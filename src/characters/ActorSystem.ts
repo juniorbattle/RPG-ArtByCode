@@ -17,7 +17,11 @@ export class ActorSystem {
   keys = new Set<string>();
   private nextId = 1;
   private district: DistrictBuild | null = null;
+  /** camera yaw: picks which sprite direction faces the viewer */
   camYaw = 0;
+  /** yaw the movement keys are mapped through: latched while a key is held so a camera blend never bends
+   *  the direction the player is already walking (re-synced by the app when input is released) */
+  controlYaw = 0;
   interactTarget: Actor | null = null;
   nearForge = false;
   onInteractForge: (() => void) | null = null;
@@ -73,7 +77,7 @@ export class ActorSystem {
     const a = this.spawn(n.archetype, n.role, p, { behaviour: { kind, waypoints: wp, wait: rng.range(0, 3), idx: 0, target: null, seed: rng.int(1, 99999) } });
     if (n.facing !== undefined) this.face(a, new THREE.Vector3(Math.sin(n.facing), 0, Math.cos(n.facing)));
     if (n.role.endsWith('work')) a.anim = 'hammer';
-    if (n.role.includes('talk')) { a.anim = 'talk'; a.bubble = 'dots'; }
+    if (n.role.includes('talk')) { if (this.atlas.counts.has(`${n.archetype}/talk`)) a.anim = 'talk'; a.bubble = 'dots'; }
     if (n.role.includes('alarm')) a.bubble = 'exclaim';
   }
 
@@ -107,11 +111,21 @@ export class ActorSystem {
     if (this.walkable(a.pos.x, nz, a.radius)) a.pos.z = nz;
   }
 
+  /** remember the world-space facing; the screen direction is re-derived every frame from the camera yaw, so idle
+   *  NPCs keep facing the same way in the world when the camera graph swings between framings */
   face(a: Actor, v: THREE.Vector3): void {
     if (v.lengthSq() < 1e-6) return;
+    a.faceVec = [v.x, v.z];
+    this.applyFacing(a);
+  }
+
+  private applyFacing(a: Actor): void {
+    if (!a.faceVec) return;
+    const [vx, vz] = a.faceVec;
     const c = Math.cos(this.camYaw), s = Math.sin(this.camYaw);
-    const sx = v.x * c - v.z * s;   // along camera right
-    const sd = v.x * s + v.z * c;   // toward camera
+    const sx = vx * c - vz * s;   // along camera right
+    const sd = vx * s + vz * c;   // toward camera
+    a.sideFlip = sx > 0;
     if (Math.abs(sd) >= Math.abs(sx) * 0.85) { a.dir = sd > 0 ? 'down' : 'up'; a.flip = false; }
     else { a.dir = 'side' as Dir; a.flip = sx > 0; }
   }
@@ -123,13 +137,20 @@ export class ActorSystem {
     else if (this.interactTarget) { this.talkTimer = 2.5; }
   }
 
+  private axes(): [number, number] {
+    const k = this.keys;
+    return [(k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0), (k.has('w') || k.has('arrowup') ? 1 : 0) - (k.has('s') || k.has('arrowdown') ? 1 : 0)];
+  }
+
+  /** true while a movement key is held */
+  get moveInput(): boolean { const [ix, iy] = this.axes(); return ix !== 0 || iy !== 0; }
+
   update(dt: number, elapsed: number): void {
     const p = this.player;
-    const c = Math.cos(this.camYaw), s = Math.sin(this.camYaw);
+    const c = Math.cos(this.controlYaw), s = Math.sin(this.controlYaw);
     // --- player
     const k = this.keys;
-    const ix = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0);
-    const iy = (k.has('w') || k.has('arrowup') ? 1 : 0) - (k.has('s') || k.has('arrowdown') ? 1 : 0);
+    const [ix, iy] = this.axes();
     const run = k.has('shift') ? 1.7 : 1;
     // screen right = (c, -s), toward-camera = (s, c); "up" on screen = away from camera
     const mv = new THREE.Vector3(c * ix - s * iy, 0, -s * ix - c * iy);
@@ -144,6 +165,7 @@ export class ActorSystem {
     // --- NPCs
     this.interactTarget = null; this.nearForge = false;
     for (const a of this.actors) {
+      if (a !== p || !mv.lengthSq()) this.applyFacing(a);
       if (a === p) continue;
       a.t += dt;
       if (a.anim === 'hammer') a.t = elapsed;

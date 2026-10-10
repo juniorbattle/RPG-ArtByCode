@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass.js';
 import { U, MAX_LIGHTS } from './SceneUniforms';
+import type { GpuTimer } from '../debug/GpuTimer';
 
 export interface PostParams {
   exposure: number;
@@ -49,12 +50,14 @@ float coc(vec2 uv, float vz){
   return clamp(max(dofC, tiltC * uTilt), 0.0, 1.0) * uStrength;
 }
 void main(){
+  // scene alpha is a protection mask: gameplay characters write (1 - protection), everything else 1. Their
+  // circle of confusion shrinks accordingly, so the set softens while the characters stay readable.
+  vec4 base = texture2D(tColor, vUv);
   float d0 = texture2D(tDepth, vUv).x;
   float z0 = viewZ(d0);
-  float c0 = coc(vUv, z0);
-  vec4 base = texture2D(tColor, vUv);
+  float c0 = coc(vUv, z0) * base.a;
   float rad = c0 * uMaxBlur;
-  if (rad < 0.35) { gl_FragColor = base; return; }
+  if (rad < 0.35) { gl_FragColor = vec4(base.rgb, 1.0); return; }
   vec3 acc = base.rgb; float wsum = 1.0;
   const int N = 26;
   for (int i = 0; i < N; i++) {
@@ -64,12 +67,13 @@ void main(){
     vec2 off = vec2(cos(a), sin(a)) * r;
     vec2 suv = vUv + off * rad * uTexel;
     float zs = viewZ(texture2D(tDepth, suv).x);
-    float rs = coc(suv, zs) * uMaxBlur;
+    vec4 sc = texture2D(tColor, suv);
+    float rs = coc(suv, zs) * uMaxBlur * sc.a;
     float dist = r * rad;
     float reach = smoothstep(dist - 1.2, dist + 0.6, rs);
     // background samples must not smear over a nearer, sharper centre pixel
     float behind = zs > z0 + 1.5 ? smoothstep(0.0, 1.0, c0 * 2.0) : 1.0;
-    vec3 col = texture2D(tColor, suv).rgb;
+    vec3 col = sc.rgb;
     float lum = dot(col, vec3(0.3, 0.55, 0.15));
     float w = reach * behind * (1.0 + smoothstep(1.2, 5.0, lum) * 1.6);
     acc += col * w; wsum += w;
@@ -84,6 +88,7 @@ const AIR_FRAG = /* glsl */ `
 precision highp float;
 #define MAX_LIGHTS ${MAX_LIGHTS}
 uniform sampler2D tDepth;
+uniform sampler2D tColor;
 uniform mat4 uInvProj;
 uniform mat4 uCamWorld;
 uniform vec3 uCamPos;
@@ -93,6 +98,8 @@ uniform int uLightCount;
 uniform float uScatter;
 varying vec2 vUv;
 void main(){
+  // characters (scene alpha < 1, see the DOF) keep part of their contrast inside a hot haze such as the forge's
+  float keep = mix(0.45, 1.0, texture2D(tColor, vUv).a);
   float d = texture2D(tDepth, vUv).x;
   vec4 vp = uInvProj * vec4(vUv * 2.0 - 1.0, d * 2.0 - 1.0, 1.0);
   vp /= vp.w;
@@ -113,7 +120,7 @@ void main(){
     float I = (atan((L - t0) / hh) - atan(-t0 / hh)) / hh;
     sum += uLightCol[i].rgb * I * exp(-h2 / (r2 * 0.3));
   }
-  gl_FragColor = vec4(sum * uScatter, 1.0);
+  gl_FragColor = vec4(sum * uScatter * keep, 1.0);
 }
 `;
 
@@ -185,7 +192,7 @@ export class PostFX {
     });
     this.airMat = new THREE.ShaderMaterial({
       uniforms: {
-        tDepth: { value: null }, uInvProj: { value: new THREE.Matrix4() }, uCamWorld: { value: new THREE.Matrix4() }, uCamPos: { value: new THREE.Vector3() },
+        tDepth: { value: null }, tColor: { value: null }, uInvProj: { value: new THREE.Matrix4() }, uCamWorld: { value: new THREE.Matrix4() }, uCamPos: { value: new THREE.Vector3() },
         uLightPos: U.uLightPos, uLightCol: U.uLightCol, uLightCount: U.uLightCount, uScatter: { value: 0.01 },
       },
       vertexShader: VERT, fragmentShader: AIR_FRAG, depthTest: false, depthWrite: false,
@@ -224,8 +231,9 @@ export class PostFX {
     return px * 8 * msaa + px * 4 + px * 8 + bloom + px * 2;
   }
 
-  render(scene: THREE.Scene, camera: THREE.PerspectiveCamera, time: number): void {
+  render(scene: THREE.Scene, camera: THREE.PerspectiveCamera, time: number, gpu?: GpuTimer): void {
     const r = this.renderer, p = this.params;
+    gpu?.begin('scene');
     r.setRenderTarget(this.sceneRT);
     r.setClearColor(0x04060c, 1);
     r.clear(true, true, true);
@@ -233,8 +241,9 @@ export class PostFX {
 
     const useAir = this.airEnabled && p.airlight > 0.001;
     if (useAir) {
+      gpu?.begin('air');
       const u = this.airMat.uniforms;
-      u.tDepth.value = this.sceneRT.depthTexture;
+      u.tDepth.value = this.sceneRT.depthTexture; u.tColor.value = this.sceneRT.texture;
       u.uInvProj.value.copy(camera.projectionMatrixInverse); u.uCamWorld.value.copy(camera.matrixWorld); u.uCamPos.value.copy(camera.position);
       // in-scatter scales with the fog the art direction dialled in
       u.uScatter.value = 0.0055 * (U.uFogDensity.value / 0.013);
@@ -244,6 +253,7 @@ export class PostFX {
 
     let src: THREE.WebGLRenderTarget = this.sceneRT;
     if (this.dofEnabled && p.dofStrength > 0.001) {
+      gpu?.begin('dof');
       const u = this.dofMat.uniforms;
       u.tColor.value = this.sceneRT.texture; u.tDepth.value = this.sceneRT.depthTexture;
       u.uNear.value = camera.near; u.uFar.value = camera.far;
@@ -254,10 +264,12 @@ export class PostFX {
       src = this.dofRT;
     }
     if (this.bloomEnabled && p.bloomStrength > 0.001) {
+      gpu?.begin('bloom');
       this.bloom.strength = p.bloomStrength; this.bloom.radius = p.bloomRadius; this.bloom.threshold = p.bloomThreshold;
       // additive blend of the bloom chain into the (already sharp / DOF'd) HDR buffer
       this.bloom.render(r, null as any, src, 0, false);
     }
+    gpu?.begin('grade');
     const g = this.gradeMat.uniforms;
     g.tColor.value = src.texture; g.tAir.value = useAir ? this.airRT.texture : this.black; g.uAir.value = p.airlight;
     g.uExposure.value = p.exposure; g.uVignette.value = p.vignette; g.uGrain.value = p.grain; g.uSat.value = p.saturation; g.uContrast.value = p.contrast; g.uTime.value = time; g.uPalette.value = p.palette;

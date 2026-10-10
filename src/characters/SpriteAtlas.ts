@@ -53,7 +53,8 @@ export class SpriteAtlas {
     const mk = (buf: Uint8ClampedArray, srgb: boolean) => {
       const t = new THREE.DataTexture(new Uint8Array(buf.buffer), W, H, THREE.RGBAFormat, THREE.UnsignedByteType);
       t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
-      t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearFilter; t.generateMipmaps = false;
+      // pixel art: nearest sampling (the sprite shader also addresses texel centres explicitly)
+      t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false;
       t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; t.needsUpdate = true;
       return t;
     };

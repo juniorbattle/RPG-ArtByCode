@@ -19,11 +19,13 @@ fs.mkdirSync(OUT, { recursive: true });
 
 // name -> query string (`player=x,z` places the player and settles the follow camera; `@x,y,w,h` clips)
 const DEFAULT_SHOTS = {
-  '01-hero': 'seed=1842&forge=normal&clean=1&freeze=7.3',
-  '02-forge-sabotaged': 'seed=1842&forge=sabotaged&clean=1&freeze=7.3&player=6.4,1.2',
-  '03-far-quay': 'seed=1842&forge=normal&clean=1&freeze=7.3&player=24,1.2',
-  '04-alt-seed-a': 'seed=7719&forge=normal&clean=1&freeze=7.3',
-  '05-alt-seed-b': 'seed=30417&forge=normal&clean=1&freeze=7.3',
+  '01-camA-establishing': 'seed=1842&forge=normal&clean=1&freeze=7.3',
+  '02-camB-merchant': 'seed=1842&forge=normal&clean=1&freeze=7.3&player=-4.6,0.6',
+  '03-camC-forge': 'seed=1842&forge=normal&clean=1&freeze=7.3&player=9.6,1.0',
+  '04-forge-sabotaged': 'seed=1842&forge=sabotaged&clean=1&freeze=7.3&player=9.6,1.0',
+  '05-far-quay': 'seed=1842&forge=normal&clean=1&freeze=7.3&player=24,1.2',
+  '06-alt-seed-a': 'seed=7719&forge=normal&clean=1&freeze=7.3',
+  '07-alt-seed-b': 'seed=30417&forge=normal&clean=1&freeze=7.3',
 };
 
 const args = process.argv.slice(2);

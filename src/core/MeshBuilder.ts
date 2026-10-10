@@ -7,6 +7,8 @@ export const SLOTS: Slot[] = ['plaster', 'timber', 'planks', 'stone', 'brick', '
 /** Shared transform stack: every slot builder of a SlotSet writes through the same current matrix,
  *  so generator modules can be written in local frames (a window in its panel, a lamp on its bracket). */
 export class Frame {
+  /** visibility part stamped on every vertex emitted through this frame (0 = untracked, never culled) */
+  part = 0;
   private stack: THREE.Matrix4[] = [new THREE.Matrix4()];
   private nstack: THREE.Matrix3[] = [new THREE.Matrix3()];
   get m(): THREE.Matrix4 { return this.stack[this.stack.length - 1]; }
@@ -62,6 +64,8 @@ export class MeshBuilder {
   tint: number[] = [];
   aux: number[] = [];
   idx: number[] = [];
+  /** per-vertex visibility part (see Frame.part); whole primitives always share one part */
+  part: number[] = [];
   constructor(readonly frame: Frame = new Frame()) {}
 
   get vertexCount(): number { return this.pos.length / 3; }
@@ -82,6 +86,7 @@ export class MeshBuilder {
     this.uv.push(u, v);
     this.tint.push(t[0], t[1], t[2], ao);
     this.aux.push(sway !== undefined ? sway : aux[0], aux[1], aux[2], aux[3]);
+    this.part.push(this.frame.part);
     return this.pos.length / 3 - 1;
   }
 
@@ -358,11 +363,13 @@ export class MeshBuilder {
     this.grid(P, { ...o, smooth: true, uvFn: (u, v) => cuv ?? [u * (rx + rz) * Math.PI, v * ry * Math.PI] });
   }
 
-  clear(): void { this.pos.length = this.nrm.length = this.uv.length = this.tint.length = this.aux.length = this.idx.length = 0; }
+  clear(): void { this.pos.length = this.nrm.length = this.uv.length = this.tint.length = this.aux.length = this.idx.length = this.part.length = 0; }
 
-  /** Append another builder's geometry transformed by m (positions + normals). */
-  append(other: MeshBuilder, m?: THREE.Matrix4): void {
+  /** Append another builder's geometry transformed by m (positions + normals). Tracked parts of `other` are
+   *  offset by `partBase` (local part ids -> global); untracked vertices take this builder's current part. */
+  append(other: MeshBuilder, m?: THREE.Matrix4, partBase = 0): void {
     const base = this.pos.length / 3;
+    for (let i = 0; i < other.part.length; i++) { const p = other.part[i]; this.part.push(p > 0 ? p + partBase : this.frame.part); }
     const nmat = m ? new THREE.Matrix3().getNormalMatrix(m) : null;
     const e = m?.elements, ne = nmat?.elements;
     for (let i = 0; i < other.pos.length; i += 3) {
@@ -385,6 +392,45 @@ export class MeshBuilder {
       const a = other.idx[i] + base, b = other.idx[i + 1] + base, c = other.idx[i + 2] + base;
       if (mirrored) this.idx.push(a, c, b); else this.idx.push(a, b, c);
     }
+  }
+
+  /** Split by a per-part class (0..n-1): one compacted builder per class (vertices re-indexed). */
+  partition(classOf: (part: number) => number, n: number): MeshBuilder[] {
+    const out = Array.from({ length: n }, () => new MeshBuilder());
+    const nv = this.pos.length / 3;
+    const remap = Array.from({ length: n }, () => new Int32Array(nv).fill(-1));
+    const take = (k: number, v: number): number => {
+      const r = remap[k], o = out[k];
+      let j = r[v];
+      if (j < 0) {
+        j = o.pos.length / 3; r[v] = j;
+        o.pos.push(this.pos[v * 3], this.pos[v * 3 + 1], this.pos[v * 3 + 2]);
+        o.nrm.push(this.nrm[v * 3], this.nrm[v * 3 + 1], this.nrm[v * 3 + 2]);
+        o.uv.push(this.uv[v * 2], this.uv[v * 2 + 1]);
+        o.tint.push(this.tint[v * 4], this.tint[v * 4 + 1], this.tint[v * 4 + 2], this.tint[v * 4 + 3]);
+        o.aux.push(this.aux[v * 4], this.aux[v * 4 + 1], this.aux[v * 4 + 2], this.aux[v * 4 + 3]);
+        o.part.push(this.part[v]);
+      }
+      return j;
+    };
+    const cache = new Map<number, number>();
+    for (let i = 0; i < this.idx.length; i += 3) {
+      const a = this.idx[i], p = this.part[a];
+      let k = cache.get(p);
+      if (k === undefined) { k = classOf(p); cache.set(p, k); }
+      if (k < 0) continue;
+      out[k].idx.push(take(k, a), take(k, this.idx[i + 1]), take(k, this.idx[i + 2]));
+    }
+    return out;
+  }
+
+  /** Visibility-bake geometry: positions + part id only. */
+  toPartGeometry(partBase = 0): THREE.BufferGeometry {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.pos), 3));
+    g.setAttribute('aPart', new THREE.BufferAttribute(new Float32Array(this.part.map((p) => (p > 0 ? p + partBase : 0))), 1));
+    g.setIndex(new THREE.BufferAttribute(this.pos.length / 3 > 65535 ? new Uint32Array(this.idx) : new Uint16Array(this.idx), 1));
+    return g;
   }
 
   toGeometry(): THREE.BufferGeometry {
@@ -428,10 +474,21 @@ export class SlotSet {
   }
   with(m: THREE.Matrix4, fn: () => void): void { this.frame.push(m); fn(); this.frame.pop(); }
   /** Append all slots of another set (already built in its own local frame) with a transform. */
-  append(other: SlotSet, m?: THREE.Matrix4): void {
+  append(other: SlotSet, m?: THREE.Matrix4, partBase = 0): void {
     const cm = this.frame.m.clone();
     if (m) cm.multiply(m);
-    for (const s of SLOTS) this.get(s).append(other.get(s), cm);
+    for (const s of SLOTS) this.get(s).append(other.get(s), cm, partBase);
+  }
+  /** set the visibility part for everything emitted inside fn */
+  inPart(part: number, fn: () => void): void { const prev = this.frame.part; this.frame.part = part; fn(); this.frame.part = prev; }
+  /** split every slot by part class (see MeshBuilder.partition) */
+  partition(classOf: (part: number) => number, n: number): SlotSet[] {
+    const out = Array.from({ length: n }, () => new SlotSet());
+    for (const s of SLOTS) {
+      const parts = this.get(s).partition(classOf, n);
+      parts.forEach((b, k) => { const d = out[k].get(s); d.pos = b.pos; d.nrm = b.nrm; d.uv = b.uv; d.tint = b.tint; d.aux = b.aux; d.idx = b.idx; d.part = b.part; });
+    }
+    return out;
   }
   triCount(): number { let t = 0; for (const s of SLOTS) t += this.get(s).triCount; return t; }
 }

@@ -1,8 +1,26 @@
 import * as THREE from 'three';
 
-/** Semi-fixed exploration camera authored for the zone: a low, near-level 3/4 view from across the canal
- *  (water in the foreground, the quay and its frontage beyond, the city rising behind). The angle never changes;
- *  the rig only dollies along the quay to keep the player readable, with a small lateral parallax. */
+/** Orbit pose of the exploration camera: the camera sits `dist` metres from `target` along yaw / pitch. */
+export interface CamPose { yaw: number; pitch: number; dist: number; fov: number; shift: number; tx: number; ty: number; tz: number }
+
+/** Place a perspective camera at a pose (shared by the rig and the visibility bake, so both see the same frame). */
+export function applyPose(c: THREE.PerspectiveCamera, p: CamPose, aspect: number, fovScale = 1): void {
+  const cp = Math.cos(p.pitch);
+  // widen the lens on narrow windows so the composition never crops the street
+  const narrow = Math.max(1, (16 / 9) / aspect);
+  c.fov = p.fov * Math.pow(narrow, 0.85) * fovScale;
+  c.aspect = aspect;
+  c.position.set(p.tx + p.dist * Math.sin(p.yaw) * cp, p.ty + p.dist * Math.sin(p.pitch), p.tz + p.dist * Math.cos(p.yaw) * cp);
+  c.up.set(0, 1, 0);
+  c.lookAt(p.tx, p.ty, p.tz);
+  c.updateProjectionMatrix();
+  c.projectionMatrix.elements[9] = p.shift;
+  c.projectionMatrixInverse.copy(c.projectionMatrix).invert();
+  c.updateMatrixWorld(true);
+}
+
+/** Applies a camera pose. The pose itself is authored by the CameraGraph (three semi-fixed framings blended
+ *  along the quay); `?cam=` puts the rig in manual mode with a fixed pose. */
 export class CameraRig {
   readonly camera = new THREE.PerspectiveCamera(34, 16 / 9, 1.5, 900);
   yaw = THREE.MathUtils.degToRad(-55);
@@ -10,51 +28,26 @@ export class CameraRig {
   dist = 30;
   fov = 34;
   shiftY = 0;
-  /** orbit pivot of the authored framing (camera sits dist metres behind it along yaw/pitch) */
-  readonly home = new THREE.Vector3(2.9, 3.1, 1.55);
-  /** where the framing expects the player; follow offsets are measured from here */
-  readonly followRef = new THREE.Vector3(-7.5, 0, 1.8);
-  private pan = new THREE.Vector3();
-  followStrength = 0.5;
-  /** dolly limits along the quay (x) and the lateral parallax band (z) */
-  followMin = new THREE.Vector3(-4, 0, -0.6);
-  followMax = new THREE.Vector3(23, 0, 0.6);
+  /** orbit pivot of the current framing */
+  readonly pivot = new THREE.Vector3(2.9, 3.1, 1.55);
+  /** manual pose (from ?cam=): the graph stops driving the rig */
+  manual = false;
   private aspect = 16 / 9;
 
   setAspect(a: number): void { this.aspect = a; this.apply(); }
 
-  /** distance from the camera to the current pivot (used for autofocus fallbacks) */
-  get target(): THREE.Vector3 { return this.home.clone().add(this.pan); }
+  get target(): THREE.Vector3 { return this.pivot.clone(); }
 
-  private followTarget(player: THREE.Vector3): THREE.Vector3 {
-    const k = this.followStrength;
-    return new THREE.Vector3((player.x - this.followRef.x) * k, 0, (player.z - this.followRef.z) * k * 0.3).clamp(this.followMin, this.followMax);
-  }
-
-  /** call every frame with the player's world position */
-  follow(player: THREE.Vector3, dt: number): void {
-    this.pan.lerp(this.followTarget(player), 1 - Math.exp(-dt * 1.8));
+  setPose(p: CamPose): void {
+    this.yaw = p.yaw; this.pitch = p.pitch; this.dist = p.dist; this.fov = p.fov; this.shiftY = p.shift;
+    this.pivot.set(p.tx, p.ty, p.tz);
     this.apply();
   }
 
-  /** jump straight to the settled follow framing (spawn / teleport / screenshots) */
-  snap(player: THREE.Vector3): void { this.pan.copy(this.followTarget(player)); this.apply(); }
+  get aspectRatio(): number { return this.aspect; }
 
   apply(): void {
-    const c = this.camera;
-    const tgt = this.home.clone().add(this.pan);
-    const cp = Math.cos(this.pitch);
-    // widen the lens on narrow windows so the composition never crops the street
-    const narrow = Math.max(1, (16 / 9) / this.aspect);
-    c.fov = this.fov * Math.pow(narrow, 0.85);
-    c.aspect = this.aspect;
-    c.position.set(tgt.x + this.dist * Math.sin(this.yaw) * cp, tgt.y + this.dist * Math.sin(this.pitch), tgt.z + this.dist * Math.cos(this.yaw) * cp);
-    c.up.set(0, 1, 0);
-    c.lookAt(tgt);
-    c.updateProjectionMatrix();
-    c.projectionMatrix.elements[9] = this.shiftY;
-    c.projectionMatrixInverse.copy(c.projectionMatrix).invert();
-    c.updateMatrixWorld(true);
+    applyPose(this.camera, { yaw: this.yaw, pitch: this.pitch, dist: this.dist, fov: this.fov, shift: this.shiftY, tx: this.pivot.x, ty: this.pivot.y, tz: this.pivot.z }, this.aspect);
   }
 
   /** screen -> world on the street plane (y = h) */

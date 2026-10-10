@@ -65,6 +65,18 @@ export class PlanarReflection {
   }
   textureBytes(): number { return this.w * this.h * 8 * 1.33; }
 
+  /** Tilt the near plane onto the world plane y = h (Lengyel's oblique frustum): geometry below the water is
+   *  clipped by the rasteriser, so surface shaders need no per-fragment discard (which disabled early-z). */
+  private obliqueClip(c: THREE.PerspectiveCamera, h: number): void {
+    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -h).applyMatrix4(c.matrixWorldInverse);
+    const cp = new THREE.Vector4(plane.normal.x, plane.normal.y, plane.normal.z, plane.constant);
+    const e = c.projectionMatrix.elements;
+    const q = new THREE.Vector4((Math.sign(cp.x) + e[8]) / e[0], (Math.sign(cp.y) + e[9]) / e[5], -1, (1 + e[10]) / e[14]);
+    cp.multiplyScalar(2 / cp.dot(q));
+    e[2] = cp.x; e[6] = cp.y; e[10] = cp.z + 1; e[14] = cp.w;
+    c.projectionMatrixInverse.copy(c.projectionMatrix).invert();
+  }
+
   update(renderer: THREE.WebGLRenderer, scene: THREE.Scene, main: THREE.PerspectiveCamera): void {
     if (!this.enabled) { U.uReflReady.value = 0; return; }
     const c = this.cam;
@@ -74,7 +86,10 @@ export class PlanarReflection {
     c.up.set(up.x, -up.y, up.z);
     c.lookAt(target.x, -target.y, target.z);
     c.fov = main.fov; c.aspect = main.aspect; c.near = main.near; c.far = main.far;
-    c.updateProjectionMatrix(); c.updateMatrixWorld(true);
+    c.updateMatrixWorld(true);
+    // the mirror frustum is the main one (lens shift included), mirrored by the flipped up vector
+    c.projectionMatrix.copy(main.projectionMatrix);
+    this.obliqueClip(c, this.clipY);
     const prev = renderer.getRenderTarget();
     const prevClip = U.uClipY.value;
     U.uClipY.value = this.clipY;

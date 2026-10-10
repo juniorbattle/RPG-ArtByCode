@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 
 export const MAX_LIGHTS = 24;
+/** light grid over the lit part of the district: x -64..96 (4 m cells), z -24..24 (6 m cells); a cell can list
+ *  every light, so the grid never drops one (it only skips the ones that cannot reach the cell) */
+export const LIGHT_GRID = { x0: -64, z0: -24, cw: 4, cd: 6, nx: 40, nz: 8, per: MAX_LIGHTS, nCells: 40 * 8 };
 
 /** One uniform bag shared *by reference* across every material: the lighting rig, fog, moon shadow and
  *  planar reflection write here once per frame and every surface shader sees it. */
@@ -9,6 +12,10 @@ export const U = {
   uLightPos: { value: Array.from({ length: MAX_LIGHTS }, () => new THREE.Vector4(0, -100, 0, 1)) },
   uLightCol: { value: Array.from({ length: MAX_LIGHTS }, () => new THREE.Vector4(0, 0, 0, 1)) },
   uLightCount: { value: 0 },
+  /** light grid (see LightRig.buildGrid): per-cell light index lists, the grid origin / cell size and dimensions */
+  uLightGrid: { value: null as THREE.Texture | null },
+  uGridRect: { value: new THREE.Vector4(LIGHT_GRID.x0, LIGHT_GRID.z0, LIGHT_GRID.cw, LIGHT_GRID.cd) },
+  uGridDim: { value: new THREE.Vector2(LIGHT_GRID.nx, LIGHT_GRID.nz) },
   uMoonDir: { value: new THREE.Vector3(0.95, 0.2, 0.17).normalize() },
   uMoonCol: { value: new THREE.Color(0.30, 0.38, 0.55) },
   uFillDir: { value: new THREE.Vector3(-0.6, 0.35, 0.7).normalize() },
@@ -40,6 +47,8 @@ export const U = {
   uReflVP: { value: new THREE.Matrix4() },
   uReflStrength: { value: 1 },
   uReflReady: { value: 0 },
+  /** water level while the mirror pass renders, -1000 otherwise (a pass flag: clipping itself is done by the
+   *  mirror camera's oblique near plane, so no surface shader needs a discard and early-z stays enabled) */
   uClipY: { value: -1000 },
   uWarmGain: { value: 1 },
   uWindAmp: { value: 1 },

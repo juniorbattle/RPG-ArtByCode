@@ -2,8 +2,10 @@ import * as THREE from 'three';
 import { U } from './SceneUniforms';
 import { COMMON_GLSL } from '../materials/ShaderChunks';
 
-/** Camera-centred sky dome drawn first at the far plane. Shares skyHaze() with the fog, so fully fogged
- *  silhouettes melt into the horizon seamlessly; also rendered by the planar reflection (layer 0). */
+/** Camera-centred sky dome at the far plane. Shares skyHaze() with the fog, so fully fogged silhouettes melt
+ *  into the horizon seamlessly; also rendered by the planar reflection (layer 0). Drawn after every other opaque
+ *  and depth-tested, so only the sky that is actually visible gets shaded (it used to fill the whole screen first
+ *  and be painted over). */
 
 const SKY_VERT = /* glsl */ `
 varying vec3 vDir;
@@ -43,9 +45,9 @@ void main(){
 export function buildSky(): THREE.Mesh {
   const mat = new THREE.ShaderMaterial({
     uniforms: { ...U }, vertexShader: SKY_VERT, fragmentShader: SKY_FRAG,
-    side: THREE.BackSide, depthWrite: false, depthTest: false,
+    side: THREE.BackSide, depthWrite: false, depthTest: true,
   });
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), mat);
-  mesh.name = 'sky'; mesh.frustumCulled = false; mesh.renderOrder = -1000;
+  mesh.name = 'sky'; mesh.frustumCulled = false; mesh.renderOrder = 1000;
   return mesh;
 }

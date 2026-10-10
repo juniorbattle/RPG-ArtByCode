@@ -6,6 +6,7 @@ import { U } from '../atmosphere/SceneUniforms';
 import { COMMON_GLSL, SURFACE_VERT } from '../materials/ShaderChunks';
 import type { MaterialLibrary } from '../materials/MaterialLibrary';
 import type { DistrictConfig } from './MerchantDistrictGenerator';
+import type { PartMeta } from './Visibility';
 import { QUAY_Z, QUAY_END_X, SOUTH_QUAY_Z, STREET, WATER_Y } from '../architecture/StreetComposer';
 
 /** The grand-but-subordinate background, authored along the canal axis (+x) in depth bands:
@@ -24,15 +25,15 @@ float boxAA(vec2 f, vec2 lo, vec2 hi, vec2 w){
   return a.x * a.y;
 }
 void main(){
-  if (vWorld.y < uClipY) discard;
   vec3 N = normalize(vNormal);
   if (!gl_FrontFacing) N = -N;
   vec3 base = vTint.rgb;
   float kind = vAux.w;
   vec3 emis = vec3(0.0);
-  float facade = step(0.5, kind) * step(kind, 2.5) * step(abs(N.y), 0.6);
+  float timber = step(3.5, kind) * step(kind, 4.5);
+  float facade = (step(0.5, kind) * step(kind, 2.5) + timber) * step(abs(N.y), 0.6);
   if (facade > 0.5) {
-    vec2 cs = kind < 1.5 ? vec2(1.6, 2.6) : vec2(2.2, 4.4);
+    vec2 cs = kind > 1.5 && kind < 2.5 ? vec2(2.2, 4.4) : vec2(1.6, 2.6);
     vec2 cell = vUv / cs; vec2 id = floor(cell), f = fract(cell);
     vec2 aa = max(fwidth(cell), vec2(1e-4));
     float above = step(0.0, id.y);
@@ -49,6 +50,11 @@ void main(){
     float plinth = 1.0 - smoothstep(0.86, 0.94, vWorld.y - vAux.y);
     base *= 1.0 - (0.3 * frame + 0.2 * plinth) * art;
     base *= 1.0 + 0.3 * sill * art;
+    // canal houses: stone ground floor, timber-framed upper floors (posts on the bay lines, rails on the floor
+    // lines) - the frontage's own grammar at the support tier's budget
+    float tl = max(1.0 - smoothstep(0.0, 0.07 + aa.x, min(f.x, 1.0 - f.x)), 1.0 - smoothstep(0.0, 0.05 + aa.y, min(f.y, 1.0 - f.y)));
+    base *= mix(1.0, mix(1.1, 0.38, tl), timber * step(1.0, id.y) * art);
+    base *= 1.0 - 0.14 * timber * (1.0 - step(1.0, id.y));
     // far lights thin out with distance: the upper city reads as sparse points, never as a lit wall
     float fade = 1.0 - 0.65 * smoothstep(90.0, 300.0, distance(vWorld, cameraPosition));
     emis = vec3(1.0, 0.6, 0.27) * (0.45 + 0.8 * hash12(id * 1.7 + vAux.z)) * (kind > 1.5 ? 1.4 : 1.7) * lit * win * fade;
@@ -78,7 +84,7 @@ void main(){
   gl_FragColor = vec4(applyFog(col, vWorld), 1.0);
 }`;
 
-const PLAIN = 0, WALL = 1, LAND = 2, LAMP = 3, GROUND = 5, BRIDGE = 6, TREE = 7;
+const PLAIN = 0, WALL = 1, LAND = 2, LAMP = 3, TIMBER = 4, GROUND = 5, BRIDGE = 6, TREE = 7;
 type Aux = [number, number, number, number];
 
 /** south shoreline: straight along the playable canal, opening into a wide river basin toward the bridge */
@@ -96,14 +102,14 @@ function qf(B: MeshBuilder, p: [V3, V3, V3, V3], want: V3, o: Parameters<MeshBui
   B.quad(p[0], p[1], p[2], p[3], { ...o, flip: n[0] * want[0] + n[1] * want[1] + n[2] * want[2] < 0 });
 }
 
-interface HouseOpts { x: number; y: number; z: number; w: number; d: number; h: number; wall: V3; roof: V3; id: number; lit: number; hip?: boolean; chimney?: boolean }
+interface HouseOpts { x: number; y: number; z: number; w: number; d: number; h: number; wall: V3; roof: V3; id: number; lit: number; hip?: boolean; chimney?: boolean; timber?: boolean }
 
 /** box + gable/hip roof; each wall gets its own window grid sized to the facade so windows never cut corners */
 function farHouse(B: MeshBuilder, o: HouseOpts): void {
   const { x, y, z, w, d, h } = o;
   const x0 = x - w / 2, x1 = x + w / 2, z0 = z - d / 2, z1 = z + d / 2;
   const yb = y - 2.5, yt = y + h;
-  const aux: Aux = [o.lit, y, o.id, WALL];
+  const aux: Aux = [o.lit, y, o.id, o.timber ? TIMBER : WALL];
   const rows = Math.max(1, Math.round(h / 2.6)), kv = (rows * 2.6) / h;
   const wall = (p: [V3, V3, V3, V3], want: V3, len: number) => {
     const U0 = Math.max(1, Math.round(len / 1.6)) * 1.6;
@@ -220,16 +226,21 @@ function archBridge(B: MeshBuilder, o: BridgeOpts): void {
   }
 }
 
-export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictConfig): { group: THREE.Group } {
+/** what the district needs to bake and finish the background: the geometry (tagged with visibility parts) and
+ *  its one cheap material */
+export interface DistantCityDraft { builder: MeshBuilder; material: THREE.ShaderMaterial }
+
+export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictConfig, register: (m: PartMeta) => number): DistantCityDraft {
   void lib;
-  const group = new THREE.Group();
-  group.name = 'distant-city';
   const B = new MeshBuilder();
   const r = rng.fork('far');
   const dens = Math.max(0.4, cfg.buildingDensity);
   const wallPal: V3[] = [[0.3, 0.31, 0.36], [0.34, 0.34, 0.38], [0.26, 0.28, 0.34], [0.36, 0.35, 0.37], [0.3, 0.3, 0.34], [0.4, 0.39, 0.4]];
   const roofPal: V3[] = [[0.12, 0.14, 0.2], [0.15, 0.16, 0.21], [0.1, 0.12, 0.17], [0.17, 0.17, 0.21]];
   let id = 100;
+  /** every house / bridge / landmark / tree is its own visibility part; terrain and quay walls stay untracked */
+  const tag = (m: PartMeta) => { B.frame.part = register(m); };
+  const untag = () => { B.frame.part = 0; };
 
   // ---------------------------------------------------------------- terrain: flat banks + the upper-city hill
   const hill = (x: number, z: number) => {
@@ -269,7 +280,9 @@ export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictCo
   qf(B, [[RIVER_END_X, WATER_Y - 0.6, QUAY_Z], [RIVER_END_X, WATER_Y - 0.6, southShore(RIVER_END_X) + 1], [RIVER_END_X, 0.3, southShore(RIVER_END_X) + 1], [RIVER_END_X, 0.3, QUAY_Z]], [-1, 0, 0], { tint: [0.16, 0.17, 0.2], aux: [0, 0, 0, PLAIN] });
 
   // ---------------------------------------------------------------- A: quay frontages
-  const row = (x0: number, x1: number, zFront: number, facing: 1 | -1, hMin: number, hMax: number, lit: number, depth = 7, wMin = 5, wMax = 8, dim = 1) => {
+  /** a random row of simplified houses; `dry` only consumes the random stream (the opposite bank used to be
+   *  built this way: replaying its draws keeps every later background element exactly where it was) */
+  const row = (x0: number, x1: number, zFront: number, facing: 1 | -1, hMin: number, hMax: number, lit: number, depth = 7, wMin = 5, wMax = 8, dim = 1, meta: PartMeta | null = null) => {
     let x = x0;
     while (x < x1) {
       const w = Math.min(r.range(wMin, wMax), x1 - x);
@@ -277,35 +290,68 @@ export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictCo
       const d = r.range(depth * 0.8, depth * 1.2), h = r.range(hMin, hMax);
       const zc = zFront - facing * (d / 2) + r.range(-0.3, 0.3) * facing;
       const wc = r.pick(wallPal);
-      farHouse(B, { x: x + w / 2, y: 0, z: zc, w: w - 0.15, d, h, wall: [wc[0] * dim, wc[1] * dim, wc[2] * dim], roof: r.pick(roofPal), id: id++, lit, hip: r.bool(0.2), chimney: r.bool(0.4) });
+      const roof = r.pick(roofPal), hid = id++, hip = r.bool(0.2), chimney = r.bool(0.4);
+      if (meta) { tag(meta); farHouse(B, { x: x + w / 2, y: 0, z: zc, w: w - 0.15, d, h, wall: [wc[0] * dim, wc[1] * dim, wc[2] * dim], roof, id: hid, lit, hip, chimney }); }
       x += w;
     }
+    untag();
+  };
+  /** The opposite bank as a coherent canal frontage (support tier: the establishing framing looks straight at
+   *  it): deep narrow houses with their gables to the water, one front line with a gentle set-back rhythm,
+   *  storeys on one shared 2.7 m module (stone ground floor, timber-framed upper floors - the frontage's own
+   *  grammar), a calm three / four storey cadence with the odd two-storey dip, chimneys on most roofs. Same
+   *  stretch of bank and the same handful of houses as before: cleaner, not denser. */
+  const rs = rng.fork('opposite-bank');
+  let cid = 5000;
+  const SOUTH_PAL: V3[] = [[0.33, 0.33, 0.37], [0.36, 0.35, 0.38], [0.31, 0.32, 0.36]];
+  const canalRow = (x0: number, x1: number, zFront: number, storeys: number[], lit: number, dim: number, depth: number, group: string) => {
+    const widths = [5.6, 6.4, 5.0, 6.0, 6.8, 5.2];
+    let x = x0, i = rs.int(0, widths.length - 1), n = 0;
+    while (x < x1) {
+      const w = Math.min(widths[i++ % widths.length] + rs.range(-0.2, 0.2), x1 - x);
+      if (w < 3.6) break;
+      const st = storeys[(n++ + rs.int(0, 1)) % storeys.length];
+      const d = Math.max(depth + rs.range(-0.4, 0.4), w + 0.8);
+      const back = n % 3 === 0 ? 0.45 : 0;
+      const wc = rs.pick(SOUTH_PAL), roof = rs.pick(roofPal.slice(0, 3));
+      tag({ kind: 'house', tier: 1, group });
+      farHouse(B, { x: x + w / 2, y: 0.3, z: zFront + d / 2 + back, w: w - 0.1, d, h: st * 2.7, wall: [wc[0] * dim, wc[1] * dim, wc[2] * dim], roof, id: cid++, lit, hip: false, chimney: st >= 3 && rs.bool(0.65), timber: true });
+      x += w;
+    }
+    untag();
   };
   // (the north frontage up to the bridge is generated at full detail by the district: nothing simplified sits
   //  in the playable foreground / midground)
-  // opposite bank (behind the camera's side of the canal): kept for reflections / alternate framings
   row(STREET.x0 - 6, STREET.x1, SOUTH_QUAY_Z + 4.4, -1, 5, 10, 0.09, 7, 5, 8, 0.62);
   row(STREET.x0 - 6, STREET.x1 + 4, SOUTH_QUAY_Z + 12.5, -1, 8, 11, 0.06, 7, 5, 8, 0.55);
+  canalRow(STREET.x0 - 6, STREET.x1, SOUTH_QUAY_Z + 4.3, [3, 3, 4, 3, 2, 3, 4], 0.09, 0.66, 8.6, 'opposite-bank');
+  canalRow(STREET.x0 - 6, STREET.x1 + 4, SOUTH_QUAY_Z + 14.2, [4, 4, 5, 4], 0.05, 0.52, 8.0, 'opposite-bank-2');
   // the quarter behind the frontage: set back past the generated back row so it only ever reads as a
   // receding roofscape, never as a second-plane facade
   for (let n = 0; n < Math.round(60 * dens); n++) {
     const x = r.range(STREET.x0 - 10, BRIDGE_X), z = r.range(-62, -25);
+    tag({ kind: 'house', tier: 2, group: 'quarter-behind' });
     farHouse(B, { x, y: 0, z, w: r.range(5, 8), d: r.range(5, 8), h: r.range(10, 14) + Math.max(0, -z - 32) * 0.12, wall: r.pick(wallPal), roof: r.pick(roofPal), id: id++, lit: 0.06, hip: r.bool(0.3) });
   }
+  untag();
 
   // ---------------------------------------------------------------- B: hero bridge and the river basin around it
   // (no gate towers: the vanishing point stays open so the castle reads directly above the bridge)
+  tag({ kind: 'bridge', tier: 1, group: 'hero-bridge' });
   archBridge(B, { x: BRIDGE_X, z0: QUAY_Z + 0.35, z1: southShore(BRIDGE_X), width: 7, spans: 4, pier: 2.4, spring: WATER_Y + 0.55, parapet: 1.0, tint: [0.3, 0.31, 0.35], id: 7, lamps: 4 });
+  untag();
   // waterfront rows around the basin (beyond the bridge and its two generated houses: background, lower and darker)
-  row(BRIDGE_X + 18.5, 168, -3.2, 1, 8, 13, 0.08, 8, 5, 8, 0.66);
+  row(BRIDGE_X + 18.5, 168, -3.2, 1, 8, 13, 0.08, 8, 5, 8, 0.66, { kind: 'house', tier: 2, group: 'basin-north' });
   {
     let x = STREET.x1 + 4;
     while (x < 166) {
       const w = r.range(5, 8), zs = southShore(x + w / 2) + 4.5;
       const wc = r.pick(wallPal);
+      tag({ kind: 'house', tier: 2, group: 'basin-south' });
       farHouse(B, { x: x + w / 2, y: 0.3, z: zs + 3.5, w: w - 0.2, d: 7, h: r.range(7, 11), wall: [wc[0] * 0.75, wc[1] * 0.75, wc[2] * 0.75], roof: r.pick(roofPal), id: id++, lit: 0.08, hip: r.bool(0.2), chimney: r.bool(0.4) });
       x += w;
     }
+    untag();
   }
 
   // ---------------------------------------------------------------- C: mid city + the second, lower bridge in the mist
@@ -313,10 +359,16 @@ export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictCo
     const north = r.bool(0.55);
     const x = r.range(BRIDGE_X + 4, RIVER_END_X + 10);
     const z = north ? r.range(-75, -14) : r.range(southShore(x) + 16, 120);
+    tag({ kind: 'house', tier: 2, group: 'mid-city' });
     farHouse(B, { x, y: 0, z, w: r.range(4.5, 8), d: r.range(4.5, 8), h: r.range(9, 16), wall: r.pick(wallPal), roof: r.pick(roofPal), id: id++, lit: 0.07, hip: r.bool(0.3), chimney: r.bool(0.3) });
   }
+  tag({ kind: 'bridge', tier: 2, group: 'second-bridge' });
   archBridge(B, { x: 128, z0: QUAY_Z + 0.35, z1: southShore(128), width: 5.5, spans: 6, pier: 1.8, spring: WATER_Y + 0.5, parapet: 0.8, tint: [0.28, 0.29, 0.33], id: 8, lamps: 3 });
-  for (const [x, z, h] of [[96, -22, 20], [118, 64, 18], [150, -40, 24], [76, 58, 16]] as Array<[number, number, number]>) tower(B, x, 0, z, 2.6, h, 10, [0.3, 0.3, 0.34], [0.1, 0.12, 0.17], id++, 0.15);
+  for (const [x, z, h] of [[96, -22, 20], [118, 64, 18], [150, -40, 24], [76, 58, 16]] as Array<[number, number, number]>) {
+    tag({ kind: 'landmark', tier: 2, group: 'towers' });
+    tower(B, x, 0, z, 2.6, h, 10, [0.3, 0.3, 0.34], [0.1, 0.12, 0.17], id++, 0.15);
+  }
+  untag();
 
   // ---------------------------------------------------------------- D: the upper city on the hill and the castle mass
   for (let n = 0; n < Math.round(230 * dens); n++) {
@@ -324,10 +376,13 @@ export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictCo
     const y = hill(x, z);
     if (y < 0.5 && r.bool(0.5)) continue;
     const s = 0.8 + y / 40;
+    tag({ kind: 'house', tier: 2, group: 'upper-city' });
     farHouse(B, { x: Math.round(x / 2) * 2, y, z: Math.round(z / 2) * 2, w: r.range(4, 7) * s, d: r.range(4, 7) * s, h: r.range(6, 11) * s, wall: r.pick(wallPal), roof: r.pick(roofPal), id: id++, lit: 0.035 + 0.04 * smoothstep(5, 25, y), hip: r.bool(0.35) });
   }
+  untag();
   // castle: keep, curtain wall, corner towers and a tall donjon (fairy-tale verticals, read only as silhouette)
   {
+    tag({ kind: 'landmark', tier: 2, group: 'castle' });
     const cx = 242, cz = 4, cy = hill(cx, cz) - 1, cw: V3 = [0.3, 0.3, 0.34], cr: V3 = [0.09, 0.1, 0.15];
     B.boxMM(cx - 14, cy - 4, cz - 11, cx + 14, cy + 9, cz + 11, { tint: cw, aux: [0.08, cy, 900, LAND], skip: ['-y'] });
     B.boxMM(cx - 8, cy - 4, cz - 7, cx + 8, cy + 20, cz + 7, { tint: cw, aux: [0.2, cy, 901, LAND], skip: ['-y', '+y'] });
@@ -341,6 +396,7 @@ export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictCo
   }
   // cathedral on the lower slope: nave + crossing spire + west towers, scaled down to stay subordinate
   {
+    tag({ kind: 'landmark', tier: 2, group: 'cathedral' });
     const LX = 200, LZ = -34, LY = hill(LX, LZ) - 0.5, cw: V3 = [0.31, 0.3, 0.33], cr: V3 = [0.1, 0.11, 0.16];
     B.boxMM(LX - 16, LY - 3, LZ - 5, LX + 16, LY + 12, LZ + 5, { tint: cw, aux: [0.16, LY, 950, LAND], skip: ['-y', '+y'] });
     qf(B, [[LX - 16.5, LY + 12, LZ + 5.6], [LX + 16.5, LY + 12, LZ + 5.6], [LX + 16.5, LY + 19, LZ], [LX - 16.5, LY + 19, LZ]], [0, 1, 1], { tint: cr, aux: [0, LY, 950, PLAIN] });
@@ -349,20 +405,19 @@ export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictCo
     tower(B, LX - 19, LY, LZ + 3.5, 2.4, 20, 12, cw, cr, id++, 0.15);
     tower(B, LX + 2, LY + 12, LZ, 2.0, 8, 16, cw, cr, id++, 0.1);
   }
+  untag();
   // a few dark tree masses break the roof rhythm on the banks and slopes
   for (let n = 0; n < Math.round(36 * dens); n++) {
     const x = r.range(STREET.x1, 300), z = r.bool(0.5) ? r.range(southShore(x) + 6, 90) : r.range(-90, -12);
     const y = (x > RIVER_END_X ? hill(x, z) : 0) + (z > 10 ? 0.3 : 0), s = r.range(2.2, 3.6);
     const g: V3 = [0.03 + r.next() * 0.015, 0.045 + r.next() * 0.02, 0.06 + r.next() * 0.02];
+    tag({ kind: 'tree', tier: 2, group: 'trees' });
     B.frame.push(mat([x, 0, z]));
     for (let k = 0; k < 3; k++) B.lathe([[1.2 * s * (1 - k * 0.24), y + (0.6 + k * 1.1) * s], [0.01, y + (2.3 + k * 1.1) * s]], 6, { tint: g, aux: [0, y, 0, TREE] });
     B.frame.pop();
   }
+  untag();
 
-  const farMat = new THREE.ShaderMaterial({ uniforms: { ...U }, vertexShader: SURFACE_VERT, fragmentShader: FAR_FRAG, side: THREE.DoubleSide });
-  const mesh = new THREE.Mesh(B.toGeometry(), farMat);
-  // layer 0: the city and bridges are reflected in the canal
-  mesh.name = 'far-city'; mesh.frustumCulled = false; mesh.layers.set(0);
-  group.add(mesh);
-  return { group };
+  const material = new THREE.ShaderMaterial({ uniforms: { ...U }, vertexShader: SURFACE_VERT, fragmentShader: FAR_FRAG, side: THREE.DoubleSide });
+  return { builder: B, material };
 }

@@ -463,7 +463,8 @@ export function crowdVariants(seed: number, count: number): CharSpec[] {
     const topHue = r.pick([210, 222, 200, 28, 36, 230, 190]);
     out.push({
       id: `crowd${i}`, detail: 'crowd', scale: r.range(0.9, 1.0), build: r.range(0.92, 1.1), skin,
-      hair: hsl(hairHue, r.range(30, 60), r.range(16, 34)), hairStyle: fem ? r.pick<HairStyle>(['bun', 'long', 'kerchief']) : r.pick<HairStyle>(['short', 'cap', 'beret', 'bald']),
+      // muted, darker hair than the hero's copper so the player's head shape stays the brightest in a crowd
+      hair: hsl(hairHue, r.range(18, 40), r.range(14, 28)), hairStyle: fem ? r.pick<HairStyle>(['bun', 'long', 'kerchief']) : r.pick<HairStyle>(['short', 'cap', 'beret', 'bald']),
       hat: hsl(topHue + 10, 22, 30), top: hsl(topHue, r.range(16, 32), r.range(30, 44)), topStyle: fem ? 'dress' : r.pick<TopStyle>(['tunic', 'jerkin', 'coat']),
       trousers: hsl(r.range(20, 40), 18, r.range(22, 32)), boots: [64, 48, 38], apron: fem && r.bool(0.5) ? [226, 214, 190] : undefined,
       accessory: r.pick<Accessory>(['none', 'none', 'none', 'sack', 'basket', 'lantern']), anims: ['idle', 'walk'],

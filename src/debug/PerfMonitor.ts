@@ -1,9 +1,14 @@
 import type * as THREE from 'three';
+import { GpuTimer } from './GpuTimer';
 
 export interface PerfSnapshot {
   fps: number; frameMs: number; cpuMs: number; drawCalls: number; triangles: number; textures: number; geometries: number; textureMB: number;
   lights: number; actors: number; generatorMs: number; district: { triangles: number; instances: number; buildings: number; windows: number };
   resolution: string;
+  /** smoothed GPU ms per pass (only when the GPU timer is enabled) */
+  gpu?: Record<string, number>; gpuMs?: number;
+  /** visibility-driven cleanup counters (see VisibilitySets) */
+  visibility?: Record<string, number | string>;
 }
 
 /** FPS / frame time / draw calls / triangles / texture memory, accumulated across every pass of the frame
@@ -14,10 +19,13 @@ export class PerfMonitor {
   cpuMs = 0;
   drawCalls = 0;
   triangles = 0;
+  gpu!: GpuTimer;
   private last = performance.now();
   private cpuStart = 0;
   private acc = 0; private n = 0;
   private fpsSamples: number[] = [];
+
+  attach(gl: WebGL2RenderingContext): void { this.gpu = new GpuTimer(gl); }
 
   beginFrame(): void { this.cpuStart = performance.now(); }
 

@@ -13,6 +13,8 @@ import { buildMarket, HERO_STALL } from '../props/MarketGenerator';
 import { buildForgeProps, type ForgeState } from './ForgeGenerator';
 import { buildDistantCity, southShore, RIVER_END_X } from './DistantCity';
 import { addBanner, buildBanners } from '../props/Banners';
+import { classify, idMaterial, CLASS_ALWAYS, CLASS_HIDDEN, CLASS_NOT_C, CLASS_ONLY_A, type PartMeta, type Tier, type VisResult } from './Visibility';
+import type { VisSet } from '../app/CameraGraph';
 
 export interface DistrictConfig {
   seed: number;
@@ -58,6 +60,23 @@ export interface DistrictBuild {
   rebuildForge(state: ForgeState): void;
   streetPath: Array<[number, number]>;
   banners: THREE.Object3D | null;
+  /** visibility-driven cleanup report (part / triangle counts per class, per-building and background tiers) */
+  visibility: VisibilityReport;
+  /** draw level of the static meshes: 0 = framing C, 1 = B, 2 = A (see Visibility.ts) */
+  setLevel(level: 0 | 1 | 2): void;
+  /** drop the Tier 3 shadow casters once the static moon shadow has been rendered */
+  releaseShadowOnly(): void;
+}
+
+export interface VisibilityReport {
+  parts: number; hidden: number; always: number; notC: number; onlyA: number;
+  trisKept: number; trisHidden: number; trisNotC: number; trisOnlyA: number;
+  bakeMs: number; poses: number; bakeSplit: VisResult['split'] | null;
+  buildings: Array<{ id: string; tier: Tier; parts: number; hidden: number; px: { A: number; B: number; C: number } }>;
+  background: Record<string, { tier: Tier; total: number; hidden: number }>;
+  /** the part registry and raw bake counts (debug / reports) */
+  registry: PartMeta[];
+  counts: Record<VisSet, Uint32Array> | null;
 }
 
 const xf = (p: V3, pos: V3, yaw: number): V3 => { const c = Math.cos(yaw), s = Math.sin(yaw); return [pos[0] + p[0] * c + p[2] * s, pos[1] + p[1], pos[2] - p[0] * s + p[2] * c]; };
@@ -130,10 +149,16 @@ const LAMP_Z = 4.15;
 /** moored boat alongside the north quay, its bow at the landing steps: the right-hand counterweight to the stall */
 const BOAT_POS: V3 = [0.8, WATER_Y, 6.35];
 
+/** authored tiers: the playable frontage is gameplay / hero (0); the street beyond the barrier, the houses past
+ *  the bridge and the back row are support (1). Tier 2 is DistantCity; Tier 3 is whatever the bake never sees. */
+const TIER_OF_ROLE: Record<string, Tier> = { 'west-end': 0, landmark: 0, shop: 0, forge: 0, 'narrow-tall': 0, 'far-end': 0, 'beyond-barrier': 1, bridgehead: 1, backdrop: 1 };
+
 export class MerchantDistrictGenerator {
   constructor(private lib: MaterialLibrary) {}
 
-  generate(cfg: DistrictConfig): DistrictBuild {
+  /** `bake` renders the visibility part ids from the camera graph's poses (see Visibility.ts); without it every
+   *  part is kept and drawn in every framing. */
+  generate(cfg: DistrictConfig, bake?: (scene: THREE.Scene, nParts: number) => VisResult): DistrictBuild {
     const t0 = performance.now();
     const tm: Record<string, number> = {};
     const lap = (k: string, from: number) => { tm[k] = performance.now() - from; return performance.now(); };
@@ -162,6 +187,12 @@ export class MerchantDistrictGenerator {
     for (const b of street.bollards) batch.add('bollard', { pos: b, yaw: rng.range(0, 6.28), scale: rng.range(0.95, 1.08), tint: [0.86, 0.9, 0.98] });
     for (const b of street.moorings) batch.add('bollard', { pos: b, yaw: 0, scale: 0.72, tint: [0.7, 0.74, 0.82] });
 
+    // ---------------------------------------------------------------- visibility parts registry (id 0 = untracked)
+    const parts: PartMeta[] = [{ kind: 'wall', tier: 0, group: '' }];
+    const register = (m: PartMeta) => { parts.push(m); return parts.length - 1; };
+    const partIdsByGroup = new Map<string, number[]>();
+    const tierOfBuilding = new Map<string, Tier>();
+
     // ---------------------------------------------------------------- buildings
     let tl = lap('street', t0);
     const slots = layoutSlots(rng, cfg);
@@ -170,7 +201,14 @@ export class MerchantDistrictGenerator {
       buildingsOut.push({ id: s.id, result: res, pos: s.pos, yaw: s.yaw, mirror: s.mirror });
       const mx = (p: V3): V3 => (s.mirror ? [-p[0], p[1], p[2]] : p);
       const L = (p: V3) => xf(mx(p), s.pos, s.yaw);
-      world.append(res.slots, mat(s.pos, s.yaw, s.mirror ? [-1, 1, 1] : 1));
+      // every wall / roof of the building becomes a district-wide part (local ids are offset by `base`)
+      const base = parts.length - 1, tier = TIER_OF_ROLE[s.role] ?? 1;
+      const ids = res.parts.map((bp) => register({
+        kind: bp.role === 'roof' ? 'roof' : bp.role === 'forge' ? 'forge' : 'wall', tier, group: s.id, floor: bp.floor,
+        role: bp.role === 'left' || bp.role === 'right' ? ((bp.role === 'left') !== !!s.mirror ? 'west' : 'east') : bp.role,
+      }));
+      partIdsByGroup.set(s.id, ids); tierOfBuilding.set(s.id, tier);
+      world.append(res.slots, mat(s.pos, s.yaw, s.mirror ? [-1, 1, 1] : 1), base);
       windows += res.windows.length;
       for (const [k, n] of Object.entries(res.stats.modules)) modules[k] = (modules[k] ?? 0) + n;
       for (const sk of res.sockets) sockets.push({ ...sk, pos: L(sk.pos), dir: dirXf(mx(sk.dir), s.yaw), building: s.id });
@@ -227,7 +265,7 @@ export class MerchantDistrictGenerator {
         batch.add('bollard', { pos: [bx, 0.12, QUAY_Z + 0.1], yaw: 0, scale: 0.8, tint: [0.78, 0.82, 0.9] });
       }
     }
-    const city = buildDistantCity(rng.fork('city'), lib, cfg);
+    const city = buildDistantCity(rng.fork('city'), lib, cfg, register);
 
     tl = lap('props+city', tl);
     // ---------------------------------------------------------------- ground: one clear playable plane
@@ -258,23 +296,77 @@ export class MerchantDistrictGenerator {
     const water = new THREE.Mesh(W.toGeometry(), lib.water); water.name = 'canal'; water.layers.set(LAYER_NOREFLECT); water.frustumCulled = false;
     group.add(groundMesh, water);
 
-    // ---------------------------------------------------------------- meshes from slot builders
-    const addSlots = (S: SlotSet, parent: THREE.Group, cast = true) => {
-      for (const s of SLOTS) {
-        const b = S.get(s);
-        if (!b.vertexCount) continue;
-        const mesh = new THREE.Mesh(b.toGeometry(), lib.slot[s]);
-        mesh.name = `static:${s}`; mesh.frustumCulled = false;
-        if (s === 'decal') mesh.layers.set(LAYER_NOREFLECT);
-        else if (cast && s !== 'leaf' && s !== 'cloth' && s !== 'banner') mesh.layers.enable(LAYER_CAST);
-        if (s === 'decal') mesh.renderOrder = 2;
-        parent.add(mesh);
+    // ---------------------------------------------------------------- visibility bake (camera graph -> visible sets)
+    tl = lap('ground+water', tl);
+    const casts = (s: string) => s !== 'decal' && s !== 'leaf' && s !== 'cloth' && s !== 'banner';
+    let vis: VisResult | null = null;
+    if (bake) {
+      const bs = new THREE.Scene();
+      const disposables: Array<{ dispose(): void }> = [];
+      const addId = (b: MeshBuilder, side: THREE.Side) => {
+        if (!b.vertexCount) return;
+        const geo = b.toPartGeometry(), m = idMaterial(side);
+        disposables.push(geo, m);
+        const mesh = new THREE.Mesh(geo, m); mesh.frustumCulled = false; bs.add(mesh);
+      };
+      for (const s of SLOTS) if (s !== 'decal') addId(world.get(s), s === 'cloth' || s === 'banner' || s === 'leaf' ? THREE.DoubleSide : THREE.FrontSide);
+      addId(city.builder, THREE.DoubleSide);
+      vis = bake(bs, parts.length - 1);
+      for (const d of disposables) d.dispose();
+    }
+    tl = lap('visibility bake', tl);
+
+    // ---------------------------------------------------------------- meshes, ordered by visibility class
+    // each static mesh holds [always | notC | onlyA]; a framing is one drawRange. Tier 3 (never visible) parts
+    // are cut from every per-frame pass; the shadow casters among them live on only for the one-off moon-shadow
+    // render (layer CAST only) and are disposed right after it.
+    const classOf = (p: number) => (vis ? classify(vis, p) : CLASS_ALWAYS);
+    const ranged: THREE.Mesh[] = [];
+    const shadowOnly: THREE.Mesh[] = [];
+    const visStats = { parts: parts.length - 1, hidden: 0, notC: 0, onlyA: 0, always: 0, trisKept: 0, trisHidden: 0, trisNotC: 0, trisOnlyA: 0 };
+    for (let p = 1; p < parts.length; p++) {
+      const k = classOf(p);
+      if (k === CLASS_HIDDEN) visStats.hidden++; else if (k === CLASS_NOT_C) visStats.notC++; else if (k === CLASS_ONLY_A) visStats.onlyA++; else visStats.always++;
+    }
+    const addRanged = (b: MeshBuilder, material: THREE.Material, name: string, cast: boolean, layer0Only = false) => {
+      let merged = b, h = new MeshBuilder(), r0 = b.idx.length, r1 = r0, r2 = r0;
+      if (vis) {
+        const [a, n, o, hid] = b.partition(classOf, 4);
+        merged = new MeshBuilder(); h = hid;
+        merged.append(a); r0 = merged.idx.length;
+        merged.append(n); r1 = merged.idx.length;
+        merged.append(o); r2 = merged.idx.length;
+      }
+      visStats.trisKept += r2 / 3; visStats.trisNotC += (r1 - r0) / 3; visStats.trisOnlyA += (r2 - r1) / 3; visStats.trisHidden += h.triCount;
+      if (merged.vertexCount) {
+        const mesh = new THREE.Mesh(merged.toGeometry(), material);
+        mesh.name = name; mesh.frustumCulled = false;
+        if (layer0Only) mesh.layers.set(0); else if (cast) mesh.layers.enable(LAYER_CAST);
+        mesh.userData.ranges = [r0, r1, r2];
+        group.add(mesh); ranged.push(mesh);
+      }
+      if (cast && h.vertexCount) {
+        const sh = new THREE.Mesh(h.toGeometry(), material);
+        sh.name = `${name}:shadow-only`; sh.frustumCulled = false; sh.layers.set(LAYER_CAST);
+        group.add(sh); shadowOnly.push(sh);
       }
     };
-    addSlots(world, group);
-    addSlots(street.decals, group, false);
+    for (const s of SLOTS) if (s !== 'decal') addRanged(world.get(s), lib.slot[s], `static:${s}`, casts(s));
+    {
+      const b = world.decal;
+      if (b.vertexCount) { const mesh = new THREE.Mesh(b.toGeometry(), lib.slot.decal); mesh.name = 'static:decal'; mesh.frustumCulled = false; mesh.layers.set(LAYER_NOREFLECT); mesh.renderOrder = 2; group.add(mesh); }
+    }
+    for (const s of SLOTS) {
+      const b = street.decals.get(s);
+      if (!b.vertexCount) continue;
+      const mesh = new THREE.Mesh(b.toGeometry(), lib.slot[s]);
+      mesh.name = `street:${s}`; mesh.frustumCulled = false;
+      if (s === 'decal') { mesh.layers.set(LAYER_NOREFLECT); mesh.renderOrder = 2; }
+      group.add(mesh);
+    }
     group.add(batch.build(lib.slot, (o, s) => { if (s !== 'leaf' && s !== 'cloth' && s !== 'glow') o.layers.enable(LAYER_CAST); }));
-    group.add(city.group);
+    // layer 0 only: the city and bridges are reflected in the canal but cast no moon shadow
+    addRanged(city.builder, city.material, 'far-city', false, true);
 
     // ---------------------------------------------------------------- forge (state-dependent)
     let forgeProps = buildForgeProps(rng.fork('forge'), cfg.forgeState, buildingsOut.find((b) => b.id === 'forge')!, sockets, lib, lights, emitters, colliders, npcs, obstacles, forgeGroup);
@@ -284,17 +376,36 @@ export class MerchantDistrictGenerator {
     for (const s of sockets.filter((q) => q.kind === 'smoke' && q.building !== 'forge')) emitters.push({ kind: 'chimney', pos: s.pos, rate: s.building.startsWith('bg') ? 0.35 : 0.7, tag: s.building });
 
     let tris = 0;
-    group.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) { const idx = m.geometry.index; const base = idx ? idx.count / 3 : m.geometry.attributes.position.count / 3; tris += base * ((m as THREE.InstancedMesh).isInstancedMesh ? (m as THREE.InstancedMesh).count : 1); } });
+    group.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && !shadowOnly.includes(m)) { const idx = m.geometry.index; const base = idx ? idx.count / 3 : m.geometry.attributes.position.count / 3; tris += base * ((m as THREE.InstancedMesh).isInstancedMesh ? (m as THREE.InstancedMesh).count : 1); } });
+
+    // per-building report: which tier it was authored at and how much of it any authored view can see
+    const report = buildingsOut.map((b) => {
+      const ids = partIdsByGroup.get(b.id) ?? [];
+      const seen = (set: VisSet) => ids.reduce((a, p) => a + (vis ? vis.counts[set][p] : 1), 0);
+      return { id: b.id, tier: tierOfBuilding.get(b.id) ?? 0, parts: ids.length, hidden: ids.filter((p) => classOf(p) === CLASS_HIDDEN).length, px: { A: seen('A'), B: seen('B'), C: seen('C') } };
+    });
+    const farGroups = new Map<string, { tier: Tier; total: number; hidden: number }>();
+    for (let p = 1; p < parts.length; p++) {
+      const m = parts[p];
+      if (m.kind === 'wall' || m.kind === 'roof' || m.kind === 'forge') continue;
+      const e = farGroups.get(m.group) ?? { tier: m.tier, total: 0, hidden: 0 };
+      e.total++; if (classOf(p) === CLASS_HIDDEN) e.hidden++;
+      farGroups.set(m.group, e);
+    }
+    const setLevel = (level: 0 | 1 | 2) => { for (const m of ranged) m.geometry.setDrawRange(0, (m.userData.ranges as number[])[level]); };
 
     const forgeB = buildingsOut.find((b) => b.id === 'forge')!;
     const out: DistrictBuild = {
       group, forgeGroup, lights, emitters, colliders, buildings: buildingsOut, npcs, spawn: [-7.5, 0, 1.8], walk: street.walkable, streetPath: path,
       stats: { triangles: tris, instances: batch.instanceCount, buildings: buildingsOut.length, generatorMs: performance.now() - t0, windows, modules, timings: tm },
+      visibility: { ...visStats, bakeMs: vis?.ms ?? 0, bakeSplit: vis?.split ?? null, poses: vis?.poses ?? 0, buildings: report, background: Object.fromEntries(farGroups), registry: parts, counts: vis?.counts ?? null },
+      setLevel,
+      releaseShadowOnly: () => { for (const m of shadowOnly) { group.remove(m); m.geometry.dispose(); } shadowOnly.length = 0; },
       heightAt: () => 0,
       forgeFocus: xf([forgeB.mirror ? -1.4 : 1.4, 1.0, 1.0], forgeB.pos, forgeB.yaw), forgeProps, banners: null,
       dispose: () => {
         group.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && m.geometry) m.geometry.dispose(); });
-        maskTex.dispose(); batch.dispose();
+        city.material.dispose(); maskTex.dispose(); batch.dispose();
       },
       rebuildForge: (state: ForgeState) => {
         forgeProps?.dispose();

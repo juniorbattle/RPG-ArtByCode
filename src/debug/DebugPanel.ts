@@ -4,6 +4,7 @@ import { U } from '../atmosphere/SceneUniforms';
 import { CANONICAL_SEED, GENERATOR_VERSION } from '../core/rng';
 import type { DistrictConfig } from '../district/MerchantDistrictGenerator';
 import type { ForgeState } from '../district/ForgeGenerator';
+import { CAM_IDS, type CamId } from '../app/CameraGraph';
 
 /** Art-direction panel: structural sliders regenerate the district (deterministically), look sliders are live. */
 
@@ -28,6 +29,8 @@ export class DebugPanel {
   private statsEl!: HTMLDivElement;
   private seedInput!: HTMLInputElement;
   private pending: number | null = null;
+  private camBody!: HTMLDivElement;
+  private camEdit: CamId | null = null;
 
   constructor(private app: App) {
     const style = document.createElement('style'); style.textContent = CSS; document.head.appendChild(style);
@@ -142,14 +145,16 @@ export class DebugPanel {
     this.slider(p, 'vignette', 0, 0.8, 0.02, () => P.vignette, (v) => { P.vignette = v; });
     this.slider(p, 'render scale', 0.5, 1.5, 0.05, () => P.renderScale, (v) => { P.renderScale = v; a.resize(); });
 
-    // ---- camera
-    const c = this.section('Camera', false);
-    this.slider(c, 'pitch (deg)', -5, 45, 0.5, () => THREE.MathUtils.radToDeg(a.rig.pitch), (v) => { a.rig.pitch = THREE.MathUtils.degToRad(v); });
-    this.slider(c, 'yaw (deg)', -120, -50, 0.5, () => THREE.MathUtils.radToDeg(a.rig.yaw), (v) => { a.rig.yaw = THREE.MathUtils.degToRad(v); });
-    this.slider(c, 'distance', 14, 70, 0.5, () => a.rig.dist, (v) => { a.rig.dist = v; });
-    this.slider(c, 'follow strength', 0, 1, 0.02, () => a.rig.followStrength, (v) => { a.rig.followStrength = v; });
-    this.slider(c, 'lens fov', 12, 40, 0.5, () => a.rig.fov, (v) => { a.rig.fov = v; });
-    this.slider(c, 'lens shift', -0.4, 0.6, 0.01, () => a.rig.shiftY, (v) => { a.rig.shiftY = v; });
+    // ---- camera graph: pick auto (zones) or pin a framing; the sliders edit the framing currently on screen
+    const c = this.section('Camera graph', false);
+    const csel = document.createElement('select');
+    for (const v of ['auto', ...CAM_IDS]) { const o = document.createElement('option'); o.value = v; o.textContent = v === 'auto' ? 'auto (zones)' : `${v} · ${a.graph.anchors[v as CamId].label}`; csel.appendChild(o); }
+    csel.value = a.graph.forced ?? 'auto';
+    csel.onchange = () => { a.graph.forced = csel.value === 'auto' ? null : (csel.value as CamId); a.graph.arrival = false; this.editCamera(); };
+    this.camBody = document.createElement('div');
+    c.append(csel, this.camBody);
+    this.slider(c, 'follow rate', 0.5, 6, 0.1, () => a.graph.followRate, (v) => { a.graph.followRate = v; });
+    this.editCamera();
 
     // ---- toggles
     const t = this.section('Quality toggles', false);
@@ -172,14 +177,33 @@ export class DebugPanel {
     const hint = document.createElement('div'); hint.className = 'hint'; hint.textContent = 'WASD / arrows move · Shift run · E interact · F toggle forge · H hide panel'; this.el.appendChild(hint);
   }
 
+  private editCamera(): void {
+    const a = this.app, g = a.graph, id = g.forced ?? g.target, an = g.anchors[id];
+    this.camEdit = id;
+    this.camBody.innerHTML = '';
+    const hdr = document.createElement('div'); hdr.className = 'hint'; hdr.textContent = `editing ${id} · ${an.label} (re-bakes visibility)`; this.camBody.appendChild(hdr);
+    // framing edits change what the camera graph can see, so they re-run the visibility bake (debounced)
+    this.slider(this.camBody, 'pitch (deg)', -5, 30, 0.5, () => an.pitch, (v) => { an.pitch = v; }, true);
+    this.slider(this.camBody, 'yaw (deg)', -100, -30, 0.5, () => an.yaw, (v) => { an.yaw = v; }, true);
+    this.slider(this.camBody, 'distance', 10, 70, 0.5, () => an.dist, (v) => { an.dist = v; }, true);
+    this.slider(this.camBody, 'lens fov', 12, 50, 0.5, () => an.fov, (v) => { an.fov = v; }, true);
+    this.slider(this.camBody, 'lens shift', -0.4, 0.6, 0.01, () => an.shift, (v) => { an.shift = v; }, true);
+    this.slider(this.camBody, 'character scale', 0.9, 1.3, 0.01, () => an.charScale, (v) => { an.charScale = v; });
+  }
+
   update(): void {
-    const s = this.app.snapshot();
+    const s = this.app.snapshot(), g = this.app.graph;
+    if ((g.forced ?? g.target) !== this.camEdit) this.editCamera();
+    const vis = s.visibility;
     this.statsEl.textContent =
       `FPS ${s.fps.toFixed(0)}   frame ${s.frameMs.toFixed(1)} ms (cpu ${s.cpuMs.toFixed(1)})\n` +
       `draw calls ${s.drawCalls}   triangles ${(s.triangles / 1000).toFixed(1)}k\n` +
       `textures ${s.textures}   tex mem ~${s.textureMB.toFixed(0)} MB\n` +
-      `geometries ${s.geometries}   lights ${s.lights}   actors ${s.actors}\n` +
+      `geometries ${s.geometries}   lights ${s.lights} (${this.app.lights.active} on screen)   actors ${s.actors}\n` +
       `generate ${s.generatorMs.toFixed(0)} ms   buildings ${s.district.buildings}   windows ${s.district.windows}\n` +
+      `camera ${g.target}${g.blending ? ` (blend ${(g.blendT * 100).toFixed(0)}%)` : ''}${g.arrival ? ' arrival' : ''}   char x${g.state.charScale.toFixed(2)}\n` +
+      (vis ? `visible set ${vis.set} (level ${vis.level})   bake ${vis.bakeMs} ms / ${vis.poses} poses\n` +
+        `tier 3 removed ${vis.tier3}/${vis.parts} parts (${(Number(vis.trisTier3) / 1000).toFixed(1)}k tris)   lights culled ${vis.lightsCulled}\n` : '') +
       `internal ${s.resolution}`;
   }
 }

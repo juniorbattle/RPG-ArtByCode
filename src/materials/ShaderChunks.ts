@@ -1,4 +1,4 @@
-import { MAX_LIGHTS } from '../atmosphere/SceneUniforms';
+import { MAX_LIGHTS, LIGHT_GRID } from '../atmosphere/SceneUniforms';
 
 /** Shared GLSL: the whole look hinges on COOL AMBIENT + WARM LOCAL lights, so every shader
  *  (surfaces, ground, water, sprites, decals) evaluates the same light list and fog. */
@@ -30,6 +30,9 @@ uniform float uShadowTexel;
 uniform float uShadowOn;
 uniform float uClipY;
 uniform float uWarmGain;
+uniform sampler2D uLightGrid;
+uniform vec4 uGridRect;
+uniform vec2 uGridDim;
 
 float hash13(vec3 p){ p = fract(p*0.1031); p += dot(p, p.zyx+31.32); return fract((p.x+p.y)*p.z); }
 float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx)*0.1031); p3 += dot(p3, p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
@@ -63,28 +66,42 @@ float ggx(float ndh, float a){
   return min(a2 / (3.14159 * d * d + 1e-4), 40.0);
 }
 
+void lightOne(int i, vec3 P, vec3 N, vec3 V, float rough, float a, float wrap, inout vec3 diff, inout vec3 spec){
+  vec4 lp = uLightPos[i];
+  vec3 L = lp.xyz - P;
+  float d2 = dot(L, L), r2 = lp.w * lp.w;
+  if (d2 >= r2) return;
+  float d = sqrt(d2); L /= d;
+  float x = 1.0 - d2 / r2;
+  float att = x * x / (1.0 + d2 * 0.22);
+  float ndl = dot(N, L);
+  float w = clamp((ndl + wrap) / (1.0 + wrap), 0.0, 1.0);
+  vec3 c = uLightCol[i].rgb * att;
+  diff += c * w;
+  if (ndl > 0.0 && rough < 0.97) {
+    vec3 H = normalize(L + V);
+    float ndh = max(dot(N, H), 0.0);
+    float vdh = max(dot(V, H), 0.0);
+    float F = 0.04 + 0.96 * pow(1.0 - vdh, 5.0);
+    spec += c * ggx(ndh, a) * F * ndl;
+  }
+}
+
+// only the lights listed for this ground cell (LightRig.buildGrid) can reach P: walk that list, not all lights
 void lightSum(vec3 P, vec3 N, vec3 V, float rough, float wrap, out vec3 diff, out vec3 spec){
   diff = vec3(0.0); spec = vec3(0.0);
   float a = max(rough*rough, 0.012);
-  for (int i = 0; i < MAX_LIGHTS; i++) {
-    if (i >= uLightCount) break;
-    vec4 lp = uLightPos[i];
-    vec3 L = lp.xyz - P;
-    float d2 = dot(L, L), r2 = lp.w * lp.w;
-    if (d2 >= r2) continue;
-    float d = sqrt(d2); L /= d;
-    float x = 1.0 - d2 / r2;
-    float att = x * x / (1.0 + d2 * 0.22);
-    float ndl = dot(N, L);
-    float w = clamp((ndl + wrap) / (1.0 + wrap), 0.0, 1.0);
-    vec3 c = uLightCol[i].rgb * att;
-    diff += c * w;
-    if (ndl > 0.0 && rough < 0.97) {
-      vec3 H = normalize(L + V);
-      float ndh = max(dot(N, H), 0.0);
-      float vdh = max(dot(V, H), 0.0);
-      float F = 0.04 + 0.96 * pow(1.0 - vdh, 5.0);
-      spec += c * ggx(ndh, a) * F * ndl;
+  vec2 g = (P.xz - uGridRect.xy) / uGridRect.zw;
+  if (g.x < 0.0 || g.y < 0.0 || g.x >= uGridDim.x || g.y >= uGridDim.y) return;
+  int cell = int(g.x) + int(g.y) * int(uGridDim.x);
+  bool done = false;
+  for (int t = 0; t < ${LIGHT_GRID.per / 4}; t++) {
+    if (done) break;
+    vec4 q = texelFetch(uLightGrid, ivec2(cell, t), 0) * 255.0;
+    for (int k = 0; k < 4; k++) {
+      int i = int(q[k] + 0.5);
+      if (i >= 255) { done = true; break; }
+      lightOne(i, P, N, V, rough, a, wrap, diff, spec);
     }
   }
   diff *= uWarmGain; spec *= uWarmGain;
@@ -234,7 +251,6 @@ varying vec4 vTint;
 varying vec4 vAux;
 
 void main(){
-  if (vWorld.y < uClipY) discard;
   vec3 V = normalize(cameraPosition - vWorld);
   #ifdef GLOW
     vec4 G = texture2D(tAlbedo, vUv);

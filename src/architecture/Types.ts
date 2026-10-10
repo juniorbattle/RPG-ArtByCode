@@ -59,8 +59,13 @@ export interface Socket {
 
 export interface WindowInfo { pos: V3; dir: V3; kind: WindowKind; lit: boolean; floor: number }
 
+/** a visibility part of a generated building (local ids are 1-based indices into BuildingResult.parts);
+ *  left / right are in the building's local frame (a mirrored slot swaps them) */
+export interface BuildingPart { role: 'front' | 'left' | 'right' | 'roof' | 'forge'; floor: number }
+
 export interface BuildingResult {
   slots: SlotSet;
+  parts: BuildingPart[];
   sockets: Socket[];
   lights: LightDef[];
   windows: WindowInfo[];

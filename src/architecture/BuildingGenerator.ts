@@ -1,6 +1,6 @@
 import { Rng } from '../core/rng';
 import { mat, type V3, type Slot } from '../core/MeshBuilder';
-import { BuildCtx, type BuildingParams, type BuildingResult, type Palette, type PaletteName } from './Types';
+import { BuildCtx, type BuildingParams, type BuildingPart, type BuildingResult, type Palette, type PaletteName } from './Types';
 import {
   PZ, BEAM_BACK, BEAM_FRONT, beam, brace, panelWithHole, qz, windowModule, doorModule, shopOpening, balcony, hangingSign, lampBracket, frameStuds,
   pickWindowKind, shopTypeAwning, shopToInterior, shopToEmblem,
@@ -130,8 +130,10 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
     return bays;
   };
 
-  /** Build the wall in the current wall-local frame. x spans xa..xb, plane z=0 */
-  const buildWall = (F: Floor, role: 'front' | 'side' | 'back', xa: number, xb: number, visible: boolean) => {
+  /** Build the wall in the current wall-local frame. x spans xa..xb, plane z=0. `edge` (side walls) names the
+   *  end that meets the street front: the corner post, rails and plinth that cap the frontage there go into the
+   *  front part, so the visibility bake judges the side wall by its own faces only. */
+  const buildWall = (F: Floor, role: 'front' | 'side' | 'back', xa: number, xb: number, visible: boolean, edge?: { part: number; at: 'a' | 'b' }) => {
     const r = ctx.rng;
     const t = ctx.tint(pal.plaster, 0.04);
     const groundStone = F.k === 0 && (p.stoneGround || forge);
@@ -140,13 +142,19 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
     const plinth = F.k === 0 && !groundStone && role !== 'back' ? 0.95 : 0;
     const railH = 0.15;
     const y0 = F.y0, y1 = F.y1;
+    const atEdge = (fn: () => void) => (edge ? S.inPart(edge.part, fn) : fn());
     // floor rails
-    beam(ctx, xa, y0, BEAM_BACK, xb, y0 + (F.k > 0 ? 0.24 : 0.12), BEAM_FRONT + (F.k > 0 ? 0.03 : 0), pal.timber, 'timber', 0.85);
-    beam(ctx, xa, y1 - railH, BEAM_BACK, xb, y1, BEAM_FRONT, pal.timber, 'timber', 0.95);
+    atEdge(() => {
+      beam(ctx, xa, y0, BEAM_BACK, xb, y0 + (F.k > 0 ? 0.24 : 0.12), BEAM_FRONT + (F.k > 0 ? 0.03 : 0), pal.timber, 'timber', 0.85);
+      beam(ctx, xa, y1 - railH, BEAM_BACK, xb, y1, BEAM_FRONT, pal.timber, 'timber', 0.95);
+    });
     if (!visible || role === 'back') {
       qz(S.get(wallSlot), xa, y0, xb, y1, PZ, [0.8, 0.8, 0.95, 0.95], wallTint);
       const n = Math.max(1, Math.round((xb - xa) / 2.2));
-      for (let i = 0; i <= n; i++) { const x = xa + ((xb - xa) * i) / n; beam(ctx, x - 0.07, y0, BEAM_BACK, x + 0.07, y1, BEAM_FRONT, pal.timber); }
+      for (let i = 0; i <= n; i++) {
+        const x = xa + ((xb - xa) * i) / n, post = () => beam(ctx, x - 0.07, y0, BEAM_BACK, x + 0.07, y1, BEAM_FRONT, pal.timber);
+        if ((edge?.at === 'a' && i === 0) || (edge?.at === 'b' && i === n)) atEdge(post); else post();
+      }
       return;
     }
     let bays: Bay[];
@@ -160,9 +168,11 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
     for (let i = 0; i < bays.length; i++) {
       const bx = bays[i].x0;
       const corner = i === 0;
-      beam(ctx, bx - (corner ? 0.0 : 0.07), y0, BEAM_BACK - (corner ? 0.03 : 0), bx + (corner ? 0.22 : 0.07), y1, BEAM_FRONT + (corner ? 0.03 : 0), pal.timber, 'timber', 0.9);
+      const post = () => beam(ctx, bx - (corner ? 0.0 : 0.07), y0, BEAM_BACK - (corner ? 0.03 : 0), bx + (corner ? 0.22 : 0.07), y1, BEAM_FRONT + (corner ? 0.03 : 0), pal.timber, 'timber', 0.9);
+      if (corner && edge?.at === 'a') atEdge(post); else post();
     }
-    beam(ctx, bays[bays.length - 1].x1 - 0.22, y0, BEAM_BACK - 0.03, bays[bays.length - 1].x1, y1, BEAM_FRONT + 0.03, pal.timber, 'timber', 0.9);
+    const lastPost = () => beam(ctx, bays[bays.length - 1].x1 - 0.22, y0, BEAM_BACK - 0.03, bays[bays.length - 1].x1, y1, BEAM_FRONT + 0.03, pal.timber, 'timber', 0.9);
+    if (edge?.at === 'b') atEdge(lastPost); else lastPost();
     const py0 = y0 + (F.k > 0 ? 0.24 : 0.12) + plinth * (F.k === 0 ? 1 : 0) - (plinth > 0 ? 0.12 : 0), py1 = y1 - railH;
     const floorH = y1 - y0;
     for (const bay of bays) {
@@ -225,23 +235,33 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
       if (!groundStone && p.timberRatio > 0.55 && detail > 0.5) brace(ctx, bx0, py1 - 0.02, bx0 + 0.55, py1 - 0.55, 0.09);
     }
     // stone plinth under the whole timber ground floor (skips shop & door)
-    if (plinth > 0) {
+    if (plinth > 0) atEdge(() => {
       let xc = xa;
       const gaps = bays.filter((b) => b.kind === 'shop' || b.kind === 'door').sort((a, b) => a.x0 - b.x0);
       const seg = (a: number, b: number) => { if (b - a > 0.05) S.stone.boxMM(a, 0, PZ - 0.03, b, plinth, BEAM_FRONT + 0.05, { tint: pal.stone, aoY: [0.55, 0.95] }); };
       for (const g of gaps) { seg(xc, g.x0 + (g.kind === 'shop' ? 0.0 : 0.07)); xc = g.x1 - (g.kind === 'shop' ? 0.0 : 0.07); }
       seg(xc, xb);
       S.stone.boxMM(xa, plinth - 0.02, PZ - 0.04, xb, plinth + 0.07, BEAM_FRONT + 0.09, { tint: pal.stone, ao: 0.95 });
-    }
+    });
   };
 
   // ---------------------------------------------------------------- assemble floors
+  // every wall of every floor is its own visibility part: the district's camera-graph bake keeps only the parts
+  // an authored view (or a blend between views) can see. Back walls are not generated at all: every authored
+  // camera stands on the canal side of the frontage, and they face away from the moon (no shadow either).
+  const parts: BuildingPart[] = [];
+  const part = (role: BuildingPart['role'], floor: number) => { parts.push({ role, floor }); return parts.length; };
+  const floorParts: Array<{ left: number; right: number; front: number }> = [];
   for (const F of floors) {
     const front = F.zF;
+    const fp = { front: part('front', F.k), left: part('left', F.k), right: part('right', F.k) };
+    floorParts.push(fp);
+    S.frame.part = fp.front;
     S.with(mat([0, 0, front]), () => buildWall(F, 'front', F.x0, F.x1, true));
-    S.with(mat([F.x0, 0, 0], -Math.PI / 2), () => buildWall(F, 'side', -D, front, p.sides!.left && detail > 0.2));
-    S.with(mat([F.x1, 0, 0], Math.PI / 2), () => buildWall(F, 'side', forge && F.k === 0 ? Math.min(D - 1, 3.4) : -front, D, p.sides!.right && detail > 0.2));
-    S.with(mat([0, 0, -D], Math.PI), () => buildWall(F, 'back', -F.x1, -F.x0, false));
+    S.inPart(fp.left, () => S.with(mat([F.x0, 0, 0], -Math.PI / 2), () => buildWall(F, 'side', -D, front, p.sides!.left && detail > 0.2, { part: fp.front, at: 'b' })));
+    S.inPart(fp.right, () => S.with(mat([F.x1, 0, 0], Math.PI / 2), () => buildWall(F, 'side', forge && F.k === 0 ? Math.min(D - 1, 3.4) : -front, D, p.sides!.right && detail > 0.2, { part: fp.front, at: 'a' })));
+    // (the skipped back wall's single random draw is kept so every seed still produces the same buildings)
+    ctx.tint(pal.plaster, 0.04);
     if (F.k > 0) {
       const low = floors[F.k - 1];
       // underside of the jetty + joist ends + knee braces
@@ -263,6 +283,7 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
         }
       }
     }
+    S.frame.part = 0;
   }
 
   // ---------------------------------------------------------------- corner quoins (stone corners read as authored)
@@ -281,15 +302,17 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
   };
   const g0 = floors[0];
   const quoinTop = p.stoneGround || forge ? g0.y1 : Math.min(g0.y1, 1.0 + (rng.bool(0.5) ? hG : 0));
+  const { front: front0, left: left0, right: right0 } = floorParts[0];
   if (detail > 0.55) {
-    quoin(g0.x0, g0.zF, 0, quoinTop, 1, -1);
-    quoin(g0.x1, g0.zF, 0, quoinTop, -1, -1);
-    if (p.sides!.left) quoin(g0.x0, -D, 0, quoinTop * 0.8, 1, 1);
-    if (p.sides!.right) quoin(g0.x1, -D, 0, quoinTop * 0.8, -1, 1);
+    S.inPart(front0, () => { quoin(g0.x0, g0.zF, 0, quoinTop, 1, -1); quoin(g0.x1, g0.zF, 0, quoinTop, -1, -1); });
+    if (p.sides!.left) S.inPart(left0, () => quoin(g0.x0, -D, 0, quoinTop * 0.8, 1, 1));
+    if (p.sides!.right) S.inPart(right0, () => quoin(g0.x1, -D, 0, quoinTop * 0.8, -1, 1));
   }
 
   // ---------------------------------------------------------------- forge bay (static architecture)
+  S.frame.part = forge ? part('forge', 0) : 0;
   const forgeInfo = forge ? buildForgeBay(ctx, g0, D, hG) : null;
+  S.frame.part = part('roof', floors.length - 1);
 
   // ---------------------------------------------------------------- roof
   const pitchBase = p.roofStyle === 'leanto' ? 21 : p.roofStyle === 'hip' ? 36 : 39 + rng.range(-3, 6);
@@ -312,6 +335,7 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
   }
 
   // ---------------------------------------------------------------- shopfront dressing (sign, banners, lamps)
+  S.frame.part = front0;
   S.with(mat([0, 0, g0.zF]), () => {
     const bays = ctx.rng.fork('dress');
     void bays;
@@ -328,10 +352,11 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
     ctx.socket('bunting', [g0.x1, top.y1 - 0.6, top.zF - g0.zF + 0.05], [0, 0, 1], { tag: 'right' });
   });
   ctx.colliders.push([g0.x0 - 0.05, -D, g0.x1 + 0.05, 0.1]);
+  S.frame.part = 0;
 
   const bounds = { w: W, d: D, h: roof.ridgeY };
   return {
-    slots: S, sockets: ctx.sockets, lights: ctx.lights, windows: ctx.windows, colliders: ctx.colliders, params: p,
+    slots: S, parts, sockets: ctx.sockets, lights: ctx.lights, windows: ctx.windows, colliders: ctx.colliders, params: p,
     width: bounds.w, depth: bounds.d, height: bounds.h, ridgeY: roof.ridgeY, shopType: p.shopType,
     stats: { quads: S.triCount() / 2, windows: ctx.windows.length, modules: ctx.modules },
   };
