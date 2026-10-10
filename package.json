@@ -1,0 +1,23 @@
+{
+  "name": "cite-du-tournoi-hd2d",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Procedural HD-2D runtime prototype: Merchant District of Cite du Tournoi, generated entirely from code.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "shots": "node tools/screenshots.mjs"
+  },
+  "dependencies": {
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "0.186.0",
+    "puppeteer-core": "25.12.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.1"
+  }
+}
