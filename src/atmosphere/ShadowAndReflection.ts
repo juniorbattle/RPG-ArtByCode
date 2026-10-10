@@ -45,6 +45,8 @@ export class PlanarReflection {
   readonly cam = new THREE.PerspectiveCamera();
   scale = 0.5;
   enabled = true;
+  /** geometry below this height is clipped from the mirror pass (the water level, so hulls and quay walls reflect) */
+  clipY = 0;
   private w = 2; private h = 2;
   constructor() {
     this.rt = this.make(2, 2);
@@ -75,7 +77,7 @@ export class PlanarReflection {
     c.updateProjectionMatrix(); c.updateMatrixWorld(true);
     const prev = renderer.getRenderTarget();
     const prevClip = U.uClipY.value;
-    U.uClipY.value = 0.0;
+    U.uClipY.value = this.clipY;
     renderer.setRenderTarget(this.rt);
     renderer.setClearColor(0x04060c, 1);
     renderer.clear(true, true, true);

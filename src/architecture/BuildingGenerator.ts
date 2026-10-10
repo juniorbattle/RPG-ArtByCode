@@ -11,25 +11,28 @@ import { buildRoof, addDormers, chimney, type RoofSpec } from './RoofGenerator';
  *  The art direction lives in the rules: jettied upper floors, leaning posts, stone plinth and quoins,
  *  heavy roof overhangs, asymmetric bays and a lived-in shopfront. */
 
+/** shutter / door paints: all desaturated slate and weathered timber, no saturated accents (the amber light is the accent) */
 const PAINT = {
-  natural: [1, 1, 1] as V3, green: [0.42, 1.4, 0.95] as V3, blue: [0.34, 0.85, 1.9] as V3, red: [1.8, 0.32, 0.26] as V3, mustard: [1.7, 1.2, 0.3] as V3, teal: [0.3, 1.2, 1.3] as V3,
+  natural: [0.82, 0.82, 0.86] as V3, slate: [0.62, 0.74, 1.0] as V3, indigo: [0.5, 0.6, 1.12] as V3, ash: [0.9, 0.94, 1.02] as V3,
 };
 
 function makePalette(name: PaletteName, rng: Rng): Palette {
   const base: Record<PaletteName, { plaster: V3; roof: V3 }> = {
-    cream: { plaster: [1.0, 0.94, 0.8], roof: [0.92, 0.98, 1.1] },
-    ochre: { plaster: [1.0, 0.8, 0.55], roof: [1.08, 0.98, 0.9] },
-    sage: { plaster: [0.8, 0.92, 0.78], roof: [0.86, 1.04, 1.04] },
-    rose: { plaster: [1.0, 0.8, 0.74], roof: [0.96, 0.98, 1.08] },
-    slate: { plaster: [0.78, 0.86, 1.0], roof: [0.9, 0.97, 1.12] },
-    lime: { plaster: [1.0, 0.98, 0.9], roof: [1.1, 0.98, 0.9] },
+    slate: { plaster: [0.8, 0.88, 1.04], roof: [0.84, 0.9, 1.06] },
+    ash: { plaster: [0.9, 0.93, 0.98], roof: [0.88, 0.92, 1.02] },
+    mist: { plaster: [0.84, 0.9, 1.0], roof: [0.8, 0.88, 1.04] },
+    ivory: { plaster: [1.0, 0.98, 0.94], roof: [0.86, 0.9, 1.0] },
+    dusk: { plaster: [0.78, 0.82, 0.98], roof: [0.78, 0.84, 1.04] },
+    stone: { plaster: [0.88, 0.9, 0.94], roof: [0.9, 0.92, 1.0] },
+    /** foreground framing masses: darker so they frame the shot instead of competing with it */
+    shadow: { plaster: [0.5, 0.55, 0.68], roof: [0.7, 0.76, 0.9] },
   };
   const b = base[name];
   const j = (v: V3, a: number): V3 => [v[0] * (1 + (rng.next() - 0.5) * a), v[1] * (1 + (rng.next() - 0.5) * a), v[2] * (1 + (rng.next() - 0.5) * a)];
-  const shutter = rng.weighted([PAINT.green, PAINT.blue, PAINT.red, PAINT.mustard, PAINT.natural, PAINT.teal], [3, 3, 1.4, 1, 2, 1.4]);
+  const shutter = rng.weighted([PAINT.slate, PAINT.indigo, PAINT.natural, PAINT.ash], [3, 2, 3, 1]);
   return {
-    plaster: j(b.plaster, 0.06), timber: j([0.9, 0.82, 0.76], 0.18), stone: j([1.0, 1.0, 1.04], 0.1), roof: j(b.roof, 0.08),
-    awning: [0.5, 0.2, 0.15], shutter, trim: [1, 1, 1], brick: j([1, 0.95, 0.9], 0.1),
+    plaster: j(b.plaster, 0.04), timber: j([0.86, 0.86, 0.9], 0.08), stone: j([0.96, 0.98, 1.04], 0.06), roof: j(b.roof, 0.05),
+    awning: [0.3, 0.32, 0.38], shutter, trim: [1, 1, 1], brick: j([0.92, 0.92, 0.96], 0.06),
   };
 }
 
@@ -55,7 +58,7 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
     depth: input.depth ?? Math.min(8, Math.max(5, input.width * 0.95)),
     sides: input.sides ?? { left: true, right: true },
   };
-  const pal = makePalette(p.palette ?? rng.pick<PaletteName>(['cream', 'ochre', 'sage', 'rose', 'slate', 'lime']), rng.fork('pal'));
+  const pal = makePalette(p.palette ?? rng.pick<PaletteName>(['slate', 'ash', 'mist', 'ivory', 'dusk', 'stone']), rng.fork('pal'));
   pal.awning = shopTypeAwning(new BuildCtx(p, rng.fork('aw'), pal), p.shopType);
   if (p.roofTint) pal.roof = p.roofTint;
   const ctx = new BuildCtx(p, rng.fork('mod'), pal);
@@ -208,8 +211,8 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
       const holes: Array<[number, number, number, number]> = [];
       for (const c of centers) {
         const kind = pickWindowKind(ctx, lit, groundStone && r.bool(0.5));
-        const sh = detail > 0.5 ? r.weighted<'none' | 'open' | 'closed'>(['none', 'open', 'closed'], [0.3, 0.6, 0.1]) : 'none';
-        holes.push(windowModule(ctx, c, wy, sizeW, wh, { kind, shutters: sh, flowerbox: detail > 0.5 && F.k <= 1 && r.bool(0.2), trim: stoneTrim ? 'stone' : 'timber', floor: F.k }, wallSlot));
+        const sh = detail > 0.6 ? r.weighted<'none' | 'open' | 'closed'>(['none', 'open', 'closed'], [0.55, 0.3, 0.15]) : 'none';
+        holes.push(windowModule(ctx, c, wy, sizeW, wh, { kind, shutters: sh, flowerbox: false, trim: stoneTrim ? 'stone' : 'timber', floor: F.k }, wallSlot));
       }
       // panel with (up to) two holes: split at the middle
       if (holes.length === 1) panelWithHole(ctx, wallSlot, bx0, py0, bx1, py1, holes[0], wallTint, 0.84, 0.62);
@@ -244,7 +247,8 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
       // underside of the jetty + joist ends + knee braces
       S.planks.quad([F.x0, F.y0 - 0.03, F.zF], [F.x1, F.y0 - 0.03, F.zF], [F.x1, F.y0 - 0.03, -D], [F.x0, F.y0 - 0.03, -D], { tint: [0.35, 0.3, 0.28], ao: 0.5, flip: true });
       const jet = F.zF - low.zF;
-      if (jet > 0.12) {
+      // joist ends + knee braces only on the hero frontages: micro-detail is spent where the eye lands
+      if (jet > 0.12 && detail > 0.6) {
         const n = Math.round((F.x1 - F.x0) / 0.55);
         for (let i = 0; i <= n; i++) {
           const x = F.x0 + ((F.x1 - F.x0) * i) / n;
@@ -277,7 +281,7 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
   };
   const g0 = floors[0];
   const quoinTop = p.stoneGround || forge ? g0.y1 : Math.min(g0.y1, 1.0 + (rng.bool(0.5) ? hG : 0));
-  if (detail > 0.35) {
+  if (detail > 0.55) {
     quoin(g0.x0, g0.zF, 0, quoinTop, 1, -1);
     quoin(g0.x1, g0.zF, 0, quoinTop, -1, -1);
     if (p.sides!.left) quoin(g0.x0, -D, 0, quoinTop * 0.8, 1, 1);
@@ -313,7 +317,7 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
     void bays;
     const sx = g0.x0 + (g0.x1 - g0.x0) * (0.2 + rng.next() * 0.6);
     if (p.shopType !== 'house') hangingSign(ctx, sx, hG - 0.55, 1.1, shopToEmblem[p.shopType]);
-    if (floors.length > 1) {
+    if (floors.length > 1 && detail > 0.6) {
       const f1 = floors[1];
       lampBracket(ctx, f1.x1 - 0.5 - rng.next() * 0.3, f1.y0 + 1.3, 0.55, 'upper');
     }

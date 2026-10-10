@@ -54,7 +54,7 @@ export class ActorSystem {
     for (const n of d.npcs) this.spawnNpc(n, rng);
     // ambient crowd: simplified sprites, count follows NPC density
     const crowd = ['crowd0', 'crowd1', 'crowd2', 'crowd3', 'crowd4'].filter((id) => this.atlas.specs.has(id));
-    const n = Math.round(3 * density);
+    const n = Math.round(2 * density);
     const taken: THREE.Vector3[] = [spawnPos, ...d.npcs.map((q) => new THREE.Vector3(...q.pos))];
     for (let i = 0; i < n; i++) {
       let p: THREE.Vector3 | null = null;
@@ -63,7 +63,7 @@ export class ActorSystem {
       if (!p) continue;
       this.spawn(rng.pick(crowd), 'crowd', p, { behaviour: { kind: 'wander', seed: rng.int(1, 99999), wait: rng.range(0, 4), target: null }, tint: [rng.range(0.9, 1.1), rng.range(0.9, 1.1), rng.range(0.9, 1.1)], scale: rng.range(0.95, 1.04) });
     }
-    if (this.atlas.specs.has('porter') && density > 0.3) this.spawn('porter', 'porter', this.randomFree(rng) ?? new THREE.Vector3(7, 0, 2.5), { behaviour: { kind: 'wander', seed: 7, wait: 1, target: null }, anim: 'carry' });
+    if (this.atlas.specs.has('porter') && density > 0.3) this.spawn('porter', 'porter', this.randomFree(rng) ?? new THREE.Vector3(9, 0, 2.5), { behaviour: { kind: 'wander', seed: 7, wait: 1, target: null }, anim: 'carry' });
   }
 
   private spawnNpc(n: NpcSpawn, rng: Rng): void {
@@ -77,20 +77,23 @@ export class ActorSystem {
     if (n.role.includes('alarm')) a.bubble = 'exclaim';
   }
 
+  /** a random point on the playable quay (inset from its edges) */
+  private randomPoint(rng: Rng, inset = 0.6): THREE.Vector3 {
+    const w = this.district!.walk;
+    return new THREE.Vector3(rng.range(w.x0 + 2, w.x1 - 1), 0, rng.range(w.z0 + inset, w.z1 - inset));
+  }
+
   private randomFree(rng: Rng): THREE.Vector3 | null {
     for (let i = 0; i < 40; i++) {
-      const p = new THREE.Vector3(rng.range(-4.5, 14), 0, rng.range(-2.6, 3.6));
+      const p = this.randomPoint(rng);
       if (this.walkable(p.x, p.z, 0.4)) return p;
     }
     return null;
   }
 
   walkable(x: number, z: number, r: number): boolean {
-    const inStreet = x > -6.6 && x < 15.2 && z > -3.7 && z < 4.15;
-    const s = this.district;
-    const inStairs = x > -7.4 && x < -4.8 && z < -3.6 && z > -9.6;
-    if (!inStreet && !inStairs) return false;
-    void s;
+    const w = this.district?.walk;
+    if (!w || x < w.x0 || x > w.x1 || z < w.z0 || z > w.z1) return false;
     for (const c of this.colliders) {
       if (c.kind === 'circle') { if (Math.hypot(x - c.x, z - c.z) < c.r + r) return false; }
       else if (x > c.x0 - r && x < c.x1 + r && z > c.z0 - r && z < c.z1 + r) return false;
@@ -173,7 +176,7 @@ export class ActorSystem {
       else {
         const r = new Rng(b.seed + Math.floor(elapsed * 10));
         for (let i = 0; i < 12; i++) {
-          const t = new THREE.Vector3(r.range(-4.5, 14.5), 0, r.range(-2.6, 3.7));
+          const t = this.randomPoint(r, 0.4);
           if (this.walkable(t.x, t.z, 0.35)) { b.target = t; break; }
         }
         if (!b.target) { b.wait = 2; return; }

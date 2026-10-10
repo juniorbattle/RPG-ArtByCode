@@ -308,9 +308,9 @@ export function paintRoofTiles(size: number, seed: number, palette: RGB[], rows 
     let h = along < 1 ? 0.25 + 0.7 * smoothstep(0, 1, along) : 0.3 * sh;
     h *= 0.6 + 0.4 * sideDark;
     let r = c[0] * k, g = c[1] * k, b = c[2] * k;
-    // lichen and the odd missing tile
+    // weathering bloom (kept grey: no green lichen in the night palette)
     const lichen = smoothstep(0.7, 0.9, fbm(u * 7, v * 7, 7, 3, 61));
-    r = lerp(r, 92, lichen * 0.35); g = lerp(g, 108, lichen * 0.35); b = lerp(b, 66, lichen * 0.35);
+    r = lerp(r, 100, lichen * 0.25); g = lerp(g, 104, lichen * 0.25); b = lerp(b, 110, lichen * 0.25);
     B.r[i] = r; B.g[i] = g; B.b[i] = b; B.h[i] = clamp01(h);
     B.ro[i] = 0.62 + 0.3 * fn; B.ao[i] = 0.5 + 0.5 * clamp01(along * 1.2) * sh;
   }

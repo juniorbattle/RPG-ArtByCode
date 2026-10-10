@@ -13,6 +13,8 @@ import { SpriteAtlas } from '../characters/SpriteAtlas';
 import { SpriteRenderer } from '../characters/SpriteRenderer';
 import { ActorSystem } from '../characters/ActorSystem';
 import { ParticleSystem } from '../atmosphere/Particles';
+import { buildSky } from '../atmosphere/Sky';
+import { WATER_Y } from '../architecture/StreetComposer';
 import { PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, crowdVariants } from '../characters/SpriteGenerator';
 
 export interface AppOptions { canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void }
@@ -29,7 +31,7 @@ export class App {
   moonGain = 1;
   ambientLevel = 1;
   ambientBase = new THREE.Color(0.07, 0.10, 0.16);
-  private moonBase = new THREE.Color(0.30, 0.38, 0.55);
+  private moonBase = new THREE.Color(0.27, 0.37, 0.58);
   lib!: MaterialLibrary;
   atlas!: SpriteAtlas;
   sprites!: SpriteRenderer;
@@ -44,7 +46,8 @@ export class App {
   frameCount = 0;
   ready = false;
   lastGenMs = 0;
-  moonDir = new THREE.Vector3(0.38, 0.8, -0.46).normalize();
+  /** low moon just right of the vanishing point: backlights the frontage, lays a glade on the canal */
+  moonDir = new THREE.Vector3(0.965, 0.1736, 0.197).normalize();
   onRegenerate: Array<() => void> = [];
   private lastT = performance.now();
 
@@ -55,6 +58,9 @@ export class App {
     this.post = new PostFX(this.renderer);
     this.rig.camera.layers.enable(2);
     this.scene.add(this.rig.camera);
+    this.scene.add(buildSky());
+    this.reflection.clipY = WATER_Y;
+    U.uMoonCol.value.copy(this.moonBase);
     const q = opts.params;
     if (q.has('seed')) this.config.seed = parseInt(q.get('seed')!, 10) >>> 0;
     if (q.get('forge') === 'sabotaged') this.config.forgeState = 'SABOTAGED_FORGE';
@@ -84,6 +90,10 @@ export class App {
     this.scene.add(this.particles.group);
     this.resize();
     this.regenerate();
+    // ?player=x,z places the player (and settles the follow camera) for authored review shots
+    const pp = this.opts.params.get('player')?.split(',').map(Number);
+    if (pp && pp.length === 2 && pp.every((v) => !isNaN(v))) this.actors.player.pos.set(pp[0], 0, pp[1]);
+    this.rig.snap(this.actors.player.pos);
     this.ready = true;
   }
 
@@ -107,7 +117,8 @@ export class App {
     const k = this.ambientLevel, b = this.ambientBase;
     U.uSkyAmb.value.copy(b).multiplyScalar(k);
     U.uGroundAmb.value.copy(b).multiplyScalar(k * 0.43);
-    U.uFillCol.value.copy(b).multiplyScalar(k * 0.64);
+    // fill is the canal-side bounce: kept low so frontages read as calm dark masses carrying warm windows
+    U.uFillCol.value.copy(b).multiplyScalar(k * 0.5);
   }
 
   snapshot(): PerfSnapshot {
@@ -156,7 +167,7 @@ export class App {
     this.lastGenMs = performance.now() - t0;
     this.rig.apply();
     this.updateShadowAndLights(0);
-    this.shadow.update(this.renderer, this.scene, new THREE.Vector3(2, 0, -4), this.moonDir, 42, 30);
+    this.shadow.update(this.renderer, this.scene, new THREE.Vector3(6, 0, 0), this.moonDir, 46, 32);
     this.onRegenerate.forEach((f) => f());
   }
 
@@ -177,6 +188,8 @@ export class App {
       this.actors.camYaw = this.rig.yaw;
       this.actors.update(dt, this.simTime);
       this.rig.follow(this.actors.player.pos, dt);
+      // autofocus on the player: the playable plane is always crisp, foreground framing and far layers soften
+      if (this.post.autoFocus) this.post.params.dofFocus = THREE.MathUtils.clamp(this.rig.camera.position.distanceTo(this.actors.player.pos), 12, 45);
       this.sprites.update(this.actors.actors, this.lights, this.rig.camera, this.moonDir);
       this.particles.update(dt, this.simTime, this.rig.camera, this.post.height, this.lights, (this.simTime * 5.5 - 2) / 4);
     }

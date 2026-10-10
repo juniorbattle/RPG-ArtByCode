@@ -41,7 +41,8 @@ export interface BuildingParams {
   sides?: { left: boolean; right: boolean };
 }
 
-export type PaletteName = 'cream' | 'ochre' | 'sage' | 'rose' | 'slate' | 'lime';
+/** Restrained night palette: every facade sits in a narrow cool band (slate / blue-grey / cool stone / ivory). */
+export type PaletteName = 'slate' | 'ash' | 'mist' | 'ivory' | 'dusk' | 'stone' | 'shadow';
 
 export interface Palette {
   plaster: V3; timber: V3; stone: V3; roof: V3; awning: V3; shutter: V3; trim: V3; brick: V3;

@@ -45,8 +45,10 @@ export class Hud {
     c.clearRect(0, 0, S, S);
     c.save(); c.beginPath(); c.arc(R, R, R - 4, 0, Math.PI * 2); c.clip();
     c.fillStyle = '#0c1424'; c.fillRect(0, 0, S, S);
-    const sc = 5.2, yaw = a.rig.yaw;
-    const cx = 1.5, cz = -2.5;
+    // centred on the player so the long quay reads; rotated so "away from camera" is up
+    const sc = 4.4, yaw = a.rig.yaw;
+    const pp = a.actors?.player?.pos;
+    const cx = pp ? pp.x + 4 : 4, cz = pp ? pp.z - 1 : 0;
     const cs = Math.cos(yaw), sn = Math.sin(yaw);
     // world -> map: rotate so "away from camera" is up the map
     const P = (x: number, z: number): [number, number] => {
@@ -58,8 +60,10 @@ export class Hud {
       c.beginPath(); pts.forEach(([x, z], i) => { const [mx, my] = P(x, z); i ? c.lineTo(mx, my) : c.moveTo(mx, my); }); c.closePath();
       c.fillStyle = fill; c.fill(); if (stroke) { c.strokeStyle = stroke; c.lineWidth = 2; c.stroke(); }
     };
-    quad([[-15, -17], [16.8, -17], [16.8, 4.6], [-15, 4.6]], '#2b3550');
-    quad([[-15, 4.6], [16.8, 4.6], [16.8, 10.6], [-15, 10.6]], '#143a5e');
+    quad([[-34, -18], [60, -18], [60, 4.6], [-34, 4.6]], '#2b3550');
+    quad([[-34, 4.6], [60, 4.6], [60, 15.5], [-34, 15.5]], '#143a5e');
+    const w = d.walk;
+    quad([[w.x0, w.z0], [w.x1, w.z0], [w.x1, w.z1], [w.x0, w.z1]], '#3a4562');
     for (const col of d.colliders) {
       if (col.kind === 'rect' && col.x1 - col.x0 > 1.2) quad([[col.x0, col.z0], [col.x1, col.z0], [col.x1, col.z1], [col.x0, col.z1]], '#6b5a48', '#2a2118');
     }

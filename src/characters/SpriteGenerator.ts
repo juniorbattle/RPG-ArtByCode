@@ -422,18 +422,18 @@ export function renderFrame(spec: CharSpec, dir: Dir, pose: Pose): Sprite {
 export const PLAYER: CharSpec = {
   id: 'player', detail: 'hero', skin: [244, 204, 168], hair: [200, 84, 40], hairStyle: 'spiky',
   top: [46, 98, 140], topStyle: 'tunic', trim: [226, 180, 80], trousers: [92, 70, 58], boots: [96, 60, 38], belt: [128, 82, 44],
-  cape: [176, 36, 44], capeLining: [236, 206, 170], scarf: [232, 206, 148], satchel: true, sword: true, eye: [52, 36, 40], anims: ['idle', 'walk'], accessory: 'none',
+  cape: [148, 46, 54], capeLining: [226, 204, 176], scarf: [222, 204, 160], satchel: true, sword: true, eye: [52, 36, 40], anims: ['idle', 'walk'], accessory: 'none',
 };
 export const BLACKSMITH: CharSpec = {
-  id: 'blacksmith', detail: 'mid', build: 1.25, skin: [214, 160, 124], hair: [70, 46, 34], beard: [92, 56, 38], hairStyle: 'bandana', hat: [150, 38, 34],
-  top: [124, 52, 42], topStyle: 'apronShirt', apron: [88, 62, 44], trousers: [62, 54, 62], boots: [52, 40, 36], belt: [60, 44, 34], accessory: 'hammer', anims: ['idle', 'walk', 'hammer'],
+  id: 'blacksmith', detail: 'mid', build: 1.25, skin: [214, 160, 124], hair: [70, 46, 34], beard: [92, 56, 38], hairStyle: 'bandana', hat: [112, 64, 56],
+  top: [98, 70, 62], topStyle: 'apronShirt', apron: [88, 62, 44], trousers: [62, 54, 62], boots: [52, 40, 36], belt: [60, 44, 34], accessory: 'hammer', anims: ['idle', 'walk', 'hammer'],
 };
 export const MERCHANT_WOMAN: CharSpec = {
-  id: 'merchant', detail: 'mid', skin: [244, 210, 178], hair: [120, 68, 46], hairStyle: 'long', top: [192, 96, 110], topStyle: 'dress', apron: [230, 218, 192], trousers: [120, 80, 70], boots: [90, 60, 44], trim: [250, 230, 200],
+  id: 'merchant', detail: 'mid', skin: [244, 210, 178], hair: [120, 68, 46], hairStyle: 'long', top: [150, 106, 96], topStyle: 'dress', apron: [230, 218, 192], trousers: [120, 80, 70], boots: [90, 60, 44], trim: [250, 230, 200],
   accessory: 'basket', anims: ['idle', 'walk', 'talk'], blush: true,
 };
 export const GUARD_A: CharSpec = {
-  id: 'guardA', detail: 'mid', skin: [226, 180, 146], hair: [84, 62, 44], hairStyle: 'cap', hat: [84, 112, 62], top: [122, 102, 64], topStyle: 'jerkin', trim: [180, 160, 100], trousers: [74, 66, 66], boots: [70, 50, 38], belt: [92, 64, 40],
+  id: 'guardA', detail: 'mid', skin: [226, 180, 146], hair: [84, 62, 44], hairStyle: 'cap', hat: [70, 80, 98], top: [122, 102, 64], topStyle: 'jerkin', trim: [180, 160, 100], trousers: [74, 66, 66], boots: [70, 50, 38], belt: [92, 64, 40],
   accessory: 'spear', anims: ['idle', 'walk'],
 };
 export const GUARD_B: CharSpec = {
@@ -445,7 +445,7 @@ export const HOODED: CharSpec = {
   accessory: 'staff', anims: ['idle', 'walk'], satchel: false,
 };
 export const PORTER: CharSpec = {
-  id: 'porter', detail: 'crowd', scale: 0.93, build: 1.1, skin: [226, 178, 140], hair: [90, 64, 40], hairStyle: 'beret', hat: [128, 60, 54], top: [176, 134, 74], topStyle: 'tunic', trousers: [78, 70, 66], boots: [70, 52, 40],
+  id: 'porter', detail: 'crowd', scale: 0.93, build: 1.1, skin: [226, 178, 140], hair: [90, 64, 40], hairStyle: 'beret', hat: [96, 76, 70], top: [176, 134, 74], topStyle: 'tunic', trousers: [78, 70, 66], boots: [70, 52, 40],
   accessory: 'crate', anims: ['idle', 'carry'],
 };
 export const CAT: CharSpec = { id: 'cat', detail: 'crowd', kind: 'cat', skin: [0, 0, 0], hair: [0, 0, 0], hairStyle: 'bald', top: [0, 0, 0], topStyle: 'tunic', trousers: [0, 0, 0], boots: [0, 0, 0], anims: ['idle', 'walk'] };
@@ -459,11 +459,12 @@ export function crowdVariants(seed: number, count: number): CharSpec[] {
     const skinT = r.range(0, 1);
     const skin: RGB = [clamp8(248 - skinT * 60), clamp8(212 - skinT * 70), clamp8(180 - skinT * 70)];
     const hairHue = r.pick([22, 30, 38, 12, 50]);
-    const topHue = r.pick([210, 150, 40, 350, 280, 28, 190]);
+    // crowd wears the city: slate, indigo, undyed wool and weathered leather
+    const topHue = r.pick([210, 222, 200, 28, 36, 230, 190]);
     out.push({
       id: `crowd${i}`, detail: 'crowd', scale: r.range(0.9, 1.0), build: r.range(0.92, 1.1), skin,
       hair: hsl(hairHue, r.range(30, 60), r.range(16, 34)), hairStyle: fem ? r.pick<HairStyle>(['bun', 'long', 'kerchief']) : r.pick<HairStyle>(['short', 'cap', 'beret', 'bald']),
-      hat: hsl(topHue + 20, 35, 32), top: hsl(topHue, r.range(28, 52), r.range(30, 46)), topStyle: fem ? 'dress' : r.pick<TopStyle>(['tunic', 'jerkin', 'coat']),
+      hat: hsl(topHue + 10, 22, 30), top: hsl(topHue, r.range(16, 32), r.range(30, 44)), topStyle: fem ? 'dress' : r.pick<TopStyle>(['tunic', 'jerkin', 'coat']),
       trousers: hsl(r.range(20, 40), 18, r.range(22, 32)), boots: [64, 48, 38], apron: fem && r.bool(0.5) ? [226, 214, 190] : undefined,
       accessory: r.pick<Accessory>(['none', 'none', 'none', 'sack', 'basket', 'lantern']), anims: ['idle', 'walk'],
     });

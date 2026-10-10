@@ -85,8 +85,9 @@ export class MaterialLibrary {
     const T = (name: string, fn: () => void) => steps.push([name, () => { const t0 = performance.now(); fn(); this.timings[name] = performance.now() - t0; }]);
     const tex: Record<string, { albedo: THREE.Texture; nr: THREE.Texture }> = {};
 
-    const stonePal: RGB[] = [[132, 134, 142], [112, 116, 128], [146, 138, 128], [98, 104, 118], [124, 120, 114]];
-    const brickPal: RGB[] = [[128, 74, 60], [112, 66, 54], [140, 88, 66], [92, 58, 50], [120, 72, 58]];
+    // cool stone / muted brick: base albedos stay near-neutral so per-building tints define a narrow slate band
+    const stonePal: RGB[] = [[128, 132, 142], [110, 116, 128], [136, 136, 140], [98, 104, 118], [120, 122, 128]];
+    const brickPal: RGB[] = [[104, 86, 82], [92, 78, 76], [112, 94, 88], [84, 72, 72], [100, 84, 80]];
     let ashlarSet!: TexSet;
 
     T('white/flat', () => {
@@ -95,17 +96,17 @@ export class MaterialLibrary {
       this.white.generateMipmaps = false; this.white.minFilter = THREE.LinearFilter; this.flatNR.generateMipmaps = false; this.flatNR.minFilter = THREE.LinearFilter;
     });
     T('ashlar', () => {
-      ashlarSet = paintAshlar(512, 101, { rows: 6, blockW: 0.3, rowVar: 0.28, widthVar: 0.4, offsetRows: false, palette: stonePal, mortar: [64, 62, 64], mortarW: 4.5, bevel: 7, moss: 0.3, chip: 0.5, streak: 0.8, crack: 0.8, normal: 3.4 });
+      ashlarSet = paintAshlar(512, 101, { rows: 6, blockW: 0.3, rowVar: 0.28, widthVar: 0.4, offsetRows: false, palette: stonePal, mortar: [58, 60, 66], mortarW: 4.5, bevel: 7, moss: 0.08, chip: 0.5, streak: 0.8, crack: 0.8, normal: 3.4 });
       tex.stone = this.texPair(ashlarSet);
     });
-    T('brick', () => { tex.brick = this.texPair(paintAshlar(512, 202, { rows: 15, blockW: 0.215, rowVar: 0.04, widthVar: 0.08, offsetRows: true, palette: brickPal, mortar: [150, 138, 120], mortarW: 2.6, bevel: 3, moss: 0.12, chip: 0.3, streak: 0.5, crack: 0.3, normal: 3.0 })); });
+    T('brick', () => { tex.brick = this.texPair(paintAshlar(512, 202, { rows: 15, blockW: 0.215, rowVar: 0.04, widthVar: 0.08, offsetRows: true, palette: brickPal, mortar: [120, 118, 116], mortarW: 2.6, bevel: 3, moss: 0.04, chip: 0.3, streak: 0.5, crack: 0.3, normal: 3.0 })); });
     T('plaster', () => {
-      const under = paintAshlar(512, 303, { rows: 9, blockW: 0.22, rowVar: 0.35, widthVar: 0.55, offsetRows: false, palette: [[120, 108, 98], [100, 92, 88], [132, 112, 96]], mortar: [76, 66, 58], mortarW: 4, bevel: 5, moss: 0.1, chip: 0.6, streak: 0, crack: 0, normal: 3 });
-      tex.plaster = this.texPair(paintPlaster(512, 404, { base: [188, 172, 150], alt: [160, 146, 126], crumble: 0.16, cracks: 1, stain: 0.9, underlying: under }));
+      const under = paintAshlar(512, 303, { rows: 9, blockW: 0.22, rowVar: 0.35, widthVar: 0.55, offsetRows: false, palette: [[112, 112, 116], [96, 98, 104], [122, 120, 120]], mortar: [66, 66, 70], mortarW: 4, bevel: 5, moss: 0.03, chip: 0.6, streak: 0, crack: 0, normal: 3 });
+      tex.plaster = this.texPair(paintPlaster(512, 404, { base: [178, 176, 172], alt: [152, 152, 154], crumble: 0.12, cracks: 1, stain: 0.8, underlying: under }));
     });
-    T('timber', () => { tex.timber = this.texPair(paintTimber(512, 505, 'beam', [70, 48, 34], [92, 66, 46])); });
-    T('planks', () => { tex.planks = this.texPair(paintTimber(512, 606, 'planks', [86, 62, 44], [108, 80, 56])); });
-    T('roof', () => { tex.roof = this.texPair(paintRoofTiles(512, 707, [[88, 88, 94], [72, 72, 82], [102, 98, 102], [106, 92, 84], [80, 80, 90]], 9, 8)); });
+    T('timber', () => { tex.timber = this.texPair(paintTimber(512, 505, 'beam', [58, 52, 50], [74, 66, 62])); });
+    T('planks', () => { tex.planks = this.texPair(paintTimber(512, 606, 'planks', [76, 68, 62], [96, 86, 78])); });
+    T('roof', () => { tex.roof = this.texPair(paintRoofTiles(512, 707, [[84, 88, 98], [70, 74, 86], [96, 98, 106], [90, 92, 100], [78, 80, 92]], 9, 8)); });
     T('cloth', () => { tex.cloth = this.texPair(paintCloth(256, 808)); });
     T('metal', () => { tex.metal = this.texPair(paintMetal(256, 909)); });
     T('cobble', () => {

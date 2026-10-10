@@ -72,7 +72,7 @@ export function pickWindowKind(ctx: BuildCtx, lit: boolean, arch = false): Windo
   const r = ctx.rng;
   if (!lit) return r.bool(0.8) ? 'dark' : 'shutter';
   if (arch) return 'arch';
-  return r.weighted<WindowKind>(['warm', 'dim', 'curtain', 'candle', 'hot'], [0.42, 0.18, 0.2, 0.12, 0.08]);
+  return r.weighted<WindowKind>(['warm', 'dim', 'curtain', 'candle', 'hot'], [0.4, 0.24, 0.2, 0.13, 0.03]);
 }
 
 export interface WindowOpts {
@@ -213,7 +213,8 @@ export function awning(ctx: BuildCtx, x0: number, x1: number, yTop: number, dept
   ctx.count('awning');
   const n = Math.max(3, Math.round((x1 - x0) / 0.32));
   const dx = (x1 - x0) / n;
-  const alt: V3 = [tint[0] * 1.55 + 0.1, tint[1] * 1.45 + 0.08, tint[2] * 1.3 + 0.06];
+  // stripes stay tonal (same hue, slightly lighter) so canvas reads as one calm shape
+  const alt: V3 = [tint[0] * 1.14 + 0.02, tint[1] * 1.14 + 0.02, tint[2] * 1.12 + 0.02];
   for (let i = 0; i < n; i++) {
     const xa = x0 + i * dx, xb = xa + dx;
     const t = stripes && i % 2 ? alt : tint;
@@ -327,8 +328,9 @@ export function frameStuds(ctx: BuildCtx, x0: number, y0: number, x1: number, y1
 }
 
 export function shopTypeAwning(ctx: BuildCtx, t: ShopType): V3 {
+  // canvas family: ivory (lit from inside it glows warm) or deep slate-indigo; never saturated hues
   const map: Record<ShopType, V3> = {
-    smith: [0.3, 0.12, 0.1], apothecary: [0.1, 0.34, 0.22], tailor: [0.36, 0.14, 0.34], tavern: [0.62, 0.38, 0.1], guild: [0.14, 0.22, 0.5], general: [0.62, 0.2, 0.1], house: [0.3, 0.3, 0.3],
+    smith: [0.16, 0.17, 0.22], apothecary: [0.2, 0.25, 0.36], tailor: [0.62, 0.6, 0.56], tavern: [0.66, 0.62, 0.55], guild: [0.17, 0.21, 0.36], general: [0.6, 0.58, 0.54], house: [0.24, 0.26, 0.32],
   };
   return ctx.tint(map[t], 0.08);
 }

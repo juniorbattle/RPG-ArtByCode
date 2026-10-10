@@ -58,6 +58,7 @@ ${COMMON_GLSL}
 uniform sampler2D tAtlas;
 uniform sampler2D tEmis;
 uniform vec2 uAtlasSize;
+uniform float uSat;
 varying vec3 vWorld; varying vec3 vFeet; varying vec2 vUv; varying vec4 vTint; varying float vH;
 // keeps texels square and edges crisp under perspective, without shimmering
 vec2 sharpUV(vec2 uv){
@@ -79,6 +80,8 @@ void main(){
   vec3 N = normalize(V + vec3(0.0, 0.45, 0.0));
   if (vTint.r < 0.0) { gl_FragColor = vec4(applyFog(c.rgb * 1.15, vWorld), 1.0); return; }
   vec3 albedo = c.rgb * vTint.rgb;
+  // characters sit inside the scene palette: readable value contrast, muted chroma
+  albedo = mix(vec3(dot(albedo, vec3(0.3, 0.55, 0.15))), albedo, uSat);
   vec3 hemi = mix(uGroundAmb, uSkyAmb, 0.7);
   float sh = moonShadow(vFeet + vec3(0.0, 0.5, 0.0), vec3(0.0, 1.0, 0.0));
   vec3 moon = uMoonCol * (0.55 + 0.25 * N.y) * sh;
@@ -154,7 +157,7 @@ export class SpriteRenderer {
       uBillUp: { value: new THREE.Vector3(0, 1, 0) },
     };
     this.bodyMat = new THREE.ShaderMaterial({
-      uniforms: { ...U, ...shared, tAtlas: { value: atlas.texture }, tEmis: { value: atlas.emis }, uAtlasSize: { value: new THREE.Vector2(atlas.width, atlas.height) } },
+      uniforms: { ...U, ...shared, tAtlas: { value: atlas.texture }, tEmis: { value: atlas.emis }, uAtlasSize: { value: new THREE.Vector2(atlas.width, atlas.height) }, uSat: { value: 0.72 } },
       vertexShader: BODY_VERT, fragmentShader: BODY_FRAG, side: THREE.DoubleSide,
     });
     this.shadowMat = new THREE.ShaderMaterial({

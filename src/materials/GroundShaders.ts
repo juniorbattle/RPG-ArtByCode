@@ -85,6 +85,8 @@ void main(){
   vec3 col = albedo * (hemi * ao * M.a + moon * ao + diff * mix(1.0, ao, 0.5));
   float specAmt = mix(0.5, 1.5, damp);
   col += spec * specAmt * ao;
+  // cool moon sheen on the wet stone, strongest in standing water
+  col += moonSpec(N, V, max(rough, 0.08), sh) * (0.2 + damp * 0.9 + puddle * 0.8) * ao;
 
   vec3 R = reflect(-V, N);
   float fr = 0.05 + 0.95 * pow(1.0 - max(dot(vec3(0.0, 1.0, 0.0), V), 0.0), 4.0);
@@ -100,7 +102,7 @@ void main(){
     float rAmt = (puddle * 0.95 + damp * 0.22 * (1.0 - rough)) * (0.35 + 0.65 * fr) * uReflStrength;
     col = mix(col, col + rc * albedo * 0.2, 0.0) + rc * rAmt * 0.9;
   } else {
-    col += uSkyAmb * 3.0 * fr * mirrorAmt;
+    col += skyColor(R) * fr * mirrorAmt;
   }
   gl_FragColor = vec4(applyFog(col, P), 1.0);
 }
@@ -108,33 +110,60 @@ void main(){
 
 export const WATER_FRAG = /* glsl */ `
 ${COMMON_GLSL}
+uniform sampler2D uReflMap;
+uniform mat4 uReflVP;
+uniform float uReflStrength;
+uniform float uReflReady;
+uniform float uWaterY;
+uniform vec2 uReflProxy;
 varying vec3 vWorld;
 varying vec3 vNormal;
 varying vec2 vUv;
 void main(){
   vec3 P = vWorld;
   vec3 V = normalize(cameraPosition - P);
-  vec2 q = P.xz;
   float t = uTime;
-  // layered ripples drifting slowly with the canal flow
+  float dist = distance(P, cameraPosition);
+  // anisotropic ripples: crests run across the canal, so reflections stretch toward the viewer as streaks
+  vec2 q = vec2(P.x, P.z * 0.38);
   vec2 g = vec2(0.0);
   for (int i = 0; i < 3; i++) {
-    float f = 0.9 + float(i) * 1.7;
-    vec2 d = vec2(0.37 + float(i) * 0.21, 0.18 - float(i) * 0.12) * t * (0.3 + float(i) * 0.2);
+    float f = 0.75 + float(i) * 1.55;
+    vec2 d = vec2(0.31 + float(i) * 0.17, 0.11 - float(i) * 0.07) * t * (0.35 + float(i) * 0.2);
     float e = 0.07;
     float c = vn2(q * f + d);
-    g += vec2(vn2(q * f + d + vec2(e, 0.0)) - c, vn2(q * f + d + vec2(0.0, e)) - c) * (1.0 / e) * 0.16 / (1.0 + float(i));
+    g += vec2(vn2(q * f + d + vec2(e, 0.0)) - c, vn2(q * f + d + vec2(0.0, e)) - c) * (1.0 / e) * 0.13 / (1.0 + float(i) * 0.8);
   }
+  g.y *= 0.38;
+  g /= 1.0 + dist * 0.01;
   vec3 N = normalize(vec3(-g.x, 1.0, -g.y));
   vec3 R = reflect(-V, N);
-  float fr = 0.03 + 0.97 * pow(1.0 - max(N.y * 0.5 + 0.5 * dot(N, V), 0.0), 4.0);
-  vec3 deep = vec3(0.004, 0.011, 0.02);
-  vec3 sky = uSkyAmb * 1.2 + vec3(0.012, 0.016, 0.026);
-  vec3 col = deep + sky * fr * 0.55;
-  col += lightMirror(P, R, 0.2, 0.035) * (0.55 + fr) * 1.2;
-  col += vec3(0.5, 0.3, 0.14) * exp(-max(P.z - 4.9, 0.0) / 2.2) * (0.012 + 0.02 * vn2(vec2(P.x * 0.7 + uTime * 0.15, P.z * 2.0)));
+  float fr = 0.02 + 0.98 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
+  vec3 deep = vec3(0.003, 0.007, 0.015);
+  vec3 refl;
+  if (uReflReady > 0.5) {
+    // the planar pass mirrors about the street plane; re-aim the lookup as if mirrored about the water.
+    // Depth of the mirrored content comes from a proxy: the frontage plane while the ray meets it below the
+    // ridgeline, otherwise the far city
+    vec3 Cw = vec3(cameraPosition.x, 2.0 * uWaterY - cameraPosition.y, cameraPosition.z);
+    vec3 dw = normalize(P - Cw);
+    float sw = 140.0;
+    if (dw.z < -0.02) { float sf = (uReflProxy.x - Cw.z) / dw.z; if (sf > 0.0 && Cw.y + dw.y * sf < uReflProxy.y) sw = sf; }
+    vec3 Q = Cw + dw * sw;
+    vec4 rp = uReflVP * vec4(Q, 1.0);
+    vec2 ruv = rp.xy / rp.w * 0.5 + 0.5;
+    vec2 fw = normalize(-V.xz + 1e-5), rt = vec2(fw.y, -fw.x);
+    // ripples smear the mirror image toward the viewer: lights and the moon break into vertical glades
+    ruv += vec2(dot(N.xz, rt) * 0.04, dot(N.xz, fw) * 0.3);
+    refl = texture2D(uReflMap, clamp(ruv, 0.001, 0.999), 0.6).rgb;
+  } else refl = skyColor(R);
+  vec3 col = deep + refl * fr * uReflStrength * 0.92;
+  col += lightMirror(P, R, 0.16, 0.026) * (0.4 + fr) * 1.1;
+  col += moonSpec(N, V, 0.11, 1.0) * 0.55;
+  // faint warm spill from the street along the north quay
+  col += vec3(0.5, 0.3, 0.14) * exp(-max(P.z - 4.95, 0.0) / 1.8) * (0.008 + 0.014 * vn2(vec2(P.x * 0.7 + uTime * 0.15, P.z * 2.0)));
   vec3 diff, spec; lightSum(P, N, V, 0.06, 0.0, diff, spec);
-  col += spec * 0.7 + diff * deep * 0.5;
+  col += spec * 0.6 + diff * deep * 0.5;
   gl_FragColor = vec4(applyFog(col, P), 1.0);
 }
 `;

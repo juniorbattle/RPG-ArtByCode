@@ -379,7 +379,12 @@ export class MeshBuilder {
     for (let i = 0; i < other.uv.length; i++) this.uv.push(other.uv[i]);
     for (let i = 0; i < other.tint.length; i++) this.tint.push(other.tint[i]);
     for (let i = 0; i < other.aux.length; i++) this.aux.push(other.aux[i]);
-    for (let i = 0; i < other.idx.length; i++) this.idx.push(other.idx[i] + base);
+    // a mirroring transform (negative determinant) must flip the winding or every face turns inside out
+    const mirrored = !!m && m.determinant() < 0;
+    for (let i = 0; i < other.idx.length; i += 3) {
+      const a = other.idx[i] + base, b = other.idx[i + 1] + base, c = other.idx[i + 2] + base;
+      if (mirrored) this.idx.push(a, c, b); else this.idx.push(a, b, c);
+    }
   }
 
   toGeometry(): THREE.BufferGeometry {

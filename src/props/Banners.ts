@@ -81,31 +81,17 @@ export function addBunting(S: SlotSet, rng: Rng, a: V3, b: V3, o: { sag?: number
   }
 }
 
+/** A few authored banners only: heraldry is a focal accent, not wallpaper. (The forge and the boat carry their own.) */
 export function buildBanners(rng: Rng, cfg: DistrictConfig, buildings: Array<{ id: string; result: { sockets: Socket[] }; pos: V3; yaw: number }>, sockets: Array<Socket & { building: string }>, world: SlotSet): void {
-  void cfg; void BuildCtx; void beam;
+  void cfg; void BuildCtx; void beam; void rng; void buildings;
   const find = (id: string, kind: string) => sockets.find((s) => s.building === id && s.kind === kind);
-  // great guild banner (scales) on the tall left building facade
+  // the great guild banner above the hero stall: the one large heraldic shape in the frontage
   const g = find('guild', 'banner');
   if (g) {
     const yaw = Math.atan2(g.dir[0], g.dir[2]);
     addBanner(world, { pos: [g.pos[0] + g.dir[0] * 0.18, g.pos[1] + 0.3, g.pos[2] + g.dir[2] * 0.18], yaw, w: 1.35, h: 2.9, emblem: 'scales', shape: 'swallow', loose: 0.5 });
   }
-  const a = find('shopA', 'banner');
-  if (a) addBanner(world, { pos: [a.pos[0] + a.dir[0] * 0.15, a.pos[1] - 0.2, a.pos[2] + a.dir[2] * 0.15], yaw: Math.atan2(a.dir[0], a.dir[2]), w: 0.9, h: 1.7, emblem: 'mortar', shape: 'swallow', loose: 0.7 });
-  const t = find('tall', 'banner');
-  if (t) addBanner(world, { pos: [t.pos[0] + t.dir[0] * 0.15, t.pos[1] - 0.1, t.pos[2] + t.dir[2] * 0.15], yaw: Math.atan2(t.dir[0], t.dir[2]), w: 0.85, h: 1.6, emblem: 'scissors', shape: 'swallow', loose: 0.7 });
-  // fleur-de-lis banner hanging on the quay wall facing the canal
-  addBanner(world, { pos: [-1.8, -0.15, 4.97], yaw: 0, w: 0.95, h: 1.75, emblem: 'fleur', shape: 'swallow', loose: 0.5 });
-  addBanner(world, { pos: [8.9, -0.15, 4.97], yaw: 0, w: 0.95, h: 1.75, emblem: 'fleur', shape: 'swallow', loose: 0.5 });
-  // bunting across the street
-  const eave = (id: string, side: 'left' | 'right') => sockets.find((s) => s.building === id && s.kind === 'bunting' && s.tag === side);
-  const pairs: Array<[string, 'left' | 'right', string, 'left' | 'right', number]> = [['guild', 'right', 'shopA', 'left', 0.7], ['shopA', 'right', 'tall', 'left', 0.5], ['guild', 'left', 'shopA', 'left', 0.9]];
-  for (const [ia, sa, ib, sb, sag] of pairs) {
-    const A = eave(ia, sa), B = eave(ib, sb);
-    if (!A || !B) continue;
-    if (Math.hypot(A.pos[0] - B.pos[0], A.pos[2] - B.pos[2]) > 14) continue;
-    addBunting(world, rng.fork(`${ia}${ib}`), [A.pos[0], A.pos[1], A.pos[2]], [B.pos[0], B.pos[1] - 0.2, B.pos[2]], { sag });
-  }
-  // a rope of lanterns-free pennants from the guild corner out over the street
-  addBunting(world, rng.fork('street'), [-7.1, 6.1, 1.2], [3.6, 5.6, -3.9], { sag: 1.1 });
+  // a small echo at the far end of the street
+  const t = find('tavern', 'banner');
+  if (t) addBanner(world, { pos: [t.pos[0] + t.dir[0] * 0.15, t.pos[1] - 0.1, t.pos[2] + t.dir[2] * 0.15], yaw: Math.atan2(t.dir[0], t.dir[2]), w: 0.85, h: 1.6, emblem: 'tankard', shape: 'swallow', loose: 0.7 });
 }

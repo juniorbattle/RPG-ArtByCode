@@ -119,7 +119,10 @@ export class DebugPanel {
     // ---- atmosphere
     const at = this.section('Atmosphere');
     this.slider(at, 'fog density', 0, 0.04, 0.001, () => U.uFogDensity.value, (v) => { U.uFogDensity.value = v; });
-    this.slider(at, 'ground mist', 0, 1, 0.05, () => U.uMist.value, (v) => { U.uMist.value = v; });
+    this.slider(at, 'fog height falloff', 0.01, 0.2, 0.005, () => U.uFogFalloff.value, (v) => { U.uFogFalloff.value = v; });
+    this.slider(at, 'low mist', 0, 1.5, 0.05, () => U.uMist.value, (v) => { U.uMist.value = v; });
+    this.slider(at, 'lantern in-scatter', 0, 3, 0.05, () => a.post.params.airlight, (v) => { a.post.params.airlight = v; });
+    this.slider(at, 'moon glints', 0, 3, 0.05, () => U.uMoonSpec.value, (v) => { U.uMoonSpec.value = v; });
     this.slider(at, 'smoke amount', 0, 2, 0.05, () => a.particles.smokeAmount, (v) => { a.particles.smokeAmount = v; });
     this.slider(at, 'spark / ember gain', 0, 2, 0.05, () => a.particles.intensity, (v) => { a.particles.intensity = v; });
     this.slider(at, 'wind (cloth / leaves)', 0, 3, 0.05, () => U.uWindAmp.value, (v) => { U.uWindAmp.value = v; });
@@ -129,19 +132,22 @@ export class DebugPanel {
     const P = a.post.params;
     this.slider(p, 'depth of field', 0, 1.5, 0.05, () => P.dofStrength, (v) => { P.dofStrength = v; });
     this.slider(p, 'tilt-shift', 0, 1.5, 0.05, () => P.tiltStrength, (v) => { P.tiltStrength = v; });
-    this.slider(p, 'focus distance', 20, 70, 0.5, () => P.dofFocus, (v) => { P.dofFocus = v; });
+    this.slider(p, 'focus (manual)', 8, 70, 0.5, () => P.dofFocus, (v) => { P.dofFocus = v; a.post.autoFocus = false; });
+    this.slider(p, 'far blur', 0, 1, 0.02, () => P.dofFar, (v) => { P.dofFar = v; });
     this.slider(p, 'bloom', 0, 2, 0.05, () => P.bloomStrength, (v) => { P.bloomStrength = v; });
     this.slider(p, 'bloom threshold', 0.3, 2, 0.05, () => P.bloomThreshold, (v) => { P.bloomThreshold = v; });
     this.slider(p, 'exposure', 0.4, 2, 0.02, () => P.exposure, (v) => { P.exposure = v; });
     this.slider(p, 'saturation', 0.4, 1.6, 0.02, () => P.saturation, (v) => { P.saturation = v; });
+    this.slider(p, 'palette discipline', 0, 1, 0.02, () => P.palette, (v) => { P.palette = v; });
     this.slider(p, 'vignette', 0, 0.8, 0.02, () => P.vignette, (v) => { P.vignette = v; });
     this.slider(p, 'render scale', 0.5, 1.5, 0.05, () => P.renderScale, (v) => { P.renderScale = v; a.resize(); });
 
     // ---- camera
     const c = this.section('Camera', false);
-    this.slider(c, 'pitch (deg)', 15, 55, 0.5, () => THREE.MathUtils.radToDeg(a.rig.pitch), (v) => { a.rig.pitch = THREE.MathUtils.degToRad(v); });
-    this.slider(c, 'yaw (deg)', 0, 70, 0.5, () => THREE.MathUtils.radToDeg(a.rig.yaw), (v) => { a.rig.yaw = THREE.MathUtils.degToRad(v); });
-    this.slider(c, 'distance', 22, 70, 0.5, () => a.rig.dist, (v) => { a.rig.dist = v; });
+    this.slider(c, 'pitch (deg)', -5, 45, 0.5, () => THREE.MathUtils.radToDeg(a.rig.pitch), (v) => { a.rig.pitch = THREE.MathUtils.degToRad(v); });
+    this.slider(c, 'yaw (deg)', -120, -50, 0.5, () => THREE.MathUtils.radToDeg(a.rig.yaw), (v) => { a.rig.yaw = THREE.MathUtils.degToRad(v); });
+    this.slider(c, 'distance', 14, 70, 0.5, () => a.rig.dist, (v) => { a.rig.dist = v; });
+    this.slider(c, 'follow strength', 0, 1, 0.02, () => a.rig.followStrength, (v) => { a.rig.followStrength = v; });
     this.slider(c, 'lens fov', 12, 40, 0.5, () => a.rig.fov, (v) => { a.rig.fov = v; });
     this.slider(c, 'lens shift', -0.4, 0.6, 0.01, () => a.rig.shiftY, (v) => { a.rig.shiftY = v; });
 
@@ -156,6 +162,8 @@ export class DebugPanel {
     toggle('planar reflections', () => a.reflection.enabled, (v) => { a.reflection.enabled = v; });
     toggle('depth of field', () => a.post.dofEnabled, (v) => { a.post.dofEnabled = v; });
     toggle('bloom', () => a.post.bloomEnabled, (v) => { a.post.bloomEnabled = v; });
+    toggle('lantern in-scatter pass', () => a.post.airEnabled, (v) => { a.post.airEnabled = v; });
+    toggle('autofocus on player', () => a.post.autoFocus, (v) => { a.post.autoFocus = v; });
     toggle('sprite tilt (billboard lean)', () => a.sprites.tilt > 0.5, (v) => { a.sprites.tilt = v ? 0.85 : 0; });
 
     // ---- perf

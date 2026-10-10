@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Rng } from '../core/rng';
 import { SlotSet, SLOTS, mat, type V3, type Slot } from '../core/MeshBuilder';
-import { atlasRect } from '../architecture/FacadeGrammar';
+import { atlasRect, quadFacing } from '../architecture/FacadeGrammar';
 import { EMBLEM_CELLS, type EmblemKind } from '../materials/CanvasArt';
 
 /** Small reusable prop generators. Each returns a SlotSet in local space (origin = base centre, +z = front),
@@ -61,7 +61,7 @@ export function crate(r: Rng, o: { size?: number } = {}): SlotSet {
 export function sack(r: Rng, o: { sit?: boolean } = {}): SlotSet {
   const S = new SlotSet();
   const rx = rnd(r, 0.24, 0.32), ry = rnd(r, 0.3, 0.4), rz = rnd(r, 0.2, 0.28);
-  const tint: V3 = [rnd(r, 0.6, 0.78), rnd(r, 0.44, 0.58), rnd(r, 0.26, 0.38)];
+  const tint: V3 = [rnd(r, 0.6, 0.72), rnd(r, 0.53, 0.62), rnd(r, 0.43, 0.52)];
   const ph = r.range(0, 6);
   S.cloth.blob(0, ry * 0.95, 0, rx, ry, rz, 12, 9, { tint, ao: 0.85, lump: (nx, ny, nz) => 1 + 0.09 * Math.sin(nx * 5 + ph) * Math.cos(nz * 4 + ph * 0.5) - 0.12 * Math.max(0, -ny) });
   S.cloth.lathe([[rx * 0.38, ry * 1.75], [rx * 0.2, ry * 1.88], [rx * 0.34, ry * 2.02], [rx * 0.12, ry * 2.1]], 8, { tint: [tint[0] * 0.9, tint[1] * 0.9, tint[2] * 0.9] });
@@ -122,7 +122,7 @@ export function bollard(r: Rng): SlotSet {
 export function pot(r: Rng, o: { kind?: 'jar' | 'amphora' | 'bowl' } = {}): SlotSet {
   const S = new SlotSet();
   const kind = o.kind ?? r.pick(['jar', 'amphora', 'bowl'] as const);
-  const t: V3 = [rnd(r, 1.0, 1.3), rnd(r, 0.55, 0.8), rnd(r, 0.35, 0.55)];
+  const t: V3 = [rnd(r, 0.92, 1.1), rnd(r, 0.74, 0.86), rnd(r, 0.6, 0.72)];
   const k = rnd(r, 0.85, 1.15);
   const prof: Array<[number, number]> = kind === 'amphora'
     ? [[0.001, 0], [0.07 * k, 0.01], [0.13 * k, 0.12], [0.16 * k, 0.3], [0.11 * k, 0.5], [0.06 * k, 0.6], [0.07 * k, 0.66], [0.09 * k, 0.7]]
@@ -140,7 +140,7 @@ export function basket(r: Rng, o: { fruit?: boolean } = {}): SlotSet {
   S.timber.lathe([[R * 0.7, 0], [R, H * 0.5], [R * 1.05, H]], 10, { tint: [1.2, 0.95, 0.6], aoY: [0.7, 1] });
   S.timber.lathe([[R * 1.05, H], [R * 0.95, H - 0.02]], 10, { tint: [1.0, 0.8, 0.5] });
   if (o.fruit !== false) {
-    const hue: V3[] = [[1.6, 0.3, 0.2], [0.5, 1.2, 0.3], [1.4, 1.0, 0.2], [0.8, 0.4, 1.0]];
+    const hue: V3[] = [[1.1, 0.72, 0.46], [0.95, 0.85, 0.62], [0.82, 0.72, 0.64], [1.0, 0.8, 0.5]];
     const c = r.pick(hue);
     for (let i = 0; i < 9; i++) { const a = r.range(0, 6.28), d = r.range(0, R * 0.7); S.cloth.blob(Math.cos(a) * d, H + 0.02, Math.sin(a) * d, 0.055, 0.05, 0.055, 6, 4, { tint: [c[0] * r.range(0.8, 1.1), c[1] * r.range(0.8, 1.1), c[2]] }); }
   }
@@ -257,6 +257,65 @@ export function cart(r: Rng): SlotSet {
   S.append(sack(r.fork('s2')), mat([0.3, bedY + 0.1, -0.25], 1.9, 0.9));
   return S;
 }
+/** Wooden street barrier (trestle): splayed A-frame legs, a top rail and a pale painted board (ivory catches
+ *  the lantern light, so the barrier reads at a distance). Origin = ground centre, rail along local x, width w. */
+export function trestle(r: Rng, w = 2.6): SlotSet {
+  const S = new SlotSet();
+  const wood: V3 = [0.84, 0.82, 0.84], paint: V3 = [0.9, 0.88, 0.84];
+  for (const sx of [-1, 1]) {
+    const x = sx * (w / 2 - 0.22);
+    for (const sz of [-1, 1]) S.with(mat([x, 0.5, sz * 0.17], 0, 1, -sz * 0.34), () => S.timber.boxMM(-0.045, -0.53, -0.045, 0.045, 0.53, 0.045, { tint: wood, grain: 'y', aoY: [0.6, 1] }));
+    S.timber.boxMM(x - 0.04, 0.42, -0.2, x + 0.04, 0.5, 0.2, { tint: wood, grain: 'z' });
+  }
+  S.timber.boxMM(-w / 2, 0.96, -0.06, w / 2, 1.08, 0.06, { tint: wood, grain: 'x', ao: 0.95 });
+  S.plaster.boxMM(-w / 2 + 0.1, 0.6, -0.1, w / 2 - 0.1, 0.9, 0.1, { tint: [paint[0] * r.range(0.96, 1.04), paint[1], paint[2]], ao: 0.92 });
+  return S;
+}
+
+/** Moored canal boat: lofted hull (outer + inner skin), thwarts, a mast whose yard carries the furled sail,
+ *  a stern lantern post and a little cargo. Origin = waterline centre, +x = bow. Returns attachment points. */
+export function boat(r: Rng): { S: SlotSet; lantern: V3; yard: V3; bow: V3; stern: V3 } {
+  const S = new SlotSet();
+  const L = 7.4, W = 2.3, N = 16;
+  const paint: V3 = [0.48, 0.54, 0.68], inner: V3 = [0.36, 0.38, 0.44], wood: V3 = [0.8, 0.8, 0.86];
+  const across: Array<[number, number]> = [[-1, 1], [-0.95, 0.12], [-0.62, -0.3], [0, -0.42], [0.62, -0.3], [0.95, 0.12], [1, 1]];
+  const sec = (t: number) => ({ x: -L / 2 + L * t, w: (W / 2) * Math.pow(Math.sin(Math.PI * (0.1 + 0.9 * t)), 0.55), sheer: 0.6 + 0.32 * Math.pow(2 * t - 1, 2) });
+  const ring = (t: number, k: number, dy: number): V3[] => { const s = sec(t); return across.map(([a, h]) => [s.x, (h > 0.5 ? s.sheer : h) + dy, a * s.w * k] as V3); };
+  for (let i = 0; i < N; i++) {
+    const A = ring(i / N, 1, 0), Bq = ring((i + 1) / N, 1, 0), Ai = ring(i / N, 0.92, 0.05), Bi = ring((i + 1) / N, 0.92, 0.05);
+    for (let j = 0; j < across.length - 1; j++) {
+      const c: V3 = [(A[j][0] + Bq[j + 1][0]) / 2, (A[j][1] + Bq[j + 1][1]) / 2, (A[j][2] + Bq[j + 1][2]) / 2];
+      const out: V3 = [0, c[1] - 0.25, c[2]];
+      quadFacing(S.planks, [A[j], Bq[j], Bq[j + 1], A[j + 1]], out, { tint: paint, grain: 'x', ao: 0.9 });
+      quadFacing(S.planks, [Ai[j], Bi[j], Bi[j + 1], Ai[j + 1]], [-out[0], -out[1], -out[2]], { tint: inner, grain: 'x', ao: 0.6 });
+    }
+    // gunwale caps join the two skins
+    for (const j of [0, across.length - 1]) quadFacing(S.timber, [A[j], Bq[j], Bi[j], Ai[j]], [0, 1, 0], { tint: wood, grain: 'x' });
+  }
+  // floorboards, thwarts, stem
+  for (let i = 1; i < N - 1; i++) {
+    const a = sec(i / N), b = sec((i + 1) / N);
+    S.planks.quad([a.x, -0.12, -a.w * 0.62], [a.x, -0.12, a.w * 0.62], [b.x, -0.12, b.w * 0.62], [b.x, -0.12, -b.w * 0.62], { tint: inner, grain: 'x', ao: 0.55, flip: true });
+  }
+  for (const x of [-1.6, 0.25, 2.0]) { const w = sec((x + L / 2) / L).w * 0.9; S.planks.boxMM(x - 0.16, 0.34, -w, x + 0.16, 0.4, w, { tint: wood, grain: 'z', ao: 0.85 }); }
+  S.timber.sweep([[L / 2 - 0.05, 0.5, 0], [L / 2 + 0.12, 1.0, 0], [L / 2 + 0.08, 1.25, 0]], 0.06, 5, { tint: wood });
+  // mast, yard and furled sail (ivory canvas, the reference's pale accent)
+  const mx = 0.9;
+  const yardY = 5.7;
+  S.with(mat([mx, yardY, 0], 0, 1, Math.PI / 2), () => S.timber.cylinder(0.05, -1.75, 1.75, 6, { tint: wood }));
+  S.cloth.blob(mx + 0.06, yardY - 0.12, 0, 0.13, 0.17, 1.55, 8, 6, { tint: [0.66, 0.64, 0.6], ao: 0.85, lump: (nx, _ny, nz) => 1 + 0.12 * Math.sin(nz * 9 + nx * 3) });
+  S.with(mat([mx, 0, 0]), () => S.timber.cylinder(0.085, -0.3, 6.5, 8, { tint: wood, r1: 0.06 }));
+  // stern lantern post
+  const sx = -L / 2 + 0.5;
+  S.timber.boxMM(sx - 0.05, 0.4, -0.05, sx + 0.05, 2.05, 0.05, { tint: wood, grain: 'y' });
+  S.metal.boxMM(sx - 0.02, 1.98, -0.02, sx + 0.38, 2.02, 0.02, { tint: [1, 1, 1] });
+  // a little cargo near the bow
+  S.append(crate(r.fork('bc1')), mat([2.6, -0.12, -0.3], 0.3, 0.9));
+  S.append(sack(r.fork('bs1')), mat([2.7, -0.12, 0.42], 1.1));
+  S.append(barrel(r.fork('bb1'), { lying: true }), mat([-0.7, -0.12, 0.1], 0.2, 0.9));
+  return { S, lantern: [sx + 0.36, 1.48, 0], yard: [mx - 0.14, yardY - 0.05, 0], bow: [L / 2 - 0.4, 0.75, 0], stern: [-L / 2 + 0.3, 0.75, 0] };
+}
+
 export function emblemRect(kind: EmblemKind): [number, number, number, number] {
   const idx = EMBLEM_CELLS[kind];
   return atlasRect(idx % 4, Math.floor(idx / 4), 4, 2, 0.01);

@@ -61,6 +61,8 @@ function edgeStrip(ctx: BuildCtx, row: V3[], outward: V3, th = 0.13, tint?: V3, 
 }
 
 function rafterTails(ctx: BuildCtx, row: V3[], dir: V3, spacing = 0.55): void {
+  // rafter tails are eave-line micro-detail: only for frontages that carry the hero budget
+  if ((ctx.p.detail ?? 1) <= 0.6) return;
   const cum: number[] = [0];
   for (let i = 1; i < row.length; i++) cum.push(cum[i - 1] + Math.hypot(row[i][0] - row[i - 1][0], row[i][2] - row[i - 1][2]));
   const total = cum[cum.length - 1];

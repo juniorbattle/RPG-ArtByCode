@@ -52,7 +52,7 @@ void main(){
     lit += uLightCol[i].rgb * x * x / (1.0 + d2 * 0.12);
   }
   float tw = 0.55 + 0.45 * sin(uTime * (0.8 + aSeed) + aSeed * 40.0);
-  vColor = vec4(lit * 0.85 + uSkyAmb * 1.5, tw * clamp(dot(lit, vec3(0.35)) * 0.8 + 0.12, 0.0, 0.9));
+  vColor = vec4(lit * 0.7 + uSkyAmb * 1.2, tw * clamp(dot(lit, vec3(0.35)) * 0.65 + 0.06, 0.0, 0.7));
 }`;
 
 class PointCloud {
@@ -113,10 +113,11 @@ export class ParticleSystem {
     this.halo.points.layers.set(0);
     this.halo.points.renderOrder = 7;
     // dust
-    const n = 150, g = new THREE.BufferGeometry();
+    const n = 90, g = new THREE.BufferGeometry();
     const p = new Float32Array(n * 3), s = new Float32Array(n), sd = new Float32Array(n);
     const r = new Rng(5);
-    for (let i = 0; i < n; i++) { p[i * 3] = r.range(-8, 16); p[i * 3 + 1] = r.range(0.3, 5.2); p[i * 3 + 2] = r.range(-5, 5); s[i] = r.range(0.03, 0.075); sd[i] = r.next(); }
+    // motes live over the playable quay; they only show where warm light actually reaches them
+    for (let i = 0; i < n; i++) { p[i * 3] = r.range(-14, 26); p[i * 3 + 1] = r.range(0.3, 4.6); p[i * 3 + 2] = r.range(-3.6, 4.6); s[i] = r.range(0.03, 0.07); sd[i] = r.next(); }
     g.setAttribute('position', new THREE.BufferAttribute(p, 3)); g.setAttribute('aSize', new THREE.BufferAttribute(s, 1)); g.setAttribute('aSeed', new THREE.BufferAttribute(sd, 1));
     this.dustMat = new THREE.ShaderMaterial({
       uniforms: { ...U, uScale: { value: 1000 }, tMap: { value: lib.dot } },
@@ -150,10 +151,11 @@ export class ParticleSystem {
         let a = k;
         while (a > 1 / rate) {
           a -= 1 / rate;
+          // seen against the night sky, smoke must stay a shade above it: dark slate, thin, warm only at the flue
           const tone = big ? 0.85 : 1;
           this.spawn(this.parts, {
             x: e.pos[0] + R.range(-0.18, 0.18), y: e.pos[1], z: e.pos[2] + R.range(-0.18, 0.18), vx: this.wind.x * 0.5 + R.range(-0.08, 0.08), vy: R.range(0.55, 0.95) * (big ? 1.25 : 1), vz: this.wind.z * 0.5 + R.range(-0.08, 0.08),
-            life: R.range(5.5, 8.5), size0: big ? 0.8 : 0.5, size1: big ? 3.0 : 2.1, r: 0.12 * tone, g: 0.14 * tone, b: 0.2 * tone, a: big ? 0.62 : 0.42, spin: R.range(-0.3, 0.3), drag: 0.15, warm: big ? 1 : 0.35, kind: big ? 2 : 1,
+            life: R.range(5.5, 8.5), size0: big ? 0.8 : 0.5, size1: big ? 3.0 : 2.1, r: 0.032 * tone, g: 0.042 * tone, b: 0.066 * tone, a: big ? 0.5 : 0.3, spin: R.range(-0.3, 0.3), drag: 0.15, warm: big ? 0.6 : 0.12, kind: big ? 2 : 1,
           });
         }
         this.acc.set(e, a);
@@ -238,7 +240,7 @@ export class ParticleSystem {
       h.pos[n * 3] = s.pos.x; h.pos[n * 3 + 1] = s.pos.y; h.pos[n * 3 + 2] = s.pos.z;
       const lv = Math.min(1.5, s.level) * (s.kind === 'fire' ? 0.8 : 1);
       h.size[n] = s.halo * (0.92 + 0.12 * lv);
-      const k = Math.min(1, s.intensity / 5) * 0.34 * lv;
+      const k = Math.min(1, s.intensity / 5) * 0.26 * lv;
       h.col[n * 4] = s.color.r * 2.2 * k; h.col[n * 4 + 1] = s.color.g * 1.9 * k; h.col[n * 4 + 2] = s.color.b * 1.6 * k; h.col[n * 4 + 3] = 1;
       h.rot[n] = 0;
       n++;

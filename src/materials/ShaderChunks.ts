@@ -17,7 +17,13 @@ uniform vec3 uFillCol;
 uniform vec3 uFogColor;
 uniform float uFogDensity;
 uniform float uFogStart;
+uniform float uFogFalloff;
+uniform float uFogBase;
 uniform float uMist;
+uniform vec3 uSkyZenith;
+uniform vec3 uCityGlow;
+uniform vec3 uCityDir;
+uniform float uMoonSpec;
 uniform sampler2D uShadowMap;
 uniform mat4 uShadowVP;
 uniform float uShadowTexel;
@@ -103,14 +109,58 @@ vec3 lightMirror(vec3 P, vec3 R, float sizeBase, float sizeGrow){
   return sum * uWarmGain;
 }
 
+// Moon glint (GGX) for wet / glossy surfaces: the low moon sits in front of the camera, so this is the cool
+// sheen that leads the eye down the street and across the canal.
+vec3 moonSpec(vec3 N, vec3 V, float rough, float sh){
+  float ndl = dot(N, uMoonDir);
+  if (ndl <= 0.0) return vec3(0.0);
+  vec3 H = normalize(uMoonDir + V);
+  float ndh = max(dot(N, H), 0.0), vdh = max(dot(V, H), 0.0);
+  float F = 0.04 + 0.96 * pow(1.0 - vdh, 5.0);
+  return uMoonCol * ggx(ndh, max(rough * rough, 0.012)) * F * ndl * sh * uMoonSpec;
+}
+
+// Horizon haze: what distant layers dissolve into. Slate-indigo, a desaturated warm lift low over the
+// upper city, and forward scatter around the moon. The sky dome uses the same function at the horizon,
+// so fully fogged silhouettes melt into the sky without a seam.
+vec3 skyHaze(vec3 rd){
+  float low = 1.0 - smoothstep(-0.04, 0.3, rd.y);
+  vec2 hd = rd.xz / max(length(rd.xz), 1e-4);
+  float toward = pow(max(dot(hd, normalize(uCityDir.xz)), 0.0), 5.0);
+  vec3 c = uFogColor * (0.84 + 0.16 * low);
+  c += uCityGlow * low * low * (0.25 + 0.75 * toward);
+  float mu = max(dot(rd, uMoonDir), 0.0);
+  c += uMoonCol * (0.016 * pow(mu, 6.0) + 0.04 * pow(mu, 56.0));
+  return c;
+}
+vec3 skyColor(vec3 rd){
+  // the gradient resolves inside the framed band of sky: luminous haze at the horizon, deep indigo by ~15 deg
+  return mix(skyHaze(rd), uSkyZenith, smoothstep(-0.01, 0.27, rd.y));
+}
+
+// Optical depth of exponential height fog along a straight segment (closed form, no marching).
+float fogDepth(float y0, float y1, float len, float b){
+  float a0 = -b * max(y0 - uFogBase, -2.0), a1 = -b * max(y1 - uFogBase, -2.0);
+  float da = a1 - a0;
+  float avg = abs(da) > 1e-4 ? (exp(a1) - exp(a0)) / da : exp(a0);
+  return len * avg;
+}
+float fogAmount(vec3 P, out vec3 rd){
+  vec3 ro = cameraPosition;
+  vec3 dv = P - ro;
+  float L = length(dv);
+  rd = dv / max(L, 1e-4);
+  float s = min(uFogStart, L);
+  // the reflection camera sits below the street plane: start its fog at the plane, not underground
+  float y0 = max(ro.y, 0.0) + rd.y * s;
+  float od = uFogDensity * (fogDepth(y0, P.y, L - s, uFogFalloff) + uMist * fogDepth(y0, P.y, L - s, 0.32));
+  return clamp(1.0 - exp(-od), 0.0, 0.985);
+}
+// fog resolves to the sky colour of the same direction, so every silhouette stays darker than the sky behind it
 vec3 applyFog(vec3 c, vec3 P){
-  float dist = distance(P, cameraPosition);
-  float d = max(dist - uFogStart, 0.0);
-  float f = 1.0 - exp(-d * uFogDensity);
-  float mist = uMist * exp(-max(P.y + 1.5, 0.0) * 0.35) * smoothstep(8.0, 60.0, dist);
-  f = clamp(f + mist * (1.0 - f), 0.0, 0.97);
-  vec3 fc = uFogColor * (0.75 + 0.25 * smoothstep(0.0, 30.0, P.y + 14.0));
-  return mix(c, fc, f);
+  vec3 rd;
+  float f = fogAmount(P, rd);
+  return mix(c, skyColor(rd), f);
 }
 `;
 
@@ -189,7 +239,8 @@ void main(){
   #ifdef GLOW
     vec4 G = texture2D(tAlbedo, vUv);
     float fl = 0.93 + 0.12 * sin(uTime * (3.0 + vAux.z * 4.0) + vAux.z * 40.0) + 0.05 * sin(uTime * 9.0 + vAux.z * 90.0);
-    vec3 e = G.rgb * vTint.rgb * vTint.a * uEmissive * mix(1.0, fl, vAux.y);
+    // unlit glass (aux.y = 0) only mirrors a little sky; lit glass flickers at full strength
+    vec3 e = G.rgb * vTint.rgb * vTint.a * uEmissive * mix(0.42, fl, vAux.y);
     gl_FragColor = vec4(applyFog(e, vWorld), 1.0);
     return;
   #endif
@@ -217,7 +268,8 @@ void main(){
     N = normalize(mix(N, vec3(0.0, 1.0, 0.0), 0.55));
   #endif
   vec3 hemi = mix(uGroundAmb, uSkyAmb, N.y * 0.5 + 0.5) + uFillCol * clamp(dot(N, uFillDir) * 0.7 + 0.3, 0.0, 1.0);
-  float mw = clamp((dot(N, uMoonDir) + 0.3) / 1.3, 0.0, 1.0);
+  // the low moon only grazes the frontages: small wrap keeps vertical planes dark and roofs/edges rim-lit
+  float mw = clamp((dot(N, uMoonDir) + 0.14) / 1.14, 0.0, 1.0);
   float sh = mw > 0.0 ? moonShadow(vWorld, N) : 1.0;
   vec3 moon = uMoonCol * mw * sh;
   vec3 diff, spec;
@@ -230,6 +282,8 @@ void main(){
   #endif
   vec3 col = albedo * (hemi * ao + moon * mix(1.0, ao, 0.5) + diff * mix(1.0, ao, 0.65));
   col += spec * ao * uSpecAmt;
+  // backlit moon catches wet tiles, iron and stone edges as a thin cool rim
+  col += moonSpec(N, V, max(rough, 0.25), sh) * ao * uSpecAmt * 0.55;
   col += albedo * uEmissive * vAux.y;
   gl_FragColor = vec4(applyFog(col, vWorld), 1.0);
 }

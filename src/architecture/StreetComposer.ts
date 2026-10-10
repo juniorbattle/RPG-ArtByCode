@@ -7,11 +7,19 @@ import { atlasRect } from './FacadeGrammar';
 export type Collider = { kind: 'rect'; x0: number; z0: number; x1: number; z1: number } | { kind: 'circle'; x: number; z: number; r: number };
 
 export interface GroundRect { x0: number; z0: number; w: number; h: number }
-export const GROUND_RECT: GroundRect = { x0: -16, z0: -17.5, w: 34, h: 28.5 };
+/** Composition constants. The quarter is authored along the canal axis (+x = toward the bridge and the upper city). */
 export const QUAY_Z = 4.6;
-export const TERRACE = { x0: -15, x1: 16.8, z0: -17, z1: 12 };
-export const WATER_Y = -2.5;
-export const NEAR_BANK_Z = 10.6;
+export const WATER_Y = -1.15;
+export const SOUTH_QUAY_Z = 15.5;
+/** authored street block: the playable quay plus the non-playable foreground behind the camera side */
+export const STREET = { x0: -34, x1: 30, z0: -18 };
+/** the cobbled quay and its coping run on past the authored block, up to the hero bridge abutment */
+export const QUAY_END_X = 46.5;
+/** walkable quay (the one playable ground plane) */
+export const WALK = { x0: -13.5, x1: 26, z0: -3.2, z1: 4.05 };
+export const GROUND_RECT: GroundRect = { x0: -26, z0: -8, w: 56, h: 13 };
+/** landing steps down to the water, beside the moored boat */
+export const WATER_STEPS = { x0: 5.2, x1: 8.0, run: 0.36, n: 6 };
 
 export interface MaskObstacle { x0: number; z0: number; x1: number; z1: number; ao?: number; grime?: number }
 export interface MaskBlob { x: number; z: number; r: number; amount: number }
@@ -77,69 +85,76 @@ export function makeGroundMask(seed: number, rect: GroundRect, resX: number, res
       out[k + 2] = clamp01(wear) * 255;
       out[k + 3] = clamp01(ao) * 255;
     }
-  }  return out;
+  }
+  return out;
 }
 
 export interface StreetResult {
   slots: SlotSet;
   colliders: Collider[];
   obstacles: MaskObstacle[];
-  stairs: { x0: number; x1: number; zBottom: number; zTop: number; yTop: number };
   bollards: V3[];
-  nearBollards: V3[];
-  lampSpots: Array<{ pos: V3; yaw: number }>;
+  /** iron mooring rings / posts at the landing (small, instanced as bollards) */
+  moorings: V3[];
   decals: SlotSet;
-  walkable: GroundRect;
+  walkable: typeof WALK;
 }
 
-/** Quay wall, parapet, stairs, canal edges, near bank. Everything the street plane needs around it. */
-export function composeStreet(seed: number, density: number): StreetResult {
+/** Quay walls on both banks, block coping along the playable edge, landing steps and a few ground decals.
+ *  The quay edge is one of the authored focal lines, so it gets block-level detail; everything else stays plain. */
+export function composeStreet(seed: number): StreetResult {
   const rng = new Rng(seed).fork('street');
   const S = new SlotSet();
   const colliders: Collider[] = [];
   const obstacles: MaskObstacle[] = [];
-  const stone: V3 = [1, 1, 1.03];
+  const stone: V3 = [0.92, 0.95, 1.02];
+  const x0 = STREET.x0, x1 = QUAY_END_X;
+  const fz = QUAY_Z + 0.35;
+  const st = WATER_STEPS;
 
-  // ---- quay: face toward the canal (visible to the camera), parapet and cap
-  const x0 = TERRACE.x0, x1 = TERRACE.x1;
-  S.stone.quad([x0, WATER_Y - 0.4, QUAY_Z + 0.35], [x1, WATER_Y - 0.4, QUAY_Z + 0.35], [x1, 0.0, QUAY_Z + 0.35], [x0, 0.0, QUAY_Z + 0.35], { tint: [0.85, 0.9, 0.9], ao: [0.25, 0.25, 0.85, 0.85], uvScale: 1 });
-  S.stone.boxMM(x0, 0, QUAY_Z - 0.1, x1, 0.46, QUAY_Z + 0.35, { tint: stone, aoY: [0.6, 1], skip: ['-y', '-z'] });
-  S.stone.boxMM(x0, 0.46, QUAY_Z - 0.16, x1, 0.56, QUAY_Z + 0.42, { tint: [1.05, 1.05, 1.08], ao: 0.95, skip: ['-y'] });
-  colliders.push({ kind: 'rect', x0, z0: QUAY_Z - 0.35, x1, z1: QUAY_Z + 1 });
-  // end walls of the canal so the camera never sees under the street
-  S.stone.quad([x0, WATER_Y - 0.4, QUAY_Z + 0.35], [x0, WATER_Y - 0.4, NEAR_BANK_Z], [x0, 0.0, NEAR_BANK_Z], [x0, 0.0, QUAY_Z + 0.35], { tint: [0.6, 0.65, 0.7], ao: 0.5 });
-  S.stone.quad([x1, WATER_Y - 0.4, NEAR_BANK_Z], [x1, WATER_Y - 0.4, QUAY_Z + 0.35], [x1, 0.0, QUAY_Z + 0.35], [x1, 0.0, NEAR_BANK_Z], { tint: [0.6, 0.65, 0.7], ao: 0.5 });
-  // near bank: top walkway slab + parapet
-  S.stone.boxMM(x0, WATER_Y - 0.6, NEAR_BANK_Z, x1, 0.4, NEAR_BANK_Z + 8, { tint: [0.8, 0.85, 0.9], aoY: [0.3, 1] });
-  S.stone.boxMM(x0, 0.4, NEAR_BANK_Z + 0.05, x1, 0.95, NEAR_BANK_Z + 0.6, { tint: stone, aoY: [0.7, 1] });
-  S.stone.boxMM(x0, 0.95, NEAR_BANK_Z - 0.02, x1, 1.07, NEAR_BANK_Z + 0.68, { tint: [1.05, 1.05, 1.08], ao: 0.95 });
-
-  // ---- stairs between the guild house and the apothecary, climbing north
-  const stairs = { x0: -7.7, x1: -4.5, zBottom: -4.2, zTop: -9.8, yTop: 0 };
-  const steps = 16, rise = 0.19, run = (stairs.zBottom - stairs.zTop) / steps;
-  for (let i = 0; i < steps; i++) {
-    const zf = stairs.zBottom - i * run, zb = zf - run, h = (i + 1) * rise;
-    S.stone.boxMM(stairs.x0, 0, zb, stairs.x1, h, zf, { tint: ctxTint(rng, stone), aoY: [0.55, 1] });
-    // cheek walls with a stepped cap
-    S.stone.boxMM(stairs.x0 - 0.3, 0, zb, stairs.x0, h + 0.55, zf, { tint: stone, aoY: [0.6, 1] });
-    S.stone.boxMM(stairs.x1, 0, zb, stairs.x1 + 0.3, h + 0.55, zf, { tint: stone, aoY: [0.6, 1] });
-    S.stone.boxMM(stairs.x0 - 0.35, h + 0.55, zb, stairs.x0 + 0.05, h + 0.63, zf, { tint: [1.05, 1.05, 1.1] });
-    S.stone.boxMM(stairs.x1 - 0.05, h + 0.55, zb, stairs.x1 + 0.35, h + 0.63, zf, { tint: [1.05, 1.05, 1.1] });
+  // ---- north quay: wall face toward the canal, darker and slick toward the waterline
+  const wallSeg = (a: number, b: number) => S.stone.quad([a, WATER_Y - 0.5, fz], [b, WATER_Y - 0.5, fz], [b, 0.0, fz], [a, 0.0, fz], { tint: [0.74, 0.8, 0.88], ao: [0.22, 0.22, 0.82, 0.82], uvScale: 1 });
+  wallSeg(x0, st.x0); wallSeg(st.x1, x1);
+  // block coping: one slab per ~1.3 m with tiny height / tone jitter so the edge reads as laid stone, not a strip
+  let cx = x0;
+  while (cx < x1) {
+    const w = Math.min(x1 - cx, 1.15 + rng.range(0, 0.35));
+    const a = cx, b = cx + w;
+    cx = b;
+    if (b > st.x0 && a < st.x1) continue;
+    const h = 0.12 + rng.range(-0.012, 0.012), k = 0.92 + rng.range(0, 0.14);
+    S.stone.boxMM(a + 0.012, 0, QUAY_Z - 0.12, b - 0.012, h, fz + 0.06, { tint: [stone[0] * k, stone[1] * k, stone[2] * k * 1.02], ao: 0.95, aoFace: { '+z': 0.85 }, skip: ['-y'] });
   }
-  stairs.yTop = steps * rise;
-  // upper landing
-  S.stone.boxMM(stairs.x0 - 0.3, 0, stairs.zTop - 6, stairs.x1 + 0.3, stairs.yTop, stairs.zTop, { tint: stone, aoY: [0.5, 1] });
-  obstacles.push({ x0: stairs.x0 - 0.3, z0: stairs.zTop, x1: stairs.x1 + 0.3, z1: stairs.zBottom, grime: 0.8 });
+  colliders.push({ kind: 'rect', x0, z0: QUAY_Z - 0.3, x1, z1: QUAY_Z + 1 });
 
-  // ---- bollards along the quay (the dark silhouettes in the reference)
+  // ---- landing steps: a flight projecting into the canal beside the moored boat (decorative, not walkable)
+  const rise = -WATER_Y / st.n, zs = QUAY_Z + 0.2;
+  S.stone.quad([st.x0, -rise, zs], [st.x1, -rise, zs], [st.x1, 0, zs], [st.x0, 0, zs], { tint: [0.8, 0.85, 0.92], ao: 0.7 });
+  for (let i = 0; i < st.n; i++) {
+    const za = zs + i * st.run, top = -(i + 1) * rise + 0.02;
+    S.stone.boxMM(st.x0, WATER_Y - 0.5, za, st.x1, top, za + st.run, { tint: ctxTint(rng, stone), aoY: [0.35, 1], skip: ['-y'] });
+  }
+  // stepped cheek walls
+  for (const [a, b] of [[st.x0 - 0.32, st.x0], [st.x1, st.x1 + 0.32]] as Array<[number, number]>) {
+    for (let i = 0; i < st.n; i++) {
+      const za = zs + i * st.run, top = 0.18 - i * rise * 0.9;
+      S.stone.boxMM(a, WATER_Y - 0.5, za, b, top, za + st.run + 0.001, { tint: [0.86, 0.9, 0.98], aoY: [0.3, 1], skip: ['-y'] });
+    }
+  }
+  const moorings: V3[] = [[st.x0 - 0.16, 0.18, fz + 0.22], [st.x1 + 0.16, 0.18, fz + 0.22]];
+
+  // ---- south quay (the opposite bank): plain wall + walkway + coping, kept low-contrast and evasive
+  const sz = SOUTH_QUAY_Z, sx1 = STREET.x1;
+  S.stone.quad([sx1, WATER_Y - 0.5, sz], [x0, WATER_Y - 0.5, sz], [x0, 0.3, sz], [sx1, 0.3, sz], { tint: [0.66, 0.72, 0.82], ao: [0.25, 0.25, 0.8, 0.8] });
+  S.stone.boxMM(x0, 0.3, sz - 0.06, sx1, 0.42, sz + 0.45, { tint: [0.9, 0.94, 1.02], ao: 0.95, skip: ['-y'] });
+  S.stone.boxMM(x0, -0.2, sz + 0.45, sx1, 0.32, sz + 4.2, { tint: [0.6, 0.66, 0.76], ao: 0.9, skip: ['-y', '-z'] });
+
+  // ---- bollards along the playable edge (rhythm; skip the landing)
   const bollards: V3[] = [];
-  const nearBollards: V3[] = [];
-  const lampSpots: Array<{ pos: V3; yaw: number }> = [];
-  for (let x = x0 + 1.5; x < x1 - 1; x += 2.8 + rng.range(-0.4, 0.6)) {
-    if (x > -8 && x < 26) bollards.push([x, 0.56, QUAY_Z + 0.1]);
+  for (let x = -19.5; x < x1 - 2.5; x += 3.4 + rng.range(-0.3, 0.4)) {
+    if (x > st.x0 - 0.8 && x < st.x1 + 0.8) continue;
+    bollards.push([x, 0.12, QUAY_Z + 0.1]);
   }
-  for (let x = x0 + 1; x < x1 - 1; x += 2.4 + rng.range(-0.3, 0.5)) nearBollards.push([x, 1.07, NEAR_BANK_Z + 0.32]);
-  void density;
 
   const decals = new SlotSet();
   const decalRect = (kind: DecalKind) => { const i = DECAL_CELLS[kind]; return atlasRect(i % 4, Math.floor(i / 4), 4, 4, 0.002); };
@@ -149,18 +164,14 @@ export function composeStreet(seed: number, density: number): StreetResult {
     const P = ([[-w / 2, -d / 2], [w / 2, -d / 2], [w / 2, d / 2], [-w / 2, d / 2]] as Array<[number, number]>).map(([a, b]) => [x + a * c - b * s, y, z + a * s + b * c] as V3);
     decals.decal.quad(P[0], P[1], P[2], P[3], { uvs: [u0, v1, u1, v1, u1, v0, u0, v0], tint: [tint[0], tint[1], tint[2]], ao: alpha, aux: [0, emissive, 0, 0], flip: true });
   };
-  // drainage + manhole + cracks + stains: positioned relative to the street layout
-  quadDecal('grate', -1.2, QUAY_Z - 0.9, 1.1, 0.7, 0.0, [1, 1, 1], 0.95);
-  quadDecal('grate', 8.4, QUAY_Z - 0.9, 1.1, 0.7, 0.02, [1, 1, 1], 0.95);
-  quadDecal('manhole', 2.4, 1.0, 1.0, 1.0, rng.range(0, 6), [1, 1, 1], 0.95);
-  for (let i = 0; i < 7; i++) quadDecal('crack', rng.range(-6, 12), rng.range(-3, 3.5), rng.range(1.2, 2.4), rng.range(1.2, 2.4), rng.range(0, 6.28), [1, 1, 1], rng.range(0.5, 0.9));
-  for (let i = 0; i < 9; i++) quadDecal('stain', rng.range(-8, 14), rng.range(-3.5, 3.8), rng.range(1.5, 3.2), rng.range(1.5, 3.2), rng.range(0, 6.28), [0.6, 0.6, 0.65], rng.range(0.25, 0.5));
-  for (let i = 0; i < 4; i++) quadDecal('mud', rng.range(-6, 14), rng.range(-3, 3.8), rng.range(1.0, 2.0), rng.range(1.0, 2.0), rng.range(0, 6.28), [0.8, 0.7, 0.6], rng.range(0.25, 0.45));
-  quadDecal('ruts', 6.0, 1.9, 8.0, 2.1, 0.05, [1, 1, 1], 0.3);
-  quadDecal('ruts', 12.0, 0.2, 7.0, 2.0, 0.35, [1, 1, 1], 0.28);
-  for (let i = 0; i < 6; i++) quadDecal(rng.pick(['leaves', 'straw'] as DecalKind[]), rng.range(-6, 14), rng.range(-3, 3.8), 1.3, 1.3, rng.range(0, 6.28), [1, 1, 1], rng.range(0.6, 0.9));
+  // a restrained set: drainage along the gutter, one manhole on the walking line, a few cracks and stains
+  quadDecal('grate', -6.2, QUAY_Z - 0.9, 1.1, 0.7, 0.0, [1, 1, 1], 0.9);
+  quadDecal('grate', 13.4, QUAY_Z - 0.9, 1.1, 0.7, 0.02, [1, 1, 1], 0.9);
+  quadDecal('manhole', 4.4, 1.0, 1.0, 1.0, rng.range(0, 6), [1, 1, 1], 0.9);
+  for (let i = 0; i < 5; i++) quadDecal('crack', rng.range(-12, 24), rng.range(-2.5, 3.5), rng.range(1.2, 2.4), rng.range(1.2, 2.4), rng.range(0, 6.28), [1, 1, 1], rng.range(0.45, 0.8));
+  for (let i = 0; i < 6; i++) quadDecal('stain', rng.range(-13, 25), rng.range(-3, 3.8), rng.range(1.6, 3.2), rng.range(1.6, 3.2), rng.range(0, 6.28), [0.6, 0.62, 0.68], rng.range(0.22, 0.42));
 
-  return { slots: S, colliders, obstacles, stairs, bollards, nearBollards, lampSpots, decals, walkable: { x0: -8, z0: -4, w: 24, h: 8 } };
+  return { slots: S, colliders, obstacles, bollards, moorings, decals, walkable: WALK };
 }
 
 function ctxTint(r: Rng, base: V3): V3 { const k = 0.9 + r.next() * 0.2; return [base[0] * k, base[1] * k, base[2] * k]; }

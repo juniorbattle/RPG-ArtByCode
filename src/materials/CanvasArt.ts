@@ -232,28 +232,29 @@ export function makeShopAtlas(seed = 33): HTMLCanvasElement {
     x.fillRect(w * 0.1, h * 0.7, w * 0.3, 10); x.fillRect(w * 0.15, h * 0.62, w * 0.18, 10);
     const g = x.createLinearGradient(0, h * 0.8, 0, h); g.addColorStop(0, 'rgba(255,90,20,0)'); g.addColorStop(1, 'rgba(255,120,40,0.9)'); x.fillStyle = g; x.fillRect(0, h * 0.8, w, h * 0.2);
   });
+  // interiors share one warm amber key: they are light sources in the composition, not colour accents
   cell(SHOP_CELLS.apothecary, (w, h) => {
-    bg(w, h, '#e8d890', '#4a5a20'); vignette(w, h);
+    bg(w, h, '#f2cf8a', '#6a3412'); vignette(w, h);
     for (let r = 0; r < 3; r++) {
       const y = 40 + r * 40; shelf(w, y + 26);
       for (let i = 0; i < 9; i++) {
         const jx = 12 + i * 27 + rng.range(-3, 3), jh = rng.range(14, 26);
-        const hue = rng.pick([80, 28, 140, 10, 50]);
-        x.fillStyle = `hsl(${hue},55%,${rng.range(30, 52)}%)`; x.beginPath(); x.roundRect(jx, y + 26 - jh, 15, jh, 3); x.fill();
-        x.fillStyle = 'rgba(255,255,220,0.5)'; x.fillRect(jx + 2, y + 26 - jh + 2, 3, jh - 6);
+        const hue = rng.pick([28, 34, 40, 22, 210]);
+        x.fillStyle = `hsl(${hue},${hue > 100 ? 18 : 40}%,${rng.range(24, 40)}%)`; x.beginPath(); x.roundRect(jx, y + 26 - jh, 15, jh, 3); x.fill();
+        x.fillStyle = 'rgba(255,240,210,0.45)'; x.fillRect(jx + 2, y + 26 - jh + 2, 3, jh - 6);
         x.fillStyle = 'rgba(30,16,6,0.9)'; x.fillRect(jx + 3, y + 26 - jh - 4, 9, 4);
       }
     }
-    x.strokeStyle = 'rgba(40,60,20,0.85)'; x.lineWidth = 2;
-    for (let i = 0; i < 6; i++) { const hx = 20 + i * 44; x.beginPath(); x.moveTo(hx, 0); x.lineTo(hx + rng.range(-3, 3), 18); x.stroke(); x.fillStyle = 'rgba(70,90,30,0.9)'; x.beginPath(); x.ellipse(hx, 24, 4, 9, 0, 0, Math.PI * 2); x.fill(); }
+    x.strokeStyle = 'rgba(40,24,10,0.85)'; x.lineWidth = 2;
+    for (let i = 0; i < 6; i++) { const hx = 20 + i * 44; x.beginPath(); x.moveTo(hx, 0); x.lineTo(hx + rng.range(-3, 3), 18); x.stroke(); x.fillStyle = 'rgba(60,36,16,0.9)'; x.beginPath(); x.ellipse(hx, 24, 4, 9, 0, 0, Math.PI * 2); x.fill(); }
   });
   cell(SHOP_CELLS.cloth, (w, h) => {
-    bg(w, h, '#f0c880', '#6a2c3a'); vignette(w, h);
+    bg(w, h, '#f0c880', '#6a3416'); vignette(w, h);
     for (let r = 0; r < 3; r++) {
       const y = 36 + r * 42; shelf(w, y + 28);
       for (let i = 0; i < 8; i++) {
         const jx = 10 + i * 30 + rng.range(-2, 2);
-        x.fillStyle = `hsl(${rng.pick([350, 210, 40, 160, 280, 20])},${rng.range(35, 55)}%,${rng.range(30, 46)}%)`;
+        x.fillStyle = `hsl(${rng.pick([28, 216, 36, 222, 20, 40])},${rng.range(14, 30)}%,${rng.range(26, 42)}%)`;
         x.beginPath(); x.roundRect(jx, y + 4, 22, 24, 5); x.fill();
         x.fillStyle = 'rgba(255,230,190,0.28)'; x.fillRect(jx + 3, y + 6, 4, 20);
       }
@@ -274,16 +275,17 @@ export function makeShopAtlas(seed = 33): HTMLCanvasElement {
 /* ------------------------------------------------------------------ heraldry */
 export const EMBLEM_CELLS = { scales: 0, hammers: 1, fleur: 2, key: 3, mortar: 4, scissors: 5, tankard: 6, anvil: 7 } as const;
 export type EmblemKind = keyof typeof EMBLEM_CELLS;
+/** one heraldic family: indigo / navy / slate fields, candle-gold and ivory charges */
 export const EMBLEM_FIELD: Record<EmblemKind, [string, string]> = {
-  scales: ['#1e3a7a', '#0e2150'], hammers: ['#9a2a24', '#5c1412'], fleur: ['#1c3f86', '#0c2154'], key: ['#1c6a62', '#0b3a38'],
-  mortar: ['#3a7a34', '#1c4a1c'], scissors: ['#6a2f6a', '#3a1640'], tankard: ['#8a5a22', '#4a2a0c'], anvil: ['#34343c', '#16161c'],
+  scales: ['#22336a', '#0f1a40'], hammers: ['#2a3148', '#141928'], fleur: ['#203a78', '#0d1d48'], key: ['#1f2f5c', '#0f1834'],
+  mortar: ['#253158', '#111a36'], scissors: ['#2a2e50', '#14182e'], tankard: ['#2e3346', '#161a26'], anvil: ['#2c2f3a', '#15161c'],
 };
 
 /** 4x2 atlas of vertical banner/sign textures (192x256 each). */
 export function makeEmblemAtlas(): HTMLCanvasElement {
   const cw = 192, ch = 256;
   const [c, x] = makeCanvas(cw * 4, ch * 2);
-  const gold = '#e4b84e', goldD = '#8a6420', cream = '#ece4cc';
+  const gold = '#d6b468', goldD = '#7c6230', cream = '#e8e2d0';
   const draw = (kind: EmblemKind, idx: number) => {
     x.save(); x.translate((idx % 4) * cw, Math.floor(idx / 4) * ch);
     const [a, b] = EMBLEM_FIELD[kind];

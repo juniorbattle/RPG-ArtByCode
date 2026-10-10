@@ -14,15 +14,16 @@ const exe = CHROME_CANDIDATES.find((p) => fs.existsSync(p));
 if (!exe) throw new Error('No Chrome/Edge found. Set CHROME_PATH.');
 
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/';
-const OUT = path.resolve('screenshots');
+const OUT = path.resolve(process.env.SHOTS_DIR || 'screenshots');
 fs.mkdirSync(OUT, { recursive: true });
 
-// name -> query string
+// name -> query string (`player=x,z` places the player and settles the follow camera; `@x,y,w,h` clips)
 const DEFAULT_SHOTS = {
-  '01-normal-night': 'seed=1842&forge=normal&clean=1&freeze=7.3',
-  '02-sabotage': 'seed=1842&forge=sabotaged&clean=1&freeze=7.3',
-  '03-alt-seed-a': 'seed=7719&forge=normal&clean=1&freeze=7.3',
-  '04-alt-seed-b': 'seed=30417&forge=normal&clean=1&freeze=7.3',
+  '01-hero': 'seed=1842&forge=normal&clean=1&freeze=7.3',
+  '02-forge-sabotaged': 'seed=1842&forge=sabotaged&clean=1&freeze=7.3&player=6.4,1.2',
+  '03-far-quay': 'seed=1842&forge=normal&clean=1&freeze=7.3&player=24,1.2',
+  '04-alt-seed-a': 'seed=7719&forge=normal&clean=1&freeze=7.3',
+  '05-alt-seed-b': 'seed=30417&forge=normal&clean=1&freeze=7.3',
 };
 
 const args = process.argv.slice(2);
