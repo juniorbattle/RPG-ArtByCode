@@ -187,8 +187,123 @@ Régénération : ~0,45 → ~0,8 s.
   (fait : `%LOCALAPPDATA%\Temp\rpg-baseline` supprimé).
 - Documentation à jour : `AGENTS.md` (graphe de caméras, visibilité, notes de rendu, paramètres d'URL, outils).
 
+---
+
+## Passe 3 — « 1B. Player Occlusion Reveal » (PRÉPARÉE, NON IMPLÉMENTÉE)
+
+**Statut : aucune ligne de code écrite, rien mesuré.** Cette entrée fixe la demande, les contraintes déduites du code
+actuel et un plan d'attaque. Tout ce qui est marqué **[?]** est une hypothèse à vérifier, pas un résultat.
+Ce qui est marqué **[fait]** a été relu dans le code le jour de la rédaction.
+
+### Demande (résumé fidèle)
+
+La caméra semi-fixe ne doit jamais perdre la lecture du joueur à cause de géométrie d'avant-plan. Quand un objet
+**marqué** `cameraOccludable` (prop, mur/toit de bâtiment, arbre, enseigne, pilier, balcon…) coupe la ligne caméra → torse
+du joueur, on révèle le joueur par une **zone locale douce** (cercle/ellipse centrée sur sa projection écran), pas en rendant
+l'objet entier transparent. Rayon intérieur ≈ 45–70 px, bord adouci ≈ 80–120 px (à la résolution de référence), ajustés selon la
+distance caméra, la taille apparente du personnage et l'ancrage actif. Fondu entrée 150–250 ms, sortie 200–350 ms, hystérésis
+anti-clignotement, plusieurs occludeurs simultanés, valable en A/B/C **et pendant les transitions**, coût négligeable
+(compter occludeurs actifs, draw calls ajoutés, impact temps de frame). Style à choisir par essai : A alpha doux, B dissolve
+tramé/pixel, C combinaison. À éviter : trous durs, popping, bâtiments entiers translucides, artefacts de tri, contours lumineux.
+
+### Faits du code qui conditionnent la conception
+
+1. **[fait] Il n'y a pas d'« objet » côté rendu.** Toute la géométrie statique (bâtiments, étal héros, bannières, bateau) est
+   fusionnée **par matériau** (`static:<slot>`). Le tag `cameraOccludable` doit donc être **par pièce** (le système de pièces
+   de la passe 2 existe : `Frame.part`, `MeshBuilder.part`), pas par mesh. Mais l'identifiant de pièce n'est aujourd'hui dans
+   la géométrie de **rendu** nulle part (seulement dans la géométrie du bake, attribut `aPart`) : il faudra l'y ajouter.
+2. **[fait] Les props instanciés** (lampadaires, barils, lanternes, bornes) sont des `InstancedMesh` par prototype × slot
+   avec `instanceColor` = teinte : pas d'attribut libre par instance. Un lampadaire est donc occludable **au niveau du
+   prototype** (variante de matériau), pas de l'instance.
+3. **[fait] Matériaux de slot partagés** (`ShaderMaterial`, uniformes via le sac global `U`) : un reveal partagé par uniformes
+   globaux est naturel, sans matériau par objet.
+4. **[fait] On a retiré tous les `discard` des shaders de surface en passe 2** (gain ≈ 6 ms : le `discard` coupait l'early-z).
+   Un reveal par `discard` partout les ferait revenir. Pistes : variante de matériau « occludable » uniquement sur les
+   pièces taguées (le coût early-z ne touche que ces draws), **alpha-to-coverage** (MSAA 4× actif → seulement 4 niveaux,
+   donc à coupler à un tramage), ou blending (tri et écriture de profondeur : à éviter).
+5. **[fait] L'alpha de la scène est le masque de protection DOF / in-scatter** (`1 − protection`, lu par le DOF et l'air).
+   Tout reveal qui écrit un alpha ≠ 1 (alpha-to-coverage, blending) entre en conflit avec ce masque. **[?]** à résoudre
+   avant de choisir la technique.
+6. **[fait] Le reflet du canal rend les mêmes matériaux** (passe miroir, drapeau `uClipY > −100`). Le reveal doit être coupé dans
+   cette passe (sinon reflets incohérents), et ne pas toucher le rendu d'ombre de lune (matériau de remplacement).
+7. **[fait → risque majeur] Le bake de visibilité ne compte que ce qui est vu en premier.** Ce qui se trouve *derrière* un
+   occludeur n'est jamais compté visible, donc peut être classé Tier 3 et **supprimé** ; les murs arrière ne sont de toute façon
+   pas générés. Percer un trou dans un occludeur montrerait alors de la géométrie manquante (intérieurs creux). Le bake devra
+   inclure une **couche « derrière les occludables »** (second rendu d'identifiants sans les pièces occludables, depuis les poses
+   utiles). Conséquence : une partie du gain de la passe 2 peut être rendue ; **à remesurer**.
+8. **[fait → risque majeur] Profondeur et sprites.** Le joueur est un billboard testé en profondeur ; la superposition à 55 %
+   (`overlay`) utilise `LessEqual`. Si l'occludeur écrit sa profondeur dans la zone révélée, le joueur situé derrière est
+   rejeté par le test de profondeur : **le reveal doit aussi empêcher l'écriture de profondeur** dans la région révélée (donc
+   `discard` / couverture), pas seulement baisser l'alpha. À coordonner avec la reprise du `SpriteRenderer` (point 1 de
+   « À reprendre ») : les deux chantiers touchent le même ordre de rendu.
+9. **[fait] Ordre dans `App.update`** : acteurs → `graph.update` → ensemble visible → sprites. L'occlusion doit se calculer
+   **après** `graph.update` (pose finale de l'image, y compris en transition) et avec l'échelle des personnages courante
+   (×1,00 / ×1,12 / ×1,15) pour la taille apparente.
+10. **[?] Occludeurs probables (à inventorier, pas à deviner)** : lampadaires du quai (z = 4,15), bateau (coque, mât, bannière
+    fleur de lys vers (1,6 ; 2,6–4,5 ; 6,35)), toile/auvent de l'étal héros, enseignes et auvents de façades, bannières, chevalets
+    de la barrière, poteaux/linteau du porche de la forge vus depuis C. Les bâtiments occultent rarement (le joueur est sur le
+    quai devant les façades), sauf joueur sous un porche ou dans la baie. Petits props (barils, caisses, bornes) : ignorés
+    comme demandé.
+
+### Conception candidate (hypothèses)
+
+- **Détection (CPU, cadencée)** : test segment caméra → cible (torse ≈ `pos + 0,5 × hauteur × échelle`) contre des **volumes
+  proxy** (AABB/capsules) des pièces taguées, pas contre les maillages. Quelques dizaines de volumes, coût négligeable.
+  Sortie : un état cible par pièce, avec fondu (entrée 150–250 ms, sortie 200–350 ms) et hystérésis (entrée immédiate, sortie
+  retardée + marge spatiale). Le fondu par pièce passe au shader par une petite texture/tableau indexé par identifiant de pièce.
+- **Shader (partagé)** : pour un fragment d'une pièce taguée : masque ellipse en pixels autour de la projection du joueur,
+  rayons ≈ 45–70 (intérieur) / 80–120 (bord) px à 1080p, mis à l'échelle par la résolution interne et par la hauteur
+  apparente du sprite. **Test de profondeur** : seuls les fragments plus proches de la caméra que le joueur (marge) sont
+  concernés, ce qui limite naturellement le reveal au chemin caméra → joueur sans rien ajouter.
+- **Rendu du dissolve** : à choisir par captures comparatives A / B / C. **[?] Favori : B ou C avec tramage aligné sur la grille
+  de pixels du rendu interne** (cohérent avec les sprites calés sur la grille), sans bruit temporel (pas de scintillement) ;
+  le doux (A) seulement au centre.
+- **Plomberie** : attribut de pièce sur les géométries occludables (0 draw call en plus, quelques octets par sommet) plutôt
+  que de séparer des maillages (draw calls en plus). Props instanciés : variante de matériau par prototype.
+- **Debug** : `occ=0` (désactive), `occdebug=1` (surligne les pièces occludables actives), compteurs dans `__stats()` et le panneau
+  (`active`, `parts`, `tests`, `ms`).
+
+### Plan par étapes (ordre proposé)
+
+0. **Inventaire empirique** des occludeurs : lancer des rayons depuis des poses échantillonnées du graphe vers une grille de
+   positions du joueur sur le quai, lister les pièces réellement traversées. On ne tague que ça.
+1. Métadonnées + plomberie **sans effet visuel** (reveal = 0) → image **pixel-identique** (`static=1`, `diff.mjs`).
+2. Détection CPU + états + fondus + stats ; test avec `walk.mjs` (journal par image des états).
+3. Shader reveal en trois variantes A/B/C + captures comparatives (zoom pixel) → choix documenté ici.
+4. Couche « derrière les occludables » dans le bake + contrôle `vis=0` vs défaut avec reveal forcé (aucun trou).
+5. Transitions : `blend=A,B,0.5`, `blend=B,C,0.5` et marche réelle ; aucun saut d'état entre images.
+6. Perf entrelacée avant/après (minuteurs GPU, baseline figée) : GPU ms, draw calls, occludeurs actifs.
+7. Mise à jour de ce journal (réussites **et** échecs).
+
+### Critères d'acceptation mesurables (à confirmer)
+
+- Reveal désactivé ou aucun occludeur → image identique au pixel près (`static=1`).
+- Aucune géométrie manquante dans la zone révélée (diff `vis=0` / défaut avec reveal forcé).
+- Fondus sans saut (journal par image), y compris pendant un blend de caméra.
+- Perf : « négligeable » **à définir avec l'utilisateur** ; proposition : ≤ +2 % du temps GPU (≈ 0,7 ms) et **+0 draw call**
+  (tolérance +N à justifier).
+
+### Décisions à valider avant de coder
+
+- Résolution de référence des rayons en pixels : 1080p interne ? (et mise à l'échelle sur la résolution réelle).
+- Joueur seul, ou aussi la **cible d'interaction** (PNJ) ? La demande ne parle que du joueur.
+- Faire cette tâche **avant ou en même temps que** la reprise du `SpriteRenderer` (profondeur / ordre de rendu partagés).
+- Le reflet du canal doit-il montrer l'occludeur entier (hypothèse retenue) ?
+- Seuil de « négligeable » (voir ci-dessus).
+
+### Leçons déjà acquises qui s'appliquent
+
+- Pas de `discard` global (early-z) ; mesurer **entrelacé** avec minuteurs GPU, jamais d'une session à l'autre.
+- Toute coupe/ajout de géométrie ou de masque se prouve par un diff `static=1`.
+- Ne consommer aucun tirage aléatoire de plus ni de moins (déterminisme par graine).
+- Ne pas ajouter de contenu : on étiquette l'existant, on ne le multiplie pas.
+
+---
+
 ## À reprendre (par priorité)
 
+0. **Prochaine tâche : 1B Player Occlusion Reveal** (voir « Passe 3 » ci-dessus : plan prêt, rien d'implémenté ; décisions
+   à valider d'abord).
 1. **`SpriteRenderer`** (prévu) : remplacer la superposition 55 % par une vraie séparation (passe dédiée ou masque propre)
    pour supprimer l'auréole ; revoir le pas de silhouette/contour ; valider sur des PNJ en mouvement (pas seulement
    des captures figées) et sur la graine 7719 / 30417.
