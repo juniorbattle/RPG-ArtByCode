@@ -30,7 +30,11 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
   thermally: only compare rows of the same run). A frozen baseline can be served from another port/worktree.
 - `node tools/diff.mjs a.png b.png [out.png] [thr]` — pixel diff (use `static=1` shots: NPCs/smoke are not deterministic)
 - `node tools/zoom.mjs in.png out.png x y w h [scale]` — nearest-neighbour crop for pixel-level sprite review
-- `node tools/walk.mjs <prefix> "<query>" "w,d" <secs>` — holds keys, logs camera blend steps, writes a contact sheet
+- `node tools/walk.mjs <prefix> "<query>" "w,d" <secs>` — holds keys, logs camera blend steps (and occlusion fades:
+  reversals / jumps), writes a contact sheet
+- `node tools/occ-inventory.mjs [query] [out.json]` — empirical occluder inventory (`OCC_FRAC=0.55|0.9|0.2` = torso /
+  head / legs ray): traces camera -> player over the quay x the graph's poses against every triangle, clusters hits
+- `node tools/occ-compare.mjs out.png "caption" "label|file|x,y,w,h|scale" ...` — N-up labelled crops (reveal variants)
 
 ## Useful URL params
 `seed=1842` (canonical) · `forge=sabotaged` · `clean=1` (no HUD/panel) · `freeze=7.3` (deterministic time) ·
@@ -38,7 +42,11 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 `camera=A|B|C` (pin a framing) · `camB=yaw,pitch,dist,fov,shift,hx,hy,hz` (override a framing while tuning) ·
 `blend=A,B,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
-`static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`)
+`static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`) ·
+`occ=0` (no player reveal: pixel-identical to Pass 2) · `occstyle=soft|dither|hybrid` · `occforce=all|0,2` (force
+occluders open: review / visibility proof) · `occdebug=1` (proxy boxes, reveal ellipse, active list) ·
+`occbehind=0` (skip the behind-occluder bake pass) · `occtest=shopA,tall` (treat those buildings' front walls as
+occludable: stress test of the behind-occluder bake)
 
 ## Art direction (locked)
 Monochrome-leaning night: indigo / slate dominant, cool stone secondary, amber light as the only warm accent,
@@ -65,8 +73,30 @@ one-off moon-shadow render). Static meshes are ordered [always | notC | onlyA]; 
 back walls are not generated (keep the skipped RNG draw so seeds stay identical). Verify culling with
 `static=1` shots, `vis=0` vs default: they must be pixel-identical.
 
+## Player occlusion reveal (`src/app/Occlusion.ts`)
+V1 protects the player only. When an occludable object stands between the camera and the player's torso, a soft
+screen-space ellipse around the player is cut out of THAT object only (colour and depth, so the sprite really renders);
+the rest of the object stays solid. The occludable set is tiny and measured (`tools/occ-inventory.mjs`): the boat's
+banner, the boat's rig (mast / yard / sail) and the 7 quay lamps. Never tag small props, hulls, floor or whole buildings.
+- Plumbing: occludable static parts are visibility parts (`kind: 'occluder'`); `addRanged` moves their triangles of
+  each slot into a separate `occ:static:<slot>` mesh with an `aOcc` attribute (occluder index). The quay lamps are an
+  instanced prototype: their draws swap to the `OCC_INST` variant (index = `uOccBase + gl_InstanceID`). Variants come
+  from `MaterialLibrary.occVariant()`, share the slot's uniforms, and are bound ONLY while a fade is > 0 (otherwise the
+  slot material is used: no discard anywhere, Pass 2 early-z intact, image pixel-identical to Pass 2).
+- Only `occReveal()` (`ShaderChunks.ts`, `#if OCC`) may `discard` in a surface shader; it is skipped in the mirror pass
+  (`uClipY`), shadows use an override material, alpha stays 1 (the DOF / in-scatter protection mask is untouched).
+- Detection (`OcclusionReveal.update`) runs after `CameraGraph.update`, with the final pose (settled or mid-blend):
+  segment camera -> torso vs voxelised proxy boxes; per-occluder fade in 0.2 s / out 0.3 s, 0.25 s release delay and a
+  wider re-test radius while active. The ellipse (1080p reference: inner 40-70 px, outer 80-120 px) scales with the
+  sprite's apparent height and the render height. Fragments are only cut if they are >= 0.35 m nearer than the player.
+- Visibility bake: a second pass renders the world WITHOUT the occludable parts, ID'd only inside the reveal windows
+  (the quay positions a pose can hold); what it shows joins the normal counts so a reveal never exposes a Tier 3 hole.
+- New occluders: add them with `registerOcc` (static) / the lamp pattern (instanced) in `MerchantDistrictGenerator`,
+  keep the table <= `OCC_MAX`, re-run the inventory and the `vis=0` vs default diff with `occforce=all`.
+
 ## Rendering notes
-- The mirror pass clips at the water with an oblique near plane: surface shaders must NOT `discard` (kills early-z).
+- The mirror pass clips at the water with an oblique near plane: surface shaders must NOT `discard` (kills early-z) —
+  the single exception is the occludable variant above, bound only while a reveal is active.
 - `lightSum()` walks a per-cell light list (`LIGHT_GRID`, rebuilt in `LightRig`); `lightMirror()` still uses all lights.
 - The sky is drawn last among opaques, depth-tested.
 - Sprites: nearest texel sampling, anchor snapped to the render-target pixel grid, scene alpha = DOF protection

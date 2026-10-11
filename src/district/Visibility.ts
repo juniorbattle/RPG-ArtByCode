@@ -19,7 +19,7 @@ import type { VisSet } from '../app/CameraGraph';
 export type Tier = 0 | 1 | 2;
 export interface PartMeta {
   /** what it is: a building wall / roof, a simplified far house, a bridge, a landmark, a tree */
-  kind: 'wall' | 'roof' | 'forge' | 'house' | 'bridge' | 'landmark' | 'tree';
+  kind: 'wall' | 'roof' | 'forge' | 'house' | 'bridge' | 'landmark' | 'tree' | 'occluder';
   /** authored tier: 0 gameplay / hero, 1 support, 2 atmosphere (3 = invisible is decided by the bake) */
   tier: Tier;
   /** grouping for the report (building id or background band) */
@@ -36,6 +36,8 @@ export const CLASS_ALWAYS = 0, CLASS_NOT_C = 1, CLASS_ONLY_A = 2, CLASS_HIDDEN =
 export interface VisResult {
   /** pixel counts per set, indexed by global part id */
   counts: Record<VisSet, Uint32Array>;
+  /** pixels seen only through the player-reveal windows once the occludable parts are removed (see BehindPass) */
+  behind?: Record<VisSet, Uint32Array>;
   poses: number;
   ms: number;
   /** time split: GPU render (submitted), readback (includes the GPU finishing), CPU decode */
@@ -44,11 +46,13 @@ export interface VisResult {
 
 export const SETS: VisSet[] = ['A', 'AB', 'B', 'BC', 'C'];
 
-/** class of a part from its bake counts (needA = A|AB, needB = AB|B|BC, needC = BC|C) */
+/** class of a part from its bake counts (needA = A|AB, needB = AB|B|BC, needC = BC|C); pixels a player reveal can
+ *  expose behind an occludable part (v.behind) count like any other visible pixel */
 export function classify(v: VisResult, id: number): number {
   if (id <= 0) return CLASS_ALWAYS;
-  const c = v.counts;
-  const needC = c.BC[id] + c.C[id] > 0, needB = c.AB[id] + c.B[id] + c.BC[id] > 0, needA = c.A[id] + c.AB[id] > 0;
+  const c = v.counts, b = v.behind;
+  const n = (s: VisSet) => c[s][id] + (b ? b[s][id] : 0);
+  const needC = n('BC') + n('C') > 0, needB = n('AB') + n('B') + n('BC') > 0, needA = n('A') + n('AB') > 0;
   if (needC) return CLASS_ALWAYS;
   if (needB) return CLASS_NOT_C;
   if (needA) return CLASS_ONLY_A;
@@ -70,12 +74,48 @@ export function idMaterial(side: THREE.Side): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({ vertexShader: ID_VERT, fragmentShader: ID_FRAG, side });
 }
 
-export interface BakePose { set: VisSet; pose: CamPose }
+/** Behind-occluder pass: the world WITHOUT its occludable parts, counted only inside the player-reveal windows
+ *  (ellipses in tile NDC around where the player can stand for that pose). Whatever this shows that the normal
+ *  bake never did is geometry a reveal can expose, so it must survive the Tier 3 cut. */
+export const WIN_MAX = 64;
+const ID_FRAG_WIN = /* glsl */ `
+varying float vPart;
+uniform vec4 uTile;
+uniform vec4 uWin[${WIN_MAX}];
+uniform int uWinN;
+void main(){
+  vec2 nd = (gl_FragCoord.xy - uTile.xy) / uTile.zw * 2.0 - 1.0;
+  bool inside = false;
+  for (int i = 0; i < ${WIN_MAX}; i++) {
+    if (i >= uWinN) break;
+    vec2 d = (nd - uWin[i].xy) / uWin[i].zw;
+    if (dot(d, d) < 1.0) { inside = true; break; }
+  }
+  float id = floor(vPart + 0.5);
+  gl_FragColor = vec4(mod(id, 256.0), mod(floor(id / 256.0), 256.0), floor(id / 65536.0), inside ? 255.0 : 0.0) / 255.0;
+}`;
+
+export interface BehindPass {
+  scene: THREE.Scene;
+  uniforms: { uTile: { value: THREE.Vector4 }; uWin: { value: THREE.Vector4[] }; uWinN: { value: number } };
+  /** reveal ellipses (centre xy, semi-axes xy; tile NDC) for a baked pose, seen through the bake camera */
+  windowsFor(cam: THREE.PerspectiveCamera, p: BakePose): Array<[number, number, number, number]>;
+}
+
+export function behindUniforms(): BehindPass['uniforms'] {
+  return { uTile: { value: new THREE.Vector4() }, uWin: { value: Array.from({ length: WIN_MAX }, () => new THREE.Vector4()) }, uWinN: { value: 0 } };
+}
+export function windowIdMaterial(side: THREE.Side, uniforms: BehindPass['uniforms']): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({ vertexShader: ID_VERT, fragmentShader: ID_FRAG_WIN, side, uniforms });
+}
+
+/** `player` = where the player stood when the pose was authored (the behind pass opens windows around it) */
+export interface BakePose { set: VisSet; pose: CamPose; player?: [number, number] }
 
 /** Renders part-ID tiles for every pose (main view at 1/4 resolution, mirror view at 1/8, matching the half-res
  *  reflection), reads them back in one go and counts pixels per part and set. The FOV is widened slightly so
  *  anything grazing a frame edge between two samples is kept. */
-export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene, nParts: number, poses: BakePose[], aspect: number, waterY: number): VisResult {
+export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene, nParts: number, poses: BakePose[], aspect: number, waterY: number, behind?: BehindPass): VisResult {
   const t0 = performance.now();
   const mainW = 480, mainH = Math.round(480 / aspect), mirW = 240, mirH = Math.round(240 / aspect);
   const tiles: Array<{ set: VisSet; pose: CamPose; mirror: boolean; x: number; y: number; w: number; h: number }> = [];
@@ -87,6 +127,8 @@ export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene
   const H = y;
   const rt = new THREE.WebGLRenderTarget(W, H, { depthBuffer: true, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false });
   rt.scissorTest = true;
+  const rt2 = behind ? new THREE.WebGLRenderTarget(W, H, { depthBuffer: true, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false }) : null;
+  if (rt2) rt2.scissorTest = true;
   const cam = new THREE.PerspectiveCamera(34, aspect, 1.5, 900);
   const mir = new THREE.PerspectiveCamera(34, aspect, 1.5, 900);
   const prevTarget = renderer.getRenderTarget(), prevAuto = renderer.autoClear;
@@ -119,39 +161,51 @@ export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene
     renderer.setRenderTarget(rt);
     renderer.clear(true, true, false);
     renderer.render(scene, c);
+    if (behind && rt2 && !t.mirror) {
+      // the same view without the occludable parts, ID'd only inside the reveal windows (the mirror pass never reveals)
+      const bu = behind.uniforms, wins = behind.windowsFor(c, t).slice(0, WIN_MAX);
+      bu.uTile.value.set(t.x, t.y, t.w, t.h); bu.uWinN.value = wins.length;
+      wins.forEach((w, i) => bu.uWin.value[i].set(w[0], w[1], w[2], w[3]));
+      rt2.viewport.set(t.x, t.y, t.w, t.h); rt2.scissor.set(t.x, t.y, t.w, t.h);
+      renderer.setRenderTarget(rt2);
+      renderer.clear(true, true, false);
+      renderer.render(behind.scene, c);
+    }
   }
   rt.scissorTest = false;
   rt.viewport.set(0, 0, W, H); rt.scissor.set(0, 0, W, H);
+  if (rt2) { rt2.scissorTest = false; rt2.viewport.set(0, 0, W, H); rt2.scissor.set(0, 0, W, H); }
   const t1 = performance.now();
+  let t2 = 0;
+  const countIds = (src: THREE.WebGLRenderTarget, tl: typeof tiles): Record<VisSet, Uint32Array> => {
   const counts = Object.fromEntries(SETS.map((s) => [s, new Uint32Array(nParts + 1)])) as Record<VisSet, Uint32Array>;
-  let t2: number;
   if (renderer.extensions.has('EXT_float_blend') && nParts < 1 << 20) {
     // GPU reduction: one point per ID pixel, additively accumulated into a (part x set) float counter target.
     // Neighbouring pixels land in different lanes (64 of them) so the blend units never serialise on one hot
     // counter; the small lane histogram is read back and summed.
     const CW = 1024, rows = Math.ceil((nParts + 1) / CW), CH = rows * SETS.length * LANES;
     const crt = new THREE.WebGLRenderTarget(CW, CH, { type: THREE.FloatType, depthBuffer: false, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false });
-    const maxPx = Math.max(...tiles.map((t) => t.w * t.h));
+    const maxPx = Math.max(...tl.map((t) => t.w * t.h));
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(maxPx * 3), 3));
     const mat = new THREE.RawShaderMaterial({
       glslVersion: THREE.GLSL3, vertexShader: SCATTER_VERT, fragmentShader: SCATTER_FRAG, depthTest: false, depthWrite: false,
       blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation,
-      uniforms: { tIds: { value: rt.texture }, uOrigin: { value: new THREE.Vector2() }, uW: { value: 1 }, uRow: { value: 0 }, uCW: { value: CW }, uSize: { value: new THREE.Vector2(CW, CH) } },
+      uniforms: { tIds: { value: src.texture }, uOrigin: { value: new THREE.Vector2() }, uW: { value: 1 }, uRow: { value: 0 }, uCW: { value: CW }, uSize: { value: new THREE.Vector2(CW, CH) } },
     });
     const pts = new THREE.Points(geo, mat); pts.frustumCulled = false;
     const ps = new THREE.Scene(); ps.add(pts);
     const oc = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     renderer.setRenderTarget(crt);
     renderer.setClearColor(0x000000, 0); renderer.clear(true, false, false);
-    for (const t of tiles) {
+    for (const t of tl) {
       mat.uniforms.uOrigin.value.set(t.x, t.y); mat.uniforms.uW.value = t.w; mat.uniforms.uRow.value = SETS.indexOf(t.set) * rows;
       geo.setDrawRange(0, t.w * t.h);
       renderer.render(ps, oc);
     }
     const buf = new Float32Array(CW * CH * 4);
     renderer.readRenderTargetPixels(crt, 0, 0, CW, CH, buf);
-    t2 = performance.now();
+    if (!t2) t2 = performance.now();
     SETS.forEach((s, si) => {
       for (let id = 1; id <= nParts; id++) {
         let n = 0;
@@ -161,11 +215,11 @@ export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene
     });
     geo.dispose(); mat.dispose(); crt.dispose();
   } else {
-    renderer.setRenderTarget(rt);
+    renderer.setRenderTarget(src);
     const px = new Uint8Array(W * H * 4);
-    renderer.readRenderTargetPixels(rt, 0, 0, W, H, px);
-    t2 = performance.now();
-    for (const t of tiles) {
+    renderer.readRenderTargetPixels(src, 0, 0, W, H, px);
+    if (!t2) t2 = performance.now();
+    for (const t of tl) {
       const cnt = counts[t.set];
       for (let j = t.y; j < t.y + t.h; j++) {
         let k = (j * W + t.x) * 4;
@@ -177,12 +231,16 @@ export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene
       }
     }
   }
+  return counts;
+  };
+  const counts = countIds(rt, tiles);
+  const behindCounts = rt2 ? countIds(rt2, tiles.filter((t) => !t.mirror)) : undefined;
   renderer.setRenderTarget(prevTarget);
   renderer.setClearColor(prevClear, prevAlpha);
   renderer.autoClear = prevAuto;
-  rt.dispose();
+  rt.dispose(); rt2?.dispose();
   const t3 = performance.now();
-  return { counts, poses: poses.length, ms: t3 - t0, split: { render: t1 - t0, readback: t2 - t1, decode: t3 - t2 } };
+  return { counts, behind: behindCounts, poses: poses.length, ms: t3 - t0, split: { render: t1 - t0, readback: t2 - t1, decode: t3 - t2 } };
 }
 
 const LANES = 64;

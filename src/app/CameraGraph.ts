@@ -164,23 +164,24 @@ export class CameraGraph {
 
   /** Representative poses of every framing over its zone, plus poses sampled along each transition (the
    *  AB / BC buffers). The visibility bake renders these, so nothing a blend can show is ever culled. */
-  samplePoses(walk: { x0: number; x1: number; z0: number; z1: number }): Array<{ set: VisSet; pose: CamState }> {
-    const out: Array<{ set: VisSet; pose: CamState }> = [];
+  samplePoses(walk: { x0: number; x1: number; z0: number; z1: number }): Array<{ set: VisSet; pose: CamState; player: [number, number] }> {
+    const out: Array<{ set: VisSet; pose: CamState; player: [number, number] }> = [];
     const seen = new Set<string>();
-    const add = (set: VisSet, pose: CamState) => {
+    // `player` = the quay position the pose was authored for (the visibility bake's behind-occluder windows open around it)
+    const add = (set: VisSet, pose: CamState, player: [number, number]) => {
       const k = `${set}:${[pose.yaw, pose.pitch, pose.dist, pose.fov, pose.tx, pose.tz].map((v) => v.toFixed(2)).join(',')}`;
-      if (!seen.has(k)) { seen.add(k); out.push({ set, pose }); }
+      if (!seen.has(k)) { seen.add(k); out.push({ set, pose, player }); }
     };
     const zs = [walk.z0 + 0.7, 0.5, walk.z1 - 0.45];
     const range = (a: number, b: number, s: number) => { const r: number[] = []; for (let x = a; x <= b + 1e-6; x += s) r.push(x); return r; };
     // A over its zone and wherever the arrival hold can show it (the spawn sits in the market)
-    for (const x of [walk.x0 + 0.5, -11.5, -10, -8, -6, -4]) for (const z of zs) add('A', this.evalAnchor('A', x, z));
-    for (const x of range(-9, walk.x1, 2)) for (const z of zs) if (this.zoneFor(x, z, null) === 'B') add('B', this.evalAnchor('B', x, z));
-    for (const x of [4.5, 7, 9.5, 12.5]) for (const z of [walk.z0 + 0.7, 0, 2]) add('C', this.evalAnchor('C', x, z));
+    for (const x of [walk.x0 + 0.5, -11.5, -10, -8, -6, -4]) for (const z of zs) add('A', this.evalAnchor('A', x, z), [x, z]);
+    for (const x of range(-9, walk.x1, 2)) for (const z of zs) if (this.zoneFor(x, z, null) === 'B') add('B', this.evalAnchor('B', x, z), [x, z]);
+    for (const x of [4.5, 7, 9.5, 12.5]) for (const z of [walk.z0 + 0.7, 0, 2]) add('C', this.evalAnchor('C', x, z), [x, z]);
     // transitions, sampled where the zones meet (and where the arrival hold releases): the AB / BC buffers
     const pairs: Array<[CamId, CamId, VisSet, number[], number[]]> = [['A', 'B', 'AB', [-11, -9.4, -7.5, -5], [-1, 2.5]], ['B', 'C', 'BC', [4.2, 8.5, 13.2], [0, 2.4]]];
     for (const [a, b, set, xs, zz] of pairs) for (const x of xs) for (const z of zz) for (const w of [0.33, 0.67]) {
-      add(set, lerpState(this.evalAnchor(a, x, z), this.evalAnchor(b, x, z), smoother(w)));
+      add(set, lerpState(this.evalAnchor(a, x, z), this.evalAnchor(b, x, z), smoother(w)), [x, z]);
     }
     return out;
   }

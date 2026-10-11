@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
 export const MAX_LIGHTS = 24;
+/** occludable objects that can be revealed at once (parts and instances share one fade table) */
+export const OCC_MAX = 16;
 /** light grid over the lit part of the district: x -64..96 (4 m cells), z -24..24 (6 m cells); a cell can list
  *  every light, so the grid never drops one (it only skips the ones that cannot reach the cell) */
 export const LIGHT_GRID = { x0: -64, z0: -24, cw: 4, cd: 6, nx: 40, nz: 8, per: MAX_LIGHTS, nCells: 40 * 8 };
@@ -54,6 +56,12 @@ export const U = {
   uWindAmp: { value: 1 },
   uWet: { value: 1 },
   uResolution: { value: new THREE.Vector2(1920, 1080) },
+  /** player occlusion reveal (only read by the occludable surface variants, see OcclusionReveal): per-occluder fade,
+   *  reveal centre in render pixels (xy), the player's view depth (z) and the style (w: 0 soft, 1 dither, 2 hybrid) */
+  uOccFade: { value: new Array<number>(OCC_MAX).fill(0) },
+  uOccC: { value: new THREE.Vector4(0, 0, 1e4, 0) },
+  /** inner ellipse semi-axes in render pixels (xy) and the feather's outer / inner ratio (z) */
+  uOccR: { value: new THREE.Vector4(1, 1, 1.7, 0) },
 };
 
 export type SharedUniforms = typeof U;

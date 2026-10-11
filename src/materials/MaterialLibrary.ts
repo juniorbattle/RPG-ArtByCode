@@ -166,6 +166,25 @@ export class MaterialLibrary {
     progress('ready', 1);
   }
 
+  private occCache = new Map<string, THREE.ShaderMaterial>();
+  /** Occludable twin of a slot material (player occlusion reveal): same programme plus the localized discard, sharing
+   *  every uniform with the slot material by reference. `instanced` takes the occluder index from gl_InstanceID
+   *  (+ uOccBase) instead of a per-vertex attribute. Only occludable draws ever use it. */
+  occVariant(slot: Slot, instanced: boolean): THREE.ShaderMaterial {
+    const key = `${slot}${instanced ? '#i' : ''}`;
+    let m = this.occCache.get(key);
+    if (!m) {
+      const b = this.slot[slot];
+      m = new THREE.ShaderMaterial({
+        uniforms: instanced ? { ...b.uniforms, uOccBase: { value: 0 } } : b.uniforms,
+        vertexShader: b.vertexShader, fragmentShader: b.fragmentShader, defines: { ...b.defines, [instanced ? 'OCC_INST' : 'OCC']: 1 }, side: b.side,
+      });
+      m.name = `occ:${key}`;
+      this.occCache.set(key, m);
+    }
+    return m;
+  }
+
   /** Approximate GPU memory held by library textures (with mips). */
   textureBytes(): number {
     let b = 0;

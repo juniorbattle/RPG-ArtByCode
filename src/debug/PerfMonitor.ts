@@ -9,6 +9,8 @@ export interface PerfSnapshot {
   gpu?: Record<string, number>; gpuMs?: number;
   /** visibility-driven cleanup counters (see VisibilitySets) */
   visibility?: Record<string, number | string>;
+  /** player occlusion reveal: eligible occluders, active ones, proxy tests, detection CPU ms */
+  occlusion?: Record<string, number | string>;
 }
 
 /** FPS / frame time / draw calls / triangles / texture memory, accumulated across every pass of the frame

@@ -5,6 +5,7 @@ import { CANONICAL_SEED, GENERATOR_VERSION } from '../core/rng';
 import type { DistrictConfig } from '../district/MerchantDistrictGenerator';
 import type { ForgeState } from '../district/ForgeGenerator';
 import { CAM_IDS, type CamId } from '../app/CameraGraph';
+import { OCC_STYLES, type OccStyle } from '../app/Occlusion';
 
 /** Art-direction panel: structural sliders regenerate the district (deterministically), look sliders are live. */
 
@@ -170,6 +171,12 @@ export class DebugPanel {
     toggle('lantern in-scatter pass', () => a.post.airEnabled, (v) => { a.post.airEnabled = v; });
     toggle('autofocus on player', () => a.post.autoFocus, (v) => { a.post.autoFocus = v; });
     toggle('sprite tilt (billboard lean)', () => a.sprites.tilt > 0.5, (v) => { a.sprites.tilt = v ? 0.85 : 0; });
+    toggle('player occlusion reveal', () => a.occlusion.enabled, (v) => { a.occlusion.enabled = v; });
+    toggle('occlusion debug overlay', () => false, (v) => { a.occlusion.debug(v); });
+    const osel = document.createElement('select');
+    for (const v of OCC_STYLES) { const o = document.createElement('option'); o.value = v; o.textContent = `reveal style: ${v}`; osel.appendChild(o); }
+    osel.value = a.occlusion.style; osel.onchange = () => { a.occlusion.style = osel.value as OccStyle; };
+    t.appendChild(osel);
 
     // ---- perf
     const pf = this.section('Performance');
@@ -204,6 +211,7 @@ export class DebugPanel {
       `camera ${g.target}${g.blending ? ` (blend ${(g.blendT * 100).toFixed(0)}%)` : ''}${g.arrival ? ' arrival' : ''}   char x${g.state.charScale.toFixed(2)}\n` +
       (vis ? `visible set ${vis.set} (level ${vis.level})   bake ${vis.bakeMs} ms / ${vis.poses} poses\n` +
         `tier 3 removed ${vis.tier3}/${vis.parts} parts (${(Number(vis.trisTier3) / 1000).toFixed(1)}k tris)   lights culled ${vis.lightsCulled}\n` : '') +
+      (s.occlusion ? `occlusion ${s.occlusion.enabled ? s.occlusion.style : 'off'}: ${s.occlusion.active}/${s.occlusion.eligible} active ${s.occlusion.names ? '[' + s.occlusion.names + ']' : ''}   ${s.occlusion.tests} tests ${s.occlusion.cpuMs} ms\n` : '') +
       `internal ${s.resolution}`;
   }
 }

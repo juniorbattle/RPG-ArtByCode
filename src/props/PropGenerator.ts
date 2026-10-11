@@ -302,9 +302,12 @@ export function boat(r: Rng): { S: SlotSet; lantern: V3; yard: V3; bow: V3; ster
   // mast, yard and furled sail (ivory canvas, the reference's pale accent)
   const mx = 0.9;
   const yardY = 5.7;
-  S.with(mat([mx, yardY, 0], 0, 1, Math.PI / 2), () => S.timber.cylinder(0.05, -1.75, 1.75, 6, { tint: wood }));
-  S.cloth.blob(mx + 0.06, yardY - 0.12, 0, 0.13, 0.17, 1.55, 8, 6, { tint: [0.66, 0.64, 0.6], ao: 0.85, lump: (nx, _ny, nz) => 1 + 0.12 * Math.sin(nz * 9 + nx * 3) });
-  S.with(mat([mx, 0, 0]), () => S.timber.cylinder(0.085, -0.3, 6.5, 8, { tint: wood, r1: 0.06 }));
+  // local part 1 = the rig (mast, yard, sail): the one piece of the boat that stands between the camera and the quay
+  S.inPart(1, () => {
+    S.with(mat([mx, yardY, 0], 0, 1, Math.PI / 2), () => S.timber.cylinder(0.05, -1.75, 1.75, 6, { tint: wood }));
+    S.cloth.blob(mx + 0.06, yardY - 0.12, 0, 0.13, 0.17, 1.55, 8, 6, { tint: [0.66, 0.64, 0.6], ao: 0.85, lump: (nx, _ny, nz) => 1 + 0.12 * Math.sin(nz * 9 + nx * 3) });
+    S.with(mat([mx, 0, 0]), () => S.timber.cylinder(0.085, -0.3, 6.5, 8, { tint: wood, r1: 0.06 }));
+  });
   // stern lantern post
   const sx = -L / 2 + 0.5;
   S.timber.boxMM(sx - 0.05, 0.4, -0.05, sx + 0.05, 2.05, 0.05, { tint: wood, grain: 'y' });

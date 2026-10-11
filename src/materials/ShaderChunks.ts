@@ -1,4 +1,4 @@
-import { MAX_LIGHTS, LIGHT_GRID } from '../atmosphere/SceneUniforms';
+import { MAX_LIGHTS, LIGHT_GRID, OCC_MAX } from '../atmosphere/SceneUniforms';
 
 /** Shared GLSL: the whole look hinges on COOL AMBIENT + WARM LOCAL lights, so every shader
  *  (surfaces, ground, water, sprites, decals) evaluates the same light list and fog. */
@@ -191,7 +191,21 @@ varying vec3 vNormal;
 varying vec2 vUv;
 varying vec4 vTint;
 varying vec4 vAux;
+#ifdef OCC
+  attribute float aOcc;
+  varying float vOcc;
+#endif
+#ifdef OCC_INST
+  uniform float uOccBase;
+  varying float vOcc;
+#endif
 void main(){
+  #ifdef OCC
+    vOcc = aOcc;
+  #endif
+  #ifdef OCC_INST
+    vOcc = uOccBase + float(gl_InstanceID);
+  #endif
   mat4 model = modelMatrix;
   #ifdef USE_INSTANCING
     model = modelMatrix * instanceMatrix;
@@ -250,7 +264,42 @@ varying vec2 vUv;
 varying vec4 vTint;
 varying vec4 vAux;
 
+#if defined(OCC) || defined(OCC_INST)
+// Player occlusion reveal: only occludable surfaces carry this variant (the one place a fragment discard is paid).
+// A fragment is removed -- colour AND depth -- when the occluder stands between the camera and the player and
+// falls inside the player's screen-space reveal ellipse; the sprite behind then passes its depth test.
+uniform float uOccFade[${OCC_MAX}];
+uniform vec4 uOccC;
+uniform vec4 uOccR;
+varying float vOcc;
+float occBayer4(vec2 p){
+  const float M[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+  ivec2 i = ivec2(mod(p, 4.0));
+  return (M[i.y * 4 + i.x] + 0.5) / 16.0;
+}
+void occReveal(){
+  if (uClipY > -100.0) return;
+  float f = uOccFade[int(vOcc + 0.5)];
+  if (f <= 0.002) return;
+  float vz = -(viewMatrix * vec4(vWorld, 1.0)).z;
+  if (vz > uOccC.z - 0.35) return;
+  vec2 fc = floor(gl_FragCoord.xy);
+  float n = length((gl_FragCoord.xy - uOccC.xy) / uOccR.xy);
+  float k = uOccR.z;
+  float ign = fract(52.9829189 * fract(dot(fc, vec2(0.06711056, 0.00583715))));
+  float bay = occBayer4(floor(fc * 0.5));
+  float cov, thr;
+  if (uOccC.w < 0.5) { cov = 1.0 - smoothstep(0.6, k, n); thr = ign; }
+  else if (uOccC.w < 1.5) { cov = 1.0 - smoothstep(0.8, k, n); thr = bay; }
+  else { cov = 1.0 - smoothstep(0.55, k, n); thr = mix(ign, bay, smoothstep(0.9, 1.25, n)); }
+  if (cov * f > thr) discard;
+}
+#endif
+
 void main(){
+  #if defined(OCC) || defined(OCC_INST)
+    occReveal();
+  #endif
   vec3 V = normalize(cameraPosition - vWorld);
   #ifdef GLOW
     vec4 G = texture2D(tAlbedo, vUv);

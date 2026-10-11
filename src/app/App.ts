@@ -5,7 +5,7 @@ import { MoonShadow, PlanarReflection } from '../atmosphere/ShadowAndReflection'
 import { LightRig } from '../atmosphere/LightRig';
 import { U } from '../atmosphere/SceneUniforms';
 import { CameraRig } from './CameraRig';
-import { CameraGraph, CAM_IDS, lerpState, type CamId } from './CameraGraph';
+import { CameraGraph, CAM_IDS, lerpState, type CamId, type CamState } from './CameraGraph';
 import { MerchantDistrictGenerator, DEFAULT_CONFIG, type DistrictConfig, type DistrictBuild } from '../district/MerchantDistrictGenerator';
 import type { ForgeState } from '../district/ForgeGenerator';
 import { CANONICAL_SEED } from '../core/rng';
@@ -16,7 +16,8 @@ import { ActorSystem } from '../characters/ActorSystem';
 import { ParticleSystem } from '../atmosphere/Particles';
 import { buildSky } from '../atmosphere/Sky';
 import { WATER_Y, WALK } from '../architecture/StreetComposer';
-import { bakeVisibility, LEVEL } from '../district/Visibility';
+import { bakeVisibility, LEVEL, type BakePose, type BehindPass } from '../district/Visibility';
+import { OcclusionReveal, OCC_STYLES, playerReveal, revealSize, type OccStyle } from './Occlusion';
 import { PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, crowdVariants } from '../characters/SpriteGenerator';
 
 export interface AppOptions { canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void }
@@ -26,6 +27,8 @@ export class App {
   readonly scene = new THREE.Scene();
   readonly rig = new CameraRig();
   readonly graph = new CameraGraph();
+  /** player occlusion reveal (?occ=0 disables, ?occstyle=soft|dither|hybrid, ?occforce=all|0,1, ?occdebug=1) */
+  readonly occlusion = new OcclusionReveal();
   readonly post: PostFX;
   readonly shadow = new MoonShadow(2048);
   readonly reflection = new PlanarReflection();
@@ -85,6 +88,12 @@ export class App {
       if (!isNaN(fov)) r.fov = fov;
       r.manual = true;
     }
+    if (q.get('occ') === '0') this.occlusion.enabled = false;
+    const os = q.get('occstyle') as OccStyle | null;
+    if (os && OCC_STYLES.includes(os)) this.occlusion.style = os;
+    const of = q.get('occforce');
+    if (of) this.occlusion.force = of === 'all' || of === '1' ? 'all' : of.split(',').map(Number).filter((n) => !isNaN(n));
+    if (q.get('occdebug') === '1') this.occlusion.debug(true);
     // ?camera=A|B|C pins one authored framing (review shots); otherwise the graph follows the zones
     const forced = q.get('camera')?.toUpperCase();
     if (forced && (CAM_IDS as string[]).includes(forced)) this.graph.forced = forced as CamId;
@@ -177,6 +186,12 @@ export class App {
         notC: this.district.visibility.notC, onlyA: this.district.visibility.onlyA, trisKept: this.district.visibility.trisKept, trisTier3: this.district.visibility.trisHidden,
         bakeMs: Math.round(this.district.visibility.bakeMs), poses: this.district.visibility.poses, lightsOnScreen: this.lights.active, lightsCulled: this.lights.culled,
       } : undefined,
+      occlusion: {
+        enabled: this.occlusion.enabled ? 1 : 0, style: this.occlusion.style, eligible: this.occlusion.stats.eligible, active: this.occlusion.stats.active, tests: this.occlusion.stats.tests,
+        cpuMs: +this.occlusion.stats.cpuMs.toFixed(4), names: this.occlusion.activeNames().join(','), fades: this.occlusion.fades().map((f) => +f.toFixed(2)).join(','),
+        centre: this.occlusion.stats.centre.join(','), radii: this.occlusion.stats.radii.map((v) => +v.toFixed(1)).join(','),
+        behindParts: this.district?.visibility.behind?.parts ?? 0, behindTris: this.district?.visibility.behind?.tris ?? 0, behindPx: this.district?.visibility.behind?.px ?? 0,
+      },
     };
   }
 
@@ -209,9 +224,13 @@ export class App {
     // camera graph -> visible sets: the district is baked against every authored pose (and blend) before its
     // meshes are built, so only what those views can show is kept (?vis=0 keeps everything, for A/B checks)
     const bake = this.opts.params.get('vis') === '0' ? undefined
-      : (scene: THREE.Scene, n: number) => bakeVisibility(this.renderer, scene, n, this.graph.samplePoses(WALK), this.rig.aspectRatio, WATER_Y);
-    this.district = this.generator.generate(this.config, bake);
+      : (scene: THREE.Scene, n: number, behind?: Pick<BehindPass, 'scene' | 'uniforms'>) =>
+        bakeVisibility(this.renderer, scene, n, this.graph.samplePoses(WALK), this.rig.aspectRatio, WATER_Y, this.occlusion.enabled && behind && this.opts.params.get('occbehind') !== '0' ? { ...behind, windowsFor: (cam, p) => this.revealWindows(cam, p) } : undefined);
+    const occTest = this.opts.params.get('occtest')?.split(',').filter(Boolean);
+    this.district = this.generator.generate(this.config, bake, { occTest });
     this.scene.add(this.district.group);
+    const dist = this.district;
+    this.occlusion.setup(dist.occluders.defs, dist.occluders.meshes, (a) => dist.setOccActive(a));
     this.actors?.populate(this.district, this.config.npcDensity, this.config.seed);
     this.particles?.clear(); this.particles?.setEmitters(this.district.emitters);
     this.syncLights();
@@ -224,6 +243,23 @@ export class App {
     this.district.releaseShadowOnly();
     this.drawLevel = -1;
     this.onRegenerate.forEach((f) => f());
+  }
+
+  /** behind-occluder windows of a baked pose: the reveal ellipse (tile NDC, with margin) around every quay position the
+   *  player can hold while the camera sits in that pose, through the same projection / sizing the runtime uses */
+  private revealWindows(cam: THREE.PerspectiveCamera, p: BakePose): Array<[number, number, number, number]> {
+    if (!p.player) return [];
+    const cs = (p.pose as CamState).charScale ?? 1, h = this.actors?.player?.height ?? 1.78, [px] = p.player;
+    const hx = 0.5 * 1080 * cam.aspect, hy = 540, out: Array<[number, number, number, number]> = [];
+    const zs = [WALK.z0 + 0.3, -1.4, 0.2, 1.7, 3.0, WALK.z1];
+    for (let x = px - 4; x <= px + 4 + 1e-6; x += 1) {
+      if (x < WALK.x0 - 0.01 || x > WALK.x1 + 0.01) continue;
+      for (const z of zs) {
+        const r = playerReveal(cam, x, 0, z, h, cs), s = revealSize(r.hNdc * 0.5 * 1080, 1080), k = s.k * 1.25;
+        out.push([r.cx, r.cy, (s.rx * k) / hx, (s.ry * k) / hy]);
+      }
+    }
+    return out;
   }
 
   /** visible set of the current framing(s): C draws [always], B adds [notC], A adds [onlyA]; a blend draws the
@@ -258,6 +294,8 @@ export class App {
       this.graph.update(a.player.pos, dt, this.rig);
       this.applyVisibleSet();
       this.sprites.charScale = this.graph.state.charScale;
+      // after the camera graph (settled or mid-blend pose): which occluders hide the player, fades, reveal ellipse
+      this.occlusion.update(dt, this.rig.camera, a.player, this.graph.state.charScale, this.post.width, this.post.height);
       // autofocus on the player's view depth (the DOF compares view z, not euclidean distance)
       if (this.post.autoFocus) {
         const p = a.player.pos, v = new THREE.Vector3(p.x, p.y + 0.9, p.z).applyMatrix4(this.rig.camera.matrixWorldInverse);

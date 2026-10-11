@@ -26,7 +26,7 @@ try {
     const d = (x) => +x.toFixed(3);
     const rec = () => {
       const g = a.graph, s = g.state, p = a.actors.player.pos;
-      window.__log.push({ t: performance.now(), target: g.target, blend: d(g.blendT), active: g.activeIds().join('+'), yaw: d(s.yaw * 57.2958), pitch: d(s.pitch * 57.2958), dist: d(s.dist), fov: d(s.fov), tx: d(s.tx), tz: d(s.tz), char: d(s.charScale), px: d(p.x), pz: d(p.z), ctrl: d(a.actors.controlYaw * 57.2958), level: a.drawLevel });
+      window.__log.push({ t: performance.now(), target: g.target, blend: d(g.blendT), active: g.activeIds().join('+'), yaw: d(s.yaw * 57.2958), pitch: d(s.pitch * 57.2958), dist: d(s.dist), fov: d(s.fov), tx: d(s.tx), tz: d(s.tz), char: d(s.charScale), px: d(p.x), pz: d(p.z), ctrl: d(a.actors.controlYaw * 57.2958), level: a.drawLevel, occ: a.occlusion.fades().map(d), occC: a.occlusion.stats.centre.slice(), occR: a.occlusion.stats.radii.slice(), occOn: a.occlusion.stats.active });
       if (window.__walking) requestAnimationFrame(rec);
     };
     window.__walking = true;
@@ -54,7 +54,25 @@ try {
   const blendSecs = blendFrames.length ? (blendFrames[blendFrames.length - 1].t - blendFrames[0].t) / 1000 : 0;
   console.log(`${log.length} frames; framing changes: ${changes.join(', ') || 'none'}; blend time ~${blendSecs.toFixed(2)} s`);
   console.log(`worst per-frame step: yaw ${worst.yaw.toFixed(2)} deg, dist ${worst.dist.toFixed(2)} m, fov ${worst.fov.toFixed(2)} deg, pivot ${worst.pivot.toFixed(2)} m, control yaw jump while held ${worst.ctrl.toFixed(2)} deg`);
-  console.log(`start ${JSON.stringify(log[0])}\nend   ${JSON.stringify(log[log.length - 1])}`);
+  // occlusion reveal: per-frame fade steps, direction reversals per occluder (flicker), and reveal-centre jumps
+  const names = await page.evaluate(() => window.__app.occlusion.defs.map((x) => x.name));
+  const nOcc = log[0].occ.length, stepMax = Array(nOcc).fill(0), flips = Array(nOcc).fill(0), seen = Array(nOcc).fill(0);
+  let cJump = 0, rJump = 0;
+  for (let i = 1; i < log.length; i++) {
+    for (let k = 0; k < nOcc; k++) {
+      const dv = log[i].occ[k] - log[i - 1].occ[k];
+      stepMax[k] = Math.max(stepMax[k], Math.abs(dv));
+      if (log[i].occ[k] > 0.01) seen[k]++;
+      if (i > 1) { const pv = log[i - 1].occ[k] - log[i - 2].occ[k]; if (dv * pv < -1e-6) flips[k]++; }
+    }
+    if (log[i].occ.some((v) => v > 0.01) && log[i - 1].occ.some((v) => v > 0.01)) {
+      cJump = Math.max(cJump, Math.hypot(log[i].occC[0] - log[i - 1].occC[0], log[i].occC[1] - log[i - 1].occC[1]));
+      rJump = Math.max(rJump, Math.abs(log[i].occR[1] - log[i - 1].occR[1]));
+    }
+  }
+  const act = names.map((n, k) => (seen[k] ? `${n}: ${seen[k]} frames, max fade step ${stepMax[k].toFixed(3)}, reversals ${flips[k]}` : null)).filter(Boolean);
+  console.log(`occlusion: ${act.join(' | ') || 'no occluder active'}; reveal centre max jump ${cJump.toFixed(1)} px, ry max step ${rJump.toFixed(2)} px`);
+  console.log(`start ${JSON.stringify({ ...log[0], occ: undefined })}\nend   ${JSON.stringify({ ...log[log.length - 1], occ: undefined })}`);
   const html = `<!doctype html><body style="margin:0;background:#05070d"><div id="c" style="display:grid;grid-template-columns:repeat(${Math.min(3, n)},640px);gap:4px;padding:4px">${frames.map((f, i) => `<figure style="margin:0;position:relative"><img style="width:640px;display:block" src="data:image/png;base64,${fs.readFileSync(f).toString('base64')}"><figcaption style="position:absolute;left:8px;top:6px;color:#f1d9a0;font:600 13px Segoe UI;background:rgba(5,7,13,.7);padding:2px 8px">t=${((i + 1) * total / n / 1000).toFixed(1)}s</figcaption></figure>`).join('')}</div></body>`;
   const p2 = await browser.newPage();
   await p2.setViewport({ width: 1960, height: 1200 });

@@ -433,6 +433,13 @@ export class MeshBuilder {
     return g;
   }
 
+  /** render geometry of an occludable partition: the usual attributes plus `aOcc`, the occluder index of each vertex's part */
+  toOccGeometry(occOf: (part: number) => number): THREE.BufferGeometry {
+    const g = this.toGeometry();
+    g.setAttribute('aOcc', new THREE.BufferAttribute(new Float32Array(this.part.map(occOf)), 1));
+    return g;
+  }
+
   toGeometry(): THREE.BufferGeometry {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.pos), 3));
