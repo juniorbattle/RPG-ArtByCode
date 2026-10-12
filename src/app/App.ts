@@ -5,7 +5,7 @@ import { MoonShadow, PlanarReflection } from '../atmosphere/ShadowAndReflection'
 import { LightRig } from '../atmosphere/LightRig';
 import { U } from '../atmosphere/SceneUniforms';
 import { CameraRig } from './CameraRig';
-import { CameraGraph, CAM_IDS, lerpState, type CamId, type CamState } from './CameraGraph';
+import { CameraGraph, CAM_IDS, type CamId, type CamState } from './CameraGraph';
 import { MerchantDistrictGenerator, DEFAULT_CONFIG, type DistrictConfig, type DistrictBuild } from '../district/MerchantDistrictGenerator';
 import type { ForgeState } from '../district/ForgeGenerator';
 import { CANONICAL_SEED } from '../core/rng';
@@ -16,7 +16,7 @@ import { ActorSystem } from '../characters/ActorSystem';
 import { ParticleSystem } from '../atmosphere/Particles';
 import { buildSky } from '../atmosphere/Sky';
 import { WATER_Y, WALK } from '../architecture/StreetComposer';
-import { bakeVisibility, LEVEL, type BakePose, type BehindPass } from '../district/Visibility';
+import { bakeVisibility, type BakePose, type BehindPass } from '../district/Visibility';
 import { OcclusionReveal, OCC_STYLES, playerReveal, revealSize, type OccStyle } from './Occlusion';
 import { PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, crowdVariants } from '../characters/SpriteGenerator';
 
@@ -97,13 +97,16 @@ export class App {
     // ?camera=A|B|C pins one authored framing (review shots); otherwise the graph follows the zones
     const forced = q.get('camera')?.toUpperCase();
     if (forced && (CAM_IDS as string[]).includes(forced)) this.graph.forced = forced as CamId;
-    // ?camB=yaw,pitch,dist,fov,shift,hx,hy,hz overrides a framing while tuning (blank fields keep the authored value)
+    // ?camB=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale] overrides a framing while tuning (blank fields
+    // keep the authored value)
     for (const id of CAM_IDS) {
       const v = q.get(`cam${id}`)?.split(',').map((s) => (s.trim() === '' ? NaN : Number(s)));
       if (!v) continue;
       const an = this.graph.anchors[id], keys = ['yaw', 'pitch', 'dist', 'fov', 'shift'] as const;
       keys.forEach((k, i) => { if (!isNaN(v[i])) an[k] = v[i]; });
       for (let i = 0; i < 3; i++) if (!isNaN(v[5 + i])) an.home[i] = v[5 + i];
+      for (let i = 0; i < 2; i++) { if (!isNaN(v[8 + i])) an.gain[i] = v[8 + i]; if (!isNaN(v[10 + i])) an.ref[i] = v[10 + i]; }
+      if (!isNaN(v[12])) an.charScale = v[12];
     }
     window.addEventListener('resize', () => this.resize());
     window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'f' && this.ready && !(e.target instanceof HTMLInputElement)) this.setForgeState(this.config.forgeState === 'NORMAL_FORGE' ? 'SABOTAGED_FORGE' : 'NORMAL_FORGE'); });
@@ -138,7 +141,7 @@ export class App {
     if (bl && bl.length === 3 && (CAM_IDS as string[]).includes(bl[0]) && (CAM_IDS as string[]).includes(bl[1])) {
       const [a, b] = [bl[0] as CamId, bl[1] as CamId], p = this.actors.player.pos, t = THREE.MathUtils.clamp(Number(bl[2]), 0, 1);
       const w = t * t * t * (t * (t * 6 - 15) + 10);
-      const st = lerpState(this.graph.evalAnchor(a, p.x, p.z), this.graph.evalAnchor(b, p.x, p.z), w);
+      const st = this.graph.blendPose(this.graph.evalAnchor(a, p.x, p.z), this.graph.evalAnchor(b, p.x, p.z), w, new THREE.Vector3(p.x, p.y + 1, p.z), this.rig.aspectRatio, a === 'D' || b === 'D');
       this.rig.manual = true; this.rig.setPose(st);
       this.graph.state = st; this.debugActive = [a, b];
     }
@@ -183,7 +186,7 @@ export class App {
       gpu, gpuMs: gpu ? p.gpu.total() : undefined,
       visibility: this.district ? {
         set: this.visibleSet, level: this.drawLevel, parts: this.district.visibility.parts, tier3: this.district.visibility.hidden,
-        notC: this.district.visibility.notC, onlyA: this.district.visibility.onlyA, trisKept: this.district.visibility.trisKept, trisTier3: this.district.visibility.trisHidden,
+        classes: this.district.visibility.levels, trisKept: this.district.visibility.trisKept, trisTier3: this.district.visibility.trisHidden,
         bakeMs: Math.round(this.district.visibility.bakeMs), poses: this.district.visibility.poses, lightsOnScreen: this.lights.active, lightsCulled: this.lights.culled,
       } : undefined,
       occlusion: {
@@ -225,7 +228,7 @@ export class App {
     // meshes are built, so only what those views can show is kept (?vis=0 keeps everything, for A/B checks)
     const bake = this.opts.params.get('vis') === '0' ? undefined
       : (scene: THREE.Scene, n: number, behind?: Pick<BehindPass, 'scene' | 'uniforms'>) =>
-        bakeVisibility(this.renderer, scene, n, this.graph.samplePoses(WALK), this.rig.aspectRatio, WATER_Y, this.occlusion.enabled && behind && this.opts.params.get('occbehind') !== '0' ? { ...behind, windowsFor: (cam, p) => this.revealWindows(cam, p) } : undefined);
+        bakeVisibility(this.renderer, scene, n, this.graph.samplePoses(WALK, this.rig.aspectRatio), this.rig.aspectRatio, WATER_Y, this.occlusion.enabled && behind && this.opts.params.get('occbehind') !== '0' ? { ...behind, windowsFor: (cam, p) => this.revealWindows(cam, p) } : undefined);
     const occTest = this.opts.params.get('occtest')?.split(',').filter(Boolean);
     this.district = this.generator.generate(this.config, bake, { occTest });
     this.scene.add(this.district.group);
@@ -238,7 +241,7 @@ export class App {
     this.rig.apply();
     this.updateShadowAndLights(0);
     // the static moon shadow sees every caster (all draw levels + the Tier 3 casters), which are then released
-    this.district.setLevel(2);
+    this.district.setLevel(this.district.visibility.levels);
     this.shadow.update(this.renderer, this.scene, new THREE.Vector3(6, 0, 0), this.moonDir, 46, 32);
     this.district.releaseShadowOnly();
     this.drawLevel = -1;
@@ -262,14 +265,14 @@ export class App {
     return out;
   }
 
-  /** visible set of the current framing(s): C draws [always], B adds [notC], A adds [onlyA]; a blend draws the
-   *  union of both ends (the AB / BC buffers are baked into those classes) */
+  /** visible set of the current framing(s): each framing draws the prefix of part classes it needs; a blend draws the
+   *  union of both ends (the AB / BC / CD / BD buffers are baked into those classes) */
   private applyVisibleSet(): void {
     if (!this.district) return;
     const ids = this.debugActive ?? (this.rig.manual || this.visibilityFrozen ? (['A'] as CamId[]) : this.graph.activeIds());
-    const level = Math.max(...ids.map((id) => LEVEL[id]));
+    const level = this.district.levelOf(ids);
     this.visibleSet = ids.join('+');
-    if (level !== this.drawLevel) { this.drawLevel = level; this.district.setLevel(level as 0 | 1 | 2); }
+    if (level !== this.drawLevel) { this.drawLevel = level; this.district.setLevel(level); }
   }
 
   randomSeed(): number { const s = Math.floor(Math.random() * 99999) + 1; this.regenerate({ seed: s }); return s; }

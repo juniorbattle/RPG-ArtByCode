@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { applyPose, type CamPose } from '../app/CameraRig';
-import type { VisSet } from '../app/CameraGraph';
+import type { CamId, VisSet } from '../app/CameraGraph';
 
 /** Visibility-driven generation.
  *
@@ -8,13 +8,11 @@ import type { VisSet } from '../app/CameraGraph';
  *  house, a bridge, ...). After generation the camera graph's sampled poses (every framing over its zone, the
  *  poses along each blend, and their planar-mirror twins) are rendered as part-ID buffers on the GPU. Parts no
  *  pose ever shows are Tier 3: they are dropped from the per-frame passes (shadow casters survive only for the
- *  one-off static moon-shadow render, then their geometry is disposed). The rest is ordered per framing:
+ *  one-off static moon-shadow render, then their geometry is disposed). The rest is classed by which baked sets show it
+ *  (A B C D AB BC CD BD bit mask, see needMask) and ordered by `planDraw`:
  *
- *    always  needed by C (or untracked)          drawn in every framing
- *    notC    needed by B / A but never by C      dropped while the close C framing is up
- *    onlyA   needed only by the establishing A   drawn only around A
- *
- *  Each static mesh stores its triangles in that order, so a framing is one drawRange: no extra draw calls. */
+ *    each static mesh stores its triangles class by class, a framing draws the prefix of classes up to the last one it needs,
+ *    so a framing is one drawRange: no extra draw calls. (Pass 2 / 3 had the fixed chain [needed by C | B only | A only].) */
 
 export type Tier = 0 | 1 | 2;
 export interface PartMeta {
@@ -29,9 +27,21 @@ export interface PartMeta {
   floor?: number;
 }
 
-/** draw levels: framing C draws [always], B [always, notC], A everything */
-export const LEVEL: Record<'A' | 'B' | 'C', 0 | 1 | 2> = { C: 0, B: 1, A: 2 };
-export const CLASS_ALWAYS = 0, CLASS_NOT_C = 1, CLASS_ONLY_A = 2, CLASS_HIDDEN = 3;
+export const FRAMINGS: CamId[] = ['A', 'B', 'C', 'D'];
+/** the baked sets, one bit each in a part's need mask: the four stable framings and the blends between neighbours */
+export const SETS: VisSet[] = ['A', 'B', 'C', 'D', 'AB', 'BC', 'CD', 'BD'];
+export const ALL_MASK = (1 << SETS.length) - 1;
+const setBit = (s: VisSet) => 1 << SETS.indexOf(s);
+/** the need bits a draw configuration covers: every stable framing on screen plus the blend sets whose two ends are both on screen */
+export function cfgMask(ids: CamId[]): number {
+  let m = 0;
+  for (const s of SETS) if ((s.length === 1 && ids.includes(s as CamId)) || (s.length === 2 && ids.includes(s[0] as CamId) && ids.includes(s[1] as CamId))) m |= setBit(s);
+  return m;
+}
+/** the draw configurations the planner optimises: each framing settled, and each blend (both ends on screen), with a weight: the
+ *  framings that existed before D (A / B / C and their blends) count double, so adding D never makes them draw more than they did
+ *  (measured: the D-side configurations then pay the contiguity cost, see the journal) */
+const CONFIGS: Array<[CamId[], number]> = [[['A'], 2], [['B'], 2], [['C'], 2], [['D'], 1], [['A', 'B'], 2], [['B', 'C'], 2], [['C', 'D'], 1], [['B', 'D'], 1]];
 
 export interface VisResult {
   /** pixel counts per set, indexed by global part id */
@@ -44,20 +54,61 @@ export interface VisResult {
   split: { render: number; readback: number; decode: number };
 }
 
-export const SETS: VisSet[] = ['A', 'AB', 'B', 'BC', 'C'];
-
-/** class of a part from its bake counts (needA = A|AB, needB = AB|B|BC, needC = BC|C); pixels a player reveal can
- *  expose behind an occludable part (v.behind) count like any other visible pixel */
-export function classify(v: VisResult, id: number): number {
-  if (id <= 0) return CLASS_ALWAYS;
-  const c = v.counts, b = v.behind;
-  const n = (s: VisSet) => c[s][id] + (b ? b[s][id] : 0);
-  const needC = n('BC') + n('C') > 0, needB = n('AB') + n('B') + n('BC') > 0, needA = n('A') + n('AB') > 0;
-  if (needC) return CLASS_ALWAYS;
-  if (needB) return CLASS_NOT_C;
-  if (needA) return CLASS_ONLY_A;
-  return CLASS_HIDDEN;
+/** which baked sets show a part (bit per SETS entry; 0 = never seen = Tier 3). A settled framing needs the parts seen in its own
+ *  stable poses; a blend additionally needs what only its blend poses show. Pixels a player reveal can expose behind an occludable
+ *  part (v.behind) count like any other visible pixel. Untracked geometry (id <= 0) is needed everywhere. */
+export function needMask(v: VisResult, id: number): number {
+  if (id <= 0) return ALL_MASK;
+  let m = 0;
+  for (const s of SETS) if (v.counts[s][id] + (v.behind ? v.behind[s][id] : 0) > 0) m |= setBit(s);
+  return m;
 }
+
+/** Draw order of the part classes (one class per distinct need mask). Each static mesh stores its triangles class by class, and a
+ *  configuration (a framing, or a blend of two) draws the prefix of classes up to the last one it needs, so it is still one
+ *  drawRange and costs no extra draw call. The order minimises the triangles drawn over all configurations: an exhaustive search
+ *  when the classes are few, otherwise a deterministic move-and-keep-if-better search. Hidden parts (mask 0) are class `order.length`. */
+export interface DrawPlan {
+  order: number[];
+  /** number of classes a configuration draws (the prefix length) */
+  hiOf: (ids: CamId[]) => number;
+  /** triangles a configuration draws */
+  drawnOf: (ids: CamId[]) => number;
+  classOfMask: (mask: number) => number;
+}
+export function planDraw(trisByMask: Map<number, number>): DrawPlan {
+  const masks = [...trisByMask.keys()].filter((m) => m !== 0).sort((a, b) => popcount(b) - popcount(a) || b - a);
+  const cfgs = CONFIGS.map(([ids]) => cfgMask(ids)), wts = CONFIGS.map(([, w]) => w);
+  const hiFor = (order: number[], cm: number) => { for (let k = order.length - 1; k >= 0; k--) if (order[k] & cm) return k + 1; return 0; };
+  const prefix = (order: number[]) => { const pre = [0]; order.forEach((m, k) => pre.push(pre[k] + (trisByMask.get(m) ?? 0))); return pre; };
+  const cost = (order: number[]) => { const pre = prefix(order); let c = 0; cfgs.forEach((cm, i) => { c += pre[hiFor(order, cm)] * wts[i]; }); return c; };
+  let best = masks.slice(), bestCost = cost(best);
+  if (masks.length <= 8) {
+    const perm = (rest: number[], cur: number[]): void => {
+      if (!rest.length) { const c = cost(cur); if (c < bestCost) { bestCost = c; best = cur.slice(); } return; }
+      for (let i = 0; i < rest.length; i++) { cur.push(rest[i]); perm([...rest.slice(0, i), ...rest.slice(i + 1)], cur); cur.pop(); }
+    };
+    perm(masks, []);
+  } else {
+    // starts: by popcount (most shared first), by mask value up and down; moves: take one class out and put it elsewhere
+    for (const start of [masks.slice(), masks.slice().reverse(), masks.slice().sort((a, b) => a - b), masks.slice().sort((a, b) => b - a)]) {
+      let cur = start, cc = cost(cur), improved = true;
+      while (improved) {
+        improved = false;
+        for (let i = 0; i < cur.length; i++) for (let j = 0; j < cur.length; j++) {
+          if (i === j) continue;
+          const t = cur.slice(); const [m] = t.splice(i, 1); t.splice(j, 0, m);
+          const c = cost(t);
+          if (c < cc) { cc = c; cur = t; improved = true; }
+        }
+      }
+      if (cc < bestCost) { bestCost = cc; best = cur; }
+    }
+  }
+  const pre = prefix(best), idx = new Map(best.map((m, k) => [m, k]));
+  return { order: best, hiOf: (ids) => hiFor(best, cfgMask(ids)), drawnOf: (ids) => pre[hiFor(best, cfgMask(ids))], classOfMask: (m) => idx.get(m) ?? best.length };
+}
+const popcount = (m: number) => { let n = 0; for (; m; m &= m - 1) n++; return n; };
 
 const ID_VERT = /* glsl */ `
 attribute float aPart;

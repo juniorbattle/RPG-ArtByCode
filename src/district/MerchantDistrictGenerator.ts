@@ -13,8 +13,8 @@ import { buildMarket, HERO_STALL } from '../props/MarketGenerator';
 import { buildForgeProps, type ForgeState } from './ForgeGenerator';
 import { buildDistantCity, southShore, RIVER_END_X } from './DistantCity';
 import { addBanner, buildBanners } from '../props/Banners';
-import { classify, idMaterial, windowIdMaterial, behindUniforms, CLASS_ALWAYS, CLASS_HIDDEN, CLASS_NOT_C, CLASS_ONLY_A, type PartMeta, type Tier, type VisResult, type BehindPass } from './Visibility';
-import type { VisSet } from '../app/CameraGraph';
+import { needMask, planDraw, ALL_MASK, FRAMINGS, SETS, idMaterial, windowIdMaterial, behindUniforms, type PartMeta, type Tier, type VisResult, type BehindPass } from './Visibility';
+import type { CamId, VisSet } from '../app/CameraGraph';
 import { voxelBoxes, type OccluderDef, type OccMeshRef } from '../app/Occlusion';
 import { OCC_MAX } from '../atmosphere/SceneUniforms';
 import type { Slot } from '../core/MeshBuilder';
@@ -65,8 +65,10 @@ export interface DistrictBuild {
   banners: THREE.Object3D | null;
   /** visibility-driven cleanup report (part / triangle counts per class, per-building and background tiers) */
   visibility: VisibilityReport;
-  /** draw level of the static meshes: 0 = framing C, 1 = B, 2 = A (see Visibility.ts) */
-  setLevel(level: 0 | 1 | 2): void;
+  /** draw level of the static meshes = how many part classes are drawn (see Visibility.ts: planDraw) */
+  setLevel(level: number): void;
+  /** the draw level a set of framings needs (a blend: the larger prefix) */
+  levelOf(ids: CamId[]): number;
   /** a reveal is (not) active: the occluder meshes take over from the main meshes' occluder prefix (see addRanged) */
   setOccActive(active: boolean): void;
   /** drop the Tier 3 shadow casters once the static moon shadow has been rendered */
@@ -76,10 +78,13 @@ export interface DistrictBuild {
 }
 
 export interface VisibilityReport {
-  parts: number; hidden: number; always: number; notC: number; onlyA: number;
-  trisKept: number; trisHidden: number; trisNotC: number; trisOnlyA: number;
+  parts: number; hidden: number;
+  trisKept: number; trisHidden: number;
+  /** part classes in draw order (the baked sets that show them, parts, triangles); per configuration (framing / blend): class-prefix length and drawn triangles */
+  classes: Array<{ mask: string; parts: number; tris: number }>;
+  hi: Record<string, number>; drawn: Record<string, number>; levels: number;
   bakeMs: number; poses: number; bakeSplit: VisResult['split'] | null;
-  buildings: Array<{ id: string; tier: Tier; parts: number; hidden: number; px: { A: number; B: number; C: number } }>;
+  buildings: Array<{ id: string; tier: Tier; parts: number; hidden: number; px: Record<CamId, number> }>;
   background: Record<string, { tier: Tier; total: number; hidden: number }>;
   /** the part registry and raw bake counts (debug / reports) */
   registry: PartMeta[];
@@ -370,44 +375,55 @@ export class MerchantDistrictGenerator {
     tl = lap('visibility bake', tl);
 
     // ---------------------------------------------------------------- meshes, ordered by visibility class
-    // each static mesh holds [always | notC | onlyA]; a framing is one drawRange. Tier 3 (never visible) parts
-    // are cut from every per-frame pass; the shadow casters among them live on only for the one-off moon-shadow
-    // render (layer CAST only) and are disposed right after it.
-    const classOf = (p: number) => (vis ? classify(vis, p) : CLASS_ALWAYS);
+    // each static mesh holds its triangles class by class (a class = the set of framings that need the part, see planDraw);
+    // a framing is one drawRange (the prefix up to its last class). Tier 3 (never visible) parts are cut from every
+    // per-frame pass; the shadow casters among them live on only for the one-off moon-shadow render (layer CAST only)
+    // and are disposed right after it.
+    const partMask = parts.map((_, p) => (vis ? needMask(vis, p) : ALL_MASK));
+    const trisByMask = new Map<number, number>(), partsByMask = new Map<number, number>();
+    for (let p = 1; p < parts.length; p++) partsByMask.set(partMask[p], (partsByMask.get(partMask[p]) ?? 0) + 1);
+    for (const m of partsByMask.keys()) trisByMask.set(m, 0);
+    const countTris = (b: MeshBuilder) => { for (let i = 0; i < b.idx.length; i += 3) { const m = partMask[Math.max(0, b.part[b.idx[i]])]; trisByMask.set(m, (trisByMask.get(m) ?? 0) + 1); } };
+    for (const s of SLOTS) if (s !== 'decal') countTris(world.get(s));
+    countTris(city.builder);
+    const plan = planDraw(trisByMask), nCls = plan.order.length;
+    const classOf = (p: number) => plan.classOfMask(partMask[Math.max(0, p)]);
     const ranged: THREE.Mesh[] = [];
     const shadowOnly: THREE.Mesh[] = [];
-    const visStats = { parts: parts.length - 1, hidden: 0, notC: 0, onlyA: 0, always: 0, trisKept: 0, trisHidden: 0, trisNotC: 0, trisOnlyA: 0 };
-    for (let p = 1; p < parts.length; p++) {
-      const k = classOf(p);
-      if (k === CLASS_HIDDEN) visStats.hidden++; else if (k === CLASS_NOT_C) visStats.notC++; else if (k === CLASS_ONLY_A) visStats.onlyA++; else visStats.always++;
-    }
+    const maskName = (m: number) => SETS.filter((_, i) => m & (1 << i)).join('+');
+    const cfgs: CamId[][] = FRAMINGS.map((f) => [f]).concat([['A', 'B'], ['B', 'C'], ['C', 'D'], ['B', 'D']]);
+    const visStats = {
+      parts: parts.length - 1, hidden: partsByMask.get(0) ?? 0, trisKept: 0, trisHidden: 0,
+      classes: plan.order.map((m) => ({ mask: maskName(m), parts: partsByMask.get(m) ?? 0, tris: 0 })),
+      hi: Object.fromEntries(cfgs.map((c) => [c.join(''), plan.hiOf(c)])), drawn: Object.fromEntries(cfgs.map((c) => [c.join(''), plan.drawnOf(c)])), levels: nCls,
+    };
     const occMeshes: OccMeshRef[] = [];
     // `occSlot`: the occludable parts of this builder get a mesh of their own (same slot) whose vertices carry the
     // occluder index (`aOcc`); it is only drawn while a reveal is active. While idle the main mesh draws them itself from
-    // a prefix block [occludable | always | notC | onlyA] (drawRange start 0), so an idle frame has exactly Pass 2's draws;
+    // a prefix block [occludable, class by class | the other classes] (drawRange start 0), so an idle frame has exactly Pass 2's draws;
     // while active the main mesh skips the prefix (drawRange start = prefix length) and the occluder mesh takes over.
     const addRanged = (b: MeshBuilder, material: THREE.Material, name: string, cast: boolean, layer0Only = false, occSlot?: Slot) => {
       let occB: MeshBuilder | null = null;
       if (occSlot && occOfPart.size && b.part.some((p) => occOfPart.has(p))) { const sp = b.partition((p) => (occOfPart.has(p) ? 1 : 0), 2); b = sp[0]; occB = sp[1]; }
       let prefix: MeshBuilder | undefined;
-      if (occB) { prefix = new MeshBuilder(); if (vis) { const [a, n, o] = occB.partition(classOf, 4); prefix.append(a); prefix.append(n); prefix.append(o); } else prefix.append(occB); }
+      if (occB) { prefix = new MeshBuilder(); if (vis) { const sp = occB.partition(classOf, nCls + 1); for (let k = 0; k < nCls; k++) prefix.append(sp[k]); } else prefix.append(occB); }
       const emit = (src: MeshBuilder, nm: string, occ: boolean, pre?: MeshBuilder) => {
-        let merged = src, h = new MeshBuilder(), r0 = src.idx.length, r1 = r0, r2 = r0;
+        let merged = src, h = new MeshBuilder();
+        // cumulative index count after each class: a draw level n draws the first n classes
+        let ends = [src.idx.length];
         if (vis) {
-          const [a, n, o, hid] = src.partition(classOf, 4);
-          merged = new MeshBuilder(); h = hid;
-          merged.append(a); r0 = merged.idx.length;
-          merged.append(n); r1 = merged.idx.length;
-          merged.append(o); r2 = merged.idx.length;
+          const sp = src.partition(classOf, nCls + 1);
+          merged = new MeshBuilder(); h = sp[nCls]; ends = [];
+          for (let k = 0; k < nCls; k++) { merged.append(sp[k]); ends.push(merged.idx.length); visStats.classes[k].tris += sp[k].triCount; }
         }
-        visStats.trisKept += r2 / 3; visStats.trisNotC += (r1 - r0) / 3; visStats.trisOnlyA += (r2 - r1) / 3; visStats.trisHidden += h.triCount;
+        visStats.trisKept += (ends[ends.length - 1] ?? 0) / 3; visStats.trisHidden += h.triCount;
         let P = 0;
         if (pre && pre.vertexCount) { const f = new MeshBuilder(); f.append(pre); P = f.idx.length; f.append(merged); merged = f; }
         if (merged.vertexCount) {
           const mesh = new THREE.Mesh(occ ? merged.toOccGeometry((p) => occOfPart.get(p) ?? 0) : merged.toGeometry(), material);
           mesh.name = nm; mesh.frustumCulled = false;
           if (layer0Only) mesh.layers.set(0); else if (cast) mesh.layers.enable(LAYER_CAST);
-          mesh.userData.ranges = [r0, r1, r2]; mesh.userData.prefix = P;
+          mesh.userData.ranges = ends; mesh.userData.prefix = P;
           group.add(mesh); ranged.push(mesh);
           if (occ) { mesh.visible = false; occMeshes.push({ mesh, base: material, variant: lib.occVariant(occSlot!, false), hideWhenIdle: true }); }
         }
@@ -471,26 +487,26 @@ export class MerchantDistrictGenerator {
     const report = buildingsOut.map((b) => {
       const ids = partIdsByGroup.get(b.id) ?? [];
       const seen = (set: VisSet) => ids.reduce((a, p) => a + (vis ? vis.counts[set][p] : 1), 0);
-      return { id: b.id, tier: tierOfBuilding.get(b.id) ?? 0, parts: ids.length, hidden: ids.filter((p) => classOf(p) === CLASS_HIDDEN).length, px: { A: seen('A'), B: seen('B'), C: seen('C') } };
+      return { id: b.id, tier: tierOfBuilding.get(b.id) ?? 0, parts: ids.length, hidden: ids.filter((p) => partMask[p] === 0).length, px: { A: seen('A'), B: seen('B'), C: seen('C'), D: seen('D') } };
     });
     const farGroups = new Map<string, { tier: Tier; total: number; hidden: number }>();
     for (let p = 1; p < parts.length; p++) {
       const m = parts[p];
       if (m.kind === 'wall' || m.kind === 'roof' || m.kind === 'forge') continue;
       const e = farGroups.get(m.group) ?? { tier: m.tier, total: 0, hidden: 0 };
-      e.total++; if (classOf(p) === CLASS_HIDDEN) e.hidden++;
+      e.total++; if (partMask[p] === 0) e.hidden++;
       farGroups.set(m.group, e);
     }
-    let curLevel: 0 | 1 | 2 = 2, occActive = false;
-    const applyRanges = () => { for (const m of ranged) { const r = m.userData.ranges as number[], P = (m.userData.prefix as number) ?? 0; m.geometry.setDrawRange(occActive ? P : 0, r[curLevel] + (occActive ? 0 : P)); } };
-    const setLevel = (level: 0 | 1 | 2) => { curLevel = level; applyRanges(); };
+    let curLevel = nCls, occActive = false;
+    const applyRanges = () => { for (const m of ranged) { const r = m.userData.ranges as number[], P = (m.userData.prefix as number) ?? 0, n = curLevel > 0 && r.length ? r[Math.min(curLevel, r.length) - 1] : 0; m.geometry.setDrawRange(occActive ? P : 0, n + (occActive ? 0 : P)); } };
+    const setLevel = (level: number) => { curLevel = level; applyRanges(); };
     const setOccActive = (a: boolean) => { occActive = a; for (const m of occMeshes) if (m.hideWhenIdle) m.mesh.visible = a; applyRanges(); };
 
     // behind-occluder support: parts the front-most bake alone would have dropped but the reveal windows can expose
     let behindReport: VisibilityReport['behind'] = null;
     if (vis?.behind) {
       const bare = { ...vis, behind: undefined } as VisResult, restored = new Set<number>();
-      for (let p = 1; p < parts.length; p++) if (classify(bare, p) === CLASS_HIDDEN && classOf(p) !== CLASS_HIDDEN) restored.add(p);
+      for (let p = 1; p < parts.length; p++) if (needMask(bare, p) === 0 && partMask[p] !== 0) restored.add(p);
       let rt = 0;
       for (const s of SLOTS) { const b = world.get(s); for (let i = 0; i < b.idx.length; i += 3) if (restored.has(b.part[b.idx[i]])) rt++; }
       let px = 0;
@@ -504,7 +520,7 @@ export class MerchantDistrictGenerator {
       stats: { triangles: tris, instances: batch.instanceCount, buildings: buildingsOut.length, generatorMs: performance.now() - t0, windows, modules, timings: tm },
       visibility: { ...visStats, bakeMs: vis?.ms ?? 0, bakeSplit: vis?.split ?? null, poses: vis?.poses ?? 0, buildings: report, background: Object.fromEntries(farGroups), registry: parts, counts: vis?.counts ?? null, behind: behindReport },
       occluders: { defs: occDefs, meshes: occMeshes },
-      setLevel, setOccActive,
+      setLevel, levelOf: (ids) => plan.hiOf(ids), setOccActive,
       releaseShadowOnly: () => { for (const m of shadowOnly) { group.remove(m); m.geometry.dispose(); } shadowOnly.length = 0; },
       heightAt: () => 0,
       forgeFocus: xf([forgeB.mirror ? -1.4 : 1.4, 1.0, 1.0], forgeB.pos, forgeB.yaw), forgeProps, banners: null,

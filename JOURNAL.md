@@ -446,6 +446,174 @@ passe 2 (≈ 10 ms contre 29–47 ms) : ces chiffres ne se comparent pas au tabl
 
 ---
 
+## Passe 4B — Caméra D : plan frontal sur la façade / le district (non commitée, à la demande de l'utilisateur)
+
+Demande : étendre le graphe avec un 4ᵉ cadrage D, **sans toucher C** (le zoom téléobjectif sur la forge) : A → B → C → D, D s'active
+après la forge, façade quasi de face, transition C→D 0,8–1,3 s sans « orbite », contrôles stables, retour D→C, bake de visibilité
+étendu, ré-inventaire des occludeurs (mesuré, pas deviné), perf contre la passe 3, preuves visuelles. Baseline : worktree gelé de
+`b11a84d` servi sur :5174 (`%TEMP%\rpg-base3`, `node node_modules/vite/bin/vite.js --port 5174`). Images : `screenshots/p4b/`
+(`evidence/` = les 10 captures demandées + contact sheet `contact-C-CD-D.png` + `walk-CD-sheet.png`, `d-candidates-D1-D2-D3.png`,
+`d-refinement-E1-E3.png`, `evidence/occ-inventory/*.json`, `evidence/perf.json`). Fichiers : `CameraGraph.ts`, `Visibility.ts`,
+`MerchantDistrictGenerator.ts`, `App.ts` ; outils neufs `tools/camsearch.mjs`, `tools/camsim.mjs`, `tools/visproof.mjs`
+(+ `eval.mjs` accepte `BASE_URL`, `occ-inventory.mjs` connaît CD / BD et compte les rayons bloqués par jeu de poses).
+
+### 4B.1 Trouver D empiriquement
+
+- **[KO] Première série de candidats D1/D2/D3 (dist 27–32, fov 26–32, comme un « C reculé »).** Captures noires / fenêtres collées à
+  l'écran : la caméra se retrouve **dans les maisons de la rive opposée**. Cause : en vue presque de face, la caméra est à
+  `pivot.z + dist·cos(yaw)·cos(pitch)` ≈ 28 m, et `canalRow` pose des maisons à z = 19,8 (rangée 1) et 29,7 (rangée 2) sur tout
+  x < 30. A / B / C ne les voient jamais (elles sont derrière la caméra, le bake en classe une partie en `A` seulement) ; une caméra
+  frontale les traverse. **Contrainte déduite : z caméra < ~18,5**, donc `dist·cos(yaw)·cos(pitch) ≲ 19,5` → D est un objectif de 20 m /
+  fov 36 (D1 −12°, D2 −22°, D3 −32° rejouées à dist 19–21, `d-candidates-D1-D2-D3.png`), **pas** un téléobjectif. Je n'ai pas retiré
+  les maisons de la rive opposée (aucune modif d'environnement), je ne les ai juste pas laissées sur le trajet de la caméra.
+- Choix de lacet : −12° est plat (presque orthographique, la barrière ne fuit plus), −32° rejoue du « B » ; **−20°** garde une fuite
+  nette de la façade vers +x sans multiplier les lignes de perspective. Hauteur/pitch : `d-refinement-E1-E3.png` — pitch 5° ou
+  pivot y 2,4 laissent un bas de cadre vide et couronnent les toits ; **pitch 8°, pivot y 3,2** montrent toute la façade, toitures
+  comprises, avec le quai en bas.
+- **D final** : yaw −20, pitch 8, dist 20, fov 36, shift 0, charScale ×1,12 (B : ×1,12 ; C : ×1,15 ; le joueur fait ≈ 167 px de haut à
+  1080p (estimation par la hauteur de cadre : 156 en B, 195 en C) : **pas** agrandi). Pivot : `home [10,8 ; 3,2 ; −1,0]`, `ref [14 ; 1,2]`, `gain [0,85 ; 0,25]`.
+  Caméra à z ≤ 18,2 sur tout le quai (marge 1,6 m avant le mur de la rangée 1).
+
+### 4B.2 Zone, hystérésis, ancre
+
+- Zone D : x ≥ 14,0, **tout z**, priorité 3 ; relâchement à 13,1 (marge 0,9 m existante). C est inchangée (x 4,2–13,2, z < 2,4) : C tient
+  jusqu'à 14,1 vers l'est, donc **C → D direct** pour qui traverse la cour de la forge. Le forgeron et la zone d'interaction s'arrêtent
+  à x ≈ 11,5 ; le flanc est de la forge est à 12,6 : D n'arrive qu'1,4 m après.
+- **[?] Découverte : C n'est presque jamais traversée « à la main ».** Dans B/C la touche « droite » pousse en diagonale vers le
+  canal (+z) ; le joueur finit collé au bord (z ≈ 4) où la zone C (z < 2,4) n'existe pas. Il faut `w,d` (ou steering) pour marcher à z < 2,4.
+  Conséquence : le long du bord de l'eau la transition est **B → D** (jeu `BD` ajouté au graphe et au bake). Je ne force pas C, ce serait
+  une modification de comportement de C. À juger avec des vrais joueurs.
+- **[KO → OK] Première D : le joueur glissait à l'envers.** Premier pivot de D centré sur le joueur (NDC x −0,08 à l'entrée contre
+  +0,36 en C) : pendant C→D le sprite marchait vers la droite mais **dérivait vers la gauche de l'écran jusqu'à −728 px/s** (57 images).
+  Cause : le terme `w'·(ndcD − ndcC)` de la transition l'emporte sur la vitesse de marche (~0,1 NDC/s) dès que l'écart dépasse ≈ 0,1.
+  Correctif en deux temps : (1) **D est réglé pour que le joueur y entre là où il se tenait en C** (NDC x ≈ +0,35 à x = 14) ;
+  (2) **mélange ancré** (`CameraGraph.blendPose`) pour toute transition qui touche D : la pose interpolée est translatée (pivot seul,
+  le long du droit / haut de la caméra : profondeur et échelle intactes) jusqu'à ce que le torse du joueur se projette à
+  `lerp(NDC dans la source, NDC dans la cible, w)` ; exact aux deux bouts, 2 itérations, ≈ 0 coût. C'est le « point d'ancrage mobile »
+  demandé : pas de balancement du joueur par la rotation de 40°, pas de saut. **A/B/C et AB/BC restent des `lerpState` purs.**
+  Après correctif : 0 image à l'envers sur C→D.
+- **Contrepartie assumée [?]** : dans D le joueur est **toujours à droite du centre** (NDC x +0,35 → +0,68 de x = 14 à 26), jamais à gauche.
+  C'est la conséquence directe de la contrainte de continuité avec C (sinon : dérive arrière). Les captures « joueur gauche / centre /
+  droite » sont donc x = 14,3 / 20 / 26 (NDC +0,35 / +0,55 / +0,68), pas trois positions d'écran réparties. La forge sort du cadre vers x ≈ 20.
+  Ça ne donne pas d'« espace devant » le joueur (vers l'est) : à rejuger visuellement.
+- Durée : le plafond du mélange passe de 1,2 à **1,3 s** pour les mélanges touchant D (lacet 38°) : mesuré 1,28 s ; pas de lacet max
+  par image 0,96° à 60 Hz (contre 0,53° pour AB, ≤ 0,55° en passe 2) ; 0,37° en marche réelle headless à ~20 fps. **[?]** lacet par image plus
+  élevé que le reste du graphe : c'est le prix d'un lacet de 38° en 1,3 s ; à juger en mouvement.
+
+### 4B.3 Contrôles (mesuré avec `tools/camsim.mjs`, vrai `App.update`, pas de 1/60 s)
+
+`camsim` fait marcher le joueur réel (collisions comprises) à pas fixe, sans rendu ; `g=x,z` = joueur qui vise un point en choisissant à
+chaque image la combinaison de touches la plus proche sous le **lacet verrouillé**. Note d'outil : les lampadaires du quai (x = 0, 9, 18…, z = 4,15)
+sont des colliders : un joueur collé au bord s'y bloque, d'où le steering.
+
+| Scénario | Résultat |
+|---|---|
+| C→D en maintenant `w,d` | 1 changement (C>D à x = 14,03), 1,28 s, lacet de contrôle **0,000°** de saut tant que la touche est tenue, 0 image à l'envers, NDC joueur 0,13→0,68 |
+| D→C en maintenant `a`/`s,a` | D>C à x = 13,07 ; 0 changement de lacet de contrôle ; 0 image à l'envers (bord de l'eau : D>B à 13,09, voir plus haut) |
+| A>B>C>D en steering (−12 → 24) | A>B x −8,46 · B>C x 4,24 · C>D x 14,03 ; 0 inversion de cadrage ; saut de contrôle 0 |
+| D>C>B>A en steering | D>C x 13,07 · C>B x 3,26 · B>A x −9,41 ; 0 inversion |
+| Arrêt en plein C→D | la transition se termine seule en 1,28 s (le temps, pas la distance) ; le lacet de contrôle se resynchronise à l'arrêt |
+| Demi-tour pendant C→D | C>D x 14,03 puis D>C x 13,06 (le joueur doit refaire 0,9 m) : **1 inversion** C→D→C, voulue (le joueur a vraiment fait demi-tour) ; mélange interrompu reprend depuis sa pose courante |
+| 25 va-et-vient de ±0,3 m autour de x = 14 | **0** inversion (hystérésis) |
+| Course (`shift`) contre le flanc de la forge / les lampadaires | 1 transition, saut max du joueur à l'écran au-delà de son propre mouvement ≤ 4 px/image |
+
+- **Images à l'envers hors D (hérité, non touché)** : B→C vers l'ouest 100 images / −254 px/s, B→A 12 images / −131 px/s : transitions de la
+  passe 2, laissées telles quelles (« A/B/C inchangés »). D→C : 16 images à −28 px/s au pire (le retard de suivi du pivot, négligeable).
+- Steering « droite » maintenu à travers C→D : le joueur reste à la même direction **monde** (verrouillée) ; il se resynchronise sur le
+  lacet de D (−20°) au relâchement : la touche « droite » en D est alors ≈ +x pur (en C/B, 0,5 / 0,87 → diagonale vers le canal).
+  Ce changement de mapping au relâchement est le comportement existant ; pas de saut de lacet de contrôle en cours de marche.
+
+### 4B.4 Visibilité (le gros chantier de la passe)
+
+- **Le schéma [toujours | pasC | seulA] ne tient plus avec 4 cadrages** (chaque pièce a désormais 4+ combinaisons de besoins).
+  Remplacé par un **masque de besoin sur 8 jeux** de poses (A, B, C, D, AB, BC, CD, BD) : une pièce = les jeux qui la montrent ; une
+  classe = un masque distinct (41 classes sur la graine 1842). Chaque mesh statique range ses triangles classe par classe ; un cadrage
+  ou un mélange dessine **le préfixe de classes** jusqu'à la dernière dont il a besoin (`levelOf`) : toujours un seul `drawRange`, **+0
+  appel de dessin**, le préfixe d'occludeurs de la passe 3 reste valable (début à 0).
+- **Ordre des classes : `planDraw`** minimise la somme (pondérée) des triangles dessinés sur les 8 configurations (4 cadrages + 4 mélanges) :
+  recherche exhaustive si ≤ 8 classes, sinon recherche locale déterministe (4 départs, déplacements d'une classe). Vérifié hors ligne :
+  60 départs aléatoires ne font pas mieux ; borne inférieure « chacun dessine exactement ce dont il a besoin » = 649 k, atteint 712 k (poids
+  égaux) / 1,13 M pondéré.
+- **[KO → OK] Poids égaux = régression de A/B.** Sans pondération : A 100,7 k (+8,5 % contre 92,8 k), B 95,2 k (+3,6 % contre 91,9 k), C 63,1 k, D 79,3 k.
+  Pondération ×2 sur A/B/C et leurs mélanges : **A 91,6 k, B 84,2 k, C 63,1 k (tous ≤ passe 3 : 92,8 / 91,9 / 72,9 k)** mais D 98,8 k, CD 100,1 k,
+  BD 100,8 k (≈ « tout »). Il n'existe que ces deux points de Pareto sur cette scène (testé poids 1,1 / 1,25 / 1,5 / 2 / 3). **Choix : poids ×2** (critère « A/B/C inchangés »,
+  C **−13 %** de triangles par bonus) ; D ne bénéficie presque pas du culling (98,8 k sur 100,8 k gardés) — mesuré, voir perf : sans effet visible sur le temps GPU.
+- **Jeux séparés pour les mélanges** (avant : un jeu de mélange comptait pour les **deux** cadrages d'extrémité, donc une pièce vue
+  seulement pendant BC était dessinée en C stable). Désormais un cadrage stable dessine ce que ses poses stables montrent ; un mélange
+  ajoute ses propres pièces. Corollaire : C pèse moins qu'en passe 3 alors que le bake est plus large.
+- **Échantillonnage** (`samplePoses(walk, aspect)`) : 102 → **273 poses** (A 18, B 26 (−18 : B ne couvre plus x ≥ 14), C 12, D 21, AB 16, BC 12, **CD 78, BD 90**).
+  CD / BD : joueur à x ∈ {13,1 ; 14 ; 15 ; 16,5 ; 18} (le foyer traîne derrière le joueur, la caméra a déjà bougé), z représentatifs, poids
+  {0 ; 0,2 ; … ; 1} (y compris les extrémités hors zone), poses **ancrées** comme à l'exécution. Une version « économe » (216 poses, x/z/poids réduits) classait
+  **321** pièces en Tier 3 au lieu de 317 : 4 pièces visibles seulement depuis les poses supprimées → je garde la version dense (principe : rien de ce qu'un mélange peut montrer n'est coupé).
+- **Résultats (graine 1842)** : 738 pièces, **Tier 3 : 343 → 317 (+26 pièces visibles)**, triangles gardés 92 842 → **100 788 (+7 946, +8,6 %)**, Tier 3
+  27 698 → 19 752 triangles. Triangles par configuration : A 91,6 k · B 84,2 k · C 63,1 k · D 98,8 k · AB 91,6 k · BC 84,6 k · CD 100,1 k · BD 100,8 k.
+  Les pièces rendues visibles par D sont surtout des murs latéraux (est / ouest) de 	all, 	avern, east1–3, gE0/1, g4 et un toit de la ville haute (liste par masque relevée à la main sur la graine 1842, non exhaustive) ; **rien n'a été ajouté** ni restauré à la main.
+- **Coût du bake / régénération** (même session, entrelacé) : bake GPU **≈ 195–202 → 322–338 ms (+≈ 130 ms)**, régénération totale **505–523 → 682–715 ms (+≈ 180 ms)**.
+  **[?]** le coût de régénération double presque par rapport à la passe 1 ; la piste « ne ré-échantillonner que les poses touchées » (À reprendre n° 3) devient plus utile.
+- **Preuve (`tools/visproof.mjs`, élagué vs `vis=0`, même session, `static=1`, seuil 2/255)** : stables A, B (2), C (2), D (6 positions dont fond de quai z = −2,8 et x = 26),
+  mélanges CD (7 poses, 25/50/75 %, x = 13,1 à 19), BD (3 poses), BC, AB : **0 px** partout, sauf **D à (26 ; 3,5) : 1 px (écart 19) en (1244 ; 185)**
+  — **[?]** non élucidé (1 pixel ; probablement une étincelle/particule chaude comme `known-issues/pass2-vis-speck.png`). Autre écart apparent : B (−4,6 ; 0,6)
+  **1 377 px** *avec* le reveal ; **0 px avec `occ=0`** et 1 280 px identiques sur la baseline gelée de la passe 3 : c'est la phase du fondu de reveal entre deux
+  régénérations (le lampadaire), pas du culling. **Toujours lancer visproof avec `occ=0`.**
+- **A/B/C inchangés (baseline vs nouveau, `static=1`)** : A, B, B bord, C, C bord, AB 50 %, BC 50 %, B forcé à x = 13,5 : **écart max 0–1/255, 0 px au-dessus du seuil 24**.
+
+### 4B.5 Rive opposée / fond
+
+D ne montre pas de trou de fond nouveau : le cadre est rempli par la façade nord (générée à plein détail) ; en haut à gauche on voit la ville haute déjà présente.
+**Aucun bâtiment ajouté.** Aucun module de fond, aucune brume ajoutée. Les maisons de la rive opposée restent derrière la caméra de D (voir 4B.1).
+
+### 4B.6 Ré-inventaire des occludeurs (mesuré : `tools/occ-inventory.mjs`, 1 092 rayons : poses C, CD 0,25 / 0,5 / 0,75, D, BD, + A/AB/B/BC)
+
+| Rayon | Bloqués (tous jeux) | D stable | CD (225 rayons) | BD (54) |
+|---|---|---|---|---|
+| torse (0,55 h) | 108 (9,9 %) | **2 / 118** | 29 | 2 |
+| tête (0,9 h) | 122 (11,2 %) | 3 / 118 | 35 | 2 |
+| jambes (0,2 h) | 117 (10,7 %) | 4 / 118 | 27 | 6 |
+
+(passe 3 : 813 rayons, 10,2 % au torse.) **Conservés** : `boat-banner`, `boat-rig`, 7 lampadaires (9 au total) — la bannière bloque pendant CD jusqu'à x = 19,5 et le lampadaire
+x = 18 est le **seul** bloqueur du D stable (2 cases). **Candidats mesurés et rejetés (0 ajouté)** : bannière de façade (x = 15,4 ; y 1,9 ; z = −3,15) et auvents / toiles
+de façade (x 14,5–25,5, z = −3,15) : 1–4 cases, **uniquement** à z = −3,2 (joueur collé au mur), tête seulement ; tonneaux x = 17,5 et bornes x = 16,5–17,5 : jambes seulement,
+≤ 4 cases ; planches / pierre / poutres du flanc est de la forge (x = 12,5–13,5, z = −3,2) : 1–5 cases, joueur collé au mur, aucune en D ; piliers de forge : 0.
+**Aucune façade ni enseigne en D ne cache le joueur.** `OCC_MAX` inchangé, table inchangée.
+- **Validation C↔D (camsim, reveals réels)** : `lampadaire 9`, `18`, `boat-banner`, `boat-rig` : **0 inversion de fondu** (0 clignotement) sur tous les scénarios (traversées A↔D, demi-tours, arrêt),
+  pas de fondu max 0,083/image, saut du centre du reveal au-delà du déplacement du joueur ≤ 4,1 px/image. Marche réelle (`walk.mjs`, ~20 fps) : 0 inversion, saut du centre ≤ 4,0 px. Capture `10-D-occdebug.png` :
+  le lampadaire x = 18 est dissous autour du joueur, joueur entier visible, boîtes proxy rouges au bon endroit. `behindParts` toujours 0 (la passe « derrière » ne restaure toujours rien : **[?]** inchangé).
+  Aucune trouée de Tier 3 visible (visproof avec reveal forcé non rejoué sur D : **[?]**, mais les fenêtres de la passe derrière couvrent maintenant les poses CD / BD / D : `player` est fourni à chaque pose).
+
+### 4B.7 Performance (même session, entrelacé, 3 tours, minuteurs GPU, 1080p, `static=1`)
+
+| Cas | Passe 3 | Passe 4B | Δ | Triangles (3 → 4B) | Appels |
+|---|---|---|---|---|---|
+| A | 8,26 ms | 8,27 | +0,01 | 227,2 k → 224,6 k | 99 = 99 |
+| B | 9,07 | 9,14 | +0,07 | 225,2 k → **209,9 k** | 105 = 105 |
+| C | 9,13 | 9,01 | −0,12 | 187,3 k → **167,7 k** | 99 = 99 |
+| CD 50 % | — | 9,10 | — | — → 241,6 k | 99 |
+| D (même pose servie par la baseline en « B » surchargé) | 8,82 | 8,67 | −0,15 | 236,0 k → 239,0 k | 99 = 99 |
+
+Passes (4B) : C reflet 0,75 / scène 5,83 / DOF 0,94 / bloom 0,77 ; CD reflet 0,77 / scène 5,89 / DOF 0,91 / bloom 0,79 ; D reflet 0,73 / scène 5,48 / DOF 0,77 / bloom 0,93 (grade ≈ 0,27–0,30, air ≈ 0,45).
+Le bruit de la machine est ≈ ±0,3–0,5 ms (cf. passe 3b) : **aucune différence distinguable du bruit**, y compris pour D qui dessine presque tout. Pièces visibles (parts − Tier 3) : 395 → 421.
+CD est un peu plus lourd (+≈ 0,1 ms, + triangles) mais dans le bruit. **[?]** Je n'ai pas mesuré CD contre une baseline équivalente (elle n'a pas de D) ni D en conditions thermiques « chaudes ».
+
+### 4B.8 Ce qui n'a pas été fait / limites
+
+- **[?]** Jugement humain en mouvement : tout est mesuré par journaux par image et captures fixes, pas par un joueur.
+- **[?]** Le D « joueur à droite » (voir 4B.2) : à rejuger. Non testé : tolérer une dérive arrière de |ΔNDC| ≲ 0,08 pendant la transition (permettrait d'entrer en D un peu plus à gauche, pas « à gauche »). Décaler la zone D vers l'est n'aide pas : le NDC de C croît avec x.
+- **[?]** B → D le long du bord de l'eau (jamais de C). Si on veut « A → B → C → D » strict, il faudrait que C couvre aussi z > 2,4 (changement de comportement de C : non fait).
+- **[?]** Pas d'édition d'environnement. Pas de défaut de construction exposé par D à l'œil (façades est des maisons visibles de face : OK).
+- **[?]** Régénération +180 ms ; le panneau de debug n'expose pas D (le sélecteur de cadrage la liste via `CAM_IDS`, non testé à la main).
+
+### 4B.9 Erreurs de méthode / d'outillage (pour ne pas les refaire)
+
+- **[KO] Incident : `node_modules` du projet vidé.** Le worktree de baseline avait un `node_modules` en **jonction** vers celui du projet ; `git worktree remove --force`
+  a suivi la jonction et supprimé le contenu réel (typescript, three, vite, `.bin`…). Réparé par `npm ci` (74 paquets, lockfile inchangé) **après avoir arrêté les deux serveurs
+  Vite du projet** qui verrouillaient des fichiers (réinstallation refusée par l'OS tant qu'ils tournaient), puis redémarrage de `npm run dev`. Règle : avant de supprimer un worktree,
+  retirer la jonction avec `cmd /c rmdir <worktree>\node_modules` (supprime le lien seul), ou ne jamais lier `node_modules` et lancer vite depuis le worktree avec une copie.
+- **[KO] Troncature d'un fichier d'outil** (`occ-inventory.mjs`) par un `Set-Content` d'une variable nulle après une erreur d'indice : restauré par `git checkout`, réédité avec l'outil d'édition.
+  Ne pas enchaîner `Substring` et écriture sans vérifier l'index ; fichiers CRLF : les `.Replace` multi-lignes PowerShell échouent, utiliser l'outil d'édition.
+- `tools/diff.mjs a b $null 2` : un argument `$null` est supprimé par PowerShell, le seuil `2` est devenu le nom du fichier de sortie (un PNG nommé `2` à la racine, supprimé) et le seuil restait 24.
+
+---
+
 ## À reprendre (par priorité)
 
 0. **Reveal d'occlusion** (passe 3b) : relecture humaine en mouvement (choix du style C, rayons 40–70 / 80–120 px, fondu 0,2 / 0,3 s) ; décider si les PNJ d'interaction
@@ -454,10 +622,15 @@ passe 2 (≈ 10 ms contre 29–47 ms) : ces chiffres ne se comparent pas au tabl
 1. **`SpriteRenderer`** (prévu) : remplacer la superposition 55 % par une vraie séparation (passe dédiée ou masque propre)
    pour supprimer l'auréole ; revoir le pas de silhouette/contour ; valider sur des PNJ en mouvement (pas seulement
    des captures figées) et sur la graine 7719 / 30417.
-2. **Zones de caméra** : les faire valider par de vrais parcours joueur (A→B→C→B→A, courses, collisions) ; vérifier
-   l'hystérésis aux bords de la zone C.
-3. **Coût de régénération** (+250 ms de la passe 2, puis ≈ +150–180 ms de la passe 3b) : mettre en cache les identifiants par graine, ou
-   n'échantillonner que les poses concernées quand seul un réglage de caméra change.
+2. **Zones de caméra** : validées par simulation (passe 4B, `tools/camsim.mjs`) mais pas par de vrais joueurs. Points ouverts : (a) D place toujours le joueur
+   **à droite** du centre (NDC +0,35 → +0,68) — contrepartie de la continuité avec C ; (b) le long du bord de l'eau (z > 2,4) on passe **B → D** sans jamais
+   traverser C ; (c) lacet max 0,96°/image en C↔D (contre ≤ 0,55° ailleurs) ; (d) les transitions B→C vers l'ouest (−254 px/s) et B→A (−131 px/s) font glisser le joueur à
+   l'envers à l'écran (héritage de la passe 2, mesuré en 4B, non corrigé).
+2b. **Pixel à élucider** : D à (26 ; 3,5), 1 px d'écart (19/255) en (1244 ; 185) entre élagué et `vis=0`.
+3. **Coût de régénération** (+250 ms de la passe 2, ≈ +150–180 ms de la passe 3b, **≈ +180 ms de la passe 4B** : 505–523 → 682–715 ms ; bake 200 → 330 ms pour 273 poses) :
+   mettre en cache les identifiants par graine, ou n'échantillonner que les poses concernées quand seul un réglage de caméra change ; réduire CD / BD (168 poses sur 273) a coûté 4 pièces de Tier 3 en précision : à ne faire qu'avec une preuve.
+3b. **Ordre des classes de dessin** : 41 classes, A/B/C pondérés ×2 (D dessine ≈ tout : 98,8 k / 100,8 k). Si D devient lourd (nouveau contenu), rejouer `planDraw` avec un autre poids ou séparer D dans un mesh à part (+ appels de dessin).
+3c. **Rive opposée / z caméra** : la caméra de D doit rester à z < ~18,5 (maisons de la rive opposée dès z = 19,8). Tout cadrage plus reculé exige de retirer ou d'abaisser ces maisons (elles sont aujourd'hui invisibles de A/B/C).
 4. **Rendu** : MSAA 4× → test d'un MSAA 2× / FXAA après le travail sur les sprites ; DOF et bloom à demi-résolution.
 5. **Autres graines** : le culling a été vérifié au pixel sur la graine 1842 ; refaire le contrôle `vis=0` vs défaut sur
    7719 et 30417 avant de se fier à la visibilité sur toute graine (la passe 3b n'a vérifié que l'identité « reveal au repos vs
@@ -478,3 +651,8 @@ passe 2 (≈ 10 ms contre 29–47 ms) : ces chiffres ne se comparent pas au tabl
 - Ne taguer que ce que l'inventaire mesure (rayons caméra → joueur contre les vrais triangles), jamais ce que l'intuition suggère ;
   un résultat « 0 » d'un outil se recoupe avec une valeur connue avant d'être cru.
 - Le DOF et le masque de protection (alpha de scène) sont des contrats : un effet qui écrit de l'alpha ne doit pas toucher ce canal.
+- Un nouveau cadrage se cherche **empiriquement** (`tools/camsearch.mjs`) et se valide en **marchant** (`tools/camsim.mjs`) : la vitesse du joueur à l'écran pendant la transition ne doit jamais
+  changer de signe par rapport à sa marche ; une transition interpolée entre deux cadrages hérite de l'écart de position écran des deux, d'où l'ancrage (`blendPose`) + un cadrage cible calé sur la sortie du cadrage précédent.
+- Une caméra qui recule traverse la géométrie qui est « derrière la caméra » des autres cadrages : vérifier z caméra contre ce qui est généré de ce côté (rive opposée).
+- Le besoin d'une pièce se mesure **par jeu de poses** (stables et mélanges séparés) ; mélanger les deux fait dessiner en C stable ce que seul un mélange voit. Pondérer les cadrages historiques pour qu'un nouveau cadrage ne les alourdisse pas.
+- Comparer le culling avec `occ=0` : la phase du fondu de reveal entre deux régénérations fabrique de faux écarts (1 377 px sur B).

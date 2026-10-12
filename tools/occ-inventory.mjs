@@ -63,7 +63,7 @@ try {
     const H = app.actors.player.height, FR = __FRAC__;
     const clusters = new Map();
     let rays = 0, blocked = 0;
-    const setCount = {};
+    const setCount = {}, blockedBy = {};
     const trace = (set, st, x, z) => {
       const o = camPos(st), T = [x, (FR * H) * st.charScale, z];
       const dv = [T[0] - o[0], T[1] - o[1], T[2] - o[2]], L = Math.hypot(...dv), dr = dv.map((q) => q / L);
@@ -83,24 +83,27 @@ try {
           clusters.set(key, e);
         }
       }
-      if (seen.size) blocked++;
+      if (seen.size) { blocked++; blockedBy[set] = (blockedBy[set] ?? 0) + 1; }
     };
     for (let x = WALK.x0; x <= WALK.x1 + 1e-6; x += 1.0) for (let z = WALK.z0; z <= WALK.z1 + 1e-6; z += 0.75) {
       if (inCollider(x, z)) continue;
       const id = g.zoneFor(x, z, null);
       trace(id, g.evalAnchor(id, x, z), x, z);
       // blend poses around the zone edges
-      for (const [a, b, set] of [['A', 'B', 'AB'], ['B', 'C', 'BC']]) {
+      for (const [a, b, set] of [['A', 'B', 'AB'], ['B', 'C', 'BC'], ['C', 'D', 'CD'], ['B', 'D', 'BD']]) {
         const sa = g.evalAnchor(a, x, z), sb = g.evalAnchor(b, x, z);
-        const near = set === 'AB' ? x < -5 && x > -13 : x > 3 && x < 14.5 && z < 3.4;
+        const near = set === 'AB' ? x < -5 && x > -13 : set === 'BC' ? x > 3 && x < 14.5 && z < 3.4 : set === 'CD' ? x > 11 && x < 20 && z < 3.4 : x > 11 && x < 20 && z > 2.3;
         if (!near) continue;
-        for (const w of [0.25, 0.5, 0.75]) { const sm = w * w * w * (w * (w * 6 - 15) + 10); const st = { yaw: sa.yaw + (sb.yaw - sa.yaw) * sm, pitch: sa.pitch + (sb.pitch - sa.pitch) * sm, dist: sa.dist + (sb.dist - sa.dist) * sm, tx: sa.tx + (sb.tx - sa.tx) * sm, ty: sa.ty + (sb.ty - sa.ty) * sm, tz: sa.tz + (sb.tz - sa.tz) * sm, charScale: sa.charScale + (sb.charScale - sa.charScale) * sm }; trace(set, st, x, z); }
+        for (const w of [0.25, 0.5, 0.75]) {
+          const sm = w * w * w * (w * (w * 6 - 15) + 10);
+          trace(set, g.blendPose(sa, sb, sm, new d.group.position.constructor(x, 1, z), app.rig.aspectRatio, a === 'D' || b === 'D'), x, z);
+        }
       }
     }
     const list = [...clusters.values()].sort((p, q) => q.n - p.n).slice(0, 60).map((c) => ({ ...c, c: c.c.map((v) => +v.toFixed(2)), tMin: +c.tMin.toFixed(2) }));
-    return { rays, blocked, setCount, soups: soups.length, list };
+    return { rays, blocked, blockedBy, setCount, soups: soups.length, list };
   }, FRAC);
-  console.log(`rays ${res.rays}, blocked ${res.blocked} (${((100 * res.blocked) / res.rays).toFixed(1)}%), sets ${JSON.stringify(res.setCount)}`);
+  console.log(`rays ${res.rays}, blocked ${res.blocked} (${((100 * res.blocked) / res.rays).toFixed(1)}%), sets ${JSON.stringify(res.setCount)}, blocked per set ${JSON.stringify(res.blockedBy)}`);
   for (const c of res.list) console.log(`${String(c.n).padStart(4)}  ${c.key.padEnd(38)} sets ${JSON.stringify(c.sets)}  x ${c.px.map((v) => v.toFixed(1)).join('..')} z ${c.pz.map((v) => v.toFixed(1)).join('..')}  centroid ${c.c.join(',')}`);
   if (out) fs.writeFileSync(out, JSON.stringify(res, null, 1));
 } finally { await browser.close(); }

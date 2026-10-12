@@ -35,12 +35,20 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 - `node tools/occ-inventory.mjs [query] [out.json]` — empirical occluder inventory (`OCC_FRAC=0.55|0.9|0.2` = torso /
   head / legs ray): traces camera -> player over the quay x the graph's poses against every triangle, clusters hits
 - `node tools/occ-compare.mjs out.png "caption" "label|file|x,y,w,h|scale" ...` — N-up labelled crops (reveal variants)
+- `node tools/camsearch.mjs out.png <id> "x,z;x,z" "name=yaw,pitch,dist,fov,shift,hx,hy,hz[,gx,gz,rx,rz,cs]" ...` — camera
+  search: candidates (rows) x player positions (columns) of one framing, contact sheet
+- `node tools/camsim.mjs [--json=f] "name|x,z|keys:secs;g=x,z;..." ...` — deterministic walk through the real `App.update`
+  (1/60 s steps, no rendering): framing changes, blend times, per-frame yaw / fov / pivot steps, control-yaw jump, the
+  player's screen glide against its walking direction, reveal fades / flicker. `g=x,z` = a player steering to a point.
+- `node tools/visproof.mjs [--keep=dir] "name|x,z|stable|A|B|C|D|X,Y,w" ...` — culling proof: pruned vs `vis=0` pixel diff
+  (stable, pinned or frozen-blend poses); use QUERY with `occ=0`
+- `tools/eval.mjs` honours BASE_URL (serve a frozen baseline worktree on :5174 for A/B)
 
 ## Useful URL params
 `seed=1842` (canonical) · `forge=sabotaged` · `clean=1` (no HUD/panel) · `freeze=7.3` (deterministic time) ·
 `player=x,z` (place the player; the camera settles in that zone's framing, no arrival hold) ·
-`camera=A|B|C` (pin a framing) · `camB=yaw,pitch,dist,fov,shift,hx,hy,hz` (override a framing while tuning) ·
-`blend=A,B,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
+`camera=A|B|C|D` (pin a framing) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
+a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
 `static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`) ·
 `occ=0` (no player reveal: pixel-identical to Pass 2) · `occstyle=soft|dither|hybrid` · `occforce=all|0,2` (force
@@ -54,24 +62,35 @@ desaturated ivory for canvas/highlights. Keep props concentrated at focal points
 quay edge, bridge, a few banners); do not add uniform clutter.
 
 ## Camera graph (`src/app/CameraGraph.ts`)
-Three authored, semi-fixed framings, all on the canal side looking up-canal (+x), chosen by zone with 0.9 m
-hysteresis and blended 0.6-1.2 s (smootherstep on yaw/pitch/dist/fov/pivot/character scale):
+Four authored, semi-fixed framings, all on the canal side (+z of the pivot) looking up-canal (+x), chosen by zone with
+0.9 m hysteresis and blended 0.6-1.3 s (smootherstep on yaw/pitch/dist/fov/pivot/character scale):
 - **A establishing** (west end x < -9.4, and the arrival hold on a fresh session until the first move): yaw -78,
   pitch 2.5, dist 44, fov 38 — moon, castle, bridge, canal; player small.
 - **B merchant** (default): yaw -57.5, pitch 8, dist 26, fov 30 — the old locked view (yaw -55 / pitch 5 / 30 m /
   fov 34) re-staged; characters x1.12.
 - **C forge** (x 4.2..13.2, z < 2.4): yaw -60, pitch 8.5, dist 27, fov 24 — a long-lens push-in from almost the B
   camera position (the boat's banner stays a right-hand framing element); characters x1.15.
+- **D frontal district** (x >= 14.0, any z; releases at 13.1): yaw -20, pitch 8, dist 20, fov 36 — the frontage seen
+  almost square-on, a long horizontal backdrop to walk across; characters x1.12. Camera z must stay < ~18.5: the
+  opposite-bank houses start at z 19.8 (never visible from A/B/C, they would swallow a camera placed further back), so
+  D is a 20 m / fov 36 lens, not a long telephoto. A C -> D or B -> D blend (edge walkers at z > 2.4 never enter C's
+  zone) is ANCHORED (`blendPose`): the pivot is shifted along the camera's own right / up so the player's screen
+  position glides between its position in the two framings (no swing from the 40 deg yaw change, no backwards drift:
+  D's pivot is set so the player enters D where it stood in C, ndc x ~ +0.35). 1.3 s.
 Movement keys stay mapped through the yaw they were pressed under until released. Panel edits of a framing re-run
-the visibility bake.
+the visibility bake. Graph: A AB B BC C CD D (+ BD for the water's-edge walker).
 
 ## Visibility-driven generation (`src/district/Visibility.ts`)
-Every wall per floor / roof / far house / bridge is a visibility part. After generation the graph's ~100 sample
-poses (each framing over its zone + AB/BC blend poses + their planar-mirror twins) are rendered as part-ID tiles and
-counted on the GPU. Never-seen parts (Tier 3) leave every per-frame pass (shadow casters survive only for the
-one-off moon-shadow render). Static meshes are ordered [always | notC | onlyA]; a framing = one drawRange. Building
-back walls are not generated (keep the skipped RNG draw so seeds stay identical). Verify culling with
-`static=1` shots, `vis=0` vs default: they must be pixel-identical.
+Every wall per floor / roof / far house / bridge is a visibility part. After generation the graph's ~270 sample
+poses (each framing over its zone + AB/BC/CD/BD blend poses + their planar-mirror twins) are rendered as part-ID tiles and
+counted on the GPU into 8 sets (A B C D AB BC CD BD). A part's need mask = the sets that show it. Never-seen parts
+(Tier 3) leave every per-frame pass (shadow casters survive only for the one-off moon-shadow render). Each static mesh
+stores its triangles class by class (class = distinct need mask), ordered by `planDraw` (search minimising the weighted
+triangles drawn per framing / blend; A/B/C and their blends weigh double so they never draw more than before D); a
+framing or blend = the prefix of classes up to the last it needs = one drawRange, no extra draw call. `levelOf(ids)` /
+`setLevel(n)` replace the old 0/1/2 levels. Building back walls are not generated (keep the skipped RNG draw so seeds
+stay identical). Verify culling with `tools/visproof.mjs` (pruned vs `vis=0`, same session, `occ=0` to keep the reveal
+fade out of the comparison): they must be pixel-identical.
 
 ## Player occlusion reveal (`src/app/Occlusion.ts`)
 V1 protects the player only. When an occludable object stands between the camera and the player's torso, a soft
