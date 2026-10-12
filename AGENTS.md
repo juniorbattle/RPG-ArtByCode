@@ -43,6 +43,14 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 - `node tools/visproof.mjs [--keep=dir] "name|x,z|stable|A|B|C|D|X,Y,w" ...` — culling proof: pruned vs `vis=0` pixel diff
   (stable, pinned or frozen-blend poses); use QUERY with `occ=0`
 - `tools/eval.mjs` honours BASE_URL (serve a frozen baseline worktree on :5174 for A/B)
+- `npm run art:doctor` — read-only report of the character art toolchain (Node, repo, Art Lab, Aseprite, Aseprite AI Artist);
+  "Aseprite not installed" is a valid state (exit 0) and it never reports the integration as validated. `-- --json` available.
+- `npm run art:validate` — provenance manifests (`art-lab/characters/manifests/*.manifest.json`) + orphan sources / exports
+- `npm run art:sheet -- <sheet.png> [meta.json] [--out f.png] [--scale 4]` — labelled nearest-neighbour review contact sheet
+  (Windows PowerShell drops the first `--` of any `npm run x -- flags` and npm then eats the flags: write `npm run x '--' flags`
+  or call `node tools/art-lab/<script>.mjs flags` directly)
+- Character Lab (dev only): `npm run dev`, then `/character-lab.html` (or `npm run art:lab`) — shows an exported PNG sheet through
+  Three.js at 1x / 4x / runtime scale; `window.__lab.selfTest()` checks nearest filtering texel-for-texel. Not part of the game or its build.
 
 ## Useful URL params
 `seed=1842` (canonical) · `forge=sabotaged` · `clean=1` (no HUD/panel) · `freeze=7.3` (deterministic time) ·
@@ -55,6 +63,21 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 occluders open: review / visibility proof) · `occdebug=1` (proxy boxes, reveal ellipse, active list) ·
 `occbehind=0` (skip the behind-occluder bake pass) · `occtest=shopA,tall` (treat those buildings' front walls as
 occludable: stress test of the behind-occluder bake)
+
+## Art production principle
+Maximise perceptual complexity while minimising runtime complexity.
+
+Detail may be procedurally generated, baked, or selectively authored. The deciding factor is final perceptual quality, runtime
+cost, reproducibility and operator approval — not procedural purity.
+- External art tools (Aseprite and the like) are development-time helpers, never runtime, install or build dependencies:
+  `npm install`, `npm run dev`, `npm run build` and the game must work on a machine without them. Today the game still generates
+  everything at boot and loads no authored or baked asset.
+- A baked asset may reach the runtime only through an approved provenance manifest (`approved: true`, `runtimeUse: "production"`)
+  and an explicit operator-approved task. Generated output never becomes canonical production art silently.
+- `*.aseprite` files are production sources (tracked); the sheet PNG + metadata JSON exports are the baked, runtime-ready outputs.
+  Local application / tool files, agent wiring with machine paths, secrets and temp files are never committed (`.gitignore`).
+- The workspace is `art-lab/` (see `art-lab/README.md`, `art-lab/characters/README.md`). Whether Aseprite and its agent
+  integration have been validated is recorded in `JOURNAL.md` (latest pass) and by `npm run art:doctor`, not here.
 
 ## Art direction (locked)
 Monochrome-leaning night: indigo / slate dominant, cool stone secondary, amber light as the only warm accent,

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "merchant-gold-master-v1",
+  "kind": "character",
+  "status": "planned",
+  "source": "art-lab/characters/source/merchant-v1.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/merchant-v1.png",
+    "metadata": "art-lab/characters/exports/merchant-v1.json"
+  },
+  "generator": {
+    "pipeline": "aseprite-ai-artist",
+    "version": null,
+    "model": null
+  },
+  "references": [
+    { "category": "A", "label": "Merchant District runtime, Camera B (current baseline)", "path": null }
+  ],
+  "approved": false,
+  "runtimeUse": "none",
+  "notes": "TEMPLATE ONLY. Nothing here exists yet. A real manifest lives in art-lab/characters/manifests/<id>.manifest.json."
+}

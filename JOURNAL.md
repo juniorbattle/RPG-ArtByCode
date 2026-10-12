@@ -614,7 +614,97 @@ CD est un peu plus lourd (+≈ 0,1 ms, + triangles) mais dans le bruit. **[?]** 
 
 ---
 
+## Passe 4A-0A — Préparation du Character Art Toolchain (branche `character-art-toolchain-1`, base `d7c439b`, outillage seul)
+
+Demande : préparer le dépôt pour un futur pipeline de personnages Aseprite-first (Opus / Devin → Aseprite AI Artist → édition au pixel →
+review / fix → animation → atlas → Character Lab Three.js), **sans installer Aseprite, sans commencer la production 4A, sans toucher à la scène**.
+Principe posé : *maximiser la complexité perçue en minimisant la complexité runtime* ; les outils externes ne sont jamais des dépendances runtime.
+Base vérifiée : `main` = `d7c439b3b08280d7643d8cfe3f658de6ad49b928` (Pass 4B, caméra D), arbre propre ; branche créée depuis ce SHA.
+Images / preuves : `screenshots/4a-0a/` (`lab-synthetic.png`, `lab-filter-comparison.png`, `contact-synthetic.png`, `lab-selftest.json`,
+`runtime-scale-validation.json`). Docs : `art-lab/README.md`, `art-lab/characters/README.md`, `art-lab/characters/reference/README.md`.
+
+### 4A-0A.1 Ce qui existe maintenant
+
+- **[OK] Squelette `art-lab/`** : `characters/{reference/{A-runtime-baseline,B-runtime-quality-targets,C-sprite-quality},source,exports,reviews,smoke-test,manifests}`
+  (`.gitkeep`), README de pipeline (références → brief → silhouette → Aseprite → palette → critique → corrections → animation → export → métadonnées → Lab → validation runtime),
+  taxonomie A/B/C/D à autorité inégale, 19 portes de qualité (dont « le personnage doit augmenter la valeur de production perçue du district »),
+  note d'architecture des PNJ génériques (famille → variation contrôlée → nettoyage artistique → sprite cuit). Aucune image de référence commitée.
+- **[OK] Provenance** : `manifest.example.json` + `tools/art-lab/validate-manifest.mjs` (`npm run art:validate`). Contrat : `approved: true` exige statut `approved` + `approval {by, date}` ;
+  `runtimeUse: production` exige `approved: true` ; fichiers requis dès `experimental` ; clés inconnues refusées ; sources / exports **orphelins** (sans manifeste) signalés.
+  Testé sur un dépôt factice : 9 cas invalides rejetés (approuvé sans approbation, production non approuvée, clé inconnue, fichier manquant, mauvais nom de fichier,
+  chemin à antislash, statut/approved incohérents, id dupliqué, JSON cassé), 1 manifeste complet accepté, 1 export orphelin signalé.
+- **[OK] `npm run art:doctor`** (`tools/art-lab/doctor.mjs`, lecture seule, `--json`) : Node, dépôt, Art Lab, Aseprite, AI Artist. Sortie réelle ici : `Aseprite ... NOT INSTALLED`,
+  `Aseprite AI Artist ... NOT CONFIGURED`, `READY FOR 4A-0B AFTER ASEPRITE INSTALLATION`, code 0. Jamais de « OK » pour un logiciel absent ni de « validé » (il ne peut pas le prouver).
+  Branches vérifiées avec de faux exécutables (`.exe` de test compilés en `%TEMP%`, hors dépôt) : chemin `ASEPRITE_PATH` invalide, fichier ou dossier valide (1.3.14 → « FOUND »),
+  1.2.40 → « TOO OLD », bannière illisible → « version unknown », fichier non nommé *aseprite* → jamais exécuté. Détection du câblage agent : seuls les **noms** de fichiers de config sont affichés.
+- **[OK] `tools/art-lab/make-contact-sheet.mjs`** (`npm run art:sheet`) : planche de revue étiquetée, plus proche voisin, une ligne par tag, `json-array` / `json-hash` / grille.
+  Réutilise Chrome via `puppeteer-core` comme les autres outils (aucune dépendance ajoutée).
+- **[OK] Hygiène** : `.gitignore` (exécutables / dossiers d'installation / paquets d'extension Aseprite, sauvegardes et temporaires, câblage agent `.mcp.json` `.cursor/mcp.json` `.codex/` `*.bak-*`, secrets,
+  caches) **sans** ignorer les `.aseprite` du projet ; `.gitattributes` (`*.aseprite *.ase *.png binary`). Vérifié avec `git check-ignore` : 29 chemins qui doivent être ignorés le sont, 17 qui ne doivent pas l'être ne le sont pas ;
+  aucun fichier suivi n'est devenu « modifié » à cause de `.gitattributes`.
+- **[OK] `AGENTS.md`** : principe de production d'art + politique durable (outils externes jamais en dépendance, manifeste approuvé pour tout passage au runtime, sources vs exports) + commandes. **Ne dit pas** qu'Aseprite est validé.
+
+### 4A-0A.2 Character Lab (dev seul) : `character-lab.html` + `src/lab/` (3 modules)
+
+- **[OK] Aller-retour synthétique** : RGBA généré par code → canvas → blob PNG → `<img>` décodée → texture GPU Three.js, comme un fichier sur disque. Page Vite **séparée** que le point d'entrée du jeu n'importe jamais.
+- **[OK] Contrat de texture = `SpriteAtlas`** : plus proche voisin, sans mipmaps, clamp, sRGB, alpha droit, fond gris neutre (`bg=neutral|dark|light`), ancre du pied calée sur la grille de pixels.
+  Trois vues sur une même ligne de pied : **1x**, **4x nearest**, **échelle runtime** d'un cadrage A/B/C/D ; planche entière avec la trame courante ; lecture des tags ; trames rognées (`spriteSourceSize`).
+- **[OK] Auto-test pixel par pixel** (`window.__lab.selfTest()`) : pour chaque pixel de chaque vue, recalcule le texel que le GPU doit échantillonner et compare le tampon d'image au PNG décodé sur le fond ; lit aussi l'état de filtre GL
+  auprès du pilote. Résultat 1920×1080 : 1x 1 872 px / 0 écart ; 4x 25 872 px / 0 écart ; runtime B 4,551× 33 304 px / 0 écart (146 pixels exactement sur une frontière de texel écartés) ; filtre `NEAREST / NEAREST`, delta max 0.
+- **[OK] Le test peut échouer** (contrôle négatif `&filter=linear`, volontairement faux) : 4x 6 594 écarts (Δ max 182), runtime 8 190 (Δ max 187), 1x 0 écart (attendu : pixel centré). `lab-filter-comparison.png` montre la différence.
+- **[OK] Échelle runtime vérifiée contre le jeu** : px écran par texel de sprite à 1080p (joueur à la position de référence du cadrage) **A 2,415 / B 4,551 / C 4,960 / D 4,366**. À 720p le Lab donne 1,610 / 3,034 / 3,306 / 2,910 et le jeu en cours
+  d'exécution (`window.__app`, caméra réelle) mesure 1,610 / 3,034 / 3,306 / 2,910 (horizontalement +0,3 %). Non entier à tous les cadrages : des largeurs de texel inégales sont **normales** au runtime et visibles dans cette vue.
+- **[OK] Formats d'export** : parseur des deux formes JSON d'Aseprite (`--data … --format json-array|json-hash --list-tags`, forme vérifiée dans la doc CLI d'Aseprite). Une trame rognée (`trimmed`, `spriteSourceSize`, forme `json-hash`) se rend
+  **pixel pour pixel comme la version non rognée** (diff 0 px) et passe l'auto-test.
+- **[?] La fixture synthétique est écrite à la main** (forme d'un export Aseprite, pas un export réel) : le Lab n'a jamais lu un vrai fichier Aseprite.
+- **[?] Limites du Lab** : exactitude à l'écran seulement à zoom navigateur 100 % et DPR entier (l'auto-test lit le tampon, pas l'écran) ; vérifié sur Chrome / ANGLE D3D11 seulement ; l'échelle runtime ignore le DOF, la passe miroir, l'élargissement de fov des fenêtres étroites
+  (aspect fixé à 16:9) et suppose le joueur à une position de référence par cadrage (en marchant, la distance caméra-joueur varie). La **règle de taille** (`PIXEL_WORLD × act.scale × charScale` le long de la verticale du billboard) est lue dans le shader de `SpriteRenderer`,
+  pas mesurée sur des pixels rendus.
+
+### 4A-0A.3 Recherche amont : `with-pebbly/aseprite-ai-artist` (lue, **rien exécuté**)
+
+- **[OK]** Le paquet npm est **`@pebbly/aseprite-ai-artist`** (dernier observé : **0.8.2**, MIT, `engines.node >=22.6.0`, bin `aseprite-ai-artist`) ; `aseprite-ai-artist` et `@with-pebbly/aseprite-ai-artist` répondent **404**. Version non épinglée dans le dépôt : à épingler à ce que 4A-0B valide.
+- Exigences : **Aseprite 1.3+** (API Lua WebSocket absente en 1.2 ; lancer Aseprite une fois), Node ≥ 22.6 (ici 22.14.0). Chaîne : agent –MCP→ serveur –pont 127.0.0.1 (9931 / 9932)→ extension Aseprite. 18 outils MCP, 14 workflows `aseprite:*`
+  (`studio` `brief` `concept` `new` `palette` `draw` `shade` `rig` `animate` `tileset` `review` `fix` `export` `submit`), 62 règles de pixel art, critique « à froid » (`pixel-critic`). Clients cités : Claude Code, omp, OpenCode, Codex, Gemini, Cursor, VS Code, Windsurf — **pas** le CLI Devin.
+- **Pièges notés pour 4A-0B** : `install --all --agents` modifie des configs utilisateur et ajoute une section à `AGENTS.md` (utiliser `--dry-run` d'abord) ; `aseprite:submit` ouvre une PR publique (ne jamais l'utiliser sur nos assets) ; `install --project` écrit des chemins machine dans le dépôt (d'où le `.gitignore`).
+- **[?]** L'auteur écrit lui-même que l'effet de sa boucle critique sur la qualité « n'est pas encore mesuré » : à traiter comme une source de brouillon soumise à nos portes de qualité.
+
+### 4A-0A.4 Preuve que le jeu n'a pas changé
+
+- **[OK] Bundle de production identique à l'octet** : `dist/assets/index-B5BamZwF.js` (818,64 kB) et `dist/index.html`, SHA-256 avant = après (F81B4D7B… / D70DFE4D…) ; `dist` ne contient ni `character-lab.html` ni aucune chaîne `characterLab` / `__lab` / `Aseprite`.
+  Le Lab est servi par le serveur de dev seulement (le build ne prend que `index.html`).
+- **[OK] Quatre cadrages, seed 1842, `static=1`, `freeze=7.3`, 1920×1080, serveur dédié :5180** : baseline vs après = **0 px de différence (max 0)** en A, B, C et D ; la baseline contre elle-même (A/A2, D/D2) = 0 px, donc le harnais est déterministe.
+  Statistiques identiques avant / après : appels de dessin A 99 / B 105 / C 99 / D 99 ; triangles 224 586 / 209 890 / 167 738 / 239 018 ; 44 textures, 188,38 MB, 24 lumières. **0 appel de dessin, 0 texture, 0 géométrie, 0 shader ajoutés au jeu.**
+- `npm install` : « 0 vulnérabilités », `package-lock.json` inchangé (git le montrait ` M` à cause de l'horodatage seul ; hash du contenu identique à `HEAD`). Aucune dépendance ajoutée. `npm run typecheck` et `npm run build` OK.
+
+### 4A-0A.5 Ce qui n'est PAS fait / reste inconnu
+
+- **[?] Aseprite n'est pas installé** ; **[?] Aseprite AI Artist n'a jamais été installé ni exécuté** ; **[?] le MCP n'est pas validé**. Le doctor n'a jamais tourné contre un vrai Aseprite :
+  `--noinapp --version` (puis repli `--version`) est supposé accepté par toutes les versions 1.3+, **non vérifié**.
+- **[?]** Aucun test automatisé dans le dépôt (pas de lanceur) : `art:validate` / `art:doctor` sont des commandes manuelles ; rien ne les lance en CI.
+- **[?]** `.gitignore` ignore des configs d'agent de portée projet (`.mcp.json`, `.codex/`, …) : si une config assainie doit être partagée, `git add -f` explicite. `.devin/` n'est pas ignoré.
+- Hors périmètre respecté : aucune production de personnage, aucun gold master, aucune amélioration des sprites, aucune expérience PixelLab, aucun changement de caméras / géométrie / éclairage / SpriteRenderer.
+
+### 4A-0A.6 Erreurs de méthode / d'outillage (pour ne pas les refaire)
+
+- **[KO → corrigé] Nom de paquet.** `npm view aseprite-ai-artist` → 404 : le nom GitHub (`with-pebbly/aseprite-ai-artist`) n'est pas le nom npm. Lire le README amont avant de supposer un nom.
+- **[KO → corrigé] Premier auto-test : 36 / 132 / 135 écarts**, tous sur une seule ligne de pixels : la ligne-guide du pied (superposition à 35 %) était comptée comme du sprite. Un test de pixels doit masquer ses propres surimpressions.
+- **[KO → corrigé] Première échelle runtime fausse** : formule `rendu / (2 · dist · tan(fov/2))` avec la distance du **pivot** ; le joueur est en réalité à 31,1 / 23,5 / 27,8 / 20,9 m de la caméra (A / B / C / D) contre 44 / 26 / 27 / 20 m de pivot, soit +45 % (A) à +11 % (B) d'erreur.
+  Mesuré dans le jeu (`window.__app`), puis recalculé avec `CameraGraph.evalAnchor` + `applyPose` : égalité à la 3ᵉ décimale. Dériver une échelle écran du code caméra du jeu, pas d'un paramètre d'auteur.
+- **Un test qui passe peut être vide** : « 0 écart » n'a de valeur qu'avec un contrôle négatif qui échoue (filtre linéaire : 6 594 écarts).
+- **`git check-ignore -v` affiche aussi les règles de négation** (`!.env.example`) : faux « échec » du test d'hygiène ; vérifier le code de sortie sans `-v` (1 = non ignoré).
+- **PowerShell mange le premier `--`** de `npm run x -- --flag` (le shim `npm.ps1`) : npm avale alors `--flag` comme option à lui (`--json` perdu, `--port 5191` → `5191` devient la **racine** de Vite → 404 partout, faux « échec » de `art:lab`).
+  Écrire `npm run x '--' --flag` (guillemets) ou appeler `node tools/art-lab/<script>.mjs --flag` ; noté dans `art-lab/README.md` et `AGENTS.md`. Valable aussi pour les anciens `npm run shots -- …`.
+- Deux serveurs Vite écoutaient déjà sur :5173 (dont un autre projet, `RPGThreeJS`) : j'ai lancé le mien sur `:5180 --strictPort` pour que la baseline vienne bien de **cet** arbre. Le processus `node` enfant de ce serveur est arrêté en fin de passe.
+- Fichiers de travail du Lab en `art-lab/**/tmp/` (ignoré par git, vérifié) puis supprimés ; faux exécutables Aseprite et fixtures de test uniquement dans `%TEMP%`.
+
+---
+
 ## À reprendre (par priorité)
+
+**-1. PROCHAIN : Passe 4A-0B — intégration d'Aseprite AI Artist** (opérateur : acheter / installer Aseprite 1.3+) → lancer Aseprite une fois, `ASEPRITE_PATH` si besoin → `npx @pebbly/aseprite-ai-artist install-extension` (+ câblage agent avec `--dry-run`)
+→ `npm run art:doctor` → test de fumée sur un sprite jetable : édition exacte au pixel → critique / review → animation 4 trames → export atlas (`--sheet --data --format json-array --list-tags`) → Character Lab + `art:sheet` → manifeste + `art:validate`.
+Premier vrai export lu par le Lab ; confirmer `--noinapp --version` ; épingler et noter les versions (Aseprite, paquet, modèle). Ensuite seulement : Passe 4A (personnages premium).
 
 0. **Reveal d'occlusion** (passe 3b) : relecture humaine en mouvement (choix du style C, rayons 40–70 / 80–120 px, fondu 0,2 / 0,3 s) ; décider si les PNJ d'interaction
    doivent entrer dans le reveal ; chercher un cas où la passe « derrière » restaure vraiment des pièces (sinon envisager de la couper pour gagner ≈ 90 ms de bake) ;
@@ -656,3 +746,8 @@ CD est un peu plus lourd (+≈ 0,1 ms, + triangles) mais dans le bruit. **[?]** 
 - Une caméra qui recule traverse la géométrie qui est « derrière la caméra » des autres cadrages : vérifier z caméra contre ce qui est généré de ce côté (rive opposée).
 - Le besoin d'une pièce se mesure **par jeu de poses** (stables et mélanges séparés) ; mélanger les deux fait dessiner en C stable ce que seul un mélange voit. Pondérer les cadrages historiques pour qu'un nouveau cadrage ne les alourdisse pas.
 - Comparer le culling avec `occ=0` : la phase du fondu de reveal entre deux régénérations fabrique de faux écarts (1 377 px sur B).
+- Un outil externe de production d'art (Aseprite et son agent) n'est jamais une dépendance de build, d'installation ou de runtime ; une passe d'outillage se prouve par un bundle `dist` identique au SHA-256 et 0 px de différence sur les quatre cadrages.
+- Rien d'externe ne devient « canon » en silence : un manifeste de provenance (`art-lab/characters/manifests`) avec approbation nommée et datée est la seule voie vers `runtimeUse: production`. Les `.aseprite` sont des sources, les PNG + JSON des sorties cuites.
+- Ne jamais écrire « validé » pour un logiciel qu'on n'a pas exécuté : `art:doctor` affiche l'état réel (`NOT INSTALLED` est un état valide) ; « validé » appartient à un test de bout en bout (4A-0B).
+- Un test de preuve doit pouvoir échouer : prévoir un contrôle négatif (Lab : `filter=linear`) avant d'accepter « 0 écart ».
+- Une échelle écran se dérive du code caméra du jeu à la position réelle du joueur (`evalAnchor` + `applyPose`), jamais de la distance de pivot d'un cadrage.

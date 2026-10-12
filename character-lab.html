@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="data:," />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Character Lab (dev only)</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #808080; overflow: hidden; font: 12px/1.45 ui-monospace, Consolas, monospace; color: #10131a; }
+    canvas#lab { display: block; width: 100vw; height: 100vh; image-rendering: pixelated; }
+    #labels { position: fixed; inset: 0; pointer-events: none; }
+    .lbl { position: absolute; padding: 1px 5px; background: rgba(16, 19, 26, .78); color: #e8e2ce; white-space: nowrap; }
+    #hl { position: absolute; border: 1px solid #e9a64c; box-sizing: content-box; }
+    #hud { position: fixed; right: 12px; bottom: 12px; max-width: 70vw; padding: 8px 10px; background: rgba(16, 19, 26, .86); color: #e8e2ce; }
+    #hud pre { margin: 0 0 6px; font: inherit; white-space: pre-wrap; }
+    #hud select, #hud button { font: inherit; }
+    .hint { opacity: .6; }
+  </style>
+</head>
+<body>
+  <canvas id="lab"></canvas>
+  <div id="labels"></div>
+  <div id="hud"><pre id="info">loading...</pre><div id="ctl"></div></div>
+  <script type="module" src="/src/lab/characterLab.ts"></script>
+</body>
+</html>

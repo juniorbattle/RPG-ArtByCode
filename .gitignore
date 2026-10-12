@@ -2,3 +2,45 @@ node_modules
 dist
 .DS_Store
 *.log
+
+# --- Art Lab hygiene: LOCAL application / tool files only (never commit) --------------------------------------
+# Project-owned art is deliberately NOT ignored: *.aseprite / *.ase sources, exported PNG + JSON sheets,
+# provenance manifests, reviews and smoke-test evidence under art-lab/.
+# Aseprite application, portable installs and extension packages
+/Aseprite/
+/aseprite/
+/Aseprite-*/
+/aseprite-*/
+Aseprite.exe
+aseprite.exe
+Aseprite.app/
+*.aseprite-extension
+# backup / temporary files written next to a source file
+*.aseprite.bak
+*.ase.bak
+*.aseprite~
+*.ase~
+art-lab/**/*.tmp
+art-lab/**/tmp/
+art-lab/**/scratch/
+art-lab/**/.cache/
+# agent wiring written by `aseprite-ai-artist install` (machine-specific paths such as ASEPRITE_PATH) and its backups.
+# If a sanitised, path-free config is ever meant to be project-owned, add it explicitly with `git add -f`.
+.mcp.json
+.cursor/mcp.json
+.vscode/mcp.json
+.codex/
+.gemini/
+opencode.json
+*.bak-*
+# secrets, tokens, machine-local overrides
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.token
+*.local.json
+# tool caches
+.cache/
+.vite/

@@ -10,7 +10,11 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "shots": "node tools/screenshots.mjs",
-    "compare": "node tools/compare.mjs"
+    "compare": "node tools/compare.mjs",
+    "art:doctor": "node tools/art-lab/doctor.mjs",
+    "art:validate": "node tools/art-lab/validate-manifest.mjs",
+    "art:sheet": "node tools/art-lab/make-contact-sheet.mjs",
+    "art:lab": "vite --open /character-lab.html"
   },
   "dependencies": {
     "three": "0.186.1"

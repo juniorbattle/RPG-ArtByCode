@@ -1,0 +1,4 @@
+# Art sources and baked outputs are binary: never line-ending-normalise, never text-diff.
+*.aseprite binary
+*.ase binary
+*.png binary
