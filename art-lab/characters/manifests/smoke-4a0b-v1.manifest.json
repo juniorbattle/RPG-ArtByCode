@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "smoke-4a0b-v1",
+  "kind": "character",
+  "status": "experimental",
+  "source": "art-lab/characters/source/smoke-4a0b-v1.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/smoke-4a0b-v1.png",
+    "metadata": "art-lab/characters/exports/smoke-4a0b-v1.json"
+  },
+  "generator": {
+    "pipeline": "aseprite-ai-artist",
+    "version": "0.8.2",
+    "model": "claude-opus-5-5"
+  },
+  "references": [],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "Pass 4A-0B toolchain smoke test. SYNTHETIC TEST DUMMY: not character art, never for production. Drawn live in Aseprite 1.3.18.6 through the aseprite-ai-artist 0.8.2 Claude Code plugin (local scope, marketplace tag v0.8.2) by two headless Claude Code sessions; a deliberately planted off-palette pixel was found by validate and removed before export. Evidence: art-lab/characters/smoke-test/4a0b/."
+}

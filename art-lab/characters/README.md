@@ -1,7 +1,8 @@
 # Character Art Lab
 
-Contract for the future Aseprite-first character pipeline (Pass 4A). **Status: prepared, not started, not validated.**
-Aseprite is not installed; the pipeline below is the intended workflow, not a record of one that ran.
+Contract for the future Aseprite-first character pipeline (Pass 4A). **Status: toolchain validated (Pass 4A-0B smoke test on a
+synthetic dummy, see `../README.md`), character production not started.** No gold master, no production sprite exists; the
+pipeline below is the intended workflow, of which only the toolchain steps (Aseprite -> export -> metadata -> Lab) have run.
 
 ## Pipeline
 

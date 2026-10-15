@@ -698,13 +698,108 @@ Images / preuves : `screenshots/4a-0a/` (`lab-synthetic.png`, `lab-filter-compar
 - Deux serveurs Vite écoutaient déjà sur :5173 (dont un autre projet, `RPGThreeJS`) : j'ai lancé le mien sur `:5180 --strictPort` pour que la baseline vienne bien de **cet** arbre. Le processus `node` enfant de ce serveur est arrêté en fin de passe.
 - Fichiers de travail du Lab en `art-lab/**/tmp/` (ignoré par git, vérifié) puis supprimés ; faux exécutables Aseprite et fixtures de test uniquement dans `%TEMP%`.
 
+## Passe 4A-0B — Intégration d'Aseprite AI Artist et test de fumée (branche `character-art-toolchain-1`, base `51b89b9`, 2026-10-15)
+
+Demande : installer et prouver la chaîne Aseprite → agent → export → Character Lab, **sans** commencer la 4A ni toucher au runtime.
+Autorisé par l'opérateur : extension Aseprite, plugin Claude Code en portée **locale**, dépendances strictement nécessaires, pont MCP local,
+sprites / exports de test, docs Art Lab + journal ; interdit : `install --all --agents`, PixelLab, soumission publique, personnages de production,
+caméras / rendu / gameplay. Agent : Claude Code 2.1.301 (Opus 5.5), qui a aussi mené l'onboarding ci-dessous. Preuves : `art-lab/characters/smoke-test/4a0b/`.
+
+### 4A-0B.0 Onboarding Claude Code (avant la passe, aucune modification du dépôt)
+
+- **[OK]** Claude Code lit `AGENTS.md` nativement (≥ 2.1.277) ; `~/.claude/CLAUDE.md` (principes universels, hors dépôt, ≈ 1,3 k tokens) créé à la demande de l'opérateur.
+  Session neuve, `/context` : User 1,2 k + `AGENTS.md` 6 k tokens, chacun **une fois** ; `JOURNAL.md` **non** chargé. Aucun `CLAUDE.md` de projet (décision opérateur).
+- **[OK] Piège mesuré** (fixtures en bac à sable, `claude -p`) : un `CLAUDE.md` ou `.claude/CLAUDE.md` dans un dossier **parent** du projet coupe le chargement natif d'`AGENTS.md` ;
+  le `~/.claude/CLAUDE.md` utilisateur en est exclu (doc + session réelle dans HD-2D), bien que `C:\Users\<moi>` soit un parent du dépôt.
+- `/doctor prompt-audit` : aucun conflit entre `~/.claude/CLAUDE.md` et `AGENTS.md` (une remarque de style sur `AGENTS.md:92-93`, laissée telle quelle).
+
+### 4A-0B.1 Ce qui est installé (rien dans Git)
+
+| Pièce | Version exacte | Où |
+|---|---|---|
+| Aseprite | 1.3.18.6-x64 (`--noinapp --version` accepté, code 0) | `C:\Program Files\Aseprite` (installé par l'opérateur avant la passe) |
+| Extension Lua | aseprite-ai-artist **0.8.2**, `ai-artist.lua` SHA-256 `bdb4d8d8…` | `%APPDATA%\Aseprite\extensions\aseprite-ai-artist` |
+| Plugin Claude Code | `aseprite@aseprite-ai-artist` **0.8.2** (MCP 18 outils, 14 skills, 4 agents, 2 hooks) | activé dans `.claude/settings.local.json` (portée **locale**, ignoré par git) |
+| Marketplace | `with-pebbly/aseprite-ai-artist#v0.8.2` (commit `5894b12`), `autoUpdate: false` | déclarée en portée locale |
+
+- **[OK] Vérifié avant d'installer** : `npm view` (0.8.2 toujours `latest`, 3 dépendances `ws` / `zod` / `@modelcontextprotocol/sdk`, aucun script d'installation),
+  intégrité du tarball = registre (`sha512-blkv8…`), tag `v0.8.2` = npm 0.8.2 (extension, skills, agents, hooks, règles identiques hors fins de ligne), le `dist/` construit
+  localement par le lanceur du plugin (`npm ci --ignore-scripts` + `tsc`) = `dist/` publié (hors source maps). Hooks lus : sonde TCP locale + marqueur dans `%TEMP%`.
+- **[OK] Dry-runs** : `install-extension --dry-run` n'écrit rien (dossier absent après) ; le code de `install` montre que `install claude` écrirait un serveur **utilisateur**
+  dans `~/.claude.json` avec `@latest` (non épinglé, chargé dans tous les projets) et `--agents` ajouterait une section à `AGENTS.md` : **non utilisés**. Pas de serveur MCP autonome (doublon).
+- **[OK] Soumission publique bloquée** : `.claude/settings.local.json` → `deny: Skill(aseprite:submit), Bash(gh repo fork:*), Bash(gh pr create:*)` ; vérifié en session neuve :
+  « Skill execution blocked by permission rules ». `gh` n'est de toute façon pas installé.
+- **[OK] Session neuve dans HD-2D** : hook SessionStart actif, 18 outils `mcp__plugin_aseprite_aseprite__*`, 14 skills `aseprite:*`, 4 agents. Coût permanent ≈ 1,7 k tokens
+  (`claude plugin details`), dans ce dépôt seulement. `~/.claude.json` ne contient aucun `mcpServers` (seulement un compteur `pluginUsage`).
+
+### 4A-0B.2 Test de fumée (le vrai aller-retour)
+
+Deux sessions **neuves** `claude -p --model opus` dans le dépôt (la session pilote ne voit pas un plugin installé après son démarrage), consignes et rapports verbatim
+dans `smoke-test/4a0b/`. Sprite `smoke-4a0b-v1` : mannequin de test 32×48 RGB, **pas** un personnage.
+
+1. **[OK] Connexion** : `preflight` → `ready: true`, Aseprite 1.3.18.6, extension 0.8.2, `features: draw_batch, recolor, validate, tileset, reference, filmstrip`.
+2. **[OK] Création** : palette exacte de 8 entrées, calques `body` / `markers`, `colorsSnapped: []`.
+3. **[OK] Pixels exacts** (`read_pixels` / `look ascii`) : valeurs attendues aux coordonnées demandées, ligne opaque la plus basse y = 44 (pied runtime y = 45).
+4. **[OK] Modification ciblée** : 2 pixels (yeux), voisins inchangés, `pixelsChanged: 2`.
+5. **[OK] Palette / calques** : `sprite_info` conforme, `offPaletteColors: []`. `validate` signale les 4 marqueurs de coin comme « strays » (voulus) ;
+   `palette analyze` annonce un « quasi-doublon » transparent / lui-même (**[?]** défaut probable de l'analyseur).
+6. **[OK] Animation 4 trames**, 120 ms, tag `test` ; diff entre trames successives 68 px, jamais dans un coin ; pied à y = 44 sur les 4 trames.
+   Effet de **ma** consigne : en trames 2 et 4, la ligne y = 29 est vide (1 px entre torse et jambes) ; conforme à la consigne, visible sur la planche.
+7. **[OK] Critique + correction fondée sur preuve** — contrôle négatif : session A a planté **un** pixel hors palette (#00ff00, trame 3, (5,20)) ; la session B ne le savait pas.
+   `validate` l'a trouvé à l'aveugle (palette + stray + outline), lecture avant → `clear` 1×1 → lecture après ; rien d'autre modifié.
+   **[KO] `aseprite:pixel-critic` n'a pas pu voir le sprite** : sa définition d'agent n'accorde que `Read` / `Glob` / `Grep` (aucun outil MCP aseprite) ; il l'a dit lui-même. Revue faite par le skill `aseprite:review` + `validate`.
+8. **[OK] Export réel** : `ExportSpriteSheet` d'Aseprite (json-array, `listTags`), planche 128×48, 4 trames non rognées, tag `test` 0–3, calques listés.
+   **[?]** L'outil `export` renvoie la taille d'une trame (32×48), pas celle de la planche.
+9. **[OK] Character Lab** (1920×1080, Chrome / ANGLE D3D11) : auto-test **réussi** sur A / B / C / D (échelles 2,42 / 4,55 / 4,96 / 4,37), **0 écart** à 1x, 4x et runtime, filtre
+   `NEAREST / NEAREST` relu au pilote. **Contrôle négatif** `filter=linear` : **échoue** (4 950 et 6 212 écarts, Δ max 119 / 139). Fixture synthétique : chiffres identiques à 4A-0A (1 872 / 25 872 / 33 304 px).
+   Décodage indépendant des 4 trames : coins magenta, pied y = 44, 0 pixel semi-transparent, 0 couleur hors palette, défaut absent de l'export.
+10. **[OK] Vérifications** : `art:sheet` (planche de revue 4x dans `reviews/`), manifeste `smoke-4a0b-v1` (`experimental`, `runtimeUse: lab`, `approved: false`, générateur
+    aseprite-ai-artist 0.8.2 / claude-opus-5-5) → `art:validate` et `--strict` : 0 erreur ; avant le manifeste, le contrôle d'orphelins signalait bien les 3 fichiers. `npm run typecheck` OK.
+
+### 4A-0B.3 Preuve que le runtime n'a pas changé
+
+- **[OK] Bundle identique à l'octet** : `dist/assets/index-B5BamZwF.js` `f81b4d7b…` et `dist/index.html` `d70dfe4d…` avant = après (= 4A-0A) ; aucune chaîne `characterLab` / `__lab` / `aseprite` / `smoke-4a0b` dans `dist`.
+- **[OK] Quatre cadrages** (graine 1842, `static=1`, `freeze=7.3`, 1920×1080, serveur dédié `:5180 --strictPort`) : avant vs après **0 px (max 0)** en A, B, C, D ; A vs A (avant) 0 px.
+  Appels de dessin / triangles identiques : A 99 / 224 586, B 105 / 209 890, C 99 / 167 738, D 99 / 239 018.
+
+### 4A-0B.4 Fichiers modifiés (dépôt)
+
+- `tools/art-lab/doctor.mjs` : détecte le plugin Claude Code (portée, ref épinglée, auto-update, version en cache), la version de l'extension Aseprite, signale un plugin hors portée
+  locale ou une version extension ≠ plugin ; `~/.claude.json` ne compte que de vrais `mcpServers` (avant : le compteur `pluginUsage` passait pour du « câblage »). Toujours en
+  lecture seule, ne dit jamais « validé ». Contrôle négatif sur un faux `HOME` : portée utilisateur + extension 0.8.2 / cache 0.9.0 détectés, `pluginUsage` ignoré.
+- `art-lab/README.md` (statut, configuration installée, reproduction, pièges), `art-lab/characters/README.md` (statut), ce journal.
+- Nouveaux : `art-lab/characters/{source/smoke-4a0b-v1.aseprite, exports/smoke-4a0b-v1.{png,json}, manifests/smoke-4a0b-v1.manifest.json, reviews/smoke-4a0b-v1-contact.png, smoke-test/4a0b/}`.
+- Hors dépôt : extension Aseprite, plugin et marketplace (cache Claude Code), `.claude/settings.local.json` (ignoré). Aucune dépendance npm ajoutée, `package.json` inchangé.
+
+### 4A-0B.5 Ce qui n'est PAS fait / reste ouvert
+
+- **[?]** Non exercés : `studio`, `brief`, `concept`, `shade`, `rig`, `animate`, `tileset`, `fix`, les agents palette / rig / animation, le mode headless ; rien n'est dit de la **qualité** artistique produite.
+- **[?]** Critique « à froid » : `pixel-critic` inutilisable tel quel en 0.8.2 (outils manquants). Contournement possible sans toucher à l'amont : une critique lancée par un agent général
+  avec la consigne de `pixel-critic`, ou un agent de projet — à décider avant la 4A.
+- **[?]** Le Lab n'auto-teste que la première trame du tag ; les autres trames ont été vérifiées par décodage séparé (script hors dépôt), pas par `selfTest()`.
+- **[?]** Le manifeste n'accepte que `kind: character` : le mannequin de test y est déclaré comme tel, signalé dans `notes`.
+
+### 4A-0B.6 Erreurs de méthode / d'outillage (pour ne pas les refaire)
+
+- **[KO → corrigé] Aseprite « redémarré » mais pas relancé** : même PID, démarré à 14:54 avant l'installation de l'extension (16:14) → `pluginConnected: false`. Vérifier l'heure de
+  démarrage du processus, pas seulement sa présence ; une extension n'est lue qu'au lancement.
+- **[KO → contourné] Pont qui meurt avec la session** : le pont lancé par le serveur MCP d'une session `claude -p` (pourtant « détaché ») ne survit pas à la fin de la session sous Windows,
+  et l'extension ne re-compose le pont **que si la fenêtre Aseprite a le focus** (minuterie Lua liée à l'UI) ; une session suivante voyait donc `ready: false`. `AppActivate` n'a pas suffi
+  (Windows refuse le vol de focus). Correctif : un pont persistant (`dist/cli.js bridge`) lancé une fois, puis Aseprite lancé **après** lui (connexion immédiate au démarrage).
+- **[KO → corrigé] Git Bash réécrit les chemins** : `/context` devenait `C:/Program Files/Git/context`, `/art-lab/...` devenait `C:/Program Files/Git/art-lab/...` (le Lab affichait « cannot load »).
+  `MSYS_NO_PATHCONV=1` pour tout argument qui commence par `/` ; à l'inverse, avec cette variable, Node ne comprend plus `/c/Users/...` : passer `C:/Users/...`.
+- **[KO → corrigé] Imbriquer `claude` depuis une session Claude Code** : désactiver d'abord les variables `CLAUDE*` héritées (identifiants de session, jeton de messagerie), sinon la session fille se croit enfant de la mère.
+- Les preuves versionnées ne doivent pas contenir de chemin machine : la racine du dépôt est remplacée par `<repo>` dans les consignes et rapports copiés.
+
 ---
 
 ## À reprendre (par priorité)
 
-**-1. PROCHAIN : Passe 4A-0B — intégration d'Aseprite AI Artist** (opérateur : acheter / installer Aseprite 1.3+) → lancer Aseprite une fois, `ASEPRITE_PATH` si besoin → `npx @pebbly/aseprite-ai-artist install-extension` (+ câblage agent avec `--dry-run`)
-→ `npm run art:doctor` → test de fumée sur un sprite jetable : édition exacte au pixel → critique / review → animation 4 trames → export atlas (`--sheet --data --format json-array --list-tags`) → Character Lab + `art:sheet` → manifeste + `art:validate`.
-Premier vrai export lu par le Lab ; confirmer `--noinapp --version` ; épingler et noter les versions (Aseprite, paquet, modèle). Ensuite seulement : Passe 4A (personnages premium).
+**-1. PROCHAIN : Passe 4A — personnages premium (gold masters)**, **uniquement sur ordre de l'opérateur**. Avant d'y entrer : décider comment faire la critique à froid
+(`pixel-critic` 0.8.2 n'a pas les outils MCP, cf. 4A-0B.5) ; lancer Aseprite **après** le pont, ou garder un pont persistant pour les sessions sans surveillance ; refaire le test de fumée
+(`smoke-test/4a0b/`) après toute mise à jour d'Aseprite, de l'extension ou du plugin (épinglés en 0.8.2, auto-update coupé).
+-0b. **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise appli. Servir les baselines sur `:518x --strictPort` ;
+  décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
 
 0. **Reveal d'occlusion** (passe 3b) : relecture humaine en mouvement (choix du style C, rayons 40–70 / 80–120 px, fondu 0,2 / 0,3 s) ; décider si les PNJ d'interaction
    doivent entrer dans le reveal ; chercher un cas où la passe « derrière » restaure vraiment des pièces (sinon envisager de la couper pour gagner ≈ 90 ms de bake) ;
@@ -751,3 +846,6 @@ Premier vrai export lu par le Lab ; confirmer `--noinapp --version` ; épingler 
 - Ne jamais écrire « validé » pour un logiciel qu'on n'a pas exécuté : `art:doctor` affiche l'état réel (`NOT INSTALLED` est un état valide) ; « validé » appartient à un test de bout en bout (4A-0B).
 - Un test de preuve doit pouvoir échouer : prévoir un contrôle négatif (Lab : `filter=linear`) avant d'accepter « 0 écart ».
 - Une échelle écran se dérive du code caméra du jeu à la position réelle du joueur (`evalAnchor` + `applyPose`), jamais de la distance de pivot d'un cadrage.
+- Un outil externe s'installe épinglé (version exacte, tag, auto-update coupé), en portée locale, après lecture de son code d'installation et un dry-run ; jamais avec l'installeur
+  « tout-en-un » d'amont s'il écrit hors de cette portée. Une revue d'agent se prouve par un défaut planté qu'elle doit trouver à l'aveugle.
+- Le chargement des instructions d'agent se mesure (`/context` dans une session neuve) : jamais de `CLAUDE.md` dans un dossier parent d'un projet qui vit de son `AGENTS.md`.

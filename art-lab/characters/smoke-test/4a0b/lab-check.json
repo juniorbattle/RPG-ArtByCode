@@ -1,0 +1,273 @@
+{
+ "sheet": "/art-lab/characters/exports/smoke-4a0b-v1.png",
+ "meta": "/art-lab/characters/exports/smoke-4a0b-v1.json",
+ "selfTest": {
+  "A": {
+   "passed": true,
+   "filter": {
+    "mag": "NEAREST",
+    "min": "NEAREST",
+    "mipmapsRequested": false
+   },
+   "canvas": "1920x1080",
+   "panels": [
+    "1x: 1872 px, 0 mismatches (opaque 318, clear 1554, semi 0, skipped 0, maxDelta 0)",
+    "4x nearest: 25872 px, 0 mismatches (opaque 5088, clear 20784, semi 0, skipped 0, maxDelta 0)",
+    "runtime, Camera A: 2.42x @ 1080p: 9922 px, 0 mismatches (opaque 1821, clear 8101, semi 0, skipped 0, maxDelta 0)"
+   ]
+  },
+  "B": {
+   "passed": true,
+   "filter": {
+    "mag": "NEAREST",
+    "min": "NEAREST",
+    "mipmapsRequested": false
+   },
+   "canvas": "1920x1080",
+   "panels": [
+    "1x: 1872 px, 0 mismatches (opaque 318, clear 1554, semi 0, skipped 0, maxDelta 0)",
+    "4x nearest: 25872 px, 0 mismatches (opaque 5088, clear 20784, semi 0, skipped 0, maxDelta 0)",
+    "runtime, Camera B: 4.55x @ 1080p: 33304 px, 0 mismatches (opaque 6590, clear 26714, semi 0, skipped 146, maxDelta 0)"
+   ]
+  },
+  "C": {
+   "passed": true,
+   "filter": {
+    "mag": "NEAREST",
+    "min": "NEAREST",
+    "mipmapsRequested": false
+   },
+   "canvas": "1920x1080",
+   "panels": [
+    "1x: 1872 px, 0 mismatches (opaque 318, clear 1554, semi 0, skipped 0, maxDelta 0)",
+    "4x nearest: 25872 px, 0 mismatches (opaque 5088, clear 20784, semi 0, skipped 0, maxDelta 0)",
+    "runtime, Camera C: 4.96x @ 1080p: 39450 px, 0 mismatches (opaque 7648, clear 31802, semi 0, skipped 159, maxDelta 0)"
+   ]
+  },
+  "D": {
+   "passed": true,
+   "filter": {
+    "mag": "NEAREST",
+    "min": "NEAREST",
+    "mipmapsRequested": false
+   },
+   "canvas": "1920x1080",
+   "panels": [
+    "1x: 1872 px, 0 mismatches (opaque 318, clear 1554, semi 0, skipped 0, maxDelta 0)",
+    "4x nearest: 25872 px, 0 mismatches (opaque 5088, clear 20784, semi 0, skipped 0, maxDelta 0)",
+    "runtime, Camera D: 4.37x @ 1080p: 30612 px, 0 mismatches (opaque 6023, clear 24589, semi 0, skipped 348, maxDelta 0)"
+   ]
+  }
+ },
+ "negativeControl": {
+  "passed": false,
+  "filter": {
+   "mag": "LINEAR",
+   "min": "LINEAR",
+   "mipmapsRequested": false
+  },
+  "canvas": "1920x1080",
+  "panels": [
+   "1x: 1872 px, 0 mismatches (opaque 318, clear 1554, semi 0, skipped 0, maxDelta 0)",
+   "4x nearest: 25872 px, 4950 mismatches (opaque 5088, clear 20784, semi 0, skipped 0, maxDelta 119)",
+   "runtime, Camera B: 4.55x @ 1080p: 33304 px, 6212 mismatches (opaque 6590, clear 26714, semi 0, skipped 146, maxDelta 139)"
+  ]
+ },
+ "decode": {
+  "image": "128x48",
+  "metaSize": {
+   "w": 128,
+   "h": 48
+  },
+  "format": "RGBA8888",
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.18.6-x64",
+  "frameTags": [
+   {
+    "name": "test",
+    "from": 0,
+    "to": 3,
+    "direction": "forward",
+    "color": "#000000ff"
+   }
+  ],
+  "layers": [
+   {
+    "name": "body",
+    "opacity": 255,
+    "blendMode": "normal"
+   },
+   {
+    "name": "markers",
+    "opacity": 255,
+    "blendMode": "normal"
+   }
+  ],
+  "frames": [
+   {
+    "filename": "smoke-4a0b-v1 0.aseprite",
+    "rect": {
+     "x": 0,
+     "y": 0,
+     "w": 32,
+     "h": 48
+    },
+    "duration": 120,
+    "corners": [
+     "ff00ff",
+     "ff00ff",
+     "ff00ff",
+     "ff00ff"
+    ],
+    "lowestBodyRow": 44,
+    "semiAlphaPixels": 0,
+    "offPalette": [],
+    "colours": {
+     "ff00ff": 4,
+     "1b1f33": 140,
+     "8f9bb8": 19,
+     "5e6a8f": 126,
+     "3b4466": 19,
+     "e9a64c": 10
+    },
+    "eyes": [
+     "e9a64c",
+     "e9a64c"
+    ],
+    "belt": [
+     "e9a64c",
+     "5e6a8f"
+    ],
+    "stray": null
+   },
+   {
+    "filename": "smoke-4a0b-v1 1.aseprite",
+    "rect": {
+     "x": 32,
+     "y": 0,
+     "w": 32,
+     "h": 48
+    },
+    "duration": 120,
+    "corners": [
+     "ff00ff",
+     "ff00ff",
+     "ff00ff",
+     "ff00ff"
+    ],
+    "lowestBodyRow": 44,
+    "semiAlphaPixels": 0,
+    "offPalette": [],
+    "colours": {
+     "ff00ff": 4,
+     "1b1f33": 140,
+     "8f9bb8": 19,
+     "5e6a8f": 126,
+     "3b4466": 19,
+     "e9a64c": 10
+    },
+    "eyes": [
+     "5e6a8f",
+     "5e6a8f"
+    ],
+    "belt": [
+     "5e6a8f",
+     "5e6a8f"
+    ],
+    "stray": null
+   },
+   {
+    "filename": "smoke-4a0b-v1 2.aseprite",
+    "rect": {
+     "x": 64,
+     "y": 0,
+     "w": 32,
+     "h": 48
+    },
+    "duration": 120,
+    "corners": [
+     "ff00ff",
+     "ff00ff",
+     "ff00ff",
+     "ff00ff"
+    ],
+    "lowestBodyRow": 44,
+    "semiAlphaPixels": 0,
+    "offPalette": [],
+    "colours": {
+     "ff00ff": 4,
+     "1b1f33": 140,
+     "8f9bb8": 19,
+     "5e6a8f": 126,
+     "3b4466": 19,
+     "e9a64c": 10
+    },
+    "eyes": [
+     "e9a64c",
+     "e9a64c"
+    ],
+    "belt": [
+     "5e6a8f",
+     "e9a64c"
+    ],
+    "stray": null
+   },
+   {
+    "filename": "smoke-4a0b-v1 3.aseprite",
+    "rect": {
+     "x": 96,
+     "y": 0,
+     "w": 32,
+     "h": 48
+    },
+    "duration": 120,
+    "corners": [
+     "ff00ff",
+     "ff00ff",
+     "ff00ff",
+     "ff00ff"
+    ],
+    "lowestBodyRow": 44,
+    "semiAlphaPixels": 0,
+    "offPalette": [],
+    "colours": {
+     "ff00ff": 4,
+     "1b1f33": 140,
+     "8f9bb8": 19,
+     "5e6a8f": 126,
+     "3b4466": 19,
+     "e9a64c": 10
+    },
+    "eyes": [
+     "5e6a8f",
+     "5e6a8f"
+    ],
+    "belt": [
+     "5e6a8f",
+     "5e6a8f"
+    ],
+    "stray": null
+   }
+  ],
+  "framePairsChanged": [
+   "1->2: 68 px",
+   "2->3: 68 px",
+   "3->4: 68 px",
+   "4->1: 68 px"
+  ]
+ },
+ "syntheticFixture": {
+  "passed": true,
+  "filter": {
+   "mag": "NEAREST",
+   "min": "NEAREST",
+   "mipmapsRequested": false
+  },
+  "canvas": "1920x1080",
+  "panels": [
+   "1x: 1872 px, 0 mismatches (opaque 602, clear 1262, semi 8, skipped 0, maxDelta 0)",
+   "4x nearest: 25872 px, 0 mismatches (opaque 9632, clear 16112, semi 128, skipped 0, maxDelta 0)",
+   "runtime, Camera B: 4.55x @ 1080p: 33304 px, 0 mismatches (opaque 12453, clear 20707, semi 144, skipped 146, maxDelta 0)"
+  ]
+ }
+}

@@ -3,9 +3,11 @@
 Development-only workspace for **authored / baked finishing** of project art. Today it is prepared for one thing: an
 Aseprite-first **character** pipeline (future Pass 4A). Nothing here is loaded by the game.
 
-> **ASEPRITE STATUS: NOT INSTALLED.** Aseprite and its AI Artist integration are **not validated**. Pass 4A-0A (this
-> scaffold) only prepared the repository; Pass 4A-0B must install, configure and prove the toolchain. `npm run art:doctor`
-> reports the real state and never claims more than it can verify.
+> **TOOLCHAIN STATUS (Pass 4A-0B, 2026-10-15): installed and validated end to end on this machine** — Aseprite 1.3.18.6,
+> Aseprite AI Artist 0.8.2 (Claude Code plugin, local scope, pinned to tag `v0.8.2`; Lua extension 0.8.2). The smoke test drew
+> a synthetic dummy live in Aseprite, exported a real sheet and passed the Character Lab self-test (see
+> `characters/smoke-test/4a0b/` and JOURNAL, Passe 4A-0B). Production (Pass 4A) has **not** started. `npm run art:doctor`
+> reports what is configured; only re-running the smoke test proves the live link after an upgrade.
 
 ## Principle
 
@@ -72,8 +74,9 @@ It exists to prove `exported sprite -> Three.js -> correct filtering -> correct 
 - `window.__lab.selfTest()` re-derives, for every pixel of every panel, which texel the GPU should have sampled and compares
   the frame buffer with the decoded PNG over the background; it also reads the GL filter state back from the driver.
   `&filter=linear` is a deliberate **negative control** (wrong filtering): the self-test must then fail.
-- The synthetic sheet is a hand-written fixture in the *shape* of an Aseprite export. It is **not** an Aseprite export: the
-  lab has not yet been exercised with a real one.
+- The default synthetic sheet is a hand-written fixture in the *shape* of an Aseprite export. A **real** Aseprite export
+  (`characters/exports/smoke-4a0b-v1.*`, `ExportSpriteSheet` json-array + tags) passed the self-test on cameras A-D in Pass 4A-0B;
+  the self-test checks the first frame of the selected tag only (the other frames were decoded separately, see the smoke test).
 
 ## Provenance (no silent canon)
 
@@ -82,14 +85,49 @@ experimental, whether an operator approved it, and whether it may be used by the
 `production` requires `approved: true` with a named approver and date. Format and rules: `characters/README.md`.
 `*.aseprite` files are production sources; the PNG + JSON exports are the baked, runtime-ready outputs.
 
-## Upstream tool (researched for 4A-0B, nothing executed)
+## Installed toolchain (Pass 4A-0B)
 
-Future agent tool: **with-pebbly/aseprite-ai-artist** (<https://github.com/with-pebbly/aseprite-ai-artist>, MIT).
-Observations of 2026-10-12 from its README / `docs/INSTALL.md` and a read-only `npm view`:
+| Piece | Exactly what is installed | Where (none of it is in Git) |
+|---|---|---|
+| Aseprite | 1.3.18.6-x64 | `C:\Program Files\Aseprite` |
+| Lua extension | aseprite-ai-artist **0.8.2** (`npx @pebbly/aseprite-ai-artist@0.8.2 install-extension`) | `%APPDATA%\Aseprite\extensions\aseprite-ai-artist` |
+| Claude Code plugin | `aseprite@aseprite-ai-artist` **0.8.2**: MCP server (18 tools), 14 `/aseprite:*` skills, 4 agents, 2 hooks | enabled in `.claude/settings.local.json` (**local scope**, git-ignored), cache `~/.claude/plugins/cache/aseprite-ai-artist/aseprite/0.8.2` |
+| Marketplace | `with-pebbly/aseprite-ai-artist#v0.8.2` (tag commit `5894b12`), `autoUpdate: false` | declared in `.claude/settings.local.json` |
+
+Reproduce (from the repo root, any shell; a later version only after its own smoke test):
+
+```
+npx -y @pebbly/aseprite-ai-artist@0.8.2 install-extension     # then quit and reopen Aseprite
+claude plugin marketplace add "with-pebbly/aseprite-ai-artist#v0.8.2" --scope local
+claude plugin install aseprite@aseprite-ai-artist --scope local
+```
+
+then add `"autoUpdate": false` to the marketplace entry and the `permissions.deny` rules below to `.claude/settings.local.json`.
+Checked before installing: tag `v0.8.2` = npm 0.8.2 (extension, skills, agents, hooks, rules identical; the plugin's locally built
+`dist/` equals the published one), only three runtime dependencies (`ws`, `zod`, `@modelcontextprotocol/sdk`), no install scripts.
+
+- **Do not use upstream's `install claude`** (it writes a *user-scope* server into `~/.claude.json` with `@latest`, i.e. unpinned
+  and loaded in every project) nor `--agents` (it appends a section to `AGENTS.md`). The plugin already brings the MCP server:
+  adding a standalone one would load every tool twice.
+- **Blocked locally**: `"permissions": {"deny": ["Skill(aseprite:submit)", "Bash(gh repo fork:*)", "Bash(gh pr create:*)"]}`.
+  `aseprite:submit` forks upstream and opens a **public** pull request; the deny rule is verified (the skill call is refused).
+- Context cost: ~1.7k tokens per session in this repo only (skill and agent descriptions; MCP tool schemas load on demand).
+- **Bridge (Windows)**: the extension dials a local relay (`127.0.0.1:9931`, agents on `:9932`). A session-spawned relay died with
+  its headless session here, and Aseprite only re-dials while its window has focus. For unattended / headless runs, keep one relay
+  alive (`node ~/.claude/plugins/cache/aseprite-ai-artist/aseprite/0.8.2/dist/cli.js bridge`) and start or focus Aseprite once;
+  `preflight` must say `ready: true` before any drawing.
+- **`aseprite:pixel-critic` cannot see the sprite** in 0.8.2: its agent definition grants only `Read`, `Glob`, `Grep` (no aseprite
+  MCP tools). Review with the `aseprite:review` skill + `validate` (which caught a planted defect blind), or a critic brief run by a
+  general agent. `validate`'s stray check also flags deliberate isolated pixels (the smoke test's corner markers).
+
+## Upstream tool (research notes of 2026-10-12, before installation)
+
+**with-pebbly/aseprite-ai-artist** (<https://github.com/with-pebbly/aseprite-ai-artist>, MIT), from its README / `docs/INSTALL.md`
+and a read-only `npm view`:
 
 | Item | Observed |
 |---|---|
-| npm package | **`@pebbly/aseprite-ai-artist`** (the unscoped `aseprite-ai-artist` and `@with-pebbly/aseprite-ai-artist` do **not** exist: npm 404). Registry `latest` observed: **0.8.2**. Not pinned here; pin the version that 4A-0B validates. |
+| npm package | **`@pebbly/aseprite-ai-artist`** (the unscoped `aseprite-ai-artist` and `@with-pebbly/aseprite-ai-artist` do **not** exist: npm 404). Registry `latest` observed: **0.8.2** (still latest on 2026-10-15; pinned at 0.8.2 above). |
 | Requirements | **Aseprite 1.3+** (its Lua WebSocket API does not exist in 1.2; Aseprite must have been run once), **Node >= 22.6** (this machine: 22.14.0). |
 | Shape | agent -(MCP)-> MCP server -(bridge, binds 127.0.0.1, ports 9931 / 9932)-> Aseprite extension. Every action is one undo step; with Aseprite detached the tools refuse instead of editing files on disk. |
 | MCP | 18 tools grouped by noun (`draw`, `look`, `layer`, `frame`, `export`, ...). |
@@ -99,23 +137,22 @@ Observations of 2026-10-12 from its README / `docs/INSTALL.md` and a read-only `
 | Clients listed upstream | Claude Code, omp, OpenCode, Codex CLI, Gemini CLI, Cursor, VS Code, Windsurf. The Devin CLI is not listed: wire it as a plain MCP server, using what `install <client> --dry-run` shows. |
 | Headless | `serve --headless --aseprite <path>` runs `aseprite -b` itself. Not a fallback: it is chosen explicitly. |
 
-Expected capabilities to validate in 4A-0B: MCP, `aseprite:*` workflows, pixel-art craft rules, drawing, palette, shading,
-rigging, animation, review, fix, export. **None of these has been run here.**
+Exercised in the 4A-0B smoke test: MCP (`preflight`, `sprite_manage`, `sprite_info`, `palette`, `layer`, `draw`, `look`,
+`read_pixels`, `frame`, `tag`, `validate`, `export`), the `aseprite:review` skill, the hooks, the critic agent (which failed, see
+above). **Not exercised**: `studio`, `brief`, `concept`, `shade`, `rig`, `animate`, `tileset`, `fix`, the palette / rig / animation
+agents, headless mode.
 
 Upstream's own caveat: the effect of its critic loop on quality "is not yet measured". Treat its output as a draft source
 under our own review gates, never as proof of quality.
 
-### 4A-0B checklist (not done)
+### 4A-0B smoke test (done 2026-10-15, evidence in `characters/smoke-test/4a0b/`)
 
-1. Purchase / install Aseprite 1.3+ (not Git-tracked; see hygiene). Run it once. Set `ASEPRITE_PATH` if it is not in a standard place.
-2. `npx @pebbly/aseprite-ai-artist install-extension`, restart Aseprite. Wire the agent: **use `--dry-run` first**; do not run
-   `install --all --agents` blindly (it edits user-level configs and adds an `AGENTS.md` section).
-3. `npx @pebbly/aseprite-ai-artist doctor`, then `npm run art:doctor`.
-4. Smoke test on a throw-away sprite: exact pixel edit -> critic / review -> 4-frame animation -> atlas export (`--sheet`,
-   `--data`, `--format json-array`, `--list-tags`) -> Character Lab (+ `art:sheet`) -> manifest -> `art:validate`.
-5. Record versions (Aseprite, package, model) in the manifest and JOURNAL. Only then may anything be called validated.
-
-Do **not** run `aseprite:submit` on project assets: upstream describes it as packaging files and opening a public pull request.
+Synthetic 32x48 dummy `smoke-4a0b-v1` (manifest: `experimental`, `runtimeUse: lab`), drawn live by two fresh headless Claude Code
+sessions (`brief-A.md`, `brief-B.md`, verbatim reports beside them): preflight -> sprite / 8-colour palette / 2 layers -> exact pixel
+reads -> 2-pixel edit -> palette + layer validation -> 4-frame tagged animation -> blind review (a planted off-palette pixel was found
+by `validate` and removed with before / after reads) -> real `ExportSpriteSheet` (128x48, json-array, tag `test`) -> Character Lab
+self-test A-D 0 mismatch (negative control fails) -> `art:sheet` -> `art:validate`. The game build stayed byte-identical.
+Re-run it after any upgrade of Aseprite, the extension or the plugin.
 
 ## Hygiene
 
