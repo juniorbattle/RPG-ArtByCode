@@ -78,6 +78,27 @@ It exists to prove `exported sprite -> Three.js -> correct filtering -> correct 
   (`characters/exports/smoke-4a0b-v1.*`, `ExportSpriteSheet` json-array + tags) passed the self-test on cameras A-D in Pass 4A-0B;
   the self-test checks the first frame of the selected tag only (the other frames were decoded separately, see the smoke test).
 
+### In-scene preview (dev only): `?labsprite=<id>`
+
+The Lab proves texel accuracy; the district proves whether a sprite *belongs*. With the dev server running,
+`/?labsprite=<id>&labpos=x,z` loads `characters/exports/<id>.png + .json` (32x48 frames, runtime format) into the boot atlas in place
+of one actor's generated cells (`labactor`, default `porter`) and stands that actor still at the given quay position(s), facing the
+camera, under the real lights, fog, DOF, rim treatment and wet-ground reflections. `labsprite=-` keeps the generated frames (the
+"before" image of a comparison, same spot); `labtag` picks a tag. Code: `src/lab/runtimePreview.ts`, reached only through a
+`main.ts` branch guarded by `import.meta.env.DEV`: the production bundle is byte-identical with or without it (verified, Pass 4A), so
+`runtimeUse: lab` covers this preview — it never ships and makes nothing canonical. The runtime idle plays only the first two frames
+of the tag (2 atlas cells, 1.7 fps); the Lab plays them all.
+
+Example (Pass 4A captures): `?seed=1842&clean=1&freeze=7.3&intro=0&camera=B&player=-4.6,0.6&labsprite=porter-gm-v1&labpos=-2.2,3.3`.
+
+### Critique workflow (replaces `aseprite:pixel-critic`, which cannot see the sprite in 0.8.2)
+
+A fresh, independent agent with only a Read tool gets an evidence pack: the 8x render, an ASCII pixel map with coordinates
+(`look op=ascii`), gameplay-scale runtime crops (A / B / C), before / after comparisons, the current cast atlas and the operator's
+references. It writes a **cold read before reading the brief**, then judges against the references, answers the operator's questions
+and lists located, pixel-level findings (craft vs taste) with a score; the next pass also gets the previous findings to verify. Pass 4A:
+`characters/reviews/porter-gm-v1/critiques.md`.
+
 ## Provenance (no silent canon)
 
 Every baked sprite gets `characters/manifests/<id>.manifest.json`: where it came from, which tool produced it, whether it is

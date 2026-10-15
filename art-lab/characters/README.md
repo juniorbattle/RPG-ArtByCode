@@ -1,8 +1,9 @@
 # Character Art Lab
 
-Contract for the future Aseprite-first character pipeline (Pass 4A). **Status: toolchain validated (Pass 4A-0B smoke test on a
-synthetic dummy, see `../README.md`), character production not started.** No gold master, no production sprite exists; the
-pipeline below is the intended workflow, of which only the toolchain steps (Aseprite -> export -> metadata -> Lab) have run.
+Contract for the Aseprite-first character pipeline (Pass 4A). **Status: toolchain validated (Pass 4A-0B); first gold-master
+CANDIDATE `porter-gm-v1` (canal porter, generic NPC) produced in Pass 4A, awaiting operator approval** — `status: candidate`,
+`approved: false`, `runtimeUse: lab`: the game does not use it. No production sprite exists. Evidence: `reviews/porter-gm-v1/`,
+`../../screenshots/4a/`, JOURNAL Passe 4A.
 
 ## Pipeline
 

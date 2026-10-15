@@ -62,7 +62,9 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 `occ=0` (no player reveal: pixel-identical to Pass 2) · `occstyle=soft|dither|hybrid` · `occforce=all|0,2` (force
 occluders open: review / visibility proof) · `occdebug=1` (proxy boxes, reveal ellipse, active list) ·
 `occbehind=0` (skip the behind-occluder bake pass) · `occtest=shopA,tall` (treat those buildings' front walls as
-occludable: stress test of the behind-occluder bake)
+occludable: stress test of the behind-occluder bake) · DEV server only: `labsprite=<id>|-&labpos=x,z[;x,z]` (show an Art Lab export
+on the porter actor, standing still, in the real scene; `-` = generated frames for the "before" image; compiled out of production,
+see `art-lab/README.md`)
 
 ## Art production principle
 Maximise perceptual complexity while minimising runtime complexity.

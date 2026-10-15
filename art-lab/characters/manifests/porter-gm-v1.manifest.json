@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "porter-gm-v1",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/porter-gm-v1.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/porter-gm-v1.png",
+    "metadata": "art-lab/characters/exports/porter-gm-v1.json"
+  },
+  "generator": {
+    "pipeline": "aseprite-ai-artist",
+    "version": "0.8.2",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    { "category": "A", "label": "Merchant District runtime, cameras A / B / C (seed 1842, freeze 7.3)", "path": "screenshots/4a/runtime-B-porter-gm-v1.png" },
+    { "category": "B", "label": "Operator-approved refined NPC sheet (NPCs 17-24, six-view turnarounds)", "path": null, "note": "supplied in the Pass 4A conversation; not stored in the repository" },
+    { "category": "C", "label": "Operator-approved supporting NPC roster (canal dock worker, props, materials)", "path": null, "note": "supplied in the Pass 4A conversation; not stored in the repository" }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "Pass 4A gold-master CANDIDATE for Merchant District NPCs: canal porter (grain sack held by its tied neck, iron hook, knit cap, beard, linen shirt, indigo vest, leather shoulder pad, hemp rope harness, canvas leg wraps). 32x48 runtime format, front view (down), 4-frame idle (rest 700 / exhale 500 / rest 700 / blink 160 ms), 30 colours, Aseprite validate 100 Clean. Pixel grids authored and pushed live into Aseprite 1.3.18.6 through the aseprite-ai-artist 0.8.2 MCP server; eight revisions, three independent critic passes (5/10, 6/10, 7/10, then a verification of v8). Character Lab self-test 0 mismatch on cameras A-D (negative control fails). Shown in the running scene only through the dev-only ?labsprite preview; not used by the game. Approval and production use are operator decisions. Evidence: art-lab/characters/reviews/porter-gm-v1/, screenshots/4a/."
+}

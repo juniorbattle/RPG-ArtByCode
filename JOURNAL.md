@@ -791,13 +791,77 @@ dans `smoke-test/4a0b/`. Sprite `smoke-4a0b-v1` : mannequin de test 32×48 RGB, 
 - **[KO → corrigé] Imbriquer `claude` depuis une session Claude Code** : désactiver d'abord les variables `CLAUDE*` héritées (identifiants de session, jeton de messagerie), sinon la session fille se croit enfant de la mère.
 - Les preuves versionnées ne doivent pas contenir de chemin machine : la racine du dépôt est remplacée par `<repo>` dans les consignes et rapports copiés.
 
+## Passe 4A — Gold master Merchant District : le portefaix du canal (branche `character-gold-master-4a-1`, base `03ed8a1`, 2026-10-15)
+
+Demande : **un seul** PNJ générique au niveau « gold master » (pas de roster), plus haut que le cast actuel, intégré au runtime, validé par une vraie critique ;
+second PNJ important seulement si le premier convainc. Références de l'opérateur, classées ainsi (classement à confirmer par l'opérateur) : image 2 (PNJ raffinés 17-24,
+vues 6 faces) = **référence B** ; image 3 (roster illustré, vignette de canal) = **référence C**, support seulement (rendu proche d'Octopath) ; image 1 (« 16 generic
+townsfolk ») = **rejetée**. Aucune capture runtime fournie : la référence A, ce sont nos captures. Les images B / C ne sont **pas** stockées dans le dépôt (non autorisé explicitement).
+Preuves : `art-lab/characters/reviews/porter-gm-v1/` (progression v1-v9, planche, filmstrip, `critiques.md`), `screenshots/4a/`. Manifeste : `porter-gm-v1` (`candidate`, `approved: false`, `runtimeUse: lab`).
+
+### 4A.1 Choix et méthode
+
+- **Archétype : portefaix du canal** — il vit où se trouve la composition (quai, bateau, étals), le runtime a déjà un `porter` (avant / après au même endroit),
+  le sac sur l'épaule donne une silhouette asymétrique, le costume se superpose (lin, gilet de laine, épaulière de cuir, corde, ceinture, molletières), base de la famille Dock Worker.
+- **Format inchangé** : 32 × 48, vue de face (`down`), pied ligne 45, plus proche voisin. Le cast actuel : porteur 35 px de haut / 40 couleurs, joueur 41 px / 58 couleurs.
+- **Production** : grilles de pixels écrites à la main (texte + légende) et poussées en direct dans Aseprite 1.3.18.6 par le serveur MCP du plugin 0.8.2 (petit client MCP stdio,
+  outils `draw` grid / `export` / `validate` / `look`), rendus 8x regardés à chaque itération ; la source de production est `source/porter-gm-v1.aseprite` (calque `porter`, 4 trames, tag `idle`).
+  Pas de génération d'image : les ébauches et toutes les corrections sont du pixel délibéré.
+- **Aperçu dans la scène (dev seul)** : `?labsprite=<id>&labpos=x,z` (`src/lab/runtimePreview.ts`) remplace en mémoire les cellules `porter/*` de l'atlas par l'export et fige l'acteur face
+  caméra ; `labsprite=-` = l'image « avant » au même endroit. Branche `import.meta.env.DEV` dans `main.ts` : **bundle de production identique à l'octet** (vérifié).
+- **Critique** : `pixel-critic` ne voit pas le sprite → agent indépendant neuf (lecture seule) avec un dossier de preuves (8x, carte ASCII à coordonnées, captures A / B / C, avant / après,
+  atlas du cast, références), **lecture à froid avant la consigne**, puis constats localisés au pixel ; à partir du 2ᵉ passage, vérification des constats précédents.
+
+### 4A.2 Itérations (v1 → v9)
+
+- v1 bloc : lisible mais **trop étroit** à côté du cast, bouche « qui crie », sac le plus lumineux de l'image, bras levé sans structure. v2 : carrure 15 px, tête +1 rang (front sous la visière, nez, moustache, barbe), bras levé construit.
+- v3-v4 : sac à « oreille » et col noué ; **[KO → corrigé] paréidolie** : les pixels du pli du sac formaient un visage triste à l'échelle runtime → pli en ligne continue ; chemise / sac / gilet assombris pour rendre le visage focal.
+- **Critique 1 (v4) : 5/10**, « pas encore » (sac rectangle dressé, port = salut, costume en bandes horizontales comme le #05 rejeté, regard fixe). v5 : sac couché, sangle diagonale, plissement d'yeux,
+  bras gauche décollé, 45 → 39 couleurs ; **[KO]** l'avant-bras traversant le sac le cachait et la manche horizontale lisait comme un bras tendu → v6 : avant-bras le long du sac.
+- **Critique 2 (v6) : 6/10**, « proche » (crochet = main-crochet, sangle = signature du héros, tête / sac / bras fondus en une masse chaude, sac collé au bord, prise illogique).
+  v7 : tête décalée de 1 px à l'opposé de la charge + colonne séparatrice froide, **poing fermé sur le col noué du sac**, épaule chargée relevée sur une épaulière 4 × 2, sac plus froid et bombé,
+  harnais de chanvre, vrai poing sur le crochet ; idle 4 trames ; 31 couleurs.
+- **Critique 3 (v7 animé) : 7/10**, critères 1-5 PASS, 6 PARTIEL (tête « brique », avant-bras « bâton », torse droit en ombre ; sourcils en colère → las).
+  v8 : coins de tête arrondis, sourcils las, poing 5 px à jointures claires + revers relevé + bras foreshortened, bord de gilet éclairé, harnais arrêté à un nœud de poitrine, 30 couleurs.
+- **Vérification (v8) : 8/10**, « proche : boucher 3 trous, baisser le bloc de manche » → **v9 (candidat final)** : trous bouchés (contrôle objectif : 0 pixel transparent enfermé sur les 4 trames),
+  manche passée dans l'ombre, bouton en lin (la boucle reste le seul accent chaud), sourcils extérieurs adoucis. v9 n'a pas été re-lu par un agent : ses changements sont les prescriptions du vérificateur + le contrôle objectif.
+
+### 4A.3 Résultat mesuré
+
+- **[OK] Sprite** `porter-gm-v1` : 4 trames (repos 700 / expiration 500 / repos 700 / clignement 160 ms), boîte x 1-30 / y 4-45, **30 couleurs**, 0 pixel semi-transparent,
+  `validate` Aseprite **100 « Clean. »** (contour sélectif cohérent), 0 trou ; l'expiration bouge 256 px, le clignement 2 px. SHA-256 (16) : source `d9025da100ff7809`, planche `76bb48f970f0d814`, atlas `e7dcc9dcae86cb0d`.
+- **[OK] Character Lab** sur l'export réel : auto-test **0 écart** à 1x / 4x / échelle runtime A 2,42 · B 4,55 · C 4,96 · D 4,37 ; `NEAREST/NEAREST` relu au pilote ; contrôle négatif
+  `filter=linear` **échoue** (11 659 / 14 431 écarts). `screenshots/4a/character-lab-*`.
+- **[OK] Runtime** (seed 1842, `freeze=7.3`, 1920 × 1080, `:5180 --strictPort`) : A (bord du canal, lampe, ~2,4x), B (flaque de lanterne sur pavés mouillés), C (lampe de la forge) ;
+  avant / après au même endroit `screenshots/4a/before-after-{A,B,C}-3x.png`. Lisible aux trois cadrages (casquette, barbe, sac, crochet à 2,4x).
+- **[OK] Runtime par défaut inchangé** : quatre cadrages `static=1` **0 px (max 0)** contre la baseline de 4A-0B, mêmes appels de dessin / triangles ; `dist` identique au SHA-256 (`f81b4d7b…`).
+
+### 4A.4 Non résolu / décisions opérateur
+
+- **[?] Décision : style du héros.** Le portefaix suit la référence B (petits yeux modelés, tête ≈ 38 % de la hauteur mais plus étroite que les épaules) ; le joueur reste chibi
+  (grands yeux ronds, visage plat) → décalage visible côte à côte (`before-after-C`, `runtime-B`). Les critiques placent la correction côté héros ; à trancher avant de décliner le cast.
+- **[?] Approbation** de `porter-gm-v1` (manifeste `candidate`) : rien n'entre au runtime sans `approved: true` + tâche explicite.
+- **[?] Non fait** : directions `up` / `side`, cycles `walk` / `carry` (le porteur du runtime marche en `carry` : l'aperçu le fige debout) ; l'idle runtime n'affiche que 2 trames (2 cellules d'atlas) ;
+  aucune variante (2 acteurs `porter` dans le district → clones dans l'aperçu) ; second PNJ important **non tenté** (le premier n'est pas encore approuvé).
+- **[?]** Contrôle « image / référence B » par des agents seulement ; jugement humain de l'opérateur attendu. Les scripts de création (client MCP, poussée de grilles, idle) sont restés hors dépôt.
+
+### 4A.5 Erreurs de méthode / d'outillage (pour ne pas les refaire)
+
+- **[KO → corrigé]** Juger un sprite seulement en 8x : l'étroitesse (v1), la paréidolie du sac (v3), la manche-« aile » (v5) et le sac fondu dans la barbe (v6) ne se voient **qu'en scène**,
+  sous la lumière chaude et le liseré du rendu. Le contrôle runtime doit être dans la boucle de chaque itération, pas à la fin.
+- **[KO → corrigé]** Les coordonnées des critiques utilisent les glyphes de `look ascii` d'Aseprite (≠ mes lettres de palette) : refaire la table de correspondance à chaque carte.
+- **[KO → corrigé]** Corriger « au pied de la lettre » une demande de critique peut casser autre chose (v5 : avant-bras en diagonale devant le sac) : revalider en scène.
+- **[KO]** Positions de capture : en C, l'objectif long met la bannière du bateau et un PNJ encapuchonné devant certains points du quai → chercher la place (3 essais) ; l'aperçu habille **tous** les acteurs `porter`.
+- Rappels 4A-0B confirmés : pont persistant + Aseprite relancé après lui ; `MSYS_NO_PATHCONV=1` ; JSON de chemins Windows avec `/`.
+
 ---
 
 ## À reprendre (par priorité)
 
-**-1. PROCHAIN : Passe 4A — personnages premium (gold masters)**, **uniquement sur ordre de l'opérateur**. Avant d'y entrer : décider comment faire la critique à froid
-(`pixel-critic` 0.8.2 n'a pas les outils MCP, cf. 4A-0B.5) ; lancer Aseprite **après** le pont, ou garder un pont persistant pour les sessions sans surveillance ; refaire le test de fumée
-(`smoke-test/4a0b/`) après toute mise à jour d'Aseprite, de l'extension ou du plugin (épinglés en 0.8.2, auto-update coupé).
+**-1. PROCHAIN : décisions opérateur sur la Passe 4A** — (a) approuver ou faire corriger `porter-gm-v1` (manifeste `candidate`) ; (b) **trancher le style du héros** (aligner le joueur sur
+la référence B, ou adapter le gold master) avant toute déclinaison ; (c) confirmer le classement des références (image 2 = B, image 3 = C, image 1 rejetée) et dire si on stocke B / C dans
+`reference/`. Ensuite seulement : directions `up` / `side` + `walk` / `carry` du même portefaix, puis un PNJ important, puis des variantes de famille (bonnet / casquette, sac / caisse / corde, crochet / rien, barbe / rasé).
+Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, test de fumée `smoke-test/4a0b/` après toute mise à jour (épinglé 0.8.2, auto-update coupé), critique par agent neuf (cf. `art-lab/README.md`).
 -0b. **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise appli. Servir les baselines sur `:518x --strictPort` ;
   décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
 
@@ -849,3 +913,6 @@ dans `smoke-test/4a0b/`. Sprite `smoke-4a0b-v1` : mannequin de test 32×48 RGB, 
 - Un outil externe s'installe épinglé (version exacte, tag, auto-update coupé), en portée locale, après lecture de son code d'installation et un dry-run ; jamais avec l'installeur
   « tout-en-un » d'amont s'il écrit hors de cette portée. Une revue d'agent se prouve par un défaut planté qu'elle doit trouver à l'aveugle.
 - Le chargement des instructions d'agent se mesure (`/context` dans une session neuve) : jamais de `CLAUDE.md` dans un dossier parent d'un projet qui vit de son `AGENTS.md`.
+- Un personnage se juge **dans la scène** à chaque itération (aperçu `?labsprite`, avant / après au même endroit), pas seulement agrandi : lumière chaude, liseré et voisinage du cast changent la lecture.
+- Une critique d'art doit voir l'image, lire à froid avant la consigne, citer des pixels, et vérifier la passe précédente ; le score monte avec des preuves, pas avec des intentions.
+  Un « 0 trou » / « 0 écart » se prouve par un contrôle objectif (remplissage depuis le bord ; contrôle négatif du Lab).
