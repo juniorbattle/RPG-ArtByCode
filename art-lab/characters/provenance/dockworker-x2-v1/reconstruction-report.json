@@ -1,0 +1,26 @@
+{
+ "pitch": 1.775,
+ "phase": [
+  0,
+  1.065
+ ],
+ "figure": [
+  43,
+  89
+ ],
+ "frame": [
+  64,
+  96
+ ],
+ "foot": 90,
+ "clipped": 0,
+ "closed": 100,
+ "islands": 9,
+ "opaque": 2672,
+ "fullColours": 2153,
+ "variants": {
+  "64": 64,
+  "96": 96,
+  "full": 2153
+ }
+}

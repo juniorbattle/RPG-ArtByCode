@@ -1,9 +1,21 @@
 # Character Art Lab
 
-Contract for the Aseprite-first character pipeline (Pass 4A). **Status: toolchain validated (Pass 4A-0B); first gold-master
-CANDIDATE `porter-gm-v1` (canal porter, generic NPC) produced in Pass 4A, awaiting operator approval** — `status: candidate`,
-`approved: false`, `runtimeUse: lab`: the game does not use it. No production sprite exists. Evidence: `reviews/porter-gm-v1/`,
-`../../screenshots/4a/`, JOURNAL Passe 4A.
+Contract for the character pipeline. **Status: toolchain validated (Pass 4A-0B). `dockworker-x2-v1` is the APPROVED VISUAL
+BASELINE for standard NPCs (operator, 2026-10-16: art direction + in-scene + dynamic validation) — NOT an approved production asset**
+(`runtimeUse: "lab"`). Standard NPCs = its quality, density x2 (64 × 96, the same world frame as the 32 × 48 runtime sprites); key
+characters get a higher budget later; one art direction, different precision budgets; never degrade the new character to match the old
+sprites. `porter-gm-v1` stays an experimental baseline (aimed at the wrong reference). No production sprite exists. Next: a second
+ORIGINAL NPC at the same quality, after operator validation. Evidence: `reviews/dockworker-x2-v1/`, `provenance/dockworker-x2-v1/`,
+`reviews/porter-gm-v1/`.
+
+**Approval scopes.** *Approved visual baseline* = `approved: true` + `runtimeUse: "lab"`: an operator-approved quality / direction
+reference, usable in the Art Lab and the DEV in-scene preview only. *Approved production asset* = `approved: true` +
+`runtimeUse: "production"`: only through an explicit, operator-approved integration task (and confirmed source rights).
+
+**Provenance packs.** `provenance/<id>/` (tracked): `PROVENANCE.json` (SHA-256 of the chain, parameters, dated decisions) + the
+intermediate images and recorded edits needed to rebuild an asset, verified by `node tools/art-lab/verify-provenance.mjs
+provenance/<id> [--sheet <source> --rebuild]` (`tools/art-lab/reconstruct-grid.mjs`, `tools/art-lab/replay-pixel-ops.mjs`). A source
+whose rights are unconfirmed is recorded by hash, never committed.
 
 ## Pipeline
 

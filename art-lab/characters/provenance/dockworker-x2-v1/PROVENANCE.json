@@ -1,0 +1,122 @@
+{
+ "id": "dockworker-x2-v1",
+ "status": "APPROVED VISUAL BASELINE (standard NPCs) - NOT an approved production asset",
+ "statusVocabulary": {
+  "approved visual baseline": "operator-approved art direction and quality reference; usable in the Art Lab and the DEV in-scene preview only (manifest runtimeUse \"lab\")",
+  "approved production asset": "operator-approved for the shipped runtime (manifest runtimeUse \"production\") through an explicit task - NOT granted"
+ },
+ "approvals": [
+  {
+   "date": "2026-10-15",
+   "decision": "x2 automatic = priority quality reference for standard NPCs; level 1 standard NPCs / level 2 key characters; no heavy x1.5 rework"
+  },
+  {
+   "date": "2026-10-15",
+   "decision": "C - x2 auto approved as the candidate for in-scene validation (Merchant District)"
+  },
+  {
+   "date": "2026-10-16",
+   "decision": "very small cleanup pass approved (mouth / collar, left hair, grouped palette without repainting volumes)"
+  },
+  {
+   "date": "2026-10-16",
+   "decision": "x2 cleaned v1 kept, v2 rejected; v1 = approved visual baseline; no further artistic retouching for now"
+  },
+  {
+   "date": "2026-10-16",
+   "decision": "dynamic validation (JOURNAL 4A-septies) accepted: v1 = approved artistic AND dynamic baseline for standard NPCs; not an approval of production integration, animations or facings"
+  }
+ ],
+ "source": {
+  "sheet": {
+   "description": "operator reference sheet \"16 generic townsfolk\", dock worker, front view",
+   "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce",
+   "bytes": 302814,
+   "format": "WebP (VP8, sRGB ICC profile, NO EXIF / XMP / author / generator metadata)",
+   "rights": "UNCONFIRMED: origin and usage rights not established (the file carries no provenance metadata; supplied by the operator in a working session). Not stored in the repository until the operator confirms origin and rights.",
+   "storage": "outside Git: art-lab/characters/scratch/e2-x2-candidate/input/reference-sheet-4.webp on the operator machine (git-ignored) - durable storage to be decided"
+  },
+  "crop": [
+   27,
+   347,
+   99,
+   504
+  ]
+ },
+ "reconstruction": {
+  "tool": "tools/art-lab/reconstruct-grid.mjs",
+  "crop": [
+   27,
+   347,
+   99,
+   504
+  ],
+  "pitch": 1.775,
+  "phase": [
+   0,
+   1.065
+  ],
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "figure": [
+   43,
+   89
+  ],
+  "fullColours": 2153,
+  "paletteColours": 64,
+  "palette": "OKLab k-means, deterministic farthest-point seeding, face rows weighted x4 (deterministic: re-run reproduces the file bit for bit)",
+  "outputs": {
+   "full": "art-lab/characters/provenance/dockworker-x2-v1/x2-auto.png",
+   "quantised": "art-lab/characters/provenance/dockworker-x2-v1/x2-quant64.png"
+  },
+  "command": "node tools/art-lab/reconstruct-grid.mjs <sheet> \"27,347,99,504\" 1.775 64 96 90 <outPrefix> \"full,64\""
+ },
+ "cleanup": {
+  "tool": "Aseprite 1.3.18.6 + Aseprite AI Artist 0.8.2 (headless), driven by Claude Code (claude-opus-5-5)",
+  "base": "art-lab/characters/provenance/dockworker-x2-v1/x2-quant64.png",
+  "ops": "art-lab/characters/provenance/dockworker-x2-v1/cleanup-ops.json",
+  "replay": "node tools/art-lab/replay-pixel-ops.mjs <x2-quant64.png> cleanup-ops.json <out.png> --expect art-lab/characters/exports/dockworker-x2-v1.png",
+  "steps": [
+   "9 orphan texels merged (8-neighbour majority >= 6/8, OKLab < 0.06, face excluded)",
+   "mouth 3x2 -> closed 2-texel dash (x38-39, y29)",
+   "collar V (x33-40, y32-37): same values, red chroma removed (15 region-limited replaces)",
+   "left neck pocket (y26-30, x21-25) cleared to background, outline closed"
+  ],
+  "result": "art-lab/characters/exports/dockworker-x2-v1.png",
+  "rejected": "v2 (dark throat shadow read as a choker in cameras C / D): not archived here, kept in the local scratch folder"
+ },
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "densityVsRuntime": 2,
+  "worldHeight": "NOT fixed: a per-instance presentation scale independent of the texture resolution (tested 1.65 / 1.75 / 1.88 m = scale 0.789 / 0.837 / 0.9 of the 2.09 m full-frame figure)"
+ },
+ "qa": [
+  "camera A: about 1.0-1.2 screen px per texel (down to 0.57 for distant standing NPCs): single-texel details (cap specks, mouth) can change between consecutive frames - QA watch point, no LOD / 32x48 fallback implemented (operator decision 2026-10-16)"
+ ],
+ "evidence": {
+  "journal": "JOURNAL.md passes 4A-quater, 4A-quinquies, 4A-sexies, 4A-septies",
+  "reviews": "art-lab/characters/reviews/dockworker-x2-v1/",
+  "fullLocalEvidence": "art-lab/characters/scratch/e2-x2-candidate/ (git-ignored, local)"
+ },
+ "verify": "node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/dockworker-x2-v1 [--sheet <sheet> --rebuild]",
+ "files": {
+  "art-lab/characters/exports/dockworker-x2-v1.png": "9e1de3ba1ff1bacbde78b152275c9c34dcb33c04a612c5c7cfd1ae9cfbc48441",
+  "art-lab/characters/exports/dockworker-x2-v1.json": "a8ec4dc806f8c2033e1d019223a9c264c1579c46472f6edc83e5b7b362b108e0",
+  "art-lab/characters/source/dockworker-x2-v1.aseprite": "1632e081706402d2b940134e546c46d9681748603d0e63fd6aa0b11a5cc73b21",
+  "art-lab/characters/provenance/dockworker-x2-v1/x2-auto.png": "62acd603dbdb138e1c232c2578777eb9abdea4afa7ba63427f02df232f4dcde7",
+  "art-lab/characters/provenance/dockworker-x2-v1/x2-quant64.png": "84cfbe5c6b159f25eeb13b0c00318b70d151582285a07af30b6ecd0629aadfa8",
+  "art-lab/characters/provenance/dockworker-x2-v1/cleanup-ops.json": "4f6d00d812d4c24151062303396f65efee520262d4d37c9b21c4894c2cfede22",
+  "art-lab/characters/provenance/dockworker-x2-v1/reconstruction-report.json": "44e6b9f9c9de017eceb32b69e0b3a94948c366dc942c4406d57a470ff833544f",
+  "tools/art-lab/reconstruct-grid.mjs": "e8f79a9fec6cf58ba7793c06199998d1bbe4b9fc03508a17261dae5f161730a2",
+  "tools/art-lab/replay-pixel-ops.mjs": "259bcaf5b34a88f43f842f6b42fa1032065d8905ae6bf87181cf49f022e1e3f8"
+ },
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored"
+}

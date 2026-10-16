@@ -854,13 +854,366 @@ Preuves : `art-lab/characters/reviews/porter-gm-v1/` (progression v1-v9, planche
 - **[KO]** Positions de capture : en C, l'objectif long met la bannière du bateau et un PNJ encapuchonné devant certains points du quai → chercher la place (3 essais) ; l'aperçu habille **tous** les acteurs `porter`.
 - Rappels 4A-0B confirmés : pont persistant + Aseprite relancé après lui ; `MSYS_NO_PATHCONV=1` ; JSON de chemins Windows avec `/`.
 
+## Passe 4A-bis — Remise en question du pipeline personnages (étude, aucune production, 2026-10-15)
+
+Décision opérateur : `porter-gm-v1` **non approuvé**, retouches suspendues, gardé comme **baseline expérimentale** (manifeste passé en `experimental`) ;
+aucune production de personnage avant validation d'une nouvelle stratégie ; les personnages peuvent avoir un traitement différent de l'environnement (même univers, autre technique).
+
+- **[KO] Erreur de cible de la passe 4A.** La planche « 16 generic townsfolk (unified style & scale) » (image 1 de 4A) est la **cible** de l'opérateur ; je l'avais classée
+  « rejetée » à cause de son titre et donnée aux trois critiques comme contre-exemple. Toute la passe 4A visait donc les deux autres images. Pensée : un classement de références
+  se fait confirmer par l'opérateur **avant** de produire, surtout quand une consigne parle de planches rejetées sans les montrer.
+- **[OK] Mesure de la référence** (`refgrid`, scripts hors dépôt) : ce n'est **pas** du pixel art strict — blocs de 3 à 4 px d'image, irréguliers, bords adoucis, dégradés dans les blocs
+  (image peinte qui imite le pixel art, très probablement générée puis réduite : à confirmer par l'opérateur). Le pas le plus stable (vieux marchand) ≈ 3,5 px → figure ≈ **45-48 pixels de haut**,
+  ≈ 20-23 de large, proportions chibi (tête large ≈ 40 % de la hauteur), ≈ 300-600 teintes par figure. Les autres mesures automatiques tombent sur des harmoniques : le pas n'est pas constant.
+- **[OK] Reconstruction stricte** du docker (#05) sur grille 32 × 48 (pas 3,55, phase cherchée par variance minimale) : figure 20 × 44, **tient dans le format actuel** et garde l'essentiel
+  (proportions, visage, cheveux, matières) **sans aucun nettoyage**. Pensée : la résolution 32 × 48 n'est **pas** le verrou principal ; le dessin et les proportions le sont.
+- **[OK/?] En scène** (aperçu dev, B / C / A, même endroit) : la reconstruction a plus de charme que `porter-gm-v1` et s'accorde aux proportions du joueur (le « conflit de style
+  avec le héros » de 4A venait de ma mauvaise cible) ; mais elle sort **pâle et bruitée** — pas de contour, trous du découpage d'ombre, 548 couleurs, et l'éclairage des sprites
+  (relèvement côté lumière, liseré) délave les tons clairs. À traiter : nettoyage + réglage de la réponse lumineuse des sprites (paramètre runtime, pas résolution).
+- Captures de l'étude (non versionnées : elles dérivent de l'image de référence de l'opérateur) : comparaisons à trois (porteur actuel / `porter-gm-v1` / reconstruction) en A et B.
+- Recommandation et pipelines comparés : voir la réponse d'étude de la conversation (résumé : pipeline hybride — base dessinée ou générée hors runtime, reconstruite sur grille,
+  finition humaine dans Aseprite, déclinaisons et intégration pilotées par le code ; résolution conservée ~45-48 px de figure avec un canevas plus large ; réglage du rendu des sprites).
+
+## Passe 4A-ter — E2 / E3 : faisabilité artistique (tests seulement, aucun asset produit ni commité, 2026-10-15)
+
+Cadre opérateur : E2 et E3 seulement, arrêt avant E4. Références classées par **contenu et approbation explicite**, jamais par nom de fichier ; densités **réellement**
+différentes comparées à **même taille monde** ; pas de limite de palette imposée avant comparaison ; finition **autonome** Claude Code + Aseprite AI Artist ; preuves natives, crops au plus
+proche voisin, captures à position identique, revue indépendante qui prouve avoir vu les images. Matériel de test : le docker #05 (vue de face) de la planche de référence.
+Preuves (hors dépôt, dérivées de la référence) : dossier de travail de la session (`e2v/`, `e2f/`, `e2rt/`, `e3/`, `e3s/`, `p2rt/`, `review-e2e3/`).
+
+### Outillage (dev seul)
+- `src/lab/runtimePreview.ts` étendu : planche d'une autre densité → **second rendu de sprites** (même shader, mêmes lumières, même liseré) à la **même taille monde**
+  (densité = hauteur de cadre / 48, mètres par texel = `PIXEL_WORLD` / densité) ; `labhd=1` force ce chemin même en 32 × 48 (comparaisons à traitement identique : le porteur du
+  runtime est en détail `crowd`, protection DOF 0,8) ; `spritelight=sat,chroma,edge,vertMin,tone,overlay,unlit` surcharge le traitement lumineux des personnages (environnement inchangé).
+  **[OK]** bundle de production identique au SHA-256 (`f81b4d7b…`), typecheck OK.
+- **[KO → contourné]** Aseprite (fenêtre) ne s'est pas reconnecté au pont même au premier plan forcé (`SetForegroundWindow`) → **mode headless** d'AI Artist (`serve --headless`,
+  instance batch dédiée, aucune fenêtre) : fonctionne, état rechargé depuis le fichier à chaque appel.
+
+### E2 — résultats
+- Sources reconstruites sur grille stricte : ×1 (32 × 48, figure 45 px, 623 couleurs), ×1,5 (48 × 72, 67 px, 1 288), ×2 (64 × 96, 89 px, 2 153).
+- **[OK] Palette** (×1) : 96 / 64 / 48 indiscernables à 8x ; à 32, léger aplatissement chemise / peau, aucun trait perdu (revue : même avis). Les 623 couleurs sont du bruit. Densités supérieures non testées.
+- **[OK] Densité, même taille monde** : ×1 → ×1,5 = gain net en B / C (yeux, bretelles, mains) ; ×1,5 → ×2 = gain plus faible (mèches, reflets), surtout en C ; en A ×1,5 ≈ ×2
+  et ×2 tombe vers 1 px écran / texel (limite du plus proche voisin). **[?]** scintillement en mouvement non mesuré.
+- **[OK/?] Finition autonome** (Claude Code + AI Artist headless, aucun humain) sur ×1,5 / 64 couleurs :
+  passe 1 (contour unifié, épines / trous / bruit, yeux à reflet, sourcils, bouche, bottes refaites, ombre de mâchoire) **3 min 17 s**, ≈ 230 px posés + 177 mécaniques ;
+  passe 2 (col en V, chemise en 4 tons + patte + boutons, boucle laiton, doigts, mèche désaturée) **1 min 37 s**, 177 px. `validate` 90-100.
+- **Revue indépendante** (agent neuf, preuves de vue vérifiées sur les fichiers) : proximité à la référence — passe 2 sans liseré **7/10**, ×2 auto 6, passe 1 6, ×1,5 auto 4,5, ×1 auto 3.
+  Reste : **rendu de la forme** (chemise en rayures verticales, manches, pantalon sans lumière directionnelle), main droite + bâton, volume des cheveux.
+  Pensée : la finition par agent corrige vite et sûrement des défauts **nommés et localisés** ; elle n'a pas encore montré qu'elle sait **peindre la forme** (demander « nettoyer le bruit » a donné des rayures).
+
+### E3 — résultats
+- **[OK]** Termes intérieurs (saturation, chroma ambiante, assombrissement du bas, compression tonale, surimpression) : quasi sans effet sur cette image (chemise L207 de L0 à L5 ; albedo seul 222).
+  La pâleur vient surtout de l'**albedo** (chemise claire de la référence), pas du traitement.
+- **[OK] Le liseré de silhouette est le seul terme nuisible** pour un art à contour sombre : mesuré porteur seul (`static=1`, contrôle L0 / L0 = 0 px) — B : 952 px écran éclaircis
+  (luminance 23 → 90), C (forge) : 1 239 px (21 → 100) ; le contour devient bleu-gris / clair côté lumière. Sans liseré (L1) : contour net, intégration conservée.
+- **[KO → corrigé]** Ma première mesure (4 419 px) était gonflée par le mouvement des autres PNJ entre captures ; le relecteur l'a relevé ; refaite en scène déterministe.
+
+### Erreurs de méthode (pour ne pas les refaire)
+- **[KO → corrigé]** Le retrait d'ombre par couleur mangeait le pantalon et les chevilles (sombres comme l'ombre et le fond) → règles de forme (fermeture verticale, îlots) + ombre limitée aux dernières rangées.
+- **[KO → corrigé]** Recadrages A de la passe 2 qui coupaient le porteur. Toute mesure par différence d'images se fait en scène déterministe (`static=1` + aperçu) avec un contrôle à 0.
+
+## Passe 4A-quater — E2 modelé : peindre la forme sur la trame ×1,5 (test seulement, aucun asset produit ni commité, 2026-10-15)
+
+Cadre opérateur : uniquement le docker ×1,5 de la passe 2 ; démontrer un vrai modelé (volumes, plis, matières) dans Aseprite via les outils d'AI Artist ; lumière haut-gauche
+sans lumière de scène peinte ; comparaison A (×1,5 passe 2) / B (×1,5 modelé) / C (×2 auto) / D (référence) à **même taille monde** — natif, plus proche voisin, caméras B / C / A
+en L1 (sans liseré), aucun changement du rendu ; critique indépendante **à l'aveugle** ; 2 itérations au plus ; si le ×1,5 reste inférieur au ×2 sur formes, vêtements ou
+expressivité : arrêter et recommander un autre pipeline. Pas d'E4, aucun personnage de production touché.
+
+Temps réel (horloge) : 19:50:56 → 20:20:24, ≈ 29,5 min jusqu'à la 2e critique (Aseprite headless : quelques secondes par appel). Itération 1 : 19:51 → 20:04 (1a / 1b procédural,
+1c retouches, 1d peint à la main) ; captures + critique 1 : 20:04 → 20:13 ; itération 2 : 20:13 → 20:16 ; captures + critique 2 : 20:16 → 20:20.
+
+### Itération 1
+- **[KO]** 1a / 1b, modelé procédural (normales de cylindres pour torse / manches / jambes, plis tracés, quantifié sur rampe) : du volume, mais une coupure **verticale** nette entre moitié
+  éclairée et moitié ombrée (les rayures reviennent) ; pantalon trop clair et trop bleu — rampe montée à L ≈ 100 alors que la référence mesure **L 45-76** (échantillonnée ensuite).
+- **[KO → corrigé]** 1c, retouches transversales posées par coordonnées : 2 px du contour de l'épaule droite écrasés et 1 px hors silhouette ; réparé en 1d.
+- 1d : chemise et pantalon **peints à la main rangée par rangée** (rampes échantillonnées sur la référence : chemise 7 tons à ombres mauves chaudes, pantalon 7 tons ardoise-violet),
+  avec contrôle « la cible est bien un pixel du vêtement » (0 avertissement), 512 px via `draw`.
+- Critique aveugle 1 (agent neuf, étiquettes tirées au sort, clé hors de son champ, preuves de vue vérifiées) : **passe 2 1re, ×2 auto 2e, modelé 1d 3e** — « moucheture rose-crème
+  sur la chemise, damier sur le pantalon : les formes se lisent comme une texture ». Volumes : 6 / 7 / 5. Gagnant chemise et pantalon : ×2. Cause trouvée dans ma spécification :
+  des valeurs alternées à 1 px (ex. `BABABCBCCD`). Mesure : 25,2 % de pixels isolés dans les vêtements (passe 2 : 23,5 %).
+
+### Itération 2
+- Masses de 3-4 valeurs par forme, plis rendus par le **bord des aplats** (pas de ligne de 1 px), terminateur courbe sur le torse, blousant + 2 plis de rentré ; bouche ramenée à un trait
+  de 2 px (la critique 1 lisait une bouche ouverte décentrée), ombre de mâchoire sur le cou ; 518 px via `draw`, `validate` 90.
+- Mesure (vêtements, pixels intérieurs) : pixels isolés **16 %** (passe 2 23,5 ; 1d 25,2), alternances à 1 px **16,2 %** (26,4 ; 26,2).
+- Critique aveugle 2 (nouvel agent, nouvelles étiquettes) : **it2 ≈ passe 2** (« it2 devant d'un cheveu, dans le bruit de jugement »), ×2 auto 3e au global. Volumes : it2 **4**,
+  passe 2 5, ×2 6 — la chemise d'it2 « en carrés gris par blocs plutôt qu'en modelé » ; gagnant chemise + manches : ×2 (à l'échelle de la planche) ; pantalon : it2 (revers justifié,
+  mais les deux jambes se fondent en scène) ; tête : it2 (bouche calme, proche de la cible).
+- En scène (B, lumière chaude), la chemise des trois ×1,5 tire au blanc : le modelé ajouté y est à peine perceptible.
+
+### Bilan — [KO] objectif non atteint, arrêt après 2 itérations
+- Le modelé ×1,5 peint par l'agent **n'a pas été lu comme du volume** par deux critiques aveugles (volumes 5 puis 4, **sous** la passe 2 non modelée : 6 puis 5) et reste **inférieur
+  au ×2 auto sur les formes** (7 puis 6). Les seuls gains sont des corrections **nommées et localisées** (bouche, revers de pantalon).
+- La baisse du bruit mesurée (23,5 → 16 % de pixels isolés) n'a pas suffi : une métrique de propreté ne mesure pas la lecture de la forme.
+- Les deux critiques donnent au ×2 la meilleure forme et les meilleurs plis et le pénalisent sur des **défauts de dessin localisés** : traînée rose de la bouche au col (lue « langue »),
+  mèche sombre à droite jusqu'à l'épaule, bosse rectangulaire sur la calotte, chevilles / bottes fragmentées, contour qui disparaît sur les bras ; à 1:1 son détail devient mou
+  (983 couleurs non quantifiées). À l'échelle de jeu, les ×1,5 se lisent aussi bien ou mieux (7 contre 5-6).
+- **Recommandation** : arrêter le modelé sur ×1,5 ; essayer la **finition artistique du ×2** — partir du ×2 auto, quantifier en palette groupée (64-96 couleurs), corriger
+  les défauts nommés ci-dessus (col / bouche, mèche, calotte, bottes, contour unifié) **sans repeindre les volumes**, puis même grille A/B/C/D en aveugle. Si elle échoue :
+  **une meilleure source illustrée** (vue de face peinte à plus haute définition que la planche, dont la figure ne fait que ≈ 45-48 blocs) avant reconstruction sur grille — le ×2 n'a de
+  la forme que parce qu'il rééchantillonne les dégradés peints à l'intérieur des blocs de la source.
+- **[?]** Non testé : finition du ×2, tenue en mouvement, caméra D, autres graines.
+
+### Erreurs de méthode (pour ne pas les refaire)
+- **[KO → corrigé]** Variables shell écrasées par les étiquettes d'anonymisation (`M`, `R`, `K` = chemins) : premier jeu de panneaux vide ; refait avec des noms distincts.
+- **[KO → corrigé]** Un outil de mesure découpait ses arguments sur « : » (chemins `C:`) → séparateur « | ».
+- Contrôle de déterminisme de la capture refaite : 0 px (caméra B, passe 2). Auto-critique écrite **avant** chaque critique aveugle, pour comparer honnêtement.
+
+Preuves (hors dépôt, dérivées de la référence) : dossier de travail de la session `e2m/` (it1d.png, it2.png, sources `.aseprite` 1c / 1d / 2, `scene1/`, `scene2/`, `critic-fs1/`,
+`critic-fs2/`, `final/fs-*.png`, auto-critiques) et clés d'anonymisation à part. Runtime inchangé : aucun fichier `src/` touché par cette passe, bundle `index-B5BamZwF.js`
+SHA-256 `f81b4d7b…` identique, exports temporaires `test-e2-fs-*` supprimés, `art:validate` 0 erreur.
+
+## Passe 4A-quinquies — Direction PNJ « ×2 auto » et validation en scène du candidat C (test seulement, rien en production, 2026-10-15)
+
+### Décisions opérateur (après revue manuelle d'E2)
+- **Hiérarchie artistique.** Niveau 1, PNJ standards : qualité proche du sprite **C — ×2 auto** — proportions stylisées, visage expressif sans surdétail, volumes et matières
+  préservés, finition Aseprite ciblée sur les vrais défauts, déclinaisons possibles plus tard (jamais de retour à des sprites génériques simplistes). Niveau 2, personnages clés :
+  qualité supérieure (planches les plus raffinées), même direction générale.
+- **Conséquence technique.** On n'impose plus une trame ×1,5 fortement retravaillée : d'abord **préserver la qualité de la source**, puis une finition Aseprite sélective. La voie
+  « modelé ×1,5 » n'est plus la direction principale ; pas de nouvelle exploration large.
+- **C — ×2 auto = candidat approuvé pour la validation en scène**, baseline à tester dans le Merchant District ; **pas** un Gold Master de production.
+- Avant de verrouiller sa densité : stabilité en mouvement (surtout caméra A) et preuve qu'on sait produire un personnage **original** à ce niveau. Pas de roster, de
+  généralisation ni de personnage clé pour l'instant.
+- Rangement : le candidat (PNG, rapport, planche source, scripts de reconstruction, preuves) est copié dans `art-lab/characters/scratch/e2-x2-candidate/` (ignoré par Git via
+  `art-lab/**/scratch/`, jamais commité ; README sur place). Pas de source `.aseprite` (sortie automatique directe). Reconstruction vérifiée **identique au bit près**
+  (SHA-256 `62acd603…`) depuis la copie.
+
+### Méthode (environnement inchangé, aperçu dev seul)
+- `src/lab/runtimePreview.ts` (dev, compilé hors production) : `labdetail` (niveau de détail / protection DOF des acteurs du second rendu ; `crowd` = celui du porteur),
+  `labscale` (échelle de présentation par acteur), `labfollow=1` (le premier acteur prend la place du joueur, masqué, chaque image : marche réelle dans les cadrages) et une poignée
+  non énumérable sur le groupe du second rendu (les outils de mesure l'éteignent pour isoler les pixels du sprite). Aucune géométrie, lumière ou shader du district touché.
+- Export temporaire `test-npc-x2c` (= le ×2, 64 × 96, pied rangée 90) + témoin `test-npc-x1c` (même art reconstruit en 32 × 48) dans `exports/`, recréés / supprimés par
+  `scene/install-test-exports.sh` ; supprimés en fin de passe.
+- Captures 1920 × 1080, graine 1842, `freeze=7.3` : caméras **A / B / C / D**, 3 emplacements chacune, AVANT (porteur runtime) / APRÈS (×2, traitement L0 actuel) / APRÈS L1
+  (sans liseré), + mêmes vues en `static=1` pour les mesures (seul le sprite diffère). Scripts : `scene/run-captures.sh`, `project.mjs` (projection écran), `light.mjs`, `motion.mjs`.
+- Revue indépendante (agent neuf, ne voit que les planches et la référence ; auto-évaluation écrite avant de lire son verdict : `scene/self-assessment.md`).
+
+### Résultats
+- **[OK] Lecture et qualité.** Le ×2 est nettement au-dessus du porteur runtime dans les 4 cadrages : rôle (« docker ») lisible en B à 1:1 par trois bandes de valeur
+  + casquette ; visage lisible en B / C / D ; silhouette nette sur fonds chauds. Revue (avant / après, /10) : lisibilité 5 / 8, direction artistique 5 / 7, silhouette 5 / 7,
+  visage 5 / 6, constance chaud / froid 5 / 7 ; par caméra A 5 / 6, B 5 / 7, C 5 / 7, D 5 / 6.
+- **Densité écran mesurée** (px écran par texel du ×2, projection réelle) : A 0,96-1,24 (le bout du quai passe juste sous 1 : quelques texels sautent), B 1,8-2,2,
+  C 2,25-2,62, D 1,97-2,42. Le liseré du rendu lit le texel voisin (`1.0 / uAtlasSize`) : il fait **1 texel**, donc deux fois moins de pixels écran sur le ×2.
+- **[KO → réglage] Échelle monde.** Figure ×2 = 89 texels × 0,0235 m = **2,09 m** ; runtime (atlas) : héros 1,93 m, gardes 2,02, marchand / forgeron 1,88, encapuchonné 1,83,
+  porteur 1,65. Le PNJ générique dépasse le héros ; à `labscale=0.9` (1,88 m) il passe juste dessous et la revue le juge juste (`review/scale-B.png`).
+- **[OK/?] Lumière.** Luminance du ×2 aux 12 emplacements du même ordre que le porteur runtime (moyenne 86-130 contre 85-161) ; décile clair (chemise) **189-212 partout**,
+  y compris dans le noir de D (fond 34-46) : la chemise « s'allume » dans les zones froides — trait du traitement des sprites, commun au cast, pas propre au ×2. Bascule chaud / froid
+  (R−B) de +16 (A) à −8 (D).
+- **L0 vs L1.** L1 (sans liseré) est meilleur sur fonds chauds (A / B / C : le contour du sprite reste continu, L0 le remplace par une frange lavande brisée) ; L0 aide en D
+  (sépare casquette / bras du sol sombre). Pas de traitement par sprite : rendre le liseré **dépendant de la densité** (décision moteur).
+- **[?] Mouvement, caméra A.** `motion.mjs` (pas fixe 1/60 s, rendu avec / sans le sprite, « churn » = part des pixels du sprite qui changent d'une image à l'autre après
+  recalage) : contrôles immobiles **0 %** ; ×2 ≈ témoin ×1 partout (médianes A latéral 4,8 / 4,5 %, A profondeur 6,4 / 6,4, A bout du quai 6,0 / 5,8, B 6,0 / 6,0). Mais le
+  **contrôle négatif** (échelle 0,6 : le ×2 à 0,6-0,7 px / texel) ne sépare pas non plus (8,6 / 8,2) : la mesure n'est **pas assez sensible** pour prouver l'absence de
+  scintillement. Contrôle visuel : 8 images consécutives et la boucle `review/motion-viewer.html` sans popping visible (yeux, casquette, boucle présents à chaque image). Reste à juger
+  par l'opérateur, et avec un vrai cycle de marche (le PNJ testé glisse sur une seule image).
+- **[KO, cast] Cohérence avec le reste du casting.** Texels deux fois plus petits que ceux du héros et des autres PNJ, ≈ 3,2 têtes contre ≈ 2,4, visage à reflets contre yeux-points :
+  à côté du héros (C emplacement 3, D emplacement 1, `scale-B`), c'est le héros qui devient le personnage le moins fin à l'écran. Non corrigeable sur ce sprite.
+- **Défauts du sprite (corrigeables)** : traînée rose bouche → col lue comme une langue (B / C / D, visible à 1:1 en C) ; mèche gauche qui descend jusqu'à l'épaule ; moucheture
+  sur la chemise et les cuisses (2 153 couleurs) ; casquette plus saturée que l'ardoise de la référence ; jambes qui se perdent sur sol sombre en D.
+
+### Conclusion
+- **[OK, sous conditions] C — ×2 auto fonctionne comme style de base des PNJ génériques** : bonne cible de qualité, meilleur que le porteur actuel sur lisibilité, rôle,
+  palette et fidélité à la référence. Ce n'est **pas** un remplacement direct dans le cast actuel.
+- **Prochaine étape recommandée (revue et moi d'accord) : (B) une très petite passe de nettoyage, puis verrouiller** : (1) bouche / col séparés (trait de 1-2 texels, ombre de
+  mâchoire, V du col en ombre de chemise froide) ; (2) mèche gauche arrêtée à l'oreille ; (3) regroupement de palette + texels orphelins sur chemise et pantalon **sans repeindre
+  les volumes** (la revue propose 32 couleurs ; l'échelle de palette d'E2 montre un aplatissement à 32 : tester 64-96) ; (4) optionnel, à arbitrer : chemise −10 % et casquette
+  désaturée ; (5) hauteur par défaut 1,88 m (échelle 0,9 ou recadrage du cadre 64 × 96).
+- **Conditions avant d'étendre la baseline** : décision de densité du cast (héros en ×2 d'abord, ou plan de migration) ; liseré dépendant de la densité ; politique sur les largeurs
+  de texel inégales à ≈ 2 px / texel (B / C) ; cycle de marche testé en A ; preuve d'un personnage **original** au même niveau.
+
+### Erreurs de méthode (pour ne pas les refaire)
+- **[KO → corrigé]** Emplacement 3 de C caché derrière la bannière du bateau (le reveal ne protège que le joueur) → déplacé en (12,4 ; 0,2).
+- **[KO → corrigé]** Premier cadrage d'échelle raté : en B, l'axe x est surtout de la **profondeur** ; une position « à côté » du joueur se calcule par projection (`project.mjs`).
+- **[KO → corrigé]** `$(pwd)` en Git Bash donne `/c/...` : converti pour un argument seul, pas dans `"label|chemin"` → `pwd -W`. `boxes.txt` sans fin de ligne finale : la dernière
+  ligne sautait dans `while read`.
+- Captures : quelques images isolées où le masque du sprite explose (même sur un trajet immobile) = défaut ponctuel de capture, écarté par médiane / p90, signalé dans le rapport.
+- Le serveur de dev dédié meurt avec la reprise de session : le relancer (`:5180 --strictPort`) avant toute capture.
+
+Preuves (hors dépôt, dérivées de la référence) : `art-lab/characters/scratch/e2-x2-candidate/scene/` — `shots/` (captures brutes), `review/` (planches A-D plein cadre et
+emplacements, `scale-B`, bandes de mouvement, `motion-viewer.html`), `motion*/` + `motion-report.json`, `light.json`, `projections.json`, `self-assessment.md`. Runtime inchangé :
+bundle `index-B5BamZwF.js` SHA-256 `f81b4d7b…` identique, typecheck OK, `art:validate` 0 erreur, exports temporaires supprimés, rien commité.
+
+## Passe 4A-sexies — Très petite passe de nettoyage du ×2 + validation en scène A-D (approuvée, test seulement, 2026-10-16)
+
+Approbation opérateur : bouche / col, mèche gauche, palette regroupée **sans repeindre les volumes**, hauteur 1,88 m ; même validation A-D ; **arrêt avant verrouillage**.
+Outil : Aseprite AI Artist 0.8.2 en **headless** (outils MCP du plugin dans la session : `sprite_manage`, `palette`, `recolor`, `look`, `draw`, `validate`, `export`).
+Temps réel : 00:21 → 00:27 édition v1 (≈ 6 min) ; captures + critique jusqu'à 00:36 ; v2 00:36 → 00:39 ; retour à v1 00:46.
+Source : `art-lab/characters/scratch/e2-x2-candidate/clean/x2-clean.aseprite` → `x2-clean.png` (64 × 96, pied 90, SHA-256 `9e1de3ba…`), dossier ignoré par Git.
+
+### Ce qui a été fait (v1, retenue)
+- **[OK] Palette** : k-means OKLab **64 couleurs** pondéré visage (déjà produit en E2, figé) : erreur moyenne 12,1 ‰ (max 43), indiscernable de la source à l'œil.
+  **[KO]** L'extraction d'Aseprite (`palette extract` 96 / 64) remplace la palette **sans remapper** les pixels malgré `remapArt` ; après `recolor snap`, erreur 16-18 ‰ (max 69) et
+  chemise rosie / marbrée (`clean/pal-compare.png`) → rejetée.
+- **[OK] Texels orphelins** : 9 seulement (majorité 6/8 très proche, visage exclu pour garder les reflets des yeux). La moucheture vue en jeu est un marbrage de 2-3 texels
+  hérité de la peinture : la lisser serait repeindre, non fait.
+- **[OK] Bouche / col** : bouche 3 × 2 orange → trait fermé de 2 texels centré entre les yeux ; V du col (x 33-40, rangées 32-37) : **mêmes valeurs, chroma rouge retirée**
+  (15 `replace` limités à la zone). La traînée « langue » disparaît dans les 4 caméras.
+- **[OK/?] Mèche gauche** : la poche sombre sous l'oreille (5-7 texels, rangées 26-30 = fond de la référence enfermé) devient du fond, contour refermé ; la mèche s'arrête
+  à l'oreille. Reste un contour + ombre de mâchoire de 2-3 texels jusqu'à l'épaule (lu « partiel » par la critique).
+- **Hauteur 1,88 m** = échelle de présentation **0,9** (donnée, aucun pixel touché ; `labscale=0.9`). Conséquence : en A le ×2 descend à **0,86-1,11 px écran / texel**
+  (B 1,6-2,0, C 2,0-2,35, D 1,8-2,2).
+- `validate` 100 (notes : 65 entrées de palette, pas de couleur unique de contour), 66 texels modifiés sur la base 64 couleurs.
+
+### Validation
+- Captures A-D, mêmes 3 emplacements, avant (porteur runtime) / ×2 auto / ×2 nettoyé (tous deux à 1,88 m) / nettoyé L1, + vues `static=1` (contrôle déterministe : 0 px)
+  et échelle à côté du héros (`scene/run-captures-clean.sh`, planches `scene/review-clean/`).
+- **Critique à l'aveugle** (Q / Z tirés au sort, clé hors champ ; auto-évaluation écrite avant : `clean/self-assessment.md`) : nettoyé **nettement meilleur** que ×2 auto,
+  uniquement par la bouche / le col — visage 7 contre 4, col / cou 6 contre 3, proximité de la cible 7,5 contre 6, lisibilité 1:1 B 8 / C 8 / D 7 / A 7 (contre 6 / 6 / 5 / 6).
+  Aucune régression ailleurs (« identiques pixel pour pixel hors visage et col », pas de dérive de couleur). Verdict : **« oui, avec une réserve mineure »** pour verrouiller.
+  Défauts restants signalés : V du col faible / gris moucheté (lu « barbe naissante » en D), colonne sombre des deux côtés de la tête jusqu'à l'épaule (cou peu visible),
+  bas du visage un peu long, marbrage des cuisses en C (léger). Hors sprite : densité de texel mélangée avec le cast, frange bleue du liseré sur le contour.
+- **[?] Marche en caméra A** à 1,88 m (bout du quai, 1,04 → 0,9 px / texel, quelques texels sautent) : 8 images consécutives sans popping visible (yeux, casquette, boucle) ;
+  churn 6,5 % contre 6,1 % pour le témoin ×1 — mesure insensible (cf. 4A-quinquies), jugement visuel seulement ; boucle dans `scene/review/motion-viewer.html` (3e colonne).
+
+### Essai rejeté (v2)
+- **[KO]** Micro-retouche sur les deux réserves (41 texels : peau du cou sous l'oreille gauche ; V net = ombre de gorge sombre + rabats) : à la vraie grille, l'ombre de gorge forme un
+  **croissant sombre** sous le menton, lu ras-de-cou / bavoir en C et D (critique à l'aveugle v1 / v2 : différence non résolue à l'échelle des planches, mais le défaut est nommé ;
+  vérifié moi-même à ×6 / ×12 : `clean/neck-v1-v2.png`). Gain du cou négligeable. Retour à v1, restaurée au bit près ; v2 archivée (`clean/x2-clean-v2-rejected.aseprite`,
+  `scene/shots-clean-v2-rejected/`). Pensée : un V de col à cette densité se règle **avec la peau** (rangée claire entre menton et ombre), pas avec une masse sombre.
+
+### Conclusion (arrêt avant verrouillage, comme demandé)
+- Le ×2 nettoyé (v1) est le **candidat prêt à verrouiller** comme qualité de base des PNJ génériques, sous réserve mineure. À décider par l'opérateur : verrouiller tel quel, ou
+  une dernière retouche du col (rangée de peau entre menton et ombre, V étroit, un texel ivoire par pointe de col) et / ou de la colonne sombre droite (non approuvée ici).
+- Conditions inchangées avant d'étendre : densité du cast (héros), liseré dépendant de la densité, politique des largeurs de texel inégales, cycle de marche, personnage original.
+
+### Erreurs de méthode (pour ne pas les refaire)
+- `palette extract` d'AI Artist 0.8.2 ne remappe pas les pixels d'un sprite RGB : enchaîner `recolor snap` et **mesurer l'erreur** (`clean/qerr.mjs`) avant d'adopter une palette.
+- `look` `ascii` refuse un sprite de plus de 261 couleurs : regrouper la palette avant toute édition au texel.
+- Planche de critique trop réduite (3 442 px affichés à 2 000) : une différence de 1-2 texels doit être montrée **à la vraie grille** (×6-×12), sinon la critique ne peut pas trancher.
+- `projections.json` / `project.mjs` ignoraient l'échelle d'acteur : corrigé (`info.scale`). La bande de mouvement de la v1 vaut pour la version retenue.
+
+Preuves (hors dépôt) : `art-lab/characters/scratch/e2-x2-candidate/clean/` (source, palettes testées, retouches `edit1.json` / `edit2.json`, comparaisons) et `scene/`
+(`shots-clean/`, `review-clean/`, `critic-clean/`, `critic-clean-v1-v2/`, `motion-far-clean/`). Runtime inchangé : bundle `index-B5BamZwF.js` SHA-256 `f81b4d7b…`, typecheck OK,
+`art:validate` 0 erreur, exports temporaires supprimés, rien commité.
+
+## Passe 4A-septies — Baseline PNJ approuvée et validation dynamique en Merchant District (chemin expérimental, rien en production, 2026-10-16)
+
+### Décision opérateur (2026-10-16)
+- **×2 nettoyé v1 = baseline visuelle approuvée des PNJ standards** (v2 rejetée). Ce n'est **pas** un Gold Master technique complet ni une autorisation de production.
+  Conserver exactement ses sources, sa provenance, ses paramètres de reconstruction et ses preuves ; **pas d'autre retouche artistique** pour l'instant.
+- Direction : PNJ standards = qualité du ×2 nettoyé v1 ; personnages clés = finition et expressivité supérieures ; **une seule direction artistique, des budgets de précision
+  différents** ; **ne jamais dégrader le nouveau personnage pour l'aligner sur les anciens sprites**. Le personnage reste dans un chemin expérimental jusqu'à l'approbation
+  de son intégration ; arrêt pour arbitrage avant toute variante ou tout nouveau personnage.
+- **[OK] Provenance figée** : `art-lab/characters/scratch/e2-x2-candidate/PROVENANCE.json` (14 fichiers sous SHA-256 : sprite, source `.aseprite`, base 64 couleurs, ×2 plein,
+  planche source, retouches, scripts ; paramètres de reconstruction ; étapes de nettoyage ; décisions datées) + `verify-provenance.mjs` (« baseline intact ») ; fichiers clés
+  en lecture seule. **Risque** : ce dossier est ignoré par Git et n'existe que sur cette machine (un `git clean -X` l'effacerait) — stockage durable à décider.
+
+### Méthode (environnement et effets intacts, aucune animation ni orientation ajoutée)
+- `src/lab/runtimePreview.ts` (dev seul) : `labfollow=1` (le PNJ prend la place du joueur, masqué), `labscale`, `labdetail` ; hauteur = échelle de présentation, **texture
+  inchangée** (64 × 96).
+- `scene/dyn/dynwalk.mjs` : boucle de l'appli reprise à **pas fixe 1/60 s**, joueur piloté par les **vraies touches** (même pilotage que `tools/camsim.mjs`) → zones, transitions,
+  collisions, DOF, reveal du jeu. Par image : recadrage 1:1 (séquences), pixels du sprite isolés (rendu avec / sans), churn (part des pixels qui changent d'une image à la
+  suivante après recalage ±3 px), silhouette, part du contour restée sombre. Itinéraires vérifiés d'abord avec `camsim` : quai A → AB → B → BC → C → CD → D (881 images),
+  bord de l'eau B → BD → D sans C (503).
+- 9 marches : quai à **1,88 / 1,75 / 1,65 m**, quai au **témoin ×1** (même art en 32 × 48, **même renderer de labo** : la comparaison isole la densité), bord de l'eau,
+  3 **PNJ fixes** sous caméra mobile, caméra C **avec / sans liseré**. Visionneuses `scene/dyn/viewer-*.html` (lecture 60 / 30 / 15 / 4 i/s, curseur, zoom, état caméra par image).
+- Revue indépendante sur planches d'images consécutives (auto-évaluation écrite avant : `scene/dyn/self-assessment.md`).
+
+### Résultats
+- **[OK] Stabilité ×2 = densité actuelle** (churn médian ×2 / ×1, même trajet) : A 5,7 / 5,6 %, B 7,5 / 7,3, C 9,4 / 9,6, D 10,2 / 9,8, transitions 11,4 / 10,3. La revue voit
+  la même chose sur les images consécutives en B (« aussi stable que ×1, bien plus lisible »). Contrôles immobiles : 0 %.
+- **[?] Caméra A** (1,1-1,2 px écran / texel) : la revue voit des détails d'**un texel** changer d'une image à l'autre (taches de la calotte, bouche, bord de casquette) — la
+  perte de texels attendue du plus proche voisin près de 1:1 ; les grands blocs restent stables. La mesure ne le détecte pas (A a le churn le plus bas) : **le churn ne mesure
+  pas le scintillement de texel** (confirmé : il compte surtout lumière, DOF, reflets ; cf. 4A-quinquies). PNJ fixes lointains : jusqu'à 0,57 px / texel en A.
+- **[OK] Transitions** AB / BC / CD : croissance / réduction progressive, aucun saut ; CD ancré tient taille et position.
+- **Hauteurs** (même texture) : churn médian 1,88 / 1,75 / 1,65 m — A 5,7 / 6,0 / 6,1, B 7,5 / 8,2 / 8,7, C 9,4 / 9,4 / 10,2, D 10,2 / 10,4 / 11,0. Px / texel en B : 1,9-2,0 /
+  1,7-1,9 / 1,6-1,8. **1,88 m** est le plus stable (proche de 2 px / texel en B) et le plus proche du héros (1,93 m).
+- **PNJ fixes, caméra mobile** : médianes B 4,5 %, C 4,4 %, D 6,2 %. Les pics viennent d'**occlusions réelles** (héros ou PNJ qui passent devant ; ellipse de reveal du joueur
+  qui découvre à moitié un PNJ placé derrière la bannière — le reveal ne protège que le joueur, conçu ainsi), pas du sprite.
+- **Contours** : part du contour restée sombre A 3,7 %, B 19, C 34, D 57 (×1 : 1,6 / 16 / 30 / 53). Caméra C : liseré L0 28,6 % contre L1 45 %, churn identique → le liseré ne
+  déstabilise pas, il éclaircit le contour (lisibilité) ; en D le pantalon se fond dans les pavés sombres.
+- **DOF** : le PNJ reste net partout où il est le sujet ; PNJ fixes nets en B / C / D.
+- **[OK] Performances** (`tools/perf.mjs`, caméra B, 3 tours entrelacés, bruit ≈ ±0,2 ms) : base 9,23 ms GPU ; renderer actuel +8 / +32 porteurs 9,63 / 9,67 ; ×2 1 / 8 / 32 PNJ
+  9,15 / 9,31 / 9,54 ; témoin ×1 32 PNJ 9,68. **Coût égal au renderer actuel** à la marge de mesure ; le chemin expérimental ajoute **4 appels de dessin fixes** (son propre
+  renderer) ; texture 24 Ko par image de sprite (6 Ko en 32 × 48). Non mesuré : plusieurs feuilles ×2 différentes, animations.
+- **[KO → expliqué] « Image noire » 718** relevée par la revue en transition CD : JPEG de séquence seul (1,8 Ko), la même image est normale dans les 3 autres marches et la mesure
+  (captures PNG) est normale → **raté de capture**, pas le rendu. 7 sur 7 396 JPEG au total, à des images différentes ; les visionneuses les signalent et affichent l'image
+  précédente ; `dynwalk.mjs` reprend désormais toute capture anormalement petite.
+
+### Conclusion (arrêt pour arbitrage, comme demandé)
+- **Revue : « oui, avec conditions » pour passer à la planification de l'intégration** (pas à l'intégration). Moi : d'accord.
+- Conditions moteur / scène : (1) **politique sous ≈ 1,2 px / texel** (caméra A, PNJ lointains, résolutions plus basses) : feuille préfiltrée ou repli 32 × 48 — à tester
+  pour le popping ; (2) **densité du héros et du cast** : le héros 32 × 48 paraît plus grossier que les figurants ×2 (décider avant d'étendre) ; (3) **reveal de la bannière** :
+  un montant sombre n'est pas découpé et coupe le joueur, la casquette tombe dans la bande tramée, la trame « rampe » quand l'ellipse bouge (Passe 3, pas le sprite ; à examiner) ;
+  (4) un **renderer de sprites unique** pour le ×2 (aujourd'hui second renderer expérimental : vérifier surimpression 55 %, masque DOF, miroir, grille de lumières) ;
+  (5) liseré par caméra ou L1 (lisibilité seulement).
+- Sprite (aucune retouche faite, conformément à l'arrêt) : détails d'un texel qui clignotent sous ≈ 1,2 px / texel ; contraste pantalon / pavés en D ; cycle de marche et autres
+  orientations non testés (à refaire avant d'en faire la baseline « PNJ qui marche »).
+
+### Erreurs de méthode (pour ne pas les refaire)
+- **[KO → corrigé]** Itinéraire en ligne droite → le joueur bute contre l'étal (3 900 images au lieu de 881) puis contre les bornes du bord de l'eau (x ≈ 9, z 3,4 / 3,6) :
+  **valider un itinéraire avec `camsim` (sans rendu, secondes) avant toute marche capturée**.
+- **[KO → corrigé]** Captures puppeteer qui pendent : (a) un onglet ouvert après la page de scène la met en arrière-plan (plus d'images produites) → `bringToFront` ;
+  (b) deux captures de suite sans nouveau rendu ; (c) `clip.scale` (redimensionne la page). Avec la boucle reprise à la main : **un rendu avant chaque capture**.
+- **[KO → corrigé]** `tools/perf.mjs` vise :5173 par défaut : passer `BASE_URL` du serveur dédié.
+- Je ne suis réveillé qu'à la fin d'une commande d'arrière-plan : pour une série longue, un `Monitor` qui émet à chaque étape (sinon l'opérateur doit relancer).
+
+Preuves (hors dépôt) : `art-lab/characters/scratch/e2-x2-candidate/scene/dyn/` (`runs/` 9 marches, `report.json`, `perf.json` + `run-perf.log`, `review/`, visionneuses,
+`self-assessment.md`, `README.md`). Runtime inchangé : bundle `index-B5BamZwF.js` SHA-256 `f81b4d7b…`, typecheck OK, `art:validate` 0 erreur, exports temporaires supprimés.
+
+## Passe 4A-octies — Conservation versionnée de la baseline et contrat d'intégration multi-résolution (2026-10-16)
+
+### Décisions opérateur (2026-10-16)
+1. Rapport dynamique validé : **×2 nettoyé v1 = baseline artistique ET dynamique approuvée des PNJ standards** — pas une approbation d'intégration en production, ni de ses
+   futures animations / orientations.
+2. Conservation durable et versionnée (pas seulement `scratch/`), provenance et droits de la planche vérifiés **avant** de proposer son archivage, statut distinguant
+   *approved visual baseline* et *approved production asset*.
+3. Densité ×2 (64 × 96) conservée ; **pas de LOD ni de repli 32 × 48** (résultats insuffisants pour le justifier) ; la limite de la caméra A reste un **point de QA**.
+4. **Hauteurs monde = paramètres indépendants de la résolution** ; 1,88 m n'est pas une taille universelle.
+5. Contrat technique d'intégration dans `SpriteAtlas` / `SpriteRenderer` à présenter **avant** implémentation ; pas de remplacement des sprites, pas de refonte.
+6. Héros inchangé ; le standard ×2 vise les PNJ ordinaires, les personnages clés auront un budget supérieur.
+7. Anomalie du montant de la bannière = **problème d'occlusion indépendant**, reveal non modifié ; tout nouvel occluder exige un inventaire visuel et technique.
+8. Prochaine priorité artistique : un **deuxième PNJ original** de même qualité (pas d'amélioration sans fin du premier) ; pas de roster, de refonte du héros ni d'animations
+   complètes sans nouveau contrat. Arrêt pour validation après cette passe.
+
+### Provenance et droits de la planche source
+- **[?] Droits non vérifiables** : la planche « 16 generic townsfolk » (WebP 302 814 octets, SHA-256 `1c3bc603…36ce`) ne porte **aucune métadonnée de provenance** (profil ICC sRGB
+  seul : ni EXIF, ni XMP, ni auteur, ni générateur) ; elle a été fournie par l'opérateur en séance (fichiers 1, 4 et 5 identiques). Origine et droits d'usage à confirmer par
+  l'opérateur. **Non archivée dans Git** (règle de `reference/README.md`) ; identifiée par empreinte et recadrage. Les images dérivées (×2, nettoyé, preuves) héritent de cette
+  question ouverte.
+
+### Conservation (fichiers suivis, prêts à commiter)
+- Manifeste `art-lab/characters/manifests/dockworker-x2-v1.manifest.json` : `status: approved`, `approved: true` (opérateur, 2026-10-16), **`runtimeUse: "lab"`** = *approved visual
+  baseline* ; *approved production asset* = `runtimeUse: "production"`, réservé à une tâche explicite + droits confirmés (convention écrite dans `art-lab/characters/README.md`).
+- Source `art-lab/characters/source/dockworker-x2-v1.aseprite` (v1) ; export Aseprite `exports/dockworker-x2-v1.png` + `.json` (identique pixel pour pixel à la v1).
+- Paquet de provenance `art-lab/characters/provenance/dockworker-x2-v1/` : `PROVENANCE.json` (SHA-256 de 9 fichiers, paramètres, étapes, décisions datées, point de QA),
+  `x2-auto.png` (×2 original), `x2-quant64.png`, `cleanup-ops.json`, `reconstruction-report.json`, `README.md`.
+- Outils portables : `tools/art-lab/reconstruct-grid.mjs` (reconstruction sur grille, sans chemin machine), `tools/art-lab/replay-pixel-ops.mjs` (rejoue les opérations
+  `draw` enregistrées sans Aseprite), `tools/art-lab/verify-provenance.mjs` (empreintes ; `--sheet` + `--rebuild` : chaîne complète).
+- **[OK] Chaîne complète vérifiée** : planche → ×2 plein **bit pour bit**, → 64 couleurs **bit pour bit**, → nettoyage rejoué **pixel pour pixel** = export approuvé ; contrôle
+  négatif (autre planche) refusé. Preuves essentielles : `art-lab/characters/reviews/dockworker-x2-v1/` (6,6 Mo, aucune image ne contient la planche elle-même).
+- **[KO → corrigé]** J'avais écrit (4A-sexies, `PROVENANCE.json` local) que le k-means 64 couleurs n'était pas déterministe : il l'est (initialisation déterministe) — la
+  reconstruction refaite redonne le fichier au bit près. Et j'ai d'abord écrit de mémoire une empreinte complète de la planche (seuls 16 caractères étaient connus) : remplacée
+  par la valeur calculée avant toute vérification. Pensée : une empreinte se calcule, ne se recopie jamais.
+
+### Contrat d'intégration (proposition, rien d'implémenté)
+- `art-lab/characters/runtime-integration-contract.md`. Fait mesuré : atlas 512 × 720 (234 images, 2,9 Mo), un renderer instancié, **taille monde et décalage des pieds
+  partagés**. Invariant proposé : une densité *k* = cadre 32k × 48k, pieds à la rangée 45k → **même rectangle monde** (1,504 × 2,256 m, 0,141 m) : aucun changement de shader
+  pour la taille ou l'ancrage, la densité ne change que la case d'atlas ; hauteur = échelle par instance. Changements : cases *k × k* dans le même atlas (aucun appel de dessin
+  en plus), `BakedSpec`, chargeur réservé aux manifestes `production` (cuisson au build recommandée), repli « face / idle » au lieu de faire disparaître un PNJ incomplet,
+  apparitions hors du flux RNG. 6 tests d'acceptation (dont pixel-identique sans PNJ ×2, et pixel-identique au rendu validé de l'aperçu) ; 10 risques (dont **droits de la
+  planche bloquants pour la production**).
+
+### Erreurs de méthode
+- Voir les deux corrections ci-dessus. Le dossier `scratch/` reste la seule copie de la planche source et des preuves complètes : à décider avec l'opérateur.
+- **[KO → corrigé]** Empreintes de fichiers texte prises brutes : un checkout Git sous Windows convertit les fins de ligne (CRLF) et la vérification aurait échoué ailleurs ; l'export
+  JSON d'Aseprite est même écrit en CRLF. Règle désormais : texte (`.json .mjs .js .ts .md .txt`) haché en LF, binaires tels quels (`hashRule` dans `PROVENANCE.json`), testé sur
+  une copie CRLF simulée (5 / 5).
+
 ---
 
 ## À reprendre (par priorité)
 
-**-1. PROCHAIN : décisions opérateur sur la Passe 4A** — (a) approuver ou faire corriger `porter-gm-v1` (manifeste `candidate`) ; (b) **trancher le style du héros** (aligner le joueur sur
-la référence B, ou adapter le gold master) avant toute déclinaison ; (c) confirmer le classement des références (image 2 = B, image 3 = C, image 1 rejetée) et dire si on stocke B / C dans
-`reference/`. Ensuite seulement : directions `up` / `side` + `walk` / `carry` du même portefaix, puis un PNJ important, puis des variantes de famille (bonnet / casquette, sac / caisse / corde, crochet / rien, barbe / rasé).
+**-1. PROCHAIN : validation opérateur de la Passe 4A-octies** — (a) commit local proposé de la conservation (`dockworker-x2-v1` : manifeste `approved` + `runtimeUse: "lab"`,
+source, export, paquet de provenance, outils, preuves) ; (b) **origine et droits de la planche source** à confirmer (bloquant pour toute production ; la planche n'est pas dans Git,
+seule copie dans `scratch/`) ; (c) contrat `art-lab/characters/runtime-integration-contract.md` à valider avant toute implémentation. Ensuite : **deuxième PNJ original** de même
+qualité (nouveau contrat). Pas de roster, de refonte du héros, d'animations complètes, de LOD.
+**-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
+**-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
+tramée ; la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un nouvel occluder.
+Avant d'étendre : densité du cast (héros), liseré dépendant de la densité, largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A, personnage **original** au même niveau.
+Pas de roster, de généralisation ni de personnage clé ; E4 **non lancée**. Le modelé ×1,5 n'est plus la voie principale. Décisions ouvertes : liseré par sprite (non implémenté),
+origine / droits de la planche de référence, son stockage dans `reference/`, quelles planches étaient réellement rejetées. `porter-gm-v1` reste une baseline expérimentale.
 Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, test de fumée `smoke-test/4a0b/` après toute mise à jour (épinglé 0.8.2, auto-update coupé), critique par agent neuf (cf. `art-lab/README.md`).
 -0b. **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise appli. Servir les baselines sur `:518x --strictPort` ;
   décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
@@ -916,3 +1269,22 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
 - Un personnage se juge **dans la scène** à chaque itération (aperçu `?labsprite`, avant / après au même endroit), pas seulement agrandi : lumière chaude, liseré et voisinage du cast changent la lecture.
 - Une critique d'art doit voir l'image, lire à froid avant la consigne, citer des pixels, et vérifier la passe précédente ; le score monte avec des preuves, pas avec des intentions.
   Un « 0 trou » / « 0 écart » se prouve par un contrôle objectif (remplissage depuis le bord ; contrôle négatif du Lab).
+- Le classement des références (cible / support / rejet) se fait **confirmer par l'opérateur avant de produire** ; on mesure une référence (grille, taille, couleurs) avant d'en déduire
+  une contrainte de résolution ou de technique.
+- Un modelé se peint par **masses** (3-4 valeurs par forme, plis rendus par le bord des aplats) ; une spécification pixel par pixel écrite en texte donne de la moucheture (alternances)
+  ou des blocs. La forme vient d'abord de l'information de la source (densité, dégradés peints) ; la finition par agent est fiable pour les défauts **nommés et localisés**, pas pour repeindre un volume.
+- Une métrique de propreté (pixels isolés, alternances) n'est pas une métrique de forme : seule une critique aveugle juge la lecture du volume. Critique à l'aveugle = étiquettes tirées au sort,
+  clé hors du champ du critique, nouvel agent à chaque tour, auto-critique écrite **avant** de lire le verdict.
+- Préserver d'abord la qualité de la source artistique, puis une finition ciblée sur des défauts nommés ; un sprite se valide **à côté du cast existant** (héros compris) :
+  densité de texel, proportions et hauteur monde se comparent à la même profondeur, pas seulement contre la référence.
+- Une mesure de stabilité en mouvement doit d'abord prouver qu'elle sépare un cas connu mauvais (contrôle négatif) ; sinon elle ne vaut que comme indice et le jugement reste visuel.
+- Retouche ciblée : changer la **chroma** d'une zone fautive en gardant ses valeurs corrige sans repeindre ; ajouter une masse sombre crée un nouveau motif (ras-de-cou). Une retouche
+  qui ne gagne pas clairement à l'aveugle est annulée, pas empilée.
+- Une marche capturée se fait à **pas fixe** avec les **vraies entrées**, sur un itinéraire d'abord validé sans rendu (`camsim`) ; chaque image se rend avant d'être capturée ; un
+  témoin (même art, autre densité, **même renderer**) sur le même trajet est la seule référence qui donne un sens aux chiffres de stabilité.
+- Une approbation visuelle se fige tout de suite : empreintes SHA-256, paramètres, décisions datées, script de vérification ; un artefact approuvé ne vit pas seulement dans un
+  dossier ignoré sans que l'opérateur le sache.
+- Deux niveaux d'approbation distincts : *approved visual baseline* (`approved: true` + `runtimeUse: "lab"`) et *approved production asset* (`runtimeUse: "production"`, tâche
+  explicite + droits confirmés). Une source aux droits non confirmés s'archive par empreinte, jamais par copie dans Git.
+- Plusieurs densités de sprites partagent un seul renderer si chaque densité *k* garde le même rectangle monde (cadre 32k × 48k, pieds à 45k) : la densité est une affaire
+  d'atlas, la hauteur une affaire d'instance.

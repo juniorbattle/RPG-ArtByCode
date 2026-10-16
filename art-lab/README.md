@@ -91,6 +91,12 @@ of the tag (2 atlas cells, 1.7 fps); the Lab plays them all.
 
 Example (Pass 4A captures): `?seed=1842&clean=1&freeze=7.3&intro=0&camera=B&player=-4.6,0.6&labsprite=porter-gm-v1&labpos=-2.2,3.3`.
 
+Other pixel densities (frames larger than 32x48, or `labhd=1`) are drawn by a second sprite renderer with the same shader and lights, at
+the same world size (density = frame height / 48). For those: `labdetail=hero|mid|crowd` (DOF protection tier, default `mid`),
+`labscale=<k>` (presentation scale), `labfollow=1` (the first actor takes the hidden player's place every frame: walk it through the
+framings), `spritelight=sat,chroma,edge,vertMin,tone,overlay,unlit` (character lighting treatment; `,,0` = no silhouette edge). Full list in
+the header of `src/lab/runtimePreview.ts`.
+
 ### Critique workflow (replaces `aseprite:pixel-critic`, which cannot see the sprite in 0.8.2)
 
 A fresh, independent agent with only a Read tool gets an evidence pack: the 8x render, an ASCII pixel map with coordinates
