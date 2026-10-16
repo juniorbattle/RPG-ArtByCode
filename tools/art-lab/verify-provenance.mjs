@@ -1,5 +1,5 @@
 // Verify an Art Lab provenance pack (art-lab/characters/provenance/<id>/PROVENANCE.json): every listed repo file still has its
-// recorded SHA-256. Optionally verify the external source sheet (never stored in the repo while its rights are unconfirmed) and
+// recorded SHA-256. Optionally verify the external source sheet (not stored in the repo: storing it needs an operator approval) and
 // re-run the whole chain: reconstruction -> palette -> recorded cleanup, compared pixel for pixel with the approved export.
 //   node tools/art-lab/verify-provenance.mjs <provenance dir> [--sheet <path to the source sheet>] [--rebuild]
 // --rebuild needs --sheet and Chrome / Edge (CHROME_PATH). Read-only for the repo: rebuild outputs go to the OS temp folder.
@@ -26,12 +26,16 @@ const sheet = P.source?.sheet;
 if (opt.sheet) {
   if (sha(opt.sheet) !== sheet.sha256) { console.log(`SHEET    ${opt.sheet} does not match the recorded source sheet`); bad++; } else console.log(`ok       source sheet (${sheet.sha256.slice(0, 16)}...)`);
 } else console.log(`skip     source sheet: not stored in the repo (${sheet?.storage ?? 'see PROVENANCE.json'}); pass --sheet to check it`);
-// an operator declaration about the source (not hashed, never a proof): reported so nobody mistakes it for a verified provenance
+// the operator's provenance record about the source (not hashed, not a cryptographic proof): reported as such
 const declFile = path.join(dir, 'source-declaration.json');
 if (fs.existsSync(declFile)) {
   const D = JSON.parse(fs.readFileSync(declFile, 'utf8'));
   if (D.subject?.sha256 !== sheet?.sha256) { console.log('DECL     source-declaration.json names another sheet than PROVENANCE.json'); bad++; }
-  else console.log(`note     source: ${D.declaration.by}, ${D.declaration.date}: OPERATOR DECLARATION, ${D.verification.status}; production ${D.consequences.production.split(':')[0]}`);
+  else {
+    const last = D.declarations?.[D.declarations.length - 1] ?? D.declaration;
+    console.log(`note     source: ${D.status ?? D.verification?.status} (${last?.by}, ${last?.date})`);
+    if (D.rightsAndProduction) console.log(`note     rights / production: ${D.rightsAndProduction.rights}`);
+  }
 }
 if (opt.rebuild) {
   if (!opt.sheet) { console.error('--rebuild needs --sheet'); process.exit(2); }

@@ -1406,6 +1406,31 @@ sprites ne doit jamais modifier l'apparence des sprites déjà validés.
 - La série complète a été arrêtée dès le premier écart d'un niveau (inutile de mesurer le reste sur un shader faux), puis relancée sur la
   version retenue.
 
+## Passe 4A-duodecies — Provenance des planches de référence confirmée par l'opérateur (documentation seule, 2026-10-16)
+
+### Décision opérateur (2026-10-16)
+Les planches « Cité du Tournoi — Merchant District — Night » (PNJ 1 à 24) ont été générées avec ChatGPT / OpenAI à partir de nos
+instructions de direction artistique ; ce ne sont pas des planches d'un artiste extérieur ; `4.webp` est une copie réencodée de l'une de ces
+générations. À enregistrer comme **provenance confirmée par l'opérateur**, sans prétendre à une vérification C2PA ; l'absence des originaux
+ne doit pas être présentée comme une interdiction automatique de production ; droits et autorisation de production s'évaluent à part ;
+baseline ×2 v1 et toute sa traçabilité conservées ; aucune métadonnée inventée.
+
+### Ce qui a été consigné — [OK]
+- `provenance/dockworker-x2-v1/source-declaration.json` : statut « provenance confirmée par l'opérateur, non vérifiée cryptographiquement » ;
+  **les deux déclarations du jour citées mot pour mot** ; faits techniques inchangés ; « rien n'est déduit » (ni date, ni modèle, ni prompt,
+  ni compte, ni C2PA) ; **série** : planche PNJ 01-16 (cette source) et planche PNJ 17-24 identifiées par leur SHA-256 (calculé sur les copies
+  collées en séance) ; la troisième planche collée ce jour-là (« NPC CHARACTER REFERENCE SHEET », 14 personnages) **n'est pas nommée** par
+  la clarification : aucun statut ne lui est attribué ; droits / production : évaluation séparée, l'absence des originaux n'interdit pas
+  à elle seule ; **historique** : le texte précédent (« production BLOCKED … ») gardé mot pour mot.
+- `PROVENANCE.json` : champ `origin` ajouté, `rights` mis à jour, ancien texte conservé dans `source.sheet.history`, décision datée ajoutée
+  à `approvals` ; modifications ciblées (le reste du fichier inchangé à l'octet). Manifeste : note de la référence mise à jour en citant
+  l'ancienne formulation ; **approbation de la baseline intacte** (`approved`, `runtimeUse: "lab"`).
+- README du paquet, README des personnages, contrat (statut, risque n° 1), README de preuves 4A-decies (sa dernière phrase annonçait une
+  production bloquée) ; `verify-provenance.mjs` affiche le nouveau statut et la ligne droits / production, jamais comme une preuve.
+- Vérifications : `verify-provenance` → **intact** (les 9 empreintes de la chaîne inchangées) ; avec la planche : `ok source sheet` ;
+  `art:validate` 0 erreur. Aucun code du jeu modifié.
+- La planche reste hors Git (stockage = approbation explicite de l'opérateur) ; sa seule copie dans le projet est dans `scratch/`.
+
 ---
 
 ## À reprendre (par priorité)
@@ -1413,14 +1438,15 @@ sprites ne doit jamais modifier l'apparence des sprites déjà validés.
 **-1. PROCHAIN** — Passe 4A-undecies close : adressage par case entière commité (sprites générés identiques au bit à `eecea58`, ×2 stable
 quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ; écart de l'ombre portée du ×2 face à l'ancien aperçu
 (3-67 px par vue, ≤ 12 / 255) **accepté par l'opérateur** : l'ombre suit la règle entière du corps. Restent ouverts : C2 (PNG versionné) à confirmer ;
-**original PNG de la planche** (déclaration opérateur, non vérifiée : production bloquée). Ensuite : deuxième PNJ original (artisane ou
+**droits et autorisation de production** de la planche à évaluer à part (provenance confirmée par l'opérateur le 16/10, non vérifiée par
+C2PA ; l'opérateur tente de récupérer les originaux ; la planche n'existe que dans `scratch/` : stockage durable à décider). Ensuite : deuxième PNJ original (artisane ou
 marchande), source **téléchargée en PNG d'origine** (C2PA conservé). Restauration : `5d10a37`. Rien poussé.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
 tramée ; la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un nouvel occluder.
 Avant d'étendre : densité du cast (héros), liseré dépendant de la densité, largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A, personnage **original** au même niveau.
 Pas de roster, de généralisation ni de personnage clé ; E4 **non lancée**. Le modelé ×1,5 n'est plus la voie principale. Décisions ouvertes : liseré par sprite (non implémenté),
-preuve d'origine de la planche de référence (voir -1), son stockage dans `reference/`, quelles planches étaient réellement rejetées. `porter-gm-v1` reste une baseline expérimentale.
+droits de la planche de référence (voir -1 ; provenance confirmée par l'opérateur), son stockage dans `reference/`, quelles planches étaient réellement rejetées. `porter-gm-v1` reste une baseline expérimentale.
 Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, test de fumée `smoke-test/4a0b/` après toute mise à jour (épinglé 0.8.2, auto-update coupé), critique par agent neuf (cf. `art-lab/README.md`).
 -0b. **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise appli. Servir les baselines sur `:518x --strictPort` ;
   décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
@@ -1508,3 +1534,6 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   adressage par case entière (t ∈ [0, 1] × taille de case, plancher + clamp, lecture au centre du texel) qui ne dépend ni de la taille de
   l'atlas ni de la place de la case. Une formule normalisée par la taille de la texture ne peut pas être stable aux égalités exactes.
 - Une chauffe se fait par cadrage **et par origine** (serveur) ; un écart d'un niveau sur 255 se traque par sondes de variantes du shader.
+- Une provenance confirmée par l'opérateur se consigne **mot pour mot et datée**, distincte d'une vérification technique (C2PA) ; ce qui
+  manque ne se déduit pas. L'absence d'original n'interdit pas à elle seule la production : droits et autorisation s'évaluent à part. Un
+  statut remplacé se garde dans un historique, jamais effacé.

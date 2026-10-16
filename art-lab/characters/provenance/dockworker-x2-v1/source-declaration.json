@@ -2,18 +2,40 @@
   "kind": "operator-provenance-declaration",
   "id": "dockworker-x2-v1",
   "subject": {
-    "description": "source reference sheet \"16 generic townsfolk\" (Cite du Tournoi, Merchant District - Night) from which dockworker-x2-v1 was reconstructed",
+    "description": "source reference sheet \"16 generic townsfolk\" (Cite du Tournoi, Merchant District - Night, NPC 01-16) from which dockworker-x2-v1 was reconstructed",
     "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce"
   },
-  "declaration": {
-    "by": "operator (git user wonmii)",
-    "date": "2026-10-16",
-    "statement": "Je confirme que nos planches de référence originales ont été créées avec ChatGPT sous ma direction artistique.",
-    "nature": "OPERATOR DECLARATION. It is NOT a cryptographically verified provenance and NOT a technical proof that this file is one of those sheets."
+  "status": "PROVENANCE CONFIRMED BY THE OPERATOR (2026-10-16). Not cryptographically verified: no C2PA manifest is available.",
+  "provenance": {
+    "origin": "generated with ChatGPT / OpenAI from the team's art-direction instructions",
+    "series": "the sheets \"Cite du Tournoi - Merchant District - Night\" covering NPCs 1 to 24",
+    "external": "not obtained from an external artist",
+    "thisFile": "a re-encoded copy of one of these generations",
+    "basis": "operator statements of 2026-10-16, recorded verbatim below; consistent with the file facts below, which do not prove it"
   },
+  "declarations": [
+    {
+      "date": "2026-10-16",
+      "by": "operator (git user wonmii)",
+      "statement": "Je confirme que nos planches de référence originales ont été créées avec ChatGPT sous ma direction artistique.",
+      "recordedAs": "operator declaration, not a verified provenance (Pass 4A-decies)"
+    },
+    {
+      "date": "2026-10-16",
+      "by": "operator (git user wonmii)",
+      "statement": [
+        "Je clarifie officiellement la provenance de nos références artistiques.",
+        "Les planches « Cité du Tournoi — Merchant District — Night », comprenant les PNJ 1 à 24, ont été générées avec ChatGPT / OpenAI à partir de nos instructions de direction artistique.",
+        "Il ne s'agit pas de planches récupérées auprès d'un artiste extérieur.",
+        "Le fichier `4.webp` est une copie réencodée de l'une de ces générations.",
+        "Tu peux enregistrer cette déclaration comme provenance confirmée par l'opérateur, sans prétendre disposer d'une vérification cryptographique C2PA.",
+        "Nous tenterons de récupérer les originaux, mais leur absence ne doit pas être présentée comme une interdiction automatique d'utilisation en production. Les questions de droits et d'autorisation de production doivent être évaluées séparément."
+      ],
+      "recordedAs": "provenance confirmed by the operator (Pass 4A-duodecies)"
+    }
+  ],
   "verification": {
-    "status": "not verified (no technical proof available)",
-    "date": "2026-10-16",
+    "cryptographic": "none: the file carries no C2PA manifest (nor EXIF / XMP) and the original generations are not available",
     "facts": [
       "the file carries no provenance metadata: WebP (VP8) 1448 x 1086 whose only metadata is a generic 456-byte sRGB ICC profile; no EXIF, XMP or C2PA",
       "it is a byte-identical copy of images pasted by the operator in a working session (2026-10-15); the three sheets pasted that day share the same ICC profile, i.e. they are transcoded copies, not the original files",
@@ -21,16 +43,36 @@
       "1448 x 1086 is a native ChatGPT output size (local ChatGPT PNGs of that size carry an OpenAI C2PA manifest): consistent with the declaration, not a proof",
       "the original PNG was not found on the operator machine (read-only search of local image folders, 2026-10-16)"
     ],
-    "notInferred": "No generation date, model, prompt, author or C2PA data is recorded here: none is known from the file."
+    "notInferred": "No generation date, model, prompt, account, author or C2PA data is recorded here: none is known."
   },
-  "consequences": {
-    "localExperiments": "allowed (operator, 2026-10-16)",
-    "production": "BLOCKED: no runtimeUse \"production\" for this asset or anything derived from the sheet until the original PNG is recovered and verified, or the operator decides otherwise",
-    "repositoryStorage": "the sheet itself stays out of Git (reference/README.md rule); identified by SHA-256 only"
+  "series": {
+    "covered": [
+      { "sheet": "Cite du Tournoi - Merchant District - Night, NPC 01-16 (this source)", "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce" },
+      { "sheet": "Cite du Tournoi - Merchant District - Night, NPC 17-24", "sha256": "3b30b9305b21ed1812b9a75b0f4919f03665f7145eca9e78f4735608f200d6d4", "note": "re-encoded copy pasted in the same working session (2026-10-15); not stored in the project" }
+    ],
+    "notNamed": [
+      { "sheet": "Cite du Tournoi - Merchant District (Night) - NPC CHARACTER REFERENCE SHEET, 14 characters numbered 01-14", "sha256": "05c101db487ecb5d1c1f7f41eff1a2a059ef2d4ce3bc62a750ec68dc4f6b97af", "note": "pasted the same day; not named by the 2026-10-16 clarification (other title and numbering): no status recorded for it here" }
+    ]
   },
-  "toCompleteIfTheOriginalIsFound": [
-    "check the original PNG's C2PA manifest (presence, issuer, claim generator; signature validation needs c2patool, to install only with operator approval)",
-    "check the visual correspondence with this WebP (lossy transcode: compare by error measure, not by hash)",
-    "then record the verified provenance next to this declaration, without rewriting it"
+  "rightsAndProduction": {
+    "rights": "to be evaluated separately (operator, 2026-10-16); not evaluated yet",
+    "production": "the missing originals are NOT by themselves a prohibition of production use (operator, 2026-10-16). A production use still needs that separate rights / authorisation evaluation, an explicit operator-approved task and a manifest with runtimeUse \"production\" (AGENTS.md)",
+    "localExperiments": "allowed",
+    "repositoryStorage": "the sheet stays out of Git unless the operator approves storing it (reference/README.md); identified by SHA-256; today its only copy in the project is the git-ignored art-lab/characters/scratch/e2-x2-candidate/input/reference-sheet-4.webp"
+  },
+  "originals": [
+    "the operator will try to recover the original generations",
+    "if one is found: check its C2PA manifest (presence, issuer, claim generator; signature validation needs c2patool, to install only with operator approval) and its visual correspondence with this WebP (lossy transcode: compare by error measure, not by hash)",
+    "then record that verification next to this record, without rewriting it"
+  ],
+  "history": [
+    {
+      "date": "2026-10-16",
+      "pass": "4A-decies",
+      "superseded": "by the operator's clarification of the same day (Pass 4A-duodecies)",
+      "verification.status": "not verified (no technical proof available)",
+      "declaration.nature": "OPERATOR DECLARATION. It is NOT a cryptographically verified provenance and NOT a technical proof that this file is one of those sheets.",
+      "consequences.production": "BLOCKED: no runtimeUse \"production\" for this asset or anything derived from the sheet until the original PNG is recovered and verified, or the operator decides otherwise"
+    }
   ]
 }

@@ -14,4 +14,6 @@ local in `art-lab/characters/scratch/baked-proof/` (git-ignored); the decisions 
 
 Reproduce (dev server on :5180, the `eecea58` tree served on :5181): `tools/art-lab/baked-proof.mjs` (modes `atlas`, `shots`, `parade`,
 `selftest`, `rules`, `actors`), `tools/art-lab/storage-bench.mjs`, `tools/art-lab/dynwalk.mjs` + `dynwalk-report.mjs`, `tools/perf.mjs`.
-The sprite derives from a source sheet whose provenance is an operator declaration, not a verified one: production stays blocked.
+The sprite derives from a source sheet whose provenance was then an operator declaration ("production stays blocked" at the time); the
+operator confirmed that provenance later the same day (`../../provenance/dockworker-x2-v1/source-declaration.json`): not cryptographically
+verified, rights and production authorisation evaluated separately.

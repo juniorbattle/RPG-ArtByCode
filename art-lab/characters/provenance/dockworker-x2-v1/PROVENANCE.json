@@ -25,6 +25,10 @@
   {
    "date": "2026-10-16",
    "decision": "dynamic validation (JOURNAL 4A-septies) accepted: v1 = approved artistic AND dynamic baseline for standard NPCs; not an approval of production integration, animations or facings"
+  },
+  {
+   "date": "2026-10-16",
+   "decision": "source sheet provenance confirmed by the operator (ChatGPT / OpenAI generation from the team's art direction, not an external artist; 4.webp = a re-encoded copy); not cryptographically verified; the missing originals are not by themselves a prohibition of production use; rights and production authorisation evaluated separately (source-declaration.json)"
   }
  ],
  "source": {
@@ -33,7 +37,14 @@
    "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce",
    "bytes": 302814,
    "format": "WebP (VP8, sRGB ICC profile, NO EXIF / XMP / author / generator metadata)",
-   "rights": "UNCONFIRMED: origin and usage rights not established (the file carries no provenance metadata; supplied by the operator in a working session). Not stored in the repository until the operator confirms origin and rights.",
+   "origin": "CONFIRMED BY THE OPERATOR (2026-10-16): generated with ChatGPT / OpenAI from the team's art-direction instructions (sheets \"Cite du Tournoi - Merchant District - Night\", NPCs 1 to 24), not obtained from an external artist; this file is a re-encoded copy of one of these generations. Not cryptographically verified (no C2PA available). See source-declaration.json",
+   "rights": "to be evaluated separately (operator, 2026-10-16); the missing originals are not by themselves a prohibition of production use. Not stored in the repository: storing the sheet needs an explicit operator approval (reference/README.md)",
+   "history": [
+    {
+     "until": "2026-10-16",
+     "rights": "UNCONFIRMED: origin and usage rights not established (the file carries no provenance metadata; supplied by the operator in a working session). Not stored in the repository until the operator confirms origin and rights."
+    }
+   ],
    "storage": "outside Git: art-lab/characters/scratch/e2-x2-candidate/input/reference-sheet-4.webp on the operator machine (git-ignored) - durable storage to be decided"
   },
   "crop": [

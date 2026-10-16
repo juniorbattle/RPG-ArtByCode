@@ -6,9 +6,10 @@ BASELINE for standard NPCs (operator, 2026-10-16: art direction + in-scene + dyn
 characters get a higher budget later; one art direction, different precision budgets; never degrade the new character to match the old
 sprites. `porter-gm-v1` stays an experimental baseline (aimed at the wrong reference). No production sprite exists. Next: a second
 ORIGINAL NPC at the same quality, after operator validation. Evidence: `reviews/dockworker-x2-v1/`, `provenance/dockworker-x2-v1/`,
-`reviews/porter-gm-v1/`. Source sheet: **operator declaration** (2026-10-16, `provenance/dockworker-x2-v1/source-declaration.json`: our
-reference sheets were created with ChatGPT under the operator's art direction) — not a verified provenance; local experiments allowed,
-**production blocked** until the original PNG is recovered and checked.
+`reviews/porter-gm-v1/`. Source sheet: **provenance confirmed by the operator** (2026-10-16, `provenance/dockworker-x2-v1/source-declaration.json`:
+the "Merchant District — Night" sheets, NPCs 1-24, were generated with ChatGPT / OpenAI from our art direction, not by an external
+artist) — not cryptographically verified (no C2PA). The missing originals do not by themselves forbid production; rights and production
+authorisation are evaluated separately.
 
 **Approval scopes.** *Approved visual baseline* = `approved: true` + `runtimeUse: "lab"`: an operator-approved quality / direction
 reference, usable in the Art Lab and the DEV in-scene preview only. *Approved production asset* = `approved: true` +
