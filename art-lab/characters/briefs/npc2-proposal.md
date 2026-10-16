@@ -118,6 +118,10 @@ Fourni par l'opérateur avec ses décisions ; le texte ci-dessous est cité tel 
 la génération seront consignés tels que l'opérateur les déclarera à la livraison du PNG. L'ébauche précédente reste dans l'historique
 Git (commit `2bc05a6`).
 
+Pièces jointes préparées à la demande de l'opérateur (2026-10-16) : `dockworker-x2-v1` agrandi ×8 au plus proche voisin, sur fond
+transparent ou sur gris neutre uni, dans `art-lab/characters/scratch/npc2-merchant/attachments/` (non versionnées ; empreintes et
+paramètres au journal, Passe 4A-quattuordecies).
+
 ```text
 Create an original, premium-quality pixel-art character reference for Cité du Tournoi — Merchant District at Night.
 Character: An adult female merchant, approximately 35–40 years old, working at a medieval fantasy canal-side market.

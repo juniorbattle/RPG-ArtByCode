@@ -1520,6 +1520,19 @@ chemin partagé + `dynwalk` → paquet de provenance, `runtimeUse: "lab"`, arrê
   art strict (4A-bis) et le ×2 n'a de la forme que parce qu'il rééchantillonne la peinture à l'intérieur des blocs (4A-quater). Les
   contraintes de format appartiennent à l'asset reconstruit.
 
+### Pièce jointe pour la génération — [OK] préparée, non versionnée
+- Demande de l'opérateur : une version agrandie au plus proche voisin de `dockworker-x2-v1`, à joindre au prompt de génération (l'export
+  de 64 × 96 serait illisible pour le générateur).
+- Depuis l'export approuvé (`exports/dockworker-x2-v1.png`, SHA-256 `9e1de3ba…8441`), dans `art-lab/characters/scratch/npc2-merchant/attachments/`
+  (ignoré par Git) : `dockworker-x2-v1-x8.png` (×8 exact, fond transparent, 512 × 768, SHA-256 `a0616dc3…360b`) et
+  `dockworker-x2-v1-x8-neutral.png` (×8 sur gris neutre uni `#808080`, 608 × 912, SHA-256 `891c3f63…bfdf`) : figure de 41 × 89 texels
+  (boîte 13,2 → 53,90) placée en (17 ; 12) sur un cadre de 76 × 114 texels (2:3, marges larges), alpha binaire aplati.
+- Vérifié : chaque bloc 8 × 8 relu dans les fichiers écrits = le texel attendu (0 écart) ; l'export n'a aucun texel d'alpha partiel.
+  Codec exact `tools/art-lab/png.mjs` (sans gestion de couleur) ; paramètres, empreintes des fichiers et des pixels dans
+  `attachments-report.json` à côté : les pixels se refont à l'identique.
+- À la livraison : relever quelles images l'opérateur a jointes ; si c'est l'un de ces fichiers, comparer son empreinte et l'archiver avec
+  la fiche de la source.
+
 ---
 
 ## À reprendre (par priorité)
@@ -1529,7 +1542,8 @@ quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ;
 (3-67 px par vue, ≤ 12 / 255) **accepté par l'opérateur** : l'ombre suit la règle entière du corps. Restent ouverts : C2 (PNG versionné) à confirmer ;
 droits : usage comme source **autorisé** (16/10, sous réserve des droits de tiers, non vérifiés exhaustivement), les trois planches archivées dans
 `reference/sources/` (octets contrôlés par `art:validate`) ; les originaux restent à retrouver (l'opérateur s'en charge). **Prochain : la marchande** (brief validé le 16/10,
-`art-lab/characters/briefs/npc2-proposal.md`) : **attendre le PNG original fourni par l'opérateur**, puis les étapes du brief (archivage à l'octet,
+`art-lab/characters/briefs/npc2-proposal.md`) : **attendre le PNG original fourni par l'opérateur** (pièces jointes prêtes : ×8 du docker,
+`art-lab/characters/scratch/npc2-merchant/attachments/`), puis les étapes du brief (archivage à l'octet,
 provenance, ×2, comparaison à v1, ≤ 2 itérations Aseprite, Character Lab + A-D, stabilité / perf, critique indépendante) ; `runtimeUse: "lab"` ;
 pas de fusion dans `main` avant acceptation. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
