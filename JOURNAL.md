@@ -1431,6 +1431,48 @@ baseline ×2 v1 et toute sa traçabilité conservées ; aucune métadonnée inve
   `art:validate` 0 erreur. Aucun code du jeu modifié.
 - La planche reste hors Git (stockage = approbation explicite de l'opérateur) ; sa seule copie dans le projet est dans `scratch/`.
 
+## Passe 4A-terdecies — Droits d'usage, troisième planche, archivage de la source ; proposition du 2e PNJ (2026-10-16)
+
+### Décisions opérateur (2026-10-16)
+1. Planches Merchant District générées avec ChatGPT / OpenAI sous notre direction artistique ; **usage autorisé** comme sources et
+   références artistiques, y compris pour des assets d'un jeu commercial, **sous réserve des droits de tiers applicables** ; selon
+   l'opérateur, les conditions d'OpenAI attribuent à l'utilisateur les droits d'OpenAI sur les sorties, dans la mesure permise par la loi ;
+   provenance confirmée par déclaration, **non certifiée cryptographiquement** ; ni l'absence de C2PA ne vaut interdiction automatique, ni
+   les droits de tiers ne sont présentés comme vérifiés exhaustivement.
+2. Troisième planche (« NPC CHARACTER REFERENCE SHEET », 14 personnages) : création originale ChatGPT, même ensemble mais génération
+   distincte des 24 PNJ ; **référence complémentaire** (personnages importants, costumes, silhouettes élaborées) ; ne remplace pas la
+   baseline ×2 v1.
+3. Archivage versionné de `4.webp` dans `art-lab/characters/reference/sources/`, octets préservés, sans faux original ni C2PA fictif.
+4. `dockworker-x2-v1` reste le standard visuel des PNJ ordinaires ; ces décisions n'autorisent pas à remplacer des PNJ de production.
+5. Commit local permis ; ni push ni fusion sans autorisation ; ensuite rapport de conservation et proposition du 2e PNJ, sans production.
+
+### Conservation — [OK]
+- `reference/sources/merchant-district-night-npc-01-16.webp` : **copie à l'octet** (SHA-256 `1c3bc603…36ce`, 302 814 o, `cmp` identique à
+  la copie de `scratch/`) + fiche `merchant-district-night-npc-01-16.source.json` (format, nature « copie réencodée, pas l'original »,
+  noms d'origine, provenance déclarée, droits, dérivés et commande de reconstruction, « rien d'inventé »). `*.webp binary` ajouté à
+  `.gitattributes` (Git ne touche jamais aux octets).
+- `PROVENANCE.json` : `source.sheet.path` (la copie archivée), `storage` et `rights` à jour, anciennes valeurs dans `history`, décision
+  datée dans `approvals` ; manifeste : `references[0].path` pointe sur la source archivée (approbation inchangée) ;
+  `source-declaration.json` : troisième déclaration citée mot pour mot, troisième planche classée « complémentaire », anciennes valeurs
+  dans `history`.
+- `verify-provenance` vérifie désormais la source archivée par défaut ; **chaîne complète refaite depuis le dépôt** (`--rebuild`) : ×2
+  plein et 64 couleurs **identiques au bit**, nettoyage rejoué **identique au pixel** à l'export approuvé ; contrôle négatif (autre planche)
+  refusé. `art:validate` 0 erreur.
+- Documentation : `reference/README.md` (dossier `sources/`, classement des trois planches), README du paquet et des personnages, contrat
+  (statut, risque n° 1). Les planches PNJ 17-24 et « 14 personnages » ne sont **pas** archivées (archivage validé pour `4.webp` seul) :
+  leurs empreintes sont consignées, leurs seules copies sont dans le dossier temporaire de la séance.
+
+### Proposition du 2e PNJ — `art-lab/characters/briefs/npc2-proposal.md` (rien de commencé)
+Recommandation : **la marchande** (rôle existant à l'étal du héros : comparaison au même endroit ; contraste de silhouette maximal avec le
+docker). Méthode : prompt validé → génération ChatGPT par l'opérateur, **PNG d'origine téléchargé** → archivage à l'octet → mesure de la
+grille avant acceptation → reconstruction ×2 → critique aveugle contre v1 → finition limitée (≤ 2 itérations) → validation en scène par le
+chemin partagé + `dynwalk` → paquet de provenance, `runtimeUse: "lab"`, arrêt pour décision.
+
+### Gouvernance
+- **[?] Conflit de consignes signalé** : `AGENTS.md` (règle du 16/10) demande de pousser chaque commit d'une branche de travail ; la
+  consigne de cette passe dit « ne pousse ni ne fusionne sans mon autorisation ». Appliqué : la consigne explicite de la passe (commit
+  local seulement) ; arbitrage demandé.
+
 ---
 
 ## À reprendre (par priorité)
@@ -1438,15 +1480,16 @@ baseline ×2 v1 et toute sa traçabilité conservées ; aucune métadonnée inve
 **-1. PROCHAIN** — Passe 4A-undecies close : adressage par case entière commité (sprites générés identiques au bit à `eecea58`, ×2 stable
 quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ; écart de l'ombre portée du ×2 face à l'ancien aperçu
 (3-67 px par vue, ≤ 12 / 255) **accepté par l'opérateur** : l'ombre suit la règle entière du corps. Restent ouverts : C2 (PNG versionné) à confirmer ;
-**droits et autorisation de production** de la planche à évaluer à part (provenance confirmée par l'opérateur le 16/10, non vérifiée par
-C2PA ; l'opérateur tente de récupérer les originaux ; la planche n'existe que dans `scratch/` : stockage durable à décider). Ensuite : deuxième PNJ original (artisane ou
-marchande), source **téléchargée en PNG d'origine** (C2PA conservé). Restauration : `5d10a37`. Rien poussé.
+droits : usage comme source **autorisé** (16/10, sous réserve des droits de tiers, non vérifiés exhaustivement), source archivée dans
+`reference/sources/` ; les originaux restent à retrouver (l'opérateur s'en charge). **Prochain : décision de l'opérateur sur la proposition
+du deuxième PNJ** (`art-lab/characters/briefs/npc2-proposal.md` : marchande recommandée, prompt à valider, PNG d'origine téléchargé) ;
+arbitrage du conflit push (AGENTS.md) / « ne pousse pas » de la passe 4A-terdecies. Restauration : `5d10a37`. Rien poussé.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
 tramée ; la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un nouvel occluder.
 Avant d'étendre : densité du cast (héros), liseré dépendant de la densité, largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A, personnage **original** au même niveau.
 Pas de roster, de généralisation ni de personnage clé ; E4 **non lancée**. Le modelé ×1,5 n'est plus la voie principale. Décisions ouvertes : liseré par sprite (non implémenté),
-droits de la planche de référence (voir -1 ; provenance confirmée par l'opérateur), son stockage dans `reference/`, quelles planches étaient réellement rejetées. `porter-gm-v1` reste une baseline expérimentale.
+archivage éventuel des planches PNJ 17-24 et « 14 personnages » (empreintes consignées, copies seulement temporaires), quelles planches étaient réellement rejetées. `porter-gm-v1` reste une baseline expérimentale.
 Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, test de fumée `smoke-test/4a0b/` après toute mise à jour (épinglé 0.8.2, auto-update coupé), critique par agent neuf (cf. `art-lab/README.md`).
 -0b. **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise appli. Servir les baselines sur `:518x --strictPort` ;
   décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
@@ -1537,3 +1580,5 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
 - Une provenance confirmée par l'opérateur se consigne **mot pour mot et datée**, distincte d'une vérification technique (C2PA) ; ce qui
   manque ne se déduit pas. L'absence d'original n'interdit pas à elle seule la production : droits et autorisation s'évaluent à part. Un
   statut remplacé se garde dans un historique, jamais effacé.
+- Une source archivée se versionne **à l'octet** (empreinte et `cmp` avant commit, attribut binaire) avec une fiche : nature (copie ou
+  original), provenance déclarée, droits, dérivés et commande de reconstruction ; jamais de faux original ni de métadonnée fabriquée.

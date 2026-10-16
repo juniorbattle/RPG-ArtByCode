@@ -1,0 +1,32 @@
+{
+  "kind": "archived-source-sheet",
+  "file": "merchant-district-night-npc-01-16.webp",
+  "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce",
+  "bytes": 302814,
+  "format": "WebP (VP8, lossy) 1448 x 1086; its only metadata is a generic 456-byte sRGB ICC profile (copyright \"Google Inc. 2016\"); no EXIF, XMP or C2PA",
+  "content": "sheet \"Cite du Tournoi - Merchant District - Night\", \"NPC SPRITE PRODUCTION REFERENCE - 16 GENERIC TOWNSFOLK (UNIFIED STYLE & SCALE)\": NPCs 01-16, four views each",
+  "nature": "a re-encoded copy of a ChatGPT / OpenAI generation (operator, 2026-10-16) - NOT the original file. Archived byte for byte, unmodified.",
+  "names": {
+    "session": "images 1, 4 and 5 pasted by the operator in the working session of 2026-10-15 (byte-identical); called \"4.webp\" in the operator's decisions",
+    "scratch": "art-lab/characters/scratch/e2-x2-candidate/input/reference-sheet-4.webp (git-ignored working copy, same bytes)"
+  },
+  "provenance": "confirmed by operator declaration, NOT cryptographically certified (no C2PA): ../../provenance/dockworker-x2-v1/source-declaration.json",
+  "rights": "use as a source and art reference for the project, including in the creation of assets for a commercial game, authorised by the operator (2026-10-16), subject to applicable third-party rights; third-party rights NOT exhaustively verified",
+  "archived": {
+    "date": "2026-10-16",
+    "decision": "operator: versioned archiving validated, bytes preserved exactly",
+    "pass": "4A-terdecies",
+    "rule": "never edited, re-encoded or replaced; an original ChatGPT file found later is added as a separate file with its own record, next to this one"
+  },
+  "derived": [
+    {
+      "asset": "dockworker-x2-v1 (APPROVED VISUAL BASELINE for standard NPCs, runtimeUse \"lab\")",
+      "figure": "\"05. Dock Worker (Male)\", front view, crop [27, 347, 99, 504]",
+      "reconstruction": "tools/art-lab/reconstruct-grid.mjs: pitch 1.775, phase [0, 1.065], frame 64 x 96, foot row 90, full colours then 64 colours (deterministic)",
+      "chain": "x2-auto.png -> x2-quant64.png -> cleanup-ops.json (recorded Aseprite edits) -> exports/dockworker-x2-v1.png (+ .json, source .aseprite)",
+      "record": "../../provenance/dockworker-x2-v1/PROVENANCE.json",
+      "verify": "node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/dockworker-x2-v1 --rebuild"
+    }
+  ],
+  "notInvented": "No original PNG, generation date, model, prompt, account or C2PA data is recorded: none is known."
+}

@@ -18,24 +18,27 @@ The approved result is `../../exports/dockworker-x2-v1.png` (+ `.json`), exporte
 
 ```
 node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/dockworker-x2-v1
-node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/dockworker-x2-v1 --sheet <reference sheet> --rebuild
+node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/dockworker-x2-v1 --rebuild
 ```
 
-The second form checks the source sheet's hash, re-runs `tools/art-lab/reconstruct-grid.mjs` (full + 64 colours: bit-identical) and
+Both check the archived source sheet's hash; the second also re-runs `tools/art-lab/reconstruct-grid.mjs` (full + 64 colours: bit-identical) and
 replays `cleanup-ops.json` with `tools/art-lab/replay-pixel-ops.mjs` (pixel-identical to the approved export). Verified 2026-10-16.
 
-## The source sheet: provenance confirmed by the operator, NOT stored here
+## The source sheet: provenance confirmed by the operator, archived in the repository
 
 **Provenance confirmed by the operator (2026-10-16)**, recorded in `source-declaration.json` (statements verbatim): the sheets "Cité du
 Tournoi — Merchant District — Night" (NPCs 1 to 24) were generated with ChatGPT / OpenAI from the team's art-direction instructions, not
 obtained from an external artist; the source file is a re-encoded copy of one of these generations. **Not cryptographically verified**: the
 file carries no provenance metadata (WebP with a generic sRGB ICC profile only: no EXIF, XMP or C2PA) and the original generations are not
-available; nothing missing is inferred. The missing originals are **not by themselves a prohibition of production use**; rights and
-production authorisation are evaluated separately (operator), and a production use still needs an explicit task and `runtimeUse:
-"production"`. The derived images in this pack and in the exports follow that separate evaluation.
+available; nothing missing is inferred. **Use as a source and art reference, including for commercial game assets, is authorised by the
+operator (2026-10-16), subject to applicable third-party rights, which have not been exhaustively verified.** Neither the missing originals
+nor the missing C2PA forbid production by themselves; this decision is not an authorisation to replace production NPCs: production stays
+subject to the technical and art contracts, the acceptance tests, an explicit task and `runtimeUse: "production"`.
 
-The sheet is not committed (`../../reference/README.md`: storing it needs an explicit operator approval). It is identified by SHA-256 in
-`PROVENANCE.json`; today its only copy in this project is the git-ignored `art-lab/characters/scratch/e2-x2-candidate/input/reference-sheet-4.webp`.
+**Archived byte for byte** (operator approval, 2026-10-16): `../../reference/sources/merchant-district-night-npc-01-16.webp` (record
+`merchant-district-night-npc-01-16.source.json` next to it), named in `PROVENANCE.json` (`source.sheet.path`): `verify-provenance` checks
+it by default and `--rebuild` re-runs the whole chain from it. Earlier, its only copy was the git-ignored
+`art-lab/characters/scratch/e2-x2-candidate/input/reference-sheet-4.webp` (same bytes).
 
 Earlier record (until 2026-10-16): origin and usage rights "unconfirmed" (no metadata in the file); the wording is kept in
 `PROVENANCE.json` (`source.sheet.history`) and `source-declaration.json` (`history`).

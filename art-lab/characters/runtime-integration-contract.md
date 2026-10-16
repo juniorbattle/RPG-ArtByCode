@@ -6,9 +6,9 @@ and occlusion kept; **no change to how existing characters render**; no LOD; no 
 or the reveal. Amendments A (atlas compatibility proof), B (incomplete facings), C (storage / loading comparison) are section 10.
 **Authorised now: an experimental implementation of the shared atlas and of baked-sprite loading, behind a DEV flag only**, on
 `character-gold-master-4a-1`, with the six tests. **Not authorised: any production NPC replacement or production activation.** Production
-also needs a separate evaluation of the source sheet's rights and production authorisation (provenance confirmed by the operator on
-2026-10-16, not cryptographically verified; the missing originals are not by themselves a prohibition: `provenance/dockworker-x2-v1/
-source-declaration.json`). v2 added the compatibility review (section 8), the files touched (section 9), the real texture-size ceiling
+stays subject to this contract and its acceptance tests: the source sheet's provenance is confirmed by the operator (not cryptographically
+certified) and its use as a source is authorised subject to third-party rights (2026-10-16), which is not an authorisation to replace
+production NPCs (`provenance/dockworker-x2-v1/source-declaration.json`). v2 added the compatibility review (section 8), the files touched (section 9), the real texture-size ceiling
 and risks R11, R12. **Experimental implementation done (2026-10-16): results in section 12; amendment C measured, C2 proposed (section 11);
 amendment A resolved by integer cell addressing (section 13); the x2 cast-shadow difference to the old preview was accepted.** `AGENTS.md` stays the authority.
 
@@ -100,7 +100,7 @@ then identical to the runtime sprites: 64 × 96 × 0.0235 m = 1.504 × 2.256 m, 
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Source sheet rights not yet evaluated (origin confirmed by the operator 2026-10-16: ChatGPT / OpenAI generation from our art direction; not cryptographically verified) | production use of any derived sprite waits for that evaluation | operator evaluates rights / production authorisation separately before `runtimeUse: "production"`; the missing originals are not by themselves a prohibition |
+| Source sheet: provenance confirmed by the operator, not cryptographically certified; use authorised (2026-10-16) subject to third-party rights, not exhaustively verified | a third-party claim on a derived sprite | keep the decision and the record (`source-declaration.json`, archived source); production still needs its own task, the acceptance tests and `runtimeUse: "production"`; no automatic ban from the missing C2PA |
 | First authored asset in the build | changes the "everything generated at boot" contract and the bundle | explicit task + `AGENTS.md` update; manifest gating; hash check |
 | Mixed densities on screen (hero 32 × 48 next to x2 NPCs) | the hero looks coarser than the extras | operator decision: hero later, with a key-character budget |
 | Texel loss near 1 screen px per texel (camera A, distant NPCs) | single-texel details flicker | QA watch point; no LOD now (operator decision) |

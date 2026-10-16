@@ -5,7 +5,7 @@
     "description": "source reference sheet \"16 generic townsfolk\" (Cite du Tournoi, Merchant District - Night, NPC 01-16) from which dockworker-x2-v1 was reconstructed",
     "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce"
   },
-  "status": "PROVENANCE CONFIRMED BY THE OPERATOR (2026-10-16). Not cryptographically verified: no C2PA manifest is available.",
+  "status": "PROVENANCE CONFIRMED BY THE OPERATOR (2026-10-16). Not cryptographically certified: no C2PA manifest is available. Use as a source authorised by the operator (2026-10-16), subject to applicable third-party rights.",
   "provenance": {
     "origin": "generated with ChatGPT / OpenAI from the team's art-direction instructions",
     "series": "the sheets \"Cite du Tournoi - Merchant District - Night\" covering NPCs 1 to 24",
@@ -32,6 +32,26 @@
         "Nous tenterons de récupérer les originaux, mais leur absence ne doit pas être présentée comme une interdiction automatique d'utilisation en production. Les questions de droits et d'autorisation de production doivent être évaluées séparément."
       ],
       "recordedAs": "provenance confirmed by the operator (Pass 4A-duodecies)"
+    },
+    {
+      "date": "2026-10-16",
+      "by": "operator (git user wonmii)",
+      "statement": [
+        "Les planches de référence Merchant District ont été générées avec ChatGPT / OpenAI sous notre direction artistique.",
+        "J'autorise leur utilisation comme sources et références artistiques pour notre projet, y compris dans notre processus de création d'assets destinés à un jeu commercial, sous réserve des droits de tiers applicables.",
+        "Les conditions d'OpenAI attribuent à l'utilisateur les droits d'OpenAI sur les sorties générées, dans la mesure permise par la loi.",
+        "La provenance est confirmée par déclaration opérateur, mais n'est pas certifiée cryptographiquement.",
+        "Ne transforme pas l'absence de C2PA en interdiction automatique de production. Ne prétends pas non plus que les droits de tiers ont été vérifiés exhaustivement.",
+        "Je confirme que la planche « Cité du Tournoi — Merchant District — NPC CHARACTER REFERENCE SHEET », présentant 14 personnages, fait également partie de nos créations originales générées avec ChatGPT.",
+        "Elle appartient au même ensemble de références artistiques du projet, mais constitue une génération distincte de la série des 24 PNJ.",
+        "Classe-la comme référence artistique complémentaire, particulièrement utile pour les personnages importants, les costumes et les silhouettes élaborées.",
+        "Elle ne remplace pas notre baseline ×2 v1 approuvée pour les PNJ standards.",
+        "Je valide l'archivage versionné de `4.webp` dans `art-lab/characters/reference/sources/`, sous réserve de préserver exactement ses octets.",
+        "La baseline `dockworker-x2-v1` demeure approuvée comme standard visuel des PNJ ordinaires.",
+        "Cette décision sur les droits et la provenance ne constitue pas une autorisation de remplacer les PNJ de production.",
+        "Le passage en production reste soumis à nos contrats techniques, artistiques et aux tests d'acceptation."
+      ],
+      "recordedAs": "rights of use authorised by the operator; third sheet classified; archiving validated (Pass 4A-terdecies)"
     }
   ],
   "verification": {
@@ -47,18 +67,30 @@
   },
   "series": {
     "covered": [
-      { "sheet": "Cite du Tournoi - Merchant District - Night, NPC 01-16 (this source)", "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce" },
-      { "sheet": "Cite du Tournoi - Merchant District - Night, NPC 17-24", "sha256": "3b30b9305b21ed1812b9a75b0f4919f03665f7145eca9e78f4735608f200d6d4", "note": "re-encoded copy pasted in the same working session (2026-10-15); not stored in the project" }
+      {
+        "sheet": "Cite du Tournoi - Merchant District - Night, NPC 01-16 (this source)",
+        "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce"
+      },
+      {
+        "sheet": "Cite du Tournoi - Merchant District - Night, NPC 17-24",
+        "sha256": "3b30b9305b21ed1812b9a75b0f4919f03665f7145eca9e78f4735608f200d6d4",
+        "note": "re-encoded copy pasted in the same working session (2026-10-15); not stored in the project"
+      }
     ],
-    "notNamed": [
-      { "sheet": "Cite du Tournoi - Merchant District (Night) - NPC CHARACTER REFERENCE SHEET, 14 characters numbered 01-14", "sha256": "05c101db487ecb5d1c1f7f41eff1a2a059ef2d4ce3bc62a750ec68dc4f6b97af", "note": "pasted the same day; not named by the 2026-10-16 clarification (other title and numbering): no status recorded for it here" }
+    "complementary": [
+      {
+        "sheet": "Cite du Tournoi - Merchant District - NPC CHARACTER REFERENCE SHEET, 14 characters numbered 01-14",
+        "sha256": "05c101db487ecb5d1c1f7f41eff1a2a059ef2d4ce3bc62a750ec68dc4f6b97af",
+        "status": "an original creation generated with ChatGPT (operator, 2026-10-16), same set of project art references but a generation distinct from the 24-NPC series; COMPLEMENTARY art reference, especially for key characters, costumes and elaborate silhouettes; does not replace the approved x2 v1 baseline for standard NPCs",
+        "note": "re-encoded copy pasted in the working session of 2026-10-15; not archived in the repository (archiving was validated for 4.webp only)"
+      }
     ]
   },
   "rightsAndProduction": {
-    "rights": "to be evaluated separately (operator, 2026-10-16); not evaluated yet",
-    "production": "the missing originals are NOT by themselves a prohibition of production use (operator, 2026-10-16). A production use still needs that separate rights / authorisation evaluation, an explicit operator-approved task and a manifest with runtimeUse \"production\" (AGENTS.md)",
+    "rights": "use as sources and art references for the project, including in the creation of assets for a commercial game, AUTHORISED by the operator (2026-10-16), subject to applicable third-party rights. The operator states that OpenAI's terms assign OpenAI's rights in the outputs to the user, to the extent permitted by law. Third-party rights have NOT been exhaustively verified.",
+    "production": "neither the missing originals nor the missing C2PA are by themselves a prohibition of production use. This rights decision is NOT an authorisation to replace production NPCs: production stays subject to the technical and art contracts and the acceptance tests, an explicit operator-approved task and a manifest with runtimeUse \"production\" (AGENTS.md)",
     "localExperiments": "allowed",
-    "repositoryStorage": "the sheet stays out of Git unless the operator approves storing it (reference/README.md); identified by SHA-256; today its only copy in the project is the git-ignored art-lab/characters/scratch/e2-x2-candidate/input/reference-sheet-4.webp"
+    "repositoryStorage": "archived byte for byte (operator, 2026-10-16): art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp, record merchant-district-night-npc-01-16.source.json; the other two sheets are not archived"
   },
   "originals": [
     "the operator will try to recover the original generations",
@@ -73,6 +105,21 @@
       "verification.status": "not verified (no technical proof available)",
       "declaration.nature": "OPERATOR DECLARATION. It is NOT a cryptographically verified provenance and NOT a technical proof that this file is one of those sheets.",
       "consequences.production": "BLOCKED: no runtimeUse \"production\" for this asset or anything derived from the sheet until the original PNG is recovered and verified, or the operator decides otherwise"
+    },
+    {
+      "date": "2026-10-16",
+      "pass": "4A-duodecies",
+      "superseded": "by the operator decisions of the same day (Pass 4A-terdecies)",
+      "rightsAndProduction.rights": "to be evaluated separately (operator, 2026-10-16); not evaluated yet",
+      "rightsAndProduction.production": "the missing originals are NOT by themselves a prohibition of production use (operator, 2026-10-16). A production use still needs that separate rights / authorisation evaluation, an explicit operator-approved task and a manifest with runtimeUse \"production\" (AGENTS.md)",
+      "rightsAndProduction.repositoryStorage": "the sheet stays out of Git unless the operator approves storing it (reference/README.md); identified by SHA-256; today its only copy in the project is the git-ignored art-lab/characters/scratch/e2-x2-candidate/input/reference-sheet-4.webp",
+      "series.notNamed": [
+        {
+          "sheet": "Cite du Tournoi - Merchant District (Night) - NPC CHARACTER REFERENCE SHEET, 14 characters numbered 01-14",
+          "sha256": "05c101db487ecb5d1c1f7f41eff1a2a059ef2d4ce3bc62a750ec68dc4f6b97af",
+          "note": "pasted the same day; not named by the 2026-10-16 clarification (other title and numbering): no status recorded for it here"
+        }
+      ]
     }
   ]
 }
