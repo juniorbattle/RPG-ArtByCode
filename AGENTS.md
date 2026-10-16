@@ -64,7 +64,8 @@ occluders open: review / visibility proof) · `occdebug=1` (proxy boxes, reveal 
 `occbehind=0` (skip the behind-occluder bake pass) · `occtest=shopA,tall` (treat those buildings' front walls as
 occludable: stress test of the behind-occluder bake) · DEV server only: `labsprite=<id>|-&labpos=x,z[;x,z]` (show an Art Lab export
 on the porter actor, standing still, in the real scene; `-` = generated frames for the "before" image; compiled out of production,
-see `art-lab/README.md`)
+see `art-lab/README.md`) · DEV server only, EXPERIMENTAL: `baked=<id>&bakedpos=x,z` (a baked export in the MAIN atlas and renderer, per
+`art-lab/characters/runtime-integration-contract.md` v3; never in production builds; flags in `src/lab/bakedLoader.ts`)
 
 ## Art production principle
 Maximise perceptual complexity while minimising runtime complexity.

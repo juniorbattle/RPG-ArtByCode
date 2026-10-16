@@ -1,0 +1,124 @@
+{
+ "boots": [
+  {
+   "what": "interactive NPC (mid), no fallback declared -> refused",
+   "expect": "error",
+   "got": "error",
+   "pass": true,
+   "error": "Error: authored spawn of dockworker-x2-v1: missing frames up/idle, side/idle for behaviour idle",
+   "aliases": [],
+   "authoredDirs": []
+  },
+  {
+   "what": "crowd NPC, never turned, no fallback -> allowed (front idle is all it needs)",
+   "expect": "ok",
+   "got": "ok",
+   "pass": true,
+   "error": null,
+   "aliases": [],
+   "authoredDirs": [
+    "down"
+   ]
+  },
+  {
+   "what": "crowd NPC with a facing, no fallback -> refused",
+   "expect": "error",
+   "got": "error",
+   "pass": true,
+   "error": "Error: authored spawn of dockworker-x2-v1: missing frames up/idle, side/idle for behaviour idle",
+   "aliases": [],
+   "authoredDirs": []
+  },
+  {
+   "what": "interactive NPC, explicit front-idle fallback (lab, immobile) -> allowed, aliases listed",
+   "expect": "ok",
+   "got": "ok",
+   "pass": true,
+   "error": null,
+   "aliases": [
+    "dockworker-x2-v1/up/idle",
+    "dockworker-x2-v1/side/idle"
+   ],
+   "authoredDirs": [
+    "down"
+   ]
+  },
+  {
+   "what": "unknown fallback keyword -> refused",
+   "expect": "error",
+   "got": "error",
+   "pass": true,
+   "error": "Error: bakedfallback \"any\": only front-idle exists",
+   "aliases": null,
+   "authoredDirs": null
+  },
+  {
+   "what": "?baked together with ?labsprite -> refused",
+   "expect": "error",
+   "got": "error",
+   "pass": true,
+   "error": "Error: ?baked and ?labsprite are exclusive (the old preview patches the atlas itself)",
+   "aliases": null,
+   "authoredDirs": null
+  },
+  {
+   "what": "lab asset without a provenance pack (porter-gm-v1) -> refused (no hash to check)",
+   "expect": "error",
+   "got": "error",
+   "pass": true,
+   "error": "Error: cannot load /art-lab/characters/provenance/porter-gm-v1/PROVENANCE.json: no such file",
+   "aliases": null,
+   "authoredDirs": null
+  },
+  {
+   "what": "unknown manifest id -> refused",
+   "expect": "error",
+   "got": "error",
+   "pass": true,
+   "error": "Error: cannot load /art-lab/characters/manifests/no-such-sprite.manifest.json: no such file",
+   "aliases": null,
+   "authoredDirs": null
+  }
+ ],
+ "checks": {
+  "valid": [],
+  "semiAlpha": [
+   "down/idle/0: 1 semi-transparent texels (alpha must be 0 or 255)"
+  ],
+  "opaqueBorder": [
+   "down/idle/0: 1 opaque texels on the frame border (a transparent one-texel ring is required)"
+  ],
+  "feetBelowRow90": [
+   "down/idle/0: last opaque row 92 is below the foot row 90",
+   "down/idle/0: idle frame must stand on row 90 (last opaque row 92)"
+  ],
+  "idleFloating": [
+   "down/idle/0: idle frame must stand on row 90 (last opaque row 89)"
+  ],
+  "wrongSize": [
+   "down/idle/0: 5760 texels, expected 64 x 96"
+  ],
+  "unevenCounts": [
+   "walk: 1 frames in one facing, 2 in another"
+  ],
+  "fallbackInProduction": [
+   "fallback front-idle is allowed for lab assets only"
+  ],
+  "requiredWander": [
+   "down/idle",
+   "up/idle",
+   "side/idle",
+   "down/walk",
+   "up/walk",
+   "side/walk"
+  ],
+  "requiredStaticCrowd": [
+   "down/idle"
+  ],
+  "requiredInteractive": [
+   "down/idle",
+   "up/idle",
+   "side/idle"
+  ]
+ }
+}

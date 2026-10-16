@@ -1,0 +1,509 @@
+{
+ "quay-188-main": {
+  "frames": 881,
+  "blendFrames": 200,
+  "revealFrames": 534,
+  "retries": 4,
+  "glitches": 0,
+  "groups": {
+   "a0:A": {
+    "run": "quay-188-main",
+    "actor": 0,
+    "group": "A",
+    "frames": 105,
+    "ppt": [
+     1.09,
+     1.2
+    ],
+    "hpx": [
+     98,
+     108
+    ],
+    "churnMed": 5.8,
+    "churnP90": 8.2,
+    "churnMax": 10.3,
+    "shapeMed": 4,
+    "shapeP90": 5.5,
+    "ringDarkMed": 3.7
+   },
+   "a0:blend": {
+    "run": "quay-188-main",
+    "actor": 0,
+    "group": "blend",
+    "frames": 200,
+    "ppt": [
+     1.09,
+     2.31
+    ],
+    "hpx": [
+     97,
+     208
+    ],
+    "churnMed": 11.4,
+    "churnP90": 20.2,
+    "churnMax": 22.4,
+    "shapeMed": 7,
+    "shapeP90": 10.2,
+    "ringDarkMed": 33.6
+   },
+   "a0:B": {
+    "run": "quay-188-main",
+    "actor": 0,
+    "group": "B",
+    "frames": 256,
+    "ppt": [
+     1.87,
+     2.03
+    ],
+    "hpx": [
+     168,
+     184
+    ],
+    "churnMed": 7.6,
+    "churnP90": 11.8,
+    "churnMax": 18.5,
+    "shapeMed": 3.9,
+    "shapeP90": 6.9,
+    "ringDarkMed": 19
+   },
+   "a0:C": {
+    "run": "quay-188-main",
+    "actor": 0,
+    "group": "C",
+    "frames": 201,
+    "ppt": [
+     2.04,
+     2.31
+    ],
+    "hpx": [
+     185,
+     207
+    ],
+    "churnMed": 9.4,
+    "churnP90": 24.1,
+    "churnMax": 32,
+    "shapeMed": 7.2,
+    "shapeP90": 13.4,
+    "ringDarkMed": 34.5
+   },
+   "a0:D": {
+    "run": "quay-188-main",
+    "actor": 0,
+    "group": "D",
+    "frames": 119,
+    "ppt": [
+     1.88,
+     1.92
+    ],
+    "hpx": [
+     169,
+     173
+    ],
+    "churnMed": 10.2,
+    "churnP90": 15.2,
+    "churnMax": 18.7,
+    "shapeMed": 7.5,
+    "shapeP90": 12.1,
+    "ringDarkMed": 56.6
+   }
+  }
+ },
+ "quay-188-preview": {
+  "frames": 881,
+  "blendFrames": 200,
+  "revealFrames": 534,
+  "retries": 2,
+  "glitches": 0,
+  "groups": {
+   "a0:A": {
+    "run": "quay-188-preview",
+    "actor": 0,
+    "group": "A",
+    "frames": 105,
+    "ppt": [
+     1.09,
+     1.2
+    ],
+    "hpx": [
+     98,
+     108
+    ],
+    "churnMed": 5.7,
+    "churnP90": 8.3,
+    "churnMax": 10.4,
+    "shapeMed": 4,
+    "shapeP90": 5.5,
+    "ringDarkMed": 3.6
+   },
+   "a0:blend": {
+    "run": "quay-188-preview",
+    "actor": 0,
+    "group": "blend",
+    "frames": 200,
+    "ppt": [
+     1.09,
+     2.31
+    ],
+    "hpx": [
+     97,
+     208
+    ],
+    "churnMed": 11.5,
+    "churnP90": 20.3,
+    "churnMax": 22.3,
+    "shapeMed": 6.9,
+    "shapeP90": 10.2,
+    "ringDarkMed": 33.6
+   },
+   "a0:B": {
+    "run": "quay-188-preview",
+    "actor": 0,
+    "group": "B",
+    "frames": 256,
+    "ppt": [
+     1.87,
+     2.03
+    ],
+    "hpx": [
+     167,
+     184
+    ],
+    "churnMed": 7.6,
+    "churnP90": 11.7,
+    "churnMax": 18.5,
+    "shapeMed": 3.9,
+    "shapeP90": 6.9,
+    "ringDarkMed": 19.2
+   },
+   "a0:C": {
+    "run": "quay-188-preview",
+    "actor": 0,
+    "group": "C",
+    "frames": 201,
+    "ppt": [
+     2.04,
+     2.31
+    ],
+    "hpx": [
+     185,
+     207
+    ],
+    "churnMed": 9.4,
+    "churnP90": 24,
+    "churnMax": 33.2,
+    "shapeMed": 7.2,
+    "shapeP90": 13.4,
+    "ringDarkMed": 34.3
+   },
+   "a0:D": {
+    "run": "quay-188-preview",
+    "actor": 0,
+    "group": "D",
+    "frames": 119,
+    "ppt": [
+     1.88,
+     1.92
+    ],
+    "hpx": [
+     169,
+     173
+    ],
+    "churnMed": 10.2,
+    "churnP90": 15.2,
+    "churnMax": 18.7,
+    "shapeMed": 7.5,
+    "shapeP90": 12.1,
+    "ringDarkMed": 56.6
+   }
+  }
+ },
+ "static-188-main": {
+  "frames": 881,
+  "blendFrames": 200,
+  "revealFrames": 534,
+  "retries": 18,
+  "glitches": 0,
+  "groups": {
+   "a0:A": {
+    "run": "static-188-main",
+    "actor": 0,
+    "group": "A",
+    "frames": 105,
+    "ppt": [
+     0.99,
+     1.02
+    ],
+    "hpx": [
+     149,
+     188
+    ],
+    "churnMed": 9.1,
+    "churnP90": 20.6,
+    "churnMax": 28.7,
+    "shapeMed": 4.6,
+    "shapeP90": 9.3,
+    "ringDarkMed": 0
+   },
+   "a0:blend": {
+    "run": "static-188-main",
+    "actor": 0,
+    "group": "blend",
+    "frames": 123,
+    "ppt": [
+     1.02,
+     3.71
+    ],
+    "hpx": [
+     119,
+     303
+    ],
+    "churnMed": 20.8,
+    "churnP90": 31.4,
+    "churnMax": 35.1,
+    "shapeMed": 7,
+    "shapeP90": 15.4,
+    "ringDarkMed": 7.8
+   },
+   "a0:B": {
+    "run": "static-188-main",
+    "actor": 0,
+    "group": "B",
+    "frames": 256,
+    "ppt": [
+     2,
+     2.69
+    ],
+    "hpx": [
+     181,
+     243
+    ],
+    "churnMed": 4.5,
+    "churnP90": 8.3,
+    "churnMax": 15.3,
+    "shapeMed": 2.5,
+    "shapeP90": 4.6,
+    "ringDarkMed": 6.2
+   },
+   "a0:C": {
+    "run": "static-188-main",
+    "actor": 0,
+    "group": "C",
+    "frames": 19,
+    "ppt": [
+     3.72,
+     3.79
+    ],
+    "hpx": [
+     278,
+     291
+    ],
+    "churnMed": 7,
+    "churnP90": 8.8,
+    "churnMax": 11.3,
+    "shapeMed": 4.4,
+    "shapeP90": 5.1,
+    "ringDarkMed": 17
+   },
+   "a1:A": {
+    "run": "static-188-main",
+    "actor": 1,
+    "group": "A",
+    "frames": 105,
+    "ppt": [
+     0.71,
+     0.72
+    ],
+    "hpx": [
+     95,
+     99
+    ],
+    "churnMed": 4.8,
+    "churnP90": 15.8,
+    "churnMax": 24.3,
+    "shapeMed": 3.6,
+    "shapeP90": 8.1,
+    "ringDarkMed": 0
+   },
+   "a1:blend": {
+    "run": "static-188-main",
+    "actor": 1,
+    "group": "blend",
+    "frames": 200,
+    "ppt": [
+     0.73,
+     2.45
+    ],
+    "hpx": [
+     88,
+     221
+    ],
+    "churnMed": 12.6,
+    "churnP90": 47.7,
+    "churnMax": 93.2,
+    "shapeMed": 5.2,
+    "shapeP90": 25.4,
+    "ringDarkMed": 7.4
+   },
+   "a1:B": {
+    "run": "static-188-main",
+    "actor": 1,
+    "group": "B",
+    "frames": 256,
+    "ppt": [
+     1.35,
+     1.63
+    ],
+    "hpx": [
+     71,
+     147
+    ],
+    "churnMed": 11.2,
+    "churnP90": 17.7,
+    "churnMax": 29.3,
+    "shapeMed": 7.4,
+    "shapeP90": 12.5,
+    "ringDarkMed": 4.6
+   },
+   "a1:C": {
+    "run": "static-188-main",
+    "actor": 1,
+    "group": "C",
+    "frames": 201,
+    "ppt": [
+     2.18,
+     2.45
+    ],
+    "hpx": [
+     188,
+     221
+    ],
+    "churnMed": 4.4,
+    "churnP90": 7.7,
+    "churnMax": 10.5,
+    "shapeMed": 2.5,
+    "shapeP90": 4.5,
+    "ringDarkMed": 4.9
+   },
+   "a1:D": {
+    "run": "static-188-main",
+    "actor": 1,
+    "group": "D",
+    "frames": 119,
+    "ppt": [
+     2.11,
+     2.27
+    ],
+    "hpx": [
+     188,
+     387
+    ],
+    "churnMed": 5.8,
+    "churnP90": 19.4,
+    "churnMax": 36.4,
+    "shapeMed": 2.7,
+    "shapeP90": 10.3,
+    "ringDarkMed": 9
+   },
+   "a2:A": {
+    "run": "static-188-main",
+    "actor": 2,
+    "group": "A",
+    "frames": 105,
+    "ppt": [
+     0.57,
+     0.58
+    ],
+    "hpx": [
+     51,
+     54
+    ],
+    "churnMed": 1.7,
+    "churnP90": 13.5,
+    "churnMax": 18.2,
+    "shapeMed": 1.3,
+    "shapeP90": 6.6,
+    "ringDarkMed": 0
+   },
+   "a2:blend": {
+    "run": "static-188-main",
+    "actor": 2,
+    "group": "blend",
+    "frames": 200,
+    "ppt": [
+     0.58,
+     1.75
+    ],
+    "hpx": [
+     -1000000000,
+     158
+    ],
+    "churnMed": 21.6,
+    "churnP90": 69.4,
+    "churnMax": 100,
+    "shapeMed": 12.6,
+    "shapeP90": 66.7,
+    "ringDarkMed": 13.2
+   },
+   "a2:B": {
+    "run": "static-188-main",
+    "actor": 2,
+    "group": "B",
+    "frames": 256,
+    "ppt": [
+     1.06,
+     1.22
+    ],
+    "hpx": [
+     -1000000000,
+     106
+    ],
+    "churnMed": 16.2,
+    "churnP90": 45.8,
+    "churnMax": 100,
+    "shapeMed": 14.4,
+    "shapeP90": 37.9,
+    "ringDarkMed": 40.4
+   },
+   "a2:C": {
+    "run": "static-188-main",
+    "actor": 2,
+    "group": "C",
+    "frames": 201,
+    "ppt": [
+     1.61,
+     1.75
+    ],
+    "hpx": [
+     4,
+     126
+    ],
+    "churnMed": 45.5,
+    "churnP90": 63.6,
+    "churnMax": 89.5,
+    "shapeMed": 42.9,
+    "shapeP90": 63.3,
+    "ringDarkMed": 19.5
+   },
+   "a2:D": {
+    "run": "static-188-main",
+    "actor": 2,
+    "group": "D",
+    "frames": 119,
+    "ppt": [
+     1.75,
+     1.87
+    ],
+    "hpx": [
+     143,
+     169
+    ],
+    "churnMed": 8.5,
+    "churnP90": 21.9,
+    "churnMax": 37.8,
+    "shapeMed": 7.6,
+    "shapeP90": 19.6,
+    "ringDarkMed": 55
+   }
+  }
+ }
+}

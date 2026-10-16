@@ -1,0 +1,244 @@
+{
+ "res": [
+  {
+   "label": "baseline",
+   "actors": 11,
+   "seeded": 11,
+   "authored": 0,
+   "seededIdentical": true,
+   "authoredAppendedLast": true,
+   "authoredList": []
+  },
+  {
+   "label": "new-no-baked",
+   "actors": 11,
+   "seeded": 11,
+   "authored": 0,
+   "seededIdentical": true,
+   "authoredAppendedLast": true,
+   "authoredList": []
+  },
+  {
+   "label": "new-baked-spawned",
+   "actors": 14,
+   "seeded": 11,
+   "authored": 3,
+   "seededIdentical": true,
+   "authoredAppendedLast": true,
+   "authoredList": [
+    {
+     "spec": "dockworker-x2-v1",
+     "role": "baked",
+     "x": -3.5,
+     "z": 2.6,
+     "scale": 0.9,
+     "tint": [
+      1,
+      1,
+      1
+     ],
+     "kind": "idle",
+     "anim": "idle",
+     "detail": "crowd"
+    },
+    {
+     "spec": "dockworker-x2-v1",
+     "role": "baked",
+     "x": 6,
+     "z": 1.5,
+     "scale": 0.9,
+     "tint": [
+      1,
+      1,
+      1
+     ],
+     "kind": "idle",
+     "anim": "idle",
+     "detail": "crowd"
+    },
+    {
+     "spec": "dockworker-x2-v1",
+     "role": "baked",
+     "x": 18,
+     "z": 2,
+     "scale": 0.9,
+     "tint": [
+      1,
+      1,
+      1
+     ],
+     "kind": "idle",
+     "anim": "idle",
+     "detail": "crowd"
+    }
+   ]
+  }
+ ],
+ "reference": [
+  {
+   "spec": "player",
+   "role": "player",
+   "x": -7.5,
+   "z": 1.8,
+   "scale": 1,
+   "tint": [
+    1.08,
+    1.06,
+    1.04
+   ],
+   "kind": "player",
+   "anim": "idle",
+   "detail": "hero"
+  },
+  {
+   "spec": "merchant",
+   "role": "merchant-talk",
+   "x": -6.283133,
+   "z": -1.685662,
+   "scale": 1,
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "kind": "idle",
+   "anim": "talk",
+   "detail": "mid"
+  },
+  {
+   "spec": "guardA",
+   "role": "guard-talk-idle",
+   "x": 25.3,
+   "z": -1.4,
+   "scale": 1,
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "kind": "idle",
+   "anim": "idle",
+   "detail": "mid"
+  },
+  {
+   "spec": "guardB",
+   "role": "guard-idle",
+   "x": 25.5,
+   "z": 1.4,
+   "scale": 1,
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "kind": "idle",
+   "anim": "idle",
+   "detail": "mid"
+  },
+  {
+   "spec": "hooded",
+   "role": "stranger-idle",
+   "x": 6,
+   "z": 3.6,
+   "scale": 1,
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "kind": "idle",
+   "anim": "idle",
+   "detail": "mid"
+  },
+  {
+   "spec": "cat",
+   "role": "cat-idle",
+   "x": 12.6,
+   "z": 4.62,
+   "scale": 1,
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "kind": "idle",
+   "anim": "idle",
+   "detail": "crowd"
+  },
+  {
+   "spec": "blacksmith",
+   "role": "forge-work",
+   "x": 7.6,
+   "z": -3.15,
+   "scale": 1,
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "kind": "work",
+   "anim": "hammer",
+   "detail": "mid"
+  },
+  {
+   "spec": "porter",
+   "role": "forge-wander",
+   "x": 5.9,
+   "z": 0.9,
+   "scale": 1,
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "kind": "patrol",
+   "anim": "idle",
+   "detail": "crowd"
+  },
+  {
+   "spec": "crowd2",
+   "role": "crowd",
+   "x": 18.333935,
+   "z": -1.317582,
+   "scale": 0.971638,
+   "tint": [
+    0.97111,
+    1.039622,
+    0.941542
+   ],
+   "kind": "wander",
+   "anim": "idle",
+   "detail": "crowd"
+  },
+  {
+   "spec": "crowd0",
+   "role": "crowd",
+   "x": 1.380763,
+   "z": -2.046133,
+   "scale": 1.011834,
+   "tint": [
+    1.083351,
+    1.076344,
+    0.974244
+   ],
+   "kind": "wander",
+   "anim": "idle",
+   "detail": "crowd"
+  },
+  {
+   "spec": "porter",
+   "role": "porter",
+   "x": 19.824435,
+   "z": -2.486715,
+   "scale": 1,
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "kind": "wander",
+   "anim": "carry",
+   "detail": "crowd"
+  }
+ ]
+}

@@ -5,6 +5,7 @@ import type { SpriteAtlas } from './SpriteAtlas';
 import type { Collider } from '../architecture/StreetComposer';
 import type { DistrictBuild, NpcSpawn } from '../district/MerchantDistrictGenerator';
 import type { Anim, Dir } from './SpriteGenerator';
+import { requiredFrames, type AuthoredSpawn } from './BakedSprites';
 
 /** Player control + NPC behaviours + a tiny circle-vs-box collision solver. */
 
@@ -26,6 +27,8 @@ export class ActorSystem {
   nearForge = false;
   onInteractForge: (() => void) | null = null;
   talkTimer = 0;
+  /** authored NPCs (baked sheets; EXPERIMENTAL, DEV flag only today): spawned after every seeded spawn, outside the district RNG */
+  authored: AuthoredSpawn[] = [];
 
   constructor(private atlas: SpriteAtlas) {
     window.addEventListener('keydown', (e) => {
@@ -39,7 +42,7 @@ export class ActorSystem {
 
   spawn(spec: string, role: string, pos: THREE.Vector3, o: Partial<Actor> = {}): Actor {
     const a: Actor = {
-      id: this.nextId++, spec, role, detail: this.atlas.specs.get(spec)?.detail ?? 'crowd', pos: pos.clone(), facing: 'down', dir: 'down', flip: false, anim: 'idle', t: Math.random() * 3,
+      id: this.nextId++, spec, role, detail: this.atlas.specs.get(spec)?.detail ?? 'crowd', pos: pos.clone(), facing: 'down', dir: 'down', flip: false, anim: 'idle', t: o.t ?? Math.random() * 3,
       speed: 0, tint: [1, 1, 1], scale: 1, height: HEIGHT[spec] ?? 1.7, radius: 0.28, ...o,
     };
     this.actors.push(a);
@@ -68,6 +71,20 @@ export class ActorSystem {
       this.spawn(rng.pick(crowd), 'crowd', p, { behaviour: { kind: 'wander', seed: rng.int(1, 99999), wait: rng.range(0, 4), target: null }, tint: [rng.range(0.9, 1.1), rng.range(0.9, 1.1), rng.range(0.9, 1.1)], scale: rng.range(0.95, 1.04) });
     }
     if (this.atlas.specs.has('porter') && density > 0.3) this.spawn('porter', 'porter', this.randomFree(rng) ?? new THREE.Vector3(9, 0, 2.5), { behaviour: { kind: 'wander', seed: 7, wait: 1, target: null }, anim: 'carry' });
+    // authored NPCs last: they draw nothing from the RNG and are not in `taken`, so every seeded character keeps its place
+    for (const s of this.authored) this.spawnAuthored(s);
+  }
+
+  /** contract amendment B: refuse a spawn whose sheet lacks a frame its behaviour can ask for (never a silent fallback) */
+  private spawnAuthored(s: AuthoredSpawn): Actor {
+    const need = requiredFrames(s.behaviour, { faced: s.facing !== undefined, interactive: s.detail !== 'crowd', talk: false });
+    const missing = need.filter(([d, an]) => !this.atlas.frames.has(`${s.spec}/${d}/${an}/0`)).map(([d, an]) => `${d}/${an}`);
+    if (missing.length) throw new Error(`authored spawn of ${s.spec}: missing frames ${missing.join(', ')} for behaviour ${s.behaviour}`);
+    const a = this.spawn(s.spec, s.role ?? 'authored', new THREE.Vector3(s.pos[0], 0, s.pos[1]), {
+      detail: s.detail, scale: s.scale, height: s.height, t: 0, behaviour: { kind: s.behaviour, seed: 1 },
+    });
+    if (s.facing !== undefined) this.face(a, new THREE.Vector3(Math.sin(s.facing), 0, Math.cos(s.facing)));
+    return a;
   }
 
   private spawnNpc(n: NpcSpawn, rng: Rng): void {

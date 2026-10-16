@@ -1,4 +1,4 @@
-import { App } from './app/App';
+import { App, type AppOptions } from './app/App';
 import { DebugPanel } from './debug/DebugPanel';
 import { Hud } from './debug/Hud';
 
@@ -11,13 +11,17 @@ loading.innerHTML = '<div style="font-size:22px;letter-spacing:.3em;margin-botto
 document.body.appendChild(loading);
 const label = loading.querySelector('#ld-label') as HTMLElement, bar = loading.querySelector('#ld-bar') as HTMLElement;
 
-const app = new App({
+const opts: AppOptions = {
   canvas, params,
   onProgress: (l, f) => { label.textContent = `GENERATING ${l.toUpperCase()}`; bar.style.width = `${Math.round(f * 100)}%`; },
-});
+};
+// DEV only: EXPERIMENTAL baked sheets in the shared atlas (?baked=<id>, see src/lab/bakedLoader.ts); compiled out of production builds
+if (import.meta.env.DEV && params.has('baked')) opts.baked = import('./lab/bakedLoader').then((m) => m.loadBaked(params));
+const app = new App(opts);
 (window as any).__app = app;
 // DEV only: in-scene preview of an exported Art Lab sheet (?labsprite=<id>, see src/lab/runtimePreview.ts); compiled out of production builds
 if (import.meta.env.DEV && params.has('labsprite')) void import('./lab/runtimePreview').then((m) => m.installLabSprite(app, params));
+if (import.meta.env.DEV && opts.baked) void import('./lab/bakedLoader').then((m) => m.installBakedHarness(app, params, opts.baked as Promise<import('./lab/bakedLoader').BakedLoad>));
 
 function showSpriteSheet(): void {
   const a = app.atlas;

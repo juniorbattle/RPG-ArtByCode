@@ -1,0 +1,619 @@
+{
+ "id": "dockworker-x2-v1",
+ "sha256": "9e1de3ba1ff1bacbde78b152275c9c34dcb33c04a612c5c7cfd1ae9cfbc48441",
+ "sheetBytes": {
+  "png": 5196,
+  "json": 456,
+  "rawRgba": 24576
+ },
+ "variants": {
+  "base": {
+   "buildMs": [
+    755,
+    685,
+    660
+   ],
+   "buildMedianMs": 685,
+   "files": [
+    {
+     "file": "assets/index-Dav2GKm7.js",
+     "bytes": 822553,
+     "gzip": 235396
+    },
+    {
+     "file": "index.html",
+     "bytes": 559,
+     "gzip": 405
+    }
+   ],
+   "js": {
+    "bytes": 822553,
+    "gzip": 235396
+   },
+   "all": {
+    "bytes": 823112,
+    "gzip": 235801
+   },
+   "loads": [
+    {
+     "error": null,
+     "readyMs": 6218.39999999851,
+     "atlasBuildMs": 65.80000000074506,
+     "atlas": [
+      512,
+      720
+     ],
+     "atlasSha": "ec5de75bc5ced0cf",
+     "assetMs": null,
+     "loaderMedianMs": null,
+     "loaderMaxMs": null,
+     "heapMB": 296.26713943481445,
+     "drawCalls": 108,
+     "transfer": [
+      {
+       "name": "index-Dav2GKm7.js",
+       "bytes": 236255,
+       "ms": 38
+      }
+     ]
+    },
+    {
+     "error": null,
+     "readyMs": 4311.70000000298,
+     "atlasBuildMs": 119.30000000074506,
+     "atlas": [
+      512,
+      720
+     ],
+     "atlasSha": "ec5de75bc5ced0cf",
+     "assetMs": null,
+     "loaderMedianMs": null,
+     "loaderMaxMs": null,
+     "heapMB": 108.88270282745361,
+     "drawCalls": 108,
+     "transfer": [
+      {
+       "name": "index-Dav2GKm7.js",
+       "bytes": 236255,
+       "ms": 56
+      }
+     ]
+    },
+    {
+     "error": null,
+     "readyMs": 4757.699999999255,
+     "atlasBuildMs": 142.80000000074506,
+     "atlas": [
+      512,
+      720
+     ],
+     "atlasSha": "ec5de75bc5ced0cf",
+     "assetMs": null,
+     "loaderMedianMs": null,
+     "loaderMaxMs": null,
+     "heapMB": 304.0522289276123,
+     "drawCalls": 108,
+     "transfer": [
+      {
+       "name": "index-Dav2GKm7.js",
+       "bytes": 236255,
+       "ms": 41
+      }
+     ]
+    }
+   ]
+  },
+  "module": {
+   "buildMs": [
+    667,
+    701,
+    574
+   ],
+   "buildMedianMs": 667,
+   "files": [
+    {
+     "file": "assets/index-BZQJd6K0.js",
+     "bytes": 855986,
+     "gzip": 240430
+    },
+    {
+     "file": "index.html",
+     "bytes": 559,
+     "gzip": 408
+    }
+   ],
+   "js": {
+    "bytes": 855986,
+    "gzip": 240430
+   },
+   "all": {
+    "bytes": 856545,
+    "gzip": 240838
+   },
+   "loads": [
+    {
+     "error": null,
+     "readyMs": 4812,
+     "atlasBuildMs": 113.5,
+     "atlas": [
+      512,
+      816
+     ],
+     "atlasSha": "e02b3cb610263b00",
+     "assetMs": 29,
+     "loaderMedianMs": 0.20000000298023224,
+     "loaderMaxMs": 1.699999999254942,
+     "heapMB": 257.28997898101807,
+     "drawCalls": 108,
+     "transfer": [
+      {
+       "name": "index-BZQJd6K0.js",
+       "bytes": 241370,
+       "ms": 77
+      }
+     ]
+    },
+    {
+     "error": null,
+     "readyMs": 4375.199999999255,
+     "atlasBuildMs": 113.19999999925494,
+     "atlas": [
+      512,
+      816
+     ],
+     "atlasSha": "e02b3cb610263b00",
+     "assetMs": 23.5,
+     "loaderMedianMs": 0.30000000074505806,
+     "loaderMaxMs": 7.099999997764826,
+     "heapMB": 295.90324878692627,
+     "drawCalls": 108,
+     "transfer": [
+      {
+       "name": "index-BZQJd6K0.js",
+       "bytes": 241370,
+       "ms": 58
+      }
+     ]
+    },
+    {
+     "error": null,
+     "readyMs": 4770.199999999255,
+     "atlasBuildMs": 133.10000000149012,
+     "atlas": [
+      512,
+      816
+     ],
+     "atlasSha": "e02b3cb610263b00",
+     "assetMs": 34.099999997764826,
+     "loaderMedianMs": 0.19999999925494194,
+     "loaderMaxMs": 0.6999999992549419,
+     "heapMB": 297.1449861526489,
+     "drawCalls": 108,
+     "transfer": [
+      {
+       "name": "index-BZQJd6K0.js",
+       "bytes": 241370,
+       "ms": 44
+      }
+     ]
+    }
+   ]
+  },
+  "png": {
+   "buildMs": [
+    581,
+    600,
+    612
+   ],
+   "buildMedianMs": 600,
+   "files": [
+    {
+     "file": "assets/dockworker-x2-v1-BYxueUzO.png",
+     "bytes": 5196,
+     "gzip": 5219
+    },
+    {
+     "file": "assets/index-D1BZnhhq.js",
+     "bytes": 824444,
+     "gzip": 236353
+    },
+    {
+     "file": "index.html",
+     "bytes": 559,
+     "gzip": 406
+    }
+   ],
+   "js": {
+    "bytes": 824444,
+    "gzip": 236353
+   },
+   "all": {
+    "bytes": 830199,
+    "gzip": 241978
+   },
+   "loads": [
+    {
+     "error": null,
+     "readyMs": 4715.199999999255,
+     "atlasBuildMs": 116.5,
+     "atlas": [
+      512,
+      816
+     ],
+     "atlasSha": "e02b3cb610263b00",
+     "assetMs": 1448,
+     "loaderMedianMs": 10.599999997764826,
+     "loaderMaxMs": 26.300000000745058,
+     "heapMB": 115.88844203948975,
+     "drawCalls": 108,
+     "transfer": [
+      {
+       "name": "index-D1BZnhhq.js",
+       "bytes": 237210,
+       "ms": 48
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 5
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 5
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 5
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 5
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 7
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 7
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 17
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 5
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 9
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 10
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 7
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 12
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 8
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 7
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 7
+      }
+     ]
+    },
+    {
+     "error": null,
+     "readyMs": 4611,
+     "atlasBuildMs": 103,
+     "atlas": [
+      512,
+      816
+     ],
+     "atlasSha": "e02b3cb610263b00",
+     "assetMs": 1368.699999999255,
+     "loaderMedianMs": 14.600000001490116,
+     "loaderMaxMs": 34.30000000074506,
+     "heapMB": 264.8029499053955,
+     "drawCalls": 108,
+     "transfer": [
+      {
+       "name": "index-D1BZnhhq.js",
+       "bytes": 237210,
+       "ms": 39
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 4
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 7
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 4
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 4
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 25
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 12
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 13
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 5
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 5
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 8
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 8
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 29
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 15
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 7
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 9
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 13
+      }
+     ]
+    },
+    {
+     "error": null,
+     "readyMs": 4677.300000000745,
+     "atlasBuildMs": 99.89999999850988,
+     "atlas": [
+      512,
+      816
+     ],
+     "atlasSha": "e02b3cb610263b00",
+     "assetMs": 1424.5999999977648,
+     "loaderMedianMs": 12.800000000745058,
+     "loaderMaxMs": 26.599999997764826,
+     "heapMB": 269.8440990447998,
+     "drawCalls": 108,
+     "transfer": [
+      {
+       "name": "index-D1BZnhhq.js",
+       "bytes": 237210,
+       "ms": 37
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 13
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 5
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 5
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 5
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 7
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 12
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 5
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 24
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 15
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 13
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 10
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 10
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 6
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 8
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 7
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 7
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 20
+      },
+      {
+       "name": "dockworker-x2-v1-BYxueUzO.png",
+       "bytes": 5496,
+       "ms": 16
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

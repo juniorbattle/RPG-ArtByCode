@@ -13,6 +13,7 @@ import { PerfMonitor, type PerfSnapshot } from '../debug/PerfMonitor';
 import { SpriteAtlas } from '../characters/SpriteAtlas';
 import { SpriteRenderer } from '../characters/SpriteRenderer';
 import { ActorSystem } from '../characters/ActorSystem';
+import type { BakedSheet, AuthoredSpawn } from '../characters/BakedSprites';
 import { ParticleSystem } from '../atmosphere/Particles';
 import { buildSky } from '../atmosphere/Sky';
 import { WATER_Y, WALK } from '../architecture/StreetComposer';
@@ -20,7 +21,11 @@ import { bakeVisibility, type BakePose, type BehindPass } from '../district/Visi
 import { OcclusionReveal, OCC_STYLES, playerReveal, revealSize, type OccStyle } from './Occlusion';
 import { PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, crowdVariants } from '../characters/SpriteGenerator';
 
-export interface AppOptions { canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void }
+export interface AppOptions {
+  canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void;
+  /** EXPERIMENTAL baked sheets + authored spawns; only ever set by the DEV loader (`?baked=`, src/lab/bakedLoader.ts) */
+  baked?: Promise<{ sheets: BakedSheet[]; spawns: AuthoredSpawn[] }>;
+}
 
 export class App {
   readonly renderer: THREE.WebGLRenderer;
@@ -117,9 +122,11 @@ export class App {
     this.generator = new MerchantDistrictGenerator(this.lib);
     this.opts.onProgress('sprites', 0.97);
     await new Promise((r) => setTimeout(r, 0));
-    this.atlas = SpriteAtlas.build([PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, ...crowdVariants(this.config.seed, 5)]);
+    const baked = this.opts.baked ? await this.opts.baked : null;
+    this.atlas = SpriteAtlas.build([PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, ...crowdVariants(this.config.seed, 5)], baked?.sheets ?? [], this.renderer.capabilities.maxTextureSize);
     this.sprites = new SpriteRenderer(this.atlas, 40);
     this.actors = new ActorSystem(this.atlas);
+    if (baked) this.actors.authored = baked.spawns;
     this.actors.onInteractForge = () => this.setForgeState(this.config.forgeState === 'NORMAL_FORGE' ? 'SABOTAGED_FORGE' : 'NORMAL_FORGE');
     this.scene.add(this.sprites.group);
     this.particles = new ParticleSystem(this.lib);

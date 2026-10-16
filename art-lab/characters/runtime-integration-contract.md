@@ -1,8 +1,15 @@
 # Contract proposal — multi-resolution sprites in the main `SpriteAtlas` / `SpriteRenderer`
 
-**Status: PROPOSAL (2026-10-16), awaiting operator validation. Nothing here is implemented.** `AGENTS.md` stays the authority; this
-document only proposes how the approved x2 NPC baseline (`dockworker-x2-v1`, 64 × 96) would enter the main sprite system. Integration
-itself needs a separate, explicitly approved task; production use needs `runtimeUse: "production"` (operator) and confirmed source rights.
+**Status: v3 — ACCEPTED WITH AMENDMENTS (operator, 2026-10-16).** Approved principles: one shared `SpriteRenderer`; one atlas holding
+32 × 48 and 64 × 96 frames; **no production shader change** while the existing invariants suffice; foot anchoring, DOF, lighting, shadows
+and occlusion kept; **no change to how existing characters render**; no LOD; no change to the Merchant District environment, the cameras
+or the reveal. Amendments A (atlas compatibility proof), B (incomplete facings), C (storage / loading comparison) are section 10.
+**Authorised now: an experimental implementation of the shared atlas and of baked-sprite loading, behind a DEV flag only**, on
+`character-gold-master-4a-1`, with the six tests. **Not authorised: any production NPC replacement or production activation.** Production
+also stays blocked by the source sheet's status (operator declaration, not a verified provenance: `provenance/dockworker-x2-v1/
+source-declaration.json`). v2 added the compatibility review (section 8), the files touched (section 9), the real texture-size ceiling
+and risks R11, R12. **Experimental implementation done (2026-10-16): results in section 12; amendment A has one open point (texel-edge
+ties, section 12) that needs operator arbitration; amendment C measured, C2 proposed (section 11).** `AGENTS.md` stays the authority.
 
 ## 1. Scope
 
@@ -44,27 +51,34 @@ then identical to the runtime sprites: 64 × 96 × 0.0235 m = 1.504 × 2.256 m, 
   1.88 m are presentation data, not properties of the sheet (operator decision 2026-10-16). No universal NPC height.
 - Frames that break the invariant (another aspect ratio, feet elsewhere, non-integer k) are **rejected by the loader**; supporting
   them would need per-instance world size / foot offset attributes (a later, separate contract).
+- Loader checks, all measured true today (section 8): frame = 32k × 48k; last opaque row of every standing / contact frame = 45k (never
+  lower); a fully transparent one-texel ring around every frame; binary alpha (0 or 255).
 
 ## 4. Proposed changes (minimal)
 
 1. **Atlas — mixed cell sizes, one page.** Generated cells keep their exact positions (first rows, same packing); baked frames are
    appended as *k × k* blocks of base cells (an x2 frame = 2 × 2 cells, 24 KB colour + 24 KB emissive). Same texture → **no extra draw
-   call**. Emissive of a baked frame = 0 unless the sheet ships an emissive layer. Ceiling: 4096 texels high = 85 rows of base cells.
+   call**. Emissive of a baked frame = 0 unless the sheet ships an emissive layer. Ceiling: WebGL2 only guarantees
+   `MAX_TEXTURE_SIZE` >= 2048 (this machine: 16384) → at width 512, rows 720..2047 hold 13 rows of x2 blocks = **104 x2 frames**; checked
+   at boot against `renderer.capabilities.maxTextureSize`. Beyond that: widen the atlas to 1024 (moves generated cells, same pixels) or a
+   second page (+ draw calls) — a separate decision.
 2. **Baked character spec.** `BakedSpec { id = manifest id, density k, detail tier, dirs, anims, frames (dir/anim/i → cell), sha256 }`
    registered in `atlas.specs` / `counts` like a generated spec, built from the Aseprite JSON (tags → animations). Sheets with one
    facing / one animation declare it; nothing else is invented.
-3. **Loading — production assets only, pixel-exact.** Only manifests with `runtimeUse: "production"` can enter the game build (checked by
-   `art:validate` + the loader; `lab` manifests stay in the DEV preview). Recommended: a build-time step that turns the approved PNG + JSON
-   into a generated module (RGBA + frame table + manifest id + SHA-256), so boot stays synchronous, offline and free of browser colour
-   management. Alternative: `fetch` + `createImageBitmap(..., { colorSpaceConversion: 'none', premultiplyAlpha: 'none' })` awaited in
-   `App.init` before `SpriteAtlas.build`. Either way the loader verifies the hash and the frame invariant (section 3).
-4. **Renderer — no shader change for size / foot.** Fallback chain extended for baked specs: any missing `dir` / `anim` resolves to the
-   declared front idle frame (**never skip the actor**). The silhouette rim stays **one texel of the sprite's own texture** (the
-   validated L0 look: half as wide on screen for x2); a density-aware rim width is an option for a later art decision, not part of this
-   contract.
+3. **Loading — pixel-exact, gated by manifest.** Only manifests with `runtimeUse: "production"` can ever enter the game build (checked
+   by `art:validate` + the loader); `lab` manifests load only behind the DEV flag. The storage format (generated TypeScript module vs
+   versioned PNG / pre-baked atlas) is **not locked**: it is chosen by the measured comparison of amendment C (section 10). Whatever the
+   format, the loader verifies the export's SHA-256 against its provenance pack and the frame invariant (section 3), and decodes the
+   bytes without colour management or premultiplication.
+4. **Renderer — no shader change.** Size, foot, rim and lighting come from the existing invariants. The silhouette rim stays **one
+   texel of the sprite's own texture** (validated L0 look: half as wide on screen for x2); a density-aware rim is a later art decision.
+   Missing facings / animations are handled by amendment B (explicit, validated before spawning), **not** by a silent renderer fallback;
+   the existing fallback chain of the generated characters is untouched.
 5. **Actors.** Baked NPCs enter through authored spawns (`NpcSpawn` with an explicit spec) **without consuming the seeded RNG stream**
-   (seed determinism, `AGENTS.md`). Until they have walk cycles and facings: `idle` behaviour only (no wandering: an unanimated sprite
-   would slide), front frame for every facing, detail tier `crowd` or `mid` as authored.
+   (seed determinism, `AGENTS.md`): appended after every seeded spawn in `ActorSystem.populate` and **not** added to the crowd's `taken`
+   list (adding them would move crowd members); an overlap with a crowd member is reported, not silently fixed. Each spawn carries its
+   presentation `scale` **and** `height` (shadow length, bubble height; today a per-spec `HEIGHT` table). A spawn is refused (explicit
+   error) unless its sheet holds every frame its behaviour needs (amendment B). Detail tier `crowd` or `mid` as authored.
 6. **Unchanged by construction** (to be proven, not assumed): contact shadows (they sample the instance's own cell alpha), DOF protection
    (`iFx.x`), 55 % overlay (same geometry), mirror pass (same group, `uClipY`), light grid, camera-graph `charScale`, occlusion reveal.
 7. **Retire the DEV second renderer** (`src/lab/runtimePreview.ts`, `labhd=1`) once the unified path exists; keep `?labsprite=` for
@@ -74,8 +88,8 @@ then identical to the runtime sprites: 64 × 96 × 0.0235 m = 1.504 × 2.256 m, 
 
 | # | Test | Pass |
 |---|---|---|
-| 1 | No baked NPC in the scene: frames A / B / C / D (static=1 and with characters, fixed seed) vs the current build | **pixel-identical**; generated atlas cells byte-identical |
-| 2 | Character Lab `selfTest` on the baked cell inside the main atlas | 0 texel mismatch; negative control (`filter=linear`) fails |
+| 1 | No baked NPC in the scene, cameras A / B / C / D (`static=1` and with characters, fixed seed, fixed time step) vs the current build: (a) no baked asset loaded; (b) baked asset loaded (atlas taller) but not spawned; (c) amendment A sampling proof | **pixel-identical** in all; (a) atlas byte-identical; (b) every generated cell byte-identical by content; (c) 0 px over every generated frame at several heights and sub-pixel offsets, negative control fails |
+| 2 | Self-test of the baked cell inside the main atlas: CPU bytes vs the independently decoded export, and GPU sampling through the renderer's addressing at 1 / 2 / 3 / non-integer scale | 0 texel mismatch; negative controls (frame table off by one row; uncentred linear sampling) fail |
 | 3 | Same spots as the validated evidence (Pass 4A-sexies), x2 drawn by the main renderer vs by the DEV preview renderer | pixel-identical (proves the unified path = the validated look) |
 | 4 | `dynwalk` quay + standing-NPC runs | churn within ±1 point of Pass 4A-septies; no vanishing frame |
 | 5 | `tools/perf.mjs`, camera B, 1 / 8 / 32 baked NPCs, interleaved | GPU within noise of the runtime-porter variants; **draw calls unchanged** (no +4); atlas +48 KB per x2 frame |
@@ -89,15 +103,185 @@ then identical to the runtime sprites: 64 × 96 × 0.0235 m = 1.504 × 2.256 m, 
 | First authored asset in the build | changes the "everything generated at boot" contract and the bundle | explicit task + `AGENTS.md` update; manifest gating; hash check |
 | Mixed densities on screen (hero 32 × 48 next to x2 NPCs) | the hero looks coarser than the extras | operator decision: hero later, with a key-character budget |
 | Texel loss near 1 screen px per texel (camera A, distant NPCs) | single-texel details flicker | QA watch point; no LOD now (operator decision) |
-| Incomplete sheets (one facing / one animation) | invisible or sliding NPCs | fallback rule + idle-only behaviour (4.4, 4.5) |
+| Incomplete sheets (one facing / one animation) | invisible or sliding NPCs | amendment B: frames required per behaviour validated before spawning (explicit error); explicit front-idle fallback only for an immobile lab asset |
 | Colour management / premultiplied alpha on decode | silent texel drift | build-time bake or `colorSpaceConversion: 'none'`; tests 2–3 |
 | Atlas growth | memory, texture-size ceiling | 48 KB per x2 frame; first-fit k × k blocks; ceiling checked at boot |
 | Rim width is per texel | thinner rim on x2 | validated as is (L0); density-aware rim = later art decision |
 | RNG / spawn order | seed drift for every other character | authored spawns outside the RNG stream; test 6 |
 | NPCs behind the banner / lamps are not revealed | partial uncovering by the player's ellipse | by design (V1); banner-pole anomaly tracked separately |
+| R11 (added v2) Cell-border sampling: at a quad edge `floor(vUv × uAtlasSize)` can land on the neighbour cell, and the rim reads ±1 texel | a stray texel / false rim from the next cell | loader rejects a frame without a transparent one-texel ring (measured: 0 opaque ring texels in the 234 generated cells and in x2 v1) |
+| R12 (added v2) Future facings: the `side` view is mirrored for the other side | asymmetric costume details (bag, strap) swap sides when the NPC turns | author side views mirror-safe; distinct left / right facings = a separate contract (renderer + `ActorSystem`) |
 
 ## 7. Proposed phasing (each step stops for review)
 
 1. Atlas mixed cells + `BakedSpec` + loader in DEV only, behind a URL flag; tests 1–2.
 2. Main-renderer drawing of one baked NPC at an authored spot (flag); tests 3–6.
 3. Operator review → decide production gating, rights, `AGENTS.md` update; only then `runtimeUse: "production"` for an approved asset.
+
+## 8. Compatibility review (v2, 2026-10-16: code re-read + measurements in the running app, seed 1842)
+
+**Existing 32 × 48 characters.** Generated specs, order, packing and atlas width (512) are unchanged; baked blocks are appended below them
+(image rows >= 720). Generated cells keep their image-space positions; because data rows are flipped and UVs are normalised by the atlas
+height, their `v` values are recomputed when the atlas grows, and the shader addresses texels explicitly (`floor(vUv × uAtlasSize)`): test
+1b proves the image stays pixel-identical. No GLSL, uniform or instance-attribute change; hero, generated NPCs, crowd and cat untouched;
+crowd RNG untouched (4.5). The DEV atlas dump (`?sprites=1`, `src/main.ts`) and the in-place `labsprite` mode read `atlas.rgba` with the
+same flip convention and keep working.
+
+**Foot anchoring.** Vertex height = `(corner.y × uWorldSize.y − uFootOffset) × iTint.w × uCharScale`, `uFootOffset` = (48 − 45) × 0.047 =
+0.141 m, shared. Measured: last opaque row = **45 in 232 of the 234 generated frames** (the 2 others are speech bubbles, 43); x2 v1: **90 =
+2 × 45**. The ground line is the top edge of row 45k; the bottom outline row sits just under it (4.7 cm at x1, 2.35 cm at x2: a 2.35 cm
+difference, half an x1 texel). The pixel snap acts on the instance anchor only (density-independent). The contact blob does not depend on
+the frame; the light / moon cast shadows reuse the cell alpha (same geometry, finer outline). x2 v1 figure = 89 texels × 0.0235 m = 2.09 m
+at scale 1 (1.88 m = scale 0.9): `Actor.height` (shadow length, bubble) is set with `scale` per spawn (4.5).
+
+**Filtering.** Nearest, no mipmaps, clamp; explicit texel-centre addressing in atlas space works for any cell size. The silhouette rim reads
+±1 atlas texel = one texel of the sprite's own density (validated L0 look, half as wide on screen for x2). Screen density halves at x2:
+camera B ≈ 1.9–2.0 px / texel (1.88 m), camera A 1.1–1.2, distant standing NPCs in A down to 0.57 (Pass 4A-septies); a lower render
+resolution lowers these figures proportionally. Under 1 px / texel texels are skipped (single-texel flicker): QA watch point, no LOD
+(operator decision). Colour: the atlas is an sRGB `DataTexture`; baked bytes must be inserted raw (no colour conversion, no premultiplied
+alpha) → build-time bake. x2 v1 has 0 semi-transparent texels (alpha test 0.5 unchanged). Cell borders: R11.
+
+**Future animations.** Today: facings `down` / `up` / `side` (+ mirror), animations `idle | walk | hammer | talk | carry`, one frame count
+per spec / animation (identical for every facing), fixed rates in `frameIndex` (walk / carry 7.5 fps, hammer 5.5, talk 4, idle 1.7):
+Aseprite frame durations are not read. Baked sheets: one Aseprite tag per `<anim>-<dir>`, the same count per animation for every facing
+(rejected otherwise), authored to the fixed rates (walk 133 ms, talk 250 ms, idle ≈ 590 ms per frame); per-frame durations (holds) would
+need a per-spec timing table in `frameIndex` (CPU only, later). Every contact frame keeps its last opaque row at 45k (bob and lifted feet
+stay inside the frame). NPC speeds are 0.8 (mid) / 0.95 (crowd) / 0.9 m/s (porter): a walk cycle is authored to its speed or the feet
+slide; a baked NPC walks only once its cycle is validated in motion (Pass 4A-septies tested a fixed pose only). Mirroring: R12.
+
+**GPU memory.** Today 512 × 720 × 4 B × 2 textures (colour + emissive) = 2.95 MB; the arrays also stay in CPU memory (`atlas.rgba`,
+`DataTexture.image.data`). One x2 frame = 64 × 96 × 4 B = 24 KB colour + 24 KB emissive = **48 KB**; the atlas grows by rows of 8 x2
+frames (96 texels, 384 KB). Hypothetical example (not planned): an NPC with 3 facings × (idle 4 + walk 8 + talk 4) = 48 frames = 6 rows =
++2.25 MiB (atlas 512 × 1296, ≈ 5.3 MB). Ceiling: 104 x2 frames at width 512 within the WebGL2 guarantee (4.1); a 2048 × 2048 pair is
+32 MiB at worst. The emissive texture uses one channel of RGBA8: an R8 emissive would save 37.5 % of the total — outside this contract
+(it would touch the generated sprites too).
+
+**Batching.** One atlas, one material: x2 instances join the existing draws — main pass body + shadows + 55 % overlay, mirror pass body =
+**4 draw calls for all characters, unchanged** (the DEV preview path adds 4: its own renderer, measured). Instance layout unchanged (`iUV`
+already carries the cell rectangle); instance buffers grow by themselves (40, doubled when actors × 2 exceed it). Measured with the same
+shader (DEV preview renderer, camera B): 32 x2 NPCs 9.54 ms GPU vs 32 runtime porters 9.67 ms (base 9.23, noise ±0.2).
+
+## 9. Files touched
+
+**Experimental phase (implemented 2026-10-16, DEV flag only, nothing in production):**
+
+| File | Change |
+|---|---|
+| `src/characters/BakedSprites.ts` (new) | `BakedSheet` / `AuthoredSpawn` types, `requiredFrames` (amendment B), `checkBakedSheet` (frame invariant: 32k x 48k, idle on row 45k, nothing below it, transparent ring, binary alpha, equal counts per facing, fallback lab-only) |
+| `src/characters/SpriteAtlas.ts` | `build(specs, baked = [], maxTextureSize)`: baked blocks shelf-packed in data rows above the generated cells (their bytes and UV expressions unchanged), frames / counts registered, explicit front-idle aliases listed in `atlas.aliases`, ceiling check, `generatedHeight` |
+| `src/characters/ActorSystem.ts` | `authored` spawns appended after every seeded spawn (no RNG, not in `taken`), refused with an explicit error when a required frame is missing; `spawn` takes an optional `t` (no `Math.random` call then) |
+| `src/app/App.ts` | optional `AppOptions.baked` (set only by the DEV loader), `maxTextureSize` passed to the atlas |
+| `src/main.ts` | DEV-only dynamic import of the loader + harness (`?baked=`) |
+| `src/lab/bakedLoader.ts` (new, DEV only) | manifest gate, SHA-256 against the provenance pack, exact PNG decode, Aseprite tags `<anim>-<dir>`, authored spawns from URL flags, harness (hide / follow / visibility toggle for measurements), test-2 self-test |
+| `tools/art-lab/baked-proof.mjs`, `png.mjs`, `storage-bench.mjs`, `dynwalk.mjs` + `dynwalk-report.mjs` (moved from `scratch/`) | tests 1-4 and 6, amendment C |
+| `src/characters/SpriteRenderer.ts`, every shader | **not modified** (amendment B is solved before spawning, not by a renderer fallback) |
+| `src/lab/runtimePreview.ts` | not modified: kept as the reference of test 3; to retire with a later task |
+
+**Not touched**: `SpriteGenerator.ts`, `PixelPainter.ts`, every shader, `Occlusion.ts`, `CameraGraph.ts`, `Visibility.ts`, `PostFX.ts`,
+`ShaderChunks.ts`, `MerchantDistrictGenerator.ts`, the hero, `vite.config.ts`.
+
+**A later production task would add** (not done, needs operator approval and a verified source): the C2 loader moved out of `src/lab/`
+into the game (approved `production` manifests only), the export PNG imported as a hashed asset, `art:validate` gating, the `AGENTS.md`
+update ("the game loads no authored asset" becomes "only approved production manifests"), and the removal of the old preview renderer.
+
+## 10. Operator amendments (2026-10-16)
+
+### A — Atlas compatibility: the old pixels and the 32 × 48 rendering must survive a taller atlas
+
+Growing the atlas changes `uAtlasSize.y` and the normalised `v` of every generated cell. The texel the shader fetches is
+`floor(vUv × H)`: in exact arithmetic it is the same cell texel for any height (for a cell whose data rows start at `r0`,
+`vUv × H = r0 + 48 t`), but float32 rounding differs with `H`, so identity is **proven, not assumed**:
+
+- **Layout that keeps the old bytes**: the generated cells keep their data rows `[0, H0)` exactly (the first `H0 × W × 4` bytes of the
+  colour and emissive arrays are unchanged); baked blocks are added in rows `[H0, H)`. Generated UVs keep the same expression
+  (`1 − cy / H`, image-space rows), so with no baked asset every float is the one of today.
+- **A1 bytes**: colour + emissive bytes of every generated cell identical for `H` = 720 and every grown height tested.
+- **A2 sampling parade**: every generated frame (234) drawn by the production `SpriteRenderer` (same shader, same instance path) in
+  front of a fixed camera, at several world scales and sub-pixel offsets, with the atlas at `H` = 720, at `H` = 816 (the x2 dockworker)
+  and near the 2048 ceiling (synthetic x2 blocks): screenshots **0 px** different.
+- **A3 scene**: cameras A / B / C / D with characters (seeded `Math.random`, fixed 1/60 s steps from load): `eecea58` build vs the new
+  code without baked asset vs the new code with the asset loaded but not spawned: **0 px**.
+- **A4 negative control**: the parade with the grown atlas but the generated UVs normalised by the old height (a deliberate bug) **must
+  differ**; otherwise the parade proves nothing.
+- If A2 or A3 is not 0 px: stop. The way out (fixed atlas height, or integer `texelFetch` in the shader) changes memory or a production
+  shader and needs operator approval.
+
+### B — Incomplete facings and animations: explicit, never masked
+
+- **Frames required per behaviour** (from `ActorSystem`): immobile and never faced → `idle/down`; immobile but faced, or interactive
+  (detail `mid` / `hero`: it turns to the player when talked to) → `idle` × `down` / `up` / `side`; `wander` / `patrol` → `idle` + `walk`
+  × the three facings; `work` → `hammer/side`; a `talk` role → `talk` × the three facings. One frame count per animation for every facing.
+- **Production** (`runtimeUse: "production"`): a missing required frame is a **load / spawn error** naming the missing `dir/anim`. The
+  renderer never meets a missing baked frame; nothing is masked.
+- **Experimental only**: a `lab` asset with an **immobile** behaviour may declare `fallback: front-idle` **explicitly** at the spawn (DEV
+  flag); the missing idle facings are then registered as named aliases of the front idle frame, listed in the harness report and logged
+  once. Never for walking / working NPCs, never in production. Without the declaration the spawn is refused.
+- The generated characters' existing renderer fallback chain is not modified (their sheets are complete).
+
+### C — Storage and loading: measured comparison before locking a format
+
+Candidates, all decoded to the same atlas bytes: **C1** a generated TypeScript module (raw RGBA + frame table + SHA-256, tracked);
+**C2** the versioned Aseprite export (PNG + JSON, already tracked and hashed in the provenance pack) fetched and decoded at boot;
+**C3** a pre-baked atlas PNG packing every baked frame at build time (same loader as C2, one file instead of one per asset). Measured:
+build time (`vite build`, median of 3), bundle (JS raw / gzip, extra asset bytes), load (fetch + decode ms, atlas build ms), memory (JS heap,
+GPU texture bytes), draw calls, reproducibility (byte-exact decode against an independent Node decode; hash check), simplicity (tooling
+steps, code). Rule: identical atlas bytes are a precondition; then the simplest, fastest and reproducible candidate wins. Results and
+decision: section 11.
+
+## 11. Amendment C — measured comparison and decision (2026-10-16)
+
+`tools/art-lab/storage-bench.mjs` (report: `art-lab/characters/scratch/storage-bench/report.json`, not tracked): three throw-away copies of
+the current tree, **production** builds (`vite build`, 3 each), `vite preview`, Chrome with the cache disabled, 3 interleaved boots each.
+One asset, `dockworker-x2-v1` (one 64 × 96 frame: PNG 5 196 B, raw RGBA 24 576 B).
+
+| | base (today) | C1 generated TS module | C2 versioned PNG + JSON |
+|---|---|---|---|
+| build time (median, ms; noise ≈ ±100) | 685 | 667 | 600 |
+| JS bundle raw / gzip (bytes) | 822 553 / 235 396 | **+33 433 / +5 034** | **+1 891 / +957** (decoder + loader) |
+| extra asset files | — | — | PNG 5 196 B (fetched once, cacheable) |
+| loader alone, idle page (median of 20 × 3) | — | 0.2 ms (base64 → bytes) | 10.6–14.6 ms (fetch + SHA-256 + exact decode) |
+| time to ready (median; noise ±300 ms) | 4 758 ms | 4 770 ms | 4 677 ms |
+| atlas / GPU texture bytes | 512 × 720 | 512 × 816, SHA `e02b3cb6…` | 512 × 816, **same bytes** |
+| draw calls (whole frame) | 108 | 108 | 108 |
+| JS heap | (GC noise 110–300 MB: not usable) | | |
+
+Reading: both decode to **byte-identical atlas bytes** (precondition met) and the same draws. C1 is faster to decode by ~12 ms, but that
+load is overlapped with the boot (`App.init` awaits it only at the sprite stage) and changes nothing measurable in time to ready. C1 puts the
+raw pixels into the JS bundle (×1.33 in base64: ≈ +33 KB raw per x2 frame — a hypothetical 48-frame NPC would add ≈ 1.6 MB of JS to parse,
+an extrapolation, not a measurement) and **duplicates in Git** pixels that already live in the hashed Aseprite export, so a generated file
+must be kept in sync and checked. C2 keeps **one source of truth** (the tracked export, already hashed in its provenance pack), adds ~1 KB
+of gzip JS once, and its loader is the one the experiment already uses.
+
+**Decision (proposed, applies to the experimental path now and to a later production task): C2.** Versioned PNG + Aseprite JSON exports,
+fetched at boot, SHA-256 checked against the provenance pack, decoded by our exact decoder (no colour management, no premultiplication),
+packed into the shared atlas. C3 (a pre-baked atlas PNG of every baked frame) is the same loader with one file; worth it only when the
+number of baked files makes the requests matter. C1 is not adopted.
+
+## 12. Results of the experimental implementation (2026-10-16, DEV flag only)
+
+Every capture comes from `tools/art-lab/baked-proof.mjs` (seeded `Math.random`, app loop taken over, 1/60 s steps, frozen clock, one
+warm-up load per framing: the first load of a framing in a browser session renders differently from all later ones, which agree with
+each other — a harness fact, measured). Baseline = the `eecea58` tree served on :5181. Evidence (untracked):
+`art-lab/characters/scratch/baked-proof/`; key images in `art-lab/characters/reviews/shared-atlas-4a-decies/`.
+
+| # | Result |
+|---|---|
+| 1a | atlas without baked sheet **byte-identical** to `eecea58` (colour + emissive SHA-256); scene A / B / C / D, with characters and `static=1`: **0 px** (8 views) |
+| 1b | baked sheet loaded, not spawned (atlas 512 x 816): generated rows byte-identical; scene A-D: **0 px** (8 views) |
+| A2 | parade of the 234 generated frames (+ bubbles), 3 scales x 3 batches, atlas 720 / 816 / 1968: **0 px** (27 renders); repeat control 0 px |
+| A2+ | dense sweep, 17 scales x 3 batches: atlas 816 **0 px** (51 renders); atlas 1968 **1 render of 51 differs: 1 032 px on 5 scanlines** (scale 2.1) |
+| A4 | negative control (generated UVs normalised by the old height): 480 000 – 1 200 000 px per render: the parade detects a real UV error |
+| 2 | baked block CPU bytes = the export decoded in Node: 0 mismatch; GPU sampling at scales 1 / 2 / 3 / 2.37: **0 texel mismatch**; negative controls fail (off-by-one row 6 616, uncentred linear 10 804). A "wrong atlas height" control was tried and is NOT valid: the nearest re-quantisation cancels it (0 mismatch) |
+| 3 | x2 by the main renderer vs the old preview renderer, 4A-sexies spots (12 x2 NPCs): **0 px on every x2 NPC** in A / B / C / D. Whole images: A, B, D 0 px; C **16 px on one scanline of the generated HERO** (32 x 48): the preview path keeps the atlas at 720 rows, the shared path has 816 — the amendment-A tie below. Control: the shared path alone at 816 vs 1968 rows flips 12 px on the same scanline |
+| 4 | `tools/art-lab/dynwalk.mjs` (seeded, frozen clock per frame), 4A-septies routes. Quay 1.88 m, median churn shared / old preview / 4A-septies: A 5.8 / 5.7 / 5.7, B 7.6 / 7.6 / 7.5, C 9.4 / 9.4 / 9.4, D 10.2 / 10.2 / 10.2, blends 11.4 / 11.5 / 11.4; no frame without the sprite (881). Standing NPCs: all 14 actor x framing groups **within 0.8 point** of 4A-septies; NPC 3 leaves its mask on 20 frames, the same as in 4A-septies (scene occlusion) |
+| 5 | camera B, 3 interleaved rounds (noise up to ±1 ms this session): base 9.91 ms GPU, 114 draws; shared x2 1 / 8 / 32 NPCs 10.21 / 10.12 / 10.21 ms, **114 draws**; runtime porters 8 / 32: 10.20 / 11.12 ms; old preview x2 32: 10.52 ms, **118 draws (+4)**; atlas +393 KB with the x2 block (512 x 816) |
+| 6 | typecheck, build green; `art:validate` 0 error; seeds 1842 / 7719 / 30417: the 11 seeded characters identical to `eecea58`, authored ones only appended; production bundle 818 648 → 822 553 B (+3.9 KB: the shared-atlas code, inert without baked sheets), DEV loader absent from it; amendment B rules 8 / 8 (refusals with explicit messages, explicit aliases listed) |
+
+**Open point (amendment A, stop for arbitration).** The bytes of the old cells never change, but the *rendering* can, on rare scanlines:
+when a texel edge falls exactly on a pixel centre (a tie), `floor(vUv × H)` resolves the tie by float rounding, and that rounding depends
+on the atlas height. Both results are correct nearest samples (the texel boundary moves by one screen pixel line), but the image is no
+longer bit-identical. Measured: at 816 rows (the dockworker alone) **one real case, camera C, the hero at the 4A-sexies spot: 16 px on one scanline**, none in
+87 parade renders + 16 scene captures; at 1968 rows, 1 parade render of 51 (scale 2.1, 1 032 px on 5 scanlines). Ways out, all outside the approved scope: (1) integer texel addressing (`iUV` in texels + `texelFetch`): ties then never
+depend on the atlas size, but this is a production shader change and shifts today's tie scanlines once; (2) a fixed atlas height (e.g.
+2048 rows from now on, +5 MB GPU): same one-time shift, then stable; (3) accept tie flips as equivalent samples, with a growth budget
+proven by the parade sweep before each growth; (4) a second atlas page for baked sheets (+ draw calls: rejected by the batching rule).

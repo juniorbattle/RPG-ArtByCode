@@ -1,0 +1,28 @@
+[
+ {
+  "view": "camera=C&player=9.6,1.0&bakedpos=7.4,0.6;11.4,-1.2;12.4,0.2",
+  "variant": "main-816",
+  "reference": true
+ },
+ {
+  "view": "camera=C&player=9.6,1.0&bakedpos=7.4,0.6;11.4,-1.2;12.4,0.2",
+  "variant": "main-816-repeat",
+  "vs": "main-816",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=9.6,1.0&bakedpos=7.4,0.6;11.4,-1.2;12.4,0.2",
+  "variant": "main-1968",
+  "vs": "main-816",
+  "pixels": 12,
+  "maxDelta": 200,
+  "box": [
+   1094,
+   665,
+   26,
+   1
+  ]
+ }
+]

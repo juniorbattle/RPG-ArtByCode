@@ -1,0 +1,82 @@
+[
+ {
+  "label": "baseline-eecea58",
+  "size": [
+   512,
+   720
+  ],
+  "generatedHeight": 720,
+  "frames": 234,
+  "colour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "emissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "generatedColour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "generatedEmissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "aliases": null,
+  "baked": null
+ },
+ {
+  "label": "new-no-baked",
+  "size": [
+   512,
+   720
+  ],
+  "generatedHeight": 720,
+  "frames": 234,
+  "colour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "emissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "generatedColour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "generatedEmissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "aliases": [],
+  "baked": {}
+ },
+ {
+  "label": "new-baked-not-spawned",
+  "size": [
+   512,
+   816
+  ],
+  "generatedHeight": 720,
+  "frames": 235,
+  "colour": "e02b3cb610263b0053cad4306e250d21dcd6178d65ffac1d21b76e77613d7e7c",
+  "emissive": "d3ac528435da56919a9087a552cfba16972026eef8f41191275b7677a45b6632",
+  "generatedColour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "generatedEmissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "aliases": [],
+  "baked": {
+   "dockworker-x2-v1": {
+    "k": 2,
+    "runtimeUse": "lab",
+    "sha256": "9e1de3ba1ff1bacbde78b152275c9c34dcb33c04a612c5c7cfd1ae9cfbc48441",
+    "frames": 1
+   }
+  }
+ },
+ {
+  "label": "new-baked-ceiling",
+  "size": [
+   512,
+   1968
+  ],
+  "generatedHeight": 720,
+  "frames": 338,
+  "colour": "dd93bed1bf78ee5951860198a93fadb2044a2816d5b458ccae31b254104777d9",
+  "emissive": "460a14b5227b511ebf75c402f3ed888929f096d727eebe5c549b250b220851c7",
+  "generatedColour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "generatedEmissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "aliases": [],
+  "baked": {
+   "dockworker-x2-v1": {
+    "k": 2,
+    "runtimeUse": "lab",
+    "sha256": "9e1de3ba1ff1bacbde78b152275c9c34dcb33c04a612c5c7cfd1ae9cfbc48441",
+    "frames": 1
+   },
+   "test-synthetic": {
+    "k": 2,
+    "runtimeUse": "lab",
+    "sha256": "synthetic",
+    "frames": 103
+   }
+  }
+ }
+]

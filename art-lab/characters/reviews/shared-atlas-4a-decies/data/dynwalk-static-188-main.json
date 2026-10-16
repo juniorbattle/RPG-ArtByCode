@@ -1,0 +1,270 @@
+{
+ "name": "static-188-main",
+ "query": "seed=1842&forge=normal&clean=1&freeze=7.3&intro=0&baked=dockworker-x2-v1&bakeddetail=crowd&bakedscale=0.9&bakedheight=1.7&bakedhide=porter&bakedpos=-6.5,0.4;6.6,-0.9;18.6,-0.6",
+ "start": "-12.5,1.0",
+ "route": "g=-9,2.0;g=-2,2.9;g=3,2.7;g=7,1.2;g=9.6,1.0;g=12.4,1.9;g=16,1.0;g=22,1.2",
+ "frames": 881,
+ "framings": "ABCD",
+ "blendFrames": 200,
+ "occlusionFrames": 0,
+ "sum": {
+  "a0": {
+   "A": {
+    "frames": 104,
+    "ppt": [
+     0.987,
+     1.016
+    ],
+    "churn": {
+     "med": 9.1,
+     "p90": 20.6,
+     "max": 28.7
+    },
+    "shape": {
+     "med": 4.6,
+     "p90": 9.3,
+     "max": 12.8
+    },
+    "ringDarkMed": 0
+   },
+   "blend": {
+    "frames": 123,
+    "ppt": [
+     1.016,
+     3.714
+    ],
+    "churn": {
+     "med": 20.8,
+     "p90": 31.4,
+     "max": 35.1
+    },
+    "shape": {
+     "med": 7,
+     "p90": 15.4,
+     "max": 19.6
+    },
+    "ringDarkMed": 7.8
+   },
+   "B": {
+    "frames": 256,
+    "ppt": [
+     2.003,
+     2.685
+    ],
+    "churn": {
+     "med": 4.5,
+     "p90": 8.3,
+     "max": 15.3
+    },
+    "shape": {
+     "med": 2.5,
+     "p90": 4.6,
+     "max": 7.7
+    },
+    "ringDarkMed": 6.2
+   },
+   "C": {
+    "frames": 19,
+    "ppt": [
+     3.718,
+     3.789
+    ],
+    "churn": {
+     "med": 7,
+     "p90": 8.8,
+     "max": 11.3
+    },
+    "shape": {
+     "med": 4.4,
+     "p90": 5.1,
+     "max": 5.6
+    },
+    "ringDarkMed": 17
+   }
+  },
+  "a1": {
+   "A": {
+    "frames": 104,
+    "ppt": [
+     0.711,
+     0.725
+    ],
+    "churn": {
+     "med": 4.8,
+     "p90": 15.8,
+     "max": 24.3
+    },
+    "shape": {
+     "med": 3.6,
+     "p90": 8.1,
+     "max": 13.9
+    },
+    "ringDarkMed": 0
+   },
+   "blend": {
+    "frames": 200,
+    "ppt": [
+     0.726,
+     2.452
+    ],
+    "churn": {
+     "med": 12.6,
+     "p90": 47.7,
+     "max": 93.2
+    },
+    "shape": {
+     "med": 5.2,
+     "p90": 25.4,
+     "max": 90
+    },
+    "ringDarkMed": 7.4
+   },
+   "B": {
+    "frames": 256,
+    "ppt": [
+     1.351,
+     1.63
+    ],
+    "churn": {
+     "med": 11.2,
+     "p90": 17.7,
+     "max": 29.3
+    },
+    "shape": {
+     "med": 7.4,
+     "p90": 12.5,
+     "max": 23.4
+    },
+    "ringDarkMed": 4.6
+   },
+   "C": {
+    "frames": 201,
+    "ppt": [
+     2.181,
+     2.452
+    ],
+    "churn": {
+     "med": 4.4,
+     "p90": 7.7,
+     "max": 10.5
+    },
+    "shape": {
+     "med": 2.5,
+     "p90": 4.5,
+     "max": 7
+    },
+    "ringDarkMed": 4.9
+   },
+   "D": {
+    "frames": 119,
+    "ppt": [
+     2.107,
+     2.268
+    ],
+    "churn": {
+     "med": 5.8,
+     "p90": 19.4,
+     "max": 36.4
+    },
+    "shape": {
+     "med": 2.7,
+     "p90": 10.3,
+     "max": 30.4
+    },
+    "ringDarkMed": 9
+   }
+  },
+  "a2": {
+   "A": {
+    "frames": 104,
+    "ppt": [
+     0.569,
+     0.578
+    ],
+    "churn": {
+     "med": 1.7,
+     "p90": 13.5,
+     "max": 18.2
+    },
+    "shape": {
+     "med": 1.3,
+     "p90": 6.6,
+     "max": 8.9
+    },
+    "ringDarkMed": 0
+   },
+   "blend": {
+    "frames": 196,
+    "ppt": [
+     0.578,
+     1.755
+    ],
+    "churn": {
+     "med": 21.6,
+     "p90": 69.4,
+     "max": 100
+    },
+    "shape": {
+     "med": 12.6,
+     "p90": 66.7,
+     "max": 100
+    },
+    "ringDarkMed": 13.2
+   },
+   "B": {
+    "frames": 232,
+    "ppt": [
+     1.058,
+     1.223
+    ],
+    "churn": {
+     "med": 16.2,
+     "p90": 45.8,
+     "max": 100
+    },
+    "shape": {
+     "med": 14.4,
+     "p90": 37.9,
+     "max": 100
+    },
+    "ringDarkMed": 40
+   },
+   "C": {
+    "frames": 201,
+    "ppt": [
+     1.611,
+     1.755
+    ],
+    "churn": {
+     "med": 45.5,
+     "p90": 63.6,
+     "max": 89.5
+    },
+    "shape": {
+     "med": 42.9,
+     "p90": 63.3,
+     "max": 89.5
+    },
+    "ringDarkMed": 19.5
+   },
+   "D": {
+    "frames": 119,
+    "ppt": [
+     1.755,
+     1.866
+    ],
+    "churn": {
+     "med": 8.5,
+     "p90": 21.9,
+     "max": 37.8
+    },
+    "shape": {
+     "med": 7.6,
+     "p90": 19.6,
+     "max": 36.3
+    },
+    "ringDarkMed": 55
+   }
+  }
+ }
+}

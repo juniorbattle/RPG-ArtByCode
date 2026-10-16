@@ -1200,20 +1200,152 @@ Preuves (hors dépôt) : `art-lab/characters/scratch/e2-x2-candidate/scene/dyn/`
   JSON d'Aseprite est même écrit en CRLF. Règle désormais : texte (`.json .mjs .js .ts .md .txt`) haché en LF, binaires tels quels (`hashRule` dans `PROVENANCE.json`), testé sur
   une copie CRLF simulée (5 / 5).
 
+## Passe 4A-nonies — Vérification de provenance de la planche source et contrat d'intégration v2 (rien d'implémenté, 2026-10-16)
+
+### Décisions opérateur (2026-10-16)
+- Commit local `eecea58` accepté comme étape préparatoire, à garder intact ; ni push ni fusion sans autorisation.
+- Déclaration de l'opérateur : les planches originales de référence de Cité du Tournoi ont été générées avec ChatGPT / OpenAI sous notre direction artistique. Demande :
+  vérifier que `4.webp` en est une (et non une inspiration externe), sans déduire de métadonnée ni fabriquer de preuve ; statut inchangé tant que ce n'est pas vérifié.
+- Contrat : direction **approuvée en principe** (un `SpriteRenderer` commun, plusieurs densités, un atlas unifié), **implémentation non autorisée** ; présenter le contenu,
+  les 6 tests, les 10 risques et les fichiers touchés (compatibilité 32 × 48, ancrage des pieds, filtrage, animations futures, mémoire GPU, batching).
+- Deuxième PNJ original : pas avant validation du contrat **et** de la méthode de création de la nouvelle source artistique.
+
+### Provenance de `4.webp` — [?] plausible, non démontrable depuis le fichier
+- **Identité** : `4.webp` = images 1, 4 et 5 collées par l'opérateur dans cette séance (15/10, 21:32:58 et 22:51:56 UTC), octet pour octet (SHA-256 `1c3bc603…36ce`,
+  302 814 o), = `scratch/e2-x2-candidate/input/reference-sheet-4.webp`. Aucune déclaration d'origine en séance avant celle du 16/10.
+- **Contenu** : titre « Cité du Tournoi — Merchant District — Night », « NPC SPRITE PRODUCTION REFERENCE — 16 GENERIC TOWNSFOLK (UNIFIED STYLE & SCALE) », 16 personnages
+  numérotés × 4 vues ; l'image 2 continue la série (n° 17-24, même en-tête), l'image 3 porte aussi le nom du projet. Le nom du projet fait partie de la composition : rien
+  n'indique une œuvre extérieure — ce n'est pas pour autant une preuve d'auteur ou d'outil.
+- **Fichier** : WebP VP8 avec pertes, 1448 × 1086, un seul bloc de métadonnées = profil ICC sRGB générique de 456 o (copyright « Google Inc. 2016 », typique d'un encodeur
+  Chromium / Skia) ; ni EXIF, ni XMP, ni C2PA. Les 3 images collées ont le même profil → **copies transcodées par le copier-coller**, pas les fichiers d'origine.
+- **Indice, pas preuve** : 1448 × 1086 (et 1122 × 1402 pour l'image 3, pendant portrait de 1402 × 1122) sont des tailles natives de ChatGPT : sur cette machine, des PNG
+  « ChatGPT Image … » (mai 2026) à ces tailles portent un manifeste C2PA d'OpenAI ; aucune image Gemini locale n'a ces tailles.
+- **Original introuvable localement** : inventaire en lecture seule de 24 674 images (Bureau, Téléchargements, Documents, Images, Vidéos ; OneDrive par nom seulement, rien lu
+  pour ne pas télécharger de fichier cloud) : aucun « ChatGPT Image » postérieur au 30/08/2026 lié à ce projet ; comparaison en vignettes 96 × 72 avec les 34 images 4:3 :
+  meilleur écart 30,1, contre 23,1 pour la planche sœur (image 2) et 0 pour elle-même → aucun original sur le disque.
+- **Conclusion** : cohérent avec la déclaration, **non vérifié**. Aucun fichier de provenance modifié ; manifeste inchangé (`approved` visuel, `runtimeUse: "lab"`), droits
+  « UNCONFIRMED ». Voie de preuve : l'opérateur récupère l'original dans son compte ChatGPT (bibliothèque ou conversation, PNG téléchargé) → vérification de la présence et du
+  contenu du manifeste C2PA (émetteur OpenAI) et de la correspondance visuelle (copie avec pertes : comparaison par écart, pas par empreinte), puis documentation. La
+  validation cryptographique de la signature demanderait un outil (`c2patool`) à installer : sur autorisation seulement.
+
+### Contrat d'intégration v2 (proposition, rien d'implémenté)
+- `art-lab/characters/runtime-integration-contract.md` : sections **8 (compatibilité)** et **9 (fichiers touchés)** ajoutées après relecture du code et mesures dans l'appli
+  (graine 1842) ; test 1 dédoublé (a : aucun asset chargé → atlas identique à l'octet ; b : asset chargé mais non placé → image identique au pixel) ; R11 (lecture de la case
+  voisine au bord d'un quad), R12 (vue de côté miroir pour les orientations futures).
+- **Mesures** : dernière rangée opaque **45 dans 232 des 234 cases générées** (les 2 bulles : 43), ×2 v1 : **90** ; **0 texel opaque sur le pourtour** de chaque case (générées
+  et ×2 v1, marges G 13 / D 10 / H 2 / B 5) ; 0 texel semi-transparent dans le ×2 v1 ; atlas 512 × 720 ; `MAX_TEXTURE_SIZE` 16 384 sur cette machine.
+- **[KO → corrigé]** La v1 annonçait un plafond de 4 096 texels : WebGL2 ne garantit que 2 048 → **104 images ×2** à largeur 512, contrôle au démarrage.
+- Points précisés : la foule tire ses places en évitant une liste `taken` (y ajouter les PNJ cuits déplacerait la foule → ajout en fin de `populate`, chevauchement signalé) ;
+  `Actor.height` (ombres, bulle) est distinct de `scale` ; `frameIndex` ignore les durées Aseprite (cadences fixes) ; l'émissif occupe 1 canal sur 4 (R8 = −37,5 %, hors contrat).
+
+### Erreurs de méthode
+- **[KO → corrigé]** `cat > "$TMPDIR/…"` sans heredoc a attendu l'entrée standard (commande bloquée, fichier vide créé dans le Temp, supprimé) ; un `find` sur tout le profil a
+  dépassé 5 min → inventaire Node ciblé (dossiers lourds sautés, OneDrive par nom seulement).
+
+## Passe 4A-decies — Contrat v3 amendé, implémentation expérimentale de l'atlas partagé (flag dev, rien en production, 2026-10-16)
+
+### Décisions opérateur (2026-10-16)
+1. **Provenance** : « Je confirme que nos planches de référence originales ont été créées avec ChatGPT sous ma direction artistique. » À
+   enregistrer comme **déclaration opérateur**, distincte d'une provenance vérifiée ; aucune métadonnée fabriquée ; vérifications à compléter
+   si le PNG original revient. Expériences locales autorisées, **production bloquée**.
+2. **Contrat v2 accepté avec amendements** — principes : un `SpriteRenderer` partagé, un atlas 32 × 48 + 64 × 96, aucun changement de shader
+   de production si les invariants suffisent, ancrage / DOF / éclairage / ombres / occlusion conservés, **rendu des personnages existants
+   inchangé**, pas de LOD, environnement intact. A : prouver que l'agrandissement de l'atlas garde exactement les anciens pixels et le rendu
+   32 × 48 malgré les nouvelles UV normalisées ; B : repli face / repos seulement pour un asset expérimental immobile et explicite, en
+   production chaque orientation / animation nécessaire est validée, aucune absence masquée ; C : comparer module TS généré et PNG / atlas
+   précuits versionnés (build, bundle, chargement, mémoire, appels de dessin), le plus simple à qualité identique.
+3. Implémentation expérimentale autorisée **sous flag dev** ; six tests avec contrôles négatifs ; générateur, caméras, reveal intouchés ;
+   s'arrêter si une contrainte sort du périmètre.
+4. Deuxième PNJ : stratégie validée (source originale, archétype distinct du docker — **artisane ou marchande** d'abord —, qualité au moins
+   ×2 v1, reconstruction ×2, finition Aseprite limitée aux défauts réels, critique indépendante, validation en scène) ; **pas pendant
+   l'implémentation**. Garder `eecea58` et sa provenance, commit local permis, rien poussé / fusionné, arrêt avant toute activation production.
+
+### Provenance — [OK] déclaration enregistrée, [?] non vérifiée
+- `provenance/dockworker-x2-v1/source-declaration.json` (nouveau ; aucun fichier de `eecea58` modifié, `verify-provenance` : intact) :
+  phrase de l'opérateur citée, nature « déclaration, pas une preuve », faits techniques (aucune métadonnée, copie transcodée, taille native
+  ChatGPT = indice, original introuvable), « rien n'est déduit », conséquences (local oui, production non), étapes si l'original revient.
+  `verify-provenance.mjs` l'affiche à part (non hachée). README des personnages à jour.
+
+### Implémentation (flag dev `?baked=`)
+- `BakedSprites.ts` (types, `requiredFrames`, `checkBakedSheet`) ; `SpriteAtlas.build(specs, baked, maxTextureSize)` : blocs cuits rangés
+  **dans les rangées de données au-dessus** des cases générées (octets et expressions UV des cases générées inchangés), alias face / repos
+  **explicites et listés** ; `ActorSystem` : apparitions écrites ajoutées après toutes celles de la graine, hors `taken`, refusées avec une
+  erreur explicite s'il manque une image requise ; `spawn` accepte un `t` (plus d'appel à `Math.random` pour elles) ; `App` / `main.ts` :
+  chargeur DEV en import dynamique ; `src/lab/bakedLoader.ts` : barrière manifeste, SHA-256 contre le paquet de provenance, décodage PNG exact,
+  tags Aseprite `<anim>-<dir>`, harnais de mesure. **`SpriteRenderer.ts` et tous les shaders : non modifiés** (B se règle avant l'apparition).
+- Outils : `tools/art-lab/baked-proof.mjs` (captures déterministes, parade, auto-test, règles, acteurs), `png.mjs`, `storage-bench.mjs`,
+  `dynwalk.mjs` + `dynwalk-report.mjs` (sortis de `scratch/`, compatibles avec les deux chemins). Bundle de production 818 648 → 822 553 o
+  (+3,9 Ko : code de l'atlas partagé, inerte sans feuille cuite) ; chargeur DEV absent du bundle (vérifié par chaînes).
+
+### Résultats (base = arbre `eecea58` servi sur :5181 ; détail : contrat section 12, preuves `reviews/shared-atlas-4a-decies/`)
+- **[OK] Test 1** : atlas sans feuille cuite identique à l'octet ; cadrages A-D avec personnages et `static=1` : 0 px (8 vues) ; feuille chargée
+  non placée (atlas 816) : rangées générées identiques, 0 px (8 vues). **Parade** des 234 images générées, atlas 720 / 816 / 1968 : 0 px
+  (27 rendus) ; **contrôle négatif** (UV normalisées par l'ancienne hauteur) : 480 000 à 1 200 000 px.
+- **[?] Amendement A — égalités de texel** : balayage de 17 échelles : 816 → 0 / 51 rendus ; 1968 → **1 rendu sur 51** (échelle 2,1 :
+  1 032 px sur 5 lignes). Et un cas réel à 816 : **caméra C, le héros, 16 px sur une ligne** (test 3). Mécanisme : un bord de texel tombe
+  exactement au centre d'une ligne de pixels ; `floor(vUv × H)` départage l'égalité par l'arrondi flottant, qui dépend de la hauteur de
+  l'atlas. Les deux résultats sont des échantillons justes (le bord se déplace d'une ligne de pixels), mais l'image n'est plus identique au
+  bit. Les octets, eux, ne bougent jamais.
+- **[OK] Test 2** : bloc ×2 dans l'atlas principal = export décodé indépendamment (0 octet) ; échantillonnage GPU aux échelles 1 / 2 / 3 /
+  2,37 : 0 texel faux ; contrôles négatifs (rangée décalée d'une ligne : 6 616 ; linéaire non centré : 10 804).
+- **[OK] Test 3** : 12 PNJ ×2 aux places de 4A-sexies, ancien renderer d'aperçu vs renderer principal : **0 px sur chaque PNJ ×2** (A-D) ;
+  le seul écart de l'image (C, héros) est l'effet A ci-dessus (l'aperçu garde un atlas de 720 rangées).
+- **Test 4** : **[OK]** même outil (`dynwalk.mjs`, `Math.random` à graine, horloge figée par image), routes de 4A-septies. Quai 1,88 m, churn
+  médian chemin partagé / ancien aperçu / 4A-septies : A 5,8 / 5,7 / 5,7, B 7,6 / 7,6 / 7,5, C 9,4 / 9,4 / 9,4, D 10,2 / 10,2 / 10,2, transitions
+  11,4 / 11,5 / 11,4 ; 881 images, aucune sans le sprite. PNJ fixes (3 PNJ × 5 groupes = 14 couples) : à moins de **0,8 point** de 4A-septies
+  partout ; le PNJ n° 3 sort du masque sur 20 images, les mêmes que dans 4A-septies (occlusion du décor, pas une disparition). Le témoin
+  « PNJ fixes » par l'ancien aperçu a été arrêté (une heure de plus ; le témoin du quai montrait déjà 0,1 point d'écart).
+- **[OK] Test 5** (caméra B, 3 tours, bruit jusqu'à ±1 ms cette session) : base 9,91 ms GPU, 114 appels ; ×2 partagé 1 / 8 / 32 PNJ 10,21 /
+  10,12 / 10,21 ms, **114 appels** ; porteurs actuels 8 / 32 : 10,20 / 11,12 ms ; ancien aperçu ×2 32 : 10,52 ms, **118 appels (+4)** ;
+  atlas +393 Ko (512 × 816).
+- **[OK] Test 6** : typecheck, build, `art:validate` (0 erreur) ; graines 1842 / 7719 / 30417 : les 11 personnages de la graine identiques à
+  `eecea58`, les ×2 seulement ajoutés à la fin. **Règles B** 8 / 8 : PNJ interactif sans repli → refusé (« missing frames up/idle,
+  side/idle ») ; PNJ de foule jamais tourné → accepté ; avec orientation → refusé ; repli explicite → accepté, alias listés ; mot-clé
+  inconnu, `?baked` + `?labsprite`, asset sans paquet de provenance, id inconnu → refusés ; contrôles de feuille sur 8 feuilles fabriquées.
+
+### Amendement C — [OK] mesuré, décision proposée : PNG versionné (C2)
+- Builds de production (3 chacun), `vite preview`, cache coupé : module TS **+33 433 o de JS** (+5 034 gzip) pour une seule image ×2 ;
+  PNG **+1 891 o de JS** (+957 gzip, décodeur) + fichier de 5 196 o. Chargeur seul : 0,2 ms (module) contre 10,6-14,6 ms (PNG : requête +
+  empreinte + décodage), recouvert par le démarrage (temps jusqu'à prêt identique au bruit près). Atlas **identique à l'octet** entre les deux,
+  mêmes appels de dessin, build identique au bruit près. Le module duplique dans Git des pixels déjà suivis et hachés (l'export) et grossit
+  le JS linéairement (≈ 1,6 Mo pour un PNJ de 48 images, extrapolation) ; le PNG garde **une seule source** et le chargeur déjà utilisé.
+
+### Erreurs de méthode (pour ne pas les refaire)
+- **[KO → corrigé]** Captures « identiques » qui ne l'étaient pas : écran de chargement en fondu sur le canvas, bulle qui lit
+  `performance.now`, **RNG propre des particules** (`Rng(99)`) qui tourne entre chargements, et **premier chargement d'un cadrage** dans une
+  session de navigateur différent des suivants (69 634 px en A) → attente du retrait du chargement, horloge figée, RNG remis à zéro, une
+  chauffe par cadrage, et un **témoin de répétition** (deux chargements : 0 px) avant toute comparaison.
+- **[KO → corrigé]** Contrôle négatif « mauvaise hauteur d'atlas » invalide : la requantification au plus proche l'annule (0 écart) →
+  remplacé par une rangée décalée. Un contrôle négatif se vérifie lui-même.
+- **[KO → corrigé]** Attendu de l'auto-test calculé avec l'échelle demandée (2,37) au lieu de la taille arrondie de la cible (2,375).
+- **[KO → corrigé]** `src/` modifié pendant une série sur le même serveur dev → rechargement HMR, une mesure perdue (graine 1842), relancée.
+- **[KO → corrigé]** Premier recadrage du test 3 fait sur le **héros** (positions supposées ; `tools/eval.mjs` tourne en 1280 × 720, les
+  captures en 1920 × 1080) → recadrage par projection. C'est ce recadrage qui a montré que l'écart de C portait sur le héros (effet A).
+- **[KO → corrigé]** Test 4, première marche du chemin partagé : churn de A à 17 % (4A-septies : 5,7). Cause : pour isoler le sprite, le
+  harnais recalcule les instances ; les **bulles de dialogue lisent l'horloge** et bougeaient entre les rendus « avec » et « sans », donc
+  entraient dans le masque (hauteur 185 px au lieu de 107). L'ancien aperçu ne recalculait que son propre renderer. Correction dans l'outil
+  (`dynwalk.mjs` : une horloge figée par image), vérifiée sur 32 images (masque 107 px, churn image par image = celui de 4A-septies), puis
+  marche refaite. Pensée : une mesure par différence « avec / sans » doit figer tout ce qui bouge entre ses deux rendus.
+- Le serveur dev :5180 de la passe précédente tournait encore (arrêter la tâche ne tue pas `vite.js`) ; un fichier absent est servi comme
+  `index.html` (200) par le serveur dev → le chargeur exige une réponse JSON.
+
 ---
 
 ## À reprendre (par priorité)
 
-**-1. PROCHAIN : validation opérateur de la Passe 4A-octies** — (a) commit local proposé de la conservation (`dockworker-x2-v1` : manifeste `approved` + `runtimeUse: "lab"`,
-source, export, paquet de provenance, outils, preuves) ; (b) **origine et droits de la planche source** à confirmer (bloquant pour toute production ; la planche n'est pas dans Git,
-seule copie dans `scratch/`) ; (c) contrat `art-lab/characters/runtime-integration-contract.md` à valider avant toute implémentation. Ensuite : **deuxième PNJ original** de même
-qualité (nouveau contrat). Pas de roster, de refonte du héros, d'animations complètes, de LOD.
+**-1. PROCHAIN : arbitrage opérateur de la Passe 4A-decies** — (a) **amendement A** : les octets des cases générées ne bougent jamais,
+mais aux égalités exactes de texel le rendu 32 × 48 peut changer d'une ligne de pixels quand l'atlas grandit (héros en C à 816 rangées ;
+1 rendu / 51 à 1968) → choisir : adressage entier `texelFetch` (shader de production), hauteur d'atlas fixe (+5 Mo GPU), accepter avec
+budget de croissance prouvé par balayage, ou seconde page (+ appels, refusé par la règle de batching) ; (b) confirmer **C2** (PNG versionné)
+pour une future tâche de production ; (c) **original PNG de la planche** (déclaration opérateur enregistrée, non vérifiée : production
+bloquée). Ensuite : **deuxième PNJ original** (artisane ou marchande), nouvelle source **téléchargée en PNG d'origine** (C2PA conservé, jamais
+un copier-coller), brief puis reconstruction ×2 ; pas pendant l'implémentation technique. Commits locaux seulement ; rien poussé.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
 tramée ; la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un nouvel occluder.
 Avant d'étendre : densité du cast (héros), liseré dépendant de la densité, largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A, personnage **original** au même niveau.
 Pas de roster, de généralisation ni de personnage clé ; E4 **non lancée**. Le modelé ×1,5 n'est plus la voie principale. Décisions ouvertes : liseré par sprite (non implémenté),
-origine / droits de la planche de référence, son stockage dans `reference/`, quelles planches étaient réellement rejetées. `porter-gm-v1` reste une baseline expérimentale.
+preuve d'origine de la planche de référence (voir -1), son stockage dans `reference/`, quelles planches étaient réellement rejetées. `porter-gm-v1` reste une baseline expérimentale.
 Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, test de fumée `smoke-test/4a0b/` après toute mise à jour (épinglé 0.8.2, auto-update coupé), critique par agent neuf (cf. `art-lab/README.md`).
 -0b. **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise appli. Servir les baselines sur `:518x --strictPort` ;
   décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
@@ -1288,3 +1420,12 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   explicite + droits confirmés). Une source aux droits non confirmés s'archive par empreinte, jamais par copie dans Git.
 - Plusieurs densités de sprites partagent un seul renderer si chaque densité *k* garde le même rectangle monde (cadre 32k × 48k, pieds à 45k) : la densité est une affaire
   d'atlas, la hauteur une affaire d'instance.
+- Une image qui sert de référence se garde **dans son fichier d'origine** (PNG téléchargé, manifeste C2PA intact) dès le premier jour : une copie collée en séance est transcodée
+  et perd toute provenance. Une correspondance visuelle se chiffre contre des témoins (elle-même = 0, planche sœur = 23) avant d'être affirmée ou exclue.
+- Un plafond matériel se cite au minimum **garanti** par la norme (WebGL2 : 2 048), pas à la valeur de la machine de développement.
+- Une preuve « pixel-identique » exige une capture déterministe : `Math.random` à graine, pas fixes, horloge figée, RNG internes remis à
+  zéro, une chauffe par cadrage, et un témoin de répétition (deux chargements : 0 px) **avant** toute comparaison.
+- Des octets identiques ne garantissent pas une image identique : `floor(vUv × taille)` départage les égalités exactes (bord de texel au centre
+  d'un pixel) selon la taille de la texture. Toute croissance d'atlas se prouve par un balayage d'échelles, pas par quelques captures.
+- Ne jamais modifier `src/` pendant une série de mesures sur le même serveur dev (rechargement HMR) ; recadrer une preuve par projection,
+  jamais par supposition.

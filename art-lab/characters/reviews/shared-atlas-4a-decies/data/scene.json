@@ -1,0 +1,254 @@
+[
+ {
+  "view": "camera=A&player=-12,2",
+  "variant": "baseline-eecea58",
+  "reference": true
+ },
+ {
+  "view": "camera=A&player=-12,2",
+  "variant": "baseline-repeat",
+  "vs": "baseline-eecea58",
+  "pixels": 69634,
+  "maxDelta": 69,
+  "box": [
+   0,
+   0,
+   1651,
+   1080
+  ]
+ },
+ {
+  "view": "camera=A&player=-12,2",
+  "variant": "new-no-baked",
+  "vs": "baseline-eecea58",
+  "pixels": 69634,
+  "maxDelta": 69,
+  "box": [
+   0,
+   0,
+   1651,
+   1080
+  ]
+ },
+ {
+  "view": "camera=A&player=-12,2",
+  "variant": "new-baked-not-spawned",
+  "vs": "baseline-eecea58",
+  "pixels": 69634,
+  "maxDelta": 69,
+  "box": [
+   0,
+   0,
+   1651,
+   1080
+  ]
+ },
+ {
+  "view": "camera=B&player=2,1.5",
+  "variant": "baseline-eecea58",
+  "reference": true
+ },
+ {
+  "view": "camera=B&player=2,1.5",
+  "variant": "baseline-repeat",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=B&player=2,1.5",
+  "variant": "new-no-baked",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=B&player=2,1.5",
+  "variant": "new-baked-not-spawned",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=8,1.5",
+  "variant": "baseline-eecea58",
+  "reference": true
+ },
+ {
+  "view": "camera=C&player=8,1.5",
+  "variant": "baseline-repeat",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=8,1.5",
+  "variant": "new-no-baked",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=8,1.5",
+  "variant": "new-baked-not-spawned",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&player=18,2",
+  "variant": "baseline-eecea58",
+  "reference": true
+ },
+ {
+  "view": "camera=D&player=18,2",
+  "variant": "baseline-repeat",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&player=18,2",
+  "variant": "new-no-baked",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&player=18,2",
+  "variant": "new-baked-not-spawned",
+  "vs": "baseline-eecea58",
+  "pixels": 9,
+  "maxDelta": 95,
+  "box": [
+   253,
+   974,
+   4,
+   3
+  ]
+ },
+ {
+  "view": "camera=A&player=-12,2&static=1",
+  "variant": "baseline-eecea58",
+  "reference": true
+ },
+ {
+  "view": "camera=A&player=-12,2&static=1",
+  "variant": "baseline-repeat",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=A&player=-12,2&static=1",
+  "variant": "new-no-baked",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=A&player=-12,2&static=1",
+  "variant": "new-baked-not-spawned",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=B&player=2,1.5&static=1",
+  "variant": "baseline-eecea58",
+  "reference": true
+ },
+ {
+  "view": "camera=B&player=2,1.5&static=1",
+  "variant": "baseline-repeat",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=B&player=2,1.5&static=1",
+  "variant": "new-no-baked",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=B&player=2,1.5&static=1",
+  "variant": "new-baked-not-spawned",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=8,1.5&static=1",
+  "variant": "baseline-eecea58",
+  "reference": true
+ },
+ {
+  "view": "camera=C&player=8,1.5&static=1",
+  "variant": "baseline-repeat",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=8,1.5&static=1",
+  "variant": "new-no-baked",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=8,1.5&static=1",
+  "variant": "new-baked-not-spawned",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&player=18,2&static=1",
+  "variant": "baseline-eecea58",
+  "reference": true
+ },
+ {
+  "view": "camera=D&player=18,2&static=1",
+  "variant": "baseline-repeat",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&player=18,2&static=1",
+  "variant": "new-no-baked",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&player=18,2&static=1",
+  "variant": "new-baked-not-spawned",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ }
+]

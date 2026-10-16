@@ -97,6 +97,18 @@ the same world size (density = frame height / 48). For those: `labdetail=hero|mi
 framings), `spritelight=sat,chroma,edge,vertMin,tone,overlay,unlit` (character lighting treatment; `,,0` = no silhouette edge). Full list in
 the header of `src/lab/runtimePreview.ts`.
 
+### Shared atlas, experimental (dev only): `?baked=<id>`
+
+The path the integration contract (`characters/runtime-integration-contract.md`, v3) puts in the game, still behind a DEV flag: the
+export joins the **main** atlas (blocks above the generated cells, their bytes untouched) and is drawn by the **main** renderer (no second
+renderer, no extra draw call). The loader (`src/lab/bakedLoader.ts`) needs a manifest with runtime use and a provenance pack whose SHA-256
+matches the PNG, decodes it byte-exact, and refuses a spawn whose sheet lacks a frame its behaviour needs (amendment B); `bakedfallback=front-idle`
+declares the front-idle aliases explicitly (lab, immobile only). Spawns: `bakedpos=x,z;x,z` (absent = loaded, not spawned), `bakedscale`,
+`bakedheight`, `bakeddetail`, `bakedface`; `bakedhide=porter`, `bakedfollow=1` as above. Example:
+`?seed=1842&clean=1&freeze=7.3&intro=0&camera=B&player=-4.6,0.6&baked=dockworker-x2-v1&bakeddetail=crowd&bakedscale=0.9&bakedpos=-2.2,3.3`.
+Proofs: `tools/art-lab/baked-proof.mjs` (atlas bytes, deterministic scene / parade captures, self-test, rules, actors),
+`tools/art-lab/storage-bench.mjs` (amendment C), `tools/art-lab/dynwalk.mjs` + `dynwalk-report.mjs` (walks; both paths).
+
 ### Critique workflow (replaces `aseprite:pixel-critic`, which cannot see the sprite in 0.8.2)
 
 A fresh, independent agent with only a Read tool gets an evidence pack: the 8x render, an ASCII pixel map with coordinates

@@ -26,6 +26,13 @@ const sheet = P.source?.sheet;
 if (opt.sheet) {
   if (sha(opt.sheet) !== sheet.sha256) { console.log(`SHEET    ${opt.sheet} does not match the recorded source sheet`); bad++; } else console.log(`ok       source sheet (${sheet.sha256.slice(0, 16)}...)`);
 } else console.log(`skip     source sheet: not stored in the repo (${sheet?.storage ?? 'see PROVENANCE.json'}); pass --sheet to check it`);
+// an operator declaration about the source (not hashed, never a proof): reported so nobody mistakes it for a verified provenance
+const declFile = path.join(dir, 'source-declaration.json');
+if (fs.existsSync(declFile)) {
+  const D = JSON.parse(fs.readFileSync(declFile, 'utf8'));
+  if (D.subject?.sha256 !== sheet?.sha256) { console.log('DECL     source-declaration.json names another sheet than PROVENANCE.json'); bad++; }
+  else console.log(`note     source: ${D.declaration.by}, ${D.declaration.date}: OPERATOR DECLARATION, ${D.verification.status}; production ${D.consequences.production.split(':')[0]}`);
+}
 if (opt.rebuild) {
   if (!opt.sheet) { console.error('--rebuild needs --sheet'); process.exit(2); }
   const R = P.reconstruction, tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'artlab-rebuild-')), pre = path.join(tmp, 'x');

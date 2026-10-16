@@ -1,0 +1,104 @@
+{
+ "name": "quay-188-main",
+ "query": "seed=1842&forge=normal&clean=1&freeze=7.3&intro=0&baked=dockworker-x2-v1&bakeddetail=crowd&bakedscale=0.9&bakedheight=1.7&bakedhide=porter&bakedfollow=1&bakedpos=-12.5,1.0",
+ "start": "-12.5,1.0",
+ "route": "g=-9,2.0;g=-2,2.9;g=3,2.7;g=7,1.2;g=9.6,1.0;g=12.4,1.9;g=16,1.0;g=22,1.2",
+ "frames": 881,
+ "framings": "ABCD",
+ "blendFrames": 200,
+ "occlusionFrames": 0,
+ "sum": {
+  "a0": {
+   "A": {
+    "frames": 104,
+    "ppt": [
+     1.091,
+     1.198
+    ],
+    "churn": {
+     "med": 5.8,
+     "p90": 8.2,
+     "max": 10.3
+    },
+    "shape": {
+     "med": 4,
+     "p90": 5.5,
+     "max": 7.8
+    },
+    "ringDarkMed": 3.7
+   },
+   "blend": {
+    "frames": 200,
+    "ppt": [
+     1.088,
+     2.315
+    ],
+    "churn": {
+     "med": 11.4,
+     "p90": 20.2,
+     "max": 22.4
+    },
+    "shape": {
+     "med": 7,
+     "p90": 10.2,
+     "max": 14
+    },
+    "ringDarkMed": 33.6
+   },
+   "B": {
+    "frames": 256,
+    "ppt": [
+     1.866,
+     2.034
+    ],
+    "churn": {
+     "med": 7.6,
+     "p90": 11.8,
+     "max": 18.5
+    },
+    "shape": {
+     "med": 3.9,
+     "p90": 6.9,
+     "max": 15.5
+    },
+    "ringDarkMed": 19
+   },
+   "C": {
+    "frames": 201,
+    "ppt": [
+     2.04,
+     2.309
+    ],
+    "churn": {
+     "med": 9.4,
+     "p90": 24.1,
+     "max": 32
+    },
+    "shape": {
+     "med": 7.2,
+     "p90": 13.4,
+     "max": 19.3
+    },
+    "ringDarkMed": 34.5
+   },
+   "D": {
+    "frames": 119,
+    "ppt": [
+     1.882,
+     1.919
+    ],
+    "churn": {
+     "med": 10.2,
+     "p90": 15.2,
+     "max": 18.7
+    },
+    "shape": {
+     "med": 7.5,
+     "p90": 12.1,
+     "max": 15.1
+    },
+    "ringDarkMed": 56.6
+   }
+  }
+ }
+}

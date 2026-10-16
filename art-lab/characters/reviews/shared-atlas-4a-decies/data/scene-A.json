@@ -1,0 +1,31 @@
+[
+ {
+  "view": "camera=A&player=-12,2",
+  "variant": "baseline-eecea58",
+  "reference": true
+ },
+ {
+  "view": "camera=A&player=-12,2",
+  "variant": "baseline-repeat",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=A&player=-12,2",
+  "variant": "new-no-baked",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=A&player=-12,2",
+  "variant": "new-baked-not-spawned",
+  "vs": "baseline-eecea58",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ }
+]

@@ -1,0 +1,36 @@
+{
+  "kind": "operator-provenance-declaration",
+  "id": "dockworker-x2-v1",
+  "subject": {
+    "description": "source reference sheet \"16 generic townsfolk\" (Cite du Tournoi, Merchant District - Night) from which dockworker-x2-v1 was reconstructed",
+    "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce"
+  },
+  "declaration": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-10-16",
+    "statement": "Je confirme que nos planches de référence originales ont été créées avec ChatGPT sous ma direction artistique.",
+    "nature": "OPERATOR DECLARATION. It is NOT a cryptographically verified provenance and NOT a technical proof that this file is one of those sheets."
+  },
+  "verification": {
+    "status": "not verified (no technical proof available)",
+    "date": "2026-10-16",
+    "facts": [
+      "the file carries no provenance metadata: WebP (VP8) 1448 x 1086 whose only metadata is a generic 456-byte sRGB ICC profile; no EXIF, XMP or C2PA",
+      "it is a byte-identical copy of images pasted by the operator in a working session (2026-10-15); the three sheets pasted that day share the same ICC profile, i.e. they are transcoded copies, not the original files",
+      "the sheet's own title names the project (Cite du Tournoi, Merchant District - Night); a second pasted sheet continues its numbering (17-24)",
+      "1448 x 1086 is a native ChatGPT output size (local ChatGPT PNGs of that size carry an OpenAI C2PA manifest): consistent with the declaration, not a proof",
+      "the original PNG was not found on the operator machine (read-only search of local image folders, 2026-10-16)"
+    ],
+    "notInferred": "No generation date, model, prompt, author or C2PA data is recorded here: none is known from the file."
+  },
+  "consequences": {
+    "localExperiments": "allowed (operator, 2026-10-16)",
+    "production": "BLOCKED: no runtimeUse \"production\" for this asset or anything derived from the sheet until the original PNG is recovered and verified, or the operator decides otherwise",
+    "repositoryStorage": "the sheet itself stays out of Git (reference/README.md rule); identified by SHA-256 only"
+  },
+  "toCompleteIfTheOriginalIsFound": [
+    "check the original PNG's C2PA manifest (presence, issuer, claim generator; signature validation needs c2patool, to install only with operator approval)",
+    "check the visual correspondence with this WebP (lossy transcode: compare by error measure, not by hash)",
+    "then record the verified provenance next to this declaration, without rewriting it"
+  ]
+}
