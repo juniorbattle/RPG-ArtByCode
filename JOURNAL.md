@@ -1471,7 +1471,7 @@ chemin partagé + `dynwalk` → paquet de provenance, `runtimeUse: "lab"`, arrê
 ### Gouvernance
 - **[?] Conflit de consignes signalé** : `AGENTS.md` (règle du 16/10) demande de pousser chaque commit d'une branche de travail ; la
   consigne de cette passe dit « ne pousse ni ne fusionne sans mon autorisation ». Appliqué : la consigne explicite de la passe (commit
-  local seulement) ; arbitrage demandé.
+  local seulement) ; arbitrage demandé. **Arbitré (opérateur, 16/10)** : la règle d'`AGENTS.md` reste la règle par défaut ; branche poussée.
 
 ---
 
@@ -1482,8 +1482,7 @@ quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ;
 (3-67 px par vue, ≤ 12 / 255) **accepté par l'opérateur** : l'ombre suit la règle entière du corps. Restent ouverts : C2 (PNG versionné) à confirmer ;
 droits : usage comme source **autorisé** (16/10, sous réserve des droits de tiers, non vérifiés exhaustivement), source archivée dans
 `reference/sources/` ; les originaux restent à retrouver (l'opérateur s'en charge). **Prochain : décision de l'opérateur sur la proposition
-du deuxième PNJ** (`art-lab/characters/briefs/npc2-proposal.md` : marchande recommandée, prompt à valider, PNG d'origine téléchargé) ;
-arbitrage du conflit push (AGENTS.md) / « ne pousse pas » de la passe 4A-terdecies. Restauration : `5d10a37`. Rien poussé.
+du deuxième PNJ** (`art-lab/characters/briefs/npc2-proposal.md` : marchande recommandée, prompt à valider, PNG d'origine téléchargé) . Restauration : `5d10a37`. Rien poussé.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
 tramée ; la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un nouvel occluder.
