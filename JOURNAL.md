@@ -1533,6 +1533,33 @@ chemin partagé + `dynwalk` → paquet de provenance, `runtimeUse: "lab"`, arrê
 - À la livraison : relever quelles images l'opérateur a jointes ; si c'est l'un de ces fichiers, comparer son empreinte et l'archiver avec
   la fiche de la source.
 
+### Prompt v2 de l'opérateur et revue — [?] décision de l'opérateur
+- Reçu de l'opérateur : un second prompt, écrit pour accompagner les images jointes (docker ×8, références de style du Merchant District),
+  qui reprend la mise en garde « ne pas copier le docker ». Consigné tel quel dans le brief (§ 6.2) ; le prompt effectivement utilisé reste à
+  confirmer à la livraison.
+- **[?] Risque d'originalité** (planche 01-16 relue à côté du brief, recadrages ×2) : n° 02 « Merchant (Female) » porte déjà la combinaison du
+  brief — chignon brun, robe bleue, tablier ivoire, petite bourse (plus coiffe blanche à volant, col blanc, manches bouffantes blanches) ;
+  n° 03 « Artisan (Female) » le chignon, le tablier et la sacoche ; n° 09 « Townswoman (Female) » le fichu bleu clair et le tablier ivoire.
+  Avec cette planche jointe comme référence de style, le générateur a sous les yeux une marchande très proche de la demande ; or le but du
+  2e PNJ est de prouver un personnage **original** au niveau de v1 (4A-quinquies). Liste de contrôle d'originalité du brief (§ 4) complétée.
+- Contraintes de v1 absentes de v2 qui comptent pour la reconstruction ou les critères : fond **uniforme** (extraction) ; les deux bottines
+  visibles sur la même ligne de sol (rangée 90) ; 3-3,5 têtes, pas de chibi ; un seul accent ambré ; mains lisibles ; ni tramage, ni bruit,
+  ni rayures mécaniques (ils se reconstruisent en moucheture : 4A-quater). Nouveau dans v2 : « de face ou très légèrement tournée »,
+  compatible avec le repos de face de v1 (lui-même légèrement tourné).
+- Proposé à l'opérateur, **non validé** : ajouter à v2 le bloc ci-dessous (ou joindre la planche sans les n° 02, 03 et 09).
+  ```text
+  Additional requirements:
+  * Do not copy any character from the attached reference sheets, especially "02. Merchant (Female)", "03. Artisan (Female)" and "09. Townswoman (Female)": same world and quality, clearly different design; avoid their signature elements (white frilled cap or bonnet, white lace collar, puffed white sleeves).
+  * Adult proportions, approximately 3–3.5 heads tall; not chibi.
+  * One small warm amber accent only (belt buckle or trim); no other bright warm colour: hair, leather and skin stay muted.
+  * Clearly readable hands.
+  * Both boots fully visible, both feet on the same ground line.
+  * Background: one flat, uniform neutral colour; no gradient, no vignette, no floor, no cast shadow.
+  * Clean pixel clusters: no dithering, no scattered noise, no mechanical stripes, no pillow shading.
+  ```
+- Pensée : une combinaison de traits peut déjà décrire un personnage existant ; le brief se compare aux références jointes **avant** la
+  génération, pas seulement le résultat après.
+
 ---
 
 ## À reprendre (par priorité)
@@ -1543,7 +1570,8 @@ quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ;
 droits : usage comme source **autorisé** (16/10, sous réserve des droits de tiers, non vérifiés exhaustivement), les trois planches archivées dans
 `reference/sources/` (octets contrôlés par `art:validate`) ; les originaux restent à retrouver (l'opérateur s'en charge). **Prochain : la marchande** (brief validé le 16/10,
 `art-lab/characters/briefs/npc2-proposal.md`) : **attendre le PNG original fourni par l'opérateur** (pièces jointes prêtes : ×8 du docker,
-`art-lab/characters/scratch/npc2-merchant/attachments/`), puis les étapes du brief (archivage à l'octet,
+`art-lab/characters/scratch/npc2-merchant/attachments/` ; prompt v2 reçu et relu : ajouts proposés, dont l'originalité face à 01-16 n° 02 / 03 / 09,
+décision de l'opérateur), puis les étapes du brief (archivage à l'octet,
 provenance, ×2, comparaison à v1, ≤ 2 itérations Aseprite, Character Lab + A-D, stabilité / perf, critique indépendante) ; `runtimeUse: "lab"` ;
 pas de fusion dans `main` avant acceptation. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
@@ -1648,3 +1676,5 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
 - Les contraintes de l'asset reconstruit (cadre 64 × 96, pieds rangée 90, anneau transparent, alpha binaire) ne s'imposent pas à l'illustration
   source : on ne dégrade jamais le modelé, l'expression ou les matières d'une source pour obtenir une grille parfaite ; la mesure de la source
   règle la reconstruction, elle ne la refuse pas.
+- Avant une génération, comparer le brief lui-même aux personnages des références qui seront jointes : une combinaison de traits peut
+  déjà décrire un personnage existant ; la liste de contrôle d'originalité nomme ces personnages.

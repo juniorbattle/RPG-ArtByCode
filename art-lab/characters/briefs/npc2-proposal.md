@@ -82,7 +82,10 @@ matières priment.
 - **Critique aveugle** : au moins égale à v1 sur chaque axe (silhouette, proportions, visage, mains, matières, palette, contours). Le
   modelé, l'expression et les matières de la source sont préservés.
 - **Originalité** : aucun personnage des trois planches n'est reproduit. Vérification côte à côte avec la planche 01-16 n° 02 « Merchant
-  (Female) », la planche complémentaire n° 03 « Spice Merchant » et n° 12 « Flower Seller », et la planche 17-24 n° 20 « Elegant Buyer ».
+  (Female) », n° 03 « Artisan (Female) » et n° 09 « Townswoman (Female) », la planche complémentaire n° 03 « Spice Merchant » et n° 12
+  « Flower Seller », et la planche 17-24 n° 20 « Elegant Buyer ». La planche 01-16 n° 02 porte déjà la combinaison du brief (chignon brun,
+  robe bleue, tablier ivoire, petite bourse ; plus coiffe blanche à volant, col blanc, manches bouffantes blanches), n° 03 le chignon, le
+  tablier et la sacoche, n° 09 le fichu bleu clair sur les épaules et le tablier ivoire : c'est la comparaison décisive.
 - **Rendu** : invariant de cadre accepté par le chargeur ; rendu identique quelle que soit la taille de l'atlas (adressage entier) ;
   aucun appel de dessin en plus.
 - **Stabilité en mouvement** : dans la plage de v1 (churn médian par cadrage). La caméra A (≈ 1 px écran par texel) reste un point
@@ -113,14 +116,17 @@ Remplacer la marchande du jeu (interactive, tournée vers le joueur) demanderait
 - **Dérive de style** face à v1 et au cast : critique aveugle et comparaison en scène.
 - **Hauteur** : 1,66 m est un point de départ (« commencer à ») ; elle s'ajuste par l'échelle d'instance, sans toucher aux pixels.
 
-## 6. Prompt de génération (opérateur, 2026-10-16 ; remplace l'ébauche)
-Fourni par l'opérateur avec ses décisions ; le texte ci-dessous est cité tel quel. Le prompt effectivement utilisé et les images jointes à
-la génération seront consignés tels que l'opérateur les déclarera à la livraison du PNG. L'ébauche précédente reste dans l'historique
-Git (commit `2bc05a6`).
+## 6. Prompts de génération (opérateur, 2026-10-16 ; remplacent l'ébauche)
+Fournis par l'opérateur et cités tels quels : 6.1 avec ses décisions, 6.2 ensuite, écrit pour accompagner les images jointes. Le prompt
+effectivement utilisé et les images jointes à la génération seront consignés tels que l'opérateur les déclarera à la livraison du PNG.
+L'ébauche précédente reste dans l'historique Git (commit `2bc05a6`). Revue de 6.2 et ajouts proposés (non validés) : `JOURNAL.md`,
+Passe 4A-quattuordecies.
 
 Pièces jointes préparées à la demande de l'opérateur (2026-10-16) : `dockworker-x2-v1` agrandi ×8 au plus proche voisin, sur fond
 transparent ou sur gris neutre uni, dans `art-lab/characters/scratch/npc2-merchant/attachments/` (non versionnées ; empreintes et
 paramètres au journal, Passe 4A-quattuordecies).
+
+### 6.1 Prompt artistique (fourni avec les décisions)
 
 ```text
 Create an original, premium-quality pixel-art character reference for Cité du Tournoi — Merchant District at Night.
@@ -167,4 +173,60 @@ This is a high-quality artistic SOURCE image, not the final 64×96 runtime sprit
 It will later be reconstructed onto a 64×96 logical pixel grid, so prioritize excellent original character design, expressive facial construction, material shading, coherent proportions, and preservation of artistic volumes.
 The final character must feel like a natural member of our premium HD-2D Merchant District, while retaining enough visual sophistication to increase the game's perceived production value.
 Create an original design, not a reproduction of any existing character.
+```
+
+### 6.2 Prompt pour la génération avec images jointes (fourni ensuite)
+
+```text
+Use the attached reference images for style guidance only. Do not copy the attached character. Create a new original character.
+Create an original premium-quality pixel-art character source image for Cité du Tournoi — Merchant District at Night.
+Character
+An adult female merchant, around 35–40 years old, working in a medieval fantasy canal-side market district.
+Role and artistic intent
+This is a standard NPC, not a key story character, but she must still feel artistically polished, expressive, and carefully designed.
+She should match the overall visual quality and tone of the attached dockworker reference and Merchant District style references, while being clearly original.
+Design requirements
+
+* Full body, single character only
+* Front-facing or very slightly turned, neutral standing pose
+* Calm, readable expression
+* Brown hair tied in a bun, with a few loose strands framing the face
+* Indigo / slate-blue dress
+* Desaturated ivory apron
+* Muted blue-grey shawl over the shoulders
+* Small leather coin purse or merchant pouch
+* Leather ankle boots
+* Modest, practical merchant outfit with personality
+* She must read clearly as a market merchant, not a noble, adventurer, or guard
+
+Visual quality target
+
+* High-quality illustrative pixel art
+* Carefully constructed face with readable eyes and subtle features
+* Good clothing volume, fabric folds, layered materials
+* Soft directional shading
+* Controlled color ramps
+* Clear silhouette
+* Refined, premium look suited for an HD-2D fantasy RPG
+
+Important constraints
+
+* This must be an original character design
+* Do not copy the dockworker’s pose, cap, clothing scheme, or identity
+* Use the attached dockworker only as a quality benchmark
+* The final image must remain simple enough to later reconstruct into a game sprite, but the source image itself should prioritize excellent artistic quality
+
+Composition
+
+* Plain neutral background
+* No environment
+* No UI
+* No text
+* No labels
+* No watermark
+* No shadow effects outside the figure
+* Character centered with generous empty margins
+
+Final goal
+The result should feel like a natural citizen of the Merchant District, visually consistent with our world, but more refined and readable than a generic low-effort NPC.
 ```
