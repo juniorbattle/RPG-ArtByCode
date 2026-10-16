@@ -17,11 +17,16 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 - Keep a few key images for unresolved issues in `screenshots/calibration/known-issues/` (or a sibling folder per
   pass); delete throw-away captures.
 
-## Git workflow (operator rule, 2026-10-16)
-- Work on a branch, not on `main`. **On any branch other than `main`, every commit is pushed right away** (`git push -u origin <branch>`
-  the first time), with everything the branch needs; the `JOURNAL.md` update goes in the same commit as the work it records.
+## Git workflow (operator rules, 2026-10-16)
+- **One working branch at a time** besides `main`, one per task (this project does not work directly on `main`). Never open a second
+  branch while another one is unfinished.
+- **On that branch, every commit is pushed right away** (`git push -u origin <branch>` the first time), with everything the branch needs;
+  the `JOURNAL.md` update goes in the same commit as the work it records.
+- **When the operator considers the task finished**: merge the branch into `main` (fast-forward when possible: `main` has a linear
+  history), push `main`, delete the merged branch (local and remote), and only then create the branch of the next task.
 - Before a push, check the commits for secrets and machine-specific paths (never committed, see "Art production principle").
-- Merging into `main`, any push to `main`, force pushes, history rewrites and branch deletions need the operator's explicit approval.
+- Anything else on `main` (direct commits, merging an unfinished branch), force pushes and history rewrites need the operator's explicit
+  approval.
 
 ## Commands
 - `npm run dev` — dev server on http://127.0.0.1:5173
