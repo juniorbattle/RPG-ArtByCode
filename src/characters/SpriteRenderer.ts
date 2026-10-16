@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { U } from '../atmosphere/SceneUniforms';
 import { COMMON_GLSL } from '../materials/ShaderChunks';
 import { FRAME_W, FRAME_H, FOOT_Y, type Dir, type Anim } from './SpriteGenerator';
-import type { SpriteAtlas } from './SpriteAtlas';
+import type { SpriteAtlas, FrameRect } from './SpriteAtlas';
 import type { LightRig, LightSource } from '../atmosphere/LightRig';
 import { LAYER_NOREFLECT } from '../atmosphere/ShadowAndReflection';
 
@@ -40,6 +40,23 @@ export interface Actor {
   sideFlip?: boolean;
 }
 
+/** Baked (authored) frames live in their own texture and are addressed by their INTEGER cell (x0, y0 = bottom-left data texel, w, h):
+ *  local texel = floor(t * cell size) with t in [0, 1] across the quad (t never depends on the atlas size or on where the cell is), clamped
+ *  to the cell (a fragment on the quad's far edge never reads a neighbour), then sampled at the texel CENTRE (exact under nearest filtering
+ *  for any texture size). Boundary policy: a texel edge exactly on a fragment centre goes to the higher texel, identically for every atlas.
+ *  Reads outside the cell (silhouette neighbours) are transparent by definition. Generated frames keep their unchanged normalised path. */
+export const BAKED_GLSL = /* glsl */ `
+uniform sampler2D tBaked;
+uniform vec2 uBakedSize;
+vec2 bakedTexel(vec4 cell, vec2 t) { return cell.xy + clamp(floor(t * cell.zw), vec2(0.0), cell.zw - 1.0); }
+vec4 bakedAt(vec2 texel) { return texture2D(tBaked, (texel + 0.5) / uBakedSize); }
+float bakedAlpha(vec4 cell, vec2 texel) {
+  vec2 l = texel - cell.xy;
+  float a = bakedAt(texel).a;   // fetched unconditionally (no texture read inside a branch)
+  return (l.x >= 0.0 && l.y >= 0.0 && l.x < cell.z && l.y < cell.w) ? a : 0.0;
+}
+`;
+
 const BODY_VERT = /* glsl */ `
 attribute vec2 corner;
 attribute vec3 iPos;
@@ -47,6 +64,7 @@ attribute vec4 iUV;
 attribute vec4 iTint;
 attribute float iFlip;
 attribute vec4 iFx; // dof protection, key-light side (-1 screen left .. +1 right), key warmth, edge amount
+attribute vec4 iCell; // baked frames: integer cell (x0, y0, w, h) in the baked texture; w = 0 for generated frames
 uniform vec2 uWorldSize;
 uniform float uFootOffset;
 uniform vec3 uBillRight;
@@ -55,12 +73,14 @@ uniform float uClipY;
 uniform float uCharScale;
 uniform vec2 uResolution;
 varying vec3 vWorld; varying vec3 vFeet; varying vec2 vUv; varying vec4 vTint; varying float vH; varying vec4 vFx; varying float vFlip;
+varying vec2 vT; varying vec4 vCell;
 void main(){
   float sc = iTint.w * uCharScale;
   vec3 wp = iPos + uBillRight * ((corner.x - 0.5) * uWorldSize.x * sc) + uBillUp * ((corner.y * uWorldSize.y - uFootOffset) * sc);
   vWorld = wp; vFeet = iPos; vTint = iTint; vH = corner.y; vFx = iFx; vFlip = iFlip;
   float cu = iFlip > 0.0 ? corner.x : 1.0 - corner.x;
   vUv = vec2(mix(iUV.x, iUV.z, cu), mix(iUV.y, iUV.w, corner.y));
+  vT = vec2(cu, corner.y); vCell = iCell;
   vec4 clip = projectionMatrix * viewMatrix * vec4(wp, 1.0);
   // pixel stability: shift the whole sprite so its anchor lands on a pixel corner of the render target
   // (main pass only; the half-res mirror pass is rippled anyway)
@@ -81,15 +101,23 @@ uniform vec2 uAtlasSize;
 uniform float uSat;
 uniform float uLightChroma;
 uniform float uEdge;
+${BAKED_GLSL}
 varying vec3 vWorld; varying vec3 vFeet; varying vec2 vUv; varying vec4 vTint; varying float vH; varying vec4 vFx; varying float vFlip;
+varying vec2 vT; varying vec4 vCell;
 void main(){
   // nearest texel (the old sharp-bilinear sampled texel boundaries, blending every pixel with its neighbour)
   vec2 uv = (floor(vUv * uAtlasSize) + 0.5) / uAtlasSize;
   vec4 c = texture2D(tAtlas, uv);
+  // baked frame: integer cell addressing (BAKED_GLSL); both paths are fetched, the instance picks one (no texture read in a branch)
+  bool baked = vCell.z > 0.5;
+  vec2 bt = bakedTexel(vCell, vT);
+  vec4 cb = bakedAt(bt);
+  if (baked) c = cb;
   if (c.a < 0.5) discard;
   float prot = 1.0 - vFx.x;
   if (vTint.r < 0.0) { gl_FragColor = vec4(applyFog(c.rgb * 1.15, vWorld), prot); return; }
   float em = texture2D(tEmis, uv).r;
+  if (baked) em = 0.0;   // a baked sheet has no emissive layer
   vec3 V = normalize(cameraPosition - vWorld);
   vec3 N = normalize(V + vec3(0.0, 0.45, 0.0));
   vec3 albedo = c.rgb * vTint.rgb;
@@ -115,7 +143,11 @@ void main(){
   // silhouette: edge texels (a transparent neighbour) facing the key light lift toward it, edges facing away
   // cool and darken, the crown catches a thin moon rim; reads as separation, never as a cartoon line
   vec2 tx = vec2(vFlip / uAtlasSize.x, 0.0), ty = vec2(0.0, 1.0 / uAtlasSize.y);
-  float aR = step(0.5, texture2D(tAtlas, uv + tx).a), aL = step(0.5, texture2D(tAtlas, uv - tx).a), aU = step(0.5, texture2D(tAtlas, uv + ty).a);
+  // neighbour alphas: the generated fetches as before; a baked frame swaps in its own (outside the cell = transparent)
+  float nR = texture2D(tAtlas, uv + tx).a, nL = texture2D(tAtlas, uv - tx).a, nU = texture2D(tAtlas, uv + ty).a;
+  float mR = bakedAlpha(vCell, bt + vec2(vFlip, 0.0)), mL = bakedAlpha(vCell, bt - vec2(vFlip, 0.0)), mU = bakedAlpha(vCell, bt + vec2(0.0, 1.0));
+  if (baked) { nR = mR; nL = mL; nU = mU; }
+  float aR = step(0.5, nR), aL = step(0.5, nL), aU = step(0.5, nU);
   float side = vFx.y, amt = vFx.w * uEdge;
   float litEdge = (1.0 - (side >= 0.0 ? aR : aL)) * abs(side);
   float shdEdge = (1.0 - (side >= 0.0 ? aL : aR)) * abs(side);
@@ -135,11 +167,13 @@ attribute vec3 iPos;
 attribute vec4 iUV;
 attribute vec4 iShadow; // dir.x, dir.z, length(m), alpha
 attribute float iFlip;
+attribute vec4 iCell;
 uniform vec2 uWorldSize;
 uniform float uFootOffset;
 uniform vec3 uBillRight;
 uniform float uCharScale;
 varying vec2 vUv; varying float vAlpha; varying vec2 vLocal; varying float vBlob; varying float vFade;
+varying vec2 vT; varying vec4 vCell;
 void main(){
   bool blob = iShadow.z < 0.0;
   vec3 dir = vec3(iShadow.x, 0.0, iShadow.y);
@@ -158,18 +192,22 @@ void main(){
   }
   float cu = iFlip > 0.0 ? corner.x : 1.0 - corner.x;
   vUv = vec2(mix(iUV.x, iUV.z, cu), mix(iUV.y, iUV.w, corner.y));
+  vT = vec2(cu, corner.y); vCell = iCell;
   vAlpha = iShadow.w; vBlob = blob ? 1.0 : 0.0; vFade = 1.0 - corner.y * 0.7;
   gl_Position = projectionMatrix * viewMatrix * vec4(wp, 1.0);
 }
 `;
 const SHADOW_FRAG = /* glsl */ `
 uniform sampler2D tAtlas;
+${BAKED_GLSL}
 varying vec2 vUv; varying float vAlpha; varying vec2 vLocal; varying float vBlob; varying float vFade;
+varying vec2 vT; varying vec4 vCell;
 void main(){
   float a;
+  float ga = texture2D(tAtlas, vUv).a, ba = bakedAt(bakedTexel(vCell, vT)).a;
   // blob: soft ambient-occlusion pool plus a tight dark core right under the feet (no floating)
   if (vBlob > 0.5) { float d = length(vLocal); a = min(1.0, (smoothstep(1.0, 0.15, d) * 0.72 + smoothstep(0.42, 0.0, d) * 0.4) * vAlpha); }
-  else a = texture2D(tAtlas, vUv).a > 0.5 ? vAlpha * vFade : 0.0;
+  else a = (vCell.z > 0.5 ? ba : ga) > 0.5 ? vAlpha * vFade : 0.0;
   if (a < 0.01) discard;
   gl_FragColor = vec4(0.012, 0.02, 0.05, a);
 }
@@ -186,8 +224,8 @@ export class SpriteRenderer {
   private overlayMat: THREE.ShaderMaterial;
   private shadow: THREE.Mesh;
   private cap = 0;
-  private attrs!: { pos: THREE.InstancedBufferAttribute; uv: THREE.InstancedBufferAttribute; tint: THREE.InstancedBufferAttribute; flip: THREE.InstancedBufferAttribute; fx: THREE.InstancedBufferAttribute };
-  private sattrs!: { pos: THREE.InstancedBufferAttribute; uv: THREE.InstancedBufferAttribute; sh: THREE.InstancedBufferAttribute; flip: THREE.InstancedBufferAttribute };
+  private attrs!: { pos: THREE.InstancedBufferAttribute; uv: THREE.InstancedBufferAttribute; tint: THREE.InstancedBufferAttribute; flip: THREE.InstancedBufferAttribute; fx: THREE.InstancedBufferAttribute; cell: THREE.InstancedBufferAttribute };
+  private sattrs!: { pos: THREE.InstancedBufferAttribute; uv: THREE.InstancedBufferAttribute; sh: THREE.InstancedBufferAttribute; flip: THREE.InstancedBufferAttribute; cell: THREE.InstancedBufferAttribute };
   private bodyMat: THREE.ShaderMaterial;
   private shadowMat: THREE.ShaderMaterial;
   private readonly shared: { uWorldSize: { value: THREE.Vector2 }; uFootOffset: { value: number }; uBillRight: { value: THREE.Vector3 }; uBillUp: { value: THREE.Vector3 }; uCharScale: { value: number } };
@@ -207,12 +245,15 @@ export class SpriteRenderer {
       uCharScale: { value: 1 },
     };
     const shared = this.shared;
+    // baked frames' texture (an atlas without baked sheets, e.g. the DEV preview's private one, gets a 1 x 1 transparent texture)
+    const bt = atlas.bakedTexture ?? emptyBaked();
+    const baked = { tBaked: { value: bt }, uBakedSize: { value: new THREE.Vector2(bt.image.width, bt.image.height) } };
     this.bodyMat = new THREE.ShaderMaterial({
-      uniforms: { ...U, ...shared, tAtlas: { value: atlas.texture }, tEmis: { value: atlas.emis }, uAtlasSize: { value: new THREE.Vector2(atlas.width, atlas.height) }, uSat: { value: 0.8 }, uLightChroma: { value: 0.62 }, uEdge: { value: 1 } },
+      uniforms: { ...U, ...shared, ...baked, tAtlas: { value: atlas.texture }, tEmis: { value: atlas.emis }, uAtlasSize: { value: new THREE.Vector2(atlas.width, atlas.height) }, uSat: { value: 0.8 }, uLightChroma: { value: 0.62 }, uEdge: { value: 1 } },
       vertexShader: BODY_VERT, fragmentShader: BODY_FRAG, side: THREE.DoubleSide,
     });
     this.shadowMat = new THREE.ShaderMaterial({
-      uniforms: { ...shared, tAtlas: { value: atlas.texture } },
+      uniforms: { ...shared, ...baked, tAtlas: { value: atlas.texture } },
       vertexShader: SHADOW_VERT, fragmentShader: SHADOW_FRAG, transparent: true, depthWrite: false, depthTest: true, side: THREE.DoubleSide,
       polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3,
     });
@@ -245,14 +286,14 @@ export class SpriteRenderer {
     };
     const g = mkGeo(0);
     const mk = (size: number) => { const a = new THREE.InstancedBufferAttribute(new Float32Array(n * size), size); a.setUsage(THREE.DynamicDrawUsage); return a; };
-    this.attrs = { pos: mk(3), uv: mk(4), tint: mk(4), flip: mk(1), fx: mk(4) };
-    g.setAttribute('iPos', this.attrs.pos); g.setAttribute('iUV', this.attrs.uv); g.setAttribute('iTint', this.attrs.tint); g.setAttribute('iFlip', this.attrs.flip); g.setAttribute('iFx', this.attrs.fx);
+    this.attrs = { pos: mk(3), uv: mk(4), tint: mk(4), flip: mk(1), fx: mk(4), cell: mk(4) };
+    g.setAttribute('iPos', this.attrs.pos); g.setAttribute('iUV', this.attrs.uv); g.setAttribute('iTint', this.attrs.tint); g.setAttribute('iFlip', this.attrs.flip); g.setAttribute('iFx', this.attrs.fx); g.setAttribute('iCell', this.attrs.cell);
     this.body.geometry.dispose(); this.body.geometry = g; this.overlay.geometry = g;
     const sg = mkGeo(0);
     const sn = n * 5;
     const mk2 = (size: number) => { const a = new THREE.InstancedBufferAttribute(new Float32Array(sn * size), size); a.setUsage(THREE.DynamicDrawUsage); return a; };
-    this.sattrs = { pos: mk2(3), uv: mk2(4), sh: mk2(4), flip: mk2(1) };
-    sg.setAttribute('iPos', this.sattrs.pos); sg.setAttribute('iUV', this.sattrs.uv); sg.setAttribute('iShadow', this.sattrs.sh); sg.setAttribute('iFlip', this.sattrs.flip);
+    this.sattrs = { pos: mk2(3), uv: mk2(4), sh: mk2(4), flip: mk2(1), cell: mk2(4) };
+    sg.setAttribute('iPos', this.sattrs.pos); sg.setAttribute('iUV', this.sattrs.uv); sg.setAttribute('iShadow', this.sattrs.sh); sg.setAttribute('iFlip', this.sattrs.flip); sg.setAttribute('iCell', this.sattrs.cell);
     this.shadow.geometry.dispose(); this.shadow.geometry = sg;
   }
 
@@ -270,10 +311,11 @@ export class SpriteRenderer {
 
     let bi = 0, si = 0;
     const a = this.attrs, s = this.sattrs;
-    const putShadow = (act: Actor, fr: { u0: number; v0: number; u1: number; v1: number }, flip: boolean, dx: number, dz: number, len: number, alpha: number) => {
+    const putShadow = (act: Actor, fr: FrameRect, flip: boolean, dx: number, dz: number, len: number, alpha: number) => {
       if (alpha < 0.01) return;
       s.pos.setXYZ(si, act.pos.x, act.pos.y, act.pos.z);
       s.uv.setXYZW(si, fr.u0, fr.v0, fr.u1, fr.v1);
+      setCell(s.cell, si, fr);
       s.sh.setXYZW(si, dx, dz, len, alpha * this.shadowAlpha);
       s.flip.setX(si, flip ? -1 : 1);
       si++;
@@ -309,11 +351,12 @@ export class SpriteRenderer {
       const prot = act === player || act === target ? 1 : this.protect[act.detail];
       a.pos.setXYZ(bi, act.pos.x, act.pos.y + 0.01, act.pos.z);
       a.uv.setXYZW(bi, fr.u0, fr.v0, fr.u1, fr.v1);
+      setCell(a.cell, bi, fr);
       a.tint.setXYZW(bi, act.tint[0], act.tint[1], act.tint[2], act.scale);
       a.flip.setX(bi, flip ? -1 : 1);
       a.fx.setXYZW(bi, prot, side, warm, edge);
       bi++;
-      s.pos.setXYZ(si, act.pos.x, act.pos.y, act.pos.z); s.uv.setXYZW(si, fr.u0, fr.v0, fr.u1, fr.v1); s.sh.setXYZW(si, 0, 0, -1, 0.85 * this.shadowAlpha); s.flip.setX(si, 1); si++;
+      s.pos.setXYZ(si, act.pos.x, act.pos.y, act.pos.z); s.uv.setXYZW(si, fr.u0, fr.v0, fr.u1, fr.v1); setCell(s.cell, si, fr); s.sh.setXYZW(si, 0, 0, -1, 0.85 * this.shadowAlpha); s.flip.setX(si, 1); si++;
       for (let k = 0; k < Math.min(2, cand.length); k++) {
         const l = cand[k].l;
         let dx = act.pos.x - l.pos.x, dz = act.pos.z - l.pos.z;
@@ -329,15 +372,27 @@ export class SpriteRenderer {
         if (bf) {
           const bob = Math.sin(performance.now() * 0.004) * 0.04;
           a.pos.setXYZ(bi, act.pos.x, act.pos.y + act.height * S - 0.05 + bob, act.pos.z);
-          a.uv.setXYZW(bi, bf.u0, bf.v0, bf.u1, bf.v1); a.tint.setXYZW(bi, -1, -1, -1, 0.9); a.flip.setX(bi, 1); a.fx.setXYZW(bi, 1, 0, 0, 0); bi++;
+          a.uv.setXYZW(bi, bf.u0, bf.v0, bf.u1, bf.v1); setCell(a.cell, bi, bf); a.tint.setXYZW(bi, -1, -1, -1, 0.9); a.flip.setX(bi, 1); a.fx.setXYZW(bi, 1, 0, 0, 0); bi++;
         }
       }
     }
-    a.pos.needsUpdate = a.uv.needsUpdate = a.tint.needsUpdate = a.flip.needsUpdate = a.fx.needsUpdate = true;
-    s.pos.needsUpdate = s.uv.needsUpdate = s.sh.needsUpdate = s.flip.needsUpdate = true;
+    a.pos.needsUpdate = a.uv.needsUpdate = a.tint.needsUpdate = a.flip.needsUpdate = a.fx.needsUpdate = a.cell.needsUpdate = true;
+    s.pos.needsUpdate = s.uv.needsUpdate = s.sh.needsUpdate = s.flip.needsUpdate = s.cell.needsUpdate = true;
     (this.body.geometry as THREE.InstancedBufferGeometry).instanceCount = bi;
     (this.shadow.geometry as THREE.InstancedBufferGeometry).instanceCount = si;
   }
+}
+
+/** baked frames carry their integer cell; generated frames a zero cell (w = 0 selects the generated path in the shaders) */
+function setCell(attr: THREE.InstancedBufferAttribute, i: number, fr: FrameRect): void {
+  const c = fr.cell;
+  if (c) attr.setXYZW(i, c[0], c[1], c[2], c[3]); else attr.setXYZW(i, 0, 0, 0, 0);
+}
+
+let empty: THREE.DataTexture | null = null;
+function emptyBaked(): THREE.DataTexture {
+  if (!empty) { empty = new THREE.DataTexture(new Uint8Array(4), 1, 1, THREE.RGBAFormat, THREE.UnsignedByteType); empty.colorSpace = THREE.SRGBColorSpace; empty.magFilter = empty.minFilter = THREE.NearestFilter; empty.needsUpdate = true; }
+  return empty;
 }
 
 export function frameIndex(atlas: SpriteAtlas, act: Actor): number {

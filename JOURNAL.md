@@ -1329,17 +1329,92 @@ Preuves (hors dépôt) : `art-lab/characters/scratch/e2-x2-candidate/scene/dyn/`
 - Le serveur dev :5180 de la passe précédente tournait encore (arrêter la tâche ne tue pas `vite.js`) ; un fichier absent est servi comme
   `index.html` (200) par le serveur dev → le chargeur exige une réponse JSON.
 
+## Passe 4A-undecies — Adressage des texels indépendant de la taille de l'atlas (flag dev, rien en production, 2026-10-16)
+
+### Décision opérateur (2026-10-16)
+« Adressage entier » pour l'amendement A ; refus qu'un changement de taille de l'atlas puisse modifier les texels affichés par les
+personnages existants. Mission ciblée sur le renderer de sprites et son atlas, sous contrôle expérimental ; pas de migration GLSL1 → GLSL3
+pour `texelFetch` ; arrêt et présentation des implications si une modification plus large devient indispensable ; aucun appel de dessin
+en plus ; `5d10a37` = point de restauration ; commit local seulement si toutes les preuves sont satisfaisantes. Critère final : ajouter des
+sprites ne doit jamais modifier l'apparence des sprites déjà validés.
+
+### Anomalie initiale — [OK] reproduite sur `5d10a37`
+- Parade, échelle 2,1, atlas de 1 968 rangées : **1 032 px** sur 5 lignes (sprites 32 × 48 générés), identique à la passe précédente.
+- Scène, caméra C, joueur en (9,6 ; 1,0), ×2 **chargé mais pas placé** : le **héros** change de **16 px** (atlas 816) et **20 px** (atlas 1 968)
+  sur une ligne, contre la baseline `eecea58`.
+
+### Cause précise
+- Un texel était choisi par `floor(vUv × H)` ; `vUv` est interpolé entre des sommets dont les valeurs v = 1 − cy / H sont des flottants
+  arrondis, puis remultiplié par H. À l'échelle de certains cadrages, l'ancrage calé sur la grille de pixels place un bord de texel
+  **exactement** au centre d'une ligne de pixels : la valeur exacte est un entier et l'erreur d'arrondi (~10⁻⁴ texel) décide du texel. Ces
+  erreurs dépendent de H (valeurs aux sommets et multiplicateur) : agrandir l'atlas renversait certaines égalités. Le billboard étant presque
+  vertical, toute la ligne bascule d'un texel. Les octets, eux, ne changeaient jamais.
+- Conséquence : aucune formule normalisée par la taille de la texture ne peut être stable ; il faut que **ni les valeurs interpolées ni le
+  multiplicateur** ne dépendent de la taille de l'atlas ou de la place de la case.
+
+### Correction (périmètre : `SpriteAtlas.ts`, `SpriteRenderer.ts`, chargeur et outils DEV)
+- **Sprites générés : chemin inchangé et texture figée.** La texture générée redevient exactement celle de `eecea58` (512 × 720) et ne grandit
+  plus jamais : mêmes octets, mêmes UV, même code d'échantillonnage → leurs égalités se résolvent comme dans la baseline, pour toujours.
+- **Sprites cuits : leur propre texture**, adressée par **case entière** (x0, y0, l, h) : `texel = case.xy + clamp(floor(t × case.zw), 0,
+  case.zw − 1)` avec t ∈ [0, 1] sur le quad (aux sommets : 0 ou 1 exactement), puis lecture **au centre du texel** (`(texel + 0,5) / taille`,
+  exacte en plus-proche-voisin quelle que soit la taille). Politique de frontière explicite : un bord exactement au centre d'un pixel donne
+  le texel supérieur, pareil pour tout atlas ; jamais de lecture hors de la case (clamp) ; voisins du liseré hors case = transparents.
+  Même fonction GLSL (`BAKED_GLSL`) pour le corps, la superposition, les ombres et l'auto-test. `texture2D` au centre du texel : pas de
+  `texelFetch`, pas de migration.
+- **Batching commun conservé** : un attribut d'instance `iCell` (largeur 0 = sprite généré), deux textures liées au même matériau ;
+  les deux chemins sont lus sans branche autour des lectures de texture, l'instance choisit. **Aucun appel de dessin en plus.**
+
+### Écart de compilation trouvé et éliminé
+- Premier essai : 5 rendus sur 51 différaient de **1 niveau sur 255** sur 1 pixel (sprites générés, toutes variantes, même sans ×2) :
+  non pas un mauvais texel mais un arrondi de l'éclairage recompilé. Isolé par variantes du shader (sondes de 15 rendus) : ombres modifiées
+  = 0 px ; corps modifié = 5 px ; sélection de couleur seule = 0 ; + émissif = 0 ; **+ liseré = 5**. Le choix entre généré et cuit fait sur
+  les **valeurs `step` du liseré** changeait l'ordonnancement du calcul ; fait sur les **échantillons d'alpha avant `step`**, le code
+  généré redevient identique au bit (0 px). Pensée : un shader partagé se vérifie au bit, et un écart d'un niveau se cherche par sondes.
+- **[?] Non expliqué** (expérience écartée) : nouveaux sommets + anciens fragments du corps donnaient 135 037 px d'écart, sur la fumée
+  de la cheminée et les étincelles. Configuration non retenue, cause non cherchée.
+
+### Résultats (la version retenue ; détails `reviews/texel-addressing-4a-undecies/`)
+- Texture générée **identique à l'octet** à `eecea58` dans toutes les variantes (sans ×2, ×2 seul, ×2 + 103 images, ×2 rangé en dernier).
+- **Parade des 234 images générées, 17 échelles × 3 lots, miroirs alternés** : baseline vs nouveau sans ×2 / ×2 (texture 96 rangées) / ×2 +
+  103 images (1 248 rangées) / ×2 déplacé : **0 px sur 4 × 51 rendus**. Contrôle négatif (UV générées décalées d'une rangée) : 141 590 px au
+  minimum par rendu.
+- **Parade du ×2** (48 copies, miroirs alternés, 17 échelles) : texture de 96 rangées vs 1 248 rangées vs case déplacée en (448 ; 1 152) :
+  **0 px sur 2 × 51 rendus**. L'ancien adressage (`5d10a37`) : 102 px au minimum sur chacun des 51 rendus, et différent entre 816 et 1 968
+  rangées. Contrôle négatif (case décalée d'une rangée) : 78 375 px au minimum par rendu.
+- **Scènes A / B / C / D**, avec personnages et `static=1`, dont la place du héros en C : nouveau sans ×2 / ×2 chargé (96 et 1 248 rangées),
+  non placé : **0 px** (9 vues × 4 variantes).
+- **Auto-test** (code d'adressage de production) : 0 octet et 0 texel faux aux échelles 1 / 2 / 3 / 2,37, case en (0 ; 0) d'une texture
+  512 × 96 **et** en (448 ; 1 152) d'une texture 512 × 1 248 ; **débordement** : 4 × 2 cases opaques sans anneau transparent, 6 échelles × 4
+  décalages sous-pixel × 8 cases = 192 rendus, **0 pixel étranger sur 4 277 568** ; contrôles négatifs : rangée décalée 6 616, linéaire non
+  centré 10 804, arrondi sans clamp **37 517 pixels étrangers**.
+- **×2 vs aperçu validé** (12 PNJ aux places de 4A-sexies) : **sans les ombres de sprites, 0 px dans les 4 cadrages** (corps, liseré,
+  superposition, DOF), pour la texture de 96 comme de 1 248 rangées. **Avec les ombres : 3 / 40 / 67 / 4 px (A / B / C / D), jusqu'à 12 / 255**,
+  identiques entre 96 et 1 248 rangées → **[?] divergence stable de l'ombre portée du ×2** : l'aperçu lisait l'ombre par le plus-proche-voisin
+  du matériel (arrondi à 1 / 256 de texel), le nouveau chemin par le même plancher entier que le corps ; ils diffèrent sur les quasi-égalités.
+  Présentée à l'opérateur avec l'alternative (tableau de textures, construction GLSL 3). **Décision opérateur (2026-10-16) : écart
+  accepté** (stable, même règle que le corps) ; commit local de la correction, rien poussé.
+- **Performance** (4 tours entrelacés, caméra B ; le 4e tour a chauffé pour presque toutes les variantes) : 114 appels de dessin partout ;
+  tours 1-3, ancien / nouveau : base 9,13 / 9,23 ms, ×2 1 PNJ 9,27 / 9,22, 8 PNJ 9,28 / 9,42, 32 PNJ 9,63 / 9,67 → dans le bruit. Une texture
+  de plus (1 × 1 sans ×2 ; 512 × 96 = 192 Ko avec, sans couche émissive). Bundle de production 822 553 → 824 920 o.
+- Typecheck, build, `art:validate`, provenance intacte ; chargeur DEV absent du bundle.
+
+### Erreurs de méthode
+- **[KO → corrigé]** La chauffe par cadrage ne visait que le premier serveur : le premier chargement d'un cadrage est propre à **chaque
+  origine** (74 491 px en A sur le second serveur) → une chauffe par serveur et par cadrage.
+- **[KO → corrigé]** Le chargeur plaçait la première feuille chargée : avec `bakedsynfirst=1`, des PNJ synthétiques au lieu du docker → il
+  place la première feuille demandée.
+- La série complète a été arrêtée dès le premier écart d'un niveau (inutile de mesurer le reste sur un shader faux), puis relancée sur la
+  version retenue.
+
 ---
 
 ## À reprendre (par priorité)
 
-**-1. PROCHAIN : arbitrage opérateur de la Passe 4A-decies** — (a) **amendement A** : les octets des cases générées ne bougent jamais,
-mais aux égalités exactes de texel le rendu 32 × 48 peut changer d'une ligne de pixels quand l'atlas grandit (héros en C à 816 rangées ;
-1 rendu / 51 à 1968) → choisir : adressage entier `texelFetch` (shader de production), hauteur d'atlas fixe (+5 Mo GPU), accepter avec
-budget de croissance prouvé par balayage, ou seconde page (+ appels, refusé par la règle de batching) ; (b) confirmer **C2** (PNG versionné)
-pour une future tâche de production ; (c) **original PNG de la planche** (déclaration opérateur enregistrée, non vérifiée : production
-bloquée). Ensuite : **deuxième PNJ original** (artisane ou marchande), nouvelle source **téléchargée en PNG d'origine** (C2PA conservé, jamais
-un copier-coller), brief puis reconstruction ×2 ; pas pendant l'implémentation technique. Commits locaux seulement ; rien poussé.
+**-1. PROCHAIN** — Passe 4A-undecies close : adressage par case entière commité (sprites générés identiques au bit à `eecea58`, ×2 stable
+quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ; écart de l'ombre portée du ×2 face à l'ancien aperçu
+(3-67 px par vue, ≤ 12 / 255) **accepté par l'opérateur** : l'ombre suit la règle entière du corps. Restent ouverts : C2 (PNG versionné) à confirmer ;
+**original PNG de la planche** (déclaration opérateur, non vérifiée : production bloquée). Ensuite : deuxième PNJ original (artisane ou
+marchande), source **téléchargée en PNG d'origine** (C2PA conservé). Restauration : `5d10a37`. Rien poussé.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
 tramée ; la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un nouvel occluder.
@@ -1429,3 +1504,7 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   d'un pixel) selon la taille de la texture. Toute croissance d'atlas se prouve par un balayage d'échelles, pas par quelques captures.
 - Ne jamais modifier `src/` pendant une série de mesures sur le même serveur dev (rechargement HMR) ; recadrer une preuve par projection,
   jamais par supposition.
+- Ajouter des sprites ne doit rien changer aux autres : une texture qui ne grandit jamais pour les sprites validés, et pour les nouveaux un
+  adressage par case entière (t ∈ [0, 1] × taille de case, plancher + clamp, lecture au centre du texel) qui ne dépend ni de la taille de
+  l'atlas ni de la place de la case. Une formule normalisée par la taille de la texture ne peut pas être stable aux égalités exactes.
+- Une chauffe se fait par cadrage **et par origine** (serveur) ; un écart d'un niveau sur 255 se traque par sondes de variantes du shader.

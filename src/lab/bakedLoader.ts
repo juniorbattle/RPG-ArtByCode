@@ -13,11 +13,12 @@
  *    &bakedfallback=front-idle EXPLICIT front-idle aliases for missing idle facings: lab assets with an immobile behaviour only (amendment B)
  *    &bakedhide=porter         hide every actor of that spec (the old preview hid the porter the same way)
  *    &bakedfollow=1            the first authored actor takes the hidden player's place every frame (dynamic walks)
- *    &bakedsynthetic=N         TEST ONLY: N extra synthetic x2 frames (a dummy sheet) to grow the atlas towards its ceiling (amendment A) */
+ *    &bakedsynthetic=N         TEST ONLY: N extra synthetic x2 frames (a dummy sheet) to grow the baked texture towards its ceiling
+ *    &bakedsynfirst=1          TEST ONLY: pack the synthetic frames BEFORE the requested sheets (moves their cells: origin independence) */
 import * as THREE from 'three';
 import type { App } from '../app/App';
 import type { Actor } from '../characters/SpriteRenderer';
-import { PIXEL_WORLD } from '../characters/SpriteRenderer';
+import { PIXEL_WORLD, BAKED_GLSL } from '../characters/SpriteRenderer';
 import { FRAME_W, FRAME_H, FOOT_Y, type Dir, type Anim } from '../characters/SpriteGenerator';
 import { checkBakedSheet, type BakedSheet, type BakedFrame, type AuthoredSpawn } from '../characters/BakedSprites';
 import { parseAsepriteJson } from './sheetMeta';
@@ -118,10 +119,10 @@ export async function loadBaked(params: URLSearchParams): Promise<BakedLoad> {
   const sheets: Array<BakedSheet & { decodeMs?: number }> = [];
   for (const id of ids) sheets.push(await loadSheet(id, fb === 'front-idle' ? 'front-idle' : undefined));
   const syn = Number(params.get('bakedsynthetic') ?? 0);
-  if (syn > 0) sheets.push(syntheticSheet(syn));
+  if (syn > 0) { if (params.get('bakedsynfirst') === '1') sheets.unshift(syntheticSheet(syn)); else sheets.push(syntheticSheet(syn)); }
   for (const s of sheets) { const e = checkBakedSheet(s); if (e.length) throw new Error(`${s.id}: ${e.join('; ')}`); }
   const pos = (params.get('bakedpos') ?? '').split(';').filter(Boolean).map((p) => p.split(',').map(Number));
-  const first = sheets[0], detail = (params.get('bakeddetail') ?? 'mid') as Actor['detail'];
+  const first = sheets.find((x) => x.id !== 'test-synthetic'), detail = (params.get('bakeddetail') ?? 'mid') as Actor['detail'];
   if (!['hero', 'mid', 'crowd'].includes(detail)) throw new Error(`bakeddetail "${detail}" is not hero | mid | crowd`);
   const scale = params.has('bakedscale') ? Number(params.get('bakedscale')) : 1;
   let height = Number(params.get('bakedheight'));
@@ -171,7 +172,7 @@ function install(app: App, params: URLSearchParams, ld: BakedLoad): void {
   apply();
   const first = ld.sheets[0], atlas = app.atlas;
   const info: Record<string, unknown> = {
-    ...ld.report, atlas: { width: atlas.width, height: atlas.height, generatedHeight: atlas.generatedHeight, frames: atlas.frames.size },
+    ...ld.report, atlas: { width: atlas.width, height: atlas.height, baked: [atlas.bakedWidth, atlas.bakedHeight], frames: atlas.frames.size },
     baked: Object.fromEntries(atlas.baked), aliases: atlas.aliases, follow, hide,
     frame: first ? [FRAME_W * first.k, FRAME_H * first.k] : null, metresPerTexel: first ? PIXEL_WORLD / first.k : null,
     placed: authored().map((a) => [a.pos.x, a.pos.z]),
@@ -186,29 +187,33 @@ function install(app: App, params: URLSearchParams, ld: BakedLoad): void {
   w.__baked = info;
 }
 
-/** Test 2: the baked block inside the MAIN atlas. CPU: atlas bytes == the expected export bytes (decoded independently by the caller).
- *  GPU: the block drawn through the renderer's own texel addressing (`floor(uv * size) + 0.5`, nearest) at several scales into an sRGB
- *  target, read back and compared texel for texel. Negative controls: a one-row offset (an off-by-one frame table), and uncentred linear
- *  sampling. (A wrong atlas height is NOT a valid control: the nearest re-quantisation of the snapped coordinate cancels it — measured.) */
+/** Test 2: a baked frame inside the shared atlas, through the renderer's OWN addressing code (BAKED_GLSL, the same string the sprite
+ *  shaders use). CPU: the baked texture bytes of the cell == the export decoded independently by the caller. GPU: the cell drawn at several
+ *  scales into an sRGB target, read back and compared texel for texel. Bleed test: a texture of fully opaque cells (no transparent ring) in
+ *  distinct colours, every cell drawn at several scales and sub-pixel offsets: no fragment may show another cell's colour. Negative
+ *  controls: a cell origin off by one row; uncentred linear sampling; rounding instead of floor-and-clamp (must bleed). */
 function selfTest(app: App, id: string, expectB64?: string): Record<string, unknown> {
-  const atlas = app.atlas, r = atlas.frames.get(`${id}/down/idle/0`), k = atlas.baked.get(id)?.k;
-  if (!r || !k) throw new Error(`${id} is not a baked sheet of this atlas`);
-  const fw = FRAME_W * k, fh = FRAME_H * k, W = atlas.width, H = atlas.height;
-  const bx = Math.round(r.u0 * W), by = Math.round((1 - r.v1) * H);   // image-space block corner
+  const atlas = app.atlas, r = atlas.frames.get(`${id}/down/idle/0`), cell = r?.cell;
+  if (!cell) throw new Error(`${id} is not a baked sheet of this atlas`);
+  const [x0, y0, fw, fh] = cell, BWd = atlas.bakedWidth, BHd = atlas.bakedHeight;
   const cpu = new Uint8Array(fw * fh * 4);
-  for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) for (let c = 0; c < 4; c++) cpu[(y * fw + x) * 4 + c] = atlas.rgba[((H - 1 - (by + y)) * W + bx + x) * 4 + c];
+  for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) for (let c = 0; c < 4; c++) cpu[(y * fw + x) * 4 + c] = atlas.bakedRgba[((y0 + fh - 1 - y) * BWd + x0 + x) * 4 + c];
   let cpuMismatch: number | null = null;
   if (expectB64) { const e = Uint8Array.from(atob(expectB64), (ch) => ch.charCodeAt(0)); cpuMismatch = 0; for (let i = 0; i < cpu.length; i++) if (cpu[i] !== e[i]) cpuMismatch++; }
   const renderer = app.renderer;
-  const run = (scale: number, mode: 'exact' | 'offByOne' | 'linear') => {
-    const ow = Math.round(fw * scale), oh = Math.round(fh * scale);
+  const draw = (tex: THREE.Texture, size: [number, number], cellV: number[], ow: number, oh: number, ndc: number[], mode: number) => {
     const rt = new THREE.WebGLRenderTarget(ow, oh, { colorSpace: THREE.SRGBColorSpace, depthBuffer: false });
-    const tex = mode === 'linear' ? atlas.texture.clone() : atlas.texture;
-    if (mode === 'linear') { tex.magFilter = THREE.LinearFilter; tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true; }
     const mat = new THREE.ShaderMaterial({
-      uniforms: { tAtlas: { value: tex }, uAtlasSize: { value: new THREE.Vector2(W, H) }, uRect: { value: new THREE.Vector4(r.u0, r.v0, r.u1, r.v1) }, uSnap: { value: mode === 'linear' ? 0 : 1 }, uRow: { value: mode === 'offByOne' ? 1 : 0 } },
-      vertexShader: 'varying vec2 vUv; uniform vec4 uRect; void main(){ vUv = mix(uRect.xy, uRect.zw, uv); gl_Position = vec4(position.xy * 2.0, 0.0, 1.0); }',
-      fragmentShader: 'uniform sampler2D tAtlas; uniform vec2 uAtlasSize; uniform float uSnap; uniform float uRow; varying vec2 vUv; void main(){ vec2 uv = uSnap > 0.5 ? (floor(vUv * uAtlasSize) + vec2(0.5, 0.5 + uRow)) / uAtlasSize : vUv; gl_FragColor = texture2D(tAtlas, uv); }',
+      uniforms: { tBaked: { value: tex }, uBakedSize: { value: new THREE.Vector2(size[0], size[1]) }, uCell: { value: new THREE.Vector4(cellV[0], cellV[1], cellV[2], cellV[3]) }, uNdc: { value: new THREE.Vector4(ndc[0], ndc[1], ndc[2], ndc[3]) }, uMode: { value: mode } },
+      vertexShader: 'varying vec2 vT; uniform vec4 uNdc; void main(){ vT = uv; gl_Position = vec4(mix(uNdc.xy, uNdc.zw, uv), 0.0, 1.0); }',
+      // mode 0: production addressing; 1: uncentred linear (texture cloned with linear filtering); 2: rounding, no clamp (must bleed)
+      fragmentShader: `${BAKED_GLSL}
+uniform vec4 uCell; uniform float uMode; varying vec2 vT;
+void main(){
+  if (uMode < 0.5) gl_FragColor = bakedAt(bakedTexel(uCell, vT));
+  else if (uMode < 1.5) gl_FragColor = texture2D(tBaked, (uCell.xy + vT * uCell.zw) / uBakedSize);
+  else gl_FragColor = bakedAt(uCell.xy + floor(vT * uCell.zw + 0.5));
+}`,
       depthTest: false, depthWrite: false,
     });
     const scene = new THREE.Scene(), cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -217,21 +222,49 @@ function selfTest(app: App, id: string, expectB64?: string): Record<string, unkn
     renderer.setRenderTarget(rt); renderer.setClearColor(0x000000, 0); renderer.autoClear = true; renderer.render(scene, cam);
     const out = new Uint8Array(ow * oh * 4); renderer.readRenderTargetPixels(rt, 0, 0, ow, oh, out);
     renderer.setRenderTarget(prevRt); renderer.setClearColor(prevColor, prevClear); renderer.autoClear = prevAuto;
+    rt.dispose(); mat.dispose();
+    return out;
+  };
+  // the cell, full-target quads: every read-back pixel against the CPU texel under it
+  const run = (scale: number, mode: 'exact' | 'offByOne' | 'linear') => {
+    const ow = Math.round(fw * scale), oh = Math.round(fh * scale);
+    let tex: THREE.Texture = atlas.bakedTexture;
+    if (mode === 'linear') { tex = atlas.bakedTexture.clone(); tex.magFilter = THREE.LinearFilter; tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true; }
+    const out = draw(tex, [BWd, BHd], [x0, y0 + (mode === 'offByOne' ? 1 : 0), fw, fh], ow, oh, [-1, -1, 1, 1], mode === 'linear' ? 1 : 0);
+    if (mode === 'linear') tex.dispose();
     let bad = 0, checked = 0, skipped = 0;
     for (let py = 0; py < oh; py++) for (let px = 0; px < ow; px++) {
       const fx = (px + 0.5) * fw / ow, fy = (py + 0.5) * fh / oh;   // read-back row 0 = bottom of the frame (target size is rounded)
       if (Math.abs(fx - Math.round(fx)) < 2e-3 || Math.abs(fy - Math.round(fy)) < 2e-3) { skipped++; continue; }   // exactly on a texel edge
-      const tx = Math.floor(fx), ty = fh - 1 - Math.floor(fy), s = (ty * fw + tx) * 4, o = (py * ow + px) * 4;
+      const tx = Math.floor(fx), ty = fh - 1 - Math.floor(fy), si = (ty * fw + tx) * 4, o = (py * ow + px) * 4;
       checked++;
-      if (cpu[s + 3] < 128 && out[o + 3] < 128) continue;   // transparent texel: its colour is never shown (alpha-tested)
-      if (cpu[s] !== out[o] || cpu[s + 1] !== out[o + 1] || cpu[s + 2] !== out[o + 2] || cpu[s + 3] !== out[o + 3]) bad++;
+      if (cpu[si + 3] < 128 && out[o + 3] < 128) continue;   // transparent texel: its colour is never shown (alpha-tested)
+      if (cpu[si] !== out[o] || cpu[si + 1] !== out[o + 1] || cpu[si + 2] !== out[o + 2] || cpu[si + 3] !== out[o + 3]) bad++;
     }
-    rt.dispose(); mat.dispose(); if (mode === 'linear') tex.dispose();
     return { scale, mode, pixels: ow * oh, checked, skipped, mismatches: bad };
+  };
+  // bleed test: 4 x 2 fully opaque cells of the same size, distinct colours, in a texture of their own
+  const bleed = (mode: number) => {
+    const cols = 4, rows = 2, TW = cols * fw, TH = rows * fh, buf = new Uint8Array(TW * TH * 4);
+    const colour = (i: number) => [40 + i * 25, 255 - i * 25, (i * 67) % 256];
+    for (let y = 0; y < TH; y++) for (let x = 0; x < TW; x++) { const i = Math.floor(y / fh) * cols + Math.floor(x / fw), d = (y * TW + x) * 4, c = colour(i); buf[d] = c[0]; buf[d + 1] = c[1]; buf[d + 2] = c[2]; buf[d + 3] = 255; }
+    const tex = new THREE.DataTexture(buf, TW, TH, THREE.RGBAFormat, THREE.UnsignedByteType);
+    tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = tex.minFilter = THREE.NearestFilter; tex.generateMipmaps = false; tex.needsUpdate = true;
+    let pixels = 0, foreign = 0, draws = 0;
+    for (const scale of [0.5, 1, 1.37, 2, 2.37, 3]) for (const [ox, oy] of [[0, 0], [0.25, 0.5], [0.5, 0.75], [0.71, 0.13]]) for (let i = 0; i < cols * rows; i++) {
+      const qw = fw * scale, qh = fh * scale, ow = Math.ceil(qw + ox) + 2, oh = Math.ceil(qh + oy) + 2;
+      const ndc = [((1 + ox) / ow) * 2 - 1, ((1 + oy) / oh) * 2 - 1, ((1 + ox + qw) / ow) * 2 - 1, ((1 + oy + qh) / oh) * 2 - 1];
+      const out = draw(tex, [TW, TH], [(i % cols) * fw, Math.floor(i / cols) * fh, fw, fh], ow, oh, ndc, mode);
+      const want = colour(i); draws++;
+      for (let p = 0; p < ow * oh; p++) { if (out[p * 4 + 3] === 0) continue; pixels++; if (out[p * 4] !== want[0] || out[p * 4 + 1] !== want[1] || out[p * 4 + 2] !== want[2]) foreign++; }
+    }
+    tex.dispose();
+    return { mode: mode === 0 ? 'production (floor + clamp, centre)' : 'rounding, no clamp', draws, pixels, foreignPixels: foreign };
   };
   const scales = [1, 2, 3, 2.37];
   return {
-    id, block: [bx, by, fw, fh], atlas: [W, H], cpuBytes: cpu.length, cpuMismatch,
-    exact: scales.map((s) => run(s, 'exact')), negative: [run(2, 'offByOne'), run(2.37, 'linear')],
+    id, cell, bakedTexture: [BWd, BHd], cpuBytes: cpu.length, cpuMismatch,
+    exact: scales.map((sc) => run(sc, 'exact')), negative: [run(2, 'offByOne'), run(2.37, 'linear')],
+    bleed: bleed(0), bleedNegative: bleed(2),
   };
 }

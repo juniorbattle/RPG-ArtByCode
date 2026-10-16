@@ -8,8 +8,8 @@ or the reveal. Amendments A (atlas compatibility proof), B (incomplete facings),
 `character-gold-master-4a-1`, with the six tests. **Not authorised: any production NPC replacement or production activation.** Production
 also stays blocked by the source sheet's status (operator declaration, not a verified provenance: `provenance/dockworker-x2-v1/
 source-declaration.json`). v2 added the compatibility review (section 8), the files touched (section 9), the real texture-size ceiling
-and risks R11, R12. **Experimental implementation done (2026-10-16): results in section 12; amendment A has one open point (texel-edge
-ties, section 12) that needs operator arbitration; amendment C measured, C2 proposed (section 11).** `AGENTS.md` stays the authority.
+and risks R11, R12. **Experimental implementation done (2026-10-16): results in section 12; amendment C measured, C2 proposed (section 11);
+amendment A resolved by integer cell addressing (section 13); the x2 cast-shadow difference to the old preview was accepted.** `AGENTS.md` stays the authority.
 
 ## 1. Scope
 
@@ -285,3 +285,38 @@ longer bit-identical. Measured: at 816 rows (the dockworker alone) **one real ca
 depend on the atlas size, but this is a production shader change and shifts today's tie scanlines once; (2) a fixed atlas height (e.g.
 2048 rows from now on, +5 MB GPU): same one-time shift, then stable; (3) accept tie flips as equivalent samples, with a growth budget
 proven by the parade sweep before each growth; (4) a second atlas page for baked sheets (+ draw calls: rejected by the batching rule).
+
+## 13. Amendment A resolved — integer cell addressing (Pass 4A-undecies, 2026-10-16; operator chose "integer addressing")
+
+**Cause.** A texel was chosen by `floor(vUv × H)` with `vUv` interpolated between vertex values `1 − cy / H` (rounded floats) and multiplied
+again by `H`. When a texel edge falls exactly on a pixel centre (the pixel-snapped anchor makes this happen at some scales), the exact value
+is an integer and float rounding (~1e-4 texel) picks the texel; that rounding depends on `H`, so growing the atlas flipped some ties (a whole
+scanline moves by one texel). Reproduced on `5d10a37`: 1 032 px (parade, 1 968 rows) and the hero in camera C (16 px at 816 rows).
+
+**Fix (sprite renderer + atlas only).**
+- Generated sprites: **their texture is frozen** (exactly the `eecea58` 512 x 720 texture, never resized): same bytes, same UVs, same
+  sampling code — their tie resolution is the baseline's, forever.
+- Baked sprites: **their own texture**, addressed by the integer cell `(x0, y0, w, h)` through one GLSL function (`BAKED_GLSL`, shared by body,
+  overlay, shadows and the self-test): `texel = cell.xy + clamp(floor(t × cell.zw), 0, cell.zw − 1)`, `t ∈ [0, 1]` across the quad, read at the
+  texel centre `(texel + 0.5) / size` (exact under nearest filtering for any size). Boundary policy: an edge exactly on a fragment centre goes
+  to the higher texel, the same for every atlas; never a read outside the cell; silhouette neighbours outside the cell are transparent.
+  `texture2D` at texel centres: no `texelFetch`, no GLSL migration.
+- Common batching kept: instance attribute `iCell` (w = 0 for generated frames), both textures bound to the same material, both paths read
+  without a branch around texture reads, the instance selects. **No extra draw call.** The rim select is made on the neighbour alpha
+  samples before `step` (made after `step`, it changed the compiled lighting by one level on 5 pixels in 51 renders — measured and removed).
+
+**Results** (`reviews/texel-addressing-4a-undecies/`): generated texture byte-identical to `eecea58` in every variant; parade of the 234
+generated frames, 17 scales x 3 batches, alternate mirrors: **0 px in 4 x 51 renders** (no baked / 96 / 1 248 rows / moved cell), negative
+control >= 141 590 px per render; x2 parade (17 scales, mirrors): **0 px between a 96-row and a 1 248-row texture and a moved cell**
+(2 x 51 renders), old addressing >= 102 px per render, negative control >= 78 375 px; scenes A-D with characters and `static=1` (including the
+hero spot in C): **0 px** (9 views x 4 variants); self-test: 0 texel mismatch at two cell positions, **bleed test 0 foreign pixel of 4 277 568**
+(192 renders of opaque, ringless cells), negative controls 6 616 / 10 804 / 37 517; x2 vs the validated preview **without character shadows:
+0 px** in A-D; **with shadows: 3 / 40 / 67 / 4 px (max 12/255), identical for every atlas size** — see the open point; perf (interleaved, 4
+rounds): 114 draws everywhere, GPU within noise (rounds 1-3: base 9.13 / 9.23 ms, 32 x2 NPCs 9.63 / 9.67 ms, old / new).
+
+**x2 cast shadow vs the old preview — ACCEPTED by the operator (2026-10-16): the shadow follows the body's integer texel rule; committed.** The old preview read the shadow alpha with the
+hardware's nearest sampler (fixed-point, ~1/256 texel) on its private 64 x 96 texture; the shared path reads it with the same integer floor as
+the body. They differ on near-ties of the cast shadow (a few ground scanlines). Stable for every atlas size. Options: (a) accept (the shadow
+then follows the body's own texel decisions) and commit; (b) baked frames in a texture **array** of fixed-size layers (one per density,
+`sampler2DArray`: a GLSL 3 construct, which three.js already compiles for WebGL2 but this renderer does not use yet), so the shadow can keep a
+hardware nearest read on a layer of exactly the preview's size — a wider shader change, to be approved and proven before a commit.

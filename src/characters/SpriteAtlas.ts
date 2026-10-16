@@ -3,11 +3,16 @@ import { FRAME_W, FRAME_H, renderFrame, posesFor, type CharSpec, type Dir, type 
 import { Sprite, ramp, Layer } from './PixelPainter';
 import { checkBakedSheet, DIRS, type BakedSheet } from './BakedSprites';
 
-export interface FrameRect { u0: number; v0: number; u1: number; v1: number }
+/** a generated frame: normalised UV rectangle in the generated texture; a baked frame: its integer cell in the baked texture
+ *  (x0, y0 = bottom-left data texel, w, h), the UV fields unused */
+export interface FrameRect { u0: number; v0: number; u1: number; v1: number; cell?: [number, number, number, number] }
 
-/** Bakes every character frame ONCE into a shared atlas (colour + emissive). The game's characters are 100% generated; baked (authored)
- *  sheets of any density k (frames 32k x 48k, see BakedSprites.ts) can join the same atlas, EXPERIMENTAL and DEV-flag only today. The
- *  generated cells keep their data rows (and bytes) whatever is added: baked blocks go in the rows above them. */
+/** width of the baked texture: 8 x2 frames per shelf */
+const BW = 512;
+
+/** Bakes every character frame ONCE into a shared atlas (colour + emissive). The game's characters are 100% generated. Baked (authored)
+ *  sheets of any density k (frames 32k x 48k, see BakedSprites.ts; EXPERIMENTAL, DEV flag only today) go to a second texture of the same
+ *  atlas, drawn by the same instanced meshes: adding them never changes the generated texture, so it can never change a generated sprite. */
 export class SpriteAtlas {
   readonly frames = new Map<string, FrameRect>();
   readonly counts = new Map<string, number>();
@@ -18,8 +23,10 @@ export class SpriteAtlas {
   frameCount = 0;
   buildMs = 0;
   rgba!: Uint8ClampedArray;
-  /** height of the generated part: data rows [0, generatedHeight) hold exactly the bytes of an atlas without baked sheets */
-  generatedHeight = 0;
+  /** baked sheets' texture (1 x 1 transparent when there is none) and its size / bytes */
+  bakedTexture!: THREE.DataTexture;
+  bakedWidth = 1; bakedHeight = 1;
+  bakedRgba!: Uint8ClampedArray;
   /** baked sheets in this atlas, by manifest id */
   readonly baked = new Map<string, { k: number; runtimeUse: BakedSheet['runtimeUse']; sha256: string; frames: number }>();
   /** explicit front-idle aliases (contract amendment B): `spec/dir/idle` keys that show the front idle frame */
@@ -46,29 +53,10 @@ export class SpriteAtlas {
     cells.push({ key: 'fx/bubble/dots', spr: makeBubble('dots') }, { key: 'fx/bubble/exclaim', spr: makeBubble('exclaim') });
     a.frameCount = cells.length;
     const rows = Math.ceil(cells.length / cols);
-    const W = cols * FRAME_W, H0 = rows * FRAME_H;
-    // baked blocks: shelf-packed in image rows [0, top) (data rows [H0, H)), one shelf per density, in sheet / frame order
-    const blocks: Array<{ s: BakedSheet; f: BakedSheet['frames'][number]; x: number; y: number }> = [];
-    let top = 0;
-    {
-      let x = W, y = 0, shelf = 0, k = 0;
-      for (const s of baked) {
-        const errs = checkBakedSheet(s);
-        if (errs.length) throw new Error(`baked sheet ${s.id}: ${errs.join('; ')}`);
-        if (specs.some((p) => p.id === s.id) || baked.filter((b) => b.id === s.id).length > 1) throw new Error(`baked sheet ${s.id}: id already used`);
-        const fw = FRAME_W * s.k, fh = FRAME_H * s.k;
-        for (const f of s.frames) {
-          if (s.k !== k || x + fw > W) { y += shelf; x = 0; shelf = fh; k = s.k; }
-          blocks.push({ s, f, x, y }); x += fw;
-        }
-      }
-      top = y + shelf;
-    }
-    const H = H0 + top;
-    if (H > maxTextureSize) throw new Error(`sprite atlas ${W} x ${H} exceeds MAX_TEXTURE_SIZE ${maxTextureSize}`);
+    const W = cols * FRAME_W, H = rows * FRAME_H;
     const data = new Uint8ClampedArray(W * H * 4), em = new Uint8ClampedArray(W * H * 4);
     cells.forEach((c, idx) => {
-      const cx = (idx % cols) * FRAME_W, cy = Math.floor(idx / cols) * FRAME_H + top;   // image-space row, below the baked shelves
+      const cx = (idx % cols) * FRAME_W, cy = Math.floor(idx / cols) * FRAME_H;
       for (let y = 0; y < FRAME_H; y++) for (let x = 0; x < FRAME_W; x++) {
         const s = (y * FRAME_W + x) * 4;
         const d = ((H - 1 - (cy + y)) * W + (cx + x)) * 4; // flip rows: data row 0 is v=0
@@ -78,14 +66,43 @@ export class SpriteAtlas {
       }
       a.frames.set(c.key, { u0: cx / W, u1: (cx + FRAME_W) / W, v1: 1 - cy / H, v0: 1 - (cy + FRAME_H) / H });
     });
+    const mk = (buf: Uint8ClampedArray, w: number, h: number, srgb: boolean) => {
+      const t = new THREE.DataTexture(new Uint8Array(buf.buffer), w, h, THREE.RGBAFormat, THREE.UnsignedByteType);
+      t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+      // pixel art: nearest sampling (the sprite shader also addresses texel centres explicitly)
+      t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false;
+      t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; t.needsUpdate = true;
+      return t;
+    };
+    a.texture = mk(data, W, H, true); a.emis = mk(em, W, H, false);
+    a.width = W; a.height = H; a.rgba = data;
+
+    // baked sheets: their OWN texture, so the generated texture (its size, bytes and UVs) never changes whatever is added. Frames are
+    // shelf-packed (one shelf per density, sheet / frame order); data row 0 is the bottom of the texture, a frame's bottom image row sits on
+    // its shelf's first data row. A baked frame is addressed by its integer cell (x0, y0, w, h), never by normalised UVs (SpriteRenderer).
+    const blocks: Array<{ s: BakedSheet; f: BakedSheet['frames'][number]; x: number; y: number }> = [];
+    let x = BW, y = 0, shelf = 0, k = 0;
+    for (const s of baked) {
+      const errs = checkBakedSheet(s);
+      if (errs.length) throw new Error(`baked sheet ${s.id}: ${errs.join('; ')}`);
+      if (specs.some((p) => p.id === s.id) || baked.filter((b) => b.id === s.id).length > 1) throw new Error(`baked sheet ${s.id}: id already used`);
+      const fw = FRAME_W * s.k, fh = FRAME_H * s.k;
+      if (fw > BW) throw new Error(`baked sheet ${s.id}: frames wider than the baked texture (${BW})`);
+      for (const f of s.frames) {
+        if (s.k !== k || x + fw > BW) { y += shelf; x = 0; shelf = fh; k = s.k; }
+        blocks.push({ s, f, x, y }); x += fw;
+      }
+    }
+    const BH = Math.max(1, y + shelf), bw = blocks.length ? BW : 1;
+    if (BH > maxTextureSize) throw new Error(`baked sprite texture ${BW} x ${BH} exceeds MAX_TEXTURE_SIZE ${maxTextureSize}`);
+    const bdata = new Uint8ClampedArray(bw * BH * 4);
     for (const { s, f, x: bx, y: by } of blocks) {
       const fw = FRAME_W * s.k, fh = FRAME_H * s.k;
-      for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) {
-        const src = (y * fw + x) * 4, d = ((H - 1 - (by + y)) * W + (bx + x)) * 4;
-        data[d] = f.rgba[src]; data[d + 1] = f.rgba[src + 1]; data[d + 2] = f.rgba[src + 2]; data[d + 3] = f.rgba[src + 3];
-        em[d + 3] = 255;   // a baked sheet has no emissive layer
+      for (let yy = 0; yy < fh; yy++) for (let xx = 0; xx < fw; xx++) {
+        const src = (yy * fw + xx) * 4, d = ((by + fh - 1 - yy) * bw + (bx + xx)) * 4;   // image row yy -> data row (bottom-up)
+        bdata[d] = f.rgba[src]; bdata[d + 1] = f.rgba[src + 1]; bdata[d + 2] = f.rgba[src + 2]; bdata[d + 3] = f.rgba[src + 3];
       }
-      a.frames.set(`${s.id}/${f.dir}/${f.anim}/${f.i}`, { u0: bx / W, u1: (bx + fw) / W, v1: 1 - by / H, v0: 1 - (by + fh) / H });
+      a.frames.set(`${s.id}/${f.dir}/${f.anim}/${f.i}`, { u0: 0, v0: 0, u1: 0, v1: 0, cell: [bx, by, fw, fh] });
     }
     for (const s of baked) {
       for (const f of s.frames) a.counts.set(`${s.id}/${f.anim}`, Math.max(a.counts.get(`${s.id}/${f.anim}`) ?? 0, f.i + 1));
@@ -99,16 +116,7 @@ export class SpriteAtlas {
       }
       a.baked.set(s.id, { k: s.k, runtimeUse: s.runtimeUse, sha256: s.sha256, frames: s.frames.length });
     }
-    const mk = (buf: Uint8ClampedArray, srgb: boolean) => {
-      const t = new THREE.DataTexture(new Uint8Array(buf.buffer), W, H, THREE.RGBAFormat, THREE.UnsignedByteType);
-      t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
-      // pixel art: nearest sampling (the sprite shader also addresses texel centres explicitly)
-      t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false;
-      t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; t.needsUpdate = true;
-      return t;
-    };
-    a.texture = mk(data, true); a.emis = mk(em, false);
-    a.width = W; a.height = H; a.rgba = data; a.generatedHeight = H0;
+    a.bakedTexture = mk(bdata, bw, BH, true); a.bakedWidth = bw; a.bakedHeight = BH; a.bakedRgba = bdata;
     a.buildMs = performance.now() - t0;
     return a;
   }

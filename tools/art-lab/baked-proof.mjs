@@ -7,7 +7,8 @@
 //        a 1920x1080 capture per view (a view = extra query, e.g. camera=B&player=2,1.5), every variant compared with the first one
 //   node tools/art-lab/baked-proof.mjs parade <outDir> "label|baseUrl|query[|uvbug]" ...
 //        every generated frame drawn by the production SpriteRenderer in a screen grid, 3 scales x 3 batches; compared with the first
-//        variant. `uvbug` = negative control: generated UVs normalised by the old atlas height (must differ)
+//        variant. `uvbug` = negative control on generated UVs, `cellbug` on baked cells (must differ). PARADE_BAKED=<id> parades that baked
+//        sheet instead of the generated frames; PARADE_SCALES=a,b,c overrides the 3 scales
 //   node tools/art-lab/baked-proof.mjs actors <out.json> "label|baseUrl|query" ...
 //        test 6: the actors right after a re-populate (spec, role, position, scale, tint, behaviour), compared with the first variant:
 //        every seeded character must be identical; authored ones may only be appended
@@ -23,7 +24,7 @@ import { decodePng, encodePng } from './png.mjs';
 const puppeteer = createRequire(import.meta.url)('puppeteer-core');
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', '/usr/bin/google-chrome'].find((p) => p && fs.existsSync(p));
 const [mode, out, ...rest] = process.argv.slice(2);
-const STEPS = Number(process.env.STEPS ?? 90), HIDE = process.env.HIDE ?? '';
+const STEPS = Number(process.env.STEPS ?? 90), HIDE = process.env.HIDE ?? '', NOSHADOW = process.env.NOSHADOW === '1';
 
 /** pixel diff: count of pixels whose RGB differ, max channel delta, bounding box; writes an amplified diff image when out is given */
 function diff(a, b, outFile) {
@@ -50,7 +51,7 @@ async function open(browser, base, query) {
   if (err) throw new Error(`${base}?${query}: ${err}`);
   // the loading screen fades out over the canvas for 0.8 s after boot: wait until main.ts removed it
   await page.waitForFunction(() => ![...document.body.children].some((e) => e.textContent?.includes('PAINTING') || e.textContent?.includes('GENERATING')), { timeout: 10000 });
-  await page.evaluate((HIDE) => {
+  await page.evaluate((HIDE, NOSHADOW) => {
     const a = window.__app;
     if (!a.__u) { a.__u = a.update.bind(a); a.__r = a.render.bind(a); a.update = () => {}; a.render = () => {}; }
     window.__settle = (steps) => {
@@ -61,9 +62,12 @@ async function open(browser, base, query) {
       a.particles.rng = new a.particles.rng.constructor(99);   // the particles' own RNG keeps running between page loads otherwise
       a.simTime = 0; a.graph.snap(a.actors.player.pos, a.rig);
       const now = performance.now; performance.now = () => 1000;
-      try { for (let i = 0; i < steps; i++) { a.__u(1 / 60); if (HIDE) for (const x of a.actors.actors) if (x.spec === HIDE) x.hidden = true; } a.__r(); } finally { performance.now = now; }
+      try { for (let i = 0; i < steps; i++) { a.__u(1 / 60); if (HIDE) for (const x of a.actors.actors) if (x.spec === HIDE) x.hidden = true; }
+        // NOSHADOW=1: hide the character shadow meshes (main renderer and the old preview's own) to isolate the sprite bodies
+        if (NOSHADOW) for (const g of [a.sprites.group, window.__labSprite?.group]) if (g) g.children[1].visible = false;
+        a.__r(); } finally { performance.now = now; }
     };
-  }, HIDE);
+  }, HIDE, NOSHADOW);
   return page;
 }
 const shot = async (page) => decodePng(Buffer.from(await page.screenshot({ type: 'png' })));
@@ -84,7 +88,7 @@ try {
         const h = async (u8) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', u8))].map((x) => x.toString(16).padStart(2, '0')).join('');
         const col = new Uint8Array(at.rgba.buffer), em = at.emis.image.data;
         const gen = (buf) => buf.subarray(0, W * H0 * 4);
-        return { size: [W, H], generatedHeight: H0, frames: at.frames.size, colour: await h(col), emissive: await h(em), generatedColour: await h(gen(col)), generatedEmissive: await h(gen(em)), aliases: at.aliases ?? null, baked: at.baked ? Object.fromEntries(at.baked) : null };
+        return { size: [W, H], generatedHeight: H0, frames: at.frames.size, colour: await h(col), emissive: await h(em), generatedColour: await h(gen(col)), generatedEmissive: await h(gen(em)), aliases: at.aliases ?? null, baked: at.baked ? Object.fromEntries(at.baked) : null, bakedTexture: at.bakedRgba ? [at.bakedWidth, at.bakedHeight, (await h(new Uint8Array(at.bakedRgba.buffer))).slice(0, 16)] : null };
       })) });
       await page.close();
     }
@@ -96,7 +100,8 @@ try {
       let ref = null; const tag = view.replace(/[^a-z0-9]+/gi, '_');
       // per-view warm-up: the FIRST load of a framing in a browser session differs from every later one (measured on camera A: 69 634 px,
       // the same against every later load, which agree with each other); a throw-away load of that view comes first
-      { const p = await open(browser, variants[0].base, `${variants[0].query}&${view}`); await p.evaluate((s) => window.__settle(s), STEPS); await p.screenshot({ type: 'png' }); await p.close(); }
+      // (one warm-up per distinct server: the effect is per origin — measured on camera A with two servers)
+      for (const w0 of [...new Map(variants.map((v) => [v.base, v])).values()]) { const p = await open(browser, w0.base, `${w0.query}&${view}`); await p.evaluate((s) => window.__settle(s), STEPS); await p.screenshot({ type: 'png' }); await p.close(); }
       for (const v of variants) {
         const page = await open(browser, v.base, `${v.query}&${view}`);
         await page.evaluate((s) => window.__settle(s), STEPS);
@@ -114,13 +119,20 @@ try {
     for (const v of variants) {
       const page = await open(browser, v.base, v.query);
       await page.evaluate((s) => window.__settle(s), STEPS);
-      const n = await page.evaluate((bug) => {
+      const n = await page.evaluate((flag, bakedId) => {
         const a = window.__app, at = a.atlas, H = at.height, H0 = at.generatedHeight ?? H, top = H - H0;
-        // the generated frames only (baked keys hold an id with a dash; fx bubbles are generated too)
-        const keys = [...at.frames.keys()].filter((k) => !at.baked || !at.baked.has(k.split('/')[0])).filter((k) => !k.startsWith('test-'));
-        if (bug) for (const k of keys) { const r = at.frames.get(k), cy0 = (1 - r.v1) * H - top; at.frames.set(k, { ...r, v1: 1 - cy0 / H0, v0: 1 - (cy0 + 48) / H0 }); }
+        // PARADE_BAKED=<id>: that baked sheet's frames, repeated (48 copies, alternate flips); otherwise the generated frames only
+        // (baked keys hold an id with a dash; fx bubbles are generated too)
+        const keys = bakedId ? Array.from({ length: 48 }, (_, i) => [...at.frames.keys()].filter((k) => k.startsWith(bakedId + '/down/'))[i % Math.max(1, [...at.frames.keys()].filter((k) => k.startsWith(bakedId + '/down/')).length)])
+          : [...at.frames.keys()].filter((k) => !at.baked || !at.baked.has(k.split('/')[0])).filter((k) => !k.startsWith('test-'));
+        // negative controls: uvbug = generated UVs normalised by a wrong height (5d10a37 layout) or, with a fixed generated texture, shifted
+        // by one texel row; cellbug = baked cells one row off
+        if (flag === 'uvbug') for (const k of new Set(keys)) { const r = at.frames.get(k);
+          if (top) { const cy0 = (1 - r.v1) * H - top; at.frames.set(k, { ...r, v1: 1 - cy0 / H0, v0: 1 - (cy0 + 48) / H0 }); }
+          else at.frames.set(k, { ...r, v1: r.v1 + 1 / H, v0: r.v0 + 1 / H }); }
+        if (flag === 'cellbug') for (const k of new Set(keys)) { const r = at.frames.get(k); if (r.cell) at.frames.set(k, { ...r, cell: [r.cell[0], r.cell[1] + 1, r.cell[2], r.cell[3]] }); }
         window.__keys = keys; return keys.length;
-      }, v.flag === 'uvbug');
+      }, v.flag ?? '', process.env.PARADE_BAKED ?? '');
       let bi = 0;
       const SCALES = (process.env.PARADE_SCALES ?? '0.7,1.15,1.9').split(',').map(Number);   // e.g. a dense sweep for texel-edge ties
       for (const scale of SCALES) for (let batch = 0; batch < 3; batch++) {
@@ -130,7 +142,7 @@ try {
           const cols = 16, rows = Math.ceil(list.length / cols), W = innerWidth, H = innerHeight;
           const rates = { walk: 7.5, carry: 7.5, hammer: 5.5, talk: 4, idle: 1.7 };
           const actors = list.map((k, i) => {
-            const [spec, dir, anim, fi] = k.split('/');
+            const [spec, dir, anim, fi] = k.split('/');   // a baked id never contains '/'
             // screen-grid anchor -> ground point (y = 0) under it
             const sx = ((i % cols) + 0.5) / cols * 2 - 1, sy = 1 - (Math.floor(i / cols) + 0.85) / rows * 1.7;
             const p0 = new V(sx, sy, 0.2).unproject(cam), p1 = new V(sx, sy, 0.9).unproject(cam), t = -p0.y / (p1.y - p0.y);

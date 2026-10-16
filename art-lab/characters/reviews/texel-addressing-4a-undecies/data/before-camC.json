@@ -1,0 +1,33 @@
+[
+ {
+  "view": "camera=C&player=9.6,1.0",
+  "variant": "baseline-eecea58",
+  "reference": true
+ },
+ {
+  "view": "camera=C&player=9.6,1.0",
+  "variant": "before-5d10a37-816-notspawned",
+  "vs": "baseline-eecea58",
+  "pixels": 16,
+  "maxDelta": 201,
+  "box": [
+   1095,
+   665,
+   43,
+   1
+  ]
+ },
+ {
+  "view": "camera=C&player=9.6,1.0",
+  "variant": "before-5d10a37-1968-notspawned",
+  "vs": "baseline-eecea58",
+  "pixels": 20,
+  "maxDelta": 201,
+  "box": [
+   1094,
+   665,
+   44,
+   1
+  ]
+ }
+]

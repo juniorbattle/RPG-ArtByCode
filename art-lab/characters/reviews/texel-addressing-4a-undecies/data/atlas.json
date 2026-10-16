@@ -1,0 +1,131 @@
+[
+ {
+  "label": "baseline-eecea58",
+  "size": [
+   512,
+   720
+  ],
+  "generatedHeight": 720,
+  "frames": 234,
+  "colour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "emissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "generatedColour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "generatedEmissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "aliases": null,
+  "baked": null,
+  "bakedTexture": null
+ },
+ {
+  "label": "fixed-no-baked",
+  "size": [
+   512,
+   720
+  ],
+  "generatedHeight": 720,
+  "frames": 234,
+  "colour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "emissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "generatedColour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "generatedEmissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "aliases": [],
+  "baked": {},
+  "bakedTexture": [
+   1,
+   1,
+   "df3f619804a92fdb"
+  ]
+ },
+ {
+  "label": "fixed-dockworker",
+  "size": [
+   512,
+   720
+  ],
+  "generatedHeight": 720,
+  "frames": 235,
+  "colour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "emissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "generatedColour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "generatedEmissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "aliases": [],
+  "baked": {
+   "dockworker-x2-v1": {
+    "k": 2,
+    "runtimeUse": "lab",
+    "sha256": "9e1de3ba1ff1bacbde78b152275c9c34dcb33c04a612c5c7cfd1ae9cfbc48441",
+    "frames": 1
+   }
+  },
+  "bakedTexture": [
+   512,
+   96,
+   "109cc13238a87b36"
+  ]
+ },
+ {
+  "label": "fixed-dockworker+103",
+  "size": [
+   512,
+   720
+  ],
+  "generatedHeight": 720,
+  "frames": 338,
+  "colour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "emissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "generatedColour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "generatedEmissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "aliases": [],
+  "baked": {
+   "dockworker-x2-v1": {
+    "k": 2,
+    "runtimeUse": "lab",
+    "sha256": "9e1de3ba1ff1bacbde78b152275c9c34dcb33c04a612c5c7cfd1ae9cfbc48441",
+    "frames": 1
+   },
+   "test-synthetic": {
+    "k": 2,
+    "runtimeUse": "lab",
+    "sha256": "synthetic",
+    "frames": 103
+   }
+  },
+  "bakedTexture": [
+   512,
+   1248,
+   "e658805c400e077c"
+  ]
+ },
+ {
+  "label": "fixed-103+dockworker",
+  "size": [
+   512,
+   720
+  ],
+  "generatedHeight": 720,
+  "frames": 338,
+  "colour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "emissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "generatedColour": "ec5de75bc5ced0cf5d2489dfaf84337b410a892dbf0dbe73ae589e0b2da7d066",
+  "generatedEmissive": "ceed1caf2e86d64b8aee04e7f30a78868390f93b169460f5d7fe6ae2dd77cf79",
+  "aliases": [],
+  "baked": {
+   "test-synthetic": {
+    "k": 2,
+    "runtimeUse": "lab",
+    "sha256": "synthetic",
+    "frames": 103
+   },
+   "dockworker-x2-v1": {
+    "k": 2,
+    "runtimeUse": "lab",
+    "sha256": "9e1de3ba1ff1bacbde78b152275c9c34dcb33c04a612c5c7cfd1ae9cfbc48441",
+    "frames": 1
+   }
+  },
+  "bakedTexture": [
+   512,
+   1248,
+   "5867f3172b0d7e22"
+  ]
+ }
+]
