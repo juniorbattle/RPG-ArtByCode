@@ -56,7 +56,8 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 - `tools/eval.mjs` honours BASE_URL (serve a frozen baseline worktree on :5174 for A/B)
 - `npm run art:doctor` — read-only report of the character art toolchain (Node, repo, Art Lab, Aseprite, Aseprite AI Artist);
   "Aseprite not installed" is a valid state (exit 0) and it never reports the integration as validated. `-- --json` available.
-- `npm run art:validate` — provenance manifests (`art-lab/characters/manifests/*.manifest.json`) + orphan sources / exports
+- `npm run art:validate` — provenance manifests (`art-lab/characters/manifests/*.manifest.json`) + orphan sources / exports + archived
+  reference sheets (`art-lab/characters/reference/sources/`: each file against its `.source.json` record, SHA-256 and size)
 - `npm run art:sheet -- <sheet.png> [meta.json] [--out f.png] [--scale 4]` — labelled nearest-neighbour review contact sheet
   (Windows PowerShell drops the first `--` of any `npm run x -- flags` and npm then eats the flags: write `npm run x '--' flags`
   or call `node tools/art-lab/<script>.mjs flags` directly)

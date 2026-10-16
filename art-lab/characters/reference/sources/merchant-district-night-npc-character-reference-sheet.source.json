@@ -1,0 +1,33 @@
+{
+  "kind": "archived-source-sheet",
+  "file": "merchant-district-night-npc-character-reference-sheet.webp",
+  "sha256": "05c101db487ecb5d1c1f7f41eff1a2a059ef2d4ce3bc62a750ec68dc4f6b97af",
+  "bytes": 377714,
+  "format": "WebP (VP8, lossy) 1122 x 1402; its only metadata is a generic 456-byte sRGB ICC profile (copyright \"Google Inc. 2016\"); no EXIF, XMP or C2PA",
+  "content": "sheet \"Cite du Tournoi - Merchant District (Night) - NPC CHARACTER REFERENCE SHEET\" (side panel \"Merchant District NPC Roster\"), with a night canal vignette and a six-colour swatch strip: 14 characters numbered 01-14, one view each (mostly three-quarter), four colour swatches each - 01 Protagonist (Young Adventurer), 02 Fish Merchant, 03 Spice Merchant, 04 Blacksmith Apprentice, 05 Canal Dock Worker, 06 Lantern Seller, 07 Innkeeper / Tavern Worker, 08 City Guard, 09 Noble Customer, 10 Cloaked Traveler, 11 Child Street Runner, 12 Flower Seller, 13 Mysterious Buyer, 14 Old Woman Vendor",
+  "classification": {
+    "current": "C - Sprite Quality Reference, COMPLEMENTARY (operator, 2026-10-16): an original ChatGPT creation, same set of project art references but a generation distinct from the 24-NPC series; especially useful for key characters, costumes and elaborate silhouettes; does not replace the approved x2 v1 baseline for standard NPCs; kept unchanged when archiving (operator, 2026-10-16)",
+    "earlier": "Pass 4A (2026-10-15): used by the agent as \"reference C, supporting roster\" (support only) without operator confirmation; not named by the operator's clarification of 2026-10-16 (Pass 4A-duodecies) until the operator classified it (Pass 4A-terdecies)"
+  },
+  "nature": "a re-encoded copy of a ChatGPT / OpenAI generation (operator, 2026-10-16) - NOT the original file. Archived byte for byte, unmodified.",
+  "names": {
+    "session": "image 3 pasted by the operator in the working session of 2026-10-15 (with images 1 and 2, written 21:32:58 UTC)"
+  },
+  "provenance": "confirmed by operator declaration, NOT cryptographically certified (no C2PA): ../../provenance/dockworker-x2-v1/source-declaration.json (declaration 3, series.complementary)",
+  "rights": "use as a source and art reference for the project, including in the creation of assets for a commercial game, authorised by the operator (2026-10-16), subject to applicable third-party rights; third-party rights NOT exhaustively verified",
+  "archived": {
+    "date": "2026-10-16",
+    "decision": "operator: versioned conservation of the two remaining ChatGPT sheets (NPC 17-24 and the complementary 14-character sheet) authorised, byte for byte, with provenance records; each keeps its art classification",
+    "pass": "4A-quattuordecies",
+    "rule": "never edited, re-encoded or replaced; an original ChatGPT file found later is added as a separate file with its own record, next to this one"
+  },
+  "derived": [],
+  "usedAsReference": [
+    {
+      "asset": "porter-gm-v1 (experimental baseline, not approved)",
+      "how": "Pass 4A reference C, supporting roster (see classification.earlier)",
+      "record": "../../manifests/porter-gm-v1.manifest.json"
+    }
+  ],
+  "notInvented": "No original PNG, generation date, model, prompt, account or C2PA data is recorded: none is known."
+}

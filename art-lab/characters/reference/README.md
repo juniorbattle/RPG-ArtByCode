@@ -24,8 +24,11 @@ rights, which have not been exhaustively verified**. Not an authorisation to rep
 | Sheet | Role | SHA-256 | In the repo |
 |---|---|---|---|
 | "Cité du Tournoi — Merchant District — Night", NPC 01-16 | C — the 24-NPC series; source of the approved `dockworker-x2-v1` baseline | `1c3bc603…36ce` | `sources/merchant-district-night-npc-01-16.webp` |
-| same series, NPC 17-24 | C — the 24-NPC series | `3b30b930…d6d4` | no (not archived) |
-| "Cité du Tournoi — Merchant District — NPC CHARACTER REFERENCE SHEET", 14 characters | C — **complementary** reference (a distinct generation): key characters, costumes, elaborate silhouettes; does not replace the x2 v1 baseline for standard NPCs | `05c101db…97af` | no (not archived) |
+| same series, NPC 17-24 | C — the 24-NPC series | `3b30b930…d6d4` | `sources/merchant-district-night-npc-17-24.webp` |
+| "Cité du Tournoi — Merchant District (Night) — NPC CHARACTER REFERENCE SHEET", 14 characters | C — **complementary** reference (a distinct generation): key characters, costumes, elaborate silhouettes; does not replace the x2 v1 baseline for standard NPCs | `05c101db…97af` | `sources/merchant-district-night-npc-character-reference-sheet.webp` |
+
+All three are re-encoded copies (WebP pasted in a working session), not the original ChatGPT files; each is archived byte for byte with
+its record (`sources/<name>.source.json`: format, content, classification, provenance, rights, derived assets).
 
 Storage rules:
 
@@ -33,7 +36,9 @@ Storage rules:
   only `.gitkeep` today.
 - `sources/`: **source sheets archived byte for byte** with operator approval, each with a record `<name>.source.json` (SHA-256,
   format, declared provenance, rights decision, the assets derived from it and how to rebuild them). Never edited, re-encoded or replaced;
-  an original found later is added as a separate file next to its copy. `*.webp` / `*.png` are binary in `.gitattributes`.
+  an original found later is added as a separate file next to its copy, with its own record (a distinct base name: one record per file).
+  `*.webp` / `*.png` are binary in `.gitattributes`; `npm run art:validate` checks every file against its record (SHA-256, size) and
+  reports a file without a record or a record without its file.
 - External inspiration (C) is committed only if its licence permits it **and** the operator approves. Otherwise cite it by
   URL / title in the manifest (`references[].label` + `note`), without storing the image.
 - Store the evidence next to the image: a short note with its origin (command, URL, seed, date) so the reference can be re-derived.

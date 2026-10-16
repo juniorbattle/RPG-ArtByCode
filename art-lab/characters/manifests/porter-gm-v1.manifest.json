@@ -15,8 +15,8 @@
   },
   "references": [
     { "category": "A", "label": "Merchant District runtime, cameras A / B / C (seed 1842, freeze 7.3)", "path": "screenshots/4a/runtime-B-porter-gm-v1.png" },
-    { "category": "B", "label": "Sheet used as Reference B during Pass 4A: NPCs 17-24, six-view turnarounds", "path": null, "note": "MISCLASSIFIED: the operator's actual quality target is the '16 generic townsfolk (unified style & scale)' sheet, which Pass 4A wrongly treated as rejected; not stored in the repository" },
-    { "category": "C", "label": "Supporting NPC roster (canal dock worker, props, materials)", "path": null, "note": "supplied in the Pass 4A conversation; not stored in the repository" }
+    { "category": "B", "label": "Sheet used as Reference B during Pass 4A: NPCs 17-24, six-view turnarounds", "path": "art-lab/characters/reference/sources/merchant-district-night-npc-17-24.webp", "note": "MISCLASSIFIED: the operator's actual quality target is the '16 generic townsfolk (unified style & scale)' sheet, which Pass 4A wrongly treated as rejected. Operator classification (2026-10-16): part of the 24-NPC series (category C). Archived byte for byte (operator, 2026-10-16): path, record merchant-district-night-npc-17-24.source.json; earlier note: 'not stored in the repository'" },
+    { "category": "C", "label": "Supporting NPC roster (canal dock worker, props, materials)", "path": "art-lab/characters/reference/sources/merchant-district-night-npc-character-reference-sheet.webp", "note": "supplied in the Pass 4A conversation: the 'NPC CHARACTER REFERENCE SHEET' (14 characters). Operator classification (2026-10-16): complementary reference (category C). Archived byte for byte (operator, 2026-10-16): path, record merchant-district-night-npc-character-reference-sheet.source.json; earlier note: 'not stored in the repository'" }
   ],
   "approved": false,
   "runtimeUse": "lab",

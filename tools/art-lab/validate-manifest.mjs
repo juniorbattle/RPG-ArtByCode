@@ -1,7 +1,9 @@
 // Provenance manifest validator for the Art Lab (no dependencies, never modifies anything).
 //   node tools/art-lab/validate-manifest.mjs [--strict] [--json] [manifest.json ...]
 // Default: every art-lab/characters/manifests/*.manifest.json, plus the documented example, plus an orphan scan
-// (sources / exports that no manifest claims). Exit 1 on errors (or on warnings with --strict).
+// (sources / exports that no manifest claims), plus the archived reference sheets of art-lab/characters/reference/sources/
+// (each file must still match the SHA-256 and size of its <name>.source.json record). Exit 1 on errors (or on warnings with --strict).
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -11,6 +13,7 @@ export const MANIFEST_DIR = 'art-lab/characters/manifests';
 export const EXAMPLE = 'art-lab/characters/manifest.example.json';
 const SOURCE_DIR = 'art-lab/characters/source';
 const EXPORT_DIR = 'art-lab/characters/exports';
+const ARCHIVE_DIR = 'art-lab/characters/reference/sources';
 
 export const STATUSES = ['planned', 'experimental', 'candidate', 'approved', 'rejected', 'superseded'];
 const PIPELINES = ['aseprite-ai-artist', 'aseprite-manual', 'procedural', 'external', 'unknown'];
@@ -136,8 +139,33 @@ export function validateAll({ root = ROOT } = {}) {
     if (!fs.existsSync(abs)) continue;
     for (const f of fs.readdirSync(abs)) if (exts.includes(path.extname(f).toLowerCase()) && !claimed.has(`${d}/${f}`)) orphans.push(`${d}/${f}`);
   }
+
+  // archived reference sheets: each file keeps the bytes named by its <name>.source.json record (never edited or re-encoded)
+  const archived = [], sd = path.join(root, ARCHIVE_DIR);
+  if (fs.existsSync(sd)) {
+    const names = fs.readdirSync(sd).filter((f) => !f.startsWith('.')).sort(), REC = '.source.json';
+    const base = (f) => f.replace(/\.[^.]*$/, '');
+    for (const f of names.filter((n) => !n.endsWith(REC))) {
+      const rec = base(f) + REC, a = { file: `${ARCHIVE_DIR}/${f}`, errors: [] };
+      if (!names.includes(rec)) a.errors.push(`no record ${rec}`);
+      else {
+        let r = null;
+        try { r = JSON.parse(fs.readFileSync(path.join(sd, rec), 'utf8')); } catch (e) { a.errors.push(`${rec}: invalid JSON: ${e.message}`); }
+        if (r) {
+          const b = fs.readFileSync(path.join(sd, f));
+          if (r.file !== f) a.errors.push(`${rec} names "${r.file}"`);
+          if (r.bytes !== b.length) a.errors.push(`${b.length} bytes, the record says ${r.bytes}`);
+          if (r.sha256 !== crypto.createHash('sha256').update(b).digest('hex')) a.errors.push('SHA-256 differs from the record: the archived bytes changed');
+        }
+      }
+      archived.push(a);
+    }
+    for (const rec of names.filter((n) => n.endsWith(REC)))
+      if (!names.some((n) => !n.endsWith(REC) && base(n) + REC === rec)) archived.push({ file: `${ARCHIVE_DIR}/${rec}`, errors: ['record without its archived file'] });
+  }
   const count = (k) => results.reduce((n, r) => n + r[k].length, 0);
-  return { results, orphans, manifests: results.filter((r) => !r.example).length, errors: count('errors'), warnings: count('warnings') + orphans.length };
+  return { results, orphans, archived, manifests: results.filter((r) => !r.example).length,
+    errors: count('errors') + archived.reduce((n, a) => n + a.errors.length, 0), warnings: count('warnings') + orphans.length };
 }
 
 function main() {
@@ -150,7 +178,7 @@ function main() {
       let m; try { m = JSON.parse(fs.readFileSync(path.resolve(f), 'utf8')); } catch (e) { return { file: rel, example: false, id: null, errors: [`cannot read / parse: ${e.message}`], warnings: [] }; }
       return { file: rel, example: rel === EXAMPLE, id: m?.id ?? null, ...validateManifest(m, { file: rel, example: rel === EXAMPLE }) };
     });
-    report = { results, orphans: [], manifests: results.length, errors: results.reduce((n, r) => n + r.errors.length, 0), warnings: results.reduce((n, r) => n + r.warnings.length, 0) };
+    report = { results, orphans: [], archived: [], manifests: results.length, errors: results.reduce((n, r) => n + r.errors.length, 0), warnings: results.reduce((n, r) => n + r.warnings.length, 0) };
   } else report = validateAll();
 
   if (flags.has('--json')) console.log(JSON.stringify(report, null, 2));
@@ -161,7 +189,11 @@ function main() {
       r.warnings.forEach((w) => console.log(`       warn:  ${w}`));
     }
     report.orphans.forEach((o) => console.log(`WARN ${o}  has no provenance manifest`));
-    console.log(`\n${report.manifests} manifest(s), ${report.errors} error(s), ${report.warnings} warning(s)`);
+    for (const a of report.archived) {
+      console.log(`${a.errors.length ? 'FAIL' : 'OK  '} ${a.file}  (archived source${a.errors.length ? '' : ': SHA-256 and size match its record'})`);
+      a.errors.forEach((e) => console.log(`       error: ${e}`));
+    }
+    console.log(`\n${report.manifests} manifest(s), ${report.archived.length} archived source(s), ${report.errors} error(s), ${report.warnings} warning(s)`);
   }
   process.exit(report.errors || (flags.has('--strict') && report.warnings) ? 1 : 0);
 }

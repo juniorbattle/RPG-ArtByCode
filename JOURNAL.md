@@ -1473,6 +1473,53 @@ chemin partagé + `dynwalk` → paquet de provenance, `runtimeUse: "lab"`, arrê
   consigne de cette passe dit « ne pousse ni ne fusionne sans mon autorisation ». Appliqué : la consigne explicite de la passe (commit
   local seulement) ; arbitrage demandé. **Arbitré (opérateur, 16/10)** : la règle d'`AGENTS.md` reste la règle par défaut ; branche poussée.
 
+## Passe 4A-quattuordecies — La marchande : décisions, correction de méthode ; archivage des deux autres planches (2026-10-16)
+
+### Décisions opérateur (2026-10-16)
+1. Proposition du 2e PNJ validée : **marchande adulte** ; **une seule figure originale**, entière, de face (pas une planche) ; le
+   **nouveau prompt artistique de l'opérateur** remplace l'ébauche ; **hauteur monde 1,66 m** pour commencer, indépendante de la densité
+   64 × 96. Niveau de qualité `dockworker-x2-v1`, référence stylistique la planche 01-16, aucun personnage existant reproduit.
+2. **Correction de méthode** : ne pas forcer la génération initiale sur une grille de pixels parfaite si cela détériore le modelé, les
+   expressions et les matières ; E2 a montré que le ×2 peut préserver une illustration riche et qu'un nettoyage trop strict dégrade ; la
+   grille 64 × 96, la rangée des pieds 90 et les marges transparentes sont des contraintes de l'**asset reconstruit**, pas de l'illustration source.
+3. Conservation versionnée des planches PNJ 17-24 et « 14 personnages », à l'octet, avec fiches de provenance ; classification artistique conservée.
+4. Production : **attendre le PNG original** de la marchande ; ensuite source conservée sans transformation, provenance, ×2, comparaison
+   au docker approuvé, au plus deux itérations Aseprite ciblées, Character Lab + A / B / C / D, stabilité et performances par le renderer
+   partagé, critique indépendante. Ni roster, ni orientation, ni animation, ni remplacement de la marchande existante ; `runtimeUse:
+   "lab"` jusqu'à validation explicite ; pas de fusion dans `main` avant que la tâche artistique soit terminée et acceptée.
+
+### Archivage des deux planches — [OK]
+- Copies retrouvées dans le dossier temporaire de la séance (images 2 et 3 collées le 15/10, 21:32:58 UTC), empreintes égales à celles
+  déjà consignées ; copiées à l'octet (`cmp` identique) : `reference/sources/merchant-district-night-npc-17-24.webp` (SHA-256
+  `3b30b930…d6d4`, 311 654 o, WebP 1448 × 1086) et `reference/sources/merchant-district-night-npc-character-reference-sheet.webp`
+  (`05c101db…97af`, 377 714 o, 1122 × 1402). Même structure que la planche 01-16 : VP8X + profil ICC sRGB générique de 456 o
+  (« Google Inc. 2016 ») + VP8 avec pertes ; ni EXIF, ni XMP, ni C2PA. Attribut binaire déjà en place (`*.webp binary`).
+- Fiches `.source.json` : format, contenu lu sur l'image, classification (actuelle et ancienne), nature « copie réencodée, pas
+  l'original », provenance, droits, aucun dérivé, usage comme référence par `porter-gm-v1`, « rien d'inventé ».
+- Classification conservée : 17-24 = série des 24 PNJ (C) ; « 14 personnages » = référence complémentaire (C). L'ancien classement de la
+  passe 4A (B « PNJ raffinés », C « roster de soutien », jamais confirmé) est gardé comme historique.
+- `source-declaration.json` : 4e déclaration citée mot pour mot, chemins des trois planches, anciennes valeurs dans `history`. Manifeste
+  `porter-gm-v1` : `references[].path` vers les planches archivées (catégories d'époque et note « MISCLASSIFIED » gardées, statut et
+  approbation inchangés). `reference/README.md`, README des personnages et de l'Art Lab, `AGENTS.md` (commande) à jour.
+- **Nouveau contrôle** : `npm run art:validate` vérifie chaque fichier de `reference/sources/` contre sa fiche (SHA-256, taille, nom) et
+  signale un fichier sans fiche ou une fiche sans fichier. Contrôles négatifs sur une copie jetable (un bit inversé, un octet ajouté,
+  fichier retiré, fichier sans fiche, fiche qui nomme un autre fichier) : 5 / 5 détectés ; copie intacte : 0. Dépôt : 3 sources OK, 0 erreur.
+
+### Brief de la marchande — [OK] mis à jour, rien produit
+- `art-lab/characters/briefs/npc2-proposal.md` passe de « proposition » à « brief validé » : décisions, prompt de l'opérateur cité tel quel
+  (§ 6 ; l'ébauche reste dans `2bc05a6`), brief aligné sur ce prompt (35-40 ans, 3-3,5 têtes, châle, bourse, un seul accent ambré),
+  contraintes séparées « illustration source » / « asset reconstruit », méthode en 10 étapes selon la liste de l'opérateur, critère
+  d'originalité (côte à côte avec les marchandes des trois planches).
+- Retiré : la règle de la proposition « une source sans grille propre est régénérée, pas réparée ». La mesure de la source règle la
+  reconstruction, elle ne la refuse pas ; une régénération ne se décide que sur l'art (opérateur).
+- **[?] Risque signalé** : une figure seule en grand donnera ≈ 10-15 px source par texel (v1 : 1,775) ; la médiane de 9 points de
+  `reconstruct-grid.mjs` n'a été validée que sur des blocs de ≈ 3,5 px : à mesurer sur la source (contre une moyenne par case) avant de choisir.
+
+### Pensée
+- La règle « régénérer une source sans grille » de la proposition contredisait E2 : la planche de référence elle-même n'est pas du pixel
+  art strict (4A-bis) et le ×2 n'a de la forme que parce qu'il rééchantillonne la peinture à l'intérieur des blocs (4A-quater). Les
+  contraintes de format appartiennent à l'asset reconstruit.
+
 ---
 
 ## À reprendre (par priorité)
@@ -1480,15 +1527,17 @@ chemin partagé + `dynwalk` → paquet de provenance, `runtimeUse: "lab"`, arrê
 **-1. PROCHAIN** — Passe 4A-undecies close : adressage par case entière commité (sprites générés identiques au bit à `eecea58`, ×2 stable
 quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ; écart de l'ombre portée du ×2 face à l'ancien aperçu
 (3-67 px par vue, ≤ 12 / 255) **accepté par l'opérateur** : l'ombre suit la règle entière du corps. Restent ouverts : C2 (PNG versionné) à confirmer ;
-droits : usage comme source **autorisé** (16/10, sous réserve des droits de tiers, non vérifiés exhaustivement), source archivée dans
-`reference/sources/` ; les originaux restent à retrouver (l'opérateur s'en charge). **Prochain : décision de l'opérateur sur la proposition
-du deuxième PNJ** (`art-lab/characters/briefs/npc2-proposal.md` : marchande recommandée, prompt à valider, PNG d'origine téléchargé) . Restauration : `5d10a37`. Rien poussé.
+droits : usage comme source **autorisé** (16/10, sous réserve des droits de tiers, non vérifiés exhaustivement), les trois planches archivées dans
+`reference/sources/` (octets contrôlés par `art:validate`) ; les originaux restent à retrouver (l'opérateur s'en charge). **Prochain : la marchande** (brief validé le 16/10,
+`art-lab/characters/briefs/npc2-proposal.md`) : **attendre le PNG original fourni par l'opérateur**, puis les étapes du brief (archivage à l'octet,
+provenance, ×2, comparaison à v1, ≤ 2 itérations Aseprite, Character Lab + A-D, stabilité / perf, critique indépendante) ; `runtimeUse: "lab"` ;
+pas de fusion dans `main` avant acceptation. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
 tramée ; la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un nouvel occluder.
 Avant d'étendre : densité du cast (héros), liseré dépendant de la densité, largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A, personnage **original** au même niveau.
 Pas de roster, de généralisation ni de personnage clé ; E4 **non lancée**. Le modelé ×1,5 n'est plus la voie principale. Décisions ouvertes : liseré par sprite (non implémenté),
-archivage éventuel des planches PNJ 17-24 et « 14 personnages » (empreintes consignées, copies seulement temporaires), quelles planches étaient réellement rejetées. `porter-gm-v1` reste une baseline expérimentale.
+quelles planches étaient réellement rejetées (la consigne de 4A en parlait sans les montrer ; les trois planches archivées sont toutes classées comme références). `porter-gm-v1` reste une baseline expérimentale.
 Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, test de fumée `smoke-test/4a0b/` après toute mise à jour (épinglé 0.8.2, auto-update coupé), critique par agent neuf (cf. `art-lab/README.md`).
 -0b. **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise appli. Servir les baselines sur `:518x --strictPort` ;
   décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
@@ -1580,4 +1629,8 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   manque ne se déduit pas. L'absence d'original n'interdit pas à elle seule la production : droits et autorisation s'évaluent à part. Un
   statut remplacé se garde dans un historique, jamais effacé.
 - Une source archivée se versionne **à l'octet** (empreinte et `cmp` avant commit, attribut binaire) avec une fiche : nature (copie ou
-  original), provenance déclarée, droits, dérivés et commande de reconstruction ; jamais de faux original ni de métadonnée fabriquée.
+  original), provenance déclarée, droits, dérivés et commande de reconstruction ; jamais de faux original ni de métadonnée fabriquée ;
+  `art:validate` revérifie ses octets contre la fiche à chaque passage, contrôle négatif à l'appui.
+- Les contraintes de l'asset reconstruit (cadre 64 × 96, pieds rangée 90, anneau transparent, alpha binaire) ne s'imposent pas à l'illustration
+  source : on ne dégrade jamais le modelé, l'expression ou les matières d'une source pour obtenir une grille parfaite ; la mesure de la source
+  règle la reconstruction, elle ne la refuse pas.

@@ -39,7 +39,7 @@ art-lab/
     manifests/                   one <id>.manifest.json per asset (provenance)
 tools/art-lab/
   doctor.mjs                     environment report (read-only)
-  validate-manifest.mjs          provenance manifest + orphan check
+  validate-manifest.mjs          provenance manifest + orphan check + archived reference sheets vs their records
   make-contact-sheet.mjs         labelled nearest-neighbour review sheet of an exported PNG + JSON
 character-lab.html + src/lab/    Character Lab: dev-only Three.js viewer for an exported sheet
 ```

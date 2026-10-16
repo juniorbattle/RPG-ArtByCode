@@ -1,0 +1,33 @@
+{
+  "kind": "archived-source-sheet",
+  "file": "merchant-district-night-npc-17-24.webp",
+  "sha256": "3b30b9305b21ed1812b9a75b0f4919f03665f7145eca9e78f4735608f200d6d4",
+  "bytes": 311654,
+  "format": "WebP (VP8, lossy) 1448 x 1086; its only metadata is a generic 456-byte sRGB ICC profile (copyright \"Google Inc. 2016\"); no EXIF, XMP or C2PA",
+  "content": "sheet \"Cite du Tournoi - Merchant District - Night\" with the same header as the NPC 01-16 sheet (\"NPC SPRITE PRODUCTION REFERENCE - 16 GENERIC TOWNSFOLK (UNIFIED STYLE & SCALE)\"): NPCs 17-24, six views each - 17 Senior Merchant (Male), 18 Forge Master (Male), 19 Harbor Official (Male), 20 Elegant Buyer (Female), 21 Mysterious Cloaked Visitor (Male), 22 Courier (Male), 23 Tavern Owner (Male), 24 Refined Market Notary (Male)",
+  "classification": {
+    "current": "C - Sprite Quality Reference: part of the 24-NPC series \"Merchant District - Night\" with the NPC 01-16 sheet (operator, 2026-10-16); kept unchanged when archiving (operator, 2026-10-16)",
+    "earlier": "Pass 4A (2026-10-15): used by the agent as \"reference B, refined NPCs\" without operator confirmation; superseded (JOURNAL, passes 4A and 4A-bis; porter-gm-v1 manifest, note \"MISCLASSIFIED\")"
+  },
+  "nature": "a re-encoded copy of a ChatGPT / OpenAI generation (operator, 2026-10-16) - NOT the original file. Archived byte for byte, unmodified.",
+  "names": {
+    "session": "image 2 pasted by the operator in the working session of 2026-10-15 (with images 1 and 3, written 21:32:58 UTC)"
+  },
+  "provenance": "confirmed by operator declaration, NOT cryptographically certified (no C2PA): ../../provenance/dockworker-x2-v1/source-declaration.json (series.covered)",
+  "rights": "use as a source and art reference for the project, including in the creation of assets for a commercial game, authorised by the operator (2026-10-16), subject to applicable third-party rights; third-party rights NOT exhaustively verified",
+  "archived": {
+    "date": "2026-10-16",
+    "decision": "operator: versioned conservation of the two remaining ChatGPT sheets (NPC 17-24 and the complementary 14-character sheet) authorised, byte for byte, with provenance records; each keeps its art classification",
+    "pass": "4A-quattuordecies",
+    "rule": "never edited, re-encoded or replaced; an original ChatGPT file found later is added as a separate file with its own record, next to this one"
+  },
+  "derived": [],
+  "usedAsReference": [
+    {
+      "asset": "porter-gm-v1 (experimental baseline, not approved)",
+      "how": "Pass 4A reference B (misclassified, see classification.earlier)",
+      "record": "../../manifests/porter-gm-v1.manifest.json"
+    }
+  ],
+  "notInvented": "No original PNG, generation date, model, prompt, account or C2PA data is recorded: none is known."
+}
