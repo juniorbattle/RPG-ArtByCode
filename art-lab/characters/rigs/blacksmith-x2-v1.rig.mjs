@@ -36,14 +36,15 @@ export function prepare(dir, v) {
   return R.shift(R.patch(m, [{ x: 28, y: 85, c }, { x: 28, y: 86, c }]), -1, 0);
 }
 
-/** an arm: per row, the span of the skin texels of rows y-1..y+1 inside x0..x1, y0..y1, widened by one texel (the outline) */
-function skinSpans(v, x0, x1, y0, y1) {
+/** an arm: per row, the span of the skin texels of rows y-1..y+1 inside x0..x1, y0..y1, widened by one texel (the outline), and by `outer`
+ *  more on the side away from the body (`inward` = +1: the arm's outer side is -x) where the outline runs two texels from the skin */
+function skinSpans(v, x0, x1, y0, y1, outer = 0, inward = 1) {
   const skin = (x, y) => { const c = R.get(v, x, y); if (!c || x < x0 || x > x1) return false; const o = R.oklab(c); return o[0] > 0.6 && Math.hypot(o[1], o[2]) > 0.035; };
   const span = new Map();
   for (let y = y0; y <= y1; y++) {
     let a = 1e9, b = -1;
     for (let yy = Math.max(y0, y - 1); yy <= Math.min(y1, y + 1); yy++) for (let x = x0; x <= x1; x++) if (skin(x, yy)) { a = Math.min(a, x); b = Math.max(b, x); }
-    if (b >= 0) span.set(y, [Math.max(x0, a - 1), Math.min(x1, b + 1)]);
+    if (b >= 0) span.set(y, [Math.max(x0, a - 1 - (inward > 0 ? outer : 0)), Math.min(x1, b + 1 + (inward < 0 ? outer : 0))]);
   }
   return (x, y) => { const sp = span.get(y); return !!sp && x >= sp[0] && x <= sp[1]; };
 }
@@ -184,20 +185,33 @@ const FB = {
   down: { hipY: 74, top: 2, apron: [64, 75], legs: [{ cols: (x) => x <= 31, foot: 90, bottom: 6, inward: 1 }, { cols: (x) => x >= 32, foot: 89, bottom: 5, inward: -1 }],
     arms: [{ box: [6, 20, 44, 64], y0: 48, y1: 63, fist: 9, inward: 1 }, { box: [44, 56, 44, 64], y0: 48, y1: 63, fist: 9, inward: -1 }] },
   up: { hipY: 66, top: 2, apron: null, legs: [{ cols: (x) => x <= 30, foot: 90, bottom: 9, inward: 1 }, { cols: (x) => x >= 31, foot: 90, bottom: 9, inward: -1 }],
-    arms: [{ box: [8, 19, 44, 67], y0: 52, y1: 66, fist: 8, inward: 1 }, { box: [45, 56, 44, 67], y0: 52, y1: 66, fist: 8, inward: -1 }] },
+    arms: [{ box: [8, 19, 44, 67], y0: 52, y1: 66, fist: 8, inward: 1, outer: 1 }, { box: [45, 56, 44, 67], y0: 52, y1: 66, fist: 8, inward: -1, outer: 1 }] },
 };
+// Pass 4A-duovicies (back walk): the arm masks take the outer outline column (two texels from the skin: it stayed put, a detached arm
+// outline hanging below the rising fist), and the fist's bottom row (66 = hipY) goes with the arm, not with the leg below it (it stayed
+// on the leg, the small tabs under the fist)
 function frontBack(v, o, i) {
   const bob = BOB[i], swing = i < 3 ? 1 : 0, k = i % 3;   // frames 0-2: leg 1 (screen right) swings, 3-5: leg 0
-  let upper = R.cut(v, (x, y) => y < o.hipY);
+  const masks = o.arms.map((a) => skinSpans(v, a.box[0], a.box[1], a.box[2], a.box[3], a.outer ?? 0, a.inward));
+  const inArms = (x, y) => o.arms.some((a, j) => masks[j](x, y) && y >= a.y0 && y <= a.y1);
+  let upper = R.cut(v, (x, y) => y < o.hipY || inArms(x, y));
+  // the legs' copy of the view: an arm texel at or below hipY (it moves with the arm) leaves the leg texel under it in its column (the leg
+  // continues up under the fist), else nothing (the fist hung beyond the hip)
+  const vLegs = R.clone(v);
+  o.arms.forEach((a, j) => { for (let y = o.hipY; y <= a.y1; y++) for (let x = 0; x < v.W; x++) {
+    if (!masks[j](x, y) || !R.opaque(v, x, y)) continue;
+    let c = null; for (let k = 1; k <= 2 && !c; k++) if (!inArms(x, y + k) && R.opaque(v, x, y + k)) c = R.get(v, x, y + k);
+    R.put(vLegs, x, y, c);
+  } });
   o.arms.forEach((a, j) => {
     const fwd = j ? ARM[i] : -ARM[i], dy = Math.sign(fwd) * Math.round(3 * Math.abs(fwd)), dx = fwd >= 1 ? a.inward : 0;
-    if (dy) upper = swingArm(upper, skinSpans(v, a.box[0], a.box[1], a.box[2], a.box[3]), a.y0, a.y1, dy, dx, a.inward, a.fist);
+    if (dy) upper = swingArm(upper, masks[j], a.y0, a.y1, dy, dx, a.inward, a.fist);
   });
   if (o.apron) upper = R.shear(upper, o.apron[0], o.apron[1], HEM[i]);
   const body = R.shift(upper, 0, bob);
   const legs = o.legs.map((L, j) => {
     const foot = L.foot - (j === swing ? SWING[k] : 0);
-    const src = R.cut(v, (x, y) => y >= o.hipY && L.cols(x));
+    const src = R.cut(vLegs, (x, y) => y >= o.hipY && L.cols(x));
     return R.shift(R.remapRows(src, L.cols, o.hipY, L.foot, o.hipY + bob, foot, o.top, L.bottom), j === swing && k === 1 ? L.inward : 0, 0);
   });
   return R.over(...legs, body);

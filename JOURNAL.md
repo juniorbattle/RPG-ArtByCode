@@ -2369,6 +2369,23 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Images : `reviews/hooded-x2-v1/05-rig-c3-before-after.png`, `06-rig-c3-walk-in-scene-cameraB.png`. **En attente de l'approbation de
   l'opérateur.**
 
+
+### Forgeron (`blacksmith-x2-v1`) — [OK] corrigé ; [?] approbation de l'opérateur
+- Causes mesurées (dos, marche 0-5) : la colonne de contour extérieure de chaque bras est à 2 texels de la peau, hors du masque
+  (`skinSpans` = peau + 1) : elle reste en place quand le poing remonte (« contour de bras détaché », jusqu'à un contour doublé avec un texel
+  de vide à l'image 3) ; la rangée basse du poing (66 = `hipY`) appartient au calque des jambes et reste sur la jambe (les « petites
+  languettes » sous le poing).
+- Correctif (bras de dos seulement ; face, profil et frappe identiques) : masques élargis d'un texel du côté extérieur ; les texels de bras
+  à `hipY` et dessous suivent le bras ; le calque des jambes y reçoit le texel de jambe juste dessous dans sa colonne (sinon rien). Essai
+  intermédiaire **[KO, abandonné avant commit]** : le texel de hanche voisin vers le corps prolongeait le contour de la hanche de 3 texels
+  hors du corps (un rebord sombre).
+- Planche : 33 retirés, 44 ajoutés, 45 recolorés, 0 couleur nouvelle, 6 images (marche de dos) ; `--check` identique, paquet intact.
+  Critique à l'aveugle : révisée **7,5/10**, précédente **5,5/10** ; toutes les différences sont des corrections (contour doublé, fil et
+  dessous de poing flottant), aucun défaut nouveau. Restent (hérités) : l'épaule gauche crénelée de la marche de face (une coche et des
+  encoches), des trous de contour du poing gauche qui alternent, une coche à côté du poing droit.
+- Images : `reviews/blacksmith-x2-v1/06-rig-c3-before-after.png`, `07-rig-c3-walk-in-scene-cameraB.png`. **En attente de l'approbation de
+  l'opérateur.**
+
 ---
 
 ## À reprendre (par priorité)
