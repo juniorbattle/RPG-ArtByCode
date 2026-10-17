@@ -12,7 +12,12 @@ import type { CamId, VisSet } from '../app/CameraGraph';
  *  (A B C D AB BC CD BD bit mask, see needMask) and ordered by `planDraw`:
  *
  *    each static mesh stores its triangles class by class, a framing draws the prefix of classes up to the last one it needs,
- *    so a framing is one drawRange: no extra draw calls. (Pass 2 / 3 had the fixed chain [needed by C | B only | A only].) */
+ *    so a framing is one drawRange: no extra draw calls. (Pass 2 / 3 had the fixed chain [needed by C | B only | A only].)
+ *
+ *  The bake point-samples a quarter-resolution view: a strip thinner than one bake pixel can be missed while the real render (4x MSAA)
+ *  still shows it. The frontal framing D sees every front-row side wall nearly edge-on (yaw -20 deg): those walls are such strips
+ *  (measured pass 5b: 1-4 px of a missing wall edge at 1080p, a 58 px line at 2560 x 1080). D's stable poses therefore get a second
+ *  main-view tile at twice the resolution (BAKE_FINE), counted on top of the normal one, so a part can only gain sets. */
 
 export type Tier = 0 | 1 | 2;
 export interface PartMeta {
@@ -177,7 +182,17 @@ export interface BakeOptions {
   /** negative controls (DEV `?visfail=`): 'alloc' asks for a page past the GPU limit (a real refusal), 'zero' drops the counts after
    *  a successful bake (a silent read failure); both must end in a VisBakeError, never in a culled district */
   fail?: 'alloc' | 'zero';
+  /** DEV experiment (`?visscale=`): tile resolution multiplier (main 480 and mirror 240 wide at 1) */
+  scale?: number;
+  /** extra main-view tiles for the poses of these sets at this scale, counted on top of the normal tiles (additive: a part can only gain
+   *  sets). Default BAKE_FINE; null = none (DEV `?visfine=0`, or `?visfine=D:4` / `A+B+C+D:2` to try others) */
+  fine?: { sets: VisSet[]; scale: number } | null;
 }
+
+/** D's stable poses (21 at 16:9) also baked at 2x: the front-row side walls D sees edge-on. Measured (pass 5b, 1920 x 1080, three seeds):
+ *  +16 ms of bake (177 -> 193 ms), a few side walls gain D (0 to +652 triangles drawn in D and its blends, A / B / C unchanged); 4x would catch more
+ *  (every D sliver of the proof set) for +75 ms. */
+export const BAKE_FINE: { sets: VisSet[]; scale: number } = { sets: ['D'], scale: 2 };
 
 /** the bake could not be trusted (target refused, GL error, empty counts): the caller keeps every part and reports it */
 export class VisBakeError extends Error {}
@@ -196,21 +211,29 @@ export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene
   const cap = Math.min(opts.page ?? BAKE_PAGE, limit);
   // tile size: 480 x 480 / aspect (wide frames, unchanged), bounded to 480 tall for frames narrower than square
   const tile = (n: number) => (aspect >= 1 ? [n, Math.round(n / aspect)] : [Math.round(n * aspect), n]);
-  const [mainW, mainH] = tile(480), [mirW, mirH] = tile(240);
+  const sc = opts.scale ?? 1, [mainW, mainH] = tile(480 * sc), [mirW, mirH] = tile(240 * sc);
   if (mainW > cap || mainH > cap) throw new VisBakeError(`visibility bake: a ${mainW} x ${mainH} tile does not fit a ${cap} px page`);
-  type Tile = BakePose & { mirror: boolean; page: number; x: number; y: number; w: number; h: number };
+  type Tile = BakePose & { mirror: boolean; fine?: boolean; page: number; x: number; y: number; w: number; h: number };
   const tiles: Tile[] = [];
   // shelf packing, main tiles then mirror tiles (on a new row)
   let page = 0, x = 0, y = 0, rowH = 0, pageW = 0, pageH = 0;
-  const place = (p: BakePose, mirror: boolean, w: number, h: number) => {
+  const place = (p: BakePose, mirror: boolean, w: number, h: number, fine = false) => {
     if (x + w > cap) { x = 0; y += rowH; rowH = 0; }
     if (y + h > cap) { page++; x = 0; y = 0; rowH = 0; }
-    tiles.push({ ...p, mirror, page, x, y, w, h });
+    tiles.push({ ...p, mirror, fine, page, x, y, w, h });
     x += w; rowH = Math.max(rowH, h); pageW = Math.max(pageW, x); pageH = Math.max(pageH, y + h);
   };
   for (const p of poses) place(p, false, mainW, mainH);
   x = cap;
   for (const p of poses) place(p, true, mirW, mirH);
+  const fine = opts.fine === undefined ? BAKE_FINE : opts.fine;
+  if (fine) {
+    // fine main-view tiles (BAKE_FINE) on a new row: no reveal windows (the normal tile of the same pose has them)
+    const [fw, fh] = tile(480 * fine.scale);
+    if (fw > cap || fh > cap) throw new VisBakeError(`visibility bake: a ${fw} x ${fh} fine tile does not fit a ${cap} px page`);
+    x = cap;
+    for (const p of poses) if (fine.sets.includes(p.set)) place(p, false, fw, fh, true);
+  }
   const pages = page + 1;
   if (opts.fail === 'alloc') pageH = limit + 1;
   const counter = renderer.extensions.has('EXT_float_blend') && nParts < 1 << 20;
@@ -237,7 +260,7 @@ export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene
       const crt = target(CW, CH, { type: THREE.FloatType, depthBuffer: false });
       if (complete(crt) !== gl.FRAMEBUFFER_COMPLETE) return null;
       renderer.setClearColor(0x000000, 0); renderer.clear(true, false, false);
-      return scatterCounter(renderer, crt, Math.max(mainW * mainH, mirW * mirH), rows, nParts, made);
+      return scatterCounter(renderer, crt, Math.max(...tiles.map((t) => t.w * t.h)), rows, nParts, made);
     };
     const main = makeCounter(), back = rt2 ? makeCounter() : null;
     const cpu = Object.fromEntries(SETS.map((s) => [s, new Uint32Array(nParts + 1)])) as Record<VisSet, Uint32Array>;
@@ -292,7 +315,7 @@ export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene
         renderer.setRenderTarget(rt);
         renderer.clear(true, true, false);
         renderer.render(scene, c);
-        if (behind && rt2 && !t.mirror) {
+        if (behind && rt2 && !t.mirror && !t.fine) {
           // the same view without the occludable parts, ID'd only inside the reveal windows (the mirror pass never reveals)
           const bu = behind.uniforms, wins = behind.windowsFor(c, t).slice(0, WIN_MAX);
           bu.uTile.value.set(t.x, t.y, t.w, t.h); bu.uWinN.value = wins.length;
@@ -304,7 +327,7 @@ export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene
         }
       }
       if (main) main.add(rt, tl); else decode(rt, tl, cpu);
-      if (rt2) { const tb = tl.filter((t) => !t.mirror); if (back) back.add(rt2, tb); else decode(rt2, tb, cpu2); }
+      if (rt2) { const tb = tl.filter((t) => !t.mirror && !t.fine); if (back) back.add(rt2, tb); else decode(rt2, tb, cpu2); }
     }
     // GPU counters: one readback each (it waits for the GPU to finish the pages), then the lane sums on the CPU
     const fromGpu = (c: Counter) => { const t = performance.now(), r = c.read(); tRead += r.readMs; tDecode += performance.now() - t - r.readMs; return r.counts; };

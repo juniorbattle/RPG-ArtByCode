@@ -2170,13 +2170,144 @@ Preuves (non versionnées) : `art-lab/characters/scratch/cast2/` (`facing.js`, `
 
 ---
 
+## Passe 5b — Écarts élagué / `vis=0` hérités : explication pièce par pièce, tuiles fines pour D, témoin d'ordre de dessin (2026-10-17)
+
+### Demande (2026-10-17)
+- Mission transmise par la séance de la Passe 5 : élucider les écarts élagué / `vis=0` qui empêchent `tools/viewport-proof.mjs` de sortir à 0
+  (À reprendre 2b et 5), pièce par pièce (registre `district.visibility.registry`, comptes bruts), puis proposer et mesurer un correctif qui
+  garde le rendu canonique 1920 × 1080 identique au pixel et coûte peu de temps de bake. Interdits : géométrie, implantation, personnages,
+  direction artistique. Preuves `visproof` / `viewport-proof` (`occ=0`) + témoin de répétition ; serveurs `:518x --strictPort`, un cache Vite
+  chacun ; textes en CRLF ; pas de nouvelle branche sans l'accord de l'opérateur.
+- Mesures d'abord sur `7e2ebfe` (Passe 5), puis travail rebasé sur `main` = `f57e69d` (Passes 5 et 4A-unvicies fusionnées ; `src/` de la
+  culling inchangé entre les deux). Serveurs : travail `:5183`, base figée `:5184` (arbre détaché de `main`, dossier de la séance).
+
+### Méthode
+- Sonde : la scène d'ID du bake (gardée en enveloppant le rappel `bake` de `generate`, même district régénéré) rendue par la caméra exacte de
+  la pose — directe à 2× / 4× la fenêtre, miroir (caméra de reflet de la dernière image) à 2× sa cible — liste les pièces que cette caméra
+  montre et que le jeu actif ne dessine pas, avec leur nombre de pixels dans une tuile de bake à cette même pose (480 de large, FOV × 1,06 :
+  « tile ») et dans une tuile 8 × plus fine (« tile8x »). tile 0 et tile8x > 0 = lanière plus fine qu'un pixel de bake.
+- Preuve causale : la pose refaite avec ces pièces forcées dans le jeu actif (un compte ajouté) → écart restant.
+- Témoin d'ordre : `vis=0` rejoué avec les triangles de chaque mesh en ordre inverse ; un pixel qui change est décidé par l'ordre de dessin.
+- Pixels restants : bissection par niveau de dessin (`setLevel`), puis par pièce (forçage), passe de scène seule avec / sans MSAA, zoom 32 × 32
+  par pixel (sous-fenêtre de projection), lancer de rayons aux positions d'échantillons.
+- Devenu `tools/vis-why.mjs` (pièces manquées + tile / tile8x, forçage, témoin d'ordre) ; le témoin d'ordre est entré dans `viewport-proof`.
+
+### Constat — trois causes, chacune prouvée (avant correctif, `main`)
+1. **Ordre de dessin de faces coplanaires — [OK] démontré ; pas un défaut de culling.** 30417 B (2 ; 1,5) : 109 px en 1080p (max 4), 36 px en
+   720p. Le rayon du pixel (1857 ; 495) touche deux faces de `far-city` à la même distance (66,40 m) dans le plan z = 4,95 : l'about du pont
+   principal (partie 280, x 46,5-53,5, y −2,35 à −0,6) et le mur de quai lointain (non tagué, x 46,5-52,5, y −1,75 à 0,05), superposés entre
+   y −1,75 et −0,6 au-dessus de l'eau (−1,15). Le tri par classes inverse leur ordre (classes 12 puis 14) : **échanger ces deux seules faces**
+   dans le tampon d'index élagué → **0 px**. Écart inchangé sans DOF / bloom / in-scatter (117 px) et sans reflet (108 px). Même nature :
+   31 des 48 px de 30417 AB (1080p), 30417 A 1 px et 1842 BC 1 px (720p) : 100 % de ces pixels changent quand `vis=0` est dessiné à l'envers.
+   Toute replanification des classes peut retourner ces pixels (constaté : D ×4 rend les 31 px de 30417 AB égaux à `vis=0`).
+2. **Lanières plus fines qu'un pixel de bake — [OK] démontré ; vrai défaut de culling.** Le bake échantillonne le quart de la résolution
+   (miroir : le huitième) ; une pièce vue sur moins d'un pixel de bake peut n'avoir aucun compte alors que le rendu (MSAA 4×) la montre.
+   Chacune a tile 0 / tile8x > 0 à la pose exacte et, forcée, ramène la pose à **0 px** :
+   - 1842 D (26 ; 3,5) : partie 89 (east3, mur ouest, ét. 2 ; besoin CD + BD, 1 px chacun) : 3 px en 1080p (max 21), 1 px en 720p — **le
+     pixel (1244 ; 185) d'À reprendre 2b** ; en 2560 × 1080 : parties 76 (east2 ouest ét. 1) et 93 (east3 est ét. 3, Tier 3 à ce cadre).
+   - 7719 D (26 ; 3,5) : partie 73 (east2 ouest ét. 1, Tier 3) : 4 px (max 55) en 1080p, 3 px en 720p ; en 2560 × 1080 partie 63 (east1 ouest
+     ét. 1, Tier 3) : la ligne d'un pixel de 57 px (max 41, x 1426-1427) ; aussi 900 × 900, 665 × 1200, 390 × 844.
+   - 7719 D (16 ; 2) 720p, 30417 D (26 ; 3,5) 720p et 665 × 1200 (partie 73), 7719 AB 665 × 1200 (2 px, 6 pièces) : levés au forçage à 4×.
+   - 30417 AB (−9,4 ; 1) : maison 609 de la ville haute (Tier 3) et 3 voisines : 17 px (1080p), 5 px (720p). 609 n'apparaît qu'autour du poids
+     de mélange 0,5 : tile8x 1-27 aux poses x −11 / −9,4 / −7,5 × z −1 / 1 / 2,5 à w = 0,5, **0** à w = 0,33 et 0,67 (les poids échantillonnés
+     pour AB) : vue **entre** deux poses et plus fine qu'un pixel de bake. Des tuiles AB ×4 ne l'attrapent pas.
+   - Item 5b (1842, B à 15,5 ; −2,7, 720p) : aujourd'hui 6 px (max 6) ; 6 lanières forcées (reflets de maisons de la ville moyenne, murs est
+     de `bg2` / `tall`) → 1 px, non élucidé [?].
+   - Ce sont des murs latéraux de la rangée de façade (D les voit presque de chant : lacet −20°) ou des maisons lointaines. Beaucoup d'autres
+     pièces manquent de la même façon sans franchir le seuil (reflets de la ville moyenne : bandes horizontales sous le pixel du miroir, floues).
+3. **Fissures de rastérisation vues par un seul échantillon MSAA — [OK] démontré ; hors de portée d'un bake.** 7719 C (8 ; 1) : 1 px (151 ; 94),
+   max 12 (le même en 2560 × 1080 : (471 ; 94)). Seule la classe 45 (D + CD + BD) le change, et dans elle la seule partie 29 (shopA, mur est,
+   ét. 2 : plâtre, pan de bois, verre ; aucun créneau soumis au vent), 4,7 m **derrière** le mur de façade (partie 27) que montre le pixel.
+   Passe de scène seule : sans MSAA, ajouter la classe change **0 px dans toute l'image** ; avec MSAA 4×, exactement ce pixel. Vrais matériaux
+   rendus à 32 × 32 échantillons par pixel sur 3 × 3 pixels : 0 différent ; rayons aux 4 positions d'échantillons D3D : tous sur la façade. Un
+   échantillon MSAA passe par une fissure (sous 1/32 px) au bas du mur de façade (y = 6,631) et voit le pan de bois de 29. Même constat pour
+   30417 CD (14 ; 1) 720p (914 ; 241) (classe BD, MSAA seul, 0 / 9 216 au zoom) ; 1842 D (26 ; 3,5) 2560 × 1080 (2367 ; 280), MSAA seul,
+   derrière lui une pièce Tier 3.
+
+### Mesures des options (1920 × 1080, médianes de 3 régénérations, même session ; « jeux » = bits de besoin gagnés / perdus)
+| variante | bake | jeux (1842) | triangles dessinés |
+|---|---|---|---|
+| actuel | 177 ms | — | A 91,6 k, B 84,2 k, C 63,1 k, D 98,9 k |
+| tout ×2 (`visscale=2`) | 344 ms | +81 / −11 | +0,06 à +1,1 k |
+| tout ×4 | 989 ms | +97 / −8 | +0,6 à +3,1 k |
+| D ×2 additif | 191-194 ms (3 graines) | +2 (D) | D 0 à +652 (A, B, C inchangés) |
+| D ×4 additif | 249-257 ms | +3 (D) | D +218 à +678 |
+| A + B + C + D ×2 additif | 229-232 ms | +4 | ≤ +1,3 k |
+| A + B + C + D ×4 additif | 386 ms | +9 | ≤ +2,3 k |
+- Monter toute la résolution **perd** aussi des jeux (−11 à 2×) : l'échantillonnage ponctuel est une loterie, un supplément doit être additif.
+- Le bake est dominé par les sommets (estimé d'après ×1 / ×2 / ×4) : 546 rendus complets d'une scène d'ID de 120 540 triangles ≈ 120 ms sur 177 ;
+  ×2 coûte +167 ms ≈ 3 × 56 ms de remplissage + comptage, ×4 +812 ms ≈ 15 × 56. Un rendu supplémentaire des arêtes en lignes (rastérisation conservatrice) coûterait au moins autant : écarté.
+- Garder toutes les lanières coûterait peu au rendu (≤ +3 % de triangles à ×4) : c'est le bake qui est cher, pas le résultat.
+
+### Correctif
+- `BAKE_FINE` (`Visibility.ts`) : les 21 poses stables de D (16:9) reçoivent une seconde tuile de vue directe à 2× (960 × 540), comptée dans
+  les mêmes compteurs, sans fenêtres de reveal : **additif**, une pièce ne peut que gagner des jeux. D seul parce qu'il voit tous les murs
+  latéraux de chant (les autres cadrages les voient à 30-60° d'incidence). Coût mesuré (12 paires alternées dans une session) : médiane des
+  écarts **+20 ms** (1842) et **+18 ms** (7719) sur un bake de 160-210 ms ; première série +14 à +16 ms. Pages 13 → 16, cibles inchangées
+  (37,7 Mio). Parties gagnant D : 1842 89 et 93, 7719 73 ; rien sur 30417.
+- DEV : `?visfine=D:4|A+B+C+D:2|0` (0 = sans tuiles fines), `?visscale=k` (toutes les tuiles k×).
+- `viewport-proof` : témoin d'ordre (une pose qui diffère est rejouée sur `vis=0` en ordre inverse ; les pixels à ≤ 1 px d'un pixel qui
+  change sont « order », comptés à part, en échec seulement avec `--strict`) ; `--q=` (requête ajoutée) ; `tools/vis-why.mjs`.
+
+### Validation
+- **Rendu canonique** (`baked-proof.mjs shots`, scène complète, `clean=1&freeze=7.3`, 1920 × 1080 ; A, B, C, D (16 ; 2), D (26 ; 3,5), AB, BC,
+  CD, BD × graines 1842 / 7719 / 30417 = 27 vues) : témoin `main` contre `main` **0 px** partout ; travail contre `main` **0 px dans 25 vues**,
+  dont les 24 vues canoniques de la Passe 5 ; seules diffèrent D (26 ; 3,5) 1842 (5 px, max 21 : lanières 89 / 93 désormais dessinées) et
+  7719 (4 px, max 55 : partie 73) — à ces poses le travail est égal à `vis=0` ; travail contre travail : identique.
+- **`viewport-proof`** (six tailles × trois graines × 9 poses) : `main` 22 contrôles en échec avant le témoin d'ordre (Passe 5, même code de culling),
+  18 avec ;
+  travail **9** (redimensionnement 0 px, contrôles `visfail` corrects ; Tier 3 identique de 390 × 844 à 1920 × 1080, même bake : 1842 317, 7719
+  303 → 302 (partie 73 gardée), 30417 304). Restent : les trois fissures
+  (7719 C 1080p et 2560, 30417 CD 720p, et 1 des 3 px de 1842 D 2560), les lanières non attrapées à ×2 (1842 D 2560 : 2 px ; 30417 D 720p et
+  665 × 1200 : partie 73 ; 7719 AB 665 × 1200 : 2 px), la maison 609 (30417 AB 1080p 17 px, 720p 5 px).
+- Variantes sur trois tailles (1080p, 2560 × 1080, 720p) : actuel 13 échecs, D ×2 7, D ×4 6 (ne restent que fissures et 609).
+- `npm run typecheck` et `npm run build` verts.
+
+### Arbitrages pour l'opérateur
+- D ×4 au lieu de ×2 : ≈ +75 ms de bake (première série), attrape aussi la partie 73 de 30417 et les lanières de 1842 en 2560 × 1080 (6 échecs au lieu de 7 sur trois tailles).
+- 609 : ajouter des poses AB à w = 0,5 rendues à ×4 (≈ +20 ms estimés, non mesuré) ou densifier les poids de AB / BC (2 aujourd'hui, 6 pour CD / BD).
+- Fissures (jonctions en T au bas des étages en encorbellement) et faces coplanaires du quai lointain : corrections de géométrie, hors périmètre ;
+  tant qu'elles existent, `viewport-proof` ne peut pas sortir à 0 (les faces coplanaires sont rapportées « order » sans échouer).
+
+### Décision opérateur (2026-10-17) — branche
+- Mot pour mot (relayé par la séance de la Passe 5) : « No new branch yet: the culling-diff session keeps its work uncommitted until
+  cast-polish-facing is merged and deleted. » Puis : ouvrir la branche depuis le `main` du moment, commiter et pousser en une fois.
+- Condition remplie avant le commit : `cast-polish-facing` fusionnée dans `main` (`f57e69d`) et supprimée (`git ls-remote` : seule `main`).
+  Branche `vis-residue-5b` ouverte depuis `f57e69d`, un commit (travail + journal), poussée. Fusion dans `main` quand l'opérateur juge la
+  tâche finie ; les arbitrages ci-dessus restent ouverts.
+
+### Pensée
+- Un écart de culling se prouve **causalement** (pièce forcée → 0 px, faces échangées → 0 px), pas par proximité : sur ces poses, des dizaines
+  de pièces manquent sans effet visible.
+- Un échantillonnage ponctuel n'est jamais conservatif : monter la résolution fait aussi perdre des pièces ; un supplément de bake doit s'ajouter
+  aux comptes existants, et se concentrer là où la géométrie se présente de chant.
+- Un pixel décidé par l'ordre de dessin ne dit rien du culling : le témoin d'ordre (`vis=0` à l'envers) le sépare ; et toute modification des
+  masques replanifie les classes, donc la preuve canonique se fait contre la base figée, pas seulement contre `vis=0`.
+- Une différence qui n'existe qu'avec MSAA et à aucun des 1 024 sous-échantillons d'un zoom est une fissure de rastérisation : aucun bake ne la voit.
+- Un script de mesure qui modifie des paramètres d'URL entre variantes doit les remettre tous à zéro : une variante a hérité `visfine=0` et
+  semblait « sans effet » (rattrapé parce que le nombre de pages n'avait pas bougé).
+
+Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs`, `classify.mjs`, `bisect.mjs`, `partbisect.mjs`, `toggle.mjs`,
+`fullrt*.mjs`, `zoomreal.mjs`, `masks.mjs`, journaux de mesure, captures) ; images clés dans `screenshots/calibration/vis-residue/`.
+
+---
+
 ## À reprendre (par priorité)
 
 **-2. Fenêtres étroites (Passe 5)** — bake par pages bornées + repli explicite + recadrage du cadre 16:9 : bâtiments présents à tout format
 testé (390 × 844 à 2560 × 1080), rendu canonique 16:9 identique au pixel (24 vues, trois graines). **Tâche acceptée par l'opérateur le 17/10**
 (« J'accepte la Passe 5 et le recadrage des fenêtres étroites tel quel : fusionne viewport-visibility-fix dans main, pousse main et supprime
-la branche. ») : recadrage gardé tel quel, branche fusionnée en avance rapide dans `main` puis supprimée. Reste ouvert : écarts de culling
-hérités (item 5, séance séparée en cours).
+la branche. ») : recadrage gardé tel quel, branche fusionnée en avance rapide dans `main` puis supprimée. Écarts de culling hérités :
+élucidés en Passe 5b (ci-dessous).
+
+**-2b. Écarts élagué / `vis=0` (Passe 5b)** — chaque écart expliqué et prouvé (pièce forcée → 0 px, faces échangées → 0 px, MSAA seul) :
+ordre de dessin de faces coplanaires du quai lointain (30417 B, AB), lanières plus fines qu'un pixel de bake (murs latéraux vus de chant en D,
+maison 609 entre deux poses AB), fissures vues par un seul échantillon MSAA (7719 C, 30417 CD). Correctif : tuiles fines ×2 pour les poses
+stables de D (`BAKE_FINE`, ≈ +18-20 ms de bake), rendu canonique identique (25 / 27 vues à 0 px, les 2 autres = lanières désormais dessinées),
+`viewport-proof` 22 → 9 échecs ; témoin d'ordre dans `viewport-proof`, `tools/vis-why.mjs`. Commité et poussé sur la branche
+`vis-residue-5b` (depuis `f57e69d`, après la suppression de `cast-polish-facing`, selon la consigne de l'opérateur). **À décider par
+l'opérateur** : acceptation / fusion, D ×4 (+75 ms), poses AB à w = 0,5 pour 609, corrections de géométrie (fissures, quai coplanaire) qui
+seules rendraient l'outil vert.
 
 **-1. PROCHAIN** — Passe 4A-undecies close : adressage par case entière commité (sprites générés identiques au bit à `eecea58`, ×2 stable
 quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ; écart de l'ombre portée du ×2 face à l'ancien aperçu
@@ -2225,20 +2356,21 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
    **à droite** du centre (NDC +0,35 → +0,68) — contrepartie de la continuité avec C ; (b) le long du bord de l'eau (z > 2,4) on passe **B → D** sans jamais
    traverser C ; (c) lacet max 0,96°/image en C↔D (contre ≤ 0,55° ailleurs) ; (d) les transitions B→C vers l'ouest (−254 px/s) et B→A (−131 px/s) font glisser le joueur à
    l'envers à l'écran (héritage de la passe 2, mesuré en 4B, non corrigé).
-2b. **Pixel à élucider** : D à (26 ; 3,5), 1 px d'écart (19/255) en (1244 ; 185) entre élagué et `vis=0` (1280 × 720 ; toujours là en passe 5,
-   3 px en 1920 × 1080, 4 px en 2560 × 1080, identiques avant / après le bake par pages).
+2b. **Fait (Passe 5b)** : le pixel (1244 ; 185) de D (26 ; 3,5) en 1280 × 720 était la lanière du mur ouest d'east3 (partie 89, étage 2) vue
+   de chant, sous le pixel de bake ; gardée en D par les tuiles fines (0 px en 1080p et 720p ; en 2560 × 1080 restent 2 lanières + 1 fissure).
 3. **Coût de régénération** (+250 ms de la passe 2, ≈ +150–180 ms de la passe 3b, **≈ +180 ms de la passe 4B** : 505–523 → 682–715 ms ; bake 200 → 330 ms pour 273 poses ;
    passe 5 : bake par pages 367 → 300 ms en médiane, génération ≈ 910 ms avec la distribution actuelle) :
    mettre en cache les identifiants par graine, ou n'échantillonner que les poses concernées quand seul un réglage de caméra change ; réduire CD / BD (168 poses sur 273) a coûté 4 pièces de Tier 3 en précision : à ne faire qu'avec une preuve.
 3b. **Ordre des classes de dessin** : 41 classes, A/B/C pondérés ×2 (D dessine ≈ tout : 98,8 k / 100,8 k). Si D devient lourd (nouveau contenu), rejouer `planDraw` avec un autre poids ou séparer D dans un mesh à part (+ appels de dessin).
 3c. **Rive opposée / z caméra** : la caméra de D doit rester à z < ~18,5 (maisons de la rive opposée dès z = 19,8). Tout cadrage plus reculé exige de retirer ou d'abaisser ces maisons (elles sont aujourd'hui invisibles de A/B/C).
 4. **Rendu** : MSAA 4× → test d'un MSAA 2× / FXAA après le travail sur les sprites ; DOF et bloom à demi-résolution.
-5. **Autres graines** — **mesuré en passe 5** (`tools/viewport-proof.mjs`, `occ=0`, 9 poses) : écarts élagué / `vis=0` **hérités**, identiques
-   avant et après le bake par pages : 30417 B 109 px (max 4 / 255, forme sombre dans la brume, 1080p) et AB 48 px (max 9) ; 7719 C 1 px,
-   D (26 ; 3,5) 4 px (1080p) et 57 px en 2560 × 1080 (filets d'un pixel sur une arête lointaine). Aucun bâtiment manquant ; à élucider pièce
-   par pièce (bake plus fin, ou poses supplémentaires) avant de rendre `viewport-proof` vert.
-5b. **Écart hérité** : 17 px d'étincelle dans le canal coupés par le bake (B, joueur 15,5 ; −2,7) — voir `known-issues/pass2-vis-speck.png` ;
-   élargir les poses échantillonnées ou comprendre quelle pièce l'émet.
+5. **Autres graines** — **élucidé en Passe 5b** (voir -2b) : reste dans `viewport-proof` 9 échecs connus, tous expliqués : fissures MSAA
+   (7719 C, 30417 CD 720p, 1 px de 1842 D 2560 × 1080), lanières non attrapées à ×2 (30417 D 720p / 665 × 1200 : partie 73 ; 1842 D 2560 × 1080 ;
+   7719 AB 665 × 1200), maison 609 (30417 AB). Pixels « order » (30417 B 109 px, AB 31 px, A / BC 1 px en 720p) rapportés sans échouer.
+   Tout nouvel écart : `tools/vis-why.mjs` avant de toucher au bake.
+5b. **Écart hérité** : 17 px d'étincelle dans le canal coupés par le bake (B, joueur 15,5 ; −2,7) — voir `known-issues/pass2-vis-speck.png`.
+   Passe 5b (1842, 720p) : aujourd'hui 6 px ; 6 lanières forcées (reflets de maisons de la ville moyenne, murs est de `bg2` / `tall`) → 1 px,
+   non élucidé [?].
 6. **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — à retirer proprement
    une fois qu'on accepte de décaler la ville lointaine d'une graine.
 
@@ -2250,6 +2382,11 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   joueur au même NDC), jamais un champ plus large ; plus large que le cadre baké, on recadre puis on re-bake.
 - La rastérisation dépend de la position d'une tuile dans sa cible : les comptes bruts ne se comparent qu'à mise en page égale ; la
   non-régression se prouve sur les masques et les images finales.
+- Un écart élagué / `vis=0` s'explique **causalement** (`tools/vis-why.mjs` : pièce forcée → 0 px ; témoin d'ordre) avant de toucher au bake ;
+  un pixel décidé par l'ordre de dessin (faces coplanaires) ou par un seul échantillon MSAA (fissure) ne dit rien du culling.
+- Le bake échantillonne des points : monter sa résolution fait aussi perdre des pièces ; un supplément s'ajoute aux comptes (tuiles fines
+  additives) et va là où la géométrie se présente de chant (D). Toute modification des masques replanifie les classes : prouver le rendu
+  canonique contre une base figée, pas seulement contre `vis=0`.
 
 - Mesurer d'abord (minuteurs GPU, entrelacé, baseline figée), optimiser ensuite.
 - Toute coupe de géométrie se prouve par un diff d'images `static=1`, culling actif vs `vis=0`.

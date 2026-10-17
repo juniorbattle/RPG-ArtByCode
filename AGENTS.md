@@ -53,9 +53,14 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
   player's screen glide against its walking direction, reveal fades / flicker. `g=x,z` = a player steering to a point.
 - `node tools/visproof.mjs [--keep=dir] "name|x,z|stable|A|B|C|D|X,Y,w" ...` — culling proof: pruned vs `vis=0` pixel diff
   (stable, pinned or frozen-blend poses); use QUERY with `occ=0`
-- `node tools/viewport-proof.mjs [--keep=dir] [--sizes=WxH,...] [--seeds=a,b]` — window-format proof: bake success / page sizes, the view never
-  leaving the baked frame, pruned vs `vis=0` at A-D + blends per size and seed, resize without reload vs fresh loads, and the `visfail`
-  negative controls (DEV server); exit 1 on any failure
+- `node tools/viewport-proof.mjs [--keep=dir] [--sizes=WxH,...] [--seeds=a,b] [--q=extra&query] [--strict]` — window-format proof: bake success /
+  page sizes, the view never leaving the baked frame, pruned vs `vis=0` at A-D + blends per size and seed, resize without reload vs fresh loads,
+  and the `visfail` negative controls (DEV server); exit 1 on any failure. Draw-order witness: a differing pose is shot again on `vis=0` with
+  every mesh's triangles reversed; pruned pixels within 1 px of a pixel that reversal changes are coplanar faces z-fighting (the culling's
+  class order is not the builder order), reported as "order", failing only with `--strict`
+- `node tools/vis-why.mjs [--seed=s] [--size=WxH] [--ss=2] [--q=..] "name|x,z|mode" ...` — explains a pruned-vs-`vis=0` diff: the parts this exact
+  camera (direct and mirror) shows that the active set does not draw, their bake-size / 8x tile counts (tile 0 + tile8x > 0 = a sliver
+  thinner than a bake pixel), the diff left once they are forced into the active set, and the draw-order witness
 - `tools/eval.mjs` honours BASE_URL (serve a frozen baseline worktree on :5174 for A/B)
 - `npm run art:doctor` — read-only report of the character art toolchain (Node, repo, Art Lab, Aseprite, Aseprite AI Artist);
   "Aseprite not installed" is a valid state (exit 0) and it never reports the integration as validated. `-- --json` available.
@@ -78,7 +83,8 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
 `static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · DEV server only: `visfail=alloc|zero` (force a
-visibility-bake failure: the fallback must keep every part and report it) and `vispage=<px>` (bake page size) ·
+visibility-bake failure: the fallback must keep every part and report it), `vispage=<px>` (bake page size), `visscale=<k>` (every bake tile k x:
+what a finer bake would keep) and `visfine=D:4|A+B+C+D:2|0` (the extra fine tiles, default D at 2x; `0` = none) ·
 `occ=0` (no player reveal: pixel-identical to Pass 2) · `occstyle=soft|dither|hybrid` · `occforce=all|0,2` (force
 occluders open: review / visibility proof) · `occdebug=1` (proxy boxes, reveal ellipse, active list) ·
 `occbehind=0` (skip the behind-occluder bake pass) · `occtest=shopA,tall` (treat those buildings' front walls as
@@ -147,8 +153,12 @@ framing or blend = the prefix of classes up to the last it needs = one drawRange
 `setLevel(n)` replace the old 0/1/2 levels. Building back walls are not generated (keep the skipped RNG draw so seeds
 stays identical). The bake renders its tiles into pages of at most 2048 x 2048 (the WebGL2 guaranteed minimum, also clamped to the GPU
 limits) and counts them into shared counters; an incomplete target, a GL error or an empty set throws `VisBakeError` and the district keeps every
-part (`snapshot().visibility.error`, console, panel): a failed bake must never cull. Verify culling with `tools/visproof.mjs` (pruned vs `vis=0`, same session, `occ=0` to keep the reveal
-fade out of the comparison): they must be pixel-identical.
+part (`snapshot().visibility.error`, console, panel): a failed bake must never cull. The tiles point-sample the view at 1/4 resolution (mirror
+1/8): a strip thinner than one bake pixel can be missed. D sees the front-row side walls edge-on, so D's stable poses also get a 2x main-view
+tile (`BAKE_FINE`, additive: +16 ms). Verify culling with `tools/visproof.mjs` / `tools/viewport-proof.mjs` (pruned vs `vis=0`, same session,
+`occ=0` to keep the reveal fade out of the comparison): they must be pixel-identical, except the known residue (journal pass 5b): pixels decided
+by draw order (coplanar far-city faces), single MSAA samples through rasterisation cracks, and slivers seen only between sampled poses.
+Explain any new diff with `tools/vis-why.mjs` before changing the bake.
 
 ## Player occlusion reveal (`src/app/Occlusion.ts`)
 V1 protects the player only. When an occludable object stands between the camera and the player's torso, a soft

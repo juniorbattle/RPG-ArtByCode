@@ -5,7 +5,7 @@ import { MoonShadow, PlanarReflection } from '../atmosphere/ShadowAndReflection'
 import { LightRig } from '../atmosphere/LightRig';
 import { U } from '../atmosphere/SceneUniforms';
 import { CameraRig, REF_ASPECT } from './CameraRig';
-import { CameraGraph, CAM_IDS, type CamId, type CamState } from './CameraGraph';
+import { CameraGraph, CAM_IDS, type CamId, type CamState, type VisSet } from './CameraGraph';
 import { MerchantDistrictGenerator, DEFAULT_CONFIG, type DistrictConfig, type DistrictBuild } from '../district/MerchantDistrictGenerator';
 import type { ForgeState } from '../district/ForgeGenerator';
 import { CANONICAL_SEED } from '../core/rng';
@@ -292,11 +292,12 @@ export class App {
     this.onRegenerate.forEach((f) => f());
   }
 
-  /** DEV negative controls / layout checks of the bake: ?visfail=alloc|zero (must fall back, see BakeOptions), ?vispage=<px> (page cap) */
+  /** DEV negative controls / layout checks of the bake: ?visfail=alloc|zero (must fall back, see BakeOptions), ?vispage=<px> (page cap),
+   *  experiments: ?visscale=<k> (every tile k x), ?visfine=D:4 | A+B+C+D:2 | 0 (the fine tiles, default BAKE_FINE; 0 = none) */
   private bakeOptions(): BakeOptions {
     if (!import.meta.env.DEV) return {};
-    const q = this.opts.params, f = q.get('visfail'), pg = Number(q.get('vispage'));
-    return { ...(f === 'alloc' || f === 'zero' ? { fail: f } : {}), ...(pg > 0 ? { page: pg } : {}) };
+    const q = this.opts.params, f = q.get('visfail'), pg = Number(q.get('vispage')), sc = Number(q.get('visscale')), fn = q.get('visfine')?.split(':');
+    return { ...(f === 'alloc' || f === 'zero' ? { fail: f } : {}), ...(pg > 0 ? { page: pg } : {}), ...(sc > 0 ? { scale: sc } : {}), ...(fn ? { fine: +fn[1] > 0 ? { sets: fn[0].split('+') as VisSet[], scale: +fn[1] } : null } : {}) };
   }
 
   /** behind-occluder windows of a baked pose: the reveal ellipse (tile NDC, with margin) around every quay position the

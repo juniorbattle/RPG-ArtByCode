@@ -1,4 +1,5 @@
 // Viewport proof (visibility bake + responsive framing): node tools/viewport-proof.mjs [--keep=dir] [--sizes=WxH,...] [--seeds=a,b] [--no-resize] [--no-controls]
+//   [--q=extra&query] [--strict]
 // Against the running dev server (BASE_URL, default http://127.0.0.1:5173/), static=1, frozen time, occ=0 (the reveal fade would make false
 // diffs). For every window size x seed, on a fresh load:
 //   bake    the bake succeeded (no visibility error), its pages fit the WebGL2 guaranteed minimum (2048) and the GPU limits, no GL error
@@ -6,7 +7,10 @@
 //   frame   at the poses below, the window never shows more than the frame the bake covered: the corners of the view, re-projected
 //           into the full 16:9 / baked frame, stay inside it; and the player keeps the NDC it has in that frame (CameraRig.applyFrame).
 //           Control (must fail on a narrow window): the same corner test on the pre-fix lens (fov x (16:9 / aspect)^0.85)
-//   culling pruned vs ?vis=0 regenerated in the same session, same poses: 0 px above the threshold
+//   culling pruned vs ?vis=0 regenerated in the same session, same poses: 0 px above the threshold. Draw-order witness: when a pose
+//           differs, the ?vis=0 build is shot again with every mesh's triangles in reverse order; a pruned pixel within 1 px of a pixel that
+//           this reversal changes is decided by draw order (coplanar faces z-fighting: the culling's class order differs from the builder
+//           order), not by which parts are drawn. Those are reported as "order" and only fail with --strict.
 // Resize (seed 1842, no reload): 1920x1080 -> 665x1200 -> 1920x1080 -> 2560x1080 (wider than the bake: re-bake) -> 665x1200, every step
 // compared with a fresh load at that size (same pose): 0 px.
 // Negative controls (DEV server only): ?visfail=alloc (a page past the GPU limit: a real refusal) and ?visfail=zero (counts dropped)
@@ -23,7 +27,7 @@ const sizes = opt('sizes', '1920x1080,1280x720,900x900,665x1200,390x844,2560x108
 const seeds = opt('seeds', '1842,7719,30417').split(',').map(Number);
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].filter(Boolean).find((p) => fs.existsSync(p));
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/';
-const Q = 'clean=1&freeze=7.3&static=1&intro=0&occ=0';
+const Q = 'clean=1&freeze=7.3&static=1&intro=0&occ=0' + (opt('q', '') ? '&' + opt('q', '') : ''), strict = args.includes('--strict');
 // stable framings at their reference spots, the four blends at their triggers
 const POSES = [['A', '-11,1', 'A'], ['B', '2,1.5', 'B'], ['C', '8,1', 'C'], ['D', '16,2', 'D'], ['D-far', '26,3.5', 'D'], ['AB', '-9.4,1', 'A,B,0.5'], ['BC', '4.2,1', 'B,C,0.5'], ['CD', '14,1', 'C,D,0.5'], ['BD', '14,3.3', 'B,D,0.5']]
   .map(([name, pos, mode]) => ({ name, pos: pos.split(',').map(Number), mode }));
@@ -57,6 +61,15 @@ const frameCheck = () => {
   const o = c.clone(); o.aspect = asp; o.fov = r.fov * Math.pow(Math.max(1, REF / asp), 0.85); o.updateProjectionMatrix(); o.projectionMatrix.elements[9] = r.shiftY; o.projectionMatrixInverse.copy(o.projectionMatrix).invert();
   return { inside: worst(c), oldLens: worst(o), drift: Math.hypot(n1.x - n0.x, n1.y - n0.y), playerNdc: [n1.x, n1.y], full };
 };
+/** the draw-order witness: every district mesh's triangles in reverse order (run on the ?vis=0 build) */
+const reverseOrder = () => {
+  window.__app.district.group.traverse((o) => {
+    if (!o.isMesh || o.isInstancedMesh || !o.geometry.index) return;
+    const ix = o.geometry.index.array, n = ix.length / 3, c = ix.slice();
+    for (let t = 0; t < n; t++) for (let k = 0; k < 3; k++) ix[t * 3 + k] = c[(n - 1 - t) * 3 + k];
+    o.geometry.index.needsUpdate = true;
+  });
+};
 const bakeStats = () => {
   const a = window.__app, v = a.district.visibility, s = a.snapshot().visibility ?? {}, gl = a.renderer.getContext();
   return { err: gl.getError(), error: s.error ?? a.visibilityError ?? null, frame: s.frame, pages: v.bakePages, targetMB: s.bakeTargetMB, parts: v.parts, tier3: v.hidden, trisKept: v.trisKept,
@@ -75,23 +88,23 @@ async function open(W, H, query) {
 }
 async function shoot(page, sc) { await page.evaluate(place, sc); await new Promise((r) => setTimeout(r, 450)); return page.screenshot({ encoding: 'base64' }); }
 let dpage;
-async function diff(a, b, name) {
+async function diff(a, b, name, list = false) {
   dpage ??= await browser.newPage();
-  const r = await dpage.evaluate(async (ua, ub, t) => {
+  const r = await dpage.evaluate(async (ua, ub, t, list) => {
     const load = (u) => new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.src = u; });
     const [ia, ib] = await Promise.all([load('data:image/png;base64,' + ua), load('data:image/png;base64,' + ub)]);
     if (ia.width !== ib.width || ia.height !== ib.height) return { n: -1, mx: -1 };
     const w = ia.width, h = ia.height, c = document.createElement('canvas'); c.width = w; c.height = h;
     const g = c.getContext('2d'); g.drawImage(ia, 0, 0); const da = g.getImageData(0, 0, w, h).data; g.drawImage(ib, 0, 0); const db = g.getImageData(0, 0, w, h);
-    let n = 0, mx = 0;
+    let n = 0, mx = 0; const px = [];
     for (let k = 0; k < da.length; k += 4) {
       const d = Math.max(Math.abs(da[k] - db.data[k]), Math.abs(da[k + 1] - db.data[k + 1]), Math.abs(da[k + 2] - db.data[k + 2]));
-      mx = Math.max(mx, d); if (d > t) n++;
+      mx = Math.max(mx, d); if (d > t) { n++; if (list) px.push(k / 4); }
       const v = Math.min(255, d * 8); db.data[k] = v; db.data[k + 1] = v * 0.6; db.data[k + 2] = d > t ? 255 : v * 0.3; db.data[k + 3] = 255;
     }
     g.putImageData(db, 0, 0);
-    return { n, mx, png: n ? c.toDataURL('image/png') : null };
-  }, a, b, thr);
+    return { n, mx, px, png: n ? c.toDataURL('image/png') : null };
+  }, a, b, thr, list);
   if (r.n && keep && name) { fs.mkdirSync(keep, { recursive: true }); fs.writeFileSync(`${keep}/${name}-diff.png`, Buffer.from(r.png.split(',')[1], 'base64')); fs.writeFileSync(`${keep}/${name}-a.png`, Buffer.from(a, 'base64')); fs.writeFileSync(`${keep}/${name}-b.png`, Buffer.from(b, 'base64')); }
   return r;
 }
@@ -111,11 +124,21 @@ try {
     const pruned = [], geo = [];
     for (const sc of POSES) { pruned.push(await shoot(page, sc)); geo.push(await page.evaluate(frameCheck)); }
     await page.evaluate(() => { window.__app.opts.params.set('vis', '0'); window.__app.regenerate(); });
-    const rows = [];
+    const rows = [], fulls = [], diffs = [];
+    for (let i = 0; i < POSES.length; i++) { fulls.push(await shoot(page, POSES[i])); diffs.push(await diff(pruned[i], fulls[i], `s${seed}-${W}x${H}-${POSES[i].name}`, true)); }
+    if (diffs.some((d) => d.n)) {
+      await page.evaluate(reverseOrder);
+      for (let i = 0; i < POSES.length; i++) {
+        if (!diffs[i].n) continue;
+        const o = new Set((await diff(fulls[i], await shoot(page, POSES[i]), null, true)).px);
+        const near = (k) => { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (o.has(k + dy * W + dx)) return true; return false; };
+        diffs[i].order = diffs[i].px.filter(near).length;
+      }
+    }
     for (let i = 0; i < POSES.length; i++) {
-      const full = await shoot(page, POSES[i]), d = await diff(pruned[i], full, `s${seed}-${W}x${H}-${POSES[i].name}`), g = geo[i];
-      rows.push(`${POSES[i].name}:${d.n}${g.inside > 1.0001 ? '!' : ''}`);
-      if (d.n) fail(`${tag} ${POSES[i].name}: pruned vs vis=0 ${d.n} px > ${thr} (max ${d.mx})`);
+      const d = diffs[i], g = geo[i], order = d.order ?? 0, cull = d.n - order;
+      rows.push(`${POSES[i].name}:${d.n}${order ? `(order ${order})` : ''}${g.inside > 1.0001 ? '!' : ''}`);
+      if (cull || (strict && d.n)) fail(`${tag} ${POSES[i].name}: pruned vs vis=0 ${d.n} px > ${thr} (max ${d.mx}), ${order} decided by draw order, ${cull} not`);
       if (s.fixed && g.inside > 1.0001) fail(`${tag} ${POSES[i].name}: the view leaves the full frame (corner at |NDC| ${g.inside.toFixed(4)})`);
       if (s.fixed && g.drift > 1e-6) fail(`${tag} ${POSES[i].name}: the player's NDC drifts ${g.drift.toExponential(2)} from the full frame`);
     }
