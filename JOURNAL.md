@@ -1862,8 +1862,9 @@ rapide dans `main`, puis supprimée. La prochaine tâche ouvre sa propre branche
 décision de mise en scène), foulée du docker 0,69 m/s contre 0,8-0,95 (léger glissement), bonnet / sac selon la planche. `merchant-x2-v1` reste comme
 preuve ; la source V4 n'est plus attendue. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
 **-1b. Fait (Passes 4A-duodevicies / undevicies)** : `blacksmith-x2-v1`, `guard-x2-v1` (les deux gardes), `hooded-x2-v1` **approuvés pour la
-production le 17/10** et chargés par le jeu (cinq planches cuites). Branche `cast-blacksmith-guard-hooded` : à fusionner dans `main` quand
-l'opérateur juge la tâche finie. Décisions de mise en scène ouvertes : tourner le forgeron vers l'enclume en B / C (séance séparée en cours,
+production le 17/10** et chargés par le jeu (cinq planches cuites). **Tâche acceptée par l'opérateur le 17/10** (« La tâche est terminée et
+acceptée : fusionne la branche cast-blacksmith-guard-hooded dans main, pousse main et supprime la branche. ») : branche fusionnée en avance
+rapide dans `main`, puis supprimée (locale et distante) ; la prochaine tâche ouvre sa propre branche. Décisions de mise en scène ouvertes : tourner le forgeron vers l'enclume en B / C (séance séparée en cours,
 proposée à la passe 4A-duodevicies), un second garde différent (miroir ou variante) au lieu de jumeaux, lances. Restent générés : héros, chat, foule.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
