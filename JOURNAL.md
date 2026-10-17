@@ -2736,6 +2736,33 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 
 ---
 
+## Passe M2 — Règle de l'opérateur : serveurs de développement et processus d'arrière-plan (2026-10-17)
+
+### Demande (2026-10-17)
+- Règle de l'opérateur, datée du 2026-10-17, ajoutée à `AGENTS.md` : section « Dev servers and background processes », entre « Commands » et
+  « Useful URL params ». Le texte a été rédigé dans la séance « Vérification des accès aux projets », qui le destinait à la « Séance commune
+  HD-2D » ; celle-ci étant archivée, l'opérateur l'a fait envoyer à la séance « Cité du Tournoi Local », mot pour mot : « Envoie la consigne
+  à la session Cité du Tournoi Local. » Consigne transmise : insérer la section mot pour mot, la journaliser, ne committer que `AGENTS.md` et
+  `JOURNAL.md` sur la branche active, pousser.
+
+### Pourquoi
+- Des séances HD-2D demandaient sans cesse l'autorisation de l'opérateur pour des balayages des processus du système
+  (`Get-CimInstance Win32_Process`) et des `taskkill` sur les restes de séries de mesures (ports 4191 / 4192). Ces commandes visent tout le
+  système et peuvent atteindre des programmes sans rapport. L'opérateur veut que les séances passent par leurs propres outils : serveurs par
+  `preview_start` / `preview_stop` (entrées de `.claude/launch.json`), longs scripts par `run_in_background` / `TaskStop` ; un processus qui
+  leur échappe se signale (port et PID propriétaire) et l'opérateur décide.
+
+### Fait
+- [OK] `AGENTS.md` : section insérée mot pour mot. `JOURNAL.md` : cette passe et un principe. Aucun code, aucune mesure.
+- Commit sur la branche active `perf-gpu` (celle de la séance « Performances GPU : analyse et plan », qui travaille dans le même dossier), avec
+  ces deux fichiers seuls : ses modifications non committées (`tools/perf.mjs`, `tools/bench-common.mjs`, `tools/gpu-witness.ps1`) n'y sont pas.
+- Cette règle remplace la méthode de la passe M1 (« chercher les processus par leur ligne de commande, […] les arrêter ») : désormais on
+  signale le port et son PID, et l'opérateur décide.
+
+### Pensée
+- Un processus lancé hors des outils de la séance ne se retrouve ensuite qu'en balayant tout le système. L'effort se place donc au lancement
+  (outils de la séance, entrée `launch.json`) et en fin de séance (tout arrêter), pas dans un nettoyage après coup.
+
 ## À reprendre (par priorité)
 
 **-2. Fenêtres étroites (Passe 5)** — bake par pages bornées + repli explicite + recadrage du cadre 16:9 : bâtiments présents à tout format
@@ -2972,3 +2999,6 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   (la lointaine plus haut à l'écran) puis par la valeur, et une pièce déplacée se borne à ce qui la cache.
 - Pendant les captures d'un serveur de développement, ne rien reconstruire de ce qu'il sert (la page se recharge) ; un masquage d'acteur
   se vérifie (base masquée contre base non masquée) : avec la distribution cuite, un acteur porte l'id de sa planche.
+- Serveurs de développement par `preview_start` / `preview_stop` (entrée de `.claude/launch.json`), longs scripts par `run_in_background` /
+  `TaskStop` ; jamais `taskkill`, `Stop-Process` ni balayage des processus du système : un reste se signale (port et PID propriétaire,
+  `Get-NetTCPConnection`) et l'opérateur décide ; en fin de séance, tout ce qu'elle a lancé est arrêté (règle de l'opérateur, 17/10, `AGENTS.md`).

@@ -76,6 +76,17 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 - Character Lab (dev only): `npm run dev`, then `/character-lab.html` (or `npm run art:lab`) — shows an exported PNG sheet through
   Three.js at 1x / 4x / runtime scale; `window.__lab.selfTest()` checks nearest filtering texel-for-texel. Not part of the game or its build.
 
+## Dev servers and background processes (operator rule, 2026-10-17)
+- Start dev servers with the session's `preview_start` tool and a `.claude/launch.json` entry (`dev`, `dev-cast2`,
+  `dev-cast3`); for a new port, add an entry instead of launching it by hand. Stop them with `preview_stop`.
+- Run long scripts (`tools/perf.mjs`, `tools/viewport-proof.mjs`, trace series…) with the Bash tool's
+  `run_in_background`, and stop them with `TaskStop` on their task id.
+- Never use `taskkill`, `Stop-Process` or a system-wide process scan (`Get-CimInstance Win32_Process`, process lists
+  filtered by command line) to find or stop leftovers: each one needs the operator's approval and can hit unrelated
+  programs. If a process escapes the tools (an orphan holding a port), report the port and its owning PID
+  (`Get-NetTCPConnection -LocalPort <port>`) and let the operator decide.
+- Before ending a session, stop every server and background task it started.
+
 ## Useful URL params
 `seed=1842` (canonical) · `forge=sabotaged` · `clean=1` (no HUD/panel) · `freeze=7.3` (deterministic time) ·
 `player=x,z` (place the player; the camera settles in that zone's framing, no arrival hold) ·
