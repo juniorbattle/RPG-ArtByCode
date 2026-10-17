@@ -4,11 +4,13 @@ Contract for the character pipeline. **Status: toolchain validated (Pass 4A-0B).
 BASELINE for standard NPCs (operator, 2026-10-16: art direction + in-scene + dynamic validation) — NOT an approved production asset**
 (`runtimeUse: "lab"`). Standard NPCs = its quality, density x2 (64 × 96, the same world frame as the 32 × 48 runtime sprites); key
 characters get a higher budget later; one art direction, different precision budgets; never degrade the new character to match the old
-sprites. `porter-gm-v1` stays an experimental baseline (aimed at the wrong reference). No production sprite exists. Next: a second
-ORIGINAL NPC at the same quality, the merchant (brief validated by the operator on 2026-10-16: `briefs/npc2-proposal.md`): a first source
-(ChatGPT PNG with its C2PA manifest, archived) gave `merchant-x2-v1` (experimental, full chain verified), but the operator decided to
-regenerate the source for the proportions of the common NPC base (prompt V4, waiting for the new PNG); the 64 × 96 frame, foot row 90 and
-transparent margins constrain the reconstructed asset, not the source illustration. Evidence: `reviews/dockworker-x2-v1/`, `provenance/dockworker-x2-v1/`,
+sprites. `porter-gm-v1` stays an experimental baseline (aimed at the wrong reference). No production sprite exists. **Production candidates (Pass 4A-sedecies, operator request of 2026-10-16: characters integrated
+and working, idle and walk, visible in production, built on the shared reference images):** `dockworker-x2-v2` (the approved front +
+back and profile from the same sheet row) and `merchant-x2-v2` (the sheet's NPC 02, three views): idle, walk (and talk for the merchant)
+in the three runtime facings, built by `tools/art-lab/build-character.mjs` from `rigs/<id>.rig.mjs` (rebuild-checked), wired into the game
+as its production cast (`src/characters/BakedCast.ts`: they take the porter's and the merchant's spawns). Status `candidate`, NOT approved:
+production needs the operator's explicit approval in the manifests; until then the cast is empty (`?cast=candidate` shows it on the DEV
+server). The ChatGPT source of `merchant-x2-v1` (proportions to regenerate) is superseded by the sheet's merchant and stays as evidence. Evidence: `reviews/dockworker-x2-v1/`, `provenance/dockworker-x2-v1/`,
 `reviews/porter-gm-v1/`. Source sheet: **provenance confirmed by the operator** (2026-10-16, `provenance/dockworker-x2-v1/source-declaration.json`:
 the "Merchant District — Night" sheets, NPCs 1-24, were generated with ChatGPT / OpenAI from our art direction, not by an external
 artist) — not cryptographically certified (no C2PA). Use as sources and art references, commercial game assets included, **authorised**

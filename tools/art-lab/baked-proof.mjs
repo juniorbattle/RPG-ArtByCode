@@ -233,9 +233,13 @@ try {
   } else if (mode === 'selftest') {
     const [bq, id, png] = rest, [base, query] = bq.split('|');
     const img = decodePng(fs.readFileSync(png));
+    // the selftest cell is down/idle/0: in a multi-frame sheet, the first frame of the idle-down tag (its rect in the Aseprite JSON)
+    const meta = JSON.parse(fs.readFileSync(png.replace(/.png$/, '.json'), 'utf8')), tag = meta.meta?.frameTags?.find((t) => t.name === 'idle-down');
+    const fr = meta.frames[tag ? tag.from : 0].frame, cell = Buffer.alloc(fr.w * fr.h * 4);
+    for (let y = 0; y < fr.h; y++) img.rgba.copy(cell, y * fr.w * 4, ((fr.y + y) * img.W + fr.x) * 4, ((fr.y + y) * img.W + fr.x + fr.w) * 4);
     const page = await open(browser, base, query);
-    const r = await page.evaluate((id, b64) => window.__baked.selfTest(id, b64), id, img.rgba.toString('base64'));
-    r.export = { file: png, size: [img.W, img.H] };
+    const r = await page.evaluate((id, b64) => window.__baked.selfTest(id, b64), id, cell.toString('base64'));
+    r.export = { file: png, size: [img.W, img.H], frame: fr };
     fs.writeFileSync(out, JSON.stringify(r, null, 1)); console.log(JSON.stringify(r, null, 1));
   } else throw new Error(`unknown mode ${mode}`);
 } finally { await browser.close(); }

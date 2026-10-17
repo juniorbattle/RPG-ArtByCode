@@ -6,6 +6,7 @@ import type { Collider } from '../architecture/StreetComposer';
 import type { DistrictBuild, NpcSpawn } from '../district/MerchantDistrictGenerator';
 import type { Anim, Dir } from './SpriteGenerator';
 import { requiredFrames, type AuthoredSpawn } from './BakedSprites';
+import type { CastMember } from './BakedCast';
 
 /** Player control + NPC behaviours + a tiny circle-vs-box collision solver. */
 
@@ -29,6 +30,8 @@ export class ActorSystem {
   talkTimer = 0;
   /** authored NPCs (baked sheets; EXPERIMENTAL, DEV flag only today): spawned after every seeded spawn, outside the district RNG */
   authored: AuthoredSpawn[] = [];
+  /** production baked sheets standing in for generated archetypes (`BakedCast.ts`): same spawns, roles, behaviours and RNG draws */
+  cast = new Map<string, CastMember>();
 
   constructor(private atlas: SpriteAtlas) {
     window.addEventListener('keydown', (e) => {
@@ -45,6 +48,13 @@ export class ActorSystem {
       id: this.nextId++, spec, role, detail: this.atlas.specs.get(spec)?.detail ?? 'crowd', pos: pos.clone(), facing: 'down', dir: 'down', flip: false, anim: 'idle', t: o.t ?? Math.random() * 3,
       speed: 0, tint: [1, 1, 1], scale: 1, height: HEIGHT[spec] ?? 1.7, radius: 0.28, ...o,
     };
+    // a production baked sheet takes the archetype's place: its sprite, presentation scale and height; the detail tier, role and
+    // behaviour stay the archetype's (the cast loader checked that the sheet holds idle + walk in every facing)
+    const c = this.cast.get(spec);
+    if (c) {
+      a.base = spec; a.spec = c.id; a.scale *= c.scale; a.height = c.height;
+      if (!this.atlas.counts.has(`${a.spec}/${a.anim}`)) a.anim = 'idle';
+    }
     this.actors.push(a);
     return a;
   }
@@ -94,7 +104,7 @@ export class ActorSystem {
     const a = this.spawn(n.archetype, n.role, p, { behaviour: { kind, waypoints: wp, wait: rng.range(0, 3), idx: 0, target: null, seed: rng.int(1, 99999) } });
     if (n.facing !== undefined) this.face(a, new THREE.Vector3(Math.sin(n.facing), 0, Math.cos(n.facing)));
     if (n.role.endsWith('work')) a.anim = 'hammer';
-    if (n.role.includes('talk')) { if (this.atlas.counts.has(`${n.archetype}/talk`)) a.anim = 'talk'; a.bubble = 'dots'; }
+    if (n.role.includes('talk')) { if (this.atlas.counts.has(`${a.spec}/talk`)) a.anim = 'talk'; a.bubble = 'dots'; }
     if (n.role.includes('alarm')) a.bubble = 'exclaim';
   }
 
@@ -225,12 +235,13 @@ export class ActorSystem {
     const dist = to.length();
     if (dist < 0.2) { b.target = null; b.wait = 1.5 + (b.seed % 5); return; }
     to.normalize();
-    const speed = a.spec === 'porter' ? 0.9 : a.detail === 'crowd' ? 0.95 : 0.8;
+    const speed = (a.base ?? a.spec) === 'porter' ? 0.9 : a.detail === 'crowd' ? 0.95 : 0.8;
     const nx = a.pos.x + to.x * speed * dt, nz = a.pos.z + to.z * speed * dt;
     const ox = a.pos.x, oz = a.pos.z;
     this.resolve(a, nx, nz);
     if (Math.abs(a.pos.x - ox) + Math.abs(a.pos.z - oz) < speed * dt * 0.2) { b.target = null; b.wait = 0.8; return; }
     this.face(a, to);
-    this.setAnim(a, a.spec === 'porter' ? 'carry' : 'walk');
+    // the porter's crate walk where the sheet has one (the generated porter), the plain walk otherwise
+    this.setAnim(a, this.atlas.counts.has(`${a.spec}/carry`) ? 'carry' : 'walk');
   }
 }

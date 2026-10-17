@@ -14,6 +14,7 @@ import { SpriteAtlas } from '../characters/SpriteAtlas';
 import { SpriteRenderer } from '../characters/SpriteRenderer';
 import { ActorSystem } from '../characters/ActorSystem';
 import type { BakedSheet, AuthoredSpawn } from '../characters/BakedSprites';
+import { loadProductionCast } from '../characters/BakedCast';
 import { ParticleSystem } from '../atmosphere/Particles';
 import { buildSky } from '../atmosphere/Sky';
 import { WATER_Y, WALK } from '../architecture/StreetComposer';
@@ -122,10 +123,16 @@ export class App {
     this.generator = new MerchantDistrictGenerator(this.lib);
     this.opts.onProgress('sprites', 0.97);
     await new Promise((r) => setTimeout(r, 0));
+    // production cast: approved baked sheets standing in for generated archetypes (src/characters/BakedCast.ts); ?cast=generated keeps the
+    // generated cast; DEV only, ?cast=candidate also loads the candidates awaiting the operator's approval
+    const castMode = this.opts.params.get('cast');
+    const cast = castMode === 'generated' ? null : await loadProductionCast(import.meta.env.DEV && castMode === 'candidate');
     const baked = this.opts.baked ? await this.opts.baked : null;
-    this.atlas = SpriteAtlas.build([PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, ...crowdVariants(this.config.seed, 5)], baked?.sheets ?? [], this.renderer.capabilities.maxTextureSize);
+    const devSheets = (baked?.sheets ?? []).filter((s) => !cast?.sheets.some((p) => p.id === s.id));
+    this.atlas = SpriteAtlas.build([PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, ...crowdVariants(this.config.seed, 5)], [...(cast?.sheets ?? []), ...devSheets], this.renderer.capabilities.maxTextureSize);
     this.sprites = new SpriteRenderer(this.atlas, 40);
     this.actors = new ActorSystem(this.atlas);
+    if (cast) this.actors.cast = cast.cast;
     if (baked) this.actors.authored = baked.spawns;
     this.actors.onInteractForge = () => this.setForgeState(this.config.forgeState === 'NORMAL_FORGE' ? 'SABOTAGED_FORGE' : 'NORMAL_FORGE');
     this.scene.add(this.sprites.group);

@@ -1,0 +1,34 @@
+{
+ "id": "dockworker-x2-v2",
+ "frames": 30,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29",
+ "sheet": [
+  384,
+  480
+ ],
+ "palette": {
+  "mode": "palette-from dockworker-x2-v1.png",
+  "colours": 64,
+  "views": {
+   "recon-up-full-q.png": {
+    "texels": 2659,
+    "meanOklabErrPermille": 13.7,
+    "maxOklabErrPermille": 53.1
+   },
+   "recon-side-full-q.png": {
+    "texels": 2084,
+    "meanOklabErrPermille": 13.2,
+    "maxOklabErrPermille": 36.8
+   }
+  }
+ },
+ "views": {
+  "up": "6763d603818326fe6b7339e02a1c85573a2a00358cd0cba5f400ac35440d5f1f",
+  "side": "f508a73572a6785c06c518c4066ddaac4bcaa327eb3027d99485bad4d54352f2"
+ },
+ "exports": {
+  "png": "57ce9c092c20ad5586bf7e7c1baec82eda7a0cb31170df0316d6d6d81657fbec",
+  "json": "a929f5619cf5b21710e623015f58f7d425c3a628a5935081d4f6a4e3e041192d",
+  "aseprite": "8143c7fd84551e1f900b9cbb7cf69f46e3ee7c590d5b2105f2f80962f75b092d"
+ }
+}

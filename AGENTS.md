@@ -57,7 +57,11 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 - `npm run art:doctor` — read-only report of the character art toolchain (Node, repo, Art Lab, Aseprite, Aseprite AI Artist);
   "Aseprite not installed" is a valid state (exit 0) and it never reports the integration as validated. `-- --json` available.
 - `npm run art:validate` — provenance manifests (`art-lab/characters/manifests/*.manifest.json`) + orphan sources / exports + archived
-  reference sheets (`art-lab/characters/reference/sources/`: each file against its `.source.json` record, SHA-256 and size)
+  reference sheets (`art-lab/characters/reference/sources/`: each file against its `.source.json` record, SHA-256 and size); a
+  `production` manifest also needs its export PNG to match the SHA-256 of its provenance pack (what the game's cast trusts)
+- `node tools/art-lab/build-character.mjs art-lab/characters/rigs/<id>.rig.mjs [--check]` — an animated baked character from its rig script
+  (archived sheet -> reconstruction per facing -> one palette -> rig frames -> Aseprite `.aseprite` + sheet PNG / JSON with tags
+  `<anim>-<dir>`); `--check` rebuilds into a temp folder and compares with the committed views and exports (needs Chrome + Aseprite)
 - `npm run art:sheet -- <sheet.png> [meta.json] [--out f.png] [--scale 4]` — labelled nearest-neighbour review contact sheet
   (Windows PowerShell drops the first `--` of any `npm run x -- flags` and npm then eats the flags: write `npm run x '--' flags`
   or call `node tools/art-lab/<script>.mjs flags` directly)
@@ -77,7 +81,9 @@ occluders open: review / visibility proof) · `occdebug=1` (proxy boxes, reveal 
 occludable: stress test of the behind-occluder bake) · DEV server only: `labsprite=<id>|-&labpos=x,z[;x,z]` (show an Art Lab export
 on the porter actor, standing still, in the real scene; `-` = generated frames for the "before" image; compiled out of production,
 see `art-lab/README.md`) · DEV server only, EXPERIMENTAL: `baked=<id>&bakedpos=x,z` (a baked export in the MAIN atlas and renderer, per
-`art-lab/characters/runtime-integration-contract.md` v3; never in production builds; flags in `src/lab/bakedLoader.ts`)
+`art-lab/characters/runtime-integration-contract.md` v3; never in production builds; flags in `src/lab/bakedLoader.ts`) · `cast=generated`
+(skip the production cast of baked characters, `src/characters/BakedCast.ts`: the old generated porter / merchant) · DEV server only:
+`cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production)
 
 ## Art production principle
 Maximise perceptual complexity while minimising runtime complexity.
@@ -85,8 +91,10 @@ Maximise perceptual complexity while minimising runtime complexity.
 Detail may be procedurally generated, baked, or selectively authored. The deciding factor is final perceptual quality, runtime
 cost, reproducibility and operator approval — not procedural purity.
 - External art tools (Aseprite and the like) are development-time helpers, never runtime, install or build dependencies:
-  `npm install`, `npm run dev`, `npm run build` and the game must work on a machine without them. Today the game still generates
-  everything at boot and loads no authored or baked asset.
+  `npm install`, `npm run dev`, `npm run build` and the game must work on a machine without them. The game generates everything at
+  boot except its production cast (`src/characters/BakedCast.ts`): baked character sheets (exported PNG + JSON, bundled as assets,
+  SHA-256 checked against their provenance pack, decoded byte-exact) standing in for generated archetypes, and only those whose
+  manifest is approved for production. Today no manifest is: the cast is empty and the game is pixel-identical to the generated one.
 - A baked asset may reach the runtime only through an approved provenance manifest (`approved: true`, `runtimeUse: "production"`)
   and an explicit operator-approved task. Generated output never becomes canonical production art silently.
 - `*.aseprite` files are production sources (tracked); the sheet PNG + metadata JSON exports are the baked, runtime-ready outputs.

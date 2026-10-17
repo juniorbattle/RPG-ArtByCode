@@ -1,0 +1,40 @@
+{
+ "id": "merchant-x2-v2",
+ "frames": 48,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29 talk-down:30-35 talk-up:36-41 talk-side:42-47",
+ "sheet": [
+  384,
+  768
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2526,
+    "meanOklabErrPermille": 14.3,
+    "maxOklabErrPermille": 48
+   },
+   "recon-up-full-q.png": {
+    "texels": 2322,
+    "meanOklabErrPermille": 14,
+    "maxOklabErrPermille": 51.7
+   },
+   "recon-side-full-q.png": {
+    "texels": 2213,
+    "meanOklabErrPermille": 15,
+    "maxOklabErrPermille": 52.3
+   }
+  }
+ },
+ "views": {
+  "down": "b798a1ab5a4da01ef3a6c97274465589336ab8e4b0c314f358f27c0a91126c50",
+  "up": "45cc2ac7db2debe5df82438d116896b797677ebef037df2a986431a6276fd87c",
+  "side": "2e074a19a63b27c65a641877d5e6fdaf4adc1468b6c50f98eddd08d59a2724bc"
+ },
+ "exports": {
+  "png": "b035fcde85c8057ac4eaa7f4677630423d2ed4fac37daf43cb2250b37972017f",
+  "json": "b04301c9d600acad4f64a2d9e0d497e83d5ff477695f45dd1bc73012f7494041",
+  "aseprite": "6dc960c3ec0c76e510d42c951bef3428ba45f4f7e2f8ce2f73e71da0c4929b26"
+ }
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "dockworker-x2-v2",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/dockworker-x2-v2.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/dockworker-x2-v2.png",
+    "metadata": "art-lab/characters/exports/dockworker-x2-v2.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-character.mjs (reconstruct-grid + quantize-palette + rig-engine, rig art-lab/characters/rigs/dockworker-x2-v2.rig.mjs); Aseprite 1.3.18.6 (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "Reference sheet NPC 05 \"Dock Worker (Male)\": front (= dockworker-x2-v1), back and profile views",
+      "path": "art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp",
+      "note": "Operator reference sheet \"16 generic townsfolk\" (four views per character), archived byte for byte; origin confirmed by the operator (ChatGPT / OpenAI under the team's art direction), not cryptographically certified; use for commercial game assets authorised by the operator (2026-10-16) subject to third-party rights, not exhaustively verified. Crops: front 27,347,99,504 (the approved dockworker-x2-v1 export, unchanged); back 195,347,269,505; profile 282,345,341,505."
+    },
+    {
+      "category": "C",
+      "label": "dockworker-x2-v1 (approved visual baseline, not a Gold Master): the front view, used as is",
+      "path": "art-lab/characters/manifests/dockworker-x2-v1.manifest.json"
+    },
+    {
+      "category": "A",
+      "label": "Merchant District runtime, cameras A / B / C / D, seed 1842",
+      "path": "art-lab/characters/reviews/dockworker-x2-v2",
+      "note": "in-scene, dynamic and performance validation (JOURNAL, Passe 4A-sedecies)"
+    }
+  ],
+  "approved": false,
+  "approval": null,
+  "runtimeUse": "lab",
+  "notes": "PRODUCTION CANDIDATE (operator request of 2026-10-16: characters integrated and working, idle and walk, visible in production). Not approved: production needs the operator's explicit approval (approved: true, status approved, runtimeUse production); until then the game's production cast skips it and only the DEV switch ?cast=candidate shows it. Replaces the generated porter (its spawns, roles and behaviours). Density x2 (64x96, feet on row 90), idle 4 frames + walk 6 frames in the three runtime facings (tags idle-down|up|side, walk-down|up|side; the side view faces left, the renderer mirrors it). Presentation scale 0.9 (1.88 m). Front = the approved baseline dockworker-x2-v1, unchanged; back and profile reconstructed from the same sheet row and mapped onto its palette; the legs of the profile walk are painted in its own colours (rig). Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/dockworker-x2-v2.rig.mjs --check"
+}

@@ -18,6 +18,8 @@ export const PIXEL_WORLD = 0.047; // metres per sprite pixel
 export interface Actor {
   id: number;
   spec: string;
+  /** the generated archetype a production baked sheet stands in for (`BakedCast.ts`): behaviours keyed on the archetype keep it */
+  base?: string;
   role: string;
   detail: 'hero' | 'mid' | 'crowd';
   pos: THREE.Vector3;

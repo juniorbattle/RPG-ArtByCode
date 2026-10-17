@@ -1634,6 +1634,87 @@ chemin partagé + `dynwalk` → paquet de provenance, `runtimeUse: "lab"`, arrê
 
 Preuves : `art-lab/characters/reviews/merchant-x2-v1/` (planches + README) ; captures brutes et scripts dans le dossier de travail de la séance.
 
+## Passe 4A-sedecies — Distribution de production : docker et marchande animés (idle, marche, parole), intégrés au jeu ; activation = approbation opérateur (2026-10-16)
+
+### Demande opérateur (2026-10-16)
+- Mot pour mot : « mais tu as deja les images ref, je te trouve que tu n'es pas assez autonome, travaille en te basant sur les images refs partages
+  et effectue un travaikl coherent avec un resultat final correct qui sera visible en prod, je veux que les personnages soient integres et
+  fonctionneles idle, marche. valide ce que tu as besoin pour achever cette tache. je veux juste un retour lorsque le resultat finale est pret ».
+- Lu comme : ne plus attendre la source V4 ; partir des planches déjà partagées ; le docker et la marchande intégrés au jeu de production,
+  avec idle et marche dans toutes les directions ; un seul retour, à la fin.
+
+### Sources — [OK] la planche 01-16 donne quatre vues par PNJ
+- La planche « 16 generic townsfolk » montre chaque PNJ de face, de trois-quarts, de dos et de profil, à la même échelle : c'est la matière
+  d'une marche. Docker = n° 05 (rangée 2), marchande = n° 02 (rangée 1). Recadrages : docker dos 195,347,269,505, profil 282,345,341,505 ;
+  marchande face 388,117,452,272, dos 546,121,608,272, profil 620,122,683,272 ; pas 1,775 (celui du docker). La face du docker refaite par la
+  même chaîne est **identique au bit** à `x2-auto.png` du paquet approuvé.
+- La marchande de la planche (n° 02) remplace la source ChatGPT V3 : proportions de la base commune d'origine, trois vues, même style que
+  le docker. `merchant-x2-v1` reste comme preuve. (La consigne d'originalité face à 02 / 03 / 09 visait la génération d'un nouveau dessin ;
+  l'opérateur demande maintenant de partir des références.)
+
+### Chaîne — [OK] outils, recette rejouable
+- `quantize-palette.mjs` : une palette pour plusieurs vues (le k-means de `reconstruct-grid` sur toutes les vues, ou les couleurs d'un
+  sprite approuvé). Sur la seule face du docker, il reproduit `x2-quant64.png` **au bit**. Docker : dos et profil sur les 64 couleurs de
+  l'export approuvé ; marchande : un k-means joint de 64 couleurs (erreur OKLab moyenne 14-15 ‰).
+- `rig-engine.mjs` (découpe, remappage de rangées, rotation RotSprite, IK à deux os, membres peints, déplacement avec remplissage,
+  souffle) ; `build-character.mjs` : planche archivée → reconstruction par direction → palette → `prepare` (miroir, recalage, retouches
+  notées) → images → contrôles du contrat → Aseprite en lot (`.aseprite` + PNG + JSON, tags `<anim>-<dir>`) → chaque image exportée
+  comparée au texel près. `--check` reconstruit dans un dossier temporaire et compare : **identique** pour les deux. La recette entière
+  tient dans `art-lab/characters/rigs/<id>.rig.mjs`. `verify-provenance --rebuild` lance `--check` pour ces paquets : **intact** (et les
+  deux paquets v1 restent intacts).
+- Profil du docker : miroir (le profil natif du jeu regarde à gauche), décalé de 2 texels (bottes sur la colonne d'ancrage), rangée 0
+  effacée et une rangée de casquette retirée (le profil se reconstruit sur 91 rangées, le cadre garde un anneau transparent).
+
+### Animation — trois itérations, deux critiques indépendantes
+- [KO] v1 du profil : tourner la masse du pantalon (les deux jambes fusionnées dans la vue) mêle les jambes et déforme les bottes.
+- [OK] Jambes de profil **peintes** dans la rampe de la vue et posées par IK, bottes d'origine déplacées rigides. Marche à 6 images (cadence du
+  jeu 7,5 i/s : 0,8 s le cycle). Face / dos : jambes remappées entre bassin et pied (levée 2 / 5 / 2 rangées), haut du corps qui suit la
+  descente du profil. Marchande : bottes rigides sous la robe, ourlet, montée et descente du corps.
+- Critique 1 (agent neuf, aveugle) : profil du docker 2/5 (jambes trop sombres et fines, pieds qui glissent au passage, botte arrière
+  retournée), bras figés face / dos, marchande qui « glisse » face / dos, parole illisible de profil / dos, souffle en interrupteur.
+  Cause de la botte : **erreur de signe** de la rotation du pied (pointe levée au lieu du talon). Corrigé.
+- Critique 2 : profil 3/5, botte arrière résolue, souffle correct ; reste : les mouvements d'**un texel ne se lisent pas** à ~1,8 px / texel,
+  foulée trop longue (fente), hochement à chaque syllabe. Itération 3 : bras 2 rangées, transfert de poids 2 texels, ourlet levé côté jambe
+  qui passe, foulée 13 texels par pas (0,69 m/s contre 0,8-0,95 pour les promeneurs : léger glissement accepté), revers évasé au-dessus de la
+  botte, levée de passage 6, parole sur 6 images (hochement une fois par cycle).
+- Final : docker 30 images (idle 4 + marche 6, × 3 directions) ; marchande 48 (+ parole 6 × 3). Non changés exprès (viennent de la planche) :
+  volume du bonnet selon la vue, sac de face de la marchande, sacoche du docker.
+
+### Intégration production — [OK] implémentée ; [?] activation = approbation de l'opérateur
+- `src/characters/BakedDecode.ts` (décodeur PNG exact + découpe JSON Aseprite, sortis de `src/lab/` ; le chargeur DEV les réutilise),
+  `SheetMeta.ts`, `BakedCast.ts` (table : export importé comme ressource hachée, champs de garde du manifeste seulement, table `files` du
+  paquet, archétype remplacé, échelle 0,9) ; `ActorSystem.cast` : même spawn, rôle, comportement et tirages ; seuls sprite, échelle et hauteur
+  changent ; `?cast=generated` = ancienne distribution ; DEV seul : `?cast=candidate`. `art:validate` refuse un manifeste `production` dont
+  le PNG ne correspond pas à son paquet (contrôle négatif vérifié).
+- [KO → décision] L'outil de permission a **refusé** d'écrire une approbation « déléguée » dans les manifestes (approved / production au nom de
+  l'opérateur). Les manifestes restent `candidate`, `runtimeUse: "lab"`, non approuvés : le jeu de production ne les charge pas. Activation =
+  l'opérateur approuve (approved, status, approval, runtimeUse) ; rien d'autre à changer.
+- Docker → porteur (le promeneur du quai et la ronde de la cour de la forge) ; marchande → marchande de l'étal principal. Elle **ne marche pas**
+  en jeu : son point est dans la boîte englobante (alignée sur les axes) du collisionneur de l'étal, aucun pas n'y est possible (comme la marchande
+  générée) ; sa marche est testée sur sol libre. Elle parle (bulle « … ») comme la marchande générée.
+
+### Validation — [OK]
+- Démarrage par défaut (aucun manifeste approuvé) contre `894c4d3` : **0 px** en A / B / C / D, personnages compris (captures déterministes) ;
+  idem avec `?cast=generated`.
+- `?cast=candidate` : les 11 personnages tirés gardent ordre, rôles, positions, teintes, comportements et niveaux de détail.
+- Autotest (test 2) des deux planches : CPU 0, GPU 0 texel à 1 / 2 / 3 / 2,37, contrôles négatifs en échec, débordement 0. L'outil comparait
+  la planche entière à une image (planches multi-images) : corrigé (découpe de `idle-down` 0).
+- Perfs (`tools/perf.mjs`, entrelacé, 3 tours) : caméra B 9,49 ms (générée) / 9,51 ms (distribution), caméra C 9,22 / 9,05 ms (bruit) ; **108 appels de dessin** dans toutes les variantes ; texture cuite 512 × 960 (1,97 Mo) pour 78 images.
+- Build : JS 824 923 → 847 433 o (gzip 238,64 → 243,67 Ko) + deux PNG (49 / 71 Ko) livrés mais non chargés tant que non approuvés ; code DEV
+  absent. Une build de **simulation** (filtre ouvert aux candidats, hors dépôt) charge les deux planches depuis leurs ressources hachées,
+  SHA-256 égaux aux paquets.
+- Marche en scène (captures 1:1, pas de 1/60 s) : docker et marchande dans les trois directions ; planches dans `art-lab/characters/reviews/`.
+
+### Pensée
+- Une planche à quatre vues est la matière d'une marche : chercher les vues existantes avant de faire générer une image unique.
+- Des jambes fusionnées dans une vue (profil) se **peignent** dans la rampe de la vue et se posent par IK ; tourner la masse ne marche pas.
+- À ~1,8 px écran / texel, un mouvement d'un texel ne se voit pas : 2 texels pour tout ce qui doit se lire en mouvement.
+- La critique par agent neuf, deux fois, a trouvé un bug (signe de rotation) que les planches à l'œil n'avaient pas montré.
+- Une approbation ne s'écrit pas au nom de l'opérateur, même déléguée : préparer l'activation (un seul changement de manifeste) et la demander.
+
+Preuves : `art-lab/characters/reviews/dockworker-x2-v2/`, `reviews/merchant-x2-v2/` (planches + README + autotests) ; paquets
+`provenance/<id>/` ; captures brutes et scripts (walkcam, montage) dans `art-lab/characters/scratch/gm/` (non versionné).
+
 ---
 
 ## À reprendre (par priorité)
@@ -1642,12 +1723,13 @@ Preuves : `art-lab/characters/reviews/merchant-x2-v1/` (planches + README) ; cap
 quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ; écart de l'ombre portée du ×2 face à l'ancien aperçu
 (3-67 px par vue, ≤ 12 / 255) **accepté par l'opérateur** : l'ombre suit la règle entière du corps. Restent ouverts : C2 (PNG versionné) à confirmer ;
 droits : usage comme source **autorisé** (16/10, sous réserve des droits de tiers, non vérifiés exhaustivement), les trois planches archivées dans
-`reference/sources/` (octets contrôlés par `art:validate`) ; les originaux restent à retrouver (l'opérateur s'en charge). **Prochain : la marchande, source à régénérer** (Passe 4A-quindecies) :
-l'opérateur génère avec le prompt V4 (`art-lab/characters/briefs/npc2-proposal.md` § 6.4 : même dessin, proportions du docker). À réception :
-mesurer les proportions de la source (tête ≈ 0,33 de la hauteur, épaules ≈ 0,40), archiver le PNG à l'octet + C2PA, rejouer la chaîne
-(`reconstruct-grid --holes --no-shadow`, pas à recalculer), ≤ 2 itérations Aseprite, Character Lab + A-D, puis **critique aveugle, marche
-dynamique, perfs** (pas encore faits) ; hauteur de présentation à trancher (1,66 m nominal, 1,88 m dessiné pour la marchande générée).
-`merchant-x2-v1` reste comme preuve ; `runtimeUse: "lab"` ; pas de fusion dans `main` avant acceptation. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
+`reference/sources/` (octets contrôlés par `art:validate`) ; les originaux restent à retrouver (l'opérateur s'en charge). **Prochain : approbation de la distribution de production** (Passe 4A-sedecies) : `dockworker-x2-v2` (porteur) et `merchant-x2-v2`
+(marchande de l'étal) sont prêts, intégrés au jeu, validés (0 px de régression sans eux, autotests, perfs, build) mais **candidats** : l'activation
+en production = l'approbation de l'opérateur dans les deux manifestes (approved, status, approval, runtimeUse `production`). Revoir sur le serveur
+DEV avec `?cast=candidate`. Puis : fusion dans `main` sur acceptation. Restent ouverts : la marchande ne marche pas à son étal (collisionneur ;
+la déplacer de 0,5 m serait une décision de mise en scène), foulée du docker 0,69 m/s contre 0,8-0,95 (léger glissement), bonnet / sac selon la
+planche, héros et reste du cast toujours générés (la planche 01-16 couvre forgeron, gardes, voyageurs encapuchonnés : même chaîne possible).
+`merchant-x2-v1` reste comme preuve ; la source V4 n'est plus attendue. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
 tramée ; la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un nouvel occluder.
@@ -1756,3 +1838,8 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   ne se corrige pas par l'échelle : les proportions se chiffrent dans le prompt et se mesurent sur la source avant toute reconstruction.
 - Un outil figé par empreinte dans un paquet approuvé s'étend par options désactivées par défaut, prouvées par le `--rebuild` du paquet ;
   l'empreinte se met alors à jour avec une note de maintenance (ancienne valeur gardée).
+- Les vues qu'il faut à une marche (face, dos, profil) se prennent sur une planche multi-vues de la même échelle, jamais inventées depuis une
+  seule face ; la recette entière (recadrages, palette, retouches, animation) vit dans un script de rig rejouable au texel près.
+- Un mouvement destiné à se lire en jeu se dimensionne en pixels écran (2 texels à ~1,8 px / texel), pas en texels de la planche.
+- Une approbation de production ne s'écrit jamais au nom de l'opérateur : l'intégration se prépare derrière la porte du manifeste et
+  l'opérateur l'ouvre.

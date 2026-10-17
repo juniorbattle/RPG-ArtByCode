@@ -37,10 +37,16 @@ art-lab/
     reviews/                     contact sheets / critic notes (tracked evidence)
     smoke-test/                  evidence of the 4A-0B validation (tracked)
     manifests/                   one <id>.manifest.json per asset (provenance)
+    rigs/                        <id>.rig.mjs: the whole recipe of an animated character (crops, palette, view edits, frames)
 tools/art-lab/
   doctor.mjs                     environment report (read-only)
   validate-manifest.mjs          provenance manifest + orphan check + archived reference sheets vs their records
   make-contact-sheet.mjs         labelled nearest-neighbour review sheet of an exported PNG + JSON
+  reconstruct-grid.mjs           strict-grid reconstruction of one figure from a reference sheet
+  quantize-palette.mjs           one palette for several views (joint OKLab k-means, or an approved sprite's colours)
+  rig-engine.mjs                 cut-out rig: parts, row remaps, RotSprite rotation, IK legs, painted limbs, frame checks
+  build-character.mjs            rig script -> views -> frames -> Aseprite source + sheet PNG / JSON; --check = rebuild and compare
+  verify-provenance.mjs          a provenance pack's hashes; --rebuild re-runs its chain (rig packs: build-character --check)
 character-lab.html + src/lab/    Character Lab: dev-only Three.js viewer for an exported sheet
 ```
 

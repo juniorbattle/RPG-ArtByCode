@@ -3,7 +3,8 @@
 // file given with --sheet. --rebuild re-runs the whole chain from that sheet: reconstruction -> palette -> recorded cleanup, compared pixel
 // for pixel with the approved export.
 //   node tools/art-lab/verify-provenance.mjs <provenance dir> [--sheet <path to the source sheet>] [--rebuild]
-// --rebuild needs Chrome / Edge (CHROME_PATH). Read-only for the repo: rebuild outputs go to the OS temp folder.
+// For a pack built by a rig script (a *.rig.mjs in its file table), --rebuild runs that script through build-character.mjs --check.
+// --rebuild needs Chrome / Edge (CHROME_PATH) (and Aseprite for rig packs). Read-only for the repo: rebuild outputs go to the OS temp folder.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -42,7 +43,12 @@ if (fs.existsSync(declFile)) {
     if (D.rightsAndProduction) console.log(`note     rights / production: ${D.rightsAndProduction.rights}`);
   }
 }
-if (opt.rebuild) {
+// packs built by a rig script (build-character.mjs): the rebuild is the script's own --check (sheet -> views -> frames -> Aseprite export)
+const rigRel = Object.keys(P.files).find((f) => f.endsWith('.rig.mjs'));
+if (opt.rebuild && rigRel) {
+  try { execFileSync(process.execPath, [path.join(ROOT, 'tools', 'art-lab', 'build-character.mjs'), path.join(ROOT, rigRel), '--check'], { stdio: 'ignore' }); console.log(`ok       rebuild by ${rigRel} --check (views, sheet pixels, frame table)`); }
+  catch { console.log(`DIFFERS  rebuild by ${rigRel} --check`); bad++; }
+} else if (opt.rebuild) {
   if (!sheetFile || !fs.existsSync(sheetFile)) { console.error('--rebuild needs the source sheet (source.sheet.path or --sheet)'); process.exit(2); }
   const R = P.reconstruction, tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'artlab-rebuild-')), pre = path.join(tmp, 'x');
   const node = process.execPath, tool = (t) => path.join(ROOT, 'tools', 'art-lab', t);

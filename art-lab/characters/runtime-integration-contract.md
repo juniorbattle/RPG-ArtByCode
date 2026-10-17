@@ -321,3 +321,34 @@ the body. They differ on near-ties of the cast shadow (a few ground scanlines). 
 then follows the body's own texel decisions) and commit; (b) baked frames in a texture **array** of fixed-size layers (one per density,
 `sampler2DArray`: a GLSL 3 construct, which three.js already compiles for WebGL2 but this renderer does not use yet), so the shadow can keep a
 hardware nearest read on a layer of exactly the preview's size — a wider shader change, to be approved and proven before a commit.
+
+## 14. Production cast (Pass 4A-sedecies, 2026-10-16) — implemented, gated on the operator's approval
+
+Operator request (2026-10-16): characters integrated and working, idle and walk, visible in production, built on the shared reference images.
+Implemented as the "later production task" of section 9, without any shader or renderer change:
+
+- **Loader in the game** (`src/characters/BakedDecode.ts`): the exact PNG decoder and the Aseprite-JSON frame cutting (tags `<anim>-<dir>`)
+  moved out of `src/lab/`; the DEV loader now imports them (one implementation). `src/characters/SheetMeta.ts` holds the JSON reader.
+- **Cast table** (`src/characters/BakedCast.ts`): each entry = an export (PNG imported as a hashed build asset, JSON bundled), the gate fields
+  of its manifest (named JSON imports: only `id`, `status`, `approved`, `runtimeUse` reach the bundle), its pack's `files` table, the generated
+  archetype it replaces, its presentation scale. Gate: `runtimeUse: "production"` needs `approved: true` + `status: "approved"` (else a load
+  error); unapproved entries are skipped in every build; DEV only, `?cast=candidate` also loads `candidate` entries. Load: fetch, SHA-256
+  against the pack (WebCrypto; skipped with no error on a non-secure http origin, where `art:validate` is the check), exact decode, the frame
+  invariant (section 3) and the frames the replaced behaviours need (idle + walk in the three facings, amendment B): any miss is a load error.
+- **Actors** (`ActorSystem.cast`): `spawn()` swaps the archetype's spec for the baked id, multiplies its scale and sets its height (figure
+  rows of the front idle frame x texel size x scale); the actor keeps `base` = the archetype, its role, detail tier, behaviour and RNG draws.
+  Behaviours read the archetype where they were keyed on it (the porter's speed), and the frame set where they asked for an animation
+  (`carry` / `talk` only when the sheet has it). `?cast=generated` keeps the generated cast.
+- **Gate in the tools**: `art:validate` refuses a `production` manifest whose export PNG does not match its provenance pack's SHA-256.
+
+Candidates (`status: "candidate"`, `runtimeUse: "lab"`, not approved): `dockworker-x2-v2` -> porter, `merchant-x2-v2` -> merchant (both
+x2, idle 4 + walk 6 frames per facing, talk 6 for the merchant: 30 + 48 frames). Measured (seed 1842, 1920 x 1080):
+- default boot (no approved manifest) vs the previous commit `894c4d3`: **0 px** in cameras A / B / C / D, characters included (deterministic
+  captures, `baked-proof.mjs shots`), with and without `?cast=generated`;
+- `?cast=candidate`: the 11 seeded characters keep spec order, roles, positions, tints, behaviours and detail tiers; only sprite, scale and
+  height change on the three replaced actors;
+- selftest (test 2) of both sheets: CPU bytes 0, GPU texels 0 at scale 1 / 2 / 3 / 2.37, negative controls fail, bleed 0;
+- `tools/perf.mjs` interleaved, 3 rounds (final sheets): camera B 9.49 ms (generated) / 9.51 ms (cast), camera C 9.22 / 9.05 ms (noise);
+  **draw calls 108 in every variant**; baked texture 512 x 960 (1.97 MB) for the 78 frames;
+- production bundle (JS) 824 923 B at `894c4d3` -> 847 433 B (+22.5 KB; gzip 238.64 -> 243.67 KB) + the two PNGs (49 / 71 KB, shipped but not fetched while unapproved); a simulation
+  build accepting the candidates loads both sheets from their hashed assets, SHA-256 equal to the packs.

@@ -1,0 +1,59 @@
+{
+ "id": "dockworker-x2-v2",
+ "status": "PRODUCTION CANDIDATE - not approved: production needs the operator's explicit approval (manifest)",
+ "request": {
+  "date": "2026-10-16",
+  "by": "operator",
+  "text": "mais tu as deja les images ref, je te trouve que tu n'es pas assez autonome, travaille en te basant sur les images refs partages et effectue un travaikl coherent avec un resultat final correct qui sera visible en prod, je veux que les personnages soient integres et fonctionneles idle, marche. valide ce que tu as besoin pour achever cette tache. je veux juste un retour lorsque le resultat finale est pret"
+ },
+ "source": {
+  "sheet": {
+   "description": "operator reference sheet \"16 generic townsfolk\" (four views per character: front, three-quarter, back, profile), NPC 05 \"Dock Worker (Male)\"",
+   "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce",
+   "bytes": 302814,
+   "path": "art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp",
+   "origin": "confirmed by the operator (2026-10-16): generated with ChatGPT / OpenAI from the team's art direction; not cryptographically verified (no C2PA). See ../dockworker-x2-v1/source-declaration.json",
+   "rights": "use as a source for commercial game assets authorised by the operator (2026-10-16), subject to applicable third-party rights, NOT exhaustively verified"
+  },
+  "views": {
+   "down": "the approved export dockworker-x2-v1 (crop 27,347,99,504, its own pack: ../dockworker-x2-v1/), used unchanged",
+   "up": "crop 195,347,269,505 (the sheet's 3rd view)",
+   "side": "crop 282,345,341,505 (the sheet's 4th view)"
+  }
+ },
+ "chain": [
+  "reconstruct-grid.mjs <sheet> <crop> 1.775 64 96 90 (the pitch of dockworker-x2-v1), full colours, per reconstructed facing",
+  "quantize-palette.mjs --palette-from exports/dockworker-x2-v1.png: back and profile mapped onto the approved front's 64 colours",
+  "rig prepare(): profile mirrored to face left (the runtime's native side), moved 2 texels left (boots centred on the anchor column), top row cleared and one cap row (row 5) removed (the profile reconstructs 2 rows taller than the front; the frame keeps a transparent ring) -> view-up.png, view-side.png",
+  "rig frames() (rig-engine.mjs): idle 4 frames (rest, rest, inhale = upper body one row up, exhale = shoulders down with the head one frame late); walk 6 frames: front and back = upper body bobbing with the profile's body drop, each leg remapped between its hip band and its foot row (swing lift 2 / 5 / 2 rows, boot and cuff rigid), forearms and fists swinging 2 rows (and 1 texel inwards forward); profile = two legs PAINTED in the view's trouser / cuff / sock ramp (widths 17 / 14 / 12 texels with a cuff flaring to 14 above the boot, one-texel outline, the far leg one ramp step darker), posed by two-bone IK on an ankle cycle of 13 texels per step (0.28 m at scale 0.9 = 0.69 m/s at 7.5 frames/s, against 0.8-0.95 m/s for the wanderers: a slight slide, a longer stride read as a lunge), the view's own boot moved rigidly (RotSprite rotation on heel strike / toe-off; a lifted foot is raised until it clears the foot row), the near arm sheared up to 2 texels against the near leg",
+  "frame checks of the runtime contract (alpha 0 / 255, transparent ring, feet on row 90 for idle, nothing below it)",
+  "Aseprite 1.3.18.6 batch: source/dockworker-x2-v2.aseprite (one layer, 30 frames, tags idle-down|up|side, walk-down|up|side, durations 588 / 133 ms) and its export exports/dockworker-x2-v2.png + .json (json-array, 6 columns); every exported frame compared texel for texel with the rig's frame"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9,
+  "height": "1.88 m (89 rows x 0.0235 x 0.9)"
+ },
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/dockworker-x2-v2.rig.mjs --check (rebuild from the archived sheet, compared with the committed views and exports); node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/dockworker-x2-v2 [--rebuild]",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/dockworker-x2-v2.png": "57ce9c092c20ad5586bf7e7c1baec82eda7a0cb31170df0316d6d6d81657fbec",
+  "art-lab/characters/exports/dockworker-x2-v2.json": "782518121666068f916fc78da2fb3791079397cad60a17aa92daa964c066e403",
+  "art-lab/characters/source/dockworker-x2-v2.aseprite": "8143c7fd84551e1f900b9cbb7cf69f46e3ee7c590d5b2105f2f80962f75b092d",
+  "art-lab/characters/provenance/dockworker-x2-v2/view-up.png": "6763d603818326fe6b7339e02a1c85573a2a00358cd0cba5f400ac35440d5f1f",
+  "art-lab/characters/provenance/dockworker-x2-v2/view-side.png": "f508a73572a6785c06c518c4066ddaac4bcaa327eb3027d99485bad4d54352f2",
+  "art-lab/characters/provenance/dockworker-x2-v2/build.json": "235c2cada8f2d6c9fc53f4f3e8e617c1a7ac618e21c626781a48a8bb8f1eb442",
+  "art-lab/characters/rigs/dockworker-x2-v2.rig.mjs": "239ae6b7de76220495d7631db07e8808f11a09a76bac7d06846391dd0be76464",
+  "tools/art-lab/build-character.mjs": "bdffe2802b1edafbb10156651d3f06363b6a48939ed4a6eb2ab0428860ddc589",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "46d277a2c10285ba48cd39fab1bca50791427632252459d9ec90750ddbc2d1cf",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ },
+ "review": "two independent reviews by a fresh agent (JOURNAL Passe 4A-sedecies): sign error of the boot rotation, profile legs too dark / thin, frozen arms, 1-texel amplitudes unreadable at ~1.8 px / texel -> fixed in iterations 2 and 3"
+}

@@ -94,6 +94,13 @@ export function validateManifest(m, { file = '', root = ROOT, example = false } 
     if (ap != null) err('approval must be absent or null while approved is false');
   }
   if (m.runtimeUse === 'production' && m.approved !== true) err('runtimeUse "production" requires approved: true (no generated output becomes canonical silently)');
+  // the game's production cast (src/characters/BakedCast.ts) trusts the pack: the export must be the file its provenance pack hashed
+  if (m.runtimeUse === 'production' && !example && isStr(m.id)) {
+    const pack = path.join(root, 'art-lab/characters/provenance', m.id, 'PROVENANCE.json'), png = path.join(root, 'art-lab/characters/exports', `${m.id}.png`);
+    const want = fs.existsSync(pack) ? JSON.parse(fs.readFileSync(pack, 'utf8')).files?.[`art-lab/characters/exports/${m.id}.png`] : null;
+    if (!want) err(`production asset without a provenance pack hashing its export (provenance/${m.id}/PROVENANCE.json)`);
+    else if (!fs.existsSync(png) || crypto.createHash('sha256').update(fs.readFileSync(png)).digest('hex') !== want) err(`exports/${m.id}.png does not match the SHA-256 of its provenance pack`);
+  }
   if (m.status === 'planned') {
     if (m.approved === true) err('a planned asset cannot be approved');
     if (m.runtimeUse !== 'none') err('a planned asset must have runtimeUse "none"');
