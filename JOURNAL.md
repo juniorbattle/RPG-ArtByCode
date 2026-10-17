@@ -2276,6 +2276,13 @@ Preuves (non versionnées) : `art-lab/characters/scratch/cast2/` (`facing.js`, `
   Branche `vis-residue-5b` ouverte depuis `f57e69d`, un commit (travail + journal), poussée. Fusion dans `main` quand l'opérateur juge la
   tâche finie ; les arbitrages ci-dessus restent ouverts.
 
+### Décision opérateur (2026-10-17) — [OK] acceptée
+- Mot pour mot : « J'accepte la Passe 5b telle quelle (tuiles fines ×2 pour D) : fusionne vis-residue-5b dans main, pousse main et supprime
+  la branche. »
+- Tuiles fines ×2 des poses stables de D gardées telles quelles. Branche `vis-residue-5b` fusionnée en avance rapide dans `main` (`77621bb`),
+  `main` poussé, branche supprimée (locale et distante ; le worktree de la séance archivée qui l'avait extraite est passé en HEAD détaché sur
+  le même commit, aucun fichier changé). Les arbitrages ci-dessus (D ×4, poses AB à w = 0,5 pour 609, géométrie) restent ouverts.
+
 ### Pensée
 - Un écart de culling se prouve **causalement** (pièce forcée → 0 px, faces échangées → 0 px), pas par proximité : sur ces poses, des dizaines
   de pièces manquent sans effet visible.
@@ -2304,10 +2311,11 @@ la branche. ») : recadrage gardé tel quel, branche fusionnée en avance rapide
 ordre de dessin de faces coplanaires du quai lointain (30417 B, AB), lanières plus fines qu'un pixel de bake (murs latéraux vus de chant en D,
 maison 609 entre deux poses AB), fissures vues par un seul échantillon MSAA (7719 C, 30417 CD). Correctif : tuiles fines ×2 pour les poses
 stables de D (`BAKE_FINE`, ≈ +18-20 ms de bake), rendu canonique identique (25 / 27 vues à 0 px, les 2 autres = lanières désormais dessinées),
-`viewport-proof` 22 → 9 échecs ; témoin d'ordre dans `viewport-proof`, `tools/vis-why.mjs`. Commité et poussé sur la branche
-`vis-residue-5b` (depuis `f57e69d`, après la suppression de `cast-polish-facing`, selon la consigne de l'opérateur). **À décider par
-l'opérateur** : acceptation / fusion, D ×4 (+75 ms), poses AB à w = 0,5 pour 609, corrections de géométrie (fissures, quai coplanaire) qui
-seules rendraient l'outil vert.
+`viewport-proof` 22 → 9 échecs ; témoin d'ordre dans `viewport-proof`, `tools/vis-why.mjs`. **Tâche acceptée par l'opérateur le 17/10**
+(« J'accepte la Passe 5b telle quelle (tuiles fines ×2 pour D) : fusionne vis-residue-5b dans main, pousse main et supprime la branche. ») :
+branche `vis-residue-5b` fusionnée en avance rapide dans `main` (`77621bb`) puis supprimée (locale et distante). **Restent à décider par
+l'opérateur** : D ×4 (+75 ms), poses AB à w = 0,5 pour 609, corrections de géométrie (fissures, quai coplanaire) qui seules rendraient
+l'outil vert.
 
 **-1. PROCHAIN** — Passe 4A-undecies close : adressage par case entière commité (sprites générés identiques au bit à `eecea58`, ×2 stable
 quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ; écart de l'ombre portée du ×2 face à l'ancien aperçu
