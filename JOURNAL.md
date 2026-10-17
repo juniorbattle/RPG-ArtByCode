@@ -2028,6 +2028,13 @@ Preuves (non versionnées) : `art-lab/characters/scratch/smith-facing/` (capture
   (vérifié avec cette séance : ses lignes d'`App.ts` / `ActorSystem.ts` ne recoupent pas les nôtres). Fusion dans `main` quand l'opérateur
   juge la tâche finie ; l'arbitrage du cadrage (ci-dessus) reste ouvert.
 
+### Décision opérateur (2026-10-17) — [OK] acceptée
+- Mot pour mot (relayé par la séance principale) : « J'accepte la Passe 5 et le recadrage des fenêtres étroites tel quel : fusionne
+  viewport-visibility-fix dans main, pousse main et supprime la branche. »
+- Arbitrage du cadrage tranché : le recadrage du cadre 16:9 est gardé tel quel (pas de bake élargi). Branche `viewport-visibility-fix`
+  fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée (locale et distante). Les écarts de culling hérités
+  (À reprendre 5) sont étudiés par une séance séparée.
+
 ### Pensée
 - Une allocation GPU se dimensionne contre le minimum garanti (2 048) et se **vérifie** (complétude, erreurs GL) ; un bake qui conclut
   « rien n'est visible » est une erreur, pas une réponse : le repli garde tout et le dit.
@@ -2045,10 +2052,10 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes, diffs, co
 ## À reprendre (par priorité)
 
 **-2. Fenêtres étroites (Passe 5)** — bake par pages bornées + repli explicite + recadrage du cadre 16:9 : bâtiments présents à tout format
-testé (390 × 844 à 2560 × 1080), rendu canonique 16:9 identique au pixel (24 vues, trois graines). **À arbitrer par l'opérateur** : le
-recadrage (contexte horizontal réduit, repères de bord hors champ) ou un bake élargi pour plus de contexte vertical ; acceptation de la tâche.
-Commité et poussé sur la branche `viewport-visibility-fix` (depuis `2eb83d1`, ouverte avec l'accord de l'opérateur alors que `cast-polish-facing`
-reste ouverte) ; fusion dans `main` quand l'opérateur juge la tâche finie.
+testé (390 × 844 à 2560 × 1080), rendu canonique 16:9 identique au pixel (24 vues, trois graines). **Tâche acceptée par l'opérateur le 17/10**
+(« J'accepte la Passe 5 et le recadrage des fenêtres étroites tel quel : fusionne viewport-visibility-fix dans main, pousse main et supprime
+la branche. ») : recadrage gardé tel quel, branche fusionnée en avance rapide dans `main` puis supprimée. Reste ouvert : écarts de culling
+hérités (item 5, séance séparée en cours).
 
 **-1. PROCHAIN** — Passe 4A-undecies close : adressage par case entière commité (sprites générés identiques au bit à `eecea58`, ×2 stable
 quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ; écart de l'ombre portée du ×2 face à l'ancien aperçu
