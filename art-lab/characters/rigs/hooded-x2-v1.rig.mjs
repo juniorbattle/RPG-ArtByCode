@@ -43,12 +43,15 @@ function closeGaps(im, area, max = 3, from = 1) {
   return o;
 }
 /** a hand swing: the texels of `m` between rows y0 and y1 move dy rows (rigid); a texel the hand uncovers takes what lies just outside it
- *  (towards -inward, up to 3 texels), else the texel on its inner side, else becomes transparent */
+ *  (towards -inward, up to 3 texels), else the texel on its inner side, else becomes transparent. A hand moved down (dy > 0) first fills the
+ *  dy rows it uncovers at the top of its mask, column by column, with the texel just above the mask: the sleeve continues down (Pass
+ *  4A-duovicies: they took the hand's dark outline from the side, a smear, or stayed transparent, a 2 x 2 hole in front walk 2-3) */
 function swingPart(v, m, y0, y1, dy, inward) {
   const inPart = (x, y) => m(x, y) && y >= y0 && y <= y1;
   const part = R.cut(v, inPart), base = R.erase(v, inPart);
   for (let y = y0; y <= y1; y++) for (let x = 0; x < v.W; x++) {
     if (!inPart(x, y) || !R.opaque(v, x, y)) continue;
+    if (dy > 0) { let t = y; while (inPart(x, t - 1)) t--; if (y - t < dy && R.opaque(v, x, t - 1)) { R.put(base, x, y, R.get(v, x, t - 1)); continue; } }
     const look = [...[1, 2, 3].map((k) => x - inward * k), ...[1, 2, 3].map((k) => x + inward * k)];
     for (const x2 of look) if (!inPart(x2, y) && R.opaque(v, x2, y)) { R.put(base, x, y, R.get(v, x2, y)); break; }
   }
