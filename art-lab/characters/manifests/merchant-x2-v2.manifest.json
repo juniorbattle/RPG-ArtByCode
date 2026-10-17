@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "merchant-x2-v2",
   "kind": "character",
-  "status": "candidate",
+  "status": "approved",
   "source": "art-lab/characters/source/merchant-x2-v2.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/merchant-x2-v2.png",
@@ -27,8 +27,12 @@
       "note": "in-scene, dynamic and performance validation (JOURNAL, Passe 4A-sedecies)"
     }
   ],
-  "approved": false,
-  "approval": null,
-  "runtimeUse": "lab",
-  "notes": "PRODUCTION CANDIDATE (operator request of 2026-10-16: characters integrated and working, idle and walk, visible in production; work from the shared reference images). Not approved: production needs the operator's explicit approval (approved: true, status approved, runtimeUse production); until then the game's production cast skips it and only the DEV switch ?cast=candidate shows it. Replaces the generated merchant of the hero stall (its spawn, role and behaviour). Density x2 (64x96, feet on row 90), idle 4 frames + walk 6 frames + talk 6 frames in the three runtime facings; one 64-colour palette for the three views. Presentation scale 0.9. Supersedes the merchant-x2-v1 experiment (ChatGPT source V3, proportions to regenerate): the sheet's merchant already has the common base's proportions and all four views. Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/merchant-x2-v2.rig.mjs --check"
+  "approved": true,
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-10-17",
+    "note": "APPROVED FOR PRODUCTION by the operator in the working session: « J'approuve dockworker-x2-v2 et merchant-x2-v2 pour la production (runtimeUse production). Active-les, valide, commite et pousse. » (after the review of Pass 4A-sedecies; the request of 2026-10-16 asked for characters integrated and working, idle and walk, visible in production). Not declared a Gold Master. Source rights: use authorised by the operator (2026-10-16) subject to third-party rights, not exhaustively verified."
+  },
+  "runtimeUse": "production",
+  "notes": "PRODUCTION ASSET (approved by the operator on 2026-10-17): loaded by the game's production cast (src/characters/BakedCast.ts); ?cast=generated restores the generated sprite. Replaces the generated merchant of the hero stall (its spawn, role and behaviour). Density x2 (64x96, feet on row 90), idle 4 frames + walk 6 frames + talk 6 frames in the three runtime facings; one 64-colour palette for the three views. Presentation scale 0.9. Supersedes the merchant-x2-v1 experiment (ChatGPT source V3, proportions to regenerate): the sheet's merchant already has the common base's proportions and all four views. Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/merchant-x2-v2.rig.mjs --check"
 }

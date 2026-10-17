@@ -1,6 +1,6 @@
 # merchant-x2-v2 — review evidence (Pass 4A-sedecies, 2026-10-16)
 
-PRODUCTION CANDIDATE, not approved (manifest `candidate`, `runtimeUse: "lab"`). Built by
+PRODUCTION ASSET, approved by the operator on 2026-10-17 (manifest `approved`, `runtimeUse: "production"`); reviewed as a candidate. Built by
 `node tools/art-lab/build-character.mjs art-lab/characters/rigs/merchant-x2-v2.rig.mjs` (`--check` rebuilds identically). Source: the
 reference sheet's NPC 02 "Merchant (Female)" (front, back, profile); it supersedes the `merchant-x2-v1` experiment (ChatGPT source V3).
 

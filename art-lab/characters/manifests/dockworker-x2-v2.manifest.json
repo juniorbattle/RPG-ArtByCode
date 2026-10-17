@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "dockworker-x2-v2",
   "kind": "character",
-  "status": "candidate",
+  "status": "approved",
   "source": "art-lab/characters/source/dockworker-x2-v2.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/dockworker-x2-v2.png",
@@ -32,8 +32,12 @@
       "note": "in-scene, dynamic and performance validation (JOURNAL, Passe 4A-sedecies)"
     }
   ],
-  "approved": false,
-  "approval": null,
-  "runtimeUse": "lab",
-  "notes": "PRODUCTION CANDIDATE (operator request of 2026-10-16: characters integrated and working, idle and walk, visible in production). Not approved: production needs the operator's explicit approval (approved: true, status approved, runtimeUse production); until then the game's production cast skips it and only the DEV switch ?cast=candidate shows it. Replaces the generated porter (its spawns, roles and behaviours). Density x2 (64x96, feet on row 90), idle 4 frames + walk 6 frames in the three runtime facings (tags idle-down|up|side, walk-down|up|side; the side view faces left, the renderer mirrors it). Presentation scale 0.9 (1.88 m). Front = the approved baseline dockworker-x2-v1, unchanged; back and profile reconstructed from the same sheet row and mapped onto its palette; the legs of the profile walk are painted in its own colours (rig). Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/dockworker-x2-v2.rig.mjs --check"
+  "approved": true,
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-10-17",
+    "note": "APPROVED FOR PRODUCTION by the operator in the working session: « J'approuve dockworker-x2-v2 et merchant-x2-v2 pour la production (runtimeUse production). Active-les, valide, commite et pousse. » (after the review of Pass 4A-sedecies; the request of 2026-10-16 asked for characters integrated and working, idle and walk, visible in production). Not declared a Gold Master. Source rights: use authorised by the operator (2026-10-16) subject to third-party rights, not exhaustively verified."
+  },
+  "runtimeUse": "production",
+  "notes": "PRODUCTION ASSET (approved by the operator on 2026-10-17): loaded by the game's production cast (src/characters/BakedCast.ts); ?cast=generated restores the generated sprite. Replaces the generated porter (its spawns, roles and behaviours). Density x2 (64x96, feet on row 90), idle 4 frames + walk 6 frames in the three runtime facings (tags idle-down|up|side, walk-down|up|side; the side view faces left, the renderer mirrors it). Presentation scale 0.9 (1.88 m). Front = the approved baseline dockworker-x2-v1, unchanged; back and profile reconstructed from the same sheet row and mapped onto its palette; the legs of the profile walk are painted in its own colours (rig). Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/dockworker-x2-v2.rig.mjs --check"
 }

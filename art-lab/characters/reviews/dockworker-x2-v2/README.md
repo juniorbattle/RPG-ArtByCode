@@ -1,6 +1,6 @@
 # dockworker-x2-v2 — review evidence (Pass 4A-sedecies, 2026-10-16)
 
-PRODUCTION CANDIDATE, not approved (manifest `candidate`, `runtimeUse: "lab"`). Built by
+PRODUCTION ASSET, approved by the operator on 2026-10-17 (manifest `approved`, `runtimeUse: "production"`); reviewed as a candidate. Built by
 `node tools/art-lab/build-character.mjs art-lab/characters/rigs/dockworker-x2-v2.rig.mjs` (`--check` rebuilds identically).
 
 | File | What it shows |

@@ -322,7 +322,7 @@ then follows the body's own texel decisions) and commit; (b) baked frames in a t
 `sampler2DArray`: a GLSL 3 construct, which three.js already compiles for WebGL2 but this renderer does not use yet), so the shadow can keep a
 hardware nearest read on a layer of exactly the preview's size — a wider shader change, to be approved and proven before a commit.
 
-## 14. Production cast (Pass 4A-sedecies, 2026-10-16) — implemented, gated on the operator's approval
+## 14. Production cast (Pass 4A-sedecies, 2026-10-16) — implemented; both entries approved for production by the operator (2026-10-17)
 
 Operator request (2026-10-16): characters integrated and working, idle and walk, visible in production, built on the shared reference images.
 Implemented as the "later production task" of section 9, without any shader or renderer change:
@@ -341,7 +341,8 @@ Implemented as the "later production task" of section 9, without any shader or r
   (`carry` / `talk` only when the sheet has it). `?cast=generated` keeps the generated cast.
 - **Gate in the tools**: `art:validate` refuses a `production` manifest whose export PNG does not match its provenance pack's SHA-256.
 
-Candidates (`status: "candidate"`, `runtimeUse: "lab"`, not approved): `dockworker-x2-v2` -> porter, `merchant-x2-v2` -> merchant (both
+Entries: `dockworker-x2-v2` -> porter, `merchant-x2-v2` -> merchant (built as candidates, approved for production by the operator on
+2026-10-17: manifests `approved`, `runtimeUse: "production"`; both
 x2, idle 4 + walk 6 frames per facing, talk 6 for the merchant: 30 + 48 frames). Measured (seed 1842, 1920 x 1080):
 - default boot (no approved manifest) vs the previous commit `894c4d3`: **0 px** in cameras A / B / C / D, characters included (deterministic
   captures, `baked-proof.mjs shots`), with and without `?cast=generated`;

@@ -32,7 +32,7 @@ its record (`sources/<name>.source.json`: format, content, classification, prove
 
 Sources of baked assets (not reference sheets): `sources/npc2-merchant-source-2026-10-16.png` — the ORIGINAL ChatGPT PNG of the second NPC
 (OpenAI C2PA manifest present, hard binding recomputed and matching, signature not validated), approved as the art source of the experiment,
-then to be regenerated for its proportions (operator, 2026-10-16); superseded the same day by the sheet's own merchant (NPC 02, `merchant-x2-v2`, built on the shared reference sheets at the operator's request): kept as evidence, prompt V4 no longer awaited. The 01-16 sheet's four views per NPC (front, three-quarter, back, profile) are the source of the animated production candidates `dockworker-x2-v2` and `merchant-x2-v2`.
+then to be regenerated for its proportions (operator, 2026-10-16); superseded the same day by the sheet's own merchant (NPC 02, `merchant-x2-v2`, built on the shared reference sheets at the operator's request): kept as evidence, prompt V4 no longer awaited. The 01-16 sheet's four views per NPC (front, three-quarter, back, profile) are the source of the animated production assets `dockworker-x2-v2` and `merchant-x2-v2` (approved 2026-10-17).
 
 Storage rules:
 

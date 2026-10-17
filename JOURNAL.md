@@ -1715,6 +1715,28 @@ Preuves : `art-lab/characters/reviews/merchant-x2-v1/` (planches + README) ; cap
 Preuves : `art-lab/characters/reviews/dockworker-x2-v2/`, `reviews/merchant-x2-v2/` (planches + README + autotests) ; paquets
 `provenance/<id>/` ; captures brutes et scripts (walkcam, montage) dans `art-lab/characters/scratch/gm/` (non versionné).
 
+## Passe 4A-septendecies — Approbation de production : docker et marchande actifs dans le jeu (2026-10-17)
+
+### Décision opérateur (2026-10-17)
+- Mot pour mot : « J'approuve dockworker-x2-v2 et merchant-x2-v2 pour la production (runtimeUse production). Active-les, valide, commite et
+  pousse. »
+- Manifestes : `status: "approved"`, `approved: true`, `approval` (opérateur, 2026-10-17, citation), `runtimeUse: "production"` ; paquets
+  `PROVENANCE.json` : statut et décision ajoutés. Pas de Gold Master déclaré. Aucun autre changement de code : la porte du manifeste suffit.
+
+### Validation — [OK]
+- `art:validate` : 0 erreur (dont la règle de production : chaque PNG égal au SHA-256 de son paquet) ; `verify-provenance` intact (4 paquets).
+- `npm run typecheck`, `npm run build` : verts ; JS 847 457 o (gzip 243,68 Ko) + les deux PNG (49 / 71 Ko), maintenant chargés.
+- Build de production servie (`vite preview`) : par défaut les deux planches sont chargées (`runtimeUse` production, SHA-256 égaux aux paquets,
+  texture cuite 512 × 960) ; le porteur et la marchande sont remplacés ; `?cast=generated` rend l'ancienne distribution ; `?cast=candidate`
+  est ignoré (DEV seul).
+- Captures déterministes A / B / C / D : build de production par défaut = rendu DEV relu en `?cast=candidate` : **0 px** ; build de production
+  en `?cast=generated` : écarts identiques au pixel près à ceux mesurés à la passe précédente entre la distribution et `894c4d3`
+  (20 013 / 95 258 / 46 657 / 17 995 px) : l'ancienne distribution reste intacte derrière le paramètre.
+
+### Pensée
+- Préparer l'intégration derrière la porte du manifeste a rendu l'activation triviale et sûre : un changement de données, prouvé par
+  l'égalité au pixel avec ce qui avait été relu.
+
 ---
 
 ## À reprendre (par priorité)
@@ -1723,13 +1745,12 @@ Preuves : `art-lab/characters/reviews/dockworker-x2-v2/`, `reviews/merchant-x2-v
 quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ; écart de l'ombre portée du ×2 face à l'ancien aperçu
 (3-67 px par vue, ≤ 12 / 255) **accepté par l'opérateur** : l'ombre suit la règle entière du corps. Restent ouverts : C2 (PNG versionné) à confirmer ;
 droits : usage comme source **autorisé** (16/10, sous réserve des droits de tiers, non vérifiés exhaustivement), les trois planches archivées dans
-`reference/sources/` (octets contrôlés par `art:validate`) ; les originaux restent à retrouver (l'opérateur s'en charge). **Prochain : approbation de la distribution de production** (Passe 4A-sedecies) : `dockworker-x2-v2` (porteur) et `merchant-x2-v2`
-(marchande de l'étal) sont prêts, intégrés au jeu, validés (0 px de régression sans eux, autotests, perfs, build) mais **candidats** : l'activation
-en production = l'approbation de l'opérateur dans les deux manifestes (approved, status, approval, runtimeUse `production`). Revoir sur le serveur
-DEV avec `?cast=candidate`. Puis : fusion dans `main` sur acceptation. Restent ouverts : la marchande ne marche pas à son étal (collisionneur ;
-la déplacer de 0,5 m serait une décision de mise en scène), foulée du docker 0,69 m/s contre 0,8-0,95 (léger glissement), bonnet / sac selon la
-planche, héros et reste du cast toujours générés (la planche 01-16 couvre forgeron, gardes, voyageurs encapuchonnés : même chaîne possible).
-`merchant-x2-v1` reste comme preuve ; la source V4 n'est plus attendue. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
+`reference/sources/` (octets contrôlés par `art:validate`) ; les originaux restent à retrouver (l'opérateur s'en charge). **Fait : distribution de production active** (Passes 4A-sedecies / septendecies) : `dockworker-x2-v2` (porteur) et `merchant-x2-v2`
+(marchande de l'étal) approuvés le 17/10 et chargés par le jeu. **Prochain : acceptation de la tâche par l'opérateur, puis fusion de la branche
+dans `main`** (règle `AGENTS.md`). Restent ouverts : la marchande ne marche pas à son étal (collisionneur ; la déplacer de 0,5 m serait une
+décision de mise en scène), foulée du docker 0,69 m/s contre 0,8-0,95 (léger glissement), bonnet / sac selon la planche, héros et reste du cast
+toujours générés (la planche 01-16 couvre forgeron, gardes, voyageurs encapuchonnés : même chaîne possible). `merchant-x2-v1` reste comme
+preuve ; la source V4 n'est plus attendue. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
 tramée ; la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un nouvel occluder.

@@ -94,7 +94,8 @@ cost, reproducibility and operator approval — not procedural purity.
   `npm install`, `npm run dev`, `npm run build` and the game must work on a machine without them. The game generates everything at
   boot except its production cast (`src/characters/BakedCast.ts`): baked character sheets (exported PNG + JSON, bundled as assets,
   SHA-256 checked against their provenance pack, decoded byte-exact) standing in for generated archetypes, and only those whose
-  manifest is approved for production. Today no manifest is: the cast is empty and the game is pixel-identical to the generated one.
+  manifest is approved for production. Today: `dockworker-x2-v2` (in place of the porter) and `merchant-x2-v2` (the hero stall's
+  merchant), approved by the operator on 2026-10-17; every other character is still generated.
 - A baked asset may reach the runtime only through an approved provenance manifest (`approved: true`, `runtimeUse: "production"`)
   and an explicit operator-approved task. Generated output never becomes canonical production art silently.
 - `*.aseprite` files are production sources (tracked); the sheet PNG + metadata JSON exports are the baked, runtime-ready outputs.

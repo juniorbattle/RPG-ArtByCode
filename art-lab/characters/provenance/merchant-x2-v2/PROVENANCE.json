@@ -1,11 +1,18 @@
 {
  "id": "merchant-x2-v2",
- "status": "PRODUCTION CANDIDATE - not approved: production needs the operator's explicit approval (manifest)",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master",
  "request": {
   "date": "2026-10-16",
   "by": "operator",
   "text": "mais tu as deja les images ref, je te trouve que tu n'es pas assez autonome, travaille en te basant sur les images refs partages et effectue un travaikl coherent avec un resultat final correct qui sera visible en prod, je veux que les personnages soient integres et fonctionneles idle, marche. valide ce que tu as besoin pour achever cette tache. je veux juste un retour lorsque le resultat finale est pret"
  },
+ "approvals": [
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "J'approuve dockworker-x2-v2 et merchant-x2-v2 pour la production (runtimeUse production). Active-les, valide, commite et pousse."
+  }
+ ],
  "why": "the operator asked for a result built on the shared reference images rather than waiting for a regenerated source (V4). The sheet's NPC 02 already has the common base's proportions (the same sheet and scale as the approved dock worker) and the three views a walking NPC needs; the merchant-x2-v1 experiment (ChatGPT V3 source, one front view, proportions rejected) stays archived as evidence.",
  "source": {
   "sheet": {
