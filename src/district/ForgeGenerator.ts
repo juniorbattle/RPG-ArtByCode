@@ -196,7 +196,9 @@ export function buildForgeProps(
   // ---------------------------------------------------------------- NPC presence
   const sp = (archetype: string, p: V3, role: string, facing = 0): NpcSpawn => ({ archetype, pos: p, role, detail: 'mid', facing: m * facing });
   if (!sab) {
-    npcs.push(sp('blacksmith', [X(ax, -0.65), 0, az + 0.25], 'forge-work', Math.PI * 0.2));
+    // the smith faces the strike point (the sparks emitter, 0.55 m along x and 0.25 m back from him): his hammer cycle exists only in
+    // profile, so this facing just picks its screen side, and towards the anvil the strike lands on the anvil side in every framing
+    npcs.push(sp('blacksmith', [X(ax, -0.65), 0, az + 0.25], 'forge-work', Math.atan2(0.55, -0.25)));
     npcs.push({ archetype: 'porter', pos: [X(yx, 1.0), 0, yz + 1.2], role: 'forge-wander', detail: 'crowd', waypoints: [[X(yx, 1), 0, yz + 1.2], [X(yx, -0.5), 0, yz + 2.4]] });
   } else {
     npcs.push(sp('blacksmith', [X(ax, 1.4), 0, az + 1.9], 'forge-alarm', -Math.PI * 0.25));

@@ -1847,6 +1847,86 @@ autotests) ; paquets `provenance/<id>/` ; captures brutes, critiques et scripts 
 ### Pensée
 - Deuxième activation par la seule porte du manifeste : la preuve tient en deux égalités au pixel (production = rendu relu ; générée = `main`).
 
+## Passe 4A-vicies — Forge : le forgeron frappe du côté de l'enclume (orientation du spawn ; approuvée par l'opérateur) (2026-10-17)
+
+### Demande (2026-10-17)
+- Consigne d'une séance parente, pour le projet de l'opérateur : le forgeron `forge-work` frappe à l'opposé de l'enclume en B et C (constat
+  hors périmètre de la passe 4A-duodevicies). Choisir une orientation (ou un autre changement minimal de mise en scène) pour que la frappe
+  tombe côté enclume en B, C et D ; rôle, comportement et tirages inchangés ; preuves par projections et captures déterministes A-D
+  (`?cast=generated`, DEV `?cast=candidate`) ; vérifier la gerbe d'étincelles (image 2 du marteau) à la tête du marteau. Change l'image de
+  démarrage : **approbation explicite de l'opérateur avant d'atterrir**.
+- Pendant la mesure, une autre séance a commité l'approbation des trois planches (`2b2707f`, passe 4A-undevicies) et fusionné
+  `cast-blacksmith-guard-hooded` dans `main` (`8693690`) : le forgeron cuit est désormais celui du démarrage par défaut. Aucune ligne de
+  `src/` ni octet de planche n'a changé entre `14b8686` et `8693690` (diff hors fins de ligne CRLF ; contrôle `?cast=generated` `14b8686` contre
+  `8693690` en B : 0 px) : les paires mesurées contre `14b8686` restent valables ; la paire « démarrage par défaut » est refaite contre une
+  copie figée de `8693690`.
+
+### Cause — [OK] mesurée
+- La forge est en miroir (`mirror: true` dans `layoutSlots`, donc `m = −1` pour toute graine). Graine 1842 : forgeron à (7,60 ; −3,15),
+  émetteur d'étincelles `X(ax, −0,1), 0,95, az` à (7,05 ; 0,95 ; −3,40) : 0,55 m vers −x et 0,25 m plus loin de la caméra.
+- `facing = m × 0,2π` donne le regard (−0,588 ; 0,809), presque vers la caméra. Le cycle `hammer` n'existe que de profil : `SpriteRenderer`
+  prend `side/hammer` retourné par `sideFlip = sx > 0` (sx = composante du regard sur la droite caméra, `ActorSystem.applyFacing`).
+  sx = +0,669 (A), +0,367 (B), +0,407 (C), −0,276 (D) : profil tourné vers la droite en **A**, B et C, alors que les étincelles sont à
+  gauche des pieds dans les quatre cadrages. Le constat de la passe 4A-duodevicies oubliait A (petit à l'écran, mais tête du marteau à 29-32 px
+  du mauvais côté en 1080p).
+
+### Changement — orientation seule
+- `src/district/ForgeGenerator.ts` : `Math.PI * 0.2` → `Math.atan2(0.55, -0.25)` (114,4°, × `m`) : le forgeron regarde le point de frappe
+  (l'émetteur). Regard (−0,910 ; −0,414). Ce regard est parallèle au vecteur forgeron → émetteur : le côté écran du profil a toujours le signe
+  de la position des étincelles le long de la droite caméra, quel que soit le cadrage. Pour tout lacet de −78° à −20° (A à D et leurs mélanges),
+  les deux termes de sx sont négatifs : aucune bascule pendant une transition.
+- sx après : −0,594 (A), −0,838 (B), −0,814 (C), −0,997 (D) ; milieux de mélange AB −0,728, BC −0,826, CD −0,963, BD −0,969. `dir` passe de
+  `down` à `side` en B, C, D (même image `side/hammer`, même retournement) et reste `down` en A (repli sur le profil, comme avant).
+- Ce qui ne change pas : relevé complet des acteurs juste après `populate` (base `14b8686` contre arbre de travail, générée et candidate, forge
+  normale et sabotée, 11 / 13 acteurs) : **seul `faceVec` du forgeron `forge-work` diffère** ; positions, graines et attentes de comportement,
+  points de patrouille, teintes, échelles, animations, bulles identiques. Le spawn `forge-alarm` (forge sabotée) n'est pas touché. Parler au
+  forgeron le tourne toujours vers le joueur (comportement existant).
+
+### Projections (1080p, `tools/eval.mjs` sur `window.__app`) — [OK]
+- Tête du marteau = plus grand amas 8-connexe des texels opaques dans l'image 2 et transparents dans les images 0, 1, 3 (généré : 20 texels,
+  colonnes 5-8 × rangées 30-35 ; cuit : 97 texels ×2, 1-16 × 54-65), placée par la formule du shader (`uBillRight` / `uBillUp`, échelle,
+  retournement) puis projetée. Écart horizontal émetteur − centre de la tête (px), généré / cuit :
+
+  | cadrage | avant | après | émetteur au-dessus du centre (après) |
+  |---|---|---|---|
+  | A | −28,6 / −32,1 (tête à droite) | +0,1 / +3,7 | 11 / 8 px |
+  | B | −64,4 / −71,9 | −3,7 / +3,8 | 16 / 11 px |
+  | C | −90,9 / −101,6 | −4,7 / +6,0 | 20 / 12 px |
+  | D | −11,9 / −2,5 | inchangé | 25 / 18 px |
+  | mélanges AB / BC / CD / BD (après) | — | +0,3 / −1,9 / −9,6 / −7,9 ; +5,1 / +5,9 / −0,4 / −0,4 | 7-22 px |
+
+- L'émetteur est au bord haut de la tête (généré : 7 px au-dessus de sa boîte en A, B, C, 13 px en D, soit 1,4-4 texels ; cuit : 0-4 px en A,
+  B, C, 7 px en D) : la tête frappe la barre chaude (0,91-0,945 m), l'émetteur est à 0,95 m. D était déjà ainsi avant. Émetteur non déplacé.
+
+### Captures déterministes (`baked-proof.mjs shots`, 1920 × 1080) — [OK]
+- Vues A, B (2 ; 1,5), C (8 ; 1), D (16 ; 2), C / D forge sabotée. 90 pas = image 0 du marteau ; 113 pas = image 2, 3 pas après la gerbe (pas
+  110). Témoins de répétition (deux chargements de l'arbre de travail) : **0 px** dans les six vues, générée et par défaut.
+- `?cast=generated` (`14b8686` contre travail) : A 672 px, B 14 272, C 22 202, **D 0**, C / D sabotée **0** ; à 113 pas A 659, B 11 101,
+  C 23 252, D 0. En B, 10 723 px autour du forgeron (écart max 150) ; ailleurs 3 549 px à ≤ 7 niveaux, dont 3 312 à 1 niveau (halo de
+  post-traitement) et un amas à 3-7 niveaux à ~200 px à sa gauche : sa longue ombre portée par le feu de forge, qui se retourne avec lui.
+- Démarrage par défaut (forgeron cuit, `8693690` contre travail) : A 620, B 141 635, C 279 496, **D 0**, C / D sabotée **0** ; à 113 pas
+  A 748, B 9 171, C 23 274, D 0 — identiques au pixel près à la paire DEV `?cast=candidate` contre `14b8686`. Les boîtes couvrent l'écran : en C, 129 661 px autour du forgeron (max 149)
+  et 149 835 ailleurs, dont 148 739 à **1 niveau** (max 8 dans l'ombre) ; le témoin à 0 px montre que ce champ à 1 niveau est déterministe,
+  causé par le changement (halo du post-traitement autour d'un sprite clair devant la lueur), pas du bruit.
+- Vu au zoom (C, B ; 1 et 7 pas après la gerbe) : les étincelles naissent sur la tête du marteau, côté enclume, pour les deux sprites. Observation
+  (non changée) : la tête du marteau cuit, claire, se détache mal sur la lueur de l'enclume ; avant elle se lisait sur le tonneau sombre.
+
+### Décision opérateur (2026-10-17) — [OK] approuvé
+- Mot pour mot : « J'approuve l'orientation du forgeron vers l'enclume (Passe 4A-vicies). Ouvre une branche pour cette tâche, commite le
+  changement, le journal et les captures, puis pousse. »
+- `npm run typecheck` vert. Changement, journal et captures clés commités ensemble sur la branche de la tâche, poussée ; fusion dans `main`
+  quand l'opérateur juge la tâche finie (`AGENTS.md`).
+
+### Pensée
+- Une animation qui n'existe que de profil prend son côté écran du signe d'une seule composante du regard : un regard « presque vers la caméra »
+  change de côté d'un cadrage à l'autre. Un personnage qui agit sur un objet regarde **l'objet** (vecteur dans le plan, depuis la géométrie),
+  pas un angle choisi pour l'apparence : son côté écran suit alors l'objet dans tout cadrage.
+- Un constat se vérifie dans les quatre cadrages, pas seulement dans ceux cités : A avait le même défaut.
+- Un écart d'image qui couvre tout l'écran se lit par zones et par niveaux, avec un témoin de répétition, avant d'être jugé.
+
+Preuves (non versionnées) : `art-lab/characters/scratch/smith-facing/` (captures, diffs, recadrages, scripts) ; recadrages clés dans
+`screenshots/calibration/smith-facing/`.
+
 ---
 
 ## À reprendre (par priorité)
@@ -1864,8 +1944,12 @@ preuve ; la source V4 n'est plus attendue. Restauration : `5d10a37`. Branche pou
 **-1b. Fait (Passes 4A-duodevicies / undevicies)** : `blacksmith-x2-v1`, `guard-x2-v1` (les deux gardes), `hooded-x2-v1` **approuvés pour la
 production le 17/10** et chargés par le jeu (cinq planches cuites). **Tâche acceptée par l'opérateur le 17/10** (« La tâche est terminée et
 acceptée : fusionne la branche cast-blacksmith-guard-hooded dans main, pousse main et supprime la branche. ») : branche fusionnée en avance
-rapide dans `main`, puis supprimée (locale et distante) ; la prochaine tâche ouvre sa propre branche. Décisions de mise en scène ouvertes : tourner le forgeron vers l'enclume en B / C (séance séparée en cours,
-proposée à la passe 4A-duodevicies), un second garde différent (miroir ou variante) au lieu de jumeaux, lances. Restent générés : héros, chat, foule.
+rapide dans `main`, puis supprimée (locale et distante) ; la prochaine tâche ouvre sa propre branche. Décisions de mise en scène ouvertes : un second garde différent (miroir ou variante) au lieu de
+jumeaux, lances. Restent générés : héros, chat, foule.
+**-1c. Fait (Passe 4A-vicies)** : forgeron tourné vers l'enclume (`Math.atan2(0.55, -0.25)`), frappe côté enclume en A, B, C, D et mélanges,
+D et forge sabotée identiques au pixel ; change l'image de démarrage en A, B, C. **Approuvé par l'opérateur le 17/10**, commité et poussé sur
+la branche de la tâche ; fusion dans `main` quand l'opérateur juge la tâche finie. Observation ouverte : tête du marteau cuit peu lisible sur
+la lueur de l'enclume.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
@@ -1990,3 +2074,5 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   les ajouter ; l'adressage par case entière permet d'élargir sans changer une image.
 - Un cycle synchronisé avec un effet (étincelles du marteau) garde son nombre d'images et l'image de l'impact ; le moteur n'a pas de durée
   par image.
+- Un personnage qui agit sur un objet (frappe, geste) regarde l'objet : son orientation se calcule depuis la géométrie (vecteur personnage →
+  point d'action), jamais un angle choisi pour l'apparence ; un cycle qui n'existe que de profil en tire son côté écran dans tout cadrage.
