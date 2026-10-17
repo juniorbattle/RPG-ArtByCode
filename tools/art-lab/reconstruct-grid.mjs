@@ -4,21 +4,25 @@
 // closed (short vertical gaps) and cleaned (islands), then optionally reduced with an OKLab k-means (deterministic farthest-point
 // seeding, face rows weighted x4). Origin: Pass 4A E2 (JOURNAL); it reproduces the approved NPC baseline bit for bit (see
 // art-lab/characters/provenance/dockworker-x2-v1/).
-//   node tools/art-lab/reconstruct-grid.mjs <sheet> "x0,y0,x1,y1" <pitch> <frameW> <frameH> <footRow> <outPrefix> ["full,96,64"] [--holes] [--no-shadow] [--bg-threshold=<n>]
+//   node tools/art-lab/reconstruct-grid.mjs <sheet> "x0,y0,x1,y1" <pitch> <frameW> <frameH> <footRow> <outPrefix> ["full,96,64"] [--holes] [--no-shadow] [--bg-threshold=<n>] [--closing-from=<row>]
 // writes <outPrefix>-<variant>.png (native size) and <outPrefix>.json (report). Needs Chrome / Edge (CHROME_PATH), like the other tools.
 // Options (off by default: without them the output is unchanged, bit for bit): --holes = background-coloured cells enclosed by the
 // figure (pockets between hair, arm and body) are background too; --no-shadow = no cast-shadow rule (a source drawn without a shadow,
 // whose dark boot soles must not be taken for one); --bg-threshold=<n> = the colour distance under which a cell joins the background flood
 // fill (default 26; a lower value keeps cloth darker than the default allows, e.g. a navy cloak close to the sheet's background, which the
-// fill otherwise cuts into slits). Counts and options are reported when an option is set.
+// fill otherwise cuts into slits); --closing-from=<row> = the vertical closing of short gaps only for gaps starting on that frame row or
+// below (the closing restores dark ankle bands and leg / boot outlines the flood fill takes for background, but higher up it fills the
+// background seen between hair and shoulders, beside a neck, with the darkest colour: thin black strokes). Counts and options are reported
+// when an option is set.
 import puppeteer from 'puppeteer-core';
 import fs from 'node:fs';
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', '/usr/bin/google-chrome', '/usr/bin/chromium', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome']
   .filter(Boolean).find((p) => fs.existsSync(p));
 if (!exe) { console.error('No Chrome / Edge found: set CHROME_PATH.'); process.exit(2); }
-const argv = process.argv.slice(2), bgArg = argv.find((a) => a.startsWith('--bg-threshold='));
-const opts = { holes: argv.includes('--holes'), noShadow: argv.includes('--no-shadow'), ...(bgArg ? { bgThreshold: Number(bgArg.split('=')[1]) } : {}) };
+const argv = process.argv.slice(2), bgArg = argv.find((a) => a.startsWith('--bg-threshold=')), cfArg = argv.find((a) => a.startsWith('--closing-from='));
+const opts = { holes: argv.includes('--holes'), noShadow: argv.includes('--no-shadow'), ...(bgArg ? { bgThreshold: Number(bgArg.split('=')[1]) } : {}), ...(cfArg ? { closingFrom: Number(cfArg.split('=')[1]) } : {}) };
 if (bgArg && !(opts.bgThreshold > 0)) { console.error('--bg-threshold=<n> needs a positive number'); process.exit(2); }
+if (cfArg && !Number.isInteger(opts.closingFrom)) { console.error('--closing-from=<row> needs an integer row'); process.exit(2); }
 const [ref, box, pitchS, fwS, fhS, footS, outPrefix, variantsS = 'full'] = argv.filter((a) => !a.startsWith('--'));
 if (!outPrefix) { console.error('usage: node tools/art-lab/reconstruct-grid.mjs <sheet> "x0,y0,x1,y1" <pitch> <frameW> <frameH> <footRow> <outPrefix> ["full,96,64"]'); process.exit(2); }
 const mime = ref.toLowerCase().endsWith('.png') ? 'image/png' : ref.toLowerCase().match(/.jpe?g$/) ? 'image/jpeg' : 'image/webp';
@@ -59,10 +63,10 @@ try {
     let grid = Array.from({ length: FH }, () => new Array(FW).fill(null)), clipped = 0;
     for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { if (isBg[j * cols + i]) continue; const x = i + offX, y = j + offY; if (x < 0 || y < 0 || x >= FW || y >= FH) { clipped++; continue; } grid[y][x] = at(i, j); }
     // shape rules: vertical closing of short gaps (background-coloured ankle bands / outlines), islands < 6 px removed
-    const gap = Math.max(3, Math.round(3 * 3.55 / P));
+    const gap = Math.max(3, Math.round(3 * 3.55 / P)), closeY0 = Math.max(1, opts.closingFrom ?? 1);
     const darkest = () => { let b = null; for (const r of grid) for (const p of r) if (p && (!b || p[0] + p[1] + p[2] < b[0] + b[1] + b[2])) b = p; return b; };
     const dk = darkest(); let closed = 0;
-    for (let x = 0; x < FW; x++) for (let y = 1; y < FH - 1; y++) { if (grid[y][x] || !grid[y - 1][x]) continue; let e = y; while (e < FH && !grid[e][x] && e - y <= gap) e++; if (e < FH && e - y <= gap && grid[e][x]) for (let k = y; k < e; k++) { grid[k][x] = dk; closed++; } }
+    for (let x = 0; x < FW; x++) for (let y = closeY0; y < FH - 1; y++) { if (grid[y][x] || !grid[y - 1][x]) continue; let e = y; while (e < FH && !grid[e][x] && e - y <= gap) e++; if (e < FH && e - y <= gap && grid[e][x]) for (let k = y; k < e; k++) { grid[k][x] = dk; closed++; } }
     // --holes, after the closing (which would refill a cleared pocket with the darkest colour): enclosed background-coloured texels
     let holeCells = 0; if (opts.holes) for (let y = 0; y < FH; y++) for (let x = 0; x < FW; x++) if (grid[y][x] && diff(grid[y][x], bg) <= T) { grid[y][x] = null; holeCells++; }
     const lab = Array.from({ length: FH }, () => new Array(FW).fill(-1)), sizes = [];
@@ -97,7 +101,7 @@ try {
       og.putImageData(id, 0, 0); out[v] = { colours: new Set(q2.map((x) => x.join(','))).size, png: oc.toDataURL('image/png').split(',')[1] };
     }
     return { pitch: P, phase: [best.ox, best.oy], figure: [maxx - minx + 1, maxy - miny + 1], frame: [FW, FH], foot: FOOT, clipped, closed, islands, opaque: pts.length, fullColours,
-      ...(opts.holes || opts.noShadow || opts.bgThreshold ? { options: opts, holeCells, shadowCells } : {}), out };
+      ...(opts.holes || opts.noShadow || opts.bgThreshold || opts.closingFrom !== undefined ? { options: opts, holeCells, shadowCells } : {}), out };
   }, src, box, +pitchS, +fwS, +fhS, +footS, variantsS, opts);
   const report = { ...r, out: undefined, variants: {} };
   for (const [v, o] of Object.entries(r.out)) { fs.writeFileSync(`${outPrefix}-${v}.png`, Buffer.from(o.png, 'base64')); report.variants[v] = o.colours; }

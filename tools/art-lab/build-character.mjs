@@ -1,7 +1,7 @@
 // Build an animated baked character from its rig script (Art Lab, development only; never a runtime / build step).
 //   node tools/art-lab/build-character.mjs <art-lab/characters/rigs/<id>.rig.mjs> [--check] [--views-only] [--keep <dir>]
 // The rig script is the whole recipe: `source` (the archived sheet, the reconstruction pitch, one crop per facing, the palette mode, and the
-// optional reconstruct-grid options for every facing: `options: { holes, noShadow, bgThreshold }`, off when absent),
+// optional reconstruct-grid options for every facing: `options: { holes, noShadow, bgThreshold, closingFrom }`, off when absent),
 // `prepare(dir, view)` (mirror / shift / recorded pixel edits of each reconstructed view) and `frames(views)` (the animation). Chain:
 //   sheet -> reconstruct-grid.mjs (full colours, one per facing) -> quantize-palette.mjs (one palette for every facing) -> prepare ->
 //   frames (rig-engine.mjs) -> frame checks (contract section 3) -> Aseprite (batch): <id>.aseprite + sheet PNG + JSON (tags <anim>-<dir>)
@@ -43,7 +43,7 @@ const recon = {};
 for (const dir of DIRS) {
   if (S.keep?.[dir]) continue;
   const pre = path.join(work, `recon-${dir}`);
-  const ropt = [...(S.options?.holes ? ['--holes'] : []), ...(S.options?.noShadow ? ['--no-shadow'] : []), ...(S.options?.bgThreshold ? [`--bg-threshold=${S.options.bgThreshold}`] : [])];
+  const ropt = [...(S.options?.holes ? ['--holes'] : []), ...(S.options?.noShadow ? ['--no-shadow'] : []), ...(S.options?.bgThreshold ? [`--bg-threshold=${S.options.bgThreshold}`] : []), ...(S.options?.closingFrom !== undefined ? [`--closing-from=${S.options.closingFrom}`] : [])];
   execFileSync(node, [tool('reconstruct-grid.mjs'), repo(S.sheet), S.views[dir], String(S.pitch), String(R.FW), String(R.FH), String(R.FOOT), pre, 'full', ...ropt], { stdio: 'ignore' });
   recon[dir] = `${pre}-full.png`;
 }
@@ -121,7 +121,9 @@ if (!check) {
   if (fs.existsSync(pf)) {
     const P = JSON.parse(fs.readFileSync(pf, 'utf8')), rel = (f) => path.relative(ROOT, f).replace(/\\/g, '/');
     const hashRule = (f) => { let b = fs.readFileSync(f); if (/\.(json|mjs|js|ts|md|txt)$/i.test(f)) b = Buffer.from(b.toString('utf8').replace(/\r\n/g, '\n'), 'utf8'); return crypto.createHash('sha256').update(b).digest('hex'); };
+    // the palette a rig maps its views onto is an input too (an archived palette.png, or an approved export)
     const list = [out.png, out.json, out.ase, ...DIRS.filter((d) => !S.keep?.[d]).map((d) => path.join(packDir, `view-${d}.png`)), path.join(packDir, 'build.json'),
+      ...(S.palette.from ? [repo(S.palette.from)] : []),
       path.resolve(rigFile), ...['build-character.mjs', 'rig-engine.mjs', 'reconstruct-grid.mjs', 'quantize-palette.mjs', 'png.mjs'].map(tool)];
     P.files = Object.fromEntries(list.map((f) => [rel(f), hashRule(f)]));
     fs.writeFileSync(pf, JSON.stringify(P, null, 1) + '\n');

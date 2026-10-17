@@ -97,7 +97,7 @@
   "art-lab/characters/provenance/merchant-x2-v1/x2-quant64.png": "73990c857a850ac1d2ccd104fb90baee6235d2b30e8b8adfd42b89a379d3745b",
   "art-lab/characters/provenance/merchant-x2-v1/cleanup-ops.json": "df47247db7013ab45b37603ae8546d4ab3e8f37a1f3af8ae22cc47b9d8b13189",
   "art-lab/characters/provenance/merchant-x2-v1/reconstruction-report.json": "6451de20cb2d45d6dfb3555fa68060c8b0983ad5657f3592c0e82e34f82fa9b2",
-  "tools/art-lab/reconstruct-grid.mjs": "36652cb14bc8bdf78ff1f0932d854d7ad911e794a5bc9238e5d432eb609a781f",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
   "tools/art-lab/replay-pixel-ops.mjs": "259bcaf5b34a88f43f842f6b42fa1032065d8905ae6bf87181cf49f022e1e3f8"
  },
  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
@@ -108,6 +108,13 @@
    "file": "tools/art-lab/reconstruct-grid.mjs",
    "change": "one opt-in option added for the hooded passerby (--bg-threshold=<n>, the background flood-fill distance, default 26); without it the tool's output is unchanged: this pack's rebuild (verify-provenance --rebuild) is identical, before and after the change",
    "previousSha256": "46d277a2c10285ba48cd39fab1bca50791427632252459d9ec90750ddbc2d1cf"
+  },
+  {
+   "date": "2026-10-17",
+   "pass": "4A-unvicies",
+   "file": "tools/art-lab/reconstruct-grid.mjs",
+   "change": "one more opt-in option (--closing-from=<row>: the vertical closing of short gaps only from that frame row down, for the cast's black-pixel revision); without it the tool's output is unchanged: this pack's rebuild (verify-provenance --rebuild) is identical, before and after the change",
+   "previousSha256": "36652cb14bc8bdf78ff1f0932d854d7ad911e794a5bc9238e5d432eb609a781f"
   }
  ]
 }

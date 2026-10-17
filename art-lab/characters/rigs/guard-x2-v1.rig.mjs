@@ -4,6 +4,7 @@
 // above the foot row, so the sheet is resampled at 1.95 (figure 87-89 rows; one pitch for the two tall figures, the hooded passerby too). He is
 // shown at the cast's presentation scale (0.9): his texels are the dock worker's size on screen and he is ~10 % smaller than the sheet's
 // unified scale would make him (2.04 m -> 1.86 m, helmet included). Deterministic: `node tools/art-lab/build-character.mjs <this file>`.
+import { fileURLToPath } from 'node:url';
 import * as R from '../../../tools/art-lab/rig-engine.mjs';
 
 export const id = 'guard-x2-v1';
@@ -12,7 +13,13 @@ export const source = {
   sheet: 'art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp',
   pitch: 1.95,
   views: { down: '385,330,461,504', up: '548,334,622,505', side: '633,334,692,506' },
-  palette: { k: 64 },
+  // the approved sheet's 64 colours (archived in the pack by the 2026-10-17 revision, which changed the closing: a new k-means would
+  // have moved every colour); every view is mapped onto them
+  palette: { from: 'art-lab/characters/provenance/guard-x2-v1/palette.png' },
+  // the vertical closing only from row 48 down (reconstruct-grid --closing-from=48): above, it
+  // filled the background beside the neck and the face with its darkest colour (black strokes that read as long hair); below, it
+  // restores the dark leg and boot outlines the flood fill takes for background
+  options: { closingFrom: 48 },
 };
 
 /** after a part is moved away from its neighbour, close the transparent gaps (<= `max` texels) left inside a row of `area`, with the colour of
@@ -62,6 +69,18 @@ function despeckle(im, area, min = 4) {
     if (comp.length < min && comp.every(([a, b]) => area(a, b))) for (const [a, b] of comp) R.put(o, a, b, null);
   }
   return o;
+}
+
+/** last pass on every frame: detached islands of fewer than 6 texels removed (parts moved by the walk or the swing can leave a few loose
+ *  texels: the fragments beside the blacksmith's fists in the first build), then the painted parts' colours snapped to the views'
+ *  palette (palette.png): every texel not in it takes the nearest palette colour (OKLab), so no new colour reaches the sheet */
+function snapToViews(out, V) {
+  for (const f of out) f.im = despeckle(f.im, () => true, 6);
+  const pal = R.paletteOf(R.load(fileURLToPath(new URL('../provenance/' + id + '/palette.png', import.meta.url)))), keys = new Set(pal.map((c) => c.join(','))), lab = pal.map(R.oklab), memo = new Map();
+  const near = (c) => { const k = c.join(','); if (keys.has(k)) return c; if (memo.has(k)) return memo.get(k); const q = R.oklab(c); let bi = 0, bd = 1e9;
+    lab.forEach((p, i) => { const d = (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 + (p[2] - q[2]) ** 2; if (d < bd) { bd = d; bi = i; } }); memo.set(k, pal[bi]); return pal[bi]; };
+  for (const f of out) f.im = R.recolour(f.im, near);
+  return out;
 }
 
 // ---- gait (the dock worker's timing: 6 frames at 7.5 frames / s, one step = 3 frames); the body is lowest on the contact frames, 2 rows
@@ -160,5 +179,5 @@ export function frames(V) {
     [R.clone(v), R.clone(v), inhale, exhale].forEach((im, i) => out.push({ anim: 'idle', dir, i, im }));
     for (let i = 0; i < 6; i++) out.push({ anim: 'walk', dir, i, im: dir === 'side' ? sideFrame(v, i) : frontBack(v, FB[dir], i) });
   }
-  return out;
+  return snapToViews(out, V);
 }

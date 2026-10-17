@@ -12,3 +12,12 @@ reference sheet's NPC 02 "Merchant (Female)" (front, back, profile); it supersed
 | `04-scene-B-stall-generated-vs-cast.png` | camera B, same deterministic frame: the generated merchant (left) / the sheet's merchant in her place (right), with the dock worker |
 
 Queries: `seed=1842&clean=1&freeze=7.3&intro=0&camera=B&player=2,1.5`, `&cast=generated` vs `&cast=candidate`.
+
+
+## Revision of 2026-10-17 (Pass 4A-unvicies): black pixels, at the operator's request
+
+| File | What it shows |
+|---|---|
+| `05-revision-black-pixels.png` | per animation (row), its first frame x3: the approved sheet (`2eb83d1`) / the revised sheet / the changes on the revised frame dimmed (magenta = texel removed, yellow = recoloured to a neighbouring colour of the approved palette, cyan = added) |
+
+The reconstruction no longer closes short vertical gaps above row 48 (`reconstruct-grid --closing-from=48`): there the closing filled the background seen between hair and shoulders, beside the jaw / neck, with its darkest colour (near-black strokes that read as long hair). Below row 48 it still restores the dark leg and boot outlines, and the legs keep the approved texels (a first attempt without any closing lost them and was abandoned). Against the approved sheet: 1843 texels removed, 0 added, 1754 recoloured, 0 new colours (the approved 64-colour palette is pinned, `provenance/merchant-x2-v2/palette.png`). `--check` rebuilds identically; `selftest.json` refreshed (`?baked=merchant-x2-v2`): CPU 0 / GPU 0 texels at 1, 2, 3, 2.37, negative controls fail, bleed 0. The approval was given for the previous sheet; the revision was merged into main at the operator's request (« si la tache est fini on peut commit/push vers main »), **the revised sheet itself is not yet reviewed by the operator** (JOURNAL, Passe 4A-unvicies).

@@ -1,6 +1,6 @@
 {
  "id": "blacksmith-x2-v1",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; the revised sheet itself not yet reviewed by the operator",
  "request": {
   "date": "2026-10-17",
   "by": "task brief from the parent working session (Claude Code), on the operator's project",
@@ -29,10 +29,10 @@
   }
  },
  "chain": [
-  "reconstruct-grid.mjs <sheet> <crop> 1.775 64 96 90 (the dock worker's pitch: same sheet, same scale), full colours, per facing",
-  "quantize-palette.mjs --k 64: ONE OKLab k-means over the three views (faces weighted x4)",
-  "rig prepare(): front: the background pocket between the legs (x 29-34 rows 77-82) and a closing tail under the left boot removed, the near-black closing strips beside the jaw (rows 29-36) cut back to a one-texel outline, moved 2 rows down; back: the closing seam between the legs removed, the strips beside the neck cut back the same way; profile: mirrored to face left, the far leg's broken fragments and a closing strip under the apron removed, the near boot's instep outline closed (x 28), moved 1 texel left -> view-down.png, view-up.png, view-side.png",
-  "rig frames() (rig-engine.mjs + the rig's own helpers): idle 4 frames (rest, rest, inhale, exhale with the head one frame late: the approved cast's 1-row breath); walk 6 frames at 7.5 frames/s, the body 2 rows lower on the contact frames; front / back = each leg remapped between its hip band and its foot row (swing lift 3 / 5 / 3), forearms stretched / squeezed 3 rows against the legs (skin-span masks), the apron hem sheared 2 texels; profile = two legs PAINTED in the trouser ramp (near on the lit steps, far two steps darker) posed by two-bone IK on the dock worker's ankle cycle (13 texels per step), the view's own boot moved rigidly (RotSprite on heel strike / toe-off, a darker copy for the far leg), apron and tool pouch trailing the near leg by one frame (3 / 2 texels), arm sheared 2 texels, loose islands < 4 texels removed around the feet; hammer 4 frames (side only, 5.5 frames/s, the strike on frame 2 = the forge's sparks): lift in front, wind-up behind the head, strike (the hammer head below the fist, the upper body 3 texels forward and 2 rows down), bounce; the near arm in two segments (RotSprite about shoulder and elbow) with a dark rim, the texels it uncovers in the vest's three tones; the hammer PAINTED (iron head in the palette's greys, dark wood handle, dark rim: the sheet shows no tool)",
+  "reconstruct-grid.mjs <sheet> <crop> 1.775 64 96 90 --closing-from=48 (since the 2026-10-17 revision: no vertical closing of short gaps above row 48, where it filled the background seen between hair and shoulders, beside the jaw / neck, with the reconstruction's darkest colour: near-black strokes; below, the closing still restores the dark leg and boot outlines) (the dock worker's pitch: same sheet, same scale), full colours, per facing",
+  "quantize-palette.mjs --palette-from provenance/blacksmith-x2-v1/palette.png: the three views mapped onto the approved sheet's 64 colours (since the 2026-10-17 revision; palette.png = the colours of the approved export, which came from ONE OKLab k-means over the three views, faces weighted x4: a new k-means would have moved every colour)",
+  "rig prepare(): front: the background pocket between the legs (x 29-34 rows 77-82) and a closing tail under the left boot removed, moved 2 rows down; back: the closing seam between the legs removed; profile: mirrored to face left, the far leg's broken fragments and a closing strip under the apron removed, the near boot's instep outline closed (x 28), moved 1 texel left -> view-down.png, view-up.png, view-side.png",
+  "rig frames() (rig-engine.mjs + the rig's own helpers): idle 4 frames (rest, rest, inhale, exhale with the head one frame late: the approved cast's 1-row breath); walk 6 frames at 7.5 frames/s, the body 2 rows lower on the contact frames; front / back = each leg remapped between its hip band and its foot row (swing lift 3 / 5 / 3), forearms stretched / squeezed 3 rows against the legs (skin-span masks), the apron hem sheared 2 texels; profile = two legs PAINTED in the trouser ramp (near on the lit steps, far two steps darker) posed by two-bone IK on the dock worker's ankle cycle (13 texels per step), the view's own boot moved rigidly (RotSprite on heel strike / toe-off, a darker copy for the far leg), apron and tool pouch trailing the near leg by one frame (3 / 2 texels), arm sheared 2 texels, loose islands < 4 texels removed around the feet; hammer 4 frames (side only, 5.5 frames/s, the strike on frame 2 = the forge's sparks): lift in front, wind-up behind the head, strike (the hammer head below the fist, the upper body 3 texels forward and 2 rows down), bounce; the near arm in two segments (RotSprite about shoulder and elbow) with a dark rim, the texels it uncovers in the vest's three tones; the hammer PAINTED (iron head in the palette's greys, dark wood handle, dark rim: the sheet shows no tool); last pass on every frame (since the 2026-10-17 revision): detached islands of fewer than 6 texels removed, enclosed pinholes (transparent components of at most 2 texels the flood fill from the border does not reach) filled with the darkest neighbouring colour (the outline's), every texel not in palette.png snapped to the nearest one (OKLab): no colour outside the approved palette",
   "frame checks of the runtime contract (alpha 0 / 255, transparent ring, feet on row 90 for idle, nothing below it)",
   "Aseprite 1.3.18.6 batch: source/blacksmith-x2-v1.aseprite (one layer, 34 frames, tags idle-, walk-down|up|side, hammer-side, durations 588 / 133 / 182 ms) and its export exports/blacksmith-x2-v1.png + .json (json-array, 6 columns); every exported frame compared texel for texel with the rig's frame"
  ],
@@ -49,19 +49,33 @@
  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/blacksmith-x2-v1.rig.mjs --check (rebuild from the archived sheet, compared with the committed views and exports); node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/blacksmith-x2-v1 [--rebuild]",
  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
  "files": {
-  "art-lab/characters/exports/blacksmith-x2-v1.png": "289a0cb97b31bd97daa915664120013bd8ce3eb5a2397617b263e885bc1ca04d",
+  "art-lab/characters/exports/blacksmith-x2-v1.png": "8972e8f920460867ed15fd817afa43c61efb475aaf3f0954c09d287c957fe524",
   "art-lab/characters/exports/blacksmith-x2-v1.json": "fcaeec6e68a8e6b35fa5dbfd390ca7a3c97d652426d004c11a50e669ec8ddb28",
-  "art-lab/characters/source/blacksmith-x2-v1.aseprite": "3562d558b774e31ea8734596680e58e6ca4cf6311e12388372e927ae4af9f579",
-  "art-lab/characters/provenance/blacksmith-x2-v1/view-down.png": "485aa57ca343dac3b14a1d25fb757c3dd05ae75f554ded6a83ede01935e99c25",
-  "art-lab/characters/provenance/blacksmith-x2-v1/view-up.png": "98ca304dfdf6c45458e3e4f4b221d8616d4e39f32fbfce40663c069a8b0cf546",
-  "art-lab/characters/provenance/blacksmith-x2-v1/view-side.png": "4f9728e0084d46932d0886830e0608ee41e27b3f5802e23d9f13872f7ebdfc32",
-  "art-lab/characters/provenance/blacksmith-x2-v1/build.json": "afe585c977cf3c713d1866014ce53ad100ff3392e945fa51bcbbda5bf38e0717",
-  "art-lab/characters/rigs/blacksmith-x2-v1.rig.mjs": "a3696161f669b53717f4d54a4f80ab941d1312cebd76636ba27b80e9a698e9d4",
-  "tools/art-lab/build-character.mjs": "a0138f9c67460aa61c4180092efcb7beae68e1280961c220cd48951e91177e73",
+  "art-lab/characters/source/blacksmith-x2-v1.aseprite": "8a39c3fd98048f0bdeeb51dbfff4b4f97db5ed6790c357ae999313c77c193204",
+  "art-lab/characters/provenance/blacksmith-x2-v1/view-down.png": "6c1878f9af2852e97cad465b24ccb4d942a130b0e42098620d7b0198c4222935",
+  "art-lab/characters/provenance/blacksmith-x2-v1/view-up.png": "49cc27bbf137d6677309b79b0d3ea7f01d84dd7ea235ecf8f6232ec74041aac2",
+  "art-lab/characters/provenance/blacksmith-x2-v1/view-side.png": "d6b053c3fb07160b9c0e4574b3e00cf447026b410ef9959bfd211c6cd05436fc",
+  "art-lab/characters/provenance/blacksmith-x2-v1/build.json": "8a95341c9bc0368f2ff32461631c32b8e6d82884c82bc59a7aae9d75df8772d5",
+  "art-lab/characters/provenance/blacksmith-x2-v1/palette.png": "42ca68a31dc23ca9bdf3141dcffd9b51b6a527d6566e1dee7974eaadad3b80f1",
+  "art-lab/characters/rigs/blacksmith-x2-v1.rig.mjs": "e710e6fbdfa90049d3286bf88d8784ce0a0f957d4c8e06e14d1666f87445d56d",
+  "tools/art-lab/build-character.mjs": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
-  "tools/art-lab/reconstruct-grid.mjs": "36652cb14bc8bdf78ff1f0932d854d7ad911e794a5bc9238e5d432eb609a781f",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
   "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
   "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
  },
- "review": "two independent blind reviews by a fresh agent (JOURNAL Passe 4A-duodevicies): 4/10, then 6/10 (verifying the first one's findings); the third iteration (the fixes of the second review) was checked by the author at texel level, not re-reviewed"
+ "review": "two independent blind reviews by a fresh agent (JOURNAL Passe 4A-duodevicies): 4/10, then 6/10 (verifying the first one's findings); the third iteration (the fixes of the second review) was checked by the author at texel level, not re-reviewed",
+ "revisions": [
+  {
+   "date": "2026-10-17",
+   "pass": "4A-unvicies",
+   "requestedBy": "operator (git user wonmii), in the working session",
+   "request": "« il y a encore quelques imperfections qu'il faudra corriger : presence de pixel noir sur le sprite, c'est leger mais tout de meme present. [...] il faudra faire une correction »",
+   "decision": "« Fais les deux corrections (pixels noirs et direction des sprites en marche) sur la même branche que la séance du forgeron, chacun ne commitant que ses fichiers. »",
+   "change": "black-pixel revision: reconstruct-grid --closing-from=48, the approved palette pinned (palette.png), a last cleanup pass (see chain); the near-black strokes beside the jaw and the neck (front, back: they read as long black hair) and the loose fragments beside the swinging fists are gone; the legs keep the approved texels. Exported sheet against the approved one: 930 texels removed, 6 added, 1366 recoloured, 0 new colours (64 colours, 64 before); same frames, tags, layout and metadata JSON. (A first attempt without any closing, --no-closing, lost the leg and boot outlines and was abandoned before the commit.)",
+   "previousExportSha256": "289a0cb97b31bd97daa915664120013bd8ce3eb5a2397617b263e885bc1ca04d",
+   "exportSha256": "8972e8f920460867ed15fd817afa43c61efb475aaf3f0954c09d287c957fe524",
+   "approval": "the operator's approval (approvals) was given for the previous sheet (previousExportSha256); the revised sheet is the operator-requested correction, merged into main at the operator's request: « si la tache est fini on peut commit/push vers main » (2026-10-17), before the operator had reviewed the revised sheet's images (reviews/blacksmith-x2-v1/)"
+  }
+ ]
 }

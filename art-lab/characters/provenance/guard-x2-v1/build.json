@@ -7,34 +7,34 @@
   480
  ],
  "palette": {
-  "mode": "joint k-means 64",
+  "mode": "palette-from palette.png",
   "colours": 64,
   "views": {
    "recon-down-full-q.png": {
-    "texels": 2330,
+    "texels": 2311,
     "meanOklabErrPermille": 15.3,
     "maxOklabErrPermille": 53.6
    },
    "recon-up-full-q.png": {
-    "texels": 2279,
-    "meanOklabErrPermille": 13.6,
+    "texels": 2229,
+    "meanOklabErrPermille": 13.7,
     "maxOklabErrPermille": 39.7
    },
    "recon-side-full-q.png": {
-    "texels": 1947,
-    "meanOklabErrPermille": 15,
+    "texels": 1927,
+    "meanOklabErrPermille": 15.1,
     "maxOklabErrPermille": 58.1
    }
   }
  },
  "views": {
-  "down": "cecfeefd60ce81e13abff314c06a5d60456c78f13bb4357f54f4c3df71995d32",
-  "up": "ce9c4b4ec1661b4129de349cfe718cfe2c992b41114aa5b583f03e7157b83814",
-  "side": "008a47c4d4e47fea951e1d47ccace8161ba920b259de70036d452d47415cd886"
+  "down": "d1b55439fde72e320ffc43afd244d5d0e5b9c03609c7a6986b3dd7f798739d73",
+  "up": "00a3ddf393c3da7dd8500311cfb0af928ee20ee395ed3a1db4dbc0b009e7040c",
+  "side": "16a0e60626b3d6e0bf1335897cf5ca3d4df72c41b975ee88646d000d2f2f3455"
  },
  "exports": {
-  "png": "a4515db26b61a6a76d346c1b04e6a42d9c0a12a0fe486583eb858e622a0247c3",
+  "png": "fa8224c197300d90360926afdf02affb4784f7f7b40fc1f60f20373fad639dbb",
   "json": "a25e6fa427880dd270899007347e5ab5680c9f2d2aa5f12259ad901f5b52305a",
-  "aseprite": "994b5e861d77f585abf0e6280334f5b6244e840ec03036f9631c03bbf43e9a5d"
+  "aseprite": "c96701c8d20889242fe796e36ed7c7917fd18afdec9e413599042f2e78c192c8"
  }
 }

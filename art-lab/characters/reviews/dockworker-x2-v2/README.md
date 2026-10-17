@@ -17,3 +17,13 @@ Queries: `seed=1842&clean=1&freeze=7.3&intro=0` + `camera=C&player=8,1` / `camer
 
 Measured (JOURNAL, Passe 4A-sedecies): selftest CPU 0 / GPU 0 texels at scale 1, 2, 3, 2.37 (negative controls fail, bleed 0); default boot
 pixel-identical to `894c4d3` in A-D; draw calls 108 with and without the cast; GPU within noise.
+
+
+## Revision of 2026-10-17 (Pass 4A-unvicies): black pixels, at the operator's request
+
+| File | What it shows |
+|---|---|
+| `06-revision-black-pixels.png` | per animation (row), its first frame x3: the approved sheet (`2eb83d1`) / the revised sheet / the changes on the revised frame dimmed (magenta = texel removed, yellow = recoloured to a neighbouring colour of the approved palette, cyan = added) |
+| `07-walk-facing-cameraB.png` | 1:1 captures x2 from the running game (camera B, other actors hidden, seeded, 1/60 s steps; scratch `walkcam2.mjs`), the same walk with the old facing rule (top) and the new one (bottom): along the quay to the left (4 tiles: the old rule showed the front while the figure slides sideways on screen) then away from the camera, 12.6 deg off its axis (2 tiles: back view in both) |
+
+The reconstruction no longer closes short vertical gaps above row 48 (`reconstruct-grid --closing-from=48`): there the closing filled the background seen between hair and shoulders, beside the jaw / neck, with its darkest colour (near-black strokes that read as long hair). Below row 48 it still restores the dark leg and boot outlines, and the legs keep the approved texels (a first attempt without any closing lost them and was abandoned). Back and profile only: the front is the approved v1 export, unchanged. Against the approved sheet: 501 texels removed, 0 added, 0 recoloured, 0 new colours (back and profile mapped onto the approved front's 64 colours, as before). `--check` rebuilds identically; `selftest.json` refreshed (`?baked=dockworker-x2-v2`): CPU 0 / GPU 0 texels at 1, 2, 3, 2.37, negative controls fail, bleed 0. The approval was given for the previous sheet; the revision was merged into main at the operator's request (« si la tache est fini on peut commit/push vers main »), **the revised sheet itself is not yet reviewed by the operator** (JOURNAL, Passe 4A-unvicies).

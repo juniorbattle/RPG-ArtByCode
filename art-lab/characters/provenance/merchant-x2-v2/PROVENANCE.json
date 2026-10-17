@@ -1,6 +1,6 @@
 {
  "id": "merchant-x2-v2",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; the revised sheet itself not yet reviewed by the operator",
  "request": {
   "date": "2026-10-16",
   "by": "operator",
@@ -30,10 +30,10 @@
   }
  },
  "chain": [
-  "reconstruct-grid.mjs <sheet> <crop> 1.775 64 96 90 (the dock worker's pitch: same sheet, same scale), full colours, per facing",
-  "quantize-palette.mjs --k 64: ONE OKLab k-means over the three views (the k-means of reconstruct-grid, faces weighted x4)",
+  "reconstruct-grid.mjs <sheet> <crop> 1.775 64 96 90 --closing-from=48 (since the 2026-10-17 revision: no vertical closing of short gaps above row 48, where it filled the background seen between hair and shoulders, beside the jaw / neck, with the reconstruction's darkest colour: near-black strokes; below, the closing still restores the dark leg and boot outlines) (the dock worker's pitch: same sheet, same scale), full colours, per facing",
+  "quantize-palette.mjs --palette-from provenance/merchant-x2-v2/palette.png: the three views mapped onto the approved sheet's 64 colours (since the 2026-10-17 revision; palette.png = the colours of the approved export, which came from ONE OKLab k-means over the three views, faces weighted x4: a new k-means would have moved every colour)",
   "rig prepare(): sheet-shadow remnants below the hem removed (front x 14-18 rows 86-87, back x 32 rows 86-89); profile mirrored to face left, its stray shadow column (x 19, rows 87-90) removed, moved 2 texels right and 1 down (soles on row 90) -> view-down.png, view-up.png, view-side.png",
-  "rig frames() (rig-engine.mjs): idle 4 frames (rest, rest, inhale, exhale with the head one frame late); walk 6 frames: the dress bobs (1 row at each contact), shifts its weight 2 texels over the planted boot (front / back) with the hem lagging 1-2 texels and lifted one row on the swing side, sheared forward with the near leg in the profile; the boots are rigid parts BEHIND the dress, planted on row 90 or lifted 1 / 3 / 1 rows (front / back), placed on the dock worker's ankle cycle in the profile (the far boot one ramp darker); talk 6 frames at 4 frames/s: mouth closed / open (#4c2927 dash) three times, the head nodding one row once per cycle",
+  "rig frames() (rig-engine.mjs): idle 4 frames (rest, rest, inhale, exhale with the head one frame late); walk 6 frames: the dress bobs (1 row at each contact), shifts its weight 2 texels over the planted boot (front / back) with the hem lagging 1-2 texels and lifted one row on the swing side, sheared forward with the near leg in the profile; the boots are rigid parts BEHIND the dress, planted on row 90 or lifted 1 / 3 / 1 rows (front / back), placed on the dock worker's ankle cycle in the profile (the far boot one ramp darker); talk 6 frames at 4 frames/s: mouth closed / open (#4c2927 dash) three times, the head nodding one row once per cycle; last pass on every frame (since the 2026-10-17 revision): every texel not in palette.png snapped to the nearest one (OKLab): no colour outside the approved palette",
   "frame checks of the runtime contract (alpha 0 / 255, transparent ring, feet on row 90 for idle, nothing below it)",
   "Aseprite 1.3.18.6 batch: source/merchant-x2-v2.aseprite (one layer, 48 frames, tags idle-, walk-, talk-down|up|side, durations 588 / 133 / 250 ms) and its export exports/merchant-x2-v2.png + .json (json-array, 6 columns); every exported frame compared texel for texel with the rig's frame"
  ],
@@ -49,17 +49,18 @@
  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/merchant-x2-v2.rig.mjs --check (rebuild from the archived sheet, compared with the committed views and exports); node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/merchant-x2-v2 [--rebuild]",
  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
  "files": {
-  "art-lab/characters/exports/merchant-x2-v2.png": "b035fcde85c8057ac4eaa7f4677630423d2ed4fac37daf43cb2250b37972017f",
+  "art-lab/characters/exports/merchant-x2-v2.png": "01dcbb4c6b054a02b5d5c037ed3fb02b4aa36db68961093d0ea26878996e99a9",
   "art-lab/characters/exports/merchant-x2-v2.json": "e5d39a6c8d845cb65a393d0c2b4869d3405a74d47328bcac27c2fea7dcf51589",
-  "art-lab/characters/source/merchant-x2-v2.aseprite": "6dc960c3ec0c76e510d42c951bef3428ba45f4f7e2f8ce2f73e71da0c4929b26",
-  "art-lab/characters/provenance/merchant-x2-v2/view-down.png": "b798a1ab5a4da01ef3a6c97274465589336ab8e4b0c314f358f27c0a91126c50",
-  "art-lab/characters/provenance/merchant-x2-v2/view-up.png": "45cc2ac7db2debe5df82438d116896b797677ebef037df2a986431a6276fd87c",
-  "art-lab/characters/provenance/merchant-x2-v2/view-side.png": "2e074a19a63b27c65a641877d5e6fdaf4adc1468b6c50f98eddd08d59a2724bc",
-  "art-lab/characters/provenance/merchant-x2-v2/build.json": "c7850946e3608bc4948967c9b5bc0f7055266015b38dceadfd428255322c60f0",
-  "art-lab/characters/rigs/merchant-x2-v2.rig.mjs": "64cefe56e61a4beca338fcb7a3c5daab673504f8e76614afc84087f4bc008f3b",
-  "tools/art-lab/build-character.mjs": "a0138f9c67460aa61c4180092efcb7beae68e1280961c220cd48951e91177e73",
+  "art-lab/characters/source/merchant-x2-v2.aseprite": "2c822fe479ea96ed2e7cbfe6f75e547f1992a2ed1421bc2cad1cb6034dd47edb",
+  "art-lab/characters/provenance/merchant-x2-v2/view-down.png": "502ee1715f1ba6c10d4c91aa28665dc80d9df7f288fe369dc7f4e93d81a9f621",
+  "art-lab/characters/provenance/merchant-x2-v2/view-up.png": "f8ed4124a8be2272b87eb783257cdd81675f3a889c054da8eccdc13083f211e7",
+  "art-lab/characters/provenance/merchant-x2-v2/view-side.png": "c87c1110597d4d391204658820f612bec7323a97c4b025639abbeba1a794863c",
+  "art-lab/characters/provenance/merchant-x2-v2/build.json": "0a0917479769ae1a5f5907faed03ac6fab317953f0d872c77c9ae414e319f9d4",
+  "art-lab/characters/provenance/merchant-x2-v2/palette.png": "9554d2eb64e9cb5d12a19cbaa097d373baa0ce31d69f5994802fb01ef749bf15",
+  "art-lab/characters/rigs/merchant-x2-v2.rig.mjs": "0ab34ef00f0bbc308c1c4de42881163f5354c7598f3c1a6a5c3bfca4f1c26fbf",
+  "tools/art-lab/build-character.mjs": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
-  "tools/art-lab/reconstruct-grid.mjs": "36652cb14bc8bdf78ff1f0932d854d7ad911e794a5bc9238e5d432eb609a781f",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
   "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
   "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
  },
@@ -78,6 +79,19 @@
    "file": "tools/art-lab/reconstruct-grid.mjs",
    "change": "one opt-in option added for the hooded passerby (--bg-threshold=<n>, the background flood-fill distance, default 26); without it the tool's output is unchanged: this pack's rebuild (verify-provenance --rebuild) is identical, before and after the change",
    "previousSha256": "46d277a2c10285ba48cd39fab1bca50791427632252459d9ec90750ddbc2d1cf"
+  }
+ ],
+ "revisions": [
+  {
+   "date": "2026-10-17",
+   "pass": "4A-unvicies",
+   "requestedBy": "operator (git user wonmii), in the working session",
+   "request": "« il y a encore quelques imperfections qu'il faudra corriger : presence de pixel noir sur le sprite, c'est leger mais tout de meme present. [...] il faudra faire une correction »",
+   "decision": "« Fais les deux corrections (pixels noirs et direction des sprites en marche) sur la même branche que la séance du forgeron, chacun ne commitant que ses fichiers. »",
+   "change": "black-pixel revision: reconstruct-grid --closing-from=48, the approved palette pinned (palette.png), a last cleanup pass (see chain); the near-black strokes beside the neck and the hair (front, back, profile: they read as long dark hair) are gone; the re-quantised views keep the approved palette (the texels counted as recoloured moved to a neighbouring colour of that palette); the legs and the hem keep the approved texels. Exported sheet against the approved one: 1843 texels removed, 0 added, 1754 recoloured, 0 new colours (64 colours, 64 before); same frames, tags, layout and metadata JSON. (A first attempt without any closing, --no-closing, lost the leg and boot outlines and was abandoned before the commit.)",
+   "previousExportSha256": "b035fcde85c8057ac4eaa7f4677630423d2ed4fac37daf43cb2250b37972017f",
+   "exportSha256": "01dcbb4c6b054a02b5d5c037ed3fb02b4aa36db68961093d0ea26878996e99a9",
+   "approval": "the operator's approval (approvals) was given for the previous sheet (previousExportSha256); the revised sheet is the operator-requested correction, merged into main at the operator's request: « si la tache est fini on peut commit/push vers main » (2026-10-17), before the operator had reviewed the revised sheet's images (reviews/merchant-x2-v2/)"
   }
  ]
 }

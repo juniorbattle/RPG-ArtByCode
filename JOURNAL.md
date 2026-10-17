@@ -2049,6 +2049,126 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes, diffs, co
 
 ---
 
+## Passe 4A-unvicies — Distribution : pixels noirs de la reconstruction et vue des marcheurs choisie à l'écran (2026-10-17)
+
+### Demande (2026-10-17)
+- Constat de l'opérateur, mot pour mot : « il y a encore quelques imperfections qu'il faudra corriger : presence de pixel noir sur le sprite,
+  c'est leger mais tout de meme present. par ailleurs je remarque aussi les directions de sprite ne sont pas optimal, lorsque le sprite docker
+  marche vers le haut et bas, son sprite position n'est pas bien oriente et donne l'impression qui marche de travers... cela est peut etre du a
+  l'angle de la camera de la scene on en a 3 differentes. il faudra faire une correction ».
+- Décision, mot pour mot : « Fais les deux corrections (pixels noirs et direction des sprites en marche) sur la même branche que la séance du
+  forgeron, chacun ne commitant que ses fichiers. » Branche partagée `cast-polish-facing` (base `2eb83d1`). Pendant le travail, la passe 5
+  (fenêtres étroites, autre séance, ses propres worktrees) a atterri dans `main` (`05d5f39`, `App.ts`, `ActorSystem.ts` et d'autres fichiers) :
+  le commit de cette passe, jamais poussé avant, a été rejoué au-dessus de `main` (rebase local, aucun conflit ; hunks disjoints) et toutes
+  les preuves finales ci-dessous sont refaites contre une copie figée de `05d5f39`.
+
+### 1. Pixels noirs — cause [OK] mesurée
+- `reconstruct-grid` ferme verticalement les trous courts (≤ max(3, round(3 × 3,55 / pas)) rangées : 6 au pas 1,775, 5 au pas 1,95) avec sa
+  couleur la plus sombre. Plus haut que la taille, le fond vu entre deux masses (entre cheveux et épaules, à côté de la mâchoire et du cou)
+  devient un trait quasi noir qui se lit comme une longue mèche : les cinq planches en avaient (rangées 16-47). Les « longs cheveux noirs » du
+  forgeron (4A-duodevicies) étaient ce défaut ; sa coupe `trimDark` (L OKLab < 0,15) laissait des texels juste au-dessus du seuil. S'y
+  ajoutaient des fragments détachés près des poings du forgeron dans le balancement des bras (6 îlots < 6 texels).
+
+### Correction, essai 1 — [KO] fermeture coupée partout
+- `--no-closing` sur les cinq planches : traits du cou partis, mais une **critique à l'aveugle** (agent neuf, planches ×4, sans savoir ce qui
+  avait changé) a trouvé des bottes qui flottent. Mesuré contre les planches approuvées : face du forgeron, rangées 78-82, 94 → 69 texels
+  opaques par image ; dos du passant 84 → 64 ; chaussure de la marchande 41 → 34 ; contours de jambes et bords de jupe cassés sur les cinq ;
+  4 trous d'épingle d'un texel ouverts. La fermeture **restaure** les contours sombres des jambes et des bottes que le remplissage du fond prend
+  pour du fond : c'était sa raison d'être (passe 4A E2, « bandes de cheville / contours » ; ce journal le notait déjà). Essai abandonné avant
+  commit.
+
+### Correction retenue — [OK] fermeture seulement sous la rangée 48
+- `reconstruct-grid --closing-from=<rangée>` (désactivée par défaut, sortie identique au bit sans elle : les paquets `dockworker-x2-v1` et
+  `merchant-x2-v1` se reconstruisent à l'identique, note de maintenance avec l'ancienne empreinte), passée par `build-character` depuis
+  `source.options.closingFrom` ; les cinq rigs : `closingFrom: 48`. Les retouches de jambes approuvées de `prepare()` sont gardées telles
+  quelles ; `trimDark` du forgeron retiré (plus rien à couper).
+- **[KO → corrigé]** Une requantification refait le k-means et déplace toutes les couleurs (109 293 texels recolorés sur la marchande au
+  premier essai). → Palettes approuvées **épinglées** : `provenance/<id>/palette.png` (les 64 couleurs de l'export approuvé) et
+  `palette: { from }` ; le docker se projetait déjà sur l'export v1. Dernière passe sur chaque image : îlots < 6 texels retirés (forgeron,
+  garde, passant), trous d'épingle fermés ≤ 2 texels remplis avec la couleur voisine la plus sombre (forgeron, passant : `fillPinholes`),
+  chaque texel ramené à `palette.png`. Face du docker (export v1 approuvé) inchangée.
+
+  | planche | texels retirés | ajoutés | recolorés | couleurs nouvelles | fond enclavé (texels) avant → après | îlots < 6 avant → après |
+  |---|---|---|---|---|---|---|
+  | `dockworker-x2-v2` | 501 | 0 | 0 | 0 | 10 → 10 | 0 → 0 |
+  | `merchant-x2-v2` | 1 843 | 0 | 1 754 | 0 | 1 → 1 | 0 → 0 |
+  | `blacksmith-x2-v1` | 930 | 6 | 1 366 | 0 | 4 → 0 | 6 → 0 |
+  | `guard-x2-v1` | 884 | 0 | 893 | 0 | 151 → 151 | 0 → 0 |
+  | `hooded-x2-v1` | 441 | 4 | 1 558 | 0 | 12 → 8 | 0 → 0 |
+
+  Texels retirés : tous au-dessus de la rangée 48, sauf 49 du forgeron (fragments près des poings), 39 du garde et 31 du passant (bas des traits
+  du cou qui commencent plus haut : profil du garde x 44, rangées 48-53 ; face du passant x 49-51, rangées 50-55). Les zones des bottes signalées
+  par la critique sont revenues identiques aux planches approuvées (0 texel changé). « Recolorés » = passés à une autre couleur de la **même**
+  palette approuvée ; [?] cause non isolée (hypothèse : affectation au plus proche de `palette.png` au lieu de l'affectation du k-means
+  d'origine). Mêmes images, étiquettes, disposition et JSON.
+- `--check` : les cinq reconstruites à l'identique ; 7 paquets intacts (`verify-provenance`) ; `art:validate` 0 erreur. Paquets et manifestes
+  consignent la révision (demande citée, empreinte précédente, comptes). Images : `reviews/<id>/0N-revision-black-pixels.png` (approuvée /
+  révisée / changements).
+- Défauts relevés par la critique à l'aveugle et **déjà présents dans les planches approuvées** (zones mesurées : 0 texel changé ; non traités
+  ici) : manches du docker coupées par le balancement des bras (marche de face 2-3 : bande 12 × 2 à x 8-19, rangées 53-54 ; encoches ; marche
+  de dos 5 : trou 5 × 2) ; contour de bras détaché et petites languettes du forgeron de dos ; trous dans le tabard du garde (marche de face
+  2-3, profil 0 : 2 × 7), tiret sombre au poing (marche de face 0 / 5), jambe arrière réduite à un filet (profil 2 / 5) ; trou de 2 × 2 dans la
+  main du passant (marche de face 2-3) ; chaussure de la marchande à une rangée de l'ourlet (marche 4-5). → « À reprendre ».
+
+### 2. Direction en marche — cause [OK] mesurée
+- `ActorSystem.applyFacing` tirait la vue du regard **en monde** contre le lacet caméra : face / dos tant que |vers caméra| ≥ 0,85 |droite
+  caméra|, soit jusqu'à 49,6° de l'axe de la caméra. Sous le tangage des cadrages (2,5° A, 8° B et D, 8,5° C), l'axe de profondeur est écrasé à
+  l'écran et la perspective tire le pas vers le point de fuite. Angle à l'écran depuis la verticale d'un pas à θ de l'axe (position du joueur) :
+  B au centre 15° → 49°, 30° → 67°, 45° → 76° ; A 15° → 52-66° ; D au bord droit (NDC 0,73) un pas droit devant monte déjà à 52°. Le long du
+  quai (+x) en B, le docker marche à 32,5° de l'axe : vue de dos, glissement à ~67° de la verticale. C'est la marche en crabe vue par l'opérateur.
+- 60 s de simulation (vrai `update`, pas de 1/60 s, PNJ en marche) : pas dont la vue contredit le mouvement écran (face / dos à plus de 50° de
+  la verticale, profil à moins de 40°) : **B 67,2 %, C 61,4 %, A 31,5 %, D 12,9 %** (arbre rebasé ; 36,7 % / 11,9 % en A / D
+  avant le rebase, autre tirage des marcheurs).
+
+### Correction — [OK]
+- Un cap **de marche** (`face(a, v, true)` : l'entrée du joueur, la cible d'un marcheur) prend sa vue d'un pas de 5 cm projeté par la vraie
+  caméra (`screenFacing`) : profil au-delà de 50° de la verticale écran, face / dos en deçà de 40°, vue gardée entre les deux (hystérésis) ;
+  haut / bas selon le sens du pas à l'écran, retournement = pas vers la droite. Gardée à l'arrêt (aucun saut), recalculée à chaque image
+  (mélanges de caméra). Les regards **mis en scène** gardent la règle monde : orientation de spawn (forgeron à l'enclume, marchande, gardes),
+  tour vers le joueur pour parler. Repli sur la règle monde sans caméra ou derrière elle.
+- `App.ts` : une ligne (la caméra passée au constructeur d'`ActorSystem`) ; `SpriteRenderer.ts` : champ `faceWalk`.
+
+### Preuves (arbre rebasé sur `05d5f39`) — [OK]
+- Simulation, après : 0 % de vues contraires (par construction) ; changements de vue à cap constant (clignotement) : 0 avant, 0 après, A-D.
+- Joueur, A-D : W dos, S face, A / D profil inchangés ; les diagonales passent de dos / face à **profil** (pas à ~75° de la verticale écran) ;
+  vue gardée au relâchement.
+- Marche capturée du docker (B, seedé, pas fixes) : `reviews/dockworker-x2-v2/07-walk-facing-cameraB.png` (le long du quai : face → profil ;
+  droit devant à 12,6° de l'axe : dos dans les deux cas).
+- CPU : 3 600 appels d'`ActorSystem.update` (11 acteurs) : 9,4 → 9,9 µs puis 6,1 → 6,8 µs par appel (+0,5-0,7 µs). GPU (`tools/perf.mjs`
+  entrelacé, B, 2 tours, avant le rebase) : 9,66 ms / 9,67 ms ; 108 appels de dessin et 210,1 k triangles des deux côtés.
+- Captures déterministes (`baked-proof.mjs shots`, 1920 × 1080, 90 pas, `freeze=7.3`, `main` figé `05d5f39` servi à part) : témoin de
+  répétition (deux chargements du travail) **0 px** dans les six vues. Démarrage par défaut, `main` contre travail : A 7 912 px, B 33 753,
+  C 4 288, D 2 886, C sabotée 8 233, D sabotée 19 307 : sur les personnages cuits (traits du cou), leurs ombres et reflets, et les marcheurs
+  passés de face / dos à profil (diff de B vu en entier). `?cast=generated`, tout écart compté : A 5 614 px, B 29 460, **C 0, D 0, C sabotée
+  0**, D sabotée 13 770 : uniquement des porteurs générés en marche passés de dos à profil, avec ombres, reflets et halos (vu au zoom).
+- Autotests des cinq planches (`?baked=<id>`) : CPU 0 / GPU 0 texel à 1, 2, 3, 2,37, contrôles négatifs en échec, débordement 0.
+- `npm run typecheck`, `npm run build` verts (JS 874,18 Ko, gzip 247,96 Ko ; 873,01 / 247,49 à `05d5f39`).
+
+### Décision opérateur (2026-10-17)
+- Mot pour mot : « si la tache est fini on peut commit/push vers main ». Les preuves finales vertes, `main` est avancé en avance rapide jusqu'au
+  commit de cette passe et poussé. Les images de revue des planches révisées n'ont pas été montrées une à une à l'opérateur avant ce message :
+  les paquets le consignent (l'approbation du 17/10 porte sur les planches précédentes, empreintes gardées).
+- La branche `cast-polish-facing` reste l'arbre de travail du dossier partagé (règle de séance : ne pas changer de branche dans ce dossier) :
+  sa suppression attend l'accord de l'opérateur pour basculer ce dossier sur `main`.
+
+### Limites
+- Pas encore vu en mouvement par un humain ; bande d'hystérésis 40° / 50° choisie, pas réglée avec l'opérateur.
+- Le tour vers le joueur pour parler garde la règle monde (comportement existant, hors périmètre).
+
+### Pensée
+- Avant de couper une règle d'un outil, relire pourquoi elle existe : la fermeture verticale fabriquait les traits du cou **et** restaurait les
+  contours des jambes. La couper par zone, pas partout ; puis compter le fond enclavé et les zones sensibles avant / après.
+- Une critique à l'aveugle sur le résultat final trouve ce que la vérification de l'auteur ne cherche pas ; chacun de ses constats se mesure
+  contre la version approuvée pour séparer régression et défaut hérité.
+- Une requantification déplace toutes les couleurs : une palette approuvée s'épingle en fichier, et une révision se projette dessus.
+- Sous un tangage bas, l'angle d'un pas avec l'axe de la caméra ne dit presque rien de son mouvement à l'écran : la vue d'un marcheur se tire
+  du pas projeté, avec hystérésis ; un regard mis en scène garde la règle monde.
+
+Preuves (non versionnées) : `art-lab/characters/scratch/cast2/` (`facing.js`, `flicker.js`, `walkcam2.mjs`, `revsheet.mjs`, `proof-facing*/`,
+`proof-final5/`, `selftest2/`) ; images clés dans `art-lab/characters/reviews/<id>/` et `screenshots/calibration/cast-polish/`.
+
+---
+
 ## À reprendre (par priorité)
 
 **-2. Fenêtres étroites (Passe 5)** — bake par pages bornées + repli explicite + recadrage du cadre 16:9 : bâtiments présents à tout format
@@ -2076,6 +2196,13 @@ jumeaux, lances. Restent générés : héros, chat, foule.
 D et forge sabotée identiques au pixel ; change l'image de démarrage en A, B, C. **Approuvé par l'opérateur le 17/10** et **fusionné dans
 `main`** (avance rapide, à sa demande) ; la branche partagée `cast-polish-facing` reste ouverte pour les correctifs de distribution de l'autre
 séance. Observation ouverte : tête du marteau cuit peu lisible sur la lueur de l'enclume.
+**-1d. Fait (Passe 4A-unvicies)** : traits noirs du cou retirés des cinq planches (fermeture verticale seulement sous la rangée 48,
+palettes approuvées épinglées, jambes identiques aux planches approuvées) et vue des marcheurs tirée de leur pas projeté à l'écran ; fusionné
+dans `main` à la demande de l'opérateur (« si la tache est fini on peut commit/push vers main »). Ouverts : (a) l'opérateur n'a pas encore vu
+les planches révisées une à une (`reviews/<id>/0N-revision-black-pixels.png`) ; (b) à juger en mouvement : la bande 40° / 50° et les
+diagonales du joueur, désormais de profil ; (c) défauts hérités des planches approuvées relevés par la critique à l'aveugle (manches du docker
+coupées par le balancement des bras, trous du tabard du garde, main du passant, jambe arrière du garde de profil, contour de bras du forgeron
+de dos, chaussure de la marchande) : une passe de rig dédiée ; (d) supprimer `cast-polish-facing` (le dossier partagé est encore dessus).
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
@@ -2201,7 +2328,13 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
 - Une approbation de production ne s'écrit jamais au nom de l'opérateur : l'intégration se prépare derrière la porte du manifeste et
   l'opérateur l'ouvre.
 - Après toute reconstruction, chercher les bandes quasi noires de la fermeture verticale entre deux masses (nuque / épaules, entre les jambes)
-  et les comparer à la planche, pas à la reconstruction : elles se lisent comme des cheveux ou des sangles qui n'existent pas.
+  et les comparer à la planche, pas à la reconstruction : elles se lisent comme des cheveux ou des sangles qui n'existent pas. Remède retenu
+  (4A-unvicies) : `reconstruct-grid --closing-from=48` : pas de fermeture au-dessus de la taille, gardée en dessous (elle y restaure les
+  contours sombres des jambes et des bottes ; la couper partout les a perdus) ; compter avant / après le fond enclavé et les zones des pieds.
+- La révision d'un asset approuvé se projette sur sa palette approuvée, épinglée en fichier (aucune couleur nouvelle), et s'inscrit à côté de
+  l'approbation (demande citée, empreinte précédente, comptes de texels) ; la confirmation de l'opérateur se demande, elle ne se présume pas.
+- La vue d'un personnage qui marche se tire de son pas projeté à l'écran (avec hystérésis), pas de l'angle de son cap avec l'axe de la
+  caméra : sous un tangage de 8°, 20° de cap font déjà ~55° à l'écran. Un regard mis en scène (spawn, conversation) garde la règle monde.
 - Un personnage plus grand que le cadre se rééchantillonne à un pas plus grossier et se présente à l'échelle commune : une densité de texel
   unique dans la scène prime sur la taille relative de la planche (écart chiffré et consigné).
 - Un mouvement de marche se fixe explicitement (rebond imposé de 2 rangées au contact), il ne se déduit pas seulement de l'IK ; une

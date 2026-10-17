@@ -38,6 +38,8 @@ export interface Actor {
   behaviour?: { kind: 'idle' | 'patrol' | 'wander' | 'work' | 'player'; waypoints?: THREE.Vector3[]; wait?: number; idx?: number; target?: THREE.Vector3 | null; seed: number };
   /** world-space facing (x, z); dir / flip are re-derived from it against the camera every frame */
   faceVec?: [number, number];
+  /** faceVec is a walking heading: shown by its on-screen direction instead of the world rule (`ActorSystem.screenFacing`) */
+  faceWalk?: boolean;
   /** flip to use if this animation only exists in the side view (e.g. the smith's hammer cycle) */
   sideFlip?: boolean;
 }

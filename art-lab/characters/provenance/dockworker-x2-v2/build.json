@@ -11,24 +11,24 @@
   "colours": 64,
   "views": {
    "recon-up-full-q.png": {
-    "texels": 2659,
+    "texels": 2636,
     "meanOklabErrPermille": 13.7,
     "maxOklabErrPermille": 53.1
    },
    "recon-side-full-q.png": {
-    "texels": 2084,
+    "texels": 2057,
     "meanOklabErrPermille": 13.2,
     "maxOklabErrPermille": 36.8
    }
   }
  },
  "views": {
-  "up": "6763d603818326fe6b7339e02a1c85573a2a00358cd0cba5f400ac35440d5f1f",
-  "side": "f508a73572a6785c06c518c4066ddaac4bcaa327eb3027d99485bad4d54352f2"
+  "up": "aad8c647262df2ea70d49ddf194e1e14ace96d172fefd839cef8d03635a9141c",
+  "side": "91fa931f103040db17ddc74d0674fc9fe46a42f69476af213c6b629b85e17f05"
  },
  "exports": {
-  "png": "57ce9c092c20ad5586bf7e7c1baec82eda7a0cb31170df0316d6d6d81657fbec",
+  "png": "afe693cd64649be4b8eaf687d2a3a23def4cbbdfc461fdc225b1f2326cbf1fcb",
   "json": "a929f5619cf5b21710e623015f58f7d425c3a628a5935081d4f6a4e3e041192d",
-  "aseprite": "8143c7fd84551e1f900b9cbb7cf69f46e3ee7c590d5b2105f2f80962f75b092d"
+  "aseprite": "5e8906b77a49f0fb8f1c60b7d83438c69c512656223f50296d8ba699f7452edd"
  }
 }

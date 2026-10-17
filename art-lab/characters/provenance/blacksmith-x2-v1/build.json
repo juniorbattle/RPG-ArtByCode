@@ -7,34 +7,34 @@
   576
  ],
  "palette": {
-  "mode": "joint k-means 64",
+  "mode": "palette-from palette.png",
   "colours": 64,
   "views": {
    "recon-down-full-q.png": {
-    "texels": 2743,
-    "meanOklabErrPermille": 12.9,
+    "texels": 2698,
+    "meanOklabErrPermille": 13.1,
     "maxOklabErrPermille": 43.7
    },
    "recon-up-full-q.png": {
-    "texels": 2817,
-    "meanOklabErrPermille": 13.3,
+    "texels": 2783,
+    "meanOklabErrPermille": 13.4,
     "maxOklabErrPermille": 38.4
    },
    "recon-side-full-q.png": {
-    "texels": 2028,
-    "meanOklabErrPermille": 12.4,
+    "texels": 1989,
+    "meanOklabErrPermille": 12.7,
     "maxOklabErrPermille": 45.7
    }
   }
  },
  "views": {
-  "down": "485aa57ca343dac3b14a1d25fb757c3dd05ae75f554ded6a83ede01935e99c25",
-  "up": "98ca304dfdf6c45458e3e4f4b221d8616d4e39f32fbfce40663c069a8b0cf546",
-  "side": "4f9728e0084d46932d0886830e0608ee41e27b3f5802e23d9f13872f7ebdfc32"
+  "down": "6c1878f9af2852e97cad465b24ccb4d942a130b0e42098620d7b0198c4222935",
+  "up": "49cc27bbf137d6677309b79b0d3ea7f01d84dd7ea235ecf8f6232ec74041aac2",
+  "side": "d6b053c3fb07160b9c0e4574b3e00cf447026b410ef9959bfd211c6cd05436fc"
  },
  "exports": {
-  "png": "289a0cb97b31bd97daa915664120013bd8ce3eb5a2397617b263e885bc1ca04d",
+  "png": "8972e8f920460867ed15fd817afa43c61efb475aaf3f0954c09d287c957fe524",
   "json": "cad686799d7e3156b8f3c716a7ea00499347c9a696946d486af3e7bcd67dc78c",
-  "aseprite": "3562d558b774e31ea8734596680e58e6ca4cf6311e12388372e927ae4af9f579"
+  "aseprite": "8a39c3fd98048f0bdeeb51dbfff4b4f97db5ed6790c357ae999313c77c193204"
  }
 }

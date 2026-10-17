@@ -12,6 +12,10 @@ import type { CastMember } from './BakedCast';
 
 const HEIGHT: Record<string, number> = { player: 1.78, blacksmith: 1.82, merchant: 1.66, guardA: 1.8, guardB: 1.8, hooded: 1.84, porter: 1.62, cat: 0.5 };
 
+/** a walking facing turns to profile beyond 50 deg from the screen vertical and back to front / back below 40 deg (see screenFacing) */
+const SIDE_IN = Math.tan(THREE.MathUtils.degToRad(50)), SIDE_OUT = Math.tan(THREE.MathUtils.degToRad(40));
+const _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3();
+
 export class ActorSystem {
   actors: Actor[] = [];
   player!: Actor;
@@ -33,7 +37,8 @@ export class ActorSystem {
   /** production baked sheets standing in for generated archetypes (`BakedCast.ts`): same spawns, roles, behaviours and RNG draws */
   cast = new Map<string, CastMember>();
 
-  constructor(private atlas: SpriteAtlas) {
+  /** camera: shows a walking facing by its on-screen direction (null: the world rule for every facing) */
+  constructor(private atlas: SpriteAtlas, private camera: THREE.PerspectiveCamera | null = null) {
     window.addEventListener('keydown', (e) => {
       const k = e.key.toLowerCase();
       this.keys.add(k);
@@ -141,23 +146,47 @@ export class ActorSystem {
     if (this.walkable(a.pos.x, nz, a.radius)) a.pos.z = nz;
   }
 
-  /** remember the world-space facing; the screen direction is re-derived every frame from the camera yaw, so idle
-   *  NPCs keep facing the same way in the world when the camera graph swings between framings */
-  face(a: Actor, v: THREE.Vector3): void {
+  /** remember the world-space facing; the screen direction is re-derived every frame from the camera, so idle
+   *  NPCs keep facing the same way in the world when the camera graph swings between framings. `walk`: the heading of a
+   *  step (the player's input, a walker's target), shown by its on-screen direction (screenFacing), also once the walker
+   *  stops; a staged facing (spawn, turning to talk) keeps the world rule */
+  face(a: Actor, v: THREE.Vector3, walk = false): void {
     if (v.lengthSq() < 1e-6) return;
-    a.faceVec = [v.x, v.z];
+    a.faceVec = [v.x, v.z]; a.faceWalk = walk;
     this.applyFacing(a);
   }
 
   private applyFacing(a: Actor): void {
     if (!a.faceVec) return;
     const [vx, vz] = a.faceVec;
+    if (a.faceWalk && this.screenFacing(a, vx, vz)) return;
     const c = Math.cos(this.camYaw), s = Math.sin(this.camYaw);
     const sx = vx * c - vz * s;   // along camera right
     const sd = vx * s + vz * c;   // toward camera
     a.sideFlip = sx > 0;
     if (Math.abs(sd) >= Math.abs(sx) * 0.85) { a.dir = sd > 0 ? 'down' : 'up'; a.flip = false; }
     else { a.dir = 'side' as Dir; a.flip = sx > 0; }
+  }
+
+  /** the view of a heading from the way a step along it moves ON SCREEN. Under the framings' low pitch (2.5-8.5 deg) the
+   *  depth axis is squashed and a step drifts toward the vanishing point: a heading 20 deg off the camera axis already moves
+   *  ~55 deg from the screen vertical, so the world rule showed a back sliding sideways (a crab walk). Profile beyond 50 deg
+   *  from the vertical, front / back below 40 deg, the view held in between (a straight walk across the frame never
+   *  flickers). False (world rule) without a camera or behind it */
+  private screenFacing(a: Actor, vx: number, vz: number): boolean {
+    const cam = this.camera;
+    if (!cam) return false;
+    const n = 0.05 / Math.hypot(vx, vz);
+    _p0.copy(a.pos).project(cam);
+    _p1.set(a.pos.x + vx * n, a.pos.y, a.pos.z + vz * n).project(cam);
+    if (_p0.z > 1 || _p1.z > 1) return false;
+    // in pixels (units of half the height): NDC x spans the width
+    const dx = (_p1.x - _p0.x) * cam.aspect, dy = _p1.y - _p0.y;
+    const side = Math.abs(dx) > Math.abs(dy) * (a.dir === 'side' ? SIDE_OUT : SIDE_IN);
+    a.sideFlip = dx > 0;
+    if (side) { a.dir = 'side'; a.flip = dx > 0; }
+    else { a.dir = dy > 0 ? 'up' : 'down'; a.flip = false; }
+    return true;
   }
 
   private setAnim(a: Actor, anim: Anim): void { if (a.anim !== anim) { a.anim = anim; } }
@@ -187,7 +216,7 @@ export class ActorSystem {
     if (mv.lengthSq() > 0) {
       mv.normalize().multiplyScalar(2.5 * run * dt);
       this.resolve(p, p.pos.x + mv.x, p.pos.z + mv.z);
-      this.face(p, mv);
+      this.face(p, mv, true);
       this.setAnim(p, 'walk'); p.t += dt * run;
     } else { this.setAnim(p, 'idle'); p.t += dt; }
     p.pos.y = this.district?.heightAt(p.pos.x, p.pos.z) ?? 0;
@@ -243,7 +272,7 @@ export class ActorSystem {
     const ox = a.pos.x, oz = a.pos.z;
     this.resolve(a, nx, nz);
     if (Math.abs(a.pos.x - ox) + Math.abs(a.pos.z - oz) < speed * dt * 0.2) { b.target = null; b.wait = 0.8; return; }
-    this.face(a, to);
+    this.face(a, to, true);
     // the porter's crate walk where the sheet has one (the generated porter), the plain walk otherwise
     this.setAnim(a, this.atlas.counts.has(`${a.spec}/carry`) ? 'carry' : 'walk');
   }

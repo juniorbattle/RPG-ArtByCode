@@ -2,6 +2,7 @@
 // reference sheet's NPC 02, "Merchant (Female)" (front, back, profile: the sheet's 1st, 3rd and 4th views, same pitch as the dock worker,
 // one joint 64-colour palette). Her legs are under the dress: the walk moves her boots under the hem, sways the hem and bobs the body.
 // Deterministic: `node tools/art-lab/build-character.mjs art-lab/characters/rigs/merchant-x2-v2.rig.mjs`.
+import { fileURLToPath } from 'node:url';
 import * as R from '../../../tools/art-lab/rig-engine.mjs';
 
 export const id = 'merchant-x2-v2';
@@ -10,7 +11,13 @@ export const source = {
   sheet: 'art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp',
   pitch: 1.775,
   views: { down: '388,117,452,272', up: '546,121,608,272', side: '620,122,683,272' },
-  palette: { k: 64 },
+  // the approved sheet's 64 colours (archived in the pack by the 2026-10-17 revision, which changed the closing: a new k-means would
+  // have moved every colour); every view is mapped onto them
+  palette: { from: 'art-lab/characters/provenance/merchant-x2-v2/palette.png' },
+  // revision of 2026-10-17 (operator: black pixels): the vertical closing only from row 48 down (reconstruct-grid --closing-from=48): above, it
+  // filled the background beside the neck (front, back) with its darkest colour (black strokes that read as long hair); below, it
+  // restores the dark leg and boot outlines the flood fill takes for background
+  options: { closingFrom: 48 },
 };
 
 /** recorded edits of the reconstructed views: dark sheet-shadow remnants below the hem removed; the profile mirrored to face left, its stray
@@ -19,6 +26,16 @@ export function prepare(dir, v) {
   if (dir === 'down') return R.erase(v, R.rect(14, 86, 18, 87));
   if (dir === 'up') return R.erase(v, R.rect(32, 86, 32, 89));
   return R.shift(R.erase(R.mirror(v), R.rect(19, 87, 19, 90)), 2, 1);
+}
+
+/** the mouth's colours were picked from the palette; after the re-quantisation every texel not in the approved palette (palette.png) is snapped to the
+ *  nearest one (OKLab), so no new colour reaches the sheet */
+function snapToViews(out, V) {
+  const pal = R.paletteOf(R.load(fileURLToPath(new URL('../provenance/' + id + '/palette.png', import.meta.url)))), keys = new Set(pal.map((c) => c.join(','))), lab = pal.map(R.oklab), memo = new Map();
+  const near = (c) => { const k = c.join(','); if (keys.has(k)) return c; if (memo.has(k)) return memo.get(k); const q = R.oklab(c); let bi = 0, bd = 1e9;
+    lab.forEach((p, i) => { const d = (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 + (p[2] - q[2]) ** 2; if (d < bd) { bd = d; bi = i; } }); memo.set(k, pal[bi]); return pal[bi]; };
+  for (const f of out) f.im = R.recolour(f.im, near);
+  return out;
 }
 
 // ---- gait (the dock worker's timing: 6 frames at 7.5 frames / s, one step = 3 frames). BOB = body drop in rows (lowest at contact).
@@ -77,5 +94,5 @@ export function frames(V) {
     const open = R.patch(v, MOUTH[dir]), nod = R.over(R.erase(open, (x, y) => y < 38), R.shift(R.cut(open, (x, y) => y < 38), 0, 1));
     [R.clone(v), open, R.clone(v), nod, R.clone(v), open].forEach((im, i) => out.push({ anim: 'talk', dir, i, im }));
   }
-  return out;
+  return snapToViews(out, V);
 }

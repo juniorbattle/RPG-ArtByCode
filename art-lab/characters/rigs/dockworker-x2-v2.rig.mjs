@@ -30,6 +30,11 @@ export const source = {
   views: { up: '195,347,269,505', side: '282,345,341,505' },
   keep: { down: 'art-lab/characters/exports/dockworker-x2-v1.png' },
   palette: { from: 'art-lab/characters/exports/dockworker-x2-v1.png' },
+  // revision of 2026-10-17 (operator: black pixels), back / side reconstructions only (the front is the approved v1 export, unchanged):
+  // the vertical closing only from row 48 down (reconstruct-grid --closing-from=48): above, it
+  // filled the background beside the head and the neck with its darkest colour (black strokes that read as long hair); below, it
+  // restores the dark leg and boot outlines the flood fill takes for background
+  options: { closingFrom: 48 },
 };
 /** side: mirrored to face left (the runtime's native side), moved 2 texels left (feet centred on the anchor column), its top row cleared
  *  and one cap row removed (row 5): the profile reconstructs 2 rows taller than the front (91), the frame keeps a transparent ring */

@@ -1,14 +1,14 @@
 {
  "id": "merchant-x2-v2",
  "cell": [
-  0,
-  0,
+  896,
+  96,
   64,
   96
  ],
  "bakedTexture": [
-  512,
-  576
+  1024,
+  1056
  ],
  "cpuBytes": 24576,
  "cpuMismatch": 0,
@@ -53,7 +53,7 @@
    "pixels": 24576,
    "checked": 24576,
    "skipped": 0,
-   "mismatches": 7000
+   "mismatches": 6932
   },
   {
    "scale": 2.37,
@@ -61,7 +61,7 @@
    "pixels": 34656,
    "checked": 31104,
    "skipped": 3552,
-   "mismatches": 11164
+   "mismatches": 10823
   }
  ],
  "bleed": {

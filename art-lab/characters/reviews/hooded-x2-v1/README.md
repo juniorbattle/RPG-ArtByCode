@@ -14,3 +14,12 @@ game's production cast loads it in place of the generated hooded stranger; `?cas
 Reconstructed with `reconstruct-grid --bg-threshold=16` (the navy cloak is close to the sheet's background: the default 26 cut slits into
 the back of the cloak), pitch 1.95 (the hood does not fit at 1.775), scale 0.9 (the cast's texel size, ~10 % smaller than the sheet's unified
 scale). Kept from the sheet on purpose: the dark values, the bright hands, the face in the hood's shadow (no eye glint, unlike the generated one).
+
+
+## Revision of 2026-10-17 (Pass 4A-unvicies): black pixels, at the operator's request
+
+| File | What it shows |
+|---|---|
+| `04-revision-black-pixels.png` | per animation (row), its first frame x3: the approved sheet (`2eb83d1`) / the revised sheet / the changes on the revised frame dimmed (magenta = texel removed, yellow = recoloured to a neighbouring colour of the approved palette, cyan = added) |
+
+The reconstruction no longer closes short vertical gaps above row 48 (`reconstruct-grid --closing-from=48`): there the closing filled the background seen between hair and shoulders, beside the jaw / neck, with its darkest colour (near-black strokes that read as long hair). Below row 48 it still restores the dark leg and boot outlines, and the legs keep the approved texels (a first attempt without any closing lost them and was abandoned). Against the approved sheet: 441 texels removed, 4 added, 1558 recoloured, 0 new colours (the approved 64-colour palette is pinned, `provenance/hooded-x2-v1/palette.png`). Enclosed pinholes of 1-2 texels are filled with the darkest neighbouring colour (4 texels, gaps already in the approved sheet). `--check` rebuilds identically; `selftest.json` refreshed (`?baked=hooded-x2-v1`): CPU 0 / GPU 0 texels at 1, 2, 3, 2.37, negative controls fail, bleed 0. The approval was given for the previous sheet; the revision was merged into main at the operator's request (« si la tache est fini on peut commit/push vers main »), **the revised sheet itself is not yet reviewed by the operator** (JOURNAL, Passe 4A-unvicies).

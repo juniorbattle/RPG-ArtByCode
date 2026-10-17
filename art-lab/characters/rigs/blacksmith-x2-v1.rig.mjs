@@ -2,6 +2,7 @@
 // cut out of three reconstructed views of the reference sheet's NPC 04, "Blacksmith Helper (Male)" (front, back, profile: the sheet's 1st, 3rd
 // and 4th views, the dock worker's pitch, one joint 64-colour palette). The sheet shows him without a tool: the hammer is PAINTED in the
 // palette's iron (bandana greys) and wood (apron browns). Deterministic: `node tools/art-lab/build-character.mjs <this file>`.
+import { fileURLToPath } from 'node:url';
 import * as R from '../../../tools/art-lab/rig-engine.mjs';
 
 export const id = 'blacksmith-x2-v1';
@@ -10,34 +11,26 @@ export const source = {
   sheet: 'art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp',
   pitch: 1.775,
   views: { down: '1089,117,1170,271', up: '1257,114,1339,272', side: '1348,119,1407,272' },
-  palette: { k: 64 },
+  // the approved sheet's 64 colours (archived in the pack by the 2026-10-17 revision, which changed the closing: a new k-means would
+  // have moved every colour); every view is mapped onto them
+  palette: { from: 'art-lab/characters/provenance/blacksmith-x2-v1/palette.png' },
+  // the vertical closing only from row 48 down (reconstruct-grid --closing-from=48): above, it
+  // filled the background beside the jaw and the neck with its darkest colour (black strokes that read as long hair); below, it
+  // restores the dark leg and boot outlines the flood fill takes for background
+  options: { closingFrom: 48 },
 };
 
 const hexOf = (c) => '#' + c.map((x) => x.toString(16).padStart(2, '0')).join('');
 
-/** The reconstruction's vertical closing fills the background beside the jaw and the neck (between the hair and the shoulders) with its
- *  darkest colour: near-black strips that read as long black hair. In `area`, a row's run of near-black texels (OKLab L < 0.15) starting at
- *  the silhouette's outer edge is removed, its innermost texel kept as the outline. `outer` = the side the edge is on (-1 left, +1 right). */
-function trimDark(v, area, outer) {
-  const o = R.clone(v), dark = (x, y) => { const c = R.get(v, x, y); return !!c && R.oklab(c)[0] < 0.15; };
-  for (let y = 0; y < v.H; y++) {
-    const xs = []; for (let x = 0; x < v.W; x++) if (area(x, y)) xs.push(x);
-    if (!xs.length) continue;
-    const run = []; for (const x of outer < 0 ? xs : [...xs].reverse()) { if (!R.opaque(v, x, y)) { if (run.length) break; continue; } if (!dark(x, y)) break; run.push(x); }
-    run.slice(0, -1).forEach((x) => R.put(o, x, y, null));
-  }
-  return o;
-}
-
 /** recorded edits of the reconstructed views. Front: the background pocket between the legs (reconstructed as a dark block, x 29-34 rows
- *  77-82) and a two-texel closing tail under the left boot removed, the near-black closing strips beside the jaw (rows 29-36) cut back to a
- *  one-texel outline (trimDark), then moved 2 rows down (soles on row 90). Back: the closing seam between the legs (x 30) removed, the strips
- *  beside the neck (rows 28-36) cut back the same way. Profile: mirrored to face left; the far leg's fragments in front of the near leg (a thin shin and the toe of a
+ *  77-82) and a two-texel closing tail under the left boot removed, then moved 2 rows down (soles on row 90). Back: the closing seam between
+ *  the legs (x 30) removed. Profile: mirrored to face left; the far leg's fragments in front of the near leg (a thin shin and the toe of a
  *  boot, both broken by the reconstruction) and a closing strip under the apron removed, the gap in the near boot's instep outline (x 28,
- *  rows 85-86) closed with the outline's colour, then moved 1 texel left (boots centred on the anchor column). */
+ *  rows 85-86) closed with the outline's colour, then moved 1 texel left (boots centred on the anchor column). (Until the 2026-10-17
+ *  revision, the closing strips beside the jaw and the neck were cut back here; there is no closing above row 48 any more.) */
 export function prepare(dir, v) {
-  if (dir === 'down') return R.shift(trimDark(trimDark(R.erase(v, R.or(R.rect(29, 77, 34, 82), R.rect(24, 89, 24, 90))), R.rect(16, 29, 25, 36), -1), R.rect(40, 29, 47, 36), 1), 0, 2);
-  if (dir === 'up') return trimDark(trimDark(R.erase(v, R.rect(30, 79, 30, 84)), R.rect(16, 28, 23, 36), -1), R.rect(39, 28, 47, 36), 1);
+  if (dir === 'down') return R.shift(R.erase(v, R.or(R.rect(29, 77, 34, 82), R.rect(24, 89, 24, 90))), 0, 2);
+  if (dir === 'up') return R.erase(v, R.rect(30, 79, 30, 84));
   const m = R.erase(R.mirror(v), R.or(R.rect(16, 79, 28, 84), R.rect(16, 85, 24, 89), R.rect(20, 74, 21, 77)));
   const c = hexOf(R.get(m, 27, 85));
   return R.shift(R.patch(m, [{ x: 28, y: 85, c }, { x: 28, y: 86, c }]), -1, 0);
@@ -89,6 +82,37 @@ function despeckle(im, area, min = 4) {
     if (comp.length < min && comp.every(([a, b]) => area(a, b))) for (const [a, b] of comp) R.put(o, a, b, null);
   }
   return o;
+}
+
+/** enclosed pinholes (transparent components of at most `max` texels the background flood fill from the frame's border does not reach)
+ *  take the darkest colour around them, the outline's: a one- or two-texel gap in an outline seam (an arm against the body, a hand against
+ *  the cloak) lets the scene show through the sprite on a few walk / swing frames */
+function fillPinholes(im, max = 2) {
+  const o = R.clone(im), W = im.W, H = im.H, bg = new Uint8Array(W * H), seen = new Uint8Array(W * H), st = [];
+  const N = (a, b) => [[a + 1, b], [a - 1, b], [a, b + 1], [a, b - 1]];
+  for (let x = 0; x < W; x++) st.push([x, 0], [x, H - 1]);
+  for (let y = 0; y < H; y++) st.push([0, y], [W - 1, y]);
+  while (st.length) { const [x, y] = st.pop(); if (x < 0 || y < 0 || x >= W || y >= H || bg[y * W + x] || R.opaque(im, x, y)) continue; bg[y * W + x] = 1; st.push(...N(x, y)); }
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (bg[y * W + x] || seen[y * W + x] || R.opaque(im, x, y)) continue;
+    const comp = [], q = [[x, y]]; seen[y * W + x] = 1;
+    while (q.length) { const [a, b] = q.pop(); comp.push([a, b]); for (const [p, r] of N(a, b)) if (!seen[r * W + p] && !R.opaque(im, p, r)) { seen[r * W + p] = 1; q.push([p, r]); } }
+    if (comp.length > max) continue;
+    for (const [a, b] of comp) { let best = null, bl = 2; for (const [p, r] of N(a, b)) { const c = R.get(im, p, r); if (c && R.oklab(c)[0] < bl) { bl = R.oklab(c)[0]; best = c; } } if (best) R.put(o, a, b, best); }
+  }
+  return o;
+}
+
+/** last pass on every frame: detached islands of fewer than 6 texels removed (parts moved by the walk or the swing can leave a few loose
+ *  texels: the fragments beside the blacksmith's fists in the first build), enclosed pinholes filled (fillPinholes), then the painted parts' colours snapped to the views'
+ *  palette (palette.png): every texel not in it takes the nearest palette colour (OKLab), so no new colour reaches the sheet */
+function snapToViews(out, V) {
+  for (const f of out) f.im = fillPinholes(despeckle(f.im, () => true, 6));
+  const pal = R.paletteOf(R.load(fileURLToPath(new URL('../provenance/' + id + '/palette.png', import.meta.url)))), keys = new Set(pal.map((c) => c.join(','))), lab = pal.map(R.oklab), memo = new Map();
+  const near = (c) => { const k = c.join(','); if (keys.has(k)) return c; if (memo.has(k)) return memo.get(k); const q = R.oklab(c); let bi = 0, bd = 1e9;
+    lab.forEach((p, i) => { const d = (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 + (p[2] - q[2]) ** 2; if (d < bd) { bd = d; bi = i; } }); memo.set(k, pal[bi]); return pal[bi]; };
+  for (const f of out) f.im = R.recolour(f.im, near);
+  return out;
 }
 
 // ---- gait: the dock worker's timing (6 frames at 7.5 frames / s, one step = 3 frames) and ankle cycle (13 texels per step); the body is
@@ -245,5 +269,5 @@ export function frames(V) {
     for (let i = 0; i < 6; i++) out.push({ anim: 'walk', dir, i, im: dir === 'side' ? sideFrame(v, i) : frontBack(v, FB[dir], i) });
   }
   HAMMER.forEach((h, i) => out.push({ anim: 'hammer', dir: 'side', i, im: hammerFrame(V.side, h) }));
-  return out;
+  return snapToViews(out, V);
 }

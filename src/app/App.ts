@@ -134,7 +134,7 @@ export class App {
     const devSheets = (baked?.sheets ?? []).filter((s) => !cast?.sheets.some((p) => p.id === s.id));
     this.atlas = SpriteAtlas.build([PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, ...crowdVariants(this.config.seed, 5)], [...(cast?.sheets ?? []), ...devSheets], this.renderer.capabilities.maxTextureSize);
     this.sprites = new SpriteRenderer(this.atlas, 40);
-    this.actors = new ActorSystem(this.atlas);
+    this.actors = new ActorSystem(this.atlas, this.rig.camera);
     if (cast) this.actors.cast = cast.cast;
     if (baked) this.actors.authored = baked.spawns;
     this.actors.onInteractForge = () => this.setForgeState(this.config.forgeState === 'NORMAL_FORGE' ? 'SABOTAGED_FORGE' : 'NORMAL_FORGE');

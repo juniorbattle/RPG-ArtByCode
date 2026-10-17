@@ -4,6 +4,7 @@
 // presentation scale (0.9: the dock worker's texel size on screen, ~10 % smaller than the sheet's unified scale). His cloak is a navy close to
 // the sheet's background: the reconstruction runs with a background threshold of 16 (reconstruct-grid --bg-threshold; the default 26 cut
 // transparent slits into the back of the cloak). Deterministic: `node tools/art-lab/build-character.mjs <this file>`.
+import { fileURLToPath } from 'node:url';
 import * as R from '../../../tools/art-lab/rig-engine.mjs';
 
 export const id = 'hooded-x2-v1';
@@ -12,8 +13,13 @@ export const source = {
   sheet: 'art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp',
   pitch: 1.95,
   views: { down: '31,818,113,988', up: '204,818,282,989', side: '294,818,355,991' },
-  palette: { k: 64 },
-  options: { bgThreshold: 16 },
+  // the approved sheet's 64 colours (archived in the pack by the 2026-10-17 revision, which changed the closing: a new k-means would
+  // have moved every colour); every view is mapped onto them
+  palette: { from: 'art-lab/characters/provenance/hooded-x2-v1/palette.png' },
+  // the vertical closing only from row 48 down (reconstruct-grid --closing-from=48): above, it
+  // filled the background beside the neck, under the hood with its darkest colour (black strokes that read as long hair); below, it
+  // restores the dark leg and boot outlines the flood fill takes for background
+  options: { bgThreshold: 16, closingFrom: 48 },
 };
 
 /** recorded edits of the reconstructed views. Front: the closing strip between the legs (x 30-32) and the closing tails under the boots (rows
@@ -60,6 +66,37 @@ function despeckle(im, area, min = 4) {
     if (comp.length < min && comp.every(([a, b]) => area(a, b))) for (const [a, b] of comp) R.put(o, a, b, null);
   }
   return o;
+}
+
+/** enclosed pinholes (transparent components of at most `max` texels the background flood fill from the frame's border does not reach)
+ *  take the darkest colour around them, the outline's: a one- or two-texel gap in an outline seam (an arm against the body, a hand against
+ *  the cloak) lets the scene show through the sprite on a few walk / swing frames */
+function fillPinholes(im, max = 2) {
+  const o = R.clone(im), W = im.W, H = im.H, bg = new Uint8Array(W * H), seen = new Uint8Array(W * H), st = [];
+  const N = (a, b) => [[a + 1, b], [a - 1, b], [a, b + 1], [a, b - 1]];
+  for (let x = 0; x < W; x++) st.push([x, 0], [x, H - 1]);
+  for (let y = 0; y < H; y++) st.push([0, y], [W - 1, y]);
+  while (st.length) { const [x, y] = st.pop(); if (x < 0 || y < 0 || x >= W || y >= H || bg[y * W + x] || R.opaque(im, x, y)) continue; bg[y * W + x] = 1; st.push(...N(x, y)); }
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (bg[y * W + x] || seen[y * W + x] || R.opaque(im, x, y)) continue;
+    const comp = [], q = [[x, y]]; seen[y * W + x] = 1;
+    while (q.length) { const [a, b] = q.pop(); comp.push([a, b]); for (const [p, r] of N(a, b)) if (!seen[r * W + p] && !R.opaque(im, p, r)) { seen[r * W + p] = 1; q.push([p, r]); } }
+    if (comp.length > max) continue;
+    for (const [a, b] of comp) { let best = null, bl = 2; for (const [p, r] of N(a, b)) { const c = R.get(im, p, r); if (c && R.oklab(c)[0] < bl) { bl = R.oklab(c)[0]; best = c; } } if (best) R.put(o, a, b, best); }
+  }
+  return o;
+}
+
+/** last pass on every frame: detached islands of fewer than 6 texels removed (parts moved by the walk or the swing can leave a few loose
+ *  texels: the fragments beside the blacksmith's fists in the first build), enclosed pinholes filled (fillPinholes), then the painted parts' colours snapped to the views'
+ *  palette (palette.png): every texel not in it takes the nearest palette colour (OKLab), so no new colour reaches the sheet */
+function snapToViews(out, V) {
+  for (const f of out) f.im = fillPinholes(despeckle(f.im, () => true, 6));
+  const pal = R.paletteOf(R.load(fileURLToPath(new URL('../provenance/' + id + '/palette.png', import.meta.url)))), keys = new Set(pal.map((c) => c.join(','))), lab = pal.map(R.oklab), memo = new Map();
+  const near = (c) => { const k = c.join(','); if (keys.has(k)) return c; if (memo.has(k)) return memo.get(k); const q = R.oklab(c); let bi = 0, bd = 1e9;
+    lab.forEach((p, i) => { const d = (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 + (p[2] - q[2]) ** 2; if (d < bd) { bd = d; bi = i; } }); memo.set(k, pal[bi]); return pal[bi]; };
+  for (const f of out) f.im = R.recolour(f.im, near);
+  return out;
 }
 
 // ---- gait (the dock worker's timing: 6 frames at 7.5 frames / s, one step = 3 frames); the body is lowest on the contact frames, 2 rows
@@ -148,5 +185,5 @@ export function frames(V) {
     [R.clone(v), R.clone(v), inhale, exhale].forEach((im, i) => out.push({ anim: 'idle', dir, i, im }));
     for (let i = 0; i < 6; i++) out.push({ anim: 'walk', dir, i, im: dir === 'side' ? sideFrame(v, i) : frontBack(v, FB[dir], i) });
   }
-  return out;
+  return snapToViews(out, V);
 }

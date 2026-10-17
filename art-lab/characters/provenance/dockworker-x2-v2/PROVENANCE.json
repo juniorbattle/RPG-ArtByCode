@@ -1,6 +1,6 @@
 {
  "id": "dockworker-x2-v2",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; the revised sheet itself not yet reviewed by the operator",
  "request": {
   "date": "2026-10-16",
   "by": "operator",
@@ -29,7 +29,7 @@
   }
  },
  "chain": [
-  "reconstruct-grid.mjs <sheet> <crop> 1.775 64 96 90 (the pitch of dockworker-x2-v1), full colours, per reconstructed facing",
+  "reconstruct-grid.mjs <sheet> <crop> 1.775 64 96 90 --closing-from=48 (since the 2026-10-17 revision: no vertical closing of short gaps above row 48, where it filled the background seen between hair and shoulders, beside the jaw / neck, with the reconstruction's darkest colour: near-black strokes; below, the closing still restores the dark leg and boot outlines) (the pitch of dockworker-x2-v1), full colours, per reconstructed facing",
   "quantize-palette.mjs --palette-from exports/dockworker-x2-v1.png: back and profile mapped onto the approved front's 64 colours",
   "rig prepare(): profile mirrored to face left (the runtime's native side), moved 2 texels left (boots centred on the anchor column), top row cleared and one cap row (row 5) removed (the profile reconstructs 2 rows taller than the front; the frame keeps a transparent ring) -> view-up.png, view-side.png",
   "rig frames() (rig-engine.mjs): idle 4 frames (rest, rest, inhale = upper body one row up, exhale = shoulders down with the head one frame late); walk 6 frames: front and back = upper body bobbing with the profile's body drop, each leg remapped between its hip band and its foot row (swing lift 2 / 5 / 2 rows, boot and cuff rigid), forearms and fists swinging 2 rows (and 1 texel inwards forward); profile = two legs PAINTED in the view's trouser / cuff / sock ramp (widths 17 / 14 / 12 texels with a cuff flaring to 14 above the boot, one-texel outline, the far leg one ramp step darker), posed by two-bone IK on an ankle cycle of 13 texels per step (0.28 m at scale 0.9 = 0.69 m/s at 7.5 frames/s, against 0.8-0.95 m/s for the wanderers: a slight slide, a longer stride read as a lunge), the view's own boot moved rigidly (RotSprite rotation on heel strike / toe-off; a lifted foot is raised until it clears the foot row), the near arm sheared up to 2 texels against the near leg",
@@ -49,16 +49,17 @@
  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/dockworker-x2-v2.rig.mjs --check (rebuild from the archived sheet, compared with the committed views and exports); node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/dockworker-x2-v2 [--rebuild]",
  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
  "files": {
-  "art-lab/characters/exports/dockworker-x2-v2.png": "57ce9c092c20ad5586bf7e7c1baec82eda7a0cb31170df0316d6d6d81657fbec",
+  "art-lab/characters/exports/dockworker-x2-v2.png": "afe693cd64649be4b8eaf687d2a3a23def4cbbdfc461fdc225b1f2326cbf1fcb",
   "art-lab/characters/exports/dockworker-x2-v2.json": "782518121666068f916fc78da2fb3791079397cad60a17aa92daa964c066e403",
-  "art-lab/characters/source/dockworker-x2-v2.aseprite": "8143c7fd84551e1f900b9cbb7cf69f46e3ee7c590d5b2105f2f80962f75b092d",
-  "art-lab/characters/provenance/dockworker-x2-v2/view-up.png": "6763d603818326fe6b7339e02a1c85573a2a00358cd0cba5f400ac35440d5f1f",
-  "art-lab/characters/provenance/dockworker-x2-v2/view-side.png": "f508a73572a6785c06c518c4066ddaac4bcaa327eb3027d99485bad4d54352f2",
-  "art-lab/characters/provenance/dockworker-x2-v2/build.json": "235c2cada8f2d6c9fc53f4f3e8e617c1a7ac618e21c626781a48a8bb8f1eb442",
-  "art-lab/characters/rigs/dockworker-x2-v2.rig.mjs": "239ae6b7de76220495d7631db07e8808f11a09a76bac7d06846391dd0be76464",
-  "tools/art-lab/build-character.mjs": "a0138f9c67460aa61c4180092efcb7beae68e1280961c220cd48951e91177e73",
+  "art-lab/characters/source/dockworker-x2-v2.aseprite": "5e8906b77a49f0fb8f1c60b7d83438c69c512656223f50296d8ba699f7452edd",
+  "art-lab/characters/provenance/dockworker-x2-v2/view-up.png": "aad8c647262df2ea70d49ddf194e1e14ace96d172fefd839cef8d03635a9141c",
+  "art-lab/characters/provenance/dockworker-x2-v2/view-side.png": "91fa931f103040db17ddc74d0674fc9fe46a42f69476af213c6b629b85e17f05",
+  "art-lab/characters/provenance/dockworker-x2-v2/build.json": "cd58c82fc542bc552cb06e2430599e0016b3159f69793fb921dd1179da71f33d",
+  "art-lab/characters/exports/dockworker-x2-v1.png": "9e1de3ba1ff1bacbde78b152275c9c34dcb33c04a612c5c7cfd1ae9cfbc48441",
+  "art-lab/characters/rigs/dockworker-x2-v2.rig.mjs": "d040ffe6eadfacaa3d22b4708555b24d7971bb9585c920a89aa260492b8ec006",
+  "tools/art-lab/build-character.mjs": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
-  "tools/art-lab/reconstruct-grid.mjs": "36652cb14bc8bdf78ff1f0932d854d7ad911e794a5bc9238e5d432eb609a781f",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
   "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
   "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
  },
@@ -77,6 +78,19 @@
    "file": "tools/art-lab/reconstruct-grid.mjs",
    "change": "one opt-in option added for the hooded passerby (--bg-threshold=<n>, the background flood-fill distance, default 26); without it the tool's output is unchanged: this pack's rebuild (verify-provenance --rebuild) is identical, before and after the change",
    "previousSha256": "46d277a2c10285ba48cd39fab1bca50791427632252459d9ec90750ddbc2d1cf"
+  }
+ ],
+ "revisions": [
+  {
+   "date": "2026-10-17",
+   "pass": "4A-unvicies",
+   "requestedBy": "operator (git user wonmii), in the working session",
+   "request": "« il y a encore quelques imperfections qu'il faudra corriger : presence de pixel noir sur le sprite, c'est leger mais tout de meme present. [...] il faudra faire une correction »",
+   "decision": "« Fais les deux corrections (pixels noirs et direction des sprites en marche) sur la même branche que la séance du forgeron, chacun ne commitant que ses fichiers. »",
+   "change": "black-pixel revision: reconstruct-grid --closing-from=48, the approved palette pinned (the approved front, as before); the near-black strokes beside the head and the neck of the back and profile views are gone; the front (the approved dockworker-x2-v1 export) is unchanged. Exported sheet against the approved one: 501 texels removed, 0 added, 0 recoloured, 0 new colours (64 colours, 64 before); same frames, tags, layout and metadata JSON. (A first attempt without any closing, --no-closing, lost the leg and boot outlines and was abandoned before the commit.)",
+   "previousExportSha256": "57ce9c092c20ad5586bf7e7c1baec82eda7a0cb31170df0316d6d6d81657fbec",
+   "exportSha256": "afe693cd64649be4b8eaf687d2a3a23def4cbbdfc461fdc225b1f2326cbf1fcb",
+   "approval": "the operator's approval (approvals) was given for the previous sheet (previousExportSha256); the revised sheet is the operator-requested correction, merged into main at the operator's request: « si la tache est fini on peut commit/push vers main » (2026-10-17), before the operator had reviewed the revised sheet's images (reviews/dockworker-x2-v2/)"
   }
  ]
 }

@@ -53,7 +53,7 @@
    "pixels": 24576,
    "checked": 24576,
    "skipped": 0,
-   "mismatches": 6980
+   "mismatches": 6964
   },
   {
    "scale": 2.37,
@@ -61,7 +61,7 @@
    "pixels": 34656,
    "checked": 31104,
    "skipped": 3552,
-   "mismatches": 10711
+   "mismatches": 10450
   }
  ],
  "bleed": {
