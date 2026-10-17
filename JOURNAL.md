@@ -2355,19 +2355,19 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Paquet : nouvelle révision (`revisions`, demande citée, empreinte précédente `fa8224c1…`, nouvelle `564f1505…`), `status`, chaîne ;
   manifeste (`notes`) ; README de revue. **En attente de l'approbation de l'opérateur** ; aucune planche déclarée Gold Master.
 
-`
-`### Passant encapuchonné (`hooded-x2-v1`) — [OK] corrigé ; [?] approbation de l'opérateur
-`- Cause mesurée : face, marche 0 / 2 / 3 / 5, la main (masque peau + 1) descendue de 2 rangées laisse sa place remplie de côté par le contour
-`  sombre de la main (une tache) ou transparente (trou de 2 × 2 dans la main gauche à l'écran, images 2-3 : 4 + 4 texels de fond enclavé ;
-`  \`fillPinholes\` ne ferme que ≤ 2 texels).
-`- Correctif (script seul, \`swingPart\`) : une main descendue remplit d'abord les rangées qu'elle découvre en haut de son masque avec le texel
-`  juste au-dessus, colonne par colonne (la manche continue).
-`- Planche : 0 retiré, 8 ajoutés, 72 recolorés, 0 couleur nouvelle, 4 images (marche de face) ; fond enclavé 8 → 0 ; \`--check\` identique,
-`  paquet intact. Critique à l'aveugle : révisée **8/10**, précédente **5/10** ; toutes les différences sont des défauts de la précédente
-`  (le trou, des avant-bras qui se lisent « sectionnés » dans 4 images sur 6), aucun défaut nouveau. Restent (hérités) : une bande sombre de
-`  l'ourlet arrière qui pend derrière le talon de profil, des éperons d'un texel sur le contour de l'ourlet.
-`- Images : \`reviews/hooded-x2-v1/05-rig-c3-before-after.png\`, \`06-rig-c3-walk-in-scene-cameraB.png\`. **En attente de l'approbation de
-`  l'opérateur.**
+
+### Passant encapuchonné (`hooded-x2-v1`) — [OK] corrigé ; [?] approbation de l'opérateur
+- Cause mesurée : face, marche 0 / 2 / 3 / 5, la main (masque peau + 1) descendue de 2 rangées laisse sa place remplie de côté par le contour
+  sombre de la main (une tache) ou transparente (trou de 2 × 2 dans la main gauche à l'écran, images 2-3 : 4 + 4 texels de fond enclavé ;
+  `fillPinholes` ne ferme que ≤ 2 texels).
+- Correctif (script seul, `swingPart`) : une main descendue remplit d'abord les rangées qu'elle découvre en haut de son masque avec le texel
+  juste au-dessus, colonne par colonne (la manche continue).
+- Planche : 0 retiré, 8 ajoutés, 72 recolorés, 0 couleur nouvelle, 4 images (marche de face) ; fond enclavé 8 → 0 ; `--check` identique,
+  paquet intact. Critique à l'aveugle : révisée **8/10**, précédente **5/10** ; toutes les différences sont des défauts de la précédente
+  (le trou, des avant-bras qui se lisent « sectionnés » dans 4 images sur 6), aucun défaut nouveau. Restent (hérités) : une bande sombre de
+  l'ourlet arrière qui pend derrière le talon de profil, des éperons d'un texel sur le contour de l'ourlet.
+- Images : `reviews/hooded-x2-v1/05-rig-c3-before-after.png`, `06-rig-c3-walk-in-scene-cameraB.png`. **En attente de l'approbation de
+  l'opérateur.**
 
 ---
 
