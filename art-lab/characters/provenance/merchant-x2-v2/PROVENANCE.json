@@ -1,6 +1,6 @@
 {
  "id": "merchant-x2-v2",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet awaits the operator's review",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »)",
  "request": {
   "date": "2026-10-16",
   "by": "operator",
@@ -17,6 +17,12 @@
    "by": "operator (git user wonmii)",
    "decision": "« Les cinq planches révisées me conviennent. »",
    "scope": "the revised sheet of the black-pixel revision (Pass 4A-unvicies, export SHA-256 01dcbb4c6b054a02b5d5c037ed3fb02b4aa36db68961093d0ea26878996e99a9), after its review images were shown one by one in the working session (reviews/merchant-x2-v2/05-revision-black-pixels.png); not declared a Gold Master"
+  },
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »",
+   "scope": "the sheet of the rig pass C3 (Pass 4A-duovicies, export SHA-256 abc819b92f0717603980d23664ce42a430834874b74a6c33d464a19f8bcdeff0), production use; not declared a Gold Master"
   }
  ],
  "why": "the operator asked for a result built on the shared reference images rather than waiting for a regenerated source (V4). The sheet's NPC 02 already has the common base's proportions (the same sheet and scale as the approved dock worker) and the three views a walking NPC needs; the merchant-x2-v1 experiment (ChatGPT V3 source, one front view, proportions rejected) stays archived as evidence.",
@@ -107,7 +113,7 @@
    "change": "rig pass C3 on an inherited defect found by the blind critique of Pass 4A-unvicies (present in the approved sheet): front / back walk 4-5 (and one texel in front walk 3): boot 0 stands one row higher in the view (sole on row 89) and is set down on row 90; on the high-body frames that left one empty row between the hem and the planted boot (the shoe floated under the hem) -> a one-row gap right above a boot takes the boot's top row (its dark shaft goes up under the hem). Exported sheet against the previous one: 0 texels removed, 30 added, 0 recoloured, 0 new colours, in 5 frames (walk-down 3, walk-down 4, walk-down 5, walk-up 4, walk-up 5); same frames, tags, layout and metadata JSON.",
    "previousExportSha256": "01dcbb4c6b054a02b5d5c037ed3fb02b4aa36db68961093d0ea26878996e99a9",
    "exportSha256": "abc819b92f0717603980d23664ce42a430834874b74a6c33d464a19f8bcdeff0",
-   "approval": "pending: the revised sheet awaits the operator's review (reviews/merchant-x2-v2/06-rig-c3-before-after.png, 07-rig-c3-walk-in-scene-cameraB.png); the production approval (approvals) covers the previous sheets"
+   "approval": "approved by the operator on 2026-10-17 in the working session, after the before / after images (reviews/merchant-x2-v2/06-rig-c3-before-after.png; in-scene: 07-rig-c3-walk-in-scene-cameraB.png) and the blind critiques were shown: « J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »"
   }
  ]
 }

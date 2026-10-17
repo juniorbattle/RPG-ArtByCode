@@ -2324,7 +2324,7 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   `--check`. Critique à l'aveugle par un agent neuf (étiquettes X / Y tirées au sort, clé gardée hors de sa portée, auto-critique écrite
   avant le verdict), marche capturée dans la scène, captures déterministes du démarrage contre une base figée (`dab59f9`, `:5184`).
 
-### Garde (`guard-x2-v1`) — [OK] corrigé ; [?] approbation de l'opérateur
+### Garde (`guard-x2-v1`) — [OK] corrigé et approuvé
 - Causes mesurées (toutes présentes dans la planche approuvée) :
   - face, marche 2-3, trou dans le tabard à côté du poing droit qui remonte (8 et 12 texels de fond enclavé) : le poing découvre des
     texels que le remplissage cherche à 3 texels vers l'extérieur, dans un masque de bras large de 7 → rien trouvé, transparent ;
@@ -2353,10 +2353,10 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   de galon. Restent (hérités, non traités) : le coin du galon d'ourlet au bout de la cape de profil se lit comme un talon détaché (x 46-50,
   rangées 81-84), la jambe arrière presque toujours cachée de profil, la fente 1 × 2, la poche de profil 3.
 - Paquet : nouvelle révision (`revisions`, demande citée, empreinte précédente `fa8224c1…`, nouvelle `564f1505…`), `status`, chaîne ;
-  manifeste (`notes`) ; README de revue. **En attente de l'approbation de l'opérateur** ; aucune planche déclarée Gold Master.
+  manifeste (`notes`) ; README de revue. **Approuvé par l'opérateur le 17/10** (voir « Décision opérateur ») ; aucune planche déclarée Gold Master.
 
 
-### Passant encapuchonné (`hooded-x2-v1`) — [OK] corrigé ; [?] approbation de l'opérateur
+### Passant encapuchonné (`hooded-x2-v1`) — [OK] corrigé et approuvé
 - Cause mesurée : face, marche 0 / 2 / 3 / 5, la main (masque peau + 1) descendue de 2 rangées laisse sa place remplie de côté par le contour
   sombre de la main (une tache) ou transparente (trou de 2 × 2 dans la main gauche à l'écran, images 2-3 : 4 + 4 texels de fond enclavé ;
   `fillPinholes` ne ferme que ≤ 2 texels).
@@ -2366,11 +2366,10 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   paquet intact. Critique à l'aveugle : révisée **8/10**, précédente **5/10** ; toutes les différences sont des défauts de la précédente
   (le trou, des avant-bras qui se lisent « sectionnés » dans 4 images sur 6), aucun défaut nouveau. Restent (hérités) : une bande sombre de
   l'ourlet arrière qui pend derrière le talon de profil, des éperons d'un texel sur le contour de l'ourlet.
-- Images : `reviews/hooded-x2-v1/05-rig-c3-before-after.png`, `06-rig-c3-walk-in-scene-cameraB.png`. **En attente de l'approbation de
-  l'opérateur.**
+- Images : `reviews/hooded-x2-v1/05-rig-c3-before-after.png`, `06-rig-c3-walk-in-scene-cameraB.png`. **Approuvé par l'opérateur le 17/10** (voir « Décision opérateur »).
 
 
-### Forgeron (`blacksmith-x2-v1`) — [OK] corrigé ; [?] approbation de l'opérateur
+### Forgeron (`blacksmith-x2-v1`) — [OK] corrigé et approuvé
 - Causes mesurées (dos, marche 0-5) : la colonne de contour extérieure de chaque bras est à 2 texels de la peau, hors du masque
   (`skinSpans` = peau + 1) : elle reste en place quand le poing remonte (« contour de bras détaché », jusqu'à un contour doublé avec un texel
   de vide à l'image 3) ; la rangée basse du poing (66 = `hipY`) appartient au calque des jambes et reste sur la jambe (les « petites
@@ -2383,11 +2382,10 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   Critique à l'aveugle : révisée **7,5/10**, précédente **5,5/10** ; toutes les différences sont des corrections (contour doublé, fil et
   dessous de poing flottant), aucun défaut nouveau. Restent (hérités) : l'épaule gauche crénelée de la marche de face (une coche et des
   encoches), des trous de contour du poing gauche qui alternent, une coche à côté du poing droit.
-- Images : `reviews/blacksmith-x2-v1/06-rig-c3-before-after.png`, `07-rig-c3-walk-in-scene-cameraB.png`. **En attente de l'approbation de
-  l'opérateur.**
+- Images : `reviews/blacksmith-x2-v1/06-rig-c3-before-after.png`, `07-rig-c3-walk-in-scene-cameraB.png`. **Approuvé par l'opérateur le 17/10** (voir « Décision opérateur »).
 
 
-### Marchande (`merchant-x2-v2`) — [OK] corrigé ; [?] approbation de l'opérateur
+### Marchande (`merchant-x2-v2`) — [OK] corrigé et approuvé
 - Cause mesurée : la botte 0 repose sur la rangée 89 dans la vue (la vue de repos la garde là) et la marche la pose sur la rangée 90 ; aux
   images où le corps est haut (bob 0 : face et dos 4-5, botte plantée), une rangée vide sépare l'ourlet (rangée 85) de la botte (rangée 87) :
   la chaussure flotte sous l'ourlet. Même cause, un texel de fond enclavé à l'image 3 de face.
@@ -2399,11 +2397,10 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Défauts hérités relevés par cette critique, **hors de la liste de l'opérateur, non traités** : de profil, les deux chaussures se fondent
   en une semelle large (images 2 et 5) traversée d'une barre noire (image 4) ; de face et de dos, le corps saute de 2 texels de côté
   (report de poids `SHIFT` = 0, 2, 1, 0, −2, −1) ; une encoche de l'ourlet qui clignote.
-- Images : `reviews/merchant-x2-v2/06-rig-c3-before-after.png`, `07-rig-c3-walk-in-scene-cameraB.png`. **En attente de l'approbation de
-  l'opérateur.**
+- Images : `reviews/merchant-x2-v2/06-rig-c3-before-after.png`, `07-rig-c3-walk-in-scene-cameraB.png`. **Approuvé par l'opérateur le 17/10** (voir « Décision opérateur »).
 
 
-### Docker (`dockworker-x2-v2`) — [OK] corrigé ; [?] approbation de l'opérateur
+### Docker (`dockworker-x2-v2`) — [OK] corrigé et approuvé
 - Cause mesurée : face 0 / 2 / 3 / 5 et dos 0 / 2 / 3 / 5, l'avant-bras descendu de 2 rangées par `R.movePart` laisse en haut de son masque
   2 rangées que `movePart` remplit de côté (couleur sombre du gilet : une bande qui coupe la manche) ou laisse transparentes (encoches au
   bord ; trou de 5 × 2 = 10 texels de fond enclavé au dos, image 5).
@@ -2421,8 +2418,7 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   texel de jambe juste dessous. Tour 3 (agent neuf) : révisée **8/10**, précédente **5/10**, toutes les différences sont des corrections ; effets secondaires notés : le bras étiré s'allonge un peu en mouvement (répétition d'une rangée), un décroché d'un texel au coude (dos 0) ; restent (hérités) : le dessus de la casquette, barre sombre épaisse aux coins cassés, des ruptures d'un texel au poignet, à l'ourlet du pantalon et à la hanche de profil.
 - Planche finale contre la précédente : 35 retirés, 117 ajoutés, 158 recolorés, 0 couleur nouvelle, 9 images (face 0 / 2 / 3 / 5, dos 0 / 2 / 3 / 4 / 5) ; fond enclavé 10 → 0 ; `--check` identique, paquet intact ; démarrage par défaut
   0 px dans les six vues, témoin 0 px.
-- Images : `reviews/dockworker-x2-v2/08-rig-c3-before-after.png`, `09-rig-c3-walk-in-scene-cameraB.png`. **En attente de l'approbation de
-  l'opérateur.**
+- Images : `reviews/dockworker-x2-v2/08-rig-c3-before-after.png`, `09-rig-c3-walk-in-scene-cameraB.png`. **Approuvé par l'opérateur le 17/10** (voir « Décision opérateur »).
 
 ### Synthèse et preuves communes
 - Cinq planches révisées dans leur script de rig, aucune couleur nouvelle (palettes approuvées épinglées), mêmes images, étiquettes et JSON ;
@@ -2433,6 +2429,13 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Marches provoquées dans la scène (caméra B, personnage envoyé sur le quai dégagé, autres acteurs masqués, pas fixes) : avant / après pour
   chacun (`reviews/<id>/…-rig-c3-walk-in-scene-cameraB.png`, vues qui changent seulement).
 - Défauts hérités relevés par les critiques, **hors de la liste de l'opérateur, non traités** → « À reprendre » -1d.
+
+### Décision opérateur (2026-10-17) — [OK] approuvée
+- Les cinq avant / après (`reviews/<id>/…-rig-c3-before-after.png`) et les verdicts des critiques montrés en séance. Mot pour mot :
+  « J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »
+- Consigné dans les cinq paquets (`approvals`, `revisions[]` de la passe, `status`), manifestes (`notes`) et README de revue ; aucune
+  planche déclarée Gold Master. Branche `cast-rig-fixes` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée
+  (locale et distante). La prochaine tâche ouvre sa propre branche.
 
 ### Pensée
 - Une pièce qui bouge emporte tout ce qui la dessine : son contour (une colonne à deux texels de la peau, la rangée basse d'un poing), même
@@ -2496,8 +2499,8 @@ mouvement : la bande 40° / 50° et les diagonales du joueur, désormais de prof
 critique à l'aveugle (manches du docker coupées par le balancement des bras, trous du tabard du garde, main du passant, jambe arrière du garde
 de profil, contour de bras du forgeron de dos, chaussure de la marchande) : passe de rig **faite** (Passe 4A-duovicies, branche
 `cast-rig-fixes`) : les cinq planches corrigées dans leur script de rig (critiques à l'aveugle, révisée contre précédente : garde 7 / 4,5,
-passant 8 / 5, forgeron 7,5 / 5,5, marchande 7 / 6, docker 8 / 5 au troisième tour), **en attente de l'approbation de l'opérateur** ;
-fusion dans `main` à son acceptation. Défauts hérités relevés par ces critiques, hors de la liste, **non traités** : (d) marchande : de
+passant 8 / 5, forgeron 7,5 / 5,5, marchande 7 / 6, docker 8 / 5 au troisième tour), **approuvées par l'opérateur le 17/10**
+(« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. ») ; branche fusionnée en avance rapide dans `main` puis supprimée (locale et distante). Défauts hérités relevés par ces critiques, hors de la liste, **non traités** : (d) marchande : de
 profil les deux chaussures se fondent en une semelle (images 2, 5 ; barre noire en 4), de face / dos le corps saute de 2 texels de côté
 (`SHIFT`) ; (e) garde : le coin du galon d'ourlet au bout de la cape de profil se lit comme un talon détaché, la jambe arrière presque
 toujours cachée de profil ; (f) passant : une bande sombre de l'ourlet arrière pend derrière le talon de profil ; (g) forgeron : épaule

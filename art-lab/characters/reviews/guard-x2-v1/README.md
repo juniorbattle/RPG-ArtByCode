@@ -43,4 +43,4 @@ the cape) -> left out of the cape mask. Against the sheet before: 43 texels remo
 (A, B, C, D, sabotaged C / D, 1920 x 1080, deterministic): 0 px against `dab59f9`, repeat witness 0 px. Blind critique (random labels,
 key withheld): revised 7/10, previous 4.5/10, every difference a defect of the previous sheet, nothing new; left as they were (inherited):
 the hem trim's corner at the profile cape's tip reads as a loose heel (x 46-50, rows 81-84), the far leg mostly hidden in profile, a
-1 x 2 slit between tabard and cape (front walk 2), a 2-texel pocket (profile 3). **This revised sheet awaits the operator's review.**
+1 x 2 slit between tabard and cape (front walk 2), a 2-texel pocket (profile 3). **Approved by the operator on 2026-10-17**: « J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. » Not declared a Gold Master.

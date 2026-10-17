@@ -1,6 +1,6 @@
 {
  "id": "blacksmith-x2-v1",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet awaits the operator's review",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »)",
  "request": {
   "date": "2026-10-17",
   "by": "task brief from the parent working session (Claude Code), on the operator's project",
@@ -17,6 +17,12 @@
    "by": "operator (git user wonmii)",
    "decision": "« Les cinq planches révisées me conviennent. »",
    "scope": "the revised sheet of the black-pixel revision (Pass 4A-unvicies, export SHA-256 8972e8f920460867ed15fd817afa43c61efb475aaf3f0954c09d287c957fe524), after its review images were shown one by one in the working session (reviews/blacksmith-x2-v1/05-revision-black-pixels.png); not declared a Gold Master"
+  },
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »",
+   "scope": "the sheet of the rig pass C3 (Pass 4A-duovicies, export SHA-256 e830a19fd2cc03f9b7d4bde4697967de30e90c0d602a7e66da87ba503d340419), production use; not declared a Gold Master"
   }
  ],
  "source": {
@@ -91,7 +97,7 @@
    "change": "rig pass C3 on an inherited defect found by the blind critique of Pass 4A-unvicies (present in the approved sheet): back walk 0-5: the outer outline column of each arm runs two texels from the skin, outside the arm mask (skin span + 1), and stayed put while the fist rose (a detached arm outline hanging below it); the fist's bottom row (66 = hipY) belonged to the leg layer and stayed on the leg (the small tabs under the fist) -> the back arm masks take one more texel on the outer side, the arm texels at or below hipY move with the arm, and the leg layer gets the leg texel under them in its column there (else nothing). Exported sheet against the previous one: 33 texels removed, 44 added, 45 recoloured, 0 new colours, in 6 frames (walk-up 0, walk-up 1, walk-up 2, walk-up 3, walk-up 4, walk-up 5); same frames, tags, layout and metadata JSON.",
    "previousExportSha256": "8972e8f920460867ed15fd817afa43c61efb475aaf3f0954c09d287c957fe524",
    "exportSha256": "e830a19fd2cc03f9b7d4bde4697967de30e90c0d602a7e66da87ba503d340419",
-   "approval": "pending: the revised sheet awaits the operator's review (reviews/blacksmith-x2-v1/06-rig-c3-before-after.png, 07-rig-c3-walk-in-scene-cameraB.png); the production approval (approvals) covers the previous sheets"
+   "approval": "approved by the operator on 2026-10-17 in the working session, after the before / after images (reviews/blacksmith-x2-v1/06-rig-c3-before-after.png; in-scene: 07-rig-c3-walk-in-scene-cameraB.png) and the blind critiques were shown: « J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »"
   }
  ]
 }

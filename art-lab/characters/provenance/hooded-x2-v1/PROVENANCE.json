@@ -1,6 +1,6 @@
 {
  "id": "hooded-x2-v1",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet awaits the operator's review",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »)",
  "request": {
   "date": "2026-10-17",
   "by": "task brief from the parent working session (Claude Code), on the operator's project",
@@ -17,6 +17,12 @@
    "by": "operator (git user wonmii)",
    "decision": "« Les cinq planches révisées me conviennent. »",
    "scope": "the revised sheet of the black-pixel revision (Pass 4A-unvicies, export SHA-256 d8ca7bb9119873faf0a6a95f13bd70619250ee9948f57f2eeb2743314da02e17), after its review images were shown one by one in the working session (reviews/hooded-x2-v1/04-revision-black-pixels.png); not declared a Gold Master"
+  },
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »",
+   "scope": "the sheet of the rig pass C3 (Pass 4A-duovicies, export SHA-256 1b2957453c53999944b7c3a4281b9a417202e8a487b9ff069c05285eb2b53741), production use; not declared a Gold Master"
   }
  ],
  "source": {
@@ -91,7 +97,7 @@
    "change": "rig pass C3 on an inherited defect found by the blind critique of Pass 4A-unvicies (present in the approved sheet): front walk 0, 2, 3, 5: a hand moved down (2 rows) left its place filled sideways with the hand's dark outline (a smear) or transparent (a 2 x 2 hole through the hand in walk 2-3) -> the rows a lowered hand uncovers at the top of its mask take, column by column, the texel just above (the sleeve continues down). Exported sheet against the previous one: 0 texels removed, 8 added, 72 recoloured, 0 new colours, in 4 frames (walk-down 0, walk-down 2, walk-down 3, walk-down 5); same frames, tags, layout and metadata JSON.",
    "previousExportSha256": "d8ca7bb9119873faf0a6a95f13bd70619250ee9948f57f2eeb2743314da02e17",
    "exportSha256": "1b2957453c53999944b7c3a4281b9a417202e8a487b9ff069c05285eb2b53741",
-   "approval": "pending: the revised sheet awaits the operator's review (reviews/hooded-x2-v1/05-rig-c3-before-after.png, 06-rig-c3-walk-in-scene-cameraB.png); the production approval (approvals) covers the previous sheets"
+   "approval": "approved by the operator on 2026-10-17 in the working session, after the before / after images (reviews/hooded-x2-v1/05-rig-c3-before-after.png; in-scene: 06-rig-c3-walk-in-scene-cameraB.png) and the blind critiques were shown: « J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »"
   }
  ]
 }
