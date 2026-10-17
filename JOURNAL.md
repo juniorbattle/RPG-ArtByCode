@@ -2617,6 +2617,115 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Une jonction se cherche partout où des bases figées ont été montées (scratchpads des séances passées), pas seulement là où l'on se
   souvient d'en avoir créé ; elle se défait comme un lien (nature et cible vérifiées), jamais par une suppression récursive.
 
+## Passe 4A-quatervicies — Distribution : défauts hérités -1d (d)-(h) des cinq planches approuvées (2026-10-17)
+
+### Demande (2026-10-17)
+- Mot pour mot : « Oui, lance les défauts hérités -1d (d)-(h) sur leur propre branche. » (troisième étape de la demande de la passe
+  4A-tervicies : « … puis enfin passer au menage M1 et defaults herites, il faudra aussi faire un travail sur les performances GP … ») ; une
+  seule branche pour les cinq (les mots de l'opérateur ; « branche par branche » était ma formulation de -1e). Branche
+  `cast-inherited-defects` ouverte depuis `main` (`f9ad117`) et poussée. Reprise après une pause : « Oui on peut coontinuer notre tache que
+  nous faisions ».
+- En cours de passe, mot pour mot : « Tu peux deleguer sur une autre session la tache de performance et optimisation du jeu via GPU et etc...
+  en te basant sur le travail fait sur le projet RPGCards qui semble etre bien reussi ». Conflit avec la règle « une branche à la fois »
+  signalé ; arbitrage de l'opérateur : « Analyse seule d'abord (Recommandé) ». Séance « Performances GPU : analyse et plan » lancée : lecture
+  seule de RPGCards, mesures `tools/perf.mjs`, plan chiffré dans le dossier de notes partagé des séances (hors dépôt) ; ni branche ni commit
+  avant la fusion de cette branche et l'accord de l'opérateur sur le plan.
+
+### Méthode
+- Celle de la passe C3 : chaque défaut mesuré dans la planche (vidages texte, zooms, comptes : texels clairs posés sur le fond, éperons,
+  fond enclavé, clarté OKLab), rattaché à la ligne du rig qui le produit, corrigé dans le script seulement. Nouveau banc d'essai hors du
+  dépôt : `frames()` d'une copie modifiée du rig rejoué sur les vues committées, variantes côte à côte et comptées, puis construction réelle
+  et `--check`. Palettes approuvées épinglées : 0 couleur nouvelle partout. Critiques à l'aveugle par des agents neufs (X / Y tirés au sort,
+  clé hors de leur portée, auto-critique écrite avant) ; chaque reprise re-critiquée.
+
+### (d) Marchande (`merchant-x2-v2`)
+- Report de poids de face / dos : `SHIFT` 0, 2, 1, 0, −2, −1 → 0, 1, 1, 0, −1, −1 (celui des robes de la foule) [OK].
+- Profil, chaussures fondues : chaque chaussure fait 10 colonnes (bout clair, talon sombre ; vérifié sur la planche) et l'écart du cycle
+  aux images 2 / 5 (6,8 colonnes) les fait chevaucher de ~3 colonnes ; la copie lointaine, 0,1 plus sombre au même niveau, s'y fondait.
+  - Tour 1 : copie 0,16 plus sombre → critique révisée 7 / précédente 6 (le saut de côté corrigé, les chaussures séparées par la valeur) ;
+    **perte** : talon lointain noir de contour, « bloc noir » à l'image 3 (19 texels sous L 0,15) [KO partiel].
+  - Tour 2 : assombrissement avec plancher (`flooredDarkener` : −0,16 sans descendre sous min(L propre, 0,2) ; 4 texels sous L 0,15) →
+    7,3 / 7,0 ; restent une semelle continue (images 2 / 5) et une bande sombre (image 3).
+  - Tour 3 : botte lointaine une rangée plus haut (plus loin de la caméra, comme la planche la dessine au repos ; son haut passe sous
+    l'ourlet) → 7,5 / 7 (profondeur cohérente, plus de semelle continue à l'image 5 ni de tiret à l'image 1) ; **perte** : à l'image 3, sa
+    rangée haute dépassait devant la jupe (4 texels sombres) ; notés aussi : pied lointain soulevé de 2 à l'image 0 (pied qui décolle),
+    bout lointain collé à la semelle proche à l'image 4, botte lointaine presque noire à l'image 5.
+  - Tour 4 : rien de la botte lointaine au-dessus de la rangée basse de l'ourlet (4 texels retirés) → 7,5 / 7,0 ; coût noté : un creux de
+    2 texels au bord avant de l'ourlet à l'image 3, presque invisible sur le sol de nuit.
+- Contre la planche approuvée : 380 texels retirés, 329 ajoutés, 6 124 recolorés (surtout le corps décalé d'un texel aux images 1 et 4
+  de face et de dos), 10 images, 0 couleur nouvelle.
+
+### (e) Garde (`guard-x2-v1`)
+- Le « talon détaché » est le coin beige de la cape (x 45-47, rangées 81-82, et son renflement x 47-49, rangée 80, du profil), seul à
+  hauteur des tibias, dans les couleurs des bottes : effacé dans `prepare` (repos de profil compris) [OK]. Essai **[KO]** : le recolorer
+  dans le bleu de la cape laissait une tache sombre et un point isolé.
+- Jambe arrière : 8 à 43 texels visibles selon l'image (botte 19 à 49), cachée surtout aux images 1, 2, 4 ; sa gamme peinte était deux crans
+  et demi plus sombre que la proche, près du bleu de la cape → un cran [OK, en partie : elle reste réduite à un pied aux images 1 / 4].
+- Critique : révisée 7,5 / précédente 6 ; coûts notés : bout de cape sans contour (invisible à l'échelle du jeu), un peu moins de
+  profondeur entre les jambes aux images 2 / 3. Planche : 89 retirés, 98 recolorés, 10 images.
+
+### (f) Passant (`hooded-x2-v1`)
+- La bande sombre derrière le talon = une mèche du bas de la cape (x 43-47, rangées 82-87 du profil), cisaillée avec elle : effacée dans
+  `prepare` [OK] (la variante x 44-47 / 83-87 laissait une pointe sombre à l'image 2). Critique : 7,5 / 5,5 ; seul coût : le talon arrière
+  de l'image 3, que la mèche couvrait, plat et sans contour. Planche : 171 retirés, 9 recolorés, 10 images.
+
+### (g) Forgeron (`blacksmith-x2-v1`)
+- Causes (marche de face) : la colonne de contour extérieure de chaque bras est à 2 texels de la peau, hors du masque (peau + 1) : elle
+  restait en place quand le bras s'étire, se resserre ou se décale (épaule et bras crénelés) — la cause corrigée de dos en C3 ; le contour
+  bas du poing (rangée 63) est sous une peau ombrée (L 0,55-0,58, sous le seuil 0,6 du test de peau) et restait en place quand le poing
+  remonte (le contour du poing qui va et vient). Baisser le seuil aurait pris le tablier (même teinte) : écarté.
+- Correctifs : `outer: 1` et `down: 1` sur les bras de face (la rangée sous la dernière rangée de peau hérite de son masque). Texels clairs
+  posés sur le fond, bras gauche, images 0-5 : 11 / 1 / 8 / 8 / 1 / 10 → 5 / 1 / 3 / 2 / 1 / 4 (repos : 1, venu de la vue).
+- Critique 1 : 7 / 6, **perte** : un cran d'un texel au coude, (12, 50) de l'image 3 (le décalage vers l'intérieur emporte la colonne de
+  contour) → `closeNotches` (dans les boîtes des bras, un texel transparent entre deux texels de contour sombres au-dessus et au-dessous
+  prend le plus sombre : 1 seul texel changé). Critique 2 : 7,5 / 7,3 (ce texel). Planche : 6 retirés, 42 ajoutés, 11 recolorés, 4 images.
+- Restent (hérités) : la ligne d'épaule gauche pointillée de la vue de face elle-même (repos compris), une entaille sous le poing gauche
+  (x 17), le bord du tablier sans contour sous le poing droit (images 2-3), un cran (49, 67) à l'image 5.
+
+### (h) Docker (`dockworker-x2-v2`)
+- Dessus de casquette : de face une barre de 2 rangées, coins percés dans les trois vues → `capOutline` dans `prepare` : rangée 2 de la
+  barre retirée (face), marches de contour manquantes dessinées dans la couleur du contour, trous du bord comblés par la couleur voisine
+  (coordonnées consignées ; la vue de face est l'export v1 approuvé, modifié ici et non dans l'export) [OK].
+- Bras qui s'allonge : l'avant-bras qui passe devant descendait de 2 rangées (la manche étirée d'autant) → 1 rangée [OK].
+- Critique : 7,5 / 6, aucun trou, cassure ni saut ajouté ; coûts : balancement plus petit et asymétrique (+1 / −2, lisible), couronne de
+  face une rangée plus basse. Planche : 169 retirés, 147 ajoutés, 775 recolorés, les 30 images (la casquette est partout).
+
+### Preuves communes
+- Les cinq : `--check` identique, `verify-provenance` intact, autotest de texture exact (CPU 0, GPU 0 aux échelles 1 / 2 / 3 / 2,37,
+  contrôles négatifs en échec, débordement 0), mêmes images, étiquettes et JSON, 0 couleur nouvelle ; `art:validate` 0 erreur (14 manifestes) ;
+  `typecheck` 0, `npm run build` vert (JS 910,55 Ko).
+- Démarrage par défaut (A, B, C, D, C et D forge sabotée, 1920 × 1080, `clean=1&freeze=7.3`) contre `main` (`f9ad117`) servi à part :
+  **diffère**, comme attendu : A 280 px, B 1 390, C 1 146, D 2 176, C sabotée 732, D sabotée 336 ; témoin de répétition 0 px. Attribution
+  (outil de preuve avec masquage) : dockers masqués → A 84, B 133, C 331, D 74, C et D sabotées inchangées ; passant masqué → C sabotée 0
+  (D monte à 3 681 : il cachait un docker) ; dockers et passant masqués → 0 px en A, B, C et C sabotée, 74 px en D et 137 px en D sabotée : les deux gardes de la barrière, de
+  profil au repos en D (leur coin de cape) ; dockers, passant et gardes masqués → 0 px en D et D sabotée. Les écarts sont donc la casquette des deux dockers (toutes leurs
+  images changent, repos compris) et le repos de profil du passant ; les autres changements sont des images de marche que le démarrage ne
+  montre pas à ce pas.
+- Marches en scène (caméra B, personnage neuf envoyé à gauche, à droite, en s'éloignant et en revenant, autres acteurs masqués, pas de
+  1/60 s), avant (`main`) / après, vues qui changent : `reviews/<id>/…-inherited-defects-walk-in-scene-cameraB.png` ; planches avant /
+  après : `…-inherited-defects-before-after.png`.
+- Paquets : nouvelle révision (`revisions`, demande citée, empreintes avant / après, comptes, approbation en attente), `status`, `chain` ;
+  manifestes (`notes`) ; README de revue ; `selftest.json` rafraîchis. **En attente de l'approbation de l'opérateur** ; aucune planche
+  déclarée Gold Master.
+
+### Restent (non traités)
+- Marchande : les limites relevées au tour 3-4 (voir plus haut) ; corps sans bras ni balancement de jupe en marche. Garde : cape rigide,
+  jambe arrière réduite à un pied aux images de passage. Passant : talon arrière plat à l'image 3, cassure de contour au dos de la cape.
+  Forgeron : ligne d'épaule pointillée de la vue, entaille sous le poing gauche, bord de tablier sans contour. Docker : manche resserrée de
+  2 rangées au recul, sangle sans contour (images 2-3), bras de profil presque immobile, bottes de profil fondues.
+
+### Pensée
+- Un assombrissement par soustraction écrase les tons déjà sombres au noir du contour : un plancher (ne pas descendre sous sa propre
+  clarté ni sous un seuil) garde l'écart sur le cœur sans créer de blocs noirs.
+- Deux pièces de même forme se séparent mieux par un indice de profondeur (la plus lointaine plus haut à l'écran, la caméra plongeant)
+  que par la valeur seule ; tout déplacement d'une pièce se borne ensuite à ce qui la cache (l'ourlet) pour ne pas dépasser de la
+  silhouette.
+- Une règle de réparation (fermer un cran d'un texel) se borne à une zone et se compte avant / après : ici un seul texel changé.
+- Pendant des captures du serveur de travail, ne rien reconstruire : une planche réécrite recharge la page (Vite) et casse la capture en
+  cours. Avec la distribution cuite, un acteur se masque par l'id de sa planche (`dockworker-x2-v2`), pas par son archétype (`porter`) :
+  un masquage sans effet se vérifie (base masquée contre base non masquée).
+- Chaque agent critique écrit dans son propre dossier : quatre agents dans un même dossier ont écrasé les fichiers les uns des autres.
+
 ---
 
 ## À reprendre (par priorité)
@@ -2671,6 +2780,9 @@ profil les deux chaussures se fondent en une semelle (images 2, 5 ; barre noire 
 toujours cachée de profil ; (f) passant : une bande sombre de l'ourlet arrière pend derrière le talon de profil ; (g) forgeron : épaule
 gauche crénelée de face, contours du poing gauche qui alternent ; (h) docker : dessus de casquette en barre sombre aux coins cassés (toutes
 les images), bras étiré qui s'allonge un peu en marche de face. Branche `cast-polish-facing` supprimée (locale et distante) à la demande de l'opérateur.
+**(d)-(h) traités en Passe 4A-quatervicies** (branche `cast-inherited-defects`, une seule pour les cinq) : critiques à l'aveugle révisée /
+précédente 7,5 / 6 (garde), 7,5 / 5,5 (passant), 7,5 / 7,3 (forgeron, après reprise), 7,5 / 6 (docker), 7 / 6 (marchande) puis trois reprises chacune préférée (7,3 / 7,0 ; 7,5 / 7 ; 7,5 / 7,0) ; **en attente de
+l'approbation de l'opérateur** ; restes listés dans la passe.
 **-1e. Fait (Passe 4A-tervicies)** : cinq citadins cuits (`artisan-x2-v1`, `traveler-x2-v1`, `townswoman-x2-v1`, `older-merchant-x2-v1`,
 `courier-x2-v1`) à la place de `crowd0`..`crowd4` ; critiques à l'aveugle finales 6-6,5/10 (3-3,5 pour la foule générée qu'ils remplacent) ;
 **approuvés pour la production le 17/10** (« J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. ») ; branche `cast-crowd` fusionnée en avance rapide
@@ -2678,8 +2790,9 @@ dans `main` puis supprimée. Seuls le héros et le chat restent générés. Déc
 (fidèles aux planches), seuls 2 des 5 citadins visibles à la graine 1842 et à la densité 1, cycle sans double appui. Ensuite, dans l'ordre
 demandé : ménage M1 **fait** (Passe M1, acceptée par l'opérateur le 17/10 et fusionnée dans `main` : worktrees `HD-2D-visbase` et `kind-wilson`
 retirés, branche `claude/kind-wilson-a0fa95` supprimée, sept jonctions défaites, entrées mortes de `.claude/launch.json` retirées, vieux
-serveurs Vite `:5174` / `:5180` arrêtés), défauts hérités -1d (d)-(h) branche par branche, performances GPU (`tools/perf.mjs`, base figée),
-puis variantes de PNJ (-1f).
+serveurs Vite `:5174` / `:5180` arrêtés), défauts hérités -1d (d)-(h) **traités** (Passe 4A-quatervicies, en attente de l'approbation), performances GPU
+(`tools/perf.mjs`, base figée : **analyse déléguée** à la séance « Performances GPU : analyse et plan », plan chiffré dans le dossier de notes
+partagé des séances ; ni branche ni commit avant la fusion de `cast-inherited-defects` et l'accord de l'opérateur), puis variantes de PNJ (-1f).
 **-1f. Variantes de PNJ (demande de l'opérateur du 17/10, après -1d et les performances GPU)** : mot pour mot
 « Par ailleurs a la suite de nos travaux de sprites NPC qui sont presque peuple partout sur le district Merchant, on creera par la
 suite des variantes de NPC avec couleur de cheveux et peau different pour amener plus de diversite au jeu ».
@@ -2845,3 +2958,8 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
 - Avant de retirer un worktree ou une base figée : défaire ses jonctions d'abord (lien seul, nature et cible vérifiées), chercher les
   processus qui y tournent (serveurs, boucles d'attente de séances passées) et les liens laissés ailleurs (`-Attributes ReparsePoint`),
   compter le `node_modules` du dépôt avant / après.
+- La copie assombrie d'une pièce lointaine (botte, jambe) garde un plancher de clarté (jamais sous sa propre clarté ni sous un seuil) :
+  une soustraction constante écrase les tons sombres au noir du contour. Deux pièces de même forme se séparent d'abord par la profondeur
+  (la lointaine plus haut à l'écran) puis par la valeur, et une pièce déplacée se borne à ce qui la cache.
+- Pendant les captures d'un serveur de développement, ne rien reconstruire de ce qu'il sert (la page se recharge) ; un masquage d'acteur
+  se vérifie (base masquée contre base non masquée) : avec la distribution cuite, un acteur porte l'id de sa planche.

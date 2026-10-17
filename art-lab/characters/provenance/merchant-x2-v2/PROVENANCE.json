@@ -1,6 +1,6 @@
 {
  "id": "merchant-x2-v2",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »)",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »); revised again on 2026-10-17 at the operator's request (inherited defects -1d, Pass 4A-quatervicies, branch cast-inherited-defects): that sheet awaits the operator's review",
  "request": {
   "date": "2026-10-16",
   "by": "operator",
@@ -45,7 +45,7 @@
   "reconstruct-grid.mjs <sheet> <crop> 1.775 64 96 90 --closing-from=48 (since the 2026-10-17 revision: no vertical closing of short gaps above row 48, where it filled the background seen between hair and shoulders, beside the jaw / neck, with the reconstruction's darkest colour: near-black strokes; below, the closing still restores the dark leg and boot outlines) (the dock worker's pitch: same sheet, same scale), full colours, per facing",
   "quantize-palette.mjs --palette-from provenance/merchant-x2-v2/palette.png: the three views mapped onto the approved sheet's 64 colours (since the 2026-10-17 revision; palette.png = the colours of the approved export, which came from ONE OKLab k-means over the three views, faces weighted x4: a new k-means would have moved every colour)",
   "rig prepare(): sheet-shadow remnants below the hem removed (front x 14-18 rows 86-87, back x 32 rows 86-89); profile mirrored to face left, its stray shadow column (x 19, rows 87-90) removed, moved 2 texels right and 1 down (soles on row 90) -> view-down.png, view-up.png, view-side.png",
-  "rig frames() (rig-engine.mjs): idle 4 frames (rest, rest, inhale, exhale with the head one frame late); walk 6 frames: the dress bobs (1 row at each contact), shifts its weight 2 texels over the planted boot (front / back) with the hem lagging 1-2 texels and lifted one row on the swing side, sheared forward with the near leg in the profile; the boots are rigid parts BEHIND the dress, planted on row 90 or lifted 1 / 3 / 1 rows (front / back), placed on the dock worker's ankle cycle in the profile (the far boot one ramp darker); talk 6 frames at 4 frames/s: mouth closed / open (#4c2927 dash) three times, the head nodding one row once per cycle; last pass on every frame (since the 2026-10-17 revision): every texel not in palette.png snapped to the nearest one (OKLab): no colour outside the approved palette (since Pass 4A-duovicies: a one-row gap between the hem and a boot takes the boot's top row)",
+  "rig frames() (rig-engine.mjs): idle 4 frames (rest, rest, inhale, exhale with the head one frame late); walk 6 frames: the dress bobs (1 row at each contact), shifts its weight 2 texels over the planted boot (front / back) with the hem lagging 1-2 texels and lifted one row on the swing side, sheared forward with the near leg in the profile; the boots are rigid parts BEHIND the dress, planted on row 90 or lifted 1 / 3 / 1 rows (front / back), placed on the dock worker's ankle cycle in the profile (the far boot one ramp darker); talk 6 frames at 4 frames/s: mouth closed / open (#4c2927 dash) three times, the head nodding one row once per cycle; last pass on every frame (since the 2026-10-17 revision): every texel not in palette.png snapped to the nearest one (OKLab): no colour outside the approved palette (since Pass 4A-duovicies: a one-row gap between the hem and a boot takes the boot's top row); Pass 4A-quatervicies: weight shift 1 texel (SHIFT 0, 1, 1, 0, -1, -1); profile far boot 0.16 OKLab darker floored at L 0.2 and one row higher",
   "frame checks of the runtime contract (alpha 0 / 255, transparent ring, feet on row 90 for idle, nothing below it)",
   "Aseprite 1.3.18.6 batch: source/merchant-x2-v2.aseprite (one layer, 48 frames, tags idle-, walk-, talk-down|up|side, durations 588 / 133 / 250 ms) and its export exports/merchant-x2-v2.png + .json (json-array, 6 columns); every exported frame compared texel for texel with the rig's frame"
  ],
@@ -61,15 +61,15 @@
  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/merchant-x2-v2.rig.mjs --check (rebuild from the archived sheet, compared with the committed views and exports); node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/merchant-x2-v2 [--rebuild]",
  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
  "files": {
-  "art-lab/characters/exports/merchant-x2-v2.png": "abc819b92f0717603980d23664ce42a430834874b74a6c33d464a19f8bcdeff0",
+  "art-lab/characters/exports/merchant-x2-v2.png": "6bf6491f730580234005885286f6aea1b114d9f29e399fbcee327a136d0823a8",
   "art-lab/characters/exports/merchant-x2-v2.json": "e5d39a6c8d845cb65a393d0c2b4869d3405a74d47328bcac27c2fea7dcf51589",
-  "art-lab/characters/source/merchant-x2-v2.aseprite": "7535a5f9a4bbaf7a81824efe29c18d05101da96a4fa1c639f9b07c23a0c55663",
+  "art-lab/characters/source/merchant-x2-v2.aseprite": "ce1a6cc7a3ba6d2a0b44f892a6a1bdf823c9f8a163361709305b3932538915d4",
   "art-lab/characters/provenance/merchant-x2-v2/view-down.png": "502ee1715f1ba6c10d4c91aa28665dc80d9df7f288fe369dc7f4e93d81a9f621",
   "art-lab/characters/provenance/merchant-x2-v2/view-up.png": "f8ed4124a8be2272b87eb783257cdd81675f3a889c054da8eccdc13083f211e7",
   "art-lab/characters/provenance/merchant-x2-v2/view-side.png": "c87c1110597d4d391204658820f612bec7323a97c4b025639abbeba1a794863c",
-  "art-lab/characters/provenance/merchant-x2-v2/build.json": "2076461ecc9f35caa58ae513e5d13b2c8b345ecfd834f9bb4f4c80a8de9899b7",
+  "art-lab/characters/provenance/merchant-x2-v2/build.json": "2a8c973b4dcba7902ad9b61ca9480f67037de30dbd258a54c3e9aa3a3c173f85",
   "art-lab/characters/provenance/merchant-x2-v2/palette.png": "9554d2eb64e9cb5d12a19cbaa097d373baa0ce31d69f5994802fb01ef749bf15",
-  "art-lab/characters/rigs/merchant-x2-v2.rig.mjs": "1180cf9d667e8ee67ec61fe08e61ba4208bfc72dfeb8ea06ac90523dbf5e4320",
+  "art-lab/characters/rigs/merchant-x2-v2.rig.mjs": "1f3344973f8e4f9fda949bac98bbe8058c5735c6d5c8944be7fe319fc8c2898a",
   "tools/art-lab/build-character.mjs": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
   "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
@@ -114,6 +114,16 @@
    "previousExportSha256": "01dcbb4c6b054a02b5d5c037ed3fb02b4aa36db68961093d0ea26878996e99a9",
    "exportSha256": "abc819b92f0717603980d23664ce42a430834874b74a6c33d464a19f8bcdeff0",
    "approval": "approved by the operator on 2026-10-17 in the working session, after the before / after images (reviews/merchant-x2-v2/06-rig-c3-before-after.png; in-scene: 07-rig-c3-walk-in-scene-cameraB.png) and the blind critiques were shown: « J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »"
+  },
+  {
+   "date": "2026-10-17",
+   "pass": "4A-quatervicies",
+   "requestedBy": "operator (git user wonmii), in the working session",
+   "request": "« Oui, lance les défauts hérités -1d (d)-(h) sur leur propre branche. » (the operator's request of the same session: « … puis enfin passer au menage M1 et defaults herites … »)",
+   "change": "inherited defect (d) of JOURNAL -1d, found by the blind critique of Pass 4A-duovicies (present in the approved sheet): front / back walk 1, 2, 4, 5: the weight shift (SHIFT) was 0, 2, 1, 0, -2, -1 texels: the 2-texel step read as the body jumping sideways -> 0, 1, 1, 0, -1, -1 (the crowd's dress walk); profile walk 0-5: the far boot copy, 0.1 OKLab darker and at the near boot's level, merged with the near boot into one wide sole where the two 10-column shoes overlap (frames 2, 5) -> 0.16 darker, floored at OKLab L 0.2 (flooredDarkener: 0.16 alone turned its heel outline-black, a black lump at frame 3, second blind critique) and one row higher (further from the camera, as the sheet draws it in the idle profile; third critique: the two soles still made one continuous bottom edge), nothing of it above the hem's bottom row (fourth critique: its top row stuck out in front of the skirt at frame 3, a 4-texel stub). Exported sheet against the previous one: 380 texels removed, 329 added, 6124 recoloured, 0 new colours, in 10 frames (walk-down 1, walk-down 4, walk-up 1, walk-up 4, walk-side 0, walk-side 1, walk-side 2, walk-side 3, walk-side 4, walk-side 5); same frames, tags, layout and metadata JSON.",
+   "previousExportSha256": "abc819b92f0717603980d23664ce42a430834874b74a6c33d464a19f8bcdeff0",
+   "exportSha256": "6bf6491f730580234005885286f6aea1b114d9f29e399fbcee327a136d0823a8",
+   "approval": "pending: the revised sheet awaits the operator's review (reviews/merchant-x2-v2/08-inherited-defects-before-after.png, 09-inherited-defects-walk-in-scene-cameraB.png); the production approval (approvals) covers the previous sheets"
   }
  ]
 }

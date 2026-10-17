@@ -8,7 +8,7 @@
  ],
  "bakedTexture": [
   1024,
-  1056
+  2016
  ],
  "cpuBytes": 24576,
  "cpuMismatch": 0,
@@ -61,7 +61,7 @@
    "pixels": 34656,
    "checked": 31104,
    "skipped": 3552,
-   "mismatches": 11374
+   "mismatches": 11530
   }
  ],
  "bleed": {

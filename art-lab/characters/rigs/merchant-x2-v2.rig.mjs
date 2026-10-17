@@ -41,7 +41,9 @@ function snapToViews(out, V) {
 // ---- gait (the dock worker's timing: 6 frames at 7.5 frames / s, one step = 3 frames). BOB = body drop in rows (lowest at contact).
 const BOB = [1, 0, 0, 1, 0, 0];
 const SWING = [1, 3, 1];                      // lift of the swing boot on frames 0..2 of its swing (front / back): it stays partly visible
-const SHIFT = [0, 2, 1, 0, -2, -1];           // weight shift over the planted boot, 2 texels at mid-stance (front / back)
+// weight shift over the planted boot (front / back); Pass 4A-quatervicies: 1 texel (it was [0, 2, 1, 0, -2, -1]: the 2-texel shift read as
+// the body jumping sideways, blind critique of Pass 4A-duovicies; the crowd's dress walk uses 1)
+const SHIFT = [0, 1, 1, 0, -1, -1];
 const HEM = [-1, -2, -2, 1, 2, 2];            // the hem lags behind the weight shift (texels at the hem, front / back)
 /** front / back: the body (dress included) bobs and shifts its weight over the planted boot, the hem lags behind; each boot is a rigid part
  *  drawn BEHIND the dress, planted on row 90 or lifted (a lifted boot slides partly up under the hem) */
@@ -68,16 +70,30 @@ function frontBack(v, o, i) {
     for (let x = 0; x < im.W; x++) if (R.opaque(bt, x, t) && !R.opaque(im, x, t - 1) && R.opaque(body, x, t - 2)) R.put(im, x, t - 1, R.get(bt, x, t)); }
   return im;
 }
+/** R.darkener with a floor: each colour goes dL OKLab darker, but no lower than min(its own lightness, floor), then snaps to the palette (the
+ *  far boot's lit core recedes, its already dark heel does not turn outline-black) */
+function flooredDarkener(pal, dL, floor) {
+  const pl = pal.map(R.oklab), memo = new Map();
+  return (c) => { const k = c.join(','); if (memo.has(k)) return memo.get(k); const q = R.oklab(c); q[0] = Math.max(q[0] - dL, Math.min(q[0], floor)); let bi = 0, bd = 1e9;
+    pl.forEach((p, i) => { const d = (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 + (p[2] - q[2]) ** 2; if (d < bd) { bd = d; bi = i; } }); memo.set(k, pal[bi]); return pal[bi]; };
+}
 // side (facing left): the near boot (the view's own, x 30-41) and a darker copy for the far one, placed by the dock worker's ankle cycle
 // (+ = forward); the hem shears forward with the near leg
 const CYCLE = [{ x: 7, lift: 0 }, { x: 2.3, lift: 0 }, { x: -2.3, lift: 0 }, { x: -7, lift: 1 }, { x: -1, lift: 3 }, { x: 4.5, lift: 1 }];
 const ANKLE = [36, 86], HIPX = 31;
 function sideFrame(v, i) {
-  const boot = R.cut(v, (x, y) => y >= 86 && x >= 30), far = R.recolour(boot, R.darkener(R.paletteOf(v), 0.1));
+  // the far copy 0.16 OKLab darker, floored at 0.2 (Pass 4A-quatervicies; it was 0.1: at frames 2 / 5 the two 10-column shoes overlap by
+  // about 3 columns and merged into one wide sole, blind critique of Pass 4A-duovicies; 0.16 without a floor separated them but turned the
+  // heel outline-black, a black lump at frame 3, second critique: 19 texels below L 0.15, 4 with the floor)
+  const boot = R.cut(v, (x, y) => y >= 86 && x >= 30), far = R.recolour(boot, flooredDarkener(R.paletteOf(v), 0.16, 0.2));
   const A = CYCLE[i], B = CYCLE[(i + 3) % 6], bob = BOB[i];
   const body = R.shift(R.shear(R.cut(v, (x, y) => y <= 85), 70, 85, -Math.round(A.x / 3.5)), 0, bob);
   const place = (b, a) => R.shift(b, Math.round(HIPX - a.x - ANKLE[0]), -a.lift);
-  return R.over(place(far, B), place(boot, A), body);
+  // the far boot one row higher (Pass 4A-quatervicies, third critique: the two soles made one continuous bottom edge at frames 2 / 5 and the
+  // far boot's dark top read as a black band at frame 3): it is further from the camera, as the sheet draws it in the idle profile; its
+  // top row goes under the hem; nothing of it above the hem's bottom row (85 + bob: fourth critique, at frame 3 its top row stuck out in front
+  // of the skirt's front edge, a 4-texel dark stub)
+  return R.over(R.erase(R.shift(place(far, B), 0, -1), (x, y) => y < 85 + bob), place(boot, A), body);
 }
 
 // talk: the nod moves the head (rows < 38, the chin) one row down over the collar; open mouth: a dark red-brown dash of the palette (#4c2927) under the closed mouth's skin shade, lower lip in the darker skin tone

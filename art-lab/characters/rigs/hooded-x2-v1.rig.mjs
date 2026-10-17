@@ -28,7 +28,9 @@ export const source = {
 export function prepare(dir, v) {
   if (dir === 'down') return R.shift(R.erase(v, R.or(R.rect(30, 77, 32, 90), R.rect(33, 87, 40, 90))), 0, 4);
   if (dir === 'up') return R.shift(R.erase(v, R.or(R.rect(24, 88, 26, 88), R.rect(33, 79, 34, 82))), 0, 3);
-  return R.erase(R.mirror(v), R.rect(21, 89, 29, 90));
+  // Pass 4A-quatervicies: the cloak tail's dark strand under its back hem (x 43-47, rows 82-87) removed: sheared with the tail, it hung
+  // behind the heel as a dark band (blind critique of Pass 4A-duovicies); the tail ends at its hem (row 81)
+  return R.erase(R.mirror(v), R.or(R.rect(21, 89, 29, 90), R.rect(43, 82, 47, 87)));
 }
 
 /** after a cloth part is sheared away from the body, close the transparent gaps (<= `max` texels) it leaves inside a row of `area`, with the

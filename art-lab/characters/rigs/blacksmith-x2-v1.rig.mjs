@@ -37,8 +37,9 @@ export function prepare(dir, v) {
 }
 
 /** an arm: per row, the span of the skin texels of rows y-1..y+1 inside x0..x1, y0..y1, widened by one texel (the outline), and by `outer`
- *  more on the side away from the body (`inward` = +1: the arm's outer side is -x) where the outline runs two texels from the skin */
-function skinSpans(v, x0, x1, y0, y1, outer = 0, inward = 1) {
+ *  more on the side away from the body (`inward` = +1: the arm's outer side is -x) where the outline runs two texels from the skin; the
+ *  `down` rows under the last row with skin of its own take that row's span (the fist's bottom outline under its shaded skin) */
+function skinSpans(v, x0, x1, y0, y1, outer = 0, inward = 1, down = 0) {
   const skin = (x, y) => { const c = R.get(v, x, y); if (!c || x < x0 || x > x1) return false; const o = R.oklab(c); return o[0] > 0.6 && Math.hypot(o[1], o[2]) > 0.035; };
   const span = new Map();
   for (let y = y0; y <= y1; y++) {
@@ -46,6 +47,8 @@ function skinSpans(v, x0, x1, y0, y1, outer = 0, inward = 1) {
     for (let yy = Math.max(y0, y - 1); yy <= Math.min(y1, y + 1); yy++) for (let x = x0; x <= x1; x++) if (skin(x, yy)) { a = Math.min(a, x); b = Math.max(b, x); }
     if (b >= 0) span.set(y, [Math.max(x0, a - 1 - (inward > 0 ? outer : 0)), Math.min(x1, b + 1 + (inward < 0 ? outer : 0))]);
   }
+  const own = new Set(span.keys());
+  for (let y = y0; y <= y1; y++) if (!own.has(y)) for (let k = 1; k <= down; k++) if (own.has(y - k)) { span.set(y, span.get(y - k)); break; }
   return (x, y) => { const sp = span.get(y); return !!sp && x >= sp[0] && x <= sp[1]; };
 }
 /** front / back arm swing: the arm's texels between rows y0 (elbow) and y1 (fist bottom) are stretched (dy > 0, forward) or squeezed (dy < 0,
@@ -59,6 +62,17 @@ function swingArm(v, m, y0, y1, dy, dx, inward, fist) {
     for (let k = 1; k <= 2; k++) { const x2 = x + inward * k; if (!inArm(x2, y) && R.opaque(v, x2, y)) { R.put(base, x, y, R.get(v, x2, y)); break; } }
   }
   return R.over(base, R.shift(R.remapRows(arm, () => true, y0, y1, y0, y1 + dy, 0, fist), dx, 0));
+}
+/** a one-texel vertical notch in an outline: a transparent texel inside `area` between two dark texels (OKLab L < 0.25) above and below
+ *  takes the darker of them (Pass 4A-quatervicies, second blind critique: front walk 3, the arm moved one texel inwards took its outline
+ *  column at the elbow (12, 50) along and left a notch between the outline texels above and below) */
+function closeNotches(im, area) {
+  const o = R.clone(im), dark = (x, y) => { const c = R.get(im, x, y); return c && R.oklab(c)[0] < 0.25 ? c : null; };
+  for (let y = 1; y < im.H - 1; y++) for (let x = 0; x < im.W; x++) {
+    if (!area(x, y) || R.opaque(im, x, y)) continue;
+    const u = dark(x, y - 1), d = dark(x, y + 1); if (u && d) R.put(o, x, y, R.oklab(u)[0] <= R.oklab(d)[0] ? u : d);
+  }
+  return o;
 }
 /** after a cloth part is sheared away from the body, close the transparent gaps (<= `max` texels) it leaves inside a row of `area`, with the
  *  colour of the texel on the gap's `from` side (+1 = right, -1 = left) */
@@ -183,16 +197,19 @@ const ARM = [1, 0, -0.5, -1, 0, 0.5];   // how far forward arm 1 (screen right) 
 const HEM = [-1, -2, -2, 1, 2, 2];
 const FB = {
   down: { hipY: 74, top: 2, apron: [64, 75], legs: [{ cols: (x) => x <= 31, foot: 90, bottom: 6, inward: 1 }, { cols: (x) => x >= 32, foot: 89, bottom: 5, inward: -1 }],
-    arms: [{ box: [6, 20, 44, 64], y0: 48, y1: 63, fist: 9, inward: 1 }, { box: [44, 56, 44, 64], y0: 48, y1: 63, fist: 9, inward: -1 }] },
+    arms: [{ box: [6, 20, 44, 64], y0: 48, y1: 63, fist: 9, inward: 1, outer: 1, down: 1 }, { box: [44, 56, 44, 64], y0: 48, y1: 63, fist: 9, inward: -1, outer: 1, down: 1 }],
+    notch: R.or(R.rect(4, 44, 22, 68), R.rect(42, 44, 58, 68)) },
   up: { hipY: 66, top: 2, apron: null, legs: [{ cols: (x) => x <= 30, foot: 90, bottom: 9, inward: 1 }, { cols: (x) => x >= 31, foot: 90, bottom: 9, inward: -1 }],
     arms: [{ box: [8, 19, 44, 67], y0: 52, y1: 66, fist: 8, inward: 1, outer: 1 }, { box: [45, 56, 44, 67], y0: 52, y1: 66, fist: 8, inward: -1, outer: 1 }] },
 };
 // Pass 4A-duovicies (back walk): the arm masks take the outer outline column (two texels from the skin: it stayed put, a detached arm
 // outline hanging below the rising fist), and the fist's bottom row (66 = hipY) goes with the arm, not with the leg below it (it stayed
-// on the leg, the small tabs under the fist)
+// on the leg, the small tabs under the fist). Pass 4A-quatervicies (front walk): the same outer outline column (`outer`: it stayed put while the
+// arm stretched, squeezed or moved a texel, the notched left shoulder and arm), and the fist's bottom outline (row 63, under shaded skin the
+// skin test misses: `down`) goes with the fist (it stayed behind when the fist rose, the left fist's outline that came and went)
 function frontBack(v, o, i) {
   const bob = BOB[i], swing = i < 3 ? 1 : 0, k = i % 3;   // frames 0-2: leg 1 (screen right) swings, 3-5: leg 0
-  const masks = o.arms.map((a) => skinSpans(v, a.box[0], a.box[1], a.box[2], a.box[3], a.outer ?? 0, a.inward));
+  const masks = o.arms.map((a) => skinSpans(v, a.box[0], a.box[1], a.box[2], a.box[3], a.outer ?? 0, a.inward, a.down ?? 0));
   const inArms = (x, y) => o.arms.some((a, j) => masks[j](x, y) && y >= a.y0 && y <= a.y1);
   let upper = R.cut(v, (x, y) => y < o.hipY || inArms(x, y));
   // the legs' copy of the view: an arm texel at or below hipY (it moves with the arm) leaves the leg texel under it in its column (the leg
@@ -207,6 +224,7 @@ function frontBack(v, o, i) {
     const fwd = j ? ARM[i] : -ARM[i], dy = Math.sign(fwd) * Math.round(3 * Math.abs(fwd)), dx = fwd >= 1 ? a.inward : 0;
     if (dy) upper = swingArm(upper, masks[j], a.y0, a.y1, dy, dx, a.inward, a.fist);
   });
+  if (o.notch) upper = closeNotches(upper, o.notch);
   if (o.apron) upper = R.shear(upper, o.apron[0], o.apron[1], HEM[i]);
   const body = R.shift(upper, 0, bob);
   const legs = o.legs.map((L, j) => {

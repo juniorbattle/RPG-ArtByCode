@@ -1,6 +1,6 @@
 {
  "id": "hooded-x2-v1",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »)",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »); revised again on 2026-10-17 at the operator's request (inherited defects -1d, Pass 4A-quatervicies, branch cast-inherited-defects): that sheet awaits the operator's review",
  "request": {
   "date": "2026-10-17",
   "by": "task brief from the parent working session (Claude Code), on the operator's project",
@@ -43,7 +43,7 @@
  "chain": [
   "reconstruct-grid.mjs <sheet> <crop> 1.95 64 96 90 --bg-threshold=16 --closing-from=48 (since the 2026-10-17 revision: no vertical closing of short gaps above row 48, where it filled the background seen between hair and shoulders, beside the jaw / neck, with the reconstruction's darkest colour: near-black strokes; below, the closing still restores the dark leg and boot outlines): the hood makes the figure ~99 rows at the dock worker's pitch (1.95 gives 86-91); the cloak is a navy close to the sheet's background, which the default threshold 26 cut into transparent slits on the back view; full colours, per facing",
   "quantize-palette.mjs --palette-from provenance/hooded-x2-v1/palette.png: the three views mapped onto the approved sheet's 64 colours (since the 2026-10-17 revision; palette.png = the colours of the approved export, which came from ONE OKLab k-means over the three views, faces weighted x4: a new k-means would have moved every colour)",
-  "rig prepare(): front: the closing strip between the legs and the closing tails under the boots removed, moved 4 rows down; back: a tail under the left boot and a closing strip between the legs removed, moved 3 rows down; profile: mirrored to face left, closing tails under the far boot removed",
+  "rig prepare(): front: the closing strip between the legs and the closing tails under the boots removed, moved 4 rows down; back: a tail under the left boot and a closing strip between the legs removed, moved 3 rows down; profile: mirrored to face left, closing tails under the far boot removed; Pass 4A-quatervicies: the cloak tail's dark strand under its back hem (x 43-47, rows 82-87 of the profile) removed",
   "rig frames(): idle 4 frames (the approved cast's breath); walk 6 frames, the body 2 rows lower on the contact frames; front / back = each lower leg a rigid part BEHIND the cloak, lifted 3 / 5 / 3 rows, weight shift 1 texel, the cloak's lower half sheared 2 texels and its hem lifted 1 row on the swing side, the hands (skin masks) moving 3 rows; profile = two legs PAINTED in the trouser ramp (far two steps darker) on IK, the view's near boot moved rigidly (a darker copy for the far leg), the coat's front edge and the cloak tail trailing the near leg by one frame (2 / 3 texels), gaps closed, loose islands < 6 texels removed around the feet; the arms stay under the cloak; last pass on every frame (since the 2026-10-17 revision): detached islands of fewer than 6 texels removed, enclosed pinholes (transparent components of at most 2 texels the flood fill from the border does not reach) filled with the darkest neighbouring colour (the outline's), every texel not in palette.png snapped to the nearest one (OKLab): no colour outside the approved palette (since Pass 4A-duovicies: a hand moved down fills the rows it uncovers at the top of its mask with the sleeve texel just above, column by column)",
   "frame checks of the runtime contract (alpha 0 / 255, transparent ring, feet on row 90 for idle, nothing below it)",
   "Aseprite 1.3.18.6 batch: source/hooded-x2-v1.aseprite (one layer, 30 frames, tags idle-, walk-down|up|side, durations 588 / 133 ms) and its export exports/hooded-x2-v1.png + .json; every exported frame compared texel for texel with the rig's frame"
@@ -61,15 +61,15 @@
  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/hooded-x2-v1.rig.mjs --check (rebuild from the archived sheet, compared with the committed views and exports); node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/hooded-x2-v1 [--rebuild]",
  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
  "files": {
-  "art-lab/characters/exports/hooded-x2-v1.png": "1b2957453c53999944b7c3a4281b9a417202e8a487b9ff069c05285eb2b53741",
+  "art-lab/characters/exports/hooded-x2-v1.png": "179e66587eec4c2bc97f54c3c92d57ef13ef120bb2dae027a0ca1ea2b92ccd6c",
   "art-lab/characters/exports/hooded-x2-v1.json": "a93fa85003f906cfbb9b879966379975d6d53c7d172b7868693388564549fe5d",
-  "art-lab/characters/source/hooded-x2-v1.aseprite": "1b0840b299c9afb54035c5969ebc5c2673403c5c801dd717fb5e4f01a0deee8d",
+  "art-lab/characters/source/hooded-x2-v1.aseprite": "e59cfa7f88fe1871b786949e0562b8b60c65ffaa4816a659f290dd0ac62739b4",
   "art-lab/characters/provenance/hooded-x2-v1/view-down.png": "aace64e57009a4a4b2460456c119bc343331b8e0447013381e5914f4ce2654a5",
   "art-lab/characters/provenance/hooded-x2-v1/view-up.png": "16e00b235b1b474ccd09d7eda5a07456d5edd76b4145a5752708310ffe523255",
-  "art-lab/characters/provenance/hooded-x2-v1/view-side.png": "a1125c2fd75eba50a9aaea1ddcb49f8df3cab6099892c96538faa9cdea048e58",
-  "art-lab/characters/provenance/hooded-x2-v1/build.json": "7b2c9c41090305b8b14eb997e4c07033d7f736db156d9375315a4d0e5f7a3a34",
+  "art-lab/characters/provenance/hooded-x2-v1/view-side.png": "41827d0fad97d49617a94694e98d4a17c23eef0b8f39c36435c19f5b6dfc9359",
+  "art-lab/characters/provenance/hooded-x2-v1/build.json": "513f23e921831dbb83264918ee3498e21d62f804f23b7fffd2c6c77b56b34988",
   "art-lab/characters/provenance/hooded-x2-v1/palette.png": "7a3a07b94d10613677269ad6ad7f4a4dca4fc28553dd7389f15032350c094259",
-  "art-lab/characters/rigs/hooded-x2-v1.rig.mjs": "14d6ad07a0337c40938f2562e108c3da6cfe0965a6a658c16d365fa44c39b199",
+  "art-lab/characters/rigs/hooded-x2-v1.rig.mjs": "99da3210002eba84681b3061f6ac0419aed684205019328c52d478771ffd208f",
   "tools/art-lab/build-character.mjs": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
   "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
@@ -98,6 +98,16 @@
    "previousExportSha256": "d8ca7bb9119873faf0a6a95f13bd70619250ee9948f57f2eeb2743314da02e17",
    "exportSha256": "1b2957453c53999944b7c3a4281b9a417202e8a487b9ff069c05285eb2b53741",
    "approval": "approved by the operator on 2026-10-17 in the working session, after the before / after images (reviews/hooded-x2-v1/05-rig-c3-before-after.png; in-scene: 06-rig-c3-walk-in-scene-cameraB.png) and the blind critiques were shown: « J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »"
+  },
+  {
+   "date": "2026-10-17",
+   "pass": "4A-quatervicies",
+   "requestedBy": "operator (git user wonmii), in the working session",
+   "request": "« Oui, lance les défauts hérités -1d (d)-(h) sur leur propre branche. » (the operator's request of the same session: « … puis enfin passer au menage M1 et defaults herites … »)",
+   "change": "inherited defect (f) of JOURNAL -1d, found by the blind critique of Pass 4A-duovicies (present in the approved sheet): profile (idle and walk): the cloak tail's dark strand under its back hem (x 43-47, rows 82-87 of the profile view), sheared with the tail, hung behind the heel as a dark band -> removed in prepare(); the tail ends at its hem (row 81). Exported sheet against the previous one: 171 texels removed, 0 added, 9 recoloured, 0 new colours, in 10 frames (idle-side 0, idle-side 1, idle-side 2, idle-side 3, walk-side 0, walk-side 1, walk-side 2, walk-side 3, walk-side 4, walk-side 5); same frames, tags, layout and metadata JSON.",
+   "previousExportSha256": "1b2957453c53999944b7c3a4281b9a417202e8a487b9ff069c05285eb2b53741",
+   "exportSha256": "179e66587eec4c2bc97f54c3c92d57ef13ef120bb2dae027a0ca1ea2b92ccd6c",
+   "approval": "pending: the revised sheet awaits the operator's review (reviews/hooded-x2-v1/07-inherited-defects-before-after.png, 08-inherited-defects-walk-in-scene-cameraB.png); the production approval (approvals) covers the previous sheets"
   }
  ]
 }

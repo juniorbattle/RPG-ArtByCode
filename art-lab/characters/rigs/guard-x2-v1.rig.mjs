@@ -47,7 +47,9 @@ export function prepare(dir, v) {
     if (!R.opaque(o, 40, 51)) R.put(o, 40, 51, R.get(o, 39, 51));
     return o;
   }
-  return R.erase(R.shift(R.mirror(v), 1, 2), R.rect(45, 83, 48, 86));
+  // Pass 4A-quatervicies: the cape tail's tan corner hanging below the cape (x 45-47, rows 81-82, and its outward bulge x 47-49, row 80) is
+  // removed: alone beside the shins, in the boots' colours, it read as a detached heel (blind critique of Pass 4A-duovicies)
+  return R.erase(R.shift(R.mirror(v), 1, 2), R.or(R.rect(45, 83, 48, 86), R.rect(45, 81, 47, 82), R.rect(47, 80, 49, 80)));
 }
 
 /** front / back arm swing: the arm's texels between rows y0 and y1 (the fist last, `fist` rows rigid) are stretched (dy > 0) or squeezed
@@ -109,7 +111,9 @@ const BOB = [2, 0, 1, 2, 0, 1];
 // leg. The tabard's front panel and the cape's tail behind trail the near leg by one frame (2 / 3 texels at the hem); the near arm swings.
 const J = { hip: [32, 74] }, L1 = 7, L2 = 7.5, BOOT_ANKLE = [36.5, 87.5];   // the rear boot's ankle point, in the view
 const NEAR = { bands: [[-0.5, '#7a6d75'], [0.15, '#645964'], [0.5, '#524a59'], [0.8, '#433d4b'], [1, '#312b36']], outline: '#040207', ow: 1 };
-const FAR = { bands: [[-0.5, '#4e434e'], [0.15, '#433d4b'], [0.5, '#3a3443'], [0.8, '#312b36'], [1, '#26202b']], outline: '#040207', ow: 1 };
+// the far leg one step darker than the near one (Pass 4A-quatervicies; it was two and a half: '#4e434e' ... '#26202b', near the cape's dark
+// blue, so the 8-43 texels of it the near leg and the cape leave visible did not read as a leg: "the back leg almost always hidden")
+const FAR = { bands: [[-0.5, '#645964'], [0.15, '#524a59'], [0.5, '#433d4b'], [0.8, '#3a3443'], [1, '#312b36']], outline: '#040207', ow: 1 };
 // the cape's tail, behind; column 40 below row 77 is the source's rear leg's back edge, not cape (Pass C3: kept with the cape it hung
 // behind the painted legs as a lone vertical thread, the "back leg reduced to a thread" of profile frames 2 / 5)
 const CAPE = (x, y) => y >= 62 && y <= 86 && (x >= 41 || (x === 40 && y < 78));

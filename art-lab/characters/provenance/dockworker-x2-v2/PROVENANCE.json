@@ -1,6 +1,6 @@
 {
  "id": "dockworker-x2-v2",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »)",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »); revised again on 2026-10-17 at the operator's request (inherited defects -1d, Pass 4A-quatervicies, branch cast-inherited-defects): that sheet awaits the operator's review",
  "request": {
   "date": "2026-10-16",
   "by": "operator",
@@ -43,8 +43,8 @@
  "chain": [
   "reconstruct-grid.mjs <sheet> <crop> 1.775 64 96 90 --closing-from=48 (since the 2026-10-17 revision: no vertical closing of short gaps above row 48, where it filled the background seen between hair and shoulders, beside the jaw / neck, with the reconstruction's darkest colour: near-black strokes; below, the closing still restores the dark leg and boot outlines) (the pitch of dockworker-x2-v1), full colours, per reconstructed facing",
   "quantize-palette.mjs --palette-from exports/dockworker-x2-v1.png: back and profile mapped onto the approved front's 64 colours",
-  "rig prepare(): profile mirrored to face left (the runtime's native side), moved 2 texels left (boots centred on the anchor column), top row cleared and one cap row (row 5) removed (the profile reconstructs 2 rows taller than the front; the frame keeps a transparent ring) -> view-up.png, view-side.png",
-  "rig frames() (rig-engine.mjs): idle 4 frames (rest, rest, inhale = upper body one row up, exhale = shoulders down with the head one frame late); walk 6 frames: front and back = upper body bobbing with the profile's body drop, each leg remapped between its hip band and its foot row (swing lift 2 / 5 / 2 rows, boot and cuff rigid), forearms and fists swinging 2 rows (and 1 texel inwards forward); profile = two legs PAINTED in the view's trouser / cuff / sock ramp (widths 17 / 14 / 12 texels with a cuff flaring to 14 above the boot, one-texel outline, the far leg one ramp step darker), posed by two-bone IK on an ankle cycle of 13 texels per step (0.28 m at scale 0.9 = 0.69 m/s at 7.5 frames/s, against 0.8-0.95 m/s for the wanderers: a slight slide, a longer stride read as a lunge), the view's own boot moved rigidly (RotSprite rotation on heel strike / toe-off; a lifted foot is raised until it clears the foot row), the near arm sheared up to 2 texels against the near leg (since Pass 4A-duovicies: a forearm moved down fills the rows it uncovers at the top of its mask with the sleeve texel just above, column by column; the back right arm mask reaches x 52, the sleeve outline included; the left back fist's bottom outline at hipY moves with the arm)",
+  "rig prepare(): profile mirrored to face left (the runtime's native side), moved 2 texels left (boots centred on the anchor column), top row cleared and one cap row (row 5) removed (the profile reconstructs 2 rows taller than the front; the frame keeps a transparent ring) -> view-up.png, view-side.png; Pass 4A-quatervicies: the cap's top outline one texel thick with closed corners in the three facings (capOutline)",
+  "rig frames() (rig-engine.mjs): idle 4 frames (rest, rest, inhale = upper body one row up, exhale = shoulders down with the head one frame late); walk 6 frames: front and back = upper body bobbing with the profile's body drop, each leg remapped between its hip band and its foot row (swing lift 2 / 5 / 2 rows, boot and cuff rigid), forearms and fists swinging 2 rows (and 1 texel inwards forward); profile = two legs PAINTED in the view's trouser / cuff / sock ramp (widths 17 / 14 / 12 texels with a cuff flaring to 14 above the boot, one-texel outline, the far leg one ramp step darker), posed by two-bone IK on an ankle cycle of 13 texels per step (0.28 m at scale 0.9 = 0.69 m/s at 7.5 frames/s, against 0.8-0.95 m/s for the wanderers: a slight slide, a longer stride read as a lunge), the view's own boot moved rigidly (RotSprite rotation on heel strike / toe-off; a lifted foot is raised until it clears the foot row), the near arm sheared up to 2 texels against the near leg (since Pass 4A-duovicies: a forearm moved down fills the rows it uncovers at the top of its mask with the sleeve texel just above, column by column; the back right arm mask reaches x 52, the sleeve outline included; the left back fist's bottom outline at hipY moves with the arm); Pass 4A-quatervicies: the forward forearm one row down (was two)",
   "frame checks of the runtime contract (alpha 0 / 255, transparent ring, feet on row 90 for idle, nothing below it)",
   "Aseprite 1.3.18.6 batch: source/dockworker-x2-v2.aseprite (one layer, 30 frames, tags idle-down|up|side, walk-down|up|side, durations 588 / 133 ms) and its export exports/dockworker-x2-v2.png + .json (json-array, 6 columns); every exported frame compared texel for texel with the rig's frame"
  ],
@@ -61,14 +61,14 @@
  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/dockworker-x2-v2.rig.mjs --check (rebuild from the archived sheet, compared with the committed views and exports); node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/dockworker-x2-v2 [--rebuild]",
  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
  "files": {
-  "art-lab/characters/exports/dockworker-x2-v2.png": "49d289adc51b684d010366f9c7d97923f86c53e031d9eaafb1953ea41ea7f217",
+  "art-lab/characters/exports/dockworker-x2-v2.png": "8a685c25f977c3a492279dfe0d1fbdb6dfee721136605a68e96e446a7b5233b8",
   "art-lab/characters/exports/dockworker-x2-v2.json": "782518121666068f916fc78da2fb3791079397cad60a17aa92daa964c066e403",
-  "art-lab/characters/source/dockworker-x2-v2.aseprite": "3d41ec8eac6af6256f0990a36955696d085a374247b10719117629c0846f40a3",
-  "art-lab/characters/provenance/dockworker-x2-v2/view-up.png": "aad8c647262df2ea70d49ddf194e1e14ace96d172fefd839cef8d03635a9141c",
-  "art-lab/characters/provenance/dockworker-x2-v2/view-side.png": "91fa931f103040db17ddc74d0674fc9fe46a42f69476af213c6b629b85e17f05",
-  "art-lab/characters/provenance/dockworker-x2-v2/build.json": "c96b90f010c678d4236182a66547ecf41cf5b00bd6cba58f59b61112eef7ba1b",
+  "art-lab/characters/source/dockworker-x2-v2.aseprite": "2311eaf08f67da8ce2143071aeaba4f6d1a717999ec8e972dfbdf82b99564f22",
+  "art-lab/characters/provenance/dockworker-x2-v2/view-up.png": "82a61d6cc9fce56c6fd1d3dd4b682ad3c07c3728c44fd346b8dd9897baa5a83f",
+  "art-lab/characters/provenance/dockworker-x2-v2/view-side.png": "e1f902fb6c5c09597b9d4fd157947b98caa49300e7730546d871b62970b059e8",
+  "art-lab/characters/provenance/dockworker-x2-v2/build.json": "d10dffb903d2cdb674efe1fee656cc91a51fa117f4b567eac32ca112608ed491",
   "art-lab/characters/exports/dockworker-x2-v1.png": "9e1de3ba1ff1bacbde78b152275c9c34dcb33c04a612c5c7cfd1ae9cfbc48441",
-  "art-lab/characters/rigs/dockworker-x2-v2.rig.mjs": "c12481562c073e41ffc29589564058b856ebf137143f09f2ed1bccd869bc62ca",
+  "art-lab/characters/rigs/dockworker-x2-v2.rig.mjs": "55cddc6f856793d65d02ba8161cd044e9775950fc021af2e7462a5b1127dcf9c",
   "tools/art-lab/build-character.mjs": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
   "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
@@ -113,6 +113,16 @@
    "previousExportSha256": "afe693cd64649be4b8eaf687d2a3a23def4cbbdfc461fdc225b1f2326cbf1fcb",
    "exportSha256": "49d289adc51b684d010366f9c7d97923f86c53e031d9eaafb1953ea41ea7f217",
    "approval": "approved by the operator on 2026-10-17 in the working session, after the before / after images (reviews/dockworker-x2-v2/08-rig-c3-before-after.png; in-scene: 09-rig-c3-walk-in-scene-cameraB.png) and the blind critiques were shown: « J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »"
+  },
+  {
+   "date": "2026-10-17",
+   "pass": "4A-quatervicies",
+   "requestedBy": "operator (git user wonmii), in the working session",
+   "request": "« Oui, lance les défauts hérités -1d (d)-(h) sur leur propre branche. » (the operator's request of the same session: « … puis enfin passer au menage M1 et defaults herites … »)",
+   "change": "inherited defect (h) of JOURNAL -1d, found by the blind critique of Pass 4A-duovicies (present in the approved sheet): every frame of the three facings: the cap's top was a thick dark bar (front: two rows) with broken corners -> in prepare(), the front bar's row 2 removed, the missing outline steps at the corners drawn in the outline's colour and the holes inside the cap's edge given the cap colour beside them (capOutline, recorded coordinates; the front view is the approved v1 export, edited here, not in the export); front / back walk: the forward forearm moved two rows down, a two-row stretch of the sleeve that read as the arm lengthening -> one row. Exported sheet against the previous one: 169 texels removed, 147 added, 775 recoloured, 0 new colours, in 30 frames (idle-down 0, idle-down 1, idle-down 2, idle-down 3, idle-up 0, idle-up 1, idle-up 2, idle-up 3, idle-side 0, idle-side 1, idle-side 2, idle-side 3, walk-down 0, walk-down 1, walk-down 2, walk-down 3, walk-down 4, walk-down 5, walk-up 0, walk-up 1, walk-up 2, walk-up 3, walk-up 4, walk-up 5, walk-side 0, walk-side 1, walk-side 2, walk-side 3, walk-side 4, walk-side 5); same frames, tags, layout and metadata JSON.",
+   "previousExportSha256": "49d289adc51b684d010366f9c7d97923f86c53e031d9eaafb1953ea41ea7f217",
+   "exportSha256": "8a685c25f977c3a492279dfe0d1fbdb6dfee721136605a68e96e446a7b5233b8",
+   "approval": "pending: the revised sheet awaits the operator's review (reviews/dockworker-x2-v2/10-inherited-defects-before-after.png, 11-inherited-defects-walk-in-scene-cameraB.png); the production approval (approvals) covers the previous sheets"
   }
  ]
 }

@@ -36,12 +36,28 @@ export const source = {
   // restores the dark leg and boot outlines the flood fill takes for background
   options: { closingFrom: 48 },
 };
+/** Pass 4A-quatervicies: the cap's top outline, one texel thick and closed at the corners in every facing (blind critique of Pass
+ *  4A-duovicies: a thick dark bar with broken corners, all frames). Front: the top bar was two rows (rows 2-3): row 2 removed; the
+ *  corners' missing outline steps drawn in the outline's colour (`line`, colour of the texel `ink`), the holes inside the cap's edge take
+ *  the cap colour beside them (`fill`: [x, y, from x, from y]). Coordinates in the prepared view. */
+const CAP = {
+  down: { erase: R.rect(30, 2, 41, 2), ink: [34, 3], line: [[27, 4], [28, 4], [29, 4], [42, 4]], fill: [[27, 5, 28, 5], [25, 6, 26, 6]] },
+  up: { ink: [24, 3], line: [[24, 4], [36, 4], [21, 5], [23, 5], [18, 7]], fill: [[18, 8, 19, 8]] },
+  side: { ink: [25, 2], line: [[24, 3], [21, 4]], fill: [] },
+};
+function capOutline(dir, v) {
+  const c = CAP[dir], o = c.erase ? R.erase(v, c.erase) : R.clone(v), ink = R.get(v, ...c.ink);
+  for (const [x, y] of c.line) R.put(o, x, y, ink);
+  for (const [x, y, fx, fy] of c.fill) R.put(o, x, y, R.get(v, fx, fy));
+  return o;
+}
 /** side: mirrored to face left (the runtime's native side), moved 2 texels left (feet centred on the anchor column), its top row cleared
- *  and one cap row removed (row 5): the profile reconstructs 2 rows taller than the front (91), the frame keeps a transparent ring */
+ *  and one cap row removed (row 5): the profile reconstructs 2 rows taller than the front (91), the frame keeps a transparent ring; then, in
+ *  every facing, the cap's top outline (capOutline) */
 export function prepare(dir, v) {
-  if (dir !== 'side') return v;
+  if (dir !== 'side') return capOutline(dir, v);
   const m = R.erase(R.shift(R.mirror(v), -2, 0), (x, y) => y === 0);
-  return R.over(R.cut(m, (x, y) => y > 5), R.shift(R.cut(m, (x, y) => y < 5), 0, 1));
+  return capOutline(dir, R.over(R.cut(m, (x, y) => y > 5), R.shift(R.cut(m, (x, y) => y < 5), 0, 1)));
 }
 
 // ---- side (facing left): the profile shows both legs merged into one trouser mass, so the two legs are PAINTED in the view's own
@@ -81,8 +97,9 @@ function sideFrame(v, i) {
 }
 
 // ---- front (down) / back (up): the body moves with the side view's drop; each leg is remapped between its hip band and its foot row; the
-// forearms and fists swing against the legs (forward = two rows lower and one texel inwards, back = two rows higher: one-texel moves do
-// not read at ~1.8 screen px per texel)
+// forearms and fists swing against the legs (forward = one row lower and one texel inwards, back = two rows higher). Pass 4A-quatervicies:
+// forward was two rows lower, a two-row stretch of the sleeve (forearmDown): the arm read as lengthening in the front / back walk (blind
+// critique of Pass 4A-duovicies); towards the camera the forearm foreshortens, one row
 const SWING = [2, 5, 2]; // lift of the swing leg on frames 0..2 of its swing (toe-off, passing, reach); it lands on the next contact
 const ARM = [1, 0, -0.5, -1, 0, 0.5]; // how far forward arm 1 (screen right) is; arm 0 is the opposite
 const FB = {
@@ -122,7 +139,7 @@ function frontBack(v, o, i) {
   }
   o.arms.forEach((m, j) => {
     const fwd = j ? ARM[i] : -ARM[i], inward = j ? -1 : 1;
-    const dy = 2 * (fwd > 0 ? Math.round(fwd) : -Math.round(-fwd)), dx = fwd >= 1 ? inward : 0;
+    const dy = fwd > 0 ? 1 : -2 * Math.round(-fwd), dx = fwd >= 1 ? inward : 0;
     if (dx || dy) upper = dy > 0 ? forearmDown(upper, m, dx, dy, inward) : R.movePart(upper, m, dx, dy, inward);
   });
   const body = R.shift(upper, 0, bob);
