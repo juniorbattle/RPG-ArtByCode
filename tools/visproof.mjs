@@ -26,7 +26,7 @@ const place = (sc) => {
   a.graph.snap(p, a.rig);
   if (m.includes(',')) {
     const [f, g, w] = m.split(','), t = +w, s = t * t * t * (t * (t * 6 - 15) + 10);
-    const st = a.graph.blendPose(a.graph.evalAnchor(f, x, z), a.graph.evalAnchor(g, x, z), s, new p.constructor(x, p.y + 1, z), a.rig.aspectRatio, f === 'D' || g === 'D');
+    const st = a.graph.blendPose(a.graph.evalAnchor(f, x, z), a.graph.evalAnchor(g, x, z), s, new p.constructor(x, p.y + 1, z), (a.rig.poseAspect ?? a.rig.aspectRatio), f === 'D' || g === 'D');
     a.rig.manual = true; a.rig.setPose(st); a.graph.state = st; a.debugActive = [f, g];
   }
 };

@@ -52,6 +52,8 @@ export interface VisResult {
   ms: number;
   /** time split: GPU render (submitted), readback (includes the GPU finishing), CPU decode */
   split: { render: number; readback: number; decode: number };
+  /** pages rendered, the page target size, and the bytes of every target the bake allocated (ID pages, depth, counters) */
+  pages: number; page: [number, number]; targetBytes: number;
 }
 
 /** which baked sets show a part (bit per SETS entry; 0 = never seen = Tier 3). A settled framing needs the parts seen in its own
@@ -163,135 +165,209 @@ export function windowIdMaterial(side: THREE.Side, uniforms: BehindPass['uniform
 /** `player` = where the player stood when the pose was authored (the behind pass opens windows around it) */
 export interface BakePose { set: VisSet; pose: CamPose; player?: [number, number] }
 
-/** Renders part-ID tiles for every pose (main view at 1/4 resolution, mirror view at 1/8, matching the half-res
- *  reflection), reads them back in one go and counts pixels per part and set. The FOV is widened slightly so
- *  anything grazing a frame edge between two samples is kept. */
-export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene, nParts: number, poses: BakePose[], aspect: number, waterY: number, behind?: BehindPass): VisResult {
+/** Upper bound of a bake page (one render target): the WebGL2 guaranteed minimum of MAX_TEXTURE_SIZE and MAX_RENDERBUFFER_SIZE, so
+ *  the bake allocates the same modest targets on every device. (It used to stack every tile in one target whose height grew with
+ *  1 / aspect: 3840 x 11880 at 16:9, 3840 x 38104 at 665 x 1200; past the GPU limit the target was refused, every count read 0 and
+ *  every building was culled.) */
+export const BAKE_PAGE = 2048;
+
+export interface BakeOptions {
+  /** page size cap (default BAKE_PAGE; always clamped to the GPU limits) */
+  page?: number;
+  /** negative controls (DEV `?visfail=`): 'alloc' asks for a page past the GPU limit (a real refusal), 'zero' drops the counts after
+   *  a successful bake (a silent read failure); both must end in a VisBakeError, never in a culled district */
+  fail?: 'alloc' | 'zero';
+}
+
+/** the bake could not be trusted (target refused, GL error, empty counts): the caller keeps every part and reports it */
+export class VisBakeError extends Error {}
+
+/** Renders part-ID tiles for every pose (main view at 1/4 resolution, mirror view at 1/8, matching the half-res reflection) and
+ *  counts pixels per part and set. The FOV is widened slightly so anything grazing a frame edge between two samples is kept.
+ *  Tiles are packed into pages of at most BAKE_PAGE x BAKE_PAGE: each page is rendered, then counted into the same accumulating
+ *  counters (GPU) or read back and decoded (CPU), so the counts do not depend on how many pages there are. A tile's size depends on
+ *  the aspect only (480 x 270 at 16:9, as before). Throws VisBakeError when a target is incomplete, a GL error was raised, or a set
+ *  that has poses counted no pixel at all: a failed bake must never read as "nothing is visible". */
+export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene, nParts: number, poses: BakePose[], aspect: number, waterY: number, behind?: BehindPass, opts: BakeOptions = {}): VisResult {
   const t0 = performance.now();
-  const mainW = 480, mainH = Math.round(480 / aspect), mirW = 240, mirH = Math.round(240 / aspect);
-  const tiles: Array<{ set: VisSet; pose: CamPose; mirror: boolean; x: number; y: number; w: number; h: number }> = [];
-  const cols = 8, W = cols * mainW;
-  let y = 0;
-  for (let i = 0; i < poses.length; i += cols) { poses.slice(i, i + cols).forEach((p, j) => tiles.push({ ...p, mirror: false, x: j * mainW, y, w: mainW, h: mainH })); y += mainH; }
-  const mcols = Math.floor(W / mirW);
-  for (let i = 0; i < poses.length; i += mcols) { poses.slice(i, i + mcols).forEach((p, j) => tiles.push({ ...p, mirror: true, x: j * mirW, y, w: mirW, h: mirH })); y += mirH; }
-  const H = y;
-  const rt = new THREE.WebGLRenderTarget(W, H, { depthBuffer: true, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false });
-  rt.scissorTest = true;
-  const rt2 = behind ? new THREE.WebGLRenderTarget(W, H, { depthBuffer: true, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false }) : null;
-  if (rt2) rt2.scissorTest = true;
-  const cam = new THREE.PerspectiveCamera(34, aspect, 1.5, 900);
-  const mir = new THREE.PerspectiveCamera(34, aspect, 1.5, 900);
+  const gl = renderer.getContext() as WebGL2RenderingContext;
+  const vp = gl.getParameter(gl.MAX_VIEWPORT_DIMS) as Int32Array;
+  const limit = Math.min(renderer.capabilities.maxTextureSize, gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) as number, vp[0], vp[1]);
+  const cap = Math.min(opts.page ?? BAKE_PAGE, limit);
+  // tile size: 480 x 480 / aspect (wide frames, unchanged), bounded to 480 tall for frames narrower than square
+  const tile = (n: number) => (aspect >= 1 ? [n, Math.round(n / aspect)] : [Math.round(n * aspect), n]);
+  const [mainW, mainH] = tile(480), [mirW, mirH] = tile(240);
+  if (mainW > cap || mainH > cap) throw new VisBakeError(`visibility bake: a ${mainW} x ${mainH} tile does not fit a ${cap} px page`);
+  type Tile = BakePose & { mirror: boolean; page: number; x: number; y: number; w: number; h: number };
+  const tiles: Tile[] = [];
+  // shelf packing, main tiles then mirror tiles (on a new row)
+  let page = 0, x = 0, y = 0, rowH = 0, pageW = 0, pageH = 0;
+  const place = (p: BakePose, mirror: boolean, w: number, h: number) => {
+    if (x + w > cap) { x = 0; y += rowH; rowH = 0; }
+    if (y + h > cap) { page++; x = 0; y = 0; rowH = 0; }
+    tiles.push({ ...p, mirror, page, x, y, w, h });
+    x += w; rowH = Math.max(rowH, h); pageW = Math.max(pageW, x); pageH = Math.max(pageH, y + h);
+  };
+  for (const p of poses) place(p, false, mainW, mainH);
+  x = cap;
+  for (const p of poses) place(p, true, mirW, mirH);
+  const pages = page + 1;
+  if (opts.fail === 'alloc') pageH = limit + 1;
+  const counter = renderer.extensions.has('EXT_float_blend') && nParts < 1 << 20;
+  const CW = 1024, rows = Math.ceil((nParts + 1) / CW), CH = rows * SETS.length * LANES;
+  const targetBytes = pageW * pageH * 8 * (behind ? 2 : 1) + (counter ? CW * CH * 16 * (behind ? 2 : 1) : 0);
+
+  const made: Array<{ dispose(): void }> = [];
+  const target = (w: number, h: number, o: THREE.RenderTargetOptions) => { const t = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false, ...o }); made.push(t); return t; };
   const prevTarget = renderer.getRenderTarget(), prevAuto = renderer.autoClear;
   const prevClear = new THREE.Color(); renderer.getClearColor(prevClear); const prevAlpha = renderer.getClearAlpha();
-  renderer.autoClear = false;
-  renderer.setRenderTarget(rt);
-  renderer.setClearColor(0x000000, 0);
-  for (const t of tiles) {
-    applyPose(cam, t.pose, aspect, 1.06);
-    let c = cam;
-    if (t.mirror) {
-      // the planar reflection camera: mirrored about the street plane, near plane tilted onto the water
-      const target = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion).add(cam.position);
-      const up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion);
-      mir.position.set(cam.position.x, -cam.position.y, cam.position.z);
-      mir.up.set(up.x, -up.y, up.z);
-      mir.lookAt(target.x, -target.y, target.z);
-      mir.updateMatrixWorld(true);
-      mir.projectionMatrix.copy(cam.projectionMatrix);
-      const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -waterY).applyMatrix4(mir.matrixWorldInverse);
-      const cp = new THREE.Vector4(plane.normal.x, plane.normal.y, plane.normal.z, plane.constant);
-      const e = mir.projectionMatrix.elements;
-      const q = new THREE.Vector4((Math.sign(cp.x) + e[8]) / e[0], (Math.sign(cp.y) + e[9]) / e[5], -1, (1 + e[10]) / e[14]);
-      cp.multiplyScalar(2 / cp.dot(q));
-      e[2] = cp.x; e[6] = cp.y; e[10] = cp.z + 1; e[14] = cp.w;
-      mir.projectionMatrixInverse.copy(mir.projectionMatrix).invert();
-      c = mir;
+  const complete = (t: THREE.WebGLRenderTarget) => { renderer.setRenderTarget(t); return gl.checkFramebufferStatus(gl.FRAMEBUFFER); };
+  for (let i = 0; i < 32 && gl.getError() !== gl.NO_ERROR; i++);
+  let tRead = 0, tDecode = 0;
+  try {
+    const rt = target(pageW, pageH, { depthBuffer: true });
+    const rt2 = behind ? target(pageW, pageH, { depthBuffer: true }) : null;
+    for (const t of rt2 ? [rt, rt2] : [rt]) {
+      const st = complete(t);
+      if (st !== gl.FRAMEBUFFER_COMPLETE) throw new VisBakeError(`visibility bake: the ${t.width} x ${t.height} page target is incomplete (status 0x${st.toString(16)}; GPU limit ${limit})`);
     }
-    rt.viewport.set(t.x, t.y, t.w, t.h); rt.scissor.set(t.x, t.y, t.w, t.h);
-    renderer.setRenderTarget(rt);
-    renderer.clear(true, true, false);
-    renderer.render(scene, c);
-    if (behind && rt2 && !t.mirror) {
-      // the same view without the occludable parts, ID'd only inside the reveal windows (the mirror pass never reveals)
-      const bu = behind.uniforms, wins = behind.windowsFor(c, t).slice(0, WIN_MAX);
-      bu.uTile.value.set(t.x, t.y, t.w, t.h); bu.uWinN.value = wins.length;
-      wins.forEach((w, i) => bu.uWin.value[i].set(w[0], w[1], w[2], w[3]));
-      rt2.viewport.set(t.x, t.y, t.w, t.h); rt2.scissor.set(t.x, t.y, t.w, t.h);
-      renderer.setRenderTarget(rt2);
-      renderer.clear(true, true, false);
-      renderer.render(behind.scene, c);
-    }
-  }
-  rt.scissorTest = false;
-  rt.viewport.set(0, 0, W, H); rt.scissor.set(0, 0, W, H);
-  if (rt2) { rt2.scissorTest = false; rt2.viewport.set(0, 0, W, H); rt2.scissor.set(0, 0, W, H); }
-  const t1 = performance.now();
-  let t2 = 0;
-  const countIds = (src: THREE.WebGLRenderTarget, tl: typeof tiles): Record<VisSet, Uint32Array> => {
-  const counts = Object.fromEntries(SETS.map((s) => [s, new Uint32Array(nParts + 1)])) as Record<VisSet, Uint32Array>;
-  if (renderer.extensions.has('EXT_float_blend') && nParts < 1 << 20) {
-    // GPU reduction: one point per ID pixel, additively accumulated into a (part x set) float counter target.
-    // Neighbouring pixels land in different lanes (64 of them) so the blend units never serialise on one hot
-    // counter; the small lane histogram is read back and summed.
-    const CW = 1024, rows = Math.ceil((nParts + 1) / CW), CH = rows * SETS.length * LANES;
-    const crt = new THREE.WebGLRenderTarget(CW, CH, { type: THREE.FloatType, depthBuffer: false, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false });
-    const maxPx = Math.max(...tl.map((t) => t.w * t.h));
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(maxPx * 3), 3));
-    const mat = new THREE.RawShaderMaterial({
-      glslVersion: THREE.GLSL3, vertexShader: SCATTER_VERT, fragmentShader: SCATTER_FRAG, depthTest: false, depthWrite: false,
-      blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation,
-      uniforms: { tIds: { value: src.texture }, uOrigin: { value: new THREE.Vector2() }, uW: { value: 1 }, uRow: { value: 0 }, uCW: { value: CW }, uSize: { value: new THREE.Vector2(CW, CH) } },
-    });
-    const pts = new THREE.Points(geo, mat); pts.frustumCulled = false;
-    const ps = new THREE.Scene(); ps.add(pts);
-    const oc = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-    renderer.setRenderTarget(crt);
-    renderer.setClearColor(0x000000, 0); renderer.clear(true, false, false);
-    for (const t of tl) {
-      mat.uniforms.uOrigin.value.set(t.x, t.y); mat.uniforms.uW.value = t.w; mat.uniforms.uRow.value = SETS.indexOf(t.set) * rows;
-      geo.setDrawRange(0, t.w * t.h);
-      renderer.render(ps, oc);
-    }
-    const buf = new Float32Array(CW * CH * 4);
-    renderer.readRenderTargetPixels(crt, 0, 0, CW, CH, buf);
-    if (!t2) t2 = performance.now();
-    SETS.forEach((s, si) => {
-      for (let id = 1; id <= nParts; id++) {
-        let n = 0;
-        for (let l = 0; l < LANES; l++) n += buf[(((si * rows + Math.floor(id / CW)) * LANES + l) * CW + (id % CW)) * 4];
-        counts[s][id] = n;
-      }
-    });
-    geo.dispose(); mat.dispose(); crt.dispose();
-  } else {
-    renderer.setRenderTarget(src);
-    const px = new Uint8Array(W * H * 4);
-    renderer.readRenderTargetPixels(src, 0, 0, W, H, px);
-    if (!t2) t2 = performance.now();
-    for (const t of tl) {
-      const cnt = counts[t.set];
-      for (let j = t.y; j < t.y + t.h; j++) {
-        let k = (j * W + t.x) * 4;
-        for (let i = 0; i < t.w; i++, k += 4) {
-          if (px[k + 3] === 0) continue;
-          const id = px[k] | (px[k + 1] << 8) | (px[k + 2] << 16);
-          if (id > 0 && id <= nParts) cnt[id]++;
+    // counting: additive scatter into a (part x set x lane) float target when the GPU can blend floats, otherwise CPU decode per page
+    const makeCounter = (): Counter | null => {
+      if (!counter) return null;
+      const crt = target(CW, CH, { type: THREE.FloatType, depthBuffer: false });
+      if (complete(crt) !== gl.FRAMEBUFFER_COMPLETE) return null;
+      renderer.setClearColor(0x000000, 0); renderer.clear(true, false, false);
+      return scatterCounter(renderer, crt, Math.max(mainW * mainH, mirW * mirH), rows, nParts, made);
+    };
+    const main = makeCounter(), back = rt2 ? makeCounter() : null;
+    const cpu = Object.fromEntries(SETS.map((s) => [s, new Uint32Array(nParts + 1)])) as Record<VisSet, Uint32Array>;
+    const cpu2 = Object.fromEntries(SETS.map((s) => [s, new Uint32Array(nParts + 1)])) as Record<VisSet, Uint32Array>;
+    const px = main && (!rt2 || back) ? null : new Uint8Array(pageW * pageH * 4);
+    const decode = (src: THREE.WebGLRenderTarget, tl: Tile[], counts: Record<VisSet, Uint32Array>) => {
+      const r0 = performance.now();
+      renderer.readRenderTargetPixels(src, 0, 0, pageW, pageH, px!);
+      const r1 = performance.now(); tRead += r1 - r0;
+      for (const t of tl) {
+        const cnt = counts[t.set];
+        for (let j = t.y; j < t.y + t.h; j++) {
+          let k = (j * pageW + t.x) * 4;
+          for (let i = 0; i < t.w; i++, k += 4) {
+            if (px![k + 3] === 0) continue;
+            const id = px![k] | (px![k + 1] << 8) | (px![k + 2] << 16);
+            if (id > 0 && id <= nParts) cnt[id]++;
+          }
         }
       }
+      tDecode += performance.now() - r1;
+    };
+    const cam = new THREE.PerspectiveCamera(34, aspect, 1.5, 900);
+    const mir = new THREE.PerspectiveCamera(34, aspect, 1.5, 900);
+    renderer.autoClear = false;
+    renderer.setClearColor(0x000000, 0);
+    rt.scissorTest = true; if (rt2) rt2.scissorTest = true;
+    for (let pg = 0; pg < pages; pg++) {
+      const tl = tiles.filter((t) => t.page === pg);
+      for (const t of tl) {
+        applyPose(cam, t.pose, aspect, 1.06);
+        let c = cam;
+        if (t.mirror) {
+          // the planar reflection camera: mirrored about the street plane, near plane tilted onto the water
+          const target = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion).add(cam.position);
+          const up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion);
+          mir.position.set(cam.position.x, -cam.position.y, cam.position.z);
+          mir.up.set(up.x, -up.y, up.z);
+          mir.lookAt(target.x, -target.y, target.z);
+          mir.updateMatrixWorld(true);
+          mir.projectionMatrix.copy(cam.projectionMatrix);
+          const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -waterY).applyMatrix4(mir.matrixWorldInverse);
+          const cp = new THREE.Vector4(plane.normal.x, plane.normal.y, plane.normal.z, plane.constant);
+          const e = mir.projectionMatrix.elements;
+          const q = new THREE.Vector4((Math.sign(cp.x) + e[8]) / e[0], (Math.sign(cp.y) + e[9]) / e[5], -1, (1 + e[10]) / e[14]);
+          cp.multiplyScalar(2 / cp.dot(q));
+          e[2] = cp.x; e[6] = cp.y; e[10] = cp.z + 1; e[14] = cp.w;
+          mir.projectionMatrixInverse.copy(mir.projectionMatrix).invert();
+          c = mir;
+        }
+        rt.viewport.set(t.x, t.y, t.w, t.h); rt.scissor.set(t.x, t.y, t.w, t.h);
+        renderer.setRenderTarget(rt);
+        renderer.clear(true, true, false);
+        renderer.render(scene, c);
+        if (behind && rt2 && !t.mirror) {
+          // the same view without the occludable parts, ID'd only inside the reveal windows (the mirror pass never reveals)
+          const bu = behind.uniforms, wins = behind.windowsFor(c, t).slice(0, WIN_MAX);
+          bu.uTile.value.set(t.x, t.y, t.w, t.h); bu.uWinN.value = wins.length;
+          wins.forEach((w, i) => bu.uWin.value[i].set(w[0], w[1], w[2], w[3]));
+          rt2.viewport.set(t.x, t.y, t.w, t.h); rt2.scissor.set(t.x, t.y, t.w, t.h);
+          renderer.setRenderTarget(rt2);
+          renderer.clear(true, true, false);
+          renderer.render(behind.scene, c);
+        }
+      }
+      if (main) main.add(rt, tl); else decode(rt, tl, cpu);
+      if (rt2) { const tb = tl.filter((t) => !t.mirror); if (back) back.add(rt2, tb); else decode(rt2, tb, cpu2); }
     }
+    // GPU counters: one readback each (it waits for the GPU to finish the pages), then the lane sums on the CPU
+    const fromGpu = (c: Counter) => { const t = performance.now(), r = c.read(); tRead += r.readMs; tDecode += performance.now() - t - r.readMs; return r.counts; };
+    const counts = main ? fromGpu(main) : cpu;
+    const behindCounts = rt2 ? (back ? fromGpu(back) : cpu2) : undefined;
+    const err = gl.getError();
+    if (err !== gl.NO_ERROR) throw new VisBakeError(`visibility bake: GL error 0x${err.toString(16)} during the bake (${pages} pages of ${pageW} x ${pageH})`);
+    if (opts.fail === 'zero') for (const s of SETS) counts[s].fill(0);
+    // every set that has poses sees part of the district: an all-zero set means the counts were not read
+    const empty = SETS.filter((s) => poses.some((p) => p.set === s) && !counts[s].some((n) => n > 0));
+    if (empty.length) throw new VisBakeError(`visibility bake: no pixel counted for ${empty.join(', ')} (${poses.length} poses, ${pages} pages of ${pageW} x ${pageH})`);
+    const ms = performance.now() - t0;
+    return { counts, behind: behindCounts, poses: poses.length, ms, split: { render: ms - tRead - tDecode, readback: tRead, decode: tDecode }, pages, page: [pageW, pageH], targetBytes };
+  } finally {
+    renderer.setRenderTarget(prevTarget);
+    renderer.setClearColor(prevClear, prevAlpha);
+    renderer.autoClear = prevAuto;
+    for (const m of made) m.dispose();
   }
-  return counts;
+}
+
+interface Counter { add(src: THREE.WebGLRenderTarget, tl: Array<{ set: VisSet; x: number; y: number; w: number; h: number }>): void; read(): { counts: Record<VisSet, Uint32Array>; readMs: number } }
+/** GPU reduction: one point per ID pixel, additively accumulated into a (part x set) float counter target. Neighbouring pixels land in
+ *  different lanes (64 of them) so the blend units never serialise on one hot counter; the lane histogram is read back once and summed. */
+function scatterCounter(renderer: THREE.WebGLRenderer, crt: THREE.WebGLRenderTarget, maxPx: number, rows: number, nParts: number, made: Array<{ dispose(): void }>): Counter {
+  const CW = crt.width, CH = crt.height;
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(maxPx * 3), 3));
+  const mat = new THREE.RawShaderMaterial({
+    glslVersion: THREE.GLSL3, vertexShader: SCATTER_VERT, fragmentShader: SCATTER_FRAG, depthTest: false, depthWrite: false,
+    blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation,
+    uniforms: { tIds: { value: null }, uOrigin: { value: new THREE.Vector2() }, uW: { value: 1 }, uRow: { value: 0 }, uCW: { value: CW }, uSize: { value: new THREE.Vector2(CW, CH) } },
+  });
+  made.push(geo, mat);
+  const pts = new THREE.Points(geo, mat); pts.frustumCulled = false;
+  const ps = new THREE.Scene(); ps.add(pts);
+  const oc = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  return {
+    add(src, tl) {
+      renderer.setRenderTarget(crt);
+      mat.uniforms.tIds.value = src.texture;
+      for (const t of tl) {
+        mat.uniforms.uOrigin.value.set(t.x, t.y); mat.uniforms.uW.value = t.w; mat.uniforms.uRow.value = SETS.indexOf(t.set) * rows;
+        geo.setDrawRange(0, t.w * t.h);
+        renderer.render(ps, oc);
+      }
+    },
+    read() {
+      const buf = new Float32Array(CW * CH * 4);
+      const r0 = performance.now();
+      renderer.readRenderTargetPixels(crt, 0, 0, CW, CH, buf);
+      const readMs = performance.now() - r0;
+      const counts = Object.fromEntries(SETS.map((s) => [s, new Uint32Array(nParts + 1)])) as Record<VisSet, Uint32Array>;
+      SETS.forEach((s, si) => {
+        for (let id = 1; id <= nParts; id++) {
+          let n = 0;
+          for (let l = 0; l < LANES; l++) n += buf[(((si * rows + Math.floor(id / CW)) * LANES + l) * CW + (id % CW)) * 4];
+          counts[s][id] = n;
+        }
+      });
+      return { counts, readMs };
+    },
   };
-  const counts = countIds(rt, tiles);
-  const behindCounts = rt2 ? countIds(rt2, tiles.filter((t) => !t.mirror)) : undefined;
-  renderer.setRenderTarget(prevTarget);
-  renderer.setClearColor(prevClear, prevAlpha);
-  renderer.autoClear = prevAuto;
-  rt.dispose(); rt2?.dispose();
-  const t3 = performance.now();
-  return { counts, behind: behindCounts, poses: poses.length, ms: t3 - t0, split: { render: t1 - t0, readback: t2 - t1, decode: t3 - t2 } };
 }
 
 const LANES = 64;

@@ -61,6 +61,9 @@ export class ActorSystem {
 
   clear(): void { this.actors.length = 0; }
 
+  /** the same district rebuilt (resize re-bake, same seed and config): actors keep their state and follow the new build */
+  rebind(d: DistrictBuild): void { this.district = d; this.colliders = d.colliders; }
+
   populate(d: DistrictBuild, density: number, seed: number): void {
     this.district = d; this.colliders = d.colliders;
     const keepPlayer = this.player && this.actors.includes(this.player) ? this.player.pos.clone() : null;

@@ -1934,7 +1934,121 @@ Preuves (non versionnées) : `art-lab/characters/scratch/smith-facing/` (capture
 
 ---
 
+## Passe 5 — Fenêtres étroites : bake de visibilité par pages bornées, repli explicite, recadrage du cadre 16:9 (2026-10-17)
+
+### Demande (2026-10-17)
+- Mission de l'opérateur, transmise par une séance parente : dans des aperçus étroits ou verticaux, une grande partie du Merchant District
+  s'affiche sans ses bâtiments (PNJ, lanternes, quai, flaques et reflets restent). Bug bloquant : correctif définitif, prouvé empiriquement,
+  sans dégrader le rendu canonique 16:9. Pistes fournies : A débordement GPU du bake (`Visibility.ts`), B FOV excessif (`CameraRig.ts`),
+  C `App.resize()` sans re-bake. Hors périmètre : personnages, distribution, sources Aseprite, direction artistique, implantation, eau, VFX.
+- Base : `700179e` puis `2eb83d1` (même `src/`, seul le journal diffère). Mesures dans deux arbres détachés servis sur :5186 (base figée)
+  et :5187 (travail), chacun avec son cache Vite (deux serveurs sur le même `node_modules` se disputent `.vite/deps` : EPERM).
+
+### Cause — [OK] démontrée (base, graine 1842, `clean=1&static=1&freeze=7.3&occ=0`)
+- `bakeVisibility` empilait toutes les tuiles dans **une** cible de 3 840 × H, H = 35 rangées × round(480 / aspect) + 18 rangées ×
+  round(240 / aspect) : 11 880 px en 16:9, 21 120 en 900 × 900, **38 104 en 665 × 1200**. Limites ici (ANGLE D3D11, Iris Xe) :
+  MAX_TEXTURE_SIZE = MAX_RENDERBUFFER_SIZE = 16 384.
+- 665 × 1200 et 900 × 900 : `glRenderbufferStorage` → GL_INVALID_VALUE (« Desired resource size is greater than max renderbuffer size »),
+  `texImage2D: width or height out of range`, puis 258 avertissements GL_INVALID_FRAMEBUFFER_OPERATION ; la réduction GPU lit une texture
+  incomplète → **0 pixel compté dans les 8 jeux** → Tier 3 = 738/738 pièces, **17/17 bâtiments entièrement retirés**, 7 615 triangles
+  gardés (géométrie non taguée : sol, eau, lampes, étals) au lieu de 100 788. Élagué contre `vis=0` : 229 074 px (665 × 1200), 416 983 px
+  (900 × 900). L'appli ne signalait rien : échec silencieux. Même chose sur 7719 et 30417 (735/735 et 740/740 pièces retirées).
+- 1920 × 1080 et 1280 × 720 : même bake (il ne dépend que de l'aspect), Tier 3 317/738, 0 px contre `vis=0`. Mais la cible 16:9 dépasse
+  déjà 8 192 (limite de nombreux GPU) et pèse ≈ 700 Mio transitoires (RGBA8 + profondeur, deux cibles avec la passe « derrière »).
+- B confirmé : `fov × (16:9 / aspect)^0,85` donne 80,8° vertical en 665 × 1200 (30° en B), 48,9° en 900 × 900 ; même avec `vis=0`, le
+  district n'est qu'une bande entre ciel et eau (`viewport-fix/B-665x1200-static-before-after.png`).
+- C : sur la base, 1920 × 1080 → 665 × 1200 → 1920 × 1080 sans rechargement (pose B par défaut) : 0 px contre un chargement neuf à chaque
+  étape. Rien ne re-bake après un changement d'aspect, mais aucune pièce manquante n'a été **montrée** ici (le bake 16:9 + 6 % couvrait
+  cette pose) : [?] non démontré, rendu impossible par construction (ci-dessous).
+
+### Correctif
+1. **Bake par pages bornées** (`Visibility.ts`) : tuiles inchangées (480 × 270 / 240 × 135 en 16:9 ; bornées à 480 de haut sous l'aspect 1),
+   rangées en étagères dans des pages ≤ `BAKE_PAGE` = 2 048 (minimum garanti WebGL2), bornées aussi par MAX_TEXTURE_SIZE,
+   MAX_RENDERBUFFER_SIZE et MAX_VIEWPORT_DIMS. Chaque page est rendue puis comptée dans les **mêmes** compteurs additifs (GPU), ou relue et
+   décodée (CPU) ; une seule relecture des compteurs à la fin. 16:9 : 13 pages de 1 920 × 2 025 ; cibles du bake **75,3 Mio** (deux pages +
+   deux compteurs) au lieu de ≈ 704 Mio. Vues miroir, comptes par pièce × 8 jeux et passe « derrière » conservés (`uTile` en coordonnées de page).
+2. **Repli explicite** : cible incomplète (`checkFramebufferStatus`), erreur GL levée pendant le bake, ou un jeu qui a des poses mais aucun
+   pixel compté → `VisBakeError`. `App.regenerate` garde alors **toutes** les pièces (comme `vis=0`), écrit un `console.error`, expose
+   `visibility.error` dans `snapshot()` et une ligne « VISIBILITY BAKE FAILED, culling off » au panneau. Compteur flottant incomplet → relecture
+   CPU (pas un échec).
+3. **Cadrage** (`CameraRig.applyFrame`) : le champ vertical d'une pose est celui du 16:9 à tout aspect (plus d'élargissement). Une fenêtre plus
+   étroite que 16:9 montre un **recadrage horizontal du cadre 16:9**, placé par un décentrement d'objectif (`projectionMatrix.elements[8]`)
+   tel que le joueur garde son NDC du cadre 16:9 ; ≥ 16:9 : inchangé (Hor+). Le recadrage ne sort jamais du cadre baké : il ne peut montrer
+   aucune pièce coupée. Le graphe compose ses poses à `rig.poseAspect` = clamp(aspect, 16:9, cadre baké) (`?blend=`, `visproof`,
+   `occ-inventory` aussi) ; reflet, particules, reveal et sprites lisent la matrice de projection et suivent.
+4. **Resize** (`App.resize`) : le bake couvre max(aspect, 16:9) (`rig.frame`). Plus étroit : rien à refaire. Plus large que le cadre baké :
+   recadrage vertical du cadre baké en attendant, puis, 400 ms après la fin du resize, district reconstruit pour le nouveau cadre (même graine ;
+   `ActorSystem.rebind` : acteurs et particules gardent leur état). Bake raté ou `vis=0` : `rig.frame` = ∞ (tout est gardé).
+5. Contrôles DEV : `?visfail=alloc` (page au-delà de la limite GPU : vrai refus), `?visfail=zero` (comptes effacés après un bake réussi),
+   `?vispage=<px>` (taille de page). Outil `tools/viewport-proof.mjs` (bake, géométrie du cadre, culling, resize, contrôles négatifs).
+
+### Validation
+- **Rendu canonique 1920 × 1080** (`baked-proof.mjs shots`, scène complète : distribution, particules, reveal ; `freeze=7.3`) : A, B, C, D,
+  AB, BC, CD, BD × graines 1842 / 7719 / 30417 : base contre travail **0 px dans les 24 vues** ; témoin de répétition (base deux fois) 0 px ;
+  contrôle négatif `camB=-57.45` (lacet +0,05°) : B et les mélanges avec B diffèrent (0,78-1,19 M px), C, D, CD à 0, A à 0 / 39 px (le bake de B
+  change). Premier essai sans `freeze` : témoin à 1,88 M px partout (grain lié à `uTime`) → mesure refaite.
+- **Comptes par pièce** (16:9, base contre travail) : 1842 : 294 pièces aux comptes différents (Σ|Δ| = 2 788 px sur ≈ 25 M comptés), **2 masques**
+  changent (pièces 97, 106 : 1-2 px, gagnent CD / AB) ; Tier 3 317 = 317, triangles gardés 100 788 = 100 788 ; 42 classes au lieu de 41,
+  triangles dessinés B 210,1 k =, C 167,9 k =, D 239,2 → 239,5 k. 7719 : 4 masques, Tier 3 302 → 303 (pièce 146 : mur est, étage 2, rangée
+  du fond, 1 px en CD → 0), 100 502 → 100 270 triangles. 30417 : 4 masques, Tier 3 304 = 304 (73 coupée, 106 gardée), 97 071 → 97 183.
+  Toutes : murs latéraux de la rangée du fond vus par **un** pixel de bake (≈ 4 px écran en 1080p). Cause : la rastérisation dépend de la
+  position de la tuile dans la cible (y ≤ 2 048 au lieu de ≤ 11 880 : précision du viewport et de la profondeur) ; preuve : pages de 2 048 /
+  1 024 / 600 → Σ|Δ| 2 788 / 2 911 / 3 014 contre la base, mêmes masques ; la base rejouée deux fois : 0.
+- **`tools/viewport-proof.mjs`** (travail ; 1920 × 1080, 1280 × 720, 900 × 900, 665 × 1200, 390 × 844, 2560 × 1080 × trois graines × 9 poses) :
+  bake réussi partout, Tier 3 identique de 390 × 844 à 1920 × 1080 (même bake) ; coins de la vue dans le cadre baké ≤ 1,0000, dérive du NDC du
+  joueur < 1e-6 ; contrôle « ancien objectif » 1,744 (900 × 900), 3,609 (665 × 1200), 4,974 (390 × 844) : le test voit le débordement.
+  Élagué contre `vis=0` : en 1920 × 1080, 1280 × 720 et 2560 × 1080, **listes identiques à la base** pour les trois graines (écarts hérités,
+  voir À reprendre 2b / 5) ; en fenêtre étroite 0 px sauf D-far 0-4 px et 7719 AB 2 px en 665 × 1200 (même nature). Base en 665 × 1200 :
+  113 959-257 632 px par pose, 17/17 bâtiments retirés.
+- **Resize sans rechargement** : 1920 × 1080 → 665 × 1200 → 1920 × 1080 → 2560 × 1080 (re-bake, cadre 2,3704) → 665 × 1200 : **0 px** contre
+  un chargement neuf à chaque étape.
+- **Contrôles négatifs du repli** (665 × 1200) : `visfail=alloc` → « the 1920 x 16385 page target is incomplete (status 0x8cd6; GPU limit
+  16384) », Tier 3 0/738, 0 px contre `vis=0`, une erreur console ; `visfail=zero` → « no pixel counted for A, B, C, D, AB, BC, CD, BD (273 poses,
+  13 pages of 1920 x 2025) », idem. Le même outil sur la base échoue (50 contrôles) : il détecte le bug.
+- **Coûts** (entrelacés, même session) : bake (médianes, 5 tours × 2 régénérations) 367 → 300 ms, génération 926 → 910 ms (à froid
+  1 083 → 1 046) ; 665 × 1200 : 307 ms. GPU (`perf.mjs`, deux séries) : 108 appels des deux côtés ; médianes B 10,57 / 10,99 puis 9,85 / 10,23 ms,
+  C 9,73 / 9,40, D 9,22 / 9,52 : signes mélangés, dans le bruit (± 1 ms par tour ; les passes de post-traitement, qui ne peuvent pas différer,
+  bougent autant). Mémoire résidente inchangée (188 Mo estimés) ; transitoire du bake ≈ 704 → 75,3 Mio (calculé sur les tailles allouées).
+- `npm run typecheck` vert.
+
+### Écarts et arbitrages pour l'opérateur
+- **Cadrage étroit = recadrage** : 665 × 1200 montre 31 % de la largeur du 16:9 (900 × 900 : 56 %), à la même hauteur ; les repères de bord de
+  cadre (lune en A, bateau et bannière en B) peuvent sortir du champ (`viewport-fix/A-…`, `B-…`, `D-…`). Montrer plus de contexte vertical
+  exigerait un bake élargi (plus de pièces gardées en 16:9) : décision de l'opérateur, non faite.
+- Les fenêtres entre 4:3 et 16:9 (portables 16:10) recadrent aussi (90 % de la largeur en 16:10) au lieu d'élargir le champ de 9 %.
+- 2 à 4 pièces marginales par graine changent de masque (± 1 pixel de bake) ; images canoniques identiques sur 24 vues.
+- Élargir la fenêtre au-delà du cadre baké coûte une régénération (≈ 0,9 s de fil principal) après le resize ; les PNJ gardent leur état.
+- `viewport-proof.mjs` sort en erreur tant que les écarts hérités (À reprendre 2b / 5) ne sont pas élucidés : 22 contrôles en échec, tous
+  identiques sur la base.
+
+### Décision opérateur (2026-10-17) — branche
+- Mot pour mot : « I approve a dedicated branch viewport-visibility-fix from main (2eb83d1) even though cast-polish-facing is still open.
+  Commit the fix, journal, AGENTS.md, tool and key images, then push. » Exception à la règle d'une seule branche de travail, accordée par
+  l'opérateur : `cast-polish-facing` (correctifs de distribution d'une autre séance) reste ouverte en parallèle ; aucun fichier commun
+  (vérifié avec cette séance : ses lignes d'`App.ts` / `ActorSystem.ts` ne recoupent pas les nôtres). Fusion dans `main` quand l'opérateur
+  juge la tâche finie ; l'arbitrage du cadrage (ci-dessus) reste ouvert.
+
+### Pensée
+- Une allocation GPU se dimensionne contre le minimum garanti (2 048) et se **vérifie** (complétude, erreurs GL) ; un bake qui conclut
+  « rien n'est visible » est une erreur, pas une réponse : le repli garde tout et le dit.
+- Un résultat de visibilité ne vaut que pour le cadre qu'il a baké : le rendu ne doit jamais montrer plus large (recadrer) ou il faut re-baker.
+  Un recadrage par décentrement d'objectif garde la composition autour du joueur sans sortir du cadre validé.
+- La rastérisation dépend de la position de la tuile dans la cible : des comptes bruts ne se comparent qu'à mise en page égale ; une preuve
+  de non-régression compare les masques et les images finales.
+- Une capture « déterministe » de `baked-proof` exige aussi `freeze=` (grain lié au temps) ; le témoin de répétition l'a montré.
+
+Preuves (non versionnées) : dossier de travail de la séance (sondes, diffs, comptes, journaux de mesure) ; images clés dans
+`screenshots/calibration/viewport-fix/`.
+
+---
+
 ## À reprendre (par priorité)
+
+**-2. Fenêtres étroites (Passe 5)** — bake par pages bornées + repli explicite + recadrage du cadre 16:9 : bâtiments présents à tout format
+testé (390 × 844 à 2560 × 1080), rendu canonique 16:9 identique au pixel (24 vues, trois graines). **À arbitrer par l'opérateur** : le
+recadrage (contexte horizontal réduit, repères de bord hors champ) ou un bake élargi pour plus de contexte vertical ; acceptation de la tâche.
+Commité et poussé sur la branche `viewport-visibility-fix` (depuis `2eb83d1`, ouverte avec l'accord de l'opérateur alors que `cast-polish-facing`
+reste ouverte) ; fusion dans `main` quand l'opérateur juge la tâche finie.
 
 **-1. PROCHAIN** — Passe 4A-undecies close : adressage par case entière commité (sprites générés identiques au bit à `eecea58`, ×2 stable
 quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ; écart de l'ombre portée du ×2 face à l'ancien aperçu
@@ -1976,21 +2090,31 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
    **à droite** du centre (NDC +0,35 → +0,68) — contrepartie de la continuité avec C ; (b) le long du bord de l'eau (z > 2,4) on passe **B → D** sans jamais
    traverser C ; (c) lacet max 0,96°/image en C↔D (contre ≤ 0,55° ailleurs) ; (d) les transitions B→C vers l'ouest (−254 px/s) et B→A (−131 px/s) font glisser le joueur à
    l'envers à l'écran (héritage de la passe 2, mesuré en 4B, non corrigé).
-2b. **Pixel à élucider** : D à (26 ; 3,5), 1 px d'écart (19/255) en (1244 ; 185) entre élagué et `vis=0`.
-3. **Coût de régénération** (+250 ms de la passe 2, ≈ +150–180 ms de la passe 3b, **≈ +180 ms de la passe 4B** : 505–523 → 682–715 ms ; bake 200 → 330 ms pour 273 poses) :
+2b. **Pixel à élucider** : D à (26 ; 3,5), 1 px d'écart (19/255) en (1244 ; 185) entre élagué et `vis=0` (1280 × 720 ; toujours là en passe 5,
+   3 px en 1920 × 1080, 4 px en 2560 × 1080, identiques avant / après le bake par pages).
+3. **Coût de régénération** (+250 ms de la passe 2, ≈ +150–180 ms de la passe 3b, **≈ +180 ms de la passe 4B** : 505–523 → 682–715 ms ; bake 200 → 330 ms pour 273 poses ;
+   passe 5 : bake par pages 367 → 300 ms en médiane, génération ≈ 910 ms avec la distribution actuelle) :
    mettre en cache les identifiants par graine, ou n'échantillonner que les poses concernées quand seul un réglage de caméra change ; réduire CD / BD (168 poses sur 273) a coûté 4 pièces de Tier 3 en précision : à ne faire qu'avec une preuve.
 3b. **Ordre des classes de dessin** : 41 classes, A/B/C pondérés ×2 (D dessine ≈ tout : 98,8 k / 100,8 k). Si D devient lourd (nouveau contenu), rejouer `planDraw` avec un autre poids ou séparer D dans un mesh à part (+ appels de dessin).
 3c. **Rive opposée / z caméra** : la caméra de D doit rester à z < ~18,5 (maisons de la rive opposée dès z = 19,8). Tout cadrage plus reculé exige de retirer ou d'abaisser ces maisons (elles sont aujourd'hui invisibles de A/B/C).
 4. **Rendu** : MSAA 4× → test d'un MSAA 2× / FXAA après le travail sur les sprites ; DOF et bloom à demi-résolution.
-5. **Autres graines** : le culling a été vérifié au pixel sur la graine 1842 ; refaire le contrôle `vis=0` vs défaut sur
-   7719 et 30417 avant de se fier à la visibilité sur toute graine (la passe 3b n'a vérifié que l'identité « reveal au repos vs
-   baseline » sur ces graines, pas le culling lui-même).
+5. **Autres graines** — **mesuré en passe 5** (`tools/viewport-proof.mjs`, `occ=0`, 9 poses) : écarts élagué / `vis=0` **hérités**, identiques
+   avant et après le bake par pages : 30417 B 109 px (max 4 / 255, forme sombre dans la brume, 1080p) et AB 48 px (max 9) ; 7719 C 1 px,
+   D (26 ; 3,5) 4 px (1080p) et 57 px en 2560 × 1080 (filets d'un pixel sur une arête lointaine). Aucun bâtiment manquant ; à élucider pièce
+   par pièce (bake plus fin, ou poses supplémentaires) avant de rendre `viewport-proof` vert.
 5b. **Écart hérité** : 17 px d'étincelle dans le canal coupés par le bake (B, joueur 15,5 ; −2,7) — voir `known-issues/pass2-vis-speck.png` ;
    élargir les poses échantillonnées ou comprendre quelle pièce l'émet.
 6. **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — à retirer proprement
    une fois qu'on accepte de décaler la ville lointaine d'une graine.
 
 ## Principes à garder
+
+- Une allocation GPU se dimensionne contre le minimum garanti (WebGL2 : 2 048) et se vérifie (complétude du framebuffer, erreurs GL) ; un bake
+  qui conclut « rien n'est visible » est une erreur : le repli garde toutes les pièces et le signale (console, stats, panneau).
+- Un résultat de visibilité ne vaut que pour le cadre baké : une fenêtre plus étroite montre un recadrage de ce cadre (décentrement d'objectif,
+  joueur au même NDC), jamais un champ plus large ; plus large que le cadre baké, on recadre puis on re-bake.
+- La rastérisation dépend de la position d'une tuile dans sa cible : les comptes bruts ne se comparent qu'à mise en page égale ; la
+  non-régression se prouve sur les masques et les images finales.
 
 - Mesurer d'abord (minuteurs GPU, entrelacé, baseline figée), optimiser ensuite.
 - Toute coupe de géométrie se prouve par un diff d'images `static=1`, culling actif vs `vis=0`.

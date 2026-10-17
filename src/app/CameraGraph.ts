@@ -178,6 +178,7 @@ export class CameraGraph {
     this.target = this.forced ?? (this.arrival ? 'A' : this.zoneFor(player.x, player.z, null));
     this.source = null;
     this.state = this.evalAnchor(this.target, this.focus.x, this.focus.z);
+    rig.focus = (rig.focus ?? new THREE.Vector3()).set(player.x, player.y + TORSO_Y, player.z);
     if (!rig.manual) rig.setPose(this.state);
   }
 
@@ -198,9 +199,11 @@ export class CameraGraph {
       this.t += dt;
       const w = smoother(Math.min(1, this.t / this.dur));
       const src = 'id' in this.source ? this.evalAnchor(this.source.id, this.focus.x, this.focus.z) : this.source.snap;
-      this.state = this.blendPose(src, tgt, w, this.torso.set(player.x, player.y + TORSO_Y, player.z), rig.aspectRatio);
+      this.state = this.blendPose(src, tgt, w, this.torso.set(player.x, player.y + TORSO_Y, player.z), rig.poseAspect);
       if (this.t >= this.dur) this.source = null;
     } else this.state = tgt;
+    // a window narrower than the frame keeps the player where the full frame has it (CameraRig.applyFrame)
+    rig.focus = (rig.focus ?? new THREE.Vector3()).set(player.x, player.y + TORSO_Y, player.z);
     if (!rig.manual) rig.setPose(this.state);
   }
 

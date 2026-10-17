@@ -4,7 +4,7 @@ import { PostFX } from '../atmosphere/PostFX';
 import { MoonShadow, PlanarReflection } from '../atmosphere/ShadowAndReflection';
 import { LightRig } from '../atmosphere/LightRig';
 import { U } from '../atmosphere/SceneUniforms';
-import { CameraRig } from './CameraRig';
+import { CameraRig, REF_ASPECT } from './CameraRig';
 import { CameraGraph, CAM_IDS, type CamId, type CamState } from './CameraGraph';
 import { MerchantDistrictGenerator, DEFAULT_CONFIG, type DistrictConfig, type DistrictBuild } from '../district/MerchantDistrictGenerator';
 import type { ForgeState } from '../district/ForgeGenerator';
@@ -18,7 +18,7 @@ import { loadProductionCast } from '../characters/BakedCast';
 import { ParticleSystem } from '../atmosphere/Particles';
 import { buildSky } from '../atmosphere/Sky';
 import { WATER_Y, WALK } from '../architecture/StreetComposer';
-import { bakeVisibility, type BakePose, type BehindPass } from '../district/Visibility';
+import { bakeVisibility, type BakeOptions, type BakePose, type BehindPass } from '../district/Visibility';
 import { OcclusionReveal, OCC_STYLES, playerReveal, revealSize, type OccStyle } from './Occlusion';
 import { PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, crowdVariants } from '../characters/SpriteGenerator';
 
@@ -68,6 +68,9 @@ export class App {
   /** low moon just right of the vanishing point: backlights the frontage, lays a glade on the canal */
   moonDir = new THREE.Vector3(0.965, 0.1736, 0.197).normalize();
   onRegenerate: Array<() => void> = [];
+  /** why the last visibility bake was rejected (culling is then off: every part kept); null when it succeeded or was not asked */
+  visibilityError: string | null = null;
+  private rebakeTimer = 0;
   private lastT = performance.now();
 
   constructor(private opts: AppOptions) {
@@ -155,7 +158,7 @@ export class App {
     if (bl && bl.length === 3 && (CAM_IDS as string[]).includes(bl[0]) && (CAM_IDS as string[]).includes(bl[1])) {
       const [a, b] = [bl[0] as CamId, bl[1] as CamId], p = this.actors.player.pos, t = THREE.MathUtils.clamp(Number(bl[2]), 0, 1);
       const w = t * t * t * (t * (t * 6 - 15) + 10);
-      const st = this.graph.blendPose(this.graph.evalAnchor(a, p.x, p.z), this.graph.evalAnchor(b, p.x, p.z), w, new THREE.Vector3(p.x, p.y + 1, p.z), this.rig.aspectRatio, a === 'D' || b === 'D');
+      const st = this.graph.blendPose(this.graph.evalAnchor(a, p.x, p.z), this.graph.evalAnchor(b, p.x, p.z), w, new THREE.Vector3(p.x, p.y + 1, p.z), this.rig.poseAspect, a === 'D' || b === 'D');
       this.rig.manual = true; this.rig.setPose(st);
       this.graph.state = st; this.debugActive = [a, b];
     }
@@ -170,6 +173,12 @@ export class App {
     this.reflection.setSize(w * pr, h * pr);
     this.rig.setAspect(w / h);
     U.uResolution.value.set(this.post.width, this.post.height);
+    // a window wider than the frame the district was baked for is shown as a vertical crop of that frame (CameraRig.applyFrame: no
+    // unbaked part on screen); once the resize has settled the district is rebuilt for the new frame, actors kept where they are
+    if (this.ready && w / h > this.rig.frame) {
+      clearTimeout(this.rebakeTimer);
+      this.rebakeTimer = window.setTimeout(() => { if (window.innerWidth / window.innerHeight > this.rig.frame) this.regenerate(undefined, { keepActors: true }); }, 400);
+    }
   }
 
   setMoonGain(v: number): void { this.moonGain = v; U.uMoonCol.value.copy(this.moonBase).multiplyScalar(v); }
@@ -202,6 +211,8 @@ export class App {
         set: this.visibleSet, level: this.drawLevel, parts: this.district.visibility.parts, tier3: this.district.visibility.hidden,
         classes: this.district.visibility.levels, trisKept: this.district.visibility.trisKept, trisTier3: this.district.visibility.trisHidden,
         bakeMs: Math.round(this.district.visibility.bakeMs), poses: this.district.visibility.poses, lightsOnScreen: this.lights.active, lightsCulled: this.lights.culled,
+        frame: this.rig.frame === Infinity ? 'any' : +this.rig.frame.toFixed(4), bakePages: this.district.visibility.bakePages, bakeTargetMB: +(this.district.visibility.bakeTargetBytes / 1048576).toFixed(1),
+        ...(this.visibilityError ? { error: this.visibilityError } : {}),
       } : undefined,
       occlusion: {
         enabled: this.occlusion.enabled ? 1 : 0, style: this.occlusion.style, eligible: this.occlusion.stats.eligible, active: this.occlusion.stats.active, tests: this.occlusion.stats.tests,
@@ -231,7 +242,8 @@ export class App {
     }
   }
 
-  regenerate(cfg?: Partial<DistrictConfig>): void {
+  /** `keepActors`: the same district rebuilt for another frame (resize re-bake): actors and particles carry on instead of re-spawning */
+  regenerate(cfg?: Partial<DistrictConfig>, opts: { keepActors?: boolean } = {}): void {
     if (cfg) Object.assign(this.config, cfg);
     if (this.district) {
       this.scene.remove(this.district.group);
@@ -239,19 +251,37 @@ export class App {
     }
     const t0 = performance.now();
     // camera graph -> visible sets: the district is baked against every authored pose (and blend) before its
-    // meshes are built, so only what those views can show is kept (?vis=0 keeps everything, for A/B checks)
+    // meshes are built, so only what those views can show is kept (?vis=0 keeps everything, for A/B checks). The bake covers the
+    // window's frame, at least 16:9 (a narrower window is a crop of the 16:9 frame, see CameraRig.applyFrame). A bake that fails
+    // keeps every part and says so (console, stats, panel): a visibility failure must never remove buildings.
+    const frame = Math.max(this.rig.aspectRatio, REF_ASPECT);
+    let baked = false;
+    this.visibilityError = null;
     const bake = this.opts.params.get('vis') === '0' ? undefined
-      : (scene: THREE.Scene, n: number, behind?: Pick<BehindPass, 'scene' | 'uniforms'>) =>
-        bakeVisibility(this.renderer, scene, n, this.graph.samplePoses(WALK, this.rig.aspectRatio), this.rig.aspectRatio, WATER_Y, this.occlusion.enabled && behind && this.opts.params.get('occbehind') !== '0' ? { ...behind, windowsFor: (cam, p) => this.revealWindows(cam, p) } : undefined);
+      : (scene: THREE.Scene, n: number, behind?: Pick<BehindPass, 'scene' | 'uniforms'>) => {
+        try {
+          const v = bakeVisibility(this.renderer, scene, n, this.graph.samplePoses(WALK, frame), frame, WATER_Y, this.occlusion.enabled && behind && this.opts.params.get('occbehind') !== '0' ? { ...behind, windowsFor: (cam, p) => this.revealWindows(cam, p) } : undefined, this.bakeOptions());
+          baked = true;
+          return v;
+        } catch (e) {
+          this.visibilityError = String((e as Error)?.message ?? e);
+          console.error(`${this.visibilityError} -> visibility culling disabled for this district: every part is kept`);
+          return null;
+        }
+      };
     const occTest = this.opts.params.get('occtest')?.split(',').filter(Boolean);
     this.district = this.generator.generate(this.config, bake, { occTest });
     this.scene.add(this.district.group);
     const dist = this.district;
     this.occlusion.setup(dist.occluders.defs, dist.occluders.meshes, (a) => dist.setOccActive(a));
-    this.actors?.populate(this.district, this.config.npcDensity, this.config.seed);
-    this.particles?.clear(); this.particles?.setEmitters(this.district.emitters);
+    if (opts.keepActors && this.actors) this.actors.rebind(this.district);
+    else {
+      this.actors?.populate(this.district, this.config.npcDensity, this.config.seed);
+      this.particles?.clear(); this.particles?.setEmitters(this.district.emitters);
+    }
     this.syncLights();
     this.lastGenMs = performance.now() - t0;
+    this.rig.frame = baked ? frame : Infinity;
     this.rig.apply();
     this.updateShadowAndLights(0);
     // the static moon shadow sees every caster (all draw levels + the Tier 3 casters), which are then released
@@ -260,6 +290,13 @@ export class App {
     this.district.releaseShadowOnly();
     this.drawLevel = -1;
     this.onRegenerate.forEach((f) => f());
+  }
+
+  /** DEV negative controls / layout checks of the bake: ?visfail=alloc|zero (must fall back, see BakeOptions), ?vispage=<px> (page cap) */
+  private bakeOptions(): BakeOptions {
+    if (!import.meta.env.DEV) return {};
+    const q = this.opts.params, f = q.get('visfail'), pg = Number(q.get('vispage'));
+    return { ...(f === 'alloc' || f === 'zero' ? { fail: f } : {}), ...(pg > 0 ? { page: pg } : {}) };
   }
 
   /** behind-occluder windows of a baked pose: the reveal ellipse (tile NDC, with margin) around every quay position the

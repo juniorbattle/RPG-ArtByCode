@@ -53,6 +53,9 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
   player's screen glide against its walking direction, reveal fades / flicker. `g=x,z` = a player steering to a point.
 - `node tools/visproof.mjs [--keep=dir] "name|x,z|stable|A|B|C|D|X,Y,w" ...` — culling proof: pruned vs `vis=0` pixel diff
   (stable, pinned or frozen-blend poses); use QUERY with `occ=0`
+- `node tools/viewport-proof.mjs [--keep=dir] [--sizes=WxH,...] [--seeds=a,b]` — window-format proof: bake success / page sizes, the view never
+  leaving the baked frame, pruned vs `vis=0` at A-D + blends per size and seed, resize without reload vs fresh loads, and the `visfail`
+  negative controls (DEV server); exit 1 on any failure
 - `tools/eval.mjs` honours BASE_URL (serve a frozen baseline worktree on :5174 for A/B)
 - `npm run art:doctor` — read-only report of the character art toolchain (Node, repo, Art Lab, Aseprite, Aseprite AI Artist);
   "Aseprite not installed" is a valid state (exit 0) and it never reports the integration as validated. `-- --json` available.
@@ -74,7 +77,8 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 `camera=A|B|C|D` (pin a framing) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
 a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
-`static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`) ·
+`static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · DEV server only: `visfail=alloc|zero` (force a
+visibility-bake failure: the fallback must keep every part and report it) and `vispage=<px>` (bake page size) ·
 `occ=0` (no player reveal: pixel-identical to Pass 2) · `occstyle=soft|dither|hybrid` · `occforce=all|0,2` (force
 occluders open: review / visibility proof) · `occdebug=1` (proxy boxes, reveal ellipse, active list) ·
 `occbehind=0` (skip the behind-occluder bake pass) · `occtest=shopA,tall` (treat those buildings' front walls as
@@ -127,6 +131,10 @@ Four authored, semi-fixed framings, all on the canal side (+z of the pivot) look
   D's pivot is set so the player enters D where it stood in C, ndc x ~ +0.35). 1.3 s.
 Movement keys stay mapped through the yaw they were pressed under until released. Panel edits of a framing re-run
 the visibility bake. Graph: A AB B BC C CD D (+ BD for the water's-edge walker).
+Window formats (`CameraRig.applyFrame`): a pose's vertical field is its 16:9 one at every aspect. Wider than 16:9 sees more on the sides (up to
+the frame the bake covered, `rig.frame`); narrower shows a horizontal crop of the 16:9 frame, placed by an off-axis lens shift so the player keeps
+its 16:9 NDC; wider than the baked frame shows a vertical crop of it until the district is re-baked (400 ms after the resize settles, actors kept).
+The graph composes its poses at `rig.poseAspect`. Never widen the lens on narrow windows: the view must stay inside the baked frame.
 
 ## Visibility-driven generation (`src/district/Visibility.ts`)
 Every wall per floor / roof / far house / bridge is a visibility part. After generation the graph's ~270 sample
@@ -137,7 +145,9 @@ stores its triangles class by class (class = distinct need mask), ordered by `pl
 triangles drawn per framing / blend; A/B/C and their blends weigh double so they never draw more than before D); a
 framing or blend = the prefix of classes up to the last it needs = one drawRange, no extra draw call. `levelOf(ids)` /
 `setLevel(n)` replace the old 0/1/2 levels. Building back walls are not generated (keep the skipped RNG draw so seeds
-stay identical). Verify culling with `tools/visproof.mjs` (pruned vs `vis=0`, same session, `occ=0` to keep the reveal
+stays identical). The bake renders its tiles into pages of at most 2048 x 2048 (the WebGL2 guaranteed minimum, also clamped to the GPU
+limits) and counts them into shared counters; an incomplete target, a GL error or an empty set throws `VisBakeError` and the district keeps every
+part (`snapshot().visibility.error`, console, panel): a failed bake must never cull. Verify culling with `tools/visproof.mjs` (pruned vs `vis=0`, same session, `occ=0` to keep the reveal
 fade out of the comparison): they must be pixel-identical.
 
 ## Player occlusion reveal (`src/app/Occlusion.ts`)

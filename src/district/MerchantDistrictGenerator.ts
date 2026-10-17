@@ -84,6 +84,8 @@ export interface VisibilityReport {
   classes: Array<{ mask: string; parts: number; tris: number }>;
   hi: Record<string, number>; drawn: Record<string, number>; levels: number;
   bakeMs: number; poses: number; bakeSplit: VisResult['split'] | null;
+  /** bake pages and the bytes of the targets it allocated (0 when nothing was baked) */
+  bakePages: number; bakeTargetBytes: number;
   buildings: Array<{ id: string; tier: Tier; parts: number; hidden: number; px: Record<CamId, number> }>;
   background: Record<string, { tier: Tier; total: number; hidden: number }>;
   /** the part registry and raw bake counts (debug / reports) */
@@ -172,7 +174,7 @@ export class MerchantDistrictGenerator {
 
   /** `bake` renders the visibility part ids from the camera graph's poses (see Visibility.ts); without it every
    *  part is kept and drawn in every framing. */
-  generate(cfg: DistrictConfig, bake?: (scene: THREE.Scene, nParts: number, behind?: Pick<BehindPass, 'scene' | 'uniforms'>) => VisResult, opts: { occTest?: string[] } = {}): DistrictBuild {
+  generate(cfg: DistrictConfig, bake?: (scene: THREE.Scene, nParts: number, behind?: Pick<BehindPass, 'scene' | 'uniforms'>) => VisResult | null, opts: { occTest?: string[] } = {}): DistrictBuild {
     const t0 = performance.now();
     const tm: Record<string, number> = {};
     const lap = (k: string, from: number) => { tm[k] = performance.now() - from; return performance.now(); };
@@ -518,7 +520,7 @@ export class MerchantDistrictGenerator {
     const out: DistrictBuild = {
       group, forgeGroup, lights, emitters, colliders, buildings: buildingsOut, npcs, spawn: [-7.5, 0, 1.8], walk: street.walkable, streetPath: path,
       stats: { triangles: tris, instances: batch.instanceCount, buildings: buildingsOut.length, generatorMs: performance.now() - t0, windows, modules, timings: tm },
-      visibility: { ...visStats, bakeMs: vis?.ms ?? 0, bakeSplit: vis?.split ?? null, poses: vis?.poses ?? 0, buildings: report, background: Object.fromEntries(farGroups), registry: parts, counts: vis?.counts ?? null, behind: behindReport },
+      visibility: { ...visStats, bakeMs: vis?.ms ?? 0, bakeSplit: vis?.split ?? null, poses: vis?.poses ?? 0, bakePages: vis?.pages ?? 0, bakeTargetBytes: vis?.targetBytes ?? 0, buildings: report, background: Object.fromEntries(farGroups), registry: parts, counts: vis?.counts ?? null, behind: behindReport },
       occluders: { defs: occDefs, meshes: occMeshes },
       setLevel, levelOf: (ids) => plan.hiOf(ids), setOccActive,
       releaseShadowOnly: () => { for (const m of shadowOnly) { group.remove(m); m.geometry.dispose(); } shadowOnly.length = 0; },

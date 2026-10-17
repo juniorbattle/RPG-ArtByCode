@@ -96,7 +96,7 @@ try {
         if (!near) continue;
         for (const w of [0.25, 0.5, 0.75]) {
           const sm = w * w * w * (w * (w * 6 - 15) + 10);
-          trace(set, g.blendPose(sa, sb, sm, new d.group.position.constructor(x, 1, z), app.rig.aspectRatio, a === 'D' || b === 'D'), x, z);
+          trace(set, g.blendPose(sa, sb, sm, new d.group.position.constructor(x, 1, z), (app.rig.poseAspect ?? app.rig.aspectRatio), a === 'D' || b === 'D'), x, z);
         }
       }
     }
