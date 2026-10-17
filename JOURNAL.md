@@ -1914,8 +1914,13 @@ autotests) ; paquets `provenance/<id>/` ; captures brutes, critiques et scripts 
 ### Décision opérateur (2026-10-17) — [OK] approuvé
 - Mot pour mot : « J'approuve l'orientation du forgeron vers l'enclume (Passe 4A-vicies). Ouvre une branche pour cette tâche, commite le
   changement, le journal et les captures, puis pousse. »
-- `npm run typecheck` vert. Changement, journal et captures clés commités ensemble sur la branche de la tâche, poussée ; fusion dans `main`
-  quand l'opérateur juge la tâche finie (`AGENTS.md`).
+- `npm run typecheck` vert. Changement, journal et captures clés commités ensemble sur la branche de la tâche (`cast-polish-facing`,
+  partagée sur décision de l'opérateur avec les correctifs de distribution d'une autre séance, chacune ne commitant que ses fichiers), poussée.
+- Fusion demandée par l'opérateur, mot pour mot : « si tout est bon on peut merge vers main comme cela l'autre tache en cours sera a jour ».
+  Vérifié avant sur une copie propre de `700179e` : `npm run build` vert (typecheck compris, JS 869,65 Ko, gzip 246,05 Ko), `art:validate`
+  0 erreur. `main` avancé en avance rapide jusqu'au commit de cette note, sans changer la branche de l'arbre partagé. La branche
+  `cast-polish-facing` est **gardée** : les correctifs de distribution de l'autre séance y sont en cours (non commités) ; elle se fusionne et
+  se supprime quand l'opérateur juge cette autre tâche finie.
 
 ### Pensée
 - Une animation qui n'existe que de profil prend son côté écran du signe d'une seule composante du regard : un regard « presque vers la caméra »
@@ -1947,9 +1952,9 @@ acceptée : fusionne la branche cast-blacksmith-guard-hooded dans main, pousse m
 rapide dans `main`, puis supprimée (locale et distante) ; la prochaine tâche ouvre sa propre branche. Décisions de mise en scène ouvertes : un second garde différent (miroir ou variante) au lieu de
 jumeaux, lances. Restent générés : héros, chat, foule.
 **-1c. Fait (Passe 4A-vicies)** : forgeron tourné vers l'enclume (`Math.atan2(0.55, -0.25)`), frappe côté enclume en A, B, C, D et mélanges,
-D et forge sabotée identiques au pixel ; change l'image de démarrage en A, B, C. **Approuvé par l'opérateur le 17/10**, commité et poussé sur
-la branche de la tâche ; fusion dans `main` quand l'opérateur juge la tâche finie. Observation ouverte : tête du marteau cuit peu lisible sur
-la lueur de l'enclume.
+D et forge sabotée identiques au pixel ; change l'image de démarrage en A, B, C. **Approuvé par l'opérateur le 17/10** et **fusionné dans
+`main`** (avance rapide, à sa demande) ; la branche partagée `cast-polish-facing` reste ouverte pour les correctifs de distribution de l'autre
+séance. Observation ouverte : tête du marteau cuit peu lisible sur la lueur de l'enclume.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
