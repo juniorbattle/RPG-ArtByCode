@@ -2299,6 +2299,25 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 
 ---
 
+## Passe 4A-duovicies — Distribution : revue des planches révisées, passe de rig sur les défauts hérités (C3) (2026-10-17)
+
+### Demande (2026-10-17)
+- Séance de travail unique, reprise des séances précédentes (Passes 5, 5b, 4A-vicies, 4A-unvicies). Mot pour mot : « Montre-moi les cinq
+  planches révisées une à une (C1), puis on décidera de la passe de rig. » Puis : « Les cinq planches révisées me conviennent. Ouvre une
+  branche pour la passe de rig C3 sur les défauts hérités, en commençant par le garde. » Branche `cast-rig-fixes` ouverte depuis `main`
+  (`55363fc`) et poussée.
+
+### Revue des planches révisées (C1) — [OK] approuvées par l'opérateur
+- Montrées une à une : `reviews/<id>/0N-revision-black-pixels.png` (approuvée / révisée / changements, première image de chaque animation),
+  puis, pour décider de la passe de rig, une planche des cycles de marche par personnage (×3, fond enclavé en magenta, images signalées par la
+  critique à l'aveugle de la 4A-unvicies encadrées ; non versionnée).
+- Approbation consignée mot pour mot (« Les cinq planches révisées me conviennent. ») dans les cinq paquets (`approvals`, `revisions[].approval`,
+  `status`), manifestes (`notes`) et README de revue ; elle porte sur les exports de la 4A-unvicies (empreintes inchangées). Aucune planche
+  n'est déclarée Gold Master. `art:validate` 0 erreur, `verify-provenance` : cinq paquets intacts.
+- Recolorations de la 4A-unvicies (893 à 1 754 texels par planche, même palette) : cause toujours non isolée [?].
+
+---
+
 ## À reprendre (par priorité)
 
 **-2. Fenêtres étroites (Passe 5)** — bake par pages bornées + repli explicite + recadrage du cadre 16:9 : bâtiments présents à tout format
@@ -2338,11 +2357,12 @@ D et forge sabotée identiques au pixel ; change l'image de démarrage en A, B, 
 séance. Observation ouverte : tête du marteau cuit peu lisible sur la lueur de l'enclume.
 **-1d. Fait (Passe 4A-unvicies)** : traits noirs du cou retirés des cinq planches (fermeture verticale seulement sous la rangée 48,
 palettes approuvées épinglées, jambes identiques aux planches approuvées) et vue des marcheurs tirée de leur pas projeté à l'écran ; fusionné
-dans `main` à la demande de l'opérateur (« si la tache est fini on peut commit/push vers main »). Ouverts : (a) l'opérateur n'a pas encore vu
-les planches révisées une à une (`reviews/<id>/0N-revision-black-pixels.png`) ; (b) à juger en mouvement : la bande 40° / 50° et les
-diagonales du joueur, désormais de profil ; (c) défauts hérités des planches approuvées relevés par la critique à l'aveugle (manches du docker
-coupées par le balancement des bras, trous du tabard du garde, main du passant, jambe arrière du garde de profil, contour de bras du forgeron
-de dos, chaussure de la marchande) : une passe de rig dédiée. Branche `cast-polish-facing` supprimée (locale et distante) à la demande de l'opérateur.
+dans `main` à la demande de l'opérateur (« si la tache est fini on peut commit/push vers main »). (a) **Fait (Passe 4A-duovicies)** : planches
+révisées montrées une à une et approuvées par l'opérateur le 17/10 (« Les cinq planches révisées me conviennent. »). Ouverts : (b) à juger en
+mouvement : la bande 40° / 50° et les diagonales du joueur, désormais de profil ; (c) défauts hérités des planches approuvées relevés par la
+critique à l'aveugle (manches du docker coupées par le balancement des bras, trous du tabard du garde, main du passant, jambe arrière du garde
+de profil, contour de bras du forgeron de dos, chaussure de la marchande) : passe de rig **en cours** (Passe 4A-duovicies, branche
+`cast-rig-fixes`, le garde d'abord). Branche `cast-polish-facing` supprimée (locale et distante) à la demande de l'opérateur.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande

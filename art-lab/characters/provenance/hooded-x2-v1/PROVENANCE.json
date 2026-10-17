@@ -1,6 +1,6 @@
 {
  "id": "hooded-x2-v1",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; the revised sheet itself not yet reviewed by the operator",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; the revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »)",
  "request": {
   "date": "2026-10-17",
   "by": "task brief from the parent working session (Claude Code), on the operator's project",
@@ -11,6 +11,12 @@
    "date": "2026-10-17",
    "by": "operator (git user wonmii)",
    "decision": "J'approuve blacksmith-x2-v1, guard-x2-v1 et hooded-x2-v1 pour la production (runtimeUse production). Active-les, valide, commite et pousse."
+  },
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "« Les cinq planches révisées me conviennent. »",
+   "scope": "the revised sheet of the black-pixel revision (Pass 4A-unvicies, export SHA-256 d8ca7bb9119873faf0a6a95f13bd70619250ee9948f57f2eeb2743314da02e17), after its review images were shown one by one in the working session (reviews/hooded-x2-v1/04-revision-black-pixels.png); not declared a Gold Master"
   }
  ],
  "source": {
@@ -75,7 +81,7 @@
    "change": "black-pixel revision: reconstruct-grid --closing-from=48, the approved palette pinned (palette.png), a last cleanup pass (see chain); the black strokes beside the neck, under the hood, are gone; the legs keep the approved texels. Exported sheet against the approved one: 441 texels removed, 4 added, 1558 recoloured, 0 new colours (64 colours, 64 before); same frames, tags, layout and metadata JSON. (A first attempt without any closing, --no-closing, lost the leg and boot outlines and was abandoned before the commit.)",
    "previousExportSha256": "52e71b9aca0da9e1169b37afc9e24ca9fd665691e67257e5df3820459910a7ac",
    "exportSha256": "d8ca7bb9119873faf0a6a95f13bd70619250ee9948f57f2eeb2743314da02e17",
-   "approval": "the operator's approval (approvals) was given for the previous sheet (previousExportSha256); the revised sheet is the operator-requested correction, merged into main at the operator's request: « si la tache est fini on peut commit/push vers main » (2026-10-17), before the operator had reviewed the revised sheet's images (reviews/hooded-x2-v1/)"
+   "approval": "the operator's approval (approvals) was given for the previous sheet (previousExportSha256); the revised sheet is the operator-requested correction, merged into main at the operator's request: « si la tache est fini on peut commit/push vers main » (2026-10-17), before the operator had reviewed the revised sheet's images (reviews/hooded-x2-v1/); reviewed afterwards: the operator saw them one by one (reviews/hooded-x2-v1/04-revision-black-pixels.png) and approved the revised sheet on 2026-10-17: « Les cinq planches révisées me conviennent. »"
   }
  ]
 }

@@ -1,6 +1,6 @@
 {
  "id": "merchant-x2-v2",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; the revised sheet itself not yet reviewed by the operator",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; the revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »)",
  "request": {
   "date": "2026-10-16",
   "by": "operator",
@@ -11,6 +11,12 @@
    "date": "2026-10-17",
    "by": "operator (git user wonmii)",
    "decision": "J'approuve dockworker-x2-v2 et merchant-x2-v2 pour la production (runtimeUse production). Active-les, valide, commite et pousse."
+  },
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "« Les cinq planches révisées me conviennent. »",
+   "scope": "the revised sheet of the black-pixel revision (Pass 4A-unvicies, export SHA-256 01dcbb4c6b054a02b5d5c037ed3fb02b4aa36db68961093d0ea26878996e99a9), after its review images were shown one by one in the working session (reviews/merchant-x2-v2/05-revision-black-pixels.png); not declared a Gold Master"
   }
  ],
  "why": "the operator asked for a result built on the shared reference images rather than waiting for a regenerated source (V4). The sheet's NPC 02 already has the common base's proportions (the same sheet and scale as the approved dock worker) and the three views a walking NPC needs; the merchant-x2-v1 experiment (ChatGPT V3 source, one front view, proportions rejected) stays archived as evidence.",
@@ -91,7 +97,7 @@
    "change": "black-pixel revision: reconstruct-grid --closing-from=48, the approved palette pinned (palette.png), a last cleanup pass (see chain); the near-black strokes beside the neck and the hair (front, back, profile: they read as long dark hair) are gone; the re-quantised views keep the approved palette (the texels counted as recoloured moved to a neighbouring colour of that palette); the legs and the hem keep the approved texels. Exported sheet against the approved one: 1843 texels removed, 0 added, 1754 recoloured, 0 new colours (64 colours, 64 before); same frames, tags, layout and metadata JSON. (A first attempt without any closing, --no-closing, lost the leg and boot outlines and was abandoned before the commit.)",
    "previousExportSha256": "b035fcde85c8057ac4eaa7f4677630423d2ed4fac37daf43cb2250b37972017f",
    "exportSha256": "01dcbb4c6b054a02b5d5c037ed3fb02b4aa36db68961093d0ea26878996e99a9",
-   "approval": "the operator's approval (approvals) was given for the previous sheet (previousExportSha256); the revised sheet is the operator-requested correction, merged into main at the operator's request: « si la tache est fini on peut commit/push vers main » (2026-10-17), before the operator had reviewed the revised sheet's images (reviews/merchant-x2-v2/)"
+   "approval": "the operator's approval (approvals) was given for the previous sheet (previousExportSha256); the revised sheet is the operator-requested correction, merged into main at the operator's request: « si la tache est fini on peut commit/push vers main » (2026-10-17), before the operator had reviewed the revised sheet's images (reviews/merchant-x2-v2/); reviewed afterwards: the operator saw them one by one (reviews/merchant-x2-v2/05-revision-black-pixels.png) and approved the revised sheet on 2026-10-17: « Les cinq planches révisées me conviennent. »"
   }
  ]
 }

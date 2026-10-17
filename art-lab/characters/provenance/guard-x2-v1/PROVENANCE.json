@@ -1,6 +1,6 @@
 {
  "id": "guard-x2-v1",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; the revised sheet itself not yet reviewed by the operator",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; the revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »)",
  "request": {
   "date": "2026-10-17",
   "by": "task brief from the parent working session (Claude Code), on the operator's project",
@@ -11,6 +11,12 @@
    "date": "2026-10-17",
    "by": "operator (git user wonmii)",
    "decision": "J'approuve blacksmith-x2-v1, guard-x2-v1 et hooded-x2-v1 pour la production (runtimeUse production). Active-les, valide, commite et pousse."
+  },
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "« Les cinq planches révisées me conviennent. »",
+   "scope": "the revised sheet of the black-pixel revision (Pass 4A-unvicies, export SHA-256 fa8224c197300d90360926afdf02affb4784f7f7b40fc1f60f20373fad639dbb), after its review images were shown one by one in the working session (reviews/guard-x2-v1/05-revision-black-pixels.png); not declared a Gold Master"
   }
  ],
  "source": {
@@ -75,7 +81,7 @@
    "change": "black-pixel revision: reconstruct-grid --closing-from=48, the approved palette pinned (palette.png), a last cleanup pass (see chain); the thin black strokes beside the face and the neck (and down the back of the profile's neck) are gone; the legs keep the approved texels. Exported sheet against the approved one: 884 texels removed, 0 added, 893 recoloured, 0 new colours (64 colours, 64 before); same frames, tags, layout and metadata JSON. (A first attempt without any closing, --no-closing, lost the leg and boot outlines and was abandoned before the commit.)",
    "previousExportSha256": "a4515db26b61a6a76d346c1b04e6a42d9c0a12a0fe486583eb858e622a0247c3",
    "exportSha256": "fa8224c197300d90360926afdf02affb4784f7f7b40fc1f60f20373fad639dbb",
-   "approval": "the operator's approval (approvals) was given for the previous sheet (previousExportSha256); the revised sheet is the operator-requested correction, merged into main at the operator's request: « si la tache est fini on peut commit/push vers main » (2026-10-17), before the operator had reviewed the revised sheet's images (reviews/guard-x2-v1/)"
+   "approval": "the operator's approval (approvals) was given for the previous sheet (previousExportSha256); the revised sheet is the operator-requested correction, merged into main at the operator's request: « si la tache est fini on peut commit/push vers main » (2026-10-17), before the operator had reviewed the revised sheet's images (reviews/guard-x2-v1/); reviewed afterwards: the operator saw them one by one (reviews/guard-x2-v1/05-revision-black-pixels.png) and approved the revised sheet on 2026-10-17: « Les cinq planches révisées me conviennent. »"
   }
  ]
 }
