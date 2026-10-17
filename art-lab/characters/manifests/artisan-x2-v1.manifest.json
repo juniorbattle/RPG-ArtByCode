@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "artisan-x2-v1",
   "kind": "character",
-  "status": "candidate",
+  "status": "approved",
   "source": "art-lab/characters/source/artisan-x2-v1.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/artisan-x2-v1.png",
@@ -27,7 +27,12 @@
       "note": "in-scene review (JOURNAL, Passe 4A-tervicies)"
     }
   ],
-  "approved": false,
-  "runtimeUse": "lab",
-  "notes": "CANDIDATE (Pass 4A-tervicies): an ambient townsperson of the crowd, replaces the generated crowd variant crowd0 only with the DEV flag ?cast=candidate until the operator approves it for production; the operator's request: « Je veux finaliser les NPC manquants de Merchant district afin d'avoir tous nos personnages de la scenes prets puis enfin passer au menage M1 et defaults herites, il faudra aussi faire un travail sur les performances GP, afin de s'assurer que le projet run bien dans le navigateur sans surcharge »; answers to the session's questions: crowd « 5 citadins ordinaires (Recommandé) » (03 Artisane, 07 Voyageur, 09 Citadine, 15 Vieux marchand, 22 Coursier); hero and cat « Générés pour l'instant (Recommandé) »; new placed NPCs « Non, remplacer seulement (Recommandé) ». Density x2 (64x96, feet on row 90), idle 4 + walk 6 frames in the three runtime facings, one 64-colour palette for the three views, presentation scale 0.9 (the cast's texel size on screen). Not declared a Gold Master. Source rights: use authorised by the operator (2026-10-16) subject to third-party rights, not exhaustively verified. Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/artisan-x2-v1.rig.mjs --check"
+  "approved": true,
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-10-17",
+    "note": "APPROVED FOR PRODUCTION by the operator in the working session: « J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. » (after the five sheets were shown one by one with the blind critiques of Pass 4A-tervicies: final 6-6.5/10 against 3-3.5/10 for the generated crowd). Not declared a Gold Master. Source rights: use authorised by the operator (2026-10-16) subject to third-party rights, not exhaustively verified."
+  },
+  "runtimeUse": "production",
+  "notes": "APPROVED FOR PRODUCTION on 2026-10-17 (« J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. »); reviewed as a CANDIDATE in Pass 4A-tervicies: an ambient townsperson of the crowd, replaces the generated crowd variant crowd0 in the production cast (?cast=generated restores it); the operator's request: « Je veux finaliser les NPC manquants de Merchant district afin d'avoir tous nos personnages de la scenes prets puis enfin passer au menage M1 et defaults herites, il faudra aussi faire un travail sur les performances GP, afin de s'assurer que le projet run bien dans le navigateur sans surcharge »; answers to the session's questions: crowd « 5 citadins ordinaires (Recommandé) » (03 Artisane, 07 Voyageur, 09 Citadine, 15 Vieux marchand, 22 Coursier); hero and cat « Générés pour l'instant (Recommandé) »; new placed NPCs « Non, remplacer seulement (Recommandé) ». Density x2 (64x96, feet on row 90), idle 4 + walk 6 frames in the three runtime facings, one 64-colour palette for the three views, presentation scale 0.9 (the cast's texel size on screen). Not declared a Gold Master. Source rights: use authorised by the operator (2026-10-16) subject to third-party rights, not exhaustively verified. Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/artisan-x2-v1.rig.mjs --check"
 }

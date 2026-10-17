@@ -105,8 +105,9 @@ cost, reproducibility and operator approval — not procedural purity.
   boot except its production cast (`src/characters/BakedCast.ts`): baked character sheets (exported PNG + JSON, bundled as assets,
   SHA-256 checked against their provenance pack, decoded byte-exact) standing in for generated archetypes, and only those whose
   manifest is approved for production. Today: `dockworker-x2-v2` (in place of the porter), `merchant-x2-v2` (the hero stall's
-  merchant), `blacksmith-x2-v1` (the forge's blacksmith), `guard-x2-v1` (both guards) and `hooded-x2-v1` (the hooded stranger), approved by
-  the operator on 2026-10-17; every other character (hero, cat, crowd) is still generated.
+  merchant), `blacksmith-x2-v1` (the forge's blacksmith), `guard-x2-v1` (both guards), `hooded-x2-v1` (the hooded stranger) and the five
+  townsfolk of the ambient crowd (`artisan-x2-v1`, `traveler-x2-v1`, `townswoman-x2-v1`, `older-merchant-x2-v1`, `courier-x2-v1` in place of
+  `crowd0`..`crowd4`), approved by the operator on 2026-10-17; the hero and the cat are still generated.
 - A baked asset may reach the runtime only through an approved provenance manifest (`approved: true`, `runtimeUse: "production"`)
   and an explicit operator-approved task. Generated output never becomes canonical production art silently.
 - `*.aseprite` files are production sources (tracked); the sheet PNG + metadata JSON exports are the baked, runtime-ready outputs.

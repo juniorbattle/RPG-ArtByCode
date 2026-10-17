@@ -2452,7 +2452,7 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - GNU `sed` : `` \` `` est une ancre (début du tampon), pas un accent grave échappé ; écrire les blocs du journal sans échappement
   (heredoc entre apostrophes) et vérifier le diff avant de pousser.
 
-## Passe 4A-tervicies — Distribution : la foule du quartier marchand, cinq citadins cuits (candidats) (2026-10-17)
+## Passe 4A-tervicies — Distribution : la foule du quartier marchand, cinq citadins cuits (2026-10-17)
 
 ### Demande (2026-10-17)
 - Mot pour mot : « Je veux finaliser les NPC manquants de Merchant district afin d'avoir tous nos personnages de la scenes prets puis enfin
@@ -2527,8 +2527,23 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   (14 manifestes) ; `npm run build` vert (JS 910,49 Ko contre 874,48 Ko au build de la passe C3 : les métadonnées des cinq feuilles ; leurs PNG
   partent aussi dans `dist` sans être chargés, comme le prévoit `BakedCast`).
 - Revue : `reviews/<id>/` (planche ×3, marche en scène générée / candidate, autotest, README) et `reviews/crowd-4a-tervicies/` (B et C,
-  générée / candidats, rapport des captures). Manifestes `status: candidate`, `approved: false`, `runtimeUse: "lab"` ; paquets
-  `CANDIDATE`, `approvals` vide. **En attente de l'approbation de l'opérateur** ; aucun personnage déclaré Gold Master.
+  générée / candidats, rapport des captures). Revus en candidats (manifestes `status: candidate`, `runtimeUse: "lab"`, paquets `CANDIDATE`), puis
+  **approuvés par l'opérateur le 17/10** (voir « Décision opérateur ») ; aucun personnage déclaré Gold Master.
+
+### Décision opérateur (2026-10-17) — [OK] approuvée
+- À la demande « Montre-moi les cinq planches une à une avant que je décide. », les cinq planches (`reviews/<id>/01-frames-x3.png`) montrées
+  une à une avec les corrections et les verdicts des critiques, puis les deux décisions ouvertes (bras, visibilité). Mot pour mot :
+  « J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. »
+- Consigné dans les cinq paquets (`approvals` avec l'empreinte de l'export, `status`), manifestes (`status: approved`, `approved: true`,
+  `runtimeUse: "production"`, `approval`, `notes`) et README de revue ; `AGENTS.md` (distribution de production : les cinq citadins, seuls le
+  héros et le chat restent générés) ; commentaire de `BakedCast.ts` (quatre reconstruits à un pas plus grossier, 1,8-2,0 contre 1,775 : le
+  « trois » du commit précédent était faux). Aucun personnage déclaré Gold Master.
+- Après approbation (DEV, sans drapeau) : le démarrage par défaut charge les dix feuilles cuites en production ; ses captures (A, B, C, D, C et
+  D forge sabotée, 1920 × 1080, `seed=1842&clean=1&freeze=7.3`) sont **identiques au pixel** (0 px, écart max 0) à celles des candidats
+  d'avant l'approbation (`?cast=candidate`) ; témoin de répétition 0 px ; `?cast=generated` diffère toujours (A 50 097 px, B 168 293,
+  C 272 340, D 97 352, C sabotée 155 893, D sabotée 137 651 : toute la distribution générée). `verify-provenance` : cinq paquets intacts ;
+  `art:validate` 0 erreur (14 manifestes) ; `typecheck` et `npm run build` verts (JS 910,55 Ko).
+- Branche `cast-crowd` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée (locale et distante).
 
 ### Restent (décisions de l'opérateur, non traités)
 - Bras immobiles en marche (les cinq critiques) : un balancement se ferait comme pour le docker, avec les mêmes risques (contours laissés).
@@ -2603,10 +2618,10 @@ profil les deux chaussures se fondent en une semelle (images 2, 5 ; barre noire 
 toujours cachée de profil ; (f) passant : une bande sombre de l'ourlet arrière pend derrière le talon de profil ; (g) forgeron : épaule
 gauche crénelée de face, contours du poing gauche qui alternent ; (h) docker : dessus de casquette en barre sombre aux coins cassés (toutes
 les images), bras étiré qui s'allonge un peu en marche de face. Branche `cast-polish-facing` supprimée (locale et distante) à la demande de l'opérateur.
-**-1e. Foule (Passe 4A-tervicies, branche `cast-crowd`)** : cinq citadins cuits **candidats** (`artisan-x2-v1`, `traveler-x2-v1`,
-`townswoman-x2-v1`, `older-merchant-x2-v1`, `courier-x2-v1`) à la place de `crowd0`..`crowd4` derrière `?cast=candidate` (DEV) ; critiques à
-l'aveugle finales 6-6,5/10 (3-3,5 pour la foule générée qu'ils remplacent) ; démarrage par défaut 0 px. **En attente de l'approbation de
-production de l'opérateur.** Décisions ouvertes : bras immobiles en marche (reproche commun des critiques), costumes différents selon la vue
+**-1e. Fait (Passe 4A-tervicies)** : cinq citadins cuits (`artisan-x2-v1`, `traveler-x2-v1`, `townswoman-x2-v1`, `older-merchant-x2-v1`,
+`courier-x2-v1`) à la place de `crowd0`..`crowd4` ; critiques à l'aveugle finales 6-6,5/10 (3-3,5 pour la foule générée qu'ils remplacent) ;
+**approuvés pour la production le 17/10** (« J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. ») ; branche `cast-crowd` fusionnée en avance rapide
+dans `main` puis supprimée. Seuls le héros et le chat restent générés. Décisions ouvertes : bras immobiles en marche (reproche commun des critiques), costumes différents selon la vue
 (fidèles aux planches), seuls 2 des 5 citadins visibles à la graine 1842 et à la densité 1, cycle sans double appui. Ensuite, dans l'ordre
 demandé : ménage M1 (HD-2D-visbase : jonction `node_modules` d'abord, jamais sa cible ; worktree `kind-wilson` détaché et la branche locale
 `claude/kind-wilson-a0fa95` ; entrées `base-cast3` / `base-main5` de `.claude/launch.json`), défauts hérités -1d (d)-(h) branche par branche,

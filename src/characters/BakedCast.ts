@@ -69,8 +69,9 @@ const ENTRIES: Entry[] = [
   { manifest: { id: gdId, status: gdStatus, approved: gdApproved, runtimeUse: gdUse }, png: guardPng, json: guardJson, files: guardFiles, replaces: ['guardA', 'guardB'], scale: 0.9 },
   // the hooded passerby takes the stranger watching the boat (and the one of the sabotaged forge)
   { manifest: { id: hdId, status: hdStatus, approved: hdApproved, runtimeUse: hdUse }, png: hoodedPng, json: hoodedJson, files: hoodedFiles, replaces: ['hooded'], scale: 0.9 },
-  // the ambient crowd (Pass 4A-tervicies): five townsfolk of the reference sheets stand in for the five generated crowd variants the
-  // wanderers pick from (ActorSystem.populate); the taller three are resampled more coarsely (see their rig scripts), all at the cast's scale
+  // the ambient crowd (Pass 4A-tervicies, approved for production on 2026-10-17): five townsfolk of the reference sheets stand in for the
+  // five generated crowd variants the wanderers pick from (ActorSystem.populate); the taller ones are reconstructed at a coarser pitch
+  // (1.8-2.0 sheet pixels per texel against the merchant's 1.775, see their rig scripts), all at the cast's scale
   { manifest: { id: arId, status: arStatus, approved: arApproved, runtimeUse: arUse }, png: artisanPng, json: artisanJson, files: artisanFiles, replaces: ['crowd0'], scale: 0.9 },
   { manifest: { id: trId, status: trStatus, approved: trApproved, runtimeUse: trUse }, png: travelerPng, json: travelerJson, files: travelerFiles, replaces: ['crowd1'], scale: 0.9 },
   { manifest: { id: twId, status: twStatus, approved: twApproved, runtimeUse: twUse }, png: townswomanPng, json: townswomanJson, files: townswomanFiles, replaces: ['crowd2'], scale: 0.9 },

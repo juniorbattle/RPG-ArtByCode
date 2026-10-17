@@ -1,13 +1,20 @@
 {
  "id": "courier-x2-v1",
- "status": "CANDIDATE (runtimeUse lab, Pass 4A-tervicies) - awaiting the operator's production approval - not declared a Gold Master",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17: « J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. ») - reviewed as a candidate in Pass 4A-tervicies - not declared a Gold Master",
  "request": {
   "date": "2026-10-17",
   "by": "operator (git user wonmii), in the working session",
   "text": "« Je veux finaliser les NPC manquants de Merchant district afin d'avoir tous nos personnages de la scenes prets puis enfin passer au menage M1 et defaults herites, il faudra aussi faire un travail sur les performances GP, afin de s'assurer que le projet run bien dans le navigateur sans surcharge »",
   "decisions": "answers to the session's questions: crowd « 5 citadins ordinaires (Recommandé) » (03 Artisane, 07 Voyageur, 09 Citadine, 15 Vieux marchand, 22 Coursier); hero and cat « Générés pour l'instant (Recommandé) »; new placed NPCs « Non, remplacer seulement (Recommandé) »"
  },
- "approvals": [],
+ "approvals": [
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "« J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. »",
+   "scope": "the sheet of Pass 4A-tervicies (export SHA-256 9952785ed00166206cc1f016e83dbebbab9cbe3bd536d716d96109ffd762c046), production use in place of the generated crowd variant crowd4, after the sheets were shown one by one with the blind critiques; not declared a Gold Master"
+  }
+ ],
  "source": {
   "sheet": {
    "description": "operator reference sheet \"Merchant District - Night\" NPC 17-24 (several views per character), NPC 22 \"Courier (Male)\"",

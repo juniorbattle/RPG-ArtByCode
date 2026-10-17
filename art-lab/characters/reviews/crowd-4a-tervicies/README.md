@@ -1,7 +1,7 @@
 # Crowd townsfolk — scene evidence (Pass 4A-tervicies, 2026-10-17)
 
-Five CANDIDATE baked sheets for the ambient crowd (`artisan-x2-v1`, `traveler-x2-v1`, `townswoman-x2-v1`, `older-merchant-x2-v1`,
-`courier-x2-v1`), replacing the generated variants `crowd0`..`crowd4` only with the DEV flag `?cast=candidate` until the operator approves them.
+Five baked sheets for the ambient crowd, reviewed as candidates and APPROVED FOR PRODUCTION by the operator on 2026-10-17 (« J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. ») (`artisan-x2-v1`, `traveler-x2-v1`, `townswoman-x2-v1`, `older-merchant-x2-v1`,
+`courier-x2-v1`), replacing the generated variants `crowd0`..`crowd4` in the production cast (`?cast=generated` restores them). The images below were taken before the approval, with the DEV flag `?cast=candidate`.
 Per-character evidence: `../<id>/`.
 
 | File | What it shows |
