@@ -2705,8 +2705,16 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   1/60 s), avant (`main`) / après, vues qui changent : `reviews/<id>/…-inherited-defects-walk-in-scene-cameraB.png` ; planches avant /
   après : `…-inherited-defects-before-after.png`.
 - Paquets : nouvelle révision (`revisions`, demande citée, empreintes avant / après, comptes, approbation en attente), `status`, `chain` ;
-  manifestes (`notes`) ; README de revue ; `selftest.json` rafraîchis. **En attente de l'approbation de l'opérateur** ; aucune planche
+  manifestes (`notes`) ; README de revue ; `selftest.json` rafraîchis. **Approuvé par l'opérateur le 17/10** (voir « Décision opérateur ») ; aucune planche
   déclarée Gold Master.
+
+### Décision opérateur (2026-10-17) — [OK] approuvée
+- Les cinq avant / après (`reviews/<id>/…-inherited-defects-before-after.png`) montrés en séance avec les verdicts des critiques et les
+  restes. Mot pour mot :
+  « J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »
+- Consigné dans les cinq paquets (`approvals`, `revisions[]` de la passe, `status`), manifestes (`notes`) et README de revue ; aucune
+  planche déclarée Gold Master. Branche `cast-inherited-defects` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée
+  (locale et distante).
 
 ### Restent (non traités)
 - Marchande : les limites relevées au tour 3-4 (voir plus haut) ; corps sans bras ni balancement de jupe en marche. Garde : cape rigide,
@@ -2781,8 +2789,9 @@ toujours cachée de profil ; (f) passant : une bande sombre de l'ourlet arrière
 gauche crénelée de face, contours du poing gauche qui alternent ; (h) docker : dessus de casquette en barre sombre aux coins cassés (toutes
 les images), bras étiré qui s'allonge un peu en marche de face. Branche `cast-polish-facing` supprimée (locale et distante) à la demande de l'opérateur.
 **(d)-(h) traités en Passe 4A-quatervicies** (branche `cast-inherited-defects`, une seule pour les cinq) : critiques à l'aveugle révisée /
-précédente 7,5 / 6 (garde), 7,5 / 5,5 (passant), 7,5 / 7,3 (forgeron, après reprise), 7,5 / 6 (docker), 7 / 6 (marchande) puis trois reprises chacune préférée (7,3 / 7,0 ; 7,5 / 7 ; 7,5 / 7,0) ; **en attente de
-l'approbation de l'opérateur** ; restes listés dans la passe.
+précédente 7,5 / 6 (garde), 7,5 / 5,5 (passant), 7,5 / 7,3 (forgeron, après reprise), 7,5 / 6 (docker), 7 / 6 (marchande) puis trois reprises chacune préférée (7,3 / 7,0 ; 7,5 / 7 ; 7,5 / 7,0) ; **approuvés pour la
+production le 17/10** (« J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. ») ; branche fusionnée en avance rapide dans `main`
+puis supprimée ; restes listés dans la passe.
 **-1e. Fait (Passe 4A-tervicies)** : cinq citadins cuits (`artisan-x2-v1`, `traveler-x2-v1`, `townswoman-x2-v1`, `older-merchant-x2-v1`,
 `courier-x2-v1`) à la place de `crowd0`..`crowd4` ; critiques à l'aveugle finales 6-6,5/10 (3-3,5 pour la foule générée qu'ils remplacent) ;
 **approuvés pour la production le 17/10** (« J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. ») ; branche `cast-crowd` fusionnée en avance rapide
@@ -2790,7 +2799,7 @@ dans `main` puis supprimée. Seuls le héros et le chat restent générés. Déc
 (fidèles aux planches), seuls 2 des 5 citadins visibles à la graine 1842 et à la densité 1, cycle sans double appui. Ensuite, dans l'ordre
 demandé : ménage M1 **fait** (Passe M1, acceptée par l'opérateur le 17/10 et fusionnée dans `main` : worktrees `HD-2D-visbase` et `kind-wilson`
 retirés, branche `claude/kind-wilson-a0fa95` supprimée, sept jonctions défaites, entrées mortes de `.claude/launch.json` retirées, vieux
-serveurs Vite `:5174` / `:5180` arrêtés), défauts hérités -1d (d)-(h) **traités** (Passe 4A-quatervicies, en attente de l'approbation), performances GPU
+serveurs Vite `:5174` / `:5180` arrêtés), défauts hérités -1d (d)-(h) **faits** (Passe 4A-quatervicies, approuvés et fusionnés dans `main` le 17/10), performances GPU
 (`tools/perf.mjs`, base figée : **analyse déléguée** à la séance « Performances GPU : analyse et plan », plan chiffré dans le dossier de notes
 partagé des séances ; ni branche ni commit avant la fusion de `cast-inherited-defects` et l'accord de l'opérateur), puis variantes de PNJ (-1f).
 **-1f. Variantes de PNJ (demande de l'opérateur du 17/10, après -1d et les performances GPU)** : mot pour mot

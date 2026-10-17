@@ -1,6 +1,6 @@
 {
  "id": "hooded-x2-v1",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »); revised again on 2026-10-17 at the operator's request (inherited defects -1d, Pass 4A-quatervicies, branch cast-inherited-defects): that sheet awaits the operator's review",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »); revised again on 2026-10-17 at the operator's request (inherited defects -1d, Pass 4A-quatervicies, branch cast-inherited-defects): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »)",
  "request": {
   "date": "2026-10-17",
   "by": "task brief from the parent working session (Claude Code), on the operator's project",
@@ -23,6 +23,12 @@
    "by": "operator (git user wonmii)",
    "decision": "« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »",
    "scope": "the sheet of the rig pass C3 (Pass 4A-duovicies, export SHA-256 1b2957453c53999944b7c3a4281b9a417202e8a487b9ff069c05285eb2b53741), production use; not declared a Gold Master"
+  },
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "« J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »",
+   "scope": "the sheet of the inherited-defects pass (Pass 4A-quatervicies, export SHA-256 179e66587eec4c2bc97f54c3c92d57ef13ef120bb2dae027a0ca1ea2b92ccd6c), production use; not declared a Gold Master"
   }
  ],
  "source": {
@@ -107,7 +113,7 @@
    "change": "inherited defect (f) of JOURNAL -1d, found by the blind critique of Pass 4A-duovicies (present in the approved sheet): profile (idle and walk): the cloak tail's dark strand under its back hem (x 43-47, rows 82-87 of the profile view), sheared with the tail, hung behind the heel as a dark band -> removed in prepare(); the tail ends at its hem (row 81). Exported sheet against the previous one: 171 texels removed, 0 added, 9 recoloured, 0 new colours, in 10 frames (idle-side 0, idle-side 1, idle-side 2, idle-side 3, walk-side 0, walk-side 1, walk-side 2, walk-side 3, walk-side 4, walk-side 5); same frames, tags, layout and metadata JSON.",
    "previousExportSha256": "1b2957453c53999944b7c3a4281b9a417202e8a487b9ff069c05285eb2b53741",
    "exportSha256": "179e66587eec4c2bc97f54c3c92d57ef13ef120bb2dae027a0ca1ea2b92ccd6c",
-   "approval": "pending: the revised sheet awaits the operator's review (reviews/hooded-x2-v1/07-inherited-defects-before-after.png, 08-inherited-defects-walk-in-scene-cameraB.png); the production approval (approvals) covers the previous sheets"
+   "approval": "approved by the operator on 2026-10-17 in the working session, after the five before / after images (reviews/hooded-x2-v1/07-inherited-defects-before-after.png; in-scene: 08-inherited-defects-walk-in-scene-cameraB.png) and the blind critiques' verdicts were shown: « J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »"
   }
  ]
 }

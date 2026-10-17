@@ -1,6 +1,6 @@
 {
  "id": "blacksmith-x2-v1",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »); revised again on 2026-10-17 at the operator's request (inherited defects -1d, Pass 4A-quatervicies, branch cast-inherited-defects): that sheet awaits the operator's review",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »); revised again on 2026-10-17 at the operator's request (inherited defects -1d, Pass 4A-quatervicies, branch cast-inherited-defects): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »)",
  "request": {
   "date": "2026-10-17",
   "by": "task brief from the parent working session (Claude Code), on the operator's project",
@@ -23,6 +23,12 @@
    "by": "operator (git user wonmii)",
    "decision": "« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »",
    "scope": "the sheet of the rig pass C3 (Pass 4A-duovicies, export SHA-256 e830a19fd2cc03f9b7d4bde4697967de30e90c0d602a7e66da87ba503d340419), production use; not declared a Gold Master"
+  },
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "« J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »",
+   "scope": "the sheet of the inherited-defects pass (Pass 4A-quatervicies, export SHA-256 c7923c3f68263524f7ba80309c959b55634df36186c204df8cc2b4f1e16369de), production use; not declared a Gold Master"
   }
  ],
  "source": {
@@ -107,7 +113,7 @@
    "change": "inherited defect (g) of JOURNAL -1d, found by the blind critique of Pass 4A-duovicies (present in the approved sheet): front walk 0, 2, 3, 5: the outer outline column of each arm runs two texels from the skin, outside the arm mask (skin span + 1), and stayed put while the arm stretched, squeezed or moved a texel (notched left shoulder and arm); the fist's bottom outline (row 63, under shaded skin the skin test misses) stayed behind when the fist rose (the left fist's outline that came and went) -> the masks widened one texel on the outer side (outer, as the back walk of Pass 4A-duovicies) and the outline row under the fist's last skin row taken with the fist (down); the one-texel notch the inward move then left at the elbow (12, 50) of front walk 3 (second blind critique) closed by closeNotches (inside the arm boxes, a transparent texel between two dark outline texels above and below takes the darker). Exported sheet against the previous one: 6 texels removed, 42 added, 11 recoloured, 0 new colours, in 4 frames (walk-down 0, walk-down 2, walk-down 3, walk-down 5); same frames, tags, layout and metadata JSON.",
    "previousExportSha256": "e830a19fd2cc03f9b7d4bde4697967de30e90c0d602a7e66da87ba503d340419",
    "exportSha256": "c7923c3f68263524f7ba80309c959b55634df36186c204df8cc2b4f1e16369de",
-   "approval": "pending: the revised sheet awaits the operator's review (reviews/blacksmith-x2-v1/08-inherited-defects-before-after.png, 09-inherited-defects-walk-in-scene-cameraB.png); the production approval (approvals) covers the previous sheets"
+   "approval": "approved by the operator on 2026-10-17 in the working session, after the five before / after images (reviews/blacksmith-x2-v1/08-inherited-defects-before-after.png; in-scene: 09-inherited-defects-walk-in-scene-cameraB.png) and the blind critiques' verdicts were shown: « J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »"
   }
  ]
 }

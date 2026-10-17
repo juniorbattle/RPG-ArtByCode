@@ -1,6 +1,6 @@
 {
  "id": "guard-x2-v1",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »); revised again on 2026-10-17 at the operator's request (inherited defects -1d, Pass 4A-quatervicies, branch cast-inherited-defects): that sheet awaits the operator's review",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »); revised again on 2026-10-17 at the operator's request (inherited defects -1d, Pass 4A-quatervicies, branch cast-inherited-defects): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »)",
  "request": {
   "date": "2026-10-17",
   "by": "task brief from the parent working session (Claude Code), on the operator's project",
@@ -23,6 +23,12 @@
    "by": "operator (git user wonmii)",
    "decision": "« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »",
    "scope": "the sheet of the rig pass C3 (Pass 4A-duovicies, export SHA-256 564f150564072daeb0afe0c59a27d3d0aeeaf0221e4f78e6b876eb8ddbe1d24d), production use; not declared a Gold Master"
+  },
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "« J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »",
+   "scope": "the sheet of the inherited-defects pass (Pass 4A-quatervicies, export SHA-256 1b6404b347c5ec92ab852735daa42ebdd50adb40916baea3dde75b2814ead130), production use; not declared a Gold Master"
   }
  ],
  "source": {
@@ -107,7 +113,7 @@
    "change": "inherited defect (e) of JOURNAL -1d, found by the blind critique of Pass 4A-duovicies (present in the approved sheet): profile (idle and walk): the cape tail's tan corner hanging below the cape (x 45-47, rows 81-82, and its outward bulge x 47-49, row 80, of the profile view) read as a detached heel beside the shins -> removed in prepare(); profile walk: the far leg's painted ramp was two and a half steps darker than the near leg's, near the cape's dark blue, so the 8-43 texels of it the near leg and the cape leave visible did not read as a leg -> one step darker (#645964 ... #312b36). Exported sheet against the previous one: 89 texels removed, 0 added, 98 recoloured, 0 new colours, in 10 frames (idle-side 0, idle-side 1, idle-side 2, idle-side 3, walk-side 0, walk-side 1, walk-side 2, walk-side 3, walk-side 4, walk-side 5); same frames, tags, layout and metadata JSON.",
    "previousExportSha256": "564f150564072daeb0afe0c59a27d3d0aeeaf0221e4f78e6b876eb8ddbe1d24d",
    "exportSha256": "1b6404b347c5ec92ab852735daa42ebdd50adb40916baea3dde75b2814ead130",
-   "approval": "pending: the revised sheet awaits the operator's review (reviews/guard-x2-v1/08-inherited-defects-before-after.png, 09-inherited-defects-walk-in-scene-cameraB.png); the production approval (approvals) covers the previous sheets"
+   "approval": "approved by the operator on 2026-10-17 in the working session, after the five before / after images (reviews/guard-x2-v1/08-inherited-defects-before-after.png; in-scene: 09-inherited-defects-walk-in-scene-cameraB.png) and the blind critiques' verdicts were shown: « J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »"
   }
  ]
 }

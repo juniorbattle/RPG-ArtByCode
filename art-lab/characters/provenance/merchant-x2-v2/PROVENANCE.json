@@ -1,6 +1,6 @@
 {
  "id": "merchant-x2-v2",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »); revised again on 2026-10-17 at the operator's request (inherited defects -1d, Pass 4A-quatervicies, branch cast-inherited-defects): that sheet awaits the operator's review",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »); revised again on 2026-10-17 at the operator's request (inherited defects -1d, Pass 4A-quatervicies, branch cast-inherited-defects): that sheet approved by the operator on 2026-10-17 (« J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »)",
  "request": {
   "date": "2026-10-16",
   "by": "operator",
@@ -23,6 +23,12 @@
    "by": "operator (git user wonmii)",
    "decision": "« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. »",
    "scope": "the sheet of the rig pass C3 (Pass 4A-duovicies, export SHA-256 abc819b92f0717603980d23664ce42a430834874b74a6c33d464a19f8bcdeff0), production use; not declared a Gold Master"
+  },
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "« J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »",
+   "scope": "the sheet of the inherited-defects pass (Pass 4A-quatervicies, export SHA-256 6bf6491f730580234005885286f6aea1b114d9f29e399fbcee327a136d0823a8), production use; not declared a Gold Master"
   }
  ],
  "why": "the operator asked for a result built on the shared reference images rather than waiting for a regenerated source (V4). The sheet's NPC 02 already has the common base's proportions (the same sheet and scale as the approved dock worker) and the three views a walking NPC needs; the merchant-x2-v1 experiment (ChatGPT V3 source, one front view, proportions rejected) stays archived as evidence.",
@@ -123,7 +129,7 @@
    "change": "inherited defect (d) of JOURNAL -1d, found by the blind critique of Pass 4A-duovicies (present in the approved sheet): front / back walk 1, 2, 4, 5: the weight shift (SHIFT) was 0, 2, 1, 0, -2, -1 texels: the 2-texel step read as the body jumping sideways -> 0, 1, 1, 0, -1, -1 (the crowd's dress walk); profile walk 0-5: the far boot copy, 0.1 OKLab darker and at the near boot's level, merged with the near boot into one wide sole where the two 10-column shoes overlap (frames 2, 5) -> 0.16 darker, floored at OKLab L 0.2 (flooredDarkener: 0.16 alone turned its heel outline-black, a black lump at frame 3, second blind critique) and one row higher (further from the camera, as the sheet draws it in the idle profile; third critique: the two soles still made one continuous bottom edge), nothing of it above the hem's bottom row (fourth critique: its top row stuck out in front of the skirt at frame 3, a 4-texel stub). Exported sheet against the previous one: 380 texels removed, 329 added, 6124 recoloured, 0 new colours, in 10 frames (walk-down 1, walk-down 4, walk-up 1, walk-up 4, walk-side 0, walk-side 1, walk-side 2, walk-side 3, walk-side 4, walk-side 5); same frames, tags, layout and metadata JSON.",
    "previousExportSha256": "abc819b92f0717603980d23664ce42a430834874b74a6c33d464a19f8bcdeff0",
    "exportSha256": "6bf6491f730580234005885286f6aea1b114d9f29e399fbcee327a136d0823a8",
-   "approval": "pending: the revised sheet awaits the operator's review (reviews/merchant-x2-v2/08-inherited-defects-before-after.png, 09-inherited-defects-walk-in-scene-cameraB.png); the production approval (approvals) covers the previous sheets"
+   "approval": "approved by the operator on 2026-10-17 in the working session, after the five before / after images (reviews/merchant-x2-v2/08-inherited-defects-before-after.png; in-scene: 09-inherited-defects-walk-in-scene-cameraB.png) and the blind critiques' verdicts were shown: « J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »"
   }
  ]
 }
