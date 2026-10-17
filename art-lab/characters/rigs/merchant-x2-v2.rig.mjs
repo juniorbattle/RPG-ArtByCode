@@ -60,7 +60,13 @@ function frontBack(v, o, i) {
     const foot = R.FOOT - (j === swing ? SWING[k] : 0);
     return R.shift(b, j === swing && k === 1 ? o.inward[j] : 0, foot - o.feet[j]);
   });
-  return R.over(...boots, body);
+  const im = R.over(...boots, body);
+  // Pass 4A-duovicies: boot 0 stands one row higher in the view (sole on row 89) and is set down on row 90; on the high-body frames (bob 0)
+  // that left one empty row between the hem and the planted boot (front / back walk 4-5: the shoe floated under the hem). A one-row gap
+  // right above a boot takes the boot's top row (its dark shaft goes up under the hem).
+  for (const bt of boots) { const t = R.top(bt); if (t < 2) continue;
+    for (let x = 0; x < im.W; x++) if (R.opaque(bt, x, t) && !R.opaque(im, x, t - 1) && R.opaque(body, x, t - 2)) R.put(im, x, t - 1, R.get(bt, x, t)); }
+  return im;
 }
 // side (facing left): the near boot (the view's own, x 30-41) and a darker copy for the far one, placed by the dock worker's ankle cycle
 // (+ = forward); the hem shears forward with the near leg

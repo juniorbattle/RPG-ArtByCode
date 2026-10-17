@@ -2386,6 +2386,22 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Images : `reviews/blacksmith-x2-v1/06-rig-c3-before-after.png`, `07-rig-c3-walk-in-scene-cameraB.png`. **En attente de l'approbation de
   l'opérateur.**
 
+
+### Marchande (`merchant-x2-v2`) — [OK] corrigé ; [?] approbation de l'opérateur
+- Cause mesurée : la botte 0 repose sur la rangée 89 dans la vue (la vue de repos la garde là) et la marche la pose sur la rangée 90 ; aux
+  images où le corps est haut (bob 0 : face et dos 4-5, botte plantée), une rangée vide sépare l'ourlet (rangée 85) de la botte (rangée 87) :
+  la chaussure flotte sous l'ourlet. Même cause, un texel de fond enclavé à l'image 3 de face.
+- Correctif (script seul) : un trou d'une rangée juste au-dessus d'une botte prend la rangée haute de la botte (sa tige sombre monte sous
+  l'ourlet).
+- Planche : 0 retiré, 30 ajoutés, 0 recoloré, 0 couleur nouvelle, 5 images ; fond enclavé 1 → 0 ; `--check` identique, paquet intact.
+  Critique à l'aveugle : révisée **7/10**, précédente **6/10** ; la chaussure flottante et le trou corrigés, aucun défaut nouveau (la
+  chaussure y a une rangée de plus : lue comme une cheville un peu plus longue ; une encoche de l'ourlet ne se voit plus qu'à l'image 3).
+- Défauts hérités relevés par cette critique, **hors de la liste de l'opérateur, non traités** : de profil, les deux chaussures se fondent
+  en une semelle large (images 2 et 5) traversée d'une barre noire (image 4) ; de face et de dos, le corps saute de 2 texels de côté
+  (report de poids `SHIFT` = 0, 2, 1, 0, −2, −1) ; une encoche de l'ourlet qui clignote.
+- Images : `reviews/merchant-x2-v2/06-rig-c3-before-after.png`, `07-rig-c3-walk-in-scene-cameraB.png`. **En attente de l'approbation de
+  l'opérateur.**
+
 ---
 
 ## À reprendre (par priorité)
