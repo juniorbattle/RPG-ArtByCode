@@ -2402,6 +2402,53 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Images : `reviews/merchant-x2-v2/06-rig-c3-before-after.png`, `07-rig-c3-walk-in-scene-cameraB.png`. **En attente de l'approbation de
   l'opérateur.**
 
+
+### Docker (`dockworker-x2-v2`) — [OK] corrigé ; [?] approbation de l'opérateur
+- Cause mesurée : face 0 / 2 / 3 / 5 et dos 0 / 2 / 3 / 5, l'avant-bras descendu de 2 rangées par `R.movePart` laisse en haut de son masque
+  2 rangées que `movePart` remplit de côté (couleur sombre du gilet : une bande qui coupe la manche) ou laisse transparentes (encoches au
+  bord ; trou de 5 × 2 = 10 texels de fond enclavé au dos, image 5).
+- Correctif (script seul, `forearmDown` ; le moteur `rig-engine.mjs`, dont l'empreinte est dans sept paquets, n'est pas touché) : ces
+  rangées prennent, colonne par colonne, le texel juste au-dessus du masque, partout où l'avant-bras a des texels dans la colonne (la manche
+  continue).
+- Critique à l'aveugle, tour 1 : révisée 7,5/10, précédente 5,5/10, mais deux restes relevés : une encoche d'un texel **créée** par le
+  correctif (face 2 : colonne du contour extérieur laissée vide, ma condition « texel d'origine opaque ») et, hérités, une couture grise
+  dans le bras droit de dos (image 0) et un texel de contour isolé (images 2-3) : le masque du bras droit (x 42-49) laissait les colonnes
+  50-52 de la manche et de son contour en place quand l'avant-bras rentre. Repris : condition « l'avant-bras a des texels dans la colonne »,
+  masque jusqu'à x 52 (essai à x 51 **[KO]** : la colonne 52 du contour restait fixe à son tour).
+- Tour 2 (agent neuf) : révisée 7,5/10, précédente 5/10, aucun défaut nouveau ; le plus visible restant, hérité : un tiret sombre à côté
+  de la cuisse au dos (images 0 / 5) = la rangée 66 (bord bas du poing gauche = `hipY`) restée sur la jambe quand le poing remonte. Repris
+  comme pour le forgeron : masque du bras gauche de dos jusqu'à la rangée 66, ces texels suivent le bras, le calque des jambes y reçoit le
+  texel de jambe juste dessous. Tour 3 (agent neuf) : révisée **8/10**, précédente **5/10**, toutes les différences sont des corrections ; effets secondaires notés : le bras étiré s'allonge un peu en mouvement (répétition d'une rangée), un décroché d'un texel au coude (dos 0) ; restent (hérités) : le dessus de la casquette, barre sombre épaisse aux coins cassés, des ruptures d'un texel au poignet, à l'ourlet du pantalon et à la hanche de profil.
+- Planche finale contre la précédente : 35 retirés, 117 ajoutés, 158 recolorés, 0 couleur nouvelle, 9 images (face 0 / 2 / 3 / 5, dos 0 / 2 / 3 / 4 / 5) ; fond enclavé 10 → 0 ; `--check` identique, paquet intact ; démarrage par défaut
+  0 px dans les six vues, témoin 0 px.
+- Images : `reviews/dockworker-x2-v2/08-rig-c3-before-after.png`, `09-rig-c3-walk-in-scene-cameraB.png`. **En attente de l'approbation de
+  l'opérateur.**
+
+### Synthèse et preuves communes
+- Cinq planches révisées dans leur script de rig, aucune couleur nouvelle (palettes approuvées épinglées), mêmes images, étiquettes et JSON ;
+  `art:validate` 0 erreur ; `verify-provenance` : les cinq paquets intacts ; `npm run build` vert.
+- Démarrage par défaut (A, B, C, D, C et D forge sabotée, 1920 × 1080, `clean=1&freeze=7.3`, base figée `dab59f9` servie sur `:5184`) :
+  0 px dans les six vues avec les cinq planches, témoin de répétition 0 px. Les images corrigées sont des marches de face / dos (et le dos
+  du garde) que le démarrage ne montre pas à ce pas ; elles se voient quand un personnage marche vers la caméra ou s'en éloigne.
+- Marches provoquées dans la scène (caméra B, personnage envoyé sur le quai dégagé, autres acteurs masqués, pas fixes) : avant / après pour
+  chacun (`reviews/<id>/…-rig-c3-walk-in-scene-cameraB.png`, vues qui changent seulement).
+- Défauts hérités relevés par les critiques, **hors de la liste de l'opérateur, non traités** → « À reprendre » -1d.
+
+### Pensée
+- Une pièce qui bouge emporte tout ce qui la dessine : son contour (une colonne à deux texels de la peau, la rangée basse d'un poing), même
+  quand il tombe dans un autre calque (les jambes à partir de `hipY`). Les cinq planches avaient la même famille de défauts : un contour
+  resté en place (tiret, languettes, fil, couture) ou une place découverte remplie de côté hors de portée (trous, bandes sombres).
+- Ce qu'une pièce découvre se remplit par ce qui est derrière elle dans le sens du mouvement : au-dessus pour un avant-bras ou une main
+  qui descend (la manche continue), en dessous pour un poing qui remonte (la cape, la jambe) ; un repli « de côté » se vérifie : vers
+  l'avant il a doublé le liseré du garde, vers le corps il a sorti la hanche du forgeron de 3 texels.
+- Un défaut se mesure dans l'export (fond enclavé par remplissage depuis le bord, îlots, vidage texte de la vue et de l'image), se rattache à
+  une ligne du script, se corrige dans le script, s'essaie hors du dépôt (`--check --keep`) et se compte (retirés / ajoutés / recolorés)
+  avant la construction réelle.
+- Une reprise se re-critique par un agent neuf : le tour 1 du docker a trouvé une encoche que le correctif venait de créer. La critique
+  à l'aveugle voit aussi des défauts hérités hors de la demande : les noter, ne pas élargir la passe sans l'opérateur.
+- GNU `sed` : `` \` `` est une ancre (début du tampon), pas un accent grave échappé ; écrire les blocs du journal sans échappement
+  (heredoc entre apostrophes) et vérifier le diff avant de pousser.
+
 ---
 
 ## À reprendre (par priorité)
@@ -2447,8 +2494,15 @@ dans `main` à la demande de l'opérateur (« si la tache est fini on peut commi
 révisées montrées une à une et approuvées par l'opérateur le 17/10 (« Les cinq planches révisées me conviennent. »). Ouverts : (b) à juger en
 mouvement : la bande 40° / 50° et les diagonales du joueur, désormais de profil ; (c) défauts hérités des planches approuvées relevés par la
 critique à l'aveugle (manches du docker coupées par le balancement des bras, trous du tabard du garde, main du passant, jambe arrière du garde
-de profil, contour de bras du forgeron de dos, chaussure de la marchande) : passe de rig **en cours** (Passe 4A-duovicies, branche
-`cast-rig-fixes`) : garde corrigé et commité (critique à l'aveugle 7/10 contre 4,5/10), en attente de l'approbation de l'opérateur. Branche `cast-polish-facing` supprimée (locale et distante) à la demande de l'opérateur.
+de profil, contour de bras du forgeron de dos, chaussure de la marchande) : passe de rig **faite** (Passe 4A-duovicies, branche
+`cast-rig-fixes`) : les cinq planches corrigées dans leur script de rig (critiques à l'aveugle, révisée contre précédente : garde 7 / 4,5,
+passant 8 / 5, forgeron 7,5 / 5,5, marchande 7 / 6, docker 8 / 5 au troisième tour), **en attente de l'approbation de l'opérateur** ;
+fusion dans `main` à son acceptation. Défauts hérités relevés par ces critiques, hors de la liste, **non traités** : (d) marchande : de
+profil les deux chaussures se fondent en une semelle (images 2, 5 ; barre noire en 4), de face / dos le corps saute de 2 texels de côté
+(`SHIFT`) ; (e) garde : le coin du galon d'ourlet au bout de la cape de profil se lit comme un talon détaché, la jambe arrière presque
+toujours cachée de profil ; (f) passant : une bande sombre de l'ourlet arrière pend derrière le talon de profil ; (g) forgeron : épaule
+gauche crénelée de face, contours du poing gauche qui alternent ; (h) docker : dessus de casquette en barre sombre aux coins cassés (toutes
+les images), bras étiré qui s'allonge un peu en marche de face. Branche `cast-polish-facing` supprimée (locale et distante) à la demande de l'opérateur.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
@@ -2597,3 +2651,7 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   par image.
 - Un personnage qui agit sur un objet (frappe, geste) regarde l'objet : son orientation se calcule depuis la géométrie (vecteur personnage →
   point d'action), jamais un angle choisi pour l'apparence ; un cycle qui n'existe que de profil en tire son côté écran dans tout cadrage.
+- Une pièce animée emporte son contour (une colonne de contour à deux texels de la peau, une rangée basse rangée dans un autre calque) ; ce
+  qu'elle découvre prend ce qui est derrière elle dans le sens du mouvement (au-dessus pour ce qui descend, en dessous pour ce qui monte),
+  jamais une couleur prise de côté hors de portée. Chaque correction de rig se compte contre la planche précédente et repasse une critique à
+  l'aveugle par un agent neuf.

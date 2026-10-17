@@ -89,20 +89,46 @@ const FB = {
   down: { hipY: 66, top: 2, legs: [{ cols: (x) => x <= 35, foot: 90, bottom: 13, inward: 1 }, { cols: (x) => x >= 36, foot: 88, bottom: 11, inward: -1 }],
     arms: [R.rect(13, 52, 22, 65), R.rect(47, 50, 54, 65)] },
   up: { hipY: 66, top: 2, legs: [{ cols: (x) => x <= 33, foot: 90, bottom: 12, inward: 1 }, { cols: (x) => x >= 34, foot: 89, bottom: 11, inward: -1 }],
-    arms: [R.rect(9, 48, 19, 65), R.rect(42, 46, 49, 64)] },
+    arms: [R.rect(9, 48, 19, 66), R.rect(42, 46, 52, 64)] },   // the right one to x 52 (Pass 4A-duovicies): the sleeve and its outline columns
+                                                               // 50-52 stayed put when the forearm moved in, a seam down the arm (back walk 0)
 };
+/** a forearm moved down (dy > 0): R.movePart, then the dy rows it uncovers at the top of its mask take, column by column, the texel just
+ *  above the mask: the sleeve continues down (a dy-row stretch of the sleeve). Pass 4A-duovicies: movePart filled them sideways with the
+ *  vest's dark colour or left them transparent, a band cutting the sleeve (front walk 2-3) and a 5 x 2 hole in the back (back walk 5) */
+function forearmDown(im, m, dx, dy, inward) {
+  const o = R.movePart(im, m, dx, dy, inward);
+  for (let y = 1; y < im.H; y++) for (let x = 0; x < im.W; x++) {
+    if (!m(x, y) || m(x, y - 1) || !R.opaque(im, x, y - 1)) continue;   // the mask's top texel in this column, under an opaque texel
+    let armHere = false; for (let t = y; m(x, t); t++) if (R.opaque(im, x, t)) { armHere = true; break; }   // the forearm has texels in this column
+    for (let k = 0; k < dy && m(x, y + k); k++) {
+      const covered = m(x - dx, y + k - dy) && R.opaque(im, x - dx, y + k - dy);   // the moved forearm lands there
+      if (!covered && armHere) R.put(o, x, y + k, R.get(im, x, y - 1));
+    }
+  }
+  return o;
+}
 function frontBack(v, o, i) {
   const bob = BOB[i], swing = i < 3 ? 1 : 0, k = i % 3;   // frames 0-2: leg 1 (screen right) swings, 3-5: leg 0
-  let upper = R.cut(v, (x, y) => y < o.hipY);
+  // Pass 4A-duovicies: an arm mask may reach hipY (the left back fist's bottom outline, row 66): those texels move with the arm, and the legs'
+  // copy of the view gets the leg texel just under them in its column there, else nothing (the outline stayed on the leg: a loose dark dash
+  // beside the thigh when the fist rose, back walk 0 / 5)
+  const inArms = (x, y) => o.arms.some((m) => m(x, y));
+  let upper = R.cut(v, (x, y) => y < o.hipY || inArms(x, y));
+  const vLegs = R.clone(v);
+  for (let y = o.hipY; y < v.H; y++) for (let x = 0; x < v.W; x++) {
+    if (!inArms(x, y) || !R.opaque(v, x, y)) continue;
+    let c = null; for (let k = 1; k <= 2 && !c; k++) if (!inArms(x, y + k) && R.opaque(v, x, y + k)) c = R.get(v, x, y + k);
+    R.put(vLegs, x, y, c);
+  }
   o.arms.forEach((m, j) => {
     const fwd = j ? ARM[i] : -ARM[i], inward = j ? -1 : 1;
     const dy = 2 * (fwd > 0 ? Math.round(fwd) : -Math.round(-fwd)), dx = fwd >= 1 ? inward : 0;
-    if (dx || dy) upper = R.movePart(upper, m, dx, dy, inward);
+    if (dx || dy) upper = dy > 0 ? forearmDown(upper, m, dx, dy, inward) : R.movePart(upper, m, dx, dy, inward);
   });
   const body = R.shift(upper, 0, bob);
   const legs = o.legs.map((L, j) => {
     const foot = R.FOOT - (j === swing ? SWING[k] : 0);
-    const src = R.cut(v, (x, y) => y >= o.hipY && L.cols(x));
+    const src = R.cut(vLegs, (x, y) => y >= o.hipY && L.cols(x));
     return R.shift(R.remapRows(src, L.cols, o.hipY, L.foot, o.hipY + bob, foot, o.top, L.bottom), j === swing && k === 1 ? L.inward : 0, 0);
   });
   return R.over(...legs, body);
