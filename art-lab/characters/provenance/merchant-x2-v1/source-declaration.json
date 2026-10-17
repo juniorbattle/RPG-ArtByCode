@@ -1,0 +1,44 @@
+{
+  "kind": "operator-provenance-declaration",
+  "id": "merchant-x2-v1",
+  "subject": {
+    "description": "original source image of the experimental second NPC (the merchant), from which merchant-x2-v1 is reconstructed",
+    "sha256": "e3292f6d78a40087cdcf1aaab8bebbab358d7df14d3c5a1123f7acf8ef4c196b"
+  },
+  "status": "SOURCE APPROVED BY THE OPERATOR for the experimental NPC2 (2026-10-16). The sprite derived from it is NOT approved. Provenance declared by the operator AND carried by the file's own C2PA manifest (OpenAI), whose signature was not validated here.",
+  "declarations": [
+    {
+      "date": "2026-10-16",
+      "by": "operator (git user wonmii)",
+      "statement": [
+        "Je valide la nouvelle image de marchande générée avec ChatGPT comme source artistique originale approuvée pour notre deuxième PNJ expérimental.",
+        "Le PNG original est joint à cette mission.",
+        "Il s'agit d'une nouvelle création générée à partir de notre prompt V3, sous notre direction artistique, et non d'une extraction de la planche 01–16.",
+        "Je souhaite maintenant que tu exploites cette image pour créer un sprite utilisable dans notre runtime Merchant District, avec un niveau artistique au moins équivalent à `dockworker-x2-v1`.",
+        "La source artistique est approuvée. Le sprite final ne l'est pas encore.",
+        "Notre objectif n'est pas de redessiner librement la marchande, mais de préserver au maximum la qualité de cette illustration pendant son adaptation au runtime.",
+        "Le fichier joint est un PNG original généré par ChatGPT / OpenAI le 16 octobre 2026, sous la direction artistique de l'opérateur.",
+        "Image : marchande adulte, cheveux auburn en tresse latérale, gilet asymétrique, jupe ardoise, carnet d'inventaire et bourse.",
+        "La source est autorisée pour cette expérimentation. Son intégration définitive en production nécessitera une validation séparée."
+      ],
+      "recordedAs": "source approved for the experiment; provenance declared by the operator (Pass 4A-quindecies)"
+    },
+    {
+      "date": "2026-10-16",
+      "by": "operator (git user wonmii)",
+      "statement": [
+        "Question: the attachment arrived as a transcoded WebP copy, not the original PNG. Answer chosen: « Je dépose le PNG ». Then: « voila l'image depuis mon bureau » (the PNG was found on the operator's desktop as marchande_en_pixel_art_livre_en_main.png).",
+        "Question: exact text of prompt V3. Answer chosen: « V2 + bloc proposé » — « V3 = le prompt v2 du brief (§ 6.2) suivi du bloc « Additional requirements » proposé au journal, sans autre changement. »",
+        "Question: images attached to the generation. Answer chosen: « Docker ×8 gris » (dockworker-x2-v1-x8-neutral.png)."
+      ],
+      "recordedAs": "operator answers to the agent's questions, quoted as selected (Pass 4A-quindecies)"
+    }
+  ],
+  "verification": {
+    "c2pa": "present: caBX chunk (21 893 B) in the PNG; read without validating the signature (c2patool not installed; install only with operator approval). Actions: c2pa.created (softwareAgent ChatGPT / gpt-image, digitalSourceType trainedAlgorithmicMedia, 2026-10-16T23:38:51.412534859Z), c2pa.converted, c2pa.watermarked.unbound; allActionsIncluded false. Claim v2: claim generator OpenAI Media Service API (c2pa-rs 0.79.2, spec 2.2.0), dc:title image.png, instanceID xmp:iid:e188e6da-7023-4e53-8266-0b3efde452c0. COSE_Sign1 ES256 with a 2-certificate chain naming OpenAI Media Service / OpenAI OpCo, LLC and Trufo C2PA Claim Signing CA (2025); timestamp by an OpenAI TSA.",
+    "hardBinding": "c2pa.hash.data (SHA-256 of the file without the caBX chunk) recomputed: 3befd929e1295d5cc183fa526c510e0d4353861259faea38e4c5029254144164 = the recorded hash: the image bytes are those hashed when the manifest was made",
+    "sessionCopies": "the attachment of the working session reached the agent twice as the same transcoded WebP (1024 x 1536, 60 928 B, SHA-256 26b796fcfd02196de77bd6163c7a460cd28986c21e08b141496c091ea9638ec9, generic sRGB ICC, no C2PA): mean absolute error 1.01 / 255 (PSNR 44.2 dB) against this PNG, 10.19 for this PNG shifted 16 px (witness); not archived",
+    "notInferred": "Nothing beyond the operator's answers and the file's own C2PA data is recorded: no account, no other prompt, no other reference."
+  },
+  "deviationsFromTheBrief": "The validated brief asked for a brown bun, a blue-grey shawl, a desaturated ivory apron, a coin purse and one amber accent. The approved source has an auburn side braid with a brass ring, no shawl (cream shirt with rolled sleeves under a dark slate wrap vest), no apron (slate wrap skirt over a brown underskirt), a belt pouch, an inventory ledger held against the side, and several small brass accents (braid ring, vest clasp, belt buckle, pouch clasp, skirt button, boot buckles). The operator approved this image as the source: it supersedes the brief on these points."
+}

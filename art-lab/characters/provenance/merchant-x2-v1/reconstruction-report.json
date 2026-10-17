@@ -1,0 +1,31 @@
+{
+ "pitch": 13.9,
+ "phase": [
+  0,
+  0
+ ],
+ "figure": [
+  36,
+  88
+ ],
+ "frame": [
+  64,
+  96
+ ],
+ "foot": 90,
+ "clipped": 0,
+ "closed": 26,
+ "islands": 0,
+ "opaque": 2278,
+ "fullColours": 1856,
+ "options": {
+  "holes": true,
+  "noShadow": true
+ },
+ "holeCells": 21,
+ "shadowCells": 0,
+ "variants": {
+  "64": 64,
+  "full": 1856
+ }
+}

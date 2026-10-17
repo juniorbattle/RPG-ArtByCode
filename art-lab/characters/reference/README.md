@@ -30,6 +30,10 @@ rights, which have not been exhaustively verified**. Not an authorisation to rep
 All three are re-encoded copies (WebP pasted in a working session), not the original ChatGPT files; each is archived byte for byte with
 its record (`sources/<name>.source.json`: format, content, classification, provenance, rights, derived assets).
 
+Sources of baked assets (not reference sheets): `sources/npc2-merchant-source-2026-10-16.png` — the ORIGINAL ChatGPT PNG of the second NPC
+(OpenAI C2PA manifest present, hard binding recomputed and matching, signature not validated), approved as the art source of the experiment,
+then to be regenerated for its proportions (operator, 2026-10-16); it stays the design reference of prompt V4.
+
 Storage rules:
 
 - **No reference image is committed unless it is explicitly supplied / approved for repository storage.** The category folders hold

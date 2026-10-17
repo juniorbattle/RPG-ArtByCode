@@ -46,7 +46,9 @@ if (opt.rebuild) {
   if (!sheetFile || !fs.existsSync(sheetFile)) { console.error('--rebuild needs the source sheet (source.sheet.path or --sheet)'); process.exit(2); }
   const R = P.reconstruction, tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'artlab-rebuild-')), pre = path.join(tmp, 'x');
   const node = process.execPath, tool = (t) => path.join(ROOT, 'tools', 'art-lab', t);
-  execFileSync(node, [tool('reconstruct-grid.mjs'), sheetFile, R.crop.join(','), String(R.pitch), String(R.frame[0]), String(R.frame[1]), String(R.footRow), pre, `full,${R.paletteColours}`], { stdio: 'ignore' });
+  // reconstruction options recorded in the pack (absent for the packs made before they existed)
+  const flags = [...(R.options?.holes ? ['--holes'] : []), ...(R.options?.noShadow ? ['--no-shadow'] : [])];
+  execFileSync(node, [tool('reconstruct-grid.mjs'), sheetFile, R.crop.join(','), String(R.pitch), String(R.frame[0]), String(R.frame[1]), String(R.footRow), pre, `full,${R.paletteColours}`, ...flags], { stdio: 'ignore' });
   for (const [v, rel] of [['full', R.outputs.full], [String(R.paletteColours), R.outputs.quantised]]) {
     const same = sha(`${pre}-${v}.png`) === sha(path.join(ROOT, rel)); if (!same) bad++; console.log(`${same ? 'ok      ' : 'DIFFERS '} rebuild ${v} == ${rel}`);
   }

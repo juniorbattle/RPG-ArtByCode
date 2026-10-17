@@ -1,0 +1,104 @@
+{
+ "id": "merchant-x2-v1",
+ "status": "EXPERIMENTAL - first attempt at the second NPC (the merchant): NOT approved, not a Gold Master, not a production asset. The operator decided to regenerate the source for its proportions (2026-10-16); kept as evidence",
+ "statusVocabulary": {
+  "approved visual baseline": "operator-approved art direction and quality reference; usable in the Art Lab and the DEV in-scene preview only (manifest runtimeUse \"lab\")",
+  "approved production asset": "operator-approved for the shipped runtime (manifest runtimeUse \"production\") through an explicit task - NOT granted"
+ },
+ "approvals": [
+  {
+   "date": "2026-10-16",
+   "decision": "NPC2 brief validated: adult merchant, one original full-body front figure, the operator's generation prompt, world height 1.66 m to start (independent of the 64x96 density); the 64x96 frame, foot row 90 and transparent margins constrain the reconstructed asset, not the source illustration"
+  },
+  {
+   "date": "2026-10-16",
+   "decision": "source image (ChatGPT, prompt V3, operator's art direction) approved as the ORIGINAL ART SOURCE of the experimental NPC2; the final sprite is not approved; runtimeUse lab; no roster, facing, animation, or replacement of the production merchant (source-declaration.json)"
+  },
+  {
+   "date": "2026-10-16",
+   "decision": "after the in-scene comparison: \"c'est surtout un problème de proportion\" (operator); the source is to be REGENERATED with the proportions of the common NPC base (the dockworker: head 0.33 of the height, about 3.1 heads; this source: 0.26, about 3.8), same character design (prompt V4); this candidate stays as evidence"
+  }
+ ],
+ "source": {
+  "sheet": {
+   "description": "original NPC2 source image: one adult merchant, full body, front view slightly turned, on a neutral grey background",
+   "sha256": "e3292f6d78a40087cdcf1aaab8bebbab358d7df14d3c5a1123f7acf8ef4c196b",
+   "bytes": 1349750,
+   "format": "PNG 1024 x 1536, 8-bit RGB, chunks IHDR / caBX (C2PA) / IDAT / IEND",
+   "origin": "generated with ChatGPT / OpenAI on 2026-10-16 under the operator's art direction (operator declaration). The file carries OpenAI's C2PA manifest (c2pa.created by ChatGPT / gpt-image, trainedAlgorithmicMedia, 2026-10-16T23:38:51Z, claim generator OpenAI Media Service API); its hard binding (c2pa.hash.data) was recomputed and matches; its signature was NOT validated (c2patool not installed). See source-declaration.json",
+   "rights": "use as the art source of this experiment authorised by the operator (2026-10-16); final production integration needs a separate validation; third-party rights not evaluated here",
+   "path": "art-lab/characters/reference/sources/npc2-merchant-source-2026-10-16.png",
+   "storage": "versioned in Git, byte for byte (the original file): art-lab/characters/reference/sources/npc2-merchant-source-2026-10-16.png, record npc2-merchant-source-2026-10-16.source.json"
+  },
+  "crop": [265, 191, 763, 1413]
+ },
+ "reconstruction": {
+  "tool": "tools/art-lab/reconstruct-grid.mjs",
+  "crop": [265, 191, 763, 1413],
+  "pitch": 13.9,
+  "phase": [0, 0],
+  "frame": [64, 96],
+  "footRow": 90,
+  "figure": [36, 88],
+  "options": { "holes": true, "noShadow": true },
+  "holeCells": 21,
+  "closed": 26,
+  "fullColours": 1856,
+  "paletteColours": 64,
+  "palette": "OKLab k-means, deterministic farthest-point seeding, face rows weighted x4 (deterministic: re-run reproduces the file bit for bit)",
+  "outputs": {
+   "full": "art-lab/characters/provenance/merchant-x2-v1/x2-auto.png",
+   "quantised": "art-lab/characters/provenance/merchant-x2-v1/x2-quant64.png"
+  },
+  "command": "node tools/art-lab/reconstruct-grid.mjs <source> \"265,191,763,1413\" 13.9 64 96 90 <outPrefix> \"full,64\" --holes --no-shadow",
+  "why": [
+   "the source's own art-pixel grid is about 11.3 px (x 11.40, y about 11.2 and irregular): the figure (1 223 px) is about 108 art pixels tall, more than the 64 x 96 frame holds (at most 89 rows above the foot row): the reconstruction REDUCES the source (about 0.8 texel per art pixel), whereas the dockworker's doubled its sheet's pixels",
+   "pitches 13.9 / 14.3 / 14.75 / 15.3 / 15.7 tested (figures 88 / 85 / 83 / 79 / 78 texels): 13.9 keeps the most of the face, the fingers on the ledger and the accessories; 15.7 would give the dockworker's texel size at 1.66 m but is visibly coarser",
+   "--holes: 21 background texels enclosed by the figure (the neck pocket between jaw, hair lock and collar 16, the arm gap 3, by the hand 1, between two locks 1) become transparent, after the vertical outline closing (which would otherwise refill them)",
+   "--no-shadow: the cast-shadow rule made for the reference sheets removed 7 texels of the boot soles (row 90) on this source drawn without a shadow",
+   "the 26 closed texels all lie on the silhouette edge (hair, sleeve, hip, skirt, boots): outline continuity, as for the dockworker (100 there)",
+   "64 colours: mean OKLab error 9.5 per mille (face 6.3, max 33.4), below the dockworker's accepted 12.1; full / 128 / 96 / 64 indistinguishable at x5; 48 / 32 flatten skin and skirt (11.0 / 13.7)"
+  ]
+ },
+ "cleanup": {
+  "tool": "Aseprite 1.3.18.6 + Aseprite AI Artist 0.8.2 (headless), driven by Claude Code (claude-opus-5-5)",
+  "base": "art-lab/characters/provenance/merchant-x2-v1/x2-quant64.png",
+  "ops": "art-lab/characters/provenance/merchant-x2-v1/cleanup-ops.json",
+  "replay": "node tools/art-lab/replay-pixel-ops.mjs <x2-quant64.png> cleanup-ops.json <out.png> --expect art-lab/characters/exports/merchant-x2-v1.png",
+  "iterations": [
+   {
+    "n": 1,
+    "texels": 18,
+    "steps": [
+     "13 grey fringe texels of the silhouette (the source's soft edge on its grey background; the dockworker has 0) -> the darkest opaque 8-neighbour (#0a080d / #0e0e15 / #151219 / #1d161b), or #836454 at the light sleeve edge (49,48) which has no dark neighbour",
+     "hair outline notch at (19,19), opened by --holes -> #271c1e",
+     "jaw contour at the neck pocket: (37,23) grey fringe and (35,24) pink corner (read as a second mouth) -> #672921, the jaw outline colour of (38,22) (the source's jaw edge: #6f3d32 - #934f3a)",
+     "mouth lost by the reconstruction (a line a third of an art pixel high, #c67754, x 530-555, y 465 in the source) -> 2-texel closed dash #c37958 (nearest palette colour) at (33,23)-(34,23)"
+    ]
+   }
+  ],
+  "notTouched": "eyes, brows (soft skin-shadow / brown tones in the source as well), hair volumes, folds, fabrics, accessories: nothing repainted",
+  "result": "art-lab/characters/exports/merchant-x2-v1.png"
+ },
+ "presentation": {
+  "frame": [64, 96],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "densityVsRuntime": 2,
+  "worldHeight": "1.66 m initial (operator) = per-instance scale 0.803 (88-row figure x 0.0235 m = 2.068 m at scale 1, counted like the dockworker's 89 rows at 1.88 m); texel 0.0189 m against 0.0212 m for the dockworker at 1.88 m. Not fixed by this asset."
+ },
+ "evidence": "art-lab/characters/reviews/merchant-x2-v1/",
+ "verify": "node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/merchant-x2-v1 [--rebuild]",
+ "files": {
+  "art-lab/characters/exports/merchant-x2-v1.png": "5d4b0876d25b832a4c5bf0b66cb700e7a9820ff8edf99970182e7e993ca6943a",
+  "art-lab/characters/exports/merchant-x2-v1.json": "06f67380d45a81c71b5a326b0999891e60961f13adb98ddfefd36f3029dcaf81",
+  "art-lab/characters/source/merchant-x2-v1.aseprite": "389c04701f49c33100ae09e7bccf0e942759c3ba211c2f9fca21a627240a50c5",
+  "art-lab/characters/provenance/merchant-x2-v1/x2-auto.png": "70e2e6acb1c79ec162d6a34e3393abf2339ba5083f7d39096f7b19a8f4a8a9a6",
+  "art-lab/characters/provenance/merchant-x2-v1/x2-quant64.png": "73990c857a850ac1d2ccd104fb90baee6235d2b30e8b8adfd42b89a379d3745b",
+  "art-lab/characters/provenance/merchant-x2-v1/cleanup-ops.json": "df47247db7013ab45b37603ae8546d4ab3e8f37a1f3af8ae22cc47b9d8b13189",
+  "art-lab/characters/provenance/merchant-x2-v1/reconstruction-report.json": "6451de20cb2d45d6dfb3555fa68060c8b0983ad5657f3592c0e82e34f82fa9b2",
+  "tools/art-lab/reconstruct-grid.mjs": "46d277a2c10285ba48cd39fab1bca50791427632252459d9ec90750ddbc2d1cf",
+  "tools/art-lab/replay-pixel-ops.mjs": "259bcaf5b34a88f43f842f6b42fa1032065d8905ae6bf87181cf49f022e1e3f8"
+ },
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored"
+}

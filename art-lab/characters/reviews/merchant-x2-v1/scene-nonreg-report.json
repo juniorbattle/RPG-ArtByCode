@@ -1,0 +1,118 @@
+[
+ {
+  "view": "camera=A&player=-11.5,1.0",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=A&player=-11.5,1.0",
+  "variant": "repeat",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=A&player=-11.5,1.0",
+  "variant": "loaded-merchant",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=A&player=-11.5,1.0",
+  "variant": "loaded-both",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=B&player=-4.6,0.6",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=B&player=-4.6,0.6",
+  "variant": "repeat",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=B&player=-4.6,0.6",
+  "variant": "loaded-merchant",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=B&player=-4.6,0.6",
+  "variant": "loaded-both",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=9.6,1.0",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=C&player=9.6,1.0",
+  "variant": "repeat",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=9.6,1.0",
+  "variant": "loaded-merchant",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=9.6,1.0",
+  "variant": "loaded-both",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&player=17.0,1.0",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=D&player=17.0,1.0",
+  "variant": "repeat",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&player=17.0,1.0",
+  "variant": "loaded-merchant",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&player=17.0,1.0",
+  "variant": "loaded-both",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ }
+]

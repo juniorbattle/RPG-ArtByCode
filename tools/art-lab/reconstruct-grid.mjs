@@ -4,21 +4,25 @@
 // closed (short vertical gaps) and cleaned (islands), then optionally reduced with an OKLab k-means (deterministic farthest-point
 // seeding, face rows weighted x4). Origin: Pass 4A E2 (JOURNAL); it reproduces the approved NPC baseline bit for bit (see
 // art-lab/characters/provenance/dockworker-x2-v1/).
-//   node tools/art-lab/reconstruct-grid.mjs <sheet> "x0,y0,x1,y1" <pitch> <frameW> <frameH> <footRow> <outPrefix> ["full,96,64"]
+//   node tools/art-lab/reconstruct-grid.mjs <sheet> "x0,y0,x1,y1" <pitch> <frameW> <frameH> <footRow> <outPrefix> ["full,96,64"] [--holes] [--no-shadow]
 // writes <outPrefix>-<variant>.png (native size) and <outPrefix>.json (report). Needs Chrome / Edge (CHROME_PATH), like the other tools.
+// Options (off by default: without them the output is unchanged, bit for bit): --holes = background-coloured cells enclosed by the
+// figure (pockets between hair, arm and body) are background too; --no-shadow = no cast-shadow rule (a source drawn without a shadow,
+// whose dark boot soles must not be taken for one). Both counts are reported when an option is set.
 import puppeteer from 'puppeteer-core';
 import fs from 'node:fs';
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', '/usr/bin/google-chrome', '/usr/bin/chromium', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome']
   .filter(Boolean).find((p) => fs.existsSync(p));
 if (!exe) { console.error('No Chrome / Edge found: set CHROME_PATH.'); process.exit(2); }
-const [ref, box, pitchS, fwS, fhS, footS, outPrefix, variantsS = 'full'] = process.argv.slice(2);
+const argv = process.argv.slice(2), opts = { holes: argv.includes('--holes'), noShadow: argv.includes('--no-shadow') };
+const [ref, box, pitchS, fwS, fhS, footS, outPrefix, variantsS = 'full'] = argv.filter((a) => !a.startsWith('--'));
 if (!outPrefix) { console.error('usage: node tools/art-lab/reconstruct-grid.mjs <sheet> "x0,y0,x1,y1" <pitch> <frameW> <frameH> <footRow> <outPrefix> ["full,96,64"]'); process.exit(2); }
 const mime = ref.toLowerCase().endsWith('.png') ? 'image/png' : ref.toLowerCase().match(/.jpe?g$/) ? 'image/jpeg' : 'image/webp';
 const browser = await puppeteer.launch({ executablePath: exe, headless: 'new' });
 try {
   const page = await browser.newPage();
   const src = `data:${mime};base64,` + fs.readFileSync(ref).toString('base64');
-  const r = await page.evaluate(async (src, box, P, FW, FH, FOOT, variants) => {
+  const r = await page.evaluate(async (src, box, P, FW, FH, FOOT, variants, opts) => {
     const img = await new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.src = src; });
     let [x0, y0, x1, y1] = box.split(',').map(Number); x0 -= 6; y0 -= 6; x1 += 6; y1 += 10;
     const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
@@ -44,8 +48,7 @@ try {
     for (let i = 0; i < cols; i++) q.push([i, 0], [i, rows - 1]); for (let j = 0; j < rows; j++) q.push([0, j], [cols - 1, j]);
     while (q.length) { const [i, j] = q.pop(); if (i < 0 || j < 0 || i >= cols || j >= rows) continue; const k = j * cols + i; if (isBg[k] || diff(at(i, j), bg) > T) continue; isBg[k] = 1; q.push([i + 1, j], [i - 1, j], [i, j + 1], [i, j - 1]); }
     const sh = (p) => Math.max(...p) < 46 && Math.max(...p) - Math.min(...p) < 16, shRows = Math.round(9 * 3.55 / P);
-    let changed = true; while (changed) { changed = false; for (let j = rows - shRows; j < rows; j++) for (let i = 0; i < cols; i++) { const k = j * cols + i; if (isBg[k] || !sh(at(i, j))) continue; if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => { const ii = i + a, jj = j + b; return ii < 0 || jj < 0 || ii >= cols || jj >= rows || isBg[jj * cols + ii]; })) { isBg[k] = 1; changed = true; } } }
-    // frame
+    let changed = !opts.noShadow, shadowCells = 0; while (changed) { changed = false; for (let j = rows - shRows; j < rows; j++) for (let i = 0; i < cols; i++) { const k = j * cols + i; if (isBg[k] || !sh(at(i, j))) continue; if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => { const ii = i + a, jj = j + b; return ii < 0 || jj < 0 || ii >= cols || jj >= rows || isBg[jj * cols + ii]; })) { isBg[k] = 1; changed = true; shadowCells++; } } }    // frame
     let minx = 1e9, maxx = -1, miny = 1e9, maxy = -1;
     for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) if (!isBg[j * cols + i]) { minx = Math.min(minx, i); maxx = Math.max(maxx, i); miny = Math.min(miny, j); maxy = Math.max(maxy, j); }
     const offX = Math.round(FW / 2 - (minx + maxx + 1) / 2), offY = FOOT - maxy;
@@ -56,6 +59,8 @@ try {
     const darkest = () => { let b = null; for (const r of grid) for (const p of r) if (p && (!b || p[0] + p[1] + p[2] < b[0] + b[1] + b[2])) b = p; return b; };
     const dk = darkest(); let closed = 0;
     for (let x = 0; x < FW; x++) for (let y = 1; y < FH - 1; y++) { if (grid[y][x] || !grid[y - 1][x]) continue; let e = y; while (e < FH && !grid[e][x] && e - y <= gap) e++; if (e < FH && e - y <= gap && grid[e][x]) for (let k = y; k < e; k++) { grid[k][x] = dk; closed++; } }
+    // --holes, after the closing (which would refill a cleared pocket with the darkest colour): enclosed background-coloured texels
+    let holeCells = 0; if (opts.holes) for (let y = 0; y < FH; y++) for (let x = 0; x < FW; x++) if (grid[y][x] && diff(grid[y][x], bg) <= T) { grid[y][x] = null; holeCells++; }
     const lab = Array.from({ length: FH }, () => new Array(FW).fill(-1)), sizes = [];
     for (let y = 0; y < FH; y++) for (let x = 0; x < FW; x++) if (grid[y][x] && lab[y][x] < 0) { const id = sizes.length, st = [[x, y]]; let n = 0; while (st.length) { const [a, b] = st.pop(); if (a < 0 || b < 0 || a >= FW || b >= FH || lab[b][a] >= 0 || !grid[b][a]) continue; lab[b][a] = id; n++; st.push([a + 1, b], [a - 1, b], [a, b + 1], [a, b - 1]); } sizes.push(n); }
     const main = sizes.indexOf(Math.max(...sizes)); let islands = 0;
@@ -87,8 +92,9 @@ try {
       pts.forEach((p, i) => { const o = (p.y * FW + p.x) * 4; id.data[o] = q2[i][0]; id.data[o + 1] = q2[i][1]; id.data[o + 2] = q2[i][2]; id.data[o + 3] = 255; });
       og.putImageData(id, 0, 0); out[v] = { colours: new Set(q2.map((x) => x.join(','))).size, png: oc.toDataURL('image/png').split(',')[1] };
     }
-    return { pitch: P, phase: [best.ox, best.oy], figure: [maxx - minx + 1, maxy - miny + 1], frame: [FW, FH], foot: FOOT, clipped, closed, islands, opaque: pts.length, fullColours, out };
-  }, src, box, +pitchS, +fwS, +fhS, +footS, variantsS);
+    return { pitch: P, phase: [best.ox, best.oy], figure: [maxx - minx + 1, maxy - miny + 1], frame: [FW, FH], foot: FOOT, clipped, closed, islands, opaque: pts.length, fullColours,
+      ...(opts.holes || opts.noShadow ? { options: opts, holeCells, shadowCells } : {}), out };
+  }, src, box, +pitchS, +fwS, +fhS, +footS, variantsS, opts);
   const report = { ...r, out: undefined, variants: {} };
   for (const [v, o] of Object.entries(r.out)) { fs.writeFileSync(`${outPrefix}-${v}.png`, Buffer.from(o.png, 'base64')); report.variants[v] = o.colours; }
   delete report.out; fs.writeFileSync(`${outPrefix}.json`, JSON.stringify(report, null, 1)); console.log(JSON.stringify(report));

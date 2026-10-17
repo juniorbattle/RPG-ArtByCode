@@ -1,8 +1,9 @@
 # Deuxième PNJ original — la marchande : brief validé (2026-10-16)
 
-**Statut : BRIEF VALIDÉ par l'opérateur (2026-10-16) ; production NON commencée.** On attend le PNG original de la marchande, que
-l'opérateur fournira. Rien n'est généré, reconstruit ni dessiné ; aucun fichier d'art. Historique : proposition du 2026-10-16 (Passe
-4A-terdecies, commit `2bc05a6`), décisions de l'opérateur le même jour (Passe 4A-quattuordecies, `JOURNAL.md`).
+**Statut : BRIEF VALIDÉ par l'opérateur (2026-10-16). Première source (prompt V3) approuvée puis à RÉGÉNÉRER pour ses proportions
+(§ 1, point 6) ; prompt V4 prêt (§ 6.4) ; on attend le nouveau PNG.** Le premier candidat `merchant-x2-v1` reste comme preuve (chaîne
+complète, `runtimeUse: "lab"`). Historique : proposition du 2026-10-16 (Passe 4A-terdecies, commit `2bc05a6`), décisions de l'opérateur le
+même jour (Passes 4A-quattuordecies et 4A-quindecies, `JOURNAL.md`).
 
 ## 1. Décisions de l'opérateur (2026-10-16)
 1. **Archétype : marchande adulte** du Merchant District. Pourquoi elle (proposition) : le rôle existe à l'étal du héros (comparaison au
@@ -11,9 +12,15 @@ l'opérateur fournira. Rien n'est généré, reconstruit ni dessiné ; aucun fic
 3. **Prompt : le nouveau prompt de génération artistique de l'opérateur** (§ 6). Il remplace l'ébauche de la proposition. L'opérateur le
    fournit avec les images approuvées.
 4. **Hauteur monde : 1,66 m pour commencer**, indépendamment de la densité 64 × 96 (la hauteur est une échelle de présentation par
-   instance, pas une propriété de la texture ; c'est aussi la hauteur de la marchande générée, `HEIGHT.merchant`).
+   instance, pas une propriété de la texture). **Correction (mesure du 2026-10-16)** : 1,66 m n'est que la valeur nominale
+   `HEIGHT.merchant` de la marchande générée (ombre et bulle) ; sa figure **dessinée** mesure 1,88 m × 1,08 m (23 × 40 texels × 0,047 m).
 5. **Niveau de qualité : `dockworker-x2-v1`** ; référence stylistique : la planche PNJ 01-16 ; **aucun personnage existant n'est
    reproduit**.
+6. **Régénérer la source (opérateur, 2026-10-16)**, après comparaison en scène : « c'est surtout un problème de proportion ». La source V3
+   est plus élancée que la base commune des PNJ, mesuré sur les sprites ×2 : tête (cheveux compris) 23 rangées sur 88 = 0,26 de la
+   hauteur (≈ 3,8 têtes) contre 29 sur 89 = 0,33 (≈ 3,1 têtes) pour le docker ; largeur de tête 0,29 contre 0,35 ; épaules avec manches
+   0,35 contre 0,40 ; largeur maximale 0,41 contre 0,48. La chaîne conserve exactement les proportions de la source (0,41 dans les deux) :
+   la correction se fait à la source. Nouvelle génération : même personnage, proportions du docker (prompt V4, § 6.4).
 
 **Correction de méthode (opérateur)** : ne pas forcer la génération initiale à respecter une grille de pixels parfaite si cela détériore
 le modelé, les expressions et les matières. E2 a montré que la reconstruction ×2 peut préserver une illustration pixel art riche, et
@@ -26,7 +33,8 @@ contraintes de l'asset reconstruit, pas des exigences absolues pour l'illustrati
 **La figure** (d'après le prompt de l'opérateur, § 6) :
 - Une femme adulte d'environ 35 à 40 ans, marchande d'un marché de canal (fantasy médiévale). Identité professionnelle, tenue modeste
   avec de la personnalité ; ni noble, ni aventurière.
-- Proportions RPG stylisées, environ 3 à 3,5 têtes (v1 : ≈ 3,2). Silhouette élégante mais pratique, aux volumes naturels.
+- Proportions RPG stylisées, environ 3 à 3,5 têtes (docker v1 : ≈ 3,1, mesuré). Silhouette élégante mais pratique, aux volumes naturels.
+  **Base commune (2026-10-16)** : les proportions du docker (§ 1, point 6), chiffrées dans le prompt V4.
 - Visage expressif et construit : yeux lisibles, sourcils discrets, petit nez, bouche fermée, expression retenue.
 - Cheveux bruns relevés en chignon visible, quelques mèches dessinées une à une autour du visage.
 - Vêtements : robe indigo / bleu ardoise, tablier de lin ivoire désaturé par-dessus, châle bleu-gris sourd sur les épaules ;
@@ -230,3 +238,55 @@ Composition
 Final goal
 The result should feel like a natural citizen of the Merchant District, visually consistent with our world, but more refined and readable than a generic low-effort NPC.
 ```
+
+### 6.3 Prompt V3, effectivement utilisé (déclaration de l'opérateur, 2026-10-16)
+
+Réponse de l'opérateur : « V3 = le prompt v2 du brief (§ 6.2) suivi du bloc « Additional requirements » proposé au journal, sans autre
+changement ». Images jointes : `dockworker-x2-v1-x8-neutral.png` seule (« Docker ×8 gris »). V3 = le texte du § 6.2, puis ce bloc :
+
+```text
+Additional requirements:
+* Do not copy any character from the attached reference sheets, especially "02. Merchant (Female)", "03. Artisan (Female)" and "09. Townswoman (Female)": same world and quality, clearly different design; avoid their signature elements (white frilled cap or bonnet, white lace collar, puffed white sleeves).
+* Adult proportions, approximately 3–3.5 heads tall; not chibi.
+* One small warm amber accent only (belt buckle or trim); no other bright warm colour: hair, leather and skin stay muted.
+* Clearly readable hands.
+* Both boots fully visible, both feet on the same ground line.
+* Background: one flat, uniform neutral colour; no gradient, no vignette, no floor, no cast shadow.
+* Clean pixel clusters: no dithering, no scattered noise, no mechanical stripes, no pillow shading.
+```
+
+Résultat : la source approuvée `reference/sources/npc2-merchant-source-2026-10-16.png` (fiche `.source.json`). Elle s'écarte du brief
+(tresse auburn au lieu du chignon, ni châle ni tablier, carnet d'inventaire) : l'opérateur l'a approuvée telle quelle.
+
+### 6.4 Prompt V4 (proposé le 2026-10-16, à utiliser pour la régénération)
+
+Images à joindre, dans cet ordre : **image 1** = la source approuvée V3 (`reference/sources/npc2-merchant-source-2026-10-16.png`, le PNG
+d'origine) comme référence de **dessin** ; **image 2** = `dockworker-x2-v1-x8-neutral.png` comme référence de **proportions** et de
+qualité. Rien d'autre : une planche jointe ajouterait des personnages à ne pas copier. Télécharger le résultat en PNG (bouton de
+téléchargement, pas copier-coller).
+
+```text
+Redraw the attached merchant (image 1) as the same character, with the body proportions of the attached dockworker (image 2).
+
+Keep from image 1 (the approved character design): an adult female merchant; auburn hair in a side braid with a small brass ring and a few loose strands framing the face; cream shirt with rolled sleeves; dark slate wrap vest with a diagonal leather strap and a small brass clasp; brown leather belt with a brass buckle; small leather belt pouch; an inventory ledger held against her side; slate-blue wrap skirt over a brown underskirt; brown leather ankle boots. Same colours, same calm expression, same props, same slightly turned standing pose.
+
+Change only the proportions, to match image 2 (our common Merchant District NPC base):
+* about 3 heads tall: the head, hair included, is one third of the total height (from the top of the hair to the soles);
+* a large head: the head is about 0.35 of the total height wide, with big readable eyes like image 2;
+* a sturdy build: shoulders with the sleeves about 0.40 of the total height wide; overall width with the arms about 0.45 to 0.48 of the height;
+* short sturdy legs and boots, large readable hands, as in image 2;
+* stylised RPG proportions, NOT realistic, elegant or slender proportions.
+
+Do not copy the dockworker's clothes, cap, face or pose: image 2 is only the proportion and quality reference.
+
+Composition and technique:
+* exactly one character, full body, front view or very slightly turned, standing idle;
+* both boots fully visible, both feet on the same ground line;
+* a compact silhouette: no small gap of background between the jaw, the hair and the collar;
+* plain, flat, uniform neutral grey background; no gradient, no vignette, no floor, no cast shadow; the character centred with generous empty margins;
+* high-quality illustrative pixel art at the same quality as image 1: controlled colour ramps, clean pixel clusters, no dithering, no scattered noise, no mechanical stripes, no pillow shading;
+* no text, labels, frames, UI or watermark.
+```
+
+Contrôle à la réception, avant toute reconstruction : mesurer sur la source la part de la tête (cible ≈ 0,33 de la hauteur), la largeur de
+tête (≈ 0,35), les épaules (≈ 0,40) et la largeur maximale (≈ 0,45-0,48) ; conformité au dessin approuvé ; fond, pieds, poches de fond.

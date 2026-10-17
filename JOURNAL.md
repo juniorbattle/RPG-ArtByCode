@@ -1560,6 +1560,80 @@ chemin partagé + `dynwalk` → paquet de provenance, `runtimeUse: "lab"`, arrê
 - Pensée : une combinaison de traits peut déjà décrire un personnage existant ; le brief se compare aux références jointes **avant** la
   génération, pas seulement le résultat après.
 
+## Passe 4A-quindecies — La marchande : source originale archivée, reconstruction ×2, scène A-D ; source à régénérer (proportions) (2026-10-16)
+
+### Décisions opérateur (2026-10-16)
+- La nouvelle image de marchande (ChatGPT, prompt V3) est la **source artistique originale approuvée** du 2e PNJ expérimental ; le sprite
+  ne l'est pas ; préserver au maximum l'illustration ; `runtimeUse: "lab"` ; ni roster, ni orientation, ni animation, ni remplacement de la
+  marchande de production ; pas de fusion dans `main`.
+- Réponses aux questions : PNG d'origine déposé (retrouvé sur le bureau de l'opérateur) ; V3 = v2 + bloc d'ajouts proposé ; image jointe :
+  le docker ×8 gris seul. Les planches renvoyées par l'opérateur (« base commune » de tous les personnages) sont les trois déjà archivées.
+- Après la comparaison en scène : « c'est surtout un problème de proportion » → **régénérer la source** (même dessin, proportions de la base
+  commune ; prompt V4).
+
+### Source — [OK] archivée à l'octet, C2PA lu
+- La pièce jointe de la séance n'est qu'une copie WebP transcodée (61 Ko, ICC générique). Le PNG d'origine (`marchande_en_pixel_art_livre_en_main.png`,
+  1 349 750 o) a été retrouvé sur le bureau ; correspondance chiffrée : écart moyen 1,01 / 255 (PSNR 44,2 dB), témoin décalé de 16 px : 10,19.
+- Archivé tel quel : `reference/sources/npc2-merchant-source-2026-10-16.png` (SHA-256 `e3292f6d…196b`) + fiche (`art:validate` le contrôle).
+  PNG 1024 × 1536 RGB, morceaux IHDR / caBX / IDAT / IEND.
+- **C2PA OpenAI présent** : c2pa.created par ChatGPT (gpt-image), trainedAlgorithmicMedia, 2026-10-16T23:38:51Z ; générateur « OpenAI Media
+  Service API » ; **liaison dure (c2pa.hash.data) recalculée : identique** ; signature non validée (c2patool non installé). Lecture seule.
+- Écarts au brief, approuvés par l'opérateur avec la source : tresse auburn au lieu du chignon, ni châle ni tablier, gilet ardoise, carnet
+  d'inventaire, plusieurs accents laiton.
+
+### Analyse et reconstruction — [OK] chaîne déterministe, deux options d'outil
+- Fond gris (124 ; 124 ; 124), écart-type 0,7, valeurs 120-128, coins identiques. Figure 499 × 1 223 px ; grille d'art ≈ 11,3 px (x 11,40 ;
+  y ≈ 11,2, irrégulière), soit ≈ 108 pixels d'art : **la source est plus fine que le cadre** (≤ 89 rangées) ; la reconstruction **réduit**
+  (≈ 0,81 texel par pixel d'art) alors que celle du docker doublait.
+- Pas 13,9 / 14,3 / 14,75 / 15,3 / 15,7 testés (figures 88 / 85 / 83 / 79 / 78 texels) : **13,9 retenu** (visage, doigts, accessoires).
+  La bouche (un tiers de pixel d'art de haut) disparaît à tous les pas.
+- `reconstruct-grid.mjs` : deux options **désactivées par défaut**. `--holes` rend transparents 21 texels de fond enfermé (poche du cou 16,
+  bras 3, main 1, mèches 1), **après** la fermeture verticale : la première version les vidait avant, et la fermeture les remplissait de noir
+  (38 texels fermés au lieu de 26). `--no-shadow` : la règle d'ombre des planches mangeait 7 texels des semelles (rangée 90). Les 26 texels
+  fermés sont tous sur le contour.
+- Sans option, sortie inchangée : la reconstruction du docker refaite est **identique au bit** (pleine, 64 couleurs) et son nettoyage rejoué
+  au pixel. L'empreinte de l'outil, figée dans le paquet du docker, est mise à jour avec une note de maintenance (ancienne empreinte gardée).
+  `verify-provenance` transmet désormais `reconstruction.options` à l'outil.
+- 64 couleurs : erreur OKLab moyenne 9,5 ‰ (visage 6,3, max 33,4), sous les 12,1 ‰ acceptés pour le docker ; pleine / 96 / 64 indiscernables à
+  ×5 ; 48 / 32 aplatissent la peau et la jupe.
+
+### Finition — [OK] itération 1 (18 texels), rejouable
+- 13 texels de frange grise du contour (docker : 0) → voisin sombre le plus proche ; encoche des cheveux (19,19) refermée ; contour de la
+  mâchoire sur la poche du cou (2 texels) ; bouche restituée (2 texels `#c37958`, valeur de la source `#c67754`). Sourcils doux dans la
+  source aussi : non touchés. Aseprite `validate` 100 ; `replay-pixel-ops` = export au pixel.
+- Paquet `provenance/merchant-x2-v1/` (déclaration mot pour mot, `PROVENANCE.json`) : `verify-provenance --rebuild` **intact** depuis la
+  source archivée. Manifeste `experimental`, non approuvé, `runtimeUse: "lab"`.
+
+### Validation — [OK] Character Lab et scène A-D
+- Character Lab : 0 texel faux à 1×, 4× et à l'échelle runtime, A-D ; contrôle négatif (linéaire) en échec (32 407 / 40 445).
+- Chemin partagé (`?baked=`, repli `bakedfallback=front-idle` explicite, amendement B) : captures déterministes A-D. **Non-régression : 0 px**
+  (répétition ; marchande chargée non placée ; marchande + docker chargés) dans les 4 cadrages.
+- Projection (1080p) à 1,66 m : A 0,88 px écran / texel, B 1,81, C 1,8-2,1, D 1,6-1,9 (docker à 1,88 m en B : 2,03).
+- Lecture en jeu : tresse, visage, gilet, carnet, jupe lisibles en B / C / D. En D le bas de la jupe se fond dans les pavés (comme le pantalon
+  du docker) ; la poche du cou laisse voir le décor (tache claire en B) ; à l'emplacement exact de la marchande en B, la lanterne de l'étal
+  masque le visage (placement).
+- Liseré : le chemin partagé n'a pas de réglage par sprite (intensité par acteur selon les lumières, `uEdge` global) ; L1 exigerait de changer
+  l'éclairage de tout le cast, exclu : montré en L0 comme le docker.
+
+### [KO → décision] Proportions et taille
+- Opérateur : le passant généré paraît « plus gros et imposant ». Mesuré dans l'atlas : la marchande générée **dessinée** fait 1,88 × 1,08 m
+  (23 × 40 texels × 0,047) ; son 1,66 m n'est que la valeur **nominale** `HEIGHT` (ombre, bulle) : mon brief l'avait prise pour sa taille
+  (corrigé). Cast : héros 1,93 × 1,13 ; porteur 1,65 × 1,03 ; forgeron 1,88 × 1,22. Nouvelle marchande à 1,66 m : 1,66 × 0,68 m.
+- Comparaison à même profondeur (pieds sur la même ligne d'écran), 1,66 / 1,88 m : la hauteur se règle, **pas la carrure**. Sur les sprites ×2 :
+  tête 0,26 de la hauteur (≈ 3,8 têtes) contre 0,33 (≈ 3,1) pour le docker ; largeur de tête 0,29 / 0,35 ; épaules 0,35 / 0,40 ; largeur
+  maximale 0,41 / 0,48. La chaîne conserve exactement le rapport de la source (0,41 / 0,41) : **le défaut est dans la source** (le prompt V3
+  demandait 3 à 3,5 têtes).
+- Décision opérateur : **régénérer**. Prompt V4 au brief (§ 6.4) : même dessin, proportions du docker chiffrées, deux images jointes (la source
+  V3 pour le dessin, le docker ×8 pour les proportions) ; contrôle des proportions sur la source avant toute reconstruction.
+- Non fait sur ce candidat, reporté au nouveau : critique aveugle (auto-évaluation écrite, critique non lancée), marche dynamique, perfs GPU.
+
+### Pensée
+- Une hauteur nominale du code n'est pas la taille dessinée : mesurer la figure dans l'atlas avant de fixer une hauteur de présentation.
+- La chaîne conserve exactement les proportions de la source, elle ne les corrige pas : les proportions se chiffrent dans le prompt et se
+  mesurent sur la source avant de reconstruire (part de la tête, largeur de tête, épaules), contre la base commune.
+
+Preuves : `art-lab/characters/reviews/merchant-x2-v1/` (planches + README) ; captures brutes et scripts dans le dossier de travail de la séance.
+
 ---
 
 ## À reprendre (par priorité)
@@ -1568,12 +1642,12 @@ chemin partagé + `dynwalk` → paquet de provenance, `runtimeUse: "lab"`, arrê
 quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ; écart de l'ombre portée du ×2 face à l'ancien aperçu
 (3-67 px par vue, ≤ 12 / 255) **accepté par l'opérateur** : l'ombre suit la règle entière du corps. Restent ouverts : C2 (PNG versionné) à confirmer ;
 droits : usage comme source **autorisé** (16/10, sous réserve des droits de tiers, non vérifiés exhaustivement), les trois planches archivées dans
-`reference/sources/` (octets contrôlés par `art:validate`) ; les originaux restent à retrouver (l'opérateur s'en charge). **Prochain : la marchande** (brief validé le 16/10,
-`art-lab/characters/briefs/npc2-proposal.md`) : **attendre le PNG original fourni par l'opérateur** (pièces jointes prêtes : ×8 du docker,
-`art-lab/characters/scratch/npc2-merchant/attachments/` ; prompt v2 reçu et relu : ajouts proposés, dont l'originalité face à 01-16 n° 02 / 03 / 09,
-décision de l'opérateur), puis les étapes du brief (archivage à l'octet,
-provenance, ×2, comparaison à v1, ≤ 2 itérations Aseprite, Character Lab + A-D, stabilité / perf, critique indépendante) ; `runtimeUse: "lab"` ;
-pas de fusion dans `main` avant acceptation. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
+`reference/sources/` (octets contrôlés par `art:validate`) ; les originaux restent à retrouver (l'opérateur s'en charge). **Prochain : la marchande, source à régénérer** (Passe 4A-quindecies) :
+l'opérateur génère avec le prompt V4 (`art-lab/characters/briefs/npc2-proposal.md` § 6.4 : même dessin, proportions du docker). À réception :
+mesurer les proportions de la source (tête ≈ 0,33 de la hauteur, épaules ≈ 0,40), archiver le PNG à l'octet + C2PA, rejouer la chaîne
+(`reconstruct-grid --holes --no-shadow`, pas à recalculer), ≤ 2 itérations Aseprite, Character Lab + A-D, puis **critique aveugle, marche
+dynamique, perfs** (pas encore faits) ; hauteur de présentation à trancher (1,66 m nominal, 1,88 m dessiné pour la marchande générée).
+`merchant-x2-v1` reste comme preuve ; `runtimeUse: "lab"` ; pas de fusion dans `main` avant acceptation. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
 tramée ; la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un nouvel occluder.
@@ -1678,3 +1752,7 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   règle la reconstruction, elle ne la refuse pas.
 - Avant une génération, comparer le brief lui-même aux personnages des références qui seront jointes : une combinaison de traits peut
   déjà décrire un personnage existant ; la liste de contrôle d'originalité nomme ces personnages.
+- Une hauteur de présentation se décide sur la figure **dessinée** (mesurée dans l'atlas), pas sur une valeur nominale du code ; une carrure
+  ne se corrige pas par l'échelle : les proportions se chiffrent dans le prompt et se mesurent sur la source avant toute reconstruction.
+- Un outil figé par empreinte dans un paquet approuvé s'étend par options désactivées par défaut, prouvées par le `--rebuild` du paquet ;
+  l'empreinte se met alors à jour avec une note de maintenance (ancienne valeur gardée).

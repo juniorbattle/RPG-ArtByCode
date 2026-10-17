@@ -1,0 +1,52 @@
+{
+  "kind": "archived-source-image",
+  "file": "npc2-merchant-source-2026-10-16.png",
+  "sha256": "e3292f6d78a40087cdcf1aaab8bebbab358d7df14d3c5a1123f7acf8ef4c196b",
+  "bytes": 1349750,
+  "format": "PNG 1024 x 1536, 8-bit RGB (no alpha), non-interlaced; chunks IHDR, caBX (C2PA manifest, 21 893 B), IDAT, IEND; no ICC, gamma, text or EXIF chunk",
+  "content": "one adult female merchant, full body, standing, front view slightly turned, on a neutral grey background (border mean (124.4, 124.0, 123.7), SD 0.74, range 120-128, no gradient between the corners); figure 499 x 1223 px; art-pixel grid about 11.3 px (x 11.40, y about 11.2 and irregular), i.e. about 108 art pixels tall; auburn side braid with a brass ring, cream shirt with rolled sleeves, dark slate wrap vest with a diagonal strap and a brass clasp, brown belt with a brass buckle, leather belt pouch, inventory ledger held against her left side, slate wrap skirt over a brown underskirt, brown ankle boots with buckles; no cast shadow",
+  "nature": "the ORIGINAL PNG downloaded from ChatGPT by the operator; it carries OpenAI's C2PA manifest. Archived byte for byte, unmodified (every transformation is a separate derived file).",
+  "names": {
+    "original": "marchande_en_pixel_art_livre_en_main.png (the operator's desktop, written 2026-10-16 20:04 local time)",
+    "c2paTitle": "image.png",
+    "session": "attached twice in the working session, both times as the same transcoded WebP (SHA-256 26b796fcfd02196de77bd6163c7a460cd28986c21e08b141496c091ea9638ec9): not archived"
+  },
+  "status": "APPROVED ARTISTIC SOURCE for the experimental NPC2 (operator, 2026-10-16). The sprite derived from it is NOT approved.",
+  "laterDecision": "2026-10-16, after the in-scene comparison: the operator decided to REGENERATE the source for its proportions (about 3.8 heads against the common NPC base of about 3.1). This file stays archived unchanged and is the DESIGN reference (image 1) of prompt V4 (art-lab/characters/briefs/npc2-proposal.md § 6.4).",
+  "generation": {
+    "declared": "generated with ChatGPT / OpenAI on 2026-10-16 under the operator's art direction (operator)",
+    "c2pa": "c2pa.created by softwareAgent ChatGPT (version gpt-image), digitalSourceType trainedAlgorithmicMedia, when 2026-10-16T23:38:51.412534859Z; then c2pa.converted and c2pa.watermarked.unbound; claim generator OpenAI Media Service API (c2pa-rs 0.79.2, spec 2.2.0)",
+    "prompt": {
+      "version": "V3",
+      "declared": "operator's selected answer: « V3 = le prompt v2 du brief (§ 6.2) suivi du bloc « Additional requirements » proposé au journal, sans autre changement. » The exact separator between the two parts is not known.",
+      "v2": "Use the attached reference images for style guidance only. Do not copy the attached character. Create a new original character.\nCreate an original premium-quality pixel-art character source image for Cité du Tournoi — Merchant District at Night.\nCharacter\nAn adult female merchant, around 35–40 years old, working in a medieval fantasy canal-side market district.\nRole and artistic intent\nThis is a standard NPC, not a key story character, but she must still feel artistically polished, expressive, and carefully designed.\nShe should match the overall visual quality and tone of the attached dockworker reference and Merchant District style references, while being clearly original.\nDesign requirements\n\n* Full body, single character only\n* Front-facing or very slightly turned, neutral standing pose\n* Calm, readable expression\n* Brown hair tied in a bun, with a few loose strands framing the face\n* Indigo / slate-blue dress\n* Desaturated ivory apron\n* Muted blue-grey shawl over the shoulders\n* Small leather coin purse or merchant pouch\n* Leather ankle boots\n* Modest, practical merchant outfit with personality\n* She must read clearly as a market merchant, not a noble, adventurer, or guard\n\nVisual quality target\n\n* High-quality illustrative pixel art\n* Carefully constructed face with readable eyes and subtle features\n* Good clothing volume, fabric folds, layered materials\n* Soft directional shading\n* Controlled color ramps\n* Clear silhouette\n* Refined, premium look suited for an HD-2D fantasy RPG\n\nImportant constraints\n\n* This must be an original character design\n* Do not copy the dockworker’s pose, cap, clothing scheme, or identity\n* Use the attached dockworker only as a quality benchmark\n* The final image must remain simple enough to later reconstruct into a game sprite, but the source image itself should prioritize excellent artistic quality\n\nComposition\n\n* Plain neutral background\n* No environment\n* No UI\n* No text\n* No labels\n* No watermark\n* No shadow effects outside the figure\n* Character centered with generous empty margins\n\nFinal goal\nThe result should feel like a natural citizen of the Merchant District, visually consistent with our world, but more refined and readable than a generic low-effort NPC.",
+      "additions": "Additional requirements:\n* Do not copy any character from the attached reference sheets, especially \"02. Merchant (Female)\", \"03. Artisan (Female)\" and \"09. Townswoman (Female)\": same world and quality, clearly different design; avoid their signature elements (white frilled cap or bonnet, white lace collar, puffed white sleeves).\n* Adult proportions, approximately 3–3.5 heads tall; not chibi.\n* One small warm amber accent only (belt buckle or trim); no other bright warm colour: hair, leather and skin stay muted.\n* Clearly readable hands.\n* Both boots fully visible, both feet on the same ground line.\n* Background: one flat, uniform neutral colour; no gradient, no vignette, no floor, no cast shadow.\n* Clean pixel clusters: no dithering, no scattered noise, no mechanical stripes, no pillow shading."
+    },
+    "references": [
+      "dockworker-x2-v1-x8-neutral.png (operator's answer « Docker ×8 gris »): the approved export dockworker-x2-v1 enlarged x8 by nearest neighbour on a uniform #808080, 608 x 912, SHA-256 891c3f6302d1db204f2fbba613095a456c337b2523674e03da06de96e37ebfdf (not versioned; re-derivable pixel for pixel, JOURNAL Pass 4A-quattuordecies)"
+    ]
+  },
+  "c2paVerification": {
+    "presence": "present (caBX chunk); read without validating the signature: c2patool is not installed (install only with operator approval)",
+    "hardBinding": "c2pa.hash.data recomputed over the file without the caBX chunk: 3befd929e1295d5cc183fa526c510e0d4353861259faea38e4c5029254144164 = the recorded hash",
+    "signer": "COSE_Sign1 ES256, a 2-certificate chain naming OpenAI Media Service / OpenAI OpCo, LLC and Trufo C2PA Claim Signing CA (2025); timestamp by an OpenAI TSA (names read from the manifest, not validated)"
+  },
+  "provenance": "../../provenance/merchant-x2-v1/source-declaration.json",
+  "rights": "use as the art source of this experiment authorised by the operator (2026-10-16); its final integration in production needs a separate validation (operator); third-party rights not evaluated here",
+  "archived": {
+    "date": "2026-10-16",
+    "decision": "operator: keep the original source file without transformation and document its provenance",
+    "pass": "4A-quindecies",
+    "rule": "never edited, re-encoded or replaced; every transformation is a separate derived file"
+  },
+  "derived": [
+    {
+      "asset": "merchant-x2-v1 (CANDIDATE, runtimeUse \"lab\", not approved)",
+      "reconstruction": "tools/art-lab/reconstruct-grid.mjs: crop [265, 191, 763, 1413], pitch 13.9, phase [0, 0], frame 64 x 96, foot row 90, --holes --no-shadow, full colours then 64 colours (deterministic)",
+      "chain": "x2-auto.png -> x2-quant64.png -> cleanup-ops.json (recorded Aseprite edits) -> exports/merchant-x2-v1.png (+ .json, source .aseprite)",
+      "record": "../../provenance/merchant-x2-v1/PROVENANCE.json",
+      "verify": "node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/merchant-x2-v1 --rebuild"
+    }
+  ],
+  "notInvented": "No account, other prompt text, other reference or generation parameter is recorded: only the operator's answers and the file's own C2PA data."
+}
