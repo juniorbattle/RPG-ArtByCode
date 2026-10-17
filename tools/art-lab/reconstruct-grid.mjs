@@ -4,17 +4,21 @@
 // closed (short vertical gaps) and cleaned (islands), then optionally reduced with an OKLab k-means (deterministic farthest-point
 // seeding, face rows weighted x4). Origin: Pass 4A E2 (JOURNAL); it reproduces the approved NPC baseline bit for bit (see
 // art-lab/characters/provenance/dockworker-x2-v1/).
-//   node tools/art-lab/reconstruct-grid.mjs <sheet> "x0,y0,x1,y1" <pitch> <frameW> <frameH> <footRow> <outPrefix> ["full,96,64"] [--holes] [--no-shadow]
+//   node tools/art-lab/reconstruct-grid.mjs <sheet> "x0,y0,x1,y1" <pitch> <frameW> <frameH> <footRow> <outPrefix> ["full,96,64"] [--holes] [--no-shadow] [--bg-threshold=<n>]
 // writes <outPrefix>-<variant>.png (native size) and <outPrefix>.json (report). Needs Chrome / Edge (CHROME_PATH), like the other tools.
 // Options (off by default: without them the output is unchanged, bit for bit): --holes = background-coloured cells enclosed by the
 // figure (pockets between hair, arm and body) are background too; --no-shadow = no cast-shadow rule (a source drawn without a shadow,
-// whose dark boot soles must not be taken for one). Both counts are reported when an option is set.
+// whose dark boot soles must not be taken for one); --bg-threshold=<n> = the colour distance under which a cell joins the background flood
+// fill (default 26; a lower value keeps cloth darker than the default allows, e.g. a navy cloak close to the sheet's background, which the
+// fill otherwise cuts into slits). Counts and options are reported when an option is set.
 import puppeteer from 'puppeteer-core';
 import fs from 'node:fs';
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', '/usr/bin/google-chrome', '/usr/bin/chromium', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome']
   .filter(Boolean).find((p) => fs.existsSync(p));
 if (!exe) { console.error('No Chrome / Edge found: set CHROME_PATH.'); process.exit(2); }
-const argv = process.argv.slice(2), opts = { holes: argv.includes('--holes'), noShadow: argv.includes('--no-shadow') };
+const argv = process.argv.slice(2), bgArg = argv.find((a) => a.startsWith('--bg-threshold='));
+const opts = { holes: argv.includes('--holes'), noShadow: argv.includes('--no-shadow'), ...(bgArg ? { bgThreshold: Number(bgArg.split('=')[1]) } : {}) };
+if (bgArg && !(opts.bgThreshold > 0)) { console.error('--bg-threshold=<n> needs a positive number'); process.exit(2); }
 const [ref, box, pitchS, fwS, fhS, footS, outPrefix, variantsS = 'full'] = argv.filter((a) => !a.startsWith('--'));
 if (!outPrefix) { console.error('usage: node tools/art-lab/reconstruct-grid.mjs <sheet> "x0,y0,x1,y1" <pitch> <frameW> <frameH> <footRow> <outPrefix> ["full,96,64"]'); process.exit(2); }
 const mime = ref.toLowerCase().endsWith('.png') ? 'image/png' : ref.toLowerCase().match(/.jpe?g$/) ? 'image/jpeg' : 'image/webp';
@@ -44,7 +48,7 @@ try {
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const x = Math.round(cx + dx * R * 0.9), y = Math.round(cy + dy * R * 0.9); if (x >= 0 && y >= 0 && x < W && y < H) s.push(px(x, y)); }
       cell.push([0, 1, 2].map((k) => s.map((p) => p[k]).sort((a, q) => a - q)[s.length >> 1]));
     }
-    const at = (i, j) => cell[j * cols + i], bg = at(0, 0), T = 26, isBg = new Uint8Array(cols * rows), q = [];
+    const at = (i, j) => cell[j * cols + i], bg = at(0, 0), T = opts.bgThreshold ?? 26, isBg = new Uint8Array(cols * rows), q = [];
     for (let i = 0; i < cols; i++) q.push([i, 0], [i, rows - 1]); for (let j = 0; j < rows; j++) q.push([0, j], [cols - 1, j]);
     while (q.length) { const [i, j] = q.pop(); if (i < 0 || j < 0 || i >= cols || j >= rows) continue; const k = j * cols + i; if (isBg[k] || diff(at(i, j), bg) > T) continue; isBg[k] = 1; q.push([i + 1, j], [i - 1, j], [i, j + 1], [i, j - 1]); }
     const sh = (p) => Math.max(...p) < 46 && Math.max(...p) - Math.min(...p) < 16, shRows = Math.round(9 * 3.55 / P);
@@ -93,7 +97,7 @@ try {
       og.putImageData(id, 0, 0); out[v] = { colours: new Set(q2.map((x) => x.join(','))).size, png: oc.toDataURL('image/png').split(',')[1] };
     }
     return { pitch: P, phase: [best.ox, best.oy], figure: [maxx - minx + 1, maxy - miny + 1], frame: [FW, FH], foot: FOOT, clipped, closed, islands, opaque: pts.length, fullColours,
-      ...(opts.holes || opts.noShadow ? { options: opts, holeCells, shadowCells } : {}), out };
+      ...(opts.holes || opts.noShadow || opts.bgThreshold ? { options: opts, holeCells, shadowCells } : {}), out };
   }, src, box, +pitchS, +fwS, +fhS, +footS, variantsS, opts);
   const report = { ...r, out: undefined, variants: {} };
   for (const [v, o] of Object.entries(r.out)) { fs.writeFileSync(`${outPrefix}-${v}.png`, Buffer.from(o.png, 'base64')); report.variants[v] = o.colours; }

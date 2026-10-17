@@ -56,11 +56,27 @@
   "art-lab/characters/provenance/dockworker-x2-v2/view-side.png": "f508a73572a6785c06c518c4066ddaac4bcaa327eb3027d99485bad4d54352f2",
   "art-lab/characters/provenance/dockworker-x2-v2/build.json": "235c2cada8f2d6c9fc53f4f3e8e617c1a7ac618e21c626781a48a8bb8f1eb442",
   "art-lab/characters/rigs/dockworker-x2-v2.rig.mjs": "239ae6b7de76220495d7631db07e8808f11a09a76bac7d06846391dd0be76464",
-  "tools/art-lab/build-character.mjs": "bdffe2802b1edafbb10156651d3f06363b6a48939ed4a6eb2ab0428860ddc589",
+  "tools/art-lab/build-character.mjs": "a0138f9c67460aa61c4180092efcb7beae68e1280961c220cd48951e91177e73",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
-  "tools/art-lab/reconstruct-grid.mjs": "46d277a2c10285ba48cd39fab1bca50791427632252459d9ec90750ddbc2d1cf",
+  "tools/art-lab/reconstruct-grid.mjs": "36652cb14bc8bdf78ff1f0932d854d7ad911e794a5bc9238e5d432eb609a781f",
   "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
   "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
  },
- "review": "two independent reviews by a fresh agent (JOURNAL Passe 4A-sedecies): sign error of the boot rotation, profile legs too dark / thin, frozen arms, 1-texel amplitudes unreadable at ~1.8 px / texel -> fixed in iterations 2 and 3"
+ "review": "two independent reviews by a fresh agent (JOURNAL Passe 4A-sedecies): sign error of the boot rotation, profile legs too dark / thin, frozen arms, 1-texel amplitudes unreadable at ~1.8 px / texel -> fixed in iterations 2 and 3",
+ "maintenance": [
+  {
+   "date": "2026-10-17",
+   "pass": "4A-duodevicies",
+   "file": "tools/art-lab/build-character.mjs",
+   "change": "two additions for Pass 4A-duodevicies (blacksmith, guard, hooded): the 'hammer' animation (tag order idle, walk, talk, hammer; 5.5 frames/s, the runtime's rate) and the rig's optional source.options passed to reconstruct-grid (off when absent); a rig without hammer frames or options builds exactly as before: this pack's rebuild (verify-provenance --rebuild) is identical, before and after the change",
+   "previousSha256": "bdffe2802b1edafbb10156651d3f06363b6a48939ed4a6eb2ab0428860ddc589"
+  },
+  {
+   "date": "2026-10-17",
+   "pass": "4A-duodevicies",
+   "file": "tools/art-lab/reconstruct-grid.mjs",
+   "change": "one opt-in option added for the hooded passerby (--bg-threshold=<n>, the background flood-fill distance, default 26); without it the tool's output is unchanged: this pack's rebuild (verify-provenance --rebuild) is identical, before and after the change",
+   "previousSha256": "46d277a2c10285ba48cd39fab1bca50791427632252459d9ec90750ddbc2d1cf"
+  }
+ ]
 }

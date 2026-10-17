@@ -57,11 +57,27 @@
   "art-lab/characters/provenance/merchant-x2-v2/view-side.png": "2e074a19a63b27c65a641877d5e6fdaf4adc1468b6c50f98eddd08d59a2724bc",
   "art-lab/characters/provenance/merchant-x2-v2/build.json": "c7850946e3608bc4948967c9b5bc0f7055266015b38dceadfd428255322c60f0",
   "art-lab/characters/rigs/merchant-x2-v2.rig.mjs": "64cefe56e61a4beca338fcb7a3c5daab673504f8e76614afc84087f4bc008f3b",
-  "tools/art-lab/build-character.mjs": "bdffe2802b1edafbb10156651d3f06363b6a48939ed4a6eb2ab0428860ddc589",
+  "tools/art-lab/build-character.mjs": "a0138f9c67460aa61c4180092efcb7beae68e1280961c220cd48951e91177e73",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
-  "tools/art-lab/reconstruct-grid.mjs": "46d277a2c10285ba48cd39fab1bca50791427632252459d9ec90750ddbc2d1cf",
+  "tools/art-lab/reconstruct-grid.mjs": "36652cb14bc8bdf78ff1f0932d854d7ad911e794a5bc9238e5d432eb609a781f",
   "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
   "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
  },
- "review": "two independent reviews by a fresh agent (JOURNAL Passe 4A-sedecies): front / back walk gliding, talk unreadable in profile and back, breath as a hard toggle -> fixed in iterations 2 and 3; not changed (from the sheet itself): bonnet volume per view, the front bag"
+ "review": "two independent reviews by a fresh agent (JOURNAL Passe 4A-sedecies): front / back walk gliding, talk unreadable in profile and back, breath as a hard toggle -> fixed in iterations 2 and 3; not changed (from the sheet itself): bonnet volume per view, the front bag",
+ "maintenance": [
+  {
+   "date": "2026-10-17",
+   "pass": "4A-duodevicies",
+   "file": "tools/art-lab/build-character.mjs",
+   "change": "two additions for Pass 4A-duodevicies (blacksmith, guard, hooded): the 'hammer' animation (tag order idle, walk, talk, hammer; 5.5 frames/s, the runtime's rate) and the rig's optional source.options passed to reconstruct-grid (off when absent); a rig without hammer frames or options builds exactly as before: this pack's rebuild (verify-provenance --rebuild) is identical, before and after the change",
+   "previousSha256": "bdffe2802b1edafbb10156651d3f06363b6a48939ed4a6eb2ab0428860ddc589"
+  },
+  {
+   "date": "2026-10-17",
+   "pass": "4A-duodevicies",
+   "file": "tools/art-lab/reconstruct-grid.mjs",
+   "change": "one opt-in option added for the hooded passerby (--bg-threshold=<n>, the background flood-fill distance, default 26); without it the tool's output is unchanged: this pack's rebuild (verify-provenance --rebuild) is identical, before and after the change",
+   "previousSha256": "46d277a2c10285ba48cd39fab1bca50791427632252459d9ec90750ddbc2d1cf"
+  }
+ ]
 }

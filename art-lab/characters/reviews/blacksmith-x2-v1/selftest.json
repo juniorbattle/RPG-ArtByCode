@@ -1,0 +1,92 @@
+{
+ "id": "blacksmith-x2-v1",
+ "cell": [
+  896,
+  384,
+  64,
+  96
+ ],
+ "bakedTexture": [
+  1024,
+  1056
+ ],
+ "cpuBytes": 24576,
+ "cpuMismatch": 0,
+ "exact": [
+  {
+   "scale": 1,
+   "mode": "exact",
+   "pixels": 6144,
+   "checked": 6144,
+   "skipped": 0,
+   "mismatches": 0
+  },
+  {
+   "scale": 2,
+   "mode": "exact",
+   "pixels": 24576,
+   "checked": 24576,
+   "skipped": 0,
+   "mismatches": 0
+  },
+  {
+   "scale": 3,
+   "mode": "exact",
+   "pixels": 55296,
+   "checked": 55296,
+   "skipped": 0,
+   "mismatches": 0
+  },
+  {
+   "scale": 2.37,
+   "mode": "exact",
+   "pixels": 34656,
+   "checked": 31104,
+   "skipped": 3552,
+   "mismatches": 0
+  }
+ ],
+ "negative": [
+  {
+   "scale": 2,
+   "mode": "offByOne",
+   "pixels": 24576,
+   "checked": 24576,
+   "skipped": 0,
+   "mismatches": 7528
+  },
+  {
+   "scale": 2.37,
+   "mode": "linear",
+   "pixels": 34656,
+   "checked": 31104,
+   "skipped": 3552,
+   "mismatches": 11634
+  }
+ ],
+ "bleed": {
+  "mode": "production (floor + clamp, centre)",
+  "draws": 192,
+  "pixels": 4277568,
+  "foreignPixels": 0
+ },
+ "bleedNegative": {
+  "mode": "rounding, no clamp",
+  "draws": 192,
+  "pixels": 4277568,
+  "foreignPixels": 37517
+ },
+ "export": {
+  "file": "art-lab/characters/exports/blacksmith-x2-v1.png",
+  "size": [
+   384,
+   576
+  ],
+  "frame": {
+   "x": 0,
+   "y": 0,
+   "w": 64,
+   "h": 96
+  }
+ }
+}

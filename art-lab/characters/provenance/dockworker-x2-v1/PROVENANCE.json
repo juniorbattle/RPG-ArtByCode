@@ -136,7 +136,7 @@
   "art-lab/characters/provenance/dockworker-x2-v1/x2-quant64.png": "84cfbe5c6b159f25eeb13b0c00318b70d151582285a07af30b6ecd0629aadfa8",
   "art-lab/characters/provenance/dockworker-x2-v1/cleanup-ops.json": "4f6d00d812d4c24151062303396f65efee520262d4d37c9b21c4894c2cfede22",
   "art-lab/characters/provenance/dockworker-x2-v1/reconstruction-report.json": "44e6b9f9c9de017eceb32b69e0b3a94948c366dc942c4406d57a470ff833544f",
-  "tools/art-lab/reconstruct-grid.mjs": "46d277a2c10285ba48cd39fab1bca50791427632252459d9ec90750ddbc2d1cf",
+  "tools/art-lab/reconstruct-grid.mjs": "36652cb14bc8bdf78ff1f0932d854d7ad911e794a5bc9238e5d432eb609a781f",
   "tools/art-lab/replay-pixel-ops.mjs": "259bcaf5b34a88f43f842f6b42fa1032065d8905ae6bf87181cf49f022e1e3f8"
  },
  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
@@ -147,6 +147,13 @@
    "file": "tools/art-lab/reconstruct-grid.mjs",
    "change": "two opt-in options added for the NPC2 merchant (--holes, --no-shadow); without them the tool's output is unchanged: verify-provenance --rebuild of this pack gives the full-colour and 64-colour reconstructions bit for bit and the replayed cleanup pixel for pixel, before and after the change",
    "previousSha256": "e8f79a9fec6cf58ba7793c06199998d1bbe4b9fc03508a17261dae5f161730a2"
+  },
+  {
+   "date": "2026-10-17",
+   "pass": "4A-duodevicies",
+   "file": "tools/art-lab/reconstruct-grid.mjs",
+   "change": "one opt-in option added for the hooded passerby (--bg-threshold=<n>, the background flood-fill distance, default 26); without it the tool's output is unchanged: this pack's rebuild (verify-provenance --rebuild) is identical, before and after the change",
+   "previousSha256": "46d277a2c10285ba48cd39fab1bca50791427632252459d9ec90750ddbc2d1cf"
   }
  ]
 }

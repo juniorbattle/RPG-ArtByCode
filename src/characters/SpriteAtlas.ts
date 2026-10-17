@@ -7,8 +7,8 @@ import { checkBakedSheet, DIRS, type BakedSheet } from './BakedSprites';
  *  (x0, y0 = bottom-left data texel, w, h), the UV fields unused */
 export interface FrameRect { u0: number; v0: number; u1: number; v1: number; cell?: [number, number, number, number] }
 
-/** width of the baked texture: 8 x2 frames per shelf */
-const BW = 512;
+/** width of the baked frames' texture: 16 x2 frames per shelf, 21 shelves within the 2048 rows WebGL2 guarantees = 336 x2 frames */
+const BW = 1024;
 
 /** Bakes every character frame ONCE into a shared atlas (colour + emissive). The game's characters are 100% generated. Baked (authored)
  *  sheets of any density k (frames 32k x 48k, see BakedSprites.ts; EXPERIMENTAL, DEV flag only today) go to a second texture of the same

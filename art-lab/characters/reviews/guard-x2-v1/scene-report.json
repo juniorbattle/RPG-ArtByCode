@@ -1,0 +1,304 @@
+[
+ {
+  "view": "camera=A",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=A",
+  "variant": "cur",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=A",
+  "variant": "basegen",
+  "vs": "base",
+  "pixels": 20013,
+  "maxDelta": 184,
+  "box": [
+   194,
+   623,
+   905,
+   437
+  ]
+ },
+ {
+  "view": "camera=A",
+  "variant": "curgen",
+  "vs": "base",
+  "pixels": 20013,
+  "maxDelta": 184,
+  "box": [
+   194,
+   623,
+   905,
+   437
+  ]
+ },
+ {
+  "view": "camera=A",
+  "variant": "cand",
+  "vs": "base",
+  "pixels": 11463,
+  "maxDelta": 167,
+  "box": [
+   252,
+   566,
+   868,
+   505
+  ]
+ },
+ {
+  "view": "camera=B&player=2,1.5",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=B&player=2,1.5",
+  "variant": "cur",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=B&player=2,1.5",
+  "variant": "basegen",
+  "vs": "base",
+  "pixels": 95258,
+  "maxDelta": 209,
+  "box": [
+   0,
+   559,
+   1291,
+   521
+  ]
+ },
+ {
+  "view": "camera=B&player=2,1.5",
+  "variant": "curgen",
+  "vs": "base",
+  "pixels": 95258,
+  "maxDelta": 209,
+  "box": [
+   0,
+   559,
+   1291,
+   521
+  ]
+ },
+ {
+  "view": "camera=B&player=2,1.5",
+  "variant": "cand",
+  "vs": "base",
+  "pixels": 36560,
+  "maxDelta": 226,
+  "box": [
+   57,
+   403,
+   1686,
+   676
+  ]
+ },
+ {
+  "view": "camera=C&player=8,1",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=C&player=8,1",
+  "variant": "cur",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=8,1",
+  "variant": "basegen",
+  "vs": "base",
+  "pixels": 46657,
+  "maxDelta": 225,
+  "box": [
+   0,
+   432,
+   1806,
+   648
+  ]
+ },
+ {
+  "view": "camera=C&player=8,1",
+  "variant": "curgen",
+  "vs": "base",
+  "pixels": 46657,
+  "maxDelta": 225,
+  "box": [
+   0,
+   432,
+   1806,
+   648
+  ]
+ },
+ {
+  "view": "camera=C&player=8,1",
+  "variant": "cand",
+  "vs": "base",
+  "pixels": 80730,
+  "maxDelta": 227,
+  "box": [
+   348,
+   343,
+   1542,
+   737
+  ]
+ },
+ {
+  "view": "camera=D&player=16,2",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=D&player=16,2",
+  "variant": "cur",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&player=16,2",
+  "variant": "basegen",
+  "vs": "base",
+  "pixels": 17995,
+  "maxDelta": 214,
+  "box": [
+   0,
+   606,
+   814,
+   474
+  ]
+ },
+ {
+  "view": "camera=D&player=16,2",
+  "variant": "curgen",
+  "vs": "base",
+  "pixels": 17995,
+  "maxDelta": 214,
+  "box": [
+   0,
+   606,
+   814,
+   474
+  ]
+ },
+ {
+  "view": "camera=D&player=16,2",
+  "variant": "cand",
+  "vs": "base",
+  "pixels": 71609,
+  "maxDelta": 240,
+  "box": [
+   0,
+   510,
+   1920,
+   570
+  ]
+ },
+ {
+  "view": "camera=C&player=8,1&forge=sabotaged",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=C&player=8,1&forge=sabotaged",
+  "variant": "cur",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=8,1&forge=sabotaged",
+  "variant": "basegen",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=8,1&forge=sabotaged",
+  "variant": "curgen",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&player=8,1&forge=sabotaged",
+  "variant": "cand",
+  "vs": "base",
+  "pixels": 181957,
+  "maxDelta": 192,
+  "box": [
+   0,
+   343,
+   1917,
+   737
+  ]
+ },
+ {
+  "view": "camera=D&player=16,2&forge=sabotaged",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=D&player=16,2&forge=sabotaged",
+  "variant": "cur",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&player=16,2&forge=sabotaged",
+  "variant": "basegen",
+  "vs": "base",
+  "pixels": 18844,
+  "maxDelta": 209,
+  "box": [
+   5,
+   675,
+   1128,
+   324
+  ]
+ },
+ {
+  "view": "camera=D&player=16,2&forge=sabotaged",
+  "variant": "curgen",
+  "vs": "base",
+  "pixels": 18844,
+  "maxDelta": 209,
+  "box": [
+   5,
+   675,
+   1128,
+   324
+  ]
+ },
+ {
+  "view": "camera=D&player=16,2&forge=sabotaged",
+  "variant": "cand",
+  "vs": "base",
+  "pixels": 130789,
+  "maxDelta": 230,
+  "box": [
+   0,
+   509,
+   1920,
+   571
+  ]
+ }
+]

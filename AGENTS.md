@@ -60,7 +60,7 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
   reference sheets (`art-lab/characters/reference/sources/`: each file against its `.source.json` record, SHA-256 and size); a
   `production` manifest also needs its export PNG to match the SHA-256 of its provenance pack (what the game's cast trusts)
 - `node tools/art-lab/build-character.mjs art-lab/characters/rigs/<id>.rig.mjs [--check]` — an animated baked character from its rig script
-  (archived sheet -> reconstruction per facing -> one palette -> rig frames -> Aseprite `.aseprite` + sheet PNG / JSON with tags
+  (archived sheet -> reconstruction per facing, with the rig's optional `source.options` such as `bgThreshold` -> one palette -> rig frames (idle / walk / talk / hammer) -> Aseprite `.aseprite` + sheet PNG / JSON with tags
   `<anim>-<dir>`); `--check` rebuilds into a temp folder and compares with the committed views and exports (needs Chrome + Aseprite)
 - `npm run art:sheet -- <sheet.png> [meta.json] [--out f.png] [--scale 4]` — labelled nearest-neighbour review contact sheet
   (Windows PowerShell drops the first `--` of any `npm run x -- flags` and npm then eats the flags: write `npm run x '--' flags`
@@ -95,7 +95,8 @@ cost, reproducibility and operator approval — not procedural purity.
   boot except its production cast (`src/characters/BakedCast.ts`): baked character sheets (exported PNG + JSON, bundled as assets,
   SHA-256 checked against their provenance pack, decoded byte-exact) standing in for generated archetypes, and only those whose
   manifest is approved for production. Today: `dockworker-x2-v2` (in place of the porter) and `merchant-x2-v2` (the hero stall's
-  merchant), approved by the operator on 2026-10-17; every other character is still generated.
+  merchant), approved by the operator on 2026-10-17; every other character is still generated. Candidates awaiting the operator's
+  approval (DEV `?cast=candidate` only): `blacksmith-x2-v1`, `guard-x2-v1` (both guards), `hooded-x2-v1` (Pass 4A-duodevicies).
 - A baked asset may reach the runtime only through an approved provenance manifest (`approved: true`, `runtimeUse: "production"`)
   and an explicit operator-approved task. Generated output never becomes canonical production art silently.
 - `*.aseprite` files are production sources (tracked); the sheet PNG + metadata JSON exports are the baked, runtime-ready outputs.

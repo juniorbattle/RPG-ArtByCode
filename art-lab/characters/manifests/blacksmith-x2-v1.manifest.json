@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "blacksmith-x2-v1",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/blacksmith-x2-v1.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/blacksmith-x2-v1.png",
+    "metadata": "art-lab/characters/exports/blacksmith-x2-v1.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-character.mjs (reconstruct-grid + quantize-palette + rig-engine, rig art-lab/characters/rigs/blacksmith-x2-v1.rig.mjs); Aseprite 1.3.18.6 (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "Reference sheet NPC 04 \"Blacksmith Helper (Male)\": front, back and profile views",
+      "path": "art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp",
+      "note": "Operator reference sheet \"16 generic townsfolk\" (four views per character), archived byte for byte; origin confirmed by the operator (ChatGPT / OpenAI under the team's art direction), not cryptographically certified; use for commercial game assets authorised by the operator (2026-10-16) subject to third-party rights, not exhaustively verified. Crops: front 1089,117,1170,271; back 1257,114,1339,272; profile 1348,119,1407,272 (the sheet's 1st, 3rd and 4th views), pitch 1.775."
+    },
+    {
+      "category": "A",
+      "label": "Merchant District runtime, cameras A / B / C / D, seed 1842",
+      "path": "art-lab/characters/reviews/blacksmith-x2-v1",
+      "note": "in-scene, dynamic and performance validation (JOURNAL, Passe 4A-duodevicies)"
+    }
+  ],
+  "approved": false,
+  "approval": null,
+  "runtimeUse": "lab",
+  "notes": "PRODUCTION CANDIDATE (task of 2026-10-17: extend the production cast from the reference sheet with the dock worker's chain). Not approved: production needs the operator's explicit approval (approved: true, status approved, runtimeUse production); until then the game's production cast skips it and only the DEV switch ?cast=candidate shows it. Replaces the generated blacksmith (forge-work: hammering at the anvil; forge-alarm in the sabotaged forge) (spawns, roles and behaviours unchanged). Density x2 (64x96, feet on row 90), idle 4 + walk 6 frames in the three runtime facings, plus the forge's side-only hammer cycle (4 frames at 5.5 frames/s, the strike on frame 2 = the frame the forge throws its sparks on); one 64-colour palette for the three views. Presentation scale 0.9. Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/blacksmith-x2-v1.rig.mjs --check"
+}

@@ -1737,6 +1737,94 @@ Preuves : `art-lab/characters/reviews/dockworker-x2-v2/`, `reviews/merchant-x2-v
 - Préparer l'intégration derrière la porte du manifeste a rendu l'activation triviale et sûre : un changement de données, prouvé par
   l'égalité au pixel avec ce qui avait été relu.
 
+## Passe 4A-duodevicies — Distribution étendue : forgeron, garde, passant encapuchonné (candidats, activation = approbation opérateur) (2026-10-17)
+
+### Demande (2026-10-17)
+- Consigne de la séance de travail parente, pour le projet de l'opérateur : étendre la distribution cuite avec la même chaîne, depuis la
+  planche 01-16 : n° 04 Blacksmith Helper → `blacksmith` (cycle `hammer` de profil à la forge : animation ou décision explicite), n° 06 City
+  Guard → `guardA` / `guardB`, n° 13 Hooded Passerby → `hooded` ; manifestes `candidate` / `runtimeUse: "lab"`, paquets de provenance, câblage
+  dans `BakedCast.ts` derrière la porte du manifeste ; ne jamais écrire d'approbation au nom de l'opérateur. Branche `cast-blacksmith-guard-hooded`.
+
+### Sources et reconstruction — [OK] avec deux écarts mesurés
+- Recadrages (vues 1, 3, 4 de chaque PNJ) : forgeron 1089,117,1170,271 / 1257,114,1339,272 / 1348,119,1407,272 ; garde 385,330,461,504 /
+  548,334,622,505 / 633,334,692,506 ; encapuchonné 31,818,113,988 / 204,818,282,989 / 294,818,355,991. Entre le dos et le profil du garde et de
+  l'encapuchonné il n'y a que 2-4 px de fond : la marge de 6 px de l'outil y fait entrer le voisin, les recadrages sont resserrés en conséquence.
+- [KO → décision] **Le casque et la capuche ne tiennent pas dans le cadre** : au pas du docker (1,775) le garde fait 96-98 rangées et
+  l'encapuchonné 99-100, pour 90 rangées disponibles au-dessus des pieds (tête rognée). Pas 1,9 / 1,92 / 1,95 / 2,0 testés : 1,92 ouvre une
+  fente dans la capuche de dos, 2,0 casse le haut de la capuche ; **1,95 retenu pour les deux** (87-91 rangées). Première version à l'échelle
+  0,9 × 1,95 / 1,775 (taille relative de la planche gardée) : la critique 1 a vu les texels 10 % plus gros à côté du forgeron. Retenu : **échelle
+  0,9 pour toute la distribution** (même texel à l'écran), garde 1,86 m et encapuchonné 1,82 m, ~10 % plus petits que l'échelle unifiée de la
+  planche (2,04 / 2,00 m). Forgeron au pas 1,775, 1,82 m.
+- [KO → outil] La cape de l'encapuchonné est d'un marine proche du fond de la planche : le remplissage du fond (seuil 26) découpait des fentes
+  transparentes dans le dos (89 texels de trous sur les rangées 20-80). Recadrages décalés : 43 à 156, jamais 0. Seuil 16 : 9 (dos) et 0
+  (profil), plis gardés. → option `reconstruct-grid --bg-threshold=<n>` (désactivée par défaut), passée par `build-character` depuis
+  `source.options` du rig.
+- [OK, trouvé à la critique 2] Les « longs cheveux noirs » du forgeron (face et dos) sont un **artefact de la fermeture verticale** : le fond
+  entre la mâchoire / la nuque et les épaules est rempli de la couleur la plus sombre (la planche montre oreilles et fond). Mesure d'abord
+  trompeuse : la masse de dos avait la même valeur que la reconstruction pleine couleur (L 0,352 / 0,354) — normal, l'artefact est dans la
+  reconstruction elle-même. Corrigé dans `prepare` (`trimDark` : bandes quasi noires coupées à un texel de contour) ; le seuil devait être 0,15
+  (le noir du dos est à L 0,14).
+- Palettes jointes de 64 couleurs : erreur OKLab moyenne forgeron 12,4-13,3 ‰, garde 13,6-15,3 ‰, encapuchonné 7,2-10,6 ‰.
+
+### Animation — trois itérations, deux critiques aveugles (agent neuf, lecture à froid, auto-critique écrite avant)
+- Itération 1 : la recette du docker (jambes de profil peintes + IK, remappage face / dos), jambes rigides glissées sous l'ourlet pour le garde
+  et l'encapuchonné (tabard, cape), marteau peint (la planche ne montre aucun outil). Critique 1 : **4/10** — boucle du marteau qui traverse le
+  corps (image 3 devant → image 0 derrière), marches face / dos à ~1 texel, jambes de profil confondues, tissus figés, artefacts (barre du poing
+  du garde : masque de bras qui emportait un bord de cape ; brin sur l'épaule du garde de dos : fente de fond ; carré creux de l'encapuchonné :
+  trou laissé par le cisaillement de la cape), texels 10 % plus gros. Cause de « la marche glisse » chez l'encapuchonné : **aucun rebond** de
+  profil (la descente venait de l'IK seule, nulle pour lui).
+- Itération 2 : rebond imposé de 2 rangées (contact le plus bas), levée 3 / 5 / 3, jambe lointaine deux pas plus sombre, tissus qui traînent
+  d'une image (2-3 texels), ourlets cisaillés de 2, bras du marteau en deux segments cerclés de sombre, échelle 0,9. Critique 2 (vérifie la 1) :
+  **6/10** — corrigés : boucle, artefacts, densité, tissus ; restent : image 1 du marteau (bras confondu avec le bandeau dans l'éclat de la
+  forge), frappe à plat, pieds de profil « en bouillie », balancement des bras. Affirmation vérifiée et **fausse** : « rebond d'un seul côté »
+  (rangées hautes mesurées 6 4 5 6 4 5) ; vraie pour le profil du forgeron (amplitude 1 : l'IK impose déjà 1 rangée au passage → +1).
+- Itération 3 (non relue par un critique, vérifiée au texel par l'auteur) : marteau = levée devant, armé derrière la tête (bras à hauteur
+  d'épaule, ne croise plus visage ni bandeau), frappe tête sous le poing avec 3 texels de penché, rebond ; bras face / dos 3 rangées ; îlots
+  < 4-6 texels retirés autour des pieds ; botte lointaine plus sombre ; bandes noires coupées.
+- Marteau : 4 images à 5,5 i/s, **frappe sur l'image 2**, celle où `App` déclenche les étincelles ((t × 5,5 − 2) / 4) ; le moteur n'a pas de
+  durée par image : 4 images obligatoires pour rester synchrone.
+- Final : forgeron 34 images (idle 4 + marche 6 × 3 directions + marteau 4), garde 30, encapuchonné 30. Non changés exprès : souffle d'une
+  rangée (celui de la distribution approuvée), valeurs sombres / mains claires / visage de l'encapuchonné (la planche).
+
+### Intégration — [OK] implémentée ; [?] activation = approbation de l'opérateur
+- `BakedCast.ts` : trois entrées `candidate` ; `replaces` devient une liste (un garde pour `guardA` et `guardB`) ; `needs: ['side/hammer']`
+  pour le forgeron (chargement refusé s'il manque). Spawns, rôles, positions, teintes, comportements, orientations, niveaux de détail
+  inchangés (test des acteurs, forge normale et sabotée) ; seuls sprite, échelle et hauteur changent (+ l'animation de départ du porteur,
+  déjà acceptée).
+- **Capacité de la texture cuite** : 78 + 94 images = 172 → 512 × 2112 au-delà des 2048 garantis par WebGL2 (`BW` 512 = 168 images x2).
+  `BW` → 1024 (336 images) : 1024 × 480 par défaut, 1024 × 1056 avec les candidats. Adressage par case entière : aucun effet sur l'image.
+- `build-character.mjs` : animation `hammer` (ordre idle, walk, talk, hammer ; 182 ms) et `source.options`. Les deux outils changés ont leur
+  empreinte mise à jour dans les quatre paquets existants (note de maintenance, ancienne empreinte gardée) après `verify-provenance --rebuild`
+  **identique** avant et après ; les 7 paquets `intact`.
+
+### Validation — [OK]
+- Démarrage par défaut contre `main` (`f34e2f2`, arbre servi à part) : **0 px** en A / B / C / D et C / D forge sabotée ; `?cast=generated`
+  identique au pixel (écart max 0) à celui de `main` ; `?cast=candidate` : seuls les PNJ remplacés, leurs ombres / reflets et le halo
+  d'in-scatter autour d'eux changent.
+- Autotest (test 2), les cinq planches, texture 1024 × 480 et 1024 × 1056 : CPU 0, GPU 0 texel à 1 / 2 / 3 / 2,37, contrôles négatifs en
+  échec (docker 6 616 / 10 804, comme à la passe 4A-sedecies), débordement 0 (négatif 37 517).
+- Perfs (`tools/perf.mjs`, entrelacé, 3 tours, itération 1, mêmes nombres d'images) : B 9,31 (`main`) / 9,31 (générée) / 9,20 (production) /
+  9,35 ms (candidats) ; C 9,13 / 9,12 ; D forge sabotée 8,47 / 8,51 : bruit ; 108 / 111 appels de dessin partout.
+- Build : JS 869 600 o (gzip 246,0 Ko, +22 Ko : tables d'images JSON) + trois PNG livrés non chargés (47 / 55 / 64 Ko). `art:validate` 0 erreur.
+- Densité écran au spawn (1080p) : forgeron 1,5 (B) - 2,1 (C), encapuchonné 1,8-2,7, gardes de la barrière **0,5 (A) / 1,05 (B)** px / texel.
+
+### Constats hors périmètre (non changés)
+- Le forgeron de `forge-work` regarde à l'opposé de l'enclume en B et C (étincelles à 35-50 px à sa gauche, marteau à droite) : orientation
+  du spawn générée, identique avant ; décision de mise en scène.
+- Un seul garde pour deux : uniformes et visages identiques ; les lances des gardes générés disparaissent (aucune sur la planche).
+
+### Pensée
+- La fermeture verticale de la reconstruction transforme le fond entre deux masses (nuque / épaules) en traits noirs : chercher ces bandes
+  sur chaque vue, et comparer à la planche, pas à la reconstruction (qui contient l'artefact).
+- Un personnage plus haut que le cadre se rééchantillonne plus gros, mais se présente à l'échelle commune : la densité de texel se voit tout de
+  suite à côté du cast, une taille 10 % plus petite non.
+- Une affirmation de critique se mesure avant d'être suivie (rebond « d'un seul côté » : faux ; « cheveux noirs » : vrai, mais pas pour la
+  raison supposée).
+- Un rebond imposé, pas seulement déduit de l'IK : un personnage aux jambes courtes sous un manteau n'en avait aucun.
+
+Preuves : `art-lab/characters/reviews/blacksmith-x2-v1/`, `guard-x2-v1/`, `hooded-x2-v1/` (planches, marche et marteau en scène, comparaisons,
+autotests) ; paquets `provenance/<id>/` ; captures brutes, critiques et scripts dans `art-lab/characters/scratch/cast2/` (non versionné).
+
 ---
 
 ## À reprendre (par priorité)
@@ -1749,10 +1837,15 @@ droits : usage comme source **autorisé** (16/10, sous réserve des droits de ti
 (marchande de l'étal) approuvés le 17/10 et chargés par le jeu. **Tâche acceptée par l'opérateur le 17/10** (« La tâche est terminée et
 acceptée : fusionne la branche dans main, pousse main et supprime la branche. ») : branche `character-gold-master-4a-1` fusionnée en avance
 rapide dans `main`, puis supprimée. La prochaine tâche ouvre sa propre branche. Restent ouverts : la marchande ne marche pas à son étal (collisionneur ; la déplacer de 0,5 m serait une
-décision de mise en scène), foulée du docker 0,69 m/s contre 0,8-0,95 (léger glissement), bonnet / sac selon la planche, héros et reste du cast
-toujours générés (la planche 01-16 couvre forgeron, gardes, voyageurs encapuchonnés : même chaîne possible). `merchant-x2-v1` reste comme
+décision de mise en scène), foulée du docker 0,69 m/s contre 0,8-0,95 (léger glissement), bonnet / sac selon la planche. `merchant-x2-v1` reste comme
 preuve ; la source V4 n'est plus attendue. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
+**-1b. EN ATTENTE DE L'OPÉRATEUR (Passe 4A-duodevicies)** : `blacksmith-x2-v1`, `guard-x2-v1`, `hooded-x2-v1` construits, revus (deux critiques,
+4/10 puis 6/10, troisième itération non relue), câblés, **candidats non approuvés** (le jeu de production ne les charge pas ; DEV
+`?cast=candidate`). Activation = l'opérateur approuve chaque manifeste (approved, status, approval, runtimeUse) ; rien d'autre à changer.
+Branche `cast-blacksmith-guard-hooded` (à fusionner quand l'opérateur juge la tâche finie). Décisions de mise en scène ouvertes : tourner le
+forgeron vers l'enclume (B / C), un second garde différent (miroir ou variante) au lieu de jumeaux, lances. Reste généré : héros, chat, foule.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
+Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
 tramée ; la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un nouvel occluder.
 Avant d'étendre : densité du cast (héros), liseré dépendant de la densité, largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A, personnage **original** au même niveau.
@@ -1865,3 +1958,13 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
 - Un mouvement destiné à se lire en jeu se dimensionne en pixels écran (2 texels à ~1,8 px / texel), pas en texels de la planche.
 - Une approbation de production ne s'écrit jamais au nom de l'opérateur : l'intégration se prépare derrière la porte du manifeste et
   l'opérateur l'ouvre.
+- Après toute reconstruction, chercher les bandes quasi noires de la fermeture verticale entre deux masses (nuque / épaules, entre les jambes)
+  et les comparer à la planche, pas à la reconstruction : elles se lisent comme des cheveux ou des sangles qui n'existent pas.
+- Un personnage plus grand que le cadre se rééchantillonne à un pas plus grossier et se présente à l'échelle commune : une densité de texel
+  unique dans la scène prime sur la taille relative de la planche (écart chiffré et consigné).
+- Un mouvement de marche se fixe explicitement (rebond imposé de 2 rangées au contact), il ne se déduit pas seulement de l'IK ; une
+  affirmation de critique se mesure (rangées, texels) avant d'être corrigée.
+- Une texture partagée se dimensionne contre le minimum garanti (WebGL2 : 2 048) pour la distribution entière, candidats compris, avant de
+  les ajouter ; l'adressage par case entière permet d'élargir sans changer une image.
+- Un cycle synchronisé avec un effet (étincelles du marteau) garde son nombre d'images et l'image de l'impact ; le moteur n'a pas de durée
+  par image.

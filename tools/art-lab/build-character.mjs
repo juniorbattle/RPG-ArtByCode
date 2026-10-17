@@ -1,6 +1,7 @@
 // Build an animated baked character from its rig script (Art Lab, development only; never a runtime / build step).
 //   node tools/art-lab/build-character.mjs <art-lab/characters/rigs/<id>.rig.mjs> [--check] [--views-only] [--keep <dir>]
-// The rig script is the whole recipe: `source` (the archived sheet, the reconstruction pitch, one crop per facing, the palette mode),
+// The rig script is the whole recipe: `source` (the archived sheet, the reconstruction pitch, one crop per facing, the palette mode, and the
+// optional reconstruct-grid options for every facing: `options: { holes, noShadow, bgThreshold }`, off when absent),
 // `prepare(dir, view)` (mirror / shift / recorded pixel edits of each reconstructed view) and `frames(views)` (the animation). Chain:
 //   sheet -> reconstruct-grid.mjs (full colours, one per facing) -> quantize-palette.mjs (one palette for every facing) -> prepare ->
 //   frames (rig-engine.mjs) -> frame checks (contract section 3) -> Aseprite (batch): <id>.aseprite + sheet PNG + JSON (tags <anim>-<dir>)
@@ -42,7 +43,8 @@ const recon = {};
 for (const dir of DIRS) {
   if (S.keep?.[dir]) continue;
   const pre = path.join(work, `recon-${dir}`);
-  execFileSync(node, [tool('reconstruct-grid.mjs'), repo(S.sheet), S.views[dir], String(S.pitch), String(R.FW), String(R.FH), String(R.FOOT), pre, 'full'], { stdio: 'ignore' });
+  const ropt = [...(S.options?.holes ? ['--holes'] : []), ...(S.options?.noShadow ? ['--no-shadow'] : []), ...(S.options?.bgThreshold ? [`--bg-threshold=${S.options.bgThreshold}`] : [])];
+  execFileSync(node, [tool('reconstruct-grid.mjs'), repo(S.sheet), S.views[dir], String(S.pitch), String(R.FW), String(R.FH), String(R.FOOT), pre, 'full', ...ropt], { stdio: 'ignore' });
   recon[dir] = `${pre}-full.png`;
 }
 // 2. one palette for every facing
@@ -59,11 +61,11 @@ for (const dir of DIRS) {
 if (viewsOnly) { console.log(`views written to ${packDir}`); process.exit(0); }
 // 4. frames, checked like the runtime loader checks them
 const frames = rig.frames(V), order = [];
-for (const anim of ['idle', 'walk', 'talk']) for (const dir of DIRS) { const fs_ = frames.filter((f) => f.anim === anim && f.dir === dir).sort((a, b) => a.i - b.i); if (fs_.length) order.push({ tag: `${anim}-${dir}`, anim, list: fs_ }); }
+for (const anim of ['idle', 'walk', 'talk', 'hammer']) for (const dir of DIRS) { const fs_ = frames.filter((f) => f.anim === anim && f.dir === dir).sort((a, b) => a.i - b.i); if (fs_.length) order.push({ tag: `${anim}-${dir}`, anim, list: fs_ }); }
 const counts = {};
 for (const g of order) { for (const f of g.list) R.check(`${g.tag}-${f.i}`, f.im, f.anim); counts[g.anim] ??= g.list.length; if (counts[g.anim] !== g.list.length) throw new Error(`${g.tag}: ${g.list.length} frames, another facing has ${counts[g.anim]}`); }
 const fdir = path.join(work, 'frames'); fs.mkdirSync(fdir, { recursive: true });
-const RATE = { idle: 1.7, walk: 7.5, talk: 4 }, lines = [], tags = []; let n = 0;
+const RATE = { idle: 1.7, walk: 7.5, talk: 4, hammer: 5.5 }, lines = [], tags = []; let n = 0;
 for (const g of order) {
   tags.push(`${g.tag}|${n}|${n + g.list.length - 1}`);
   for (const f of g.list) { const p = path.join(fdir, `${String(n).padStart(3, '0')}-${g.tag}-${f.i}.png`); R.save(p, f.im); lines.push(`${p.replace(/\\/g, '/')}|${Math.round(1000 / RATE[g.anim])}`); n++; }

@@ -1,0 +1,40 @@
+{
+ "id": "blacksmith-x2-v1",
+ "frames": 34,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29 hammer-side:30-33",
+ "sheet": [
+  384,
+  576
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2743,
+    "meanOklabErrPermille": 12.9,
+    "maxOklabErrPermille": 43.7
+   },
+   "recon-up-full-q.png": {
+    "texels": 2817,
+    "meanOklabErrPermille": 13.3,
+    "maxOklabErrPermille": 38.4
+   },
+   "recon-side-full-q.png": {
+    "texels": 2028,
+    "meanOklabErrPermille": 12.4,
+    "maxOklabErrPermille": 45.7
+   }
+  }
+ },
+ "views": {
+  "down": "485aa57ca343dac3b14a1d25fb757c3dd05ae75f554ded6a83ede01935e99c25",
+  "up": "98ca304dfdf6c45458e3e4f4b221d8616d4e39f32fbfce40663c069a8b0cf546",
+  "side": "4f9728e0084d46932d0886830e0608ee41e27b3f5802e23d9f13872f7ebdfc32"
+ },
+ "exports": {
+  "png": "289a0cb97b31bd97daa915664120013bd8ce3eb5a2397617b263e885bc1ca04d",
+  "json": "cad686799d7e3156b8f3c716a7ea00499347c9a696946d486af3e7bcd67dc78c",
+  "aseprite": "3562d558b774e31ea8734596680e58e6ca4cf6311e12388372e927ae4af9f579"
+ }
+}

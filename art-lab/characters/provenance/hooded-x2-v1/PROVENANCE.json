@@ -1,0 +1,60 @@
+{
+ "id": "hooded-x2-v1",
+ "status": "PRODUCTION CANDIDATE - not approved: production needs the operator's explicit approval (manifest)",
+ "request": {
+  "date": "2026-10-17",
+  "by": "task brief from the parent working session (Claude Code), on the operator's project",
+  "text": "Extend the baked production cast beyond the dock worker and the merchant with the same chain (reconstruct-grid -> one joint palette -> rig -> Aseprite), from the reference sheet merchant-district-night-npc-01-16: n° 04 Blacksmith Helper -> generated blacksmith (side-only hammer cycle at the forge: a hammer animation or an explicit decision), n° 06 City Guard -> guardA / guardB, n° 13 Hooded Passerby -> hooded. Manifests candidate / runtimeUse lab, provenance packs, wired into BakedCast behind the manifest gate. Never write an approval in the operator's name: ask the operator to approve production."
+ },
+ "source": {
+  "sheet": {
+   "description": "operator reference sheet \"16 generic townsfolk\" (four views per character: front, three-quarter, back, profile), NPC 13 \"Hooded Passerby (Male)\"",
+   "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce",
+   "bytes": 302814,
+   "path": "art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp",
+   "origin": "confirmed by the operator (2026-10-16): generated with ChatGPT / OpenAI from the team's art direction; not cryptographically verified (no C2PA). See ../dockworker-x2-v1/source-declaration.json",
+   "rights": "use as a source for commercial game assets authorised by the operator (2026-10-16), subject to applicable third-party rights, NOT exhaustively verified"
+  },
+  "views": {
+   "down": "crop 31,818,113,988 (the sheet's 1st view)",
+   "up": "crop 204,818,282,989 (3rd view)",
+   "side": "crop 294,818,355,991 (4th view)"
+  }
+ },
+ "chain": [
+  "reconstruct-grid.mjs <sheet> <crop> 1.95 64 96 90 --bg-threshold=16: the hood makes the figure ~99 rows at the dock worker's pitch (1.95 gives 86-91); the cloak is a navy close to the sheet's background, which the default threshold 26 cut into transparent slits on the back view; full colours, per facing",
+  "quantize-palette.mjs --k 64: ONE OKLab k-means over the three views (faces weighted x4)",
+  "rig prepare(): front: the closing strip between the legs and the closing tails under the boots removed, moved 4 rows down; back: a tail under the left boot and a closing strip between the legs removed, moved 3 rows down; profile: mirrored to face left, closing tails under the far boot removed",
+  "rig frames(): idle 4 frames (the approved cast's breath); walk 6 frames, the body 2 rows lower on the contact frames; front / back = each lower leg a rigid part BEHIND the cloak, lifted 3 / 5 / 3 rows, weight shift 1 texel, the cloak's lower half sheared 2 texels and its hem lifted 1 row on the swing side, the hands (skin masks) moving 3 rows; profile = two legs PAINTED in the trouser ramp (far two steps darker) on IK, the view's near boot moved rigidly (a darker copy for the far leg), the coat's front edge and the cloak tail trailing the near leg by one frame (2 / 3 texels), gaps closed, loose islands < 6 texels removed around the feet; the arms stay under the cloak",
+  "frame checks of the runtime contract (alpha 0 / 255, transparent ring, feet on row 90 for idle, nothing below it)",
+  "Aseprite 1.3.18.6 batch: source/hooded-x2-v1.aseprite (one layer, 30 frames, tags idle-, walk-down|up|side, durations 588 / 133 ms) and its export exports/hooded-x2-v1.png + .json; every exported frame compared texel for texel with the rig's frame"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9,
+  "height": "1.82 m hood included (front figure x 0.0235 x 0.9): ~10 % smaller than the sheet's unified scale"
+ },
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/hooded-x2-v1.rig.mjs --check (rebuild from the archived sheet, compared with the committed views and exports); node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/hooded-x2-v1 [--rebuild]",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/hooded-x2-v1.png": "52e71b9aca0da9e1169b37afc9e24ca9fd665691e67257e5df3820459910a7ac",
+  "art-lab/characters/exports/hooded-x2-v1.json": "a93fa85003f906cfbb9b879966379975d6d53c7d172b7868693388564549fe5d",
+  "art-lab/characters/source/hooded-x2-v1.aseprite": "e14d03bf348b01c32b43aff2df320ee37eba9bb0fe3364c38500e671a38a7633",
+  "art-lab/characters/provenance/hooded-x2-v1/view-down.png": "2852721ac98f7fbb2d3c84984fab5cadeee89081da15f355d4cba0c5ea4e7b12",
+  "art-lab/characters/provenance/hooded-x2-v1/view-up.png": "bb85cff0725d97ab9dcaddcbe4a3d42a39d547c7431fa7f5e653acd0dde33a3e",
+  "art-lab/characters/provenance/hooded-x2-v1/view-side.png": "e0190013335b151012255c8a37ebb6d7c0088686e1dae9b57b32b1ab0f6e59c3",
+  "art-lab/characters/provenance/hooded-x2-v1/build.json": "95ea72d9891cc82473979141853862caf3ba765a09a7e55afff376934de05011",
+  "art-lab/characters/rigs/hooded-x2-v1.rig.mjs": "11884106bb34285cda4234d6ce8a3db1f712b31645990e8a1109cfc3e34d1b56",
+  "tools/art-lab/build-character.mjs": "a0138f9c67460aa61c4180092efcb7beae68e1280961c220cd48951e91177e73",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "36652cb14bc8bdf78ff1f0932d854d7ad911e794a5bc9238e5d432eb609a781f",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ },
+ "review": "two independent blind reviews by a fresh agent (JOURNAL Passe 4A-duodevicies): 4/10, then 6/10 (verifying the first one's findings); the third iteration (the fixes of the second review) was checked by the author at texel level, not re-reviewed"
+}
