@@ -37,23 +37,32 @@ function closeGaps(im, area, max = 3, from = 1) {
 /** recorded edits of the reconstructed views. Front: closing tails between the legs (x 29-30, rows 80-83), under the cape (row 80) and under
  *  the left boot (20, 90) removed, then moved 1 row down (soles on row 90). Back: a closing tail between the legs removed; the background
  *  slit between the cape and the right arm's edge (x 40-42, rows 36-50, it made the edge read as a loose strand) closed with the cape's
- *  colour. Profile: mirrored to face left, moved 1 texel right and 2 rows down (legs centred on the anchor column, soles on row 90), the cape
- *  tail's one-texel thread (x 45-48, rows 83-86: it reads as a loose strand once the tail sways) removed. */
+ *  colour; the one-texel pinhole in the cape at (40, 51) (background seen through the back in every back frame) takes its left
+ *  neighbour's colour (Pass C3). Profile: mirrored to face left, moved 1 texel right and 2 rows down (legs centred on the anchor column, soles
+ *  on row 90), the cape tail's one-texel thread (x 45-48, rows 83-86: it reads as a loose strand once the tail sways) removed. */
 export function prepare(dir, v) {
   if (dir === 'down') return R.shift(R.erase(v, R.or(R.rect(29, 80, 30, 83), R.rect(44, 80, 48, 80), R.rect(20, 90, 20, 90))), 0, 1);
-  if (dir === 'up') return closeGaps(R.erase(v, R.rect(31, 81, 31, 82)), R.rect(39, 36, 43, 50), 3, -1);
+  if (dir === 'up') {
+    const o = closeGaps(R.erase(v, R.rect(31, 81, 31, 82)), R.rect(39, 36, 43, 50), 3, -1);
+    if (!R.opaque(o, 40, 51)) R.put(o, 40, 51, R.get(o, 39, 51));
+    return o;
+  }
   return R.erase(R.shift(R.mirror(v), 1, 2), R.rect(45, 83, 48, 86));
 }
 
 /** front / back arm swing: the arm's texels between rows y0 and y1 (the fist last, `fist` rows rigid) are stretched (dy > 0) or squeezed
  *  (dy < 0) by |dy| rows and moved dx texels; a texel the arm uncovers takes what lies just outside the arm (up to 3 texels away, away from
- *  the body), else becomes transparent */
-function swingArm(v, m, y0, y1, dy, dx, inward, fist) {
+ *  the body), else, with `below` > 0, the first texel under the arm in its column (up to `below` rows down: what hangs behind the fist),
+ *  else becomes transparent */
+function swingArm(v, m, y0, y1, dy, dx, inward, fist, below = 0) {
   const inArm = (x, y) => m(x, y) && y >= y0 && y <= y1;
   const arm = R.cut(v, inArm), base = R.erase(v, inArm);
   for (let y = y0; y <= y1; y++) for (let x = 0; x < v.W; x++) {
     if (!inArm(x, y) || !R.opaque(v, x, y)) continue;
-    for (let k = 1; k <= 3; k++) { const x2 = x - inward * k; if (!inArm(x2, y) && R.opaque(v, x2, y)) { R.put(base, x, y, R.get(v, x2, y)); break; } }
+    let c = null;
+    for (let k = 1; k <= 3 && !c; k++) { const x2 = x - inward * k; if (!inArm(x2, y) && R.opaque(v, x2, y)) c = R.get(v, x2, y); }
+    for (let k = 1; k <= below && !c; k++) if (!inArm(x, y + k) && R.opaque(v, x, y + k)) c = R.get(v, x, y + k);
+    if (c) R.put(base, x, y, c);
   }
   return R.over(base, R.shift(R.remapRows(arm, () => true, y0, y1, y0, y1 + dy, 0, fist), dx, 0));
 }
@@ -101,16 +110,22 @@ const BOB = [2, 0, 1, 2, 0, 1];
 const J = { hip: [32, 74] }, L1 = 7, L2 = 7.5, BOOT_ANKLE = [36.5, 87.5];   // the rear boot's ankle point, in the view
 const NEAR = { bands: [[-0.5, '#7a6d75'], [0.15, '#645964'], [0.5, '#524a59'], [0.8, '#433d4b'], [1, '#312b36']], outline: '#040207', ow: 1 };
 const FAR = { bands: [[-0.5, '#4e434e'], [0.15, '#433d4b'], [0.5, '#3a3443'], [0.8, '#312b36'], [1, '#26202b']], outline: '#040207', ow: 1 };
-const CAPE = (x, y) => y >= 62 && y <= 86 && x >= 40;          // the cape's tail, behind
+// the cape's tail, behind; column 40 below row 77 is the source's rear leg's back edge, not cape (Pass C3: kept with the cape it hung
+// behind the painted legs as a lone vertical thread, the "back leg reduced to a thread" of profile frames 2 / 5)
+const CAPE = (x, y) => y >= 62 && y <= 86 && (x >= 41 || (x === 40 && y < 78));
 const LEGS = (x, y) => y >= 78 && !CAPE(x, y);                 // the source's legs (both boots), replaced by the painted ones
 const PANEL = (x, y) => y >= 64 && y <= 77 && x <= 28;         // the tabard's front panel
 const SIDE_ARM = R.rect(29, 47, 41, 68);                       // elbow, bracer and fist of the near arm
-/** texels of `mask` take the colour of the nearest opaque texel outside it in their row, towards +x (what the swinging arm uncovers) */
+/** texels of `mask` take the colour of the nearest opaque texel outside it in their row, towards +x (what the swinging arm uncovers), else
+ *  keep their own colour (Pass C3: the mask's front columns are tabard, too far from its back edge: they stayed transparent between the
+ *  tabard panel and the arm swung back, a hole through the tabard) */
 function filled(im, mask) {
   const o = R.erase(im, mask);
   for (let y = 0; y < im.H; y++) for (let x = 0; x < im.W; x++) {
     if (!mask(x, y) || !R.opaque(im, x, y)) continue;
-    for (let k = 1; k <= 6; k++) if (!mask(x + k, y) && R.opaque(im, x + k, y)) { R.put(o, x, y, R.get(im, x + k, y)); break; }
+    let c = null;
+    for (let k = 1; k <= 6 && !c; k++) if (!mask(x + k, y) && R.opaque(im, x + k, y)) c = R.get(im, x + k, y);
+    R.put(o, x, y, c ?? R.get(im, x, y));
   }
   return o;
 }
@@ -142,13 +157,15 @@ function sideFrame(v, i) {
 // ---- front (down) / back (up): the tabard / cape hangs to row 80 and covers the thighs, so each lower leg (rows >= 81) is a rigid part drawn
 // BEHIND it, planted or lifted 3 / 5 / 3 rows (it slides up under the hem, like the merchant's boots); the body bobs 2 rows and shifts its
 // weight over the planted leg; the hem sways 2 texels trailing the weight shift and lifts one row on the swing side at passing; the fists
-// swing three rows (two in between, and one texel inwards forward).
+// swing three rows (two in between, and one texel inwards forward). Front arms (Pass C3): the fist's bottom outline (row 66) moves with the
+// fist (it stayed behind as a loose dark dash when the fist rose), and what a rising fist uncovers takes the tabard / cape below it (it was
+// a hole through the tabard).
 const SWING = [3, 5, 3];
 const SHIFT = [0, 1, 1, 0, -1, -1];
 const HEM = [-1, -2, -2, 1, 2, 2];
 const ARM = [1, 0, -0.5, -1, 0, 0.5];
 const FB = {
-  down: { split: 31, hem: [62, 80], arms: [{ m: R.rect(12, 47, 20, 65), y0: 47, y1: 65, fist: 7, inward: 1 }, { m: R.rect(40, 47, 46, 65), y0: 47, y1: 65, fist: 7, inward: -1 }] },
+  down: { split: 31, hem: [62, 80], arms: [{ m: R.rect(12, 47, 20, 66), y0: 47, y1: 66, fist: 8, inward: 1, below: 4 }, { m: R.rect(40, 47, 46, 66), y0: 47, y1: 66, fist: 8, inward: -1, below: 4 }] },
   up: { split: 31, hem: [58, 80], arms: [{ m: R.rect(10, 50, 19, 69), y0: 50, y1: 69, fist: 7, inward: 1 }, { m: R.rect(44, 50, 53, 69), y0: 50, y1: 69, fist: 7, inward: -1 }] },
 };
 function frontBack(v, o, i) {
@@ -157,7 +174,7 @@ function frontBack(v, o, i) {
   let upper = R.cut(v, (x, y) => y <= 80);
   o.arms.forEach((a, j) => {
     const fwd = j ? ARM[i] : -ARM[i], dy = Math.sign(fwd) * Math.round(3 * Math.abs(fwd)), dx = fwd >= 1 ? a.inward : 0;
-    if (dy) upper = swingArm(upper, a.m, a.y0, a.y1, dy, dx, a.inward, a.fist);
+    if (dy) upper = swingArm(upper, a.m, a.y0, a.y1, dy, dx, a.inward, a.fist, a.below);
   });
   upper = R.movePart(upper, (x, y) => y >= 74 && y <= 80 && half(x), 0, k === 1 ? -1 : 0, swing ? -1 : 1, 0);
   upper = R.shear(upper, o.hem[0], o.hem[1], HEM[i]);

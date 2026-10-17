@@ -1,6 +1,6 @@
 {
  "id": "guard-x2-v1",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; the revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »)",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master - revised on 2026-10-17 at the operator's request (black pixels, see revisions), merged into main at the operator's request; that revised sheet approved by the operator on 2026-10-17 (« Les cinq planches révisées me conviennent. »); revised again on 2026-10-17 at the operator's request (rig pass C3 on inherited defects, Pass 4A-duovicies, branch cast-rig-fixes): that sheet awaits the operator's review",
  "request": {
   "date": "2026-10-17",
   "by": "task brief from the parent working session (Claude Code), on the operator's project",
@@ -37,8 +37,8 @@
  "chain": [
   "reconstruct-grid.mjs <sheet> <crop> 1.95 64 96 90 --closing-from=48 (since the 2026-10-17 revision: no vertical closing of short gaps above row 48, where it filled the background seen between hair and shoulders, beside the jaw / neck, with the reconstruction's darkest colour: near-black strokes; below, the closing still restores the dark leg and boot outlines): the helmet makes the figure 96-98 rows at the dock worker's pitch, more than the 90 rows above the foot row; 1.95 (one pitch for the two tall figures) gives 87-90 rows; full colours, per facing",
   "quantize-palette.mjs --palette-from provenance/guard-x2-v1/palette.png: the three views mapped onto the approved sheet's 64 colours (since the 2026-10-17 revision; palette.png = the colours of the approved export, which came from ONE OKLab k-means over the three views, faces weighted x4: a new k-means would have moved every colour)",
-  "rig prepare(): front: closing tails between the legs, under the cape and under the left boot removed, moved 1 row down; back: a closing tail between the legs removed, the background slit between the cape and the right arm's edge (x 40-42, rows 36-50) closed with the cape's colour; profile: mirrored to face left, moved 1 texel right and 2 rows down, the cape tail's one-texel thread (x 45-48, rows 83-86) removed",
-  "rig frames(): idle 4 frames (the approved cast's breath); walk 6 frames, the body 2 rows lower on the contact frames; front / back = each lower leg (rows >= 81) a rigid part BEHIND the tabard / cape, lifted 3 / 5 / 3 rows, weight shift 1 texel, the hem sheared 2 texels and lifted 1 row on the swing side, fists stretched / squeezed 3 rows (narrow masks: no tabard or cape texel moves); profile = two greaves PAINTED in the view's grey ramp (far two steps darker) on IK, the view's rear boot moved rigidly (a darker copy for the far leg), the tabard panel and the cape tail trailing the near leg by one frame (2 / 3 texels), gaps closed, loose islands < 6 texels removed around the feet; last pass on every frame (since the 2026-10-17 revision): detached islands of fewer than 6 texels removed, every texel not in palette.png snapped to the nearest one (OKLab): no colour outside the approved palette",
+  "rig prepare(): front: closing tails between the legs, under the cape and under the left boot removed, moved 1 row down; back: a closing tail between the legs removed, the background slit between the cape and the right arm's edge (x 40-42, rows 36-50) closed with the cape's colour, the one-texel pinhole at (40, 51) filled with its left neighbour's colour (Pass 4A-duovicies); profile: mirrored to face left, moved 1 texel right and 2 rows down, the cape tail's one-texel thread (x 45-48, rows 83-86) removed",
+  "rig frames(): idle 4 frames (the approved cast's breath); walk 6 frames, the body 2 rows lower on the contact frames; front / back = each lower leg (rows >= 81) a rigid part BEHIND the tabard / cape, lifted 3 / 5 / 3 rows, weight shift 1 texel, the hem sheared 2 texels and lifted 1 row on the swing side, fists stretched / squeezed 3 rows (narrow masks: no tabard or cape texel moves; since Pass 4A-duovicies the front masks end on the fist's bottom outline, row 66, and a texel a rising fist uncovers without an outward fill takes the texel under the arm in its column); profile = two greaves PAINTED in the view's grey ramp (far two steps darker) on IK, the view's rear boot moved rigidly (a darker copy for the far leg), the tabard panel and the cape tail trailing the near leg by one frame (2 / 3 texels; since Pass 4A-duovicies the cape mask leaves out view column 40 below row 77, the source's rear-leg edge), the arm's uncovered front texels keep their own colour, gaps closed, loose islands < 6 texels removed around the feet; last pass on every frame (since the 2026-10-17 revision): detached islands of fewer than 6 texels removed, every texel not in palette.png snapped to the nearest one (OKLab): no colour outside the approved palette",
   "frame checks of the runtime contract (alpha 0 / 255, transparent ring, feet on row 90 for idle, nothing below it)",
   "Aseprite 1.3.18.6 batch: source/guard-x2-v1.aseprite (one layer, 30 frames, tags idle-, walk-down|up|side, durations 588 / 133 ms) and its export exports/guard-x2-v1.png + .json; every exported frame compared texel for texel with the rig's frame"
  ],
@@ -55,15 +55,15 @@
  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/guard-x2-v1.rig.mjs --check (rebuild from the archived sheet, compared with the committed views and exports); node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/guard-x2-v1 [--rebuild]",
  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
  "files": {
-  "art-lab/characters/exports/guard-x2-v1.png": "fa8224c197300d90360926afdf02affb4784f7f7b40fc1f60f20373fad639dbb",
+  "art-lab/characters/exports/guard-x2-v1.png": "564f150564072daeb0afe0c59a27d3d0aeeaf0221e4f78e6b876eb8ddbe1d24d",
   "art-lab/characters/exports/guard-x2-v1.json": "85852abce9083445e637a2b1eedfd1b0f6a53d1a5e39bf9f262c5737144dbd18",
-  "art-lab/characters/source/guard-x2-v1.aseprite": "c96701c8d20889242fe796e36ed7c7917fd18afdec9e413599042f2e78c192c8",
+  "art-lab/characters/source/guard-x2-v1.aseprite": "60de0ddd97549f0c33b6a1a5821e28a2abb73c62e8304e91dc0f3029037f7c56",
   "art-lab/characters/provenance/guard-x2-v1/view-down.png": "d1b55439fde72e320ffc43afd244d5d0e5b9c03609c7a6986b3dd7f798739d73",
-  "art-lab/characters/provenance/guard-x2-v1/view-up.png": "00a3ddf393c3da7dd8500311cfb0af928ee20ee395ed3a1db4dbc0b009e7040c",
+  "art-lab/characters/provenance/guard-x2-v1/view-up.png": "5026e19b8d4869dfb61bddd9fd721336e5338cab9ac462c2d46be76e14775a14",
   "art-lab/characters/provenance/guard-x2-v1/view-side.png": "16a0e60626b3d6e0bf1335897cf5ca3d4df72c41b975ee88646d000d2f2f3455",
-  "art-lab/characters/provenance/guard-x2-v1/build.json": "66559da13dedbf2b77031f9540a8674b99fa6cbf4e55b0a170ce9f44540cda73",
+  "art-lab/characters/provenance/guard-x2-v1/build.json": "53eba9e6561d3fc808e03cf9cb1cee54cf5ca6e59f713cdd5144bd4d1c142a34",
   "art-lab/characters/provenance/guard-x2-v1/palette.png": "6305786a8e32c22df03dc85b3a782a5c2e4ae602559ae7bb95061a4d2726d063",
-  "art-lab/characters/rigs/guard-x2-v1.rig.mjs": "0e95f7ade664561f7d1523d7f406636bb74667e219f31c40efe9a4f6abaf0dd2",
+  "art-lab/characters/rigs/guard-x2-v1.rig.mjs": "64785b02a4428a261ea32beb6a4fe30dbbcff90ee186920d98e906805128814e",
   "tools/art-lab/build-character.mjs": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
   "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
@@ -82,6 +82,16 @@
    "previousExportSha256": "a4515db26b61a6a76d346c1b04e6a42d9c0a12a0fe486583eb858e622a0247c3",
    "exportSha256": "fa8224c197300d90360926afdf02affb4784f7f7b40fc1f60f20373fad639dbb",
    "approval": "the operator's approval (approvals) was given for the previous sheet (previousExportSha256); the revised sheet is the operator-requested correction, merged into main at the operator's request: « si la tache est fini on peut commit/push vers main » (2026-10-17), before the operator had reviewed the revised sheet's images (reviews/guard-x2-v1/); reviewed afterwards: the operator saw them one by one (reviews/guard-x2-v1/05-revision-black-pixels.png) and approved the revised sheet on 2026-10-17: « Les cinq planches révisées me conviennent. »"
+  },
+  {
+   "date": "2026-10-17",
+   "pass": "4A-duovicies",
+   "requestedBy": "operator (git user wonmii), in the working session",
+   "request": "« Les cinq planches révisées me conviennent. Ouvre une branche pour la passe de rig C3 sur les défauts hérités, en commençant par le garde. »",
+   "change": "rig pass C3 on the inherited defects found by the blind critique of Pass 4A-unvicies (all present in the approved sheets): front walk 2-3, a hole through the tabard beside the rising right fist (what the fist uncovered got no fill: the outward search, 3 texels, ended inside the 7-texel arm mask) -> an uncovered texel without an outward fill takes the first texel under the arm in its column (the cape / tabard hanging behind the fist); front walk 0 / 5, a dark dash floating under the rising left fist (the fist's bottom outline, row 66, lay outside the arm mask and stayed put) -> the front arm masks end on row 66 (fist rigid 8 rows: the stretched band is unchanged); back (idle and walk), a one-texel pinhole in the cape at (40, 51) of the view -> filled with its left neighbour's colour; profile walk 0 / 1 / 5, a transparent strip between the tabard panel and the arm swung back (the arm mask's front columns are tabard, beyond the +x search) -> those texels keep their own colour; profile walk 0-5, a lone vertical dark thread behind the legs (the source's rear-leg back edge, view column 40 rows 78-86, fell in the cape mask and was carried with the cape: the \"back leg reduced to a thread\" of frames 2 / 5) -> column 40 below row 77 is no longer cape (replaced by the painted legs like the rest of the source legs).",
+   "previousExportSha256": "fa8224c197300d90360926afdf02affb4784f7f7b40fc1f60f20373fad639dbb",
+   "exportSha256": "564f150564072daeb0afe0c59a27d3d0aeeaf0221e4f78e6b876eb8ddbe1d24d",
+   "approval": "pending: the revised sheet awaits the operator's review (reviews/guard-x2-v1/06-rig-c3-before-after.png, 07-rig-c3-walk-in-scene-cameraB.png); the production approval (approvals) covers the previous sheets"
   }
  ]
 }

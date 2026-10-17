@@ -2316,6 +2316,45 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   n'est déclarée Gold Master. `art:validate` 0 erreur, `verify-provenance` : cinq paquets intacts.
 - Recolorations de la 4A-unvicies (893 à 1 754 texels par planche, même palette) : cause toujours non isolée [?].
 
+### Méthode de la passe de rig (C3)
+- Chaque défaut relevé par la critique à l'aveugle de la 4A-unvicies est d'abord mesuré dans la planche exportée (fond enclavé par
+  remplissage depuis le bord du cadre, îlots, vidage texte des rangées de la vue et de l'image) puis rattaché à la ligne du script de rig qui
+  le produit ; la correction se fait dans le script (rejouable au texel près), jamais par retouche de l'export. Essai d'abord hors du dépôt
+  (`build-character --check --keep`), comptes avant / après (retirés / ajoutés / recolorés, couleurs nouvelles), puis construction réelle et
+  `--check`. Critique à l'aveugle par un agent neuf (étiquettes X / Y tirées au sort, clé gardée hors de sa portée, auto-critique écrite
+  avant le verdict), marche capturée dans la scène, captures déterministes du démarrage contre une base figée (`dab59f9`, `:5184`).
+
+### Garde (`guard-x2-v1`) — [OK] corrigé ; [?] approbation de l'opérateur
+- Causes mesurées (toutes présentes dans la planche approuvée) :
+  - face, marche 2-3, trou dans le tabard à côté du poing droit qui remonte (8 et 12 texels de fond enclavé) : le poing découvre des
+    texels que le remplissage cherche à 3 texels vers l'extérieur, dans un masque de bras large de 7 → rien trouvé, transparent ;
+  - face, marche 0 / 5, tiret sombre sous le poing gauche : la rangée 66 (contour bas du poing) est hors du masque du bras (rangées 47-65) et
+    reste en place quand le poing remonte de 3 rangées ;
+  - dos, toutes les images (repos compris), un trou d'un texel dans la cape en (40 ; 51) de la vue reconstruite ;
+  - profil, marche 0 / 1 / 5, une lanière transparente entre le pan du tabard et le bras (2 à 8 texels) : les colonnes avant du masque du
+    bras sont du tabard, hors de portée de la recherche vers +x ; un repli vers −x a d'abord pris le liseré clair du tabard (liseré doublé)
+    **[KO, abandonné avant commit]** ; retenu : ces texels gardent leur propre couleur ;
+  - profil, marche 0-5, la « jambe arrière réduite à un filet » : un fil vertical sombre d'un texel derrière les jambes = le bord arrière
+    de la jambe source (colonne 40, rangées 78-86), tombé dans le masque de la cape et cisaillé avec elle.
+- Correctifs (script `rigs/guard-x2-v1.rig.mjs` seulement) : masques des bras de face jusqu'à la rangée 66 (poing rigide sur 8 rangées :
+  la bande étirée est inchangée), repli « texel sous le bras dans sa colonne » pour ce qu'un poing qui remonte découvre ; trou de la vue de
+  dos rempli par la couleur de cape voisine ; `filled` garde la couleur propre du texel ; colonne 40 sous la rangée 77 sortie de la cape.
+- Planche contre la précédente : 43 texels retirés, 68 ajoutés, 65 recolorés, 0 couleur nouvelle, 20 images changées (repos de face et de
+  profil inchangés). Fond enclavé restant : 2 texels (fente tabard / cape, face 2) et les poches jambe arrière / cape en profil 0 (12) et
+  3 (6 + 2), du vide entre la jambe et la cape. `--check` identique, `verify-provenance` intact, `art:validate` 0 erreur ; mêmes images,
+  étiquettes et JSON ; `npm run build` vert (JS 874,48 Ko).
+- Jeu : démarrage par défaut (A, B, C, D, C et D forge sabotée, 1920 × 1080, `clean=1&freeze=7.3`) **0 px** contre la base figée, témoin
+  de répétition 0 px : les gardes restent immobiles et de face, les images corrigées ne se voient que si un garde marche ou se détourne.
+  Marche provoquée dans la scène (caméra B, garde de la barrière envoyé sur le quai, les autres masqués) : quatre vues, cycle complet,
+  avant / après → `reviews/guard-x2-v1/07-rig-c3-walk-in-scene-cameraB.png` ; planche `06-rig-c3-before-after.png`.
+- Critique à l'aveugle (agent neuf) : révisée **7/10**, précédente **4,5/10** ; toutes les différences sont des défauts de la précédente
+  (trous du tabard jugés « sérieux », fente de profil qui clignote, fil « qui se lit comme une jambe réduite à un fil »), aucun défaut
+  nouveau. Auto-critique écrite avant : mêmes corrections attendues ; elle annonçait la fente et la poche, pas la lecture « talon » du coin
+  de galon. Restent (hérités, non traités) : le coin du galon d'ourlet au bout de la cape de profil se lit comme un talon détaché (x 46-50,
+  rangées 81-84), la jambe arrière presque toujours cachée de profil, la fente 1 × 2, la poche de profil 3.
+- Paquet : nouvelle révision (`revisions`, demande citée, empreinte précédente `fa8224c1…`, nouvelle `564f1505…`), `status`, chaîne ;
+  manifeste (`notes`) ; README de revue. **En attente de l'approbation de l'opérateur** ; aucune planche déclarée Gold Master.
+
 ---
 
 ## À reprendre (par priorité)
@@ -2362,7 +2401,7 @@ révisées montrées une à une et approuvées par l'opérateur le 17/10 (« Les
 mouvement : la bande 40° / 50° et les diagonales du joueur, désormais de profil ; (c) défauts hérités des planches approuvées relevés par la
 critique à l'aveugle (manches du docker coupées par le balancement des bras, trous du tabard du garde, main du passant, jambe arrière du garde
 de profil, contour de bras du forgeron de dos, chaussure de la marchande) : passe de rig **en cours** (Passe 4A-duovicies, branche
-`cast-rig-fixes`, le garde d'abord). Branche `cast-polish-facing` supprimée (locale et distante) à la demande de l'opérateur.
+`cast-rig-fixes`) : garde corrigé et commité (critique à l'aveugle 7/10 contre 4,5/10), en attente de l'approbation de l'opérateur. Branche `cast-polish-facing` supprimée (locale et distante) à la demande de l'opérateur.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
