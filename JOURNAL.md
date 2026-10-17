@@ -2596,13 +2596,17 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - [KO] `cmd //c "rmdir <chemin>"` depuis Git Bash : « chemin d'accès introuvable » pour les chemins du dossier temporaire (rien supprimé),
   alors qu'il avait marché pour `HD-2D-visbase` ; repli Node (`lstat` / `readlink` / `unlink`).
 - Vérifications : `git worktree list` = le dépôt seul ; branches `main` et `housekeeping-m1` ; `typecheck` 0, `npm run build` vert,
-  `art:validate` 0 erreur (14 manifestes). Fusion dans `main` : en attente de l'acceptation de l'opérateur.
+  `art:validate` 0 erreur (14 manifestes).
+
+### Décision opérateur (2026-10-17) — [OK] acceptée
+- Mot pour mot : « La tâche est terminée et acceptée : fusionne housekeeping-m1 dans main, pousse main et supprime la branche. Arrête aussi les deux
+  vieux serveurs Vite sur 5174 et 5180. »
+- Les deux serveurs Vite d'hier arrêtés (ligne de commande vérifiée avant) : `:5180` (lancé le 16/10 à 20:23 avec le `node_modules` du
+  dépôt) et `:5174` (16/10 à 22:48, base `base-894c4d3` d'un ancien scratchpad dont le `node_modules` n'existait plus ; `:5174` est le port
+  des bases figées de `tools/eval.mjs` : un outil pointé dessus aurait photographié cette vieille base). Ports 5174 et 5180 libres.
+- Branche `housekeeping-m1` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée (locale et distante).
 
 ### Restent (décisions de l'opérateur, non traités)
-- Deux serveurs Vite d'hier tournent encore : `:5180` (lancé le 16/10 à 20:23 avec le `node_modules` du dépôt) et `:5174` (16/10 à 22:48,
-  base `base-894c4d3` d'un ancien scratchpad, dont le `node_modules` n'existe plus). `:5174` est le port des bases figées de `tools/eval.mjs` :
-  un outil pointé dessus photographierait cette vieille base. Non arrêtés sans accord ; à arrêter avant le travail de performances GPU
-  (ils chargent la machine).
 - Bases figées restantes, sans lien désormais : `base-14b8686`, `base-8693690`, `v-700179e`, `base-894c4d3` (scratchpads de séances passées).
 - `.claude/launch.json` : `dev-cast2` (`:5186`) et `dev-cast3` (`:5189`) servent le dépôt lui-même sur d'autres ports : sans objet.
 
@@ -2672,10 +2676,10 @@ les images), bras étiré qui s'allonge un peu en marche de face. Branche `cast-
 **approuvés pour la production le 17/10** (« J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. ») ; branche `cast-crowd` fusionnée en avance rapide
 dans `main` puis supprimée. Seuls le héros et le chat restent générés. Décisions ouvertes : bras immobiles en marche (reproche commun des critiques), costumes différents selon la vue
 (fidèles aux planches), seuls 2 des 5 citadins visibles à la graine 1842 et à la densité 1, cycle sans double appui. Ensuite, dans l'ordre
-demandé : ménage M1 **fait** (Passe M1, branche `housekeeping-m1` : worktrees `HD-2D-visbase` et `kind-wilson` retirés, branche
-`claude/kind-wilson-a0fa95` supprimée, sept jonctions défaites, entrées mortes de `.claude/launch.json` retirées), défauts hérités -1d (d)-(h)
-branche par branche, performances GPU (`tools/perf.mjs`, base figée ; arrêter d'abord, avec l'accord de l'opérateur, les vieux serveurs Vite
-`:5174` / `:5180`, voir Passe M1), puis variantes de PNJ (-1f).
+demandé : ménage M1 **fait** (Passe M1, acceptée par l'opérateur le 17/10 et fusionnée dans `main` : worktrees `HD-2D-visbase` et `kind-wilson`
+retirés, branche `claude/kind-wilson-a0fa95` supprimée, sept jonctions défaites, entrées mortes de `.claude/launch.json` retirées, vieux
+serveurs Vite `:5174` / `:5180` arrêtés), défauts hérités -1d (d)-(h) branche par branche, performances GPU (`tools/perf.mjs`, base figée),
+puis variantes de PNJ (-1f).
 **-1f. Variantes de PNJ (demande de l'opérateur du 17/10, après -1d et les performances GPU)** : mot pour mot
 « Par ailleurs a la suite de nos travaux de sprites NPC qui sont presque peuple partout sur le district Merchant, on creera par la
 suite des variantes de NPC avec couleur de cheveux et peau different pour amener plus de diversite au jeu ».
