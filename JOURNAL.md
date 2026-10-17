@@ -2564,6 +2564,55 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Une affirmation de critique se mesure avant correction (« flotte d'un texel » : faux) ; chaque reprise se re-critique par un agent neuf :
   il a trouvé deux pertes créées par la reprise (bottes fondues, orteil coupé).
 
+## Passe M1 — Ménage : worktrees, bases figées et jonctions `node_modules` (2026-10-17)
+
+### Demande (2026-10-17)
+- Mot pour mot : « Oui, lance le ménage M1 sur sa propre branche. » (réponse à « On attaque le ménage M1 maintenant ? »), deuxième étape de la
+  demande de la passe 4A-tervicies (« … puis enfin passer au menage M1 et defaults herites … »). Périmètre noté en -1e : `HD-2D-visbase`
+  (jonction `node_modules` d'abord, jamais sa cible), worktree `kind-wilson` détaché et branche locale `claude/kind-wilson-a0fa95`, entrées
+  `base-cast3` / `base-main5` de `.claude/launch.json`. Branche `housekeeping-m1` ouverte depuis `main` (`4a31577`) et poussée.
+- En cours de passe, l'opérateur a ajouté une tâche pour plus tard (mot pour mot en -1f) : des variantes de PNJ (cheveux, peau).
+
+### Fait
+- État de départ : `HD-2D-visbase` (détaché, `700179e`) et `.claude/worktrees/kind-wilson-a0fa95` (détaché, `77621bb`) propres (rien de
+  modifié ni de non suivi ; `dist/` ignoré dans kind-wilson), leurs têtes dans `main` ; `claude/kind-wilson-a0fa95` (`f57e69d`) ancêtre de
+  `main`, sans branche distante. Chacun portait une jonction `node_modules` vers celui du dépôt.
+- `node_modules` du dépôt compté avant et après chaque retrait : 44 entrées, 52 `package.json` (profondeur 3), vite 8.3.1, three 0.186.1,
+  typescript 5.9.3 : inchangé du début à la fin.
+- `HD-2D-visbase` [OK] : jonction retirée (`rmdir` sur le lien seul), puis `git worktree remove` : worktree désinscrit et vidé, mais le dossier
+  vide refusé (« Permission denied ») : un serveur Vite d'une séance précédente (lancé à 06:22, `:5186`, configuration d'un ancien scratchpad)
+  y avait son répertoire courant. Arrêté (il ne servait plus rien : sa jonction venait de partir), dossier supprimé.
+- `kind-wilson` [OK] : jonction retirée ; `git worktree remove` refusé de même : deux boucles d'attente `until grep … sleep 5` d'une séance
+  de la passe 5b (07:40, en attente d'une ligne de log qui ne viendrait plus) y avaient leur répertoire courant. Arrêtées, dossier supprimé,
+  `git worktree prune` sans reste ; branche `claude/kind-wilson-a0fa95` supprimée (`git branch -d` : fusionnée).
+- `.claude/launch.json` [OK] : entrées `base-cast3` / `base-main5` retirées (et `crowd-base` de la passe 4A-tervicies) ; restent `dev`,
+  `dev-cast2`, `dev-cast3`. Le dossier `.claude/` n'est pas versionné : rien de ceci n'est dans le commit.
+- Jonctions orphelines [OK] : recherche des liens sous le dossier temporaire des séances HD-2D (`Get-ChildItem -Attributes ReparsePoint`) :
+  cinq autres jonctions vers le `node_modules` du dépôt dans d'anciens scratchpads (`base-05d5f39` / `base-2eb83d1`, les bases des deux
+  entrées retirées ; `base-14b8686`, `base-8693690`, `v-700179e`). Risque : un nettoyage récursif du dossier temporaire qui suivrait une
+  jonction viderait le `node_modules` du dépôt. Les cinq liens retirés (script Node : lien et cible vérifiés, puis `unlinkSync`) ; plus aucun
+  lien sous ce dossier ; les deux bases des entrées retirées supprimées (instantanés de `2eb83d1` / `05d5f39`, tous deux dans `main`). Les
+  jonctions des séances RPGCards ne sont pas touchées.
+- [KO] `cmd //c "rmdir <chemin>"` depuis Git Bash : « chemin d'accès introuvable » pour les chemins du dossier temporaire (rien supprimé),
+  alors qu'il avait marché pour `HD-2D-visbase` ; repli Node (`lstat` / `readlink` / `unlink`).
+- Vérifications : `git worktree list` = le dépôt seul ; branches `main` et `housekeeping-m1` ; `typecheck` 0, `npm run build` vert,
+  `art:validate` 0 erreur (14 manifestes). Fusion dans `main` : en attente de l'acceptation de l'opérateur.
+
+### Restent (décisions de l'opérateur, non traités)
+- Deux serveurs Vite d'hier tournent encore : `:5180` (lancé le 16/10 à 20:23 avec le `node_modules` du dépôt) et `:5174` (16/10 à 22:48,
+  base `base-894c4d3` d'un ancien scratchpad, dont le `node_modules` n'existe plus). `:5174` est le port des bases figées de `tools/eval.mjs` :
+  un outil pointé dessus photographierait cette vieille base. Non arrêtés sans accord ; à arrêter avant le travail de performances GPU
+  (ils chargent la machine).
+- Bases figées restantes, sans lien désormais : `base-14b8686`, `base-8693690`, `v-700179e`, `base-894c4d3` (scratchpads de séances passées).
+- `.claude/launch.json` : `dev-cast2` (`:5186`) et `dev-cast3` (`:5189`) servent le dépôt lui-même sur d'autres ports : sans objet.
+
+### Pensée
+- `git worktree remove` désinscrit et vide le worktree, puis échoue sur le dossier vide tant qu'un processus y a son répertoire courant
+  (serveur, boucle d'attente d'une séance passée) : chercher les processus par leur ligne de commande, vérifier qu'ils ne servent plus
+  rien, les arrêter, puis supprimer le dossier.
+- Une jonction se cherche partout où des bases figées ont été montées (scratchpads des séances passées), pas seulement là où l'on se
+  souvient d'en avoir créé ; elle se défait comme un lien (nature et cible vérifiées), jamais par une suppression récursive.
+
 ---
 
 ## À reprendre (par priorité)
@@ -2623,9 +2672,17 @@ les images), bras étiré qui s'allonge un peu en marche de face. Branche `cast-
 **approuvés pour la production le 17/10** (« J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. ») ; branche `cast-crowd` fusionnée en avance rapide
 dans `main` puis supprimée. Seuls le héros et le chat restent générés. Décisions ouvertes : bras immobiles en marche (reproche commun des critiques), costumes différents selon la vue
 (fidèles aux planches), seuls 2 des 5 citadins visibles à la graine 1842 et à la densité 1, cycle sans double appui. Ensuite, dans l'ordre
-demandé : ménage M1 (HD-2D-visbase : jonction `node_modules` d'abord, jamais sa cible ; worktree `kind-wilson` détaché et la branche locale
-`claude/kind-wilson-a0fa95` ; entrées `base-cast3` / `base-main5` de `.claude/launch.json`), défauts hérités -1d (d)-(h) branche par branche,
-performances GPU (`tools/perf.mjs`, base figée).
+demandé : ménage M1 **fait** (Passe M1, branche `housekeeping-m1` : worktrees `HD-2D-visbase` et `kind-wilson` retirés, branche
+`claude/kind-wilson-a0fa95` supprimée, sept jonctions défaites, entrées mortes de `.claude/launch.json` retirées), défauts hérités -1d (d)-(h)
+branche par branche, performances GPU (`tools/perf.mjs`, base figée ; arrêter d'abord, avec l'accord de l'opérateur, les vieux serveurs Vite
+`:5174` / `:5180`, voir Passe M1), puis variantes de PNJ (-1f).
+**-1f. Variantes de PNJ (demande de l'opérateur du 17/10, après -1d et les performances GPU)** : mot pour mot
+« Par ailleurs a la suite de nos travaux de sprites NPC qui sont presque peuple partout sur le district Merchant, on creera par la
+suite des variantes de NPC avec couleur de cheveux et peau different pour amener plus de diversite au jeu ».
+Contraintes connues : la texture cuite garantit 336 images et en porte 322 (dix feuilles, 1024 × 2016) : une variante en feuille séparée ne
+rentre pas sans agrandir la texture ; la teinte aléatoire de la foule (± 10 % par canal sur tout le sprite) ne s'applique plus aux feuilles
+cuites (Passe 4A-tervicies). Piste non évaluée : une permutation de palette limitée aux rampes de cheveux et de peau, à l'affichage, sur la
+même feuille. À arbitrer avec l'opérateur : quels personnages, combien de variantes, quelles teintes dans la direction artistique.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
@@ -2781,3 +2838,6 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
 - Une famille de personnages se produit par gabarit, mais chaque vue se mesure avant : sens du profil contre la planche (avant tout miroir),
   rangée basse de chaque jambe (l'ombre du sol de la planche décale toute une vue), boîte de la seule matière pour une gamme peinte (filtrée
   par sa teinte), boîte de la pièce pour une botte. Une reprise se re-critique par un agent neuf : elle crée ses propres pertes.
+- Avant de retirer un worktree ou une base figée : défaire ses jonctions d'abord (lien seul, nature et cible vérifiées), chercher les
+  processus qui y tournent (serveurs, boucles d'attente de séances passées) et les liens laissés ailleurs (`-Attributes ReparsePoint`),
+  compter le `node_modules` du dépôt avant / après.
