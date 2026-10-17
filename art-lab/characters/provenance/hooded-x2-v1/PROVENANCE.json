@@ -1,11 +1,18 @@
 {
  "id": "hooded-x2-v1",
- "status": "PRODUCTION CANDIDATE - not approved: production needs the operator's explicit approval (manifest)",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-17) - not declared a Gold Master",
  "request": {
   "date": "2026-10-17",
   "by": "task brief from the parent working session (Claude Code), on the operator's project",
   "text": "Extend the baked production cast beyond the dock worker and the merchant with the same chain (reconstruct-grid -> one joint palette -> rig -> Aseprite), from the reference sheet merchant-district-night-npc-01-16: n° 04 Blacksmith Helper -> generated blacksmith (side-only hammer cycle at the forge: a hammer animation or an explicit decision), n° 06 City Guard -> guardA / guardB, n° 13 Hooded Passerby -> hooded. Manifests candidate / runtimeUse lab, provenance packs, wired into BakedCast behind the manifest gate. Never write an approval in the operator's name: ask the operator to approve production."
  },
+ "approvals": [
+  {
+   "date": "2026-10-17",
+   "by": "operator (git user wonmii)",
+   "decision": "J'approuve blacksmith-x2-v1, guard-x2-v1 et hooded-x2-v1 pour la production (runtimeUse production). Active-les, valide, commite et pousse."
+  }
+ ],
  "source": {
   "sheet": {
    "description": "operator reference sheet \"16 generic townsfolk\" (four views per character: front, three-quarter, back, profile), NPC 13 \"Hooded Passerby (Male)\"",

@@ -1,7 +1,7 @@
 # blacksmith-x2-v1 — review evidence (Pass 4A-duodevicies, 2026-10-17)
 
-PRODUCTION CANDIDATE, not approved (manifest `candidate`, `runtimeUse: "lab"`): the production cast skips it; DEV `?cast=candidate` shows it
-in place of the generated blacksmith. Built by `node tools/art-lab/build-character.mjs art-lab/characters/rigs/blacksmith-x2-v1.rig.mjs`
+PRODUCTION ASSET, approved by the operator on 2026-10-17 (manifest `approved`, `runtimeUse: "production"`); reviewed as a candidate. The
+game's production cast loads it in place of the generated blacksmith; `?cast=generated` restores the generated sprite. Built by `node tools/art-lab/build-character.mjs art-lab/characters/rigs/blacksmith-x2-v1.rig.mjs`
 (`--check` rebuilds identically from the archived sheet).
 
 | File | What it shows |

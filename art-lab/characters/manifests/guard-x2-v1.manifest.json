@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "guard-x2-v1",
   "kind": "character",
-  "status": "candidate",
+  "status": "approved",
   "source": "art-lab/characters/source/guard-x2-v1.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/guard-x2-v1.png",
@@ -27,8 +27,12 @@
       "note": "in-scene, dynamic and performance validation (JOURNAL, Passe 4A-duodevicies)"
     }
   ],
-  "approved": false,
-  "approval": null,
-  "runtimeUse": "lab",
-  "notes": "PRODUCTION CANDIDATE (task of 2026-10-17: extend the production cast from the reference sheet with the dock worker's chain). Not approved: production needs the operator's explicit approval (approved: true, status approved, runtimeUse production); until then the game's production cast skips it and only the DEV switch ?cast=candidate shows it. Replaces BOTH generated guards (guardA, guardB: the barrier at the end of the quay, the sabotaged forge): one guard uniform, the sheet has one guard (spawns, roles and behaviours unchanged). Density x2 (64x96, feet on row 90), idle 4 + walk 6 frames in the three runtime facings; one 64-colour palette for the three views. Presentation scale 0.9 (the cast's texel size on screen; resampled at 1.95 because the helmet / hood does not fit the frame at 1.775: ~10 % smaller than the sheet's unified scale). Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/guard-x2-v1.rig.mjs --check"
+  "approved": true,
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-10-17",
+    "note": "APPROVED FOR PRODUCTION by the operator in the working session: « J'approuve blacksmith-x2-v1, guard-x2-v1 et hooded-x2-v1 pour la production (runtimeUse production). Active-les, valide, commite et pousse. » (after the review of Pass 4A-duodevicies: two blind reviews, 4/10 then 6/10, a third iteration not re-reviewed). Not declared a Gold Master. Source rights: use authorised by the operator (2026-10-16) subject to third-party rights, not exhaustively verified."
+  },
+  "runtimeUse": "production",
+  "notes": "PRODUCTION ASSET (approved by the operator on 2026-10-17): loaded by the game's production cast (src/characters/BakedCast.ts); ?cast=generated restores the generated sprite. Replaces BOTH generated guards (guardA, guardB: the barrier at the end of the quay, the sabotaged forge): one guard uniform, the sheet has one guard (spawns, roles and behaviours unchanged). Density x2 (64x96, feet on row 90), idle 4 + walk 6 frames in the three runtime facings; one 64-colour palette for the three views. Presentation scale 0.9 (the cast's texel size on screen; resampled at 1.95 because the helmet / hood does not fit the frame at 1.775: ~10 % smaller than the sheet's unified scale). Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/guard-x2-v1.rig.mjs --check"
 }

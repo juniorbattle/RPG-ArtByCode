@@ -1,7 +1,7 @@
 # guard-x2-v1 — review evidence (Pass 4A-duodevicies, 2026-10-17)
 
-PRODUCTION CANDIDATE, not approved (manifest `candidate`, `runtimeUse: "lab"`): the production cast skips it; DEV `?cast=candidate` shows it
-in place of BOTH generated guards (guardA, guardB). Built by `node tools/art-lab/build-character.mjs art-lab/characters/rigs/guard-x2-v1.rig.mjs`
+PRODUCTION ASSET, approved by the operator on 2026-10-17 (manifest `approved`, `runtimeUse: "production"`); reviewed as a candidate. The
+game's production cast loads it in place of BOTH generated guards (guardA, guardB); `?cast=generated` restores the generated sprite. Built by `node tools/art-lab/build-character.mjs art-lab/characters/rigs/guard-x2-v1.rig.mjs`
 (`--check` rebuilds identically).
 
 | File | What it shows |

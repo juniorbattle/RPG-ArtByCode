@@ -1825,6 +1825,28 @@ Preuves : `art-lab/characters/reviews/dockworker-x2-v2/`, `reviews/merchant-x2-v
 Preuves : `art-lab/characters/reviews/blacksmith-x2-v1/`, `guard-x2-v1/`, `hooded-x2-v1/` (planches, marche et marteau en scène, comparaisons,
 autotests) ; paquets `provenance/<id>/` ; captures brutes, critiques et scripts dans `art-lab/characters/scratch/cast2/` (non versionné).
 
+## Passe 4A-undevicies — Approbation de production : forgeron, garde, passant encapuchonné actifs dans le jeu (2026-10-17)
+
+### Décision opérateur (2026-10-17)
+- Mot pour mot : « J'approuve blacksmith-x2-v1, guard-x2-v1 et hooded-x2-v1 pour la production (runtimeUse production). Active-les, valide,
+  commite et pousse. »
+- Manifestes : `status: "approved"`, `approved: true`, `approval` (opérateur, 2026-10-17, citation), `runtimeUse: "production"` ; paquets
+  `PROVENANCE.json` : statut et décision ajoutés. Pas de Gold Master déclaré. Aucun changement de code : la porte du manifeste suffit.
+
+### Validation — [OK]
+- `art:validate` : 0 erreur (règle de production : chaque PNG égal au SHA-256 de son paquet) ; `verify-provenance` intact (paquets des cinq
+  planches de production).
+- `npm run build` (typecheck compris) : vert ; JS 869 640 o (gzip 246,04 Ko) + les cinq PNG, maintenant chargés.
+- Build de production servie (`vite preview`) : par défaut les cinq planches sont chargées en `production` (SHA-256 égaux aux paquets, texture
+  cuite 1024 × 1056) ; forgeron, gardes (barrière et forge sabotée) et passants encapuchonnés remplacés ; `?cast=generated` rend l'ancienne
+  distribution ; `?cast=candidate` est sans effet en production (DEV seul).
+- Captures déterministes A / B / C / D et C / D forge sabotée : build de production par défaut = rendu DEV relu en `?cast=candidate` : **0 px**
+  dans les six vues ; build de production en `?cast=generated` = DEV `?cast=generated` = distribution générée de `main` (`f34e2f2`) : **0 px**
+  (écart maximal 0) : l'ancienne distribution reste intacte derrière le paramètre.
+
+### Pensée
+- Deuxième activation par la seule porte du manifeste : la preuve tient en deux égalités au pixel (production = rendu relu ; générée = `main`).
+
 ---
 
 ## À reprendre (par priorité)
@@ -1839,11 +1861,10 @@ acceptée : fusionne la branche dans main, pousse main et supprime la branche. �
 rapide dans `main`, puis supprimée. La prochaine tâche ouvre sa propre branche. Restent ouverts : la marchande ne marche pas à son étal (collisionneur ; la déplacer de 0,5 m serait une
 décision de mise en scène), foulée du docker 0,69 m/s contre 0,8-0,95 (léger glissement), bonnet / sac selon la planche. `merchant-x2-v1` reste comme
 preuve ; la source V4 n'est plus attendue. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
-**-1b. EN ATTENTE DE L'OPÉRATEUR (Passe 4A-duodevicies)** : `blacksmith-x2-v1`, `guard-x2-v1`, `hooded-x2-v1` construits, revus (deux critiques,
-4/10 puis 6/10, troisième itération non relue), câblés, **candidats non approuvés** (le jeu de production ne les charge pas ; DEV
-`?cast=candidate`). Activation = l'opérateur approuve chaque manifeste (approved, status, approval, runtimeUse) ; rien d'autre à changer.
-Branche `cast-blacksmith-guard-hooded` (à fusionner quand l'opérateur juge la tâche finie). Décisions de mise en scène ouvertes : tourner le
-forgeron vers l'enclume (B / C), un second garde différent (miroir ou variante) au lieu de jumeaux, lances. Reste généré : héros, chat, foule.
+**-1b. Fait (Passes 4A-duodevicies / undevicies)** : `blacksmith-x2-v1`, `guard-x2-v1` (les deux gardes), `hooded-x2-v1` **approuvés pour la
+production le 17/10** et chargés par le jeu (cinq planches cuites). Branche `cast-blacksmith-guard-hooded` : à fusionner dans `main` quand
+l'opérateur juge la tâche finie. Décisions de mise en scène ouvertes : tourner le forgeron vers l'enclume en B / C (séance séparée en cours,
+proposée à la passe 4A-duodevicies), un second garde différent (miroir ou variante) au lieu de jumeaux, lances. Restent générés : héros, chat, foule.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
