@@ -1,0 +1,40 @@
+{
+ "id": "courier-x2-v1",
+ "frames": 30,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29",
+ "sheet": [
+  384,
+  480
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2788,
+    "meanOklabErrPermille": 13.9,
+    "maxOklabErrPermille": 42.9
+   },
+   "recon-up-full-q.png": {
+    "texels": 2685,
+    "meanOklabErrPermille": 13.4,
+    "maxOklabErrPermille": 42.4
+   },
+   "recon-side-full-q.png": {
+    "texels": 2243,
+    "meanOklabErrPermille": 13.5,
+    "maxOklabErrPermille": 48
+   }
+  }
+ },
+ "views": {
+  "down": "fd45fe93bb19132e7d4d695b88a40d031ac906e1ec7ba633e113a161fc1b4068",
+  "up": "7ccd628373654bc99e7955172a2ad834f995d77be6f551ba3286210790772cf8",
+  "side": "982370c05853cd0048b3767f600488d0c1fb23805809171dea0eb7e077f0a5b1"
+ },
+ "exports": {
+  "png": "9952785ed00166206cc1f016e83dbebbab9cbe3bd536d716d96109ffd762c046",
+  "json": "ecc2edce6164b4c37471f8415c5beaeaa815c2958f1539adaaba79c4c80b8249",
+  "aseprite": "768f00cea0bb1fb570b2145cf83d954500135ef81a3ca68c4650b0f4ace90615"
+ }
+}

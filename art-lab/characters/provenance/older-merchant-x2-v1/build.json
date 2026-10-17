@@ -1,0 +1,40 @@
+{
+ "id": "older-merchant-x2-v1",
+ "frames": 30,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29",
+ "sheet": [
+  384,
+  480
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 3029,
+    "meanOklabErrPermille": 12.9,
+    "maxOklabErrPermille": 46.9
+   },
+   "recon-up-full-q.png": {
+    "texels": 2777,
+    "meanOklabErrPermille": 13.5,
+    "maxOklabErrPermille": 41.2
+   },
+   "recon-side-full-q.png": {
+    "texels": 2469,
+    "meanOklabErrPermille": 13.6,
+    "maxOklabErrPermille": 39.2
+   }
+  }
+ },
+ "views": {
+  "down": "9ec33b359e520968e95656d3fd75f0cf8d77f34d2e5d0c1056957bf07f2b03aa",
+  "up": "e89220388c78434750d5694f6d66e7e3cc1bb2442140b2933ab2262dd3cfd5a4",
+  "side": "b8da52004df74d10d9c6c4dfe93155a7cf3bfc3c242af7d988d58e82e48c2687"
+ },
+ "exports": {
+  "png": "d7a8a7cd98e17cd0d2c95992c124d50bb51318bb1320ffe5220767737c05002d",
+  "json": "5a84f24eb5d04348a826c1ae2b360bd01c3feb088400c32d659bd9cd4ad2e0f3",
+  "aseprite": "216ee1cba9bbfb207c9991251ccd5b325db5e578755c841927e761ec95a82102"
+ }
+}

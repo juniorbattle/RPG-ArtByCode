@@ -2452,6 +2452,103 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - GNU `sed` : `` \` `` est une ancre (début du tampon), pas un accent grave échappé ; écrire les blocs du journal sans échappement
   (heredoc entre apostrophes) et vérifier le diff avant de pousser.
 
+## Passe 4A-tervicies — Distribution : la foule du quartier marchand, cinq citadins cuits (candidats) (2026-10-17)
+
+### Demande (2026-10-17)
+- Mot pour mot : « Je veux finaliser les NPC manquants de Merchant district afin d'avoir tous nos personnages de la scenes prets puis enfin
+  passer au menage M1 et defaults herites, il faudra aussi faire un travail sur les performances GP, afin de s'assurer que le projet run bien
+  dans le navigateur sans surcharge ». Réponses aux questions de la séance : foule « 5 citadins ordinaires (Recommandé) » (planche 01-16 :
+  03 Artisane, 07 Voyageur, 09 Citadine, 15 Vieux marchand ; planche 17-24 : 22 Coursier) ; héros et chat « Générés pour l'instant
+  (Recommandé) » ; nouveaux PNJ placés « Non, remplacer seulement (Recommandé) ». Branche `cast-crowd` ouverte depuis `main` (`549aab9`) et
+  poussée. Pause demandée (« Rapide pause »), reprise (« On peut reprendre la session »).
+- Cette passe ne fait que la foule ; le ménage M1, les défauts hérités (-1d) et les performances GPU restent à faire, chacun sur sa branche.
+
+### Méthode
+- Cinq rigs (`rigs/{artisan,traveler,townswoman,older-merchant,courier}-x2-v1.rig.mjs`) tirés d'un gabarit à deux familles : **robe**
+  (artisane, citadine) = la marche de la marchande approuvée (corps et robe qui rebondissent, ourlet en retard, bottes rigides derrière la
+  robe ; profil : une botte de la vue et une copie plus sombre sur le cycle de cheville du docker) ; **pantalon** (voyageur, vieux marchand,
+  coursier) = face / dos du garde approuvé (corps au-dessus de l'entrejambe qui rebondit, bas de jambes rigides derrière lui), profil du
+  docker (deux jambes peintes par IK dans la gamme du pantalon de la vue, botte de la vue déplacée rigidement). Bras immobiles (choix de la
+  marchande approuvée : les balancements de bras étaient la source des défauts hérités de la 4A-duovicies). Vues reconstruites
+  (`reconstruct-grid --closing-from=48`), une palette k-means de 64 couleurs par personnage, cadre 64 × 96, pieds rangée 90, échelle 0,9.
+- Jeu : `BakedCast.ts` déclare les cinq feuilles à la place des variantes générées `crowd0`..`crowd4` (les promeneurs en tirent une par
+  apparition) ; elles ne se chargent qu'avec `?cast=candidate` (DEV) tant que les manifestes sont `candidate`. `ActorSystem.spawn` : une
+  feuille cuite garde ses couleurs (la teinte aléatoire de la foule, l'outil de variété des modèles générés, ne s'y applique pas ; les tirages
+  restent).
+- Preuves à chaque tour : planches ×3, marches provoquées en scène (caméra B, un citadin neuf envoyé à gauche, à droite, en s'éloignant et en
+  revenant, les autres acteurs masqués, pas fixes de 1/60 s), fond enclavé compté (remplissage depuis le bord), critiques à l'aveugle par
+  des agents neufs (étiquettes tirées au sort, clé hors de leur portée, auto-critique écrite avant), `--check`, autotest de texture,
+  captures déterministes contre une base figée (`549aab9` servie sur `:5184`).
+
+### Constats et corrections (tous dans les scripts de rig, rejouables au texel près)
+- **Profil de l'artisane à l'envers** [OK] : la 4e vue de NPC 03 regarde déjà à gauche sur la planche (celle de la marchande, à droite) ;
+  le miroir commun la faisait marcher à reculons. Profil gardé tel quel, chaussure de 12 colonnes, ourlet 84 ; les quatre autres vérifiés.
+- **Jambes peintes de profil brunes ou noires** (pantalons) [OK] : la gamme était échantillonnée sur des rangées entières (manteau, sac,
+  tablier). Puis : boîte de texels de pantalon mesurée par vue (`legs`) ; teinte filtrée (à 40° de la teinte médiane des texels chromatiques,
+  ou quasi neutre : sans ce filtre, un seul texel gris mauve donnait la teinte moyenne du voyageur) ; cinquième le plus sombre écarté ; jambe
+  lointaine = gamme proche 0,07 L plus sombre (au tour 2, un même gris pour les deux tibias les fondait).
+- **Bottes de profil en fragments** [OK] : « 9 colonnes depuis l'orteil le plus avancé » prenait l'orteil de la botte lointaine ou l'ombre
+  sous l'ourlet (épingles sombres de la citadine) → boîte mesurée de la botte proche (`bootRect`). Copie lointaine : 0,16 plus sombre →
+  chaussures bordeaux (voyageur), 0,1 → bottes fondues (tour 2), retenu 0,13 (pantalons) et 0,16 (citadine). Citadine à 11 colonnes
+  **[KO, tour 3]** : la colonne de contour de l'orteil coupée, le bout brun se fondait dans le sol chaud → retour à 13 colonnes.
+- **Ombre du sol sous les semelles du coursier** (profil, dos) [OK] : `align` la prenait pour les semelles, vue entière 2 rangées trop haute
+  (saut au demi-tour, dalle noire de 7 × 2 sous la botte) → effacée en coordonnées alignées (`BELOW`), vue réalignée.
+- **Pieds plantés au-dessus de la rangée 90** dans les vues de face / dos (rangée 88-89 : la pose dessinée) [OK] : le pied planté sautait
+  d'une rangée à chaque pas et le repos sautait dans la marche → chaque jambe posée sur la rangée 90 pour repos et marche (`setDown`), sa
+  rangée haute répétée sous le corps.
+- **Tibias quasi noirs** (vieux marchand de face, coursier de dos, lus comme des trous) [OK] : sous l'entrejambe + 2, un texel de L < 0,12
+  aux quatre voisins opaques prend la couleur de palette un cran plus claire (`liftLegs`) ; le contour reste.
+- **Glissade latérale des robes** [OK] : report de poids 2 → 1 texel (celui de la marchande).
+- Voyageur : bout de sangle détaché du sac (face) et éclat sombre entre les jambes (dos) effacés [OK]. Citadine : trous de 1-2 texels
+  comblés par le voisin le plus sombre (`fillPinholes` de la distribution approuvée) [OK].
+- Fond enclavé : 0 dans les 90 images de marche et les repos. Rangée la plus basse : 90 dans les 150 images (une critique annonçait un
+  profil « qui flotte d'un texel » : mesuré faux, non corrigé).
+
+### Critiques à l'aveugle
+- Tour 1 (candidat contre la variante générée qu'il remplace, en scène ; planche contre la référence) : artisane 7 / 3,5 (planche 6,5),
+  voyageur 6,5 / 3 (6), citadine 6,5 / 3 (6), vieux marchand 7 / 3,5 (6,5), coursier 6 / 3 (6). Toutes jugent le candidat très au-dessus ;
+  reproche commun : haut du corps figé.
+- Tour 2 (révisée / précédente) : artisane 6 / 5, voyageur 6 / 5, citadine 5,5 / 4 (introduit : une semelle unique en profil 4-5), vieux
+  marchand 6,5 / 6 (perte : bottes fondues de profil), coursier 6,5 / 5 (perte : jambes lointaines fondues).
+- Tour 3 (voyageur, citadine, vieux marchand, coursier) : 6,5 / 6, citadine 6 / 6,5 (tour 2 préféré : orteil coupé), 6,5 / 6, 6,5 / 5,5 ;
+  aucun défaut nouveau chez les trois autres. Tour 4 (citadine finale, 13 colonnes, copie
+  lointaine 0,16, trous comblés, contre celle du tour 2) : 6,5 / 6, aucun défaut nouveau.
+- Auto-critiques écrites avant chaque tour ; elles annonçaient les pertes de contraste de la jambe lointaine, pas l'orteil coupé.
+
+### Preuves finales
+- Jeu (DEV `?cast=candidate`) : dix feuilles cuites chargées sans erreur, 322 images sur les 336 que la texture garantit (1024 × 2016) ;
+  les deux promeneurs de la graine 1842 deviennent `artisan-x2-v1` et `traveler-x2-v1` (teinte 1 / 1 / 1, échelle 0,9 × tirage).
+- Démarrage par défaut (A, B, C, D, C et D forge sabotée, 1920 × 1080, `clean=1&freeze=7.3`) : **0 px** contre la base figée `549aab9`,
+  témoin de répétition 0 px (les candidats ne se chargent qu'avec le drapeau DEV ; la ligne de teinte d'`ActorSystem` ne touche que les
+  feuilles cuites, dont aucune n'a de teinte aujourd'hui). Avec les candidats : A 23 522 px, B 82 508, C 74 211, D 24 515, C sabotée 23 257,
+  D sabotée 36 633 (les deux promeneurs, leur ombre, leur reflet).
+- Autotest de texture (`?baked=<id>`) des cinq feuilles finales : CPU 0, GPU 0 texel aux échelles 1, 2, 3, 2,37, contrôles négatifs en échec,
+  débordement 0. `--check` : les cinq se reconstruisent à l'identique ; `verify-provenance` : cinq paquets intacts ; `art:validate` 0 erreur
+  (14 manifestes) ; `npm run build` vert (JS 910,49 Ko contre 874,48 Ko au build de la passe C3 : les métadonnées des cinq feuilles ; leurs PNG
+  partent aussi dans `dist` sans être chargés, comme le prévoit `BakedCast`).
+- Revue : `reviews/<id>/` (planche ×3, marche en scène générée / candidate, autotest, README) et `reviews/crowd-4a-tervicies/` (B et C,
+  générée / candidats, rapport des captures). Manifestes `status: candidate`, `approved: false`, `runtimeUse: "lab"` ; paquets
+  `CANDIDATE`, `approvals` vide. **En attente de l'approbation de l'opérateur** ; aucun personnage déclaré Gold Master.
+
+### Restent (décisions de l'opérateur, non traités)
+- Bras immobiles en marche (les cinq critiques) : un balancement se ferait comme pour le docker, avec les mêmes risques (contours laissés).
+- Costumes différents selon la vue, fidèles aux planches : tablier absent de profil (citadine, vieux marchand), sac absent de profil (voyageur),
+  chemise de couleur différente (vieux marchand).
+- Cycle 3 + 3 sans double appui (hérité du garde), moucheture orange de l'écharpe du coursier, tablier et mains clairs sous les lanternes,
+  quelques éperons d'un texel (talon, orteil, bord du sac), coin sombre entre les jambes de dos (voyageur).
+- **Visibilité** : à la densité 1 et à la graine 1842, la foule ne compte que 2 promeneurs (`round(2 × densité)`) : l'artisane et le voyageur ;
+  la citadine, le vieux marchand et le coursier n'apparaissent qu'avec d'autres graines ou une densité plus forte (« remplacer seulement »).
+
+### Pensée
+- La 4e vue d'une planche n'est pas toujours tournée du même côté : un profil se vérifie contre la planche avant d'être miroité.
+- Une gamme peinte s'échantillonne sur une boîte de la seule matière, filtrée par sa teinte : un texel étranger au milieu des quantiles
+  colore toute la jambe. Une pièce découpée « par colonnes depuis l'orteil » prend ce qui dépasse le plus (orteil de l'autre botte, ombre) :
+  une boîte mesurée par vue.
+- Les vues reconstruites portent l'ombre du sol de la planche ; `align` la prend pour les semelles et décale toute la vue : compter la
+  rangée basse par jambe et par vue.
+- Une affirmation de critique se mesure avant correction (« flotte d'un texel » : faux) ; chaque reprise se re-critique par un agent neuf :
+  il a trouvé deux pertes créées par la reprise (bottes fondues, orteil coupé).
+
 ---
 
 ## À reprendre (par priorité)
@@ -2506,6 +2603,14 @@ profil les deux chaussures se fondent en une semelle (images 2, 5 ; barre noire 
 toujours cachée de profil ; (f) passant : une bande sombre de l'ourlet arrière pend derrière le talon de profil ; (g) forgeron : épaule
 gauche crénelée de face, contours du poing gauche qui alternent ; (h) docker : dessus de casquette en barre sombre aux coins cassés (toutes
 les images), bras étiré qui s'allonge un peu en marche de face. Branche `cast-polish-facing` supprimée (locale et distante) à la demande de l'opérateur.
+**-1e. Foule (Passe 4A-tervicies, branche `cast-crowd`)** : cinq citadins cuits **candidats** (`artisan-x2-v1`, `traveler-x2-v1`,
+`townswoman-x2-v1`, `older-merchant-x2-v1`, `courier-x2-v1`) à la place de `crowd0`..`crowd4` derrière `?cast=candidate` (DEV) ; critiques à
+l'aveugle finales 6-6,5/10 (3-3,5 pour la foule générée qu'ils remplacent) ; démarrage par défaut 0 px. **En attente de l'approbation de
+production de l'opérateur.** Décisions ouvertes : bras immobiles en marche (reproche commun des critiques), costumes différents selon la vue
+(fidèles aux planches), seuls 2 des 5 citadins visibles à la graine 1842 et à la densité 1, cycle sans double appui. Ensuite, dans l'ordre
+demandé : ménage M1 (HD-2D-visbase : jonction `node_modules` d'abord, jamais sa cible ; worktree `kind-wilson` détaché et la branche locale
+`claude/kind-wilson-a0fa95` ; entrées `base-cast3` / `base-main5` de `.claude/launch.json`), défauts hérités -1d (d)-(h) branche par branche,
+performances GPU (`tools/perf.mjs`, base figée).
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
@@ -2658,3 +2763,6 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   qu'elle découvre prend ce qui est derrière elle dans le sens du mouvement (au-dessus pour ce qui descend, en dessous pour ce qui monte),
   jamais une couleur prise de côté hors de portée. Chaque correction de rig se compte contre la planche précédente et repasse une critique à
   l'aveugle par un agent neuf.
+- Une famille de personnages se produit par gabarit, mais chaque vue se mesure avant : sens du profil contre la planche (avant tout miroir),
+  rangée basse de chaque jambe (l'ombre du sol de la planche décale toute une vue), boîte de la seule matière pour une gamme peinte (filtrée
+  par sa teinte), boîte de la pièce pour une botte. Une reprise se re-critique par un agent neuf : elle crée ses propres pertes.

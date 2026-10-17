@@ -1,0 +1,40 @@
+{
+ "id": "townswoman-x2-v1",
+ "frames": 30,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29",
+ "sheet": [
+  384,
+  480
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2530,
+    "meanOklabErrPermille": 14.7,
+    "maxOklabErrPermille": 55.3
+   },
+   "recon-up-full-q.png": {
+    "texels": 2578,
+    "meanOklabErrPermille": 12.6,
+    "maxOklabErrPermille": 40.1
+   },
+   "recon-side-full-q.png": {
+    "texels": 2127,
+    "meanOklabErrPermille": 12.9,
+    "maxOklabErrPermille": 46.7
+   }
+  }
+ },
+ "views": {
+  "down": "4430fa1b57ed24c18a372fe61dc7eef373caa2b9ee5145a40cc2019c2fead589",
+  "up": "24a693556dc79e4b16d97c2f07c5454bd16a4db2e2af7e88a1d2be41bb673032",
+  "side": "40db4331c1b9883ebec3284e8f3195946843d0ff8cfb7dafbc9421e977c1a115"
+ },
+ "exports": {
+  "png": "966c5131a511ee5b8cdacad108f2be1ba8d12493fb6537d00b813fe0a7afbb2f",
+  "json": "9d875a5a8085fd51bc36e6531feaff21248a1ac848dd80244531a5d4960e4a6f",
+  "aseprite": "7aa6165bf244955a9f491f91866620928f45ae60a77ac2ee5006cb54a0f7bc90"
+ }
+}

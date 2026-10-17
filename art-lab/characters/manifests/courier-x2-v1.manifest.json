@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "courier-x2-v1",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/courier-x2-v1.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/courier-x2-v1.png",
+    "metadata": "art-lab/characters/exports/courier-x2-v1.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-character.mjs (reconstruct-grid + quantize-palette + rig-engine, rig art-lab/characters/rigs/courier-x2-v1.rig.mjs); Aseprite 1.3.18.6 (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "Reference sheet NPC 22 \"Courier (Male)\": front, back and profile views",
+      "path": "art-lab/characters/reference/sources/merchant-district-night-npc-17-24.webp",
+      "note": "Operator reference sheet \"Merchant District - Night\" NPC 17-24, archived byte for byte; origin confirmed by the operator (ChatGPT / OpenAI under the team's art direction), not cryptographically certified; use as a source and art reference for the project, including in the creation of assets for a commercial game, authorised by the operator (2026-10-16), subject to applicable third-party rights; third-party rights NOT exhaustively verified. Crops: front 770,599,868,770; back 995,599,1087,770; profile 1103,599,1182,770; pitch 2."
+    },
+    {
+      "category": "A",
+      "label": "Merchant District runtime, cameras A / B / C / D, seed 1842",
+      "path": "art-lab/characters/reviews/courier-x2-v1",
+      "note": "in-scene review (JOURNAL, Passe 4A-tervicies)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "CANDIDATE (Pass 4A-tervicies): an ambient townsperson of the crowd, replaces the generated crowd variant crowd4 only with the DEV flag ?cast=candidate until the operator approves it for production; the operator's request: « Je veux finaliser les NPC manquants de Merchant district afin d'avoir tous nos personnages de la scenes prets puis enfin passer au menage M1 et defaults herites, il faudra aussi faire un travail sur les performances GP, afin de s'assurer que le projet run bien dans le navigateur sans surcharge »; answers to the session's questions: crowd « 5 citadins ordinaires (Recommandé) » (03 Artisane, 07 Voyageur, 09 Citadine, 15 Vieux marchand, 22 Coursier); hero and cat « Générés pour l'instant (Recommandé) »; new placed NPCs « Non, remplacer seulement (Recommandé) ». Density x2 (64x96, feet on row 90), idle 4 + walk 6 frames in the three runtime facings, one 64-colour palette for the three views, presentation scale 0.9 (the cast's texel size on screen). Not declared a Gold Master. Source rights: use authorised by the operator (2026-10-16) subject to third-party rights, not exhaustively verified. Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/courier-x2-v1.rig.mjs --check"
+}

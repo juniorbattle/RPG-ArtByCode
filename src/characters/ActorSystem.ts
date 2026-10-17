@@ -58,6 +58,9 @@ export class ActorSystem {
     const c = this.cast.get(spec);
     if (c) {
       a.base = spec; a.spec = c.id; a.scale *= c.scale; a.height = c.height;
+      // a baked sheet keeps its own colours: the crowd's random tint (the variety device of the generated templates) is not applied to it
+      // (the RNG draws that made it stay; the other spawns had no tint)
+      a.tint = [1, 1, 1];
       if (!this.atlas.counts.has(`${a.spec}/${a.anim}`)) a.anim = 'idle';
     }
     this.actors.push(a);

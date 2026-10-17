@@ -1,0 +1,40 @@
+{
+ "id": "traveler-x2-v1",
+ "frames": 30,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29",
+ "sheet": [
+  384,
+  480
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2703,
+    "meanOklabErrPermille": 15.1,
+    "maxOklabErrPermille": 63.1
+   },
+   "recon-up-full-q.png": {
+    "texels": 2550,
+    "meanOklabErrPermille": 14.7,
+    "maxOklabErrPermille": 54.8
+   },
+   "recon-side-full-q.png": {
+    "texels": 2102,
+    "meanOklabErrPermille": 15.4,
+    "maxOklabErrPermille": 46.9
+   }
+  }
+ },
+ "views": {
+  "down": "c93fd4794f303b58c717c507bda3ba785196956c7f87a8880b5f00850a982a0d",
+  "up": "68780c728006660ddc5b8871958eb302a91cf9f66e29866ce7dc90d22536845e",
+  "side": "22cb47d01790191ecff701c9935d179e56dc577c7951fc94b7c668819f32a253"
+ },
+ "exports": {
+  "png": "cfe4685b4c7519d34e1d311edae994c3c299dde1e1c067082f6e00eafbff5ce4",
+  "json": "2b971b36701b410484278c9bacd8ec4f11d7d36670a94265795777937e06a686",
+  "aseprite": "00cbb41fc1a152d5afce321d09851c4041601918cf38b4a7f8b39a372a57c712"
+ }
+}

@@ -1,0 +1,62 @@
+{
+ "id": "townswoman-x2-v1",
+ "status": "CANDIDATE (runtimeUse lab, Pass 4A-tervicies) - awaiting the operator's production approval - not declared a Gold Master",
+ "request": {
+  "date": "2026-10-17",
+  "by": "operator (git user wonmii), in the working session",
+  "text": "« Je veux finaliser les NPC manquants de Merchant district afin d'avoir tous nos personnages de la scenes prets puis enfin passer au menage M1 et defaults herites, il faudra aussi faire un travail sur les performances GP, afin de s'assurer que le projet run bien dans le navigateur sans surcharge »",
+  "decisions": "answers to the session's questions: crowd « 5 citadins ordinaires (Recommandé) » (03 Artisane, 07 Voyageur, 09 Citadine, 15 Vieux marchand, 22 Coursier); hero and cat « Générés pour l'instant (Recommandé) »; new placed NPCs « Non, remplacer seulement (Recommandé) »"
+ },
+ "approvals": [],
+ "source": {
+  "sheet": {
+   "description": "operator reference sheet \"Merchant District - Night\" NPC 01-16 (several views per character), NPC 09 \"Townswoman (Female)\"",
+   "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce",
+   "bytes": 302814,
+   "path": "art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp",
+   "origin": "confirmed by the operator (2026-10-16): generated with ChatGPT / OpenAI from the team's art direction; not cryptographically verified (no C2PA). See ../dockworker-x2-v1/source-declaration.json",
+   "rights": "use as a source and art reference for the project, including in the creation of assets for a commercial game, authorised by the operator (2026-10-16), subject to applicable third-party rights; third-party rights NOT exhaustively verified"
+  },
+  "views": {
+   "down": "crop 38,579,107,739 (front)",
+   "up": "crop 200,580,273,739 (back)",
+   "side": "crop 279,580,336,739 (profile, facing right on the sheet: mirrored)"
+  }
+ },
+ "chain": [
+  "reconstruct-grid.mjs <sheet> <crop> 1.85 64 96 90 --closing-from=48 (no vertical closing above row 48: the lesson of Pass 4A-unvicies), full colours, per facing",
+  "quantize-palette.mjs --k 64: ONE OKLab k-means over the three views (top 30 % of each figure weighted x4): the same material gets the same colour in every facing",
+  "rig prepare(): the profile mirrored to face left; recorded erasures (rig ERASE); one-texel vertical strands below row 60 and islands < 6 texels removed (cleanStrands); one-texel slits below row 56 closed with the darker neighbour (closeSlits); soles on row 90, feet centred on the anchor column (align)",
+  "rig frames(): idle 4 frames (rig-engine breath, the approved cast's); walk 6 frames (the approved merchant's): the body (dress included) bobs one row at contact and shifts its weight 1 texel (2 in the merchant's: the first blind critique read it as a sideways slide), the hem lags 2 texels and lifts one row on the swing side at passing; each boot a rigid part BEHIND the dress, lifted 1 / 3 / 1 rows; a one- or two-row gap between the hem and a boot takes the boot's top row; profile: one boot of the view (a measured box of 13 columns, toe and heel outline included: the 9 columns from the front toe took the far boot's toe and the shadow under the hem, read as thin dark pins; 11 columns cut the dark toe outline, the bare toe melted into the warm floor) and a darker copy (0.16 OKLab darker) placed by the dock worker's ankle cycle, its ankle 3.5 columns in front of the heel under the hip column, the hem sheared forward with the near leg; arms still; enclosed pinholes of up to 2 texels filled with the darkest neighbouring colour (the approved blacksmith's helper)",
+  "frame checks of the runtime contract (alpha 0 / 255, transparent ring, feet on row 90 for idle, nothing below it)",
+  "Aseprite 1.3.18.6 batch: source/townswoman-x2-v1.aseprite (one layer, 30 frames, tags idle-, walk-down|up|side, durations 588 / 133 ms) and its export exports/townswoman-x2-v1.png + .json; every exported frame compared texel for texel with the rig's frame"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9,
+  "height": "1.84 m (87 rows x 0.0235 x 0.9)"
+ },
+ "runtime": "replaces the generated crowd variant crowd2 (ActorSystem: the ambient wanderers pick one of crowd0..crowd4 per spawn); the crowd's random tint is not applied to a baked sheet (its approved colours), the RNG draws stay",
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/townswoman-x2-v1.rig.mjs --check (rebuild from the archived sheet, compared with the committed views and exports); node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/townswoman-x2-v1 [--rebuild]",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/townswoman-x2-v1.png": "966c5131a511ee5b8cdacad108f2be1ba8d12493fb6537d00b813fe0a7afbb2f",
+  "art-lab/characters/exports/townswoman-x2-v1.json": "2ea36c3da1a2a809a2eaabb3d1cf7d3ea66c8b978b1bbcd58f49a5a9dbce9919",
+  "art-lab/characters/source/townswoman-x2-v1.aseprite": "7aa6165bf244955a9f491f91866620928f45ae60a77ac2ee5006cb54a0f7bc90",
+  "art-lab/characters/provenance/townswoman-x2-v1/view-down.png": "4430fa1b57ed24c18a372fe61dc7eef373caa2b9ee5145a40cc2019c2fead589",
+  "art-lab/characters/provenance/townswoman-x2-v1/view-up.png": "24a693556dc79e4b16d97c2f07c5454bd16a4db2e2af7e88a1d2be41bb673032",
+  "art-lab/characters/provenance/townswoman-x2-v1/view-side.png": "40db4331c1b9883ebec3284e8f3195946843d0ff8cfb7dafbc9421e977c1a115",
+  "art-lab/characters/provenance/townswoman-x2-v1/build.json": "186bc1a94b8791044131cc406dc937a2e5eee7aacb3d7623d2aad0da02689b85",
+  "art-lab/characters/rigs/townswoman-x2-v1.rig.mjs": "16c17b17ccf0a1636d76b174a0be91eaf535b3d2b7649a6bf0af86758ef04a54",
+  "tools/art-lab/build-character.mjs": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

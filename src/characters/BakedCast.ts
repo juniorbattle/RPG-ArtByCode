@@ -18,6 +18,26 @@ import hoodedPng from '../../art-lab/characters/exports/hooded-x2-v1.png?url';
 import hoodedJson from '../../art-lab/characters/exports/hooded-x2-v1.json';
 import { id as hdId, status as hdStatus, approved as hdApproved, runtimeUse as hdUse } from '../../art-lab/characters/manifests/hooded-x2-v1.manifest.json';
 import { files as hoodedFiles } from '../../art-lab/characters/provenance/hooded-x2-v1/PROVENANCE.json';
+import artisanPng from '../../art-lab/characters/exports/artisan-x2-v1.png?url';
+import artisanJson from '../../art-lab/characters/exports/artisan-x2-v1.json';
+import { id as arId, status as arStatus, approved as arApproved, runtimeUse as arUse } from '../../art-lab/characters/manifests/artisan-x2-v1.manifest.json';
+import { files as artisanFiles } from '../../art-lab/characters/provenance/artisan-x2-v1/PROVENANCE.json';
+import travelerPng from '../../art-lab/characters/exports/traveler-x2-v1.png?url';
+import travelerJson from '../../art-lab/characters/exports/traveler-x2-v1.json';
+import { id as trId, status as trStatus, approved as trApproved, runtimeUse as trUse } from '../../art-lab/characters/manifests/traveler-x2-v1.manifest.json';
+import { files as travelerFiles } from '../../art-lab/characters/provenance/traveler-x2-v1/PROVENANCE.json';
+import townswomanPng from '../../art-lab/characters/exports/townswoman-x2-v1.png?url';
+import townswomanJson from '../../art-lab/characters/exports/townswoman-x2-v1.json';
+import { id as twId, status as twStatus, approved as twApproved, runtimeUse as twUse } from '../../art-lab/characters/manifests/townswoman-x2-v1.manifest.json';
+import { files as townswomanFiles } from '../../art-lab/characters/provenance/townswoman-x2-v1/PROVENANCE.json';
+import olderMerchantPng from '../../art-lab/characters/exports/older-merchant-x2-v1.png?url';
+import olderMerchantJson from '../../art-lab/characters/exports/older-merchant-x2-v1.json';
+import { id as omId, status as omStatus, approved as omApproved, runtimeUse as omUse } from '../../art-lab/characters/manifests/older-merchant-x2-v1.manifest.json';
+import { files as olderMerchantFiles } from '../../art-lab/characters/provenance/older-merchant-x2-v1/PROVENANCE.json';
+import courierPng from '../../art-lab/characters/exports/courier-x2-v1.png?url';
+import courierJson from '../../art-lab/characters/exports/courier-x2-v1.json';
+import { id as coId, status as coStatus, approved as coApproved, runtimeUse as coUse } from '../../art-lab/characters/manifests/courier-x2-v1.manifest.json';
+import { files as courierFiles } from '../../art-lab/characters/provenance/courier-x2-v1/PROVENANCE.json';
 import { FRAME_W, FOOT_Y } from './SpriteGenerator';
 import { PIXEL_WORLD } from './SpriteRenderer';
 import { checkBakedSheet, DIRS, type BakedSheet } from './BakedSprites';
@@ -49,6 +69,13 @@ const ENTRIES: Entry[] = [
   { manifest: { id: gdId, status: gdStatus, approved: gdApproved, runtimeUse: gdUse }, png: guardPng, json: guardJson, files: guardFiles, replaces: ['guardA', 'guardB'], scale: 0.9 },
   // the hooded passerby takes the stranger watching the boat (and the one of the sabotaged forge)
   { manifest: { id: hdId, status: hdStatus, approved: hdApproved, runtimeUse: hdUse }, png: hoodedPng, json: hoodedJson, files: hoodedFiles, replaces: ['hooded'], scale: 0.9 },
+  // the ambient crowd (Pass 4A-tervicies): five townsfolk of the reference sheets stand in for the five generated crowd variants the
+  // wanderers pick from (ActorSystem.populate); the taller three are resampled more coarsely (see their rig scripts), all at the cast's scale
+  { manifest: { id: arId, status: arStatus, approved: arApproved, runtimeUse: arUse }, png: artisanPng, json: artisanJson, files: artisanFiles, replaces: ['crowd0'], scale: 0.9 },
+  { manifest: { id: trId, status: trStatus, approved: trApproved, runtimeUse: trUse }, png: travelerPng, json: travelerJson, files: travelerFiles, replaces: ['crowd1'], scale: 0.9 },
+  { manifest: { id: twId, status: twStatus, approved: twApproved, runtimeUse: twUse }, png: townswomanPng, json: townswomanJson, files: townswomanFiles, replaces: ['crowd2'], scale: 0.9 },
+  { manifest: { id: omId, status: omStatus, approved: omApproved, runtimeUse: omUse }, png: olderMerchantPng, json: olderMerchantJson, files: olderMerchantFiles, replaces: ['crowd3'], scale: 0.9 },
+  { manifest: { id: coId, status: coStatus, approved: coApproved, runtimeUse: coUse }, png: courierPng, json: courierJson, files: courierFiles, replaces: ['crowd4'], scale: 0.9 },
 ];
 
 export interface CastMember { id: string; scale: number; height: number }

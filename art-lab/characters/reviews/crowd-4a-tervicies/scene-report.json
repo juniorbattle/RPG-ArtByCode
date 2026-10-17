@@ -1,0 +1,206 @@
+[
+ {
+  "view": "camera=A",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=A",
+  "variant": "work",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=A",
+  "variant": "work2",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=A",
+  "variant": "cand",
+  "vs": "base",
+  "pixels": 23522,
+  "maxDelta": 156,
+  "box": [
+   136,
+   642,
+   837,
+   433
+  ]
+ },
+ {
+  "view": "camera=B",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=B",
+  "variant": "work",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=B",
+  "variant": "work2",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=B",
+  "variant": "cand",
+  "vs": "base",
+  "pixels": 82508,
+  "maxDelta": 211,
+  "box": [
+   0,
+   44,
+   1777,
+   1036
+  ]
+ },
+ {
+  "view": "camera=C",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=C",
+  "variant": "work",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C",
+  "variant": "work2",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C",
+  "variant": "cand",
+  "vs": "base",
+  "pixels": 74211,
+  "maxDelta": 219,
+  "box": [
+   157,
+   613,
+   852,
+   467
+  ]
+ },
+ {
+  "view": "camera=D",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=D",
+  "variant": "work",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D",
+  "variant": "work2",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D",
+  "variant": "cand",
+  "vs": "base",
+  "pixels": 24515,
+  "maxDelta": 207,
+  "box": [
+   0,
+   591,
+   941,
+   489
+  ]
+ },
+ {
+  "view": "camera=C&forge=sabotaged",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=C&forge=sabotaged",
+  "variant": "work",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&forge=sabotaged",
+  "variant": "work2",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=C&forge=sabotaged",
+  "variant": "cand",
+  "vs": "base",
+  "pixels": 23257,
+  "maxDelta": 151,
+  "box": [
+   634,
+   412,
+   1286,
+   525
+  ]
+ },
+ {
+  "view": "camera=D&forge=sabotaged",
+  "variant": "base",
+  "reference": true
+ },
+ {
+  "view": "camera=D&forge=sabotaged",
+  "variant": "work",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&forge=sabotaged",
+  "variant": "work2",
+  "vs": "base",
+  "pixels": 0,
+  "maxDelta": 0,
+  "box": null
+ },
+ {
+  "view": "camera=D&forge=sabotaged",
+  "variant": "cand",
+  "vs": "base",
+  "pixels": 36633,
+  "maxDelta": 221,
+  "box": [
+   331,
+   617,
+   1585,
+   463
+  ]
+ }
+]

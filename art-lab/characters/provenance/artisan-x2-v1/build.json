@@ -1,0 +1,40 @@
+{
+ "id": "artisan-x2-v1",
+ "frames": 30,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29",
+ "sheet": [
+  384,
+  480
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2388,
+    "meanOklabErrPermille": 15.4,
+    "maxOklabErrPermille": 53.9
+   },
+   "recon-up-full-q.png": {
+    "texels": 2197,
+    "meanOklabErrPermille": 15.2,
+    "maxOklabErrPermille": 39.2
+   },
+   "recon-side-full-q.png": {
+    "texels": 2147,
+    "meanOklabErrPermille": 14.6,
+    "maxOklabErrPermille": 50.3
+   }
+  }
+ },
+ "views": {
+  "down": "72417bedd0a4eaf7f194a9dbd1c9e8dc26e20a4d1f7e6d2fd16ef9e52c4533f0",
+  "up": "1f1772caf73ebc4a9ee94f701c847f6a985e1b487ca149baea2fca39d6d93d2e",
+  "side": "e6f0cec02c5b88b69c6e093cc2f59bf8547b75663d7246b9b40832d7d5ba47e9"
+ },
+ "exports": {
+  "png": "b26095eff8363d17f51a333ec4f285d46a42b14e3ff78125bd2c2188575bc6db",
+  "json": "2885f0c4d62ca7f67eb6accc82a79adff00d01cc257819982cd656d073110651",
+  "aseprite": "9a20a1b0e7f77b85f51c7de135d8dba251b37928743fbccf881ebe243be0f890"
+ }
+}
