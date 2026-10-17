@@ -2148,8 +2148,9 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes, diffs, co
 - Mot pour mot : « si la tache est fini on peut commit/push vers main ». Les preuves finales vertes, `main` est avancé en avance rapide jusqu'au
   commit de cette passe et poussé. Les images de revue des planches révisées n'ont pas été montrées une à une à l'opérateur avant ce message :
   les paquets le consignent (l'approbation du 17/10 porte sur les planches précédentes, empreintes gardées).
-- La branche `cast-polish-facing` reste l'arbre de travail du dossier partagé (règle de séance : ne pas changer de branche dans ce dossier) :
-  sa suppression attend l'accord de l'opérateur pour basculer ce dossier sur `main`.
+- Suppression de la branche demandée par l'opérateur, mot pour mot : « Oui : bascule ce dossier sur main et supprime la branche
+  cast-polish-facing (locale et distante). » : le dossier partagé passe sur `main` (même commit, aucun fichier changé), la branche est
+  supprimée en local et sur `origin`. La prochaine tâche ouvre sa propre branche.
 
 ### Limites
 - Pas encore vu en mouvement par un humain ; bande d'hystérésis 40° / 50° choisie, pas réglée avec l'opérateur.
@@ -2202,7 +2203,7 @@ dans `main` à la demande de l'opérateur (« si la tache est fini on peut commi
 les planches révisées une à une (`reviews/<id>/0N-revision-black-pixels.png`) ; (b) à juger en mouvement : la bande 40° / 50° et les
 diagonales du joueur, désormais de profil ; (c) défauts hérités des planches approuvées relevés par la critique à l'aveugle (manches du docker
 coupées par le balancement des bras, trous du tabard du garde, main du passant, jambe arrière du garde de profil, contour de bras du forgeron
-de dos, chaussure de la marchande) : une passe de rig dédiée ; (d) supprimer `cast-polish-facing` (le dossier partagé est encore dessus).
+de dos, chaussure de la marchande) : une passe de rig dédiée. Branche `cast-polish-facing` supprimée (locale et distante) à la demande de l'opérateur.
 **-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
 Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
 **-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
