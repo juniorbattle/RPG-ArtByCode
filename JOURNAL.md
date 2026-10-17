@@ -2763,7 +2763,99 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Un processus lancé hors des outils de la séance ne se retrouve ensuite qu'en balayant tout le système. L'effort se place donc au lancement
   (outils de la séance, entrée `launch.json`) et en fin de séance (tout arrêter), pas dans un nettoyage après coup.
 
+---
+
+## Passe 6 — Performances GPU / navigateur : état mesuré, plan chiffré, outillage (P0) (2026-10-17)
+
+### Demande (2026-10-17)
+- Mot pour mot : « il faudra aussi faire un travail sur les performances GP, afin de s'assurer que le projet run bien dans le navigateur sans
+  surcharge », puis : « Tu peux deleguer sur une autre session la tache de performance et optimisation du jeu via GPU et etc... en te basant
+  sur le travail fait sur le projet RPGCards qui semble etre bien reussi ». Arbitrage (règle « une seule branche ») : « Analyse seule
+  d'abord » — mesurer, écrire un plan chiffré, sans branche tant que `cast-inherited-defects` n'est pas fusionnée.
+- Plan validé, mot pour mot : « Je valide le plan perf-gpu : ouvre la branche perf-gpu depuis main et commence par P0 puis P1 (chauffe des
+  variantes d'occlusion), chaque piste avec sa preuve. » Branche `perf-gpu` ouverte depuis `main` (`2cbb858`, après la fusion de
+  `cast-inherited-defects`) et poussée. Le plan complet est dans les notes de séance (`perf-gpu-plan.md`) ; l'essentiel est ci-dessous.
+
+### Conditions de mesure — [OK] établies, deux croyances corrigées
+- **Le GPU n'est pas une Iris Xe.** Portable Ryzen 7 8845HS : Radeon 780M intégrée (adaptateur choisi par Chrome) et RTX 4060 Laptop.
+  `powerPreference: 'high-performance'` ne bascule pas Chrome sur la RTX ; `--force_high_performance_gpu` le fait (vérifié par
+  `WEBGL_debug_renderer_info`). Écran 2560 × 1600 à 175 % : une fenêtre maximisée rend ≈ 2560 × 1450 (`min(dpr, 2)`) : la définition
+  réelle de l'opérateur est 1440p, pas 1080p.
+- Chrome 155 headless, ANGLE D3D11, vsync coupée ; base figée (`git archive` + copie de `node_modules/three`, sans jonction), **build de
+  production** servi par `vite preview` sur `:5188 --strictPort`.
+- **[KO] → contourné : contention.** D'autres séances (RPGCards `tools/perf-trace.mjs` / `qa-product.mjs`, captures headless) rendaient sur
+  la même 780M pendant presque tous les tours (10-65 % du moteur 3D relevés par compteur de performance) : un minuteur GPU compte ce
+  partage. Les chiffres de la 780M sont des **majorants** ; on lit la médiane, le **minimum** (la contention ne fait qu'ajouter) et les
+  tours propres. La RTX, que personne d'autre n'utilisait, donne des chiffres propres.
+- **[KO] Traîne du temps d'image en headless** : p95 ≈ 25-35 ms même quand le GPU fait 10-12 ms ; une page vide montre déjà p95 40 ms dans
+  le même harnais (contrôle négatif). Seuls les minuteurs GPU sont crus.
+- Méthode : pendant l'analyse, j'ai identifié les sources de contention par des balayages en lecture seule des processus du système
+  (`Get-CimInstance Win32_Process`), avant que la règle de la passe M2 ne me parvienne ; rien n'a été arrêté. L'outillage n'en fait plus :
+  le PID GPU du navigateur vient du navigateur lui-même (CDP `SystemInfo.getProcessInfo`).
+
+### État mesuré (seed 1842, caméra B sauf mention ; ms GPU par image)
+| Cas | 780M 1080p | 780M 1440p | RTX 1080p | RTX 1440p |
+|---|---|---|---|---|
+| A / B / C / D / C→D 50 % (médianes) | 10,8 / 12,3 / 11,7 / 10,0 / 11,3 | 16,3 / 17,8 / 21,0 / 17,4 / 17,6 | — / 2,97 / 2,92 / — / — | — / 4,94 / 4,97 / — / — |
+| passe scène (B) | 7,3 | 10,7-12,1 | 1,87 | 3,1 |
+| reflet / DOF / bloom / in-scatter / grade (B) | 1,0 / 1,0 / 1,1 / 0,5 / 0,3 | 1,2-1,4 / 1,8-2,0 / 1,3-1,4 / 0,8 / 0,5 | | |
+- 720p : 5,7-6,3 ms. Appels de dessin 108-114, triangles 168-242 k, CPU ≈ 2 ms par image (RTX) : **aucun n'est le goulot**. Sur la 780M
+  le temps JS de `render` (9-20 ms) n'est que l'attente du GPU.
+- Ablations (780M, B) : sans MSAA −3,7 à −4,0 ms (1080p), −4,6 (1440p, tour propre) ; MSAA 2× −1,4 à −2,2 / −2,0 ; matériau trivial
+  (ombrage) −2,0 ms seulement (≈ 27 % de la scène) : **la scène est limitée par la bande passante du MSAA 4× RGBA16F**, pas par l'ombrage
+  (sur la RTX c'est l'inverse : ombrage ≈ 65 % de la scène). Rendu interne 0,75 en 1440p : 18,3-21,6 → 10,9-13,5 ms (−40 %). Reflet à
+  1/4 : −0,5 / −0,7 ms. Ombre de lune coupée : ≤ 4 %, non conclusif. Sprites et particules (`static=1`) : ≈ 0.
+- Surdessin de la passe scène (ordre réel) : 1,53 (A) à 1,67 (B) fragment ombré par pixel couvert.
+- `UnrealBloomPass` part déjà de la demi-résolution : « bloom à demi-résolution » (point 4 ci-dessous) est acquis.
+- Démarrage (production, 8 chargements, sous contention) : `__ready` 5,5 s [4,3-7,2] = peinture des textures 2,8 s [2,2-4,1] (pavés
+  0,75 s, enduit 0,53 s…, fil principal) + atlas 0,16 s + génération 1,28 s (bake 0,49 s : soumission 0,20, attente GPU 0,29) + **première
+  image bloquée 1,6 s** [1,4-3,5] (28 programmes, après le début du fondu de l'écran de chargement).
+- **À-coup majeur** : la première révélation d'occlusion gèle l'image **295 à 1 084 ms** (17 chargements) ; 4 programmes créés (28 → 32) ;
+  les suivantes sont normales. Forge : 6-15 ms ; régénération : 1,2-2,2 s (connu, point 3).
+
+### Leçons de RPGCards (lecture seule)
+- Transposé : programmes intermittents gardés et **préparés par un dessin témoin** (leur passe 12 : « garder le programme sans le dessiner
+  laissait 38 ms ») ; mesure image par image et percentiles ; adaptateur relevé dans chaque mesure ; froid / chaud nommé.
+- Non transposé : lumière peinte (gain prouvé sous SwiftShader seulement ; HD-2D a sa grille de lumières et un éclairage verrouillé), canvas
+  `willReadFrequently` (nos peintres écrivent des tableaux typés), rendu à la demande (HD-2D rend en continu ; rAF s'arrête déjà onglet
+  masqué). RPGCards n'a jamais eu de minuteur GPU. Aucun code copié.
+
+### Plan validé (ordre de travail)
+- Niveau 1, image identique : **P1** chauffe des variantes d'occlusion ; **P2** première image sous l'écran de chargement + compilation
+  parallèle (`compileAsync`, `KHR_parallel_shader_compile` présent) ; **P3** peintres de textures en Web Workers (fonctions pures à graine
+  fixe : −1,3 à −1,8 s attendus, octets identiques) ; **P4** plafond de cadence (165 Hz : la 780M tourne à 100 % dès qu'elle dépasse
+  60 img/s ; défaut à décider) ; **P5** cache du bake par (graine, cadre, empreinte du build).
+- Niveau 2, l'image change, décision de l'opérateur sur captures : **P6** résolution interne plafonnée en HiDPI (−40 % en 1440p, seule
+  piste qui atteint ≈ 14 ms) ; **P7** MSAA 2× ; **P8** reflet à 1/4 ; **P9** DOF demi-résolution (non mesuré).
+- Écartés pour l'instant (mesurés) : pré-passage de profondeur (gain théorique ≤ 0,75 ms en 1080p avant son propre coût), filtre de l'ombre
+  de lune (≤ 4 %).
+
+### P0 — Outillage — [OK]
+- `tools/perf.mjs` (même CLI, rétrocompatible) : taille par variante (`|WxH[@dpr]`, `--size`), `--warm`, `--gpu=igpu|dgpu`, adaptateur
+  affiché, valeur GPU **de chaque image** (inversion de la moyenne glissante de `GpuTimer` : moyenne et p95 par passe), JS de
+  `App.update` / `App.render`, **témoin de contention** (`tools/gpu-witness.ps1` : compteurs « GPU Engine » en lecture seule ; tour marqué
+  `*` si un autre processus dépasse `--thr` % — défaut 15, l'application Claude elle-même prend 10-18 % — sur le même adaptateur ;
+  médiane des tours propres et minimum). `tools/startup.mjs` (phases du démarrage, première image, première / seconde révélation, forge,
+  régénération, programmes créés), `tools/overdraw.mjs` (surdessin), `tools/bench-common.mjs` (lancement, adaptateur, témoin).
+- `AGENTS.md` : outils, adaptateur réel (780M / RTX 4060, plus d'« Iris Xe »), recette d'une base figée.
+- Preuve : `npm run build` du dépôt contre la base figée `2cbb858` : bundle JS `7d35d83d…` et 11 fichiers sur 12 identiques au SHA-256 ;
+  `dist/index.html` ne diffère que par les fins de ligne (**[KO] de méthode** : `git archive` applique `core.autocrlf=true` et écrit des CRLF
+  dans la base ; d'où `git -c core.autocrlf=false archive` dans la recette). `typecheck` 0.
+
+### Pensée
+- Mesurer d'abord a encore déplacé la cible : on croyait le MSAA et le DOF / bloom « les plus gros postes » (passe 2) sur une Iris Xe ; sur
+  la 780M réelle, c'est la bande passante du MSAA 4× HDR et la définition 1440p de l'écran de l'opérateur. Et l'à-coup le plus visible
+  (première révélation) n'apparaît dans aucune moyenne : il faut une sonde dédiée aux premières fois.
+- Sur un poste partagé, un temps GPU n'est crédible qu'avec son témoin de contention ; à défaut, le minimum des tours entrelacés.
+
 ## À reprendre (par priorité)
+
+**-3. Performances GPU (Passe 6, branche `perf-gpu`, plan validé par l'opérateur le 17/10)** — fait : P0 (outillage). Suivent, une piste
+par commit, chacune avec sa preuve : P1 chauffe des variantes d'occlusion (gel de 0,3-1,1 s à la première révélation), P2 première image
+sous l'écran de chargement + compilation parallèle, P3 peintres de textures en Web Workers, P4 plafond de cadence (défaut à décider), P5
+cache du bake ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
+P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
+de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
 **-2. Fenêtres étroites (Passe 5)** — bake par pages bornées + repli explicite + recadrage du cadre 16:9 : bâtiments présents à tout format
 testé (390 × 844 à 2560 × 1080), rendu canonique 16:9 identique au pixel (24 vues, trois graines). **Tâche acceptée par l'opérateur le 17/10**
@@ -2864,7 +2956,8 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
    mettre en cache les identifiants par graine, ou n'échantillonner que les poses concernées quand seul un réglage de caméra change ; réduire CD / BD (168 poses sur 273) a coûté 4 pièces de Tier 3 en précision : à ne faire qu'avec une preuve.
 3b. **Ordre des classes de dessin** : 41 classes, A/B/C pondérés ×2 (D dessine ≈ tout : 98,8 k / 100,8 k). Si D devient lourd (nouveau contenu), rejouer `planDraw` avec un autre poids ou séparer D dans un mesh à part (+ appels de dessin).
 3c. **Rive opposée / z caméra** : la caméra de D doit rester à z < ~18,5 (maisons de la rive opposée dès z = 19,8). Tout cadrage plus reculé exige de retirer ou d'abaisser ces maisons (elles sont aujourd'hui invisibles de A/B/C).
-4. **Rendu** : MSAA 4× → test d'un MSAA 2× / FXAA après le travail sur les sprites ; DOF et bloom à demi-résolution.
+4. **Rendu** — repris par la Passe 6 (plan validé, voir -3) : MSAA 2× = P7 (−1,4 à −2,2 ms en 1080p sur la 780M), FXAA écarté sans masque
+   des sprites (il flouterait le pixel-art), DOF demi-résolution = P9 ; le bloom est **déjà** à demi-résolution (`UnrealBloomPass`).
 5. **Autres graines** — **élucidé en Passe 5b** (voir -2b) : reste dans `viewport-proof` 9 échecs connus, tous expliqués : fissures MSAA
    (7719 C, 30417 CD 720p, 1 px de 1842 D 2560 × 1080), lanières non attrapées à ×2 (30417 D 720p / 665 × 1200 : partie 73 ; 1842 D 2560 × 1080 ;
    7719 AB 665 × 1200), maison 609 (30417 AB). Pixels « order » (30417 B 109 px, AB 31 px, A / BC 1 px en 720p) rapportés sans échouer.
@@ -2876,6 +2969,12 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
    une fois qu'on accepte de décaler la ville lointaine d'une graine.
 
 ## Principes à garder
+
+- Relever l'adaptateur réellement utilisé (`WEBGL_debug_renderer_info`) dans chaque mesure : un portable hybride rend sur l'iGPU par défaut,
+  quoi que demande `powerPreference`. Mesurer à la définition de l'écran de l'opérateur (dpr compris), pas seulement en 1080p.
+- Un temps GPU pris sur un poste partagé ne vaut qu'avec son témoin de contention (autres processus sur le même adaptateur) ; à défaut, le
+  minimum des tours entrelacés est l'estimation sans contention. La traîne du temps d'image en headless n'est pas une mesure.
+- Une première fois (programme, variante, dessin) se mesure par une sonde dédiée : aucune moyenne ne la voit.
 
 - Une allocation GPU se dimensionne contre le minimum garanti (WebGL2 : 2 048) et se vérifie (complétude du framebuffer, erreurs GL) ; un bake
   qui conclut « rien n'est visible » est une erreur : le repli garde toutes les pièces et le signale (console, stats, panneau).

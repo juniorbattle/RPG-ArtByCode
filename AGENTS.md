@@ -36,9 +36,21 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
   (env `SHOTS_DIR` changes the folder, `BASE_URL` the server). Query suffix `@x,y,w,h` clips a region.
 - `npm run compare -- out.png before.png after.png "caption"` — labelled side-by-side composite
 - `node tools/eval.mjs "<js using window.__app>" [query] [shot.png]` — evaluate inside the running app
-- `node tools/perf.mjs [--secs=4] [--rounds=2] "label|<query or full url>|<js>" ...` — per-pass GPU ms (timer
-  queries), uncapped frame time, draws/tris; variants interleaved in one browser session (the Iris Xe drifts
-  thermally: only compare rows of the same run). A frozen baseline can be served from another port/worktree.
+- `node tools/perf.mjs [--secs=4] [--warm=2.5] [--rounds=2] [--size=WxH[@dpr]] [--gpu=igpu|dgpu] [--witness=1|0] [--thr=15] [--json=f]
+  "label|<query or full url>|<js>|<WxH[@dpr]>" ...` — per-pass GPU ms (timer queries, each frame's value: mean / p95), uncapped frame
+  time, JS ms of `App.update` / `App.render`, draws/tris, and the adapter actually used; variants interleaved in one browser session
+  (only compare rows of the same run: the GPU drifts thermally). The dev laptop is hybrid: Chrome renders on the integrated
+  **Radeon 780M** (the game's `powerPreference` does not switch it), `--gpu=dgpu` forces the RTX 4060. Contention witness (Windows,
+  `tools/gpu-witness.ps1`, read-only GPU performance counters): rounds during which another process used more than `--thr` % of the
+  same adapter are flagged `*` and left out of the "clean" median; the min over rounds is the estimate without contention. The
+  headless frame-time tail (p95) is not trusted (an idle page shows ~40 ms). A frozen baseline can be served from another port.
+- `node tools/startup.mjs [--n=4] [--gpu=..] "label|<query or url>|<WxH>" ...` — boot phases (texture painters, atlas, generation
+  laps, bake split, first-frame stall, time to `__ready`, long tasks) and first-use hitches (first / later occlusion reveal, forge
+  swap, regeneration, programs created at the first reveal), median [min-max] per variant
+- `node tools/overdraw.mjs "label|<query or url>|<WxH>" ...` — fragments shaded per covered pixel in the scene pass (real draw order)
+- Frozen baseline for A/B: `git -c core.autocrlf=false archive <commit>` into a scratch folder, copy `node_modules/three` into it (no
+  junction), serve it with the repo's `node_modules/vite/bin/vite.js <folder> --config <its config> --port <518x> --strictPort` (a
+  `.claude/launch.json` entry); `autocrlf` on converts the archive's line endings (`dist/index.html` then differs by CR only)
 - `node tools/diff.mjs a.png b.png [out.png] [thr]` — pixel diff (use `static=1` shots: NPCs/smoke are not deterministic)
 - `node tools/zoom.mjs in.png out.png x y w h [scale]` — nearest-neighbour crop for pixel-level sprite review
 - `node tools/walk.mjs <prefix> "<query>" "w,d" <secs>` — holds keys, logs camera blend steps (and occlusion fades:
@@ -212,4 +224,5 @@ barrier (`WALK.x1`); the street beyond stays visible and fully built.
 - Background layers (bridges, banks, hill city, castle) are in `src/district/DistantCity.ts` (one cheap far material).
 - Fog/sky share `skyHaze()/skyColor()` in `src/materials/ShaderChunks.ts`; post (in-scatter, DOF, bloom, palette grade) in `src/atmosphere/PostFX.ts`.
 - Headless perf numbers on this machine are GPU-bound; the vsync'd frame time quantises to 16.7/33.3 ms, so use
-  `tools/perf.mjs` (GPU timer queries) and compare A/B in one session only.
+  `tools/perf.mjs` (GPU timer queries) and compare A/B in one session only. Measured state, ablations and the GPU plan: journal
+  pass 6 (780M: 10-12 ms at 1080p, 16-21 ms at 2560 x 1440; the scene pass is bandwidth-bound by the 4x MSAA HDR target).
