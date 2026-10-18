@@ -48,7 +48,7 @@ function facet(ctx: BuildCtx, A: V3, B: V3, C: V3, D: V3, disp: Disp | null, tin
   ctx.S.roof.grid(P, {
     flip, tint,
     uvFn: (u, v) => [u * lenU, v * lenV],
-    aoFn: (u, v) => 0.7 + 0.3 * smoothstep(0, 0.22, v),
+    aoFn: (_u, v) => 0.7 + 0.3 * smoothstep(0, 0.22, v),
   });
   return { eave: P[0], ridge: P[nv] };
 }
@@ -206,8 +206,6 @@ export function buildRoof(ctx: BuildCtx, s: RoofSpec): RoofResult {
         gableFill(ctx, xl0, xl1, s.yBase, xm, yR, { window: true, floor: 9 });
       });
     }
-    const hAt = (x: number, z: number) => (z >= zMid ? yEF + (ezF - z) * tanP * 1 : yEB + (z - ezB) * tanP);
-    void hAt;
     const heightAt = (_x: number, z: number) => (z >= zMid ? s.yBase + (s.zF - z) * tanP : s.yBase + (z - s.zB) * tanP);
     S.roof.sweep(ridgePts, 0.075, 5, { tint: [tint[0] * 0.8, tint[1] * 0.8, tint[2] * 0.8], ao: 0.95 });
     return { ridgeY: yR, ridge: ridgePts, heightAt, zMid, xMid };

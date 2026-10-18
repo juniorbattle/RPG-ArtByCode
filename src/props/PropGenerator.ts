@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { Rng } from '../core/rng';
 import { SlotSet, SLOTS, mat, type V3, type Slot } from '../core/MeshBuilder';
 import { atlasRect, quadFacing } from '../architecture/FacadeGrammar';
-import { EMBLEM_CELLS, type EmblemKind } from '../materials/CanvasArt';
 
 /** Small reusable prop generators. Each returns a SlotSet in local space (origin = base centre, +z = front),
  *  built from a deterministic Rng so every variant is reproducible. Repeated props are instanced. */
@@ -317,11 +316,6 @@ export function boat(r: Rng): { S: SlotSet; lantern: V3; yard: V3; bow: V3; ster
   S.append(sack(r.fork('bs1')), mat([2.7, -0.12, 0.42], 1.1));
   S.append(barrel(r.fork('bb1'), { lying: true }), mat([-0.7, -0.12, 0.1], 0.2, 0.9));
   return { S, lantern: [sx + 0.36, 1.48, 0], yard: [mx - 0.14, yardY - 0.05, 0], bow: [L / 2 - 0.4, 0.75, 0], stern: [-L / 2 + 0.3, 0.75, 0] };
-}
-
-export function emblemRect(kind: EmblemKind): [number, number, number, number] {
-  const idx = EMBLEM_CELLS[kind];
-  return atlasRect(idx % 4, Math.floor(idx / 4), 4, 2, 0.01);
 }
 
 export const PROP_BUILDERS: Record<string, (r: Rng, v: number) => SlotSet> = {

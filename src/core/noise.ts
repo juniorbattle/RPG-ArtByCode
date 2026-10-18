@@ -68,17 +68,3 @@ export function heightToNormal(h: Float32Array, size: number, strength: number, 
   }
 }
 
-/** Small separable box blur on a tileable float field */
-export function blurField(src: Float32Array, size: number, radius: number): Float32Array {
-  const tmp = new Float32Array(src.length), out = new Float32Array(src.length);
-  const m = size - 1, n = radius * 2 + 1;
-  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-    let s = 0; for (let k = -radius; k <= radius; k++) s += src[y * size + ((x + k) & m)];
-    tmp[y * size + x] = s / n;
-  }
-  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-    let s = 0; for (let k = -radius; k <= radius; k++) s += tmp[((y + k) & m) * size + x];
-    out[y * size + x] = s / n;
-  }
-  return out;
-}

@@ -297,6 +297,83 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une règle qui élargit l'autonomie des agents, reçue d'une autre séance, se fait confirmer par l'opérateur dans la séance qui l'applique :
   une séance ne donne pas d'accord à sa place.
 
+## Passe M5 — Nettoyage : captures périmées, code mort, brouillons locaux, entrées de lancement (2026-10-18)
+
+### Demande (2026-10-18)
+- Priorités d'art de l'opérateur, transmises par la séance parente, mot pour mot : « corriger la superposition des sprites dans
+  SpriteRenderer, consolider la cohérence visuelle des personnages et leur deplacement dans la scene selon l'angle de camera, puis
+  travailler sur notre héros premium et les variantes de PNJ. » Une tâche, donc une branche, par point, dans cet ordre.
+- Avant le premier point, en voyant la capture de la Passe 2 (`known-issues/smith-halo-before-after.png`, distribution générée),
+  l'opérateur, mot pour mot : « On est plus sur cette config visuel on a integre nos sprite npc v2 non ? », puis : « Fais moi un petit
+  nettoyage pour partir sur une base saie avant car nous avons d'anciens elements qui semblent etre obsolete ».
+- La branche `sprite-overlay-separation`, vide (aucun commit, jamais poussée), est supprimée ; branche `cleanup-base-saine` ouverte depuis
+  `main` (`1a84a06`) après `git fetch --prune` (aucune autre branche).
+
+### Inventaire
+- Suivi par git : 115 Mo de captures dans `screenshots/`, dont les images « de référence » de `calibration/` (Passe 2 : distribution
+  générée, pas de cadrage D) ; code mort : 6 déclarations inutilisées (`tsc --noUnusedLocals --noUnusedParameters`) et quatre exports jamais
+  importés (`buildVegetation`, module entier ; `addBunting` ; `blurField` ; `emblemRect`).
+- Local, ignoré : `art-lab/characters/scratch/` 8,1 Go (dossiers des passes 4A-decies à 4A-unvicies, dont deux bases figées) ; 30 dossiers de
+  séances dans `%TEMP%\claude\` (scratchpads) ; `.claude/launch.json` : `dev-cast2` / `dev-cast3` sans objet
+  (Passe M1), `pv-base` / `pv-work` (séance perf).
+- Suppressions locales irréversibles : question posée à l'opérateur ; réponse, mot pour mot : « Brouillons Art Lab (~7,3 Go),Scratchpads
+  terminés (~3,5 Go) ».
+
+### Dépôt — [OK]
+- Code mort retiré, aucun tirage aléatoire touché : `src/props/Vegetation.ts` (jamais importé depuis le désencombrement de la Passe 1),
+  `addBunting` (`Banners.ts`), `blurField` (`noise.ts`), `emblemRect` (`PropGenerator.ts`), le lambda `hAt` et son `void hAt`
+  (`RoofGenerator.ts`), le champ `lib` jamais lu (`Particles.ts`), des imports et une variable inutilisés (`ForgeGenerator.ts`,
+  `characterLab.ts`, `runtimePreview.ts`, `Banners.ts`, `PropGenerator.ts`). `tsc --noUnusedLocals --noUnusedParameters` : 0 erreur (6
+  avant). Laissés : des `void x;` qui taisent des paramètres (11 fichiers) et des types exportés sans usage hors de leur fichier.
+- Captures : 43 fichiers (64,7 Mo) des passes closes retirés de l'arbre : `calibration/compare-cam{A,B,C}.png`, `calibration/perf.json`,
+  `calibration/{cast-polish,smith-facing,viewport-fix}/`, `4a-0a/`, `p4b/`, `known-issues/smith-halo-before-after.png`. Ils restent lisibles
+  par `git show 1a84a06:<chemin>` ; les passes archivées qui les citent ne sont pas retouchées.
+- Gardés : `calibration/occlusion/` (« À reprendre » §2), `calibration/vis-residue/` et `known-issues/pass2-vis-speck.png` (§5), et
+  `screenshots/4a/` entier : le manifeste `porter-gm-v1` le cite comme preuve (`art:validate` vérifie le chemin) et l'opérateur l'a gardé
+  « with all evidence » (15/10).
+- Références refaites sur l'état actuel (`1a84a06`, distribution cuite) : `calibration/cam{A-establishing,B-merchant,C-forge,D-frontal}.png`
+  (1920 × 1080, graine 1842, `freeze=7.3`, `Math.random` à graine, 120 pas de 1/60 s) ; `known-issues/sprite-overlay-forge-C.png` (×3) : le
+  forgeron cuit délavé dans la lueur de la forge, objet du premier point des priorités.
+- `AGENTS.md` : l'entrée `dev-strict` remplace `dev-cast2` / `dev-cast3`. Les README de deux critiques (`shared-atlas-4a-decies`,
+  `texel-addressing-4a-undecies`) disent que leurs captures locales sont supprimées (les images clés restent dans leur dossier).
+
+### Local — [OK]
+- `art-lab/characters/scratch/` : 8,1 Go → 824 Mo. Supprimés : `addr-fix`, `baked-proof`, `cast2`, `gm`, `smith-facing`, `baseline-eecea58`,
+  `before-5d10a37`. Gardés : `e2-x2-candidate` (copie de travail de la planche de référence et preuves locales que cite le paquet de
+  provenance de `dockworker-x2-v1`), `npc2-merchant` (pièces jointes de la proposition), `storage-bench` (rapport cité par le contrat),
+  `selfcritique-guard.md`.
+- Dossiers de séances : sept séances closes supprimées (≈ 3,5 Go ; bases figées `base-14b8686`, `base-8693690`, `base-2cbb858`, `base-main`,
+  `base-p1`…). Avant : aucun point de réparation (jonction) dans les cibles (`Get-ChildItem -Recurse -Attributes ReparsePoint`) ;
+  `node_modules` du dépôt : 4 988 fichiers avant et après.
+- `.claude/launch.json` (non versionné) : `dev-cast3` retiré ; `dev-cast2` devient `dev-strict` (`node node_modules/vite/bin/vite.js
+  --port 5186 --strictPort`, sans `npx`, qui laissait un `node` enfant, Passe 2).
+
+### Preuves
+- Témoin de répétition, `static=1` : A, B, C, D, forge sabotée, graines 7719 et 30417 en A, deux chargements : 0 px (écart max 0). Après le
+  retrait du code mort : 0 px, écart max 0, sur les sept vues.
+- Bundle : `main` (archive figée construite avec les mêmes options) contre la branche : les dix PNG et le worker identiques ; le JS principal ne
+  diffère que par le champ `lib` retiré (`lib` et `this.lib=e`), le reste identique à l'octet ; `index.html` ne diffère que par le nom haché du
+  JS.
+- `npm run typecheck` [OK], `npm test` 24 / 24, `npm run build` [OK], `npm run art:validate` : 14 manifestes, 4 sources archivées, 0 erreur,
+  0 avertissement.
+- **[KO → corrigé] harnais de capture avec personnages** : attendre après `__ready` laisse tourner la vraie boucle un nombre variable d'images
+  avant la prise en main ; la même capture de C avec personnages différait (écart max 9). Corrigé en neutralisant `App.start` dès le
+  chargement (`evaluateOnNewDocument`, setter sur `window.__app`) : chaque image est rendue pas à pas, deux chargements de C avec personnages
+  → 0 px, écart max 0. Le harnais (scratchpad de cette séance) sera versionné avec le point 1, qui en a besoin.
+
+### Restes [?]
+- Dossier de la séance perf `c6b9b403…` (3,8 Go ; `pv/base`, `pv/work`, servis par les entrées `pv-base` / `pv-work`) : oublié dans le
+  décompte présenté à l'opérateur (« ~3,5 Go »), donc pas supprimé ; à redemander. Celui de la séance parente (`a0b00d58…`, actif, base
+  `base-894c4d3`) n'est pas touché.
+- Le contrat d'intégration (section 12) cite encore `scratch/baked-proof/` ; son texte n'est pas retouché (les images clés sont dans
+  `reviews/shared-atlas-4a-decies/`).
+
+### Pensée
+- Une image « de référence » vieillit sans bruit : celle de la Passe 2 a failli servir d'état actuel. Les références se refont à chaque
+  changement visible du jeu (distribution comprise) ; les preuves des passes closes vivent dans l'historique git.
+- Une capture avec personnages n'est déterministe que si la boucle du jeu ne tourne jamais hors du harnais.
+- Une autorisation de suppression vaut pour la liste et la taille annoncées : un dossier oublié dans le décompte se redemande.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -339,9 +416,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   dans le reveal ; chercher un cas où la passe « derrière » restaure vraiment des pièces (sinon envisager de la couper pour gagner ≈ 90 ms
   de bake) ; rejouer l'inventaire à chaque changement de zones de caméra ou de composition (bateau, lampadaires).
 
-**3. `SpriteRenderer`** (prévu) : remplacer la superposition 55 % par une vraie séparation (passe dédiée ou masque propre) pour supprimer
-l'auréole ; revoir le pas de silhouette / contour ; valider sur des PNJ en mouvement (pas seulement des captures figées) et sur les graines
-7719 / 30417.
+**3. `SpriteRenderer`** (prévu, premier point des priorités du 18/10) : remplacer la superposition 55 % par une vraie séparation (passe dédiée
+ou masque propre) pour supprimer l'auréole ; revoir le pas de silhouette / contour ; valider sur des PNJ en mouvement (pas seulement des
+captures figées) et sur les graines 7719 / 30417. État actuel avec la distribution cuite : `known-issues/sprite-overlay-forge-C.png` (Passe M5).
 
 **4. Zones de caméra** — validées par simulation (Passe 4B, `tools/camsim.mjs`), pas par de vrais joueurs : (a) D place toujours le joueur
 **à droite** du centre (NDC +0,35 → +0,68), contrepartie de la continuité avec C ; (b) le long du bord de l'eau (z > 2,4) on passe **B → D**
@@ -379,8 +456,8 @@ sprites.
   l'opérateur) ; le rejet « images requises manquantes » de `loadProductionCast` n'est pas testé (il faudrait lui passer une liste) ;
   d'autres fonctions pures sans test (`parseFrameCap`, `lerpState`, `needMask`, `bakeKey` du cache du bake) ; les tests ne sont pas typés
   (`.mjs`, hors `tsconfig`).
-- **Restes du ménage M1** : bases figées sans lien dans d'anciens scratchpads, entrées `dev-cast2` / `dev-cast3` sans objet (Passe M1,
-  « Restent »).
+- **Ménage local (Passe M5)** : dossier de la séance perf `c6b9b403…` (3,8 Go, entrées `pv-base` / `pv-work`) à faire confirmer ; code mort
+  mineur laissé (`void x;` qui taisent des paramètres, types exportés sans usage).
 - **Archivage du journal** (Passe M4) : le critère « operator decision recorded, branch merged » d'`AGENTS.md` date d'avant la fusion
   sans demande ; lire « branche fusionnée » suffit, à confirmer par l'opérateur.
 - **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — à retirer proprement une fois qu'on
@@ -454,7 +531,8 @@ sprites.
   (Passe Q1).
 - Une preuve « pixel-identique » exige une capture déterministe : `Math.random` à graine, pas fixes, horloge figée, RNG internes remis à
   zéro, une chauffe par cadrage **et par origine** (serveur), et un témoin de répétition (deux chargements : 0 px) **avant** toute
-  comparaison ; un écart d'un niveau sur 255 se traque par sondes de variantes du shader.
+  comparaison ; un écart d'un niveau sur 255 se traque par sondes de variantes du shader. Avec des personnages, la boucle du jeu ne doit
+  jamais tourner hors du harnais (`App.start` neutralisé dès le chargement, Passe M5).
 - Pendant une série de mesures ou de captures sur un serveur de développement, ne rien modifier ni reconstruire de ce qu'il sert (`src/`
   compris : rechargement HMR) ; recadrer une preuve par projection, jamais par supposition ; un masquage d'acteur se vérifie (base masquée
   contre base non masquée) : avec la distribution cuite, un acteur porte l'id de sa planche.
@@ -556,7 +634,9 @@ sprites.
 - Le chargement des instructions d'agent se mesure (`/context` dans une session neuve) : jamais de `CLAUDE.md` dans un dossier parent d'un
   projet qui vit de son `AGENTS.md`.
 - Un statut de README se réécrit à l'état courant, daté, avec un renvoi au journal pour l'historique ; « À reprendre » ne garde que l'ouvert :
-  ce qui est fait en sort à la clôture de sa passe (Passe M3).
+  ce qui est fait en sort à la clôture de sa passe (Passe M3). De même pour les images : les références (`screenshots/calibration/`) se
+  refont à chaque changement visible du jeu, les preuves des passes closes vivent dans l'historique git (Passe M5).
+- Une autorisation de suppression vaut pour la liste et la taille annoncées ; ce qui manquait au décompte se redemande (Passe M5).
 - Des fins de ligne se comptent en octets (node) : sous Git Bash, `sed -i` retire les CR et `grep` / `cat -A` ne les montrent pas de façon
   fiable (Passe M3) ; une modification de fichier CRLF passe par un outil qui les garde.
 - Une étape irréversible (fusion, push de `main`, suppression de branche) ne part qu'après la vérification de la précédente, dans une

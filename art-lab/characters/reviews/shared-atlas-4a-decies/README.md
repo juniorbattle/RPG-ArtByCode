@@ -2,6 +2,7 @@
 
 DEV flag only (`?baked=`), nothing in production. Contract: `../../runtime-integration-contract.md` (v3, sections 10-12). Full captures stay
 local in `art-lab/characters/scratch/baked-proof/` (git-ignored); the decisions and numbers are in `JOURNAL.md` (Pass 4A-decies).
+2026-10-18: that local folder was deleted with the operator's approval (JOURNAL, Passe M5); the key images below are the evidence kept.
 
 | File | Evidence |
 |---|---|

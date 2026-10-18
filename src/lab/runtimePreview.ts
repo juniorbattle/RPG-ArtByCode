@@ -78,7 +78,7 @@ async function patch(app: App, params: URLSearchParams): Promise<unknown> {
   const pos = (params.get('labpos') ?? '').split(';').filter(Boolean).map((p) => p.split(',').map(Number));
   let hiDensity: { renderer: SpriteRenderer; actors: Actor[]; follow: boolean } | null = null;
   if (id !== '-') {
-    const { ctx, meta, tag, order } = await loadSheet(id, params);
+    const { ctx, tag, order } = await loadSheet(id, params);
     const fw = order[0].sw, fh = order[0].sh;
     if (order.some((f) => f.sw !== fw || f.sh !== fh)) throw new Error('labsprite frames must share one size');
     if (fw === FRAME_W && fh === FRAME_H && params.get('labhd') !== '1') {

@@ -2,6 +2,7 @@
 
 DEV flag only, nothing in production. Contract: `../../runtime-integration-contract.md`, section 13. Journal: Pass 4A-undecies. Full
 captures stay local in `art-lab/characters/scratch/addr-fix/` (git-ignored). Restore point: commit `5d10a37`.
+2026-10-18: that local folder was deleted with the operator's approval (JOURNAL, Passe M5); the key images below are the evidence kept.
 
 | File | Evidence |
 |---|---|

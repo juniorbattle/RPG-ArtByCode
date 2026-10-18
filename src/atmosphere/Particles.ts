@@ -103,10 +103,8 @@ export class ParticleSystem {
   wind = new THREE.Vector3(0.28, 0, -0.12);
   hammerRate = 5.5;
   smokeAmount = 1;
-  private lib: MaterialLibrary;
 
   constructor(lib: MaterialLibrary) {
-    this.lib = lib;
     this.smoke = new PointCloud(420, lib.smoke, false);
     this.glow = new PointCloud(520, lib.dot, true);
     this.halo = new PointCloud(48, lib.halo, true);

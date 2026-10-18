@@ -2,9 +2,8 @@ import { Rng } from '../core/rng';
 import { SlotSet, mat, type V3 } from '../core/MeshBuilder';
 import type { Socket } from '../architecture/Types';
 import type { DistrictConfig } from '../district/MerchantDistrictGenerator';
-import { atlasRect, beam } from '../architecture/FacadeGrammar';
+import { atlasRect } from '../architecture/FacadeGrammar';
 import { EMBLEM_CELLS, type EmblemKind } from '../materials/CanvasArt';
-import { BuildCtx } from '../architecture/Types';
 
 export interface BannerOpts {
   pos: V3; yaw?: number; w: number; h: number; emblem: EmblemKind;
@@ -56,34 +55,10 @@ export function addBanner(S: SlotSet, o: BannerOpts): void {
     }
   });
 }
-/** Rope with triangular pennants hanging in a catenary. */
-export function addBunting(S: SlotSet, rng: Rng, a: V3, b: V3, o: { sag?: number; flags?: number; palette?: V3[] } = {}): void {
-  const n = o.flags ?? Math.max(5, Math.round(Math.hypot(b[0] - a[0], b[2] - a[2]) / 0.55));
-  const sag = o.sag ?? 0.55 + 0.04 * Math.hypot(b[0] - a[0], b[2] - a[2]);
-  const pal = o.palette ?? [[0.7, 0.14, 0.12], [0.16, 0.26, 0.6], [0.78, 0.58, 0.14], [0.2, 0.5, 0.3], [0.62, 0.22, 0.4]];
-  const pts: V3[] = [];
-  const seg = n * 2;
-  for (let i = 0; i <= seg; i++) {
-    const t = i / seg;
-    pts.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t - sag * 4 * t * (1 - t), a[2] + (b[2] - a[2]) * t]);
-  }
-  S.cloth.sweep(pts, 0.012, 4, { tint: [0.5, 0.42, 0.3] });
-  const dx = b[0] - a[0], dz = b[2] - a[2], len = Math.hypot(dx, dz) || 1;
-  const nx = -dz / len, nz = dx / len;
-  for (let i = 1; i < n; i++) {
-    const t = i / n;
-    const p: V3 = [a[0] + dx * t, a[1] + (b[1] - a[1]) * t - sag * 4 * t * (1 - t), a[2] + dz * t];
-    const w = 0.22, h = 0.34 + rng.range(-0.03, 0.04);
-    const col = pal[(i + Math.floor(rng.next() * 2)) % pal.length];
-    const tx = dx / len * w, tz = dz / len * w;
-    S.cloth.tri([p[0] - tx, p[1], p[2] - tz], [p[0] + tx, p[1], p[2] + tz], [p[0] + nx * 0.02, p[1] - h, p[2] + nz * 0.02], { tint: col, ao: [1, 1, 0.8], swayArr: [0.2, 0.2, 1.0], aux: [0, 0, rng.next(), 0], flip: false });
-    S.cloth.tri([p[0] - tx, p[1], p[2] - tz], [p[0] + tx, p[1], p[2] + tz], [p[0] + nx * 0.02, p[1] - h, p[2] + nz * 0.02], { tint: col, ao: [1, 1, 0.8], swayArr: [0.2, 0.2, 1.0], flip: true });
-  }
-}
 
 /** A few authored banners only: heraldry is a focal accent, not wallpaper. (The forge and the boat carry their own.) */
 export function buildBanners(rng: Rng, cfg: DistrictConfig, buildings: Array<{ id: string; result: { sockets: Socket[] }; pos: V3; yaw: number }>, sockets: Array<Socket & { building: string }>, world: SlotSet): void {
-  void cfg; void BuildCtx; void beam; void rng; void buildings;
+  void cfg; void rng; void buildings;
   const find = (id: string, kind: string) => sockets.find((s) => s.building === id && s.kind === kind);
   // the great guild banner above the hero stall: the one large heraldic shape in the frontage
   const g = find('guild', 'banner');

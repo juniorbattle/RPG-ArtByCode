@@ -121,8 +121,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   Three.js at 1x / 4x / runtime scale; `window.__lab.selfTest()` checks nearest filtering texel-for-texel. Not part of the game or its build.
 
 ## Dev servers and background processes (operator rule, 2026-10-17)
-- Start dev servers with the session's `preview_start` tool and a `.claude/launch.json` entry (`dev`, `dev-cast2`,
-  `dev-cast3`); for a new port, add an entry instead of launching it by hand. Stop them with `preview_stop`.
+- Start dev servers with the session's `preview_start` tool and a `.claude/launch.json` entry (`dev`; `dev-strict` = the repo on :5186 with
+  `--strictPort`, through `node node_modules/vite/bin/vite.js`, safe from the other local project that also uses 5173: tools take
+  `BASE_URL=http://127.0.0.1:5186/`); for a new port, add an entry instead of launching it by hand. Stop them with `preview_stop`.
 - Run long scripts (`tools/perf.mjs`, `tools/viewport-proof.mjs`, trace series…) with the Bash tool's
   `run_in_background`, and stop them with `TaskStop` on their task id. `TaskStop` on a background `bash script.sh` stopped the shell, not
   the node / Chrome it had started (they ran on to their end and two measurements measured each other, journal pass 6h): before relaunching,

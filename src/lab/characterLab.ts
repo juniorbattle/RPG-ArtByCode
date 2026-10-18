@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { FRAME_W, FRAME_H, FOOT_Y } from '../characters/SpriteGenerator';
+import { FRAME_H, FOOT_Y } from '../characters/SpriteGenerator';
 import { PIXEL_WORLD } from '../characters/SpriteRenderer';
 import { CameraGraph, CAM_IDS, type CamId } from '../app/CameraGraph';
 import { applyPose } from '../app/CameraRig';

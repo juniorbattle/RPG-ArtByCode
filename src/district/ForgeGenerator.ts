@@ -6,7 +6,7 @@ import type { MaterialLibrary } from '../materials/MaterialLibrary';
 import type { Collider, MaskObstacle } from '../architecture/StreetComposer';
 import type { LightRecord, NpcSpawn, Emitter } from './MerchantDistrictGenerator';
 import { LAYER_CAST, LAYER_NOREFLECT } from '../atmosphere/ShadowAndReflection';
-import { barrel, crate, sack, bucket, lantern } from '../props/PropGenerator';
+import { barrel, crate, sack, lantern } from '../props/PropGenerator';
 import { addBanner } from '../props/Banners';
 import { atlasRect } from '../architecture/FacadeGrammar';
 import { DECAL_CELLS, type DecalKind } from '../materials/CanvasArt';
