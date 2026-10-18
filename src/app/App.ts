@@ -104,10 +104,6 @@ export class App {
     // over 1/4 on captures; journal pass 6g)
     const rf = Number(opts.params.get('refl'));
     if (rf > 0 && rf <= 1) this.reflection.scale = rf;
-    // ?dof=half|full: the DOF gather at half or full resolution (default full; journal pass 6j, P9: half against full is the operator's call
-    // on captures)
-    const dof = opts.params.get('dof');
-    if (dof === 'half') this.post.params.dofScale = 0.5; else if (dof === 'full') this.post.params.dofScale = 1;
     this.rig.camera.layers.enable(2);
     this.scene.add(this.rig.camera);
     this.scene.add(buildSky());
@@ -265,7 +261,7 @@ export class App {
       fps: p.fps, frameMs: p.frameMs, cpuMs: p.cpuMs, drawCalls: p.drawCalls, triangles: p.triangles, textures: r.info.memory.textures, geometries: r.info.memory.geometries, textureMB: bytes / 1048576,
       lights: this.lights.sources.length, actors: this.actors?.actors.length ?? 0, generatorMs: this.lastGenMs,
       district: this.district ? { triangles: this.district.stats.triangles, instances: this.district.stats.instances, buildings: this.district.stats.buildings, windows: this.district.stats.windows } : { triangles: 0, instances: 0, buildings: 0, windows: 0 },
-      resolution: `${this.post.width}x${this.post.height} MSAA${this.post.params.msaa}${this.post.params.dofScale < 1 ? ` DOF${this.post.params.dofScale}` : ''}`,
+      resolution: `${this.post.width}x${this.post.height} MSAA${this.post.params.msaa}`,
       gpu, gpuMs: gpu ? p.gpu.total() : undefined,
       visibility: this.district ? {
         set: this.visibleSet, level: this.drawLevel, parts: this.district.visibility.parts, tier3: this.district.visibility.hidden,
