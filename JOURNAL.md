@@ -3342,6 +3342,12 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   essai défait en 0,36 s) contre `?fps=e60` 46,0 img/s, 4 vsyncs 58 % / 3 : 42 %. Le témoin d'énergie n'a rendu aucun échantillon sur cette
   série (déjà muet depuis le milieu de la seconde) **[?]** : pas de puissance pour cette vérification.
 
+### Décision opérateur (2026-10-18) — [OK] pas adaptatif accepté
+- Mot pour mot : « J'accepte le pas adaptatif tel quel (a60 par défaut, ?fps=e60 manuel) : fusionne perf-p4b-adaptive-cap dans main, pousse
+  main et supprime la branche. »
+- Branche `perf-p4b-adaptive-cap` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée (locale et distante). La suite
+  (P9, témoin d'énergie muet) ouvrira sa propre branche depuis `main`.
+
 ### Pensée
 - Le retard d'une image se lit dans les horodatages rAF, à condition d'écarter le démarrage et les trous : les premières images de la boucle
   ont suffi à pousser le pas au plancher à chaque chargement.
@@ -3357,8 +3363,8 @@ image de la boucle 17 → 4 ms, 0 programme compilé après le départ ; durée 
 fausse). **P3 fait (Passe 6b), accepté par l'opérateur le 17/10 et fusionné dans `main`** : peintres de textures en Web
 Workers, octets et image identiques, peinture 1,80 → 0,55 s, `__ready` 3,64 → 2,50 s ; sonde `startup.mjs` corrigée (première étiquette). Suivent,
 une piste par commit, chacune avec sa preuve : **P4 plafond de cadence fait (Passe 6c) : défaut `e60` choisi par l'opérateur le 17/10, accepté et fusionné dans `main`**
-(55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `?fps=off` sans plafond ; **pas adaptatif 3 → 4 vsyncs fait (Passe 6h,
-branche `perf-p4b-adaptive-cap`) : l'opérateur choisit `a60` par défaut le 18/10, `?fps=e60` reste disponible** : 41 img/s réguliers au lieu
+(55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `?fps=off` sans plafond ; **pas adaptatif 3 → 4 vsyncs fait (Passe 6h) :
+l'opérateur choisit `a60` par défaut le 18/10, `?fps=e60` reste disponible ; accepté et fusionné dans `main`** : 41 img/s réguliers au lieu
 d'un mélange 3 / 4 quand le GPU rate son créneau, identique à `e60` au calme) ;
 **P5 cache du bake fait (Passe 6d), accepté par l'opérateur le 18/10 et fusionné dans `main`** : bake 337 → 36 ms relu,
 `__ready` 2,28 → 1,98 s, image et décisions de culling identiques (`viewport-proof` ligne à ligne) ; puis revue de captures pour les décisions de l'opérateur : **P6 fait (Passe 6e) : l'opérateur garde le natif par
