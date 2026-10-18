@@ -3168,6 +3168,52 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - La puissance ne suit pas le temps GPU linéairement : −41 % de temps GPU donnent −56 % de SoC sous plafond de cadence (le pilote baisse
   les fréquences quand il a de la marge).
 
+## Passe 6f — Performances : P7, MSAA 4× contre 2× — captures et mesures (2026-10-18)
+
+### Demande (2026-10-18)
+- Mot pour mot : « Go P7 : ouvre sa branche depuis main et prépare les captures côte à côte MSAA 4× contre 2× (arêtes, sprites, lampes)
+  avec les mesures, avant toute décision. » Branche `perf-p7-msaa` ouverte depuis `main` (`a830315`) et poussée. **Rien n'est décidé : le
+  défaut reste 4×.**
+
+### Mécanisme
+- `?msaa=0|2|4|8` : nombre d'échantillons de la cible de scène (`post.params.msaa`, lu avant le premier dimensionnement). Défaut 4,
+  inchangé.
+
+### Captures (production, 2560 × 1440, `seed=1842&clean=1&freeze=7.3`, A-D, avec et sans personnages ; composites dans
+`perf-gpu-evidence/p7/compare/`)
+- **Écart mesuré** (vues `static=1`, `tools/diff.mjs`) : 4× contre 2× : **0,26-0,62 % des pixels** à plus de 16 niveaux (sur 255), 1-1,8 %
+  à plus de 4, tous sur des arêtes ; 4× contre sans MSAA : 0,44-1,02 % à plus de 16. Le reste (9-12 % des pixels à plus de 0) est un bruit
+  de 1 à 4 niveaux réparti sur les surfaces (résolution de profondeur lue par le DOF / l'in-scatter), invisible.
+- **Arêtes nettes du premier plan** (lampadaire, cordages, bornes, mât) : 4× et 2× quasi indiscernables à × 1,5 ; sans MSAA, la corde et le
+  mât font des escaliers. **Fond** (colombages, toits) : brume et DOF masquent la différence ; sans MSAA, légers escaliers sur les diagonales.
+- **Sprites** : identiques quel que soit le MSAA (quads alignés sur les texels, test alpha).
+- **Non vu** : le scintillement des arêtes fines en mouvement (moins d'échantillons = plus de crépitement possible sur les cordages) ; les
+  captures sont figées.
+
+### Mesures
+- **GPU** (`tools/perf.mjs`, 780M, B) : le seul tour entièrement propre donne 2560 × 1440 : 4× **15,94 ms**, 2× **13,79 (−13 %)**, sans 10,64 ;
+  passe scène 10,62 / 8,51 / 5,40 ; 1080p : 9,30 / 8,09 / 6,23. Une seconde série de 4 tours est tombée sous forte contention (un autre
+  Chrome à 25-39 % du GPU, deux PID d'une autre séance) : ses minima confirment l'ordre (B 1440p 16,26 / 16,48 contaminé), pas les écarts.
+  Mémoire des cibles (estimation `__stats`) : 1440p 277 → 221 Mo (2×) → 192 (sans) ; 1080p 188 → 157 → 141.
+- **Vraie fenêtre maximisée** (`tools/cadence.mjs`, plafond `e60`, 3 tours propres) : 4× 55 img/s réguliers, GPU 84-86 %, **SoC 35,6-36,5 W** ;
+  2× 55 img/s réguliers, GPU 73-75 %, **SoC 31,1-32,4 W (≈ −12 %)**. Une première série (4×, 2×, sans) était contaminée (un autre Chrome
+  jusqu'à 99 %) : seule sa ligne 4× (37,4 W) est retenue.
+- **Culling** (`tools/viewport-proof.mjs --q=msaa=2`, serveur dev) : décisions identiques (le bake ne dépend pas du MSAA : mêmes Tier 3, mêmes
+  triangles) ; **10 écarts élagué / `vis=0` contre 9 en 4×**, pas les mêmes : le résidu « fissures vues par un seul échantillon » change
+  d'échantillons (1 à 4 px par vue, max 3-19 niveaux), l'écart connu de 30417 AB reste (64 px dont 53 d'ordre de dessin, contre 48 / 31).
+  Si 2× est choisi, chaque nouvel écart s'explique par `tools/vis-why.mjs` avant d'être accepté (règle de la passe 5b) : non fait.
+- Pendant les mesures, un Chrome d'une autre séance (PID 34736, lancé à 02:04:30, au milieu de ma série) occupait 92 % du GPU ; ni arrêté
+  ni touché (règle M2).
+
+### Décision opérateur — en attente
+- Options : garder 4× (aucun changement), 2× (≈ −13 % de temps GPU, ≈ −12 % de SoC, arêtes fines un peu moins lisses, scintillement en
+  mouvement non vérifié), sans MSAA (−33 %, escaliers visibles : déconseillé).
+
+### Pensée
+- Un écart d'image se lit à plusieurs seuils : « 9 % des pixels diffèrent » ne dit rien tant qu'on ne sépare pas le bruit de 1-4 niveaux des
+  arêtes à plus de 16 ; et se juge là où la scène est nette (premier plan), pas dans le fond que la brume et le DOF lissent déjà.
+- Sous contention, une seule série propre vaut mieux que des médianes contaminées : relancer quand le témoin est calme, et le dire.
+
 ## À reprendre (par priorité)
 
 **-3. Performances GPU (Passe 6, plan validé par l'opérateur le 17/10 ; P0-P2 acceptés et fusionnés dans `main` le 17/10, la suite ouvre
@@ -3182,7 +3228,8 @@ quand le GPU rate son créneau, vu sous contention en 1440p) ;
 **P5 cache du bake fait (Passe 6d), accepté par l'opérateur le 18/10 et fusionné dans `main`** : bake 337 → 36 ms relu,
 `__ready` 2,28 → 1,98 s, image et décisions de culling identiques (`viewport-proof` ligne à ligne) ; puis revue de captures pour les décisions de l'opérateur : **P6 fait (Passe 6e) : l'opérateur garde le natif par
 défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans `main`** (1080p : GPU −41 %, SoC −56 % sous
-`e60`, sprites plus doux), P7 (MSAA 2×),
+`e60`, sprites plus doux), **P7 captures et mesures faites (Passe 6f, branche `perf-p7-msaa`, `?msaa=`), décision en attente** (2× :
+GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts à expliquer si choisi),
 P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 

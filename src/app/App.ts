@@ -96,6 +96,9 @@ export class App {
     const rm = opts.params.get('res')?.match(/^(\d{3,4})p(?::(px|pixelated|smooth))?$/);
     if (rm) this.resCap = { pixels: Math.round((+rm[1] * +rm[1] * 16) / 9), filter: rm[2] === 'px' || rm[2] === 'pixelated' ? 'pixelated' : 'smooth' };
     this.post = new PostFX(this.renderer);
+    // ?msaa=0|2|4|8: samples of the scene target (default 4; journal pass 6, P7: 4x against 2x is the operator's call on captures)
+    const ms = Number(opts.params.get('msaa'));
+    if (opts.params.has('msaa') && [0, 2, 4, 8].includes(ms)) this.post.params.msaa = ms;
     this.rig.camera.layers.enable(2);
     this.scene.add(this.rig.camera);
     this.scene.add(buildSky());
