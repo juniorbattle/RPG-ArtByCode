@@ -3269,8 +3269,8 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 
 ### Demande (2026-10-18)
 - Mot pour mot : « Go pas adaptatif : ouvre sa branche depuis main et mesure d'abord le plafond qui passe de 3 à 4 vsyncs quand le GPU rate
-  son créneau, avec cadence.mjs, avant toute décision. » Branche `perf-p4b-adaptive-cap` ouverte depuis `main` (`2560ce9`) et poussée. **Rien
-  n'est décidé : le défaut reste `e60`** ; le pas adaptatif est un mode manuel, `?fps=a60`.
+  son créneau, avec cadence.mjs, avant toute décision. » Branche `perf-p4b-adaptive-cap` ouverte depuis `main` (`2560ce9`) et poussée. Les
+  mesures ont été faites avec `e60` par défaut et le pas adaptatif en mode manuel, `?fps=a60` (choisi ensuite par défaut : voir la décision).
 
 ### Mécanisme (`src/app/FrameCap.ts`)
 - `a<n>` = `e<n>` (toutes les round(fréquence / n) vsyncs, 3 à 165 Hz) plus un pas adaptatif. Une image rendue est **en retard** quand
@@ -3332,6 +3332,16 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
    44-49 img/s, un essai de retour toutes les 4-16 s, et jusqu'à 16 s à 41 img/s après la fin d'une longue charge.
 - Le choix est entre régularité et nombre d'images sous charge ; sur cette machine au calme, rien ne change.
 
+### Décision opérateur (2026-10-18) — [OK] `a60` par défaut
+- Mot pour mot : « Je choisis a60 (pas adaptatif) comme plafond par défaut ; ?fps=e60 reste disponible. »
+- `DEFAULT_FRAME_CAP` = `a60` (`App.ts`) ; `?fps=e60` garde le pas fixe, `?fps=off` la boucle sans plafond ; `tools/perf.mjs` et
+  `tools/startup.mjs` mesurent toujours sans plafond (`fps=off` ajouté).
+- Preuves du défaut (build figé de la branche, `index-CLn5puYo.js`, le même que `npm run build`, sans paramètre) : 13 vues `static=1&freeze=7.3` **identiques à l'octet** à `main` `2560ce9`
+  (et de même avec `fps=a60`) ; base deux fois identique ; contrôle négatif détecté. Vraie fenêtre maximisée, sans paramètre : `a60` actif,
+  **55,0 img/s, 3 vsyncs 100 %, aucun changement de pas** au calme ; sous la charge +5,5 ms, **41,6 img/s, 4 vsyncs 95,2 %** (le reste : un
+  essai défait en 0,36 s) contre `?fps=e60` 46,0 img/s, 4 vsyncs 58 % / 3 : 42 %. Le témoin d'énergie n'a rendu aucun échantillon sur cette
+  série (déjà muet depuis le milieu de la seconde) **[?]** : pas de puissance pour cette vérification.
+
 ### Pensée
 - Le retard d'une image se lit dans les horodatages rAF, à condition d'écarter le démarrage et les trous : les premières images de la boucle
   ont suffi à pousser le pas au plancher à chaque chargement.
@@ -3347,9 +3357,9 @@ image de la boucle 17 → 4 ms, 0 programme compilé après le départ ; durée 
 fausse). **P3 fait (Passe 6b), accepté par l'opérateur le 17/10 et fusionné dans `main`** : peintres de textures en Web
 Workers, octets et image identiques, peinture 1,80 → 0,55 s, `__ready` 3,64 → 2,50 s ; sonde `startup.mjs` corrigée (première étiquette). Suivent,
 une piste par commit, chacune avec sa preuve : **P4 plafond de cadence fait (Passe 6c) : défaut `e60` choisi par l'opérateur le 17/10, accepté et fusionné dans `main`**
-(55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `?fps=off` sans plafond ; **pas adaptatif 3 → 4 vsyncs mesuré (Passe 6h,
-branche `perf-p4b-adaptive-cap`, `?fps=a60`), décision en attente** : 41 img/s réguliers au lieu d'un mélange 3 / 4 quand le GPU rate son
-créneau, identique à `e60` au calme) ;
+(55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `?fps=off` sans plafond ; **pas adaptatif 3 → 4 vsyncs fait (Passe 6h,
+branche `perf-p4b-adaptive-cap`) : l'opérateur choisit `a60` par défaut le 18/10, `?fps=e60` reste disponible** : 41 img/s réguliers au lieu
+d'un mélange 3 / 4 quand le GPU rate son créneau, identique à `e60` au calme) ;
 **P5 cache du bake fait (Passe 6d), accepté par l'opérateur le 18/10 et fusionné dans `main`** : bake 337 → 36 ms relu,
 `__ready` 2,28 → 1,98 s, image et décisions de culling identiques (`viewport-proof` ligne à ligne) ; puis revue de captures pour les décisions de l'opérateur : **P6 fait (Passe 6e) : l'opérateur garde le natif par
 défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans `main`** (1080p : GPU −41 %, SoC −56 % sous
@@ -3484,6 +3494,9 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   garde). Une sonde de démarrage observe dès le premier repère, pas depuis `DOMContentLoaded`.
 - Une cadence se mesure dans une vraie fenêtre avec vsync (`tools/cadence.mjs`), une « surcharge » en watts (RAPL, SoC = boîtier − cœurs),
   pas en % d'occupation GPU. La vsync se sonde au repos ; les horodatages rAF de la boucle ne sont pas sur sa grille.
+- La cadence préfère la régularité au nombre d'images (choix de l'opérateur, `e60` puis `a60`) : quand le GPU ne tient plus son créneau, un
+  pas plus long et régulier plutôt qu'un mélange ; le retour au pas court se vérifie par un essai. Une mesure de cadence ne s'arrête pas
+  par `TaskStop` (node et Chrome lui survivent) : on la laisse finir.
 - Un résultat calculé mis en cache se relit seulement pour les mêmes entrées exactes : la clé couvre tout ce qu'il lit (géométrie, poses,
   réglages, code du calcul, GPU) ; une entrée douteuse est un échec de cache, jamais un culling. Toute nouvelle entrée du bake entre dans
   `bakeKey`.

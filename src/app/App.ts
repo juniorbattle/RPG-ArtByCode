@@ -31,9 +31,10 @@ export interface AppOptions {
   baked?: Promise<{ sheets: BakedSheet[]; spawns: AuthoredSpawn[] }>;
 }
 
-/** The frame cap when `?fps=` is absent: evenly paced near 60 fps (`e60`: 55 at 165 Hz, 72 at 144, 60 at 60 / 120), chosen by the operator
- *  on 2026-10-17 (journal pass 6c); `?fps=off` restores the uncapped loop. */
-const DEFAULT_FRAME_CAP: FrameCapMode = { kind: 'even', fps: 60 };
+/** The frame cap when `?fps=` is absent: `a60`, evenly paced near 60 fps (55 at 165 Hz, 72 at 144, 60 at 60 / 120) with the adaptive
+ *  step (one more vsync per frame while frames keep missing their slot), chosen by the operator on 2026-10-18 (journal pass 6h; `e60`, the
+ *  same pace without the step, from pass 6c); `?fps=e60` keeps the fixed step, `?fps=off` restores the uncapped loop. */
+const DEFAULT_FRAME_CAP: FrameCapMode = { kind: 'adaptive', fps: 60 };
 
 export class App {
   readonly renderer: THREE.WebGLRenderer;
@@ -79,7 +80,7 @@ export class App {
   visibilityError: string | null = null;
   private rebakeTimer = 0;
   private lastT = performance.now();
-  /** frame-rate cap (journal pass 6, P4): `?fps=off|<n>|v<k>|e<n>`, otherwise DEFAULT_FRAME_CAP */
+  /** frame-rate cap (journal pass 6, P4 and 6h): `?fps=off|<n>|v<k>|e<n>|a<n>`, otherwise DEFAULT_FRAME_CAP */
   readonly frameCap = new FrameCap();
   /** internal resolution cap (journal pass 6, P6): `?res=<lines>p[:px]` = at most lines x lines x 16 / 9 rendered pixels (1080p: 1920 x 1080),
    *  scaled up by the browser (`:px` = nearest, `image-rendering: pixelated`); `?res=native` or absent = none (the default, kept by the operator

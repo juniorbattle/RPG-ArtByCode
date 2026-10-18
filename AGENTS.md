@@ -117,9 +117,9 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 `static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
 thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) ·
 `fps=off|<n>|v<k>|e<n>|a<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
-round(refresh / n) vsyncs; **default `e60`**, chosen by the operator on 2026-10-17: 55 fps at 165 Hz, 72 at 144, 60 at 60 / 120; the vsync
-interval comes from a boot probe; `tools/perf.mjs` and `tools/startup.mjs` add `fps=off` unless the query sets `fps`; journal pass 6c; `a<n>` = `e<n>`
-with an adaptive step, manual: one more vsync per frame while rendered frames keep missing their slot, down to 30 fps, then trials of the shorter
+round(refresh / n) vsyncs / the same with an adaptive step; **default `a60`**, chosen by the operator on 2026-10-18 (`e60` from 2026-10-17):
+55 fps at 165 Hz, 72 at 144, 60 at 60 / 120; the vsync interval comes from a boot probe; `tools/perf.mjs` and `tools/startup.mjs` add `fps=off` unless the query sets `fps`; journal pass 6c; `a<n>` = `e<n>`
+with an adaptive step: one more vsync per frame while rendered frames keep missing their slot, down to 30 fps, then trials of the shorter
 step after 4-16 s; `__stats().frameCap` shows the step and its changes; journal pass 6h) ·
 `viscache=0|verify` (visibility bake cache off / bake and compare with the stored result, journal pass 6d) ·
 `res=<lines>p[:px]` (internal resolution cap, manual: at most lines² x 16 / 9 rendered pixels, scene and reflection, the browser scales the canvas up,
