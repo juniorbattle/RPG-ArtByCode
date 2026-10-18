@@ -17,6 +17,8 @@ export interface PostParams {
   palette: number;
   renderScale: number;
   msaa: number;
+  /** DOF gather resolution against the internal resolution: 1, or 0.5 (`?dof=half`) */
+  dofScale: number;
 }
 
 export const defaultPost = (): PostParams => ({
@@ -27,12 +29,13 @@ export const defaultPost = (): PostParams => ({
   vignette: 0.34, grain: 0.01, saturation: 0.96, contrast: 1.06,
   shadowTint: new THREE.Color(0.92, 0.98, 1.22), highlightTint: new THREE.Color(1.07, 1.0, 0.9),
   airlight: 1, palette: 0.85,
-  renderScale: 1, msaa: 4,
+  renderScale: 1, msaa: 4, dofScale: 1,
 });
 
 const VERT = /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
-const DOF_FRAG = /* glsl */ `
+/** the DOF's inputs and circle of confusion (shared by the gather and, at half resolution, the full-resolution composite) */
+const DOF_COC = /* glsl */ `
 precision highp float;
 uniform sampler2D tColor;
 uniform sampler2D tDepth;
@@ -49,7 +52,9 @@ float coc(vec2 uv, float vz){
   float tiltC = smoothstep(uTiltWidth, uTiltWidth + 0.36, t);
   return clamp(max(dofC, tiltC * uTilt), 0.0, 1.0) * uStrength;
 }
-void main(){
+`;
+
+const DOF_FRAG = /* glsl */ `${DOF_COC}void main(){
   // scene alpha is a protection mask: gameplay characters write (1 - protection), everything else 1. Their
   // circle of confusion shrinks accordingly, so the set softens while the characters stay readable.
   vec4 base = texture2D(tColor, vUv);
@@ -79,6 +84,18 @@ void main(){
     acc += col * w; wsum += w;
   }
   gl_FragColor = vec4(acc / wsum, 1.0);
+}
+`;
+
+/** Half-resolution DOF (`?dof=half`, journal pass 6j): the gather above runs on a target of half the width and height (its radius still in
+ *  full-resolution pixels), then this composite keeps every pixel whose own circle of confusion stays under the gather's threshold exactly
+ *  as the scene drew it (sharp set, protected characters) and takes the upsampled blur where it grows. */
+const DOF_UP_FRAG = /* glsl */ `${DOF_COC}uniform sampler2D tHalf;
+void main(){
+  vec4 base = texture2D(tColor, vUv);
+  float rad = coc(vUv, viewZ(texture2D(tDepth, vUv).x)) * base.a * uMaxBlur;
+  if (rad < 0.35) { gl_FragColor = vec4(base.rgb, 1.0); return; }
+  gl_FragColor = vec4(mix(base.rgb, texture2D(tHalf, vUv).rgb, smoothstep(0.35, 1.5, rad)), 1.0);
 }
 `;
 
@@ -169,10 +186,12 @@ export class PostFX {
   readonly params = defaultPost();
   sceneRT!: THREE.WebGLRenderTarget;
   private dofRT!: THREE.WebGLRenderTarget;
+  private dofHalfRT: THREE.WebGLRenderTarget | null = null;
   private airRT!: THREE.WebGLRenderTarget;
   private bloom!: UnrealBloomPass;
   private quad = new FullScreenQuad();
   private dofMat: THREE.ShaderMaterial;
+  private dofUpMat: THREE.ShaderMaterial;
   private airMat: THREE.ShaderMaterial;
   private gradeMat: THREE.ShaderMaterial;
   private black = new THREE.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1);
@@ -189,6 +208,11 @@ export class PostFX {
         uFocus: { value: 44 }, uRange: { value: 14 }, uMaxBlur: { value: 7 }, uStrength: { value: 1 }, uFarAmt: { value: 0.3 }, uTilt: { value: 1 }, uTiltCenter: { value: 0.5 }, uTiltWidth: { value: 0.2 },
       },
       vertexShader: VERT, fragmentShader: DOF_FRAG, depthTest: false, depthWrite: false,
+    });
+    // the composite shares the gather's uniform objects (same values every frame) and adds the half-resolution blur
+    this.dofUpMat = new THREE.ShaderMaterial({
+      uniforms: { ...this.dofMat.uniforms, tHalf: { value: null } },
+      vertexShader: VERT, fragmentShader: DOF_UP_FRAG, depthTest: false, depthWrite: false,
     });
     this.airMat = new THREE.ShaderMaterial({
       uniforms: {
@@ -212,12 +236,14 @@ export class PostFX {
     const s = this.params.renderScale;
     const w = Math.max(2, Math.round(cssW * pixelRatio * s)), h = Math.max(2, Math.round(cssH * pixelRatio * s));
     this.width = w; this.height = h;
-    this.sceneRT?.dispose(); this.dofRT?.dispose(); this.airRT?.dispose();
+    this.sceneRT?.dispose(); this.dofRT?.dispose(); this.airRT?.dispose(); this.dofHalfRT?.dispose(); this.dofHalfRT = null;
     const depth = new THREE.DepthTexture(w, h);
     depth.type = THREE.UnsignedIntType;
     this.sceneRT = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: this.params.msaa, depthBuffer: true, depthTexture: depth, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
     this.dofRT = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
     this.airRT = new THREE.WebGLRenderTarget(Math.max(2, w >> 1), Math.max(2, h >> 1), { type: THREE.HalfFloatType, depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
+    const ds = this.params.dofScale;
+    if (ds < 1) this.dofHalfRT = new THREE.WebGLRenderTarget(Math.max(2, Math.round(w * ds)), Math.max(2, Math.round(h * ds)), { type: THREE.HalfFloatType, depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
     this.bloom.setSize(w, h);
     this.dofMat.uniforms.uTexel.value.set(1 / w, 1 / h);
     this.renderer.setPixelRatio(pixelRatio * s);
@@ -228,7 +254,8 @@ export class PostFX {
     const px = this.width * this.height;
     const msaa = this.sceneRT ? this.sceneRT.samples || 1 : 1;
     const bloom = px * 8 * 0.5 * 2.2; // half-res mip chain, horizontal + vertical
-    return px * 8 * msaa + px * 4 + px * 8 + bloom + px * 2;
+    const dofHalf = this.dofHalfRT ? this.dofHalfRT.width * this.dofHalfRT.height * 8 : 0;
+    return px * 8 * msaa + px * 4 + px * 8 + bloom + px * 2 + dofHalf;
   }
 
   render(scene: THREE.Scene, camera: THREE.PerspectiveCamera, time: number, gpu?: GpuTimer): void {
@@ -260,6 +287,12 @@ export class PostFX {
       u.uFocus.value = p.dofFocus; u.uRange.value = p.dofRange; u.uMaxBlur.value = p.dofMaxBlur * (this.height / 1080); u.uFarAmt.value = p.dofFar;
       u.uStrength.value = p.dofStrength; u.uTilt.value = p.tiltStrength; u.uTiltCenter.value = p.tiltCenter; u.uTiltWidth.value = p.tiltWidth;
       this.quad.material = this.dofMat;
+      if (this.dofHalfRT) {
+        r.setRenderTarget(this.dofHalfRT); r.clear(); this.quad.render(r);
+        gpu?.begin('dofup');
+        this.dofUpMat.uniforms.tHalf.value = this.dofHalfRT.texture;
+        this.quad.material = this.dofUpMat;
+      }
       r.setRenderTarget(this.dofRT); r.clear(); this.quad.render(r);
       src = this.dofRT;
     }

@@ -3399,6 +3399,63 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Un nombre écrit par un script pour un autre programme s'écrit dans la culture invariante, et en entier quand c'est un compteur : la
   culture de la machine et la taille du nombre ne doivent pas changer son format. Et un lecteur qui reçoit l'illisible le dit.
 
+## Passe 6j — Performances : P9, DOF en demi-résolution — captures et mesures (2026-10-18)
+
+### Demande (2026-10-18)
+- Mot pour mot : « Go P9 : ouvre sa branche depuis main et prépare les captures côte à côte du DOF pleine contre demi-résolution (A, B, D)
+  avec les mesures, avant toute décision. » Branche `perf-p9-dof-half` ouverte depuis `main` (`64cf157`) et poussée. **Rien n'est décidé :
+  le défaut reste le DOF pleine résolution.**
+
+### Mécanisme (`src/atmosphere/PostFX.ts`, `?dof=half|full`)
+- `?dof=half` : la même collecte (26 échantillons, `DOF_FRAG` inchangé) sur une cible de demi-largeur et demi-hauteur, son rayon toujours en
+  pixels pleine résolution ; puis une recomposition pleine résolution (`DOF_UP_FRAG`) : un pixel dont le cercle de confusion reste sous le
+  seuil de la collecte (0,35 px) garde exactement la couleur de la scène (décor net, personnages protégés), au-delà il prend le flou
+  rééchantillonné (fondu de 0,35 à 1,5 px). Le calcul du cercle de confusion est partagé (`DOF_COC`) ; le texte final de `DOF_FRAG` est
+  identique caractère pour caractère à celui de `main` (2 006 caractères, comparés).
+- `__stats().resolution` porte « DOF0.5 » ; le minuteur GPU sépare `dof` (collecte) et `dofup` (recomposition). +7 Mo de cible en 1440p.
+
+### Captures (production, 2560 × 1440, `seed=1842&clean=1&freeze=7.3`, A, B, D, avec et sans personnages ; composites dans
+`perf-gpu-evidence/p9/compare/`)
+- Écart (vues `static=1`) : A 24,9 % des pixels changent un peu, **0,30 % de plus de 8 niveaux** (max 94) ; B 25,0 % / **0,53 %** (max 110) ;
+  D 7,0 % / **0,17 %** (max 113). Seuls changent les bords des zones floues (quai et lampadaires du premier plan, fenêtres et toits du fond,
+  bord gauche) ; la zone nette (personnages, étal, forge) est identique au pixel, comme voulu.
+- À l'œil (crops ×1 et ×2) : les deux images se confondent ; en demi-résolution les bords flous sont un peu plus doux, et les fortes lumières
+  floues (lanterne de D à ×2) montrent une légère marche.
+
+### Mesures GPU (`tools/perf.mjs`, 780M, 4 tours propres sur 4, médianes)
+| Vue | DOF plein : total / passe DOF | DOF demi : total / collecte + recomposition |
+|---|---|---|
+| B 2560 × 1440 | 16,55 / 1,67 ms | 16,72 / 0,87 + 1,04 = 1,91 ms |
+| A 2560 × 1440 | 13,68 / 1,88 ms | 14,18 / 0,97 + 0,91 = 1,88 ms |
+| D 2560 × 1440 | 14,21 / 1,41 ms | 15,02 / 0,79 + 1,09 = 1,88 ms |
+| B 1920 × 1080 | 9,95 / 0,96 ms | 9,78 / 0,46 + 0,58 = 1,04 ms |
+- **[KO] aucun gain** : la collecte en demi-résolution coûte bien deux fois moins (pas quatre : ses 26 échantillons lisent des textures
+  pleine résolution, moins bien en cache), mais la recomposition est une passe plein écran de plus (lire couleur et profondeur, écrire
+  RGBA16F : ≈ 1 ms en 1440p sur la 780M), ce que la passe DOF pleine payait déjà ; la passe DOF était limitée par cette bande passante, pas
+  par ses échantillons.
+
+### Vraie fenêtre (`tools/cadence.mjs`, 3 tours) — **[?] inexploitable**
+- Une charge CPU étrangère pendant toute la série : page vide à 22-25 W de boîtier, SoC calculé à −5,3 à 0,9 W (les cœurs dépassaient le
+  boîtier entre deux lectures : sous forte charge CPU, « boîtier − cœurs » n'est plus une mesure du SoC). **La sonde de vsync du plafond a lu
+  10,1 / 10,4 / 13 ms au lieu de 6,1 dans 3 chargements sur 12** (tous au premier tour) : le plafond a alors tourné à un pas faux. Série
+  non relancée : le minuteur GPU tranche déjà.
+
+### Preuves
+- Pixels (`static=1&freeze=7.3`, 13 vues) : sans paramètre et avec `dof=full`, **identiques à l'octet** à la base `main` `64cf157` (13 / 13
+  chacun) ; base deux fois identique ; contrôle négatif détecté. `typecheck` 0.
+
+### Options pour l'opérateur
+1. **Abandonner P9** : retirer le code de la branche, garder au journal la mesure et les captures (le DOF pleine résolution reste).
+2. Garder `?dof=half` en réglage manuel : sans gain mesuré sur la 780M, image un peu plus douce aux bords flous.
+3. Essayer une variante plus profonde : recomposer le DOF dans la passe d'étalonnage (qui lit déjà l'image en pleine résolution) et sortir le
+   bloom de son mélange actuel ; gain estimé ≤ 0,8 ms en 1440p d'après les passes mesurées, bloom changé, nouvelles captures nécessaires ;
+   sous `a60` au calme, un gain de cette taille ne s'est pas vu en watts (P8).
+
+### Pensée
+- Une passe plein écran se paie d'abord en bande passante : réduire ses échantillons sans retirer la passe ne gagne rien sur une iGPU. Un
+  effet « en demi-résolution » ne paie que si sa recomposition tient dans une passe qui existe déjà.
+- Une sonde de vsync au démarrage peut se tromper sous forte charge CPU étrangère (3 chargements sur 12) : à durcir (piste ouverte).
+
 ## À reprendre (par priorité)
 
 **-3. Performances GPU (Passe 6, plan validé par l'opérateur le 17/10 ; P0-P2 acceptés et fusionnés dans `main` le 17/10, la suite ouvre
@@ -3417,7 +3474,7 @@ défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans 
 `e60`, sprites plus doux), **P7 fait (Passe 6f) : l'opérateur garde le MSAA 4× le 18/10, `?msaa=` reste un réglage manuel ; accepté et
 fusionné dans `main`** (2× : GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts non expliqués),
 **P8 fait (Passe 6g) : l'opérateur garde le reflet à 1/2 le 18/10, `?refl=` reste un réglage manuel ; accepté et fusionné dans `main`**
-(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), P9 (DOF demi-résolution). **Témoin d'énergie réparé (Passe 6i), accepté et fusionné dans `main`** : muet depuis que le compteur du boîtier a passé
+(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), **P9 captures et mesures faites (Passe 6j, branche `perf-p9-dof-half`, `?dof=half`), décision en attente** : [KO] aucun gain GPU (la recomposition pleine résolution coûte ce que la collecte gagne), bords flous un peu plus doux. **Piste ouverte** : la sonde de vsync du plafond a lu 10-13 ms au lieu de 6,1 dans 3 chargements sur 12 sous forte charge CPU étrangère (passe 6j) : à durcir. **Témoin d'énergie réparé (Passe 6i), accepté et fusionné dans `main`** : muet depuis que le compteur du boîtier a passé
 1e15 pWh (écrit « 1,011E+15 » en culture fr-FR), désormais en entiers invariants. Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
