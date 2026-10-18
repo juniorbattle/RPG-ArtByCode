@@ -123,6 +123,84 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   retrouvée une seule fois, et un contrôle négatif montre que la preuve sait échouer.
 - Des fins de ligne se comptent en octets : les outils texte de Git Bash (`sed -i`, `grep`, `cat -A`) peuvent retirer ou cacher les CR.
 
+## Passe Q1 — Qualité : intégration continue sans GPU (GitHub Actions) et tests unitaires de la logique pure (2026-10-18)
+
+### Demande (2026-10-18)
+- Même audit externe que la Passe M3 : beaucoup d'outils de preuve, mais ni tests unitaires ni CI. Vérifié sur `main` (`7086340`) : pas de
+  dossier `.github/`, pas de script `test`. Tâche transmise par la séance parente : un workflow GitHub Actions pour les contrôles qui se
+  passent de GPU (Node 22, `npm ci`, `typecheck`, `build`, `art:validate`, aucune dépendance nouvelle), et une proposition de tests unitaires.
+- Pendant la vérification, la séance de la Passe M3 a ouvert `docs-art-lab-journal` : branche CI non ouverte (une branche de travail à la
+  fois), travail préparé hors dépôt. Proposition faite ; réponse de l'opérateur, mot pour mot : « Oui : quand la branche docs sera fusionnée,
+  ouvre la branche CI et ajoute aussi les tests unitaires node --test via Vite, avec le paramètre ajouté à castEntries. » Puis : « La branche
+  docs-art-lab-journal est fusionnée dans main : ouvre la branche CI, applique la CI et les tests, pousse et relève le run GitHub. »
+- Branche `ci-github-actions` ouverte depuis `main` (`8ffc3f9`) après `git fetch --prune` et `git branch -a` (aucune autre branche), dans un
+  clone LF du scratchpad poussé vers `origin` : la copie partagée de l'opérateur n'a pas changé de branche.
+
+### Contrôles en clone propre — [OK]
+- Clone de `main` avec `core.autocrlf=false` (l'index est en LF, comme le runner Linux), `npm ci` avec un cache npm vide : 74 paquets en 15 s
+  depuis le `package-lock.json` commité, aucun script d'installation lancé (seul `fsevents`, optionnel et réservé à macOS, en déclare un),
+  `puppeteer-core` ne télécharge aucun navigateur (pas de `~/.cache/puppeteer`). Les liaisons Linux de rolldown et de lightningcss sont dans
+  le lockfile.
+- `npm run typecheck` [OK] (3 s), `npm run build` [OK], `npm run art:validate` [OK] : 14 manifestes, 4 sources archivées, 0 erreur, 0
+  avertissement.
+- Rien de propre à la machine : `art:validate` ne lit que des fichiers suivis par git ; les octets qu'il hache (exports PNG, sources archivées
+  `.webp` / `.png`) sont binaires dans `.gitattributes`, donc jamais convertis. Casse : chaque import relatif de `src/` et chaque chemin des
+  manifestes et des paquets de provenance correspond exactement à un fichier suivi (le runner distingue la casse, Windows non).
+
+### Workflow — `.github/workflows/ci.yml`
+- À chaque push et pull request : `ubuntu-latest`, Node 22 (`actions/setup-node@v7`, cache npm indexé sur le lockfile), `actions/checkout@v7`
+  sans identifiants persistés, permissions `contents: read`, une exécution par ref (la précédente est annulée), 15 min au plus ; puis
+  `npm ci`, `npm run typecheck`, `npm run build`, `npm run art:validate`, `npm test`. Aucune dépendance ajoutée.
+- Les preuves GPU, pixel, cadence et Aseprite restent locales (`AGENTS.md`, « Commands »).
+
+### Tests unitaires — `npm test` (`node --test "tests/*.test.mjs"`)
+- **[KO] `--experimental-strip-types` seul** : `ERR_MODULE_NOT_FOUND` sur `./CameraRig` (les imports de `src/` n'ont pas d'extension), sans
+  compter les imports `?url` et JSON nommés de `BakedCast.ts`. **[OK] chargeur SSR de Vite** (`tests/load.mjs`, Vite est déjà une dépendance) :
+  il résout `src/` comme le bundle ; un serveur par fichier de test (`node --test` lance chaque fichier dans son processus), dans son propre
+  dossier de cache (`node_modules/.vite-test`) pour ne jamais réécrire les dépendances pré-groupées du serveur de développement. Node 22 ne
+  prend pas un dossier, il faut un motif (`"tests/*.test.mjs"`, cité : le shell ne l'étend pas, Node si, sous Windows comme sous Linux).
+- Seule modification du code, approuvée : `castEntries(candidates, entries = ENTRIES)` (`src/characters/BakedCast.ts`), sans effet sur le jeu.
+- Cinq fichiers, 24 tests :
+  1. `camera-graph` : zones et marge écrites (A, C, D, 0,9 m) ; choix sans zone courante ; hystérésis (D tient à x 13,15 et lâche à 13,05,
+     vers C sur le quai, vers B au bord de l'eau ; idem aux bords de C et de A) ; une zone plus prioritaire prend la main à son propre bord ;
+     la marge est lue sur l'instance.
+  2. `plan-draw` : `cfgMask` ; ordre = permutation des masques non nuls ; pour chacun des huit cadrages et mélanges, chaque classe dont il a
+     besoin est dans son préfixe (sinon une pièce visible disparaît), le préfixe finit sur une classe utile, `drawnOf` = triangles du préfixe ;
+     optimum exact contre une force brute indépendante jusqu'à 8 classes ; au-delà, optimum local (aucun déplacement d'une classe ne fait
+     mieux) et pas pire que son départ ; même entrée, même ordre, quel que soit l'ordre d'insertion.
+  3. `baked-cast` : `castEntries(false)` = exactement les 10 manifestes `runtimeUse: "production"` du disque, chacun approuvé (par, date) ;
+     règles sur des entrées données (production non approuvée ou non `approved` → erreur ; `candidate` seulement sur demande) ;
+     `loadProductionCast` avec `fetch` servi depuis le dépôt : 10 planches, empreinte = celle du paquet de provenance = SHA-256 réel, images
+     idle / walk des trois vues, 11 rôles distribués ; un octet changé dans un PNG (premier et dernier id) → rejet « does not match its
+     provenance pack ».
+  4. `sheet-meta` : les 10 exports commités (taille = en-tête PNG, cadres dans la feuille, tags dans la plage) ; json-array = json-hash ;
+     valeurs par défaut (nom, durée 100 ms, décalage d'un cadre rogné) ; tags hors plage écartés ; six entrées malformées refusées ;
+     `sheetFrames` (tags `<anim>-<dir>`, découpe au texel près, tailles et tags vérifiés, feuille sans tag = idle de face).
+  5. `png-decode` : PNG construits dans le test avec `node:zlib`, une rangée par filtre (None, Sub, Up, Average, Paeth) ; première rangée et
+     largeur d'un pixel ; IDAT en cinq morceaux et bloc annexe ignoré ; refus (pas un PNG, pas RGBA 8 bits, entrelacé) ; chaque export commité
+     décodé comme par un décodeur de référence écrit dans le test (inflate de `node:zlib` + défiltrage de la norme).
+- Durée : 24 / 24 en 1,5-1,8 s sous Windows (serveur Vite 70 ms, premier module 250 ms) ; typecheck et build inchangés avec la couture.
+- **Contrôle négatif — 19 / 20 fautes injectées attrapées**, une à la fois dans un clone puis rétablies : marge 0,5 ; hystérésis retirée ;
+  zone de repli ; préfixe décalé d'une classe ; recherche exhaustive qui garde le pire ; recherche locale coupée ; masque 0 gardé comme
+  classe ; contrôle d'approbation retiré ; contrôle du statut retiré ; candidats toujours chargés ; contrôle SHA-256 retiré ; filtre de plage
+  des tags retiré ; durée nulle gardée ; borne des cadres retirée ; égalité du Paeth c avant b ; arrondi de Average ; voisin c du Paeth en
+  x < 4 ; seul le premier IDAT lu ; contrôle d'entrelacement retiré. **Survivant** : le contrôle des images requises de `loadProductionCast`
+  (le rejet n'est atteignable qu'en lui passant une liste, ce que la couture approuvée ne couvre pas).
+- **[KO] deux oracles trop faibles, remplacés** : (a) un motif « pixel-art » tiré d'un hachage multiplicatif ne produisait aucune égalité du
+  Paeth (voisins corrélés) : l'égalité c-avant-b passait ; mélangeur bien brassé et le test vérifie que son motif contient des égalités ;
+  (b) l'aller-retour décodage → réencodage → décodage des exports ne voyait pas cette faute : remplacé par le décodeur de référence. La faute
+  « b avant a » du Paeth est **équivalente** (une égalité a / b avec a ≠ b laisse toujours c strictement meilleur) : aucun test ne peut la voir.
+
+### Résultat sur GitHub
+- [?] à relever après le push.
+
+### Pensée
+- Un contrôle de CI s'essaie d'abord sur un clone propre, avec un cache npm vide, les fins de ligne de l'index et la casse exacte des chemins,
+  pas dans le dossier de travail : c'est là que se cachent les dépendances à la machine.
+- Les modules de `src/` sont écrits pour le bundler : un test les charge par le même résolveur (Vite), pas par Node seul.
+- Un test unitaire se prouve comme une preuve d'image : par des fautes injectées qu'il doit attraper ; un oracle qui repasse par le code testé
+  (aller-retour) ou des données trop régulières laissent passer des fautes réelles.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -201,7 +279,10 @@ sprites.
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
   appli. Servir les baselines sur `:518x --strictPort` ; décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
-- **Tests et CI** : l'audit externe du 18/10 relève l'absence de suite de tests unitaires et d'intégration continue ; tâche séparée.
+- **Tests et CI (Passe Q1, en attente de l'acceptation de l'opérateur)** : CI GitHub Actions (typecheck, build, `art:validate`, `npm test`) et
+  24 tests de la logique pure sur la branche `ci-github-actions`. Restent : le rejet « images requises manquantes » de `loadProductionCast`
+  n'est pas testé (il faudrait lui passer une liste) ; d'autres fonctions pures sans test (`parseFrameCap`, `lerpState`, `needMask`, bake
+  cache `bakeKey`) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`).
 - **Restes du ménage M1** : bases figées sans lien dans d'anciens scratchpads, entrées `dev-cast2` / `dev-cast3` sans objet (Passe M1,
   « Restent »).
 - **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — à retirer proprement une fois qu'on
@@ -270,7 +351,9 @@ sprites.
 - Une preuve doit pouvoir échouer : un contrôle négatif avant d'accepter « 0 écart » (Lab : `filter=linear` ; revue d'agent : un défaut
   planté qu'elle doit trouver à l'aveugle ; « 0 trou » : remplissage depuis le bord ; mesure de stabilité en mouvement : un cas connu
   mauvais qu'elle doit séparer, sinon elle ne vaut que comme indice et le jugement reste visuel). Un résultat « 0 » d'un outil se recoupe
-  avec une valeur connue avant d'être cru.
+  avec une valeur connue avant d'être cru. Un test unitaire aussi : des fautes injectées une à une, chacune attrapée ; son oracle est
+  indépendant du code testé (pas d'aller-retour par lui) et ses données exercent les cas limites (égalités, bords), vérifiés par le test même
+  (Passe Q1).
 - Une preuve « pixel-identique » exige une capture déterministe : `Math.random` à graine, pas fixes, horloge figée, RNG internes remis à
   zéro, une chauffe par cadrage **et par origine** (serveur), et un témoin de répétition (deux chargements : 0 px) **avant** toute
   comparaison ; un écart d'un niveau sur 255 se traque par sondes de variantes du shader.
@@ -385,3 +468,6 @@ sprites.
   compter le `node_modules` du dépôt avant / après.
 - Serveurs, longs scripts, mesures en fenêtre et processus restants : règles de l'opérateur dans `AGENTS.md` (17/10 ; mesures discrètes,
   passe 6k).
+- La CI ne lance que ce qui se prouve sans GPU, sans navigateur ni Aseprite (types, bundle, provenance, tests de la logique pure) ; les
+  preuves d'image, de cadence et d'art restent locales. Un contrôle s'essaie d'abord sur un clone propre (cache npm vide, fins de ligne de
+  l'index, casse des chemins), pas dans le dossier de travail (Passe Q1).

@@ -85,9 +85,10 @@ export interface CastMember { id: string; scale: number; height: number }
  *  frame in production is a load error, never a silent fallback) */
 const REQUIRED = DIRS.flatMap((d) => (['idle', 'walk'] as const).map((a) => `${d}/${a}`));
 
-/** production: approved production manifests; candidates: also the unapproved `candidate` ones (callers allow it in DEV builds only) */
-export function castEntries(candidates: boolean): Entry[] {
-  return ENTRIES.filter((e) => {
+/** production: approved production manifests; candidates: also the unapproved `candidate` ones (callers allow it in DEV builds only).
+ *  `entries`: the list to gate, the cast's own by default (the unit tests pass their own, tests/baked-cast.test.mjs) */
+export function castEntries(candidates: boolean, entries: readonly Entry[] = ENTRIES): Entry[] {
+  return entries.filter((e) => {
     const m = e.manifest;
     if (m.runtimeUse === 'production') { if (m.approved !== true || m.status !== 'approved') throw new Error(`${m.id}: runtimeUse production without an approval`); return true; }
     return candidates && m.status === 'candidate';

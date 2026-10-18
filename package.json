@@ -9,6 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "test": "node --test \"tests/*.test.mjs\"",
     "shots": "node tools/screenshots.mjs",
     "compare": "node tools/compare.mjs",
     "art:doctor": "node tools/art-lab/doctor.mjs",

@@ -40,6 +40,15 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `npm run dev` — dev server on http://127.0.0.1:5173
 - `npm run typecheck` — `tsc --noEmit` (run after every change)
 - `npm run build` — typecheck + production bundle
+- `npm test` — unit tests of the pure logic (`tests/*.test.mjs`, built-in `node --test`, ~2 s, no browser or GPU): camera zone hysteresis,
+  `planDraw`, the production cast's gate (manifest approval, SHA-256 against the provenance pack), sheet metadata, PNG decoding.
+  `tests/load.mjs` loads `src/` through Vite's SSR loader (extensionless imports, `?url`, named JSON imports, as the bundle resolves
+  them; `--experimental-strip-types` alone cannot), with its own cache folder (`node_modules/.vite-test`)
+- CI (`.github/workflows/ci.yml`, GitHub Actions, every push and pull request): Node 22 on `ubuntu-latest`, `npm ci`, `npm run typecheck`,
+  `npm run build`, `npm run art:validate`, `npm test`. The runner has no Chrome, GPU or Aseprite (`puppeteer-core` downloads no browser at
+  install): every other tool below (screenshots, perf / cadence / startup / overdraw measurements, visibility and viewport proofs, camera
+  and occlusion tools, `build-character --check`, `art:doctor`, the Character Lab) stays a local proof on the operator's machine (journal
+  Passe Q1)
 - `npm run shots [-- name:query ...]` — headless Chrome/Edge screenshots of the running dev server into `screenshots/`
   (env `SHOTS_DIR` changes the folder, `BASE_URL` the server). Query suffix `@x,y,w,h` clips a region.
 - `npm run compare -- out.png before.png after.png "caption"` — labelled side-by-side composite
