@@ -20,11 +20,18 @@ export async function launch(gpu = 'igpu', extra = []) {
   return puppeteer.launch({ executablePath: exe, headless: 'new', args, defaultViewport: null });
 }
 
-/** A VISIBLE Chrome window with vsync and the frame-rate limit left on (tools/cadence.mjs, journal pass 6 P4): the delivered cadence on
- *  the real display. Maximised; occlusion tracking and backgrounding off so a covered window keeps rendering. */
-export async function launchHeaded(gpu = 'igpu', extra = []) {
+/** The maximised window's viewport on the dev laptop (2560 x 1600 panel at 175 %: 1463 x 724 CSS px, 2560 x 1267 rendered), as the visible
+ *  runs of journal passes 6c-6j measured it: what an off-screen window emulates for `max`. */
+export const MAX_VIEWPORT = { width: 1463, height: 724, deviceScaleFactor: 1.75 };
+
+/** A headed Chrome window with vsync and the frame-rate limit left on (tools/cadence.mjs, journal pass 6 P4): the delivered cadence on the
+ *  real display. Occlusion tracking and backgrounding off so a covered window keeps rendering. By default (journal pass 6k, the operator's
+ *  request) it is discreet: placed off-screen, never brought to front, and the tools emulate MAX_VIEWPORT for `max`; `visible` puts the
+ *  maximised window on the desktop as before. */
+export async function launchHeaded(gpu = 'igpu', extra = [], { visible = false } = {}) {
   if (!exe) throw new Error('No Chrome/Edge found. Set CHROME_PATH.');
-  const args = ['--use-gl=angle', '--use-angle=d3d11', '--enable-gpu-rasterization', '--ignore-gpu-blocklist', '--no-sandbox', '--start-maximized',
+  const place = visible ? ['--start-maximized'] : ['--window-position=-3000,0', '--window-size=1480,860'];
+  const args = ['--use-gl=angle', '--use-angle=d3d11', '--enable-gpu-rasterization', '--ignore-gpu-blocklist', '--no-sandbox', ...place,
     '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
     '--disable-features=CalculateNativeWinOcclusion', '--no-first-run', '--no-default-browser-check', ...extra];
   if (gpu === 'dgpu') args.push('--force_high_performance_gpu');

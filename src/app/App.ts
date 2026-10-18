@@ -94,6 +94,12 @@ export class App {
     this.perf.attach(this.renderer.getContext() as WebGL2RenderingContext);
     if (opts.params.has('gpuprof')) this.perf.gpu.enabled = true;
     this.frameCap.mode = parseFrameCap(opts.params.get('fps')) ?? DEFAULT_FRAME_CAP;
+    // DEV only (journal pass 6k): a wrong boot reading on demand, and the in-session vsync check off, to prove the check corrects it
+    if (import.meta.env.DEV) {
+      const fv = Number(opts.params.get('vsyncprobe'));
+      if (fv > 0) this.frameCap.forcedVsync = fv;
+      if (opts.params.get('vsyncwatch') === '0') this.frameCap.watch = false;
+    }
     const rm = opts.params.get('res')?.match(/^(\d{3,4})p(?::(px|pixelated|smooth))?$/);
     if (rm) this.resCap = { pixels: Math.round((+rm[1] * +rm[1] * 16) / 9), filter: rm[2] === 'px' || rm[2] === 'pixelated' ? 'pixelated' : 'smooth' };
     this.post = new PostFX(this.renderer);
@@ -278,6 +284,7 @@ export class App {
       },
       frameCap: {
         mode: frameCapLabel(this.frameCap.mode), every: this.frameCap.every(), vsyncMs: +this.frameCap.vsync.toFixed(3), vsyncFrom: this.frameCap.vsyncSource, skipped: this.frameCap.skipped,
+        vsyncChanges: this.frameCap.vsyncChanges, ...(this.frameCap.vsyncChanges ? { vsyncLog: this.frameCap.vsyncLog.map((x) => x.join(':')).join(',') } : {}),
         ...(this.frameCap.mode.kind === 'adaptive' ? { steps: this.frameCap.steps, trialsFailed: this.frameCap.trialsFailed, log: this.frameCap.log.map((x) => x.join(':')).join(',') } : {}),
       },
     };

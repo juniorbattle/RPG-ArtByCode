@@ -50,11 +50,16 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
   programs created at the first reveal), median [min-max] per variant. The largest rAF interval from the very first frame is the
   `regenerate()` block under the loading screen, not the first frame (journal pass 6)
 - `node tools/overdraw.mjs "label|<query or url>|<WxH>" ...` — fragments shaded per covered pixel in the scene pass (real draw order)
-- `node tools/cadence.mjs [--secs=8] [--rounds=1] [--gpu=..] "label|<query or url>|<max | WxH[@dpr]>|<js>" ...` — the cadence the player sees, in
-  a VISIBLE maximised Chrome window with vsync (a window opens on the desktop for the run: leave it on screen): display vsync, render
-  intervals in vsync units, irregular share, GPU busy share, package and SoC power (`tools/energy-witness.ps1`, RAPL counters: SoC = package
-  minus cores = the iGPU's share; a busy share is not a power figure, the driver lowers the clocks when there is slack), idle-page reference
-  per round, foreign GPU use
+- `node tools/cadence.mjs [--secs=8] [--rounds=1] [--gpu=..] [--visible=0|1] "label|<query or url>|<max | WxH[@dpr]>|<js>" ...` — the cadence the
+  player sees, in a headed Chrome window with vsync: display vsync, render intervals in vsync units, irregular share, GPU busy share, package and
+  SoC power (`tools/energy-witness.ps1`, RAPL counters: SoC = package minus cores = the iGPU's share; a busy share is not a power figure, the
+  driver lowers the clocks when there is slack; under a heavy CPU load from other programs the difference is no longer the SoC, journal pass
+  6j), idle-page reference per round, foreign GPU use. **Discreet by default** (operator's request, journal pass 6k): the window sits
+  off-screen, one tab is reused (a new tab takes the keyboard focus), nothing is brought to front, and `max` emulates the maximised viewport
+  (`MAX_VIEWPORT` in `bench-common.mjs`: same vsync, DPR and 2560 x 1267 rendering); `--visible=1` opens the maximised window on the desktop
+- `node tools/vsync-probe.mjs [--n=8] [--play=<s>] [--size=..] [--cpuload=<k>|all] [--gpuload=<k>] [--visible=0|1] "<query or url>"` — the frame
+  cap's vsync interval against the display's (same discreet window): the boot probe's reading and raw intervals per load, the interval after
+  s seconds of play (in-session check), under k busy CPU threads or k uncapped headless pages of the app (journal pass 6k)
 - Frozen baseline for A/B: `git -c core.autocrlf=false archive <commit>` into a scratch folder, copy `node_modules/three` into it (no
   junction), serve it with the repo's `node_modules/vite/bin/vite.js <folder> --config <its config> --port <518x> --strictPort` (a
   `.claude/launch.json` entry); `autocrlf` on converts the archive's line endings (`dist/index.html` then differs by CR only)
@@ -118,9 +123,12 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) ·
 `fps=off|<n>|v<k>|e<n>|a<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
 round(refresh / n) vsyncs / the same with an adaptive step; **default `a60`**, chosen by the operator on 2026-10-18 (`e60` from 2026-10-17):
-55 fps at 165 Hz, 72 at 144, 60 at 60 / 120; the vsync interval comes from a boot probe; `tools/perf.mjs` and `tools/startup.mjs` add `fps=off` unless the query sets `fps`; journal pass 6c; `a<n>` = `e<n>`
-with an adaptive step: one more vsync per frame while rendered frames keep missing their slot, down to 30 fps, then trials of the shorter
-step after 4-16 s; `__stats().frameCap` shows the step and its changes; journal pass 6h) ·
+55 fps at 165 Hz, 72 at 144, 60 at 60 / 120; the vsync interval comes from a boot probe, checked in session (the intervals of the callbacks the
+cap skips, or the grid of all callbacks, over 1.5 s windows without a late frame; two agreeing readings more than 10 % off replace it: the
+callback rate can change during a session, journal pass 6k); `tools/perf.mjs` and `tools/startup.mjs` add `fps=off` unless the query sets
+`fps`; journal pass 6c; `a<n>` = `e<n>` with an adaptive step: one more vsync per frame while rendered frames keep missing their slot, down to
+30 fps, then trials of the shorter step after 4-16 s; `__stats().frameCap` shows the step and its changes; journal pass 6h) · DEV server only:
+`vsyncprobe=<ms>` (a wrong boot reading on demand) and `vsyncwatch=0` (no in-session check), to prove the check (journal pass 6k) ·
 `viscache=0|verify` (visibility bake cache off / bake and compare with the stored result, journal pass 6d) ·
 `res=<lines>p[:px]` (internal resolution cap, manual: at most lines² x 16 / 9 rendered pixels, scene and reflection, the browser scales the canvas up,
 smoothed or nearest with `:px`; at or under the budget nothing changes; default native, the operator's choice on 2026-10-18, journal pass 6e) ·

@@ -3467,6 +3467,73 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Une passe plein écran se paie d'abord en bande passante : réduire ses échantillons sans retirer la passe ne gagne rien sur une iGPU. Un
   effet « en demi-résolution » ne paie que si sa recomposition tient dans une passe qui existe déjà.
 - Une sonde de vsync au démarrage peut se tromper sous forte charge CPU étrangère (3 chargements sur 12) : à durcir (piste ouverte).
+  **Corrigé en passe 6k** : la charge CPU (ni GPU) ne le reproduit pas ; c'est le rythme des rappels de Chrome lui-même qui avait changé.
+
+## Passe 6k — Performances : la sonde de vsync du plafond, contrôlée en cours de session (2026-10-18)
+
+### Demande (2026-10-18)
+- Mot pour mot : « Go sonde de vsync : ouvre sa branche depuis main, reproduis la mauvaise lecture (10-13 ms au lieu de 6,1) sous charge CPU et
+  durcis la sonde du plafond, avec ses preuves. » Branche `perf-vsync-probe` ouverte depuis `main` (`8d0386c`) et poussée.
+- En cours de tâche, mot pour mot : « peut tu faire tes tests navigateurs discretement ? » (voir « Outils discrets »).
+
+### Reproduction — [KO] pas reproduite par une charge
+- Outil `tools/vsync-probe.mjs` : fenêtre avec vsync, n chargements, lecture de la sonde et de ses intervalles bruts, charge CPU (fils occupés)
+  ou GPU (le jeu sans plafond dans un Chrome headless) en option. Build de production identique à `main` (même bundle `index-CLn5puYo.js`).
+- **0 lecture fausse sur 30 chargements** : au calme 0/6, sous 16 fils occupés (16 cœurs logiques) 0/8, sous un autre Chrome qui sature le GPU
+  0/8, les deux ensemble 0/8 ; les intervalles de la sonde tombent à 95-99 % sur un intervalle d'écran (6,1 ms) dans tous les cas.
+- **Relecture des données de la passe 6j** (rappels rAF par seconde pendant la fenêtre mesurée) : B demi, tour 1 : sonde 10,1 ms et
+  **98,5 rappels/s** ; D plein, tour 1 : sonde 13 ms et **116 rappels/s** ; D demi, tour 1 : sonde 10,4 ms mais **159,5 rappels/s** ; tous les
+  autres : 161-165/s. La sonde ne s'était pas trompée sur ses échantillons : **Chrome a livré ses rappels plus lentement pendant une à deux
+  minutes**, puis est revenu à 165 Hz ; une lecture unique au démarrage a alors réglé toute la session sur un pas faux. Cause du ralentissement
+  **[?]** : ni la charge CPU ni la charge GPU seules (ci-dessus) ; hypothèse : un rafraîchissement dynamique de l'écran ou du pilote.
+- Les séries de la passe 6h montrent aussi que, quand le GPU ne suit pas les images du jeu, Chrome espace lui-même les rappels (57-126/s
+  sous la charge synthétique en `e60`, 163-166/s dès que les images tiennent) : les rappels de la boucle ne lisent l'écran que si le GPU ne
+  freine pas.
+
+### Mécanisme (`src/app/FrameCap.ts`) — contrôle en cours de session
+- Sur chaque fenêtre de 1,5 s d'un mode calé sur la vsync, sans image en retard (intervalle > pas + ½ vsync) ni trou ≥ 250 ms : lecture =
+  la médiane des intervalles qui **finissent sur un rappel sauté** par le plafond (un rappel au repos arrive au rythme de l'écran), ou, avec
+  moins de 30 rappels sautés (boucle limitée par le GPU, chaque rappel rend), **la grille de tous les rappels** (`gridInterval` : le plus
+  grand intervalle dont ils sont tous des multiples entiers à 12 % près, seulement s'ils couvrent au moins deux multiples d'au moins 10 %
+  chacun). Deux lectures consécutives d'accord à 5 % et à plus de 10 % de la valeur courante la remplacent (`vsyncFrom` 'loop', les deux
+  sens) ; le pas adaptatif repart alors de zéro.
+- **[KO] premier jet** : la médiane de tous les intervalles. Avec une lecture de 13 ms sur l'écran 165 Hz, la boucle limitée par le GPU
+  espaçait chaque rappel de 18,1 ms, aucune image ne comptait en retard (seuil 19,5 ms), et 18,1 ms a été pris pour la vsync (4 chargements sur
+  4). D'où les rappels sautés, puis la grille, qui ne répond rien sur des intervalles tous égaux.
+- `__stats().frameCap` : `vsyncChanges`, `vsyncLog` ; `cadence.mjs` compte les intervalles avec la vsync de la page si elle vient de la sonde
+  ou du contrôle, avec la sienne sinon. DEV seulement : `?vsyncprobe=<ms>` (une lecture fausse à la demande) et `?vsyncwatch=0` (contrôle
+  coupé), absents du bundle de production.
+
+### Validation (`tools/vsync-probe.mjs --play`, `tools/cadence.mjs`, fenêtre discrète)
+- **Correction** (serveur dev, lectures forcées) : 10,4 ms → 6,05-6,10 ms dans **3 chargements sur 3** (5,8-6,6 s après le chargement) ;
+  13 ms en 1280 × 720 (GPU peu chargé, des rappels sautés) → 6,1 dans **3 sur 3** (4,2-5,0 s) ; 13 ms en fenêtre maximisée (GPU saturé :
+  la grille) → 6,1 dans 2 sur 4 au bout de 8 s, et dans les deux tours de `cadence.mjs` (6,6 et 7,2 s) : **55,0 img/s, 3 vsyncs 100 %,
+  GPU 84 %, SoC 35,9-36,3 W**, contre, contrôle coupé, 49,3-65,5 img/s, 44-49 % irréguliers, GPU 97 %. Contrôle coupé : la lecture reste
+  fausse (2 sur 2).
+- **Aucun faux changement** (production, défaut `a60`) : au calme 0 sur 4, sous un autre Chrome qui sature le GPU 0 sur 4, sous 16 fils occupés
+  0 sur 3 (10 s de jeu chacun) ; GPU saturé par le jeu lui-même (`cadence.mjs`, charge synthétique : `e60` +5,5 ms, `a60` +12 ms, `v3` +5,5 ms) :
+  0 changement.
+- **Limite [?]** : une lecture trop **basse** (4 ms forcée) n'est pas corrigée : jugées avec cette vsync, les images paraissent en retard et
+  les fenêtres sont écartées ; la cadence reste près du bon pas (`a60` monte à 5-6 pas de 4 ms, soit ≈ 3 vsyncs réelles). Jamais observée.
+
+### Outils discrets — [OK]
+- `launchHeaded` place désormais la fenêtre hors de l'écran (`--window-position=-3000,0`), sans la mettre au premier plan ; `cadence.mjs` et
+  `vsync-probe.mjs` réutilisent son premier onglet (**un nouvel onglet prenait le focus clavier** : `document.hasFocus()` vrai, des frappes
+  seraient parties dans une fenêtre invisible) et émulent la fenêtre maximisée (`MAX_VIEWPORT` : 1463 × 724 à 1,75 → 2560 × 1267).
+  Vérifié : rappels à 6,1 ms, DPR 1,75, état `visible`, pas de focus, sonde du jeu 6,1 ms ; au calme mêmes valeurs qu'en fenêtre visible
+  (55,0 img/s réguliers, SoC 36 W). `--visible=1` rend l'ancienne fenêtre maximisée. Les deux premières séries de validation de cette passe
+  (avant la demande) étaient encore visibles.
+
+### Preuves
+- Pixels (`static=1&freeze=7.3`, 13 vues, builds figés) : sans paramètre (`a60` avec le contrôle) et avec `fps=e60`, **identiques à l'octet**
+  à la base `main` `8d0386c` (13 / 13 chacun) ; base deux fois identique ; contrôle négatif détecté. `typecheck` 0, `npm run build` vert
+  (même bundle `index-B8aQqSrE.js` que la validation de production et la preuve).
+
+### Pensée
+- Une mesure unique au démarrage décrit le démarrage : une grandeur qui peut changer pendant la session se revérifie pendant la session, et
+  seulement avec des échantillons qu'elle ne fausse pas (ici les rappels au repos, ou la grille quand il n'y en a pas).
+- Avant de durcir contre une cause, la reproduire : la « charge CPU » de la passe 6j était une coïncidence, les données de la même série
+  (rappels par seconde) le montraient déjà.
 
 ## À reprendre (par priorité)
 
@@ -3486,7 +3553,7 @@ défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans 
 `e60`, sprites plus doux), **P7 fait (Passe 6f) : l'opérateur garde le MSAA 4× le 18/10, `?msaa=` reste un réglage manuel ; accepté et
 fusionné dans `main`** (2× : GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts non expliqués),
 **P8 fait (Passe 6g) : l'opérateur garde le reflet à 1/2 le 18/10, `?refl=` reste un réglage manuel ; accepté et fusionné dans `main`**
-(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), **P9 abandonné par l'opérateur le 18/10 (Passe 6j), passe du journal acceptée et fusionnée dans `main`** : [KO] aucun gain GPU du DOF en demi-résolution sur la 780M (la recomposition pleine résolution coûte ce que la collecte gagne), code retiré, mesure et captures gardées. **Piste ouverte** : la sonde de vsync du plafond a lu 10-13 ms au lieu de 6,1 dans 3 chargements sur 12 sous forte charge CPU étrangère (passe 6j) : à durcir. **Témoin d'énergie réparé (Passe 6i), accepté et fusionné dans `main`** : muet depuis que le compteur du boîtier a passé
+(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), **P9 abandonné par l'opérateur le 18/10 (Passe 6j), passe du journal acceptée et fusionnée dans `main`** : [KO] aucun gain GPU du DOF en demi-résolution sur la 780M (la recomposition pleine résolution coûte ce que la collecte gagne), code retiré, mesure et captures gardées. **Sonde de vsync durcie (Passe 6k, branche `perf-vsync-probe`), en attente d'acceptation** : la lecture unique au démarrage est contrôlée en cours de session (rappels sautés, ou grille des rappels) ; lectures forcées de 10,4 / 13 ms corrigées en 4-9 s, aucun faux changement sous charge ; outils de mesure en fenêtre discrète. Reste [?] : la cause du ralentissement des rappels de la passe 6j, et une lecture trop basse non corrigée. **Témoin d'énergie réparé (Passe 6i), accepté et fusionné dans `main`** : muet depuis que le compteur du boîtier a passé
 1e15 pWh (écrit « 1,011E+15 » en culture fr-FR), désormais en entiers invariants. Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
@@ -3615,6 +3682,8 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   garde). Une sonde de démarrage observe dès le premier repère, pas depuis `DOMContentLoaded`.
 - Une cadence se mesure dans une vraie fenêtre avec vsync (`tools/cadence.mjs`), une « surcharge » en watts (RAPL, SoC = boîtier − cœurs),
   pas en % d'occupation GPU. La vsync se sonde au repos ; les horodatages rAF de la boucle ne sont pas sur sa grille.
+- Les mesures en fenêtre (cadence, sonde) se font hors écran, sur un seul onglet, sans jamais prendre le focus (demande de l'opérateur,
+  passe 6k) ; un nouvel onglet volait le focus clavier.
 - La cadence préfère la régularité au nombre d'images (choix de l'opérateur, `e60` puis `a60`) : quand le GPU ne tient plus son créneau, un
   pas plus long et régulier plutôt qu'un mélange ; le retour au pas court se vérifie par un essai. Une mesure de cadence ne s'arrête pas
   par `TaskStop` (node et Chrome lui survivent) : on la laisse finir.
