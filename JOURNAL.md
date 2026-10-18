@@ -3223,6 +3223,38 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   arêtes à plus de 16 ; et se juge là où la scène est nette (premier plan), pas dans le fond que la brume et le DOF lissent déjà.
 - Sous contention, une seule série propre vaut mieux que des médianes contaminées : relancer quand le témoin est calme, et le dire.
 
+## Passe 6g — Performances : P8, reflet planaire 1/2 contre 1/4 — captures et mesures (2026-10-18)
+
+### Demande (2026-10-18)
+- Mot pour mot : « Go P8 : ouvre sa branche depuis main et prépare les captures côte à côte du reflet 1/2 contre 1/4 (canal en A, B, D)
+  avec les mesures, avant toute décision. » Branche `perf-p8-reflection` ouverte depuis `main` (`5cb5ad7`) et poussée. **Rien n'est
+  décidé : le défaut reste 1/2.**
+
+### Mécanisme
+- `?refl=<échelle>` : taille du reflet planaire par rapport à la définition interne (`reflection.scale`, défaut 0,5, inchangé). Le reflet
+  garde ses mips et l'ondulation du shader d'eau.
+
+### Captures (production, 2560 × 1440, `seed=1842&clean=1&freeze=7.3`, A, B, D, avec et sans personnages ; composites dans
+`perf-gpu-evidence/p8/compare/`)
+- **Écart** (vues `static=1`) : confiné au canal ; 3-6 % des pixels changent un peu, **0,44-0,55 % de plus de 8 niveaux** (maximum
+  129-178 : les traînées de reflet des lampadaires et des fenêtres).
+- À l'échelle 1 : à 1/4, les traînées des lampadaires et les reflets des façades (D) s'adoucissent et s'étalent un peu ; l'ondulation de
+  l'eau floutait déjà le reflet, la lecture d'ensemble du canal ne change pas.
+
+### Mesures
+- **GPU** (`tools/perf.mjs`, 780M, 4 tours propres sur 4) : passe reflet **B 2560 × 1440 1,11 → 0,47-0,52 ms**, A 0,84 → 0,38-0,40, B 1080p
+  0,74 → 0,35 ; total B 1440p 15,47-16,11 → 14,69-16,58 (médianes 15,50 / 15,30, un tour bruité), A 1440p 13,52 → 13,04 (−3,5 %), B 1080p 9,25 →
+  8,84 (−4,4 %).
+- **Vraie fenêtre maximisée** (`tools/cadence.mjs`, `e60`, 3 tours propres) : 1/2 GPU 84-87 %, SoC 35,2-37,7 W ; 1/4 GPU 82-83 %, SoC
+  35,5-35,9 W : 55 img/s réguliers dans les deux cas ; écart de puissance de 0 à 2 W, **dans le bruit de la mesure**.
+
+### Décision opérateur — en attente
+- Options : garder 1/2 (aucun changement) ou 1/4 (−0,4 à −0,6 ms par image, puissance inchangée dans la mesure, reflets un peu plus doux).
+
+### Pensée
+- Un poste de 1 ms sur 16 ne se voit plus en watts sous plafond de cadence : la passe de reflet était déjà à 7 % du temps GPU ; diviser
+  ses pixels par 4 la ramène à 3 %, sans effet mesurable sur la puissance.
+
 ## À reprendre (par priorité)
 
 **-3. Performances GPU (Passe 6, plan validé par l'opérateur le 17/10 ; P0-P2 acceptés et fusionnés dans `main` le 17/10, la suite ouvre
@@ -3239,7 +3271,8 @@ quand le GPU rate son créneau, vu sous contention en 1440p) ;
 défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans `main`** (1080p : GPU −41 %, SoC −56 % sous
 `e60`, sprites plus doux), **P7 fait (Passe 6f) : l'opérateur garde le MSAA 4× le 18/10, `?msaa=` reste un réglage manuel ; accepté et
 fusionné dans `main`** (2× : GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts non expliqués),
-P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
+**P8 captures et mesures faites (Passe 6g, branche `perf-p8-reflection`, `?refl=`), décision en attente** (1/4 : −0,4 à
+−0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
 **-2. Fenêtres étroites (Passe 5)** — bake par pages bornées + repli explicite + recadrage du cadre 16:9 : bâtiments présents à tout format
