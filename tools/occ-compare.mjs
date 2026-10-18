@@ -16,7 +16,7 @@ const fig = (spec) => {
 };
 const html = `<!doctype html><html><head><style>
   body{margin:0;background:#05070d;color:#d9c9a8;font:600 14px 'Segoe UI',system-ui,sans-serif;letter-spacing:.1em}
-  #g{display:grid;grid-template-columns:repeat(${cols},auto);gap:4px;padding:4px;width:max-content}
+  #c{width:max-content} #g{display:grid;grid-template-columns:repeat(${cols},auto);gap:4px;padding:4px;width:max-content}
   figure{margin:0;position:relative;overflow:hidden} img{position:absolute;transform-origin:0 0;image-rendering:pixelated}
   figcaption{position:absolute;left:8px;top:8px;padding:2px 9px;background:rgba(5,7,13,.74);border:1px solid rgba(233,166,76,.45);border-radius:3px}
   .cap{padding:8px 12px;font-weight:400;letter-spacing:.03em;color:#b9c3d8;font-size:13px}

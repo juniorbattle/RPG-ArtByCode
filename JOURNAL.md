@@ -3120,6 +3120,46 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Avant d'écrire l'attente d'un test, relire ce que le système est censé faire : deux « échecs » de cette passe étaient mes attentes (cadre
   16:9 partagé, `occ=0` = `occbehind=0`), pas le cache.
 
+## Passe 6e — Performances : P6, résolution interne plafonnée — captures et mesures (2026-10-18)
+
+### Demande (2026-10-18)
+- Mot pour mot : « Go P6 : ouvre sa branche depuis main et prépare les captures côte à côte (natif contre résolution interne plafonnée, en
+  1440p) avec les mesures, avant toute décision. » Branche `perf-p6-render-scale` ouverte depuis `main` (`45be91f`) et poussée. **Rien
+  n'est décidé : le défaut reste natif.**
+
+### Mécanisme (`App.resize`, `?res=`) — défaut natif, inchangé
+- `?res=<lignes>p[:px]` : au plus lignes² × 16 / 9 pixels rendus (1080p = 1920 × 1080, 1260p = 2240 × 1260) ; au-delà, la scène **et le
+  reflet** sont rendus plus petits (facteur √(budget / pixels)) et le navigateur agrandit le canevas, lissé (bilinéaire) ou au plus proche
+  voisin avec `:px` (`image-rendering: pixelated`). Les sprites restent accrochés à la grille des pixels **internes** (`uResolution`). Sous le
+  budget, rien ne change. Le curseur « render scale » du panneau (qui ne réduisait pas le reflet) est inchangé.
+
+### Captures (production, 2560 × 1440, `seed=1842&clean=1&freeze=7.3`, A-D ; composites dans `perf-gpu-evidence/p6/compare/`)
+- **1260p (2240 × 1260)** : presque indiscernable du natif à l'échelle 1 ; un léger adoucissement des arêtes fines au zoom.
+- **1080p lissé (1920 × 1080)** : sprites et pavés nettement plus doux (le pixel-art perd son tranchant), fines fissures de l'enduit et
+  barreaux du balcon adoucis ; l'ambiance (brume, lumières, DOF) ne change pas.
+- **1080p `pixelated`** : net, mais les texels des sprites prennent des largeurs inégales (agrandissement × 1,33) et les diagonales des
+  colombages deviennent des escaliers.
+
+### Mesures
+- **GPU** (`tools/perf.mjs`, 2560 × 1440, 780M, 3 tours propres sur 3) : B natif 15,76 ms → 1260p 12,22 (−22 %) → 1080p **9,26 (−41 %)** ;
+  C natif 15,20 → 1080p 9,07 (−40 %) ; mémoire des cibles 277 → 229 → 188 Mo. **1080p à dpr 1 : 9,26 contre 9,23 ms** (sous le budget, rien
+  ne change).
+- **Vraie fenêtre maximisée** (`tools/cadence.mjs`, 2560 × 1267 internes en natif, plafond `e60`, 2 tours, aucun processus étranger, SoC de la
+  page vide 2,4-2,9 W) : natif 55 img/s réguliers, GPU 86 %, **SoC 36-37 W** ; 1260p (2388 × 1182) 55 réguliers, 76-77 %, SoC 32 W ; 1080p
+  (2047 × 1013) 55 réguliers, 64 %, **SoC 16 W (−56 %)**. Sans plafond de cadence : natif 57-60 img/s (16-28 % irréguliers), 1080p 85-86 img/s
+  (10-15 % irréguliers), SoC 36-40 W dans les deux cas (le GPU reste saturé).
+- Marge : en natif, `e60` laisse le GPU à 86 % (la contention de la passe 6c lui faisait déjà rater ses créneaux) ; à 1080p, 64 %.
+
+### Décision opérateur — en attente
+- Options présentées : natif (aucun changement), 1260p lissé, 1080p lissé, 1080p `pixelated`, ou un budget adaptatif (non construit).
+  Le défaut ne change qu'après sa décision, citée ici.
+
+### Pensée
+- Une réduction de définition se juge sur le pixel-art (les sprites) et sur les arêtes fines, pas sur la vue d'ensemble : l'ambiance ne bouge
+  pas, le tranchant si. Le budget se fixe en pixels rendus, pas en facteur : un écran 1080p ne doit rien perdre.
+- La puissance ne suit pas le temps GPU linéairement : −41 % de temps GPU donnent −56 % de SoC sous plafond de cadence (le pilote baisse
+  les fréquences quand il a de la marge).
+
 ## À reprendre (par priorité)
 
 **-3. Performances GPU (Passe 6, plan validé par l'opérateur le 17/10 ; P0-P2 acceptés et fusionnés dans `main` le 17/10, la suite ouvre
@@ -3132,7 +3172,8 @@ une piste par commit, chacune avec sa preuve : **P4 plafond de cadence fait (Pas
 (55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `?fps=off` sans plafond ; piste ouverte : pas adaptatif 3 → 4 vsyncs
 quand le GPU rate son créneau, vu sous contention en 1440p) ;
 **P5 cache du bake fait (Passe 6d), accepté par l'opérateur le 18/10 et fusionné dans `main`** : bake 337 → 36 ms relu,
-`__ready` 2,28 → 1,98 s, image et décisions de culling identiques (`viewport-proof` ligne à ligne) ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
+`__ready` 2,28 → 1,98 s, image et décisions de culling identiques (`viewport-proof` ligne à ligne) ; puis revue de captures pour les décisions de l'opérateur : **P6 captures et mesures faites (Passe 6e, branche
+`perf-p6-render-scale`, `?res=`), décision en attente** (1080p : GPU −41 %, SoC −56 % sous `e60`, sprites plus doux), P7 (MSAA 2×),
 P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 

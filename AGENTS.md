@@ -117,7 +117,9 @@ thread / in n Web Workers; default min(4, cores - 1) workers, the main thread be
 `fps=off|<n>|v<k>|e<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
 round(refresh / n) vsyncs; **default `e60`**, chosen by the operator on 2026-10-17: 55 fps at 165 Hz, 72 at 144, 60 at 60 / 120; the vsync
 interval comes from a boot probe; `tools/perf.mjs` and `tools/startup.mjs` add `fps=off` unless the query sets `fps`; journal pass 6c) ·
-`viscache=0|verify` (visibility bake cache off / bake and compare with the stored result, journal pass 6d) · DEV server only: `visfail=alloc|zero` (force a
+`viscache=0|verify` (visibility bake cache off / bake and compare with the stored result, journal pass 6d) ·
+`res=<lines>p[:px]` (internal resolution cap: at most lines² x 16 / 9 rendered pixels, scene and reflection, the browser scales the canvas up,
+smoothed or nearest with `:px`; at or under the budget nothing changes; default native until the operator decides, journal pass 6e) · DEV server only: `visfail=alloc|zero` (force a
 visibility-bake failure: the fallback must keep every part and report it), `vispage=<px>` (bake page size), `visscale=<k>` (every bake tile k x:
 what a finer bake would keep) and `visfine=D:4|A+B+C+D:2|0` (the extra fine tiles, default D at 2x; `0` = none) ·
 `occ=0` (no player reveal: pixel-identical to Pass 2) · `occstyle=soft|dither|hybrid` · `occforce=all|0,2` (force

@@ -81,6 +81,10 @@ export class App {
   private lastT = performance.now();
   /** frame-rate cap (journal pass 6, P4): `?fps=off|<n>|v<k>|e<n>`, otherwise DEFAULT_FRAME_CAP */
   readonly frameCap = new FrameCap();
+  /** internal resolution cap (journal pass 6, P6): `?res=<lines>p[:px]` = at most lines x lines x 16 / 9 rendered pixels (1080p: 1920 x 1080),
+   *  scaled up by the browser (`:px` = nearest, `image-rendering: pixelated`); `?res=native` or absent = none (the default until the operator
+   *  decides) */
+  resCap: { pixels: number; filter: 'smooth' | 'pixelated' } | null = null;
 
   constructor(private opts: AppOptions) {
     this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: false, powerPreference: 'high-performance', stencil: false, alpha: false });
@@ -89,6 +93,8 @@ export class App {
     this.perf.attach(this.renderer.getContext() as WebGL2RenderingContext);
     if (opts.params.has('gpuprof')) this.perf.gpu.enabled = true;
     this.frameCap.mode = parseFrameCap(opts.params.get('fps')) ?? DEFAULT_FRAME_CAP;
+    const rm = opts.params.get('res')?.match(/^(\d{3,4})p(?::(px|pixelated|smooth))?$/);
+    if (rm) this.resCap = { pixels: Math.round((+rm[1] * +rm[1] * 16) / 9), filter: rm[2] === 'px' || rm[2] === 'pixelated' ? 'pixelated' : 'smooth' };
     this.post = new PostFX(this.renderer);
     this.rig.camera.layers.enable(2);
     this.scene.add(this.rig.camera);
@@ -205,7 +211,12 @@ export class App {
 
   resize(): void {
     const w = window.innerWidth, h = window.innerHeight;
-    const pr = Math.min(window.devicePixelRatio || 1, 2);
+    // internal resolution cap (journal pass 6, P6): above the pixel budget the scene and its reflection render smaller and the browser
+    // scales the canvas up (smoothed, or nearest with `pixelated`); at or under the budget nothing changes
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const cap = this.resCap, s = cap ? Math.min(1, Math.sqrt(cap.pixels / (w * dpr * h * dpr))) : 1;
+    const pr = dpr * s;
+    this.opts.canvas.style.imageRendering = cap?.filter === 'pixelated' && s < 1 ? 'pixelated' : '';
     this.post.setSize(w, h, pr);
     this.reflection.setSize(w * pr, h * pr);
     this.rig.setAspect(w / h);
