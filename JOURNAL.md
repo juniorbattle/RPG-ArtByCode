@@ -3458,6 +3458,11 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   AGENTS.md` vide, `typecheck` 0. La branche n'apporte plus que cette passe du journal ; captures et mesures restent dans
   `perf-gpu-evidence/p9/` (notes partagées). Le DOF reste en pleine résolution.
 
+### Décision opérateur (2026-10-18) — [OK] P9 accepté (journal seul)
+- Mot pour mot : « J'accepte P9 tel quel (abandonné, journal seul) : fusionne perf-p9-dof-half dans main, pousse main et supprime la branche. »
+- Branche `perf-p9-dof-half` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée (locale et distante). Le plan GPU
+  (P0-P9) est terminé ; reste la piste de la sonde de vsync (voir « À reprendre »).
+
 ### Pensée
 - Une passe plein écran se paie d'abord en bande passante : réduire ses échantillons sans retirer la passe ne gagne rien sur une iGPU. Un
   effet « en demi-résolution » ne paie que si sa recomposition tient dans une passe qui existe déjà.
@@ -3481,7 +3486,7 @@ défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans 
 `e60`, sprites plus doux), **P7 fait (Passe 6f) : l'opérateur garde le MSAA 4× le 18/10, `?msaa=` reste un réglage manuel ; accepté et
 fusionné dans `main`** (2× : GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts non expliqués),
 **P8 fait (Passe 6g) : l'opérateur garde le reflet à 1/2 le 18/10, `?refl=` reste un réglage manuel ; accepté et fusionné dans `main`**
-(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), **P9 abandonné par l'opérateur le 18/10 (Passe 6j)** : [KO] aucun gain GPU du DOF en demi-résolution sur la 780M (la recomposition pleine résolution coûte ce que la collecte gagne), code retiré, mesure et captures gardées. **Piste ouverte** : la sonde de vsync du plafond a lu 10-13 ms au lieu de 6,1 dans 3 chargements sur 12 sous forte charge CPU étrangère (passe 6j) : à durcir. **Témoin d'énergie réparé (Passe 6i), accepté et fusionné dans `main`** : muet depuis que le compteur du boîtier a passé
+(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), **P9 abandonné par l'opérateur le 18/10 (Passe 6j), passe du journal acceptée et fusionnée dans `main`** : [KO] aucun gain GPU du DOF en demi-résolution sur la 780M (la recomposition pleine résolution coûte ce que la collecte gagne), code retiré, mesure et captures gardées. **Piste ouverte** : la sonde de vsync du plafond a lu 10-13 ms au lieu de 6,1 dans 3 chargements sur 12 sous forte charge CPU étrangère (passe 6j) : à durcir. **Témoin d'énergie réparé (Passe 6i), accepté et fusionné dans `main`** : muet depuis que le compteur du boîtier a passé
 1e15 pWh (écrit « 1,011E+15 » en culture fr-FR), désormais en entiers invariants. Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
