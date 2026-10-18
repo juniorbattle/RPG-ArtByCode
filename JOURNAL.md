@@ -2842,18 +2842,50 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   `dist/index.html` ne diffère que par les fins de ligne (**[KO] de méthode** : `git archive` applique `core.autocrlf=true` et écrit des CRLF
   dans la base ; d'où `git -c core.autocrlf=false archive` dans la recette). `typecheck` 0.
 
+### P1 — Chauffe des variantes d'occlusion — [OK]
+- Cause : les variantes `OCC` / `OCC_INST` ne sont liées que pendant un fondu ; leur premier usage compile 4 programmes (28 → 32), puis
+  ANGLE / D3D11 crée encore ses shaders au **premier dessin**. Deux essais côté page avant la bonne réponse :
+  - **[KO]** `renderer.compileAsync(scene, camera)` avec la cible par défaut : 19 programmes inutiles (28 → 47), la clé de programme
+    dépend de la cible liée (RT linéaire RGBA16F contre canevas sRGB) ; la révélation en a recréé 4 et gelait toujours ≈ 300 ms ;
+  - **[KO]** le même, `sceneRT` liée : exactement les 4 bons programmes (aucun créé à la révélation), mais toujours 277-313 ms au premier
+    dessin (le palier [KO] de RPGCards passe 12, « garder le programme sans le dessiner », retrouvé ici) ;
+  - **[OK]** un dessin jetable avec les variantes liées : première révélation 295-870 → 8-16 ms.
+- Changement (`App.warmOcclusionVariants`, appelé à la fin de `regenerate`, quand le niveau de dessin est encore complet) : variantes liées,
+  `setOccActive(true)`, `frustumCulled` coupé le temps du dessin (lampadaires instanciés hors cadre), un rendu du miroir et de `sceneRT` (tous
+  deux redessinés à chaque image, jamais présentés), puis l'état d'origine. Les fondus sont à 0 (remis par `OcclusionReveal.setup`) : aucun
+  `discard`. Sauté si `occ=0` (rien ne change alors). Aucun coût par image.
+- Preuves (build de production pour les temps, serveurs dev pour les captures, base figée `2cbb858`) :
+  - **à-coup** (`tools/startup.mjs`, 5 + 5 chargements entrelacés, 780M) : première révélation **315 ms [301-769] → 11 ms [1-22]**, programmes
+    créés à la révélation 4 → 0 ; révélations suivantes inchangées (31-50 ms au pire sous contention) ; `__ready` 2,42 → 2,38 s, première
+    image bloquée 0,88 → 0,97 s (dans la dispersion : base 0,88-2,58 s) : le coût de la chauffe se fond dans la première image ;
+  - **pixels** (`static=1&freeze=7.3`, seuil 0) : 13 vues (A, B, C, D, AB, BC, CD, BD, trois `occforce=all`, graines 7719 et 30417) et
+    6 vues avec une **vraie révélation** (lampadaires -9 / 0 / 0 / 18 / 27 et bannière du bateau, en B, C, D) : **0 px** contre la base ;
+    témoin de répétition (deux chargements de la base) 0 px partout ; contrôle négatif (`occ=0` sur les 6 vues révélées) : 528 à
+    3 860 px, la comparaison sait échouer. **[KO] de méthode** au passage : les vues `occforce=all` ne découpaient rien (aucun occluder
+    devant le joueur à ces positions, B / `occforce` = 0 px) ; d'où les 6 positions trouvées par la détection elle-même ;
+  - **coût par image** (`tools/perf.mjs`, 3 tours, tous propres) : B 1080p 9,33 → 9,40 ms, B en révélation 9,39 → 9,57 ms (dispersion des
+    tours 9,2-10,1) ; 108 / 114 appels, 210,1 k triangles des deux côtés ;
+  - `typecheck` 0, `npm run build` vert. `viewport-proof` non rejoué : rien du culling ni du bake ne change (la chauffe ne touche que
+    les matériaux liés et la visibilité des maillages d'occluders le temps d'un rendu).
+- Chiffres propres au passage : cette série tournait sans contention (3/3 tours propres) : B 1080p **9,3 ms** sur la 780M, contre 11,3-12,3 ms
+  en médiane pendant l'analyse (sous contention) ; la peinture des textures 1,1-1,5 s contre 2,2-4,1 s (la contention était aussi CPU). Les
+  chiffres de l'analyse sont donc des majorants d'environ 20 % (GPU) et ×2 (démarrage) : le gain attendu de P3 se révise à ≈ −0,7 s.
+
 ### Pensée
 - Mesurer d'abord a encore déplacé la cible : on croyait le MSAA et le DOF / bloom « les plus gros postes » (passe 2) sur une Iris Xe ; sur
   la 780M réelle, c'est la bande passante du MSAA 4× HDR et la définition 1440p de l'écran de l'opérateur. Et l'à-coup le plus visible
   (première révélation) n'apparaît dans aucune moyenne : il faut une sonde dédiée aux premières fois.
 - Sur un poste partagé, un temps GPU n'est crédible qu'avec son témoin de contention ; à défaut, le minimum des tours entrelacés.
+- Sur ANGLE / D3D11, « compilé » ne veut pas dire « prêt » : seul un dessin réel, vers une cible de même format, finit un programme. Une
+  preuve au pixel d'un effet conditionnel se fait sur des vues où l'effet agit vraiment (contrôle négatif non nul), pas sur un drapeau forcé.
 
 ## À reprendre (par priorité)
 
-**-3. Performances GPU (Passe 6, branche `perf-gpu`, plan validé par l'opérateur le 17/10)** — fait : P0 (outillage). Suivent, une piste
-par commit, chacune avec sa preuve : P1 chauffe des variantes d'occlusion (gel de 0,3-1,1 s à la première révélation), P2 première image
-sous l'écran de chargement + compilation parallèle, P3 peintres de textures en Web Workers, P4 plafond de cadence (défaut à décider), P5
-cache du bake ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
+**-3. Performances GPU (Passe 6, branche `perf-gpu`, plan validé par l'opérateur le 17/10)** — fait : P0 (outillage), P1 (chauffe des
+variantes d'occlusion : première révélation 315 → 11 ms, image identique). Suivent, une piste par commit, chacune avec sa preuve : P2 première
+image sous l'écran de chargement (la chauffe de P1 ne l'a pas raccourcie : le travail GPU de la première image reste à attendre, `finish`
+avant le fondu) + compilation parallèle, P3 peintres de textures en Web Workers (gain révisé ≈ −0,7 s hors contention), P4 plafond de
+cadence (défaut à décider), P5 cache du bake ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
 P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 

@@ -288,8 +288,30 @@ export class App {
     this.district.setLevel(this.district.visibility.levels);
     this.shadow.update(this.renderer, this.scene, new THREE.Vector3(6, 0, 0), this.moonDir, 46, 32);
     this.district.releaseShadowOnly();
+    this.warmOcclusionVariants();
     this.drawLevel = -1;
     this.onRegenerate.forEach((f) => f());
+  }
+
+  /** ANGLE / D3D11 finishes a linked program at its first draw: the occlusion variants, bound only while a reveal fades, froze the first
+   *  reveal for 0.3-1.1 s (journal pass 6; compiling them ahead without drawing does not help). One throw-away frame with every variant
+   *  bound and every fade at 0 (no fragment is discarded), into the mirror and the scene targets (both redrawn every frame, never
+   *  presented), moves that cost to the regeneration. The draw level is still the full one here, so every occluder triangle is drawn;
+   *  the instanced lamps are drawn even when off-frame. */
+  private warmOcclusionVariants(): void {
+    const occ = this.occlusion, d = this.district, r = this.renderer;
+    if (!occ.enabled || !d || !occ.meshes.length) return;
+    const culled = occ.meshes.map((m) => m.mesh.frustumCulled);
+    for (const m of occ.meshes) { m.mesh.material = m.variant; m.mesh.frustumCulled = false; }
+    d.setOccActive(true);
+    const prev = r.getRenderTarget();
+    this.reflection.update(r, this.scene, this.rig.camera);
+    r.setRenderTarget(this.post.sceneRT);
+    r.clear(true, true, true);
+    r.render(this.scene, this.rig.camera);
+    r.setRenderTarget(prev);
+    d.setOccActive(false);
+    occ.meshes.forEach((m, i) => { m.mesh.material = m.base; m.mesh.frustumCulled = culled[i]; });
   }
 
   /** DEV negative controls / layout checks of the bake: ?visfail=alloc|zero (must fall back, see BakeOptions), ?vispage=<px> (page cap),

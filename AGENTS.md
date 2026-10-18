@@ -193,7 +193,11 @@ banner, the boat's rig (mast / yard / sail) and the 7 quay lamps. Never tag smal
   each slot into a separate `occ:static:<slot>` mesh with an `aOcc` attribute (occluder index). The quay lamps are an
   instanced prototype: their draws swap to the `OCC_INST` variant (index = `uOccBase + gl_InstanceID`). Variants come
   from `MaterialLibrary.occVariant()`, share the slot's uniforms, and are bound ONLY while a fade is > 0 (otherwise the
-  slot material is used: no discard anywhere, Pass 2 early-z intact, image pixel-identical to Pass 2).
+  slot material is used: no discard anywhere, Pass 2 early-z intact, image pixel-identical to Pass 2). The one exception is
+  `App.warmOcclusionVariants()`: at each regeneration, one throw-away frame (mirror + scene target, never presented) with every
+  variant bound and every fade at 0, because ANGLE / D3D11 finishes a program at its first draw (the first reveal froze 0.3-1.1 s;
+  compiling ahead without drawing does not help, journal pass 6). New occludable variants are warmed by it as long as they are in
+  `occluders.meshes`.
 - Only `occReveal()` (`ShaderChunks.ts`, `#if OCC`) may `discard` in a surface shader; it is skipped in the mirror pass
   (`uClipY`), shadows use an override material, alpha stays 1 (the DOF / in-scatter protection mask is untouched).
 - Detection (`OcclusionReveal.update`) runs after `CameraGraph.update`, with the final pose (settled or mid-blend):
