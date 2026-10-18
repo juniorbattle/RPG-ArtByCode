@@ -82,8 +82,8 @@ export class App {
   /** frame-rate cap (journal pass 6, P4): `?fps=off|<n>|v<k>|e<n>`, otherwise DEFAULT_FRAME_CAP */
   readonly frameCap = new FrameCap();
   /** internal resolution cap (journal pass 6, P6): `?res=<lines>p[:px]` = at most lines x lines x 16 / 9 rendered pixels (1080p: 1920 x 1080),
-   *  scaled up by the browser (`:px` = nearest, `image-rendering: pixelated`); `?res=native` or absent = none (the default until the operator
-   *  decides) */
+   *  scaled up by the browser (`:px` = nearest, `image-rendering: pixelated`); `?res=native` or absent = none (the default, kept by the operator
+   *  on 2026-10-18, journal pass 6e) */
   resCap: { pixels: number; filter: 'smooth' | 'pixelated' } | null = null;
 
   constructor(private opts: AppOptions) {
