@@ -3153,7 +3153,8 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 ### Décision opérateur (2026-10-18) — [OK] natif par défaut
 - Options présentées : natif (aucun changement), 1260p lissé, 1080p lissé, 1080p `pixelated`, ou un budget adaptatif (non construit).
 - Mot pour mot : « Garde la résolution native par défaut ; ?res= reste disponible. » Aucun changement de code : sans `?res=`, le rendu est
-  celui d'avant (même chemin, `resCap` nul) ; `?res=` reste un réglage manuel.
+  celui d'avant (même chemin, `resCap` nul) ; `?res=` reste un réglage manuel. Preuve : 13 vues `static=1&freeze=7.3` sans `?res=`
+  **identiques à l'octet** à la base `45be91f` ; base deux fois identique ; contrôle négatif détecté.
 
 ### Pensée
 - Une réduction de définition se juge sur le pixel-art (les sprites) et sur les arêtes fines, pas sur la vue d'ensemble : l'ambiance ne bouge
