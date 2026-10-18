@@ -248,6 +248,13 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Résultat sur GitHub — [OK] vert
 - Run `39164762984` (push de `ec274d8` sur `tests-load-no-watch`) : **success**, job de 24 s ; `npm test` 1 s (3 s au premier run de la
   Passe Q1 : le runner n'a pas de brouillons, le gain y est faible), les autres étapes inchangées.
+- Run `39164863506` (push de `0e79cb8`, ce résultat consigné) : success.
+
+### Décision opérateur (2026-10-18) — [OK] Passe Q1b acceptée
+- Mot pour mot : « J'accepte la Passe Q1b telle quelle : fusionne tests-load-no-watch dans main en avance rapide, pousse main et supprime la
+  branche. »
+- Cette entrée est commitée et poussée sur la branche avant la fusion ; puis `tests-load-no-watch` fusionnée en avance rapide dans `main`,
+  `main` poussé, branche supprimée (locale et distante).
 
 ### Pensée
 - Un temps mesuré dans un clone propre ne vaut pas pour le dossier de travail : les fichiers ignorés (brouillons, caches) y pèsent. Une durée
