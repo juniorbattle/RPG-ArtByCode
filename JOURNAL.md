@@ -2900,6 +2900,16 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Constat au passage : un onglet d'aperçu masqué (fenêtre 0 × 0) fait échouer le bake (« NaN x 960 page target ») et le repli garde tout,
   comme prévu (comportement antérieur, non lié à P2, non traité).
 
+### Décision opérateur (2026-10-17) — [OK] P0 + P1 + P2 acceptés
+- Mot pour mot : « Fusionne d'abord perf-gpu (P0 + P1 + P2) dans main, pousse main et supprime la branche ; on ouvrira une nouvelle branche
+  pour la suite. »
+- Branche `perf-gpu` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée (locale et distante). Les pistes suivantes
+  (P3…) ouvriront leur propre branche depuis `main`.
+- Au passage, l'opérateur a autorisé par défaut les actions de routine de la tâche, mot pour mot : « Tu as toutes les permissions necessaires
+  qui ne soont pas sensible pour faire ta tache de session, plus besoin de me demander ». Liste blanche ajoutée en conséquence dans
+  `.claude/settings.local.json` (ignoré par git) : outils, build, git en lecture, add / commit / push, lectures et copies ; rien de
+  destructif.
+
 ### Pensée
 - Mesurer d'abord a encore déplacé la cible : on croyait le MSAA et le DOF / bloom « les plus gros postes » (passe 2) sur une Iris Xe ; sur
   la 780M réelle, c'est la bande passante du MSAA 4× HDR et la définition 1440p de l'écran de l'opérateur. Et l'à-coup le plus visible
@@ -2910,7 +2920,8 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 
 ## À reprendre (par priorité)
 
-**-3. Performances GPU (Passe 6, branche `perf-gpu`, plan validé par l'opérateur le 17/10)** — fait : P0 (outillage), P1 (chauffe des
+**-3. Performances GPU (Passe 6, plan validé par l'opérateur le 17/10 ; P0-P2 acceptés et fusionnés dans `main` le 17/10, la suite ouvre
+sa propre branche)** — fait : P0 (outillage), P1 (chauffe des
 variantes d'occlusion : première révélation 315 → 11 ms, image identique), P2 (première image préparée sous l'écran de chargement : première
 image de la boucle 17 → 4 ms, 0 programme compilé après le départ ; durée de démarrage inchangée, l'estimation « −1 à −1,5 s » du plan était
 fausse). Suivent, une piste par commit, chacune avec sa preuve : P3 peintres de textures en Web Workers (gain révisé ≈ −0,7 s hors contention), P4 plafond de
