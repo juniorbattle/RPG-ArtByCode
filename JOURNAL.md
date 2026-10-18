@@ -3248,8 +3248,12 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - **Vraie fenêtre maximisée** (`tools/cadence.mjs`, `e60`, 3 tours propres) : 1/2 GPU 84-87 %, SoC 35,2-37,7 W ; 1/4 GPU 82-83 %, SoC
   35,5-35,9 W : 55 img/s réguliers dans les deux cas ; écart de puissance de 0 à 2 W, **dans le bruit de la mesure**.
 
-### Décision opérateur — en attente
-- Options : garder 1/2 (aucun changement) ou 1/4 (−0,4 à −0,6 ms par image, puissance inchangée dans la mesure, reflets un peu plus doux).
+### Décision opérateur (2026-10-18) — [OK] 1/2 par défaut
+- Options présentées : garder 1/2 (aucun changement) ou 1/4 (−0,4 à −0,6 ms par image, puissance inchangée dans la mesure, reflets un peu
+  plus doux).
+- Mot pour mot : « Garde le reflet à 1/2 par défaut ; ?refl= reste disponible. » Aucun changement de code : sans `?refl=`, le reflet garde
+  l'échelle 0,5. Preuve : 13 vues `static=1&freeze=7.3` sans `?refl=` **identiques à l'octet** à la base (`main` `5cb5ad7`) ; base deux fois
+  identique ; contrôle négatif (`freeze=7.31`) détecté (91 % des pixels de B diffèrent).
 
 ### Pensée
 - Un poste de 1 ms sur 16 ne se voit plus en watts sous plafond de cadence : la passe de reflet était déjà à 7 % du temps GPU ; diviser
@@ -3271,8 +3275,8 @@ quand le GPU rate son créneau, vu sous contention en 1440p) ;
 défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans `main`** (1080p : GPU −41 %, SoC −56 % sous
 `e60`, sprites plus doux), **P7 fait (Passe 6f) : l'opérateur garde le MSAA 4× le 18/10, `?msaa=` reste un réglage manuel ; accepté et
 fusionné dans `main`** (2× : GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts non expliqués),
-**P8 captures et mesures faites (Passe 6g, branche `perf-p8-reflection`, `?refl=`), décision en attente** (1/4 : −0,4 à
-−0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
+**P8 fait (Passe 6g, branche `perf-p8-reflection`) : l'opérateur garde le reflet à 1/2 le 18/10, `?refl=` reste un réglage manuel**
+(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
 **-2. Fenêtres étroites (Passe 5)** — bake par pages bornées + repli explicite + recadrage du cadre 16:9 : bâtiments présents à tout format

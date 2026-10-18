@@ -99,8 +99,8 @@ export class App {
     // ?msaa=0|2|4|8: samples of the scene target (default 4, kept by the operator on 2026-10-18 after the 4x / 2x captures, journal pass 6f)
     const ms = Number(opts.params.get('msaa'));
     if (opts.params.has('msaa') && [0, 2, 4, 8].includes(ms)) this.post.params.msaa = ms;
-    // ?refl=<scale>: the planar reflection's size against the internal resolution (default 0.5; journal pass 6, P8: 1/2 against 1/4 is
-    // the operator's call on captures)
+    // ?refl=<scale>: the planar reflection's size against the internal resolution, manual (default 0.5, kept by the operator on 2026-10-18
+    // over 1/4 on captures; journal pass 6g)
     const rf = Number(opts.params.get('refl'));
     if (rf > 0 && rf <= 1) this.reflection.scale = rf;
     this.rig.camera.layers.enable(2);
