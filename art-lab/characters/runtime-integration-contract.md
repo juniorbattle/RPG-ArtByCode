@@ -1,5 +1,9 @@
 # Contract proposal — multi-resolution sprites in the main `SpriteAtlas` / `SpriteRenderer`
 
+> **Later (2026-10-17):** the v3 status below did not authorise production; the operator then approved production activation asset by
+> asset (Passes 4A-septendecies, 4A-undevicies, 4A-tervicies): the production cast loaded by `src/characters/BakedCast.ts`, listed in
+> `README.md`. The status below is the v3 record of 2026-10-16, kept as written.
+
 **Status: v3 — ACCEPTED WITH AMENDMENTS (operator, 2026-10-16).** Approved principles: one shared `SpriteRenderer`; one atlas holding
 32 × 48 and 64 × 96 frames; **no production shader change** while the existing invariants suffice; foot anchoring, DOF, lighting, shadows
 and occlusion kept; **no change to how existing characters render**; no LOD; no change to the Merchant District environment, the cameras

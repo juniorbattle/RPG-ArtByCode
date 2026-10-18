@@ -3540,138 +3540,139 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Avant de durcir contre une cause, la reproduire : la « charge CPU » de la passe 6j était une coïncidence, les données de la même série
   (rappels par seconde) le montraient déjà.
 
+## Passe M3 — Documentation : README de l'Art Lab à l'état courant, « À reprendre » élagué, coût de contexte du journal (2026-10-18)
+
+### Demande (2026-10-18)
+- Audit externe collé par l'opérateur le 18/10, transmis par la séance parente : architecture et chaîne de provenance solides ;
+  documentation qui dérive (les README de l'Art Lab décrivent encore les préparatifs de 4A alors que des personnages cuits sont en
+  production ; `AGENTS.md` 29 Ko et `JOURNAL.md` 418 Ko coûtent cher en contexte à chaque séance) ; ni tests unitaires ni CI. Cette tâche
+  couvre la documentation et le journal, la CI est une tâche séparée. Documentation seule : aucun code d'exécution touché.
+- Branche `docs-art-lab-journal` ouverte depuis `main` (`7086340`) après `git fetch --prune` et `git branch -a` (aucune autre branche).
+
+### README de l'Art Lab — [OK] état courant
+- `art-lab/README.md` : « (future Pass 4A). Nothing here is loaded by the game. » et « Production (Pass 4A) has **not** started. » étaient
+  faux depuis la Passe 4A-septendecies. Remplacés par un statut daté : le jeu ne lit de l'Art Lab que sa distribution de production (feuilles
+  cuites, manifestes, empreintes des paquets de provenance, par `src/characters/BakedCast.ts`), les dix manifestes approuvés
+  `runtimeUse: "production"` nommés, aucun déclaré Gold Master ; héros et chat générés ; le reste hors du jeu et du build. Arborescence
+  complétée (`runtime-integration-contract.md`, `briefs/`, `provenance/`, `reference/sources/` ; « no images yet » était faux), outils
+  manquants listés, `?baked=` présenté comme banc DEV à côté du chemin de production, critiques à l'aveugle mentionnées. Versions de
+  l'outillage revérifiées par `art:doctor` (Aseprite 1.3.18.6, extension et greffon 0.8.2) : inchangées.
+- `art-lab/characters/README.md` : l'en-tête de statut, grossi par ajouts (un paragraphe de 16 lignes), devient une liste datée : outillage,
+  distribution de production (table manifeste → archétype remplacé → animations, vérifiée sur les balises des exports JSON et la planche
+  source de chaque script de rig), lab seul (`dockworker-x2-v1`, baseline visuelle approuvée ; `porter-gm-v1`, `merchant-x2-v1`,
+  `smoke-4a0b-v1` expérimentaux), planches sources (provenance et droits repris tels quels). « Quality gates (future Pass 4A) » →
+  « Quality gates » (liste inchangée) ; ligne D « future production character authority » → autorité une fois déclarée, aucun Gold Master ne
+  l'est ; une phrase sur le chemin réel de la distribution (script de rig → `build-character.mjs`) ; renvoi à la demande ouverte des
+  variantes de PNJ.
+- Même dérive corrigée dans `reference/README.md` (« Future Pass 4A uses… », ligne D), et une note datée en tête de
+  `runtime-integration-contract.md` : le statut v3 du 16/10 n'autorisait pas la production, approuvée ensuite actif par actif ; le texte v3
+  reste tel quel.
+- Contrats intacts (champs du manifeste, portées d'approbation, règles) ; aucune approbation changée, aucun Gold Master déclaré, aucune
+  métadonnée inventée. `npm run art:validate` : 14 manifestes, 4 sources archivées, 0 erreur, 0 avertissement. Fins de ligne CRLF gardées.
+
+### « À reprendre » — [OK] élagué
+- 19 525 → 8 879 octets. Retirés, parce que faits (ils vivent dans leur passe) : -2 (Passe 5), 2b (Passe 5b), 4 (rendu, repris par la
+  Passe 6), les paragraphes « Fait » de -1 et -1b … -1e, les historiques d'acceptation et les citations de fusion. Retirés, parce que
+  périmés : la branche `cast-polish-facing` « reste ouverte » (supprimée depuis), « restent générés : héros, chat, foule » (la foule est cuite
+  depuis 4A-tervicies), « non mesuré : cadence dans une vraie fenêtre » (mesurée en 6c, 6h, 6k), le point de restauration `5d10a37` (passe
+  4A-undecies close).
+- Gardés, regroupés par thème (1 distribution, 2 occlusion, 3 `SpriteRenderer`, 4 caméras, 5 visibilité, 6 performances, 7 outillage) :
+  chaque point ouvert de l'ancienne liste, avec ses mesures et ses renvois. Corrigés au passage : le coût de régénération tient compte du
+  cache du bake (P5) ; C2 est noté « appliqué par la production, confirmation explicite non consignée » (le contrat le dit « proposé »).
+  Ajoutés : tests et CI (audit), proposition d'archivage du journal, restes du ménage M1.
+- La liste précédente reste lisible par `git show 7086340:JOURNAL.md` (renvoi en tête de la section) : les repères -3 … 6 cités par les
+  anciennes passes y renvoient.
+
+### Pensée
+- Un en-tête de statut qui grossit par ajouts garde en tête sa première phrase, même périmée, et c'est celle qu'un agent lit d'abord : un
+  statut se réécrit à l'état courant, daté, avec un renvoi vers l'historique.
+- « À reprendre » est une liste de travail, pas un registre : ce qui est fait en sort à la clôture de sa passe, sinon la liste coûte plus de
+  contexte que le travail qu'elle annonce.
+
 ## À reprendre (par priorité)
 
-**-3. Performances GPU (Passe 6, plan validé par l'opérateur le 17/10 ; P0-P2 acceptés et fusionnés dans `main` le 17/10, la suite ouvre
-sa propre branche)** — fait : P0 (outillage), P1 (chauffe des
-variantes d'occlusion : première révélation 315 → 11 ms, image identique), P2 (première image préparée sous l'écran de chargement : première
-image de la boucle 17 → 4 ms, 0 programme compilé après le départ ; durée de démarrage inchangée, l'estimation « −1 à −1,5 s » du plan était
-fausse). **P3 fait (Passe 6b), accepté par l'opérateur le 17/10 et fusionné dans `main`** : peintres de textures en Web
-Workers, octets et image identiques, peinture 1,80 → 0,55 s, `__ready` 3,64 → 2,50 s ; sonde `startup.mjs` corrigée (première étiquette). Suivent,
-une piste par commit, chacune avec sa preuve : **P4 plafond de cadence fait (Passe 6c) : défaut `e60` choisi par l'opérateur le 17/10, accepté et fusionné dans `main`**
-(55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `?fps=off` sans plafond ; **pas adaptatif 3 → 4 vsyncs fait (Passe 6h) :
-l'opérateur choisit `a60` par défaut le 18/10, `?fps=e60` reste disponible ; accepté et fusionné dans `main`** : 41 img/s réguliers au lieu
-d'un mélange 3 / 4 quand le GPU rate son créneau, identique à `e60` au calme) ;
-**P5 cache du bake fait (Passe 6d), accepté par l'opérateur le 18/10 et fusionné dans `main`** : bake 337 → 36 ms relu,
-`__ready` 2,28 → 1,98 s, image et décisions de culling identiques (`viewport-proof` ligne à ligne) ; puis revue de captures pour les décisions de l'opérateur : **P6 fait (Passe 6e) : l'opérateur garde le natif par
-défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans `main`** (1080p : GPU −41 %, SoC −56 % sous
-`e60`, sprites plus doux), **P7 fait (Passe 6f) : l'opérateur garde le MSAA 4× le 18/10, `?msaa=` reste un réglage manuel ; accepté et
-fusionné dans `main`** (2× : GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts non expliqués),
-**P8 fait (Passe 6g) : l'opérateur garde le reflet à 1/2 le 18/10, `?refl=` reste un réglage manuel ; accepté et fusionné dans `main`**
-(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), **P9 abandonné par l'opérateur le 18/10 (Passe 6j), passe du journal acceptée et fusionnée dans `main`** : [KO] aucun gain GPU du DOF en demi-résolution sur la 780M (la recomposition pleine résolution coûte ce que la collecte gagne), code retiré, mesure et captures gardées. **Sonde de vsync durcie (Passe 6k), acceptée et fusionnée dans `main`** : la lecture unique au démarrage est contrôlée en cours de session (rappels sautés, ou grille des rappels) ; lectures forcées de 10,4 / 13 ms corrigées en 4-9 s, aucun faux changement sous charge ; outils de mesure en fenêtre discrète. Reste [?] : la cause du ralentissement des rappels de la passe 6j, et une lecture trop basse non corrigée. **Témoin d'énergie réparé (Passe 6i), accepté et fusionné dans `main`** : muet depuis que le compteur du boîtier a passé
-1e15 pWh (écrit « 1,011E+15 » en culture fr-FR), désormais en entiers invariants. Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
-de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
+> Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
+> (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
-**-2. Fenêtres étroites (Passe 5)** — bake par pages bornées + repli explicite + recadrage du cadre 16:9 : bâtiments présents à tout format
-testé (390 × 844 à 2560 × 1080), rendu canonique 16:9 identique au pixel (24 vues, trois graines). **Tâche acceptée par l'opérateur le 17/10**
-(« J'accepte la Passe 5 et le recadrage des fenêtres étroites tel quel : fusionne viewport-visibility-fix dans main, pousse main et supprime
-la branche. ») : recadrage gardé tel quel, branche fusionnée en avance rapide dans `main` puis supprimée. Écarts de culling hérités :
-élucidés en Passe 5b (ci-dessous).
+**1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
+- **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
+  presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
+  amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantit 336 images et en porte 322 (dix feuilles,
+  1024 × 2016) : une variante en feuille séparée ne rentre pas sans agrandir la texture ; la teinte aléatoire de la foule (± 10 % par canal
+  sur tout le sprite) ne s'applique plus aux feuilles cuites (Passe 4A-tervicies). Piste non évaluée : une permutation de palette limitée aux
+  rampes de cheveux et de peau, à l'affichage, sur la même feuille. À arbitrer avec l'opérateur : quels personnages, combien de variantes,
+  quelles teintes dans la direction artistique.
+- **Mise en scène** : la marchande ne marche pas à son étal (collisionneur ; la déplacer de 0,5 m serait une décision de mise en scène) ; un
+  second garde différent (miroir ou variante) au lieu de jumeaux, lances ; seuls 2 des 5 citadins (artisane, voyageur) paraissent à la
+  graine 1842 et à la densité 1 (`round(2 × densité)` promeneurs ; « remplacer seulement »).
+- **Mouvement** : foulée du docker 0,69 m/s contre 0,8-0,95 (léger glissement accepté en 4A-sedecies) ; bras immobiles en marche des
+  citadins (reproche commun des critiques) ; cycle 3 + 3 sans double appui (hérité du garde) ; à juger en mouvement : la bande 40° / 50° et
+  les diagonales du joueur, désormais de profil (Passe 4A-unvicies).
+- **Fidèles aux planches, non changés exprès** : bonnet / sac de la marchande selon la vue ; costumes des citadins différents selon la vue
+  (tablier, sac, chemise).
+- **Lisibilité** : tête du marteau cuit peu lisible sur la lueur de l'enclume (Passe 4A-vicies).
+- **Restes mineurs** relevés par les critiques : sections « Restent » des passes 4A-tervicies et 4A-quatervicies.
+- **Contrat et sources** : C2 (PNG versionné + JSON, `runtime-integration-contract.md` section 11) proposé le 16/10, appliqué par la
+  distribution de production, sans confirmation explicite consignée : à faire confirmer. Originaux des planches de référence à retrouver
+  (l'opérateur s'en charge) ; droits de tiers non vérifiés exhaustivement.
+- **Personnages clés et suite de l'art** : héros et chat restent générés (densité ×1) ; ni personnage clé ni personnage **original** au
+  même niveau ; E4 non lancée. Avant d'étendre : densité du cast (héros), liseré dépendant de la densité (liseré par sprite non implémenté),
+  largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A. Décision ouverte : quelles planches étaient réellement rejetées (la
+  consigne de 4A en parlait sans les montrer ; les trois planches archivées sont toutes classées comme références). Le modelé ×1,5 n'est
+  plus la voie principale (Passes 4A-quater / quinquies).
+- **Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ;
+  surveiller à chaque nouveau PNJ. Mesuré en 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
 
-**-2b. Écarts élagué / `vis=0` (Passe 5b)** — chaque écart expliqué et prouvé (pièce forcée → 0 px, faces échangées → 0 px, MSAA seul) :
-ordre de dessin de faces coplanaires du quai lointain (30417 B, AB), lanières plus fines qu'un pixel de bake (murs latéraux vus de chant en D,
-maison 609 entre deux poses AB), fissures vues par un seul échantillon MSAA (7719 C, 30417 CD). Correctif : tuiles fines ×2 pour les poses
-stables de D (`BAKE_FINE`, ≈ +18-20 ms de bake), rendu canonique identique (25 / 27 vues à 0 px, les 2 autres = lanières désormais dessinées),
-`viewport-proof` 22 → 9 échecs ; témoin d'ordre dans `viewport-proof`, `tools/vis-why.mjs`. **Tâche acceptée par l'opérateur le 17/10**
-(« J'accepte la Passe 5b telle quelle (tuiles fines ×2 pour D) : fusionne vis-residue-5b dans main, pousse main et supprime la branche. ») :
-branche `vis-residue-5b` fusionnée en avance rapide dans `main` (`77621bb`) puis supprimée (locale et distante). **Restent à décider par
-l'opérateur** : D ×4 (+75 ms), poses AB à w = 0,5 pour 609, corrections de géométrie (fissures, quai coplanaire) qui seules rendraient
-l'outil vert.
+**2. Occlusion du joueur (Passes 3 / 3b)**
+- Un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande tramée ;
+  la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un
+  nouvel occluder.
+- Relecture humaine en mouvement (style C, rayons 40–70 / 80–120 px, fondu 0,2 / 0,3 s) ; décider si les PNJ d'interaction doivent entrer
+  dans le reveal ; chercher un cas où la passe « derrière » restaure vraiment des pièces (sinon envisager de la couper pour gagner ≈ 90 ms
+  de bake) ; rejouer l'inventaire à chaque changement de zones de caméra ou de composition (bateau, lampadaires).
 
-**-1. PROCHAIN** — Passe 4A-undecies close : adressage par case entière commité (sprites générés identiques au bit à `eecea58`, ×2 stable
-quelle que soit la taille de l'atlas, aucun débordement, aucun appel en plus) ; écart de l'ombre portée du ×2 face à l'ancien aperçu
-(3-67 px par vue, ≤ 12 / 255) **accepté par l'opérateur** : l'ombre suit la règle entière du corps. Restent ouverts : C2 (PNG versionné) à confirmer ;
-droits : usage comme source **autorisé** (16/10, sous réserve des droits de tiers, non vérifiés exhaustivement), les trois planches archivées dans
-`reference/sources/` (octets contrôlés par `art:validate`) ; les originaux restent à retrouver (l'opérateur s'en charge). **Fait : distribution de production active** (Passes 4A-sedecies / septendecies) : `dockworker-x2-v2` (porteur) et `merchant-x2-v2`
-(marchande de l'étal) approuvés le 17/10 et chargés par le jeu. **Tâche acceptée par l'opérateur le 17/10** (« La tâche est terminée et
-acceptée : fusionne la branche dans main, pousse main et supprime la branche. ») : branche `character-gold-master-4a-1` fusionnée en avance
-rapide dans `main`, puis supprimée. La prochaine tâche ouvre sa propre branche. Restent ouverts : la marchande ne marche pas à son étal (collisionneur ; la déplacer de 0,5 m serait une
-décision de mise en scène), foulée du docker 0,69 m/s contre 0,8-0,95 (léger glissement), bonnet / sac selon la planche. `merchant-x2-v1` reste comme
-preuve ; la source V4 n'est plus attendue. Restauration : `5d10a37`. Branche poussée à chaque commit (règle `AGENTS.md`).
-**-1b. Fait (Passes 4A-duodevicies / undevicies)** : `blacksmith-x2-v1`, `guard-x2-v1` (les deux gardes), `hooded-x2-v1` **approuvés pour la
-production le 17/10** et chargés par le jeu (cinq planches cuites). **Tâche acceptée par l'opérateur le 17/10** (« La tâche est terminée et
-acceptée : fusionne la branche cast-blacksmith-guard-hooded dans main, pousse main et supprime la branche. ») : branche fusionnée en avance
-rapide dans `main`, puis supprimée (locale et distante) ; la prochaine tâche ouvre sa propre branche. Décisions de mise en scène ouvertes : un second garde différent (miroir ou variante) au lieu de
-jumeaux, lances. Restent générés : héros, chat, foule.
-**-1c. Fait (Passe 4A-vicies)** : forgeron tourné vers l'enclume (`Math.atan2(0.55, -0.25)`), frappe côté enclume en A, B, C, D et mélanges,
-D et forge sabotée identiques au pixel ; change l'image de démarrage en A, B, C. **Approuvé par l'opérateur le 17/10** et **fusionné dans
-`main`** (avance rapide, à sa demande) ; la branche partagée `cast-polish-facing` reste ouverte pour les correctifs de distribution de l'autre
-séance. Observation ouverte : tête du marteau cuit peu lisible sur la lueur de l'enclume.
-**-1d. Fait (Passe 4A-unvicies)** : traits noirs du cou retirés des cinq planches (fermeture verticale seulement sous la rangée 48,
-palettes approuvées épinglées, jambes identiques aux planches approuvées) et vue des marcheurs tirée de leur pas projeté à l'écran ; fusionné
-dans `main` à la demande de l'opérateur (« si la tache est fini on peut commit/push vers main »). (a) **Fait (Passe 4A-duovicies)** : planches
-révisées montrées une à une et approuvées par l'opérateur le 17/10 (« Les cinq planches révisées me conviennent. »). Ouverts : (b) à juger en
-mouvement : la bande 40° / 50° et les diagonales du joueur, désormais de profil ; (c) défauts hérités des planches approuvées relevés par la
-critique à l'aveugle (manches du docker coupées par le balancement des bras, trous du tabard du garde, main du passant, jambe arrière du garde
-de profil, contour de bras du forgeron de dos, chaussure de la marchande) : passe de rig **faite** (Passe 4A-duovicies, branche
-`cast-rig-fixes`) : les cinq planches corrigées dans leur script de rig (critiques à l'aveugle, révisée contre précédente : garde 7 / 4,5,
-passant 8 / 5, forgeron 7,5 / 5,5, marchande 7 / 6, docker 8 / 5 au troisième tour), **approuvées par l'opérateur le 17/10**
-(« J'approuve les cinq planches corrigées de la passe C3 pour la production : fusionne cast-rig-fixes dans main, pousse main et supprime la branche. ») ; branche fusionnée en avance rapide dans `main` puis supprimée (locale et distante). Défauts hérités relevés par ces critiques, hors de la liste, **non traités** : (d) marchande : de
-profil les deux chaussures se fondent en une semelle (images 2, 5 ; barre noire en 4), de face / dos le corps saute de 2 texels de côté
-(`SHIFT`) ; (e) garde : le coin du galon d'ourlet au bout de la cape de profil se lit comme un talon détaché, la jambe arrière presque
-toujours cachée de profil ; (f) passant : une bande sombre de l'ourlet arrière pend derrière le talon de profil ; (g) forgeron : épaule
-gauche crénelée de face, contours du poing gauche qui alternent ; (h) docker : dessus de casquette en barre sombre aux coins cassés (toutes
-les images), bras étiré qui s'allonge un peu en marche de face. Branche `cast-polish-facing` supprimée (locale et distante) à la demande de l'opérateur.
-**(d)-(h) traités en Passe 4A-quatervicies** (branche `cast-inherited-defects`, une seule pour les cinq) : critiques à l'aveugle révisée /
-précédente 7,5 / 6 (garde), 7,5 / 5,5 (passant), 7,5 / 7,3 (forgeron, après reprise), 7,5 / 6 (docker), 7 / 6 (marchande) puis trois reprises chacune préférée (7,3 / 7,0 ; 7,5 / 7 ; 7,5 / 7,0) ; **approuvés pour la
-production le 17/10** (« J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. ») ; branche fusionnée en avance rapide dans `main`
-puis supprimée ; restes listés dans la passe.
-**-1e. Fait (Passe 4A-tervicies)** : cinq citadins cuits (`artisan-x2-v1`, `traveler-x2-v1`, `townswoman-x2-v1`, `older-merchant-x2-v1`,
-`courier-x2-v1`) à la place de `crowd0`..`crowd4` ; critiques à l'aveugle finales 6-6,5/10 (3-3,5 pour la foule générée qu'ils remplacent) ;
-**approuvés pour la production le 17/10** (« J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. ») ; branche `cast-crowd` fusionnée en avance rapide
-dans `main` puis supprimée. Seuls le héros et le chat restent générés. Décisions ouvertes : bras immobiles en marche (reproche commun des critiques), costumes différents selon la vue
-(fidèles aux planches), seuls 2 des 5 citadins visibles à la graine 1842 et à la densité 1, cycle sans double appui. Ensuite, dans l'ordre
-demandé : ménage M1 **fait** (Passe M1, acceptée par l'opérateur le 17/10 et fusionnée dans `main` : worktrees `HD-2D-visbase` et `kind-wilson`
-retirés, branche `claude/kind-wilson-a0fa95` supprimée, sept jonctions défaites, entrées mortes de `.claude/launch.json` retirées, vieux
-serveurs Vite `:5174` / `:5180` arrêtés), défauts hérités -1d (d)-(h) **faits** (Passe 4A-quatervicies, approuvés et fusionnés dans `main` le 17/10), performances GPU
-(`tools/perf.mjs`, base figée : **analyse déléguée** à la séance « Performances GPU : analyse et plan », plan chiffré dans le dossier de notes
-partagé des séances ; ni branche ni commit avant la fusion de `cast-inherited-defects` et l'accord de l'opérateur), puis variantes de PNJ (-1f).
-**-1f. Variantes de PNJ (demande de l'opérateur du 17/10, après -1d et les performances GPU)** : mot pour mot
-« Par ailleurs a la suite de nos travaux de sprites NPC qui sont presque peuple partout sur le district Merchant, on creera par la
-suite des variantes de NPC avec couleur de cheveux et peau different pour amener plus de diversite au jeu ».
-Contraintes connues : la texture cuite garantit 336 images et en porte 322 (dix feuilles, 1024 × 2016) : une variante en feuille séparée ne
-rentre pas sans agrandir la texture ; la teinte aléatoire de la foule (± 10 % par canal sur tout le sprite) ne s'applique plus aux feuilles
-cuites (Passe 4A-tervicies). Piste non évaluée : une permutation de palette limitée aux rampes de cheveux et de peau, à l'affichage, sur la
-même feuille. À arbitrer avec l'opérateur : quels personnages, combien de variantes, quelles teintes dans la direction artistique.
-**-0c. Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ; surveiller à chaque nouveau PNJ.
-Mesuré à la passe 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
-**-0d. Occlusion (problème indépendant, Passe 3)** : un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande
-tramée ; la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un nouvel occluder.
-Avant d'étendre : densité du cast (héros), liseré dépendant de la densité, largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A, personnage **original** au même niveau.
-Pas de roster, de généralisation ni de personnage clé ; E4 **non lancée**. Le modelé ×1,5 n'est plus la voie principale. Décisions ouvertes : liseré par sprite (non implémenté),
-quelles planches étaient réellement rejetées (la consigne de 4A en parlait sans les montrer ; les trois planches archivées sont toutes classées comme références). `porter-gm-v1` reste une baseline expérimentale.
-Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, test de fumée `smoke-test/4a0b/` après toute mise à jour (épinglé 0.8.2, auto-update coupé), critique par agent neuf (cf. `art-lab/README.md`).
--0b. **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise appli. Servir les baselines sur `:518x --strictPort` ;
-  décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
+**3. `SpriteRenderer`** (prévu) : remplacer la superposition 55 % par une vraie séparation (passe dédiée ou masque propre) pour supprimer
+l'auréole ; revoir le pas de silhouette / contour ; valider sur des PNJ en mouvement (pas seulement des captures figées) et sur les graines
+7719 / 30417.
 
-0. **Reveal d'occlusion** (passe 3b) : relecture humaine en mouvement (choix du style C, rayons 40–70 / 80–120 px, fondu 0,2 / 0,3 s) ; décider si les PNJ d'interaction
-   doivent entrer dans le reveal ; chercher un cas où la passe « derrière » restaure vraiment des pièces (sinon envisager de la couper pour gagner ≈ 90 ms de bake) ;
-   rejouer l'inventaire (`tools/occ-inventory.mjs`) à chaque changement de zones de caméra ou de composition (bateau, lampadaires).
-1. **`SpriteRenderer`** (prévu) : remplacer la superposition 55 % par une vraie séparation (passe dédiée ou masque propre)
-   pour supprimer l'auréole ; revoir le pas de silhouette/contour ; valider sur des PNJ en mouvement (pas seulement
-   des captures figées) et sur la graine 7719 / 30417.
-2. **Zones de caméra** : validées par simulation (passe 4B, `tools/camsim.mjs`) mais pas par de vrais joueurs. Points ouverts : (a) D place toujours le joueur
-   **à droite** du centre (NDC +0,35 → +0,68) — contrepartie de la continuité avec C ; (b) le long du bord de l'eau (z > 2,4) on passe **B → D** sans jamais
-   traverser C ; (c) lacet max 0,96°/image en C↔D (contre ≤ 0,55° ailleurs) ; (d) les transitions B→C vers l'ouest (−254 px/s) et B→A (−131 px/s) font glisser le joueur à
-   l'envers à l'écran (héritage de la passe 2, mesuré en 4B, non corrigé).
-2b. **Fait (Passe 5b)** : le pixel (1244 ; 185) de D (26 ; 3,5) en 1280 × 720 était la lanière du mur ouest d'east3 (partie 89, étage 2) vue
-   de chant, sous le pixel de bake ; gardée en D par les tuiles fines (0 px en 1080p et 720p ; en 2560 × 1080 restent 2 lanières + 1 fissure).
-3. **Coût de régénération** (+250 ms de la passe 2, ≈ +150–180 ms de la passe 3b, **≈ +180 ms de la passe 4B** : 505–523 → 682–715 ms ; bake 200 → 330 ms pour 273 poses ;
-   passe 5 : bake par pages 367 → 300 ms en médiane, génération ≈ 910 ms avec la distribution actuelle) :
-   mettre en cache les identifiants par graine, ou n'échantillonner que les poses concernées quand seul un réglage de caméra change ; réduire CD / BD (168 poses sur 273) a coûté 4 pièces de Tier 3 en précision : à ne faire qu'avec une preuve.
-3b. **Ordre des classes de dessin** : 41 classes, A/B/C pondérés ×2 (D dessine ≈ tout : 98,8 k / 100,8 k). Si D devient lourd (nouveau contenu), rejouer `planDraw` avec un autre poids ou séparer D dans un mesh à part (+ appels de dessin).
-3c. **Rive opposée / z caméra** : la caméra de D doit rester à z < ~18,5 (maisons de la rive opposée dès z = 19,8). Tout cadrage plus reculé exige de retirer ou d'abaisser ces maisons (elles sont aujourd'hui invisibles de A/B/C).
-4. **Rendu** — repris par la Passe 6 (plan validé, voir -3) : MSAA 2× = P7 (−1,4 à −2,2 ms en 1080p sur la 780M), FXAA écarté sans masque
-   des sprites (il flouterait le pixel-art), DOF demi-résolution = P9 ; le bloom est **déjà** à demi-résolution (`UnrealBloomPass`).
-5. **Autres graines** — **élucidé en Passe 5b** (voir -2b) : reste dans `viewport-proof` 9 échecs connus, tous expliqués : fissures MSAA
-   (7719 C, 30417 CD 720p, 1 px de 1842 D 2560 × 1080), lanières non attrapées à ×2 (30417 D 720p / 665 × 1200 : partie 73 ; 1842 D 2560 × 1080 ;
-   7719 AB 665 × 1200), maison 609 (30417 AB). Pixels « order » (30417 B 109 px, AB 31 px, A / BC 1 px en 720p) rapportés sans échouer.
-   Tout nouvel écart : `tools/vis-why.mjs` avant de toucher au bake.
-5b. **Écart hérité** : 17 px d'étincelle dans le canal coupés par le bake (B, joueur 15,5 ; −2,7) — voir `known-issues/pass2-vis-speck.png`.
-   Passe 5b (1842, 720p) : aujourd'hui 6 px ; 6 lanières forcées (reflets de maisons de la ville moyenne, murs est de `bg2` / `tall`) → 1 px,
-   non élucidé [?].
-6. **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — à retirer proprement
-   une fois qu'on accepte de décaler la ville lointaine d'une graine.
+**4. Zones de caméra** — validées par simulation (Passe 4B, `tools/camsim.mjs`), pas par de vrais joueurs : (a) D place toujours le joueur
+**à droite** du centre (NDC +0,35 → +0,68), contrepartie de la continuité avec C ; (b) le long du bord de l'eau (z > 2,4) on passe **B → D**
+sans traverser C ; (c) lacet max 0,96° / image en C ↔ D (≤ 0,55° ailleurs) ; (d) les transitions B → C vers l'ouest (−254 px/s) et B → A
+(−131 px/s) font glisser le joueur à l'envers à l'écran (héritage de la passe 2, mesuré en 4B, non corrigé). Contrainte : la caméra de D reste
+à z < ~18,5 (maisons de la rive opposée dès z = 19,8, invisibles de A/B/C) ; tout cadrage plus reculé exige de les retirer ou de les abaisser.
+
+**5. Visibilité / culling**
+- **Décisions de l'opérateur (Passe 5b)** : D ×4 (+75 ms de bake), poses AB à w = 0,5 pour la maison 609, corrections de géométrie
+  (fissures, quai coplanaire) qui seules rendraient `viewport-proof` vert.
+- **Écarts connus de `viewport-proof`** (9 échecs, tous expliqués en Passe 5b) : fissures MSAA (7719 C, 30417 CD 720p, 1 px de 1842 D
+  2560 × 1080), lanières non attrapées à ×2 (30417 D 720p / 665 × 1200 : partie 73 ; 1842 D 2560 × 1080 ; 7719 AB 665 × 1200), maison 609
+  (30417 AB). Pixels « order » (30417 B 109 px, AB 31 px, A / BC 1 px en 720p) rapportés sans échouer. Tout nouvel écart :
+  `tools/vis-why.mjs` avant de toucher au bake.
+- **Écart hérité [?]** : 17 px d'étincelle dans le canal coupés par le bake (B, joueur 15,5 ; −2,7), `known-issues/pass2-vis-speck.png` ;
+  Passe 5b (1842, 720p) : 6 px aujourd'hui ; 6 lanières forcées (reflets de maisons de la ville moyenne, murs est de `bg2` / `tall`) → 1 px,
+  non élucidé.
+- **Coût d'un bake neuf** : le cache (P5, Passe 6d) relit un bake en 36 ms au lieu de 337 ; un bake neuf reste ≈ 300 ms par pages (Passe 5,
+  273 poses), génération ≈ 910 ms. Piste : n'échantillonner que les poses concernées quand seul un réglage de caméra change ; réduire CD / BD
+  (168 poses sur 273) a coûté 4 pièces de Tier 3 en précision : seulement avec une preuve.
+- **Ordre des classes de dessin** : 41 classes, A/B/C pondérés ×2 (D dessine ≈ tout : 98,8 k / 100,8 k). Si D s'alourdit (nouveau
+  contenu), rejouer `planDraw` avec un autre poids ou séparer D dans un mesh à part (+ appels de dessin).
+
+**6. Performances GPU (Passes 6 à 6k, plan P0-P9 terminé, tout accepté et fusionné)** — Restent [?] : la cause du ralentissement des
+rappels rAF de la passe 6j (ni charge CPU ni charge GPU ; hypothèse : rafraîchissement dynamique de l'écran ou du pilote) ; une lecture de
+vsync trop **basse** n'est pas corrigée par le contrôle en session (jamais observée). Non mesuré : autres navigateurs / GPU, cache de
+shaders d'un profil persistant, 780M sans contention (fenêtre calme, témoin à l'appui). Écartés (mesurés, Passe 6) : pré-passage de
+profondeur (≤ 0,75 ms en 1080p avant son propre coût), filtre de l'ombre de lune (≤ 4 %) ; FXAA, qui flouterait le pixel-art sans masque des
+sprites.
+
+**7. Outillage, documentation, dette**
+- **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
+  appli. Servir les baselines sur `:518x --strictPort` ; décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
+- **Tests et CI** : l'audit externe du 18/10 relève l'absence de suite de tests unitaires et d'intégration continue ; tâche séparée.
+- **Coût de contexte du journal** : archivage des anciennes passes proposé à l'opérateur (Passe M3), en attente de sa décision.
+- **Restes du ménage M1** : bases figées sans lien dans d'anciens scratchpads, entrées `dev-cast2` / `dev-cast3` sans objet (Passe M1,
+  « Restent »).
+- **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — à retirer proprement une fois qu'on
+  accepte de décaler la ville lointaine d'une graine.
 
 ## Principes à garder
 
@@ -3821,3 +3822,5 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
 - Serveurs de développement par `preview_start` / `preview_stop` (entrée de `.claude/launch.json`), longs scripts par `run_in_background` /
   `TaskStop` ; jamais `taskkill`, `Stop-Process` ni balayage des processus du système : un reste se signale (port et PID propriétaire,
   `Get-NetTCPConnection`) et l'opérateur décide ; en fin de séance, tout ce qu'elle a lancé est arrêté (règle de l'opérateur, 17/10, `AGENTS.md`).
+- Un statut de README se réécrit à l'état courant, daté, avec un renvoi au journal pour l'historique ; « À reprendre » ne garde
+  que l'ouvert : ce qui est fait en sort à la clôture de sa passe (Passe M3).

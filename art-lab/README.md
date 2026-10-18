@@ -1,13 +1,22 @@
 # Art Lab
 
-Development-only workspace for **authored / baked finishing** of project art. Today it is prepared for one thing: an
-Aseprite-first **character** pipeline (future Pass 4A). Nothing here is loaded by the game.
+Development-time workspace for **authored / baked finishing** of project art. Its scope is the **character** pipeline:
+reference sheets -> rig scripts -> Aseprite sources -> baked sheets (PNG + JSON) -> provenance manifests.
 
-> **TOOLCHAIN STATUS (Pass 4A-0B, 2026-10-15): installed and validated end to end on this machine** — Aseprite 1.3.18.6,
-> Aseprite AI Artist 0.8.2 (Claude Code plugin, local scope, pinned to tag `v0.8.2`; Lua extension 0.8.2). The smoke test drew
-> a synthetic dummy live in Aseprite, exported a real sheet and passed the Character Lab self-test (see
-> `characters/smoke-test/4a0b/` and JOURNAL, Passe 4A-0B). Production (Pass 4A) has **not** started. `npm run art:doctor`
-> reports what is configured; only re-running the smoke test proves the live link after an upgrade.
+> **STATUS (2026-10-18).** The game reads only its **production cast** from here: the baked sheets
+> (`characters/exports/<id>.png + .json`), with their manifests and the SHA-256 their provenance packs record, loaded by
+> `src/characters/BakedCast.ts` (each sheet hash-checked, decoded byte-exact), and only for the manifests approved by the operator with
+> `runtimeUse: "production"`: `dockworker-x2-v2`, `merchant-x2-v2`,
+> `blacksmith-x2-v1`, `guard-x2-v1`, `hooded-x2-v1` and the five townsfolk of the ambient crowd (`artisan-x2-v1`, `traveler-x2-v1`,
+> `townswoman-x2-v1`, `older-merchant-x2-v1`, `courier-x2-v1`), all approved on 2026-10-17, none declared a Gold Master. The hero and the
+> cat are still generated; `?cast=generated` shows the old generated sprites. Everything else here (Character Lab, tools, sources,
+> reviews, lab and experimental exports) stays out of the game and of its build. Details: [`characters/README.md`](characters/README.md);
+> history: `JOURNAL.md` (Passes 4A-0A to 4A-quatervicies).
+>
+> **Toolchain (Pass 4A-0B, 2026-10-15): installed and validated end to end on this machine** — Aseprite 1.3.18.6, Aseprite AI Artist
+> 0.8.2 (Claude Code plugin, local scope, pinned to tag `v0.8.2`; Lua extension 0.8.2). The smoke test drew a synthetic dummy live in
+> Aseprite, exported a real sheet and passed the Character Lab self-test (`characters/smoke-test/4a0b/`). `npm run art:doctor` reports
+> what is configured; only re-running the smoke test proves the live link after an upgrade.
 
 ## Principle
 
@@ -20,8 +29,8 @@ The project moves from *pure code-generated art* toward *code-directed procedura
   `npm run dev` and `npm run build` must work on a machine without Aseprite.
 - No generated output silently becomes canonical production art: see the provenance manifests below.
 
-Only characters are in scope. Environment textures, decals, signage, VFX flipbooks, crowds, distant-city cards and facade
-baking may be evaluated later, each through an explicit operator-approved task. None of that exists here.
+Only characters are in scope (the ambient crowd's townsfolk are characters). Environment textures, decals, signage, VFX flipbooks,
+distant-city cards and facade baking may be evaluated later, each through an explicit operator-approved task. None of that exists here.
 
 ## Layout
 
@@ -29,24 +38,30 @@ baking may be evaluated later, each through an explicit operator-approved task. 
 art-lab/
   README.md                      this file
   characters/
-    README.md                    pipeline, provenance manifests, quality gates, NPC architecture notes
+    README.md                    status, approval scopes, provenance, pipeline, manifest contract, quality gates, NPC notes
     manifest.example.json        documented template (status "planned"; validated by art:validate)
-    reference/                   reference-package conventions (README + A / B / C folders; no images yet)
+    runtime-integration-contract.md   multi-resolution sprites in the main atlas / renderer (v3, accepted with amendments)
+    reference/                   reference-package conventions (README; A / B / C folders hold only .gitkeep) and sources/:
+                                 the archived reference sheets and art sources, each with its .source.json record
+    briefs/                      character briefs / proposals
     source/                      *.aseprite production sources (project-owned, tracked)
     exports/                     baked runtime-ready outputs: sheet PNG + metadata JSON (tracked)
+    manifests/                   one <id>.manifest.json per asset (provenance, approval, runtime use)
+    provenance/                  <id>/PROVENANCE.json: SHA-256 of the chain, dated decisions, rebuild inputs
+    rigs/                        <id>.rig.mjs: the whole recipe of an animated character (crops, palette, view edits, frames)
     reviews/                     contact sheets / critic notes (tracked evidence)
     smoke-test/                  evidence of the 4A-0B validation (tracked)
-    manifests/                   one <id>.manifest.json per asset (provenance)
-    rigs/                        <id>.rig.mjs: the whole recipe of an animated character (crops, palette, view edits, frames)
 tools/art-lab/
   doctor.mjs                     environment report (read-only)
   validate-manifest.mjs          provenance manifest + orphan check + archived reference sheets vs their records
   make-contact-sheet.mjs         labelled nearest-neighbour review sheet of an exported PNG + JSON
   reconstruct-grid.mjs           strict-grid reconstruction of one figure from a reference sheet
+  replay-pixel-ops.mjs           replays the recorded pixel edits of a provenance pack
   quantize-palette.mjs           one palette for several views (joint OKLab k-means, or an approved sprite's colours)
   rig-engine.mjs                 cut-out rig: parts, row remaps, RotSprite rotation, IK legs, painted limbs, frame checks
   build-character.mjs            rig script -> views -> frames -> Aseprite source + sheet PNG / JSON; --check = rebuild and compare
   verify-provenance.mjs          a provenance pack's hashes; --rebuild re-runs its chain (rig packs: build-character --check)
+  baked-proof.mjs, storage-bench.mjs, dynwalk.mjs, dynwalk-report.mjs   proofs of the shared atlas (see below)
 character-lab.html + src/lab/    Character Lab: dev-only Three.js viewer for an exported sheet
 ```
 
@@ -105,9 +120,10 @@ the header of `src/lab/runtimePreview.ts`.
 
 ### Shared atlas, experimental (dev only): `?baked=<id>`
 
-The path the integration contract (`characters/runtime-integration-contract.md`, v3) puts in the game, still behind a DEV flag: the
-export joins the **main** atlas (blocks above the generated cells, their bytes untouched) and is drawn by the **main** renderer (no second
-renderer, no extra draw call). The loader (`src/lab/bakedLoader.ts`) needs a manifest with runtime use and a provenance pack whose SHA-256
+The DEV harness of the integration contract (`characters/runtime-integration-contract.md`, v3): any export with a `lab` or
+`production` manifest joins the **main** atlas (blocks above the generated cells, their bytes untouched) and is drawn by the **main**
+renderer (no second renderer, no extra draw call), at authored spawns. The production cast (`src/characters/BakedCast.ts`) is the
+contract's production path; this flag stays the DEV test bench. The loader (`src/lab/bakedLoader.ts`) needs a manifest with runtime use and a provenance pack whose SHA-256
 matches the PNG, decodes it byte-exact, and refuses a spawn whose sheet lacks a frame its behaviour needs (amendment B); `bakedfallback=front-idle`
 declares the front-idle aliases explicitly (lab, immobile only). Spawns: `bakedpos=x,z;x,z` (absent = loaded, not spawned), `bakedscale`,
 `bakedheight`, `bakeddetail`, `bakedface`; `bakedhide=porter`, `bakedfollow=1` as above. Example:
@@ -121,7 +137,9 @@ A fresh, independent agent with only a Read tool gets an evidence pack: the 8x r
 (`look op=ascii`), gameplay-scale runtime crops (A / B / C), before / after comparisons, the current cast atlas and the operator's
 references. It writes a **cold read before reading the brief**, then judges against the references, answers the operator's questions
 and lists located, pixel-level findings (craft vs taste) with a score; the next pass also gets the previous findings to verify. Pass 4A:
-`characters/reviews/porter-gm-v1/critiques.md`.
+`characters/reviews/porter-gm-v1/critiques.md`. The production cast was reviewed by **blind** critiques, a fresh agent each round (the
+full protocol in `JOURNAL.md`, "Principes à garder": labels drawn at random, key out of the critic's reach, self-critique written before
+reading the verdict); evidence in `characters/reviews/<id>/`.
 
 ## Provenance (no silent canon)
 
@@ -130,7 +148,7 @@ experimental, whether an operator approved it, and whether it may be used by the
 `production` requires `approved: true` with a named approver and date. Format and rules: `characters/README.md`.
 `*.aseprite` files are production sources; the PNG + JSON exports are the baked, runtime-ready outputs.
 
-## Installed toolchain (Pass 4A-0B)
+## Installed toolchain (Pass 4A-0B; same versions reported by `art:doctor` on 2026-10-18)
 
 | Piece | Exactly what is installed | Where (none of it is in Git) |
 |---|---|---|

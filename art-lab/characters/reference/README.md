@@ -1,19 +1,20 @@
 # Reference package conventions
 
-Future Pass 4A uses four kinds of references. They do **not** have equal authority; when they disagree, the table decides.
+The character pipeline uses four kinds of references. They do **not** have equal authority; when they disagree, the table decides.
 
 | Cat. | Folder | What it is | Authority |
 |---|---|---|---|
 | **A** | `A-runtime-baseline/` | Current Runtime Baseline: actual Merchant District screenshots (`npm run shots`, Cameras A / B / C / D) | **environment authority**: how the world really looks |
 | **B** | `B-runtime-quality-targets/` | Runtime Quality Targets: our generated Merchant District character-integration previews | **perceptual integration / quality ceiling**: how good a character may look in this scene |
 | **C** | `C-sprite-quality/` | Sprite Quality References: our generated NPC sheets + selected external inspiration | **pixel-art craft, silhouette, costume quality** |
-| **D** | (none: by manifest) | Gold Master Outputs: Merchant, Dock Worker, Forge Helper | **future production character authority** |
+| **D** | (none: by manifest) | Gold Master Outputs: Merchant, Dock Worker, Forge Helper | **production character authority, once declared** (none is yet) |
 
 Rules of thumb:
 
 - A never overrules B on integration, and B never overrules A on what the district is. C teaches craft, never composition.
-- D does not exist yet. Once approved, a gold master lives in `exports/` with its manifest (`approved: true`) and is referenced
-  **by manifest id**: never copy it into `reference/`.
+- D does not exist yet (the production cast, `../README.md`, is approved for production, not declared Gold Masters). Once approved, a
+  gold master lives in `exports/` with its manifest (`approved: true`) and is referenced **by manifest id**: never copy it into
+  `reference/`.
 - Every manifest lists the references that informed it (`references[].category`).
 
 Our reference sheets (operator decisions, 2026-10-16; record `../provenance/dockworker-x2-v1/source-declaration.json`). Generated with
