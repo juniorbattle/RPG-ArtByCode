@@ -28,8 +28,10 @@ if (!variants.length) throw new Error('usage: node tools/startup.mjs [--n=4] "la
 const INSTR = () => {
   window.__boot = { labels: [], longs: [], frames: [] };
   try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__boot.longs.push([Math.round(e.startTime), Math.round(e.duration)]); }).observe({ type: 'longtask', buffered: true }); } catch {}
+  // observed from the start (not from DOMContentLoaded): the first label is set while the module script runs, before DOMContentLoaded
+  // (journal pass 6, P3: the probe used to miss it and start the painting phase at the second label)
   const mo = new MutationObserver(() => { const el = document.getElementById('ld-label'); if (el && window.__boot.labels.at(-1)?.[1] !== el.textContent) window.__boot.labels.push([Math.round(performance.now()), el.textContent]); });
-  document.addEventListener('DOMContentLoaded', () => mo.observe(document.body, { subtree: true, childList: true, characterData: true }));
+  mo.observe(document, { subtree: true, childList: true, characterData: true });
   const raf = window.requestAnimationFrame.bind(window), ts = window.__boot.frames;
   window.requestAnimationFrame = (cb) => raf((t) => { if (ts.length < 4000) ts.push(t); cb(t); });
   let app;
@@ -87,7 +89,7 @@ try {
           programs: { atStart: b.progsAtStart, boot: progs0, beforeReveal: progsBeforeReveal, afterReveal: progsAfterReveal, end: R.info.programs.length }, occ1, occ2, forge, regen,
         };
       });
-      const paint = (() => { const a = r.labels.find((x) => /ASHLAR|WHITE/.test(x[1])), z = r.labels.find((x) => /READY/.test(x[1])); return a && z ? z[0] - a[0] : NaN; })();
+      const paint = (() => { const a = r.labels.find((x) => /WHITE/.test(x[1])) ?? r.labels.find((x) => /ASHLAR/.test(x[1])), z = r.labels.find((x) => /READY/.test(x[1])); return a && z ? z[0] - a[0] : NaN; })();
       const row = { label: v.label, i, wallMs: Date.now() - t0, paint, longest: Math.max(0, ...r.longs.map((x) => x[1])), foreign: wit.on ? foreignUse(wit.samples(), t0, Date.now(), mine, opt.thr) : [], ...r };
       out.push(row);
       console.log(`[${i + 1}] ${v.label.padEnd(16)} ready ${r.readyAt} ms  paint ${paint} gen ${r.gen.toFixed(0)} (bake ${r.bake})  regenerate ${r.regenBoot} then ${r.regenToStart} to start  first frame after start ${r.firstAfterStart} (programs created ${r.programs.boot - r.programs.atStart})  longest task ${row.longest}  `

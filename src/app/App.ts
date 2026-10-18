@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MaterialLibrary } from '../materials/MaterialLibrary';
+import { defaultPainters } from '../materials/PainterPool';
 import { PostFX } from '../atmosphere/PostFX';
 import { MoonShadow, PlanarReflection } from '../atmosphere/ShadowAndReflection';
 import { LightRig } from '../atmosphere/LightRig';
@@ -122,7 +123,10 @@ export class App {
   }
 
   async init(): Promise<void> {
-    this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress);
+    // texture painters in Web Workers (journal pass 6, P3); ?painters=main paints on the main thread, ?painters=<n> sets the pool size
+    const pq = this.opts.params.get('painters');
+    const painters = pq === 'main' ? 0 : pq !== null && /^\d+$/.test(pq) ? +pq : defaultPainters();
+    this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress, painters);
     this.generator = new MerchantDistrictGenerator(this.lib);
     this.opts.onProgress('sprites', 0.97);
     await new Promise((r) => setTimeout(r, 0));

@@ -107,7 +107,8 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 `camera=A|B|C|D` (pin a framing) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
 a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
-`static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · DEV server only: `visfail=alloc|zero` (force a
+`static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
+thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) · DEV server only: `visfail=alloc|zero` (force a
 visibility-bake failure: the fallback must keep every part and report it), `vispage=<px>` (bake page size), `visscale=<k>` (every bake tile k x:
 what a finer bake would keep) and `visfine=D:4|A+B+C+D:2|0` (the extra fine tiles, default D at 2x; `0` = none) ·
 `occ=0` (no player reveal: pixel-identical to Pass 2) · `occstyle=soft|dither|hybrid` · `occforce=all|0,2` (force
@@ -216,6 +217,10 @@ banner, the boat's rig (mast / yard / sail) and the 7 quay lamps. Never tag smal
   the single exception is the occludable variant above, bound only while a reveal is active.
 - `lightSum()` walks a per-cell light list (`LIGHT_GRID`, rebuilt in `LightRig`); `lightMirror()` still uses all lights.
 - The sky is drawn last among opaques, depth-tested.
+- Texture painters (`TexturePainters.ts`) run as named jobs (`PainterJobs.ts`) in a small Web Worker pool (`PainterPool.ts`) while the main
+  thread paints the canvas atlases; a worker that cannot start, throws or stays silent 20 s has its job painted on the main thread (console,
+  `lib.painterFallbacks`). Painters must stay pure (no DOM, no `Math.random`) so both paths paint the same bytes, and the THREE textures are
+  created in their fixed order afterwards (texture ids, uuids).
 - Sprites: nearest texel sampling, anchor snapped to the render-target pixel grid, scene alpha = DOF protection
   mask (1 - protection) read by DOF and in-scatter; a 55% overlay re-draws characters after transparent effects.
 

@@ -3,9 +3,9 @@ import { U } from '../atmosphere/SceneUniforms';
 import { SURFACE_VERT, SURFACE_FRAG } from './ShaderChunks';
 import { GROUND_VERT, GROUND_FRAG, WATER_FRAG, DECAL_FRAG } from './GroundShaders';
 import type { Slot } from '../core/MeshBuilder';
-import {
-  paintAshlar, paintPlaster, paintTimber, paintRoofTiles, paintCloth, paintMetal, paintCobble, type TexSet, type RGB,
-} from './TexturePainters';
+import type { TexSet } from './TexturePainters';
+import type { PaintJob } from './PainterJobs';
+import { paintAll } from './PainterPool';
 import {
   makeWindowAtlas, makeShopAtlas, makeEmblemAtlas, makeDecalAtlas, makeLeafAtlas, makeBushCard, makeHalo, makeSmokePuff, makeSoftDot,
 } from './CanvasArt';
@@ -31,11 +31,14 @@ export class MaterialLibrary {
   private white!: THREE.DataTexture;
   groundMask!: THREE.DataTexture;
   timings: Record<string, number> = {};
+  /** Painting jobs that left their worker for the main thread, and why (empty = every worker answered; `PainterPool`). */
+  painterFallbacks: string[] = [];
 
-  static async build(renderer: THREE.WebGLRenderer, progress: (label: string, f: number) => void): Promise<MaterialLibrary> {
+  /** `painters`: texture workers (0 = paint on the main thread, `?painters=main`). */
+  static async build(renderer: THREE.WebGLRenderer, progress: (label: string, f: number) => void, painters: number): Promise<MaterialLibrary> {
     const lib = new MaterialLibrary();
     lib.aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-    await lib.init(progress);
+    await lib.init(progress, painters);
     return lib;
   }
 
@@ -80,58 +83,57 @@ export class MaterialLibrary {
     });
   }
 
-  private async init(progress: (label: string, f: number) => void): Promise<void> {
-    const steps: Array<[string, () => void]> = [];
-    const T = (name: string, fn: () => void) => steps.push([name, () => { const t0 = performance.now(); fn(); this.timings[name] = performance.now() - t0; }]);
+  private async init(progress: (label: string, f: number) => void, painters: number): Promise<void> {
     const tex: Record<string, { albedo: THREE.Texture; nr: THREE.Texture }> = {};
+    const t0 = performance.now();
+    progress('white/flat', 0);
+    // Every THREE texture is created in the pre-P3 order (white, flat, painted pairs, canvas atlases): texture ids, uuids (Math.random)
+    // and `textures` stay what they were. Only the painting moved (journal pass 6, P3).
+    this.white = this.dataTex(new Uint8Array([255, 255, 255, 255]), 1, true);
+    this.flatNR = this.dataTex(new Uint8Array([128, 128, 255, 170]), 1, false);
+    this.white.generateMipmaps = false; this.white.minFilter = THREE.LinearFilter; this.flatNR.generateMipmaps = false; this.flatNR.minFilter = THREE.LinearFilter;
 
-    // cool stone / muted brick: base albedos stay near-neutral so per-building tints define a narrow slate band
-    const stonePal: RGB[] = [[128, 132, 142], [110, 116, 128], [136, 136, 140], [98, 104, 118], [120, 122, 128]];
-    const brickPal: RGB[] = [[104, 86, 82], [92, 78, 76], [112, 94, 88], [84, 72, 72], [100, 84, 80]];
-    let ashlarSet!: TexSet;
+    // painted textures: in Web Workers, longest first (PainterPool); `?painters=main` (0) keeps the pre-P3 main-thread order
+    const order: PaintJob[] = painters > 0
+      ? ['cobble', 'plaster', 'ashlar', 'brick', 'planks', 'timber', 'roof', 'metal', 'cloth']
+      : ['ashlar', 'brick', 'plaster', 'timber', 'planks', 'roof', 'cloth', 'metal', 'cobble'];
+    const painting = paintAll(order, painters, (job, done) => progress(job, done / (order.length + 1)));
+    // the canvas atlases (DOM canvases) paint on the main thread meanwhile
+    await nextFrame();
+    const tc = performance.now();
+    const art = {
+      halo: makeHalo(128), smoke: makeSmokePuff(128, 3), dot: makeSoftDot(32), leaf: makeLeafAtlas(5), bush: makeBushCard(8, 256),
+      window: makeWindowAtlas(21), shop: makeShopAtlas(33), emblem: makeEmblemAtlas(), decal: makeDecalAtlas(77),
+    };
+    this.timings['canvas atlases'] = performance.now() - tc;
+    const painted = await painting;
+    Object.assign(this.timings, painted.ms);
+    this.timings['paint wall'] = performance.now() - t0;
+    this.timings['paint workers'] = painted.workers;
+    this.painterFallbacks = painted.fallbacks;
 
-    T('white/flat', () => {
-      this.white = this.dataTex(new Uint8Array([255, 255, 255, 255]), 1, true);
-      this.flatNR = this.dataTex(new Uint8Array([128, 128, 255, 170]), 1, false);
-      this.white.generateMipmaps = false; this.white.minFilter = THREE.LinearFilter; this.flatNR.generateMipmaps = false; this.flatNR.minFilter = THREE.LinearFilter;
-    });
-    T('ashlar', () => {
-      ashlarSet = paintAshlar(512, 101, { rows: 6, blockW: 0.3, rowVar: 0.28, widthVar: 0.4, offsetRows: false, palette: stonePal, mortar: [58, 60, 66], mortarW: 4.5, bevel: 7, moss: 0.08, chip: 0.5, streak: 0.8, crack: 0.8, normal: 3.4 });
-      tex.stone = this.texPair(ashlarSet);
-    });
-    T('brick', () => { tex.brick = this.texPair(paintAshlar(512, 202, { rows: 15, blockW: 0.215, rowVar: 0.04, widthVar: 0.08, offsetRows: true, palette: brickPal, mortar: [120, 118, 116], mortarW: 2.6, bevel: 3, moss: 0.04, chip: 0.3, streak: 0.5, crack: 0.3, normal: 3.0 })); });
-    T('plaster', () => {
-      const under = paintAshlar(512, 303, { rows: 9, blockW: 0.22, rowVar: 0.35, widthVar: 0.55, offsetRows: false, palette: [[112, 112, 116], [96, 98, 104], [122, 120, 120]], mortar: [66, 66, 70], mortarW: 4, bevel: 5, moss: 0.03, chip: 0.6, streak: 0, crack: 0, normal: 3 });
-      tex.plaster = this.texPair(paintPlaster(512, 404, { base: [178, 176, 172], alt: [152, 152, 154], crumble: 0.12, cracks: 1, stain: 0.8, underlying: under }));
-    });
-    T('timber', () => { tex.timber = this.texPair(paintTimber(512, 505, 'beam', [58, 52, 50], [74, 66, 62])); });
-    T('planks', () => { tex.planks = this.texPair(paintTimber(512, 606, 'planks', [76, 68, 62], [96, 86, 78])); });
-    T('roof', () => { tex.roof = this.texPair(paintRoofTiles(512, 707, [[84, 88, 98], [70, 74, 86], [96, 98, 106], [90, 92, 100], [78, 80, 92]], 9, 8)); });
-    T('cloth', () => { tex.cloth = this.texPair(paintCloth(256, 808)); });
-    T('metal', () => { tex.metal = this.texPair(paintMetal(256, 909)); });
-    T('cobble', () => {
-      const c = this.texPair(paintCobble(1024, 1001));
-      tex.cobble = c;
-    });
-    T('canvas atlases', () => {
-      this.halo = this.canvasTex(makeHalo(128), { mip: false, srgb: true });
-      this.smoke = this.canvasTex(makeSmokePuff(128, 3), { mip: true });
-      this.dot = this.canvasTex(makeSoftDot(32), { mip: false });
-      this.leafAtlas = this.canvasTex(makeLeafAtlas(5), { mip: true });
-      this.bushCard = this.canvasTex(makeBushCard(8, 256), { mip: true });
-      tex.window = { albedo: this.canvasTex(makeWindowAtlas(21)), nr: this.flatNR };
-      tex.shop = { albedo: this.canvasTex(makeShopAtlas(33)), nr: this.flatNR };
-      tex.emblem = { albedo: this.canvasTex(makeEmblemAtlas()), nr: this.flatNR };
-      tex.decal = { albedo: this.canvasTex(makeDecalAtlas(77)), nr: this.flatNR };
-      tex.leaf = { albedo: this.leafAtlas, nr: this.flatNR };
-      for (const k of ['window', 'shop', 'emblem', 'decal', 'leaf']) (tex[k].albedo as THREE.Texture).wrapS = (tex[k].albedo as THREE.Texture).wrapT = THREE.ClampToEdgeWrapping;
-    });
+    const P = painted.sets;
+    tex.stone = this.texPair(P.ashlar);
+    tex.brick = this.texPair(P.brick);
+    tex.plaster = this.texPair(P.plaster);
+    tex.timber = this.texPair(P.timber);
+    tex.planks = this.texPair(P.planks);
+    tex.roof = this.texPair(P.roof);
+    tex.cloth = this.texPair(P.cloth);
+    tex.metal = this.texPair(P.metal);
+    tex.cobble = this.texPair(P.cobble);
+    this.halo = this.canvasTex(art.halo, { mip: false, srgb: true });
+    this.smoke = this.canvasTex(art.smoke, { mip: true });
+    this.dot = this.canvasTex(art.dot, { mip: false });
+    this.leafAtlas = this.canvasTex(art.leaf, { mip: true });
+    this.bushCard = this.canvasTex(art.bush, { mip: true });
+    tex.window = { albedo: this.canvasTex(art.window), nr: this.flatNR };
+    tex.shop = { albedo: this.canvasTex(art.shop), nr: this.flatNR };
+    tex.emblem = { albedo: this.canvasTex(art.emblem), nr: this.flatNR };
+    tex.decal = { albedo: this.canvasTex(art.decal), nr: this.flatNR };
+    tex.leaf = { albedo: this.leafAtlas, nr: this.flatNR };
+    for (const k of ['window', 'shop', 'emblem', 'decal', 'leaf']) (tex[k].albedo as THREE.Texture).wrapS = (tex[k].albedo as THREE.Texture).wrapT = THREE.ClampToEdgeWrapping;
 
-    for (let i = 0; i < steps.length; i++) {
-      progress(steps[i][0], i / steps.length);
-      await nextFrame();
-      steps[i][1]();
-    }
     progress('materials', 0.95);
     await nextFrame();
 

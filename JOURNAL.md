@@ -2918,14 +2918,76 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Sur ANGLE / D3D11, « compilé » ne veut pas dire « prêt » : seul un dessin réel, vers une cible de même format, finit un programme. Une
   preuve au pixel d'un effet conditionnel se fait sur des vues où l'effet agit vraiment (contrôle négatif non nul), pas sur un drapeau forcé.
 
+## Passe 6b — Performances : P3, peintres de textures en Web Workers (2026-10-17)
+
+### Demande (2026-10-17)
+- Séance reprise d'un clone de la séance « Performances GPU : analyse et plan » (archivée par l'opérateur pour que les nouvelles permissions
+  automatiques s'appliquent). Mot pour mot : « Go : ouvre la branche de P3 depuis main et commence les peintres de textures en Web Workers,
+  avec leurs preuves. » Branche `perf-p3-texture-workers` ouverte depuis `main` (`51b9167`) et poussée.
+
+### Changement — [OK]
+- `PainterJobs.ts` : les neuf peintures de `MaterialLibrary` (pierre, brique, enduit avec sa pierre sous-jacente, colombages, planches,
+  toits, tissu, métal, pavés) en jobs nommés, graines et paramètres déplacés tels quels. `painter.worker.ts` : un job par message, les deux
+  tableaux renvoyés par transfert (sans copie). `PainterPool.ts` : pool de Workers modules, file du plus long au plus court (pavés, enduit,
+  pierre…), chaque Worker prend le job suivant dès qu'il est libre.
+- Repli sur le fil principal, job par job : Worker non constructible, erreur (script introuvable, exception), réponse d'erreur, ou silence
+  de 20 s (chien de garde) ; ce qui reste dans la file quand plus aucun Worker ne tourne est peint sur le fil principal. Avertissement
+  console `[painters]` et `lib.painterFallbacks`. `?painters=main` (fil principal, ordre d'avant) et `?painters=<n>`.
+- `MaterialLibrary.init` : pendant que les Workers peignent, le fil principal peint les atlas canevas (DOM, ≈ 12 ms) ; les textures THREE
+  sont ensuite créées **dans l'ordre d'avant** : ids 34-63 identiques, uuid (`Math.random`) tirés dans le même ordre, tableau `textures`
+  inchangé. `timings` : temps propre de chaque job, `paint wall`, `paint workers`.
+- Défaut : min(4, cœurs − 1) Workers, fil principal en dessous de 2 (voir la taille du pool). Vite sort le Worker en chunk séparé
+  (`painter.worker-*.js`, 14 Ko) ; serveur dev et build de production marchent tous deux.
+- **[KO] de sonde corrigé** (`tools/startup.mjs`) : l'observateur des étiquettes de l'écran de chargement s'attachait à `DOMContentLoaded`,
+  après la première étiquette (posée pendant l'exécution du module) ; la phase « paint » partait donc de la seconde (ASHLAR, posée après
+  le job pierre, ≈ 0,2 s). Il observe désormais dès le départ et « paint » part de WHITE. Conséquences : la peinture « 1,1-1,5 s au calme »
+  de la passe 6 omettait la pierre (≈ 1,3-1,7 s en vrai), d'où le gain révisé de P3 (« ≈ −0,7 s ») trop prudent ; et avec les Workers,
+  l'ancienne sonde affichait 301 ms (fin de la pierre → READY) au lieu de 550.
+
+### Preuves (base figée `51b9167` servie en production sur `:5188`, build de la branche figé sur `:5190`, serveur dev de la branche)
+- **Octets** (script de séance `p3-hash.mjs`) : SHA-256 des 30 textures de la bibliothèque (21 tableaux, 9 canevas), ordre et ids compris :
+  **identiques à la base** avec 4 Workers (défaut), 1, 2 et 8, sur le fil principal, en dev (Workers et fil principal), et sous trois pannes
+  injectées avant tout script : `Worker` absent (repli complet), script du Worker introuvable (4 erreurs → 4 replis), Worker muet (chien de
+  garde : 4 replis, chargement 25 s). Témoin de répétition (base deux fois) identique ; contrôle négatif (un octet des pavés inversé avant
+  hachage) détecté.
+- **Pixels** (`static=1&freeze=7.3`, 1920 × 1080, comparaison à l'octet des PNG, sinon `tools/diff.mjs` seuil 0) : 13 vues — A, B, C, D, AB,
+  BC, CD, BD, A et B `occforce=all`, forge sabotée en C, B graine 7719, D graine 30417 `occforce=all` ; 6 avec une révélation active (3 réelles :
+  lampadaire -9 en B et B 7719, lampadaire 0 en BC ; 3 forcées) — **identiques à l'octet** contre la base pour les Workers, `painters=main` et
+  le serveur dev ; base deux fois identique ; contrôle négatif (`freeze=7.31`) : 91 % des pixels diffèrent.
+- **Démarrage** (`tools/startup.mjs` corrigé, production, 6 + 6 + 6 chargements entrelacés, 1920 × 1080, 780M, 0 / 18 sous contention GPU) :
+  peinture **1 803 [1 759-1 817] → 550 [517-603] ms** ; `__ready` **3 638 [3 453-4 681] → 2 495 [2 167-2 635] ms** (−1,14 s, −31 %) ;
+  `painters=main` : 1 762 / 3 634 ms, soit la base (le repli coûte ce que coûtait l'ancien code). Génération, bake, bloc `regenerate`,
+  première image après le départ, première révélation : inchangés (dans la dispersion). Une première série avec l'ancienne sonde donnait
+  la même conclusion (`__ready` 3 722 → 2 437 ms).
+- **Taille du pool** (`p3-sweep.mjs`, 4 tours entrelacés, build figé) : peinture 1 766 (fil principal) / 1 984 (1 Worker) / 987 (2) / 700 (3) /
+  **545 (4)** / 536 (6) / 553 (8) ms : plateau dès 4, la peinture est bornée par le plus long job (pavés ≈ 0,5 s). **[?]** chaque job est
+  ≈ 10 % plus lent dans un Worker que sur le fil principal (somme des jobs 1 716 → 1 940 ms ; cause non cherchée) : un Worker seul perd contre
+  le fil principal, d'où le défaut « fil principal en dessous de 2 Workers » (ajouté après les mesures ; sur cette machine le défaut reste 4,
+  chemins prouvés ci-dessus).
+- **Coût par image** (`tools/perf.mjs`, B 1080p avec révélation, 3 tours entrelacés, tous propres) : 13,49 [13,10-13,70] → 12,88
+  [12,84-13,36] ms, mêmes appels (114), triangles (210,1 k) et textures (50) : le code par image n'a pas changé, écart dans la dispersion.
+  (Ces valeurs sont plus hautes que les 9,3 ms de P1 : même GPU, autre état thermique ou d'alimentation ; seule la comparaison entrelacée
+  compte.)
+- `typecheck` 0, `npm run build` vert. Preuves et scripts dans les notes de séance (`perf-gpu-evidence/p3/`).
+
+### Pensée
+- Une sonde de démarrage doit voir le tout premier repère : un observateur branché sur `DOMContentLoaded` rate ce que le module écrit pendant
+  son exécution. Relire la suite réelle des repères enregistrés avant d'attribuer une phase ; un gain estimé sur une phase mal bornée l'est
+  aussi.
+- Déplacer des fonctions pures à graine fixe dans des Workers se prouve à l'octet (empreinte de chaque sortie) **et** par l'ordre de création
+  des objets qui tirent `Math.random` (ids, uuid) ; le repli se prouve en injectant les pannes (Worker absent, script introuvable, Worker
+  muet), pas en le supposant.
+- Le parallélisme est borné par le plus long job : au-delà de 4 Workers rien ne bouge. Découper un peintre changerait ses tirages (non fait).
+
 ## À reprendre (par priorité)
 
 **-3. Performances GPU (Passe 6, plan validé par l'opérateur le 17/10 ; P0-P2 acceptés et fusionnés dans `main` le 17/10, la suite ouvre
 sa propre branche)** — fait : P0 (outillage), P1 (chauffe des
 variantes d'occlusion : première révélation 315 → 11 ms, image identique), P2 (première image préparée sous l'écran de chargement : première
 image de la boucle 17 → 4 ms, 0 programme compilé après le départ ; durée de démarrage inchangée, l'estimation « −1 à −1,5 s » du plan était
-fausse). Suivent, une piste par commit, chacune avec sa preuve : P3 peintres de textures en Web Workers (gain révisé ≈ −0,7 s hors contention), P4 plafond de
-cadence (défaut à décider), P5 cache du bake ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
+fausse). **P3 fait (Passe 6b, branche `perf-p3-texture-workers`, en attente de l'acceptation de l'opérateur)** : peintres de textures en Web
+Workers, octets et image identiques, peinture 1,80 → 0,55 s, `__ready` 3,64 → 2,50 s ; sonde `startup.mjs` corrigée (première étiquette). Suivent,
+une piste par commit, chacune avec sa preuve : P4 plafond de cadence (défaut à décider), P5 cache du bake ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
 P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
@@ -3049,6 +3111,9 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
 - Une première fois (programme, variante, dessin) se mesure par une sonde dédiée : aucune moyenne ne la voit. Un intervalle rAF ne
   s'attribue qu'avec un repère (le départ de la boucle, un `gl.finish()` chronométré) : le plus grand intervalle depuis le chargement est le
   plus long bloc synchrone, pas forcément la première image.
+- Un travail de démarrage déplacé dans un Worker reste une fonction pure à graine fixe ; il se prouve à l'octet (empreinte de chaque sortie,
+  ordre de création des objets qui tirent `Math.random`) et par ses pannes injectées ; le jeu démarre sans Worker (repli par job, chien de
+  garde). Une sonde de démarrage observe dès le premier repère, pas depuis `DOMContentLoaded`.
 
 - Une allocation GPU se dimensionne contre le minimum garanti (WebGL2 : 2 048) et se vérifie (complétude du framebuffer, erreurs GL) ; un bake
   qui conclut « rien n'est visible » est une erreur : le repli garde toutes les pièces et le signale (console, stats, panneau).
