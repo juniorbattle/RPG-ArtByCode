@@ -3108,6 +3108,11 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   cache coûte ≈ +36 ms une fois (clé ≈ 20 ms, stockage). Le gain prévu par le plan (−0,44 à −0,73 s) était mesuré sous contention.
 - `typecheck` 0, `npm run build` vert.
 
+### Décision opérateur (2026-10-18) — [OK] P5 accepté
+- Mot pour mot : « J'accepte P5 tel quel : fusionne perf-p5-bake-cache dans main, pousse main et supprime la branche. »
+- Branche `perf-p5-bake-cache` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée (locale et distante). Les pistes P6-P9
+  changent l'image : elles attendent la décision de l'opérateur sur captures côte à côte, chacune sur sa propre branche.
+
 ### Pensée
 - Un cache d'un calcul GPU ne se justifie que si sa clé couvre **toutes** ses entrées, le code du calcul compris (sa source à l'exécution) et
   le GPU ; il se prouve par l'égalité bake neuf = relu (`verify`) sur une matrice, et par des contrôles où la clé doit changer, et un où
@@ -3126,7 +3131,7 @@ Workers, octets et image identiques, peinture 1,80 → 0,55 s, `__ready` 3,64 �
 une piste par commit, chacune avec sa preuve : **P4 plafond de cadence fait (Passe 6c) : défaut `e60` choisi par l'opérateur le 17/10, accepté et fusionné dans `main`**
 (55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `?fps=off` sans plafond ; piste ouverte : pas adaptatif 3 → 4 vsyncs
 quand le GPU rate son créneau, vu sous contention en 1440p) ;
-**P5 cache du bake fait (Passe 6d, branche `perf-p5-bake-cache`, en attente de l'acceptation de l'opérateur)** : bake 337 → 36 ms relu,
+**P5 cache du bake fait (Passe 6d), accepté par l'opérateur le 18/10 et fusionné dans `main`** : bake 337 → 36 ms relu,
 `__ready` 2,28 → 1,98 s, image et décisions de culling identiques (`viewport-proof` ligne à ligne) ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
 P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
