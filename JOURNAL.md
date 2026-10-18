@@ -398,6 +398,39 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Une preuve d'octets contre l'historique git compare des fins de ligne : le blob est celui de l'index, pas celui du disque.
 
+## Passe V0 — Variantes de PNJ (cheveux / peau) : analyse des palettes, proposition (2026-10-18)
+
+### Demande
+- Quatrième point des priorités (Passe M5) : « les variantes de PNJ » ; demande de l'opérateur du 17/10 citée mot pour mot dans « À
+  reprendre » §1 (couleurs de cheveux et de peau différentes). Branche `npc-variants` ouverte depuis `main` (`3a7c242`).
+
+### Analyse — [OK] mesurée ; [KO] une permutation de couleurs seule
+- `tools/art-lab/palette-ramps.mjs` : pour chacune des dix feuilles de production (64 couleurs chacune), chaque couleur comptée sur toutes les
+  images et située dans la hauteur de la figure ; classement proposé : « peau » (teinte 8-45°, saturation 0,18-0,65, valeur ≥ 0,42), « cheveux »
+  (≥ 75 % des texels dans le tiers haut, hors peau). Planche : `reviews/npc-variants-v0/palette-ramps.png` (vue de face, puis cheveux / peau /
+  autres).
+- Constat : les rampes de cheveux sortent nettement pour l'artisane (11 couleurs), le voyageur (8) et le coursier (7) ; ailleurs le « tiers
+  haut » attrape une coiffe, un bonnet, un casque ou une capuche (forgeron, docker, gardes, encapuchonné, marchande, citadine ; vieux
+  marchand : 0). Les 17 à 33 couleurs « peau » mêlent peau, cuir, bois et reflets de cheveux bruns : mêmes teintes. Une permutation de palette
+  par couleur recolorerait aussi ceintures, sacs et coiffes : la piste « rampes de cheveux et de peau, à l'affichage, sur la même feuille »
+  (« À reprendre » §1) ne tient pas sans masque.
+
+### Proposition (à arbitrer par l'opérateur)
+- Un **masque de matière** par feuille (cheveux, peau), calque du `.aseprite` construit par le script de rig (rejouable), exporté à côté de la
+  feuille et haché dans son paquet de provenance ; au chargement, il est rangé dans le canal alpha de la texture cuite (255 = autre, 254 =
+  cheveux, 253 = peau : le test d'alpha à 0,5 ne voit rien, l'export approuvé n'est pas modifié).
+- Au rendu : un indice de variante par instance et une table de rampes (cheveux, peau) appliquée par rang de luminance sur les seuls texels
+  masqués. Aucune image ajoutée à la texture cuite (322 / 336), aucun appel de dessin en plus.
+- Une variante n'atteint la production qu'approuvée par l'opérateur, comme une feuille (manifeste ou fichier de variantes approuvé).
+
+### Restes [?]
+- **En attente de l'opérateur** : quels personnages, combien de variantes, quelles familles de teintes dans la direction artistique, et
+  l'accord sur le masque.
+
+### Pensée
+- Une palette quantifiée depuis une peinture partage ses couleurs entre matières : recolorer « une rampe » demande de savoir où elle est, pas
+  seulement quelle couleur elle a.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -408,8 +441,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantit 336 images et en porte 322 (dix feuilles,
   1024 × 2016) : une variante en feuille séparée ne rentre pas sans agrandir la texture ; la teinte aléatoire de la foule (± 10 % par canal
-  sur tout le sprite) ne s'applique plus aux feuilles cuites (Passe 4A-tervicies). Piste non évaluée : une permutation de palette limitée aux
-  rampes de cheveux et de peau, à l'affichage, sur la même feuille. À arbitrer avec l'opérateur : quels personnages, combien de variantes,
+  sur tout le sprite) ne s'applique plus aux feuilles cuites (Passe 4A-tervicies). Passe V0 : une permutation par couleur ne suffit pas (la
+  peau partage ses teintes avec le cuir, les coiffes cachent les cheveux) ; proposition d'un masque de matière par feuille, en attente. À arbitrer avec l'opérateur : quels personnages, combien de variantes,
   quelles teintes dans la direction artistique.
 - **Mise en scène** : la marchande ne marche pas à son étal (collisionneur ; la déplacer de 0,5 m serait une décision de mise en scène) ; un
   second garde différent (miroir ou variante) au lieu de jumeaux, lances ; seuls 2 des 5 citadins (artisane, voyageur) paraissent à la
