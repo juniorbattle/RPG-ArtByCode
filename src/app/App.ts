@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { MaterialLibrary } from '../materials/MaterialLibrary';
 import { defaultPainters } from '../materials/PainterPool';
+import { FrameCap, parseFrameCap, frameCapLabel, type FrameCapMode } from './FrameCap';
 import { PostFX } from '../atmosphere/PostFX';
 import { MoonShadow, PlanarReflection } from '../atmosphere/ShadowAndReflection';
 import { LightRig } from '../atmosphere/LightRig';
@@ -28,6 +29,9 @@ export interface AppOptions {
   /** EXPERIMENTAL baked sheets + authored spawns; only ever set by the DEV loader (`?baked=`, src/lab/bakedLoader.ts) */
   baked?: Promise<{ sheets: BakedSheet[]; spawns: AuthoredSpawn[] }>;
 }
+
+/** The frame cap when `?fps=` is absent: off (the pre-P4 loop) until the operator chooses a default (journal pass 6, P4). */
+const DEFAULT_FRAME_CAP: FrameCapMode = { kind: 'off' };
 
 export class App {
   readonly renderer: THREE.WebGLRenderer;
@@ -73,6 +77,8 @@ export class App {
   visibilityError: string | null = null;
   private rebakeTimer = 0;
   private lastT = performance.now();
+  /** frame-rate cap (journal pass 6, P4): `?fps=off|<n>|v<k>|e<n>`, otherwise DEFAULT_FRAME_CAP */
+  readonly frameCap = new FrameCap();
 
   constructor(private opts: AppOptions) {
     this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: false, powerPreference: 'high-performance', stencil: false, alpha: false });
@@ -80,6 +86,7 @@ export class App {
     this.renderer.info.autoReset = false;
     this.perf.attach(this.renderer.getContext() as WebGL2RenderingContext);
     if (opts.params.has('gpuprof')) this.perf.gpu.enabled = true;
+    this.frameCap.mode = parseFrameCap(opts.params.get('fps')) ?? DEFAULT_FRAME_CAP;
     this.post = new PostFX(this.renderer);
     this.rig.camera.layers.enable(2);
     this.scene.add(this.rig.camera);
@@ -126,7 +133,10 @@ export class App {
     // texture painters in Web Workers (journal pass 6, P3); ?painters=main paints on the main thread, ?painters=<n> sets the pool size
     const pq = this.opts.params.get('painters');
     const painters = pq === 'main' ? 0 : pq !== null && /^\d+$/.test(pq) ? +pq : defaultPainters();
+    // the main thread idles while the workers paint: the frame cap measures the display's vsync interval meanwhile
+    this.frameCap.probe();
     this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress, painters);
+    this.frameCap.endProbe();
     this.generator = new MerchantDistrictGenerator(this.lib);
     this.opts.onProgress('sprites', 0.97);
     await new Promise((r) => setTimeout(r, 0));
@@ -245,6 +255,7 @@ export class App {
         centre: this.occlusion.stats.centre.join(','), radii: this.occlusion.stats.radii.map((v) => +v.toFixed(1)).join(','),
         behindParts: this.district?.visibility.behind?.parts ?? 0, behindTris: this.district?.visibility.behind?.tris ?? 0, behindPx: this.district?.visibility.behind?.px ?? 0,
       },
+      frameCap: { mode: frameCapLabel(this.frameCap.mode), every: this.frameCap.every(), vsyncMs: +this.frameCap.vsync.toFixed(3), vsyncFrom: this.frameCap.vsyncSource, skipped: this.frameCap.skipped },
     };
   }
 
@@ -427,14 +438,17 @@ export class App {
   }
 
   start(): void {
-    const loop = () => {
-      const now = performance.now();
-      const dt = Math.min(0.05, (now - this.lastT) / 1000);
-      this.lastT = now;
-      this.update(dt);
-      this.render();
+    // a callback the frame cap does not let through skips update and render (dt then spans the skipped vsyncs); `off` lets all through
+    const loop = (t: number) => {
+      if (this.frameCap.shouldRender(t)) {
+        const now = performance.now();
+        const dt = Math.min(0.05, (now - this.lastT) / 1000);
+        this.lastT = now;
+        this.update(dt);
+        this.render();
+      }
       requestAnimationFrame(loop);
     };
-    loop();
+    loop(performance.now());
   }
 }

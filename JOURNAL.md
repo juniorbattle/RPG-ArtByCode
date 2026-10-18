@@ -2984,6 +2984,74 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   muet), pas en le supposant.
 - Le parallélisme est borné par le plus long job : au-delà de 4 Workers rien ne bouge. Découper un peintre changerait ses tirages (non fait).
 
+## Passe 6c — Performances : P4, plafond de cadence — mesures et options (2026-10-17)
+
+### Demande (2026-10-17)
+- Mot pour mot : « Go P4 : ouvre sa branche depuis main, mesure d'abord la cadence et propose-moi les options de plafond avant d'en choisir
+  le défaut. » Branche `perf-p4-frame-cap` ouverte depuis `main` (`e27a914`) et poussée. **Le défaut reste « sans plafond » tant que
+  l'opérateur n'a pas choisi.**
+
+### Outillage — [OK]
+- `tools/cadence.mjs` : la cadence **vue par le joueur**, dans une fenêtre Chrome **visible**, maximisée, vsync active (`launchHeaded` dans
+  `bench-common.mjs` : ni `--disable-gpu-vsync` ni `--disable-frame-rate-limit`, suivi d'occlusion coupé). Intervalles entre deux
+  `App.render` comptés en vsyncs, part irrégulière (intervalles hors du nombre le plus fréquent), occupation 3D du processus GPU (témoin),
+  et **puissance** : `tools/energy-witness.ps1` lit les compteurs « Energy Meter » RAPL (lecture seule ; nom du jeu de compteurs localisé,
+  trouvé par l'instance `RAPL_Package0_PKG` ; énergie en pWh, horloge en ms, unités calibrées contre la puissance instantanée) ; **SoC =
+  boîtier − cœurs** = la part de la 780M (et de la mémoire), sans le travail CPU des autres processus. Page vide en référence à chaque tour.
+- Écran : Radeon 780M à **165 Hz** (vsync mesurée 6,0-6,1 ms), 2560 × 1600 à 175 %, sur secteur. Fenêtre maximisée : 2560 × 1267 internes
+  (≈ 1440p, le cas réel de l'opérateur).
+- **[KO] de mesure, contourné** : une fois, la page vide statique a lu 12,1 ms (82,6 Hz) pendant que le jeu, animé, sondait 6,1 ms : le
+  rafraîchissement dynamique de Windows baisse la fréquence d'un contenu fixe. Les intervalles sont désormais comptés avec la vsync sondée
+  par la page elle-même ; cette série-là n'est lue que par ses p50 / p95.
+- **Occupation ≠ puissance** : à 55 img/s en 1080p le GPU reste « occupé » 56-71 % alors que la puissance SoC est divisée par ≈ 3 : le pilote
+  baisse les fréquences quand il y a du jeu. Seule la puissance mesure la « surcharge » (chaleur, ventilateur, batterie).
+
+### Cadence actuelle, sans plafond — mesurée
+- ≈ 1440p : 44-71 img/s selon la charge, **intervalles de 2 et 3 vsyncs mêlés (24-54 % irréguliers)**, GPU occupé 97-100 %, SoC 41-45 W.
+- 1080p : 75-100 img/s, **1 et 2 vsyncs mêlés (23-36 % irréguliers)**, GPU 97-100 %, SoC 39-44 W.
+- Le GPU est saturé en permanence et la cadence alterne : le pire des deux mondes.
+
+### Mécanisme (`src/app/FrameCap.ts`, `?fps=`) — défaut `off`, image identique
+- La boucle garde son rappel rAF à chaque vsync ; un rappel que le plafond refuse saute `update` et `render` (le `dt` suivant couvre les
+  vsyncs sautées). Modes : `off` (boucle d'avant), `<n>` (moyenne de n img/s : intervalles alternés si l'écran n'en est pas multiple),
+  `v<k>` (une image toutes les k vsyncs), `e<n>` (régulier près de n : toutes les round(fréquence / n) vsyncs ; 165 Hz → 55, 144 → 72,
+  120 → 60, 60 → 60). `__stats().frameCap` et le panneau affichent le mode et la vsync.
+- La vsync vient d'une **sonde au démarrage** : une chaîne rAF pendant que les Workers peignent (fil principal libre) ; médiane 6,0-6,1 ms
+  à chaque chargement, `painters=main` compris. Sans assez d'échantillons : 16,7 ms, ce qui ne fait que relâcher le plafond.
+- **[KO] ×2, affiner la vsync dans la boucle** : (1) médiane des intervalles qui suivent un rappel sauté : sous contention GPU ils valent
+  souvent 2 vsyncs, l'estimation est passée à 12,1 ms et `e60` est retombé à « chaque vsync », sans plafond ; (2) minimum des intervalles,
+  « jamais plus courts qu'une vsync » : faux, Chrome livre des rappels à 2,8-4,4 ms d'écart à 165 Hz, l'estimation a plongé et `v4` a tourné
+  à 55 img/s. Les horodatages rAF de la boucle ne sont pas sur la grille vsync : seule la sonde au repos fait foi.
+
+### Options mesurées (code final, `tools/cadence.mjs`, 2-3 tours ; SoC des tours les moins contaminés, plages sur plusieurs séries)
+| Option | ≈ 1440p : img/s, irrégulier, SoC | 1080p : img/s, irrégulier, SoC | Remarque |
+|---|---|---|---|
+| `off` (actuel) | 44-71, 24-54 %, 41-45 W | 75-100, 23-36 %, 39-44 W | GPU saturé, cadence alternée |
+| `60` (moyenne) | 59-60, 25 %, 38-42 W | 60, 25 %, 16-19 W | alterne 2 et 3 vsyncs à 165 Hz, par construction |
+| `e60` (≈ 60 régulier) | **55,0, 0-0,2 %, 35 W** | **55,0, 0 %, 14,5-15 W** | 3 vsyncs exactement ; 72 à 144 Hz, 60 à 60 / 120 Hz |
+| `v2` (82,5) | intenable (58-70, 21-44 %) | 80-82, 0-6 %, 34 W | seulement si le GPU tient 12,1 ms |
+| `v4` (41,3) | 41,3, 0 %, 17-20 W | 41,3, 0 %, 10-12 W | le plus sobre, cadence basse |
+- Page vide (référence) : SoC 2,2-2,7 W dans les tours calmes. **Contention** : d'autres séances rendaient sur la même 780M pendant la plupart
+  des tours (Chrome headless à 16-52 %, signalés par le témoin) ; elles gonflent le SoC et perturbent `off` / `60` ; les lignes `e60` / `v4`
+  restent régulières même sous contention.
+
+### Preuves
+- **Pixels** (`static=1&freeze=7.3`, 13 vues de la passe 6b, PNG comparés à l'octet) : plafond `off` (défaut), `e60`, `60`, `v2` puis, sur le
+  build final, `off`, `e60`, `v4` : **identiques à la base figée `e27a914`** ; base deux fois identique ; contrôle négatif (`freeze=7.31`)
+  détecté.
+- Robustesse : `painters=main` + `e60` (sonde sur un fil principal occupé) : 55,0 img/s réguliers, vsync 6,1 ms sondée.
+- `typecheck` 0, `npm run build` vert.
+
+### Décision opérateur — en attente
+- Les options ci-dessus sont proposées à l'opérateur ; le défaut sera fixé (`DEFAULT_FRAME_CAP` dans `App.ts`) après sa décision, citée ici.
+
+### Pensée
+- Une cadence se mesure dans une vraie fenêtre, sur l'écran réel, avec la vsync : le harnais headless (vsync coupée) ne dit rien de la
+  régularité. Et une fréquence d'écran n'est pas une constante : le rafraîchissement dynamique la baisse sur un contenu fixe.
+- L'occupation GPU n'est pas une puissance (le pilote baisse les fréquences) : la « surcharge » se mesure en watts (RAPL : boîtier − cœurs).
+- Des horodatages rAF ne sont pas une horloge vsync : ni leur médiane après un saut, ni leur minimum ne retrouvent la vsync ; une sonde au
+  repos, si. Une auto-correction qui se nourrit de son propre effet (les sauts qu'elle provoque) peut lever le plafond qu'elle règle.
+
 ## À reprendre (par priorité)
 
 **-3. Performances GPU (Passe 6, plan validé par l'opérateur le 17/10 ; P0-P2 acceptés et fusionnés dans `main` le 17/10, la suite ouvre
@@ -2992,7 +3060,9 @@ variantes d'occlusion : première révélation 315 → 11 ms, image identique), 
 image de la boucle 17 → 4 ms, 0 programme compilé après le départ ; durée de démarrage inchangée, l'estimation « −1 à −1,5 s » du plan était
 fausse). **P3 fait (Passe 6b), accepté par l'opérateur le 17/10 et fusionné dans `main`** : peintres de textures en Web
 Workers, octets et image identiques, peinture 1,80 → 0,55 s, `__ready` 3,64 → 2,50 s ; sonde `startup.mjs` corrigée (première étiquette). Suivent,
-une piste par commit, chacune avec sa preuve : P4 plafond de cadence (défaut à décider), P5 cache du bake ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
+une piste par commit, chacune avec sa preuve : **P4 plafond de cadence : mécanisme et mesures faits (Passe 6c, branche `perf-p4-frame-cap`), défaut
+`off` en attente du choix de l'opérateur** (`e60` : 55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `v4` : 41 img/s, −60 %) ;
+P5 cache du bake ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
 P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
@@ -3119,6 +3189,8 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
 - Un travail de démarrage déplacé dans un Worker reste une fonction pure à graine fixe ; il se prouve à l'octet (empreinte de chaque sortie,
   ordre de création des objets qui tirent `Math.random`) et par ses pannes injectées ; le jeu démarre sans Worker (repli par job, chien de
   garde). Une sonde de démarrage observe dès le premier repère, pas depuis `DOMContentLoaded`.
+- Une cadence se mesure dans une vraie fenêtre avec vsync (`tools/cadence.mjs`), une « surcharge » en watts (RAPL, SoC = boîtier − cœurs),
+  pas en % d'occupation GPU. La vsync se sonde au repos ; les horodatages rAF de la boucle ne sont pas sur sa grille.
 
 - Une allocation GPU se dimensionne contre le minimum garanti (WebGL2 : 2 048) et se vérifie (complétude du framebuffer, erreurs GL) ; un bake
   qui conclut « rien n'est visible » est une erreur : le repli garde toutes les pièces et le signale (console, stats, panneau).

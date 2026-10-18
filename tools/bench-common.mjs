@@ -20,6 +20,17 @@ export async function launch(gpu = 'igpu', extra = []) {
   return puppeteer.launch({ executablePath: exe, headless: 'new', args, defaultViewport: null });
 }
 
+/** A VISIBLE Chrome window with vsync and the frame-rate limit left on (tools/cadence.mjs, journal pass 6 P4): the delivered cadence on
+ *  the real display. Maximised; occlusion tracking and backgrounding off so a covered window keeps rendering. */
+export async function launchHeaded(gpu = 'igpu', extra = []) {
+  if (!exe) throw new Error('No Chrome/Edge found. Set CHROME_PATH.');
+  const args = ['--use-gl=angle', '--use-angle=d3d11', '--enable-gpu-rasterization', '--ignore-gpu-blocklist', '--no-sandbox', '--start-maximized',
+    '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
+    '--disable-features=CalculateNativeWinOcclusion', '--no-first-run', '--no-default-browser-check', ...extra];
+  if (gpu === 'dgpu') args.push('--force_high_performance_gpu');
+  return puppeteer.launch({ executablePath: exe, headless: false, args, defaultViewport: null });
+}
+
 /** this browser's own GPU process id, asked to the browser itself (CDP SystemInfo, no system process scan), so the witness can tell
  *  this run's load from anybody else's */
 export async function gpuPid(browser) {
@@ -54,6 +65,24 @@ export function witness(enabled = process.platform === 'win32') {
     });
   };
   return { on: true, samples, stop: () => { try { child.kill(); } catch {} try { fs.unlinkSync(file); } catch {} } };
+}
+
+/** starts the package energy witness (tools/energy-witness.ps1, Windows RAPL counters); returns { samples(), stop(), on } */
+export function energyWitness(enabled = process.platform === 'win32') {
+  if (!enabled || process.platform !== 'win32') return { samples: () => [], stop: () => {}, on: false };
+  const file = path.join(os.tmpdir(), `energy-witness-${process.pid}-${Date.now()}.log`);
+  const ps1 = path.join(path.dirname(fileURLToPath(import.meta.url)), 'energy-witness.ps1');
+  const child = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ps1, '-Out', file, '-Secs', '7200'], { stdio: 'ignore' });
+  const samples = () => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split(/\r?\n/).filter(Boolean).map((l) => { const [t, ms, pkg, cores] = l.split(' ').map(Number); return { t, ms, pkg, cores }; }) : []);
+  return { on: true, samples, stop: () => { try { child.kill(); } catch {} try { fs.unlinkSync(file); } catch {} } };
+}
+
+/** mean package and SoC (package minus cores) power, W, between the first and last energy samples inside [t0, t1] (epoch ms) */
+export function meanPower(samples, t0, t1) {
+  const s = samples.filter((x) => x.t >= t0 && x.t <= t1 && x.ms > 0);
+  if (s.length < 2) return { pkg: NaN, soc: NaN, secs: 0 };
+  const a = s[0], b = s.at(-1), dt = (b.ms - a.ms) / 1000, pWh = 3.6e-9;
+  return { pkg: ((b.pkg - a.pkg) * pWh) / dt, soc: ((b.pkg - b.cores - (a.pkg - a.cores)) * pWh) / dt, secs: dt };
 }
 
 /** foreign GPU use inside [t0, t1] (epoch ms) on the adapter this run uses: other processes above thr % (the desktop compositor excluded) */

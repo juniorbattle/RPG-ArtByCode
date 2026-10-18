@@ -11,6 +11,8 @@ export interface PerfSnapshot {
   visibility?: Record<string, number | string>;
   /** player occlusion reveal: eligible occluders, active ones, proxy tests, detection CPU ms */
   occlusion?: Record<string, number | string>;
+  /** frame-rate cap: mode, vsyncs per frame (0 = not vsync-locked), vsync interval and its source, callbacks skipped */
+  frameCap?: Record<string, number | string>;
 }
 
 /** FPS / frame time / draw calls / triangles / texture memory, accumulated across every pass of the frame

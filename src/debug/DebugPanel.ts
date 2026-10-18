@@ -203,7 +203,8 @@ export class DebugPanel {
     if ((g.forced ?? g.target) !== this.camEdit) this.editCamera();
     const vis = s.visibility;
     this.statsEl.textContent =
-      `FPS ${s.fps.toFixed(0)}   frame ${s.frameMs.toFixed(1)} ms (cpu ${s.cpuMs.toFixed(1)})\n` +
+      `FPS ${s.fps.toFixed(0)}   frame ${s.frameMs.toFixed(1)} ms (cpu ${s.cpuMs.toFixed(1)})` +
+      (s.frameCap ? `   cap ${s.frameCap.mode} (vsync ${s.frameCap.vsyncMs} ms)\n` : '\n') +
       `draw calls ${s.drawCalls}   triangles ${(s.triangles / 1000).toFixed(1)}k\n` +
       `textures ${s.textures}   tex mem ~${s.textureMB.toFixed(0)} MB\n` +
       `geometries ${s.geometries}   lights ${s.lights} (${this.app.lights.active} on screen)   actors ${s.actors}\n` +

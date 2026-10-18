@@ -50,6 +50,11 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
   programs created at the first reveal), median [min-max] per variant. The largest rAF interval from the very first frame is the
   `regenerate()` block under the loading screen, not the first frame (journal pass 6)
 - `node tools/overdraw.mjs "label|<query or url>|<WxH>" ...` — fragments shaded per covered pixel in the scene pass (real draw order)
+- `node tools/cadence.mjs [--secs=8] [--rounds=1] [--gpu=..] "label|<query or url>|<max | WxH[@dpr]>|<js>" ...` — the cadence the player sees, in
+  a VISIBLE maximised Chrome window with vsync (a window opens on the desktop for the run: leave it on screen): display vsync, render
+  intervals in vsync units, irregular share, GPU busy share, package and SoC power (`tools/energy-witness.ps1`, RAPL counters: SoC = package
+  minus cores = the iGPU's share; a busy share is not a power figure, the driver lowers the clocks when there is slack), idle-page reference
+  per round, foreign GPU use
 - Frozen baseline for A/B: `git -c core.autocrlf=false archive <commit>` into a scratch folder, copy `node_modules/three` into it (no
   junction), serve it with the repo's `node_modules/vite/bin/vite.js <folder> --config <its config> --port <518x> --strictPort` (a
   `.claude/launch.json` entry); `autocrlf` on converts the archive's line endings (`dist/index.html` then differs by CR only)
@@ -108,7 +113,9 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
 `static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
-thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) · DEV server only: `visfail=alloc|zero` (force a
+thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) ·
+`fps=off|<n>|v<k>|e<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
+round(refresh / n) vsyncs; the vsync interval comes from a boot probe; journal pass 6 P4) · DEV server only: `visfail=alloc|zero` (force a
 visibility-bake failure: the fallback must keep every part and report it), `vispage=<px>` (bake page size), `visscale=<k>` (every bake tile k x:
 what a finer bake would keep) and `visfine=D:4|A+B+C+D:2|0` (the extra fine tiles, default D at 2x; `0` = none) ·
 `occ=0` (no player reveal: pixel-identical to Pass 2) · `occstyle=soft|dither|hybrid` · `occforce=all|0,2` (force
