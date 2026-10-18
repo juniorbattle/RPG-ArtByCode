@@ -199,6 +199,14 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une annotation, de niveau « notice » : le libellé `ubuntu-latest` passera à Ubuntu 26 à partir du 19/10/2026 (annonce GitHub
   `actions/runner-images#14748`). [?] Le prochain run tournera sans doute sur Ubuntu 26 : épingler `ubuntu-24.04` serait une décision de
   l'opérateur ; rien à changer tant que la CI reste verte.
+- Run `39163367817` (push de `0930fee`, ce résultat consigné) : success.
+
+### Décision opérateur (2026-10-18) — [OK] Passe Q1 acceptée
+- Mot pour mot : « J'accepte la Passe Q1 telle quelle (CI GitHub Actions et tests unitaires) : fusionne ci-github-actions dans main en avance
+  rapide, pousse main et supprime la branche. »
+- Cette entrée est commitée et poussée sur la branche avant la fusion (leçon de la Passe M3) ; puis `ci-github-actions` fusionnée en avance
+  rapide dans `main` depuis la copie partagée, `main` poussé, branche distante supprimée (aucune branche locale dans la copie partagée), clone
+  de travail du scratchpad retiré.
 
 ### Pensée
 - Un contrôle de CI s'essaie d'abord sur un clone propre, avec un cache npm vide, les fins de ligne de l'index et la casse exacte des chemins,
@@ -285,10 +293,10 @@ sprites.
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
   appli. Servir les baselines sur `:518x --strictPort` ; décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
-- **Tests et CI (Passe Q1, en attente de l'acceptation de l'opérateur)** : CI GitHub Actions (typecheck, build, `art:validate`, `npm test`) et
-  24 tests de la logique pure sur la branche `ci-github-actions`. Restent : le rejet « images requises manquantes » de `loadProductionCast`
-  n'est pas testé (il faudrait lui passer une liste) ; d'autres fonctions pures sans test (`parseFrameCap`, `lerpState`, `needMask`, bake
-  cache `bakeKey`) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`).
+- **Tests et CI — restes (Passe Q1)** : le libellé `ubuntu-latest` passe à Ubuntu 26 dès le 19/10 (épingler `ubuntu-24.04` = décision de
+  l'opérateur) ; le rejet « images requises manquantes » de `loadProductionCast` n'est pas testé (il faudrait lui passer une liste) ;
+  d'autres fonctions pures sans test (`parseFrameCap`, `lerpState`, `needMask`, `bakeKey` du cache du bake) ; les tests ne sont pas typés
+  (`.mjs`, hors `tsconfig`).
 - **Restes du ménage M1** : bases figées sans lien dans d'anciens scratchpads, entrées `dev-cast2` / `dev-cast3` sans objet (Passe M1,
   « Restent »).
 - **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — à retirer proprement une fois qu'on
