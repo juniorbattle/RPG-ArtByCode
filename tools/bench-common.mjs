@@ -73,7 +73,15 @@ export function energyWitness(enabled = process.platform === 'win32') {
   const file = path.join(os.tmpdir(), `energy-witness-${process.pid}-${Date.now()}.log`);
   const ps1 = path.join(path.dirname(fileURLToPath(import.meta.url)), 'energy-witness.ps1');
   const child = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ps1, '-Out', file, '-Secs', '7200'], { stdio: 'ignore' });
-  const samples = () => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split(/\r?\n/).filter(Boolean).map((l) => { const [t, ms, pkg, cores] = l.split(' ').map(Number); return { t, ms, pkg, cores }; }) : []);
+  // a line that does not parse is reported once and left out (journal pass 6i: "1,011E+15" turned every power into NaN, silently)
+  let warned = false;
+  const parse = (l) => {
+    const [t, ms, pkg, cores] = l.split(' ').map(Number);
+    if ([t, ms, pkg, cores].every(Number.isFinite)) return { t, ms, pkg, cores };
+    if (!warned) { warned = true; console.log(`[energy-witness] unparsable sample "${l}": left out`); }
+    return null;
+  };
+  const samples = () => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split(/\r?\n/).filter(Boolean).map(parse).filter(Boolean) : []);
   return { on: true, samples, stop: () => { try { child.kill(); } catch {} try { fs.unlinkSync(file); } catch {} } };
 }
 

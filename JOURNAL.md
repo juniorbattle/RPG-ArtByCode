@@ -3306,8 +3306,8 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 | +5,5 ms | 44,0-44,1 img/s, 4 vsyncs 70-72 % / 3 : 26-28 % ; SoC 40,0 W | 41,6 img/s, **4 vsyncs 95,5 %** ; SoC 38,6 W | 41,1 img/s, 4 vsyncs 100 % ; SoC 38,2 W |
 | +12 ms | 33,4-33,6 img/s, 5 vsyncs 83-87 % / 4 : 12 % (quelques 6-14) | 33,3 img/s, **5 vsyncs 94-95 %** | — |
 - Dans `a60`, le reste (3 vsyncs à +3,5 / +5,5 ms, 4 à +12 ms) est l'essai raté tombé dans la fenêtre de 8 s : entre deux essais, 100 % au
-  pas long. SoC du premier tour seulement : le témoin d'énergie n'a plus rendu d'échantillon à partir du milieu de la série **[?]** (cause
-  non cherchée).
+  pas long. SoC du premier tour seulement : le témoin d'énergie n'a plus rendu d'échantillon à partir du milieu de la série (cause trouvée
+  en passe 6i : le compteur du boîtier a passé 1e15 pWh et s'est écrit « 1,011E+15 »).
 - **Charge qui arrive et repart** (charge +5,5 ms de 4 à 14 s d'une fenêtre de 30 s) : `e60` passe de 55 à 45,4-46,3 img/s, **4 vsyncs
   56-63 % / 3 : 37-44 %** pendant la charge. `a60` passe à 4 vsyncs **0,33-0,43 s** après l'arrivée de la charge : 42,0-42,2 img/s, **4 vsyncs
   91-92 %** (le reste : un essai à 8,4 s, défait en 0,4 s) ; la charge partie à 14 s, il revient à 3 vsyncs à l'essai suivant (16,8 s, attente
@@ -3340,7 +3340,7 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   (et de même avec `fps=a60`) ; base deux fois identique ; contrôle négatif détecté. Vraie fenêtre maximisée, sans paramètre : `a60` actif,
   **55,0 img/s, 3 vsyncs 100 %, aucun changement de pas** au calme ; sous la charge +5,5 ms, **41,6 img/s, 4 vsyncs 95,2 %** (le reste : un
   essai défait en 0,36 s) contre `?fps=e60` 46,0 img/s, 4 vsyncs 58 % / 3 : 42 %. Le témoin d'énergie n'a rendu aucun échantillon sur cette
-  série (déjà muet depuis le milieu de la seconde) **[?]** : pas de puissance pour cette vérification.
+  série (déjà muet depuis le milieu de la seconde ; cause en passe 6i) : pas de puissance pour cette vérification.
 
 ### Décision opérateur (2026-10-18) — [OK] pas adaptatif accepté
 - Mot pour mot : « J'accepte le pas adaptatif tel quel (a60 par défaut, ?fps=e60 manuel) : fusionne perf-p4b-adaptive-cap dans main, pousse
@@ -3353,6 +3353,46 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   ont suffi à pousser le pas au plancher à chaque chargement.
 - La marge du GPU ne se prédit pas : ses minuteries incluent la contention (étalonnage : 31 ms au lieu de 15,6 avec un autre Chrome sur le GPU) et le
   pilote baisse les fréquences quand il y a du jeu ; le pas plus court se vérifie donc par un essai, pas par un calcul.
+
+## Passe 6i — Outillage : le témoin d'énergie muet en cours de série (2026-10-18)
+
+### Demande (2026-10-18)
+- Mot pour mot : « Go témoin d'énergie : ouvre sa branche depuis main et trouve pourquoi tools/energy-witness.ps1 ne rend plus
+  d'échantillons en cours de série, avec ses preuves. » Branche `tools-energy-witness` ouverte depuis `main` (`74ccb91`) et poussée.
+
+### Symptôme
+- Passe 6h : puissance `NaN` à partir du 9e variant du premier tour de la seconde série (lancée à 04:00:25, vers 04:03), puis sur **toutes**
+  les mesures suivantes, y compris dans des processus neufs (série dynamique, vérification du défaut, page vide comprise) : le défaut tenait
+  à la machine, pas à la vie d'un processus témoin.
+
+### Cause — [OK] trouvée et prouvée
+- Le script écrivait les compteurs en `[double]` avec `-f`, dans la culture de la session (**fr-FR**). Un `[double]` de plus de 15 chiffres
+  s'écrit en notation scientifique avec la virgule décimale française : `999999999999999` → « 999999999999999 », mais `1000000000000000` →
+  « 1E+15 » et `1011028324583330` → « 1,01102832458333E+15 ». Le lecteur (`Number` dans `bench-common.mjs`) rend `NaN` pour cette chaîne
+  (« 1.011…E+15 », avec un point, se lirait), et `meanPower` rend `NaN` sans rien dire.
+- Le compteur « énergie » du boîtier (RAPL, en pWh) cumule depuis le départ du compteur (son horloge : 195 430 531 ms ≈ 54 h, sans doute le
+  démarrage de la machine) : il a passé **1e15 pWh (1 kWh, ≈ 18,6 W de moyenne sur 54 h)** pendant la seconde série. Cohérence : à 04:27:08 il
+  valait 1,011028e15 pWh, soit 1,1e13 pWh (39,7 kJ) au-delà du seuil, ≈ 28 W de moyenne depuis 04:03, ce que donnent les séries, les preuves et
+  le repos de cette période. La somme des cœurs (7,6e14 pWh) l'aurait passé plus tard.
+- Aucun chiffre publié n'est faux : sous le seuil, les valeurs s'écrivaient en entiers (lues justes) ; au-delà, elles étaient illisibles, donc
+  absentes (`NaN`), jamais mal lues. Le `[double]` perdait aussi le 16e chiffre (résolution 10 pWh), sans effet sur des écarts de 1e10-1e11.
+
+### Correctif
+- `tools/energy-witness.ps1` : les compteurs (`RawValue`, des `UInt64`) sont gardés en `[decimal]` et écrits en entiers dans la culture
+  invariante (`[string]::Format(InvariantCulture, …)`) : pleine précision, lisibles dans toute culture et à toute valeur.
+- `tools/bench-common.mjs` : une ligne illisible est signalée une fois (« [energy-witness] unparsable sample … ») et laissée de côté, au lieu
+  de rendre la puissance `NaN` en silence.
+
+### Preuves
+- Culture `fr-FR`, formats ci-dessus relevés dans PowerShell 5.1 ; `Number("1,01102832458333E+15")` = `NaN`.
+- Ancien et nouveau script lancés ensemble 6 s sur les mêmes compteurs : l'ancien écrit « 1,0113348909625E+15 », le nouveau
+  « 1011334790362500 » ; `meanPower` sur l'ancien journal : `NaN` ; sur le nouveau : boîtier 11,9 W, SoC 2,5 W (repos).
+- Bout en bout (`tools/cadence.mjs`, serveur dev, vue B, défaut `a60`, 2 tours) : la puissance revient, page vide boîtier 7,0-12,9 W / SoC
+  2,5-3,0 W, jeu 57,9-58,7 W / **SoC 37,3-39,0 W** à 55,0 img/s réguliers (passes 6c-6h, même vue : 35-37 W), aucune ligne signalée illisible.
+
+### Pensée
+- Un nombre écrit par un script pour un autre programme s'écrit dans la culture invariante, et en entier quand c'est un compteur : la
+  culture de la machine et la taille du nombre ne doivent pas changer son format. Et un lecteur qui reçoit l'illisible le dit.
 
 ## À reprendre (par priorité)
 
@@ -3372,7 +3412,8 @@ défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans 
 `e60`, sprites plus doux), **P7 fait (Passe 6f) : l'opérateur garde le MSAA 4× le 18/10, `?msaa=` reste un réglage manuel ; accepté et
 fusionné dans `main`** (2× : GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts non expliqués),
 **P8 fait (Passe 6g) : l'opérateur garde le reflet à 1/2 le 18/10, `?refl=` reste un réglage manuel ; accepté et fusionné dans `main`**
-(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
+(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), P9 (DOF demi-résolution). **Témoin d'énergie réparé (Passe 6i, branche `tools-energy-witness`)** : muet depuis que le compteur du boîtier a passé
+1e15 pWh (écrit « 1,011E+15 » en culture fr-FR), désormais en entiers invariants. Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
 **-2. Fenêtres étroites (Passe 5)** — bake par pages bornées + repli explicite + recadrage du cadre 16:9 : bâtiments présents à tout format
