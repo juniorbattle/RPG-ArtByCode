@@ -3529,6 +3529,11 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   à la base `main` `8d0386c` (13 / 13 chacun) ; base deux fois identique ; contrôle négatif détecté. `typecheck` 0, `npm run build` vert
   (même bundle `index-B8aQqSrE.js` que la validation de production et la preuve).
 
+### Décision opérateur (2026-10-18) — [OK] durcissement accepté
+- Mot pour mot : « J'accepte le durcissement de la sonde de vsync tel quel (contrôle en cours de session, outils discrets) : fusionne
+  perf-vsync-probe dans main, pousse main et supprime la branche. »
+- Branche `perf-vsync-probe` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée (locale et distante).
+
 ### Pensée
 - Une mesure unique au démarrage décrit le démarrage : une grandeur qui peut changer pendant la session se revérifie pendant la session, et
   seulement avec des échantillons qu'elle ne fausse pas (ici les rappels au repos, ou la grille quand il n'y en a pas).
@@ -3553,7 +3558,7 @@ défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans 
 `e60`, sprites plus doux), **P7 fait (Passe 6f) : l'opérateur garde le MSAA 4× le 18/10, `?msaa=` reste un réglage manuel ; accepté et
 fusionné dans `main`** (2× : GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts non expliqués),
 **P8 fait (Passe 6g) : l'opérateur garde le reflet à 1/2 le 18/10, `?refl=` reste un réglage manuel ; accepté et fusionné dans `main`**
-(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), **P9 abandonné par l'opérateur le 18/10 (Passe 6j), passe du journal acceptée et fusionnée dans `main`** : [KO] aucun gain GPU du DOF en demi-résolution sur la 780M (la recomposition pleine résolution coûte ce que la collecte gagne), code retiré, mesure et captures gardées. **Sonde de vsync durcie (Passe 6k, branche `perf-vsync-probe`), en attente d'acceptation** : la lecture unique au démarrage est contrôlée en cours de session (rappels sautés, ou grille des rappels) ; lectures forcées de 10,4 / 13 ms corrigées en 4-9 s, aucun faux changement sous charge ; outils de mesure en fenêtre discrète. Reste [?] : la cause du ralentissement des rappels de la passe 6j, et une lecture trop basse non corrigée. **Témoin d'énergie réparé (Passe 6i), accepté et fusionné dans `main`** : muet depuis que le compteur du boîtier a passé
+(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), **P9 abandonné par l'opérateur le 18/10 (Passe 6j), passe du journal acceptée et fusionnée dans `main`** : [KO] aucun gain GPU du DOF en demi-résolution sur la 780M (la recomposition pleine résolution coûte ce que la collecte gagne), code retiré, mesure et captures gardées. **Sonde de vsync durcie (Passe 6k), acceptée et fusionnée dans `main`** : la lecture unique au démarrage est contrôlée en cours de session (rappels sautés, ou grille des rappels) ; lectures forcées de 10,4 / 13 ms corrigées en 4-9 s, aucun faux changement sous charge ; outils de mesure en fenêtre discrète. Reste [?] : la cause du ralentissement des rappels de la passe 6j, et une lecture trop basse non corrigée. **Témoin d'énergie réparé (Passe 6i), accepté et fusionné dans `main`** : muet depuis que le compteur du boîtier a passé
 1e15 pWh (écrit « 1,011E+15 » en culture fr-FR), désormais en entiers invariants. Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
