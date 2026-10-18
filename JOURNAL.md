@@ -191,8 +191,14 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   (b) l'aller-retour décodage → réencodage → décodage des exports ne voyait pas cette faute : remplacé par le décodeur de référence. La faute
   « b avant a » du Paeth est **équivalente** (une égalité a / b avec a ≠ b laisse toujours c strictement meilleur) : aucun test ne peut la voir.
 
-### Résultat sur GitHub
-- [?] à relever après le push.
+### Résultat sur GitHub — [OK] vert
+- Run `39163251617` (push de `f214993` sur `ci-github-actions`) : **success**, job de 22 s ; étapes : checkout 3 s, setup-node 1 s, `npm ci`
+  3 s, `typecheck` 4 s, `build` 4 s, `art:validate` < 1 s, `npm test` 3 s, toutes réussies. Relevé par l'API publique
+  (`/actions/runs/…/jobs`) ; le journal détaillé du job demande une authentification (HTTP 403 sans), donc le décompte « 24 / 24 » vient du
+  code de sortie de `node --test` sur le runner, pas d'une lecture de son journal.
+- Une annotation, de niveau « notice » : le libellé `ubuntu-latest` passera à Ubuntu 26 à partir du 19/10/2026 (annonce GitHub
+  `actions/runner-images#14748`). [?] Le prochain run tournera sans doute sur Ubuntu 26 : épingler `ubuntu-24.04` serait une décision de
+  l'opérateur ; rien à changer tant que la CI reste verte.
 
 ### Pensée
 - Un contrôle de CI s'essaie d'abord sur un clone propre, avec un cache npm vide, les fins de ligne de l'index et la casse exacte des chemins,
