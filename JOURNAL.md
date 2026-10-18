@@ -106,6 +106,14 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Les renvois existants (manifestes, `PROVENANCE.json`, reviews, `AGENTS.md` « journal pass 6k », `art:doctor` « JOURNAL Passe 4A-0B ») ne
   sont pas modifiés : l'index les résout ; `art:doctor` ne vérifie que l'existence de `JOURNAL.md`.
 
+### Décision opérateur (2026-10-18) — [OK] Passe M3 acceptée
+- Mot pour mot : « J'accepte la Passe M3 telle quelle (README de l'Art Lab, « À reprendre » élagué, principes regroupés, archivage du
+  journal) : fusionne docs-art-lab-journal dans main, pousse main et supprime la branche. »
+- Branche `docs-art-lab-journal` fusionnée en avance rapide dans `main` (`0fa3ab0`), `main` poussé, branche supprimée (locale et distante).
+- **[KO] ordre des opérations** : cette entrée devait être commitée sur la branche avant la fusion ; son ajout a échoué, mais la commande
+  enchaînée (le reste après un heredoc, sur des lignes non liées par `&&`) a fusionné et supprimé la branche quand même. Entrée commitée
+  ensuite sur la même branche recréée, puis fusionnée en avance rapide.
+
 ### Pensée
 - Un en-tête de statut qui grossit par ajouts garde en tête sa première phrase, même périmée, et c'est celle qu'un agent lit d'abord : un
   statut se réécrit à l'état courant, daté, avec un renvoi vers l'historique.
@@ -370,6 +378,8 @@ sprites.
   ce qui est fait en sort à la clôture de sa passe (Passe M3).
 - Des fins de ligne se comptent en octets (node) : sous Git Bash, `sed -i` retire les CR et `grep` / `cat -A` ne les montrent pas de façon
   fiable (Passe M3) ; une modification de fichier CRLF passe par un outil qui les garde.
+- Une étape irréversible (fusion, push de `main`, suppression de branche) ne part qu'après la vérification de la précédente, dans une
+  commande à part ou liée par `&&` (Passe M3 : une ligne après un heredoc a fusionné malgré un commit vide).
 - Avant de retirer un worktree ou une base figée : défaire ses jonctions d'abord (lien seul, nature et cible vérifiées), chercher les
   processus qui y tournent (serveurs, boucles d'attente de séances passées) et les liens laissés ailleurs (`-Attributes ReparsePoint`),
   compter le `node_modules` du dépôt avant / après.
