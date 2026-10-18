@@ -3205,9 +3205,12 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Pendant les mesures, un Chrome d'une autre séance (PID 34736, lancé à 02:04:30, au milieu de ma série) occupait 92 % du GPU ; ni arrêté
   ni touché (règle M2).
 
-### Décision opérateur — en attente
-- Options : garder 4× (aucun changement), 2× (≈ −13 % de temps GPU, ≈ −12 % de SoC, arêtes fines un peu moins lisses, scintillement en
-  mouvement non vérifié), sans MSAA (−33 %, escaliers visibles : déconseillé).
+### Décision opérateur (2026-10-18) — [OK] 4× par défaut
+- Options présentées : garder 4× (aucun changement), 2× (≈ −13 % de temps GPU, ≈ −12 % de SoC, arêtes fines un peu moins lisses,
+  scintillement en mouvement non vérifié), sans MSAA (−33 %, escaliers visibles : déconseillé).
+- Mot pour mot : « Garde le MSAA 4× par défaut ; ?msaa= reste disponible. » Aucun changement de code : sans `?msaa=`, la cible garde 4
+  échantillons. Preuve : 13 vues `static=1&freeze=7.3` sans `?msaa=` **identiques à l'octet** à la base (`main` `a830315`) ; base deux fois
+  identique ; contrôle négatif détecté. Les écarts `viewport-proof` propres à 2× restent non expliqués (2× n'est pas le défaut).
 
 ### Pensée
 - Un écart d'image se lit à plusieurs seuils : « 9 % des pixels diffèrent » ne dit rien tant qu'on ne sépare pas le bruit de 1-4 niveaux des
@@ -3228,8 +3231,8 @@ quand le GPU rate son créneau, vu sous contention en 1440p) ;
 **P5 cache du bake fait (Passe 6d), accepté par l'opérateur le 18/10 et fusionné dans `main`** : bake 337 → 36 ms relu,
 `__ready` 2,28 → 1,98 s, image et décisions de culling identiques (`viewport-proof` ligne à ligne) ; puis revue de captures pour les décisions de l'opérateur : **P6 fait (Passe 6e) : l'opérateur garde le natif par
 défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans `main`** (1080p : GPU −41 %, SoC −56 % sous
-`e60`, sprites plus doux), **P7 captures et mesures faites (Passe 6f, branche `perf-p7-msaa`, `?msaa=`), décision en attente** (2× :
-GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts à expliquer si choisi),
+`e60`, sprites plus doux), **P7 fait (Passe 6f, branche `perf-p7-msaa`) : l'opérateur garde le MSAA 4× le 18/10, `?msaa=` reste un réglage
+manuel** (2× : GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts non expliqués),
 P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 

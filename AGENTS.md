@@ -120,7 +120,7 @@ interval comes from a boot probe; `tools/perf.mjs` and `tools/startup.mjs` add `
 `viscache=0|verify` (visibility bake cache off / bake and compare with the stored result, journal pass 6d) ·
 `res=<lines>p[:px]` (internal resolution cap, manual: at most lines² x 16 / 9 rendered pixels, scene and reflection, the browser scales the canvas up,
 smoothed or nearest with `:px`; at or under the budget nothing changes; default native, the operator's choice on 2026-10-18, journal pass 6e) ·
-`msaa=0|2|4|8` (samples of the scene target, default 4; journal pass 6f) · DEV server only: `visfail=alloc|zero` (force a
+`msaa=0|2|4|8` (samples of the scene target, manual; default 4, the operator's choice on 2026-10-18, journal pass 6f) · DEV server only: `visfail=alloc|zero` (force a
 visibility-bake failure: the fallback must keep every part and report it), `vispage=<px>` (bake page size), `visscale=<k>` (every bake tile k x:
 what a finer bake would keep) and `visfine=D:4|A+B+C+D:2|0` (the extra fine tiles, default D at 2x; `0` = none) ·
 `occ=0` (no player reveal: pixel-identical to Pass 2) · `occstyle=soft|dither|hybrid` · `occforce=all|0,2` (force
