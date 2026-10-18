@@ -16,6 +16,8 @@ import { LAYER_NOREFLECT } from '../atmosphere/ShadowAndReflection';
  *     outline), shadow-side edge cooler / darker */
 
 export const PIXEL_WORLD = 0.047; // metres per sprite pixel
+/** a sprite's depth: one card at its anchor, this many metres toward the camera (the body's half-thickness); < 0 = the quad's own depth */
+export const SPRITE_DEPTH_CARD = 0.2;
 /** walk (and carry) frames per second at the actor's animation clock; a baked walker's clock runs at its speed over the speed its cycle
  *  draws (ActorSystem.walkClock), so its planted foot stays on the ground */
 export const WALK_CADENCE = 7.5;
@@ -81,6 +83,7 @@ uniform vec3 uBillUp;
 uniform float uClipY;
 uniform float uCharScale;
 uniform vec2 uResolution;
+uniform float uDepthCard;
 varying vec3 vWorld; varying vec3 vFeet; varying vec2 vUv; varying vec4 vTint; varying float vH; varying vec4 vFx; varying float vFlip;
 varying vec2 vT; varying vec4 vCell;
 void main(){
@@ -97,6 +100,14 @@ void main(){
     vec4 ac = projectionMatrix * viewMatrix * vec4(iPos, 1.0);
     vec2 px = (ac.xy / ac.w * 0.5 + 0.5) * uResolution;
     clip.xy += (floor(px + 0.5) - px) / uResolution * 2.0 * clip.w;
+    // depth: the whole sprite at ONE depth, its anchor's, pulled toward the camera by the body's half-thickness (uDepthCard, metres). The
+    // quad leans back with the camera's pitch (tilt), so its top (the head) sat ~0.25 m deeper than the feet and props standing behind the
+    // character covered it (a stall lantern 0.5 m behind the merchant hid her hair, journal Passe S1b); a flat quad also cut through posts
+    // and walls right beside it, and through other characters. Geometry nearer than the card still hides the sprite (a counter in front).
+    if (uDepthCard >= 0.0) {
+      vec4 dc = projectionMatrix * viewMatrix * vec4(iPos + normalize(cameraPosition - iPos) * uDepthCard, 1.0);
+      clip.z = dc.z / dc.w * clip.w;
+    }
   }
   gl_Position = clip;
 }
@@ -253,7 +264,7 @@ export class SpriteRenderer {
     const bt = atlas.bakedTexture ?? emptyBaked();
     const baked = { tBaked: { value: bt }, uBakedSize: { value: new THREE.Vector2(bt.image.width, bt.image.height) } };
     this.bodyMat = new THREE.ShaderMaterial({
-      uniforms: { ...U, ...shared, ...baked, tAtlas: { value: atlas.texture }, tEmis: { value: atlas.emis }, uAtlasSize: { value: new THREE.Vector2(atlas.width, atlas.height) }, uSat: { value: 0.8 }, uLightChroma: { value: 0.62 }, uEdge: { value: 1 } },
+      uniforms: { ...U, ...shared, ...baked, tAtlas: { value: atlas.texture }, tEmis: { value: atlas.emis }, uAtlasSize: { value: new THREE.Vector2(atlas.width, atlas.height) }, uSat: { value: 0.8 }, uLightChroma: { value: 0.62 }, uEdge: { value: 1 }, uDepthCard: { value: SPRITE_DEPTH_CARD } },
       vertexShader: BODY_VERT, fragmentShader: BODY_FRAG, side: THREE.DoubleSide,
     });
     this.shadowMat = new THREE.ShaderMaterial({

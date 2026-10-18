@@ -565,6 +565,51 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une animation se règle sur ce que l'écran montre (la règle de vue de la Passe 4A-unvicies vaut aussi pour la cadence), sans toucher aux
   positions ni aux tirages.
 
+## Passe S1b — `SpriteRenderer` : une seule profondeur par sprite (le décor derrière un personnage ne le coupe plus) (2026-10-18)
+
+### Demande (2026-10-18)
+- En voyant la capture du contour (`sprite-s2/B-edge-x4-before-after.png`), l'opérateur, mot pour mot : « cela ne semble pas corriger on a
+  toujours une partie du decors qui se voit par dessus le sprite NPC » : une lanterne de l'étal couvre les cheveux de la marchande. La
+  « superposition des sprites » du premier point des priorités visait donc aussi (surtout) le décor dessiné par-dessus les personnages, que
+  la Passe S1 (superposition 55 %, masque) ne traitait pas.
+- Branche `sprite-depth-card` ouverte depuis `main` (`378664d`, Passe S2 fusionnée, runs non relevés ici).
+
+### Cause — [OK]
+- Profondeur de vue (graine 1842, B) : marchande 23,07 m, lanterne 23,56 m, soit **0,5 m derrière** ses pieds, et pourtant dessinée sur sa
+  tête. Le sprite est un quadrilatère penché avec le tangage de la caméra (`tilt` 0,85) : son sommet (la tête) est ≈ 0,25 m plus profond que
+  ses pieds, et passe derrière ce qui se trouve derrière le personnage. Le même défaut faisait traverser les sprites par les poteaux, murs et
+  autres sprites tout proches, et enfonçait la rangée basse des bottes dans le pavé (bande bleutée floue sous les semelles).
+
+### Fait
+- `BODY_VERT`, passe principale seulement (le miroir garde la profondeur du quadrilatère) : le dessin est inchangé (inclinaison, ancrage sur
+  la grille de pixels), mais tout le sprite prend **une seule profondeur**, celle de son ancrage, avancée vers la caméra de la demi-épaisseur du
+  corps (`SPRITE_DEPTH_CARD` = 0,2 m, uniforme `uDepthCard`, < 0 = l'ancienne profondeur) : `clip.z = ndc(ancrage avancé) × clip.w`. Ce qui est
+  plus proche que cette carte cache toujours le personnage (comptoir devant ses jambes, autre personnage devant lui) ; ce qui est derrière ne
+  le coupe plus.
+
+### Preuves
+- Avant / après sur la même image (même page, `uDepthCard` = −1 puis 0,2 ; A, B, C, D, graine 1842, 120 pas) : changements limités à la
+  lanterne de la marchande (B, 722 px) et aux semelles (A, B, C, D : bottes dessinées en entier au lieu de s'enfoncer dans le pavé).
+  `sprite-s1b/B-merchant-lantern-x3.png`, `sprite-s1b/feet-x4.png`.
+- Ce qui reste caché (post-traitement coupé, carte contre « sans test de profondeur ») : un personnage derrière un autre (garde derrière le
+  héros en D), le chat derrière une borne, les mains du forgeron derrière l'enclume, et la tête du forgeron derrière l'enseigne de la forge
+  (C) : l'enseigne pend à la poutre de devant, le forgeron travaille dedans, l'occultation est réelle : question de mise en scène,
+  `sprite-s1b/C-smith-sign-staging-x2.png`.
+- Monde statique (`static=1`, sept vues) contre la Passe S1 : 0 px, écart max 0.
+- Performances (`tools/perf.mjs`, 780M, 2 tours, sans contention) : B 9,36 → 9,35 ms, C 9,20 → 9,15 ms (même page, uniforme basculé).
+- Références `cam{A,B,C,D}-*.png` refaites ; `npm run typecheck`, `npm test`, `npm run build`, `npm run art:validate`.
+
+### Restes [?]
+- Mise en scène : l'enseigne de la forge cache la tête du forgeron en C (la remonter, la déplacer ou déplacer le forgeron : décision de
+  l'opérateur).
+- Un accessoire mince à moins de 0,2 m devant l'ancrage (un poteau) ne cache plus le personnage : ce corps a de l'épaisseur.
+
+### Pensée
+- Un billboard n'a pas d'épaisseur : penché pour l'apparence, il prend une profondeur que le personnage n'a pas. Dessin et profondeur se
+  séparent : le dessin suit la caméra, la profondeur reste celle de l'ancrage (une carte), avancée de la demi-épaisseur du corps.
+- Une demande d'image se vérifie sur l'image que l'opérateur montre avant d'interpréter son vocabulaire : « superposition » désignait le décor
+  par-dessus les personnages, pas seulement la superposition à 55 %.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -609,8 +654,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   dans le reveal ; chercher un cas où la passe « derrière » restaure vraiment des pièces (sinon envisager de la couper pour gagner ≈ 90 ms
   de bake) ; rejouer l'inventaire à chaque changement de zones de caméra ou de composition (bateau, lampadaires).
 
-**3. `SpriteRenderer`** (Passe S1 : superposition retirée, masque de protection propre, auréole mesurée en mouvement) — restent des décisions
-d'image : le bord des feuilles cuites ×2 (frange bleutée sur le contour d'auteur ; décision du 18/10 : contour d'auteur gardé, à faire au point 2) ;
+**3. `SpriteRenderer`** (Passe S1 : superposition retirée, masque de protection propre, auréole mesurée en mouvement ; Passe S1b : une seule
+profondeur par sprite, le décor derrière un personnage ne le coupe plus) — restent : l'enseigne de la forge qui cache la tête du forgeron en C
+(mise en scène, `sprite-s1b/C-smith-sign-staging-x2.png`) ; des décisions d'image : le bord des feuilles cuites ×2 (frange bleutée sur le contour d'auteur ; décision du 18/10 : contour d'auteur gardé, à faire au point 2) ;
 la lisibilité du forgeron dans l'in-scatter de la forge (part des personnages 45 %, `known-issues/forge-smith-inscatter-C.png`) ; un halo placé
 devant un personnage s'applique désormais entièrement (B : héros sous la lanterne, plus clair au visage).
 

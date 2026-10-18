@@ -284,7 +284,9 @@ banner, the boat's rig (mast / yard / sail) and the 7 quay lamps. Never tag smal
   thread paints the canvas atlases; a worker that cannot start, throws or stays silent 20 s has its job painted on the main thread (console,
   `lib.painterFallbacks`). Painters must stay pure (no DOM, no `Math.random`) so both paths paint the same bytes, and the THREE textures are
   created in their fixed order afterwards (texture ids, uuids).
-- Sprites: nearest texel sampling, anchor snapped to the render-target pixel grid, scene alpha = DOF protection
+- Sprites: nearest texel sampling, anchor snapped to the render-target pixel grid, ONE depth per sprite in the main pass (its anchor's,
+  `SPRITE_DEPTH_CARD` = 0.2 m toward the camera: the tilted quad no longer passes behind props standing behind the character, journal Passe S1b),
+  scene alpha = DOF protection
   mask (1 - protection), written by the opaque pass only: everything drawn after it (particles, decals, contact shadows, the bloom's
   composite) blends with `maskSafeBlending` (`SceneUniforms.ts`), which keeps the destination alpha. The DOF carries the mask on in its
   alpha and the grade applies the in-scatter protection at full resolution (no second pass of the characters: the old 55 % overlay
