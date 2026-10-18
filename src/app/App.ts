@@ -275,7 +275,10 @@ export class App {
         centre: this.occlusion.stats.centre.join(','), radii: this.occlusion.stats.radii.map((v) => +v.toFixed(1)).join(','),
         behindParts: this.district?.visibility.behind?.parts ?? 0, behindTris: this.district?.visibility.behind?.tris ?? 0, behindPx: this.district?.visibility.behind?.px ?? 0,
       },
-      frameCap: { mode: frameCapLabel(this.frameCap.mode), every: this.frameCap.every(), vsyncMs: +this.frameCap.vsync.toFixed(3), vsyncFrom: this.frameCap.vsyncSource, skipped: this.frameCap.skipped },
+      frameCap: {
+        mode: frameCapLabel(this.frameCap.mode), every: this.frameCap.every(), vsyncMs: +this.frameCap.vsync.toFixed(3), vsyncFrom: this.frameCap.vsyncSource, skipped: this.frameCap.skipped,
+        ...(this.frameCap.mode.kind === 'adaptive' ? { steps: this.frameCap.steps, trialsFailed: this.frameCap.trialsFailed, log: this.frameCap.log.map((x) => x.join(':')).join(',') } : {}),
+      },
     };
   }
 

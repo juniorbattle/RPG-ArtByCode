@@ -10,6 +10,7 @@
 // them), the GPU process's 3D-engine utilisation (median of the witness samples, ~1 per 2 s; the driver lowers the clocks when there is
 // slack, so a busy share is not a power figure), the mean package and SoC power (tools/energy-witness.ps1: RAPL counters, SoC = package
 // minus cores = the integrated GPU's share) and foreign GPU use. Each round starts with the idle page (about:blank) as the power reference.
+// An adaptive cap (`fps=a<n>`) also reports its step changes ([rAF ms:vsyncs per frame]; the JSON row's `t0` = the first measured render).
 import fs from 'node:fs';
 import { launchHeaded, gpuPid, witness, energyWitness, meanPower, foreignUse, quantile as q } from './bench-common.mjs';
 
@@ -103,13 +104,13 @@ try {
       const row = {
         label: v.label, i, url: v.url, size: v.size, cap: r.cap, res: r.res, dpr: r.dpr, inner: r.inner, vis: r.vis,
         fps: (iv.length) / span, p50: q(iv, 0.5), p95: q(iv, 0.95), max: Math.max(...iv), hist, mode, irregular: k.filter((x) => x !== mode).length / Math.max(1, k.length),
-        vsync: vs, intervals: iv.map((x) => +x.toFixed(2)), skipped: r.raf.length - r.render.length, rafs: r.raf.length, gpuBusy: own.length ? q(own, 0.5) : NaN, gpuSamples: own, pkgW: pw.pkg, socW: pw.soc,
+        vsync: vs, t0: +r.render[0]?.toFixed(1), intervals: iv.map((x) => +x.toFixed(2)), skipped: r.raf.length - r.render.length, rafs: r.raf.length, gpuBusy: own.length ? q(own, 0.5) : NaN, gpuSamples: own, pkgW: pw.pkg, socW: pw.soc,
         foreign: wit.on ? foreignUse(wit.samples(), t0, t1, mine, opt.thr) : [],
       };
       out.push(row);
       console.log(`[${i + 1}] ${v.label.padEnd(18)} ${r.res} (${r.inner}@${r.dpr}${r.vis !== 'visible' ? ' ' + r.vis : ''})  ${row.fps.toFixed(1)} fps  interval p50 ${row.p50.toFixed(2)} p95 ${row.p95.toFixed(2)} max ${row.max.toFixed(1)} ms  `
         + `vsyncs 1/2/3/4/5+ ${hist.map((h) => (h * 100).toFixed(0)).join('/')} %  irregular ${(row.irregular * 100).toFixed(1)} %  rAF without render ${row.skipped}/${row.rafs}  `
-        + `GPU busy ${isNaN(row.gpuBusy) ? '-' : row.gpuBusy + ' %'} [${own.join(',')}]  pkg ${pw.pkg.toFixed(1)} W  soc ${pw.soc.toFixed(1)} W${r.cap ? `  cap ${r.cap.mode} every ${r.cap.every} vsync ${r.cap.vsyncMs} (${r.cap.vsyncFrom})` : ''}${row.foreign.length ? '  foreign ' + row.foreign.join(',') : ''}`);
+        + `GPU busy ${isNaN(row.gpuBusy) ? '-' : row.gpuBusy + ' %'} [${own.join(',')}]  pkg ${pw.pkg.toFixed(1)} W  soc ${pw.soc.toFixed(1)} W${r.cap ? `  cap ${r.cap.mode} every ${r.cap.every} vsync ${r.cap.vsyncMs} (${r.cap.vsyncFrom})${r.cap.steps !== undefined ? ` steps ${r.cap.steps} trials undone ${r.cap.trialsFailed} [${r.cap.log}]` : ''}` : ''}${row.foreign.length ? '  foreign ' + row.foreign.join(',') : ''}`);
       await page.close();
     }
   }

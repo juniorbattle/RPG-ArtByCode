@@ -3265,6 +3265,79 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Un poste de 1 ms sur 16 ne se voit plus en watts sous plafond de cadence : la passe de reflet était déjà à 7 % du temps GPU ; diviser
   ses pixels par 4 la ramène à 3 %, sans effet mesurable sur la puissance.
 
+## Passe 6h — Performances : pas adaptatif du plafond de cadence (`?fps=a60`) — mesures (2026-10-18)
+
+### Demande (2026-10-18)
+- Mot pour mot : « Go pas adaptatif : ouvre sa branche depuis main et mesure d'abord le plafond qui passe de 3 à 4 vsyncs quand le GPU rate
+  son créneau, avec cadence.mjs, avant toute décision. » Branche `perf-p4b-adaptive-cap` ouverte depuis `main` (`2560ce9`) et poussée. **Rien
+  n'est décidé : le défaut reste `e60`** ; le pas adaptatif est un mode manuel, `?fps=a60`.
+
+### Mécanisme (`src/app/FrameCap.ts`)
+- `a<n>` = `e<n>` (toutes les round(fréquence / n) vsyncs, 3 à 165 Hz) plus un pas adaptatif. Une image rendue est **en retard** quand
+  son intervalle dépasse le pas + ½ vsync (horodatages rAF, ceux que la porte du plafond utilise déjà). **3 retards parmi les 30 dernières
+  images** → une vsync de plus par image, jusqu'au plancher de 30 img/s (5 vsyncs à 165 Hz). Après 4 s à un pas plus long, **essai** du pas
+  plus court pendant 2 s : gardé s'il tient ; sinon défait, et l'attente avant l'essai suivant double (au plus 16 s, remise à 4 s après un
+  essai réussi). Ne comptent pas : la première image, un trou ≥ 250 ms (régénération, onglet caché) et les 2 s qui suivent (grâce), ni les
+  6 images qui suivent un changement de pas.
+- `__stats().frameCap` : `every` (pas courant), `steps`, `trialsFailed`, `log` (« ms rAF:pas ») ; panneau ; `tools/cadence.mjs` les affiche
+  (et `t0` dans le JSON pour caler `log` sur les intervalles).
+- Le chemin `e60` (défaut) ne change pas : même calcul de pas, même porte. Preuve pixel ci-dessous.
+
+### Charge GPU synthétique (outil de mesure, hors dépôt : `perf-gpu-evidence/p4b/`)
+- Pour faire rater le créneau à volonté, un crochet `cadence.mjs` ajoute après chaque `App.render` un triangle plein écran dans une cible
+  1024² (boucle sin / cos de n itérations, GL brut puis `renderer.resetState()`), chronométré par le `GpuTimer` du jeu (passe « load ») :
+  ≈ 4,5 µs par itération sur la 780M (`tools/perf.mjs`, 2560 × 1267 : n = 100 → 0,46 ms, 200 → 0,89, 400 → 1,79). C'est une charge **par
+  image rendue** (une scène plus lourde, un GPU plus faible), pas une contention extérieure. Charges utilisées, extrapolées : n = 780
+  (≈ +3,5 ms), 1250 (≈ +5,5 ms), 2700 (≈ +12 ms). Vue B (`seed=1842&clean=1&player=-4.6,0.6`), fenêtre maximisée 2560 × 1267, 165 Hz.
+
+### Première série — [KO] deux défauts, corrigés
+- **Démarrage** : sans charge, `a60` montait à 4 puis 5 vsyncs dans les 0,3 s qui suivent la première image (les premières images de la
+  boucle durent 30-100 ms), puis redescendait d'un pas toutes les 4 s : 44,7-44,8 img/s et 54 % d'intervalles hors de 3 vsyncs dans la
+  fenêtre mesurée, à chaque chargement. Corrigé par la grâce de 2 s et les 6 images de stabilisation.
+- **Retour lent** : après deux essais ratés sous charge l'attente était de 16 s (plafond 32 s) : la charge partie, `a60` est resté à 4 vsyncs
+  ≈ 15 s. Plafond ramené à 16 s.
+- Le principe tenait déjà : sous charge, 4 vsyncs réguliers au lieu du mélange 3 / 4 d'`e60`.
+
+### Seconde série (code final, 2 tours, `tools/cadence.mjs`)
+| Charge | `e60` (défaut) | `a60` | `v4` |
+|---|---|---|---|
+| aucune | 55,0 img/s, 3 vsyncs 99,5-100 % ; SoC 36,7 W | 55,0 img/s, 3 vsyncs 99,5-100 %, **0 changement** ; SoC 37,2 W | — |
+| +3,5 ms | 48,8-48,9 img/s, 3 vsyncs 62-64 % / 4 : 35-36 % ; SoC 40,5 W | 42,1 img/s, **4 vsyncs 90,5-90,8 %** ; SoC 35,3 W | — |
+| +5,5 ms | 44,0-44,1 img/s, 4 vsyncs 70-72 % / 3 : 26-28 % ; SoC 40,0 W | 41,6 img/s, **4 vsyncs 95,5 %** ; SoC 38,6 W | 41,1 img/s, 4 vsyncs 100 % ; SoC 38,2 W |
+| +12 ms | 33,4-33,6 img/s, 5 vsyncs 83-87 % / 4 : 12 % (quelques 6-14) | 33,3 img/s, **5 vsyncs 94-95 %** | — |
+- Dans `a60`, le reste (3 vsyncs à +3,5 / +5,5 ms, 4 à +12 ms) est l'essai raté tombé dans la fenêtre de 8 s : entre deux essais, 100 % au
+  pas long. SoC du premier tour seulement : le témoin d'énergie n'a plus rendu d'échantillon à partir du milieu de la série **[?]** (cause
+  non cherchée).
+- **Charge qui arrive et repart** (charge +5,5 ms de 4 à 14 s d'une fenêtre de 30 s) : `e60` passe de 55 à 45,4-46,3 img/s, **4 vsyncs
+  56-63 % / 3 : 37-44 %** pendant la charge. `a60` passe à 4 vsyncs **0,33-0,43 s** après l'arrivée de la charge : 42,0-42,2 img/s, **4 vsyncs
+  91-92 %** (le reste : un essai à 8,4 s, défait en 0,4 s) ; la charge partie à 14 s, il revient à 3 vsyncs à l'essai suivant (16,8 s, attente
+  doublée à 8 s), puis 55 img/s réguliers : 2,8 s de 41 img/s de trop.
+- Coût en régime chargé durable : un essai raté toutes les 4, 8 puis 16 s, ≈ 0,4-0,6 s de mélange 3 / 4 chacun (≈ 3 % du temps, calculé).
+
+### Outillage — [KO] `TaskStop` n'arrête que le shell
+- Un étalonnage puis un balayage lancés en `run_in_background` (`bash script.sh`) et arrêtés par `TaskStop` ont continué : seul bash s'est
+  arrêté, node et son Chrome ont couru jusqu'au bout (≈ 1 min) et le balayage relancé les a vus comme contention étrangère (PID 32848 /
+  21852, 37-61 % du GPU). Repérés par `Get-Process -Id` sur les PID du témoin, attendus jusqu'à leur sortie, mesures refaites ; aucun processus
+  arrêté à la main. Règle notée dans AGENTS (section des processus).
+
+### Preuves
+- Pixels (`static=1&freeze=7.3`, 13 vues de la passe 6b, builds figés) : sans paramètre (`e60`) et avec `fps=a60`, **identiques à l'octet**
+  à la base `main` `2560ce9` (13 / 13 chacun) ; base deux fois identique ; contrôle négatif (`freeze=7.31`) détecté (91 % des pixels de B).
+- `typecheck` 0, `npm run build` vert : même bundle (`index-0fz2QHsv.js`) que le build mesuré par la seconde série et la preuve.
+
+### Options pour l'opérateur
+1. **Garder `e60` par défaut** (aucun changement) ; `?fps=a60` reste un réglage manuel.
+2. **`a60` par défaut** : identique à `e60` tant que le GPU tient ses 3 vsyncs (mesuré : 55,0 img/s, aucun changement de pas) ; quand il ne
+   les tient plus (GPU plus faible, autre programme sur le GPU, fenêtre plus grande), 41 img/s réguliers au lieu d'un mélange 3 / 4 à
+   44-49 img/s, un essai de retour toutes les 4-16 s, et jusqu'à 16 s à 41 img/s après la fin d'une longue charge.
+- Le choix est entre régularité et nombre d'images sous charge ; sur cette machine au calme, rien ne change.
+
+### Pensée
+- Le retard d'une image se lit dans les horodatages rAF, à condition d'écarter le démarrage et les trous : les premières images de la boucle
+  ont suffi à pousser le pas au plancher à chaque chargement.
+- La marge du GPU ne se prédit pas : ses minuteries incluent la contention (étalonnage : 31 ms au lieu de 15,6 avec un autre Chrome sur le GPU) et le
+  pilote baisse les fréquences quand il y a du jeu ; le pas plus court se vérifie donc par un essai, pas par un calcul.
+
 ## À reprendre (par priorité)
 
 **-3. Performances GPU (Passe 6, plan validé par l'opérateur le 17/10 ; P0-P2 acceptés et fusionnés dans `main` le 17/10, la suite ouvre
@@ -3274,8 +3347,9 @@ image de la boucle 17 → 4 ms, 0 programme compilé après le départ ; durée 
 fausse). **P3 fait (Passe 6b), accepté par l'opérateur le 17/10 et fusionné dans `main`** : peintres de textures en Web
 Workers, octets et image identiques, peinture 1,80 → 0,55 s, `__ready` 3,64 → 2,50 s ; sonde `startup.mjs` corrigée (première étiquette). Suivent,
 une piste par commit, chacune avec sa preuve : **P4 plafond de cadence fait (Passe 6c) : défaut `e60` choisi par l'opérateur le 17/10, accepté et fusionné dans `main`**
-(55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `?fps=off` sans plafond ; piste ouverte : pas adaptatif 3 → 4 vsyncs
-quand le GPU rate son créneau, vu sous contention en 1440p) ;
+(55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `?fps=off` sans plafond ; **pas adaptatif 3 → 4 vsyncs mesuré (Passe 6h,
+branche `perf-p4b-adaptive-cap`, `?fps=a60`), décision en attente** : 41 img/s réguliers au lieu d'un mélange 3 / 4 quand le GPU rate son
+créneau, identique à `e60` au calme) ;
 **P5 cache du bake fait (Passe 6d), accepté par l'opérateur le 18/10 et fusionné dans `main`** : bake 337 → 36 ms relu,
 `__ready` 2,28 → 1,98 s, image et décisions de culling identiques (`viewport-proof` ligne à ligne) ; puis revue de captures pour les décisions de l'opérateur : **P6 fait (Passe 6e) : l'opérateur garde le natif par
 défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans `main`** (1080p : GPU −41 %, SoC −56 % sous

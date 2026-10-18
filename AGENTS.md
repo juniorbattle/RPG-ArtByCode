@@ -99,7 +99,9 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 - Start dev servers with the session's `preview_start` tool and a `.claude/launch.json` entry (`dev`, `dev-cast2`,
   `dev-cast3`); for a new port, add an entry instead of launching it by hand. Stop them with `preview_stop`.
 - Run long scripts (`tools/perf.mjs`, `tools/viewport-proof.mjs`, trace series…) with the Bash tool's
-  `run_in_background`, and stop them with `TaskStop` on their task id.
+  `run_in_background`, and stop them with `TaskStop` on their task id. `TaskStop` on a background `bash script.sh` stopped the shell, not
+  the node / Chrome it had started (they ran on to their end and two measurements measured each other, journal pass 6h): before relaunching,
+  look up the witness's foreign GPU PIDs with `Get-Process -Id <pid>` and wait for them to exit.
 - Never use `taskkill`, `Stop-Process` or a system-wide process scan (`Get-CimInstance Win32_Process`, process lists
   filtered by command line) to find or stop leftovers: each one needs the operator's approval and can hit unrelated
   programs. If a process escapes the tools (an orphan holding a port), report the port and its owning PID
@@ -114,9 +116,11 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
 `static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
 thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) ·
-`fps=off|<n>|v<k>|e<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
+`fps=off|<n>|v<k>|e<n>|a<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
 round(refresh / n) vsyncs; **default `e60`**, chosen by the operator on 2026-10-17: 55 fps at 165 Hz, 72 at 144, 60 at 60 / 120; the vsync
-interval comes from a boot probe; `tools/perf.mjs` and `tools/startup.mjs` add `fps=off` unless the query sets `fps`; journal pass 6c) ·
+interval comes from a boot probe; `tools/perf.mjs` and `tools/startup.mjs` add `fps=off` unless the query sets `fps`; journal pass 6c; `a<n>` = `e<n>`
+with an adaptive step, manual: one more vsync per frame while rendered frames keep missing their slot, down to 30 fps, then trials of the shorter
+step after 4-16 s; `__stats().frameCap` shows the step and its changes; journal pass 6h) ·
 `viscache=0|verify` (visibility bake cache off / bake and compare with the stored result, journal pass 6d) ·
 `res=<lines>p[:px]` (internal resolution cap, manual: at most lines² x 16 / 9 rendered pixels, scene and reflection, the browser scales the canvas up,
 smoothed or nearest with `:px`; at or under the budget nothing changes; default native, the operator's choice on 2026-10-18, journal pass 6e) ·
