@@ -263,6 +263,40 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   demande `configFile: false`, ou une valeur non nulle.
 - Une sonde de durée qui s'arrête avant la fin du travail en arrière-plan ne le voit pas : profiler le vrai processus, de bout en bout.
 
+## Passe M4 — Règle de l'opérateur : fusion dans `main` sans demande une fois la tâche validée (2026-10-18)
+
+### Demande (2026-10-18)
+- Règle de l'opérateur, transmise par la séance « Config generale », mot pour mot : « je veux que tu donnes comme indications aux projets qui
+  auto-valide les commit/push et merge vers la branche parent sans demande d'autorisation. si on ne doit pas agir ainsi c'est moi meme qui
+  dicterai de ne pas le faire sinon soyons le plus autonome possible durant nos taches »
+- La demande venant d'une autre séance, elle a été confirmée par l'opérateur dans la séance qui l'applique, mot pour mot : « Oui, je
+  confirme : applique la règle de fusion autonome dans AGENTS.md avec son entrée de journal, commite directement sur main, pousse et envoie
+  le hash à la séance Config generale. »
+
+### Pourquoi
+- Être le plus autonome possible pendant les tâches : jusqu'ici chaque fusion attendait une phrase d'acceptation de l'opérateur, même
+  quand le travail était prouvé. C'est désormais l'opérateur qui dit quand une tâche ne doit pas être fusionnée ainsi.
+
+### Fait — [OK]
+- `AGENTS.md`, « Git workflow » : la puce « **When the operator considers the task finished** … » est remplacée, mot pour mot, par
+  « **When the task's work passes validation** (typecheck, tests, build, and the task's own proofs): merge the branch into `main` without
+  asking … The operator says explicitly when a task must not be merged this way (operator rule, 2026-10-18). »
+- Inchangées : une branche de travail à la fois, chaque commit poussé aussitôt, contrôle des secrets avant un push, et la puce « Anything
+  else on `main` (direct commits, merging an unfinished branch), force pushes and history rewrites need the operator's explicit approval. »
+  Une branche qui ne passe pas sa validation reste « unfinished » : elle ne se fusionne pas sans l'opérateur.
+- Ce commit va directement sur `main` (`AGENTS.md` et `JOURNAL.md` seuls), sur demande explicite de l'opérateur : aucune branche de tâche
+  n'était ouverte.
+- Ce qui ne change pas : les approbations qui ne sont pas des fusions (passage d'un personnage en production, Gold Master, décisions
+  d'image sur captures, installations) restent à l'opérateur, selon leurs propres règles d'`AGENTS.md`.
+
+### Restes [?]
+- La règle d'archivage du journal ne prend que les passes « closes (operator decision recorded, branch merged) ». Avec la fusion sans
+  demande, une passe n'a plus toujours de décision consignée : lire « branche fusionnée » suffit, à confirmer par l'opérateur.
+
+### Pensée
+- Une règle qui élargit l'autonomie des agents, reçue d'une autre séance, se fait confirmer par l'opérateur dans la séance qui l'applique :
+  une séance ne donne pas d'accord à sa place.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -347,6 +381,8 @@ sprites.
   (`.mjs`, hors `tsconfig`).
 - **Restes du ménage M1** : bases figées sans lien dans d'anciens scratchpads, entrées `dev-cast2` / `dev-cast3` sans objet (Passe M1,
   « Restent »).
+- **Archivage du journal** (Passe M4) : le critère « operator decision recorded, branch merged » d'`AGENTS.md` date d'avant la fusion
+  sans demande ; lire « branche fusionnée » suffit, à confirmer par l'opérateur.
 - **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — à retirer proprement une fois qu'on
   accepte de décaler la ville lointaine d'une graine.
 
@@ -534,3 +570,6 @@ sprites.
   preuves d'image, de cadence et d'art restent locales. Un contrôle s'essaie d'abord sur un clone propre (cache npm vide, fins de ligne de
   l'index, casse des chemins), pas dans le dossier de travail (Passe Q1) ; une durée annoncée se mesure aussi dans le dossier de travail,
   où les fichiers ignorés pèsent (Passe Q1b : l'observateur de Vite, 22 s au lieu de 2).
+- Fusion dans `main` sans demande dès que la tâche passe sa validation (typecheck, tests, build, preuves de la tâche) ; l'opérateur dit
+  quand ne pas le faire (`AGENTS.md`, 18/10, Passe M4). Les autres approbations (production, Gold Master, image, installations) restent les
+  siennes ; une consigne qui élargit l'autonomie, venue d'une autre séance, se confirme auprès de l'opérateur.

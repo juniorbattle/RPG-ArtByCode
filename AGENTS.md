@@ -30,8 +30,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   branch while another one is unfinished.
 - **On that branch, every commit is pushed right away** (`git push -u origin <branch>` the first time), with everything the branch needs;
   the `JOURNAL.md` update goes in the same commit as the work it records.
-- **When the operator considers the task finished**: merge the branch into `main` (fast-forward when possible: `main` has a linear
-  history), push `main`, delete the merged branch (local and remote), and only then create the branch of the next task.
+- **When the task's work passes validation** (typecheck, tests, build, and the task's own proofs): merge the branch into `main` without
+  asking (fast-forward when possible: `main` has a linear history), push `main`, delete the merged branch (local and remote), and only then
+  create the branch of the next task. The operator says explicitly when a task must not be merged this way (operator rule, 2026-10-18).
 - Before a push, check the commits for secrets and machine-specific paths (never committed, see "Art production principle").
 - Anything else on `main` (direct commits, merging an unfinished branch), force pushes and history rewrites need the operator's explicit
   approval.
