@@ -473,6 +473,12 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   (cohérence visuelle des personnages), jamais par l'éclairage global.
 - Anneau résiduel du chat au premier plan (son flou de profondeur) et des pixels de bord.
 
+### Décision opérateur (2026-10-18) — [OK]
+- Captures montrées (`sprite-s1/B-stall-x2-before-after.png`, `C-forge-x2-before-after.png`, `B-full-before-after.png`,
+  `rim-proposal-x1-x2.png`), deux questions (posées en anglais par erreur). Réponses, mot pour mot : halo devant un personnage —
+  « Fully applied (Recommended) » (S1 fusionnée telle quelle) ; bord des feuilles cuites ×2 — « Keep the authored outline » (pas
+  d'éclaircissement du bord sur les feuilles cuites, liseré de lune et assombrissement du côté ombre gardés ; fait au point 2).
+
 ### Pensée
 - Un canal qui sert de contrat (l'alpha = masque de protection) se protège à l'écriture, par les facteurs de mélange de chaque passe, pas en le
   réparant après coup : la réparation (la superposition) cachait la corruption sur les personnages et la laissait autour d'eux.
@@ -524,7 +530,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   de bake) ; rejouer l'inventaire à chaque changement de zones de caméra ou de composition (bateau, lampadaires).
 
 **3. `SpriteRenderer`** (Passe S1 : superposition retirée, masque de protection propre, auréole mesurée en mouvement) — restent des décisions
-d'image : le pas de silhouette / contour sur les feuilles cuites ×2 (frange bleutée sur le contour d'auteur ; `sprite-s1/rim-proposal-x1-x2.png`) ;
+d'image : le bord des feuilles cuites ×2 (frange bleutée sur le contour d'auteur ; décision du 18/10 : contour d'auteur gardé, à faire au point 2) ;
 la lisibilité du forgeron dans l'in-scatter de la forge (part des personnages 45 %, `known-issues/forge-smith-inscatter-C.png`) ; un halo placé
 devant un personnage s'applique désormais entièrement (B : héros sous la lanterne, plus clair au visage).
 
