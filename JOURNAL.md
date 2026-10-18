@@ -2871,6 +2871,35 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   en médiane pendant l'analyse (sous contention) ; la peinture des textures 1,1-1,5 s contre 2,2-4,1 s (la contention était aussi CPU). Les
   chiffres de l'analyse sont donc des majorants d'environ 20 % (GPU) et ×2 (démarrage) : le gain attendu de P3 se révise à ≈ −0,7 s.
 
+### P2 — Première image sous l'écran de chargement, liaison parallèle des programmes — [OK] petit gain ; [KO] l'estimation du plan
+- **[KO] d'attribution (analyse et sonde de P0)** : le « blocage de la première image » (1,4-3,5 s sous contention, 0,9 s au calme) était le
+  plus grand intervalle rAF **depuis la toute première image** : c'est le bloc synchrone de `regenerate()` (génération, bake et, depuis P1,
+  chauffe), sous l'écran de chargement. Mesuré côté page (`regenerate` et `render` enveloppés d'un `gl.finish()` chronométré, build de
+  production) : arriéré GPU après `regenerate` 0 ms, première vraie image 21-277 ms (11 programmes de post-traitement), les suivantes
+  2-5 ms. L'estimation du plan (« −1 à −1,5 s ») ne tenait donc pas. `tools/startup.mjs` corrigé : bloc `regenerate` du démarrage, temps
+  jusqu'à `start()`, première image **après** `start()`, programmes créés par les premières images.
+- Essai dans une copie jetable (modes `sync` / `async`, 4 chargements chacun, au calme) : chauffe seule (programmes de la scène + variantes
+  + envois) 148-207 ms (médiane 192) ; `compileAsync` (avec `KHR_parallel_shader_compile`, présent) **avant** la chauffe : liaison 19-25 ms
+  sans bloquer le fil principal, puis chauffe 115-182 ms (médiane 116) : ≈ −50 à −75 ms. Programmes 2 → 21 → 21 → 32 : aucun doublon (la
+  cible `sceneRT` liée pendant `compileAsync`, voir P1).
+- Changement (`App.init` / `App.prepareFirstFrame`) : le démarrage appelle `regenerate(undefined, { warm: false })`, puis, une fois la pose
+  de caméra fixée, `compileAsync` avec les variantes et `sceneRT` liées, la chauffe (P1) et une image complète (miroir, scène, post), avant
+  la fin de `init()` : l'écran de chargement ne s'efface plus sur une image qui compile encore. Les régénérations suivantes gardent la
+  chauffe synchrone dans `regenerate` (programmes déjà en cache). `warmOcclusionVariants` remet lui-même le niveau de dessin complet
+  (appelable hors de `regenerate`).
+- Preuves (contre la base figée P1 `f80834d` pour les temps, `2cbb858` pour les pixels) :
+  - **démarrage** (`tools/startup.mjs` corrigé, 6 + 6 chargements entrelacés, aucun sous contention) : première image après `start()`
+    **17 ms [3-20] → 4 ms [3-8]**, programmes créés par les premières images **11 → 0** ; bloc `regenerate` 922 [884-2 535] → 709 [680-739]
+    ms, suivi de 228 [188-234] ms de préparation sous l'écran ; `__ready` 2 557 [2 282-4 511] → 2 495 [2 299-2 564] ms : **durée totale
+    inchangée** (dans le bruit), le travail est seulement déplacé et un peu parallélisé ;
+  - **pixels** (seuil 0) : 19 vues (les 13 de P1 + les 6 à révélation réelle) **0 px** contre `2cbb858` ; témoin de répétition 0 px ;
+    contrôle négatif `occ=0` 528-3 860 px ; chemin `occ=0` (6 vues) 0 px contre la base en `occ=0` (contrat « identique à la passe 2 ») ;
+  - **coût par image** : B 1080p 10,90 → 10,97 ms ; C 1440p 18,51 → 18,91 ms dans un premier ordre, puis 18,95 / 18,85 (P1) contre
+    19,25 / 18,38 (P2) en ordre inversé et répété (tous les tours propres) : aucun écart ; le code par image n'a pas changé ;
+  - `typecheck` 0, `npm run build` vert.
+- Constat au passage : un onglet d'aperçu masqué (fenêtre 0 × 0) fait échouer le bake (« NaN x 960 page target ») et le repli garde tout,
+  comme prévu (comportement antérieur, non lié à P2, non traité).
+
 ### Pensée
 - Mesurer d'abord a encore déplacé la cible : on croyait le MSAA et le DOF / bloom « les plus gros postes » (passe 2) sur une Iris Xe ; sur
   la 780M réelle, c'est la bande passante du MSAA 4× HDR et la définition 1440p de l'écran de l'opérateur. Et l'à-coup le plus visible
@@ -2882,9 +2911,9 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 ## À reprendre (par priorité)
 
 **-3. Performances GPU (Passe 6, branche `perf-gpu`, plan validé par l'opérateur le 17/10)** — fait : P0 (outillage), P1 (chauffe des
-variantes d'occlusion : première révélation 315 → 11 ms, image identique). Suivent, une piste par commit, chacune avec sa preuve : P2 première
-image sous l'écran de chargement (la chauffe de P1 ne l'a pas raccourcie : le travail GPU de la première image reste à attendre, `finish`
-avant le fondu) + compilation parallèle, P3 peintres de textures en Web Workers (gain révisé ≈ −0,7 s hors contention), P4 plafond de
+variantes d'occlusion : première révélation 315 → 11 ms, image identique), P2 (première image préparée sous l'écran de chargement : première
+image de la boucle 17 → 4 ms, 0 programme compilé après le départ ; durée de démarrage inchangée, l'estimation « −1 à −1,5 s » du plan était
+fausse). Suivent, une piste par commit, chacune avec sa preuve : P3 peintres de textures en Web Workers (gain révisé ≈ −0,7 s hors contention), P4 plafond de
 cadence (défaut à décider), P5 cache du bake ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
 P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
@@ -3006,7 +3035,9 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   quoi que demande `powerPreference`. Mesurer à la définition de l'écran de l'opérateur (dpr compris), pas seulement en 1080p.
 - Un temps GPU pris sur un poste partagé ne vaut qu'avec son témoin de contention (autres processus sur le même adaptateur) ; à défaut, le
   minimum des tours entrelacés est l'estimation sans contention. La traîne du temps d'image en headless n'est pas une mesure.
-- Une première fois (programme, variante, dessin) se mesure par une sonde dédiée : aucune moyenne ne la voit.
+- Une première fois (programme, variante, dessin) se mesure par une sonde dédiée : aucune moyenne ne la voit. Un intervalle rAF ne
+  s'attribue qu'avec un repère (le départ de la boucle, un `gl.finish()` chronométré) : le plus grand intervalle depuis le chargement est le
+  plus long bloc synchrone, pas forcément la première image.
 
 - Une allocation GPU se dimensionne contre le minimum garanti (WebGL2 : 2 048) et se vérifie (complétude du framebuffer, erreurs GL) ; un bake
   qui conclut « rien n'est visible » est une erreur : le repli garde toutes les pièces et le signale (console, stats, panneau).

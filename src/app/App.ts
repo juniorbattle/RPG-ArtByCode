@@ -142,7 +142,8 @@ export class App {
     this.particles = new ParticleSystem(this.lib);
     this.scene.add(this.particles.group);
     this.resize();
-    this.regenerate();
+    // the boot links the programs in parallel first (prepareFirstFrame), then warms the occlusion variants
+    this.regenerate(undefined, { warm: false });
     // ?player=x,z places the player (and settles the camera in that zone's framing) for authored review shots
     const pp = this.opts.params.get('player')?.split(',').map(Number);
     const placed = !!pp && pp.length === 2 && pp.every((v) => !isNaN(v));
@@ -163,7 +164,27 @@ export class App {
       this.graph.state = st; this.debugActive = [a, b];
     }
     this.actors.controlYaw = this.actors.camYaw = this.rig.yaw;
+    await this.prepareFirstFrame();
     this.ready = true;
+  }
+
+  /** Boot only (journal pass 6, P2), under the loading screen: every program of the scene is linked in parallel (compileAsync, which
+   *  uses KHR_parallel_shader_compile) with the occlusion variants bound and the scene target bound (a program's key depends on the bound
+   *  target: the linear half-float scene target vs the sRGB canvas, otherwise the programs compiled are never used); then the variants'
+   *  first draw (warmOcclusionVariants: ANGLE / D3D11 finishes a program only there) and one full frame (mirror, scene, post), so the
+   *  loading screen never fades onto a frame that still compiles. Nothing drawn here is presented: the loop's first frame redraws all. */
+  private async prepareFirstFrame(): Promise<void> {
+    const r = this.renderer, swap = this.occlusion.enabled ? this.occlusion.meshes : [];
+    for (const m of swap) m.mesh.material = m.variant;
+    const prev = r.getRenderTarget();
+    r.setRenderTarget(this.post.sceneRT);
+    const linked = r.compileAsync(this.scene, this.rig.camera);
+    r.setRenderTarget(prev);
+    for (const m of swap) m.mesh.material = m.base;
+    await linked;
+    this.warmOcclusionVariants();
+    this.reflection.update(r, this.scene, this.rig.camera);
+    this.post.render(this.scene, this.rig.camera, this.time);
   }
 
   resize(): void {
@@ -242,8 +263,9 @@ export class App {
     }
   }
 
-  /** `keepActors`: the same district rebuilt for another frame (resize re-bake): actors and particles carry on instead of re-spawning */
-  regenerate(cfg?: Partial<DistrictConfig>, opts: { keepActors?: boolean } = {}): void {
+  /** `keepActors`: the same district rebuilt for another frame (resize re-bake): actors and particles carry on instead of re-spawning;
+   *  `warm: false`: the occlusion variants are warmed later by the caller (the boot, see prepareFirstFrame) */
+  regenerate(cfg?: Partial<DistrictConfig>, opts: { keepActors?: boolean; warm?: boolean } = {}): void {
     if (cfg) Object.assign(this.config, cfg);
     if (this.district) {
       this.scene.remove(this.district.group);
@@ -288,7 +310,7 @@ export class App {
     this.district.setLevel(this.district.visibility.levels);
     this.shadow.update(this.renderer, this.scene, new THREE.Vector3(6, 0, 0), this.moonDir, 46, 32);
     this.district.releaseShadowOnly();
-    this.warmOcclusionVariants();
+    if (opts.warm !== false) this.warmOcclusionVariants();
     this.drawLevel = -1;
     this.onRegenerate.forEach((f) => f());
   }
@@ -296,13 +318,14 @@ export class App {
   /** ANGLE / D3D11 finishes a linked program at its first draw: the occlusion variants, bound only while a reveal fades, froze the first
    *  reveal for 0.3-1.1 s (journal pass 6; compiling them ahead without drawing does not help). One throw-away frame with every variant
    *  bound and every fade at 0 (no fragment is discarded), into the mirror and the scene targets (both redrawn every frame, never
-   *  presented), moves that cost to the regeneration. The draw level is still the full one here, so every occluder triangle is drawn;
-   *  the instanced lamps are drawn even when off-frame. */
+   *  presented), moves that cost to the regeneration (or the boot). At the full draw level, so every occluder triangle is drawn (the
+   *  framing's level is re-applied by the next update); the instanced lamps are drawn even when off-frame. */
   private warmOcclusionVariants(): void {
     const occ = this.occlusion, d = this.district, r = this.renderer;
     if (!occ.enabled || !d || !occ.meshes.length) return;
     const culled = occ.meshes.map((m) => m.mesh.frustumCulled);
     for (const m of occ.meshes) { m.mesh.material = m.variant; m.mesh.frustumCulled = false; }
+    d.setLevel(d.visibility.levels); this.drawLevel = -1;
     d.setOccActive(true);
     const prev = r.getRenderTarget();
     this.reflection.update(r, this.scene, this.rig.camera);

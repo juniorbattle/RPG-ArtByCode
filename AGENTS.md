@@ -45,8 +45,10 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
   same adapter are flagged `*` and left out of the "clean" median; the min over rounds is the estimate without contention. The
   headless frame-time tail (p95) is not trusted (an idle page shows ~40 ms). A frozen baseline can be served from another port.
 - `node tools/startup.mjs [--n=4] [--gpu=..] "label|<query or url>|<WxH>" ...` — boot phases (texture painters, atlas, generation
-  laps, bake split, first-frame stall, time to `__ready`, long tasks) and first-use hitches (first / later occlusion reveal, forge
-  swap, regeneration, programs created at the first reveal), median [min-max] per variant
+  laps, bake split, the boot's synchronous `regenerate()` block, the first frame after `App.start()` and the programs the first frames
+  still create, time to `__ready`, long tasks) and first-use hitches (first / later occlusion reveal, forge swap, regeneration,
+  programs created at the first reveal), median [min-max] per variant. The largest rAF interval from the very first frame is the
+  `regenerate()` block under the loading screen, not the first frame (journal pass 6)
 - `node tools/overdraw.mjs "label|<query or url>|<WxH>" ...` — fragments shaded per covered pixel in the scene pass (real draw order)
 - Frozen baseline for A/B: `git -c core.autocrlf=false archive <commit>` into a scratch folder, copy `node_modules/three` into it (no
   junction), serve it with the repo's `node_modules/vite/bin/vite.js <folder> --config <its config> --port <518x> --strictPort` (a
