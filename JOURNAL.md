@@ -3583,6 +3583,22 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - La liste précédente reste lisible par `git show 7086340:JOURNAL.md` (renvoi en tête de la section) : les repères -3 … 6 cités par les
   anciennes passes y renvoient.
 
+### « Principes à garder » — [OK] dédoublonnés, regroupés (proposition, commit séparé)
+- 74 → 61 puces, 19 769 → 19 468 octets : six thèmes (mesure et performances ; visibilité, rendu, caméras ; preuves ; personnages ; provenance
+  et approbations ; outillage, documentation, processus). Le gain en octets est faible : les principes sont presque tous distincts, le levier
+  du coût de contexte est l'archivage des passes (proposé à part).
+- Fusionnés (rien de perdu) : mesurer d'abord + adaptateur ; trois « minimum garanti WebGL2 2 048 » (allocation, plafond, texture partagée) ;
+  diff `vis=0` + `occ=0` ; cinq formes du contrôle négatif (Lab, défaut planté, « 0 trou », stabilité en mouvement, « 0 » d'outil) ; le
+  protocole de critique à l'aveugle et ses trois rappels (correction de rig, reprise, retouche annulée) ; capture déterministe + chauffe par
+  origine ; deux « ne rien reconstruire pendant les captures » ; manifeste + deux niveaux + porte de l'opérateur ; adressage par case
+  entière + « des octets identiques ne font pas une image identique » ; personnage dans la scène + à côté du cast ; mouvement en pixels écran
+  + rebond imposé ; outil externe + installation épinglée + consignes de passe d'art (venues de l'ancien « À reprendre »).
+- Retirés parce qu'`AGENTS.md` les dit déjà (renvoi gardé) : les `.aseprite` sources / PNG + JSON sorties, `bakeKey`, le repli d'un bake
+  vide, le recadrage des fenêtres étroites, les mesures discrètes, la règle des serveurs et `TaskStop`.
+- Corrigé, parce que dépassé : « les horodatages rAF de la boucle ne sont pas sur sa grille » (passe 6c) ; la passe 6k lit justement la vsync
+  sur leur grille quand le GPU freine : le principe dit maintenant médiane / minimum non, grille oui, et revérification en cours de session.
+- Ajoutés, depuis des « Pensée » jamais reportées : bande passante d'une passe plein écran (6j), nombres écrits en culture invariante (6i).
+
 ### Pensée
 - Un en-tête de statut qui grossit par ajouts garde en tête sa première phrase, même périmée, et c'est celle qu'un agent lit d'abord : un
   statut se réécrit à l'état courant, daté, avec un renvoi vers l'historique.
@@ -3676,8 +3692,13 @@ sprites.
 
 ## Principes à garder
 
-- Relever l'adaptateur réellement utilisé (`WEBGL_debug_renderer_info`) dans chaque mesure : un portable hybride rend sur l'iGPU par défaut,
-  quoi que demande `powerPreference`. Mesurer à la définition de l'écran de l'opérateur (dpr compris), pas seulement en 1080p.
+> Dédoublonnés et regroupés le 18/10 (Passe M3 ; liste précédente : `git show 7086340:JOURNAL.md`). Ce qu'`AGENTS.md` dit déjà n'est pas
+> recopié ici.
+
+### Mesure et performances
+- Mesurer d'abord, optimiser ensuite : minuteurs GPU, variantes entrelacées dans une seule session, base figée. Relever l'adaptateur
+  réellement utilisé (`WEBGL_debug_renderer_info`) dans chaque mesure : un portable hybride rend sur l'iGPU par défaut, quoi que demande
+  `powerPreference`. Mesurer à la définition de l'écran de l'opérateur (dpr compris), pas seulement en 1080p.
 - Un temps GPU pris sur un poste partagé ne vaut qu'avec son témoin de contention (autres processus sur le même adaptateur) ; à défaut, le
   minimum des tours entrelacés est l'estimation sans contention. La traîne du temps d'image en headless n'est pas une mesure.
 - Une première fois (programme, variante, dessin) se mesure par une sonde dédiée : aucune moyenne ne la voit. Un intervalle rAF ne
@@ -3687,20 +3708,25 @@ sprites.
   ordre de création des objets qui tirent `Math.random`) et par ses pannes injectées ; le jeu démarre sans Worker (repli par job, chien de
   garde). Une sonde de démarrage observe dès le premier repère, pas depuis `DOMContentLoaded`.
 - Une cadence se mesure dans une vraie fenêtre avec vsync (`tools/cadence.mjs`), une « surcharge » en watts (RAPL, SoC = boîtier − cœurs),
-  pas en % d'occupation GPU. La vsync se sonde au repos ; les horodatages rAF de la boucle ne sont pas sur sa grille.
-- Les mesures en fenêtre (cadence, sonde) se font hors écran, sur un seul onglet, sans jamais prendre le focus (demande de l'opérateur,
-  passe 6k) ; un nouvel onglet volait le focus clavier.
+  pas en % d'occupation GPU. La vsync se sonde au repos (les rappels que le plafond saute) : la médiane ou le minimum des horodatages rAF de
+  la boucle ne la retrouvent pas, leur grille (le plus grand intervalle dont ils sont tous multiples) si ; une grandeur qui peut changer
+  pendant la session (le rythme des rappels de Chrome) se revérifie pendant la session, avec des échantillons qu'elle ne fausse pas (passe 6k).
 - La cadence préfère la régularité au nombre d'images (choix de l'opérateur, `e60` puis `a60`) : quand le GPU ne tient plus son créneau, un
-  pas plus long et régulier plutôt qu'un mélange ; le retour au pas court se vérifie par un essai. Une mesure de cadence ne s'arrête pas
-  par `TaskStop` (node et Chrome lui survivent) : on la laisse finir.
+  pas plus long et régulier plutôt qu'un mélange ; le retour au pas court se vérifie par un essai.
+- Une passe plein écran se paie d'abord en bande passante : réduire ses échantillons sans retirer la passe ne gagne rien sur une iGPU ; un
+  effet « en demi-résolution » ne paie que si sa recomposition tient dans une passe qui existe déjà (passe 6j).
+- Un nombre écrit par un script pour un autre programme s'écrit dans la culture invariante, et en entier quand c'est un compteur ; un
+  lecteur qui reçoit l'illisible le dit (passe 6i).
 - Un résultat calculé mis en cache se relit seulement pour les mêmes entrées exactes : la clé couvre tout ce qu'il lit (géométrie, poses,
-  réglages, code du calcul, GPU) ; une entrée douteuse est un échec de cache, jamais un culling. Toute nouvelle entrée du bake entre dans
-  `bakeKey`.
+  réglages, code du calcul, GPU) ; une entrée douteuse est un échec de cache, jamais un culling.
+- Une allocation, un plafond matériel ou une texture partagée se dimensionne contre le minimum **garanti** par la norme (WebGL2 : 2 048),
+  jamais la valeur de la machine de développement, et se vérifie (complétude du framebuffer, erreurs GL) ; une texture partagée se
+  dimensionne pour la distribution entière, candidats compris, avant de les ajouter (l'adressage par case entière permet d'élargir sans
+  changer une image).
 
-- Une allocation GPU se dimensionne contre le minimum garanti (WebGL2 : 2 048) et se vérifie (complétude du framebuffer, erreurs GL) ; un bake
-  qui conclut « rien n'est visible » est une erreur : le repli garde toutes les pièces et le signale (console, stats, panneau).
-- Un résultat de visibilité ne vaut que pour le cadre baké : une fenêtre plus étroite montre un recadrage de ce cadre (décentrement d'objectif,
-  joueur au même NDC), jamais un champ plus large ; plus large que le cadre baké, on recadre puis on re-bake.
+### Visibilité, rendu, caméras
+- Toute coupe de géométrie se prouve par un diff d'images `static=1`, culling actif contre `vis=0`, avec `occ=0` : la phase du fondu de
+  reveal entre deux régénérations fabrique de faux écarts (1 377 px sur B).
 - La rastérisation dépend de la position d'une tuile dans sa cible : les comptes bruts ne se comparent qu'à mise en page égale ; la
   non-régression se prouve sur les masques et les images finales.
 - Un écart élagué / `vis=0` s'explique **causalement** (`tools/vis-why.mjs` : pièce forcée → 0 px ; témoin d'ordre) avant de toucher au bake ;
@@ -3708,119 +3734,133 @@ sprites.
 - Le bake échantillonne des points : monter sa résolution fait aussi perdre des pièces ; un supplément s'ajoute aux comptes (tuiles fines
   additives) et va là où la géométrie se présente de chant (D). Toute modification des masques replanifie les classes : prouver le rendu
   canonique contre une base figée, pas seulement contre `vis=0`.
-
-- Mesurer d'abord (minuteurs GPU, entrelacé, baseline figée), optimiser ensuite.
-- Toute coupe de géométrie se prouve par un diff d'images `static=1`, culling actif vs `vis=0`.
+- Le besoin d'une pièce se mesure **par jeu de poses** (stables et mélanges séparés) ; mélanger les deux fait dessiner en C stable ce que seul
+  un mélange voit. Pondérer les cadrages historiques pour qu'un nouveau cadrage ne les alourdisse pas.
 - Ne pas ajouter de contenu pour combler le vide ; dépenser la complexité là où la caméra la perçoit.
 - Garder le déterminisme par graine : toute suppression de code doit préserver les tirages aléatoires.
 - Un `discard` ne se paie que là où il sert : variante de matériau liée seulement pendant l'effet, sinon le matériau de slot d'origine ;
   « au repos » doit coûter exactement la passe précédente (mêmes appels de dessin, image pixel-identique).
-- Ne taguer que ce que l'inventaire mesure (rayons caméra → joueur contre les vrais triangles), jamais ce que l'intuition suggère ;
-  un résultat « 0 » d'un outil se recoupe avec une valeur connue avant d'être cru.
+- Ne taguer que ce que l'inventaire mesure (rayons caméra → joueur contre les vrais triangles), jamais ce que l'intuition suggère.
 - Le DOF et le masque de protection (alpha de scène) sont des contrats : un effet qui écrit de l'alpha ne doit pas toucher ce canal.
-- Un nouveau cadrage se cherche **empiriquement** (`tools/camsearch.mjs`) et se valide en **marchant** (`tools/camsim.mjs`) : la vitesse du joueur à l'écran pendant la transition ne doit jamais
-  changer de signe par rapport à sa marche ; une transition interpolée entre deux cadrages hérite de l'écart de position écran des deux, d'où l'ancrage (`blendPose`) + un cadrage cible calé sur la sortie du cadrage précédent.
-- Une caméra qui recule traverse la géométrie qui est « derrière la caméra » des autres cadrages : vérifier z caméra contre ce qui est généré de ce côté (rive opposée).
-- Le besoin d'une pièce se mesure **par jeu de poses** (stables et mélanges séparés) ; mélanger les deux fait dessiner en C stable ce que seul un mélange voit. Pondérer les cadrages historiques pour qu'un nouveau cadrage ne les alourdisse pas.
-- Comparer le culling avec `occ=0` : la phase du fondu de reveal entre deux régénérations fabrique de faux écarts (1 377 px sur B).
-- Un outil externe de production d'art (Aseprite et son agent) n'est jamais une dépendance de build, d'installation ou de runtime ; une passe d'outillage se prouve par un bundle `dist` identique au SHA-256 et 0 px de différence sur les quatre cadrages.
-- Rien d'externe ne devient « canon » en silence : un manifeste de provenance (`art-lab/characters/manifests`) avec approbation nommée et datée est la seule voie vers `runtimeUse: production`. Les `.aseprite` sont des sources, les PNG + JSON des sorties cuites.
-- Ne jamais écrire « validé » pour un logiciel qu'on n'a pas exécuté : `art:doctor` affiche l'état réel (`NOT INSTALLED` est un état valide) ; « validé » appartient à un test de bout en bout (4A-0B).
-- Un test de preuve doit pouvoir échouer : prévoir un contrôle négatif (Lab : `filter=linear`) avant d'accepter « 0 écart ».
-- Une échelle écran se dérive du code caméra du jeu à la position réelle du joueur (`evalAnchor` + `applyPose`), jamais de la distance de pivot d'un cadrage.
-- Un outil externe s'installe épinglé (version exacte, tag, auto-update coupé), en portée locale, après lecture de son code d'installation et un dry-run ; jamais avec l'installeur
-  « tout-en-un » d'amont s'il écrit hors de cette portée. Une revue d'agent se prouve par un défaut planté qu'elle doit trouver à l'aveugle.
-- Le chargement des instructions d'agent se mesure (`/context` dans une session neuve) : jamais de `CLAUDE.md` dans un dossier parent d'un projet qui vit de son `AGENTS.md`.
-- Un personnage se juge **dans la scène** à chaque itération (aperçu `?labsprite`, avant / après au même endroit), pas seulement agrandi : lumière chaude, liseré et voisinage du cast changent la lecture.
-- Une critique d'art doit voir l'image, lire à froid avant la consigne, citer des pixels, et vérifier la passe précédente ; le score monte avec des preuves, pas avec des intentions.
-  Un « 0 trou » / « 0 écart » se prouve par un contrôle objectif (remplissage depuis le bord ; contrôle négatif du Lab).
-- Le classement des références (cible / support / rejet) se fait **confirmer par l'opérateur avant de produire** ; on mesure une référence (grille, taille, couleurs) avant d'en déduire
-  une contrainte de résolution ou de technique.
-- Un modelé se peint par **masses** (3-4 valeurs par forme, plis rendus par le bord des aplats) ; une spécification pixel par pixel écrite en texte donne de la moucheture (alternances)
-  ou des blocs. La forme vient d'abord de l'information de la source (densité, dégradés peints) ; la finition par agent est fiable pour les défauts **nommés et localisés**, pas pour repeindre un volume.
-- Une métrique de propreté (pixels isolés, alternances) n'est pas une métrique de forme : seule une critique aveugle juge la lecture du volume. Critique à l'aveugle = étiquettes tirées au sort,
-  clé hors du champ du critique, nouvel agent à chaque tour, auto-critique écrite **avant** de lire le verdict.
-- Préserver d'abord la qualité de la source artistique, puis une finition ciblée sur des défauts nommés ; un sprite se valide **à côté du cast existant** (héros compris) :
-  densité de texel, proportions et hauteur monde se comparent à la même profondeur, pas seulement contre la référence.
-- Une mesure de stabilité en mouvement doit d'abord prouver qu'elle sépare un cas connu mauvais (contrôle négatif) ; sinon elle ne vaut que comme indice et le jugement reste visuel.
-- Retouche ciblée : changer la **chroma** d'une zone fautive en gardant ses valeurs corrige sans repeindre ; ajouter une masse sombre crée un nouveau motif (ras-de-cou). Une retouche
-  qui ne gagne pas clairement à l'aveugle est annulée, pas empilée.
-- Une marche capturée se fait à **pas fixe** avec les **vraies entrées**, sur un itinéraire d'abord validé sans rendu (`camsim`) ; chaque image se rend avant d'être capturée ; un
-  témoin (même art, autre densité, **même renderer**) sur le même trajet est la seule référence qui donne un sens aux chiffres de stabilité.
-- Une approbation visuelle se fige tout de suite : empreintes SHA-256, paramètres, décisions datées, script de vérification ; un artefact approuvé ne vit pas seulement dans un
-  dossier ignoré sans que l'opérateur le sache.
-- Deux niveaux d'approbation distincts : *approved visual baseline* (`approved: true` + `runtimeUse: "lab"`) et *approved production asset* (`runtimeUse: "production"`, tâche
-  explicite + droits confirmés). Une source aux droits non confirmés s'archive par empreinte, jamais par copie dans Git.
-- Plusieurs densités de sprites partagent un seul renderer si chaque densité *k* garde le même rectangle monde (cadre 32k × 48k, pieds à 45k) : la densité est une affaire
-  d'atlas, la hauteur une affaire d'instance.
-- Une image qui sert de référence se garde **dans son fichier d'origine** (PNG téléchargé, manifeste C2PA intact) dès le premier jour : une copie collée en séance est transcodée
-  et perd toute provenance. Une correspondance visuelle se chiffre contre des témoins (elle-même = 0, planche sœur = 23) avant d'être affirmée ou exclue.
-- Un plafond matériel se cite au minimum **garanti** par la norme (WebGL2 : 2 048), pas à la valeur de la machine de développement.
+- Un nouveau cadrage se cherche **empiriquement** (`tools/camsearch.mjs`) et se valide en **marchant** (`tools/camsim.mjs`) : la vitesse du
+  joueur à l'écran pendant la transition ne doit jamais changer de signe par rapport à sa marche ; une transition interpolée entre deux
+  cadrages hérite de l'écart de position écran des deux, d'où l'ancrage (`blendPose`) + un cadrage cible calé sur la sortie du cadrage
+  précédent.
+- Une caméra qui recule traverse la géométrie qui est « derrière la caméra » des autres cadrages : vérifier z caméra contre ce qui est généré
+  de ce côté (rive opposée).
+
+### Preuves
+- Une preuve doit pouvoir échouer : un contrôle négatif avant d'accepter « 0 écart » (Lab : `filter=linear` ; revue d'agent : un défaut
+  planté qu'elle doit trouver à l'aveugle ; « 0 trou » : remplissage depuis le bord ; mesure de stabilité en mouvement : un cas connu
+  mauvais qu'elle doit séparer, sinon elle ne vaut que comme indice et le jugement reste visuel). Un résultat « 0 » d'un outil se recoupe
+  avec une valeur connue avant d'être cru.
 - Une preuve « pixel-identique » exige une capture déterministe : `Math.random` à graine, pas fixes, horloge figée, RNG internes remis à
-  zéro, une chauffe par cadrage, et un témoin de répétition (deux chargements : 0 px) **avant** toute comparaison.
-- Des octets identiques ne garantissent pas une image identique : `floor(vUv × taille)` départage les égalités exactes (bord de texel au centre
-  d'un pixel) selon la taille de la texture. Toute croissance d'atlas se prouve par un balayage d'échelles, pas par quelques captures.
-- Ne jamais modifier `src/` pendant une série de mesures sur le même serveur dev (rechargement HMR) ; recadrer une preuve par projection,
-  jamais par supposition.
+  zéro, une chauffe par cadrage **et par origine** (serveur), et un témoin de répétition (deux chargements : 0 px) **avant** toute
+  comparaison ; un écart d'un niveau sur 255 se traque par sondes de variantes du shader.
+- Pendant une série de mesures ou de captures sur un serveur de développement, ne rien modifier ni reconstruire de ce qu'il sert (`src/`
+  compris : rechargement HMR) ; recadrer une preuve par projection, jamais par supposition ; un masquage d'acteur se vérifie (base masquée
+  contre base non masquée) : avec la distribution cuite, un acteur porte l'id de sa planche.
+- Une échelle écran se dérive du code caméra du jeu à la position réelle du joueur (`evalAnchor` + `applyPose`), jamais de la distance de
+  pivot d'un cadrage.
 - Ajouter des sprites ne doit rien changer aux autres : une texture qui ne grandit jamais pour les sprites validés, et pour les nouveaux un
   adressage par case entière (t ∈ [0, 1] × taille de case, plancher + clamp, lecture au centre du texel) qui ne dépend ni de la taille de
-  l'atlas ni de la place de la case. Une formule normalisée par la taille de la texture ne peut pas être stable aux égalités exactes.
-- Une chauffe se fait par cadrage **et par origine** (serveur) ; un écart d'un niveau sur 255 se traque par sondes de variantes du shader.
-- Une provenance confirmée par l'opérateur se consigne **mot pour mot et datée**, distincte d'une vérification technique (C2PA) ; ce qui
-  manque ne se déduit pas. L'absence d'original n'interdit pas à elle seule la production : droits et autorisation s'évaluent à part. Un
-  statut remplacé se garde dans un historique, jamais effacé.
-- Une source archivée se versionne **à l'octet** (empreinte et `cmp` avant commit, attribut binaire) avec une fiche : nature (copie ou
-  original), provenance déclarée, droits, dérivés et commande de reconstruction ; jamais de faux original ni de métadonnée fabriquée ;
-  `art:validate` revérifie ses octets contre la fiche à chaque passage, contrôle négatif à l'appui.
-- Les contraintes de l'asset reconstruit (cadre 64 × 96, pieds rangée 90, anneau transparent, alpha binaire) ne s'imposent pas à l'illustration
-  source : on ne dégrade jamais le modelé, l'expression ou les matières d'une source pour obtenir une grille parfaite ; la mesure de la source
-  règle la reconstruction, elle ne la refuse pas.
+  l'atlas ni de la place de la case. Des octets identiques ne garantissent pas une image identique : `floor(vUv × taille)` départage les
+  égalités exactes (bord de texel au centre d'un pixel) selon la taille de la texture, et une formule normalisée par la taille de la texture
+  ne peut pas y être stable. Toute croissance d'atlas se prouve par un balayage d'échelles, pas par quelques captures.
+- Plusieurs densités de sprites partagent un seul renderer si chaque densité *k* garde le même rectangle monde (cadre 32k × 48k, pieds à 45k) :
+  la densité est une affaire d'atlas, la hauteur une affaire d'instance.
+
+### Personnages : art et critique
+- Un personnage se juge **dans la scène** à chaque itération (aperçu `?labsprite`, avant / après au même endroit) et **à côté du cast
+  existant** (héros compris : densité de texel, proportions et hauteur monde à la même profondeur), pas seulement agrandi ni contre la
+  référence : lumière chaude, liseré et voisinage du cast changent la lecture.
+- Une critique d'art voit l'image, lit à froid avant la consigne, cite des pixels et vérifie la passe précédente ; le score monte avec des
+  preuves, pas avec des intentions. Critique à l'aveugle = étiquettes tirées au sort, clé hors du champ du critique, nouvel agent à chaque
+  tour, auto-critique écrite **avant** de lire le verdict. Toute correction ou reprise (de rig comprise, comptée contre la planche
+  précédente) repasse une critique à l'aveugle par un agent neuf : elle crée ses propres pertes ; une retouche qui ne gagne pas clairement à
+  l'aveugle est annulée, pas empilée.
+- Une métrique de propreté (pixels isolés, alternances) n'est pas une métrique de forme : seule une critique aveugle juge la lecture du volume.
+- Le classement des références (cible / support / rejet) se fait **confirmer par l'opérateur avant de produire** ; on mesure une référence
+  (grille, taille, couleurs) avant d'en déduire une contrainte de résolution ou de technique.
 - Avant une génération, comparer le brief lui-même aux personnages des références qui seront jointes : une combinaison de traits peut
   déjà décrire un personnage existant ; la liste de contrôle d'originalité nomme ces personnages.
+- Un modelé se peint par **masses** (3-4 valeurs par forme, plis rendus par le bord des aplats) ; une spécification pixel par pixel écrite en
+  texte donne de la moucheture (alternances) ou des blocs. La forme vient d'abord de l'information de la source (densité, dégradés peints) :
+  préserver sa qualité, puis une finition ciblée ; la finition par agent est fiable pour les défauts **nommés et localisés**, pas pour
+  repeindre un volume.
+- Les contraintes de l'asset reconstruit (cadre 64 × 96, pieds rangée 90, anneau transparent, alpha binaire) ne s'imposent pas à
+  l'illustration source : on ne dégrade jamais le modelé, l'expression ou les matières d'une source pour obtenir une grille parfaite ; la
+  mesure de la source règle la reconstruction, elle ne la refuse pas.
 - Une hauteur de présentation se décide sur la figure **dessinée** (mesurée dans l'atlas), pas sur une valeur nominale du code ; une carrure
   ne se corrige pas par l'échelle : les proportions se chiffrent dans le prompt et se mesurent sur la source avant toute reconstruction.
-- Un outil figé par empreinte dans un paquet approuvé s'étend par options désactivées par défaut, prouvées par le `--rebuild` du paquet ;
-  l'empreinte se met alors à jour avec une note de maintenance (ancienne valeur gardée).
+- Un personnage plus grand que le cadre se rééchantillonne à un pas plus grossier et se présente à l'échelle commune : une densité de texel
+  unique dans la scène prime sur la taille relative de la planche (écart chiffré et consigné).
 - Les vues qu'il faut à une marche (face, dos, profil) se prennent sur une planche multi-vues de la même échelle, jamais inventées depuis une
   seule face ; la recette entière (recadrages, palette, retouches, animation) vit dans un script de rig rejouable au texel près.
-- Un mouvement destiné à se lire en jeu se dimensionne en pixels écran (2 texels à ~1,8 px / texel), pas en texels de la planche.
-- Une approbation de production ne s'écrit jamais au nom de l'opérateur : l'intégration se prépare derrière la porte du manifeste et
-  l'opérateur l'ouvre.
+- Une famille de personnages se produit par gabarit, mais chaque vue se mesure avant : sens du profil contre la planche (avant tout miroir),
+  rangée basse de chaque jambe (l'ombre du sol de la planche décale toute une vue), boîte de la seule matière pour une gamme peinte (filtrée
+  par sa teinte), boîte de la pièce pour une botte.
 - Après toute reconstruction, chercher les bandes quasi noires de la fermeture verticale entre deux masses (nuque / épaules, entre les jambes)
   et les comparer à la planche, pas à la reconstruction : elles se lisent comme des cheveux ou des sangles qui n'existent pas. Remède retenu
   (4A-unvicies) : `reconstruct-grid --closing-from=48` : pas de fermeture au-dessus de la taille, gardée en dessous (elle y restaure les
   contours sombres des jambes et des bottes ; la couper partout les a perdus) ; compter avant / après le fond enclavé et les zones des pieds.
-- La révision d'un asset approuvé se projette sur sa palette approuvée, épinglée en fichier (aucune couleur nouvelle), et s'inscrit à côté de
-  l'approbation (demande citée, empreinte précédente, comptes de texels) ; la confirmation de l'opérateur se demande, elle ne se présume pas.
-- La vue d'un personnage qui marche se tire de son pas projeté à l'écran (avec hystérésis), pas de l'angle de son cap avec l'axe de la
-  caméra : sous un tangage de 8°, 20° de cap font déjà ~55° à l'écran. Un regard mis en scène (spawn, conversation) garde la règle monde.
-- Un personnage plus grand que le cadre se rééchantillonne à un pas plus grossier et se présente à l'échelle commune : une densité de texel
-  unique dans la scène prime sur la taille relative de la planche (écart chiffré et consigné).
-- Un mouvement de marche se fixe explicitement (rebond imposé de 2 rangées au contact), il ne se déduit pas seulement de l'IK ; une
-  affirmation de critique se mesure (rangées, texels) avant d'être corrigée.
-- Une texture partagée se dimensionne contre le minimum garanti (WebGL2 : 2 048) pour la distribution entière, candidats compris, avant de
-  les ajouter ; l'adressage par case entière permet d'élargir sans changer une image.
-- Un cycle synchronisé avec un effet (étincelles du marteau) garde son nombre d'images et l'image de l'impact ; le moteur n'a pas de durée
-  par image.
-- Un personnage qui agit sur un objet (frappe, geste) regarde l'objet : son orientation se calcule depuis la géométrie (vecteur personnage →
-  point d'action), jamais un angle choisi pour l'apparence ; un cycle qui n'existe que de profil en tire son côté écran dans tout cadrage.
-- Une pièce animée emporte son contour (une colonne de contour à deux texels de la peau, une rangée basse rangée dans un autre calque) ; ce
-  qu'elle découvre prend ce qui est derrière elle dans le sens du mouvement (au-dessus pour ce qui descend, en dessous pour ce qui monte),
-  jamais une couleur prise de côté hors de portée. Chaque correction de rig se compte contre la planche précédente et repasse une critique à
-  l'aveugle par un agent neuf.
-- Une famille de personnages se produit par gabarit, mais chaque vue se mesure avant : sens du profil contre la planche (avant tout miroir),
-  rangée basse de chaque jambe (l'ombre du sol de la planche décale toute une vue), boîte de la seule matière pour une gamme peinte (filtrée
-  par sa teinte), boîte de la pièce pour une botte. Une reprise se re-critique par un agent neuf : elle crée ses propres pertes.
-- Avant de retirer un worktree ou une base figée : défaire ses jonctions d'abord (lien seul, nature et cible vérifiées), chercher les
-  processus qui y tournent (serveurs, boucles d'attente de séances passées) et les liens laissés ailleurs (`-Attributes ReparsePoint`),
-  compter le `node_modules` du dépôt avant / après.
+- Retouche ciblée : changer la **chroma** d'une zone fautive en gardant ses valeurs corrige sans repeindre ; ajouter une masse sombre crée un
+  nouveau motif (ras-de-cou).
 - La copie assombrie d'une pièce lointaine (botte, jambe) garde un plancher de clarté (jamais sous sa propre clarté ni sous un seuil) :
   une soustraction constante écrase les tons sombres au noir du contour. Deux pièces de même forme se séparent d'abord par la profondeur
   (la lointaine plus haut à l'écran) puis par la valeur, et une pièce déplacée se borne à ce qui la cache.
-- Pendant les captures d'un serveur de développement, ne rien reconstruire de ce qu'il sert (la page se recharge) ; un masquage d'acteur
-  se vérifie (base masquée contre base non masquée) : avec la distribution cuite, un acteur porte l'id de sa planche.
-- Serveurs de développement par `preview_start` / `preview_stop` (entrée de `.claude/launch.json`), longs scripts par `run_in_background` /
-  `TaskStop` ; jamais `taskkill`, `Stop-Process` ni balayage des processus du système : un reste se signale (port et PID propriétaire,
-  `Get-NetTCPConnection`) et l'opérateur décide ; en fin de séance, tout ce qu'elle a lancé est arrêté (règle de l'opérateur, 17/10, `AGENTS.md`).
-- Un statut de README se réécrit à l'état courant, daté, avec un renvoi au journal pour l'historique ; « À reprendre » ne garde
-  que l'ouvert : ce qui est fait en sort à la clôture de sa passe (Passe M3).
+- Une pièce animée emporte son contour (une colonne de contour à deux texels de la peau, une rangée basse rangée dans un autre calque) ; ce
+  qu'elle découvre prend ce qui est derrière elle dans le sens du mouvement (au-dessus pour ce qui descend, en dessous pour ce qui monte),
+  jamais une couleur prise de côté hors de portée.
+- Un mouvement destiné à se lire en jeu se dimensionne en pixels écran (2 texels à ~1,8 px / texel), pas en texels de la planche, et se fixe
+  explicitement (rebond imposé de 2 rangées au contact) : il ne se déduit pas seulement de l'IK ; une affirmation de critique se mesure
+  (rangées, texels) avant d'être corrigée.
+- Une marche capturée se fait à **pas fixe** avec les **vraies entrées**, sur un itinéraire d'abord validé sans rendu (`camsim`) ; chaque
+  image se rend avant d'être capturée ; un témoin (même art, autre densité, **même renderer**) sur le même trajet est la seule référence qui
+  donne un sens aux chiffres de stabilité.
+- La vue d'un personnage qui marche se tire de son pas projeté à l'écran (avec hystérésis), pas de l'angle de son cap avec l'axe de la
+  caméra : sous un tangage de 8°, 20° de cap font déjà ~55° à l'écran. Un regard mis en scène (spawn, conversation) garde la règle monde.
+- Un personnage qui agit sur un objet (frappe, geste) regarde l'objet : son orientation se calcule depuis la géométrie (vecteur personnage →
+  point d'action), jamais un angle choisi pour l'apparence ; un cycle qui n'existe que de profil en tire son côté écran dans tout cadrage.
+- Un cycle synchronisé avec un effet (étincelles du marteau) garde son nombre d'images et l'image de l'impact ; le moteur n'a pas de durée
+  par image.
+
+### Provenance et approbations
+- Rien d'externe ne devient « canon » en silence : un manifeste de provenance (`art-lab/characters/manifests`) avec approbation nommée et
+  datée est la seule voie vers `runtimeUse: production`. Deux niveaux d'approbation distincts : *approved visual baseline*
+  (`approved: true` + `runtimeUse: "lab"`) et *approved production asset* (`runtimeUse: "production"`, tâche explicite + droits confirmés).
+  Une approbation de production ne s'écrit jamais au nom de l'opérateur : l'intégration se prépare derrière la porte du manifeste et
+  l'opérateur l'ouvre. Une source aux droits non confirmés s'archive par empreinte, jamais par copie dans Git.
+- Une approbation visuelle se fige tout de suite : empreintes SHA-256, paramètres, décisions datées, script de vérification ; un artefact
+  approuvé ne vit pas seulement dans un dossier ignoré sans que l'opérateur le sache.
+- La révision d'un asset approuvé se projette sur sa palette approuvée, épinglée en fichier (aucune couleur nouvelle), et s'inscrit à côté de
+  l'approbation (demande citée, empreinte précédente, comptes de texels) ; la confirmation de l'opérateur se demande, elle ne se présume pas.
+- Une provenance confirmée par l'opérateur se consigne **mot pour mot et datée**, distincte d'une vérification technique (C2PA) ; ce qui
+  manque ne se déduit pas. L'absence d'original n'interdit pas à elle seule la production : droits et autorisation s'évaluent à part. Un
+  statut remplacé se garde dans un historique, jamais effacé.
+- Une image qui sert de référence se garde **dans son fichier d'origine** (PNG téléchargé, manifeste C2PA intact) dès le premier jour : une
+  copie collée en séance est transcodée et perd toute provenance. Une correspondance visuelle se chiffre contre des témoins (elle-même = 0,
+  planche sœur = 23) avant d'être affirmée ou exclue.
+- Une source archivée se versionne **à l'octet** (empreinte et `cmp` avant commit, attribut binaire) avec une fiche : nature (copie ou
+  original), provenance déclarée, droits, dérivés et commande de reconstruction ; jamais de faux original ni de métadonnée fabriquée ;
+  `art:validate` revérifie ses octets contre la fiche à chaque passage, contrôle négatif à l'appui.
+- Un outil figé par empreinte dans un paquet approuvé s'étend par options désactivées par défaut, prouvées par le `--rebuild` du paquet ;
+  l'empreinte se met alors à jour avec une note de maintenance (ancienne valeur gardée).
+
+### Outillage, documentation, processus
+- Un outil externe de production d'art (Aseprite et son agent) n'étant jamais une dépendance (`AGENTS.md`), une passe d'outillage se prouve
+  par un bundle `dist` identique au SHA-256 et 0 px de différence sur les quatre cadrages. Il s'installe épinglé (version exacte, tag,
+  auto-update coupé), en portée locale, après lecture de son code d'installation et un dry-run ; jamais avec l'installeur « tout-en-un »
+  d'amont s'il écrit hors de cette portée. Pour toute passe d'art : pont persistant, Aseprite relancé après lui, test de fumée
+  `smoke-test/4a0b/` après toute mise à jour (`art-lab/README.md`).
+- Ne jamais écrire « validé » pour un logiciel qu'on n'a pas exécuté : `art:doctor` affiche l'état réel (`NOT INSTALLED` est un état
+  valide) ; « validé » appartient à un test de bout en bout (4A-0B).
+- Le chargement des instructions d'agent se mesure (`/context` dans une session neuve) : jamais de `CLAUDE.md` dans un dossier parent d'un
+  projet qui vit de son `AGENTS.md`.
+- Un statut de README se réécrit à l'état courant, daté, avec un renvoi au journal pour l'historique ; « À reprendre » ne garde que l'ouvert :
+  ce qui est fait en sort à la clôture de sa passe (Passe M3).
+- Avant de retirer un worktree ou une base figée : défaire ses jonctions d'abord (lien seul, nature et cible vérifiées), chercher les
+  processus qui y tournent (serveurs, boucles d'attente de séances passées) et les liens laissés ailleurs (`-Attributes ReparsePoint`),
+  compter le `node_modules` du dépôt avant / après.
+- Serveurs, longs scripts, mesures en fenêtre et processus restants : règles de l'opérateur dans `AGENTS.md` (17/10 ; mesures discrètes,
+  passe 6k).
