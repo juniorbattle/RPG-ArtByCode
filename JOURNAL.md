@@ -2989,7 +2989,7 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 ### Demande (2026-10-17)
 - Mot pour mot : « Go P4 : ouvre sa branche depuis main, mesure d'abord la cadence et propose-moi les options de plafond avant d'en choisir
   le défaut. » Branche `perf-p4-frame-cap` ouverte depuis `main` (`e27a914`) et poussée. **Le défaut reste « sans plafond » tant que
-  l'opérateur n'a pas choisi.**
+  l'opérateur n'a pas choisi** (choisi ensuite : `e60`, voir la décision ci-dessous).
 
 ### Outillage — [OK]
 - `tools/cadence.mjs` : la cadence **vue par le joueur**, dans une fenêtre Chrome **visible**, maximisée, vsync active (`launchHeaded` dans
@@ -3042,8 +3042,17 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Robustesse : `painters=main` + `e60` (sonde sur un fil principal occupé) : 55,0 img/s réguliers, vsync 6,1 ms sondée.
 - `typecheck` 0, `npm run build` vert.
 
-### Décision opérateur — en attente
-- Les options ci-dessus sont proposées à l'opérateur ; le défaut sera fixé (`DEFAULT_FRAME_CAP` dans `App.ts`) après sa décision, citée ici.
+### Décision opérateur (2026-10-17) — [OK] `e60` par défaut
+- Mot pour mot : « Je choisis e60 (≈ 60 régulier) comme plafond par défaut ; ?fps=off reste disponible. »
+- `DEFAULT_FRAME_CAP` = `e60` (`App.ts`). `tools/perf.mjs` et `tools/startup.mjs` ajoutent `fps=off` quand la requête ne fixe pas `fps`
+  (`uncapped` dans `bench-common.mjs`) : ils mesurent toujours la boucle sans plafond, comparable aux passes précédentes ; `tools/cadence.mjs`
+  mesure ce que voit le joueur. Les autres outils (captures, preuves de culling) voient le défaut : image identique.
+- Preuves du défaut : 13 vues sans paramètre (`e60` actif : 288-291 rappels sautés, vsync sondée 6,1 ms) et avec `fps=off` **identiques à
+  l'octet** à la base `e27a914` ; contrôle négatif détecté. Vraie fenêtre, sans paramètre : `e60` actif (3 vsyncs). Cette série-là est tombée
+  sous forte contention (un autre Chrome à 22-32 % de la même 780M) : en 1080p `e60` reste régulier à 95 % (54 img/s, SoC 30 W contaminé) ;
+  en ≈ 1440p **ni `e60` ni `off` ne tiennent** (36,8 / 41,3 img/s, 54-60 % irréguliers) : le GPU partagé ne tient plus 3 vsyncs (18,3 ms).
+  **[?] Piste** : un pas adaptatif (passer à 4 vsyncs quand les images ratent leur créneau, revenir à 3 quand elles le tiennent) garderait une
+  cadence régulière sur un GPU plus faible ou chargé ; non fait (hors de la décision de l'opérateur), à proposer.
 
 ### Pensée
 - Une cadence se mesure dans une vraie fenêtre, sur l'écran réel, avec la vsync : le harnais headless (vsync coupée) ne dit rien de la
@@ -3060,8 +3069,9 @@ variantes d'occlusion : première révélation 315 → 11 ms, image identique), 
 image de la boucle 17 → 4 ms, 0 programme compilé après le départ ; durée de démarrage inchangée, l'estimation « −1 à −1,5 s » du plan était
 fausse). **P3 fait (Passe 6b), accepté par l'opérateur le 17/10 et fusionné dans `main`** : peintres de textures en Web
 Workers, octets et image identiques, peinture 1,80 → 0,55 s, `__ready` 3,64 → 2,50 s ; sonde `startup.mjs` corrigée (première étiquette). Suivent,
-une piste par commit, chacune avec sa preuve : **P4 plafond de cadence : mécanisme et mesures faits (Passe 6c, branche `perf-p4-frame-cap`), défaut
-`off` en attente du choix de l'opérateur** (`e60` : 55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `v4` : 41 img/s, −60 %) ;
+une piste par commit, chacune avec sa preuve : **P4 plafond de cadence fait (Passe 6c, branche `perf-p4-frame-cap`) : défaut `e60` choisi par l'opérateur le 17/10**
+(55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `?fps=off` sans plafond ; piste ouverte : pas adaptatif 3 → 4 vsyncs
+quand le GPU rate son créneau, vu sous contention en 1440p) ;
 P5 cache du bake ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
 P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).

@@ -10,7 +10,7 @@
 // from the very first frame is the regenerate() block, not the first frame.)
 // Summary: median [min-max] per variant. A query is appended to BASE_URL (default http://127.0.0.1:5173/).
 import fs from 'node:fs';
-import { launch, gpuPid, witness, foreignUse, quantile as q } from './bench-common.mjs';
+import { launch, gpuPid, witness, foreignUse, uncapped, quantile as q } from './bench-common.mjs';
 
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/';
 const opt = { n: 4, gpu: 'igpu', json: '', witness: process.platform === 'win32' ? 1 : 0, thr: 15 };
@@ -20,7 +20,7 @@ for (const a of process.argv.slice(2)) {
   if (m) { opt[m[1]] = isNaN(+m[2]) ? m[2] : +m[2]; continue; }
   const [label, qs = '', size = '1920x1080'] = a.split('|');
   const [w, h] = size.split('x').map(Number);
-  variants.push({ label, url: qs.startsWith('http') ? qs : `${BASE}?${qs}`, w, h });
+  variants.push({ label, url: uncapped(qs.startsWith('http') ? qs : `${BASE}?${qs}`), w, h });
 }
 if (!variants.length) throw new Error('usage: node tools/startup.mjs [--n=4] "label|query|WxH" ...');
 

@@ -13,7 +13,7 @@
 // rounds is the best estimate without contention (sharing the GPU only adds time). The headless frame-time tail (p95) is not
 // trusted: an idle page already shows ~40 ms in this harness (journal pass 6).
 import fs from 'node:fs';
-import { launch, gpuPid, witness, foreignUse, quantile as q, mean } from './bench-common.mjs';
+import { launch, gpuPid, witness, foreignUse, uncapped, quantile as q, mean } from './bench-common.mjs';
 
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/';
 const opt = { secs: 4, warm: 2.5, rounds: 2, json: '', size: '1920x1080', gpu: 'igpu', witness: process.platform === 'win32' ? 1 : 0, thr: 15 };
@@ -23,7 +23,7 @@ for (const a of process.argv.slice(2)) {
   const m = a.match(/^--(\w+)=(.*)$/);
   if (m) { opt[m[1]] = isNaN(+m[2]) ? m[2] : +m[2]; continue; }
   const [label, qs = '', js = '', size = ''] = a.split('|');
-  variants.push({ label, url: qs.startsWith('http') ? qs : `${BASE}?${qs}`, js, size });
+  variants.push({ label, url: uncapped(qs.startsWith('http') ? qs : `${BASE}?${qs}`), js, size });
 }
 if (!variants.length) throw new Error('usage: node tools/perf.mjs [--secs=4] [--rounds=2] [--size=WxH] [--gpu=igpu|dgpu] "label|query|js|WxH" ...');
 

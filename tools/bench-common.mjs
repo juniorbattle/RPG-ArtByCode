@@ -98,5 +98,9 @@ export function foreignUse(samples, t0, t1, mine, thr = 15) {
   return [...new Set(out)];
 }
 
-export const quantile = (xs, p) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.min(s.length - 1, Math.floor(p * s.length))] : NaN; };
+/** the URL with the frame cap off unless it sets one (`fps=`): the GPU and boot probes measure the uncapped loop (the game defaults to
+ *  `e60` since journal pass 6c; tools/cadence.mjs measures what the player sees instead) */
+export const uncapped = (url) => (/[?&]fps=/.test(url) ? url : `${url}${url.includes('?') ? '&' : '?'}fps=off`);
+
+export const quantile =(xs, p) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.min(s.length - 1, Math.floor(p * s.length))] : NaN; };
 export const mean = (xs) => xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);

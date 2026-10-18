@@ -30,8 +30,9 @@ export interface AppOptions {
   baked?: Promise<{ sheets: BakedSheet[]; spawns: AuthoredSpawn[] }>;
 }
 
-/** The frame cap when `?fps=` is absent: off (the pre-P4 loop) until the operator chooses a default (journal pass 6, P4). */
-const DEFAULT_FRAME_CAP: FrameCapMode = { kind: 'off' };
+/** The frame cap when `?fps=` is absent: evenly paced near 60 fps (`e60`: 55 at 165 Hz, 72 at 144, 60 at 60 / 120), chosen by the operator
+ *  on 2026-10-17 (journal pass 6c); `?fps=off` restores the uncapped loop. */
+const DEFAULT_FRAME_CAP: FrameCapMode = { kind: 'even', fps: 60 };
 
 export class App {
   readonly renderer: THREE.WebGLRenderer;
