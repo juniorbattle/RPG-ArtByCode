@@ -444,6 +444,7 @@ export class App {
     if (this.actors) {
       const a = this.actors;
       a.camYaw = this.rig.yaw;
+      a.charScale = this.graph.state.charScale;
       // movement keys stay mapped through the yaw they were pressed under; re-sync only when input is released
       if (!a.moveInput) a.controlYaw = this.rig.yaw;
       else if (this.graph.arrival) this.graph.arrival = false;

@@ -12,6 +12,10 @@ import type { CastMember } from './BakedCast';
 
 const HEIGHT: Record<string, number> = { player: 1.78, blacksmith: 1.82, merchant: 1.66, guardA: 1.8, guardB: 1.8, hooded: 1.84, porter: 1.62, cat: 0.5 };
 
+/** a baked walker's animation clock runs at the speed its steps show over the ground speed its cycle draws (walkClock), within these
+ *  bounds: above, a cycle drawn for a much slower walk would race (the dock worker's); below, a profile seen walking almost into the depth
+ *  would freeze (journal Passe S2) */
+const WALK_CLOCK_MIN = 0.4, WALK_CLOCK_MAX = 1.6;
 /** a walking facing turns to profile beyond 50 deg from the screen vertical and back to front / back below 40 deg (see screenFacing) */
 const SIDE_IN = Math.tan(THREE.MathUtils.degToRad(50)), SIDE_OUT = Math.tan(THREE.MathUtils.degToRad(40));
 const _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3();
@@ -36,6 +40,8 @@ export class ActorSystem {
   authored: AuthoredSpawn[] = [];
   /** production baked sheets standing in for generated archetypes (`BakedCast.ts`): same spawns, roles, behaviours and RNG draws */
   cast = new Map<string, CastMember>();
+  /** the camera's character scale (set by the app every frame): a sprite drawn larger takes longer strides on the ground */
+  charScale = 1;
 
   /** camera: shows a walking facing by its on-screen direction (null: the world rule for every facing) */
   constructor(private atlas: SpriteAtlas, private camera: THREE.PerspectiveCamera | null = null) {
@@ -278,5 +284,19 @@ export class ActorSystem {
     this.face(a, to, true);
     // the porter's crate walk where the sheet has one (the generated porter), the plain walk otherwise
     this.setAnim(a, this.atlas.counts.has(`${a.spec}/carry`) ? 'carry' : 'walk');
+    // a baked walker's clock (its frame) advances at the speed its steps show over the speed its cycle draws: the planted foot stays put
+    // (positions and RNG draws are unchanged: only which frame is shown)
+    a.t += dt * (this.walkClock(a, to.x * speed, to.z * speed) - 1);
+  }
+
+  /** animation clock rate of a walking baked actor (1 for a generated sprite or a sheet without a measured cycle): the speed its steps show
+   *  over the ground speed its cycle draws at the current character scale. In profile the cycle slides the planted foot along the
+   *  billboard, i.e. the camera's right: what it must match is the velocity along that axis (a profile walking mostly into the depth crosses
+   *  the screen slowly: at the full speed its feet slid backwards, a moonwalk); seen from the front or the back, the full speed */
+  walkClock(a: Actor, vx: number, vz: number): number {
+    const ws = a.base ? this.cast.get(a.base)?.walkSpeed : null;
+    if (!ws) return 1;
+    const shown = a.dir === 'side' ? Math.abs(vx * Math.cos(this.camYaw) - vz * Math.sin(this.camYaw)) : Math.hypot(vx, vz);
+    return Math.min(WALK_CLOCK_MAX, Math.max(WALK_CLOCK_MIN, shown / (ws * this.charScale)));
   }
 }

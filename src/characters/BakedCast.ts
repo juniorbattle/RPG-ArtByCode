@@ -39,7 +39,8 @@ import courierJson from '../../art-lab/characters/exports/courier-x2-v1.json';
 import { id as coId, status as coStatus, approved as coApproved, runtimeUse as coUse } from '../../art-lab/characters/manifests/courier-x2-v1.manifest.json';
 import { files as courierFiles } from '../../art-lab/characters/provenance/courier-x2-v1/PROVENANCE.json';
 import { FRAME_W, FOOT_Y } from './SpriteGenerator';
-import { PIXEL_WORLD } from './SpriteRenderer';
+import { PIXEL_WORLD, WALK_CADENCE } from './SpriteRenderer';
+import { walkSlide } from './Stride';
 import { checkBakedSheet, DIRS, type BakedSheet } from './BakedSprites';
 import { decodePng, sheetFrames, sha256, figureRows } from './BakedDecode';
 
@@ -79,7 +80,8 @@ const ENTRIES: Entry[] = [
   { manifest: { id: coId, status: coStatus, approved: coApproved, runtimeUse: coUse }, png: courierPng, json: courierJson, files: courierFiles, replaces: ['crowd4'], scale: 0.9 },
 ];
 
-export interface CastMember { id: string; scale: number; height: number }
+/** `walkSpeed`: the ground speed its walk cycle draws, in m/s at character scale 1 and the base walk cadence (Stride.ts); null = unknown */
+export interface CastMember { id: string; scale: number; height: number; walkSpeed: number | null }
 
 /** every behaviour of the replaced archetypes (idle, turned to talk, wander, patrol) needs these frames (contract amendment B: a missing
  *  frame in production is a load error, never a silent fallback) */
@@ -112,7 +114,8 @@ export async function loadProductionCast(candidates = false): Promise<{ sheets: 
     const front = frames.find((f) => f.dir === 'down' && f.anim === 'idle' && f.i === 0)!;
     sheets.push(sheet);
     const height = figureRows(front, FRAME_W * k, FOOT_Y * k) * (PIXEL_WORLD / k) * e.scale;
-    for (const r of e.replaces) cast.set(r, { id, scale: e.scale, height });
+    const slide = walkSlide(frames, k), walkSpeed = slide === null ? null : slide * WALK_CADENCE * (PIXEL_WORLD / k) * e.scale;
+    for (const r of e.replaces) cast.set(r, { id, scale: e.scale, height, walkSpeed });
   }
   return { sheets, cast };
 }

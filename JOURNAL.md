@@ -487,6 +487,84 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une auréole se mesure : ce que le post-traitement fait changer autour d'une silhouette, personnage présent / absent, image par image et en
   mouvement, puis par effet.
 
+## Passe S2 — Personnages : cadence de marche réglée sur la vitesse vue à l'écran, contour d'auteur gardé, densités mesurées (2026-10-18)
+
+### Demande (2026-10-18)
+- Deuxième point des priorités de l'opérateur (Passe M5) : « consolider la cohérence visuelle des personnages et leur deplacement dans la
+  scene selon l'angle de camera ». Points de départ : « À reprendre » §1 (bande 40° / 50° et diagonales du joueur de profil, à juger en
+  mouvement ; foulée du docker ; bras immobiles en marche ; densité ×1 / ×2 ; détails d'un texel qui clignotent en A) et la décision de
+  l'opérateur en Passe S1 (« Keep the authored outline »).
+- Branche `cast-coherence-motion` ouverte depuis `main` (`c45e621`, Passe S1 fusionnée). Base figée de `main` servie sur :5187 (entrée
+  `base-main`).
+
+### Foulée — [OK] mesurée sur les feuilles
+- Sur la rangée des pieds (45k) des images de marche de profil, les pieds sont des segments opaques ; le pied d'appui recule de 4 à 4,5
+  texels par image sur 9 feuilles sur 10 (×2), soit 0,63-0,71 m/s à la cadence de 7,5 images / s et à l'échelle 0,9 de la distribution.
+  Le jeu les fait marcher à 0,8 (gardes, encapuchonné), 0,9 (docker) et 0,95 m/s (foule) : les pieds patinaient. Le cycle du docker n'est
+  pas un tapis roulant régulier (botte tenue une image puis 4 texels, double appui : glissements 0 / 2 / 2,5 / 4) ; la « foulée de 13 texels
+  par pas » de la Passe 4A-sedecies était l'écart entre les pieds, pas le glissement du pied d'appui.
+- `walkSlide` (`src/characters/Stride.ts`) mesure cela au chargement de la distribution (`CastMember.walkSpeed`) ; un cycle irrégulier (un
+  glissement à plus de 30 % de la médiane, ou une botte tenue) rend `null`. Outil : `tools/art-lab/stride.mjs` (même fonction).
+
+### Cadence — [OK] l'horloge d'animation suit la vitesse que montrent les pas
+- **[KO → compris] première mesure en mouvement** : comparer la dérive du pied d'appui à la vitesse totale du marcheur donnait 0,5-0,7 de
+  glissement avant comme après. Un profil n'affiche le glissement du pied que le long de l'axe droit de la caméra (le plan du billboard) ;
+  un marcheur montré de profil alors qu'il va surtout en profondeur (règle de l'écran, Passe 4A-unvicies : 20° de cap font déjà ~55° à
+  l'écran) traverse l'écran lentement. Exemple relevé (artisane, B) : 0,051 m d'avance à l'écran par image d'animation contre 0,094 m de
+  recul du pied : les pieds faisaient un moonwalk, et une cadence accélérée l'aggravait.
+- `ActorSystem.walkClock` : de profil, la vitesse le long de l'axe droit de la caméra ; de face / de dos, la vitesse entière ; divisée par la
+  vitesse que dessine le cycle à l'échelle du cadrage (`charScale`, que l'app transmet), bornée à [0,4 ; 1,6] ; 1 pour un sprite généré ou un
+  cycle irrégulier (docker). Seul `a.t` avance plus ou moins vite : positions, cibles, tirages aléatoires inchangés (vérifié : 11 acteurs,
+  positions, animations et vues identiques après 60 s, graines 1842 et 30417). `WALK_CADENCE` (7,5) nommé dans `SpriteRenderer.ts`.
+- Mesure en mouvement (`tools/foot-slip.mjs`, `App.update` à 1/60 s, 40 s par cas, sans rendu ; à chaque changement d'image, dérive du pied
+  d'appui le long de l'axe droit de la caméra sur l'avance du marcheur : 0 = planté, négatif = moonwalk), médianes avant → après :
+
+| Cas | artisane | voyageur / citadine | docker |
+|---|---|---|---|
+| A, 1842 | −2,40 → −0,36 (horloge au plancher 0,4) | voyageur −1,18 → −0,01 | 0,09 → 0,09 |
+| B, 1842 | −0,76 → −0,08 | voyageur −0,42 → 0,01 | 0,11 → 0,11 |
+| C, 1842 | −0,95 → −0,04 | voyageur −0,58 → 0,00 | 0,04 → 0,04 |
+| D, 1842 | 0,01 → 0,01 | voyageur 0,17 → 0,02 | 0,48 → 0,48 |
+| B, 7719 | −0,19 → 0,01 | citadine −0,61 → −0,07 | −0,18 → −0,18 |
+| B, 30417 | — | citadine −0,55 → −0,03 ; voyageur −0,21 → 0,01 | 0,17 → 0,17 |
+
+- Revue en mouvement : `tools/flipbook.mjs` (même exécution déterministe sur deux serveurs, recadrage qui suit un acteur, lecture
+  synchronisée dans une page HTML autonome) ; artisane en C, `main` contre cette branche, montrée à l'opérateur (page hors dépôt, 9 Mo).
+
+### Contour d'auteur — [OK] décision de l'opérateur appliquée
+- `BODY_FRAG` : pas d'éclaircissement du bord côté lumière sur une feuille cuite (`litEdge = 0`) ; liseré de lune au sommet et
+  assombrissement côté ombre gardés. `sprite-s2/B-edge-x4-before-after.png` : contour sombre rendu à gauche du voyageur et de la marchande.
+  [?] Le liseré de lune au sommet, gardé comme demandé, se lit encore comme une frange bleutée sur l'escalier d'une chevelure en épis
+  (voyageur, à droite).
+
+### Densités — [?] mesurées, à décider
+- Pixels écran par texel (graine 1842, positions de capture des références) : A : distribution ×2 0,35-0,78, héros ×1 1,61, chat ×1 0,99 ;
+  B : ×2 0,65-1,68, héros 3,04 ; C : ×2 0,97-2,02, héros 3,31 ; D : ×2 1,15-1,29, héros 2,92, chat 4,51. En A, la distribution passe sous
+  un pixel par texel : les détails d'un texel tombent et reviennent en mouvement (le point de QA). Le héros ×1 a des texels deux fois plus
+  gros que la distribution autour de lui (point 3 : héros cuit à la densité de la distribution). Rien changé ici.
+
+### Preuves
+- Monde statique (`static=1`, A, B, C, D, forge sabotée, graines 7719 / 30417 en A) contre la Passe S1 : 0 px, écart max 0.
+- Tests : `tests/stride.test.mjs` (4 tests : tapis roulant synthétique dans les deux sens, `null` sans profil / sans pied / cycle à botte
+  tenue, table des 10 feuilles de production, `walkClock` : axe de la caméra, échelle, bornes, sprite généré, cycle irrégulier) ; contrôle
+  négatif : trois fautes injectées une à une (vitesse entière de profil, échelle ignorée, contrôle de régularité retiré), chacune attrapée.
+  `npm test` 28 / 28.
+- Références `screenshots/calibration/cam{A,B,C,D}-*.png` refaites ; `npm run typecheck`, `npm run build`, `npm run art:validate`.
+
+### Restes [?]
+- Docker : cycle irrégulier, horloge 1 ; glissement mesuré +0,1 en B / C, +0,48 en D. Le corriger demanderait de reprendre sa marche dans son
+  script de rig (révision d'un asset approuvé : critique à l'aveugle et accord de l'opérateur).
+- Bras immobiles en marche des citadins : même voie (scripts de rig), non traité.
+- En A, l'horloge touche son plancher pour les profils qui vont presque en profondeur (artisane −0,36).
+- Héros généré : horloge 1 ; il marche à 2,5 m/s. Pour le héros cuit (point 3), un cycle dessiné pour cette vitesse (glissement ≈ 9 texels
+  par image à ×2 avec l'horloge à 1,6) ou une vitesse revue.
+
+### Pensée
+- Un glissement de pied se mesure dans l'axe où le sprite peut le montrer : un profil ne montre que l'axe droit de la caméra ; la vitesse
+  totale d'un marcheur vu de profil peut être surtout en profondeur.
+- Une animation se règle sur ce que l'écran montre (la règle de vue de la Passe 4A-unvicies vaut aussi pour la cadence), sans toucher aux
+  positions ni aux tirages.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -503,9 +581,10 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - **Mise en scène** : la marchande ne marche pas à son étal (collisionneur ; la déplacer de 0,5 m serait une décision de mise en scène) ; un
   second garde différent (miroir ou variante) au lieu de jumeaux, lances ; seuls 2 des 5 citadins (artisane, voyageur) paraissent à la
   graine 1842 et à la densité 1 (`round(2 × densité)` promeneurs ; « remplacer seulement »).
-- **Mouvement** : foulée du docker 0,69 m/s contre 0,8-0,95 (léger glissement accepté en 4A-sedecies) ; bras immobiles en marche des
-  citadins (reproche commun des critiques) ; cycle 3 + 3 sans double appui (hérité du garde) ; à juger en mouvement : la bande 40° / 50° et
-  les diagonales du joueur, désormais de profil (Passe 4A-unvicies).
+- **Mouvement** (Passe S2 : cadence réglée sur la vitesse vue à l'écran, pieds plantés pour la foule et les gardes) : cycle du docker
+  irrégulier (botte tenue une image, double appui), horloge 1, glissement +0,1 en B / C et +0,48 en D : à reprendre dans son script de rig ;
+  bras immobiles en marche des citadins (reproche commun des critiques) ; cycle 3 + 3 sans double appui (hérité du garde) ; en A, l'horloge
+  touche son plancher pour un profil qui va presque en profondeur.
 - **Fidèles aux planches, non changés exprès** : bonnet / sac de la marchande selon la vue ; costumes des citadins différents selon la vue
   (tablier, sac, chemise).
 - **Lisibilité** : tête du marteau cuit peu lisible sur la lueur de l'enclume (Passe 4A-vicies).
@@ -519,7 +598,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   consigne de 4A en parlait sans les montrer ; les trois planches archivées sont toutes classées comme références). Le modelé ×1,5 n'est
   plus la voie principale (Passes 4A-quater / quinquies).
 - **Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ;
-  surveiller à chaque nouveau PNJ. Mesuré en 4A-duodevicies : gardes de la barrière à 0,5 (A) et 1,05 (B) px / texel.
+  surveiller à chaque nouveau PNJ. Mesuré en Passe S2 (graine 1842) : distribution ×2 à 0,35-0,78 px / texel en A, 0,65-1,68 en B, 0,97-2,02
+  en C, 1,15-1,29 en D ; héros ×1 à 1,6 / 3,0 / 3,3 / 2,9.
 
 **2. Occlusion du joueur (Passes 3 / 3b)**
 - Un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande tramée ;
@@ -714,6 +794,9 @@ sprites.
   donne un sens aux chiffres de stabilité.
 - La vue d'un personnage qui marche se tire de son pas projeté à l'écran (avec hystérésis), pas de l'angle de son cap avec l'axe de la
   caméra : sous un tangage de 8°, 20° de cap font déjà ~55° à l'écran. Un regard mis en scène (spawn, conversation) garde la règle monde.
+- La cadence d'une marche cuite suit la vitesse que montrent ses pas : de profil, la vitesse le long de l'axe droit de la caméra (le seul
+  axe où le sprite montre le glissement du pied), de face ou de dos la vitesse entière, sur la vitesse que dessine le cycle à l'échelle du
+  cadrage ; un glissement se mesure dans cet axe, en mouvement (`tools/foot-slip.mjs`, Passe S2).
 - Un personnage qui agit sur un objet (frappe, geste) regarde l'objet : son orientation se calcule depuis la géométrie (vecteur personnage →
   point d'action), jamais un angle choisi pour l'apparence ; un cycle qui n'existe que de profil en tire son côté écran dans tout cadrage.
 - Un cycle synchronisé avec un effet (étincelles du marteau) garde son nombre d'images et l'image de l'impact ; le moteur n'a pas de durée

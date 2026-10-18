@@ -12,9 +12,13 @@ import { LAYER_NOREFLECT } from '../atmosphere/ShadowAndReflection';
  *   - the anchor is snapped to the render-target pixel grid, so texel edges never crawl while actors / camera move
  *   - characters write a protection mask into the scene alpha; the DOF keeps them sharp while the set softens, the in-scatter keeps part of
  *     their contrast. Nothing drawn after them touches that alpha (maskSafeBlending), so no second pass of the characters is needed
- *   - a quiet silhouette treatment: lit-side edge lifted toward the key light, shadow-side edge cooler / darker */
+ *   - a quiet silhouette treatment: lit-side edge lifted toward the key light (generated sprites only: a baked sheet keeps its authored
+ *     outline), shadow-side edge cooler / darker */
 
 export const PIXEL_WORLD = 0.047; // metres per sprite pixel
+/** walk (and carry) frames per second at the actor's animation clock; a baked walker's clock runs at its speed over the speed its cycle
+ *  draws (ActorSystem.walkClock), so its planted foot stays on the ground */
+export const WALK_CADENCE = 7.5;
 
 export interface Actor {
   id: number;
@@ -154,7 +158,8 @@ void main(){
   if (baked) { nR = mR; nL = mL; nU = mU; }
   float aR = step(0.5, nR), aL = step(0.5, nL), aU = step(0.5, nU);
   float side = vFx.y, amt = vFx.w * uEdge;
-  float litEdge = (1.0 - (side >= 0.0 ? aR : aL)) * abs(side);
+  // a baked sheet keeps its authored outline: no lit-side lift (operator's decision, journal Passe S1); crown rim and shadow side stay
+  float litEdge = baked ? 0.0 : (1.0 - (side >= 0.0 ? aR : aL)) * abs(side);
   float shdEdge = (1.0 - (side >= 0.0 ? aL : aR)) * abs(side);
   vec3 key = mix(uMoonCol * 1.6, vec3(1.0, 0.64, 0.34) * 0.9, vFx.z);
   col += key * (0.1 + 0.5 * dot(albedo, vec3(0.3, 0.55, 0.15))) * litEdge * amt;
@@ -386,6 +391,6 @@ function emptyBaked(): THREE.DataTexture {
 
 export function frameIndex(atlas: SpriteAtlas, act: Actor): number {
   const n = atlas.counts.get(`${act.spec}/${act.anim}`) ?? 1;
-  const rate = act.anim === 'walk' || act.anim === 'carry' ? 7.5 : act.anim === 'hammer' ? 5.5 : act.anim === 'talk' ? 4 : 1.7;
+  const rate = act.anim === 'walk' || act.anim === 'carry' ? WALK_CADENCE : act.anim === 'hammer' ? 5.5 : act.anim === 'talk' ? 4 : 1.7;
   return Math.floor(act.t * rate) % n;
 }

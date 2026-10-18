@@ -42,7 +42,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `npm run typecheck` — `tsc --noEmit` (run after every change)
 - `npm run build` — typecheck + production bundle
 - `npm test` — unit tests of the pure logic (`tests/*.test.mjs`, built-in `node --test`, ~2 s, no browser or GPU): camera zone hysteresis,
-  `planDraw`, the production cast's gate (manifest approval, SHA-256 against the provenance pack), sheet metadata, PNG decoding.
+  `planDraw`, the production cast's gate (manifest approval, SHA-256 against the provenance pack), sheet metadata, PNG decoding, the baked walk
+  cycles' ground speed and the walkers' animation clock (journal Passe S2).
   `tests/load.mjs` loads `src/` through Vite's SSR loader (extensionless imports, `?url`, named JSON imports, as the bundle resolves
   them; `--experimental-strip-types` alone cannot), with its own cache folder (`node_modules/.vite-test`), no file watcher and no
   `vite.config.ts` (`configFile: false` + `server.watch: null`: a merged config drops the null, and the watcher crawled the ignored Art Lab
@@ -90,6 +91,11 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `node tools/sprite-halo.mjs <out.json> "<query>" [route] [secs] [every] [ring]` — the characters' halo in motion (same harness): per sampled
   frame and character, how much the post chain makes a character change the pixels 1..ring px around its silhouette, and its contrast kept;
   `POST=air|bloom|dof` attributes it to one effect (journal Passe S1)
+- `node tools/foot-slip.mjs [--secs=20] "label|<query or url>" ...` — the baked walkers' foot slip in motion (same harness, no rendering): at each
+  frame change, the planted foot's drift along the camera's right over the walker's own advance (0 = planted, negative = moonwalk; journal
+  Passe S2). `node tools/art-lab/stride.mjs` — the ground speed each production walk cycle draws (the runtime's `walkSlide`)
+- `node tools/flipbook.mjs <out.html> "<spec prefix>" <from> <to> [every] [WxH] [zoom] "label|url" ...` — the same deterministic run on several
+  servers / queries, a crop following one actor, played in sync in one self-contained HTML page (motion review, journal Passe S2)
 - `node tools/zoom.mjs in.png out.png x y w h [scale]` — nearest-neighbour crop for pixel-level sprite review
 - `node tools/walk.mjs <prefix> "<query>" "w,d" <secs>` — holds keys, logs camera blend steps (and occlusion fades:
   reversals / jumps), writes a contact sheet
