@@ -2964,6 +2964,11 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   ≈ 10 % plus lent dans un Worker que sur le fil principal (somme des jobs 1 716 → 1 940 ms ; cause non cherchée) : un Worker seul perd contre
   le fil principal, d'où le défaut « fil principal en dessous de 2 Workers » (ajouté après les mesures ; sur cette machine le défaut reste 4,
   chemins prouvés ci-dessus).
+
+### Décision opérateur (2026-10-17) — [OK] P3 accepté
+- Mot pour mot : « J'accepte P3 tel quel : fusionne perf-p3-texture-workers dans main, pousse main et supprime la branche. »
+- Branche `perf-p3-texture-workers` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée (locale et distante). P4 ouvrira
+  sa propre branche depuis `main`.
 - **Coût par image** (`tools/perf.mjs`, B 1080p avec révélation, 3 tours entrelacés, tous propres) : 13,49 [13,10-13,70] → 12,88
   [12,84-13,36] ms, mêmes appels (114), triangles (210,1 k) et textures (50) : le code par image n'a pas changé, écart dans la dispersion.
   (Ces valeurs sont plus hautes que les 9,3 ms de P1 : même GPU, autre état thermique ou d'alimentation ; seule la comparaison entrelacée
@@ -2985,7 +2990,7 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 sa propre branche)** — fait : P0 (outillage), P1 (chauffe des
 variantes d'occlusion : première révélation 315 → 11 ms, image identique), P2 (première image préparée sous l'écran de chargement : première
 image de la boucle 17 → 4 ms, 0 programme compilé après le départ ; durée de démarrage inchangée, l'estimation « −1 à −1,5 s » du plan était
-fausse). **P3 fait (Passe 6b, branche `perf-p3-texture-workers`, en attente de l'acceptation de l'opérateur)** : peintres de textures en Web
+fausse). **P3 fait (Passe 6b), accepté par l'opérateur le 17/10 et fusionné dans `main`** : peintres de textures en Web
 Workers, octets et image identiques, peinture 1,80 → 0,55 s, `__ready` 3,64 → 2,50 s ; sonde `startup.mjs` corrigée (première étiquette). Suivent,
 une piste par commit, chacune avec sa preuve : P4 plafond de cadence (défaut à décider), P5 cache du bake ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
 P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
