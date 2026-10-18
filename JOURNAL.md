@@ -610,6 +610,48 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une demande d'image se vérifie sur l'image que l'opérateur montre avant d'interpréter son vocabulaire : « superposition » désignait le décor
   par-dessus les personnages, pas seulement la superposition à 55 %.
 
+## Passe H0 — Héros premium : brief et prompt de la planche source ; décision sur l'enseigne de la forge (2026-10-18)
+
+### Complément de la Passe S1b
+- Passe S1b fusionnée en avance rapide (`1634b59`) ; runs GitHub : S1 `39174062375` / `39174069769`, S2 `39175497168` / `39175505682`, S1b
+  `39176075688` / `39176097041` (branche / `main`) : success.
+- Enseigne de la forge devant la tête du forgeron (C) : décision de l'opérateur, mot pour mot : « celui ci c'est different car le npc forge
+  se trouve a l'interieur du decors dans c'est logique le beau de decors surpasse le sprite ». Rien à changer.
+
+### Demande (2026-10-18)
+- Troisième point des priorités (Passe M5) : « travailler sur notre héros premium ». Consigne de la séance parente : un héros cuit à la
+  densité de la distribution par la chaîne existante, critiqué à l'aveugle par un agent neuf ; production et Gold Master à l'opérateur ;
+  aucune provenance inventée.
+- Branche `hero-premium` ouverte depuis `main` (`1634b59`).
+
+### Constat — [OK]
+- Aucune source multi-vues du héros dans l'Art Lab. La planche complémentaire (14 personnages, classée « C, utile pour les personnages
+  clés » par l'opérateur le 16/10) montre « 01. Protagonist — Young Adventurer » sous une seule vue (trois-quarts) ; les PNJ venaient de
+  planches à 4 ou 6 vues découpées par leurs scripts de rig. Une marche ne s'invente pas depuis une vue (« Principes à garder ») : il faut
+  une planche de l'opérateur.
+
+### Décisions de l'opérateur (2026-10-18) — [OK]
+- Base de dessin, mot pour mot : « 01 Protagonist (Recommandé) ». Vitesse, mot pour mot : « Foulée de course (Recommandé) » (2,5 m/s
+  gardés ; le cycle de profil doit reculer le pied d'appui d'≈ 9 texels par image à ×2, contre 4-4,5 pour la distribution, Passe S2).
+
+### Fait
+- `art-lab/characters/briefs/hero-proposal.md` : décisions, brief (figure d'après la vue 01, proportions de la base commune, 1,78 m),
+  contraintes mesurées (densité, foulée, entrée `replaces: ['player']` seulement après approbation), prompt anglais de la planche (face, dos,
+  profil au repos, deux poses de course de profil, même échelle et même ligne de sol, fond gris uni), méthode à réception (celle des PNJ),
+  critères, risques.
+- Pièces jointes du prompt (non versionnées, `art-lab/characters/scratch/hero-premium/attachments/`) : `design-01-protagonist-crop-x2.png`
+  (vue 01 recadrée de la planche complémentaire archivée, ×2 ; SHA-256 `fbdf11b5…`) et
+  `quality-dockworker-x2-v2-front-side-back-x6-neutral.png` (docker v2 au repos, face / profil / dos ×6 au plus proche voisin sur gris
+  `#808080` ; `93d5e3a6…`).
+
+### Restes [?]
+- **En attente de l'opérateur** : la planche générée, livrée en PNG d'origine, avec l'outil, la date et le prompt effectivement utilisés.
+- Avec Maj (4,25 m/s), la borne × 1,6 de l'horloge laissera glisser : à décider à la livraison.
+
+### Pensée
+- Un personnage clé se prépare comme les PNJ : la source d'abord (multi-vues, fichier d'origine, provenance déclarée), puis la chaîne ; une
+  contrainte d'animation (la foulée de course) s'écrit dans le prompt, chiffrée, avant la génération.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -637,6 +679,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - **Contrat et sources** : C2 (PNG versionné + JSON, `runtime-integration-contract.md` section 11) proposé le 16/10, appliqué par la
   distribution de production, sans confirmation explicite consignée : à faire confirmer. Originaux des planches de référence à retrouver
   (l'opérateur s'en charge) ; droits de tiers non vérifiés exhaustivement.
+- **Héros premium** (Passe H0) : brief et prompt prêts (`briefs/hero-proposal.md`, design « 01 Protagonist », foulée de course) ; **en
+  attente de la planche source de l'opérateur** (PNG d'origine, outil, date, prompt utilisé).
 - **Personnages clés et suite de l'art** : héros et chat restent générés (densité ×1) ; ni personnage clé ni personnage **original** au
   même niveau ; E4 non lancée. Avant d'étendre : densité du cast (héros), liseré dépendant de la densité (liseré par sprite non implémenté),
   largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A. Décision ouverte : quelles planches étaient réellement rejetées (la
@@ -655,8 +699,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   de bake) ; rejouer l'inventaire à chaque changement de zones de caméra ou de composition (bateau, lampadaires).
 
 **3. `SpriteRenderer`** (Passe S1 : superposition retirée, masque de protection propre, auréole mesurée en mouvement ; Passe S1b : une seule
-profondeur par sprite, le décor derrière un personnage ne le coupe plus) — restent : l'enseigne de la forge qui cache la tête du forgeron en C
-(mise en scène, `sprite-s1b/C-smith-sign-staging-x2.png`) ; des décisions d'image : le bord des feuilles cuites ×2 (frange bleutée sur le contour d'auteur ; décision du 18/10 : contour d'auteur gardé, à faire au point 2) ;
+profondeur par sprite, le décor derrière un personnage ne le coupe plus ; l'enseigne devant le forgeron est voulue, opérateur, Passe H0) —
+restent des décisions d'image : le bord des feuilles cuites ×2 (frange bleutée sur le contour d'auteur ; décision du 18/10 : contour d'auteur gardé, à faire au point 2) ;
 la lisibilité du forgeron dans l'in-scatter de la forge (part des personnages 45 %, `known-issues/forge-smith-inscatter-C.png`) ; un halo placé
 devant un personnage s'applique désormais entièrement (B : héros sous la lanterne, plus clair au visage).
 
