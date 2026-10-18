@@ -3255,6 +3255,12 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   l'échelle 0,5. Preuve : 13 vues `static=1&freeze=7.3` sans `?refl=` **identiques à l'octet** à la base (`main` `5cb5ad7`) ; base deux fois
   identique ; contrôle négatif (`freeze=7.31`) détecté (91 % des pixels de B diffèrent).
 
+### Décision opérateur (2026-10-18) — [OK] P8 accepté
+- Mot pour mot : « J'accepte P8 tel quel (reflet 1/2 par défaut, ?refl= manuel) : fusionne perf-p8-reflection dans main, pousse main et
+  supprime la branche. »
+- Branche `perf-p8-reflection` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée (locale et distante). P9 ouvrira sa
+  propre branche depuis `main`.
+
 ### Pensée
 - Un poste de 1 ms sur 16 ne se voit plus en watts sous plafond de cadence : la passe de reflet était déjà à 7 % du temps GPU ; diviser
   ses pixels par 4 la ramène à 3 %, sans effet mesurable sur la puissance.
@@ -3275,7 +3281,7 @@ quand le GPU rate son créneau, vu sous contention en 1440p) ;
 défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans `main`** (1080p : GPU −41 %, SoC −56 % sous
 `e60`, sprites plus doux), **P7 fait (Passe 6f) : l'opérateur garde le MSAA 4× le 18/10, `?msaa=` reste un réglage manuel ; accepté et
 fusionné dans `main`** (2× : GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts non expliqués),
-**P8 fait (Passe 6g, branche `perf-p8-reflection`) : l'opérateur garde le reflet à 1/2 le 18/10, `?refl=` reste un réglage manuel**
+**P8 fait (Passe 6g) : l'opérateur garde le reflet à 1/2 le 18/10, `?refl=` reste un réglage manuel ; accepté et fusionné dans `main`**
 (1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
