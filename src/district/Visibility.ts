@@ -59,6 +59,9 @@ export interface VisResult {
   split: { render: number; readback: number; decode: number };
   /** pages rendered, the page target size, and the bytes of every target the bake allocated (ID pages, depth, counters) */
   pages: number; page: [number, number]; targetBytes: number;
+  /** bake cache (BakeCache.ts): where the result came from, and the time spent computing its key */
+  cache?: 'hit' | 'miss' | 'off' | 'verify-ok' | 'verify-mismatch' | 'verify-miss';
+  keyMs?: number;
 }
 
 /** which baked sets show a part (bit per SETS entry; 0 = never seen = Tier 3). A settled framing needs the parts seen in its own
@@ -347,6 +350,13 @@ export function bakeVisibility(renderer: THREE.WebGLRenderer, scene: THREE.Scene
     renderer.autoClear = prevAuto;
     for (const m of made) m.dispose();
   }
+}
+
+/** Everything of the bake's own code its result depends on (shaders, the bake and counter functions, the pose placement, constants), for
+ *  the bake cache key (BakeCache.ts, journal pass 6, P5): any edit of the bake changes it, so a stale entry can never be read back. */
+export function bakeCodeFingerprint(): string {
+  return [ID_VERT, ID_FRAG, ID_FRAG_WIN, SCATTER_VERT, SCATTER_FRAG, LANES, BAKE_PAGE, JSON.stringify(BAKE_FINE), WIN_MAX, SETS.join(),
+    bakeVisibility.toString(), scatterCounter.toString(), applyPose.toString()].join('\u0000');
 }
 
 interface Counter { add(src: THREE.WebGLRenderTarget, tl: Array<{ set: VisSet; x: number; y: number; w: number; h: number }>): void; read(): { counts: Record<VisSet, Uint32Array>; readMs: number } }

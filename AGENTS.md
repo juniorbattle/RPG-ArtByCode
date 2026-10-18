@@ -116,7 +116,8 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) ·
 `fps=off|<n>|v<k>|e<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
 round(refresh / n) vsyncs; **default `e60`**, chosen by the operator on 2026-10-17: 55 fps at 165 Hz, 72 at 144, 60 at 60 / 120; the vsync
-interval comes from a boot probe; `tools/perf.mjs` and `tools/startup.mjs` add `fps=off` unless the query sets `fps`; journal pass 6c) · DEV server only: `visfail=alloc|zero` (force a
+interval comes from a boot probe; `tools/perf.mjs` and `tools/startup.mjs` add `fps=off` unless the query sets `fps`; journal pass 6c) ·
+`viscache=0|verify` (visibility bake cache off / bake and compare with the stored result, journal pass 6d) · DEV server only: `visfail=alloc|zero` (force a
 visibility-bake failure: the fallback must keep every part and report it), `vispage=<px>` (bake page size), `visscale=<k>` (every bake tile k x:
 what a finer bake would keep) and `visfine=D:4|A+B+C+D:2|0` (the extra fine tiles, default D at 2x; `0` = none) ·
 `occ=0` (no player reveal: pixel-identical to Pass 2) · `occstyle=soft|dither|hybrid` · `occforce=all|0,2` (force
@@ -194,6 +195,11 @@ tile (`BAKE_FINE`, additive: +16 ms). Verify culling with `tools/visproof.mjs` /
 `occ=0` to keep the reveal fade out of the comparison): they must be pixel-identical, except the known residue (journal pass 5b): pixels decided
 by draw order (coplanar far-city faces), single MSAA samples through rasterisation cracks, and slivers seen only between sampled poses.
 Explain any new diff with `tools/vis-why.mjs` before changing the bake.
+Bake cache (`src/district/BakeCache.ts`, journal pass 6d): the bake goes through a cache keyed by a 64-bit hash of everything its result depends
+on (the ID scenes' geometry, poses, reveal windows, frame, options and page cap, the bake's own code via `bakeCodeFingerprint()`, the GPU string);
+results live in memory and in localStorage (6 entries). A malformed entry is a miss, a failed bake is never stored, the DEV `visfail` controls
+bypass it. `viscache=0` bakes and stores nothing; `viscache=verify` bakes and compares with the stored entry (`__stats().visibility.bakeCache`).
+Anything new the bake reads must enter the key (`bakeKey`), or a stale result could cull.
 
 ## Player occlusion reveal (`src/app/Occlusion.ts`)
 V1 protects the player only. When an occludable object stands between the camera and the player's torso, a soft

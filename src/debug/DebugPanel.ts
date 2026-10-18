@@ -210,7 +210,7 @@ export class DebugPanel {
       `geometries ${s.geometries}   lights ${s.lights} (${this.app.lights.active} on screen)   actors ${s.actors}\n` +
       `generate ${s.generatorMs.toFixed(0)} ms   buildings ${s.district.buildings}   windows ${s.district.windows}\n` +
       `camera ${g.target}${g.blending ? ` (blend ${(g.blendT * 100).toFixed(0)}%)` : ''}${g.arrival ? ' arrival' : ''}   char x${g.state.charScale.toFixed(2)}\n` +
-      (vis ? `visible set ${vis.set} (level ${vis.level})   bake ${vis.bakeMs} ms / ${vis.poses} poses\n` +
+      (vis ? `visible set ${vis.set} (level ${vis.level})   bake ${vis.bakeMs} ms (${vis.bakeCache}) / ${vis.poses} poses\n` +
         `tier 3 removed ${vis.tier3}/${vis.parts} parts (${(Number(vis.trisTier3) / 1000).toFixed(1)}k tris)   lights culled ${vis.lightsCulled}\n` +
         (vis.error ? `VISIBILITY BAKE FAILED, culling off: ${vis.error}\n` : '') : '') +
       (s.occlusion ? `occlusion ${s.occlusion.enabled ? s.occlusion.style : 'off'}: ${s.occlusion.active}/${s.occlusion.eligible} active ${s.occlusion.names ? '[' + s.occlusion.names + ']' : ''}   ${s.occlusion.tests} tests ${s.occlusion.cpuMs} ms\n` : '') +

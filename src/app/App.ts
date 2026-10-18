@@ -20,7 +20,8 @@ import { loadProductionCast } from '../characters/BakedCast';
 import { ParticleSystem } from '../atmosphere/Particles';
 import { buildSky } from '../atmosphere/Sky';
 import { WATER_Y, WALK } from '../architecture/StreetComposer';
-import { bakeVisibility, type BakeOptions, type BakePose, type BehindPass } from '../district/Visibility';
+import { type BakeOptions, type BakePose, type BehindPass } from '../district/Visibility';
+import { bakeVisibilityCached, type BakeCacheMode } from '../district/BakeCache';
 import { OcclusionReveal, OCC_STYLES, playerReveal, revealSize, type OccStyle } from './Occlusion';
 import { PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, crowdVariants } from '../characters/SpriteGenerator';
 
@@ -246,7 +247,7 @@ export class App {
       visibility: this.district ? {
         set: this.visibleSet, level: this.drawLevel, parts: this.district.visibility.parts, tier3: this.district.visibility.hidden,
         classes: this.district.visibility.levels, trisKept: this.district.visibility.trisKept, trisTier3: this.district.visibility.trisHidden,
-        bakeMs: Math.round(this.district.visibility.bakeMs), poses: this.district.visibility.poses, lightsOnScreen: this.lights.active, lightsCulled: this.lights.culled,
+        bakeMs: Math.round(this.district.visibility.bakeMs), bakeCache: this.district.visibility.bakeCache ?? 'none', bakeKeyMs: +this.district.visibility.bakeKeyMs.toFixed(1), poses: this.district.visibility.poses, lightsOnScreen: this.lights.active, lightsCulled: this.lights.culled,
         frame: this.rig.frame === Infinity ? 'any' : +this.rig.frame.toFixed(4), bakePages: this.district.visibility.bakePages, bakeTargetMB: +(this.district.visibility.bakeTargetBytes / 1048576).toFixed(1),
         ...(this.visibilityError ? { error: this.visibilityError } : {}),
       } : undefined,
@@ -298,7 +299,12 @@ export class App {
     const bake = this.opts.params.get('vis') === '0' ? undefined
       : (scene: THREE.Scene, n: number, behind?: Pick<BehindPass, 'scene' | 'uniforms'>) => {
         try {
-          const v = bakeVisibility(this.renderer, scene, n, this.graph.samplePoses(WALK, frame), frame, WATER_Y, this.occlusion.enabled && behind && this.opts.params.get('occbehind') !== '0' ? { ...behind, windowsFor: (cam, p) => this.revealWindows(cam, p) } : undefined, this.bakeOptions());
+          // through the bake cache (journal pass 6, P5): the same inputs on the same GPU read back the stored result; ?viscache=0 | verify
+          const v = bakeVisibilityCached({
+            renderer: this.renderer, scene, nParts: n, poses: this.graph.samplePoses(WALK, frame), aspect: frame, waterY: WATER_Y,
+            behind: this.occlusion.enabled && behind && this.opts.params.get('occbehind') !== '0' ? { ...behind, windowsFor: (cam, p) => this.revealWindows(cam, p) } : undefined,
+            opts: this.bakeOptions(),
+          }, this.bakeCacheMode());
           baked = true;
           return v;
         } catch (e) {
@@ -351,6 +357,12 @@ export class App {
     r.setRenderTarget(prev);
     d.setOccActive(false);
     occ.meshes.forEach((m, i) => { m.mesh.material = m.base; m.mesh.frustumCulled = culled[i]; });
+  }
+
+  /** ?viscache=0 (or off): bake every time, store nothing; ?viscache=verify: bake every time and compare with the stored result */
+  private bakeCacheMode(): BakeCacheMode {
+    const c = this.opts.params.get('viscache');
+    return c === '0' || c === 'off' ? 'off' : c === 'verify' ? 'verify' : 'on';
   }
 
   /** DEV negative controls / layout checks of the bake: ?visfail=alloc|zero (must fall back, see BakeOptions), ?vispage=<px> (page cap),

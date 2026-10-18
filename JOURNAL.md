@@ -3066,6 +3066,55 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Des horodatages rAF ne sont pas une horloge vsync : ni leur médiane après un saut, ni leur minimum ne retrouvent la vsync ; une sonde au
   repos, si. Une auto-correction qui se nourrit de son propre effet (les sauts qu'elle provoque) peut lever le plafond qu'elle règle.
 
+## Passe 6d — Performances : P5, cache du bake de visibilité (2026-10-18)
+
+### Demande (2026-10-18)
+- Mot pour mot : « Go P5 : ouvre sa branche depuis main et commence le cache du bake de visibilité, avec ses preuves. » Branche
+  `perf-p5-bake-cache` ouverte depuis `main` (`4334d57`) et poussée.
+
+### Changement — [OK]
+- `src/district/BakeCache.ts` : `bakeVisibilityCached` enveloppe `bakeVisibility` (mêmes arguments, même résultat). **Clé** = hachage 64 bits
+  (deux voies 32 bits) de tout ce dont le résultat dépend : la géométrie des scènes d'ID (chaque maillage : matrice, côté et shaders du
+  matériau, attributs `position` / `aPart`, index), celle de la passe « derrière », les poses échantillonnées (tous leurs champs, pleine
+  précision), les fenêtres de révélation de chaque pose (calculées comme le bake, caméra de la pose au champ élargi), le cadre, le niveau
+  d'eau, le nombre de pièces, les options et le plafond de page (limites GPU), **le code du bake** (`bakeCodeFingerprint()` dans
+  `Visibility.ts` : shaders d'ID / de comptage, sources de `bakeVisibility`, du compteur et d'`applyPose`, constantes), la révision de Three
+  et la chaîne du GPU. Toute modification d'une de ces entrées est un échec de cache, donc un bake neuf.
+- Stockage : mémoire de la séance + `localStorage` (6 entrées, la plus ancienne retirée ; ≈ 63 Ko chacune : les comptes de pixels complets de
+  chaque ensemble et de la passe « derrière », pour que rapports et statistiques restent identiques). Entrée illisible, de mauvaise taille,
+  à somme de contrôle fausse ou qui échoue au contrôle du bake (un ensemble sans aucun pixel) = échec de cache ; un bake qui échoue n'est
+  jamais stocké ; les contrôles négatifs DEV `visfail` contournent le cache ; un résultat relu est copié (aucun tableau partagé).
+- `?viscache=0` (bake neuf, rien stocké), `?viscache=verify` (bake neuf comparé à l'entrée stockée : `verify-ok` / `verify-mismatch`, erreur
+  console). `__stats().visibility.bakeCache` / `bakeKeyMs`, panneau (« bake N ms (hit) »).
+
+### Preuves
+- **Empreintes** (script de séance `p5-proof.mjs`, serveur dev, une instance de navigateur) : 3 graines × 6 tailles de `viewport-proof`,
+  chacune chargée quatre fois (cache coupé, premier chargement, second, `verify`) ; l'empreinte de tout ce que décide le bake (comptes de
+  chaque ensemble pour toutes les pièces, rapport « derrière », classes, préfixes et triangles dessinés par cadrage, Tier 3) est **identique
+  sur les quatre chargements des 18 combinaisons** (72 chargements) ; second chargement servi par le cache, `verify-ok` partout. Les fenêtres plus
+  étroites que 16:9 bakent le cadre 16:9 : leur premier chargement relit donc à juste titre l'entrée du 1920 × 1080 (**[KO] de mon attente**
+  dans le premier passage du script, pas du cache). Régénération dans la séance 1842 → 7719 → 1842 : succès mémoire, empreintes égales aux
+  bakes neufs, 18-19 ms. Contrôles : `camD` réglé, `visfine=0`, `occbehind=0` → échec de cache (la clé les voit) ; `occ=0` juste après
+  `occbehind=0` → succès avec la même empreinte (mêmes entrées du bake : pas de passe « derrière » ; **[KO] de mon contrôle**, qui l'attendait
+  en échec).
+- **`viewport-proof`** (serveurs dev, branche contre base figée `4334d57`) : sortie **identique ligne à ligne** (mêmes 9 écarts connus de la
+  passe 5b, mêmes pixels et maxima, mêmes Tier 3, redimensionnement sans rechargement identique, contrôles `visfail=alloc|zero` repliés),
+  seuls les temps de bake diffèrent (10-17 ms servis par le cache contre 176-284 ms).
+- **Pixels** (production, 13 vues de la passe 6b) : PNG **identiques à l'octet** à la base avec le cache (10 succès, 3 échecs = premier
+  chargement de chaque graine) et avec `viscache=0` ; base deux fois identique ; contrôle négatif détecté.
+- **Temps** (`tools/startup.mjs`, production, 6 + 6 + 6 chargements entrelacés, 780M, 0 / 18 sous contention GPU) : bake **337 [331-364] →
+  36 [35-37] ms** après le premier chargement ; bloc `regenerate` du démarrage 946 → 653 ms ; **`__ready` 2 282 [1 999-2 307] → 1 984
+  [1 914-2 400] ms** (−0,3 s) ; régénération vers une graine déjà vue 845 → 596-685 ms ; `viscache=0` : 2 240 ms, soit la base. Un échec de
+  cache coûte ≈ +36 ms une fois (clé ≈ 20 ms, stockage). Le gain prévu par le plan (−0,44 à −0,73 s) était mesuré sous contention.
+- `typecheck` 0, `npm run build` vert.
+
+### Pensée
+- Un cache d'un calcul GPU ne se justifie que si sa clé couvre **toutes** ses entrées, le code du calcul compris (sa source à l'exécution) et
+  le GPU ; il se prouve par l'égalité bake neuf = relu (`verify`) sur une matrice, et par des contrôles où la clé doit changer, et un où
+  elle ne doit pas (deux réglages qui donnent les mêmes entrées).
+- Avant d'écrire l'attente d'un test, relire ce que le système est censé faire : deux « échecs » de cette passe étaient mes attentes (cadre
+  16:9 partagé, `occ=0` = `occbehind=0`), pas le cache.
+
 ## À reprendre (par priorité)
 
 **-3. Performances GPU (Passe 6, plan validé par l'opérateur le 17/10 ; P0-P2 acceptés et fusionnés dans `main` le 17/10, la suite ouvre
@@ -3077,7 +3126,8 @@ Workers, octets et image identiques, peinture 1,80 → 0,55 s, `__ready` 3,64 �
 une piste par commit, chacune avec sa preuve : **P4 plafond de cadence fait (Passe 6c) : défaut `e60` choisi par l'opérateur le 17/10, accepté et fusionné dans `main`**
 (55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `?fps=off` sans plafond ; piste ouverte : pas adaptatif 3 → 4 vsyncs
 quand le GPU rate son créneau, vu sous contention en 1440p) ;
-P5 cache du bake ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
+**P5 cache du bake fait (Passe 6d, branche `perf-p5-bake-cache`, en attente de l'acceptation de l'opérateur)** : bake 337 → 36 ms relu,
+`__ready` 2,28 → 1,98 s, image et décisions de culling identiques (`viewport-proof` ligne à ligne) ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
 P8 (reflet 1/4), P9 (DOF demi-résolution). Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
@@ -3206,6 +3256,9 @@ Garder pour toute passe d'art : pont persistant, Aseprite relancé après lui, t
   garde). Une sonde de démarrage observe dès le premier repère, pas depuis `DOMContentLoaded`.
 - Une cadence se mesure dans une vraie fenêtre avec vsync (`tools/cadence.mjs`), une « surcharge » en watts (RAPL, SoC = boîtier − cœurs),
   pas en % d'occupation GPU. La vsync se sonde au repos ; les horodatages rAF de la boucle ne sont pas sur sa grille.
+- Un résultat calculé mis en cache se relit seulement pour les mêmes entrées exactes : la clé couvre tout ce qu'il lit (géométrie, poses,
+  réglages, code du calcul, GPU) ; une entrée douteuse est un échec de cache, jamais un culling. Toute nouvelle entrée du bake entre dans
+  `bakeKey`.
 
 - Une allocation GPU se dimensionne contre le minimum garanti (WebGL2 : 2 048) et se vérifie (complétude du framebuffer, erreurs GL) ; un bake
   qui conclut « rien n'est visible » est une erreur : le repli garde toutes les pièces et le signale (console, stats, panneau).
