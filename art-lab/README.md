@@ -11,7 +11,7 @@ reference sheets -> rig scripts -> Aseprite sources -> baked sheets (PNG + JSON)
 > `townswoman-x2-v1`, `older-merchant-x2-v1`, `courier-x2-v1`), all approved on 2026-10-17, none declared a Gold Master. The hero and the
 > cat are still generated; `?cast=generated` shows the old generated sprites. Everything else here (Character Lab, tools, sources,
 > reviews, lab and experimental exports) stays out of the game and of its build. Details: [`characters/README.md`](characters/README.md);
-> history: `JOURNAL.md` (Passes 4A-0A to 4A-quatervicies).
+> history: Passes 4A-0A to 4A-quatervicies, archived in `journal/` (index at the top of `JOURNAL.md`).
 >
 > **Toolchain (Pass 4A-0B, 2026-10-15): installed and validated end to end on this machine** — Aseprite 1.3.18.6, Aseprite AI Artist
 > 0.8.2 (Claude Code plugin, local scope, pinned to tag `v0.8.2`; Lua extension 0.8.2). The smoke test drew a synthetic dummy live in

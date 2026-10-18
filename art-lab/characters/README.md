@@ -1,6 +1,7 @@
 # Character Art Lab
 
-Contract for the character pipeline. Current state (2026-10-18; history in `JOURNAL.md`, Passes 4A-0A to 4A-quatervicies):
+Contract for the character pipeline. Current state (2026-10-18; history: Passes 4A-0A to 4A-quatervicies, archived in `journal/`,
+index at the top of `JOURNAL.md`):
 
 - **Toolchain** validated end to end (Pass 4A-0B); `npm run art:doctor` reports what is configured.
 - **Production cast** — `approved: true`, `runtimeUse: "production"`, approved by the operator on 2026-10-17, **none declared a Gold

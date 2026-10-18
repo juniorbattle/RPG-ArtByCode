@@ -3,17 +3,25 @@
 Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting) is generated from code at boot.
 
 ## Project journal (MANDATORY workflow)
-`JOURNAL.md` is the project's memory: what was done, what worked, what failed and why, open problems, lessons.
+`JOURNAL.md` is the project's memory: what was done, what worked, what failed and why, open problems, lessons. It holds the
+recent passes, "À reprendre" and "Principes à garder"; older passes are archived **verbatim** in `journal/` (operator decision,
+2026-10-18, journal Passe M3), and the index at the top of `JOURNAL.md` says which file holds which pass.
 - **Before starting any new conversation or task — and always before an analysis, audit, optimisation or
-  investigation — read `JOURNAL.md` first** (at least the latest pass, "À reprendre" and "Principes à garder").
-  Do not redo an approach it records as failed; start from its "À reprendre" list and known issues
-  (reference images live in `screenshots/calibration/`, see `known-issues/`).
+  investigation — read `JOURNAL.md` first, whole.** Open a `journal/` file only for the pass a task or a reference
+  ("journal pass 6k", "JOURNAL, Passe 4A-0B") points to, through the index, with targeted reads. Do not redo an approach
+  the journal records as failed; start from its "À reprendre" list and known issues (reference images live in
+  `screenshots/calibration/`, see `known-issues/`).
 - **When an analysis or task ends, update `JOURNAL.md` before you finish**, whether it succeeded or not. Every
   discovered process or finding gets an entry: what was tried, the result **[OK] validated / [KO] failed /
   [?] unresolved**, the measurements or evidence, and the lesson ("Pensée"). Failures and dead ends are as
   valuable as successes: record why they failed so nobody repeats them.
-- Add a new "Passe N" section at the bottom (newest last); update "À reprendre" (remove what is done, add what
-  was discovered) and "Principes à garder". Write in French, factual, no embellished numbers.
+- Add a new "Passe N" section after the last pass, before "À reprendre" (newest last); update "À reprendre" (remove what is
+  done, add what was discovered) and "Principes à garder". Write in French, factual, no embellished numbers.
+- **Archiving**: when the passes kept in `JOURNAL.md` exceed about 60 KB, move the oldest closed passes (operator decision
+  recorded, branch merged) as one contiguous block, in their original order and byte for byte, into the next
+  `journal/NN-passes-<first>-<last>.md` (a short header, a `---` line, then the unchanged bytes), add its row to the index, and
+  prove the move (the archived bodies concatenated equal the removed bytes; every section in exactly one file; CRLF kept).
+  Never edit an archived pass: a correction or a complement goes in a new pass of `JOURNAL.md`.
 - Keep a few key images for unresolved issues in `screenshots/calibration/known-issues/` (or a sibling folder per
   pass); delete throw-away captures.
 
