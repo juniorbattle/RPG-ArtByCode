@@ -3390,6 +3390,11 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
 - Bout en bout (`tools/cadence.mjs`, serveur dev, vue B, défaut `a60`, 2 tours) : la puissance revient, page vide boîtier 7,0-12,9 W / SoC
   2,5-3,0 W, jeu 57,9-58,7 W / **SoC 37,3-39,0 W** à 55,0 img/s réguliers (passes 6c-6h, même vue : 35-37 W), aucune ligne signalée illisible.
 
+### Décision opérateur (2026-10-18) — [OK] réparation acceptée
+- Mot pour mot : « J'accepte la réparation du témoin d'énergie telle quelle : fusionne tools-energy-witness dans main, pousse main et supprime
+  la branche. »
+- Branche `tools-energy-witness` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée (locale et distante).
+
 ### Pensée
 - Un nombre écrit par un script pour un autre programme s'écrit dans la culture invariante, et en entier quand c'est un compteur : la
   culture de la machine et la taille du nombre ne doivent pas changer son format. Et un lecteur qui reçoit l'illisible le dit.
@@ -3412,7 +3417,7 @@ défaut le 18/10, `?res=` reste un réglage manuel ; accepté et fusionné dans 
 `e60`, sprites plus doux), **P7 fait (Passe 6f) : l'opérateur garde le MSAA 4× le 18/10, `?msaa=` reste un réglage manuel ; accepté et
 fusionné dans `main`** (2× : GPU −13 %, SoC −12 %, arêtes à peine moins lisses ; résidu `viewport-proof` 9 → 10 écarts non expliqués),
 **P8 fait (Passe 6g) : l'opérateur garde le reflet à 1/2 le 18/10, `?refl=` reste un réglage manuel ; accepté et fusionné dans `main`**
-(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), P9 (DOF demi-résolution). **Témoin d'énergie réparé (Passe 6i, branche `tools-energy-witness`)** : muet depuis que le compteur du boîtier a passé
+(1/4 : −0,4 à −0,6 ms, puissance inchangée dans la mesure, reflets un peu plus doux), P9 (DOF demi-résolution). **Témoin d'énergie réparé (Passe 6i), accepté et fusionné dans `main`** : muet depuis que le compteur du boîtier a passé
 1e15 pWh (écrit « 1,011E+15 » en culture fr-FR), désormais en entiers invariants. Non mesuré : cadence dans une vraie fenêtre (vsync 165 Hz), autres navigateurs / GPU, cache
 de shaders d'un profil persistant, 780M sans contention (à refaire dans une fenêtre calme, témoin à l'appui).
 
