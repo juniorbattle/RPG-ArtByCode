@@ -215,6 +215,46 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un test unitaire se prouve comme une preuve d'image : par des fautes injectées qu'il doit attraper ; un oracle qui repasse par le code testé
   (aller-retour) ou des données trop régulières laissent passer des fautes réelles.
 
+## Passe Q1b — Tests : `npm test` sans observateur de fichiers (2026-10-18)
+
+### Demande (2026-10-18)
+- Constat fait après la fusion de la Passe Q1, dans la copie de travail de l'opérateur : `npm test` réussit (24 / 24) mais prend 10-12 s, puis
+  22 s, au lieu des 1,5-1,8 s mesurés dans un clone propre (ce que la Passe Q1 et `AGENTS.md` annonçaient). Réponse de l'opérateur, mot pour
+  mot : « Oui : ouvre une branche depuis main, ajoute configFile: false et server.watch: null dans tests/load.mjs, vérifie dans mon dossier,
+  journalise, pousse et relève le run GitHub. »
+- Branche `tests-load-no-watch` ouverte depuis `main` (`e3dc5cb`) dans la copie de l'opérateur, après `git fetch --prune` et `git branch -a`
+  (aucune autre branche).
+
+### Cause — [OK] l'observateur de fichiers de Vite
+- Par fichier de test : `baked-cast` 9,0 s et `png-decode` 8,7 s dans la copie de l'opérateur, contre 1,7 s et 1,3 s dans un clone ; les
+  tests eux-mêmes prennent quelques millisecondes à 160 ms.
+- Profil CPU de `png-decode` : 11,2 s sur 15,3 s dans `fs.watch`, appelé par chokidar (embarqué dans Vite, `_handleFile`), contre 0,45 s
+  dans un clone. Le serveur Vite des tests surveille sa racine, dont les ≈ 18 000 fichiers ignorés de `art-lab/characters/scratch/` (absents
+  d'un clone : `git ls-files art-lab` en compte 311). Un `fs.watch` coûte moins d'1 ms : c'est leur nombre qui pèse, et le parcours bloque
+  la boucle d'événements.
+- **[KO] `server.watch: null` seul** : 19,6-22,2 s, sans différence. Vite fusionne la configuration en ligne avec `vite.config.ts` par
+  `mergeConfig`, qui ignore les valeurs `null` : le watcher reste chokidar. **[OK] `configFile: false` + `server.watch: null`** : `vite.config.ts`
+  ne règle que le port, l'hôte et la cible du build, rien que le chargeur SSR utilise.
+- Hypothèses écartées en chemin : fins de ligne CRLF de la copie de travail (transformation oxc de `SheetMeta.ts` en 0,1-2 ms, CRLF ou LF),
+  lectures lentes dans `Documents` (38 fichiers lus en 10-23 ms dans les deux copies). **[KO] méthode** : une première sonde qui mesurait
+  démarrage + chargement d'un module n'a rien vu (même temps avec ou sans `watch: null`) : elle s'arrêtait avant la fin du parcours de
+  chokidar ; seul le profil d'un vrai fichier de test l'a montré.
+
+### Correctif et vérification — [OK]
+- `tests/load.mjs` : `configFile: false`, `server.watch: null`, avec la raison en commentaire. `AGENTS.md` (« Commands », `npm test`) le dit.
+- Dans la copie de l'opérateur, même session : avant 22,0 / 22,9 s ; après 2,2 / 2,3 / 2,4 s (`npm test` compris), 24 / 24 ; `node --test` dit
+  1,19 s ; profil de `png-decode` : 15,3 → 0,69 s, `fs.watch` disparu du haut du profil. Aucun fichier de `src/` ni `vite.config.ts` touché.
+
+### Résultat sur GitHub
+- [?] à relever après le push.
+
+### Pensée
+- Un temps mesuré dans un clone propre ne vaut pas pour le dossier de travail : les fichiers ignorés (brouillons, caches) y pèsent. Une durée
+  annoncée se mesure aussi là où la commande sera lancée.
+- Une option `null` passée en ligne à Vite se perd quand un fichier de configuration est chargé (`mergeConfig` ignore `null`) : la désactiver
+  demande `configFile: false`, ou une valeur non nulle.
+- Une sonde de durée qui s'arrête avant la fin du travail en arrière-plan ne le voit pas : profiler le vrai processus, de bout en bout.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -484,4 +524,5 @@ sprites.
   passe 6k).
 - La CI ne lance que ce qui se prouve sans GPU, sans navigateur ni Aseprite (types, bundle, provenance, tests de la logique pure) ; les
   preuves d'image, de cadence et d'art restent locales. Un contrôle s'essaie d'abord sur un clone propre (cache npm vide, fins de ligne de
-  l'index, casse des chemins), pas dans le dossier de travail (Passe Q1).
+  l'index, casse des chemins), pas dans le dossier de travail (Passe Q1) ; une durée annoncée se mesure aussi dans le dossier de travail,
+  où les fichiers ignorés pèsent (Passe Q1b : l'observateur de Vite, 22 s au lieu de 2).
