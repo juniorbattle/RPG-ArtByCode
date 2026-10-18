@@ -7,6 +7,20 @@ export const OCC_MAX = 16;
  *  every light, so the grid never drops one (it only skips the ones that cannot reach the cell) */
 export const LIGHT_GRID = { x0: -64, z0: -24, cw: 4, cd: 6, nx: 40, nz: 8, per: MAX_LIGHTS, nCells: 40 * 8 };
 
+/** Blending for anything drawn after the opaque pass (particles, decals, contact shadows): the colour blends as three's own
+ *  NormalBlending / AdditiveBlending (non-premultiplied, or premultiplied: the source colour taken as it is), the destination alpha is
+ *  kept as it is. The scene alpha is the DOF / in-scatter
+ *  protection mask written by the opaque pass (characters: 1 - protection, everything else 1); three's own modes add to it (an additive
+ *  particle +1 per fragment: a lantern halo doubled the DOF blur and raised the in-scatter by 55 % inside its disc, and erased the
+ *  protection of a character it covered). */
+export function maskSafeBlending(mode: 'normal' | 'additive', premultiplied = false): Partial<THREE.ShaderMaterialParameters> {
+  return {
+    blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendEquationAlpha: THREE.AddEquation,
+    blendSrc: premultiplied ? THREE.OneFactor : THREE.SrcAlphaFactor, blendDst: mode === 'additive' ? THREE.OneFactor : THREE.OneMinusSrcAlphaFactor,
+    blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor,
+  };
+}
+
 /** One uniform bag shared *by reference* across every material: the lighting rig, fog, moon shadow and
  *  planar reflection write here once per frame and every surface shader sees it. */
 export const U = {

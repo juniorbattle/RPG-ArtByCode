@@ -84,6 +84,12 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   junction), serve it with the repo's `node_modules/vite/bin/vite.js <folder> --config <its config> --port <518x> --strictPort` (a
   `.claude/launch.json` entry); `autocrlf` on converts the archive's line endings (`dist/index.html` then differs by CR only)
 - `node tools/diff.mjs a.png b.png [out.png] [thr]` — pixel diff (use `static=1` shots: NPCs/smoke are not deterministic)
+- `node tools/detshots.mjs <outDir> "<query>" <steps> "name|js" ...` — deterministic captures WITH characters: seeded `Math.random`, the game
+  loop never started (`App.start` a no-op), N fixed 1/60 s steps, one render + shot per variant on the same frame (two loads: 0 px; journal
+  Passes M5 / S1); `CLIP=x,y,w,h` crops
+- `node tools/sprite-halo.mjs <out.json> "<query>" [route] [secs] [every] [ring]` — the characters' halo in motion (same harness): per sampled
+  frame and character, how much the post chain makes a character change the pixels 1..ring px around its silhouette, and its contrast kept;
+  `POST=air|bloom|dof` attributes it to one effect (journal Passe S1)
 - `node tools/zoom.mjs in.png out.png x y w h [scale]` — nearest-neighbour crop for pixel-level sprite review
 - `node tools/walk.mjs <prefix> "<query>" "w,d" <secs>` — holds keys, logs camera blend steps (and occlusion fades:
   reversals / jumps), writes a contact sheet
@@ -273,7 +279,10 @@ banner, the boat's rig (mast / yard / sail) and the 7 quay lamps. Never tag smal
   `lib.painterFallbacks`). Painters must stay pure (no DOM, no `Math.random`) so both paths paint the same bytes, and the THREE textures are
   created in their fixed order afterwards (texture ids, uuids).
 - Sprites: nearest texel sampling, anchor snapped to the render-target pixel grid, scene alpha = DOF protection
-  mask (1 - protection) read by DOF and in-scatter; a 55% overlay re-draws characters after transparent effects.
+  mask (1 - protection), written by the opaque pass only: everything drawn after it (particles, decals, contact shadows, the bloom's
+  composite) blends with `maskSafeBlending` (`SceneUniforms.ts`), which keeps the destination alpha. The DOF carries the mask on in its
+  alpha and the grade applies the in-scatter protection at full resolution (no second pass of the characters: the old 55 % overlay
+  is gone, journal Passe S1).
 
 Detail tiers: anything that can sit in the foreground / midground of that camera (the whole north frontage up to the
 bridge, plus the two houses just past it) is a generated building at full detail. Simplified modules

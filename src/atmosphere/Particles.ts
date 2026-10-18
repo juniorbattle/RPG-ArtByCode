@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { U } from './SceneUniforms';
+import { U, maskSafeBlending } from './SceneUniforms';
 import { COMMON_GLSL } from '../materials/ShaderChunks';
 import type { MaterialLibrary } from '../materials/MaterialLibrary';
 import type { LightRig } from './LightRig';
@@ -70,7 +70,7 @@ class PointCloud {
     this.mat = new THREE.ShaderMaterial({
       uniforms: { tMap: { value: tex }, uScale: { value: 1000 }, uAdd: { value: additive ? 1 : 0 } },
       vertexShader: PVERT, fragmentShader: PFRAG, transparent: true, depthWrite: false, depthTest: true,
-      blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+      ...maskSafeBlending(additive ? 'additive' : 'normal'),
     });
     this.points = new THREE.Points(g, this.mat);
     this.points.frustumCulled = false;
@@ -120,7 +120,7 @@ export class ParticleSystem {
     this.dustMat = new THREE.ShaderMaterial({
       uniforms: { ...U, uScale: { value: 1000 }, tMap: { value: lib.dot } },
       vertexShader: DVERT, fragmentShader: `uniform sampler2D tMap; varying vec4 vColor; void main(){ float a = texture2D(tMap, gl_PointCoord).a * vColor.a; if (a < 0.004) discard; gl_FragColor = vec4(vColor.rgb * a, 1.0); }`,
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      transparent: true, depthWrite: false, ...maskSafeBlending('additive'),
     });
     this.dust = new THREE.Points(g, this.dustMat);
     this.dust.frustumCulled = false; this.dust.layers.set(LAYER_NOREFLECT); this.dust.renderOrder = 6;

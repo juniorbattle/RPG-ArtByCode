@@ -374,6 +374,113 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une capture avec personnages n'est déterministe que si la boucle du jeu ne tourne jamais hors du harnais.
 - Une autorisation de suppression vaut pour la liste et la taille annoncées : un dossier oublié dans le décompte se redemande.
 
+## Passe S1 — `SpriteRenderer` : masque de protection intact, superposition 55 % retirée, in-scatter des personnages à pleine résolution (2026-10-18)
+
+### Demande (2026-10-18)
+- Premier point des priorités de l'opérateur (citées mot pour mot en Passe M5) : « corriger la superposition des sprites dans
+  SpriteRenderer ». « À reprendre » §3 : remplacer la superposition 55 % par une vraie séparation (passe dédiée ou masque propre) pour
+  supprimer l'auréole ; revoir le pas de silhouette / contour ; valider sur des PNJ en mouvement et sur les graines 7719 / 30417.
+- Branche `sprite-overlay-separation` ouverte depuis `main` (`07bc42d`).
+
+### Complément de la Passe M5
+- M5 fusionnée en avance rapide (`07bc42d`), runs GitHub `39169021336` (branche) et `39169036997` (`main`) : success.
+- Dossier de la séance perf `c6b9b403…` (3,8 Go, oublié dans le décompte présenté) : redemandé ; réponse de l'opérateur, mot pour mot :
+  « Oui, supprime-le ». Avant : aucun point de réparation, ports 5188 / 5190 sans écoute ; supprimé, entrées `pv-base` / `pv-work` retirées
+  de `.claude/launch.json` ; `node_modules` du dépôt : 4 988 fichiers après.
+
+### Diagnostic, avant tout changement — [OK]
+- Captures déterministes (`tools/detshots.mjs`), un effet coupé à la fois sur la même image, en C, B et D. La superposition (seconde passe
+  des personnages à 55 % après les effets transparents, test de profondeur `LessEqual`) faisait deux choses : réécrire l'alpha de scène
+  (masque de protection du DOF et de l'in-scatter) et ramener à 45 % les effets transparents devant un personnage. Sans elle, le héros sous
+  le halo d'une lanterne devenait flou (B) et le forgeron fantomatique (C).
+- Cause de l'effacement : le mélange additif de three (non prémultiplié : `SRC_ALPHA, ONE` en couleur, `ONE, ONE` en alpha) ajoute 1 à
+  l'alpha par fragment de particule ; le mélange normal (fumée, décalques, ombres de contact) l'augmente aussi. Sur un personnage : protection
+  perdue. Sur le décor : alpha 2 dans chaque disque de halo de lanterne, donc flou du DOF × 2 et in-scatter × 1,55 dans le disque, avec un bord
+  net (le `discard` du disque). La superposition remettait le personnage à son alpha mais pas le décor autour : c'était l'auréole (une bulle
+  plus floue et plus brumeuse découpée autour du personnage). Le principe « le DOF et le masque de protection sont des contrats » était violé
+  depuis la Passe 2.
+- Délavage : d'abord l'in-scatter (C : sans lui, contours sombres et rampes du forgeron rendus), protégé à 45 % sur les personnages par un
+  masque lu à demi-résolution.
+
+### Fait
+1. `maskSafeBlending` (`SceneUniforms.ts`) : ce qui est dessiné après la passe opaque mélange sa couleur comme avant (normal / additif non
+   prémultiplié, ou additif prémultiplié) et garde l'alpha de destination (`ZERO, ONE`) : particules (fumée, lueurs, halos, poussière),
+   décalques, ombres de contact, composition du bloom. Le masque n'est plus écrit que par la passe opaque.
+2. Superposition 55 % retirée (maillage, matériau, `overlayAmount`) : un appel de dessin de moins. Un effet devant un personnage s'y applique
+   entièrement, comme sur le reste de l'image.
+3. In-scatter : le DOF transmet le masque dans son alpha ; le grade applique la part des personnages à pleine résolution (`keep = mix(0,45,
+   1, a)`, valeur inchangée) ; la passe d'in-scatter (demi-résolution) range dans son alpha la classe du pixel dont elle a lu la profondeur
+   (personnage ou décor : parmi les 2 × 2 pixels autour du texel, celui qui porte exactement cette profondeur) ; le grade suréchantillonne
+   depuis les texels de la classe du pixel, et prend le bilinéaire matériel quand les quatre en sont (partout loin des personnages).
+4. Outils : `tools/detshots.mjs` (le harnais déterministe de la Passe M5 : `App.start` neutralisé, pas fixes, variantes sur la même image),
+   `tools/sprite-halo.mjs` (l'auréole mesurée en mouvement, `POST=air|bloom|dof` pour l'attribuer). `AGENTS.md` : « Rendering notes » et
+   « Commands ».
+
+### Preuves
+- Base `main` figée (`07bc42d`, servie sur :5187, entrée `base-s0` de `.claude/launch.json`) : 0 px contre le serveur de dev de `main` sur la
+  même capture de C avec personnages.
+- Monde statique (`static=1` : A, B, C, D, forge sabotée, graines 7719 et 30417 en A) contre `main` : 1 à 6 pixels à 1 niveau sur 255, aucun
+  au-dessus. Attribué par deux sondes : sans le `keep` du grade, mêmes pixels ; avec l'ancien `keep` remis dans la passe d'in-scatter, 0 px.
+  C'est l'ancien `mix(0,45, 1, 1)`, qui ne vaut pas exactement 1 en flottant ; le nouveau code ne multiplie plus le décor.
+- **[KO → corrigé]** première version : le bloom de three compose en prémultiplié (`ONE, ONE`), pas en `SRC_ALPHA, ONE` ; le halo de la lune et
+  des lampes lointaines avait disparu (A : 3,3 % des pixels, jusqu'à 113 niveaux). Mode prémultiplié ajouté à `maskSafeBlending`.
+- **[KO → corrigé]** lire profondeur et classe par `texelFetch(floor(uv × taille))` ne tombe pas toujours sur le pixel que choisit le filtrage
+  au plus proche : monde statique changé (4-6 % des pixels, jusqu'à 98 niveaux). La profondeur se lit comme avant, la classe vient du pixel qui
+  porte exactement cette profondeur.
+- En mouvement (`sprite-halo`, 6 s à 1/60 s, mesure toutes les 10 images, PNJ qui marchent selon leurs comportements, héros piloté par les
+  vraies touches en B, C et D), « avant » = `main` figé, « après » = cette branche, mêmes images. Anneau = |écart de luminance| entre
+  personnages présents et absents, post-traitement actif, sur 1 à 6 px autour de la silhouette (tête à hanches) ; contraste = écart-type de la
+  luminance du sprite, post-traitement actif / coupé :
+
+| Cadrage / graine | échantillons | anneau médian (niveaux) | part de l'anneau > 4 niveaux (médiane) | anneau p90 | contraste médian |
+|---|---|---|---|---|---|
+| A / 1842 | 386 | 1,36 → 0,47 | 12,0 → 2,2 % | 2,68 → 1,03 | 0,773 → 0,796 |
+| B / 1842 | 376 | 2,28 → 1,3 | 15,2 → 4,1 % | 8,14 → 7,53 | 0,924 → 0,927 |
+| C / 1842 | 288 | 1,21 → 0,57 | 8,5 → 2,8 % | 10,65 → 10,75 | 0,979 → 0,978 |
+| D / 1842 | 165 | 0,35 → 0,11 | 2,0 → 0,4 % | 13,92 → 13,95 | 0,998 → 0,998 |
+| A / 7719 | 396 | 1,33 → 0,4 | 10,0 → 2,1 % | 2,23 → 0,99 | 0,766 → 0,798 |
+| B / 7719 | 386 | 1,27 → 0,93 | 9,6 → 4,6 % | 6,56 → 6,06 | 0,952 → 0,954 |
+| A / 30417 | 366 | 1,1 → 0,36 | 10,0 → 1,7 % | 2,28 → 0,62 | 0,791 → 0,8 |
+| B / 30417 | 386 | 2,04 → 0,84 | 11,8 → 5,2 % | 7,55 → 7,04 | 0,936 → 0,943 |
+
+- L'anneau qui reste est presque tout au premier pixel hors silhouette (héros en B, in-scatter seul : 18,4 → 8,2 niveaux à 1 px, 0,63 → 0,02 à
+  2 px) : pixels de bord multi-échantillonnés, en partie couverts par le personnage. La traîne (p90) tient au chat (premier plan, protégé à
+  80 % : son propre flou de profondeur, anneau ≈ 13-16 niveaux avant comme après) et à la marchande (grande bulle « … » protégée, lanterne
+  devant son visage). Attribution (B, 1842) : DOF 0,26 → 0,15, bloom 0,04 → 0,04, in-scatter 2,06 → 0,74 (avant le suréchantillonnage par
+  classe) ; le forgeron 2,43 → 0,47.
+- Performances (`tools/perf.mjs`, Radeon 780M, 3 tours entrelacés, témoin de contention propre 3 / 3) : B 1080p 9,69 → 9,62 ms, C 1080p
+  9,66 → 9,65 ms, B 2560 × 1267 14,72 → 14,56 ms (médianes) ; grade 0,28 / 0,43 ms et in-scatter 0,45 / 0,70 ms inchangés ; 114 → 113 appels
+  de dessin. Neutre, dans le bruit.
+- Références `screenshots/calibration/cam{A,B,C,D}-*.png` refaites (même protocole que la Passe M5) ; images clés de la passe dans
+  `screenshots/calibration/sprite-s1/` ; `tools/detshots.mjs` reproduit au pixel près (0 px) la capture du harnais de la Passe M5.
+- `npm run typecheck`, `npm test` (24 / 24), `npm run build`, `npm run art:validate` (14 manifestes, 0 erreur).
+
+### Changement visible (captures montrées à l'opérateur)
+- Les disques de halo de lanterne ne floutent et n'embrument plus le décor plus que le reste de l'image : la bulle autour des personnages
+  disparaît.
+- Un halo placé devant un personnage s'applique entièrement (il était ramené à 45 %) : le héros, en B, sous la lanterne qui est devant lui, est
+  plus clair au visage.
+- Le forgeron reste délavé par l'in-scatter de la forge (part des personnages inchangée, 45 %) : `known-issues/forge-smith-inscatter-C.png`.
+
+### Pas de silhouette / contour — [?] proposition, non appliquée
+- Le traitement de bord (`uEdge` : bord côté lumière éclairci vers la lumière clé, bord opposé assombri, liseré de lune au sommet) a été écrit
+  pour les sprites générés ×1. Sur les feuilles cuites ×2, qui portent leur propre contour sombre, le bord côté lune devient une frange bleutée
+  pointillée (voyageur en B, côté gauche des cheveux et de l'écharpe) ; sur le héros ×1, il se voit à peine. Pistes : pas d'éclaircissement du
+  bord sur les feuilles cuites (contour d'auteur gardé), ou un pas de bord proportionnel à la densité. Décision d'image : à l'opérateur.
+
+### Restes [?]
+- Lisibilité du forgeron dans la forge : la part des personnages dans l'in-scatter (45 %) est un réglage d'image ; à proposer avec le point 2
+  (cohérence visuelle des personnages), jamais par l'éclairage global.
+- Anneau résiduel du chat au premier plan (son flou de profondeur) et des pixels de bord.
+
+### Pensée
+- Un canal qui sert de contrat (l'alpha = masque de protection) se protège à l'écriture, par les facteurs de mélange de chaque passe, pas en le
+  réparant après coup : la réparation (la superposition) cachait la corruption sur les personnages et la laissait autour d'eux.
+- Un mode de mélange de bibliothèque se lit dans son code (prémultiplié ou non) avant d'être réécrit.
+- Un échantillonnage « au plus proche » du matériel ne se rejoue pas par une formule : on retrouve le texel par sa valeur.
+- Une auréole se mesure : ce que le post-traitement fait changer autour d'une silhouette, personnage présent / absent, image par image et en
+  mouvement, puis par effet.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -416,9 +523,10 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   dans le reveal ; chercher un cas où la passe « derrière » restaure vraiment des pièces (sinon envisager de la couper pour gagner ≈ 90 ms
   de bake) ; rejouer l'inventaire à chaque changement de zones de caméra ou de composition (bateau, lampadaires).
 
-**3. `SpriteRenderer`** (prévu, premier point des priorités du 18/10) : remplacer la superposition 55 % par une vraie séparation (passe dédiée
-ou masque propre) pour supprimer l'auréole ; revoir le pas de silhouette / contour ; valider sur des PNJ en mouvement (pas seulement des
-captures figées) et sur les graines 7719 / 30417. État actuel avec la distribution cuite : `known-issues/sprite-overlay-forge-C.png` (Passe M5).
+**3. `SpriteRenderer`** (Passe S1 : superposition retirée, masque de protection propre, auréole mesurée en mouvement) — restent des décisions
+d'image : le pas de silhouette / contour sur les feuilles cuites ×2 (frange bleutée sur le contour d'auteur ; `sprite-s1/rim-proposal-x1-x2.png`) ;
+la lisibilité du forgeron dans l'in-scatter de la forge (part des personnages 45 %, `known-issues/forge-smith-inscatter-C.png`) ; un halo placé
+devant un personnage s'applique désormais entièrement (B : héros sous la lanterne, plus clair au visage).
 
 **4. Zones de caméra** — validées par simulation (Passe 4B, `tools/camsim.mjs`), pas par de vrais joueurs : (a) D place toujours le joueur
 **à droite** du centre (NDC +0,35 → +0,68), contrepartie de la continuité avec C ; (b) le long du bord de l'eau (z > 2,4) on passe **B → D**
@@ -456,8 +564,7 @@ sprites.
   l'opérateur) ; le rejet « images requises manquantes » de `loadProductionCast` n'est pas testé (il faudrait lui passer une liste) ;
   d'autres fonctions pures sans test (`parseFrameCap`, `lerpState`, `needMask`, `bakeKey` du cache du bake) ; les tests ne sont pas typés
   (`.mjs`, hors `tsconfig`).
-- **Ménage local (Passe M5)** : dossier de la séance perf `c6b9b403…` (3,8 Go, entrées `pv-base` / `pv-work`) à faire confirmer ; code mort
-  mineur laissé (`void x;` qui taisent des paramètres, types exportés sans usage).
+- **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** (Passe M4) : le critère « operator decision recorded, branch merged » d'`AGENTS.md` date d'avant la fusion
   sans demande ; lire « branche fusionnée » suffit, à confirmer par l'opérateur.
 - **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — à retirer proprement une fois qu'on
@@ -514,7 +621,10 @@ sprites.
 - Un `discard` ne se paie que là où il sert : variante de matériau liée seulement pendant l'effet, sinon le matériau de slot d'origine ;
   « au repos » doit coûter exactement la passe précédente (mêmes appels de dessin, image pixel-identique).
 - Ne taguer que ce que l'inventaire mesure (rayons caméra → joueur contre les vrais triangles), jamais ce que l'intuition suggère.
-- Le DOF et le masque de protection (alpha de scène) sont des contrats : un effet qui écrit de l'alpha ne doit pas toucher ce canal.
+- Le DOF et le masque de protection (alpha de scène) sont des contrats : un effet qui écrit de l'alpha ne doit pas toucher ce canal. Tout ce
+  qui est dessiné après la passe opaque garde l'alpha de destination (`maskSafeBlending`) : un canal-contrat se protège à l'écriture, pas en le
+  réparant après coup ; un mode de mélange de bibliothèque se lit dans son code (prémultiplié ou non) avant d'être réécrit (Passe S1).
+- Un échantillonnage « au plus proche » du matériel ne se rejoue pas par une formule : on retrouve le texel par sa valeur (Passe S1).
 - Un nouveau cadrage se cherche **empiriquement** (`tools/camsearch.mjs`) et se valide en **marchant** (`tools/camsim.mjs`) : la vitesse du
   joueur à l'écran pendant la transition ne doit jamais changer de signe par rapport à sa marche ; une transition interpolée entre deux
   cadrages hérite de l'écart de position écran des deux, d'où l'ancrage (`blendPose`) + un cadrage cible calé sur la sortie du cadrage
@@ -536,6 +646,8 @@ sprites.
 - Pendant une série de mesures ou de captures sur un serveur de développement, ne rien modifier ni reconstruire de ce qu'il sert (`src/`
   compris : rechargement HMR) ; recadrer une preuve par projection, jamais par supposition ; un masquage d'acteur se vérifie (base masquée
   contre base non masquée) : avec la distribution cuite, un acteur porte l'id de sa planche.
+- Une auréole se mesure : ce que le post-traitement fait changer autour d'une silhouette, personnage présent / absent, image par image en
+  mouvement, puis effet par effet (`tools/sprite-halo.mjs`, Passe S1).
 - Une échelle écran se dérive du code caméra du jeu à la position réelle du joueur (`evalAnchor` + `applyPose`), jamais de la distance de
   pivot d'un cadrage.
 - Ajouter des sprites ne doit rien changer aux autres : une texture qui ne grandit jamais pour les sprites validés, et pour les nouveaux un

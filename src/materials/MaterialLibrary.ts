@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { U } from '../atmosphere/SceneUniforms';
+import { U, maskSafeBlending } from '../atmosphere/SceneUniforms';
 import { SURFACE_VERT, SURFACE_FRAG } from './ShaderChunks';
 import { GROUND_VERT, GROUND_FRAG, WATER_FRAG, DECAL_FRAG } from './GroundShaders';
 import type { Slot } from '../core/MeshBuilder';
@@ -163,6 +163,7 @@ export class MaterialLibrary {
     this.slot.decal = new THREE.ShaderMaterial({
       uniforms: { ...U, tDecal: { value: tex.decal.albedo } },
       vertexShader: SURFACE_VERT, fragmentShader: DECAL_FRAG, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
+      ...maskSafeBlending('normal'),
     });
     decal.dispose();
     progress('ready', 1);

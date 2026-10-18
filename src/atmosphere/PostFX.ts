@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass.js';
-import { U, MAX_LIGHTS } from './SceneUniforms';
+import { U, MAX_LIGHTS, maskSafeBlending } from './SceneUniforms';
 import type { GpuTimer } from '../debug/GpuTimer';
 
 export interface PostParams {
@@ -57,7 +57,8 @@ void main(){
   float z0 = viewZ(d0);
   float c0 = coc(vUv, z0) * base.a;
   float rad = c0 * uMaxBlur;
-  if (rad < 0.35) { gl_FragColor = vec4(base.rgb, 1.0); return; }
+  // the mask goes on (alpha) for the grade's in-scatter protection, sharp at full resolution
+  if (rad < 0.35) { gl_FragColor = base; return; }
   vec3 acc = base.rgb; float wsum = 1.0;
   const int N = 26;
   for (int i = 0; i < N; i++) {
@@ -78,12 +79,16 @@ void main(){
     float w = reach * behind * (1.0 + smoothstep(1.2, 5.0, lum) * 1.6);
     acc += col * w; wsum += w;
   }
-  gl_FragColor = vec4(acc / wsum, 1.0);
+  gl_FragColor = vec4(acc / wsum, base.a);
 }
 `;
 
 /** Closed-form single scattering of point lights along each view ray, clipped at the depth buffer:
- *  lantern glows sit *in* the haze and are occluded by whatever stands in front of them. Half resolution. */
+ *  lantern glows sit *in* the haze and are occluded by whatever stands in front of them. Half resolution: a texel stands for ONE full
+ *  resolution pixel (the one nearest filtering picked before), whose depth it integrates to and whose class it stores in alpha (0 = a
+ *  character: protection mask < 1, 1 = the set). The grade upsamples from the texels of the pixel's own class and applies the characters'
+ *  share of the haze at full resolution: read here or interpolated across a silhouette, the half-resolution mask and depth smeared a band
+ *  around every character (journal Passe S1). */
 const AIR_FRAG = /* glsl */ `
 precision highp float;
 #define MAX_LIGHTS ${MAX_LIGHTS}
@@ -98,9 +103,15 @@ uniform int uLightCount;
 uniform float uScatter;
 varying vec2 vUv;
 void main(){
-  // characters (scene alpha < 1, see the DOF) keep part of their contrast inside a hot haze such as the forge's
-  float keep = mix(0.45, 1.0, texture2D(tColor, vUv).a);
   float d = texture2D(tDepth, vUv).x;
+  // the class of the pixel that depth came from: of the 2 x 2 pixels around this texel's centre, the one holding exactly that depth
+  // (texelFetch at floor(uv * size) is not always the pixel nearest filtering picks: the set's depth, so its image, would change)
+  ivec2 b = ivec2(floor(vUv * vec2(textureSize(tDepth, 0)) - 0.5));
+  float cls = 1.0;
+  for (int k = 0; k < 4; k++) {
+    ivec2 q = b + ivec2(k & 1, k >> 1);
+    if (texelFetch(tDepth, q, 0).x == d) { cls = texelFetch(tColor, q, 0).a < 0.999 ? 0.0 : 1.0; break; }
+  }
   vec4 vp = uInvProj * vec4(vUv * 2.0 - 1.0, d * 2.0 - 1.0, 1.0);
   vp /= vp.w;
   vec3 wp = (uCamWorld * vec4(vp.xyz, 1.0)).xyz;
@@ -120,7 +131,7 @@ void main(){
     float I = (atan((L - t0) / hh) - atan(-t0 / hh)) / hh;
     sum += uLightCol[i].rgb * I * exp(-h2 / (r2 * 0.3));
   }
-  gl_FragColor = vec4(sum * uScatter * keep, 1.0);
+  gl_FragColor = vec4(sum * uScatter, cls);
 }
 `;
 
@@ -128,6 +139,7 @@ const GRADE_FRAG = /* glsl */ `
 precision highp float;
 uniform sampler2D tColor;
 uniform sampler2D tAir;
+uniform vec2 uAirSize;
 uniform float uAir;
 uniform float uExposure, uVignette, uGrain, uSat, uContrast, uTime, uPalette;
 uniform vec3 uShadowTint, uHighTint;
@@ -135,8 +147,27 @@ varying vec2 vUv;
 vec3 aces(vec3 x){ const float a = 2.51, b = 0.03, c = 2.43, d = 0.59, e = 0.14; return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0); }
 float h21(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 vec3 toSRGB(vec3 c){ return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
+// the in-scatter at this pixel from the half-resolution texels of its own class (alpha: 0 = character, 1 = set); the hardware bilinear
+// when all four texels are of that class (always, away from characters: the set's image is the plain bilinear upsample)
+vec3 airAt(vec2 uv, bool character) {
+  vec4 h = texture2D(tAir, uv);
+  if (character ? h.a < 0.001 : h.a > 0.999) return h.rgb;
+  vec2 t = uv * uAirSize - 0.5, f = fract(t);
+  ivec2 i0 = ivec2(floor(t)), hi = ivec2(uAirSize) - 1;
+  vec3 acc = vec3(0.0); float ws = 0.0;
+  for (int k = 0; k < 4; k++) {
+    ivec2 o = ivec2(k & 1, k >> 1);
+    vec4 s = texelFetch(tAir, clamp(i0 + o, ivec2(0), hi), 0);
+    float w = (o.x == 1 ? f.x : 1.0 - f.x) * (o.y == 1 ? f.y : 1.0 - f.y) * ((s.a < 0.5) == character ? 1.0 : 0.0);
+    acc += s.rgb * w; ws += w;
+  }
+  return ws > 1e-4 ? acc / ws : h.rgb;
+}
 void main(){
-  vec3 c = (texture2D(tColor, vUv).rgb + texture2D(tAir, vUv).rgb * uAir) * uExposure;
+  // characters (scene alpha < 1: the protection mask, carried by the DOF) keep part of their contrast inside a hot haze such as the forge's
+  vec4 src = texture2D(tColor, vUv);
+  float keep = mix(0.45, 1.0, clamp(src.a, 0.0, 1.0));
+  vec3 c = (src.rgb + airAt(vUv, src.a < 0.999) * uAir * keep) * uExposure;
   vec3 t = aces(c);
   float l = dot(t, vec3(0.2126, 0.7152, 0.0722));
   // palette discipline in an opponent space: amber keeps its red/green split, cool colours lose theirs
@@ -199,13 +230,16 @@ export class PostFX {
     });
     this.gradeMat = new THREE.ShaderMaterial({
       uniforms: {
-        tColor: { value: null }, tAir: { value: this.black }, uAir: { value: 1 }, uExposure: { value: 1 }, uVignette: { value: 0.3 }, uGrain: { value: 0.01 }, uSat: { value: 1 }, uContrast: { value: 1 }, uTime: { value: 0 }, uPalette: { value: 0 },
+        tColor: { value: null }, tAir: { value: this.black }, uAirSize: { value: new THREE.Vector2(1, 1) }, uAir: { value: 1 }, uExposure: { value: 1 }, uVignette: { value: 0.3 }, uGrain: { value: 0.01 }, uSat: { value: 1 }, uContrast: { value: 1 }, uTime: { value: 0 }, uPalette: { value: 0 },
         uShadowTint: { value: new THREE.Vector3(1, 1, 1) }, uHighTint: { value: new THREE.Vector3(1, 1, 1) },
       },
       vertexShader: VERT, fragmentShader: GRADE_FRAG, depthTest: false, depthWrite: false,
     });
     this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.7, 0.9);
     this.bloom.renderToScreen = false;
+    // the bloom is added into the HDR buffer the grade reads, protection mask (alpha) included: keep that alpha (its blend material is
+    // premultiplied additive: colour ONE, ONE as before; three added the bloom's max channel to the alpha)
+    Object.assign(this.bloom.blendMaterial, maskSafeBlending('additive', true));
   }
 
   setSize(cssW: number, cssH: number, pixelRatio: number): void {
@@ -272,6 +306,7 @@ export class PostFX {
     gpu?.begin('grade');
     const g = this.gradeMat.uniforms;
     g.tColor.value = src.texture; g.tAir.value = useAir ? this.airRT.texture : this.black; g.uAir.value = p.airlight;
+    g.uAirSize.value.set(useAir ? this.airRT.width : 1, useAir ? this.airRT.height : 1);
     g.uExposure.value = p.exposure; g.uVignette.value = p.vignette; g.uGrain.value = p.grain; g.uSat.value = p.saturation; g.uContrast.value = p.contrast; g.uTime.value = time; g.uPalette.value = p.palette;
     g.uShadowTint.value.set(p.shadowTint.r, p.shadowTint.g, p.shadowTint.b); g.uHighTint.value.set(p.highlightTint.r, p.highlightTint.g, p.highlightTint.b);
     this.quad.material = this.gradeMat;

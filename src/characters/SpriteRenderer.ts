@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { U } from '../atmosphere/SceneUniforms';
+import { U, maskSafeBlending } from '../atmosphere/SceneUniforms';
 import { COMMON_GLSL } from '../materials/ShaderChunks';
 import { FRAME_W, FRAME_H, FOOT_Y, type Dir, type Anim } from './SpriteGenerator';
 import type { SpriteAtlas, FrameRect } from './SpriteAtlas';
@@ -10,7 +10,8 @@ import { LAYER_NOREFLECT } from '../atmosphere/ShadowAndReflection';
  *  grounded by projected contact shadows. Readability rules:
  *   - nearest-texel sampling: every screen pixel shows exactly one authored texel (the sprite palette survives)
  *   - the anchor is snapped to the render-target pixel grid, so texel edges never crawl while actors / camera move
- *   - characters write a protection mask into the scene alpha; the DOF keeps them sharp while the set softens
+ *   - characters write a protection mask into the scene alpha; the DOF keeps them sharp while the set softens, the in-scatter keeps part of
+ *     their contrast. Nothing drawn after them touches that alpha (maskSafeBlending), so no second pass of the characters is needed
  *   - a quiet silhouette treatment: lit-side edge lifted toward the key light, shadow-side edge cooler / darker */
 
 export const PIXEL_WORLD = 0.047; // metres per sprite pixel
@@ -220,12 +221,6 @@ void main(){
 export class SpriteRenderer {
   readonly group = new THREE.Group();
   private body: THREE.Mesh;
-  /** readability overlay: the characters again, after the transparent effects (halos, haze, smoke), at partial
-   *  opacity and with a depth-equal test - glows in front of a character are halved, nothing shows through walls,
-   *  and the DOF protection mask those additive effects erode is written back */
-  private overlay: THREE.Mesh;
-  overlayAmount = 0.55;
-  private overlayMat: THREE.ShaderMaterial;
   private shadow: THREE.Mesh;
   private cap = 0;
   private attrs!: { pos: THREE.InstancedBufferAttribute; uv: THREE.InstancedBufferAttribute; tint: THREE.InstancedBufferAttribute; flip: THREE.InstancedBufferAttribute; fx: THREE.InstancedBufferAttribute; cell: THREE.InstancedBufferAttribute };
@@ -259,22 +254,13 @@ export class SpriteRenderer {
     this.shadowMat = new THREE.ShaderMaterial({
       uniforms: { ...shared, ...baked, tAtlas: { value: atlas.texture } },
       vertexShader: SHADOW_VERT, fragmentShader: SHADOW_FRAG, transparent: true, depthWrite: false, depthTest: true, side: THREE.DoubleSide,
-      polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3,
-    });
-    this.overlayMat = this.bodyMat.clone();
-    Object.assign(this.overlayMat, {
-      uniforms: this.bodyMat.uniforms, transparent: true, depthWrite: false, depthFunc: THREE.LessEqualDepth,
-      blending: THREE.CustomBlending, blendEquation: THREE.AddEquation,
-      blendSrc: THREE.ConstantAlphaFactor, blendDst: THREE.OneMinusConstantAlphaFactor, blendAlpha: this.overlayAmount,
-      blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.ZeroFactor,
+      polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3, ...maskSafeBlending('normal'),
     });
     this.body = new THREE.Mesh(new THREE.BufferGeometry(), this.bodyMat);
-    this.overlay = new THREE.Mesh(this.body.geometry, this.overlayMat);
     this.shadow = new THREE.Mesh(new THREE.BufferGeometry(), this.shadowMat);
-    this.body.frustumCulled = false; this.shadow.frustumCulled = false; this.overlay.frustumCulled = false;
+    this.body.frustumCulled = false; this.shadow.frustumCulled = false;
     this.shadow.layers.set(LAYER_NOREFLECT); this.shadow.renderOrder = 3;
-    this.overlay.layers.set(LAYER_NOREFLECT); this.overlay.renderOrder = 8;
-    this.group.add(this.body, this.shadow, this.overlay);
+    this.group.add(this.body, this.shadow);
     this.alloc(capacity);
   }
 
@@ -292,7 +278,7 @@ export class SpriteRenderer {
     const mk = (size: number) => { const a = new THREE.InstancedBufferAttribute(new Float32Array(n * size), size); a.setUsage(THREE.DynamicDrawUsage); return a; };
     this.attrs = { pos: mk(3), uv: mk(4), tint: mk(4), flip: mk(1), fx: mk(4), cell: mk(4) };
     g.setAttribute('iPos', this.attrs.pos); g.setAttribute('iUV', this.attrs.uv); g.setAttribute('iTint', this.attrs.tint); g.setAttribute('iFlip', this.attrs.flip); g.setAttribute('iFx', this.attrs.fx); g.setAttribute('iCell', this.attrs.cell);
-    this.body.geometry.dispose(); this.body.geometry = g; this.overlay.geometry = g;
+    this.body.geometry.dispose(); this.body.geometry = g;
     const sg = mkGeo(0);
     const sn = n * 5;
     const mk2 = (size: number) => { const a = new THREE.InstancedBufferAttribute(new Float32Array(sn * size), size); a.setUsage(THREE.DynamicDrawUsage); return a; };
@@ -310,7 +296,6 @@ export class SpriteRenderer {
     const up = new THREE.Vector3(0, 1, 0).lerp(camUp, this.tilt).normalize();
     this.shared.uBillRight.value.copy(right); this.shared.uBillUp.value.copy(up);
     this.shared.uCharScale.value = this.charScale;
-    this.overlayMat.blendAlpha = this.overlayAmount; this.overlay.visible = this.overlayAmount > 0.01;
     const S = this.charScale;
 
     let bi = 0, si = 0;
