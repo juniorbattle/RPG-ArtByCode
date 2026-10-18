@@ -3054,6 +3054,11 @@ Preuves (non versionnées) : dossier de travail de la séance (sondes `probe.mjs
   **[?] Piste** : un pas adaptatif (passer à 4 vsyncs quand les images ratent leur créneau, revenir à 3 quand elles le tiennent) garderait une
   cadence régulière sur un GPU plus faible ou chargé ; non fait (hors de la décision de l'opérateur), à proposer.
 
+### Décision opérateur (2026-10-17) — [OK] P4 accepté
+- Mot pour mot : « J'accepte P4 tel quel (e60 par défaut) : fusionne perf-p4-frame-cap dans main, pousse main et supprime la branche. »
+- Branche `perf-p4-frame-cap` fusionnée en avance rapide dans `main`, `main` poussé, branche supprimée (locale et distante). P5 ouvrira sa
+  propre branche depuis `main`.
+
 ### Pensée
 - Une cadence se mesure dans une vraie fenêtre, sur l'écran réel, avec la vsync : le harnais headless (vsync coupée) ne dit rien de la
   régularité. Et une fréquence d'écran n'est pas une constante : le rafraîchissement dynamique la baisse sur un contenu fixe.
@@ -3069,7 +3074,7 @@ variantes d'occlusion : première révélation 315 → 11 ms, image identique), 
 image de la boucle 17 → 4 ms, 0 programme compilé après le départ ; durée de démarrage inchangée, l'estimation « −1 à −1,5 s » du plan était
 fausse). **P3 fait (Passe 6b), accepté par l'opérateur le 17/10 et fusionné dans `main`** : peintres de textures en Web
 Workers, octets et image identiques, peinture 1,80 → 0,55 s, `__ready` 3,64 → 2,50 s ; sonde `startup.mjs` corrigée (première étiquette). Suivent,
-une piste par commit, chacune avec sa preuve : **P4 plafond de cadence fait (Passe 6c, branche `perf-p4-frame-cap`) : défaut `e60` choisi par l'opérateur le 17/10**
+une piste par commit, chacune avec sa preuve : **P4 plafond de cadence fait (Passe 6c) : défaut `e60` choisi par l'opérateur le 17/10, accepté et fusionné dans `main`**
 (55 img/s réguliers à 165 Hz, SoC −20 % en 1440p, −65 % en 1080p ; `?fps=off` sans plafond ; piste ouverte : pas adaptatif 3 → 4 vsyncs
 quand le GPU rate son créneau, vu sous contention en 1440p) ;
 P5 cache du bake ; puis revue de captures pour les décisions de l'opérateur P6 (résolution interne en HiDPI, −40 % en 1440p), P7 (MSAA 2×),
