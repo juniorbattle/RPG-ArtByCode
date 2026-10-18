@@ -245,8 +245,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Dans la copie de l'opérateur, même session : avant 22,0 / 22,9 s ; après 2,2 / 2,3 / 2,4 s (`npm test` compris), 24 / 24 ; `node --test` dit
   1,19 s ; profil de `png-decode` : 15,3 → 0,69 s, `fs.watch` disparu du haut du profil. Aucun fichier de `src/` ni `vite.config.ts` touché.
 
-### Résultat sur GitHub
-- [?] à relever après le push.
+### Résultat sur GitHub — [OK] vert
+- Run `39164762984` (push de `ec274d8` sur `tests-load-no-watch`) : **success**, job de 24 s ; `npm test` 1 s (3 s au premier run de la
+  Passe Q1 : le runner n'a pas de brouillons, le gain y est faible), les autres étapes inchangées.
 
 ### Pensée
 - Un temps mesuré dans un clone propre ne vaut pas pour le dossier de travail : les fichiers ignorés (brouillons, caches) y pèsent. Une durée
