@@ -504,6 +504,45 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - **[KO] méthode** : modifier `variants.json` et `Variants.ts` pendant une série de captures a rechargé les pages du serveur de dev en cours de
   capture (écarts et délais) : la règle « ne rien modifier de ce que sert le serveur pendant une série » vaut aussi pour les données.
 
+## Passe V2 — Variantes de PNJ : approbation de l'opérateur, correction des masques signalée par lui (2026-10-18)
+
+### Complément de la Passe V1
+- V1 fusionnée en avance rapide (`ecf997d`) ; production inchangée tant que le fichier de variantes n'était pas approuvé.
+
+### Décisions de l'opérateur (2026-10-18), mot pour mot
+- Après la planche, la comparaison en scène (B) et les gros plans des peaux foncées : production — « Oui, approuve » ; PNJ uniques —
+  « Originaux partout » (marchande, forgeron et encapuchonné fixés à leur original).
+- Puis, en voyant le voyageur à cheveux foncés : « il semble avoir une erreur pour ce pnj avec sa tete ses cheveux . peux tu verifier ».
+- Branche `npc-variants-approval` ouverte depuis `main` (`ecf997d`).
+
+### Correction — [OK]
+- Cause : la frange du voyageur, orange comme sa peau, tombe dans la zone du visage ; la règle de peau y passait avant celle des cheveux et
+  prenait ses mèches claires pour de la peau : sur une variante, une frange à moitié couleur peau, rayée de mèches sombres.
+- Règle de frange (`referenceMask`) : là où zone de cheveux et zone de peau se chevauchent, une couleur rencontrée comme cheveux hors du
+  visage au moins aussi souvent que dans le chevauchement reste cheveux. Revue des dix feuilles : elle a fait apparaître deux défauts, corrigés
+  par réglage de feuille : une tache sombre sous le menton de l'artisane (ombre du cou prise pour des cheveux : zone en sommet de tête +
+  mèches latérales) ; des points bruns sur les bonnets de la citadine et de la marchande (ombres chaudes de la toile : plafond de valeur des
+  cheveux `hairMax` 0,7 / 0,72, zones de cheveux de la marchande sous le bonnet).
+- Planches : `reviews/npc-variants-v2/traveler-fringe-before-after-x5.png`, `lineup.png`, `masks.png`.
+
+### Approbation inscrite
+- `art-lab/characters/variants/variants.json` : `approved: true`, `approval` (opérateur, 2026-10-18, phrases citées, correction des masques
+  rapportée), empreintes des masques corrigés par feuille (artisane `eddf88c9`, forgeron `222f8949`, coursier `4056437b`, docker `09fbb257`,
+  garde `2bd58755`, encapuchonné `50f2dcdf`, marchande `8c0a3135`, vieux marchand `67922527`, citadine `a7936a07`, voyageur `54d62bc3`),
+  vérifiées au chargement. Pas un Gold Master.
+
+### Preuves
+- Rendu de production (fichier approuvé, sans paramètre) contre `main` (`709c6a1`, sans variantes), harnais déterministe : A 3 445 px,
+  B 10 379, C 10 094, D 468 (> 8 niveaux), uniquement sur des personnages ; la marchande (fixée) reste à l'identique.
+  `reviews/npc-variants-v2/B-production-main-vs-variants.png`.
+- Tests : `tests/variants.test.mjs` (8 : le fichier approuvé du dépôt se charge en production avec ses propres empreintes, variantes et
+  fixations) ; `npm test` 36 / 36 ; `typecheck`, `art:validate`.
+
+### Pensée
+- Deux matières de même teinte qui se recouvrent (une frange rousse sur une peau claire) se départagent par l'endroit où chaque couleur se
+  rencontre seule (le haut de la tête), pas par sa couleur.
+- Une règle générale corrigée se revérifie sur toutes les feuilles : elle crée ses propres défauts ailleurs (cou, bonnets).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -514,9 +553,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantit 336 images et en porte 322 (dix feuilles,
   1024 × 2016) : une variante en feuille séparée ne rentre pas sans agrandir la texture ; la teinte aléatoire de la foule (± 10 % par canal
-  sur tout le sprite) ne s'applique plus aux feuilles cuites (Passe 4A-tervicies). **Passe V1** : masques de matière, recoloration au rendu,
-  porte d'approbation ; **en attente de l'opérateur** : rampes, deux variantes par feuille, variante des PNJ uniques (originaux d'ici là),
-  approbation (empreintes à inscrire). À arbitrer avec l'opérateur : quels personnages, combien de variantes,
+  sur tout le sprite) ne s'applique plus aux feuilles cuites (Passe 4A-tervicies). **Passes V1 / V2** : masques de matière, recoloration au
+  rendu, approuvées pour la production le 18/10 (PNJ uniques en original). Restent : quelques texels (trait rosé sous la bouche du voyageur,
+  épaule du forgeron de profil), à reprendre si l'opérateur les relève. À arbitrer avec l'opérateur : quels personnages, combien de variantes,
   quelles teintes dans la direction artistique.
 - **Mise en scène** : la marchande ne marche pas à son étal (collisionneur ; la déplacer de 0,5 m serait une décision de mise en scène) ; un
   second garde différent (miroir ou variante) au lieu de jumeaux, lances ; seuls 2 des 5 citadins (artisane, voyageur) paraissent à la

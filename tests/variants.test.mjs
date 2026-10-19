@@ -107,3 +107,18 @@ test('the gate: an unapproved file changes nothing; candidate review applies it;
     await assert.rejects(cast.loadProductionCast(false, 'approved', wrong), /are not the approved masks/);
   });
 });
+
+test('the committed file, once approved, loads in production with its own fingerprints', async () => {
+  if (!file.approved) return;
+  await withRepoFetch(async () => {
+    const { cast: members, sheets } = await cast.loadProductionCast(false, 'approved');
+    for (const [id, s] of Object.entries(file.sheets)) {
+      const sheet = sheets.find((x) => x.id === id);
+      assert.equal(sheet.materials?.length, sheet.frames.length, id);
+      for (const [role, m] of members) if (m.id === id) {
+        assert.equal(m.variants?.list.length, s.variants.length, `${id} as ${role}`);
+        if (s.fixed?.[role] !== undefined) assert.equal(m.variants.fixed[role], s.fixed[role]);
+      }
+    }
+  });
+});

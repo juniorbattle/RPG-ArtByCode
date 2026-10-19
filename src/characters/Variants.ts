@@ -16,6 +16,8 @@ export interface MaskSettings {
   zones: Partial<Record<Dir, FacingZones>>;
   /** hair colour rule: 'warm' (hue 345-45 deg, saturation >= 0.25) or 'any' (grey / white / blond hair: every non-outline texel of the zone) */
   hair?: 'warm' | 'any';
+  /** highest HSV value a hair texel may have (default 0.95): under a light bonnet, dark hair stops before the cream shades */
+  hairMax?: number;
   /** colours (6 hex digits) never recoloured: an accessory that matches a rule inside a zone */
   exclude?: string[];
 }
@@ -30,7 +32,7 @@ export function hsv(r: number, g: number, b: number): [number, number, number] {
   return [(h * 60 + 360) % 360, mx ? d / mx : 0, mx / 255];
 }
 const isSkin = (h: number, s: number, v: number, sMin: number) => h >= 5 && h <= 45 && s >= sMin && s <= 0.55 && v >= 0.55;   // linen and canvas stay under 0.22
-const isWarmHair = (h: number, s: number, v: number) => (h >= 345 || h <= 45) && s >= 0.25 && v >= OUTLINE && v <= 0.95;
+const isWarmHair = (h: number, s: number, v: number, vMax = 0.95) => (h >= 345 || h <= 45) && s >= 0.25 && v >= OUTLINE && v <= vMax;
 const inAny = (rs: Rect[] | undefined, x: number, y: number) => !!rs?.some(([x0, y0, x1, y1]) => x >= x0 && x <= x1 && y >= y0 && y <= y1);
 /** the lowest minimum saturation of the skin zones containing (x, y), or null outside them */
 const skinMin = (rs: Rect[] | undefined, x: number, y: number) => { let m: number | null = null; for (const r of rs ?? []) if (x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3]) m = Math.min(m ?? 1, r[4] ?? 0.22); return m; };
@@ -38,6 +40,19 @@ const skinMin = (rs: Rect[] | undefined, x: number, y: number) => { let m: numbe
 /** the reference view's material map (zones + colour rules) */
 function referenceMask(f: BakedFrame, fw: number, fh: number, z: FacingZones, s: MaskSettings, ex: Set<number>): Uint8Array {
   const out = new Uint8Array(fw * fh);
+  const hairMax = s.hairMax ?? 0.95;
+  const hairRule = (h: number, sat: number, v: number) => v <= hairMax && (s.hair === 'any' || isWarmHair(h, sat, v, hairMax));
+  // per colour: how often it is hair outside the face (hair zone, no skin zone) and how often it sits where the two zones overlap. A colour
+  // met as hair outside the face more often than in the overlap is hair there too: a fringe over the forehead (red hair shares its light
+  // tones with the skin: the skin rule turned the traveler's fringe into skin, journal Passe V2)
+  const hairOnly = new Map<number, number>(), overlap = new Map<number, number>();
+  for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) {
+    const i = (y * fw + x) * 4;
+    if (f.rgba[i + 3] < 128 || !inAny(z.hair, x, y)) continue;
+    const r = f.rgba[i], g = f.rgba[i + 1], b = f.rgba[i + 2], c = (r << 16) | (g << 8) | b, [h, sat, v] = hsv(r, g, b);
+    if (skinMin(z.skin, x, y) !== null) overlap.set(c, (overlap.get(c) ?? 0) + 1);
+    else if (v >= OUTLINE && hairRule(h, sat, v)) hairOnly.set(c, (hairOnly.get(c) ?? 0) + 1);
+  }
   for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) {
     const i = (y * fw + x) * 4;
     if (f.rgba[i + 3] < 128) continue;
@@ -45,9 +60,10 @@ function referenceMask(f: BakedFrame, fw: number, fh: number, z: FacingZones, s:
     if (ex.has((r << 16) | (g << 8) | b)) continue;
     const [h, sat, v] = hsv(r, g, b);
     if (v < OUTLINE) continue;
-    const sMin = skinMin(z.skin, x, y), inHair = inAny(z.hair, x, y);
-    if (sMin !== null && isSkin(h, sat, v, sMin)) out[y * fw + x] = 2;
-    else if (inHair && (s.hair === 'any' || isWarmHair(h, sat, v))) out[y * fw + x] = 1;
+    const sMin = skinMin(z.skin, x, y), inHair = inAny(z.hair, x, y), c = (r << 16) | (g << 8) | b;
+    if (sMin !== null && inHair && hairRule(h, sat, v) && (hairOnly.get(c) ?? 0) >= (overlap.get(c) ?? 0)) out[y * fw + x] = 1;
+    else if (sMin !== null && isSkin(h, sat, v, sMin)) out[y * fw + x] = 2;
+    else if (inHair && hairRule(h, sat, v)) out[y * fw + x] = 1;
   }
   // fill (twice): a non-outline texel the rules missed but its material surrounds takes that material: lips, pale highlights, the saturated
   // shade of a jaw or an ear, a light lock in the hair (they stayed light or orange on a dark variant, journal Passe V1); a bonnet or a
@@ -58,11 +74,12 @@ function referenceMask(f: BakedFrame, fw: number, fh: number, z: FacingZones, s:
       const j = y * fw + x, i = j * 4;
       if (prev[j] || f.rgba[i + 3] < 128) continue;
       const r = f.rgba[i], g = f.rgba[i + 1], b = f.rgba[i + 2];
-      if (ex.has((r << 16) | (g << 8) | b) || hsv(r, g, b)[2] < OUTLINE) continue;
+      const val = hsv(r, g, b)[2];
+      if (ex.has((r << 16) | (g << 8) | b) || val < OUTLINE) continue;
       let ns = 0, nh = 0;
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const m = prev[j + dy * fw + dx]; if (m === 2) ns++; else if (m === 1) nh++; }
       if (ns >= 4 && skinMin(z.skin, x, y) !== null) out[j] = 2;
-      else if (nh >= 5 && inAny(z.hair, x, y)) out[j] = 1;
+      else if (nh >= 5 && inAny(z.hair, x, y) && val <= hairMax) out[j] = 1;
     }
   }
   return out;
