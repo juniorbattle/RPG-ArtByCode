@@ -202,6 +202,13 @@ export class ActorSystem {
     return true;
   }
 
+  /** the step a walker is shown taking: its actual displacement once the colliders let at least a fifth of the intended step through
+   *  (axis-separated slides: a walker pushed along a stall or a wall faces, and steps, the way it moves; journal Passe F1), the intended
+   *  step otherwise (fully blocked: it keeps facing where it wants to go) */
+  private shownStep(intended: THREE.Vector3, dx: number, dz: number): THREE.Vector3 {
+    return Math.hypot(dx, dz) >= intended.length() * 0.2 ? new THREE.Vector3(dx, 0, dz) : intended;
+  }
+
   private setAnim(a: Actor, anim: Anim): void { if (a.anim !== anim) { a.anim = anim; } }
 
   interact(): void {
@@ -228,10 +235,12 @@ export class ActorSystem {
     const mv = new THREE.Vector3(c * ix - s * iy, 0, -s * ix - c * iy);
     if (mv.lengthSq() > 0) {
       mv.normalize().multiplyScalar(2.5 * run * dt);
+      const ox = p.pos.x, oz = p.pos.z;
       this.resolve(p, p.pos.x + mv.x, p.pos.z + mv.z);
-      this.face(p, mv, true);
+      const step = this.shownStep(mv, p.pos.x - ox, p.pos.z - oz);
+      this.face(p, step, true);
       // a baked hero's clock follows its steps like a walker's (walkClock, the run key's speed included); the generated sprite keeps x1.7
-      this.setAnim(p, 'walk'); p.t += dt * (p.base ? this.walkClock(p, mv.x / dt, mv.z / dt) : run);
+      this.setAnim(p, 'walk'); p.t += dt * (p.base ? this.walkClock(p, step.x / dt, step.z / dt) : run);
     } else { this.setAnim(p, 'idle'); p.t += dt; }
     p.pos.y = this.district?.heightAt(p.pos.x, p.pos.z) ?? 0;
 
@@ -286,12 +295,13 @@ export class ActorSystem {
     const ox = a.pos.x, oz = a.pos.z;
     this.resolve(a, nx, nz);
     if (Math.abs(a.pos.x - ox) + Math.abs(a.pos.z - oz) < speed * dt * 0.2) { b.target = null; b.wait = 0.8; return; }
-    this.face(a, to, true);
+    const step = this.shownStep(to.clone().multiplyScalar(speed * dt), a.pos.x - ox, a.pos.z - oz);
+    this.face(a, step, true);
     // the porter's crate walk where the sheet has one (the generated porter), the plain walk otherwise
     this.setAnim(a, this.atlas.counts.has(`${a.spec}/carry`) ? 'carry' : 'walk');
     // a baked walker's clock (its frame) advances at the speed its steps show over the speed its cycle draws: the planted foot stays put
     // (positions and RNG draws are unchanged: only which frame is shown)
-    a.t += dt * (this.walkClock(a, to.x * speed, to.z * speed) - 1);
+    a.t += dt * (this.walkClock(a, step.x / dt, step.z / dt) - 1);
   }
 
   /** animation clock rate of a walking baked actor (1 for a generated sprite or a sheet without a measured cycle): the speed its steps show

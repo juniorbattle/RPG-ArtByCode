@@ -620,6 +620,52 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Le fond d'une planche se mélange aux cellules du bord : mesurer la part des texels du contour proches de la couleur du fond, et la retirer
   au rig, avant la critique.
 
+## Passe F1 — Revue du héros par l'opérateur ; le sprite d'un marcheur suit son déplacement réel (2026-10-19)
+
+### Revue de l'opérateur (`hero-x2-v2` en jeu, DEV `?cast=candidate`), mot pour mot
+- « les courses de profil ne sont pas bons surtout quand le joueur descend vers le bas de la camera de face on dirait que le joueur fait une
+  monte de genou, sinon on utilise un anim qui donne l'impression de courir mais le personnage se deplace lentement... le heros a cote des
+  pnjs semble correct, mais de maniere generale j'ai l'impression que les angles de camera dynamique n'aide pas setup de maniere clair les
+  deplacements des perso npc/heros correctemnt ils donnent l'impression de marcher de travers... un des docker lors qui marche vers le stand
+  de la marchande se deplace avec vers le bas et du point de vue de la camera on le voit se deplacer de cote dos a la camera.... donc de
+  travers »
+
+### Mesures à sa suite
+- Méthode : variante hors dépôt du harnais de `tools/foot-slip.mjs` ; à chaque pas, la vue montrée contre celle que donnerait le
+  déplacement réel à l'écran (même règle des 50° / 40°).
+- Cause 1, **[OK] confirmée** : le sprite prenait la direction **voulue** (cible du PNJ, touche du joueur) alors que `resolve` fait glisser
+  le marcheur le long d'un seul axe contre un obstacle. En D, le docker montré de profil vers la droite en allant vers la gauche sur 4,8 % de
+  ses pas (40 s, graine 1842).
+- Cause 2, **[?] structurelle** : trois vues seulement (face, dos, profil) ; en B et C, 41 à 100 % des pas des PNJ partent à 20-40° en
+  diagonale à l'écran (en D : 0 à 13 %) : un profil qui glisse en diagonale.
+- Course du héros : la planche dessine ≈ 14 texels par image entre ses poses, resserrés à 9 pour 2,5 m/s : grande allure, petit pas
+  (« court mais avance lentement ») ; de face, les jambes levées jusqu'à 9 texels sous le corps se lisent comme une montée de genou.
+
+### Décisions de l'opérateur (2026-10-19), mot pour mot
+- Vitesse : « Héros plus rapide (Recommandé) » (garder les enjambées dessinées, ≈ 3,5-4 m/s, Maj à revoir).
+- Directions : « Correctif puis 3/4 (Recommandé) » (d'abord le sprite suit le déplacement réel ; ensuite étudier des vues de trois-quarts,
+  le héros d'abord, dont la planche en dessine).
+
+### Fait — [OK] le correctif
+- Branche `facing-actual-motion` depuis `main` (`0b5de1c`). `ActorSystem.shownStep` : un pas est montré, et son horloge réglée, par le
+  déplacement réel dès que les obstacles en laissent passer au moins un cinquième ; bloqué, le marcheur garde la direction voulue. Joueur et
+  PNJ ; positions et tirages inchangés (seule la vue montrée change).
+- `tests/stride.test.mjs` +1 (un pas en diagonale bloqué vers la caméra glisse à droite : profil vers la droite, horloge à la vitesse du
+  glissement) ; contrôle négatif : l'ancien `ActorSystem.ts` remis → 1 échec. `npm test` 39 / 39, `typecheck`, `build`, `art:validate`.
+- Audit après : D, docker 4,8 % → 0,0 % de vues contraires au déplacement ; mêmes nombres de pas (déplacements identiques). Les diagonales
+  de B / C restent (cause 2).
+
+### Restes [?]
+- Héros plus rapide : vitesse du joueur cuit, enjambée dessinée (≈ 14 texels par image), course de face sans montée de genou ; Maj.
+- Étude des vues de trois-quarts (héros d'abord).
+- Suite confiée par l'opérateur à une séance cloud (consolider le Merchant District : personnages en scène, architecture, caméras, météo).
+
+### Pensée
+- Une vue se choisit sur ce que le personnage fait à l'écran, pas sur ce qu'il voulait faire : un glissement contre un obstacle doit se voir
+  comme un pas de côté.
+- Avec trois vues, toute marche en diagonale à l'écran se lit de travers ; mesurer la part des pas hors de l'axe de la vue montrée dit si le
+  problème est le choix de la vue ou le nombre de vues.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

@@ -91,3 +91,28 @@ test('the player: a baked hero runs on walkClock (the run key included), the gen
   assert.ok(Math.abs(run(false, false).t - 0.02) < 1e-9, 'generated: x1');
   assert.ok(Math.abs(run(false, true).t - 0.02 * 1.7) < 1e-9, 'generated: the run key x1.7');
 });
+
+test('a walker pushed along a collider faces, and steps, the way it actually moves (journal Passe F1)', () => {
+  const atlas = { specs: new Map(), counts: new Map([['hero/walk', 6]]), frames: new Map() };
+  const at = () => ({ x: 0, y: 0, z: 0, clone() { return { ...this }; } });
+  const step = (colliders) => {
+    const sys = new ActorSystem(atlas);
+    sys.rebind({ walk: { x0: -10, x1: 10, z0: -10, z1: 10 }, colliders, heightAt: () => 0 });
+    sys.cast.set('player', { id: 'hero', scale: 0.9, height: 1.78, walkSpeed: 1.4 });
+    sys.player = sys.spawn('player', 'player', at(), { t: 0 });
+    sys.camYaw = 0; sys.controlYaw = 0; sys.charScale = 1.12;
+    sys.keys.add('d'); sys.keys.add('s');                    // right and toward the camera: the world rule shows the front
+    sys.update(0.02, 0);
+    return sys.player;
+  };
+  const free = step([]);
+  assert.equal(free.dir, 'down', 'a free diagonal step: the front');
+  // a stall just in front of the player (toward the camera): the step slides to the right only
+  const slid = step([{ kind: 'box', x0: -5, x1: 5, z0: 0.3, z1: 1 }]);
+  assert.ok(slid.pos.z === 0 && slid.pos.x > 0, 'blocked toward the camera, slid to the right');
+  assert.equal(slid.dir, 'side', 'it faces the way it moves (profile), not the way it was heading');
+  assert.equal(slid.flip, true, 'to the right');
+  // its clock follows the slide (the speed along the camera right), not the intended diagonal
+  const v = 2.5 * Math.SQRT1_2;
+  assert.ok(Math.abs(slid.t - 0.02 * (v / (1.4 * 1.12))) < 1e-9, 'clock at the slide speed');
+});
