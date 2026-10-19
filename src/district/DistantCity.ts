@@ -269,9 +269,11 @@ export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictCo
   }
 
   // ---------------------------------------------------------------- far quays: the canal walls run on toward the bridge
+  // 2 cm behind the bridges' abutments (z0 = QUAY_Z + 0.35): in the same plane, draw order decided which face showed (journal Passes 5b / Z2)
+  const QZ = QUAY_Z + 0.33;
   for (let x = QUAY_END_X; x < RIVER_END_X; x += 6) {
     const xb = Math.min(x + 6, RIVER_END_X);
-    qf(B, [[x, WATER_Y - 0.6, QUAY_Z + 0.35], [xb, WATER_Y - 0.6, QUAY_Z + 0.35], [xb, 0.05, QUAY_Z + 0.35], [x, 0.05, QUAY_Z + 0.35]], [0, 0, 1], { tint: [0.2, 0.21, 0.25], aux: [0, 0, 0, BRIDGE], ao: [0.4, 0.4, 1, 1] });
+    qf(B, [[x, WATER_Y - 0.6, QZ], [xb, WATER_Y - 0.6, QZ], [xb, 0.05, QZ], [x, 0.05, QZ]], [0, 0, 1], { tint: [0.2, 0.21, 0.25], aux: [0, 0, 0, BRIDGE], ao: [0.4, 0.4, 1, 1] });
   }
   for (let x = STREET.x1; x < RIVER_END_X; x += 3) {
     const xb = x + 3, za = southShore(x), zb = southShore(xb);

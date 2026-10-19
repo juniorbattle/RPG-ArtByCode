@@ -266,6 +266,17 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
       const low = floors[F.k - 1];
       // underside of the jetty + joist ends + knee braces
       S.planks.quad([F.x0, F.y0 - 0.03, F.zF], [F.x1, F.y0 - 0.03, F.zF], [F.x1, F.y0 - 0.03, -D], [F.x0, F.y0 - 0.03, -D], { tint: [0.35, 0.3, 0.28], ao: 0.5, flip: true });
+      // an upper floor set in from the one below (the asymmetry of x0 / x1): the step between the two floors' side rails was open, a slot seen
+      // from above into the floor below (journal Passe Z2); an upward-facing strip closes it, 3 cm under the rails' top, hidden inside them
+      if (F.x0 > low.x0 + 1e-3) S.planks.quad([low.x0, F.y0 - 0.03, F.zF], [F.x0, F.y0 - 0.03, F.zF], [F.x0, F.y0 - 0.03, -D], [low.x0, F.y0 - 0.03, -D], { tint: [0.35, 0.3, 0.28], ao: 0.5 });
+      if (low.x1 > F.x1 + 1e-3) S.planks.quad([F.x1, F.y0 - 0.03, F.zF], [low.x1, F.y0 - 0.03, F.zF], [low.x1, F.y0 - 0.03, -D], [F.x1, F.y0 - 0.03, -D], { tint: [0.35, 0.3, 0.28], ao: 0.5 });
+      // the 3 cm between the underside and this floor's bottom rails was open at the floor's sides and front (a ray slid in there through
+      // the step above, journal Passe Z2): closed by strips facing out, from the underside's edges (the same vertices: no T-junction, nothing
+      // hanging below the underside) up into the rails, which hide their top
+      const sy0 = F.y0 - 0.03, sy1 = F.y0 + 0.02, under = { tint: [0.35, 0.3, 0.28] as V3, ao: 0.5 };
+      S.planks.quad([F.x0, sy0, -D], [F.x0, sy0, F.zF], [F.x0, sy1, F.zF], [F.x0, sy1, -D], under);
+      S.planks.quad([F.x1, sy0, F.zF], [F.x1, sy0, -D], [F.x1, sy1, -D], [F.x1, sy1, F.zF], under);
+      S.planks.quad([F.x0, sy0, F.zF], [F.x1, sy0, F.zF], [F.x1, sy1, F.zF], [F.x0, sy1, F.zF], under);
       const jet = F.zF - low.zF;
       // joist ends + knee braces only on the hero frontages: micro-detail is spent where the eye lands
       if (jet > 0.12 && detail > 0.6) {

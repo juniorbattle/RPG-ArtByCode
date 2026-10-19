@@ -47,15 +47,25 @@ export function brace(ctx: BuildCtx, xa: number, ya: number, xb: number, yb: num
   });
 }
 
-/** Wall panel (plaster/stone/brick) with at most one rectangular hole. Painted AO darkens edges and openings. */
+/** Wall panel (plaster/stone/brick) with at most one rectangular hole. Painted AO darkens edges and openings. Around a hole the panel is
+ *  nine pieces at most (the rows below and above it split at the hole's verticals): every edge two pieces share has the same two ends.
+ *  The former strips under and over the hole ran across the whole panel, and the side strips' corners sat in the middle of their edges
+ *  (a T-junction), where one MSAA sample saw through to the wall behind (journal Passes 5b / Z2). The AO of a row varies in y only and
+ *  the UVs come from the world position, so the split is invisible. */
 export function panelWithHole(ctx: BuildCtx, slot: Slot, x0: number, y0: number, x1: number, y1: number, hole: Rect | null, tint: V3, aoEdge = 0.86, aoHole = 0.6): void {
   const b = ctx.S.get(slot);
   if (!hole) { qz(b, x0, y0, x1, y1, PZ, [aoEdge, aoEdge, aoEdge, aoEdge], tint); return; }
   const [hx0, hy0, hx1, hy1] = hole;
-  if (hy0 > y0 + 0.001) qz(b, x0, y0, x1, hy0, PZ, [aoEdge, aoEdge, aoHole, aoHole], tint);
-  if (y1 > hy1 + 0.001) qz(b, x0, hy1, x1, y1, PZ, [aoHole, aoHole, aoEdge, aoEdge], tint);
-  if (hx0 > x0 + 0.001) qz(b, x0, hy0, hx0, hy1, PZ, [aoEdge, aoHole, aoHole, aoEdge], tint);
-  if (x1 > hx1 + 0.001) qz(b, hx1, hy0, x1, hy1, PZ, [aoHole, aoEdge, aoEdge, aoHole], tint);
+  const left = hx0 > x0 + 0.001, right = x1 > hx1 + 0.001;
+  const row = (ya: number, yb: number, ao: number[]) => {
+    if (left) qz(b, x0, ya, hx0, yb, PZ, ao, tint);
+    qz(b, hx0, ya, hx1, yb, PZ, ao, tint);
+    if (right) qz(b, hx1, ya, x1, yb, PZ, ao, tint);
+  };
+  if (hy0 > y0 + 0.001) row(y0, hy0, [aoEdge, aoEdge, aoHole, aoHole]);
+  if (y1 > hy1 + 0.001) row(hy1, y1, [aoHole, aoHole, aoEdge, aoEdge]);
+  if (left) qz(b, x0, hy0, hx0, hy1, PZ, [aoEdge, aoHole, aoHole, aoEdge], tint);
+  if (right) qz(b, hx1, hy0, x1, hy1, PZ, [aoHole, aoEdge, aoEdge, aoHole], tint);
 }
 
 /** Recess reveals of a rectangular opening, from the wall plane back to depth d (in `slot`, dark AO). */
