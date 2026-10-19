@@ -8,6 +8,7 @@
 // Profile run: the eight drawn run frames of the v3 sheet (the run of hero-x2-v2, Pass H6: the 14-texel stride, flight frames), mapped onto
 // this rig's palette: the v4-b sheet draws no run. Front / back / three-quarter runs: rigged like hero-x2-v2's front and back (bob, weight,
 // cape sway, legs lifted 5 texels at most, hands dropping on the forward swing), with masks measured on each view.
+// The face retouched at the texel (Pass H9, `FACE` in prepare): the reconstruction at pitch 3.4 lost the source's mouth and closed its eyes.
 // Deterministic: `node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v3.rig.mjs`.
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -99,8 +100,23 @@ function dehalo(v) {
   }
   return o;
 }
+/** Pass H9, recorded texel edits of the face (operator decision H1 « Retouches d'abord (visage, palette) »; the blind critique of Pass H8:
+ *  half-closed eyes, no mouth, the skin one tone), in the prepared views, colours of the joint palette (the palette is unchanged: the profile
+ *  run is mapped onto it). Front: each pupil two rows tall (rows 25-26) with a shine on its inner side and the lit iris on row 27 (lash, pupil,
+ *  glow: the eye reads open), a two-texel mouth on row 30, a shade along the cheeks and the chin. Three-quarter front: the near eye as the
+ *  front's, the far eye's pupil two rows tall, the mouth under the nose. Profile: the dark iris at the front of the eye (the sclera kept behind
+ *  it; the reconstruction left a white eye), the mouth at the contour. [x, y, colour] */
+const PUPIL = '#151017', GLOW = '#b76d37', SHINE = '#f8e9d8', MOUTH = '#a37e71', SHADE = '#f8ba8f', SHADE2 = '#f6ad7a';
+const FACE = {
+  down: [[27, 25, PUPIL], [27, 26, PUPIL], [28, 26, SHINE], [27, 27, GLOW], [28, 27, GLOW],
+    [36, 26, PUPIL], [35, 26, SHINE], [35, 27, GLOW], [36, 27, GLOW],
+    [31, 30, MOUTH], [32, 30, MOUTH],
+    [26, 28, SHADE], [26, 29, SHADE], [27, 30, SHADE], [29, 31, SHADE], [37, 27, SHADE], [37, 28, SHADE], [37, 29, SHADE], [36, 30, SHADE2], [34, 31, SHADE2]],
+  downSide: [[32, 26, PUPIL], [31, 26, SHINE], [31, 27, GLOW], [32, 27, GLOW], [25, 26, PUPIL], [25, 27, GLOW], [28, 30, MOUTH], [29, 30, MOUTH]],
+  side: [[26, 25, PUPIL], [26, 26, GLOW], [26, 29, MOUTH]],
+};
 export function prepare(dir, v) {
-  return align(closeSlits(cleanStrands(dehalo(v))));
+  return R.patch(align(closeSlits(cleanStrands(dehalo(v)))), (FACE[dir] ?? []).map(([x, y, c]) => ({ x, y, c })));
 }
 
 // ---- the v3 sheet's run frames (bottom row, facing right): each figure cut out of the row (a breadth-first fill through the foreground from a

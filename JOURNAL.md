@@ -638,6 +638,88 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
 - Une option cochée avec une note qui la contredit se tranche par une question courte, posée avec les faits ; ici, la décision confirme
   l'état du jeu.
 
+## Passe H9 — Héros : le visage de `hero-x2-v3` retouché au texel (yeux ouverts, bouche, ombre des joues ; décision H1) (2026-10-19)
+
+### Demande
+- Opérateur, mot pour mot : « je valide pour le moment, quel est la suite ? », puis « Commence par la retouche du visage du héros v3
+  (décision H1). ». Décision de la fiche (Passe D1) : H1 « Retouches d'abord (visage, palette) ».
+- « je valide pour le moment » est lu comme un accord sur l'état du moment, pas comme l'approbation du héros, du pivot de A ni du suivi
+  `?camfollow=screen` (dit à l'opérateur dans la séance).
+- Branche `hero-face-h9` depuis `main` (`b5b42a6`).
+
+### Constat de départ — sur les pixels des vues préparées
+- **Face** : sous les cils (rangée 24), la pupille ne fait qu'une rangée et l'iris de la rangée 26 est brun moyen : l'œil se lit mi-clos.
+  Entre la frange et les cils, une bande claire (rangée 23) fait paupière. Pas de bouche ; la peau est d'un ton (rangées 27-31).
+- **Trois-quarts face** : l'œil proche est bâti de même, l'œil lointain d'un seul texel sombre ; pas de bouche.
+- **Profil** : l'œil est blanc (la sclère, colonne 27, rangées 25-26) et l'iris réduit à un texel brun : un œil vide.
+- La planche v4-b dessine de grands yeux et une petite bouche. Au pas de 3,4, la bouche (environ 2 px de haut) se fond dans la peau.
+
+### Fait — [OK] 31 texels enregistrés dans le rig (`FACE`, appliqué par `prepare`)
+- **Face (20)** :
+  - pupille sur deux rangées (25-26), reflet du côté intérieur, iris éclairé (ambre) sur la rangée 27 ;
+  - bouche de deux texels sur la rangée 30 ;
+  - ombre le long des joues et du menton.
+- **Trois-quarts face (8)** : l'œil proche comme ceux de la face ; la pupille de l'œil lointain sur deux rangées ; la bouche sous le nez.
+- **Profil (3)** : l'iris sombre à l'avant de l'œil (la sclère gardée derrière) ; la bouche au contour.
+- Couleurs de la palette commune seulement. **La palette ne change pas** (64 couleurs, le même ensemble) : la course de profil y est
+  projetée, et une couleur perdue l'aurait changée.
+- Choix faits sur des planches de variantes (×8, ×3, ×2) :
+  - la couleur de la bouche : #a37e71, contre #b28f80 et #976947 ;
+  - une ombre des joues plutôt qu'une rougeur ;
+  - quatre variantes de l'œil de profil et quatre du trois-quarts.
+
+### Preuves
+- **Reconstruction** : export reconstruit avec Aseprite ; `--check` : identique ; `verify-provenance` : intact ; `art:validate` : 0 erreur.
+- **Seuls les texels du visage changent**, image par image contre l'export de la Passe H8 :
+  - repos et course de face : 20 texels par image ; de trois-quarts face : 8 ; repos de profil : 3 ;
+  - course de profil, dos et trois-quarts dos : 0 ;
+  - table d'images et JSON identiques ; opacité inchangée.
+- **En scène** : captures déterministes, graine 1842, `cast=candidate&views=5`, 120 pas, la facette du joueur fixée avant le rendu ; la branche
+  contre `main` figé (:5187).
+  - En B et en D, face, trois-quarts et profil : 12 à 48 px changent, tous dans la tête du héros.
+  - Dos : 0 px. Témoin de répétition : 0 px.
+- **Production** (sans `cast=candidate`, `vis=0`, 300 pas) : A / B / C / D **0 px** contre `main` figé (écart max 0).
+- **Validation** : typecheck, `npm test` 87 / 87, build.
+- **Paquet** :
+  - `revisions` : la Passe H9, la demande citée, les anciennes empreintes des exports et des vues ;
+  - statut et chaîne mis à jour ;
+  - manifeste : note ;
+  - revue : `reviews/hero-x2-v3/07-h9-face-before-after-x8.png` et `08-h9-in-scene-before-after-x5.png`.
+
+### Critique à l'aveugle — [OK] le visage gagne nettement
+- **Méthode** de la Passe H8 :
+  - un agent neuf, l'avant et l'après sous des étiquettes tirées au sort (la clé hors du dossier des images) ;
+  - les mêmes planches : têtes ×8, repos ×3, courses ×3, recadrages en scène ×5 ;
+  - le docker approuvé en référence ; l'auto-critique écrite avant le verdict.
+- Le critique trouve seul que les deux ne diffèrent que par le visage (course de profil : 0 px).
+- **Visage : 7 contre 5** pour la retouche, confiance 80 % ; l'écart est net à ×8 et en D, faible en B.
+  - Moyenne : 7,3 contre 7,0. Tout l'écart vient du visage ; le reste est identique par construction.
+  - Ce qu'il voit : des yeux ouverts (pupille, reflet, iris ambré) et une petite bouche, en B et en D, dans les trois facettes. Avant : des
+    yeux fermés ou baissés sur un ovale vide.
+- **Relevés, vérifiés sur les pixels** :
+  - « les deux yeux de face sont construits différemment » : **faux**. Ils sont en miroir l'un de l'autre (pupille contre la sclère, reflet
+    de l'autre côté) ;
+  - « la pupille lointaine du trois-quarts sur le contour, qui peut se lire comme une encoche » : elle est à un texel du contour (colonne 25 ;
+    peau en 24, contour en 23). C'est plausible à la taille du jeu : à juger en jeu ;
+  - la bouche est grisâtre : « une tache » en B, où elle fait 2 à 4 px d'écran ;
+  - les pupilles contrastées donnent un regard un peu fixe (un avis) ;
+  - la peau reste plate : l'ombre est presque du ton de base, sans ombre sous la frange ;
+  - l'œil du repos de profil diffère de celui de la course, qui vient de la planche v3. C'était déjà le cas avant (un œil blanc contre une
+    rangée sombre).
+- **Mon choix** : la retouche reste, puisqu'elle gagne nettement sur le point visé sans rien perdre ailleurs. Aucune retouche n'est empilée
+  sans nouvelle critique : la couleur de la bouche et la pupille lointaine se jugent en jeu.
+
+### Restes [?]
+- La revue de l'opérateur en jeu : `npm run dev`, puis `?cast=candidate&views=5`. Rien n'est approuvé.
+- Le volet « palette » de H1 n'est pas traité ici. Le critique donne 8 aux deux en palette.
+- La course de profil garde le visage de la planche v3.
+- Relevés communs, non traités : la course de face « sur place » (les jambes alternent peu), des mouchetures gris-bleu autour des mèches.
+
+### Pensée
+- Une retouche au texel d'une vue reconstruite se pose sur la vue préparée, s'enregistre dans le rig et reste dans la palette commune. Quand
+  un autre cycle est projeté sur cette palette, on vérifie que l'ensemble des couleurs ne change pas.
+- Un relevé de critique se vérifie sur les pixels avant d'être corrigé : ici, un relevé sur six était faux (les yeux en miroir).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -681,7 +763,8 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
   (Passe T1 : 672 images garanties). Passe H6 : vitesse du héros cuit tirée de son cycle (3,73 m/s avec le rig préparé, Maj = sprint × 1,2),
   rig préparé (14 texels, vol, genoux à 5 texels) ; export reconstruit avec Aseprite (Passe H7 : `walkSlide` 14, `--check` identique,
   glissement ≈ 0). Décisions de la Passe D1 : « Source : la b » (planche v4-b), « Cinq vues, le héros d'abord », « Sprint ×1,2 », vues du
-  côté droit « Ignorées » : appliquées en Passe H8 (`hero-x2-v3`, candidat en cinq vues, revue de l'opérateur en jeu). Vues de trois-quarts : étude `briefs/three-quarter-views.md` (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
+  côté droit « Ignorées » : appliquées en Passe H8 (`hero-x2-v3`, candidat en cinq vues, revue de l'opérateur en jeu) ; visage retouché au texel en Passe H9 (yeux
+  ouverts, bouche, ombre des joues ; critique à l'aveugle : 7 contre 5 sur le visage), à juger en jeu. Vues de trois-quarts : étude `briefs/three-quarter-views.md` (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
   deux planches générées en huit vues, trois-quarts dos compris, archivées comme sources non canoniques). Plus tard : masques du héros pour ses
   déclinaisons, écran de choix (code de jeu). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
   production.

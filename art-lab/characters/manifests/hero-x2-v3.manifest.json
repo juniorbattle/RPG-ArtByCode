@@ -30,10 +30,10 @@
       "category": "A",
       "label": "Merchant District runtime, cameras A / B / C / D, seed 1842",
       "path": "art-lab/characters/reviews/hero-x2-v3",
-      "note": "in-scene review (JOURNAL, Passe H8)"
+      "note": "in-scene review (JOURNAL, Passes H8 and H9)"
     }
   ],
   "approved": false,
   "runtimeUse": "lab",
-  "notes": "CANDIDATE (Pass H8), NOT APPROVED: the retouched premium hero (decision sheet H1 « Retouches d'abord (visage, palette) », H4 « Source : la b », H3 « Cinq vues, le héros d'abord »), for review in the scene (DEV, ?cast=candidate; three-quarter facings with ?views=5). Density x2 (64x96, feet on row 90), idle 4 + run 8 frames in FIVE facings (down, downSide, side, upSide, up), one 64-colour palette over the five views, presentation scale 0.9. The profile run is hero-x2-v2's (the v3 sheet's drawn run, 14-texel stride, flight frames) on this palette. Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v3.rig.mjs --check"
+  "notes": "CANDIDATE (Pass H8; the face retouched at the texel in Pass H9: eyes, mouth, cheek shade), NOT APPROVED: the retouched premium hero (decision sheet H1 « Retouches d'abord (visage, palette) », H4 « Source : la b », H3 « Cinq vues, le héros d'abord »), for review in the scene (DEV, ?cast=candidate; three-quarter facings with ?views=5). Density x2 (64x96, feet on row 90), idle 4 + run 8 frames in FIVE facings (down, downSide, side, upSide, up), one 64-colour palette over the five views, presentation scale 0.9. The profile run is hero-x2-v2's (the v3 sheet's drawn run, 14-texel stride, flight frames) on this palette. Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v3.rig.mjs --check"
 }

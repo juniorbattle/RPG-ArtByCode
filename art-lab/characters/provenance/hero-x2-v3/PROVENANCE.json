@@ -1,6 +1,6 @@
 {
  "id": "hero-x2-v3",
- "status": "CANDIDATE (Pass H8), NOT APPROVED: built from the generated, non-canonical v4-b turnaround (the operator's choice of source) for review in the scene (DEV, ?cast=candidate, ?views=5); production, approval and any Gold Master status are the operator's decision",
+ "status": "CANDIDATE (Pass H8; face retouched in Pass H9), NOT APPROVED: built from the generated, non-canonical v4-b turnaround (the operator's choice of source) for review in the scene (DEV, ?cast=candidate, ?views=5); production, approval and any Gold Master status are the operator's decision",
  "request": {
   "date": "2026-10-19",
   "by": "operator (git user wonmii), in this session",
@@ -26,7 +26,7 @@
  "chain": [
   "reconstruct-grid.mjs <sheet> <crop> 3.4 64 96 90 --holes --no-shadow --closing-from=48, full colours, per facing: front 5,377,198,681; three-quarter front 216,377,393,681; profile 424,377,560,681; three-quarter back 614,377,760,681; back 772,377,961,681 (all facing left)",
   "quantize-palette.mjs --k 64: one OKLab k-means over the five views",
-  "rig prepare(): the background halo peeled, thin strands and islands removed, one-texel slits closed, soles on row 90 and feet centred",
+  "rig prepare(): the background halo peeled, thin strands and islands removed, one-texel slits closed, soles on row 90 and feet centred; then (Pass H9) the face: 31 recorded texel edits in the colours of the joint palette (unchanged), front 20 (pupils two rows tall with a shine, the lit iris below, a two-texel mouth, a shade along the cheeks), three-quarter front 8 (both eyes, the mouth), profile 3 (the dark iris at the front of the eye, the mouth)",
   "rig frames(): idle = rest, rest, inhale, exhale (rig-engine breath) in the five facings; run, profile = the v3 sheet's eight drawn run frames (hero-x2-v2, Pass H6: 14-texel stride, flight frames), mapped onto this palette; run, front / back / three-quarters = body bob and weight shift, cape sway, each leg lifted 5 texels at most, the hands dropping on their forward swing (masks measured per view)",
   "build-character.mjs: frame checks (contract section 3), Aseprite assembly (tags <anim>-<dir>, the three-quarter facings downSide / upSide since Pass H8), export compared pixel for pixel with the rig frames"
  ],
@@ -43,20 +43,43 @@
  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v3.rig.mjs --check; node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/hero-x2-v3 [--rebuild]",
  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
  "files": {
-  "art-lab/characters/exports/hero-x2-v3.png": "f4ce348100e5d6881e9a744deb8958101a5d78206a69e41aae24d65aed763671",
+  "art-lab/characters/exports/hero-x2-v3.png": "65788b0d7665991c8fc4f5fbeb6290dc2e3e3afc8d38842b41c0398dbae816d0",
   "art-lab/characters/exports/hero-x2-v3.json": "1e48472f24d019688fcf044f35cdfed084339a1db584dcd468512beb55bc1847",
-  "art-lab/characters/source/hero-x2-v3.aseprite": "a4e039f9d4682f18672de8ade741e3cbf9018659b6f87124494484f7e937e3a4",
-  "art-lab/characters/provenance/hero-x2-v3/view-down.png": "ac9b5f1daac6f70946a034d607852a256311fa01aee3a6478b0ab6051037fa6b",
+  "art-lab/characters/source/hero-x2-v3.aseprite": "068e714d101f56d1b6e4bc3ea106ccf12540abd6bd902d9726c802d713b934c9",
+  "art-lab/characters/provenance/hero-x2-v3/view-down.png": "451deba61749282a2f450d704ea2aafeacc0fb9d44ade79436d86f6a2bf224fe",
   "art-lab/characters/provenance/hero-x2-v3/view-up.png": "a3c919a7073b5351b66d0f5477e2e19178c456b8415bb588e78581202b2f6e67",
-  "art-lab/characters/provenance/hero-x2-v3/view-side.png": "d8b6413da76ca5a6cfd5104d2d2021ce9b2ca51e8b839a4a44cda932083e31bb",
-  "art-lab/characters/provenance/hero-x2-v3/view-downSide.png": "f312a11fb52af69e4288bb87dc9417e6a20eaa69858e57493a5707ea4faaa5be",
+  "art-lab/characters/provenance/hero-x2-v3/view-side.png": "62e3017619073620afebafb831913daec3469264ae90aa781a8bcd90ecaa3ec4",
+  "art-lab/characters/provenance/hero-x2-v3/view-downSide.png": "93665a40eb56979edf191885694389891dc4a003445d7e1790822c8a400dd06f",
   "art-lab/characters/provenance/hero-x2-v3/view-upSide.png": "433d93cc16783c3be09f5f4a5f4a0597e0b0532dd824c259827a2b90c2754a72",
-  "art-lab/characters/provenance/hero-x2-v3/build.json": "5605dbd0be28610dc8e5fbedfc99c9cc78a3effe9fb262ecb3b31509d68c8143",
-  "art-lab/characters/rigs/hero-x2-v3.rig.mjs": "7817c825e0a377f357df83c2447df3b8682a3edf9b441956dfdf1de9a54b2595",
+  "art-lab/characters/provenance/hero-x2-v3/build.json": "9b3047946122e28403560eb09feb01ca001b437a1e27324153f8060c52d884ac",
+  "art-lab/characters/rigs/hero-x2-v3.rig.mjs": "a1c87af861a01928a378c71214c478cd30e89c98f78155b44d293f200a617312",
   "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
   "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
   "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
   "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
- }
+ },
+ "revisions": [
+  {
+   "date": "2026-10-19",
+   "pass": "H9",
+   "by": "operator (git user wonmii), in this session",
+   "request": "word for word: « Commence par la retouche du visage du héros v3 (décision H1). »; the decision sheet: H1 « Retouches d'abord (visage, palette) » (journal Passe D1)",
+   "what": "the face retouched at the texel in the rig (prepare: FACE): the blind critique of Pass H8 found half-closed eyes, no mouth and a one-tone skin; only face texels change (idle and run of the front and the three-quarter front, the profile idle); the profile run, the back views, the palette and the frame table are unchanged",
+   "previous": {
+    "exports": {
+     "png": "f4ce348100e5d6881e9a744deb8958101a5d78206a69e41aae24d65aed763671",
+     "json": "fb778f8b1513545076dea9ef0a3d2037c98987721f0ed5b8f85e7d2c7db1d52d",
+     "aseprite": "a4e039f9d4682f18672de8ade741e3cbf9018659b6f87124494484f7e937e3a4"
+    },
+    "views": {
+     "down": "ac9b5f1daac6f70946a034d607852a256311fa01aee3a6478b0ab6051037fa6b",
+     "up": "a3c919a7073b5351b66d0f5477e2e19178c456b8415bb588e78581202b2f6e67",
+     "side": "d8b6413da76ca5a6cfd5104d2d2021ce9b2ca51e8b839a4a44cda932083e31bb",
+     "downSide": "f312a11fb52af69e4288bb87dc9417e6a20eaa69858e57493a5707ea4faaa5be",
+     "upSide": "433d93cc16783c3be09f5f4a5f4a0597e0b0532dd824c259827a2b90c2754a72"
+    }
+   }
+  }
+ ]
 }

@@ -15,6 +15,10 @@ Production, approval and any Gold Master status are the operator's decision. Bui
 | `04-run-downSide-x4.png` | the three-quarter front run x4 |
 | `05-in-scene-D.png` | 1:1 crop of the same harness in camera D (`player=19,3.6&camera=D&cast=candidate&views=5`, 120 steps): the hero idle on the frontage |
 | `06-v2-vs-v3-idle-x3.png` | x3: top, hero-x2-v2 idle front / profile / back (the three facings); bottom, hero-x2-v3 front, three-quarter front, profile, three-quarter back, back |
+| `07-h9-face-before-after-x8.png` | Pass H9, the face retouched at the texel (decision H1): the idle head x8, front / three-quarter front / profile; top before (Pass H8), bottom after |
+| `08-h9-in-scene-before-after-x5.png` | Pass H9 in the scene: crops x5 of deterministic 1080p captures (DEV, `seed=1842&forge=normal&clean=1&freeze=7.3&cast=candidate&views=5`, 120 steps, the player's facing set before the render), top camera B (`player=-3.1,1.2`), bottom camera D (`player=19,3.6&camera=D`); per facing (front, three-quarter front, profile) before then after |
+
+Images 01-06 show the export of Pass H8 (the face before the Pass H9 retouch); only the faces changed since (JOURNAL, Passe H9).
 
 Measures (the runtime's own functions): `walkSlide` 14 (the profile run is hero-x2-v2's, the v3 sheet's drawn run, on this palette): 3.73 m/s,
 4.48 m/s with the run key. Foot slip in motion (`tools/foot-slip.mjs --secs=3`, median): B -0.07, D -0.07 (the quantisation of Pass H6).
