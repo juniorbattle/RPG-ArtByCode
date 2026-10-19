@@ -15,4 +15,7 @@ HUD allégé et signaux d'attaque discrets. Un seul fichier HTML, Three.js r128 
   panneau), `?devtest=1` (banc de mesure sur appareil réel). Touches : 1-6 attaques et techniques, A esquive, B garde (maintenir), R
   recommencer, Espace pause, H panneau, L atelier des sprites.
 - Captures : `node tools/arena-shots.mjs <dossier> arena/arena.html "nom|moment|js" ...` (moments scriptés du prototype : `charging`,
-  `window`, `combo`, ... ; voir l'en-tête de l'outil).
+  `window`, `combo`, ... ; voir l'en-tête de l'outil) ; contrôles : `node tools/arena-check.mjs arena/arena.html` (empreinte de la
+  simulation, chaque moment dans chaque mode sans erreur, contraste du télégraphe >= 2:1).
+- Version publiée (artefact privé de l'opérateur) : https://claude.ai/artifact/3w7wmerkBRUFACTm2Y9xCh ; la page se refait avec
+  `node tools/arena-page.mjs arena/arena.html <page.html>` (le service d'artefacts ajoute son propre squelette de document).

@@ -3,7 +3,7 @@
 <title>Arène des Champions</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Cinzel:wght@500;700&display=swap">
 <style>
-:root{--bg:#05070d;--panel:rgba(8,12,22,.86);--ink:#e8dcc0;--muted:#8e98ae;--line:rgba(233,166,76,.24);--gold:#e9a64c;--red:#c65a4a;--blue:#8fb4e0;--green:#cfdcf0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{color-scheme:dark;--bg:#05070d;--panel:rgba(8,12,22,.86);--ink:#e8dcc0;--muted:#8e98ae;--line:rgba(233,166,76,.24);--gold:#e9a64c;--red:#c65a4a;--blue:#8fb4e0;--green:#cfdcf0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 'Segoe UI',system-ui,sans-serif;overflow:hidden}
 #stage{position:fixed;inset:0;top:env(safe-area-inset-top,0px);bottom:env(safe-area-inset-bottom,0px)}#gl{display:block;width:100%;height:100%}
 #boot{position:absolute;inset:0;display:grid;place-items:center;color:#d9c9a8;font-size:13px;letter-spacing:.14em;text-transform:uppercase;background:#05070d;z-index:5}
@@ -50,10 +50,10 @@ body[data-mode="hd2d"] .hp .bar i{background:repeating-linear-gradient(90deg,#b4
 #title,#alert,#ctx,#tl{display:none}
 body[data-mode="hd2d"] #title{display:flex;position:absolute;left:16px;top:10px;gap:10px;align-items:center;font-family:'Segoe UI',system-ui,sans-serif;color:#f1d9a0;text-shadow:0 1px 0 #05070d,0 0 12px rgba(0,0,0,.7)}
 #title svg{width:38px;height:38px}#title b{display:block;font-size:23px;line-height:1.05}#title span{font-size:14px;opacity:.88}
-body[data-mode="hd2d"] .port{top:84px}body[data-mode="hd2d"] .hp{top:82px;width:min(32vw,330px);padding:8px 12px 9px;background:linear-gradient(90deg,rgba(8,12,22,.88),rgba(8,12,22,.55));border:1px solid rgba(233,166,76,.38);box-shadow:inset 0 0 0 1px rgba(0,0,0,.4)}
-body[data-mode="hd2d"] .hp.r{background:linear-gradient(270deg,rgba(8,12,22,.88),rgba(8,12,22,.55));border-color:rgba(208,113,78,.5);text-align:right}
+body[data-mode="hd2d"] .port{top:84px}body[data-mode="hd2d"] .hp{top:82px;width:min(32vw,330px);padding:8px 12px 9px;background:linear-gradient(90deg,rgba(5,8,16,.92),rgba(5,8,16,.62));border:1px solid rgba(233,166,76,.38);box-shadow:inset 0 0 0 1px rgba(0,0,0,.4)}
+body[data-mode="hd2d"] .hp.r{background:linear-gradient(270deg,rgba(5,8,16,.92),rgba(5,8,16,.62));border-color:rgba(198,90,74,.5);text-align:right}
 body[data-mode="hd2d"] .hp .nm{font-family:'Cinzel',serif;font-size:16px;text-transform:none;letter-spacing:.04em;color:#efe3c4}body[data-mode="hd2d"] .hp b{display:none}
-body[data-mode="hd2d"] .hp .bar.hpb{position:relative;height:15px;margin-top:5px}body[data-mode="hd2d"] .hp .bar em{position:absolute;right:6px;top:-1px;font:700 11px/15px 'Segoe UI',system-ui,sans-serif;font-style:normal;color:#f3e9d2;text-shadow:0 1px 2px #000}body[data-mode="hd2d"] .hp.r .bar em{right:auto;left:6px}
+body[data-mode="hd2d"] .hp .bar.hpb{position:relative;height:15px;margin-top:5px}body[data-mode="hd2d"] .hp .bar em{position:absolute;right:6px;top:0;font:700 10px/13px 'Segoe UI',system-ui,sans-serif;font-style:normal;color:#f3e9d2;text-shadow:0 1px 2px #000}body[data-mode="hd2d"] .hp.r .bar em{right:auto;left:6px}
 body[data-mode="hd2d"] .hp.r .bar.hpb i{background:repeating-linear-gradient(90deg,#c8604e 0 6px,#8a3428 6px 8px)}
 .hp .bar.gg,.hp .pips,.hp .nx{display:none}body[data-mode="hd2d"] .hp .bar.gg{display:block;height:8px;margin-top:5px}body[data-mode="hd2d"] .hp .bar.gg i{background:repeating-linear-gradient(90deg,#7ac4ff 0 4px,#3a82e0 4px 6px)}body[data-mode="hd2d"] .hp.r .bar.gg i{background:repeating-linear-gradient(90deg,#ffc06a 0 4px,#d9822a 4px 6px)}
 body[data-mode="hd2d"] .hp .pips{display:flex;gap:9px;margin-top:6px;padding-left:4px}body[data-mode="hd2d"] .hp.r .pips{justify-content:flex-end;padding-right:4px}.pips u{width:11px;height:11px;transform:rotate(45deg);border:1.5px solid rgba(233,166,76,.65);background:transparent;display:block}.pips u.on{background:#e9a64c;box-shadow:0 0 8px rgba(233,166,76,.85)}.hp.r .pips u{border-color:#e0a070}.hp.r .pips u.on{background:#ffb060;box-shadow:0 0 8px #ffb060}
@@ -77,7 +77,7 @@ body[data-mode="hd2d"] #tl{display:block;position:absolute;left:50%;bottom:6px;w
 .ab{position:relative;width:98px;height:62px;padding:7px 8px 6px;text-align:left;font:inherit;color:#e8dcc0;background:linear-gradient(#121a2ce6,#090d18e6);border:2px solid rgba(233,166,76,.28);border-radius:6px;cursor:pointer;overflow:hidden;opacity:.5;transition:opacity .1s,border-color .1s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
 .ab kbd{position:absolute;top:5px;right:6px;min-width:17px;padding:0 4px;font:700 11px/16px 'Segoe UI',system-ui,sans-serif;text-align:center;color:#05070d;background:#e8dcc0;border-radius:9px}
 .ab b{display:block;font:600 13px/1.1 'Cinzel',Georgia,serif;margin-top:15px;white-space:nowrap;color:#f3e9d2}.ab em{display:block;font:600 10.5px/1.2 'Segoe UI',system-ui,sans-serif;font-style:normal;color:#8e98ae;margin-top:3px}
-.ab.on{opacity:1;border-color:rgba(233,166,76,.85)}.ab.tech.on{border-color:#8fb4e0}.ab.noap{opacity:.4}.ab.noap em{color:#d08a6a}.ab.guard{margin-left:10px}
+.ab.on{opacity:1;border-color:rgba(233,166,76,.85)}.ab.tech.on{border-color:rgba(233,166,76,.85);background:linear-gradient(#18243ee6,#0b1224e6)}.ab.noap{opacity:.4}.ab.noap em{color:#d08a6a}.ab.guard{margin-left:10px}
 .ab .cd{position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(5,8,18,.78)}.ab s{position:absolute;inset:0;display:none;place-items:center;font:700 20px 'Segoe UI',system-ui,sans-serif;text-decoration:none;color:#fff;text-shadow:0 1px 3px #000}.ab.cool s{display:grid}
 .ab.open{opacity:1;border-color:#f3e3bf;box-shadow:0 0 14px rgba(243,227,191,.6);animation:abp .45s infinite alternate}@keyframes abp{to{transform:translateY(-4px)}}
 .ab.warn{border-color:#d0714e;box-shadow:0 0 12px rgba(208,113,78,.6)}.ab.active{opacity:1;border-color:#a9c4e8;background:linear-gradient(#1c2c4a,#0b1424);box-shadow:0 0 14px rgba(143,180,224,.5)}
@@ -93,7 +93,7 @@ body[data-mode="hd2d"] #tl{display:block;position:absolute;left:50%;bottom:6px;w
 body[data-mode="hd2d"] .hp{top:60px;width:min(24vw,270px);padding:6px 11px 8px}body[data-mode="hd2d"] .hp.l{left:80px}body[data-mode="hd2d"] .hp.r{right:80px}
 body[data-mode="hd2d"] .port{top:60px;width:52px;height:52px}body[data-mode="hd2d"] .port.l{left:18px}body[data-mode="hd2d"] .port.r{right:18px}
 body[data-mode="hd2d"] .hp .bar.hpb{height:13px;margin-top:3px}
-#abar{gap:5px;bottom:10px}.ab{width:72px;height:50px;padding:6px 7px 5px}.ab b{font-size:12px;margin-top:13px}.ab em{font-size:10px;margin-top:2px}.ab.guard{width:112px;margin-left:0}.ab.guard b{font-size:14px}
+#abar{gap:5px;bottom:10px}.ab{width:72px;height:50px;padding:6px 7px 5px}.ab b{font-size:12px;margin-top:13px}.ab em{font-size:10px;margin-top:2px}.ab.guard{width:112px;margin-left:0}@media (min-width:1000px){.ab.tech{width:112px}.ab.tech b{font-size:11px}.ab[data-act="heavy"]{width:84px}}.ab.guard b{font-size:14px}
 .sep{width:2px;align-self:stretch;margin:6px 5px;background:rgba(233,166,76,.25);border-radius:1px}.ab .dm{color:#e9a64c;letter-spacing:1px}
 @media (prefers-reduced-motion:reduce){.ab.open,.ab.hit,.ab.deny{animation:none}}
 /* pass 12 (Cité du Tournoi repo, journal Passe A1): the Merchant District night art direction; title as the game's loading screen */
@@ -101,10 +101,11 @@ body[data-mode="hd2d"] .hp .bar.hpb{height:13px;margin-top:3px}
 @media (max-width:860px){.ab{width:52px;height:46px}.ab.guard{width:70px}.ab em{display:none}.ab b{font-size:10px;margin-top:15px}.sep{margin:6px 2px}#abar{gap:3px}}
 
 @media (max-width:700px){.hp{width:40vw}#keys button{padding:10px}}
+#rotate{display:none;position:absolute;inset:0;z-index:80;place-items:center;padding:24px;text-align:center;background:#05070d;color:#d9c9a8}#rotate b{display:block;font-weight:400;font-size:15px;letter-spacing:.3em;text-transform:uppercase;color:#f1d9a0}#rotate span{display:block;margin-top:14px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.75}#rotate div::after{content:'';display:block;width:132px;height:2px;margin:16px auto 0;background:#e9a64c}@media (orientation:portrait) and (max-width:700px){#rotate{display:grid}}
 @media (prefers-reduced-motion:reduce){#dmg .dmg{animation-duration:.01s}}
 </style></head>
 <body data-mode="hd2d">
-<div id="stage"><canvas id="gl"></canvas><div id="boot">Loading Three.js…</div>
+<div id="stage"><canvas id="gl"></canvas><div id="boot">Chargement…</div><div id="rotate" role="alert"><div><b>Cité du Tournoi</b><span>Tournez l'appareil : l'arène se joue en paysage</span></div></div>
 <div id="overlay">
  <div id="hud"><div id="title"><svg viewBox="0 0 40 40" aria-hidden="true"><path fill="#e8b84a" stroke="#4a3008" stroke-width="1.4" stroke-linejoin="round" d="M20 2c4 5 5 10 0 18-5-8-4-13 0-18zM19 22c-6-9-14-6-14 1 0 4 4 6 8 5-3-2-3-5-1-6 3-1 5 1 7 3zM21 22c6-9 14-6 14 1 0 4-4 6-8 5 3-2 3-5 1-6-3-1-5 1-7 3zM11 25h18v3H11zM20 29c2 3 3 5 5 9-3-1-4-2-5-4-1 2-2 3-5 4 2-4 3-6 5-9z"/></svg><div><b>Cité du Tournoi</b><span>Arène des Champions</span></div></div><div class="hp l" id="hpRen"><span class="nm">Ren</span><div class="bar hpb"><i style="width:100%"></i><em>200 / 200</em></div><div class="pips" aria-label="Points d'action"><u></u><u></u><u></u><u></u><u></u></div></div><div class="hp r" id="hpMarek"><span class="nm">Marek</span><div class="bar hpb"><i style="width:100%"></i><em>800 / 800</em></div></div>
  <canvas class="port l" id="portRen" width="64" height="64"></canvas><canvas class="port r" id="portMarek" width="64" height="64"></canvas>
@@ -825,10 +826,10 @@ window.__CACHE_VER='2c556ca157';
       var P = this.tele, g = P.g, w = 512, h = 276; g.clearRect(0, 0, w, h);
       var cp = inc.castProgress, open = inc.windowOpen, flash = .5 + .5 * Math.sin(t * (open ? 22 : 7));
       var x0 = 20, x1 = w - 20, y0 = 30, y1 = h - 30;
-      g.fillStyle = 'rgba(120,44,34,.94)'; g.fillRect(x0, y0, x1 - x0, y1 - y0);
-      var fillW = (x1 - x0) * cp; g.fillStyle = open ? 'rgba(222,104,72,' + (.94 + .05 * flash) + ')' : 'rgba(176,70,50,.96)'; g.fillRect(x1 - fillW, y0, fillW, y1 - y0);
-      g.save(); g.beginPath(); g.rect(x0, y0, x1 - x0, y1 - y0); g.clip(); g.fillStyle = 'rgba(250,240,220,.5)';
-      for (var cx = x1 + 60 - ((t * 170) % 110); cx > x0 - 110; cx -= 110) { g.beginPath(); g.moveTo(cx, h / 2); g.lineTo(cx + 44, y0 + 10); g.lineTo(cx + 44 - 24, y0 + 10); g.lineTo(cx - 24, h / 2); g.lineTo(cx + 44 - 24, y1 - 10); g.lineTo(cx + 44, y1 - 10); g.closePath(); g.fill(); }
+      g.fillStyle = 'rgba(150,40,56,.94)'; g.fillRect(x0, y0, x1 - x0, y1 - y0);
+      var fillW = (x1 - x0) * cp; g.fillStyle = open ? 'rgba(206,60,78,' + (.94 + .05 * flash) + ')' : 'rgba(176,48,64,.96)'; g.fillRect(x1 - fillW, y0, fillW, y1 - y0);
+      g.save(); g.beginPath(); g.rect(x0, y0, x1 - x0, y1 - y0); g.clip(); g.fillStyle = 'rgba(241,217,160,.88)';
+      for (var cx = x1 + 60 - ((t * 170) % 110); cx > x0 - 110; cx -= 110) { g.beginPath(); g.moveTo(cx, h / 2); g.lineTo(cx + 44, y0 + 10); g.lineTo(cx + 44 - 38, y0 + 10); g.lineTo(cx - 38, h / 2); g.lineTo(cx + 44 - 38, y1 - 10); g.lineTo(cx + 44, y1 - 10); g.closePath(); g.fill(); }
       g.restore();
       g.lineJoin = 'miter'; g.strokeStyle = '#0a0d16'; g.lineWidth = 16; g.strokeRect(x0, y0, x1 - x0, y1 - y0);
       g.strokeStyle = open ? 'rgba(243,233,210,' + (.7 + .3 * flash) + ')' : '#d0503e'; g.lineWidth = 9; g.strokeRect(x0, y0, x1 - x0, y1 - y0);
@@ -968,8 +969,8 @@ window.__CACHE_VER='2c556ca157';
     '  float ms = mist * exp(-max(P.y, 0.0) * 1.1) * (0.55 + 0.45 * vn(P.xz * 0.16 + vec2(time * 0.012, time * 0.008))) * clearM * farW;',
     '  col = mix(col, fogCol, clamp(fog + ms * 0.55, 0.0, 0.85));',
     '  vec3 il = vec3(0.0), sc = vec3(0.0);',
-    '  for (int i = 0; i < 16; i++) { if (float(i) >= nLights) break; vec3 L = uLP[i]; float R = uLR[i]; float dl = length(L - P); il += uLC[i] / (1.0 + 9.0 * (dl / R) * (dl / R)); vec3 w = L - uCamPos; float tt = clamp(dot(w, V), 0.0, dist); float dd = length(L - (uCamPos + V * tt)); sc += uLC[i] * (R * R * 0.12) / (dd * dd + R * R * 0.12) * 0.06; }',
-    '  col = col * (1.0 + il * lamp * 0.9) + il * lamp * 0.012 + sc * scat;',
+    '  for (int i = 0; i < 16; i++) { if (float(i) >= nLights) break; vec3 L = uLP[i]; float R = uLR[i]; float dl = length(L - P); il += uLC[i] / (1.0 + 9.0 * (dl / R) * (dl / R)) * (1.0 - smoothstep(min(R * 1.1, 3.0), min(R * 2.4, 6.0), dl)); vec3 w = L - uCamPos; float tt = clamp(dot(w, V), 0.0, dist); float dd = length(L - (uCamPos + V * tt)); sc += uLC[i] * (R * R * 0.12) / (dd * dd + R * R * 0.12) * 0.06 * (1.0 - smoothstep(min(R * 0.45, 1.2), min(R * 1.05, 2.6), dd)); }',
+    '  col = col * (1.0 + il * lamp * 0.9) + il * lamp * 0.035 + sc * scat;',
     '  gl_FragColor = vec4(col, 1.0);',
     '}'].join('\n');
 
@@ -1021,7 +1022,7 @@ window.__CACHE_VER='2c556ca157';
     U.tScene.value = src.texture; U.tDepth.value = this.rtS.depthTexture; U.tB1.value = this.bl[0][0].texture; U.tB2.value = this.bl[1][0].texture; U.tB3.value = this.bl[2][0].texture;
     U.near.value = camera.near; U.far.value = camera.far; U.time.value = p.time || 0; U.focus.value = p.focus; U.range.value = p.range || 5; U.rangeNear.value = p.rangeNear || 3.4; U.rangeFar.value = p.rangeFar || 30; U.farScale.value = p.farScale == null ? .5 : p.farScale; U.plateauN.value = p.plateauN || 0; U.plateauF.value = p.plateauF || 0; if (p.sunUV) U.sunUV.value.set(p.sunUV[0], p.sunUV[1]); U.maxBlur.value = (p.maxBlur || 7) * Math.max(.5, this.h / 1080 * (p.dpr || 1) * 1.0 + .0);
     U.dofOn.value = o.dof ? 1 : 0; U.bloom.value = o.bloom ? (p.bloom == null ? .55 : p.bloom) : 0; U.rays.value = o.rays ? (p.rays == null ? .5 : p.rays) : 0; U.tilt.value = o.dof ? (p.tilt == null ? .55 : p.tilt) : 0;
-    U.pulse.value = p.pulse || 0; U.sat.value = o.grade ? (p.sat || 1.2) : 1.0; U.vig.value = o.grade ? .68 : 0; U.grain.value = o.grade ? .02 : 0; U.exposure.value = o.grade ? (p.exposure || .86) : 1.0;
+    U.pulse.value = p.pulse || 0; U.sat.value = o.grade ? (p.sat || 1.2) : 1.0; U.vig.value = o.grade ? .68 : 0; U.grain.value = o.grade ? .008 : 0; U.exposure.value = o.grade ? (p.exposure || .86) : 1.0;
     this.pass(this.mComp, this.rtO);
     this.mFxaa.uniforms.amount.value = o.fxaa === false ? 0 : 1; this.mFxaa.uniforms.tex.value = this.rtO.texture; this.pass(this.mFxaa, null);
     r.autoClear = prevAuto;
@@ -1337,7 +1338,7 @@ window.__CACHE_VER='2c556ca157';
   }
   function skyNight(THREE, moonU, moonV) {
     return T(THREE, 1024, 160, 28, function (g, w, h) {
-      var gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#080c1a'); gr.addColorStop(.35, '#111a30'); gr.addColorStop(.72, '#212c46'); gr.addColorStop(1, '#344258'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      var gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#060918'); gr.addColorStop(.35, '#0c1330'); gr.addColorStop(.72, '#1a2446'); gr.addColorStop(1, '#2e3a5c'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
       var sg = g.createRadialGradient(w * moonU, h * moonV, 4, w * moonU, h * moonV, h * .9); sg.addColorStop(0, 'rgba(150,172,220,.42)'); sg.addColorStop(.45, 'rgba(110,132,186,.14)'); sg.addColorStop(1, 'rgba(110,132,186,0)'); g.fillStyle = sg; g.fillRect(0, 0, w, h);
       var cg = g.createLinearGradient(0, h * .78, 0, h); cg.addColorStop(0, 'rgba(84,70,62,0)'); cg.addColorStop(1, 'rgba(84,70,62,.3)'); g.fillStyle = cg; g.fillRect(0, h * .78, w, h * .22);
     }, { ss: 1, after: function (g, w, h) {
@@ -1462,7 +1463,7 @@ window.__CACHE_VER='2c556ca157';
     opts = opts || {}; var g = new THREE.Group(), anim = { banners: [], flames: [], clouds: [] }, rnd = X2.rnd(17);
     var S = function (map, o) { return new THREE.MeshStandardMaterial(Object.assign({ map: map, roughness: 1, metalness: 0 }, o || {})); };
     var flat = function (c, o) { return new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 1, metalness: 0 }, o || {})); };
-    var cob = X3.cobbleW(THREE), rings = X3.rings(THREE), wallC = X3.wallCalm(THREE), wallA = X3.wallArch(THREE), fl = X2.flames(THREE), banner = X2.banner(THREE, '#22327a', '#e0b03a');
+    var cob = X3.cobbleW(THREE), rings = X3.rings(THREE), wallC = X3.wallCalm(THREE), wallA = X3.wallArch(THREE), fl = X2.flames(THREE), banner = X2.banner(THREE, '#0e1874', '#e0b03a');
     var batches = {}, cbatch = [];
     function box(w, h, d, x, y, z, map, o) { o = o || {}; var geo = new THREE.BoxGeometry(w, h, d); uvScale(geo, w, h, d, o.tw || 3.2, o.th || 1.6, o.tt || 1.6); geo.translate(x, y, z); (batches[map.uuid] = batches[map.uuid] || { map: map, geos: [] }).geos.push(geo); }
     function flatBox(w, h, d, x, y, z, col) { var geo = new THREE.BoxGeometry(w, h, d), c = new THREE.Color(col), n = geo.attributes.position.count, ca = new Float32Array(n * 3); for (var q = 0; q < n; q++) { ca[q * 3] = c.r; ca[q * 3 + 1] = c.g; ca[q * 3 + 2] = c.b; } geo.setAttribute('color', new THREE.BufferAttribute(ca, 3)); geo.deleteAttribute('uv'); geo.translate(x, y, z); cbatch.push(geo); }
@@ -1472,7 +1473,7 @@ window.__CACHE_VER='2c556ca157';
 
     // ---- floor: cool cobbles (slightly glossy: moon and lanterns glint on wet stone), ring pattern + muted medallion, a faint moonlit pool under the fighters, darker rim
     var fg = new THREE.PlaneGeometry(90, 52); fg.rotateX(-Math.PI / 2); var fu = fg.attributes.uv; for (var i = 0; i < fu.count; i++) fu.setXY(i, fu.getX(i) * 90 / 6.4, fu.getY(i) * 52 / 6.4);
-    var floor = new THREE.Mesh(fg, S(cob, { color: 0x9ca2b0, roughness: .72, metalness: 0 })); floor.position.set(0, 0, -9); floor.receiveShadow = true; g.add(floor);
+    var floor = new THREE.Mesh(fg, S(cob, { color: 0x9ca2b0, roughness: .85, metalness: 0 })); floor.position.set(0, 0, -9); floor.receiveShadow = true; g.add(floor);
     var rg = new THREE.Mesh(new THREE.CircleGeometry(7, 72), S(rings, { alphaTest: .5, roughness: .8, metalness: .04, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })); rg.rotation.x = -Math.PI / 2; rg.rotation.z = Math.PI; rg.position.set(0, .012, .2); rg.receiveShadow = true; g.add(rg);
     pool(40, 26, 0, -2, 'rgba(4,6,12,0)', 'rgba(4,6,12,.62)', false); pool(15, 9, 0, .2, 'rgba(150,170,214,.12)', 'rgba(150,170,214,0)', true);
 
@@ -1498,6 +1499,7 @@ window.__CACHE_VER='2c556ca157';
     g.add(wm);
     // sparse lantern points (emissive sprites, not lights)
     var lp = [], lg = VFX.glowTex(THREE); [8.2, 10.0, 11.8, 13.6, 15.0].forEach(function (x) { lp.push([x, 1.6, -7.85], [-x, 1.6, -7.85]); });
+    lp.forEach(function (q) { flatBox(.05, .3, .05, q[0], 1.36, q[2] - .02, '#16161c'); flatBox(.15, .22, .15, q[0], 1.6, q[2] - .04, '#1e1c22'); });
     var lm = new THREE.InstancedMesh(new THREE.PlaneGeometry(.38, .38), new THREE.MeshBasicMaterial({ map: lg, color: 0xff9a40, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: .6 }), lp.length), dm = new THREE.Object3D(); lp.forEach(function (p, k) { dm.position.set(p[0], p[1], p[2]); dm.updateMatrix(); lm.setMatrixAt(k, dm.matrix); }); g.add(lm);
 
     // ---- local lights for the post pass (light pools on surfaces, in-scatter halos, reflections): tower flames, parapet lanterns, two low lamp posts at the ring's edge. No real point lights.
@@ -1505,8 +1507,8 @@ window.__CACHE_VER='2c556ca157';
     function addLight(x, y, z, c, k, r) { lightList.push({ p: new THREE.Vector3(x, y, z), c: c, k: k, k0: k, r: r, ph: lightList.length * 1.7 }); }
     towers.forEach(function (t) { addLight(t.x, t.y - .4, t.z + .7, [1, .62, .28], .9, 3.6); });
     [8.2, 10.0, 11.8].forEach(function (x) { addLight(x, 1.7, -7.6, [1, .6, .26], .8, 1.9); addLight(-x, 1.7, -7.6, [1, .6, .26], .8, 1.9); });
-    var lampCore = new THREE.InstancedMesh(new THREE.BoxGeometry(.28, .38, .28), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.7, 1.05, .45) }), 4);
-    [-6.0, 6.0].forEach(function (x, k) { flatBox(.1, 2.1, .1, x, 1.05, -3.6, '#2a1f24'); flatBox(.36, .08, .36, x, .04, -3.6, '#2a1f24'); flatBox(.34, .05, .34, x, 2.05, -3.6, '#2a1f24'); flatBox(.34, .05, .34, x, 2.47, -3.6, '#2a1f24'); dm.position.set(x, 2.26, -3.6); dm.updateMatrix(); lampCore.setMatrixAt(k, dm.matrix); addLight(x, 2.25, -3.3, [1, .62, .28], 1.35, 4.2); });
+    var lampCore = new THREE.InstancedMesh(new THREE.BoxGeometry(.28, .38, .28), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.55, .86, .34) }), 4);
+    [-6.0, 6.0].forEach(function (x, k) { flatBox(.1, 2.1, .1, x, 1.05, -3.6, '#2a1f24'); flatBox(.36, .08, .36, x, .04, -3.6, '#2a1f24'); flatBox(.34, .05, .34, x, 2.05, -3.6, '#2a1f24'); flatBox(.34, .05, .34, x, 2.47, -3.6, '#2a1f24'); dm.position.set(x, 2.26, -3.6); dm.updateMatrix(); lampCore.setMatrixAt(k, dm.matrix); addLight(x, 2.25, -3.3, [1, .62, .28], 2.0, 4.2); });
     g.add(lampCore);
     // ---- framing architecture behind the tribunes: timber-framed facades with lit windows, balconies, signs and roofs (the Merchant District's language, kept at the edges so the centre stays calm)
     function addC(geo, x, y, z, col, ry) { if (ry) geo.rotateY(ry); geo.translate(x, y, z); var c = new THREE.Color(col), n = geo.attributes.position.count, ca = new Float32Array(n * 3); for (var q = 0; q < n; q++) { ca[q * 3] = c.r; ca[q * 3 + 1] = c.g; ca[q * 3 + 2] = c.b; } geo.setAttribute('color', new THREE.BufferAttribute(ca, 3)); if (geo.attributes.uv) geo.deleteAttribute('uv'); cbatch.push(geo); }
@@ -1568,8 +1570,8 @@ window.__CACHE_VER='2c556ca157';
     var sunWorld = new THREE.Vector3(6, 26.5, -172), sky = new THREE.Mesh(new THREE.PlaneGeometry(440, 42), new THREE.MeshBasicMaterial({ map: X3.skyNight(THREE, (sunWorld.x + 220) / 440, 1 - (sunWorld.y - (17 - 21)) / 42), fog: false })); sky.position.set(0, 17, -180); g.add(sky);
     [[-60, 20, 1], [10, 24, 2], [75, 19, 3]].forEach(function (c, k) { var cl = new THREE.Mesh(new THREE.PlaneGeometry(70, 16), new THREE.MeshBasicMaterial({ map: X3.cloudsW(THREE, 50 + k), transparent: true, alphaTest: .5, fog: false })); cl.position.set(c[0], c[1], -170 + k); g.add(cl); anim.clouds.push(cl); });
     // the moon (sunWorld keeps its name: the god-ray pass aims at it): a cool halo, then the disc, as the district's moon
-    var sg = new THREE.Sprite(new THREE.SpriteMaterial({ map: lg, color: 0x7f94c8, transparent: true, opacity: .2, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })); sg.scale.set(70, 56, 1); sg.position.copy(sunWorld).add(new THREE.Vector3(0, 0, 6)); g.add(sg);
-    var sd = new THREE.Sprite(new THREE.SpriteMaterial({ map: X3.moonTex(THREE), color: 0xffffff, transparent: true, depthWrite: false, fog: false })); sd.scale.set(5.2, 5.2, 1); sd.position.copy(sunWorld).add(new THREE.Vector3(0, 0, 8)); g.add(sd);
+    var sg = new THREE.Sprite(new THREE.SpriteMaterial({ map: lg, color: 0x7f94c8, transparent: true, opacity: .42, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })); sg.scale.set(22, 22, 1); sg.position.copy(sunWorld).add(new THREE.Vector3(0, 0, 6)); g.add(sg);
+    var sd = new THREE.Sprite(new THREE.SpriteMaterial({ map: X3.moonTex(THREE), color: new THREE.Color(1.8, 1.78, 1.72), transparent: true, depthWrite: false, fog: false })); sd.scale.set(5.2, 5.2, 1); sd.position.copy(sunWorld).add(new THREE.Vector3(0, 0, 8)); g.add(sd);
 
     // ---- foreground framing: two dark simple masses, smooth because the DOF blurs real geometry
     function silTex(kind) { var c = document.createElement('canvas'); c.width = c.height = 128; var q = c.getContext('2d'); q.filter = 'blur(3px)'; q.fillStyle = '#06080e'; q.beginPath(); q.ellipse(64, 104, 46, 40, 0, Math.PI, 0); q.fill(); q.fillRect(18, 104, 92, 30); q.beginPath(); q.arc(64, 62, 21, 0, 7); q.fill(); if (kind === 1) { q.beginPath(); q.ellipse(64, 46, 36, 9, 0, 0, 7); q.fill(); q.beginPath(); q.moveTo(46, 44); q.lineTo(64, 14); q.lineTo(82, 44); q.fill(); } else if (kind === 2) { q.fillRect(40, 30, 48, 14); q.beginPath(); q.arc(64, 40, 24, Math.PI, 0); q.fill(); } else { q.beginPath(); q.arc(64, 50, 25, Math.PI, 0); q.fill(); } q.filter = 'none'; var tx = new THREE.CanvasTexture(c); tx.encoding = THREE.sRGBEncoding; return tx; }
@@ -1578,7 +1580,7 @@ window.__CACHE_VER='2c556ca157';
 
     // ---- lights: ONE key (the moon, behind-left), a dim slate bounce from camera side, an indigo hemisphere. No point lights: the warm light is the lanterns' (post pass).
     var sun = new THREE.DirectionalLight(0xa4b8e8, 1.8); sun.position.set(-8, 8.5, -14); sun.target.position.set(0, 0, 0); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); var sc = sun.shadow.camera; sc.left = -20; sc.right = 20; sc.top = 16; sc.bottom = -16; sc.near = 1; sc.far = 70; sun.shadow.bias = -.0004; sun.shadow.normalBias = .03; sun.shadow.radius = 2; g.add(sun); g.add(sun.target);
-    var fill = new THREE.DirectionalLight(0x40507a, .2); fill.position.set(2, 4, 16); g.add(fill); var hemi = new THREE.HemisphereLight(0x4a5c8a, 0x16181f, .46); g.add(hemi);
+    var fill = new THREE.DirectionalLight(0x40507a, .2); fill.position.set(2, 4, 16); g.add(fill); var hemi = new THREE.HemisphereLight(0x3c5296, 0x0e1220, .46); g.add(hemi);
 
     // ---- merge batched geometry into a handful of meshes
     function mergeGeos(list) { var P = [], N = [], U = [], C = [], I = [], off = 0, hasUV = !!list[0].attributes.uv, hasC = !!list[0].attributes.color; list.forEach(function (gg) { var p = gg.attributes.position, n = gg.attributes.normal, u = gg.attributes.uv, c = gg.attributes.color; for (var i = 0; i < p.count; i++) { P.push(p.getX(i), p.getY(i), p.getZ(i)); N.push(n.getX(i), n.getY(i), n.getZ(i)); if (hasUV) U.push(u.getX(i), u.getY(i)); if (hasC) C.push(c.getX(i), c.getY(i), c.getZ(i)); } var ix = gg.index; for (var j = 0; j < ix.count; j++) I.push(ix.getX(j) + off); off += p.count; }); var out = new THREE.BufferGeometry(); out.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); out.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3)); if (hasUV) out.setAttribute('uv', new THREE.Float32BufferAttribute(U, 2)); if (hasC) out.setAttribute('color', new THREE.Float32BufferAttribute(C, 3)); out.setIndex(I); return out; }
@@ -2479,7 +2481,7 @@ window.__CACHE_VER='2c556ca157';
   };
   HD2DRenderer.prototype.render = function () {
     if (this.flags.post === false) { this.renderer.setRenderTarget(null); this.renderer.render(this.scene, this.camera); return; }
-    var sv = this.arena.sunWorld.clone().project(this.camera); var AD0_ = window.__ad || {}, dk = AD0_.dusk == null ? .7 : AD0_.dusk, AD = Object.assign({}, AD0_, { lamp: (AD0_.lamp == null ? 1 : AD0_.lamp) * (1 + .6 * dk), scat: (AD0_.scat == null ? 1 : AD0_.scat) * (1 + .5 * dk), wet: (AD0_.wet == null ? 1 : AD0_.wet) * (1 + .25 * dk) }); this.arena.hemi.intensity = .3 * (AD0_.ambient == null ? 1 : AD0_.ambient) * (1 - .4 * dk); this.arena.sun.intensity = .95 * (AD0_.warm == null ? 1 : AD0_.warm) * (1 - .5 * dk); this.post.render(this.scene, this.camera, { pulse: this.screenPulse * (window.__rm ? .35 : 1) * ((window.__assist || 'subtle') === 'off' ? 0 : Math.min(1, (window.__ad && window.__ad.tell != null) ? window.__ad.tell : 1)), ad: AD, lights: this.arena.lightList, time: this.t, focus: this.camera.position.distanceTo(this.target), rangeNear: 3.4, rangeFar: 30, farScale: .32, plateauN: 2.6, plateauF: 7, tilt: 0, maxBlur: 7, dpr: this.renderer.getPixelRatio(), bloom: .16, rays: .12, exposure: .95, sat: 1.0, sunUV: [sv.x * .5 + .5, sv.y * .5 + .5] });
+    var sv = this.arena.sunWorld.clone().project(this.camera); var AD0_ = window.__ad || {}, dk = AD0_.dusk == null ? .7 : AD0_.dusk, AD = Object.assign({}, AD0_, { lamp: (AD0_.lamp == null ? 1 : AD0_.lamp) * (1 + .6 * dk), scat: (AD0_.scat == null ? 1 : AD0_.scat) * (1 + .5 * dk), wet: (AD0_.wet == null ? 1 : AD0_.wet) * (1 + .25 * dk) }); this.arena.hemi.intensity = .5 * (AD0_.ambient == null ? 1 : AD0_.ambient) * (1 - .4 * dk); this.arena.sun.intensity = 1.1 * (AD0_.warm == null ? 1 : AD0_.warm) * (1 - .5 * dk); this.post.render(this.scene, this.camera, { pulse: this.screenPulse * (window.__rm ? .35 : 1) * ((window.__assist || 'subtle') === 'off' ? 0 : Math.min(1, (window.__ad && window.__ad.tell != null) ? window.__ad.tell : 1)), ad: AD, lights: this.arena.lightList, time: this.t, focus: this.camera.position.distanceTo(this.target), rangeNear: 3.4, rangeFar: 30, farScale: .32, plateauN: 2.6, plateauF: 7, tilt: 0, maxBlur: 7, dpr: this.renderer.getPixelRatio(), bloom: .16, rays: .12, exposure: .95, sat: 1.0, sunUV: [sv.x * .5 + .5, sv.y * .5 + .5] });
   };
   HD2DRenderer.prototype.resize = function (w, h) { this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); var v = new this.THREE.Vector2(); this.renderer.getDrawingBufferSize(v); if (this.post) this.post.setSize(v.x, v.y); };
   /* animated pixel portrait: crop of the current sprite frame around the head, plus the live face overlay, integer-scaled */
@@ -2929,7 +2931,7 @@ window.__CACHE_VER='2c556ca157';
 /* App shell: CombatSimulation -> presentation -> (HybridRenderer | Full3DRenderer). Input, DOM HUD, debug panel, presets, stats. */
 (function () {
   var $ = function (s, r) { return (r || document).querySelector(s); }, $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
-  if (!window.THREE) { document.getElementById('boot').textContent = 'Three.js failed to load (cdnjs). Check your connection and reload.'; return; }
+  if (!window.THREE) { document.getElementById('boot').textContent = 'Three.js n\'a pas pu être chargé (cdnjs) : vérifiez la connexion, puis rechargez.'; return; }
   var THREE = window.THREE, sim = new CombatLib.CombatSim(), D = sim.D;
   var canvas = $('#gl'), stage = $('#stage');
   var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: 'high-performance' }); renderer.info.autoReset = false;
@@ -3191,7 +3193,7 @@ window.__CACHE_VER='2c556ca157';
   function boot() {
     size(); var boot = $('#boot'); boot.textContent = 'Peindre la nuit…';
     var tStart = performance.now(), prog = function (lo, hi, label) { return function (p) { boot.textContent = label + ' ' + Math.round((lo + (hi - lo) * p) * 100) + '%'; }; };
-    HybridRenderer.prepare(THREE, prog(0, .5, 'Preparing painted sprites…')).then(function () { return HD2DRenderer.prepare(THREE, prog(.5, 1, 'Preparing pixel sprites…')); }).then(function () {
+    HybridRenderer.prepare(THREE, prog(0, .5, 'Peindre les combattants…')).then(function () { return HD2DRenderer.prepare(THREE, prog(.5, 1, 'Pixels des combattants…')); }).then(function () {
       var prepMs = performance.now() - tStart, t0 = performance.now(); R.hybrid = new HybridRenderer(THREE, renderer, W, H); var tA = performance.now() - t0; t0 = performance.now();
       R.full3d = new Full3DRenderer(THREE, renderer, W, H); var tB = performance.now() - t0; t0 = performance.now(); R.hd2d = new HD2DRenderer(THREE, renderer, W, H); var tC = performance.now() - t0;
       window.__bake.build = { prepareMs: prepMs, hybridMs: tA, full3dMs: tB, hd2dMs: tC, painted: window.__atlasT, pixel: window.__pixAtlasT };

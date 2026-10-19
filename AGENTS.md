@@ -141,7 +141,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - Arena prototype (`arena/`, journal Passe A1; not part of the game or its build): `node tools/arena-shots.mjs <outDir> arena/arena.html
   "name|moment|js" ...` — captures of its scripted moments (`charging`, `window`, `combo`, ...); `node tools/arena-check.mjs <file.html> ...`
   — its combat simulation's state hash over a fixed input script, every moment in every mode without a page error, the telegraph's contrast
-  against the floor (>= 2:1); both serve the file locally (`ARENA_THREE=<three r128>` when cdnjs is unreachable)
+  against the floor (>= 2:1); both serve the file locally (`ARENA_THREE=<three r128>` when cdnjs is unreachable); `node tools/arena-page.mjs arena/arena.html <page.html>` — the page
+  to publish as an artifact (the service adds its own document skeleton; journal Passe A2)
 - Character Lab (dev only): `npm run dev`, then `/character-lab.html` (or `npm run art:lab`) — shows an exported PNG sheet through
   Three.js at 1x / 4x / runtime scale; `window.__lab.selfTest()` checks nearest filtering texel-for-texel. Not part of the game or its build.
 

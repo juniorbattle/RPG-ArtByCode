@@ -735,6 +735,74 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   contrôle chiffré du prototype l'a vu, pas l'œil sur une capture.
 - Une silhouette lointaine se lit par sa valeur contre le ciel derrière elle : à valeur égale, il ne reste que ses liserés.
 
+## Passe A2 — Arène : critiques à l'aveugle, la chaleur bornée aux sources, télégraphe cramoisi, publication (2026-10-19)
+
+### Pourquoi
+- Suite de la Passe A1 (fusionnée, `74a815a`), même consigne ; « Principes à garder » : toute retouche repasse une critique à l'aveugle par
+  un agent neuf, et une retouche qui ne gagne pas clairement est annulée. Branche `claude/stoic-goodall-8ieke4` (de `main` = `74a815a`).
+
+### Critique n° 1 — [OK] (agent neuf ; original contre A1, étiquettes tirées au sort, clé gardée hors de sa portée ; références A / B du district)
+- A1 l'emporte : conformité globale 7 / 10 contre 3, ciel 6 / 2, pierre 6 / 3, lumière (chaud seulement aux sources) 6 / 2, HUD 8 / 5,
+  signaux 7 / 6 (l'original : « a warm dusk scene », accents verts étrangers à l'interface du jeu).
+- Ses écarts restants, **vérifiés sur les pixels** avant d'agir : mur du fond #262228 et arches #2e241b (neutres / chauds, la référence
+  est bleu froid dans l'ombre), bannières prune #47373c, bord du sol #615f6c (clair), haut du ciel #303950 ; lune sans halo lisible ;
+  libellés de techniques coupés (« COUP ÉCL », « TOURBILLO » : déjà dans l'original).
+
+### Cause de la teinte tiède — [OK] attribuée effet par effet (mêmes captures, un effet coupé à la fois)
+- Sans l'in-scatter des lanternes : mur #101528, arches noires, bannières #0e0f40 ; sans les flaques ou sans le bloom : presque rien ne
+  change. Le terme d'in-scatter de la passe de post-traitement, `R²·0,12 / (d² + R²·0,12)`, a une traîne en 1 / d² : sommé sur les
+  14 lumières, il voile tout le cadre d'ambre.
+- **[KO]** premier essai sans attribution (flaques bornées, ambiance plus froide) : mur #29262f, presque rien. **[KO]** halo borné à
+  0,9-2,6 R : les lampadaires (R 4,2 m) couvraient encore l'arène (#201f2c). **[OK]** halo borné en distance absolue : mur #101528,
+  ciel loin de la lune #0e152b (référence #0f1533), bord du sol #3b3e50.
+- Flaques des lampadaires plus chaudes (terme additif 0,012 → 0,035), halo de la lune resserré (70 × 56 m à 0,2 → 22 × 22 à 0,42 : le
+  grand halo éclaircissait tout le ciel), sol moins brillant, grain 0,02 → 0,012, panneaux du HUD plus sombres, cartes de techniques
+  assez larges dès 1 000 px (112 px, 11 px ; « Puissante » 84 px).
+- Télégraphe : le critique le trouvait « dans la famille de l'ambre » (confondable avec les lanternes). **[KO]** cramoisi #a8283a qu'il
+  proposait : 1,55:1 (le rouge porte peu de luminance). **[OK]** bande cramoisi-rosé plus claire, chevrons ivoire plus épais : 2,19:1
+  (deutéranopie 2,51), puis 2,29:1 avec l'éclairage final.
+
+### Critique n° 2 — [OK] (agent neuf ; A1 contre cette révision, étiquettes tirées au sort)
+- La révision l'emporte : 7 / 10 contre 5, ciel 6,5 / 4,5, pierre 6 / 5, lumière 6,5 / 5,5, HUD 7,5 / 5,5, signaux 8 / 6,5 ; mesures du
+  critique : pixels bleus 50 % (A1 : 15 %), point noir Y ≈ 20 (A1 : 33 ; référence ≈ 20).
+- Ses écarts restants, vérifiés : gradins latéraux beige #604d43 sur toute leur largeur, lune terne #c4beb5, bannières violacées #4e3d58,
+  cœurs des lampadaires presque blancs, lueurs ambrées sans lanterne sur les parapets, chiffres de vie rognés en bas de leur barre.
+- Attribution de nouveau : sans in-scatter, gradins #1c1e2d ; les six lanternes de parapet de chaque côté, espacées de 1,8 m, fondaient
+  leurs halos en un voile continu → halo ≤ 2,6 m et proportionnel au rayon pour les petites lanternes ; gradins #4e403c avec des taches
+  chaudes autour de chaque lanterne. Flaques bornées aussi en distance (≤ 6 m). Lune en valeurs HDR (elle fleurit dans le bloom, comme celle
+  du district) ; bannières #0e1874 ; cœurs des lampadaires plus ambrés ; une petite lanterne (poteau et cage) sous chaque lueur de parapet ;
+  chiffres de vie à l'intérieur de leur barre ; toutes les cartes disponibles bordées d'ambre (techniques teintées dedans) ; grain 0,008.
+- Critique n° 3 (révision 2 contre révision 3) : en cours au moment de ce commit (agent neuf, étiquettes tirées au sort) ; la version 3 n'est fusionnée qu'après son verdict
+
+### Écarté — [KO] les modes de comparaison PAINTED / FULL 3D de nuit
+- Ciel, brume, lumières et tissus passés à la nuit : sans post-traitement, avec des textures de sable claires et un dégradé toon plancher à
+  33 %, le sable éclairé par les braseros reste chaud, même à des intensités très basses (hémisphère 0,16, lune 0,32). Retiré (paires du
+  script inversées) ; **mon choix** : ces deux modes du « bake-off » gardent leur jour, le mode du jeu est HD-2D.
+
+### Aussi
+- Écran « tournez l'appareil » en portrait sur téléphone (le cadre de combat est un cadre paysage : en portrait il coupait les deux
+  combattants et la barre d'actions débordait) ; `color-scheme: dark` (contrôles natifs du panneau) ; libellés de chargement en français.
+- Publication : `tools/arena-page.mjs` (le service d'artefacts enveloppe le fichier dans son propre squelette : la page retire le sien,
+  `data-mode="hd2d"` posé par un premier script) ; artefact privé **https://claude.ai/artifact/3w7wmerkBRUFACTm2Y9xCh** (nouveau ; l'original
+  `Bhee6cMZ5mLKdVejE2rsim` reste la source archivée, non touché). Avertissement du service : le bouton « Download 3 key frames » du banc
+  d'appareil (lien de téléchargement) ne fait rien dans la visionneuse d'artefacts ; il marche en servant le fichier soi-même.
+
+### Journal
+- Passes gardées (H5 à A2) : 75 722 octets avant cette ligne, au-delà des ≈ 60 Ko ; aucun archivage possible selon le critère d'`AGENTS.md` :
+  la plus ancienne, H5, attend sa décision (production du héros). Si « branche fusionnée » suffit (question ouverte, « À reprendre » § 7),
+  H5 à W3 deviennent archivables d'un bloc.
+
+### Preuves
+- `tools/arena-check.mjs` sur la version finale : même empreinte de simulation, 33 rendus sans erreur, télégraphe 2,29:1 (2,63) ;
+  simulation, poses, visages et pipeline des sprites identiques à l'octet à l'archive ; typecheck, `npm test`, build, `art:validate`.
+- Captures : `screenshots/calibration/a1-arena/{calm,combo,window,panel}-before-after.png` (original / version finale).
+
+### Pensée
+- Un effet « local » sommé sur beaucoup de sources se mesure loin d'elles : une traîne en 1 / d², négligeable pour une lanterne, colore
+  tout le cadre pour quatorze. Avant de corriger une teinte, couper les effets un à un et mesurer.
+- Une critique d'art et un seuil de lisibilité peuvent se contredire (cramoisi contre 2:1) : la teinte se garde et la luminance se prend
+  ailleurs (ici, des chevrons ivoire plus épais).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -842,6 +910,12 @@ temps GPU sur la 780M (`tools/perf.mjs`, commandes dans la passe), le jugement d
 pluie qui tombe, éclairs), une éventuelle météo par défaut ou un cycle (décision de l'opérateur) ; non faits : son (le jeu n'en a pas), éclaboussures
 au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
 
+**6c. Arène (Passes A1 / A2)** — prototype de combat `arena/arena.html` (hors du jeu et de son build), passé dans la DA nocturne du district,
+publié en artefact privé (https://claude.ai/artifact/3w7wmerkBRUFACTm2Y9xCh). Restent : le jugement de l'opérateur en jeu et en mouvement sur
+sa machine (banc `?devtest=1` du prototype : temps GPU, cadence, contraste) ; décision de l'opérateur : porter l'arène dans le jeu (`src/`,
+Three.js récent, distribution cuite, rendu partagé avec le district) ou garder le prototype à part ; les modes PAINTED / FULL 3D restés de
+jour (Passe A2) ; écarts de la dernière critique (Passe A2).
+
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
   appli. Servir les baselines sur `:518x --strictPort` ; décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
@@ -922,6 +996,8 @@ au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
   vérifiées contre la mesure ; une hypothèse plausible non décomposée a coûté un prototype inutile (Passes K2 / K3).
 - Un quad construit dans le shader (une traînée orientée par sa vitesse à l'écran) se dessine double face ; un « rien à l'écran » se vérifie
   d'abord au compteur d'appels de dessin, puis en agrandissant l'effet (Passe W1).
+- Un effet « local » sommé sur beaucoup de sources se mesure loin d'elles (une traîne en 1 / d² négligeable pour une lanterne colore tout le
+  cadre pour quatorze) ; une teinte se corrige après avoir coupé les effets un à un et mesuré (Passe A2).
 - Un effet qui écrit des uniformes partagés garde leurs valeurs d'avant et les rend : sa preuve est « activé puis retiré = 0 px » (Passe W2) ;
   tant qu'aucun paramètre ne le demande, il ne crée rien (un objet THREE tire `Math.random`).
 ### Preuves
@@ -952,6 +1028,9 @@ au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
 
 - Un serveur de mesure sert un instantané figé (copie hors dépôt), pas la copie de travail : on peut éditer pendant la série sans
   recharger les pages mesurées (Passes H6, K1).
+- Passer du jour à la nuit inverse les contrastes : un repère « plus sombre que le sol » doit devenir « plus clair » ; un seuil chiffré
+  (contraste du télégraphe) le voit, l'œil sur une capture non ; une critique d'art qui contredit le seuil garde sa teinte et prend la
+  luminance ailleurs (Passes A1 / A2).
 - Une propriété aléatoire se teste sur plusieurs tirages (dix éclairs, deux caps de caméra), un repli dans ses deux sens (±π) : un seul cas
   laisse passer une faute injectée (Passes Q2, W3).
 ### Personnages : art et critique
