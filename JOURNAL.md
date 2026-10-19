@@ -966,13 +966,73 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 - Le gain d'un réglage se remesure avec le joueur de production : à 3,73 m/s, les chiffres de la Passe K5 (relevés à 2,5 m/s) changent, et
   une marche régresse.
 
+## Passe K8 — Caméras : diagnostic du recul de −445 px/s au bord de l'eau (décision RK3) (2026-10-19)
+
+### Demande
+- Décision de l'opérateur (Passe D3), mot pour mot : RK3 « Diagnostiquer avant le gel ».
+- Ordre de la Passe D3 : un correctif qui toucherait un cadrage approuvé est montré à l'opérateur avant d'être appliqué.
+- Branche `diag-edge-k8` depuis `main` (`3f4f666`). Pas de code de jeu changé.
+
+### Reproduction — [OK]
+- `tools/camsim.mjs`, graine 1842, `static=1`, `d` tenue depuis C (9 / 0,6), sur `main` (`3bef265`, la production d'alors) :
+  - avec le héros de production : **38 images de recul pendant C → B, jusqu'à −436 px/s** ;
+  - avec la distribution générée : 41 images, −447 px/s, les chiffres de la Passe K5.
+
+### Cause — [OK] décomposée
+- **Méthode** : les positions enregistrées par `camsim` sont rejouées dans le graphe seul. La caméra rejouée est identique à celle du jeu
+  (0 d'écart en lacet et en pivot). Puis, image par image, on sépare deux parts :
+  - la part du joueur : son pas avec la caméra de l'image précédente ;
+  - la part de la caméra : le joueur figé, la caméra qui change.
+- **Deux effets s'ajoutent** :
+  1. **Le joueur bute au bord de l'eau.** `d` dans C l'emmène surtout en profondeur, vers le canal. Arrêté à z = 3,99, il ne fait plus que
+     glisser le long de x : sa part à l'écran tombe de +348 à +62 px/s.
+  2. **Le fondu ancré le recentre.**
+     - Le fondu glisse le joueur de sa place dans C à sa place dans B.
+     - C laisse le joueur loin à droite, à environ +430 px du centre de l'écran : la longue focale suit peu.
+     - B le garde vers +222 px : il suit x à 75 %.
+     - Résultat : environ 210 px vers la gauche en 0,87 s. La part de la caméra culmine à **−498 px/s** ; le total, à **−436 px/s**.
+- **Une fois B posé**, le joueur reste presque immobile à l'écran : B le suit (−62 px/s pour la caméra, +64 pour le joueur). Ce n'est
+  donc pas un joueur bloqué, comme le supposait la Passe K5 : c'est B qui le suit.
+- **Même mécanisme ailleurs** : la régression de la diagonale en profondeur pendant C → D (Passe K7) vient aussi du fondu ancré. Il glisse le
+  joueur vers sa place dans D, environ 200 px à droite, alors que son pas propre va faiblement à gauche. Le fondu ancré interpole entre
+  les deux places sans regarder le pas propre du joueur.
+- **Deux mesures du recul** :
+  - celle de `camsim` : le signe contre le mouvement du joueur projeté sur l'axe droit de la caméra ;
+  - celle de la garde du suivi : contre le pas propre du joueur à l'écran.
+  - Elles s'accordent au bord de l'eau, pas pour une marche vers la caméra (la fin de B → A).
+
+### Première piste — [KO] insuffisante
+- **Prototype**, dans une copie non versionnée du graphe : l'horloge du fondu ralentie (dichotomie) dès que l'avancer ferait reculer le joueur
+  contre son pas propre. Les poses restent ainsi dans la famille que le bake échantillonne, un fondu à un poids donné.
+- **Résultat, rejoué dans le graphe** :
+  - bord de l'eau : 38 → 7 images de recul, mais un pire encore à −393 px/s, et la transition passe de 2,15 à 3,12 s ;
+  - diagonale : 26 → 28 images.
+- **Pourquoi c'est insuffisant** : à poids fixe, les deux places entre lesquelles le fondu interpole bougent elles-mêmes avec le joueur et
+  le foyer. Ralentir l'horloge ne suffit donc pas.
+
+### Options à décider par l'opérateur (aucune n'est appliquée)
+1. **Un fondu ancré « continu à l'écran »** : il part de la place réelle du joueur à l'écran et ne la corrige vers la place du cadrage
+   d'arrivée que dans le sens de son pas, ou quand il s'arrête.
+   - Le joueur ne reculerait plus pendant aucune transition.
+   - Une transition contre la marche durerait plus longtemps.
+   - Les poses intermédiaires sortent de la famille échantillonnée : il faut la preuve de visibilité en mouvement (`tools/visproof-walk.mjs`).
+2. **Rapprocher la place du joueur entre C et B au bord de l'eau** : régler le suivi de C ou la limite de sa zone côté canal. Cela change
+   un cadrage approuvé.
+3. **Laisser** : la glissade dure 0,87 s, seulement à la sortie de C par le bord de l'eau (et pendant C → D sur la diagonale).
+
+### Pensée
+- Un recul à l'écran se décompose avant d'être corrigé : la part du joueur (qui bute au bord) et la part de la caméra (le fondu qui
+  recentre). « Bloqué » était une hypothèse, la décomposition a montré un suivi.
+- Un remède sur une seule grandeur (l'horloge du fondu) ne suffit pas quand les deux bornes de l'interpolation bougent : une piste mesurée
+  à « insuffisante » se consigne avec ses chiffres.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
 **0. Jalon M1 — décisions de la fiche de revue (Passe D3), à appliquer dans l'ordre de cette passe** :
-diagnostic du recul au bord de l'eau (avec la glissade de la diagonale C → D, Passe K7) ; gel (T1, T2, T7) ; district clos après le gel ;
+le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3 à décider par l'opérateur) ; gel (T1, T2, T7) ; district clos après le gel ;
 puis l'état jour. Gold Master : « Pas encore » (RJ3). Fait : le héros en production et les cinq vues par défaut (Passe H10), le pivot de A
 à 5,8 (Passe K6), le suivi de D par défaut (Passe K7).
 
@@ -1054,8 +1114,8 @@ sans traverser C ; (c) lacet max 0,96° / image en C ↔ D (≤ 0,55° ailleurs)
 −39 px/s, Passe K1) : expliqués en Passes K2 / K3 (le pivot de D, qui suit 85 % du déplacement latéral, dépasse un joueur que sa marche en profondeur
 ralentit à l'écran ; le suivi le long des axes de la caméra n'y change rien) ; suivi visant la vitesse à l'écran :
 « Prototyper le suivi à l'écran » (Passe D1) : prototype `?camfollow=screen` (Passe K5 : 0 image de recul sur C ↔ D et D → B), RK2
-« Adopter (avec la preuve) » (Passe D3) : par défaut depuis la Passe K7 (`?camfollow=off` : l'ancien suivi) ; (f) recul de −445 px/s pendant C → B au bord de l'eau (Passe K5), non expliqué : RK3
-« Diagnostiquer avant le gel » (Passe D3). Contrainte : la caméra de D reste
+« Adopter (avec la preuve) » (Passe D3) : par défaut depuis la Passe K7 (`?camfollow=off` : l'ancien suivi) ; (f) recul de −445 px/s pendant C → B au bord de l'eau (Passe K5), RK3
+« Diagnostiquer avant le gel » (Passe D3) : expliqué en Passe K8 (le fondu ancré recentre le joueur qui bute au bord ; options à décider). Contrainte : la caméra de D reste
 à z < ~18,5 (maisons de la rive opposée dès z = 19,8, invisibles de A/B/C) ; tout cadrage plus reculé exige de les retirer ou de les abaisser.
 
 **5. Visibilité / culling**
