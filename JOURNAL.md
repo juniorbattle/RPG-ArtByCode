@@ -546,6 +546,108 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   rencontre seule (le haut de la tête), pas par sa couleur.
 - Une règle générale corrigée se revérifie sur toutes les feuilles : elle crée ses propres défauts ailleurs (cou, bonnets).
 
+## Passe V3 — PNJ : trois restes mineurs corrigés (voyageur, forgeron, docker), approuvés par l'opérateur (2026-10-18)
+
+### Demande (2026-10-18)
+- Transmise par la séance « Priorités artistiques » (séance parente), à traiter tout de suite dans une séance à part : trois des quatre restes
+  mineurs qu'elle avait listés : le trait rosé sous la bouche du voyageur et les texels pâles à l'épaule du forgeron de profil (« À
+  reprendre » §1, Passes V1 / V2), le cycle de marche irrégulier du docker (Passe S2). Pour les deux premiers, dire d'abord si la cause est le
+  masque ou la feuille.
+- Le quatrième est écarté par l'opérateur, mot pour mot : « les bras immobiles des citadins quand ils marchent n'est pas une priorites dans notre strucutre HD-2D, ce n'est pas problematique ».
+- Branche `npc-minor-fixes` ouverte depuis `main` (`c5e7836`) après `git fetch --prune` (aucune autre branche), poussée.
+
+### 1. Voyageur, trait rosé sous la bouche — [OK] le masque, pas la feuille
+- De face, l'ombre du menton (4 texels de la rangée 36, `703638` / `5d403a` : teinte 358° / 10°, valeur 0,44 / 0,36) est trop rouge et trop
+  sombre pour la règle de peau, et le remplissage ne la prend pas (3 voisins de peau sur 8, il en faut 4) : sur une variante, elle gardait son
+  rouge d'origine sous un menton foncé. Visible en scène (B, graine 1842, voyageur à cheveux foncés). Sur l'original, c'est l'ombre du cou :
+  la feuille est juste.
+- Correctif : option de masque `force` (`Variants.ts`) : par vue, des rectangles relevés à la main où tout texel ni contour ni exclu prend
+  une matière, dans la vue de référence, après les règles et le remplissage (puis propagé aux autres images comme le reste). Voyageur : ces 4
+  texels en peau ; la couleur `665963` (gris-violet du foulard) exclue : la propagation la prenait pour de la peau dans le foulard sous le
+  menton (images d'inspiration / d'expiration) ; de profil, la zone des cheveux s'arrête à la rangée 31 au lieu de 34 : le bas du menton
+  (6 texels) passait en cheveux (une ligne sombre ou châtain sous la bouche selon la variante), le haut du sac (13 texels) aussi.
+- Empreinte du masque `54d62bc3` → `0e6e3b03`.
+
+### 2. Forgeron, texels pâles à l'épaule de profil — [OK] le masque : la manche était peinte en peau
+- La planche de référence archivée montre une chemise crème à manches courtes sous le tablier, avant-bras nus. Les zones de peau des bras
+  partaient de l'épaule (saturation minimale 0,05) : sur une variante, la manche entière devenait peau ; les gris pâles du col (`e0d3cf`,
+  `d4c5bf`, `c3b2b1`), pris en partie ou juste hors des zones, restaient pâles : ce sont les « texels pâles à l'épaule ». Élargir la zone
+  pour les rattraper aurait aggravé l'erreur.
+- Correctif : bras de face et de dos en saturation minimale 0,35 (toile ≤ 0,33, peau ≥ 0,39 sur cette feuille) ; de profil, où la toile et le
+  reflet de l'avant-bras partagent `edd1b4`, une zone d'avant-bras sous l'ourlet (rangée 51 à 0,35, rangées 52-66 à 0,05) ; les gris pâles du
+  col et du bandeau exclus. Manches et col gardent leur toile dans toutes les variantes ; avant-bras, visage et cou restent peau.
+- Empreinte `222f8949` → `baed056d`. Aucun pixel du jeu ne change : le forgeron est fixé à son original (« Originaux partout », Passe V2) ;
+  contrôle : forgeron masqué ou non, aucun écart supplémentaire.
+- [?] Vu en passant, non traité : les 4 images de frappe (profil) ne sont presque pas masquées (le bras levé s'éloigne de plus de 3 texels de
+  la vue de référence, la propagation ne le retrouve pas) ; invisible en production pour la même raison.
+
+### 3. Docker, cycle irrégulier — [OK] le script de rig
+- Cause mesurée sur la rangée des pieds (texel 90) : la botte de contact, inclinée de 6° (talon d'abord), laissait sa pointe hors de la
+  rangée ; de l'image 0 à 1, son bord avant restait en place pendant que son talon avançait de 5 texels (la « botte tenue une image ») ; au
+  décollement (lever 2), la pointe du pied arrière restait sur la rangée (le double appui). Centres des appuis : 2,5 / 4 / 2 texels par image,
+  `walkSlide` → `null`.
+- Correctif (`rigs/dockworker-x2-v2.rig.mjs`, `CYCLE`, deux nombres) : botte de contact à plat (6° → 0), pied arrière levé d'une rangée de
+  plus au décollement (2 → 3), qui quitte ainsi la rangée des pieds. Banc d'essai hors du dépôt (méthode de la Passe 4A-quatervicies) : l'autre
+  voie essayée (lever 2 et « dégager la rangée » dans la boucle du pied levé) donne les mêmes images, la plus simple est gardée ; des angles de
+  décollement plus raides (−26° à −32°) font retoucher la pointe au sol (`walkSlide` de nouveau `null`). [KO] Garder l'inclinaison de 6° avec
+  le pied arrière dégagé : `walkSlide` 3,25, accepté par la tolérance de 30 % mais une alternance 2,5 / 4 qui patine.
+- Seules les images de marche de profil 0 et 3 changent : 54 texels retirés, 24 ajoutés, 319 recolorés, 0 couleur nouvelle ; vues, images,
+  étiquettes et JSON inchangés ; `--check` identique ; empreinte du masque de variantes inchangée (`09fbb257`). `walkSlide` : `null` → 4 texels
+  par image (0,634 m/s à l'échelle 1) ; horloge ×1,27 en B / D, ×1,23 en C (`tools/art-lab/stride.mjs`).
+- Glissement en mouvement (`tools/foot-slip.mjs`, 40 s par cas, médiane, 0 = planté), base `main` figée (`c5e7836`, servie sur :5188) →
+  branche : A 1842 0,09 → −0,04 ; B 1842 0,11 → 0,04 ; C 1842 0,04 → 0,01 ; D 1842 0,48 → −0,01 ; B 7719 −0,18 → −0,00 ; B 30417 0,17 →
+  −0,00. La base reproduit exactement les valeurs de la Passe S2 ; les autres feuilles mesurent à l'identique avant / après (12 sur 12).
+
+### Critique à l'aveugle du docker — [?] partagée ; [OK] ses mesures vérifiées
+- Trois agents neufs (étiquettes tirées au sort, clé hors de leur portée, auto-critique écrite avant chaque verdict) :
+  - tour 1 (sol avancé de la foulée de conception, 13 texels pour 3 images, pour les deux) : révisé 5,5 / 10, actuel 5 / 10, révisé préféré
+    (le pied avant ne patine plus après le contact) ; son « glissement de 2 texels au décollement » est mesuré au coin bas-gauche de la botte
+    levée : la pointe (ses texels les plus bas) avance de 4, comme le sol ;
+  - tour 2 (sol avancé de l'avance réelle du jeu en B : 5,07 texels par image pour l'actuel à l'horloge 1, 4 pour le révisé à l'horloge
+    1,27) : actuel 7, révisé 5 ; lu sur une image réduite (sa propre réserve), ses dérives (révisé −2 à −3 texels par image) sont contredites
+    par les pixels de sa planche : la botte d'appui du révisé occupe exactement les texels 129-142,8 sur ses trois images, celle de l'actuel
+    change de forme au contact puis avance de 1,2 texel par image ;
+  - tour 3 (les pieds seuls, lus à 1:1) : actuel 7, révisé 4 ; même contradiction (le révisé mesure 129,0-142,8 sur ses trois images, le
+    critique y lit +1,6 par image).
+- La règle « une retouche qui ne gagne pas clairement à l'aveugle est annulée » n'a pas été appliquée seule, les verdicts reposant sur des
+  mesures que les pixels réfutent : décision laissée à l'opérateur, flip-book en mouvement à l'appui. Relevés par les trois, communs aux deux
+  versions : pas d'attaque du talon, la botte qui passe à l'image 4 posée sur celle d'appui, une poussée faible.
+
+### Preuves
+- Démarrage par défaut (`tools/detshots.mjs`, A / B / C / D, graine 1842, `clean=1&freeze=7.3`, 120 pas) contre `main` figé : A 395 px, B
+  7 258, C 2 563, D 2 848 (> 8 niveaux) ; docker et voyageur masqués : 0 px, tous niveaux, dans les quatre ; docker seul masqué : A 151 px,
+  B 171 (le menton du voyageur à variante). Le masquage change 12 000 à 56 000 px (contrôle). Témoin de répétition 0 px. Rendu de production
+  (sans paramètre) contre le rendu `?variants=candidate` montré à l'opérateur : 0 px (A, B).
+- Tant que leurs empreintes n'étaient pas inscrites, la porte de production a refusé les masques changés (`npm test` : 3 échecs « variant
+  masks baed056d are not the approved masks 222f8949 ») : contrôle négatif de la porte.
+- Tests : `tests/variants.test.mjs` +1 (option `force` : rectangle appliqué, jamais sur un contour ni sur une couleur exclue, propagé,
+  limité à sa vue ; quatre fautes injectées une à une, chacune attrapée) ; `tests/stride.test.mjs` : docker attendu à 4 (régression
+  remesurée exprès) ; `npm test` 37 / 37 ; `typecheck`, `build`, `art:validate` (14 manifestes, 0 erreur), `verify-provenance` intact.
+- Références `screenshots/calibration/cam{A,B,C,D}-*.png` refaites (requêtes de `tools/screenshots.mjs`, capture déterministe, 120 pas,
+  témoin 0 px) : elles dataient de la Passe S1b et ne montraient pas encore les variantes de V2 (`main` en différait sur les seuls
+  personnages) ; docker et voyageur masqués, 0 px contre `main`.
+- Planches : `reviews/npc-variants-v3/` (voyageur, forgeron, planche des variantes avant / après, `lineup.png`, `masks.png`),
+  `reviews/dockworker-x2-v2/12-walk-v3-before-after.png` ; flip-book (caméra B, `main` contre la branche) hors suivi git :
+  `art-lab/characters/scratch/npc-fixes-v3/` (32 Mo).
+
+### Décision de l'opérateur (2026-10-18) — [OK]
+- Planches, flip-book, verdicts des trois critiques et leurs contradictions mesurées montrés ; question : « Approuvez-vous ces assets corrigés
+  pour la production (masques du voyageur et du forgeron, planche du docker) ? » ; réponse, mot pour mot : « J'approuve les trois
+  (Recommandé) ».
+- Inscrit : `variants.json` (empreintes `0e6e3b03` et `baed056d`, note d'approbation complétée) ; paquet de provenance du docker
+  (`approvals`, `revisions[]` V3 avec empreintes avant / après, `status`, `chain`), manifeste (`notes`), README de revue. Aucun Gold Master.
+
+### Pensée
+- Avant d'élargir une zone de masque pour rattraper des texels oubliés, regarder la planche de référence : les texels pâles de l'épaule du
+  forgeron étaient la manche ; c'est la peau autour qui était fausse.
+- Une ombre de peau trop sombre ou trop rouge pour une règle de couleur se relève à la main (rectangle forcé, consigné, couvert par
+  l'empreinte), pas par une règle générale qui toucherait les autres feuilles.
+- Un cycle cuit se règle sur la mesure du moteur : `walkSlide` lit le centre des appuis sur la rangée des pieds ; une botte inclinée ou une
+  pointe qui traîne déplacent ce centre et rendent le cycle irrégulier, même quand le point d'appui est juste.
+- Une mesure qu'avance un critique (une dérive en texels) se vérifie sur les pixels de sa propre planche avant de peser son verdict ; une
+  planche de critique reproduit l'avance réelle du jeu (l'horloge) et se lit à 1:1 ; un désaccord qui persiste revient à l'opérateur, image en
+  mouvement à l'appui.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -557,16 +659,18 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantit 336 images et en porte 322 (dix feuilles,
   1024 × 2016) : une variante en feuille séparée ne rentre pas sans agrandir la texture ; la teinte aléatoire de la foule (± 10 % par canal
   sur tout le sprite) ne s'applique plus aux feuilles cuites (Passe 4A-tervicies). **Passes V1 / V2** : masques de matière, recoloration au
-  rendu, approuvées pour la production le 18/10 (PNJ uniques en original). Restent : quelques texels (trait rosé sous la bouche du voyageur,
-  épaule du forgeron de profil), à reprendre si l'opérateur les relève. À arbitrer avec l'opérateur : quels personnages, combien de variantes,
+  rendu, approuvées pour la production le 18/10 (PNJ uniques en original). Passe V3 : trait rosé sous la bouche du voyageur et manches du forgeron
+  (les « texels pâles à l'épaule ») corrigés dans les masques, approuvés le 18/10. Reste : les images de frappe du forgeron presque sans
+  masque (invisible tant qu'il est fixé à son original). À arbitrer avec l'opérateur : quels personnages, combien de variantes,
   quelles teintes dans la direction artistique.
 - **Mise en scène** : la marchande ne marche pas à son étal (collisionneur ; la déplacer de 0,5 m serait une décision de mise en scène) ; un
   second garde différent (miroir ou variante) au lieu de jumeaux, lances ; seuls 2 des 5 citadins (artisane, voyageur) paraissent à la
   graine 1842 et à la densité 1 (`round(2 × densité)` promeneurs ; « remplacer seulement »).
-- **Mouvement** (Passe S2 : cadence réglée sur la vitesse vue à l'écran, pieds plantés pour la foule et les gardes) : cycle du docker
-  irrégulier (botte tenue une image, double appui), horloge 1, glissement +0,1 en B / C et +0,48 en D : à reprendre dans son script de rig ;
-  bras immobiles en marche des citadins (reproche commun des critiques) ; cycle 3 + 3 sans double appui (hérité du garde) ; en A, l'horloge
-  touche son plancher pour un profil qui va presque en profondeur.
+- **Mouvement** (Passe S2 : cadence réglée sur la vitesse vue à l'écran, pieds plantés pour la foule et les gardes ; Passe V3 : docker
+  régularisé, glissement ≈ 0 en B / C / D) : restes des critiques du docker, communs à ses deux cycles : pas d'attaque du talon, botte de
+  passage posée sur celle d'appui (image 4), poussée faible ; cycle 3 + 3 sans double appui (hérité du garde) ; en A, l'horloge touche son
+  plancher pour un profil qui va presque en profondeur. Bras immobiles des citadins en marche : pas une priorité, décision de l'opérateur du
+  18/10, mot pour mot : « les bras immobiles des citadins quand ils marchent n'est pas une priorites dans notre strucutre HD-2D, ce n'est pas problematique ».
 - **Fidèles aux planches, non changés exprès** : bonnet / sac de la marchande selon la vue ; costumes des citadins différents selon la vue
   (tablier, sac, chemise).
 - **Lisibilité** : tête du marteau cuit peu lisible sur la lueur de l'enclume (Passe 4A-vicies).
@@ -637,7 +741,8 @@ sprites.
   (`.mjs`, hors `tsconfig`).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** (Passe M4) : le critère « operator decision recorded, branch merged » d'`AGENTS.md` date d'avant la fusion
-  sans demande ; lire « branche fusionnée » suffit, à confirmer par l'opérateur.
+  sans demande ; lire « branche fusionnée » suffit, à confirmer par l'opérateur. Après la Passe V3, les passes gardées font 59,3 Ko : la prochaine
+  passe dépasse le seuil d'environ 60 Ko, archiver alors les plus anciennes closes (M5 et suivantes).
 - **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — à retirer proprement une fois qu'on
   accepte de décaler la ville lointaine d'une graine.
 
@@ -786,6 +891,14 @@ sprites.
   point d'action), jamais un angle choisi pour l'apparence ; un cycle qui n'existe que de profil en tire son côté écran dans tout cadrage.
 - Un cycle synchronisé avec un effet (étincelles du marteau) garde son nombre d'images et l'image de l'impact ; le moteur n'a pas de durée
   par image.
+- Un cycle cuit se règle sur la mesure du moteur (`walkSlide` : centre des appuis sur la rangée des pieds) : botte de contact à plat, pied
+  arrière qui quitte la rangée au décollement ; une inclinaison ou une pointe qui traîne rendent le cycle irrégulier (Passe V3).
+- Une mesure qu'avance un critique (dérive, rangées, texels) se vérifie sur les pixels de sa propre planche avant de peser son verdict ; une
+  planche de critique reproduit l'avance réelle du jeu et se lit à 1:1 ; un désaccord qui persiste revient à l'opérateur, image en mouvement à
+  l'appui (Passe V3).
+- Un masque de matière se vérifie contre la planche de référence : des texels « oubliés » peuvent être la bonne matière et la zone autour la
+  fausse (manches du forgeron, Passe V3) ; une ombre que les règles ne prennent pas se relève à la main (rectangle forcé), pas par une règle
+  générale.
 
 ### Provenance et approbations
 - Rien d'externe ne devient « canon » en silence : un manifeste de provenance (`art-lab/characters/manifests`) avec approbation nommée et

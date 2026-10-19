@@ -20,6 +20,9 @@ export interface MaskSettings {
   hairMax?: number;
   /** colours (6 hex digits) never recoloured: an accessory that matches a rule inside a zone */
   exclude?: string[];
+  /** texels recorded by hand, per facing: every non-outline, non-excluded texel of these rects takes that material in the reference view,
+   *  after the rules and the fill (a shadow the rules cannot take: the traveler's chin shadow, too dark and too red for the skin rule) */
+  force?: Partial<Record<Dir, FacingZones>>;
 }
 
 export const PROPAGATE = 3;
@@ -38,7 +41,7 @@ const inAny = (rs: Rect[] | undefined, x: number, y: number) => !!rs?.some(([x0,
 const skinMin = (rs: Rect[] | undefined, x: number, y: number) => { let m: number | null = null; for (const r of rs ?? []) if (x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3]) m = Math.min(m ?? 1, r[4] ?? 0.22); return m; };
 
 /** the reference view's material map (zones + colour rules) */
-function referenceMask(f: BakedFrame, fw: number, fh: number, z: FacingZones, s: MaskSettings, ex: Set<number>): Uint8Array {
+function referenceMask(f: BakedFrame, fw: number, fh: number, z: FacingZones, s: MaskSettings, ex: Set<number>, forced?: FacingZones): Uint8Array {
   const out = new Uint8Array(fw * fh);
   const hairMax = s.hairMax ?? 0.95;
   const hairRule = (h: number, sat: number, v: number) => v <= hairMax && (s.hair === 'any' || isWarmHair(h, sat, v, hairMax));
@@ -82,6 +85,12 @@ function referenceMask(f: BakedFrame, fw: number, fh: number, z: FacingZones, s:
       else if (nh >= 5 && inAny(z.hair, x, y) && val <= hairMax) out[j] = 1;
     }
   }
+  if (forced) for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) {
+    const i = (y * fw + x) * 4;
+    if (f.rgba[i + 3] < 128 || ex.has((f.rgba[i] << 16) | (f.rgba[i + 1] << 8) | f.rgba[i + 2]) || hsv(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2])[2] < OUTLINE) continue;
+    if (inAny(forced.skin, x, y)) out[y * fw + x] = 2;
+    else if (inAny(forced.hair, x, y)) out[y * fw + x] = 1;
+  }
   return out;
 }
 
@@ -91,7 +100,7 @@ export function sheetMasks(frames: readonly BakedFrame[], fw: number, fh: number
   const refs = new Map<Dir, { f: BakedFrame; m: Uint8Array }>();
   for (const dir of ['down', 'up', 'side'] as Dir[]) {
     const z = s.zones[dir], f = frames.find((q) => q.dir === dir && q.anim === 'idle' && q.i === 0);
-    if (z && f) refs.set(dir, { f, m: referenceMask(f, fw, fh, z, s, ex) });
+    if (z && f) refs.set(dir, { f, m: referenceMask(f, fw, fh, z, s, ex, s.force?.[dir]) });
   }
   const key = (px: Uint8Array, i: number) => (px[i + 3] < 128 ? -1 : (px[i] << 16) | (px[i + 1] << 8) | px[i + 2]);
   return frames.map((f) => {

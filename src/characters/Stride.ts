@@ -7,7 +7,8 @@ import { FRAME_W, FOOT_Y } from './SpriteGenerator';
  *  other way, and does not count). Returns the median slide in texels per frame (texels of the sheet's density k), or null without a side
  *  walk or when the cycle is not a steady treadmill (a slide more than 30 % off the median: no single cadence keeps that foot planted).
  *  Measured on the production cast: 4-4.5 texels / frame at k = 2, i.e. 0.63-0.71 m/s at the 7.5 frames / s walk cadence and the cast's 0.9
- *  scale; the dock worker's cycle (a boot held one frame, then 4 texels; double support) is not steady: null. */
+ *  scale. The dock worker's cycle (a boot held one frame, then 4 texels; double support) returned null until its rig was fixed (journal
+ *  Passe V3): 4 texels / frame. */
 export function walkSlide(frames: readonly BakedFrame[], k: number): number | null {
   const fw = FRAME_W * k, row = FOOT_Y * k;
   const walk = frames.filter((f) => f.dir === 'side' && f.anim === 'walk').sort((a, b) => a.i - b.i);

@@ -48,6 +48,23 @@ test('propagation: another frame of the facing takes the material of the nearest
   assert.equal(mo.every((v) => v === 0), true, 'a facing without zones: nothing');
 });
 
+test('forced texels (journal Passe V3): a rect of the reference view takes its material, never an outline or an excluded colour; it propagates', () => {
+  const SHADOW = '#703638';   // the traveler's chin shadow: too red (hue 358) and too dark (value 0.44) for the skin rule
+  const ref = frame('down', 'idle', 0, [[22, 21, 38, 30, SKIN], [26, 31, 33, 31, SHADOW], [34, 31, 35, 31, OUTLINE], [36, 31, 37, 31, LINEN]]);
+  const moved = frame('down', 'walk', 0, [[22, 22, 38, 31, SKIN], [26, 32, 33, 32, SHADOW]]);
+  const s = { zones: { down: { skin: [[20, 20, 40, 31, 0.1]] } } };
+  const [m0] = V.sheetMasks([ref], W, H, s);
+  assert.equal(at(m0, 28, 31), 0, 'without force: the shadow under the chin stays other');
+  const [m, mw] = V.sheetMasks([ref, moved], W, H, { ...s, exclude: [LINEN.slice(1)], force: { down: { skin: [[26, 31, 37, 31]] } } });
+  for (let x = 26; x <= 33; x++) assert.equal(at(m, x, 31), 2, `forced skin at ${x}`);
+  assert.equal(at(m, 34, 31), 0, 'an outline in the rect stays other');
+  assert.equal(at(m, 36, 31), 0, 'an excluded colour in the rect stays other');
+  assert.equal(at(m, 30, 25), 2, 'the rules still apply outside the rect');
+  assert.equal(at(mw, 28, 32), 2, 'a walk frame takes the forced material by propagation');
+  const [mu] = V.sheetMasks([frame('up', 'idle', 0, [[26, 31, 33, 31, SHADOW]])], W, H, { zones: { up: {} }, force: { down: { skin: [[26, 31, 37, 31]] } } });
+  assert.equal(mu.every((v) => v === 0), true, 'a facing\'s force does not reach another facing');
+});
+
 test('fingerprints differ when one texel differs', () => {
   const m = new Uint8Array(W * H); m[0] = 1; m[1] = 2;
   const a = V.maskFingerprint([m]), m2 = Uint8Array.from(m); m2[5] = 1;

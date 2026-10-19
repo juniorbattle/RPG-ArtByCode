@@ -4,7 +4,7 @@
  "approval": {
   "by": "operator (git user wonmii)",
   "date": "2026-10-18",
-  "note": "APPROVED FOR PRODUCTION by the operator in the working session, after the line-up (art-lab/characters/reviews/npc-variants-v1/lineup.png), the in-scene B comparison and the dark-skin close-ups: « Oui, approuve » (ramps and 2 variants per character as on the line-up); unique NPCs: « Originaux partout » (merchant, blacksmith, hooded fixed to their original). Masks are those of the recorded fingerprints (journal Passes V1 / V2). Not a Gold Master. Masks corrected after the operator's report on the traveler's hair (« il semble avoir une erreur pour ce pnj avec sa tete ses cheveux »): fringe rule, hair value ceilings (townswoman, merchant), artisan and merchant hair zones; fingerprints recomputed (journal Passe V2)."
+  "note": "APPROVED FOR PRODUCTION by the operator in the working session, after the line-up (art-lab/characters/reviews/npc-variants-v1/lineup.png), the in-scene B comparison and the dark-skin close-ups: « Oui, approuve » (ramps and 2 variants per character as on the line-up); unique NPCs: « Originaux partout » (merchant, blacksmith, hooded fixed to their original). Masks are those of the recorded fingerprints (journal Passes V1 / V2). Not a Gold Master. Masks corrected after the operator's report on the traveler's hair (« il semble avoir une erreur pour ce pnj avec sa tete ses cheveux »): fringe rule, hair value ceilings (townswoman, merchant), artisan and merchant hair zones; fingerprints recomputed (journal Passe V2). Masks corrected again on 2026-10-18 (journal Passe V3) after the operator's report of two leftovers (the traveler's pink line under the mouth, pale texels on the blacksmith's shoulder in profile): traveler: the chin shadow (4 texels, row 36 of the front) forced to skin (mask option force), the scarf colour 665963 excluded, the profile's hair zone stops at row 31 (the bottom of the chin and the top of the bag were taken for hair), fingerprint 54d62bc3 -> 0e6e3b03; blacksmith: the cream short sleeves and the collar stay linen as on the reference sheet (forearms only are skin; the collar / headband pale greys excluded), fingerprint 222f8949 -> baed056d (the blacksmith stays fixed to its original in production). Approved by the operator on 2026-10-18 after the before / after boards (art-lab/characters/reviews/npc-variants-v3/): « Approuvez-vous ces assets corrigés pour la production (masques du voyageur et du forgeron, planche du docker) ? » -> « J'approuve les trois (Recommandé) ». Not a Gold Master."
  },
  "ramps": {
   "hair": {
@@ -219,7 +219,7 @@
         16,
         5,
         49,
-        34
+        31
        ]
       ],
       "skin": [
@@ -256,9 +256,24 @@
        ]
       ]
      }
-    }
+    },
+    "force": {
+     "down": {
+      "skin": [
+       [
+        29,
+        36,
+        32,
+        36
+       ]
+      ]
+     }
+    },
+    "exclude": [
+     "665963"
+    ]
    },
-   "fingerprint": "54d62bc3",
+   "fingerprint": "0e6e3b03",
    "variants": [
     {
      "hair": "dark",
@@ -886,14 +901,14 @@
         36,
         25,
         64,
-        0.05
+        0.35
        ],
        [
         42,
         36,
         56,
         64,
-        0.05
+        0.35
        ]
       ]
      },
@@ -915,8 +930,15 @@
         0.05
        ],
        [
-        24,
-        35,
+        20,
+        51,
+        41,
+        51,
+        0.35
+       ],
+       [
+        20,
+        52,
         41,
         66,
         0.05
@@ -945,20 +967,31 @@
         37,
         21,
         67,
-        0.05
+        0.35
        ],
        [
         43,
         37,
         55,
         67,
-        0.05
+        0.35
        ]
       ]
      }
-    }
+    },
+    "exclude": [
+     "e0d3cf",
+     "d4c5bf",
+     "c3b2b1",
+     "cdbdba",
+     "b8a8ab",
+     "ab9ea1",
+     "a09399",
+     "968c92",
+     "8b828d"
+    ]
    },
-   "fingerprint": "222f8949",
+   "fingerprint": "baed056d",
    "variants": [
     {
      "hair": "dark",

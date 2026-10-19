@@ -11,11 +11,15 @@ export const id = 'dockworker-x2-v2';
 // read as a lunge on these short legs (independent review, Passe 4A-sedecies).
 // Leg A is forward on frame 0; leg B is the same cycle half a period later. Ankle offsets are texels from the hip (x, + = forward / -x);
 // lift = ankle height above its standing height; foot = boot angle (+ = toe up).
+// Pass V3 (journal): a regular treadmill. The contact boot was tilted 6 deg (heel strike): its toe left the foot row, so from frame 0 to 1
+// the boot's front edge held still while its heel moved 5 texels (a boot held one frame), and the toe-off boot (lift 2) kept its toe on the
+// foot row (a double support): the planted foot's slide read 2.5 / 4 / 2 texels and the runtime's walkSlide (src/characters/Stride.ts)
+// refused the cycle (cadence clock 1). Now the contact boot lands flat and the toe-off boot clears the foot row: 4 texels every frame.
 const CYCLE = [
-  { x: 6.5, lift: 0, foot: 6 },    // 0 contact: heel strike in front
+  { x: 6.5, lift: 0, foot: 0 },    // 0 contact: the boot lands flat in front
   { x: 2.2, lift: 0, foot: 0 },    // 1 mid-stance, the body passes over the foot
   { x: -2.2, lift: 0, foot: 0 },   // 2 push
-  { x: -6.5, lift: 2, foot: -18 }, // 3 toe-off behind (the other leg strikes)
+  { x: -6.5, lift: 3, foot: -18 }, // 3 toe-off behind, clear of the foot row (the other leg strikes)
   { x: -1, lift: 6, foot: -15 },   // 4 passing: knee forward, foot lifted under the body, toe down
   { x: 4.5, lift: 2, foot: 4 },    // 5 reach
 ];

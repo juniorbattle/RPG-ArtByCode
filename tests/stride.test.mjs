@@ -32,12 +32,12 @@ test('walkSlide: null without a side walk, without feet, or for an unsteady cycl
   assert.equal(walkSlide(cycle(2, [18, 22, 27]).map((f) => ({ ...f, dir: 'down' })), 2), null);
   assert.equal(walkSlide(cycle(2, [18]), 2), null, 'a single frame');
   assert.equal(walkSlide(cycle(2, [[], [], []]), 2), null, 'no foot on the foot row');
-  // a boot held one frame, then 4 texels (the dock worker's): no single cadence keeps it planted
+  // a boot held one frame, then 4 texels (the dock worker's until journal Passe V3): no single cadence keeps it planted
   assert.equal(walkSlide(cycle(2, [23, 23, 27, 23, 23, 27]), 2), null);
 });
 
 test('walkSlide on the production sheets (regression: re-measure on purpose after any rebuild of a walk)', async () => {
-  const want = { 'artisan-x2-v1': 4.5, 'blacksmith-x2-v1': 4, 'courier-x2-v1': 4.25, 'dockworker-x2-v2': null, 'guard-x2-v1': 4, 'hooded-x2-v1': 4,
+  const want = { 'artisan-x2-v1': 4.5, 'blacksmith-x2-v1': 4, 'courier-x2-v1': 4.25, 'dockworker-x2-v2': 4, 'guard-x2-v1': 4, 'hooded-x2-v1': 4,
     'merchant-x2-v2': 4.5, 'older-merchant-x2-v1': 4.25, 'townswoman-x2-v1': 4.5, 'traveler-x2-v1': 4.25 };
   const production = fs.readdirSync(path.join(ROOT, 'art-lab/characters/manifests')).filter((f) => f.endsWith('.manifest.json'))
     .map((f) => JSON.parse(fs.readFileSync(path.join(ROOT, 'art-lab/characters/manifests', f), 'utf8'))).filter((m) => m.runtimeUse === 'production').map((m) => m.id).sort();
