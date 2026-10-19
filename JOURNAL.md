@@ -816,6 +816,31 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un recul à l'écran en cadrage posé vient de ce que le pivot suit (ici x, avec un gain) comparé à ce que le joueur montre à l'écran (sa
   vitesse le long de la droite de la caméra) : une marche en diagonale suffit à les inverser.
 
+## Passe K3 — Caméras : recul en D posé, cause précisée ; [KO] le suivi le long des axes de la caméra (2026-10-19)
+
+### Essai — [KO] (prototype retiré, rien de commité)
+- La Passe K2 recommandait un suivi « à l'écran » : le pivot de D suit le joueur le long de la droite de la caméra et de l'axe de profondeur au
+  sol, avec les mêmes gains et bornes, au lieu de x / z. Prototype derrière `?camfollow=screen`, `camsim` (graine 1842) : C → D **16 images de
+  recul, −42 px/s** (au lieu de −39), D → C 38 images, −20 px/s (au lieu de −15) ; D vers l'est / l'ouest : 0, comme avant. Le recul reste :
+  prototype retiré (`git checkout`).
+
+### Cause, image par image — [OK] (reconstruction exacte : NDC recalculée = NDC de `camsim`, écart max 0,0000)
+- Vitesse à l'écran décomposée : (joueur qui bouge, caméra figée) + (caméra qui bouge, joueur figé). C → D en D posé : **joueur +94 px/s,
+  caméra −133 px/s, total −39** (mesuré −39). D → C : joueur −128 px/s, caméra +140, total +12 à +15.
+- Le joueur, à NDC 0,42 (à droite du centre), marche aussi **en profondeur** (1,9 m/s en s'éloignant) : la perspective le ramène vers le
+  centre et lui retire ≈ 39 px/s ; le pivot, qui suit 85 % de son déplacement latéral sans cette perte, le dépasse. Ce n'est pas l'axe du
+  suivi (x / z ou celui de la caméra) qui compte, mais un gain assez bas pour couvrir la perte due à la profondeur : 0,6 le fait (Passe K2).
+- Correction de la Passe K2 : sa cause (« le pivot suit x à 0,85 ») était incomplète ; c'est la combinaison gain × marche en profondeur à
+  droite du centre.
+
+### Décision à demander à l'opérateur (inchangée)
+- Garder D, baisser son gain à 0,6 (`?camD=,,,,,,,,0.6` pour l'essayer : plus de recul, joueur plus à droite), ou un suivi qui vise la
+  vitesse du joueur à l'écran (comme l'ancrage des transitions : plus de travail, à prouver par `camsim` et le bake).
+
+### Pensée
+- Avant de prototyper un correctif, décomposer la grandeur mesurée en ses causes (ici : part du joueur, part de la caméra) et vérifier la
+  décomposition contre la mesure : une hypothèse plausible (l'axe du suivi) a coûté un essai inutile.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -888,8 +913,9 @@ sans traverser C ; (c) lacet max 0,96° / image en C ↔ D (≤ 0,55° ailleurs)
 (−131 px/s) font glisser le joueur à l'envers à l'écran (héritage de la passe 2, mesuré en 4B ; Passe K1 : B → A remesuré −139 px/s, C → B
 0 ; **transitions ancrées partout préparées derrière `?camblend=anchored`** : B → A 0 image de recul au lieu de 14, pic +21 px/s au lieu de +181 ;
 décision de l'opérateur ; le reste demanderait de recaler le pivot de A) ; (e) reculs du joueur à l'écran en cadrage posé C / D (−15 à
-−39 px/s, Passe K1) : expliqués en Passe K2 (pivot de D qui suit x à 0,85 pendant une marche en diagonale) ; gain 0,6 ou suivi « à
-l'écran » à décider par l'opérateur. Contrainte : la caméra de D reste
+−39 px/s, Passe K1) : expliqués en Passes K2 / K3 (le pivot de D, qui suit 85 % du déplacement latéral, dépasse un joueur que sa marche en profondeur
+ralentit à l'écran ; le suivi le long des axes de la caméra n'y change rien) ; gain 0,6 ou suivi visant la vitesse à l'écran : décision de
+l'opérateur. Contrainte : la caméra de D reste
 à z < ~18,5 (maisons de la rive opposée dès z = 19,8, invisibles de A/B/C) ; tout cadrage plus reculé exige de les retirer ou de les abaisser.
 
 **5. Visibilité / culling**
