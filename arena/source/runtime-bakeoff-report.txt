@@ -1,0 +1,885 @@
+Cité du Tournoi: runtime bakeoff report
+
+## Runtime bakeoff: Hybrid Diorama vs Full 3D
+
+Two playable prototypes of the same Ren vs Marek encounter, built over one shared combat simulation. This report describes what was built, what I actually observed, and what remains placeholder. It does not pick a winner. Updated after two further passes: richer procedural art (section 3) and a new HD-2D mode (section 8). The runtime table and the three-way comparison are from the latest build.
+Open the playable prototype
+
+## Read this first: what I could and could not observe
+
+I tested in headless Chromium with a software rasterizer (SwiftShader, no GPU). It rendered about 3 to 4 frames per second in both prototypes, at any resolution, with or without shadows. So I could not judge how either one feels in motion, and I have no real frame-time numbers. What I did observe: stills of seven scripted moments in both versions, keyboard-driven interaction tests, and structural metrics (draw calls, triangles, texture memory, build time). Anything about animation feel and responsiveness is for you to judge in the playable link, on your own GPU.
+
+## 1. What was built
+
+CombatSim (sim.js, 173 lines)   fixed 1/120 s step, data-driven actions, event stream, no rendering knowledge
+        |  state + events
+Shared presentation data: poses.js (89), env.js (269: arena, lights, floor rings/telegraph), vfx.js (54)
+        |
+HybridRenderer (hybrid.js, 303)      Full3DRenderer (full3d.js, 289)
+        \  both driven by app.js (198): input, DOM HUD, debug panel, presets, stats
+
+About 1,375 lines in total, one 146 KB HTML file, Three.js r128 from cdnjs, no external art. The simulation never references sprites, meshes or cameras. I tested it separately in Node (17 assertions: determinism, timings, dodge, block, early and buffered input, recovery rules, KO).
+
+## Combat rules as implemented (all tuning placeholders)
+
+Item | Value |
+
+Gauge | threshold 100; Ren 22/s, Marek 18/s; start 55 / 34, so Ren is READY at about 2.05 s |
+
+Ren Attack | 12 damage, impact 0.14 s after command, recovery 0.9 s |
+
+Ren Flash Cut (instant skill) | 26 damage, impact 0.18 s, recovery 2.2 s |
+
+Marek Slash | cast 0.7 s, 9 damage, reaction window 0.4 s |
+
+Marek Heavy Strike | cast 1.5 s, 28 damage, reaction window 0.5 s; Marek alternates Heavy then Slash |
+
+Dodge | avoids all damage, costs 30 gauge, unavailable while recovering |
+
+Block | costs 15 gauge, reduces damage 35% (Slash) or 50% (Heavy); allowed while recovering at 60% effectiveness |
+
+Input rules | reaction presses are accepted 0.15 s before the window opens; earlier presses are denied; a clean hit costs 8 gauge and 0.38 s of stagger |
+
+The debug panel has restart, pause, single-step, 1x to 0.1x time, trigger Marek's heavy, refill Ren's gauge, HUD and telegraph toggles, freeze at the reaction window, a sun-shadow toggle, a camera toggle, seven scripted moment presets and a live stats block. Switching between HYBRID and FULL 3D keeps the same combat state (verified by comparing simulation hashes before and after). Gamepad and on-screen buttons work too.
+
+## 2. What is identical, and what differs
+
+Identical | Differs |
+
+Arena geometry, dimensions, fighter positions, base camera
+All combat timings, damage, controls, logic
+Keypose data and forward kinematics (poses.js)
+HUD data and DOM overlay
+Light placement and intent (sun, hemisphere, two braziers, a cast light)
+Floor rings and telegraph decal logic |
+
+Fighters: generated sprite atlases vs procedural 3D rigs
+Materials: PBR vs toon with a banded gradient
+Outlines: drawn into the sprites vs inverted-hull meshes
+Shadows: projected sprite shadow vs real shadow-map casting
+Lighting on fighters: normal map derived from the sprite vs real surface normals
+Camera: fixed with small shake vs a director with push-in, whip and punch
+Impact: smear frames and afterimages vs sword trail, screen flash, harder shake
+Ring style: soft glow vs bold flat |
+
+One honest caveat on fairness: both renderers read the same keyposes, which keeps the comparison about rendering. It also hides a real production difference, because in a real hand-drawn pipeline every one of those poses would be separately drawn frames.
+
+## 3. Second procedural-design pass
+
+The first pass exposed the weakest code-made art: crude Full 3D figures, thin sprite detail, a flat arena. This pass improved all three without changing the combat or making either renderer imitate the other. Before is on the left, after on the right.
+
+[image: Hybrid before and after]
+
+[image: Full 3D before and after]
+
+Left: Hybrid Diorama, before and after. Right: Full 3D, before and after. Same moment (Ren READY), same camera.
+
+## What changed
+
+Hybrid sprites: tapered limbs with volume gradients and rim light, shaped torso, armor plates and bracers, bigger heads with eyes, brows and hair, cloak folds with a gold hem, runed greatsword, painted brush-texture pass.
+
+Full 3D rig: tapered lathe limbs, shaped torso, breastplate and pauldrons, greaves, faces with eyes and brows, hair tufts, ponytail and scarf tails on spring chains, detailed sword (fuller, guard, wrapped grip), blades turned to face the camera.
+
+Arena (both): inlaid stone and sand floor with scuffs, ashlar wall with pilasters and arches, a real Coliseum arcade, cloudy sky, seat rows, varied spectators with raised arms when they cheer, drifting dust motes.
+
+## What it cost
+
+Hybrid sprite generation went from about 3.5 s to about 11 s in this container.
+
+Full 3D draw calls went from 179 to 351, then back to 192 after baking static parts per joint.
+
+Source grew from about 1,170 to 1,375 lines.
+
+The Full 3D sword was first edge-on to the camera and read as a black line, and Ren’s shoulder pad first looked like a beard. Both were found only by inspecting raw frames.
+
+## 4. Equivalent moments
+
+Captured from scripted, deterministic runs of the same simulation at 1280 x 720. Hybrid is on the left, Full 3D on the right.
+
+## Idle / charging
+
+[image: Hybrid Diorama: Idle / charging]
+Hybrid Diorama
+
+[image: Full 3D: Idle / charging]
+Full 3D
+Both gauges filling. Ren&#x27;s ring is blue, Marek&#x27;s orange. The only text is a small "next: Heavy Strike" label over Marek. Hybrid fighters read as dark-outlined illustrations; Full 3D fighters read as toy-like primitives with thinner outlines.
+
+## Ren READY
+
+[image: Hybrid Diorama: Ren READY]
+Hybrid Diorama
+
+[image: Full 3D: Ren READY]
+Full 3D
+Ren&#x27;s ring turns solid gold with a pulse and a READY chip appears; the 1 and 2 keys light up in the bar. In both versions this is the clearest state change in the encounter.
+
+## Marek casting
+
+[image: Hybrid Diorama: Marek casting]
+Hybrid Diorama
+
+[image: Full 3D: Marek casting]
+Full 3D
+Marek&#x27;s ring fills red as cast progress, the red floor zone appears with moving chevrons, and the chip switches to HEAVY STRIKE. Full 3D adds a camera push-in and an emissive blade. In both, the chip sits on top of the raised sword.
+
+## Reaction window
+
+[image: Hybrid Diorama: Reaction window]
+Hybrid Diorama
+
+[image: Full 3D: Reaction window]
+Full 3D
+A converging ring closes onto Ren&#x27;s gauge ring, the "A Dodge / B Block" chip replaces READY, and the zone flashes white. Full 3D has already eased the camera back to its base shot.
+
+## Attack impact (unreacted)
+
+[image: Hybrid Diorama: Attack impact (unreacted)]
+Hybrid Diorama
+
+[image: Full 3D: Attack impact (unreacted)]
+Full 3D
+Heavy Strike lands for 28. Both show sparks, a flash, a shock ring, damage number and a cheering crowd. Hybrid shows a drawn smear and keeps the frame readable; Full 3D stacks a trail, a screen flash and a camera punch, which briefly washes out Ren.
+
+## Block (extra)
+
+[image: Hybrid Diorama: Block (extra)]
+Hybrid Diorama
+
+[image: Full 3D: Block (extra)]
+Full 3D
+Blue sparks and "blocked" damage number. Ren was still recovering, so mitigation is the reduced 60% version and he takes 20.
+
+## Dodge (extra)
+
+[image: Hybrid Diorama: Dodge (extra)]
+Hybrid Diorama
+
+[image: Full 3D: Dodge (extra)]
+Full 3D
+Hybrid leaves afterimages and a dust puff; Full 3D steps back and toward the camera, using the depth axis the sprite cannot.
+
+## 5. Observed comparison (no ranking)
+
+## Visual
+
+Aspect | Hybrid Diorama | Full 3D |
+
+Readability | Dark outlines and strong value contrast keep both silhouettes clear in every captured moment, including impact. | Needed two lighting passes and a 26% material darkening before fighters separated from the arena. At impact the trail, flash and punch briefly wash out Ren. |
+
+Depth | Sprites are cards in a real scene. A projected shadow and contact blob ground them. Both prototypes share the same foreground pillars and landmark. I did not stage a fighter walking behind scenery, so occlusion is untested in play. | Same scene, but fighters cast and receive real shadows, use the depth axis (dodge steps toward the camera), and parallax comes free when the camera moves. |
+
+Character presence | Reads as illustrated characters: faces with eyes and brows, spiky or swept hair, pauldrons, bracers, a runed greatsword, cloak folds with gold hem. Code-drawn placeholder art, so it says little about hand-painted potential. | After pass 2 it reads as stylised low-poly heroes: tapered limbs, armor plates, faces, hair tufts, boots. Still clearly procedural and a little stiff, but no longer toy-like primitives. |
+
+Animation | Stepped: 44 frames for Ren and 48 for Marek. Marek’s 1.5 s heavy wind-up is 8 frames, roughly 5 fps. Not judged in motion. | Continuous interpolation, spring-driven cape, sword trail. Not judged in motion. |
+
+Impact feedback | Sparks, flash, shock ring, drawn smear, afterimages, small shake. | Same particles plus camera punch, harder shake, screen flash, trail. |
+
+## Dynamic Turn-Based readability
+
+Aspect | Observation (same in both unless noted) |
+
+Gauge and READY | Floor rings plus one READY chip carry it with no gauge panels. The ring partly hides behind the legs because the camera is low. The bold ring (Full 3D) reads slightly better at distance than the soft glow (Hybrid). |
+
+Cast anticipation and telegraph | The first telegraph decal was almost invisible: a floor decal at this camera pitch is foreshortened to a thin strip. A bolder, taller, high-contrast version fixed it. Floor-level UI depends on camera pitch, and a lower camera makes it worse. |
+
+Reaction window | A closing ring, a prompt chip and a flashing zone work. The key bar at the bottom duplicates the chip, so it is a candidate to remove for minimal UI. |
+
+Camera interference | The first Full 3D cast push-in cropped the top of Marek’s raised sword. I reduced it and made it ease back within 0.22 s of the window opening. The guard rail had to be added by hand. |
+
+UI collisions | Marek’s name chip overlaps his raised sword in both versions at the casting moment. |
+
+Team battles (not built) | Structural estimate only. Full 3D costs about 55 draw calls per fighter (shadow pass included, after merging static parts per joint) vs about 3 for a sprite, so 4v4 adds roughly 440 vs 24. Hybrid sprites at the same depth plane needed manual z offsets to avoid overlap fighting, so 8 fighters need explicit ordering rules. |
+
+## Production
+
+Aspect | Hybrid Diorama | Full 3D |
+
+Custom assets | Per fighter: an atlas of 44 to 48 frames at 324 x 306 px plus a derived normal map. Here both are generated by code. | None for characters: about 85 parts per fighter, baked to roughly 33 meshes, parametric by dimensions and colours. |
+
+Code | 303 lines: 2D painter, atlas packing, async build, normal-map synthesis, billboards, fake shadows, afterimages. | 289 lines: rig builder, mesh baking, toon and outline materials, trail, cape and hair springs, camera director. |
+
+Iteration speed | Generating the two atlases takes about 11 s in this container (3.5 to 4 s before the richer painter). Any pose or palette change regenerates it. | Rig build takes about 75 ms. Look changes were lighting and material tuning. |
+
+Adding a fighter | New palette plus drawing parameters plus another atlas of roughly 31 MB at this resolution. Not tested. | New colours and dimensions on the same rig. Not tested. |
+
+Procedural / modular | Parametric here only because the sprites are drawn from the skeleton. Real hand-painted sprites would not be. | Naturally parametric. |
+
+Autonomous Codex / Claude work | The sim, atlas pipeline and renderer were built and tested headlessly. The visual quality of real painted frames cannot be authored by code, and screenshots were the only visual check. | Same for code, rig and shading. Rig animation quality was equally only checked by stills. |
+
+## Runtime (structural; not a frame-time benchmark)
+
+Metric (reaction-window scene) | HD-2D | Painted sprites | Full 3D |
+
+Draw calls (shadow pass included) | 66 to 73, of which about 21 are post-processing passes | 150 | 301 |
+Triangles | 2.3k (billboards and instanced masses) | 60.6k | 107.6k |
+
+Estimated texture memory | 27 MB (small pixel atlases, palette-quantised textures) | 79 MB (two large atlases and normal maps) | 18 MB |
+
+Sprite generation, cold cache | about 1.5 s (124 frames) | about 12.4 s | none |
+Sprite restore, warm cache | about 0.5 s | about 1 s | none |
+
+Whole page boot, cold / warm | about 20 s / about 6.4 s in the latest run (earlier runs 12 s / 4.4 s; varies with machine load) | same | same |
+GPU frame time | not measured | not measured | not measured |
+
+Draw calls and triangles include the shared arena, which now has props and a varied crowd (props are baked into one mesh). Texture memory is estimated from texture dimensions. HD-2D also allocates full-resolution HDR render targets that are not counted here. Tiny scene: early signals only.
+
+## 6. Still placeholder
+
+Both fighters: code-drawn sprites and primitive rigs, not designed characters
+All keyposes, authored by me and shared between versions
+Arena textures, generated on canvas; spectators are instanced capsules
+Balance values, input buffer, and the gauge and reaction costs
+Camera director parameters
+
+No Counter reaction and no defensive skills
+Only a minimal "next action" label, no real timeline
+No audio, hit-stop, depth of field or post-processing
+Outlines on fighters only, none on architecture
+Sprites have one facing; no team layouts; no walking behind scenery
+
+## 7. Technical problems discovered
+
+No GPU available for testing. Software rendering gave about 3 to 4 fps regardless of resolution or shadows, so real performance and motion feel are unmeasured.
+
+Sprite memory and build cost. About 31 MB of estimated texture memory per fighter at 90 px per metre, plus about 11 s of generation here (the richer painter made it about 3x slower; the browser rasterizes canvas drawing lazily, so my first timer attributed it to the wrong step). A real roster needs an offline bake, compression and streaming. Sprite resolution is also tied to camera distance, so Hybrid effectively needs a locked camera.
+
+Sprite depth. Billboards at the same depth plane z-fight during melee overlap. I used fixed offsets (Ren in front), which is a hack and not a general rule.
+
+Normal-map lighting from sprites gives a rounded response but is fake: no self-shadowing, and the fighters cast only a projected shadow.
+
+Detail multiplies draw calls. The richer rig first pushed Full 3D to 351 draw calls; baking static parts per joint into one vertex-coloured mesh brought it back to 192 with an identical look. Detail in 3D needs that kind of pipeline step.
+
+Outline hulls double draw calls and triangles, break on hard-edged boxes (needing a scale hack), and have constant world thickness, so line weight changes with camera push.
+
+Full 3D look is lighting-sensitive. The first pass was blown out, the second pale; it took a lighting and a material change to separate fighters from the arena.
+
+Floor UI and camera pitch. The telegraph decal vanishes at a grazing angle. Any cinematic low camera needs a fallback.
+
+Three.js r128 (the version usable under the hosting CSP) has no CapsuleGeometry or built-in post-processing, so I used lathe capsules and no screen-space outline.
+
+## 8. HD-2D pass (pass 3)
+
+Following your steer toward HD-2D, I added a third mode and made it the default. Same combat, same arena, same cast; only the rendering changes. Still 100% procedural: no external art.
+
+[image: HD-2D hero frame]
+
+HD-2D, Ren READY: outlined pixel sprites with live pixel faces, sprite-shaped cast shadows, depth of field melting the pillars and stands, bloom, pixel floor, pixel rings.
+
+## What HD-2D adds
+
+Pixel sprites made by code: a dedicated pixel-art pipeline (section 9): 124 frames generated in about 1.5 s cold, 0.5 s from cache.
+
+Pixel faces with live expressions: a 24 x 24 overlay redrawn when the expression changes. 13 expressions (calm, focus, determined, stern, smirk, shout, angry, snarl with glowing eyes, pain, grit, surprise, tired with sweat, dizzy with stars) plus blinking, all driven by combat state.
+
+Pixel-art world: arena textures drawn, reduced and dithered, nearest-filtered.
+
+Light: real sun and brazier lights, per-pixel sprite normals, and sprite-shaped cast shadows.
+
+Custom post stack (Three r128 has no composer): HDR target with depth, depth-of-field with bokeh highlights and tilt, 3-level bloom, god rays, filmic grade, vignette, grain, FXAA. Each piece has a toggle in the panel.
+
+Pixel VFX: crescent slash, star flash, pixel shock ring, square sparks, embers rising from the braziers, light-shaft cards.
+
+Camera: slightly higher than the other modes, with a slow drift, which also helps the floor telegraph read.
+
+## The four requested improvements
+
+Sprite cache: atlases are stored once in IndexedDB, keyed by a hash of the art code. Sprite preparation went from about 13 s to about 1 s, and the page boots in about 4.5 s warm instead of 17 to 23 s. It falls back to generating if IndexedDB is unavailable. Verified in headless Chromium only.
+
+Animated faces: in HD-2D and Full 3D (3D eyelids, brows, mouth shapes, sweat drops, dizzy stars). The painted-sprite mode is not animated.
+
+Props: weapon racks with spears, swords and axes, round shields, barrels with hoops, crates, hay bales, amphorae, a training dummy, a trophy table, hanging lanterns. All static props are baked into one mesh.
+
+Crowd: hats, hoods and caps, helmets, children, broad and slim builds, waved pennants, and a crowd wave that rolls across the stands on impacts.
+
+## Three-way comparison, five key moments
+
+[image: Three-way comparison]
+
+Left to right: HD-2D, painted sprites in 3D, Full 3D.
+
+## Observed in HD-2D (stills only)
+
+Strongest atmosphere of the three: the depth-of-field and bloom make the arena feel like a lit miniature, and the fighters pop as the only sharp elements. The same blur also hides most arena and crowd detail, by design.
+
+Gauge rings, telegraph and reaction cue stay readable, and the higher camera helps the floor decal.
+
+Pixel faces read well on Ren at 1280 x 720. On Marek they are partly lost behind his beard and the blur, and the snarl is hard to see in stills.
+
+The grade needed three tuning passes in the first HD-2D pass: the first was washed out and then too orange. Bloom and DOF thresholds are tuned to this scene.
+
+The dithered floor shows some moiré at certain distances.
+
+## Problems found in this pass
+
+My test browser served a stale page from its own cache, so one round of measurements was out of date; I added a cache-buster and re-measured.
+
+A string replace silently corrupted an identifier in the props code; syntax checks passed and only a real run would have caught it.
+
+Static props first added about 250 draw calls; baking them into one mesh fixed it.
+
+Pixel faces are a separate quad anchored to a per-frame head position stored with each sprite frame. A real pipeline would need that metadata authored for every frame.
+
+Still unmeasured: real GPU cost of the post stack (two full-resolution HDR targets plus a bloom chain) and animation feel.
+
+## 9. Premium pixel-art pass (pass 4)
+
+The first HD-2D sprites were a vector drawing shrunk down, so they were pixelated but not pixel art. This pass replaces them with a pipeline that works the way pixel artists do. Still 100% code, no external art.
+
+## The pipeline, per frame
+
+Material IDs: the figure is drawn as flat material IDs (skin, hair, cloak, tunic, pants, boot, metal, trim, leather, blade, scarf, smear) with draw order, 3x supersampled, then reduced by majority vote per pixel. Clean, alias-free shapes.
+
+Form light: a second pass lights each part (lit side toward the sun), so a limb is shaded across its width.
+
+Hue-shifted ramps: every material has a 4-tone ramp: shadows drift cool and purple, highlights warm and yellow. 15 materials, 56 ramp colours, 89 distinct colours in the whole atlas.
+
+Dither only at band edges: 4x4 ordered dither at +-5% so tones blend without noise.
+
+Cleanup: orphan pixels removed, single holes filled.
+
+Lines: selective outline (the neighbouring ramp’s dark tone, lighter on the lit side), 1 px internal separation lines between parts, a warm bounce rim on the shadow side, specular accents on metal.
+
+## Around the sprites
+
+More frames: 60 (Ren) and 64 (Marek) instead of 44 and 48, including a crescent smear with its own ramp and an energy aura on Marek’s heavy wind-up.
+
+Secondary motion: cloak, hair and scarf sway per idle frame and stream with the lunge velocity.
+
+Pixel grid discipline: sprite positions snap to the pixel grid, so every pixel stays the same size while fighters move.
+
+Baked light: the shading lives in the sprite; scene lights only tint it, so the ramps survive the post stack.
+
+World textures: median-cut limited palettes (12 to 34 colours) at a pixel density matched to the sprites, replacing the dither that caused moiré.
+
+Pixel HUD: pixel-font chips, framed segmented HP bars, and animated pixel portraits that show the same live expression as the sprite.
+
+Sprite lab (press L): play every clip frame by frame at 4x, inspect the material ramps and the 13 expressions.
+
+[image: Raw sprite frames at 3x]
+
+Raw frames at 3x, no post-processing: idle, ready, wind-up, strike/follow, hit, block, dodge. Top Ren, bottom Marek.
+
+[image: Sprite lab]
+
+The sprite lab: Marek’s wind-up at 4x, with the hue-shifted ramps and the expression gallery.
+
+## What looked wrong at first, and what I did about it
+
+The first output had skin shadows turning screaming orange (the hue shift kept full saturation on light colours), so the head read as a red ball. I desaturated shadows for light materials.
+
+Bodies were too thin for the big heads, so I added mass to torso, limbs, hands and boots.
+
+Flat shapes sitting exactly on a tone boundary produced a checkerboard. I moved their light values to the middle of a band.
+
+Marek’s silver hair and light skin merged into a cream blob; I changed the hair to cool silver and the skin to tan and shrank the mane.
+
+I also introduced a bug (implicit globals shared between fighters) and fixed it before any render depended on it.
+
+## Honest limits
+
+The poses are still derived from a skeleton and a few keyposes, not hand-drawn key frames, so the animation will read as procedural until it is judged in motion (not done here).
+
+Marek’s face is small and partly hidden by his beard, so his expressions are harder to read than Ren’s.
+
+Sprite shadows are flat card projections. Pixel density of the floor matches the sprites only approximately because the floor is in perspective. Snapping is on world X only, so the slow camera drift can still shift pixels slightly.
+
+## 10. Art-direction pass on your reference (pass 5)
+
+You asked for a premium procedural pixel-art HD-2D combat look, with your uploaded preview as the baseline: smaller, integrated fighters; a much stronger environment; a crisp gameplay plane; and contextual camera emphasis. This pass rebuilds the HD-2D arena and camera around that direction. Everything is still generated by code.
+
+[image: Reference vs live render]
+
+Your reference (left) next to the live procedural render (right), same moment. The structure and scale match; the reference is still richer in material realism and skyline presence (see the gap list below).
+
+## 1. Locked fighter scale
+
+At the default wide shot, Ren is about 21 to 22% of the frame height (about 155 px at 720p), so one sprite pixel is about 2.2 screen pixels. That is smaller than the earlier large-character framing and slightly larger than a strict Octopath scale.
+
+Fighters stand 4.8 m apart (was 3.1); lunges are scaled 1.75x so strikes still connect. The camera orbit is 15.4 m at an 11 degree elevation with a 32 degree field of view.
+
+## 2. A real environment: "Arène des Champions"
+
+Plaza: fine cobblestones with a 336 px medallion (navy and gold, fleur-de-lis, laurel and gem rings), scattered petals, ambient-occlusion strips at the wall bases and a gentle darkening toward the edges so the fighting area pops.
+
+Architecture: parapet with pillars and finials, five-step stone tribunes on both sides with scalloped awnings, a VIP balcony with columns, canopy, balustrade and stairs, stone braziers.
+
+Heraldry: banners with a pixel fleur-de-lis in navy and red, small ones on the parapet and tall ones on poles, all waving.
+
+Crowd: about 170 pixel spectators from 16 authored people (hats, hoods, helmets, outfits, nobles in the balcony), with idle bobbing, a cheering frame and a wave across the stands on impacts.
+
+City backdrop: river with moving water, a bridge with arches, a skyline with castle towers and a cathedral, trees, drifting clouds, birds, all in layered cards with distance haze.
+
+Foreground: soft, pre-blurred silhouettes of spectators at the bottom corners.
+
+## 3. Crisp gameplay plane, lighting hierarchy
+
+Depth of field now has separate near and far ranges: the fighting plane stays sharp, the far backdrop is only gently soft, and the foreground blurs. Bloom, god rays and saturation were reduced from the earlier HD-2D look.
+
+A raking sun from the left gives long fighter shadows; sprite shading is baked so it survives the grade.
+
+## 4. Readability without bigger sprites
+
+Silhouette contrast and selective outlines (section 9), floor rings with pips, the red floor telegraph, a glowing energy aura and orbiting red swooshes on heavy casts.
+
+HUD in the reference idiom: title block, framed panels with pixel portraits, HP and action-gauge bars with diamond pips, a "Prochaine" line for Marek, an "Attaque puissante !" alert with a live countdown, a contextual Réaction panel (Esquiver / Bloquer, with a shrinking window bar) or "À vous de jouer" command panel, and a timeline of upcoming events with portrait nodes.
+
+## 5. Contextual camera
+
+Wide by default. On Marek’s heavy cast the camera pushes in (up to 1.4x), holds through the reaction window and the impact, then eases back; on Ren’s attacks it leans toward the strike; on a KO it lingers on the loser. It can be turned off in the panel.
+
+[image: HD-2D moments]
+
+Wide default, Ren READY, the cast push-in, and the held push-in during the reaction window.
+
+[image: HD-2D moments]
+
+Impact (close hold), block and dodge.
+
+## What I got wrong along the way
+
+The first arena render had cobbles as wide as the characters, a sky gradient that mapped to its pale bottom band (so the backdrop looked washed out), and a skyline about three times too big.
+
+Foreground crowd sprites were outside the narrow field of view, then turned into glitchy blocks when blurred, because giant nearest-filtered pixels do not blur smoothly. They are now soft cards.
+
+Each textured box with a material array cost 6 draw calls, pushing the scene to 627. Batching static boxes by texture brought it to 117.
+
+The impact flash and crescent swamped Ren at push-in zoom; I reduced them. The first energy swooshes also hid Marek, so they now sit behind him, and one referenced a variable before it was assigned.
+
+## Honest gap list against your reference
+
+Material realism: your reference has photographic-quality stone and lighting. Mine reads as clean, saturated, more cartoonish pixel art and is flatter in its lighting.
+
+Skyline presence: the castle and cathedral are small and partly hidden by the tribunes, tall banners and HUD; your reference shows them large and clear.
+
+Architecture depth: the VIP balcony and stairs are mostly out of frame; there is no large staircase mass like your reference.
+
+VFX: the telegraph is a floor decal plus swooshes, not the large arcing energy of your reference. The sprites are still driven by a skeleton rather than hand-drawn key frames.
+
+Not measured: real GPU cost (the test browser has no GPU) and how the camera and animation feel in motion.
+
+## 11. Calibration pass: the Arena as the Merchant District’s combat counterpart (pass 6)
+
+The brief: the Arena and the Merchant District are one grammar (simple masses, orchestrated detail, a restrained palette, haze, sparse warm lights), applied with a different dominant palette and focal hierarchy. Merchant District = indigo, slate and amber. Arena = warm stone, burnt gold and brown-violet shadows, with red only for the enemy and blue only for the player. Focal order: fighters, telegraphs, floor, near architecture, crowd, distant city.
+
+[image: Clean master frame]
+
+Clean master combat frame, art only. The back wall behind the fighters is calm and in shadow; the city and crowd are masses; detail is concentrated on the fighters, rings and floor.
+
+[image: Before and after master]
+
+Before (left) and after (right), master frame.
+
+[image: Before and after telegraph]
+
+Before and after with the combat telegraph active (reaction window, heavy cast).
+
+[image: Fighter readability]
+
+Fighter readability: the same frame with and without the fighters, before and after, with the measured contrast.
+
+## Performance comparison (identical conditions, reaction-window frame)
+
+Metric | Before | After |
+
+Draw calls (shadow and post passes included) | 110 | 65 |
+Triangles | 4,126 | 2,444 |
+Geometries / meshes | 74 / 86 | 47 / 51 |
+
+Arena scene objects | 70 | 35 |
+Lights (point lights) | 6 (3) | 4 (1, the dynamic cast light) |
+Shadow-casting lights | 1 | 1 (fighters only; structures use baked ambient occlusion) |
+
+Instances | 305 (about 155 crowd, 150 petals) | 275 (94 crowd, 85 city masses, 44 roofs, about 42 windows, 10 lanterns) |
+
+Texture count / estimated memory | 55 / 25.7 MB | 50 / 27.1 MB (a little more: larger ring and skyline textures) |
+
+CPU frame time, software renderer, 960 x 540 | 2,321 ms | 1,792 ms (-23%) |
+FPS / GPU frame time | not measurable (no GPU here) | not measurable (no GPU here) |
+
+The software-renderer time is only a relative signal of vertex and fill cost. Real FPS and GPU time still need a real device. My first version of this pass added 12 MB of texture memory through separate rim-light silhouette atlases; a shader override now reuses the main atlas.
+
+## Geometry removed or simplified
+
+Removed: the VIP balcony and stairs, tribune awnings, both pedestal braziers and their point lights, the two tall banner poles, four wall banners, parapet pillars and finials, 150 floor petals, river, bridge, trees and birds, the foreground posts.
+
+Simplified: tribunes from 5 tiers to 3; the back wall’s arches are a texture, not geometry; the single sparse fire source is a pair of small tower-top flames and a few lantern points.
+
+City: instead of tall painted cards, 85 instanced masses are generated only inside the master camera’s visible window and above the wall’s occlusion line (a rule computed from the camera, not an automatic visibility culler), plus an aqueduct silhouette and two far silhouette layers.
+
+## Crowd strategy
+
+94 instances in 2 draw calls: 84 faceless silhouettes in 3 dark values and 6 shapes, with 1 or 2 sun-catching pixels on some, and only 10 individually treated spectators near the focal side.
+
+Limited animation: a 2-frame bob per tier, a cheer frame on impacts, and a gentle wave. Down from about 155 individually coloured people.
+
+## Palette changes
+
+Removed: blue and gold medallion, blue and red banners, green trees, saturated sky blue, red petals.
+
+Now: sandstone, ochre, burnt gold, brown-violet shadows, a sunset gradient and a violet-to-mauve city. Banners are dark burgundy-brown with muted gold. Red appears only on the enemy and the telegraph; blue only on Ren’s ring and the HUD.
+
+## Lighting changes
+
+One dominant key: a low warm sun from behind-left, with a soft warm bounce from the camera side and a violet hemisphere. Point lights 3 to 1.
+
+Structures no longer cast shadows (my first attempt threw a huge hard shadow wedge over the floor); baked ambient-occlusion strips and a darker plaza edge shape the combat plane instead.
+
+A warm light pool under the fighters, a 1-pixel warm rim on both sprites, long fighter shadows. Bloom 0.2 to 0.12, god rays 0.16 to 0.1, saturation back to neutral.
+
+## Background hierarchy
+
+Near: real, batched geometry (back wall, two towers, three-tier tribunes, parapets).
+
+Mid: instanced silhouette masses in 4 rows, each lighter and warmer than the one before (aerial perspective), sparse amber windows, an aqueduct silhouette.
+
+Far: two silhouette cards with haze and sparse windows, a sunset sky, and a low sun behind the skyline.
+
+## Fighter readability
+
+Measured head-zone contrast rose from 0.258 to 0.377 (Ren) and from 0.275 to 0.422 (Marek), about +46% and +53%; overall figure-ground contrast about +20%; high-frequency edge density behind the fighters fell 13 to 15%.
+
+Sprites stay pixel-sharp: the depth of field has a sharp plateau around the gameplay plane, sprites snap to the pixel grid, and the master camera has no drift.
+
+Contextual camera, always returning to the master frame: a small push when Ren becomes READY (6%), reaction framing (10%), a short lateral lean on Ren’s strikes, a hold through Marek’s heavy cast, reaction window and impact (28%), a short hold after impacts (16%), a slower push on a KO. The fighters’ screen position now stays stable during pushes so the panel never covers the telegraph.
+
+## What I got wrong along the way
+
+The first calibrated render had a giant hard shadow wedge across the floor, a specular glare patch, awnings that hid the crowd, and clunky foreground boxes.
+
+The first city looked like pastel cardboard because I set colours as if they were display values while the pipeline treats them as linear; they were being brightened. They are now set in linear space with per-row aerial perspective.
+
+The horizon glow strip above the wall was the brightest rectangle in the frame and competed with the fighters; I filled the gap with a dark terrace band and calmed the glow.
+
+During a push-in the reaction panel covered the floor telegraph.
+
+My first readability metric was misleading (it compared average luminances, which cancel out); I replaced it with a figure-ground contrast measure.
+
+## Remaining limitations
+
+City grandeur: the city is subordinate, as intended, but it is not yet grand. The cathedral, the aqueduct and the sun are barely visible, and the mid-city masses read as cut-out blocks rather than a believable skyline.
+
+Procedural characters: the poses are still skeleton-driven with few key poses, the faces are tiny (Marek’s is mostly lost), there are no hand-drawn smears beyond a few shapes, and the sprites are shaded by baked light plus a rim, not truly lit by the key light, so their light direction is only approximately consistent with the scene.
+
+The warm rim reads somewhat like a gold outline on the sun side.
+
+The arena is darker overall than your reference; there are no wet-floor reflections like the Merchant District’s; the HUD panels cover part of the city at the top corners.
+
+No real-device FPS or GPU frame time, and no judgement of the camera and animation in motion.
+
+## 12. Pass 7: city grandeur, fighter integration, device validation kit
+
+Four jobs: restore the sense of a grand city without adding structure; integrate the procedural fighters (light direction, rim, silhouette, faces, animation); leave the arena composition, crowd strategy, palette grammar, geometry simplification, focal hierarchy and master camera untouched; and prepare real-device validation. All four are done; the device numbers themselves are still to be collected on real hardware.
+
+[image: City before and after]
+
+City band, same camera. Before: the mid-city blocks filled the top of the frame, so no sky, sun or landmark ever appeared. After: a low sun, a castle, a cathedral with a lit rose window, a faded viaduct and a lower belt of silhouettes.
+
+[image: Master before and after]
+
+Master frame before (left) and after (right), with HUD.
+
+## 1. City grandeur without density
+
+Diagnosis: the four rows of mid-city masses were tall enough to fill the whole band above the wall, so the layers behind them were never visible. Grandeur cannot come from layers the camera cannot see.
+
+Fix by composition and rendering, not structure: the near belt is lowered so it frames the skyline; two landmark silhouettes (a crenellated castle, a cathedral with a rim-lit nave, spires and a glowing rose window) sit in the free centre band between the towers and the HUD panels; a faded viaduct, a warm sunset band behind them, a low sun at the upper left, one haze plane and light god rays from the sun.
+
+Value layering: near belt darkest, landmarks dark violet against the peach band, haze lightening each layer with distance, sparse amber windows only.
+
+Structure budget: mid-city masses 85 to 76, roofs 44 to 36, instances 275 to 257, triangles 2,444 to 2,240; the only addition is the haze plane (+1 draw call, 65 to 66). Crowd (94), palette family and master camera are unchanged.
+
+## 3. What was not changed
+
+Arena composition and focal hierarchy, the crowd (94 instances, same strategy), the palette grammar, the geometry simplification, the master camera and its restrained contextual moves.
+
+## 2. Fighter integration
+
+One light story: a low warm sun from the upper left, slightly behind. The key light has the same azimuth (shadows rake to the right and toward the camera), the sprites are baked lit from the left, the rim sits on the upper-left edges, the right tower’s inner face catches the sun while the left one does not, the castle’s left edges glow, and the god rays start at the sun.
+
+Rim: now modulated by height: strongest on hair, shoulders and blade, fading toward the boots where a warm floor bounce takes over; a faint cool sky tint on the head. Sprites no longer receive cast shadows, so a shadow never dirties a fighter.
+
+Silhouette: the KO pose was broken: the HD-2D painter never applied the skeleton’s fall rotation, so defeat did not show at all in this mode. Fixed, and the face overlay rotates with the head. Also wider stances for idle, ready and recover, a more upright ready sword, a stronger hit lean, and longer, bolder blades.
+
+Faces: more skin area (Marek’s hood edge and beard, Ren’s fringe), a dark hairline, 3-pixel eyes with a lid line, stronger irises and brows.
+
+Animation readability: the heavy wind-up reaches its loaded pose at 0.9 s and holds it through most of the 0.5 s reaction window, with a distinct snap frame in the last 120 ms (before, the peak existed for only about 12% of the cast). Hit-stop freezes both fighters for 60 to 120 ms at impacts, with a 100 ms ease-out catch-up (without it the lunge jumped 0.42 u in one frame).
+
+Telegraph: a deeper, more opaque interior raised the interior-fill contrast against the floor from 1.8:1 to 2.2:1 at worst (deuteranopia simulation 1.5:1 to 1.9:1), measured from the framebuffer.
+
+[image: Silhouettes]
+
+Silhouettes at the on-screen scale: idle, ready, wind-up, strike, block, dodge, hit, KO. Ren on top, Marek below.
+
+[image: Faces]
+
+Faces at 4x. Top block before, bottom block after.
+
+[image: Telegraph before and after]
+
+Reaction window, art only: before and after.
+
+[image: KO]
+
+Defeat now reads: Ren lies fallen, the crowd’s cheer frame is up, the impact effects linger.
+
+## 4. Real-device validation kit
+
+A built-in Device test (Debug panel, or ?devtest=1) plays the arena with a bot and measures: GPU frame time (timer query where the browser offers it), frame-time percentiles and hitches, three A/B variants (post off, DOF off, FXAA off), camera push smoothness, idle sprite sub-pixel jitter and sprite pixel size, telegraph contrast read from the framebuffer (including a deuteranopia simulation), JS heap, draw calls, device and GPU strings. It reports PASS, WARN or FAIL against stated budgets and exports JSON and three key frames.
+
+A separate checklist document gives the device matrix, the budgets for 60 and 30 fps targets, the manual protocols (thermal soak, fallback order, recognition test with 5 people, colour-blind filters, FXAA A/B, resize and DPR checks), a results table and go or no-go rules.
+
+FXAA is now a toggle because it runs over the whole frame, sprites included, and might soften pixel edges; it is unvalidated until checked on a real device.
+
+## Structural comparison (pass 6 to pass 7, same conditions)
+
+Metric | Before | After |
+
+Draw calls (shadow and post passes included) | 65 | 66 (+1 haze plane) |
+Triangles | 2,444 | 2,240 |
+Geometries / meshes | 47 / 51 | 48 / 52 |
+
+Instances (crowd / city masses / roofs) | 275 (94 / 85 / 44) | 257 (94 / 76 / 36) |
+Lights (point lights) | 4 (1) | 4 (1) |
+Texture memory (estimated) | 27.1 MB | 27.1 MB |
+
+CPU frame time, software renderer, 960 x 540 | 1,362 ms | 1,218 ms (within noise; not a GPU figure) |
+
+## What I got wrong along the way
+
+The KO bug above: HD-2D defeat had been invisible since the pixel painter was written in pass 4. I only found it by drawing the silhouette sheet at the real scale.
+
+My first landmark placement put the castle and cathedral behind the towers and under the HUD panels, so they could not be seen; the first version also had dark spires vanishing into a dark sky and a long pale arcade that looked like a floating bar. I moved them into the free centre band, warmed the sky band behind them, darkened the silhouettes and shortened the viaduct with faded ends.
+
+The device harness had two bugs: it ignored frames over 250 ms, and then a device slower than 1 frame per second reported PASS because every frame was filtered out. It now fails such a device and refuses to judge fewer than 30 valid frames. My first sprite-stability metric also counted intentional whole-pixel idle breathing as drift; it now counts only fractional movement.
+
+My first telegraph reading was interior only and flagged a WARN, which led to the contrast fix; it still does not measure the outline or the chevrons, which help beyond colour.
+
+## Remaining limitations
+
+Light is art-directed, not physical: the sun disc sits low in the sky while the key light is about 27 degrees up; the sprites are lit by baked shading plus a shader tint, not by the key light.
+
+The city is still stylised: flat silhouette cards with no parallax depth; the HUD panels hide parts of the skyline at the top corners; it does not match the reference’s richness.
+
+Procedural characters: still skeleton-driven with few key poses; Marek’s face is small even after the fix; the rim reads like an outline in places.
+
+Telegraph: the worst-case deuteranopia interior contrast is about 1.9:1, just under the 2.0:1 pass line.
+
+Not measured on any real device: GPU time, frame pacing, thermal behaviour, memory pressure, FXAA’s effect on sprite crispness, motion comfort. No reduced-motion option yet. Touch layout on small screens is untested.
+
+## 13. Pass 8: closing the gap to the Merchant District
+
+Your feedback was right: the Arena did not reach the Merchant District’s artistic level. Comparing your two Merchant shots with the Arena, the Merchant’s quality does not come from geometry. It comes from lighting and atmosphere multipliers (its own art-direction panel lists them): lantern intensity, warm-light gain, wetness and puddles, fog density and height falloff, low mist, lantern in-scatter, moon glints, smoke, sparks and embers. The Arena had a single directional key, a dry matte floor and flat planes.
+
+[image: Pass 7 vs pass 8]
+
+Pass 7 (left), pass 8 at time of day 0.5 (middle, the default) and at 1.0 (right).
+
+[image: Merchant District vs Arena]
+
+Your Merchant District reference (left) and the Arena at full dusk (right). The approach to lighting is closer; the richness is not.
+
+## What was added
+
+Local lights without real lights: 10 light sources (2 tower flames, 6 parapet lanterns, 2 low lamp posts at the ring’s edge) lit per pixel in the post pass, giving warm pools on walls and floor and visible in-scatter halos, with 0 extra real lights.
+
+Wet floor: screen-space planar reflections from the depth buffer, with a puddle mask, Fresnel and a small normal noise. Lamps, windows and the fighters mirror in the stone. A combat-lane rule reduces the effect around the fighters so the telegraph stays readable.
+
+Fog and mist: a dark brown-violet height fog and a low mist that keeps the combat zone clear (a light fog lifted the blacks and washed the frame out, so the colour is dark).
+
+Materials: small irregular cobbles instead of large regular pavers, and warm lit windows in the towers.
+
+Time of day: one slider from golden hour to dusk (default 0.5): at dusk the lanterns dominate, as in the Merchant.
+
+Art-direction panel: 11 sliders for the Arena (time of day, wetness, reflection, lantern pools, in-scatter, fog density and falloff, low mist, ambient, warm key, embers), plus a toggle for the whole pass.
+
+## Cost and measurements
+
+Draw calls 66 to 70, triangles 2,240 to 2,374, instances 257 to 265, real lights unchanged. The reflection pass is the expensive part: CPU time in the software renderer rose about 47% (1,409 to 2,066 ms). It also needs a full-resolution HDR target (about 16 MB at 1080p, not in the 27 MB texture figure). The device test now has a “reflections off” variant to price it on real hardware.
+
+A regression I caused and fixed: at dusk the floor got darker and the telegraph’s interior contrast fell to 1.2:1 (1.06:1 in the colour-blind simulation). I made the interior a deep crimson that stays darker than the floor at any time of day: now 2.5:1 and 2.5:1.
+
+Regression tests pass: no console errors, simulation and KO tests, all three modes.
+
+## What I got wrong on the way
+
+The first render was milky: a light fog and broad light pools lifted every black. I switched to a dark fog, steeper pool falloff and a lower exposure.
+
+The first window slits looked like LED strips, and the first puddle threshold gave almost no puddles; a helper variable was also used before it existed (boot crash). All fixed.
+
+## Honest gap that remains against the Merchant District
+
+Architecture: the Merchant has deep half-timbered facades with many lit windows, signs and balconies; the Arena’s walls are still flat brown blocks with a few slits.
+
+Perspective and framing: the Merchant is a strong three-quarter view with huge foreground masses; the Arena is a flat frontal combat frame by design, so it cannot get the same depth.
+
+Light count and placement: the Merchant has dozens of lanterns along a path; the Arena has ten, mostly at the edges.
+
+Surfaces and characters: no normal maps or ambient occlusion on walls; sprites are lit by the lamps only through the per-pixel pool, not by real normals.
+
+Reflections: a single screen-space ray per pixel that can only mirror what is on screen; the sunset sky mirrors as a bright flat patch on one puddle.
+
+Colour: the Merchant is a cool indigo scene with amber accents; the Arena is warm by design, so even at dusk it is less dramatic. The telegraph is now a quieter dark crimson with bright chevrons.
+
+## 14. Pass 9: new combat rules and a richer, lit architecture
+
+Two jobs. First, the combat logic changed to your new design (action points, no waiting time, guard, dodge cost, techniques with cooldowns, an enemy that chains attacks). Second, the Arena gets the lit architecture that was the biggest remaining gap to the Merchant District. The rules are real and tested; the art moved a long way but does not equal the Merchant District yet.
+
+## 1. Combat rules as implemented (all numbers are placeholders)
+
+Element | Behaviour |
+
+Action points (AP) | Maximum 5, start 3. Light attack gives +1 AP when it connects (a dodged light gives nothing, so whiffing cannot farm AP). Heavy attack gives and costs nothing. |
+
+No waiting time | There is no gauge. Any action can start at any moment; each has only a charge time. Light 0.20 s (almost instant), heavy 0.50 s (2.5x). Pressing during the last 0.2 s of another action queues it; earlier presses are ignored, not silently kept. |
+
+Guard | Hold to cut damage by 60%, costs no AP, takes 0.10 s to come up. A heavy hit on a guarding fighter breaks the guard and stuns it for 2.4 s (you said “may be stunned”: the chance is 100% for now and is a single value to tune). Starting an action drops the guard. |
+
+Dodge | Costs 1 AP, accepted inside the enemy’s reaction window (light 0.22 s, heavy 0.42 s) plus a 0.15 s early buffer; avoids all damage; denied with no AP; not possible while charging an action. |
+
+Techniques (4) | Almost instant (0.16 to 0.24 s charge), each with a cooldown. Coup éclair: 2 AP, 22 dmg, 4 s. Fente perçante: 2 AP, 20 dmg, ignores guard, 6 s. Tourbillon: 3 AP, 28 dmg, stuns 1 s and interrupts, 9 s. Estocade: 4 AP, 58 dmg, 14 s. |
+
+Enemy | No AP. It plays short sequences and then rests: see section 15 (combos of 2 to 4 hits ending in a heavy, or a single light, or a single heavy, with 5 to 10 s of rest). It cannot guard or dodge yet. Health: Ren 200, Marek 800. |
+
+Verified by 37 automatic checks, one per sentence of your spec (costs, gains, cooldowns, denials, guard, stun, buffer, enemy chaining, KO, determinism).
+
+## Balance probes (automatic players, same rules)
+
+Policy | Result |
+
+Does nothing | Loses in 25 s |
+Holds guard all the time | Loses in 66 s after 6 guard breaks: guarding alone is not a strategy |
+
+Spams light attacks | Loses in 25 s with the enemy at 370 of 800 health: offence alone does not win |
+
+Competent: dodges heavies, guards lights, spends AP on techniques | Wins in 33 s with 120 of 200 health left, using 10 techniques |
+
+These are the numbers after the enemy rhythm change of section 15. Before it, the same probes showed that rests of 5 to 10 s made the enemy too passive (spamming light attacks beat it); its damage and health were raised to compensate. This is a sanity check of the pacing, not a balance pass: the competent bot is perfectly timed, a human will do worse.
+
+[image: HUD]
+
+New HUD: AP pips, the action bar (light, heavy, four techniques with AP cost and cooldown sweep, hold-to-guard, dodge), the enemy’s status line, the reaction timer bar and the alert that now tells you not to guard a heavy. Keys: 1 to 6 actions, A dodge, hold B to guard.
+
+## 2. Lit architecture, closer to the Merchant District
+
+Timber-framed facades behind the tribunes (the Merchant’s own language): plaster, dark timber, braces, shuttered windows, about half lit from inside with curtains and silhouettes, hanging signs, balconies and roofs. Their windows glow through an emissive map, independent of the scene lights.
+
+Near the combat plane, kept low and to the sides: weapon rack, barrels, crates, training dummy, sandbags. Towers: corbels, iron bands, wall lanterns that light the arena.
+
+Materials: weathered stone with soot streaks, stains and chips; a depth-based ambient-occlusion term that grounds props, walls and balconies (slider).
+
+The wall behind the fighters stays calm; I moved the rack, dummy and crates away from the fighters’ heads after the first render, and removed two accent-coloured shields that competed with the player and enemy colours.
+
+## Cost and measurements
+
+Draw calls 70 to 75, triangles 2,374 to 4,640, instances 265 to 267, real lights unchanged (4), 14 local lights in the post pass (16 maximum). Texture estimate 27 to 36 MB (Ren’s atlas grew to 88 frames, plus facade and emissive textures). Software-renderer CPU time +11% (the occlusion term).
+
+Telegraph contrast measured again after all changes: 2.5 to 2.7:1, also in the colour-blind simulation. The device harness bot was rewritten for the new rules and runs.
+
+Regression: no console errors, all three modes, KO autoplay.
+
+## What I got wrong on the way
+
+Two of my first tests were badly specified (dodge window, guard raise time) and two flagged real defects: starting an action did not drop the guard immediately, and an action pressed too early was reported as queued but silently expired. Both are fixed.
+
+The KO autoplay test still assumed 100 health and failed until I updated it.
+
+The first button labels were truncated, and a guard break printed its text twice.
+
+The rack’s spears and the dummy sat right behind the fighters’ heads, which is exactly what the calm-backdrop rule forbids.
+
+[image: Before and after]
+
+Pass 8 (left), this pass at time of day 0.5 (middle) and at dusk (right).
+
+[image: Merchant District vs Arena]
+
+Your Merchant District reference (left) and the Arena at dusk after this pass (right).
+
+## Honest gap to the Merchant District
+
+Scale and depth of the architecture: the Merchant’s half-timbered masses are huge and run along the line of sight; the Arena’s facades are small and sit at the top corners. This is a consequence of the frontal, symmetrical master frame we locked: it cannot create the Merchant’s depth by itself.
+
+Density: dozens of lit windows and lanterns versus about a dozen windows and 14 local lights here.
+
+Colour and contrast: the Merchant is cool indigo with amber; the Arena stays warm by design, so it is less dramatic.
+
+Techniques share two or three animation clips (skill, slash, heavy), so they differ in effect and numbers but not yet in look. Ren’s heavy attack reuses Marek’s heavy pose. The painted and Full 3D modes run the new rules but map the clips they lack onto the closest one.
+
+Rules left open: the stun chance (100%), whether AP is gained on use or on hit (hit), the enemy having no guard or AP, and every number above.
+
+## 15. Pass 10: the enemy plays sequences, then rests
+
+The enemy must not chain attacks forever. It now plays sequences and then rests for 5 to 10 seconds. A sequence is one of three things, chosen at random with a fixed seed so the behaviour is reproducible: a combo of 2 to 4 hits whose last hit is always a heavy (60%), a single light hit (20%) or a single heavy hit (20%). The weights, the rest range, the combo length and the gap inside a combo (0.25 to 0.42 s) are all single values in the data.
+
+[image: Enemy rhythm]
+
+The enemy’s real attack timeline over 120 s (passive player): 12 sequences, rests between 5.2 and 9.8 s, every combo ending in a heavy hit.
+
+## Rules and checks
+
+Over a 900 s run (about 110 sequences) the automatic checks confirm: every sequence is 1 to 4 hits; every combo of 2 or more is light hits then exactly one heavy as the last hit; combos of 2, 3 and 4 all occur; single lights and single heavies both occur; every rest is between 5 and 10 s (mean 7.4 s); the planner is deterministic. The observed mix was 69% combos, 16% single light, 14% single heavy.
+
+A stun (for example the Tourbillon technique) cancels the rest of a combo, and the enemy then still rests 5 to 10 s, so interrupting it is rewarded with a long opening. You did not specify this case; I kept the same 5 to 10 s rest.
+
+The test suite is now 43 checks, all passing.
+
+## Readability and balance
+
+During a rest the enemy shows a relaxed idle pose and a winded face, and the panel reads “Reprend son souffle” (catching its breath); during a combo it reads “Enchaînement 2/3”, or “Attaque isolée” for a single hit. The exact rest length is not shown, so the player cannot count it down.
+
+Side effect I caught with the balance probes: with long rests the enemy was too passive: spamming light attacks beat it, and a competent player was barely touched. I raised the enemy’s damage (light 9 to 16, heavy 24 to 48) and health (520 to 800). Now a heavy takes a quarter of Ren’s health, so the guard-break rule and the dodge cost matter.
+
+Everything is tunable and provisional: the 60/20/20 split, the rests, and the damage and health numbers.
+
+## 16. Pass 11: leaner HUD and subtle enemy tells
+
+Two goals: a HUD that takes less of the screen, and a visual cue on the enemy that tells the player, without spelling it out, that an attack is coming. The cue is deliberately two-level: light for a single hit, more marked for the opening of a combo. It never says which kind of attack (light or heavy) and never says how many hits. Reading the enemy and anticipating, or keeping the guard up, stays the player's job.
+
+## HUD
+
+The enemy gauge block, the sub-gauges and the "next move" line were removed. Both fighters keep one health bar; Ren keeps the AP pips.
+
+Measured in headless Chromium on the same frame: HUD footprint 14.2% to 8.7% of the screen, text elements 31-33 to 30, DOM writes 7.6 to 0.3 per frame (values are only written when they change).
+
+The action bar is grouped (attacks, techniques, defence) and shows the cost and the cooldown only when relevant.
+
+[image: HUD before and after]
+
+Top left: previous HUD. Others: the new HUD (subtle, subtle during the reaction window, full).
+
+## Enemy tells
+
+Single attack (light tell): a small glint on the blade, a faint rim brightening and a very light edge pulse.
+
+Combo opening (marked tell): a red expanding ring and crescent, a stronger red rim on the sprite, a stronger screen-edge pulse and a very small camera push. It fires only on the first hit of a combo (seeded sequence, checked in the in-page rules as comboStartCorrect).
+
+The hits that follow inside a combo get no new marked tell, so the player must keep the guard up on their own.
+
+Assistance levels (selector in the HUD, window.__assist): subtle (default, tells only), full (adds the charge arc, reaction ring and banner), off (no tell at all). Reduced motion scales the pulse and the push down.
+
+[image: Enemy tells: combo, single, off, window]
+
+Top left: combo opening. Top right: single attack. Bottom left: assistance off. Bottom right: the reaction window.
+
+## Limits, said plainly
+
+The tells are checked by screenshots and by in-page rule checks, not by a human playing on a device. Whether the light tell is too discreet or the marked one too loud is a feel question: the strengths are single values in the data (tell slider).
+
+The device checklist measures the telegraph only at the full assistance level.
+
+The project's source folder (build script, tests, balance and report scripts) was lost during this session. Pass 11 was rebuilt by patching the delivered pass-10 file with a strict-anchor patch; the delivered HTML is the only source of truth now.
+
+## 17. What to look at when you play it
+
+Does the READY and reaction-window information read without the key bar? Hide the HUD to see only the world, then re-enable it.
+
+Try the cast moment in Full 3D with the camera toggle on and off. Does the push help or hurt?
+
+Step the heavy wind-up at 0.1x in both. How does stepped sprite animation read next to continuous motion?
+
+Switch modes mid-cast. The state carries over, so you can compare the same instant directly.
+
+Turn the sun shadow off and watch which version loses grounding.
+
+Controls: 1 Attack, 2 Flash Cut, A Dodge, B Block, R reset, Space pause, H panel. No winner is implied anywhere above.

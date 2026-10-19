@@ -1,0 +1,27 @@
+{
+  "what": "Arena prototype of Cité du Tournoi (HD-2D arena, combat with action points / guard / dodge, Marek's sequenced AI, light HUD, discreet attack tells), as published; the only remaining source of that project (its source folder was lost, operator, 2026-10-19).",
+  "nature": "copy of the published page, byte for byte, as the artifact service serves it (its own document skeleton around the original file)",
+  "provenance": {
+    "declaredBy": "operator, 2026-10-19 (cloud session brief): « Le fichier HTML du prototype publié est donc maintenant la seule source à partir de laquelle reprendre le travail. »",
+    "origin": "claude.ai conversation « Visual direction exploration for Cité du Tournoi » (https://claude.ai/chat/d8e46a41-78d5-4367-b9c3-44c09e65d805)",
+    "artifactUrl": "https://claude.ai/artifact/Bhee6cMZ5mLKdVejE2rsim",
+    "artifactId": "56a85568-8eca-4b87-a594-e24eef865156",
+    "artifactVersion": "1792100867-cf3f",
+    "fetched": "2026-10-19, Artifact tool read action (owner's private artifact)"
+  },
+  "files": {
+    "arena-prototype.served.html": { "bytes": 402688, "sha256": "feb7461a3e44ee746a0eec3208dffc6200056f2753197b56050bd299e93a7a64" },
+    "../arena.html (at commit of Passe A1, before any change)": {
+      "bytes": 402142,
+      "sha256": "d1ddef1e87f6d98d61b5ae8630b5398d18a045f6760a3dded4f2a7359dbe811f",
+      "derivation": "the served page minus the service's wrapper: its first line (531 bytes, `<!doctype html><html><head>…<body>` + LF) and its last 15 bytes (LF + `</body></html>`); wrapper + document + tail reassembled = the served bytes (checked)"
+    },
+    "runtime-bakeoff-report.txt": {
+      "bytes": 59364,
+      "sha256": "d16ade0c8be6994cf1f1738a40db62c58e33acdab8b0d66cfb89f2abe35d31b3",
+      "derivation": "text of the technical report (https://claude.ai/artifact/SWwfcVxRu2tnPRBMyGeR3n, artifact cea2b98b-2b66-4639-a588-312688e658b9, version 1792101029-d349, served page 8,240,162 bytes, SHA-256 a989744b67caa2cbe1185b2d00231c1a5d37f7a44acb30d53f719f702f38602b): styles and scripts dropped, its 41 embedded JPEG captures replaced by their alt text; the page itself is not archived (8 MB of captures)"
+    }
+  },
+  "dependencies": "Three.js r128 from cdnjs (https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js) and Google Fonts (Bricolage Grotesque, Press Start 2P, Cinzel), loaded by the page at run time; nothing else.",
+  "rights": "generated in the operator's own Claude conversations for this project; no third-party asset (everything is drawn by code)"
+}

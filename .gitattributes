@@ -3,3 +3,5 @@
 *.ase binary
 *.png binary
 *.webp binary
+# Arena prototype archive (journal Passe A1): the served page is kept byte for byte, never line-ending-normalised.
+arena/source/*.html -text

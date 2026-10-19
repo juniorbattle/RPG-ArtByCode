@@ -660,6 +660,30 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une séance sans l'opérateur avance le plus en préparant des décisions mesurées (paramètre d'URL, capture avant / après, recommandation)
   et en prouvant à chaque fois que le jeu par défaut n'a pas bougé (0 px).
 
+## Passe A1 — Arène : le prototype publié archivé à l'octet, puis adapté à la direction artistique du Merchant District (2026-10-19)
+
+### Demande (opérateur, mot pour mot)
+- « Voici une tâche sur laquelle tu peux te concentrer pour ces 3 derniers heures : c'est un travail en parallèle que je faisais pour préparer
+  l'arène que nous utiliserons pour notre jeu. Il faudra adapter visuellement ( UI, décors, HUD ) afin que cela colle avec notre DA actuelle »
+  ; sources : la conversation « Visual direction exploration for Cité du Tournoi », le prototype publié
+  (https://claude.ai/artifact/Bhee6cMZ5mLKdVejE2rsim) et son rapport technique (https://claude.ai/artifact/SWwfcVxRu2tnPRBMyGeR3n) ;
+  « Le fichier HTML du prototype publié est donc maintenant la seule source à partir de laquelle reprendre le travail. »
+- Branche `claude/stoic-goodall-8ieke4` recréée depuis `main` (`64faacf`).
+
+### Archive — [OK]
+- La page publiée lue par l'outil d'artefacts (version `1792100867-cf3f`) : 402 688 octets, SHA-256 `feb7461a3e44ee74…`, copiée à l'octet
+  (`cmp`) dans `arena/source/arena-prototype.served.html` (`-text` dans `.gitattributes` : aucune conversion de fins de ligne). Le service
+  l'enveloppe dans son propre squelette (une première ligne `<!doctype html><html><head>…<body>` de 531 octets, et `\n</body></html>` à la
+  fin) : `arena/arena.html` = la page sans cette enveloppe (402 142 octets, `d1ddef1e87f6d98d…`) ; enveloppe + document + fin réassemblés =
+  les octets servis (vérifié par script). Fiche `arena/source/arena-prototype.source.json` (URL, identifiant et version de l'artefact,
+  tailles, empreintes, dérivation, dépendances : Three.js r128 sur cdnjs et Google Fonts) ; ses trois tailles et empreintes revérifiées par
+  script contre les fichiers.
+- Rapport technique (page de 8,2 Mo, 41 captures JPEG intégrées) : seul son texte est versionné (`arena/source/runtime-bakeoff-report.txt`,
+  captures remplacées par leur texte alternatif), l'empreinte de la page dans la fiche.
+- **Mon choix** : l'arène vit dans `arena/`, hors du jeu et de son build (Vite ne construit que `index.html`) : un prototype en un seul
+  fichier, Three.js r128 (le jeu est sur une version récente : le porter dans `src/` serait une autre tâche) ; l'adaptation se fait dans
+  `arena/arena.html`, l'original reste servable à côté pour l'avant / après, `git log -p` montre chaque changement.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

@@ -1,0 +1,18 @@
+# Arène des Champions — prototype de combat (HD-2D)
+
+Prototype jouable de l'arène de Cité du Tournoi, fait dans une autre conversation (« Visual direction exploration for Cité du Tournoi ») :
+arène procédurale HD-2D (ville en silhouettes, reflets au sol, brume), combat à points d'action, garde et esquive, IA de Marek en séquences,
+HUD allégé et signaux d'attaque discrets. Un seul fichier HTML, Three.js r128 (cdnjs) et Google Fonts chargés par la page, tout le reste
+(décor, sprites, effets) est dessiné par le code au démarrage. **Il ne fait pas partie du jeu ni de son build** (Vite ne construit que
+`index.html`).
+
+- `source/arena-prototype.served.html` : la page publiée, **à l'octet** (enveloppe du service d'artefacts comprise), seule source restante
+  du projet (le dossier source a été perdu, opérateur, 19/10) ; fiche `source/arena-prototype.source.json` (URL, version, SHA-256,
+  dérivation) ; `source/runtime-bakeoff-report.txt` : le texte du rapport technique de ce prototype (passes 1 à 11, règles, mesures, limites).
+- `arena.html` : le prototype lui-même, repris de la page publiée (l'enveloppe retirée, preuve dans la fiche), puis adapté à la direction
+  artistique du Merchant District (journal, Passe A1). `git log -p arena/arena.html` montre chaque changement depuis l'original.
+- Ouvrir : servir le dossier (`npx vite arena` ou tout serveur statique) puis `arena.html` ; `?mode=hd2d|hybrid|full3d`, `?clean=1` (sans
+  panneau), `?devtest=1` (banc de mesure sur appareil réel). Touches : 1-6 attaques et techniques, A esquive, B garde (maintenir), R
+  recommencer, Espace pause, H panneau, L atelier des sprites.
+- Captures : `node tools/arena-shots.mjs <dossier> arena/arena.html "nom|moment|js" ...` (moments scriptés du prototype : `charging`,
+  `window`, `combo`, ... ; voir l'en-tête de l'outil).
