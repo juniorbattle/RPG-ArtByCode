@@ -421,6 +421,34 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
 - Un changement de défaut qui reprend une variante déjà préparée se prouve contre cette variante sur la base figée (0 px). Un oracle
   mesuré sur l'ancien code garde ce qui ne se voit pas (un tirage conservé pour la suite de la graine).
 
+## Passe K4 — Caméras : toutes les transitions ancrées par défaut (décision K1) (2026-10-19)
+
+### Demande
+- Décision de l'opérateur (Passe D1), mot pour mot : K1 « Oui, par défaut ». L'ancrage était préparé derrière `?camblend=anchored` (Passe K1).
+- Branche `camblend-default-k4` depuis `main` (`96c9af9`).
+
+### Fait — [OK]
+- `CameraGraph.anchorAll = true` par défaut : les transitions A ↔ B et B ↔ C passent par `blendPose` ancré, comme celles vers D. Le bake les échantillonne aux six poids : 329 poses au lieu de 273, la clé du cache les distingue.
+- `?camblend=interpolated` rend les anciennes transitions interpolées, pour comparer. `?camblend=anchored` ne change plus rien.
+- Les outils de preuve suivent `anchorAll` : `visproof` et `vis-why` depuis la Passe K1, `viewport-proof` depuis la Passe G1.
+- Mis à jour : `AGENTS.md` (paramètre et section des caméras), les commentaires de `CameraGraph` et d'`App`.
+
+### Preuves
+- **Simulation de marche** (`tools/camsim.mjs`, graine 1842, `vis=0`, joueur guidé vers un point), `main` figé (`96c9af9`, :5187) contre la branche :
+  - B → A : **13 images de recul (−139 px/s) → 0** ;
+  - A → B : **5 images (−25 px/s) → 0** (reste une image à −8 px/s en cadrage posé, la même sur `main`) ;
+  - B → C et C → B : 0 des deux côtés.
+- **Cadrages posés A, B, C, D et D lointain**, culling actif, `static=1`, 30 pas : **0 px** contre `main`, témoin de répétition 0 px. Le bake de la branche compte bien 329 poses (`main` : 273) ; Tier 3 = 317 pièces des deux côtés à la graine 1842.
+- **Visibilité** : la preuve de la Passe G1 avec `anchorAll` (le même chemin de code) donne 8 contrôles en échec, aucun au-delà de 3 px, tous de la classe connue.
+- `tests/camera-graph.test.mjs` : les trois tests d'ancrage réécrits (défaut ancré ; `anchorAll = false` reproduit l'ancien recul ; poses du bake). Faute injectée (le défaut remis à `false`) : 2 échecs.
+- typecheck, `npm test` 82 / 82, build, `art:validate`.
+
+### Restes [?]
+- K2 (« Cherche et montre-moi ») : le recalage du pivot de A, pour le +21 px/s qui reste en B → A.
+
+### Pensée
+- Un défaut qui change le bake (des poses en plus) doit montrer 0 px aux cadrages posés, et ce 0 px se recoupe avec le nombre de poses du bake (329 contre 273) : sans ce recoupement, un « 0 px » peut venir d'un bake qui n'a pas changé.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -497,7 +525,7 @@ devant un personnage s'applique désormais entièrement (B : héros sous la lant
 sans traverser C ; (c) lacet max 0,96° / image en C ↔ D (≤ 0,55° ailleurs) ; (d) les transitions B → C vers l'ouest (−254 px/s) et B → A
 (−131 px/s) font glisser le joueur à l'envers à l'écran (héritage de la passe 2, mesuré en 4B ; Passe K1 : B → A remesuré −139 px/s, C → B
 0 ; **transitions ancrées partout préparées derrière `?camblend=anchored`** : B → A 0 image de recul au lieu de 14, pic +21 px/s au lieu de +181 ;
-« Oui, par défaut » (Passe D1, à appliquer) ; preuve de visibilité sur GPU faite, Passe G1 ; le reste demanderait de recaler le pivot de A :
+« Oui, par défaut » (Passe D1), appliqué (Passe K4) ; preuve de visibilité sur GPU faite, Passe G1 ; le reste demanderait de recaler le pivot de A :
 « Cherche et montre-moi ») ; (e) reculs du joueur à l'écran en cadrage posé C / D (−15 à
 −39 px/s, Passe K1) : expliqués en Passes K2 / K3 (le pivot de D, qui suit 85 % du déplacement latéral, dépasse un joueur que sa marche en profondeur
 ralentit à l'écran ; le suivi le long des axes de la caméra n'y change rien) ; suivi visant la vitesse à l'écran :

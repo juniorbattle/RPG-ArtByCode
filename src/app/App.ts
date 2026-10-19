@@ -141,9 +141,9 @@ export class App {
     // ?camera=A|B|C pins one authored framing (review shots); otherwise the graph follows the zones
     const forced = q.get('camera')?.toUpperCase();
     if (forced && (CAM_IDS as string[]).includes(forced)) this.graph.forced = forced as CamId;
-    // ?camblend=anchored: every framing blend keeps the player's screen position gliding between its two framings (as the D blends do);
-    // a proposal awaiting the operator (journal Passe K1), the approved transitions without it
-    if (q.get('camblend') === 'anchored') this.graph.anchorAll = true;
+    // every framing blend is anchored by default (the player's screen position glides between its two framings; operator decision K1,
+    // journal Passe K4); ?camblend=interpolated brings back the former interpolated A <-> B / B <-> C blends, for comparison
+    if (q.get('camblend') === 'interpolated') this.graph.anchorAll = false;
     // ?camB=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale] overrides a framing while tuning (blank fields
     // keep the authored value)
     for (const id of CAM_IDS) {

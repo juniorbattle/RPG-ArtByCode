@@ -176,8 +176,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 ## Useful URL params
 `seed=1842` (canonical) · `forge=sabotaged` · `clean=1` (no HUD/panel) · `freeze=7.3` (deterministic time) ·
 `player=x,z` (place the player; the camera settles in that zone's framing, no arrival hold) ·
-`camera=A|B|C|D` (pin a framing) · `camblend=anchored` (every framing blend anchored like the D blends: the player's screen position glides
-between its two framings; a proposal awaiting the operator, journal Passe K1; absent = the approved transitions) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
+`camera=A|B|C|D` (pin a framing) · `camblend=interpolated` (the former interpolated A <-> B / B <-> C blends, for comparison; absent = every blend
+anchored, the operator's decision of 2026-10-19, journal Passes K1 / K4) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
 a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
 `static=1` (hide characters/particles) · weather (`src/atmosphere/Weather.ts`, journal Passe W1; absent = nothing created, the game as before;
@@ -279,8 +279,8 @@ Four authored, semi-fixed framings, all on the canal side (+z of the pivot) look
 - **D frontal district** (x >= 14.0, any z; releases at 13.1): yaw -20, pitch 8, dist 20, fov 36 — the frontage seen
   almost square-on, a long horizontal backdrop to walk across; characters x1.12. Camera z must stay < ~18.5: the
   opposite-bank houses start at z 19.8 (never visible from A/B/C, they would swallow a camera placed further back), so
-  D is a 20 m / fov 36 lens, not a long telephoto. A C -> D or B -> D blend (edge walkers at z > 2.4 never enter C's
-  zone) is ANCHORED (`blendPose`): the pivot is shifted along the camera's own right / up so the player's screen
+  D is a 20 m / fov 36 lens, not a long telephoto. Every blend is ANCHORED (the C -> D and B -> D ones since Pass 4B, edge walkers at
+  z > 2.4 never entering C's zone; A <-> B and B <-> C too since the operator's decision of 2026-10-19, journal Passe K4) (`blendPose`): the pivot is shifted along the camera's own right / up so the player's screen
   position glides between its position in the two framings (no swing from the 40 deg yaw change, no backwards drift:
   D's pivot is set so the player enters D where it stood in C, ndc x ~ +0.35). 1.3 s.
 Movement keys stay mapped through the yaw they were pressed under until released. Panel edits of a framing re-run

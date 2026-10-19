@@ -60,7 +60,8 @@ test('the margin is read from the instance', () => {
   assert.equal(g.zoneFor(13.85, 0, 'D'), 'D');
 });
 
-// Anchored blends everywhere (?camblend=anchored, journal Passe K1): a proposal behind a flag; without it the graph is the approved one
+// Anchored blends everywhere (journal Passes K1 / K4): the default since the operator's decision K1 of 2026-10-19; anchorAll = false
+// (?camblend=interpolated) is the former default, kept for comparison
 const WALK = { x0: -13.5, x1: 26, z0: -3.2, z1: 4.05 };
 /** the player's screen x (px, 1920 wide) per frame while walking from x0 to x1 at 2.5 m/s along the quay (z 0.5), through graph.update */
 function walk(anchorAll, x0, x1) {
@@ -82,25 +83,26 @@ function walk(anchorAll, x0, x1) {
  *  camsim threshold (8 px/s) */
 const against = (log, sign) => { let worst = 0, n = 0; log.slice(1).forEach((e, i) => { if (!e.blending) return; const v = -(e.sx - log[i].sx) * 60 * sign; worst = Math.max(worst, v); if (v > 8) n++; }); return { worst, n }; };
 
-test('approved transitions: B -> A swings the player backwards on screen (the measured defect, journal Passes 4B / K1)', () => {
+test('the default anchors every blend (decision K1); interpolated blends swing the player backwards on B -> A (journal Passes 4B / K1)', () => {
+  assert.equal(new CameraGraph().anchorAll, true, 'anchored by default');
   const w = walk(false, -5, -12.5), r = against(w, -1);
   assert.ok(w.some((e) => e.blending), 'the walk crosses the A / B transition');
   assert.ok(r.worst > 150 && r.n >= 20, `worst ${r.worst.toFixed(0)} px/s over ${r.n} frames`);
 });
 
-test('?camblend=anchored: the backwards glide of B -> A drops below 30 px/s, A -> B none', () => {
+test('anchored (the default): the backwards glide of B -> A stays below 30 px/s, A -> B none', () => {
   const ba = against(walk(true, -5, -12.5), -1), ab = against(walk(true, -12.5, -5), 1);
   assert.ok(ba.worst < 30, `B -> A worst ${ba.worst.toFixed(1)} px/s`);
   assert.ok(ab.worst <= 0, `A -> B worst ${ab.worst.toFixed(1)} px/s`);
 });
 
-test('?camblend=anchored: the bake samples the anchored A <-> B / B <-> C blends; without it the poses are the approved ones', () => {
-  const a = new CameraGraph(), b = new CameraGraph(); b.anchorAll = true;
+test('the bake samples the anchored A <-> B / B <-> C blends by default; interpolated, the poses are the former ones', () => {
+  const a = new CameraGraph(), b = new CameraGraph(); a.anchorAll = false;
   const pa = a.samplePoses(WALK), pb = b.samplePoses(WALK);
   const count = (ps, set) => ps.filter((p) => p.set === set).length;
   for (const set of ['A', 'B', 'C', 'D', 'CD', 'BD']) assert.deepEqual(pb.filter((p) => p.set === set), pa.filter((p) => p.set === set), set);
   assert.ok(count(pb, 'AB') > count(pa, 'AB') && count(pb, 'BC') > count(pa, 'BC'), 'more blend poses with the anchored weights');
-  // the approved AB / BC poses are plain interpolations (lerpState): the pivot lies on the segment between the two framings' pivots
+  // the interpolated AB / BC poses are plain interpolations (lerpState): the pivot lies on the segment between the two framings' pivots
   for (const p of pa.filter((q) => q.set === 'AB' || q.set === 'BC')) {
     const [s, t] = p.set === 'AB' ? ['A', 'B'] : ['B', 'C'], e0 = a.evalAnchor(s, p.player[0], p.player[1]), e1 = a.evalAnchor(t, p.player[0], p.player[1]);
     const w = (p.pose.dist - e0.dist) / (e1.dist - e0.dist || 1);

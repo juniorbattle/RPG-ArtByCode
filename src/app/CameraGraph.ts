@@ -104,10 +104,10 @@ export class CameraGraph {
   forced: CamId | null = null;
   /** arrival hold: the establishing shot is kept until the player first moves */
   arrival = false;
-  /** every blend anchored (blendPose), not only those with D at one end: `?camblend=anchored`, a proposal awaiting the operator (journal
-   *  Passe K1): the A <-> B and B <-> C blends swung the player backwards on screen (B -> A: -139 px/s for 0.23 s). Off = the approved
-   *  transitions, unchanged */
-  anchorAll = false;
+  /** every blend anchored (blendPose), not only those with D at one end: the default since the operator's decision of 2026-10-19 (K1, « Oui,
+   *  par défaut », journal Passe K4; prepared in Passe K1). The interpolated A <-> B and B <-> C blends swung the player backwards on screen
+   *  (B -> A: -139 px/s for 0.23 s); `?camblend=interpolated` brings them back for comparison */
+  anchorAll = true;
   /** the framing the camera is in or blending toward */
   target: CamId = 'B';
   state!: CamState;
