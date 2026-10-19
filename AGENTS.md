@@ -92,14 +92,19 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `node tools/sprite-halo.mjs <out.json> "<query>" [route] [secs] [every] [ring]` — the characters' halo in motion (same harness): per sampled
   frame and character, how much the post chain makes a character change the pixels 1..ring px around its silhouette, and its contrast kept;
   `POST=air|bloom|dof` attributes it to one effect (journal Passe S1)
-- `node tools/foot-slip.mjs [--secs=20] "label|<query or url>" ...` — the baked walkers' foot slip in motion (same harness, no rendering): at each
-  frame change, the planted foot's drift along the camera's right over the walker's own advance (0 = planted, negative = moonwalk; journal
-  Passe S2). `node tools/art-lab/stride.mjs` — the ground speed each production walk cycle draws (the runtime's `walkSlide`)
+- `node tools/foot-slip.mjs [--secs=20] [--keys=d,shift] "label|<query or url>" ...` — the baked walkers' foot slip in motion (same harness, no
+  rendering): at each frame change, the planted foot's drift along the camera's right over the walker's own advance (0 = planted, negative =
+  moonwalk; journal Passe S2); `--keys` holds movement keys (the player runs: a baked hero is measured too, Passe H6); a median of a few % can be
+  the frame quantisation (5 or 6 steps of 1/60 s per frame, Passe H6). `node tools/art-lab/stride.mjs` — the ground speed each production walk
+  cycle draws (the runtime's `walkSlide`)
+- `node tools/step-angles.mjs [--secs=40] "label|<query or url>" ...` — the NPCs' steps by on-screen direction per framing (same harness, no
+  rendering): front / three-quarter / profile sectors, and the 3-view rule's steps 20-40 deg off the shown view's axis (journal Passe H6)
 - `node tools/art-lab/variant-masks.mjs <out.png> [id ...]` — the NPC variant masks (hair magenta, skin cyan) of the production sheets over their
   idle and walk frames, and each sheet's mask fingerprint; `node tools/art-lab/variant-lineup.mjs <out.png>` — every sheet's original and variants,
   recoloured with the shader's formula (journal Passe V1); `node tools/art-lab/palette-ramps.mjs` — the palette analysis of Passe V0
 - `node tools/flipbook.mjs <out.html> "<spec prefix>" <from> <to> [every] [WxH] [zoom] "label|url" ...` — the same deterministic run on several
-  servers / queries, a crop following one actor, played in sync in one self-contained HTML page (motion review, journal Passe S2)
+  servers / queries, a crop following one actor, played in sync in one self-contained HTML page (motion review, journal Passe S2); `KEYS=d,shift`
+  holds movement keys (the player's run, Passe H6)
 - `node tools/zoom.mjs in.png out.png x y w h [scale]` — nearest-neighbour crop for pixel-level sprite review
 - `node tools/walk.mjs <prefix> "<query>" "w,d" <secs>` — holds keys, logs camera blend steps (and occlusion fades:
   reversals / jumps), writes a contact sheet

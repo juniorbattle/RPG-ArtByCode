@@ -482,6 +482,105 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une séance sans GPU reste utile pour l'image : le rendu logiciel est déterministe et compare deux versions entre elles ; il ne dit rien des
   temps du GPU de l'opérateur.
 
+## Passe H6 — Héros plus rapide (code de jeu fait, rig préparé, export à reconstruire) ; étude des vues de trois-quarts (2026-10-19)
+
+### Demande
+- Décisions de l'opérateur de la Passe F1, mot pour mot : « Héros plus rapide (Recommandé) » (garder l'enjambée dessinée, ≈ 3,5-4 m/s, Maj
+  à revoir ; de face, ne plus lever les jambes jusqu'à 9 texels) et « Correctif puis 3/4 (Recommandé) » (étudier les vues de trois-quarts,
+  le héros d'abord). Séance cloud sans Aseprite (Passe T1).
+- Branche `claude/stoic-goodall-8ieke4` recréée depuis `main` (`1b56448`). **[KO] environnement** : la suppression de la branche distante après
+  la fusion de T1 est refusée par le proxy git de la séance (« unexpected disconnect », puis « Everything up-to-date ») ; la branche distante
+  pointait sur le commit fusionné et sert de nouveau, sous le même nom, à la tâche suivante.
+
+### Vitesse du héros cuit — [OK] code de jeu (`ActorSystem`)
+- **Mon choix** (raisons : garder l'enjambée dessinée, aucune image qui patine, aucun changement du jeu par défaut) : un joueur cuit court à
+  la vitesse que dessine son cycle, `walkSpeed` (la mesure du moteur, `walkSlide`) × 1,12 (l'échelle des personnages en B / D) × 1,5
+  (`HERO_CLOCK`) : ses images défilent à 1,5 × la cadence de base en B / D, pied d'appui planté. La vitesse suit donc le dessin : avec l'export
+  actuel (9 texels par image) 2,40 m/s au lieu de 2,5 ; avec le rig préparé (14 texels) **3,73 m/s**.
+- Maj sur le héros cuit : un sprint × 1,2 (4,48 m/s avec 14 texels), son horloge bornée à 2 (`HERO_CLOCK_MAX` ; la borne des PNJ, 1,6, sert à
+  empêcher un cycle lent de s'emballer, sans objet pour un cycle dessiné à la vitesse du héros) : en A (échelle 1), 2,02 → 2, 1 % de glissement.
+- Joueur généré (la production : le héros cuit est un candidat, DEV `?cast=candidate`) : 2,5 m/s, × 1,7 avec Maj, inchangé.
+- `tests/stride.test.mjs` : le test du joueur réécrit (oracle en nombres : 1,4 × 1,12 × 1,5 = 2,352 m/s, déplacement, horloges B / C / A,
+  sprint, 14 texels → 3,73086 m/s ; joueur généré : 2,5 m/s, × 1, × 1,7) ; le test de la Passe F1 suit la nouvelle vitesse. **Fautes injectées
+  une à une, toutes attrapées** : héros à 2,5 m/s (2 échecs), Maj × 1,7 pour le héros, borne 1,6 pour le joueur, vitesse selon l'échelle du
+  cadrage courant, Maj × 1,2 pour le joueur généré (1 échec chacune).
+
+### Rig préparé — [OK] images construites ici ; [?] export à reconstruire sur la machine de l'opérateur
+- `rigs/hero-x2-v2.rig.mjs` : pied d'appui sur une piste de **14 texels par image** (l'écart contact → pied ramassé que dessine la planche,
+  mesuré ici : pied d'appui des 8 images dessinées entre les colonnes 12,5 et 42,5, en deux images au lieu de trois de 9) ; la 4e image de
+  chaque pas devient un **vol** (les jambes de la poussée, la figure 2 rangées au-dessus de la rangée des pieds : la critique de la Passe H5
+  relevait « course sans vol ») ; de face / dos, jambes levées de **5 texels au plus** (`LIFT` 0,0,0,2,4,5,3,1 au lieu de 0,0,0,3,7,9,5,1).
+- `build-character.mjs` tourne ici jusqu'aux images (étapes 1 à 4 : reconstruction par Chromium, palette, rig, contrôles du contrat) ; seule
+  l'écriture Aseprite manque. Contrôle : avec le rig de H5, les 36 images reconstruites ici = l'export validé, **0 texel d'écart** ; avec le
+  rig H6 : contrôles du contrat OK (anneau transparent, alpha binaire, repos sur la rangée 90), `walkSlide` **14** (mesure du moteur), rangée
+  basse des images de profil 90 90 90 88 90 90 90 88 (vol).
+- **L'export, le `.aseprite` et le paquet de provenance restent ceux de H5** : `verify-provenance` signale l'empreinte du rig (1 problème)
+  jusqu'à la reconstruction ; `art:validate` passe (candidat, pas de production). À faire sur la machine de l'opérateur :
+  `node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v2.rig.mjs`, puis `--check`, puis `verify-provenance` ; la revue
+  (`reviews/hero-x2-v2/README.md`, § Pass H6) le détaille.
+
+### Glissement en mouvement — [OK]
+- `tools/foot-slip.mjs --keys=d[,shift]` (nouveau : touches tenues, le joueur court ; `CHROME_ARGS` / `READY_MS`), graine 1842, 4 s, caméra
+  épinglée, médiane [min .. max] ; `main` figé (`b3ac07f`, export H5 à 2,5 m/s), branche (export H5 à 2,40 m/s), aperçu H6 (copie hors dépôt
+  servie sur :5189 : la planche assemblée depuis les images du rig H6 et l'empreinte du paquet de la copie mise à jour ; jamais commitée ;
+  l'assembleur redonne l'export H5 à 0 texel avec les images de H5) :
+
+| | A | B | C | D |
+|---|---|---|---|---|
+| `main`, marche (2,5 m/s) | +0,09 | −0,02 | −0,05 | −0,02 |
+| `main`, Maj (4,25 m/s) | −2,11 | +0,22 | +0,35 | +0,40 |
+| branche, export H5 (2,40 m/s) | +0,05 | −0,07 | −0,10 | −0,07 |
+| branche, export H5, Maj (2,88 m/s) | +0,01 | −0,03 | +0,04 | −0,01 |
+| aperçu H6 (3,73 m/s) | +0,05 | −0,06 | −0,10 | −0,07 |
+| aperçu H6, Maj (4,48 m/s) | +0,01 | −0,06 | +0,04 | −0,04 |
+| aperçu H6, vers la gauche | — | −0,03 | −0,10 | −0,07 |
+
+- Les −0,06 à −0,10 ne sont pas un glissement : à 11,25 images / s (horloge 1,5), une image dure 5,33 pas de 1/60 s, soit 5 ou 6 ; une
+  période de 5 pas donne (5 − 5,33) / 5 = −0,067, une de 6 donne +0,111 : exactement les bornes mesurées (−0,07 .. +0,11) ; la moyenne est
+  nulle. Sur `main`, l'horloge × 1,56 (5,13 pas) donnait −0,02 pour la même raison ; Maj patinait de +0,22 à +0,40 (horloge plafonnée à 1,6).
+- En A, `main` place le héros à x = −16 hors du quai jouable (x ≥ −13,5) : mesures refaites à x = −12,5.
+
+### Critique à l'aveugle — [OK] le rig H6 gagne
+- Agent neuf, étiquettes tirées au sort (clé hors de sa portée), images de course seules (profil, face, dos ×4), auto-critique écrite avant
+  le verdict : **H6 7 / 10, H5 5,5 / 10**, H6 meilleur en lecture de course de profil (vraies images de vol, rebond de la tête de 2-3 texels à
+  l'atterrissage), de face (levée de 5 texels : « a light jog-in-place » contre « a high-knee march in place » pour 9), de dos (la botte de H5
+  disparaît sous l'ourlet de la cape aux images 1 et 5, celle de H6 garde au moins 4 rangées) et en propreté ; H5 garde l'avantage de la
+  fluidité (pas de 9 texels plus fin).
+- Ses mesures, **vérifiées contre le rig** : contact 14,5 / 28,5 / 42,5 (+14 par image), images 3 et 7 sans texel sur les rangées 89-90, levées
+  de face 0,0,0,2,4,5,3,1 contre 0,0,0,3,7,9,5,1 : exactement les valeurs du script.
+- Relevés communs aux deux, non traités : pas de balancement des bras de face / dos (corps rigide), un texel noir en éperon au talon arrière
+  (profil, images 6-7), un genou en boule grise ; botte levée de face = copie rigide (ni semelle ni talon).
+- [?] Contrepartie notée par le critique : entre deux images, le pied d'appui avance avec le sprite puis recule de 14 texels (9 avant) :
+  ≈ 25 px en B au lieu de 16 ; seules plus d'images intermédiaires (16 au lieu de 8) le réduiraient. À juger en jeu par l'opérateur.
+
+### Vues de trois-quarts — [OK] étude ; décision à l'opérateur
+- `art-lab/characters/briefs/three-quarter-views.md` : mesure, planche, coût du code et de l'art, autres voies, recommandation, questions.
+- **Mesure** (`tools/step-angles.mjs`, nouveau : harnais de `foot-slip`, 40 s, tous les PNJ qui marchent) : avec cinq secteurs, le
+  **trois-quarts dos** prendrait 44 à 54 % des pas en A / B / C à la graine 1842 (8 % à 7719), le trois-quarts face 5 à 32 %, le profil 36 à 61 % ;
+  D garde 93 % de profils. Raison : le quai court le long de x et A / B / C regardent en amont du canal : remonter le quai, c'est s'éloigner en
+  diagonale. Règle actuelle à trois vues : 7 à 67 % des pas à 20-40° de l'axe de la vue montrée.
+- **Planche du héros** (boîtes des huit vues mesurées) : la 2e est un trois-quarts face ; **les 4e et 5e sont deux dos presque identiques,
+  aucun trois-quarts dos n'est dessiné** (le brief en comptait deux) ; 6e et 7e : côté droit, presque de profil ; course et marche de profil
+  seulement. Vues reconstruites au pas du héros : `reviews/hero-x2-v2/08-turnaround-eight-views-x3.png`.
+- **Coût du code** : `Dir` à 5 valeurs, règle à 5 secteurs avec hystérésis et **repli par feuille** (sans images de trois-quarts, la règle
+  actuelle : aucun PNJ ne change), `walkSlide` / `walkClock` par vue, étiquettes, contrôles ; aucun appel de dessin ni shader ; texture :
+  10 PNJ + héros en 5 vues = 582 images, sous les 672 garanties depuis T1. **Coût de l'art** : trois-quarts face du héros depuis la vue 2
+  (course montée comme celle de face) ; trois-quarts dos : une nouvelle source (génération par l'opérateur).
+- Recommandation : (a) règle à 5 secteurs avec repli, derrière un paramètre DEV, prouvée à 0 px ; (b) le héros en cinq vues, trois-quarts dos
+  demandé à la source ; (c) les PNJ ensuite, trois-quarts dos d'abord. Autres voies chiffrables sans art : règle à trois vues biaisée vers le
+  dos, cibles des promeneurs plus alignées sur l'écran.
+
+### Restes [?]
+- Reconstruction Aseprite de `hero-x2-v2` (export, `.aseprite`, paquet) puis `--check`, `verify-provenance`, glissement refait sur le vrai
+  export, revue de l'opérateur en jeu (`?cast=candidate`) : rien n'est approuvé.
+- Décision de l'opérateur sur les vues de trois-quarts (questions du § 6 de l'étude).
+
+### Pensée
+- Une vitesse de jeu qui suit le dessin (la mesure du moteur sur le cycle) ne peut pas faire patiner : changer l'enjambée dessinée change la
+  vitesse, et l'export d'avant reste juste à sa propre vitesse.
+- Un « glissement » médian de quelques pour cent se vérifie contre la quantification (pas de simulation par image) avant d'être corrigé.
+- Une planche « tournante » se mesure vue par vue : deux dos ne font pas un trois-quarts dos.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -519,7 +618,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   (`briefs/hero-proposal.md` § 5, trois pièces jointes) ; déclinaisons au choix du joueur : « Une base + couleurs (Recommandé) » (Passe H4) ;
   deux lots d'images évalués, non validés (brief § 11) ; planche de base archivée, `hero-x2-v2` construit au stade lab, candidat non
   approuvé (Passe H5) ; **en attente de la décision de l'opérateur** (production ou retouches). Texture cuite élargie
-  (Passe T1 : 672 images garanties) ; course avec Maj à décider. Plus tard : masques du héros pour ses
+  (Passe T1 : 672 images garanties). Passe H6 : vitesse du héros cuit tirée de son cycle (3,73 m/s avec le rig préparé, Maj = sprint × 1,2),
+  rig préparé (14 texels, vol, genoux à 5 texels) : **export à reconstruire avec Aseprite sur la machine de l'opérateur**. Vues de
+  trois-quarts : étude `briefs/three-quarter-views.md`, décision de l'opérateur (aucun trois-quarts dos sur la planche). Plus tard : masques du héros pour ses
   déclinaisons, écran de choix (code de jeu). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
   production.
 - **Personnages clés et suite de l'art** : héros et chat restent générés (densité ×1) ; ni personnage clé ni personnage **original** au

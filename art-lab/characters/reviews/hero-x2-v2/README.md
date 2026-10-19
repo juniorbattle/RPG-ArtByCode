@@ -20,3 +20,21 @@ profile run: planted foot 9 texels per frame (`walkSlide`), clock x1.56 in B / D
 (4.25 m/s) in B: -1.09 (known, to be decided). A flipbook of the run in B and D was reviewed in the browser (scratch, not versioned). Blind critique (fresh agent, random labels, against
 dockworker-x2-v2): a light halo of the sheet's grey background around the contour, confirmed on the pixels (6.2 % of the edge texels against
 0.8-1 % for the cast) and peeled in the rig (0.5 %); see JOURNAL, Passe H5.
+
+## Pass H6 (2026-10-19, cloud session without Aseprite) — the rig prepared, the export NOT rebuilt
+
+The operator's decision of Pass F1, word for word: « Héros plus rapide (Recommandé) » (keep the drawn stride, about 3.5-4 m/s, the run key
+to revisit; no more legs lifted 9 texels in the front run: « une monte de genou »). The rig `rigs/hero-x2-v2.rig.mjs` now puts the planted foot
+on a 14-texel-per-frame track (the sheet's contact-to-gathered span in two frames instead of three of 9), makes the fourth frame of each step a
+flight (the figure 2 rows above the foot row) and lifts the front / back legs 5 texels at most. **The committed export, `.aseprite` and pack are
+still Pass H5's** (this session had no Aseprite): `verify-provenance` reports the rig's hash until the operator rebuilds.
+
+| File | What it shows |
+|---|---|
+| `07-h6-run-before-after-x3.png` | rows 1-2: the profile run, Pass H5 export (9 texels per frame) then the Pass H6 rig (14, flight frames 4 and 8); rows 3-4: the front run, H5 then H6 (lift 9 -> 5). The H6 frames were built here by `build-character.mjs` steps 1-4 (the reconstruction reproduces the H5 export's 36 frames at 0 texels), not exported by Aseprite |
+| `08-turnaround-eight-views-x3.png` | the sheet's idle views reconstructed at the hero's pitch and palette: front, 2nd view (three-quarter front), profile, back, 5th (a back), 6th, 7th (right side): the study of `briefs/three-quarter-views.md` |
+
+To finish on the operator's machine (Aseprite):
+`node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v2.rig.mjs` (writes the export, the `.aseprite`, `build.json` and the pack's
+file table), then `--check`, `node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/hero-x2-v2`, `node tools/art-lab/stride.mjs`
+is production-only: the hero's `walkSlide` must read 14 (`ActorSystem.playerSpeed` then gives 3.73 m/s, the run key 4.48 m/s).

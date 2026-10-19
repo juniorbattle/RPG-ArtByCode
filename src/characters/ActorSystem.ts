@@ -17,6 +17,17 @@ const HEIGHT: Record<string, number> = { player: 1.78, blacksmith: 1.82, merchan
  *  bounds: above, a cycle drawn for a much slower walk would race (the dock worker's); below, a profile seen walking almost into the depth
  *  would freeze (journal Passe S2) */
 const WALK_CLOCK_MIN = 0.4, WALK_CLOCK_MAX = 1.6;
+/** the generated player: 2.5 m/s, x1.7 with the run key (its frames simply play faster) */
+const PLAYER_SPEED = 2.5, PLAYER_RUN = 1.7;
+/** a baked player runs at the speed its run cycle draws (journal Passe H6, the operator's « Héros plus rapide (Recommandé) »: the sheet's
+ *  stride kept, the speed follows it): the cast's walkSpeed x the character scale of B / D x HERO_CLOCK, i.e. its frames play at
+ *  HERO_CLOCK x the base cadence in B / D with the planted foot on the ground. A 14-texel stride (hero-x2-v2 rebuilt from its Pass H6 rig):
+ *  3.73 m/s; the 9-texel export of Pass H5: 2.40 m/s */
+const HERO_CLOCK = 1.5, HERO_REF_SCALE = 1.12;
+/** the run key on a baked hero: its cycle is already a run, a sprint at x1.2 (4.48 m/s with a 14-texel stride); its clock bound is
+ *  HERO_CLOCK_MAX (the cycle is drawn for the hero's own speed: the NPCs' bound, a slow cycle racing, does not apply), which keeps the sprint
+ *  within its cycle in A too (character scale 1: clock 2.02, 1 % of slip) */
+const HERO_RUN = 1.2, HERO_CLOCK_MAX = 2;
 /** a walking facing turns to profile beyond 50 deg from the screen vertical and back to front / back below 40 deg (see screenFacing) */
 const SIDE_IN = Math.tan(THREE.MathUtils.degToRad(50)), SIDE_OUT = Math.tan(THREE.MathUtils.degToRad(40));
 const _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3();
@@ -230,11 +241,12 @@ export class ActorSystem {
     // --- player
     const k = this.keys;
     const [ix, iy] = this.axes();
-    const run = k.has('shift') ? 1.7 : 1;
+    const hero = this.heroWalkSpeed();
+    const run = k.has('shift') ? (hero ? HERO_RUN : PLAYER_RUN) : 1;
     // screen right = (c, -s), toward-camera = (s, c); "up" on screen = away from camera
     const mv = new THREE.Vector3(c * ix - s * iy, 0, -s * ix - c * iy);
     if (mv.lengthSq() > 0) {
-      mv.normalize().multiplyScalar(2.5 * run * dt);
+      mv.normalize().multiplyScalar(this.playerSpeed() * run * dt);
       const ox = p.pos.x, oz = p.pos.z;
       this.resolve(p, p.pos.x + mv.x, p.pos.z + mv.z);
       const step = this.shownStep(mv, p.pos.x - ox, p.pos.z - oz);
@@ -304,6 +316,12 @@ export class ActorSystem {
     a.t += dt * (this.walkClock(a, step.x / dt, step.z / dt) - 1);
   }
 
+  /** the cast's walkSpeed of a baked player (null: the generated sprite, or a sheet without a measured cycle) */
+  private heroWalkSpeed(): number | null { return this.player?.base ? this.cast.get(this.player.base)?.walkSpeed ?? null : null; }
+
+  /** the player's walking speed (m/s, before the run key): a baked hero's follows the stride its cycle draws (HERO_CLOCK) */
+  playerSpeed(): number { const ws = this.heroWalkSpeed(); return ws ? ws * HERO_REF_SCALE * HERO_CLOCK : PLAYER_SPEED; }
+
   /** animation clock rate of a walking baked actor (1 for a generated sprite or a sheet without a measured cycle): the speed its steps show
    *  over the ground speed its cycle draws at the current character scale. In profile the cycle slides the planted foot along the
    *  billboard, i.e. the camera's right: what it must match is the velocity along that axis (a profile walking mostly into the depth crosses
@@ -312,6 +330,6 @@ export class ActorSystem {
     const ws = a.base ? this.cast.get(a.base)?.walkSpeed : null;
     if (!ws) return 1;
     const shown = a.dir === 'side' ? Math.abs(vx * Math.cos(this.camYaw) - vz * Math.sin(this.camYaw)) : Math.hypot(vx, vz);
-    return Math.min(WALK_CLOCK_MAX, Math.max(WALK_CLOCK_MIN, shown / (ws * this.charScale)));
+    return Math.min(a === this.player ? HERO_CLOCK_MAX : WALK_CLOCK_MAX, Math.max(WALK_CLOCK_MIN, shown / (ws * this.charScale)));
   }
 }

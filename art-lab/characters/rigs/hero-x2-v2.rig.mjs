@@ -6,8 +6,10 @@
 // Profile run: the sheet's own eight run frames, reconstructed here at the same pitch (each figure cut out of the row first: the frames
 // touch), mirrored to face left and mapped onto the joint palette, upper bodies and legs as drawn; the sheet's planted foot jumps about 28
 // texels from one drawn frame to the next (contact and gathered poses only, no flight), so every frame's legs are sheared from the hip to
-// put the planted foot on a 9-texel-per-frame track (see `sideRun`). A first version painted IK legs under the drawn upper bodies (the
-// method of hero-x2-v1): stiff boots next to the sheet's drawn ones, and the coat's skirt cut ragged; the drawn legs read better.
+// put the planted foot on a 14-texel-per-frame track, then one flight frame per step (see `sideRun`). A first version painted IK legs under
+// the drawn upper bodies (the method of hero-x2-v1): stiff boots next to the sheet's drawn ones, and the coat's skirt cut ragged; the drawn
+// legs read better. Pass H6 (journal): the stride the sheet draws kept (14 texels per frame instead of 9: the operator's « Héros plus rapide
+// (Recommandé) », journal Passe F1), a flight frame per step, the front / back knees lifted 5 texels at most instead of 9.
 // Deterministic: `node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v2.rig.mjs`.
 import fs from 'node:fs';
 import os from 'node:os';
@@ -181,23 +183,27 @@ function pieces(im, min) {
 /** centre of the opaque run on a layer's lowest row (the planted foot) */
 function footX(im) { const b = R.bottom(im); let a = 99, c = -1; for (let x = 0; x < im.W; x++) if (R.opaque(im, x, b)) { a = Math.min(a, x); c = Math.max(c, x); } return (a + c) / 2; }
 
-// ---- profile run (the operator's running stride, 2.5 m/s: brief section 4). The sheet's own run frames, legs included: four per step,
-// contact (the planted foot far ahead), two in-betweens, gathered (the planted foot behind the hips). The sheet only draws contact and
-// gathered poses (the planted foot about 28 texels apart, no flight), so the in-betweens reuse a contact and a gathered pose whose legs are
-// SHEARED: rows from the hip (row 60) down to the ankle move progressively, the foot (the lowest 6 rows) moves as a block and stays flat,
-// the hip stays attached under the coat (a rotation about the hip that never resamples the boots' texture). Every frame's legs are placed
-// this way so that the planted foot moves exactly 9 texels per frame, from column 14 to 41 (the runtime's walkSlide, Stride.ts: the clock
-// reaches 2.5 m/s at about x1.56 in B / D); the frame then stands on the foot row. [upper body, legs, step position 0-3]; the upper bodies
-// keep the sheet's order (cape and arms as drawn).
+// ---- profile run (Pass H6: the stride the sheet draws, about 3.7 m/s in game: ActorSystem.playerSpeed). The sheet's own run frames, legs
+// included: four per step, contact (the planted foot far ahead), mid-stance, push-off (the planted foot behind the hips), flight. The sheet
+// only draws contact and gathered poses (the planted foot about 28 texels apart, no flight), so the in-betweens reuse a contact and a
+// gathered pose whose legs are SHEARED: rows from the hip (row 60) down to the ankle move progressively, the foot (the lowest 6 rows) moves
+// as a block and stays flat, the hip stays attached under the coat (a rotation about the hip that never resamples the boots' texture).
+// Every stance frame's legs are placed this way so that the planted foot moves exactly 14 texels per frame, from column 14 to 42 (the drawn
+// span in two frames: the runtime's walkSlide, Stride.ts); the frame then stands on the foot row. The fourth frame of a step is the flight:
+// the push-off legs, the whole figure FLIGHT rows above the foot row (no foot on it: walkSlide skips the pair). Pass H5 spread the same span
+// over three frames of 9 texels (a short step at a long stride: « court mais avance lentement », journal Passe F1).
+// [upper body, legs, step position 0-3]; the upper bodies keep the sheet's order (cape and arms as drawn).
 const RUN = [[2, 2, 0], [3, 3, 1], [4, 4, 2], [5, 4, 3], [6, 5, 0], [7, 6, 1], [8, 1, 2], [1, 1, 3]];
-const STEP = { from: 14, slide: 9, hip: 60, foot: 6 };
+const STEP = { from: 14, slide: 14, hip: 60, foot: 6 };
+/** rows the flight frame (step position 3) floats above the foot row */
+const FLIGHT = 2;
 function sideRun(parts, i) {
   const [u, l, t] = RUN[i], P = parts[u - 1], L = parts[l - 1].legs;
-  const legs = R.shear(L, STEP.hip, R.bottom(L) - STEP.foot, Math.round(STEP.from + STEP.slide * t - footX(L)));
+  const legs = R.shear(L, STEP.hip, R.bottom(L) - STEP.foot, Math.round(STEP.from + STEP.slide * Math.min(t, 2) - footX(L)));
   const blue = (x, y) => { const c = R.get(P.upper, x, y); return !!c && isBlue(c); };
   const im = R.over(R.cut(P.upper, blue), legs, R.cut(P.upper, (x, y) => !blue(x, y)));
   // the frame's border ring stays empty (contract section 3): the sheared back boot of frame 5 reaches column 63 (6 texels trimmed)
-  return R.erase(despeckle(R.shift(im, 0, R.FOOT - R.bottom(legs)), () => true, 4), (x, y) => x === 0 || x === R.FW - 1 || y === 0);
+  return R.erase(despeckle(R.shift(im, 0, R.FOOT - R.bottom(legs) - (t === 3 ? FLIGHT : 0)), () => true, 4), (x, y) => x === 0 || x === R.FW - 1 || y === 0);
 }
 
 // ---- front / back run: the body (everything above the legs, the cape's panels and lining included) bobs with the profile's rhythm and
@@ -214,7 +220,8 @@ const FB = {
   },
   up: { hem: 64, legs: [(x, y) => y >= 80 && x <= 30, (x, y) => y >= 80 && x >= 34], hands: [(x, y) => y >= 52 && y <= 66 && x >= 7 && x <= 15] },
 };
-const LIFT = [0, 0, 0, 3, 7, 9, 5, 1];
+// Pass H6: 5 texels at most (9 read as a knee raise: « une monte de genou », the operator, journal Passe F1)
+const LIFT = [0, 0, 0, 2, 4, 5, 3, 1];
 const BOB = [1, 2, 1, 0, 1, 2, 1, 0];
 const SHIFT = [0, 1, 1, 0, 0, -1, -1, 0];
 const HEM = [-1, -2, -1, 1, 1, 2, 1, -1];

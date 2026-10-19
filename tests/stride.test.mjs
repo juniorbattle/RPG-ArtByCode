@@ -72,24 +72,35 @@ test('walkClock: the speed the steps show over the speed the cycle draws, at the
   assert.equal(sys.walkClock({ base: 'porter', dir: 'side' }, 0.9, 0), 1, 'an unsteady cycle');
 });
 
-test('the player: a baked hero runs on walkClock (the run key included), the generated sprite keeps x1 / x1.7', () => {
+test('the player: a baked hero runs at the speed its cycle draws (journal Passe H6), the generated sprite keeps 2.5 m/s, x1 / x1.7', () => {
   const atlas = { specs: new Map(), counts: new Map([['hero/walk', 6]]), frames: new Map() };
   const at = () => ({ x: 0, y: 0, z: 0, clone() { return { ...this }; } });
-  const run = (baked, shift) => {
+  const run = (baked, shift, cs = 1.12, ws = 1.4) => {
     const sys = new ActorSystem(atlas);
-    if (baked) sys.cast.set('player', { id: 'hero', scale: 0.9, height: 1.78, walkSpeed: 1.4 });
+    sys.rebind({ walk: { x0: -10, x1: 10, z0: -10, z1: 10 }, colliders: [], heightAt: () => 0 });
+    if (baked) sys.cast.set('player', { id: 'hero', scale: 0.9, height: 1.78, walkSpeed: ws });
     sys.player = sys.spawn('player', 'player', at(), { t: 0 });
-    sys.camYaw = 0; sys.controlYaw = 0; sys.charScale = 1.12;
+    sys.camYaw = 0; sys.controlYaw = 0; sys.charScale = cs;
     sys.keys.add('d'); if (shift) sys.keys.add('shift');                   // straight across the screen: shown in profile
     sys.update(0.02, 0);
-    return { t: sys.player.t, dir: sys.player.dir, base: sys.player.base };
+    return { t: sys.player.t, dir: sys.player.dir, base: sys.player.base, x: sys.player.pos.x, speed: sys.playerSpeed() };
   };
+  const near = (a, b, what) => assert.ok(Math.abs(a - b) < 1e-9, `${what}: ${a} vs ${b}`);
   const b = run(true, false);
   assert.equal(b.base, 'player'); assert.equal(b.dir, 'side');
-  assert.ok(Math.abs(b.t - 0.02 * (2.5 / (1.4 * 1.12))) < 1e-9, 'its steps at 2.5 m/s over the speed its cycle draws');
-  assert.ok(Math.abs(run(true, true).t - 0.02 * 1.6) < 1e-9, 'bounded with the run key');
-  assert.ok(Math.abs(run(false, false).t - 0.02) < 1e-9, 'generated: x1');
-  assert.ok(Math.abs(run(false, true).t - 0.02 * 1.7) < 1e-9, 'generated: the run key x1.7');
+  // the oracle in numbers, not through the code's constants: walkSpeed 1.4 m/s x 1.12 x 1.5 = 2.352 m/s
+  near(b.speed, 2.352, 'speed: the stride the cycle draws at x1.5 in B / D');
+  near(b.x, 2.352 * 0.02, 'it moves at that speed');
+  near(b.t, 0.02 * 1.5, 'its frames at x1.5 in B / D: the planted foot stays put');
+  near(run(true, false, 1.15).t, 0.02 * 2.352 / (1.4 * 1.15), 'in C (x1.15) a little slower');
+  const s = run(true, true);
+  near(s.x, 2.352 * 1.2 * 0.02, 'the run key: a sprint at x1.2');
+  near(s.t, 0.02 * 1.8, 'the sprint\'s clock (x1.8, above the NPC bound of 1.6)');
+  near(run(true, true, 1).t, 0.02 * 2, 'the sprint in A (character scale 1): bounded at x2');
+  near(run(true, false, 1.12, 14 * 7.5 * 0.0235 * 0.9).speed, 3.73086, 'a 14-texel stride (the Pass H6 rig): 3.73 m/s');
+  const g = run(false, false), gs = run(false, true);
+  near(g.speed, 2.5, 'generated: 2.5 m/s'); near(g.x, 0.05, 'generated: moves 2.5 m/s');
+  near(g.t, 0.02, 'generated: x1'); near(gs.t, 0.02 * 1.7, 'generated: the run key x1.7'); near(gs.x, 0.02 * 2.5 * 1.7, 'generated: runs x1.7');
 });
 
 test('a walker pushed along a collider faces, and steps, the way it actually moves (journal Passe F1)', () => {
@@ -112,7 +123,7 @@ test('a walker pushed along a collider faces, and steps, the way it actually mov
   assert.ok(slid.pos.z === 0 && slid.pos.x > 0, 'blocked toward the camera, slid to the right');
   assert.equal(slid.dir, 'side', 'it faces the way it moves (profile), not the way it was heading');
   assert.equal(slid.flip, true, 'to the right');
-  // its clock follows the slide (the speed along the camera right), not the intended diagonal
-  const v = 2.5 * Math.SQRT1_2;
+  // its clock follows the slide (the speed along the camera right), not the intended diagonal (the hero's speed: 1.4 x 1.12 x 1.5 m/s)
+  const v = 2.352 * Math.SQRT1_2;
   assert.ok(Math.abs(slid.t - 0.02 * (v / (1.4 * 1.12))) < 1e-9, 'clock at the slide speed');
 });

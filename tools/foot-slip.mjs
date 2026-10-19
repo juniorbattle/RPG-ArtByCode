@@ -5,7 +5,9 @@
 // frame change is the same planted foot (a frame change steps it ~11 cm back; the next foot lands 20-30 cm ahead): its drift over the actor's
 // own advance along that axis in the period is the slip. Reported: median slip per sheet and framing (0 = the foot stays put; +0.25 = it
 // skates forwards a quarter of the walk across the screen; -0.8 = it slides backwards, a moonwalk).
-//   node tools/foot-slip.mjs [--secs=20] "label|<query or full url>" ...   (BASE_URL env for a bare query)
+//   node tools/foot-slip.mjs [--secs=20] [--keys=d,shift] "label|<query or full url>" ...   (BASE_URL env for a bare query)
+// --keys: movement keys held from the first step (the player walks: a baked hero's cycle is measured like the NPCs', journal Passe H6);
+// CHROME_ARGS env replaces the GL switches (e.g. --use-angle=swiftshader without a GPU), READY_MS the boot timeout.
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 const puppeteer = createRequire(import.meta.url)('puppeteer-core');
@@ -14,15 +16,18 @@ const SEED = `(() => { let s = 1842; Math.random = () => { s |= 0; s = (s + 0x6D
 const HOLD = `Object.defineProperty(window, '__app', { configurable: true, get() { return undefined; }, set(v) { v.start = () => {}; Object.defineProperty(window, '__app', { value: v, writable: true, configurable: true }); } });`;
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/';
 const args = process.argv.slice(2), secs = +(args.find((a) => a.startsWith('--secs='))?.slice(7) ?? 20);
+const keys = (args.find((a) => a.startsWith('--keys='))?.slice(7) ?? '').split(',').filter(Boolean);
+const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];
 const runs = args.filter((a) => !a.startsWith('--')).map((a) => { const [label, q] = a.split('|'); return { label, url: q.startsWith('http') ? q : `${BASE}?${q}` }; });
-const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: ['--use-gl=angle', '--use-angle=d3d11', '--ignore-gpu-blocklist', '--no-sandbox', '--window-size=1280,720'], defaultViewport: { width: 1280, height: 720 } });
+const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', '--window-size=1280,720'], defaultViewport: { width: 1280, height: 720 } });
 try {
   for (const r of runs) {
     const page = await b.newPage(); page.on('pageerror', (e) => console.log('[pageerror]', e.message));
     await page.evaluateOnNewDocument(SEED); await page.evaluateOnNewDocument(HOLD);
-    await page.goto(r.url, { waitUntil: 'load' }); await page.waitForFunction('window.__ready === true', { timeout: 180000 });
-    const res = await page.evaluate((secs) => {
+    await page.goto(r.url, { waitUntil: 'load' }); await page.waitForFunction('window.__ready === true', { timeout: +(process.env.READY_MS || 180000) });
+    const res = await page.evaluate((secs, keys) => {
       const a = window.__app, at = a.atlas, data = at.bakedRgba, BW = at.bakedWidth, cam = a.rig.camera;
+      for (const k of keys) a.actors.keys.add(k);
       let clock = 0; const frozen = (fn) => { const n = performance.now; performance.now = () => clock; try { return fn(); } finally { performance.now = n; } };
       const prev = new Map(), runsBy = {};
       // feet on the foot row, as positions along the camera's right (the billboard's axis: the axis a profile's cycle slides its foot on)
@@ -62,7 +67,7 @@ try {
         }
       }
       return runsBy;
-    }, secs);
+    }, secs, keys);
     const med = (v) => { const s = [...v].sort((x, y) => x - y); return s[s.length >> 1]; };
     console.log(`== ${r.label}`);
     for (const [k, v] of Object.entries(res).sort()) console.log(`  ${k.padEnd(30)} periods ${String(v.length).padStart(3)}  slip / speed: median ${med(v).toFixed(2)}  [${Math.min(...v).toFixed(2)} .. ${Math.max(...v).toFixed(2)}]`);
