@@ -549,6 +549,80 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
 - La valeur d'une vue se mesure sur les directions réelles du joueur : au clavier, la perspective place ses pas en trois-quarts en A et en D,
   pas en B.
 
+## Passe K5 — Caméras : prototype du suivi qui vise la vitesse du joueur à l'écran (`?camfollow=screen`, décision K3) ; recalage du pivot de A cherché (K2) (2026-10-19)
+
+### Demande
+- Décisions de l'opérateur (Passe D1), mot pour mot : K3 « Prototyper le suivi à l'écran » ; K2 « Cherche et montre-moi ».
+- Branche `camfollow-k5` depuis `main` (`2774d2d`).
+
+### K3 — [OK] prototype derrière `?camfollow=screen` (absent : le suivi approuvé, inchangé)
+- **Le principe** (`CameraGraph.holdFocus`) : quand D est à l'écran (posé, ou à un bout d'une transition), la garde compare deux déplacements du
+  joueur à l'écran sur la même image.
+  - le sien : la caméra de l'image précédente ;
+  - le total : avec la pose de cette image.
+  - Quand les deux ont des signes contraires, la caméra dépasse le joueur. Le foyer lissé ne garde alors que la plus grande part de son pas
+    qui ne le fait pas reculer (dichotomie sur cette part, le poids de la transition laissé tel quel), puis rattrape par le lissage habituel.
+  - Les poses restent celles du cadrage pour un autre foyer : la famille que le bake échantillonne déjà.
+- **[KO → corrigé] première version** : la garde n'agissait qu'en D posé.
+  - Effet en D posé : C → D passait de 36 images de recul à 1, D → C de 53 à 0.
+  - Mais D → C empirait pendant la transition (−18 → −31 px/s) : le foyer retenu rattrapait son retard en pleine transition.
+  - Étendue aux transitions qui touchent D.
+- **Mesures** (`tools/camsim.mjs`, graine 1842, `vis=0`, joueur guidé vers un point, le scénario de la Passe K2), le suivi approuvé contre
+  `?camfollow=screen` :
+
+| marche | images de recul, approuvé | avec le prototype |
+|---|---|---|
+| C → D (8 / 1 vers 20 / 0,6) | 43 (7 en transition à −39 px/s, 36 posées à −40) | **0** |
+| D → C | 63 (53 posées à −18, 10 en transition) | **0** |
+| D → B, au bord de l'eau | 64 (62 posées à −25) | **0** |
+| D vers l'est / l'ouest | 0 | 0 |
+
+- Place du joueur à l'écran : NDC x 0,14 .. 0,47 au lieu de 0,14 .. 0,45 en C → D (le suivi ne fait que prendre du retard).
+- **Défaut inchangé** : la sortie complète de `camsim` (six marches, JSON) est **identique à l'octet** entre `main` figé (`0418f84`) et la
+  branche. Captures déterministes avec personnages (graine 1842, `clean=1&freeze=7.3&vis=0`, 300 pas), A / B / C / D, contre `main` figé : **0 px**.
+- **Tests** : `tests/camera-graph.test.mjs` +1, sur la diagonale en profondeur de C vers D et retour, dans le graphe seul.
+  - Le suivi approuvé recule en D posé : au moins 30 images par sens.
+  - Avec le prototype : 0 en D posé, et au moins deux fois moins sur toute la marche.
+  - Le joueur reste dans sa bande à l'écran.
+  - **Trois fautes injectées, attrapées** : la garde jamais appelée, la garde active par défaut, le pas entier gardé.
+- **[?] Restes du prototype** :
+  - Dans le graphe seul, quelques images reculent encore pendant les transitions vers D et vers C : 9 et 5, contre 19 et 10. Là, le joueur
+    qui marche en profondeur ne bouge presque pas à l'écran (−5 px/s), et c'est l'avancée du poids de la transition qui le déplace.
+  - Le recul en C posé (13 images sur cette diagonale) n'est pas traité : la garde ne vise que D.
+  - La visibilité des poses retardées n'est pas prouvée en mouvement (`viewport-proof` ne rejoue que des poses fixes).
+
+### K2 — [OK] recherche ; la cause de la Passe K1 corrigée
+- La Passe K1 attribuait le reste de +21 px/s de B → A à l'écart de place du joueur entre B (NDC x ≈ −0,37) et A (≈ −0,17). Mesuré ici, au
+  bord de la zone (x −9,4 / −10,3, z 1), l'écart est faible : **B −0,21, A −0,22**. Les valeurs de K1 étaient l'étendue sur toute la marche.
+- **Image par image**, dans le harnais des tests : le pic est **+20,7 px/s à t = 0,63 s** de la transition (x −10,96).
+  - Avancer le pivot de A le long du quai (`home.x` 5,0 → 5,8) l'efface : **0 px/s**. Le joueur finit la transition 18 px plus à gauche.
+  - Le reculer l'aggrave : 4,2 → +47 px/s, 3,5 → +69.
+  - Le gain x de A à 0,75 le réduit à +7,5 px/s.
+- **Planche avant / après** (captures déterministes, graine 1842, `camA=,,,,,5.8,,`, joueur en −12 / 1,2 et en −10,3 / 1) :
+  `screenshots/calibration/k2-pivotA/A-pivot-5.0-vs-5.8.png`. La lune, le château, le pont et le canal restent ; la vue se décale de
+  quelques pixels.
+- **Décision à demander à l'opérateur** (cadrage approuvé) : pivot de A x 5,8. Le bake se refait de lui-même, la clé du cache change.
+
+### Constat — [?] un recul au bord de l'eau, qui n'est pas dû à l'ancrage
+- Une marche tenue sur d depuis C (9 / 0,6) gagne le bord de l'eau (z > 2,4), puis passe C → B. Pendant cette transition, **41 images
+  reculent, jusqu'à −445 px/s** : −445 avec les transitions interpolées, −447 avec l'ancrage. Ce n'est donc pas une régression de K4.
+- Le joueur reste presque bloqué contre le bord (fin en x 14,00, z 3,99) : la cause n'est pas mesurée.
+
+### [KO → corrigé] procédure
+- Le commit du code (`8d91352`) est parti sans cette entrée ni la ligne d'`AGENTS.md`.
+  - Le script du journal avait échoué (une ancre présente deux fois).
+  - La commande enchaînait pourtant les étapes par `;` au lieu de `&&` : la faute de la Passe M3.
+- Le code fusionné était validé : typecheck, `npm test` 87 / 87, build, `art:validate`, et les preuves ci-dessus.
+- Cette entrée et la ligne d'`AGENTS.md` suivent dans un commit à part, sans réécrire l'historique.
+- Deux fichiers vides à la racine, nés d'une commande précédente (des accents graves lus par Bash comme une redirection), sont supprimés. Ils
+  n'ont jamais été commités.
+
+### Pensée
+- Une garde sur le foyer, plutôt que sur la pose, garde les poses dans la famille que le bake connaît, et rattrape par le lissage existant.
+  Limitée au cadrage posé, elle reportait le rattrapage sur la transition suivante.
+- Une cause écrite d'après l'étendue d'une mesure (−0,37 / −0,17 sur toute la marche) se revérifie au point où le défaut se produit (le
+  bord de la zone, l'instant du pic) avant d'en tirer un réglage.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -626,10 +700,11 @@ sans traverser C ; (c) lacet max 0,96° / image en C ↔ D (≤ 0,55° ailleurs)
 (−131 px/s) font glisser le joueur à l'envers à l'écran (héritage de la passe 2, mesuré en 4B ; Passe K1 : B → A remesuré −139 px/s, C → B
 0 ; **transitions ancrées partout préparées derrière `?camblend=anchored`** : B → A 0 image de recul au lieu de 14, pic +21 px/s au lieu de +181 ;
 « Oui, par défaut » (Passe D1), appliqué (Passe K4) ; preuve de visibilité sur GPU faite, Passe G1 ; le reste demanderait de recaler le pivot de A :
-« Cherche et montre-moi ») ; (e) reculs du joueur à l'écran en cadrage posé C / D (−15 à
+« Cherche et montre-moi » : pivot de A x 5,8 trouvé, avant / après montré, décision de l'opérateur, Passe K5) ; (e) reculs du joueur à l'écran en cadrage posé C / D (−15 à
 −39 px/s, Passe K1) : expliqués en Passes K2 / K3 (le pivot de D, qui suit 85 % du déplacement latéral, dépasse un joueur que sa marche en profondeur
 ralentit à l'écran ; le suivi le long des axes de la caméra n'y change rien) ; suivi visant la vitesse à l'écran :
-« Prototyper le suivi à l'écran » (Passe D1). Contrainte : la caméra de D reste
+« Prototyper le suivi à l'écran » (Passe D1) : prototype `?camfollow=screen` (Passe K5 : 0 image de recul sur C ↔ D et D → B), à juger
+en jeu par l'opérateur ; (f) recul de −445 px/s pendant C → B au bord de l'eau (Passe K5), non expliqué. Contrainte : la caméra de D reste
 à z < ~18,5 (maisons de la rive opposée dès z = 19,8, invisibles de A/B/C) ; tout cadrage plus reculé exige de les retirer ou de les abaisser.
 
 **5. Visibilité / culling**

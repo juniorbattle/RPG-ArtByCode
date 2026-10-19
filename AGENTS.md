@@ -177,7 +177,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 `seed=1842` (canonical) · `forge=sabotaged` · `clean=1` (no HUD/panel) · `freeze=7.3` (deterministic time) ·
 `player=x,z` (place the player; the camera settles in that zone's framing, no arrival hold) ·
 `camera=A|B|C|D` (pin a framing) · `camblend=interpolated` (the former interpolated A <-> B / B <-> C blends, for comparison; absent = every blend
-anchored, the operator's decision of 2026-10-19, journal Passes K1 / K4) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
+anchored, the operator's decision of 2026-10-19, journal Passes K1 / K4) · `camfollow=screen` (a prototype for the operator,
+journal Passe K5: while D is on screen the follow never overtakes the player on screen, the focus held back and caught up by the usual
+smoothing; absent = the approved follow) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
 a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
 `static=1` (hide characters/particles) · weather (`src/atmosphere/Weather.ts`, journal Passe W1; absent = nothing created, the game as before;
