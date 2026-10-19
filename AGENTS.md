@@ -188,7 +188,8 @@ occluders open: review / visibility proof) · `occdebug=1` (proxy boxes, reveal 
 occludable: stress test of the behind-occluder bake) · DEV server only: `labsprite=<id>|-&labpos=x,z[;x,z]` (show an Art Lab export
 on the porter actor, standing still, in the real scene; `-` = generated frames for the "before" image; compiled out of production,
 see `art-lab/README.md`) · DEV server only, EXPERIMENTAL: `baked=<id>&bakedpos=x,z` (a baked export in the MAIN atlas and renderer, per
-`art-lab/characters/runtime-integration-contract.md` v3; never in production builds; flags in `src/lab/bakedLoader.ts`) · `cast=generated`
+`art-lab/characters/runtime-integration-contract.md` v3; never in production builds; flags in `src/lab/bakedLoader.ts`) · `crowd=<n>` (n ambient walkers, the five townsfolk in turn; a staging proposal awaiting the operator, journal Passe C1; absent =
+round(2 x density) randomly picked, as approved) · `cast=generated`
 (skip the production cast of baked characters, `src/characters/BakedCast.ts`: the old generated porter / merchant) · DEV server only:
 `cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production) · DEV server only:
 `variants=candidate` (apply the NPC variants file `art-lab/characters/variants/variants.json` while it waits for the operator's approval; production

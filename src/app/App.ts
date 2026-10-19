@@ -180,6 +180,9 @@ export class App {
     this.sprites = new SpriteRenderer(this.atlas, 40);
     this.actors = new ActorSystem(this.atlas, this.rig.camera);
     if (cast) this.actors.cast = cast.cast;
+    // ?crowd=<n>: n ambient walkers, the five townsfolk in turn (a staging proposal awaiting the operator, journal Passe C1)
+    const crowd = Number(this.opts.params.get('crowd'));
+    if (this.opts.params.has('crowd') && Number.isInteger(crowd) && crowd >= 0 && crowd <= 12) this.actors.crowdCount = crowd;
     if (baked) this.actors.authored = baked.spawns;
     this.actors.onInteractForge = () => this.setForgeState(this.config.forgeState === 'NORMAL_FORGE' ? 'SABOTAGED_FORGE' : 'NORMAL_FORGE');
     this.scene.add(this.sprites.group);

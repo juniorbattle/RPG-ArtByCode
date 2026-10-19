@@ -742,6 +742,28 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un test de repli (±π, deux branches) s'écrit dans les deux sens : une faute injectée par branche le montre.
 - Une clé de cache se teste par ce qui doit la changer, chacune de ses entrées, et par ce qui ne doit pas (un nom).
 
+## Passe C1 — Foule : les cinq citadins préparés derrière `?crowd=<n>` (décision de mise en scène de l'opérateur) (2026-10-19)
+
+### Demande
+- « À reprendre » § 1, Mise en scène : « seuls 2 des 5 citadins (artisane, voyageur) paraissent à la graine 1842 et à la densité 1
+  (`round(2 × densité)` promeneurs ; « remplacer seulement ») ». Consigne d'autonomie (Passe T1) : une décision de l'opérateur se prépare
+  derrière un paramètre d'URL, sans changer le jeu par défaut. Branche `claude/stoic-goodall-8ieke4` recréée depuis `main` (`d7c6a62`).
+
+### Fait — [OK]
+- `ActorSystem.crowdCount` (`?crowd=<n>`, 0 à 12) : n promeneurs, les cinq citadins à tour de rôle (tous les cinq dès n = 5). Le tirage du
+  type est fait dans tous les cas (`rng.pick`), puis ignoré avec le paramètre : les promeneurs communs aux deux restent où ils étaient, et
+  avec n = 2 tout ce qui suit (le docker) aussi. Sans le paramètre : `round(2 × densité)` promeneurs tirés au sort, comme approuvé.
+- `tests/crowd.test.mjs` (3) : effectifs approuvés (densité 1, 2, 0,2) et types tirés (valeurs de régression dans un district d'essai) ;
+  `crowd=5` = les cinq types une fois ; mêmes positions que le défaut pour les promeneurs communs (graines 1842, 7719, 30417) et docker à la même
+  place avec n = 2. **Fautes injectées, toutes attrapées** : tirage sauté avec le paramètre, paramètre ignoré, tourniquet aussi par défaut.
+- Jeu par défaut contre `main` figé (`3fe2bfe` : son rendu par défaut est celui de `d7c6a62`, Passes W1 / Q2), captures déterministes avec
+  personnages (graine 1842, `clean=1&freeze=7.3&vis=0`, **300 pas** : les promeneurs ont marché, 1280 × 720, SwiftShader), A / B / C / D :
+  **0 px**. Planche `screenshots/calibration/c1-crowd/BD-default-vs-crowd5.png` (B puis D ; défaut à gauche, `crowd=5` à droite, même pas).
+
+### Décision à demander à l'opérateur
+- Combien de promeneurs par défaut, et faut-il les cinq citadins ? Recommandation : `crowd=5` (chaque citadin approuvé paraît une fois ; +3
+  sprites, aucun appel de dessin de plus), à juger en jeu en B / D.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -759,7 +781,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   quelles teintes dans la direction artistique.
 - **Mise en scène** : la marchande ne marche pas à son étal (collisionneur ; la déplacer de 0,5 m serait une décision de mise en scène) ; un
   second garde différent (miroir ou variante) au lieu de jumeaux, lances ; seuls 2 des 5 citadins (artisane, voyageur) paraissent à la
-  graine 1842 et à la densité 1 (`round(2 × densité)` promeneurs ; « remplacer seulement »).
+  graine 1842 et à la densité 1 (`round(2 × densité)` promeneurs ; « remplacer seulement ») : **`?crowd=<n>` préparé (Passe C1), les cinq dès
+  n = 5, décision de l'opérateur**.
 - **Mouvement** (Passe S2 : cadence réglée sur la vitesse vue à l'écran, pieds plantés pour la foule et les gardes ; Passe V3 : docker
   régularisé, glissement ≈ 0 en B / C / D) : restes des critiques du docker, communs à ses deux cycles : pas d'attaque du talon, botte de
   passage posée sur celle d'appui (image 4), poussée faible ; cycle 3 + 3 sans double appui (hérité du garde) ; en A, l'horloge touche son
