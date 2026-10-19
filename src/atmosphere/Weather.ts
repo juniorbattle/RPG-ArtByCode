@@ -162,6 +162,9 @@ export class Weather {
   private base: Record<string, THREE.Color> = {};
   private applied: Record<string, THREE.Color> = {};
   private static readonly FLASHED = ['uMoonCol', 'uSkyAmb', 'uGroundAmb', 'uFillCol', 'uFogColor'] as const;
+  /** the scene uniforms this weather sets, as they were before it (dispose gives them back: the weather can be changed while playing) */
+  private static readonly SET = ['uWet', 'uRain', 'uSnow', 'uCloud', 'uWindAmp', 'uMist', 'uFogDensity'] as const;
+  private readonly before: Record<string, number> = {};
 
   constructor(readonly p: WeatherParams) {
     this.rain = p.rain > 0 ? new Precipitation(RAIN_MAX, true, 77) : null;
@@ -180,6 +183,7 @@ export class Weather {
       this.snow.count = SNOW_MAX * p.snow;
     }
     // the scene state this weather sets once (uniforms read by the ground, surfaces and sky): wetness, snow cover, overcast, mist
+    for (const k of Weather.SET) this.before[k] = U[k].value;
     U.uWet.value = Math.max(0, 1 + 0.3 * p.rain - 0.9 * p.snow);
     U.uRain.value = p.rain;
     U.uSnow.value = p.snow;
@@ -252,7 +256,11 @@ export class Weather {
     set('uFogColor', this.base.uFogColor.clone().lerp(new THREE.Color(0.17, 0.2, 0.29), Math.min(0.6, 0.38 * f)));
   }
 
+  /** frees the precipitation and gives the scene uniforms back: what they were before this weather, and the light a flash was scaling */
   dispose(): void {
     for (const x of [this.rain, this.snow]) if (x) { x.mesh.geometry.dispose(); x.mat.dispose(); }
+    for (const k of Weather.FLASHED) { const u = U[k].value as THREE.Color; if (this.applied[k] && u.equals(this.applied[k])) u.copy(this.base[k]); }
+    this.applied = {};
+    for (const k of Weather.SET) U[k].value = this.before[k];
   }
 }

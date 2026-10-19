@@ -18,7 +18,7 @@ import { ActorSystem } from '../characters/ActorSystem';
 import type { BakedSheet, AuthoredSpawn } from '../characters/BakedSprites';
 import { loadProductionCast } from '../characters/BakedCast';
 import { ParticleSystem } from '../atmosphere/Particles';
-import { Weather, parseWeather } from '../atmosphere/Weather';
+import { Weather, parseWeather, type WeatherParams } from '../atmosphere/Weather';
 import { buildSky } from '../atmosphere/Sky';
 import { WATER_Y, WALK } from '../architecture/StreetComposer';
 import { type BakeOptions, type BakePose, type BehindPass } from '../district/Visibility';
@@ -60,6 +60,8 @@ export class App {
   particles!: ParticleSystem;
   /** ?rain / ?snow / ?storm / ?wind (journal Passe W1); null = no weather parameter: nothing created, the game as before */
   weather: Weather | null = null;
+  /** the smoke's drift as authored (a weather's wind scales it) */
+  private readonly baseWind = new THREE.Vector3();
   generator!: MerchantDistrictGenerator;
   district: DistrictBuild | null = null;
   config: DistrictConfig = { ...DEFAULT_CONFIG };
@@ -188,12 +190,8 @@ export class App {
     this.scene.add(this.sprites.group);
     this.particles = new ParticleSystem(this.lib);
     this.scene.add(this.particles.group);
-    const wx = parseWeather(this.opts.params);
-    if (wx) {
-      this.weather = new Weather(wx);
-      this.scene.add(this.weather.group);
-      this.particles.wind.multiplyScalar(wx.wind);
-    }
+    this.baseWind.copy(this.particles.wind);
+    this.setWeather(parseWeather(this.opts.params));
     this.resize();
     // the boot links the programs in parallel first (prepareFirstFrame), then warms the occlusion variants
     this.regenerate(undefined, { warm: false });
@@ -258,6 +256,16 @@ export class App {
       clearTimeout(this.rebakeTimer);
       this.rebakeTimer = window.setTimeout(() => { if (window.innerWidth / window.innerHeight > this.rig.frame) this.regenerate(undefined, { keepActors: true }); }, 400);
     }
+  }
+
+  /** replaces the weather while playing (the DEV panel): the old one gives its uniforms back, null or a calm one (no rain, snow, storm,
+   *  wind 1) leaves none */
+  setWeather(p: WeatherParams | null): void {
+    if (this.weather) { this.scene.remove(this.weather.group); this.weather.dispose(); this.weather = null; this.particles.wind.copy(this.baseWind); }
+    if (!p || (p.rain <= 0 && p.snow <= 0 && p.storm <= 0 && p.wind === 1)) return;
+    this.weather = new Weather(p);
+    this.scene.add(this.weather.group);
+    this.particles.wind.copy(this.baseWind).multiplyScalar(p.wind);
   }
 
   setMoonGain(v: number): void { this.moonGain = v; U.uMoonCol.value.copy(this.moonBase).multiplyScalar(v); }

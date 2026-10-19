@@ -88,3 +88,18 @@ test('a frozen clock never fires a flash by itself; strike() shows one', () => {
   assert.ok(w.flashLevel > 0.5);
   reset(before);
 });
+
+test('dispose gives every scene uniform back, the light of a flash in progress included (the weather changed while playing; Passe W2)', () => {
+  const before = snap();
+  const cam = new THREE.PerspectiveCamera();
+  const w = new Weather({ rain: 1, snow: 0.6, storm: 1, wind: 2.5 });
+  assert.notEqual(snap(), before, 'the weather changed the scene');
+  w.strike(3); w.update(3, cam, new THREE.Vector3());
+  assert.ok(w.flashLevel > 0.5, 'a flash is lighting the scene');
+  w.dispose();
+  assert.equal(snap(), before, 'every uniform as before');
+  // two weathers one after the other (the panel): the second one's dispose comes back to the first state too
+  const a = new Weather({ rain: 0.3, snow: 0, storm: 0, wind: 1 }); a.dispose();
+  const b = new Weather({ rain: 0, snow: 1, storm: 0, wind: 0 }); b.dispose();
+  assert.equal(snap(), before);
+});

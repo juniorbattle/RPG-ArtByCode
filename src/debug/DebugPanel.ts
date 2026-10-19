@@ -131,6 +131,19 @@ export class DebugPanel {
     this.slider(at, 'spark / ember gain', 0, 2, 0.05, () => a.particles.intensity, (v) => { a.particles.intensity = v; });
     this.slider(at, 'wind (cloth / leaves)', 0, 3, 0.05, () => U.uWindAmp.value, (v) => { U.uWindAmp.value = v; });
 
+    // ---- weather (DEV only, closed: the ?rain / ?snow / ?storm / ?wind proposal, journal Passes W1 / W2): changes the weather while playing
+    if (import.meta.env.DEV) {
+      const w = this.section('Weather (proposal, DEV)', false);
+      const cur = { rain: 0, snow: 0, storm: 0, wind: 1, ...(a.weather?.p ?? {}) };
+      let pending = 0;
+      const apply = () => { clearTimeout(pending); pending = window.setTimeout(() => a.setWeather({ ...cur }), 150); };
+      this.slider(w, 'rain', 0, 1, 0.05, () => cur.rain, (v) => { cur.rain = v; apply(); });
+      this.slider(w, 'snow', 0, 1, 0.05, () => cur.snow, (v) => { cur.snow = v; apply(); });
+      this.slider(w, 'storm (lightning)', 0, 1, 0.05, () => cur.storm, (v) => { cur.storm = v; apply(); });
+      this.slider(w, 'wind', 0, 3, 0.05, () => cur.wind, (v) => { cur.wind = v; apply(); });
+      this.button(w, 'Lightning now', () => a.weather?.strike(a.time));
+    }
+
     // ---- post
     const p = this.section('Post FX');
     const P = a.post.params;

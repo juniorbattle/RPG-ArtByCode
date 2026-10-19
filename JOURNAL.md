@@ -764,6 +764,27 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Combien de promeneurs par défaut, et faut-il les cinq citadins ? Recommandation : `crowd=5` (chaque citadin approuvé paraît une fois ; +3
   sprites, aucun appel de dessin de plus), à juger en jeu en B / D.
 
+## Passe W2 — Météo changeable en cours de partie (panneau DEV), pour la revue de l'opérateur (2026-10-19)
+
+### Pourquoi
+- La météo de la Passe W1 ne se juge bien qu'en jeu et en mouvement (pluie qui tombe, vent, éclairs), sur la machine de l'opérateur ; sans
+  moyen de la changer en jouant, chaque essai demande de recharger (bake compris). **Mon choix** : des curseurs dans le panneau, DEV seulement.
+  Branche `claude/stoic-goodall-8ieke4` recréée depuis `main` (`c00ff7b`).
+
+### Fait — [OK]
+- `Weather.dispose()` rend les uniformes qu'il avait posés (mouillé, pluie, neige, ciel couvert, vent, brume, densité du brouillard : leurs
+  valeurs d'avant lui) et la lumière d'un éclair en cours ; `App.setWeather(p)` retire l'ancienne météo et crée la nouvelle (aucune pour un
+  temps calme) ; le démarrage passe par lui (sans paramètre : rien, comme avant).
+- Panneau (touche H), section « Weather (proposal, DEV) », fermée, **DEV seulement** (absente du build de production) : pluie, neige, orage,
+  vent, bouton « Lightning now » (0 occurrence de son titre dans le bundle de production, vérifié).
+- `tests/weather.test.mjs` +1 : après une météo complète et un éclair en cours, `dispose` rend chaque uniforme à l'identique ; deux météos à la
+  suite aussi. **Fautes injectées, attrapées** : `dispose` sans restauration, éclair en cours non rendu.
+- Preuve en image (SwiftShader, B, graine 1842, même pas) : défaut, puis orage + pluie + neige + vent posés en cours de partie (98 % des pixels
+  changent), puis retirés : **0 px** contre l'image d'avant. Jeu par défaut : le chemin de démarrage sans paramètre ne crée rien (Passe W1).
+
+### Pensée
+- Un effet réglable en cours de partie rend ce qu'il a pris : il garde les valeurs d'avant lui, et sa preuve est « activé puis retiré = 0 px ».
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -862,7 +883,8 @@ shaders d'un profil persistant, 780M sans contention (fenêtre calme, témoin à
 profondeur (≤ 0,75 ms en 1080p avant son propre coût), filtre de l'ombre de lune (≤ 4 %) ; FXAA, qui flouterait le pixel-art sans masque des
 sprites.
 
-**6b. Météo (Passe W1)** — pluie, neige, orage, vent derrière `?rain` / `?snow` / `?storm` / `?wind`, défaut inchangé (0 px). Restent : le
+**6b. Météo (Passes W1 / W2)** — pluie, neige, orage, vent derrière `?rain` / `?snow` / `?storm` / `?wind`, défaut inchangé (0 px), réglables
+en jouant dans le panneau DEV (section « Weather »). Restent : le
 temps GPU sur la 780M (`tools/perf.mjs`, commandes dans la passe), le jugement de l'opérateur en jeu et en mouvement (vent sur les bannières,
 pluie qui tombe, éclairs), une éventuelle météo par défaut ou un cycle (décision de l'opérateur) ; non faits : éclair dessiné dans le ciel,
 son (le jeu n'en a pas), éclaboussures au sol, neige sur les personnages.
