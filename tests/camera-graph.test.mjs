@@ -64,9 +64,9 @@ test('the margin is read from the instance', () => {
 // (?camblend=interpolated) is the former default, kept for comparison
 const WALK = { x0: -13.5, x1: 26, z0: -3.2, z1: 4.05 };
 /** the player's screen x (px, 1920 wide) per frame while walking from x0 to x1 at 2.5 m/s along the quay (z 0.5), through graph.update */
-function walk(anchorAll, x0, x1) {
+function walk(anchorAll, x0, x1, tune = () => {}) {
   const g = new CameraGraph(), rig = new CameraRig(), cam = new THREE.PerspectiveCamera();
-  g.anchorAll = anchorAll; rig.setAspect?.(16 / 9);
+  g.anchorAll = anchorAll; rig.setAspect?.(16 / 9); tune(g);
   const p = new THREE.Vector3(x0, 0, 0.5), v = new THREE.Vector3(), out = [];
   g.snap(p, rig);
   const dir = Math.sign(x1 - x0);
@@ -90,10 +90,14 @@ test('the default anchors every blend (decision K1); interpolated blends swing t
   assert.ok(r.worst > 150 && r.n >= 20, `worst ${r.worst.toFixed(0)} px/s over ${r.n} frames`);
 });
 
-test('anchored (the default): the backwards glide of B -> A stays below 30 px/s, A -> B none', () => {
+test('anchored (the default) with A\'s pivot at x 5.8: no backwards glide on B -> A nor A -> B; at the former 5.0, B -> A glides (journal Passes K5 / K6)', () => {
+  assert.equal(new CameraGraph().anchors.A.home[0], 5.8, 'the operator\'s decision RK1 « Appliquer 5,8 »');
   const ba = against(walk(true, -5, -12.5), -1), ab = against(walk(true, -12.5, -5), 1);
-  assert.ok(ba.worst < 30, `B -> A worst ${ba.worst.toFixed(1)} px/s`);
+  assert.ok(ba.worst <= 1, `B -> A worst ${ba.worst.toFixed(1)} px/s`);
   assert.ok(ab.worst <= 0, `A -> B worst ${ab.worst.toFixed(1)} px/s`);
+  // control: the former pivot keeps the +21 px/s residue of Passe K1, which the measure must still see
+  const old = against(walk(true, -5, -12.5, (g) => { g.anchors.A.home[0] = 5.0; }), -1);
+  assert.ok(old.worst > 15, `B -> A at pivot 5.0: worst ${old.worst.toFixed(1)} px/s`);
 });
 
 test('the bake samples the anchored A <-> B / B <-> C blends by default; interpolated, the poses are the former ones', () => {

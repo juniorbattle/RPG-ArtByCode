@@ -40,7 +40,9 @@ export const DEFAULT_ANCHORS: Record<CamId, CameraAnchor> = {
   A: {
     id: 'A', label: 'Establishing / arrival',
     yaw: -78, pitch: 2.5, dist: 44, fov: 38, shift: 0,
-    home: [5.0, 4.6, 1.9], ref: [-12, 1.2], gain: [0.35, 0.2], min: [-1, -0.6], max: [3, 0.6],
+    // pivot x 5.8 (5.0 until the operator's decision of 2026-10-19, « Appliquer 5,8 », journal Passes K5 / K6): the anchored B -> A blend no
+    // longer glides the player backwards (+20.7 px/s at x 5.0); the view moves a few pixels along the quay
+    home: [5.8, 4.6, 1.9], ref: [-12, 1.2], gain: [0.35, 0.2], min: [-1, -0.6], max: [3, 0.6],
     charScale: 1.0,
   },
   // the art director's frontal stall view, re-staged: a touch higher (characters separate vertically), a longer

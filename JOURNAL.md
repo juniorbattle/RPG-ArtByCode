@@ -858,14 +858,60 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
   près, la revue d'avant (`?cast=candidate&views=5` sur `main`).
 - Une feuille ajoutée en dernier ne déplace rien de ce qui la précède ; le test le dit par l'ordre et par les cases.
 
+## Passe K6 — Caméras : le pivot de A avancé à x 5,8 (décision RK1) (2026-10-19)
+
+### Demande
+- Décision de l'opérateur (Passe D3), mot pour mot : RK1 « Appliquer 5,8 ».
+- Branche `camera-pivotA-k6` depuis `main` (`3bef265`).
+
+### Fait — [OK]
+- `CameraGraph`, cadrage A : `home` x 5,0 → **5,8**, avec la décision en commentaire. Le reste de A (lacet, tangage, distance, focale, gains)
+  ne change pas.
+- Le bake se refait de lui-même : la clé du cache couvre les poses.
+- `tests/camera-graph.test.mjs` : le test de B → A est durci.
+  - Avec le pivot 5,8 : aucun recul, ni sur B → A ni sur A → B.
+  - **Contrôle** : le même test, le pivot remis à 5,0 sur l'instance, doit voir le recul de la Passe K1 (plus de 15 px/s). Il le voit.
+
+### Mesures
+- **Graphe seul** (le harnais des tests : marche droite le long du quai à 2,5 m/s) :
+  - B → A : **+20,7 px/s de recul (24 images) à 5,0 → aucune image de recul à 5,8** ; le joueur avance toujours, d'au moins 7 px/s.
+  - A → B : inchangé, jamais de recul.
+  - Le joueur finit la transition 18 px plus à gauche.
+- **Dans le jeu** (`tools/camsim.mjs`, graine 1842, `static=1`, joueur guidé vers −12,5 / 0,5, puis le long du bord, z 1,6) :
+  - `main` figé (`3bef265`) comme la branche : 0 image de recul au seuil de `camsim` (8 px/s).
+  - Sans seuil, le joueur avance toujours à l'écran pendant B → A. Son avance la plus lente monte avec le pivot à 5,8 :
+    - le héros de production (3,73 m/s) : 36 → 66 px/s ;
+    - la distribution générée (2,5 m/s) : 27,5 → 40 px/s.
+  - **[?] Constat** : le recul de +20,7 px/s n'existait que dans le harnais, où la marche est droite le long de x à 2,5 m/s. Dans le jeu, le
+    guidage et l'échelle des personnages le couvraient déjà ; le recalage donne de la marge.
+- **Visibilité** (`tools/viewport-proof.mjs --no-resize --no-controls`, trois graines × cinq formats, la même série) :
+  - `main` figé : **8 contrôles en échec**, les écarts connus de la Passe G1 (au plus 3 px).
+  - la branche : **13**. Les 8 mêmes, et 5 nouveaux, tous sur A ou AB, tous expliqués par `tools/vis-why.mjs` :
+    - graine 1842, A en 1920 × 1080 (2 px) et en 2560 × 1080 (3 px), AB en 2560 × 1080 (7 px). Les parties manquées forcées, il reste
+      **0 px** : ce sont des lanières plus fines qu'un pixel du bake (pièce 179, un toit du fond, 0 pixel de tuile même à ×8 ; pièce 515, une
+      maison de la ville haute, 0 à la taille du bake). Intensité de 5 à 9 sur 255. C'est la classe de résidu connue (Passe 5b).
+    - graine 7719, A, 2 px dans les deux formats (le même point de la scène, intensité 150). Les parties forcées, l'écart reste, et ce n'est
+      pas l'ordre de dessin. Avec `msaa=8` : **0 px** ; avec `msaa=0`, l'écart se déplace (3 px ailleurs, intensité 44). C'est un seul
+      échantillon MSAA à travers une fissure de la géométrie, pas le culling. Il est à reprendre avec les corrections de géométrie du gel
+      (T2).
+  - Tier 3 et poses du bake : 317 pièces sur 738 à la graine 1842 des deux côtés (1080p) ; le bake se refait (la clé change avec la pose
+    de A).
+- **Validation** : typecheck, `npm test` 87 / 87, build, `art:validate`.
+- **Référence** : `screenshots/calibration/camA-establishing.png` refaite (requête de `tools/screenshots.mjs`, 120 pas, témoin 0 px).
+
+### Pensée
+- Un défaut mesuré dans un harnais se remesure dans le jeu avant d'en tirer le bénéfice d'un réglage : ici, la vitesse et le guidage du
+  joueur réel le couvraient déjà. Le réglage reste celui que l'opérateur a choisi, et la mesure dit ce qu'il apporte vraiment.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
-**0. Jalon M1 — décisions de la fiche de revue (Passe D3), à appliquer dans l'ordre de cette passe** : pivot de A à 5,8 ;
+**0. Jalon M1 — décisions de la fiche de revue (Passe D3), à appliquer dans l'ordre de cette passe** :
 suivi `?camfollow=screen` par défaut avec sa preuve ; diagnostic du recul au bord de l'eau ; gel (T1, T2, T7) ; district clos après le gel ;
-puis l'état jour. Gold Master : « Pas encore » (RJ3). Fait : le héros en production et les cinq vues par défaut (Passe H10).
+puis l'état jour. Gold Master : « Pas encore » (RJ3). Fait : le héros en production et les cinq vues par défaut (Passe H10), le pivot de A
+à 5,8 (Passe K6).
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
@@ -941,7 +987,7 @@ sans traverser C ; (c) lacet max 0,96° / image en C ↔ D (≤ 0,55° ailleurs)
 (−131 px/s) font glisser le joueur à l'envers à l'écran (héritage de la passe 2, mesuré en 4B ; Passe K1 : B → A remesuré −139 px/s, C → B
 0 ; **transitions ancrées partout préparées derrière `?camblend=anchored`** : B → A 0 image de recul au lieu de 14, pic +21 px/s au lieu de +181 ;
 « Oui, par défaut » (Passe D1), appliqué (Passe K4) ; preuve de visibilité sur GPU faite, Passe G1 ; le reste demanderait de recaler le pivot de A :
-« Cherche et montre-moi » : pivot de A x 5,8 trouvé, avant / après montré, Passe K5 ; RK1 « Appliquer 5,8 », Passe D3) ; (e) reculs du joueur à l'écran en cadrage posé C / D (−15 à
+« Cherche et montre-moi » : pivot de A x 5,8 trouvé, avant / après montré, Passe K5 ; RK1 « Appliquer 5,8 », Passe D3 : appliqué, Passe K6) ; (e) reculs du joueur à l'écran en cadrage posé C / D (−15 à
 −39 px/s, Passe K1) : expliqués en Passes K2 / K3 (le pivot de D, qui suit 85 % du déplacement latéral, dépasse un joueur que sa marche en profondeur
 ralentit à l'écran ; le suivi le long des axes de la caméra n'y change rien) ; suivi visant la vitesse à l'écran :
 « Prototyper le suivi à l'écran » (Passe D1) : prototype `?camfollow=screen` (Passe K5 : 0 image de recul sur C ↔ D et D → B), RK2
@@ -952,7 +998,8 @@ ralentit à l'écran ; le suivi le long des axes de la caméra n'y change rien) 
 **5. Visibilité / culling**
 - **Décision de l'opérateur (Passe D1)** : « Géométrie au gel, pas de ×4 » : les corrections de géométrie (fissures, quai coplanaire) au gel
   du district ; ni D ×4 ni poses AB à w = 0,5 (maison 609).
-- **Écarts connus de `viewport-proof`** (9 échecs, tous expliqués en Passe 5b) : fissures MSAA (7719 C, 30417 CD 720p, 1 px de 1842 D
+- **Écarts connus de `viewport-proof`** (9 échecs, tous expliqués en Passe 5b ; 8 avec l'ancrage, Passe G1 ; 13 avec le pivot de A à 5,8, Passe K6 :
+  les 5 de plus sur A / AB, des lanières et une fissure MSAA de la graine 7719 en A, à reprendre avec T2) : fissures MSAA (7719 C, 30417 CD 720p, 1 px de 1842 D
   2560 × 1080), lanières non attrapées à ×2 (30417 D 720p / 665 × 1200 : partie 73 ; 1842 D 2560 × 1080 ; 7719 AB 665 × 1200), maison 609
   (30417 AB). Pixels « order » (30417 B 109 px, AB 31 px, A / BC 1 px en 720p) rapportés sans échouer. Tout nouvel écart :
   `tools/vis-why.mjs` avant de toucher au bake.
