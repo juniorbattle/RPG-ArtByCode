@@ -17,7 +17,8 @@ concurrency:
 jobs:
   checks:
     name: typecheck, build, art:validate, unit tests
-    runs-on: ubuntu-latest
+    # pinned (operator decision T3 of 2026-10-19, « Épingler 24.04 », journal Passe O1): ubuntu-latest moves to Ubuntu 26 from 2026-10-19
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7

@@ -361,6 +361,27 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
   d'être posé.
 - Une décision dont la note contredit l'option choisie (S1) ne s'applique pas. Elle se repose avec les faits.
 
+## Passe O1 — Outillage : CI épinglée sur Ubuntu 24.04, `strictPort` sur le port 5173 (décisions T3 et T4) (2026-10-19)
+
+### Demande
+- Décisions de l'opérateur (Passe D1), mot pour mot : T3 « Épingler 24.04 », T4 « strictPort ».
+- Branche `tooling-o1` depuis `main` (`59fd6c0`).
+
+### Fait — [OK]
+- `.github/workflows/ci.yml` : `runs-on: ubuntu-24.04` au lieu de `ubuntu-latest` (qui passe à Ubuntu 26 dès le 19/10), avec la décision en commentaire.
+- `vite.config.ts` : `strictPort: true`. `npm run dev` s'arrête avec une erreur quand le port 5173 est pris, au lieu de passer en silence au port suivant (un autre projet local utilise aussi 5173).
+- `AGENTS.md` (commandes et CI) mis à jour.
+
+### Preuves
+- `strictPort`, dans les deux sens :
+  - 5173 tenu par un simple écouteur TCP : `npm run dev` sort en code 1, « Error: Port 5173 is already in use » ;
+  - l'écouteur arrêté : Vite démarre sur 5173.
+- typecheck, `npm test` 82 / 82, build, `art:validate`.
+- CI : vérifiée sur le push de la branche (voir le commit de fusion).
+
+### Pensée
+- Un défaut d'outillage qui échoue en silence (un port pris, une image d'OS qui change de version sous le même nom) se règle en le rendant explicite : une erreur nette, une version épinglée.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -487,9 +508,9 @@ artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direc
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
-  appli. Servir les baselines sur `:518x --strictPort` ; décision « strictPort » (Passe D1), **à appliquer**.
-- **Tests et CI — restes (Passe Q1)** : le libellé `ubuntu-latest` passe à Ubuntu 26 dès le 19/10 (« Épingler 24.04 », Passe D1, **à
-  appliquer**) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
+  appli. Servir les baselines sur `:518x --strictPort` ; décision « strictPort » (Passe D1), appliquée (Passe O1).
+- **Tests et CI — restes (Passe Q1)** : le libellé `ubuntu-latest` passe à Ubuntu 26 dès le 19/10 (« Épingler 24.04 », Passe D1, appliqué
+  en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
   (Passe D1) ; le prochain au-delà d'environ 60 Ko de passes gardées.

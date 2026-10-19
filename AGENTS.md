@@ -38,7 +38,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   approval.
 
 ## Commands
-- `npm run dev` — dev server on http://127.0.0.1:5173
+- `npm run dev` — dev server on http://127.0.0.1:5173 (`strictPort`: it stops with an error when 5173 is taken instead of moving to another
+  port, operator decision of 2026-10-19, journal Passe O1)
 - `npm run typecheck` — `tsc --noEmit` (run after every change)
 - `npm run build` — typecheck + production bundle
 - `npm test` — unit tests of the pure logic (`tests/*.test.mjs`, built-in `node --test`, ~2 s, no browser or GPU): camera zone hysteresis,
@@ -49,7 +50,7 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   them; `--experimental-strip-types` alone cannot), with its own cache folder (`node_modules/.vite-test`), no file watcher and no
   `vite.config.ts` (`configFile: false` + `server.watch: null`: a merged config drops the null, and the watcher crawled the ignored Art Lab
   scratch files, 22 s instead of ~2 s, journal Passe Q1b)
-- CI (`.github/workflows/ci.yml`, GitHub Actions, every push and pull request): Node 22 on `ubuntu-latest`, `npm ci`, `npm run typecheck`,
+- CI (`.github/workflows/ci.yml`, GitHub Actions, every push and pull request): Node 22 on `ubuntu-24.04` (pinned, operator decision of 2026-10-19), `npm ci`, `npm run typecheck`,
   `npm run build`, `npm run art:validate`, `npm test`. The runner has no Chrome, GPU or Aseprite (`puppeteer-core` downloads no browser at
   install): every other tool below (screenshots, perf / cadence / startup / overdraw measurements, visibility and viewport proofs, camera
   and occlusion tools, `build-character --check`, `art:doctor`, the Character Lab) stays a local proof on the operator's machine (journal
