@@ -54,8 +54,8 @@ export class ActorSystem {
   cast = new Map<string, CastMember>();
   /** the camera's character scale (set by the app every frame): a sprite drawn larger takes longer strides on the ground */
   charScale = 1;
-  /** ambient walkers when set (`?crowd=<n>`, journal Passe C1, a staging proposal awaiting the operator): n walkers, the five townsfolk in
-   *  turn (all five from n = 5); null = round(2 x density) walkers of randomly picked kinds, as approved */
+  /** ambient walkers when set (`?crowd=<n>`, journal Passe C1): n walkers, the five townsfolk in turn; null = round(5 x density), in turn too
+   *  (the operator's decision of 2026-10-19, « Cinq par défaut », journal Passe C2: at density 1 each approved townsperson walks once) */
   crowdCount: number | null = null;
 
   /** camera: shows a walking facing by its on-screen direction (null: the world rule for every facing) */
@@ -106,16 +106,16 @@ export class ActorSystem {
     for (const n of d.npcs) this.spawnNpc(n, rng);
     // ambient crowd: simplified sprites, count follows NPC density
     const crowd = ['crowd0', 'crowd1', 'crowd2', 'crowd3', 'crowd4'].filter((id) => this.atlas.specs.has(id));
-    const n = this.crowdCount ?? Math.round(2 * density);
+    const n = this.crowdCount ?? Math.round(5 * density);
     const taken: THREE.Vector3[] = [spawnPos, ...d.npcs.map((q) => new THREE.Vector3(...q.pos))];
     for (let i = 0; i < n; i++) {
       let p: THREE.Vector3 | null = null;
       for (let k = 0; k < 20 && !p; k++) { const c = this.randomFree(rng); if (c && taken.every((t) => Math.hypot(t.x - c.x, t.z - c.z) > 3.2)) p = c; }
       if (p) taken.push(p);
       if (!p) continue;
-      // the pick is drawn either way (every later draw stays where it was); `?crowd` takes the townsfolk in turn instead
-      const picked = rng.pick(crowd);
-      this.spawn(this.crowdCount !== null ? crowd[i % crowd.length] : picked, 'crowd', p, { behaviour: { kind: 'wander', seed: rng.int(1, 99999), wait: rng.range(0, 4), target: null }, tint: [rng.range(0.9, 1.1), rng.range(0.9, 1.1), rng.range(0.9, 1.1)], scale: rng.range(0.95, 1.04) });
+      // the townsfolk in turn; the old random pick is still drawn, so every later draw of the district RNG keeps its place
+      rng.pick(crowd);
+      this.spawn(crowd[i % crowd.length], 'crowd', p, { behaviour: { kind: 'wander', seed: rng.int(1, 99999), wait: rng.range(0, 4), target: null }, tint: [rng.range(0.9, 1.1), rng.range(0.9, 1.1), rng.range(0.9, 1.1)], scale: rng.range(0.95, 1.04) });
     }
     if (this.atlas.specs.has('porter') && density > 0.3) this.spawn('porter', 'porter', this.randomFree(rng) ?? new THREE.Vector3(9, 0, 2.5), { behaviour: { kind: 'wander', seed: 7, wait: 1, target: null }, anim: 'carry' });
     // authored NPCs last: they draw nothing from the RNG and are not in `taken`, so every seeded character keeps its place

@@ -382,6 +382,45 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
 ### Pensée
 - Un défaut d'outillage qui échoue en silence (un port pris, une image d'OS qui change de version sous le même nom) se règle en le rendant explicite : une erreur nette, une version épinglée.
 
+## Passe C2 — Foule : cinq promeneurs par défaut, les cinq citadins à tour de rôle (décision C1) (2026-10-19)
+
+### Demande
+- Décision de l'opérateur (Passe D1), mot pour mot : C1 « Cinq par défaut ».
+- Branche `crowd-five-c2` depuis `main` (`a6c1f1e`).
+
+### Fait — [OK]
+- `ActorSystem.populate` : sans `?crowd`, **round(5 × densité)** promeneurs, les cinq citadins à tour de rôle. À la densité 1, chaque
+  citadin approuvé marche une fois ; avant, round(2 × densité) promeneurs de types tirés au sort.
+- **Mon choix** : garder la proportion à la densité (le curseur du panneau) plutôt qu'un 5 fixe. À la densité 1, c'est exactement
+  l'ancien `?crowd=5`.
+- L'ancien tirage du type reste fait : chaque tirage suivant de la graine du district garde sa place.
+- `?crowd=<n>` fixe toujours le nombre, à tour de rôle aussi.
+- Mis à jour : `AGENTS.md` (paramètre `crowd`), le commentaire d'`App`.
+
+### Preuves
+- **Captures déterministes** (graine 1842, `clean=1&freeze=7.3&vis=0`, 300 pas : les promeneurs ont marché, 1920 × 1080, Radeon 780M) :
+  - la branche, par défaut, contre `main` figé (`ba3f5aa`, servi sur :5187) avec `?crowd=5`, en A / B / C / D : **0 px**, PNG identiques
+    à l'octet ;
+  - témoin de répétition (deux chargements) : 0 px ;
+  - contrôle (l'ancien défaut) : 0,7 % (A) à 4,8 % (B) des pixels changent.
+- **`tests/crowd.test.mjs`** réécrit (3 tests) :
+  - le défaut : cinq types dans l'ordre aux graines 1842, 7719 et 30417 ; densités 2, 0,2 et 0 ;
+  - `?crowd=<n>` ;
+  - le défaut = l'ancien `?crowd=5` (positions, types, porteur), et moins de promeneurs gardent les premiers en place ;
+  - **un oracle mesuré sur le code d'avant** : les places de l'ancien `?crowd=5` à la graine 1842 et celle du porteur, au millionième.
+- **Cinq fautes injectées une à une, toutes attrapées** :
+  - défaut à 2 × densité ;
+  - types tirés au sort par défaut ;
+  - nombre indépendant de la densité ;
+  - `?crowd` ignoré ;
+  - l'ancien tirage du type retiré (seul l'oracle l'attrape).
+- typecheck, `npm test` 82 / 82, build, `art:validate`.
+- Références `screenshots/calibration/cam{A,B,C,D}-*.png` refaites avec la foule par défaut (requêtes de `tools/screenshots.mjs`, capture déterministe, 120 pas, témoin de répétition 0 px) ; contre les anciennes, 0,8 à 4,1 % des pixels changent, la foule et le porteur, dont la place suit les tirages des promeneurs de plus.
+
+### Pensée
+- Un changement de défaut qui reprend une variante déjà préparée se prouve contre cette variante sur la base figée (0 px). Un oracle
+  mesuré sur l'ancien code garde ce qui ne se voit pas (un tirage conservé pour la suite de la graine).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -401,7 +440,7 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
   - La marchande reste à son étal sans marcher : son point est dans le collisionneur de l'étal. L'opérateur a choisi « La déplacer »,
     avec la note « Mais la marchande n'est pas cense rester a son stand ? » ; **la question est reposée** (Passe D1).
   - Les deux gardes diffèrent déjà (variante 1 pour le second, approuvée le 18/10). Restent les lances.
-  - Les cinq citadins : « Cinq par défaut » (Passe D1), **à appliquer** (`?crowd=<n>`, Passe C1).
+  - Les cinq citadins : « Cinq par défaut » (Passe D1), appliqué (Passe C2).
 - **Mouvement** (Passe S2 : cadence réglée sur la vitesse vue à l'écran, pieds plantés pour la foule et les gardes ; Passe V3 : docker
   régularisé, glissement ≈ 0 en B / C / D) : restes des critiques du docker, communs à ses deux cycles : pas d'attaque du talon, botte de
   passage posée sur celle d'appui (image 4), poussée faible ; cycle 3 + 3 sans double appui (hérité du garde) ; en A, l'horloge touche son
