@@ -720,6 +720,42 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
   un autre cycle est projeté sur cette palette, on vérifie que l'ensemble des couleurs ne change pas.
 - Un relevé de critique se vérifie sur les pixels avant d'être corrigé : ici, un relevé sur six était faux (les yeux en miroir).
 
+## Passe R1 — Fiche de revue du district (jalon M1) publiée : onze décisions en attente (2026-10-19)
+
+### Demande
+- Opérateur, mot pour mot : « Okay interessant, quel est la suite ^ », puis « Prépare la fiche de revue (jalon M1) avec les décisions en
+  attente. ». Décision M1 de l'opérateur (Passe D1) : « Appliquer, puis revue ».
+- « Okay interessant » n'est pas pris pour une approbation.
+- Branche `review-sheet-r1` depuis `main` (`6ca81e0`).
+
+### Fait — [OK]
+- **Page privée** : https://claude.ai/artifact/6URUh6P2VKXNxwCQq1RMsA.
+  - Les choix sont enregistrés dans la collection `decisions`, qui est vide à la publication (relue).
+  - La page et sa logique sont celles de la première fiche (Passe G1) ; le récapitulatif peut aussi se copier.
+- **En tête** : comment revoir en jeu (`npm run dev`), avec trois adresses :
+  - tout ensemble : `?cast=candidate&views=5&camfollow=screen&camA=,,,,,5.8,,` ;
+  - le héros seul ;
+  - le jeu tel qu'il est.
+- **Onze décisions**, chacune avec son contexte, ses preuves, ma recommandation et ses options :
+  - héros : RH1 le héros v3 en production ; RH2 les cinq vues par défaut ; RH3 le volet « palette » de H1 ; RH4 les trois-quarts des PNJ ;
+  - caméras : RK1 le pivot de A à x 5,8 ; RK2 `?camfollow=screen` par défaut ; RK3 le recul de −445 px/s au bord de l'eau ;
+  - gel : RG1 lancer le gel (T1, T2, T7) ;
+  - jalon : RJ1 clore le district ; RJ2 la suite (état jour, autre quartier ou arène) ; RJ3 le Gold Master.
+- **Preuves jointes** :
+  - le visage avant / après, en scène et ×8 ;
+  - les 60 images de l'export ×3 ;
+  - la planche du pivot de A ;
+  - deux flipbooks neufs en D (héros candidat, `KEYS=w` et `KEYS=s`, trois vues contre cinq). Sur 75 images, 74 diffèrent entre les deux
+    variantes : la règle à cinq vues change bien ce que montre le héros en D.
+
+### Restes [?]
+- Attendre que l'opérateur dise la fiche remplie, puis relire `decisions`, consigner les choix mot pour mot et les appliquer, une branche
+  par tâche.
+
+### Pensée
+- Une fiche de revue se construit après l'application des décisions précédentes : chaque point porte l'état prouvé du dépôt, et les
+  adresses pour juger en jeu.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
