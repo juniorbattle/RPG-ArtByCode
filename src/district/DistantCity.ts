@@ -324,6 +324,9 @@ export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictCo
   };
   // (the north frontage up to the bridge is generated at full detail by the district: nothing simplified sits
   //  in the playable foreground / midground)
+  // the former opposite bank's two rows build nothing (no meta): they replay its draws so that the background drawn after them keeps its
+  // place. Kept at the district's freeze, operator decision « T7 : garde les tirages « en sec », le fond actuel reste. » (journal Passe Z3:
+  // without them, seed 1842 showed a blank wall under the castle in A)
   row(STREET.x0 - 6, STREET.x1, SOUTH_QUAY_Z + 4.4, -1, 5, 10, 0.09, 7, 5, 8, 0.62);
   row(STREET.x0 - 6, STREET.x1 + 4, SOUTH_QUAY_Z + 12.5, -1, 8, 11, 0.06, 7, 5, 8, 0.55);
   canalRow(STREET.x0 - 6, STREET.x1, SOUTH_QUAY_Z + 4.3, [3, 3, 4, 3, 2, 3, 4], 0.09, 0.66, 8.6, 'opposite-bank');

@@ -551,13 +551,49 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 - Un changement qui retire des objets THREE (une passe du bake) déplace le `Math.random` à graine des captures avec personnages : ses preuves
   sans personnages ne le voient pas, et les références se refont dans la même passe.
 
+## Passe Z3 — Gel du district, T7 : les tirages « en sec » de l'ancienne rive opposée gardés (décision de l'opérateur) (2026-10-19)
+
+### Demande
+- Décision de l'opérateur, mot pour mot : T7 « Retirer au gel » (Passe D1). Ordre de la Passe D3 : le fond change, son avant / après est
+  montré à l'opérateur, et la fusion attend son accord.
+- Branche `freeze-t7-z3` depuis `main` (`9b2c278`).
+
+### Le retrait — essayé, montré, abandonné
+- **Code** : les deux appels `row(...)` sans `meta` retirés de `DistantCity`, `meta` rendu obligatoire. typecheck, `npm test` 87 / 87.
+- **Rendus canoniques** (captures déterministes, culling actif, `static=1&occ=0`, 30 pas ; trois graines × A, B, C, D, D lointain et les quatre
+  transitions figées) contre `main` figé (`9b2c278`, :5187) : **0,5 à 7,2 % des pixels changent** dans les vues qui voient la ville lointaine
+  (A, B, C, D, AB, BC, BD), 0,008 à 0,17 % en D lointain et en CD. Tout ce que le flux `r` tire après ces rangées prend d'autres tirages : le
+  quartier derrière le front, les rangées du bassin, la ville haute.
+- **À la graine canonique 1842, en A**, un grand mur clair sans fenêtres remplace sous le château l'étagement de maisons éclairées
+  (`screenshots/calibration/z3-t7/1842-A-hillcity-x2.png`, ×2 ; le cadre entier : `1842-A-before-after.png`). Aux graines 7719 et 30417, la
+  ville haute change mais reste étagée et éclairée.
+- **Visibilité** (`tools/viewport-proof.mjs --no-resize --no-controls`, la même série) : `main` 5 contrôles en échec (ceux de la Passe Z2) ;
+  le retrait 6, dont deux nouveaux, 30417 A et AB en 2560 × 1080 (5 et 2 px, intensité 7 au plus). `vis-why` : les pièces manquées forcées,
+  **0 px** dans les deux cas. Ce sont des reflets de la ville moyenne et de la ville haute plus fins qu'un pixel du bake (tuile 0, ×8 > 0), la
+  classe connue.
+- Les planches ont été montrées à l'opérateur dans la séance, avec ma recommandation de garder les tirages.
+
+### Décision de l'opérateur, mot pour mot
+- « T7 : garde les tirages « en sec », le fond actuel reste. Consigne-le et passe à la clôture du district. »
+
+### Fait — [OK]
+- Le retrait n'est pas commité : `DistantCity` reste comme sur `main`. Un commentaire aux deux rangées cite la décision, pour que personne ne
+  les retire sans l'opérateur. Aucun pixel ne change (un commentaire seul ; typecheck, build).
+- Gardées comme pièces de la décision : les deux planches de A (`screenshots/calibration/z3-t7/`).
+- **Validation** : typecheck, `npm test` 87 / 87, build, `art:validate` 0 erreur.
+
+### Pensée
+- Une dette qui ne coûte rien au rendu (des tirages rejoués sans rien dessiner) peut tenir l'image approuvée. La retirer redistribue tout ce
+  qui suit dans le flux, et la graine canonique peut tomber sur pire. Un tel retrait se juge sur les images, à la graine canonique d'abord, puis
+  aux autres.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
 **0. Jalon M1 — décisions de la fiche de revue (Passe D3), à appliquer dans l'ordre de cette passe** :
-le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3 à décider par l'opérateur) ; gel (T7 ; T1 fait, Passe Z1 ; T2 fait, Passe Z2) ; district clos après le gel ;
+le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3 à décider par l'opérateur) ; gel fini (T1, Passe Z1 ; T2, Passe Z2 ; T7 : tirages « en sec » gardés, Passe Z3) ; district clos après le gel ;
 puis l'état jour. Gold Master : « Pas encore » (RJ3). Fait : le héros en production et les cinq vues par défaut (Passe H10), le pivot de A
 à 5,8 (Passe K6), le suivi de D par défaut (Passe K7).
 
@@ -693,8 +729,6 @@ c'est la suite après la clôture du district.
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
   (Passe D1), H7-D2 (Passe Z2) ; le prochain au-delà d'environ 60 Ko de passes gardées.
-- **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — « Retirer au gel » (Passe D1) : au gel
-  du district, avec des captures du fond avant / après (la ville lointaine décale d'une graine).
 
 ## Principes à garder
 
