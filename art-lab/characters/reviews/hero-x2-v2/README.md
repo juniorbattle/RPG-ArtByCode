@@ -38,3 +38,15 @@ To finish on the operator's machine (Aseprite):
 `node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v2.rig.mjs` (writes the export, the `.aseprite`, `build.json` and the pack's
 file table), then `--check`, `node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/hero-x2-v2`, `node tools/art-lab/stride.mjs`
 is production-only: the hero's `walkSlide` must read 14 (`ActorSystem.playerSpeed` then gives 3.73 m/s, the run key 4.48 m/s).
+
+## Pass H7 (2026-10-19, the operator's machine) — the export rebuilt from the Pass H6 rig
+
+`build-character.mjs` with Aseprite 1.3.18.6 wrote the export, the `.aseprite`, `build.json` and the pack's file table; `--check` rebuilds identically,
+`verify-provenance` reports the pack intact, the JSON (frames, durations, tags) and the reconstructed views are unchanged. The engine's `walkSlide`
+reads 14 (Pass H5 export: 9): 3.73 m/s, 4.48 m/s with the run key. Foot slip in motion (`tools/foot-slip.mjs --secs=3`, median): A +0.05, B -0.03,
+C -0.10, D -0.07 walking; A +0.01, B -0.03, C -0.07, D -0.01 with the run key (the quantisation of Pass H6). Still a CANDIDATE: the operator decides
+in game (`?cast=candidate`).
+
+| File | What it shows |
+|---|---|
+| `09-h7-export-x3.png` | the rebuilt export's 36 frames x3 with their tags and durations (`tools/art-lab/make-contact-sheet.mjs`): idle front / back / profile, the front and back runs (legs lifted 5 texels at most), the profile run with its flight frames (4th and 8th) |

@@ -1055,6 +1055,71 @@ aussi les personnages combattants. Nous allons intégrer des spirites cohérents
 - Le temps d'un geste porte le signal : l'élan de Marek commençait trop tôt, il raccourcissait la bande et mêlait les silhouettes
   pendant la seule seconde où le joueur doit lire l'attaque.
 
+## Passe H7 — Héros : export reconstruit avec Aseprite depuis le rig de la Passe H6, mesures en jeu (2026-10-19)
+
+### Demande
+- Opérateur, mot pour mot : « la session cloud est finie prend en compte ce qui a ete etabli pour la suite » ; ce qui était établi, mot
+  pour mot : « Ok on reprendra nos taches qui demanderont l;utilisation de aseprite et openAI, une fois que la session Cloud aura fini donc
+  dans 5-6 heures » ; ici, le point 1 d'« À vérifier sur la machine de l'opérateur » (Passe B1).
+- `main` à jour (`ba3f5aa`) ; CI verte sur chaque push de la séance cloud (lue par l'API publique de GitHub). La branche
+  `claude/stoic-goodall-8ieke4`, entièrement fusionnée (sa suppression était refusée par le proxy de la séance cloud, Passe H6), est
+  supprimée du dépôt distant. Branche `hero-h7-rebuild` depuis `main`.
+
+### [KO → corrigé] `npm test` échouait sous Windows
+- Sur la machine de l'opérateur, `main` donnait 1 échec : `tests/camera-graph.test.mjs` (Passe K1) chargeait `CameraRig.ts` au milieu du
+  fichier, après ses cinq premiers tests ; ceux-ci tournent pendant que le chargement attend, puis le crochet `after()` de `tests/load.mjs`
+  ferme le chargeur de Vite et le chargement reste en suspens (« Detected unsettled top-level await », code de sortie 13). La CI (Linux)
+  passait : une course entre les deux.
+- Correctif : tous les chargements du fichier en tête, avant le premier test. `npm test` 75 / 75 ; contrôle négatif : le fichier de `main`
+  échouait sur cette machine (vu avant le correctif).
+
+### Reconstruction — [OK]
+- `node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v2.rig.mjs` (Aseprite 1.3.18.6, Chrome) : 36 images ; le JSON est
+  identique à l'octet (images, durées, étiquettes) ; les vues reconstruites ne changent pas (`view-*.png`, mêmes empreintes).
+- Export `7d62c12b…` → `6617d4b8…`, `.aseprite` `b908025d…` → `8445287b…` ; `build.json` et la table du paquet mis à jour (rig H6
+  `971d1e8a…`).
+- `--check` : « rebuilt identical » ; `verify-provenance` : « intact » (le problème signalé depuis la Passe H6 a disparu) ;
+  `art:validate` 0 erreur ; `npm test` 75 / 75 ; manifeste inchangé (`candidate`, `approved: false`, `lab`).
+- `walkSlide` (la mesure du moteur, par un script hors dépôt qui passe par le chargeur des tests) : export H5 9 texels, export H7 **14** ; le
+  héros cuit court donc à 3,73 m/s, et à 4,48 m/s avec Maj (Passe H6).
+- Planche `reviews/hero-x2-v2/09-h7-export-x3.png` (les 36 images ×3) : vol aux 4e et 8e images du profil, jambes de face levées de
+  5 texels au plus.
+
+### Glissement en mouvement — [OK]
+- Méthode : `tools/foot-slip.mjs --secs=3`, graine 1842, `cast=candidate`, caméra épinglée, touche tenue ; médiane [min .. max].
+
+| | A | B | C | D | D vers la gauche |
+|---|---|---|---|---|---|
+| marche (3,73 m/s) | +0,05 [−0,59 .. +0,05] | −0,03 [−0,10 .. +0,11] | −0,10 [−0,15 .. +0,09] | −0,07 [−0,10 .. +0,11] | −0,07 [−0,33 .. +0,11] |
+| Maj (4,48 m/s) | +0,01 [−0,32 .. +0,01] | −0,03 [−0,15 .. +0,11] | −0,07 [−0,18 .. +0,09] | −0,01 [−0,15 .. +0,11] | — |
+
+- Ces médianes rejoignent celles de l'aperçu de la Passe H6 à 0,04 près (A +0,05, B −0,06, C −0,10, D −0,07). Les ±0,07-0,11 sont la
+  quantification : 5 ou 6 pas de 1/60 s par image (Passe H6).
+- **[?]** Trois minima isolés restent non élucidés : A −0,59, A avec Maj −0,32, D vers la gauche −0,33.
+
+### Flipbooks — revue en mouvement, hors dépôt
+- `tools/flipbook.mjs` rejoue la même course à graine sur deux serveurs :
+  - `main` figé, servi sur :5188 : export H5, 2,40 m/s ;
+  - la branche : export H7, 3,73 m/s.
+- Deux prises :
+  - profil en B : `KEYS=d`, joueur à −6 / 0,6 ;
+  - face en D : `KEYS=s`, joueur à 19 / −2,4. En B, la marchande, puis le voyageur et l'étal cachaient le héros.
+- Pages de 6,5 et 3,8 Mo, à joindre à la fiche d'arbitrages.
+
+### Restes [?]
+- **Décision de l'opérateur** : le héros en production ou des retouches. Elle se prend en jeu, avec `?cast=candidate`. Rien n'est approuvé.
+- Relevés de la critique H6, non traités :
+  - pas de balancement des bras de face ni de dos ;
+  - éperon du talon ;
+  - genou en boule grise ;
+  - botte levée de face rigide.
+
+### Pensée
+- Un fichier de test charge tous ses modules avant son premier test. Sinon, l'ordre d'exécution décide : sous Windows, le crochet qui ferme
+  le chargeur passe avant le chargement.
+- Une reconstruction préparée sans l'outil final (la séance cloud n'avait pas Aseprite) n'est finie qu'après `--check` et
+  `verify-provenance` sur une machine qui l'a. Avant, les images du rig et l'export versionné restent deux choses distinctes.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -1094,7 +1159,8 @@ aussi les personnages combattants. Nous allons intégrer des spirites cohérents
   deux lots d'images évalués, non validés (brief § 11) ; planche de base archivée, `hero-x2-v2` construit au stade lab, candidat non
   approuvé (Passe H5) ; **en attente de la décision de l'opérateur** (production ou retouches). Texture cuite élargie
   (Passe T1 : 672 images garanties). Passe H6 : vitesse du héros cuit tirée de son cycle (3,73 m/s avec le rig préparé, Maj = sprint × 1,2),
-  rig préparé (14 texels, vol, genoux à 5 texels) : **export à reconstruire avec Aseprite sur la machine de l'opérateur**. Vues de
+  rig préparé (14 texels, vol, genoux à 5 texels) ; export reconstruit avec Aseprite (Passe H7 : `walkSlide` 14, `--check` identique,
+  glissement ≈ 0), **décision de l'opérateur en jeu**. Vues de
   trois-quarts : étude `briefs/three-quarter-views.md`, décision de l'opérateur (aucun trois-quarts dos sur la planche). Plus tard : masques du héros pour ses
   déclinaisons, écran de choix (code de jeu). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
   production.
@@ -1420,6 +1486,8 @@ de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sourc
 - Avant de retirer un worktree ou une base figée : défaire ses jonctions d'abord (lien seul, nature et cible vérifiées), chercher les
   processus qui y tournent (serveurs, boucles d'attente de séances passées) et les liens laissés ailleurs (`-Attributes ReparsePoint`),
   compter le `node_modules` du dépôt avant / après.
+- Un fichier de test charge tous ses modules avant son premier `test()` : un chargement en suspens pendant que les tests tournent est
+  coupé par le crochet `after()` qui ferme le chargeur (Windows ; la CI Linux passait, Passe H7).
 - Serveurs, longs scripts, mesures en fenêtre et processus restants : règles de l'opérateur dans `AGENTS.md` (17/10 ; mesures discrètes,
   passe 6k).
 - La CI ne lance que ce qui se prouve sans GPU, sans navigateur ni Aseprite (types, bundle, provenance, tests de la logique pure) ; les

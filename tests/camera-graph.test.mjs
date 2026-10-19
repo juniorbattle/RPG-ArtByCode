@@ -5,6 +5,10 @@ import assert from 'node:assert/strict';
 import { load } from './load.mjs';
 
 const { CameraGraph, DEFAULT_ZONES, lerpState } = await load('/src/app/CameraGraph.ts');
+// Every module is loaded before the first test: a load left pending while the tests already run is cut by the after() hook
+// that closes the loader (Windows: an unsettled top-level await, journal Passe H7).
+const THREE = await import('three');
+const { CameraRig, applyPose } = await load('/src/app/CameraRig.ts');
 const graph = () => new CameraGraph();
 
 test('the authored zones and margin', () => {
@@ -57,8 +61,6 @@ test('the margin is read from the instance', () => {
 });
 
 // Anchored blends everywhere (?camblend=anchored, journal Passe K1): a proposal behind a flag; without it the graph is the approved one
-const THREE = await import('three');
-const { CameraRig, applyPose } = await load('/src/app/CameraRig.ts');
 const WALK = { x0: -13.5, x1: 26, z0: -3.2, z1: 4.05 };
 /** the player's screen x (px, 1920 wide) per frame while walking from x0 to x1 at 2.5 m/s along the quay (z 0.5), through graph.update */
 function walk(anchorAll, x0, x1) {
