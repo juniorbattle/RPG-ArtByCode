@@ -2,6 +2,12 @@
 
 Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting) is generated from code at boot.
 
+## Status
+The Merchant District (night) is **complete** since 2026-10-19 (operator decision RJ1 « Clore après le gel », journal Passe Z4): milestone
+M1 applied and reviewed, then frozen (journal Passes Z1-Z3). Its content, framings, cast and look stay as they are; any change to them is a
+new task decided by the operator. It is **not** Gold Master (RJ3 « Pas encore »: that status is the operator's). Next: the day state's art
+direction, proposed to and decided by the operator before any code (RJ2, see "Art direction").
+
 ## Project journal (MANDATORY workflow)
 `JOURNAL.md` is the project's memory: what was done, what worked, what failed and why, open problems, lessons. It holds the
 recent passes, "À reprendre" and "Principes à garder"; older passes are archived **verbatim** in `journal/` (operator decision,

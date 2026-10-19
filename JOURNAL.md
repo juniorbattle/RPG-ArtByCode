@@ -587,15 +587,63 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
   qui suit dans le flux, et la graine canonique peut tomber sur pire. Un tel retrait se juge sur les images, à la graine canonique d'abord, puis
   aux autres.
 
+## Passe Z4 — Jalon M1 clos : le Merchant District déclaré complet (décision RJ1) (2026-10-19)
+
+### Demande
+- Décision de l'opérateur (Passe D3), mot pour mot : RJ1 « Clore après le gel ». La fiche recommandait : « Le déclarer complet après le gel ».
+- Opérateur, mot pour mot, après la Passe Z3 : « T7 : garde les tirages « en sec », le fond actuel reste. Consigne-le et passe à la clôture du
+  district. »
+- Branche `close-district-z4` depuis `main` (`d91a475`). Aucun code de jeu ne change.
+
+### Le jalon M1 — [OK] appliqué, revu, gelé
+- Première fiche (27 décisions, Passe D1), appliquée : O1, C2, K4, V5, H8, K5 ; S1 tranchée (Passe D2) ; visage du héros (Passe H9).
+- Fiche de revue (onze décisions, Passes R1 / D3), appliquée :
+  - le héros `hero-x2-v3` en production et la règle à cinq vues par défaut (Passe H10) ;
+  - le pivot de A à x 5,8 (Passe K6) ;
+  - le suivi de D qui ne dépasse plus le joueur, par défaut (Passe K7) ;
+  - le recul au bord de l'eau diagnostiqué (Passe K8) ;
+  - le gel : la passe « derrière » du bake coupée (Passe Z1), les fissures fermées (Passe Z2), les tirages « en sec » gardés (Passe Z3).
+- **État à la clôture** (`main` `d91a475`) :
+  - `tools/viewport-proof.mjs` (trois graines × cinq formats) : 5 contrôles en échec, tous des lanières plus fines qu'un pixel du bake (Passe
+    Z2), sans D ×4 (décision T2) ;
+  - visibilité en mouvement : 836 captures, 0 écart (Passe Z2) ;
+  - références `screenshots/calibration/cam{A,B,C,D}-*.png` refaites sur le district gelé (Passe Z2 ; la Passe Z3 ne change aucun pixel) ;
+  - typecheck, `npm test` 87 / 87, build, `art:validate` ; CI verte sur `9b2c278` et `d91a475`.
+  - **[?] Non remesuré à la clôture** : le temps GPU. Dernière mesure : Passe G1 (10-12 ms en 1080p, 16-21 ms en 2560 × 1440, Radeon 780M).
+    Depuis : le héros cuit en cinq vues, des bandes sous les encorbellements, moins de triangles dessinés (Passe Z2).
+
+### Fait — [OK]
+- `AGENTS.md` : une section « Status ». Le district est **complet** : son contenu, ses cadrages, sa distribution et son image restent tels
+  quels, et tout changement est une nouvelle tâche décidée par l'opérateur. Il n'est **pas** Gold Master (RJ3 « Pas encore »).
+- « À reprendre » § 0 : le jalon clos ; la suite (RJ2) et la décision qui reste (RK3).
+
+### Préparé pour la suite (RJ2) — trois images de jour, non canoniques
+- Pendant le gel, pour la proposition de direction artistique de l'état jour, trois images générées par `tools/art-lab/gen-image.mjs` (tâche
+  `day-state-concepts`) : `gpt-image-2`, édition depuis `screenshots/calibration/camB-merchant.png` (la référence de la Passe H10),
+  1536 × 1024, qualité haute ; une le matin (brumeux, froid), une à midi (bleu profond, beaucoup de pavois), une en fin d'après-midi (doré).
+- Coût : 0,5334 $ sur 5 (trois requêtes, 0,18 $ chacune d'après la consommation). Fiches de provenance automatiques ; C2PA présent, non vérifié.
+- Elles restent dans le dossier ignoré `art-lab/characters/scratch/generated/day-state-concepts/`, **non canoniques**, sans archivage.
+- Réaction de l'opérateur, mot pour mot : « je trouve cela très intéressant. » Ce n'est pas un choix : elles entreront dans la proposition RJ2,
+  décidée sur une fiche.
+
+### Restes [?] — non bloquants, gardés dans « À reprendre »
+- Décision de l'opérateur : le remède au recul du fondu ancré (Passe K8, options 1 à 3).
+- Les résidus connus de la visibilité (§ 5), les restes des personnages (§ 1), la relecture de l'occlusion en mouvement (§ 2).
+
+### Pensée
+- Un jalon se clôt sur un état prouvé et daté : la dernière preuve de chaque sorte, et ce qui n'a pas été remesuré, dit comme tel. « Complet »
+  n'est pas « Gold Master » : ce statut reste à l'opérateur.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
-**0. Jalon M1 — décisions de la fiche de revue (Passe D3), à appliquer dans l'ordre de cette passe** :
-le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3 à décider par l'opérateur) ; gel fini (T1, Passe Z1 ; T2, Passe Z2 ; T7 : tirages « en sec » gardés, Passe Z3) ; district clos après le gel ;
-puis l'état jour. Gold Master : « Pas encore » (RJ3). Fait : le héros en production et les cinq vues par défaut (Passe H10), le pivot de A
-à 5,8 (Passe K6), le suivi de D par défaut (Passe K7).
+**0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
+- **La suite, RJ2 « L'état jour »** : une proposition de direction artistique (heure par défaut, palette, pavoisement du tournoi, ciel et
+  brume, passage du jour à la nuit), avec les trois images de jour générées (Passe Z4 ; non canoniques), décidée avec l'opérateur sur une
+  fiche avant tout code.
+- **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
@@ -719,7 +767,7 @@ de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sourc
 
 **6d. Jour et nuit (note de l'opérateur, Passe D1)** — mot pour mot : « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Le jeu n'a aujourd'hui que la nuit (direction
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
-c'est la suite après la clôture du district.
+c'est la suite, le district étant clos (Passe Z4) ; trois images de jour, non canoniques, attendent la proposition (Passe Z4).
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
