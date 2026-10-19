@@ -262,6 +262,9 @@ fetched at boot, SHA-256 checked against the provenance pack, decoded by our exa
 packed into the shared atlas. C3 (a pre-baked atlas PNG of every baked frame) is the same loader with one file; worth it only when the
 number of baked files makes the requests matter. C1 is not adopted.
 
+**Confirmed by the operator on 2026-10-19** (decision sheet, item T6, word for word: « Confirmé »; journal Passe D1): C2 is the format of the
+production cast, as applied since 2026-10-17.
+
 ## 12. Results of the experimental implementation (2026-10-16, DEV flag only)
 
 Every capture comes from `tools/art-lab/baked-proof.mjs` (seeded `Math.random`, app loop taken over, 1/60 s steps, frozen clock, one

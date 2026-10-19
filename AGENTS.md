@@ -17,8 +17,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   valuable as successes: record why they failed so nobody repeats them.
 - Add a new "Passe N" section after the last pass, before "À reprendre" (newest last); update "À reprendre" (remove what is
   done, add what was discovered) and "Principes à garder". Write in French, factual, no embellished numbers.
-- **Archiving**: when the passes kept in `JOURNAL.md` exceed about 60 KB, move the oldest closed passes (operator decision
-  recorded, branch merged) as one contiguous block, in their original order and byte for byte, into the next
+- **Archiving**: when the passes kept in `JOURNAL.md` exceed about 60 KB, move the oldest closed passes (closed = their branch
+  merged: operator decision of 2026-10-19, « Branche fusionnée suffit », journal Passe D1) as one contiguous block, in their original order and byte for byte, into the next
   `journal/NN-passes-<first>-<last>.md` (a short header, a `---` line, then the unchanged bytes), add its row to the index, and
   prove the move (the archived bodies concatenated equal the removed bytes; every section in exactly one file; CRLF kept).
   Never edit an archived pass: a correction or a complement goes in a new pass of `JOURNAL.md`.
@@ -263,6 +263,8 @@ tâche, la provenance enregistrée automatiquement et la règle dans AGENTS.md. 
 Monochrome-leaning night: indigo / slate dominant, cool stone secondary, amber light as the only warm accent,
 desaturated ivory for canvas/highlights. Keep props concentrated at focal points (hero stall, lantern clusters,
 quay edge, bridge, a few banners); do not add uniform clutter.
+Day and night (the operator's note of 2026-10-19, word for word, journal Passe D1): « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Not designed or implemented yet: the night
+above stays the Merchant District's only state until a day state gets its own art direction, decided with the operator.
 
 ## Camera graph (`src/app/CameraGraph.ts`)
 Four authored, semi-fixed framings, all on the canal side (+z of the pivot) looking up-canal (+x), chosen by zone with
