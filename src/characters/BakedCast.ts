@@ -43,6 +43,8 @@ import { PIXEL_WORLD, WALK_CADENCE } from './SpriteRenderer';
 import { walkSlide } from './Stride';
 import { checkBakedSheet, DIRS, type BakedSheet } from './BakedSprites';
 import { decodePng, sheetFrames, sha256, figureRows } from './BakedDecode';
+import variantsFile from '../../art-lab/characters/variants/variants.json';
+import { sheetMasks, maskFingerprint, materialRange, rampTable, type VariantsFile } from './Variants';
 
 /** The PRODUCTION cast of baked characters (`art-lab/characters/runtime-integration-contract.md`): approved manifests with
  *  `runtimeUse: "production"` only; an entry whose manifest is not approved is skipped (never loaded) in every build. Each sheet takes
@@ -80,8 +82,11 @@ const ENTRIES: Entry[] = [
   { manifest: { id: coId, status: coStatus, approved: coApproved, runtimeUse: coUse }, png: courierPng, json: courierJson, files: courierFiles, replaces: ['crowd4'], scale: 0.9 },
 ];
 
+/** NPC variants of a sheet (Variants.ts): the ramp rows of each variant (-1 = keep that material), the luminance ranges of its masked
+ *  hair / skin, and the variant the operator fixed (per archetype) */
+export interface CastVariants { list: Array<[number, number]>; hair: [number, number] | null; skin: [number, number] | null; fixed?: Record<string, number> }
 /** `walkSpeed`: the ground speed its walk cycle draws, in m/s at character scale 1 and the base walk cadence (Stride.ts); null = unknown */
-export interface CastMember { id: string; scale: number; height: number; walkSpeed: number | null }
+export interface CastMember { id: string; scale: number; height: number; walkSpeed: number | null; variants?: CastVariants }
 
 /** every behaviour of the replaced archetypes (idle, turned to talk, wander, patrol) needs these frames (contract amendment B: a missing
  *  frame in production is a load error, never a silent fallback) */
@@ -97,8 +102,11 @@ export function castEntries(candidates: boolean, entries: readonly Entry[] = ENT
   });
 }
 
-export async function loadProductionCast(candidates = false): Promise<{ sheets: BakedSheet[]; cast: Map<string, CastMember> }> {
+/** `variants`: 'approved' (production: only an approved variants file is applied), 'candidate' (DEV review of an unapproved one), 'off' */
+export async function loadProductionCast(candidates = false, variants: 'approved' | 'candidate' | 'off' = 'approved', file: VariantsFile = variantsFile as unknown as VariantsFile): Promise<{ sheets: BakedSheet[]; cast: Map<string, CastMember> }> {
   const sheets: BakedSheet[] = [], cast = new Map<string, CastMember>();
+  const useVariants = variants === 'candidate' || (variants === 'approved' && file.approved === true && !!file.approval?.by && !!file.approval?.date);
+  const ramps = rampTable(file);
   for (const e of castEntries(candidates)) {
     const m = e.manifest, id = m.id;
     const bytes = new Uint8Array(await (await fetch(e.png)).arrayBuffer());
@@ -115,7 +123,16 @@ export async function loadProductionCast(candidates = false): Promise<{ sheets: 
     sheets.push(sheet);
     const height = figureRows(front, FRAME_W * k, FOOT_Y * k) * (PIXEL_WORLD / k) * e.scale;
     const slide = walkSlide(frames, k), walkSpeed = slide === null ? null : slide * WALK_CADENCE * (PIXEL_WORLD / k) * e.scale;
-    for (const r of e.replaces) cast.set(r, { id, scale: e.scale, height, walkSpeed });
+    // NPC variants: the sheet's material masks, written by the atlas into the baked texture's alpha (the sheet keeps its binary alpha)
+    let vars: CastVariants | undefined;
+    const sv = useVariants ? file.sheets[id] : undefined;
+    if (sv && sv.variants.length) {
+      const masks = sheetMasks(frames, FRAME_W * k, 48 * k, sv.mask), fp = maskFingerprint(masks);
+      if (sv.fingerprint !== fp && variants === 'approved') throw new Error(`${id}: variant masks ${fp} are not the approved masks ${sv.fingerprint}`);
+      sheet.materials = masks;
+      vars = { list: sv.variants.map((v) => [v.hair ? ramps.hair[v.hair] ?? -1 : -1, v.skin ? ramps.skin[v.skin] ?? -1 : -1]), hair: materialRange(frames, masks, 1), skin: materialRange(frames, masks, 2), fixed: sv.fixed };
+    }
+    for (const r of e.replaces) cast.set(r, { id, scale: e.scale, height, walkSpeed, ...(vars ? { variants: vars } : {}) });
   }
   return { sheets, cast };
 }

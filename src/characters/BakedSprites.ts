@@ -18,6 +18,9 @@ export interface BakedSheet {
   /** contract amendment B: declared explicitly at the spawn, for an immobile `lab` asset only: the missing idle facings become named
    *  aliases of the front idle frame. Never for walking / working NPCs, never in production. */
   fallback?: 'front-idle';
+  /** NPC variants (Variants.ts): per frame (frames order), the material of each texel (0 other, 1 hair, 2 skin). The sheet itself keeps its
+   *  binary alpha (checkBakedSheet); the atlas writes the materials into the baked texture's alpha (255 - material) after its checks */
+  materials?: Uint8Array[];
 }
 
 /** An authored NPC placed after every seeded spawn (it never consumes the district RNG). Height and scale are presentation data. */

@@ -94,6 +94,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `node tools/foot-slip.mjs [--secs=20] "label|<query or url>" ...` — the baked walkers' foot slip in motion (same harness, no rendering): at each
   frame change, the planted foot's drift along the camera's right over the walker's own advance (0 = planted, negative = moonwalk; journal
   Passe S2). `node tools/art-lab/stride.mjs` — the ground speed each production walk cycle draws (the runtime's `walkSlide`)
+- `node tools/art-lab/variant-masks.mjs <out.png> [id ...]` — the NPC variant masks (hair magenta, skin cyan) of the production sheets over their
+  idle and walk frames, and each sheet's mask fingerprint; `node tools/art-lab/variant-lineup.mjs <out.png>` — every sheet's original and variants,
+  recoloured with the shader's formula (journal Passe V1); `node tools/art-lab/palette-ramps.mjs` — the palette analysis of Passe V0
 - `node tools/flipbook.mjs <out.html> "<spec prefix>" <from> <to> [every] [WxH] [zoom] "label|url" ...` — the same deterministic run on several
   servers / queries, a crop following one actor, played in sync in one self-contained HTML page (motion review, journal Passe S2)
 - `node tools/zoom.mjs in.png out.png x y w h [scale]` — nearest-neighbour crop for pixel-level sprite review
@@ -177,7 +180,9 @@ on the porter actor, standing still, in the real scene; `-` = generated frames f
 see `art-lab/README.md`) · DEV server only, EXPERIMENTAL: `baked=<id>&bakedpos=x,z` (a baked export in the MAIN atlas and renderer, per
 `art-lab/characters/runtime-integration-contract.md` v3; never in production builds; flags in `src/lab/bakedLoader.ts`) · `cast=generated`
 (skip the production cast of baked characters, `src/characters/BakedCast.ts`: the old generated porter / merchant) · DEV server only:
-`cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production)
+`cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production) · DEV server only:
+`variants=candidate` (apply the NPC variants file `art-lab/characters/variants/variants.json` while it waits for the operator's approval; production
+applies it only once approved, its mask fingerprints checked, journal Passe V1)
 
 ## Art production principle
 Maximise perceptual complexity while minimising runtime complexity.

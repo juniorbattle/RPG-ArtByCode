@@ -5,6 +5,8 @@ import { FRAME_W, FRAME_H, FOOT_Y, type Dir, type Anim } from './SpriteGenerator
 import type { SpriteAtlas, FrameRect } from './SpriteAtlas';
 import type { LightRig, LightSource } from '../atmosphere/LightRig';
 import { LAYER_NOREFLECT } from '../atmosphere/ShadowAndReflection';
+import variantsFile from '../../art-lab/characters/variants/variants.json';
+import { rampTable, type VariantsFile } from './Variants';
 
 /** One shared pixel-art billboard per actor, rendered as 3D: depth-tested, lit by the scene's own light list,
  *  grounded by projected contact shadows. Readability rules:
@@ -49,6 +51,8 @@ export interface Actor {
   faceWalk?: boolean;
   /** flip to use if this animation only exists in the side view (e.g. the smith's hammer cycle) */
   sideFlip?: boolean;
+  /** NPC variant of a baked sheet (Variants.ts): ramp rows (-1 = keep) and the sheet's luminance ranges of its masked hair / skin */
+  variant?: { hair: number; skin: number; hairRange: [number, number] | null; skinRange: [number, number] | null };
 }
 
 /** Baked (authored) frames live in their own texture and are addressed by their INTEGER cell (x0, y0 = bottom-left data texel, w, h):
@@ -76,6 +80,8 @@ attribute vec4 iTint;
 attribute float iFlip;
 attribute vec4 iFx; // dof protection, key-light side (-1 screen left .. +1 right), key warmth, edge amount
 attribute vec4 iCell; // baked frames: integer cell (x0, y0, w, h) in the baked texture; w = 0 for generated frames
+attribute vec4 iVarA; // NPC variant: hair ramp row, skin ramp row (-1 = keep), hair luminance range
+attribute vec4 iVarB; // skin luminance range
 uniform vec2 uWorldSize;
 uniform float uFootOffset;
 uniform vec3 uBillRight;
@@ -85,8 +91,9 @@ uniform float uCharScale;
 uniform vec2 uResolution;
 uniform float uDepthCard;
 varying vec3 vWorld; varying vec3 vFeet; varying vec2 vUv; varying vec4 vTint; varying float vH; varying vec4 vFx; varying float vFlip;
-varying vec2 vT; varying vec4 vCell;
+varying vec2 vT; varying vec4 vCell; varying vec4 vVarA; varying vec4 vVarB;
 void main(){
+  vVarA = iVarA; vVarB = iVarB;
   float sc = iTint.w * uCharScale;
   vec3 wp = iPos + uBillRight * ((corner.x - 0.5) * uWorldSize.x * sc) + uBillUp * ((corner.y * uWorldSize.y - uFootOffset) * sc);
   vWorld = wp; vFeet = iPos; vTint = iTint; vH = corner.y; vFx = iFx; vFlip = iFlip;
@@ -121,9 +128,11 @@ uniform vec2 uAtlasSize;
 uniform float uSat;
 uniform float uLightChroma;
 uniform float uEdge;
+uniform sampler2D tRamps;
+uniform float uRampRows;
 ${BAKED_GLSL}
 varying vec3 vWorld; varying vec3 vFeet; varying vec2 vUv; varying vec4 vTint; varying float vH; varying vec4 vFx; varying float vFlip;
-varying vec2 vT; varying vec4 vCell;
+varying vec2 vT; varying vec4 vCell; varying vec4 vVarA; varying vec4 vVarB;
 void main(){
   // nearest texel (the old sharp-bilinear sampled texel boundaries, blending every pixel with its neighbour)
   vec2 uv = (floor(vUv * uAtlasSize) + 0.5) / uAtlasSize;
@@ -134,6 +143,15 @@ void main(){
   vec4 cb = bakedAt(bt);
   if (baked) c = cb;
   if (c.a < 0.5) discard;
+  // NPC variant: a baked texel's material is in its alpha (255 other, 254 hair, 253 skin); a masked texel takes the target ramp's colour
+  // at its luminance rank within the sheet's range of that material (lighting is applied afterwards, as to any texel)
+  float mat = floor(c.a * 255.0 + 0.5);
+  float row = !baked ? -1.0 : mat == 254.0 ? vVarA.x : mat == 253.0 ? vVarA.y : -1.0;
+  if (row >= 0.0) {
+    vec2 r = mat == 254.0 ? vVarA.zw : vVarB.xy;
+    float t = clamp((dot(c.rgb, vec3(0.2126, 0.7152, 0.0722)) - r.x) / max(r.y - r.x, 1e-4), 0.0, 1.0);
+    c.rgb = texture2D(tRamps, vec2((t * 4.0 + 0.5) / 5.0, (row + 0.5) / uRampRows)).rgb;
+  }
   float prot = 1.0 - vFx.x;
   if (vTint.r < 0.0) { gl_FragColor = vec4(applyFog(c.rgb * 1.15, vWorld), prot); return; }
   float em = texture2D(tEmis, uv).r;
@@ -238,8 +256,11 @@ export class SpriteRenderer {
   readonly group = new THREE.Group();
   private body: THREE.Mesh;
   private shadow: THREE.Mesh;
+  /** NPC variant ramps: created only once an actor shows a variant (a texture's uuid draws from Math.random: created at boot it shifted
+   *  every later draw, the NPCs' spawn phases included, journal Passe V1) */
+  private ramps: { texture: THREE.DataTexture; rows: number } | null = null;
   private cap = 0;
-  private attrs!: { pos: THREE.InstancedBufferAttribute; uv: THREE.InstancedBufferAttribute; tint: THREE.InstancedBufferAttribute; flip: THREE.InstancedBufferAttribute; fx: THREE.InstancedBufferAttribute; cell: THREE.InstancedBufferAttribute };
+  private attrs!: { pos: THREE.InstancedBufferAttribute; uv: THREE.InstancedBufferAttribute; tint: THREE.InstancedBufferAttribute; flip: THREE.InstancedBufferAttribute; fx: THREE.InstancedBufferAttribute; cell: THREE.InstancedBufferAttribute; varA: THREE.InstancedBufferAttribute; varB: THREE.InstancedBufferAttribute };
   private sattrs!: { pos: THREE.InstancedBufferAttribute; uv: THREE.InstancedBufferAttribute; sh: THREE.InstancedBufferAttribute; flip: THREE.InstancedBufferAttribute; cell: THREE.InstancedBufferAttribute };
   private bodyMat: THREE.ShaderMaterial;
   private shadowMat: THREE.ShaderMaterial;
@@ -264,7 +285,7 @@ export class SpriteRenderer {
     const bt = atlas.bakedTexture ?? emptyBaked();
     const baked = { tBaked: { value: bt }, uBakedSize: { value: new THREE.Vector2(bt.image.width, bt.image.height) } };
     this.bodyMat = new THREE.ShaderMaterial({
-      uniforms: { ...U, ...shared, ...baked, tAtlas: { value: atlas.texture }, tEmis: { value: atlas.emis }, uAtlasSize: { value: new THREE.Vector2(atlas.width, atlas.height) }, uSat: { value: 0.8 }, uLightChroma: { value: 0.62 }, uEdge: { value: 1 }, uDepthCard: { value: SPRITE_DEPTH_CARD } },
+      uniforms: { ...U, ...shared, ...baked, tAtlas: { value: atlas.texture }, tEmis: { value: atlas.emis }, uAtlasSize: { value: new THREE.Vector2(atlas.width, atlas.height) }, uSat: { value: 0.8 }, uLightChroma: { value: 0.62 }, uEdge: { value: 1 }, uDepthCard: { value: SPRITE_DEPTH_CARD }, tRamps: { value: bt }, uRampRows: { value: 1 } },
       vertexShader: BODY_VERT, fragmentShader: BODY_FRAG, side: THREE.DoubleSide,
     });
     this.shadowMat = new THREE.ShaderMaterial({
@@ -292,7 +313,8 @@ export class SpriteRenderer {
     };
     const g = mkGeo(0);
     const mk = (size: number) => { const a = new THREE.InstancedBufferAttribute(new Float32Array(n * size), size); a.setUsage(THREE.DynamicDrawUsage); return a; };
-    this.attrs = { pos: mk(3), uv: mk(4), tint: mk(4), flip: mk(1), fx: mk(4), cell: mk(4) };
+    this.attrs = { pos: mk(3), uv: mk(4), tint: mk(4), flip: mk(1), fx: mk(4), cell: mk(4), varA: mk(4), varB: mk(4) };
+    g.setAttribute('iVarA', this.attrs.varA); g.setAttribute('iVarB', this.attrs.varB);
     g.setAttribute('iPos', this.attrs.pos); g.setAttribute('iUV', this.attrs.uv); g.setAttribute('iTint', this.attrs.tint); g.setAttribute('iFlip', this.attrs.flip); g.setAttribute('iFx', this.attrs.fx); g.setAttribute('iCell', this.attrs.cell);
     this.body.geometry.dispose(); this.body.geometry = g;
     const sg = mkGeo(0);
@@ -360,6 +382,10 @@ export class SpriteRenderer {
       a.tint.setXYZW(bi, act.tint[0], act.tint[1], act.tint[2], act.scale);
       a.flip.setX(bi, flip ? -1 : 1);
       a.fx.setXYZW(bi, prot, side, warm, edge);
+      const vr = act.variant, hr = vr?.hairRange, sr = vr?.skinRange;
+      if (vr && !this.ramps) { this.ramps = rampTexture(); this.bodyMat.uniforms.tRamps.value = this.ramps.texture; this.bodyMat.uniforms.uRampRows.value = this.ramps.rows; }
+      a.varA.setXYZW(bi, vr && hr ? vr.hair : -1, vr && sr ? vr.skin : -1, hr?.[0] ?? 0, hr?.[1] ?? 1);
+      a.varB.setXYZW(bi, sr?.[0] ?? 0, sr?.[1] ?? 1, 0, 0);
       bi++;
       s.pos.setXYZ(si, act.pos.x, act.pos.y, act.pos.z); s.uv.setXYZW(si, fr.u0, fr.v0, fr.u1, fr.v1); setCell(s.cell, si, fr); s.sh.setXYZW(si, 0, 0, -1, 0.85 * this.shadowAlpha); s.flip.setX(si, 1); si++;
       for (let k = 0; k < Math.min(2, cand.length); k++) {
@@ -377,11 +403,11 @@ export class SpriteRenderer {
         if (bf) {
           const bob = Math.sin(performance.now() * 0.004) * 0.04;
           a.pos.setXYZ(bi, act.pos.x, act.pos.y + act.height * S - 0.05 + bob, act.pos.z);
-          a.uv.setXYZW(bi, bf.u0, bf.v0, bf.u1, bf.v1); setCell(a.cell, bi, bf); a.tint.setXYZW(bi, -1, -1, -1, 0.9); a.flip.setX(bi, 1); a.fx.setXYZW(bi, 1, 0, 0, 0); bi++;
+          a.uv.setXYZW(bi, bf.u0, bf.v0, bf.u1, bf.v1); setCell(a.cell, bi, bf); a.tint.setXYZW(bi, -1, -1, -1, 0.9); a.flip.setX(bi, 1); a.fx.setXYZW(bi, 1, 0, 0, 0); a.varA.setXYZW(bi, -1, -1, 0, 1); bi++;
         }
       }
     }
-    a.pos.needsUpdate = a.uv.needsUpdate = a.tint.needsUpdate = a.flip.needsUpdate = a.fx.needsUpdate = a.cell.needsUpdate = true;
+    a.pos.needsUpdate = a.uv.needsUpdate = a.tint.needsUpdate = a.flip.needsUpdate = a.fx.needsUpdate = a.cell.needsUpdate = a.varA.needsUpdate = a.varB.needsUpdate = true;
     s.pos.needsUpdate = s.uv.needsUpdate = s.sh.needsUpdate = s.flip.needsUpdate = s.cell.needsUpdate = true;
     (this.body.geometry as THREE.InstancedBufferGeometry).instanceCount = bi;
     (this.shadow.geometry as THREE.InstancedBufferGeometry).instanceCount = si;
@@ -392,6 +418,15 @@ export class SpriteRenderer {
 function setCell(attr: THREE.InstancedBufferAttribute, i: number, fr: FrameRect): void {
   const c = fr.cell;
   if (c) attr.setXYZW(i, c[0], c[1], c[2], c[3]); else attr.setXYZW(i, 0, 0, 0, 0);
+}
+
+/** the variant ramps (Variants.ts, art-lab/characters/variants/variants.json) as a 5-stop x rows sRGB texture, linear along the stops */
+function rampTexture(): { texture: THREE.DataTexture; rows: number } {
+  const { rows } = rampTable(variantsFile as unknown as VariantsFile), n = Math.max(1, rows.length), data = new Uint8Array(5 * n * 4);
+  rows.forEach((r, y) => r.forEach((h, x) => { const i = (y * 5 + x) * 4; data[i] = parseInt(h.slice(1, 3), 16); data[i + 1] = parseInt(h.slice(3, 5), 16); data[i + 2] = parseInt(h.slice(5, 7), 16); data[i + 3] = 255; }));
+  const t = new THREE.DataTexture(data, 5, n, THREE.RGBAFormat, THREE.UnsignedByteType);
+  t.colorSpace = THREE.SRGBColorSpace; t.magFilter = t.minFilter = THREE.LinearFilter; t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; t.needsUpdate = true;
+  return { texture: t, rows: n };
 }
 
 let empty: THREE.DataTexture | null = null;

@@ -431,6 +431,79 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une palette quantifiée depuis une peinture partage ses couleurs entre matières : recolorer « une rampe » demande de savoir où elle est, pas
   seulement quelle couleur elle a.
 
+## Passe V1 — Variantes de PNJ (cheveux / peau) : masques de matière, recoloration au rendu, porte d'approbation (2026-10-18)
+
+### Décisions de l'opérateur (2026-10-18), mot pour mot
+- Personnages : « Les 5 citadins (Recommandé),Les gardes,Le docker,Les PNJ uniques aussi ». Nombre : « 2 variantes (Recommandé) ». Cheveux :
+  « Noir / brun foncé,Châtain / auburn,Blond cendré,Gris / blanc ». Peau : « Claire à foncée (Recommandé) ». La question proposait un masque de
+  matière par feuille, « tiré du fichier Aseprite par le script de rig ».
+- Branche `npc-variants-v1` ouverte depuis `main` (`709c6a1`).
+
+### Masques — [KO] par couleur seule ; [OK] zones grossières + règles de couleur + propagation
+- **[KO]** Règles de couleur seules (teinte, saturation, valeur, part dans le tiers haut) : la peau, le lin et le cuir clair partagent teintes et
+  saturations dans les palettes de 64 couleurs (coursier : peau `f8c59e` s 0,36, chemise `f6d2b0` s 0,28) ; les coiffes, casques et capuches
+  tombent dans « cheveux ».
+- **[KO → écarté]** Propager un calque de masque par les opérations du script de rig : rotations RotSprite (EPX sur les couleurs) et membres
+  peints ; trop fragile.
+- **[OK]** `src/characters/Variants.ts` (`sheetMasks`) : sur l'image 0 du repos de chaque vue (face, dos, profil), des zones grossières en
+  texels (cheveux ; peau : visage et mains) et des règles de couleur dedans (peau : teinte 5-45°, saturation ≥ 0,22 près d'une manche de lin,
+  ≥ 0,1 ou 0,05 pour un visage ou des mains sans lin à côté, valeur ≥ 0,55 ; cheveux : chauds et saturés, ou tout sauf le contour ; contour :
+  valeur < 0,25, jamais recoloré) ; les autres images d'une vue prennent, texel par texel, la matière du texel de même couleur le plus proche
+  de la vue de référence, à 3 texels au plus. Zones posées sur des vues quadrillées des dix feuilles (`art-lab/characters/variants/variants.json`) ;
+  revue sur toutes les images (`tools/art-lab/variant-masks.mjs`). Le vieux marchand garde ses cheveux et sa barbe gris (peau seule) ;
+  l'encapuchonné n'a que menton et mains.
+- Le dessin reste intact : la feuille approuvée et son `.aseprite` ne changent pas (alpha binaire contrôlé par `checkBakedSheet`) ; l'atlas
+  range la matière dans l'alpha de **sa** texture (255 autre, 254 cheveux, 253 peau) après ses contrôles.
+
+### Rendu — [OK]
+- `BODY_FRAG` : un texel masqué prend la couleur de la rampe cible à son rang de luminance (lumière linéaire) dans la plage de sa matière sur
+  la feuille, puis l'éclairage habituel ; rampes de 5 arrêts dans une petite texture (une ligne par rampe). Attributs d'instance `iVarA` /
+  `iVarB` ; aucun appel de dessin, aucune image de la texture cuite en plus (322 / 336).
+- Variante d'un acteur (`variantOf`) : depuis son identifiant (0 = l'original), ou fixée par archétype (`guardB` : 1, les gardes ne sont plus
+  jumeaux) ; aucun tirage aléatoire (graines intactes).
+
+### Porte — [OK]
+- Le fichier de variantes n'est appliqué en production que s'il est approuvé (`approved: true`, `approval` : qui, quand) ; il porte alors
+  l'empreinte des masques de chaque feuille, vérifiée au chargement (refus sinon). DEV : `?variants=candidate` montre le fichier non approuvé.
+
+### Propositions soumises à l'opérateur (à approuver)
+- Rampes (5 arrêts sRGB, sourdes, nuit) : cheveux `dark`, `chestnut`, `auburn`, `ash` (blond cendré, réchauffé après une première version
+  qui se lisait verdâtre à côté des peaux orangées), `grey` ; peaux `light`, `medium`, `tan`, `dark`.
+- Deux variantes par feuille (table du fichier), planche `reviews/npc-variants-v1/lineup.png` ; les PNJ uniques (marchande, forgeron,
+  encapuchonné) gardent l'original tant que l'opérateur n'en fixe pas un.
+
+### Preuves
+- Jeu par défaut (fichier non approuvé) contre `main` figé (`709c6a1`), avec personnages, harnais déterministe, A / B / C / D : **0 px, écart
+  max 0**. **[KO → corrigé]** d'abord 14 572 px en A, sur les seuls personnages : la texture des rampes, créée au démarrage, tire
+  `Math.random` pour son uuid ; sous graine, chaque tirage suivant (les phases d'animation des PNJ à leur apparition) se décalait. Elle n'est
+  plus créée qu'au premier acteur qui montre une variante.
+- **[KO → corrigé]** l'atlas revalide les feuilles (`checkBakedSheet` : alpha 0 ou 255) : des matières écrites dans les images refusaient le
+  chargement (`?variants=candidate`). Les matières vont à côté de la feuille (`BakedSheet.materials`) et l'atlas les écrit dans sa texture
+  après ses contrôles.
+- `?variants=candidate` contre le défaut : A 4 452 px, B 14 066, C 10 255, D 484 (> 8 niveaux), uniquement sur des personnages.
+- Remarque de l'opérateur pendant la revue, mot pour mot : « Il y a quelques imperfections sur les pnjs sprites surtout concernant les sprite
+  avec la peau plus fonce ». Vu au zoom : lèvres, reflets pâles, ombre saturée d'une joue ou d'une oreille, mèche claire restés à la couleur
+  d'origine (hors règle de couleur). Corrigé par un remplissage (deux passes : un texel hors contour entouré de peau, 4 voisins sur 8, devient
+  peau ; entouré de cheveux, 5 sur 8, devient cheveux) et deux zones de visage élargies (docker : l'oreille ; voyageur : la bouche). Restent :
+  un trait rosé sous la bouche du voyageur, quelques texels pâles à l'épaule du forgeron de profil.
+- Empreintes actuelles des masques (à inscrire au fichier à l'approbation) : artisane `01e8ce61`, forgeron `84d39b5d`, coursier `306ddcde`,
+  docker `237d92c3`, garde `6db9d991`, encapuchonné `50f2dcdf`, marchande `31ff3147`, vieux marchand `67922527`, citadine `20b824bb`, voyageur
+  `459616b1`.
+- Tests : `tests/variants.test.mjs` (7 : zones et règles, propagation à 3 texels et pas au-delà, empreintes, `variantOf`, plages et rampes,
+  fichier de variantes, porte : non approuvé = rien, candidat = appliqué, alpha binaire gardé dans les feuilles, approuvé à mauvaise empreinte =
+  refus) ; `npm test` 35 / 35 ; `typecheck`, `build`, `art:validate`.
+- Performances (`tools/perf.mjs`, 2 tours, sans contention) : B 10,48 → 10,12 ms, C 10,11 → 10,45 ms avec les variantes : dans le bruit.
+- Planches : `reviews/npc-variants-v1/lineup.png` (original + 2 variantes, face et profil, sans éclairage), `reviews/npc-variants-v1/masks.png`
+  (masques sur les images de repos et de marche).
+
+### Pensée
+- Une palette quantifiée depuis une peinture partage ses couleurs entre matières : où est la matière se dit par une zone, quelle couleur elle
+  prend se dit par une règle ; la propagation par « même couleur, tout près » suit les petits déplacements des images d'un cycle.
+- Une métadonnée d'affichage (la matière) ne réécrit pas l'asset approuvé : elle vit à côté (fichier approuvé, empreinte) et entre dans la
+  texture du moteur, pas dans l'export.
+- **[KO] méthode** : modifier `variants.json` et `Variants.ts` pendant une série de captures a rechargé les pages du serveur de dev en cours de
+  capture (écarts et délais) : la règle « ne rien modifier de ce que sert le serveur pendant une série » vaut aussi pour les données.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -441,8 +514,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantit 336 images et en porte 322 (dix feuilles,
   1024 × 2016) : une variante en feuille séparée ne rentre pas sans agrandir la texture ; la teinte aléatoire de la foule (± 10 % par canal
-  sur tout le sprite) ne s'applique plus aux feuilles cuites (Passe 4A-tervicies). Passe V0 : une permutation par couleur ne suffit pas (la
-  peau partage ses teintes avec le cuir, les coiffes cachent les cheveux) ; proposition d'un masque de matière par feuille, en attente. À arbitrer avec l'opérateur : quels personnages, combien de variantes,
+  sur tout le sprite) ne s'applique plus aux feuilles cuites (Passe 4A-tervicies). **Passe V1** : masques de matière, recoloration au rendu,
+  porte d'approbation ; **en attente de l'opérateur** : rampes, deux variantes par feuille, variante des PNJ uniques (originaux d'ici là),
+  approbation (empreintes à inscrire). À arbitrer avec l'opérateur : quels personnages, combien de variantes,
   quelles teintes dans la direction artistique.
 - **Mise en scène** : la marchande ne marche pas à son étal (collisionneur ; la déplacer de 0,5 m serait une décision de mise en scène) ; un
   second garde différent (miroir ou variante) au lieu de jumeaux, lances ; seuls 2 des 5 citadins (artisane, voyageur) paraissent à la

@@ -165,7 +165,9 @@ export class App {
     // production cast: approved baked sheets standing in for generated archetypes (src/characters/BakedCast.ts); ?cast=generated keeps the
     // generated cast; DEV only, ?cast=candidate also loads the candidates awaiting the operator's approval
     const castMode = this.opts.params.get('cast');
-    const cast = castMode === 'generated' ? null : await loadProductionCast(import.meta.env.DEV && castMode === 'candidate');
+    // NPC variants (journal Passe V1): applied only from an approved variants file; DEV only, ?variants=candidate shows an unapproved one
+    const variants = import.meta.env.DEV && this.opts.params.get('variants') === 'candidate' ? 'candidate' : 'approved';
+    const cast = castMode === 'generated' ? null : await loadProductionCast(import.meta.env.DEV && castMode === 'candidate', variants);
     const baked = this.opts.baked ? await this.opts.baked : null;
     const devSheets = (baked?.sheets ?? []).filter((s) => !cast?.sheets.some((p) => p.id === s.id));
     this.atlas = SpriteAtlas.build([PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, ...crowdVariants(this.config.seed, 5)], [...(cast?.sheets ?? []), ...devSheets], this.renderer.capabilities.maxTextureSize);

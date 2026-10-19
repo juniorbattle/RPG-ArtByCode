@@ -80,7 +80,7 @@ export class SpriteAtlas {
     // baked sheets: their OWN texture, so the generated texture (its size, bytes and UVs) never changes whatever is added. Frames are
     // shelf-packed (one shelf per density, sheet / frame order); data row 0 is the bottom of the texture, a frame's bottom image row sits on
     // its shelf's first data row. A baked frame is addressed by its integer cell (x0, y0, w, h), never by normalised UVs (SpriteRenderer).
-    const blocks: Array<{ s: BakedSheet; f: BakedSheet['frames'][number]; x: number; y: number }> = [];
+    const blocks: Array<{ s: BakedSheet; f: BakedSheet['frames'][number]; n: number; x: number; y: number }> = [];
     let x = BW, y = 0, shelf = 0, k = 0;
     for (const s of baked) {
       const errs = checkBakedSheet(s);
@@ -88,19 +88,22 @@ export class SpriteAtlas {
       if (specs.some((p) => p.id === s.id) || baked.filter((b) => b.id === s.id).length > 1) throw new Error(`baked sheet ${s.id}: id already used`);
       const fw = FRAME_W * s.k, fh = FRAME_H * s.k;
       if (fw > BW) throw new Error(`baked sheet ${s.id}: frames wider than the baked texture (${BW})`);
-      for (const f of s.frames) {
+      if (s.materials && (s.materials.length !== s.frames.length || s.materials.some((m) => m.length !== fw * fh))) throw new Error(`baked sheet ${s.id}: materials do not match its frames`);
+      s.frames.forEach((f, n) => {
         if (s.k !== k || x + fw > BW) { y += shelf; x = 0; shelf = fh; k = s.k; }
-        blocks.push({ s, f, x, y }); x += fw;
-      }
+        blocks.push({ s, f, n, x, y }); x += fw;
+      });
     }
     const BH = Math.max(1, y + shelf), bw = blocks.length ? BW : 1;
     if (BH > maxTextureSize) throw new Error(`baked sprite texture ${BW} x ${BH} exceeds MAX_TEXTURE_SIZE ${maxTextureSize}`);
     const bdata = new Uint8ClampedArray(bw * BH * 4);
-    for (const { s, f, x: bx, y: by } of blocks) {
-      const fw = FRAME_W * s.k, fh = FRAME_H * s.k;
+    for (const { s, f, n, x: bx, y: by } of blocks) {
+      const fw = FRAME_W * s.k, fh = FRAME_H * s.k, mat = s.materials?.[n];
       for (let yy = 0; yy < fh; yy++) for (let xx = 0; xx < fw; xx++) {
         const src = (yy * fw + xx) * 4, d = ((by + fh - 1 - yy) * bw + (bx + xx)) * 4;   // image row yy -> data row (bottom-up)
         bdata[d] = f.rgba[src]; bdata[d + 1] = f.rgba[src + 1]; bdata[d + 2] = f.rgba[src + 2]; bdata[d + 3] = f.rgba[src + 3];
+        // NPC variants: an opaque texel's material in its alpha (254 hair, 253 skin; >= 0.5 for the alpha test, read by the sprite shader)
+        if (mat && mat[yy * fw + xx] && f.rgba[src + 3] >= 128) bdata[d + 3] = 255 - mat[yy * fw + xx];
       }
       a.frames.set(`${s.id}/${f.dir}/${f.anim}/${f.i}`, { u0: 0, v0: 0, u1: 0, v1: 0, cell: [bx, by, fw, fh] });
     }

@@ -7,6 +7,7 @@ import type { DistrictBuild, NpcSpawn } from '../district/MerchantDistrictGenera
 import type { Anim, Dir } from './SpriteGenerator';
 import { requiredFrames, type AuthoredSpawn } from './BakedSprites';
 import type { CastMember } from './BakedCast';
+import { variantOf } from './Variants';
 
 /** Player control + NPC behaviours + a tiny circle-vs-box collision solver. */
 
@@ -68,6 +69,9 @@ export class ActorSystem {
       // (the RNG draws that made it stay; the other spawns had no tint)
       a.tint = [1, 1, 1];
       if (!this.atlas.counts.has(`${a.spec}/${a.anim}`)) a.anim = 'idle';
+      // NPC variant (journal Passe V1): from the actor's id or fixed per archetype, never from the RNG (every seeded draw stays)
+      const cv = c.variants;
+      if (cv) { const v = variantOf(a.id, cv.list.length, cv.fixed?.[spec]); if (v > 0) a.variant = { hair: cv.list[v - 1][0], skin: cv.list[v - 1][1], hairRange: cv.hair, skinRange: cv.skin }; }
     }
     this.actors.push(a);
     return a;
