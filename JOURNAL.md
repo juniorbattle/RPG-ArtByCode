@@ -821,7 +821,26 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   flaques plus sombre (albédo 0x9ca2b0 → 0x80869a : #31364a) ; appliques des parapets : un cœur ambré (6 × 10 cm, HDR) devant chaque cage ;
   chiffres de vie cernés de sombre ; même fond pour toutes les cartes (bordure ambre) ; pastille « Debug » au style du panneau.
 - `tools/arena-check.mjs` : PASS (même empreinte de simulation, 33 rendus sans erreur, télégraphe 2,31:1, deutéranopie 2,65).
-- Critique n° 4 (révision 3 contre révision 4, agent neuf, étiquettes tirées au sort) : en cours à ce commit ; fusion après son verdict.
+- Critique n° 4 — [OK, de peu] (agent neuf ; révision 3 contre révision 4, étiquettes tirées au sort) : la révision 4 l'emporte, 7,5 / 10
+  contre 7, devant sur cinq axes sur six (ciel 7,5 / 7, pierre 7 / 6,5, lumière 7 / 6, HUD 8 / 7), égalité sur la lisibilité des signaux
+  (7,5) ; « close to a toss-up for the scene itself, clearer on the HUD » ; zones chaudes du terrain 11,0 / 10,4 / 12,5 % contre 12,3 /
+  11,5 / 13,6 %. **Mon choix** : gardée (verdict explicite, aucun axe perdu), l'étroitesse du gain consignée.
+- Un de ses écarts, **vérifié sur les pixels** (agrandissement ×6) : les chiffres de vie étaient rognés en bas, du texte de 13 px dans une
+  barre dont l'intérieur fait 9 px (bordure de 2 px, `box-sizing: border-box`) ; barre de 16 px, texte 10 / 12 px : entiers. Un défaut,
+  pas une retouche de goût : pas de nouvelle critique.
+- Écarts restants de la critique n° 4 (non traités) : dans le moment de combo, la pulsation rouge des bords (signal marqué de l'ennemi,
+  réglable par le curseur « Enemy tell strength ») envahit les gradins et les coins ; pierre éclairée encore brun chaud près des lampes
+  (#524340, référence mauve-gris #6a6471) ; lune #d3d3cd contre #fdf6ec ; bande du télégraphe la couleur la plus saturée de l'image ; barre
+  de fenêtre de réaction sans repère ; les six appliques des parapets forment une rangée régulière de points chauds.
+- Preuves finales : `tools/arena-check.mjs` PASS (même empreinte, 33 rendus sans erreur, télégraphe 2,31:1, deutéranopie 2,65) ; planches
+  `screenshots/calibration/a1-arena/` refaites sur cette version ; typecheck, `npm test`, build, `art:validate`.
+
+### Pensée
+- Un éclairage local se teinte par multiplication quand il doit garder la couleur des matières (un tissu marine sous une lanterne) ;
+  l'addition d'une couleur de lumière la recouvre.
+- Quatre critiques à l'aveugle successives ont donné des gains de plus en plus étroits (7 / 3, 7 / 5, 7,5 / 6,5, 7,5 / 7) : la suite
+  (pulsation rouge, saturation du télégraphe, rangée d'appliques) touche aux signaux de jeu ou à la mise en scène, à juger en jeu par
+  l'opérateur plutôt qu'à empiler.
 
 ## À reprendre (par priorité)
 
@@ -934,8 +953,9 @@ au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
 publié en artefact privé (https://claude.ai/artifact/3w7wmerkBRUFACTm2Y9xCh). Restent : le jugement de l'opérateur en jeu et en mouvement sur
 sa machine (banc `?devtest=1` du prototype : temps GPU, cadence, contraste) ; décision de l'opérateur : porter l'arène dans le jeu (`src/`,
 Three.js récent, distribution cuite, rendu partagé avec le district) ou garder le prototype à part ; les modes PAINTED / FULL 3D restés de
-jour (Passe A2) ; écarts de la critique n° 3 (Passe A2) : gradins encore tièdes sous les lampes, bannières prune, lune et brume de distance
-faibles, sol hors des flaques un peu clair, chiffres de vie, pastille « Debug ».
+jour (Passe A2) ; écarts de la critique n° 4 (Passe A3) : pulsation rouge des bords au signal de combo (à régler avec le signal, décision
+de jeu), pierre encore brun chaud près des lampes, lune moins blanche que celle du district, saturation de la bande du télégraphe, repère de
+la fenêtre de réaction, rangée régulière d'appliques sur les parapets.
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
