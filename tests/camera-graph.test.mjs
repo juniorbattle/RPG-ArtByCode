@@ -55,3 +55,53 @@ test('the margin is read from the instance', () => {
   assert.equal(g.zoneFor(13.75, 0, 'D'), 'B');
   assert.equal(g.zoneFor(13.85, 0, 'D'), 'D');
 });
+
+// Anchored blends everywhere (?camblend=anchored, journal Passe K1): a proposal behind a flag; without it the graph is the approved one
+const THREE = await import('three');
+const { CameraRig, applyPose } = await load('/src/app/CameraRig.ts');
+const WALK = { x0: -13.5, x1: 26, z0: -3.2, z1: 4.05 };
+/** the player's screen x (px, 1920 wide) per frame while walking from x0 to x1 at 2.5 m/s along the quay (z 0.5), through graph.update */
+function walk(anchorAll, x0, x1) {
+  const g = new CameraGraph(), rig = new CameraRig(), cam = new THREE.PerspectiveCamera();
+  g.anchorAll = anchorAll; rig.setAspect?.(16 / 9);
+  const p = new THREE.Vector3(x0, 0, 0.5), v = new THREE.Vector3(), out = [];
+  g.snap(p, rig);
+  const dir = Math.sign(x1 - x0);
+  for (let i = 0; i < 60 * 6 && (x1 - p.x) * dir > 0; i++) {
+    p.x += dir * 2.5 / 60;
+    g.update(p, 1 / 60, rig);
+    applyPose(cam, g.state, 16 / 9);
+    v.set(p.x, 1, p.z).project(cam);
+    out.push({ sx: v.x * 960, blending: g.blending, yaw: g.state.yaw });
+  }
+  return out;
+}
+/** the worst screen speed against the walk during the blend (px/s, 1920 wide; > 0 = the player glides backwards), and the frames beyond the
+ *  camsim threshold (8 px/s) */
+const against = (log, sign) => { let worst = 0, n = 0; log.slice(1).forEach((e, i) => { if (!e.blending) return; const v = -(e.sx - log[i].sx) * 60 * sign; worst = Math.max(worst, v); if (v > 8) n++; }); return { worst, n }; };
+
+test('approved transitions: B -> A swings the player backwards on screen (the measured defect, journal Passes 4B / K1)', () => {
+  const w = walk(false, -5, -12.5), r = against(w, -1);
+  assert.ok(w.some((e) => e.blending), 'the walk crosses the A / B transition');
+  assert.ok(r.worst > 150 && r.n >= 20, `worst ${r.worst.toFixed(0)} px/s over ${r.n} frames`);
+});
+
+test('?camblend=anchored: the backwards glide of B -> A drops below 30 px/s, A -> B none', () => {
+  const ba = against(walk(true, -5, -12.5), -1), ab = against(walk(true, -12.5, -5), 1);
+  assert.ok(ba.worst < 30, `B -> A worst ${ba.worst.toFixed(1)} px/s`);
+  assert.ok(ab.worst <= 0, `A -> B worst ${ab.worst.toFixed(1)} px/s`);
+});
+
+test('?camblend=anchored: the bake samples the anchored A <-> B / B <-> C blends; without it the poses are the approved ones', () => {
+  const a = new CameraGraph(), b = new CameraGraph(); b.anchorAll = true;
+  const pa = a.samplePoses(WALK), pb = b.samplePoses(WALK);
+  const count = (ps, set) => ps.filter((p) => p.set === set).length;
+  for (const set of ['A', 'B', 'C', 'D', 'CD', 'BD']) assert.deepEqual(pb.filter((p) => p.set === set), pa.filter((p) => p.set === set), set);
+  assert.ok(count(pb, 'AB') > count(pa, 'AB') && count(pb, 'BC') > count(pa, 'BC'), 'more blend poses with the anchored weights');
+  // the approved AB / BC poses are plain interpolations (lerpState): the pivot lies on the segment between the two framings' pivots
+  for (const p of pa.filter((q) => q.set === 'AB' || q.set === 'BC')) {
+    const [s, t] = p.set === 'AB' ? ['A', 'B'] : ['B', 'C'], e0 = a.evalAnchor(s, p.player[0], p.player[1]), e1 = a.evalAnchor(t, p.player[0], p.player[1]);
+    const w = (p.pose.dist - e0.dist) / (e1.dist - e0.dist || 1);
+    if (Math.abs(e1.dist - e0.dist) > 1e-6) assert.ok(Math.abs(p.pose.tx - (e0.tx + (e1.tx - e0.tx) * w)) < 1e-6, `${p.set} pivot x on the segment`);
+  }
+});

@@ -1,4 +1,5 @@
 // Why does a pose differ between pruned and ?vis=0? node tools/vis-why.mjs [--seed=1842] [--size=1920x1080] [--ss=2] [--q=extra] [--keep=dir] "name|x,z|mode" ...
+// env: BASE_URL, CHROME_PATH, CHROME_ARGS (GL switches, e.g. --use-angle=swiftshader), READY_MS (boot timeout), SETTLE_MS (wait before each shot)
 // mode = A|B|C|D (pinned framing) or X,Y,w (frozen blend), as in visproof / viewport-proof. Against the running dev server (BASE_URL), static=1,
 // frozen time, occ=0. Per pose, in one session:
 //   missed   the parts this exact camera shows that the active set does not draw: the bake's ID scene rendered through the rig camera at ss x
@@ -21,7 +22,7 @@ const seed = +opt('seed', 1842), [W, H] = opt('size', '1920x1080').split('x').ma
 const scen = args.filter((a) => !a.startsWith('--')).map((s) => { const [name, pos, mode] = s.split('|'); return { name, pos: pos.split(',').map(Number), mode: mode || 'B' }; });
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].filter(Boolean).find((p) => fs.existsSync(p));
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/';
-const browser = await puppeteer.launch({ executablePath: exe, headless: 'new', args: ['--use-gl=angle', '--use-angle=d3d11', '--ignore-gpu-blocklist', '--no-sandbox', '--window-size=2600,1400', '--hide-scrollbars'] });
+const browser = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...(process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11']), '--ignore-gpu-blocklist', '--no-sandbox', '--window-size=2600,1400', '--hide-scrollbars'] });
 
 const place = (sc) => {
   const a = window.__app, [x, z] = sc.pos, p = a.actors.player.pos;
@@ -32,11 +33,11 @@ const place = (sc) => {
   a.graph.snap(p, a.rig);
   if (m.includes(',')) {
     const [f, g, w] = m.split(','), t = +w, s = t * t * t * (t * (t * 6 - 15) + 10);
-    const st = a.graph.blendPose(a.graph.evalAnchor(f, x, z), a.graph.evalAnchor(g, x, z), s, new p.constructor(x, p.y + 1, z), a.rig.poseAspect ?? a.rig.aspectRatio, f === 'D' || g === 'D');
+    const st = a.graph.blendPose(a.graph.evalAnchor(f, x, z), a.graph.evalAnchor(g, x, z), s, new p.constructor(x, p.y + 1, z), a.rig.poseAspect ?? a.rig.aspectRatio, f === 'D' || g === 'D' || !!a.graph.anchorAll);
     a.rig.manual = true; a.rig.setPose(st); a.graph.state = st; a.debugActive = [f, g];
   }
 };
-const shot = async (page, sc) => { await page.evaluate(place, sc); await new Promise((r) => setTimeout(r, 450)); return page.screenshot({ encoding: 'base64' }); };
+const shot = async (page, sc) => { await page.evaluate(place, sc); await new Promise((r) => setTimeout(r, +(process.env.SETTLE_MS || 450))); return page.screenshot({ encoding: 'base64' }); };
 let dpage;
 const diff = async (a, b) => {
   dpage ??= await browser.newPage();
@@ -100,7 +101,7 @@ try {
   await page.setViewport({ width: W, height: H, deviceScaleFactor: 1 });
   page.on('pageerror', (e) => console.log('[pageerror]', e.message));
   await page.goto(`${BASE}?seed=${seed}&clean=1&freeze=7.3&static=1&intro=0&occ=0${extra ? '&' + extra : ''}`, { waitUntil: 'load' });
-  await page.waitForFunction('window.__ready === true', { timeout: 180000 });
+  await page.waitForFunction('window.__ready === true', { timeout: +(process.env.READY_MS || 180000) });
   // keep the bake's ID scene and result: regenerate the same district through a wrapped bake callback (window.__force adds counts)
   await page.evaluate(async () => {
     const a = window.__app, g = a.generator, orig = g.generate.bind(g);

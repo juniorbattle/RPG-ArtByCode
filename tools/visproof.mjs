@@ -1,4 +1,4 @@
-// Visibility-pruning proof: node tools/visproof.mjs [--thr=2] [--keep=dir] "name|x,z|mode" ...
+// Visibility-pruning proof: node tools/visproof.mjs [--thr=2] [--keep=dir] "name|x,z|mode" ...   (env: QUERY, BASE_URL, W / H, CHROME_ARGS, READY_MS, SETTLE_MS: wait before each shot, 450 ms; software WebGL needs seconds)
 // mode = stable (zone framing for that player position), A|B|C|D (pinned framing) or X,Y,w (frozen blend of two framings, e.g. C,D,0.5).
 // Renders each pose with the pruned visible sets and again with ?vis=0 (everything kept; regenerated in the same session, static=1, frozen
 // time) and reports how many pixels differ above the threshold: the culling must be invisible. With --keep=dir the diffs that are not 0 are saved.
@@ -14,7 +14,7 @@ const W = +(process.env.W || 1280), H = +(process.env.H || 720);
 const query = process.env.QUERY || 'seed=1842&clean=1&freeze=7.3&static=1&intro=0';
 const browser = await puppeteer.launch({
   executablePath: exe, headless: 'new',
-  args: ['--use-gl=angle', '--use-angle=d3d11', '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`],
+  args: [...(process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11']), '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`],
   defaultViewport: { width: W, height: H, deviceScaleFactor: 1 },
 });
 const place = (sc) => {
@@ -26,7 +26,7 @@ const place = (sc) => {
   a.graph.snap(p, a.rig);
   if (m.includes(',')) {
     const [f, g, w] = m.split(','), t = +w, s = t * t * t * (t * (t * 6 - 15) + 10);
-    const st = a.graph.blendPose(a.graph.evalAnchor(f, x, z), a.graph.evalAnchor(g, x, z), s, new p.constructor(x, p.y + 1, z), (a.rig.poseAspect ?? a.rig.aspectRatio), f === 'D' || g === 'D');
+    const st = a.graph.blendPose(a.graph.evalAnchor(f, x, z), a.graph.evalAnchor(g, x, z), s, new p.constructor(x, p.y + 1, z), (a.rig.poseAspect ?? a.rig.aspectRatio), f === 'D' || g === 'D' || !!a.graph.anchorAll);
     a.rig.manual = true; a.rig.setPose(st); a.graph.state = st; a.debugActive = [f, g];
   }
 };
@@ -34,7 +34,7 @@ const shoot = async (page) => {
   const out = [];
   for (const sc of scen) {
     await page.evaluate(place, sc);
-    await new Promise((r) => setTimeout(r, 450));
+    await new Promise((r) => setTimeout(r, +(process.env.SETTLE_MS || 450)));
     out.push(await page.screenshot({ encoding: 'base64' }));
   }
   return out;
@@ -43,7 +43,7 @@ try {
   const page = await browser.newPage();
   page.on('pageerror', (e) => console.log('[pageerror]', e.message));
   await page.goto(`${BASE}?${query}`, { waitUntil: 'load' });
-  await page.waitForFunction('window.__ready === true', { timeout: 120000 });
+  await page.waitForFunction('window.__ready === true', { timeout: +(process.env.READY_MS || 120000) });
   const stats = await page.evaluate(() => { const v = window.__app.district.visibility; return { tier3: v.hidden, parts: v.parts, tris: v.trisKept }; });
   const pruned = await shoot(page);
   await page.evaluate(() => { window.__app.opts.params.set('vis', '0'); window.__app.regenerate(); });

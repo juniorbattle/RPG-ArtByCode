@@ -104,6 +104,10 @@ export class CameraGraph {
   forced: CamId | null = null;
   /** arrival hold: the establishing shot is kept until the player first moves */
   arrival = false;
+  /** every blend anchored (blendPose), not only those with D at one end: `?camblend=anchored`, a proposal awaiting the operator (journal
+   *  Passe K1): the A <-> B and B <-> C blends swung the player backwards on screen (B -> A: -139 px/s for 0.23 s). Off = the approved
+   *  transitions, unchanged */
+  anchorAll = false;
   /** the framing the camera is in or blending toward */
   target: CamId = 'B';
   state!: CamState;
@@ -191,8 +195,9 @@ export class CameraGraph {
       this.source = this.source ? { snap: { ...this.state }, ids: [...new Set(ids)] } : { id: this.target };
       this.t = 0;
       this.target = want;
-      this.anchored = this.activeIds().includes('D');
-      this.dur = this.duration(this.state, this.evalAnchor(want, this.focus.x, this.focus.z), this.anchored ? 1.3 : 1.2);
+      const d = this.activeIds().includes('D');
+      this.anchored = d || this.anchorAll;
+      this.dur = this.duration(this.state, this.evalAnchor(want, this.focus.x, this.focus.z), d ? 1.3 : 1.2);
     }
     const tgt = this.evalAnchor(this.target, this.focus.x, this.focus.z);
     if (this.source) {
@@ -238,15 +243,17 @@ export class CameraGraph {
     // anchored (see blendPose), sampled the way they run: more weights (the yaw travels furthest), the player a few metres
     // past the trigger (the camera focus trails it) and the pure ends (w = 0 / 1) at those off-zone positions
     const P = new THREE.Vector3();
+    // with anchorAll the A <-> B and B <-> C blends are anchored too: sampled like the D blends (every weight, the pure ends included)
+    const W6 = [0, 0.2, 0.4, 0.6, 0.8, 1], wAB = this.anchorAll ? W6 : [0.33, 0.67];
     const pairs: Array<[CamId, CamId, VisSet, number[], number[], number[]]> = [
-      ['A', 'B', 'AB', [-11, -9.4, -7.5, -5], [-1, 2.5], [0.33, 0.67]],
-      ['B', 'C', 'BC', [4.2, 8.5, 13.2], [0, 2.4], [0.33, 0.67]],
-      ['C', 'D', 'CD', [13.1, 14, 15, 16.5, 18], [walk.z0 + 0.7, 0, 2.4], [0, 0.2, 0.4, 0.6, 0.8, 1]],
-      ['B', 'D', 'BD', [13.1, 14, 15, 16.5, 18], [2.4, 3.3, walk.z1], [0, 0.2, 0.4, 0.6, 0.8, 1]],
+      ['A', 'B', 'AB', [-11, -9.4, -7.5, -5], [-1, 2.5], wAB],
+      ['B', 'C', 'BC', [4.2, 8.5, 13.2], [0, 2.4], wAB],
+      ['C', 'D', 'CD', [13.1, 14, 15, 16.5, 18], [walk.z0 + 0.7, 0, 2.4], W6],
+      ['B', 'D', 'BD', [13.1, 14, 15, 16.5, 18], [2.4, 3.3, walk.z1], W6],
     ];
     for (const [a, b, set, xs, zz, ws] of pairs) for (const x of xs) for (const z of zz) for (const w of ws) {
       P.set(x, TORSO_Y, z);
-      add(set, this.blendPose(this.evalAnchor(a, x, z), this.evalAnchor(b, x, z), smoother(w), P, aspect, a === 'D' || b === 'D'), [x, z]);
+      add(set, this.blendPose(this.evalAnchor(a, x, z), this.evalAnchor(b, x, z), smoother(w), P, aspect, a === 'D' || b === 'D' || this.anchorAll), [x, z]);
     }
     return out;
   }

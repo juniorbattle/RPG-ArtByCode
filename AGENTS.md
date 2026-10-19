@@ -158,7 +158,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 ## Useful URL params
 `seed=1842` (canonical) · `forge=sabotaged` · `clean=1` (no HUD/panel) · `freeze=7.3` (deterministic time) ·
 `player=x,z` (place the player; the camera settles in that zone's framing, no arrival hold) ·
-`camera=A|B|C|D` (pin a framing) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
+`camera=A|B|C|D` (pin a framing) · `camblend=anchored` (every framing blend anchored like the D blends: the player's screen position glides
+between its two framings; a proposal awaiting the operator, journal Passe K1; absent = the approved transitions) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
 a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
 `static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main

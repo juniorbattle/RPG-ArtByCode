@@ -581,6 +581,64 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un « glissement » médian de quelques pour cent se vérifie contre la quantification (pas de simulation par image) avant d'être corrigé.
 - Une planche « tournante » se mesure vue par vue : deux dos ne font pas un trois-quarts dos.
 
+## Passe K1 — Caméras : transitions ancrées partout, préparées derrière `?camblend=anchored` (décision de l'opérateur) (2026-10-19)
+
+### Demande
+- Objectif 2 du brief : « Architecture et caméras : optimisations mesurées : coût GPU, preuves de visibilité, cadrages. Tout changement de
+  cadrage approuvé passe par l'accord de l'opérateur ; montre-lui avant / après. » Consigne d'autonomie (Passe T1) : un changement des
+  cadrages approuvés se prépare derrière un paramètre d'URL, sans changer le jeu par défaut.
+- Point ouvert d'« À reprendre » § 4 (d) : les transitions B → A et C → B (vers l'ouest) font glisser le joueur à l'envers à l'écran
+  (mesuré en Passe 4B, jamais corrigé). Branche `claude/stoic-goodall-8ieke4` recréée depuis `main` (`b7bdec2`).
+- Pas de GPU dans cette séance : **aucune mesure de coût GPU** (les temps SwiftShader ne disent rien de la 780M) ; les preuves sont
+  `camsim`, des tests, des captures et `visproof` en rendu logiciel.
+
+### Mesure avant — [OK] (`tools/camsim.mjs`, `CHROME_ARGS` / `READY_MS` ajoutés ; graine 1842, `vis=0`, joueur généré à 2,5 m/s)
+- B → A (de x −5 à −12,5) : **14 images de recul, au pire −139 px/s** (Passe 4B : −131) ; A → B : 5 images, −25 px/s ; B → C, C → B : 0 ; C → D :
+  6 images de transition à −38 px/s et 10 images posées à −39 px/s ; D → C : 6 images de transition et 25 posées, −15 px/s.
+- Calcul image par image (nouveau test) : pendant B → A, le joueur file d'abord vers la gauche (jusqu'à −197 px/s), puis repart **à
+  contresens jusqu'à +181 px/s** : la rotation de −57,5° à −78° l'emporte sur sa marche.
+
+### Préparé — `?camblend=anchored` (DEV et production ; absent = les transitions approuvées)
+- `CameraGraph.anchorAll` : toutes les transitions passent par `blendPose` ancré (le joueur glisse de sa place à l'écran dans le cadrage de
+  départ à sa place dans le cadrage d'arrivée, comme les transitions vers D depuis la Passe 4B) ; leurs durées ne changent pas (1,2 s au plus
+  hors D). Le bake échantillonne alors les transitions A ↔ B et B ↔ C ancrées, aux six poids des transitions vers D : 329 poses au lieu de 273
+  (+56, ≈ +20 % sur un bake neuf, la clé du cache les distingue). `?blend=` suit le paramètre. Les cadrages A / B / C / D eux-mêmes ne
+  changent pas.
+- **Mon choix** de laisser C ↔ D tel quel : déjà ancré ; ses reculs restants surviennent en grande partie hors transition (cadrage posé : le
+  pivot qui rattrape le joueur), un autre sujet.
+
+### Mesure après — [OK]
+- `camsim` avec `camblend=anchored` : B → A **0 image de recul** (au lieu de 14) ; A → B 0 (au lieu de 5) ; B ↔ C 0 ; C ↔ D inchangés.
+- Calcul image par image : pic à contresens de B → A **+21 px/s** (au lieu de +181) ; ce reste vient de l'écart de place du joueur entre B
+  (NDC x ≈ −0,37) et A (≈ −0,17) : l'effacer demanderait de recaler le pivot de A (un changement de cadrage, à l'opérateur).
+- Captures (SwiftShader, 960 × 540, graine 1842, le joueur à sa place réelle pendant la transition) :
+  `screenshots/calibration/k1-camblend/BA-approved-vs-anchored.png` (six instants, approuvé en haut, ancré en bas) et
+  `BA-mid-approved-vs-anchored.png` (0,2 / 0,4 / 0,6, plus grand) : ancré, le joueur reste en bas à gauche pendant la transition.
+
+### Preuves
+- Défaut inchangé : les 273 poses du bake sont **identiques à l'octet** à celles de `main` figé (`b3ac07f`) ; le code des transitions ne
+  diffère que si `anchorAll` est vrai.
+- `tests/camera-graph.test.mjs` +3 : le défaut approuvé reproduit le recul de B → A (pic > 150 px/s, ≥ 20 images) ; ancré, pic < 30 px/s et
+  aucun recul en A → B ; poses du bake : A / B / C / D / CD / BD identiques, AB / BC plus nombreuses avec le paramètre, et des interpolations
+  simples sans lui. **Fautes injectées une à une, toutes attrapées** (1 échec chacune) : paramètre sans effet sur les transitions, poids du
+  bake inchangés, poses AB / BC ancrées par défaut, toutes les transitions ancrées par défaut.
+- Visibilité (`tools/visproof.mjs`, nouveau : `CHROME_ARGS`, `READY_MS`, `SETTLE_MS`, les transitions ancrées suivent `anchorAll` ; SwiftShader,
+  1280 × 720, `occ=0`, élagué contre `vis=0` dans la même session, `camblend=anchored`) : AB −9,4 à w 0,5 ; AB −11 / 2,5 à 0,7 ; BC 4,2 à 0,5 ;
+  BC 8,5 / 2,4 à 0,4 ; B posé : **0 px** ; AB −7,5 / −1 à 0,33 : **5 px** au bord droit (colonnes 1270-1279, max 21). `tools/vis-why.mjs` (même
+  ajout) : 3 pièces manquées, toutes Tier 3, 1 px chacune (deux arbres au bord du cadre, un mur de la guilde), « tile 0, tile8x 0 » = plus fines
+  qu'un pixel du bake même ×8 ; une fois forcées, **3 px restent**, sans pixel d'ordre : la classe de résidu connue (un seul échantillon MSAA
+  à travers une fissure, Passe 5b), au bord du cadre, entre deux poses échantillonnées (w 0,33 → poids lissé 0,26, entre 0,06 et 0,32).
+  Tier 3 : 299 pièces sur 738 avec le paramètre (303 sans) : le bake garde 4 pièces de plus pour les poses ancrées.
+
+### Décision à demander à l'opérateur
+- Adopter les transitions ancrées partout (`?camblend=anchored` devient le défaut) ? **Recommandation : oui** (plus de recul du joueur en
+  A ↔ B, aucun cadrage changé, coût : +56 poses au bake neuf). En option, recaler le pivot de A pour effacer le reste (+21 px/s) : à chercher
+  avec `camsearch` et montrer.
+
+### Pensée
+- Une transition entre deux cadrages hérite de l'écart de place du joueur à l'écran entre eux : l'ancrage supprime la rotation qui l'emporte,
+  pas cet écart ; une mesure image par image (signe de la vitesse à l'écran) sépare les deux.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -649,7 +707,10 @@ devant un personnage s'applique désormais entièrement (B : héros sous la lant
 **4. Zones de caméra** — validées par simulation (Passe 4B, `tools/camsim.mjs`), pas par de vrais joueurs : (a) D place toujours le joueur
 **à droite** du centre (NDC +0,35 → +0,68), contrepartie de la continuité avec C ; (b) le long du bord de l'eau (z > 2,4) on passe **B → D**
 sans traverser C ; (c) lacet max 0,96° / image en C ↔ D (≤ 0,55° ailleurs) ; (d) les transitions B → C vers l'ouest (−254 px/s) et B → A
-(−131 px/s) font glisser le joueur à l'envers à l'écran (héritage de la passe 2, mesuré en 4B, non corrigé). Contrainte : la caméra de D reste
+(−131 px/s) font glisser le joueur à l'envers à l'écran (héritage de la passe 2, mesuré en 4B ; Passe K1 : B → A remesuré −139 px/s, C → B
+0 ; **transitions ancrées partout préparées derrière `?camblend=anchored`** : B → A 0 image de recul au lieu de 14, pic +21 px/s au lieu de +181 ;
+décision de l'opérateur ; le reste demanderait de recaler le pivot de A) ; (e) reculs du joueur à l'écran en cadrage posé C / D (−15 à
+−39 px/s, le pivot qui rattrape le joueur après une transition, Passe K1), non traités. Contrainte : la caméra de D reste
 à z < ~18,5 (maisons de la rive opposée dès z = 19,8, invisibles de A/B/C) ; tout cadrage plus reculé exige de les retirer ou de les abaisser.
 
 **5. Visibilité / culling**

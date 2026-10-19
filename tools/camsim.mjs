@@ -3,7 +3,8 @@
 // e.g. "east|9,0.5|w,d:7" holds w+d for 7 s; "there-and-back|9,0.5|w,d:5;a,s:5"; an empty key set ("-:1.5") waits.
 // Per scenario it reports framing changes, blend times, worst per-frame steps (yaw, fov, dist, pivot, char scale), the player's
 // on-screen speed against its walking direction (a negative value while walking = the player glides backwards on screen), the
-// control-yaw jump while a key is held, and where the forge sits on screen. env: QUERY (default "clean=1&freeze=7.3&static=1&seed=1842"), BASE_URL, W/H.
+// control-yaw jump while a key is held, and where the forge sits on screen. env: QUERY (default "clean=1&freeze=7.3&static=1&seed=1842"), BASE_URL, W/H,
+// CHROME_ARGS (replaces the GL switches, e.g. --use-angle=swiftshader without a GPU), READY_MS (boot timeout).
 import puppeteer from 'puppeteer-core';
 import fs from 'node:fs';
 
@@ -17,7 +18,7 @@ const W = +(process.env.W || 1920), H = +(process.env.H || 1080);
 const query = process.env.QUERY || 'clean=1&freeze=7.3&static=1&seed=1842';
 const browser = await puppeteer.launch({
   executablePath: exe, headless: 'new',
-  args: ['--use-gl=angle', '--use-angle=d3d11', '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`],
+  args: [...(process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11']), '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`],
   defaultViewport: { width: W, height: H, deviceScaleFactor: 1 },
 });
 const R2D = 57.29578;
@@ -25,7 +26,7 @@ try {
   const page = await browser.newPage();
   page.on('pageerror', (e) => console.log('[pageerror]', e.message));
   await page.goto(`${BASE}?${query}&intro=0`, { waitUntil: 'load' });
-  await page.waitForFunction('window.__ready === true', { timeout: 120000 });
+  await page.waitForFunction('window.__ready === true', { timeout: +(process.env.READY_MS || 120000) });
   const all = {};
   for (const sc of scen) {
     const [name, start, plan] = sc.split('|');
