@@ -18,6 +18,7 @@ import { ActorSystem } from '../characters/ActorSystem';
 import type { BakedSheet, AuthoredSpawn } from '../characters/BakedSprites';
 import { loadProductionCast } from '../characters/BakedCast';
 import { ParticleSystem } from '../atmosphere/Particles';
+import { Weather, parseWeather } from '../atmosphere/Weather';
 import { buildSky } from '../atmosphere/Sky';
 import { WATER_Y, WALK } from '../architecture/StreetComposer';
 import { type BakeOptions, type BakePose, type BehindPass } from '../district/Visibility';
@@ -57,6 +58,8 @@ export class App {
   sprites!: SpriteRenderer;
   actors!: ActorSystem;
   particles!: ParticleSystem;
+  /** ?rain / ?snow / ?storm / ?wind (journal Passe W1); null = no weather parameter: nothing created, the game as before */
+  weather: Weather | null = null;
   generator!: MerchantDistrictGenerator;
   district: DistrictBuild | null = null;
   config: DistrictConfig = { ...DEFAULT_CONFIG };
@@ -182,6 +185,12 @@ export class App {
     this.scene.add(this.sprites.group);
     this.particles = new ParticleSystem(this.lib);
     this.scene.add(this.particles.group);
+    const wx = parseWeather(this.opts.params);
+    if (wx) {
+      this.weather = new Weather(wx);
+      this.scene.add(this.weather.group);
+      this.particles.wind.multiplyScalar(wx.wind);
+    }
     this.resize();
     // the boot links the programs in parallel first (prepareFirstFrame), then warms the occlusion variants
     this.regenerate(undefined, { warm: false });
@@ -273,6 +282,7 @@ export class App {
       lights: this.lights.sources.length, actors: this.actors?.actors.length ?? 0, generatorMs: this.lastGenMs,
       district: this.district ? { triangles: this.district.stats.triangles, instances: this.district.stats.instances, buildings: this.district.stats.buildings, windows: this.district.stats.windows } : { triangles: 0, instances: 0, buildings: 0, windows: 0 },
       resolution: `${this.post.width}x${this.post.height} MSAA${this.post.params.msaa}`,
+      ...(this.weather ? { weather: { ...this.weather.p, flash: +this.weather.flashLevel.toFixed(3), drops: this.weather.drops() } } : {}),
       gpu, gpuMs: gpu ? p.gpu.total() : undefined,
       visibility: this.district ? {
         set: this.visibleSet, level: this.drawLevel, parts: this.district.visibility.parts, tier3: this.district.visibility.hidden,
@@ -469,6 +479,7 @@ export class App {
     if (this.actors) {
       this.sprites.update(this.actors.actors, this.lights, this.rig.camera, this.moonDir, this.actors.interactTarget, this.actors.player);
       this.particles.update(dt, this.simTime, this.rig.camera, this.post.height, this.lights, (this.simTime * 5.5 - 2) / 4);
+      this.weather?.update(this.time, this.rig.camera, this.actors.player.pos);
     }
   }
 

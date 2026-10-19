@@ -1,5 +1,24 @@
 import { COMMON_GLSL } from './ShaderChunks';
 
+/** rain on standing water (?rain, journal Passe W1): rings that open and fade, two staggered layers of cells; a normal offset (xz) */
+const RAIN_GLSL = /* glsl */ `
+uniform float uRain;
+vec2 rainRings(vec2 p, float t){
+  vec2 g = vec2(0.0);
+  for (int k = 0; k < 2; k++) {
+    vec2 q = p * 2.6 + float(k) * vec2(0.37, 0.61);
+    vec2 c = floor(q), f = fract(q) - 0.5;
+    float h = hash13(vec3(c, float(k)));
+    float ph = fract(t * (0.9 + 0.5 * h) + h * 7.0);
+    vec2 d = f - (vec2(hash13(vec3(c, 3.1 + float(k))), hash13(vec3(c, 7.7 + float(k)))) - 0.5) * 0.5;
+    float r = length(d), R = ph * 0.42;
+    float w = exp(-(r - R) * (r - R) * 420.0) * (1.0 - ph) * step(h, 0.35 + 0.6 * uRain);
+    g += d / max(r, 1e-3) * w * sin((r - R) * 46.0);
+  }
+  return g;
+}
+`;
+
 export const GROUND_VERT = /* glsl */ `
 varying vec3 vWorld;
 varying vec3 vNormal;
@@ -22,6 +41,8 @@ uniform sampler2D uReflMap;
 uniform mat4 uReflVP;
 uniform vec4 uGroundRect;
 uniform float uWet;
+uniform float uSnow;
+${RAIN_GLSL}
 uniform float uReflStrength;
 uniform float uReflReady;
 varying vec3 vWorld;
@@ -73,6 +94,15 @@ void main(){
   if (puddle > 0.01) {
     vec2 rp = gp * 6.0;
     N = normalize(N + vec3(vn2(rp + uTime * 0.4) - 0.5, 0.0, vn2(rp.yx - uTime * 0.37) - 0.5) * 0.05 * puddle);
+    if (uRain > 0.0) { vec2 rr = rainRings(gp, uTime) * 0.45 * puddle * uRain; N = normalize(N + vec3(rr.x, 0.0, rr.y)); }
+  }
+  // snow (?snow): a cover on the cobbles, thinner in the joints and where the puddles were (they freeze dark); uSnow = 0 skips it
+  if (uSnow > 0.0) {
+    float cover = smoothstep(0.42, 0.85, vn2(gp * 0.55) * 0.45 + vn2(gp * 2.7) * 0.25 + h * 0.4 - M.r * 0.5 + 0.3 * uSnow) * min(1.0, uSnow * 1.2);
+    albedo = mix(albedo, vec3(0.36, 0.38, 0.44), cover);
+    rough = mix(rough, 0.92, cover);
+    puddle *= 1.0 - cover; damp *= 1.0 - cover;
+    N = normalize(mix(N, vec3(0.0, 1.0, 0.0), cover * 0.6));
   }
 
   vec3 hemi = mix(uGroundAmb, uSkyAmb, N.y * 0.5 + 0.5);
@@ -116,6 +146,7 @@ uniform float uReflStrength;
 uniform float uReflReady;
 uniform float uWaterY;
 uniform vec2 uReflProxy;
+${RAIN_GLSL}
 varying vec3 vWorld;
 varying vec3 vNormal;
 varying vec2 vUv;
@@ -136,6 +167,8 @@ void main(){
   }
   g.y *= 0.38;
   g /= 1.0 + dist * 0.01;
+  // rain (?rain): rings on the canal, fading with distance (uRain = 0 skips it)
+  if (uRain > 0.0) g -= rainRings(P.xz, uTime) * 0.5 * uRain / (1.0 + dist * 0.04);
   vec3 N = normalize(vec3(-g.x, 1.0, -g.y));
   vec3 R = reflect(-V, N);
   float fr = 0.02 + 0.98 * pow(1.0 - max(dot(N, V), 0.0), 5.0);

@@ -13,6 +13,8 @@ export interface PerfSnapshot {
   occlusion?: Record<string, number | string>;
   /** frame-rate cap: mode, vsyncs per frame (0 = not vsync-locked), vsync interval and its source, callbacks skipped */
   frameCap?: Record<string, number | string>;
+  /** ?rain / ?snow / ?storm / ?wind (Weather.ts): the parameters, the lightning's level now, the drops / flakes drawn */
+  weather?: Record<string, number>;
 }
 
 /** FPS / frame time / draw calls / triangles / texture memory, accumulated across every pass of the frame

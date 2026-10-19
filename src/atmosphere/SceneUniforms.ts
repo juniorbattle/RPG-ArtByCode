@@ -69,6 +69,11 @@ export const U = {
   uWarmGain: { value: 1 },
   uWindAmp: { value: 1 },
   uWet: { value: 1 },
+  /** weather (Weather.ts, journal Passe W1), all 0 without a weather parameter (the shaders skip their branch): rain (rings in puddles and
+   *  on the canal), snow (cover on the cobbles and on upward faces), cloud deck over the sky (the moon hidden) */
+  uRain: { value: 0 },
+  uSnow: { value: 0 },
+  uCloud: { value: 0 },
   uResolution: { value: new THREE.Vector2(1920, 1080) },
   /** player occlusion reveal (only read by the occludable surface variants, see OcclusionReveal): per-occluder fade,
    *  reveal centre in render pixels (xy), the player's view depth (z) and the style (w: 0 soft, 1 dither, 2 hybrid) */

@@ -162,7 +162,10 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 between its two framings; a proposal awaiting the operator, journal Passe K1; absent = the approved transitions) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
 a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
-`static=1` (hide characters/particles) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
+`static=1` (hide characters/particles) · weather (`src/atmosphere/Weather.ts`, journal Passe W1; absent = nothing created, the game as before;
+a bare parameter = 1): `rain=<0..1>` (lamp-lit streaks, wetter cobbles, rings in puddles and on the canal, a little more mist), `snow=<0..1>`
+(drifting flakes, a cover on the cobbles and upward faces), `storm=<0..1>` (lightning flashes every 5-14 s, overcast sky hiding the moon; brings
+rain 0.85 x storm and wind 1 + storm unless given), `wind=<0..3>` (cloth / leaves sway, smoke drift, precipitation slant; 1 = as before) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
 thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) ·
 `fps=off|<n>|v<k>|e<n>|a<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
 round(refresh / n) vsyncs / the same with an adaptive step; **default `a60`**, chosen by the operator on 2026-10-18 (`e60` from 2026-10-17):
@@ -292,6 +295,11 @@ banner, the boat's rig (mast / yard / sail) and the 7 quay lamps. Never tag smal
   the single exception is the occludable variant above, bound only while a reveal is active.
 - `lightSum()` walks a per-cell light list (`LIGHT_GRID`, rebuilt in `LightRig`); `lightMirror()` still uses all lights.
 - The sky is drawn last among opaques, depth-tested.
+- Weather (journal Passe W1): one instanced draw per precipitation (a quad per drop / flake animated in the vertex shader from the scene time),
+  main pass only (`LAYER_NOREFLECT`), after the opaque pass, depth-tested without depth writes, `maskSafeBlending`, no `discard` (alpha =
+  coverage), double-sided (a falling streak's quad winds clockwise). The surfaces, ground, water and sky read `uRain` / `uSnow` / `uCloud` only
+  inside a `> 0` branch (0 without weather: the same pixels as before). A lightning flash scales the shared light / haze uniforms for a frame
+  and gives them back (a value written meanwhile, e.g. by the debug panel, is kept).
 - Texture painters (`TexturePainters.ts`) run as named jobs (`PainterJobs.ts`) in a small Web Worker pool (`PainterPool.ts`) while the main
   thread paints the canvas atlases; a worker that cannot start, throws or stays silent 20 s has its job painted on the main thread (console,
   `lib.painterFallbacks`). Painters must stay pure (no DOM, no `Math.random`) so both paths paint the same bytes, and the THREE textures are

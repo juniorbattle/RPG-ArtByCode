@@ -258,6 +258,7 @@ uniform vec3 uDirt;
 uniform float uEmissive;
 uniform float uWrap;
 uniform float uTrans;
+uniform float uSnow;
 varying vec3 vWorld;
 varying vec3 vNormal;
 varying vec2 vUv;
@@ -329,6 +330,14 @@ void main(){
   float ao = vTint.a * mix(1.0, NR.b, 0.9);
   ao *= mix(1.0, 0.55 + 0.45 * smoothstep(0.0, 0.8, vWorld.y), uContact);
   float rough = clamp(uRough * (0.65 + 0.7 * NR.a), 0.04, 1.0);
+  // snow (?snow, journal Passe W1): upward faces (roofs, sills, ledges, cornices) take a cool ivory cover, patchy; uSnow = 0 skips it
+  if (uSnow > 0.0) {
+    vec3 Ng = normalize(vNormal);
+    float cover = smoothstep(0.42, 0.8, Ng.y) * smoothstep(0.32, 0.62, vn3(vWorld * 1.9) * 0.45 + vn3(vWorld * 0.37) * 0.55 + 0.22 * uSnow) * min(1.0, uSnow * 1.4);
+    albedo = mix(albedo, vec3(0.46, 0.48, 0.55), cover);
+    rough = mix(rough, 0.9, cover);
+    N = normalize(mix(N, Ng, cover));
+  }
   #ifdef LEAF
     N = normalize(mix(N, vec3(0.0, 1.0, 0.0), 0.55));
   #endif

@@ -639,6 +639,75 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une transition entre deux cadrages hérite de l'écart de place du joueur à l'écran entre eux : l'ancrage supprime la rotation qui l'emporte,
   pas cet écart ; une mesure image par image (signe de la vitesse à l'écran) sépare les deux.
 
+## Passe W1 — Météo : pluie, neige, orage, vent, chacun derrière son paramètre d'URL (2026-10-19)
+
+### Demande
+- Objectif 3 du brief, mot pour mot : « Météo : pluie, neige, orage, vent. Génère-la par le code, avec un paramètre d'URL pour chaque effet ;
+  le jeu par défaut reste identique tant que l'opérateur n'a pas choisi. Respecte les règles de rendu d'AGENTS.md : pas de `discard` hors de
+  l'occlusion, alpha de la scène = masque du flou de profondeur, `maskSafeBlending` pour tout ce qui est dessiné après la passe opaque,
+  reflets. Mesure les performances. » Branche `claude/stoic-goodall-8ieke4` recréée depuis `main` (`3fe2bfe`).
+
+### Fait — [OK] (`src/atmosphere/Weather.ts`, `?rain` / `?snow` / `?storm` / `?wind`)
+- **Sans paramètre, rien n'est créé** : aucun objet, aucun uniforme écrit, aucun tirage de `Math.random` (l'uuid d'un objet THREE en tire un ;
+  sous graine, toute la suite se décalerait, Passe V1).
+- **Pluie** (`rain=<0..1>`) : jusqu'à 9 000 traînées dans une boîte de 44 × 14 × 44 m qui suit le joueur (repliée dans le monde : le champ ne
+  glisse pas quand la caméra bouge), un quad par goutte animé dans le shader de sommets depuis l'horloge de la scène (aucun travail par goutte
+  sur le CPU), au moins un pixel de large (plus fin : l'alpha prend la couverture), éclairées par les lanternes comme les poussières (ambre
+  seulement là où la lumière les atteint), éteintes par la brume, rien à moins de 2,5 m de l'objectif ; pavés plus mouillés (`uWet` 1 → 1,3),
+  **anneaux de pluie** dans les flaques et sur le canal (nouvelles branches `uRain > 0` des shaders du sol et de l'eau), un peu plus de brume.
+- **Neige** (`snow=<0..1>`) : jusqu'à 5 000 flocons qui dérivent (balancement propre à chacun, vent), une **couverture** ivoire froid, en
+  plaques, sur les pavés (plus mince dans les joints ; les flaques disparaissent) et sur les faces tournées vers le haut (toits, appuis,
+  corniches : branche `uSnow > 0` du shader des surfaces, sur la normale géométrique) ; plus de brume.
+- **Orage** (`storm=<0..1>`) : éclairs graines (`Rng(4242)`, horloge de la scène), un toutes les 5 à 14 s, 2-3 pulsations : la lumière de lune,
+  l'ambiance et la brume (le même ton que les nuages du ciel) montent un instant vers un indigo pâle, puis reviennent exactement ; un
+  uniforme écrit entre-temps (curseur du panneau) est gardé. Ciel couvert (`uCloud` : une couche lente qui cache la lune et les étoiles). Amène
+  la pluie (0,85 × orage) et le vent (1 + orage) sauf s'ils sont donnés. Horloge figée (`?freeze`) : aucun éclair ; `weather.strike()` en
+  montre un (captures).
+- **Vent** (`wind=<0..3>`) : multiplie le balancement des tissus et des feuilles (`uWindAmp`, 1 = comme avant), la dérive des fumées et
+  l'inclinaison de la pluie et de la neige.
+- **[KO → corrigé]** première version : la pluie dessinée (108 appels au lieu de 107) mais invisible, même agrandie ×10 ; cause : une traînée
+  qui tombe a sa queue au-dessus de la goutte, son quad tourne dans le sens horaire à l'écran, et le matériau à une face l'éliminait (les
+  flocons, carrés dans l'autre sens, passaient). Matériau double face.
+- **[KO → corrigé]** réglages de la première version : pluie invisible dans la bande de mise au point (gouttes de 0,5 px à 26 m, le flou de
+  profondeur efface les proches), puis une averse trop blanche ; neige au sol trop blanche sous les lanternes (albédo 0,58 sur des pavés
+  ≈ 0,25) → 0,36, en plaques ; éclair trop brumeux.
+- Règles de rendu : passe principale seulement (`LAYER_NOREFLECT` : ni reflet ni ombre), après la passe opaque, test de profondeur sans
+  écriture, `maskSafeBlending` (l'alpha de la scène, masque de protection du flou de profondeur, est gardé), **aucun `discard`** (l'alpha
+  fait la couverture). `stats.weather` : paramètres, niveau d'éclair, gouttes dessinées.
+
+### Mesures — [OK] compteurs ; [?] temps GPU à mesurer sur la 780M
+- `stats` en 1920 × 1080, caméra B (A et D pour la pluie), SwiftShader : appels de dessin **107 → 108** (une précipitation = un appel) ;
+  triangles 282 698 → 300 698 (pluie : 9 000 quads), 292 698 (neige : 5 000), 297 998 (orage : 7 650 gouttes). Surface couverte à l'écran,
+  calculée avec les formules du shader : pluie 184 397 px en B, 188 227 en D, 219 245 en A (9 à 11 % des 2,07 M pixels, en traînées d'un
+  pixel), orage 148 796, neige 59 245. Le shader de fragment n'éclaire rien (l'éclairage est fait aux sommets).
+- **Pas de temps GPU ici** (pas de GPU) : estimation d'ordre de grandeur pour la 780M (passe de scène limitée par la bande passante de la
+  cible HDR ×4, Passe 6) : ≈ 0,2 M fragments mélangés × 4 échantillons × 8 octets × lecture + écriture ≈ 13 Mo par image, ≈ 0,1-0,3 ms à
+  mesurer. Les branches `uRain` / `uSnow` / `uCloud` à 0 : un test d'uniforme par fragment.
+- À relancer sur la machine de l'opérateur : `node tools/perf.mjs --rounds=3 "clair|seed=1842&camera=B" "pluie|seed=1842&camera=B&rain=1"
+  "neige|seed=1842&camera=B&snow=1" "orage|seed=1842&camera=B&storm=1"` (et en D, et à 2560 × 1440).
+
+### Preuves
+- Jeu par défaut (sans paramètre météo, les shaders modifiés compris) contre `main` figé (`3fe2bfe`), captures déterministes (graine 1842,
+  `clean=1&freeze=7.3&vis=0`, 120 pas, 1280 × 720, SwiftShader), A / B / C / D : **0 px** ; témoin de répétition 0 px ; contrôle : pluie contre
+  défaut, 64 à 90 % des pixels changés (pluie, pavés plus mouillés, brume, ciel couvert).
+- Planches : `screenshots/calibration/w1-weather/{A,B,D}-clear-rain-snow-stormflash.png` (clair, pluie, neige, orage pendant un éclair) ;
+  `B-rain-1280.png` à 1:1. Avec un paramètre météo, les PNJ d'une capture à graine ne sont plus au même endroit (les
+  objets THREE de la météo tirent `Math.random` pour leur uuid) : sans conséquence hors du harnais.
+- `tests/weather.test.mjs` (4) : lecture des paramètres (absents = rien, nu = 1, bornes, ce que l'orage apporte, valeur illisible) ; uniformes
+  écrits et maillages instanciés ; éclairs graines (deux exécutions identiques), 3 à 12 en 40 s, retour exact de la lumière après l'éclair,
+  valeur écrite pendant l'éclair gardée ; horloge figée sans éclair, `strike()`. **Fautes injectées une à une, toutes attrapées** (1 échec
+  chacune) : météo créée sans paramètre, orage sans pluie, valeur écrite écrasée, lumière jamais restaurée, éclairs non graines, éclair au
+  premier pas d'une horloge figée.
+
+### Décision à demander à l'opérateur
+- Faut-il une météo par défaut (et laquelle), ou un cycle (par exemple pluie fine aléatoire) ? Recommandation : garder le défaut sans météo
+  (la nuit claire approuvée) et proposer `rain=0.5` comme variante d'ambiance à juger en jeu, après la mesure du coût GPU sur la 780M.
+
+### Pensée
+- Un quad construit dans le shader (une traînée orientée par sa vitesse à l'écran) n'a pas d'orientation fixe : double face, ou il disparaît
+  dès que sa direction s'inverse ; un « rien à l'écran » se vérifie d'abord par le compteur d'appels de dessin, puis par un agrandissement.
+- Un effet transparent se règle dans la bande de mise au point : ce que le flou de profondeur efface près de la caméra ne compte pas.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -735,6 +804,11 @@ vsync trop **basse** n'est pas corrigée par le contrôle en session (jamais obs
 shaders d'un profil persistant, 780M sans contention (fenêtre calme, témoin à l'appui). Écartés (mesurés, Passe 6) : pré-passage de
 profondeur (≤ 0,75 ms en 1080p avant son propre coût), filtre de l'ombre de lune (≤ 4 %) ; FXAA, qui flouterait le pixel-art sans masque des
 sprites.
+
+**6b. Météo (Passe W1)** — pluie, neige, orage, vent derrière `?rain` / `?snow` / `?storm` / `?wind`, défaut inchangé (0 px). Restent : le
+temps GPU sur la 780M (`tools/perf.mjs`, commandes dans la passe), le jugement de l'opérateur en jeu et en mouvement (vent sur les bannières,
+pluie qui tombe, éclairs), une éventuelle météo par défaut ou un cycle (décision de l'opérateur) ; non faits : éclair dessiné dans le ciel,
+son (le jeu n'en a pas), éclaboussures au sol, neige sur les personnages.
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
