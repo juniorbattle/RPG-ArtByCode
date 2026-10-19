@@ -623,6 +623,21 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
 - Une cause écrite d'après l'étendue d'une mesure (−0,37 / −0,17 sur toute la marche) se revérifie au point où le défaut se produit (le
   bord de la zone, l'instant du pic) avant d'en tirer un réglage.
 
+## Passe D2 — Décision S1 : la marchande reste immobile à son étal (2026-10-19)
+
+### Décision de l'opérateur, mot pour mot
+- « S1 : la marchande reste immobile à son étal, comme aujourd'hui. Consigne-le. »
+- Elle répond à la question reposée en Passe D1 : sur la fiche, l'opérateur avait choisi « La déplacer » avec la note « Mais la marchande
+  n'est pas cense rester a son stand ? ».
+
+### Effet
+- Aucun changement de code : la marchande garde son point dans le collisionneur de l'étal ; elle reste debout et parle (Passe 4A-unvicies).
+- « À reprendre » § 1 (Mise en scène) : la question est close.
+
+### Pensée
+- Une option cochée avec une note qui la contredit se tranche par une question courte, posée avec les faits ; ici, la décision confirme
+  l'état du jeu.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -639,8 +654,8 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
   original (approuvé le 18/10 ; vérifié en Passe D1). Reste : les images de frappe du forgeron presque sans masque (invisible tant qu'il est
   fixé à son original).
 - **Mise en scène** :
-  - La marchande reste à son étal sans marcher : son point est dans le collisionneur de l'étal. L'opérateur a choisi « La déplacer »,
-    avec la note « Mais la marchande n'est pas cense rester a son stand ? » ; **la question est reposée** (Passe D1).
+  - La marchande reste immobile à son étal (décision de l'opérateur, Passe D2 : « S1 : la marchande reste immobile à son étal, comme
+    aujourd'hui. Consigne-le. »).
   - Les deux gardes diffèrent déjà (variante 1 pour le second, approuvée le 18/10). Restent les lances.
   - Les cinq citadins : « Cinq par défaut » (Passe D1), appliqué (Passe C2).
 - **Mouvement** (Passe S2 : cadence réglée sur la vitesse vue à l'écran, pieds plantés pour la foule et les gardes ; Passe V3 : docker
