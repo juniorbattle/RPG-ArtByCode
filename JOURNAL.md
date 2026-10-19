@@ -809,6 +809,20 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une critique d'art et un seuil de lisibilité peuvent se contredire (cramoisi contre 2:1) : la teinte se garde et la luminance se prend
   ailleurs (ici, des chevrons ivoire plus épais).
 
+## Passe A3 — Arène : écarts de la troisième critique, la teinte des flaques par multiplication (2026-10-19)
+
+### Fait (écarts de la critique n° 3, Passe A2, vérifiés sur les pixels avant d'agir)
+- Bannières prune (#2e242e) sous les lanternes des tours : le terme **additif** des flaques (0,035, Passe A2) ajoutait de l'ambre à un tissu
+  marine ; un terme **multiplicatif** garde la teinte (un marine éclairé reste marine) : multiplicatif 0,9 → 1,4, additif 0,035 → 0,012.
+- Gradins encore tièdes sous les lampes (#4c3f3e) : flaques bornées plus tôt (de 0,9 R à 1,9 R, au plus 2,5 à 4,5 m) → #463a3b, des taches
+  chaudes autour des lampes seulement.
+- Lune (valeur 0,81 contre 0,99 au district) : disque HDR plus fort (2,6), halo 30 m à 0,55 → #d1d2cb avec un halo visible ; ville moyenne
+  plus brumeuse (masses plus proches de la couleur de la brume : #324165 au lieu de #121936 en moyenne sur 500-900 × 100-190) ; sol hors des
+  flaques plus sombre (albédo 0x9ca2b0 → 0x80869a : #31364a) ; appliques des parapets : un cœur ambré (6 × 10 cm, HDR) devant chaque cage ;
+  chiffres de vie cernés de sombre ; même fond pour toutes les cartes (bordure ambre) ; pastille « Debug » au style du panneau.
+- `tools/arena-check.mjs` : PASS (même empreinte de simulation, 33 rendus sans erreur, télégraphe 2,31:1, deutéranopie 2,65).
+- Critique n° 4 (révision 3 contre révision 4, agent neuf, étiquettes tirées au sort) : en cours à ce commit ; fusion après son verdict.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
