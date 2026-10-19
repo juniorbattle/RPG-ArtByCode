@@ -138,6 +138,10 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `npm run art:sheet -- <sheet.png> [meta.json] [--out f.png] [--scale 4]` — labelled nearest-neighbour review contact sheet
   (Windows PowerShell drops the first `--` of any `npm run x -- flags` and npm then eats the flags: write `npm run x '--' flags`
   or call `node tools/art-lab/<script>.mjs flags` directly)
+- Arena prototype (`arena/`, journal Passe A1; not part of the game or its build): `node tools/arena-shots.mjs <outDir> arena/arena.html
+  "name|moment|js" ...` — captures of its scripted moments (`charging`, `window`, `combo`, ...); `node tools/arena-check.mjs <file.html> ...`
+  — its combat simulation's state hash over a fixed input script, every moment in every mode without a page error, the telegraph's contrast
+  against the floor (>= 2:1); both serve the file locally (`ARENA_THREE=<three r128>` when cdnjs is unreachable)
 - Character Lab (dev only): `npm run dev`, then `/character-lab.html` (or `npm run art:lab`) — shows an exported PNG sheet through
   Three.js at 1x / 4x / runtime scale; `window.__lab.selfTest()` checks nearest filtering texel-for-texel. Not part of the game or its build.
 

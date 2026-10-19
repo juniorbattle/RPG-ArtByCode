@@ -684,6 +684,57 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   fichier, Three.js r128 (le jeu est sur une version récente : le porter dans `src/` serait une autre tâche) ; l'adaptation se fait dans
   `arena/arena.html`, l'original reste servable à côté pour l'avant / après, `git log -p` montre chaque changement.
 
+### Adaptation — [OK] (`arena/arena.html`, mode HD-2D : celui du jeu)
+- Méthode : remplacements à ancre stricte (chaque ancre doit apparaître le nombre de fois attendu, sinon rien n'est écrit), en huit étapes ;
+  `git log -p arena/arena.html` est le changement (174 lignes ajoutées, 163 retirées sur 3 202).
+- Références : captures A / B du district (`screenshots/calibration/camA-establishing.png`, `camB-merchant.png`) et ses valeurs
+  (`SceneUniforms.ts` : brume (0,034 ; 0,055 ; 0,098), zénith, lune) ; pour l'interface, l'écran de chargement (`src/main.ts` : fond
+  #05070d, ivoire #d9c9a8 / #f1d9a0, ambre #e9a64c) et le panneau DEV (`DebugPanel.ts`).
+- Décor : ciel de nuit (zénith indigo, la brume du district à l'horizon, halo froid autour de la lune, une lueur chaude très basse comme
+  `uCityGlow`, étoiles posées après la réduction de palette par un crochet `after` des peintres) ; lune (disque ivoire, halo additif froid)
+  dans la trouée entre château et cathédrale (`sunWorld` garde son nom : les rayons du post-traitement la visent, teinte froide) ; ville
+  lointaine, monuments et aqueduc en silhouettes indigo plus claires que le ciel derrière elles, liseré froid côté lune, fenêtres ambre ;
+  pavés et murs en pierre froide ; façades à colombages en plâtre ivoire désaturé et bois sombre ; bannières marine à fleur de lys or
+  (celles du quai) ; foule en masses indigo, quelques pixels qui prennent la lune ; accessoires désaturés ; brume (scène, foule, passe de
+  reflets) à la couleur du district. **[KO → corrigé]** au premier rendu, des tours de la valeur du ciel ne laissaient voir que leurs liserés
+  (des traits clairs qui flottaient) : silhouettes éclaircies (perspective aérienne).
+- Lumière : la clé est la lune (bleu froid, faible), hémisphère indigo, plus de soleil ; la chaleur vient des lanternes (la passe de
+  lumières locales du prototype ; lampadaires 1,35 / 4,2 m au lieu de 1,0 / 3,2) ; curseurs « Time of day (golden hour to dusk) » →
+  « Lanterns over moonlight » (défaut 0,7 au lieu de 0,5), « Warm key gain » → « Moon key gain », « Sun shadow map » → « Moon … » ; liseré
+  des sprites froid (lune) au lieu de chaud, rebond chaud du sol atténué. **[KO → corrigé]** premier rendu : sol gris délavé (clé et
+  hémisphère reprises du soleil, 1,8 et 0,46) → 0,95 et 0,3, pavés plus sombres, sol moins brillant.
+- HUD / interface : la police du jeu (Segoe UI / system-ui ; Bricolage Grotesque retirée) ; titre comme l'écran de chargement (capitales
+  espacées, or pâle, filet ambre) ; Cinzel gardée pour les noms et les actions ; panneaux indigo à filet ambre ; vie de Ren acier-ivoire, de
+  Marek braise ; points d'action en losanges ambre ; barre d'actions ardoise (disponible : ambre ; technique : acier ; fenêtre de réaction :
+  ivoire) ; panneau DEV au style de celui du jeu ; KO et chargement en français.
+- Signaux de combat : anneaux au sol de Ren acier, de Marek braise-cramoisi (distinct de l'ambre des lanternes) ; les signaux de l'ennemi
+  (lueur de lame, anneau et aura rouges de combo, pulsation rouge des bords) gardés : ce sont des accents de jeu, pas de la lumière.
+- **Mon choix** : seul le mode HD-2D (celui du jeu) est adapté ; PAINTED et FULL 3D, modes de comparaison du « bake-off », gardent leur
+  arène de jour (leur HUD suit les nouvelles couleurs) ; personnages (sprites, visages) non touchés, hors de la demande (UI, décors, HUD).
+
+### Preuves
+- `tools/arena-check.mjs` (nouveau) : (1) la simulation seule, 120 s d'un script d'entrées fixe : même empreinte d'état avant / après
+  (`152:1:idle:20.233:…`) ; (2) les 11 moments scriptés dans les 3 modes (33 rendus) : 0 erreur de page ou de console, avant comme après ;
+  (3) contraste du télégraphe contre le sol dans la fenêtre de réaction (aide complète), mesure du banc d'appareil du prototype : avant
+  2,34:1 (deutéranopie 2,34).
+- **[KO → corrigé]** cette mesure a attrapé une régression : de nuit, le sol est aussi sombre que l'ancien intérieur cramoisi du
+  télégraphe, 1,44:1 (1,37) sous le seuil de 2:1 du prototype ; un rouge plus clair ne suffisait pas (1,49:1 : le rouge porte peu de
+  luminance) ; bande braise plus claire que la pierre et chevrons ivoire : **2,44:1 (deutéranopie 2,69)**.
+- Inchangés à l'octet (comparaison de texte) : simulation de combat, poses et visages ; pipeline des sprites pixel ; le banc d'appareil ne
+  diffère que par la police de sa feuille de style.
+- Captures (SwiftShader, 1280 × 720, `tools/arena-shots.mjs`, mêmes moments) : `screenshots/calibration/a1-arena/{calm,combo,window,panel}-before-after.png`.
+- Dépôt : typecheck, `npm test` 67 / 67, build, `art:validate` ; rien de `src/` n'a changé (le jeu et son bundle ne contiennent pas l'arène).
+
+### Restes [?]
+- Jugement de l'opérateur en jeu et en mouvement (rendu logiciel ici : ni cadence ni temps GPU) ; le banc `?devtest=1` du prototype sur sa
+  machine ; les modes PAINTED / FULL 3D restés de jour ; la foule et la profondeur de l'architecture (écarts relevés par le rapport du
+  prototype) ; le portage de l'arène dans le jeu (`src/`, Three.js récent) : une autre tâche, à décider.
+
+### Pensée
+- Passer du jour à la nuit inverse les contrastes : un repère pensé « plus sombre que le sol » doit devenir « plus clair que le sol » ; le
+  contrôle chiffré du prototype l'a vu, pas l'œil sur une capture.
+- Une silhouette lointaine se lit par sa valeur contre le ciel derrière elle : à valeur égale, il ne reste que ses liserés.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
