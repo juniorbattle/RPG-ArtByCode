@@ -1,0 +1,44 @@
+{
+  "kind": "archived-source-sheet",
+  "file": "hero-turnaround-v3-2026-10-19.png",
+  "sha256": "a86cea282b5645ec4ab008dd0dc469f76d5105e792a12b62ec587758385d29a1",
+  "bytes": 2280337,
+  "format": "PNG 1448 x 1086, 8-bit RGB (no alpha), non-interlaced; chunks IHDR, caBX, IDAT, IEND (caBX = C2PA manifest, 21893 B at offset 33); no ICC, gamma, text or EXIF chunk",
+  "content": "ONE character, the brown-haired protagonist (the design of casting 1, sheet a, entry 01, with the proportions asked by prompt v3), on a flat neutral grey background with a soft dark drop shadow under every figure, no text: top row, eight idle views turning around the figure (front; three-quarter front facing right; profile facing left; two backs, each slightly turned; profile facing left, the body slightly turned; three-quarter front facing left; front three-quarter); middle row, eight walk frames facing left (the same stride repeated, arms still); bottom row, eight run frames facing right (contact poses, the front foot planted far ahead, and gathered poses, the planted foot under or behind the body; no flight frame; one fist forward and one gauntlet back in every frame, their positions alternating); plain indigo hooded cloak with a thin gold edge and NO gold motif on the hem (accepted by the operator), brass clasp, ecru shirt, brown leather vest, belt, pouches and gauntlets, dark trousers, tall brown boots",
+  "measured": "background: border mean (115.7, 118.6, 118.1), range 112-124; drop shadows about (83-92, 86-93, 87-95); idle figures 288-297 px tall with their shadow (front x 22-201, y 48-342), walk frames 288 px, run frames 272 px (bodies leaning), every row at the same scale (head 102 px wide in the run, 105 px at rest); head, hair included, to the chin about 0.33 of the height (front, read on a 5 px ruler); no regular pixel grid (in-cell variance against the pitch dips only at 3.0, 3.5 and 4.0 px, the artefact of integer and half pitches); reconstruction at pitch 3.4: front 85 rows once the drop shadow is removed (87 with it), profile 84-85, run frames 77-78; run row: in texels, the planted foot about 15 texels ahead of the head in the contact frames and about 17 behind in the gathered ones (a 30-texel jump between two drawn frames)",
+  "classification": "ART SOURCE of the lab candidate hero-x2-v2 (not approved), chosen by the operator as the protagonist's base: « Oui : archive 2.png et construis le héros depuis elle, cape sans motif doré sur l'ourlet. »; the design of casting 1, sheet a, entry 01 (2026-10-18, « Planche 1 (Recommandé) », dark trousers « Foncé (Recommandé) »); the base of the player-selectable colour variants (« Une base + couleurs (Recommandé) », Pass H4)",
+  "nature": "the ORIGINAL PNG file supplied by the operator (dropped into art-lab/characters/scratch/hero-premium/incoming/, not versioned); it carries OpenAI's C2PA manifest. Archived byte for byte, unmodified (compared with the incoming file before commit).",
+  "names": {
+    "original": "2.png (the copy in incoming/, file time 2026-10-19 05:20:05 UTC)",
+    "c2paTitle": "image.png"
+  },
+  "generation": {
+    "declared": "operator, 2026-10-19: delivered among eleven PNGs in incoming/ after « on va attendre les images que je mettrai dans upcoming puis on avisera » and « tu peux consulter le incoming »; chosen as the base with « Oui : archive 2.png et construis le héros depuis elle, cape sans motif doré sur l'ourlet. »; the exact prompt text pasted and the attachments joined are not stated in words",
+    "c2pa": "c2pa.created by softwareAgent ChatGPT (version gpt-image), digitalSourceType trainedAlgorithmicMedia, when 2026-10-19T05:19:44.479240868Z; then c2pa.converted and c2pa.watermarked.unbound; claim v2: claim generator OpenAI Media Service API (c2pa-rs 0.79.2, spec 2.2.0), dc:title image.png, instanceID xmp:iid:407af1c4-cf7d-4d95-a523-900e0d96fb78, manifest urn:c2pa:b25706ad-ec93-42e4-9097-329d64cf4e58"
+  },
+  "c2paVerification": {
+    "presence": "present (caBX chunk); read without validating the signature: c2patool is not installed (install only with operator approval). SIGNATURE AND CERTIFICATE CHAIN NOT VERIFIED.",
+    "hardBinding": "c2pa.hash.data (sha256 of the file without the caBX chunk, exclusion start 33 length 21893) recomputed: 9a3c943c0e1a520581ecde5bdd5f61e8b5797989f278ddb52b4ff8b5739f4a61 = the recorded hash (an integrity check of the binding, not of the signature)",
+    "signer": "COSE_Sign1 (CBOR tag 18) ES256, 2-certificate chain: C=US, O=OpenAI OpCo\\, LLC, CN=OpenAI Media Service (issuer: Trufo C2PA Claim Signing CA (2025); Mar 23 02:53:02 2026 GMT to Mar 24 02:53:02 2027 GMT); Trufo C2PA Claim Signing CA (2025) (issuer: Trufo C2PA Root CA (2025\\, ECC P384); Feb  1 09:15:18 2026 GMT to Feb  2 09:15:18 2031 GMT); names read from the manifest, not validated",
+    "reader": "the read-only script of Pass H2 (outside the repo), checked on npc2-merchant-source-2026-10-16.png"
+  },
+  "v3Checks": "against prompt v3 (brief section 5): the cast's proportions (head about 1/3, larger face, compact torso, visible legs) [fixed]; a TRUE profile at rest [yes, 3rd view]; the near arm apart from the torso in profile [yes]; a 6-frame run cycle at the same scale [8 frames at the same scale, but contact and gathered poses only, no flight, the planted foot jumping 30 texels: its upper bodies are used, the legs are rigged]; arms swinging [one fist forward and one gauntlet back in every frame, alternating]; the gold motif along the hem [absent, accepted by the operator]; crisp uniform pixels [soft painting, no regular grid]; no text, grey background [yes, with drop shadows]",
+  "provenance": "supplied by the operator and chosen by them as the base sheet; its own C2PA manifest (signature not verified) names ChatGPT / gpt-image (OpenAI Media Service API) and an AI-generated source type",
+  "rights": "use as the art source of the hero candidate decided by the operator (brief, decisions 1-7); third-party rights NOT exhaustively verified; AI-generated according to its C2PA manifest (signature not verified); production use needs the operator's separate decision",
+  "archived": {
+    "date": "2026-10-19",
+    "decision": "brief section 6.1 (archive the source byte for byte before any work), on the operator's answer « Oui : archive 2.png et construis le héros depuis elle, cape sans motif doré sur l'ourlet. »",
+    "pass": "H5",
+    "rule": "never edited, re-encoded or replaced; every transformation is a separate derived file"
+  },
+  "derived": [
+    {
+      "asset": "hero-x2-v2 (CANDIDATE, runtimeUse \"lab\", not approved)",
+      "reconstruction": "tools/art-lab/reconstruct-grid.mjs per facing: front 22,48,201,342; back 536,48,707,342; profile 386,56,527,344; and the eight run figures of the bottom row (y 736-1022, each cut out of the row by the rig), pitch 3.4, frame 64 x 96, foot row 90, --holes --closing-from=48",
+      "chain": "tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v2.rig.mjs (one 64-colour palette, rig prepare + frames, Aseprite assembly)",
+      "record": "../../provenance/hero-x2-v2/PROVENANCE.json"
+    }
+  ],
+  "usedAsReference": [],
+  "notInvented": "No prompt text, attachment list, account or generation parameter beyond the operator's sentences and the file's own C2PA data is recorded; the C2PA signature is not claimed to be valid."
+}

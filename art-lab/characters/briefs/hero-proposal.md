@@ -2,9 +2,10 @@
 
 **Statut : BRIEF, décisions de base prises par l'opérateur (2026-10-18) ; casting 1 reçu et tranché (§ 9), ses PNG d'origine archivés
 (§ 9, Passe H2) ; planche v2 reçue, archivée et construite au stade lab (§ 10, Passe H3) ; l'opérateur demande une planche v3 (§ 1.5) ;
-deux lots d'images évalués, non validés (§ 11) ; déclinaisons au choix du joueur : une base + couleurs (§ 1.6) : on attend le PNG d'origine
-de la planche de base, générée avec le prompt v3 du § 5.** Asset de lab `hero-x2-v1` (non approuvé, « experimental ») construit
-depuis la v2, à reconstruire depuis la v3. Troisième point des priorités de l'opérateur (journal, Passe M5) ; journal, Passes H0 à H4.
+deux lots d'images évalués, non validés (§ 11) ; déclinaisons au choix du joueur : une base + couleurs (§ 1.6) ; planche de base reçue,
+archivée et construite au stade lab : `hero-x2-v2`, candidat non approuvé (§ 1.7, § 12) : on attend la décision de l'opérateur sur la
+production.** `hero-x2-v1` (« experimental ») reste écarté. Troisième point des priorités de l'opérateur (journal, Passe M5) ; journal,
+Passes H0 à H5.
 
 ## 1. Décisions de l'opérateur (2026-10-18)
 1. **Base de dessin : « 01. Protagonist — Young Adventurer »** de la planche complémentaire de 14 personnages
@@ -32,6 +33,9 @@ depuis la v2, à reconstruire depuis la v3. Troisième point des priorités de l
    par le système des variantes des PNJ (journal, Passe V1 : masques de matière, rampes, recoloration au rendu, aucune image de plus dans la
    texture cuite) ; d'autres coiffures pourront s'ajouter, chacune une nouvelle base qui reprend ces couleurs. L'écran de choix et le héros
    choisi à la place du joueur sont du code de jeu, à décider plus tard.
+7. **Planche de base** (2026-10-19, Passe H5). Onze PNG déposés dans `incoming/` (« tu peux consulter le incoming ») ; à la question « Je
+   construis le héros depuis 2.png, sans le motif doré ? », réponse, mot pour mot : « Oui : archive 2.png et construis le héros depuis elle, cape sans motif doré sur l'ourlet. » Archivée :
+   `reference/sources/hero-turnaround-v3-2026-10-19.png` ; le liseré doré de la cape reste, le motif de l'ourlet n'y est plus.
 
 ## 2. Pourquoi une nouvelle planche
 - La planche complémentaire ne montre le protagoniste que sous **une** vue (trois-quarts). Une marche demande face, dos et profil à la
@@ -247,3 +251,21 @@ première ajoute une marche, des poses à l'épée et des gros plans du visage) 
   presque-profil ;
 - personnages clés : propositions non canoniques ; la marchande et la capitaine doublonnent la distribution approuvée (`merchant-x2-v2`,
   gardes).
+
+## 12. Planche de base (2026-10-19, Passe H5) : archivée, construite au stade lab (`hero-x2-v2`, candidat)
+**Reçu** : onze PNG dans `incoming/` : `1.png` (six variantes de couleur et de coiffure), `2.png` (la base, cheveux bruns : vue tournante
+de 8 vues, marche de 8 images, course de 8 images), `3.png` (attaques à l'épée), `ref1` / `ref2` (mêmes pixels que les planches 1 et 3 du
+casting, écart moyen 0,00, sans manifeste), `ref3` à `ref8` (personnages clés). Neuf portent le manifeste C2PA d'OpenAI (ChatGPT /
+gpt-image), liaison dure recalculée identique, signature non vérifiée. Seule `2.png` est archivée (décision 7).
+
+**Mesures** : même échelle sur toute la planche (repos 288-297 px avec l'ombre portée, course 272 px, tête de même largeur) ; tête ≈ 0,33
+de la hauteur ; vrai profil au repos (3e vue) ; course : poses de contact et poses ramassées seulement (pied d'appui ≈ 28 texels plus loin
+d'une image dessinée à l'autre, pas de vol), un poing devant et un gantelet en arrière sur chaque image, en alternance ; marche : la même
+enjambée répétée, bras figés (pas utilisée : le héros a la foulée de course, décision 2). Pas 3,4 : face de 85 rangées une fois l'ombre
+portée retirée.
+
+**Construit** (`rigs/hero-x2-v2.rig.mjs`, lab, candidat non approuvé) : face (1re vue), dos (4e), profil (3e, déjà tourné vers la gauche) ;
+l'ombre portée de la planche retirée ; repos 4 images ; course de profil de 8 images prises dans la rangée de course de la planche (haut du
+corps et jambes dessinés, bras et cape tels quels), les intermédiaires par cisaillement des jambes dessinées depuis la hanche pour que le
+pied d'appui avance de 9 texels par image ; face / dos : rebond, poids, cape, jambes levées sous le corps, mains qui descendent. Aperçu en
+DEV (`?cast=candidate`). Revue : `reviews/hero-x2-v2/`.

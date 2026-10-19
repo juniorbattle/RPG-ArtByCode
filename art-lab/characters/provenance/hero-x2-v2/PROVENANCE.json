@@ -1,0 +1,56 @@
+{
+ "id": "hero-x2-v2",
+ "status": "CANDIDATE (Pass H5), NOT APPROVED: built from the operator's base sheet for review in the scene (DEV, ?cast=candidate); production, approval and any Gold Master status are the operator's decision",
+ "request": {
+  "date": "2026-10-19",
+  "by": "operator (git user wonmii), in this session",
+  "text": "build the hero from the base sheet: « Oui : archive 2.png et construis le héros depuis elle, cape sans motif doré sur l'ourlet. »",
+  "decisions": "brief decisions 1-7: « 01 Protagonist (Recommandé) », « Foulée de course (Recommandé) », « Planche 1 (Recommandé) », « Foncé (Recommandé) », « Planche v3 (Recommandé) », « Une base + couleurs (Recommandé) », then « Oui : archive 2.png et construis le héros depuis elle, cape sans motif doré sur l'ourlet. »"
+ },
+ "approvals": [],
+ "source": {
+  "sheet": {
+   "description": "the operator's base sheet of the protagonist (8 idle views, 8 walk frames, 8 run frames), original PNG with an OpenAI C2PA manifest (signature not verified)",
+   "sha256": "a86cea282b5645ec4ab008dd0dc469f76d5105e792a12b62ec587758385d29a1",
+   "bytes": 2280337,
+   "path": "art-lab/characters/reference/sources/hero-turnaround-v3-2026-10-19.png",
+   "origin": "supplied by the operator (incoming/2.png) and chosen by them as the base; C2PA: ChatGPT / gpt-image, trainedAlgorithmicMedia (read, not cryptographically validated); see the source record",
+   "rights": "use as the art source of the hero candidate decided by the operator (brief, decisions 1-7); third-party rights NOT exhaustively verified; AI-generated according to its C2PA manifest (signature not verified); production use needs the operator's separate decision"
+  }
+ },
+ "chain": [
+  "reconstruct-grid.mjs <sheet> <crop> 3.4 64 96 90 --holes --closing-from=48, full colours, per facing (front 22,48,201,342; back 536,48,707,342; profile 386,56,527,344, already facing left)",
+  "quantize-palette.mjs --k 64: one OKLab k-means over the three views",
+  "rig prepare(): the sheet's drop shadow removed (neutral greys reachable from the outside, rows >= 78), thin strands and islands removed, one-texel slits closed, soles on row 90 and feet centred",
+  "rig frames(): idle = rest, rest, inhale, exhale (rig-engine breath); run, profile = the sheet's eight run frames (cut out of their row, reconstructed at the same pitch with the same options, mirrored, shadowless, mapped onto the joint palette, aligned on the face), each split into its upper body and its drawn legs; four frames per step (contact, two in-betweens, gathered), the legs sheared from the hip so that the planted foot moves 9 texels per frame; run, front / back = body bob and weight shift, cape sway, each leg lifted under the body, the hands dropping on their forward swing",
+  "build-character.mjs: frame checks (contract section 3), Aseprite assembly (tags <anim>-<dir>), export compared pixel for pixel with the rig frames"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9,
+  "height": "1.777 m (84 rows x 0.0235 x 0.9, the runtime's figureRows)"
+ },
+ "runtime": "DEV preview only: BakedCast candidate entry (replaces: ['player'], scale 0.9, ?cast=candidate); never in production builds without the operator's approval. Before production, the baked texture must grow: the ten production sheets hold 322 of its 336 guaranteed frames, the hero adds 36 (journal Passes H3, H5)",
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v2.rig.mjs --check; node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/hero-x2-v2 [--rebuild]",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/hero-x2-v2.png": "7d62c12bb88c2a9eee1cfcfeaec57b997fabe1c54b8a5aa725c6ccbea594040f",
+  "art-lab/characters/exports/hero-x2-v2.json": "e4bc80805065f626b0dbc57c9bbb7d89c9c3ba2c89affc2a50d366e04c1ef365",
+  "art-lab/characters/source/hero-x2-v2.aseprite": "b908025da9b7adb88abe2c12a4cddc4e63a0d9d562e2514948eb4c782b123def",
+  "art-lab/characters/provenance/hero-x2-v2/view-down.png": "dd476db7b6d84f7f9c08f05c80e65d24a68c38a95c3b36d97ed00b1356e4c7fc",
+  "art-lab/characters/provenance/hero-x2-v2/view-up.png": "3f038b254fa9274f3cff726719e1a4d4f17fb0b244c409d552f6e3750e6be654",
+  "art-lab/characters/provenance/hero-x2-v2/view-side.png": "2f4d505083e7d241a935dae1412c7cc55ec3e2d72382226504dcc4a208bb672d",
+  "art-lab/characters/provenance/hero-x2-v2/build.json": "11c7d17f8b017b12b7f94943cd3355b7f230adc5504ace25da274bd8a9ba9ee3",
+  "art-lab/characters/rigs/hero-x2-v2.rig.mjs": "40fca7107da935d221687d8a56b68246b9c94e8342a84d55d30b8dc77badb77a",
+  "tools/art-lab/build-character.mjs": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

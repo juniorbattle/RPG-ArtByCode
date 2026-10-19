@@ -38,6 +38,10 @@ import courierPng from '../../art-lab/characters/exports/courier-x2-v1.png?url';
 import courierJson from '../../art-lab/characters/exports/courier-x2-v1.json';
 import { id as coId, status as coStatus, approved as coApproved, runtimeUse as coUse } from '../../art-lab/characters/manifests/courier-x2-v1.manifest.json';
 import { files as courierFiles } from '../../art-lab/characters/provenance/courier-x2-v1/PROVENANCE.json';
+import heroPng from '../../art-lab/characters/exports/hero-x2-v2.png?url';
+import heroJson from '../../art-lab/characters/exports/hero-x2-v2.json';
+import { id as heId, status as heStatus, approved as heApproved, runtimeUse as heUse } from '../../art-lab/characters/manifests/hero-x2-v2.manifest.json';
+import { files as heroFiles } from '../../art-lab/characters/provenance/hero-x2-v2/PROVENANCE.json';
 import { FRAME_W, FOOT_Y } from './SpriteGenerator';
 import { PIXEL_WORLD, WALK_CADENCE } from './SpriteRenderer';
 import { walkSlide } from './Stride';
@@ -80,6 +84,8 @@ const ENTRIES: Entry[] = [
   { manifest: { id: twId, status: twStatus, approved: twApproved, runtimeUse: twUse }, png: townswomanPng, json: townswomanJson, files: townswomanFiles, replaces: ['crowd2'], scale: 0.9 },
   { manifest: { id: omId, status: omStatus, approved: omApproved, runtimeUse: omUse }, png: olderMerchantPng, json: olderMerchantJson, files: olderMerchantFiles, replaces: ['crowd3'], scale: 0.9 },
   { manifest: { id: coId, status: coStatus, approved: coApproved, runtimeUse: coUse }, png: courierPng, json: courierJson, files: courierFiles, replaces: ['crowd4'], scale: 0.9 },
+  // CANDIDATE, not approved (journal Pass H5): the premium hero on the player, DEV review only (?cast=candidate)
+  { manifest: { id: heId, status: heStatus, approved: heApproved, runtimeUse: heUse }, png: heroPng, json: heroJson, files: heroFiles, replaces: ['player'], scale: 0.9 },
 ];
 
 /** NPC variants of a sheet (Variants.ts): the ramp rows of each variant (-1 = keep that material), the luminance ranges of its masked

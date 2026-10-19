@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b sont archivées **mot pour mot** dans `journal/` (Passes M3, M6 et M7, 2026-10-18) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0 et M6 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7 et H5) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -17,74 +17,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/04-passes-6-6k.md`](journal/04-passes-6-6k.md) | 6, 6b, 6c, 6d, 6e, 6f, 6g, 6h, 6i, 6j, 6k | 17/10 → 18/10 |
 | [`journal/05-passes-M3-M4.md`](journal/05-passes-M3-M4.md) | M3, Q1, Q1b, M4 | 18/10 |
 | [`journal/06-passes-M5-S1b.md`](journal/06-passes-M5-S1b.md) | M5, S1, S2, S1b | 18/10 |
+| [`journal/07-passes-H0-M6.md`](journal/07-passes-H0-M6.md) | H0, M6 | 18/10 |
 
 ---
-
-## Passe H0 — Héros premium : brief et prompt de la planche source ; décision sur l'enseigne de la forge (2026-10-18)
-
-### Complément de la Passe S1b
-- Passe S1b fusionnée en avance rapide (`1634b59`) ; runs GitHub : S1 `39174062375` / `39174069769`, S2 `39175497168` / `39175505682`, S1b
-  `39176075688` / `39176097041` (branche / `main`) : success.
-- Enseigne de la forge devant la tête du forgeron (C) : décision de l'opérateur, mot pour mot : « celui ci c'est different car le npc forge
-  se trouve a l'interieur du decors dans c'est logique le beau de decors surpasse le sprite ». Rien à changer.
-
-### Demande (2026-10-18)
-- Troisième point des priorités (Passe M5) : « travailler sur notre héros premium ». Consigne de la séance parente : un héros cuit à la
-  densité de la distribution par la chaîne existante, critiqué à l'aveugle par un agent neuf ; production et Gold Master à l'opérateur ;
-  aucune provenance inventée.
-- Branche `hero-premium` ouverte depuis `main` (`1634b59`).
-
-### Constat — [OK]
-- Aucune source multi-vues du héros dans l'Art Lab. La planche complémentaire (14 personnages, classée « C, utile pour les personnages
-  clés » par l'opérateur le 16/10) montre « 01. Protagonist — Young Adventurer » sous une seule vue (trois-quarts) ; les PNJ venaient de
-  planches à 4 ou 6 vues découpées par leurs scripts de rig. Une marche ne s'invente pas depuis une vue (« Principes à garder ») : il faut
-  une planche de l'opérateur.
-
-### Décisions de l'opérateur (2026-10-18) — [OK]
-- Base de dessin, mot pour mot : « 01 Protagonist (Recommandé) ». Vitesse, mot pour mot : « Foulée de course (Recommandé) » (2,5 m/s
-  gardés ; le cycle de profil doit reculer le pied d'appui d'≈ 9 texels par image à ×2, contre 4-4,5 pour la distribution, Passe S2).
-
-### Fait
-- `art-lab/characters/briefs/hero-proposal.md` : décisions, brief (figure d'après la vue 01, proportions de la base commune, 1,78 m),
-  contraintes mesurées (densité, foulée, entrée `replaces: ['player']` seulement après approbation), prompt anglais de la planche (face, dos,
-  profil au repos, deux poses de course de profil, même échelle et même ligne de sol, fond gris uni), méthode à réception (celle des PNJ),
-  critères, risques.
-- Pièces jointes du prompt (non versionnées, `art-lab/characters/scratch/hero-premium/attachments/`) : `design-01-protagonist-crop-x2.png`
-  (vue 01 recadrée de la planche complémentaire archivée, ×2 ; SHA-256 `fbdf11b5…`) et
-  `quality-dockworker-x2-v2-front-side-back-x6-neutral.png` (docker v2 au repos, face / profil / dos ×6 au plus proche voisin sur gris
-  `#808080` ; `93d5e3a6…`).
-
-### Restes [?]
-- **En attente de l'opérateur** : la planche générée, livrée en PNG d'origine, avec l'outil, la date et le prompt effectivement utilisés.
-- Avec Maj (4,25 m/s), la borne × 1,6 de l'horloge laissera glisser : à décider à la livraison.
-
-### Pensée
-- Un personnage clé se prépare comme les PNJ : la source d'abord (multi-vues, fichier d'origine, provenance déclarée), puis la chaîne ; une
-  contrainte d'animation (la foulée de course) s'écrit dans le prompt, chiffrée, avant la génération.
-
-## Passe M6 — Journal : archivage des passes M3 à M4 (2026-10-18)
-
-### Pourquoi
-- Règle d'`AGENTS.md` : au-delà d'environ 60 Ko de passes dans `JOURNAL.md`, les passes closes les plus anciennes partent d'un bloc dans
-  `journal/`. Après la Passe H0 : 61 672 octets de passes (M3 11 863, Q1 10 023, Q1b 4 187, M4 2 860, M5 7 366, S1 10 922, S2 7 224,
-  S1b 3 967, H0 3 260).
-- Branche `journal-archive-m3-m4` ouverte depuis `main` (`aa58d31`).
-
-### Fait — [OK]
-- M3, Q1, Q1b et M4 (closes : décision de l'opérateur consignée, branches fusionnées) déplacées d'un bloc, dans leur ordre, à l'octet, dans
-  `journal/05-passes-M3-M4.md` (en-tête de quelques lignes, une ligne `---`, puis les 28 933 octets inchangés, SHA-256 `e80b0dfcc58a44af…`) ;
-  ligne ajoutée à l'index ; phrase d'en-tête : « Les passes 0 à M4 sont archivées… (Passes M3 et M6) ». `JOURNAL.md` : 96 085 → 67 249 octets
-  avant cette entrée.
-- Preuve (script hors dépôt, contre `git show aa58d31:JOURNAL.md` ramené aux fins de ligne de la copie de travail) : **7 / 7** — corps de
-  l'archive = octets retirés (SHA-256 et longueur) ; les 4 sections déplacées retrouvées chacune une seule fois, dans la nouvelle archive
-  seulement ; les 5 passes gardées inchangées ; `JOURNAL.md` = l'original moins le bloc, aux deux lignes d'index près ; CRLF seuls dans les
-  deux fichiers. Contrôle négatif : « 15 / 15 contrôles » changé en « 15 / 16 » dans une copie de l'archive → 5 / 7 (SHA-256 et section).
-  Avec cette entrée ajoutée, le contrôle « original moins le bloc » échoue comme attendu (lignes en plus).
-- **[KO → compris]** première exécution : 2 / 7 ; `git show` rend le blob de l'index en LF (0 CRLF, 946 LF), la copie de travail est en CRLF
-  (`autocrlf`) : comparer aux fins de ligne de la copie de travail, comme en Passe M3.
-
-### Pensée
-- Une preuve d'octets contre l'historique git compare des fins de ligne : le blob est celui de l'index, pas celui du disque.
 
 ## Passe V0 — Variantes de PNJ (cheveux / peau) : analyse des palettes, proposition (2026-10-18)
 
@@ -621,6 +556,70 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une déclinaison de couleur passe par le système des variantes (au rendu, sans image en plus) ; une déclinaison de forme demande une base
   dessinée.
 
+## Passe H5 — Héros premium : planche de base archivée, `hero-x2-v2` construit au stade lab (candidat) (2026-10-19)
+
+### Reçu
+- Onze PNG dans `incoming/` (« tu peux consulter le incoming ») : neuf avec le manifeste C2PA d'OpenAI (liaison dure recalculée identique,
+  signature non vérifiée) ; `ref1` / `ref2` sans manifeste, mêmes pixels que les planches 1 et 3 du casting (écart 0,00). `2.png` (vue
+  tournante 8 vues, marche 8, course 8) mesurée : même échelle partout, tête ≈ 0,33, vrai profil au repos ; course en poses de contact et
+  ramassées seulement. Question : « Je construis le héros depuis 2.png, sans le motif doré ? » ; réponse, mot pour mot : « Oui : archive 2.png
+  et construis le héros depuis elle, cape sans motif doré sur l'ourlet. »
+- Branche `hero-x2-v2` depuis `main` (`0398c4f`). Archivée à l'octet (`cmp`) : `reference/sources/hero-turnaround-v3-2026-10-19.png`
+  (`a86cea28…`) et sa fiche. La clé d'API OpenAI de l'opérateur (`.env.local`, ignoré par git, son ajout au `.gitignore` est de lui) n'est
+  ni lue ni utilisée ici.
+
+### Construction (`rigs/hero-x2-v2.rig.mjs`, outils partagés inchangés)
+- Pas 3,4 ; `--holes --closing-from=48` ; l'ombre portée de la planche retirée dans le rig (gris neutres atteignables depuis l'extérieur,
+  rangées ≥ 78) : face de 84 rangées, 1,777 m. Repos : respiration de la distribution.
+- Course de profil, 8 images : les huit figures de la rangée de course, découpées (deux se touchent : remplissage depuis chaque tête),
+  reconstruites au même pas, retournées, sur la palette commune, calées sur le visage. **[KO]** jambes peintes par IK sous les hauts du
+  corps dessinés (méthode de `hero-x2-v1`) : bottes raides à côté des bottes dessinées, pan du manteau coupé en dents de scie. **[KO]**
+  jambes dessinées décalées d'un bloc : la hanche se détache du manteau. **[OK]** jambes dessinées **cisaillées depuis la hanche** (pied à
+  plat, déplacé d'un bloc) : pied d'appui sur une piste de 9 texels par image ; les images 4 et 8 reprennent les jambes des images 3 et 7.
+  Pas de phase de vol (la planche n'en dessine pas).
+- Face / dos : rebond, poids, cape, jambes levées sous le corps ; les mains descendent au balancement avant. **[KO]** les déplacer par
+  `movePart` laissait des traînées claires (le fond comblé depuis la manche) ; la main redescendue est dessinée par-dessus.
+
+### Contrôles
+- `--check` : reconstruit à l'identique ; `verify-provenance` : intact ; `walkSlide` 9 texels : horloge × 1,56 en B / D, × 1,52 en C,
+  × 1,6 (plafond) en A ; glissement en mouvement (joueur tenu sur une touche) B −0,02, C −0,05, D −0,02 ; Maj en B −1,09 (connu).
+- Aperçu DEV `?cast=candidate` (entrée candidate de `BakedCast`, `replaces: ['player']`) ; flipbook de la course en B et D relu ;
+  captures `reviews/hero-x2-v2/`. En B, l'anneau pointillé autour de la tête est le dévoilement du réverbère du quai, pas le sprite.
+- **Critique à l'aveugle** (agent neuf, étiquettes tirées au sort, contre `dockworker-x2-v2`) : héros meilleur en silhouette, matières et
+  animation ; moins bon en proportions (cheveux et gants volumineux), visage (yeux sous la frange), palette sombre et contours. Son premier
+  défaut, un halo clair autour du contour, **[OK] vérifié sur les pixels** : 6,2 % des texels du bord ont le gris du fond de la planche
+  (distribution 0,8-1 %, `hero-x2-v1` 4,1 %) ; retiré dans le rig (`dehalo` : bords gris neutres de la clarté du fond, deux passes) → 0,5 %.
+  Bras figés devant la poitrine et course sans vol : dessin de la planche, laissé à l'opérateur (qui a jugé les bras de ces planches
+  vivants, Passe H4).
+- Seconde critique, neuve, après la retouche : plus de halo signalé ; héros toujours meilleur en silhouette, mains, matières et animation
+  (jambes : contact, passage, genou levé ; cape), égal en proportions, moins bon en visage (yeux sombres sous la frange, pas de bouche :
+  illisible à 1-2 px par texel), palette (cheveux, sangles, gants et bottes sur une même rampe brun-orangé) et contours (couronne des cheveux
+  effritée, bruit du buste en course). Vérifié sur les pixels : 17 texels orphelins sur 36 images, aucun îlot (voyageur 11, docker 0) :
+  l'effritement est la texture peinte de la planche à 3,4 px par texel plus qu'une saleté ; restent quelques texels clairs (pan de chemise)
+  entre les jambes des images 7 et 8. **[KO] critère d'acceptation du brief (§ 7 : au moins égal au docker sur chaque axe) non atteint**
+  (visage, palette, contours) ; une retouche faite sur les deux permises, la suite (visage, bras, vol) touche au dessin de la planche :
+  décision de l'opérateur.
+
+### Journal — [OK] archivage
+- Avec la Passe H5, les passes gardées atteignaient 61 415 octets (seuil ≈ 60 Ko) : H0 et M6, les deux plus anciennes (closes : décisions
+  consignées, branches fusionnées), déplacées d'un bloc, dans leur ordre, à l'octet, dans `journal/07-passes-H0-M6.md` (en-tête, ligne `---`,
+  puis les 5 281 octets inchangés, SHA-256 `cdd6363d1487f793…`) ; ligne d'index et phrase d'en-tête mises à jour ; 56 134 octets de passes
+  gardées (V0 à H5).
+- Preuve (script hors dépôt, contre le journal juste avant le déplacement) : **8 / 8** (en-tête ; corps = octets retirés ; H0 et M6 chacune
+  une seule fois, dans la nouvelle archive ; passes gardées inchangées ; `JOURNAL.md` = l'original moins le bloc, à la phrase et à la ligne
+  d'index près ; archives 01 à 06 inchangées ; CRLF seuls). Contrôle négatif : un mot changé dans une copie de l'archive → 7 / 8.
+
+### Restes [?]
+- **Décision de l'opérateur** : production du héros ou retouches ; rien n'est approuvé.
+- Texture cuite : 322 + 36 images, au-delà des 336 garanties (l'aperçu passe sur ce GPU) ; à élargir avant la production.
+- Course avec Maj (4,25 m/s) ; masques des déclinaisons de couleur (tâche distincte).
+
+### Pensée
+- Une planche qui ne dessine que les poses extrêmes d'une course se complète par cisaillement de ses jambes depuis la hanche (le pied reste
+  un bloc à plat) : le dessin d'origine reste, la foulée devient régulière ; des jambes peintes à côté d'un dessin riche font tache.
+- Le fond d'une planche se mélange aux cellules du bord : mesurer la part des texels du contour proches de la couleur du fond, et la retirer
+  au rig, avant la critique.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -656,7 +655,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   leurs PNG d'origine) ; planche v2 archivée, héros `hero-x2-v1` construit au stade lab puis écarté par l'opérateur (proportions, bras
   immobiles, cuisses trop hautes ; « experimental ») ; décision, mot pour mot : « Planche v3 (Recommandé) » ; prompt v3 prêt
   (`briefs/hero-proposal.md` § 5, trois pièces jointes) ; déclinaisons au choix du joueur : « Une base + couleurs (Recommandé) » (Passe H4) ;
-  deux lots d'images évalués, non validés (brief § 11) ; **en attente de la planche de base de l'opérateur** (PNG téléchargé). Avant toute
+  deux lots d'images évalués, non validés (brief § 11) ; planche de base archivée, `hero-x2-v2` construit au stade lab, candidat non
+  approuvé (Passe H5) ; **en attente de la décision de l'opérateur** (production ou retouches). Avant toute
   production : élargir la texture cuite (322 + 30 images > 336 garanties) ; course avec Maj à décider. Plus tard : masques du héros pour ses
   déclinaisons, écran de choix (code de jeu). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
   production.
@@ -882,6 +882,8 @@ sprites.
   fragmente une fois tournée, des membres peints dans les teintes de la vue restent lisibles (Passe H3).
 - Le balancement d'un bras de profil se lit sur le bras proche, images alignées sur la tête (en course, un poing est toujours devant) ; une
   planche de casting choisit une direction, une source se juge à la taille de ses figures contre les 85 rangées du sprite (Passe H4).
+- Une course dessinée en poses extrêmes se complète par cisaillement des jambes depuis la hanche, pied à plat ; le halo du fond d'une
+  planche se mesure sur le contour et se retire au rig avant la critique (Passe H5).
 - Un masque de matière se vérifie contre la planche de référence : des texels « oubliés » peuvent être la bonne matière et la zone autour la
   fausse (manches du forgeron, Passe V3) ; une ombre que les règles ne prennent pas se relève à la main (rectangle forcé), pas par une règle
   générale.

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "hero-x2-v2",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/hero-x2-v2.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/hero-x2-v2.png",
+    "metadata": "art-lab/characters/exports/hero-x2-v2.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-character.mjs (reconstruct-grid + quantize-palette + rig-engine, rig art-lab/characters/rigs/hero-x2-v2.rig.mjs); Aseprite 1.3.18.6 (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "The operator's base sheet of the protagonist: front, back and profile idle views, and its eight run frames",
+      "path": "art-lab/characters/reference/sources/hero-turnaround-v3-2026-10-19.png",
+      "note": "Original PNG supplied by the operator (incoming/2.png) and chosen by them: « Oui : archive 2.png et construis le héros depuis elle, cape sans motif doré sur l'ourlet. »; archived byte for byte with its record; its C2PA manifest names ChatGPT / gpt-image (signature not verified); third-party rights NOT exhaustively verified. Crops: front 22,48,201,342; back 536,48,707,342; profile 386,56,527,344; run row y 736-1022 (eight figures); pitch 3.4."
+    },
+    {
+      "category": "C",
+      "label": "Casting 1, sheet a, entry 01 « Young Adventurer » (the design chosen by the operator)",
+      "path": "art-lab/characters/reference/sources/tournament-roster-casting-2026-10-18-a-original.png",
+      "note": "design reference only (journal Passes H1 / H2)"
+    },
+    {
+      "category": "A",
+      "label": "Merchant District runtime, cameras A / B / C / D, seed 1842",
+      "path": "art-lab/characters/reviews/hero-x2-v2",
+      "note": "in-scene review (JOURNAL, Passe H5)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "CANDIDATE (Pass H5), NOT APPROVED: the premium hero built to the lab stage from the operator's base sheet (« Oui : archive 2.png et construis le héros depuis elle, cape sans motif doré sur l'ourlet. »), for review in the scene (DEV, ?cast=candidate). Density x2 (64x96, feet on row 90), idle 4 + run 8 frames in the three runtime facings, one 64-colour palette, presentation scale 0.9 (1.777 m). The profile run keeps the sheet's own drawn upper bodies and legs (arms and cape as drawn); its in-betweens shear the drawn legs from the hip so that the planted foot moves 9 texels per frame (walkSlide 9: clock x1.56 at 2.5 m/s in B / D). The base of the player-selectable colour variants (« Une base + couleurs (Recommandé) »), whose masks are a later task. Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v2.rig.mjs --check"
+}
