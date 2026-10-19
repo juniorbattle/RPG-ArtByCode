@@ -1,0 +1,49 @@
+{
+  "kind": "archived-source-sheet",
+  "file": "hero-turnaround-v2-2026-10-18.png",
+  "sha256": "d69f626b83c5e054d32eee6b20fe9e4c07ef39ca726e295c56bc2fa66e707aab",
+  "bytes": 2203836,
+  "format": "PNG 1672 x 941, 8-bit RGB (no alpha), non-interlaced; chunks IHDR, caBX, IDAT, IEND (caBX = C2PA manifest, 21893 B at offset 33); no ICC, gamma, text or EXIF chunk",
+  "content": "ONE character, the protagonist of casting 1 (sheet a, entry 01, chosen by the operator), on a flat neutral grey background, no text: top row, six idle views (front; three-quarter front; three-quarter back; near-profile facing right, the face in profile and the body slightly turned; three-quarter back; back), the capes of the first two touching (x about 297); bottom row, five run frames facing right (frames 1, 2, 4 and 5 nearly the same flight pose, the back leg kicked up; frame 3 a contact pose); dark trousers in every view, the run included",
+  "measured": "background: border mean (116.8, 117.7, 117.1), range 113-121; idle figures 457-462 px tall (front y 51-509), run figures 362-366 px; head, hair included, to the chin about 26 rows of 86 at pitch 5.3 in the idle views and 25 of 69 in the run frames: the same head, but the run frames draw a shorter body (chin to belt about 11 rows against 24); no regular pixel grid found (in-cell variance against the pitch, 3.6-7.0 px: only the artefact of integer pitches); reconstruction at pitch 5.3 gives idle figures of 85-87 rows",
+  "classification": "ART SOURCE of the experimental hero-x2-v1 (lab, not approved), superseded as the hero's source by the v3 sheet the operator asked for (« Planche v3 (Recommandé) »); the design of casting 1, sheet a, entry 01, chosen by the operator (2026-10-18, « Planche 1 (Recommandé) », dark trousers « Foncé (Recommandé) »)",
+  "nature": "the ORIGINAL PNG file supplied by the operator (dropped into art-lab/characters/scratch/hero-premium/incoming/, not versioned); it carries OpenAI's C2PA manifest. Archived byte for byte, unmodified (cmp against the incoming file before commit).",
+  "names": {
+    "original": "V2-Planche de sprites pixel art d’un aventurier bleu et or.png (the copy in incoming/, file time 2026-10-19 03:22:00 UTC)",
+    "c2paTitle": "image.png",
+    "session": "also pasted in the working session as a transcoded WebP (1672 x 941, 307 166 B, SHA-256 105094d747ae296977b78251f3b43db3c38979b2c62f93c5fa2f9e3ab7159510): mean absolute error 2.18 / 255 against this PNG (decoded by Chrome), 27.57 for this PNG shifted 16 px; not archived"
+  },
+  "generation": {
+    "declared": "operator, 2026-10-18, verbatim: « je viens de deposer le png v2 V2-Planche de sprites pixel art d’un aventurier bleu et or.png dans incoming » (after choosing « Attendre la planche v2 (Recommandé) »): the individual sheet asked for by prompt v2 of art-lab/characters/briefs/hero-proposal.md section 5; the exact prompt text pasted and the attachments joined are not stated in words",
+    "c2pa": "c2pa.created by softwareAgent ChatGPT (version gpt-image), digitalSourceType trainedAlgorithmicMedia, when 2026-10-19T03:21:05.791669852Z; then c2pa.converted and c2pa.watermarked.unbound; allActionsIncluded false; claim v2: claim generator OpenAI Media Service API (c2pa-rs 0.79.2, spec 2.2.0), dc:title image.png, instanceID xmp:iid:76e1fce3-3469-46c0-90ad-38f675a8ce65, manifest urn:c2pa:9a8bc990-cfd2-4fb2-ad85-21d498f02189"
+  },
+  "c2paVerification": {
+    "presence": "present (caBX chunk); read without validating the signature: c2patool is not installed (install only with operator approval). SIGNATURE AND CERTIFICATE CHAIN NOT VERIFIED.",
+    "hardBinding": "c2pa.hash.data (sha256 of the file without the caBX chunk, exclusion start 33 length 21893) recomputed: f8ee94ab4c361c409850d04a2eaf1032b1372b2ede9d9ff1385f91f986fd9459 = the recorded hash (an integrity check of the binding, not of the signature)",
+    "signer": "COSE_Sign1 (CBOR tag 18) ES256, 2-certificate chain: C=US, O=OpenAI OpCo\\, LLC, CN=OpenAI Media Service (issuer: C=US, ST=New York, L=New York, O=Trufo Inc., OU=CA Division, emailAddress=ca@trufo.ai, CN=Trufo C2PA Claim Signing CA (2025); Mar 23 02:53:02 2026 GMT to Mar 24 02:53:02 2027 GMT); C=US, ST=New York, L=New York, O=Trufo Inc., OU=CA Division, emailAddress=ca@trufo.ai, CN=Trufo C2PA Claim Signing CA (2025) (issuer: C=US, ST=New York, L=New York, O=Trufo Inc., OU=CA Division, emailAddress=ca@trufo.ai, CN=Trufo C2PA Root CA (2025\\, ECC P384); Feb  1 09:15:18 2026 GMT to Feb  2 09:15:18 2031 GMT); names read from the manifest, not validated",
+    "reader": "the read-only script of Pass H2 (outside the repo), checked on npc2-merchant-source-2026-10-16.png"
+  },
+  "v2Checks": "against the H1 defects of sheet a: dark trousers in the run [fixed]; flat neutral grey background, far from the indigo cape [fixed]; a profile at rest: the 4th view is a near-profile (face in profile, body slightly turned) [mostly]; crisp pixels of one size: soft painting, no regular grid [not fixed]; one row of five views as asked: six idle views and five run frames instead (the layout of the attachments)",
+  "provenance": "supplied and declared by the operator as the v2 sheet; its own C2PA manifest (signature not verified) names ChatGPT / gpt-image (OpenAI Media Service API) and an AI-generated source type",
+  "rights": "use as the art source of the hero candidate decided by the operator (brief, decisions 1-4); third-party rights NOT exhaustively verified; AI-generated according to its C2PA manifest (signature not verified); production use needs the operator's separate decision",
+  "archived": {
+    "date": "2026-10-18",
+    "decision": "brief section 6.1 (archive the source byte for byte before any work), after the operator chose « Attendre la planche v2 (Recommandé) » and delivered it",
+    "pass": "H3",
+    "rule": "never edited, re-encoded or replaced; every transformation is a separate derived file"
+  },
+  "derived": [
+    {
+      "asset": "hero-x2-v1 (EXPERIMENTAL, runtimeUse \"lab\", not approved; turned down by the operator, to be rebuilt from the v3 sheet)",
+      "reconstruction": "tools/art-lab/reconstruct-grid.mjs per facing: front 24,50,292,510; back 1393,51,1624,508; profile 820,50,1033,512; pitch 5.3, frame 64 x 96, foot row 90, --holes --no-shadow --closing-from=48",
+      "chain": "tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v1.rig.mjs (one 64-colour palette, rig prepare + frames, Aseprite assembly)",
+      "record": "../../provenance/hero-x2-v1/PROVENANCE.json"
+    }
+  ],
+  "usedAsReference": [],
+  "notInvented": "No prompt text, attachment list, account or generation parameter beyond the operator's sentence and the file's own C2PA data is recorded; the C2PA signature is not claimed to be valid.",
+  "v3Attachments": [
+    "art-lab/characters/scratch/hero-premium/attachments/v3-image1-v2-idle-front-back-profile.png (not versioned, SHA-256 9ea079380fcb94c6863c6c5a6031ace1122b3c995f6e403cee11959d64b68fa5): crops 20,44-296,515 / 1388,44-1630,515 / 814,44-1040,515 of this PNG (front, back, near-profile), unscaled, bottoms aligned, 24 px gaps on rgb(117,118,117): image 1 of the hero prompt v3",
+    "art-lab/characters/scratch/hero-premium/attachments/v3-image2-v2-run-poses.png (not versioned, SHA-256 c14bca8a83ecfe8e4586f90d07288f9ffe1feb25b02633c6c0f63ce0492bb5dd): crop 18,540-1640,918, same method: image 2 of the hero prompt v3"
+  ]
+}

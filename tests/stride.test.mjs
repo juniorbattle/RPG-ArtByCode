@@ -71,3 +71,23 @@ test('walkClock: the speed the steps show over the speed the cycle draws, at the
   sys.cast.set('porter', { id: 'dock', scale: 0.9, height: 1.7, walkSpeed: null });
   assert.equal(sys.walkClock({ base: 'porter', dir: 'side' }, 0.9, 0), 1, 'an unsteady cycle');
 });
+
+test('the player: a baked hero runs on walkClock (the run key included), the generated sprite keeps x1 / x1.7', () => {
+  const atlas = { specs: new Map(), counts: new Map([['hero/walk', 6]]), frames: new Map() };
+  const at = () => ({ x: 0, y: 0, z: 0, clone() { return { ...this }; } });
+  const run = (baked, shift) => {
+    const sys = new ActorSystem(atlas);
+    if (baked) sys.cast.set('player', { id: 'hero', scale: 0.9, height: 1.78, walkSpeed: 1.4 });
+    sys.player = sys.spawn('player', 'player', at(), { t: 0 });
+    sys.camYaw = 0; sys.controlYaw = 0; sys.charScale = 1.12;
+    sys.keys.add('d'); if (shift) sys.keys.add('shift');                   // straight across the screen: shown in profile
+    sys.update(0.02, 0);
+    return { t: sys.player.t, dir: sys.player.dir, base: sys.player.base };
+  };
+  const b = run(true, false);
+  assert.equal(b.base, 'player'); assert.equal(b.dir, 'side');
+  assert.ok(Math.abs(b.t - 0.02 * (2.5 / (1.4 * 1.12))) < 1e-9, 'its steps at 2.5 m/s over the speed its cycle draws');
+  assert.ok(Math.abs(run(true, true).t - 0.02 * 1.6) < 1e-9, 'bounded with the run key');
+  assert.ok(Math.abs(run(false, false).t - 0.02) < 1e-9, 'generated: x1');
+  assert.ok(Math.abs(run(false, true).t - 0.02 * 1.7) < 1e-9, 'generated: the run key x1.7');
+});

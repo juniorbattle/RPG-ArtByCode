@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "hero-x2-v1",
+  "kind": "character",
+  "status": "experimental",
+  "source": "art-lab/characters/source/hero-x2-v1.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/hero-x2-v1.png",
+    "metadata": "art-lab/characters/exports/hero-x2-v1.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-character.mjs (reconstruct-grid + quantize-palette + rig-engine, rig art-lab/characters/rigs/hero-x2-v1.rig.mjs); Aseprite 1.3.18.6 (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "The operator's individual sheet of the protagonist (prompt v2): front, back and near-profile idle views",
+      "path": "art-lab/characters/reference/sources/hero-turnaround-v2-2026-10-18.png",
+      "note": "Original PNG supplied by the operator (« je viens de deposer le png v2 ... »), archived byte for byte with its record; its C2PA manifest names ChatGPT / gpt-image (signature not verified); third-party rights NOT exhaustively verified. Crops: front 24,50,292,510; back 1393,51,1624,508; profile 820,50,1033,512; pitch 5.3. Its five run frames are not used (proportions differ from the idle views, journal Pass H3)."
+    },
+    {
+      "category": "C",
+      "label": "Casting 1, sheet a, entry 01 « Young Adventurer » (the design chosen by the operator)",
+      "path": "art-lab/characters/reference/sources/tournament-roster-casting-2026-10-18-a-original.png",
+      "note": "design reference only (journal Passes H1 / H2)"
+    },
+    {
+      "category": "A",
+      "label": "Merchant District runtime, cameras A / B / C / D, seed 1842",
+      "path": "art-lab/characters/reviews/hero-x2-v1",
+      "note": "in-scene review and the operator's critique (JOURNAL, Passe H3)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "EXPERIMENTAL (Pass H3), NOT APPROVED: the premium hero built to the lab stage from the operator's v2 sheet, shown in the scene (DEV, ?cast=candidate) and turned down by the operator: « Il s'affiche mais enorment de probleme deja il semble avoir des proportions differents aux autres pnjjs sprite travaille et surtout les animations de marche deplacement non c'est mauvais, bras qui ne bouge pas, les jambes qui ne soont pas alignes et donne l'impression qui marche de maniere decale »; « on voit le ddefaut clairement sur ce runntime capture du protagnoist enrain de marcher avec les jambes cuisses trop haute et les bras immobiles »; their answer to the way forward: « Planche v3 (Recommandé) » (prompt v3, art-lab/characters/briefs/hero-proposal.md section 5). Measured: head (top to chin) 0.28 of the height against 0.31-0.35 for the cast, face about 13 texels wide against 22-25; the profile's arm merged with the pouches (no part to swing). The legs' fault (thighs too high) is fixed in the rig; the rest needs the v3 sheet, from which this id is rebuilt. Not in the cast (no BakedCast entry) until then. Density x2 (64x96, feet on row 90), idle 4 + run 6 frames in the three runtime facings, one 64-colour palette, presentation scale 0.9 (1.78 m). Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v1.rig.mjs --check"
+}

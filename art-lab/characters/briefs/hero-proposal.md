@@ -1,8 +1,9 @@
 # Héros premium — le protagoniste cuit : brief (2026-10-18)
 
 **Statut : BRIEF, décisions de base prises par l'opérateur (2026-10-18) ; casting 1 reçu et tranché (§ 9), ses PNG d'origine archivés
-(§ 9, Passe H2) ; l'opérateur a choisi d'attendre la planche individuelle (PNG d'origine) qu'il génère avec le prompt v2 du § 5 (§ 1.4).**
-Aucun asset produit, aucun manifeste. Troisième point des priorités de l'opérateur (journal, Passe M5) ; casting : journal, Passes H1 et H2.
+(§ 9, Passe H2) ; planche v2 reçue, archivée et construite au stade lab (§ 10, Passe H3) ; l'opérateur demande une planche v3 (§ 1.5) :
+on attend le PNG d'origine qu'il génère avec le prompt v3 du § 5.** Asset de lab `hero-x2-v1` (non approuvé, « experimental ») construit
+depuis la v2, à reconstruire depuis la v3. Troisième point des priorités de l'opérateur (journal, Passe M5) ; journal, Passes H0 à H3.
 
 ## 1. Décisions de l'opérateur (2026-10-18)
 1. **Base de dessin : « 01. Protagonist — Young Adventurer »** de la planche complémentaire de 14 personnages
@@ -17,6 +18,12 @@ Aucun asset produit, aucun manifeste. Troisième point des priorités de l'opér
 4. **Source du héros** (2026-10-18, Passe H2, après l'archivage des PNG d'origine du casting) : à la question « Pour le héros premium : je
    le construis maintenant à partir de la planche 1 (PNG d'origine), ou on attend la planche individuelle générée avec le prompt v2 du
    brief ? », réponse, mot pour mot : « Attendre la planche v2 (Recommandé) ». Rien n'est construit depuis la planche 1.
+5. **Planche v3** (2026-10-18/19, Passe H3, après l'aperçu en scène du héros construit depuis la v2, § 10). Remarques de l'opérateur, mot pour
+   mot : « Il s'affiche mais enorment de probleme deja il semble avoir des proportions differents aux autres pnjjs sprite travaille et surtout
+   les animations de marche deplacement non c'est mauvais, bras qui ne bouge pas, les jambes qui ne soont pas alignes et donne l'impression qui
+   marche de maniere decale » ; puis, capture à l'appui : « on voit le ddefaut clairement sur ce runntime capture du protagnoist enrain de
+   marcher avec les jambes cuisses trop haute et les bras immobiles ». À la question « Pour corriger les proportions et faire bouger les bras,
+   quelle voie veux-tu ? », réponse, mot pour mot : « Planche v3 (Recommandé) ».
 
 ## 2. Pourquoi une nouvelle planche
 - La planche complémentaire ne montre le protagoniste que sous **une** vue (trois-quarts). Une marche demande face, dos et profil à la
@@ -64,52 +71,52 @@ règle sur le sens mesuré sur la planche, avant tout miroir.
 - Entrée de production : `BakedCast.ts` avec `replaces: ['player']`, seulement après approbation de l'opérateur (manifeste `approved: true`,
   `runtimeUse: "production"`). D'ici là : `runtimeUse: "lab"`, aperçu `?baked=` / `cast=candidate` en DEV.
 
-## 5. Prompt de la planche individuelle, v2 (à coller ; images jointes dans cet ordre)
-Le prompt v1 (planche multi-vues d'après la seule vue 01, avec le docker en référence de proportions) n'a pas servi : le casting 1 (§ 9)
-est venu d'un autre prompt, non déclaré. Le v1 reste dans l'historique git de ce fichier. Le v2 part du design retenu par l'opérateur.
+## 5. Prompt de la planche individuelle, v3 (à coller ; images jointes dans cet ordre)
+Le prompt v2 a donné la planche v2 (§ 10) ; il reste dans l'historique git de ce fichier (comme le v1). Le v3 garde le design de la v2 et
+corrige ce que l'aperçu en scène a montré (§ 1.5) : les proportions de la distribution, un bras séparable de profil, un vrai cycle de course
+à la même échelle que les vues de repos.
 
-Images à joindre : **image 1** = `scratch/hero-premium/attachments/casting1-p1-original-protagonist-views-x2.png` (les 6 vues de repos du
-protagoniste, casting 1, planche 1, sans texte) ; **image 2** = `scratch/hero-premium/attachments/casting1-p1-original-run-x2.png` (ses 5
-images de course). Rien d'autre : le docker n'est plus joint (les proportions de l'image 1 sont déjà dans la plage de la distribution), et une
-planche entière ajouterait des personnages à ne pas copier. Depuis la Passe H2, les deux images sont recadrées dans le **PNG d'origine** de la
-planche 1 (sans perte, même cadrage ; les anciennes, tirées de la copie WebP, gardent leur nom sans `-original`) ; elles se refont depuis
-l'archive (§ 9, fiche `reference/sources/tournament-roster-casting-2026-10-18-a-original.source.json`, champ `derived`).
-Télécharger le résultat en PNG (bouton de téléchargement, pas copier-coller), et dire l'outil, la date et le prompt effectivement utilisé.
+Images à joindre (`scratch/hero-premium/attachments/`, non versionnées, refaites depuis les fichiers archivés) :
+**image 1** = `v3-image1-v2-idle-front-back-profile.png` (face, dos et presque-profil de la v2, sans changement d'échelle, sur le gris de la
+planche) ; **image 2** = `v3-image2-v2-run-poses.png` (les cinq images de course de la v2) ; **image 3** = `v3-image3-cast-proportions-x6.png`
+(le docker et le coursier de la distribution, face et profil, ×6 au plus proche voisin sur gris `#808080` : référence de proportions
+seulement ; le voyageur, garçon aux cheveux en épis et au foulard bleu, n'est pas joint : trop proche de l'archétype du héros).
+Télécharger le résultat en PNG (bouton de téléchargement, pas copier-coller).
 
 ```text
-Create a character turnaround sheet of ONE character: the protagonist shown in images 1 and 2, for Cité du Tournoi — Merchant District
-at Night (HD-2D pixel art). Images 1 and 2 are our own casting references of this character: keep his design, colours and proportions;
-this sheet makes him consistent across the views and more refined.
+Create a character sheet of ONE character: the protagonist shown in image 1, for Cité du Tournoi — Merchant District at Night (HD-2D pixel
+art). Keep his design and colours exactly: brown spiky hair, indigo hooded cloak with the gold motif along the hem, brass clasp, ecru shirt,
+brown leather vest, belt and pouches, brown leather gauntlets, DARK grey-brown trousers, tall brown boots with turned-down cuffs.
 
-The character, identical in every view:
-* a young male adventurer; brown spiky hair with locks over the forehead; readable dark eyes, calm determined expression;
-* an indigo-blue hooded cloak, hood down, reaching below the knees, with a frayed hem; small gold dots on the shoulders and a gold
-  embroidered motif along the hem, the same at the front and at the back; a round brass clasp at the collar;
-* an ecru linen shirt, a brown leather vest and harness, a belt with a brass buckle, belt pouches and a small purse;
-* brown leather gloves with cuffs;
-* DARK grey-brown baggy trousers, the same dark colour in every view, including the running poses (image 2 shows them lighter: draw
-  them dark);
-* tall brown leather boots with turned-down cuffs.
-Proportions exactly as in image 1: the head, hair included, about one third of the total height; stylised RPG proportions.
+Change his PROPORTIONS to match image 3. Image 3 shows two of our townsfolk ONLY as a proportion and scale reference: do not copy their
+clothes, caps, hair or faces. Like them:
+* the head, hair included, is about one third of the total height, with a larger, rounder face and bigger readable eyes than in image 1;
+* a compact torso;
+* the legs (trousers and boots) clearly visible below the cloak, about one third of the height.
 
-Views, all of the SAME character at the SAME scale, side by side on ONE row, all feet on the SAME ground line, generous empty space
-between the views:
-1. front view, standing idle;
-2. back view, standing idle;
-3. side view facing right, standing idle: a true profile, not a three-quarter view;
-4. side view facing right, running: contact pose, legs spread in a long running stride, the front heel touching the ground, the cloak
-   flowing behind as in image 2;
-5. side view facing right, running: passing pose, the supporting leg under the body, the other knee raised.
-The cloak, hair, straps and pouches must be consistent between the views; both feet fully visible in every view.
+Top row, idle, all at the SAME scale, feet on the SAME ground line:
+1. front view;
+2. back view;
+3. side view facing right: a TRUE profile (one eye visible, the body turned 90 degrees), the near arm hanging clearly apart from the torso
+   and the pouches, its gauntlet and hand fully visible.
+
+Bottom row: a 6-frame RUNNING cycle, side view facing right, at EXACTLY the same scale and proportions as the top row (the head the same
+size in every frame), the poses of image 2 as a guide:
+1. contact: right leg forward, heel touching the ground, left leg behind;
+2. down: the right leg under the body, knee bent, carrying the weight;
+3. passing: both feet off the ground, the left knee coming forward;
+4. contact: left leg forward, heel touching the ground, right leg behind;
+5. down: the left leg under the body, knee bent;
+6. passing: both feet off the ground, the right knee coming forward.
+The arms swing opposite to the legs, elbows bent, the near arm clearly visible against the body in every frame; the cloak flows behind the
+same way in every frame; the trousers stay dark; both boots fully visible.
 
 Technique and composition:
-* premium illustrative pixel art, more refined than ordinary NPCs: a carefully constructed face, readable hands, convincing fabric
-  folds, soft directional shading, controlled colour ramps, selective dark outlines;
-* crisp square pixels of one uniform size across the whole sheet: no blur, no mixed pixel sizes, no dithering, no scattered noise, no
-  mechanical stripes, no pillow shading;
-* one amber accent family only (brass, gold embroidery); hair, leather and skin stay muted;
-* plain, flat, uniform neutral grey background (not dark blue); no gradient, no vignette, no floor, no cast shadow;
-* no text, labels, numbers, frames, UI or watermark.
+* premium illustrative pixel art: carefully constructed face, readable hands, controlled colour ramps, selective dark outlines;
+* crisp square pixels of one uniform size across the whole sheet: no blur, no mixed pixel sizes, no dithering, no scattered noise;
+* one amber accent family only (brass, gold embroidery);
+* plain, flat, uniform neutral grey background; no gradient, no vignette, no floor, no cast shadow;
+* generous empty space between the figures; no text, labels, numbers, frames, UI or watermark.
 ```
 
 ## 6. Méthode, après réception (celle des PNJ, journal Passes 4A-quindecies à 4A-tervicies)
@@ -186,3 +193,18 @@ proportions et de qualité.
 
 **Originalité** : le v2 ne joint que le protagoniste lui-même. L'archétype (jeune aventurier, cheveux bruns en épis, cape bleue) est courant
 dans le genre ; aucun personnage existant précis n'a été reconnu, sans vérification exhaustive des droits.
+
+## 10. Planche v2 (2026-10-18, Passe H3) : reçue, construite au stade lab, écartée par l'opérateur
+**Reçue** : `reference/sources/hero-turnaround-v2-2026-10-18.png` (PNG d'origine, 1672 × 941, C2PA d'OpenAI lu, signature non vérifiée),
+archivée à l'octet avec sa fiche. Six vues de repos (face, deux 3/4, presque-profil, 3/4 dos, dos) et cinq images de course, fond gris uni
+(≈ 117), pantalon foncé partout ; pas de grille de pixels régulière.
+
+**Mesures** (export `hero-x2-v1`, même lecture que la distribution) : tête du sommet au menton 24 rangées sur 85 (0,28) contre 0,31-0,32
+pour le docker, le voyageur et le coursier et ≈ 0,35 pour la marchande ; visage ≈ 13 texels de large contre 22-25 ; buste long, jambes
+courtes. Les images de course dessinent une tête de même taille mais un buste deux fois plus court (menton-ceinture ≈ 11 rangées contre 24) :
+inutilisables telles quelles ; de profil, manche, gantelet, sacoche et ceinture se fondent en une masse brune : pas de bras séparable.
+
+**Construit** (`rigs/hero-x2-v1.rig.mjs`, lab, non approuvé) : vues face / dos / presque-profil au pas 5,3 (85-87 rangées), repos 4 images,
+course 6 images (contact, poussée, vol × 2 ; pied d'appui 9 texels par image : horloge × 1,56 en B / D), jambes de profil peintes dans les
+teintes de la vue, bras immobiles. Écarté par l'opérateur (§ 1.5) : proportions, bras immobiles, cuisses trop hautes (corrigées dans le rig,
+le reste demande une nouvelle source).

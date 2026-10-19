@@ -491,6 +491,88 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   témoins), il ne se lit pas dans les noms.
 - Un lecteur de métadonnées écrit pour l'occasion se valide d'abord sur un fichier dont les valeurs sont déjà consignées.
 
+## Passe H3 — Héros premium : planche v2 archivée, héros construit au stade lab puis écarté par l'opérateur ; prompt v3 (2026-10-18/19)
+
+### Reçu
+- Opérateur, mot pour mot : « je viens de deposer le png v2 V2-Planche de sprites pixel art d’un aventurier bleu et or.png dans incoming ».
+  PNG 1672 × 941 RGB, manifeste C2PA (ChatGPT / gpt-image, `trainedAlgorithmicMedia`, `c2pa.created` 2026-10-19T03:21:05Z) ; liaison dure
+  recalculée identique ; signature non vérifiée. La copie collée dans la séance (WebP) : écart 2,18 / 255 contre ce PNG, 27,57 pour le témoin
+  décalé de 16 px.
+- Branche `hero-x2-v1` ouverte depuis `main` (`d2b5fd6`) après `git fetch --prune` (aucune autre branche).
+- Archivée à l'octet : `reference/sources/hero-turnaround-v2-2026-10-18.png` (`d69f626b…`) et sa fiche (`v2Checks` : pantalon foncé et fond
+  gris corrigés ; un presque-profil au repos ; pas de grille de pixels ; six vues de repos et cinq images de course au lieu des cinq vues).
+
+### Mesures de la source — [OK] ; [KO] les images de course
+- Fond gris uni (bord 116,8 / 117,7 / 117,1) ; figures de repos 457-462 px, de course 362-366 px. Pas de grille régulière : la variance par
+  cellule ne creuse qu'aux pas entiers (artefact de la recherche par dixièmes de pas ; disparu avec un pas de 0,02). Pas 5,3 : 85-87 rangées
+  (la distribution : 83-89).
+- **[KO]** images de course : même tête (25 rangées sur 69 contre 26 sur 86) mais buste deux fois plus court (menton-ceinture ≈ 11 rangées
+  contre 24) ; les images 1, 2, 4 et 5 montrent presque la même pose de vol, la 3 un contact : des poses clés, pas un cycle. Pas utilisées
+  comme images.
+
+### Construction (`rigs/hero-x2-v1.rig.mjs`, lab, non approuvé)
+- Outils partagés inchangés (`build-character`, `rig-engine`, `reconstruct-grid` sont figés par empreinte dans les dix paquets approuvés,
+  que `verify-provenance` contrôle) : toute la recette est dans le rig.
+- Vues : face (1re), dos (6e), presque-profil (4e, retourné) ; `--holes` retire le gris du fond enfermé entre les tiges de bottes du profil
+  et quelques texels de halo au bord des capes ; `--no-shadow` ; `--closing-from=48`. Une palette de 64 couleurs.
+- Repos : respiration de la distribution. Course de 6 images : contact, poussée, vol, ×2 ; pied d'appui à plat, 9 texels par image entre
+  contact et poussée ; aucun texel sur la rangée 90 en vol. `walkSlide` 9 texels : horloge × 1,56 en B / D, × 1,52 en C, plafonnée à × 1,6
+  en A (glissement 9 %) ; avec Maj (4,25 m/s), 38 à 46 % (à décider). Face / dos : le corps rebondit, la cape ondule, chaque jambe se lève
+  sous le corps, les deux en vol. Face de 84 rangées : 1,777 m à l'échelle 0,9 (`HEIGHT.player` 1,78).
+- **[KO]** la jambe découpée dans la vue (cuisse et botte), tournée en trois segments (RotSprite) : la texture chargée de la botte se
+  fragmente ; la jambe lointaine à −0,1 OKLab d'un pantalon déjà sombre fait une tache presque noire. **[OK]** jambes peintes dans les
+  teintes de la vue (cuisse : pantalon ; tige : botte, revers clair), le pied de la vue déplacé d'un bloc (méthode des PNJ).
+- **[KO]** le balancement du bras par cisaillement d'une boîte détache un morceau de gant : de profil, manche, gantelet, sacoche et ceinture
+  font une seule masse brune ; aucune pièce de bras séparable.
+
+### Runtime — [OK] DEV ; [?] texture cuite
+- `ActorSystem.update` : l'horloge d'animation d'un joueur cuit suit ses pas (`walkClock`, touche de course comprise) ; le joueur généré
+  garde × 1 / × 1,7. `tests/stride.test.mjs` +1 ; contrôle négatif : l'ancienne ligne remise → 1 échec.
+- Aperçu `?cast=candidate` par une entrée candidate de `BakedCast` (`replaces: ['player']`) : le héros sur le joueur, 1,777 m. Entrée
+  retirée après la revue de l'opérateur ; elle revient avec la v3.
+- Glissement en mouvement (variante hors dépôt de `tools/foot-slip.mjs` : le joueur tenu sur une touche, harnais à graine, médiane) :
+  A +0,09 (le plafond × 1,6), B −0,02, C −0,05, D −0,02 ; témoin connu mauvais, Maj en B : −1,09.
+- **[?]** texture cuite : 322 + 30 images = 2 112 rangées, plus que les 2 048 garanties par WebGL2. L'aperçu passe sur ce GPU (sa
+  `MAX_TEXTURE_SIZE` est plus grande) ; à élargir (adressage par case entière) avant toute production du héros.
+
+### Revue de l'opérateur (2026-10-18/19), mot pour mot
+- « Il s'affiche mais enorment de probleme deja il semble avoir des proportions differents aux autres pnjjs sprite travaille et surtout les
+  animations de marche deplacement non c'est mauvais, bras qui ne bouge pas, les jambes qui ne soont pas alignes et donne l'impression qui
+  marche de maniere decale » ; puis, capture à l'appui : « on voit le ddefaut clairement sur ce runntime capture du protagnoist enrain de
+  marcher avec les jambes cuisses trop haute et les bras immobiles ».
+- Mesuré à sa suite (même lecture sur la distribution) : tête du sommet au menton 0,28 de la hauteur contre 0,31-0,32 (docker, voyageur,
+  coursier) et ≈ 0,35 (marchande) ; visage ≈ 13 texels de large contre 22-25 ; buste long, jambes courtes.
+- Cuisses trop hautes **[OK] corrigé dans le rig** : le bassin descendait de 3 rangées et les genoux montaient jusqu'à 8 → jambes 11,5 +
+  11,5, bassin abaissé d'au plus 1 rangée, genoux levés d'au plus 6, jambes recentrées sous le buste ; foulée inchangée (9).
+- Question : « Pour corriger les proportions et faire bouger les bras, quelle voie veux-tu ? » ; réponse, mot pour mot : « Planche v3
+  (Recommandé) ».
+
+### Fait ensuite
+- Brief : décision 5 (citations), prompt v3 (§ 5 : le design de la v2, les proportions de la distribution, un vrai profil au bras détaché du
+  buste, un cycle de course de 6 images à la même échelle, bras qui balancent), § 10 (la v2). Pièces jointes, non versionnées, refaites depuis
+  les fichiers archivés : `v3-image1-v2-idle-front-back-profile.png`, `v3-image2-v2-run-poses.png`, `v3-image3-cast-proportions-x6.png`
+  (docker et coursier ; le voyageur, garçon aux cheveux en épis et au foulard bleu, écarté : même archétype que le héros).
+- `hero-x2-v1` passé « experimental » (manifeste, paquet de provenance, fiche de la source) ; revue `reviews/hero-x2-v1/` (capture en B,
+  alignement avec la distribution, jambes avant / après, toutes les images).
+- Pas de critique à l'aveugle : la revue de l'opérateur a renvoyé le travail à la source avant.
+
+### Preuves
+- `build-character --check` : reconstruit à l'identique ; `verify-provenance` : intact ; `art:validate` : 15 manifestes, 11 sources
+  archivées, 0 erreur ; `typecheck`, `npm test` (38 / 38), `build` : OK.
+- Production : aucune entrée de distribution ajoutée ; le seul code de jeu changé (l'horloge du joueur) ne s'exécute qu'avec un joueur cuit,
+  le chemin du joueur généré est couvert par le test (× 1 et × 1,7). Pas de preuve d'image sur ce point.
+
+### Restes [?]
+- La planche v3 : l'opérateur la génère avec le prompt v3 et ses trois pièces jointes, et la livre en PNG téléchargé ; puis § 6 du brief.
+- Texture cuite à élargir avant la production du héros ; course avec Maj (4,25 m/s) à décider.
+
+### Pensée
+- Une planche source se mesure contre la distribution avant toute construction : tête sur hauteur, largeur du visage, longueur des jambes,
+  avec la même lecture. Ici l'écart (0,28 contre 0,31-0,35) ne s'est vu qu'à l'aperçu en scène.
+- Une « course » générée n'est pas un cycle : quatre images sur cinq identiques, et un buste deux fois plus court que les vues de repos.
+- Un membre ne s'anime que s'il est séparable dans la vue : la source doit dessiner le bras détaché du buste ; une texture peinte chargée se
+  fragmente quand on la tourne, des membres peints dans les teintes de la vue restent lisibles.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -522,11 +604,12 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   distribution de production, sans confirmation explicite consignée : à faire confirmer. Originaux des planches de référence des PNJ (01-16,
   17-24, planche complémentaire) à retrouver (l'opérateur s'en charge ; ceux du casting 1 sont archivés, Passe H2) ; droits de tiers non
   vérifiés exhaustivement ; signatures C2PA lues, jamais validées (`c2patool` non installé).
-- **Héros premium** (Passes H0, H1, H2) : casting 1 tranché par l'opérateur (design de la planche 1, pantalon foncé, trois planches archivées,
-  leurs PNG d'origine aussi) ; décision du 18/10, mot pour mot : « Attendre la planche v2 (Recommandé) » ; prompt v2 prêt
-  (`briefs/hero-proposal.md` § 5, pièces jointes refaites dans le PNG d'origine) ; **en attente de la planche individuelle de l'opérateur**
-  (PNG téléchargé, outil, date, prompt utilisé). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
-  production.
+- **Héros premium** (Passes H0 à H3) : casting 1 tranché par l'opérateur (design de la planche 1, pantalon foncé, planches archivées
+  avec leurs PNG d'origine) ; planche v2 archivée, héros `hero-x2-v1` construit au stade lab puis écarté par l'opérateur (proportions, bras
+  immobiles, cuisses trop hautes ; « experimental ») ; décision, mot pour mot : « Planche v3 (Recommandé) » ; prompt v3 prêt
+  (`briefs/hero-proposal.md` § 5, trois pièces jointes) ; **en attente de la planche v3 de l'opérateur** (PNG téléchargé). Avant toute
+  production : élargir la texture cuite (322 + 30 images > 336 garanties) ; course avec Maj à décider. Le reste des planches du casting :
+  propositions non canoniques, design à valider avant toute production.
 - **Personnages clés et suite de l'art** : héros et chat restent générés (densité ×1) ; ni personnage clé ni personnage **original** au
   même niveau ; E4 non lancée. Avant d'étendre : densité du cast (héros), liseré dépendant de la densité (liseré par sprite non implémenté),
   largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A. Décision ouverte : quelles planches étaient réellement rejetées (la
@@ -743,6 +826,10 @@ sprites.
 - Une mesure qu'avance un critique (dérive, rangées, texels) se vérifie sur les pixels de sa propre planche avant de peser son verdict ; une
   planche de critique reproduit l'avance réelle du jeu et se lit à 1:1 ; un désaccord qui persiste revient à l'opérateur, image en mouvement à
   l'appui (Passe V3).
+- Une planche source se mesure contre la distribution avant toute construction (tête sur hauteur, largeur du visage, jambes, même lecture),
+  et une « course » générée se vérifie contre les vues de repos (même échelle, même buste) avant d'être prise pour un cycle (Passe H3).
+- Un membre ne s'anime que s'il est séparable dans la vue (bras détaché du buste : à demander à la source) ; une texture peinte chargée se
+  fragmente une fois tournée, des membres peints dans les teintes de la vue restent lisibles (Passe H3).
 - Un masque de matière se vérifie contre la planche de référence : des texels « oubliés » peuvent être la bonne matière et la zone autour la
   fausse (manches du forgeron, Passe V3) ; une ombre que les règles ne prennent pas se relève à la main (rectangle forcé), pas par une règle
   générale.

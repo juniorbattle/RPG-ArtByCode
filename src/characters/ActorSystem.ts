@@ -230,7 +230,8 @@ export class ActorSystem {
       mv.normalize().multiplyScalar(2.5 * run * dt);
       this.resolve(p, p.pos.x + mv.x, p.pos.z + mv.z);
       this.face(p, mv, true);
-      this.setAnim(p, 'walk'); p.t += dt * run;
+      // a baked hero's clock follows its steps like a walker's (walkClock, the run key's speed included); the generated sprite keeps x1.7
+      this.setAnim(p, 'walk'); p.t += dt * (p.base ? this.walkClock(p, mv.x / dt, mv.z / dt) : run);
     } else { this.setAnim(p, 'idle'); p.t += dt; }
     p.pos.y = this.district?.heightAt(p.pos.x, p.pos.z) ?? 0;
 

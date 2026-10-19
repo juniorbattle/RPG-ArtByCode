@@ -1,0 +1,40 @@
+{
+ "id": "hero-x2-v1",
+ "frames": 30,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29",
+ "sheet": [
+  384,
+  480
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2759,
+    "meanOklabErrPermille": 15.2,
+    "maxOklabErrPermille": 59
+   },
+   "recon-up-full-q.png": {
+    "texels": 2603,
+    "meanOklabErrPermille": 13.4,
+    "maxOklabErrPermille": 50.9
+   },
+   "recon-side-full-q.png": {
+    "texels": 2186,
+    "meanOklabErrPermille": 14.2,
+    "maxOklabErrPermille": 55.6
+   }
+  }
+ },
+ "views": {
+  "down": "3158ed0f7e6cb30b23fd67d6781e066d4441e9a4f2034c280c55390ec53c4e86",
+  "up": "c25069d6be226a0b490360f320136f7290f1ccc7cc0eab7c0174ead6f37bbd01",
+  "side": "d2611e96ae654c67cbcf6e5f33cfebdd71624b37510d2f08f08380c8e8b371ec"
+ },
+ "exports": {
+  "png": "10af619d057f238ea2708964007eccd570625fd0b149d2c78e74487f3f19c22d",
+  "json": "b62accc501f55723a0f9fec25e2fd84fe9d9c0931da55981723f30f8a6a4d243",
+  "aseprite": "16179f60db1070fbb1b1d61fdf55e3de625d8920cd73fe56a19aa32ad291ac68"
+ }
+}
