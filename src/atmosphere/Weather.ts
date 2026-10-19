@@ -201,10 +201,18 @@ export class Weather {
   /** a flash now (captures with a frozen clock, the debug panel); the next one keeps its plan */
   strike(time: number): void { this.flash = this.newFlash(time); }
 
+  /** the camera's heading (azimuth of its view on the ground plane), kept by update: a new flash's bolt falls in the sky it faces (Passe W3) */
+  private camAz = 0;
+  private boltAz = 0;
+  private boltSeed = 0;
+  private readonly fwd = new THREE.Vector3();
+
   private newFlash(t0: number): Flash {
     const n = this.rng.int(2, 3), pulses: Array<[number, number, number]> = [];
     let t = 0;
     for (let i = 0; i < n; i++) { pulses.push([t, i === 0 ? this.rng.range(0.55, 0.9) : this.rng.range(0.8, 1.6), this.rng.range(0.05, 0.12)]); t += this.rng.range(0.06, 0.16); }
+    // its bolt: somewhere in the sky the camera faces, its own shape
+    this.boltAz = this.camAz + this.rng.range(-0.3, 0.3); this.boltSeed = this.rng.range(0, 100);
     return { t0, pulses };
   }
 
@@ -219,6 +227,7 @@ export class Weather {
     const min = new THREE.Vector3(c.x - BOX.x / 2, -1.4, c.z - BOX.z / 2);
     if (this.rain) { const m = this.rain.mat.uniforms; m.uBoxMin.value.copy(min); m.uVel.value.set(w.x * 1.2, -8.5, w.z * 1.2); }
     if (this.snow) { const m = this.snow.mat.uniforms; m.uBoxMin.value.copy(min); m.uVel.value.set(w.x * 0.8, -0.85, w.z * 0.8); }
+    camera.getWorldDirection(this.fwd); this.camAz = Math.atan2(this.fwd.z, this.fwd.x);
     this.updateFlash(time);
   }
 
@@ -230,6 +239,7 @@ export class Weather {
       this.base[k] = u.clone();
     }
     this.applied = {};
+    U.uBolt.value.w = 0;
     if (this.p.storm <= 0) { this.flashLevel = 0; return; }
     // planned from the first update; a clock that jumps back (a regenerated session) re-plans instead of waiting
     if (!(time >= this.nextFlash - 60)) this.nextFlash = time + this.rng.range(2.5, 6);
@@ -245,6 +255,8 @@ export class Weather {
     }
     this.flashLevel = k * this.p.storm;
     if (this.flashLevel < 1e-3) return;
+    // the bolt shows while the flash is strong (its strokes last a few frames), in the sky behind the city
+    U.uBolt.value.set(this.boltAz, this.boltSeed, 0, Math.min(1.2, Math.max(0, this.flashLevel - 0.2) * 1.5));
     // a cool white flash: the moonlight and the ambient lift (every surface, sprite and the water reflect it), the haze and the cloud bands
     // (sky, fog: the same colour) brighten toward a pale indigo
     const f = this.flashLevel;
@@ -261,6 +273,7 @@ export class Weather {
     for (const x of [this.rain, this.snow]) if (x) { x.mesh.geometry.dispose(); x.mat.dispose(); }
     for (const k of Weather.FLASHED) { const u = U[k].value as THREE.Color; if (this.applied[k] && u.equals(this.applied[k])) u.copy(this.base[k]); }
     this.applied = {};
+    U.uBolt.value.set(0, 0, 0, 0);
     for (const k of Weather.SET) U[k].value = this.before[k];
   }
 }

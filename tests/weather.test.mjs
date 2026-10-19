@@ -103,3 +103,33 @@ test('dispose gives every scene uniform back, the light of a flash in progress i
   const b = new Weather({ rain: 0, snow: 1, storm: 0, wind: 0 }); b.dispose();
   assert.equal(snap(), before);
 });
+
+test('the bolt (Passe W3): in the sky only during a strong flash, gone after it and after dispose', () => {
+  const before = snap();
+  const cam = new THREE.PerspectiveCamera(); cam.position.set(0, 3, 20); cam.lookAt(10, 3, 0); cam.updateMatrixWorld();
+  const w = new Weather({ rain: 0, snow: 0, storm: 1, wind: 1 });
+  w.update(5, cam, new THREE.Vector3());
+  assert.equal(U.uBolt.value.w, 0, 'no flash, no bolt');
+  w.strike(5); w.update(5, cam, new THREE.Vector3());
+  assert.ok(U.uBolt.value.w > 0, 'a bolt during the flash');
+  const camAz = Math.atan2(-20, 10);   // the camera faces (10, -20) on the ground from where it stands
+  assert.ok(Math.abs(U.uBolt.value.x - camAz) <= 0.3 + 1e-9, 'in the sky the camera faces');
+  let t = 5; for (let i = 0; i < 120; i++) { t += 1 / 60; w.update(t, cam, new THREE.Vector3()); }
+  assert.equal(U.uBolt.value.w, 0, 'gone after the flash');
+  // a flash cut short (the clock jumps back: a regenerated session) leaves no bolt behind
+  w.strike(t); w.update(t, cam, new THREE.Vector3()); assert.ok(U.uBolt.value.w > 0);
+  w.update(t - 2, cam, new THREE.Vector3());
+  assert.equal(U.uBolt.value.w, 0, 'gone when the flash is cut short');
+  // ten bolts under two headings: each in the sky its camera faces
+  const cam2 = new THREE.PerspectiveCamera(); cam2.position.set(0, 3, 0); cam2.lookAt(-5, 3, 8); cam2.updateMatrixWorld();
+  for (let i = 0; i < 10; i++) {
+    const c = i % 2 ? cam2 : cam, az = i % 2 ? Math.atan2(8, -5) : camAz;
+    t += 3; w.update(t, c, new THREE.Vector3()); w.strike(t); w.update(t, c, new THREE.Vector3());
+    const d = Math.abs(((U.uBolt.value.x - az + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI);
+    assert.ok(d <= 0.3 + 1e-9, `bolt ${i}: ${d.toFixed(3)} rad from the camera's heading`);
+  }
+  w.strike(t); w.update(t, cam, new THREE.Vector3());
+  w.dispose();
+  assert.equal(U.uBolt.value.w, 0, 'gone after dispose');
+  assert.equal(snap(), before);
+});

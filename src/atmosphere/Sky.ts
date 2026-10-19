@@ -18,6 +18,7 @@ void main(){
 const SKY_FRAG = /* glsl */ `
 ${COMMON_GLSL}
 uniform float uCloud;
+uniform vec4 uBolt;
 varying vec3 vDir;
 void main(){
   vec3 rd = normalize(vDir);
@@ -41,6 +42,21 @@ void main(){
   float disc = smoothstep(0.99984, 0.99991, mu);
   col += vec3(1.2, 1.26, 1.36) * disc * 1.45 * (1.0 - cl * 0.7) * (1.0 - uCloud);
   col += uMoonCol * (pow(mu, 2600.0) * 0.45 + pow(mu, 220.0) * 0.05) * (1.0 - 0.8 * uCloud);
+  // lightning (?storm, journal Passe W3): during a flash, a jagged stroke from the cloud deck down behind the city, with a fork from mid-height
+  // and a soft glow; uBolt.w = 0 skips it
+  if (uBolt.w > 0.0) {
+    float el = asin(clamp(rd.y, -1.0, 1.0)), az = atan(rd.z, rd.x), ce = cos(el);
+    float h = clamp((0.32 - el) / 0.3, 0.0, 1.0);
+    float span = smoothstep(0.35, 0.3, el) * smoothstep(-0.02, 0.05, el);
+    float path = uBolt.x + (vn2(vec2(h * 6.0, uBolt.y)) - 0.5) * 0.1 + (vn2(vec2(h * 23.0, uBolt.y + 7.0)) - 0.5) * 0.03;
+    float d = (mod(az - path + 3.14159265, 6.2831853) - 3.14159265) * ce;
+    float bolt = exp(-d * d / 1.44e-6) + 0.35 * exp(-d * d / 3.6e-5);
+    float hf = clamp((h - 0.4) / 0.6, 0.0, 1.0), side = vn2(vec2(uBolt.y, 9.0)) > 0.5 ? 1.0 : -1.0;
+    float fpath = path + side * hf * (0.05 + 0.04 * vn2(vec2(uBolt.y, 3.0))) + (vn2(vec2(h * 19.0, uBolt.y + 3.0)) - 0.5) * 0.02 * hf;
+    float df = (mod(az - fpath + 3.14159265, 6.2831853) - 3.14159265) * ce;
+    bolt += step(0.4, h) * 0.7 * exp(-df * df / 8.1e-7) * (1.0 - 0.7 * hf);
+    col += vec3(1.5, 1.62, 1.95) * bolt * span * uBolt.w;
+  }
   // sparse faint stars, only high in the sky and away from the moon
   vec3 sd = rd * 240.0, cell = floor(sd);
   float h = hash13(cell);

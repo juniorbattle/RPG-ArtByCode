@@ -74,6 +74,8 @@ export const U = {
   uRain: { value: 0 },
   uSnow: { value: 0 },
   uCloud: { value: 0 },
+  /** a lightning bolt in the sky during a flash (Weather.ts, journal Passe W3): azimuth (rad), seed, unused, intensity (0 = none) */
+  uBolt: { value: new THREE.Vector4(0, 0, 0, 0) },
   uResolution: { value: new THREE.Vector2(1920, 1080) },
   /** player occlusion reveal (only read by the occludable surface variants, see OcclusionReveal): per-occluder fade,
    *  reveal centre in render pixels (xy), the player's view depth (z) and the style (w: 0 soft, 1 dither, 2 hybrid) */

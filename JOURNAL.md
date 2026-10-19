@@ -841,6 +841,25 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Avant de prototyper un correctif, décomposer la grandeur mesurée en ses causes (ici : part du joueur, part de la caméra) et vérifier la
   décomposition contre la mesure : une hypothèse plausible (l'axe du suivi) a coûté un essai inutile.
 
+## Passe W3 — Orage : un éclair dessiné dans le ciel pendant les flashs (2026-10-19)
+
+### Pourquoi
+- Mon choix, pour que `?storm` se lise comme un orage et pas seulement comme un ciel qui s'éclaire : un éclair visible là où le ciel l'est
+  (A surtout). Branche `claude/stoic-goodall-8ieke4` recréée depuis `main` (`3383ef3`).
+
+### Fait — [OK]
+- Shader du ciel : pendant un flash (`uBolt.w > 0`, sinon la branche est sautée), un trait brisé de la couche nuageuse (élévation 0,32 rad)
+  jusque derrière la ville (0,02 rad), deux échelles de bruit pour le tracé, une fourche depuis mi-hauteur, une lueur douce ; ≈ 2,5 px de cœur
+  en 1080p, blanc froid (le bloom l'adoucit). Placé à chaque flash dans le ciel que la caméra regarde (cap de la caméra ± 0,3 rad), forme tirée
+  du même générateur graine que les flashs ; visible tant que le flash dépasse 0,2.
+- `tests/weather.test.mjs` +1 : pas d'éclair sans flash ; pendant un flash, dans le ciel que la caméra regarde ; éteint après le flash, quand
+  un flash est coupé (horloge qui recule) et après `dispose` ; dix éclairs sous deux caps de caméra. **Fautes injectées, attrapées** : éclair
+  jamais éteint, éclair hors du ciel visible, `dispose` qui le laisse. **[KO → corrigé]** les deux premières passaient d'abord : le flash
+  s'éteignait de lui-même avant la fin (le test ne coupait jamais un flash), et un seul tirage d'azimut tombait par chance dans le secteur.
+- Jeu par défaut contre `main` figé (`3fe2bfe`, même rendu par défaut que `3383ef3`), A / B / C / D : **0 px**.
+- Capture : `screenshots/calibration/w1-weather/A-storm-bolt-1280.png` (A, `storm=1`, éclair forcé) ; en B / D le ciel visible est trop
+  étroit : seul le flash de lumière se voit.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -944,8 +963,8 @@ sprites.
 **6b. Météo (Passes W1 / W2)** — pluie, neige, orage, vent derrière `?rain` / `?snow` / `?storm` / `?wind`, défaut inchangé (0 px), réglables
 en jouant dans le panneau DEV (section « Weather »). Restent : le
 temps GPU sur la 780M (`tools/perf.mjs`, commandes dans la passe), le jugement de l'opérateur en jeu et en mouvement (vent sur les bannières,
-pluie qui tombe, éclairs), une éventuelle météo par défaut ou un cycle (décision de l'opérateur) ; non faits : éclair dessiné dans le ciel,
-son (le jeu n'en a pas), éclaboussures au sol, neige sur les personnages.
+pluie qui tombe, éclairs), une éventuelle météo par défaut ou un cycle (décision de l'opérateur) ; non faits : son (le jeu n'en a pas), éclaboussures
+au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
