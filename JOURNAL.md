@@ -648,6 +648,61 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   planche de critique reproduit l'avance réelle du jeu (l'horloge) et se lit à 1:1 ; un désaccord qui persiste revient à l'opérateur, image en
   mouvement à l'appui.
 
+## Passe H1 — Héros premium : casting 1 (trois planches de personnages), design du protagoniste choisi, prompt v2 (2026-10-18)
+
+### Reçu
+- L'opérateur a collé trois planches de personnages (WebP 1447 × 1087, avec perte ; le même profil ICC générique que les planches archivées,
+  qui sont des copies ré-encodées) avec une note collée par lui : ce sont des références de casting, « et non des spritesheets de production directement
+  exploitables » ; le protagoniste issu du « 01. Young Adventurer » se développe « dans une planche individuelle détaillée » ; « Les
+  personnages représentés ne deviennent pas automatiquement canoniques » ; « La priorité reste le protagoniste H0 ».
+- Elles ne viennent pas du prompt du brief (§ 5, v1 : un seul personnage, cinq vues, fond gris) : plusieurs personnages, fond bleu nuit,
+  textes. Outil, date et prompt non déclarés.
+
+### Mesures du protagoniste — [OK] proportions ; [?] grille
+- Réglette sur la vue de face (± 0,015), tête cheveux compris jusqu'au menton sur la hauteur : planche 1 ≈ 0,31, planche 2 ≈ 0,32,
+  planche 3 ≈ 0,35 ; même lecture sur la planche source de la distribution : docker ≈ 0,31, voyageur ≈ 0,34. Les trois sont dans la famille
+  de la distribution. Hauteurs ≈ 146-148 / 145 / 136-141 px, contre 153-174 px pour les vues des PNJ sur leurs planches (le pas de
+  reconstruction se règle par personnage, 1,775 à 2,0).
+- Grille de pixels : un spectre des gradients ne trouve pas de pas net, mais il n'en trouve pas non plus sur la planche 01-16 (pas connu :
+  1,775) : méthode non concluante, abandonnée ; le pas se fixera sur la planche individuelle.
+- Défauts de cohérence relevés : planches 1 et 2, pantalon foncé au repos et clair en course, aucun vrai profil au repos (deux 3/4 face,
+  deux 3/4 dos) ; planche 3, jambes confuses aux images 3-4 de la course, cape de « 01b » rouge puis grise dans sa 4e vue ; partout, fond
+  bleu nuit proche de la cape indigo.
+- Planches de revue (non versionnées) : `art-lab/characters/scratch/hero-premium/casting-1/board-1-designs.png`, `board-2-course.png`,
+  `board-3-proportions.png`.
+
+### Décisions de l'opérateur (2026-10-18), mot pour mot
+- Design du protagoniste : « Planche 1 (Recommandé) » (fidèle au 01 d'origine, expression calme).
+- Pantalon : « Foncé (Recommandé) », dans toutes les vues, course comprise.
+- Archivage des trois planches : « Oui, à l'octet (Recommandé) ».
+
+### Fait — [OK]
+- Archivage à l'octet dans `art-lab/characters/reference/sources/` : `tournament-roster-casting-2026-10-18-a.webp` (planche 1),
+  `tournament-roster-casting-2026-10-18-b.webp` (planche 2), `main-characters-casting-2026-10-18.webp` (planche 3), chacune avec sa fiche
+  `.source.json` : classement « casting, non canonique », mesures, décision, provenance **non déclarée**, droits non vérifiés.
+- Brief `briefs/hero-proposal.md` : décision 3 (casting 1), figure et proportions d'après la planche 1, § 5 remplacé par le **prompt v2**
+  (le v1 n'a pas servi ; il reste dans l'historique git), § 9 « Casting 1 » (mesures, défauts, statut du reste des planches).
+- Prompt v2 : images jointes = les 6 vues de repos et les 5 images de course de la planche 1 (×2, sans texte, refaites depuis la planche
+  archivée) ; le docker n'est plus joint ; demande un vrai profil au repos, le pantalon foncé partout, le motif de cape cohérent, des pixels
+  nets d'une seule taille, un fond gris neutre ; profils tournés vers la droite comme la course jointe.
+
+### Restes [?]
+- La planche individuelle (PNG d'origine, outil, date, prompt) : l'opérateur la génère avec le v2. Ensuite, § 6 du brief.
+- Le reste des trois planches (tenues alternatives, combattants, personnages narratifs, PNJ importants) : propositions, aucune production
+  avant validation de leur design.
+
+### Preuves
+- `art:validate` : 14 manifestes, 7 sources archivées dont les 3 nouvelles, 0 erreur. Contrôle négatif : un octet ajouté à une archive
+  donne 2 erreurs (taille, SHA-256) ; archive restaurée, SHA-256 de nouveau celui du fichier collé.
+- SHA-256 des trois archives = ceux des trois fichiers collés dans la séance (`f44f86af…`, `fcb38cda…`, `2a7962f8…`).
+- `typecheck`, `npm test` (37 / 37), `build` : OK. Aucun code ni asset du jeu changé.
+
+### Pensée
+- Une planche de casting se mesure contre les planches sources de la distribution avec la même lecture (réglette sur la source, pas sur un
+  export) : 0,33 mesuré sur l'export du docker et 0,31 sur sa source décrivent la même tête.
+- Une méthode de mesure se teste d'abord sur un cas connu : le spectre des gradients, muet sur la planche 01-16 dont le pas est connu,
+  n'était pas une preuve d'absence de grille sur les nouvelles planches.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -678,8 +733,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - **Contrat et sources** : C2 (PNG versionné + JSON, `runtime-integration-contract.md` section 11) proposé le 16/10, appliqué par la
   distribution de production, sans confirmation explicite consignée : à faire confirmer. Originaux des planches de référence à retrouver
   (l'opérateur s'en charge) ; droits de tiers non vérifiés exhaustivement.
-- **Héros premium** (Passe H0) : brief et prompt prêts (`briefs/hero-proposal.md`, design « 01 Protagonist », foulée de course) ; **en
-  attente de la planche source de l'opérateur** (PNG d'origine, outil, date, prompt utilisé).
+- **Héros premium** (Passes H0, H1) : casting 1 tranché par l'opérateur (design de la planche 1, pantalon foncé, trois planches archivées) ;
+  prompt v2 prêt (`briefs/hero-proposal.md` § 5) ; **en attente de la planche individuelle de l'opérateur** (PNG d'origine, outil, date,
+  prompt utilisé). Le reste des planches du casting : propositions non canoniques, design à valider avant toute production.
 - **Personnages clés et suite de l'art** : héros et chat restent générés (densité ×1) ; ni personnage clé ni personnage **original** au
   même niveau ; E4 non lancée. Avant d'étendre : densité du cast (héros), liseré dépendant de la densité (liseré par sprite non implémenté),
   largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A. Décision ouverte : quelles planches étaient réellement rejetées (la

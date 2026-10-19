@@ -1,0 +1,26 @@
+{
+  "kind": "archived-source-sheet",
+  "file": "main-characters-casting-2026-10-18.webp",
+  "sha256": "2a7962f8b9b2f1cf63ab6737b6f92382182aa54d490ee8df0e9558ef8c990381",
+  "bytes": 390384,
+  "format": "WebP (VP8X: ICCP + VP8, lossy) 1447 x 1087; its only metadata is a generic 456-byte sRGB ICC profile (copyright \"Google Inc. 2016\"); no EXIF, XMP or C2PA",
+  "content": "sheet \"Cité du Tournoi — Personnages Principaux — Références de Sprites\" (header \"NPC SPRITE PRODUCTION REFERENCE · UNIFIED STYLE & SCALE\"), dark navy background, entries 01 Protagoniste (Héros) (4 views: three-quarter front, near profile, back with a large gold fleur-de-lis, profile; shorter cloak, pauldron, dark tunic), 01b Protagoniste — Tenue de voyage (5 views, red cloak, grey in its 4th view), 01c Protagoniste — Animation de course (référence) (5 frames facing right), 02 Seigneur du Tournoi (Noble), 03 Dame du Tournoi (Noble), 04 Maître des Épreuves (Organisateur), 05 Capitaine des Gardes, 06 Héraut du Tournoi, 07 Combattant du Tournoi — Chevalier (Homme), 08 Combattante du Tournoi (Femme), 09 Combattant du Tournoi — Barbare, a second \"07.\" Combattant du Tournoi — Duelliste (no 10), 11 Combattante du Tournoi — Prêtresse, 12 Combattant du Tournoi — Mage, 13 Combattant du Tournoi — Archer",
+  "measured": "protagonist figures about 136-141 px tall; head about 0.35 of the height (ruler, ± 0.015)",
+  "classification": "CASTING REFERENCE, NOT CANONICAL (operator, 2026-10-18): a first series of art references, not production sprite sheets; the characters shown do not become canonical automatically; each design is validated by the operator before any reconstruction, orientation or animation; priority: the protagonist (brief art-lab/characters/briefs/hero-proposal.md)",
+  "decision": "operator, 2026-10-18: not chosen as the protagonist's base (sheet a chosen)",
+  "nature": "a copy pasted by the operator into the working session (WebP, lossy VP8, 456-byte generic sRGB ICC profile, copyright \"Google Inc. 2016\", the same profile as the archived sheets merchant-district-night-npc-*.webp, which are re-encoded copies); NOT declared as the original file. Archived byte for byte, unmodified.",
+  "names": {
+    "session": "image 3 of 3 pasted by the operator in the working session of 2026-10-18 (written 2026-10-19 01:09:25 UTC), with a note treating the three sheets as casting proposals"
+  },
+  "provenance": "NOT declared: the operator has not stated the generator, the date of generation or the prompt (as of 2026-10-18). The sheet's own header text (\"NPC SPRITE PRODUCTION REFERENCE\", \"HD-2D PIXEL ART\") is image content, not a provenance statement.",
+  "rights": "archiving and use as a casting reference for the project decided by the operator (2026-10-18); third-party rights NOT verified",
+  "archived": {
+    "date": "2026-10-18",
+    "decision": "operator, answer to « Faut-il archiver ces trois planches dans le dépôt comme références de casting, telles que collées, avec une fiche ? »: « Oui, à l'octet (Recommandé) »",
+    "pass": "H1",
+    "rule": "never edited, re-encoded or replaced; an original file found later is added as a separate file with its own record, next to this one; every transformation is a separate derived file"
+  },
+  "derived": [],
+  "usedAsReference": [],
+  "notInvented": "No original PNG, generator, generation date, prompt, account or C2PA data is recorded: none is known."
+}

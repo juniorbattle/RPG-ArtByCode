@@ -1,0 +1,29 @@
+{
+  "kind": "archived-source-sheet",
+  "file": "tournament-roster-casting-2026-10-18-a.webp",
+  "sha256": "f44f86af5c43e9f844ba2357cd1d5190e5c0bef69118ceceb1f3aa4c15c202c3",
+  "bytes": 456030,
+  "format": "WebP (VP8X: ICCP + VP8, lossy) 1447 x 1087; its only metadata is a generic 456-byte sRGB ICC profile (copyright \"Google Inc. 2016\"); no EXIF, XMP or C2PA",
+  "content": "sheet \"Cité du Tournoi — Main Characters & Tournament Roster — Reference\" (header \"NPC SPRITE PRODUCTION REFERENCE · UNIFIED STYLE · SCALE · 16 GENERIC TOWNSFOLK COMPATIBLE · CITÉ DU TOURNOI — HD-2D PIXEL ART\"), dark navy background, 19 numbered entries with 5 or 6 views each: 01 Protagonist (Male) — Young Adventurer (6 idle views: front, two three-quarter fronts, two three-quarter backs, back; no strict profile), 02 Protagonist — Run Cycle (Male) (5 profile frames facing right), 03 Protagonist — Alternate Outfit (Male) (red scarf, no cloak), 04 Princess / Noble Heir (Female), 05 Royal Advisor, 06 Captain of the Guard, 07 High Priestess (Female), Tournament Fighters 08 Swordmaster, 09 Spear Champion, 10 Axe Fighter, 11 Duelist (Female), 12 Archer (Female), 13 Mage, 14 Martial Artist, 15 Gladiator, Important NPCs 16 Tournament Organizer, 17 Arena Gatekeeper, 18 Announcer, 19 Traveling Merchant",
+  "measured": "protagonist figures about 146-148 px tall (front: hair top y 136 to soles y 284); head, hair included, to the chin about 0.31 of the height (ruler reading, ± 0.015); background around the protagonist about rgb(16, 28, 40); trousers dark grey-brown in the idle views but light tan in the run frames; no regular pixel grid found by a gradient spectrum (the same method finds none on the archived 01-16 sheet either: not conclusive)",
+  "classification": "CASTING REFERENCE, NOT CANONICAL (operator, 2026-10-18): a first series of art references, not production sprite sheets; the characters shown do not become canonical automatically; each design is validated by the operator before any reconstruction, orientation or animation; priority: the protagonist (brief art-lab/characters/briefs/hero-proposal.md)",
+  "decision": "operator, 2026-10-18: « Planche 1 (Recommandé) » = the protagonist's design base (entry 01), with dark trousers in every view (« Foncé (Recommandé) »)",
+  "nature": "a copy pasted by the operator into the working session (WebP, lossy VP8, 456-byte generic sRGB ICC profile, copyright \"Google Inc. 2016\", the same profile as the archived sheets merchant-district-night-npc-*.webp, which are re-encoded copies); NOT declared as the original file. Archived byte for byte, unmodified.",
+  "names": {
+    "session": "image 1 of 3 pasted by the operator in the working session of 2026-10-18 (written 2026-10-19 01:09:25 UTC), with a note treating the three sheets as casting proposals"
+  },
+  "provenance": "NOT declared: the operator has not stated the generator, the date of generation or the prompt (as of 2026-10-18). The sheet's own header text (\"NPC SPRITE PRODUCTION REFERENCE\", \"HD-2D PIXEL ART\") is image content, not a provenance statement.",
+  "rights": "archiving and use as a casting reference for the project decided by the operator (2026-10-18); third-party rights NOT verified",
+  "archived": {
+    "date": "2026-10-18",
+    "decision": "operator, answer to « Faut-il archiver ces trois planches dans le dépôt comme références de casting, telles que collées, avec une fiche ? »: « Oui, à l'octet (Recommandé) »",
+    "pass": "H1",
+    "rule": "never edited, re-encoded or replaced; an original file found later is added as a separate file with its own record, next to this one; every transformation is a separate derived file"
+  },
+  "derived": [
+    "art-lab/characters/scratch/hero-premium/attachments/casting1-p1-protagonist-views-x2.png (not versioned): crop 22,131 506 x 158 of this sheet decoded by Chrome (canvas), x2 nearest neighbour (tools/zoom.mjs): image 1 of the hero prompt v2",
+    "art-lab/characters/scratch/hero-premium/attachments/casting1-p1-run-x2.png (not versioned): crop 540,131 486 x 158, same method: image 2 of the hero prompt v2"
+  ],
+  "usedAsReference": [],
+  "notInvented": "No original PNG, generator, generation date, prompt, account or C2PA data is recorded: none is known."
+}
