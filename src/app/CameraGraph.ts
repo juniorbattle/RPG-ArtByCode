@@ -108,6 +108,12 @@ export class CameraGraph {
    *  par défaut », journal Passe K4; prepared in Passe K1). The interpolated A <-> B and B <-> C blends swung the player backwards on screen
    *  (B -> A: -139 px/s for 0.23 s); `?camblend=interpolated` brings them back for comparison */
   anchorAll = true;
+  /** D's follow aimed at the player's screen speed (`?camfollow=screen`, journal Passe K5; the operator's decision K3, « Prototyper le suivi à
+   *  l'écran »): in settled D the smoothed focus never takes a step that would move the player backwards on screen against the step the player
+   *  takes itself (the pivot, following 85 % of the player's sideways move, overtook a player whom its walk into the depth slows on screen,
+   *  Passes K2 / K3); that frame it stops where the player stands still on screen, and catches up through the usual smoothing. Off = the
+   *  approved follow, unchanged */
+  screenFollow = false;
   /** the framing the camera is in or blending toward */
   target: CamId = 'B';
   state!: CamState;
@@ -122,6 +128,14 @@ export class CameraGraph {
   private readonly pv = new THREE.Vector3();
   private readonly torso = new THREE.Vector3();
   private readonly pr = new THREE.Vector3();
+  private readonly lastPlayer = new THREE.Vector3();
+  private hasLast = false;
+  private readonly prevFocus = new THREE.Vector3();
+  private readonly s0 = new THREE.Vector3();
+  private readonly s1 = new THREE.Vector3();
+  private readonly s2 = new THREE.Vector3();
+  private readonly s3 = new THREE.Vector3();
+  private readonly n2 = new THREE.Vector2();
   private readonly pu = new THREE.Vector3();
 
   /** NDC of a world point seen from a pose */
@@ -178,7 +192,7 @@ export class CameraGraph {
 
   /** jump to the settled framing for this player position (spawn, teleport, screenshots) */
   snap(player: THREE.Vector3, rig: CameraRig): void {
-    this.focus.copy(player);
+    this.focus.copy(player); this.hasLast = false;
     this.target = this.forced ?? (this.arrival ? 'A' : this.zoneFor(player.x, player.z, null));
     this.source = null;
     this.state = this.evalAnchor(this.target, this.focus.x, this.focus.z);
@@ -187,6 +201,7 @@ export class CameraGraph {
   }
 
   update(player: THREE.Vector3, dt: number, rig: CameraRig): void {
+    this.prevFocus.copy(this.focus);
     this.focus.lerp(player, 1 - Math.exp(-dt * this.followRate));
     const want = this.forced ?? (this.arrival ? 'A' : this.zoneFor(player.x, player.z));
     if (want !== this.target) {
@@ -199,17 +214,37 @@ export class CameraGraph {
       this.anchored = d || this.anchorAll;
       this.dur = this.duration(this.state, this.evalAnchor(want, this.focus.x, this.focus.z), d ? 1.3 : 1.2);
     }
-    const tgt = this.evalAnchor(this.target, this.focus.x, this.focus.z);
-    if (this.source) {
-      this.t += dt;
-      const w = smoother(Math.min(1, this.t / this.dur));
-      const src = 'id' in this.source ? this.evalAnchor(this.source.id, this.focus.x, this.focus.z) : this.source.snap;
-      this.state = this.blendPose(src, tgt, w, this.torso.set(player.x, player.y + TORSO_Y, player.z), rig.poseAspect);
-      if (this.t >= this.dur) this.source = null;
-    } else this.state = tgt;
+    if (this.source) this.t += dt;
+    const source = this.source, w = source ? smoother(Math.min(1, this.t / this.dur)) : 1;
+    /** the pose for a focus: the target framing, or the blend toward it at this frame's weight */
+    const stateAt = (f: THREE.Vector3): CamState => {
+      const tgt = this.evalAnchor(this.target, f.x, f.z);
+      if (!source) return tgt;
+      const src = 'id' in source ? this.evalAnchor(source.id, f.x, f.z) : source.snap;
+      return this.blendPose(src, tgt, w, this.torso.set(player.x, player.y + TORSO_Y, player.z), rig.poseAspect);
+    };
+    if (this.screenFollow && this.hasLast && this.activeIds().includes('D')) this.holdFocus(stateAt, player, rig.poseAspect);
+    this.lastPlayer.copy(player); this.hasLast = true;
+    this.state = stateAt(this.focus);
+    if (source && this.t >= this.dur) this.source = null;
     // a window narrower than the frame keeps the player where the full frame has it (CameraRig.applyFrame)
     rig.focus = (rig.focus ?? new THREE.Vector3()).set(player.x, player.y + TORSO_Y, player.z);
     if (!rig.manual) rig.setPose(this.state);
+  }
+
+  /** screenFollow: the player's screen x moved by its own step (last frame's camera) and by its step with this frame's pose. When the two
+   *  disagree in sign (the camera overtakes the player), the focus keeps only the largest share of its step that does not (bisection over
+   *  the share, the blend weight left as it is; none at all if even the last focus does) */
+  private holdFocus(stateAt: (f: THREE.Vector3) => CamState, player: THREE.Vector3, aspect: number): void {
+    const p0 = this.s0.set(this.lastPlayer.x, this.lastPlayer.y + TORSO_Y, this.lastPlayer.z), p1 = this.s1.set(player.x, player.y + TORSO_Y, player.z);
+    const x0 = this.ndc(this.state, aspect, p0, this.n2).x, own = this.ndc(this.state, aspect, p1, this.n2).x - x0;
+    if (Math.abs(own) < 1e-6) return;
+    const to = this.s2.copy(this.focus), f = this.s3;
+    const back = (k: number) => { f.lerpVectors(this.prevFocus, to, k); const d = this.ndc(stateAt(f), aspect, p1, this.n2).x - x0; return Math.sign(d) !== Math.sign(own) && Math.abs(d) > 1e-7; };
+    if (!back(1)) return;
+    let lo = 0, hi = 1;
+    if (back(0)) hi = 0; else for (let i = 0; i < 10; i++) { const m = (lo + hi) / 2; if (back(m)) hi = m; else lo = m; }
+    this.focus.lerpVectors(this.prevFocus, to, hi === 0 ? 0 : lo);
   }
 
   /** framings that may be on screen right now (both ends of a blend) */

@@ -144,6 +144,8 @@ export class App {
     // every framing blend is anchored by default (the player's screen position glides between its two framings; operator decision K1,
     // journal Passe K4); ?camblend=interpolated brings back the former interpolated A <-> B / B <-> C blends, for comparison
     if (q.get('camblend') === 'interpolated') this.graph.anchorAll = false;
+    // ?camfollow=screen: D's follow never overtakes the player on screen (a prototype for the operator, decision K3, journal Passe K5)
+    if (q.get('camfollow') === 'screen') this.graph.screenFollow = true;
     // ?camB=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale] overrides a framing while tuning (blank fields
     // keep the authored value)
     for (const id of CAM_IDS) {

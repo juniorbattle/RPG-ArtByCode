@@ -110,6 +110,37 @@ test('the bake samples the anchored A <-> B / B <-> C blends by default; interpo
   }
 });
 
+// D's follow aimed at the player's screen speed (?camfollow=screen, journal Passe K5, a prototype for the operator's decision K3): a walk steered
+// at 2.5 m/s from C into D and back along the diagonal C's forward key gives (v = 2.17 / -1.25 m/s: the walk into the depth of Passes K2 / K3), the player's screen x step with last frame's camera (its own) against its total step
+function steer(screenFollow, from, to) {
+  const g = new CameraGraph(), rig = new CameraRig(), cam = new THREE.PerspectiveCamera(); g.screenFollow = screenFollow; rig.setAspect?.(16 / 9);
+  const p = new THREE.Vector3(from[0], 0, from[1]), end = new THREE.Vector3(to[0], 0, to[1]), d = end.clone().sub(p).normalize(), v = new THREE.Vector3(), out = [];
+  g.snap(p, rig);
+  for (let i = 0; i < 60 * 8 && p.distanceTo(end) > 0.05; i++) {
+    applyPose(cam, g.state, 16 / 9); const x0 = v.set(p.x, 1, p.z).project(cam).x;
+    p.addScaledVector(d, 2.5 / 60);
+    const own = v.set(p.x, 1, p.z).project(cam).x - x0;
+    g.update(p, 1 / 60, rig); applyPose(cam, g.state, 16 / 9);
+    out.push({ own, tot: v.set(p.x, 1, p.z).project(cam).x - x0, sx: v.x, settledD: g.target === 'D' && !g.blending });
+  }
+  return out;
+}
+/** frames whose screen step goes against the player's own step faster than camsim's 8 px/s (1920 wide); `only` keeps some frames */
+const backward = (log, only = () => true) => log.filter((e) => only(e) && Math.abs(e.own) > 1e-6 && Math.sign(e.tot) !== Math.sign(e.own) && Math.abs(e.tot) * 960 * 60 > 8).length;
+
+test('?camfollow=screen: in settled D the walk into the depth no longer glides backwards, and the blends halve it (journal Passes K2 / K5)', () => {
+  assert.equal(new CameraGraph().screenFollow, false, 'off by default: the approved follow');
+  const A = [8.5, 2.2], B = [18.5, -3.0];
+  const runs = [steer(false, A, B), steer(true, A, B), steer(false, B, A), steer(true, B, A)];
+  const settled = runs.map((r) => backward(r, (e) => e.settledD)), all = runs.map((r) => backward(r));
+  assert.ok(settled[0] >= 30 && settled[2] >= 30, `approved, settled D: C -> D ${settled[0]}, D -> C ${settled[2]} backward frames`);
+  assert.deepEqual([settled[1], settled[3]], [0, 0], 'screen follow, settled D: none');
+  assert.ok(all[1] * 2 <= all[0] && all[3] * 2 <= all[2], `whole walks: ${all.join(' / ')}`);
+  // and the player stays within the framing's band on screen (the follow only lags, it never loses the player)
+  const xs = steer(true, A, B).map((e) => e.sx);
+  assert.ok(Math.max(...xs) < 0.6 && Math.min(...xs) > -0.6, `screen x ${Math.min(...xs).toFixed(2)}..${Math.max(...xs).toFixed(2)}`);
+});
+
 // lerpState (the blend of two framings' states): ends exact, every field linear, the yaw the short way round (Passe Q2)
 test('lerpState: exact ends, linear fields, the yaw takes the short way round', () => {
   const s = (yaw, k) => ({ yaw, pitch: 0.1 * k, dist: 20 + k, fov: 30 + k, shift: 0.01 * k, tx: k, ty: 2 + k, tz: -k, charScale: 1 + 0.1 * k });
