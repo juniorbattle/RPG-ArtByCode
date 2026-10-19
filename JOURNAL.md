@@ -538,6 +538,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Tests : `tests/variants.test.mjs` (8 : le fichier approuvé du dépôt se charge en production avec ses propres empreintes, variantes et
   fixations) ; `npm test` 36 / 36 ; `typecheck`, `art:validate`.
 
+### Confirmation de l'opérateur (2026-10-18) — [OK]
+- Masques corrigés montrés (voyageur avant / après, rendu de production en B, planche complète) ; réponse, mot pour mot : « Oui, fusionne ».
+
 ### Pensée
 - Deux matières de même teinte qui se recouvrent (une frange rousse sur une peau claire) se départagent par l'endroit où chaque couleur se
   rencontre seule (le haut de la tête), pas par sa couleur.
