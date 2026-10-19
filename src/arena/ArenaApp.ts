@@ -1,0 +1,442 @@
+import * as THREE from 'three';
+import { MaterialLibrary } from '../materials/MaterialLibrary';
+import { defaultPainters } from '../materials/PainterPool';
+import { PostFX } from '../atmosphere/PostFX';
+import { MoonShadow, PlanarReflection } from '../atmosphere/ShadowAndReflection';
+import { LightRig, type LightSource } from '../atmosphere/LightRig';
+import { ParticleSystem } from '../atmosphere/Particles';
+import { U } from '../atmosphere/SceneUniforms';
+import { buildSky } from '../atmosphere/Sky';
+import { applyPose, type CamPose } from '../app/CameraRig';
+import { FrameCap, parseFrameCap } from '../app/FrameCap';
+import { SpriteRenderer, PIXEL_WORLD, type Actor } from '../characters/SpriteRenderer';
+import type { Anim } from '../characters/SpriteGenerator';
+import { CombatSim, type CombatEvent, type FighterId, type ActionId } from './CombatSim';
+import { buildArena, type ArenaBuild } from './ArenaScene';
+import { buildArenaAtlas, clipFrame, CELL_W, CELL_H, CELL_FOOT, type ArenaSpriteSet } from './FighterArt';
+import { ArenaHud, type Assist } from './ArenaHud';
+import { PRESETS, runScript } from './Presets';
+import { FloorUI } from './FloorUI';
+
+/** The arena scene of the game (journal Passe P1): `?scene=arena`. The prototype's duel (CombatSim, ported rule for rule) staged with
+ *  the town's renderer: the same materials, lights (LightRig), sky, moon shadow, planar reflection in the puddles and post chain (in-scatter,
+ *  DOF, bloom, palette grade); the fighters are generated sprites drawn by the town's SpriteRenderer; the HUD is DOM in the game's UI style.
+ *  The town (the default scene) is untouched by it: nothing here runs unless the parameter asks for it.
+ *  Parameters: `assist=subtle|full|off` (the prototype's visual assistance; default subtle), `hud=0` / `clean=1` (no HUD), `fps=` (the
+ *  game's frame cap), `freeze=<s>` (fixed shader time), `seed=` (the stands' spectators and the town houses). Keys: 1-6 attacks and
+ *  techniques, A dodge, B guard (hold), R restart, Space pause, H HUD. */
+
+export interface ArenaOptions { canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void }
+
+type Clip = string;
+const ATTACKS = new Set<Clip>(['strike', 'heavy', 'skill', 'slash']);
+/** the impact frame of each attack clip (FighterArt.clipFrame) */
+const IMPACT_FRAME: Record<string, number> = { strike: 1, heavy: 2, skill: 1, slash: 1 };
+/** the fighters' marks on the floor (x), the camera's base framing */
+const HOME = { ren: -2.05, marek: 2.05 };
+const CHAR_SCALE = 1.3;
+const BASE_POSE: CamPose = { yaw: 0, pitch: THREE.MathUtils.degToRad(3.5), dist: 15.6, fov: 34, shift: 0, tx: 0, ty: 2.3, tz: -0.6 };
+/** the low moon behind the grand gate, a little right of it: elevation 6.5 deg, azimuth 4 deg */
+const MOON_DIR = new THREE.Vector3(Math.sin(THREE.MathUtils.degToRad(4)) * Math.cos(THREE.MathUtils.degToRad(6.5)), Math.sin(THREE.MathUtils.degToRad(6.5)), -Math.cos(THREE.MathUtils.degToRad(4)) * Math.cos(THREE.MathUtils.degToRad(6.5))).normalize();
+
+interface Pres { off: number; knock: number; flash: number; guardHit: number; lastClip: string }
+interface Fx { act: Actor; kind: string; age: number; frames: number; step: number }
+
+export class ArenaApp {
+  readonly renderer: THREE.WebGLRenderer;
+  readonly scene = new THREE.Scene();
+  readonly camera = new THREE.PerspectiveCamera(30, 16 / 9, 0.5, 900);
+  readonly post: PostFX;
+  readonly shadow = new MoonShadow(2048);
+  readonly reflection = new PlanarReflection();
+  readonly lights = new LightRig();
+  readonly frameCap = new FrameCap();
+  readonly sim = new CombatSim();
+  lib!: MaterialLibrary;
+  arena!: ArenaBuild;
+  set!: ArenaSpriteSet;
+  sprites!: SpriteRenderer;
+  particles!: ParticleSystem;
+  hud: ArenaHud | null = null;
+  readonly floor = new FloorUI();
+  assist: Assist = 'subtle';
+  hudVisible = true;
+  paused = false;
+  /** a scripted moment is on screen (`jump`): the simulation holds without the pause screen */
+  moment = false;
+  timeScale = 1;
+  ready = false;
+  /** presentation clock (shaders, loops), frozen by ?freeze= */
+  time = 0;
+  frozen: number | null = null;
+  frameCount = 0;
+  readonly fighters: Record<FighterId, Actor>;
+  readonly fans: Actor[] = [];
+  private readonly pres: Record<FighterId, Pres> = { ren: { off: 0, knock: 0, flash: 0, guardHit: 0, lastClip: '' }, marek: { off: 0, knock: 0, flash: 0, guardHit: 0, lastClip: '' } };
+  private fx: Fx[] = [];
+  private fanCheer: number[] = [];
+  private acc = 0;
+  private lastT = performance.now();
+  private shake = 0;
+  private koT = -1;
+  private castLight: LightSource | null = null;
+  private hitLight: LightSource | null = null;
+  private reducedMotion = false;
+  private pose: CamPose = { ...BASE_POSE };
+  /** the camera's push-in toward Marek's heavy charge, smoothed (0..1) */
+  private push = 0;
+
+  constructor(private opts: ArenaOptions) {
+    this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: false, powerPreference: 'high-performance', stencil: false, alpha: false });
+    this.renderer.autoClear = false;
+    this.renderer.info.autoReset = false;
+    this.post = new PostFX(this.renderer);
+    const q = opts.params;
+    this.frameCap.mode = parseFrameCap(q.get('fps')) ?? { kind: 'adaptive', fps: 60 };
+    const as = q.get('assist');
+    if (as === 'full' || as === 'off' || as === 'subtle') this.assist = as;
+    if (q.get('hud') === '0' || q.has('clean')) this.hudVisible = false;
+    if (q.has('freeze')) this.frozen = parseFloat(q.get('freeze')!);
+    // ?cam=pitchDeg,dist,fov,ty,tz,tx overrides the base framing while tuning (blank = keep)
+    const cv = q.get('cam')?.split(',').map((x) => (x.trim() === '' ? NaN : Number(x)));
+    if (cv) {
+      if (!isNaN(cv[0])) BASE_POSE.pitch = THREE.MathUtils.degToRad(cv[0]);
+      ([['dist', 1], ['fov', 2], ['ty', 3], ['tz', 4], ['tx', 5]] as const).forEach(([k, i]) => { if (!isNaN(cv[i])) BASE_POSE[k] = cv[i]; });
+    }
+    this.reducedMotion = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.scene.add(this.camera);
+    this.camera.layers.enable(2);
+    this.scene.add(buildSky());
+    this.reflection.clipY = 0;
+    U.uMoonDir.value.copy(MOON_DIR);
+    U.uMoonCol.value.setRGB(0.27, 0.37, 0.58);
+    const fighter = (id: FighterId): Actor => ({
+      id: id === 'ren' ? 1 : 2, spec: id, role: 'fighter', detail: 'hero', pos: new THREE.Vector3(HOME[id], 0, 0), facing: 'side', dir: 'side', flip: id === 'ren',
+      anim: 'idle.0' as Anim, t: 0, speed: 0, tint: [1, 1, 1], scale: 1, height: 1.95, radius: 0.4,
+    });
+    this.fighters = { ren: fighter('ren'), marek: fighter('marek') };
+    window.addEventListener('resize', () => this.resize());
+  }
+
+  async init(): Promise<void> {
+    const pq = this.opts.params.get('painters');
+    const painters = pq === 'main' ? 0 : pq !== null && /^\d+$/.test(pq) ? +pq : defaultPainters();
+    this.frameCap.probe();
+    this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress, painters);
+    this.frameCap.endProbe();
+    this.opts.onProgress('arena', 0.96);
+    await new Promise((r) => setTimeout(r, 0));
+    const seed = (parseInt(this.opts.params.get('seed') ?? '1842', 10) >>> 0) || 1842;
+    this.arena = buildArena(this.lib, seed);
+    this.scene.add(this.arena.group);
+    for (const l of this.arena.lights) this.lights.add(l, 'static', Math.abs(Math.sin(l.pos[0] * 12.9 + l.pos[2] * 78.2)));
+    // two dynamic lights: Marek's charged blade (the heavy's tell) and the flash of a landed blow
+    this.castLight = this.lights.add({ pos: [HOME.marek + 0.2, 3.2, -0.6], color: [1.0, 0.46, 0.2], intensity: 2.4, radius: 6, kind: 'steady', priority: 9 }, 'fx', 0);
+    this.hitLight = this.lights.add({ pos: [0, 1.4, 0.5], color: [1.0, 0.86, 0.66], intensity: 2.4, radius: 5, kind: 'steady', priority: 10 }, 'fx', 0);
+    this.castLight.scale = this.castLight.targetScale = 0; this.hitLight.scale = this.hitLight.targetScale = 0;
+    this.opts.onProgress('fighters', 0.98);
+    this.set = buildArenaAtlas(seed, 5);
+    this.sprites = new SpriteRenderer(this.set.atlas, 96, { w: CELL_W, h: CELL_H, foot: CELL_FOOT });
+    this.sprites.charScale = CHAR_SCALE;
+    this.sprites.protect.crowd = 0.35;
+    this.scene.add(this.sprites.group);
+    this.scene.add(this.floor.mesh);
+    // spectators on the tiers: the town's crowd archetypes, front view, idling and cheering in turn
+    let k = 0;
+    for (const st of this.arena.stands) {
+      const h = Math.abs(Math.sin(st.pos[0] * 91.7 + st.pos[2] * 13.3 + k));
+      this.fans.push({ id: 100 + k, spec: `fan${Math.floor(h * 997) % this.set.crowd.length}`, role: 'fan', detail: 'crowd', pos: new THREE.Vector3(...st.pos), facing: 'down', dir: 'down', flip: h > 0.5, anim: 'idle', t: h * 10, speed: 0, tint: [0.9, 0.92, 1.0], scale: 0.82, height: 1.6, radius: 0.3 });
+      this.fanCheer.push(-10);
+      k++;
+    }
+    this.particles = new ParticleSystem(this.lib);
+    this.particles.setEmitters(this.arena.emitters);
+    this.scene.add(this.particles.group);
+    this.resize();
+    this.applyCamera(0);
+    this.lights.update(this.time, 0, this.camera);
+    this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 3.5, -6), MOON_DIR, 24, 9);
+    if (!this.opts.params.has('clean')) this.hud = new ArenaHud(this.sim, this.set.portraits);
+    if (this.hud) {
+      this.hud.onAction = (id, down) => this.action(id, down);
+      this.hud.project = (who) => this.headScreen(who);
+    }
+    this.bindInput();
+    this.presentFighters(0);
+    // the programs, linked in parallel under the loading screen (the town's boot does the same, journal pass 6 P2)
+    const prev = this.renderer.getRenderTarget();
+    this.renderer.setRenderTarget(this.post.sceneRT);
+    const linked = this.renderer.compileAsync(this.scene, this.camera);
+    this.renderer.setRenderTarget(prev);
+    await linked;
+    this.render();
+    this.ready = true;
+  }
+
+  resize(): void {
+    const w = window.innerWidth, h = window.innerHeight, pr = Math.min(window.devicePixelRatio || 1, 2);
+    this.post.setSize(w, h, pr);
+    this.reflection.setSize(w * pr, h * pr);
+    U.uResolution.value.set(this.post.width, this.post.height);
+    this.applyCamera(0);
+  }
+
+  // ---------------------------------------------------------------- input
+  /** a command from the keys, a gamepad or the action bar */
+  action(id: string, down = true): void {
+    const s = this.sim;
+    if (id === 'guard') { s.setGuard('ren', down); return; }
+    if (!down) return;
+    if (id === 'dodge') s.react('ren', 'dodge');
+    else if (id === 'reset') this.restart();
+    else if (id === 'pause') { this.paused = !this.paused && !this.moment ? true : false; this.moment = false; }
+    else s.command('ren', id as ActionId);
+  }
+
+  private bindInput(): void {
+    const KEYS: Record<string, string> = { '1': 'light', '2': 'heavy', '3': 't1', '4': 't2', '5': 't3', '6': 't4', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
+    window.addEventListener('keydown', (e) => {
+      if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || !this.ready) return;
+      const k = e.key.toLowerCase(), m = KEYS[k];
+      if (m) { e.preventDefault(); this.action(m, true); this.hud?.flash(m); }
+      else if (k === 'h') this.hudVisible = !this.hudVisible;
+    });
+    window.addEventListener('keyup', (e) => { if (e.key.toLowerCase() === 'b') this.action('guard', false); });
+    window.addEventListener('blur', () => this.action('guard', false));
+  }
+
+  private padPrev: boolean[] = [];
+  /** gamepad (the prototype's mapping): A dodge, B guard, X / Y light / heavy, shoulders and triggers the techniques, Start pause, Back reset */
+  private pollPad(): void {
+    const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
+    const p = pads && pads[0]; if (!p) return;
+    const PAD: Record<number, string> = { 0: 'dodge', 1: 'guard', 2: 'light', 3: 'heavy', 4: 't1', 5: 't2', 6: 't3', 7: 't4', 9: 'pause', 8: 'reset' };
+    for (const [b, id] of Object.entries(PAD)) {
+      const i = +b, down = !!p.buttons[i]?.pressed;
+      if (down && !this.padPrev[i]) { this.action(id, true); this.hud?.flash(id); }
+      if (!down && this.padPrev[i] && id === 'guard') this.action('guard', false);
+      this.padPrev[i] = down;
+    }
+  }
+
+  restart(): void {
+    this.sim.reset();
+    this.onEvents(this.sim.drain());
+    this.paused = false; this.moment = false;
+  }
+
+  // ---------------------------------------------------------------- simulation -> presentation
+  private onEvents(evs: CombatEvent[]): void {
+    for (const e of evs) {
+      if (e.type === 'impact') {
+        const to = this.pres[e.to], tgt = this.fighters[e.to], heavy = e.kind === 'heavy' || e.damage >= 20;
+        if (e.result === 'hit') { to.knock = heavy ? -0.42 : -0.24; to.flash = 1; this.shake = Math.max(this.shake, heavy ? 1 : 0.45); this.spawnFx(e.from === 'marek' && e.kind === 'heavy' ? 'ember' : 'spark', tgt, e.to); }
+        else if (e.result === 'guarded') { to.knock = -0.12; to.guardHit = 1; this.shake = Math.max(this.shake, 0.3); this.spawnFx('guard', tgt, e.to); }
+        else if (e.result === 'guardbreak') { to.knock = -0.6; to.flash = 1; this.shake = Math.max(this.shake, 1.2); this.spawnFx('ember', tgt, e.to); this.spawnFx('guard', tgt, e.to); }
+        if (e.result !== 'dodged' && this.hitLight) {
+          this.hitLight.pos.set(tgt.pos.x - (e.to === 'ren' ? -0.3 : 0.3), 1.45, 1.2);
+          this.hitLight.scale = this.hitLight.targetScale = heavy || e.result === 'guardbreak' ? 1 : 0.55;
+        }
+        this.cheer(e.result === 'hit' && heavy ? 0.9 : e.result === 'guardbreak' ? 0.8 : e.result === 'hit' ? 0.35 : 0.2);
+      } else if (e.type === 'ko') { this.koT = this.sim.t; this.cheer(1); }
+      else if (e.type === 'reset') {
+        this.koT = -1; this.shake = 0; this.push = 0;
+        for (const p of Object.values(this.pres)) { p.off = p.knock = p.flash = p.guardHit = 0; }
+        for (const f of this.fx) f.act.hidden = true;
+        this.fx = [];
+      }
+    }
+    this.hud?.onEvents(evs, this.sim);
+  }
+
+  /** a share of the stands react (deterministic: by seat and sim time) */
+  private cheer(amount: number): void {
+    const t = this.sim.t;
+    this.fanCheer.forEach((_, i) => { const h = Math.abs(Math.sin(i * 12.9898 + t * 7.31)) % 1; if (h < amount) this.fanCheer[i] = t + h * 0.3; });
+  }
+
+  private spawnFx(kind: string, tgt: Actor, who: FighterId): void {
+    const dir = who === 'ren' ? 1 : -1;   // toward the attacker
+    const act: Actor = { id: 900 + this.fx.length, spec: 'fx', role: 'fx', detail: 'hero', pos: new THREE.Vector3(tgt.pos.x + dir * 0.32, 0.32, 0.45), facing: 'side', dir: 'side', flip: kind === 'guard' ? who === 'ren' : false, anim: `${kind}.0` as Anim, t: 0, speed: 0, tint: [1, 1, 1], scale: 1, height: 1, radius: 0.1, noShadow: true };
+    this.fx.push({ act, kind, age: 0, frames: 3, step: kind === 'guard' ? 0.07 : 0.055 });
+  }
+
+  /** each fighter's frame, place and tint from its simulation state */
+  private presentFighters(dt: number): void {
+    const s = this.sim;
+    for (const id of ['ren', 'marek'] as FighterId[]) {
+      const f = s.f[id], a = this.fighters[id], p = this.pres[id], an = f.anim!;
+      let clip = an.name;
+      const clips = this.set.clips[id];
+      if (s.over && f.state !== 'down') clip = 'victory';
+      if (!clips[clip]) clip = id === 'marek' || f.ap >= 2 ? 'ready' : 'idle';
+      const def = clips[clip], n = def.frames.length;
+      let fi = clipFrame(clip, n, an.t, an.impactAt ?? 0, def.loop ?? 0);
+      if (clip === 'block' && p.guardHit > 0) fi = 1;
+      a.anim = `${clip}.${fi}` as Anim;
+      // lunges: an attack closes the gap so its blade lands on the opponent at the impact; a dodge leaps back; hits knock back
+      const other = id === 'ren' ? 'marek' : 'ren', gap = Math.abs(HOME[other] - HOME[id]);
+      if (ATTACKS.has(clip) && an.impactAt !== undefined) {
+        const reach = (this.set.reach[`${id}/${clip}.${IMPACT_FRAME[clip]}`] ?? 20) * PIXEL_WORLD * CHAR_SCALE;
+        const A = Math.max(0, Math.min(2.4, gap - reach - 0.12)), ia = an.impactAt, t = an.t;
+        if (t <= ia + 0.12) p.off = A * smooth((t - ia * 0.3) / (ia * 0.7));
+        else p.off *= Math.exp(-dt * 5);
+      } else if (clip === 'dodge') p.off = Math.min(p.off, -1.05 * smooth(an.t / 0.16));
+      else p.off *= Math.exp(-dt * (p.off < 0 ? 4 : 5));
+      p.knock *= Math.exp(-dt * 7); p.flash = Math.max(0, p.flash - dt / 0.14); p.guardHit = Math.max(0, p.guardHit - dt / 0.14);
+      const facing = id === 'ren' ? 1 : -1;
+      a.pos.x = HOME[id] + facing * (p.off + p.knock);
+      // the acting fighter draws in front (its blade over the other's body)
+      a.pos.z = f.state === 'acting' ? 0.14 : -0.06;
+      const k = p.flash;
+      a.tint = [1 + 0.7 * k, 1 + 0.6 * k, 1 + 0.45 * k];
+      a.t = 0;
+      p.lastClip = clip;
+    }
+  }
+
+  private presentFans(): void {
+    const t = this.sim.t;
+    this.fans.forEach((a, i) => {
+      const c = this.fanCheer[i], on = t >= c && t < c + 1.4;
+      a.anim = on ? 'talk' : 'idle';
+      a.t = (on ? t - c : t + i * 0.37);
+      a.pos.y = this.arena.stands[i].pos[1] + (on ? Math.max(0, Math.sin((t - c) * 9)) * 0.07 : 0);
+    });
+  }
+
+  private presentFx(dt: number): void {
+    for (const f of this.fx) {
+      f.age += dt;
+      const i = Math.floor(f.age / f.step);
+      if (i >= f.frames) { f.act.hidden = true; continue; }
+      f.act.anim = `${f.kind}.${i}` as Anim;
+    }
+    this.fx = this.fx.filter((f) => !f.act.hidden);
+  }
+
+  /** the contextual camera: the base framing; a push-in toward Marek while he charges a heavy (scaled by the assistance), held through the
+   *  window and released after the impact; a small shake on hard blows (none with reduced motion); a slow push onto a KO */
+  private applyCamera(dt: number): void {
+    const s = this.sim, inc = s.incoming(), ac = this.assist === 'full' ? 1 : this.assist === 'subtle' ? 0.45 : 0;
+    const want = inc && inc.kind === 'heavy' ? ac * smooth((inc.castProgress - 0.1) / 0.75) : inc ? ac * 0.25 * inc.castProgress : 0;
+    this.push += (want - this.push) * Math.min(1, dt * (want > this.push ? 6 : 2.5));
+    const P = { ...BASE_POSE };
+    P.dist -= 1.1 * this.push; P.tx += 0.55 * this.push; P.pitch += THREE.MathUtils.degToRad(0.6) * this.push;
+    if (this.koT >= 0) {
+      const k = smooth((s.t - this.koT) / 1.6), down = s.f.ren.state === 'down' ? 'ren' : 'marek';
+      P.dist -= 2.2 * k; P.tx += (this.fighters[down].pos.x * 0.6) * k; P.ty -= 0.25 * k;
+    }
+    this.shake = Math.max(0, this.shake - dt * 4.5);
+    if (this.shake > 0 && !this.reducedMotion) {
+      const a = this.shake * this.shake * 0.07, t = s.t * 53;
+      P.tx += Math.sin(t * 1.7) * a; P.ty += Math.sin(t * 2.3 + 1.1) * a * 0.7;
+    }
+    this.pose = P;
+    applyPose(this.camera, P, window.innerWidth / Math.max(1, window.innerHeight));
+  }
+
+  /** CSS px of a fighter's head on screen */
+  private headScreen(who: FighterId): { x: number; y: number } {
+    const a = this.fighters[who], v = new THREE.Vector3(a.pos.x, 2.35 * CHAR_SCALE, a.pos.z).project(this.camera);
+    return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight };
+  }
+
+  /** the fighters' rings (with the HUD) and the telegraph of a reactable attack (full assistance) */
+  private updateFloor(): void {
+    const inc = this.sim.incoming(), tele = !!inc && this.assist === 'full' && this.hudVisible && !this.sim.over;
+    this.floor.update(this.fighters.ren.pos, this.fighters.marek.pos, this.hudVisible && !this.sim.over ? 1 : 0, tele ? 1 : 0, inc ? inc.castProgress : 0, !!inc?.windowOpen, this.sim.t);
+  }
+
+  private updateDynamicLights(): void {
+    const inc = this.sim.incoming(), c = this.castLight, h = this.hitLight;
+    if (c) {
+      const glow = this.assist === 'off' ? 0 : inc && inc.action === 'm_heavy' ? Math.min(1, inc.castProgress * 1.25) * (inc.windowOpen ? 1.15 : 0.85) : 0;
+      c.pos.set(HOME.marek + 0.2, 3.2, -0.6);
+      c.scale = c.targetScale = glow;
+    }
+    if (h) { h.scale = Math.max(0, h.scale - 1 / 60 / 0.14); h.targetScale = h.scale; }
+  }
+
+  // ---------------------------------------------------------------- frame
+  /** advances the simulation (fixed 1/120 s steps) and the presentation by dt */
+  update(dt: number): void {
+    this.time = this.frozen ?? this.time + dt;
+    U.uTime.value = this.time;
+    U.uMoonDir.value.copy(MOON_DIR);
+    this.pollPad();
+    if (!this.paused) {
+      this.acc += dt * this.timeScale;
+      const step = this.sim.D.dt;
+      let n = 0;
+      while (this.acc >= step && n++ < 24) { this.sim.step(step); this.onEvents(this.sim.drain()); this.acc -= step; }
+      if (n >= 24) this.acc = 0;
+    }
+    const pdt = this.paused ? 0 : dt;
+    this.presentFighters(pdt);
+    this.presentFans();
+    this.presentFx(pdt);
+    this.updateDynamicLights();
+    this.applyCamera(pdt);
+    this.updateFloor();
+    // depth of field on the duel
+    const v = new THREE.Vector3(0, 1.2, 0).applyMatrix4(this.camera.matrixWorldInverse);
+    this.post.params.dofFocus = THREE.MathUtils.clamp(-v.z, 6, 40);
+    this.lights.update(this.time, pdt, this.camera);
+    this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...this.fans], this.lights, this.camera, MOON_DIR, null, this.fighters.ren);
+    this.particles.update(pdt, this.time, this.camera, this.post.height, this.lights, null);
+    this.hud?.update(this.sim, this.assist, this.hudVisible, this.paused && !this.moment);
+  }
+
+  render(): void {
+    this.renderer.info.reset();
+    this.reflection.update(this.renderer, this.scene, this.camera);
+    this.post.render(this.scene, this.camera, this.time);
+    this.frameCount++;
+  }
+
+  start(): void {
+    const loop = (t: number) => {
+      if (this.frameCap.shouldRender(t)) {
+        const now = performance.now(), dt = Math.min(0.05, (now - this.lastT) / 1000);
+        this.lastT = now;
+        this.update(dt);
+        this.render();
+      }
+      requestAnimationFrame(loop);
+    };
+    this.lastT = performance.now();
+    requestAnimationFrame(loop);
+  }
+
+  // ---------------------------------------------------------------- deterministic moments (captures, reviews)
+  /** the prototype's `jump`: a scripted moment from a reset, every step delivered to the presentation at the simulation's fixed step (the
+   *  prototype delivered its last half second only: a KO before it never reached the screen), then held */
+  jump(name: string): boolean {
+    const p = PRESETS[name]; if (!p) return false;
+    this.sim.reset(); this.onEvents(this.sim.drain());
+    const dt = this.sim.D.dt;
+    runScript(this.sim, p.script, () => true, () => {
+      this.onEvents(this.sim.drain());
+      this.presentFighters(dt); this.presentFans(); this.presentFx(dt); this.updateDynamicLights(); this.applyCamera(dt);
+      this.particles.update(dt, this.time, this.camera, this.post.height, this.lights, null);
+    });
+    this.paused = true; this.moment = true;
+    this.update(0);
+    return true;
+  }
+
+  renderOnce(): void { this.update(0); this.render(); }
+
+  snapshot(): Record<string, unknown> {
+    const r = this.renderer.info;
+    return {
+      t: +this.sim.t.toFixed(3), hash: this.sim.hash(), ren: { hp: this.sim.f.ren.hp, ap: this.sim.f.ren.ap, state: this.sim.f.ren.state, anim: this.fighters.ren.anim }, marek: { hp: this.sim.f.marek.hp, state: this.sim.f.marek.state, anim: this.fighters.marek.anim },
+      lights: this.lights.sources.length, lightsOnScreen: this.lights.active, fans: this.fans.length, triangles: this.arena?.stats.triangles, instances: this.arena?.stats.instances,
+      atlas: this.set ? `${this.set.atlas.width}x${this.set.atlas.height} (${this.set.atlas.frameCount} cells)` : null, drawCalls: r.render.calls, frameTriangles: r.render.triangles, resolution: `${this.post.width}x${this.post.height}`,
+      pose: this.pose, assist: this.assist,
+    };
+  }
+}
+
+function smooth(x: number): number { const t = Math.max(0, Math.min(1, x)); return t * t * (3 - 2 * t); }

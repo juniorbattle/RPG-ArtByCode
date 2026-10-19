@@ -55,8 +55,8 @@ export function posesFor(anim: Anim): Pose[] {
   }
 }
 
-interface Rig { legLen: number; torsoH: number; legTop: number; torsoTop: number; headRx: number; headRy: number; headCy: number; torsoW: number; cx: number }
-function makeRig(spec: CharSpec): Rig {
+export interface Rig { legLen: number; torsoH: number; legTop: number; torsoTop: number; headRx: number; headRy: number; headCy: number; torsoW: number; cx: number }
+export function makeRig(spec: CharSpec): Rig {
   const s = spec.scale ?? 1;
   const legLen = Math.round(11 * s), torsoH = Math.round(13 * s);
   const legTop = FOOT_Y - legLen, torsoTop = legTop - torsoH + 1;
@@ -64,7 +64,7 @@ function makeRig(spec: CharSpec): Rig {
   return { legLen, torsoH, legTop, torsoTop, headRx, headRy, headCy: torsoTop - headRy + 1.8, torsoW: Math.round(12 * (spec.build ?? 1)), cx: 16 };
 }
 
-function palette(spec: CharSpec) {
+export function palette(spec: CharSpec) {
   return {
     skin: skinRamp(spec.skin), hair: ramp(spec.hair), top: ramp(spec.top), trim: ramp(spec.trim ?? lighten(spec.top, 1.5)), apron: ramp(spec.apron ?? spec.top),
     trousers: ramp(spec.trousers), boots: ramp(spec.boots), belt: ramp(spec.belt ?? [96, 64, 40]), cape: ramp(spec.cape ?? spec.top), lining: ramp(spec.capeLining ?? [220, 200, 170]),

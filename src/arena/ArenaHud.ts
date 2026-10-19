@@ -1,0 +1,205 @@
+import type { CombatSim, CombatEvent, FighterId, ActionId } from './CombatSim';
+
+/** The arena's HUD (journal Passe P1): DOM over the canvas, in the game's own UI language (the loading screen: night ink #05070d, ivory
+ *  #d9c9a8, pale gold #f1d9a0 for titles, the lamps' amber #e9a64c as the only accent, Segoe UI with wide letter-spacing, no external
+ *  font). From the prototype's lean HUD (pass 11 of its report): two fighter panels (portrait, name, health with a damage trail, Ren's
+ *  action points), the action bar grouped as defence | attacks | techniques with costs, cooldowns and the reaction cue, floating damage,
+ *  and with the full assistance only the attack alert and the reaction window's bar. Every DOM write goes through a cache. */
+
+export type Assist = 'subtle' | 'full' | 'off';
+
+const CSS = `
+#arena-hud{position:fixed;inset:0;pointer-events:none;color:#d9c9a8;font:14px/1.4 "Segoe UI",system-ui,sans-serif;z-index:20;user-select:none;-webkit-user-select:none}
+#arena-hud.off>*:not(#ah-ko):not(#ah-pause){opacity:0}
+#arena-hud .top{position:absolute;left:0;right:0;top:0;height:120px;background:linear-gradient(rgba(5,7,13,.62),rgba(5,7,13,0))}
+#ah-title{position:absolute;left:18px;top:12px;letter-spacing:.3em;text-transform:uppercase;font-size:13px;color:#f1d9a0;text-shadow:0 1px 0 #05070d}
+#ah-title small{display:block;margin-top:3px;font-size:10px;letter-spacing:.16em;color:#d9c9a8;opacity:.75}
+#ah-title::after{content:'';display:block;width:132px;height:2px;margin-top:6px;background:linear-gradient(90deg,#e9a64c,rgba(233,166,76,0))}
+.ah-f{position:absolute;top:58px;display:flex;gap:10px;align-items:flex-start}
+.ah-f.l{left:18px}.ah-f.r{right:18px;flex-direction:row-reverse;text-align:right}
+.ah-port{width:52px;height:52px;flex:none;image-rendering:pixelated;border:2px solid #0a0d16;box-shadow:0 0 0 1px rgba(233,166,76,.55),0 3px 0 1px rgba(0,0,0,.45);background:linear-gradient(#24304c,#0b1020)}
+.ah-f.r .ah-port{box-shadow:0 0 0 1px rgba(198,90,74,.6),0 3px 0 1px rgba(0,0,0,.45);background:linear-gradient(#34262c,#120c10)}
+.ah-card{width:min(25vw,280px);padding:6px 11px 8px;background:linear-gradient(90deg,rgba(5,8,16,.92),rgba(5,8,16,.6));border:1px solid rgba(233,166,76,.36)}
+.ah-f.r .ah-card{background:linear-gradient(270deg,rgba(5,8,16,.92),rgba(5,8,16,.6));border-color:rgba(198,90,74,.5)}
+.ah-nm{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#efe3c4}
+.ah-nm span{margin-left:8px;font-size:10px;letter-spacing:.14em;color:#8e98ae}
+.ah-f.r .ah-nm span{margin:0 0 0 8px}
+.ah-hp{position:relative;height:15px;margin-top:4px;background:#141a28;border:2px solid #0a0d16;box-shadow:0 0 0 1px rgba(207,196,168,.6)}
+.ah-hp i,.ah-hp u{position:absolute;top:0;bottom:0;left:0}
+.ah-f.r .ah-hp i,.ah-f.r .ah-hp u{left:auto;right:0}
+.ah-hp u{background:#efe3c4;opacity:.55;transition:width .45s ease-in .35s}
+.ah-hp i{background:repeating-linear-gradient(90deg,#b4cbe8 0 6px,#7290bc 6px 8px)}
+.ah-f.r .ah-hp i{background:repeating-linear-gradient(90deg,#c8604e 0 6px,#8a3428 6px 8px)}
+.ah-hp em{position:absolute;right:6px;top:0;font:700 10px/11px "Segoe UI",system-ui,sans-serif;font-style:normal;color:#f3e9d2;text-shadow:0 0 2px #05070d,0 0 2px #05070d,0 1px 2px #000;font-variant-numeric:tabular-nums}
+.ah-f.r .ah-hp em{right:auto;left:6px}
+.ah-pips{display:flex;gap:9px;margin-top:7px;padding-left:3px}
+.ah-pips b{width:10px;height:10px;transform:rotate(45deg);border:1.5px solid rgba(233,166,76,.65);display:block}
+.ah-pips b.on{background:#e9a64c;box-shadow:0 0 8px rgba(233,166,76,.8)}
+.ah-pips b.gain{animation:ahg .4s}
+@keyframes ahg{40%{transform:rotate(45deg) scale(1.5)}}
+.ah-state{height:16px;margin-top:5px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#f1d9a0;opacity:0;transition:opacity .15s}
+.ah-state.on{opacity:1}
+#ah-bar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:5px;pointer-events:auto;transition:opacity .15s}
+.ah-sep{width:2px;align-self:stretch;margin:6px 4px;background:rgba(233,166,76,.25)}
+.ah-b{position:relative;width:76px;height:52px;padding:6px 7px 5px;text-align:left;font:inherit;color:#d9c9a8;background:linear-gradient(rgba(18,26,44,.92),rgba(9,13,24,.92));border:1.5px solid rgba(233,166,76,.26);border-radius:3px;cursor:pointer;overflow:hidden;opacity:.5;transition:opacity .1s,border-color .1s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.ah-b.wide{width:112px}.ah-b.tech b{font-size:10px;letter-spacing:.05em}
+.ah-b kbd{position:absolute;top:5px;right:6px;min-width:16px;padding:0 4px;font:700 10px/15px "Segoe UI",system-ui,sans-serif;text-align:center;color:#05070d;background:#d9c9a8;border-radius:2px}
+.ah-b b{display:block;margin-top:14px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;color:#efe3c4}
+.ah-b em{display:block;margin-top:2px;font-size:10px;font-style:normal;color:#8e98ae;white-space:nowrap}
+.ah-b em q{quotes:none;color:#e9a64c;letter-spacing:1px}
+.ah-b.on{opacity:1;border-color:rgba(233,166,76,.8)}
+.ah-b.noap{opacity:.38}.ah-b.noap em{color:#d08a6a}
+.ah-b .cd{position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(5,8,18,.8)}
+.ah-b s{position:absolute;inset:0;display:none;place-items:center;font:700 19px "Segoe UI",system-ui,sans-serif;text-decoration:none;color:#f3e9d2;text-shadow:0 1px 3px #000}
+.ah-b.cool s{display:grid}
+.ah-b.open{opacity:1;border-color:#f3e3bf;box-shadow:0 0 14px rgba(243,227,191,.6);animation:ahp .45s infinite alternate}
+@keyframes ahp{to{transform:translateY(-4px)}}
+.ah-b.warn{border-color:#d0714e;box-shadow:0 0 12px rgba(208,113,78,.6)}
+.ah-b.active{opacity:1;border-color:#a9c4e8;background:linear-gradient(#1c2c4a,#0b1424);box-shadow:0 0 14px rgba(143,180,224,.5)}
+.ah-b.hit{animation:ahk .18s}.ah-b.deny{animation:ahd .25s}
+@keyframes ahk{50%{transform:scale(.92)}}@keyframes ahd{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+#ah-wbar{position:absolute;left:50%;bottom:74px;width:min(420px,70vw);height:3px;transform:translateX(-50%) scaleX(0);background:#f3e3bf;box-shadow:0 0 8px rgba(243,227,191,.8);opacity:0}
+#ah-wbar.on{opacity:1}
+#ah-alert{position:absolute;left:0;top:0;display:flex;gap:10px;align-items:center;padding:6px 18px 6px 8px;background:linear-gradient(90deg,rgba(8,12,22,.92),rgba(8,12,22,0));opacity:0;transition:opacity .12s;will-change:transform}
+#ah-alert.on{opacity:1}
+#ah-alert svg{width:30px;height:30px}
+#ah-alert b{display:block;font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:#f1d9a0}
+#ah-alert span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+#ah-dmg div{position:absolute;transform:translate(-50%,0);font-weight:800;font-size:22px;letter-spacing:.04em;text-shadow:0 2px 0 rgba(0,0,0,.6),0 0 8px rgba(0,0,0,.5);animation:ahf 1.05s ease-out forwards;white-space:nowrap;font-variant-numeric:tabular-nums}
+#ah-dmg .hit{color:#f6e2b0}#ah-dmg .guarded{color:#a9c4e8;font-size:17px}#ah-dmg .guardbreak{color:#e9a64c;font-size:24px}#ah-dmg .dodged{color:#cfdcf0;font-size:16px;letter-spacing:.2em}
+#ah-dmg .ap{color:#e9a64c;font-size:15px}#ah-dmg .stun{color:#f1d9a0;font-size:15px;letter-spacing:.2em}
+@keyframes ahf{0%{opacity:0;margin-top:6px}12%{opacity:1}100%{opacity:0;margin-top:-48px}}
+#ah-ko,#ah-pause{position:absolute;inset:0;display:none;place-items:center;background:rgba(5,7,13,.58);text-align:center;pointer-events:none}
+#ah-ko.on,#ah-pause.on{display:grid}
+#ah-ko b,#ah-pause b{display:block;font-weight:400;font-size:26px;letter-spacing:.34em;text-transform:uppercase;color:#f1d9a0}
+#ah-ko b::after{content:'';display:block;width:180px;height:2px;margin:12px auto 0;background:linear-gradient(90deg,rgba(233,166,76,0),#e9a64c,rgba(233,166,76,0))}
+#ah-ko span,#ah-pause span{display:block;margin-top:12px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#d9c9a8;opacity:.8}
+#ah-rotate{position:absolute;inset:0;display:none;place-items:center;padding:24px;text-align:center;background:#05070d;pointer-events:auto}
+#ah-rotate b{display:block;font-weight:400;font-size:15px;letter-spacing:.3em;text-transform:uppercase;color:#f1d9a0}
+#ah-rotate span{display:block;margin-top:14px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+@media (orientation:portrait) and (max-width:820px){#ah-rotate{display:grid}}
+@media (max-width:900px){.ah-b{width:54px;height:46px}.ah-b.wide{width:70px}.ah-b em{display:none}.ah-b b{font-size:9px;margin-top:15px}.ah-sep{margin:6px 2px}#ah-bar{gap:3px}.ah-card{width:30vw}}
+button:focus-visible{outline:3px solid #f1d9a0;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.ah-b.open,.ah-b.hit,.ah-b.deny,.ah-pips b.gain{animation:none}#ah-dmg div{animation-duration:.01s}}
+`;
+
+/** the action bar: defence | attacks | techniques (the prototype's grouping and keys) */
+const BAR: Array<'|' | { id: ActionId | 'guard' | 'dodge'; key: string; name?: string; sub?: string; wide?: boolean }> = [
+  { id: 'guard', key: 'B', name: 'Garde', sub: 'maintenir', wide: true }, { id: 'dodge', key: 'A', name: 'Esquive', sub: '1 PA' }, '|',
+  { id: 'light', key: '1', name: 'Rapide', sub: '+1 PA' }, { id: 'heavy', key: '2', name: 'Puissante', sub: 'brise la garde', wide: true }, '|',
+  { id: 't1', key: '3' }, { id: 't2', key: '4' }, { id: 't3', key: '5' }, { id: 't4', key: '6' },
+];
+
+export class ArenaHud {
+  readonly el: HTMLDivElement;
+  private c = new Map<string, unknown>();
+  private btn = new Map<string, HTMLButtonElement>();
+  private q = <T extends Element>(s: string) => this.el.querySelector(s) as T;
+  /** the caller's commands (keys and the action bar's buttons) */
+  onAction: (id: string, down: boolean) => void = () => {};
+  /** screen position (CSS px) of a fighter's head, for floating text */
+  project: (who: FighterId) => { x: number; y: number } = () => ({ x: 0, y: 0 });
+
+  constructor(sim: CombatSim, portraits: Record<FighterId, HTMLCanvasElement | null>) {
+    if (!document.getElementById('arena-hud-css')) { const st = document.createElement('style'); st.id = 'arena-hud-css'; st.textContent = CSS; document.head.appendChild(st); }
+    this.el = document.createElement('div'); this.el.id = 'arena-hud';
+    const D = sim.D, bar = BAR.map((b) => {
+      if (b === '|') return '<span class="ah-sep"></span>';
+      const d = b.id === 'guard' || b.id === 'dodge' ? null : D.actions[b.id];
+      const nm = b.name ?? d?.short ?? d?.name ?? b.id, sub = b.sub ?? `<q>${'◆'.repeat(d?.apCost ?? 0)}</q> ${d?.cooldown ?? 0} s`;
+      return `<button class="ah-b${b.wide || (d && d.kind === 'tech') ? ' wide' : ''}${d && d.kind === 'tech' ? ' tech' : ''}" data-act="${b.id}" aria-label="${nm} (${b.key})"><kbd>${b.key}</kbd><b>${nm}</b><em>${sub}</em><i class="cd"></i><s></s></button>`;
+    }).join('');
+    const card = (who: FighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<span>${sub}</span></div><div class="ah-hp" role="meter" aria-label="Santé de ${D.fighters[who].name}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i><em></em></div>${who === 'ren' ? '<div class="ah-pips" aria-label="Points d\'action">' + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-state"></div></div></div>`;
+    this.el.innerHTML = `<div class="top"></div><div id="ah-title">Cité du Tournoi<small>Arène des champions</small></div>
+      ${card('ren', 'l', 'le héros')}${card('marek', 'r', 'le champion')}
+      <div id="ah-alert"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2l18 18-18 18L2 20z" fill="#3a1812" stroke="#d0714e" stroke-width="2.4"/><rect x="18" y="9" width="4" height="14" fill="#f3e3bf"/><rect x="18" y="26" width="4" height="4" fill="#f3e3bf"/></svg><div><b></b><span></span></div></div>
+      <div id="ah-dmg"></div><div id="ah-wbar"></div><div id="ah-bar">${bar}</div>
+      <div id="ah-ko" role="status"><div><b></b><span>R pour recommencer</span></div></div>
+      <div id="ah-pause" role="status"><div><b>Pause</b><span>Espace pour reprendre</span></div></div>
+      <div id="ah-rotate" role="alert"><div><b>Cité du Tournoi</b><span>Tournez l'appareil : l'arène se joue en paysage</span></div></div>`;
+    document.body.appendChild(this.el);
+    for (const who of ['ren', 'marek'] as FighterId[]) {
+      const src = portraits[who], cv = this.q<HTMLCanvasElement>(`#ah-${who} .ah-port`);
+      if (src) { const x = cv.getContext('2d')!; x.imageSmoothingEnabled = false; if (who === 'marek') { x.translate(24, 0); x.scale(-1, 1); } x.drawImage(src, 0, 0); }
+    }
+    this.el.querySelectorAll<HTMLButtonElement>('.ah-b').forEach((b) => {
+      const id = b.dataset.act!;
+      this.btn.set(id, b);
+      b.addEventListener('pointerdown', (e) => { e.preventDefault(); this.onAction(id, true); this.flash(id); });
+      if (id === 'guard') for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, () => this.onAction(id, false));
+    });
+  }
+
+  flash(id: string, cls: 'hit' | 'deny' = 'hit'): void {
+    const b = this.btn.get(id); if (!b) return;
+    b.classList.remove(cls); void b.offsetWidth; b.classList.add(cls);
+  }
+
+  private set(k: string, v: unknown, apply: () => void): void { if (this.c.get(k) !== v) { this.c.set(k, v); apply(); } }
+  private cls(k: string, el: Element, c: string, on: boolean): void { this.set(`${k}|${c}`, on, () => el.classList.toggle(c, on)); }
+
+  /** per frame: the simulation's state to the DOM (cached writes only) */
+  update(sim: CombatSim, assist: Assist, visible: boolean, paused: boolean): void {
+    const R = sim.f.ren, M = sim.f.marek, inc = sim.incoming(), full = assist === 'full', up = !!inc && inc.windowOpen && full;
+    this.cls('hud', this.el, 'off', !visible);
+    for (const f of [R, M]) {
+      const root = this.q(`#ah-${f.id}`), pct = Math.round((f.hp / f.maxHp) * 1000) / 10;
+      this.set(`hp${f.id}`, pct, () => { (root.querySelector('.ah-hp i') as HTMLElement).style.width = `${pct}%`; (root.querySelector('.ah-hp u') as HTMLElement).style.width = `${pct}%`; root.querySelector('.ah-hp')!.setAttribute('aria-valuenow', String(Math.ceil(f.hp))); });
+      this.set(`hpt${f.id}`, Math.ceil(f.hp), () => { root.querySelector('.ah-hp em')!.textContent = `${Math.ceil(f.hp)} / ${f.maxHp}`; });
+      const st = f.state === 'stunned' ? (f.id === 'ren' ? 'Étourdi' : 'Étourdi — frappez !') : f.state === 'down' ? 'À terre' : f.guarding ? 'En garde' : '';
+      const se = root.querySelector('.ah-state')!;
+      this.set(`st${f.id}`, st, () => { if (st) se.textContent = st; se.classList.toggle('on', !!st); });
+    }
+    this.el.querySelectorAll('#ah-ren .ah-pips b').forEach((u, k) => {
+      const on = k < R.ap;
+      this.set(`pip${k}`, on, () => { u.classList.toggle('on', on); if (on) { u.classList.remove('gain'); void (u as HTMLElement).offsetWidth; u.classList.add('gain'); } });
+    });
+    for (const id of ['light', 'heavy', 't1', 't2', 't3', 't4'] as ActionId[]) {
+      const b = this.btn.get(id)!, d = sim.D.actions[id], cd = sim.cooldownLeft('ren', id);
+      this.cls(id, b, 'on', sim.available('ren', id)); this.cls(id, b, 'noap', !sim.canAfford('ren', id)); this.cls(id, b, 'cool', cd > 0);
+      if (d.cooldown) {
+        const h = cd > 0 ? Math.round((cd / d.cooldown) * 100) : 0, s = cd > 0 ? String(Math.ceil(cd)) : '';
+        this.set(`${id}h`, h, () => { (b.querySelector('.cd') as HTMLElement).style.height = `${h}%`; });
+        this.set(`${id}s`, s, () => { b.querySelector('s')!.textContent = s; });
+      }
+    }
+    // the dodge button never tells whether an attack is coming (only the full assistance lights it in the window)
+    const dg = this.btn.get('dodge')!, gd = this.btn.get('guard')!;
+    this.cls('dg', dg, 'on', R.ap >= 1); this.cls('dg', dg, 'noap', R.ap < 1); this.cls('dg', dg, 'open', up && sim.canReact('ren', 'dodge'));
+    this.cls('gd', gd, 'on', R.state === 'idle'); this.cls('gd', gd, 'active', R.guarding); this.cls('gd', gd, 'warn', up && !!inc && inc.kind === 'heavy' && R.guarding);
+    const wb = this.q<HTMLElement>('#ah-wbar');
+    this.cls('wb', wb, 'on', up && !R.react);
+    if (up) wb.style.transform = `translateX(-50%) scaleX(${Math.max(0, inc!.windowRemaining / inc!.windowDur).toFixed(2)})`;
+    const al = this.q<HTMLElement>('#ah-alert'), show = !!inc && full && visible;
+    this.cls('al', al, 'on', show);
+    if (show) {
+      const p = this.project('marek'), ax = Math.max(8, Math.min(window.innerWidth - 300, p.x - 330)), ay = Math.max(150, Math.min(window.innerHeight * 0.5, p.y - 110));
+      this.set('alX', `${Math.round(ax)},${Math.round(ay)}`, () => { al.style.transform = `translate(${Math.round(ax)}px,${Math.round(ay)}px)`; });
+      this.set('alT', inc!.action, () => { al.querySelector('b')!.textContent = inc!.action === 'm_heavy' ? 'Attaque puissante !' : 'Attaque !'; });
+      this.set('alS', inc!.windowOpen, () => { al.querySelector('span')!.textContent = inc!.windowOpen ? 'Réagissez maintenant' : ''; });
+    }
+    this.cls('pause', this.q('#ah-pause'), 'on', paused && !sim.over);
+  }
+
+  /** the events' feedback: floating numbers, denied commands, the KO screen */
+  onEvents(evs: CombatEvent[], sim: CombatSim): void {
+    for (const e of evs) {
+      if (e.type === 'impact') this.float(e.to, e.result === 'dodged' ? 'Esquive' : e.result === 'guarded' ? `${e.damage} garde` : `-${e.damage}`, e.result);
+      else if (e.type === 'apGain' && e.who === 'ren') this.float('ren', `+${e.amount} PA`, 'ap', -34);
+      else if (e.type === 'stun') this.float(e.who, e.why === 'guardbreak' ? 'Garde brisée' : 'Étourdi', 'stun', -34);
+      else if (e.type === 'commandDenied' && e.who === 'ren') this.flash(e.action, 'deny');
+      else if (e.type === 'reactDenied' && e.who === 'ren') this.flash('dodge', 'deny');
+      else if (e.type === 'ko') { const ko = this.q('#ah-ko'); ko.querySelector('b')!.textContent = e.who === 'marek' ? 'Victoire' : 'Défaite'; ko.querySelector('span')!.textContent = `${e.who === 'marek' ? 'Marek' : 'Ren'} est à terre · R pour recommencer`; ko.classList.add('on'); }
+      else if (e.type === 'reset') { this.q('#ah-ko').classList.remove('on'); this.q('#ah-dmg').textContent = ''; }
+    }
+    void sim;
+  }
+
+  private float(who: FighterId, text: string, cls: string, dy = 26): void {
+    const p = this.project(who), el = document.createElement('div');
+    el.className = cls; el.textContent = text;
+    el.style.left = `${Math.round(p.x)}px`; el.style.top = `${Math.round(p.y + dy)}px`;
+    this.q('#ah-dmg').appendChild(el);
+    setTimeout(() => el.remove(), 1100);
+  }
+}

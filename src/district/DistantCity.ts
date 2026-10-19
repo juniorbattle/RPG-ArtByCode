@@ -102,10 +102,10 @@ function qf(B: MeshBuilder, p: [V3, V3, V3, V3], want: V3, o: Parameters<MeshBui
   B.quad(p[0], p[1], p[2], p[3], { ...o, flip: n[0] * want[0] + n[1] * want[1] + n[2] * want[2] < 0 });
 }
 
-interface HouseOpts { x: number; y: number; z: number; w: number; d: number; h: number; wall: V3; roof: V3; id: number; lit: number; hip?: boolean; chimney?: boolean; timber?: boolean }
+export interface HouseOpts { x: number; y: number; z: number; w: number; d: number; h: number; wall: V3; roof: V3; id: number; lit: number; hip?: boolean; chimney?: boolean; timber?: boolean }
 
 /** box + gable/hip roof; each wall gets its own window grid sized to the facade so windows never cut corners */
-function farHouse(B: MeshBuilder, o: HouseOpts): void {
+export function farHouse(B: MeshBuilder, o: HouseOpts): void {
   const { x, y, z, w, d, h } = o;
   const x0 = x - w / 2, x1 = x + w / 2, z0 = z - d / 2, z1 = z + d / 2;
   const yb = y - 2.5, yt = y + h;
@@ -145,7 +145,7 @@ function farHouse(B: MeshBuilder, o: HouseOpts): void {
   if (o.chimney) B.boxMM(x + w * 0.22 - 0.3, yt, z - 0.3, x + w * 0.22 + 0.3, yt + rh + 0.9, z + 0.3, { tint: [0.16, 0.16, 0.19], aux: rt });
 }
 
-function tower(B: MeshBuilder, x: number, y: number, z: number, r: number, h: number, spire: number, tint: V3, roof: V3, id: number, lit = 0.25): void {
+export function tower(B: MeshBuilder, x: number, y: number, z: number, r: number, h: number, spire: number, tint: V3, roof: V3, id: number, lit = 0.25): void {
   const poly: Array<[number, number]> = [];
   const n = 8;
   for (let i = 0; i < n; i++) poly.push([x + Math.cos((i / n) * Math.PI * 2) * r, z + Math.sin((i / n) * Math.PI * 2) * r]);
@@ -418,6 +418,13 @@ export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictCo
   }
   untag();
 
-  const material = new THREE.ShaderMaterial({ uniforms: { ...U }, vertexShader: SURFACE_VERT, fragmentShader: FAR_FRAG, side: THREE.DoubleSide });
-  return { builder: B, material };
+  return { builder: B, material: farMaterial() };
 }
+
+/** the far city's one cheap material (lit windows, roof courses, ashlar, haze); also the arena's backdrop (src/arena/ArenaScene.ts) */
+export function farMaterial(): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({ uniforms: { ...U }, vertexShader: SURFACE_VERT, fragmentShader: FAR_FRAG, side: THREE.DoubleSide });
+}
+
+/** the far shader's surface kinds (aux.w) */
+export const FAR_KIND = { PLAIN, WALL, LAND, LAMP, TIMBER, GROUND, BRIDGE, TREE } as const;

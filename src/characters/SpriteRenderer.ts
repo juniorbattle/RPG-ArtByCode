@@ -53,6 +53,8 @@ export interface Actor {
   sideFlip?: boolean;
   /** NPC variant of a baked sheet (Variants.ts): ramp rows (-1 = keep) and the sheet's luminance ranges of its masked hair / skin */
   variant?: { hair: number; skin: number; hairRange: [number, number] | null; skinRange: [number, number] | null };
+  /** no contact or light shadows (an effect sprite: the arena's impact sparks, journal Passe P1) */
+  noShadow?: boolean;
 }
 
 /** Baked (authored) frames live in their own texture and are addressed by their INTEGER cell (x0, y0 = bottom-left data texel, w, h):
@@ -272,10 +274,12 @@ export class SpriteRenderer {
   /** DOF protection per detail tier (1 = never blurred); the player and the interaction target are always 1 */
   protect = { hero: 1, mid: 1, crowd: 0.8 };
 
-  constructor(private atlas: SpriteAtlas, capacity = 48) {
+  /** `frame`: the texel size of the atlas' cells and their foot row (the town's 32 x 48 frames by default; the arena's fighters use larger
+   *  cells at the same texel size, journal Passe P1) */
+  constructor(private atlas: SpriteAtlas, capacity = 48, frame: { w: number; h: number; foot: number } = { w: FRAME_W, h: FRAME_H, foot: FOOT_Y }) {
     this.shared = {
-      uWorldSize: { value: new THREE.Vector2(FRAME_W * PIXEL_WORLD, FRAME_H * PIXEL_WORLD) },
-      uFootOffset: { value: (FRAME_H - FOOT_Y) * PIXEL_WORLD },
+      uWorldSize: { value: new THREE.Vector2(frame.w * PIXEL_WORLD, frame.h * PIXEL_WORLD) },
+      uFootOffset: { value: (frame.h - frame.foot) * PIXEL_WORLD },
       uBillRight: { value: new THREE.Vector3(1, 0, 0) },
       uBillUp: { value: new THREE.Vector3(0, 1, 0) },
       uCharScale: { value: 1 },
@@ -387,6 +391,7 @@ export class SpriteRenderer {
       a.varA.setXYZW(bi, vr && hr ? vr.hair : -1, vr && sr ? vr.skin : -1, hr?.[0] ?? 0, hr?.[1] ?? 1);
       a.varB.setXYZW(bi, sr?.[0] ?? 0, sr?.[1] ?? 1, 0, 0);
       bi++;
+      if (act.noShadow) continue;
       s.pos.setXYZ(si, act.pos.x, act.pos.y, act.pos.z); s.uv.setXYZW(si, fr.u0, fr.v0, fr.u1, fr.v1); setCell(s.cell, si, fr); s.sh.setXYZW(si, 0, 0, -1, 0.85 * this.shadowAlpha); s.flip.setX(si, 1); si++;
       for (let k = 0; k < Math.min(2, cand.length); k++) {
         const l = cand[k].l;

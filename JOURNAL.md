@@ -842,6 +842,109 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   (pulsation rouge, saturation du télégraphe, rangée d'appliques) touche aux signaux de jeu ou à la mise en scène, à juger en jeu par
   l'opérateur plutôt qu'à empiler.
 
+## Passe P1 — L'arène dans le jeu : `?scene=arena` (simulation portée, décor du district, combattants générés ×2, HUD) (2026-10-19)
+
+### Demande (opérateur, mot pour mot)
+« Le but de notre tâche était de porter l'arène dans notre jeu et adaptés ameliorer correctement le décors comme nous voulons et améliorer
+aussi les personnages combattants. Nous allons intégrer des spirites cohérents. Enfin le UI / HUD doit aussi être améliorer »
+
+### Fait — [OK] (branche `claude/stoic-goodall-8ieke4` depuis `main` `b0c2206`)
+- **Entrée** : `?scene=arena` (`src/main.ts`) charge `src/arena/ArenaApp.ts` à la demande (morceau séparé au build : 74 ko, 27 ko gzip) ;
+  sans le paramètre, la ville suit exactement son ancien chemin (`startTown`, code déplacé tel quel dans une fonction).
+- **Simulation** (`src/arena/CombatSim.ts`) : port TypeScript de `CombatLib` (prototype), règle pour règle et dans le même ordre des
+  opérations, mêmes nombres (provisoires, à régler par l'opérateur). Aucune règle changée.
+- **Rendu** : celui de la ville, réutilisé tel quel : `MaterialLibrary` (peintres en workers), `LightRig` (22 sources fixes + 2 dynamiques =
+  `MAX_LIGHTS`), ciel (`buildSky`), ombre de lune, reflet plan (plan y = 0 : les flaques), `PostFX` (in-scatter, profondeur de champ sur le
+  duel, bloom, gradation de palette), particules (flammes, braises, fumée, halos), plafond d'images `a60`, `SpriteRenderer`.
+- **Décor** (`src/arena/ArenaScene.ts`), avec les matériaux et modules du district : mur d'enceinte courbe (3,4 m, pierre de taille,
+  pilastres, chaperon) ; deux portes cintrées des combattants (claveaux, clef, tunnel sombre éclairé du fond, lanternes) ; gradins sur quatre
+  rangs, mur du fond crénelé, oriflammes marine ; **grande porte** au centre : deux tours de 9,5 m portant les bannières marine à fleur de lys,
+  ouverte sur le ciel, **la lune basse dans son axe** (élévation 6,5°, azimut 4°) : sa lumière entre par la porte et tombe entre les
+  combattants (une lune derrière les gradins n'éclairait rien du sol) ; une chaussée vers une balustrade, ses lampadaires en perspective ;
+  au-delà, la ville basse et la colline au château (modules `farHouse` / `tower` du district et son matériau lointain, l'axe de la porte gardé
+  libre) ; six maisons générées (`createMerchantBuilding`) derrière les gradins ; sol pavé mouillé du district avec un masque propre
+  (flaques là où tombe la lumière, usure le long de la ligne de duel, crasse et ombre au pied des murs) ; anneau de dalles et médaillon ;
+  braseros à la porte et deux juste hors cadre devant (la lumière chaude qui éclaire les combattants de face), râtelier d'armes, tonneaux,
+  foin, caisses près des portes. 53,7 k triangles fixes, 24 instances.
+- **Combattants** (`src/arena/FighterArt.ts`) : un peintre de profil de combat dans la grammaire du générateur de la ville (`makeRig`,
+  `palette`, rampes à teinte décalée, modes d'ombrage, contour sélectif) : **Ren = la palette du héros généré** (`PLAYER`), **Marek = un nouvel
+  archétype** dans la même grammaire (plus grand et plus large, cheveux et barbe blancs, plaque d'acier, tabard et cape cramoisis, grande épée
+  à deux mains). Poses paramétriques (inclinaison, accroupi, appuis, genoux et coudes pliés, lame à tout angle), douze clips (repos, garde
+  prête, attaque rapide, puissante, technique, taille, garde, esquive, coup reçu, étourdi, KO à genoux, victoire), arcs de mouvement et
+  estocade sur la couche émissive, lame qui chauffe pour les techniques et la charge de Marek. **Densité ×2** (cases de 128 × 192 texels au
+  texel monde de la ville, comme la distribution cuite : 64 × 96 par image 32 × 48). Les images suivent l'horloge de la simulation (l'image de
+  frappe à l'instant d'impact). Spectateurs : les cinq archétypes de foule générés de la ville (vue de face, repos / bouche ouverte pour les
+  acclamations), pixel doublé. Effets : étincelles ivoire / braise, éclat de garde (sprites sans ombre). Atlas 2048 × 960, 75 cases.
+- **Moteur de sprites partagé**, deux options sans effet sur la ville : la taille de case du `SpriteRenderer` (défaut : 32 × 48, pied 45)
+  et `Actor.noShadow`. Ailleurs, seulement des `export` (`makeRig`, `palette`, `farHouse`, `tower`, `farMaterial`, `FAR_KIND`).
+- **Mise en scène** : élan calculé pour que la pointe atteigne l'adversaire à l'impact (portée mesurée sur l'image de frappe), recul aux
+  coups, éclair de teinte, lumière d'impact, secousse (aucune avec `prefers-reduced-motion`), poussée de caméra vers la charge de Marek
+  (pondérée par l'assistance), plan qui s'approche du KO ; lueur de la lame chargée (lumière dynamique, signal des assistances discrète et
+  complète) ; acclamations des gradins ; marques au sol (`FloorUI`) : anneaux sous les combattants, **bande cramoisie à chevrons ivoire** en
+  assistance complète.
+- **HUD** (`src/arena/ArenaHud.ts`) : DOM dans le langage de l'écran de chargement du jeu (encre #05070d, ivoire #d9c9a8, or pâle #f1d9a0,
+  l'ambre #e9a64c seul accent, Segoe UI espacé ; **aucune police externe**, le prototype chargeait Google Fonts) ; cartes des combattants
+  (portrait = la vue de face du générateur, nom, vie avec **traînée de dégâts**, PA en losanges, état « Étourdi — frappez ! » / « En garde » /
+  « À terre ») ; barre d'actions défense | attaques | techniques (coûts, recharges chiffrées, refus, appel de la fenêtre) ; alerte et barre de
+  la fenêtre en assistance complète ; chiffres flottants ; écrans Victoire / Défaite, Pause, rotation en portrait ; libellés aria, focus
+  visible, mouvement réduit. Touches du prototype (1-6, A, B maintenu, R, Espace ; H masque le HUD) et sa manette.
+- **Paramètres** : `assist=subtle|full|off` (défaut discrète, comme le prototype), `hud=0` / `clean=1`, `cam=pitch,dist,fov,ty,tz,tx`
+  (réglage du cadrage), `freeze=`, `seed=`, `fps=`. **Moments scriptés** (`src/arena/Presets.ts`) : les onze du prototype + `strike`,
+  `heavyRen`, `ko` ; `__arena.jump(nom)`. Différence voulue : chaque pas est livré à la présentation (le prototype n'en livrait que la
+  dernière demi-seconde : un KO plus tôt n'atteignait pas l'écran).
+- **Outils** : `tools/arena-scene-shots.mjs` (captures des moments), `tools/arena-scene-check.mjs` (jeu en direct, empreinte, moments ×
+  assistances, contraste du télégraphe).
+
+### Essais écartés — [KO]
+- Combattants à ×1 (la densité du héros de la ville) : à la taille du duel, ≈ 6 px écran par texel en 1080p, deux fois plus gros que tout le
+  reste du jeu (≈ 2,6-3,3 px / texel pour le héros, Passe S2) ; à ×2, ≈ 3 px / texel (captures). Le ×2 garde aussi les plis : le motif de
+  plis du mode `cloth`, appliqué texel par texel, faisait des rayures fines ; il est reposé à l'espacement des pixels de la ville.
+- Premier cadrage (tangage 6,5°, champ 30°) : les gradins hors cadre, un tiers d'image de sol vide ; puis combattants à 1,18 et ±1,75 m :
+  serrés et petits à côté du prototype. Retenu : tangage 3,5°, distance 15,6 m, champ 34°, pivot à 2,3 m, échelle 1,3, ±2,05 m.
+- Portes des combattants absentes du premier rendu : la porte prenait un seul segment de mur (0,56 m) ; elle est maintenant une pièce de
+  3,4 m qui remplace les segments qu'elle couvre (gradins sur linteau au-dessus du tunnel).
+- Lumière de charge et lumière d'impact sur le visage des combattants : sprites brûlés en blanc ; déplacées (au-dessus et derrière
+  Marek, devant la cible) et adoucies.
+
+### Preuves
+- `npm test` : 75 / 75 (nouveaux : `tests/arena-sim.test.mjs`, `tests/arena-art.test.mjs`) ; typecheck, build, `art:validate` (0 erreur).
+- **Port de la simulation** : le script du prototype, lu dans `arena/arena.html`, tourne à côté du port : mêmes événements pas à pas et même
+  empreinte (`152:1:idle:20.233:…;20.233`) sur le script d'empreinte, puis sur des entrées pseudo-aléatoires (3 graines, 300 s : garde tenue
+  aux impacts, commandes en attente, esquives tôt / tard, étourdissements, KO), **état complet des deux combattants comparé à chaque pas**.
+  Contrôles négatifs : quatre fautes injectées une à une (attente d'une commande, temps de levée de la garde, durée du recul, délai entre
+  coups d'un combo), toutes attrapées ; le script d'empreinte seul n'en attrapait qu'une (il ne tient jamais la garde à l'impact, ne met
+  jamais de commande en attente), d'où le second script.
+- `tools/arena-scene-check.mjs` (SwiftShader, 1280 × 720) : PASS ; en direct, la boucle avance et prend les touches ; empreinte identique au
+  prototype ; 42 rendus (14 moments × 3 assistances) sans erreur ; télégraphe 5,33:1 contre le sol (deutéranopie 5,76 ; 2,31 au prototype
+  adapté) ; 82 appels de dessin et 130 k triangles par image (passe miroir comprise).
+- **Ville inchangée** : `tools/detshots.mjs` (graine 1842, 30 pas ; cadrages A au démarrage, B joueur 2,1, D joueur 18,1) sur une copie
+  figée de `main` `b0c2206` (:5187) et sur la branche (:5186) : 0 px, PNG identiques à l'octet.
+- Avant / après : `screenshots/calibration/p1-arena/{calm,window,impact,technique}-before-after.png` (prototype adapté à gauche, le jeu à
+  droite).
+
+### Mes choix (décisions techniques, la plus sûre)
+- L'arène reste derrière `?scene=arena`, sans entrée depuis la ville (y entrer depuis le district est une décision de jeu de l'opérateur).
+- Combattants **générés par le code** (comme le héros), pas cuits : aucun asset à approuver ; une feuille cuite approuvée pourra les remplacer
+  par les mêmes clés (`<id>/side/<clip>.<i>/0`) quand elle aura ses animations de combat (le candidat `hero-x2-v2` n'en a pas).
+- Densité ×2, assistance discrète par défaut, nombres du prototype inchangés, cadrage ci-dessus.
+
+### Restes [?]
+- Temps GPU et cadence sur la machine de l'opérateur (aucun GPU ici ; `tools/perf.mjs` mesure `App`, pas l'arène).
+- 24 sources = `MAX_LIGHTS` : une lumière de plus serait coupée par priorité (les lanternes du mur du fond d'abord).
+- Sous 20 images/s, la simulation ralentit (pas d'image borné à 0,05 s, comme la ville).
+- L'anneau de dalles se voit à peine (sol rasant, nuit) ; spectateurs debout (pas de pose assise) ; cheveux et barbe blancs de Marek en une
+  masse claire de loin ; pas de son (le jeu n'en a pas).
+- Ni critique à l'aveugle, ni jugement de l'opérateur en mouvement.
+
+### Pensée
+- Réutiliser le rendu de la ville donne à l'arène son atmosphère sans code (brume, in-scatter, reflets, gradation) : le travail du décor est
+  surtout de placer volumes et lumières.
+- La densité d'un sprite se choisit par la taille du texel à l'écran dans le cadrage où il vit, pas par celle de l'image source.
+- Composition et lumière sont une seule décision : la lune derrière les gradins n'éclairait rien ; l'axe de la porte la fait entrer dans le
+  duel.
+- Un port de logique se prouve contre l'original exécuté à côté, sur des entrées qui atteignent chaque chemin (vérifié par le test), et une
+  faute injectée doit le faire échouer.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -949,13 +1052,14 @@ temps GPU sur la 780M (`tools/perf.mjs`, commandes dans la passe), le jugement d
 pluie qui tombe, éclairs), une éventuelle météo par défaut ou un cycle (décision de l'opérateur) ; non faits : son (le jeu n'en a pas), éclaboussures
 au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
 
-**6c. Arène (Passes A1 / A2)** — prototype de combat `arena/arena.html` (hors du jeu et de son build), passé dans la DA nocturne du district,
-publié en artefact privé (https://claude.ai/artifact/3w7wmerkBRUFACTm2Y9xCh). Restent : le jugement de l'opérateur en jeu et en mouvement sur
-sa machine (banc `?devtest=1` du prototype : temps GPU, cadence, contraste) ; décision de l'opérateur : porter l'arène dans le jeu (`src/`,
-Three.js récent, distribution cuite, rendu partagé avec le district) ou garder le prototype à part ; les modes PAINTED / FULL 3D restés de
-jour (Passe A2) ; écarts de la critique n° 4 (Passe A3) : pulsation rouge des bords au signal de combo (à régler avec le signal, décision
-de jeu), pierre encore brun chaud près des lampes, lune moins blanche que celle du district, saturation de la bande du télégraphe, repère de
-la fenêtre de réaction, rangée régulière d'appliques sur les parapets.
+**6c. Arène (Passes A1 à A3, P1)** — **dans le jeu derrière `?scene=arena`** (Passe P1 : simulation portée et prouvée contre le prototype,
+décor du district, combattants générés ×2, HUD au style du jeu ; la ville inchangée, 0 px). Le prototype `arena/arena.html` reste la référence
+de ses règles (publié : https://claude.ai/artifact/3w7wmerkBRUFACTm2Y9xCh). **Décisions de l'opérateur** : une entrée depuis la ville (porte,
+transition) ; le style des combattants générés (ou des feuilles cuites de combat à produire : Ren et Marek, animations de duel) ; le réglage
+des règles (nombres provisoires du prototype) ; l'assistance par défaut (discrète). **À mesurer sur sa machine** : temps GPU et cadence
+(`?scene=arena`, un outil de mesure de l'arène reste à écrire : `tools/perf.mjs` vise `App`), lecture en mouvement. Restes : anneau de dalles
+peu visible, spectateurs debout, Marek en masse claire de loin, 24 sources de lumière sur 24, ralenti sous 20 images/s ; restes de la critique
+n° 4 du prototype (Passe A3) à rejuger dans le jeu.
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
@@ -1042,6 +1146,9 @@ la fenêtre de réaction, rangée régulière d'appliques sur les parapets.
 - Un effet qui écrit des uniformes partagés garde leurs valeurs d'avant et les rend : sa preuve est « activé puis retiré = 0 px » (Passe W2) ;
   tant qu'aucun paramètre ne le demande, il ne crée rien (un objet THREE tire `Math.random`).
 ### Preuves
+- Un port de logique se prouve contre l'original exécuté à côté (mêmes entrées, mêmes événements et même état à chaque pas), sur des
+  entrées dont le test vérifie qu'elles atteignent chaque chemin ; des fautes injectées une à une doivent le faire échouer (Passe P1 : le
+  script d'empreinte seul en laissait passer trois sur quatre).
 - Une preuve doit pouvoir échouer : un contrôle négatif avant d'accepter « 0 écart » (Lab : `filter=linear` ; revue d'agent : un défaut
   planté qu'elle doit trouver à l'aveugle ; « 0 trou » : remplissage depuis le bord ; mesure de stabilité en mouvement : un cas connu
   mauvais qu'elle doit séparer, sinon elle ne vaut que comme indice et le jugement reste visuel). Un résultat « 0 » d'un outil se recoupe
@@ -1075,6 +1182,8 @@ la fenêtre de réaction, rangée régulière d'appliques sur les parapets.
 - Une propriété aléatoire se teste sur plusieurs tirages (dix éclairs, deux caps de caméra), un repli dans ses deux sens (±π) : un seul cas
   laisse passer une faute injectée (Passes Q2, W3).
 ### Personnages : art et critique
+- La densité d'un sprite se choisit par la taille de son texel à l'écran dans le cadrage où il vit (l'arène : ×2 pour ≈ 3 px / texel en 1080p,
+  comme les personnages de la ville), pas par celle de l'image source (Passe P1).
 - Un personnage se juge **dans la scène** à chaque itération (aperçu `?labsprite`, avant / après au même endroit) et **à côté du cast
   existant** (héros compris : densité de texel, proportions et hauteur monde à la même profondeur), pas seulement agrandi ni contre la
   référence : lumière chaude, liseré et voisinage du cast changent la lecture.

@@ -6,6 +6,11 @@ HUD allégé et signaux d'attaque discrets. Un seul fichier HTML, Three.js r128 
 (décor, sprites, effets) est dessiné par le code au démarrage. **Il ne fait pas partie du jeu ni de son build** (Vite ne construit que
 `index.html`).
 
+**L'arène du jeu** est `?scene=arena` (`src/arena/`, journal, Passe P1) : la simulation de ce prototype portée en TypeScript (prouvée contre
+lui par `tests/arena-sim.test.mjs`, qui lit son script dans `arena.html`), mise en scène avec le rendu, les matériaux, les maisons et la
+lumière du Merchant District, des combattants générés par les règles du générateur de sprites de la ville (×2) et un HUD au style du jeu. Ce
+dossier reste la référence des règles et des moments scriptés.
+
 - `source/arena-prototype.served.html` : la page publiée, **à l'octet** (enveloppe du service d'artefacts comprise), seule source restante
   du projet (le dossier source a été perdu, opérateur, 19/10) ; fiche `source/arena-prototype.source.json` (URL, version, SHA-256,
   dérivation) ; `source/runtime-bakeoff-report.txt` : le texte du rapport technique de ce prototype (passes 1 à 11, règles, mesures, limites).

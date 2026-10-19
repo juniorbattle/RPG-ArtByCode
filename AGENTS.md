@@ -43,7 +43,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `npm run build` — typecheck + production bundle
 - `npm test` — unit tests of the pure logic (`tests/*.test.mjs`, built-in `node --test`, ~2 s, no browser or GPU): camera zone hysteresis,
   `planDraw`, the production cast's gate (manifest approval, SHA-256 against the provenance pack), sheet metadata, PNG decoding, the baked walk
-  cycles' ground speed and the walkers' animation clock (journal Passe S2).
+  cycles' ground speed and the walkers' animation clock (journal Passe S2), the arena's combat simulation against the prototype's own script
+  read out of `arena/arena.html` (same events and state at every step, journal Passe P1) and the arena fighters' atlas.
   `tests/load.mjs` loads `src/` through Vite's SSR loader (extensionless imports, `?url`, named JSON imports, as the bundle resolves
   them; `--experimental-strip-types` alone cannot), with its own cache folder (`node_modules/.vite-test`), no file watcher and no
   `vite.config.ts` (`configFile: false` + `server.watch: null`: a merged config drops the null, and the watcher crawled the ignored Art Lab
@@ -143,6 +144,11 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   — its combat simulation's state hash over a fixed input script, every moment in every mode without a page error, the telegraph's contrast
   against the floor (>= 2:1); both serve the file locally (`ARENA_THREE=<three r128>` when cdnjs is unreachable); `node tools/arena-page.mjs arena/arena.html <page.html>` — the page
   to publish as an artifact (the service adds its own document skeleton; journal Passe A2)
+- Arena scene of the game (`?scene=arena`, `src/arena/`, journal Passe P1), on a running dev server (`BASE_URL`): `node tools/arena-scene-shots.mjs
+  <outDir> "<extra query>" "name|moment|js" ...` — captures of the scripted moments (`__arena.jump`: the prototype's eleven plus `strike`,
+  `heavyRen`, `ko`; deterministic, every step delivered to the presentation); `node tools/arena-scene-check.mjs ["<extra query>"]` — live play
+  (keys pressed while the loop runs), the simulation's hash against the prototype's, every moment in every assistance mode without a page
+  error, the floor telegraph's contrast (>= 2:1, also deuteranopia); exit 1 on a failure
 - Character Lab (dev only): `npm run dev`, then `/character-lab.html` (or `npm run art:lab`) — shows an exported PNG sheet through
   Three.js at 1x / 4x / runtime scale; `window.__lab.selfTest()` checks nearest filtering texel-for-texel. Not part of the game or its build.
 
@@ -199,7 +205,10 @@ round(2 x density) randomly picked, as approved) · `cast=generated`
 (skip the production cast of baked characters, `src/characters/BakedCast.ts`: the old generated porter / merchant) · DEV server only:
 `cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production) · DEV server only:
 `variants=candidate` (apply the NPC variants file `art-lab/characters/variants/variants.json` while it waits for the operator's approval; production
-applies it only once approved, its mask fingerprints checked, journal Passe V1)
+applies it only once approved, its mask fingerprints checked, journal Passe V1) · `scene=arena` (the arena of the Cité du Tournoi instead of the
+town, `src/arena/ArenaApp.ts`, loaded on demand; journal Passe P1; absent = the town, unchanged) with `assist=subtle|full|off` (the prototype's
+visual assistance, default subtle; full adds the floor telegraph, the alert and the reaction window's bar), `hud=0` (or `clean=1`: no HUD),
+`cam=pitchDeg,dist,fov,ty,tz,tx` (the arena's framing while tuning; blank = keep); keys 1-6, A dodge, B guard (hold), R restart, Space pause, H HUD
 
 ## Art production principle
 Maximise perceptual complexity while minimising runtime complexity.
@@ -213,7 +222,9 @@ cost, reproducibility and operator approval — not procedural purity.
   manifest is approved for production. Today: `dockworker-x2-v2` (in place of the porter), `merchant-x2-v2` (the hero stall's
   merchant), `blacksmith-x2-v1` (the forge's blacksmith), `guard-x2-v1` (both guards), `hooded-x2-v1` (the hooded stranger) and the five
   townsfolk of the ambient crowd (`artisan-x2-v1`, `traveler-x2-v1`, `townswoman-x2-v1`, `older-merchant-x2-v1`, `courier-x2-v1` in place of
-  `crowd0`..`crowd4`), approved by the operator on 2026-10-17; the hero and the cat are still generated.
+  `crowd0`..`crowd4`), approved by the operator on 2026-10-17; the hero and the cat are still generated. The arena scene (`?scene=arena`, journal
+  Passe P1) generates its fighters (Ren with the hero's palette, Marek) with the town generator's rules at x2 density (`src/arena/FighterArt.ts`);
+  a baked sheet can take their place by the same frame keys only through an approved manifest.
 - A baked asset may reach the runtime only through an approved provenance manifest (`approved: true`, `runtimeUse: "production"`)
   and an explicit operator-approved task. Generated output never becomes canonical production art silently.
 - `*.aseprite` files are production sources (tracked); the sheet PNG + metadata JSON exports are the baked, runtime-ready outputs.
