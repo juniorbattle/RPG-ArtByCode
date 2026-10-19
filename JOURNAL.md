@@ -785,6 +785,37 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Un effet réglable en cours de partie rend ce qu'il a pris : il garde les valeurs d'avant lui, et sa preuve est « activé puis retiré = 0 px ».
 
+## Passe K2 — Caméras : le recul du joueur en cadrage D posé expliqué (analyse, aucun code) (2026-10-19)
+
+### Constat (Passe K1, `camsim`, graine 1842)
+- C → D : 10 images posées en D à −39 px/s ; D → C : 25 images posées à −15 px/s (le joueur recule à l'écran alors qu'il marche).
+
+### Cause — [OK] mesurée image par image (journal `camsim` enregistré)
+- Le joueur garde sa touche depuis C : elle reste dans le repère de C (règle voulue, `AGENTS.md`), donc en D il marche **en diagonale**
+  (v = 2,17 / −1,25 m/s). Le pivot de D suit son x avec un gain de 0,85 (z presque bloqué) : 0,85 × 2,17 = 1,84 m/s le long de x, soit
+  **1,73 m/s le long de la droite de la caméra** (lacet −20°), contre **1,61 m/s** pour le joueur, que sa composante en z ralentit à l'écran :
+  il recule de 39 px/s. Même mécanisme dans l'autre sens (−15 px/s).
+- En D, la touche pressée sous D (le joueur marche selon l'écran) : **0 image de recul** à tous les gains.
+
+### Essais (`?camD=,,,,,,,,<gainX>`, paramètre de réglage existant ; aucun code changé)
+| gain x de D | C → D (recul) | D → C (recul) | D vers l'est, NDC x du joueur |
+|---|---|---|---|
+| 0,85 (approuvé) | 16 images, −39 px/s | 31 images, −15 px/s | 0,33 .. 0,59 |
+| 0,75 | 14, −24 | 0 | 0,34 .. 0,64 |
+| 0,7 | 12, −17 | 0 | 0,34 .. 0,66 |
+| 0,6 | **0** | **0** | 0,35 .. **0,71** |
+
+- Contrepartie : un gain plus bas laisse le joueur filer plus à droite en D, déjà le point ouvert (a) d'« À reprendre » § 4.
+
+### Décision à demander à l'opérateur (cadrage approuvé)
+- Garder D tel quel (recul de 15-39 px/s seulement en marche diagonale venue de C), baisser son gain (0,6 : plus de recul, joueur plus à
+  droite), ou suivre le joueur **le long de la droite de la caméra** plutôt qu'en x (un suivi « à l'écran » : jamais plus vite que lui
+  à l'écran ; à prototyper derrière un paramètre et à prouver par `camsim` et le bake). Recommandation : prototyper le suivi à l'écran.
+
+### Pensée
+- Un recul à l'écran en cadrage posé vient de ce que le pivot suit (ici x, avec un gain) comparé à ce que le joueur montre à l'écran (sa
+  vitesse le long de la droite de la caméra) : une marche en diagonale suffit à les inverser.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -857,7 +888,8 @@ sans traverser C ; (c) lacet max 0,96° / image en C ↔ D (≤ 0,55° ailleurs)
 (−131 px/s) font glisser le joueur à l'envers à l'écran (héritage de la passe 2, mesuré en 4B ; Passe K1 : B → A remesuré −139 px/s, C → B
 0 ; **transitions ancrées partout préparées derrière `?camblend=anchored`** : B → A 0 image de recul au lieu de 14, pic +21 px/s au lieu de +181 ;
 décision de l'opérateur ; le reste demanderait de recaler le pivot de A) ; (e) reculs du joueur à l'écran en cadrage posé C / D (−15 à
-−39 px/s, le pivot qui rattrape le joueur après une transition, Passe K1), non traités. Contrainte : la caméra de D reste
+−39 px/s, Passe K1) : expliqués en Passe K2 (pivot de D qui suit x à 0,85 pendant une marche en diagonale) ; gain 0,6 ou suivi « à
+l'écran » à décider par l'opérateur. Contrainte : la caméra de D reste
 à z < ~18,5 (maisons de la rive opposée dès z = 19,8, invisibles de A/B/C) ; tout cadrage plus reculé exige de les retirer ou de les abaisser.
 
 **5. Visibilité / culling**
