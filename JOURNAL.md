@@ -772,7 +772,13 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   chaudes autour de chaque lanterne. Flaques bornées aussi en distance (≤ 6 m). Lune en valeurs HDR (elle fleurit dans le bloom, comme celle
   du district) ; bannières #0e1874 ; cœurs des lampadaires plus ambrés ; une petite lanterne (poteau et cage) sous chaque lueur de parapet ;
   chiffres de vie à l'intérieur de leur barre ; toutes les cartes disponibles bordées d'ambre (techniques teintées dedans) ; grain 0,008.
-- Critique n° 3 (révision 2 contre révision 3) : en cours au moment de ce commit (agent neuf, étiquettes tirées au sort) ; la version 3 n'est fusionnée qu'après son verdict
+- Critique n° 3 — [OK] (agent neuf ; révision 2 contre révision 3, étiquettes tirées au sort) : la révision 3 l'emporte, « petit écart mais
+  constant », 7,5 / 10 contre 6,5 (ciel 7 / 6,5, pierre 7 / 6, lumière 7,5 / 6, HUD 7,5 / 6,5 ; signaux 7,5 / 8 : les bordures acier
+  distinguaient mieux le groupe des techniques) ; zones chaudes 13,6 % contre 17,1 %, froides 66 % contre 55 %. Ses écarts restants (non
+  traités, « À reprendre » § 6c) : pierre des gradins encore tiède sous les lampes (#4c3f3e, référence #181828), bannières encore prune
+  (#2e242e), lune moins blanche que celle du district (valeur 0,81 contre 0,99) et brume de distance faible sur la ville, sol hors des
+  flaques plus clair (#383848), chiffres de vie peu contrastés sur leur barre, fond des cartes de techniques plus bleu, pastille « Debug »
+  grise, appliques des parapets trop faibles.
 
 ### Écarté — [KO] les modes de comparaison PAINTED / FULL 3D de nuit
 - Ciel, brume, lumières et tissus passés à la nuit : sans post-traitement, avec des textures de sable claires et un dégradé toon plancher à
@@ -914,7 +920,8 @@ au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
 publié en artefact privé (https://claude.ai/artifact/3w7wmerkBRUFACTm2Y9xCh). Restent : le jugement de l'opérateur en jeu et en mouvement sur
 sa machine (banc `?devtest=1` du prototype : temps GPU, cadence, contraste) ; décision de l'opérateur : porter l'arène dans le jeu (`src/`,
 Three.js récent, distribution cuite, rendu partagé avec le district) ou garder le prototype à part ; les modes PAINTED / FULL 3D restés de
-jour (Passe A2) ; écarts de la dernière critique (Passe A2).
+jour (Passe A2) ; écarts de la critique n° 3 (Passe A2) : gradins encore tièdes sous les lampes, bannières prune, lune et brume de distance
+faibles, sol hors des flaques un peu clair, chiffres de vie, pastille « Debug ».
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
