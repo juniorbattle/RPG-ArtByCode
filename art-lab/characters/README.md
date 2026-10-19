@@ -1,11 +1,11 @@
 # Character Art Lab
 
-Contract for the character pipeline. Current state (2026-10-18; history: Passes 4A-0A to 4A-quatervicies, archived in `journal/`,
+Contract for the character pipeline. Current state (2026-10-19; history: Passes 4A-0A to 4A-quatervicies, archived in `journal/`, and the hero, Passes H5 to H10,
 index at the top of `JOURNAL.md`):
 
 - **Toolchain** validated end to end (Pass 4A-0B); `npm run art:doctor` reports what is configured.
-- **Production cast** — `approved: true`, `runtimeUse: "production"`, approved by the operator on 2026-10-17, **none declared a Gold
-  Master**; loaded by the game through `src/characters/BakedCast.ts` (sheet SHA-256 checked against `provenance/<id>/PROVENANCE.json`,
+- **Production cast** — `approved: true`, `runtimeUse: "production"`, approved by the operator on 2026-10-17 (the hero on 2026-10-19), **none
+  declared a Gold Master**; loaded by the game through `src/characters/BakedCast.ts` (sheet SHA-256 checked against `provenance/<id>/PROVENANCE.json`,
   decoded byte-exact), each in place of one generated archetype on the same seeded spawns (`?cast=generated` shows the old sprites):
 
   | Manifest | Stands in for | Animations (front / back / side) |
@@ -16,10 +16,12 @@ index at the top of `JOURNAL.md`):
   | `guard-x2-v1` | both guards | idle, walk |
   | `hooded-x2-v1` | the hooded stranger | idle, walk |
   | `artisan-x2-v1`, `traveler-x2-v1`, `townswoman-x2-v1`, `older-merchant-x2-v1`, `courier-x2-v1` | the ambient crowd (`crowd0`..`crowd4`) | idle, walk |
+  | `hero-x2-v3` | the player (journal Passes H8, H9, H10) | idle, run, in five facings (front, three-quarter front, profile, three-quarter back, back) |
 
-  All density x2 (64 × 96 frames, the world frame of the 32 × 48 runtime sprites), built from the 01-16 / 17-24 reference sheets by
+  All density x2 (64 × 96 frames, the world frame of the 32 × 48 runtime sprites), built from the 01-16 / 17-24 reference sheets (the hero:
+  from the generated v4-b turnaround and the v3 sheet's run, journal Passe H8) by
   `tools/art-lab/build-character.mjs` from `rigs/<id>.rig.mjs` (`--check` rebuilds and compares). Approvals, revisions and blind
-  critiques: each manifest's `approval`, `provenance/<id>/`, `reviews/<id>/`. The hero and the cat are still generated.
+  critiques: each manifest's `approval`, `provenance/<id>/`, `reviews/<id>/`. The cat is still generated.
 - **Lab only** — `dockworker-x2-v1`: the **approved visual baseline** for standard NPCs (operator, 2026-10-16: art direction + in-scene +
   dynamic validation; `runtimeUse: "lab"`, not a production asset). Standard NPCs = its quality at density x2; key characters get a
   higher budget later; one art direction, different precision budgets; never degrade a new character to match the old sprites.

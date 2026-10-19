@@ -70,9 +70,10 @@ export class ActorSystem {
    *  (the operator's decision of 2026-10-19, « Cinq par défaut », journal Passe C2: at density 1 each approved townsperson walks once) */
   crowdCount: number | null = null;
 
-  /** the five-view rule for walking facings (fiveViewFacing; DEV `?views=5`, journal Passe V5), for the sheets that have the two three-quarter
-   *  facings only: every other sprite keeps the three-view rule, unchanged */
-  views5 = false;
+  /** the five-view rule for walking facings (fiveViewFacing, journal Passe V5; the default since the operator's decision of 2026-10-19,
+   *  Passes D3 / H10; `?views=3` turns it off), for the sheets that have the two three-quarter facings only: every other sprite keeps the
+   *  three-view rule, unchanged */
+  views5 = true;
   private has34 = new Map<string, boolean>();
 
   /** camera: shows a walking facing by its on-screen direction (null: the world rule for every facing) */

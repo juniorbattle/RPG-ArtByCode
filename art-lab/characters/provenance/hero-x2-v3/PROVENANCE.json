@@ -1,12 +1,19 @@
 {
  "id": "hero-x2-v3",
- "status": "CANDIDATE (Pass H8; face retouched in Pass H9), NOT APPROVED: built from the generated, non-canonical v4-b turnaround (the operator's choice of source) for review in the scene (DEV, ?cast=candidate, ?views=5); production, approval and any Gold Master status are the operator's decision",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-19, review sheet RH1 « Production », journal Passe D3) - not declared a Gold Master - built in Pass H8 from the generated v4-b turnaround (the operator's choice of source), the face retouched in Pass H9",
  "request": {
   "date": "2026-10-19",
   "by": "operator (git user wonmii), in this session",
   "text": "the decision sheet, word for word: H1 « Retouches d'abord (visage, palette) », H4 « Source : la b », H3 « Cinq vues, le héros d'abord », H2 « Sprint ×1,2 », H5 « Ignorées »; then « La fiche d'arbitrages est remplie : relis mes choix, consigne-les et applique-les. » (journal Passe D1)"
  },
- "approvals": [],
+ "approvals": [
+  {
+   "date": "2026-10-19",
+   "by": "operator (git user wonmii)",
+   "decision": "« Production » (review sheet of milestone M1, RH1 « Le héros en production »; with RH2 « Par défaut avec le héros », the five-view rule by default), the operator's choices pasted in the working session and read back from the sheet's `decisions` collection (journal Passe D3)",
+   "scope": "the sheet of Pass H9 (export SHA-256 65788b0d7665991c8fc4f5fbeb6290dc2e3e3afc8d38842b41c0398dbae816d0), production use on the player in place of the generated hero; not declared a Gold Master. Source rights: the v4-b turnaround generated with the operator's OpenAI account (tools/art-lab/gen-image.mjs, journal Passe I1; OpenAI's terms) and the operator's v3 base sheet; use in production decided by the operator (RH1); third-party rights not exhaustively verified; C2PA chunk present, not verified."
+  }
+ ],
  "source": {
   "sheet": {
    "description": "eight-view idle turnaround of the protagonist generated with tools/art-lab/gen-image.mjs (gpt-image-2, edit of the v3 sheet), NON-CANONICAL, archived byte for byte with its automatic record",
@@ -14,7 +21,7 @@
    "bytes": 1481998,
    "path": "art-lab/characters/reference/sources/hero-turnaround-v4-2026-10-19-b.png",
    "origin": "generated through the OpenAI Images API with the operator's account (journal Passe I1); its record names the model, the exact prompt and its SHA-256, the request id; C2PA chunk present, NOT verified",
-   "rights": "generated image (OpenAI's terms); third-party rights NOT verified; non-canonical until the operator approves; production use needs the operator's separate decision"
+   "rights": "generated image (OpenAI's terms) through the operator's account; third-party rights NOT exhaustively verified; its use in production decided by the operator (review sheet RH1 « Production », journal Passe D3)"
   },
   "runSheet": {
    "description": "the v3 sheet's run row (eight run frames): the profile run of hero-x2-v2, Pass H6",
@@ -39,7 +46,7 @@
   "metresPerTexel": 0.0235,
   "scale": 0.9
  },
- "runtime": "DEV preview only: BakedCast candidate entry (replaces: ['player'], scale 0.9, ?cast=candidate); the three-quarter facings are shown only with DEV ?views=5 (journal Passe V5)",
+ "runtime": "PRODUCTION: BakedCast entry (replaces: ['player'], scale 0.9); the three-quarter facings shown by the five-view rule, the default (?views=3: the three-view rule; journal Passes V5, H10)",
  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v3.rig.mjs --check; node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/hero-x2-v3 [--rebuild]",
  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
  "files": {

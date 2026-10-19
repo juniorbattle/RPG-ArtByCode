@@ -800,14 +800,72 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 - Les choix se relisent dans la collection même quand l'opérateur colle le récapitulatif. Les deux concordent ici ; un écart serait reposé
   à l'opérateur avant d'agir.
 
+## Passe H10 — Héros : `hero-x2-v3` en production, la règle à cinq vues par défaut (décisions RH1, RH2) (2026-10-19)
+
+### Demande
+- Décisions de l'opérateur (Passe D3), mot pour mot : RH1 « Production », RH2 « Par défaut avec le héros ».
+- Branche `hero-production-h10` depuis `main` (`095e716`).
+
+### Fait — [OK]
+- **Approbation** : le manifeste passe à `status: approved`, `approved: true`, `runtimeUse: production`.
+  - L'approbation cite la décision et sa date, et l'empreinte de l'export approuvé (`65788b0d…`, celui de la Passe H9).
+  - Le paquet de provenance reçoit la même entrée dans `approvals`, son statut et la ligne des droits.
+  - Droits : la planche v4-b, générée avec le compte OpenAI de l'opérateur, et sa planche v3 ; l'usage en production décidé par l'opérateur ;
+    droits de tiers non vérifiés exhaustivement ; C2PA lu, non vérifié.
+  - Pas de Gold Master (RJ3).
+- **Distribution** : l'entrée du héros reste la **dernière** de `BakedCast`.
+  - Ses 60 images viennent après les 322 des PNJ dans la texture cuite : la première colonne se remplit, la seconde s'ouvre (382 images sur
+    les 672 garanties, Passe T1).
+  - Chaque image des PNJ garde sa case.
+- **Cinq vues par défaut** : `ActorSystem.views5 = true`. `?views=3` rend la règle à trois vues à tout sprite ; le paramètre `?views=5`
+  disparaît. Elle ne s'applique qu'aux feuilles qui ont les deux trois-quarts : aujourd'hui, le héros seul.
+- **Documents** : `AGENTS.md` (le principe de production, les paramètres `views`, `cast`), `art-lab/README.md`,
+  `art-lab/characters/README.md` (tableau de la distribution).
+
+### Preuves
+- **Captures déterministes** : graine 1842, `clean=1&freeze=7.3&vis=0`, 300 pas, A / B / C / D ; la branche contre `main` figé
+  (`095e716`, :5187).
+  - **La production est exactement ce que l'opérateur a revu** : la branche par défaut contre `main` avec `?cast=candidate&views=5` donne
+    **0 px** sur les quatre cadrages (écart max 0).
+  - `?cast=generated` : **0 px** contre `main` ; l'ancienne distribution générée reste disponible.
+  - Contre `main` par défaut, seul le joueur change : son sprite, son reflet, sa longue ombre de lune (A 14 602 px, B 31 963, C 33 071 ;
+    D 0, le joueur hors champ).
+  - Témoin de répétition : 0 px.
+- **Bundle de production** (`npm run build`, servi par `vite preview` sur :5189) : le joueur porte `hero-x2-v3`, la règle à cinq vues est
+  active, la texture cuite fait 2 048 de large.
+  - **[?]** Le bundle et le serveur DEV ne donnent pas la même image à la même graine (B : 22 919 px), y compris avec `?cast=generated`
+    (24 230 px). L'écart ne vient donc pas du héros ; sa cause n'est pas cherchée (piste : du code DEV qui tire dans `Math.random` à graine).
+    Les preuves d'image se comparent sur le même type de serveur.
+- **Glissement en mouvement** (`tools/foot-slip.mjs --secs=3 --keys=d`) : B −0,07, D −0,07. Ce sont les valeurs de la Passe H8, la
+  quantification.
+- **Tests** :
+  - `tests/baked-atlas.test.mjs` réécrit : le héros est la dernière feuille de la production ; les PNJ gardent case et octets ; le héros
+    remplit la dernière étagère de la première colonne puis la seconde ; 336 < 382 ≤ 672.
+  - `tests/baked-cast.test.mjs` : le joueur entre dans la liste des rôles distribués.
+  - `tests/stride.test.mjs` : `walkSlide` du héros, 14.
+  - **Faute injectée** (le héros remis avant les citadins dans la liste) : attrapée.
+  - typecheck, `npm test` 87 / 87, build, `art:validate` 0 erreur.
+- **Références** : `screenshots/calibration/cam{A,B,C,D}-*.png` refaites (requêtes de `tools/screenshots.mjs`, capture déterministe, 120 pas,
+  témoin 0 px). Contre les anciennes : 0,23 à 0,92 % des pixels, tous autour du joueur.
+
+### Restes [?]
+- Le chat reste généré.
+- Relevés de la Passe H9, à suivre en jeu : la course de face « sur place », la bouche grisâtre en B, l'œil lointain du trois-quarts.
+- Les trois-quarts des PNJ : « Plus tard » (RH4).
+
+### Pensée
+- Une approbation de production se prouve contre ce que l'opérateur a revu, sur la même base : la production d'après doit égaler, au pixel
+  près, la revue d'avant (`?cast=candidate&views=5` sur `main`).
+- Une feuille ajoutée en dernier ne déplace rien de ce qui la précède ; le test le dit par l'ordre et par les cases.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
-**0. Jalon M1 — décisions de la fiche de revue (Passe D3), à appliquer dans l'ordre de cette passe** : héros en production et cinq vues
-par défaut ; pivot de A à 5,8 ; suivi `?camfollow=screen` par défaut avec sa preuve ; diagnostic du recul au bord de l'eau ; gel (T1, T2,
-T7) ; district clos après le gel ; puis l'état jour. Gold Master : « Pas encore » (RJ3).
+**0. Jalon M1 — décisions de la fiche de revue (Passe D3), à appliquer dans l'ordre de cette passe** : pivot de A à 5,8 ;
+suivi `?camfollow=screen` par défaut avec sa preuve ; diagnostic du recul au bord de l'eau ; gel (T1, T2, T7) ; district clos après le gel ;
+puis l'état jour. Gold Master : « Pas encore » (RJ3). Fait : le héros en production et les cinq vues par défaut (Passe H10).
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
@@ -849,11 +907,11 @@ T7) ; district clos après le gel ; puis l'état jour. Gold Master : « Pas enco
   glissement ≈ 0). Décisions de la Passe D1 : « Source : la b » (planche v4-b), « Cinq vues, le héros d'abord », « Sprint ×1,2 », vues du
   côté droit « Ignorées » : appliquées en Passe H8 (`hero-x2-v3`, candidat en cinq vues, revue de l'opérateur en jeu) ; visage retouché au texel en Passe H9 (yeux
   ouverts, bouche, ombre des joues ; critique à l'aveugle : 7 contre 5 sur le visage) ; fiche de revue (Passe D3) : RH1 « Production »,
-  RH2 « Par défaut avec le héros », RH3 « Fait », RH4 « Plus tard » (les trois-quarts des PNJ). Vues de trois-quarts : étude `briefs/three-quarter-views.md` (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
+  RH2 « Par défaut avec le héros » : **en production depuis la Passe H10**, cinq vues par défaut ; RH3 « Fait », RH4 « Plus tard » (les trois-quarts des PNJ). Vues de trois-quarts : étude `briefs/three-quarter-views.md` (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
   deux planches générées en huit vues, trois-quarts dos compris, archivées comme sources non canoniques). Plus tard : masques du héros pour ses
   déclinaisons, écran de choix (code de jeu). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
   production.
-- **Personnages clés et suite de l'art** : héros et chat restent générés (densité ×1) ; ni personnage clé ni personnage **original** au
+- **Personnages clés et suite de l'art** : le chat reste généré (densité ×1 ; le héros est cuit depuis la Passe H10) ; ni personnage clé ni personnage **original** au
   même niveau ; E4 non lancée. Avant d'étendre : densité du cast (héros), liseré dépendant de la densité (liseré par sprite non implémenté),
   largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A. Décision ouverte : quelles planches étaient réellement rejetées (la
   consigne de 4A en parlait sans les montrer ; les trois planches archivées sont toutes classées comme références). Le modelé ×1,5 n'est

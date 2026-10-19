@@ -52,18 +52,21 @@ async function withRepoFetch(fn) {
   try { return await fn(); } finally { globalThis.fetch = real; }
 }
 
-test('the production cast keeps its texture byte for byte; the candidate hero goes to the second column', async () => {
+test('the production NPCs keep their texture byte for byte; the hero, loaded last, fills the first column and opens the second', async () => {
   await withRepoFetch(async () => {
-    const prod = await cast.loadProductionCast(false), withHero = await cast.loadProductionCast(true);
-    const a = SpriteAtlas.build([], prod.sheets, 2048), b = SpriteAtlas.build([], withHero.sheets, 2048);
-    const n = prod.sheets.reduce((s, x) => s + x.frames.length, 0);
-    assert.ok(n <= 336, `${n} production frames fit one column`);
+    // the hero in production (journal Passe H10): the last entry of the cast, after the NPCs approved on 2026-10-17
+    const prod = await cast.loadProductionCast(false), withCand = await cast.loadProductionCast(true);
+    assert.equal(prod.sheets.at(-1).id, 'hero-x2-v3', 'the hero is the last production sheet');
+    const npcs = prod.sheets.slice(0, -1), extra = prod.sheets.slice(-1);
+    const a = SpriteAtlas.build([], npcs, 2048), b = SpriteAtlas.build([], prod.sheets, 2048);
+    const n = npcs.reduce((s, x) => s + x.frames.length, 0), total = n + extra[0].frames.length;
+    assert.ok(n <= 336, `${n} NPC frames fit one column`);
     assert.deepEqual([a.bakedWidth, a.bakedHeight], [1024, Math.ceil(n / 16) * 96]);
-    const extra = withHero.sheets.filter((s) => !prod.sheets.some((p) => p.id === s.id));
-    if (!extra.length) return;   // no candidate in the repo any more
-    assert.ok(n + extra.reduce((s, x) => s + x.frames.length, 0) > 336, 'the candidates overflow one column (the case this pass fixes)');
+    assert.ok(total > 336 && total <= 672, `${total} production frames: past one column, within the two guaranteed`);
     assert.equal(b.bakedWidth, 2048);
     assert.ok(b.bakedHeight <= 2048);
+    // DEV candidates (none today) come after the production cast and move none of its frames
+    assert.deepEqual(withCand.sheets.slice(0, prod.sheets.length).map((s) => s.id), prod.sheets.map((s) => s.id));
     // every production frame: same cell, same bytes (texture of 1024 vs 2048 columns: compared texel by texel)
     let frames = 0;
     for (const [key, r] of a.frames) {
@@ -78,8 +81,8 @@ test('the production cast keeps its texture byte for byte; the candidate hero go
       frames++;
     }
     assert.equal(frames, n);
-    // the candidates' frames fill the last shelf of the first column, then the second column
-    const cand = extra.flatMap((s) => s.frames.map((f) => b.frames.get(`${s.id}/${f.dir}/${f.anim}/${f.i}`).cell));
-    assert.equal(cand.filter((c) => c[0] >= 1024).length, n + cand.length - 336);
+    // the hero's frames fill the last shelf of the first column, then the second column
+    const hero = extra.flatMap((s) => s.frames.map((f) => b.frames.get(`${s.id}/${f.dir}/${f.anim}/${f.i}`).cell));
+    assert.equal(hero.filter((c) => c[0] >= 1024).length, total - 336);
   });
 });

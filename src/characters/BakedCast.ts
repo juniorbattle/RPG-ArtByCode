@@ -84,8 +84,9 @@ const ENTRIES: Entry[] = [
   { manifest: { id: twId, status: twStatus, approved: twApproved, runtimeUse: twUse }, png: townswomanPng, json: townswomanJson, files: townswomanFiles, replaces: ['crowd2'], scale: 0.9 },
   { manifest: { id: omId, status: omStatus, approved: omApproved, runtimeUse: omUse }, png: olderMerchantPng, json: olderMerchantJson, files: olderMerchantFiles, replaces: ['crowd3'], scale: 0.9 },
   { manifest: { id: coId, status: coStatus, approved: coApproved, runtimeUse: coUse }, png: courierPng, json: courierJson, files: courierFiles, replaces: ['crowd4'], scale: 0.9 },
-  // CANDIDATE, not approved (journal Pass H8; hero-x2-v2 of Pass H5 before it): the premium hero on the player, DEV review only
-  // (?cast=candidate); its three-quarter facings only with ?views=5
+  // the premium hero on the player (journal Passes H8, H9; approved for production on 2026-10-19, review sheet RH1 « Production », Passe D3);
+  // its three-quarter facings through the five-view rule, the default (?views=3: three views). LAST in the list: its 60 frames come after the
+  // NPCs' in the baked texture (the first column full, the second opened), so every NPC frame keeps its cell (journal Passe T1)
   { manifest: { id: heId, status: heStatus, approved: heApproved, runtimeUse: heUse }, png: heroPng, json: heroJson, files: heroFiles, replaces: ['player'], scale: 0.9 },
 ];
 

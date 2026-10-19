@@ -64,7 +64,7 @@ test('loadProductionCast: every sheet checked against its provenance pack, every
       assert.equal(s.runtimeUse, 'production');
       for (const d of ['down', 'up', 'side']) for (const a of ['idle', 'walk']) assert.ok(s.frames.some((f) => f.dir === d && f.anim === a), `${s.id}: ${d}/${a}`);
     }
-    assert.deepEqual([...members.keys()].sort(), ['blacksmith', 'crowd0', 'crowd1', 'crowd2', 'crowd3', 'crowd4', 'guardA', 'guardB', 'hooded', 'merchant', 'porter']);
+    assert.deepEqual([...members.keys()].sort(), ['blacksmith', 'crowd0', 'crowd1', 'crowd2', 'crowd3', 'crowd4', 'guardA', 'guardB', 'hooded', 'merchant', 'player', 'porter']);
     for (const [role, m] of members) assert.ok(production.includes(m.id) && m.height > 0 && m.scale > 0, role);
   });
 });

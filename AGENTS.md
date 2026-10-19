@@ -211,10 +211,11 @@ on the porter actor, standing still, in the real scene; `-` = generated frames f
 see `art-lab/README.md`) · DEV server only, EXPERIMENTAL: `baked=<id>&bakedpos=x,z` (a baked export in the MAIN atlas and renderer, per
 `art-lab/characters/runtime-integration-contract.md` v3; never in production builds; flags in `src/lab/bakedLoader.ts`) · `crowd=<n>` (n ambient walkers, the five townsfolk in turn, journal Passe C1; absent =
 round(5 x density) in turn, each townsperson once at density 1: the operator's decision of 2026-10-19, « Cinq par défaut », journal Passe C2) · `cast=generated`
-(skip the production cast of baked characters, `src/characters/BakedCast.ts`: the old generated porter / merchant) · DEV server only:
-`cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production) · DEV server only:
-`views=5` (the five-view rule, journal Passe V5: front / three-quarter / profile sectors at 22.5 / 67.5 deg on screen, for the sheets
-that hold both three-quarter facings `downSide` / `upSide` only; every other sprite keeps the three views) · DEV server only:
+(skip the production cast of baked characters, `src/characters/BakedCast.ts`: the old generated hero / porter / merchant / NPCs) · DEV server only:
+`cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production; none today) ·
+`views=3` (the three-view rule for every sprite; absent = the five-view rule, journal Passe V5: front / three-quarter / profile sectors at
+22.5 / 67.5 deg on screen, for the sheets that hold both three-quarter facings `downSide` / `upSide` only, today the hero; every other sprite
+keeps the three views; the default since the operator's decision of 2026-10-19, « Par défaut avec le héros », journal Passes D3 / H10) · DEV server only:
 `variants=candidate` (apply the NPC variants file `art-lab/characters/variants/variants.json` while it waits for the operator's approval; production
 applies it only once approved, its mask fingerprints checked, journal Passe V1) · `scene=arena` (the arena of the Cité du Tournoi instead of the
 town, `src/arena/ArenaApp.ts`, loaded on demand; journal Passe P1; absent = the town, unchanged) with `assist=subtle|full|off` (the prototype's
@@ -233,7 +234,8 @@ cost, reproducibility and operator approval — not procedural purity.
   manifest is approved for production. Today: `dockworker-x2-v2` (in place of the porter), `merchant-x2-v2` (the hero stall's
   merchant), `blacksmith-x2-v1` (the forge's blacksmith), `guard-x2-v1` (both guards), `hooded-x2-v1` (the hooded stranger) and the five
   townsfolk of the ambient crowd (`artisan-x2-v1`, `traveler-x2-v1`, `townswoman-x2-v1`, `older-merchant-x2-v1`, `courier-x2-v1` in place of
-  `crowd0`..`crowd4`), approved by the operator on 2026-10-17; the hero and the cat are still generated. The arena scene (`?scene=arena`, journal
+  `crowd0`..`crowd4`), approved by the operator on 2026-10-17; `hero-x2-v3` (the player, in five facings), approved on 2026-10-19 (« Production »,
+  journal Passes D3 / H10); the cat is still generated. The arena scene (`?scene=arena`, journal
   Passe P1) generates its fighters (Ren with the hero's palette, Marek) with the town generator's rules at x2 density (`src/arena/FighterArt.ts`);
   a baked sheet can take their place by the same frame keys only through an approved manifest.
 - A baked asset may reach the runtime only through an approved provenance manifest (`approved: true`, `runtimeUse: "production"`)
