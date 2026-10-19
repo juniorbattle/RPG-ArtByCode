@@ -22,5 +22,13 @@
   },
   "derived": [],
   "usedAsReference": [],
-  "notInvented": "No original PNG, generator, generation date, prompt, account or C2PA data is recorded: none is known."
+  "notInvented": "No original PNG, generator, generation date, prompt, account or C2PA data is recorded: none is known.",
+  "originalFound": {
+    "date": "2026-10-18",
+    "pass": "H2",
+    "file": "main-characters-casting-2026-10-18-original.png",
+    "record": "main-characters-casting-2026-10-18-original.source.json",
+    "sha256": "1c68adcddde5f243b65be8e483ba6d9485dfe75f63b06249c621403ae1f6e793",
+    "note": "the original PNG of this sheet, supplied by the operator, archived next to this copy with its own record (C2PA manifest read, signature not verified); this file and the fields above are unchanged"
+  }
 }

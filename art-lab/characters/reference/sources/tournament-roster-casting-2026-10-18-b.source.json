@@ -22,5 +22,13 @@
   },
   "derived": [],
   "usedAsReference": [],
-  "notInvented": "No original PNG, generator, generation date, prompt, account or C2PA data is recorded: none is known."
+  "notInvented": "No original PNG, generator, generation date, prompt, account or C2PA data is recorded: none is known.",
+  "originalFound": {
+    "date": "2026-10-18",
+    "pass": "H2",
+    "file": "tournament-roster-casting-2026-10-18-b-original.png",
+    "record": "tournament-roster-casting-2026-10-18-b-original.source.json",
+    "sha256": "6afb84bd79553f2bbf0c914b64af67ad31cdaa6df4dfaa4fb532a9de636e3888",
+    "note": "the original PNG of this sheet, supplied by the operator, archived next to this copy with its own record (C2PA manifest read, signature not verified); this file and the fields above are unchanged"
+  }
 }

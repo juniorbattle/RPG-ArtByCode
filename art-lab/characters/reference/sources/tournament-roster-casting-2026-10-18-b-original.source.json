@@ -1,0 +1,43 @@
+{
+  "kind": "archived-source-sheet",
+  "file": "tournament-roster-casting-2026-10-18-b-original.png",
+  "sha256": "6afb84bd79553f2bbf0c914b64af67ad31cdaa6df4dfaa4fb532a9de636e3888",
+  "bytes": 2699402,
+  "format": "PNG 1447 x 1087, 8-bit RGB (no alpha), non-interlaced; chunks IHDR, caBX, IDAT, IEND (caBX = C2PA manifest, 21893 B at offset 33); no ICC, gamma, text or EXIF chunk",
+  "content": "the ORIGINAL of sheet b (planche 2, the second version of sheet a): the same image as the session copy tournament-roster-casting-2026-10-18-b.webp (its record describes the content: tournament-roster-casting-2026-10-18-b.source.json); lossless, so the soft, unevenly sized art pixels are the image's own, not WebP losses",
+  "nature": "an original PNG file supplied by the operator: dropped by the operator on 2026-10-18 into art-lab/characters/scratch/hero-premium/incoming/ (not versioned), relayed by the parent working session as the original PNGs of the three casting sheets; it carries OpenAI's C2PA manifest. Archived byte for byte, unmodified (cmp against the incoming file before commit).",
+  "names": {
+    "original": "Cité du Tournoi _ Roster Pixel Art-1.png (the copy in incoming/, file time 2026-10-19 01:07:56 UTC; the operator's Desktop is not readable by the tools)",
+    "c2paTitle": "image.png"
+  },
+  "sessionCopy": {
+    "file": "tournament-roster-casting-2026-10-18-b.webp",
+    "record": "tournament-roster-casting-2026-10-18-b.source.json",
+    "sha256": "fcb38cda94f2b59db6910a56fb82f740d588423395dd56fd7b8a8a485e45a8d4",
+    "match": "pixel comparison against the session copy decoded by Chrome (canvas, sRGB), all 1447 x 1087 pixels, RGB: mean absolute error 2.93 / 255 (PSNR 33.5 dB, largest channel difference 93); against the two other archived WebPs (a 29.43, main 44.33); witnesses: this PNG against itself 0, shifted 16 px 34.29; the same layout checked by eye. The WebP is consistent with a lossy transcode of this PNG; that it was made from this very file is not proved."
+  },
+  "classification": "CASTING REFERENCE, NOT CANONICAL (operator, 2026-10-18): a first series of art references, not production sprite sheets; the characters shown do not become canonical automatically; each design is validated by the operator before any reconstruction, orientation or animation; priority: the protagonist (brief art-lab/characters/briefs/hero-proposal.md)",
+  "decision": "operator, 2026-10-18: not chosen as the protagonist's base (sheet a chosen)",
+  "generation": {
+    "declared": "NOT stated in words by the operator: no generator, prompt, account or generation date declared to the working sessions (as of 2026-10-18); the file name is the downloaded file's name, not a statement",
+    "c2pa": "c2pa.created by softwareAgent ChatGPT (version gpt-image), digitalSourceType trainedAlgorithmicMedia, when 2026-10-19T01:04:34.342076470Z; then c2pa.converted and c2pa.watermarked.unbound; allActionsIncluded false; claim v2: claim generator OpenAI Media Service API (c2pa-rs 0.79.2, spec 2.2.0), dc:title image.png, instanceID xmp:iid:34b9b187-6431-489a-91d4-3e2d74d1e790, manifest urn:c2pa:aff8218a-990e-4de8-9a3e-f5e0d146db72",
+    "timeNote": "the manifest's c2pa.created time is a few minutes before the incoming copy's file time (2026-10-19 01:07:56 UTC) and the writing of the WebP session copies (2026-10-19 01:09:25 UTC); whether it is the time of generation or the time the file was produced for download is not known"
+  },
+  "c2paVerification": {
+    "presence": "present (caBX chunk); read without validating the signature: c2patool is not installed (install only with operator approval). SIGNATURE AND CERTIFICATE CHAIN NOT VERIFIED.",
+    "hardBinding": "c2pa.hash.data (sha256 of the file without the caBX chunk, exclusion start 33 length 21893) recomputed: 994b07442f86fb626148e3dbee584d893ecf5125cc44bc12d7e7b2d66f79526b = the recorded hash: the image bytes are those hashed when the manifest was made (an integrity check of the binding, not of the signature)",
+    "signer": "COSE_Sign1 (CBOR tag 18) ES256, 2-certificate chain: C=US, O=OpenAI OpCo\\, LLC, CN=OpenAI Media Service (issuer: C=US, ST=New York, L=New York, O=Trufo Inc., OU=CA Division, emailAddress=ca@trufo.ai, CN=Trufo C2PA Claim Signing CA (2025); Mar 23 02:53:02 2026 GMT to Mar 24 02:53:02 2027 GMT); C=US, ST=New York, L=New York, O=Trufo Inc., OU=CA Division, emailAddress=ca@trufo.ai, CN=Trufo C2PA Claim Signing CA (2025) (issuer: C=US, ST=New York, L=New York, O=Trufo Inc., OU=CA Division, emailAddress=ca@trufo.ai, CN=Trufo C2PA Root CA (2025\\, ECC P384); Feb  1 09:15:18 2026 GMT to Feb  2 09:15:18 2031 GMT); unprotected header sigTst2, rVals, pad (sigTst2 = a timestamp token); names read from the manifest, not validated",
+    "reader": "a read-only script outside the repo (PNG chunks, JUMBF boxes, CBOR, Node crypto for the hash and for reading the certificates), first checked on npc2-merchant-source-2026-10-16.png, whose recorded C2PA values and hash it reproduces"
+  },
+  "provenance": "the operator supplied the file; its own C2PA manifest (signature not verified) names ChatGPT / gpt-image (OpenAI Media Service API) and an AI-generated source type; nothing else is known",
+  "rights": "archiving and use as a casting reference for the project decided by the operator (2026-10-18); third-party rights NOT exhaustively verified; AI-generated according to its C2PA manifest (signature not verified)",
+  "archived": {
+    "date": "2026-10-18",
+    "decision": "the operator's decision to archive the three casting sheets byte for byte (answer « Oui, à l'octet (Recommandé) », Pass H1) and the rule of their records (an original found later is added next to the copy with its own record); the operator then supplied the original PNGs (2026-10-18)",
+    "pass": "H2",
+    "rule": "never edited, re-encoded or replaced; the WebP session copy stays archived unchanged next to it; every transformation is a separate derived file"
+  },
+  "derived": [],
+  "usedAsReference": [],
+  "notInvented": "No generator, prompt, account or generation date beyond the file's own C2PA data is recorded; the C2PA signature is not claimed to be valid."
+}

@@ -416,6 +416,81 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une coupe d'archive suit les séances (nettoyage et points 1-2 des priorités ensemble) et laisse près de la passe en cours celle qu'elle
   prolonge.
 
+## Passe H2 — Héros premium : PNG d'origine des trois planches du casting archivés (C2PA lu) ; l'opérateur attend la planche v2 (2026-10-18)
+
+### Demande (2026-10-18)
+- Transmise par la séance parente : l'opérateur a déposé trois PNG dans `art-lab/characters/scratch/hero-premium/incoming/` (non versionné)
+  et demande de commencer le héros premium. Consigne : apparier chaque PNG à sa copie WebP archivée, l'archiver à l'octet avec sa fiche (C2PA
+  lu, signature non vérifiée, droits non vérifiés exhaustivement), garder les WebP, puis une seule question : construire depuis la planche 1
+  ou attendre la planche individuelle du prompt v2.
+- Branche `hero-x2-v1` ouverte depuis `main` (`d94adef`) après `git fetch --prune` (aucune autre branche).
+
+### Appariement — [OK] mesuré ; [KO] l'ordre des noms
+- PNG 1447 × 1087, RGB 8 bits, morceaux IHDR / caBX / IDAT / IEND, contre les trois WebP archivés décodés par Chrome (canvas sRGB) ; écart moyen
+  absolu (/ 255) sur tous les pixels :
+
+| PNG déposé | planche 1 (a) | planche 2 (b) | planche 3 | Apparié à |
+|---|---|---|---|---|
+| « Cité du Tournoi — Roster en pixel art-3.png » | **2,97** | 29,33 | 46,05 | planche 1 |
+| « Cité du Tournoi _ Roster Pixel Art-1.png » | 29,43 | **2,93** | 44,33 | planche 2 |
+| « Planche de sprites pixel art du tournoi-2.png » | 46,26 | 44,57 | **2,45** | planche 3 |
+
+- Témoins : un PNG contre lui-même 0 ; décalé de 16 px contre lui-même 30,7 à 35,4. Mise en page vérifiée à l'œil (grille réduite, PNG
+  au-dessus, WebP en dessous). Plus grand écart d'un canal contre sa copie : 82 à 97 (pertes WebP sur les bords).
+- **[KO] supposition** : la séance parente tenait « …Roster Pixel Art-1.png » pour la planche 1 ; c'est la planche 2. Le numéro des fichiers
+  téléchargés ne suit pas l'ordre des copies collées.
+
+### C2PA — [OK] lu, liaison dure recalculée ; [?] signature non vérifiée
+- Lecteur en lecture seule hors dépôt (morceaux PNG, boîtes JUMBF, CBOR, Node crypto), essayé d'abord sur `npc2-merchant-source-2026-10-16.png` :
+  il retrouve les valeurs consignées en Passe 4A-quindecies (actions, générateur, hachage `3befd929…`).
+- Les trois : un manifeste, claim v2, générateur « OpenAI Media Service API » (c2pa-rs 0.79.2, spec 2.2.0), `dc:title` image.png ;
+  `c2pa.created` par ChatGPT (gpt-image), `trainedAlgorithmicMedia`, puis `c2pa.converted` et `c2pa.watermarked.unbound` ; heures (19/10, UTC) :
+  planche 2 01:04:34, planche 3 01:05:34, planche 1 01:06:44.
+- `c2pa.hash.data` (SHA-256 du fichier sans le morceau caBX) recalculé : identique au manifeste pour les trois (`b72b90dd…` planche 1,
+  `994b0744…` planche 2, `67ea9639…` planche 3). Une liaison intacte, pas une signature validée.
+- Signatures COSE_Sign1 : planches 1 et 3 ES256, chaîne « OpenAI Media Service » ← « Trufo C2PA Claim Signing CA (2025) » ; planche 2 PS256
+  (RSA), chaîne « OpenAI Media Service » ← « SSL.com C2PA ICA R1 2025 ». Noms lus, non validés ; `c2patool` non installé (installation
+  sur autorisation seulement).
+- [?] Les heures `c2pa.created` précèdent de 1 à 3 min celles des fichiers déposés (01:07:56-01:08:27 UTC) et l'écriture des copies WebP
+  (01:09:25 UTC) : heure de génération ou heure de production du fichier téléchargé, on ne sait pas ; consigné tel quel.
+
+### Archivage — [OK]
+- `reference/sources/tournament-roster-casting-2026-10-18-a-original.png` (planche 1, `9f54beed…`), `…-b-original.png` (planche 2,
+  `6afb84bd…`), `main-characters-casting-2026-10-18-original.png` (planche 3, `1c68adcd…`) : copiés, `cmp` contre le fichier déposé. Suffixe
+  `-original` : `art:validate` associe un fichier à la fiche de même nom sans extension ; un `X.png` et un `X.webp` partageraient la fiche.
+- Fiche de chacun : format, nom du fichier déposé, `sessionCopy` (copie WebP, sa fiche, son empreinte, l'écart et ses témoins : cohérent avec
+  un transcodage avec perte de ce PNG, sans preuve qu'elle en vienne), classement et décision repris de la copie, `generation` (rien de
+  déclaré en mots par l'opérateur ; valeurs C2PA ; note sur les heures), `c2paVerification` (« SIGNATURE AND CERTIFICATE CHAIN NOT
+  VERIFIED », liaison dure, signataires lus, lecteur), droits non vérifiés exhaustivement.
+- Fiches des WebP : un champ `originalFound` ajouté (lien vers l'original et sa fiche) ; leurs autres champs et leurs octets inchangés.
+- Pièces jointes du prompt v2 refaites dans le PNG d'origine (mêmes recadrages, ×2 au plus proche voisin) :
+  `scratch/hero-premium/attachments/casting1-p1-original-protagonist-views-x2.png` (`ea95a9c6…`) et `casting1-p1-original-run-x2.png`
+  (`feca9afe…`), non versionnées, inscrites dans le champ `derived` de la fiche de l'original a ; brief § 5 mis à jour. Les anciennes (tirées de
+  la copie WebP) restent.
+
+### Décision de l'opérateur (2026-10-18) — [OK]
+- Montrés : l'appariement, le C2PA, le protagoniste de la planche 1 tiré de l'original (repos et course, ×3 ; défauts de H1 inchangés : pas
+  de vrai profil au repos, pantalon clair en course, fond bleu nuit). Question : « Pour le héros premium : je le construis maintenant à partir
+  de la planche 1 (PNG d'origine), ou on attend la planche individuelle générée avec le prompt v2 du brief ? » ; réponse, mot pour mot :
+  « Attendre la planche v2 (Recommandé) ».
+- Inscrit au brief (§ 1.4, § 9 « Originaux », statut). Rien n'est construit : ni script de rig, ni manifeste.
+
+### Preuves
+- `art:validate` : 14 manifestes, 10 sources archivées, 0 erreur. Contrôle négatif : un octet ajouté à `…-b-original.png` → 2 erreurs
+  (taille, SHA-256) ; fichier recopié, `cmp` et SHA-256 de nouveau ceux du fichier déposé, 0 erreur.
+- `typecheck`, `npm test` (37 / 37), `build` : OK. Aucun code ni asset du jeu changé.
+
+### Restes [?]
+- La planche individuelle (prompt v2, pièces jointes refaites dans l'original) : l'opérateur la génère et la livre en PNG téléchargé ; puis
+  § 6 du brief sur une nouvelle branche.
+- Signatures C2PA des trois PNG (et de celui de la marchande) non validées : il faudrait `c2patool` (installation à l'opérateur).
+- Prompt et compte des planches du casting : non déclarés.
+
+### Pensée
+- Un numéro dans le nom d'un fichier téléchargé ne dit pas quelle planche c'est : l'appariement se mesure (écart de pixels contre des
+  témoins), il ne se lit pas dans les noms.
+- Un lecteur de métadonnées écrit pour l'occasion se valide d'abord sur un fichier dont les valeurs sont déjà consignées.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -444,11 +519,14 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - **Lisibilité** : tête du marteau cuit peu lisible sur la lueur de l'enclume (Passe 4A-vicies).
 - **Restes mineurs** relevés par les critiques : sections « Restent » des passes 4A-tervicies et 4A-quatervicies.
 - **Contrat et sources** : C2 (PNG versionné + JSON, `runtime-integration-contract.md` section 11) proposé le 16/10, appliqué par la
-  distribution de production, sans confirmation explicite consignée : à faire confirmer. Originaux des planches de référence à retrouver
-  (l'opérateur s'en charge) ; droits de tiers non vérifiés exhaustivement.
-- **Héros premium** (Passes H0, H1) : casting 1 tranché par l'opérateur (design de la planche 1, pantalon foncé, trois planches archivées) ;
-  prompt v2 prêt (`briefs/hero-proposal.md` § 5) ; **en attente de la planche individuelle de l'opérateur** (PNG d'origine, outil, date,
-  prompt utilisé). Le reste des planches du casting : propositions non canoniques, design à valider avant toute production.
+  distribution de production, sans confirmation explicite consignée : à faire confirmer. Originaux des planches de référence des PNJ (01-16,
+  17-24, planche complémentaire) à retrouver (l'opérateur s'en charge ; ceux du casting 1 sont archivés, Passe H2) ; droits de tiers non
+  vérifiés exhaustivement ; signatures C2PA lues, jamais validées (`c2patool` non installé).
+- **Héros premium** (Passes H0, H1, H2) : casting 1 tranché par l'opérateur (design de la planche 1, pantalon foncé, trois planches archivées,
+  leurs PNG d'origine aussi) ; décision du 18/10, mot pour mot : « Attendre la planche v2 (Recommandé) » ; prompt v2 prêt
+  (`briefs/hero-proposal.md` § 5, pièces jointes refaites dans le PNG d'origine) ; **en attente de la planche individuelle de l'opérateur**
+  (PNG téléchargé, outil, date, prompt utilisé). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
+  production.
 - **Personnages clés et suite de l'art** : héros et chat restent générés (densité ×1) ; ni personnage clé ni personnage **original** au
   même niveau ; E4 non lancée. Avant d'étendre : densité du cast (héros), liseré dépendant de la densité (liseré par sprite non implémenté),
   largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A. Décision ouverte : quelles planches étaient réellement rejetées (la
@@ -684,7 +762,9 @@ sprites.
   statut remplacé se garde dans un historique, jamais effacé.
 - Une image qui sert de référence se garde **dans son fichier d'origine** (PNG téléchargé, manifeste C2PA intact) dès le premier jour : une
   copie collée en séance est transcodée et perd toute provenance. Une correspondance visuelle se chiffre contre des témoins (elle-même = 0,
-  planche sœur = 23) avant d'être affirmée ou exclue.
+  planche sœur = 23) avant d'être affirmée ou exclue ; le numéro d'un fichier téléchargé ne dit pas quelle planche c'est (Passe H2).
+- Un lecteur de métadonnées écrit pour l'occasion (C2PA) se valide d'abord sur un fichier aux valeurs déjà consignées ; une liaison dure
+  recalculée prouve l'intégrité des octets liés au manifeste, pas la signature (Passe H2).
 - Une source archivée se versionne **à l'octet** (empreinte et `cmp` avant commit, attribut binaire) avec une fiche : nature (copie ou
   original), provenance déclarée, droits, dérivés et commande de reconstruction ; jamais de faux original ni de métadonnée fabriquée ;
   `art:validate` revérifie ses octets contre la fiche à chaque passage, contrôle négatif à l'appui.

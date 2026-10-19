@@ -25,5 +25,13 @@
     "art-lab/characters/scratch/hero-premium/attachments/casting1-p1-run-x2.png (not versioned): crop 540,131 486 x 158, same method: image 2 of the hero prompt v2"
   ],
   "usedAsReference": [],
-  "notInvented": "No original PNG, generator, generation date, prompt, account or C2PA data is recorded: none is known."
+  "notInvented": "No original PNG, generator, generation date, prompt, account or C2PA data is recorded: none is known.",
+  "originalFound": {
+    "date": "2026-10-18",
+    "pass": "H2",
+    "file": "tournament-roster-casting-2026-10-18-a-original.png",
+    "record": "tournament-roster-casting-2026-10-18-a-original.source.json",
+    "sha256": "9f54beedaf5e2eb62bddd01bf7e0ff8011c8b8f2bb4943160ca02f6abd951997",
+    "note": "the original PNG of this sheet, supplied by the operator, archived next to this copy with its own record (C2PA manifest read, signature not verified); this file and the fields above are unchanged"
+  }
 }

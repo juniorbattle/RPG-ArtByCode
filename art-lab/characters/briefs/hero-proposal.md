@@ -1,8 +1,8 @@
 # Héros premium — le protagoniste cuit : brief (2026-10-18)
 
-**Statut : BRIEF, décisions de base prises par l'opérateur (2026-10-18) ; casting 1 reçu et tranché (§ 9) ; on attend la planche
-individuelle (PNG d'origine) que l'opérateur génère avec le prompt v2 du § 5.** Aucun asset produit, aucun manifeste. Troisième point des
-priorités de l'opérateur (journal, Passe M5) ; casting : journal, Passe H1.
+**Statut : BRIEF, décisions de base prises par l'opérateur (2026-10-18) ; casting 1 reçu et tranché (§ 9), ses PNG d'origine archivés
+(§ 9, Passe H2) ; l'opérateur a choisi d'attendre la planche individuelle (PNG d'origine) qu'il génère avec le prompt v2 du § 5 (§ 1.4).**
+Aucun asset produit, aucun manifeste. Troisième point des priorités de l'opérateur (journal, Passe M5) ; casting : journal, Passes H1 et H2.
 
 ## 1. Décisions de l'opérateur (2026-10-18)
 1. **Base de dessin : « 01. Protagonist — Young Adventurer »** de la planche complémentaire de 14 personnages
@@ -14,6 +14,9 @@ priorités de l'opérateur (journal, Passe M5) ; casting : journal, Passe H1.
    canoniques** (sa note : un design est validé avant toute reconstruction, orientation ou animation ; le protagoniste d'abord, qui servira
    de référence de proportions et de qualité aux autres personnages clés). Réponses, mot pour mot : design du protagoniste « Planche 1
    (Recommandé) » ; pantalon « Foncé (Recommandé) » ; archivage des trois planches « Oui, à l'octet (Recommandé) ».
+4. **Source du héros** (2026-10-18, Passe H2, après l'archivage des PNG d'origine du casting) : à la question « Pour le héros premium : je
+   le construis maintenant à partir de la planche 1 (PNG d'origine), ou on attend la planche individuelle générée avec le prompt v2 du
+   brief ? », réponse, mot pour mot : « Attendre la planche v2 (Recommandé) ». Rien n'est construit depuis la planche 1.
 
 ## 2. Pourquoi une nouvelle planche
 - La planche complémentaire ne montre le protagoniste que sous **une** vue (trois-quarts). Une marche demande face, dos et profil à la
@@ -65,10 +68,12 @@ règle sur le sens mesuré sur la planche, avant tout miroir.
 Le prompt v1 (planche multi-vues d'après la seule vue 01, avec le docker en référence de proportions) n'a pas servi : le casting 1 (§ 9)
 est venu d'un autre prompt, non déclaré. Le v1 reste dans l'historique git de ce fichier. Le v2 part du design retenu par l'opérateur.
 
-Images à joindre : **image 1** = `scratch/hero-premium/attachments/casting1-p1-protagonist-views-x2.png` (les 6 vues de repos du
-protagoniste, casting 1, planche 1, sans texte) ; **image 2** = `scratch/hero-premium/attachments/casting1-p1-run-x2.png` (ses 5 images de
-course). Rien d'autre : le docker n'est plus joint (les proportions de l'image 1 sont déjà dans la plage de la distribution), et une planche
-entière ajouterait des personnages à ne pas copier. Les deux images se refont depuis la planche archivée (§ 9).
+Images à joindre : **image 1** = `scratch/hero-premium/attachments/casting1-p1-original-protagonist-views-x2.png` (les 6 vues de repos du
+protagoniste, casting 1, planche 1, sans texte) ; **image 2** = `scratch/hero-premium/attachments/casting1-p1-original-run-x2.png` (ses 5
+images de course). Rien d'autre : le docker n'est plus joint (les proportions de l'image 1 sont déjà dans la plage de la distribution), et une
+planche entière ajouterait des personnages à ne pas copier. Depuis la Passe H2, les deux images sont recadrées dans le **PNG d'origine** de la
+planche 1 (sans perte, même cadrage ; les anciennes, tirées de la copie WebP, gardent leur nom sans `-original`) ; elles se refont depuis
+l'archive (§ 9, fiche `reference/sources/tournament-roster-casting-2026-10-18-a-original.source.json`, champ `derived`).
 Télécharger le résultat en PNG (bouton de téléchargement, pas copier-coller), et dire l'outil, la date et le prompt effectivement utilisé.
 
 ```text
@@ -132,9 +137,9 @@ Technique and composition:
 - La cape dépasse en largeur et flotte : en course, elle déborde du cadre 64 × 96 ; au besoin un pas de rééchantillonnage plus grossier
   (comme le garde, Passe 4A-duodevicies), présenté à l'échelle commune.
 - Caméra A (≈ 0,5-1,6 px écran par texel) : motif doré et fermoir d'un texel (point de QA).
-- Les planches du casting 1 sont des copies collées (WebP avec perte, fond bleu nuit proche de la cape indigo) : les pièces jointes du v2
-  en héritent. La planche individuelle doit venir en PNG d'origine sur fond gris neutre (un fond proche de la cape la fait découper par le
-  remplissage du fond, cf. `reconstruct-grid --bg-threshold`).
+- Les planches du casting 1 ont un fond bleu nuit proche de la cape indigo : les pièces jointes du v2 en héritent (elles viennent du PNG
+  d'origine depuis la Passe H2, plus de la copie WebP avec perte). La planche individuelle doit venir en PNG d'origine sur fond gris neutre
+  (un fond proche de la cape la fait découper par le remplissage du fond, cf. `reconstruct-grid --bg-threshold`).
 
 ## 9. Casting 1 (2026-10-18) : trois planches, propositions non canoniques
 **Reçu** : trois planches collées par l'opérateur dans la séance (WebP 1447 × 1087, avec perte), avec sa note : ce sont des références de
@@ -146,6 +151,18 @@ sans validation de son design, avant toute reconstruction. Archivées à l'octet
 - `reference/sources/main-characters-casting-2026-10-18.webp` : planche 3, « Personnages Principaux », 13 entrées (« 07 » en double, pas de
   « 10 »).
 Provenance non déclarée (outil, date et prompt inconnus) : rien d'inventé dans les fiches.
+
+**Originaux (Passe H2, 2026-10-18)** : l'opérateur a fourni les PNG d'origine des trois planches (1447 × 1087, RGB, chacun avec un manifeste
+C2PA d'OpenAI). Archivés à l'octet à côté des copies WebP, qui restent inchangées, chacun avec sa fiche liée à celle de sa copie :
+- `reference/sources/tournament-roster-casting-2026-10-18-a-original.png` (fichier déposé « Cité du Tournoi — Roster en pixel art-3.png ») =
+  planche 1 ;
+- `reference/sources/tournament-roster-casting-2026-10-18-b-original.png` (« Cité du Tournoi _ Roster Pixel Art-1.png ») = planche 2 ;
+- `reference/sources/main-characters-casting-2026-10-18-original.png` (« Planche de sprites pixel art du tournoi-2.png ») = planche 3.
+Appariement mesuré, pas déduit des noms (le numéro des fichiers ne suit pas celui des planches) : écart moyen 2,45-2,97 / 255 contre sa copie,
+29,3-46,3 contre les deux autres, 31-35 pour un PNG décalé de 16 px contre lui-même. C2PA lu sans valider la signature (aucun outil installé) :
+`c2pa.created` par ChatGPT (gpt-image), `trainedAlgorithmicMedia`, 2026-10-19 01:04-01:07 UTC ; la liaison dure (`c2pa.hash.data`)
+recalculée est identique à celle du manifeste pour les trois. L'outil est connu par le manifeste ; le prompt et le compte restent non déclarés.
+Les défauts relevés ci-dessous sont dans l'image elle-même : l'original sans perte les garde.
 
 **Le protagoniste, mesuré** (vue de face, réglette, ± 0,015 ; planches de revue non versionnées dans `scratch/hero-premium/casting-1/`) :
 
