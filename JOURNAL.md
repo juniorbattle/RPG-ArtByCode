@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6 et V0 à V3 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5 et T1) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7 et H2 à H4 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1 et B1) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -19,293 +19,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/06-passes-M5-S1b.md`](journal/06-passes-M5-S1b.md) | M5, S1, S2, S1b | 18/10 |
 | [`journal/07-passes-H0-M6.md`](journal/07-passes-H0-M6.md) | H0, M6 | 18/10 |
 | [`journal/08-passes-V0-V3.md`](journal/08-passes-V0-V3.md) | V0, V1, V2, V3 | 18/10 |
+| [`journal/09-passes-H1-H4.md`](journal/09-passes-H1-H4.md) | H1, M7, H2, H3, H4 | 18/10 → 19/10 |
 
 ---
-
-## Passe H1 — Héros premium : casting 1 (trois planches de personnages), design du protagoniste choisi, prompt v2 (2026-10-18)
-
-### Reçu
-- L'opérateur a collé trois planches de personnages (WebP 1447 × 1087, avec perte ; le même profil ICC générique que les planches archivées,
-  qui sont des copies ré-encodées) avec une note collée par lui : ce sont des références de casting, « et non des spritesheets de production directement
-  exploitables » ; le protagoniste issu du « 01. Young Adventurer » se développe « dans une planche individuelle détaillée » ; « Les
-  personnages représentés ne deviennent pas automatiquement canoniques » ; « La priorité reste le protagoniste H0 ».
-- Elles ne viennent pas du prompt du brief (§ 5, v1 : un seul personnage, cinq vues, fond gris) : plusieurs personnages, fond bleu nuit,
-  textes. Outil, date et prompt non déclarés.
-
-### Mesures du protagoniste — [OK] proportions ; [?] grille
-- Réglette sur la vue de face (± 0,015), tête cheveux compris jusqu'au menton sur la hauteur : planche 1 ≈ 0,31, planche 2 ≈ 0,32,
-  planche 3 ≈ 0,35 ; même lecture sur la planche source de la distribution : docker ≈ 0,31, voyageur ≈ 0,34. Les trois sont dans la famille
-  de la distribution. Hauteurs ≈ 146-148 / 145 / 136-141 px, contre 153-174 px pour les vues des PNJ sur leurs planches (le pas de
-  reconstruction se règle par personnage, 1,775 à 2,0).
-- Grille de pixels : un spectre des gradients ne trouve pas de pas net, mais il n'en trouve pas non plus sur la planche 01-16 (pas connu :
-  1,775) : méthode non concluante, abandonnée ; le pas se fixera sur la planche individuelle.
-- Défauts de cohérence relevés : planches 1 et 2, pantalon foncé au repos et clair en course, aucun vrai profil au repos (deux 3/4 face,
-  deux 3/4 dos) ; planche 3, jambes confuses aux images 3-4 de la course, cape de « 01b » rouge puis grise dans sa 4e vue ; partout, fond
-  bleu nuit proche de la cape indigo.
-- Planches de revue (non versionnées) : `art-lab/characters/scratch/hero-premium/casting-1/board-1-designs.png`, `board-2-course.png`,
-  `board-3-proportions.png`.
-
-### Décisions de l'opérateur (2026-10-18), mot pour mot
-- Design du protagoniste : « Planche 1 (Recommandé) » (fidèle au 01 d'origine, expression calme).
-- Pantalon : « Foncé (Recommandé) », dans toutes les vues, course comprise.
-- Archivage des trois planches : « Oui, à l'octet (Recommandé) ».
-
-### Fait — [OK]
-- Archivage à l'octet dans `art-lab/characters/reference/sources/` : `tournament-roster-casting-2026-10-18-a.webp` (planche 1),
-  `tournament-roster-casting-2026-10-18-b.webp` (planche 2), `main-characters-casting-2026-10-18.webp` (planche 3), chacune avec sa fiche
-  `.source.json` : classement « casting, non canonique », mesures, décision, provenance **non déclarée**, droits non vérifiés.
-- Brief `briefs/hero-proposal.md` : décision 3 (casting 1), figure et proportions d'après la planche 1, § 5 remplacé par le **prompt v2**
-  (le v1 n'a pas servi ; il reste dans l'historique git), § 9 « Casting 1 » (mesures, défauts, statut du reste des planches).
-- Prompt v2 : images jointes = les 6 vues de repos et les 5 images de course de la planche 1 (×2, sans texte, refaites depuis la planche
-  archivée) ; le docker n'est plus joint ; demande un vrai profil au repos, le pantalon foncé partout, le motif de cape cohérent, des pixels
-  nets d'une seule taille, un fond gris neutre ; profils tournés vers la droite comme la course jointe.
-
-### Restes [?]
-- La planche individuelle (PNG d'origine, outil, date, prompt) : l'opérateur la génère avec le v2. Ensuite, § 6 du brief.
-- Le reste des trois planches (tenues alternatives, combattants, personnages narratifs, PNJ importants) : propositions, aucune production
-  avant validation de leur design.
-
-### Preuves
-- `art:validate` : 14 manifestes, 7 sources archivées dont les 3 nouvelles, 0 erreur. Contrôle négatif : un octet ajouté à une archive
-  donne 2 erreurs (taille, SHA-256) ; archive restaurée, SHA-256 de nouveau celui du fichier collé.
-- SHA-256 des trois archives = ceux des trois fichiers collés dans la séance (`f44f86af…`, `fcb38cda…`, `2a7962f8…`).
-- `typecheck`, `npm test` (37 / 37), `build` : OK. Aucun code ni asset du jeu changé.
-
-### Pensée
-- Une planche de casting se mesure contre les planches sources de la distribution avec la même lecture (réglette sur la source, pas sur un
-  export) : 0,33 mesuré sur l'export du docker et 0,31 sur sa source décrivent la même tête.
-- Une méthode de mesure se teste d'abord sur un cas connu : le spectre des gradients, muet sur la planche 01-16 dont le pas est connu,
-  n'était pas une preuve d'absence de grille sur les nouvelles planches.
-
-## Passe M7 — Journal : archivage des passes M5 à S1b (2026-10-18)
-
-### Pourquoi
-- Règle d'`AGENTS.md` : au-delà d'environ 60 Ko de passes dans `JOURNAL.md`, les passes closes les plus anciennes partent d'un bloc dans
-  `journal/` (seuil signalé par la séance des retouches après la Passe V3). Après la Passe H1 : 64 127 octets de passes (M5 7 366, S1 10 922,
-  S2 7 224, S1b 3 967, H0 3 260, M6 2 021, V0 2 745, V1 7 285, V2 3 458, V3 11 032, H1 4 847).
-- Réponse de l'opérateur, mot pour mot (le mode automatique de l'outil avait d'abord refusé la fusion de `hero-casting`) : « Je t'autorise à
-  fusionner hero-casting dans main en avance rapide, à pousser main et à supprimer la branche, puis à faire l'archivage M7 du journal. »
-- Branche `journal-archive-m5-s1b` ouverte depuis `main` (`a5e06a5`).
-
-### Fait — [OK]
-- M5, S1, S2 et S1b (closes : décisions de l'opérateur consignées, branches fusionnées) déplacées d'un bloc, dans leur ordre, à l'octet, dans
-  `journal/06-passes-M5-S1b.md` (en-tête de quelques lignes, une ligne `---`, puis les 29 479 octets inchangés, SHA-256
-  `238e3288750e1829…`) ; ligne ajoutée à l'index ; phrase d'en-tête : « Les passes 0 à S1b… (Passes M3, M6 et M7) ». `JOURNAL.md` :
-  100 416 → 71 034 octets avant cette entrée ; 34 648 octets de passes gardées (H0 à H1). H0 reste près de H1 : le héros est en cours.
-- Preuve (script hors dépôt, contre `git show a5e06a5:JOURNAL.md` ramené en CRLF ; cette entrée laissée hors de la comparaison) : **8 / 8** —
-  corps de l'archive = octets retirés (SHA-256 et longueur) ; les 4 sections retrouvées chacune une seule fois, dans la nouvelle archive
-  seulement ; passes gardées H0 à H1 inchangées ; `JOURNAL.md` = l'original moins le bloc, à la phrase d'en-tête et à la ligne d'index près ;
-  archives 01 à 05 inchangées ; CRLF seuls dans les deux fichiers. Contrôle négatif : un mot changé (`maskSafeBlending` →
-  `maskSafeBlendinG`) dans une copie de l'archive → 6 / 8 (SHA-256 et section).
-
-### Pensée
-- Une coupe d'archive suit les séances (nettoyage et points 1-2 des priorités ensemble) et laisse près de la passe en cours celle qu'elle
-  prolonge.
-
-## Passe H2 — Héros premium : PNG d'origine des trois planches du casting archivés (C2PA lu) ; l'opérateur attend la planche v2 (2026-10-18)
-
-### Demande (2026-10-18)
-- Transmise par la séance parente : l'opérateur a déposé trois PNG dans `art-lab/characters/scratch/hero-premium/incoming/` (non versionné)
-  et demande de commencer le héros premium. Consigne : apparier chaque PNG à sa copie WebP archivée, l'archiver à l'octet avec sa fiche (C2PA
-  lu, signature non vérifiée, droits non vérifiés exhaustivement), garder les WebP, puis une seule question : construire depuis la planche 1
-  ou attendre la planche individuelle du prompt v2.
-- Branche `hero-x2-v1` ouverte depuis `main` (`d94adef`) après `git fetch --prune` (aucune autre branche).
-
-### Appariement — [OK] mesuré ; [KO] l'ordre des noms
-- PNG 1447 × 1087, RGB 8 bits, morceaux IHDR / caBX / IDAT / IEND, contre les trois WebP archivés décodés par Chrome (canvas sRGB) ; écart moyen
-  absolu (/ 255) sur tous les pixels :
-
-| PNG déposé | planche 1 (a) | planche 2 (b) | planche 3 | Apparié à |
-|---|---|---|---|---|
-| « Cité du Tournoi — Roster en pixel art-3.png » | **2,97** | 29,33 | 46,05 | planche 1 |
-| « Cité du Tournoi _ Roster Pixel Art-1.png » | 29,43 | **2,93** | 44,33 | planche 2 |
-| « Planche de sprites pixel art du tournoi-2.png » | 46,26 | 44,57 | **2,45** | planche 3 |
-
-- Témoins : un PNG contre lui-même 0 ; décalé de 16 px contre lui-même 30,7 à 35,4. Mise en page vérifiée à l'œil (grille réduite, PNG
-  au-dessus, WebP en dessous). Plus grand écart d'un canal contre sa copie : 82 à 97 (pertes WebP sur les bords).
-- **[KO] supposition** : la séance parente tenait « …Roster Pixel Art-1.png » pour la planche 1 ; c'est la planche 2. Le numéro des fichiers
-  téléchargés ne suit pas l'ordre des copies collées.
-
-### C2PA — [OK] lu, liaison dure recalculée ; [?] signature non vérifiée
-- Lecteur en lecture seule hors dépôt (morceaux PNG, boîtes JUMBF, CBOR, Node crypto), essayé d'abord sur `npc2-merchant-source-2026-10-16.png` :
-  il retrouve les valeurs consignées en Passe 4A-quindecies (actions, générateur, hachage `3befd929…`).
-- Les trois : un manifeste, claim v2, générateur « OpenAI Media Service API » (c2pa-rs 0.79.2, spec 2.2.0), `dc:title` image.png ;
-  `c2pa.created` par ChatGPT (gpt-image), `trainedAlgorithmicMedia`, puis `c2pa.converted` et `c2pa.watermarked.unbound` ; heures (19/10, UTC) :
-  planche 2 01:04:34, planche 3 01:05:34, planche 1 01:06:44.
-- `c2pa.hash.data` (SHA-256 du fichier sans le morceau caBX) recalculé : identique au manifeste pour les trois (`b72b90dd…` planche 1,
-  `994b0744…` planche 2, `67ea9639…` planche 3). Une liaison intacte, pas une signature validée.
-- Signatures COSE_Sign1 : planches 1 et 3 ES256, chaîne « OpenAI Media Service » ← « Trufo C2PA Claim Signing CA (2025) » ; planche 2 PS256
-  (RSA), chaîne « OpenAI Media Service » ← « SSL.com C2PA ICA R1 2025 ». Noms lus, non validés ; `c2patool` non installé (installation
-  sur autorisation seulement).
-- [?] Les heures `c2pa.created` précèdent de 1 à 3 min celles des fichiers déposés (01:07:56-01:08:27 UTC) et l'écriture des copies WebP
-  (01:09:25 UTC) : heure de génération ou heure de production du fichier téléchargé, on ne sait pas ; consigné tel quel.
-
-### Archivage — [OK]
-- `reference/sources/tournament-roster-casting-2026-10-18-a-original.png` (planche 1, `9f54beed…`), `…-b-original.png` (planche 2,
-  `6afb84bd…`), `main-characters-casting-2026-10-18-original.png` (planche 3, `1c68adcd…`) : copiés, `cmp` contre le fichier déposé. Suffixe
-  `-original` : `art:validate` associe un fichier à la fiche de même nom sans extension ; un `X.png` et un `X.webp` partageraient la fiche.
-- Fiche de chacun : format, nom du fichier déposé, `sessionCopy` (copie WebP, sa fiche, son empreinte, l'écart et ses témoins : cohérent avec
-  un transcodage avec perte de ce PNG, sans preuve qu'elle en vienne), classement et décision repris de la copie, `generation` (rien de
-  déclaré en mots par l'opérateur ; valeurs C2PA ; note sur les heures), `c2paVerification` (« SIGNATURE AND CERTIFICATE CHAIN NOT
-  VERIFIED », liaison dure, signataires lus, lecteur), droits non vérifiés exhaustivement.
-- Fiches des WebP : un champ `originalFound` ajouté (lien vers l'original et sa fiche) ; leurs autres champs et leurs octets inchangés.
-- Pièces jointes du prompt v2 refaites dans le PNG d'origine (mêmes recadrages, ×2 au plus proche voisin) :
-  `scratch/hero-premium/attachments/casting1-p1-original-protagonist-views-x2.png` (`ea95a9c6…`) et `casting1-p1-original-run-x2.png`
-  (`feca9afe…`), non versionnées, inscrites dans le champ `derived` de la fiche de l'original a ; brief § 5 mis à jour. Les anciennes (tirées de
-  la copie WebP) restent.
-
-### Décision de l'opérateur (2026-10-18) — [OK]
-- Montrés : l'appariement, le C2PA, le protagoniste de la planche 1 tiré de l'original (repos et course, ×3 ; défauts de H1 inchangés : pas
-  de vrai profil au repos, pantalon clair en course, fond bleu nuit). Question : « Pour le héros premium : je le construis maintenant à partir
-  de la planche 1 (PNG d'origine), ou on attend la planche individuelle générée avec le prompt v2 du brief ? » ; réponse, mot pour mot :
-  « Attendre la planche v2 (Recommandé) ».
-- Inscrit au brief (§ 1.4, § 9 « Originaux », statut). Rien n'est construit : ni script de rig, ni manifeste.
-
-### Preuves
-- `art:validate` : 14 manifestes, 10 sources archivées, 0 erreur. Contrôle négatif : un octet ajouté à `…-b-original.png` → 2 erreurs
-  (taille, SHA-256) ; fichier recopié, `cmp` et SHA-256 de nouveau ceux du fichier déposé, 0 erreur.
-- `typecheck`, `npm test` (37 / 37), `build` : OK. Aucun code ni asset du jeu changé.
-
-### Restes [?]
-- La planche individuelle (prompt v2, pièces jointes refaites dans l'original) : l'opérateur la génère et la livre en PNG téléchargé ; puis
-  § 6 du brief sur une nouvelle branche.
-- Signatures C2PA des trois PNG (et de celui de la marchande) non validées : il faudrait `c2patool` (installation à l'opérateur).
-- Prompt et compte des planches du casting : non déclarés.
-
-### Pensée
-- Un numéro dans le nom d'un fichier téléchargé ne dit pas quelle planche c'est : l'appariement se mesure (écart de pixels contre des
-  témoins), il ne se lit pas dans les noms.
-- Un lecteur de métadonnées écrit pour l'occasion se valide d'abord sur un fichier dont les valeurs sont déjà consignées.
-
-## Passe H3 — Héros premium : planche v2 archivée, héros construit au stade lab puis écarté par l'opérateur ; prompt v3 (2026-10-18/19)
-
-### Reçu
-- Opérateur, mot pour mot : « je viens de deposer le png v2 V2-Planche de sprites pixel art d’un aventurier bleu et or.png dans incoming ».
-  PNG 1672 × 941 RGB, manifeste C2PA (ChatGPT / gpt-image, `trainedAlgorithmicMedia`, `c2pa.created` 2026-10-19T03:21:05Z) ; liaison dure
-  recalculée identique ; signature non vérifiée. La copie collée dans la séance (WebP) : écart 2,18 / 255 contre ce PNG, 27,57 pour le témoin
-  décalé de 16 px.
-- Branche `hero-x2-v1` ouverte depuis `main` (`d2b5fd6`) après `git fetch --prune` (aucune autre branche).
-- Archivée à l'octet : `reference/sources/hero-turnaround-v2-2026-10-18.png` (`d69f626b…`) et sa fiche (`v2Checks` : pantalon foncé et fond
-  gris corrigés ; un presque-profil au repos ; pas de grille de pixels ; six vues de repos et cinq images de course au lieu des cinq vues).
-
-### Mesures de la source — [OK] ; [KO] les images de course
-- Fond gris uni (bord 116,8 / 117,7 / 117,1) ; figures de repos 457-462 px, de course 362-366 px. Pas de grille régulière : la variance par
-  cellule ne creuse qu'aux pas entiers (artefact de la recherche par dixièmes de pas ; disparu avec un pas de 0,02). Pas 5,3 : 85-87 rangées
-  (la distribution : 83-89).
-- **[KO]** images de course : même tête (25 rangées sur 69 contre 26 sur 86) mais buste deux fois plus court (menton-ceinture ≈ 11 rangées
-  contre 24) ; les images 1, 2, 4 et 5 montrent presque la même pose de vol, la 3 un contact : des poses clés, pas un cycle. Pas utilisées
-  comme images.
-
-### Construction (`rigs/hero-x2-v1.rig.mjs`, lab, non approuvé)
-- Outils partagés inchangés (`build-character`, `rig-engine`, `reconstruct-grid` sont figés par empreinte dans les dix paquets approuvés,
-  que `verify-provenance` contrôle) : toute la recette est dans le rig.
-- Vues : face (1re), dos (6e), presque-profil (4e, retourné) ; `--holes` retire le gris du fond enfermé entre les tiges de bottes du profil
-  et quelques texels de halo au bord des capes ; `--no-shadow` ; `--closing-from=48`. Une palette de 64 couleurs.
-- Repos : respiration de la distribution. Course de 6 images : contact, poussée, vol, ×2 ; pied d'appui à plat, 9 texels par image entre
-  contact et poussée ; aucun texel sur la rangée 90 en vol. `walkSlide` 9 texels : horloge × 1,56 en B / D, × 1,52 en C, plafonnée à × 1,6
-  en A (glissement 9 %) ; avec Maj (4,25 m/s), 38 à 46 % (à décider). Face / dos : le corps rebondit, la cape ondule, chaque jambe se lève
-  sous le corps, les deux en vol. Face de 84 rangées : 1,777 m à l'échelle 0,9 (`HEIGHT.player` 1,78).
-- **[KO]** la jambe découpée dans la vue (cuisse et botte), tournée en trois segments (RotSprite) : la texture chargée de la botte se
-  fragmente ; la jambe lointaine à −0,1 OKLab d'un pantalon déjà sombre fait une tache presque noire. **[OK]** jambes peintes dans les
-  teintes de la vue (cuisse : pantalon ; tige : botte, revers clair), le pied de la vue déplacé d'un bloc (méthode des PNJ).
-- **[KO]** le balancement du bras par cisaillement d'une boîte détache un morceau de gant : de profil, manche, gantelet, sacoche et ceinture
-  font une seule masse brune ; aucune pièce de bras séparable.
-
-### Runtime — [OK] DEV ; [?] texture cuite
-- `ActorSystem.update` : l'horloge d'animation d'un joueur cuit suit ses pas (`walkClock`, touche de course comprise) ; le joueur généré
-  garde × 1 / × 1,7. `tests/stride.test.mjs` +1 ; contrôle négatif : l'ancienne ligne remise → 1 échec.
-- Aperçu `?cast=candidate` par une entrée candidate de `BakedCast` (`replaces: ['player']`) : le héros sur le joueur, 1,777 m. Entrée
-  retirée après la revue de l'opérateur ; elle revient avec la v3.
-- Glissement en mouvement (variante hors dépôt de `tools/foot-slip.mjs` : le joueur tenu sur une touche, harnais à graine, médiane) :
-  A +0,09 (le plafond × 1,6), B −0,02, C −0,05, D −0,02 ; témoin connu mauvais, Maj en B : −1,09.
-- **[?]** texture cuite : 322 + 30 images = 2 112 rangées, plus que les 2 048 garanties par WebGL2. L'aperçu passe sur ce GPU (sa
-  `MAX_TEXTURE_SIZE` est plus grande) ; à élargir (adressage par case entière) avant toute production du héros.
-
-### Revue de l'opérateur (2026-10-18/19), mot pour mot
-- « Il s'affiche mais enorment de probleme deja il semble avoir des proportions differents aux autres pnjjs sprite travaille et surtout les
-  animations de marche deplacement non c'est mauvais, bras qui ne bouge pas, les jambes qui ne soont pas alignes et donne l'impression qui
-  marche de maniere decale » ; puis, capture à l'appui : « on voit le ddefaut clairement sur ce runntime capture du protagnoist enrain de
-  marcher avec les jambes cuisses trop haute et les bras immobiles ».
-- Mesuré à sa suite (même lecture sur la distribution) : tête du sommet au menton 0,28 de la hauteur contre 0,31-0,32 (docker, voyageur,
-  coursier) et ≈ 0,35 (marchande) ; visage ≈ 13 texels de large contre 22-25 ; buste long, jambes courtes.
-- Cuisses trop hautes **[OK] corrigé dans le rig** : le bassin descendait de 3 rangées et les genoux montaient jusqu'à 8 → jambes 11,5 +
-  11,5, bassin abaissé d'au plus 1 rangée, genoux levés d'au plus 6, jambes recentrées sous le buste ; foulée inchangée (9).
-- Question : « Pour corriger les proportions et faire bouger les bras, quelle voie veux-tu ? » ; réponse, mot pour mot : « Planche v3
-  (Recommandé) ».
-
-### Fait ensuite
-- Brief : décision 5 (citations), prompt v3 (§ 5 : le design de la v2, les proportions de la distribution, un vrai profil au bras détaché du
-  buste, un cycle de course de 6 images à la même échelle, bras qui balancent), § 10 (la v2). Pièces jointes, non versionnées, refaites depuis
-  les fichiers archivés : `v3-image1-v2-idle-front-back-profile.png`, `v3-image2-v2-run-poses.png`, `v3-image3-cast-proportions-x6.png`
-  (docker et coursier ; le voyageur, garçon aux cheveux en épis et au foulard bleu, écarté : même archétype que le héros).
-- `hero-x2-v1` passé « experimental » (manifeste, paquet de provenance, fiche de la source) ; revue `reviews/hero-x2-v1/` (capture en B,
-  alignement avec la distribution, jambes avant / après, toutes les images).
-- Pas de critique à l'aveugle : la revue de l'opérateur a renvoyé le travail à la source avant.
-
-### Preuves
-- `build-character --check` : reconstruit à l'identique ; `verify-provenance` : intact ; `art:validate` : 15 manifestes, 11 sources
-  archivées, 0 erreur ; `typecheck`, `npm test` (38 / 38), `build` : OK.
-- Production : aucune entrée de distribution ajoutée ; le seul code de jeu changé (l'horloge du joueur) ne s'exécute qu'avec un joueur cuit,
-  le chemin du joueur généré est couvert par le test (× 1 et × 1,7). Pas de preuve d'image sur ce point.
-
-### Restes [?]
-- La planche v3 : l'opérateur la génère avec le prompt v3 et ses trois pièces jointes, et la livre en PNG téléchargé ; puis § 6 du brief.
-- Texture cuite à élargir avant la production du héros ; course avec Maj (4,25 m/s) à décider.
-
-### Pensée
-- Une planche source se mesure contre la distribution avant toute construction : tête sur hauteur, largeur du visage, longueur des jambes,
-  avec la même lecture. Ici l'écart (0,28 contre 0,31-0,35) ne s'est vu qu'à l'aperçu en scène.
-- Une « course » générée n'est pas un cycle : quatre images sur cinq identiques, et un buste deux fois plus court que les vues de repos.
-- Un membre ne s'anime que s'il est séparable dans la vue : la source doit dessiner le bras détaché du buste ; une texture peinte chargée se
-  fragmente quand on la tourne, des membres peints dans les teintes de la vue restent lisibles.
-
-## Passe H4 — Héros premium : deux lots d'images v3 évalués ; déclinaisons du protagoniste : « une base + couleurs » (2026-10-19)
-
-### Reçu
-- Lot 1, deux planches collées dans la séance (copies WebP), opérateur, mot pour mot : « que penses tu de ces images ? ce n'est encore valider
-  car je genere d'autres images encore ». Lot 2, quatre planches de casting (protagoniste en variantes A-D, personnages clés), mot pour mot :
-  « qu'en penses tu de ce lot de images ? ». Ni l'un ni l'autre validé ; rien d'archivé (copies avec perte : l'archive attend le PNG d'origine
-  de la planche retenue). Détail des mesures : `briefs/hero-proposal.md` § 11.
-
-### Mesures (règle de 10 px sur les copies, à quelques pixels près)
-- **[OK]** lot 1, proportions : tête ≈ 0,31 de la hauteur, contre 0,28-0,33 pour les PNJ redessinés dans la même image (0,28 sur la v2) ;
-  visage presque aussi large que le leur, au lieu d'environ la moitié sur la v2.
-- **[KO]** lot 1 : pas de vrai profil au repos (vues de côté de trois quarts) ; course à la même enjambée (écart des pieds 149-184 px pour des
-  figures ≈ 262 px), aucune pose jambes croisées. Course de la deuxième planche à ≈ 0,75 de l'échelle du repos, proportions gardées ; de la
-  première, buste rétréci (0,63 contre une tête à 0,89).
-- **[KO] ma première lecture des bras** (« le poing au même endroit sur toutes les images ») : je mesurais le poing le plus avancé, or en course
-  de profil un poing est toujours devant. L'opérateur, mot pour mot : « pourtant les bras bougent bien sur les sprites walk/run ». Relu image
-  par image, alignées sur la tête : **[OK]** deuxième planche, la main proche descend à la hanche sur les images 2, 3 et 7, le bras proche est
-  devant sur les autres (les deux extrêmes dessinés, ordre irrégulier) ; première, coude et avant-bras varient, le bras proche ne passe jamais
-  derrière la hanche.
-- **[KO]** lot 2 comme source : figures de repos ≈ 130-205 px, de course ≈ 75-125 px (1 à 2,4 px de source par texel pour un sprite de 85
-  rangées ; v2 : 5,3) ; texte sur les planches. **[?]** cape de même clarté (OKLab L ≈ 0,31-0,35) mais deux fois moins saturée (C 0,03-0,05
-  contre 0,08 sur la v2), liseré doré presque absent : lisibilité de nuit à vérifier en scène. Personnages clés : propositions non canoniques,
-  deux doublonnent la distribution approuvée (marchande, capitaine / gardes).
-
-### Décision de l'opérateur (2026-10-19), mot pour mot
-- « nous aurons des declinaisons du protagonist afin de laisser le choix au joueur de choisir le personnage qu'il veut ».
-- Question : « Qu'est-ce qui doit changer d'une déclinaison du protagoniste à l'autre ? » ; réponse, mot pour mot : « Une base + couleurs
-  (Recommandé) » (autres choix proposés : « Plusieurs coiffures dès le départ », « Personnages distincts »).
-- Sens : un seul dessin (une planche, un rig, une approbation), décliné en couleurs de cheveux et de peau (peut-être de cape) par le système
-  des variantes des PNJ (Passe V1 : recoloration au rendu, aucune image de plus dans la texture cuite) ; d'autres coiffures plus tard, chacune
-  une nouvelle base qui reprend les rampes.
-
-### Fait
-- Brief : décision 6, note au § 5 (une seule planche de base ; les couleurs ne se génèrent pas), un risque au § 8, § 11 (les deux lots).
-  Aucun asset, aucun code.
-
-### Restes [?]
-- La planche de base de l'opérateur (PNG téléchargé), puis § 6 du brief.
-- Plus tard, en tâches distinctes : masques du héros (cheveux, peau, cape éventuelle ; plus propres que ceux des PNJ, le héros est toujours à
-  l'écran) ; écran de choix et héros choisi à la place du joueur (code de jeu, décision de l'opérateur).
-
-### Pensée
-- Le balancement d'un bras de profil se lit sur le bras proche (celui qui passe par-dessus le buste), images alignées sur la tête : le poing
-  le plus avancé ne dit rien, en course un poing est toujours devant.
-- Une planche de casting choisit une direction ; une source se juge à la taille de ses figures contre les 85 rangées du sprite.
-- Une déclinaison de couleur passe par le système des variantes (au rendu, sans image en plus) ; une déclinaison de forme demande une base
-  dessinée.
 
 ## Passe H5 — Héros premium : planche de base archivée, `hero-x2-v2` construit au stade lab (candidat) (2026-10-19)
 
@@ -860,6 +576,90 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Capture : `screenshots/calibration/w1-weather/A-storm-bolt-1280.png` (A, `storm=1`, éclair forcé) ; en B / D le ciel visible est trop
   étroit : seul le flash de lumière se voit.
 
+## Passe B1 — Bilan de la séance cloud du 19/10 : fusionné, mesures, à vérifier, décisions, reste à faire (2026-10-19)
+
+### Cadre
+- Séance cloud de 4-5 h, sans GPU (rendu logiciel SwiftShader), sans Aseprite, sans clé OpenAI ; opérateur absent : pleine autonomie
+  (consigne citée en Passe T1) ; les décisions de l'opérateur sont préparées derrière des paramètres d'URL, jamais prises.
+- Journal : passes H1, M7, H2, H3 et H4 (closes) archivées d'un bloc dans `journal/09-passes-H1-H4.md` (25 767 octets, SHA-256
+  `463d8b0fc4645c42…`) ; preuve **8 / 8** (script de la Passe T1 adapté, contre `git show f877e21:JOURNAL.md`, fait avant d'ajouter cette entrée et les mises à jour d'« À
+  reprendre » et des « Principes à garder »),
+  contrôle négatif 7 / 8. H5 reste ici (sa décision est ouverte).
+
+### Fusionné dans `main` (une tâche = une branche, avance rapide, CI verte sur chaque push)
+| Passe | Commit | Contenu |
+|---|---|---|
+| T1 | `1b56448` | texture cuite en colonnes : 672 images garanties (production : mêmes octets) ; archivage V0-V3 |
+| H6 | `b7bdec2` | vitesse du héros cuit tirée de son cycle ; rig du héros préparé (14 texels, vol, genoux à 5) ; étude des vues de trois-quarts |
+| K1 | `3fe2bfe` | transitions ancrées partout derrière `?camblend=anchored` |
+| W1 | `dbff468` | météo : `?rain`, `?snow`, `?storm`, `?wind` |
+| Q2 | `d7c6a62` | tests des fonctions pures (fréquence d'images, masques, clé du bake, `lerpState`, images manquantes) |
+| C1 | `c00ff7b` | foule : `?crowd=<n>` (les cinq citadins) |
+| W2 | `e622f89` | météo changeable en jouant (panneau DEV) |
+| K2, K3 | `335c0ce`, `3383ef3` | recul du joueur en D posé : analysé, un prototype écarté |
+| W3 | `f877e21` | éclair dessiné dans le ciel |
+| B1 | (ce commit) | ce bilan, archivage H1-H4, mesure de la passe « derrière » |
+
+- **Jeu par défaut inchangé** à chaque passe : captures déterministes contre `main` figé, A / B / C / D, **0 px** (T1, W1, C1, W2, W3) ;
+  poses du bake identiques à l'octet (K1). `npm test` : 39 → 67 tests ; chaque nouveau test a attrapé ses fautes injectées.
+
+### Mesures clés (logiciel : compteurs et images seulement, aucun temps GPU)
+- Héros (rig préparé) : `walkSlide` 14 → 3,73 m/s, Maj 4,48 m/s ; glissement en mouvement ≈ 0 (les ±0,07-0,11 sont la quantification) ;
+  critique à l'aveugle 7 / 10 contre 5,5 / 10 pour la course de H5.
+- Vues : avec cinq secteurs, le trois-quarts dos prendrait 44-54 % des pas des PNJ en A / B / C (graine 1842) ; la planche du héros n'en
+  dessine aucun.
+- Caméras : B → A 14 images de recul (−139 px/s) → 0 avec `camblend=anchored` ; recul en D posé (−39 px/s) : panoramique −133 px/s contre
+  marche +94 px/s ; gain 0,6 l'efface.
+- Météo (1080p) : +1 appel de dessin par précipitation (107 → 108), +18 000 triangles (pluie), traînées sur 9-11 % de l'écran ; estimation
+  0,1-0,3 ms sur la 780M, **à mesurer**.
+- Passe « derrière les occluders » du bake (« À reprendre » § 2, mesure de cette passe) : graines 1842, 7719 et 30417, en 1280 × 720 et
+  1920 × 1080, bake neuf sur `main` figé : **0 pièce et 0 triangle restaurés dans les six cas** (≈ 2,3 M pixels vus par elle, tous de
+  pièces que les poses normales gardent déjà ; la taille de la fenêtre ne change rien, les tuiles du bake ont une taille fixe). Son coût,
+  ≈ 90 ms par bake neuf, vient de la Passe 6 (780M) ; le cache la rend gratuite ensuite.
+
+### À vérifier sur la machine de l'opérateur (GPU, Aseprite)
+1. **Héros** : `node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v2.rig.mjs`, puis la même commande avec `--check`,
+   `node tools/art-lab/verify-provenance.mjs art-lab/characters/provenance/hero-x2-v2`, `npm test` ; glissement : `node tools/foot-slip.mjs
+   --secs=4 --keys=d "B|seed=1842&clean=1&cast=candidate&intro=0&camera=B&player=-6,0.6"` (et A / C / D, `--keys=d,shift`) ; course en
+   mouvement : `KEYS=d node tools/flipbook.mjs out.html hero 0 100 2 360x300 2 "héros|http://127.0.0.1:5173/?seed=1842&clean=1&cast=candidate&intro=0&camera=B&player=-6,0.6"`.
+2. **Performances** : `node tools/perf.mjs --rounds=3 "clair|seed=1842&camera=B" "pluie|seed=1842&camera=B&rain=1" "neige|seed=1842&camera=B&snow=1"
+   "orage|seed=1842&camera=B&storm=1"`, puis en D et à 2560 × 1440 ; `tools/cadence.mjs` sous la pluie ; budget de la passe 6 (10-12 ms en
+   1080p) à tenir.
+3. **Visibilité sur GPU** avec `camblend=anchored` : `node tools/viewport-proof.mjs --q=camblend=anchored` (serveur DEV) et `tools/visproof.mjs`
+   aux poses AB / BC ancrées en 1080p.
+4. **En jeu** : panneau (H) → « Weather (proposal, DEV) » (pluie, neige, orage, vent, éclair) ; `?camblend=anchored` en marchant de B vers A ;
+   `?crowd=5` ; `?camD=,,,,,,,,0.6` en marchant de C vers D.
+
+### Décisions à demander à l'opérateur (recommandation entre parenthèses)
+1. Héros `hero-x2-v2`, après reconstruction : production ou retouches (juger en jeu la course à 3,73 m/s ; contrepartie : le pied d'appui
+   dérive de 14 texels entre deux images au lieu de 9) ; Maj en sprint × 1,2 (à confirmer).
+2. Vues de trois-quarts (`briefs/three-quarter-views.md` § 6) : cinq vues pour le héros seul, pour tous, ou trois vues ; source du trois-quarts
+   dos (nouvelle planche) ; vues 6 / 7 ignorées (recommandé : règle à cinq secteurs avec repli, puis le héros, trois-quarts dos à demander).
+3. `?camblend=anchored` par défaut (oui) ; recaler le pivot de A pour effacer le reste (+21 px/s) (à chercher et montrer).
+4. Cadrage D : gain x 0,85 (approuvé), 0,6, ou un suivi qui vise la vitesse du joueur à l'écran (à prototyper).
+5. Météo : défaut sans météo (oui, la nuit claire approuvée) ; `rain=0.5` comme variante d'ambiance après la mesure GPU ; un cycle ?
+6. Foule : `?crowd=5` par défaut (oui : chaque citadin approuvé paraît).
+7. Passe « derrière » du bake : la garder (filet de sécurité tant que les occluders, les zones ou la composition peuvent changer) ou la
+   couper (≈ 90 ms par bake neuf) : 0 pièce restaurée sur trois graines (mon choix en attendant : la garder ; recommandé : la couper au gel
+   du district, après une dernière mesure).
+8. Restées ouvertes d'avant (rappel) : bake D ×4, poses AB à w = 0,5 pour la maison 609, corrections de géométrie (Passe 5b) ; épingler
+   `ubuntu-24.04` en CI ; `strictPort` sur 5173 ; confirmation du contrat C2 ; critère d'archivage (« branche fusionnée ») ; statut Gold Master.
+
+### Ce qui reste pour déclarer le Merchant District complet
+- **Personnages** : le héros en production (reconstruction Aseprite, revue en jeu, approbation, puis masques de ses déclinaisons) ; la
+  décision des trois-quarts et son art ; la foule (`crowd`) ; la marchande à son étal (mise en scène) ; les restes d'art des critiques
+  (talon, poussée, marteau peu lisible sur l'enclume), qui demandent Aseprite.
+- **Caméras et architecture** : les décisions 3 et 4 ; la relecture humaine de l'occlusion (montant de la bannière du bateau) ; les neuf
+  écarts connus de `viewport-proof` (décisions de la Passe 5b) ; la dette de l'ancienne rive opposée (décalage d'une graine à accepter).
+- **Météo** : la mesure GPU et la décision 5 ; non faits : son, éclaboussures, neige sur les personnages.
+- **Performances** : remesurer le budget GPU avec le héros cuit, la foule à cinq et la météo (machine de l'opérateur).
+- **Clôture** : un passage en revue de l'opérateur en jeu (A / B / C / D, avec et sans météo) et sa décision de statut ; ensuite, un autre
+  quartier.
+
+### Pensée
+- Une séance sans l'opérateur avance le plus en préparant des décisions mesurées (paramètre d'URL, capture avant / après, recommandation)
+  et en prouvant à chaque fois que le jeu par défaut n'a pas bougé (0 px).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -917,7 +717,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un
   nouvel occluder.
 - Relecture humaine en mouvement (style C, rayons 40–70 / 80–120 px, fondu 0,2 / 0,3 s) ; décider si les PNJ d'interaction doivent entrer
-  dans le reveal ; chercher un cas où la passe « derrière » restaure vraiment des pièces (sinon envisager de la couper pour gagner ≈ 90 ms
+  dans le reveal ; chercher un cas où la passe « derrière » restaure vraiment des pièces (Passe B1 : aucune sur les graines 1842, 7719, 30417 en 720p et
+  1080p ; décision de l'opérateur) (sinon envisager de la couper pour gagner ≈ 90 ms
   de bake) ; rejouer l'inventaire à chaque changement de zones de caméra ou de composition (bateau, lampadaires).
 
 **3. `SpriteRenderer`** (Passe S1 : superposition retirée, masque de protection propre, auréole mesurée en mouvement ; Passe S1b : une seule
@@ -973,8 +774,8 @@ au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
   l'opérateur) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** (Passe M4) : le critère « operator decision recorded, branch merged » d'`AGENTS.md` date d'avant la fusion
-  sans demande ; lire « branche fusionnée » suffit, à confirmer par l'opérateur. Dernier archivage : V0-V3 (Passe T1) ; prochain au-delà
-  d'environ 60 Ko de passes gardées (H1 et suivantes).
+  sans demande ; lire « branche fusionnée » suffit, à confirmer par l'opérateur. Derniers archivages : V0-V3 (Passe T1), H1-H4 (Passe B1) ;
+  prochain au-delà d'environ 60 Ko de passes gardées (H5 et suivantes, une fois leurs décisions consignées).
 - **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — à retirer proprement une fois qu'on
   accepte de décaler la ville lointaine d'une graine.
 
@@ -1012,6 +813,8 @@ au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
   dimensionne pour la distribution entière, candidats compris, avant de les ajouter (l'adressage par case entière permet d'élargir sans
   changer une image).
 
+- Sans GPU (séance cloud), le rendu logiciel (SwiftShader) sert les preuves d'image déterministes (0 px entre deux versions) et les compteurs
+  (appels de dessin, triangles, surface couverte) ; jamais les temps : ceux-là se mesurent sur la machine de l'opérateur (Passe T1).
 ### Visibilité, rendu, caméras
 - Toute coupe de géométrie se prouve par un diff d'images `static=1`, culling actif contre `vis=0`, avec `occ=0` : la phase du fondu de
   reveal entre deux régénérations fabrique de faux écarts (1 377 px sur B).
@@ -1040,6 +843,12 @@ au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
 - Une caméra qui recule traverse la géométrie qui est « derrière la caméra » des autres cadrages : vérifier z caméra contre ce qui est généré
   de ce côté (rive opposée).
 
+- Un recul du joueur à l'écran se décompose avant d'être corrigé : part du joueur (caméra figée) et part de la caméra (joueur figé),
+  vérifiées contre la mesure ; une hypothèse plausible non décomposée a coûté un prototype inutile (Passes K2 / K3).
+- Un quad construit dans le shader (une traînée orientée par sa vitesse à l'écran) se dessine double face ; un « rien à l'écran » se vérifie
+  d'abord au compteur d'appels de dessin, puis en agrandissant l'effet (Passe W1).
+- Un effet qui écrit des uniformes partagés garde leurs valeurs d'avant et les rend : sa preuve est « activé puis retiré = 0 px » (Passe W2) ;
+  tant qu'aucun paramètre ne le demande, il ne crée rien (un objet THREE tire `Math.random`).
 ### Preuves
 - Une preuve doit pouvoir échouer : un contrôle négatif avant d'accepter « 0 écart » (Lab : `filter=linear` ; revue d'agent : un défaut
   planté qu'elle doit trouver à l'aveugle ; « 0 trou » : remplissage depuis le bord ; mesure de stabilité en mouvement : un cas connu
@@ -1066,6 +875,10 @@ au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
 - Plusieurs densités de sprites partagent un seul renderer si chaque densité *k* garde le même rectangle monde (cadre 32k × 48k, pieds à 45k) :
   la densité est une affaire d'atlas, la hauteur une affaire d'instance.
 
+- Un serveur de mesure sert un instantané figé (copie hors dépôt), pas la copie de travail : on peut éditer pendant la série sans
+  recharger les pages mesurées (Passes H6, K1).
+- Une propriété aléatoire se teste sur plusieurs tirages (dix éclairs, deux caps de caméra), un repli dans ses deux sens (±π) : un seul cas
+  laisse passer une faute injectée (Passes Q2, W3).
 ### Personnages : art et critique
 - Un personnage se juge **dans la scène** à chaque itération (aperçu `?labsprite`, avant / après au même endroit) et **à côté du cast
   existant** (héros compris : densité de texel, proportions et hauteur monde à la même profondeur), pas seulement agrandi ni contre la
@@ -1140,6 +953,11 @@ au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
   fausse (manches du forgeron, Passe V3) ; une ombre que les règles ne prennent pas se relève à la main (rectangle forcé), pas par une règle
   générale.
 
+- La vitesse de jeu d'un personnage cuit suit son cycle dessiné (`walkSlide` × échelle × horloge visée) : changer l'enjambée change la
+  vitesse, sans patin ; un glissement médian de quelques pour cent se vérifie contre la quantification (5 ou 6 pas de 1/60 s par image)
+  avant d'être corrigé (Passe H6).
+- Une planche « tournante » se mesure vue par vue (boîtes, orientation) avant d'en compter les vues de trois-quarts : deux dos ne font pas un
+  trois-quarts dos (Passe H6).
 ### Provenance et approbations
 - Rien d'externe ne devient « canon » en silence : un manifeste de provenance (`art-lab/characters/manifests`) avec approbation nommée et
   datée est la seule voie vers `runtimeUse: production`. Deux niveaux d'approbation distincts : *approved visual baseline*
