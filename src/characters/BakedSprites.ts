@@ -38,6 +38,8 @@ export interface AuthoredSpawn {
 }
 
 export const DIRS: readonly Dir[] = ['down', 'up', 'side'];
+/** the optional three-quarter facings of a baked sheet (journal Passe V5): shown only by the five-view rule (ActorSystem.views5) */
+export const DIRS34: readonly Dir[] = ['downSide', 'upSide'];
 
 /** Frames a behaviour can ask the renderer for (contract amendment B), read from `ActorSystem`: an NPC that is turned (a facing, or
  *  interactive: `mid` / `hero` NPCs face the player when talked to) is seen from any side; walking NPCs need idle + walk in every facing. */

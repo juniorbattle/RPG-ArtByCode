@@ -449,6 +449,29 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
 ### Pensée
 - Un défaut qui change le bake (des poses en plus) doit montrer 0 px aux cadrages posés, et ce 0 px se recoupe avec le nombre de poses du bake (329 contre 273) : sans ce recoupement, un « 0 px » peut venir d'un bake qui n'a pas changé.
 
+## Passe V5 — Vues : la règle à cinq secteurs, avec repli par feuille, derrière `?views=5` (DEV) (décision H3) (2026-10-19)
+
+### Demande
+- Décision de l'opérateur (Passe D1), mot pour mot : H3 « Cinq vues, le héros d'abord ». L'étude recommandait d'abord la règle à cinq secteurs avec repli par feuille, derrière un paramètre DEV, prouvée à 0 px sur la production (`briefs/three-quarter-views.md` § 6).
+- Branche `views-five-v5` depuis `main` (`0418f84`).
+
+### Fait — [OK]
+- `Dir` gagne deux valeurs, `downSide` (trois-quarts face) et `upSide` (trois-quarts dos), dessinées tournées vers la gauche comme le profil. `BakedSprites.DIRS34` les liste ; `BakedDecode` lit les étiquettes `<anim>-downSide` / `<anim>-upSide`. Le générateur, qui n'a pas de trois-quarts, les dessine comme la face ou le dos (aucun appel aujourd'hui).
+- `fiveViewFacing` (`ActorSystem`) : l'angle du pas à l'écran depuis la verticale ; face / dos sous 22,5°, trois-quarts de 22,5 à 67,5°, profil au-delà (les secteurs de l'étude, `tools/step-angles.mjs`) ; chaque bord tenu 5° au-delà depuis le côté où est le marcheur ; les trois-quarts retournés vers la droite comme le profil.
+- **Repli par feuille** : la règle ne s'applique qu'aux feuilles qui ont les deux trois-quarts, repos et marche ; tout autre sprite garde la règle à trois vues, inchangée. **Paramètre** : `?views=5`, DEV seulement (`import.meta.env.DEV`).
+- Rien ne change dans le moteur de rendu : une image absente retombe déjà sur le profil puis le repos.
+
+### Preuves
+- `tests/views.test.mjs` (4) : secteurs ; bords tenus (un balayage 0 → 90 → 0° change 4 fois de vue, jamais d'aller-retour) ; repli (une feuille sans trois-quarts : les 72 caps donnent exactement les vues de la règle à trois vues, avec ou sans le paramètre ; une feuille avec trois-quarts sans le paramètre aussi) ; avec trois-quarts et le paramètre : les cinq vues paraissent, les deux miroirs aussi, face et dos jamais retournés. **Cinq fautes injectées une à une, toutes attrapées** : pas de repli, paramètre ignoré, bords non tenus, trois-quarts jamais retournés, bord à 30°.
+- **Production** (captures déterministes avec personnages, graine 1842, `clean=1&freeze=7.3&vis=0`, 300 pas, Radeon 780M), la branche contre `main` figé (`0418f84`, :5187), A / B / C / D : **0 px** par défaut et **0 px** avec `?views=5` (aucune feuille de production n'a de trois-quarts).
+- typecheck, `npm test` 86 / 86, build, `art:validate`.
+
+### Restes [?]
+- Le héros en cinq vues (décisions H1 / H4) : les feuilles de trois-quarts n'existent pas encore ; `build-character.mjs` (figé par empreinte dans tous les paquets) devra sortir leurs étiquettes. La règle par défaut, après la revue de l'opérateur en jeu.
+
+### Pensée
+- Une nouvelle règle de vue s'ajoute derrière un repli par feuille : sans les images qu'elle demande, un sprite garde exactement l'ancienne règle, et la production se prouve à 0 px avant même que l'art existe.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

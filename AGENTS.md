@@ -211,6 +211,8 @@ see `art-lab/README.md`) · DEV server only, EXPERIMENTAL: `baked=<id>&bakedpos=
 round(5 x density) in turn, each townsperson once at density 1: the operator's decision of 2026-10-19, « Cinq par défaut », journal Passe C2) · `cast=generated`
 (skip the production cast of baked characters, `src/characters/BakedCast.ts`: the old generated porter / merchant) · DEV server only:
 `cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production) · DEV server only:
+`views=5` (the five-view rule, journal Passe V5: front / three-quarter / profile sectors at 22.5 / 67.5 deg on screen, for the sheets
+that hold both three-quarter facings `downSide` / `upSide` only; every other sprite keeps the three views) · DEV server only:
 `variants=candidate` (apply the NPC variants file `art-lab/characters/variants/variants.json` while it waits for the operator's approval; production
 applies it only once approved, its mask fingerprints checked, journal Passe V1) · `scene=arena` (the arena of the Cité du Tournoi instead of the
 town, `src/arena/ArenaApp.ts`, loaded on demand; journal Passe P1; absent = the town, unchanged) with `assist=subtle|full|off` (the prototype's

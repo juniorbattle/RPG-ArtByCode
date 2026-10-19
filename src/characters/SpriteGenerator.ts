@@ -8,7 +8,9 @@ import { Sprite, Layer, ramp, skinRamp, mixRGB, hsl, type RGB } from './PixelPai
 export const FRAME_W = 32;
 export const FRAME_H = 48;
 export const FOOT_Y = 45;
-export type Dir = 'down' | 'up' | 'side';
+/** a sprite's facing: front, back, profile; and the three-quarter views a baked sheet may add, front (downSide) and back (upSide), drawn
+ *  facing left like the profile (journal Passe V5) */
+export type Dir = 'down' | 'up' | 'side' | 'downSide' | 'upSide';
 export type Anim = 'idle' | 'walk' | 'hammer' | 'talk' | 'carry';
 export type Detail = 'hero' | 'mid' | 'crowd';
 
@@ -413,7 +415,9 @@ export function renderFrame(spec: CharSpec, dir: Dir, pose: Pose): Sprite {
   const S = new Sprite(FRAME_W, FRAME_H);
   if (spec.kind === 'cat') { drawCat(S, pose); S.outline(0.4); return S; }
   const pal = palette(spec);
-  if (dir === 'side') drawSide(S, spec, pose, pal); else drawFront(S, spec, dir, pose, pal);
+  // the generator draws no three-quarter view (only baked sheets may have one): such a facing is drawn as its front or back
+  const view = dir === 'downSide' ? 'down' : dir === 'upSide' ? 'up' : dir;
+  if (view === 'side') drawSide(S, spec, pose, pal); else drawFront(S, spec, view, pose, pal);
   S.outline(spec.detail === 'hero' ? 0.36 : spec.detail === 'mid' ? 0.42 : 0.5);
   return S;
 }

@@ -30,6 +30,18 @@ const HERO_CLOCK = 1.5, HERO_REF_SCALE = 1.12;
 const HERO_RUN = 1.2, HERO_CLOCK_MAX = 2;
 /** a walking facing turns to profile beyond 50 deg from the screen vertical and back to front / back below 40 deg (see screenFacing) */
 const SIDE_IN = Math.tan(THREE.MathUtils.degToRad(50)), SIDE_OUT = Math.tan(THREE.MathUtils.degToRad(40));
+/** the five-view rule (journal Passe V5; the study's sectors, art-lab/characters/briefs/three-quarter-views.md): the on-screen step's angle
+ *  from the vertical, front / back below 22.5 deg, three-quarter from 22.5 to 67.5, profile beyond; each edge held V5_HOLD deg past it from
+ *  the side the walker is on (a straight walk never flickers between two views) */
+const V5_IN = 22.5, V5_OUT = 67.5, V5_HOLD = 5;
+export function fiveViewFacing(prev: Dir, dx: number, dy: number): Dir {
+  const ang = THREE.MathUtils.radToDeg(Math.atan2(Math.abs(dx), Math.abs(dy))), up = dy > 0;
+  const cur = prev === 'side' ? 2 : prev === 'downSide' || prev === 'upSide' ? 1 : 0;
+  const edge1 = V5_IN + (cur === 0 ? V5_HOLD : cur === 1 ? -V5_HOLD : 0), edge2 = V5_OUT + (cur === 1 ? V5_HOLD : cur === 2 ? -V5_HOLD : 0);
+  if (ang > edge2) return 'side';
+  if (ang >= edge1) return up ? 'upSide' : 'downSide';
+  return up ? 'up' : 'down';
+}
 const _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3();
 
 export class ActorSystem {
@@ -57,6 +69,11 @@ export class ActorSystem {
   /** ambient walkers when set (`?crowd=<n>`, journal Passe C1): n walkers, the five townsfolk in turn; null = round(5 x density), in turn too
    *  (the operator's decision of 2026-10-19, « Cinq par défaut », journal Passe C2: at density 1 each approved townsperson walks once) */
   crowdCount: number | null = null;
+
+  /** the five-view rule for walking facings (fiveViewFacing; DEV `?views=5`, journal Passe V5), for the sheets that have the two three-quarter
+   *  facings only: every other sprite keeps the three-view rule, unchanged */
+  views5 = false;
+  private has34 = new Map<string, boolean>();
 
   /** camera: shows a walking facing by its on-screen direction (null: the world rule for every facing) */
   constructor(private atlas: SpriteAtlas, private camera: THREE.PerspectiveCamera | null = null) {
@@ -211,11 +228,23 @@ export class ActorSystem {
     if (_p0.z > 1 || _p1.z > 1) return false;
     // in pixels (units of half the height): NDC x spans the width
     const dx = (_p1.x - _p0.x) * cam.aspect, dy = _p1.y - _p0.y;
+    if (this.views5 && this.threeQuarters(a.spec)) {
+      a.dir = fiveViewFacing(a.dir, dx, dy); a.sideFlip = dx > 0;
+      a.flip = a.dir === 'side' || a.dir === 'downSide' || a.dir === 'upSide' ? dx > 0 : false;   // profile and three-quarters drawn facing left
+      return true;
+    }
     const side = Math.abs(dx) > Math.abs(dy) * (a.dir === 'side' ? SIDE_OUT : SIDE_IN);
     a.sideFlip = dx > 0;
     if (side) { a.dir = 'side'; a.flip = dx > 0; }
     else { a.dir = dy > 0 ? 'up' : 'down'; a.flip = false; }
     return true;
+  }
+
+  /** a sheet with both three-quarter facings, idle and walk (the five-view rule falls back to three views without them) */
+  private threeQuarters(spec: string): boolean {
+    let v = this.has34.get(spec);
+    if (v === undefined) { v = ['downSide', 'upSide'].every((d) => ['idle', 'walk'].every((m) => !!this.atlas.frames.get(`${spec}/${d}/${m}/0`))); this.has34.set(spec, v); }
+    return v;
   }
 
   /** the step a walker is shown taking: its actual displacement once the colliders let at least a fifth of the intended step through

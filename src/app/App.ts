@@ -185,6 +185,8 @@ export class App {
     // ?crowd=<n>: n ambient walkers, the five townsfolk in turn (journal Passe C1); absent: round(5 x density), the default (Passe C2)
     const crowd = Number(this.opts.params.get('crowd'));
     if (this.opts.params.has('crowd') && Number.isInteger(crowd) && crowd >= 0 && crowd <= 12) this.actors.crowdCount = crowd;
+    // DEV ?views=5: the five-view rule for the sheets that have three-quarter facings (journal Passe V5; a review before the operator decides)
+    if (import.meta.env.DEV && this.opts.params.get('views') === '5') this.actors.views5 = true;
     if (baked) this.actors.authored = baked.spawns;
     this.actors.onInteractForge = () => this.setForgeState(this.config.forgeState === 'NORMAL_FORGE' ? 'SABOTAGED_FORGE' : 'NORMAL_FORGE');
     this.scene.add(this.sprites.group);

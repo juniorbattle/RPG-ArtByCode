@@ -6,7 +6,7 @@ import type { BakedFrame, BakedSheet } from './BakedSprites';
  *  (`BakedCast.ts`) and the DEV harness (`src/lab/bakedLoader.ts`): no browser image decoder, so no colour management and no
  *  premultiplied alpha touch the bytes. */
 
-const ANIMS: Anim[] = ['idle', 'walk', 'hammer', 'talk', 'carry'], DIRS: Dir[] = ['down', 'up', 'side'];
+const ANIMS: Anim[] = ['idle', 'walk', 'hammer', 'talk', 'carry'], DIRS: Dir[] = ['down', 'up', 'side', 'downSide', 'upSide'];
 
 export const hex = (b: ArrayBuffer) => [...new Uint8Array(b)].map((v) => v.toString(16).padStart(2, '0')).join('');
 
