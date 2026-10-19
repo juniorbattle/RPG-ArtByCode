@@ -76,3 +76,20 @@ test('one changed byte in an exported PNG stops the load', async () => {
       () => assert.rejects(cast.loadProductionCast(false), new RegExp(`${id}: exported PNG SHA-256 .* does not match its provenance pack`)));
   }
 });
+
+test('a sheet missing a frame its archetype needs is a load error, never a silent fallback (contract amendment B; Passe Q2)', async () => {
+  const id = 'dockworker-x2-v2', m = manifests.find((x) => x.id === id);
+  const json = JSON.parse(fs.readFileSync(path.join(ROOT, `art-lab/characters/exports/${id}.json`), 'utf8'));
+  const files = JSON.parse(fs.readFileSync(path.join(ROOT, `art-lab/characters/provenance/${id}/PROVENANCE.json`), 'utf8')).files;
+  const entryWith = (j, needs) => ({ manifest: { id, status: m.status, approved: m.approved, runtimeUse: m.runtimeUse }, png: `/art-lab/characters/exports/${id}.png`, json: j, files, replaces: ['porter'], scale: 0.9, ...(needs ? { needs } : {}) });
+  await withRepoFetch(null, async () => {
+    // the same sheet as production: it loads
+    const ok = await cast.loadProductionCast(false, 'off', undefined, [entryWith(json)]);
+    assert.deepEqual(ok.sheets.map((s) => s.id), [id]);
+    // its walk-up tag dropped from the metadata (the PNG unchanged: its SHA-256 still matches the pack)
+    const noWalkUp = { ...json, meta: { ...json.meta, frameTags: json.meta.frameTags.filter((t) => t.name !== 'walk-up') } };
+    await assert.rejects(cast.loadProductionCast(false, 'off', undefined, [entryWith(noWalkUp)]), new RegExp(`${id}: .*missing frames up/walk`));
+    // an archetype that also needs a frame the sheet does not have (the smith's side hammer)
+    await assert.rejects(cast.loadProductionCast(false, 'off', undefined, [entryWith(json, ['side/hammer'])]), /missing frames side\/hammer/);
+  });
+});

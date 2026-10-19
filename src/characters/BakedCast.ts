@@ -108,12 +108,13 @@ export function castEntries(candidates: boolean, entries: readonly Entry[] = ENT
   });
 }
 
-/** `variants`: 'approved' (production: only an approved variants file is applied), 'candidate' (DEV review of an unapproved one), 'off' */
-export async function loadProductionCast(candidates = false, variants: 'approved' | 'candidate' | 'off' = 'approved', file: VariantsFile = variantsFile as unknown as VariantsFile): Promise<{ sheets: BakedSheet[]; cast: Map<string, CastMember> }> {
+/** `variants`: 'approved' (production: only an approved variants file is applied), 'candidate' (DEV review of an unapproved one), 'off';
+ *  `entries`: the list to load, the cast's own by default (the unit tests pass their own, tests/baked-cast.test.mjs) */
+export async function loadProductionCast(candidates = false, variants: 'approved' | 'candidate' | 'off' = 'approved', file: VariantsFile = variantsFile as unknown as VariantsFile, entries: readonly Entry[] = ENTRIES): Promise<{ sheets: BakedSheet[]; cast: Map<string, CastMember> }> {
   const sheets: BakedSheet[] = [], cast = new Map<string, CastMember>();
   const useVariants = variants === 'candidate' || (variants === 'approved' && file.approved === true && !!file.approval?.by && !!file.approval?.date);
   const ramps = rampTable(file);
-  for (const e of castEntries(candidates)) {
+  for (const e of castEntries(candidates, entries)) {
     const m = e.manifest, id = m.id;
     const bytes = new Uint8Array(await (await fetch(e.png)).arrayBuffer());
     const want = e.files[`art-lab/characters/exports/${id}.png`], got = await sha256(bytes);

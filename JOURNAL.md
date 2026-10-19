@@ -708,6 +708,40 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   dès que sa direction s'inverse ; un « rien à l'écran » se vérifie d'abord par le compteur d'appels de dessin, puis par un agrandissement.
 - Un effet transparent se règle dans la bande de mise au point : ce que le flou de profondeur efface près de la caméra ne compte pas.
 
+## Passe Q2 — Tests : les fonctions pures restées sans test depuis la Passe Q1 (2026-10-19)
+
+### Demande
+- Consigne d'autonomie (Passe T1) : « Si tu finis avant l'heure, continue sur « À reprendre » dans le périmètre du Merchant District. » ;
+  « À reprendre » § 7, « Tests et CI — restes (Passe Q1) » : le rejet « images requises manquantes » de `loadProductionCast` non testé (il
+  fallait lui passer une liste), `parseFrameCap`, `lerpState`, `needMask`, `bakeKey` sans test. Branche `claude/stoic-goodall-8ieke4` recréée
+  depuis `main` (`dbff468`).
+
+### Fait — [OK]
+- `tests/frame-cap.test.mjs` (3) : toutes les formes de `?fps=` (off, max, n, v<k>, e<n>, a<n>), 15 formes refusées, `frameCapLabel` relit ce
+  que `parseFrameCap` lit.
+- `tests/visibility-mask.test.mjs` (4) : ordre des jeux (A B C D AB BC CD BD, écrit en dur), `needMask` (jeux qui montrent une pièce, Tier 3,
+  géométrie non suivie partout, pixels de la passe derrière un occluder), `cfgMask` (cadrages et transitions à l'écran, transition
+  interrompue, pas de jeu AC).
+- `tests/bake-key.test.mjs` (3) : `bakeKey` avec un faux contexte GL (aucun navigateur) : même entrée = même clé (16 chiffres hex) ; le nom
+  d'un maillage n'y entre pas ; **17 entrées changent chacune la clé, sans collision entre elles** (chaîne du GPU, quatre limites, nombre de
+  pièces, cadre, niveau de l'eau, options, un champ de pose à 1e-12 près, le jeu d'une pose, le joueur d'une pose, l'ordre des poses, un
+  maillage déplacé de 1 mm, un sommet de 1e-6, un maillage caché, la face d'un matériau) ; la passe derrière les occluders (sa scène, ses
+  fenêtres).
+- `tests/baked-cast.test.mjs` +1 : `loadProductionCast` prend une liste d'entrées (4e paramètre, la distribution par défaut : rien ne change au
+  jeu) ; la feuille du docker telle quelle se charge ; sans son étiquette `walk-up` (PNG inchangé, empreinte juste) : refus « missing frames
+  up/walk » ; une archétype qui demande `side/hammer` : refus.
+- `tests/camera-graph.test.mjs` +1 : `lerpState` (bouts exacts, champs linéaires, le lacet par le plus court à travers ±π, dans les deux sens).
+- **Fautes injectées une à une, toutes attrapées** : `v<k>` à plusieurs chiffres, passe derrière ignorée, transitions hors du masque, niveau
+  de l'eau / joueur de la pose / face du matériau hors de la clé, images manquantes acceptées, lacet sans retour par +π, par −π. **[KO →
+  corrigé]** la première version du test de `lerpState` ne passait que par −π : retirer la boucle `dy > π` ne la faisait pas échouer.
+- **[KO → corrigé]** un second `load()` du même module en fin de fichier de test faisait échouer le fichier après ses tests (« invoke was
+  called before connect », activité asynchrone du chargeur de Vite) : un seul chargement par module et par fichier.
+- `npm test` 50 → 62 ; aucun code de jeu changé hors du paramètre ajouté (défaut = la liste de production).
+
+### Pensée
+- Un test de repli (±π, deux branches) s'écrit dans les deux sens : une faute injectée par branche le montre.
+- Une clé de cache se teste par ce qui doit la changer, chacune de ses entrées, et par ce qui ne doit pas (un nom).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -814,9 +848,7 @@ son (le jeu n'en a pas), éclaboussures au sol, neige sur les personnages.
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
   appli. Servir les baselines sur `:518x --strictPort` ; décider avec l'opérateur s'il faut changer le défaut (outillage, pas runtime).
 - **Tests et CI — restes (Passe Q1)** : le libellé `ubuntu-latest` passe à Ubuntu 26 dès le 19/10 (épingler `ubuntu-24.04` = décision de
-  l'opérateur) ; le rejet « images requises manquantes » de `loadProductionCast` n'est pas testé (il faudrait lui passer une liste) ;
-  d'autres fonctions pures sans test (`parseFrameCap`, `lerpState`, `needMask`, `bakeKey` du cache du bake) ; les tests ne sont pas typés
-  (`.mjs`, hors `tsconfig`).
+  l'opérateur) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** (Passe M4) : le critère « operator decision recorded, branch merged » d'`AGENTS.md` date d'avant la fusion
   sans demande ; lire « branche fusionnée » suffit, à confirmer par l'opérateur. Dernier archivage : V0-V3 (Passe T1) ; prochain au-delà

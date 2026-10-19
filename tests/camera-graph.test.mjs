@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './load.mjs';
 
-const { CameraGraph, DEFAULT_ZONES } = await load('/src/app/CameraGraph.ts');
+const { CameraGraph, DEFAULT_ZONES, lerpState } = await load('/src/app/CameraGraph.ts');
 const graph = () => new CameraGraph();
 
 test('the authored zones and margin', () => {
@@ -104,4 +104,22 @@ test('?camblend=anchored: the bake samples the anchored A <-> B / B <-> C blends
     const w = (p.pose.dist - e0.dist) / (e1.dist - e0.dist || 1);
     if (Math.abs(e1.dist - e0.dist) > 1e-6) assert.ok(Math.abs(p.pose.tx - (e0.tx + (e1.tx - e0.tx) * w)) < 1e-6, `${p.set} pivot x on the segment`);
   }
+});
+
+// lerpState (the blend of two framings' states): ends exact, every field linear, the yaw the short way round (Passe Q2)
+test('lerpState: exact ends, linear fields, the yaw takes the short way round', () => {
+  const s = (yaw, k) => ({ yaw, pitch: 0.1 * k, dist: 20 + k, fov: 30 + k, shift: 0.01 * k, tx: k, ty: 2 + k, tz: -k, charScale: 1 + 0.1 * k });
+  const a = s(-1, 0), b = s(-0.5, 2);
+  assert.deepEqual(lerpState(a, b, 0), a);
+  for (const [k, v] of Object.entries(lerpState(a, b, 1))) assert.ok(Math.abs(v - b[k]) < 1e-12, `t = 1: ${k}`);
+  const m = lerpState(a, b, 0.25);
+  assert.ok(Math.abs(m.yaw + 0.875) < 1e-12 && Math.abs(m.dist - 20.5) < 1e-12 && Math.abs(m.charScale - 1.05) < 1e-12 && Math.abs(m.tz + 0.5) < 1e-12);
+  // across +-pi: from 3.0 to -3.0 rad is 0.283 rad the short way (through pi), not 6 rad back through 0
+  const w = lerpState(s(3.0, 0), s(-3.0, 0), 0.5);
+  assert.ok(Math.abs(Math.abs(w.yaw) - Math.PI) < 1e-9, `mid yaw ${w.yaw}`);
+  const q = lerpState(s(3.0, 0), s(-3.0, 0), 0.25);
+  assert.ok(Math.abs(q.yaw - (3.0 + (2 * Math.PI - 6) / 4)) < 1e-9, `quarter yaw ${q.yaw}`);
+  // and the other way round (-3.0 to 3.0: through -pi)
+  const r = lerpState(s(-3.0, 0), s(3.0, 0), 0.25);
+  assert.ok(Math.abs(r.yaw - (-3.0 - (2 * Math.PI - 6) / 4)) < 1e-9, `quarter yaw back ${r.yaw}`);
 });
