@@ -12,63 +12,68 @@ const CSS = `
 #arena-hud{position:fixed;inset:0;pointer-events:none;color:#d9c9a8;font:14px/1.4 "Segoe UI",system-ui,sans-serif;z-index:20;user-select:none;-webkit-user-select:none}
 #arena-hud.off>*:not(#ah-ko):not(#ah-pause){opacity:0}
 #arena-hud .top{position:absolute;left:0;right:0;top:0;height:120px;background:linear-gradient(rgba(5,7,13,.62),rgba(5,7,13,0))}
-#ah-title{position:absolute;left:18px;top:12px;letter-spacing:.3em;text-transform:uppercase;font-size:13px;color:#f1d9a0;text-shadow:0 1px 0 #05070d}
+#ah-title{position:absolute;left:18px;top:12px;letter-spacing:.3em;text-transform:uppercase;font-size:13px;color:#f1d9a0;text-shadow:0 1px 0 #05070d,0 0 8px #05070d,0 0 14px #05070d}
 #ah-title small{display:block;margin-top:3px;font-size:10px;letter-spacing:.16em;color:#d9c9a8;opacity:.75}
 #ah-title::after{content:'';display:block;width:132px;height:2px;margin-top:6px;background:linear-gradient(90deg,#e9a64c,rgba(233,166,76,0))}
 .ah-f{position:absolute;top:58px;display:flex;gap:10px;align-items:flex-start}
 .ah-f.l{left:18px}.ah-f.r{right:18px;flex-direction:row-reverse;text-align:right}
 .ah-port{width:52px;height:52px;flex:none;image-rendering:pixelated;border:2px solid #0a0d16;box-shadow:0 0 0 1px rgba(233,166,76,.55),0 3px 0 1px rgba(0,0,0,.45);background:linear-gradient(#24304c,#0b1020)}
 .ah-f.r .ah-port{box-shadow:0 0 0 1px rgba(198,90,74,.6),0 3px 0 1px rgba(0,0,0,.45);background:linear-gradient(#34262c,#120c10)}
-.ah-card{width:min(25vw,280px);padding:6px 11px 8px;background:linear-gradient(90deg,rgba(5,8,16,.92),rgba(5,8,16,.6));border:1px solid rgba(233,166,76,.36)}
-.ah-f.r .ah-card{background:linear-gradient(270deg,rgba(5,8,16,.92),rgba(5,8,16,.6));border-color:rgba(198,90,74,.5)}
-.ah-nm{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#efe3c4}
-.ah-nm span{margin-left:8px;font-size:10px;letter-spacing:.14em;color:#8e98ae}
-.ah-f.r .ah-nm span{margin:0 0 0 8px}
+.ah-card{position:relative;width:min(25vw,280px);padding:6px 11px 8px;background:rgba(6,9,18,.95);border:1px solid rgba(233,166,76,.4)}
+.ah-f.r .ah-card{border-color:rgba(198,90,74,.55)}
+.ah-nm{display:flex;align-items:baseline;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#efe3c4}
+.ah-nm span{margin-left:8px;font-size:11px;letter-spacing:.12em;color:#9aa3b8}
+.ah-nm em{margin-left:auto;font:700 12px/1 "Segoe UI",system-ui,sans-serif;font-style:normal;letter-spacing:.04em;color:#f3e9d2;font-variant-numeric:tabular-nums}
+.ah-f.r .ah-nm{flex-direction:row-reverse}.ah-f.r .ah-nm span{margin:0 8px 0 0}.ah-f.r .ah-nm em{margin:0 auto 0 0}
 .ah-hp{position:relative;height:15px;margin-top:4px;background:#141a28;border:2px solid #0a0d16;box-shadow:0 0 0 1px rgba(207,196,168,.6)}
 .ah-hp i,.ah-hp u{position:absolute;top:0;bottom:0;left:0}
 .ah-f.r .ah-hp i,.ah-f.r .ah-hp u{left:auto;right:0}
-.ah-hp u{background:#efe3c4;opacity:.55;transition:width .45s ease-in .35s}
+.ah-hp u{background:#e9a64c;opacity:.85;transition:width .45s ease-in .35s}
 .ah-hp i{background:repeating-linear-gradient(90deg,#b4cbe8 0 6px,#7290bc 6px 8px)}
 .ah-f.r .ah-hp i{background:repeating-linear-gradient(90deg,#c8604e 0 6px,#8a3428 6px 8px)}
-.ah-hp em{position:absolute;right:6px;top:0;font:700 10px/11px "Segoe UI",system-ui,sans-serif;font-style:normal;color:#f3e9d2;text-shadow:0 0 2px #05070d,0 0 2px #05070d,0 1px 2px #000;font-variant-numeric:tabular-nums}
-.ah-f.r .ah-hp em{right:auto;left:6px}
 .ah-pips{display:flex;gap:9px;margin-top:7px;padding-left:3px}
 .ah-pips b{width:10px;height:10px;transform:rotate(45deg);border:1.5px solid rgba(233,166,76,.65);display:block}
 .ah-pips b.on{background:#e9a64c;box-shadow:0 0 8px rgba(233,166,76,.8)}
 .ah-pips b.gain{animation:ahg .4s}
 @keyframes ahg{40%{transform:rotate(45deg) scale(1.5)}}
-.ah-state{height:16px;margin-top:5px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#f1d9a0;opacity:0;transition:opacity .15s}
+.ah-state{position:absolute;left:0;right:0;top:100%;margin-top:4px;padding:0 11px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#f1d9a0;text-shadow:0 1px 2px #000,0 0 6px #05070d;opacity:0;transition:opacity .15s}
 .ah-state.on{opacity:1}
 #ah-bar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:5px;pointer-events:auto;transition:opacity .15s}
 .ah-sep{width:2px;align-self:stretch;margin:6px 4px;background:rgba(233,166,76,.25)}
-.ah-b{position:relative;width:76px;height:52px;padding:6px 7px 5px;text-align:left;font:inherit;color:#d9c9a8;background:linear-gradient(rgba(18,26,44,.92),rgba(9,13,24,.92));border:1.5px solid rgba(233,166,76,.26);border-radius:3px;cursor:pointer;overflow:hidden;opacity:.5;transition:opacity .1s,border-color .1s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.ah-b.wide{width:112px}.ah-b.tech b{font-size:10px;letter-spacing:.05em}
-.ah-b kbd{position:absolute;top:5px;right:6px;min-width:16px;padding:0 4px;font:700 10px/15px "Segoe UI",system-ui,sans-serif;text-align:center;color:#05070d;background:#d9c9a8;border-radius:2px}
-.ah-b b{display:block;margin-top:14px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;color:#efe3c4}
-.ah-b em{display:block;margin-top:2px;font-size:10px;font-style:normal;color:#8e98ae;white-space:nowrap}
+.ah-b{position:relative;width:80px;height:54px;padding:6px 7px 5px;text-align:left;font:inherit;color:#d9c9a8;background:linear-gradient(#131b2e,#0a0f1c);border:1.5px solid rgba(120,130,156,.35);border-radius:3px;cursor:pointer;overflow:hidden;transition:border-color .1s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.ah-b.wide{width:118px}.ah-b.tech b{font-size:11px;letter-spacing:.04em}
+.ah-b kbd{position:absolute;top:5px;right:6px;min-width:17px;padding:0 4px;font:700 11px/16px "Segoe UI",system-ui,sans-serif;text-align:center;color:#05070d;background:#d9c9a8;border-radius:2px}
+.ah-b b{display:block;margin-top:15px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;color:#7f889c}
+.ah-b em{display:block;margin-top:2px;font-size:11px;font-style:normal;color:#858da0;white-space:nowrap}
+.ah-b.on b{color:#f3e9d2}.ah-b.on em{color:#aab2c4}
 .ah-b em q{quotes:none;color:#e9a64c;letter-spacing:1px}
-.ah-b.on{opacity:1;border-color:rgba(233,166,76,.8)}
-.ah-b.noap{opacity:.38}.ah-b.noap em{color:#d08a6a}
+.ah-b.on{border-color:rgba(233,166,76,.85)}
+.ah-b.noap{border-color:rgba(90,96,116,.3)}.ah-b.noap b{color:#5d6577}.ah-b.noap em{color:#b0705a}.ah-b.noap kbd{background:#6c7488}
 .ah-b .cd{position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(5,8,18,.8)}
-.ah-b s{position:absolute;inset:0;display:none;place-items:center;font:700 19px "Segoe UI",system-ui,sans-serif;text-decoration:none;color:#f3e9d2;text-shadow:0 1px 3px #000}
-.ah-b.cool s{display:grid}
-.ah-b.open{opacity:1;border-color:#f3e3bf;box-shadow:0 0 14px rgba(243,227,191,.6);animation:ahp .45s infinite alternate}
+.ah-b s{position:absolute;inset:0;display:none;place-items:center;font:700 20px "Segoe UI",system-ui,sans-serif;text-decoration:none;color:#f3e9d2;text-shadow:0 1px 3px #000;font-variant-numeric:tabular-nums}
+.ah-b.cool s{display:grid}.ah-b.cool b,.ah-b.cool em{visibility:hidden}
+.ah-b.open{border-color:#e9a64c;background:linear-gradient(#3a2a12,#1a1208);box-shadow:0 0 16px rgba(233,166,76,.75);animation:ahp .45s infinite alternate}
+.ah-b.open kbd{background:#e9a64c}
 @keyframes ahp{to{transform:translateY(-4px)}}
 .ah-b.warn{border-color:#d0714e;box-shadow:0 0 12px rgba(208,113,78,.6)}
-.ah-b.active{opacity:1;border-color:#a9c4e8;background:linear-gradient(#1c2c4a,#0b1424);box-shadow:0 0 14px rgba(143,180,224,.5)}
+.ah-b.active{border-color:#a9c4e8;background:linear-gradient(#1c2c4a,#0b1424);box-shadow:0 0 14px rgba(143,180,224,.5)}
 .ah-b.hit{animation:ahk .18s}.ah-b.deny{animation:ahd .25s}
 @keyframes ahk{50%{transform:scale(.92)}}@keyframes ahd{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
-#ah-wbar{position:absolute;left:50%;bottom:74px;width:min(420px,70vw);height:3px;transform:translateX(-50%) scaleX(0);background:#f3e3bf;box-shadow:0 0 8px rgba(243,227,191,.8);opacity:0}
+#ah-wbar{position:absolute;left:50%;bottom:80px;width:min(440px,70vw);height:8px;transform:translateX(-50%);background:rgba(5,8,16,.9);border:1px solid rgba(233,166,76,.7);opacity:0}
 #ah-wbar.on{opacity:1}
-#ah-alert{position:absolute;left:0;top:0;display:flex;gap:10px;align-items:center;padding:6px 18px 6px 8px;background:linear-gradient(90deg,rgba(8,12,22,.92),rgba(8,12,22,0));opacity:0;transition:opacity .12s;will-change:transform}
+#ah-wbar i{position:absolute;left:0;top:0;bottom:0;width:100%;transform-origin:left center;background:#e9a64c;box-shadow:0 0 8px rgba(233,166,76,.8)}
+#ah-wbar b{position:absolute;left:0;bottom:12px;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#f3e3bf;text-shadow:0 1px 2px #000,0 0 6px #05070d;white-space:nowrap}
+#ah-wbar b kbd{display:inline-block;margin-left:6px;padding:0 4px;font:700 11px/15px "Segoe UI",system-ui,sans-serif;color:#05070d;background:#e9a64c;border-radius:2px}
+#ah-alert{position:absolute;left:50%;top:27%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;padding:8px 22px 8px 10px;background:rgba(8,11,20,.94);border:1px solid rgba(208,113,78,.6);opacity:0;transition:opacity .12s}
 #ah-alert.on{opacity:1}
-#ah-alert svg{width:30px;height:30px}
-#ah-alert b{display:block;font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:#f1d9a0}
-#ah-alert span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+#ah-alert svg{width:36px;height:36px}
+#ah-alert b{display:block;font-size:17px;letter-spacing:.2em;text-transform:uppercase;color:#f1d9a0}
+#ah-alert span{display:block;margin-top:2px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#f3e3bf}
 #ah-dmg div{position:absolute;transform:translate(-50%,0);font-weight:800;font-size:22px;letter-spacing:.04em;text-shadow:0 2px 0 rgba(0,0,0,.6),0 0 8px rgba(0,0,0,.5);animation:ahf 1.05s ease-out forwards;white-space:nowrap;font-variant-numeric:tabular-nums}
 #ah-dmg .hit{color:#f6e2b0}#ah-dmg .guarded{color:#a9c4e8;font-size:17px}#ah-dmg .guardbreak{color:#e9a64c;font-size:24px}#ah-dmg .dodged{color:#cfdcf0;font-size:16px;letter-spacing:.2em}
 #ah-dmg .ap{color:#e9a64c;font-size:15px}#ah-dmg .stun{color:#f1d9a0;font-size:15px;letter-spacing:.2em}
 @keyframes ahf{0%{opacity:0;margin-top:6px}12%{opacity:1}100%{opacity:0;margin-top:-48px}}
+#arena-hud.still #ah-dmg div{animation-delay:-.22s;animation-play-state:paused}
 #ah-ko,#ah-pause{position:absolute;inset:0;display:none;place-items:center;background:rgba(5,7,13,.58);text-align:center;pointer-events:none}
 #ah-ko.on,#ah-pause.on{display:grid}
 #ah-ko b,#ah-pause b{display:block;font-weight:400;font-size:26px;letter-spacing:.34em;text-transform:uppercase;color:#f1d9a0}
@@ -78,16 +83,22 @@ const CSS = `
 #ah-rotate b{display:block;font-weight:400;font-size:15px;letter-spacing:.3em;text-transform:uppercase;color:#f1d9a0}
 #ah-rotate span{display:block;margin-top:14px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
 @media (orientation:portrait) and (max-width:820px){#ah-rotate{display:grid}}
-@media (max-width:900px){.ah-b{width:54px;height:46px}.ah-b.wide{width:70px}.ah-b em{display:none}.ah-b b{font-size:9px;margin-top:15px}.ah-sep{margin:6px 2px}#ah-bar{gap:3px}.ah-card{width:30vw}}
+@media (max-width:900px){.ah-b{width:56px;height:48px}.ah-b.wide{width:72px}.ah-b em{display:none}.ah-b b{font-size:10px;margin-top:17px}.ah-b.tech b{font-size:9px}.ah-sep{margin:6px 2px}#ah-bar{gap:3px}.ah-card{width:30vw}}
+.ah-b .sn{display:none}
+@media (max-width:900px){.ah-b .fn{display:none}.ah-b .sn{display:inline}}
+/* phone in landscape: the cards, the alert and the bars shrink so the duel stays in view */
+@media (max-height:480px){#ah-title{display:none}.ah-f{top:8px}.ah-port{width:36px;height:36px}.ah-card{padding:4px 8px 5px}.ah-nm{font-size:11px}.ah-nm span{display:none}.ah-hp{height:11px}.ah-pips{margin-top:4px;gap:7px}.ah-pips b{width:8px;height:8px}
+  #ah-alert{top:24%;padding:4px 14px 4px 6px}#ah-alert svg{width:24px;height:24px}#ah-alert b{font-size:12px}#ah-alert span{font-size:10px}
+  #ah-wbar{bottom:58px;height:6px}#ah-wbar b{font-size:9px;bottom:9px}#ah-bar{bottom:6px}.ah-b{height:42px}.ah-b b{margin-top:14px}.ah-top{height:70px}}
 button:focus-visible{outline:3px solid #f1d9a0;outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.ah-b.open,.ah-b.hit,.ah-b.deny,.ah-pips b.gain{animation:none}#ah-dmg div{animation-duration:.01s}}
 `;
 
 /** the action bar: defence | attacks | techniques (the prototype's grouping and keys) */
-const BAR: Array<'|' | { id: ActionId | 'guard' | 'dodge'; key: string; name?: string; sub?: string; wide?: boolean }> = [
+const BAR: Array<'|' | { id: ActionId | 'guard' | 'dodge'; key: string; name?: string; short?: string; sub?: string; wide?: boolean }> = [
   { id: 'guard', key: 'B', name: 'Garde', sub: 'maintenir', wide: true }, { id: 'dodge', key: 'A', name: 'Esquive', sub: '1 PA' }, '|',
   { id: 'light', key: '1', name: 'Rapide', sub: '+1 PA' }, { id: 'heavy', key: '2', name: 'Puissante', sub: 'brise la garde', wide: true }, '|',
-  { id: 't1', key: '3' }, { id: 't2', key: '4' }, { id: 't3', key: '5' }, { id: 't4', key: '6' },
+  { id: 't1', key: '3', short: 'Éclair' }, { id: 't2', key: '4', short: 'Fente' }, { id: 't3', key: '5', short: 'Tourbillon' }, { id: 't4', key: '6', short: 'Estocade' },
 ];
 
 export class ArenaHud {
@@ -106,14 +117,14 @@ export class ArenaHud {
     const D = sim.D, bar = BAR.map((b) => {
       if (b === '|') return '<span class="ah-sep"></span>';
       const d = b.id === 'guard' || b.id === 'dodge' ? null : D.actions[b.id];
-      const nm = b.name ?? d?.short ?? d?.name ?? b.id, sub = b.sub ?? `<q>${'◆'.repeat(d?.apCost ?? 0)}</q> ${d?.cooldown ?? 0} s`;
-      return `<button class="ah-b${b.wide || (d && d.kind === 'tech') ? ' wide' : ''}${d && d.kind === 'tech' ? ' tech' : ''}" data-act="${b.id}" aria-label="${nm} (${b.key})"><kbd>${b.key}</kbd><b>${nm}</b><em>${sub}</em><i class="cd"></i><s></s></button>`;
+      const nm = b.name ?? d?.short ?? d?.name ?? b.id, label = b.short ? `<span class="fn">${nm}</span><span class="sn">${b.short}</span>` : nm, sub = b.sub ?? `<q>${'◆'.repeat(d?.apCost ?? 0)}</q> ${d?.cooldown ?? 0} s`;
+      return `<button class="ah-b${b.wide || (d && d.kind === 'tech') ? ' wide' : ''}${d && d.kind === 'tech' ? ' tech' : ''}" data-act="${b.id}" aria-label="${nm} (${b.key})"><kbd>${b.key}</kbd><b>${label}</b><em>${sub}</em><i class="cd"></i><s></s></button>`;
     }).join('');
-    const card = (who: FighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<span>${sub}</span></div><div class="ah-hp" role="meter" aria-label="Santé de ${D.fighters[who].name}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i><em></em></div>${who === 'ren' ? '<div class="ah-pips" aria-label="Points d\'action">' + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-state"></div></div></div>`;
+    const card = (who: FighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<span>${sub}</span><em></em></div><div class="ah-hp" role="meter" aria-label="Santé de ${D.fighters[who].name}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i></div>${who === 'ren' ? '<div class="ah-pips" aria-label="Points d\'action">' + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-state"></div></div></div>`;
     this.el.innerHTML = `<div class="top"></div><div id="ah-title">Cité du Tournoi<small>Arène des champions</small></div>
       ${card('ren', 'l', 'le héros')}${card('marek', 'r', 'le champion')}
       <div id="ah-alert"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2l18 18-18 18L2 20z" fill="#3a1812" stroke="#d0714e" stroke-width="2.4"/><rect x="18" y="9" width="4" height="14" fill="#f3e3bf"/><rect x="18" y="26" width="4" height="4" fill="#f3e3bf"/></svg><div><b></b><span></span></div></div>
-      <div id="ah-dmg"></div><div id="ah-wbar"></div><div id="ah-bar">${bar}</div>
+      <div id="ah-dmg"></div><div id="ah-wbar" aria-hidden="true"><i></i><b>Fenêtre d'esquive<kbd>A</kbd></b></div><div id="ah-bar">${bar}</div>
       <div id="ah-ko" role="status"><div><b></b><span>R pour recommencer</span></div></div>
       <div id="ah-pause" role="status"><div><b>Pause</b><span>Espace pour reprendre</span></div></div>
       <div id="ah-rotate" role="alert"><div><b>Cité du Tournoi</b><span>Tournez l'appareil : l'arène se joue en paysage</span></div></div>`;
@@ -128,6 +139,12 @@ export class ArenaHud {
       b.addEventListener('pointerdown', (e) => { e.preventDefault(); this.onAction(id, true); this.flash(id); });
       if (id === 'guard') for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, () => this.onAction(id, false));
     });
+  }
+
+  /** a held moment (ArenaApp.jump): floating numbers stay at their shown state instead of starting their fade-in */
+  still(on: boolean): void {
+    this.el.classList.toggle('still', on);
+    if (!on) this.q('#ah-dmg').textContent = '';
   }
 
   flash(id: string, cls: 'hit' | 'deny' = 'hit'): void {
@@ -145,7 +162,7 @@ export class ArenaHud {
     for (const f of [R, M]) {
       const root = this.q(`#ah-${f.id}`), pct = Math.round((f.hp / f.maxHp) * 1000) / 10;
       this.set(`hp${f.id}`, pct, () => { (root.querySelector('.ah-hp i') as HTMLElement).style.width = `${pct}%`; (root.querySelector('.ah-hp u') as HTMLElement).style.width = `${pct}%`; root.querySelector('.ah-hp')!.setAttribute('aria-valuenow', String(Math.ceil(f.hp))); });
-      this.set(`hpt${f.id}`, Math.ceil(f.hp), () => { root.querySelector('.ah-hp em')!.textContent = `${Math.ceil(f.hp)} / ${f.maxHp}`; });
+      this.set(`hpt${f.id}`, Math.ceil(f.hp), () => { root.querySelector('.ah-nm em')!.textContent = `${Math.ceil(f.hp)} / ${f.maxHp}`; });
       const st = f.state === 'stunned' ? (f.id === 'ren' ? 'Étourdi' : 'Étourdi — frappez !') : f.state === 'down' ? 'À terre' : f.guarding ? 'En garde' : '';
       const se = root.querySelector('.ah-state')!;
       this.set(`st${f.id}`, st, () => { if (st) se.textContent = st; se.classList.toggle('on', !!st); });
@@ -169,12 +186,10 @@ export class ArenaHud {
     this.cls('gd', gd, 'on', R.state === 'idle'); this.cls('gd', gd, 'active', R.guarding); this.cls('gd', gd, 'warn', up && !!inc && inc.kind === 'heavy' && R.guarding);
     const wb = this.q<HTMLElement>('#ah-wbar');
     this.cls('wb', wb, 'on', up && !R.react);
-    if (up) wb.style.transform = `translateX(-50%) scaleX(${Math.max(0, inc!.windowRemaining / inc!.windowDur).toFixed(2)})`;
+    if (up) (wb.firstElementChild as HTMLElement).style.transform = `scaleX(${Math.max(0, inc!.windowRemaining / inc!.windowDur).toFixed(2)})`;
     const al = this.q<HTMLElement>('#ah-alert'), show = !!inc && full && visible;
     this.cls('al', al, 'on', show);
     if (show) {
-      const p = this.project('marek'), ax = Math.max(8, Math.min(window.innerWidth - 300, p.x - 330)), ay = Math.max(150, Math.min(window.innerHeight * 0.5, p.y - 110));
-      this.set('alX', `${Math.round(ax)},${Math.round(ay)}`, () => { al.style.transform = `translate(${Math.round(ax)}px,${Math.round(ay)}px)`; });
       this.set('alT', inc!.action, () => { al.querySelector('b')!.textContent = inc!.action === 'm_heavy' ? 'Attaque puissante !' : 'Attaque !'; });
       this.set('alS', inc!.windowOpen, () => { al.querySelector('span')!.textContent = inc!.windowOpen ? 'Réagissez maintenant' : ''; });
     }
@@ -200,6 +215,7 @@ export class ArenaHud {
     el.className = cls; el.textContent = text;
     el.style.left = `${Math.round(p.x)}px`; el.style.top = `${Math.round(p.y + dy)}px`;
     this.q('#ah-dmg').appendChild(el);
-    setTimeout(() => el.remove(), 1100);
+    // a held moment keeps its numbers until play resumes (still(false) clears them)
+    setTimeout(() => { if (!this.el.classList.contains('still')) el.remove(); }, 1100);
   }
 }

@@ -148,7 +148,10 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   <outDir> "<extra query>" "name|moment|js" ...` — captures of the scripted moments (`__arena.jump`: the prototype's eleven plus `strike`,
   `heavyRen`, `ko`; deterministic, every step delivered to the presentation); `node tools/arena-scene-check.mjs ["<extra query>"]` — live play
   (keys pressed while the loop runs), the simulation's hash against the prototype's, every moment in every assistance mode without a page
-  error, the floor telegraph's contrast (>= 2:1, also deuteranopia); exit 1 on a failure
+  error, the floor telegraph's contrast (>= 2:1, also deuteranopia); exit 1 on a failure; `node tools/arena-scene-page.mjs <outDir>` — a
+  production build with relative paths and the page to publish as an artifact (`arena-page.html`, no document skeleton, sets `?scene=arena`
+  itself: the service hands no query string; its supporting files are `assets/*`; journal Passe P2). GPU time per pass of the arena:
+  `node tools/perf.mjs "arena|scene=arena"` (the tool drives `window.__arena` when there is no `__app`; `?gpuprof=1` for the panel-less timer)
 - Character Lab (dev only): `npm run dev`, then `/character-lab.html` (or `npm run art:lab`) — shows an exported PNG sheet through
   Three.js at 1x / 4x / runtime scale; `window.__lab.selfTest()` checks nearest filtering texel-for-texel. Not part of the game or its build.
 

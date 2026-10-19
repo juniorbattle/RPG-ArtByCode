@@ -3,9 +3,9 @@ import { maskSafeBlending } from '../atmosphere/SceneUniforms';
 import { LAYER_NOREFLECT } from '../atmosphere/ShadowAndReflection';
 
 /** Floor marks of the duel (journal Passe P1), the prototype's FloorUI in the town's renderer: a thin ring under each fighter (Ren's cool
- *  ivory, Marek's crimson; with the HUD), and, with the full assistance only, the telegraph of a reactable attack: a crimson band from Marek
- *  to Ren with thick ivory chevrons running toward Ren, filling as the attack charges and pulsing once its reaction window is open (the
- *  prototype's night tuning, journal Passe A2: >= 2:1 against the floor). Drawn after the opaque pass on the floor (LAYER_NOREFLECT), unlit,
+ *  ivory, Marek's crimson; with the HUD), and, with the full assistance only, the telegraph of a reactable attack: a band from ring to ring with
+ *  thick ivory chevrons running toward Ren, filling in amber as the attack charges, turning crimson and pulsing once its reaction window is
+ *  open (>= 2:1 against the floor, tools/arena-scene-check.mjs; journal Passes A2, P2). Drawn after the opaque pass on the floor (LAYER_NOREFLECT), unlit,
  *  colour blended without touching the scene alpha (maskSafeBlending). */
 
 const VERT = /* glsl */ `
@@ -24,25 +24,29 @@ float ring(vec2 p, vec2 c, float r, float w){ float d = abs(length((p - c) * vec
 void main(){
   vec2 p = vWorld.xz;
   vec4 col = vec4(0.0);
-  float rr = ring(p, uRen, 0.8, 0.11) * uRings, rm = ring(p, uMarek, 0.9, 0.11) * uRings;
-  col = mix(col, vec4(0.78, 0.86, 1.0, 0.7), rr);
-  col = mix(col, vec4(0.92, 0.26, 0.26, 0.75), rm * (1.0 - rr));
   if (uTele > 0.0) {
-    float x0 = min(uRen.x, uMarek.x) + 0.5, x1 = max(uRen.x, uMarek.x) - 0.55, z = p.y - uRen.y;
-    float inside = step(x0, p.x) * step(p.x, x1) * (1.0 - smoothstep(0.62, 0.68, abs(z)));
+    // a lane from ring to ring: dark ink with an ivory rim, filling in amber as the attack charges, ivory-hot once its reaction window is
+    // open; amber / ivory chevrons run toward Ren (red read as pink after the grade and left the palette, critique of Passe P2)
+    // from Marek's ring to past Ren: the lane points through him (critique n° 4)
+    float x0 = min(uRen.x, uMarek.x) - 0.9, x1 = max(uRen.x, uMarek.x) - 0.35, z = p.y - uRen.y;
+    float inside = step(x0, p.x) * step(p.x, x1) * (1.0 - smoothstep(0.92, 0.96, abs(z)));
     if (inside > 0.0) {
-      // from Marek (+x) toward Ren: s = 0 at Marek, 1 at Ren
-      float s = (x1 - p.x) / max(x1 - x0, 0.01);
-      float filled = step(s, uFill);
-      vec3 base = mix(vec3(0.42, 0.06, 0.1), vec3(0.86, 0.14, 0.2), filled);
-      // chevrons pointing at Ren, running toward him
-      float u = fract((x1 - p.x) / 0.8 - uTime * (uOpen > 0.5 ? 2.2 : 1.1) - abs(z) * 0.9);
-      float chev = step(0.0, u) * (1.0 - step(0.34, u));
-      vec3 c = mix(base, vec3(1.0, 0.95, 0.84), chev * (0.55 + 0.45 * filled));
-      float pulse = uOpen > 0.5 ? 0.82 + 0.18 * sin(uTime * 24.0) : 1.0;
-      col = mix(col, vec4(c * pulse * 1.15, 0.9), inside * uTele);
+      float s = (x1 - p.x) / max(x1 - x0, 0.01), filled = step(s, uFill);
+      vec3 hot = mix(vec3(0.95, 0.56, 0.16), vec3(1.0, 0.68, 0.24), uOpen);
+      vec3 base = mix(vec3(0.05, 0.05, 0.08), hot * 0.7, filled);
+      float u = fract((x1 - p.x) / 0.95 - uTime * (uOpen > 0.5 ? 2.4 : 1.1) - abs(z) * 0.8);
+      float chev = step(0.0, u) * (1.0 - step(0.42, u)) * (1.0 - step(0.8, abs(z)));
+      vec3 c = mix(base, mix(hot, vec3(1.0, 0.96, 0.86), uOpen), chev * (0.45 + 0.55 * filled));
+      float edge = 1.0 - smoothstep(0.05, 0.08, abs(abs(z) - 0.86));
+      c = mix(c, vec3(1.0, 0.95, 0.84), edge);
+      float pulse = uOpen > 0.5 ? 0.8 + 0.3 * (0.5 + 0.5 * sin(uTime * 22.0)) : 1.0;
+      col = vec4(c * pulse * 1.1, 0.92 * inside * uTele);
     }
   }
+  float rr = ring(p, uRen, 0.8, 0.11) * uRings, rm = ring(p, uMarek, 0.9, 0.11) * uRings;
+  // the sides: Ren's blue (his tunic), Marek's amber (the danger; a crimson ring was a second warm hue, critique n° 4)
+  col = mix(col, vec4(0.42, 0.66, 1.0, 0.85), rr);
+  col = mix(col, vec4(0.96, 0.58, 0.2, 0.85), rm * (1.0 - rr));
   if (col.a < 0.01) discard;
   gl_FragColor = col;
 }`;

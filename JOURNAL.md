@@ -945,6 +945,116 @@ aussi les personnages combattants. Nous allons intégrer des spirites cohérents
 - Un port de logique se prouve contre l'original exécuté à côté, sur des entrées qui atteignent chaque chemin (vérifié par le test), et une
   faute injectée doit le faire échouer.
 
+## Passe P2 — Arène du jeu : quatre critiques à l'aveugle contre le prototype, la lumière refroidie, le signal de réaction refait (2026-10-19)
+
+### Méthode
+- Agent neuf à chaque critique ; le prototype adapté (Passes A1 à A3) contre l'arène du jeu sur quatre moments (`calm`, `window` en
+  assistance complète, `impact`, `technique`), étiquettes tirées au sort, clé lue puis effacée avant le lancement, gardée hors de sa portée.
+
+### Critique n° 1 — l'arène de la Passe P1 : [KO] (le prototype devant, 7 contre 6,5)
+- Le jeu devant sur le décor (8 / 6) et le HUD (6 / 5,5) ; derrière sur la lumière (6 / 7,5 : « l'ambre domine le sol et les murs, pas un
+  accent »), les sprites (5 / 7,5 : visages en masques blancs, Marek fondu en une masse blanche) ; lisibilité du combat à égalité (6) mais
+  signal de réaction faible chez nous (alerte petite, décentrée sur une tour ; chevrons courts sous les pieds de Marek ; barre de temps ténue).
+- Vérifié sur les pixels avant d'agir : le sol avant éclairé par les deux braseros hors cadre (la lumière de face des combattants) est
+  brun-ambre sur toute la largeur ; les braseros de la porte derrière la tête de Ren ; spectateurs à ×1 doublés, tièdes, serrés.
+
+### Corrections — [OK]
+- **Lumière** : la lumière de face des combattants n'est plus l'ambre des braseros mais un **rebond de lune froid** (bleu pâle, 1,7, rayon
+  15 m, devant et en hauteur) ; braseros avant 3,0 → 1,5 (rayon 5,5 : des flaques de lumière dans les coins), lampadaires du ring 4,2 → 3,0
+  (rayon 7,5), lanternes des portes 1,9 → 1,3, foyers des tunnels 2,6 → 2,2, braseros de la porte 3,4 → 2,5 et déplacés devant les tours
+  (x ±6,1), lanternes du mur du fond 6 → 4. Sources : 21 fixes + 2 dynamiques = 23 sur 24.
+- **Sprites** : tête éclairée du dessus dans le peintre (la peau garde son ton, joue et mâchoire leur ombre : de face, tout le visage était
+  en hautes lumières) ; Marek poivre et sel (cheveux, barbe, sourcils foncés, peau plus chaude) ; mèches de Ren balayées vers l'arrière
+  (dressées, de profil, elles se lisaient comme des oreilles, critique n° 2) ; **liseré de lune** d'un texel sur le haut et le dos de la
+  silhouette (les capes sombres se détachent de la pierre) ; lames d'acier plus claires ; traînées de mouvement pleines et effilées (la
+  traîne tramée se lisait comme une chaîne de points) ; étincelles plus petites, moins émissives ; éclair d'impact divisé par deux.
+- **Signal de réaction** (assistance complète) : alerte centrée au-dessus du duel, plus grande, sur fond plein ; bande au sol d'anneau à
+  anneau, deux fois plus large, **encre sombre cerclée d'ivoire, remplie d'ambre pendant la charge, ivoire brûlant dans la fenêtre**
+  (le cramoisi virait au rose après la gradation et sortait de la palette) ; barre de la fenêtre épaisse, sur une piste, qui se vide vers la
+  gauche, étiquetée « Fenêtre d'esquive A » ; touche d'esquive qui pulse en ambre.
+- **HUD** : cartes sur fond plein, chiffres de vie sortis de la barre (ivoire sur bleu pâle illisible), l'état sous la carte sans réserver
+  de place ; tailles minimales 11-13 px ; cases de la barre d'actions opaques, l'état indisponible porté par la couleur du texte et non par
+  la transparence ; recharge en grand chiffre centré, libellé masqué pendant la recharge.
+- **Foule** : moins dense, plus petite (0,66), teinte froide.
+
+### Critique n° 2 — après les corrections lumière / signal / HUD : [OK] (le jeu devant, 7 contre 6)
+- Lumière 8 / 6, HUD 7,5 / 5, lisibilité du combat 6,5 / 5,5, décor 7 / 6,5 ; sprites encore derrière (5,5 / 7,5). « P is better overall by
+  about one point: its world, light, hit contact and HUD are more finished, while Q has the better fighters and a much stronger floor
+  telegraph. » Ses écarts traités ensuite : bande rose et fine, tête de Ren lue comme un masque de renard, silhouettes sombres sur la
+  pierre, braseros derrière les têtes, foule à l'échelle des portes, barre de temps ambiguë, recharge serrée contre la touche.
+- Relevé au passage chez le prototype (référence archivée, non modifiée) : la vie de Marek affichée « 800 / 742 » au moment `technique`.
+
+### Corrections après la critique n° 2 — [OK]
+- Bande au sol **d'anneau à anneau, ambre et ivoire**, encre sombre cerclée d'ivoire (contraste 7,33:1, deutéranopie 7,54) ; mèches de Ren
+  balayées vers l'arrière ; Marek poivre et sel ; liseré de lune ; lames plus claires ; braseros de la porte devant les tours (x ±6,1, hors
+  des têtes) ; foule réduite (0,66) et refroidie ; barre de fenêtre étiquetée qui se vide vers la gauche ; esquive qui pulse en ambre ;
+  recharge en grand chiffre centré.
+
+### Critique n° 3 — [OK] (le jeu devant, 7 contre 5,5)
+- Lisibilité du combat 7 / 4,5, HUD 8 / 5, décor 7 / 6, lumière 7 / 6,5, sprites 6 / 7 (l'écart se resserre : 5, puis 5,5, puis 6).
+  « M is clearly better overall, by about 1.5 points, because its attacks connect and its reaction cue and HUD read cleanly ».
+- Ses écarts, vérifiés : pendant la charge, Marek s'avançait déjà (l'élan commençait à 30 % de la charge : à l'ouverture de la fenêtre il
+  avait fait 68 % du chemin), la bande se réduisait à un tronçon et les silhouettes se mêlaient ; deux capes rouges ; anneaux blanc et rose
+  pâle ; arc du coup puissant au-dessus de Marek « en arc-en-ciel » ; spectateurs chauves répétés, coupés par le cadre et sous les cartes ;
+  aucun chiffre de dégâts sur les captures.
+
+### Corrections après la critique n° 3 — [OK]
+- L'élan du coup puissant ne part que dans ses 0,16 dernières secondes (les autres attaques à 35 % de la charge) : l'écart et la bande
+  restent ouverts pendant toute la charge.
+- Cape de Marek bleu ardoise sombre (le tabard reste cramoisi) : Ren seul porte la cape rouge du héros ; anneaux franchement bleu (Ren, sa
+  tunique et sa barre de vie) et cramoisi (Marek).
+- Traînée du coup puissant : la fin de la course seulement, juste derrière la lame (rayon 17 / 22 texels au lieu du grand arc).
+- Spectateurs : seulement sur les segments proches de la porte (rien sous les cartes ni au bord du cadre), plus de crânes chauves (béret
+  ou casquette), 0,62.
+- Rebond de lune plus haut et plus en arrière (8 m, z 11 : ses reflets sur les pavés tombent hors cadre) ; lampadaires 2,6 / rayon 6,2,
+  lanternes des portes 1,0 / 4,2 ; foin et caisses de la porte droite rentrés dans le cadre ; nez du profil plus petit (le « museau »).
+- **Chiffres flottants absents des captures** : la cause est la minuterie de 1,1 s qui les retirait avant la capture (un rendu logiciel
+  prend plus d'une seconde) ; un moment tenu (`jump`) les garde affichés à leur état visible jusqu'à la reprise ; la traînée de vie passe
+  à l'ambre (lisible).
+- Contrôle : `tools/arena-scene-check.mjs` PASS (42 rendus sans erreur, télégraphe 4,97:1, deutéranopie 5,09).
+
+### Critique n° 4 — [OK] (le jeu devant, 7,5 contre 5,5 ; ses sprites devant pour la première fois)
+- Lisibilité du combat 7,5 / 4,5, lumière 8 / 6, décor 7,5 / 6, HUD 7,5 / 5, **sprites 6,5 / 6**. « S is clearly better overall, by about
+  two points, mainly on combat feedback, atmosphere and HUD polish. » Série : 6,5 / 7, puis 7 / 6, 7 / 5,5, 7,5 / 5,5.
+- Ses écarts, traités sans nouvelle critique (gains de plus en plus étroits, Passe A3) : bande qui s'arrête sous les pieds (elle passe
+  maintenant sous Ren, ambre plus franc et pulsé dans la fenêtre) ; visage de Ren en masque (peau un ton plus chaude que celle du héros de la
+  ville, œil plus haut avec sa paupière) ; barbe et cheveux de Marek d'une même valeur (barbe plus sombre, cheveux argent) ; bas des corps
+  fondus dans les pavés (liseré plus doux sur le bord avant) ; murs encore orangés (braseros de la porte reculés des murs, 2,0 / rayon 4,8 ;
+  lampadaires 2,4 / 5,2) ; anneau cramoisi de Marek, une seconde teinte chaude (anneau ambre : le danger) ; spectateurs derrière les cartes
+  (seulement les deux rangs bas) ; bottes de foin lues comme des cubes de remplacement (tonneaux) ; lame de Marek blanchie par le bloom au
+  coup (plus d'émissif à l'impact) ; épée de Ren rejetée en arrière au coup reçu (levée vers l'avant) ; sous-libellés gris trop pâles,
+  techniques inabordables à peine grisées, titre sur une fenêtre éclairée (halo d'encre).
+- **Téléphone en paysage** (844 × 390, vérifié sur capture) : l'alerte chevauchait les cartes, la barre de fenêtre les pieds, un libellé
+  était coupé ; mise en page des écrans bas (cartes, alerte, barres resserrées, titre masqué) et noms courts des techniques sous 900 px.
+  `screenshots/calibration/p1-arena/phone-landscape-window.png`.
+
+### Publication — [OK]
+- `tools/arena-scene-page.mjs` : build de production à chemins relatifs et page sans squelette (le service n'envoie pas la chaîne de requête :
+  la page pose elle-même `?scene=arena` par `history.replaceState` avant le module du jeu ; le jeu n'est pas modifié). Vérifiée servie depuis
+  un dossier quelconque (l'arène démarre, aucun repli des peintres). Publiée en artefact privé (trois scripts : le jeu, l'arène, le peintre ;
+  les feuilles PNG de la ville, inutiles à l'arène, non publiées) : https://claude.ai/artifact/EzSKUGk1jrCSxLENY5CC44.
+- `tools/perf.mjs` mesure aussi l'arène (`window.__arena` : moniteur de performance et minuteur GPU par passe dans `ArenaApp`, `?gpuprof=1`) ;
+  vérifié ici que l'API répond (SwiftShader : temps sans valeur), à mesurer sur la 780M.
+
+### Preuves (état final)
+- `tools/arena-scene-check.mjs` PASS : la boucle en direct prend les touches ; empreinte identique au prototype ; 42 rendus sans erreur ;
+  télégraphe 6,93:1 (deutéranopie 7,14) ; 92 appels de dessin, 130 k triangles par image ; 23 sources sur 24.
+- `npm test` 75 / 75, typecheck, build, `art:validate` (0 erreur). La passe ne touche que `src/arena/` et les outils de l'arène
+  (`git diff --stat 22d2b91 -- src`) : la preuve 0 px de la ville (Passe P1) reste valable.
+- Avant / après refaits : `screenshots/calibration/p1-arena/{calm,window,impact,technique}-before-after.png`.
+
+### Restes [?]
+- Les sprites gardent la grammaire du générateur de la ville (grosse tête, profil) : la quatrième critique les met de peu devant ceux du
+  prototype, les trois premières derrière. Au-delà : des feuilles cuites de combat (décision de l'opérateur, Passe P1).
+- Corrections de la critique n° 4 non rejugées à l'aveugle ; temps GPU et lecture en mouvement sur la machine de l'opérateur ; la page
+  publiée n'a pas été ouverte dans le visualiseur d'artefacts (le service ne s'inspecte pas d'ici).
+
+### Pensée
+- Un défaut vu par une critique peut venir de la capture et non du jeu : les chiffres de dégâts existaient, une minuterie de 1,1 s les
+  retirait avant la photo (rendu logiciel lent). Vérifier dans la page (DOM, état) avant de corriger l'image.
+- Le temps d'un geste porte le signal : l'élan de Marek commençait trop tôt, il raccourcissait la bande et mêlait les silhouettes
+  pendant la seule seconde où le joueur doit lire l'attaque.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -1052,14 +1162,15 @@ temps GPU sur la 780M (`tools/perf.mjs`, commandes dans la passe), le jugement d
 pluie qui tombe, éclairs), une éventuelle météo par défaut ou un cycle (décision de l'opérateur) ; non faits : son (le jeu n'en a pas), éclaboussures
 au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
 
-**6c. Arène (Passes A1 à A3, P1)** — **dans le jeu derrière `?scene=arena`** (Passe P1 : simulation portée et prouvée contre le prototype,
-décor du district, combattants générés ×2, HUD au style du jeu ; la ville inchangée, 0 px). Le prototype `arena/arena.html` reste la référence
-de ses règles (publié : https://claude.ai/artifact/3w7wmerkBRUFACTm2Y9xCh). **Décisions de l'opérateur** : une entrée depuis la ville (porte,
-transition) ; le style des combattants générés (ou des feuilles cuites de combat à produire : Ren et Marek, animations de duel) ; le réglage
-des règles (nombres provisoires du prototype) ; l'assistance par défaut (discrète). **À mesurer sur sa machine** : temps GPU et cadence
-(`?scene=arena`, un outil de mesure de l'arène reste à écrire : `tools/perf.mjs` vise `App`), lecture en mouvement. Restes : anneau de dalles
-peu visible, spectateurs debout, Marek en masse claire de loin, 24 sources de lumière sur 24, ralenti sous 20 images/s ; restes de la critique
-n° 4 du prototype (Passe A3) à rejuger dans le jeu.
+**6c. Arène (Passes A1 à A3, P1, P2)** — **dans le jeu derrière `?scene=arena`** (Passe P1 : simulation portée et prouvée contre le
+prototype, décor du district, combattants générés ×2, HUD au style du jeu ; la ville inchangée, 0 px ; Passe P2 : quatre critiques à
+l'aveugle, de 6,5 / 7 à 7,5 / 5,5 contre le prototype). Jouable en artefact privé : https://claude.ai/artifact/EzSKUGk1jrCSxLENY5CC44 (à
+republier avec `tools/arena-scene-page.mjs` après un changement). Le prototype `arena/arena.html` reste la référence de ses règles.
+**Décisions de l'opérateur** : une entrée depuis la ville (porte, transition) ; le style des combattants générés ou des feuilles cuites de
+combat à produire (Ren et Marek, animations de duel) ; le réglage des règles (nombres provisoires du prototype) ; l'assistance par défaut
+(discrète). **À mesurer sur sa machine** : `node tools/perf.mjs "arena|scene=arena"` (temps GPU par passe), cadence, lecture en mouvement,
+la page publiée dans le visualiseur. Restes : visages des combattants (la grammaire du générateur), anneau de dalles peu visible (l'occlusion
+de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sources de lumière sur 24, ralenti sous 20 images/s.
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
@@ -1146,6 +1257,8 @@ n° 4 du prototype (Passe A3) à rejuger dans le jeu.
 - Un effet qui écrit des uniformes partagés garde leurs valeurs d'avant et les rend : sa preuve est « activé puis retiré = 0 px » (Passe W2) ;
   tant qu'aucun paramètre ne le demande, il ne crée rien (un objet THREE tire `Math.random`).
 ### Preuves
+- Un défaut relevé sur une capture se vérifie dans la page avant de corriger l'image : il peut venir de la capture (Passe P2 : chiffres de
+  dégâts retirés par leur minuterie avant la photo).
 - Un port de logique se prouve contre l'original exécuté à côté (mêmes entrées, mêmes événements et même état à chaque pas), sur des
   entrées dont le test vérifie qu'elles atteignent chaque chemin ; des fautes injectées une à une doivent le faire échouer (Passe P1 : le
   script d'empreinte seul en laissait passer trois sur quatre).

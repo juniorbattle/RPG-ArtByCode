@@ -9,6 +9,7 @@ import { U } from '../atmosphere/SceneUniforms';
 import { buildSky } from '../atmosphere/Sky';
 import { applyPose, type CamPose } from '../app/CameraRig';
 import { FrameCap, parseFrameCap } from '../app/FrameCap';
+import { PerfMonitor } from '../debug/PerfMonitor';
 import { SpriteRenderer, PIXEL_WORLD, type Actor } from '../characters/SpriteRenderer';
 import type { Anim } from '../characters/SpriteGenerator';
 import { CombatSim, type CombatEvent, type FighterId, type ActionId } from './CombatSim';
@@ -33,8 +34,8 @@ const ATTACKS = new Set<Clip>(['strike', 'heavy', 'skill', 'slash']);
 /** the impact frame of each attack clip (FighterArt.clipFrame) */
 const IMPACT_FRAME: Record<string, number> = { strike: 1, heavy: 2, skill: 1, slash: 1 };
 /** the fighters' marks on the floor (x), the camera's base framing */
-const HOME = { ren: -2.05, marek: 2.05 };
-const CHAR_SCALE = 1.3;
+const HOME = { ren: -2.15, marek: 2.15 };
+const CHAR_SCALE = 1.42;
 const BASE_POSE: CamPose = { yaw: 0, pitch: THREE.MathUtils.degToRad(3.5), dist: 15.6, fov: 34, shift: 0, tx: 0, ty: 2.3, tz: -0.6 };
 /** the low moon behind the grand gate, a little right of it: elevation 6.5 deg, azimuth 4 deg */
 const MOON_DIR = new THREE.Vector3(Math.sin(THREE.MathUtils.degToRad(4)) * Math.cos(THREE.MathUtils.degToRad(6.5)), Math.sin(THREE.MathUtils.degToRad(6.5)), -Math.cos(THREE.MathUtils.degToRad(4)) * Math.cos(THREE.MathUtils.degToRad(6.5))).normalize();
@@ -51,6 +52,9 @@ export class ArenaApp {
   readonly reflection = new PlanarReflection();
   readonly lights = new LightRig();
   readonly frameCap = new FrameCap();
+  /** frame time, draws and (?gpuprof=1, or tools/perf.mjs) GPU ms per pass, as the town's App */
+  readonly perf = new PerfMonitor();
+  buildMs = 0;
   readonly sim = new CombatSim();
   lib!: MaterialLibrary;
   arena!: ArenaBuild;
@@ -90,8 +94,10 @@ export class ArenaApp {
     this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: false, powerPreference: 'high-performance', stencil: false, alpha: false });
     this.renderer.autoClear = false;
     this.renderer.info.autoReset = false;
+    this.perf.attach(this.renderer.getContext() as WebGL2RenderingContext);
     this.post = new PostFX(this.renderer);
     const q = opts.params;
+    if (q.has('gpuprof')) this.perf.gpu.enabled = true;
     this.frameCap.mode = parseFrameCap(q.get('fps')) ?? { kind: 'adaptive', fps: 60 };
     const as = q.get('assist');
     if (as === 'full' || as === 'off' || as === 'subtle') this.assist = as;
@@ -127,12 +133,14 @@ export class ArenaApp {
     this.opts.onProgress('arena', 0.96);
     await new Promise((r) => setTimeout(r, 0));
     const seed = (parseInt(this.opts.params.get('seed') ?? '1842', 10) >>> 0) || 1842;
+    const tb = performance.now();
     this.arena = buildArena(this.lib, seed);
+    this.buildMs = performance.now() - tb;
     this.scene.add(this.arena.group);
     for (const l of this.arena.lights) this.lights.add(l, 'static', Math.abs(Math.sin(l.pos[0] * 12.9 + l.pos[2] * 78.2)));
     // two dynamic lights: Marek's charged blade (the heavy's tell) and the flash of a landed blow
     this.castLight = this.lights.add({ pos: [HOME.marek + 0.2, 3.2, -0.6], color: [1.0, 0.46, 0.2], intensity: 2.4, radius: 6, kind: 'steady', priority: 9 }, 'fx', 0);
-    this.hitLight = this.lights.add({ pos: [0, 1.4, 0.5], color: [1.0, 0.86, 0.66], intensity: 2.4, radius: 5, kind: 'steady', priority: 10 }, 'fx', 0);
+    this.hitLight = this.lights.add({ pos: [0, 1.4, 0.5], color: [1.0, 0.86, 0.66], intensity: 1.5, radius: 4.5, kind: 'steady', priority: 10 }, 'fx', 0);
     this.castLight.scale = this.castLight.targetScale = 0; this.hitLight.scale = this.hitLight.targetScale = 0;
     this.opts.onProgress('fighters', 0.98);
     this.set = buildArenaAtlas(seed, 5);
@@ -145,7 +153,7 @@ export class ArenaApp {
     let k = 0;
     for (const st of this.arena.stands) {
       const h = Math.abs(Math.sin(st.pos[0] * 91.7 + st.pos[2] * 13.3 + k));
-      this.fans.push({ id: 100 + k, spec: `fan${Math.floor(h * 997) % this.set.crowd.length}`, role: 'fan', detail: 'crowd', pos: new THREE.Vector3(...st.pos), facing: 'down', dir: 'down', flip: h > 0.5, anim: 'idle', t: h * 10, speed: 0, tint: [0.9, 0.92, 1.0], scale: 0.82, height: 1.6, radius: 0.3 });
+      this.fans.push({ id: 100 + k, spec: `fan${Math.floor(h * 997) % this.set.crowd.length}`, role: 'fan', detail: 'crowd', pos: new THREE.Vector3(...st.pos), facing: 'down', dir: 'down', flip: h > 0.5, anim: 'idle', t: h * 10, speed: 0, tint: [0.5, 0.56, 0.74], scale: 0.62, height: 1.4, radius: 0.3 });
       this.fanCheer.push(-10);
       k++;
     }
@@ -189,7 +197,7 @@ export class ArenaApp {
     if (!down) return;
     if (id === 'dodge') s.react('ren', 'dodge');
     else if (id === 'reset') this.restart();
-    else if (id === 'pause') { this.paused = !this.paused && !this.moment ? true : false; this.moment = false; }
+    else if (id === 'pause') { this.paused = !this.paused && !this.moment ? true : false; this.moment = false; this.hud?.still(false); }
     else s.command('ren', id as ActionId);
   }
 
@@ -222,7 +230,7 @@ export class ArenaApp {
   restart(): void {
     this.sim.reset();
     this.onEvents(this.sim.drain());
-    this.paused = false; this.moment = false;
+    this.paused = false; this.moment = false; this.hud?.still(false);
   }
 
   // ---------------------------------------------------------------- simulation -> presentation
@@ -279,7 +287,9 @@ export class ArenaApp {
       if (ATTACKS.has(clip) && an.impactAt !== undefined) {
         const reach = (this.set.reach[`${id}/${clip}.${IMPACT_FRAME[clip]}`] ?? 20) * PIXEL_WORLD * CHAR_SCALE;
         const A = Math.max(0, Math.min(2.4, gap - reach - 0.12)), ia = an.impactAt, t = an.t;
-        if (t <= ia + 0.12) p.off = A * smooth((t - ia * 0.3) / (ia * 0.7));
+        // the heavy closes the gap only in its last 0.16 s (gap and telegraph stay open through the charge, critique n° 3 of Passe P2)
+        const t0 = clip === 'heavy' ? Math.max(0, ia - 0.16) : ia * 0.35;
+        if (t <= ia + 0.12) p.off = A * smooth((t - t0) / Math.max(0.05, ia - t0));
         else p.off *= Math.exp(-dt * 5);
       } else if (clip === 'dodge') p.off = Math.min(p.off, -1.05 * smooth(an.t / 0.16));
       else p.off *= Math.exp(-dt * (p.off < 0 ? 4 : 5));
@@ -289,7 +299,7 @@ export class ArenaApp {
       // the acting fighter draws in front (its blade over the other's body)
       a.pos.z = f.state === 'acting' ? 0.14 : -0.06;
       const k = p.flash;
-      a.tint = [1 + 0.7 * k, 1 + 0.6 * k, 1 + 0.45 * k];
+      a.tint = [1 + 0.35 * k, 1 + 0.3 * k, 1 + 0.22 * k];
       a.t = 0;
       p.lastClip = clip;
     }
@@ -389,9 +399,14 @@ export class ArenaApp {
   }
 
   render(): void {
-    this.renderer.info.reset();
-    this.reflection.update(this.renderer, this.scene, this.camera);
-    this.post.render(this.scene, this.camera, this.time);
+    const r = this.renderer, gpu = this.perf.gpu;
+    this.perf.beginFrame();
+    r.info.reset();
+    gpu.begin('reflection');
+    this.reflection.update(r, this.scene, this.camera);
+    this.post.render(this.scene, this.camera, this.time, gpu);
+    gpu.end(); gpu.poll();
+    this.perf.endFrame(r);
     this.frameCount++;
   }
 
@@ -414,14 +429,14 @@ export class ArenaApp {
    *  prototype delivered its last half second only: a KO before it never reached the screen), then held */
   jump(name: string): boolean {
     const p = PRESETS[name]; if (!p) return false;
-    this.sim.reset(); this.onEvents(this.sim.drain());
+    this.sim.reset(); this.hud?.still(false); this.onEvents(this.sim.drain());
     const dt = this.sim.D.dt;
     runScript(this.sim, p.script, () => true, () => {
       this.onEvents(this.sim.drain());
       this.presentFighters(dt); this.presentFans(); this.presentFx(dt); this.updateDynamicLights(); this.applyCamera(dt);
       this.particles.update(dt, this.time, this.camera, this.post.height, this.lights, null);
     });
-    this.paused = true; this.moment = true;
+    this.paused = true; this.moment = true; this.hud?.still(true);
     this.update(0);
     return true;
   }
@@ -429,11 +444,14 @@ export class ArenaApp {
   renderOnce(): void { this.update(0); this.render(); }
 
   snapshot(): Record<string, unknown> {
-    const r = this.renderer.info;
+    const r = this.renderer.info, p = this.perf, gpu = p.gpu.enabled ? { ...p.gpu.ms } : undefined;
+    const bytes = (this.lib?.textureBytes() ?? 0) + (this.set ? this.set.atlas.width * this.set.atlas.height * 8 : 0) + this.post.textureBytes() + this.reflection.textureBytes() + this.shadow.size * this.shadow.size * 8;
     return {
+      fps: p.fps, frameMs: p.frameMs, cpuMs: p.cpuMs, triangles: p.triangles, geometries: r.memory.geometries, textures: r.memory.textures, textureMB: bytes / 1048576, generatorMs: this.buildMs,
+      gpu, gpuMs: gpu ? p.gpu.total() : undefined,
       t: +this.sim.t.toFixed(3), hash: this.sim.hash(), ren: { hp: this.sim.f.ren.hp, ap: this.sim.f.ren.ap, state: this.sim.f.ren.state, anim: this.fighters.ren.anim }, marek: { hp: this.sim.f.marek.hp, state: this.sim.f.marek.state, anim: this.fighters.marek.anim },
-      lights: this.lights.sources.length, lightsOnScreen: this.lights.active, fans: this.fans.length, triangles: this.arena?.stats.triangles, instances: this.arena?.stats.instances,
-      atlas: this.set ? `${this.set.atlas.width}x${this.set.atlas.height} (${this.set.atlas.frameCount} cells)` : null, drawCalls: r.render.calls, frameTriangles: r.render.triangles, resolution: `${this.post.width}x${this.post.height}`,
+      lights: this.lights.sources.length, lightsOnScreen: this.lights.active, fans: this.fans.length, instances: this.arena?.stats.instances,
+      atlas: this.set ? `${this.set.atlas.width}x${this.set.atlas.height} (${this.set.atlas.frameCount} cells)` : null, drawCalls: p.drawCalls, frameTriangles: p.triangles, arenaTriangles: this.arena?.stats.triangles, resolution: `${this.post.width}x${this.post.height}`,
       pose: this.pose, assist: this.assist,
     };
   }

@@ -24,12 +24,12 @@ type P2 = [number, number];
 
 /** the champion: older, taller and broader than the hero, white hair and beard, steel plate under a crimson tabard and cloak */
 export const MAREK: CharSpec = {
-  id: 'marek', detail: 'hero', scale: 1.18, build: 1.35, skin: [226, 184, 156], hair: [190, 194, 206], hairStyle: 'long', beard: [214, 214, 222],
+  id: 'marek', detail: 'hero', scale: 1.18, build: 1.35, skin: [208, 152, 120], hair: [172, 176, 192], hairStyle: 'long', beard: [112, 110, 124],
   top: [88, 98, 122], topStyle: 'coat', trim: [210, 172, 92], apron: [150, 40, 50], trousers: [56, 50, 66], boots: [50, 42, 50], belt: [84, 56, 40],
-  cape: [88, 24, 34], capeLining: [56, 20, 28], sword: true, eye: [38, 32, 44], anims: ['idle'], accessory: 'none',
+  cape: [44, 48, 70], capeLining: [24, 26, 40], sword: true, eye: [38, 32, 44], anims: ['idle'], accessory: 'none',
 };
 /** the hero of the district, with his sword out */
-export const REN: CharSpec = { ...PLAYER, id: 'ren', anims: ['idle'] };
+export const REN: CharSpec = { ...PLAYER, id: 'ren', skin: [232, 184, 148], anims: ['idle'] };
 
 export interface FighterLook { spec: CharSpec; blade: number; bladeW: number; armor: boolean; smear: 'ivory' | 'ember'; /** a long hairstyle's tail down the back (px) */ tail?: number }
 export const LOOKS: Record<'ren' | 'marek', FighterLook> = {
@@ -210,6 +210,7 @@ export function paintFighter(look: FighterLook, p: CPose, k = FIGHTER_K): Sprite
     if (look.armor) { L = P.layer(); L.ellipse(shoulderN[0] + 0.5, shoulderN[1] - 0.2, 3.4, 2.8); P.commit(L, ramp([138, 146, 164]), 'sphere', { id: 17, bands: 4 }); }
   }
   S.outline(0.36);
+  rimLight(S);
   // ---- motion: smears behind the silhouette (never over it), lit by the emissive layer
   if (p.smear) {
     const cols = SMEAR[look.smear], em = look.smear === 'ember' ? 150 : 120;
@@ -230,7 +231,7 @@ function drawSword(P: Pen, look: FighterLook, pal: Pal, hand: P2, d: P2, n: P2, 
   const b0 = add(hand, d, 2.4), b1 = add(hand, d, look.blade), tip = add(hand, d, look.blade + 1.8);
   L = P.layer(); L.line(b0[0], b0[1], b1[0], b1[1], look.bladeW); L.line(b1[0], b1[1], tip[0], tip[1], look.bladeW * 0.55);
   // a glowing blade warms toward ivory-amber
-  const steel = glow > 0 ? ramp(mixRGB([166, 172, 186], [250, 226, 170], Math.min(1, glow / 255))) : pal.metal;
+  const steel = glow > 0 ? ramp(mixRGB([186, 194, 210], [250, 226, 170], Math.min(1, glow / 255))) : ramp([186, 194, 212]);
   P.commit(L, steel, 'edge', { id: 52, em: glow || undefined });
   // the fuller and the edge that catches the light: thin lines along the blade (one texel at k = 2)
   const len = look.blade - 3;
@@ -246,12 +247,14 @@ function drawSword(P: Pen, look: FighterLook, pal: Pal, hand: P2, d: P2, n: P2, 
 
 function drawHead(P: Pen, spec: CharSpec, pal: Pal, rx: number, ry: number, hx: number, hy: number, p: CPose, tail: number): void {
   let L = P.layer();
-  L.ellipse(hx, hy, rx - 0.4, ry); L.rect(hx - rx - 0.6, hy + 1, 1.6, 2);
-  P.commit(L, pal.skin, 'sphere', { id: 20, bands: 4, cx: hx - 1, cy: hy + 1, rx, ry });
+  L.ellipse(hx, hy, rx - 0.4, ry); L.rect(hx - rx - 0.2, hy + 1.3, 1.0, 1.4);
+  // the key from above (the moon and the lamps on their posts), not from the face: the skin keeps its own tone, the cheek and jaw their
+  // shadow, the crown the light (lit from the front, the face was all highlight: a pale mask, critique of Passe P1)
+  P.commit(L, pal.skin, 'sphere', { id: 20, bands: 4, cx: hx - 0.5, cy: hy, rx, ry, light: [0.15, -0.95] });
   const eye = spec.eye ?? [34, 28, 52];
   if (p.blink) P.rect(hx - 4.5, hy + 2, 2, 1, eye);
-  else { P.rect(hx - 4.5, hy + 0.5, 2, 3, eye); P.dot(hx - 4.4, hy + 0.6, [255, 255, 255]); P.dot(hx - 3.9, hy + 2.6, mixRGB(eye, [120, 140, 190], 0.5)); }
-  P.rect(hx - 5.5, hy - 2 + (p.blink ? 1 : 0), 3, 1, pal.hair[1]);
+  else { P.rect(hx - 4.6, hy + 0.3, 2.2, 3.4, eye); P.rect(hx - 5.0, hy, 2.8, 0.5, mixRGB(eye, [10, 8, 20], 0.5)); P.dot(hx - 4.5, hy + 0.8, [255, 255, 255]); P.dot(hx - 3.9, hy + 2.8, mixRGB(eye, [120, 140, 190], 0.5)); }
+  P.rect(hx - 5.6, hy - 2.2 + (p.blink ? 1 : 0), 3.4, 1.2, mixRGB(pal.hair[0], [20, 16, 30], 0.35));
   P.px(hx - rx - 0.2, hy + 2.5, pal.skin[3]);
   if (p.mouth) P.rect(hx - 4.2, hy + 4.4, 1.6, 2, [120, 40, 48]); else P.rect(hx - 4, hy + 4.8, 1.6, 0.5, pal.skin[0]);
   P.rect(hx - 2.5, hy + 3, 1.5, 1, mixRGB(spec.skin, [240, 120, 120], 0.4));
@@ -260,11 +263,28 @@ function drawHead(P: Pen, spec: CharSpec, pal: Pal, rx: number, ry: number, hx: 
   const hp: P2[] = [[-6.3, -2.4], [-5.4, -6.3], [-2.6, -8.4], [2, -8.9], [5.6, -7], [7.5, -2.6], [7.3, 3.4], [4.8, 4.8], [3, 2], [0.8, -0.8], [-1.8, -1.5], [-4, -1.2], [-5.6, -0.6]];
   L = P.layer(); L.poly(hp.map(([x, y]) => [hx + x, hy + y] as P2));
   if (spec.hairStyle === 'long') L.poly([[hx + 2, hy], [hx + 8, hy - 1], [hx + 8.6, hy + tail], [hx + 2.4, hy + tail - 1]]);
-  if (spec.hairStyle === 'spiky') L.poly([[hx - 5.4, hy - 5], [hx - 4.6, top - 3.4], [hx - 1.8, top - 0.8], [hx - 0.2, top - 4.6], [hx + 2.2, top - 0.8], [hx + 4.6, top - 3.8], [hx + 6.2, hy - 4]]);
+  // spikes swept back (upright, in profile they read as ears, critique of Passe P2)
+  if (spec.hairStyle === 'spiky') L.poly([[hx - 5.6, hy - 4.6], [hx - 5.8, top - 2.2], [hx - 2.6, top - 0.6], [hx - 0.6, top - 3.4], [hx + 2.2, top - 0.4], [hx + 5.6, top - 2.6], [hx + 5.2, hy - 6.2], [hx + 8.6, hy - 4.4], [hx + 7.2, hy - 2.2]]);
   P.commit(L, pal.hair, 'sphere', { id: 3, bands: 4, cx: hx + 0.5, cy: hy - 3.5, rx, ry });
   // strands: a few lighter locks catch the moon (the hero detail of the town's generator)
   if (P.k >= 2) for (const [dx, dy, l] of [[-3, -6.4, 2.2], [0.6, -7.4, 2.6], [3.8, -5.6, 2], [5.6, -1.5, 2.4]] as Array<[number, number, number]>) {
     const Lr = P.layer(); Lr.line(hx + dx, hy + dy, hx + dx + 0.8, hy + dy + l, 0.5); P.commit(Lr, [pal.hair[3], pal.hair[3], pal.hair[4], pal.hair[4], pal.hair[4]], 'flat', { id: 6 });
+  }
+}
+
+/** the moon behind the duel: the silhouette's top and back edges (the outline texels with transparency above or behind, +x) take a cool
+ *  rim, so dark capes and armour detach from the dark stone (critique of Passe P2); one texel, painted in the frame */
+function rimLight(S: Sprite): void {
+  const W = S.w, H = S.h, a = (x: number, y: number) => S.getA(x, y) > 0, rim: number[] = [];
+  for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+    if (!a(x, y)) continue;
+    const up = !a(x, y - 1), back = !a(x + 1, y), front = !a(x - 1, y);
+    if ((up || back) && a(x, y + 1) && a(x - 1, y)) rim.push(y * W + x, up && back ? 2 : 1);
+    else if (front && a(x + 1, y) && a(x, y + 1)) rim.push(y * W + x, 0);
+  }
+  for (let i = 0; i < rim.length; i += 2) {
+    const q = rim[i] * 4, k = rim[i + 1] === 2 ? 0.55 : rim[i + 1] === 1 ? 0.4 : 0.22;
+    S.rgba[q] += (150 - S.rgba[q]) * k; S.rgba[q + 1] += (172 - S.rgba[q + 1]) * k; S.rgba[q + 2] += (226 - S.rgba[q + 2]) * k;
   }
 }
 
@@ -279,9 +299,8 @@ function smearArc(S: Sprite, k: number, c0: P2, r0: number, a0: number, a1: numb
     let t = (ang - a0) / span;
     if (t < 0 || t > 1) { ang += span > 0 ? 360 : -360; t = (ang - a0) / span; }
     if (t < 0 || t > 1) continue;
-    const width = w * (0.25 + 0.75 * t);
+    const width = Math.max(1, w * (0.12 + 0.88 * t * t));
     if (rho > r || rho < r - width) continue;
-    if (t < 0.35 && (i + j) % 2) continue;
     const q = (r - rho) / width;
     S.px(i, j, t > 0.75 ? (q < 0.45 ? cols[2] : cols[1]) : q < 0.5 ? cols[1] : cols[0]);
     S.emis[j * S.w + i] = Math.round(em * (0.4 + 0.6 * t));
@@ -299,7 +318,6 @@ function smearLine(S: Sprite, k: number, tip0: P2, d: P2, len0: number, w0: numb
     if (along < 0 || along > len) continue;
     const t = 1 - along / len, half = (w / 2) * (0.3 + 0.7 * t);
     if (across > half) continue;
-    if (t < 0.3 && (i + j) % 2) continue;
     S.px(i, j, across < half * 0.45 ? cols[2] : t > 0.5 ? cols[1] : cols[0]);
     S.emis[j * S.w + i] = Math.round(em * (0.4 + 0.6 * t));
   }
@@ -327,7 +345,7 @@ const REN_CLIPS: Record<string, Clip> = {
   heavy: { frames: [
     { lean: -2, crouch: 1, front: [-4, 0], back: [4.5, 0], hand: [0.5, -11], hand2: 'hilt', blade: 140, bladeBehind: true, cape: 1 },
     { lean: -3, crouch: 2.5, front: [-4.5, 0], back: [5, 0], hand: [1.5, -12], hand2: 'hilt', blade: 158, bladeBehind: true, glow: 90, cape: 2 },
-    { lean: 4, crouch: 4, front: [-7.5, 0], back: [6.5, 0], hand: [-7, 7], hand2: 'hilt', blade: -46, smear: { a0: 166, a1: -46, w: 5.5 }, mouth: true },
+    { lean: 4, crouch: 4, front: [-7.5, 0], back: [6.5, 0], hand: [-7, 7], hand2: 'hilt', blade: -46, smear: { a0: 70, a1: -46, r: 17, w: 6 }, mouth: true },
     { lean: 3, crouch: 3.5, front: [-7, 0], back: [6, 0], hand: [-5.5, 10.5], hand2: 'hilt', blade: -80 },
   ] },
   skill: { frames: [
@@ -349,7 +367,7 @@ const REN_CLIPS: Record<string, Clip> = {
     { lean: -2, crouch: 3, front: [-3.5, 0], back: [5, 0], hand: [-1.5, 6.5], blade: 22, cape: 2 },
   ] },
   hit: { frames: [
-    { lean: -4, crouch: 1, front: [-2, 0], back: [3.5, 0], hand: [4, 2.5], blade: 125, bladeBehind: true, head: 1, mouth: true, blink: true, cape: 2 },
+    { lean: -4, crouch: 1, front: [-2, 0], back: [3.5, 0], hand: [1, -1], blade: 62, head: 1, mouth: true, blink: true, cape: 2 },
     { lean: -2, crouch: 1.5, front: [-2.5, 0], back: [3.5, 0], hand: [0, 6], blade: 40 },
   ] },
   recover: { loop: 2.5, frames: [
@@ -383,7 +401,7 @@ const MAREK_CLIPS: Record<string, Clip> = {
   heavy: { frames: [
     { lean: -2, crouch: 1.5, front: [-4.5, 0], back: [5, 0], hand: [0.5, -12], hand2: 'hilt', blade: 118, bladeBehind: true, cape: 1 },
     { lean: -3.5, crouch: 3, front: [-5, 0], back: [5.5, 0], hand: [2, -13], hand2: 'hilt', blade: 150, bladeBehind: true, glow: 150, cape: 2, mouth: true },
-    { lean: 4.5, crouch: 5, front: [-8.5, 0], back: [7, 0], hand: [-8, 7], hand2: 'hilt', blade: -42, glow: 120, smear: { a0: 150, a1: -42, w: 6.5 }, mouth: true },
+    { lean: 4.5, crouch: 5, front: [-8.5, 0], back: [7, 0], hand: [-8, 7], hand2: 'hilt', blade: -42, smear: { a0: 70, a1: -42, r: 22, w: 7 }, mouth: true },
     { lean: 3.5, crouch: 4.5, front: [-8, 0], back: [6.5, 0], hand: [-6, 11], hand2: 'hilt', blade: -82 },
   ] },
   hit: { frames: [
@@ -430,7 +448,7 @@ const FX_AMBER: RGB[] = [[200, 110, 50], [240, 168, 84], [255, 220, 150]];
 /** an impact burst: rays from the centre, growing and thinning over the frames (cell centre at the torso height) */
 function paintSpark(frame: number, cols: RGB[], em: number, rays = 8, k = FIGHTER_K): Sprite {
   const S = new Sprite(CELL_W * k, CELL_H * k), P = new Pen(S, k), c: P2 = [32, 70];
-  const r0 = [2, 5, 8][frame], r1 = [8, 13, 15][frame], th = [2.4, 1.8, 1.2][frame];
+  const r0 = [2, 4, 6][frame], r1 = [5, 8, 10][frame], th = [1.6, 1.2, 0.8][frame];
   const L = P.layer();
   for (let q = 0; q < rays; q++) {
     const a = (q / rays) * Math.PI * 2 + (q % 2 ? 0.2 : 0), rr = r1 * (q % 2 ? 0.65 : 1);
@@ -473,11 +491,11 @@ export function buildArenaAtlas(seed: number, crowdCount = 5): ArenaSpriteSet {
       });
     }
   }
-  const crowd = crowdVariants(seed, crowdCount).map((s) => ({ ...s, id: `fan${s.id.slice(5)}` }));
+  const crowd = crowdVariants(seed, crowdCount).map((s, i) => ({ ...s, id: `fan${s.id.slice(5)}`, ...(s.hairStyle === 'bald' ? { hairStyle: (i % 2 ? 'cap' : 'beret') as CharSpec['hairStyle'] } : {}) }));
   for (const spec of crowd) for (const anim of ['idle', 'talk'] as const) posesFor(anim).forEach((p, i) => cells.push({ key: `${spec.id}/down/${anim}/${i}`, spr: inCell(renderFrame(spec, 'down', p)) }));
   for (let f = 0; f < 3; f++) {
-    cells.push({ key: `fx/side/spark.${f}/0`, spr: paintSpark(f, FX_IVORY, 200) });
-    cells.push({ key: `fx/side/ember.${f}/0`, spr: paintSpark(f, FX_AMBER, 220, 10) });
+    cells.push({ key: `fx/side/spark.${f}/0`, spr: paintSpark(f, FX_IVORY, 140) });
+    cells.push({ key: `fx/side/ember.${f}/0`, spr: paintSpark(f, FX_AMBER, 160, 10) });
     cells.push({ key: `fx/side/guard.${f}/0`, spr: paintGuardFlash(f) });
   }
   const cw = CELL_W * FIGHTER_K, ch = CELL_H * FIGHTER_K, cols = 16, rows = Math.ceil(cells.length / cols), W = cols * cw, H = rows * ch;

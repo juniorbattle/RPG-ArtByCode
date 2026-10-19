@@ -55,7 +55,7 @@ try {
       const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
       return [Math.floor(Math.min(...xs)), Math.floor(Math.min(...ys)), Math.ceil(Math.max(...xs)), Math.ceil(Math.max(...ys))];
     };
-    return { simHash: sim.hash(), renders, band: rect(-0.4, 0.4), behind: rect(-1.6, -1.0), front: rect(1.0, 1.6) };
+    return { simHash: sim.hash(), renders, band: rect(-0.7, 0.7), behind: rect(-2.3, -1.4), front: rect(1.4, 2.3) };
   });
   const shot = decodePng(Buffer.from(await page.screenshot({ type: 'png' }))), png = { width: shot.W, height: shot.H, data: shot.rgba };
   const mean = ([x0, y0, x1, y1]) => { const s = [0, 0, 0]; let n = 0; for (let y = Math.max(0, y0); y < Math.min(png.height, y1); y++) for (let x = Math.max(0, x0); x < Math.min(png.width, x1); x++) { const i = (y * png.width + x) * 4; s[0] += png.data[i]; s[1] += png.data[i + 1]; s[2] += png.data[i + 2]; n++; } return s.map((v) => v / Math.max(1, n)); };
@@ -67,6 +67,6 @@ try {
   const contrast = +Math.min(ratio(lum(tc), lum(fb)), ratio(lum(tc), lum(ff))).toFixed(2), contrastDeuteranopia = +Math.min(ratio(deut(tc), deut(fb)), ratio(deut(tc), deut(ff))).toFixed(2);
   const bad = errors.length > 0 || res.simHash !== PROTOTYPE_HASH || contrast < 2 || contrastDeuteranopia < 2 || !(live.advanced > 0) || !live.lastAction;
   failed = bad;
-  console.log(JSON.stringify({ live: { advanced: live.advanced, lastAction: live.lastAction, marekHp: live.marekHp, frames: live.frames, drawCalls: live.stats.drawCalls, frameTriangles: live.stats.frameTriangles, triangles: live.stats.triangles, instances: live.stats.instances, lights: live.stats.lights, atlas: live.stats.atlas }, simHash: res.simHash, sameAsPrototype: res.simHash === PROTOTYPE_HASH, renders: res.renders, telegraph: { band: tc.map(Math.round), behind: fb.map(Math.round), front: ff.map(Math.round), contrast, contrastDeuteranopia }, errors: errors.slice(0, 10), errorCount: errors.length, verdict: bad ? 'FAIL' : 'PASS' }));
+  console.log(JSON.stringify({ live: { advanced: live.advanced, lastAction: live.lastAction, marekHp: live.marekHp, frames: live.frames, drawCalls: live.stats.drawCalls, frameTriangles: live.stats.frameTriangles, triangles: live.stats.arenaTriangles, instances: live.stats.instances, lights: live.stats.lights, atlas: live.stats.atlas }, simHash: res.simHash, sameAsPrototype: res.simHash === PROTOTYPE_HASH, renders: res.renders, telegraph: { band: tc.map(Math.round), behind: fb.map(Math.round), front: ff.map(Math.round), contrast, contrastDeuteranopia }, errors: errors.slice(0, 10), errorCount: errors.length, verdict: bad ? 'FAIL' : 'PASS' }));
 } finally { await b.close(); }
 process.exit(failed ? 1 : 0);

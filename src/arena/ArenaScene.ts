@@ -81,12 +81,12 @@ export function buildArena(lib: MaterialLibrary, seed: number): ArenaBuild {
         // the fighters' doors: a tunnel into the stands' body, lit from deep inside; lanterns either side
         const pos = onArc(side * doorTheta), yaw = -side * doorTheta;
         const inner = onArc(side * doorTheta, ARC.r + ARC.thick + 2.2);
-        lights.push({ pos: [inner[0], 1.4, inner[2]], color: FIRE, intensity: 2.6, radius: 6.5, kind: 'fire', priority: 5 });
+        lights.push({ pos: [inner[0], 1.4, inner[2]], color: FIRE, intensity: 2.2, radius: 5.5, kind: 'fire', priority: 5 });
         for (const o of [-1.55, 1.55]) {
           const lp = xf([o, 2.35, 0.22], pos, yaw);
           batch.add('lantern', { pos: [lp[0], lp[1] - 0.25, lp[2]], yaw: yaw }, 0);
           W.at(xf([o, 2.35, 0.08], pos, yaw), yaw, () => W.metal.boxMM(-0.02, -0.02, -0.08, 0.02, 0.02, 0.14, { tint: [0.4, 0.4, 0.44] }));
-          lights.push({ pos: [lp[0], lp[1] + 0.02, lp[2]], color: LAMP_WARM, intensity: 1.9, radius: 6.5, kind: 'lantern', halo: 1.2, priority: 4 });
+          lights.push({ pos: [lp[0], lp[1] + 0.02, lp[2]], color: LAMP_WARM, intensity: 1.0, radius: 4.2, kind: 'lantern', halo: 1.0, priority: 4 });
         }
         // a stack of barrels, a crate and the weapon rack on the floor beside each door
         const f = (x: number, z: number): V3 => xf([x, 0, z], pos, yaw);
@@ -96,11 +96,10 @@ export function buildArena(lib: MaterialLibrary, seed: number): ArenaBuild {
           batch.add('crate', { pos: f(2.5, 0.75), yaw: 0.2, scale: 1.1 });
           weaponRack(W, f(3.6, 0.5), yaw + 0.05);
         } else {
-          batch.add('hay', { pos: f(2.7, 0.9), yaw: 0.3 });
-          batch.add('hay', { pos: f(3.5, 1.7), yaw: 1.4, scale: 0.92 });
-          batch.add('bucket', { pos: f(-2.4, 0.6), yaw: 0 });
-          batch.add('crate', { pos: f(-3.2, 0.8), yaw: -0.3 });
-          batch.add('crate', { pos: f(-3.9, 1.3), yaw: 0.25, scale: 0.8 });
+          batch.add('barrel', { pos: f(-2.6, 0.7), yaw: 0.9, tint: [0.78, 0.8, 0.88] });
+          batch.add('barrelOpen', { pos: f(-3.3, 1.0), yaw: 2.1, tint: [0.74, 0.76, 0.84] });
+          batch.add('bucket', { pos: f(2.4, 0.6), yaw: 0 });
+          batch.add('crate', { pos: f(3.0, 0.8), yaw: -0.3 });
         }
       }
       // ---- the stands behind this segment: four tiers of stone risers, then the back wall
@@ -116,9 +115,9 @@ export function buildArena(lib: MaterialLibrary, seed: number): ArenaBuild {
           W.stone.boxMM(-1.15, 3.0, -(r1 - r0), 1.15, hk, 0, { tint, aoY: [0.8, 1] });
         });
         // spectators: one row per tier, irregular (gaps, clusters), more near the gate where the view is best
-        const per = door ? 4 : 2;
+        const per = tm > (60 * Math.PI) / 180 ? 0 : door ? 4 : 2;
         for (let s = 0; s < per; s++) {
-          if (rng.next() < 0.4 + k * 0.06) continue;
+          if (k > 1 || rng.next() < 0.5) continue;
           const ta = door ? doorTheta - doorHalf : t0, tb = door ? doorTheta + doorHalf : t1;
           const tt = ta + (tb - ta) * ((s + 0.5 + rng.range(-0.25, 0.25)) / per);
           const q = onArc(side * tt, r0 + TIER.depth * 0.45);
@@ -140,7 +139,7 @@ export function buildArena(lib: MaterialLibrary, seed: number): ArenaBuild {
           W.at([pp[0], hb, pp[2]], yaw, () => W.timber.boxMM(-0.05, 0, -0.05, 0.05, 3.2, 0.05, { tint: [0.5, 0.46, 0.44] }));
           addBanner(W, { pos: [pp[0], hb + 3.05, pp[2]], yaw, w: 0.7, h: 1.5, emblem: 'fleur', shape: 'pennant', loose: 0.8, rod: true });
         }
-        if (i % 6 === 3) {
+        if (i % 9 === 4) {
           const lp = onArc(side * tm, r0 - 0.12);
           batch.add('lantern', { pos: [lp[0], hb - 1.25, lp[2]], yaw }, 0);
           lights.push({ pos: [lp[0], hb - 0.95, lp[2]], color: LAMP_WARM, intensity: 1.6, radius: 6, kind: 'lantern', halo: 1.0, priority: 2 });
@@ -170,9 +169,9 @@ export function buildArena(lib: MaterialLibrary, seed: number): ArenaBuild {
     const bp = xf([0, 8.1, 0.32], pos, yaw);
     addBanner(W, { pos: bp, yaw, w: 1.55, h: 3.9, emblem: 'fleur', shape: 'swallow', loose: 0.35, rod: true });
     // braziers at the gate's inner corners: fire, embers, a little smoke
-    const br = onArc(side * (gateTheta - 0.03), ARC.r - 1.0);
+    const br: V3 = [side * 6.0, 0, -5.4];   // in front of the towers, clear of the fighters' heads and of the walls (critiques of Passe P2)
     brazier(W, br);
-    lights.push({ pos: [br[0], 1.75, br[2]], color: FIRE, intensity: 3.4, radius: 9, kind: 'fire', halo: 1.6, priority: 8 });
+    lights.push({ pos: [br[0], 1.75, br[2]], color: FIRE, intensity: 2.0, radius: 4.8, kind: 'fire', halo: 1.3, priority: 8 });
     emitters.push({ kind: 'forge', tag: 'flame', pos: [br[0], 1.32, br[2]], rate: 0.5 }, { kind: 'forge', tag: 'embers', pos: [br[0], 1.45, br[2]], rate: 1 }, { kind: 'chimney', pos: [br[0], 1.9, br[2]], rate: 0.35 });
     // the gate passage's side walls between the towers' backs and the terrace
     // the causeway's low walls from the towers' backs to the balustrade
@@ -217,16 +216,20 @@ export function buildArena(lib: MaterialLibrary, seed: number): ArenaBuild {
     const pos: V3 = [side * 5.6, 0, -3.0], yaw = side < 0 ? 0 : Math.PI;
     batch.add('lampPost', { pos, yaw, scale: 1 }, 0);
     const lp = xf([0.52, 3.2 - 0.38, 0], pos, yaw);
-    lights.push({ pos: lp, color: LAMP_WARM, intensity: 4.2, radius: 11, kind: 'lantern', halo: 2.0, priority: 7 });
+    lights.push({ pos: lp, color: LAMP_WARM, intensity: 2.4, radius: 5.2, kind: 'lantern', halo: 1.6, priority: 7 });
   }
 
-  // ---------------------------------------------------------------- the front braziers, just outside the frame: the fighters' warm key
+  // ---------------------------------------------------------------- the front braziers, just outside the frame: warm pools in the corners
   for (const side of [-1, 1]) {
     const pos: V3 = [side * 7.4, 0, 4.6];
     brazier(W, pos);
-    lights.push({ pos: [pos[0], 1.75, pos[2]], color: FIRE, intensity: 3.0, radius: 10, kind: 'fire', halo: 1.4, priority: 9 });
+    lights.push({ pos: [pos[0], 1.75, pos[2]], color: FIRE, intensity: 1.5, radius: 5.5, kind: 'fire', halo: 1.4, priority: 9 });
     emitters.push({ kind: 'forge', tag: 'flame', pos: [pos[0], 1.32, pos[2]], rate: 0.5 }, { kind: 'forge', tag: 'embers', pos: [pos[0], 1.45, pos[2]], rate: 1 });
   }
+
+  // the fighters' key: a cool moonlit fill from the camera side (the bounce of the moon off the stands), not the braziers' amber, so the floor
+  // and the walls stay slate and the warm light stays in pools (critique of Passe P1)
+  lights.push({ pos: [0, 8, 11], color: [0.6, 0.7, 1.0], intensity: 2.0, radius: 19, kind: 'steady', priority: 10 });
 
   // ---------------------------------------------------------------- town houses behind the stands (their upper floors over the back wall)
   const houseSlots: Array<{ pos: V3; yaw: number; floors: number; width: number }> = [
