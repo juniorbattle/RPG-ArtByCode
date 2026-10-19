@@ -2,7 +2,8 @@
 // (the game loop never runs outside this harness), then N fixed 1/60 s steps with a frozen clock, then one render + screenshot per variant
 // (its JS runs first, against window.__app). Variants share the page, so the NPCs stand where they stood: before / after or effect on / off
 // on the same frame. Two loads of the same query give 0 px (repetition witness, Passe M5); tools/screenshots.mjs does not (the loop runs).
-//   node tools/detshots.mjs <outDir> "<query>" <steps> "name|js" ...      (BASE_URL env; CLIP=x,y,w,h crops; W / H env = viewport)
+//   node tools/detshots.mjs <outDir> "<query>" <steps> "name|js" ...      (BASE_URL env; CLIP=x,y,w,h crops; W / H env = viewport;
+//   CHROME_PATH / CHROME_ARGS env: browser and GL switches; READY_MS env: boot timeout, default 180 s)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,11 +17,14 @@ if (!outDir || !query || !vars.length) throw new Error('usage: node tools/detsho
 const W = +(process.env.W || 1920), H = +(process.env.H || 1080);
 const clip = process.env.CLIP ? (([x, y, width, height]) => ({ x, y, width, height }))(process.env.CLIP.split(',').map(Number)) : undefined;
 fs.mkdirSync(outDir, { recursive: true });
-const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: ['--use-gl=angle', '--use-angle=d3d11', '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars', '--disable-background-timer-throttling', '--disable-renderer-backgrounding'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 } });
+// CHROME_ARGS (space-separated) replaces the GL switches, e.g. "--use-angle=swiftshader" on a machine without a GPU (software WebGL: same
+// harness, slower; compare its captures with each other only, never with a GPU's)
+const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];
+const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars', '--disable-background-timer-throttling', '--disable-renderer-backgrounding'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 } });
 try {
   const page = await b.newPage(); page.on('pageerror', (e) => console.log('[pageerror]', e.message));
   await page.evaluateOnNewDocument(SEED); await page.evaluateOnNewDocument(HOLD);
-  await page.goto(`${BASE}?${query}`, { waitUntil: 'load' }); await page.waitForFunction('window.__ready === true', { timeout: 180000 });
+  await page.goto(`${BASE}?${query}`, { waitUntil: 'load' }); await page.waitForFunction('window.__ready === true', { timeout: +(process.env.READY_MS || 180000) });
   await new Promise((r) => setTimeout(r, 1200));   // the loading screen fades out (the app does not run meanwhile)
   await page.evaluate((steps) => {
     const a = window.__app, u = a.update.bind(a), r = a.render.bind(a);

@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0 et M6 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7 et H5) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6 et V0 à V3 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5 et T1) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -18,258 +18,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/05-passes-M3-M4.md`](journal/05-passes-M3-M4.md) | M3, Q1, Q1b, M4 | 18/10 |
 | [`journal/06-passes-M5-S1b.md`](journal/06-passes-M5-S1b.md) | M5, S1, S2, S1b | 18/10 |
 | [`journal/07-passes-H0-M6.md`](journal/07-passes-H0-M6.md) | H0, M6 | 18/10 |
+| [`journal/08-passes-V0-V3.md`](journal/08-passes-V0-V3.md) | V0, V1, V2, V3 | 18/10 |
 
 ---
-
-## Passe V0 — Variantes de PNJ (cheveux / peau) : analyse des palettes, proposition (2026-10-18)
-
-### Demande
-- Quatrième point des priorités (Passe M5) : « les variantes de PNJ » ; demande de l'opérateur du 17/10 citée mot pour mot dans « À
-  reprendre » §1 (couleurs de cheveux et de peau différentes). Branche `npc-variants` ouverte depuis `main` (`3a7c242`).
-
-### Analyse — [OK] mesurée ; [KO] une permutation de couleurs seule
-- `tools/art-lab/palette-ramps.mjs` : pour chacune des dix feuilles de production (64 couleurs chacune), chaque couleur comptée sur toutes les
-  images et située dans la hauteur de la figure ; classement proposé : « peau » (teinte 8-45°, saturation 0,18-0,65, valeur ≥ 0,42), « cheveux »
-  (≥ 75 % des texels dans le tiers haut, hors peau). Planche : `reviews/npc-variants-v0/palette-ramps.png` (vue de face, puis cheveux / peau /
-  autres).
-- Constat : les rampes de cheveux sortent nettement pour l'artisane (11 couleurs), le voyageur (8) et le coursier (7) ; ailleurs le « tiers
-  haut » attrape une coiffe, un bonnet, un casque ou une capuche (forgeron, docker, gardes, encapuchonné, marchande, citadine ; vieux
-  marchand : 0). Les 17 à 33 couleurs « peau » mêlent peau, cuir, bois et reflets de cheveux bruns : mêmes teintes. Une permutation de palette
-  par couleur recolorerait aussi ceintures, sacs et coiffes : la piste « rampes de cheveux et de peau, à l'affichage, sur la même feuille »
-  (« À reprendre » §1) ne tient pas sans masque.
-
-### Proposition (à arbitrer par l'opérateur)
-- Un **masque de matière** par feuille (cheveux, peau), calque du `.aseprite` construit par le script de rig (rejouable), exporté à côté de la
-  feuille et haché dans son paquet de provenance ; au chargement, il est rangé dans le canal alpha de la texture cuite (255 = autre, 254 =
-  cheveux, 253 = peau : le test d'alpha à 0,5 ne voit rien, l'export approuvé n'est pas modifié).
-- Au rendu : un indice de variante par instance et une table de rampes (cheveux, peau) appliquée par rang de luminance sur les seuls texels
-  masqués. Aucune image ajoutée à la texture cuite (322 / 336), aucun appel de dessin en plus.
-- Une variante n'atteint la production qu'approuvée par l'opérateur, comme une feuille (manifeste ou fichier de variantes approuvé).
-
-### Restes [?]
-- **En attente de l'opérateur** : quels personnages, combien de variantes, quelles familles de teintes dans la direction artistique, et
-  l'accord sur le masque.
-
-### Pensée
-- Une palette quantifiée depuis une peinture partage ses couleurs entre matières : recolorer « une rampe » demande de savoir où elle est, pas
-  seulement quelle couleur elle a.
-
-## Passe V1 — Variantes de PNJ (cheveux / peau) : masques de matière, recoloration au rendu, porte d'approbation (2026-10-18)
-
-### Décisions de l'opérateur (2026-10-18), mot pour mot
-- Personnages : « Les 5 citadins (Recommandé),Les gardes,Le docker,Les PNJ uniques aussi ». Nombre : « 2 variantes (Recommandé) ». Cheveux :
-  « Noir / brun foncé,Châtain / auburn,Blond cendré,Gris / blanc ». Peau : « Claire à foncée (Recommandé) ». La question proposait un masque de
-  matière par feuille, « tiré du fichier Aseprite par le script de rig ».
-- Branche `npc-variants-v1` ouverte depuis `main` (`709c6a1`).
-
-### Masques — [KO] par couleur seule ; [OK] zones grossières + règles de couleur + propagation
-- **[KO]** Règles de couleur seules (teinte, saturation, valeur, part dans le tiers haut) : la peau, le lin et le cuir clair partagent teintes et
-  saturations dans les palettes de 64 couleurs (coursier : peau `f8c59e` s 0,36, chemise `f6d2b0` s 0,28) ; les coiffes, casques et capuches
-  tombent dans « cheveux ».
-- **[KO → écarté]** Propager un calque de masque par les opérations du script de rig : rotations RotSprite (EPX sur les couleurs) et membres
-  peints ; trop fragile.
-- **[OK]** `src/characters/Variants.ts` (`sheetMasks`) : sur l'image 0 du repos de chaque vue (face, dos, profil), des zones grossières en
-  texels (cheveux ; peau : visage et mains) et des règles de couleur dedans (peau : teinte 5-45°, saturation ≥ 0,22 près d'une manche de lin,
-  ≥ 0,1 ou 0,05 pour un visage ou des mains sans lin à côté, valeur ≥ 0,55 ; cheveux : chauds et saturés, ou tout sauf le contour ; contour :
-  valeur < 0,25, jamais recoloré) ; les autres images d'une vue prennent, texel par texel, la matière du texel de même couleur le plus proche
-  de la vue de référence, à 3 texels au plus. Zones posées sur des vues quadrillées des dix feuilles (`art-lab/characters/variants/variants.json`) ;
-  revue sur toutes les images (`tools/art-lab/variant-masks.mjs`). Le vieux marchand garde ses cheveux et sa barbe gris (peau seule) ;
-  l'encapuchonné n'a que menton et mains.
-- Le dessin reste intact : la feuille approuvée et son `.aseprite` ne changent pas (alpha binaire contrôlé par `checkBakedSheet`) ; l'atlas
-  range la matière dans l'alpha de **sa** texture (255 autre, 254 cheveux, 253 peau) après ses contrôles.
-
-### Rendu — [OK]
-- `BODY_FRAG` : un texel masqué prend la couleur de la rampe cible à son rang de luminance (lumière linéaire) dans la plage de sa matière sur
-  la feuille, puis l'éclairage habituel ; rampes de 5 arrêts dans une petite texture (une ligne par rampe). Attributs d'instance `iVarA` /
-  `iVarB` ; aucun appel de dessin, aucune image de la texture cuite en plus (322 / 336).
-- Variante d'un acteur (`variantOf`) : depuis son identifiant (0 = l'original), ou fixée par archétype (`guardB` : 1, les gardes ne sont plus
-  jumeaux) ; aucun tirage aléatoire (graines intactes).
-
-### Porte — [OK]
-- Le fichier de variantes n'est appliqué en production que s'il est approuvé (`approved: true`, `approval` : qui, quand) ; il porte alors
-  l'empreinte des masques de chaque feuille, vérifiée au chargement (refus sinon). DEV : `?variants=candidate` montre le fichier non approuvé.
-
-### Propositions soumises à l'opérateur (à approuver)
-- Rampes (5 arrêts sRGB, sourdes, nuit) : cheveux `dark`, `chestnut`, `auburn`, `ash` (blond cendré, réchauffé après une première version
-  qui se lisait verdâtre à côté des peaux orangées), `grey` ; peaux `light`, `medium`, `tan`, `dark`.
-- Deux variantes par feuille (table du fichier), planche `reviews/npc-variants-v1/lineup.png` ; les PNJ uniques (marchande, forgeron,
-  encapuchonné) gardent l'original tant que l'opérateur n'en fixe pas un.
-
-### Preuves
-- Jeu par défaut (fichier non approuvé) contre `main` figé (`709c6a1`), avec personnages, harnais déterministe, A / B / C / D : **0 px, écart
-  max 0**. **[KO → corrigé]** d'abord 14 572 px en A, sur les seuls personnages : la texture des rampes, créée au démarrage, tire
-  `Math.random` pour son uuid ; sous graine, chaque tirage suivant (les phases d'animation des PNJ à leur apparition) se décalait. Elle n'est
-  plus créée qu'au premier acteur qui montre une variante.
-- **[KO → corrigé]** l'atlas revalide les feuilles (`checkBakedSheet` : alpha 0 ou 255) : des matières écrites dans les images refusaient le
-  chargement (`?variants=candidate`). Les matières vont à côté de la feuille (`BakedSheet.materials`) et l'atlas les écrit dans sa texture
-  après ses contrôles.
-- `?variants=candidate` contre le défaut : A 4 452 px, B 14 066, C 10 255, D 484 (> 8 niveaux), uniquement sur des personnages.
-- Remarque de l'opérateur pendant la revue, mot pour mot : « Il y a quelques imperfections sur les pnjs sprites surtout concernant les sprite
-  avec la peau plus fonce ». Vu au zoom : lèvres, reflets pâles, ombre saturée d'une joue ou d'une oreille, mèche claire restés à la couleur
-  d'origine (hors règle de couleur). Corrigé par un remplissage (deux passes : un texel hors contour entouré de peau, 4 voisins sur 8, devient
-  peau ; entouré de cheveux, 5 sur 8, devient cheveux) et deux zones de visage élargies (docker : l'oreille ; voyageur : la bouche). Restent :
-  un trait rosé sous la bouche du voyageur, quelques texels pâles à l'épaule du forgeron de profil.
-- Empreintes actuelles des masques (à inscrire au fichier à l'approbation) : artisane `01e8ce61`, forgeron `84d39b5d`, coursier `306ddcde`,
-  docker `237d92c3`, garde `6db9d991`, encapuchonné `50f2dcdf`, marchande `31ff3147`, vieux marchand `67922527`, citadine `20b824bb`, voyageur
-  `459616b1`.
-- Tests : `tests/variants.test.mjs` (7 : zones et règles, propagation à 3 texels et pas au-delà, empreintes, `variantOf`, plages et rampes,
-  fichier de variantes, porte : non approuvé = rien, candidat = appliqué, alpha binaire gardé dans les feuilles, approuvé à mauvaise empreinte =
-  refus) ; `npm test` 35 / 35 ; `typecheck`, `build`, `art:validate`.
-- Performances (`tools/perf.mjs`, 2 tours, sans contention) : B 10,48 → 10,12 ms, C 10,11 → 10,45 ms avec les variantes : dans le bruit.
-- Planches : `reviews/npc-variants-v1/lineup.png` (original + 2 variantes, face et profil, sans éclairage), `reviews/npc-variants-v1/masks.png`
-  (masques sur les images de repos et de marche).
-
-### Pensée
-- Une palette quantifiée depuis une peinture partage ses couleurs entre matières : où est la matière se dit par une zone, quelle couleur elle
-  prend se dit par une règle ; la propagation par « même couleur, tout près » suit les petits déplacements des images d'un cycle.
-- Une métadonnée d'affichage (la matière) ne réécrit pas l'asset approuvé : elle vit à côté (fichier approuvé, empreinte) et entre dans la
-  texture du moteur, pas dans l'export.
-- **[KO] méthode** : modifier `variants.json` et `Variants.ts` pendant une série de captures a rechargé les pages du serveur de dev en cours de
-  capture (écarts et délais) : la règle « ne rien modifier de ce que sert le serveur pendant une série » vaut aussi pour les données.
-
-## Passe V2 — Variantes de PNJ : approbation de l'opérateur, correction des masques signalée par lui (2026-10-18)
-
-### Complément de la Passe V1
-- V1 fusionnée en avance rapide (`ecf997d`) ; production inchangée tant que le fichier de variantes n'était pas approuvé.
-
-### Décisions de l'opérateur (2026-10-18), mot pour mot
-- Après la planche, la comparaison en scène (B) et les gros plans des peaux foncées : production — « Oui, approuve » ; PNJ uniques —
-  « Originaux partout » (marchande, forgeron et encapuchonné fixés à leur original).
-- Puis, en voyant le voyageur à cheveux foncés : « il semble avoir une erreur pour ce pnj avec sa tete ses cheveux . peux tu verifier ».
-- Branche `npc-variants-approval` ouverte depuis `main` (`ecf997d`).
-
-### Correction — [OK]
-- Cause : la frange du voyageur, orange comme sa peau, tombe dans la zone du visage ; la règle de peau y passait avant celle des cheveux et
-  prenait ses mèches claires pour de la peau : sur une variante, une frange à moitié couleur peau, rayée de mèches sombres.
-- Règle de frange (`referenceMask`) : là où zone de cheveux et zone de peau se chevauchent, une couleur rencontrée comme cheveux hors du
-  visage au moins aussi souvent que dans le chevauchement reste cheveux. Revue des dix feuilles : elle a fait apparaître deux défauts, corrigés
-  par réglage de feuille : une tache sombre sous le menton de l'artisane (ombre du cou prise pour des cheveux : zone en sommet de tête +
-  mèches latérales) ; des points bruns sur les bonnets de la citadine et de la marchande (ombres chaudes de la toile : plafond de valeur des
-  cheveux `hairMax` 0,7 / 0,72, zones de cheveux de la marchande sous le bonnet).
-- Planches : `reviews/npc-variants-v2/traveler-fringe-before-after-x5.png`, `lineup.png`, `masks.png`.
-
-### Approbation inscrite
-- `art-lab/characters/variants/variants.json` : `approved: true`, `approval` (opérateur, 2026-10-18, phrases citées, correction des masques
-  rapportée), empreintes des masques corrigés par feuille (artisane `eddf88c9`, forgeron `222f8949`, coursier `4056437b`, docker `09fbb257`,
-  garde `2bd58755`, encapuchonné `50f2dcdf`, marchande `8c0a3135`, vieux marchand `67922527`, citadine `a7936a07`, voyageur `54d62bc3`),
-  vérifiées au chargement. Pas un Gold Master.
-
-### Preuves
-- Rendu de production (fichier approuvé, sans paramètre) contre `main` (`709c6a1`, sans variantes), harnais déterministe : A 3 445 px,
-  B 10 379, C 10 094, D 468 (> 8 niveaux), uniquement sur des personnages ; la marchande (fixée) reste à l'identique.
-  `reviews/npc-variants-v2/B-production-main-vs-variants.png`.
-- Tests : `tests/variants.test.mjs` (8 : le fichier approuvé du dépôt se charge en production avec ses propres empreintes, variantes et
-  fixations) ; `npm test` 36 / 36 ; `typecheck`, `art:validate`.
-
-### Confirmation de l'opérateur (2026-10-18) — [OK]
-- Masques corrigés montrés (voyageur avant / après, rendu de production en B, planche complète) ; réponse, mot pour mot : « Oui, fusionne ».
-
-### Pensée
-- Deux matières de même teinte qui se recouvrent (une frange rousse sur une peau claire) se départagent par l'endroit où chaque couleur se
-  rencontre seule (le haut de la tête), pas par sa couleur.
-- Une règle générale corrigée se revérifie sur toutes les feuilles : elle crée ses propres défauts ailleurs (cou, bonnets).
-
-## Passe V3 — PNJ : trois restes mineurs corrigés (voyageur, forgeron, docker), approuvés par l'opérateur (2026-10-18)
-
-### Demande (2026-10-18)
-- Transmise par la séance « Priorités artistiques » (séance parente), à traiter tout de suite dans une séance à part : trois des quatre restes
-  mineurs qu'elle avait listés : le trait rosé sous la bouche du voyageur et les texels pâles à l'épaule du forgeron de profil (« À
-  reprendre » §1, Passes V1 / V2), le cycle de marche irrégulier du docker (Passe S2). Pour les deux premiers, dire d'abord si la cause est le
-  masque ou la feuille.
-- Le quatrième est écarté par l'opérateur, mot pour mot : « les bras immobiles des citadins quand ils marchent n'est pas une priorites dans notre strucutre HD-2D, ce n'est pas problematique ».
-- Branche `npc-minor-fixes` ouverte depuis `main` (`c5e7836`) après `git fetch --prune` (aucune autre branche), poussée.
-
-### 1. Voyageur, trait rosé sous la bouche — [OK] le masque, pas la feuille
-- De face, l'ombre du menton (4 texels de la rangée 36, `703638` / `5d403a` : teinte 358° / 10°, valeur 0,44 / 0,36) est trop rouge et trop
-  sombre pour la règle de peau, et le remplissage ne la prend pas (3 voisins de peau sur 8, il en faut 4) : sur une variante, elle gardait son
-  rouge d'origine sous un menton foncé. Visible en scène (B, graine 1842, voyageur à cheveux foncés). Sur l'original, c'est l'ombre du cou :
-  la feuille est juste.
-- Correctif : option de masque `force` (`Variants.ts`) : par vue, des rectangles relevés à la main où tout texel ni contour ni exclu prend
-  une matière, dans la vue de référence, après les règles et le remplissage (puis propagé aux autres images comme le reste). Voyageur : ces 4
-  texels en peau ; la couleur `665963` (gris-violet du foulard) exclue : la propagation la prenait pour de la peau dans le foulard sous le
-  menton (images d'inspiration / d'expiration) ; de profil, la zone des cheveux s'arrête à la rangée 31 au lieu de 34 : le bas du menton
-  (6 texels) passait en cheveux (une ligne sombre ou châtain sous la bouche selon la variante), le haut du sac (13 texels) aussi.
-- Empreinte du masque `54d62bc3` → `0e6e3b03`.
-
-### 2. Forgeron, texels pâles à l'épaule de profil — [OK] le masque : la manche était peinte en peau
-- La planche de référence archivée montre une chemise crème à manches courtes sous le tablier, avant-bras nus. Les zones de peau des bras
-  partaient de l'épaule (saturation minimale 0,05) : sur une variante, la manche entière devenait peau ; les gris pâles du col (`e0d3cf`,
-  `d4c5bf`, `c3b2b1`), pris en partie ou juste hors des zones, restaient pâles : ce sont les « texels pâles à l'épaule ». Élargir la zone
-  pour les rattraper aurait aggravé l'erreur.
-- Correctif : bras de face et de dos en saturation minimale 0,35 (toile ≤ 0,33, peau ≥ 0,39 sur cette feuille) ; de profil, où la toile et le
-  reflet de l'avant-bras partagent `edd1b4`, une zone d'avant-bras sous l'ourlet (rangée 51 à 0,35, rangées 52-66 à 0,05) ; les gris pâles du
-  col et du bandeau exclus. Manches et col gardent leur toile dans toutes les variantes ; avant-bras, visage et cou restent peau.
-- Empreinte `222f8949` → `baed056d`. Aucun pixel du jeu ne change : le forgeron est fixé à son original (« Originaux partout », Passe V2) ;
-  contrôle : forgeron masqué ou non, aucun écart supplémentaire.
-- [?] Vu en passant, non traité : les 4 images de frappe (profil) ne sont presque pas masquées (le bras levé s'éloigne de plus de 3 texels de
-  la vue de référence, la propagation ne le retrouve pas) ; invisible en production pour la même raison.
-
-### 3. Docker, cycle irrégulier — [OK] le script de rig
-- Cause mesurée sur la rangée des pieds (texel 90) : la botte de contact, inclinée de 6° (talon d'abord), laissait sa pointe hors de la
-  rangée ; de l'image 0 à 1, son bord avant restait en place pendant que son talon avançait de 5 texels (la « botte tenue une image ») ; au
-  décollement (lever 2), la pointe du pied arrière restait sur la rangée (le double appui). Centres des appuis : 2,5 / 4 / 2 texels par image,
-  `walkSlide` → `null`.
-- Correctif (`rigs/dockworker-x2-v2.rig.mjs`, `CYCLE`, deux nombres) : botte de contact à plat (6° → 0), pied arrière levé d'une rangée de
-  plus au décollement (2 → 3), qui quitte ainsi la rangée des pieds. Banc d'essai hors du dépôt (méthode de la Passe 4A-quatervicies) : l'autre
-  voie essayée (lever 2 et « dégager la rangée » dans la boucle du pied levé) donne les mêmes images, la plus simple est gardée ; des angles de
-  décollement plus raides (−26° à −32°) font retoucher la pointe au sol (`walkSlide` de nouveau `null`). [KO] Garder l'inclinaison de 6° avec
-  le pied arrière dégagé : `walkSlide` 3,25, accepté par la tolérance de 30 % mais une alternance 2,5 / 4 qui patine.
-- Seules les images de marche de profil 0 et 3 changent : 54 texels retirés, 24 ajoutés, 319 recolorés, 0 couleur nouvelle ; vues, images,
-  étiquettes et JSON inchangés ; `--check` identique ; empreinte du masque de variantes inchangée (`09fbb257`). `walkSlide` : `null` → 4 texels
-  par image (0,634 m/s à l'échelle 1) ; horloge ×1,27 en B / D, ×1,23 en C (`tools/art-lab/stride.mjs`).
-- Glissement en mouvement (`tools/foot-slip.mjs`, 40 s par cas, médiane, 0 = planté), base `main` figée (`c5e7836`, servie sur :5188) →
-  branche : A 1842 0,09 → −0,04 ; B 1842 0,11 → 0,04 ; C 1842 0,04 → 0,01 ; D 1842 0,48 → −0,01 ; B 7719 −0,18 → −0,00 ; B 30417 0,17 →
-  −0,00. La base reproduit exactement les valeurs de la Passe S2 ; les autres feuilles mesurent à l'identique avant / après (12 sur 12).
-
-### Critique à l'aveugle du docker — [?] partagée ; [OK] ses mesures vérifiées
-- Trois agents neufs (étiquettes tirées au sort, clé hors de leur portée, auto-critique écrite avant chaque verdict) :
-  - tour 1 (sol avancé de la foulée de conception, 13 texels pour 3 images, pour les deux) : révisé 5,5 / 10, actuel 5 / 10, révisé préféré
-    (le pied avant ne patine plus après le contact) ; son « glissement de 2 texels au décollement » est mesuré au coin bas-gauche de la botte
-    levée : la pointe (ses texels les plus bas) avance de 4, comme le sol ;
-  - tour 2 (sol avancé de l'avance réelle du jeu en B : 5,07 texels par image pour l'actuel à l'horloge 1, 4 pour le révisé à l'horloge
-    1,27) : actuel 7, révisé 5 ; lu sur une image réduite (sa propre réserve), ses dérives (révisé −2 à −3 texels par image) sont contredites
-    par les pixels de sa planche : la botte d'appui du révisé occupe exactement les texels 129-142,8 sur ses trois images, celle de l'actuel
-    change de forme au contact puis avance de 1,2 texel par image ;
-  - tour 3 (les pieds seuls, lus à 1:1) : actuel 7, révisé 4 ; même contradiction (le révisé mesure 129,0-142,8 sur ses trois images, le
-    critique y lit +1,6 par image).
-- La règle « une retouche qui ne gagne pas clairement à l'aveugle est annulée » n'a pas été appliquée seule, les verdicts reposant sur des
-  mesures que les pixels réfutent : décision laissée à l'opérateur, flip-book en mouvement à l'appui. Relevés par les trois, communs aux deux
-  versions : pas d'attaque du talon, la botte qui passe à l'image 4 posée sur celle d'appui, une poussée faible.
-
-### Preuves
-- Démarrage par défaut (`tools/detshots.mjs`, A / B / C / D, graine 1842, `clean=1&freeze=7.3`, 120 pas) contre `main` figé : A 395 px, B
-  7 258, C 2 563, D 2 848 (> 8 niveaux) ; docker et voyageur masqués : 0 px, tous niveaux, dans les quatre ; docker seul masqué : A 151 px,
-  B 171 (le menton du voyageur à variante). Le masquage change 12 000 à 56 000 px (contrôle). Témoin de répétition 0 px. Rendu de production
-  (sans paramètre) contre le rendu `?variants=candidate` montré à l'opérateur : 0 px (A, B).
-- Tant que leurs empreintes n'étaient pas inscrites, la porte de production a refusé les masques changés (`npm test` : 3 échecs « variant
-  masks baed056d are not the approved masks 222f8949 ») : contrôle négatif de la porte.
-- Tests : `tests/variants.test.mjs` +1 (option `force` : rectangle appliqué, jamais sur un contour ni sur une couleur exclue, propagé,
-  limité à sa vue ; quatre fautes injectées une à une, chacune attrapée) ; `tests/stride.test.mjs` : docker attendu à 4 (régression
-  remesurée exprès) ; `npm test` 37 / 37 ; `typecheck`, `build`, `art:validate` (14 manifestes, 0 erreur), `verify-provenance` intact.
-- Références `screenshots/calibration/cam{A,B,C,D}-*.png` refaites (requêtes de `tools/screenshots.mjs`, capture déterministe, 120 pas,
-  témoin 0 px) : elles dataient de la Passe S1b et ne montraient pas encore les variantes de V2 (`main` en différait sur les seuls
-  personnages) ; docker et voyageur masqués, 0 px contre `main`.
-- Planches : `reviews/npc-variants-v3/` (voyageur, forgeron, planche des variantes avant / après, `lineup.png`, `masks.png`),
-  `reviews/dockworker-x2-v2/12-walk-v3-before-after.png` ; flip-book (caméra B, `main` contre la branche) hors suivi git :
-  `art-lab/characters/scratch/npc-fixes-v3/` (32 Mo).
-
-### Décision de l'opérateur (2026-10-18) — [OK]
-- Planches, flip-book, verdicts des trois critiques et leurs contradictions mesurées montrés ; question : « Approuvez-vous ces assets corrigés
-  pour la production (masques du voyageur et du forgeron, planche du docker) ? » ; réponse, mot pour mot : « J'approuve les trois
-  (Recommandé) ».
-- Inscrit : `variants.json` (empreintes `0e6e3b03` et `baed056d`, note d'approbation complétée) ; paquet de provenance du docker
-  (`approvals`, `revisions[]` V3 avec empreintes avant / après, `status`, `chain`), manifeste (`notes`), README de revue. Aucun Gold Master.
-
-### Pensée
-- Avant d'élargir une zone de masque pour rattraper des texels oubliés, regarder la planche de référence : les texels pâles de l'épaule du
-  forgeron étaient la manche ; c'est la peau autour qui était fausse.
-- Une ombre de peau trop sombre ou trop rouge pour une règle de couleur se relève à la main (rectangle forcé, consigné, couvert par
-  l'empreinte), pas par une règle générale qui toucherait les autres feuilles.
-- Un cycle cuit se règle sur la mesure du moteur : `walkSlide` lit le centre des appuis sur la rangée des pieds ; une botte inclinée ou une
-  pointe qui traîne déplacent ce centre et rendent le cycle irrégulier, même quand le point d'appui est juste.
-- Une mesure qu'avance un critique (une dérive en texels) se vérifie sur les pixels de sa propre planche avant de peser son verdict ; une
-  planche de critique reproduit l'avance réelle du jeu (l'horloge) et se lit à 1:1 ; un désaccord qui persiste revient à l'opérateur, image en
-  mouvement à l'appui.
 
 ## Passe H1 — Héros premium : casting 1 (trois planches de personnages), design du protagoniste choisi, prompt v2 (2026-10-18)
 
@@ -666,6 +417,71 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Avec trois vues, toute marche en diagonale à l'écran se lit de travers ; mesurer la part des pas hors de l'axe de la vue montrée dit si le
   problème est le choix de la vue ou le nombre de vues.
 
+## Passe T1 — Séance cloud : texture cuite en colonnes (672 images garanties) ; archivage V0-V3 (2026-10-19)
+
+### Demande et cadre
+- Brief de la séance locale, transmis à une séance cloud de 4-5 h : consolider le Merchant District (personnages en scène, architecture et
+  caméras, météo), point 3 des personnages : « Texture des personnages cuits à élargir avant toute production du héros : les dix PNJ en
+  production utilisent 322 des 336 images garanties en 2048 rangées, et le héros en ajoute 36. »
+- Consigne de l'opérateur pendant la séance, mot pour mot (extraits) : « pleine autonomie jusqu'à la fin de la séance, elle remplace « arrête-toi
+  et pose-lui une question » du brief » ; « Ne t'arrête jamais pour demander, et n'attends aucune réponse : avance sur tout le brief. » ;
+  « Certaines décisions restent les miennes : approbation d'assets pour la production, statut Gold Master, installations, changement des
+  cadrages A/B/C/D approuvés. » ; « Ne les prends pas : prépare-les derrière un paramètre d'URL, sans changer le jeu par défaut. » ; « Pour toute
+  autre décision technique : choisis toi-même l'option la plus sûre. Consigne-la dans le journal comme ton choix, avec ses raisons, et non comme
+  ma décision. » ; « Fusionne dans main chaque tâche validée, comme le dit AGENTS.md. »
+- Branche : la séance cloud impose un seul nom de branche (`claude/stoic-goodall-8ieke4`) ; **mon choix** : une tâche à la fois sur ce nom,
+  fusionnée en avance rapide dans `main`, supprimée, puis recréée depuis `main` pour la tâche suivante (une branche par tâche, comme le veut
+  `AGENTS.md`).
+
+### Environnement de la séance cloud — [OK] mesuré
+- Linux, 4 cœurs, Node 22.22.0 ; `npm ci`, `typecheck`, `npm test` (39 / 39), `build`, `art:validate` (16 manifestes, 12 sources, 0 erreur) : OK.
+  `art:doctor` : Aseprite **non installé** (rien installé). Pas de GPU (`/dev/dri` absent).
+- Chromium 1194 (celui de Playwright, préinstallé dans le conteneur) : WebGL2 par **SwiftShader** (rendu logiciel ; `MAX_TEXTURE_SIZE` 8192,
+  MSAA 4, minuteurs GPU présents mais sans valeur pour la 780M). Le jeu démarre : 154 s en 1280 × 720, dont 136 s de bake ; 25 s avec `vis=0`.
+  Les captures déterministes (`tools/detshots.mjs`) marchent ; **aucune mesure de temps GPU de cette séance ne vaut pour la machine de
+  l'opérateur** (seuls les appels de dessin et triangles se transposent).
+- Chrome refuse de démarrer en root sans `--no-sandbox` : un enveloppeur hors dépôt (`exec chromium --no-sandbox "$@"`) sert de `CHROME_PATH`
+  aux outils figés par empreinte (`reconstruct-grid`) sans les toucher. `tools/detshots.mjs` prend désormais `CHROME_ARGS` (remplace les
+  options GL, ex. `--use-angle=swiftshader`) et `READY_MS` (délai de démarrage) ; sans ces variables, rien ne change.
+
+### Texture cuite en colonnes — [OK]
+- `SpriteAtlas.packBaked` : rangement par étagères (une par densité, dans l'ordre des feuilles) en **colonnes de 1024 × 2048 texels** (2048 =
+  le minimum garanti par WebGL2, quel que soit le GPU : même rangement partout) ; une image qui ne tient plus sous la rangée 2048 ouvre la
+  colonne suivante à x = 1024 ; deux colonnes au plus (2048 × 2048, la garantie) : **672 images ×2**. La première colonne se range exactement
+  comme l'ancienne texture : la case d'une image ne bouge jamais quand on en ajoute après elle ; la texture n'a que la largeur de ses colonnes.
+- Production (322 images) : une colonne, 1024 × 2016, **les mêmes octets** qu'avant. `?cast=candidate` (+ 36 images du héros) : 2048 × 2016
+  (les 14 premières images du héros finissent la dernière étagère de la colonne 0, les 22 autres ouvrent la colonne 1) au lieu de
+  1024 × 2208 (calculé : 23 étagères), au-delà de la garantie.
+- L'adressage par case entière (contrat § 13) lit `(texel + 0,5) / taille` : la largeur de la texture ne change pas le texel lu.
+- Contrat d'intégration : § 15 ajouté.
+
+### Preuves
+- `tests/baked-atlas.test.mjs` (4) : une colonne = l'ancienne formule (oracle écrit à part : x = (n mod 16) × 64, y = ⌊n / 16⌋ × 96) pour
+  1 à 336 images ; au-delà, deuxième colonne, première inchangée ; 672 tiennent, 673 refusées ; une nouvelle densité ouvre une étagère, une
+  étagère ×3 qui ne tient plus passe à la colonne suivante ; distribution réelle : production à l'octet près, cases et octets de chaque image
+  de PNJ identiques avec le héros candidat. **Fautes injectées une à une, toutes attrapées** : colonnes de 4096 rangées (1 / 4 passe), nouvelle
+  colonne à x = 0 (1 / 4), seuil décalé d'une étagère (1 / 4), trois colonnes permises (3 / 4), hauteur = dernière colonne (1 / 4).
+- Captures déterministes (graine 1842, `clean=1&freeze=7.3&vis=0`, 120 pas, 1280 × 720, SwiftShader), branche contre `main` figé
+  (`b3ac07f`, servi sur :5188), cadrages A / B / C / D (joueur placé dans la zone) : production **0 px** ; `?cast=candidate` **0 px** (héros dans
+  la deuxième colonne d'un côté, texture de 1024 × 2208 de l'autre). Témoin : production contre candidat sur la branche, 7 538 à 12 797 px
+  (le héros) ; répétition (deux chargements) 0 px. `vis=0` : le changement ne touche que la texture des personnages, pas le bake.
+- `npm test` 43 / 43, `typecheck`, `build`, `art:validate`.
+
+### Journal — [OK] archivage
+- Les passes gardées faisaient 60 364 octets (forme de l'index git, fins de ligne LF) : V0 à V3 (closes : décisions consignées, branches
+  fusionnées) déplacées d'un bloc, dans leur ordre, à l'octet, dans `journal/08-passes-V0-V3.md` (en-tête, ligne `---`, puis les 24 270 octets
+  inchangés, SHA-256 `7a45d58c4e714cc2…`) ; ligne d'index et phrase d'en-tête mises à jour.
+- Preuve (script hors dépôt, contre `git show b3ac07f:JOURNAL.md`, cette entrée laissée hors de la comparaison) : **8 / 8** (en-tête ; corps =
+  octets retirés ; V0-V3 chacune une seule fois, dans la nouvelle archive ; passes gardées H1-F1 inchangées ; `JOURNAL.md` = l'original moins
+  le bloc, à la phrase et à la ligne d'index près ; ligne d'index ; archives 01-07 inchangées ; LF seuls). Contrôle négatif : deux mots changés
+  dans une copie de l'archive → 7 / 8. Le dépôt garde les fins de ligne LF dans l'index ; la copie de travail de l'opérateur les convertit.
+
+### Pensée
+- Une capacité se dimensionne contre la garantie de la norme, et s'étend en ajoutant à côté (une colonne) plutôt qu'en déplaçant ce qui
+  existe : la production garde ses octets, la preuve en image est alors un 0 px exact.
+- Une séance sans GPU reste utile pour l'image : le rendu logiciel est déterministe et compare deux versions entre elles ; il ne dit rien des
+  temps du GPU de l'opérateur.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -674,8 +490,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
-  amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantit 336 images et en porte 322 (dix feuilles,
-  1024 × 2016) : une variante en feuille séparée ne rentre pas sans agrandir la texture ; la teinte aléatoire de la foule (± 10 % par canal
+  amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantissait 336 images et en porte 322 (dix feuilles,
+  1024 × 2016 ; 672 garanties depuis la Passe T1) : une variante en feuille séparée ne rentre pas sans agrandir la texture ; la teinte aléatoire de la foule (± 10 % par canal
   sur tout le sprite) ne s'applique plus aux feuilles cuites (Passe 4A-tervicies). **Passes V1 / V2** : masques de matière, recoloration au
   rendu, approuvées pour la production le 18/10 (PNJ uniques en original). Passe V3 : trait rosé sous la bouche du voyageur et manches du forgeron
   (les « texels pâles à l'épaule ») corrigés dans les masques, approuvés le 18/10. Reste : les images de frappe du forgeron presque sans
@@ -702,8 +518,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   immobiles, cuisses trop hautes ; « experimental ») ; décision, mot pour mot : « Planche v3 (Recommandé) » ; prompt v3 prêt
   (`briefs/hero-proposal.md` § 5, trois pièces jointes) ; déclinaisons au choix du joueur : « Une base + couleurs (Recommandé) » (Passe H4) ;
   deux lots d'images évalués, non validés (brief § 11) ; planche de base archivée, `hero-x2-v2` construit au stade lab, candidat non
-  approuvé (Passe H5) ; **en attente de la décision de l'opérateur** (production ou retouches). Avant toute
-  production : élargir la texture cuite (322 + 30 images > 336 garanties) ; course avec Maj à décider. Plus tard : masques du héros pour ses
+  approuvé (Passe H5) ; **en attente de la décision de l'opérateur** (production ou retouches). Texture cuite élargie
+  (Passe T1 : 672 images garanties) ; course avec Maj à décider. Plus tard : masques du héros pour ses
   déclinaisons, écran de choix (code de jeu). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
   production.
 - **Personnages clés et suite de l'art** : héros et chat restent générés (densité ×1) ; ni personnage clé ni personnage **original** au
@@ -767,8 +583,8 @@ sprites.
   (`.mjs`, hors `tsconfig`).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** (Passe M4) : le critère « operator decision recorded, branch merged » d'`AGENTS.md` date d'avant la fusion
-  sans demande ; lire « branche fusionnée » suffit, à confirmer par l'opérateur. Après la Passe V3, les passes gardées font 59,3 Ko : la prochaine
-  passe dépasse le seuil d'environ 60 Ko, archiver alors les plus anciennes closes (M5 et suivantes).
+  sans demande ; lire « branche fusionnée » suffit, à confirmer par l'opérateur. Dernier archivage : V0-V3 (Passe T1) ; prochain au-delà
+  d'environ 60 Ko de passes gardées (H1 et suivantes).
 - **Dette** : l'ancienne rive opposée (`row(...)` en « sec ») rejoue ses tirages sans rien dessiner — à retirer proprement une fois qu'on
   accepte de décaler la ville lointaine d'une graine.
 

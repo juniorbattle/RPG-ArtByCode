@@ -357,3 +357,15 @@ x2, idle 4 + walk 6 frames per facing, talk 6 for the merchant: 30 + 48 frames).
   **draw calls 108 in every variant**; baked texture 512 x 960 (1.97 MB) for the 78 frames;
 - production bundle (JS) 824 923 B at `894c4d3` -> 847 433 B (+22.5 KB; gzip 238.64 -> 243.67 KB) + the two PNGs (49 / 71 KB, shipped but not fetched while unapproved); a simulation
   build accepting the candidates loads both sheets from their hashed assets, SHA-256 equal to the packs.
+
+## 15. Baked texture columns (Pass T1, 2026-10-19)
+
+The baked frames' texture (`SpriteAtlas.packBaked`) is shelf-packed in **columns of 1024 x 2048 texels** (2048 = the WebGL2 guaranteed
+`MAX_TEXTURE_SIZE`, whatever the GPU allows: the packing is the same on every machine): 16 x2 frames per shelf, 21 shelves = 336 x2 frames
+per column; a frame that does not fit under row 2048 opens the next column at x = 1024; at most 2 columns (2048 x 2048, the guarantee):
+**672 x2 frames**. The first column packs exactly as the single-column texture did, so a frame's cell never moves when frames are added
+after it; the texture is only as wide as its columns (the production cast's 322 frames: one column, 1024 x 2016, byte for byte the texture
+of before). Frames are read by their integer cell (section 13), so the texture's width does not change a sampled texel. Measured (seed
+1842, deterministic captures, cameras A / B / C / D, `vis=0`, software WebGL): production default and `?cast=candidate` (the hero's 36
+frames: 358 frames, 2048 x 2016 instead of a 1024 x 2208 texture beyond the guarantee) against `main` `b3ac07f`: **0 px**;
+`tests/baked-atlas.test.mjs`.

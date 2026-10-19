@@ -87,7 +87,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `node tools/diff.mjs a.png b.png [out.png] [thr]` — pixel diff (use `static=1` shots: NPCs/smoke are not deterministic)
 - `node tools/detshots.mjs <outDir> "<query>" <steps> "name|js" ...` — deterministic captures WITH characters: seeded `Math.random`, the game
   loop never started (`App.start` a no-op), N fixed 1/60 s steps, one render + shot per variant on the same frame (two loads: 0 px; journal
-  Passes M5 / S1); `CLIP=x,y,w,h` crops
+  Passes M5 / S1); `CLIP=x,y,w,h` crops; `CHROME_ARGS` replaces the GL switches (`--use-angle=swiftshader` without a GPU: software WebGL,
+  compare such captures only with each other) and `READY_MS` the boot timeout (journal Passe T1)
 - `node tools/sprite-halo.mjs <out.json> "<query>" [route] [secs] [every] [ring]` — the characters' halo in motion (same harness): per sampled
   frame and character, how much the post chain makes a character change the pixels 1..ring px around its silhouette, and its contrast kept;
   `POST=air|bloom|dof` attributes it to one effect (journal Passe S1)
