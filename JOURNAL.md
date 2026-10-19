@@ -1222,6 +1222,75 @@ aussi les personnages combattants. Nous allons intégrer des spirites cohérents
 - Une clé se garde par construction (un seul endroit où elle passe, tout le reste masqué), et se prouve par une fausse clé cherchée dans
   tout ce que l'outil écrit et affiche.
 
+## Passe G1 — Preuves sur la machine de l'opérateur : temps GPU de la météo, de la foule et de l'arène ; visibilité avec l'ancrage ; fiche d'arbitrages (2026-10-19)
+
+### Demande
+- Suite de la Passe H7 : points 2 et 3 d'« À vérifier sur la machine de l'opérateur » (Passe B1), puis les décisions accumulées, regroupées
+  sur une fiche (principe de l'opérateur : une fiche d'arbitrages à chaque jalon). Branche `local-proofs-g1` depuis `main`.
+
+### Temps GPU — [OK]
+- Conditions de la mesure :
+  - `tools/perf.mjs --rounds=3`, serveur DEV :5186, graine 1842, `clean=1` ;
+  - Radeon 780M (ANGLE D3D11), MSAA 4 ;
+  - témoin de contention actif : **3 / 3 tours propres** pour chaque variante ;
+  - médiane [min-max] des tours, en ms.
+
+| | clair | pluie | neige | orage | héros + `crowd=5` + pluie |
+|---|---|---|---|---|---|
+| B, 1920 × 1080 | 10,81 [9,88-10,95] | 10,76 [10,22-12,14] | 10,68 [10,37-11,22] | 11,25 [10,37-11,71] | 10,80 [10,41-12,12] |
+| D, 1920 × 1080 | 9,94 [9,42-10,01] | 10,60 [10,33-12,48] | 9,66 [9,53-11,87] | 10,19 [10,12-11,40] | — |
+| B, 2560 × 1440 | 19,65 [18,60-20,04] | 18,97 [18,71-19,06] | — | — | 18,14 [17,44-18,35] |
+
+- **Le coût de la météo reste sous le bruit de la mesure.** Entre deux tours, la même variante bouge jusqu'à 2 ms (dérive thermique). Sur
+  les minima, l'estimation sans contention, la pluie coûte au plus +0,3 ms en B et +0,9 ms en D ; la neige et l'orage +0,1 à +0,7 ms.
+- La météo ajoute un appel de dessin (107 → 108) et 10 000 à 18 000 triangles, comme le comptait la Passe W1.
+- **Le budget de la passe 6 tient** : 10-12 ms en 1080p, 16-21 ms en 2560 × 1440. C'est vrai avec le héros cuit, la foule à cinq et la pluie
+  ensemble.
+- **Arène** (`scene=arena`, même session) : **9,30 ms** [9,25-9,49], 92 appels de dessin, 130 k triangles. La ville en B : 9,88 ms
+  [9,79-10,22].
+
+### Visibilité sur GPU — [OK] (`tools/viewport-proof.mjs --no-resize --no-controls`, serveur DEV, trois graines × cinq formats)
+- **Transitions approuvées**, la référence de cette séance :
+  - 9 contrôles en échec, le même nombre et les mêmes classes que les écarts connus de la Passe 5b ;
+  - détail : 1842 D-far 2560 × 1080 (3 px) ; 7719 C 1080p et 2560 × 1080 (1 px chacun), AB 665 × 1200 (2 px) ; 30417 AB 1080p (48 px, dont 31
+    décidés par l'ordre de dessin), et en 720p AB (5 px), CD (1 px) et D-far (1 px) ; 30417 D-far 665 × 1200 (1 px).
+- **Transitions ancrées** (`--q=camblend=anchored`), **[KO → corrigé] l'outil** :
+  - `viewport-proof.mjs` ancrait ses poses de transition seulement vers D, sans suivre `anchorAll`. La séance cloud avait mis `visproof`
+    et `vis-why` à jour (Passe K1), pas lui.
+  - Avec le paramètre, il testait donc une transition AB non ancrée, que le jeu ne montre jamais. L'écart obtenu (15 px à 30417 AB
+    2560 × 1080) se reproduisait, alors que `vis-why` donnait 0 px à la même pose.
+  - Correctif d'une ligne (`|| !!a.graph.anchorAll`), sans effet sans le paramètre.
+- **Après correctif : 8 contrôles en échec, aucun au-delà de 3 px.**
+  - Les écarts AB disparaissent (la pose AB n'est plus la même).
+  - Restent : 1842 D-far 2560 × 1080 (3 px) ; 7719 C en 1080p et en 2560 × 1080 ; 30417 D-far et CD en 720p ; 30417 D-far 665 × 1200 (1 px
+    chacun).
+  - Deux écarts neufs d'1 px en BC (1842, en 1080p et en 2560 × 1080).
+- `vis-why` sur BC (1842, 1080p) : 1 px, d'intensité 8 / 255 au plus. Il ne change pas quand on force la seule pièce manquée, une lanière du
+  reflet plus fine qu'un pixel du bake. C'est la classe de résidu connue (un échantillon MSAA à travers une fissure, Passe 5b), pas un manque
+  du culling.
+
+### Fiche d'arbitrages — publiée
+- Elle porte 25 décisions en six familles : héros (H1-H5), caméras (K1-K3), scène et ambiance (W1, C1, S1, S2, V1), arène (A1-A4), technique
+  et processus (T1-T8), jalon (M1-M2).
+- Chaque décision a son contexte, ses sources, des captures quand c'est visuel (dont les flipbooks de la course du héros, ancien export
+  contre nouveau), une recommandation et des options.
+- Page privée : https://claude.ai/artifact/JBaceiRrkNFHCq9SgdihY6. Les choix y sont enregistrés (collection `decisions`) et relus par la séance ; ils seront consignés mot pour mot
+  avant d'agir.
+- Pièce ajoutée pour H4 : `reviews/hero-x2-v2/10-v4b-views-vs-current-x3.png`.
+  - Ce sont cinq vues de la planche v4-b reconstruites au pas du héros, en aperçu : `reconstruct-grid`, pas 3,4, `--holes --no-shadow
+    --closing-from=48`. Rien n'est construit ni commité d'autre.
+  - Elles font 85 à 87 rangées, comme le héros actuel (84-85).
+  - À côté de lui, à ×3 : les yeux sont lisibles de face, et le trois-quarts dos se lit à la taille du jeu.
+
+### Pensée
+- Un paramètre qui change ce que le jeu montre (ici `anchorAll`) doit être suivi par chaque outil de preuve qui recalcule cette pose.
+  Sinon, la preuve teste une image que le jeu ne fait jamais. Un écart qu'un second outil ne reproduit pas à la même pose se cherche
+  d'abord dans les outils.
+- Un coût plus petit que la dérive d'une session ne se lit pas sur une médiane. On le borne par les minima des tours entrelacés, et on le
+  dit comme une borne.
+- Une preuve de visibilité se compare d'abord à sa propre référence du jour, sur la même machine et dans la même série. Les écarts connus
+  s'y retrouvent ; un écart neuf se voit alors par différence.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -1296,7 +1365,7 @@ devant un personnage s'applique désormais entièrement (B : héros sous la lant
 sans traverser C ; (c) lacet max 0,96° / image en C ↔ D (≤ 0,55° ailleurs) ; (d) les transitions B → C vers l'ouest (−254 px/s) et B → A
 (−131 px/s) font glisser le joueur à l'envers à l'écran (héritage de la passe 2, mesuré en 4B ; Passe K1 : B → A remesuré −139 px/s, C → B
 0 ; **transitions ancrées partout préparées derrière `?camblend=anchored`** : B → A 0 image de recul au lieu de 14, pic +21 px/s au lieu de +181 ;
-décision de l'opérateur ; le reste demanderait de recaler le pivot de A) ; (e) reculs du joueur à l'écran en cadrage posé C / D (−15 à
+décision de l'opérateur ; preuve de visibilité sur GPU faite, Passe G1 ; le reste demanderait de recaler le pivot de A) ; (e) reculs du joueur à l'écran en cadrage posé C / D (−15 à
 −39 px/s, Passe K1) : expliqués en Passes K2 / K3 (le pivot de D, qui suit 85 % du déplacement latéral, dépasse un joueur que sa marche en profondeur
 ralentit à l'écran ; le suivi le long des axes de la caméra n'y change rien) ; gain 0,6 ou suivi visant la vitesse à l'écran : décision de
 l'opérateur. Contrainte : la caméra de D reste
@@ -1327,7 +1396,7 @@ sprites.
 
 **6b. Météo (Passes W1 / W2)** — pluie, neige, orage, vent derrière `?rain` / `?snow` / `?storm` / `?wind`, défaut inchangé (0 px), réglables
 en jouant dans le panneau DEV (section « Weather »). Restent : le
-temps GPU sur la 780M (`tools/perf.mjs`, commandes dans la passe), le jugement de l'opérateur en jeu et en mouvement (vent sur les bannières,
+jugement de l'opérateur en jeu et en mouvement (vent sur les bannières,
 pluie qui tombe, éclairs), une éventuelle météo par défaut ou un cycle (décision de l'opérateur) ; non faits : son (le jeu n'en a pas), éclaboussures
 au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
 
@@ -1337,7 +1406,7 @@ l'aveugle, de 6,5 / 7 à 7,5 / 5,5 contre le prototype). Jouable en artefact pri
 republier avec `tools/arena-scene-page.mjs` après un changement). Le prototype `arena/arena.html` reste la référence de ses règles.
 **Décisions de l'opérateur** : une entrée depuis la ville (porte, transition) ; le style des combattants générés ou des feuilles cuites de
 combat à produire (Ren et Marek, animations de duel) ; le réglage des règles (nombres provisoires du prototype) ; l'assistance par défaut
-(discrète). **À mesurer sur sa machine** : `node tools/perf.mjs "arena|scene=arena"` (temps GPU par passe), cadence, lecture en mouvement,
+(discrète). Temps GPU mesuré sur la 780M (Passe G1 : 9,3 ms en 1080p). **À voir sur sa machine** : cadence, lecture en mouvement,
 la page publiée dans le visualiseur. Restes : visages des combattants (la grammaire du générateur), anneau de dalles peu visible (l'occlusion
 de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sources de lumière sur 24, ralenti sous 20 images/s.
 

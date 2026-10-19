@@ -50,3 +50,9 @@ in game (`?cast=candidate`).
 | File | What it shows |
 |---|---|
 | `09-h7-export-x3.png` | the rebuilt export's 36 frames x3 with their tags and durations (`tools/art-lab/make-contact-sheet.mjs`): idle front / back / profile, the front and back runs (legs lifted 5 texels at most), the profile run with its flight frames (4th and 8th) |
+
+## Pass G1 (2026-10-19) — the v4-b turnaround at the hero's pitch, a preview for the operator's decision
+
+| File | What it shows |
+|---|---|
+| `10-v4b-views-vs-current-x3.png` | x3 nearest on grey: top, hero-x2-v2 idle front / profile / back (export frames 0, 8, 4); bottom, five views of the GENERATED, NON-CANONICAL sheet `reference/sources/hero-turnaround-v4-2026-10-19-b.png` (front, three-quarter front, profile, three-quarter back, back) reconstructed with `reconstruct-grid.mjs` at pitch 3.4, frame 64 x 96, feet on row 90, `--holes --no-shadow --closing-from=48` (85-87 rows). A preview only: nothing is built from that sheet until the operator decides (decision sheet, H4) |
