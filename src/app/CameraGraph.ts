@@ -110,12 +110,12 @@ export class CameraGraph {
    *  par défaut », journal Passe K4; prepared in Passe K1). The interpolated A <-> B and B <-> C blends swung the player backwards on screen
    *  (B -> A: -139 px/s for 0.23 s); `?camblend=interpolated` brings them back for comparison */
   anchorAll = true;
-  /** D's follow aimed at the player's screen speed (`?camfollow=screen`, journal Passe K5; the operator's decision K3, « Prototyper le suivi à
-   *  l'écran »): in settled D the smoothed focus never takes a step that would move the player backwards on screen against the step the player
-   *  takes itself (the pivot, following 85 % of the player's sideways move, overtook a player whom its walk into the depth slows on screen,
-   *  Passes K2 / K3); that frame it stops where the player stands still on screen, and catches up through the usual smoothing. Off = the
-   *  approved follow, unchanged */
-  screenFollow = false;
+  /** D's follow aimed at the player's screen speed (journal Passe K5, prototyped on the operator's decision K3, « Prototyper le suivi à
+   *  l'écran »; the default since the operator's decision of 2026-10-19, RK2 « Adopter (avec la preuve) », Passe K7): while D is on screen the
+   *  smoothed focus never takes a step that would move the player backwards on screen against the step the player takes itself (the pivot,
+   *  following 85 % of the player's sideways move, overtook a player whom its walk into the depth slows on screen, Passes K2 / K3); that frame
+   *  it stops where the player stands still on screen, and catches up through the usual smoothing. `?camfollow=off`: the former follow */
+  screenFollow = true;
   /** the framing the camera is in or blending toward */
   target: CamId = 'B';
   state!: CamState;

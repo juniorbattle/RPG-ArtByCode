@@ -132,8 +132,8 @@ function steer(screenFollow, from, to) {
 /** frames whose screen step goes against the player's own step faster than camsim's 8 px/s (1920 wide); `only` keeps some frames */
 const backward = (log, only = () => true) => log.filter((e) => only(e) && Math.abs(e.own) > 1e-6 && Math.sign(e.tot) !== Math.sign(e.own) && Math.abs(e.tot) * 960 * 60 > 8).length;
 
-test('?camfollow=screen: in settled D the walk into the depth no longer glides backwards, and the blends halve it (journal Passes K2 / K5)', () => {
-  assert.equal(new CameraGraph().screenFollow, false, 'off by default: the approved follow');
+test('the screen follow (the default since Passe K7): in settled D the walk into the depth no longer glides backwards, and the blends halve it (journal Passes K2 / K5)', () => {
+  assert.equal(new CameraGraph().screenFollow, true, 'on by default: the operator\'s decision RK2');
   const A = [8.5, 2.2], B = [18.5, -3.0];
   const runs = [steer(false, A, B), steer(true, A, B), steer(false, B, A), steer(true, B, A)];
   const settled = runs.map((r) => backward(r, (e) => e.settledD)), all = runs.map((r) => backward(r));

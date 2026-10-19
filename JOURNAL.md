@@ -903,15 +903,78 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 - Un défaut mesuré dans un harnais se remesure dans le jeu avant d'en tirer le bénéfice d'un réglage : ici, la vitesse et le guidage du
   joueur réel le couvraient déjà. Le réglage reste celui que l'opérateur a choisi, et la mesure dit ce qu'il apporte vraiment.
 
+## Passe K7 — Caméras : le suivi de D qui ne dépasse plus le joueur, par défaut (décision RK2), et sa preuve de visibilité en mouvement (2026-10-19)
+
+### Demande
+- Décision de l'opérateur (Passe D3), mot pour mot : RK2 « Adopter (avec la preuve) ». La preuve demandée : la visibilité des poses que le
+  suivi retient, en mouvement (la Passe K5 ne l'avait prouvée que sur des poses fixes).
+- Branche `camfollow-default-k7` depuis `main` (`7397ed7`).
+
+### Fait — [OK]
+- `CameraGraph.screenFollow = true` : le suivi de la Passe K5 est le défaut.
+  - `?camfollow=off` rend l'ancien suivi, pour comparer ; `?camfollow=screen` ne change plus rien.
+  - `AGENTS.md` : le paramètre, et le nouvel outil.
+- **Nouvel outil, `tools/visproof-walk.mjs`** : la preuve de visibilité en mouvement.
+  - La même marche déterministe tourne sur deux pages, le défaut élagué et `vis=0`, pas à pas en même temps : graine, `App.start`
+    neutralisé, horloge figée, joueur guidé comme dans `camsim`.
+  - Les deux pages sont rendues et capturées tous les N pas, puis comparées au pixel. Le contrôle vérifie aussi qu'elles n'ont pas divergé
+    (cadrages actifs, position du joueur).
+  - Une page de fond du même navigateur ne produit pas d'image (la capture tombait en délai dépassé) : chaque page passe au premier plan
+    avant sa capture.
+  - **Contrôle négatif** `--control` : la page élaguée ne dessine que les pièces de A. Résultat : 6 captures sur 6 diffèrent, jusqu'à
+    11 028 px.
+
+### Preuves
+- **Visibilité en mouvement** (`main` figé `7397ed7`, :5187 ; tous les 6 pas, seuil 24). Sept marches : C → D, D → C, D → B au bord de
+  l'eau, la diagonale en profondeur dans les deux sens, D vers l'est et vers l'ouest.
+  - Ancien suivi : **926 captures, 0 écart**.
+  - Suivi à l'écran : **926 captures, 1 écart d'1 pixel**. Diagonale, pas 282, D posé, joueur en 16,25 / −2,7 ; pixel (779, 213), dans le
+    fond, écart 25 pour un seuil de 24. Image : `screenshots/calibration/known-issues/k7-walk-1px.png`.
+  - **[?]** La pose posée de D au même endroit donne 0 px, sans pièce manquée (`vis-why`). La pose retenue par le suivi tombe entre deux
+    échantillons du bake : c'est la classe connue des lanières vues seulement entre des poses échantillonnées. `vis-why` ne sait pas se
+    placer à cette pose exacte, la cause n'est donc pas prouvée.
+- **Le défaut est seulement inversé** : la sortie complète de `camsim` (les sept marches, JSON) est **identique à l'octet** dans les deux
+  sens.
+  - La branche par défaut contre `main` avec `?camfollow=screen`.
+  - La branche avec `?camfollow=off` contre `main` par défaut.
+- **Cadrages posés** (captures déterministes, 300 pas, A / B / C / D) : **0 px** contre `main`. Le joueur ne bouge pas, le suivi n'agit
+  donc pas.
+- **Marches** (`camsim`, le héros de production à 3,73 m/s ; images de recul au seuil de 8 px/s, ancien suivi → suivi à l'écran) :
+
+| marche | ancien suivi | suivi à l'écran |
+|---|---|---|
+| C → D (8 / 1 vers 20 / 0,6) | 20 (−62 px/s) | **0** |
+| D → C | 46 (−90 px/s) | **3** (−18 px/s) |
+| D → B, au bord de l'eau | 52 (−34 px/s) | **0** |
+| diagonale (8,5 / 2,2 vers 18,5 / −3) | 10 (−58 px/s) | **12 (−177 px/s)** |
+| retour de la diagonale, D vers l'est / l'ouest | 0 | 0 |
+
+- **[?] Une régression, expliquée : la diagonale, pendant C → D.**
+  - Rejouée exactement (0 d'écart) dans le graphe seul, la marche se décompose ainsi.
+    - Le joueur va en profondeur : son pas propre à l'écran est faible et vers la gauche, −2 à −18 px/s.
+    - Le fondu ancré le glisse vers sa place de D, environ 200 px plus à droite.
+  - Le foyer retenu par le suivi éloigne encore cette place, et la glissade va plus vite.
+  - C'est le mécanisme du recul au bord de l'eau (RK3) : le fondu ancré glisse le joueur entre ses deux places sans regarder son pas propre.
+    Il est traité avec RK3, avant le gel.
+- **Tests** :
+  - `tests/camera-graph.test.mjs` : le défaut attendu est le suivi à l'écran ;
+  - typecheck, `npm test` 87 / 87, build, `art:validate`.
+
+### Pensée
+- La visibilité d'un suivi qui retient sa pose se prouve sur les poses qu'une vraie marche produit, les deux pages pas à pas en même temps,
+  avec un contrôle qui doit échouer.
+- Le gain d'un réglage se remesure avec le joueur de production : à 3,73 m/s, les chiffres de la Passe K5 (relevés à 2,5 m/s) changent, et
+  une marche régresse.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
 **0. Jalon M1 — décisions de la fiche de revue (Passe D3), à appliquer dans l'ordre de cette passe** :
-suivi `?camfollow=screen` par défaut avec sa preuve ; diagnostic du recul au bord de l'eau ; gel (T1, T2, T7) ; district clos après le gel ;
+diagnostic du recul au bord de l'eau (avec la glissade de la diagonale C → D, Passe K7) ; gel (T1, T2, T7) ; district clos après le gel ;
 puis l'état jour. Gold Master : « Pas encore » (RJ3). Fait : le héros en production et les cinq vues par défaut (Passe H10), le pivot de A
-à 5,8 (Passe K6).
+à 5,8 (Passe K6), le suivi de D par défaut (Passe K7).
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
@@ -991,7 +1054,7 @@ sans traverser C ; (c) lacet max 0,96° / image en C ↔ D (≤ 0,55° ailleurs)
 −39 px/s, Passe K1) : expliqués en Passes K2 / K3 (le pivot de D, qui suit 85 % du déplacement latéral, dépasse un joueur que sa marche en profondeur
 ralentit à l'écran ; le suivi le long des axes de la caméra n'y change rien) ; suivi visant la vitesse à l'écran :
 « Prototyper le suivi à l'écran » (Passe D1) : prototype `?camfollow=screen` (Passe K5 : 0 image de recul sur C ↔ D et D → B), RK2
-« Adopter (avec la preuve) » (Passe D3) ; (f) recul de −445 px/s pendant C → B au bord de l'eau (Passe K5), non expliqué : RK3
+« Adopter (avec la preuve) » (Passe D3) : par défaut depuis la Passe K7 (`?camfollow=off` : l'ancien suivi) ; (f) recul de −445 px/s pendant C → B au bord de l'eau (Passe K5), non expliqué : RK3
 « Diagnostiquer avant le gel » (Passe D3). Contrainte : la caméra de D reste
 à z < ~18,5 (maisons de la rive opposée dès z = 19,8, invisibles de A/B/C) ; tout cadrage plus reculé exige de les retirer ou de les abaisser.
 

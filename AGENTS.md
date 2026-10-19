@@ -128,6 +128,10 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `node tools/vis-why.mjs [--seed=s] [--size=WxH] [--ss=2] [--q=..] "name|x,z|mode" ...` — explains a pruned-vs-`vis=0` diff: the parts this exact
   camera (direct and mirror) shows that the active set does not draw, their bake-size / 8x tile counts (tile 0 + tile8x > 0 = a sliver
   thinner than a bake pixel), the diff left once they are forced into the active set, and the draw-order witness
+- `node tools/visproof-walk.mjs [--every=6] [--thr=24] [--q=..] [--keep=dir] [--control] "name|x,z|g=x,z;keys:secs;..." ...` — the visibility proof IN MOTION
+  (journal Passe K7): the same deterministic walk (the player steered like `camsim`) on the culled default and on `vis=0`, stepped in lockstep,
+  both shot every N steps and compared: the poses a walk really produces (a held-back follow, blends at their real weights), where `visproof` /
+  `viewport-proof` replay sampled or pinned poses; `--control` (the culled page drawing A's parts only) must differ
 - `tools/eval.mjs` honours BASE_URL (serve a frozen baseline worktree on :5174 for A/B)
 - `npm run art:doctor` — read-only report of the character art toolchain (Node, repo, Art Lab, Aseprite, Aseprite AI Artist);
   "Aseprite not installed" is a valid state (exit 0) and it never reports the integration as validated. `-- --json` available.
@@ -177,9 +181,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 `seed=1842` (canonical) · `forge=sabotaged` · `clean=1` (no HUD/panel) · `freeze=7.3` (deterministic time) ·
 `player=x,z` (place the player; the camera settles in that zone's framing, no arrival hold) ·
 `camera=A|B|C|D` (pin a framing) · `camblend=interpolated` (the former interpolated A <-> B / B <-> C blends, for comparison; absent = every blend
-anchored, the operator's decision of 2026-10-19, journal Passes K1 / K4) · `camfollow=screen` (a prototype for the operator,
-journal Passe K5: while D is on screen the follow never overtakes the player on screen, the focus held back and caught up by the usual
-smoothing; absent = the approved follow) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
+anchored, the operator's decision of 2026-10-19, journal Passes K1 / K4) · `camfollow=off` (the former follow, for comparison; absent =
+while D is on screen the follow never overtakes the player on screen, the focus held back and caught up by the usual smoothing: journal Passe K5,
+the default since the operator's decision of 2026-10-19, « Adopter (avec la preuve) », journal Passes D3 / K7) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
 a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
 `static=1` (hide characters/particles) · weather (`src/atmosphere/Weather.ts`, journal Passe W1; absent = nothing created, the game as before;
