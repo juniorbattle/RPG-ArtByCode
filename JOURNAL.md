@@ -472,6 +472,83 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
 ### Pensée
 - Une nouvelle règle de vue s'ajoute derrière un repli par feuille : sans les images qu'elle demande, un sprite garde exactement l'ancienne règle, et la production se prouve à 0 px avant même que l'art existe.
 
+## Passe H8 — Héros : `hero-x2-v3`, candidat en cinq vues depuis la planche v4-b (décisions H1, H4, H3) (2026-10-19)
+
+### Demande
+- Décisions de l'opérateur (Passe D1), mot pour mot : H1 « Retouches d'abord (visage, palette) », H4 « Source : la b », H3 « Cinq vues, le
+  héros d'abord », H2 « Sprint ×1,2 », H5 « Ignorées ». Branche `hero-x2-v3-h8` depuis `main` (`effc76e`).
+
+### Outil — [OK] `build-character.mjs` sort les trois-quarts, sur demande
+- Les facettes `downSide` / `upSide` sont reconstruites, quantifiées avec les autres (une palette commune), préparées, vérifiées et
+  étiquetées (`<anim>-downSide`, `<anim>-upSide`) **seulement si le rig les nomme** (une boîte de vue ou un export gardé). Tout autre rig se
+  construit comme avant.
+- L'outil est figé par empreinte dans 12 paquets, dont les 10 de production. Les 12 sont reconstruits par `verify-provenance --rebuild` avec
+  l'outil modifié : **12 / 12 « ok rebuild --check »**. Un premier passage avait filtré cette ligne par erreur ; il est relancé.
+- Dans les 12 paquets, l'empreinte de l'outil est mise à jour avec une entrée `maintenance` (Passe H8, ancienne empreinte gardée), comme
+  en Passe 4A-duodevicies. `verify-provenance` : intact.
+
+### Construit — [OK] (`rigs/hero-x2-v3.rig.mjs`, candidat, `runtimeUse: "lab"`)
+- **Source** : la planche v4-b (générée, non canonique, Passe I1), pas 3,4, `--holes --no-shadow --closing-from=48`. Les cinq vues de repos
+  sont toutes tournées vers la gauche (face, trois-quarts face, profil, trois-quarts dos, dos), sur une palette de 64 couleurs commune.
+- **Course de profil** : celle de `hero-x2-v2` (les huit images dessinées de la planche v3, enjambée de 14 texels, vol), ramenée sur la
+  nouvelle palette. Le rig vérifie la SHA-256 de la planche v3 avant de s'en servir (deuxième source, consignée dans le paquet).
+- **Courses de face, de dos et de trois-quarts** : le rig de face / dos de la v2 (rebond, poids, cape, jambes levées de 5 texels au plus,
+  mains qui descendent). Les masques des jambes, des mains et de l'ourlet sont mesurés sur des cartes ASCII de chaque vue, par matière.
+- **Export** : 60 images (repos 4, course 8, cinq facettes), feuille 384 × 960. `--check` reconstruit à l'identique ; `verify-provenance` :
+  intact ; manifeste candidat ; `art:validate` : 17 manifestes, 0 erreur.
+- **`BakedCast`** : l'entrée candidate (DEV `?cast=candidate`) montre maintenant `hero-x2-v3`. `hero-x2-v2` reste dans le dépôt, inchangé.
+  Texture cuite : 322 + 60 images, sous les 672 garanties.
+
+### Mesures — [OK]
+- `walkSlide` 14 (la même course de profil) : 3,73 m/s, 4,48 m/s avec Maj. Glissement en mouvement : B −0,07, D −0,07 (la quantification).
+- **Directions du clavier à l'écran** (le joueur aux points de référence des cadrages) :
+  - w / s : 3° en B, 13° en C (face / dos), **33° en A et 35° en D** (secteur trois-quarts, avec `?views=5`) ;
+  - les diagonales : 69 à 79° (profil).
+  - Le héros au clavier montre donc ses trois-quarts surtout **en D et en A**, où la perspective décentre ses pas. La règle à trois vues y
+    montrait un dos ou une face qui glissent en biais.
+- Flipbooks en D (`KEYS=w`, `KEYS=s`, trois vues contre cinq) : avec cinq vues, le trois-quarts dos remplace le dos qui glisse.
+- Revue : `reviews/hero-x2-v3/` (export, en scène B et D, courses de trois-quarts ×4, v2 contre v3 au repos ×3).
+
+### Critique à l'aveugle
+- **Méthode** :
+  - un agent neuf, la v2 contre la v3, sous des étiquettes tirées au sort (la clé hors du dossier des images) ;
+  - les mêmes planches ×3 : repos face / profil / dos, course de face, course de profil ; le docker approuvé comme référence ;
+  - l'auto-critique écrite avant le verdict.
+- **[OK, de peu] La v3 l'emporte** : environ 0,5 point en moyenne, confiance d'environ 65 %. Ses notes contre celles de la v2 :
+  - silhouette 7,5 / 7 ;
+  - palette et matières 6,5 / 5,5 (reflets des cheveux plus clairs, boucles dorées, semelles sombres) ;
+  - contours 5,5 / 5 ;
+  - course de face 5 / 4,5 ;
+  - course de profil 7 / 6 (le genou de la 4e image n'est plus percé) ;
+  - proportions 7 / 7.
+- **[KO] L'objectif « visage » de la décision H1 n'est pas atteint : 6 contre 6,5**, la v2 devant.
+  - Les yeux sont plus lisibles mais « mi-clos » : une ligne de cils sombre sur la rangée 24.
+  - Il n'y a toujours pas de bouche, et la peau est d'un seul ton.
+  - **Vérifié sur les pixels de la vue de face** : rangée 24 sombre aux colonnes 25-28 et 34-38 ; blancs des yeux en rangée 25 (colonnes
+    26 et 37) ; aucun texel de bouche dans la peau des rangées 26-31. La petite bouche de la planche v4-b ne survit pas au pas de 3,4.
+- **Contre le docker**, les deux candidats restent derrière en palette, contours et visage. Relevés communs aux deux :
+  - la course de face se lit « sur place » (bras figés, jambes raides) ;
+  - le poing figé à la poitrine en profil ;
+  - le bruit du buste.
+- **Mon choix, en attendant l'opérateur** :
+  - aucune retouche empilée (« Principes à garder » : une retouche qui ne gagne pas nettement à l'aveugle ne s'empile pas) ;
+  - la v3 reste le candidat présenté, puisque c'est la source choisie par l'opérateur et qu'elle apporte les cinq vues ;
+  - la bouche et des yeux moins lourds se reprendraient au texel ou depuis une nouvelle source : décision de l'opérateur.
+
+### Restes [?]
+- La revue de l'opérateur en jeu : `npm run dev`, puis `?cast=candidate&views=5`. Rien n'est approuvé.
+- Ensuite, au choix de l'opérateur :
+  - la règle à cinq vues par défaut ;
+  - les trois-quarts des PNJ (une source par personnage) ;
+  - les masques des déclinaisons du héros.
+
+### Pensée
+- Un outil figé par empreinte dans des paquets approuvés s'étend par une option que seul un nouveau rig déclenche. La preuve, c'est la
+  reconstruction à l'identique de chaque paquet, puis l'empreinte mise à jour avec sa note. Un filtre de sortie trop étroit peut cacher le
+  verdict : lire la ligne entière une fois avant de filtrer.
+- La valeur d'une vue se mesure sur les directions réelles du joueur : au clavier, la perspective place ses pas en trois-quarts en A et en D,
+  pas en B.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -515,7 +592,7 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
   (Passe T1 : 672 images garanties). Passe H6 : vitesse du héros cuit tirée de son cycle (3,73 m/s avec le rig préparé, Maj = sprint × 1,2),
   rig préparé (14 texels, vol, genoux à 5 texels) ; export reconstruit avec Aseprite (Passe H7 : `walkSlide` 14, `--check` identique,
   glissement ≈ 0). Décisions de la Passe D1 : « Source : la b » (planche v4-b), « Cinq vues, le héros d'abord », « Sprint ×1,2 », vues du
-  côté droit « Ignorées » : **à appliquer**. Vues de trois-quarts : étude `briefs/three-quarter-views.md` (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
+  côté droit « Ignorées » : appliquées en Passe H8 (`hero-x2-v3`, candidat en cinq vues, revue de l'opérateur en jeu). Vues de trois-quarts : étude `briefs/three-quarter-views.md` (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
   deux planches générées en huit vues, trois-quarts dos compris, archivées comme sources non canoniques). Plus tard : masques du héros pour ses
   déclinaisons, écran de choix (code de jeu). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
   production.

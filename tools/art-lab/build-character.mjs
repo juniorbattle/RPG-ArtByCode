@@ -24,7 +24,9 @@ const check = flag('--check'), viewsOnly = flag('--views-only'), keep = optv('--
 const rigFile = args[0];
 if (!rigFile) { console.error('usage: node tools/art-lab/build-character.mjs <rig.mjs> [--check] [--views-only] [--keep <dir>]'); process.exit(2); }
 const rig = await import(pathToFileURL(path.resolve(rigFile)).href);
-const id = rig.id, S = rig.source, DIRS = ['down', 'up', 'side'];
+// the facings built: front, back, profile, and the three-quarter ones (downSide, upSide; journal Passe H8) only when the rig's source names
+// them (a view box or a kept export): every other rig builds exactly as before
+const id = rig.id, S = rig.source, DIRS = ['down', 'up', 'side', ...['downSide', 'upSide'].filter((d) => S.views?.[d] || S.keep?.[d])];
 const ase = [process.env.ASEPRITE_PATH, 'C:/Program Files/Aseprite/Aseprite.exe', 'C:/Program Files (x86)/Aseprite/Aseprite.exe',
   'C:/Program Files (x86)/Steam/steamapps/common/Aseprite/Aseprite.exe', '/Applications/Aseprite.app/Contents/MacOS/aseprite', '/usr/bin/aseprite'].filter(Boolean).find((p) => fs.existsSync(p));
 

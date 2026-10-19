@@ -135,7 +135,7 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   reference sheets (`art-lab/characters/reference/sources/`: each file against its `.source.json` record, SHA-256 and size); a
   `production` manifest also needs its export PNG to match the SHA-256 of its provenance pack (what the game's cast trusts)
 - `node tools/art-lab/build-character.mjs art-lab/characters/rigs/<id>.rig.mjs [--check]` — an animated baked character from its rig script
-  (archived sheet -> reconstruction per facing, with the rig's optional `source.options` such as `bgThreshold` or `closingFrom` -> one palette (or the approved palette pinned by `palette.from`) -> rig frames (idle / walk / talk / hammer) -> Aseprite `.aseprite` + sheet PNG / JSON with tags
+  (archived sheet -> reconstruction per facing, with the rig's optional `source.options` such as `bgThreshold` or `closingFrom` -> one palette (or the approved palette pinned by `palette.from`) -> rig frames (idle / walk / talk / hammer; facings down / up / side, plus the three-quarter downSide / upSide when the rig's source names them, journal Passe H8) -> Aseprite `.aseprite` + sheet PNG / JSON with tags
   `<anim>-<dir>`); `--check` rebuilds into a temp folder and compares with the committed views and exports (needs Chrome + Aseprite)
 - `npm run art:sheet -- <sheet.png> [meta.json] [--out f.png] [--scale 4]` — labelled nearest-neighbour review contact sheet
   (Windows PowerShell drops the first `--` of any `npm run x -- flags` and npm then eats the flags: write `npm run x '--' flags`

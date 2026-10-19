@@ -76,7 +76,7 @@
   "art-lab/characters/provenance/blacksmith-x2-v1/build.json": "2dbfe4ade0f38f880932d49bb7f4d2831d9cee81898e8d6f1dcc3cce3e1f96d5",
   "art-lab/characters/provenance/blacksmith-x2-v1/palette.png": "42ca68a31dc23ca9bdf3141dcffd9b51b6a527d6566e1dee7974eaadad3b80f1",
   "art-lab/characters/rigs/blacksmith-x2-v1.rig.mjs": "2fe3cb154c0fd0944e52411561ad950d21cdd7c211738b2b2d5fc60aa565f5af",
-  "tools/art-lab/build-character.mjs": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
   "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
   "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
@@ -114,6 +114,15 @@
    "previousExportSha256": "e830a19fd2cc03f9b7d4bde4697967de30e90c0d602a7e66da87ba503d340419",
    "exportSha256": "c7923c3f68263524f7ba80309c959b55634df36186c204df8cc2b4f1e16369de",
    "approval": "approved by the operator on 2026-10-17 in the working session, after the five before / after images (reviews/blacksmith-x2-v1/08-inherited-defects-before-after.png; in-scene: 09-inherited-defects-walk-in-scene-cameraB.png) and the blind critiques' verdicts were shown: « J'approuve les cinq planches corrigées des défauts hérités pour la production : fusionne cast-inherited-defects dans main, pousse main et supprime la branche. »"
+  }
+ ],
+ "maintenance": [
+  {
+   "date": "2026-10-19",
+   "pass": "H8",
+   "file": "tools/art-lab/build-character.mjs",
+   "change": "the three-quarter facings (downSide, upSide) built only when a rig's source names them (a view box or a kept export); a rig without them builds exactly as before: this pack's rebuild (verify-provenance --rebuild) is identical after the change (journal Passe H8)",
+   "previousSha256": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5"
   }
  ]
 }

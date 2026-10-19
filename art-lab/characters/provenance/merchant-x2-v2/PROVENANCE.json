@@ -76,7 +76,7 @@
   "art-lab/characters/provenance/merchant-x2-v2/build.json": "2a8c973b4dcba7902ad9b61ca9480f67037de30dbd258a54c3e9aa3a3c173f85",
   "art-lab/characters/provenance/merchant-x2-v2/palette.png": "9554d2eb64e9cb5d12a19cbaa097d373baa0ce31d69f5994802fb01ef749bf15",
   "art-lab/characters/rigs/merchant-x2-v2.rig.mjs": "1f3344973f8e4f9fda949bac98bbe8058c5735c6d5c8944be7fe319fc8c2898a",
-  "tools/art-lab/build-character.mjs": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
   "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
   "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
@@ -97,6 +97,13 @@
    "file": "tools/art-lab/reconstruct-grid.mjs",
    "change": "one opt-in option added for the hooded passerby (--bg-threshold=<n>, the background flood-fill distance, default 26); without it the tool's output is unchanged: this pack's rebuild (verify-provenance --rebuild) is identical, before and after the change",
    "previousSha256": "46d277a2c10285ba48cd39fab1bca50791427632252459d9ec90750ddbc2d1cf"
+  },
+  {
+   "date": "2026-10-19",
+   "pass": "H8",
+   "file": "tools/art-lab/build-character.mjs",
+   "change": "the three-quarter facings (downSide, upSide) built only when a rig's source names them (a view box or a kept export); a rig without them builds exactly as before: this pack's rebuild (verify-provenance --rebuild) is identical after the change (journal Passe H8)",
+   "previousSha256": "f6421e91a1adca8f7dd6f731e94d1909ae25778cced3354a93cadae847400fa5"
   }
  ],
  "revisions": [
