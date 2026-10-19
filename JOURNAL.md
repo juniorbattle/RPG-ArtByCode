@@ -756,10 +756,58 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
 - Une fiche de revue se construit après l'application des décisions précédentes : chaque point porte l'état prouvé du dépôt, et les
   adresses pour juger en jeu.
 
+## Passe D3 — Fiche de revue remplie (jalon M1) : onze décisions de l'opérateur consignées (2026-10-19)
+
+### Demande
+- L'opérateur a collé dans la séance le récapitulatif de la fiche (https://claude.ai/artifact/6URUh6P2VKXNxwCQq1RMsA), qui commence par
+  « Fiche de revue du district (M1) — mes choix : ».
+- La collection `decisions`, lue vers 20 h 01 UTC, compte 11 documents. Ils sont identiques au récapitulatif collé, sans aucune note.
+- Branche `decisions-d3` depuis `main` (`b235894`).
+
+### Les choix, mot pour mot (l'option cliquée)
+
+| | Décision | Choix |
+|---|---|---|
+| RH1 | Le héros en production | « Production » |
+| RH2 | Les cinq vues par défaut | « Par défaut avec le héros » |
+| RH3 | Le volet « palette » de ta décision H1 | « Fait » |
+| RH4 | Les trois-quarts pour les PNJ | « Plus tard » |
+| RK1 | Le pivot du cadrage A avancé de 0,8 m | « Appliquer 5,8 » |
+| RK2 | Le suivi qui ne dépasse plus le joueur en D | « Adopter (avec la preuve) » |
+| RK3 | Le recul de −445 px/s au bord de l'eau | « Diagnostiquer avant le gel » |
+| RG1 | Lancer le gel du district | « Lancer le gel » |
+| RJ1 | Clore le Merchant District | « Clore après le gel » |
+| RJ2 | La suite après le district | « L'état jour » |
+| RJ3 | Le statut Gold Master du district | « Pas encore » |
+
+### À appliquer, une branche par tâche, dans cet ordre
+1. RH1 et RH2 : `hero-x2-v3` en production, à la place du héros généré ; son manifeste approuvé avec la décision citée et datée ; la règle à
+   cinq vues par défaut.
+2. RK1 : le pivot de A à x 5,8 (le bake se refait, la preuve de visibilité suit).
+3. RK2 : `?camfollow=screen` par défaut, après une preuve de visibilité en mouvement.
+4. RK3 : le diagnostic du recul au bord de l'eau, avant le gel. Un correctif qui toucherait un cadrage approuvé est montré à l'opérateur
+   avant d'être appliqué.
+5. RG1 : le gel.
+   - T1 : couper la passe « derrière » du bake.
+   - T2 : corriger la géométrie (fissures, quai coplanaire), sans D ×4.
+   - T7 : retirer l'ancienne rive opposée. Le fond change : il est montré avant / après, et la fusion attend l'accord de l'opérateur.
+6. RJ1 : le district déclaré clos à la fin du gel.
+7. RJ2 : l'état jour. D'abord une proposition de direction artistique, décidée avec l'opérateur avant tout code.
+
+Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») et RJ3 (pas de Gold Master).
+
+### Pensée
+- Les choix se relisent dans la collection même quand l'opérateur colle le récapitulatif. Les deux concordent ici ; un écart serait reposé
+  à l'opérateur avant d'agir.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
+
+**0. Jalon M1 — décisions de la fiche de revue (Passe D3), à appliquer dans l'ordre de cette passe** : héros en production et cinq vues
+par défaut ; pivot de A à 5,8 ; suivi `?camfollow=screen` par défaut avec sa preuve ; diagnostic du recul au bord de l'eau ; gel (T1, T2,
+T7) ; district clos après le gel ; puis l'état jour. Gold Master : « Pas encore » (RJ3).
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
@@ -800,7 +848,8 @@ Rien à faire pour H2, H5, A1-A4, T1, T8 et M2. T2 et T7 attendent le gel du dis
   rig préparé (14 texels, vol, genoux à 5 texels) ; export reconstruit avec Aseprite (Passe H7 : `walkSlide` 14, `--check` identique,
   glissement ≈ 0). Décisions de la Passe D1 : « Source : la b » (planche v4-b), « Cinq vues, le héros d'abord », « Sprint ×1,2 », vues du
   côté droit « Ignorées » : appliquées en Passe H8 (`hero-x2-v3`, candidat en cinq vues, revue de l'opérateur en jeu) ; visage retouché au texel en Passe H9 (yeux
-  ouverts, bouche, ombre des joues ; critique à l'aveugle : 7 contre 5 sur le visage), à juger en jeu. Vues de trois-quarts : étude `briefs/three-quarter-views.md` (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
+  ouverts, bouche, ombre des joues ; critique à l'aveugle : 7 contre 5 sur le visage) ; fiche de revue (Passe D3) : RH1 « Production »,
+  RH2 « Par défaut avec le héros », RH3 « Fait », RH4 « Plus tard » (les trois-quarts des PNJ). Vues de trois-quarts : étude `briefs/three-quarter-views.md` (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
   deux planches générées en huit vues, trois-quarts dos compris, archivées comme sources non canoniques). Plus tard : masques du héros pour ses
   déclinaisons, écran de choix (code de jeu). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
   production.
@@ -834,11 +883,12 @@ sans traverser C ; (c) lacet max 0,96° / image en C ↔ D (≤ 0,55° ailleurs)
 (−131 px/s) font glisser le joueur à l'envers à l'écran (héritage de la passe 2, mesuré en 4B ; Passe K1 : B → A remesuré −139 px/s, C → B
 0 ; **transitions ancrées partout préparées derrière `?camblend=anchored`** : B → A 0 image de recul au lieu de 14, pic +21 px/s au lieu de +181 ;
 « Oui, par défaut » (Passe D1), appliqué (Passe K4) ; preuve de visibilité sur GPU faite, Passe G1 ; le reste demanderait de recaler le pivot de A :
-« Cherche et montre-moi » : pivot de A x 5,8 trouvé, avant / après montré, décision de l'opérateur, Passe K5) ; (e) reculs du joueur à l'écran en cadrage posé C / D (−15 à
+« Cherche et montre-moi » : pivot de A x 5,8 trouvé, avant / après montré, Passe K5 ; RK1 « Appliquer 5,8 », Passe D3) ; (e) reculs du joueur à l'écran en cadrage posé C / D (−15 à
 −39 px/s, Passe K1) : expliqués en Passes K2 / K3 (le pivot de D, qui suit 85 % du déplacement latéral, dépasse un joueur que sa marche en profondeur
 ralentit à l'écran ; le suivi le long des axes de la caméra n'y change rien) ; suivi visant la vitesse à l'écran :
-« Prototyper le suivi à l'écran » (Passe D1) : prototype `?camfollow=screen` (Passe K5 : 0 image de recul sur C ↔ D et D → B), à juger
-en jeu par l'opérateur ; (f) recul de −445 px/s pendant C → B au bord de l'eau (Passe K5), non expliqué. Contrainte : la caméra de D reste
+« Prototyper le suivi à l'écran » (Passe D1) : prototype `?camfollow=screen` (Passe K5 : 0 image de recul sur C ↔ D et D → B), RK2
+« Adopter (avec la preuve) » (Passe D3) ; (f) recul de −445 px/s pendant C → B au bord de l'eau (Passe K5), non expliqué : RK3
+« Diagnostiquer avant le gel » (Passe D3). Contrainte : la caméra de D reste
 à z < ~18,5 (maisons de la rive opposée dès z = 19,8, invisibles de A/B/C) ; tout cadrage plus reculé exige de les retirer ou de les abaisser.
 
 **5. Visibilité / culling**
@@ -880,7 +930,8 @@ la page publiée dans le visualiseur. Restes : visages des combattants (la gramm
 de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sources de lumière sur 24, ralenti sous 20 images/s.
 
 **6d. Jour et nuit (note de l'opérateur, Passe D1)** — mot pour mot : « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Le jeu n'a aujourd'hui que la nuit (direction
-artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code.
+artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
+c'est la suite après la clôture du district.
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
