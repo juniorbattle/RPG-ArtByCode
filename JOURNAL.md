@@ -573,6 +573,54 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un membre ne s'anime que s'il est séparable dans la vue : la source doit dessiner le bras détaché du buste ; une texture peinte chargée se
   fragmente quand on la tourne, des membres peints dans les teintes de la vue restent lisibles.
 
+## Passe H4 — Héros premium : deux lots d'images v3 évalués ; déclinaisons du protagoniste : « une base + couleurs » (2026-10-19)
+
+### Reçu
+- Lot 1, deux planches collées dans la séance (copies WebP), opérateur, mot pour mot : « que penses tu de ces images ? ce n'est encore valider
+  car je genere d'autres images encore ». Lot 2, quatre planches de casting (protagoniste en variantes A-D, personnages clés), mot pour mot :
+  « qu'en penses tu de ce lot de images ? ». Ni l'un ni l'autre validé ; rien d'archivé (copies avec perte : l'archive attend le PNG d'origine
+  de la planche retenue). Détail des mesures : `briefs/hero-proposal.md` § 11.
+
+### Mesures (règle de 10 px sur les copies, à quelques pixels près)
+- **[OK]** lot 1, proportions : tête ≈ 0,31 de la hauteur, contre 0,28-0,33 pour les PNJ redessinés dans la même image (0,28 sur la v2) ;
+  visage presque aussi large que le leur, au lieu d'environ la moitié sur la v2.
+- **[KO]** lot 1 : pas de vrai profil au repos (vues de côté de trois quarts) ; course à la même enjambée (écart des pieds 149-184 px pour des
+  figures ≈ 262 px), aucune pose jambes croisées. Course de la deuxième planche à ≈ 0,75 de l'échelle du repos, proportions gardées ; de la
+  première, buste rétréci (0,63 contre une tête à 0,89).
+- **[KO] ma première lecture des bras** (« le poing au même endroit sur toutes les images ») : je mesurais le poing le plus avancé, or en course
+  de profil un poing est toujours devant. L'opérateur, mot pour mot : « pourtant les bras bougent bien sur les sprites walk/run ». Relu image
+  par image, alignées sur la tête : **[OK]** deuxième planche, la main proche descend à la hanche sur les images 2, 3 et 7, le bras proche est
+  devant sur les autres (les deux extrêmes dessinés, ordre irrégulier) ; première, coude et avant-bras varient, le bras proche ne passe jamais
+  derrière la hanche.
+- **[KO]** lot 2 comme source : figures de repos ≈ 130-205 px, de course ≈ 75-125 px (1 à 2,4 px de source par texel pour un sprite de 85
+  rangées ; v2 : 5,3) ; texte sur les planches. **[?]** cape de même clarté (OKLab L ≈ 0,31-0,35) mais deux fois moins saturée (C 0,03-0,05
+  contre 0,08 sur la v2), liseré doré presque absent : lisibilité de nuit à vérifier en scène. Personnages clés : propositions non canoniques,
+  deux doublonnent la distribution approuvée (marchande, capitaine / gardes).
+
+### Décision de l'opérateur (2026-10-19), mot pour mot
+- « nous aurons des declinaisons du protagonist afin de laisser le choix au joueur de choisir le personnage qu'il veut ».
+- Question : « Qu'est-ce qui doit changer d'une déclinaison du protagoniste à l'autre ? » ; réponse, mot pour mot : « Une base + couleurs
+  (Recommandé) » (autres choix proposés : « Plusieurs coiffures dès le départ », « Personnages distincts »).
+- Sens : un seul dessin (une planche, un rig, une approbation), décliné en couleurs de cheveux et de peau (peut-être de cape) par le système
+  des variantes des PNJ (Passe V1 : recoloration au rendu, aucune image de plus dans la texture cuite) ; d'autres coiffures plus tard, chacune
+  une nouvelle base qui reprend les rampes.
+
+### Fait
+- Brief : décision 6, note au § 5 (une seule planche de base ; les couleurs ne se génèrent pas), un risque au § 8, § 11 (les deux lots).
+  Aucun asset, aucun code.
+
+### Restes [?]
+- La planche de base de l'opérateur (PNG téléchargé), puis § 6 du brief.
+- Plus tard, en tâches distinctes : masques du héros (cheveux, peau, cape éventuelle ; plus propres que ceux des PNJ, le héros est toujours à
+  l'écran) ; écran de choix et héros choisi à la place du joueur (code de jeu, décision de l'opérateur).
+
+### Pensée
+- Le balancement d'un bras de profil se lit sur le bras proche (celui qui passe par-dessus le buste), images alignées sur la tête : le poing
+  le plus avancé ne dit rien, en course un poing est toujours devant.
+- Une planche de casting choisit une direction ; une source se juge à la taille de ses figures contre les 85 rangées du sprite.
+- Une déclinaison de couleur passe par le système des variantes (au rendu, sans image en plus) ; une déclinaison de forme demande une base
+  dessinée.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -604,12 +652,14 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   distribution de production, sans confirmation explicite consignée : à faire confirmer. Originaux des planches de référence des PNJ (01-16,
   17-24, planche complémentaire) à retrouver (l'opérateur s'en charge ; ceux du casting 1 sont archivés, Passe H2) ; droits de tiers non
   vérifiés exhaustivement ; signatures C2PA lues, jamais validées (`c2patool` non installé).
-- **Héros premium** (Passes H0 à H3) : casting 1 tranché par l'opérateur (design de la planche 1, pantalon foncé, planches archivées
-  avec leurs PNG d'origine) ; planche v2 archivée, héros `hero-x2-v1` construit au stade lab puis écarté par l'opérateur (proportions, bras
+- **Héros premium** (Passes H0 à H4) : casting 1 tranché par l'opérateur (design de la planche 1, pantalon foncé, planches archivées avec
+  leurs PNG d'origine) ; planche v2 archivée, héros `hero-x2-v1` construit au stade lab puis écarté par l'opérateur (proportions, bras
   immobiles, cuisses trop hautes ; « experimental ») ; décision, mot pour mot : « Planche v3 (Recommandé) » ; prompt v3 prêt
-  (`briefs/hero-proposal.md` § 5, trois pièces jointes) ; **en attente de la planche v3 de l'opérateur** (PNG téléchargé). Avant toute
-  production : élargir la texture cuite (322 + 30 images > 336 garanties) ; course avec Maj à décider. Le reste des planches du casting :
-  propositions non canoniques, design à valider avant toute production.
+  (`briefs/hero-proposal.md` § 5, trois pièces jointes) ; déclinaisons au choix du joueur : « Une base + couleurs (Recommandé) » (Passe H4) ;
+  deux lots d'images évalués, non validés (brief § 11) ; **en attente de la planche de base de l'opérateur** (PNG téléchargé). Avant toute
+  production : élargir la texture cuite (322 + 30 images > 336 garanties) ; course avec Maj à décider. Plus tard : masques du héros pour ses
+  déclinaisons, écran de choix (code de jeu). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
+  production.
 - **Personnages clés et suite de l'art** : héros et chat restent générés (densité ×1) ; ni personnage clé ni personnage **original** au
   même niveau ; E4 non lancée. Avant d'étendre : densité du cast (héros), liseré dépendant de la densité (liseré par sprite non implémenté),
   largeurs de texel inégales à ≈ 2 px / texel, cycle de marche en A. Décision ouverte : quelles planches étaient réellement rejetées (la
@@ -830,6 +880,8 @@ sprites.
   et une « course » générée se vérifie contre les vues de repos (même échelle, même buste) avant d'être prise pour un cycle (Passe H3).
 - Un membre ne s'anime que s'il est séparable dans la vue (bras détaché du buste : à demander à la source) ; une texture peinte chargée se
   fragmente une fois tournée, des membres peints dans les teintes de la vue restent lisibles (Passe H3).
+- Le balancement d'un bras de profil se lit sur le bras proche, images alignées sur la tête (en course, un poing est toujours devant) ; une
+  planche de casting choisit une direction, une source se juge à la taille de ses figures contre les 85 rangées du sprite (Passe H4).
 - Un masque de matière se vérifie contre la planche de référence : des texels « oubliés » peuvent être la bonne matière et la zone autour la
   fausse (manches du forgeron, Passe V3) ; une ombre que les règles ne prennent pas se relève à la main (rectangle forcé), pas par une règle
   générale.

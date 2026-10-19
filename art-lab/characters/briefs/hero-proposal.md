@@ -1,9 +1,10 @@
 # Héros premium — le protagoniste cuit : brief (2026-10-18)
 
 **Statut : BRIEF, décisions de base prises par l'opérateur (2026-10-18) ; casting 1 reçu et tranché (§ 9), ses PNG d'origine archivés
-(§ 9, Passe H2) ; planche v2 reçue, archivée et construite au stade lab (§ 10, Passe H3) ; l'opérateur demande une planche v3 (§ 1.5) :
-on attend le PNG d'origine qu'il génère avec le prompt v3 du § 5.** Asset de lab `hero-x2-v1` (non approuvé, « experimental ») construit
-depuis la v2, à reconstruire depuis la v3. Troisième point des priorités de l'opérateur (journal, Passe M5) ; journal, Passes H0 à H3.
+(§ 9, Passe H2) ; planche v2 reçue, archivée et construite au stade lab (§ 10, Passe H3) ; l'opérateur demande une planche v3 (§ 1.5) ;
+deux lots d'images évalués, non validés (§ 11) ; déclinaisons au choix du joueur : une base + couleurs (§ 1.6) : on attend le PNG d'origine
+de la planche de base, générée avec le prompt v3 du § 5.** Asset de lab `hero-x2-v1` (non approuvé, « experimental ») construit
+depuis la v2, à reconstruire depuis la v3. Troisième point des priorités de l'opérateur (journal, Passe M5) ; journal, Passes H0 à H4.
 
 ## 1. Décisions de l'opérateur (2026-10-18)
 1. **Base de dessin : « 01. Protagonist — Young Adventurer »** de la planche complémentaire de 14 personnages
@@ -24,6 +25,13 @@ depuis la v2, à reconstruire depuis la v3. Troisième point des priorités de l
    marche de maniere decale » ; puis, capture à l'appui : « on voit le ddefaut clairement sur ce runntime capture du protagnoist enrain de
    marcher avec les jambes cuisses trop haute et les bras immobiles ». À la question « Pour corriger les proportions et faire bouger les bras,
    quelle voie veux-tu ? », réponse, mot pour mot : « Planche v3 (Recommandé) ».
+6. **Déclinaisons du protagoniste** (2026-10-19, Passe H4) : « nous aurons des declinaisons du protagonist afin de laisser le choix au joueur
+   de choisir le personnage qu'il veut ». À la question « Qu'est-ce qui doit changer d'une déclinaison du protagoniste à l'autre ? », réponse,
+   mot pour mot : « Une base + couleurs (Recommandé) » (les autres choix proposés : « Plusieurs coiffures dès le départ », « Personnages
+   distincts »). Un seul dessin d'abord (une planche, un rig, une approbation), décliné en couleurs de cheveux et de peau (peut-être de cape)
+   par le système des variantes des PNJ (journal, Passe V1 : masques de matière, rampes, recoloration au rendu, aucune image de plus dans la
+   texture cuite) ; d'autres coiffures pourront s'ajouter, chacune une nouvelle base qui reprend ces couleurs. L'écran de choix et le héros
+   choisi à la place du joueur sont du code de jeu, à décider plus tard.
 
 ## 2. Pourquoi une nouvelle planche
 - La planche complémentaire ne montre le protagoniste que sous **une** vue (trois-quarts). Une marche demande face, dos et profil à la
@@ -81,7 +89,8 @@ Images à joindre (`scratch/hero-premium/attachments/`, non versionnées, refait
 planche) ; **image 2** = `v3-image2-v2-run-poses.png` (les cinq images de course de la v2) ; **image 3** = `v3-image3-cast-proportions-x6.png`
 (le docker et le coursier de la distribution, face et profil, ×6 au plus proche voisin sur gris `#808080` : référence de proportions
 seulement ; le voyageur, garçon aux cheveux en épis et au foulard bleu, n'est pas joint : trop proche de l'archétype du héros).
-Télécharger le résultat en PNG (bouton de téléchargement, pas copier-coller).
+Télécharger le résultat en PNG (bouton de téléchargement, pas copier-coller). Une seule planche, celle de la base (§ 1.6) : les couleurs
+des déclinaisons ne se génèrent pas, elles se font au rendu.
 
 ```text
 Create a character sheet of ONE character: the protagonist shown in image 1, for Cité du Tournoi — Merchant District at Night (HD-2D pixel
@@ -147,6 +156,9 @@ Technique and composition:
 - Les planches du casting 1 ont un fond bleu nuit proche de la cape indigo : les pièces jointes du v2 en héritent (elles viennent du PNG
   d'origine depuis la Passe H2, plus de la copie WebP avec perte). La planche individuelle doit venir en PNG d'origine sur fond gris neutre
   (un fond proche de la cape la fait découper par le remplissage du fond, cf. `reconstruct-grid --bg-threshold`).
+- Déclinaisons (§ 1.6) : le héros est toujours à l'écran, ses masques de matière doivent être plus propres que ceux des PNJ (l'opérateur a
+  relevé des défauts sur les peaux foncées, journal Passe V1) ; des cheveux foncés sur une cape sombre se fondent dans la nuit : chaque
+  variante se vérifie en scène.
 
 ## 9. Casting 1 (2026-10-18) : trois planches, propositions non canoniques
 **Reçu** : trois planches collées par l'opérateur dans la séance (WebP 1447 × 1087, avec perte), avec sa note : ce sont des références de
@@ -208,3 +220,30 @@ inutilisables telles quelles ; de profil, manche, gantelet, sacoche et ceinture 
 course 6 images (contact, poussée, vol × 2 ; pied d'appui 9 texels par image : horloge × 1,56 en B / D), jambes de profil peintes dans les
 teintes de la vue, bras immobiles. Écarté par l'opérateur (§ 1.5) : proportions, bras immobiles, cuisses trop hautes (corrigées dans le rig,
 le reste demande une nouvelle source).
+
+## 11. Lots d'images v3 (2026-10-19, Passe H4) : évalués, non validés par l'opérateur, non archivés
+Copies collées dans la séance (WebP avec perte), mesurées à la règle de 10 px (à quelques pixels près) ; l'opérateur génère encore. Rien n'est
+archivé : l'archive attend le PNG d'origine de la planche retenue.
+
+**Lot 1, deux planches** (le design de la v2 ; vues de repos, course de 8 images, rangée de comparaison avec quatre PNJ redessinés ; la
+première ajoute une marche, des poses à l'épée et des gros plans du visage) :
+- proportions corrigées : tête ≈ 0,31 de la hauteur, contre 0,28-0,33 pour les PNJ redessinés dans la même image ; visage presque aussi
+  large que le leur (≈ 52 px contre 57-65 sur la deuxième planche) ;
+- pas de vrai profil au repos : les vues de côté sont de trois quarts ;
+- course : la même enjambée répétée (écart des pieds 149-184 px sur la deuxième planche, figures ≈ 262 px ; marche de la première
+  150-167 px), aucune pose jambes croisées sous le corps ;
+- échelle de la course : deuxième planche ≈ 0,75 des vues de repos, proportions gardées (tête 0,77, buste 0,73, jambes 0,74) ; première :
+  tête 0,89 mais buste 0,63 (le défaut de la v2, en moins fort) ;
+- bras : deuxième planche, le bras proche est devant sur les images 1, 4, 5, 6 et 8 et la main proche descend à la hanche sur les images 2,
+  3 et 7 (les deux extrêmes du balancement, dans un ordre irrégulier : à choisir par pose) ; première, coude et avant-bras varient sans que le
+  bras proche passe derrière la hanche.
+
+**Lot 2, quatre planches de casting** (protagoniste en variantes A-D, personnages clés) :
+- pas une source : figures de repos ≈ 130-205 px, de course ≈ 75-125 px, 1 à 2,4 px de source par texel pour un sprite de 85 rangées (v2 :
+  5,3) ; texte sur les planches ;
+- cape de même clarté (OKLab L ≈ 0,31-0,35) mais deux fois moins saturée (C 0,03-0,05 contre 0,08 sur la v2) et liseré doré presque
+  absent : risque de se fondre dans la nuit, jamais vérifié en scène ;
+- course de la quatrième planche : écart des pieds 50-63 px pour ≈ 125 px, aucune pose jambes croisées ; sa troisième vue de repos est un
+  presque-profil ;
+- personnages clés : propositions non canoniques ; la marchande et la capitaine doublonnent la distribution approuvée (`merchant-x2-v2`,
+  gardes).
