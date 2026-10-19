@@ -209,7 +209,7 @@ visibility-bake failure: the fallback must keep every part and report it), `visp
 what a finer bake would keep) and `visfine=D:4|A+B+C+D:2|0` (the extra fine tiles, default D at 2x; `0` = none) ·
 `occ=0` (no player reveal: pixel-identical to Pass 2) · `occstyle=soft|dither|hybrid` · `occforce=all|0,2` (force
 occluders open: review / visibility proof) · `occdebug=1` (proxy boxes, reveal ellipse, active list) ·
-`occbehind=0` (skip the behind-occluder bake pass) · `occtest=shopA,tall` (treat those buildings' front walls as
+`occbehind=1` (run the behind-occluder bake pass; absent = skipped since the district's freeze, the operator's decisions T1 / RG1, journal Passe Z1) · `occtest=shopA,tall` (treat those buildings' front walls as
 occludable: stress test of the behind-occluder bake) · DEV server only: `labsprite=<id>|-&labpos=x,z[;x,z]` (show an Art Lab export
 on the porter actor, standing still, in the real scene; `-` = generated frames for the "before" image; compiled out of production,
 see `art-lab/README.md`) · DEV server only, EXPERIMENTAL: `baked=<id>&bakedpos=x,z` (a baked export in the MAIN atlas and renderer, per
@@ -343,8 +343,10 @@ banner, the boat's rig (mast / yard / sail) and the 7 quay lamps. Never tag smal
   segment camera -> torso vs voxelised proxy boxes; per-occluder fade in 0.2 s / out 0.3 s, 0.25 s release delay and a
   wider re-test radius while active. The ellipse (1080p reference: inner 40-70 px, outer 80-120 px) scales with the
   sprite's apparent height and the render height. Fragments are only cut if they are >= 0.35 m nearer than the player.
-- Visibility bake: a second pass renders the world WITHOUT the occludable parts, ID'd only inside the reveal windows
-  (the quay positions a pose can hold); what it shows joins the normal counts so a reveal never exposes a Tier 3 hole.
+- Visibility bake: a second pass (`?occbehind=1`; off since the district's freeze, journal Passe Z1: it restored no part on three seeds at three
+  window sizes and cost 90-160 ms per fresh bake) renders the world WITHOUT the occludable parts, ID'd only inside the reveal windows (the quay
+  positions a pose can hold); what it shows joins the normal counts so a reveal never exposes a Tier 3 hole. Run it again, with
+  `tools/occ-inventory.mjs`, whenever the framings, the occluders or the composition change.
 - New occluders: add them with `registerOcc` (static) / the lamp pattern (instanced) in `MerchantDistrictGenerator`,
   keep the table <= `OCC_MAX`, re-run the inventory and the `vis=0` vs default diff with `occforce=all`.
 

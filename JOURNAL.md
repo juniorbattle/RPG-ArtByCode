@@ -1026,13 +1026,53 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 - Un remède sur une seule grandeur (l'horloge du fondu) ne suffit pas quand les deux bornes de l'interpolation bougent : une piste mesurée
   à « insuffisante » se consigne avec ses chiffres.
 
+## Passe Z1 — Gel du district, T1 : la passe « derrière les occluders » du bake coupée par défaut (décisions T1, RG1) (2026-10-19)
+
+### Demande
+- Décisions de l'opérateur, mot pour mot : T1 « Garder jusqu'au gel » (Passe D1), RG1 « Lancer le gel » (Passe D3).
+- Branche `freeze-t1-z1` depuis `main` (`a5b1e00`).
+
+### Mesure d'abord — [OK]
+- Bake neuf (`viscache=0`), `static=1`, graines 1842 / 7719 / 30417, en 1920 × 1080, 1280 × 720 et 2560 × 1080, avec les caméras d'aujourd'hui :
+  transitions ancrées, pivot de A à 5,8, suivi de D.
+  - **Pièces restaurées par la passe : 0 dans les neuf cas.** Le nombre de triangles est le même avec et sans elle.
+  - **Coût** : bake de 280 à 375 ms avec la passe, de 189 à 213 ms sans elle, soit **90 à 160 ms gagnés** par bake neuf. Le cache rendait déjà
+    le bake gratuit ensuite.
+- Le test de charge `occtest=shopA,tall` (9 occluders au lieu de 2) avec la passe : elle tourne (2,5 millions de pixels comptés) et ne
+  restaure rien non plus, comme en Passe B1.
+
+### Fait — [OK]
+- `App` : la passe ne tourne plus que sur demande, avec `?occbehind=1` (avant : `?occbehind=0` la sautait). Le commentaire dit quand la
+  rejouer : à chaque changement de cadrage, d'occluder ou de composition, avec `tools/occ-inventory.mjs`.
+- `AGENTS.md` : le paramètre, et le paragraphe du bake dans la section de l'occlusion.
+
+### Preuves
+- **Rendus élagués** (captures déterministes, graine 1842, `static=1&occ=0`, 60 pas), la branche contre `main` figé (`a5b1e00`) :
+  - A, B, C, D : **0 px** ;
+  - les quatre transitions figées (`blend=` AB, BC, CD, BD) : **0 px** ;
+  - écart max 0.
+- **Validation** : typecheck, `npm test` 87 / 87, build, `art:validate`.
+
+### [KO → corrigé] procédure
+- Le premier essai du commit a échoué : le script du journal ne trouvait pas son ancre, présente deux fois. Les étapes push / fusion / suppression
+  de la branche venaient pourtant à la ligne suivante, sans lien `&&` avec lui : elles ont tourné.
+- Effet : rien de perdu, puisque la branche n'avait aucun commit. `main` est resté à `a5b1e00` (« Already up to date ») ; la branche, vide, a été
+  poussée puis supprimée ; les changements non commités sont restés dans la copie de travail. La branche est recréée, et le commit refait.
+- C'est la faute des Passes M3 et K5 : une étape irréversible doit être liée par `&&` à la vérification de la précédente, jamais seulement
+  posée à la ligne suivante. Et un texte qui porte des accents graves ne passe jamais par une commande `node -e` entre guillemets doubles :
+  Bash les lit comme une substitution de commande (deuxième faute de cette passe, corrigée par un script écrit sans le shell).
+
+### Pensée
+- Une passe de sécurité se coupe sur une mesure faite avec la configuration d'aujourd'hui : les cadrages ont changé depuis la Passe B1. La
+  passe reste disponible par un paramètre, avec la règle de la rejouer.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
 **0. Jalon M1 — décisions de la fiche de revue (Passe D3), à appliquer dans l'ordre de cette passe** :
-le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3 à décider par l'opérateur) ; gel (T1, T2, T7) ; district clos après le gel ;
+le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3 à décider par l'opérateur) ; gel (T2, T7 ; T1 fait, Passe Z1) ; district clos après le gel ;
 puis l'état jour. Gold Master : « Pas encore » (RJ3). Fait : le héros en production et les cinq vues par défaut (Passe H10), le pivot de A
 à 5,8 (Passe K6), le suivi de D par défaut (Passe K7).
 
@@ -1094,9 +1134,8 @@ puis l'état jour. Gold Master : « Pas encore » (RJ3). Fait : le héros en pro
   la trame « rampe » quand l'ellipse bouge. Ne rien changer sans inventaire visuel et technique (`tools/occ-inventory.mjs`) qui justifie un
   nouvel occluder.
 - Relecture humaine en mouvement (style C, rayons 40–70 / 80–120 px, fondu 0,2 / 0,3 s) ; décider si les PNJ d'interaction doivent entrer
-  dans le reveal ; chercher un cas où la passe « derrière » restaure vraiment des pièces (Passe B1 : aucune sur les graines 1842, 7719, 30417 en 720p et
-  1080p) : « Garder jusqu'au gel » (Passe D1), puis la couper au gel du district pour gagner ≈ 90 ms
-  de bake ; rejouer l'inventaire à chaque changement de zones de caméra ou de composition (bateau, lampadaires).
+  dans le reveal ; la passe « derrière » : coupée au gel (Passe Z1 : aucune pièce restaurée sur trois graines en 720p, 1080p et 2560 × 1080 ; 90 à
+  160 ms de bake gagnés), `?occbehind=1` pour la rejouer ; rejouer l'inventaire à chaque changement de zones de caméra ou de composition (bateau, lampadaires).
 
 **3. `SpriteRenderer`** (Passe S1 : superposition retirée, masque de protection propre, auréole mesurée en mouvement ; Passe S1b : une seule
 profondeur par sprite, le décor derrière un personnage ne le coupe plus ; l'enseigne devant le forgeron est voulue, opérateur, Passe H0) —

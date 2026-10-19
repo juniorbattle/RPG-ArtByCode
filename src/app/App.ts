@@ -363,7 +363,10 @@ export class App {
           // through the bake cache (journal pass 6, P5): the same inputs on the same GPU read back the stored result; ?viscache=0 | verify
           const v = bakeVisibilityCached({
             renderer: this.renderer, scene, nParts: n, poses: this.graph.samplePoses(WALK, frame), aspect: frame, waterY: WATER_Y,
-            behind: this.occlusion.enabled && behind && this.opts.params.get('occbehind') !== '0' ? { ...behind, windowsFor: (cam, p) => this.revealWindows(cam, p) } : undefined,
+            // the behind-occluder pass only on request (?occbehind=1): it restored no part on seeds 1842 / 7719 / 30417 at 720p, 1080p and
+            // 2560 x 1080 and cost 90-160 ms per fresh bake, cut at the district's freeze (the operator's decisions T1 / RG1, journal Passe Z1);
+            // re-run it (and tools/occ-inventory.mjs) whenever the framings or the composition change
+            behind: this.occlusion.enabled && behind && this.opts.params.get('occbehind') === '1' ? { ...behind, windowsFor: (cam, p) => this.revealWindows(cam, p) } : undefined,
             opts: this.bakeOptions(),
           }, this.bakeCacheMode());
           baked = true;
