@@ -43,7 +43,7 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `npm run build` — typecheck + production bundle
 - `npm test` — unit tests of the pure logic (`tests/*.test.mjs`, built-in `node --test`, ~2 s, no browser or GPU): camera zone hysteresis,
   `planDraw`, the production cast's gate (manifest approval, SHA-256 against the provenance pack), sheet metadata, PNG decoding, the baked walk
-  cycles' ground speed and the walkers' animation clock (journal Passe S2), the arena's combat simulation against the prototype's own script
+  cycles' ground speed and the walkers' animation clock (journal Passe S2), the image generation tool offline (a fake API and key, journal Passe I1), the arena's combat simulation against the prototype's own script
   read out of `arena/arena.html` (same events and state at every step, journal Passe P1) and the arena fighters' atlas.
   `tests/load.mjs` loads `src/` through Vite's SSR loader (extensionless imports, `?url`, named JSON imports, as the bundle resolves
   them; `--experimental-strip-types` alone cannot), with its own cache folder (`node_modules/.vite-test`), no file watcher and no
@@ -154,6 +154,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   `node tools/perf.mjs "arena|scene=arena"` (the tool drives `window.__arena` when there is no `__app`; `?gpuprof=1` for the panel-less timer)
 - Character Lab (dev only): `npm run dev`, then `/character-lab.html` (or `npm run art:lab`) — shows an exported PNG sheet through
   Three.js at 1x / 4x / runtime scale; `window.__lab.selfTest()` checks nearest filtering texel-for-texel. Not part of the game or its build.
+- `node tools/art-lab/gen-image.mjs --task=<name> --prompt-file=<f.txt> [--ref=<image> ...] [--n=1] [--size=1536x1024] [--quality=high]
+  [--dry-run]` — images through the OpenAI Images API, under the rule "Image generation" below (`--list-models`, `--spent`,
+  `--archive=<generated.png> --name=<base>`; journal Passe I1)
 
 ## Dev servers and background processes (operator rule, 2026-10-17)
 - Start dev servers with the session's `preview_start` tool and a `.claude/launch.json` entry (`dev`; `dev-strict` = the repo on :5186 with
@@ -234,6 +237,27 @@ cost, reproducibility and operator approval — not procedural purity.
   Local application / tool files, agent wiring with machine paths, secrets and temp files are never committed (`.gitignore`).
 - The workspace is `art-lab/` (see `art-lab/README.md`, `art-lab/characters/README.md`). Whether Aseprite and its agent
   integration have been validated is recorded in `JOURNAL.md` (latest pass) and by `npm run art:doctor`, not here.
+
+## Image generation (operator rule, 2026-10-19)
+The operator's decision, word for word: « Oui : fais créer l'outil de génération d'images par la séance du héros, avec un plafond de 5 $ par
+tâche, la provenance enregistrée automatiquement et la règle dans AGENTS.md. » (journal Passe I1).
+- Images are generated only through `tools/art-lab/gen-image.mjs` (OpenAI Images API, plain Node, no dependency), never by a hand-written
+  request. **Cap: 5 USD per task**, kept in a git-ignored ledger (`art-lab/characters/scratch/gen-image-ledger.json`): each request is reserved at
+  its worst-case estimate before it is sent and refused beyond the cap; `--cap` may only lower it. Raising the cap is the operator's decision.
+  `--dry-run` shows the request and its estimate without sending anything.
+- The key (`OPENAI_API_KEY`) lives in the environment or in `.env.local` at the repo root, which must stay git-ignored (the tool checks it).
+  It is never read by hand, printed, logged, committed or copied into a record, a message or another session. The MiniMax key of the same
+  file is not used unless the operator asks.
+- Provenance is automatic: every image keeps the API's original bytes next to its `.source.json` (model, endpoint, parameters, exact prompt and
+  its SHA-256, references' SHA-256, request id, dates, usage, cost from the tool's price table). The C2PA chunk is located, never claimed valid.
+  Generated images land in `art-lab/characters/scratch/generated/<task>/` (ignored); one that matters is copied byte for byte with
+  `--archive` into `art-lab/characters/reference/sources/` (checked by `npm run art:validate`) and committed with its record.
+- **Generated images are non-canonical** until the operator approves them; any use as a source of a character, and anything reaching the
+  runtime, goes through the usual manifests and the operator's decisions ("Art production principle").
+- Cloud sessions have no key (`.env.local` is not in the repository). Protocol: the cloud session writes its request in a tracked file on its
+  branch (prompt, references, count, purpose) and pushes; the operator tells the local session (or it reads the cloud session's transcript);
+  the local session generates with the tool, archives the images it keeps under `reference/sources/` with their records, pushes only its own
+  commits on top of that branch, and tells the cloud session to pull.
 
 ## Art direction (locked)
 Monochrome-leaning night: indigo / slate dominant, cool stone secondary, amber light as the only warm accent,

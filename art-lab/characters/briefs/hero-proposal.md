@@ -4,7 +4,8 @@
 (§ 9, Passe H2) ; planche v2 reçue, archivée et construite au stade lab (§ 10, Passe H3) ; l'opérateur demande une planche v3 (§ 1.5) ;
 deux lots d'images évalués, non validés (§ 11) ; déclinaisons au choix du joueur : une base + couleurs (§ 1.6) ; planche de base reçue,
 archivée et construite au stade lab : `hero-x2-v2`, candidat non approuvé (§ 1.7, § 12) : on attend la décision de l'opérateur sur la
-production.** `hero-x2-v1` (« experimental ») reste écarté. Troisième point des priorités de l'opérateur (journal, Passe M5) ; journal,
+production ; export reconstruit depuis le rig de la Passe H6 (Passe H7) ; deux vues tournantes en huit vues générées par l'outil d'images,
+archivées comme sources non canoniques (§ 13, Passe I1).** `hero-x2-v1` (« experimental ») reste écarté. Troisième point des priorités de l'opérateur (journal, Passe M5) ; journal,
 Passes H0 à H5.
 
 ## 1. Décisions de l'opérateur (2026-10-18)
@@ -269,3 +270,25 @@ l'ombre portée de la planche retirée ; repos 4 images ; course de profil de 8 
 corps et jambes dessinés, bras et cape tels quels), les intermédiaires par cisaillement des jambes dessinées depuis la hanche pour que le
 pied d'appui avance de 9 texels par image ; face / dos : rebond, poids, cape, jambes levées sous le corps, mains qui descendent. Aperçu en
 DEV (`?cast=candidate`). Revue : `reviews/hero-x2-v2/`.
+
+## 13. Vue tournante v4 (2026-10-19, Passe I1) : générée par l'outil d'images, archivée, non canonique
+**Pourquoi** : la planche v3 n'a aucun trois-quarts dos (étude `three-quarter-views.md`), et la critique de la Passe H5 lisait mal le
+visage (yeux sous la frange, pas de bouche).
+
+**Requête** : `tools/art-lab/gen-image.mjs`, tâche `hero-turnaround-v4`, `gpt-image-2`, édition depuis
+`reference/sources/hero-turnaround-v3-2026-10-19.png`, deux images 1536 × 1024 de qualité haute, 0,36 $. Le prompt exact est dans les
+fiches des deux images ; il demande :
+- huit vues de repos par pas de 45° ;
+- les vues 4 et 6 en trois-quarts dos, distinctes du dos ;
+- deux yeux et une petite bouche lisibles ;
+- trois rampes distinctes pour les cheveux, le cuir et les bottes ;
+- un fond gris uni, sans ombre portée.
+
+**Reçu** :
+- `hero-turnaround-v4-2026-10-19-a.png` : figures de 317 à 321 px ;
+- `hero-turnaround-v4-2026-10-19-b.png` : figures de 290 à 293 px, la même échelle que la v3 ;
+- les deux : vrais trois-quarts dos, visage lisible, design gardé ;
+- les vues 2 à 4 sont tournées vers la gauche, au lieu de la droite demandée.
+
+**Statut** : sources **non canoniques**. Rien n'est construit depuis elles. Leur usage (source des trois-quarts, du visage, d'une nouvelle base)
+est la décision de l'opérateur.

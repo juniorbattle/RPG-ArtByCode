@@ -1,0 +1,79 @@
+{
+  "kind": "generated-image",
+  "file": "hero-turnaround-v4-2026-10-19-a.png",
+  "sha256": "cddd87d0c8e45b1ae608bce999e3e61affe2d3e0aba4e8e9243fd73dc3e15ba0",
+  "bytes": 1507833,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "d154c8b8ac0eaa7d89bab168780b94f519208a2fd47ca688be3753ab21cf495a",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 is the character sheet of ONE character, the protagonist of \"Cité du Tournoi\" (HD-2D pixel art, a merchant district at night). Make a NEW turnaround sheet of the SAME character. Keep his design, colours, proportions and pixel-art rendering exactly as in image 1: brown spiky hair; plain indigo hooded cloak with a thin gold edge and NO motif on the hem; brass clasp; ecru shirt; brown leather vest, belt, pouches and gauntlets; dark grey-brown trousers; tall brown boots with turned-down cuffs. The head, hair included, stays about one third of the height.\n\nONE row of EIGHT idle views (standing, arms relaxed), all at the SAME scale as the idle figures of image 1, feet on the SAME ground line, the body turning in 45-degree steps:\n1. front view;\n2. three-quarter front view, the body turned toward the right of the image;\n3. side view facing right: a true profile, one eye visible;\n4. three-quarter BACK view facing right: we see mostly his back and the back of his head, the right side of his face just turned away from us (only the cheek line and the tip of the nose visible), the cloak seen from behind and slightly from its right side;\n5. back view;\n6. three-quarter BACK view facing left: the mirror of view 4;\n7. side view facing left: a true profile;\n8. three-quarter front view, the body turned toward the left of the image.\nViews 4 and 6 are the most important: they must clearly differ from the back view 5 (the head and shoulders visibly turned, one boot tip and one gauntlet showing on the near side).\n\nFace, as in image 1 but readable at a small size: in the front and three-quarter front views both eyes clearly visible below the fringe, and a small mouth.\n\nColour separation: the hair, the leather (vest, straps, gauntlets) and the boots on three distinct value ramps, so that hair and leather never merge into one brown.\n\nTechnique and composition: premium illustrative pixel art, crisp square pixels of one uniform size across the whole sheet, controlled colour ramps, selective dark outlines; no blur, no mixed pixel sizes, no dithering, no scattered noise. Plain, flat, uniform neutral grey background like image 1 but WITHOUT any cast shadow or floor; generous empty space between the figures; no text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "9aefde1f5a194b155c43e875bd7f410faccbf1c4ad56065f9af8a80b4519a9ea",
+    "promptFile": "art-lab/characters/scratch/hero-premium/prompts/hero-turnaround-v4.txt",
+    "references": [
+      {
+        "file": "art-lab/characters/reference/sources/hero-turnaround-v3-2026-10-19.png",
+        "sha256": "a86cea282b5645ec4ab008dd0dc469f76d5105e792a12b62ec587758385d29a1",
+        "bytes": 2280337
+      }
+    ],
+    "image": "1 of 2",
+    "task": "hero-turnaround-v4",
+    "requestedAt": "2026-10-19T16:05:57.752Z",
+    "response": {
+      "requestId": "req_33d7fd55c172445797198ae268c4b4d3",
+      "created": "2026-10-19T16:07:03.000Z",
+      "processingMs": 64367
+    },
+    "usage": {
+      "input_tokens": 3960,
+      "input_tokens_details": {
+        "image_tokens": 2904,
+        "text_tokens": 1056
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 14936
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.18713,
+        "fromUsage": 0.357792
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 23664 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-10-19",
+    "from": "hero-turnaround-v4-20261019T160557Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

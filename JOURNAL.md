@@ -1120,6 +1120,108 @@ aussi les personnages combattants. Nous allons intégrer des spirites cohérents
 - Une reconstruction préparée sans l'outil final (la séance cloud n'avait pas Aseprite) n'est finie qu'après `--check` et
   `verify-provenance` sur une machine qui l'a. Avant, les images du rig et l'export versionné restent deux choses distinctes.
 
+## Passe I1 — Outil de génération d'images (OpenAI, plafond 5 $ par tâche) ; premier essai : vue tournante du héros en huit vues (2026-10-19)
+
+### Demande
+- Décision de l'opérateur (2026-10-19), mot pour mot : « Oui : fais créer l'outil de génération d'images par la séance du héros, avec un
+  plafond de 5 $ par tâche, la provenance enregistrée automatiquement et la règle dans AGENTS.md. » ; puis, mot pour mot : « attends ne cree
+  rien tout de suite une sous-session est en cours mais prend ces considerations pour plus tart ».
+- Reprise après la séance cloud (Passe H7, même demande). Branche `image-gen-tool` depuis `main` (`d43585b`).
+
+### Outil — [OK] (`tools/art-lab/gen-image.mjs`)
+- **Technique** : Node seul (`fetch`, `FormData`, `Blob`), sans dépendance.
+- **Points d'accès** :
+  - `/v1/images/generations` sans référence ;
+  - `/v1/images/edits` avec des références (`image[]`).
+- **Clé** :
+  - lue dans `OPENAI_API_KEY`, sinon dans `.env.local` ;
+  - `.env.local` est refusé s'il n'est pas ignoré par git (contrôle par `git check-ignore`) ;
+  - la clé n'apparaît que dans l'en-tête `Authorization` ; toute ligne affichée ou écrite passe par `redact`.
+  - Elle n'a été ni lue à la main ni affichée dans cette passe.
+- **Plafond** :
+  - un registre ignoré par git (`art-lab/characters/scratch/gen-image-ledger.json`) tient la dépense de chaque tâche ;
+  - chaque requête y est réservée au pire cas **avant** l'envoi, et refusée si la tâche dépassait 5 $ ;
+  - `--cap` ne peut que baisser le plafond ;
+  - la réponse remplace la réservation par le coût de sa consommation ;
+  - une erreur HTTP compte 0 ; une requête restée sans réponse garde sa réservation.
+- **Modèles** : tarifs de la page de prix d'OpenAI, lue le 19/10.
+  - `gpt-image-1`, `gpt-image-1-mini` et `gpt-image-1.5` suivent la table publiée de jetons de sortie ;
+  - `gpt-image-2` n'a pas de table publiée : le pire cas compte trois fois la table ;
+  - tout autre modèle est refusé (pas d'estimation, donc pas de plafond).
+  - `--list-models` lit les modèles d'image du compte (gratuit) : `gpt-image-1`, `-1-mini`, `-1.5`, `-2`, `-2.5-flare`, `-2.5-sunburst`,
+    `chatgpt-image-latest`.
+- **Provenance automatique**, dans une fiche `.source.json` à côté de chaque image, dont les octets de l'API sont gardés tels quels :
+  - modèle, point d'accès, paramètres ;
+  - prompt exact et son SHA-256 ; références (SHA-256, taille) ;
+  - identifiant de requête, dates, consommation, coût estimé et coût d'après la consommation ;
+  - empreinte de l'outil ;
+  - présence du bloc C2PA (`caBX`), **non vérifié**.
+- **Archivage** : `--archive` copie une image à l'octet dans `reference/sources/` avec sa fiche ; il ne remplace jamais une source
+  existante et refuse une image qui ne correspond plus à sa fiche.
+- **Autres modes** : `--dry-run` (rien n'est envoyé ni écrit), `--spent`.
+- **Règle** : section « Image generation » d'`AGENTS.md`, avec la décision citée et le protocole des séances cloud de la mémoire du projet.
+
+### Tests — [OK] (`tests/gen-image.test.mjs`, 7 tests, hors ligne, faux `fetch`, fausse clé)
+- Couvert :
+  - lecture de la clé, et refus d'un `.env.local` que git commiterait ;
+  - estimations et coûts contre les prix publiés, écrits en nombres dans le test ;
+  - une génération complète : octets gardés, fiche, registre réglé, clé absente de tout fichier écrit et de toute ligne affichée ;
+  - les références envoyées en `image[]`, sans `input_fidelity` pour `gpt-image-2` ;
+  - le plafond : refus avant tout envoi, `--cap 50` ramené à 5 ; `--dry-run` ;
+  - les pannes : HTTP 400, absence de réponse, message sans la clé ;
+  - `--archive`.
+- **Douze fautes injectées une à une, toutes attrapées** :
+  - plafond ignoré ; plafond relevable ;
+  - message d'erreur non masqué ;
+  - erreur HTTP facturée ; réservation perdue sans réponse ;
+  - `.env.local` lu sans contrôle ;
+  - octets modifiés ;
+  - `--dry-run` qui envoie ;
+  - archive écrasée ;
+  - pire cas de `gpt-image-2` à 1 × la table ; `input_fidelity` envoyé à tous ;
+  - texte de sortie payé au prix de l'image.
+- `npm test` 82 / 82.
+
+### Premier essai — [OK] la requête ; [?] le jugement est à l'opérateur
+- **But** : deux points ouverts du héros.
+  - Les vues de trois-quarts : la planche v3 n'a aucun trois-quarts dos (Passe H6).
+  - Le visage : yeux sous la frange, pas de bouche (critique de la Passe H5).
+- **Requête** :
+  - tâche `hero-turnaround-v4` ; `gpt-image-2`, édition depuis la planche v3 archivée ;
+  - deux images 1536 × 1024, qualité haute ;
+  - prompt dans les fiches (SHA-256 `9aefde1f5a194b15…`) : huit vues de repos par pas de 45° (vues 4 et 6 en trois-quarts dos), visage
+    lisible, cheveux, cuir et bottes sur trois rampes distinctes, fond gris sans ombre portée.
+- **Coût** : réservé 1,19 $ ; consommation 3 960 jetons d'entrée (2 904 d'image) et 10 976 de sortie, soit **0,36 $**. Total de la tâche :
+  0,36 $ sur 5.
+- **Résultat**, deux planches :
+  - de vrais trois-quarts dos aux vues 4 et 6 : nuque et ligne de la joue, gantelet et bout de botte du côté proche ;
+  - deux yeux lisibles sous la frange et une petite bouche ;
+  - le design gardé : cape indigo unie au liseré doré, fermoir, cuir, pantalon foncé.
+- **Écart au prompt** : les vues 2 à 4 sont tournées vers la gauche au lieu de la droite. C'est sans effet pour le jeu, qui retourne le
+  profil.
+- **Mesures** : boîtes des figures, fond médian du bord, seuil 40.
+  - Image a : figures de 317 à 321 px, 8 % plus grandes que la planche v3.
+  - **Image b** : figures de 290 à 293 px, la même échelle que les vues de repos de la v3 (289 à 297 px).
+  - Aucune des deux n'a d'ombre portée.
+- **Archivage** : les deux images sont archivées à l'octet, comme **sources non canoniques**. Elles attendent la décision de l'opérateur.
+  - `reference/sources/hero-turnaround-v4-2026-10-19-a.png` (`cddd87d0…`) et `-b.png`, avec leurs fiches automatiques ;
+  - `cmp` identique ; `art:validate` : 14 sources, 0 erreur.
+
+### Restes [?]
+- Décisions de l'opérateur, portées sur la fiche d'arbitrages :
+  - prendre ces planches comme source des trois-quarts et du visage du héros ;
+  - aller aux cinq vues (`briefs/three-quarter-views.md` § 6).
+- Rien n'est construit depuis ces planches. La reconstruction (pas, palette, rig) suivra cette décision.
+- Clé MiniMax de `.env.local` : non utilisée (règle).
+
+### Pensée
+- Un plafond de dépense se tient avant l'envoi :
+  - on réserve au pire cas, puis on règle d'après la consommation ;
+  - pour un modèle sans table publiée, on prend un pire cas déclaré (ici trois fois la table), et la consommation réelle (5 488 jetons par
+    image) dit ensuite s'il était juste.
+- Une clé se garde par construction (un seul endroit où elle passe, tout le reste masqué), et se prouve par une fausse clé cherchée dans
+  tout ce que l'outil écrit et affiche.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -1161,7 +1263,8 @@ aussi les personnages combattants. Nous allons intégrer des spirites cohérents
   (Passe T1 : 672 images garanties). Passe H6 : vitesse du héros cuit tirée de son cycle (3,73 m/s avec le rig préparé, Maj = sprint × 1,2),
   rig préparé (14 texels, vol, genoux à 5 texels) ; export reconstruit avec Aseprite (Passe H7 : `walkSlide` 14, `--check` identique,
   glissement ≈ 0), **décision de l'opérateur en jeu**. Vues de
-  trois-quarts : étude `briefs/three-quarter-views.md`, décision de l'opérateur (aucun trois-quarts dos sur la planche). Plus tard : masques du héros pour ses
+  trois-quarts : étude `briefs/three-quarter-views.md`, décision de l'opérateur (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
+  deux planches générées en huit vues, trois-quarts dos compris, archivées comme sources non canoniques). Plus tard : masques du héros pour ses
   déclinaisons, écran de choix (code de jeu). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
   production.
 - **Personnages clés et suite de l'art** : héros et chat restent générés (densité ×1) ; ni personnage clé ni personnage **original** au
