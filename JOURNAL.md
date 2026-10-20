@@ -585,8 +585,21 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   servie sur :5187 par le Vite du dépôt avec une config hors dépôt sans import (`vite.config.ts` de la copie ne trouve pas `vite` hors du
   dépôt).
 
-### Relais local
-- Requête `briefs/local-requests/000-handshake.md` poussée (type « autre ») : l'état de la machine locale (Aseprite, clé OpenAI, GPU).
+- **Capture de fumée de `main`** (`detshots`, 1280 × 720, `seed=1842&clean=1&camera=B&freeze=7.3`, 120 pas, personnages compris) et son
+  témoin de répétition : deux chargements en parallèle, **0 px** (`diff.mjs` au seuil 0, et les deux PNG identiques à l'octet). Chaque
+  chargement prend **162 s** en SwiftShader (deux en parallèle sur 4 cœurs), le bake compris.
+- **[KO → corrigé]** `tools/diff.mjs` compte au seuil 24 par défaut : le seuil 0 du brief se passe en quatrième argument. Il lui faut aussi
+  `CHROME_PATH` (il ouvre un navigateur pour décoder les PNG).
+
+### Relais local — [?]
+- Requête `briefs/local-requests/000-handshake.md` poussée (type « autre ») : l'état de la machine locale (Aseprite, clé OpenAI, GPU). Pas de
+  réponse à la clôture de L0 ; la séance continue (le brief : une requête ne bloque jamais).
+
+### Preuves
+- Aucun fichier de `src/`, `tests/` ou `tools/` ne change. Validation : typecheck, `npm test` 103 / 103, build, `art:validate`.
+
+### Pensée
+- Un outil de preuve se relit avant d'en croire le « 0 % » : son seuil par défaut n'est pas forcément celui de la preuve.
 
 ## À reprendre (par priorité)
 
