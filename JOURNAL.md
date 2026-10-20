@@ -650,6 +650,59 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - La preuve d'une bascule de production, c'est le défaut de la branche contre l'ancien candidat de `main` (`?cast=candidate`) à 0 px : ce que
   l'opérateur a vu est ce qui part en production.
 
+## Passe N1 — Planification de la séance cloud « version jouable » : inventaire du code, écarts avec les contrats maîtres, plan v1 (2026-10-20)
+
+### Demande
+- Séance lancée par la séance de la Passe H11. Les mots de l'opérateur, mot pour mot : « nous allons planifier notre grosse session cloud a
+  effectuer des maintenant toujours avec le principe d'avoir une version jouable en prenant en compte ce que nous avons fait dans la mesure
+  du possible ( cloud n'a pas acces au services externe ) ». Sa règle : « a partir de maintenant chaque nouvelle tache sera lance sur une
+  nouvelle session ».
+- La tâche : planifier avec l'opérateur une longue séance cloud autonome, qui livre une version jouable guidée par ses deux contrats
+  maîtres, le gameplay v1.0 et le tournoi v1.0 (2026-10-02). Ils ont été transmis dans la séance ; ils ne sont pas dans le dépôt.
+  - La séance cloud n'est lancée qu'une fois le plan validé, et sur le « go » de l'opérateur.
+  - Cette séance planifie seulement : elle ne code pas la version jouable.
+- Branche `cloud-plan-n1` depuis `main` (`8a707b9`), dans un worktree (`.claude/worktrees/cloud-plan-n1`) : le dossier partagé avec les
+  autres séances reste sur `main`.
+
+### Fait — [OK]
+- **L'inventaire, lu dans le code** (§ 2 du plan) :
+  - **La ville** : un seul quartier, clos ; le quai praticable fait environ 40 × 7 m (`WALK`).
+    - Les interactions se limitent à deux : la bulle « … » des PNJ (2,5 s, sans texte) et la bascule de la forge (`NORMAL_FORGE` /
+      `SABOTAGED_FORGE`).
+    - L'état du jour n'est lu qu'au démarrage (constructeur d'`App`) ; la météo, elle, se change en jouant.
+    - Le HUD de la ville est en anglais, dans `src/debug/`, et le panneau DEV s'affiche par défaut.
+  - **L'arène** : une scène à part, un seul duel (Ren contre Marek), en temps continu. `CombatSim` reçoit ses données au constructeur.
+  - **Ce qui n'existe pas** : un état de partie, les créneaux, l'économie, les quêtes, les dialogues écrits, le tournoi, la sauvegarde, un
+    menu, le passage de la ville à l'arène.
+- **Treize écarts avec les contrats** (§ 3 du plan), signalés sans être tranchés. Le premier :
+  - le contrat de gameplay dit « combat tour par tour » ;
+  - l'arène se joue sans attente : des temps de charge, une garde tenue, une esquive dans une fenêtre de réaction ;
+  - le rapport du prototype (`arena/source/runtime-bakeoff-report.txt`, passe 9) présente ces règles comme le « nouveau design » de
+    l'opérateur, venu après une version « Dynamic Turn-Based » à jauge.
+- **Le plan v1**, `briefs/cloud-session-playable.md` : le périmètre (la tranche du gameplay § 13, ramenée au cloud), l'architecture (un cœur
+  pur `src/game/`, le mode jouable derrière un paramètre), huit lots L0 à L7 avec leur critère de fin et leurs preuves headless, ce qui est
+  réutilisé, les risques et quatorze décisions préparées.
+- **Mon choix d'emplacement** : `briefs/` à la racine. Les briefs existants vivent dans `art-lab/characters/briefs/`, mais ce sont des
+  briefs d'art ; un brief de séance qui touche tout le jeu va à la racine, sous le même nom de dossier.
+- **Constat** : le dépôt GitHub est public (`"visibility": "public"`, lu par l'API publique). Tout fichier versionné est publié, contrats
+  compris (décision C1).
+- **Le journal** : les passes gardées font 49 769 octets. Pas d'archivage.
+
+### Preuves
+- Document seulement : aucun fichier de `src/`, `tests/` ou `tools/` ne change.
+- **Validation** : typecheck, `npm test` 103 / 103, build, `art:validate`.
+
+### Restes [?]
+- **La fiche d'arbitrages** (décisions C1-C3, P1-P4, G1-G3, K1-K3, S1), puis les choix consignés mot pour mot au § 11 du plan et au
+  journal, puis le brief final et le lancement sur le « go ».
+- **Trois points que seul l'opérateur peut lever** : les contrats hors du dépôt ; `PROJECT_MASTER_CONTRACT.md` absent ; la « décision A3 »
+  des verrous, définie nulle part dans le dépôt.
+
+### Pensée
+- Un écart entre un contrat et le code se montre avec sa source des deux côtés : la clause, le fichier, la passe du prototype. Il reste à
+  l'opérateur. « Tour par tour » et « pas d'attente pour agir » ne se tranchent pas par l'agent.
+- Un dossier partagé entre séances ne change pas de branche : la branche de tâche vit dans un worktree.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -661,6 +714,10 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
   défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
+
+**0b. Version jouable — séance cloud (Passe N1)** : plan v1 `briefs/cloud-session-playable.md` (inventaire, écarts E1-E13 avec les contrats
+  maîtres, lots L0-L7). Reste : la fiche d'arbitrages (C1-C3, P1-P4, G1-G3, K1-K3, S1), les choix consignés au § 11 du plan, le brief final, le
+  lancement sur le « go » de l'opérateur.
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
