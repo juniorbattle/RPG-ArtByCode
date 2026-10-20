@@ -63,12 +63,19 @@ void main(){
   float star = step(0.994, h) * smoothstep(0.24, 0.0, length(fract(sd) - 0.5));
   star *= smoothstep(0.2, 0.5, rd.y) * (1.0 - pow(mu, 30.0)) * (1.0 - cl);
   col += vec3(0.62, 0.68, 0.85) * star * (0.08 + 0.22 * hash13(cell + 7.0));
+  #ifdef DAY
+  // the day (?time=day, journal Passe Y1; a variant compiled only by day): a pale sky veiled with thin cloud (J3), the veil brighter than the
+  // haze; no moon, corona or stars (the sun, high at midday, stays above every framing)
+  float veil = max(cl, smoothstep(0.42, 0.78, n) * smoothstep(0.02, 0.2, rd.y));
+  col = mix(skyColor(rd), uFogColor * 1.1 + vec3(0.05), veil * 0.42);
+  #endif
   gl_FragColor = vec4(col, 1.0);
 }`;
 
-export function buildSky(): THREE.Mesh {
+/** `day` (?time=day, journal Passe Y1): the day's sky, a variant compiled with DAY; the night's material is main's exactly */
+export function buildSky(day = false): THREE.Mesh {
   const mat = new THREE.ShaderMaterial({
-    uniforms: { ...U }, vertexShader: SKY_VERT, fragmentShader: SKY_FRAG,
+    uniforms: { ...U }, vertexShader: SKY_VERT, fragmentShader: SKY_FRAG, defines: day ? { DAY: 1 } : {},
     side: THREE.BackSide, depthWrite: false, depthTest: true,
   });
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), mat);

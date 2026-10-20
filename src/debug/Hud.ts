@@ -13,7 +13,7 @@ export class Hud {
   constructor(private app: App) {
     this.title = document.createElement('div');
     this.title.style.cssText = 'position:fixed;left:22px;top:16px;color:#f1e6cf;font:600 21px/1.1 "Palatino Linotype","Book Antiqua",Georgia,serif;letter-spacing:.04em;text-shadow:0 2px 8px #000,0 0 18px rgba(0,0,0,.8);z-index:20;pointer-events:none';
-    this.title.innerHTML = 'Cité du Tournoi<div style="font:400 13.5px/1.5 \'Segoe UI\',system-ui,sans-serif;letter-spacing:.06em;opacity:.85;margin-top:3px">Merchant District — Night <span id="hud-state" style="opacity:.6"></span></div>';
+    this.title.innerHTML = 'Cité du Tournoi<div style="font:400 13.5px/1.5 \'Segoe UI\',system-ui,sans-serif;letter-spacing:.06em;opacity:.85;margin-top:3px">Merchant District — ' + (app.day ? 'Day' : 'Night') + ' <span id="hud-state" style="opacity:.6"></span></div>';
     document.body.appendChild(this.title);
     this.prompt = document.createElement('div');
     this.prompt.style.cssText = 'position:fixed;left:50%;bottom:28px;transform:translateX(-50%);padding:6px 16px;border-radius:20px;background:rgba(8,12,22,.7);border:1px solid rgba(233,166,76,.4);color:#f6e7c4;font:13px "Segoe UI",system-ui,sans-serif;letter-spacing:.05em;z-index:20;opacity:0;transition:opacity .25s;pointer-events:none';

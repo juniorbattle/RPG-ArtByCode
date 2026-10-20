@@ -81,6 +81,11 @@ void main(){
   vec3 col = base * (hemi + uMoonCol * mw * 0.7) + emis * vTint.a;
   // the city is lit from below by its own lanterns: a faint warm lift at street level on facades
   col += base * vec3(1.0, 0.62, 0.34) * 0.3 * exp(-max(vWorld.y - vAux.y, 0.0) / 2.6) * facade;
+  #ifdef DAY
+  // by day (?time=day, journal Passe Y1; a variant compiled only by day: App sets DAY on the material named 'far') the far windows, bridge
+  // lamps and street-level lift are unlit (J4)
+  col = base * (hemi + uMoonCol * mw * 0.7);
+  #endif
   gl_FragColor = vec4(applyFog(col, vWorld), 1.0);
 }`;
 
@@ -428,7 +433,9 @@ export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictCo
 
 /** the far city's one cheap material (lit windows, roof courses, ashlar, haze); also the arena's backdrop (src/arena/ArenaScene.ts) */
 export function farMaterial(): THREE.ShaderMaterial {
-  return new THREE.ShaderMaterial({ uniforms: { ...U }, vertexShader: SURFACE_VERT, fragmentShader: FAR_FRAG, side: THREE.DoubleSide });
+  const m = new THREE.ShaderMaterial({ uniforms: { ...U }, vertexShader: SURFACE_VERT, fragmentShader: FAR_FRAG, side: THREE.DoubleSide });
+  m.name = 'far';
+  return m;
 }
 
 /** the far shader's surface kinds (aux.w) */

@@ -19,6 +19,7 @@ import type { BakedSheet, AuthoredSpawn } from '../characters/BakedSprites';
 import { loadProductionCast } from '../characters/BakedCast';
 import { ParticleSystem } from '../atmosphere/Particles';
 import { Weather, parseWeather, type WeatherParams } from '../atmosphere/Weather';
+import { DAY, litByDay, parseTime } from '../atmosphere/DayState';
 import { buildSky } from '../atmosphere/Sky';
 import { WATER_Y, WALK } from '../architecture/StreetComposer';
 import { type BakeOptions, type BakePose, type BehindPass } from '../district/Visibility';
@@ -80,6 +81,11 @@ export class App {
   private debugActive: CamId[] | null = null;
   /** low moon just right of the vanishing point: backlights the frontage, lays a glade on the canal */
   moonDir = new THREE.Vector3(0.965, 0.1736, 0.197).normalize();
+  /** the day state (?time=day, DayState.ts, journal Passe Y1): the sun in the moon's place, the day's sky, haze, lights and grade; false = the
+   *  night, untouched */
+  readonly day: boolean;
+  /** by day, the forge's own copy of the glow material (its coals stay lit while the window glass dims); null at night */
+  private forgeGlow: THREE.ShaderMaterial | null = null;
   onRegenerate: Array<() => void> = [];
   /** why the last visibility bake was rejected (culling is then off: every part kept); null when it succeeded or was not asked */
   visibilityError: string | null = null;
@@ -117,10 +123,13 @@ export class App {
     if (rf > 0 && rf <= 1) this.reflection.scale = rf;
     this.rig.camera.layers.enable(2);
     this.scene.add(this.rig.camera);
-    this.scene.add(buildSky());
+    // ?time=day (journal Passe Y1): read before the sky, which is built as the day's variant
+    this.day = parseTime(opts.params) === 'day';
+    this.scene.add(buildSky(this.day));
     this.reflection.clipY = WATER_Y;
     U.uMoonCol.value.copy(this.moonBase);
     const q = opts.params;
+    if (this.day) this.applyDay();
     if (q.has('seed')) this.config.seed = parseInt(q.get('seed')!, 10) >>> 0;
     if (q.get('forge') === 'sabotaged') this.config.forgeState = 'SABOTAGED_FORGE';
     if (q.has('freeze')) this.frozen = parseFloat(q.get('freeze')!);
@@ -169,6 +178,14 @@ export class App {
     // the main thread idles while the workers paint: the frame cap measures the display's vsync interval meanwhile
     this.frameCap.probe();
     this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress, painters);
+    if (this.day) {
+      // the window and lantern glass dims by day (J4); the forge keeps the night's glow on its own copy of the material
+      const g = this.lib.slot.glow;
+      this.forgeGlow = new THREE.ShaderMaterial({ uniforms: { ...g.uniforms, uEmissive: { value: g.uniforms.uEmissive.value } }, vertexShader: g.vertexShader, fragmentShader: g.fragmentShader, defines: { ...g.defines }, side: g.side });
+      this.forgeGlow.name = 'glow:forge-day';
+      g.uniforms.uEmissive.value = DAY.glowEmissive;
+      this.lib.slot.shop.uniforms.uEmissive.value = DAY.shopEmissive;
+    }
     this.frameCap.endProbe();
     this.generator = new MerchantDistrictGenerator(this.lib);
     this.opts.onProgress('sprites', 0.97);
@@ -274,6 +291,20 @@ export class App {
     this.particles.wind.copy(this.baseWind).multiplyScalar(p.wind);
   }
 
+  /** the day look (DayState.ts) over the night's values: in the constructor, before the first generation (the sun's shadow is rendered
+   *  there) and before the weather, which then scales the day's haze and gives it back */
+  private applyDay(): void {
+    this.moonDir.copy(DAY.sunDir);
+    this.moonBase.copy(DAY.sunCol);
+    U.uMoonCol.value.copy(this.moonBase);
+    this.ambientBase.copy(DAY.skyAmb);
+    U.uSkyAmb.value.copy(DAY.skyAmb); U.uGroundAmb.value.copy(DAY.groundAmb); U.uFillCol.value.copy(DAY.fillCol);
+    U.uFogColor.value.copy(DAY.fogColor); U.uSkyZenith.value.copy(DAY.skyZenith); U.uCityGlow.value.setRGB(0, 0, 0);
+    U.uFogDensity.value = DAY.fogDensity; U.uMist.value = DAY.mist; U.uWet.value = DAY.wet;
+    // the grade's colours copied, not shared: the DEV panel edits post.params in place
+    Object.assign(this.post.params, DAY.post, { shadowTint: DAY.post.shadowTint!.clone(), highlightTint: DAY.post.highlightTint!.clone() });
+  }
+
   setMoonGain(v: number): void { this.moonGain = v; U.uMoonCol.value.copy(this.moonBase).multiplyScalar(v); }
   setAmbientLevel(v: number): void { this.ambientLevel = v; this.applyAmbient(); }
   setAmbientColor(c: THREE.Color): void {
@@ -338,7 +369,16 @@ export class App {
     for (const l of this.district!.lights) {
       const s = this.lights.add(l, l.group, Math.abs(Math.sin(l.pos[0] * 12.9 + l.pos[2] * 78.2)));
       s.scale = 1;
+      // by day only the forge burns (J4): a light at 0 leaves the upload, the in-scatter, the halos and the sprite light shadows
+      if (this.day && !litByDay(l)) s.scale = s.targetScale = 0;
     }
+    const fg = this.forgeGlow;
+    if (fg) this.district!.forgeGroup.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && m.material === this.lib.slot.glow) m.material = fg; });
+    // by day the far city compiles its day variant (its lamps and windows unlit); the night's material is untouched
+    if (this.day) this.district!.group.traverse((o) => {
+      const m = (o as THREE.Mesh).material as THREE.ShaderMaterial | undefined;
+      if (m && m.name === 'far' && !m.defines?.DAY) { m.defines = { ...m.defines, DAY: 1 }; m.needsUpdate = true; }
+    });
   }
 
   /** `keepActors`: the same district rebuilt for another frame (resize re-bake): actors and particles carry on instead of re-spawning;

@@ -750,6 +750,85 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 - Un outil qui écrit une fiche de provenance n'y recopie jamais un chemin donné tel quel : il le rend relatif au dépôt, ou n'en garde que le
   nom.
 
+## Passe Y1 — L'état jour : un premier jet derrière `?time=day`, la nuit inchangée (décisions J1 à J4, J8, J9) (2026-10-19)
+
+### Demande
+- Opérateur, mot pour mot : « La fiche de l'état jour est remplie : relis mes choix, consigne-les et applique-les. » Ordre de la Passe D4 :
+  d'abord un premier jet derrière un paramètre, montré en captures aux quatre cadrages.
+- Branche `day-state-y1` depuis `main` (`39316b9`).
+- Avant le code, un agent a cartographié en lecture seule où vivent les valeurs « nuit » du moteur (lune, ambiance, ciel, brume, lumières,
+  fenêtres, étalonnage, météo).
+
+### Fait — [OK]
+- **`src/atmosphere/DayState.ts`** :
+  - `parseTime` : seul `?time=day` fait le jour ;
+  - `DAY` : la table des valeurs du jour ;
+  - `litByDay` : de jour, seule la forge brûle, c'est-à-dire son feu, ses braises, la barre chaude et le foyer sous sa hotte ; ses deux lanternes
+    de porche sont des lanternes (J4).
+- **`App`** (`?time=day` lu avant le ciel ; rien d'écrit sans lui) :
+  - le soleil prend la place de la lune : sa direction et sa couleur, donc son ombre rendue à la génération, le liseré et l'ombre de contact des
+    sprites ;
+  - puis l'ambiance, la brume et le ciel, les pavés et l'étalonnage ;
+  - le verre des fenêtres et des lanternes et les intérieurs de boutique faiblissent ; la forge garde sa lueur sur sa propre copie du matériau ;
+  - les lumières éteintes passent à l'échelle 0, ce qui les retire de l'envoi, de l'in-scatter, des halos et des ombres de sprites.
+- **Le ciel et la ville lointaine** : de jour, une variante compilée avec `#define DAY`, jamais une branche à l'exécution.
+  - Le ciel devient pâle, voilé de nuages fins plus clairs que la brume ; ni lune, ni couronne, ni étoiles.
+  - Les fenêtres, les lampes du pont et la lueur de rue du lointain s'éteignent.
+- Le titre du HUD dit « Day » de jour.
+- **Les valeurs du premier jet**, réglées en trois tours de captures :
+  - le soleil à 55° de hauteur, venu de l'amont du canal, côté canal, couleur (2,6 ; 2,3 ; 1,8) ;
+  - l'ambiance du ciel (0,34 ; 0,38 ; 0,45) ;
+  - la brume à 0,006 (nuit : 0,013), la brume basse à 0,1 ;
+  - le verre à 0,06 (nuit : 2,3), les boutiques à 0,35 (nuit : 1,9) ;
+  - l'étalonnage : exposition 1,0, bloom 0,18 au seuil 3,0, vignette 0,22, palette 0,6, saturation 1,0, l'ombre moins bleue (0,96 ; 0,99 ; 1,1) ;
+  - **mon choix, pas un choix de la fiche** : des pavés plus secs que la nuit (`uWet` 0,35 au lieu de 1).
+  - Tour 1 : brume à 0,012, on lisait un matin brumeux ; tour 2 : brume baissée, mais une image lavande ; tour 3 : soleil plus chaud, ombre du
+    grade moins bleue.
+
+### [KO → corrigé] la nuit bougeait d'un niveau
+- **Première version** : le jour était une branche `if (uDay > 0.0)` dans les shaders du ciel et du lointain, avec des facteurs qui valent 1 la
+  nuit.
+- **La preuve au seuil 0 l'a vu** : 2 et 3 px décalés d'1 / 255 en A (graines 1842 et 7719). Une branche non prise changeait la compilation.
+- **Ma faute de preuve** : le premier passage comparait au seuil par défaut de `tools/diff.mjs` (24). C'est la colonne « max » qui a montré
+  l'écart.
+- **Corrigé** : le jour devient une variante compilée ; l'uniforme `uDay` est retiré. Cette première version sert de contrôle négatif : le même
+  outil y voyait l'écart.
+- **[?] L'arène** : sa capture (`tools/arena-scene-shots.mjs`) n'est pas reproductible : `main` contre `main`, 99,99 % des pixels diffèrent,
+  jusqu'à 34. Elle ne prouve donc rien. Son matériau du lointain reste celui de `main` : sans `DAY`, la même source après le préprocesseur.
+
+### Preuves
+- **Nuit** (sans `?time=day`), contre `main` figé (`39316b9`, :5187), au **seuil 0**, **0 px partout** :
+  - graines 1842 et 7719 × A, B, C, D, D lointain et les quatre transitions figées (`static=1&occ=0`, 30 pas) ;
+  - les quatre références avec personnages (120 pas), la forge sabotée et l'orage.
+- **Jour** : témoin de répétition (deux chargements) **0 px**.
+  - Le jour final contre le troisième jet : 2 px d'écart d'1 niveau, car le mélange par `uDay = 1` a disparu.
+  - Combinaisons sans erreur de page : jour et orage, jour et forge sabotée, jour à la graine 7719.
+- **Tests** (`tests/day-state.test.mjs`, 3 tests) :
+  - le paramètre ;
+  - les lumières gardées et éteintes, sur les étiquettes des générateurs ;
+  - la variante compilée (aucune branche `uDay`) ;
+  - un soleil de midi ni trop bas ni vertical (la caméra de l'ombre regarde le long de lui), chaud contre une ambiance froide.
+  - **Quatre fautes injectées, attrapées** : les lanternes de la forge gardées, toute valeur de `time` acceptée, `uDay` à 1 par défaut (avant
+    son retrait), un soleil vertical.
+- **Validation** : typecheck, `npm test` 91 / 91, build, `art:validate`.
+- **Planches pour l'opérateur** : `screenshots/calibration/y1-day/{A,B,C,D}-night-day.png` (la nuit à gauche, le jour à droite, graine 1842).
+
+### Restes [?]
+- **La revue de l'opérateur en jeu** (J9) : `npm run dev`, puis `?time=day`. Rien n'est approuvé, et la nuit reste le défaut.
+- **Pas encore faits** : le pavois du tournoi (J5, J6), la foule du jour (J7, nombre à proposer).
+- **Vus sur les captures** :
+  - les petites fumées de cheminée restent sombres (couleurs écrites pour la nuit) ;
+  - le joint des pavés est très sombre en D ;
+  - le verre des fenêtres se lit brun foncé (aucun reflet du ciel) ;
+  - l'orage de jour pleut sous un soleil net : le ciel de jour ignore la couche de nuages, et les éclairs ne s'y dessinent pas.
+- **Non mesurés** : le temps GPU du jour ; les autres graines aux quatre cadrages.
+
+### Pensée
+- Un état qui ne doit rien changer sans son paramètre se fait en variante compilée (`#define`), pas en branche à l'exécution : une branche non
+  prise peut changer l'arrondi du code autour d'elle.
+- Une preuve « 0 px » donne son seuil, et la colonne du maximum se lit : au seuil par défaut, un écart d'un niveau passe inaperçu.
+- Une capture se recoupe avec son témoin de répétition avant de prouver quoi que ce soit (l'arène).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -757,8 +836,9 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
-  `AGENTS.md`). À appliquer dans l'ordre de la Passe D4 : un premier jet derrière un paramètre, montré en captures aux quatre cadrages ; le
-  pavois du tournoi ; une proposition chiffrée de la foule du jour (J7) ; le jour par défaut seulement après la revue de l'opérateur en jeu (J9).
+  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1), la nuit inchangée : à revoir par l'opérateur en jeu. Ensuite, dans l'ordre de la
+  Passe D4 : le pavois du tournoi (J5, J6) ; une proposition chiffrée de la foule du jour (J7) ; le jour par défaut seulement après la revue de
+  l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)

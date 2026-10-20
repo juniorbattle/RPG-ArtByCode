@@ -196,7 +196,10 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 a bare parameter = 1): `rain=<0..1>` (lamp-lit streaks, wetter cobbles, rings in puddles and on the canal, a little more mist), `snow=<0..1>`
 (drifting flakes, a cover on the cobbles and upward faces), `storm=<0..1>` (lightning flashes every 5-14 s, overcast sky hiding the moon; brings
 rain 0.85 x storm and wind 1 + storm unless given), `wind=<0..3>` (cloth / leaves sway, smoke drift, precipitation slant; 1 = as before);
-DEV: the panel's closed « Weather » section changes it while playing (`App.setWeather`, journal Passe W2) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
+DEV: the panel's closed « Weather » section changes it while playing (`App.setWeather`, journal Passe W2) · `time=day` (the day state,
+`src/atmosphere/DayState.ts`, journal Passe Y1, a first draft: a midday sun in the moon's place and its shadow, a pale veiled sky and a light
+haze, the night's palette transposed in the grade, lanterns, windows and far lights unlit, the forge lit; absent = the night, unchanged, the
+default until the operator approves the day in game, decision J9) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
 thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) ·
 `fps=off|<n>|v<k>|e<n>|a<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
 round(refresh / n) vsyncs / the same with an adaptive step; **default `a60`**, chosen by the operator on 2026-10-18 (`e60` from 2026-10-17):
@@ -281,7 +284,7 @@ Monochrome-leaning night: indigo / slate dominant, cool stone secondary, amber l
 desaturated ivory for canvas/highlights. Keep props concentrated at focal points (hero stall, lantern clusters,
 quay edge, bridge, a few banners); do not add uniform clutter.
 Day and night (the operator's note of 2026-10-19, word for word, journal Passe D1): « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Its art direction is decided
-(the operator's day-state sheet, journal Passe D4) and not implemented yet: the night above stays the game's default until the operator
+(the operator's day-state sheet, journal Passe D4); a first draft runs behind `?time=day` (journal Passe Y1). The night above stays the game's default until the operator
 approves the day in game (J9 « Après ma revue en jeu »).
 Day (decided, journal Passe D4):
 - **Midday** (J1 « Midi »): a high sun, short crisp shadows.
