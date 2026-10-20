@@ -755,6 +755,33 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Choix de la séance (consignés comme tels)
 - Lantern Row n'a qu'un aspect, la nuit, et ne s'ouvre que le soir : une maquette d'un seul cadrage n'a pas d'état du jour à montrer.
 - Le parvis reste l'arène sous son aspect de nuit (Passe L4).
+- Au téléphone en portrait, le parvis ne montre que le centre de l'arène (son cadrage est fait pour le paysage, comme le duel, qui affiche alors
+  « tournez l'appareil ») : en paysage, il se joue.
+
+### Preuves
+- **Tests** (`tests/town-roles.test.mjs` +2, `tests/slice.test.mjs`) : Lantern Row fermé le jour, ouvert le soir ; la raillerie (une seule fois,
+  la rancune de Cassius −15), la dénonciation refusée sans preuve, permise avec ; l'écoute de la taverne prend la soirée ; l'atlas de marche
+  n'existe qu'en mode parvis (le duel garde le sien) ; la partie prudente passe par les trois lieux.
+  - **Quatre fautes injectées une à une, toutes attrapées** : Lantern Row ouvert le jour, la raillerie sans effet, l'atlas de marche par défaut
+    (attrapée aussi par l'empreinte de l'atlas du duel, Passe L3), la partie prudente sans le troisième lieu.
+- **Le PD de l'arène** (`main` figé :5187, branche figée `1d78eac` :5190, boucle tenue, un moment de chauffe) : `charging`, `window`, `combo`,
+  `guardbreak`, `ko` à **0 px**, témoin compris. Pour `strike` et `heavyRen`, les deux chargements de `main` diffèrent entre eux de 107 à 162 px
+  dans la barre d'actions (ses transitions CSS) ; la branche est **identique à 0 px** à l'un des deux.
+- **`arena-scene-check`** : sans paramètre, la branche a échoué trois fois et `main` passé deux fois, sur la seule boucle vivante (5 images
+  contre 6). Mesuré : sans saisie, la boucle de l'arène ne fait qu'**une ou deux images en 10 s** en headless SwiftShader, sur `main` comme
+  sur la branche, alors qu'une image coûte 5 à 13 ms : la phase vivante du contrôle tombe ou non sur une image. Avec `fps=off`, **PASS** des
+  deux côtés (6 images, empreinte égale au prototype).
+- **Dans le navigateur** (branche figée) : Lantern Row et le parvis en 1280 × 720, 390 × 844 et 844 × 390, et le dialogue de Cassius, sans
+  erreur de page ; la marche au clavier sur le parvis (`D` tenu : le héros avance, image de marche, l'invite d'Odo) ; le duel du jour 2 joué
+  de bout en bout (`play-flow`, graine 30417), rejoué en Node à l'identique.
+- Deux images gardées : `screenshots/calibration/l6-places/`.
+- **Validation** : typecheck, `npm test` **148 / 148**, build, `art:validate`.
+
+### Pensée
+- Un bug de rendu se cherche d'abord dans ce que la caméra voit, pas dans l'éclairage : un sol absent laisse voir le ciel, qui ressemble à
+  un miroir.
+- Un contrôle qui échoue sur une branche et passe sur `main` ne prouve une régression qu'après avoir mesuré sa marge : ici, une ou deux images
+  en dix secondes des deux côtés.
 
 ## À reprendre (par priorité)
 
