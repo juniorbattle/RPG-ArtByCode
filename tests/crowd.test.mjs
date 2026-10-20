@@ -1,6 +1,8 @@
 // Ambient walkers (src/characters/ActorSystem.ts populate, journal Passes C1 / C2): by default round(5 x density) walkers, the five townsfolk
 // in turn (the operator's decision of 2026-10-19, « Cinq par défaut »: at density 1 each approved townsperson walks once); `?crowd=<n>` spawns
 // n of them, in turn too. The old random pick of the kind is still drawn, so the district RNG keeps every later draw in place.
+// Beyond what 3.2 m apart holds, `?crowd=<n>` (only) lets a walker without a place try again 2.2 then 1.4 m apart (the day's crowd, J7,
+// prepared for the operator, journal Passe R3).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './load.mjs';
@@ -50,4 +52,17 @@ test('the default is exactly the former ?crowd=5, and the RNG draws stay in plac
   const d = crowd(null, 1842);
   d.walkers.forEach((w, i) => { assert.ok(Math.abs(w.pos.x - OLD_CROWD5[i][0]) < 1e-6 && Math.abs(w.pos.z - OLD_CROWD5[i][1]) < 1e-6, `walker ${i}`); });
   assert.ok(Math.abs(d.porter.pos.x - 17.401212) < 1e-6 && Math.abs(d.porter.pos.z - 1.391807) < 1e-6, 'the porter');
+});
+
+test('?crowd=<n> beyond what 3.2 m holds (Passe R3): a walker without a place tries again 2.2 then 1.4 m apart; the default never does', () => {
+  const minGap = (ws) => { let m = Infinity; for (let i = 0; i < ws.length; i++) for (let j = i + 1; j < ws.length; j++) m = Math.min(m, Math.hypot(ws[i].pos.x - ws[j].pos.x, ws[i].pos.z - ws[j].pos.z)); return m; };
+  const dflt = crowd(null, 1842, 12);          // round(5 x 12) = 60 asked: far more than this quay holds 3.2 m apart
+  assert.ok(dflt.walkers.length < 60, `the default stops where 3.2 m stops (${dflt.walkers.length})`);
+  assert.ok(minGap(dflt.walkers) > 3.2, 'the default keeps 3.2 m');
+  const many = crowd(60, 1842);
+  assert.ok(many.walkers.length > dflt.walkers.length + 10, `?crowd places more (${many.walkers.length} against ${dflt.walkers.length})`);
+  const g = minGap(many.walkers);
+  assert.ok(g > 1.4 && g < 2.2, `never closer than 1.4 m, and the last tier used (closest pair ${g.toFixed(2)} m)`);
+  // until the first walker without a place, ?crowd draws exactly what the default draws
+  many.walkers.slice(0, 5).forEach((w, i) => assert.ok(w.pos.equals(dflt.walkers[i].pos), `walker ${i} where the default puts it`));
 });

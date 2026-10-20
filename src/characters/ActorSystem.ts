@@ -129,6 +129,11 @@ export class ActorSystem {
     for (let i = 0; i < n; i++) {
       let p: THREE.Vector3 | null = null;
       for (let k = 0; k < 20 && !p; k++) { const c = this.randomFree(rng); if (c && taken.every((t) => Math.hypot(t.x - c.x, t.z - c.z) > 3.2)) p = c; }
+      // ?crowd=<n> only (the day's crowd, J7, prepared for the operator's decision, journal Passe R3): the quay holds 8 walkers at most 3.2 m
+      // apart, so a walker that found no place tries again 2.2 then 1.4 m apart; the default never comes here (its draws stay in place)
+      if (!p && this.crowdCount !== null) {
+        for (const gap of [2.2, 1.4]) for (let k = 0; k < 20 && !p; k++) { const c = this.randomFree(rng); if (c && taken.every((t) => Math.hypot(t.x - c.x, t.z - c.z) > gap)) p = c; }
+      }
       if (p) taken.push(p);
       if (!p) continue;
       // the townsfolk in turn; the old random pick is still drawn, so every later draw of the district RNG keeps its place

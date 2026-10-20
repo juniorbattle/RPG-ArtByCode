@@ -617,6 +617,94 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   branche du code de l'effet, jamais par une formule « générale » qui redonnerait la nuit à l'arrondi près.
 - Un défaut de jour se trouve en relisant chaque valeur absolue qu'écrivait l'effet : `uWet` = 1 voulait dire « la nuit ».
 
+## Passe R3 — La foule du jour (J7) : proposition chiffrée publiée sur une fiche ; le placement au-delà de huit préparé derrière `?crowd` (2026-10-20)
+
+### Demande
+- Opérateur, mot pour mot : « Prépare la proposition chiffrée de la foule du jour (J7), avec sa mesure GPU, pour que je décide. »
+- C'est la tâche 5 de la Passe D6. Le choix J7 de la fiche de l'état jour était « Plus de monde le jour (note) », note vide (Passe D4).
+- Branche `day-crowd-sheet-r3` depuis `main` (`78337cb`).
+
+### Constat — [OK] le placement plafonnait la foule à huit
+- Un promeneur naît à 3,2 m au moins de tout autre personnage, en 20 essais (`ActorSystem.populate`).
+- Sur le quai réel (graine 1842), `?crowd=8` n'en plaçait que 7, et `?crowd=10` ou `?crowd=12` que 8. Le paramètre plafonnait sans le dire.
+- Vu par un relevé de ce que chaque effectif montre à l'écran (harnais de `tools/step-angles.mjs`, script hors dépôt). La première version
+  comptait les acteurs de détail « crowd », qui comprennent des PNJ placés à la main : elle compte maintenant le rôle `crowd`.
+
+### Fait — [OK]
+- **Préparé derrière `?crowd` seulement** : un promeneur sans place réessaie à 2,2 m, puis à 1,4 m, 20 essais chacun.
+  - Sans `crowd`, le code ne passe jamais par là : ses tirages restent en place, de nuit comme de jour.
+  - Avec un effectif qui tient à 3,2 m (5 aujourd'hui), rien ne change non plus.
+  - Désormais, 8, 10 et 12 demandés sont tous placés.
+- **Fiche privée** : https://claude.ai/artifact/EYTkeGc68zoUih9yziKjiB. Les choix sont enregistrés dans la collection `decisions`, vide à la
+  publication (relue). Le style et la logique sont ceux des fiches des Passes R1 et R2.
+  - En tête : comment voir en jeu (`?time=midday&crowd=12`, `?time=morning&crowd=6`, `?time=afternoon&crowd=9`) ; les deux tableaux de
+    mesures ci-dessous.
+  - **J7a, combien de promeneurs pour chaque état du jour.** Ma recommandation : matin 6, midi 12, fin de journée 9 (la note de l'opérateur à
+    J1 : le matin les lève-tôt, midi le moment où beaucoup de choses se passent). Autres options : 8 / 12 / 10, 5 / 8 / 6, cinq partout.
+  - **J7b, le placement resserré au-delà de huit.** Recommandé : l'accepter ; sinon, plafonner à huit.
+  - Sept captures déterministes (300 pas, les promeneurs ont marché), en JPEG hors du dépôt : midi en B à 5, 8 et 12, en D à 5 et 12, le matin à
+    6 et la fin de journée à 9.
+
+### Mesures
+- **À l'écran** (midi, 40 s de `App.update` à pas fixes, 4 relevés par seconde) :
+
+| demandés | placés | B : à l'écran | B : paires qui se chevauchent | D : à l'écran (max) | D : paires |
+|---|---|---|---|---|---|
+| 5 (aujourd'hui) | 5 | 5 | 2,2 | 1,7 (3) | 0,26 |
+| 8 | 8 | 8 | 4,7 | 2,5 (4) | 0,34 |
+| 10 | 10 | 10 | 7,3 | 3,6 (5) | 0,46 |
+| 12 | 12 | 12 | 8,6 | 4,0 (6) | 0,47 |
+
+  - B voit tout le quai ; D n'en voit qu'une partie.
+  - Une paire « se chevauche » quand deux silhouettes se recouvrent à l'écran (pieds à moins de 0,45 hauteur en travers et 0,5 en hauteur ;
+    hauteur = 1,7 m projetés × l'échelle de l'acteur × celle du cadrage). C'est une approximation, pour comparer les effectifs entre eux.
+- **GPU** (`tools/perf.mjs`, Radeon 780M, médiane de 5 tours entrelacés, **5 / 5 tours propres** au témoin de contention) :
+
+| variante | 1920 × 1080 | 2560 × 1267 | JS `update` |
+|---|---|---|---|
+| nuit, 5, B | 10,07 ms | 14,44 ms | 0,51 ms |
+| midi, 5, B | 9,03 | 13,16 | 0,53 |
+| midi, 8, B | 8,84 | — | 0,55 |
+| midi, 12, B | 8,81 | 12,93 | 0,58 |
+| midi, 5, D | 8,15 | — | 0,52 |
+| midi, 12, D | 8,22 | — | 0,60 |
+
+  - **Entre 5 et 12 promeneurs, l'écart reste dans le bruit** (± 0,2 ms) : tous les personnages sont dessinés en un appel (113 appels en B dans
+    tous les cas). Le JS paie 0,05 ms par image pour 7 promeneurs de plus.
+  - **Le temps GPU du jour, non mesuré jusqu'ici** (Passes Y1-Y4) : midi coûte environ 1 ms de moins que la nuit (1,3 ms en 2560 × 1267). Il
+    n'a que 4 lumières allumées sur 24.
+- **[KO → corrigé] la première série GPU** (3 tours) ne valait pas pour deux raisons.
+  - **Elle mesurait 8 promeneurs au plus** : c'est le plafond ci-dessus.
+  - **Elle était en contention** : un processus Chrome étranger utilisait 25 à 42 % de l'adaptateur. À 2560 × 1267, midi n'avait aucun tour
+    propre. C'était l'onglet du jeu que la séance avait ouvert dans son panneau navigateur (`preview_start`), qui rendait en arrière-plan.
+    Une fois l'onglet fermé, la seconde série a eu 5 tours propres sur 5 pour chaque variante.
+
+### Preuves
+- **Le jeu sans `crowd` ne change pas** (captures déterministes avec personnages, contre `main` figé `78337cb` sur :5187, au **seuil 0**) :
+  **0 px**, sans erreur de page.
+  - La nuit : A, B, C (120 pas), D (300 pas).
+  - Midi : B et D (300 pas).
+- **`?crowd=5` ne change pas** : 0 px la nuit en B, à midi en B et en D (300 pas).
+- **Contrôle** : `?crowd=12` à midi en B diffère de `main` (3,7 % des pixels), puisque `main` n'en plaçait que 8.
+- **Tests** (`tests/crowd.test.mjs` +1) :
+  - au-delà de ce que tient 3,2 m, le défaut s'arrête et garde 3,2 m entre ses promeneurs ;
+  - `?crowd` en place plus de dix de plus, jamais à moins de 1,4 m, et le dernier palier sert ;
+  - jusqu'au premier promeneur sans place, `?crowd` tire exactement ce que tire le défaut.
+  - **Trois fautes injectées, attrapées** : le défaut qui se resserre aussi ; pas de resserrement ; un palier à 0,6 m. Le fichier est restauré
+    à l'octet.
+- **Validation** : typecheck, `npm test` 98 / 98, build, `art:validate`.
+
+### Restes [?]
+- **Attendre que l'opérateur dise la fiche remplie**, puis relire `decisions`, consigner les choix mot pour mot et les appliquer :
+  - l'effectif de chaque état du jour devient son défaut ;
+  - la nuit garde ses cinq promeneurs (le district est clos) ;
+  - sans J7b, l'effectif plafonne à huit.
+- **Restent ensuite** : la revue du jour par l'opérateur en jeu (J9) ; le remède RK3 (Passe K8).
+
+### Pensée
+- Un paramètre de nombre se vérifie contre ce qui est vraiment placé : 12 demandés en plaçaient 8, sans erreur ni message.
+- Le panneau navigateur de la séance est un client du GPU comme un autre. Une mesure de temps se fait sans l'onglet du jeu qu'il garde ouvert.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -624,7 +712,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
-  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
+  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5) ; la foule du jour (J7) proposée sur une fiche (Passe R3, https://claude.ai/artifact/EYTkeGc68zoUih9yziKjiB), en attente des choix de l'opérateur. Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
   midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
   défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
@@ -773,6 +861,8 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
   `powerPreference`. Mesurer à la définition de l'écran de l'opérateur (dpr compris), pas seulement en 1080p.
 - Un temps GPU pris sur un poste partagé ne vaut qu'avec son témoin de contention (autres processus sur le même adaptateur) ; à défaut, le
   minimum des tours entrelacés est l'estimation sans contention. La traîne du temps d'image en headless n'est pas une mesure.
+- Avant une mesure GPU, fermer l'onglet du jeu que la séance a ouvert dans son panneau navigateur : il rend en arrière-plan sur le même
+  adaptateur (Passe R3 : 25 à 42 % d'un processus Chrome étranger, puis 5 tours propres sur 5 une fois fermé).
 - Une première fois (programme, variante, dessin) se mesure par une sonde dédiée : aucune moyenne ne la voit. Un intervalle rAF ne
   s'attribue qu'avec un repère (le départ de la boucle, un `gl.finish()` chronométré) : le plus grand intervalle depuis le chargement est le
   plus long bloc synchrone, pas forcément la première image.

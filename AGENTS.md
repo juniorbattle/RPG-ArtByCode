@@ -7,7 +7,7 @@ The Merchant District (night) is **complete** since 2026-10-19 (operator decisio
 M1 applied and reviewed, then frozen (journal Passes Z1-Z3). Its content, framings, cast and look stay as they are; any change to them is a
 new task decided by the operator. It is **not** Gold Master (RJ3 « Pas encore »: that status is the operator's). Next (RJ2): the day states,
 decided (journal Passes D4, D6; see "Art direction"): the morning, midday and the end of day are built behind `?time=` (journal Passes Y2-Y4);
-the weather applies to each state (journal Passe Y5); the day's crowd (J7) remains, and the day becomes the default only after the operator's
+the weather applies to each state (journal Passe Y5); the day's crowd (J7) is proposed on a sheet (journal Passe R3), and the day becomes the default only after the operator's
 review in game (J9).
 
 ## Project journal (MANDATORY workflow)
@@ -232,7 +232,8 @@ occludable: stress test of the behind-occluder bake) · DEV server only: `labspr
 on the porter actor, standing still, in the real scene; `-` = generated frames for the "before" image; compiled out of production,
 see `art-lab/README.md`) · DEV server only, EXPERIMENTAL: `baked=<id>&bakedpos=x,z` (a baked export in the MAIN atlas and renderer, per
 `art-lab/characters/runtime-integration-contract.md` v3; never in production builds; flags in `src/lab/bakedLoader.ts`) · `crowd=<n>` (n ambient walkers, the five townsfolk in turn, journal Passe C1; absent =
-round(5 x density) in turn, each townsperson once at density 1: the operator's decision of 2026-10-19, « Cinq par défaut », journal Passe C2) · `cast=generated`
+round(5 x density) in turn, each townsperson once at density 1: the operator's decision of 2026-10-19, « Cinq par défaut », journal Passe C2; the quay
+holds 8 walkers at most 3.2 m apart, so with `crowd` only a walker without a place tries again 2.2 then 1.4 m apart, journal Passe R3) · `cast=generated`
 (skip the production cast of baked characters, `src/characters/BakedCast.ts`: the old generated hero / porter / merchant / NPCs) · DEV server only:
 `cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production; none today) ·
 `views=3` (the three-view rule for every sprite; absent = the five-view rule, journal Passe V5: front / three-quarter / profile sectors at
@@ -309,7 +310,7 @@ Day (decided, journal Passes D4 and D6):
   `day-state-late-afternoon-2026-10-19.png`). Built and shown (journal Passe Y4), not yet reviewed in game by the operator. As on its track,
   the morning's light comes from the canal side (not from an east consistent with the end of day's sun at the far end of the canal).
 - **Kept from the sheet**: J4, lanterns and windows unlit by day, the forge lit; J6, the bunting by day only, never at night; J7, more people by
-  day, the number still to be proposed with its measurement and decided by the operator; J9, the night stays the default until the operator
+  day, the number proposed with its measurement on the sheet of journal Passe R3 and decided by the operator; J9, the night stays the default until the operator
   approves the day in game.
 
 ## Camera graph (`src/app/CameraGraph.ts`)
