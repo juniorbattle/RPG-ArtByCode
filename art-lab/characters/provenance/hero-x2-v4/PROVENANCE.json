@@ -1,0 +1,70 @@
+{
+ "id": "hero-x2-v4",
+ "status": "CANDIDATE, NOT APPROVED (journal Passe K11): for the operator's review in the scene (DEV, ?cast=candidate) before any production decision; hero-x2-v3 stays the production hero",
+ "request": {
+  "date": "2026-10-20",
+  "by": "operator (git user wonmii), in this session",
+  "text": "« Refais les cycles de face et de dos du héros en course, comme le profil (bras et jambes), et corrige son trois-quarts dos trop tourné ; montre-moi avant la production. » (journal Passes K10, K11)"
+ },
+ "approvals": [],
+ "source": {
+  "sheet": {
+   "description": "generated sheet b2 (gpt-image-2, NON-CANONICAL): its three-quarter back idle view (second row, first figure), reconstructed by the build at pitch 2.77",
+   "sha256": "400ba3013625ea5b6bca5be41769f5305e7fab6b54dfeeec2ab8f5bf1c818484",
+   "bytes": 1914381,
+   "path": "art-lab/characters/reference/sources/hero-run-v4-2026-10-20-b2.png",
+   "check": "the rig refuses a different file (SHA-256 checked before use)",
+   "origin": "generated through the OpenAI Images API with the operator's account (tools/art-lab/gen-image.mjs); its record names the model, the exact prompt and its SHA-256, the request id; C2PA chunk present, NOT verified",
+   "rights": "generated image (OpenAI's terms) through the operator's account; third-party rights NOT exhaustively verified; production use NOT decided"
+  },
+  "runSheets": [
+   {
+    "description": "generated run sheet a1: its front run (first row, pitch 2.78) and its three-quarter back run (third row, pitch 2.67)",
+    "sha256": "91b7635ab05a3bbba1b9b07aedf82cba27b929e2ee1c6e45d94db8941bb1c8dd",
+    "bytes": 2162998,
+    "path": "art-lab/characters/reference/sources/hero-run-v4-2026-10-20-a1.png",
+    "check": "the rig refuses a different file (SHA-256 checked before use)"
+   },
+   {
+    "description": "generated run sheet a2: its back run (second row, pitch 2.72)",
+    "sha256": "d45a10d4b02b09d778b215dd092cdf91f46f07b3c4cd4cad01c3b0f387cb78c0",
+    "bytes": 2115302,
+    "path": "art-lab/characters/reference/sources/hero-run-v4-2026-10-20-a2.png",
+    "check": "the rig refuses a different file (SHA-256 checked before use)"
+   },
+   {
+    "description": "generated sheet b1: its three-quarter front run (first row, pitch 2.93)",
+    "sha256": "79b39a5d5ac91b02382b03ce991cf6c77720b30f9068835e677cd0af2eceb7dd",
+    "bytes": 1639898,
+    "path": "art-lab/characters/reference/sources/hero-run-v4-2026-10-20-b1.png",
+    "check": "the rig refuses a different file (SHA-256 checked before use)"
+   }
+  ],
+  "kept": {
+   "from": "art-lab/characters/provenance/hero-x2-v3 (approved for production, RH1 « Production », journal Passe D3)",
+   "what": "the palette (its export, pinned), the front, three-quarter front, profile and back idle views, and every frame its rig makes in those facings plus its profile run (rebuilt by art-lab/characters/rigs/hero-x2-v3.rig.mjs)",
+   "check": "the rig refuses any of those files (views, export, rig) whose SHA-256 differs from hero-x2-v3's provenance pack"
+  }
+ },
+ "chain": [
+  "three-quarter back idle: reconstruct-grid.mjs <b2> 390,556,517,798 2.77 64 96 90 --holes --no-shadow --closing-from=48, full colours -> quantize-palette.mjs --palette-from exports/hero-x2-v3.png -> hero-x2-v3's prepare (halo, strands, slits, feet centred)",
+  "drawn runs (drawnRun in the rig): each figure of the row alone on its sheet (5 x 5-connected foreground components; the others painted with the background) -> reconstruct-grid.mjs at the run's pitch, same options (a clipped reconstruction is an error) -> nearest OKLab colour of hero-x2-v3's palette -> hero-x2-v3's cleaning without its feet centring -> the head on one column for the cycle (the idle's when every frame fits inside the border ring, else the nearest), the lowest texel lifted above the foot row by the figure's height above the row's median bottom on the sheet",
+  "frames: hero-x2-v3's 60 frames rebuilt by its rig, with the new three-quarter back idle (rig-engine breath, as hero-x2-v3) and the drawn runs in place of walk-down / walk-up / walk-downSide / walk-upSide",
+  "Aseprite 1.3.18.6 (batch): source/hero-x2-v4.aseprite + exports/hero-x2-v4.png|json, every exported frame compared with the rig's frame (build-character.mjs)"
+ ],
+ "rebuild": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v4.rig.mjs --check",
+ "files": {
+  "art-lab/characters/exports/hero-x2-v4.png": "06a7fab7c90ee0d83b97477c3276710bb217161c2be32b12ab4143c338c603f1",
+  "art-lab/characters/exports/hero-x2-v4.json": "5e06af832baaa001f0b4cf114ae80140b7eecbdfe8520e989f06306774e3b882",
+  "art-lab/characters/source/hero-x2-v4.aseprite": "20b50e53c126178eaff846ba6872745475092987c8fd2964d82ea3c426040a42",
+  "art-lab/characters/provenance/hero-x2-v4/view-upSide.png": "4d71654f701fb369740131551d7e0049cd6a0f37ef500c5386046bdfc2bad635",
+  "art-lab/characters/provenance/hero-x2-v4/build.json": "08902dfd4c9fde7bda893b48c224f34abd75f37d21b902eba6a42a42f5c46d15",
+  "art-lab/characters/exports/hero-x2-v3.png": "65788b0d7665991c8fc4f5fbeb6290dc2e3e3afc8d38842b41c0398dbae816d0",
+  "art-lab/characters/rigs/hero-x2-v4.rig.mjs": "64da7382133f2238b1343094e064919c8eb3b39eecda8f222196d72e1e9ea517",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

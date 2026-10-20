@@ -69,6 +69,22 @@ test('loadProductionCast: every sheet checked against its provenance pack, every
   });
 });
 
+test('the hero candidate (journal Passe K11) stands in for the player only with ?cast=candidate, at hero-x2-v3\'s height and speed', async () => {
+  await withRepoFetch(null, async (fetched) => {
+    const prod = await cast.loadProductionCast(false);
+    assert.ok(!fetched.includes('art-lab/characters/exports/hero-x2-v4.png'), 'production never fetches the candidate');
+    assert.equal(prod.cast.get('player').id, 'hero-x2-v3');
+    const cand = await cast.loadProductionCast(true), a = prod.cast.get('player'), b = cand.cast.get('player');
+    assert.equal(b.id, 'hero-x2-v4');
+    assert.equal(cand.sheets.find((s) => s.id === 'hero-x2-v4').runtimeUse, 'lab');
+    // its front idle and its profile run are hero-x2-v3's: the same height and ground speed, the same scale
+    assert.deepEqual([b.height, b.walkSpeed, b.scale], [a.height, a.walkSpeed, a.scale]);
+    assert.ok(b.walkSpeed > 0);
+    // every other role keeps its production sheet
+    for (const [role, m] of prod.cast) if (role !== 'player') assert.equal(cand.cast.get(role).id, m.id, role);
+  });
+});
+
 test('one changed byte in an exported PNG stops the load', async () => {
   for (const id of [production[0], production.at(-1)]) {
     const target = `art-lab/characters/exports/${id}.png`;

@@ -1,0 +1,28 @@
+{
+ "id": "hero-x2-v4",
+ "frames": 60,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 idle-downSide:12-15 idle-upSide:16-19 walk-down:20-27 walk-up:28-35 walk-side:36-43 walk-downSide:44-51 walk-upSide:52-59",
+ "sheet": [
+  384,
+  960
+ ],
+ "palette": {
+  "mode": "palette-from hero-x2-v3.png",
+  "colours": 59,
+  "views": {
+   "recon-upSide-full-q.png": {
+    "texels": 2454,
+    "meanOklabErrPermille": 11.6,
+    "maxOklabErrPermille": 48.7
+   }
+  }
+ },
+ "views": {
+  "upSide": "4d71654f701fb369740131551d7e0049cd6a0f37ef500c5386046bdfc2bad635"
+ },
+ "exports": {
+  "png": "06a7fab7c90ee0d83b97477c3276710bb217161c2be32b12ab4143c338c603f1",
+  "json": "7e46fe77cc016792d8560adb7f7e043c0e923e1e0e8ea662b48dfe95cec5fc66",
+  "aseprite": "20b50e53c126178eaff846ba6872745475092987c8fd2964d82ea3c426040a42"
+ }
+}

@@ -1,0 +1,84 @@
+{
+  "kind": "generated-image",
+  "file": "hero-run-v4-2026-10-20-b1.png",
+  "sha256": "79b39a5d5ac91b02382b03ce991cf6c77720b30f9068835e677cd0af2eceb7dd",
+  "bytes": 1639898,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 is the turnaround sheet of ONE character, the protagonist of \"Cité du Tournoi\" (HD-2D pixel art, a merchant district). Image 2 shows the SAME character; its bottom row is his side-view RUN cycle. Make a NEW sheet of the SAME character: his three-quarter FRONT run, and a set of standing views with a corrected three-quarter BACK view.\n\nKeep his design, colours, proportions and pixel-art rendering exactly as in image 1: brown spiky hair; plain indigo hooded cloak with a thin gold edge and NO motif on the hem; brass clasp; ecru shirt; brown leather vest, belt, pouches and gauntlets; dark grey-brown trousers; tall brown boots with turned-down cuffs. The head, hair included, stays about one third of the height. Every figure at the SAME scale as the idle figures of image 1 (about 290 pixels tall in this 1536 x 1024 image), the feet of each row on one common ground line.\n\nTWO rows:\nRow 1: EIGHT figures, the THREE-QUARTER FRONT run, running toward the viewer and toward the LEFT of the image, with the same energy as the side run of image 2: the arms pump, bent at the elbow, each fist swinging forward and back opposite to the leg of its side; the legs alternate, the forward knee lifted moderately (never above the hip), the other foot pushing off behind; the body bounces up and down; the cloak swings with the motion. Frames in this order: right foot contact, down, passing, flight; left foot contact, down, passing, flight. Face as in image 1, both eyes visible, a small mouth.\nRow 2: FOUR standing idle figures, arms relaxed, at the same scale: (1) THREE-QUARTER BACK view facing LEFT: the body turned 45 degrees away from us, so that we see MOSTLY HIS BACK, the back of his head and the cloak from behind; the face turned away (only the cheek line and the tip of the nose visible); one boot tip and one gauntlet showing on the near side; it must look much more like the back view than like a profile; (2) back view; (3) three-quarter front view facing left; (4) front view.\n\nTechnique and composition: premium illustrative pixel art, crisp square pixels of one uniform size across the whole sheet (the same pixel size as image 1), controlled colour ramps, selective dark outlines; no blur, no mixed pixel sizes, no dithering, no scattered noise. Plain, flat, uniform neutral grey background like image 1, WITHOUT any cast shadow or floor; empty space between the figures so they never touch; no text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "3ecd16a2b0db7f09bfa43ed0e83f8e0130439d45bcf3082dad17abc1379413e4",
+    "promptFile": "art-lab/characters/scratch/hero-premium/prompts/hero-run-v4-b.txt",
+    "references": [
+      {
+        "file": "art-lab/characters/reference/sources/hero-turnaround-v4-2026-10-19-b.png",
+        "sha256": "974a27d2d12c41d9f053711b6ec7bfa35bdf44d9ceb198f961bdbac3ffab791a",
+        "bytes": 1481998
+      },
+      {
+        "file": "art-lab/characters/reference/sources/hero-turnaround-v3-2026-10-19.png",
+        "sha256": "a86cea282b5645ec4ab008dd0dc469f76d5105e792a12b62ec587758385d29a1",
+        "bytes": 2280337
+      }
+    ],
+    "image": "1 of 2",
+    "task": "hero-run-v4",
+    "requestedAt": "2026-10-20T06:16:07.394Z",
+    "response": {
+      "requestId": "req_1ebb9c49c0964b218ff9a0e85a269390",
+      "created": "2026-10-20T06:17:26.000Z",
+      "processingMs": 78014
+    },
+    "usage": {
+      "input_tokens": 7152,
+      "input_tokens_details": {
+        "image_tokens": 5976,
+        "text_tokens": 1176
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 18128
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.2516,
+        "fromUsage": 0.382968
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 23664 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-10-20",
+    "from": "hero-run-v4-20261020T061607Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

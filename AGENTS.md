@@ -238,7 +238,9 @@ holds 8 walkers at most 3.2 m apart, so with `crowd` or by day a walker without 
 operator's decision J7b « Accepter », Passe D7; by day the default is round(n x density) with n = 6 / 12 / 9 for the morning / midday / end of day,
 decision J7a, Passe D7) · `cast=generated`
 (skip the production cast of baked characters, `src/characters/BakedCast.ts`: the old generated hero / porter / merchant / NPCs) · DEV server only:
-`cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production; none today) ·
+`cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production; today `hero-x2-v4`, the
+hero with drawn front, back and three-quarter runs and a three-quarter back idle turned further away, in place of `hero-x2-v3` on the player, journal
+Passe K11) ·
 `views=3` (the three-view rule for every sprite; absent = the five-view rule, journal Passe V5: front / three-quarter / profile sectors at
 22.5 / 67.5 deg on screen, for the sheets that hold both three-quarter facings `downSide` / `upSide` only, today the hero; every other sprite
 keeps the three views; the default since the operator's decision of 2026-10-19, « Par défaut avec le héros », journal Passes D3 / H10) ·

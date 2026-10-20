@@ -475,6 +475,132 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un choix perceptif qui divise peut se trancher par personnage : le joueur, qui dirige le héros, attend son dos quand il le fait s'éloigner.
   Les PNJ, que l'on regarde passer, gardent la règle qui les fait glisser le moins.
 
+## Passe K11 — Le héros court de face, de dos et de trois-quarts : candidat `hero-x2-v4` construit, critiqué à l'aveugle, montré avant la production (2026-10-20)
+
+### Demande, mot pour mot
+- Opérateur : « Refais les cycles de face et de dos du héros en course, comme le profil (bras et jambes), et corrige son trois-quarts dos trop
+  tourné ; montre-moi avant la production. »
+- Interrompu par « pause », repris par « tu peux reprendre ».
+- Branche `hero-run-v4` depuis `main` (`08d9dc6`).
+
+### Sources — [OK] deux planches générées, archivées non canoniques
+- Deux requêtes à l'outil d'images (`gen-image.mjs`, gpt-image-2), deux images chacune, avec la planche v4-b et la planche v3 en références :
+  **0,77 $** sur le plafond de 5 $ (tâche `hero-run-v4`).
+  - Planche a : trois rangées de huit, la course de face, de dos et de trois-quarts dos (vers la gauche).
+  - Planche b : la course de trois-quarts face (vers la gauche) ; quatre poses debout, dont un trois-quarts dos « surtout de dos ».
+- Les quatre images sont archivées à l'octet avec leur fiche (`reference/sources/hero-run-v4-2026-10-20-a1|a2|b1|b2`), non canoniques.
+- **Le pas de reconstruction se règle sur la tête** de `hero-x2-v3` (2,67 à 3,14 selon la planche).
+- **Choix**, sur les reconstructions comparées vue par vue :
+  - la face : a1 ;
+  - le dos : a2, où les coudes et les poings sortent de la cape ;
+  - le trois-quarts face : b1, où les jambes varient le plus ;
+  - le trois-quarts dos : a1 ;
+  - le trois-quarts dos debout : b2, la cape la plus large et aucun bord du visage.
+
+### Fait — [OK] le candidat `hero-x2-v4`
+- **Rig** `rigs/hero-x2-v4.rig.mjs` :
+  - Repris de `hero-x2-v3` au texel : sa palette (son export, épinglé), ses quatre vues debout (face, trois-quarts face, profil, dos) et sa
+    course de profil, recalculées par le rig de `hero-x2-v3` lui-même.
+  - Le rig refuse tout fichier de `hero-x2-v3` (vues, export, rig) dont l'empreinte diffère de son paquet de provenance. Contrôle : une ligne
+    ajoutée au rig de `hero-x2-v3` → refus.
+  - **Nouveau** :
+    - les quatre courses (face, dos, trois-quarts face, trois-quarts dos), huit images chacune, dessinées par l'outil (`drawnRun`) ;
+    - le trois-quarts dos debout, reconstruit par la chaîne du build.
+- **`drawnRun`** :
+  - chaque figure est seule sur sa planche (les autres peintes du fond), avec son empreinte vérifiée ;
+  - reconstruite au pas de la course ; une reconstruction rognée est une erreur ;
+  - ramenée à la palette, nettoyée comme les vues ;
+  - posée la tête sur une colonne pour tout le cycle, et levée de sa hauteur sur la planche au-dessus de la ligne de sol de la rangée.
+- **Distribution** : une entrée candidate après le héros (`BakedCast.ts`), chargée seulement avec `?cast=candidate` (DEV), où elle remplace
+  `hero-x2-v3`.
+- **Documents** : le manifeste (`candidate`, `runtimeUse: lab`), le paquet de provenance et le README de l'Art Lab ; dans `AGENTS.md`, le
+  paramètre `cast=candidate`.
+
+### [KO → corrigé] trois défauts de placement, vus à la planche ou par les contrôles
+1. **La cape rognée en silence.**
+   - **Ce qui s'est passé** : la préparation de `hero-x2-v3` finit par `align`, qui centre les pieds sur la colonne d'ancrage. Dans une course,
+     l'enjambée et la cape qui vole sont plus larges qu'en pose debout, et le décalage poussait la cape hors du cadre (planche : un bord
+     droit vertical en trois-quarts dos).
+   - **Correction** : le nettoyage seul (sans `align`), puis un placement compté : une image dont un texel sortirait du cadre est une erreur.
+2. **Des images qui flottaient d'un texel.**
+   - **Ce qui s'est passé** : la ligne de sol était la plus basse figure de la rangée. Les bases des planches varient de quelques pixels, et en
+     trois-quarts le pied proche se pose plus bas que le lointain.
+   - **Correction** : la base médiane de la rangée.
+3. **La course de face plus large que le cadre.**
+   - **Ce qui s'est passé** : au pas de la tête (2,67), la cape déployée mesure 64,4 texels.
+   - **Correction** : un pas de 2,78 (62 texels, l'anneau du bord libre). Le coureur est 3 à 4 rangées plus bas que la pose debout ; le profil en
+     course l'est déjà de 6 à 8.
+- **Le prix du placement** : la cape qui vole décale la tête des courses par rapport à la pose debout. L'écart est de 3 texels de dos, 7 en
+  trois-quarts dos et 10 en trois-quarts face ; le profil de production a déjà 11 texels d'écart.
+- **[KO → corrigé]** `sed -i` a retiré les CR d'un fichier de test (principe de la Passe M3, encore oublié). Rendus par un script node.
+
+### Preuves
+- **Construction** :
+  - `build-character --check` reconstruit à l'identique ;
+  - une seconde construction redonne l'export à l'octet ;
+  - `verify-provenance` : paquet intact.
+- **Ce qui vient de `hero-x2-v3` est identique au texel** : les poses debout de face, de trois-quarts face, de profil et de dos, et la course de
+  profil (`walk-side`). Diffèrent : le trois-quarts dos debout et les quatre courses.
+- **Taille et vitesse** : celles de `hero-x2-v3`. La taille vient de la pose de face, la vitesse de la course de profil (`walkSlide` 14).
+- **Tests** (`tests/baked-cast.test.mjs` +1) :
+  - sans candidat, le jeu ne télécharge pas `hero-x2-v4` et garde `hero-x2-v3` ;
+  - avec `?cast=candidate`, le joueur prend `hero-x2-v4`, à la même taille, vitesse et échelle, et tous les autres rôles gardent leur
+    feuille.
+  - **Deux fautes injectées, attrapées** : le candidat placé avant le héros ; le manifeste qui n'est plus candidat. Fichiers rendus à l'octet
+    (`cmp`).
+- **Contre `main` figé** (`08d9dc6`, :5187), au **seuil 0**, sortie de `detshots` gardée et relue :
+  - **Captures avec personnages**, le héros à l'arrêt et les PNJ en marche (300 pas), A, B, C, D et midi en B : **0 px**.
+  - **Le héros de production en course** (touches tenues 45 pas, horloge figée), en B, face, dos, trois-quarts face et trois-quarts dos :
+    **0 px**. Témoin de répétition (deux chargements) : 0 px.
+  - **Contrôle** : la même course de face avec `?cast=candidate` change 1,7 % des pixels. À l'arrêt de face (B, 300 pas), le candidat donne
+    0 px, puisque cette pose est celle de `hero-x2-v3`.
+  - Aucune erreur de page. La série a été attendue jusqu'au bout dans le tour (principe de la Passe Y4), et rien de ce que servaient les
+    serveurs n'a changé pendant.
+- **En jeu** : quatre flipbooks hors dépôt (B, `flipbook.mjs` avec les touches, v3 à côté de v4). Une image de chacun est gardée,
+  `screenshots/calibration/k11-hero-run/B-runs-v3-v4.jpg` (en haut v3, en bas v4) ; v4 se lit en course dans les quatre vues.
+- **Validation** : typecheck, `npm test` 103 / 103, build, `art:validate` (18 manifestes, 21 sources archivées).
+
+### Critique à l'aveugle — [OK] v4 gagne les cinq séries
+- Un agent neuf, sur des bandes ×3 et ×2 étiquetées au hasard, la clé hors de son dossier. Pour la face et le dos, un contrôle : le cycle de v4
+  dans un ordre mélangé. Mon auto-critique a été écrite avant de lire son verdict.
+- Notes sur 10 : course / énergie du profil / continuité / stabilité / fidélité aux poses debout.
+
+| vue | v3 | v4 | contrôle |
+|---|---|---|---|
+| face | 2 / 1 / 6 / 9 / 9 | **7 / 6 / 7 / 7 / 8** | 7 / 6 / 6 / 5 / 7 |
+| dos | 1 / 1 / 7 / 9 / 9 | **8 / 7 / 8 / 8 / 8** | 7 / 7 / 6 / 7 / 8 |
+| trois-quarts face | 2 / 1 / 6 / 9 / 9 | **8 / 8 / 7 / 7 / 8** | — |
+| trois-quarts dos | 2 / 1 / 7 / 9 / 8 | **8 / 8 / 7 / 8 / 8** | — |
+| trois-quarts dos debout | 5 | **7** | — |
+
+- Sur v3 debout de trois-quarts dos, on voit la joue, l'oreille et le bord du nez : « un profil avec une cape ». Sur v4, aucun bord du
+  visage.
+- **Le contrôle ne sépare qu'à moitié** : il finit dernier sur la continuité de dos (6 contre 8), mais de face il est à égalité avec v3 (6),
+  juste sous v4 (7). Les images de face se ressemblent assez pour qu'un mélange se voie peu. La critique vaut donc sur la lecture des
+  courses, et faiblement sur l'ordre des images de face.
+- **Contre mon auto-critique** : comme prévu, v4 gagne. Les risques que j'avais nommés sont relevés : de face, les poings bougent peu ; en
+  trois-quarts face, le bras proche reste devant. Le critique ajoute une dérive de 3 à 4 texels du bord gauche des cheveux aux images 7-8 du
+  trois-quarts face. Mesuré : le centre de la tête ne bouge que de 0,7 texel sur le cycle ; ce sont les mèches.
+- **Sa correction la plus utile** : de face, faire pomper les poings de 4 à 6 texels à l'opposé du genou.
+
+### Présenté à l'opérateur
+- Page privée : https://claude.ai/artifact/AS2T5okXxR8YoorM81Y2gW. Chaque vue, v3 à côté de v4, s'anime à 7,5 images par seconde ; la page
+  donne aussi la critique et les limites.
+- En jeu : `npm run dev`, puis `?cast=candidate`.
+
+### Restes [?]
+- **La décision de l'opérateur** : mettre `hero-x2-v4` en production (approbation de son manifeste, puis une passe de bascule), le reprendre,
+  ou le laisser candidat.
+- **De face, les bras pompent peu.** Le remède serait une nouvelle planche de face (l'outil d'images, 4,23 $ restants sur le plafond de la
+  tâche), ou une retouche des poings au rig.
+- **Non fait** : la critique en mouvement par l'opérateur (les flipbooks sont hors dépôt) ; les trois-quarts des PNJ (RH4) ; le remède RK3.
+
+### Pensée
+- Un recentrage hérité d'une autre chaîne (`align` des vues debout) peut rogner en silence ce qui déborde. Une pièce déplacée se compte avant
+  et après, et la perte est une erreur.
+- Une planche générée n'a pas de ligne de sol exacte. La médiane de la rangée sert de sol, jamais l'extrême.
+- La largeur d'un dessin déployé (une cape qui vole) borne le pas de reconstruction autant que la tête.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -482,7 +608,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
-  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5) ; la foule du jour (J7) décidée et appliquée (Passes R3 / D7 : matin 6, midi 12, fin de journée 9 ; la nuit garde cinq). Les tâches de la Passe D6 sont faites. Revue de l'opérateur en jeu (Passe K9) : tout est bien implémenté, la nuit reste le défaut pour le moment (J9). Orientation (Passe K10) : le héros selon la ligne de visée, les PNJ selon l'écran (décision K9). Ouverts : les cycles de face et de dos du héros (ils marchent quand le profil court, Passe K10) et son trois-quarts dos, les trois-quarts des PNJ (RH4). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
+  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5) ; la foule du jour (J7) décidée et appliquée (Passes R3 / D7 : matin 6, midi 12, fin de journée 9 ; la nuit garde cinq). Les tâches de la Passe D6 sont faites. Revue de l'opérateur en jeu (Passe K9) : tout est bien implémenté, la nuit reste le défaut pour le moment (J9). Orientation (Passe K10) : le héros selon la ligne de visée, les PNJ selon l'écran (décision K9). Les cycles de face et de dos du héros et son trois-quarts dos : candidat `hero-x2-v4` (Passe K11, courses dessinées, gagnant à l'aveugle), en attente de la décision de l'opérateur. Ouverts : les trois-quarts des PNJ (RH4). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
   midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
   défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
@@ -527,7 +653,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   glissement ≈ 0). Décisions de la Passe D1 : « Source : la b » (planche v4-b), « Cinq vues, le héros d'abord », « Sprint ×1,2 », vues du
   côté droit « Ignorées » : appliquées en Passe H8 (`hero-x2-v3`, candidat en cinq vues, revue de l'opérateur en jeu) ; visage retouché au texel en Passe H9 (yeux
   ouverts, bouche, ombre des joues ; critique à l'aveugle : 7 contre 5 sur le visage) ; fiche de revue (Passe D3) : RH1 « Production »,
-  RH2 « Par défaut avec le héros » : **en production depuis la Passe H10**, cinq vues par défaut ; RH3 « Fait », RH4 « Plus tard » (les trois-quarts des PNJ). Vues de trois-quarts : étude `briefs/three-quarter-views.md` (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
+  RH2 « Par défaut avec le héros » : **en production depuis la Passe H10**, cinq vues par défaut ; RH3 « Fait », RH4 « Plus tard » (les trois-quarts des PNJ) ; Passe K11 : `hero-x2-v4`, candidat aux courses de face, de dos et de trois-quarts dessinées, montré à l'opérateur (`?cast=candidate`). Vues de trois-quarts : étude `briefs/three-quarter-views.md` (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
   deux planches générées en huit vues, trois-quarts dos compris, archivées comme sources non canoniques). Plus tard : masques du héros pour ses
   déclinaisons, écran de choix (code de jeu). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
   production.

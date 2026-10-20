@@ -42,6 +42,10 @@ import heroPng from '../../art-lab/characters/exports/hero-x2-v3.png?url';
 import heroJson from '../../art-lab/characters/exports/hero-x2-v3.json';
 import { id as heId, status as heStatus, approved as heApproved, runtimeUse as heUse } from '../../art-lab/characters/manifests/hero-x2-v3.manifest.json';
 import { files as heroFiles } from '../../art-lab/characters/provenance/hero-x2-v3/PROVENANCE.json';
+import heroCandPng from '../../art-lab/characters/exports/hero-x2-v4.png?url';
+import heroCandJson from '../../art-lab/characters/exports/hero-x2-v4.json';
+import { id as hcId, status as hcStatus, approved as hcApproved, runtimeUse as hcUse } from '../../art-lab/characters/manifests/hero-x2-v4.manifest.json';
+import { files as heroCandFiles } from '../../art-lab/characters/provenance/hero-x2-v4/PROVENANCE.json';
 import { FRAME_W, FOOT_Y } from './SpriteGenerator';
 import { PIXEL_WORLD, WALK_CADENCE } from './SpriteRenderer';
 import { walkSlide } from './Stride';
@@ -88,6 +92,9 @@ const ENTRIES: Entry[] = [
   // its three-quarter facings through the five-view rule, the default (?views=3: three views). LAST in the list: its 60 frames come after the
   // NPCs' in the baked texture (the first column full, the second opened), so every NPC frame keeps its cell (journal Passe T1)
   { manifest: { id: heId, status: heStatus, approved: heApproved, runtimeUse: heUse }, png: heroPng, json: heroJson, files: heroFiles, replaces: ['player'], scale: 0.9 },
+  // CANDIDATE, not approved (journal Passe K11): the hero with drawn front / back / three-quarter runs and a corrected three-quarter back idle.
+  // Loaded only with ?cast=candidate (DEV), after the production cast (its frames move none of theirs), where it stands in for hero-x2-v3
+  { manifest: { id: hcId, status: hcStatus, approved: hcApproved, runtimeUse: hcUse }, png: heroCandPng, json: heroCandJson, files: heroCandFiles, replaces: ['player'], scale: 0.9 },
 ];
 
 /** NPC variants of a sheet (Variants.ts): the ramp rows of each variant (-1 = keep that material), the luminance ranges of its masked

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "hero-x2-v4",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/hero-x2-v4.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/hero-x2-v4.png",
+    "metadata": "art-lab/characters/exports/hero-x2-v4.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-character.mjs (reconstruct-grid + quantize-palette + rig-engine, rig art-lab/characters/rigs/hero-x2-v4.rig.mjs, which rebuilds hero-x2-v3's frames through art-lab/characters/rigs/hero-x2-v3.rig.mjs); Aseprite 1.3.18.6 (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "Generated run sheet a1 (gpt-image-2, NON-CANONICAL): front, back and three-quarter back run of the protagonist, eight frames each; its front and three-quarter back runs",
+      "path": "art-lab/characters/reference/sources/hero-run-v4-2026-10-20-a1.png",
+      "note": "generated with tools/art-lab/gen-image.mjs (journal Passe K11) from the v4-b turnaround and the v3 sheet, archived byte for byte with its automatic record; C2PA chunk not verified; third-party rights NOT verified. Pitch 2.67 (the head at hero-x2-v3's height)."
+    },
+    {
+      "category": "C",
+      "label": "Generated run sheet a2 (the second image of the same request, NON-CANONICAL): its back run",
+      "path": "art-lab/characters/reference/sources/hero-run-v4-2026-10-20-a2.png",
+      "note": "as a1; pitch 2.72"
+    },
+    {
+      "category": "C",
+      "label": "Generated sheet b1 (NON-CANONICAL): three-quarter front run and four idle views; its three-quarter front run",
+      "path": "art-lab/characters/reference/sources/hero-run-v4-2026-10-20-b1.png",
+      "note": "as a1; pitch 2.93"
+    },
+    {
+      "category": "C",
+      "label": "Generated sheet b2 (the second image of the same request, NON-CANONICAL): its corrected three-quarter back idle view",
+      "path": "art-lab/characters/reference/sources/hero-run-v4-2026-10-20-b2.png",
+      "note": "as a1; pitch 2.77"
+    },
+    {
+      "category": "B",
+      "label": "hero-x2-v3, the production hero: its palette, its front, three-quarter front, profile and back idle views and its profile run, kept texel for texel",
+      "path": "art-lab/characters/provenance/hero-x2-v3",
+      "note": "approved for production by the operator on 2026-10-19 (RH1 « Production », journal Passe D3)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "CANDIDATE (Pass K11), NOT APPROVED: hero-x2-v3 with drawn run cycles in the front, back and three-quarter facings and a three-quarter back idle turned further away, after the operator's request (« Refais les cycles de face et de dos du héros en course, comme le profil (bras et jambes), et corrige son trois-quarts dos trop tourné ; montre-moi avant la production. »), for review in the scene (DEV, ?cast=candidate: it then stands in for hero-x2-v3 on the player). Density x2 (64x96, feet on row 90), idle 4 + run 8 frames in five facings, hero-x2-v3's palette pinned (its export), presentation scale 0.9. Its front, three-quarter front, profile and back idle frames and its profile run are hero-x2-v3's, texel for texel: same height, same ground speed (walkSlide 14). Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v4.rig.mjs --check"
+}

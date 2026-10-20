@@ -65,7 +65,7 @@ test('the production NPCs keep their texture byte for byte; the hero, loaded las
     assert.ok(total > 336 && total <= 672, `${total} production frames: past one column, within the two guaranteed`);
     assert.equal(b.bakedWidth, 2048);
     assert.ok(b.bakedHeight <= 2048);
-    // DEV candidates (none today) come after the production cast and move none of its frames
+    // DEV candidates (the hero candidate of Passe K11) come after the production cast and move none of its frames
     assert.deepEqual(withCand.sheets.slice(0, prod.sheets.length).map((s) => s.id), prod.sheets.map((s) => s.id));
     // every production frame: same cell, same bytes (texture of 1024 vs 2048 columns: compared texel by texel)
     let frames = 0;
