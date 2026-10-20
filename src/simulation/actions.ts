@@ -2,6 +2,8 @@ import type { Rng } from '../core/rng';
 import { PLACES, clamp, placeName, type GameState, type PlaceId } from './state';
 import type { Emit } from './advance';
 import { PEOPLE, presentAt } from '../narrative/people';
+import { applyPlayerDuel, playerMatch, opponentOf, type DuelOutcome } from '../tournament/pool';
+import { RIVALS } from '../narrative/roster';
 
 /** The player's actions (journal Passe L1). Each says what it costs (0 = a minor action that takes no slot: moving between places,
  *  talking, consulting, GAMEPLAY § 4.2; 1 = a significant action that takes the slot, § 4.1), when it is refused and why (a readable
@@ -12,7 +14,9 @@ export type Action =
   | { type: 'talk'; who: string }
   | { type: 'rest' }
   | { type: 'train' }
-  | { type: 'wait' };
+  | { type: 'wait' }
+  | { type: 'fight'; outcome: DuelOutcome }
+  | { type: 'payWatch' };
 
 export interface ActionDef<A extends Action = Action> {
   /** the actions of this kind worth offering now (refused ones included, with their reason) */
@@ -58,12 +62,37 @@ export const ACTIONS: Table = {
   },
   train: {
     list: (st) => (st.place === 'forecourt' ? [{ type: 'train' }] : []),
-    label: () => 'Train on the practice sand (+1 action point at your next duel)',
+    label: () => 'Train on the practice sand (+5 % damage at your next duel)',
     cost: () => 1,
     check: (st) => (st.place !== 'forecourt' ? 'The practice sand is at the Arena Forecourt.' : st.slot === 'evening' ? 'The practice sand closes at dusk.' : st.player.training >= 2 ? 'You are as sharp as training can make you before the next duel.' : null),
     apply: (s, _a, _r, emit) => {
       s.player.training++; s.player.reputation = clamp(s.player.reputation + 1);
       emit({ kind: 'action', id: 'train', cause: 'action:train', text: 'You drill on the practice sand until your arms burn.', visible: true });
+    },
+  },
+  fight: {
+    // the arena (or the bot, headless) fights the duel and hands its result in; offered as « enter the arena » by the interface
+    list: () => [],
+    label: (st) => { const m = playerMatch(st); return m ? `Fight ${RIVALS[opponentOf(m)].name} in the arena` : 'Fight'; },
+    cost: () => 1,
+    check: (st, a) => {
+      const m = playerMatch(st);
+      if (!m) return 'You have no bout today.';
+      if (st.slot !== 'afternoon') return 'Your bout is this afternoon.';
+      if (m.winner) return 'You have fought today.';
+      const o = a.outcome;
+      return o && (o.winner === 'player' || o.winner === 'opponent') && o.playerMaxHp > 0 && o.opponentMaxHp > 0 ? null : 'No result from the arena.';
+    },
+    apply: (s, a, _r, emit) => { applyPlayerDuel(s, a.outcome, emit); s.pendingMatch = null; },
+  },
+  payWatch: {
+    list: (st) => (st.place === 'district' && st.slot === 'evening' ? [{ type: 'payWatch' }] : []),
+    label: () => 'Pay Sergeant Hale to watch the forge tonight (15 coins)',
+    cost: () => 0,
+    check: (st) => (st.place !== 'district' ? 'Sergeant Hale is on the quay.' : st.slot !== 'evening' ? 'The night watch is hired at dusk.' : st.services.forgeWatch ? 'The watch is already posted.' : st.player.coins < 15 ? 'You cannot pay the watch (15 coins).' : null),
+    apply: (s, _a, _r, emit) => {
+      s.player.coins -= 15; s.services.forgeWatch = true; s.town.hale = clamp((s.town.hale ?? 0) + 5, -100, 100);
+      emit({ kind: 'action', id: 'pay-watch', cause: 'action:payWatch', text: 'You pay Sergeant Hale: two of his men will stand by Bram\'s forge tonight.', visible: true });
     },
   },
   wait: {

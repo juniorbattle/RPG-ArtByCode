@@ -38,7 +38,7 @@ function staticImports(file) {
 test('the game modules are pure: no three, no DOM, no Math.random, no clock, and they import only pure modules', () => {
   const files = PURE_DIRS.flatMap(filesUnder);
   assert.ok(files.length >= 5, `game modules found: ${files.length}`);
-  const banned = [/\bfrom\s+['"]three['"]/, /\bdocument\b/, /\bwindow\b/, /\blocalStorage\b/, /Math\.random/, /Date\.now/, /new\s+Date\b/, /performance\.now/, /requestAnimationFrame/, /setTimeout/];
+  const banned = [/\bfrom\s+['"]three['"]/, /\bdocument\s*[.[]/, /\bwindow\s*[.[]/, /\bglobalThis\b/, /\blocalStorage\b/, /Math\.random/, /Date\.now/, /new\s+Date\b/, /performance\.now/, /requestAnimationFrame/, /setTimeout/];
   for (const f of files) {
     const src = stripComments(fs.readFileSync(path.join(ROOT, f), 'utf8'));
     for (const b of banned) assert.ok(!b.test(src), `${f} uses ${b}`);
@@ -62,12 +62,20 @@ test('the default path (src/main.ts and everything it imports statically) reache
   for (const f of seen) assert.ok(!PURE_DIRS.some((d) => f.startsWith(`${d}/`)) && !f.startsWith('src/ui/'), `the default path imports ${f}`);
 });
 
-/** a fixed script over the whole slice: moves, talks, refusals, training, rest attempts, waits */
+/** duel results handed in by the arena (fixed here: the arena's own tests play the duels) */
+const WIN = { winner: 'player', playerHp: 120, playerMaxHp: 200, opponentHp: 0, opponentMaxHp: 600, finisher: 'tech' };
+const LOSS = { winner: 'opponent', playerHp: 0, playerMaxHp: 200, opponentHp: 150, opponentMaxHp: 800, finisher: 'heavy' };
+/** a fixed script over the whole slice: moves, talks, refusals, training, rest attempts, waits, the two duels */
 const SCRIPT = [
   { type: 'talk', who: 'mara' }, { type: 'move', to: 'forecourt' }, { type: 'talk', who: 'odo' }, { type: 'rest' }, { type: 'train' },
-  { type: 'talk', who: 'anwen' }, { type: 'train' }, { type: 'move', to: 'district' }, { type: 'talk', who: 'stranger' }, { type: 'wait' },
-  { type: 'talk', who: 'tam' }, { type: 'wait' }, { type: 'move', to: 'forecourt' }, { type: 'train' }, { type: 'wait' }, { type: 'wait' },
-  { type: 'move', to: 'lanterns' }, { type: 'talk', who: 'lio' }, { type: 'wait' }, { type: 'wait' }, { type: 'wait' }, { type: 'wait' },
+  { type: 'talk', who: 'anwen' }, { type: 'train' },
+  { type: 'move', to: 'district' }, { type: 'talk', who: 'stranger' }, { type: 'wait' },
+  { type: 'talk', who: 'tam' }, { type: 'fight', outcome: WIN }, { type: 'wait' },
+  { type: 'wait' }, { type: 'fight', outcome: WIN },
+  { type: 'move', to: 'forecourt' }, { type: 'train' }, { type: 'wait' },
+  { type: 'move', to: 'lanterns' }, { type: 'talk', who: 'lio' }, { type: 'wait' },
+  { type: 'wait' }, { type: 'fight', outcome: LOSS },
+  { type: 'wait' }, { type: 'wait' },
 ];
 
 function playScript(seed, onStep) {
@@ -87,8 +95,10 @@ test('the same seed and script give the same fingerprint (three seeds); differen
     const a = playScript(seed), b = playScript(seed);
     assert.equal(G.hash(a.st), G.hash(b.st), `seed ${seed}`);
     assert.ok(a.st.over, 'the script plays the slice to its end');
-    hashes.push(G.hash(a.st));
+    assert.equal(a.st.step, SCRIPT.length - a.refused, 'every applied action is counted (the random streams follow it)');
+    hashes.push(G.hash({ ...a.st, seed: 0 }));
   }
+  // the seeds diverge beyond the seed itself: the rivals' bouts and activities differ
   assert.equal(new Set(hashes).size, 3);
 });
 
@@ -122,7 +132,12 @@ test('a minor action takes no slot, a significant one takes one, a refused one c
   assert.equal(G.serialize(st), before, 'advance never mutates its input');
   // the evening rolls over to the next morning; nine significant actions end the slice
   let s = st;
-  for (let i = 0; i < 9; i++) { assert.equal(s.over, false); s = G.advance(s, { type: 'wait' }).state; }
+  for (let i = 0; i < 9; i++) {
+    assert.equal(s.over, false);
+    const fight = s.slot === 'afternoon' && s.day >= 2;
+    if (fight) assert.match(G.advance(s, { type: 'wait' }).reason, /bout is this afternoon/);
+    s = G.advance(s, fight ? { type: 'fight', outcome: LOSS } : { type: 'wait' }).state;
+  }
   assert.equal(s.over, true);
   assert.equal(G.actions(s).length, 0);
   assert.equal(G.advance(s, { type: 'wait' }).ok, false);

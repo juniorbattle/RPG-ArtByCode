@@ -4,6 +4,8 @@ import { canonical, fnv64 } from './canonical';
 import { ACTIONS, type Action, type ActionDef } from './actions';
 import { endSlot } from './slot';
 import { initialState, CONTENT_ID } from './content';
+import { playerMatch } from '../tournament/pool';
+import { computePulse } from '../tournament/pulse';
 
 /** The simulation's entry points (PROJECT_MASTER_CONTRACT § 10.2, journal Passe L1):
  *  - `newGame(seed, name)`: the slice's first morning;
@@ -41,8 +43,15 @@ export function actions(st: GameState): ActionOption[] {
   return out;
 }
 
+/** refusals that hold for every significant action: on a match afternoon, the bout comes first */
+function slotRule(st: GameState, def: ActionDef, a: Action): string | null {
+  if (a.type === 'fight' || def.cost(st, a) === 0) return null;
+  const m = playerMatch(st);
+  return m && st.slot === 'afternoon' && !m.winner ? 'Your bout is this afternoon: the arena is waiting.' : null;
+}
+
 function option(st: GameState, def: ActionDef, a: Action): ActionOption {
-  const reason = def.check(st, a);
+  const reason = def.check(st, a) ?? slotRule(st, def, a);
   return { action: a, label: def.label(st, a), cost: def.cost(st, a), ok: reason === null, ...(reason !== null ? { reason } : {}) };
 }
 
@@ -50,7 +59,7 @@ export function advance(st: GameState, action: Action, rng?: Rng): Advance {
   if (st.over) return { state: st, events: [], ok: false, reason: 'The slice is over.' };
   const def = ACTIONS[action.type] as ActionDef | undefined;
   if (!def) return { state: st, events: [], ok: false, reason: `Unknown action "${action.type}".` };
-  const reason = def.check(st, action);
+  const reason = def.check(st, action) ?? slotRule(st, def, action);
   if (reason !== null) return { state: st, events: [], ok: false, reason };
   const s = clone(st), events: GameEvent[] = [];
   const r = rng ?? rngFor(st, `action:${action.type}`);
@@ -75,6 +84,7 @@ function passSlot(s: GameState, emit: Emit, cause: string): void {
   if (i < SLOTS.length - 1) s.slot = SLOTS[i + 1];
   else if (s.day < DAYS) { s.day++; s.slot = 'morning'; }
   else { s.over = true; emit({ kind: 'slot', id: 'slice-over', cause, text: 'The third day ends. The pool goes on without you for now: to be continued.', visible: true }); return; }
+  s.pulse = computePulse(s);
   emit({ kind: 'slot', id: `slot:${s.day}:${s.slot}`, cause, text: `Day ${s.day}, ${slotName(s.slot)}.`, visible: false });
 }
 

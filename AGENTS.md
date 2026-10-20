@@ -67,12 +67,16 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `npm run build` — typecheck + production bundle
 - `npm test` — unit tests of the pure logic (`tests/*.test.mjs`, built-in `node --test`, ~2 s, no browser or GPU): camera zone hysteresis,
   `planDraw`, the production cast's gate (manifest approval, SHA-256 against the provenance pack), sheet metadata, PNG decoding, the baked walk
-  cycles' ground speed and the walkers' animation clock (journal Passe S2), the image generation tool offline (a fake API and key, journal Passe I1), the arena's combat simulation against the prototype's own script
+  cycles' ground speed and the walkers' animation clock (journal Passe S2), the image generation tool offline (a fake API and key, journal Passe I1), the game's headless core and the tournament (journal Passes L1 / L2: determinism, saves, the pure modules, the off-screen resolution against full duels, the events and the sabotage chain), the arena's combat simulation against the prototype's own script
   read out of `arena/arena.html` (same events and state at every step, journal Passe P1) and the arena fighters' atlas.
   `tests/load.mjs` loads `src/` through Vite's SSR loader (extensionless imports, `?url`, named JSON imports, as the bundle resolves
   them; `--experimental-strip-types` alone cannot), with its own cache folder (`node_modules/.vite-test`), no file watcher and no
   `vite.config.ts` (`configFile: false` + `server.watch: null`: a merged config drops the null, and the watcher crawled the ignored Art Lab
   scratch files, 22 s instead of ~2 s, journal Passe Q1b)
+- `node tools/tournament-lab.mjs [--seeds=1..50 | --seeds=a,b] [--policy=idle|diligent] [--json=f]` — the TournamentLab (tournament contract
+  § 13, journal Passe L2): whole games of the playable slice headless (the game's pure modules, the player's duels fought by a bot in the arena's
+  full simulation): win, injury, upset and sabotage rates, events fired, forgotten participants; `--state=<named>` / `--save=<file>` `[--days=N]`
+  loads a state and plays on; `--compare=a,b` two seeds side by side. No browser
 - CI (`.github/workflows/ci.yml`, GitHub Actions, every push and pull request): Node 22 on `ubuntu-24.04` (pinned, operator decision of 2026-10-19), `npm ci`, `npm run typecheck`,
   `npm run build`, `npm run art:validate`, `npm test`. The runner has no Chrome, GPU or Aseprite (`puppeteer-core` downloads no browser at
   install): every other tool below (screenshots, perf / cadence / startup / overdraw measurements, visibility and viewport proofs, camera

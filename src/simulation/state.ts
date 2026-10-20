@@ -23,7 +23,7 @@ export interface PlayerState {
   reputation: number;
   /** 0 healthy, 1 hurt (-20 % health in a duel), 2 badly hurt (-40 %) */
   injury: number;
-  /** training sessions since the last duel (each: +1 action point at the start of the next duel, at most 2) */
+  /** training sessions since the last duel (each: +5 % damage at the next duel, at most 2) */
   training: number;
   /** items held (ids of the narrative's item table) */
   items: string[];
