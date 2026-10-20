@@ -883,6 +883,64 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 - Une image jointe se compare d'abord aux pièces archivées : c'était la piste de midi réencodée, et la référence reste l'original.
 - Une décision plus récente de l'opérateur remplace des choix de la fiche : la passe le dit choix par choix, et garde ceux qui restent.
 
+## Passe Y2 — Midi d'après la piste de midi, derrière `?time=midday` (décision D6) ; la nuit inchangée (2026-10-19)
+
+### Demande
+- Décision de l'opérateur (Passe D6), mot pour mot : « le jour doit etre cette image joint ». C'est la tâche 1 de la Passe D6 : midi fidèle à
+  l'image, montré en captures.
+- Branche `day-midday-y2` depuis `main` (`cbe2158`).
+
+### Fait — [OK]
+- **`?time=midday`** fait midi, et `?time=day` en reste l'alias. Absent ou `night` donne la nuit. `morning` et `afternoon` ne sont pas encore
+  construits : ils donnent la nuit, et le test le vérifie.
+- **La table de midi** (`DayState.ts`), réglée en cinq tours de captures contre la piste :
+  - un soleil blanc chaud (2,9 ; 2,72 ; 2,35), toujours à 55° ;
+  - une ambiance neutre (0,38 ; 0,4 ; 0,45) et un sol chaud (0,38 ; 0,36 ; 0,32) ;
+  - un horizon bleu (0,3 ; 0,52 ; 0,95), un zénith bleu profond (0,06 ; 0,2 ; 0,7) ;
+  - la brume à 0,003 (nuit : 0,013), la brume basse à 0,05, les pavés presque secs (`uWet` 0,2) ;
+  - le grade : exposition 1,24, **la discipline de palette de la nuit coupée** (0 : elle éteignait tous les bleus), saturation 1,25,
+    contraste 1,05, ombres et hautes lumières presque neutres.
+- **Les toits d'un bleu franc** : de jour, le multiplicateur d'albedo du matériau des toits (`uBase`, blanc la nuit) passe à
+  (0,58 ; 0,74 ; 1,22). Les palettes des façades sont froides par construction (« palette de nuit retenue ») ; le plâtre retrouve son blanc par
+  la lumière et le grade, pas par la géométrie.
+- **Le ciel de midi** (variante `DAY`) : un bleu profond et des cumulus blancs bas sur l'horizon, éclairés dessus, plus gris dessous (bruit à
+  quatre octaves).
+- **Les tours** :
+  1. trop d'horizon blanchâtre, des ombres bleues ;
+  2. le ciel bleu et ses nuages, mais un plâtre bleuté ;
+  3. le plâtre blanc ;
+  4. les toits bleus ;
+  5. plus clair.
+- Les planches du premier jet (`screenshots/calibration/y1-day/`) sont retirées et remplacées par `y2-midday/`. Elles restent dans
+  l'historique (`e68e340`).
+
+### Preuves
+- **Nuit** (sans paramètre), contre `main` figé (`cbe2158`, :5187), au **seuil 0**, **0 px partout** :
+  - graines 1842 et 7719 × A, B, C, D, D lointain et les quatre transitions figées (`static=1&occ=0`) ;
+  - les quatre références avec personnages, la forge sabotée et l'orage.
+- **Midi** : témoin de répétition (deux chargements) 0 px.
+- **Ordre de la preuve** : elle a tourné sur le code du 4e tour. Le 5e tour ne change que deux valeurs de la table de midi (le sol,
+  l'exposition), qui n'est lue que de jour.
+- **Tests** (`tests/day-state.test.mjs`) : le paramètre et son alias ; un zénith bleu profond ; la discipline de palette coupée à midi.
+- **Validation** : typecheck, `npm test` 91 / 91, build, `art:validate`.
+- **Planches** :
+  - `screenshots/calibration/y2-midday/{A,B,C,D}-night-midday.png` (la nuit, puis midi) ;
+  - `B-target-vs-midday.png` (la piste de midi à côté de midi en jeu, en B).
+
+### Restes [?]
+- **Contre la cible** :
+  - les pavés et l'eau restent plus sombres ;
+  - les nuages font une nappe plutôt que des cumulus détachés ;
+  - le lointain (ville haute, rive opposée) garde ses toits gris : le matériau du lointain n'a pas la teinte des toits.
+- **À faire** (Passe D6) : le pavois comme l'image ; le matin et la fin de journée ; la météo sur chaque état ; J7.
+- **Signalé par l'opérateur dans la séance** : un trou dans la coque du bateau, côté caméra, près du poteau d'amarrage. Il se voit la nuit comme
+  le jour, et ne vient pas du culling (0 px contre `vis=0`). C'est la tâche suivante.
+
+### Pensée
+- Une image cible se rejoint par la lumière, le ciel et le grade d'abord, puis par un seul réglage de matériau quand le reste ne suffit pas
+  (les toits). Une palette d'albedo écrite pour la nuit se compense de jour par la lumière, sans toucher la géométrie, que la nuit prouvée
+  partage.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -890,7 +948,7 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
-  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
+  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
   midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
   défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).

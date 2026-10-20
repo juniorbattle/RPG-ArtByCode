@@ -11,11 +11,13 @@ const { U } = await load('/src/atmosphere/SceneUniforms.ts');
 const src = (f) => fs.readFileSync(f, 'utf8');
 const q = (s) => new URLSearchParams(s);
 
-test('parseTime: only ?time=day makes the day; the night is the default', () => {
+test('parseTime: only ?time=midday (alias day) makes the day; the night is the default', () => {
   assert.equal(parseTime(q('')), null);
   assert.equal(parseTime(q('seed=1842&camera=B&clean=1&rain=1')), null, 'other parameters do not make the day');
-  assert.equal(parseTime(q('time=day')), 'day');
+  assert.equal(parseTime(q('time=day')), 'midday');
+  assert.equal(parseTime(q('time=midday')), 'midday');
   assert.equal(parseTime(q('time=night')), null);
+  assert.equal(parseTime(q('time=morning')), null, 'not built yet: the night');
   assert.equal(parseTime(q('time=Day')), null);
   assert.equal(parseTime(q('time')), null);
   // the day is a compile-time variant: the night's shaders hold no runtime day branch (a branch, even untaken, moved 1 / 255 on a few pixels)
@@ -43,11 +45,13 @@ test('litByDay: the forge burns by day (fire, embers, hot bar, the fill under it
   assert.match(fs.readFileSync('src/district/ForgeGenerator.ts', 'utf8'), /kind: 'fire'/);
 });
 
-test('the day look: a midday sun, high but not vertical, warm against a cool ambient and haze', () => {
+test('the midday look: a high sun, never vertical; a blue sky and haze; the palette discipline of the night off (the midday track, D6)', () => {
   const d = DAY.sunDir, elev = Math.asin(d.y / d.length()) * 180 / Math.PI;
   assert.ok(Math.abs(d.length() - 1) < 1e-9, 'normalised');
   assert.ok(elev >= 45 && elev <= 70, `midday elevation ${elev.toFixed(1)} deg`);
-  assert.ok(DAY.sunCol.r > DAY.sunCol.b, 'the sun is the warm accent');
+  assert.ok(DAY.sunCol.r > DAY.sunCol.b, 'a warm-white sun');
+  assert.equal(DAY.post.palette, 0, 'the palette discipline of the night would mute the blues');
+  assert.ok(DAY.skyZenith.b > 2 * DAY.skyZenith.r, 'a deep blue zenith');
   for (const c of [DAY.skyAmb, DAY.fogColor, DAY.skyZenith]) assert.ok(c.b > c.r, 'slate / pale blue: cool');
   assert.ok(DAY.fogDensity < U.uFogDensity.value, 'a lighter haze than the night');
   assert.ok(DAY.glowEmissive < 0.5, 'the window glass is dim by day');

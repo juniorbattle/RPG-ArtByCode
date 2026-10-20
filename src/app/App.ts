@@ -124,7 +124,7 @@ export class App {
     this.rig.camera.layers.enable(2);
     this.scene.add(this.rig.camera);
     // ?time=day (journal Passe Y1): read before the sky, which is built as the day's variant
-    this.day = parseTime(opts.params) === 'day';
+    this.day = parseTime(opts.params) === 'midday';
     this.scene.add(buildSky(this.day));
     this.reflection.clipY = WATER_Y;
     U.uMoonCol.value.copy(this.moonBase);
@@ -185,6 +185,8 @@ export class App {
       this.forgeGlow.name = 'glow:forge-day';
       g.uniforms.uEmissive.value = DAY.glowEmissive;
       this.lib.slot.shop.uniforms.uEmissive.value = DAY.shopEmissive;
+      // the saturated blue roofs of the midday track (journal Passe Y2): the roof material's albedo multiplier, white at night
+      this.lib.slot.roof.uniforms.uBase.value.copy(DAY.roofTint);
     }
     this.frameCap.endProbe();
     this.generator = new MerchantDistrictGenerator(this.lib);
