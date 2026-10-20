@@ -176,6 +176,17 @@ test('--archive copies a generated image byte for byte into the archived sources
   const rec = JSON.parse(fs.readFileSync(dst.replace(/\.png$/, '.source.json'), 'utf8'));
   assert.equal(rec.file, 'hero-trial-a.png'); assert.equal(rec.sha256, sha(fs.readFileSync(dst))); assert.equal(rec.archived.from, path.basename(file));
   assert.throws(() => G.archive({ archive: rel, name: 'hero-trial-a' }, { root }), /never replaced/);
+  // a record written before journal Passe D5 (an absolute prompt path, an outside reference): the archived copy keeps them by name only
+  const recFile = file.replace(/\.png$/, '.source.json'), old = JSON.parse(fs.readFileSync(recFile, 'utf8'));
+  old.generation.promptFile = path.join(os.tmpdir(), 'scratch', 'midday.txt').split(path.sep).join('/');
+  old.generation.references = [{ file: '../../outside/night.png', sha256: 'x', bytes: 1 }];
+  fs.writeFileSync(recFile, JSON.stringify(old, null, 2));
+  const dst2 = G.archive({ archive: rel, name: 'hero-trial-c' }, { root });
+  const text2 = fs.readFileSync(dst2.replace(/\.png$/, '.source.json'), 'utf8'), rec2 = JSON.parse(text2);
+  assert.equal(rec2.generation.promptFile, '(outside the repository) midday.txt');
+  assert.equal(rec2.generation.references[0].file, '(outside the repository) night.png');
+  assert.deepEqual(rec2.archived.pathsKeptByName, ['generation.promptFile', 'generation.references[0].file']);
+  assert.ok(!text2.includes(os.tmpdir().split(path.sep).join('/')) && !text2.includes('outside/night'), 'no outside path left');
   fs.appendFileSync(file, 'x');
   assert.throws(() => G.archive({ archive: rel, name: 'hero-trial-b' }, { root }), /does not match its record/);
 });

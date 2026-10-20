@@ -284,20 +284,22 @@ Monochrome-leaning night: indigo / slate dominant, cool stone secondary, amber l
 desaturated ivory for canvas/highlights. Keep props concentrated at focal points (hero stall, lantern clusters,
 quay edge, bridge, a few banners); do not add uniform clutter.
 Day and night (the operator's note of 2026-10-19, word for word, journal Passe D1): « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Its art direction is decided
-(the operator's day-state sheet, journal Passe D4); a first draft runs behind `?time=day` (journal Passe Y1). The night above stays the game's default until the operator
-approves the day in game (J9 « Après ma revue en jeu »).
-Day (decided, journal Passe D4):
-- **Midday** (J1 « Midi »): a high sun, short crisp shadows.
-- **The night's rule transposed** (J2): slate and cool stone dominant, the ivory-warm sun as the warm accent, stronger colours kept for the
-  bunting and banners. Not the saturated blue sky or roofs of the generated midday track.
-- **A pale sky** veiled with thin cloud and a **light haze** (J3): the simplified far city stays distant.
-- **Lanterns and windows unlit, the forge lit** (J4).
-- **Tournament bunting at the focal points, by day only** (J5, J6): garlands across the street at the hero stall and toward the forge, banners on
-  the bridge and the boat's mast.
-- **More people by day** (J7): the number is still to be proposed, with its measurement, and decided by the operator.
-- **Two fixed states**, no continuous cycle (J8).
-- References, non-canonical: `art-lab/characters/reference/sources/day-state-midday-2026-10-19.png` (the hour and light) and
-  `day-state-morning-2026-10-19.png` (the palette, sky and haze); generated, their characters redrawn by the tool: mood references only.
+(the operator's day-state sheet, journal Passe D4, then the operator's direction of journal Passe D6); a first draft runs behind `?time=day`
+(journal Passe Y1). The night above stays the game's default until the operator approves the day in game (J9 « Après ma revue en jeu »).
+Day (decided, journal Passes D4 and D6):
+- **Four fixed states** (D6, replacing J8 « Deux états fixes »): **morning**, **midday** (the tournament's launch), **end of day** (after the
+  tournament) and **evening, which is the night above** (the operator's answer « La nuit actuelle »). **The weather** (rain, snow, storm,
+  wind) applies to each.
+- **Midday is the generated midday track** (the operator, word for word: « le jour doit etre cette image joint »):
+  `art-lab/characters/reference/sources/day-state-midday-2026-10-19.png`. That means a deep blue sky with white clouds, a high sun and short
+  crisp shadows, saturated blue roofs and banners, and the tournament's bunting along the whole frontage, across the street and on the quay wall
+  (« Comme l'image »). For midday this replaces the sheet's J2 (the night's rule transposed), J3 (pale sky, light haze) and J5 (bunting at the
+  focal points). The image's characters were redrawn by the tool: its light, palette, sky and bunting are the target, not its sprites.
+- **Morning and end of day** take the generated morning and late-afternoon tracks as references (`day-state-morning-2026-10-19.png`,
+  `day-state-late-afternoon-2026-10-19.png`). Their looks are still to be built and shown.
+- **Kept from the sheet**: J4, lanterns and windows unlit by day, the forge lit; J6, the bunting by day only, never at night; J7, more people by
+  day, the number still to be proposed with its measurement and decided by the operator; J9, the night stays the default until the operator
+  approves the day in game.
 
 ## Camera graph (`src/app/CameraGraph.ts`)
 Four authored, semi-fixed framings, all on the canal side (+z of the pivot) looking up-canal (+x), chosen by zone with

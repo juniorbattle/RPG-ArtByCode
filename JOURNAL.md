@@ -829,6 +829,60 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 - Une preuve « 0 px » donne son seuil, et la colonne du maximum se lit : au seuil par défaut, un écart d'un niveau passe inaperçu.
 - Une capture se recoupe avec son témoin de répétition avant de prouver quoi que ce soit (l'arène).
 
+## Passe D6 — Le jour : la piste de midi est la cible ; quatre états, la météo sur chacun ; le pavois comme l'image (décisions de l'opérateur) (2026-10-19)
+
+### Demande et décisions, mot pour mot
+- Après les planches du premier jet (Passe Y1), l'opérateur joint une image et écrit : « le jour doit etre cette image joint puis nous aurons
+  donc matin, midi (lancement du tournoi), fin de journnee(apres le tournoi),  soir avec les variances meteoroligiques qui doivent etre
+  applicable »
+- Deux questions lui sont posées dans la séance ; ses réponses (l'option choisie) :
+  - « Le « soir » de ta liste, c'est la nuit actuelle (lune, lanternes allumées) ou un nouvel état entre la fin de journée et la nuit ? » →
+    « La nuit actuelle (Recommandé) » ;
+  - « Le pavois de midi : comme l'image (guirlandes tout le long du front et sur le mur du quai), ou aux points focaux comme tu l'avais choisi
+    (J5) ? » → « Comme l'image (Recommandé) ».
+- **L'image jointe est la piste de midi** (Passe Z4), réencodée en WebP : à la même taille que `day-state-midday-2026-10-19.png`, 0,38 % des
+  pixels diffèrent au-delà de 24 (la compression). La référence reste le PNG archivé, aux octets de l'API.
+- Branche `decisions-d6` depuis `main` (`e68e340`).
+
+### Ce qui change
+- **Midi est la piste de midi** : un ciel bleu profond aux nuages blancs, un soleil haut, des ombres courtes et nettes, des toits et des
+  bannières d'un bleu franc, le pavois du tournoi tout le long du front, en travers de la rue et sur le mur du quai.
+  - Cela remplace, pour midi, trois choix de la fiche (Passe D4) : J2 « Transposer la règle de la nuit », J3 « Ciel pâle et brume légère » et
+    J5 « Aux points focaux ».
+- **Quatre états fixes** au lieu de deux (J8 « Deux états fixes ») : le matin, midi (le lancement du tournoi), la fin de journée (après le
+  tournoi) et le soir, qui est la nuit actuelle, close. **La météo** (pluie, neige, orage, vent) s'applique à chacun.
+- **Restent** de la fiche :
+  - J1 « Midi » : midi est l'heure du lancement ;
+  - J4 « Éteintes, la forge allumée » ;
+  - J6 « Le jour seulement » : le pavois n'est pas tendu la nuit ;
+  - J7 « Plus de monde le jour » : le nombre est encore à proposer ;
+  - J9 « Après ma revue en jeu » : la nuit reste le défaut ;
+  - J10 : les pistes retenues sont archivées.
+- **Références** : le matin et la fin de journée prennent les pistes du matin et de la fin d'après-midi.
+
+### Fait — [OK]
+- **J10, la fin de journée archivée** : `art-lab/characters/reference/sources/day-state-late-afternoon-2026-10-19.png` (`d3573d64247ae288…`),
+  à l'octet (`cmp` identique), avec sa fiche ; `art:validate` : 17 sources, 0 erreur.
+- **[KO → corrigé] avant l'archivage** : la fiche de cette piste, écrite avant la Passe D5, portait encore le chemin absolu de son prompt, et
+  `--archive` l'aurait recopié.
+  - L'outil garde maintenant par leur nom seul les chemins hors du dépôt d'une fiche ancienne (prompt, références) et le note
+    (`archived.pathsKeptByName`).
+  - Test étendu ; avec l'ancien outil, il échoue (1 échec sur 8). La fiche archivée ne porte aucun chemin machine.
+- **`AGENTS.md`** : la direction du jour réécrite (quatre états, la cible de midi, les références, la météo sur chacun).
+- « À reprendre » § 0 mis à jour.
+
+### À appliquer ensuite, une branche par tâche
+1. **Midi fidèle à l'image**, derrière `?time=` ; la nuit reste à 0 px. Les états sont nommés `morning`, `midday` et `afternoon` ;
+   `day` reste un alias de midi ; absent ou `night` donne la nuit. Montré à l'opérateur en captures aux quatre cadrages.
+2. Le pavois du tournoi, comme l'image, par jour seulement.
+3. Le matin et la fin de journée, depuis leurs pistes.
+4. La météo sur chaque état : l'orage de jour voile le soleil, la neige, la pluie.
+5. J7 : une proposition chiffrée de la foule du jour.
+
+### Pensée
+- Une image jointe se compare d'abord aux pièces archivées : c'était la piste de midi réencodée, et la référence reste l'original.
+- Une décision plus récente de l'opérateur remplace des choix de la fiche : la passe le dit choix par choix, et garde ceux qui restent.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -836,9 +890,9 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
-  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1), la nuit inchangée : à revoir par l'opérateur en jeu. Ensuite, dans l'ordre de la
-  Passe D4 : le pavois du tournoi (J5, J6) ; une proposition chiffrée de la foule du jour (J7) ; le jour par défaut seulement après la revue de
-  l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
+  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
+  midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
+  défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)

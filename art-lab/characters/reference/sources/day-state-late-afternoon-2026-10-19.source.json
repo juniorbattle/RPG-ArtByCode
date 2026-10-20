@@ -1,0 +1,82 @@
+{
+  "kind": "generated-image",
+  "file": "day-state-late-afternoon-2026-10-19.png",
+  "sha256": "d3573d64247ae28809e03cf73562bdaf24bff17f103e0e6b319aefdf7036bcab",
+  "bytes": 2888318,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "344769698ec7f3b0740e05d25e9cce04af280858918f9f32b8d650ec5e5ed74d",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 1,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Edit this image. Keep exactly the same camera, framing and composition, the same architecture (the half-timbered merchant street, the stalls, the quay, the canal, the bridge, the castle on the hill) and the same characters in the same places. Keep the HD-2D look: a 3D diorama with pixel-art character sprites, soft tilt-shift depth of field, painterly light, slightly desaturated colours. Change only the time of day and the light, to daytime on the day of the city's tournament: lanterns and windows unlit; add only a few pennants and banners in the town's colours along the frontage and on the bridge, no new buildings, no extra clutter. Keep the restrained palette: slate blue and cool stone dominant, ivory canvas, sunlight as the warm accent. No text, no logos, no watermark.\nTime: late afternoon. A warm golden sun low from the right, long shadows across the cobbles, the canal and the castle catching the golden light, a soft warm haze in the distance.\n",
+    "promptSha256": "0c3bdacceab2e86d70caa93f07275860afc1a39e64cdf400125d0f2bc65eaed3",
+    "promptFile": "(outside the repository) afternoon.txt",
+    "references": [
+      {
+        "file": "screenshots/calibration/camB-merchant.png",
+        "sha256": "e1bf50c7d841623b1eb3dd8c5ac060fc0b9cc0841a65a789e5465bebc3aa5831",
+        "bytes": 2967129
+      }
+    ],
+    "image": "1 of 1",
+    "task": "day-state-concepts",
+    "requestedAt": "2026-10-19T21:39:49.429Z",
+    "response": {
+      "requestId": "req_eb8420d3a4c442a49b6f8e7aa4e629bd",
+      "created": "2026-10-19T21:41:15.000Z",
+      "processingMs": 85952
+    },
+    "usage": {
+      "input_tokens": 1729,
+      "input_tokens_details": {
+        "image_tokens": 1508,
+        "text_tokens": 221
+      },
+      "output_tokens": 5488,
+      "output_tokens_details": {
+        "image_tokens": 5488,
+        "text_tokens": 0
+      },
+      "total_tokens": 7217
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 0.625125,
+        "fromUsage": 0.177809
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-10-20",
+    "from": "day-state-concepts-20261019T213949Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced",
+    "pathsKeptByName": [
+      "generation.promptFile"
+    ]
+  }
+}

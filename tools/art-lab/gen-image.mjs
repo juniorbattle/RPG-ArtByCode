@@ -276,7 +276,13 @@ export function archive(o, { root = ROOT, now = () => new Date() } = {}) {
   fs.mkdirSync(dir, { recursive: true });
   fs.copyFileSync(src, dst);
   if (sha(fs.readFileSync(dst)) !== rec.sha256) throw new Error('copy differs from the original');
-  const out = { ...rec, file: `${name}.png`, archived: { date: now().toISOString().slice(0, 10), from: rec.file, rule: 'copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced' } };
+  // a record written before journal Passe D5 may hold a path outside the repository: the archived copy keeps it by its name only
+  const outside = (p) => typeof p === 'string' && (/^([A-Za-z]:)?[\\/]/.test(p) || p.split(/[\\/]/).includes('..'));
+  const byName = (p) => `(outside the repository) ${p.split(/[\\/]/).pop()}`;
+  const gen = rec.generation ? { ...rec.generation } : null, kept = [];
+  if (gen && outside(gen.promptFile)) { gen.promptFile = byName(gen.promptFile); kept.push('generation.promptFile'); }
+  if (gen && Array.isArray(gen.references)) gen.references = gen.references.map((r, i) => (outside(r.file) ? (kept.push(`generation.references[${i}].file`), { ...r, file: byName(r.file) }) : r));
+  const out = { ...rec, ...(gen ? { generation: gen } : {}), file: `${name}.png`, archived: { date: now().toISOString().slice(0, 10), from: rec.file, rule: 'copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced', ...(kept.length ? { pathsKeptByName: kept } : {}) } };
   fs.writeFileSync(path.join(dir, `${name}.source.json`), JSON.stringify(out, null, 2) + '\n');
   return dst;
 }
