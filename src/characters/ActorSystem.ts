@@ -77,9 +77,13 @@ export class ActorSystem {
    *  Passes D3 / H10; `?views=3` turns it off), for the sheets that have the two three-quarter facings only: every other sprite keeps the
    *  three-view rule, unchanged */
   views5 = true;
-  /** `?facing=ray` (journal Passe K9, prepared for the operator's review): a walking view chosen by the heading's angle to the line of sight
-   *  (the ground direction from the walker to the camera) instead of its step on screen; false = the screen rule (Passe F1), the default */
+  /** `?facing=ray` (journal Passe K9): every walking view chosen by the heading's angle to the line of sight (the ground direction from the
+   *  walker to the camera) instead of its step on screen (the screen rule, Passe F1) */
   facingRay = false;
+  /** the line-of-sight rule for the player only, by default (the operator's decision K9, « Adopte la règle du regard pour le héros seulement ;
+   *  les PNJ gardent la règle de l'écran jusqu'à leurs trois-quarts », journal Passe K10): « up » shows the hero's back even where the low
+   *  pitch of A turns the walk into a slide; `?facing=screen` turns it off */
+  facingRayPlayer = true;
   private has34 = new Map<string, boolean>();
 
   /** camera: shows a walking facing by its on-screen direction (null: the world rule for every facing) */
@@ -240,7 +244,7 @@ export class ActorSystem {
     if (_p0.z > 1 || _p1.z > 1) return false;
     // in pixels (units of half the height): NDC x spans the width
     let dx = (_p1.x - _p0.x) * cam.aspect, dy = _p1.y - _p0.y;
-    if (this.facingRay) {
+    if (this.facingRay || (this.facingRayPlayer && a === this.player)) {
       // ?facing=ray (journal Passe K9): the heading against the line of sight on the ground - across it (to the camera's right: dx > 0) and
       // along it (away from the camera: dy > 0) - so a walk straight away shows the back wherever the walker stands in the frame, even where
       // the low pitch turns that walk into a slide toward the vanishing point on screen

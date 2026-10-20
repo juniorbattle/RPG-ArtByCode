@@ -242,9 +242,10 @@ decision J7a, Passe D7) · `cast=generated`
 `views=3` (the three-view rule for every sprite; absent = the five-view rule, journal Passe V5: front / three-quarter / profile sectors at
 22.5 / 67.5 deg on screen, for the sheets that hold both three-quarter facings `downSide` / `upSide` only, today the hero; every other sprite
 keeps the three views; the default since the operator's decision of 2026-10-19, « Par défaut avec le héros », journal Passes D3 / H10) ·
-`facing=ray` (a walking view chosen by the heading's angle to the line of sight, the ground direction from the walker to the camera, instead of
-its step on screen: a walk away shows the back even where the low pitch of A turns it into a slide toward the vanishing point; absent = the
-screen rule of journal Passe F1; prepared for the operator's comparison, journal Passe K9) · DEV server only:
+`facing=ray|screen` (walking views; absent = the hero by the line of sight - the heading's angle to the ground direction from the walker to
+the camera, so a walk away shows his back even where the low pitch of A turns it into a slide toward the vanishing point - and the NPCs by
+their step on screen, journal Passe F1, until they have three-quarter views: the operator's decision K9, journal Passe K10; `ray` = everyone
+by the line of sight, `screen` = everyone by the screen, for comparison, journal Passe K9) · DEV server only:
 `variants=candidate` (apply the NPC variants file `art-lab/characters/variants/variants.json` while it waits for the operator's approval; production
 applies it only once approved, its mask fingerprints checked, journal Passe V1) · `scene=arena` (the arena of the Cité du Tournoi instead of the
 town, `src/arena/ArenaApp.ts`, loaded on demand; journal Passe P1; absent = the town, unchanged) with `assist=subtle|full|off` (the prototype's

@@ -87,3 +87,22 @@ test('?facing=ray (Passe K9): the view by the heading against the line of sight 
   sys.face(a, away.clone().add(right).normalize(), true); assert.equal(a.dir, 'upSide', '45 deg away and right: the three-quarter back');
   assert.equal(a.flip, true);
 });
+
+test('by default the hero walks by the line of sight, the NPCs by the screen (decision K9, Passe K10); ?facing=screen gives the hero the screen rule', () => {
+  const frames = new Map(), specs = new Map([['sheet', { id: 'sheet', detail: 'crowd' }]]);
+  for (const d of ['down', 'up', 'side', 'downSide', 'upSide']) for (const m of ['idle', 'walk']) frames.set(`sheet/${d}/${m}/0`, {});
+  const cam = new THREE.PerspectiveCamera(38, 16 / 9, 0.1, 400);
+  cam.position.set(-37, 2.5, 12); cam.lookAt(6, 1, 0); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+  const sys = new ActorSystem({ specs, counts: new Map(), frames }, cam);
+  assert.equal(sys.facingRayPlayer, true, 'the hero by the line of sight, by default');
+  assert.equal(sys.facingRay, false, 'not everyone');
+  const hero = sys.spawn('sheet', 'player', new THREE.Vector3(-14, 0, -2)), npc = sys.spawn('sheet', 'crowd', new THREE.Vector3(-14, 0, -2));
+  sys.player = hero;
+  const fwd = new THREE.Vector3(6 - cam.position.x, 0, 0 - cam.position.z).normalize();   // the key « up » in this framing
+  sys.face(hero, fwd, true); sys.face(npc, fwd, true);
+  assert.equal(hero.dir, 'up', 'the hero walking away shows his back');
+  assert.notEqual(npc.dir, 'up', `the NPC keeps the screen rule (${npc.dir})`);
+  sys.facingRayPlayer = false; hero.dir = 'down';
+  sys.face(hero, fwd, true);
+  assert.equal(hero.dir, npc.dir, '?facing=screen: the hero takes the screen rule like the NPCs');
+});
