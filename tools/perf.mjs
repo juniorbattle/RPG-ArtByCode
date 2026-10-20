@@ -88,6 +88,7 @@ try {
 console.log(`\nadapter: ${adapter}${wit.on ? `  (contention witness on, GPU process ${mine ?? '?'}, threshold ${opt.thr} %)` : '  (contention witness off)'}`);
 console.log('=== over rounds: median [min-max], clean = median of the rounds without foreign GPU use ===');
 const med = (xs) => q(xs, 0.5);
+const fx = (x, d) => (Number.isFinite(x) ? x.toFixed(d) : '-');   // a page may not report a counter (Lantern Row: no texture memory)
 const summary = [];
 for (const [label, rs] of results) {
   const clean = rs.filter((r) => !r.foreign.length);
@@ -101,6 +102,6 @@ for (const [label, rs] of results) {
     ...Object.fromEntries(['draws', 'tris', 'geos', 'tex', 'texMB', 'lights', 'lightsOn', 'gen'].map((k) => [k, med(rs.map((r) => r[k]))])), res: rs[0].res, vis: rs[rs.length - 1].vis, adapter, rounds: rs,
   };
   summary.push(row);
-  console.log(`${label.padEnd(24)} ${row.res.padEnd(16)} GPU ${row.gpuMs.toFixed(2)} [${row.gpuMin.toFixed(2)}-${row.gpuMax.toFixed(2)}] clean ${row.gpuClean === null ? '-' : row.gpuClean.toFixed(2)} (${clean.length}/${rs.length}) [${passes.map((p) => `${p} ${gpu[p].toFixed(2)}`).join(' | ')}]  js upd ${row.cpuUpdate.toFixed(2)} ren ${row.cpuRender.toFixed(2)}  draws ${row.draws.toFixed(0)}  tris ${(row.tris / 1000).toFixed(1)}k  tex ${row.tex.toFixed(0)} (${row.texMB.toFixed(0)} MB)  lights ${row.lightsOn.toFixed(0)}/${row.lights.toFixed(0)}  gen ${row.gen.toFixed(0)} ms${row.vis ? '  ' + JSON.stringify(row.vis) : ''}`);
+  console.log(`${label.padEnd(24)} ${row.res.padEnd(16)} GPU ${row.gpuMs.toFixed(2)} [${row.gpuMin.toFixed(2)}-${row.gpuMax.toFixed(2)}] clean ${row.gpuClean === null ? '-' : row.gpuClean.toFixed(2)} (${clean.length}/${rs.length}) [${passes.map((p) => `${p} ${gpu[p].toFixed(2)}`).join(' | ')}]  js upd ${row.cpuUpdate.toFixed(2)} ren ${row.cpuRender.toFixed(2)}  draws ${row.draws.toFixed(0)}  tris ${(row.tris / 1000).toFixed(1)}k  tex ${fx(row.tex, 0)} (${fx(row.texMB, 0)} MB)  lights ${fx(row.lightsOn, 0)}/${fx(row.lights, 0)}  gen ${fx(row.gen, 0)} ms${row.vis ? '  ' + JSON.stringify(row.vis) : ''}`);
 }
 if (opt.json) fs.writeFileSync(opt.json, JSON.stringify(summary, null, 1));

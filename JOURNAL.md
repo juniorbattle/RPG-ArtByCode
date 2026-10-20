@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 et L1 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2 et L7) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L3 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7 et Q4) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -28,204 +28,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/15-passes-K9-H11.md`](journal/15-passes-K9-H11.md) | K9, K10, K11, H11 | 20/10 |
 | [`journal/16-passes-N1-N4.md`](journal/16-passes-N1-N4.md) | N1, N2, N3, N4 | 20/10 |
 | [`journal/17-passes-L0-L1.md`](journal/17-passes-L0-L1.md) | L0, L1 | 20/10 |
+| [`journal/18-passes-L2-L3.md`](journal/18-passes-L2-L3.md) | L2, L3 | 20/10 |
 
 ---
-
-## Passe L2 — Le tournoi de la phase I, les concurrents hors écran, le pouls, dix-sept événements configurables, le TournamentLab (2026-10-20)
-
-### Contrat de tâche (contrat projet § 11.3)
-- **Objectif** : la poule à points (choix G3) de huit concurrents persistants, leur vie hors écran, les rivalités fondées sur des faits, le pouls
-  de la ville, au moins douze événements configurables dont une chaîne de sabotage contrable, et le laboratoire du tournoi.
-- **Entrées** : contrat du tournoi §§ 5-9, 11-13 ; contrat projet §§ 3.4, 9, 14 ; plan, lot L2 ; `CombatSim` (choix G1).
-- **Fichiers autorisés** : `src/simulation/`, `src/tournament/`, `src/combat/`, `src/events/`, `src/narrative/`, `tests/`, `tools/tournament-lab.mjs`,
-  `AGENTS.md` (la commande), `JOURNAL.md`. **Interdits** : `src/arena/` (`COMBAT_DATA`, `ARENA_SIM_HASH`), tout fichier du jeu par défaut.
-- **Outputs** : la poule, le hors écran, le pouls, `src/events/`, `tools/tournament-lab.mjs`.
-- **Critères d'acceptation** : la résolution simplifiée d'accord avec des duels complets dans la tolérance écrite à l'avance ; aucun
-  participant oublié ; le laboratoire reproductible sur 50 graines ; la chaîne de sabotage déclenchée par ses causes, annoncée, contrée.
-- **Tests** : `tests/tournament.test.mjs`, des fautes injectées. **Risques** : un modèle simplifié qui diverge du combat réel ; un concurrent
-  qui ne fait rien ; un sabotage arbitraire.
-- **Définition de terminé** : tests verts, fautes attrapées, laboratoire en CLI et dans `npm test`, validation complète, jeu par défaut intact.
-
-### Fait — [OK]
-- **La distribution** (`src/narrative/roster.ts`, en anglais) : le joueur et sept rivaux. Chacun a une identité, un style, des objectifs, des
-  relations de départ, un tempérament et des couleurs de portrait :
-  - Marek Varn, le champion (le Marek du prototype, nombre pour nombre) ;
-  - Vessa Lark (enchaînements rapides) ; Orla Brask, des docks (le futur recrutable) ; Cassius Dree, noble, rival hostile (le saboteur) ;
-  - Ilse Morrow, chevalière du Temple ; Tobin Fenn, le jeune ; Rhosk, le mercenaire du Nord.
-  - Deux rondes : le joueur affronte Vessa le jour 2 et Marek le jour 3 ; tout le monde combat les deux jours. Victoire 3 points, défaite serrée
-    1 point (le perdant garde un quart de sa vie), défaite 0. Personne n'est éliminé (choix G3).
-- **Les profils de combat** (`src/combat/profiles.ts`) : chaque rival est une suite de nombres pour le siège ennemi de `CombatData` (santé,
-  coup léger, coup lourd, enchaînements, repos). `duelData` en fait les données d'un duel ; `COMBAT_DATA` ne change pas. Le profil de Marek
-  passé par `duelData` redonne l'empreinte `ARENA_SIM_HASH`.
-- **La résolution hors écran** : une course aux dégâts tirée des mêmes nombres (dégâts par seconde de chaque kit, temps pour abattre l'autre,
-  une logistique).
-  - Trois constantes, réglées sur des graines de calibrage (1-40) : la part des lectures qui aboutissent (`READ_AVAIL` 0,5 : une esquive
-    demande un point d'action, une garde un combattant au repos), la pente (3,2) et l'avance du kit du joueur (0,75 en logit : 3 points
-    d'action au départ, techniques en tête).
-  - Le kit du joueur est résolu par un petit bilan de temps (les coups légers gagnent des points, les techniques les dépensent au rythme de
-    leurs recharges).
-- **Un bot** (`src/combat/bot.ts`) joue le siège du joueur dans le `CombatSim` complet, avec une adresse de 0 à 1 et son propre flux
-  aléatoire : 3 ms par duel en Node.
-- **La fiche de match** (`src/combat/match.ts`) prend des listes de combattants par camp (écart E17) ; elle ne devient `CombatData` qu'en 1 contre
-  1 et le dit sinon (« team formats (1v2) are outside the slice »). Elle porte ce que la préparation change : la blessure (−20 % de santé par
-  niveau), une lame trempée (+15 % de dégâts), l'entraînement (+5 % par séance, deux au plus), et l'assistance `full` si l'adversaire a été
-  observé.
-- **Le hors écran** (`src/tournament/offscreen.ts`) : à chaque créneau, chaque rival choisit une activité (s'entraîner, se reposer, acheter,
-  espionner, boire avec un autre, comploter), tirée selon son état, ses objectifs et l'heure, dans son propre flux. Chaque choix est journalisé
-  (caché du joueur).
-- **Les rivalités sur des faits** (contrat du tournoi § 7) : un rival fier qui perd en veut au vainqueur, un honorable le respecte.
-- **Le pouls** (`src/tournament/pulse.ts`, les huit champs du § 9) : calculé à chaque créneau depuis l'état, plus les décalages durables que
-  laissent les événements.
-- **`src/events/`** : un langage de conditions et d'effets en données ; dix-sept événements des six types du contrat projet § 9.1.
-  - La chaîne de sabotage (§ 3.4) : la rancune de Cassius (sa relation au joueur ≤ −25, née d'un fait : la première victoire du joueur) et la
-    renommée du joueur ; deux signes (l'huile achetée chez Mara ; la silhouette vue par le guet), puis la tentative du soir.
-  - Ses réponses (§ 9.3) : payer le guet (la tentative échoue, le coupable nommé, Cassius perd 3 points), un guet qui veille (l'auteur fuit) ;
-    sinon la forge brûle, l'acier manque et la boutique augmente ses prix de 40 % (« boutique affectée par une conséquence »). Les autres
-    réponses (enquêter, réparer, la lame de Mara) viennent avec le contenu du lot L5.
-- **L'action `fight`** reçoit le résultat du duel de l'arène (ou du bot) ; l'après-midi d'un jour de match, aucune autre action importante
-  n'est permise. **L'action `payWatch`** (mineure, le soir, 15 pièces).
-- **TournamentLab** : `src/tournament/lab.ts` (parties automatiques avec une politique de joueur, participants oubliés, taux) et la CLI
-  `tools/tournament-lab.mjs` (`--seeds`, `--policy`, `--state` / `--save` + `--days`, `--compare`, `--json`). 50 parties en 0,7 s.
-
-### Choix de la séance (consignés comme tels)
-- **[KO → changé] L'entraînement** : « +1 point d'action au départ » faisait **perdre** le bot (Vessa, 60 duels : 90 % de victoires sans
-  entraînement, 62 % avec deux séances) ; il dépense tout d'entrée et n'a plus de point pour esquiver. L'entraînement donne maintenant +5 % de
-  dégâts par séance, un effet qui ne peut que servir.
-- Les nombres des rivaux sont provisoires (« Régler après essai », D1). **Constat** : le kit du joueur domine. Le bot gagne 65 à 100 % de ses
-  duels selon l'adversaire et son adresse ; Marek, le plus dur, est battu à 68 % par un bot d'adresse 0.
-- Le pouls est recalculé depuis l'état, pas accumulé : chaque valeur a des causes que le code nomme.
-
-### Preuves
-- **La résolution simplifiée contre les duels complets** : la tolérance, **0,2**, a été écrite dans le test avant le passage sur les graines
-  tenues à part (101-140). Les sept profils à trois adresses (0 ; 0,5 ; 1), plus trois cas avec modificateurs : tous dans la tolérance
-  (écart maximal de 0,14 sur les graines de calibrage).
-- **`tests/tournament.test.mjs`, 11 tests** :
-  - la résolution simplifiée, sur les graines tenues à part ;
-  - les données de duel : le prototype intact, l'empreinte de l'arène tenue par le profil de Marek ;
-  - la fiche de match, et son refus d'un format d'équipe ;
-  - la poule : tous les combats joués, les points qui s'additionnent, personne d'éliminé ;
-  - aucun participant oublié, sur 50 graines et deux politiques ;
-  - les événements : au moins douze, des six types, chacun avec sa cause ; chacun se déclenche dans au moins une partie sur 60. Une exception
-    déclarée : la faveur de Mara, qui attend les services du lot L5 ;
-  - la chaîne de sabotage sur trois graines : les deux signes avant la nuit, la forge brûlée sans réponse et la boutique touchée, le coupable
-    pris quand le guet est payé ; sans la cause (le premier duel perdu), ni signe ni tentative ;
-  - une défaite coûte (un point pour une défaite serrée, une blessure après un coup lourd) sans éliminer ;
-  - le laboratoire reproductible (deux passages sur 50 graines égaux), et sa CLI.
-- **Sept fautes injectées une à une, fichiers rendus à l'octet, toutes attrapées** : la défaite serrée sans son point, un rival qui ne fait rien,
-  le guet ignoré, une pente fausse, la nuit sans baisse de la sécurité, une défaite qui élimine, et `step` non compté (la faute passée en L1,
-  attrapée maintenant que l'aléatoire sert).
-- **Mesures du laboratoire** (50 graines, Node, à titre indicatif) :
-  - politique « idle » (adresse 0,3) : 74 % de duels gagnés, la forge sabotée dans 96 % des parties, jamais contrée ;
-  - « diligent » (adresse 0,6, guet payé) : 97 % de victoires, sabotages contrés dans 82 % des parties ; 0 participant oublié.
-- **Le jeu par défaut ne change pas** : aucun fichier de `src/main.ts`, `src/app`, `src/arena`, `src/characters`, `src/district`, `src/debug` ne
-  change (`git diff --stat`) ; le bundle ne contient pas le jeu.
-- **Validation** : typecheck, `npm test` **123 / 123**, build, `art:validate`.
-
-### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
-- Avec cette passe, les passes gardées faisaient 60 842 octets.
-- K9, K10, K11 et H11, toutes closes (branches fusionnées), partent d'un seul bloc, dans leur ordre et à l'octet, vers
-  `journal/15-passes-K9-H11.md` : en-tête, ligne `---`, puis les 23 873 octets inchangés (SHA-256 `734db47bf54ccf61…`). La ligne d'index et la
-  phrase d'en-tête sont mises à jour. Restent N1 à N4, L0, L1 et L2 : 36 969 octets.
-- **Preuve** (script hors dépôt, contre la copie de `JOURNAL.md` faite juste avant le déplacement) : **8 / 8**, les huit contrôles de la Passe
-  D1 ; le huitième est ici « LF seuls, aucun CR » (le dépôt garde LF ; la Passe D1, sous Windows, contrôlait les CRLF de la copie de travail).
-  Contrôle négatif : un mot changé dans une copie de l'archive → 7 / 8.
-
-### Pensée
-- Un modèle simplifié se règle sur des graines et se juge sur d'autres, avec une tolérance écrite avant ; ses constantes se nomment par ce qu'elles
-  représentent (une lecture qui n'aboutit pas faute de point d'action), pas par le chiffre qui fait passer le test.
-- Un bonus de jeu se vérifie sur le bot avant d'être gardé : un avantage nominal (des points d'action de plus) peut faire perdre.
-
-## Passe L3 — Le duel officiel : l'arène pilotée par une fiche de match, Vessa générée, l'aller et retour ville → arène → ville (2026-10-20)
-
-### Contrat de tâche (contrat projet § 11.3)
-- **Objectif** : les deux duels de la tranche se jouent dans l'arène actuelle (choix G1), pilotée par une fiche de match ; le résultat revient
-  à l'état ; on passe de la ville à l'arène et retour par une sauvegarde et un rechargement (choix G2).
-- **Entrées** : plan, lot L3 ; `src/arena/` (Passe P1) ; le cœur des Passes L1 et L2 ; choix G1, G2, K1, K2.
-- **Fichiers autorisés** : `src/arena/ArenaApp.ts`, `ArenaHud.ts`, `FighterArt.ts` (des options, défauts inchangés), `src/main.ts` (une entrée
-  `?play=1` chargée à la demande), `src/ui/`, les modules du jeu, `tests/`, `tools/play-flow.mjs`, `JOURNAL.md`.
-- **Interdits** : `COMBAT_DATA`, `CombatSim`, `ARENA_SIM_HASH` ; tout changement visible de `?scene=arena` et du jeu par défaut.
-- **Outputs** : `ArenaMatch` ; la table de textes du HUD (`TEXTS_FR` par défaut, `TEXTS_EN`) ; Vessa (`FighterArt.VESSA`, `FOES`) ; `src/ui/play.ts`,
-  `playArena.ts`, une première page de ville `playTown.ts` ; `?play=1`.
-- **Critères d'acceptation** : les deux duels, gagnés et perdus, joués jusqu'au bout et appliqués ; la sauvegarde rechargée des deux côtés
-  du changement de scène égale la partie continue ; `ARENA_SIM_HASH` et l'équivalence au prototype verts ; le PD à 0 px.
-- **Tests** : `tests/play-duel.test.mjs` ; `tools/play-flow.mjs` dans le navigateur ; le PD. **Risques** : un écart de pixel de `?scene=arena`
-  (textes, atlas) ; le chemin par défaut touché par `src/main.ts`.
-- **Définition de terminé** : tests verts, fautes attrapées, parcours prouvé dans le navigateur, PD à 0 px, validation complète.
-
-### Fait — [OK]
-- **`ArenaApp`** prend une option `match` : les données du duel (une variante de `CombatData`, `src/combat/match.ts`), qui s'assoit dans le siège
-  adverse, l'assistance gagnée par la préparation, la table de textes ; pas de recommencement (« R ») ; `onOver` une fois le KO montré
-  (1,6 s). Sans l'option, rien ne change.
-- **Le HUD** : ses mots dans une table. `TEXTS_FR`, le défaut, reprend mot pour mot ceux du prototype ; `TEXTS_EN` sert au mode jouable (choix
-  K1). Les noms des actions viennent des données du duel : en anglais dans une fiche (`src/narrative/texts.ts`), et le libellé court
-  « Estocade » du prototype tombe avec son nom français.
-- **Vessa Lark**, le second adversaire : générée dans la grammaire de `FighterArt` (le rig du générateur, ses rampes, son contour, à ×2), plus
-  légère que Marek, une lame à une main, une veste et une cape sarcelle ; elle bouge avec les images du héros, depuis le siège adverse
-  (`FOES`). `buildArenaAtlas(seed, 5)` reste le même à l'octet.
-- **Le mode jouable** (`?play=1`, chargé à la demande par `src/main.ts`) :
-  - l'état vient de la sauvegarde (`localStorage`, et un fichier à garder ou recharger), ou d'une partie neuve (`&new=1&name=`) ; DEV :
-    `&state=<état nommé>` ;
-  - **la ville** : le district figé, son état du jour, sa forge, sa foule et sa météo tirés de l'état (`townQuery` : matin → `morning`,
-    après-midi → `midday`, soir → la nuit ; au retour d'un duel, la fin de journée → `afternoon` jusqu'à « Let the night fall ») ; un premier
-    panneau (l'horloge, les actions et leur coût, le journal, le tableau du tournoi, le fichier de sauvegarde) ;
-  - **l'arène** : un rapport d'observation avant le premier coup, le duel, le résultat appliqué (`fight`), sauvegardé, puis le retour en ville ;
-  - `window.__game` (l'état, les actions, `act`) pour les preuves ; `?noreload=1` garde la page et laisse l'adresse suivante dans
-    `window.__go`.
-- **Des états nommés** de duel : `day2-afternoon`, `day2-dusk-won`, `day2-dusk-lost`, `day3-afternoon`.
-
-### Choix de la séance (consignés comme tels)
-- **L'arène reste de nuit** pendant le duel de l'après-midi : elle n'a que cet aspect (choix G1 : « L'arène actuelle »). Lui donner le jour serait
-  un changement d'aspect, préparé comme une décision (au bilan).
-- Le rapport d'observation suspend la simulation (sans écran de pause) jusqu'à « Fight » : le premier coup ne part pas pendant la lecture.
-- Le profil du siège adverse prend les images du héros pour Vessa : un personnage nouveau sans clips nouveaux. Sa silhouette reste proche de
-  celle du héros ; une critique à l'aveugle, puis l'opérateur, en jugeront.
-
-### Preuves
-- **`tests/play-duel.test.mjs`, 5 tests** :
-  - l'atlas de l'arène par défaut est celui de `main` `d129433` à l'octet (SHA-256 `f7bb50a0…`, calculé sur la copie figée) ; celui de Vessa
-    ne change que les cases du siège adverse, et l'on y compte sa couleur sarcelle (≥ 200 texels sur l'image de repos ; Marek : 0) ;
-  - `TEXTS_FR` reprend les mots du prototype, listés dans le test ; `TEXTS_EN` a les mêmes clés et aucun mot français ;
-  - les deux duels (Vessa le jour 2, Marek le jour 3), gagnés et perdus, joués jusqu'au bout par le bot dans le `CombatSim` complet, leur
-    résultat appliqué ; au retour, la fin de journée, puis la nuit ;
-  - la sauvegarde rechargée des deux côtés du changement de scène égale la partie continue ;
-  - les données de la fiche ne changent du prototype que les sièges et la préparation.
-  - **Cinq fautes injectées une à une, fichiers rendus à l'octet** : Vessa par défaut, un mot français changé, le crépuscule oublié, le libellé
-    court gardé, le mauvais aspect dans le siège adverse. **[KO → corrigé]** la cinquième passait d'abord (le test ne vérifiait que « autre
-    que Marek ») ; l'oracle de la couleur sarcelle l'attrape.
-- **Le PD**, contre `main` figé (`d129433`, :5187) et la branche figée (`0b823ef`, :5188), au **seuil 0**, sortie gardée et relue :
-  - témoin de répétition (deux chargements de `main`, B avec personnages) : 0 px ;
-  - nuit A, B, C, D (`static=1&occ=0`, 30 pas) et avec personnages (120 pas), midi en B : **0 px** les neuf ;
-  - `?scene=arena`, cinq moments (`charging`, `window`, `combo`, `ko`, `strike`) avec la boucle tenue (`HOLD=1`) : **0 px**, témoin compris ;
-  - `tools/arena-scene-check.mjs` sur la branche : **PASS** deux fois sur deux (empreinte égale au prototype, 42 rendus, contraste du
-    télégraphe 6,9:1).
-- **Le parcours dans le navigateur** (`tools/play-flow.mjs`, branche figée, SwiftShader) :
-  - victoire contre Vessa (graine 1842, jour 2) et défaite contre Marek (graine 7719, jour 3) ;
-  - à chaque fois : la ville rechargée depuis la sauvegarde garde le même état ; l'arène assoit le joueur nommé face au bon adversaire, HUD
-    anglais ; le résultat est dans l'état ; la ville revient à la fin de journée (`afternoon`) ; **l'état final rejoué en Node a la même
-    empreinte** que celui du navigateur ; 0 erreur de page.
-- Une image gardée : `screenshots/calibration/l3-arena/vessa-vs-hero-combo-x2.png` (Vessa et le héros, moment `combo`, ×2) pour la critique à
-  venir.
-
-### [KO → corrigé] l'outillage sous SwiftShader
-- **Le délai du protocole** : sous la charge (trois navigateurs), le bake bloque la page plus de 180 s, le délai par défaut de Puppeteer ;
-  `detshots`, `arena-scene-check`, `arena-scene-shots` et `play-flow` prennent maintenant `READY_MS` comme `protocolTimeout`. Une première
-  série de captures du PD a échoué entièrement ainsi ; elle a été arrêtée et refaite.
-- **`arena-scene-shots` n'était pas déterministe ici** : la boucle de la page tourne entre le chargement et le premier moment, et y laisse sa
-  trace (l'acclamation des spectateurs, les particules) ; en SwiftShader ce délai varie, d'où 18 % de pixels différents entre `main` et la
-  branche, et même entre deux chargements de `main`. Avec `HOLD=1` (la boucle neutralisée, comme `detshots`) : 0 px. Le premier moment d'une
-  page variait encore dans la barre d'actions (3 424 px, ses transitions CSS au premier affichage) : un moment de chauffe avant lui suffit.
-- **`arena-scene-check` échouait sous la charge** : sa boucle vivante ne fait que 5 à 6 images en SwiftShader (une par seconde environ, le pas
-  plafonné à 0,05 s), et la simulation n'avance qu'au-delà de la cinquième. Seul sur la machine, il passe sur `main` et sur la branche.
-- **Le panneau de ville ne se redessine pas** quand on agit par `window.__game` : `play-flow` recharge la page depuis la sauvegarde avant
-  d'entrer dans l'arène.
-
-### Validation
-- typecheck, `npm test` **128 / 128**, build, `art:validate`.
-
-### Pensée
-- Un outil réputé déterministe se revérifie sur une machine lente : sa boucle libre entre le chargement et la capture peut y écrire dans
-  l'image. Le témoin de répétition le dit avant toute comparaison.
-- Un échec d'outil sous la charge se rejoue seul avant d'être lu comme une régression : le même contrôle sur `main` figé départage.
 
 ## Passe L4 — La ville jouable : les rôles des PNJ, les dialogues et leurs portraits, l'interface en anglais, l'écran titre par défaut (2026-10-20)
 
@@ -644,6 +449,89 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Un retour à une séance qu'on ne peut pas joindre va là où elle lit déjà : le dépôt, à côté du brief qui l'a lancée.
 
+## Passe Q4 — Relais local : les requêtes `000` (état de la machine) et `001` (temps GPU du mode jouable sur la 780M) répondues (2026-10-20)
+
+### Demande
+- Séance locale lancée par la séance parente : répondre sur cette machine aux deux requêtes du relais restées ouvertes (Passes L7, Q3), dans
+  la section « Réponse » de chaque fichier de `briefs/local-requests/`.
+- Branche `relay-gpu-q4` depuis `main` (`94aa82f`). La séance cloud étant close, tout a tourné sur `main` (même code de jeu que `7b7a966`).
+
+### Requête `000` — [OK] répondue
+- **Aseprite** : oui, 1.3.18.6-x64 (`art:doctor`) ; l'extension et le plugin Aseprite AI Artist 0.8.2 configurés, le lien vivant non testé.
+- **Clé OpenAI** : présente, dans `.env.local` (ignoré par Git), absente de l'environnement. La présence vient de la fonction `readKey()` de
+  l'outil, qui n'a affiché qu'un booléen : la valeur n'a été ni lue, ni affichée, ni recopiée. Registre des dépenses : trois tâches, 0,36 /
+  0,53 / 0,77 $ sur 5 $.
+- **GPU** : Chrome rend sur la Radeon 780M (ANGLE D3D11), pilote AMD 32.0.21030.14003 ; la RTX 4060 (pilote 32.0.15.7702) n'est prise
+  qu'avec `--gpu=dgpu`. Chrome 155.0.8059.80 ; écran 2560 × 1600 à 165 Hz.
+
+### Requête `001` — [OK] répondue, [?] mesurée sous contention
+- **Conditions** : serveur DEV `dev-strict` (:5186) lancé par `preview_start`, son onglet fermé aussitôt, le panneau navigateur resté fermé ;
+  chaque série en arrière-plan, attendue jusqu'au bout dans le tour ; témoin de contention au seuil de 15 %. La série 1080p en 5 tours, la
+  série 2560 × 1440 en 3 tours.
+- **[?] La contention** : le processus GPU d'un Firefox de l'opérateur (PID 10840, ouvert depuis le 19/10) a occupé **13 à 38 % de la 780M**
+  pendant toute la séance (médiane 17 % sur un journal complet du témoin tenu pendant la série 1440p). Il n'a pas été touché. **Aucun tour
+  n'est sans contention** : les tours « clean » ne sont que ceux où Firefox est resté entre 13 et 15 %. Les variantes étant entrelacées, la
+  comparaison entre pages tient ; les temps absolus non.
+- **Résultats** (ms de GPU, médiane des tours ; écart à la nuit B de la même série) :
+
+| Page | 1920 × 1080 | 2560 × 1440 |
+|---|---|---|
+| nuit B (`seed=1842&clean=1&camera=B`) | 13,77 [13,44-16,45] | 22,25 [21,48-23,35] |
+| jeu, matin (`day1-morning`) | 12,63 (−8 %) | 20,05 (−10 %) |
+| jeu, midi (`day2-afternoon`) | 12,51 (−9 %) | 20,44 (−8 %) |
+| jeu, fin de journée (`day2-dusk-won`) | 13,58 (−1 %) | 19,76 (−11 %) |
+| duel (`scene=arena`, jour 2) | 12,82 (−7 %) | 20,82 (−6 %) |
+| parvis (`forecourt-morning`) | 12,36 (−10 %) | 20,75 (−7 %) |
+| Lantern Row (`lanterns-night`) | 12,52 (−9 %) | 20,68 (−7 %) |
+| arène par défaut (`scene=arena`) | 13,01 (−5 %) | 21,02 (−6 %) |
+
+- **Lecture** :
+  - Chaque page du mode jouable coûte au plus ce que coûte la nuit par défaut dans la même série (−1 à −11 %). Les pages de jour gagnent leurs
+    lumières éteintes (4 allumées sur 24) ; mêmes appels de dessin que la nuit (107), ≈ 2 000 triangles de plus (le pavois), comme le comptait
+    le cloud (Passe L7).
+  - Contre les références : la nuit B fait +3,0 ms en 1080p et +2,6 ms en 1440p de plus qu'à la Passe G1 (10,81 [9,88-10,95] et 19,65
+    [18,60-20,04], tours propres), hors de la fourchette de la Passe 6 en 1080p (10-12 ms), dedans en 1440p (16-21 ms). L'arène garde son
+    rapport à la ville : −6 % à la Passe G1 (9,30 contre 9,88 ms), −5 % ici.
+  - **[?] Estimation non vérifiée** : si cet excès tient tout entier à Firefox et pèse autant sur chaque page, les pages du jeu tiendraient
+    9,4 à 10,6 ms en 1080p et 17,2 à 18,2 ms en 1440p, dans le budget de la Passe 6. À remesurer Firefox fermé.
+  - `js ren` suit le temps GPU sur toutes les pages : le rendu semble attendre le GPU dans ce harnais sans plafond (hypothèse, non vérifiée).
+- **Cadence** (`tools/cadence.mjs`, fenêtre discrète, `max`, plafond `a60`) : 37 à 44 images/s sur la nuit B et trois pages de jeu, le plafond
+  à 4 vsyncs ; à la Passe 6h, au calme 55,0 images/s à 3 vsyncs, sous une charge de +5,5 ms 41,6 images/s à 4 vsyncs. Aujourd'hui, la nuit
+  comme le jeu sont dans le cas chargé.
+- **Démarrage** (`tools/startup.mjs`, 1080p, 4 chargements, serveur DEV) : la page du premier matin est prête en 2,86 s [2,53-3,29], la
+  nuit B en 2,66 s [2,44-2,79] ; le premier chargement de la session rate le cache du bake (bake 339 ms, prêt en 3,29 s), les suivants le
+  relisent (bake 18-21 ms). C'est l'attente du joueur à chaque créneau, sur un serveur DEV. La bascule de la forge ne fait rien dans le mode
+  jouable (0-0,2 ms), comme le veut la Passe L4.
+- Les sorties complètes sont recopiées dans `briefs/local-requests/001-gpu-budget.md`.
+
+### [KO → corrigé] `tools/perf.mjs` plantait au résumé sur Lantern Row
+- Une première série 1080p de 3 tours a donné tous ses tours, puis le résumé s'est arrêté sur `play-lanterns` (`TypeError … reading
+  'toFixed'`), sans écrire son JSON : la page de Lantern Row (`PlaceApp.snapshot()`) ne publie ni `textures` ni `textureMB`. La Passe L7 avait
+  ajouté cette page à l'outil (`window.__place`) dans le cloud ; le résumé, lui, ne prévoyait pas une page sans ces compteurs.
+- Correctif : le résumé affiche `-` pour un compteur absent (deux lignes, aucune mesure changée). La série refaite en 5 tours l'a traversé.
+
+### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
+- Avant cette passe, les passes gardées faisaient 60 533 octets. L2 et L3, closes (fusionnées), partent d'un seul bloc, dans leur ordre et à
+  l'octet, vers `journal/18-passes-L2-L3.md` : en-tête, ligne `---`, puis les 19 559 octets inchangés (SHA-256 `cd45c00274fccb6b…`). La ligne
+  d'index et la phrase d'en-tête sont mises à jour.
+- **Preuve** (script hors dépôt, contre la copie de `JOURNAL.md` faite juste avant le déplacement) : **9 / 9** (le corps de l'archive égal au
+  bloc retiré ; un bloc contigu L2-L3 suivi de L4 ; chaque section dans un seul fichier de `journal/` et plus dans `JOURNAL.md` ; `JOURNAL.md`
+  inchangé à partir de L4 ; seules la phrase d'en-tête et une ligne d'index changent ; l'en-tête de l'archive comme celui de `journal/17` ;
+  CRLF seuls dans les deux fichiers de la copie de travail ; aucune autre archive touchée). Contrôle négatif : une lettre changée dans une copie
+  de l'archive → 7 / 9.
+
+### Validation
+- typecheck, `npm test` **148 / 148**, build, `art:validate`.
+
+### Restes [?]
+- Les temps absolus : remesurer la série `001` (1080p au moins) et la cadence avec Firefox fermé, témoin à l'appui, avant de les tenir pour le
+  budget du contrat projet § 14.
+
+### Pensée
+- Un témoin de contention qui ne descend jamais sous son seuil ne laisse aucun tour propre : un tour « clean » au seuil de 15 % peut porter
+  13 % d'un autre programme. Un journal complet du témoin pendant la série le montre ; la comparaison entrelacée reste, les temps absolus non.
+- Un outil étendu à une page nouvelle s'essaie jusqu'à sa dernière ligne, résumé compris, avant de partir au relais.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -659,7 +547,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 **0b. Version jouable — séance cloud (Passes N1 à N4, puis L0 à L7)** : plan v4 `briefs/cloud-session-playable.md`, brief
   `briefs/cloud-session-playable-brief.md`, contrats dans `contracts/`. **Séance close** : lots L0 à L7 fusionnés dans `main` ; bilan, mesures,
   décisions préparées et écarts E1 à E30 : **Passe L7**. Ouverts :
-  - les requêtes au relais `000-handshake` et `001-gpu-budget` (temps GPU des pages du mode jouable), sans réponse ;
+  - les requêtes au relais `000-handshake` et `001-gpu-budget` : répondues (Passe Q4) ; chaque page du jeu coûte au plus la nuit par défaut
+    dans la même série, mais sous la contention d'un Firefox (13-38 % de la 780M) : les temps absolus restent à remesurer Firefox fermé ;
   - la revue en jeu de l'opérateur (ressenti, équilibrage : le kit du joueur domine, Passe L2) ;
   - les six décisions de la Passe L7 (Vessa générée, l'arène de nuit à toute heure, Lantern Row maquette, l'équilibrage, l'écran titre caché
     aux navigateurs pilotés, le jour par défaut) ;
@@ -796,7 +685,7 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -811,6 +700,9 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
   minimum des tours entrelacés est l'estimation sans contention. La traîne du temps d'image en headless n'est pas une mesure.
 - Avant une mesure GPU, fermer l'onglet du jeu que la séance a ouvert dans son panneau navigateur : il rend en arrière-plan sur le même
   adaptateur (Passe R3 : 25 à 42 % d'un processus Chrome étranger, puis 5 tours propres sur 5 une fois fermé).
+- Un tour « propre » au seuil du témoin n'est pas un tour sans contention : un programme qui reste juste sous le seuil (Passe Q4 : Firefox à
+  13-15 % sous un seuil de 15 %) le charge encore. Un journal complet du témoin pendant la série le dit ; sans tour calme, seule la comparaison
+  entrelacée se rapporte, pas les temps absolus.
 - Une première fois (programme, variante, dessin) se mesure par une sonde dédiée : aucune moyenne ne la voit. Un intervalle rAF ne
   s'attribue qu'avec un repère (le départ de la boucle, un `gl.finish()` chronométré) : le plus grand intervalle depuis le chargement est le
   plus long bloc synchrone, pas forcément la première image.
