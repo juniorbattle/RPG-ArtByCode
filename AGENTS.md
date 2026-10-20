@@ -7,24 +7,33 @@ The Merchant District (night) is **complete** since 2026-10-19 (operator decisio
 M1 applied and reviewed, then frozen (journal Passes Z1-Z3). Its content, framings, cast and look stay as they are; any change to them is a
 new task decided by the operator. It is **not** Gold Master (RJ3 « Pas encore »: that status is the operator's). Next (RJ2): the day states,
 decided (journal Passes D4, D6; see "Art direction"): the morning, midday and the end of day are built behind `?time=` (journal Passes Y2-Y4);
-the weather applies to each state (journal Passe Y5); the day's crowd is decided and applied (J7, journal Passes R3 / D7), and the day becomes the default only after the operator's
-review in game (J9).
+the weather applies to each state (journal Passe Y5); the day's crowd is decided and applied (J7, journal Passes R3 / D7). After the operator's
+review in game, the day is decided as the default of « Explore the district » (L7-6a, journal Passe D8): the night stays the default until the
+task that applies it. Still not Gold Master (L7-6b « Pas encore (RJ3 inchangé) », journal Passe D8).
 
 The playable slice (the gameplay contract's § 13, cloud session « version jouable », journal Passes L0-L7, its review in Passe L7) is on
 `main`: the bare address shows the title screen to a person (New game / Continue / Explore the district; « Explore the district » is the game
 above, unchanged); the game code lives in `src/simulation`, `src/tournament`, `src/combat`, `src/events`, `src/narrative` (pure) and `src/ui`,
-`src/world` (pages). Its open decisions and gaps (E1-E30) are listed in journal Passe L7; none was taken by an agent.
+`src/world` (pages). Its prepared decisions and gaps (E1-E30) are listed in journal Passe L7; the operator decided the six decisions and six of
+the gaps on the sheet of journal Passe D8 (none by an agent), and the work they call for is five tasks of their own listed there.
 
 ## Master contracts (operator decision C1, 2026-10-20, journal Passe N2)
 The operator's master contracts live in `contracts/`, versioned and therefore published, since the repository is public:
 - `GAMEPLAY_MASTER_CONTRACT.md` and `TOURNAMENT_MASTER_CONTRACT.md` (v1.0, 2026-10-02, in French);
 - `PROJECT_MASTER_CONTRACT.md`, the gameplay contract's higher authority (decision C2): pasted by the operator on 2026-10-20 and versioned
-  as received (journal Passe N3; its header says version 1.2, its last line v1.1). Its gaps with this repository (Blender and glTF as the
-  city's source, runtime generation of the city as a V1 non-goal, turn-based combat...) are listed in `briefs/cloud-session-playable.md` § 3b.
+  as received (journal Passe N3; its header says version 1.2, its last line v1.1: the header governs, E25 « 1.2 : l’en-tête fait foi »,
+  journal Passe D8). Its gaps with this repository (Blender and glTF as the city's source, runtime generation of the city as a V1 non-goal,
+  turn-based combat...) are listed in `briefs/cloud-session-playable.md` § 3b. Decided in journal Passe D8:
+  - generation by code is the project's way (E14 / E15, « Amender le contrat : la génération par le code est la voie du projet »); the pasted
+    text stays as received until the task that amends it, written with the operator;
+  - combat without turns stays a recorded gap until the team phase (E1 / E16, « Écart consigné jusqu’à la phase d’équipe »), with a task of its
+    own on the combat system and its logic, led by the operator.
 
 They govern gameplay and the tournament; this file keeps the repository's rules (branches, journal, proofs, art). Two rules follow from
 decision C3 (« Aucun verrou modifié, écarts consignés »):
-- no lock (« verrou ») of a contract changes without the operator; the contracts' « décision A3 » is not defined in the repository yet;
+- no lock (« verrou ») of a contract changes without the operator; the contracts' « décision A3 » is the operator's explicit decision, quoted
+  word for word and dated in a journal pass, before any implementation (E11, « A3 = ma décision citée mot pour mot au journal », journal Passe
+  D8);
 - a gap between a contract and the code is recorded in the journal, never resolved by an agent.
 
 The plan of the cloud session « version jouable » (the gameplay contract's vertical slice, § 13), with the operator's choices on it (§ 11), is
@@ -230,7 +239,8 @@ the default since the operator's decision of 2026-10-19, « Adopter (avec la pre
 a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
 `title=1` (the title screen, journal Passe L4, choice P2: « New game », « Explore the district », « Continue » with a save; it shows by itself
-on the bare address only, and only in a browser no automation drives (`navigator.webdriver`): every tool and proof keeps today's game; its
+on the bare address only, and only in a browser no automation drives (`navigator.webdriver`), kept by the operator (L7-5 « Le garder », journal
+Passe D8): every tool and proof keeps today's game; its
 « Explore the district » runs today's town, the night and the DEV panel) · `play=1` (the game's play mode, journal Passe L3, loaded on demand: the state from the browser's save, or `&new=1&name=<name>&seed=<n>` for a
 new game; DEV only `&state=<named state>` of `src/simulation/named.ts`; the page shown is the state's place, or the day's bout with
 `&scene=arena`; moving to another slot or place saves and reloads; `&noreload=1` keeps the page and leaves the next address in `window.__go`;
@@ -251,7 +261,8 @@ Passe Y4) - a soft sun not yet high from the canal side, a pale sky veiled by a 
 sun; in every day state the lanterns, windows and far lights are unlit, the forge lit, and the tournament's bunting is up (blue and ivory
 pennants along the frontage, across the street to the quay lamps and along the quay wall, journal Passe Y3); more walkers by day: 6 in the
 morning, 12 at midday, 9 at the end of day at density 1 (the operator's decision J7a, journal Passe D7; the night keeps 5); `evening` is not a parameter:
-the evening is the night; absent or `night` = the night, unchanged, the default until the operator approves the day in game, decision J9) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
+the evening is the night; absent or `night` = the night, unchanged, the default until the task of the operator's decision L7-6a (journal Passe
+D8) makes the day the default of « Explore the district ») · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
 thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) ·
 `fps=off|<n>|v<k>|e<n>|a<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
 round(refresh / n) vsyncs / the same with an adaptive step; **default `a60`**, chosen by the operator on 2026-10-18 (`e60` from 2026-10-17):
@@ -309,7 +320,8 @@ cost, reproducibility and operator approval — not procedural purity.
   `crowd0`..`crowd4`), approved by the operator on 2026-10-17; `hero-x2-v4` (the player, in five facings, run cycles drawn in
   every facing), approved on 2026-10-20 (« Production : mets hero-x2-v4 en production à la place de hero-x2-v3. », journal Passes K11 / H11), in
   place of `hero-x2-v3` (approved on 2026-10-19, journal Passes D3 / H10, now superseded); the cat is still generated. The arena scene (`?scene=arena`, journal
-  Passe P1) generates its fighters (Ren with the hero's palette, Marek) with the town generator's rules at x2 density (`src/arena/FighterArt.ts`);
+  Passe P1) generates its fighters (Ren with the hero's palette, Marek, and the play mode's Vessa Lark, kept generated for the slice: L7-1 « La
+  garder pour la tranche », journal Passe D8) with the town generator's rules at x2 density (`src/arena/FighterArt.ts`);
   a baked sheet can take their place by the same frame keys only through an approved manifest.
 - A baked asset may reach the runtime only through an approved provenance manifest (`approved: true`, `runtimeUse: "production"`)
   and an explicit operator-approved task. Generated output never becomes canonical production art silently.
@@ -350,7 +362,7 @@ quay edge, bridge, a few banners); do not add uniform clutter.
 Day and night (the operator's note of 2026-10-19, word for word, journal Passe D1): « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Its art direction is decided
 (the operator's day-state sheet, journal Passe D4, then the operator's direction of journal Passe D6); a first draft runs behind `?time=day`
 (journal Passe Y1), midday matched to the midday track behind `?time=midday` (journal Passe Y2), the morning and the end of day matched to
-their tracks behind `?time=morning` / `?time=afternoon` (journal Passe Y4). The night above stays the game's default until the operator approves the day in game (J9 « Après ma revue en jeu »).
+their tracks behind `?time=morning` / `?time=afternoon` (journal Passe Y4). The night above stays the game's default until the operator approves the day in game (J9 « Après ma revue en jeu »); after that review the operator decided « Le jour devient le défaut d’« Explore the district » (tâche à part) » (L7-6a, journal Passe D8), and the night stays the default until that task applies it.
 Day (decided, journal Passes D4 and D6):
 - **Four fixed states** (D6, replacing J8 « Deux états fixes »): **morning**, **midday** (the tournament's launch), **end of day** (after the
   tournament) and **evening, which is the night above** (the operator's answer « La nuit actuelle »). **The weather** (rain, snow, storm,
@@ -367,7 +379,8 @@ Day (decided, journal Passes D4 and D6):
   day, decided on the sheet of journal Passe R3 (journal Passe D7): J7a « Matin 6, midi 12, fin 9 » (walkers at density 1; the night keeps 5)
   and J7b « Accepter » (the relaxed spacing beyond eight); J9, the night stays the default until the operator
   approves the day in game (the operator's review in game of 2026-10-20, word for word: « tout est bien implemente mais la nuit rst toujours le
-  defaut pour le moment », journal Passe K9).
+  defaut pour le moment », journal Passe K9); then L7-6a (journal Passe D8): the day becomes the default of « Explore the district », by a
+  task of its own.
 
 ## Camera graph (`src/app/CameraGraph.ts`)
 Four authored, semi-fixed framings, all on the canal side (+z of the pivot) looking up-canal (+x), chosen by zone with
@@ -478,3 +491,6 @@ barrier (`WALK.x1`); the street beyond stays visible and fully built.
 - Headless perf numbers on this machine are GPU-bound; the vsync'd frame time quantises to 16.7/33.3 ms, so use
   `tools/perf.mjs` (GPU timer queries) and compare A/B in one session only. Measured state, ablations and the GPU plan: journal
   pass 6 (780M: 10-12 ms at 1080p, 16-21 ms at 2560 x 1440; the scene pass is bandwidth-bound by the 4x MSAA HDR target).
+- Performance budget (project contract §§ 14 and 16; the operator's decision E24, journal Passe D8): « Pas plus cher que la nuit B, à définition
+  égale », a page of the game costs no more GPU than the default night B at the same resolution. The operator's note, word for word: « Mais rien
+  n'est confirme car il y a peut etre des zones plus grande et dense ». The play mode's pages against it, without contention: journal Passe Q4b.

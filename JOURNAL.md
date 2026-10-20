@@ -578,6 +578,115 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une fenêtre fermée ne prouve pas un programme arrêté : un processus du navigateur peut rester vivant et tenir le GPU. Le témoin se relit
   juste avant la série, pas sur la parole d'un « c'est fermé ».
 
+## Passe D8 — La fiche d'arbitrages de la tranche jouable : les six décisions de la Passe L7 et six écarts, tranchés par l'opérateur (2026-10-20)
+
+### Demande
+- Séance locale lancée par la séance parente : rassembler sur une fiche d'arbitrages les six décisions préparées par la séance cloud (Passe
+  L7), avec seulement les écarts E1 à E30 qui demandent vraiment une décision de l'opérateur ; chiffrer l'équilibrage avec
+  `tools/tournament-lab.mjs` ; mettre en tête le budget GPU dès qu'il est mesuré ; consigner les choix mot pour mot, sans rien appliquer
+  d'autre : chaque décision qui demande du travail devient une tâche à part, dans sa propre séance.
+- Pendant la préparation, le dossier était sur la branche de la séance GPU (`relay-gpu-q4`) : ni branche, ni commit, ni navigateur, ni serveur ;
+  seulement des lectures et des calculs en Node.
+- Opérateur, mot pour mot : « arbitrages rempli ».
+- Branche `decisions-d8` depuis `main` (`2c9f318`).
+
+### La fiche — [OK] les choix se sont enregistrés
+- Page privée https://claude.ai/artifact/NAcnnZAm6Vcu1CRtofLVFD, collection `decisions`, vide à chaque publication (relue par `list`) : version 1,
+  puis 2 avec le budget de la Passe Q4, puis 3 avec celui de la Passe Q4b, qui le remplace (la série 2560 × 1440 et le démarrage, non refaits sans
+  Firefox, y sont dits tels).
+- **13 entrées** : les six décisions de la Passe L7, la sixième coupée en deux (le jour par défaut, le Gold Master), et six écarts : E24, E30,
+  E1 / E16, E14 / E15, E11, E25. Les autres écarts sont faits, tranchés par la fiche de la Passe N2, ou sans décision (E19 : le contrat projet
+  § 8.2 admet un Colisée « suggéré »). En tête : comment jouer la tranche (les points 1 à 5 de « À vérifier » de la Passe L7) et le budget GPU.
+- Avant la première version, une écriture d'essai dans une autre collection (`probe`), supprimée aussitôt : la base de l'artefact répondait.
+- **Relue après « arbitrages rempli » : 13 documents sur 13**, cliqués entre 21 h 50 et 21 h 57 UTC, trois notes. La fiche de la Passe D7 n'avait
+  rien enregistré. Ce qui a changé cette fois :
+  - la page attend le pont du visualiseur jusqu'à 10 s, contre 3 s dans le gabarit ;
+  - chaque écriture est relue (`get`) avant d'afficher « Enregistré et relu » ; un échec s'affiche dans un bandeau ;
+  - une copie des choix reste dans le navigateur, et les choix faits avant la connexion sont écrits dès qu'elle arrive.
+  La cause de l'échec de la Passe D7 n'est pas prouvée pour autant.
+
+### Le chiffrage de l'équilibrage pour la fiche (E28) — Node seul, scripts hors dépôt
+- Le bot dans le `CombatSim` complet ; les réglages ne touchent que les points de vie et les dégâts de Vessa et de Marek, passés par
+  `duelData` (`COMBAT_DATA` intact). « Préparé » : la lame trempée (+15 %) et deux entraînements (+10 %). Victoires du joueur en %, aux
+  adresses 0 / 0,45 / 0,6 :
+
+| Réglage | Vessa, nu | Vessa, préparé | Marek, nu | Marek, préparé |
+|---|---|---|---|---|
+| aujourd'hui (200 graines) | 68 / 91 / 97 | 100 / 100 / 100 | 67 / 87 / 92 | 90 / 99 / 100 |
+| « modéré » : Vessa PV ×1,2 ; Marek PV ×1,25, dégâts ×1,1 (150 graines) | 35 / 70 / 79 | 81 / 96 / 99 | 23 / 57 / 67 | 61 / 80 / 88 |
+| « disputé » : Vessa PV ×1,2, dégâts ×1,1 ; Marek PV ×1,25, dégâts ×1,25 | 19 / 55 / 61 | 68 / 95 / 98 | 13 / 43 / 51 | 37 / 66 / 74 |
+
+- Parties entières du TournamentLab (50 graines ; `PROFILES` modifié en mémoire, donc les duels et les matchs hors écran) : duels gagnés % ·
+  1re place % · forge brûlée % :
+
+| Politique | aujourd'hui | « modéré » | « disputé » |
+|---|---|---|---|
+| idle | 74 · 6 · 96 | 34 · 0 · 58 | 18 · 0 · 34 |
+| négligente | 85 · 22 · 98 | 53 · 12 · 76 | 43 · 4 · 68 |
+| diligente | 97 · 36 · 18 | 72 · 14 · 32 | 54 · 6 · 28 |
+| prudente | 99 · 24 · 0 | 79 · 20 · 8 | 62 · 18 · 10 |
+| perdante | 0 · 0 · 0 | 0 · 0 · 0 | 0 · 0 · 0 |
+
+- Contrôle : les chiffres « aujourd'hui » redonnent ceux de `tools/tournament-lab.mjs` (idle 74 %, diligente 97 %, prudente 99 %, négligente
+  85 %, perdante 0 %). Un réglage uniforme des rivaux rendait Vessa (jour 2) plus dure que Marek (jour 3) : d'où des multiplicateurs par rival.
+- Effet de bord mesuré : la chaîne de sabotage naît de la première victoire du joueur ; des duels plus durs la déclenchent moins.
+
+### Les choix de l'opérateur, mot pour mot
+« = » : la recommandation de la fiche est suivie ; « ≠ » : le choix diffère, et c'est lui qui fait foi.
+
+| # | Décision | Choix de l'opérateur | Note de l'opérateur | |
+|---|---|---|---|---|
+| L7-1 | Vessa Lark, une combattante générée | « La garder pour la tranche » | — | = |
+| L7-2 | L'arène reste de nuit à toute heure (E26) | « Oui, après la revue du jour (J9), par DayState » | — | = |
+| L7-3 | Lantern Row, une maquette du troisième lieu (E27) | « La garder telle quelle pour la tranche » | — | = |
+| L7-4 | Les duels sont-ils assez disputés ? (E28) | « Régler vers « modéré » (tâche à part) » | — | = |
+| L7-5 | L'écran titre caché aux navigateurs pilotés (E29) | « Le garder » | — | = |
+| L7-6a | Le jour par défaut (J9) | « Le jour devient le défaut d’« Explore the district » (tâche à part) » | — | ≠ |
+| L7-6b | Le Gold Master | « Pas encore (RJ3 inchangé) » | — | = |
+| E24 | Quel seuil pour le budget de performance ? | « Pas plus cher que la nuit B, à définition égale » | « Mais rien n'est confirme car il y a peut etre des zones plus grande et dense » | = |
+| E30 | Jouer au toucher | « Hors tranche, plus tard » | — | = |
+| E1 / E16 | Le combat au-delà de la tranche | « Écart consigné jusqu’à la phase d’équipe » | « Nous devons faire une tache entiere concernant le systeme de combat et la logique car c'est quelque chose de nouveau que seul moi a l'entiere comprehension » | = |
+| E14 / E15 | Blender et glTF contre une ville générée par le code | « Amender le contrat : la génération par le code est la voie du projet » | — | ≠ |
+| E11 | Ce que veut dire « décision A3 » | « A3 = ma décision citée mot pour mot au journal » | — | = |
+| E25 | La version du contrat projet | « 1.2 : l’en-tête fait foi » | — | = |
+
+- L7-4 : la séance cloud recommandait « régler après votre essai » ; l'option recommandée de la fiche, « modéré », venait du chiffrage
+  ci-dessus. Les deux notes (E24, E1 / E16) précisent leur option sans la contredire.
+
+### Ce qui change — [OK] consigné, rien appliqué
+- **Dans `AGENTS.md`** (des règles changent) :
+  - « décision A3 » : la décision explicite de l'opérateur, citée mot pour mot et datée dans une passe du journal (E11). Cette passe est donc la
+    décision A3 du choix E14 / E15 ;
+  - le contrat projet : la version 1.2 fait foi (E25) ; la génération par le code est la voie du projet (E14 / E15), le texte collé restant tel
+    quel jusqu'à la tâche qui l'amende ; le combat sans tour reste un écart consigné jusqu'à la phase d'équipe (E1 / E16) ;
+  - le budget de performance (E24), avec la note de l'opérateur ;
+  - l'écran titre caché aux navigateurs pilotés, gardé par l'opérateur (L7-5) ; Vessa générée pour la tranche (L7-1) ; toujours pas Gold
+    Master (L7-6b) ;
+  - le jour décidé comme défaut d'« Explore the district » (L7-6a) : **la nuit reste le défaut jusqu'à la tâche qui l'applique**.
+- **Sans travail** : L7-1, L7-3, L7-5, L7-6b, E11, E25, E30.
+- **Tâches à part, chacune dans sa séance, une branche à la fois** :
+  1. **L7-4** : régler Vessa et Marek vers « modéré » ; recaler la résolution hors écran (`PLAYER_EDGE`, `READ_AVAIL`, `RACE_SLOPE`, tolérance
+     0,2) et les attentes des parties scriptées ; les chiffres ci-dessus comme point de départ.
+  2. **L7-6a** : le jour comme défaut d'« Explore the district ». L'état à prendre se vérifie dans la tâche (midi, `time=day`, d'après la
+     direction D6).
+  3. **L7-2** : les états du jour pour l'arène (duel et parvis) par `DayState`. Condition de l'opérateur : « après la revue du jour (J9) ». Le
+     choix L7-6a fait du jour le défaut, ce que J9 attendait ; la tâche suit celle du jour par défaut.
+  4. **E14 / E15** : amender le texte du contrat projet. C'est le document de l'opérateur : la rédaction se fait avec lui.
+  5. **E1 / E16** : la tâche « système de combat et sa logique » que demande la note de l'opérateur. Elle part de ses explications (« seul moi a
+     l'entiere comprehension »), pas d'une proposition d'agent.
+
+### Validation
+- Documentation seule : typecheck, `npm test` **148 / 148**, build, `art:validate`.
+- Journal : avec cette passe, les passes gardées font 60 040 octets dans la copie de travail (CRLF), à la limite d'environ 60 Ko ; l'archivage
+  vient avec la passe suivante.
+
+### Pensée
+- Une fiche dont le pont du visualiseur arrive tard perd ses choix sans bruit. Attendre le pont plus longtemps, relire chaque écriture et dire
+  l'échec en clair ont suffi ici (13 / 13), sans prouver la cause de la Passe D7.
+- Une note qui ajoute une tâche ne contredit pas l'option cliquée : elle se consigne avec elle, et la tâche part à part.
+- Un réglage d'équilibre se chiffre par adversaire et dans l'ordre du calendrier : un multiplicateur commun rendait le jour 2 plus dur que le
+  jour 3.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -587,7 +696,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
   `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5) ; la foule du jour (J7) décidée et appliquée (Passes R3 / D7 : matin 6, midi 12, fin de journée 9 ; la nuit garde cinq). Les tâches de la Passe D6 sont faites. Revue de l'opérateur en jeu (Passe K9) : tout est bien implémenté, la nuit reste le défaut pour le moment (J9). Orientation (Passe K10) : le héros selon la ligne de visée, les PNJ selon l'écran (décision K9). Les cycles de face et de dos du héros et son trois-quarts dos : `hero-x2-v4` (Passe K11, courses dessinées, gagnant à l'aveugle), en production depuis la Passe H11 (« Production : mets hero-x2-v4 en production à la place de hero-x2-v3. »). Ouverts : les trois-quarts des PNJ (RH4). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
   midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
-  défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
+  défaut : décidé en Passe D8 (L7-6a, « Le jour devient le défaut d’« Explore the district » (tâche à part) »), la nuit restant le défaut
+  jusqu'à sa tâche. Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
 
 **0b. Version jouable — séance cloud (Passes N1 à N4, puis L0 à L7)** : plan v4 `briefs/cloud-session-playable.md`, brief
@@ -595,9 +705,10 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   décisions préparées et écarts E1 à E30 : **Passe L7**. Ouverts :
   - les requêtes au relais `000-handshake` et `001-gpu-budget` : répondues (Passes Q4, Q4b) ; au calme, les pages du jeu font 8,7 à 9,8 ms en
     1080p, sous la nuit par défaut (10,6 ms), et la cadence tient 55 images/s ; restent à refaire au calme la série 2560 × 1440 et le démarrage ;
-  - la revue en jeu de l'opérateur (ressenti, équilibrage : le kit du joueur domine, Passe L2) ;
-  - les six décisions de la Passe L7 (Vessa générée, l'arène de nuit à toute heure, Lantern Row maquette, l'équilibrage, l'écran titre caché
-    aux navigateurs pilotés, le jour par défaut) ;
+  - la revue en jeu de l'opérateur et les six décisions de la Passe L7 : faites, tranchées sur la fiche de la Passe D8 avec six écarts
+    (E24, E30, E1 / E16, E14 / E15, E11, E25). Restent les cinq tâches à part de la Passe D8 : l'équilibrage vers « modéré » (L7-4), le jour
+    par défaut d'« Explore the district » (L7-6a), les états du jour de l'arène après lui (L7-2), l'amendement du contrat projet (E14 / E15,
+    avec l'opérateur), la tâche « système de combat » (E1 / E16, avec l'opérateur) ;
   - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
@@ -940,6 +1051,8 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
   trois-quarts dos (Passe H6).
 - Une fiche d'arbitrages se bâtit sur l'état du dépôt (fichiers approuvés, code), pas sur « À reprendre » seul : une ligne restée à l'ancien
   état fait reposer une question déjà tranchée (Passe D1, V1 et S2). Une note qui contredit l'option cliquée suspend la décision.
+- Une fiche attend le pont du visualiseur assez longtemps (10 s), relit chaque écriture avant d'afficher « enregistré » et dit l'échec en clair ;
+  sa collection se relit dès que l'opérateur la dit remplie (Passes D7, D8).
 ### Provenance et approbations
 - Rien d'externe ne devient « canon » en silence : un manifeste de provenance (`art-lab/characters/manifests`) avec approbation nommée et
   datée est la seule voie vers `runtimeUse: production`. Deux niveaux d'approbation distincts : *approved visual baseline*
