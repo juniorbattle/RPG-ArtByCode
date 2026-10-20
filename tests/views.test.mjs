@@ -63,3 +63,27 @@ test('with three-quarter frames and ?views=5: the five views appear, a three-qua
   assert.ok(v.includes('downSide>') && v.includes('downSide<') && v.includes('upSide>') && v.includes('upSide<'), 'both mirrors');
   assert.ok(!v.includes('down>') && !v.includes('up>'), 'front / back never flipped');
 });
+
+test('?facing=ray (Passe K9): the view by the heading against the line of sight - a walk away along the camera axis shows the back even off the frame centre, toward the camera the front, across it the mirrored profile; off by default', () => {
+  const frames = new Map(), specs = new Map([['sheet', { id: 'sheet', detail: 'crowd' }]]);
+  for (const d of ['down', 'up', 'side', 'downSide', 'upSide']) for (const m of ['idle', 'walk']) frames.set(`sheet/${d}/${m}/0`, {});
+  // an establishing-like camera (far, low pitch) and a walker off the frame's centre
+  const cam = new THREE.PerspectiveCamera(38, 16 / 9, 0.1, 400);
+  cam.position.set(-37, 2.5, 12); cam.lookAt(6, 1, 0); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+  const sys = new ActorSystem({ specs, counts: new Map(), frames }, cam);
+  assert.equal(sys.facingRay, false, 'the screen rule stays the default');
+  const a = sys.spawn('sheet', 'crowd', new THREE.Vector3(-14, 0, -2));   // 16 deg off the camera axis
+  const away = new THREE.Vector3(a.pos.x - cam.position.x, 0, a.pos.z - cam.position.z).normalize();
+  const right = new THREE.Vector3(-away.z, 0, away.x);   // across the line of sight, to the camera's right
+  const fwd = new THREE.Vector3(6 - cam.position.x, 0, 0 - cam.position.z).normalize();   // the camera axis on the ground (the key « up »)
+  sys.face(a, fwd, true); const screen = a.dir;
+  assert.notEqual(screen, 'up', `the screen rule shows that walk as ${screen} (the case the ray rule is for)`);
+  sys.facingRay = true;
+  sys.face(a, fwd, true); assert.equal(a.dir, 'up', 'away along the camera axis: the back');
+  sys.face(a, away, true); assert.equal(a.dir, 'up', 'straight away: the back');
+  sys.face(a, away.clone().negate(), true); assert.equal(a.dir, 'down', 'straight toward the camera: the front');
+  sys.face(a, right, true); assert.equal(a.dir, 'side'); assert.equal(a.flip, true, 'to the right: the profile mirrored to face right');
+  sys.face(a, right.clone().negate(), true); assert.equal(a.dir, 'side'); assert.equal(a.flip, false);
+  sys.face(a, away.clone().add(right).normalize(), true); assert.equal(a.dir, 'upSide', '45 deg away and right: the three-quarter back');
+  assert.equal(a.flip, true);
+});

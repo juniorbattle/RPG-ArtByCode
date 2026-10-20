@@ -220,6 +220,8 @@ export class App {
     // the five-view rule for the sheets that have three-quarter facings, by default (journal Passe V5; the operator's decision of 2026-10-19,
     // « Par défaut avec le héros », Passes D3 / H10); ?views=3: the three-view rule for every sprite, for comparison
     if (this.opts.params.get('views') === '3') this.actors.views5 = false;
+    // ?facing=ray: walking views by the line of sight, for the operator's comparison with the screen rule (journal Passe K9)
+    if (this.opts.params.get('facing') === 'ray') this.actors.facingRay = true;
     if (baked) this.actors.authored = baked.spawns;
     this.actors.onInteractForge = () => this.setForgeState(this.config.forgeState === 'NORMAL_FORGE' ? 'SABOTAGED_FORGE' : 'NORMAL_FORGE');
     this.scene.add(this.sprites.group);

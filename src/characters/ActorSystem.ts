@@ -77,6 +77,9 @@ export class ActorSystem {
    *  Passes D3 / H10; `?views=3` turns it off), for the sheets that have the two three-quarter facings only: every other sprite keeps the
    *  three-view rule, unchanged */
   views5 = true;
+  /** `?facing=ray` (journal Passe K9, prepared for the operator's review): a walking view chosen by the heading's angle to the line of sight
+   *  (the ground direction from the walker to the camera) instead of its step on screen; false = the screen rule (Passe F1), the default */
+  facingRay = false;
   private has34 = new Map<string, boolean>();
 
   /** camera: shows a walking facing by its on-screen direction (null: the world rule for every facing) */
@@ -236,7 +239,15 @@ export class ActorSystem {
     _p1.set(a.pos.x + vx * n, a.pos.y, a.pos.z + vz * n).project(cam);
     if (_p0.z > 1 || _p1.z > 1) return false;
     // in pixels (units of half the height): NDC x spans the width
-    const dx = (_p1.x - _p0.x) * cam.aspect, dy = _p1.y - _p0.y;
+    let dx = (_p1.x - _p0.x) * cam.aspect, dy = _p1.y - _p0.y;
+    if (this.facingRay) {
+      // ?facing=ray (journal Passe K9): the heading against the line of sight on the ground - across it (to the camera's right: dx > 0) and
+      // along it (away from the camera: dy > 0) - so a walk straight away shows the back wherever the walker stands in the frame, even where
+      // the low pitch turns that walk into a slide toward the vanishing point on screen
+      const tx = cam.position.x - a.pos.x, tz = cam.position.z - a.pos.z, tl = Math.hypot(tx, tz), hl = Math.hypot(vx, vz);
+      if (tl < 1e-6) return false;
+      dx = (vx * tz - vz * tx) / (tl * hl); dy = -(vx * tx + vz * tz) / (tl * hl);
+    }
     if (this.views5 && this.threeQuarters(a.spec)) {
       a.dir = fiveViewFacing(a.dir, dx, dy); a.sideFlip = dx > 0;
       a.flip = a.dir === 'side' || a.dir === 'downSide' || a.dir === 'upSide' ? dx > 0 : false;   // profile and three-quarters drawn facing left

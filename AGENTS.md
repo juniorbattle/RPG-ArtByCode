@@ -241,7 +241,10 @@ decision J7a, Passe D7) · `cast=generated`
 `cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production; none today) ·
 `views=3` (the three-view rule for every sprite; absent = the five-view rule, journal Passe V5: front / three-quarter / profile sectors at
 22.5 / 67.5 deg on screen, for the sheets that hold both three-quarter facings `downSide` / `upSide` only, today the hero; every other sprite
-keeps the three views; the default since the operator's decision of 2026-10-19, « Par défaut avec le héros », journal Passes D3 / H10) · DEV server only:
+keeps the three views; the default since the operator's decision of 2026-10-19, « Par défaut avec le héros », journal Passes D3 / H10) ·
+`facing=ray` (a walking view chosen by the heading's angle to the line of sight, the ground direction from the walker to the camera, instead of
+its step on screen: a walk away shows the back even where the low pitch of A turns it into a slide toward the vanishing point; absent = the
+screen rule of journal Passe F1; prepared for the operator's comparison, journal Passe K9) · DEV server only:
 `variants=candidate` (apply the NPC variants file `art-lab/characters/variants/variants.json` while it waits for the operator's approval; production
 applies it only once approved, its mask fingerprints checked, journal Passe V1) · `scene=arena` (the arena of the Cité du Tournoi instead of the
 town, `src/arena/ArenaApp.ts`, loaded on demand; journal Passe P1; absent = the town, unchanged) with `assist=subtle|full|off` (the prototype's
@@ -315,7 +318,8 @@ Day (decided, journal Passes D4 and D6):
 - **Kept from the sheet**: J4, lanterns and windows unlit by day, the forge lit; J6, the bunting by day only, never at night; J7, more people by
   day, decided on the sheet of journal Passe R3 (journal Passe D7): J7a « Matin 6, midi 12, fin 9 » (walkers at density 1; the night keeps 5)
   and J7b « Accepter » (the relaxed spacing beyond eight); J9, the night stays the default until the operator
-  approves the day in game.
+  approves the day in game (the operator's review in game of 2026-10-20, word for word: « tout est bien implemente mais la nuit rst toujours le
+  defaut pour le moment », journal Passe K9).
 
 ## Camera graph (`src/app/CameraGraph.ts`)
 Four authored, semi-fixed framings, all on the canal side (+z of the pivot) looking up-canal (+x), chosen by zone with
