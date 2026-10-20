@@ -13,7 +13,9 @@ review in game (J9).
 ## Master contracts (operator decision C1, 2026-10-20, journal Passe N2)
 The operator's master contracts live in `contracts/`, versioned and therefore published, since the repository is public:
 - `GAMEPLAY_MASTER_CONTRACT.md` and `TOURNAMENT_MASTER_CONTRACT.md` (v1.0, 2026-10-02, in French);
-- `PROJECT_MASTER_CONTRACT.md`, the gameplay contract's higher authority, which the operator provides before the cloud session (decision C2).
+- `PROJECT_MASTER_CONTRACT.md`, the gameplay contract's higher authority (decision C2): pasted by the operator on 2026-10-20 and versioned
+  as received (journal Passe N3; its header says version 1.2, its last line v1.1). Its gaps with this repository (Blender and glTF as the
+  city's source, runtime generation of the city as a V1 non-goal, turn-based combat...) are listed in `briefs/cloud-session-playable.md` § 3b.
 
 They govern gameplay and the tournament; this file keeps the repository's rules (branches, journal, proofs, art). Two rules follow from
 decision C3 (« Aucun verrou modifié, écarts consignés »):

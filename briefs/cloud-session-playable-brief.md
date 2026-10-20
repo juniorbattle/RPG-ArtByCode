@@ -27,7 +27,7 @@ et écris en français : journal, bilan, messages. Le code et l'interface du jeu
    le tournoi.
 4. `briefs/cloud-session-playable.md`, le plan v2, à suivre :
    - § 2 : l'existant lu dans le code ;
-   - § 3 : les écarts E1 à E13 ;
+   - § 3 et § 3b : les écarts E1 à E25 (E14 à E25 viennent du contrat projet) ;
    - § 5 : le périmètre ;
    - § 6 : l'architecture ;
    - § 7 : les lots L0 à L7 et la preuve « jeu par défaut inchangé » (PD) ;
@@ -39,7 +39,8 @@ et écris en français : journal, bilan, messages. Le code et l'interface du jeu
 Les mots de l'opérateur : « nous allons planifier notre grosse session cloud a effectuer des maintenant toujours avec le principe d'avoir une
 version jouable en prenant en compte ce que nous avons fait dans la mesure du possible ( cloud n'a pas acces au services externe ) ».
 
-Livre une **version jouable** : la tranche verticale du contrat de gameplay (§ 13), ramenée au cloud comme le dit le plan (§ 5). Elle reprend
+Livre une **version jouable** : la tranche verticale du contrat de gameplay (§ 13) et les ajouts de celle du contrat projet (§ 14), ramenées
+au cloud comme le dit le plan (§ 5). Elle reprend
 au mieux le Merchant District, l'arène (`?scene=arena`) et les outils de preuve existants. Fais les lots **dans l'ordre** du plan : L0, puis L1,
 L2, L3, L4, L5, L6, L7. Chaque lot est fusionné dans `main` dès qu'il passe sa validation : un arrêt en route doit laisser `main` jouable.
 
@@ -67,6 +68,33 @@ L2, L3, L4, L5, L6, L7. Chaque lot est fusionné dans `main` dès qu'il passe sa
 - **K2** : « New game » demande **le nom du joueur**. L'arène l'affiche en mode jouable.
 - **K3** : en ville, les rivaux apparaissent par des portraits et des dialogues, sans nouveau sprite.
 - **S1** : si tout est fait avant la fin, la finition et la robustesse, puis le bilan. Aucune extension du périmètre.
+
+**Le contrat projet** (`contracts/PROJECT_MASTER_CONTRACT.md`, reçu après la fiche, Passe N3) est l'autorité supérieure. Les choix de la fiche
+restent en vigueur. Il ajoute (plan § 3b, § 5, § 6, § 7) :
+- **à la tranche** :
+  - plusieurs rivaux persistants ;
+  - un combat extensible vers l'équipe : l'interface de match côté jeu prend des listes de combattants, l'arène reste 1v1 (E17) ;
+  - une boutique affectée par une conséquence ;
+  - au moins douze événements dynamiques configurables (`src/events/`) ;
+  - une chaîne de sabotage déclenchée par des conditions ;
+  - le changement de lieu ;
+  - des captures sur ordinateur et à la taille d'un téléphone ;
+  - un budget technique : des compteurs ici, les temps GPU en local ;
+  - le jour et la nuit qui changent les services et les présences ;
+- **au code neuf** :
+  - l'architecture de son § 10.4 (`src/simulation/`, `src/tournament/`, `src/combat/`, `src/events/`, `src/narrative/`, `src/ui/`) ;
+  - `advance(state, action, rng)` (§ 10.2) ;
+  - des états nommés pour les tests (§ 10.3) ;
+  - les dossiers existants ne bougent pas ;
+- **à chaque lot** : son contrat de tâche (§ 11.3), écrit en tête de sa passe, et la définition de terminé du § 16.
+
+**Ses écarts avec le dépôt se consignent, sans être tranchés** :
+- E14 : Blender et glTF comme source de la ville ; ici, tout est généré par le code, et le cloud n'a pas Blender ;
+- E15 : la « génération runtime de la ville » est un non-objectif ; le troisième lieu suit pourtant P3 tel que choisi ;
+- E16 : le combat « tour par tour » ;
+- E19 : le Colisée, qui n'existe pas dans le district figé ;
+- E20 : la musique ;
+- E25 : les versions 1.2 et 1.1 de l'en-tête et de la fin.
 
 ## 3. L'environnement et ses limites
 
@@ -115,14 +143,16 @@ L2, L3, L4, L5, L6, L7. Chaque lot est fusionné dans `main` dès qu'il passe sa
   sortie des outils : un « ok » dont la sortie est jetée ne prouve rien (Passe Y4).
 - **Chaque nouveau test** se voit d'abord échouer sur au moins trois fautes injectées une à une, chacune attrapée. Les fichiers sont ensuite
   rendus à l'octet. Son oracle est indépendant du code testé.
-- **Le cœur de jeu (`src/game/`) est pur** : ni `three`, ni DOM, ni `Math.random`, ni `Date.now`, ni `performance.now`. Un test le vérifie.
+- **Les modules du jeu sont purs** (`src/simulation/`, `src/tournament/`, `src/combat/`, `src/events/`, `src/narrative/`) : ni `three`, ni DOM,
+  ni `Math.random`, ni `Date.now`, ni `performance.now`. Un test le vérifie.
   - Une même graine et un même script d'actions donnent la même empreinte.
   - Une sauvegarde rechargée égale la partie continue.
 - **Arrête tout serveur et toute tâche de fond** que tu as lancés avant de finir.
 
 ## 6. Le journal
 
-- **Une passe par lot**, nommée d'après lui : Passe L0, L1… (L3b pour une seconde passe du même lot). Ajoute-la après la dernière passe,
+- **Une passe par lot**, nommée d'après lui : Passe L0, L1… (L3b pour une seconde passe du même lot). Elle s'ouvre sur le contrat de tâche du
+  lot. Ajoute-la après la dernière passe,
   avant « À reprendre ». Elle est en français et factuelle : [OK] / [KO] / [?], les mesures, la « Pensée ».
 - **Mets à jour** « À reprendre » et « Principes à garder ».
 - **L'archivage** : quand les passes gardées dépassent environ 60 Ko, déplace les plus anciennes, closes, à l'octet, avec les huit contrôles de
@@ -136,8 +166,9 @@ L2, L3, L4, L5, L6, L7. Chaque lot est fusionné dans `main` dès qu'il passe sa
   - ce qui reste à vérifier sur la machine de l'opérateur : jouer, le ressenti, l'équilibrage, le GPU, la cadence, les preuves d'image si
     Chrome manquait ;
   - les requêtes d'images écrites ;
+  - les compteurs du budget technique ;
   - les décisions préparées, chacune avec sa recommandation ;
-  - les écarts consignés ;
+  - les écarts consignés (E1 à E25, et ceux que la séance aura trouvés) ;
   - le reste à faire.
 - **Ton dernier message** résume ce bilan pour l'opérateur, en français, en commençant par ce qui est jouable et comment y jouer
   (`npm run dev`, puis l'adresse nue).

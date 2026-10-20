@@ -1,14 +1,17 @@
 # Plan de la séance cloud « Version jouable » — Cité du Tournoi
 
-- **Version 2, 2026-10-20.** La version 1 (Passe N1) a été rédigée par la séance locale de planification, avant la fiche d'arbitrages. La
-  version 2 (Passe N2) consigne les choix de l'opérateur au § 11 et met le plan à leur niveau.
+- **Version 3, 2026-10-20.** Trois versions se sont succédé :
+  - la version 1 (Passe N1), rédigée par la séance locale de planification avant la fiche d'arbitrages ;
+  - la version 2 (Passe N2), qui consigne les choix de l'opérateur au § 11 ;
+  - la version 3 (Passe N3), qui ajoute le contrat projet, reçu après la fiche : ses écarts (§ 3b), ses ajouts à la tranche (§ 5) et son
+    architecture (§ 6).
 - **Statut : décidé.** Chaque renvoi « [Xn] » désigne une décision de la fiche (§ 10). Le choix de l'opérateur est au § 11, mot pour mot ; là où
   il diffère de la recommandation du § 10, c'est le § 11 qui fait foi.
 - **Autorité.** `AGENTS.md` (règles du dépôt) et `JOURNAL.md` ; les contrats maîtres de l'opérateur, dans `contracts/` (décision C1) :
   - `contracts/GAMEPLAY_MASTER_CONTRACT.md` (v1.0, 2026-10-02) ;
   - `contracts/TOURNAMENT_MASTER_CONTRACT.md` (v1.0, 2026-10-02) ;
-  - `contracts/PROJECT_MASTER_CONTRACT.md`, que le contrat de gameplay cite comme son autorité supérieure. L'opérateur le fournit avant le
-    lancement (décision C2).
+  - `contracts/PROJECT_MASTER_CONTRACT.md` (« Version : 1.2 », 2026-10-02), que le contrat de gameplay cite comme son autorité supérieure.
+    L'opérateur l'a collé dans la séance (décision C2, Passe N3).
   
   En cas de conflit entre ce plan et l'un de ces documents, le document l'emporte et le conflit est consigné.
 - **Base** : `main` `8a707b9` (Passe H11) ; ce plan entre dans `main` en Passe N1 (`7ff0c23`), puis en version 2 en Passe N2.
@@ -90,6 +93,32 @@ La séance cloud doit livrer une **version jouable** qui fait vivre la boucle ca
 | E12 | Tournoi : « Tournament Agent », « TournamentLab » | Aucun outil. TournamentLab sera une CLI headless (L2), sans agent. | — |
 | E13 | Tournoi § 10 : un festival | Non requis par la tranche du gameplay § 13 | P1 |
 
+## 3b. Écarts avec le contrat projet (reçu après la fiche, Passe N3) — signalés, non tranchés
+
+Ces écarts sont postérieurs à la fiche. Le choix C3 s'y applique : aucun verrou n'est modifié, chaque écart est consigné. Les choix de la
+fiche restent en vigueur.
+
+| # | Contrat projet | Constat dans le dépôt | Effet sur la séance |
+|---|---|---|---|
+| E14 | « Décision canonique », §§ 10.1, 12.1 : la ville en 3D low-poly conçue dans Blender, « source d'autorité spatiale » ; glTF / GLB comme format 3D principal | Tout est généré par le code au démarrage (`AGENTS.md`) ; ni Blender ni glTF dans le dépôt. Le cloud n'a pas Blender. | Aucun asset Blender ; l'écart est consigné |
+| E15 | § 15, non-objectif V1 : « génération runtime de la ville » | Le district et l'arène sont générés au démarrage ; le troisième lieu léger (P3) le serait aussi | P3 tel que choisi ; l'écart est consigné |
+| E16 | § 1 : « RPG narratif au tour par tour » ; § 6.1 : « Le combat est un RPG tour par tour » | L'arène, sans attente pour agir (E1) | G1 tel que choisi ; l'écart E1 est confirmé par l'autorité supérieure |
+| E17 | § 6.1 : un moteur de combat « conçu dès le départ pour supporter plusieurs combattants » ; § 14 : « combat 1v1 complet et extensible vers l’équipe » | `CombatSim` est fixé à deux combattants (`ren` / `marek`) | Choix technique sûr : l'interface de match côté jeu prend des listes de combattants ; l'arène reste 1v1, son empreinte ne change pas |
+| E18 | § 14 : une tranche plus large que le gameplay § 13 | Voir les ajouts du § 5 | Ajoutés au périmètre (§ 5) |
+| E19 | § 8.2 : le Colisée visible, audible ou suggéré depuis plusieurs quartiers | Le district montre un château sur la colline ; aucun Colisée. Le district est figé. | Suggéré par l'interface et les textes (annonces, clameurs) ; aucun changement du district |
+| E20 | § 8.1 : la musique change avec le jour et la nuit ; § 10.4 : `audio/` | Le jeu n'a aucun son | Hors tranche ; l'écart est consigné |
+| E21 | § 10.4 : une architecture conceptuelle (`core`, `simulation`, `tournament`, `combat`, `events`, `narrative`, `world`, `rendering`, `ui`, `audio`, `tools`) | `src/` suit ses propres dossiers (`app`, `district`, `characters`, `atmosphere`, `arena`…) | Choix technique sûr : le code neuf suit le § 10.4 ; les dossiers existants ne bougent pas (§ 6) |
+| E22 | § 10.3 : des hooks de test pour charger des états nommés | Aucun | Ajouté au lot L1 |
+| E23 | § 11.3 : chaque tâche autonome déclare son contrat (objectif, entrées, fichiers autorisés, éléments interdits, outputs, critères d'acceptation, tests, risques, définition de terminé) | Les lots du plan ont un contenu, des preuves et une fin | Chaque lot écrit son contrat de tâche en tête de sa passe (§ 7) |
+| E24 | § 16 : une fonctionnalité finie « respecte le budget de performance » | Le cloud n'a pas de GPU | Des compteurs dans le cloud ; le budget est mesuré en local, après la séance (§ 12) |
+| E25 | En-tête « Version : 1.2 », dernière ligne « PROJECT MASTER CONTRACT v1.1 » | — | Consigné tel quel, non corrigé |
+
+La « décision A3 » des deux autres contrats n'est pas définie dans le contrat projet non plus. Son § 0 dit qu'« une modification d'un verrou
+majeur doit être explicite, documentée dans un journal de décision et validée avant implémentation », ce qui rejoint C3.
+
+Le § 4 (dix journées) place le deuxième match au jour 4. Ici, la tranche de trois jours met ses deux duels aux jours 2 et 3, comme le demande
+son § 14 (« 3 jours, 9 créneaux et 2 combats officiels »).
+
 ## 4. Contraintes de la séance cloud (reprises dans le brief)
 
 - **Aucun service externe.**
@@ -147,6 +176,21 @@ La tranche verticale du gameplay § 13, ramenée à ce que permet le cloud :
 | Sauvegarde / chargement | JSON versionné, dans `localStorage` et en fichier | — |
 | Simulation headless déterministe | `node --test` et `tools/tournament-lab.mjs` | `tests/load.mjs` |
 
+**Ajouts du contrat projet § 14** (Passe N3). Ils entrent dans le périmètre, puisque le contrat projet fait foi :
+
+| Exigence du contrat projet § 14 | Ce que la tranche en fait |
+|---|---|
+| 3 jours, 9 créneaux, 2 combats officiels | Déjà au tableau ci-dessus |
+| Plusieurs rivaux persistants minimum | Les sept concurrents de la poule (G3), persistants et hors écran |
+| Combat 1v1 complet et extensible vers l’équipe | L'arène actuelle (G1) ; l'interface de match côté jeu prend des listes de combattants (E17) |
+| Boutique affectée par une conséquence | La boutique de la marchande : prix et stock changent par une cause nommée (la forge sabotée, une pénurie) |
+| Au moins 12 événements dynamiques configurables | `src/events/` : douze définitions au moins, en données (conditions, effets, cause, signes, réponses), des six types du § 9.1 |
+| Une chaîne de sabotage contrable | La forge, déclenchée par des conditions (§ 3.4 : favori, rival hostile, sécurité faible) plutôt qu'à date fixe, avec des signes |
+| Navigation et streaming / changement de quartier | La carte de la ville et le passage entre les trois lieux (P3), sans coût de créneau |
+| Captures desktop et mobile | Des captures `detshots` en 1280 × 720 et à la taille d'un téléphone, en portrait et en paysage. Le jeu au toucher est hors tranche. |
+| Budget technique mesuré | Dans le cloud, des compteurs (appels de dessin, triangles, coût de `advance` en Node, à titre indicatif) ; les temps GPU en local (§ 12) |
+| Le jour et la nuit qui modifient les possibilités (§ 8.1) | Les services, les présences actives et la sécurité changent avec le créneau (le forgeron ferme la nuit, l'inconnu ne parle que la nuit…) |
+
 **Hors tranche** :
 - le combat d'équipe (non requis par § 13) ; les phases II et III, seulement préparées dans les données ;
 - le festival (tournoi § 10) [P1] ;
@@ -155,21 +199,30 @@ La tranche verticale du gameplay § 13, ramenée à ce que permet le cloud :
 
 ## 6. Architecture proposée (choix techniques de la séance, dans ce cadre)
 
-- **`src/game/`, un cœur pur.** Il n'importe ni `three`, ni le DOM, ni `Math.random`, ni `Date.now`, ni `performance.now`. Un test parcourt
-  ses fichiers et échoue sur ces noms.
+- **Un cœur pur, rangé selon l'architecture du contrat projet** (§ 10.4, écart E21). Les dossiers existants ne bougent pas.
+  - `src/simulation/` : l'état, `advance`, la sauvegarde.
+  - `src/tournament/` : la poule, les concurrents, le hors écran, le pouls.
+  - `src/combat/` : la fiche de match et l'adaptateur de `CombatSim`.
+  - `src/events/` : les événements configurables.
+  - `src/narrative/` : le contenu et les textes.
+  
+  Ces modules n'importent ni `three`, ni le DOM, ni `Math.random`, ni `Date.now`, ni `performance.now` ; un test parcourt leurs fichiers et
+  échoue sur ces noms. L'interface (`src/ui/`) et le passage aux scènes restent à part.
   - `GameState` porte un `schemaVersion`.
   - `CompetitorState` reprend **exactement** l'interface du tournoi § 5 ; un `TeamState` agrégé est seulement typé.
   - `TournamentState`.
   - `WorldPulse` porte les huit champs du tournoi § 9.
   - Les services (`ServicesState`, la forge ouverte, sabotée ou fermée) et les quêtes.
   - Un journal d'événements, chacun avec sa cause (gameplay § 14, verrou 8).
-- **Ses fonctions** : `newGame(seed, content)`, `actions(state)`, `apply(state, action) → { state, events }`, `endSlot(state)` (le hors écran et
-  le pouls), `applyMatchResult`, `serialize`, `deserialize` et `hash`.
+- **Ses fonctions** : `newGame(seed, content)`, `actions(state)`, `advance(state, action, rng) → { state, events }` (contrat projet § 10.2),
+  `endSlot(state)` (le hors écran et le pouls), `applyMatchResult`, `serialize`, `deserialize` et `hash`.
+  - Les états nommés (§ 10.3), par exemple « day2-morning-favourite » ou « forge-sabotaged », servent aux tests, au laboratoire et à
+    `?state=<nom>` (DEV).
   - Une action mineure (parler, consulter, se déplacer dans un quartier) ne consomme aucun créneau (gameplay § 4.2).
   - Choisir un quartier n'en consomme pas non plus.
 - **L'aléatoire** : le `Rng` de `src/core/rng.ts`, en flux dérivés de (graine, jour, créneau, acteur). Une partie reprise d'une sauvegarde
   donne donc la même suite qu'une partie continue.
-- **Le contenu en données** : `src/game/content/` (concurrents, quêtes, services, textes **en anglais** [K1]).
+- **Le contenu en données** : `src/narrative/` (concurrents, quêtes, services, textes **en anglais** [K1]).
 - **La présentation.**
   - **L'écran titre par défaut** [P2] : « New game », « Explore the district », et « Continue » quand une sauvegarde existe (sauvegarde et
     chargement, § 13).
@@ -181,7 +234,7 @@ La tranche verticale du gameplay § 13, ramenée à ce que permet le cloud :
   - **« New game » demande le nom du joueur** [K2], puis lance le mode jouable. Le nom vit dans l'état de la partie ; l'arène l'affiche à la
     place de « Ren » en mode jouable. Une proposition par défaut dans le champ est un choix de la séance.
   - **`?play=1`** saute l'écran titre et entre en mode jouable : c'est l'entrée des outils et des preuves (`&name=` pour le nom).
-  - **Une couche d'interface DOM, `src/game/ui/`, en anglais** [K1] : horloge, prochaine échéance, tableau du tournoi (tournoi § 11),
+  - **Une couche d'interface DOM, `src/ui/`, en anglais** [K1] : horloge, prochaine échéance, tableau du tournoi (tournoi § 11),
     dialogues, journal des faits, menu de sauvegarde.
     - En mode jouable, l'arène prend des libellés anglais par une table de textes.
     - `?scene=arena` seul garde son HUD français, au pixel près.
@@ -207,6 +260,11 @@ Chaque lot suit le même cycle :
 4. la validation : typecheck, `npm test`, build, `art:validate` et les preuves du lot ;
 5. la fusion en avance rapide dans `main`.
 
+**Le contrat de tâche** (contrat projet § 11.3, écart E23) : chaque lot commence par l'écrire, en tête de sa passe du journal. Il donne
+l'objectif, les entrées, les fichiers autorisés, les éléments interdits, les outputs, les critères d'acceptation, les tests, les risques et
+la définition de terminé (contrat projet § 16 : déclenchable dans le jeu réel, testé, sans erreur, preuve visuelle, reproductible,
+documentation à jour ; le budget de performance est mesuré en local).
+
 L'ordre met d'abord ce qui se prouve sans navigateur. Si la séance s'arrête en route, `main` garde des morceaux cohérents et jouables.
 
 **Preuve « jeu par défaut inchangé » (PD)**. Elle vaut à chaque lot qui touche un fichier atteint par une adresse à paramètres, par « Explore the
@@ -221,7 +279,7 @@ district » ou, avant l'écran titre, par l'adresse nue :
   capture qui passe par l'écran titre et ce bouton, égale à 0 px à l'adresse nue de `main` figé.
 
 **Sans Chrome**, aucune preuve d'image n'est possible. Le lot ne modifie alors aucun fichier atteint par le chemin par défaut, hors une branche
-gardée par le paramètre ou par l'écran titre. Il le montre (`git diff --stat`, et un test qui vérifie que le chemin par défaut n'importe pas `src/game/`), et la
+gardée par le paramètre ou par l'écran titre. Il le montre (`git diff --stat`, et un test qui vérifie que le chemin par défaut n'importe aucun module du jeu), et la
 preuve d'image est inscrite au bilan comme à refaire en local.
 
 ### L0 — Mise en route
@@ -229,21 +287,22 @@ preuve d'image est inscrite au bilan comme à refaire en local.
   - `npm ci` ; typecheck ; `npm test` ; build ; `art:validate` ; `art:doctor` (Aseprite absent, attendu).
   - Détection de Chrome, son enveloppeur hors dépôt, une capture de fumée de `main` et son témoin de répétition.
   - La lecture des trois contrats de `contracts/` (décisions C1, C2).
-  - L'archivage du journal si les passes gardées dépassent environ 60 Ko (elles font 49,8 Ko au départ), avec les huit contrôles de la
+  - L'archivage du journal si les passes gardées dépassent environ 60 Ko (environ 39 Ko au départ, après l'archivage de la Passe N3), avec les huit contrôles de la
     Passe D1.
 - **Fin** : l'environnement est consigné dans la première passe de la séance (machine, Node, navigateur, temps de démarrage logiciel).
 
-### L1 — Cœur de jeu headless (`src/game/`)
+### L1 — Cœur de jeu headless (`src/simulation/` et ses voisins)
 - **Contenu** :
   - l'état, les actions, les créneaux, le journal causal ;
   - la sauvegarde et le chargement (JSON stable, version de schéma, migration vide), l'empreinte ;
+  - les états nommés (contrat projet § 10.3) ;
   - le test de pureté.
 - **Preuves** (`tests/game-core.test.mjs`) :
   - la même graine et le même script d'actions donnent la même empreinte, sur trois graines au moins ; deux graines divergent ;
   - une sauvegarde à chaque créneau, rechargée puis poursuivie, égale la partie continue ;
   - une action mineure ne coûte aucun créneau, une action importante en coûte un, une action invalide est refusée sans toucher l'état ;
   - au moins trois fautes injectées, attrapées, fichiers rendus à l'octet.
-- **Fin** : tests verts ; le chemin par défaut n'importe rien de `src/game/` ; PD si un fichier du défaut change.
+- **Fin** : tests verts ; le chemin par défaut n'importe aucun module du jeu ; PD si un fichier du défaut change.
 
 ### L2 — Tournoi, phase I, et TournamentLab
 - **Contenu** :
@@ -254,6 +313,8 @@ preuve d'image est inscrite au bilan comme à refaire en local.
   - les rivalités fondées sur des faits (tournoi § 7) ;
   - les éliminés qui restent dans l'état (tournoi § 8) ;
   - le pouls de la ville (§ 9) après chaque créneau ;
+  - `src/events/` : au moins douze événements configurables (contrat projet §§ 9, 14), chacun déclenché par ses conditions, avec sa cause ;
+    pour un événement majeur, des signes et des réponses (§ 9.3) ;
   - `tools/tournament-lab.mjs` (tournoi § 13). Il charge un état ou une sauvegarde, accélère N jours et inspecte les concurrents. Il compare
     des graines et repère les participants oubliés (aucun événement depuis un jour). Il mesure la fréquence des éliminations et des blessures,
     et dit que la transition vers l'équipe est hors tranche. Sortie en texte et en `--json`.
@@ -292,7 +353,7 @@ preuve d'image est inscrite au bilan comme à refaire en local.
 - **Preuves** :
   - le PD : chaque adresse à paramètres, et « Explore the district », à 0 px ;
   - l'écran titre sur l'adresse nue ; ses trois boutons, et « Continue » absent sans sauvegarde ;
-  - des captures du mode jouable à chaque créneau ;
+  - des captures du mode jouable à chaque créneau, sur ordinateur et à la taille d'un téléphone (portrait et paysage, contrat projet § 14) ;
   - le jour 1 joué de bout en bout par `__game`, et une fumée au clavier (`E` sur la marchande) ;
   - la sauvegarde reprise après un rechargement.
 - **Fin** : le jour 1 se joue dans la ville, depuis l'écran titre.
@@ -303,12 +364,15 @@ preuve d'image est inscrite au bilan comme à refaire en local.
     - jour 1 : l'arrivée, l'inscription, le premier rival, la quête, le futur recrutable ;
     - jour 2 : le duel 1, puis des indices et la menace sur la forge le soir ;
     - jour 3 : la forge sabotée ou sauvée (le service modifié), le duel 2, la réaction de la ville, la fin de tranche ;
-  - l'échec qui ouvre des réponses (gameplay § 11) : la défaite [G3], la blessure suivie de soin ou de repos.
+  - l'échec qui ouvre des réponses (gameplay § 11) : la défaite [G3], la blessure suivie de soin ou de repos ;
+  - la boutique affectée par une conséquence ; la chaîne de sabotage déclenchée par des conditions ;
+  - les services et les présences qui changent avec le jour et la nuit (contrat projet § 8.1) ;
+  - le Colisée suggéré par les annonces et les clameurs (§ 8.2).
 - **Preuves** :
   - trois parties scriptées complètes (« prévoyante », « négligente », « perdante ») jusqu'à l'écran de fin ;
-  - un test qui coche chaque exigence du § 13 à partir des événements ;
+  - un test qui coche chaque exigence du gameplay § 13 et du contrat projet § 14 à partir des événements ;
   - le déterminisme ; la sauvegarde à chaque créneau.
-- **Fin** : la liste du § 13 est cochée par le test.
+- **Fin** : les listes du gameplay § 13 et du contrat projet § 14 sont cochées par le test (le budget GPU excepté, mesuré en local).
 
 ### L6 — Les autres lieux [P3]
 - **Contenu** :
@@ -323,6 +387,7 @@ preuve d'image est inscrite au bilan comme à refaire en local.
 - **Contenu** :
   - la lisibilité, le clavier et le focus (écran titre compris) ;
   - la relecture des textes anglais ;
+  - les compteurs du budget technique (appels de dessin, triangles par lieu et par écran ; le coût de `advance` en Node) ;
   - une passe de bilan au journal, comme la Passe B1 : ce qui est fusionné, les mesures, ce qui reste à vérifier sur la machine de
     l'opérateur, les décisions préparées, le reste à faire.
 - **Fin** : le bilan est fusionné, et le dernier message de la séance le résume.
@@ -350,7 +415,7 @@ preuve d'image est inscrite au bilan comme à refaire en local.
 | SwiftShader lent (154 s de démarrage avec le bake en Passe T1) | Peu de poses ; `vis=0` pour les captures du mode jouable, jamais pour le PD |
 | Ni ressenti ni équilibrage sans joueur humain | Des bots et des nombres provisoires ; le réglage de l'opérateur après essai (D1) ; le bilan le dit |
 | Le volume de contenu (textes, quêtes) et la qualité du troisième lieu | La tranche minimale d'abord (L5 avant L6) ; les lieux légers sont annoncés comme tels |
-| Fuites de non-déterminisme (`Math.random`, horloge, objets THREE) | Le test de pureté de `src/game/` ; des empreintes |
+| Fuites de non-déterminisme (`Math.random`, horloge, objets THREE) | Le test de pureté des modules du jeu ; des empreintes |
 | Changer le district figé ou l'arène sans le vouloir | Le PD à 0 px ; l'empreinte de l'arène |
 | L'écran titre par défaut bloque un outil ou une preuve qui charge l'adresse nue (`__app` jamais créé) | L'écran titre seulement sur l'adresse nue ; `?title=0` ; chaque outil de `tools/` vérifié avant la fusion qui l'active |
 | Le proxy Git (un nom de branche imposé, pas de suppression distante) | Une tâche à la fois sous ce nom (Passes T1, H6) |
@@ -420,8 +485,10 @@ mot : « La fiche d'arbitrages est remplie : relis mes choix, consigne-les et é
   HUD français. Le journal, les contrats et ce plan restent en français.
 - **K2**, le nom choisi : « New game » demande le nom du joueur ; l'arène l'affiche en mode jouable.
 
-**Ce qui reste à l'opérateur avant le lancement** : fournir `PROJECT_MASTER_CONTRACT.md` (C2), qui sera versionné dans `contracts/`. Puis
-dire « go ».
+**Le contrat projet** (C2) : collé par l'opérateur dans la séance après la fiche, versionné tel quel dans `contracts/PROJECT_MASTER_CONTRACT.md`
+(Passe N3). Ses écarts sont au § 3b, ses ajouts au § 5 ; aucun choix de la fiche n'est changé.
+
+**Ce qui reste à l'opérateur avant le lancement** : dire « go ».
 
 **Écarts consignés, non tranchés** (C3, G1) :
 - E1, le combat « tour par tour » du contrat contre l'arène sans attente : la tranche se joue avec l'arène actuelle, et le contrat ne change
