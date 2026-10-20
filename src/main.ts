@@ -11,9 +11,13 @@ loading.innerHTML = '<div style="font-size:22px;letter-spacing:.3em;margin-botto
 document.body.appendChild(loading);
 const label = loading.querySelector('#ld-label') as HTMLElement, bar = loading.querySelector('#ld-bar') as HTMLElement;
 
-// ?play=1: the game's play mode (journal Passe L3), loaded on demand; ?scene=arena: the arena of the Cité du Tournoi (journal Passe P1), loaded
-// on demand; without them the town runs exactly as before
+// ?play=1: the game's play mode (journal Passe L3), loaded on demand; the title screen (choice P2, journal Passe L4) on the bare address only,
+// in a browser no automation drives (navigator.webdriver: every tool and proof keeps today's game), or forced by ?title=1; its « Explore the
+// district » starts the town below, untouched; ?scene=arena: the arena of the Cité du Tournoi (journal Passe P1), loaded on demand; any other
+// address runs the town exactly as before
+const title = params.get('title') === '1' || (location.search === '' && !navigator.webdriver);
 if (params.has('play')) void import('./ui/play').then((m) => m.startPlay({ canvas, params, label, bar, loading }));
+else if (title) void import('./ui/title').then((m) => m.showTitle({ explore: startTown }));
 else if (params.get('scene') === 'arena') void startArena();
 else startTown();
 

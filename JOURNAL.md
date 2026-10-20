@@ -570,6 +570,62 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   l'image. Le témoin de répétition le dit avant toute comparaison.
 - Un échec d'outil sous la charge se rejoue seul avant d'être lu comme une régression : le même contrôle sur `main` figé départage.
 
+## Passe L4 — La ville jouable : les rôles des PNJ, les dialogues et leurs portraits, l'interface en anglais, l'écran titre par défaut (2026-10-20)
+
+### Contrat de tâche (contrat projet § 11.3)
+- **Objectif** : le jour 1 se joue dans la ville depuis l'écran titre ; les PNJ existants y tiennent des rôles de jeu ; l'interface montre
+  l'horloge, l'échéance, le tableau, les dialogues, le journal et la sauvegarde ; l'écran titre entre dans le défaut (choix P2).
+- **Entrées** : plan, lot L4 ; choix P2, P4, K1, K2, K3 ; les passes L1 à L3.
+- **Fichiers autorisés** : `src/main.ts` (l'aiguillage de l'écran titre), `src/ui/`, `src/simulation/`, `src/narrative/`, `src/combat/match.ts`,
+  `src/tournament/pool.ts`, `tests/`, `tools/` (des outils de preuve), `AGENTS.md`, `JOURNAL.md`.
+- **Interdits** : le district (géométrie, cadrages, distribution, aspect : choix P4) ; `src/app/`, `src/characters/`, `src/arena/` ; la nuit
+  reste le moment par défaut de « Explore the district » (J9).
+- **Outputs** : `src/ui/title.ts`, `townUi.ts`, `portraits.ts`, `playForecourt.ts` ; `src/simulation/roles.ts` ; `src/narrative/dialogue.ts`.
+- **Critères d'acceptation** : le PD à 0 px (toute adresse à paramètres, et « Explore the district » contre l'adresse nue de `main`) ; l'écran
+  titre et ses trois boutons, « Continue » absent sans sauvegarde ; le jour 1 joué de bout en bout ; une fumée au clavier ; la reprise après
+  un rechargement ; des captures à chaque créneau, sur ordinateur et à la taille d'un téléphone.
+- **Tests** : `tests/town-roles.test.mjs` ; `tools/title-proof.mjs`, `tools/play-day.mjs`, `tools/play-shots.mjs` ; le PD. **Risques** : un outil
+  qui charge l'adresse nue et trouve l'écran titre ; le chemin de « Explore the district » qui dévie.
+- **Définition de terminé** : tests verts, fautes attrapées, preuves du navigateur passées, PD à 0 px, validation complète.
+
+### Fait — [OK]
+- **Les rôles** (`src/simulation/roles.ts`, chaque action dit qui l'offre) :
+  - Mara : sa boutique, ouverte le jour (pierre à aiguiser +5 % au prochain duel, baume qui soigne un niveau, lame importée +15 %), ses prix
+    multipliés par la pénurie et diminués de sa faveur ; l'aider à décharger ses caisses (le matin, un créneau) ;
+  - la quête « The Steel Cargo » : Tam la propose, le sergent Hale signe la levée, on hisse la caisse (un créneau), Bram trempe la lame
+    (un créneau, 10 pièces : +15 % au duel suivant) ;
+  - les réponses au sabotage : veiller soi-même à la forge (le soir, un créneau : l'attaque échoue et le coupable est nommé), payer le guet,
+    l'informateur la nuit (10 pièces : un avertissement, ou le nom du payeur après l'incendie), le rapport à Hale (Cassius perd 3 points, la
+    guilde paie 15 pièces), rebâtir la forge avec Bram (12 pièces, 6 si Orla est une amie) ;
+  - le parvis : signer le rôle (Odo), se faire soigner (Anwen, 8 pièces, gratuit après l'aumône d'Ilse), s'entraîner avec Orla (la recrue
+    future), observer Vessa ou Marek (l'assistance `full` et deux lignes de renseignement au duel contre eux).
+  - Le jour et la nuit : la boutique ferme la nuit, Bram ne travaille que le jour et disparaît d'une forge en ruine (son sprite aussi : le
+    district le retire déjà), l'informateur ne parle que la nuit, on ne rebâtit pas dans le noir.
+- **Les dialogues** (`src/narrative/dialogue.ts`) : des répliques choisies selon l'état (le créneau, le pouls, les faits, les quêtes, les
+  résultats) ; la ville réagit aux duels, à l'incendie, aux querelles, à l'excitation (contrat du gameplay § 8).
+- **L'interface** (`src/ui/townUi.ts`, en anglais) : l'horloge (jour / 3 · créneau), le nom, les pièces, la réputation, la santé, la prochaine
+  échéance ; « Here » (ce qu'on peut faire ici, et son coût : « 1 slot » ou « free ») ; les gens présents ; l'invite « [E] Talk to … » près
+  d'un PNJ (par son archétype dans la scène) ; le dialogue (portrait, répliques, options) ; la carte (M), le journal avec les causes (J), le
+  tableau du tournoi (T), le menu (Échap : fichier de sauvegarde, rechargement, retour à l'écran titre) ; les nouvelles depuis la dernière
+  visite ; l'écran de fin de la tranche. Au téléphone, la liste se replie sous son titre.
+- **Les portraits** (`src/ui/portraits.ts`, choix K3) : l'image de face du générateur (tête et épaules, 24 × 24 texels) pour les gens du
+  district (leurs archétypes), les rivaux (leurs couleurs du `roster`) et trois personnes sans sprite (Odo, Anwen, Lio : un portrait, aucun
+  spawn).
+- **Le parvis** (`src/ui/playForecourt.ts`) : l'arène vue des gradins, immobile, et l'interface ; il devient praticable au lot L6.
+- **L'écran titre** (`src/ui/title.ts`) : « New game » (il demande le nom, choix K2 ; « Ren » en suggestion), « Explore the district », et
+  « Continue » quand une sauvegarde existe. Il ne paraît que sur l'adresse nue, et `?title=1` le force.
+- `window.__game.subscribe` : l'interface se redessine aussi quand un outil agit à sa place.
+
+### Choix de la séance (consignés comme tels)
+- **L'écran titre ne paraît pas dans un navigateur piloté** (`navigator.webdriver`), sauf avec `?title=1`. L'audit des outils de `tools/` qui
+  chargent l'adresse nue (le brief, P2) : `perf` et `startup` ajoutent toujours `fps=off` ; `detshots`, `visproof`, `viewport-proof` exigent une
+  requête ; mais `eval`, `screenshots`, `cadence`, `flipbook`, `foot-slip`, `step-angles` et `vsync-probe` atteignent l'adresse nue dès que leur
+  requête est vide. Plutôt que de les modifier un à un (et ceux de l'opérateur), le jeu ne montre l'écran titre qu'à une personne.
+- Dans le mode jouable, l'interrupteur DEV de la forge (F, et E devant la forge) est coupé : l'état de la forge est celui du jeu.
+- Les actions des gens apparaissent dans leur dialogue ; « Here » garde celles du joueur (se reposer, laisser passer le temps, entrer dans
+  l'arène, rebâtir la forge en ruine).
+- Lantern Row reste fermé (« opens in a later build of the slice ») jusqu'au lot L6.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

@@ -22,11 +22,13 @@ export interface MatchSheet {
   seed: number;
 }
 
-/** what the player's state changes in a duel: an injury (-20 % health per level), a tempered blade (+15 % damage), training (+5 % damage
+/** what the player's state changes in a duel: an injury (-20 % health per level), a tempered blade (+15 % damage), a whetstone (+5 %, used
+ *  up by the bout), training (+5 % damage
  *  per session, at most 2; a head start of action points made the bot spend them at once and lose its dodges, journal Passe L2) */
 export function playerMods(s: GameState): Mods {
   const blade = s.player.items.includes('tempered-blade') || s.player.items.includes('imported-blade') ? 1.15 : 1;
-  return { hp: 1 - 0.2 * s.player.injury, damage: +(blade * (1 + 0.05 * Math.min(2, s.player.training))).toFixed(4) };
+  const stone = s.player.items.includes('whetstone') ? 1.05 : 1;
+  return { hp: 1 - 0.2 * s.player.injury, damage: +(blade * stone * (1 + 0.05 * Math.min(2, s.player.training))).toFixed(4) };
 }
 
 /** the sheet of the player's duel today (null when there is none) */

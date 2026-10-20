@@ -1,7 +1,9 @@
 import type { Rng } from '../core/rng';
 import { PLACES, clamp, placeName, type GameState, type PlaceId } from './state';
 import type { Emit } from './advance';
-import { PEOPLE, presentAt } from '../narrative/people';
+import { PEOPLE } from '../narrative/people';
+import { ROLE_ACTIONS, available, type RoleAction } from './roles';
+import { onTalk } from '../narrative/dialogue';
 import { applyPlayerDuel, playerMatch, opponentOf, type DuelOutcome } from '../tournament/pool';
 import { RIVALS } from '../narrative/roster';
 
@@ -9,7 +11,8 @@ import { RIVALS } from '../narrative/roster';
  *  talking, consulting, GAMEPLAY § 4.2; 1 = a significant action that takes the slot, § 4.1), when it is refused and why (a readable
  *  reason, the state untouched), and what it changes (`apply` works on the copy `advance` made). */
 
-export type Action =
+export type Action = BaseAction | RoleAction;
+type BaseAction =
   | { type: 'move'; to: PlaceId }
   | { type: 'talk'; who: string }
   | { type: 'rest' }
@@ -29,29 +32,25 @@ export interface ActionDef<A extends Action = Action> {
   apply(s: GameState, a: A, rng: Rng, emit: Emit): void;
 }
 
-type Table = { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> };
+type Table = { [K in BaseAction['type']]: ActionDef<Extract<BaseAction, { type: K }>> };
 
-export const ACTIONS: Table = {
+const BASE: Table = {
   move: {
     list: (st) => PLACES.filter((p) => p !== st.place).map((to) => ({ type: 'move', to })),
     label: (_, a) => `Go to ${placeName(a.to)}`,
     cost: () => 0,
-    check: (st, a) => (!PLACES.includes(a.to) ? 'No such place.' : a.to === st.place ? 'You are already there.' : null),
+    check: (st, a) => (!PLACES.includes(a.to) ? 'No such place.' : a.to === st.place ? 'You are already there.' : a.to === 'lanterns' ? 'Lantern Row opens in a later build of the slice.' : null),
     apply: (s, a, _r, emit) => { s.place = a.to; emit({ kind: 'action', id: 'move', cause: 'action:move', text: `You walk to ${placeName(a.to)}.`, visible: false }); },
   },
   talk: {
     list: (st) => Object.values(PEOPLE).filter((p) => p.place === st.place).map((p) => ({ type: 'talk', who: p.id })),
     label: (_, a) => `Talk to ${PEOPLE[a.who]?.name ?? a.who}`,
     cost: () => 0,
-    check: (st, a) => {
-      const p = PEOPLE[a.who];
-      if (!p) return 'Nobody by that name.';
-      if (p.place !== st.place) return `${p.name} is not here.`;
-      return presentAt(p, st.place, st.slot) ? null : `${p.name} is not around at this hour.`;
-    },
+    check: (st, a) => available(st, a.who),
     apply: (s, a, _r, emit) => {
       const k = `met:${a.who}`;
       if (!s.flags[k]) { s.flags[k] = true; emit({ kind: 'action', id: 'meet', cause: 'action:talk', text: `You meet ${PEOPLE[a.who].name}, ${PEOPLE[a.who].title}.`, visible: true }); }
+      onTalk(s, a.who, emit);
     },
   },
   rest: {
@@ -112,3 +111,6 @@ export const ACTIONS: Table = {
     apply: (_s, _a, _r, emit) => { emit({ kind: 'action', id: 'wait', cause: 'action:wait', text: 'You let the hours go by.', visible: false }); },
   },
 };
+
+/** every action: the player's own, and those the town's people offer (roles.ts) */
+export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS };

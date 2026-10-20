@@ -111,6 +111,7 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
   const hurt = (!won && o.finisher === 'heavy') || (won && o.playerHp / o.playerMaxHp < 0.15);
   if (hurt) P.injury = Math.min(2, P.injury + 1);
   P.training = 0;
+  P.items = P.items.filter((i) => i !== 'whetstone');
   emit({
     kind: 'match', id: won ? 'player-won' : 'player-lost', cause: `match:${matchId(m)}`, visible: true,
     text: won ? `You beat ${name}${close ? ' with your last breath' : ''}. +${opp === 'marek' ? 20 : 15} reputation, a purse of 20 coins.`

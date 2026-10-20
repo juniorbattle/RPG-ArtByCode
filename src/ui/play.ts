@@ -6,7 +6,7 @@ import { readSave, writeSave } from './save';
  *  arena for the day's bout (`&scene=arena`). Moving to another scene, or to another slot (whose day state changes the town's look), is a save
  *  then a reload: no scene ever changes its day state while it runs (choice G2).
  *  `window.__game` drives it for the proofs: `state()`, `actions()`, `act(action)` (the state saved; `reload` says whether the page would
- *  reload), `hash()`. */
+ *  reload), `hash()`, `subscribe(f)`. */
 
 export interface Boot { canvas: HTMLCanvasElement; params: URLSearchParams; label: HTMLElement; bar: HTMLElement; loading: HTMLElement }
 
@@ -38,7 +38,10 @@ export function startingState(params: URLSearchParams): { state: GameState; note
 
 /** the game API of a page: the current state, its actions, applying one (saved at once) */
 export function installGameApi(get: () => GameState, set: (s: GameState) => void, after: (prev: GameState, next: GameState, a: Action) => boolean): void {
+  const subs: Array<() => void> = [];
   (window as any).__game = {
+    /** the page's interface redraws after any action, its own or a harness's */
+    subscribe: (f: () => void) => { subs.push(f); },
     state: () => get(),
     hash: () => hash(get()),
     actions: () => actions(get()),
@@ -46,6 +49,7 @@ export function installGameApi(get: () => GameState, set: (s: GameState) => void
       const prev = get(), r = advance(prev, a);
       if (!r.ok) return { ok: false, reason: r.reason };
       set(r.state); writeSave(r.state);
+      for (const f of subs) f();
       return { ok: true, events: r.events, reload: after(prev, r.state, a) };
     },
   };
@@ -56,6 +60,7 @@ export async function startPlay(b: Boot): Promise<void> {
     const { state, note } = startingState(b.params);
     writeSave(state);
     if (b.params.get('scene') === 'arena') await (await import('./playArena')).startPlayArena(b, state);
+    else if (state.place === 'forecourt') await (await import('./playForecourt')).startPlayForecourt(b, state);
     else await (await import('./playTown')).startPlayTown(b, state, note);
   } catch (e: any) {
     console.error(e);
