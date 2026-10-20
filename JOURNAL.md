@@ -717,6 +717,45 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une partie « perdante » se scripte par ce que fait le joueur, pas par l'issue voulue : si le jeu la fait gagner, c'est une mesure de
   l'équilibre, à consigner, pas à masquer.
 
+## Passe L6 — Les trois lieux : le parvis praticable, Lantern Row (une maquette), le passage de l'un à l'autre (2026-10-20)
+
+### Contrat de tâche (contrat projet § 11.3)
+- **Objectif** : trois lieux praticables (choix P3) : le district ; le parvis de l'arène rendu praticable ; un troisième lieu léger, bâti avec
+  les générateurs du district, à cadrage fixe, annoncé comme une maquette ; on passe de l'un à l'autre par la carte, sans coût de créneau.
+- **Entrées** : plan, lot L6 ; `ArenaScene.ts` (sa manière de bâtir avec les pièces du district) ; `BuildingGenerator`, `PropGenerator`,
+  `Banners`, `DistantCity`.
+- **Fichiers autorisés** : `src/arena/ArenaApp.ts`, `FighterArt.ts` (des options, défauts inchangés), `src/world/` (nouveau), `src/ui/`,
+  `src/simulation/`, `src/tournament/lab.ts`, `tests/`, `JOURNAL.md`. **Interdits** : le district ; `?scene=arena` sans paramètre de jeu.
+- **Outputs** : le mode parvis d'`ArenaApp` ; `src/world/LanternRow.ts`, `PlaceApp.ts` ; `src/ui/playLanterns.ts` ; les rôles de Lio et Cassius.
+- **Critères d'acceptation** : l'arène par défaut à 0 px ; chaque lieu se charge sans erreur, sur ordinateur et téléphone ; la partie
+  scriptée de L5 toujours verte, et passant par les trois lieux.
+- **Tests** : `tests/town-roles.test.mjs` (+2), `tests/slice.test.mjs` (trois lieux) ; le PD de l'arène ; des captures. **Risques** : un écart
+  de pixel de l'arène par défaut ; une scène neuve qui rend mal en SwiftShader.
+- **Définition de terminé** : tests verts, fautes attrapées, PD de l'arène à 0 px, validation complète.
+
+### Fait — [OK]
+- **Le parvis praticable** : `ArenaApp` prend une option `forecourt` : pas de duel ; le héros marche sur le sable (flèches ou A / D, W / S),
+  avec la marche de profil du générateur de la ville ajoutée à l'atlas (seulement dans ce mode) ; Marek s'entraîne près de l'anneau le jour.
+  Quatre places sur le sable (la table d'Odo, le poteau d'Orla, Marek, le coin d'Anwen) : l'invite « E Talk to … » et le dialogue.
+- **Lantern Row** (`src/world/LanternRow.ts`) : une rue de tavernes et de maisons de jeu, deux rangées de maisons de `createMerchantBuilding`
+  face à face, des lanternes de papier tendues au-dessus de la rue, deux lampadaires à son entrée, tonneaux, caisses et tabourets aux portes,
+  deux bannières (la chope, la balance), le bout de la rue fermé par la ville lointaine ; pavés mouillés à flaques. Vu d'un seul cadrage
+  (`PlaceApp`, le rendu de la ville : matériaux, lumières, ciel, ombre de lune, reflet, post-traitement), jamais cuit, sans acteur. Un bandeau
+  le dit : « a mock-up of the third place ».
+- **Le jour et la nuit** : Lantern Row ne s'ouvre que le soir (« sleeps until dusk ») : un quartier qui vit la nuit (contrat projet § 8.1).
+  Lio y fait écouter la taverne (un créneau : de la renommée, et la rumeur de House Dree si Cassius en veut au joueur) ; Cassius s'y laisse
+  railler (sa rancune grandit : le joueur peut ainsi provoquer la chaîne de sabotage) ou dénoncer, une fois le coupable connu.
+- **La partie prudente** passe par Lantern Row le premier soir : les trois lieux dans la même partie.
+
+### [KO → corrigé] le sol de Lantern Row
+- **Le sol se lisait comme un miroir pâle.** Une caméra presque rasante (4°) a d'abord été soupçonnée (le Fresnel du sol mouillé) : la baisser
+  à 11° n'a rien changé. **La vraie cause** : le sol vit sur la couche de la passe principale (`LAYER_NOREFLECT`), que la caméra de `PlaceApp`
+  n'activait pas ; on voyait le ciel sous l'horizon. Corrigé comme dans `ArenaApp`.
+
+### Choix de la séance (consignés comme tels)
+- Lantern Row n'a qu'un aspect, la nuit, et ne s'ouvre que le soir : une maquette d'un seul cadrage n'a pas d'état du jour à montrer.
+- Le parvis reste l'arène sous son aspect de nuit (Passe L4).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

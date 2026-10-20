@@ -39,7 +39,7 @@ const BASE: Table = {
     list: (st) => PLACES.filter((p) => p !== st.place).map((to) => ({ type: 'move', to })),
     label: (_, a) => `Go to ${placeName(a.to)}`,
     cost: () => 0,
-    check: (st, a) => (!PLACES.includes(a.to) ? 'No such place.' : a.to === st.place ? 'You are already there.' : a.to === 'lanterns' ? 'Lantern Row opens in a later build of the slice.' : null),
+    check: (st, a) => (!PLACES.includes(a.to) ? 'No such place.' : a.to === st.place ? 'You are already there.' : a.to === 'lanterns' && st.slot !== 'evening' ? 'Lantern Row sleeps until dusk: its taverns open at night.' : null),
     apply: (s, a, _r, emit) => { s.place = a.to; emit({ kind: 'action', id: 'move', cause: 'action:move', text: `You walk to ${placeName(a.to)}.`, visible: false }); },
   },
   talk: {

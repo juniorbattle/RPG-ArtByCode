@@ -128,7 +128,7 @@ test('several persistent rivals, places changed (navigation), a 1v1 combat exten
     assert.ok(Object.values(g.st.competitors).every((c) => c.knownFacts.length > 0 || c.preparation > 20), 'each rival has a history');
   }
   const places = new Set(all.flatMap((g) => g.states.map((s) => s.place)));
-  assert.ok(places.size >= 2, `places: ${[...places].join(', ')}`);
+  assert.deepEqual([...places].sort(), ['district', 'forecourt', 'lanterns'], 'the three places of the slice (choice P3)');
   const sh = all[0].sheets[0].sheet;
   assert.throws(() => sheetData({ ...sh, sides: [sh.sides[0], { fighters: [...sh.sides[1].fighters, ...sh.sides[1].fighters] }] }), /team formats/);
 });

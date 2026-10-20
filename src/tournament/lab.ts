@@ -67,8 +67,8 @@ export const SCRIPTS: Record<string, () => Policy> = {
   careful: () => scripted('careful', 0.6, {
     '1:morning': [T('tam'), T('hale'), { type: 'askPapers' }, { type: 'haul' }],
     '1:afternoon': [{ type: 'move', to: 'forecourt' }, T('odo'), { type: 'register' }, T('orla'), { type: 'spar' }],
-    '1:evening': [{ type: 'move', to: 'district' }, T('stranger'), { type: 'buyInfo' }],
-    '2:morning': [T('bram'), { type: 'temper' }],
+    '1:evening': [{ type: 'move', to: 'district' }, T('stranger'), { type: 'buyInfo' }, { type: 'move', to: 'lanterns' }, T('lio'), { type: 'listen' }],
+    '2:morning': [{ type: 'move', to: 'district' }, T('bram'), { type: 'temper' }],
     '2:evening': [{ type: 'nightfall' }, T('hale'), { type: 'payWatch' }],
     '3:morning': [{ type: 'move', to: 'forecourt' }, T('marek'), { type: 'scout', who: 'marek' }],
     '3:evening': [{ type: 'nightfall' }, { type: 'move', to: 'district' }, T('folk')],

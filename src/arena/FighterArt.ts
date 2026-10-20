@@ -490,7 +490,9 @@ export interface ArenaSpriteSet {
 
 /** every fighter frame, the spectators (the town's crowd archetypes, front view) and the effects, in cells of 64 x 96, as a SpriteAtlas
  *  the town's SpriteRenderer draws (frame keys `<id>/<dir>/<anim>/<i>`; a fighter frame is its own one-frame anim `<clip>.<i>`) */
-export function buildArenaAtlas(seed: number, crowdCount = 5, foe = 'marek'): ArenaSpriteSet {
+/** `walker`: the hero's walk in the town generator's own side view (`ren/side/walk.<i>/0`), for the forecourt's walking mode (journal Passe
+ *  L6); without it the atlas is the duel's, byte for byte */
+export function buildArenaAtlas(seed: number, crowdCount = 5, foe = 'marek', walker = false): ArenaSpriteSet {
   const cells: Array<{ key: string; spr: Sprite }> = [];
   const reach: Record<string, number> = {};
   const F = FOES[foe] ?? FOES.marek, clips = { ren: REN_CLIPS, marek: F.clips }, looks = { ren: LOOKS.ren, marek: F.look };
@@ -508,6 +510,7 @@ export function buildArenaAtlas(seed: number, crowdCount = 5, foe = 'marek'): Ar
   }
   const crowd = crowdVariants(seed, crowdCount).map((s, i) => ({ ...s, id: `fan${s.id.slice(5)}`, ...(s.hairStyle === 'bald' ? { hairStyle: (i % 2 ? 'cap' : 'beret') as CharSpec['hairStyle'] } : {}) }));
   for (const spec of crowd) for (const anim of ['idle', 'talk'] as const) posesFor(anim).forEach((p, i) => cells.push({ key: `${spec.id}/down/${anim}/${i}`, spr: inCell(renderFrame(spec, 'down', p)) }));
+  if (walker) posesFor('walk').forEach((p, i) => cells.push({ key: `ren/side/walk.${i}/0`, spr: inCell(renderFrame({ ...REN, anims: ['idle', 'walk'] }, 'side', p)) }));
   for (let f = 0; f < 3; f++) {
     cells.push({ key: `fx/side/spark.${f}/0`, spr: paintSpark(f, FX_IVORY, 140) });
     cells.push({ key: `fx/side/ember.${f}/0`, spr: paintSpark(f, FX_AMBER, 160, 10) });

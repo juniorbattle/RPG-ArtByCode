@@ -33,7 +33,10 @@ export interface ArenaMatch {
   data: CombatData; foe: string; assist: Assist; texts: ArenaTexts;
   onOver?: (r: { winner: FighterId; hp: Record<FighterId, number>; maxHp: Record<FighterId, number>; finisher: string | null; t: number }) => void;
 }
-export interface ArenaOptions { canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void; match?: ArenaMatch }
+/** the forecourt's walking mode (journal Passe L6): no bout; the hero walks the sand (arrows or A / D, W / S), Marek drills by the ring; the
+ *  play mode reads where the hero stands (`walkerX`) */
+export interface ArenaForecourt { /** the champion is on the sand (by day) */ marek: boolean }
+export interface ArenaOptions { canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void; match?: ArenaMatch; forecourt?: ArenaForecourt }
 
 type Clip = string;
 const ATTACKS = new Set<Clip>(['strike', 'heavy', 'skill', 'slash']);
@@ -98,6 +101,12 @@ export class ArenaApp {
   /** the blow that ended the bout, and whether the play mode has been told */
   private finisher: string | null = null;
   private told = false;
+  /** the forecourt's walker: held keys, position along the sand, its walk clock */
+  private walkKeys = new Set<string>();
+  walkerX = -4.5;
+  private walkerZ = 0.6;
+  private walkT = 0;
+  private walkFrames = 0;
 
   constructor(private opts: ArenaOptions) {
     this.sim = new CombatSim(opts.match?.data);
@@ -154,7 +163,8 @@ export class ArenaApp {
     this.hitLight = this.lights.add({ pos: [0, 1.4, 0.5], color: [1.0, 0.86, 0.66], intensity: 1.5, radius: 4.5, kind: 'steady', priority: 10 }, 'fx', 0);
     this.castLight.scale = this.castLight.targetScale = 0; this.hitLight.scale = this.hitLight.targetScale = 0;
     this.opts.onProgress('fighters', 0.98);
-    this.set = buildArenaAtlas(seed, 5, this.opts.match?.foe);
+    this.set = buildArenaAtlas(seed, 5, this.opts.match?.foe, !!this.opts.forecourt);
+    this.walkFrames = [...this.set.atlas.frames.keys()].filter((x) => x.startsWith('ren/side/walk.')).length;
     this.sprites = new SpriteRenderer(this.set.atlas, 96, { w: CELL_W, h: CELL_H, foot: CELL_FOOT });
     this.sprites.charScale = CHAR_SCALE;
     this.sprites.protect.crowd = 0.35;
@@ -213,6 +223,12 @@ export class ArenaApp {
   }
 
   private bindInput(): void {
+    if (this.opts.forecourt) {
+      window.addEventListener('keydown', (e) => { if (!e.metaKey && !e.ctrlKey && !e.altKey && !(e.target instanceof HTMLInputElement)) this.walkKeys.add(e.key.toLowerCase()); });
+      window.addEventListener('keyup', (e) => this.walkKeys.delete(e.key.toLowerCase()));
+      window.addEventListener('blur', () => this.walkKeys.clear());
+      return;
+    }
     const KEYS: Record<string, string> = { '1': 'light', '2': 'heavy', '3': 't1', '4': 't2', '5': 't3', '6': 't4', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
     window.addEventListener('keydown', (e) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || !this.ready) return;
@@ -380,6 +396,24 @@ export class ArenaApp {
     if (h) { h.scale = Math.max(0, h.scale - 1 / 60 / 0.14); h.targetScale = h.scale; }
   }
 
+  /** the forecourt: the hero walks (the town generator's walk, side view), Marek drills his slash by the ring when he is there */
+  private presentForecourt(dt: number): void {
+    const k = this.walkKeys, ix = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0), iz = (k.has('s') || k.has('arrowdown') ? 1 : 0) - (k.has('w') || k.has('arrowup') ? 1 : 0);
+    const r = this.fighters.ren, m = this.fighters.marek;
+    if (ix || iz) {
+      this.walkerX = Math.max(-6.4, Math.min(6.4, this.walkerX + ix * 2.6 * dt));
+      this.walkerZ = Math.max(-1.6, Math.min(2.2, this.walkerZ + iz * 1.8 * dt));
+      if (ix) r.flip = ix > 0;
+      this.walkT += dt;
+      r.anim = (this.walkFrames ? `walk.${Math.floor(this.walkT * 8) % this.walkFrames}` : 'idle.0') as Anim;
+    } else { this.walkT = 0; r.anim = `idle.${Math.floor(this.time * 1.7) % 2}` as Anim; }
+    r.pos.set(this.walkerX, 0, this.walkerZ);
+    m.hidden = !this.opts.forecourt!.marek;
+    const cyc = this.time % 3.2, clip = cyc < 2.2 ? 'ready' : 'slash';
+    m.anim = `${clip}.${clip === 'ready' ? Math.floor(this.time * 1.4) % 2 : Math.min(2, Math.floor((cyc - 2.2) / 0.33))}` as Anim;
+    m.pos.set(3.4, 0, -1.2);
+  }
+
   // ---------------------------------------------------------------- frame
   /** advances the simulation (fixed 1/120 s steps) and the presentation by dt */
   update(dt: number): void {
@@ -395,7 +429,7 @@ export class ArenaApp {
       if (n >= 24) this.acc = 0;
     }
     const pdt = this.paused ? 0 : dt;
-    this.presentFighters(pdt);
+    if (this.opts.forecourt) this.presentForecourt(dt); else this.presentFighters(pdt);
     this.presentFans();
     this.presentFx(pdt);
     this.updateDynamicLights();

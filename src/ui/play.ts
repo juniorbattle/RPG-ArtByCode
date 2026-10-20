@@ -61,6 +61,7 @@ export async function startPlay(b: Boot): Promise<void> {
     writeSave(state);
     if (b.params.get('scene') === 'arena') await (await import('./playArena')).startPlayArena(b, state);
     else if (state.place === 'forecourt') await (await import('./playForecourt')).startPlayForecourt(b, state);
+    else if (state.place === 'lanterns') await (await import('./playLanterns')).startPlayLanterns(b, state);
     else await (await import('./playTown')).startPlayTown(b, state, note);
   } catch (e: any) {
     console.error(e);

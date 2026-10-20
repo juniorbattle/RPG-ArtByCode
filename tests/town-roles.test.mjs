@@ -151,3 +151,29 @@ test('« Explore the district » runs today\'s town path: main.ts\'s startTown i
     assert.equal(now.slice(now.indexOf('async function startArena'), now.indexOf('function startTown')), base.slice(base.indexOf('async function startArena'), base.indexOf('function startTown')), 'startArena is unchanged');
   }
 });
+
+test('Lantern Row (journal Passe L6): open at night only; the tavern\'s talk takes the evening; Cassius mocked, or named once the culprit is known', () => {
+  no(G.newGame(1842, 'Aster'), { type: 'move', to: 'lanterns' }, /sleeps until dusk/);
+  let st = ok(G.namedState('day1-evening'), { type: 'move', to: 'lanterns' });
+  assert.equal(st.place, 'lanterns');
+  const rel = st.competitors.cassius.relationships.player;
+  st = ok(st, { type: 'taunt' });
+  assert.equal(st.competitors.cassius.relationships.player, rel - 15);
+  no(st, { type: 'taunt' });
+  no(st, { type: 'confront' }, /no proof/);
+  const heard = ok(st, { type: 'listen' });
+  assert.deepEqual([heard.day, heard.slot], [2, 'morning']);
+  assert.ok(heard.facts.includes('tavern-talk'));
+  const known = structuredClone(st); known.flags['culprit-known'] = 'cassius';
+  const named = ok(known, { type: 'confront' });
+  assert.equal(named.competitors.cassius.reputation, known.competitors.cassius.reputation - 10);
+});
+
+test('the forecourt\'s walking atlas adds the hero\'s walk; without it the duel\'s atlas is unchanged', async () => {
+  const F = await load('/src/arena/FighterArt.ts');
+  const duel = F.buildArenaAtlas(1842, 5), walk = F.buildArenaAtlas(1842, 5, 'marek', true);
+  const keys = [...walk.atlas.frames.keys()].filter((k) => k.startsWith('ren/side/walk.'));
+  assert.ok(keys.length >= 4, `${keys.length} walk frames`);
+  assert.equal([...duel.atlas.frames.keys()].filter((k) => k.startsWith('ren/side/walk.')).length, 0);
+  assert.equal(duel.atlas.frameCount + keys.length, walk.atlas.frameCount);
+});

@@ -22,7 +22,10 @@ export type RoleAction =
   | { type: 'register' }
   | { type: 'heal' }
   | { type: 'spar' }
-  | { type: 'scout'; who: string };
+  | { type: 'scout'; who: string }
+  | { type: 'listen' }
+  | { type: 'taunt' }
+  | { type: 'confront' };
 
 export type ShopItem = 'whetstone' | 'salve' | 'imported-blade';
 export const ITEMS: Record<ShopItem, { name: string; price: number; about: string }> = {
@@ -197,6 +200,45 @@ export const ROLE_ACTIONS: T = {
       fact(s, `scouted:${a.who}`);
       const c = s.competitors[a.who]; if (c) c.relationships.player = clamp((c.relationships.player ?? 0) + (RIVALS[a.who].temper === 'proud' ? -5 : 2), -100, 100);
       emit({ kind: 'action', id: `scout:${a.who}`, cause: 'action:scout', text: `You watch ${RIVALS[a.who].name} drill for an hour: ${RIVALS[a.who].name === 'Marek Varn' ? 'he winds up his great blow for an age, and rests long after it' : 'her cuts come in strings of three to five, then she breathes'}.`, visible: true });
+    },
+  },
+  // ---------------------------------------------------------------- Lantern Row at night (journal Passe L6): the tavern's talk, House Dree
+  listen: {
+    by: 'lio',
+    list: (st) => (st.place === 'lanterns' ? [{ type: 'listen' }] : []),
+    label: () => 'Spend the evening on a tavern bench, listening (the rivals\' habits, some fame)',
+    cost: () => 1,
+    check: (st) => available(st, 'lio') ?? (st.flags[`listened:${st.day}`] ? 'You have heard tonight\'s talk.' : null),
+    apply: (s, _a, _r, emit) => {
+      s.flags[`listened:${s.day}`] = true; s.player.reputation = clamp(s.player.reputation + 3); fact(s, 'tavern-talk');
+      const hostile = (s.competitors.cassius?.relationships.player ?? 0) <= -25;
+      emit({ kind: 'action', id: 'listen', cause: 'action:listen', visible: true, text: hostile
+        ? 'Over the third ale a drunk docker brags that House Dree pays well for « a fire, or a fall ». The bench goes quiet when Cassius walks in.'
+        : 'The tavern talks of nothing but the pool: Marek rests long after his great blow, Vessa never stops cutting, Rhosk drinks alone. A few raise a cup to you.' });
+    },
+  },
+  taunt: {
+    by: 'cassius',
+    list: (st) => (st.place === 'lanterns' && !st.flags.taunted ? [{ type: 'taunt' }] : []),
+    label: () => 'Mock Cassius Dree before the tavern (fame, and a dangerous enemy)',
+    cost: () => 0,
+    check: (st) => available(st, 'cassius') ?? (st.flags.taunted ? 'Once was enough.' : null),
+    apply: (s, _a, _r, emit) => {
+      s.flags.taunted = true; s.player.reputation = clamp(s.player.reputation + 4);
+      const c = s.competitors.cassius; if (c) c.relationships.player = clamp((c.relationships.player ?? 0) - 15, -100, 100);
+      emit({ kind: 'action', id: 'taunt', cause: 'action:taunt', visible: true, text: 'You toast « the best purse in the pool, and the worst sword ». The tavern roars; Cassius Dree smiles, and does not forget.' });
+    },
+  },
+  confront: {
+    by: 'cassius',
+    list: (st) => (st.place === 'lanterns' && st.flags['culprit-known'] && !st.flags.confronted ? [{ type: 'confront' }] : []),
+    label: () => 'Name Cassius Dree as the forge\'s saboteur, before the whole tavern',
+    cost: () => 0,
+    check: (st) => available(st, 'cassius') ?? (!st.flags['culprit-known'] ? 'You have no proof.' : st.flags.confronted ? 'He has heard it.' : null),
+    apply: (s, _a, _r, emit) => {
+      s.flags.confronted = true; s.player.reputation = clamp(s.player.reputation + 5);
+      const c = s.competitors.cassius; if (c) c.reputation = clamp(c.reputation - 10);
+      emit({ kind: 'consequence', id: 'cassius-shamed', cause: 'action:confront', visible: true, text: 'You name him. The tavern turns its back on Cassius Dree; tomorrow the whole Cité will know who pays for fires.' });
     },
   },
 };
