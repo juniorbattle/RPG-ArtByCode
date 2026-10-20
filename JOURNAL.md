@@ -563,6 +563,31 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un canal se décrit dans ses deux sens avant d'être promis. Ici, l'un est un message, l'autre un fichier poussé, et le protocole se règle sur
   le sens le plus faible.
 
+## Passe L0 — Séance cloud « version jouable » : mise en route (2026-10-20)
+
+### Contrat de tâche (contrat projet § 11.3)
+- **Objectif** : un environnement cloud prêt et consigné ; le relais local éprouvé ; `main` validé tel quel.
+- **Entrées** : `main` `d129433` ; le brief `briefs/cloud-session-playable-brief.md`, le plan v4 et les trois contrats de `contracts/`.
+- **Fichiers autorisés** : `JOURNAL.md`, `briefs/local-requests/`. **Interdits** : tout le reste (aucun code ne change).
+- **Outputs** : la requête `000-handshake`, cette passe.
+- **Critères d'acceptation** : `npm ci`, typecheck, `npm test`, build, `art:validate` verts ; `art:doctor` lu ; Chrome trouvé ou absent, dit ;
+  une capture de fumée de `main` et son témoin de répétition (0 px).
+- **Tests** : ceux du dépôt, inchangés. **Risques** : SwiftShader lent ; le relais sans réponse (repli : la séance continue sans lui).
+- **Définition de terminé** : l'environnement consigné ici (machine, Node, navigateur, temps de démarrage logiciel), la requête poussée.
+
+### Environnement — [OK]
+- Conteneur Linux x64, 4 cœurs, 15 Go de mémoire, sans GPU. Node v22.22.0, npm 10.9.4. Branche imposée : `claude/pensive-pasteur-lbz4ji`.
+- `npm ci` ; typecheck ; `npm test` **103 / 103** (14 s) ; build ; `art:validate` (18 manifestes, 21 sources, 0 erreur).
+- `art:doctor` : Aseprite absent (état attendu), aucune intégration d'agent.
+- **Chrome** : le Chromium 141 de Playwright, préinstallé (`/opt/pw-browsers/chromium`). Un enveloppeur hors dépôt
+  (`exec /opt/pw-browsers/chromium --no-sandbox "$@"`) sert de `CHROME_PATH`, avec `CHROME_ARGS=--use-angle=swiftshader` (comme en Passe T1).
+- **Copie figée de `main`** : `git -c core.autocrlf=false archive d129433` dans le dossier de travail de la séance, `node_modules/three` copié,
+  servie sur :5187 par le Vite du dépôt avec une config hors dépôt sans import (`vite.config.ts` de la copie ne trouve pas `vite` hors du
+  dépôt).
+
+### Relais local
+- Requête `briefs/local-requests/000-handshake.md` poussée (type « autre ») : l'état de la machine locale (Aseprite, clé OpenAI, GPU).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
