@@ -621,6 +621,29 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un test qui compare un fichier du disque avec `git show` compare aussi les fins de ligne ; il se normalise des deux côtés. La CI Linux ne
   le voit pas, la machine Windows de l'opérateur si.
 
+## Passe L7b — Retour de la séance cloud à la séance parente (2026-10-20)
+
+### Demande, mot pour mot
+- Opérateur, à la séance cloud : « feeback a  la session parente ».
+- Branche `claude/pensive-pasteur-lbz4ji` recréée depuis `main` (`8ce21e5`, la Passe Q3 de la séance parente).
+
+### Fait — [OK]
+- La séance parente n'est pas joignable : aucune autre séance n'est atteignable d'ici, et une séance cloud n'écrit à aucune séance
+  (`AGENTS.md`). Le retour est donc un fichier versionné : `briefs/cloud-session-playable-feedback.md`. Il contient :
+  - l'état remis ;
+  - ce qui reste ouvert pour une séance locale (les requêtes `000` / `001`, à traiter sur `main` puisque la séance cloud a fini) ;
+  - la leçon de la Passe Q3 ;
+  - un retour sur le plan et le brief, pour la prochaine séance cloud : ce qui a marché, ce qui a coûté du temps (SwiftShader, le crochet de
+    fin de tour, les contrôles vivants en logiciel, l'écran titre contre les outils, le relais muet) et ce qu'il faudrait ajouter au brief.
+- Vérifié pour ce retour : aucun autre test de la séance ne compare un fichier du disque avec `git show`. Les autres lectures du disque
+  (`tests/game-core.test.mjs`) cherchent des motifs, indifférents aux fins de ligne, et la Passe Q3 compte 148 / 148 sous Windows.
+
+### Preuves
+- Documentation seule : typecheck, `npm test` 148 / 148, build, `art:validate`.
+
+### Pensée
+- Un retour à une séance qu'on ne peut pas joindre va là où elle lit déjà : le dépôt, à côté du brief qui l'a lancée.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
