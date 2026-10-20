@@ -24,9 +24,116 @@
   dessin, les triangles, les tours signalés par le témoin de contention) ; la date et l'heure de la mesure.
 - Repli si elle n'aboutit pas : le bilan (Passe L7) donne les compteurs mesurés dans le cloud (appels de dessin, triangles, lumières, coût de
   `advance` en Node) et inscrit les temps GPU comme à mesurer sur la machine de l'opérateur, avec cette commande.
-- Statut : répondue (2026-10-20, séance locale, Passe Q4)
+- Statut : répondue (2026-10-20, séance locale, Passe Q4 ; remesure sans Firefox, Passe Q4b)
 
 ## Réponse
+### Remesure, Firefox arrêté : 1920 × 1080 et cadence (2026-10-20, 17 h 16 - 17 h 25, Passe Q4b)
+- L'opérateur : « Firefox est fermé : refais la série 001 en 1080p (et la cadence) avec le témoin, puis mets à jour la réponse et le journal. »
+  Le processus `firefox` 10840 tournait encore (30 % de la 780M à 16 h 59) ; à la question posée, l'opérateur a choisi « Arrête-le (PID
+  10840) ». Il a été arrêté seul (`Stop-Process -Id 10840`, nom et heure de lancement revérifiés juste avant) ; il n'est plus reparu.
+- **Autre contention, plus courte** : pendant la remesure, une autre séance (projet RPGCards) lançait des Chrome sans fenêtre, par à-coups
+  jusqu'à 94 % de la 780M. Un journal complet du témoin (166 échantillons) dit, tour par tour, lesquels sont **vraiment calmes** (aucun autre
+  programme au-dessus de 5 % pendant le tour) ; le minimum des tours reste l'estimation sans contention pour les autres pages.
+- Même serveur, même commande, 5 tours ; aucun onglet du jeu ouvert ; série et cadence en arrière-plan, attendues jusqu'au bout.
+
+| 1920 × 1080 | tours calmes | minimum | écart à la nuit B (minimum) | médiane des 5 tours [min-max] | sous le seuil de 15 % |
+|---|---|---|---|---|---|
+| night-B | 10,72 ; 10,57 | 10,57 | — | 13,03 [10,57-14,38] | 2 / 5 |
+| play-morning | 8,74 | 8,74 | −17 % | 11,20 [8,74-11,46] | 4 / 5 |
+| play-midday | 9,08 | 9,08 | −14 % | 9,47 [9,08-11,56] | 1 / 5 |
+| play-dusk | — | 9,42 | −11 % | 9,98 [9,42-11,97] | 2 / 5 |
+| play-bout | — | 9,82 | −7 % | 11,04 [9,82-11,85] | 1 / 5 |
+| play-forecourt | 9,19 | 9,02 | −15 % | 9,34 [9,02-14,09] | 3 / 5 |
+| play-lanterns | 9,30 | 9,30 | −12 % | 9,89 [9,30-11,65] | 1 / 5 |
+| arena | — | 9,24 | −13 % | 10,69 [9,24-13,21] | 2 / 5 |
+
+- **La nuit par défaut retrouve la Passe G1** : 10,57 et 10,72 ms sur ses deux tours calmes, contre 10,81 [9,88-10,95] à la Passe G1 ; dans
+  les 10-12 ms de la Passe 6. L'excès de +3 ms de la première mesure était bien la contention de Firefox.
+- **Les pages du mode jouable tiennent le budget** : 8,74 à 9,30 ms sur leurs tours calmes (matin, midi, parvis, Lantern Row), 9,24 à 9,82 ms
+  de minimum pour les trois autres (fin de journée, duel, arène) ; toutes sous la nuit par défaut (−7 à −17 % sur les minima). L'arène :
+  9,24 ms, contre 9,30 à la Passe G1.
+- L'estimation de la première mesure (9,4 à 10,6 ms) était un peu haute.
+- **Cadence** (`max`, plafond `a60`) : **55,0 images/s, 3 vsyncs 100 %, aucun changement de pas**, sur la nuit B et les trois pages de jeu, aux
+  deux tours, même pendant les à-coups de l'autre séance (signalés par le témoin) ; SoC 30,5 à 39,4 W. C'est le cas calme de la Passe 6h.
+- Non refait : la série 2560 × 1440 et le démarrage (ci-dessous, sous Firefox) ; le démarrage ne dépend guère du GPU partagé.
+
+**Série 1920 × 1080, 5 tours, Firefox arrêté** :
+
+```
+start 2026-10-20 17:16:08 -0400
+[r1] night-B                  1920x1080 MSAA4  GPU 10.72  (p95 13.20) [scene 6.81 | air 0.56 | dof 1.05 | bloom 1.03 | grade 0.37 | reflection 0.90]  frame p50 10.8  js upd 0.42 ren 10.04  draws 107  tris 211.1k  lights 24/24
+[r1] play-morning             1920x1080 MSAA4  GPU 9.85  (p95 12.03) [scene 6.58 | air 0.52 | dof 0.94 | bloom 0.63 | grade 0.36 | reflection 0.82]  frame p50 8.9  js upd 0.42 ren 9.16  draws 107  tris 213.2k  lights 4/24
+[r1] play-midday              1920x1080 MSAA4  GPU 9.08  (p95 10.75) [scene 6.01 | air 0.47 | dof 0.94 | bloom 0.56 | grade 0.35 | reflection 0.76]  frame p50 8.6  js upd 0.44 ren 8.43  draws 107  tris 213.2k  lights 4/24
+[r1] play-dusk                1920x1080 MSAA4  GPU 9.42  (p95 14.43) [scene 6.10 | air 0.55 | dof 0.94 | bloom 0.70 | grade 0.32 | reflection 0.81]  frame p50 8.0  js upd 0.41 ren 8.80  draws 107  tris 213.2k  lights 4/24
+[r1] play-bout                1920x1080        GPU 11.82* (p95 16.50) [reflection 1.34 | scene 7.28 | air 0.64 | dof 0.93 | bloom 1.27 | grade 0.35]  frame p50 10.4  js upd 0.33 ren 11.51  draws 92  tris 133.3k  lights 21/23  foreign chrome:23108:30%,chrome:23108:22%
+[r1] play-forecourt           1920x1080        GPU 14.09* (p95 19.40) [scene 8.62 | air 0.71 | dof 1.10 | bloom 1.16 | grade 0.36 | reflection 2.14]  frame p50 13.6  js upd 0.32 ren 13.99  draws 92  tris 133.3k  lights 21/23  foreign chrome:23108:35%,chrome:23108:34%
+[r1] play-lanterns            1920x1080        GPU 11.65* (p95 16.34) [scene 7.30 | air 0.66 | dof 1.23 | bloom 1.14 | grade 0.30 | reflection 1.02]  frame p50 11.8  js upd 0.08 ren 11.47  draws 106  tris 188.5k  lights 12/12  foreign chrome:23108:32%,chrome:23108:21%
+[r1] arena                    1920x1080        GPU 13.21* (p95 17.42) [reflection 1.77 | scene 7.86 | air 0.72 | dof 0.98 | bloom 1.52 | grade 0.35]  frame p50 11.6  js upd 0.47 ren 12.77  draws 92  tris 133.3k  lights 21/23  foreign chrome:23108:32%,chrome:23108:31%,chrome:23108:28%
+[r2] night-B                  1920x1080 MSAA4  GPU 10.57  (p95 12.63) [scene 6.97 | air 0.51 | dof 0.99 | bloom 0.94 | grade 0.34 | reflection 0.83]  frame p50 9.9  js upd 0.57 ren 9.50  draws 107  tris 211.1k  lights 24/24
+[r2] play-morning             1920x1080 MSAA4  GPU 11.20  (p95 17.57) [scene 7.06 | air 0.67 | dof 0.97 | bloom 1.12 | grade 0.32 | reflection 1.05]  frame p50 11.6  js upd 0.44 ren 10.52  draws 107  tris 213.2k  lights 4/24
+[r2] play-midday              1920x1080 MSAA4  GPU 11.56* (p95 16.69) [bloom 1.10 | grade 0.34 | reflection 1.08 | scene 7.41 | air 0.64 | dof 0.99]  frame p50 11.0  js upd 0.46 ren 10.90  draws 107  tris 213.2k  lights 4/24  foreign chrome:30052:30%
+[r2] play-dusk                1920x1080 MSAA4  GPU 11.97* (p95 15.86) [air 0.73 | dof 0.96 | bloom 1.13 | grade 0.33 | reflection 1.39 | scene 7.43]  frame p50 12.0  js upd 0.43 ren 11.59  draws 107  tris 213.2k  lights 4/24  foreign chrome:30052:32%,chrome:30052:28%
+[r2] play-bout                1920x1080        GPU 11.85* (p95 15.78) [scene 7.38 | air 0.67 | dof 0.94 | bloom 1.22 | grade 0.36 | reflection 1.29]  frame p50 10.5  js upd 0.32 ren 11.53  draws 92  tris 133.3k  lights 21/23  foreign chrome:30052:23%,chrome:30052:30%
+[r2] play-forecourt           1920x1080        GPU 9.02  (p95 10.29) [reflection 0.68 | scene 5.92 | air 0.48 | dof 0.97 | bloom 0.65 | grade 0.33]  frame p50 9.3  js upd 0.39 ren 8.24  draws 92  tris 133.3k  lights 21/23
+[r2] play-lanterns            1920x1080        GPU 9.89* (p95 14.59) [scene 6.17 | air 0.52 | dof 1.17 | bloom 0.99 | grade 0.30 | reflection 0.74]  frame p50 10.6  js upd 0.08 ren 9.54  draws 106  tris 188.5k  lights 12/12  foreign chrome:12192:29%
+[r2] arena                    1920x1080        GPU 10.48* (p95 15.60) [bloom 1.08 | grade 0.33 | reflection 1.06 | scene 6.56 | air 0.51 | dof 0.94]  frame p50 9.5  js upd 0.45 ren 9.84  draws 92  tris 133.3k  lights 21/23  foreign chrome:12192:30%
+[r3] night-B                  1920x1080 MSAA4  GPU 13.03* (p95 17.22) [reflection 1.54 | scene 8.12 | air 0.81 | dof 0.92 | bloom 1.30 | grade 0.34]  frame p50 13.6  js upd 0.49 ren 12.52  draws 107  tris 211.1k  lights 24/24  foreign chrome:12192:25%
+[r3] play-morning             1920x1080 MSAA4  GPU 11.46* (p95 15.32) [scene 7.06 | air 0.70 | dof 0.94 | bloom 1.02 | grade 0.30 | reflection 1.43]  frame p50 11.3  js upd 0.41 ren 11.13  draws 107  tris 213.2k  lights 4/24  foreign chrome:12192:28%,chrome:12192:25%
+[r3] play-midday              1920x1080 MSAA4  GPU 9.47* (p95 14.47) [bloom 0.71 | grade 0.34 | reflection 0.83 | scene 6.13 | air 0.50 | dof 0.96]  frame p50 8.5  js upd 0.47 ren 8.78  draws 107  tris 213.2k  lights 4/24  foreign chrome:12192:28%
+[r3] play-dusk                1920x1080 MSAA4  GPU 10.23* (p95 14.57) [scene 6.60 | air 0.53 | dof 0.94 | bloom 0.80 | grade 0.33 | reflection 1.04]  frame p50 9.5  js upd 0.46 ren 9.62  draws 107  tris 213.2k  lights 4/24  foreign chrome:12192:28%,chrome:12192:16%
+[r3] play-bout                1920x1080        GPU 11.04* (p95 15.41) [scene 6.88 | air 0.61 | dof 0.99 | bloom 1.02 | grade 0.31 | reflection 1.22]  frame p50 10.1  js upd 0.32 ren 10.59  draws 92  tris 133.3k  lights 21/23  foreign chrome:12192:27%
+[r3] play-forecourt           1920x1080        GPU 12.00* (p95 16.28) [scene 7.50 | air 0.69 | dof 0.96 | bloom 1.24 | grade 0.32 | reflection 1.29]  frame p50 11.0  js upd 0.40 ren 11.67  draws 92  tris 133.3k  lights 21/23  foreign chrome:12192:31%,chrome:12192:25%
+[r3] play-lanterns            1920x1080        GPU 9.39* (p95 11.97) [scene 5.88 | air 0.51 | dof 1.17 | bloom 0.83 | grade 0.29 | reflection 0.70]  frame p50 11.1  js upd 0.09 ren 8.95  draws 106  tris 188.5k  lights 12/12  foreign chrome:12192:22%
+[r3] arena                    1920x1080        GPU 10.69  (p95 15.31) [grade 0.31 | reflection 0.96 | scene 6.62 | air 0.59 | dof 0.96 | bloom 1.24]  frame p50 9.3  js upd 0.49 ren 9.95  draws 92  tris 133.3k  lights 21/23
+[r4] night-B                  1920x1080 MSAA4  GPU 13.40* (p95 17.45) [bloom 1.39 | grade 0.32 | reflection 1.60 | scene 8.46 | air 0.71 | dof 0.93]  frame p50 12.1  js upd 0.46 ren 12.83  draws 107  tris 211.1k  lights 24/24  foreign chrome:4872:26%,chrome:4872:29%
+[r4] play-morning             1920x1080 MSAA4  GPU 8.74  (p95 9.72) [scene 5.85 | air 0.44 | dof 0.91 | bloom 0.51 | grade 0.31 | reflection 0.72]  frame p50 7.9  js upd 0.39 ren 8.08  draws 107  tris 213.2k  lights 4/24
+[r4] play-midday              1920x1080 MSAA4  GPU 9.18* (p95 14.80) [scene 5.95 | air 0.51 | dof 0.94 | bloom 0.63 | grade 0.33 | reflection 0.81]  frame p50 8.5  js upd 0.44 ren 8.49  draws 107  tris 213.2k  lights 4/24  foreign chrome:4872:17%
+[r4] play-dusk                1920x1080 MSAA4  GPU 9.98* (p95 14.79) [reflection 0.98 | scene 6.42 | air 0.52 | dof 0.94 | bloom 0.78 | grade 0.35]  frame p50 9.5  js upd 0.45 ren 9.46  draws 107  tris 213.2k  lights 4/24  foreign chrome:4872:25%
+[r4] play-bout                1920x1080        GPU 10.27* (p95 15.11) [reflection 1.07 | scene 6.55 | air 0.53 | dof 0.97 | bloom 0.83 | grade 0.32]  frame p50 10.3  js upd 0.32 ren 9.78  draws 92  tris 133.3k  lights 21/23  foreign chrome:4872:29%
+[r4] play-forecourt           1920x1080        GPU 9.34  (p95 11.27) [reflection 0.72 | scene 6.15 | air 0.49 | dof 0.97 | bloom 0.68 | grade 0.33]  frame p50 9.3  js upd 0.37 ren 8.45  draws 92  tris 133.3k  lights 21/23
+[r4] play-lanterns            1920x1080        GPU 11.33* (p95 16.00) [scene 6.87 | air 0.75 | dof 1.20 | bloom 1.14 | grade 0.29 | reflection 1.08]  frame p50 11.8  js upd 0.09 ren 11.32  draws 106  tris 188.5k  lights 12/12  foreign chrome:10288:25%,chrome:10288:16%
+[r4] arena                    1920x1080        GPU 11.12* (p95 16.24) [scene 6.83 | air 0.62 | dof 0.94 | bloom 1.28 | grade 0.35 | reflection 1.10]  frame p50 8.9  js upd 0.53 ren 10.27  draws 92  tris 133.3k  lights 21/23  foreign chrome:10288:28%
+[r5] night-B                  1920x1080 MSAA4  GPU 14.38* (p95 23.51) [reflection 1.67 | scene 8.93 | air 0.67 | dof 0.92 | bloom 1.85 | grade 0.32]  frame p50 13.6  js upd 0.49 ren 13.97  draws 107  tris 211.1k  lights 24/24  foreign chrome:10288:30%,chrome:10288:33%
+[r5] play-morning             1920x1080 MSAA4  GPU 11.34  (p95 18.29) [scene 7.42 | air 0.63 | dof 1.03 | bloom 0.85 | grade 0.36 | reflection 1.05]  frame p50 9.6  js upd 0.66 ren 10.33  draws 107  tris 213.2k  lights 4/24
+[r5] play-midday              1920x1080 MSAA4  GPU 10.55* (p95 15.85) [air 0.59 | dof 0.97 | bloom 0.73 | grade 0.35 | reflection 1.05 | scene 6.85]  frame p50 9.2  js upd 0.65 ren 9.69  draws 107  tris 213.2k  lights 4/24  foreign chrome:10288:20%
+[r5] play-dusk                1920x1080 MSAA4  GPU 9.71  (p95 12.29) [air 0.55 | dof 1.00 | bloom 0.67 | grade 0.36 | reflection 0.72 | scene 6.40]  frame p50 7.6  js upd 0.61 ren 8.81  draws 107  tris 213.2k  lights 4/24
+[r5] play-bout                1920x1080        GPU 9.82  (p95 11.74) [bloom 0.85 | grade 0.34 | reflection 0.78 | scene 6.34 | air 0.53 | dof 0.98]  frame p50 9.4  js upd 0.41 ren 9.09  draws 92  tris 133.3k  lights 21/23
+[r5] play-forecourt           1920x1080        GPU 9.19  (p95 11.30) [dof 0.94 | bloom 0.73 | grade 0.33 | reflection 0.71 | scene 6.00 | air 0.48]  frame p50 9.5  js upd 0.40 ren 8.46  draws 92  tris 133.3k  lights 21/23
+[r5] play-lanterns            1920x1080        GPU 9.30  (p95 10.76) [scene 5.85 | air 0.50 | dof 1.16 | bloom 0.83 | grade 0.29 | reflection 0.66]  frame p50 10.8  js upd 0.11 ren 8.87  draws 106  tris 188.5k  lights 12/12
+[r5] arena                    1920x1080        GPU 9.24  (p95 10.93) [scene 5.87 | air 0.47 | dof 0.91 | bloom 0.96 | grade 0.32 | reflection 0.72]  frame p50 8.7  js upd 0.55 ren 8.38  draws 92  tris 133.3k  lights 21/23
+
+adapter: ANGLE (AMD, AMD Radeon 780M Graphics (0x00001900) Direct3D11 vs_5_0 ps_5_0, D3D11)  (contention witness on, GPU process 13216, threshold 15 %)
+=== over rounds: median [min-max], clean = median of the rounds without foreign GPU use ===
+night-B                  1920x1080 MSAA4  GPU 13.03 [10.57-14.38] clean 10.72 (2/5) [scene 6.97 | air 0.56 | dof 1.05 | bloom 1.03 | grade 0.37 | reflection 0.90]  js upd 0.49 ren 12.52  draws 107  tris 211.1k  tex 51 (188 MB)  lights 24/24  gen 405 ms  {"set":"B","level":26,"parts":738,"tier3":330,"classes":36,"trisKept":98902,"trisTier3":25272,"bakeMs":14,"bakeCache":"hit","bakeKeyMs":12,"poses":329,"lightsOnScreen":24,"lightsCulled":0,"frame":1.7778,"bakePages":19,"bakeTargetMB":37.7}
+play-morning             1920x1080 MSAA4  GPU 11.20 [8.74-11.46] clean 11.20 (4/5) [scene 7.06 | air 0.63 | dof 0.97 | bloom 0.85 | grade 0.36 | reflection 1.05]  js upd 0.42 ren 10.33  draws 107  tris 213.2k  tex 51 (188 MB)  lights 4/24  gen 419 ms  {"set":"B","level":26,"parts":738,"tier3":330,"classes":36,"trisKept":99930,"trisTier3":25272,"bakeMs":18,"bakeCache":"hit","bakeKeyMs":16.1,"poses":329,"lightsOnScreen":4,"lightsCulled":0,"frame":1.7778,"bakePages":19,"bakeTargetMB":37.7}
+play-midday              1920x1080 MSAA4  GPU 9.47 [9.08-11.56] clean 9.08 (1/5) [scene 6.01 | air 0.47 | dof 0.94 | bloom 0.56 | grade 0.35 | reflection 0.76]  js upd 0.46 ren 8.78  draws 107  tris 213.2k  tex 51 (188 MB)  lights 4/24  gen 361 ms  {"set":"B","level":26,"parts":738,"tier3":330,"classes":36,"trisKept":99930,"trisTier3":25272,"bakeMs":21,"bakeCache":"hit","bakeKeyMs":18.4,"poses":329,"lightsOnScreen":4,"lightsCulled":0,"frame":1.7778,"bakePages":19,"bakeTargetMB":37.7}
+play-dusk                1920x1080 MSAA4  GPU 9.98 [9.42-11.97] clean 9.71 (2/5) [scene 6.40 | air 0.55 | dof 1.00 | bloom 0.70 | grade 0.36 | reflection 0.81]  js upd 0.45 ren 9.46  draws 107  tris 213.2k  tex 51 (188 MB)  lights 4/24  gen 377 ms  {"set":"B","level":26,"parts":738,"tier3":330,"classes":36,"trisKept":99930,"trisTier3":25272,"bakeMs":19,"bakeCache":"hit","bakeKeyMs":17.1,"poses":329,"lightsOnScreen":4,"lightsCulled":0,"frame":1.7778,"bakePages":19,"bakeTargetMB":37.7}
+play-bout                1920x1080        GPU 11.04 [9.82-11.85] clean 9.82 (1/5) [reflection 0.78 | scene 6.34 | air 0.53 | dof 0.98 | bloom 0.85 | grade 0.34]  js upd 0.32 ren 10.59  draws 92  tris 133.3k  tex 47 (198 MB)  lights 21/23  gen 207 ms
+play-forecourt           1920x1080        GPU 9.34 [9.02-14.09] clean 9.19 (3/5) [scene 6.00 | air 0.48 | dof 0.97 | bloom 0.68 | grade 0.33 | reflection 0.71]  js upd 0.39 ren 8.46  draws 92  tris 133.3k  tex 47 (195 MB)  lights 21/23  gen 318 ms
+play-lanterns            1920x1080        GPU 9.89 [9.30-11.65] clean 9.30 (1/5) [scene 5.85 | air 0.50 | dof 1.16 | bloom 0.83 | grade 0.29 | reflection 0.66]  js upd 0.09 ren 9.54  draws 106  tris 188.5k  tex - (- MB)  lights 12/12  gen 172 ms
+arena                    1920x1080        GPU 10.69 [9.24-13.21] clean 10.69 (2/5) [reflection 0.96 | scene 6.62 | air 0.59 | dof 0.96 | bloom 1.24 | grade 0.32]  js upd 0.49 ren 9.95  draws 92  tris 133.3k  tex 47 (195 MB)  lights 21/23  gen 201 ms
+end 2026-10-20 17:21:45 -0400
+```
+
+**Cadence, Firefox arrêté** :
+
+```
+start 2026-10-20 17:22:40 -0400
+display: vsync 6.100 ms (163.9 Hz), idle-page interval p5 6.00 / p95 6.20 ms
+[1] idle page          pkg 19.8 W  soc 0.3 W
+[1] night-B            2560x1267 MSAA4 (1463x724@1.75)  55.0 fps  interval p50 18.20 p95 18.80 max 19.8 ms  vsyncs 1/2/3/4/5+ 0/0/100/0/0 %  irregular 0.0 %  rAF without render 881/1322  GPU busy 88 % [87,89,88,87]  pkg 56.5 W  soc 35.2 W  cap a60 every 3 vsync 6.1 (probe) steps 0 trials undone 0 []  foreign chrome:24768:18%
+[1] play-morning       2560x1267 MSAA4 (1463x724@1.75)  55.0 fps  interval p50 18.20 p95 19.10 max 20.6 ms  vsyncs 1/2/3/4/5+ 0/0/100/0/0 %  irregular 0.0 %  rAF without render 2205/2646  GPU busy 80 % [80,80,79,81]  pkg 51.1 W  soc 30.7 W  cap a60 every 3 vsync 6.1 (probe) steps 0 trials undone 0 []  foreign chrome:24768:17%
+[1] play-midday        2560x1267 MSAA4 (1463x724@1.75)  55.0 fps  interval p50 18.20 p95 18.80 max 20.6 ms  vsyncs 1/2/3/4/5+ 0/0/100/0/0 %  irregular 0.0 %  rAF without render 2205/2646  GPU busy 87 % [87,84,86,89]  pkg 53.7 W  soc 31.4 W  cap a60 every 3 vsync 6.1 (probe) steps 0 trials undone 0 []
+[1] play-dusk          2560x1267 MSAA4 (1463x724@1.75)  55.0 fps  interval p50 18.20 p95 18.90 max 22.8 ms  vsyncs 1/2/3/4/5+ 0/0/100/0/0 %  irregular 0.5 %  rAF without render 2204/2644  GPU busy 90 % [88,90,90,90]  pkg 52.5 W  soc 34.3 W  cap a60 every 3 vsync 6.1 (probe) steps 0 trials undone 0 []  foreign chrome:32196:26%,chrome:32196:28%,chrome:32196:30%
+[2] idle page          pkg 12.7 W  soc 3.4 W
+[2] night-B            2560x1267 MSAA4 (1463x724@1.75)  55.0 fps  interval p50 18.20 p95 18.60 max 22.7 ms  vsyncs 1/2/3/4/5+ 0/0/100/0/0 %  irregular 0.5 %  rAF without render 880/1321  GPU busy 95 % [95,95,96]  pkg 57.5 W  soc 39.4 W  cap a60 every 3 vsync 6.1 (probe) steps 0 trials undone 0 []  foreign chrome:32196:28%,chrome:32196:21%,chrome:32196:30%,chrome:32196:19%
+[2] play-morning       2560x1267 MSAA4 (1463x724@1.75)  55.0 fps  interval p50 18.20 p95 18.70 max 25.7 ms  vsyncs 1/2/3/4/5+ 0/0/100/0/0 %  irregular 0.2 %  rAF without render 2200/2640  GPU busy 90 % [90,90,88]  pkg 50.8 W  soc 33.0 W  cap a60 every 3 vsync 6 (probe) steps 0 trials undone 0 []  foreign chrome:32196:26%,chrome:32196:35%,chrome:32196:16%,chrome:32196:17%
+[2] play-midday        2560x1267 MSAA4 (1463x724@1.75)  55.0 fps  interval p50 18.20 p95 18.80 max 25.2 ms  vsyncs 1/2/3/4/5+ 0/0/100/0/0 %  irregular 0.5 %  rAF without render 2192/2632  GPU busy 91 % [87,92,91,88]  pkg 55.5 W  soc 30.5 W  cap a60 every 3 vsync 6.1 (probe) steps 0 trials undone 0 []  foreign chrome:39660:17%,chrome:39660:20%,chrome:39660:26%
+[2] play-dusk          2560x1267 MSAA4 (1463x724@1.75)  55.0 fps  interval p50 18.20 p95 18.90 max 20.7 ms  vsyncs 1/2/3/4/5+ 0/0/100/0/0 %  irregular 0.0 %  rAF without render 2203/2644  GPU busy 82 % [82,83,81,82]  pkg 53.2 W  soc 31.8 W  cap a60 every 3 vsync 6.1 (probe) steps 0 trials undone 0 []  foreign chrome:39660:34%,chrome:39660:30%
+end 2026-10-20 17:25:02 -0400
+```
+
+### Première mesure, sous la contention de Firefox (16 h 29 - 16 h 49, Passe Q4)
 Séance locale, sur la machine de l'opérateur, le **2026-10-20 entre 16 h 29 et 16 h 49 (UTC−4)**, Passe Q4 du journal. Code mesuré :
 `main` `94aa82f` (même code de jeu que `7b7a966` et que le commit de cette requête), branche de tâche `relay-gpu-q4`.
 

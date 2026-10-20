@@ -532,6 +532,52 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   13 % d'un autre programme. Un journal complet du témoin pendant la série le montre ; la comparaison entrelacée reste, les temps absolus non.
 - Un outil étendu à une page nouvelle s'essaie jusqu'à sa dernière ligne, résumé compris, avant de partir au relais.
 
+## Passe Q4b — Requête `001` : la série 1080p et la cadence remesurées, Firefox arrêté (2026-10-20)
+
+### Demande, mot pour mot
+- Opérateur : « Firefox est fermé : refais la série 001 en 1080p (et la cadence) avec le témoin, puis mets à jour la réponse et le journal. »
+- Branche `relay-gpu-q4b` depuis `main` (`aeefedd`).
+
+### Constat — [KO → réglé avec l'opérateur] le Firefox « fermé » tournait encore
+- Le témoin, avant la série (16 h 59) : le processus `firefox` 10840 (lancé le 19/10 à 8 h 12) toujours vivant, à 30 % de la 780M.
+- Question posée ; réponse de l'opérateur : « Arrête-le (PID 10840) ». Arrêté seul (`Stop-Process -Id 10840`), après avoir revérifié son nom et
+  son heure de lancement ; il n'est plus reparu au témoin.
+- Une autre séance (projet RPGCards, en cours) lançait des Chrome sans fenêtre, par à-coups jusqu'à 94 % de la 780M. Non touchée ; un journal
+  complet du témoin (166 échantillons) dit quels tours sont **vraiment calmes** (aucun autre programme au-dessus de 5 % pendant le tour).
+
+### Mesures — [OK]
+- Même serveur DEV (:5186), même commande, 5 tours, aucun onglet du jeu ouvert, série et cadence attendues jusqu'au bout.
+
+| 1920 × 1080 | tours calmes | minimum des 5 tours | écart à la nuit B (minimum) |
+|---|---|---|---|
+| nuit B | 10,72 ; 10,57 | 10,57 | — |
+| jeu, matin | 8,74 | 8,74 | −17 % |
+| jeu, midi | 9,08 | 9,08 | −14 % |
+| jeu, fin de journée | — | 9,42 | −11 % |
+| duel | — | 9,82 | −7 % |
+| parvis | 9,19 | 9,02 | −15 % |
+| Lantern Row | 9,30 | 9,30 | −12 % |
+| arène par défaut | — | 9,24 | −13 % |
+
+- **La nuit par défaut retrouve la Passe G1** (10,81 [9,88-10,95]) et la fourchette de la Passe 6 (10-12 ms) : les +3 ms de la Passe Q4 étaient
+  la contention de Firefox.
+- **Les pages du mode jouable tiennent le budget** : 8,7 à 9,8 ms en 1080p, toutes sous la nuit par défaut. L'arène : 9,24 ms (9,30 à la Passe
+  G1). L'estimation de la Passe Q4 (9,4 à 10,6 ms) était un peu haute.
+- **Cadence** (`tools/cadence.mjs`, `max`, `a60`) : **55,0 images/s, 3 vsyncs 100 %, aucun changement de pas**, nuit B et trois pages de jeu,
+  deux tours ; SoC 30,5 à 39,4 W. C'est le cas calme de la Passe 6h (55,0 images/s à 3 vsyncs), contre 37-44 images/s sous Firefox.
+- Les sorties complètes sont en tête de la réponse de `briefs/local-requests/001-gpu-budget.md`, la première mesure gardée dessous.
+
+### Validation
+- typecheck, `npm test` **148 / 148**, build, `art:validate`.
+
+### Restes [?]
+- Non refaits au calme : la série 2560 × 1440 (Passe Q4 : 19,8 à 20,8 ms pour les pages du jeu, sous Firefox) et le démarrage.
+- Trois pages sans tour calme (fin de journée, duel, arène) : leur minimum est une borne haute.
+
+### Pensée
+- Une fenêtre fermée ne prouve pas un programme arrêté : un processus du navigateur peut rester vivant et tenir le GPU. Le témoin se relit
+  juste avant la série, pas sur la parole d'un « c'est fermé ».
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -547,8 +593,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 **0b. Version jouable — séance cloud (Passes N1 à N4, puis L0 à L7)** : plan v4 `briefs/cloud-session-playable.md`, brief
   `briefs/cloud-session-playable-brief.md`, contrats dans `contracts/`. **Séance close** : lots L0 à L7 fusionnés dans `main` ; bilan, mesures,
   décisions préparées et écarts E1 à E30 : **Passe L7**. Ouverts :
-  - les requêtes au relais `000-handshake` et `001-gpu-budget` : répondues (Passe Q4) ; chaque page du jeu coûte au plus la nuit par défaut
-    dans la même série, mais sous la contention d'un Firefox (13-38 % de la 780M) : les temps absolus restent à remesurer Firefox fermé ;
+  - les requêtes au relais `000-handshake` et `001-gpu-budget` : répondues (Passes Q4, Q4b) ; au calme, les pages du jeu font 8,7 à 9,8 ms en
+    1080p, sous la nuit par défaut (10,6 ms), et la cadence tient 55 images/s ; restent à refaire au calme la série 2560 × 1440 et le démarrage ;
   - la revue en jeu de l'opérateur (ressenti, équilibrage : le kit du joueur domine, Passe L2) ;
   - les six décisions de la Passe L7 (Vessa générée, l'arène de nuit à toute heure, Lantern Row maquette, l'équilibrage, l'écran titre caché
     aux navigateurs pilotés, le jour par défaut) ;
@@ -655,7 +701,7 @@ ralentit à l'écran ; le suivi le long des axes de la caméra n'y change rien) 
 **6. Performances GPU (Passes 6 à 6k, plan P0-P9 terminé, tout accepté et fusionné)** — Restent [?] : la cause du ralentissement des
 rappels rAF de la passe 6j (ni charge CPU ni charge GPU ; hypothèse : rafraîchissement dynamique de l'écran ou du pilote) ; une lecture de
 vsync trop **basse** n'est pas corrigée par le contrôle en session (jamais observée). Non mesuré : autres navigateurs / GPU, cache de
-shaders d'un profil persistant, 780M sans contention (fenêtre calme, témoin à l'appui). Écartés (mesurés, Passe 6) : pré-passage de
+shaders d'un profil persistant, 780M sans contention (fenêtre calme, témoin à l'appui ; en 1080p, tours calmes de la Passe Q4b : nuit B 10,6-10,7 ms). Écartés (mesurés, Passe 6) : pré-passage de
 profondeur (≤ 0,75 ms en 1080p avant son propre coût), filtre de l'ombre de lune (≤ 4 %) ; FXAA, qui flouterait le pixel-art sans masque des
 sprites.
 
@@ -703,6 +749,8 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
 - Un tour « propre » au seuil du témoin n'est pas un tour sans contention : un programme qui reste juste sous le seuil (Passe Q4 : Firefox à
   13-15 % sous un seuil de 15 %) le charge encore. Un journal complet du témoin pendant la série le dit ; sans tour calme, seule la comparaison
   entrelacée se rapporte, pas les temps absolus.
+- Une fenêtre fermée ne prouve pas un programme arrêté : le témoin se relit juste avant la série (Passe Q4b : un Firefox « fermé » tenait encore
+  30 % de la 780M).
 - Une première fois (programme, variante, dessin) se mesure par une sonde dédiée : aucune moyenne ne la voit. Un intervalle rAF ne
   s'attribue qu'avec un repère (le départ de la boucle, un `gl.finish()` chronométré) : le plus grand intervalle depuis le chargement est le
   plus long bloc synchrone, pas forcément la première image.
