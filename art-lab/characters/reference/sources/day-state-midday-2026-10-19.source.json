@@ -19,7 +19,7 @@
     },
     "prompt": "Edit this image. Keep exactly the same camera, framing and composition, the same architecture (the half-timbered merchant street, the stalls, the quay, the canal, the bridge, the castle on the hill) and the same characters in the same places. Keep the HD-2D look: a 3D diorama with pixel-art character sprites, soft tilt-shift depth of field, painterly light, slightly desaturated colours. Change only the time of day and the light, to daytime on the day of the city's tournament: lanterns and windows unlit; add only a few pennants and banners in the town's colours along the frontage and on the bridge, no new buildings, no extra clutter. Keep the restrained palette: slate blue and cool stone dominant, ivory canvas, sunlight as the warm accent. No text, no logos, no watermark.\nTime: midday. A high sun, crisp short shadows under the awnings, a clear blue sky with a few white clouds, bright but not saturated, the canal reflecting the sky.\n",
     "promptSha256": "f67b3034f61c860eb85b8731faa289b22a9acfe90e5a8a8e7a4ec498a2a10b55",
-    "promptFile": "C:/Users/miche/AppData/Local/Temp/claude/C--Users-miche-Documents-Projects-HD-2D/fc6c3ebc-4d64-48eb-990c-c92b9a78bee1/scratchpad/day/midday.txt",
+    "promptFile": "(outside the repository) midday.txt",
     "references": [
       {
         "file": "screenshots/calibration/camB-merchant.png",
@@ -74,6 +74,13 @@
   "archived": {
     "date": "2026-10-20",
     "from": "day-state-concepts-20261019T213822Z-1.png",
-    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced",
+    "corrections": [
+      {
+        "date": "2026-10-19",
+        "pass": "journal Passe D5",
+        "what": "promptFile held an absolute machine path (a session scratch file outside the repository): kept by its name only, as gen-image.mjs now records it. The exact prompt and its SHA-256 above are unchanged."
+      }
+    ]
   }
 }

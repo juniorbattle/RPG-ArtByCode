@@ -97,6 +97,13 @@ export function parseArgs(argv) {
 }
 
 /** the request this tool would send, checked; throws on anything it cannot price or would not send */
+/** a path as a record keeps it: relative to the repository with '/' separators, or only the file's name when it lies outside the repository
+ *  (a machine path is never written into a record, journal Passe D5) */
+export function recordPath(p, root = ROOT) {
+  const abs = path.resolve(root, p), rel = path.relative(root, abs);
+  return rel && !rel.startsWith('..') && !path.isAbsolute(rel) ? rel.split(path.sep).join('/') : `(outside the repository) ${path.basename(abs)}`;
+}
+
 export function planRequest(o, { root = ROOT } = {}) {
   if (typeof o.task !== 'string' || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(o.task)) throw new Error('--task=<kebab-case name> is required (the ledger and the cap are per task)');
   const prompt = typeof o.prompt === 'string' ? o.prompt : typeof o['prompt-file'] === 'string' ? fs.readFileSync(path.resolve(root, o['prompt-file']), 'utf8') : null;
@@ -112,14 +119,14 @@ export function planRequest(o, { root = ROOT } = {}) {
     const abs = path.resolve(root, r), bytes = fs.readFileSync(abs), ext = path.extname(abs).toLowerCase();
     const mime = { '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg' }[ext];
     if (!mime) throw new Error(`reference ${r}: PNG, WebP or JPEG only`);
-    return { file: path.relative(root, abs).split(path.sep).join('/'), abs, sha256: sha(bytes), bytes: bytes.length, mime, data: bytes };
+    return { file: recordPath(abs, root), abs, sha256: sha(bytes), bytes: bytes.length, mime, data: bytes };
   });
   if (o.fidelity !== undefined && !price.fidelity) throw new Error(`--fidelity: ${model} takes no input_fidelity`);
   const fidelity = refs.length && price.fidelity ? (o.fidelity ?? 'high') : null;
   if (fidelity && !['high', 'low'].includes(fidelity)) throw new Error('--fidelity must be high or low');
   const parameters = { n, size, quality, background, output_format: 'png', ...(fidelity ? { input_fidelity: fidelity } : {}) };
   const endpoint = refs.length ? `${API}/images/edits` : `${API}/images/generations`;
-  return { task: o.task, model, prompt, promptSha256: sha(Buffer.from(prompt, 'utf8')), promptFile: o['prompt-file'] ?? null, refs, parameters, endpoint,
+  return { task: o.task, model, prompt, promptSha256: sha(Buffer.from(prompt, 'utf8')), promptFile: typeof o['prompt-file'] === 'string' ? recordPath(o['prompt-file'], root) : null, refs, parameters, endpoint,
     price, estimateUsd: estimateCost({ model, prompt, n, size, quality, refs: refs.length }) };
 }
 

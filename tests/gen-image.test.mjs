@@ -120,6 +120,21 @@ test('references go to the edits endpoint as image[] with their SHA-256 in the r
   assert.equal(two.calls[0].init.body.get('input_fidelity'), null); assert.equal(two.calls[0].init.body.get('model'), 'gpt-image-2');
 });
 
+test('records keep no machine path: a prompt file or a reference outside the repository is kept by its name only', async () => {
+  const root = sandbox(), ledgerFile = path.join(root, 'ledger.json'), outside = fs.mkdtempSync(path.join(os.tmpdir(), 'gen-image-outside-'));
+  fs.writeFileSync(path.join(outside, 'midday.txt'), 'Daytime, a high sun.');
+  fs.writeFileSync(path.join(outside, 'night.png'), tinyPng());
+  fs.mkdirSync(path.join(root, 'prompts')); fs.writeFileSync(path.join(root, 'prompts', 'p.txt'), 'Inside.');
+  assert.equal(G.planRequest({ task: 't', 'prompt-file': 'prompts/p.txt', ref: [] }, { root }).promptFile, 'prompts/p.txt');
+  const { fetchFn } = fakeApi();
+  const files = await G.generate({ task: 'day', 'prompt-file': path.join(outside, 'midday.txt'), ref: [path.join(outside, 'night.png'), 'ref.png'], quality: 'low' },
+    { root, key: KEY, fetchFn, log: () => {}, ledgerFile, toolFile: path.join(root, 'tool.mjs') });
+  const text = fs.readFileSync(files[0].replace(/\.png$/, '.source.json'), 'utf8'), rec = JSON.parse(text);
+  assert.equal(rec.generation.promptFile, '(outside the repository) midday.txt');
+  assert.deepEqual(rec.generation.references.map((r) => r.file), ['(outside the repository) night.png', 'ref.png']);
+  for (const p of [outside, outside.split(path.sep).join('/'), os.tmpdir(), os.homedir()]) assert.ok(!text.includes(p), `the record holds no machine path (${p})`);
+});
+
 test('the cap: a request that would pass 5 USD for its task is refused before anything is sent; a dry run sends and writes nothing', async () => {
   const root = sandbox(), ledgerFile = path.join(root, 'ledger.json');
   G.saveLedger(ledgerFile, { version: 1, tasks: { big: { entries: [{ costUsd: 4.8, status: 'answered' }] } } });

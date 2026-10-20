@@ -719,6 +719,37 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
   lecture se dit à l'opérateur avant d'agir, avec l'option non choisie qui la justifie.
 - Une option « (note) » cochée sans note ne donne pas son détail : il se propose, il ne se devine pas.
 
+## Passe D5 — [KO → corrigé] un chemin machine commité dans deux fiches de provenance (Passe D4) ; l'outil d'images ne l'écrit plus (2026-10-19)
+
+### Ce qui s'est passé
+- Le commit de la Passe D4 (`304dfcb`, fusionné et poussé sur `main`) contenait, dans les fiches des deux pistes archivées
+  (`day-state-midday-2026-10-19.source.json`, `-morning-`), un champ `promptFile` portant le chemin absolu du fichier de prompt, dans le
+  dossier temporaire de la séance : il nomme l'utilisateur Windows et ce dossier. **Pas de secret** (ni clé ni jeton), mais la règle d'`AGENTS.md`
+  interdit tout chemin machine dans un commit.
+- **Deux causes** :
+  - `tools/art-lab/gen-image.mjs` recopiait `--prompt-file` tel qu'on le donnait (et le chemin relatif d'une référence hors du dépôt) ;
+  - ma commande lançait le scan des chemins puis le commit, séparés par `;` : le scan a trouvé les deux lignes, et le commit est parti quand
+    même. C'est la faute des Passes M3, K5 et Z1 : une vérification qui doit arrêter une étape irréversible est liée à elle par `&&`.
+- Le chemin a été vu à la sortie du scan, juste après le push. Rien d'autre n'en contient (`git grep` sur `art-lab`, `tools`, `tests`, `src`).
+
+### Corrigé — [OK]
+- **L'outil** : `recordPath` écrit un chemin relatif au dépôt (séparateurs `/`), ou seulement le nom du fichier, précédé de « (outside the
+  repository) », quand il est hors du dépôt. Il sert au fichier de prompt et aux références.
+- **Test** (`tests/gen-image.test.mjs`, +1) : un prompt et une référence hors du dépôt, une référence dedans ; la fiche écrite ne contient ni
+  le dossier extérieur, ni le dossier temporaire, ni le dossier de l'utilisateur. **Contrôle négatif** : avec l'outil d'avant, ce test échoue
+  (1 échec sur 8) ; avec le nouveau, 8 / 8.
+- **Les deux fiches** : `promptFile` ramené au nom du fichier, avec une entrée `archived.corrections` datée qui dit ce qui a changé et
+  pourquoi. Le prompt exact et son SHA-256 ne changent pas ; les images non plus. `art:validate` : 16 sources, 0 erreur.
+- **L'historique n'est pas réécrit** : le chemin reste lisible dans `304dfcb`. Le retirer demanderait de réécrire `main` et de pousser en
+  force, ce qui revient à l'opérateur ; c'est dit dans la séance.
+- **Validation** : typecheck, `npm test` 88 / 88, build, `art:validate`.
+
+### Pensée
+- Un scan avant un commit est une porte, pas un affichage : il doit faire échouer la chaîne (`! git grep -q … && git commit …`), sinon il
+  constate après coup.
+- Un outil qui écrit une fiche de provenance n'y recopie jamais un chemin donné tel quel : il le rend relatif au dépôt, ou n'en garde que le
+  nom.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
