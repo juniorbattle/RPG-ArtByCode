@@ -543,6 +543,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   - le brief : le § 0 (autonomie et relais), le § 3 (limites du cloud), le § 3b (le protocole), Git et le bilan ;
   - le plan v4 : l'en-tête, le § 4, le § 4b, le budget du § 5, deux risques, les § 11 et 12 ;
   - `AGENTS.md` : une règle « Cloud relay » sous « Image generation ».
+  - Avant le lancement, une coquille du brief corrigée : son § 1 nommait encore « le plan v2 ».
 - **Essai du guet** : un passage de la boucle (`git fetch` des branches `claude/*`, liste de `briefs/local-requests/`) tourne d'ici sans
   erreur. Aucune branche `claude/*` n'existe aujourd'hui.
 

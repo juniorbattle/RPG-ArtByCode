@@ -29,7 +29,7 @@ et écris en français : journal, bilan, messages. Le code et l'interface du jeu
 2. `JOURNAL.md`, **en entier** (règle du projet). Un fichier de `journal/` ne s'ouvre que par son index, pour une passe citée.
 3. `contracts/` : `PROJECT_MASTER_CONTRACT.md`, `GAMEPLAY_MASTER_CONTRACT.md`, `TOURNAMENT_MASTER_CONTRACT.md`. Ils font foi sur le gameplay et
    le tournoi.
-4. `briefs/cloud-session-playable.md`, le plan v2, à suivre :
+4. `briefs/cloud-session-playable.md`, le plan (version 4), à suivre :
    - § 2 : l'existant lu dans le code ;
    - § 3 et § 3b : les écarts E1 à E25 (E14 à E25 viennent du contrat projet) ;
    - § 5 : le périmètre ;
