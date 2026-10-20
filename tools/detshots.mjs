@@ -3,7 +3,8 @@
 // (its JS runs first, against window.__app). Variants share the page, so the NPCs stand where they stood: before / after or effect on / off
 // on the same frame. Two loads of the same query give 0 px (repetition witness, Passe M5); tools/screenshots.mjs does not (the loop runs).
 //   node tools/detshots.mjs <outDir> "<query>" <steps> "name|js" ...      (BASE_URL env; CLIP=x,y,w,h crops; W / H env = viewport;
-//   CHROME_PATH / CHROME_ARGS env: browser and GL switches; READY_MS env: boot timeout, default 180 s)
+//   CHROME_PATH / CHROME_ARGS env: browser and GL switches; READY_MS env: boot timeout, default 180 s, also the DevTools protocol's timeout:
+//   a software-GL bake can hold the page's thread longer than puppeteer's 180 s, journal Passe L3)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,7 +21,7 @@ fs.mkdirSync(outDir, { recursive: true });
 // CHROME_ARGS (space-separated) replaces the GL switches, e.g. "--use-angle=swiftshader" on a machine without a GPU (software WebGL: same
 // harness, slower; compare its captures with each other only, never with a GPU's)
 const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];
-const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars', '--disable-background-timer-throttling', '--disable-renderer-backgrounding'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 } });
+const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars', '--disable-background-timer-throttling', '--disable-renderer-backgrounding'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 }, protocolTimeout: +(process.env.READY_MS || 180000) });
 try {
   const page = await b.newPage(); page.on('pageerror', (e) => console.log('[pageerror]', e.message));
   await page.evaluateOnNewDocument(SEED); await page.evaluateOnNewDocument(HOLD);

@@ -77,6 +77,10 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   § 13, journal Passe L2): whole games of the playable slice headless (the game's pure modules, the player's duels fought by a bot in the arena's
   full simulation): win, injury, upset and sabotage rates, events fired, forgotten participants; `--state=<named>` / `--save=<file>` `[--days=N]`
   loads a state and plays on; `--compare=a,b` two seeds side by side. No browser
+- `node tools/play-flow.mjs <outDir> <win|lose> [seed] [day]` — the play mode's scene change in a browser (journal Passe L3): a new game in the town
+  page, the clock driven by `window.__game` to the day's bout, the arena page loaded from the save, the bout decided by scripted inputs on
+  `window.__arena`, the town page again from the save; the browser's final state replayed in Node must give the same fingerprint (DEV or
+  production server; `BASE_URL`, `CHROME_PATH` / `CHROME_ARGS` / `READY_MS` as `detshots`)
 - CI (`.github/workflows/ci.yml`, GitHub Actions, every push and pull request): Node 22 on `ubuntu-24.04` (pinned, operator decision of 2026-10-19), `npm ci`, `npm run typecheck`,
   `npm run build`, `npm run art:validate`, `npm test`. The runner has no Chrome, GPU or Aseprite (`puppeteer-core` downloads no browser at
   install): every other tool below (screenshots, perf / cadence / startup / overdraw measurements, visibility and viewport proofs, camera
@@ -213,6 +217,11 @@ while D is on screen the follow never overtakes the player on screen, the focus 
 the default since the operator's decision of 2026-10-19, « Adopter (avec la preuve) », journal Passes D3 / K7) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
 a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
+`play=1` (the game's play mode, journal Passe L3, loaded on demand: the state from the browser's save, or `&new=1&name=<name>&seed=<n>` for a
+new game; DEV only `&state=<named state>` of `src/simulation/named.ts`; the page shown is the state's place, or the day's bout with
+`&scene=arena`; moving to another slot or place saves and reloads; `&noreload=1` keeps the page and leaves the next address in `window.__go`;
+`window.__game` drives it: `state()`, `actions()`, `act(action)`, `hash()`; the tools' parameters `fps`, `vis`, `viscache`, `painters`, `res`,
+`msaa`, `refl`, `camera`, `player`, `static`, `occ`, `freeze`, `gpuprof` are carried into the scene; absent = the game as before) ·
 `static=1` (hide characters/particles) · weather (`src/atmosphere/Weather.ts`, journal Passe W1; absent = nothing created, the game as before;
 a bare parameter = 1): `rain=<0..1>` (lamp-lit streaks, wetter cobbles, rings in puddles and on the canal, a little more mist), `snow=<0..1>`
 (drifting flakes, a cover on the cobbles and upward faces), `storm=<0..1>` (lightning flashes every 5-14 s, overcast sky hiding the moon; brings
