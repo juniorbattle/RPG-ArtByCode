@@ -703,6 +703,75 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   l'opérateur. « Tour par tour » et « pas d'attente pour agir » ne se tranchent pas par l'agent.
 - Un dossier partagé entre séances ne change pas de branche : la branche de tâche vit dans un worktree.
 
+## Passe N2 — Fiche de la séance cloud : les choix de l'opérateur consignés ; contrats versionnés ; plan v2 et brief final (2026-10-20)
+
+### Demande
+- Opérateur, mot pour mot : « La fiche d'arbitrages est remplie : relis mes choix, consigne-les et écris le brief final. »
+- Branche `cloud-plan-n1` (celle de la Passe N1, fusionnée et gardée pour cette suite de la même tâche), dans son worktree.
+
+### Les choix — [OK] relus dans la fiche
+- La fiche : https://claude.ai/artifact/RvECCuX3UHykYMbnPzctY7, collection `decisions`. Elle contient 14 documents sur 14, cliqués entre
+  07 h 35 et 07 h 42 UTC, sans note. Cette fois, l'enregistrement a marché (en Passe D7, la collection était restée vide).
+- Les choix, mot pour mot :
+
+| # | Décision | Choix de l'opérateur | Recommandation suivie ? |
+|---|---|---|---|
+| C1 | Où ranger les contrats | « contracts/ à la racine (versionnés, donc publiés) » | oui |
+| C2 | `PROJECT_MASTER_CONTRACT.md` | « Je le fournis avant le lancement » | oui |
+| C3 | Les verrous, la « décision A3 » | « Aucun verrou modifié, écarts consignés » | oui |
+| P1 | Le périmètre de la tranche | « Le § 13 entier, ramené au cloud (plan § 5) » | oui |
+| P2 | Le démarrage | « Un écran titre par défaut : Nouvelle partie ou Explorer le district » | **non** (recommandé : derrière `?play=1`) |
+| P3 | Les quartiers | « Trois lieux, dont un léger » | oui |
+| P4 | Le district clos en mode jouable | « Couches de jeu seulement » | oui |
+| G1 | Le modèle de combat | « L'arène actuelle, écart consigné » | oui |
+| G2 | Les créneaux et les états du jour | « Matin, midi, nuit ; la fin de journée en transition » | oui |
+| G3 | La phase I | « Poule à points » | oui |
+| K1 | La langue de l'interface | « Anglais » | **non** (recommandé : le français) |
+| K2 | Le nom du joueur | « Un nom choisi par le joueur » | **non** (recommandé : « Ren », provisoire) |
+| K3 | Les rivaux en ville | « Portraits et dialogues » | oui |
+| S1 | Si tout est fait avant la fin | « Finition, puis le bilan » | oui |
+
+### Fait — [OK]
+- **`contracts/`** (décision C1) : `GAMEPLAY_MASTER_CONTRACT.md` et `TOURNAMENT_MASTER_CONTRACT.md`.
+  - Leur texte est celui que la séance de la Passe H11 a transmis. Seule la mise en forme change : un paragraphe par section, l'en-tête en
+    titre, l'interface `CompetitorState` en bloc de code.
+  - Chacun porte sa provenance. L'en-tête entre parenthèses peut être un résumé fait par la séance de transmission ; l'original de
+    l'opérateur fait foi.
+  - **Le dépôt est public** : les contrats sont publiés, comme le dit le libellé du choix.
+- **`AGENTS.md`** : une section « Master contracts ». Elle donne où vivent les contrats, la règle de C3 (aucun verrou modifié sans l'opérateur,
+  un écart consigné au journal) et le renvoi au plan et au brief.
+- **Le plan v2** (`briefs/cloud-session-playable.md`) :
+  - le § 11 porte les choix, et ce que les trois choix « non » changent ;
+  - P2 :
+    - l'écran titre ne paraît que sur l'adresse nue ;
+    - « Explore the district » et toute adresse à paramètres donnent le jeu d'aujourd'hui ;
+    - `?play=1` sert aux outils, `?title=0|1` à sauter ou forcer l'écran ;
+    - l'écran titre n'entre dans le défaut qu'au lot L4, quand « New game » mène à une journée complète ;
+    - la PD passe aussi par l'écran titre ; un risque ajouté : un outil qui charge l'adresse nue ;
+  - K1 : l'interface et les textes du mode jouable en anglais, l'arène comprise par une table de textes. `?scene=arena` seul garde son HUD
+    français.
+  - K2 : « New game » demande le nom.
+- **Le brief final**, `briefs/cloud-session-playable-brief.md`. Il est autonome, versionné pour être relu après un compactage, et il servira
+  de texte de lancement. Il couvre :
+  - la pleine autonomie et les décisions réservées ;
+  - l'ordre de lecture et la mission, avec les quatorze choix ;
+  - l'environnement : ni service externe, ni Aseprite, ni GPU, Chrome à vérifier, aucune dépendance ajoutée ;
+  - Git, les preuves, le journal (passes L0 à L7), la fin.
+
+### Preuves
+- Documents seulement : aucun fichier de `src/`, `tests/` ou `tools/` ne change.
+- **Validation** : typecheck, `npm test` 103 / 103, build, `art:validate`.
+
+### Restes [?]
+- **Avant le lancement** : l'opérateur fournit `PROJECT_MASTER_CONTRACT.md` (C2), qui sera versionné dans `contracts/`. Puis il dit « go ».
+- La séance cloud partira de `main` tel qu'il est poussé.
+
+### Pensée
+- Une fiche se relit telle qu'elle est enregistrée, choix par choix. Trois choix diffèrent de la recommandation : chacun se reporte dans les
+  sections du plan qu'il touche, pas seulement dans le tableau des décisions.
+- Un écran titre par défaut change l'adresse nue, que des outils chargent peut-être. Le borner à l'adresse nue, avec une porte de sortie
+  (`?title=0`), garde intactes toutes les preuves existantes.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -715,9 +784,10 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
 
-**0b. Version jouable — séance cloud (Passe N1)** : plan v1 `briefs/cloud-session-playable.md` (inventaire, écarts E1-E13 avec les contrats
-  maîtres, lots L0-L7). Reste : la fiche d'arbitrages (C1-C3, P1-P4, G1-G3, K1-K3, S1), les choix consignés au § 11 du plan, le brief final, le
-  lancement sur le « go » de l'opérateur.
+**0b. Version jouable — séance cloud (Passes N1, N2)** : plan v2 `briefs/cloud-session-playable.md` (choix de la fiche au § 11 : écran
+  titre par défaut, interface en anglais, nom choisi par le joueur, arène actuelle, poule à points, trois lieux dont un léger) ; brief final
+  `briefs/cloud-session-playable-brief.md` ; contrats dans `contracts/`. Reste : `PROJECT_MASTER_CONTRACT.md` à fournir par l'opérateur (C2),
+  puis le lancement de la séance cloud sur son « go ».
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont

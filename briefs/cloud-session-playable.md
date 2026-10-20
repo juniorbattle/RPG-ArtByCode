@@ -1,15 +1,17 @@
 # Plan de la séance cloud « Version jouable » — Cité du Tournoi
 
-- **Version 1, 2026-10-20.** Rédigée par la séance locale de planification (journal, Passe N1), avant la fiche d'arbitrages.
-- **Statut : proposé.** Chaque renvoi « [Xn] » désigne une décision de l'opérateur, posée sur la fiche (§ 10). Les choix seront consignés au
-  § 11 et au journal **avant** l'écriture du brief final et le lancement.
-- **Autorité.** `AGENTS.md` (règles du dépôt) et `JOURNAL.md` ; les deux contrats maîtres de l'opérateur :
-  - le contrat de gameplay (*Gameplay Master Contract* v1.0, 2026-10-02) ;
-  - le contrat du tournoi (*Tournament Master Contract* v1.0, 2026-10-02).
+- **Version 2, 2026-10-20.** La version 1 (Passe N1) a été rédigée par la séance locale de planification, avant la fiche d'arbitrages. La
+  version 2 (Passe N2) consigne les choix de l'opérateur au § 11 et met le plan à leur niveau.
+- **Statut : décidé.** Chaque renvoi « [Xn] » désigne une décision de la fiche (§ 10). Le choix de l'opérateur est au § 11, mot pour mot ; là où
+  il diffère de la recommandation du § 10, c'est le § 11 qui fait foi.
+- **Autorité.** `AGENTS.md` (règles du dépôt) et `JOURNAL.md` ; les contrats maîtres de l'opérateur, dans `contracts/` (décision C1) :
+  - `contracts/GAMEPLAY_MASTER_CONTRACT.md` (v1.0, 2026-10-02) ;
+  - `contracts/TOURNAMENT_MASTER_CONTRACT.md` (v1.0, 2026-10-02) ;
+  - `contracts/PROJECT_MASTER_CONTRACT.md`, que le contrat de gameplay cite comme son autorité supérieure. L'opérateur le fournit avant le
+    lancement (décision C2).
   
-  Ils ne sont pas encore dans le dépôt [C1]. `PROJECT_MASTER_CONTRACT.md`, que le contrat de gameplay cite comme son autorité supérieure, est
-  absent [C2]. En cas de conflit entre ce plan et l'un de ces documents, le document l'emporte et le conflit est consigné.
-- **Base** : `main` `8a707b9` (Passe H11).
+  En cas de conflit entre ce plan et l'un de ces documents, le document l'emporte et le conflit est consigné.
+- **Base** : `main` `8a707b9` (Passe H11) ; ce plan entre dans `main` en Passe N1 (`7ff0c23`), puis en version 2 en Passe N2.
 
 ## 1. But
 
@@ -119,7 +121,12 @@ La séance cloud doit livrer une **version jouable** qui fait vivre la boucle ca
     tâche à la fois sous ce nom, fusionnée, puis on recrée la branche depuis `main`.
 - **Le jeu reste jouable après chaque fusion.**
   - `npm run dev` et le build marchent.
-  - Sans paramètre, le jeu par défaut reste celui de `8a707b9` tant que l'opérateur n'a pas décidé autrement [P2].
+  - L'opérateur a choisi un écran titre par défaut [P2], qui propose « New game » ou « Explore the district » (§ 6).
+    - « Explore the district » donne exactement le jeu de `8a707b9`.
+    - Toute adresse qui porte déjà des paramètres (tous les outils et toutes les preuves) donne, elle aussi, le jeu de `8a707b9`, sans écran
+      titre.
+    - L'écran titre n'arrive dans le défaut qu'une fois que « New game » mène à au moins une journée complète (lot L4).
+  - La nuit reste le moment par défaut quand on explore le district (J9).
   - `?scene=arena` sans paramètre de jeu reste inchangé : même `ARENA_SIM_HASH`, équivalence au prototype verte.
 
 ## 5. Périmètre proposé de la version jouable [P1]
@@ -162,12 +169,24 @@ La tranche verticale du gameplay § 13, ramenée à ce que permet le cloud :
   - Choisir un quartier n'en consomme pas non plus.
 - **L'aléatoire** : le `Rng` de `src/core/rng.ts`, en flux dérivés de (graine, jour, créneau, acteur). Une partie reprise d'une sauvegarde
   donne donc la même suite qu'une partie continue.
-- **Le contenu en données** : `src/game/content/` (concurrents, quêtes, services, textes en français [K1]).
+- **Le contenu en données** : `src/game/content/` (concurrents, quêtes, services, textes **en anglais** [K1]).
 - **La présentation.**
-  - Un mode jouable derrière un paramètre (nom proposé : `?play=1`) [P2].
-  - Une couche d'interface DOM, `src/game/ui/` : horloge, prochaine échéance, tableau du tournoi (tournoi § 11), dialogues, journal des faits,
-    menu de sauvegarde.
-  - La ville (`App`) et l'arène (`ArenaApp`) gardent leur chemin sans le paramètre.
+  - **L'écran titre par défaut** [P2] : « New game », « Explore the district », et « Continue » quand une sauvegarde existe (sauvegarde et
+    chargement, § 13).
+    - C'est un écran DOM, affiché avant toute génération, dans le style de l'écran de chargement. Il ne paraît que sur l'adresse nue.
+    - Une adresse qui porte déjà des paramètres démarre comme dans `8a707b9`. Les outils et les preuves n'en sont donc pas touchés ; chaque
+      outil de `tools/` qui charge l'adresse nue est vérifié et adapté.
+    - `?title=0` saute l'écran titre, `?title=1` le force (pour ses propres captures).
+    - « Explore the district » lance le chemin de la ville d'aujourd'hui (`startTown`) tel quel : la nuit et le panneau DEV.
+  - **« New game » demande le nom du joueur** [K2], puis lance le mode jouable. Le nom vit dans l'état de la partie ; l'arène l'affiche à la
+    place de « Ren » en mode jouable. Une proposition par défaut dans le champ est un choix de la séance.
+  - **`?play=1`** saute l'écran titre et entre en mode jouable : c'est l'entrée des outils et des preuves (`&name=` pour le nom).
+  - **Une couche d'interface DOM, `src/game/ui/`, en anglais** [K1] : horloge, prochaine échéance, tableau du tournoi (tournoi § 11),
+    dialogues, journal des faits, menu de sauvegarde.
+    - En mode jouable, l'arène prend des libellés anglais par une table de textes.
+    - `?scene=arena` seul garde son HUD français, au pixel près.
+    - Le HUD de debug de la ville est déjà en anglais et ne change pas.
+  - **La ville (`App`) et l'arène (`ArenaApp`)** gardent leur chemin hors du mode jouable.
   - On passe d'une scène à l'autre, et d'un état du jour à l'autre, par une sauvegarde puis un rechargement de page. Pas de changement à chaud
     de l'état du jour dans cette séance : il toucherait la nuit figée.
 - **Le combat** : une fiche de match devient une variante de `CombatData` (adversaire, modificateurs du joueur, assistance). `COMBAT_DATA`
@@ -190,23 +209,26 @@ Chaque lot suit le même cycle :
 
 L'ordre met d'abord ce qui se prouve sans navigateur. Si la séance s'arrête en route, `main` garde des morceaux cohérents et jouables.
 
-**Preuve « jeu par défaut inchangé » (PD)**, à chaque lot qui touche un fichier atteint sans paramètre :
+**Preuve « jeu par défaut inchangé » (PD)**. Elle vaut à chaque lot qui touche un fichier atteint par une adresse à paramètres, par « Explore the
+district » ou, avant l'écran titre, par l'adresse nue :
 - `detshots` contre une copie figée de `main`, servie sur un autre port, au **seuil 0** ;
 - un témoin de répétition d'abord (deux chargements, 0 px) ;
 - nuit : A, B, C, D, `static=1&occ=0`, 30 pas ; les quatre références avec personnages, 120 pas ;
 - midi en B ;
 - `tools/arena-scene-check.mjs` sans paramètre de jeu ;
-- sortie gardée et relue (principe de la Passe Y4).
+- sortie gardée et relue (principe de la Passe Y4) ;
+- dès l'écran titre : un test qui montre que « Explore the district » appelle le chemin de la ville d'aujourd'hui, sans autre paramètre ; et une
+  capture qui passe par l'écran titre et ce bouton, égale à 0 px à l'adresse nue de `main` figé.
 
 **Sans Chrome**, aucune preuve d'image n'est possible. Le lot ne modifie alors aucun fichier atteint par le chemin par défaut, hors une branche
-gardée par le paramètre. Il le montre (`git diff --stat`, et un test qui vérifie que le chemin par défaut n'importe pas `src/game/`), et la
+gardée par le paramètre ou par l'écran titre. Il le montre (`git diff --stat`, et un test qui vérifie que le chemin par défaut n'importe pas `src/game/`), et la
 preuve d'image est inscrite au bilan comme à refaire en local.
 
 ### L0 — Mise en route
 - **Contenu** :
   - `npm ci` ; typecheck ; `npm test` ; build ; `art:validate` ; `art:doctor` (Aseprite absent, attendu).
   - Détection de Chrome, son enveloppeur hors dépôt, une capture de fumée de `main` et son témoin de répétition.
-  - Les contrats dans le dépôt selon [C1].
+  - La lecture des trois contrats de `contracts/` (décisions C1, C2).
   - L'archivage du journal si les passes gardées dépassent environ 60 Ko (elles font 49,8 Ko au départ), avec les huit contrôles de la
     Passe D1.
 - **Fin** : l'environnement est consigné dans la première passe de la séance (machine, Node, navigateur, temps de démarrage logiciel).
@@ -256,21 +278,24 @@ preuve d'image est inscrite au bilan comme à refaire en local.
   - le PD de l'arène ; les captures du nouvel adversaire (SwiftShader).
 - **Fin** : les deux duels se jouent de bout en bout en headless.
 
-### L4 — La ville jouable (le Merchant District sous le paramètre jouable)
+### L4 — La ville jouable (le Merchant District en mode jouable), puis l'écran titre
 - **Contenu** :
-  - l'interface de jeu en français [K1] : jour et créneau, prochaine échéance, tableau (phase, prochain adversaire, rivaux en course,
+  - l'interface de jeu en anglais [K1] : jour et créneau, prochaine échéance, tableau (phase, prochain adversaire, rivaux en course,
     conséquence d'une défaite, quand et pourquoi le format change), dialogues écrits, journal des faits, menu ;
+  - le nom choisi par le joueur [K2] ;
+  - **l'écran titre par défaut** [P2], dès que « New game » mène à une journée complète, comme le décrit le § 6 ;
   - les PNJ existants dans des rôles de jeu [P4] : la marchande (boutique, rumeurs), le forgeron (amélioration, service sabotable), les gardes
     (sécurité, guet), l'inconnu (indices, suspect), le docker (une quête), les citadins (rumeurs selon le pouls) ;
   - la réaction visible de la ville (gameplay § 8, sans écran de debug) : l'effectif de la foule selon l'excitation, l'état de la forge, les
     rumeurs ;
   - ni le panneau DEV ni le HUD de debug en mode jouable.
 - **Preuves** :
-  - le PD (le défaut à 0 px) ;
+  - le PD : chaque adresse à paramètres, et « Explore the district », à 0 px ;
+  - l'écran titre sur l'adresse nue ; ses trois boutons, et « Continue » absent sans sauvegarde ;
   - des captures du mode jouable à chaque créneau ;
   - le jour 1 joué de bout en bout par `__game`, et une fumée au clavier (`E` sur la marchande) ;
   - la sauvegarde reprise après un rechargement.
-- **Fin** : le jour 1 se joue dans la ville.
+- **Fin** : le jour 1 se joue dans la ville, depuis l'écran titre.
 
 ### L5 — Le contenu des trois jours
 - **Contenu** :
@@ -296,8 +321,8 @@ preuve d'image est inscrite au bilan comme à refaire en local.
 
 ### L7 — Finition et bilan
 - **Contenu** :
-  - l'écran titre selon [P2], la lisibilité, le clavier et le focus ;
-  - la relecture des textes ;
+  - la lisibilité, le clavier et le focus (écran titre compris) ;
+  - la relecture des textes anglais ;
   - une passe de bilan au journal, comme la Passe B1 : ce qui est fusionné, les mesures, ce qui reste à vérifier sur la machine de
     l'opérateur, les décisions préparées, le reste à faire.
 - **Fin** : le bilan est fusionné, et le dernier message de la séance le résume.
@@ -327,6 +352,7 @@ preuve d'image est inscrite au bilan comme à refaire en local.
 | Le volume de contenu (textes, quêtes) et la qualité du troisième lieu | La tranche minimale d'abord (L5 avant L6) ; les lieux légers sont annoncés comme tels |
 | Fuites de non-déterminisme (`Math.random`, horloge, objets THREE) | Le test de pureté de `src/game/` ; des empreintes |
 | Changer le district figé ou l'arène sans le vouloir | Le PD à 0 px ; l'empreinte de l'arène |
+| L'écran titre par défaut bloque un outil ou une preuve qui charge l'adresse nue (`__app` jamais créé) | L'écran titre seulement sur l'adresse nue ; `?title=0` ; chaque outil de `tools/` vérifié avant la fusion qui l'active |
 | Le proxy Git (un nom de branche imposé, pas de suppression distante) | Une tâche à la fois sous ce nom (Passes T1, H6) |
 | Le journal au-delà d'environ 60 Ko | Archivage avec ses huit contrôles (L0 ou en route) |
 | Un contexte compacté pendant une longue séance | Relire ce plan, `AGENTS.md` et les dernières passes du journal après chaque compactage |
@@ -336,7 +362,8 @@ preuve d'image est inscrite au bilan comme à refaire en local.
 
 ## 10. Décisions préparées pour l'opérateur (fiche d'arbitrages)
 
-Chaque décision a sa recommandation entre parenthèses ; le détail est sur la fiche.
+Ces décisions ont été posées sur la fiche le 2026-10-20, chacune avec sa recommandation (entre parenthèses ci-dessous) ; le détail est sur la
+fiche. **Les choix de l'opérateur sont au § 11.**
 
 - **C1** — Où ranger les deux contrats (et le contrat projet) dans le dépôt, qui est public ? (`contracts/` à la racine, cité par `AGENTS.md`.)
 - **C2** — `PROJECT_MASTER_CONTRACT.md` : le fournir, ou avancer sans lui ? (Le fournir avant le lancement ; sinon, avancer sans lui en
@@ -359,7 +386,47 @@ Chaque décision a sa recommandation entre parenthèses ; le détail est sur la 
 
 ## 11. Décisions consignées
 
-Vide jusqu'à la fiche. Les choix de l'opérateur s'y inscrivent mot pour mot, datés, avant le brief final.
+**Source.** La fiche d'arbitrages, page privée https://claude.ai/artifact/RvECCuX3UHykYMbnPzctY7, collection `decisions`, relue le
+2026-10-20 : 14 documents sur 14, cliqués entre 07 h 35 et 07 h 42 UTC, sans aucune note. L'opérateur a ensuite écrit dans la séance, mot pour
+mot : « La fiche d'arbitrages est remplie : relis mes choix, consigne-les et écris le brief final. »
+
+**Les choix** (« = » : la recommandation de la fiche est suivie ; « ≠ » : le choix diffère, et c'est lui qui fait foi) :
+
+| # | Décision | Choix de l'opérateur, mot pour mot | |
+|---|---|---|---|
+| C1 | Où ranger les deux contrats maîtres dans le dépôt ? | « contracts/ à la racine (versionnés, donc publiés) » | = |
+| C2 | `PROJECT_MASTER_CONTRACT.md` | « Je le fournis avant le lancement » | = |
+| C3 | Les verrous des contrats et la « décision A3 » | « Aucun verrou modifié, écarts consignés » | = |
+| P1 | Le périmètre de la tranche | « Le § 13 entier, ramené au cloud (plan § 5) » | = |
+| P2 | La version jouable démarre-t-elle par défaut ? | « Un écran titre par défaut : Nouvelle partie ou Explorer le district » | ≠ |
+| P3 | Combien de quartiers dans la tranche ? | « Trois lieux, dont un léger » | = |
+| P4 | Ce que le mode jouable peut ajouter au district figé | « Couches de jeu seulement » | = |
+| G1 | Le modèle de combat | « L'arène actuelle, écart consigné » | = |
+| G2 | Les trois créneaux et les quatre états du jour | « Matin, midi, nuit ; la fin de journée en transition » | = |
+| G3 | Le format de la phase I dans la tranche | « Poule à points » | = |
+| K1 | La langue de l'interface du jeu | « Anglais » | ≠ |
+| K2 | Le nom du joueur | « Un nom choisi par le joueur » | ≠ |
+| K3 | Les rivaux en ville | « Portraits et dialogues » | = |
+| S1 | Si tout est fait avant la fin de la séance | « Finition, puis le bilan » | = |
+
+**Ce que les trois choix « ≠ » changent dans ce plan** (version 2) :
+- **P2**, l'écran titre par défaut :
+  - § 4 et § 6 : l'écran titre sur l'adresse nue seulement ; « Explore the district » et toute adresse à paramètres donnent le jeu de
+    `8a707b9` ; `?play=1` pour les outils ; `?title=0|1`.
+  - Lot L4 : l'écran titre arrive dans le défaut dès qu'une journée complète se joue.
+  - § 7 : le PD passe aussi par l'écran titre.
+  - Le district et la nuit restent ce qu'ils sont quand on l'explore (J9, RJ1).
+- **K1**, l'anglais : l'interface et les textes du mode jouable sont en anglais, l'arène y compris en mode jouable. `?scene=arena` seul garde son
+  HUD français. Le journal, les contrats et ce plan restent en français.
+- **K2**, le nom choisi : « New game » demande le nom du joueur ; l'arène l'affiche en mode jouable.
+
+**Ce qui reste à l'opérateur avant le lancement** : fournir `PROJECT_MASTER_CONTRACT.md` (C2), qui sera versionné dans `contracts/`. Puis
+dire « go ».
+
+**Écarts consignés, non tranchés** (C3, G1) :
+- E1, le combat « tour par tour » du contrat contre l'arène sans attente : la tranche se joue avec l'arène actuelle, et le contrat ne change
+  pas.
+- Tout autre écart que la séance rencontre se consigne au journal, sans toucher aux verrous.
 
 ## 12. Après la séance : à faire sur la machine de l'opérateur
 

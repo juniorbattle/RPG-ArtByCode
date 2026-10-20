@@ -10,6 +10,19 @@ decided (journal Passes D4, D6; see "Art direction"): the morning, midday and th
 the weather applies to each state (journal Passe Y5); the day's crowd is decided and applied (J7, journal Passes R3 / D7), and the day becomes the default only after the operator's
 review in game (J9).
 
+## Master contracts (operator decision C1, 2026-10-20, journal Passe N2)
+The operator's master contracts live in `contracts/`, versioned and therefore published, since the repository is public:
+- `GAMEPLAY_MASTER_CONTRACT.md` and `TOURNAMENT_MASTER_CONTRACT.md` (v1.0, 2026-10-02, in French);
+- `PROJECT_MASTER_CONTRACT.md`, the gameplay contract's higher authority, which the operator provides before the cloud session (decision C2).
+
+They govern gameplay and the tournament; this file keeps the repository's rules (branches, journal, proofs, art). Two rules follow from
+decision C3 (« Aucun verrou modifié, écarts consignés »):
+- no lock (« verrou ») of a contract changes without the operator; the contracts' « décision A3 » is not defined in the repository yet;
+- a gap between a contract and the code is recorded in the journal, never resolved by an agent.
+
+The plan of the cloud session « version jouable » (the gameplay contract's vertical slice, § 13), with the operator's choices on it (§ 11), is
+`briefs/cloud-session-playable.md`. Its brief is `briefs/cloud-session-playable-brief.md`.
+
 ## Project journal (MANDATORY workflow)
 `JOURNAL.md` is the project's memory: what was done, what worked, what failed and why, open problems, lessons. It holds the
 recent passes, "À reprendre" and "Principes à garder"; older passes are archived **verbatim** in `journal/` (operator decision,
