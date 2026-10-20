@@ -4,7 +4,8 @@ import { CombatSim, type ActionId, type CombatData } from '../arena/CombatSim';
 /** A scripted player for the arena's simulation (journal Passe L2): it drives the player's slot (`ren`) of a full CombatSim, so a duel can be
  *  played to its end headless (the scripted games, the TournamentLab, the check of the off-screen resolution). `skill` (0..1) sets how
  *  often it dodges a heavy in its window, guards a light, and how fast it reacts; its own seeded stream decides each reaction once per
- *  enemy action, so a duel replays exactly from (data, skill, seed). Pure: no DOM, no clock. */
+ *  enemy action, so a duel replays exactly from (data, skill, seed). A negative skill is a player who does not play: no attack, no guard, no
+ *  dodge (the scripted losing game, journal Passe L5). Pure: no DOM, no clock. */
 
 export interface DuelResult {
   winner: 'player' | 'opponent' | null;
@@ -24,6 +25,7 @@ export function runBotDuel(data: CombatData, o: BotOptions): DuelResult {
   let decided: unknown = null, dodge = false, guard = false, react = 0, nextAct = 0.4 + rng.next() * 0.3, finisher: string | null = null;
   const maxT = o.maxSecs ?? 240;
   while (!sim.over && sim.t < maxT) {
+    if (s < 0) { sim.step(dt); for (const e of sim.drain()) if (e.type === 'impact' && e.hp <= 0) finisher = e.kind; continue; }
     const inc = sim.incoming(), m = sim.f.marek;
     // one decision per enemy action: will it be read (dodged if heavy, guarded if light), and after what reaction delay
     if (inc && m.act !== decided) {

@@ -656,6 +656,67 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   chaque outil, celui de l'opérateur compris, reste juste sans modification.
 - Une preuve de « même chemin » se lit dans le code de la version figée (`git show`) : l'oracle ne passe pas par le fichier modifié.
 
+## Passe L5 — Le contenu des trois jours : trois parties scriptées jusqu'à la fin, la tranche cochée par un test (2026-10-20)
+
+### Contrat de tâche (contrat projet § 11.3)
+- **Objectif** : le déroulé des trois jours, joué de bout en bout par trois parties scriptées (prudente, négligente, perdante), et un test qui
+  coche chaque exigence du gameplay § 13 et du contrat projet § 14 à partir de leurs événements.
+- **Entrées** : plan, lot L5 ; les contenus des Passes L2 et L4 (rôles, quête, chaîne de sabotage, événements).
+- **Fichiers autorisés** : `src/tournament/lab.ts`, `src/combat/bot.ts`, `src/events/catalog.ts`, `src/simulation/named.ts`, `tests/`,
+  `tools/tournament-lab.mjs`, `JOURNAL.md`. **Interdits** : tout fichier du chemin par défaut.
+- **Outputs** : `SCRIPTS` (trois parties), `tests/slice.test.mjs`, un événement de plus, `--policy=careful|careless|losing`.
+- **Critères d'acceptation** : les trois parties atteignent la fin de la tranche sur trois graines ; le test coche les exigences ; le
+  déterminisme ; la sauvegarde à chaque créneau.
+- **Tests** : `tests/slice.test.mjs`, des fautes injectées. **Risques** : une partie « perdante » qui gagne (le kit du joueur domine) ; un
+  événement jamais déclenché.
+- **Définition de terminé** : tests verts, fautes attrapées, validation complète ; aucun fichier du défaut ne change (PD sans objet).
+
+### Fait — [OK]
+- **Le déroulé** (contenu des Passes L2 et L4, éprouvé ici) :
+  - jour 1 : l'arrivée, les hérauts du Colisée, l'inscription, Tam et sa caisse, Orla, la première rumeur ;
+  - jour 2 : le duel contre Vessa ; s'il est gagné, la rancune de Cassius et les deux signes ; le soir, la tentative contre la forge ;
+  - jour 3 : la forge sauvée ou brûlée (le service perdu, la boutique plus chère, la réparation, la lame de Mara), le duel contre Marek, la
+    réaction de la ville, l'écran de fin.
+- **Trois parties scriptées** (`SCRIPTS`, `src/tournament/lab.ts`) : par créneau, des actions essayées dans l'ordre, puis le duel (le bot) ou
+  le temps qui passe :
+  - **prudente** (adresse 0,6) : la caisse, l'inscription, Orla, l'informateur, la lame trempée, le guet payé, l'observation de Marek ;
+  - **négligente** (0,45) : aider Mara, rien d'autre ; la forge brûle ; la lame de Mara au prix de la pénurie ; l'informateur et le rapport ;
+  - **perdante** : un joueur qui ne joue pas (adresse négative : ni coup, ni garde, ni esquive), blessé, soigné, battu deux fois.
+- **Un événement de plus**, la clameur du Colisée les après-midi de combat (le Colisée « audible », contrat projet § 8.2) : dix-huit en tout.
+- **La CLI** du laboratoire joue aussi les trois parties (`--policy=careful|careless|losing`).
+- **Un état nommé** de fin de tranche (`slice-end`) ; l'écran de fin capturé, gardé dans `screenshots/calibration/l4-play/slice-end.png`.
+
+### Choix de la séance (consignés comme tels)
+- **[KO → changé] la partie perdante gagnait** : un bot d'adresse 0 gagne encore 65 à 100 % de ses duels (le kit du joueur domine, constat de la
+  Passe L2). Une défaite déterministe vient d'un joueur qui ne joue pas. **À régler après essai** (D1) : l'équilibre des duels.
+- La partie négligente aide Mara le premier matin : c'est ce qui déclenche sa faveur, le seul événement qu'aucune politique ne touchait ;
+  l'exception déclarée en Passe L2 est retirée du test des événements.
+
+### Preuves
+- **`tests/slice.test.mjs`, 11 tests**, sur les trois parties × trois graines (1842, 7719, 30417) :
+  - 3 jours, 9 créneaux, la fin de la tranche ; les quatre aspects (matin, midi, fin de journée, nuit), les services et les gens selon l'heure ;
+  - 2 duels officiels 1 contre 1 par partie, gagnés et perdus selon les parties, jamais éliminatoires ;
+  - la recrue future (Orla, présentée et prête dans la partie prudente) ;
+  - la quête qui change un duel (la lame trempée : des dégâts plus hauts au duel suivant) ;
+  - le sabotage contrable : les signes avant la tentative, déjoué par le guet, subi par la négligente, son auteur trouvé après ; aucune
+    tentative contre un joueur qui n'inquiète personne ;
+  - le service modifié (la forge) et la boutique touchée, avec sa cause et son alternative ;
+  - les concurrents hors écran (chaque rival journalisé chaque jour, leur état changé, six combats sans le joueur) ;
+  - la sauvegarde rechargée avant chaque action égale la partie ; le déterminisme ;
+  - au moins douze événements configurables déclenchés, des six types, chacun avec sa cause ;
+  - plusieurs rivaux persistants, un changement de lieu, un combat extensible (le format d'équipe refusé avec sa raison).
+  - **Ce que le test ne coche pas** : le troisième lieu (il vient au lot L6 ; le test demande deux lieux d'ici là), les captures (Passe L4),
+    le budget technique (lot L7, temps GPU au relais).
+- **Cinq fautes injectées une à une, toutes attrapées** : le guet oublié de la partie prudente, la pénurie sans effet, le crépuscule perdu, un
+  rival oublié, la recrue jamais prête.
+- **Mesures** (CLI, 20 graines, Node, à titre indicatif) : prudente 100 % de duels gagnés, sabotage déjoué 20 fois sur 20 ; négligente 85 %, la
+  forge brûlée 20 fois sur 20 ; perdante 0 %. 30 à 52 ms par partie.
+- **Validation** : typecheck, `npm test` **146 / 146**, build, `art:validate`. Aucun fichier de `src/main.ts`, `src/app`, `src/arena`, `src/characters`, `src/district`, `src/debug` ni `src/ui` ne change (`git diff --stat`).
+
+### Pensée
+- Une partie « perdante » se scripte par ce que fait le joueur, pas par l'issue voulue : si le jeu la fait gagner, c'est une mesure de
+  l'équilibre, à consigner, pas à masquer.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

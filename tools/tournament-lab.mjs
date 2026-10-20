@@ -1,6 +1,6 @@
 // TournamentLab (TOURNAMENT_MASTER_CONTRACT § 13, journal Passe L2): the tournament headless, from the game's own pure modules
 // (src/tournament/lab.ts). No browser, no GPU.
-//   node tools/tournament-lab.mjs [--seeds=1..50 | --seeds=1842,7719] [--policy=idle|diligent] [--json=out.json]
+//   node tools/tournament-lab.mjs [--seeds=1..50 | --seeds=1842,7719] [--policy=idle|diligent|careful|careless|losing] [--json=out.json]
 //       many games: the player's rate of wins and injuries, the rivals' injuries, eliminations, upsets, sabotages, events fired, the
 //       forgotten participants (no log entry about them in a day), the team transition (outside the slice)
 //   node tools/tournament-lab.mjs --state=<named state> | --save=<file.json> [--days=N] [--policy=..]
@@ -19,8 +19,9 @@ try {
   const G = await server.ssrLoadModule('/src/simulation/index.ts');
   const T = await server.ssrLoadModule('/src/tournament/pool.ts');
   const { RIVALS } = await server.ssrLoadModule('/src/narrative/roster.ts');
-  const policy = L.POLICIES[arg('policy', 'diligent')];
-  if (!policy) throw new Error(`no policy "${arg('policy')}" (known: ${Object.keys(L.POLICIES).join(', ')})`);
+  // a policy (idle, diligent) or one of the slice's scripted games (careful, careless, losing; a script restarts its plan with each new game)
+  const pn = arg('policy', 'diligent'), policy = L.POLICIES[pn] ?? L.SCRIPTS[pn]?.();
+  if (!policy) throw new Error(`no policy "${pn}" (known: ${[...Object.keys(L.POLICIES), ...Object.keys(L.SCRIPTS)].join(', ')})`);
   const out = arg('json');
   const table = (st) => T.standings(st).map((r, i) => `  ${String(i + 1).padStart(2)}. ${(r.id === 'player' ? st.player.name : RIVALS[r.id].name).padEnd(14)} ${String(r.points).padStart(2)} pts  rep ${String(r.reputation).padStart(3)}${r.id === 'player' ? '' : `  ${st.competitors[r.id].healthState.padEnd(7)} prep ${st.competitors[r.id].preparation}`}`).join('\n');
 

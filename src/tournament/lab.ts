@@ -43,6 +43,50 @@ export const POLICIES: Record<string, Policy> = {
   },
 };
 
+/** a scripted game (journal Passe L5): per slot, the actions to try in order (each once, when the state allows it), then the slot's end
+ *  (the bout on a match afternoon, fought by the bot at `skill`; otherwise the time let pass) */
+export function scripted(name: string, skill: number, plan: Record<string, Action[]>): Policy {
+  let key = '', i = 0;
+  return {
+    name, skill,
+    choose: (st) => {
+      const k = `${st.day}:${st.slot}:${st.flags[`night:${st.day}`] ? 'n' : ''}`;
+      if (k !== key) { key = k; i = 0; }
+      const list = plan[`${st.day}:${st.slot}`] ?? [];
+      while (i < list.length) { const a = list[i++]; if (has(st, a)) return a; }
+      return fallback(st, skill);
+    },
+  };
+}
+
+const T = (who: string): Action => ({ type: 'talk', who });
+/** the three games of the slice's proof (journal Passe L5): the careful one (the cargo quest, the scouting, the watch paid), the careless one
+ *  (nothing prepared: the forge burns, the merchant's blade at the shortage's price, the culprit found after), the losing one (a weak hand,
+ *  wounded, healed, losing again) */
+export const SCRIPTS: Record<string, () => Policy> = {
+  careful: () => scripted('careful', 0.6, {
+    '1:morning': [T('tam'), T('hale'), { type: 'askPapers' }, { type: 'haul' }],
+    '1:afternoon': [{ type: 'move', to: 'forecourt' }, T('odo'), { type: 'register' }, T('orla'), { type: 'spar' }],
+    '1:evening': [{ type: 'move', to: 'district' }, T('stranger'), { type: 'buyInfo' }],
+    '2:morning': [T('bram'), { type: 'temper' }],
+    '2:evening': [{ type: 'nightfall' }, T('hale'), { type: 'payWatch' }],
+    '3:morning': [{ type: 'move', to: 'forecourt' }, T('marek'), { type: 'scout', who: 'marek' }],
+    '3:evening': [{ type: 'nightfall' }, { type: 'move', to: 'district' }, T('folk')],
+  }),
+  careless: () => scripted('careless', 0.45, {
+    '1:morning': [T('mara'), { type: 'restock' }],
+    '2:evening': [{ type: 'nightfall' }, T('folk')],
+    '3:morning': [T('mara'), { type: 'buy', item: 'imported-blade' }],
+    '3:evening': [{ type: 'nightfall' }, T('stranger'), { type: 'buyInfo' }, T('hale'), { type: 'report' }],
+  }),
+  losing: () => scripted('losing', -1, {
+    '1:morning': [T('folk')],
+    '2:evening': [{ type: 'nightfall' }, { type: 'move', to: 'forecourt' }, T('anwen'), { type: 'heal' }],
+    '3:morning': [T('anwen'), { type: 'heal' }, { type: 'move', to: 'district' }, T('mara'), { type: 'buy', item: 'salve' }],
+    '3:evening': [{ type: 'nightfall' }, T('folk')],
+  }),
+};
+
 export interface GameRun { seed: number; state: GameState; events: GameEvent[]; hash: string }
 export function autoplay(seed: number, policy: Policy, name = 'Ren', maxActions = 200): GameRun {
   let st = newGame(seed, name);

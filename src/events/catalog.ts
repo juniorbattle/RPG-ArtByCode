@@ -1,6 +1,6 @@
 import type { Cond, EventDef } from './types';
 
-/** The slice's dynamic events (PROJECT_MASTER_CONTRACT §§ 9.1, 14; journal Passe L2): seventeen definitions of the six types of § 9.1,
+/** The slice's dynamic events (PROJECT_MASTER_CONTRACT §§ 9.1, 14; journal Passes L2 / L5): eighteen definitions of the six types of § 9.1,
  *  each fired by its causes at the end of a slot, in this order. The forge's sabotage is the targeted chain of § 3.4 (« joueur favori +
  *  faction hostile + sécurité faible → tentative possible »): announced by two signs, answered by the watch, the investigation, the repair
  *  or the merchant's blade (§ 9.3). English texts (choice K1). */
@@ -19,6 +19,11 @@ export const EVENTS: readonly EventDef[] = [
       { when: { day: true, lte: 1 }, effects: [{ pulse: 'excitement', add: 2 }], text: 'From the Colosseum steps the heralds cry the pool of eight: the first bouts are tomorrow.' },
       { effects: [{ pulse: 'excitement', add: 3 }], text: 'Drums from the Colosseum: the heralds cry this afternoon\'s bouts across the rooftops.' },
     ],
+  },
+  {
+    id: 'colosseum-roar', type: 'tournament', about: 'The Colosseum\'s roar over the rooftops on the afternoons of the bouts (PROJECT § 8.2: the Colosseum audible).',
+    slots: ['afternoon'], once: false, cooldown: 3, when: { day: true, gte: 2 }, cause: 'the pool\'s bouts at the Colosseum',
+    outcomes: [{ effects: [{ pulse: 'excitement', add: 3 }], text: 'A roar rolls over the rooftops from the Colosseum: the pool\'s other bouts are being fought.' }],
   },
   {
     id: 'crowd-swell', type: 'tournament', about: 'A big crowd fills the streets once the excitement is high.',

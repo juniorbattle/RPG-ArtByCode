@@ -94,12 +94,11 @@ test('at least twelve configurable events, of the six types, each with a cause; 
     assert.doesNotThrow(() => JSON.stringify(e), 'an event is data');
     if (e.major) { assert.ok(e.major.signs.length >= 1 && e.major.answers.length >= 2, e.id); for (const sg of e.major.signs) assert.ok(EVENTS.some((x) => x.id === sg), sg); }
   }
-  // every event fires in some game: over 60 seeds of both policies
+  // every event fires in some game: over 60 seeds of both policies and the three scripted games of the slice (journal Passe L5)
   const seen = new Set();
   for (const p of ['idle', 'diligent']) for (const g of L.labReport(Array.from({ length: 30 }, (_, i) => 200 + i), L.POLICIES[p]).games) g.events.forEach((id) => seen.add(id));
-  // Mara's favour needs her services, the content of lot L5 (journal Passe L2): the only exception, until then
-  const NEEDS_CONTENT = ['merchant-favour'];
-  for (const e of EVENTS) if (!NEEDS_CONTENT.includes(e.id)) assert.ok(seen.has(e.id), `event ${e.id} never fired`);
+  for (const sc of Object.values(L.SCRIPTS)) for (const seed of [1842, 7719]) L.autoplay(seed, sc()).state.log.forEach((e) => seen.add(e.id));
+  for (const e of EVENTS) assert.ok(seen.has(e.id), `event ${e.id} never fired`);
   // a fired event is logged with its cause
   const st = L.autoplay(1842, L.POLICIES.idle).state;
   for (const ev of st.log.filter((x) => EVENTS.some((e) => e.id === x.id))) assert.equal(ev.cause, EVENTS.find((e) => e.id === ev.id).cause);
