@@ -37,6 +37,8 @@ export interface DayLook {
   sky: Record<string, number | string>;
   /** the HUD's name of the state */
   label: string;
+  /** ambient walkers at density 1 (the operator's decision J7a « Matin 6, midi 12, fin 9 », journal Passe D7; the night keeps 5) */
+  crowd: number;
 }
 
 /** Midday, the tournament's launch: the generated midday track is the target (the operator, journal Passe D6: « le jour doit etre cette
@@ -63,6 +65,7 @@ export const DAY: DayLook = {
   },
   sky: { DAY: 1 },
   label: 'Midday',
+  crowd: 12,
 };
 
 /** The morning, the early risers and the preparations (the operator's note to J1): after the generated morning track,
@@ -89,6 +92,7 @@ export const MORNING: DayLook = {
   },
   sky: { DAY: 1, DAY_HAZE: '0.55' },
   label: 'Morning',
+  crowd: 6,
 };
 
 /** The end of day, after the tournament: after the generated late-afternoon track,
@@ -114,6 +118,7 @@ export const AFTERNOON: DayLook = {
   },
   sky: { DAY: 1, DAY_SUN: '1.0' },
   label: 'End of day',
+  crowd: 9,
 };
 
 export const LOOKS: Record<DayTime, DayLook> = { morning: MORNING, midday: DAY, afternoon: AFTERNOON };

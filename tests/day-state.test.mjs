@@ -102,3 +102,8 @@ test('the sky under a day weather (Passe Y5): DAY_WEATHER only by day and only w
   assert.match(src('src/app/App.ts'), /skyDefines\(this\.look, overcast\(p\) > 0\)/);
   assert.match(src('src/app/App.ts'), /new Weather\(p, \{ day: this\.day, post: this\.post\.params \}\)/);
 });
+
+test('the day crowd (decision J7a « Matin 6, midi 12, fin 9 », Passe D7): the walkers of each state at density 1; App gives them to the actors by day only', () => {
+  assert.deepEqual([MORNING.crowd, DAY.crowd, AFTERNOON.crowd], [6, 12, 9]);
+  assert.match(src('src/app/App.ts'), /if \(this\.look\) this\.actors\.crowdBase = this\.look\.crowd;/);
+});

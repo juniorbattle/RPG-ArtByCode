@@ -2,7 +2,8 @@
 // in turn (the operator's decision of 2026-10-19, « Cinq par défaut »: at density 1 each approved townsperson walks once); `?crowd=<n>` spawns
 // n of them, in turn too. The old random pick of the kind is still drawn, so the district RNG keeps every later draw in place.
 // Beyond what 3.2 m apart holds, `?crowd=<n>` (only) lets a walker without a place try again 2.2 then 1.4 m apart (the day's crowd, J7,
-// prepared for the operator, journal Passe R3).
+// prepared for the operator, journal Passe R3). By day, round(crowdBase x density) walkers: morning 6, midday 12, end of day 9 at density 1
+// (the operator's decisions J7a and J7b, journal Passe D7), with the same relaxed spacing; the night keeps its five.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './load.mjs';
@@ -14,9 +15,10 @@ const THREE = await import('three');
 const KINDS = ['crowd0', 'crowd1', 'crowd2', 'crowd3', 'crowd4'];
 const atlas = { specs: new Map([...KINDS, 'player', 'porter'].map((id) => [id, { id, detail: 'crowd' }])), counts: new Map(), frames: new Map() };
 const district = { walk: { x0: -13.5, x1: 26, z0: -3.2, z1: 4.05 }, colliders: [], npcs: [], spawn: [0, 0, 0.5], heightAt: () => 0 };
-function crowd(count, seed = 1842, density = 1) {
+function crowd(count, seed = 1842, density = 1, base = null) {
   const sys = new ActorSystem(atlas);
   sys.crowdCount = count;
+  sys.crowdBase = base;
   sys.populate(district, density, seed);
   return { walkers: sys.actors.filter((a) => a.role === 'crowd'), porter: sys.actors.find((a) => a.spec === 'porter') };
 }
@@ -65,4 +67,18 @@ test('?crowd=<n> beyond what 3.2 m holds (Passe R3): a walker without a place tr
   assert.ok(g > 1.4 && g < 2.2, `never closer than 1.4 m, and the last tier used (closest pair ${g.toFixed(2)} m)`);
   // until the first walker without a place, ?crowd draws exactly what the default draws
   many.walkers.slice(0, 5).forEach((w, i) => assert.ok(w.pos.equals(dflt.walkers[i].pos), `walker ${i} where the default puts it`));
+});
+
+test('the day states (decisions J7a, J7b, Passe D7): round(base x density) walkers in turn, the relaxed spacing beyond what 3.2 m holds; ?crowd still wins; the night untouched', () => {
+  assert.equal(crowd(null, 1842, 1, 12).walkers.length, 12, 'midday: 12 at density 1');
+  assert.equal(crowd(null, 1842, 0.5, 12).walkers.length, 6, 'the density scales it, as at night');
+  assert.deepEqual(crowd(null, 1842, 1, 6).walkers.map((a) => a.spec), [...KINDS, 'crowd0'], 'the morning: the townsfolk in turn');
+  assert.equal(crowd(3, 1842, 1, 12).walkers.length, 3, '?crowd wins over the day count');
+  // beyond what 3.2 m holds, the day relaxes the spacing (J7b), the night does not
+  const day = crowd(null, 1842, 12, 5), night = crowd(null, 1842, 12);
+  assert.ok(day.walkers.length > night.walkers.length + 10, `by day ${day.walkers.length} placed, at night ${night.walkers.length}`);
+  // the first five by day stand where the night's five stand: the same draws until the first walker without a place
+  crowd(null, 1842, 1, 12).walkers.slice(0, 5).forEach((w, i) => assert.ok(w.pos.equals(crowd(null).walkers[i].pos), `walker ${i}`));
+  // the night (no base) is the approved default: the former ?crowd=5
+  assert.equal(crowd(null, 1842, 1, null).walkers.length, 5);
 });

@@ -69,6 +69,9 @@ export class ActorSystem {
   /** ambient walkers when set (`?crowd=<n>`, journal Passe C1): n walkers, the five townsfolk in turn; null = round(5 x density), in turn too
    *  (the operator's decision of 2026-10-19, « Cinq par défaut », journal Passe C2: at density 1 each approved townsperson walks once) */
   crowdCount: number | null = null;
+  /** a day state's walkers at density 1 (DayState's `crowd`: morning 6, midday 12, end of day 9, the operator's decision J7a, journal Passe
+   *  D7): round(crowdBase x density) without ?crowd; null = the night's five */
+  crowdBase: number | null = null;
 
   /** the five-view rule for walking facings (fiveViewFacing, journal Passe V5; the default since the operator's decision of 2026-10-19,
    *  Passes D3 / H10; `?views=3` turns it off), for the sheets that have the two three-quarter facings only: every other sprite keeps the
@@ -124,14 +127,14 @@ export class ActorSystem {
     for (const n of d.npcs) this.spawnNpc(n, rng);
     // ambient crowd: simplified sprites, count follows NPC density
     const crowd = ['crowd0', 'crowd1', 'crowd2', 'crowd3', 'crowd4'].filter((id) => this.atlas.specs.has(id));
-    const n = this.crowdCount ?? Math.round(5 * density);
+    const n = this.crowdCount ?? Math.round((this.crowdBase ?? 5) * density);
     const taken: THREE.Vector3[] = [spawnPos, ...d.npcs.map((q) => new THREE.Vector3(...q.pos))];
     for (let i = 0; i < n; i++) {
       let p: THREE.Vector3 | null = null;
       for (let k = 0; k < 20 && !p; k++) { const c = this.randomFree(rng); if (c && taken.every((t) => Math.hypot(t.x - c.x, t.z - c.z) > 3.2)) p = c; }
-      // ?crowd=<n> only (the day's crowd, J7, prepared for the operator's decision, journal Passe R3): the quay holds 8 walkers at most 3.2 m
-      // apart, so a walker that found no place tries again 2.2 then 1.4 m apart; the default never comes here (its draws stay in place)
-      if (!p && this.crowdCount !== null) {
+      // ?crowd=<n> and the day states (journal Passe R3; the operator's decision J7b « Accepter », Passe D7): the quay holds 8 walkers at most
+      // 3.2 m apart, so a walker that found no place tries again 2.2 then 1.4 m apart; the night's default never comes here (its draws stay)
+      if (!p && (this.crowdCount !== null || this.crowdBase !== null)) {
         for (const gap of [2.2, 1.4]) for (let k = 0; k < 20 && !p; k++) { const c = this.randomFree(rng); if (c && taken.every((t) => Math.hypot(t.x - c.x, t.z - c.z) > gap)) p = c; }
       }
       if (p) taken.push(p);

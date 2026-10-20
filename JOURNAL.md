@@ -705,6 +705,62 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un paramètre de nombre se vérifie contre ce qui est vraiment placé : 12 demandés en plaçaient 8, sans erreur ni message.
 - Le panneau navigateur de la séance est un client du GPU comme un autre. Une mesure de temps se fait sans l'onglet du jeu qu'il garde ouvert.
 
+## Passe D7 — La foule du jour (J7) : les choix de l'opérateur consignés et appliqués ; matin 6, midi 12, fin de journée 9 (2026-10-20)
+
+### Demande
+- Opérateur, mot pour mot : « La fiche de la foule du jour (J7) est remplie : relis mes choix, consigne-les et applique-les. »
+- Branche `day-crowd-d7` depuis `main` (`5461086`).
+
+### Les choix — [?] la fiche n'avait rien enregistré
+- La collection `decisions` de la fiche (https://claude.ai/artifact/EYTkeGc68zoUih9yziKjiB) était **vide**, relue deux fois (`list` et
+  `query`). Les choix cliqués ne s'y sont pas enregistrés ; la cause n'est pas connue (la page affiche « Enregistrement indisponible » quand
+  elle ne reçoit pas la base).
+- Je n'ai rien deviné. Les deux questions ont été reposées dans la séance, avec les mêmes options et les mêmes recommandations. Réponses de
+  l'opérateur, mot pour mot (l'option choisie) :
+
+| | Décision | Choix |
+|---|---|---|
+| J7a | Combien de promeneurs pour chaque état du jour ? (la nuit garde ses cinq) | « Matin 6, midi 12, fin 9 (Recommandé) » |
+| J7b | Le placement resserré au-delà de huit promeneurs (2,2 puis 1,4 m entre deux naissances) ? | « Accepter (Recommandé) » |
+
+### Fait — [OK]
+- **`DayState`** : chaque état porte son effectif à la densité 1 (`crowd`), soit 6 le matin, 12 à midi et 9 en fin de journée.
+- **`ActorSystem`** : `crowdBase`, que `App` règle de jour seulement.
+  - Sans `?crowd`, de jour : round(crowdBase × densité) promeneurs, les cinq citadins à tour de rôle, comme la nuit avec ses cinq. Le curseur
+    de densité du panneau garde son effet.
+  - Le placement resserré de la Passe R3 vaut aussi de jour (J7b). La nuit n'y passe jamais : ses tirages restent en place.
+  - `?crowd=<n>` garde la main sur l'effectif, de jour comme de nuit.
+- Au-delà de cinq, chaque citadin revient avec l'une de ses variantes approuvées (Passe V1).
+- **`AGENTS.md`** : les paramètres `time` et `crowd`, la section « Status » et J7 dans la direction du jour.
+
+### Preuves
+- **Contre `main` figé** (`5461086`, :5187), au **seuil 0**, captures déterministes avec personnages : **0 px**, sans erreur de page.
+  - **La nuit** : les quatre références (120 pas), B et D à 300 pas, l'orage en B.
+  - **Le jour avec `?crowd`** (l'effectif fixé par le paramètre) : midi en B avec `crowd=5` et `crowd=12`, le matin en D avec `crowd=6` (300 pas).
+- **Le jour par défaut change**, comme voulu : midi en B, 2,5 % des pixels contre les cinq promeneurs de `main`. Témoin de répétition (fin de
+  journée en B, deux chargements) : 0 px.
+- **Promeneurs placés par défaut** (graine 1842, densité 1) : 6 le matin, 12 à midi, 9 en fin de journée, 5 la nuit.
+- **Tests** :
+  - `tests/crowd.test.mjs` +1 : de jour, round(base × densité) promeneurs à tour de rôle ; la densité les règle ; `?crowd` l'emporte ; au-delà
+    de ce que tient 3,2 m, le jour resserre et la nuit non ; les cinq premiers du jour sont où sont les cinq de la nuit ; la nuit garde cinq.
+  - `tests/day-state.test.mjs` +1 : 6, 12 et 9 ; `App` les donne aux acteurs de jour seulement.
+  - **Cinq fautes injectées, attrapées** : l'effectif du jour ignoré ; pas de placement resserré de jour ; la nuit à douze ; `App` qui ne donne
+    pas l'effectif ; un matin à huit. Les fichiers sont restaurés à l'octet.
+  - **[KO → corrigé]** une apostrophe dans le titre d'un test (« state's ») cassait la chaîne entre apostrophes du fichier, une faute déjà faite
+    dans cette séance. Titre réécrit.
+- **Validation** : typecheck, `npm test` 100 / 100, build, `art:validate`.
+- **Planche** : `screenshots/calibration/d7-day-crowd/B-four-states-crowd.png` (le matin, midi, la fin de journée et la nuit en B, 300 pas).
+
+### Restes [?]
+- **La revue du jour par l'opérateur en jeu** (J9) : les quatre états, la météo, le pavois, la foule. La nuit reste le défaut jusque-là.
+- **Le remède RK3** (Passe K8) reste à décider.
+- La fiche n'enregistre pas toujours ses choix : à la prochaine, je relirai la collection dès qu'un choix est fait, ou je demanderai le
+  récapitulatif copié.
+
+### Pensée
+- Une fiche dite remplie dont la collection est vide ne se devine pas : les questions se reposent avec les mêmes options, et le journal dit
+  d'où vient la réponse.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -712,7 +768,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
-  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5) ; la foule du jour (J7) proposée sur une fiche (Passe R3, https://claude.ai/artifact/EYTkeGc68zoUih9yziKjiB), en attente des choix de l'opérateur. Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
+  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5) ; la foule du jour (J7) décidée et appliquée (Passes R3 / D7 : matin 6, midi 12, fin de journée 9 ; la nuit garde cinq). Les tâches de la Passe D6 sont faites ; reste la revue du jour par l'opérateur en jeu (J9). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
   midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
   défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
