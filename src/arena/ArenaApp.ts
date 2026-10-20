@@ -12,10 +12,10 @@ import { FrameCap, parseFrameCap } from '../app/FrameCap';
 import { PerfMonitor } from '../debug/PerfMonitor';
 import { SpriteRenderer, PIXEL_WORLD, type Actor } from '../characters/SpriteRenderer';
 import type { Anim } from '../characters/SpriteGenerator';
-import { CombatSim, type CombatEvent, type FighterId, type ActionId } from './CombatSim';
+import { CombatSim, type CombatData, type CombatEvent, type FighterId, type ActionId } from './CombatSim';
 import { buildArena, type ArenaBuild } from './ArenaScene';
 import { buildArenaAtlas, clipFrame, CELL_W, CELL_H, CELL_FOOT, type ArenaSpriteSet } from './FighterArt';
-import { ArenaHud, type Assist } from './ArenaHud';
+import { ArenaHud, type Assist, type ArenaTexts } from './ArenaHud';
 import { PRESETS, runScript } from './Presets';
 import { FloorUI } from './FloorUI';
 
@@ -27,7 +27,13 @@ import { FloorUI } from './FloorUI';
  *  game's frame cap), `freeze=<s>` (fixed shader time), `seed=` (the stands' spectators and the town houses). Keys: 1-6 attacks and
  *  techniques, A dodge, B guard (hold), R restart, Space pause, H HUD. */
 
-export interface ArenaOptions { canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void }
+/** an official bout of the game's play mode (journal Passe L3): its data (a variant of CombatData, src/combat/match.ts), who sits in the
+ *  opponent's seat, the assistance the preparation earned, the play mode's words; no restart, and `onOver` once the bout is decided */
+export interface ArenaMatch {
+  data: CombatData; foe: string; assist: Assist; texts: ArenaTexts;
+  onOver?: (r: { winner: FighterId; hp: Record<FighterId, number>; maxHp: Record<FighterId, number>; finisher: string | null; t: number }) => void;
+}
+export interface ArenaOptions { canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void; match?: ArenaMatch }
 
 type Clip = string;
 const ATTACKS = new Set<Clip>(['strike', 'heavy', 'skill', 'slash']);
@@ -55,7 +61,7 @@ export class ArenaApp {
   /** frame time, draws and (?gpuprof=1, or tools/perf.mjs) GPU ms per pass, as the town's App */
   readonly perf = new PerfMonitor();
   buildMs = 0;
-  readonly sim = new CombatSim();
+  readonly sim: CombatSim;
   lib!: MaterialLibrary;
   arena!: ArenaBuild;
   set!: ArenaSpriteSet;
@@ -89,8 +95,12 @@ export class ArenaApp {
   private pose: CamPose = { ...BASE_POSE };
   /** the camera's push-in toward Marek's heavy charge, smoothed (0..1) */
   private push = 0;
+  /** the blow that ended the bout, and whether the play mode has been told */
+  private finisher: string | null = null;
+  private told = false;
 
   constructor(private opts: ArenaOptions) {
+    this.sim = new CombatSim(opts.match?.data);
     this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: false, powerPreference: 'high-performance', stencil: false, alpha: false });
     this.renderer.autoClear = false;
     this.renderer.info.autoReset = false;
@@ -101,6 +111,7 @@ export class ArenaApp {
     this.frameCap.mode = parseFrameCap(q.get('fps')) ?? { kind: 'adaptive', fps: 60 };
     const as = q.get('assist');
     if (as === 'full' || as === 'off' || as === 'subtle') this.assist = as;
+    if (opts.match) this.assist = opts.match.assist;
     if (q.get('hud') === '0' || q.has('clean')) this.hudVisible = false;
     if (q.has('freeze')) this.frozen = parseFloat(q.get('freeze')!);
     // ?cam=pitchDeg,dist,fov,ty,tz,tx overrides the base framing while tuning (blank = keep)
@@ -143,7 +154,7 @@ export class ArenaApp {
     this.hitLight = this.lights.add({ pos: [0, 1.4, 0.5], color: [1.0, 0.86, 0.66], intensity: 1.5, radius: 4.5, kind: 'steady', priority: 10 }, 'fx', 0);
     this.castLight.scale = this.castLight.targetScale = 0; this.hitLight.scale = this.hitLight.targetScale = 0;
     this.opts.onProgress('fighters', 0.98);
-    this.set = buildArenaAtlas(seed, 5);
+    this.set = buildArenaAtlas(seed, 5, this.opts.match?.foe);
     this.sprites = new SpriteRenderer(this.set.atlas, 96, { w: CELL_W, h: CELL_H, foot: CELL_FOOT });
     this.sprites.charScale = CHAR_SCALE;
     this.sprites.protect.crowd = 0.35;
@@ -164,7 +175,7 @@ export class ArenaApp {
     this.applyCamera(0);
     this.lights.update(this.time, 0, this.camera);
     this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 3.5, -6), MOON_DIR, 24, 9);
-    if (!this.opts.params.has('clean')) this.hud = new ArenaHud(this.sim, this.set.portraits);
+    if (!this.opts.params.has('clean')) this.hud = new ArenaHud(this.sim, this.set.portraits, this.opts.match?.texts);
     if (this.hud) {
       this.hud.onAction = (id, down) => this.action(id, down);
       this.hud.project = (who) => this.headScreen(who);
@@ -196,7 +207,7 @@ export class ArenaApp {
     if (id === 'guard') { s.setGuard('ren', down); return; }
     if (!down) return;
     if (id === 'dodge') s.react('ren', 'dodge');
-    else if (id === 'reset') this.restart();
+    else if (id === 'reset') { if (!this.opts.match) this.restart(); }
     else if (id === 'pause') { this.paused = !this.paused && !this.moment ? true : false; this.moment = false; this.hud?.still(false); }
     else s.command('ren', id as ActionId);
   }
@@ -237,6 +248,7 @@ export class ArenaApp {
   private onEvents(evs: CombatEvent[]): void {
     for (const e of evs) {
       if (e.type === 'impact') {
+        if (e.hp <= 0) this.finisher = e.kind;
         const to = this.pres[e.to], tgt = this.fighters[e.to], heavy = e.kind === 'heavy' || e.damage >= 20;
         if (e.result === 'hit') { to.knock = heavy ? -0.42 : -0.24; to.flash = 1; this.shake = Math.max(this.shake, heavy ? 1 : 0.45); this.spawnFx(e.from === 'marek' && e.kind === 'heavy' ? 'ember' : 'spark', tgt, e.to); }
         else if (e.result === 'guarded') { to.knock = -0.12; to.guardHit = 1; this.shake = Math.max(this.shake, 0.3); this.spawnFx('guard', tgt, e.to); }
@@ -396,6 +408,13 @@ export class ArenaApp {
     this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...this.fans], this.lights, this.camera, MOON_DIR, null, this.fighters.ren);
     this.particles.update(pdt, this.time, this.camera, this.post.height, this.lights, null);
     this.hud?.update(this.sim, this.assist, this.hudVisible, this.paused && !this.moment);
+    // an official bout: told once the KO has had its moment on screen
+    const m = this.opts.match;
+    if (m?.onOver && this.sim.over && !this.told && this.koT >= 0 && this.sim.t - this.koT >= 1.6) {
+      this.told = true;
+      const f = this.sim.f;
+      m.onOver({ winner: f.ren.state === 'down' ? 'marek' : 'ren', hp: { ren: f.ren.hp, marek: f.marek.hp }, maxHp: { ren: f.ren.maxHp, marek: f.marek.maxHp }, finisher: this.finisher, t: this.sim.t });
+    }
   }
 
   render(): void {

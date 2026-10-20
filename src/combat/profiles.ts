@@ -51,7 +51,8 @@ export function duelData(opponent: CombatProfile, o: { seed: number; playerName:
   d.ap = { ...d.ap, start: Math.min(d.ap.max, d.ap.start + (pm.ap ?? 0)) };
   for (const a of Object.values(d.actions)) {
     if (a.owner === 'ren') a.damage = Math.round(a.damage * (pm.damage ?? 1));
-    if (o.names?.[a.id]) a.name = o.names[a.id]!;
+    // the play mode's names (choice K1): the prototype's short labels (« Estocade ») go with its French names
+    if (o.names?.[a.id]) { a.name = o.names[a.id]!; delete a.short; }
   }
   const L = d.actions.m_slash, H = d.actions.m_heavy, ed = em.damage ?? 1;
   Object.assign(L, { damage: Math.round(opponent.light.damage * ed), impactAt: opponent.light.impactAt, windowDur: opponent.light.windowDur });

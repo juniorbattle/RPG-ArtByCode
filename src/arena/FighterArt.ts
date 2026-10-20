@@ -422,6 +422,20 @@ MAREK_CLIPS.block = MAREK_CLIPS.ready; MAREK_CLIPS.victory = MAREK_CLIPS.ready; 
 
 export const CLIPS: Record<'ren' | 'marek', Record<string, Clip>> = { ren: REN_CLIPS, marek: MAREK_CLIPS };
 
+/** the duelist of the river towns (journal Passe L3): the game's second opponent, in the same grammar as Marek (the town generator's rig,
+ *  ramps and outline at x2), lighter and quicker, a one-handed blade and a short teal cape; she moves with the hero's clips (one hand on
+ *  the grip, the same frames) from the opponent's seat */
+export const VESSA: CharSpec = {
+  id: 'vessa', detail: 'hero', scale: 1.02, build: 0.95, skin: [236, 196, 160], hair: [40, 34, 46], hairStyle: 'long',
+  top: [62, 104, 112], topStyle: 'jerkin', trim: [220, 210, 180], trousers: [48, 46, 60], boots: [58, 44, 46], belt: [96, 70, 50],
+  cape: [40, 78, 88], capeLining: [22, 34, 44], sword: true, eye: [44, 36, 50], anims: ['idle'], accessory: 'none',
+};
+/** who can sit in the opponent's seat (`marek`, the simulation's second slot): their look and clips; `marek` is the prototype's */
+export const FOES: Record<string, { look: FighterLook; clips: Record<string, Clip> }> = {
+  marek: { look: LOOKS.marek, clips: MAREK_CLIPS },
+  vessa: { look: { spec: VESSA, blade: 16, bladeW: 2, armor: false, smear: 'ivory', tail: 4 }, clips: REN_CLIPS },
+};
+
 /** the frame of a clip at its clock (`t`, s) given its impact time: wind-ups until the impact, the strike frame around it, the
  *  follow-through after; loops at their own rate */
 export function clipFrame(clip: string, n: number, t: number, impactAt = 0, loopRate = 0): number {
@@ -469,21 +483,22 @@ function paintGuardFlash(frame: number, k = FIGHTER_K): Sprite {
 /* ------------------------------------------------------------------ the arena's atlas */
 
 export interface ArenaSpriteSet {
-  atlas: SpriteAtlas; clips: typeof CLIPS; crowd: CharSpec[]; portraits: Record<'ren' | 'marek', HTMLCanvasElement | null>;
+  atlas: SpriteAtlas; clips: Record<'ren' | 'marek', Record<string, Clip>>; crowd: CharSpec[]; portraits: Record<'ren' | 'marek', HTMLCanvasElement | null>;
   /** how far forward of the body axis a fighter frame reaches (texels: its blade tip in a strike), by `<id>/<clip>.<i>` */
   reach: Record<string, number>;
 }
 
 /** every fighter frame, the spectators (the town's crowd archetypes, front view) and the effects, in cells of 64 x 96, as a SpriteAtlas
  *  the town's SpriteRenderer draws (frame keys `<id>/<dir>/<anim>/<i>`; a fighter frame is its own one-frame anim `<clip>.<i>`) */
-export function buildArenaAtlas(seed: number, crowdCount = 5): ArenaSpriteSet {
+export function buildArenaAtlas(seed: number, crowdCount = 5, foe = 'marek'): ArenaSpriteSet {
   const cells: Array<{ key: string; spr: Sprite }> = [];
   const reach: Record<string, number> = {};
+  const F = FOES[foe] ?? FOES.marek, clips = { ren: REN_CLIPS, marek: F.clips }, looks = { ren: LOOKS.ren, marek: F.look };
   for (const id of ['ren', 'marek'] as const) {
-    for (const [clip, c] of Object.entries(CLIPS[id])) {
-      if (Object.entries(CLIPS[id]).find(([, v]) => v === c)![0] !== clip) continue;   // a borrowed clip: aliased below
+    for (const [clip, c] of Object.entries(clips[id])) {
+      if (Object.entries(clips[id]).find(([, v]) => v === c)![0] !== clip) continue;   // a borrowed clip: aliased below
       c.frames.forEach((p, i) => {
-        const spr = paintFighter(LOOKS[id], p);
+        const spr = paintFighter(looks[id], p);
         let r = 0;
         for (let y = 0; y < spr.h; y++) for (let x = 0; x < spr.w; x++) if (spr.rgba[(y * spr.w + x) * 4 + 3] > 0) r = Math.max(r, (spr.w / 2 - x) / FIGHTER_K);
         reach[`${id}/${clip}.${i}`] = r;
@@ -512,8 +527,8 @@ export function buildArenaAtlas(seed: number, crowdCount = 5): ArenaSpriteSet {
   });
   for (const k of a.frames.keys()) { const [id, , anim] = k.split('/'); a.counts.set(`${id}/${anim}`, (a.counts.get(`${id}/${anim}`) ?? 0) + 1); }
   // borrowed clips: alias their keys
-  for (const id of ['ren', 'marek'] as const) for (const [clip, c] of Object.entries(CLIPS[id])) {
-    const src = Object.entries(CLIPS[id]).find(([, v]) => v === c)![0];
+  for (const id of ['ren', 'marek'] as const) for (const [clip, c] of Object.entries(clips[id])) {
+    const src = Object.entries(clips[id]).find(([, v]) => v === c)![0];
     if (src === clip) continue;
     c.frames.forEach((_, i) => { a.frames.set(`${id}/side/${clip}.${i}/0`, a.frames.get(`${id}/side/${src}.${i}/0`)!); a.counts.set(`${id}/${clip}.${i}`, 1); reach[`${id}/${clip}.${i}`] = reach[`${id}/${src}.${i}`]; });
   }
@@ -524,7 +539,7 @@ export function buildArenaAtlas(seed: number, crowdCount = 5): ArenaSpriteSet {
     return t;
   };
   a.texture = mk(data, true); a.emis = mk(em, false); a.width = W; a.height = H; a.rgba = data; a.frameCount = cells.length;
-  return { atlas: a, clips: CLIPS, crowd, portraits: { ren: portrait(REN), marek: portrait(MAREK) }, reach };
+  return { atlas: a, clips, crowd, portraits: { ren: portrait(REN), marek: portrait(F.look.spec) }, reach };
 }
 
 /** a 32 x 48 town frame placed in a cell (feet on the cell's foot row), each town pixel a k x k block: the spectators keep the town's
@@ -540,7 +555,7 @@ function inCell(s: Sprite, k = FIGHTER_K): Sprite {
 }
 
 /** the HUD portrait: the front view's head and shoulders (the town generator's own front frame), 24 x 24 texels on a canvas */
-function portrait(spec: CharSpec, dir: Dir = 'down'): HTMLCanvasElement | null {
+export function portrait(spec: CharSpec, dir: Dir = 'down'): HTMLCanvasElement | null {
   if (typeof document === 'undefined') return null;
   const s = renderFrame({ ...spec, anims: ['idle'] }, dir, posesFor('idle')[0]);
   const R = makeRig(spec), y0 = Math.max(0, Math.round(R.headCy - R.headRy - 5)), x0 = 4, n = 24;

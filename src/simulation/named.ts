@@ -18,11 +18,18 @@ export function play(st: GameState, script: readonly Action[]): GameState {
 }
 
 const W: Action = { type: 'wait' };
+/** fixed results of the arena, for the named states past a bout */
+const WON: Action = { type: 'fight', outcome: { winner: 'player', playerHp: 120, playerMaxHp: 200, opponentHp: 0, opponentMaxHp: 600, finisher: 'tech' } };
+const LOST: Action = { type: 'fight', outcome: { winner: 'opponent', playerHp: 0, playerMaxHp: 200, opponentHp: 300, opponentMaxHp: 600, finisher: 'heavy' } };
 
 export const NAMED_STATES: Record<string, { about: string; script: readonly Action[] }> = {
   'day1-morning': { about: 'a new game, the first morning', script: [] },
   'day1-evening': { about: 'the first evening, nothing done', script: [W, W] },
   'day2-morning': { about: 'the second morning, nothing done', script: [W, W, W] },
+  'day2-afternoon': { about: 'the first bout\'s afternoon (Vessa), nothing done', script: [W, W, W, W] },
+  'day2-dusk-won': { about: 'back from a won first bout, at the end of day', script: [W, W, W, W, WON] },
+  'day2-dusk-lost': { about: 'back from a lost first bout (hurt), at the end of day', script: [W, W, W, W, LOST] },
+  'day3-afternoon': { about: 'the second bout\'s afternoon (Marek), the first won', script: [W, W, W, W, WON, W, W] },
   'trained-day1-evening': { about: 'trained twice on day 1', script: [{ type: 'move', to: 'forecourt' }, { type: 'train' }, { type: 'train' }] },
 };
 

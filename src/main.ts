@@ -11,8 +11,10 @@ loading.innerHTML = '<div style="font-size:22px;letter-spacing:.3em;margin-botto
 document.body.appendChild(loading);
 const label = loading.querySelector('#ld-label') as HTMLElement, bar = loading.querySelector('#ld-bar') as HTMLElement;
 
-// ?scene=arena: the arena of the Cité du Tournoi (journal Passe P1), loaded on demand; without it the town runs exactly as before
-if (params.get('scene') === 'arena') void startArena();
+// ?play=1: the game's play mode (journal Passe L3), loaded on demand; ?scene=arena: the arena of the Cité du Tournoi (journal Passe P1), loaded
+// on demand; without them the town runs exactly as before
+if (params.has('play')) void import('./ui/play').then((m) => m.startPlay({ canvas, params, label, bar, loading }));
+else if (params.get('scene') === 'arena') void startArena();
 else startTown();
 
 async function startArena(): Promise<void> {

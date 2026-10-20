@@ -16,7 +16,8 @@ export type Action =
   | { type: 'train' }
   | { type: 'wait' }
   | { type: 'fight'; outcome: DuelOutcome }
-  | { type: 'payWatch' };
+  | { type: 'payWatch' }
+  | { type: 'nightfall' };
 
 export interface ActionDef<A extends Action = Action> {
   /** the actions of this kind worth offering now (refused ones included, with their reason) */
@@ -83,7 +84,15 @@ export const ACTIONS: Table = {
       const o = a.outcome;
       return o && (o.winner === 'player' || o.winner === 'opponent') && o.playerMaxHp > 0 && o.opponentMaxHp > 0 ? null : 'No result from the arena.';
     },
-    apply: (s, a, _r, emit) => { applyPlayerDuel(s, a.outcome, emit); s.pendingMatch = null; },
+    apply: (s, a, _r, emit) => { applyPlayerDuel(s, a.outcome, emit); s.pendingMatch = null; s.flags.dusk = s.day; },
+  },
+  nightfall: {
+    // back from a bout the evening opens at the end of day (choice G2: `afternoon` as the transition); the night falls when the player says
+    list: (st) => (st.slot === 'evening' && st.flags.dusk === st.day && !st.flags[`night:${st.day}`] ? [{ type: 'nightfall' }] : []),
+    label: () => 'Let the night fall',
+    cost: () => 0,
+    check: (st) => (st.slot === 'evening' && st.flags.dusk === st.day && !st.flags[`night:${st.day}`] ? null : 'The sun is not setting on a bout.'),
+    apply: (s, _a, _r, emit) => { s.flags[`night:${s.day}`] = true; emit({ kind: 'action', id: 'nightfall', cause: 'action:nightfall', text: 'The sun sinks behind the Colosseum; the lanterns of the Cité are lit.', visible: true }); },
   },
   payWatch: {
     list: (st) => (st.place === 'district' && st.slot === 'evening' ? [{ type: 'payWatch' }] : []),

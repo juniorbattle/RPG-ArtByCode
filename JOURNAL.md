@@ -478,6 +478,51 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   représentent (une lecture qui n'aboutit pas faute de point d'action), pas par le chiffre qui fait passer le test.
 - Un bonus de jeu se vérifie sur le bot avant d'être gardé : un avantage nominal (des points d'action de plus) peut faire perdre.
 
+## Passe L3 — Le duel officiel : l'arène pilotée par une fiche de match, Vessa générée, l'aller et retour ville → arène → ville (2026-10-20)
+
+### Contrat de tâche (contrat projet § 11.3)
+- **Objectif** : les deux duels de la tranche se jouent dans l'arène actuelle (choix G1), pilotée par une fiche de match ; le résultat revient
+  à l'état ; on passe de la ville à l'arène et retour par une sauvegarde et un rechargement (choix G2).
+- **Entrées** : plan, lot L3 ; `src/arena/` (Passe P1) ; le cœur des Passes L1 et L2 ; choix G1, G2, K1, K2.
+- **Fichiers autorisés** : `src/arena/ArenaApp.ts`, `ArenaHud.ts`, `FighterArt.ts` (des options, défauts inchangés), `src/main.ts` (une entrée
+  `?play=1` chargée à la demande), `src/ui/`, les modules du jeu, `tests/`, `tools/play-flow.mjs`, `JOURNAL.md`.
+- **Interdits** : `COMBAT_DATA`, `CombatSim`, `ARENA_SIM_HASH` ; tout changement visible de `?scene=arena` et du jeu par défaut.
+- **Outputs** : `ArenaMatch` ; la table de textes du HUD (`TEXTS_FR` par défaut, `TEXTS_EN`) ; Vessa (`FighterArt.VESSA`, `FOES`) ; `src/ui/play.ts`,
+  `playArena.ts`, une première page de ville `playTown.ts` ; `?play=1`.
+- **Critères d'acceptation** : les deux duels, gagnés et perdus, joués jusqu'au bout et appliqués ; la sauvegarde rechargée des deux côtés
+  du changement de scène égale la partie continue ; `ARENA_SIM_HASH` et l'équivalence au prototype verts ; le PD à 0 px.
+- **Tests** : `tests/play-duel.test.mjs` ; `tools/play-flow.mjs` dans le navigateur ; le PD. **Risques** : un écart de pixel de `?scene=arena`
+  (textes, atlas) ; le chemin par défaut touché par `src/main.ts`.
+- **Définition de terminé** : tests verts, fautes attrapées, parcours prouvé dans le navigateur, PD à 0 px, validation complète.
+
+### Fait — [OK]
+- **`ArenaApp`** prend une option `match` : les données du duel (une variante de `CombatData`, `src/combat/match.ts`), qui s'assoit dans le siège
+  adverse, l'assistance gagnée par la préparation, la table de textes ; pas de recommencement (« R ») ; `onOver` une fois le KO montré
+  (1,6 s). Sans l'option, rien ne change.
+- **Le HUD** : ses mots dans une table. `TEXTS_FR`, le défaut, reprend mot pour mot ceux du prototype ; `TEXTS_EN` sert au mode jouable (choix
+  K1). Les noms des actions viennent des données du duel : en anglais dans une fiche (`src/narrative/texts.ts`), et le libellé court
+  « Estocade » du prototype tombe avec son nom français.
+- **Vessa Lark**, le second adversaire : générée dans la grammaire de `FighterArt` (le rig du générateur, ses rampes, son contour, à ×2), plus
+  légère que Marek, une lame à une main, une veste et une cape sarcelle ; elle bouge avec les images du héros, depuis le siège adverse
+  (`FOES`). `buildArenaAtlas(seed, 5)` reste le même à l'octet.
+- **Le mode jouable** (`?play=1`, chargé à la demande par `src/main.ts`) :
+  - l'état vient de la sauvegarde (`localStorage`, et un fichier à garder ou recharger), ou d'une partie neuve (`&new=1&name=`) ; DEV :
+    `&state=<état nommé>` ;
+  - **la ville** : le district figé, son état du jour, sa forge, sa foule et sa météo tirés de l'état (`townQuery` : matin → `morning`,
+    après-midi → `midday`, soir → la nuit ; au retour d'un duel, la fin de journée → `afternoon` jusqu'à « Let the night fall ») ; un premier
+    panneau (l'horloge, les actions et leur coût, le journal, le tableau du tournoi, le fichier de sauvegarde) ;
+  - **l'arène** : un rapport d'observation avant le premier coup, le duel, le résultat appliqué (`fight`), sauvegardé, puis le retour en ville ;
+  - `window.__game` (l'état, les actions, `act`) pour les preuves ; `?noreload=1` garde la page et laisse l'adresse suivante dans
+    `window.__go`.
+- **Des états nommés** de duel : `day2-afternoon`, `day2-dusk-won`, `day2-dusk-lost`, `day3-afternoon`.
+
+### Choix de la séance (consignés comme tels)
+- **L'arène reste de nuit** pendant le duel de l'après-midi : elle n'a que cet aspect (choix G1 : « L'arène actuelle »). Lui donner le jour serait
+  un changement d'aspect, préparé comme une décision (au bilan).
+- Le rapport d'observation suspend la simulation (sans écran de pause) jusqu'à « Fight » : le premier coup ne part pas pendant la lecture.
+- Le profil du siège adverse prend les images du héros pour Vessa : un personnage nouveau sans clips nouveaux. Sa silhouette reste proche de
+  celle du héros ; une critique à l'aveugle, puis l'opérateur, en jugeront.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
