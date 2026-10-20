@@ -291,6 +291,21 @@ export function boat(r: Rng): { S: SlotSet; lantern: V3; yard: V3; bow: V3; ster
     // gunwale caps join the two skins
     for (const j of [0, across.length - 1]) quadFacing(S.timber, [A[j], Bq[j], Bi[j], Ai[j]], [0, 1, 0], { tint: wood, grain: 'x' });
   }
+  // transom: the lofted hull ends with an open section at the stern (its width stays 0.6 m there, unlike the bow's): framings that look up-canal
+  // saw into the boat through it, the hull read as holed (the operator's report, journal Passe Z5). A flat panel closes the section, painted
+  // outside, inner wood inside, with a cap on its top edge; a fan from the section's centre (the outline is convex)
+  {
+    const R = ring(0, 1, 0), c: V3 = [R[0][0], R.reduce((t, p) => t + p[1], 0) / R.length, 0], T = 0.05;
+    const fan = (dx: number, wantX: number, o: { tint: V3; ao: number }) => R.forEach((p, j) => {
+      const q = R[(j + 1) % R.length], P: V3 = [p[0] + dx, p[1], p[2]], Q: V3 = [q[0] + dx, q[1], q[2]], C: V3 = [c[0] + dx, c[1], c[2]];
+      const nx = (P[1] - C[1]) * (Q[2] - C[2]) - (P[2] - C[2]) * (Q[1] - C[1]);
+      S.planks.tri(C, P, Q, { ...o, grain: 'z', flip: nx * wantX < 0 });
+    });
+    fan(0, -1, { tint: paint, ao: 0.9 });
+    fan(T, 1, { tint: inner, ao: 0.6 });
+    const t0 = R[0], t1 = R[R.length - 1];
+    quadFacing(S.timber, [t0, t1, [t1[0] + T, t1[1], t1[2]], [t0[0] + T, t0[1], t0[2]]], [0, 1, 0], { tint: wood, grain: 'z' });
+  }
   // floorboards, thwarts, stem
   for (let i = 1; i < N - 1; i++) {
     const a = sec(i / N), b = sec((i + 1) / N);

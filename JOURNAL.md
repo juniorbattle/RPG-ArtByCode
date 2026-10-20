@@ -941,6 +941,53 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
   (les toits). Une palette d'albedo écrite pour la nuit se compense de jour par la lumière, sans toucher la géométrie, que la nuit prouvée
   partage.
 
+## Passe Z5 — Le bateau : sa poupe était ouverte, un tableau arrière la ferme (signalement de l'opérateur) (2026-10-19)
+
+### Demande
+- Opérateur, mot pour mot, pendant la Passe Y2, une capture du bateau à l'appui : « d'ailleurs il y a aussi une imperfection que je veux
+  signaler ddepuis un moment sur le bateau qui semble manquer une partie ».
+- Le district est complet (Passe Z4) : tout changement est une tâche décidée par l'opérateur. Ce signalement en est une.
+- Branche `fix-boat-z5` depuis `main` (`03f3e9d`), après la fusion de la Passe Y2.
+
+### Cause — [OK] trouvée
+- En B, le flanc de la coque, côté caméra, s'interrompait à hauteur du poteau de la lanterne de poupe : la poupe à gauche, le reste de la coque à
+  droite, et l'eau entre les deux. Le défaut se voyait la nuit comme le jour.
+- **Ce n'était pas le culling** : `vis=0` donne le même trou (1 px d'écart ailleurs dans l'image).
+- **Les triangles du flanc existent** : les deux premières tranches, côté caméra, sont présentes, normales vers l'extérieur (relevé des
+  triangles dans la boîte du bateau).
+- **L'eau masquée, la cause se lit** : la coque lissée (`boat`, `PropGenerator`) finit à la poupe sur une section ouverte. La largeur de la
+  coque y reste à 0,6 m, alors qu'elle tombe à 0 à la proue. Aucun tableau arrière ne fermait la poupe.
+  - Les cadrages regardent vers l'amont, donc la poupe en face, et voyaient l'intérieur par l'ouverture : le plancher éclairé par la lanterne,
+    puis l'eau. C'est le « morceau qui manque ».
+
+### Fait — [OK]
+- Un tableau arrière ferme la section de la poupe :
+  - un éventail depuis le centre de la section (le contour est convexe) ;
+  - peint dehors, tourné vers l'arrière ; la teinte intérieure dedans, tournée vers l'avant, 5 cm plus loin ;
+  - un chapeau de bois sur son bord haut.
+- Le sens de chaque triangle est calculé, pas supposé.
+- Aucun tirage aléatoire de plus : le reste du district ne bouge pas.
+
+### Preuves
+- **Avant / après** (captures déterministes, graine 1842, B, 120 pas), `main` figé (`cbe2158`, :5187) contre la branche :
+  - la nuit : 0,55 % des pixels changent (11 415 px), la poupe (jusqu'à 177) et le chatoiement du reflet du bateau sur l'eau et les pavés mouillés
+    (la réflexion planaire) ;
+  - l'eau masquée : la coque est fermée ;
+  - planche : `screenshots/calibration/z5-boat/B-boat-before-after-x3.png`.
+- **Visibilité** (`tools/viewport-proof.mjs --no-resize --no-controls`, trois graines × cinq formats, la même série) :
+  - `main` et la branche : **les 5 mêmes contrôles en échec**, les lanières de la Passe Z2, aucun nouveau ;
+  - Tier 3 330 pièces des deux côtés ; 16 triangles dessinés de plus (98 886 → 98 902), les deux éventails et le chapeau.
+- **Références** refaites (témoin de répétition 0 px) :
+  - `camA` (3 642 px, le bateau vu de loin) et `camB` (11 415 px) ;
+  - `camC` (1 636 px d'un niveau, le reflet) ;
+  - `camD` inchangée (0 px).
+- **Validation** : typecheck, `npm test` 91 / 91, build, `art:validate`.
+
+### Pensée
+- Un « morceau qui manque » se cherche dans l'ordre : le culling (`vis=0`), les triangles (présents ? tournés ?), puis ce qui les cache ou ce
+  qu'on voit à travers. En masquant l'eau, on a vu l'intérieur du bateau par une poupe jamais fermée.
+- Une forme lissée entre des sections se ferme à ses bouts : une section de largeur non nulle est un trou.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
