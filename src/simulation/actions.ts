@@ -62,9 +62,9 @@ const BASE: Table = {
   },
   train: {
     list: (st) => (st.place === 'forecourt' ? [{ type: 'train' }] : []),
-    label: () => 'Train on the practice sand (+5 % damage at your next duel)',
+    label: () => 'Train on the practice sand (+5 % damage at your next bout)',
     cost: () => 1,
-    check: (st) => (st.place !== 'forecourt' ? 'The practice sand is at the Arena Forecourt.' : st.slot === 'evening' ? 'The practice sand closes at dusk.' : st.player.training >= 2 ? 'You are as sharp as training can make you before the next duel.' : null),
+    check: (st) => (st.place !== 'forecourt' ? 'The practice sand is at the Arena Forecourt.' : st.slot === 'evening' ? 'The practice sand closes at dusk.' : st.player.training >= 2 ? 'You are as sharp as training can make you before the next bout.' : null),
     apply: (s, _a, _r, emit) => {
       s.player.training++; s.player.reputation = clamp(s.player.reputation + 1);
       emit({ kind: 'action', id: 'train', cause: 'action:train', text: 'You drill on the practice sand until your arms burn.', visible: true });

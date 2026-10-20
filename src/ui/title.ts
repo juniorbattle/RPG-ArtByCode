@@ -13,10 +13,10 @@ export function showTitle(c: TitleChoice): void {
   const save = readSave().state, root = el('div', 'pm');
   root.id = 'title-screen';
   root.style.cssText = 'inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:radial-gradient(ellipse at 50% 38%,#121a2e 0%,#05070d 70%)';
-  root.innerHTML = `<div style="width:min(420px,100%);text-align:center">
+  root.innerHTML = `<div style="width:min(620px,100%);text-align:center">
     <div style="font-size:clamp(22px,6vw,34px);letter-spacing:.32em;color:#f1d9a0;margin-bottom:4px">CITÉ DU TOURNOI</div>
     <div class="pm-sub" style="margin-bottom:26px">The pool of eight · a playable slice</div>
-    <div class="pm-card" style="padding:16px 18px;text-align:left" id="title-menu"></div>
+    <div class="pm-card" style="width:min(420px,100%);margin:0 auto;padding:16px 18px;text-align:left" id="title-menu"></div>
     <p class="pm-sub" style="margin-top:18px;opacity:.7">Keyboard: arrows or WASD to walk, E to talk</p></div>`;
   document.body.appendChild(root);
   const menu = root.querySelector('#title-menu')!;

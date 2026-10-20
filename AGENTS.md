@@ -10,6 +10,11 @@ decided (journal Passes D4, D6; see "Art direction"): the morning, midday and th
 the weather applies to each state (journal Passe Y5); the day's crowd is decided and applied (J7, journal Passes R3 / D7), and the day becomes the default only after the operator's
 review in game (J9).
 
+The playable slice (the gameplay contract's § 13, cloud session « version jouable », journal Passes L0-L7, its review in Passe L7) is on
+`main`: the bare address shows the title screen to a person (New game / Continue / Explore the district; « Explore the district » is the game
+above, unchanged); the game code lives in `src/simulation`, `src/tournament`, `src/combat`, `src/events`, `src/narrative` (pure) and `src/ui`,
+`src/world` (pages). Its open decisions and gaps (E1-E30) are listed in journal Passe L7; none was taken by an agent.
+
 ## Master contracts (operator decision C1, 2026-10-20, journal Passe N2)
 The operator's master contracts live in `contracts/`, versioned and therefore published, since the repository is public:
 - `GAMEPLAY_MASTER_CONTRACT.md` and `TOURNAMENT_MASTER_CONTRACT.md` (v1.0, 2026-10-02, in French);

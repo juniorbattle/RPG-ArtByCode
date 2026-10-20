@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7 et K9 à H11 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3 et L2) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 et L1 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2 et L7) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -26,353 +26,10 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/13-passes-R2-Y3.md`](journal/13-passes-R2-Y3.md) | R2, D4, D5, Y1, D6, Y2, Z5, Y3 | 19/10 → 20/10 |
 | [`journal/14-passes-Y4-D7.md`](journal/14-passes-Y4-D7.md) | Y4, Y5, R3, D7 | 19/10 → 20/10 |
 | [`journal/15-passes-K9-H11.md`](journal/15-passes-K9-H11.md) | K9, K10, K11, H11 | 20/10 |
+| [`journal/16-passes-N1-N4.md`](journal/16-passes-N1-N4.md) | N1, N2, N3, N4 | 20/10 |
+| [`journal/17-passes-L0-L1.md`](journal/17-passes-L0-L1.md) | L0, L1 | 20/10 |
 
 ---
-
-## Passe N1 — Planification de la séance cloud « version jouable » : inventaire du code, écarts avec les contrats maîtres, plan v1 (2026-10-20)
-
-### Demande
-- Séance lancée par la séance de la Passe H11. Les mots de l'opérateur, mot pour mot : « nous allons planifier notre grosse session cloud a
-  effectuer des maintenant toujours avec le principe d'avoir une version jouable en prenant en compte ce que nous avons fait dans la mesure
-  du possible ( cloud n'a pas acces au services externe ) ». Sa règle : « a partir de maintenant chaque nouvelle tache sera lance sur une
-  nouvelle session ».
-- La tâche : planifier avec l'opérateur une longue séance cloud autonome, qui livre une version jouable guidée par ses deux contrats
-  maîtres, le gameplay v1.0 et le tournoi v1.0 (2026-10-02). Ils ont été transmis dans la séance ; ils ne sont pas dans le dépôt.
-  - La séance cloud n'est lancée qu'une fois le plan validé, et sur le « go » de l'opérateur.
-  - Cette séance planifie seulement : elle ne code pas la version jouable.
-- Branche `cloud-plan-n1` depuis `main` (`8a707b9`), dans un worktree (`.claude/worktrees/cloud-plan-n1`) : le dossier partagé avec les
-  autres séances reste sur `main`.
-
-### Fait — [OK]
-- **L'inventaire, lu dans le code** (§ 2 du plan) :
-  - **La ville** : un seul quartier, clos ; le quai praticable fait environ 40 × 7 m (`WALK`).
-    - Les interactions se limitent à deux : la bulle « … » des PNJ (2,5 s, sans texte) et la bascule de la forge (`NORMAL_FORGE` /
-      `SABOTAGED_FORGE`).
-    - L'état du jour n'est lu qu'au démarrage (constructeur d'`App`) ; la météo, elle, se change en jouant.
-    - Le HUD de la ville est en anglais, dans `src/debug/`, et le panneau DEV s'affiche par défaut.
-  - **L'arène** : une scène à part, un seul duel (Ren contre Marek), en temps continu. `CombatSim` reçoit ses données au constructeur.
-  - **Ce qui n'existe pas** : un état de partie, les créneaux, l'économie, les quêtes, les dialogues écrits, le tournoi, la sauvegarde, un
-    menu, le passage de la ville à l'arène.
-- **Treize écarts avec les contrats** (§ 3 du plan), signalés sans être tranchés. Le premier :
-  - le contrat de gameplay dit « combat tour par tour » ;
-  - l'arène se joue sans attente : des temps de charge, une garde tenue, une esquive dans une fenêtre de réaction ;
-  - le rapport du prototype (`arena/source/runtime-bakeoff-report.txt`, passe 9) présente ces règles comme le « nouveau design » de
-    l'opérateur, venu après une version « Dynamic Turn-Based » à jauge.
-- **Le plan v1**, `briefs/cloud-session-playable.md` : le périmètre (la tranche du gameplay § 13, ramenée au cloud), l'architecture (un cœur
-  pur `src/game/`, le mode jouable derrière un paramètre), huit lots L0 à L7 avec leur critère de fin et leurs preuves headless, ce qui est
-  réutilisé, les risques et quatorze décisions préparées.
-- **Mon choix d'emplacement** : `briefs/` à la racine. Les briefs existants vivent dans `art-lab/characters/briefs/`, mais ce sont des
-  briefs d'art ; un brief de séance qui touche tout le jeu va à la racine, sous le même nom de dossier.
-- **Constat** : le dépôt GitHub est public (`"visibility": "public"`, lu par l'API publique). Tout fichier versionné est publié, contrats
-  compris (décision C1).
-- **Le journal** : les passes gardées font 49 769 octets. Pas d'archivage.
-
-### Preuves
-- Document seulement : aucun fichier de `src/`, `tests/` ou `tools/` ne change.
-- **Validation** : typecheck, `npm test` 103 / 103, build, `art:validate`.
-
-### Restes [?]
-- **La fiche d'arbitrages** (décisions C1-C3, P1-P4, G1-G3, K1-K3, S1), puis les choix consignés mot pour mot au § 11 du plan et au
-  journal, puis le brief final et le lancement sur le « go ».
-- **Trois points que seul l'opérateur peut lever** : les contrats hors du dépôt ; `PROJECT_MASTER_CONTRACT.md` absent ; la « décision A3 »
-  des verrous, définie nulle part dans le dépôt.
-
-### Pensée
-- Un écart entre un contrat et le code se montre avec sa source des deux côtés : la clause, le fichier, la passe du prototype. Il reste à
-  l'opérateur. « Tour par tour » et « pas d'attente pour agir » ne se tranchent pas par l'agent.
-- Un dossier partagé entre séances ne change pas de branche : la branche de tâche vit dans un worktree.
-
-## Passe N2 — Fiche de la séance cloud : les choix de l'opérateur consignés ; contrats versionnés ; plan v2 et brief final (2026-10-20)
-
-### Demande
-- Opérateur, mot pour mot : « La fiche d'arbitrages est remplie : relis mes choix, consigne-les et écris le brief final. »
-- Branche `cloud-plan-n1` (celle de la Passe N1, fusionnée et gardée pour cette suite de la même tâche), dans son worktree.
-
-### Les choix — [OK] relus dans la fiche
-- La fiche : https://claude.ai/artifact/RvECCuX3UHykYMbnPzctY7, collection `decisions`. Elle contient 14 documents sur 14, cliqués entre
-  07 h 35 et 07 h 42 UTC, sans note. Cette fois, l'enregistrement a marché (en Passe D7, la collection était restée vide).
-- Les choix, mot pour mot :
-
-| # | Décision | Choix de l'opérateur | Recommandation suivie ? |
-|---|---|---|---|
-| C1 | Où ranger les contrats | « contracts/ à la racine (versionnés, donc publiés) » | oui |
-| C2 | `PROJECT_MASTER_CONTRACT.md` | « Je le fournis avant le lancement » | oui |
-| C3 | Les verrous, la « décision A3 » | « Aucun verrou modifié, écarts consignés » | oui |
-| P1 | Le périmètre de la tranche | « Le § 13 entier, ramené au cloud (plan § 5) » | oui |
-| P2 | Le démarrage | « Un écran titre par défaut : Nouvelle partie ou Explorer le district » | **non** (recommandé : derrière `?play=1`) |
-| P3 | Les quartiers | « Trois lieux, dont un léger » | oui |
-| P4 | Le district clos en mode jouable | « Couches de jeu seulement » | oui |
-| G1 | Le modèle de combat | « L'arène actuelle, écart consigné » | oui |
-| G2 | Les créneaux et les états du jour | « Matin, midi, nuit ; la fin de journée en transition » | oui |
-| G3 | La phase I | « Poule à points » | oui |
-| K1 | La langue de l'interface | « Anglais » | **non** (recommandé : le français) |
-| K2 | Le nom du joueur | « Un nom choisi par le joueur » | **non** (recommandé : « Ren », provisoire) |
-| K3 | Les rivaux en ville | « Portraits et dialogues » | oui |
-| S1 | Si tout est fait avant la fin | « Finition, puis le bilan » | oui |
-
-### Fait — [OK]
-- **`contracts/`** (décision C1) : `GAMEPLAY_MASTER_CONTRACT.md` et `TOURNAMENT_MASTER_CONTRACT.md`.
-  - Leur texte est celui que la séance de la Passe H11 a transmis. Seule la mise en forme change : un paragraphe par section, l'en-tête en
-    titre, l'interface `CompetitorState` en bloc de code.
-  - Chacun porte sa provenance. L'en-tête entre parenthèses peut être un résumé fait par la séance de transmission ; l'original de
-    l'opérateur fait foi.
-  - **Le dépôt est public** : les contrats sont publiés, comme le dit le libellé du choix.
-- **`AGENTS.md`** : une section « Master contracts ». Elle donne où vivent les contrats, la règle de C3 (aucun verrou modifié sans l'opérateur,
-  un écart consigné au journal) et le renvoi au plan et au brief.
-- **Le plan v2** (`briefs/cloud-session-playable.md`) :
-  - le § 11 porte les choix, et ce que les trois choix « non » changent ;
-  - P2 :
-    - l'écran titre ne paraît que sur l'adresse nue ;
-    - « Explore the district » et toute adresse à paramètres donnent le jeu d'aujourd'hui ;
-    - `?play=1` sert aux outils, `?title=0|1` à sauter ou forcer l'écran ;
-    - l'écran titre n'entre dans le défaut qu'au lot L4, quand « New game » mène à une journée complète ;
-    - la PD passe aussi par l'écran titre ; un risque ajouté : un outil qui charge l'adresse nue ;
-  - K1 : l'interface et les textes du mode jouable en anglais, l'arène comprise par une table de textes. `?scene=arena` seul garde son HUD
-    français.
-  - K2 : « New game » demande le nom.
-- **Le brief final**, `briefs/cloud-session-playable-brief.md`. Il est autonome, versionné pour être relu après un compactage, et il servira
-  de texte de lancement. Il couvre :
-  - la pleine autonomie et les décisions réservées ;
-  - l'ordre de lecture et la mission, avec les quatorze choix ;
-  - l'environnement : ni service externe, ni Aseprite, ni GPU, Chrome à vérifier, aucune dépendance ajoutée ;
-  - Git, les preuves, le journal (passes L0 à L7), la fin.
-
-### Preuves
-- Documents seulement : aucun fichier de `src/`, `tests/` ou `tools/` ne change.
-- **Validation** : typecheck, `npm test` 103 / 103, build, `art:validate`.
-
-### Restes [?]
-- **Avant le lancement** : l'opérateur fournit `PROJECT_MASTER_CONTRACT.md` (C2), qui sera versionné dans `contracts/`. Puis il dit « go ».
-- La séance cloud partira de `main` tel qu'il est poussé.
-
-### Pensée
-- Une fiche se relit telle qu'elle est enregistrée, choix par choix. Trois choix diffèrent de la recommandation : chacun se reporte dans les
-  sections du plan qu'il touche, pas seulement dans le tableau des décisions.
-- Un écran titre par défaut change l'adresse nue, que des outils chargent peut-être. Le borner à l'adresse nue, avec une porte de sortie
-  (`?title=0`), garde intactes toutes les preuves existantes.
-
-## Passe N3 — Le contrat projet versionné ; ses écarts avec le dépôt et ses ajouts à la tranche ; plan v3 et brief à jour (2026-10-20)
-
-### Demande
-- Décision C2 : « Je le fournis avant le lancement ». L'opérateur, mot pour mot : « Je colle PROJECT_MASTER_CONTRACT.md dans mon prochain
-  message. » Il l'a collé dans le message suivant.
-- Interrompu pendant l'analyse, repris sur « continue ».
-- Branche `cloud-plan-n1`, dans son worktree.
-
-### Fait — [OK]
-- **`contracts/PROJECT_MASTER_CONTRACT.md`** : le texte collé, recopié tel quel, sans mise en forme ajoutée, sous un commentaire de
-  provenance.
-- **Deux points relevés, non corrigés** :
-  - l'en-tête dit « Version : 1.2 », la dernière ligne « PROJECT MASTER CONTRACT v1.1 » ;
-  - la « décision A3 » des deux autres contrats n'y est pas définie. Son § 0 demande qu'une modification d'un verrou majeur soit
-    « explicite, documentée dans un journal de décision et validée avant implémentation », ce qui rejoint C3.
-- **Douze écarts avec le dépôt**, E14 à E25 (§ 3b du plan), signalés sans être tranchés. Les plus lourds :
-  - **E14** : la ville en 3D low-poly conçue dans Blender, « source d'autorité spatiale », et glTF / GLB comme format principal. Le dépôt
-    génère tout par le code au démarrage, et le cloud n'a pas Blender.
-  - **E15** : la « génération runtime de la ville » est un non-objectif V1 ; or le district, l'arène et le troisième lieu de P3 sont générés.
-  - **E16** : le combat « RPG tour par tour » (§§ 1, 6.1), qui confirme l'écart E1 depuis l'autorité supérieure.
-  - **E17** : un moteur de combat extensible à plusieurs combattants ; `CombatSim` est fixé à deux.
-- **Ses ajouts à la tranche** (son § 14, plus large que le gameplay § 13), entrés au périmètre (§ 5 du plan) :
-  - plusieurs rivaux persistants ; une boutique affectée par une conséquence ; au moins douze événements dynamiques configurables ;
-  - une chaîne de sabotage déclenchée par des conditions ; le changement de quartier ;
-  - des captures sur ordinateur et sur mobile ; un budget technique mesuré (des compteurs dans le cloud, les temps GPU en local) ;
-  - le jour et la nuit qui changent les services et les présences (§ 8.1).
-- **Choix techniques sûrs, les miens, consignés comme tels** :
-  - le code neuf suit son architecture (§ 10.4 : `src/simulation/`, `tournament/`, `combat/`, `events/`, `narrative/`, `ui/`) ; les dossiers
-    existants ne bougent pas ;
-  - `advance(state, action, rng)` (§ 10.2) ; des états nommés pour les tests (§ 10.3) ;
-  - chaque lot s'ouvre sur son contrat de tâche (§ 11.3) ;
-  - l'interface de match côté jeu prend des listes de combattants, et l'arène reste 1v1.
-- **Aucun choix de la fiche ne change.** P3 reste « Trois lieux, dont un léger », malgré E15 ; G1 reste l'arène actuelle, malgré E16.
-- **Les documents** :
-  - plan v3 : l'en-tête, le § 3b, les ajouts du § 5, le § 6, les lots L1, L2, L4, L5, L7 et le § 11 ;
-  - le brief final : le paragraphe « Le contrat projet », la lecture des écarts E1 à E25, la pureté des nouveaux modules, le contrat de
-    tâche par passe, le bilan ;
-  - `AGENTS.md` : la ligne du contrat projet dans « Master contracts ».
-
-### Journal — [OK] archivage (règle d'`AGENTS.md`, passes gardées au-delà d'environ 60 Ko)
-- Les passes gardées faisaient 63 342 octets, après l'ajout de cette passe.
-- Y4, Y5, R3 et D7, toutes closes (branches fusionnées), partent d'un seul bloc, dans leur ordre et à l'octet, vers
-  `journal/14-passes-Y4-D7.md` : en-tête, ligne `---`, puis les 25 598 octets inchangés (SHA-256 `9325b955dbd0805a…`).
-- La ligne d'index et la phrase d'en-tête sont mises à jour. Restent K9, K10, K11, H11, N1, N2 et N3 : 37 744 octets.
-- **Preuve** (script hors dépôt, contre la copie de `JOURNAL.md` faite juste avant le déplacement) : **8 / 8**, les huit contrôles de la
-  Passe D1. Le compte rendu ajouté ensuite à cette passe reste hors de la comparaison. Contrôle négatif : un mot changé dans une copie de
-  l'archive → 7 / 8.
-
-### Preuves
-- Documents seulement : aucun fichier de `src/`, `tests/` ou `tools/` ne change.
-- **Validation** : typecheck, `npm test` 103 / 103, build, `art:validate`.
-
-### Restes [?]
-- **Le « go » de l'opérateur**, puis le lancement de la séance cloud depuis `main` poussé.
-- **Les écarts E14 et E15 touchent la direction même du projet** (Blender contre génération par le code). Ils restent à l'opérateur, après
-  la séance.
-
-### Pensée
-- Un contrat reçu après une fiche peut agrandir le périmètre sans contredire un choix. Ses exigences entrent alors au plan, et ses écarts
-  se consignent à côté des choix, qui restent en vigueur. Un écart de direction (l'outil source de la ville) ne se règle pas dans une
-  séance de construction.
-
-## Passe N4 — L'ordinateur local reste allumé : un relais local pour Aseprite, la clé OpenAI et le GPU ; plan v4 et brief à jour (2026-10-20)
-
-### Demande
-- À la question « Je lance la séance cloud ? », l'opérateur a d'abord répondu : « Pas encore : je veux d'abord revoir un point du plan ou du
-  brief. »
-- Puis, mot pour mot : « Excellent, l'ordi local sera finalement ouvert donc session cloud poura communiquer avvec toi pour utiliser les
-  outils externes comme aseprite ou open ai key ».
-- Branche `cloud-plan-n1`, dans son worktree.
-
-### Constat — [OK] une limite du canal
-- **Une séance cloud ne peut envoyer de message à aucune autre séance.** C'est la description de l'outil de messagerie. La séance locale, elle,
-  peut lui écrire et lire son transcript.
-- Le sens cloud → local passe donc par le dépôt. C'est déjà le protocole des images d'`AGENTS.md` (« Image generation ») : une requête dans
-  un fichier suivi, sur la branche du cloud.
-
-### Fait — [OK]
-- **Le protocole du relais** (brief § 3b, plan § 4b) :
-  - le cloud pousse `briefs/local-requests/NNN-<sujet>.md` (type, lot, base, demande, entrées, sorties, repli, statut), puis continue ;
-  - la séance locale surveille les branches `claude/*` toutes les deux minutes environ ;
-  - elle exécute la requête, écrit la réponse dans le même fichier et pousse ses propres commits au-dessus de la branche du cloud ;
-  - elle prévient le cloud par message ; le cloud tire sa branche (`git pull --rebase`, jamais de force-push) ;
-  - une requête ne bloque jamais le cloud : chacune porte son repli ;
-  - au lot L0, une requête `000-handshake` éprouve le canal dans les deux sens.
-- **Mes choix, sûrs** :
-  - toutes les images de la séance sous une seule tâche, `cloud-playable`, plafonnée à 5 $. Le plafond par tâche d'`AGENTS.md` ne doit pas
-    devenir 5 $ par requête ; le relever reste la décision de l'opérateur.
-  - Une feuille cuite construite par le relais reste candidate (`runtimeUse: lab`). Le relais ne prend aucune décision réservée et ne
-    fusionne rien dans `main`.
-- **Le budget technique** (contrat projet § 14) est désormais mesurable : les temps GPU sur la 780M, par le relais, aux lots L4 et L7.
-- **Les documents** :
-  - le brief : le § 0 (autonomie et relais), le § 3 (limites du cloud), le § 3b (le protocole), Git et le bilan ;
-  - le plan v4 : l'en-tête, le § 4, le § 4b, le budget du § 5, deux risques, les § 11 et 12 ;
-  - `AGENTS.md` : une règle « Cloud relay » sous « Image generation ».
-  - Avant le lancement, une coquille du brief corrigée : son § 1 nommait encore « le plan v2 ».
-- **Essai du guet** : un passage de la boucle (`git fetch` des branches `claude/*`, liste de `briefs/local-requests/`) tourne d'ici sans
-  erreur. Aucune branche `claude/*` n'existe aujourd'hui.
-
-### Preuves
-- Documents seulement : aucun fichier de `src/`, `tests/` ou `tools/` ne change.
-- **Validation** : typecheck, `npm test` 103 / 103, build, `art:validate`.
-
-### Restes [?]
-- **Le « go » de l'opérateur.** Ensuite :
-  1. le lancement ;
-  2. le guet des requêtes, réarmé à chaque expiration (30 min au plus) ;
-  3. la machine et l'application gardées éveillées pendant la course.
-- **Non éprouvé avant le lancement** : le message de la séance locale vers la séance cloud. C'est la requête `000-handshake` qui le
-  prouvera.
-
-### Pensée
-- Un canal se décrit dans ses deux sens avant d'être promis. Ici, l'un est un message, l'autre un fichier poussé, et le protocole se règle sur
-  le sens le plus faible.
-
-## Passe L0 — Séance cloud « version jouable » : mise en route (2026-10-20)
-
-### Contrat de tâche (contrat projet § 11.3)
-- **Objectif** : un environnement cloud prêt et consigné ; le relais local éprouvé ; `main` validé tel quel.
-- **Entrées** : `main` `d129433` ; le brief `briefs/cloud-session-playable-brief.md`, le plan v4 et les trois contrats de `contracts/`.
-- **Fichiers autorisés** : `JOURNAL.md`, `briefs/local-requests/`. **Interdits** : tout le reste (aucun code ne change).
-- **Outputs** : la requête `000-handshake`, cette passe.
-- **Critères d'acceptation** : `npm ci`, typecheck, `npm test`, build, `art:validate` verts ; `art:doctor` lu ; Chrome trouvé ou absent, dit ;
-  une capture de fumée de `main` et son témoin de répétition (0 px).
-- **Tests** : ceux du dépôt, inchangés. **Risques** : SwiftShader lent ; le relais sans réponse (repli : la séance continue sans lui).
-- **Définition de terminé** : l'environnement consigné ici (machine, Node, navigateur, temps de démarrage logiciel), la requête poussée.
-
-### Environnement — [OK]
-- Conteneur Linux x64, 4 cœurs, 15 Go de mémoire, sans GPU. Node v22.22.0, npm 10.9.4. Branche imposée : `claude/pensive-pasteur-lbz4ji`.
-- `npm ci` ; typecheck ; `npm test` **103 / 103** (14 s) ; build ; `art:validate` (18 manifestes, 21 sources, 0 erreur).
-- `art:doctor` : Aseprite absent (état attendu), aucune intégration d'agent.
-- **Chrome** : le Chromium 141 de Playwright, préinstallé (`/opt/pw-browsers/chromium`). Un enveloppeur hors dépôt
-  (`exec /opt/pw-browsers/chromium --no-sandbox "$@"`) sert de `CHROME_PATH`, avec `CHROME_ARGS=--use-angle=swiftshader` (comme en Passe T1).
-- **Copie figée de `main`** : `git -c core.autocrlf=false archive d129433` dans le dossier de travail de la séance, `node_modules/three` copié,
-  servie sur :5187 par le Vite du dépôt avec une config hors dépôt sans import (`vite.config.ts` de la copie ne trouve pas `vite` hors du
-  dépôt).
-
-- **Capture de fumée de `main`** (`detshots`, 1280 × 720, `seed=1842&clean=1&camera=B&freeze=7.3`, 120 pas, personnages compris) et son
-  témoin de répétition : deux chargements en parallèle, **0 px** (`diff.mjs` au seuil 0, et les deux PNG identiques à l'octet). Chaque
-  chargement prend **162 s** en SwiftShader (deux en parallèle sur 4 cœurs), le bake compris.
-- **[KO → corrigé]** `tools/diff.mjs` compte au seuil 24 par défaut : le seuil 0 du brief se passe en quatrième argument. Il lui faut aussi
-  `CHROME_PATH` (il ouvre un navigateur pour décoder les PNG).
-
-### Relais local — [?]
-- Requête `briefs/local-requests/000-handshake.md` poussée (type « autre ») : l'état de la machine locale (Aseprite, clé OpenAI, GPU). Pas de
-  réponse à la clôture de L0 ; la séance continue (le brief : une requête ne bloque jamais).
-
-### Preuves
-- Aucun fichier de `src/`, `tests/` ou `tools/` ne change. Validation : typecheck, `npm test` 103 / 103, build, `art:validate`.
-
-### Pensée
-- Un outil de preuve se relit avant d'en croire le « 0 % » : son seuil par défaut n'est pas forcément celui de la preuve.
-
-## Passe L1 — Le cœur de jeu headless : état, actions, créneaux, journal causal, sauvegarde, empreinte, états nommés (2026-10-20)
-
-### Contrat de tâche (contrat projet § 11.3)
-- **Objectif** : un cœur de jeu pur, sans rendu : l'état de la partie, ses actions, les trois créneaux par jour, le journal causal, la
-  sauvegarde versionnée et l'empreinte, les états nommés (contrat projet § 10.3).
-- **Entrées** : plan § 6 et lot L1 ; contrat de gameplay §§ 4, 12, 14 (verrou 8) ; contrat projet §§ 10.2-10.4 ; `src/core/rng.ts`.
-- **Fichiers autorisés** : `src/simulation/`, `src/narrative/`, `tests/game-core.test.mjs`, `JOURNAL.md`. **Interdits** : tout fichier atteint
-  par le jeu par défaut (`src/main.ts` et ses imports), `src/arena/`, les outils.
-- **Outputs** : `newGame`, `actions`, `advance(state, action, rng)`, `serialize` / `deserialize`, `hash`, `namedState`.
-- **Critères d'acceptation** : même graine + même script = même empreinte (trois graines) ; une sauvegarde rechargée à chaque pas égale la
-  partie continue ; une action mineure ne coûte aucun créneau, une importante en coûte un, une refusée ne touche pas l'état ; les modules du
-  jeu purs ; le chemin par défaut n'importe aucun module du jeu.
-- **Tests** : `tests/game-core.test.mjs`, trois fautes injectées au moins. **Risques** : une fuite de non-déterminisme ; un import du jeu
-  dans le chemin par défaut.
-- **Définition de terminé** : tests verts, fautes attrapées, fichiers rendus à l'octet, validation complète ; aucun fichier du défaut ne change
-  (PD sans objet).
-
-### Fait — [OK]
-- **`src/simulation/`** :
-  - `state.ts` : `GameState` (avec `schemaVersion`), les créneaux `morning | afternoon | evening`, trois jours, trois lieux (`district`,
-    `forecourt`, `lanterns`). `CompetitorState` reprend mot pour mot l'interface du contrat du tournoi § 5 ; `TeamState` est seulement typé ;
-    `WorldPulse` porte les huit champs du § 9. Les concurrents, le tournoi et le pouls sont remplis au lot L2.
-  - `actions.ts` : une table d'actions. Chacune dit son coût (0 = mineure : parler, se déplacer entre les lieux ; 1 = importante : elle prend
-    le créneau), son refus et sa raison lisible, et son effet. Pour L1 : `move`, `talk`, `rest`, `train`, `wait`.
-  - `advance.ts` : `advance` ne modifie jamais son entrée (une copie) ; une action refusée rend le même objet sans événement. Une action
-    importante termine le créneau (`endSlot`, qui accueillera le hors écran, le pouls et les événements en L2), puis l'horloge avance ; après
-    le soir du jour 3, la tranche est finie.
-  - L'aléatoire : `rngFor(state, label)`, un flux tiré de (graine, nombre d'actions appliquées, étiquette) seulement. Une partie reprise
-    d'une sauvegarde tire donc la même suite que la partie continue.
-  - `canonical.ts` : un JSON canonique (clés triées à chaque niveau) et une empreinte FNV-1a 64 bits.
-  - La sauvegarde : le JSON canonique, avec son type, sa version de schéma et la version du contenu. Un fichier étranger, une version plus
-    récente ou un état abîmé sont refusés avec une raison lisible ; la table des migrations est vide (contrat projet § 10.3).
-  - `named.ts` : chaque état nommé est atteint par un script d'actions depuis une partie neuve, jamais en écrivant des champs : il est
-    donc un état que le jeu peut atteindre.
-- **`src/narrative/people.ts`** : les gens à qui parler, en anglais (choix K1). Les personnages du district gardent leur sprite (choix P4) ;
-  les rivaux n'ont qu'un portrait et des dialogues (choix K3). Leurs heures de présence : le forgeron le jour, l'informateur la nuit (contrat
-  projet § 8.1).
-
-### Choix de la séance (consignés comme tels)
-- Le nom du joueur (choix K2) : nettoyé (20 caractères au plus ; lettres, chiffres, espaces, apostrophes, tirets) ; « Ren » s'il est vide.
-- Une sauvegarde porte aussi la version du contenu (`slice-1`) : un état fait avec d'autres tables est refusé, plutôt que lu de travers.
-- L'empreinte est un FNV-1a 64 bits du texte canonique, calculé en deux moitiés de 32 bits, sans dépendance.
-
-### Preuves
-- **`tests/game-core.test.mjs`, 9 tests** :
-  - la pureté : les fichiers de `src/simulation`, `tournament`, `combat`, `events` et `narrative` ne contiennent ni `three`, ni le DOM, ni
-    `Math.random`, ni horloge, et n'importent que des modules purs (plus `src/core/rng.ts` et `src/arena/CombatSim.ts`). L'oracle lit le
-    texte des fichiers, sans passer par le code testé ;
-  - le chemin par défaut : depuis `src/main.ts`, les imports statiques n'atteignent aucun module du jeu ni `src/ui/` ;
-  - le déterminisme, sur trois graines ; une sauvegarde rechargée à chaque pas égale la partie continue ;
-  - les coûts des créneaux et les refus ; les heures de présence ;
-  - les refus de la sauvegarde ;
-  - l'empreinte contre une référence BigInt indépendante, et le vecteur publié de FNV-1a 64 (« a » → `af63dc4c8601ec8c`) ;
-  - les états nommés.
-  - **[KO → corrigé]** deux erreurs du test lui-même, pas du code : un `JSON.stringify` avec une liste de clés filtre aussi les objets
-    imbriqués (la permutation des clés est maintenant récursive) ; une limite du nom à 18 caractères tronquait le cas du test.
-- **Huit fautes injectées une à une, fichiers rendus à l'octet** : `advance` qui modifie son entrée, parler qui coûte un créneau, une
-  version de sauvegarde plus récente acceptée, un `Math.random` dans un module du jeu, le JSON canonique sans tri, l'informateur présent le
-  matin (attrapée une fois le test des heures ajouté), un import du jeu dans `src/main.ts` : **7 attrapées**.
-  - **[?] La huitième passe** : `step` non compté. En L1, aucune action ne tire au sort, donc le flux n'a pas d'effet. Elle sera rejouée en
-    L2.
-- **Le jeu par défaut ne change pas** : aucun fichier suivi ne change (`git status` : seulement des fichiers neufs), et le bundle de production
-  ne contient pas le module (`cite-du-tournoi-save` absent de `dist/`).
-- **Validation** : typecheck, `npm test` **112 / 112**, build, `art:validate`.
-
-### Pensée
-- Un test de déterminisme ne vaut que pour ce qui tire au sort : un compteur qui ne nourrit que l'aléatoire ne se prouve qu'une fois
-  l'aléatoire utilisé. La faute qui passe se consigne et se rejoue au lot suivant.
-- Un état nommé atteint par un script d'actions, jamais par des champs écrits à la main, ne peut pas décrire un état impossible.
 
 ## Passe L2 — Le tournoi de la phase I, les concurrents hors écran, le pouls, dix-sept événements configurables, le TournamentLab (2026-10-20)
 
@@ -783,6 +440,155 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un contrôle qui échoue sur une branche et passe sur `main` ne prouve une régression qu'après avoir mesuré sa marge : ici, une ou deux images
   en dix secondes des deux côtés.
 
+## Passe L7 — Bilan de la séance cloud « version jouable » : fusionné, mesures, à vérifier, décisions, écarts, reste à faire (2026-10-20)
+
+### Contrat de tâche (contrat projet § 11.3)
+- **Objectif** : la finition (robustesse, polissage, sans extension du périmètre, choix S1) et le bilan de la séance, comme la Passe B1.
+- **Entrées** : les passes L0 à L6 ; le brief § 7 ; les requêtes `000` et `001` au relais.
+- **Fichiers autorisés** : `JOURNAL.md`, `journal/`, `AGENTS.md`, `briefs/local-requests/`, des retouches de textes et de mise en page de
+  `src/ui/` et `src/simulation/` (sans changer une règle), `tools/perf.mjs`. **Interdits** : le district, l'arène par défaut, toute règle de jeu.
+- **Outputs** : la requête `001-gpu-budget` ; l'archivage N1-N4 ; cette passe ; « À reprendre », « Principes à garder », le statut d'`AGENTS.md`.
+- **Critères d'acceptation** : typecheck, `npm test`, build, `art:validate` verts ; l'archivage prouvé (huit contrôles) ; aucun fichier du chemin
+  par défaut touché.
+- **Tests** : ceux du dépôt (148). **Risques** : un texte retouché qui casse une assertion de test (vérifié : 148 / 148).
+- **Définition de terminé** : le bilan écrit, fusionné dans `main`, tous les serveurs et tâches de fond arrêtés.
+
+### Cadre
+- Séance cloud lancée sur le « go » de l'opérateur (brief `briefs/cloud-session-playable-brief.md`, plan v4 `briefs/cloud-session-playable.md`),
+  sans GPU (SwiftShader), sans Aseprite, sans clé OpenAI ; opérateur absent : aucune décision réservée prise, chacune préparée ci-dessous.
+- **Journal** : passes N1 à N4 (closes : `main` les porte depuis `d129433`) archivées d'un bloc, à l'octet, dans `journal/16-passes-N1-N4.md`
+  (17 827 octets, SHA-256 `d9b1d4fed327c0a4…`) ; preuve **8 / 8** (script de la Passe T1 adapté, contre le `JOURNAL.md` de `0c6d4bf`, fait avant
+  d'ajouter cette passe) ; contrôle négatif (un octet changé dans la copie) attrapé. Cette passe écrite, les passes gardées faisaient 65 563
+  octets : L0 et L1 (closes, fusionnées) archivées à leur tour dans `journal/17-passes-L0-L1.md` (9 634 octets, SHA-256 du bloc
+  `25d0773178f7099d…`), preuve **8 / 8** contre le `JOURNAL.md` d'avant ce second déplacement, contrôle négatif 7 / 8 (un octet changé dans
+  l'archive) ; restent 55 929 octets de passes gardées.
+- **Finition** (choix S1, sans changer une règle) : « next duel » → « next bout » dans le libellé et le refus de l'entraînement (le mot du reste
+  de l'interface) ; l'écran titre élargi (le titre « CITÉ DU TOURNOI » tenait mal sur 420 px à 34 px de corps ; le menu reste à 420 px).
+
+### Fusionné dans `main` (une tâche = une branche `claude/pensive-pasteur-lbz4ji`, avance rapide, CI verte sur chaque push de `main`)
+| Passe | Commits | Contenu |
+|---|---|---|
+| L0 | `29135ca`, `55a653c` | environnement (Chromium 141 + SwiftShader, copie figée de `main` sur :5187), requête `000-handshake`, capture de fumée et témoin à 0 px |
+| L1 | `4eb400c` | cœur headless `src/simulation/` : état nommé, actions, créneaux, journal causal, sauvegarde versionnée, empreinte FNV-64, états nommés |
+| L2 | `124bd79` | poule à points de la phase I, sept rivaux persistants hors écran, pouls de la ville, 17 événements configurables (`src/events/`), chaîne de sabotage de la forge, `tools/tournament-lab.mjs` ; archivage K9-H11 |
+| L3 | `0b823ef`, `0b75607`, `4fbebd5` | le duel officiel : l'arène pilotée par une fiche de match (listes de combattants, E17), Vessa générée, HUD anglais par table, `?play=1`, l'aller et retour ville → arène → ville |
+| L4 | `d593537`, `8d05a33`, `7ca6dfd`, `79776d4` | la ville jouable : rôles des PNJ, dialogues et portraits, interface anglaise, cargaison d'acier, réponses au sabotage, l'écran titre sur l'adresse nue (« New game », « Continue », « Explore the district ») |
+| L5 | `1e38914` | trois parties scriptées (prudente, négligente, perdante) jusqu'à la fin des trois jours ; `tests/slice.test.mjs` coche gameplay § 13 et projet § 14 ; la clameur du Colisée |
+| L6 | `1d78eac`, `7b7a966` | le parvis praticable, Lantern Row (maquette de nuit bâtie avec les générateurs du district), trois lieux dans la même partie |
+| L7 | `0c6d4bf`, (ce commit) | requête `001-gpu-budget`, `perf.mjs` pilote la page de Lantern Row ; finition ; archivage N1-N4 ; ce bilan |
+
+- **Jeu par défaut inchangé** à chaque lot qui touchait un fichier du chemin par défaut (L3, L4, L6) : `detshots` contre `main` figé au seuil 0,
+  témoin de répétition d'abord, nuit A / B / C / D (statique et personnages) et midi B : **0 px** ; les moments de l'arène par défaut : **0 px**
+  (sauf `strike` / `heavyRen`, dont les deux chargements de `main` diffèrent entre eux dans la barre d'actions ; la branche égale l'un des
+  deux) ; « Explore the district » depuis l'écran titre : **0 px** contre l'adresse nue de `main`. `npm test` : 103 → **148** tests ; chaque
+  nouveau test a d'abord attrapé ses fautes injectées (au moins trois par lot).
+- **CI** (GitHub Actions, lue par l'API) : verte sur chaque push de `main` (L0 à L6) et de la branche (une exécution annulée par un push
+  plus récent, Passe L6).
+
+### Ce qui est jouable, et comment
+- `npm run dev`, puis l'adresse nue `http://127.0.0.1:5173/` dans un navigateur ouvert par une personne : l'écran titre. **New game** demande un
+  nom (20 caractères au plus) ; **Continue** reprend la sauvegarde (localStorage ; le menu, Échap, l'écrit aussi dans un fichier et en relit un) ; **Explore the district**
+  ouvre le jeu d'aujourd'hui, la nuit et son panneau DEV, à l'identique.
+- La partie : **trois jours, neuf créneaux** (matin → `morning`, après-midi → `midday`, soir → la nuit ; `afternoon` en transition après un
+  duel), dans **trois lieux** (le district, le parvis de l'arène, Lantern Row le soir), passés par la carte (M). Les gens du district parlent (E,
+  portrait, mots, leurs services) ; une action majeure prend le créneau, la page se recharge dans l'aspect suivant (sauvegarde à chaque fois).
+  **Deux duels officiels** : Vessa Lark l'après-midi du jour 2, Marek l'après-midi du jour 3, joués dans l'arène (clavier : 1-6, A esquive,
+  B garde), leurs données tirées de la préparation (cargaison d'acier livrée : lame +15 % ; pierre à aiguiser ; entraînement ; blessures). Une
+  défaite coûte des points, n'élimine jamais (G3). La chaîne de sabotage de la forge se déclenche sur conditions et se contre (guet payé, pistes
+  achetées, dénonciation) ; la fin de la tranche donne le classement de la poule.
+- Raccourcis : `?play=1&new=1&name=<n>&seed=<s>` (une partie neuve sans l'écran titre), `?title=0` / `?title=1`, et, sur le serveur DEV,
+  `?play=1&state=<nom>` (les états nommés de `src/simulation/named.ts`).
+
+### Mesures (cloud : compteurs, aucun temps GPU)
+- **Rendu** (SwiftShader, 1280 × 720, bake actif ; `__stats()`) :
+  | Page | Appels de dessin | Triangles | Lumières (à l'écran) |
+  |---|---|---|---|
+  | nuit B (défaut) | 107 | 212 166 (district 120 114, 58 instanciés) | 24 (24) |
+  | jeu, matin | 107 | 214 186 | 24 (4 allumées : la forge, de jour) |
+  | jeu, midi | 107 | 214 250 | 24 (4) |
+  | duel / parvis / `?scene=arena` | 92 | 133 322 (arène 55 189, 21 instanciés) | 23 (21) |
+  | Lantern Row | 106 | 188 522 (lieu 84 642, 27 instanciés) | 12 |
+- **Cœur de jeu** (Node 22, 4 cœurs) : `advance` d'une action mineure 0,082 ms, d'une action majeure (fin de créneau, matchs hors écran,
+  événements) 0,232 ms ; sauvegarde + relecture 0,524 ms ; sauvegarde de fin de tranche 23 313 octets ; une partie entière du TournamentLab 11 à
+  52 ms.
+- **TournamentLab** (`node tools/tournament-lab.mjs`) : politique « idle » 74 % de victoires (50 graines), sabotage réussi 96 % ; « diligent »
+  97 %, sabotage déjoué 82 % ; parties scriptées (20 graines) : prudente 100 % de victoires, sabotage déjoué 20 / 20 ; négligente 85 %, forge
+  brûlée 20 / 20 ; perdante 0 %.
+- **Démarrage** : une page de la ville en SwiftShader prend 2 à 3 min (bake compris, deux pages en parallèle sur 4 cœurs) : un chiffre du
+  rendu logiciel, sans rapport avec la machine de l'opérateur.
+- **Temps GPU** : la requête `001` n'a pas reçu de réponse ; ils restent **à mesurer** (commande ci-dessous, point 2).
+
+### Requêtes au relais local
+| Requête | Objet | Statut |
+|---|---|---|
+| `000-handshake` | éprouver le relais ; état de la machine locale (Aseprite, clé OpenAI, GPU) | ouverte, sans réponse ; repli : la séance a continué sans relais |
+| `001-gpu-budget` | temps GPU par passe des pages du mode jouable à côté de la nuit B, 1920 × 1080 (et 2560 × 1440), sur la 780M | ouverte, sans réponse ; repli appliqué : les compteurs ci-dessus, les temps à mesurer |
+
+### Budget technique (contrat projet § 14, § 16 ; écart E24)
+- Compteurs du cloud ci-dessus : le mode jouable dessine la ville avec les **mêmes appels** que la nuit par défaut (107) et ≈ 2 000 triangles de
+  plus (le pavois de jour), l'arène 92 appels, Lantern Row 106 ; l'interface est du DOM, hors du rendu.
+- Référence GPU connue : la nuit par défaut 10-12 ms en 1080p sur la 780M (Passe 6), l'arène 9,3 ms (Passe G1). Le budget des pages du mode
+  jouable n'est **pas mesuré** : point 2 ci-dessous.
+
+### À vérifier sur la machine de l'opérateur
+1. **Jouer** la tranche à la main, depuis l'adresse nue : le ressenti (la lisibilité des choix, la longueur d'une journée, le rechargement à
+   chaque créneau, environ le temps d'une génération), les deux duels au clavier, une partie qui laisse brûler la forge, « Continue » après
+   avoir fermé l'onglet.
+2. **Budget GPU** : la série de la requête `001` (`node tools/perf.mjs --secs=4 --warm=2.5 --rounds=3 --size=1920x1080 "night-B|…" …`, le texte
+   complet dans `briefs/local-requests/001-gpu-budget.md`), puis `tools/cadence.mjs` sur une page du jeu ; `tools/startup.mjs` sur
+   `play=1&state=day1-morning` (la génération à chaque créneau).
+3. **L'équilibrage** (« Régler après essai », D1) : le kit du joueur domine (Passe L2 : un bot d'adresse 0 bat Marek à 68 %) ; juger en jouant
+   si les duels demandent quelque chose.
+4. **Preuves d'image sur GPU** : les PD ont été faits en SwiftShader ; `tools/arena-scene-check.mjs` sans `fps=off` (Passe L6 : en headless
+   logiciel, la boucle de l'arène ne fait qu'une ou deux images en 10 s, sur `main` comme sur la branche) ; `npm run shots` des pages du jeu.
+5. **Téléphone** : l'interface se lit à 390 × 844 (captures `screenshots/calibration/l4-play/`), mais la tranche se joue au clavier (aucune
+   commande tactile de marche) ; le duel et le parvis veulent le paysage.
+
+### Décisions préparées (réservées à l'opérateur ; recommandation de la séance)
+1. **Vessa Lark, combattante générée** (`src/arena/FighterArt.ts`, l'atlas de l'arène par défaut inchangé à l'octet) : garder ou retoucher. Sa
+   silhouette reste proche de celle du héros (elle prend ses images) ; capture `screenshots/calibration/l3-arena/vessa-vs-hero-combo-x2.png`.
+   Recommandation : la garder pour la tranche, la juger en jeu ; une feuille cuite plus tard passerait par un manifeste approuvé.
+2. **L'arène (duel et parvis) n'a que l'aspect de nuit**, même l'après-midi (choix G1, « L'arène actuelle ») : lui donner les états du jour
+   serait un changement d'aspect. Recommandation : oui, après la revue du jour en jeu (J9), par la même voie que la ville (`DayState`).
+3. **Lantern Row** reste une maquette d'un seul cadrage, de nuit, ouverte le soir (P3) ; captures `screenshots/calibration/l6-places/`.
+   Recommandation : la garder telle quelle pour la tranche ; en faire un quartier praticable est une tâche à part.
+4. **L'équilibrage des duels** (point 3 ci-dessus) : recommandation : régler après votre essai, avec `tools/tournament-lab.mjs` pour chiffrer.
+5. **L'écran titre caché aux navigateurs pilotés** (`navigator.webdriver`, sauf `?title=1` ; choix de la séance, Passe L4) : il évite de changer
+   une douzaine d'outils qui chargent l'adresse nue. Recommandation : le garder.
+6. **Le jour par défaut** (J9) : « Explore the district » garde la nuit ; le mode jouable suit déjà les créneaux. Recommandation : rien avant
+   votre revue en jeu. **Gold Master** : non (RJ3) ; la tranche ne le demande pas.
+
+### Écarts consignés (non résolus par la séance)
+- **E1 à E25** : tableau du plan (`briefs/cloud-session-playable.md` §§ 3, 3b), appliqués comme le plan le dit : E1 / E16 le combat sans tour
+  (G1), E2 trois lieux dont un léger (P3), E3 trois créneaux sur quatre aspects (G2), E4 la nuit par défaut (J9), E5 / E6 / E12 le tournoi hors
+  écran et le TournamentLab CLI (faits, L2), E7 la défaite non éliminatoire (G3, faite), E8 le nom du joueur (K2, fait ; pas d'art de combat
+  du héros cuit), E9 l'interface en anglais (K1, faite), E10 / E11 les contrats et la « décision A3 » (non définie), E13 pas de festival, E14
+  pas de Blender ni de glTF, E15 la ville générée au démarrage, E17 la fiche de match en listes (faite ; l'arène reste 1 contre 1), E18 les
+  ajouts du § 5, E19 le Colisée suggéré (annonces, clameur), E20 aucun son, E21 le code neuf rangé selon le § 10.4, E22 les états nommés
+  (faits), E23 un contrat de tâche par passe (fait), E24 le budget GPU mesuré en local, E25 la version du contrat projet (1.2 / 1.1).
+- **Trouvés par la séance** :
+  - **E26** : l'arène, duel et parvis, de nuit à toute heure (décision 2 ci-dessus), alors que le contrat projet § 8.1 veut le jour et la nuit
+    visibles.
+  - **E27** : Lantern Row n'a pas de profil de jour (fermée « until dusk ») ni d'identité de quartier complète (gameplay § 6) : une maquette.
+  - **E28** : le tournoi veut des duels disputés ; le kit du joueur domine les nombres actuels (décision 4).
+  - **E29** : le choix P2 (« l'écran titre sur l'adresse nue ») est appliqué aux seules personnes (décision 5).
+  - **E30** : le projet § 14 demande des captures sur ordinateur et téléphone, faites ; la tranche ne se joue pas au toucher (point 5).
+
+### Reste à faire
+- Le relais : les réponses à `000` et `001`, puis recopier les temps GPU dans une passe.
+- Les décisions 1 à 6 ; l'équilibrage après essai.
+- Hors tranche (consignés, non commencés) : la phase d'équipe et le recrutement effectif (P1), le festival (E13), le son (E20), un quartier
+  praticable de plus, l'art de combat du héros cuit, les commandes tactiles.
+
+### Preuves
+- Validation : typecheck, `npm test` **148 / 148**, build, `art:validate`. Aucun fichier du chemin par défaut touché par L7 (`src/ui/title.ts`
+  ne paraît pas à un navigateur piloté ; `actions.ts` est un texte du mode jouable).
+- Tous les serveurs (5173, 5187-5190) et toutes les tâches de fond de la séance arrêtés avant de finir.
+
+### Pensée
+- Une requête au relais est un pari sans échéance : son repli, écrit en même temps qu'elle, est ce que le bilan donne si la réponse ne vient pas.
+- Un mode de jeu ajouté au-dessus d'un district figé se prouve en deux sens : le jeu neuf joué de bout en bout, et l'ancien chemin à 0 px.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -795,12 +601,14 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
 
-**0b. Version jouable — séance cloud (Passes N1 à N4)** : plan v4 `briefs/cloud-session-playable.md` (choix de la fiche au § 11 : écran
-  titre par défaut, interface en anglais, nom choisi par le joueur, arène actuelle, poule à points, trois lieux dont un léger ; écarts avec le
-  contrat projet au § 3b ; ses ajouts à la tranche au § 5 ; le relais local au § 4b) ; brief final `briefs/cloud-session-playable-brief.md` ;
-  les trois contrats dans `contracts/`. **Séance lancée** (« go »), passes L0 à L7 en cours : L0 mise en route, L1 cœur headless
-  (`src/simulation/`), L2 tournoi, événements et TournamentLab (`tools/tournament-lab.mjs`). Requête au relais : `000-handshake` (sans réponse à
-  la Passe L2).
+**0b. Version jouable — séance cloud (Passes N1 à N4, puis L0 à L7)** : plan v4 `briefs/cloud-session-playable.md`, brief
+  `briefs/cloud-session-playable-brief.md`, contrats dans `contracts/`. **Séance close** : lots L0 à L7 fusionnés dans `main` ; bilan, mesures,
+  décisions préparées et écarts E1 à E30 : **Passe L7**. Ouverts :
+  - les requêtes au relais `000-handshake` et `001-gpu-budget` (temps GPU des pages du mode jouable), sans réponse ;
+  - la revue en jeu de l'opérateur (ressenti, équilibrage : le kit du joueur domine, Passe L2) ;
+  - les six décisions de la Passe L7 (Vessa générée, l'arène de nuit à toute heure, Lantern Row maquette, l'équilibrage, l'écran titre caché
+    aux navigateurs pilotés, le jour par défaut) ;
+  - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
@@ -933,7 +741,7 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -951,6 +759,10 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
 - Une première fois (programme, variante, dessin) se mesure par une sonde dédiée : aucune moyenne ne la voit. Un intervalle rAF ne
   s'attribue qu'avec un repère (le départ de la boucle, un `gl.finish()` chronométré) : le plus grand intervalle depuis le chargement est le
   plus long bloc synchrone, pas forcément la première image.
+- Un mode de jeu ajouté au-dessus d'un contenu figé passe par ses propres paramètres et pages (`?play=1`, les états nommés) ; le chemin par
+  défaut se prouve à 0 px à chaque lot qui touche un de ses fichiers, et le jeu neuf se prouve joué de bout en bout puis rejoué en Node
+  (même empreinte) (Passes L3 à L6).
+- Un contrôle vivant en rendu logiciel (une boucle qui tourne pendant N secondes) se mesure sur `main` avant d'accuser la branche (Passe L6).
 - Un travail de démarrage déplacé dans un Worker reste une fonction pure à graine fixe ; il se prouve à l'octet (empreinte de chaque sortie,
   ordre de création des objets qui tirent `Math.random`) et par ses pannes injectées ; le jeu démarre sans Worker (repli par job, chien de
   garde). Une sonde de démarrage observe dès le premier repère, pas depuis `DOMContentLoaded`.
