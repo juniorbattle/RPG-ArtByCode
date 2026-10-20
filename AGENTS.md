@@ -7,7 +7,8 @@ The Merchant District (night) is **complete** since 2026-10-19 (operator decisio
 M1 applied and reviewed, then frozen (journal Passes Z1-Z3). Its content, framings, cast and look stay as they are; any change to them is a
 new task decided by the operator. It is **not** Gold Master (RJ3 « Pas encore »: that status is the operator's). Next (RJ2): the day states,
 decided (journal Passes D4, D6; see "Art direction"): the morning, midday and the end of day are built behind `?time=` (journal Passes Y2-Y4);
-the weather on each state and the day's crowd (J7) remain, and the day becomes the default only after the operator's review in game (J9).
+the weather applies to each state (journal Passe Y5); the day's crowd (J7) remains, and the day becomes the default only after the operator's
+review in game (J9).
 
 ## Project journal (MANDATORY workflow)
 `JOURNAL.md` is the project's memory: what was done, what worked, what failed and why, open problems, lessons. It holds the
@@ -197,6 +198,9 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 a bare parameter = 1): `rain=<0..1>` (lamp-lit streaks, wetter cobbles, rings in puddles and on the canal, a little more mist), `snow=<0..1>`
 (drifting flakes, a cover on the cobbles and upward faces), `storm=<0..1>` (lightning flashes every 5-14 s, overcast sky hiding the moon; brings
 rain 0.85 x storm and wind 1 + storm unless given), `wind=<0..3>` (cloth / leaves sway, smoke drift, precipitation slant; 1 = as before);
+by day (`time=`, journal Passe Y5) the cover of rain, snow or storm veils the sun (its light and its shadow; to 18 % under a full storm), greys
+the sky (an overcast deck, the bolt during a flash), the haze, the zenith and the ambient, and lowers the grade's saturation; wind alone leaves
+the day's cobbles dry; at night every weather is the one of Passes W1-W3;
 DEV: the panel's closed « Weather » section changes it while playing (`App.setWeather`, journal Passe W2) · `time=morning|midday|afternoon` (alias `time=day` = midday; the day
 states, `src/atmosphere/DayState.ts`, the operator's decision D6, each after its generated track: `midday` (journal Passes Y1 / Y2) - a high
 sun in the moon's place and its shadow, a deep blue sky with white clouds, saturated blue roofs and water, almost no haze; `morning` (journal
@@ -295,7 +299,7 @@ their tracks behind `?time=morning` / `?time=afternoon` (journal Passe Y4). The 
 Day (decided, journal Passes D4 and D6):
 - **Four fixed states** (D6, replacing J8 « Deux états fixes »): **morning**, **midday** (the tournament's launch), **end of day** (after the
   tournament) and **evening, which is the night above** (the operator's answer « La nuit actuelle »). **The weather** (rain, snow, storm,
-  wind) applies to each.
+  wind) applies to each (built, journal Passe Y5: by day the cover veils the sun and greys the sky; the night's weather unchanged).
 - **Midday is the generated midday track** (the operator, word for word: « le jour doit etre cette image joint »):
   `art-lab/characters/reference/sources/day-state-midday-2026-10-19.png`. That means a deep blue sky with white clouds, a high sun and short
   crisp shadows, saturated blue roofs and banners, and the tournament's bunting along the whole frontage, across the street and on the quay wall
@@ -389,7 +393,8 @@ banner, the boat's rig (mast / yard / sail) and the 7 quay lamps. Never tag smal
 - Weather (journal Passe W1): one instanced draw per precipitation (a quad per drop / flake animated in the vertex shader from the scene time),
   main pass only (`LAYER_NOREFLECT`), after the opaque pass, depth-tested without depth writes, `maskSafeBlending`, no `discard` (alpha =
   coverage), double-sided (a falling streak's quad winds clockwise). The surfaces, ground, water and sky read `uRain` / `uSnow` / `uCloud` only
-  inside a `> 0` branch (0 without weather: the same pixels as before). A lightning flash scales the shared light / haze uniforms for a frame
+  inside a `> 0` branch (0 without weather: the same pixels as before); by day the sky's overcast deck and bolt are a variant compiled only
+  while a weather covers it (`DAY_WEATHER`, journal Passe Y5), and the cover's veil is written once by the weather and given back. A lightning flash scales the shared light / haze uniforms for a frame
   and gives them back (a value written meanwhile, e.g. by the debug panel, is kept).
 - Texture painters (`TexturePainters.ts`) run as named jobs (`PainterJobs.ts`) in a small Web Worker pool (`PainterPool.ts`) while the main
   thread paints the canvas atlases; a worker that cannot start, throws or stays silent 20 s has its job painted on the main thread (console,

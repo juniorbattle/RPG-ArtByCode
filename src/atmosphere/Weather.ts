@@ -12,6 +12,10 @@ import { Rng } from '../core/rng';
  *    ?storm=<0..1>  lightning: the sky, the clouds and the cool light flash a few times every 5-14 s; overcast sky (the moon hidden),
  *                   rain (0.85 x storm) and wind (1 + storm) unless given
  *    ?wind=<0..3>   multiplies the cloth / leaves sway (`uWindAmp`, 1 = as before), the smoke's drift and the precipitation's slant
+ *  By day (?time=morning|midday|afternoon, journal Passe Y5; the operator's direction D6: the weather applies to every state) the cover veils
+ *  the sun (its light and so its shadow), greys the sky, the haze and the ambient and lowers the grade's saturation; a flash lifts the light
+ *  less and brightens the haze instead of darkening it; wind alone leaves the day's cobbles as dry as they were. At night (no `day`) every
+ *  value is the one of Passes W1-W3.
  *  A bare parameter (`?rain`) means 1. Precipitation: one instanced draw per kind (a quad per drop / flake, animated in the vertex shader from
  *  the time: no per-drop CPU work), main pass only (LAYER_NOREFLECT), after the opaque pass, depth-tested without writing depth, blended with
  *  `maskSafeBlending` (the scene alpha, the DOF / in-scatter protection mask, is kept), no `discard` (the alpha is the coverage). */
@@ -29,6 +33,18 @@ export function parseWeather(q: URLSearchParams): WeatherParams | null {
   };
   const storm = num('storm', 1, 0);
   return { storm, rain: num('rain', 1, 0.85 * storm), snow: num('snow', 1, 0), wind: num('wind', 3, 1 + storm) };
+}
+
+/** the sky's cover (uCloud) a weather sets: 0 without rain, snow or storm */
+export function overcast(p: WeatherParams | null): number {
+  return p ? Math.min(1, p.storm + 0.6 * p.rain + 0.5 * p.snow) : 0;
+}
+
+export interface WeatherOpts {
+  /** a day state (journal Passe Y5): the cover veils the sun; false or absent = the night's weather, unchanged */
+  day?: boolean;
+  /** by day, the grade whose saturation the cover lowers (App's post.params, given back by dispose) */
+  post?: { saturation: number };
 }
 
 /** the precipitation box: a fixed size (the field stays continuous while it follows the camera: drops are wrapped in world space) */
@@ -165,8 +181,17 @@ export class Weather {
   /** the scene uniforms this weather sets, as they were before it (dispose gives them back: the weather can be changed while playing) */
   private static readonly SET = ['uWet', 'uRain', 'uSnow', 'uCloud', 'uWindAmp', 'uMist', 'uFogDensity'] as const;
   private readonly before: Record<string, number> = {};
+  /** by day: the colours the veil sets, as they were before it and as it left them (dispose gives back those nobody changed since) */
+  private static readonly VEILED = ['uMoonCol', 'uSkyAmb', 'uGroundAmb', 'uFillCol', 'uFogColor', 'uSkyZenith'] as const;
+  private readonly dayBefore: Record<string, THREE.Color> = {};
+  private readonly dayApplied: Record<string, THREE.Color> = {};
+  private post: { saturation: number } | null = null;
+  private postBefore = 0;
+  private postApplied = 0;
+  private readonly day: boolean;
 
-  constructor(readonly p: WeatherParams) {
+  constructor(readonly p: WeatherParams, opts: WeatherOpts = {}) {
+    this.day = !!opts.day;
     this.rain = p.rain > 0 ? new Precipitation(RAIN_MAX, true, 77) : null;
     this.snow = p.snow > 0 ? new Precipitation(SNOW_MAX, false, 91) : null;
     for (const x of [this.rain, this.snow]) if (x) this.group.add(x.mesh);
@@ -184,13 +209,37 @@ export class Weather {
     }
     // the scene state this weather sets once (uniforms read by the ground, surfaces and sky): wetness, snow cover, overcast, mist
     for (const k of Weather.SET) this.before[k] = U[k].value;
-    U.uWet.value = Math.max(0, 1 + 0.3 * p.rain - 0.9 * p.snow);
+    // by day the cobbles start from the day's dryness: rain wets them, snow takes the puddles, wind alone changes nothing
+    U.uWet.value = this.day ? Math.max(0, (this.before.uWet + (1.3 - this.before.uWet) * p.rain) * (1 - 0.9 * p.snow)) : Math.max(0, 1 + 0.3 * p.rain - 0.9 * p.snow);
     U.uRain.value = p.rain;
     U.uSnow.value = p.snow;
-    U.uCloud.value = Math.min(1, p.storm + 0.6 * p.rain + 0.5 * p.snow);
+    U.uCloud.value = overcast(p);
     U.uWindAmp.value = p.wind;
     U.uMist.value *= 1 + 0.5 * p.rain + 0.9 * p.snow;
     U.uFogDensity.value *= 1 + 0.25 * p.rain + 0.4 * p.snow;
+    if (this.day) this.veil(opts.post ?? null);
+  }
+
+  /** by day (journal Passe Y5): the cover c veils the sun (to 18 % under a full storm: its shadow fades with it), the ambient turns grey and a
+   *  little stronger (the overcast sky lights from everywhere), the haze and the zenith go to an overcast grey (darker in a storm), the
+   *  storm thickens the haze, the grade loses saturation */
+  private veil(post: { saturation: number } | null): void {
+    const c = U.uCloud.value as number, st = this.p.storm;
+    for (const k of Weather.VEILED) this.dayBefore[k] = (U[k].value as THREE.Color).clone();
+    const grey = (col: THREE.Color, k: number, gain: number) => {
+      const l = 0.2126 * col.r + 0.7152 * col.g + 0.0722 * col.b;
+      return col.clone().lerp(new THREE.Color(l, l, l * 1.04), k).multiplyScalar(gain);
+    };
+    const set = (k: (typeof Weather.VEILED)[number], v: THREE.Color) => { (U[k].value as THREE.Color).copy(v); this.dayApplied[k] = v.clone(); };
+    set('uMoonCol', this.dayBefore.uMoonCol.clone().multiplyScalar(1 - 0.82 * c));
+    set('uSkyAmb', grey(this.dayBefore.uSkyAmb, 0.6 * c, 1 + 0.3 * c));
+    set('uGroundAmb', grey(this.dayBefore.uGroundAmb, 0.6 * c, 1 + 0.2 * c));
+    set('uFillCol', grey(this.dayBefore.uFillCol, 0.6 * c, 1 + 0.3 * c));
+    const dim = 1 - 0.45 * st;
+    set('uFogColor', this.dayBefore.uFogColor.clone().lerp(new THREE.Color(0.55, 0.58, 0.62).multiplyScalar(dim), 0.9 * c));
+    set('uSkyZenith', this.dayBefore.uSkyZenith.clone().lerp(new THREE.Color(0.42, 0.45, 0.5).multiplyScalar(dim), 0.9 * c));
+    U.uFogDensity.value *= 1 + st;
+    if (post) { this.post = post; this.postBefore = post.saturation; post.saturation *= 1 - 0.35 * c; this.postApplied = post.saturation; }
   }
 
   /** drops and flakes drawn */
@@ -261,11 +310,12 @@ export class Weather {
     // (sky, fog: the same colour) brighten toward a pale indigo
     const f = this.flashLevel;
     const set = (k: (typeof Weather.FLASHED)[number], c: THREE.Color) => { (U[k].value as THREE.Color).copy(c); this.applied[k] = c.clone(); };
-    set('uMoonCol', this.base.uMoonCol.clone().multiplyScalar(1 + 3 * f).add(new THREE.Color(0.2, 0.22, 0.3).multiplyScalar(f)));
+    // by day (journal Passe Y5) the veiled sun lifts less, and the haze brightens toward a cool white instead of the night's pale indigo
+    set('uMoonCol', this.base.uMoonCol.clone().multiplyScalar(1 + (this.day ? 1.2 : 3) * f).add(new THREE.Color(0.2, 0.22, 0.3).multiplyScalar(f)));
     set('uSkyAmb', this.base.uSkyAmb.clone().add(new THREE.Color(0.1, 0.12, 0.17).multiplyScalar(f)));
     set('uGroundAmb', this.base.uGroundAmb.clone().add(new THREE.Color(0.04, 0.05, 0.07).multiplyScalar(f)));
     set('uFillCol', this.base.uFillCol.clone().add(new THREE.Color(0.05, 0.06, 0.09).multiplyScalar(f)));
-    set('uFogColor', this.base.uFogColor.clone().lerp(new THREE.Color(0.17, 0.2, 0.29), Math.min(0.6, 0.38 * f)));
+    set('uFogColor', this.base.uFogColor.clone().lerp(this.day ? new THREE.Color(0.85, 0.9, 1.05) : new THREE.Color(0.17, 0.2, 0.29), Math.min(0.6, 0.38 * f)));
   }
 
   /** frees the precipitation and gives the scene uniforms back: what they were before this weather, and the light a flash was scaling */
@@ -275,5 +325,8 @@ export class Weather {
     this.applied = {};
     U.uBolt.value.set(0, 0, 0, 0);
     for (const k of Weather.SET) U[k].value = this.before[k];
+    // by day: the veil's colours and the grade's saturation, unless something else changed them since
+    for (const k of Weather.VEILED) { const u = U[k].value as THREE.Color; if (this.dayApplied[k] && u.equals(this.dayApplied[k])) u.copy(this.dayBefore[k]); }
+    if (this.post && this.post.saturation === this.postApplied) this.post.saturation = this.postBefore;
   }
 }

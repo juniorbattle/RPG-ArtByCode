@@ -20,6 +20,23 @@ ${COMMON_GLSL}
 uniform float uCloud;
 uniform vec4 uBolt;
 varying vec3 vDir;
+#ifdef DAY_WEATHER
+// the night's lightning stroke below, as a function for the day's sky (journal Passe Y5): the same shape, kept apart so that the night's code
+// does not change
+float dayBolt(vec3 rd){
+  float el = asin(clamp(rd.y, -1.0, 1.0)), az = atan(rd.z, rd.x), ce = cos(el);
+  float h = clamp((0.32 - el) / 0.3, 0.0, 1.0);
+  float span = smoothstep(0.35, 0.3, el) * smoothstep(-0.02, 0.05, el);
+  float path = uBolt.x + (vn2(vec2(h * 6.0, uBolt.y)) - 0.5) * 0.1 + (vn2(vec2(h * 23.0, uBolt.y + 7.0)) - 0.5) * 0.03;
+  float d = (mod(az - path + 3.14159265, 6.2831853) - 3.14159265) * ce;
+  float bolt = exp(-d * d / 1.44e-6) + 0.35 * exp(-d * d / 3.6e-5);
+  float hf = clamp((h - 0.4) / 0.6, 0.0, 1.0), side = vn2(vec2(uBolt.y, 9.0)) > 0.5 ? 1.0 : -1.0;
+  float fpath = path + side * hf * (0.05 + 0.04 * vn2(vec2(uBolt.y, 3.0))) + (vn2(vec2(h * 19.0, uBolt.y + 3.0)) - 0.5) * 0.02 * hf;
+  float df = (mod(az - fpath + 3.14159265, 6.2831853) - 3.14159265) * ce;
+  bolt += step(0.4, h) * 0.7 * exp(-df * df / 8.1e-7) * (1.0 - 0.7 * hf);
+  return bolt * span;
+}
+#endif
 void main(){
   vec3 rd = normalize(vDir);
   vec3 col = skyColor(rd);
@@ -82,6 +99,14 @@ void main(){
   float sg = max(dot(rd, uMoonDir), 0.0);
   col = mix(col, col * uMoonCol * 0.42, cum * pow(sg, 3.0));
   col += uMoonCol * (0.05 * pow(sg, 6.0) + 0.16 * pow(sg, 48.0) + 0.6 * pow(sg, 900.0)) * DAY_SUN;
+  #endif
+  #ifdef DAY_WEATHER
+  // a day state's weather (?rain / ?snow / ?storm by day, journal Passe Y5; compiled only then): the overcast deck greys the sky by the cover,
+  // its slow masses darker, in the haze's (veiled) tone; the bolt during a flash
+  float wm = vn2(sp * 0.45 + vec2(uTime * 0.008, uTime * 0.002)) * 0.6 + vn2(sp * 1.3 + 5.1) * 0.4;
+  vec3 deckCol = uFogColor * (1.08 - 0.3 * smoothstep(0.45, 0.85, wm));
+  col = mix(col, mix(skyColor(rd), deckCol, smoothstep(-0.02, 0.12, rd.y)), min(1.0, uCloud * 1.1));
+  col += vec3(1.5, 1.62, 1.95) * dayBolt(rd) * uBolt.w;
   #endif
   gl_FragColor = vec4(col, 1.0);
 }`;

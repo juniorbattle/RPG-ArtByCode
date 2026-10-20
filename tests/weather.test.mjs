@@ -1,12 +1,14 @@
 // Weather (src/atmosphere/Weather.ts, journal Passe W1): each effect behind its own URL parameter; without any of them nothing is created and
 // no shared uniform moves (the default game is unchanged); the lightning is seeded, scales the shared light / haze uniforms during a flash and
-// gives them back afterwards (or keeps a value the app wrote meanwhile).
+// gives them back afterwards (or keeps a value the app wrote meanwhile). By day (journal Passe Y5) the cover veils the sun and greys the sky; at
+// night none of it.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './load.mjs';
 
 const { parseWeather, Weather, RAIN_MAX, SNOW_MAX } = await load('/src/atmosphere/Weather.ts');
 const { U } = await load('/src/atmosphere/SceneUniforms.ts');
+const { DAY } = await load('/src/atmosphere/DayState.ts');
 const THREE = await import('three');
 const q = (s) => new URLSearchParams(s);
 
@@ -132,4 +134,52 @@ test('the bolt (Passe W3): in the sky only during a strong flash, gone after it 
   w.dispose();
   assert.equal(U.uBolt.value.w, 0, 'gone after dispose');
   assert.equal(snap(), before);
+});
+
+test('by day (Passe Y5): the cover veils the sun, greys the haze, the zenith and the ambient, lowers the saturation; a flash brightens the haze; wind alone leaves the cobbles dry; dispose gives it all back; at night none of it', () => {
+  const before = snap(), zen0 = U.uSkyZenith.value.clone();
+  const lookDay = () => {
+    U.uMoonCol.value.copy(DAY.sunCol); U.uSkyAmb.value.copy(DAY.skyAmb); U.uGroundAmb.value.copy(DAY.groundAmb); U.uFillCol.value.copy(DAY.fillCol);
+    U.uFogColor.value.copy(DAY.fogColor); U.uSkyZenith.value.copy(DAY.skyZenith); U.uWet.value = DAY.wet; U.uFogDensity.value = DAY.fogDensity; U.uMist.value = DAY.mist;
+  };
+  lookDay();
+  const snapDay = () => snap() + JSON.stringify(U.uSkyZenith.value.toArray());
+  const day = snapDay(), post = { saturation: 1.25 };
+  const sat = (c) => (Math.max(c.r, c.g, c.b) - Math.min(c.r, c.g, c.b)) / Math.max(c.r, c.g, c.b);
+  const lum = (c) => 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+  const w = new Weather({ rain: 0.85, snow: 0, storm: 1, wind: 2 }, { day: true, post });
+  assert.ok(U.uMoonCol.value.r <= 0.2 * DAY.sunCol.r && U.uMoonCol.value.b <= 0.2 * DAY.sunCol.b, 'a storm veils the sun (and so its shadow)');
+  assert.ok(sat(U.uFogColor.value) < 0.5 * sat(DAY.fogColor), 'an overcast haze');
+  assert.ok(sat(U.uSkyZenith.value) < 0.5 * sat(DAY.skyZenith), 'a grey zenith');
+  assert.ok(sat(U.uSkyAmb.value) < sat(DAY.skyAmb) && lum(U.uSkyAmb.value) > lum(DAY.skyAmb), 'a greyer, stronger ambient');
+  assert.ok(U.uFogDensity.value > 2 * DAY.fogDensity, 'a thicker haze');
+  assert.ok(post.saturation < 1.25, 'a less saturated grade');
+  assert.ok(U.uWet.value > 1, 'the rain wets the cobbles');
+  const veiledFog = U.uFogColor.value.clone();
+  const cam = new THREE.PerspectiveCamera();
+  w.strike(10); w.update(10.05, cam, new THREE.Vector3());
+  assert.ok(w.flashLevel > 0.3, 'a flash');
+  assert.ok(lum(U.uFogColor.value) > lum(veiledFog), 'a flash brightens the day haze (the night lerp would darken it)');
+  assert.ok(U.uMoonCol.value.r < DAY.sunCol.r, 'the flash stays under the unveiled sun');
+  w.dispose();
+  assert.equal(snapDay(), day, 'dispose gives every uniform back, a flash in progress included');
+  assert.equal(post.saturation, 1.25, 'and the grade');
+  // snow and rain veil less than a storm
+  const r = new Weather({ rain: 1, snow: 0, storm: 0, wind: 1 }, { day: true, post }), rainSun = U.uMoonCol.value.r; r.dispose();
+  assert.ok(rainSun > 0.2 * DAY.sunCol.r && rainSun < 0.7 * DAY.sunCol.r, 'rain: a sun half veiled');
+  const s = new Weather({ rain: 0, snow: 1, storm: 0, wind: 1 }, { day: true, post });
+  assert.ok(U.uWet.value < DAY.wet, 'snow takes the puddles'); s.dispose();
+  // wind alone by day: nothing veiled, the day's dry cobbles kept
+  const v = new Weather({ rain: 0, snow: 0, storm: 0, wind: 2 }, { day: true, post });
+  assert.equal(U.uWet.value, DAY.wet, 'wind alone does not wet the day');
+  assert.ok(U.uMoonCol.value.equals(DAY.sunCol)); assert.equal(post.saturation, 1.25);
+  v.dispose();
+  assert.equal(snapDay(), day);
+  // at night (no day option) the light and the grade are not touched (Passes W1-W3); the night's wetness formula
+  const n = new Weather({ rain: 0.85, snow: 0, storm: 1, wind: 2 }, { post });
+  assert.ok(U.uMoonCol.value.equals(DAY.sunCol) && U.uFogColor.value.equals(DAY.fogColor) && U.uSkyZenith.value.equals(DAY.skyZenith), 'the night weather leaves the light');
+  assert.equal(post.saturation, 1.25);
+  assert.equal(U.uWet.value, Math.max(0, 1 + 0.3 * 0.85 - 0.9 * 0), 'the night formula');
+  n.dispose();
+  reset(before); U.uSkyZenith.value.copy(zen0);
 });

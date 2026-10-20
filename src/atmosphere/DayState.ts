@@ -118,6 +118,13 @@ export const AFTERNOON: DayLook = {
 
 export const LOOKS: Record<DayTime, DayLook> = { morning: MORNING, midday: DAY, afternoon: AFTERNOON };
 
+/** the sky's defines: none at night (the night's sky, weather or not); a day state's own, plus DAY_WEATHER when its sky is overcast (rain, snow
+ *  or storm; journal Passe Y5) - without weather a day state's sky stays exactly its own */
+export function skyDefines(look: DayLook | null, overcast: boolean): Record<string, number | string> | null {
+  if (!look) return null;
+  return overcast ? { ...look.sky, DAY_WEATHER: 1 } : { ...look.sky };
+}
+
 /** a light stays lit by day only if it is the forge's (J4 « Éteintes, la forge allumée »): its fire, embers and hot bar, and the fill under
  *  its hood. Its porch lanterns are lanterns, and the shop pools, candles and lamps are off. */
 export function litByDay(l: { group: string; kind: string; tag?: string }): boolean {

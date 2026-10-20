@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { load } from './load.mjs';
 
-const { parseTime, litByDay, DAY, MORNING, AFTERNOON, LOOKS } = await load('/src/atmosphere/DayState.ts');
+const { parseTime, litByDay, DAY, MORNING, AFTERNOON, LOOKS, skyDefines } = await load('/src/atmosphere/DayState.ts');
 const { U } = await load('/src/atmosphere/SceneUniforms.ts');
 const src = (f) => fs.readFileSync(f, 'utf8');
 const q = (s) => new URLSearchParams(s);
@@ -89,4 +89,16 @@ test('the morning and the end of day: a softer, lower morning sun in a cool haze
   assert.ok(c.r > c.g && c.g > c.b && c.r > 2.5 * c.b, 'a golden sun');
   assert.ok(AFTERNOON.fogColor.r > AFTERNOON.fogColor.b, 'a warm haze');
   assert.ok(AFTERNOON.post.shadowTint.b > AFTERNOON.post.shadowTint.r, 'blue shadows against the warm light');
+});
+
+test('the sky under a day weather (Passe Y5): DAY_WEATHER only by day and only when overcast; the night sky never changes', () => {
+  assert.equal(skyDefines(null, true), null, 'the night: no defines, weather or not');
+  assert.equal(skyDefines(null, false), null);
+  assert.deepEqual(skyDefines(DAY, false), { DAY: 1 }, 'midday without weather: its own sky exactly');
+  assert.deepEqual(skyDefines(MORNING, false), MORNING.sky);
+  for (const L of Object.values(LOOKS)) assert.deepEqual(skyDefines(L, true), { ...L.sky, DAY_WEATHER: 1 }, L.label);
+  assert.notEqual(skyDefines(DAY, false), DAY.sky, 'a copy: the look is never written');
+  assert.match(src('src/atmosphere/Sky.ts'), /#ifdef DAY_WEATHER/);
+  assert.match(src('src/app/App.ts'), /skyDefines\(this\.look, overcast\(p\) > 0\)/);
+  assert.match(src('src/app/App.ts'), /new Weather\(p, \{ day: this\.day, post: this\.post\.params \}\)/);
 });

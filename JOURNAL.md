@@ -544,6 +544,79 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un soleil rasant à contre-jour éteint un front entier. Le soleil d'une piste se lit sur la direction de ses ombres à l'écran et sur ce
   qu'il éclaire, pas seulement sur sa lueur.
 
+## Passe Y5 — La météo sur chaque état : de jour, la couverture voile le soleil et grise le ciel (décision D6) ; la nuit et les jours clairs inchangés (2026-10-20)
+
+### Demande
+- Opérateur, mot pour mot : « Passe à la météo sur chaque état (matin, midi, fin de journée, nuit) : l'orage de jour voile le soleil, la pluie
+  et la neige. » C'est la tâche 4 de la Passe D6.
+- Branche `day-weather-y5` depuis `main` (`c4a19ce`).
+
+### Constat de départ
+- La météo (Passes W1-W3) écrivait les mêmes valeurs de jour que de nuit, avec trois défauts de jour :
+  - le soleil restait net sous l'orage, et son ombre avec lui ;
+  - la variante `DAY` du ciel recouvrait la couche nuageuse et l'éclair ;
+  - le vent seul mouillait les pavés du jour (`uWet` remis à 1, la valeur de la nuit).
+- La nuit, la météo est celle que l'opérateur a revue : elle ne change pas.
+
+### Fait — [OK]
+- **`Weather` reçoit `{ day, post }`** (`App.setWeather` passe `this.day` et les réglages du grade). Sans `day`, chaque valeur est celle des
+  Passes W1-W3.
+- **De jour, la couverture c** (`uCloud` = orage + 0,6 × pluie + 0,5 × neige, au plus 1) :
+  - **voile le soleil** : sa couleur × (1 − 0,82 c), soit 18 % sous un orage plein ; son ombre faiblit avec lui ;
+  - **grise l'ambiance** (vers sa luminance, 0,6 c) et la renforce un peu (le ciel couvert éclaire de partout) ;
+  - **grise la brume de l'horizon et le zénith** (0,9 c), plus sombres sous l'orage ; l'orage épaissit la brume (× 1 + orage) ;
+  - **baisse la saturation** du grade (× 1 − 0,35 c).
+  - **[KO → corrigé]** au premier réglage, la brume gardait 20 % de son bleu sous l'orage de midi (0,8 c) : le test l'a vu, la planche aussi. Passée à 0,9 c.
+- **Les pavés** : de jour, ils partent de la sécheresse de l'état. La pluie les mouille vers 1,3, la neige retire les flaques, le vent seul ne
+  change rien.
+- **L'éclair de jour** : le soleil voilé monte moins (× 1 + 1,2 f au lieu de 3 f), et la brume s'éclaircit vers un blanc froid au lieu de
+  l'indigo pâle de la nuit, qui l'aurait assombrie.
+- **Le ciel de jour** : une variante `DAY_WEATHER`, compilée seulement de jour et sous une couverture. Elle mêle au ciel de l'état une couche
+  grise, dans le ton de la brume voilée, aux masses lentes plus sombres, et y dessine l'éclair pendant un flash.
+  - Le tracé de l'éclair est celui de la nuit, recopié dans une fonction sous `#ifdef`, pour ne pas changer le code de la nuit.
+  - `skyDefines` (`DayState.ts`) donne les défines : aucune la nuit ; ceux de l'état, plus `DAY_WEATHER` sous une couverture.
+  - `App.setWeather` les met à jour quand la météo change en jouant (panneau DEV).
+- **`dispose`** rend aussi, de jour, les couleurs voilées et la saturation, sauf celles qu'autre chose a changées entre-temps.
+- **Les états gardent leur caractère** sous la météo : l'orage de la fin de journée reste plus chaud, celui du matin gris-bleu. La neige de la fin
+  de journée garde une lumière dorée, puisque le soleil n'est voilé qu'à moitié.
+
+### Preuves
+- **Contre `main` figé** (`c4a19ce`, :5187), au **seuil 0** : **0 px partout** (écart max 0) ; aucune erreur de page, la sortie de `detshots`
+  étant gardée et relue.
+  - **La nuit claire** : graines 1842 et 7719 × A, B, C, D, D lointain et les quatre transitions figées (`static=1&occ=0`) ; les quatre
+    références avec personnages et la forge sabotée.
+  - **La nuit sous chaque météo** (B avec personnages) : `rain=1`, `snow=1`, `storm=1`, `wind=2`, `rain=0.5&snow=0.6`. Et en A, l'orage, avec
+    et sans flash (forcé par `strike`).
+  - **Le matin, midi et la fin de journée sans météo** : A, B, C, D (`static=1&occ=0`), et B avec personnages.
+- **Les météos de jour** : témoins de répétition (deux chargements) à 0 px pour midi sous l'orage, le matin sous la pluie, la fin de journée sous
+  la neige et sous l'orage.
+- **Posé puis retiré en jouant** (`App.setWeather`, le chemin du panneau DEV) : un orage posé puis retiré redonne le jour clair à 0 px, à midi et
+  en fin de journée. Contrôle : l'orage laissé posé change 97,4 % des pixels.
+- **La série a été attendue dans le tour**, comme le demande le principe de la Passe Y4 : aucun serveur n'a été arrêté pendant.
+- **Tests** :
+  - `tests/weather.test.mjs` +1 : de jour, l'orage voile le soleil (au plus 20 %) et grise la brume, le zénith et l'ambiance ; la brume
+    s'épaissit, la saturation baisse, la pluie mouille ; un flash éclaircit la brume du jour ; la pluie voile à moitié ; la neige retire les
+    flaques ; le vent seul ne mouille pas ; `dispose` rend tout ; la nuit ne touche ni la lumière ni le grade, et garde sa formule des pavés.
+  - `tests/day-state.test.mjs` +1 : `DAY_WEATHER` seulement de jour et sous une couverture ; le ciel de la nuit n'a jamais de défines.
+  - **Six fautes injectées, attrapées**, sans série en cours : le voile la nuit aussi ; le vent seul qui mouille le jour ; `dispose` qui laisse
+    le voile, ou la saturation ; un flash de jour qui assombrit la brume ; `DAY_WEATHER` sans météo. Les fichiers sont restaurés à l'octet.
+- **Validation** : typecheck, `npm test` 97 / 97, build, `art:validate`.
+- **Planches** (`screenshots/calibration/y5-day-weather/`) : `morning-weather.png`, `midday-weather.png`, `end-of-day-weather.png`. Chacune
+  montre l'orage, la pluie et la neige en B, et l'orage pendant un flash en A.
+
+### Restes [?]
+- **À juger par l'opérateur en jeu** (J9) : `?time=midday&storm=1` et les autres combinaisons. Le panneau DEV (touche H, section
+  « Weather ») change la météo en jouant.
+- **Non faits** : la neige sur les personnages, les éclaboussures (Passe W1). Le soleil voilé garde la direction de son ombre ; seule sa force
+  baisse.
+- **Non mesuré** : le temps GPU (la variante `DAY_WEATHER` ajoute du bruit au ciel ; la précipitation coûte ce qu'elle coûtait la nuit).
+- **À faire** (Passe D6) : J7, la foule du jour.
+
+### Pensée
+- Un effet écrit pour un état (la nuit) se généralise par une option qui ne change rien sans elle. Chaque nouvelle valeur passe par une
+  branche du code de l'effet, jamais par une formule « générale » qui redonnerait la nuit à l'arrondi près.
+- Un défaut de jour se trouve en relisant chaque valeur absolue qu'écrivait l'effet : `uWet` = 1 voulait dire « la nuit ».
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -551,7 +624,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
-  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
+  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
   midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
   défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
@@ -665,7 +738,7 @@ sprites.
 en jouant dans le panneau DEV (section « Weather »). Restent : le
 jugement de l'opérateur en jeu et en mouvement (vent sur les bannières,
 pluie qui tombe, éclairs), météo par défaut : « Nuit claire par défaut » (Passe D1) ; non faits : son (le jeu n'en a pas), éclaboussures
-au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3.
+au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3. De jour, la couverture voile le soleil et grise le ciel : Passe Y5.
 
 **6c. Arène (Passes A1 à A3, P1, P2)** — **dans le jeu derrière `?scene=arena`** (Passe P1 : simulation portée et prouvée contre le
 prototype, décor du district, combattants générés ×2, HUD au style du jeu ; la ville inchangée, 0 px ; Passe P2 : quatre critiques à

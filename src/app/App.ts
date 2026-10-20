@@ -18,8 +18,8 @@ import { ActorSystem } from '../characters/ActorSystem';
 import type { BakedSheet, AuthoredSpawn } from '../characters/BakedSprites';
 import { loadProductionCast } from '../characters/BakedCast';
 import { ParticleSystem } from '../atmosphere/Particles';
-import { Weather, parseWeather, type WeatherParams } from '../atmosphere/Weather';
-import { LOOKS, litByDay, parseTime, type DayLook, type TimeOfDay } from '../atmosphere/DayState';
+import { Weather, overcast, parseWeather, type WeatherParams } from '../atmosphere/Weather';
+import { LOOKS, litByDay, parseTime, skyDefines, type DayLook, type TimeOfDay } from '../atmosphere/DayState';
 import { buildSky } from '../atmosphere/Sky';
 import { WATER_Y, WALK } from '../architecture/StreetComposer';
 import { type BakeOptions, type BakePose, type BehindPass } from '../district/Visibility';
@@ -86,6 +86,7 @@ export class App {
   readonly timeOfDay: TimeOfDay;
   readonly day: boolean;
   private readonly look: DayLook | null;
+  private readonly sky: THREE.Mesh;
   /** the HUD's name of the day state; null at night */
   get dayLabel(): string | null { return this.look?.label ?? null; }
   /** by day, the forge's own copy of the glow material (its coals stay lit while the window glass dims); null at night */
@@ -130,7 +131,8 @@ export class App {
     // ?time= (journal Passes Y1 / Y4): read before the sky, which is built as the state's variant
     const t = parseTime(opts.params);
     this.timeOfDay = t ?? 'night'; this.day = t !== null; this.look = t ? LOOKS[t] : null;
-    this.scene.add(buildSky(this.look?.sky ?? null));
+    this.sky = buildSky(this.look?.sky ?? null);
+    this.scene.add(this.sky);
     this.reflection.clipY = WATER_Y;
     U.uMoonCol.value.copy(this.moonBase);
     const q = opts.params;
@@ -293,8 +295,13 @@ export class App {
    *  wind 1) leaves none */
   setWeather(p: WeatherParams | null): void {
     if (this.weather) { this.scene.remove(this.weather.group); this.weather.dispose(); this.weather = null; this.particles.wind.copy(this.baseWind); }
+    // by day the sky compiles its overcast deck only while a weather covers it (journal Passe Y5); the night's sky never changes
+    if (this.look) {
+      const m = this.sky.material as THREE.ShaderMaterial, d = skyDefines(this.look, overcast(p) > 0)!;
+      if (JSON.stringify(m.defines) !== JSON.stringify(d)) { m.defines = d; m.needsUpdate = true; }
+    }
     if (!p || (p.rain <= 0 && p.snow <= 0 && p.storm <= 0 && p.wind === 1)) return;
-    this.weather = new Weather(p);
+    this.weather = new Weather(p, { day: this.day, post: this.post.params });
     this.scene.add(this.weather.group);
     this.particles.wind.copy(this.baseWind).multiplyScalar(p.wind);
   }
