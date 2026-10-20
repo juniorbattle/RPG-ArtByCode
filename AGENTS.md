@@ -5,8 +5,9 @@ Three.js + TypeScript (Vite). Everything (geometry, textures, sprites, lighting)
 ## Status
 The Merchant District (night) is **complete** since 2026-10-19 (operator decision RJ1 « Clore après le gel », journal Passe Z4): milestone
 M1 applied and reviewed, then frozen (journal Passes Z1-Z3). Its content, framings, cast and look stay as they are; any change to them is a
-new task decided by the operator. It is **not** Gold Master (RJ3 « Pas encore »: that status is the operator's). Next: the day state's art
-direction, proposed to and decided by the operator before any code (RJ2, see "Art direction").
+new task decided by the operator. It is **not** Gold Master (RJ3 « Pas encore »: that status is the operator's). Next (RJ2): the day states,
+decided (journal Passes D4, D6; see "Art direction"): the morning, midday and the end of day are built behind `?time=` (journal Passes Y2-Y4);
+the weather on each state and the day's crowd (J7) remain, and the day becomes the default only after the operator's review in game (J9).
 
 ## Project journal (MANDATORY workflow)
 `JOURNAL.md` is the project's memory: what was done, what worked, what failed and why, open problems, lessons. It holds the
@@ -196,12 +197,14 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 a bare parameter = 1): `rain=<0..1>` (lamp-lit streaks, wetter cobbles, rings in puddles and on the canal, a little more mist), `snow=<0..1>`
 (drifting flakes, a cover on the cobbles and upward faces), `storm=<0..1>` (lightning flashes every 5-14 s, overcast sky hiding the moon; brings
 rain 0.85 x storm and wind 1 + storm unless given), `wind=<0..3>` (cloth / leaves sway, smoke drift, precipitation slant; 1 = as before);
-DEV: the panel's closed « Weather » section changes it while playing (`App.setWeather`, journal Passe W2) · `time=midday` (alias `time=day`; the day,
-`src/atmosphere/DayState.ts`, journal Passes Y1 / Y2: midday after the generated midday track, the operator's decision D6 - a high sun in the
-moon's place and its shadow, a deep blue sky with white clouds, saturated blue roofs and water, almost no haze, lanterns, windows and far
-lights unlit, the forge lit, the tournament's bunting (blue and ivory pennants along the frontage, across the street to the quay lamps
-and along the quay wall, journal Passe Y3); the morning and the end of day are not built yet; absent or `night` = the night, unchanged, the default until the
-operator approves the day in game, decision J9) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
+DEV: the panel's closed « Weather » section changes it while playing (`App.setWeather`, journal Passe W2) · `time=morning|midday|afternoon` (alias `time=day` = midday; the day
+states, `src/atmosphere/DayState.ts`, the operator's decision D6, each after its generated track: `midday` (journal Passes Y1 / Y2) - a high
+sun in the moon's place and its shadow, a deep blue sky with white clouds, saturated blue roofs and water, almost no haze; `morning` (journal
+Passe Y4) - a soft sun not yet high from the canal side, a pale sky veiled by a cool haze and mist, dewy cobbles, slate-blue roofs;
+`afternoon`, the end of day (journal Passe Y4) - a low golden sun at the far end of the canal, long shadows, a warm haze and a glow around the
+sun; in every day state the lanterns, windows and far lights are unlit, the forge lit, and the tournament's bunting is up (blue and ivory
+pennants along the frontage, across the street to the quay lamps and along the quay wall, journal Passe Y3); `evening` is not a parameter:
+the evening is the night; absent or `night` = the night, unchanged, the default until the operator approves the day in game, decision J9) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
 thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) ·
 `fps=off|<n>|v<k>|e<n>|a<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
 round(refresh / n) vsyncs / the same with an adaptive step; **default `a60`**, chosen by the operator on 2026-10-18 (`e60` from 2026-10-17):
@@ -287,7 +290,8 @@ desaturated ivory for canvas/highlights. Keep props concentrated at focal points
 quay edge, bridge, a few banners); do not add uniform clutter.
 Day and night (the operator's note of 2026-10-19, word for word, journal Passe D1): « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Its art direction is decided
 (the operator's day-state sheet, journal Passe D4, then the operator's direction of journal Passe D6); a first draft runs behind `?time=day`
-(journal Passe Y1), midday matched to the midday track behind `?time=midday` (journal Passe Y2). The night above stays the game's default until the operator approves the day in game (J9 « Après ma revue en jeu »).
+(journal Passe Y1), midday matched to the midday track behind `?time=midday` (journal Passe Y2), the morning and the end of day matched to
+their tracks behind `?time=morning` / `?time=afternoon` (journal Passe Y4). The night above stays the game's default until the operator approves the day in game (J9 « Après ma revue en jeu »).
 Day (decided, journal Passes D4 and D6):
 - **Four fixed states** (D6, replacing J8 « Deux états fixes »): **morning**, **midday** (the tournament's launch), **end of day** (after the
   tournament) and **evening, which is the night above** (the operator's answer « La nuit actuelle »). **The weather** (rain, snow, storm,
@@ -298,7 +302,8 @@ Day (decided, journal Passes D4 and D6):
   (« Comme l'image »). For midday this replaces the sheet's J2 (the night's rule transposed), J3 (pale sky, light haze) and J5 (bunting at the
   focal points). The image's characters were redrawn by the tool: its light, palette, sky and bunting are the target, not its sprites.
 - **Morning and end of day** take the generated morning and late-afternoon tracks as references (`day-state-morning-2026-10-19.png`,
-  `day-state-late-afternoon-2026-10-19.png`). Their looks are still to be built and shown.
+  `day-state-late-afternoon-2026-10-19.png`). Built and shown (journal Passe Y4), not yet reviewed in game by the operator. As on its track,
+  the morning's light comes from the canal side (not from an east consistent with the end of day's sun at the far end of the canal).
 - **Kept from the sheet**: J4, lanterns and windows unlit by day, the forge lit; J6, the bunting by day only, never at night; J7, more people by
   day, the number still to be proposed with its measurement and decided by the operator; J9, the night stays the default until the operator
   approves the day in game.

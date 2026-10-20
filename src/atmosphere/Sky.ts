@@ -72,13 +72,25 @@ void main(){
   vec3 cloudCol = mix(uFogColor * 0.7 + vec3(0.3), vec3(1.5, 1.51, 1.56), smoothstep(0.6, 0.82, f));
   col = mix(skyColor(rd), cloudCol, cum);
   #endif
+  #ifdef DAY_HAZE
+  // the morning (?time=morning, journal Passe Y4): the sky and its clouds veiled by the pale haze of the morning track
+  col = mix(col, skyHaze(rd), DAY_HAZE);
+  #endif
+  #ifdef DAY_SUN
+  // the end of day (?time=afternoon, journal Passe Y4): the low sun's glow at the far end of the canal (the sun in the moon's uniforms), the
+  // clouds warmed toward it
+  float sg = max(dot(rd, uMoonDir), 0.0);
+  col = mix(col, col * uMoonCol * 0.42, cum * pow(sg, 3.0));
+  col += uMoonCol * (0.05 * pow(sg, 6.0) + 0.16 * pow(sg, 48.0) + 0.6 * pow(sg, 900.0)) * DAY_SUN;
+  #endif
   gl_FragColor = vec4(col, 1.0);
 }`;
 
-/** `day` (?time=day, journal Passe Y1): the day's sky, a variant compiled with DAY; the night's material is main's exactly */
-export function buildSky(day = false): THREE.Mesh {
+/** `defines` (?time=..., DayState.ts `sky`, journal Passes Y1 / Y4): a day state's sky, a variant compiled with DAY (and DAY_HAZE / DAY_SUN);
+ *  none = the night's material, main's exactly */
+export function buildSky(defines: Record<string, number | string> | null = null): THREE.Mesh {
   const mat = new THREE.ShaderMaterial({
-    uniforms: { ...U }, vertexShader: SKY_VERT, fragmentShader: SKY_FRAG, defines: day ? { DAY: 1 } : {},
+    uniforms: { ...U }, vertexShader: SKY_VERT, fragmentShader: SKY_FRAG, defines: defines ? { ...defines } : {},
     side: THREE.BackSide, depthWrite: false, depthTest: true,
   });
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), mat);

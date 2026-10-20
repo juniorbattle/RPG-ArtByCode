@@ -19,7 +19,7 @@ import type { BakedSheet, AuthoredSpawn } from '../characters/BakedSprites';
 import { loadProductionCast } from '../characters/BakedCast';
 import { ParticleSystem } from '../atmosphere/Particles';
 import { Weather, parseWeather, type WeatherParams } from '../atmosphere/Weather';
-import { DAY, litByDay, parseTime } from '../atmosphere/DayState';
+import { LOOKS, litByDay, parseTime, type DayLook, type TimeOfDay } from '../atmosphere/DayState';
 import { buildSky } from '../atmosphere/Sky';
 import { WATER_Y, WALK } from '../architecture/StreetComposer';
 import { type BakeOptions, type BakePose, type BehindPass } from '../district/Visibility';
@@ -81,9 +81,13 @@ export class App {
   private debugActive: CamId[] | null = null;
   /** low moon just right of the vanishing point: backlights the frontage, lays a glade on the canal */
   moonDir = new THREE.Vector3(0.965, 0.1736, 0.197).normalize();
-  /** the day state (?time=day, DayState.ts, journal Passe Y1): the sun in the moon's place, the day's sky, haze, lights and grade; false = the
-   *  night, untouched */
+  /** the day states (?time=morning|midday|afternoon, DayState.ts, journal Passes Y1 / Y2 / Y4): the sun in the moon's place, the state's sky,
+   *  haze, lights and grade; 'night' (day false, look null) = the night, untouched */
+  readonly timeOfDay: TimeOfDay;
   readonly day: boolean;
+  private readonly look: DayLook | null;
+  /** the HUD's name of the day state; null at night */
+  get dayLabel(): string | null { return this.look?.label ?? null; }
   /** by day, the forge's own copy of the glow material (its coals stay lit while the window glass dims); null at night */
   private forgeGlow: THREE.ShaderMaterial | null = null;
   onRegenerate: Array<() => void> = [];
@@ -123,9 +127,10 @@ export class App {
     if (rf > 0 && rf <= 1) this.reflection.scale = rf;
     this.rig.camera.layers.enable(2);
     this.scene.add(this.rig.camera);
-    // ?time=day (journal Passe Y1): read before the sky, which is built as the day's variant
-    this.day = parseTime(opts.params) === 'midday';
-    this.scene.add(buildSky(this.day));
+    // ?time= (journal Passes Y1 / Y4): read before the sky, which is built as the state's variant
+    const t = parseTime(opts.params);
+    this.timeOfDay = t ?? 'night'; this.day = t !== null; this.look = t ? LOOKS[t] : null;
+    this.scene.add(buildSky(this.look?.sky ?? null));
     this.reflection.clipY = WATER_Y;
     U.uMoonCol.value.copy(this.moonBase);
     const q = opts.params;
@@ -178,15 +183,16 @@ export class App {
     // the main thread idles while the workers paint: the frame cap measures the display's vsync interval meanwhile
     this.frameCap.probe();
     this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress, painters);
-    if (this.day) {
+    if (this.look) {
+      const L = this.look;
       // the window and lantern glass dims by day (J4); the forge keeps the night's glow on its own copy of the material
       const g = this.lib.slot.glow;
       this.forgeGlow = new THREE.ShaderMaterial({ uniforms: { ...g.uniforms, uEmissive: { value: g.uniforms.uEmissive.value } }, vertexShader: g.vertexShader, fragmentShader: g.fragmentShader, defines: { ...g.defines }, side: g.side });
       this.forgeGlow.name = 'glow:forge-day';
-      g.uniforms.uEmissive.value = DAY.glowEmissive;
-      this.lib.slot.shop.uniforms.uEmissive.value = DAY.shopEmissive;
-      // the saturated blue roofs of the midday track (journal Passe Y2): the roof material's albedo multiplier, white at night
-      this.lib.slot.roof.uniforms.uBase.value.copy(DAY.roofTint);
+      g.uniforms.uEmissive.value = L.glowEmissive;
+      this.lib.slot.shop.uniforms.uEmissive.value = L.shopEmissive;
+      // the roofs of the state's track (the saturated blue of midday, journal Passe Y2): the roof material's albedo multiplier, white at night
+      this.lib.slot.roof.uniforms.uBase.value.copy(L.roofTint);
     }
     this.frameCap.endProbe();
     this.generator = new MerchantDistrictGenerator(this.lib);
@@ -296,15 +302,16 @@ export class App {
   /** the day look (DayState.ts) over the night's values: in the constructor, before the first generation (the sun's shadow is rendered
    *  there) and before the weather, which then scales the day's haze and gives it back */
   private applyDay(): void {
-    this.moonDir.copy(DAY.sunDir);
-    this.moonBase.copy(DAY.sunCol);
+    const L = this.look!;
+    this.moonDir.copy(L.sunDir);
+    this.moonBase.copy(L.sunCol);
     U.uMoonCol.value.copy(this.moonBase);
-    this.ambientBase.copy(DAY.skyAmb);
-    U.uSkyAmb.value.copy(DAY.skyAmb); U.uGroundAmb.value.copy(DAY.groundAmb); U.uFillCol.value.copy(DAY.fillCol);
-    U.uFogColor.value.copy(DAY.fogColor); U.uSkyZenith.value.copy(DAY.skyZenith); U.uCityGlow.value.setRGB(0, 0, 0);
-    U.uFogDensity.value = DAY.fogDensity; U.uMist.value = DAY.mist; U.uWet.value = DAY.wet;
+    this.ambientBase.copy(L.skyAmb);
+    U.uSkyAmb.value.copy(L.skyAmb); U.uGroundAmb.value.copy(L.groundAmb); U.uFillCol.value.copy(L.fillCol);
+    U.uFogColor.value.copy(L.fogColor); U.uSkyZenith.value.copy(L.skyZenith); U.uCityGlow.value.setRGB(0, 0, 0);
+    U.uFogDensity.value = L.fogDensity; U.uMist.value = L.mist; U.uWet.value = L.wet;
     // the grade's colours copied, not shared: the DEV panel edits post.params in place
-    Object.assign(this.post.params, DAY.post, { shadowTint: DAY.post.shadowTint!.clone(), highlightTint: DAY.post.highlightTint!.clone() });
+    Object.assign(this.post.params, L.post, { shadowTint: L.post.shadowTint!.clone(), highlightTint: L.post.highlightTint!.clone() });
   }
 
   setMoonGain(v: number): void { this.moonGain = v; U.uMoonCol.value.copy(this.moonBase).multiplyScalar(v); }
