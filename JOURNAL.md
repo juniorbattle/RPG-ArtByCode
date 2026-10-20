@@ -625,6 +625,36 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Les actions des gens apparaissent dans leur dialogue ; « Here » garde celles du joueur (se reposer, laisser passer le temps, entrer dans
   l'arène, rebâtir la forge en ruine).
 - Lantern Row reste fermé (« opens in a later build of the slice ») jusqu'au lot L6.
+- **Le parvis de jour s'affiche de nuit** : il est l'arène, qui n'a que l'aspect de nuit (choix G1). Lui donner le jour serait un changement
+  d'aspect : une décision préparée au bilan.
+
+### Preuves
+- **`tests/town-roles.test.mjs`, 7 tests** : la quête de la cargaison jusqu'aux données du duel (+15 %) ; la boutique (ouverte le jour, la
+  pénurie, la faveur) ; le jour et la nuit (Bram, l'informateur, la forge en ruine) ; les réponses au sabotage (le guet tenu, le nom du payeur,
+  le rapport, la réparation, la lame de Mara au prix de la pénurie) ; le parvis (le rôle, le soin payé ou gratuit, l'observation qui donne
+  l'assistance et le renseignement, Orla) ; chaque personne a des répliques à chaque créneau où elle est là ; « Explore the district » : la
+  fonction `startTown` et le chargement de `src/main.ts` sont ceux de `main` `d129433`, lus par `git show`.
+  - **Huit fautes injectées une à une, toutes attrapées** : la levée oubliée, la pénurie sans effet, la boutique ouverte la nuit, Bram dans la
+    ruine, le guet inutile, la lame ignorée au duel, l'observation sans assistance, l'écran titre qui lance l'arène.
+- **Le PD**, contre `main` figé (`d129433`, :5187) et la branche figée (`d593537`, :5189), au **seuil 0** : témoin de répétition 0 px ; nuit A,
+  B, C, D statiques et avec personnages, midi en B : **0 px** les neuf. `src/arena/` ne change pas dans ce lot.
+- **L'écran titre** (`tools/title-proof.mjs`) : sur l'adresse nue, dans un navigateur qui ne se dit pas piloté, l'écran paraît avant toute
+  génération ; « New game » et « Explore the district » sans sauvegarde, « Continue » en plus avec une sauvegarde. **« Explore the district »
+  donne l'adresse nue de `main` figé à 0 px** (120 pas, personnages compris).
+- **Le jour 1 dans le navigateur** (`tools/play-day.mjs`, graines 1842 sur le serveur de développement et 7719 sur la branche figée) : E près
+  de Mara ouvre son dialogue (portrait, réplique, cinq options) ; la quête et le parvis par `window.__game` ; chaque rechargement depuis la
+  sauvegarde garde l'état ; le deuxième matin atteint, l'horloge et l'échéance justes ; la partie rejouée en Node a la même empreinte ;
+  0 erreur de page.
+- **Les captures** (`tools/play-shots.mjs`) : le matin, midi, le crépuscule après un duel, la nuit et le parvis, en 1280 × 720, 390 × 844 et
+  844 × 390 (17 images), et un dialogue au téléphone ; 0 erreur de page. Trois gardées dans `screenshots/calibration/l4-play/`.
+- **[KO → corrigé]** sous SwiftShader, une image prend une à quatre secondes : l'invite n'était pas encore calculée quand l'outil appuyait sur
+  E (il attend maintenant `__ui.near`) ; la navigation dépassait le délai par défaut de 30 s (les outils du mode jouable prennent `READY_MS`).
+- **Validation** : typecheck, `npm test` **135 / 135**, build, `art:validate`.
+
+### Pensée
+- Un écran par défaut nouveau se protège par qui le regarde, pas seulement par l'adresse : un navigateur piloté garde le jeu d'avant, et
+  chaque outil, celui de l'opérateur compris, reste juste sans modification.
+- Une preuve de « même chemin » se lit dans le code de la version figée (`git show`) : l'oracle ne passe pas par le fichier modifié.
 
 ## À reprendre (par priorité)
 
