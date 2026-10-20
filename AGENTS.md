@@ -199,7 +199,8 @@ rain 0.85 x storm and wind 1 + storm unless given), `wind=<0..3>` (cloth / leave
 DEV: the panel's closed « Weather » section changes it while playing (`App.setWeather`, journal Passe W2) · `time=midday` (alias `time=day`; the day,
 `src/atmosphere/DayState.ts`, journal Passes Y1 / Y2: midday after the generated midday track, the operator's decision D6 - a high sun in the
 moon's place and its shadow, a deep blue sky with white clouds, saturated blue roofs and water, almost no haze, lanterns, windows and far
-lights unlit, the forge lit; the morning and the end of day are not built yet; absent or `night` = the night, unchanged, the default until the
+lights unlit, the forge lit, the tournament's bunting (blue and ivory pennants along the frontage, across the street to the quay lamps
+and along the quay wall, journal Passe Y3); the morning and the end of day are not built yet; absent or `night` = the night, unchanged, the default until the
 operator approves the day in game, decision J9) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
 thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) ·
 `fps=off|<n>|v<k>|e<n>|a<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every

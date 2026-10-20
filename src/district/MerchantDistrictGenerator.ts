@@ -4,7 +4,7 @@ import { MeshBuilder, SlotSet, SLOTS, mat, type V3 } from '../core/MeshBuilder';
 import type { MaterialLibrary } from '../materials/MaterialLibrary';
 import { createMerchantBuilding } from '../architecture/BuildingGenerator';
 import type { BuildingParams, BuildingResult, ShopType, RoofStyle, PaletteName, Socket } from '../architecture/Types';
-import { composeStreet, makeGroundMask, GROUND_RECT, STREET, QUAY_END_X, QUAY_Z, WATER_Y, WALK, type Collider, type MaskObstacle, type MaskBlob } from '../architecture/StreetComposer';
+import { composeStreet, makeGroundMask, GROUND_RECT, STREET, QUAY_END_X, QUAY_Z, WATER_Y, WALK, WATER_STEPS, type Collider, type MaskObstacle, type MaskBlob } from '../architecture/StreetComposer';
 import { InstanceBatch, boat } from '../props/PropGenerator';
 import type { LightDef } from '../atmosphere/LightRig';
 import { LAYER_CAST, LAYER_NOREFLECT } from '../atmosphere/ShadowAndReflection';
@@ -13,6 +13,7 @@ import { buildMarket, HERO_STALL } from '../props/MarketGenerator';
 import { buildForgeProps, type ForgeState } from './ForgeGenerator';
 import { buildDistantCity, southShore, RIVER_END_X } from './DistantCity';
 import { addBanner, buildBanners } from '../props/Banners';
+import { buildBunting } from '../props/Bunting';
 import { needMask, planDraw, ALL_MASK, FRAMINGS, SETS, idMaterial, windowIdMaterial, behindUniforms, type PartMeta, type Tier, type VisResult, type BehindPass } from './Visibility';
 import type { CamId, VisSet } from '../app/CameraGraph';
 import { voxelBoxes, type OccluderDef, type OccMeshRef } from '../app/Occlusion';
@@ -176,7 +177,7 @@ export class MerchantDistrictGenerator {
 
   /** `bake` renders the visibility part ids from the camera graph's poses (see Visibility.ts); without it every
    *  part is kept and drawn in every framing. */
-  generate(cfg: DistrictConfig, bake?: (scene: THREE.Scene, nParts: number, behind?: Pick<BehindPass, 'scene' | 'uniforms'>) => VisResult | null, opts: { occTest?: string[] } = {}): DistrictBuild {
+  generate(cfg: DistrictConfig, bake?: (scene: THREE.Scene, nParts: number, behind?: Pick<BehindPass, 'scene' | 'uniforms'>) => VisResult | null, opts: { occTest?: string[]; bunting?: boolean } = {}): DistrictBuild {
     const t0 = performance.now();
     const tm: Record<string, number> = {};
     const lap = (k: string, from: number) => { tm[k] = performance.now() - from; return performance.now(); };
@@ -285,6 +286,12 @@ export class MerchantDistrictGenerator {
     // ---------------------------------------------------------------- market anchor, forge yard, banners, boat, distant city
     buildMarket(rng.fork('market'), cfg, sockets, world, batch, lights, colliders, obstacles, npcs, emitters);
     buildBanners(rng.fork('banners'), cfg, buildingsOut, sockets, world);
+    // the tournament's bunting, by day only (opts.bunting, journal Passe Y3): untracked geometry, no random draw, nothing at night
+    if (opts.bunting) world.inPart(0, () => buildBunting(world, {
+      sockets,
+      lampTops: QUAY_LAMPS_X.filter((x) => x >= WALK.x0 && x <= WALK.x1).map((x) => [x, 3.05, LAMP_Z] as V3),
+      quay: { x0: -26, x1: QUAY_END_X - 2.5, y: -0.02, z: QUAY_Z + 0.44, skip: [[WATER_STEPS.x0 - 0.4, WATER_STEPS.x1 + 0.4]] },
+    }));
     {
       const bt = boat(rng.fork('boat'));
       const rigPart = registerOcc('boat-rig'), bannerPart = registerOcc('boat-banner');

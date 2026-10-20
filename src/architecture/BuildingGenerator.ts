@@ -361,6 +361,9 @@ export function createMerchantBuilding(input: BuildingParams): BuildingResult {
     ctx.socket('banner', [bf.x0 + 0.65 + rng.next() * 0.3, bf.y1 - 0.3, 0.05 + (bf.zF - g0.zF)], [0, 0, 1], { tag: p.shopType, width: 1.3 });
     ctx.socket('bunting', [g0.x0, top.y1 - 0.6, top.zF - g0.zF + 0.05], [0, 0, 1], { tag: 'left' });
     ctx.socket('bunting', [g0.x1, top.y1 - 0.6, top.zF - g0.zF + 0.05], [0, 0, 1], { tag: 'right' });
+    // the tournament's bunting by day (journal Passe Y3): the top of the first upper floor, in front of its wall (data only, no random draw)
+    ctx.socket('bunting', [bf.x0, bf.y1 - 0.2, bf.zF - g0.zF + 0.08], [0, 0, 1], { tag: 'left1' });
+    ctx.socket('bunting', [bf.x1, bf.y1 - 0.2, bf.zF - g0.zF + 0.08], [0, 0, 1], { tag: 'right1' });
   });
   ctx.colliders.push([g0.x0 - 0.05, -D, g0.x1 + 0.05, 0.1]);
   S.frame.part = 0;

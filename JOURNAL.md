@@ -988,6 +988,62 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
   qu'on voit à travers. En masquant l'eau, on a vu l'intérieur du bateau par une poupe jamais fermée.
 - Une forme lissée entre des sections se ferme à ses bouts : une section de largeur non nulle est un trou.
 
+## Passe Y3 — Le pavois du tournoi, de jour seulement, comme l'image (décisions D6 et J6) ; la nuit inchangée (2026-10-19)
+
+### Demande
+- Opérateur, mot pour mot : « Passe au pavois du tournoi comme sur l'image (guirlandes le long du front, en travers de la rue et sur le mur du
+  quai), de jour seulement. »
+- Décisions : D6 « Comme l'image » et J6 « Le jour seulement ».
+- Branche `day-bunting-y3` depuis `main` (`c9485d1`).
+
+### Fait — [OK]
+- **`src/props/Bunting.ts`** : `garland` tend une corde avec une flèche parabolique et y suspend des fanions triangulaires, bleus et ivoire en
+  alternance. Ils sont dans le matériau tissu (double face, vent), et la pointe seule se balance.
+- **`buildBunting` place trois sortes de guirlandes** :
+  - **le long du front** : une guirlande en travers de chaque maison du premier rang, en haut du premier étage, flèche 0,55 m ;
+  - **en travers de la rue** : depuis l'accroche de façade la plus proche jusqu'au sommet de chaque lampadaire du quai jouable, flèche 0,45 m ;
+  - **sur le mur du quai** : une rangée continue en festons de 2,4 m sous la margelle, devant la face du mur, de x −26 à 44. L'escalier de
+    débarquement reste libre.
+- **Les accroches** : deux nouvelles par maison (`BuildingGenerator`, étiquettes `left1` / `right1`), en haut du premier étage et devant son mur.
+  Ce sont des données, sans tirage : les accroches existantes `left` / `right`, sous les combles, étaient trop hautes pour les cadrages.
+- **De jour seulement** : `generate(..., { bunting })`, qu'`App` met à `this.day`. Rien n'est construit la nuit.
+  - Le pavois est de la géométrie non suivie (pièce 0) : il n'est jamais coupé par le culling.
+  - Aucun tirage aléatoire : la suite de la graine du district ne bouge pas.
+- Les maisons du rang arrière (`bg*`) n'en portent pas.
+
+### Preuves
+- **Captures de midi** (graine 1842, A, B, C, D), et en B la piste de midi à côté de midi en jeu : guirlandes, fanions et rangée du quai lus
+  comme sur l'image (`screenshots/calibration/y3-bunting/`). Les planches de la Passe Y2 (`y2-midday/`) sont remplacées ; elles restent dans
+  l'historique (`03f3e9d`).
+- **Nuit** (sans paramètre), contre `main` figé (`c9485d1`, :5187), au **seuil 0** : **0 px partout**.
+  - Graines 1842 et 7719 × A, B, C, D, D lointain et les quatre transitions figées.
+  - Les quatre références avec personnages, la forge sabotée et l'orage.
+  - Témoin du jour : 0 px.
+- **Tests** (`tests/bunting.test.mjs`, 3 tests) :
+  - une guirlande n'a que les trois couleurs, et les fanions pendent sous la corde ;
+  - le rang arrière n'a rien ; les accroches sont celles du premier étage, pas celles des combles ; la rangée du quai évite l'escalier ; une
+    guirlande atteint le lampadaire ;
+  - deux constructions sont identiques ; rien n'est construit sans `opts.bunting` ; aucun `Math.random`.
+  - **Quatre fautes injectées, attrapées** : l'escalier non évité, le rang arrière gardé, les accroches des combles, des couleurs au hasard.
+- **Validation** : typecheck, `npm test` 94 / 94, build, `art:validate`.
+
+### [KO → corrigé] procédure
+- J'ai injecté ces fautes dans `src/props/Bunting.ts` pendant que la preuve de nuit tournait sur le serveur de la branche. C'est contraire au
+  principe : rien ne se modifie de ce qu'un serveur sert pendant une série.
+- Le fichier a été restauré à l'octet (`cmp`). La série a donné 0 px sans capture en échec, mais elle a été relancée en entier sans aucune
+  modification (le résultat ci-dessus vient de ce second passage).
+
+### Restes [?]
+- **À juger par l'opérateur** : en B, la guirlande qui descend vers le lampadaire de l'étal passe, par la perspective, devant la tête du héros
+  et la bulle de la marchande quand ils sont à leur place de référence. Le révélateur d'occlusion ne protège pas le joueur du pavois.
+- **À faire** (Passe D6) : le matin et la fin de journée ; la météo sur chaque état ; J7.
+- **Non mesuré** : le temps GPU de midi avec le pavois.
+
+### Pensée
+- Un habillage qui n'existe que dans un état se construit seulement dans cet état, sans tirage : la nuit ne voit pas la différence (0 px), et
+  le jour ne déplace rien d'autre.
+- Une faute s'injecte quand aucun serveur ne mesure.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -995,7 +1051,7 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
-  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
+  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
   midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
   défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).

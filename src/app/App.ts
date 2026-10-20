@@ -420,7 +420,7 @@ export class App {
         }
       };
     const occTest = this.opts.params.get('occtest')?.split(',').filter(Boolean);
-    this.district = this.generator.generate(this.config, bake, { occTest });
+    this.district = this.generator.generate(this.config, bake, { occTest, bunting: this.day });
     this.scene.add(this.district.group);
     const dist = this.district;
     this.occlusion.setup(dist.occluders.defs, dist.occluders.meshes, (a) => dist.setOccActive(a));
