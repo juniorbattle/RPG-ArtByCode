@@ -589,6 +589,38 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une requête au relais est un pari sans échéance : son repli, écrit en même temps qu'elle, est ce que le bilan donne si la réponse ne vient pas.
 - Un mode de jeu ajouté au-dessus d'un district figé se prouve en deux sens : le jeu neuf joué de bout en bout, et l'ancien chemin à 0 px.
 
+## Passe Q3 — Reprise locale de la séance cloud : `main` validé sur la machine de l'opérateur, un test rendu indépendant des fins de ligne (2026-10-20)
+
+### Demande, mot pour mot
+- Opérateur : « Nos sous-sessions sont finis prendre les elements en compte puis si tout est bon archivons les »
+- Branche `test-crlf-q3` depuis `main` (`1f217bc`).
+
+### Constat à la reprise — [KO → corrigé]
+- Le `main` local avait 16 commits de retard sur `origin/main` (les lots L0 à L7 de la séance cloud). Il est avancé en avance rapide ; la
+  modification locale de `.gitignore` de l'opérateur reste en place.
+- Sur cette machine (Windows), typecheck, build et `art:validate` passent, mais `npm test` donnait **147 / 148**.
+- **Le test en échec** : « « Explore the district » runs today's town path… » (`tests/town-roles.test.mjs`). Il compare le texte de
+  `startTown` lu sur le disque avec celui de `git show d129433:src/main.ts`. Sous Windows (`core.autocrlf`), le disque a des CRLF et
+  `git show` donne les LF de l'index : le texte diffère par les seuls CR. Sur le runner Linux de la CI, les deux sont en LF, d'où la CI verte
+  de la séance cloud.
+
+### Fait — [OK]
+- Le test ramène les deux textes aux LF avant de les comparer. Aucune règle et aucun fichier du jeu ne changent.
+
+### Preuves
+- `npm test` **148 / 148** sur la machine de l'opérateur ; typecheck, build, `art:validate` (18 manifestes, 21 sources, 0 erreur).
+- **Faute injectée, attrapée** : un ajout dans le corps de `startTown` (`src/main.ts`) fait échouer le test (« startTown is unchanged »).
+  Le fichier est rendu à l'octet (`cmp`).
+
+### Restes [?]
+- Les requêtes au relais `000-handshake` et `001-gpu-budget` sont restées ouvertes, sans réponse (Passe L7). Elles relèvent d'une séance
+  locale.
+- Les six décisions préparées par la séance cloud (Passe L7) et la tranche jouée à la main par l'opérateur.
+
+### Pensée
+- Un test qui compare un fichier du disque avec `git show` compare aussi les fins de ligne ; il se normalise des deux côtés. La CI Linux ne
+  le voit pas, la machine Windows de l'opérateur si.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

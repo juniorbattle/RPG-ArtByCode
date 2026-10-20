@@ -137,9 +137,11 @@ test('every person has words in every slot they are there, and the people\'s opt
 });
 
 test('« Explore the district » runs today\'s town path: main.ts\'s startTown is main d129433\'s, called with no other parameter', () => {
-  const now = fs.readFileSync(path.join(ROOT, 'src/main.ts'), 'utf8');
+  // line endings normalised: a Windows checkout (core.autocrlf) has CRLF on disk, `git show` gives the index's LF (journal Passe Q3)
+  const lf = (t) => t.replace(/\r\n/g, '\n');
+  const now = lf(fs.readFileSync(path.join(ROOT, 'src/main.ts'), 'utf8'));
   let base;
-  try { base = execFileSync('git', ['show', 'd129433:src/main.ts'], { cwd: ROOT, encoding: 'utf8' }); } catch { base = null; }
+  try { base = lf(execFileSync('git', ['show', 'd129433:src/main.ts'], { cwd: ROOT, encoding: 'utf8' })); } catch { base = null; }
   const fn = (src) => src.slice(src.indexOf('function startTown(): void {'));
   assert.match(now, /m\.showTitle\(\{ explore: startTown \}\)/);
   assert.match(now, /const title = params\.get\('title'\) === '1' \|\| \(location\.search === '' && !navigator\.webdriver\);/);
