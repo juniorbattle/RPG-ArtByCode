@@ -311,6 +311,10 @@ tâche, la provenance enregistrée automatiquement et la règle dans AGENTS.md. 
   branch (prompt, references, count, purpose) and pushes; the operator tells the local session (or it reads the cloud session's transcript);
   the local session generates with the tool, archives the images it keeps under `reference/sources/` with their records, pushes only its own
   commits on top of that branch, and tells the cloud session to pull.
+- Cloud relay (journal Passe N4): any tool a cloud session lacks (Aseprite, the OpenAI key, the operator's GPU) is requested in a tracked file
+  `briefs/local-requests/NNN-<topic>.md` pushed on its branch. A local session watches that branch, does the work, writes the answer in the
+  same file, pushes only its own commits on top and messages the cloud session. A cloud session cannot message any session; the request never
+  blocks its work.
 
 ## Art direction (locked)
 Monochrome-leaning night: indigo / slate dominant, cool stone secondary, amber light as the only warm accent,

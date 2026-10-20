@@ -1,12 +1,16 @@
 # Brief — séance cloud « Version jouable » de Cité du Tournoi
 
-Ce brief est versionné dans `briefs/cloud-session-playable-brief.md` (journal, Passe N2). Relis-le après chaque compactage du contexte. Parle
+Ce brief est versionné dans `briefs/cloud-session-playable-brief.md` (journal, Passes N2 à N4). Relis-le après chaque compactage du contexte. Parle
 et écris en français : journal, bilan, messages. Le code et l'interface du jeu sont en anglais.
 
-## 0. Pleine autonomie
+## 0. Autonomie, et un relais local
 
-- **L'opérateur a éteint son ordinateur.** Ni lui ni aucune séance locale ne peut te répondre. Ne t'arrête jamais pour demander, n'attends
-  aucune réponse : avance sur tout le brief, lot après lot, jusqu'au bilan.
+- **L'opérateur ne te répond pas pendant la séance.** Ne t'arrête jamais pour demander, n'attends aucune réponse : avance sur tout le brief,
+  lot après lot, jusqu'au bilan.
+- **L'ordinateur local reste allumé.** L'opérateur, mot pour mot : « Excellent, l'ordi local sera finalement ouvert donc session cloud poura communiquer avvec toi pour utiliser les outils externes comme aseprite ou open ai key ».
+  - La séance locale qui t'a lancée sert de **relais** pour ce que le cloud n'a pas : Aseprite, la clé OpenAI (les images), le GPU de
+    l'opérateur (les temps, les preuves sur GPU).
+  - Le protocole est au § 3b. Une requête ne bloque jamais ton travail.
 - **Certaines décisions restent les siennes.** Tu ne les prends pas : tu les prépares derrière un paramètre d'URL, sans changer ce que le brief
   fixe, avec des captures et une recommandation. Tu les listes au journal et au bilan, puis tu continues. Ce sont :
   - l'approbation d'un art pour la production, et toute feuille cuite nouvelle ;
@@ -98,19 +102,73 @@ restent en vigueur. Il ajoute (plan § 3b, § 5, § 6, § 7) :
 
 ## 3. L'environnement et ses limites
 
-- **Aucun service externe** : ni clé OpenAI ni clé MiniMax (`.env.local` n'existe pas ici), pas d'outil d'images, pas de web.
-  - S'il manque un visuel, écris une requête dans un fichier suivi, `art-lab/characters/briefs/image-requests/<sujet>.md` : le prompt, les
-    références, le nombre d'images, le but. Pousse-la avec le lot. La séance locale la traitera plus tard (`AGENTS.md`, « Image
-    generation »).
-- **Pas d'Aseprite** : ni feuille cuite nouvelle, ni `build-character`. Les nouveaux personnages (le second adversaire, par exemple) passent
-  par le générateur du code (`FighterArt.ts`, `SpriteGenerator.ts`), à densité ×2 comme l'arène.
-- **Pas de GPU** : aucune mesure de temps. SwiftShader sert aux preuves d'image déterministes et aux compteurs.
+- **Pas de service externe dans le cloud** : ni clé OpenAI ni clé MiniMax ici (`.env.local` n'existe pas), pas de web. Les images passent par
+  le relais (§ 3b).
+- **Pas d'Aseprite dans le cloud.**
+  - Un personnage nouveau (le second adversaire, par exemple) passe d'abord par le générateur du code (`FighterArt.ts`, `SpriteGenerator.ts`),
+    à densité ×2 comme l'arène.
+  - Une feuille cuite (Aseprite, `build-character`) se demande au relais.
+- **Pas de GPU dans le cloud** : aucune mesure de temps ici. SwiftShader sert aux preuves d'image déterministes et aux compteurs. Les temps GPU
+  (le budget technique du contrat projet § 14) se demandent au relais.
 - **Au lot L0, vérifie Chrome.** En Passe T1, c'était le Chromium de Playwright, préinstallé :
   - un enveloppeur hors du dépôt (`exec chromium --no-sandbox "$@"`) servait de `CHROME_PATH` ;
   - `CHROME_ARGS=--use-angle=swiftshader` ;
   - `READY_MS` assez long : 154 s de démarrage en 1280 × 720, dont 136 s de bake.
   - Sans Chrome, applique le mode « sans image » du plan § 7, et inscris au bilan les preuves d'image à refaire en local.
 - **Installations** : `npm ci` seulement. Aucune dépendance ajoutée à `package.json`.
+
+## 3b. Le relais local
+
+- **Tu ne peux pas écrire à la séance locale.** Une séance cloud ne peut envoyer de message à aucune autre séance. La séance locale, elle, peut
+  t'en envoyer et lire ton transcript. Le relais passe donc par le dépôt.
+- **Une requête** est un fichier suivi, `briefs/local-requests/NNN-<sujet>.md` (NNN : 001, 002…). Tu la commites et la pousses sur ta branche
+  de travail, comme tout commit. Sa forme :
+
+  ```
+  # Requête locale NNN — <sujet>
+  - Type : aseprite | image | gpu | preuve-gpu | autre
+  - Lot : Ln
+  - Branche et commit de base : <branche> @ <sha court>
+  - Demande : ce qu'il faut faire, en une phrase.
+  - Entrées : les fichiers et les commandes exactes. Pour une image : le prompt exact, les références (des fichiers du dépôt), le nombre,
+    la taille, le but.
+  - Sorties attendues : les fichiers et leur emplacement.
+  - Repli si elle n'aboutit pas : ce que tu fais sans elle.
+  - Statut : ouverte
+
+  ## Réponse
+  (écrite par la séance locale)
+  ```
+- **La séance locale traite la requête** :
+  1. elle surveille ta branche, toutes les deux minutes environ ;
+  2. elle exécute la requête ;
+  3. elle écrit la réponse et le statut (« traitée », ou « refusée » avec la raison) ;
+  4. elle commite sur ta branche, au-dessus de tes commits, et pousse ;
+  5. elle t'envoie un message : « Requête NNN traitée : tire la branche. »
+- **De ton côté** :
+  - **tu n'attends jamais** : tu continues ton travail. Une requête sans réponse au moment où tu en as besoin applique son repli, et le bilan
+    le dit ;
+  - **à son message, ou si un push est refusé** parce que la branche distante a avancé : `git pull --rebase`, puis tu reprends. Seuls tes
+    commits pas encore poussés sont rejoués ; jamais de force-push ;
+  - **avant de fusionner un lot dans `main`** et avant de recréer ta branche : `git fetch`, puis tu intègres tout commit de la séance locale
+    arrivé sur ta branche ;
+  - **peu de requêtes, groupées** : une série de mesures GPU plutôt qu'une requête par variante, et aucune en double.
+- **Les images** :
+  - par `tools/art-lab/gen-image.mjs`, avec une seule tâche, `cloud-playable`, pour toute la séance ;
+  - un plafond de 5 $ (règle d'`AGENTS.md` ; le relever est la décision de l'opérateur) ;
+  - les images gardées arrivent archivées dans `art-lab/characters/reference/sources/` avec leur fiche ; elles restent non canoniques.
+- **Aseprite** : une feuille cuite construite par le relais arrive avec un manifeste candidat (`runtimeUse: lab`, visible avec
+  `?cast=candidate`). Elle ne passe en production que sur l'approbation de l'opérateur.
+- **Le GPU** :
+  - les mesures se font sur la Radeon 780M de l'opérateur (`tools/perf.mjs`, `tools/cadence.mjs`, `tools/startup.mjs`), et les preuves de
+    visibilité sur GPU (`tools/viewport-proof.mjs`, `tools/visproof.mjs`) aussi ;
+  - toujours sur un commit poussé que la requête nomme ;
+  - les chiffres reviennent dans la réponse ; recopie-les dans ta passe.
+- **Au lot L0, éprouve le relais** : pousse la requête `000-handshake` (type « autre » : « confirme le relais et donne l'état de la
+  machine locale : Aseprite, clé OpenAI présente ou non, GPU »), puis continue. Sa réponse prouve le canal dans les deux sens.
+- **Ce que le relais ne fait pas** : il ne prend aucune décision réservée, n'écrit pas ton code de jeu et ne fusionne rien dans `main`.
+- **Si l'opérateur tranche une décision réservée pendant la séance**, sa réponse t'arrive par un message de la séance locale, citée mot pour
+  mot : applique-la et consigne-la. Sinon, prépare la décision comme le dit le § 0.
 
 ## 4. Git (règles d'`AGENTS.md`)
 
@@ -129,6 +187,7 @@ restent en vigueur. Il ajoute (plan § 3b, § 5, § 6, § 7) :
 - **La CI GitHub** tourne à chaque push. Si l'API publique est joignable, lis son résultat ; sinon, ta validation locale fait foi, et le bilan
   le dit.
 - **Les fins de ligne** : le dépôt garde LF dans l'index. Ne convertis aucun fichier.
+- **Le relais local pousse aussi sur ta branche** (§ 3b) : tire-la à son message et avant chaque fusion.
 
 ## 5. Les preuves
 
@@ -162,10 +221,9 @@ restent en vigueur. Il ajoute (plan § 3b, § 5, § 6, § 7) :
 
 - **Le bilan** (lot L7) est une passe comme la Passe B1. Elle contient :
   - le tableau de ce qui est fusionné, par commit ;
-  - les mesures (compteurs, jamais des temps) ;
-  - ce qui reste à vérifier sur la machine de l'opérateur : jouer, le ressenti, l'équilibrage, le GPU, la cadence, les preuves d'image si
-    Chrome manquait ;
-  - les requêtes d'images écrites ;
+  - les mesures : les compteurs du cloud, et les temps GPU rapportés par le relais ;
+  - ce qui reste à vérifier sur la machine de l'opérateur : jouer, le ressenti, l'équilibrage, et les preuves d'image si Chrome manquait ;
+  - les requêtes au relais local, avec leur statut ;
   - les compteurs du budget technique ;
   - les décisions préparées, chacune avec sa recommandation ;
   - les écarts consignés (E1 à E25, et ceux que la séance aura trouvés) ;

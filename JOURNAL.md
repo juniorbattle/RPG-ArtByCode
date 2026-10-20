@@ -510,6 +510,58 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   se consignent à côté des choix, qui restent en vigueur. Un écart de direction (l'outil source de la ville) ne se règle pas dans une
   séance de construction.
 
+## Passe N4 — L'ordinateur local reste allumé : un relais local pour Aseprite, la clé OpenAI et le GPU ; plan v4 et brief à jour (2026-10-20)
+
+### Demande
+- À la question « Je lance la séance cloud ? », l'opérateur a d'abord répondu : « Pas encore : je veux d'abord revoir un point du plan ou du
+  brief. »
+- Puis, mot pour mot : « Excellent, l'ordi local sera finalement ouvert donc session cloud poura communiquer avvec toi pour utiliser les
+  outils externes comme aseprite ou open ai key ».
+- Branche `cloud-plan-n1`, dans son worktree.
+
+### Constat — [OK] une limite du canal
+- **Une séance cloud ne peut envoyer de message à aucune autre séance.** C'est la description de l'outil de messagerie. La séance locale, elle,
+  peut lui écrire et lire son transcript.
+- Le sens cloud → local passe donc par le dépôt. C'est déjà le protocole des images d'`AGENTS.md` (« Image generation ») : une requête dans
+  un fichier suivi, sur la branche du cloud.
+
+### Fait — [OK]
+- **Le protocole du relais** (brief § 3b, plan § 4b) :
+  - le cloud pousse `briefs/local-requests/NNN-<sujet>.md` (type, lot, base, demande, entrées, sorties, repli, statut), puis continue ;
+  - la séance locale surveille les branches `claude/*` toutes les deux minutes environ ;
+  - elle exécute la requête, écrit la réponse dans le même fichier et pousse ses propres commits au-dessus de la branche du cloud ;
+  - elle prévient le cloud par message ; le cloud tire sa branche (`git pull --rebase`, jamais de force-push) ;
+  - une requête ne bloque jamais le cloud : chacune porte son repli ;
+  - au lot L0, une requête `000-handshake` éprouve le canal dans les deux sens.
+- **Mes choix, sûrs** :
+  - toutes les images de la séance sous une seule tâche, `cloud-playable`, plafonnée à 5 $. Le plafond par tâche d'`AGENTS.md` ne doit pas
+    devenir 5 $ par requête ; le relever reste la décision de l'opérateur.
+  - Une feuille cuite construite par le relais reste candidate (`runtimeUse: lab`). Le relais ne prend aucune décision réservée et ne
+    fusionne rien dans `main`.
+- **Le budget technique** (contrat projet § 14) est désormais mesurable : les temps GPU sur la 780M, par le relais, aux lots L4 et L7.
+- **Les documents** :
+  - le brief : le § 0 (autonomie et relais), le § 3 (limites du cloud), le § 3b (le protocole), Git et le bilan ;
+  - le plan v4 : l'en-tête, le § 4, le § 4b, le budget du § 5, deux risques, les § 11 et 12 ;
+  - `AGENTS.md` : une règle « Cloud relay » sous « Image generation ».
+- **Essai du guet** : un passage de la boucle (`git fetch` des branches `claude/*`, liste de `briefs/local-requests/`) tourne d'ici sans
+  erreur. Aucune branche `claude/*` n'existe aujourd'hui.
+
+### Preuves
+- Documents seulement : aucun fichier de `src/`, `tests/` ou `tools/` ne change.
+- **Validation** : typecheck, `npm test` 103 / 103, build, `art:validate`.
+
+### Restes [?]
+- **Le « go » de l'opérateur.** Ensuite :
+  1. le lancement ;
+  2. le guet des requêtes, réarmé à chaque expiration (30 min au plus) ;
+  3. la machine et l'application gardées éveillées pendant la course.
+- **Non éprouvé avant le lancement** : le message de la séance locale vers la séance cloud. C'est la requête `000-handshake` qui le
+  prouvera.
+
+### Pensée
+- Un canal se décrit dans ses deux sens avant d'être promis. Ici, l'un est un message, l'autre un fichier poussé, et le protocole se règle sur
+  le sens le plus faible.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -522,10 +574,10 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
 
-**0b. Version jouable — séance cloud (Passes N1 à N3)** : plan v3 `briefs/cloud-session-playable.md` (choix de la fiche au § 11 : écran
+**0b. Version jouable — séance cloud (Passes N1 à N4)** : plan v4 `briefs/cloud-session-playable.md` (choix de la fiche au § 11 : écran
   titre par défaut, interface en anglais, nom choisi par le joueur, arène actuelle, poule à points, trois lieux dont un léger ; écarts avec le
-  contrat projet au § 3b ; ses ajouts à la tranche au § 5) ; brief final `briefs/cloud-session-playable-brief.md` ; les trois contrats dans
-  `contracts/`. Reste : le « go » de l'opérateur, puis le lancement de la séance cloud.
+  contrat projet au § 3b ; ses ajouts à la tranche au § 5 ; le relais local au § 4b) ; brief final `briefs/cloud-session-playable-brief.md` ;
+  les trois contrats dans `contracts/`. Reste : le « go » de l'opérateur, le lancement, puis le relais (requêtes `briefs/local-requests/`).
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont

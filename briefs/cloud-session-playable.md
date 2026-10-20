@@ -1,10 +1,11 @@
 # Plan de la séance cloud « Version jouable » — Cité du Tournoi
 
-- **Version 3, 2026-10-20.** Trois versions se sont succédé :
+- **Version 4, 2026-10-20.** Quatre versions se sont succédé :
   - la version 1 (Passe N1), rédigée par la séance locale de planification avant la fiche d'arbitrages ;
   - la version 2 (Passe N2), qui consigne les choix de l'opérateur au § 11 ;
   - la version 3 (Passe N3), qui ajoute le contrat projet, reçu après la fiche : ses écarts (§ 3b), ses ajouts à la tranche (§ 5) et son
-    architecture (§ 6).
+    architecture (§ 6) ;
+  - la version 4 (Passe N4) : l'ordinateur local reste allumé, et une séance locale sert de relais (§ 4b).
 - **Statut : décidé.** Chaque renvoi « [Xn] » désigne une décision de la fiche (§ 10). Le choix de l'opérateur est au § 11, mot pour mot ; là où
   il diffère de la recommandation du § 10, c'est le § 11 qui fait foi.
 - **Autorité.** `AGENTS.md` (règles du dépôt) et `JOURNAL.md` ; les contrats maîtres de l'opérateur, dans `contracts/` (décision C1) :
@@ -121,17 +122,16 @@ son § 14 (« 3 jours, 9 créneaux et 2 combats officiels »).
 
 ## 4. Contraintes de la séance cloud (reprises dans le brief)
 
-- **Aucun service externe.**
-  - Ni clé OpenAI ni clé MiniMax (`.env.local` n'est pas dans le dépôt), donc pas d'outil d'images ; pas de web.
-  - Une demande d'image suit le protocole cloud d'`AGENTS.md` (« Image generation ») : une requête écrite dans un fichier suivi, que la séance
-    locale traitera plus tard.
-- **Pas d'Aseprite.** Aucune nouvelle feuille cuite, aucun `build-character`. Les nouveaux personnages passent par le générateur
-  procédural du code (`SpriteGenerator.ts`, `FighterArt.ts`) et ne deviennent jamais une production cuite en silence.
-- **Pas de GPU.**
-  - Aucune mesure de temps : SwiftShader ne sert qu'aux preuves d'image déterministes et aux compteurs (Passe T1).
+- **Aucun service externe dans le cloud.** Ni clé OpenAI ni clé MiniMax (`.env.local` n'est pas dans le dépôt), pas de web. Les images passent
+  par le relais local (§ 4b).
+- **Pas d'Aseprite dans le cloud.** Les nouveaux personnages passent d'abord par le générateur procédural du code (`SpriteGenerator.ts`,
+  `FighterArt.ts`). Une feuille cuite se demande au relais ; elle reste candidate jusqu'à l'approbation de l'opérateur.
+- **Pas de GPU dans le cloud.**
+  - Aucune mesure de temps dans le cloud : SwiftShader ne sert qu'aux preuves d'image déterministes et aux compteurs (Passe T1). Les temps GPU
+    se demandent au relais.
   - La présence de Chrome se vérifie au départ. En Passe T1, c'était le Chromium de Playwright, préinstallé, lancé par un enveloppeur hors
     dépôt avec `--no-sandbox` ; il fallait 154 s pour démarrer en 1280 × 720, dont 136 s de bake, et 25 s avec `vis=0`.
-- **Personne à qui demander** : l'opérateur éteint son ordinateur.
+- **Personne à qui demander pendant la course.** L'ordinateur local reste allumé (§ 4b), mais l'opérateur ne répond pas à la séance cloud.
   - Le brief interdit de s'arrêter pour demander ou pour attendre.
   - Les décisions réservées à l'opérateur sont préparées, jamais prises :
     - les approbations de production d'un art ;
@@ -157,6 +157,25 @@ son § 14 (« 3 jours, 9 créneaux et 2 combats officiels »).
     - L'écran titre n'arrive dans le défaut qu'une fois que « New game » mène à au moins une journée complète (lot L4).
   - La nuit reste le moment par défaut quand on explore le district (J9).
   - `?scene=arena` sans paramètre de jeu reste inchangé : même `ARENA_SIM_HASH`, équivalence au prototype verte.
+
+## 4b. Le relais local (Passe N4)
+
+L'opérateur, mot pour mot : « Excellent, l'ordi local sera finalement ouvert donc session cloud poura communiquer avvec toi pour utiliser les outils externes comme aseprite ou open ai key ».
+
+- **La séance locale de planification sert de relais** pour ce que le cloud n'a pas : Aseprite et `build-character`, la clé OpenAI
+  (`gen-image.mjs`, une tâche `cloud-playable` plafonnée à 5 $ pour toute la séance), et le GPU de l'opérateur (`perf.mjs`, `cadence.mjs`,
+  `startup.mjs`, les preuves de visibilité sur GPU).
+- **Une séance cloud ne peut envoyer de message à aucune séance.** La séance locale, elle, peut lui en envoyer et lire son transcript. Le
+  sens cloud → local passe donc par le dépôt.
+- **Le protocole** (brief § 3b) :
+  1. le cloud pousse une requête `briefs/local-requests/NNN-<sujet>.md` sur sa branche, puis continue son travail ;
+  2. la séance locale surveille ses branches `claude/*` toutes les deux minutes environ ;
+  3. elle exécute la requête et écrit la réponse dans le même fichier ;
+  4. elle pousse ses propres commits au-dessus de la branche du cloud ;
+  5. elle prévient le cloud par message ;
+  6. le cloud tire sa branche (`git pull --rebase`, jamais de force-push) et intègre le résultat. Une requête sans réponse applique son repli.
+- **Le relais ne prend aucune décision réservée.** Une feuille cuite reste candidate, une image reste non canonique, et rien n'est fusionné
+  dans `main` par le relais. Si l'opérateur tranche une décision pendant la séance, la séance locale la transmet, citée mot pour mot.
 
 ## 5. Périmètre proposé de la version jouable [P1]
 
@@ -188,7 +207,7 @@ La tranche verticale du gameplay § 13, ramenée à ce que permet le cloud :
 | Une chaîne de sabotage contrable | La forge, déclenchée par des conditions (§ 3.4 : favori, rival hostile, sécurité faible) plutôt qu'à date fixe, avec des signes |
 | Navigation et streaming / changement de quartier | La carte de la ville et le passage entre les trois lieux (P3), sans coût de créneau |
 | Captures desktop et mobile | Des captures `detshots` en 1280 × 720 et à la taille d'un téléphone, en portrait et en paysage. Le jeu au toucher est hors tranche. |
-| Budget technique mesuré | Dans le cloud, des compteurs (appels de dessin, triangles, coût de `advance` en Node, à titre indicatif) ; les temps GPU en local (§ 12) |
+| Budget technique mesuré | Dans le cloud, des compteurs (appels de dessin, triangles, coût de `advance` en Node, à titre indicatif) ; les temps GPU par le relais local, sur la 780M de l'opérateur (§ 4b), aux lots L4 et L7 |
 | Le jour et la nuit qui modifient les possibilités (§ 8.1) | Les services, les présences actives et la sécurité changent avec le créneau (le forgeron ferme la nuit, l'inconnu ne parle que la nuit…) |
 
 **Hors tranche** :
@@ -287,6 +306,7 @@ preuve d'image est inscrite au bilan comme à refaire en local.
   - `npm ci` ; typecheck ; `npm test` ; build ; `art:validate` ; `art:doctor` (Aseprite absent, attendu).
   - Détection de Chrome, son enveloppeur hors dépôt, une capture de fumée de `main` et son témoin de répétition.
   - La lecture des trois contrats de `contracts/` (décisions C1, C2).
+  - La requête `000-handshake` au relais local (§ 4b), qui éprouve le canal dans les deux sens.
   - L'archivage du journal si les passes gardées dépassent environ 60 Ko (environ 39 Ko au départ, après l'archivage de la Passe N3), avec les huit contrôles de la
     Passe D1.
 - **Fin** : l'environnement est consigné dans la première passe de la séance (machine, Node, navigateur, temps de démarrage logiciel).
@@ -424,6 +444,8 @@ preuve d'image est inscrite au bilan comme à refaire en local.
 | Dépôt public | Les contrats et les textes sont publiés une fois versionnés [C1] |
 | L'autorité supérieure absente (`PROJECT_MASTER_CONTRACT.md`) | Un conflit entre documents est consigné, jamais tranché |
 | Des sauvegardes rendues invalides par une version suivante | `schemaVersion` et un refus lisible ; la migration plus tard |
+| Le relais local lent ou indisponible (machine en veille, séance arrêtée) | Une requête ne bloque jamais ; chacune porte son repli ; le bilan liste les requêtes et leur statut |
+| Deux séances qui poussent sur la même branche | Le relais pousse seulement ses propres commits, au-dessus ; le cloud tire avant de pousser et avant chaque fusion ; jamais de force-push |
 
 ## 10. Décisions préparées pour l'opérateur (fiche d'arbitrages)
 
@@ -488,6 +510,9 @@ mot : « La fiche d'arbitrages est remplie : relis mes choix, consigne-les et é
 **Le contrat projet** (C2) : collé par l'opérateur dans la séance après la fiche, versionné tel quel dans `contracts/PROJECT_MASTER_CONTRACT.md`
 (Passe N3). Ses écarts sont au § 3b, ses ajouts au § 5 ; aucun choix de la fiche n'est changé.
 
+**L'ordinateur local reste allumé** (Passe N4). L'opérateur a écrit, mot pour mot, « Excellent, l'ordi local sera finalement ouvert donc session cloud poura communiquer avvec toi pour utiliser les outils externes comme aseprite ou open ai key ». La séance locale sert de relais (§ 4b). Aucun
+choix de la fiche ne change.
+
 **Ce qui reste à l'opérateur avant le lancement** : dire « go ».
 
 **Écarts consignés, non tranchés** (C3, G1) :
@@ -498,7 +523,6 @@ mot : « La fiche d'arbitrages est remplie : relis mes choix, consigne-les et é
 ## 12. Après la séance : à faire sur la machine de l'opérateur
 
 - **Jouer** la version jouable : le ressenti, l'équilibrage des duels (« Régler après essai »), la lisibilité.
-- **Mesurer le GPU** du mode jouable et de l'arène pilotée (`tools/perf.mjs`, `tools/cadence.mjs`) ; vérifier la visibilité si un lieu en
-  dépend.
-- **Traiter les demandes d'images** que la séance aura écrites, puis les art cuits éventuels (Aseprite, manifestes, approbations).
+- **Reprendre** les requêtes que le relais n'aura pas pu traiter, avec les mesures GPU qui manqueraient.
+- **Approuver ou non** les feuilles cuites et les images candidates (manifestes).
 - **Arbitrer** les décisions préparées et listées au bilan.
