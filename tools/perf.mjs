@@ -44,7 +44,7 @@ try {
       if (v.js) await page.evaluate(v.js);
       let t0 = 0;
       const r = await page.evaluate(async (secs, warm) => {
-        const app = window.__app ?? window.__arena, g = app.perf.gpu;   // the town, or the arena scene (?scene=arena, journal Passe P1)
+        const app = window.__app ?? window.__arena ?? window.__place, g = app.perf.gpu;   // the town, the arena scene (?scene=arena, journal Passe P1), or a light place of the play mode (Lantern Row, Passe L6)
         const gl = app.renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
         const adapter = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : '?';
         if (g.available) g.enabled = true;
