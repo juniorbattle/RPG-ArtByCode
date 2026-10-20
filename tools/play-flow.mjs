@@ -24,7 +24,7 @@ const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (
 try {
   const page = await b.newPage();
   page.on('pageerror', (e) => { errors.push(e.message); console.log('[pageerror]', e.message); });
-  const open = async (q) => { await page.goto(`${BASE}${q}`, { waitUntil: 'load' }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); const e = await page.evaluate(() => window.__error ?? null); check(!e, `page ${q} ready${e ? `: ${e}` : ''}`); };
+  const open = async (q) => { await page.goto(`${BASE}${q}`, { waitUntil: 'load', timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); const e = await page.evaluate(() => window.__error ?? null); check(!e, `page ${q} ready${e ? `: ${e}` : ''}`); };
   const act = async (a) => { const r = await page.evaluate((x) => window.__game.act(x), a); check(r.ok, `act ${JSON.stringify(a).slice(0, 60)}${r.ok ? '' : `: ${r.reason}`}`); if (r.ok) actionsDone.push(a); return r; };
   // 1. the town: a new game, the clock to the bout's afternoon
   await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1`);

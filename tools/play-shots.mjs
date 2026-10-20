@@ -24,7 +24,7 @@ try {
       await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
       page.on('pageerror', (e) => { errors++; console.log('[pageerror]', name, e.message); });
       const q = `play=1&noreload=1&state=${encodeURIComponent(state)}&name=Aster${/(^|&)vis=/.test(extra ?? '') ? '' : '&vis=0'}${extra ? `&${extra}` : ''}`;
-      await page.goto(`${BASE}?${q}`, { waitUntil: 'load' });
+      await page.goto(`${BASE}?${q}`, { waitUntil: 'load', timeout: +(process.env.READY_MS || 600000) });
       await page.waitForFunction('window.__ready === true || window.__error', { timeout: +(process.env.READY_MS || 600000) });
       const err = await page.evaluate(() => window.__error ?? null);
       if (err) { errors++; console.log('[error]', name, err); }

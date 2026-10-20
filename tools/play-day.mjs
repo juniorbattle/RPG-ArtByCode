@@ -22,7 +22,7 @@ const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (
 try {
   const page = await b.newPage();
   page.on('pageerror', (e) => { errors++; console.log('[pageerror]', e.message); });
-  const open = async (q) => { await page.goto(`${BASE}${q}`, { waitUntil: 'load' }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); check(!(await page.evaluate(() => window.__error ?? null)), `page ${q} ready`); await new Promise((r) => setTimeout(r, 1200)); await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click()); };
+  const open = async (q) => { await page.goto(`${BASE}${q}`, { waitUntil: 'load', timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); check(!(await page.evaluate(() => window.__error ?? null)), `page ${q} ready`); await new Promise((r) => setTimeout(r, 1200)); await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click()); };
   await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1`);
   // 1. the keyboard: next to Mara, E opens her dialogue
   await page.evaluate(() => { const A = window.__app, m = A.actors.actors.find((a) => (a.base ?? a.spec) === 'merchant'); A.actors.player.pos.set(m.pos.x + 0.9, 0, m.pos.z + 0.6); });
