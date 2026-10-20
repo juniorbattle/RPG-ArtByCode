@@ -665,16 +665,69 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 - Une fiche de direction artistique montre les pistes côte à côte avec l'état actuel. Elle dit aussi ce qu'une image générée vaut (la lumière,
   la palette) et ce qu'elle ne vaut pas (des personnages redessinés).
 
+## Passe D4 — Fiche de l'état jour remplie (RJ2) : dix décisions de l'opérateur consignées ; deux pistes archivées (2026-10-19)
+
+### Demande
+- Opérateur, mot pour mot : « La fiche de l'état jour est remplie : relis mes choix, consigne-les et applique-les. »
+- La fiche (https://claude.ai/artifact/End97NNMhHPxtynBGNXyYW), collection `decisions` : 10 documents, lus vers 00 h 45 UTC le 20/10.
+- Branche `decisions-d4` depuis `main` (`233d9bb`).
+
+### Les choix, mot pour mot (l'option cliquée ; la note quand il y en a une)
+
+| | Décision | Choix | Note |
+|---|---|---|---|
+| J1 | L'heure par défaut | « Midi » | « je préfère midi car cela marque une vrai différence avec la nuit et sur le plan logique. c'est le moment où beaucoup de chose se passe. le matin c'est les levés-tot et les pre-preparation » |
+| J2 | La palette du jour | « Transposer la règle de la nuit » | — |
+| J3 | Le ciel et la brume | « Ciel pâle et brume légère » | — |
+| J4 | Les lumières de la ville le jour | « Éteintes, la forge allumée » | — |
+| J5 | Le pavoisement | « Aux points focaux » | — |
+| J6 | Le pavois la nuit aussi ? | « Le jour seulement » | — |
+| J7 | La foule du jour | « Plus de monde le jour (note) » | — (vide) |
+| J8 | Le passage entre jour et nuit | « Deux états fixes » | — |
+| J9 | Quand le jour devient le défaut | « Après ma revue en jeu » | — |
+| J10 | Les trois images | « Archiver la ou les pistes retenues » | — |
+
+### Lectures — dites à l'opérateur dans la séance
+- **J1 avec J2 et J3** : la lumière de midi (soleil haut, ombres courtes et nettes), sous un ciel pâle voilé et une brume légère, dans la palette
+  de la nuit transposée. Le ciel bleu saturé et les toits bleus de la piste de midi ne sont pas retenus : ils étaient l'option « Bleus saturés »
+  de J2 et « Ciel bleu net » de J3, non choisies.
+- **J7** : l'option demandait une note, laissée vide. Le nombre de promeneurs du jour n'est pas décidé ; il sera proposé avec sa mesure (temps
+  GPU, lisibilité), pas inventé.
+- **J10** : les pistes retenues sont **midi** (l'heure, J1) et **le matin**, qui illustrait sur la fiche la palette et le ciel choisis (J2,
+  J3). La fin d'après-midi n'est pas archivée.
+
+### Fait — [OK]
+- **J10, archivage** (`tools/art-lab/gen-image.mjs --archive`, à l'octet, `cmp` identique), comme **références non canoniques** :
+  - `art-lab/characters/reference/sources/day-state-midday-2026-10-19.png` (`8396a46cd599b114…`) : l'heure et la lumière ;
+  - `day-state-morning-2026-10-19.png` (`eef6501cedf43717…`) : la palette, le ciel et la brume ;
+  - chacune avec sa fiche de provenance (aucune clé dedans) ; `art:validate` : 16 sources, 0 erreur.
+- **`AGENTS.md`**, direction artistique : un paragraphe « Day » avec ces décisions. La nuit reste l'état par défaut jusqu'à la revue de
+  l'opérateur en jeu (J9).
+- « À reprendre » § 0 et § 6d mis à jour.
+
+### À appliquer ensuite, une branche par tâche
+1. **Un premier jet du jour derrière un paramètre** (J9 : la nuit reste le défaut, 0 px sans le paramètre) : le soleil de midi et son ombre, le
+   ciel pâle et la brume légère, la palette transposée (étalonnage, lumière, brouillard), lanternes et fenêtres éteintes, la forge allumée.
+   Montré à l'opérateur en captures aux quatre cadrages.
+2. **Le pavois du tournoi**, le jour seulement, aux points focaux (J5, J6) : des guirlandes en travers de la rue devant l'étal du héros et vers
+   la forge, des bannières sur le pont et au mât du bateau (la recommandation de l'option choisie).
+3. **J7** : une proposition chiffrée de la foule du jour, avec sa mesure, à décider par l'opérateur.
+4. Le jour par défaut seulement après l'approbation de l'opérateur en jeu (J9) ; deux états fixes, sans cycle (J8).
+
+### Pensée
+- Des choix pris option par option se composent : une heure (J1), un ciel (J3) et une palette (J2) peuvent venir de pistes différentes. La
+  lecture se dit à l'opérateur avant d'agir, avec l'option non choisie qui la justifie.
+- Une option « (note) » cochée sans note ne donne pas son détail : il se propose, il ne se devine pas.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
-- **La suite, RJ2 « L'état jour »** : la fiche est publiée (Passe R2, https://claude.ai/artifact/End97NNMhHPxtynBGNXyYW) ; à relire quand
-  l'opérateur la dit remplie. Une proposition de direction artistique (heure par défaut, palette, pavoisement du tournoi, ciel et
-  brume, passage du jour à la nuit), avec les trois images de jour générées (Passe Z4 ; non canoniques), décidée avec l'opérateur sur une
-  fiche avant tout code.
+- **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
+  `AGENTS.md`). À appliquer dans l'ordre de la Passe D4 : un premier jet derrière un paramètre, montré en captures aux quatre cadrages ; le
+  pavois du tournoi ; une proposition chiffrée de la foule du jour (J7) ; le jour par défaut seulement après la revue de l'opérateur en jeu (J9).
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
@@ -799,7 +852,7 @@ de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sourc
 
 **6d. Jour et nuit (note de l'opérateur, Passe D1)** — mot pour mot : « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Le jeu n'a aujourd'hui que la nuit (direction
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
-c'est la suite, le district étant clos (Passe Z4) ; trois images de jour, non canoniques, attendent la proposition (Passe Z4).
+c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise

@@ -280,8 +280,21 @@ tâche, la provenance enregistrée automatiquement et la règle dans AGENTS.md. 
 Monochrome-leaning night: indigo / slate dominant, cool stone secondary, amber light as the only warm accent,
 desaturated ivory for canvas/highlights. Keep props concentrated at focal points (hero stall, lantern clusters,
 quay edge, bridge, a few banners); do not add uniform clutter.
-Day and night (the operator's note of 2026-10-19, word for word, journal Passe D1): « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Not designed or implemented yet: the night
-above stays the Merchant District's only state until a day state gets its own art direction, decided with the operator.
+Day and night (the operator's note of 2026-10-19, word for word, journal Passe D1): « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Its art direction is decided
+(the operator's day-state sheet, journal Passe D4) and not implemented yet: the night above stays the game's default until the operator
+approves the day in game (J9 « Après ma revue en jeu »).
+Day (decided, journal Passe D4):
+- **Midday** (J1 « Midi »): a high sun, short crisp shadows.
+- **The night's rule transposed** (J2): slate and cool stone dominant, the ivory-warm sun as the warm accent, stronger colours kept for the
+  bunting and banners. Not the saturated blue sky or roofs of the generated midday track.
+- **A pale sky** veiled with thin cloud and a **light haze** (J3): the simplified far city stays distant.
+- **Lanterns and windows unlit, the forge lit** (J4).
+- **Tournament bunting at the focal points, by day only** (J5, J6): garlands across the street at the hero stall and toward the forge, banners on
+  the bridge and the boat's mast.
+- **More people by day** (J7): the number is still to be proposed, with its measurement, and decided by the operator.
+- **Two fixed states**, no continuous cycle (J8).
+- References, non-canonical: `art-lab/characters/reference/sources/day-state-midday-2026-10-19.png` (the hour and light) and
+  `day-state-morning-2026-10-19.png` (the palette, sky and haze); generated, their characters redrawn by the tool: mood references only.
 
 ## Camera graph (`src/app/CameraGraph.ts`)
 Four authored, semi-fixed framings, all on the canal side (+z of the pivot) looking up-canal (+x), chosen by zone with
