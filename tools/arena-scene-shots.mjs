@@ -4,7 +4,9 @@
 //   node tools/arena-scene-shots.mjs <outDir> "<extra query>" "name|preset|js" ...
 //     preset: charging, ready, casting, window, impact, block, guardbreak, dodge, combo, single, technique, strike, heavyRen, ko (empty: as booted)
 //     js (optional) runs against window.__arena after the jump, e.g. "__arena.assist='full'"
-//   BASE_URL (default http://127.0.0.1:5173/), W / H (viewport, default 1280 x 720), CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs
+//   BASE_URL (default http://127.0.0.1:5173/), W / H (viewport, default 1280 x 720), CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs;
+//   HOLD=1: the page's loop never starts (ArenaApp.start a no-op, as tools/detshots.mjs holds the town): without it the live seconds between
+//   the boot and the first moment leave their mark (the stands' cheers, the particles), so two loads differ on a slow renderer (journal Passe L3)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,6 +25,7 @@ try {
   page.on('pageerror', (e) => { errors++; console.log('[pageerror]', e.message); });
   page.on('console', (m) => { if (m.type() === 'error') { errors++; console.log('[console]', m.text()); } });
   await page.evaluateOnNewDocument(SEED);
+  if (process.env.HOLD === '1') await page.evaluateOnNewDocument(`Object.defineProperty(window, '__arena', { configurable: true, get() { return undefined; }, set(v) { v.start = () => {}; Object.defineProperty(window, '__arena', { value: v, writable: true, configurable: true }); } });`);
   const q = `scene=arena&freeze=7.3${extra ? '&' + extra : ''}`;
   await page.goto(`${BASE}?${q}`, { waitUntil: 'load', timeout: 120000 });
   await page.waitForFunction('window.__ready === true || window.__error', { timeout: +(process.env.READY_MS || 300000) });

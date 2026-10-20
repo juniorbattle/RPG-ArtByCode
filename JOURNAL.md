@@ -523,6 +523,53 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Le profil du siège adverse prend les images du héros pour Vessa : un personnage nouveau sans clips nouveaux. Sa silhouette reste proche de
   celle du héros ; une critique à l'aveugle, puis l'opérateur, en jugeront.
 
+### Preuves
+- **`tests/play-duel.test.mjs`, 5 tests** :
+  - l'atlas de l'arène par défaut est celui de `main` `d129433` à l'octet (SHA-256 `f7bb50a0…`, calculé sur la copie figée) ; celui de Vessa
+    ne change que les cases du siège adverse, et l'on y compte sa couleur sarcelle (≥ 200 texels sur l'image de repos ; Marek : 0) ;
+  - `TEXTS_FR` reprend les mots du prototype, listés dans le test ; `TEXTS_EN` a les mêmes clés et aucun mot français ;
+  - les deux duels (Vessa le jour 2, Marek le jour 3), gagnés et perdus, joués jusqu'au bout par le bot dans le `CombatSim` complet, leur
+    résultat appliqué ; au retour, la fin de journée, puis la nuit ;
+  - la sauvegarde rechargée des deux côtés du changement de scène égale la partie continue ;
+  - les données de la fiche ne changent du prototype que les sièges et la préparation.
+  - **Cinq fautes injectées une à une, fichiers rendus à l'octet** : Vessa par défaut, un mot français changé, le crépuscule oublié, le libellé
+    court gardé, le mauvais aspect dans le siège adverse. **[KO → corrigé]** la cinquième passait d'abord (le test ne vérifiait que « autre
+    que Marek ») ; l'oracle de la couleur sarcelle l'attrape.
+- **Le PD**, contre `main` figé (`d129433`, :5187) et la branche figée (`0b823ef`, :5188), au **seuil 0**, sortie gardée et relue :
+  - témoin de répétition (deux chargements de `main`, B avec personnages) : 0 px ;
+  - nuit A, B, C, D (`static=1&occ=0`, 30 pas) et avec personnages (120 pas), midi en B : **0 px** les neuf ;
+  - `?scene=arena`, cinq moments (`charging`, `window`, `combo`, `ko`, `strike`) avec la boucle tenue (`HOLD=1`) : **0 px**, témoin compris ;
+  - `tools/arena-scene-check.mjs` sur la branche : **PASS** deux fois sur deux (empreinte égale au prototype, 42 rendus, contraste du
+    télégraphe 6,9:1).
+- **Le parcours dans le navigateur** (`tools/play-flow.mjs`, branche figée, SwiftShader) :
+  - victoire contre Vessa (graine 1842, jour 2) et défaite contre Marek (graine 7719, jour 3) ;
+  - à chaque fois : la ville rechargée depuis la sauvegarde garde le même état ; l'arène assoit le joueur nommé face au bon adversaire, HUD
+    anglais ; le résultat est dans l'état ; la ville revient à la fin de journée (`afternoon`) ; **l'état final rejoué en Node a la même
+    empreinte** que celui du navigateur ; 0 erreur de page.
+- Une image gardée : `screenshots/calibration/l3-arena/vessa-vs-hero-combo-x2.png` (Vessa et le héros, moment `combo`, ×2) pour la critique à
+  venir.
+
+### [KO → corrigé] l'outillage sous SwiftShader
+- **Le délai du protocole** : sous la charge (trois navigateurs), le bake bloque la page plus de 180 s, le délai par défaut de Puppeteer ;
+  `detshots`, `arena-scene-check`, `arena-scene-shots` et `play-flow` prennent maintenant `READY_MS` comme `protocolTimeout`. Une première
+  série de captures du PD a échoué entièrement ainsi ; elle a été arrêtée et refaite.
+- **`arena-scene-shots` n'était pas déterministe ici** : la boucle de la page tourne entre le chargement et le premier moment, et y laisse sa
+  trace (l'acclamation des spectateurs, les particules) ; en SwiftShader ce délai varie, d'où 18 % de pixels différents entre `main` et la
+  branche, et même entre deux chargements de `main`. Avec `HOLD=1` (la boucle neutralisée, comme `detshots`) : 0 px. Le premier moment d'une
+  page variait encore dans la barre d'actions (3 424 px, ses transitions CSS au premier affichage) : un moment de chauffe avant lui suffit.
+- **`arena-scene-check` échouait sous la charge** : sa boucle vivante ne fait que 5 à 6 images en SwiftShader (une par seconde environ, le pas
+  plafonné à 0,05 s), et la simulation n'avance qu'au-delà de la cinquième. Seul sur la machine, il passe sur `main` et sur la branche.
+- **Le panneau de ville ne se redessine pas** quand on agit par `window.__game` : `play-flow` recharge la page depuis la sauvegarde avant
+  d'entrer dans l'arène.
+
+### Validation
+- typecheck, `npm test` **128 / 128**, build, `art:validate`.
+
+### Pensée
+- Un outil réputé déterministe se revérifie sur une machine lente : sa boucle libre entre le chargement et la capture peut y écrire dans
+  l'image. Le témoin de répétition le dit avant toute comparaison.
+- Un échec d'outil sous la charge se rejoue seul avant d'être lu comme une régression : le même contrôle sur `main` figé départage.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
