@@ -634,13 +634,45 @@ Rien à faire pour RH3, RH4 (les trois-quarts des PNJ restent « Plus tard ») e
 - Un jalon se clôt sur un état prouvé et daté : la dernière preuve de chaque sorte, et ce qui n'a pas été remesuré, dit comme tel. « Complet »
   n'est pas « Gold Master » : ce statut reste à l'opérateur.
 
+## Passe R2 — Fiche de l'état jour (RJ2) publiée : dix décisions de direction artistique (2026-10-19)
+
+### Demande
+- Opérateur, mot pour mot : « Prépare la fiche de l'état jour (RJ2) avec les trois images et les questions de direction artistique. »
+  Décision RJ2 « L'état jour » (Passe D3).
+- Branche `day-sheet-r2` depuis `main` (`7012ccf`). Aucun code de jeu.
+
+### Fait — [OK]
+- **Page privée** : https://claude.ai/artifact/End97NNMhHPxtynBGNXyYW. Les choix sont enregistrés dans la collection `decisions`, vide à la
+  publication (relue). Le style et la logique sont ceux des fiches des Passes G1 et R1 ; le récapitulatif peut aussi se copier.
+- **En tête, les trois pistes** : la même consigne depuis la capture de nuit du cadrage B, seule l'heure change ; leur statut non canonique ; ce
+  qu'elles valent (lumière, palette, ciel, pavois) et ce qu'elles ne valent pas (l'outil a redessiné les personnages et des détails).
+- **Dix décisions**, chacune avec son contexte, des images, ma recommandation et ses options :
+  - lumière et palette : J1 l'heure par défaut (recommandé : le matin) ; J2 la palette (transposer la règle de la nuit) ; J3 le ciel et la
+    brume (ciel pâle, brume légère) ; J4 les lumières de la ville (éteintes, la forge allumée) ;
+  - le tournoi : J5 le pavoisement (aux points focaux) ; J6 le pavois la nuit aussi (le jour seulement) ; J7 la foule du jour (la même pour
+    commencer) ;
+  - jour et nuit : J8 le passage (deux états fixes) ; J9 quand le jour devient le défaut (après la revue de l'opérateur en jeu) ;
+  - méthode : J10 les trois images (archiver la ou les pistes retenues, non canoniques).
+- **Images de la page** : les trois pistes et deux captures de nuit (A, B), en JPEG de qualité 0,9 (2,2 Mo en tout, contre 14 Mo en PNG),
+  hors du dépôt.
+- **Vérification** : un rendu local à 1 280 px et à 400 px de large ; aucune erreur de page, pas de défilement horizontal.
+
+### Restes [?]
+- Attendre que l'opérateur dise la fiche remplie. Ensuite : relire `decisions`, consigner les choix mot pour mot, écrire la direction
+  artistique du jour dans `AGENTS.md`, puis un premier jet derrière un paramètre, montré en captures aux quatre cadrages.
+
+### Pensée
+- Une fiche de direction artistique montre les pistes côte à côte avec l'état actuel. Elle dit aussi ce qu'une image générée vaut (la lumière,
+  la palette) et ce qu'elle ne vaut pas (des personnages redessinés).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
-- **La suite, RJ2 « L'état jour »** : une proposition de direction artistique (heure par défaut, palette, pavoisement du tournoi, ciel et
+- **La suite, RJ2 « L'état jour »** : la fiche est publiée (Passe R2, https://claude.ai/artifact/End97NNMhHPxtynBGNXyYW) ; à relire quand
+  l'opérateur la dit remplie. Une proposition de direction artistique (heure par défaut, palette, pavoisement du tournoi, ciel et
   brume, passage du jour à la nuit), avec les trois images de jour générées (Passe Z4 ; non canoniques), décidée avec l'opérateur sur une
   fiche avant tout code.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
