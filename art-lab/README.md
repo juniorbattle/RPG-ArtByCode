@@ -8,7 +8,7 @@ reference sheets -> rig scripts -> Aseprite sources -> baked sheets (PNG + JSON)
 > `src/characters/BakedCast.ts` (each sheet hash-checked, decoded byte-exact), and only for the manifests approved by the operator with
 > `runtimeUse: "production"`: `dockworker-x2-v2`, `merchant-x2-v2`,
 > `blacksmith-x2-v1`, `guard-x2-v1`, `hooded-x2-v1` and the five townsfolk of the ambient crowd (`artisan-x2-v1`, `traveler-x2-v1`,
-> `townswoman-x2-v1`, `older-merchant-x2-v1`, `courier-x2-v1`), all approved on 2026-10-17, and the hero `hero-x2-v3`, approved on 2026-10-19;
+> `townswoman-x2-v1`, `older-merchant-x2-v1`, `courier-x2-v1`), all approved on 2026-10-17, and the hero `hero-x2-v4`, approved on 2026-10-20 (in place of `hero-x2-v3`, approved on 2026-10-19);
 > none declared a Gold Master. The cat is still generated; `?cast=generated` shows the old generated sprites. Everything else here (Character Lab, tools, sources,
 > reviews, lab and experimental exports) stays out of the game and of its build. Details: [`characters/README.md`](characters/README.md);
 > history: Passes 4A-0A to 4A-quatervicies, archived in `journal/` (index at the top of `JOURNAL.md`).

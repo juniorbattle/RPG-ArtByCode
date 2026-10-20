@@ -601,6 +601,55 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une planche générée n'a pas de ligne de sol exacte. La médiane de la rangée sert de sol, jamais l'extrême.
 - La largeur d'un dessin déployé (une cape qui vole) borne le pas de reconstruction autant que la tête.
 
+## Passe H11 — `hero-x2-v4` en production à la place de `hero-x2-v3` (décision de l'opérateur) (2026-10-20)
+
+### Décision, mot pour mot
+- À la question « Je mets hero-x2-v4 en production ? » (fin de la Passe K11), l'opérateur : « Production : mets hero-x2-v4 en production à la
+  place de hero-x2-v3. »
+- Branche `hero-prod-h11` depuis `main` (`59711d2`).
+
+### Fait — [OK]
+- **`hero-x2-v4`** : manifeste `approved`, `runtimeUse: production`. Son approbation cite la décision, datée, avec l'empreinte de l'export
+  approuvé (`06a7fab7…`, celui de la Passe K11, inchangé). Son paquet de provenance reçoit son approbation et la ligne des droits.
+- **`hero-x2-v3`** : `superseded`, `runtimeUse: lab`. La règle des manifestes interdit une approbation sur un statut autre
+  qu'`approved` ; son approbation du 19/10 est donc gardée mot pour mot dans ses notes, et dans l'historique de son paquet, avec la
+  date du remplacement. Ses fichiers restent : ce sont les sources de `hero-x2-v4`, que son rig vérifie.
+- **Distribution** (`BakedCast.ts`) : l'entrée du héros pointe sur `hero-x2-v4`, toujours en dernier (ses 60 images après celles des PNJ).
+  L'entrée candidate disparaît. `?cast=candidate` ne charge plus rien de plus, et l'export de `hero-x2-v3` n'est plus dans le bundle.
+- **Tests** :
+  - l'atlas : le héros de production est `hero-x2-v4`, la dernière feuille ; les images des PNJ gardent leurs cases et leurs octets ;
+  - `walkSlide` : `hero-x2-v4` à 14 ;
+  - la distribution : le joueur prend `hero-x2-v4`, avec ou sans candidats, et le jeu ne télécharge jamais `hero-x2-v3`. Comparé à
+    `hero-x2-v3`, chargé à part par une entrée de test, il a la même taille, la même vitesse et la même échelle.
+  - **Deux fautes injectées, attrapées** : la distribution encore sur les fichiers de `hero-x2-v3` (4 tests en échec) ; `hero-x2-v4` qui n'est
+    plus un asset de production (4 en échec). Fichiers rendus à l'octet (`cmp`).
+- **Documents** : `AGENTS.md` (la distribution de production ; `?cast=candidate` : aucun aujourd'hui), les README de l'Art Lab.
+
+### Preuves
+- **Contre `main` figé** (`59711d2`, :5187), au **seuil 0**, sortie de `detshots` gardée et relue :
+  - **Le défaut de la branche est le candidat que l'opérateur a vu** (`main` avec `?cast=candidate`) : **0 px** partout.
+    - Debout, les PNJ en marche (300 pas) : A, B, C, D et midi en B.
+    - En course (touches tenues 45 pas, horloge figée) : face, dos, trois-quarts face et trois-quarts dos en B, et la face en D.
+  - **Contre le défaut de `main`, debout : 0 px.** La pose de face de `hero-x2-v4` est celle de `hero-x2-v3`, donc les références de
+    `screenshots/calibration/` restent justes.
+  - **Contre le défaut de `main`, en course** : seul le héros change. 1,7 % des pixels de face, 1,3 % de dos, 2,4 % en trois-quarts face,
+    1,8 % en trois-quarts dos, 0,7 % de face en D.
+  - **`?cast=generated`** : **0 px** en B et en D.
+  - Témoin de répétition (deux chargements) : 0 px. Aucune erreur de page. La série a été attendue jusqu'au bout dans le tour.
+  - **Le bundle de production** ne porte plus que `hero-x2-v4` (250 Ko) ; `hero-x2-v3` n'y est plus.
+- **Validation** : typecheck, `npm test` 103 / 103, build, `art:validate` (18 manifestes, 0 erreur), `verify-provenance` des paquets de
+  `hero-x2-v3` et `hero-x2-v4` intacts.
+
+### Restes [?]
+- **De face, les poings pompent peu** (critique de la Passe K11). Ce n'est pas demandé.
+- **Les trois-quarts des PNJ** (RH4 « Plus tard ») ; **le remède RK3** (Passe K8) ; **J9** (la nuit reste le défaut).
+
+### Pensée
+- Un asset remplacé garde son approbation comme histoire. Le schéma l'interdit dans le champ `approval` d'un statut autre qu'`approved` ; elle
+  vit donc mot pour mot dans ses notes et dans son paquet, sans être effacée ni présentée comme valide.
+- La preuve d'une bascule de production, c'est le défaut de la branche contre l'ancien candidat de `main` (`?cast=candidate`) à 0 px : ce que
+  l'opérateur a vu est ce qui part en production.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -608,7 +657,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
-  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5) ; la foule du jour (J7) décidée et appliquée (Passes R3 / D7 : matin 6, midi 12, fin de journée 9 ; la nuit garde cinq). Les tâches de la Passe D6 sont faites. Revue de l'opérateur en jeu (Passe K9) : tout est bien implémenté, la nuit reste le défaut pour le moment (J9). Orientation (Passe K10) : le héros selon la ligne de visée, les PNJ selon l'écran (décision K9). Les cycles de face et de dos du héros et son trois-quarts dos : candidat `hero-x2-v4` (Passe K11, courses dessinées, gagnant à l'aveugle), en attente de la décision de l'opérateur. Ouverts : les trois-quarts des PNJ (RH4). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
+  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5) ; la foule du jour (J7) décidée et appliquée (Passes R3 / D7 : matin 6, midi 12, fin de journée 9 ; la nuit garde cinq). Les tâches de la Passe D6 sont faites. Revue de l'opérateur en jeu (Passe K9) : tout est bien implémenté, la nuit reste le défaut pour le moment (J9). Orientation (Passe K10) : le héros selon la ligne de visée, les PNJ selon l'écran (décision K9). Les cycles de face et de dos du héros et son trois-quarts dos : `hero-x2-v4` (Passe K11, courses dessinées, gagnant à l'aveugle), en production depuis la Passe H11 (« Production : mets hero-x2-v4 en production à la place de hero-x2-v3. »). Ouverts : les trois-quarts des PNJ (RH4). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
   midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
   défaut seulement après la revue de l'opérateur en jeu (J9). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
@@ -653,7 +702,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   glissement ≈ 0). Décisions de la Passe D1 : « Source : la b » (planche v4-b), « Cinq vues, le héros d'abord », « Sprint ×1,2 », vues du
   côté droit « Ignorées » : appliquées en Passe H8 (`hero-x2-v3`, candidat en cinq vues, revue de l'opérateur en jeu) ; visage retouché au texel en Passe H9 (yeux
   ouverts, bouche, ombre des joues ; critique à l'aveugle : 7 contre 5 sur le visage) ; fiche de revue (Passe D3) : RH1 « Production »,
-  RH2 « Par défaut avec le héros » : **en production depuis la Passe H10**, cinq vues par défaut ; RH3 « Fait », RH4 « Plus tard » (les trois-quarts des PNJ) ; Passe K11 : `hero-x2-v4`, candidat aux courses de face, de dos et de trois-quarts dessinées, montré à l'opérateur (`?cast=candidate`). Vues de trois-quarts : étude `briefs/three-quarter-views.md` (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
+  RH2 « Par défaut avec le héros » : **en production depuis la Passe H10**, cinq vues par défaut ; RH3 « Fait », RH4 « Plus tard » (les trois-quarts des PNJ) ; Passe K11 : `hero-x2-v4`, courses de face, de dos et de trois-quarts dessinées ; **en production depuis la Passe H11** à la place de `hero-x2-v3` (remplacé). Vues de trois-quarts : étude `briefs/three-quarter-views.md` (aucun trois-quarts dos sur la planche v3 ; Passe I1 :
   deux planches générées en huit vues, trois-quarts dos compris, archivées comme sources non canoniques). Plus tard : masques du héros pour ses
   déclinaisons, écran de choix (code de jeu). Le reste des planches du casting : propositions non canoniques, design à valider avant toute
   production.

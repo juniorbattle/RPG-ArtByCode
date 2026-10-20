@@ -238,9 +238,7 @@ holds 8 walkers at most 3.2 m apart, so with `crowd` or by day a walker without 
 operator's decision J7b « Accepter », Passe D7; by day the default is round(n x density) with n = 6 / 12 / 9 for the morning / midday / end of day,
 decision J7a, Passe D7) · `cast=generated`
 (skip the production cast of baked characters, `src/characters/BakedCast.ts`: the old generated hero / porter / merchant / NPCs) · DEV server only:
-`cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production; today `hero-x2-v4`, the
-hero with drawn front, back and three-quarter runs and a three-quarter back idle turned further away, in place of `hero-x2-v3` on the player, journal
-Passe K11) ·
+`cast=candidate` (also load the cast entries whose manifests still wait for the operator's approval: review before production; none today) ·
 `views=3` (the three-view rule for every sprite; absent = the five-view rule, journal Passe V5: front / three-quarter / profile sectors at
 22.5 / 67.5 deg on screen, for the sheets that hold both three-quarter facings `downSide` / `upSide` only, today the hero; every other sprite
 keeps the three views; the default since the operator's decision of 2026-10-19, « Par défaut avec le héros », journal Passes D3 / H10) ·
@@ -266,8 +264,9 @@ cost, reproducibility and operator approval — not procedural purity.
   manifest is approved for production. Today: `dockworker-x2-v2` (in place of the porter), `merchant-x2-v2` (the hero stall's
   merchant), `blacksmith-x2-v1` (the forge's blacksmith), `guard-x2-v1` (both guards), `hooded-x2-v1` (the hooded stranger) and the five
   townsfolk of the ambient crowd (`artisan-x2-v1`, `traveler-x2-v1`, `townswoman-x2-v1`, `older-merchant-x2-v1`, `courier-x2-v1` in place of
-  `crowd0`..`crowd4`), approved by the operator on 2026-10-17; `hero-x2-v3` (the player, in five facings), approved on 2026-10-19 (« Production »,
-  journal Passes D3 / H10); the cat is still generated. The arena scene (`?scene=arena`, journal
+  `crowd0`..`crowd4`), approved by the operator on 2026-10-17; `hero-x2-v4` (the player, in five facings, run cycles drawn in
+  every facing), approved on 2026-10-20 (« Production : mets hero-x2-v4 en production à la place de hero-x2-v3. », journal Passes K11 / H11), in
+  place of `hero-x2-v3` (approved on 2026-10-19, journal Passes D3 / H10, now superseded); the cat is still generated. The arena scene (`?scene=arena`, journal
   Passe P1) generates its fighters (Ren with the hero's palette, Marek) with the town generator's rules at x2 density (`src/arena/FighterArt.ts`);
   a baked sheet can take their place by the same frame keys only through an approved manifest.
 - A baked asset may reach the runtime only through an approved provenance manifest (`approved: true`, `runtimeUse: "production"`)

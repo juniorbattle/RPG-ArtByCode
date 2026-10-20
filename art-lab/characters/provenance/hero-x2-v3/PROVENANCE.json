@@ -1,6 +1,6 @@
 {
  "id": "hero-x2-v3",
- "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-19, review sheet RH1 « Production », journal Passe D3) - not declared a Gold Master - built in Pass H8 from the generated v4-b turnaround (the operator's choice of source), the face retouched in Pass H9",
+ "status": "SUPERSEDED on 2026-10-20 by hero-x2-v4 (operator: « Production : mets hero-x2-v4 en production à la place de hero-x2-v3. », journal Passe H11); was an APPROVED PRODUCTION ASSET from 2026-10-19 (RH1 « Production », journal Passe D3) to 2026-10-20 - built in Pass H8, the face retouched in Pass H9",
  "request": {
   "date": "2026-10-19",
   "by": "operator (git user wonmii), in this session",
@@ -12,6 +12,12 @@
    "by": "operator (git user wonmii)",
    "decision": "« Production » (review sheet of milestone M1, RH1 « Le héros en production »; with RH2 « Par défaut avec le héros », the five-view rule by default), the operator's choices pasted in the working session and read back from the sheet's `decisions` collection (journal Passe D3)",
    "scope": "the sheet of Pass H9 (export SHA-256 65788b0d7665991c8fc4f5fbeb6290dc2e3e3afc8d38842b41c0398dbae816d0), production use on the player in place of the generated hero; not declared a Gold Master. Source rights: the v4-b turnaround generated with the operator's OpenAI account (tools/art-lab/gen-image.mjs, journal Passe I1; OpenAI's terms) and the operator's v3 base sheet; use in production decided by the operator (RH1); third-party rights not exhaustively verified; C2PA chunk present, not verified."
+  },
+  {
+   "date": "2026-10-20",
+   "by": "operator (git user wonmii)",
+   "decision": "superseded: « Production : mets hero-x2-v4 en production à la place de hero-x2-v3. » (journal Passe H11)",
+   "scope": "no longer loaded by the game; the approval of 2026-10-19 above is history (export SHA-256 65788b0d7665991c8fc4f5fbeb6290dc2e3e3afc8d38842b41c0398dbae816d0, unchanged); the sheet stays the source of hero-x2-v4"
   }
  ],
  "source": {

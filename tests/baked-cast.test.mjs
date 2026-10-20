@@ -69,19 +69,20 @@ test('loadProductionCast: every sheet checked against its provenance pack, every
   });
 });
 
-test('the hero candidate (journal Passe K11) stands in for the player only with ?cast=candidate, at hero-x2-v3\'s height and speed', async () => {
+test('the production hero is hero-x2-v4 (journal Passe H11), at hero-x2-v3\'s height, speed and scale; hero-x2-v3 is never fetched', async () => {
   await withRepoFetch(null, async (fetched) => {
-    const prod = await cast.loadProductionCast(false);
-    assert.ok(!fetched.includes('art-lab/characters/exports/hero-x2-v4.png'), 'production never fetches the candidate');
-    assert.equal(prod.cast.get('player').id, 'hero-x2-v3');
-    const cand = await cast.loadProductionCast(true), a = prod.cast.get('player'), b = cand.cast.get('player');
-    assert.equal(b.id, 'hero-x2-v4');
-    assert.equal(cand.sheets.find((s) => s.id === 'hero-x2-v4').runtimeUse, 'lab');
+    const prod = await cast.loadProductionCast(false), withCand = await cast.loadProductionCast(true);
+    assert.equal(prod.cast.get('player').id, 'hero-x2-v4');
+    assert.equal(withCand.cast.get('player').id, 'hero-x2-v4', 'no candidate stands in for the hero any more');
+    assert.ok(!fetched.includes('art-lab/characters/exports/hero-x2-v3.png'), 'the superseded hero is never loaded');
+    // hero-x2-v3, loaded on its own through a test entry (its gate fields forced: the gate itself is tested above)
+    const id = 'hero-x2-v3', files = JSON.parse(fs.readFileSync(path.join(ROOT, `art-lab/characters/provenance/${id}/PROVENANCE.json`), 'utf8')).files;
+    const json = JSON.parse(fs.readFileSync(path.join(ROOT, `art-lab/characters/exports/${id}.json`), 'utf8'));
+    const old = await cast.loadProductionCast(false, 'off', undefined, [{ manifest: { id, status: 'approved', approved: true, runtimeUse: 'production' }, png: `/art-lab/characters/exports/${id}.png`, json, files, replaces: ['player'], scale: 0.9 }]);
+    const a = old.cast.get('player'), b = prod.cast.get('player');
     // its front idle and its profile run are hero-x2-v3's: the same height and ground speed, the same scale
     assert.deepEqual([b.height, b.walkSpeed, b.scale], [a.height, a.walkSpeed, a.scale]);
     assert.ok(b.walkSpeed > 0);
-    // every other role keeps its production sheet
-    for (const [role, m] of prod.cast) if (role !== 'player') assert.equal(cand.cast.get(role).id, m.id, role);
   });
 });
 

@@ -54,9 +54,9 @@ async function withRepoFetch(fn) {
 
 test('the production NPCs keep their texture byte for byte; the hero, loaded last, fills the first column and opens the second', async () => {
   await withRepoFetch(async () => {
-    // the hero in production (journal Passe H10): the last entry of the cast, after the NPCs approved on 2026-10-17
+    // the hero in production (journal Passes H10, H11): the last entry of the cast, after the NPCs approved on 2026-10-17
     const prod = await cast.loadProductionCast(false), withCand = await cast.loadProductionCast(true);
-    assert.equal(prod.sheets.at(-1).id, 'hero-x2-v3', 'the hero is the last production sheet');
+    assert.equal(prod.sheets.at(-1).id, 'hero-x2-v4', 'the hero is the last production sheet');
     const npcs = prod.sheets.slice(0, -1), extra = prod.sheets.slice(-1);
     const a = SpriteAtlas.build([], npcs, 2048), b = SpriteAtlas.build([], prod.sheets, 2048);
     const n = npcs.reduce((s, x) => s + x.frames.length, 0), total = n + extra[0].frames.length;
@@ -65,7 +65,7 @@ test('the production NPCs keep their texture byte for byte; the hero, loaded las
     assert.ok(total > 336 && total <= 672, `${total} production frames: past one column, within the two guaranteed`);
     assert.equal(b.bakedWidth, 2048);
     assert.ok(b.bakedHeight <= 2048);
-    // DEV candidates (the hero candidate of Passe K11) come after the production cast and move none of its frames
+    // DEV candidates (none today) come after the production cast and move none of its frames
     assert.deepEqual(withCand.sheets.slice(0, prod.sheets.length).map((s) => s.id), prod.sheets.map((s) => s.id));
     // every production frame: same cell, same bytes (texture of 1024 vs 2048 columns: compared texel by texel)
     let frames = 0;

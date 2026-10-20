@@ -39,8 +39,9 @@ test('walkSlide: null without a side walk, without feet, or for an unsteady cycl
 test('walkSlide on the production sheets (regression: re-measure on purpose after any rebuild of a walk)', async () => {
   const want = { 'artisan-x2-v1': 4.5, 'blacksmith-x2-v1': 4, 'courier-x2-v1': 4.25, 'dockworker-x2-v2': 4, 'guard-x2-v1': 4, 'hooded-x2-v1': 4,
     'merchant-x2-v2': 4.5, 'older-merchant-x2-v1': 4.25, 'townswoman-x2-v1': 4.5, 'traveler-x2-v1': 4.25,
-    // the hero's run: the v3 sheet's drawn stride, 14 texels per frame (journal Passes H6, H7, H8; in production since Passe H10)
-    'hero-x2-v3': 14 };
+    // the hero's run: the v3 sheet's drawn stride, 14 texels per frame (journal Passes H6, H7, H8; hero-x2-v4 keeps hero-x2-v3's profile run,
+    // Passes K11, H11)
+    'hero-x2-v4': 14 };
   const production = fs.readdirSync(path.join(ROOT, 'art-lab/characters/manifests')).filter((f) => f.endsWith('.manifest.json'))
     .map((f) => JSON.parse(fs.readFileSync(path.join(ROOT, 'art-lab/characters/manifests', f), 'utf8'))).filter((m) => m.runtimeUse === 'production').map((m) => m.id).sort();
   assert.deepEqual(production, Object.keys(want).sort(), 'every production sheet has an expected value');

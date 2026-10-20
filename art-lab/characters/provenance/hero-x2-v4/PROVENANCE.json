@@ -1,12 +1,19 @@
 {
  "id": "hero-x2-v4",
- "status": "CANDIDATE, NOT APPROVED (journal Passe K11): for the operator's review in the scene (DEV, ?cast=candidate) before any production decision; hero-x2-v3 stays the production hero",
+ "status": "APPROVED PRODUCTION ASSET (operator, 2026-10-20, « Production : mets hero-x2-v4 en production à la place de hero-x2-v3. », journal Passe H11) - not declared a Gold Master - built in Pass K11, replaces hero-x2-v3 on the player",
  "request": {
   "date": "2026-10-20",
   "by": "operator (git user wonmii), in this session",
   "text": "« Refais les cycles de face et de dos du héros en course, comme le profil (bras et jambes), et corrige son trois-quarts dos trop tourné ; montre-moi avant la production. » (journal Passes K10, K11)"
  },
- "approvals": [],
+ "approvals": [
+  {
+   "date": "2026-10-20",
+   "by": "operator (git user wonmii)",
+   "decision": "« Production : mets hero-x2-v4 en production à la place de hero-x2-v3. », in this session, after the review of Pass K11 (journal Passe H11)",
+   "scope": "the sheet of Pass K11 (export SHA-256 06a7fab7c90ee0d83b97477c3276710bb217161c2be32b12ab4143c338c603f1), production use on the player in place of hero-x2-v3; not declared a Gold Master. Source rights: the generated run sheets a1, a2, b1, b2 (tools/art-lab/gen-image.mjs with the operator's OpenAI account, OpenAI's terms) and hero-x2-v3's sources (the v4-b turnaround, the operator's v3 base sheet); use in production decided by the operator; third-party rights not exhaustively verified; C2PA chunks present, not verified."
+  }
+ ],
  "source": {
   "sheet": {
    "description": "generated sheet b2 (gpt-image-2, NON-CANONICAL): its three-quarter back idle view (second row, first figure), reconstructed by the build at pitch 2.77",
@@ -15,7 +22,7 @@
    "path": "art-lab/characters/reference/sources/hero-run-v4-2026-10-20-b2.png",
    "check": "the rig refuses a different file (SHA-256 checked before use)",
    "origin": "generated through the OpenAI Images API with the operator's account (tools/art-lab/gen-image.mjs); its record names the model, the exact prompt and its SHA-256, the request id; C2PA chunk present, NOT verified",
-   "rights": "generated image (OpenAI's terms) through the operator's account; third-party rights NOT exhaustively verified; production use NOT decided"
+   "rights": "generated image (OpenAI's terms) through the operator's account; third-party rights NOT exhaustively verified; its use in production decided by the operator (journal Passe H11)"
   },
   "runSheets": [
    {

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "hero-x2-v3",
   "kind": "character",
-  "status": "approved",
+  "status": "superseded",
   "source": "art-lab/characters/source/hero-x2-v3.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/hero-x2-v3.png",
@@ -33,12 +33,7 @@
       "note": "in-scene review (JOURNAL, Passes H8 and H9)"
     }
   ],
-  "approved": true,
-  "approval": {
-    "by": "operator (git user wonmii)",
-    "date": "2026-10-19",
-    "note": "APPROVED FOR PRODUCTION by the operator: « Production » (review sheet of milestone M1, RH1 « Le héros en production »; with RH2 « Par défaut avec le héros », the five-view rule by default), the operator's choices pasted in the working session and read back from the sheet's `decisions` collection (journal Passe D3). Approved sheet: export SHA-256 65788b0d7665991c8fc4f5fbeb6290dc2e3e3afc8d38842b41c0398dbae816d0 (Pass H9, the face retouched at the texel). Not declared a Gold Master (RJ3 « Pas encore »). Source rights: the v4-b turnaround generated with the operator's OpenAI account (tools/art-lab/gen-image.mjs, journal Passe I1; OpenAI's terms) and the operator's v3 base sheet; use in production decided by the operator (RH1); third-party rights not exhaustively verified; C2PA chunk present, not verified."
-  },
-  "runtimeUse": "production",
-  "notes": "PRODUCTION ASSET (approved by the operator on 2026-10-19, journal Passes D3 and H10): loaded by the game's production cast (src/characters/BakedCast.ts) on the player in place of the generated hero; ?cast=generated restores the generated sprite. Its three-quarter facings are shown by the five-view rule, the default since the same decision (?views=3: the three-view rule). Built in Pass H8, the face retouched at the texel in Pass H9 (eyes, mouth, cheek shade): the retouched premium hero (decision sheet H1 « Retouches d'abord (visage, palette) », H4 « Source : la b », H3 « Cinq vues, le héros d'abord »), for review in the scene (DEV, ?cast=candidate; three-quarter facings with ?views=5). Density x2 (64x96, feet on row 90), idle 4 + run 8 frames in FIVE facings (down, downSide, side, upSide, up), one 64-colour palette over the five views, presentation scale 0.9. The profile run is hero-x2-v2's (the v3 sheet's drawn run, 14-texel stride, flight frames) on this palette. Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v3.rig.mjs --check"
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "SUPERSEDED on 2026-10-20 by hero-x2-v4 (the operator, word for word: « Production : mets hero-x2-v4 en production à la place de hero-x2-v3. », journal Passe H11): no longer loaded by the game; kept as hero-x2-v4's source (its palette, four idle views and profile run, which hero-x2-v4's rig rebuilds and checks against this pack). History, kept: its approval of 2026-10-19 (by: operator (git user wonmii)), as it was written: APPROVED FOR PRODUCTION by the operator: « Production » (review sheet of milestone M1, RH1 « Le héros en production »; with RH2 « Par défaut avec le héros », the five-view rule by default), the operator's choices pasted in the working session and read back from the sheet's `decisions` collection (journal Passe D3). Approved sheet: export SHA-256 65788b0d7665991c8fc4f5fbeb6290dc2e3e3afc8d38842b41c0398dbae816d0 (Pass H9, the face retouched at the texel). Not declared a Gold Master (RJ3 « Pas encore »). Source rights: the v4-b turnaround generated with the operator's OpenAI account (tools/art-lab/gen-image.mjs, journal Passe I1; OpenAI's terms) and the operator's v3 base sheet; use in production decided by the operator (RH1); third-party rights not exhaustively verified; C2PA chunk present, not verified. In production from Pass H10 to Pass H11. Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v3.rig.mjs --check"
 }

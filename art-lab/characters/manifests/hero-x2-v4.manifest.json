@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "hero-x2-v4",
   "kind": "character",
-  "status": "candidate",
+  "status": "approved",
   "source": "art-lab/characters/source/hero-x2-v4.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/hero-x2-v4.png",
@@ -45,7 +45,12 @@
       "note": "approved for production by the operator on 2026-10-19 (RH1 « Production », journal Passe D3)"
     }
   ],
-  "approved": false,
-  "runtimeUse": "lab",
-  "notes": "CANDIDATE (Pass K11), NOT APPROVED: hero-x2-v3 with drawn run cycles in the front, back and three-quarter facings and a three-quarter back idle turned further away, after the operator's request (« Refais les cycles de face et de dos du héros en course, comme le profil (bras et jambes), et corrige son trois-quarts dos trop tourné ; montre-moi avant la production. »), for review in the scene (DEV, ?cast=candidate: it then stands in for hero-x2-v3 on the player). Density x2 (64x96, feet on row 90), idle 4 + run 8 frames in five facings, hero-x2-v3's palette pinned (its export), presentation scale 0.9. Its front, three-quarter front, profile and back idle frames and its profile run are hero-x2-v3's, texel for texel: same height, same ground speed (walkSlide 14). Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v4.rig.mjs --check"
+  "approved": true,
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-10-20",
+    "note": "APPROVED FOR PRODUCTION by the operator, in this session, word for word: « Production : mets hero-x2-v4 en production à la place de hero-x2-v3. » (journal Passe H11), after the review of Pass K11 (the review page, the blind critique: v4 ahead in all five sets). Approved sheet: export SHA-256 06a7fab7c90ee0d83b97477c3276710bb217161c2be32b12ab4143c338c603f1. Replaces hero-x2-v3 (superseded) on the player. Not declared a Gold Master. Source rights: the generated run sheets a1, a2, b1, b2 (tools/art-lab/gen-image.mjs with the operator's OpenAI account, OpenAI's terms) and hero-x2-v3's sources (the v4-b turnaround, the operator's v3 base sheet); use in production decided by the operator; third-party rights not exhaustively verified; C2PA chunks present, not verified."
+  },
+  "runtimeUse": "production",
+  "notes": "PRODUCTION ASSET (approved by the operator on 2026-10-20, journal Passe H11): loaded by the game's production cast (src/characters/BakedCast.ts) on the player in place of the generated hero, replacing hero-x2-v3; ?cast=generated restores the generated sprite. Built in Pass K11: hero-x2-v3 with drawn run cycles in the front, back and three-quarter facings and a three-quarter back idle turned further away (the operator's request: « Refais les cycles de face et de dos du héros en course, comme le profil (bras et jambes), et corrige son trois-quarts dos trop tourné ; montre-moi avant la production. »). Density x2 (64x96, feet on row 90), idle 4 + run 8 frames in five facings, hero-x2-v3's palette pinned (its export), presentation scale 0.9. Its front, three-quarter front, profile and back idle frames and its profile run are hero-x2-v3's, texel for texel: same height, same ground speed (walkSlide 14). Rebuild: node tools/art-lab/build-character.mjs art-lab/characters/rigs/hero-x2-v4.rig.mjs --check"
 }
