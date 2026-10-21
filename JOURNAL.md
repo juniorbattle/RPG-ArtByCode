@@ -568,6 +568,28 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un test qui fige un appel (`explore: startTown`) change avec la décision qu'il gardait : il garde ce qui ne doit pas bouger (`startTown`) et
   fige le nouvel appel, fautes injectées à l'appui.
 
+## Passe FR1 — La feuille de route après la tranche jouable, versionnée (2026-10-20)
+
+### Demande, mot pour mot
+- Opérateur, la feuille de route en cinq points (citée en entier dans `briefs/roadmap-2026-10.md`), close par « On ne lance rien encore mais
+  consolide le plan » ; puis « Le district en cours, c'est le parvis de l'arène (la place principale) : c'est lui à finaliser en premier. » ;
+  enfin, une fois les séances L7-6a et L7-2 rendues : « Okay les sous-sessions sont finis avacons vers le plan consolide ».
+- Branche `roadmap-fr1` depuis `main` (`ff4caa2`).
+
+### Fait — [OK]
+- `briefs/roadmap-2026-10.md` : le plan consolidé, dans l'ordre de l'opérateur. Étape 0, l'atelier « système de combat » (E1 / E16) avant les
+  combattants ; étape 1, les sprites de l'arène (combattants, gradins) ; étape 2, l'interface (audit, images de référence, fiche, système de
+  design) ; étape 3, les districts, le parvis d'abord, en places ouvertes ; étape 4, le peuplement (avec un plan de capacité de la texture des
+  sprites) ; étape 5, le gameplay (événements, narration, cinématiques en direct). Les règles de fonctionnement et quatre questions ouvertes y sont.
+- Aucun code ne change.
+
+### Constat — [?]
+- La séance L7-2 (les états du jour de l'arène) n'avait pas commencé : elle attendait la fusion de D9, que rien ne lui a signalée. Elle est la
+  première tâche du plan, lancée après cette passe.
+
+### Pensée
+- Une séance qui attend la fusion d'une autre n'en est pas prévenue : la séance qui les a lancées le lui dit dès la fusion.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -590,6 +612,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
     (E24, E30, E1 / E16, E14 / E15, E11, E25). Restent quatre des cinq tâches à part de la Passe D8 (le jour par défaut d'« Explore the district »,
     L7-6a, fait en Passe D9) : l'équilibrage vers « modéré » (L7-4), les états du jour de l'arène (L7-2, qui suivait L7-6a), l'amendement du contrat projet (E14 / E15,
     avec l'opérateur), la tâche « système de combat » (E1 / E16, avec l'opérateur) ;
+  - feuille de route après la tranche (Passe FR1) : `briefs/roadmap-2026-10.md` (arène, interface, districts dont le parvis d’abord, peuplement, gameplay) ;
   - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)

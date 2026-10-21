@@ -40,6 +40,9 @@ decision C3 (« Aucun verrou modifié, écarts consignés »):
 The plan of the cloud session « version jouable » (the gameplay contract's vertical slice, § 13), with the operator's choices on it (§ 11), is
 `briefs/cloud-session-playable.md`. Its brief is `briefs/cloud-session-playable-brief.md`.
 
+The roadmap after the playable slice (the operator's five points, in order: the arena's sprites, the UI / HUD, the districts with the arena's
+forecourt first, populating them, then gameplay) is `briefs/roadmap-2026-10.md` (journal Passe FR1); each of its tasks runs in a session of its own.
+
 ## Project journal (MANDATORY workflow)
 `JOURNAL.md` is the project's memory: what was done, what worked, what failed and why, open problems, lessons. It holds the
 recent passes, "À reprendre" and "Principes à garder"; older passes are archived **verbatim** in `journal/` (operator decision,

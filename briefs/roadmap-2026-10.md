@@ -1,0 +1,92 @@
+# Feuille de route après la tranche jouable (20/10/2026)
+
+Plan consolidé de l'opérateur, versionné en Passe FR1 du journal. Il ordonne les tâches qui suivent la tranche jouable ; chaque tâche part dans
+sa propre séance (règle de l'opérateur du 20/10 : « a partir de maintenant chaque nouvelle tache sera lance sur une nouvelle session ») et suit
+`AGENTS.md` (une branche à la fois, journal, preuves, art approuvé par l'opérateur).
+
+## La demande, mot pour mot
+
+L'opérateur :
+
+> Excellent, On va maintenant travailler quelques points :
+> - Les sprites personnages en combat arene, que ce soit les combattants ainsi que les personnages dans les gradins,
+> - Puis UI/HUD car ce n'est vraiment pas optimale, mais on commencera par fait un audit et des passes visuels via des images references generes pour valider la ligne directrice, pour bien implementer.
+> - puis enfin finaliser les environnement restants, donc nos districts on a 4 district, commercants, place principale pour acceder a l'arene, place festif, zone d'entrainement, Avec une volonte de respecter nos structure etabli dans district merchant mais en y ajout plus de profondeur, surtout pour la place principal et training, je veux que les zones est plus d'espaces et non un long couloir comme district merchant, mais je veux que tu finalises l'autre district en cours qui semblait bien avance puis nous verrons le resultat finale
+> - puis une fois que tout cela sera bon on peuplera aussi les pnjs mais aussi les combattants et autres
+> - Enfin nous commencerons a reelement integrer notre gameplay avec les events dynamiques et mise en structure narrative avec eventuellement des custcenes runtime
+> On ne lance rien encore mais consolide le plan
+
+Puis : « Le district en cours, c'est le parvis de l'arène (la place principale) : c'est lui à finaliser en premier. »
+
+## Règles de fonctionnement
+
+- **Une branche de travail à la fois** : les tâches qui touchent au code passent l'une après l'autre. Les audits et la génération d'images de
+  référence peuvent se faire en parallèle, puisqu'ils n'ouvrent pas de branche.
+- **Images générées** : par `tools/art-lab/gen-image.mjs` seulement, plafond 5 $ par tâche, non canoniques tant que l'opérateur ne les approuve pas.
+- **Une fiche d'arbitrages à la fin de chaque étape** : rien ne change par défaut sans la décision de l'opérateur.
+- **Budget de performance** (E24) : « Pas plus cher que la nuit B, à définition égale », avec la réserve de l'opérateur, « Mais rien n'est confirme
+  car il y a peut etre des zones plus grande et dense ».
+- **Le cloud** n'a ni la clé d'images, ni Aseprite, ni le GPU de l'opérateur : il passe par le relais local (`briefs/local-requests/`).
+
+## Déjà engagé (tâches à part de la Passe D8)
+
+- L7-6a, le jour comme défaut d'« Explore the district » : fait (Passe D9).
+- **L7-2, les états du jour de l'arène** (duel et parvis, par `DayState`) : la première tâche à lancer. Les sprites de l'arène se jugeront ensuite de
+  jour comme de nuit.
+- L7-4, l'équilibrage vers « modéré » : petite tâche indépendante, à placer quand l'opérateur veut.
+- E14 / E15, l'amendement du contrat projet (la génération par le code) : avec l'opérateur.
+
+## Étape 0. Avant les combattants
+
+- **L'atelier « système de combat »** (E1 / E16, mené par l'opérateur : « Nous devons faire une tache entiere concernant le systeme de combat et la
+  logique car c'est quelque chose de nouveau que seul moi a l'entiere comprehension »). Il fixe la liste des animations (attaques, garde, esquive,
+  coups reçus, K.O., charge). Sans lui, les sprites de l'étape 1 se limitent au jeu d'images actuel de l'arène.
+
+## Étape 1. Les sprites de l'arène
+
+1. **Audit** : ce que génère `src/arena/FighterArt.ts` (Ren, Marek, Vessa), les images que l'arène attend, la taille d'un texel à l'écran dans son
+   cadrage, les gradins tels qu'ils sont.
+2. **Les combattants**, par la chaîne du héros : planches générées, reconstruction, rig, Aseprite, manifeste, critique à l'aveugle, approbation de
+   l'opérateur ; une feuille cuite remplace un combattant généré par les mêmes clés d'images.
+3. **Les spectateurs** : une foule bon marché (quelques silhouettes, variantes de couleurs par les masques de la Passe V1, une boucle d'acclamation,
+   un seul appel de dessin) plutôt qu'un personnage complet par spectateur.
+
+## Étape 2. L'interface (UI et HUD)
+
+1. **Audit** des écrans (titre, panneau de la ville, dialogues et portraits, carte, HUD de l'arène, fiche de match, sauvegarde), sur ordinateur et
+   sur téléphone, défauts relevés avec captures.
+2. **La ligne directrice** : deux ou trois directions en images de référence générées, sur une fiche d'arbitrages ; l'opérateur choisit.
+3. **Un petit système de design** (polices, cadres, couleurs, accord avec le jour et la nuit), puis la mise en œuvre écran par écran, chaque fois
+   avec des captures avant / après.
+
+## Étape 3. Les districts
+
+Quatre districts : le marché (Merchant District, complet et figé), la place principale qui mène à l'arène (le parvis), la place festive, la zone
+d'entraînement.
+
+1. **Le parvis d'abord**, puis la revue de l'opérateur avant de continuer.
+2. **Le principe** : les générateurs et la structure du Merchant District (composition, bake de visibilité, cadrages, occlusion), mais des places
+   ouvertes plutôt qu'un couloir, surtout le parvis et l'entraînement. Cela demande une zone praticable en surface au lieu de la bande du quai, un
+   graphe de cadrages pensé pour un espace ouvert, et des poses de bake sur toute la surface.
+3. **Ensuite** la zone d'entraînement, puis la place festive. Lantern Row (`src/world/LanternRow.ts`) reste la maquette décidée (L7-3), à reprendre
+   ou à remplacer au moment de la place festive.
+
+## Étape 4. Le peuplement
+
+- Les rôles des PNJ par district, les rivaux (les sept persistants et Orla, la recrue), les spectateurs, la densité selon l'état du jour.
+- Les trois-quarts des PNJ (RH4) se placent ici.
+- **La place dans la texture des sprites** : elle garantit 672 images, dont environ 380 prises ; un vrai peuplement demande un plan de capacité
+  avant de produire.
+
+## Étape 5. Le gameplay
+
+- Les événements dynamiques (`src/events/`) et les phases du tournoi selon les contrats (`contracts/`).
+- La structure narrative et des cinématiques jouées en direct (plans de caméra scriptés, dialogues, animations des sprites).
+- L'intégration du système de combat de l'étape 0.
+
+## Questions ouvertes pour l'opérateur
+
+- Le calendrier de l'atelier combat : avant ou après les combattants de l'étape 1.
+- Ren : devient-il le héros `hero-x2-v4` avec des animations de combat ?
+- Les spectateurs : foule générée simple ou feuilles cuites.
+- La ligne directrice de l'interface (étape 2) et la forme du parvis une fois montré (étape 3).
