@@ -1,8 +1,9 @@
 // The title screen's proof (journal Passe L4; plan § 7, PD): the bare address in a browser that does not announce automation shows the title
-// screen (« New game », « Explore the district », and « Continue » only with a save); « Explore the district » then gives exactly today's
-// game: the same deterministic capture as the bare address of a frozen main (no title there), at threshold 0. The harness of
+// screen (« New game », « Explore the district », and « Continue » only with a save); « Explore the district » then gives exactly the town
+// at midday (the operator's decision L7-6a, journal Passe D9): the same deterministic capture as a frozen main's ?time=midday (BASE_QUERY,
+// default 'time=midday'; BASE_QUERY= gives main's bare address, the night: the negative control), at threshold 0. The harness of
 // tools/detshots.mjs (seeded Math.random, the loop held, N fixed steps, one render).
-//   node tools/title-proof.mjs <outDir> <base server url> <branch server url> [steps=120]   (W / H, CHROME_PATH / CHROME_ARGS / READY_MS)
+//   node tools/title-proof.mjs <outDir> <base server url> <branch server url> [steps=120]   (W / H, BASE_QUERY, CHROME_PATH / CHROME_ARGS / READY_MS)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,6 +12,7 @@ const puppeteer = createRequire(import.meta.url)('puppeteer-core');
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/google-chrome'].find((p) => p && fs.existsSync(p));
 const [outDir, BASE, BRANCH, stepsS = '120'] = process.argv.slice(2);
 if (!outDir || !BASE || !BRANCH) throw new Error('usage: node tools/title-proof.mjs <outDir> <base url> <branch url> [steps]');
+const BASE_QUERY = process.env.BASE_QUERY ?? 'time=midday';
 const W = +(process.env.W || 1280), H = +(process.env.H || 720), READY = +(process.env.READY_MS || 600000);
 const SEED = `(() => { let s = 1842; Math.random = () => { s |= 0; s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();`;
 const HOLD = `Object.defineProperty(window, '__app', { configurable: true, get() { return undefined; }, set(v) { v.start = () => {}; Object.defineProperty(window, '__app', { value: v, writable: true, configurable: true }); } });`;
@@ -55,8 +57,8 @@ async function capture(url, file, viaTitle, save) {
   } finally { await b.close(); }
 }
 
-const base = path.join(outDir, 'bare-main.png'), branch = path.join(outDir, 'bare-title-explore.png');
-await Promise.all([capture(BASE, base, false, false), capture(BRANCH, branch, true, false)]);
+const base = path.join(outDir, BASE_QUERY ? `main-${BASE_QUERY.replace(/[^a-z0-9]+/gi, '-')}.png` : 'bare-main.png'), branch = path.join(outDir, 'bare-title-explore.png');
+await Promise.all([capture(BASE_QUERY ? `${BASE}${BASE.includes('?') ? '&' : '?'}${BASE_QUERY}` : BASE, base, false, false), capture(BRANCH, branch, true, false)]);
 await capture(BRANCH, path.join(outDir, 'bare-with-save.png'), true, true);
 console.log(failed ? `${failed} check(s) failed` : 'title checks passed; compare the two captures with tools/diff.mjs at threshold 0');
 process.exit(failed ? 1 : 0);

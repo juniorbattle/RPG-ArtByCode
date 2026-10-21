@@ -8,12 +8,13 @@ M1 applied and reviewed, then frozen (journal Passes Z1-Z3). Its content, framin
 new task decided by the operator. It is **not** Gold Master (RJ3 « Pas encore »: that status is the operator's). Next (RJ2): the day states,
 decided (journal Passes D4, D6; see "Art direction"): the morning, midday and the end of day are built behind `?time=` (journal Passes Y2-Y4);
 the weather applies to each state (journal Passe Y5); the day's crowd is decided and applied (J7, journal Passes R3 / D7). After the operator's
-review in game, the day is decided as the default of « Explore the district » (L7-6a, journal Passe D8): the night stays the default until the
-task that applies it. Still not Gold Master (L7-6b « Pas encore (RJ3 inchangé) », journal Passe D8).
+review in game, the day is the default of « Explore the district » (L7-6a, journal Passe D8, applied in journal Passe D9 with the operator's
+scope, « Midi » and « Le bouton seul »): the title screen's « Explore the district » opens midday; every address with parameters, and the bare
+address in a driven browser, keeps the night without `time=`. Still not Gold Master (L7-6b « Pas encore (RJ3 inchangé) », journal Passe D8).
 
 The playable slice (the gameplay contract's § 13, cloud session « version jouable », journal Passes L0-L7, its review in Passe L7) is on
 `main`: the bare address shows the title screen to a person (New game / Continue / Explore the district; « Explore the district » is the game
-above, unchanged); the game code lives in `src/simulation`, `src/tournament`, `src/combat`, `src/events`, `src/narrative` (pure) and `src/ui`,
+above at midday, decision L7-6a, journal Passe D9); the game code lives in `src/simulation`, `src/tournament`, `src/combat`, `src/events`, `src/narrative` (pure) and `src/ui`,
 `src/world` (pages). Its prepared decisions and gaps (E1-E30) are listed in journal Passe L7; the operator decided the six decisions and six of
 the gaps on the sheet of journal Passe D8 (none by an agent), and the work they call for is five tasks of their own listed there.
 
@@ -101,7 +102,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   server: named states; `vis=0` unless the query sets `vis`), a panel opened by its JS (`__ui.openPerson('mara')`); not pixel proofs
 - `node tools/title-proof.mjs <outDir> <base url> <branch url> [steps]` — the title screen's proof (journal Passe L4): in a browser that does not
   announce automation, the bare address shows the title screen (« Continue » only with a save); « Explore the district » then gives the frozen
-  main's bare address at threshold 0 (compare the two captures with `tools/diff.mjs`)
+  main's `?time=midday` at threshold 0 (journal Passe D9; `BASE_QUERY` changes that query, `BASE_QUERY=` = main's bare address, the night: the
+  negative control; compare the two captures with `tools/diff.mjs`)
 - CI (`.github/workflows/ci.yml`, GitHub Actions, every push and pull request): Node 22 on `ubuntu-24.04` (pinned, operator decision of 2026-10-19), `npm ci`, `npm run typecheck`,
   `npm run build`, `npm run art:validate`, `npm test`. The runner has no Chrome, GPU or Aseprite (`puppeteer-core` downloads no browser at
   install): every other tool below (screenshots, perf / cadence / startup / overdraw measurements, visibility and viewport proofs, camera
@@ -241,7 +243,7 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 `title=1` (the title screen, journal Passe L4, choice P2: « New game », « Explore the district », « Continue » with a save; it shows by itself
 on the bare address only, and only in a browser no automation drives (`navigator.webdriver`), kept by the operator (L7-5 « Le garder », journal
 Passe D8): every tool and proof keeps today's game; its
-« Explore the district » runs today's town, the night and the DEV panel) · `play=1` (the game's play mode, journal Passe L3, loaded on demand: the state from the browser's save, or `&new=1&name=<name>&seed=<n>` for a
+« Explore the district » runs today's town at midday, as `time=midday` without changing the address, and the DEV panel: decision L7-6a, journal Passe D9) · `play=1` (the game's play mode, journal Passe L3, loaded on demand: the state from the browser's save, or `&new=1&name=<name>&seed=<n>` for a
 new game; DEV only `&state=<named state>` of `src/simulation/named.ts`; the page shown is the state's place, or the day's bout with
 `&scene=arena`; moving to another slot or place saves and reloads; `&noreload=1` keeps the page and leaves the next address in `window.__go`;
 `window.__game` drives it: `state()`, `actions()`, `act(action)`, `hash()`; the tools' parameters `fps`, `vis`, `viscache`, `painters`, `res`,
@@ -261,8 +263,9 @@ Passe Y4) - a soft sun not yet high from the canal side, a pale sky veiled by a 
 sun; in every day state the lanterns, windows and far lights are unlit, the forge lit, and the tournament's bunting is up (blue and ivory
 pennants along the frontage, across the street to the quay lamps and along the quay wall, journal Passe Y3); more walkers by day: 6 in the
 morning, 12 at midday, 9 at the end of day at density 1 (the operator's decision J7a, journal Passe D7; the night keeps 5); `evening` is not a parameter:
-the evening is the night; absent or `night` = the night, unchanged, the default until the task of the operator's decision L7-6a (journal Passe
-D8) makes the day the default of « Explore the district ») · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
+the evening is the night; absent or `night` = the night, unchanged, for every address (tools, proofs, the play mode's
+evening); only the title screen's « Explore the district » takes midday by itself (the operator's decision L7-6a, journal Passes D8 / D9, scope
+« Le bouton seul »)) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
 thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) ·
 `fps=off|<n>|v<k>|e<n>|a<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
 round(refresh / n) vsyncs / the same with an adaptive step; **default `a60`**, chosen by the operator on 2026-10-18 (`e60` from 2026-10-17):
@@ -371,7 +374,7 @@ quay edge, bridge, a few banners); do not add uniform clutter.
 Day and night (the operator's note of 2026-10-19, word for word, journal Passe D1): « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Its art direction is decided
 (the operator's day-state sheet, journal Passe D4, then the operator's direction of journal Passe D6); a first draft runs behind `?time=day`
 (journal Passe Y1), midday matched to the midday track behind `?time=midday` (journal Passe Y2), the morning and the end of day matched to
-their tracks behind `?time=morning` / `?time=afternoon` (journal Passe Y4). The night above stays the game's default until the operator approves the day in game (J9 « Après ma revue en jeu »); after that review the operator decided « Le jour devient le défaut d’« Explore the district » (tâche à part) » (L7-6a, journal Passe D8), and the night stays the default until that task applies it.
+their tracks behind `?time=morning` / `?time=afternoon` (journal Passe Y4). The night above stayed the game's default until the operator approved the day in game (J9 « Après ma revue en jeu »); after that review the operator decided « Le jour devient le défaut d’« Explore the district » (tâche à part) » (L7-6a, journal Passe D8), applied in journal Passe D9 with the operator's answers « Midi » and « Le bouton seul »: « Explore the district » opens midday, and any address without `time=` keeps the night.
 Day (decided, journal Passes D4 and D6):
 - **Four fixed states** (D6, replacing J8 « Deux états fixes »): **morning**, **midday** (the tournament's launch), **end of day** (after the
   tournament) and **evening, which is the night above** (the operator's answer « La nuit actuelle »). **The weather** (rain, snow, storm,
@@ -388,8 +391,8 @@ Day (decided, journal Passes D4 and D6):
   day, decided on the sheet of journal Passe R3 (journal Passe D7): J7a « Matin 6, midi 12, fin 9 » (walkers at density 1; the night keeps 5)
   and J7b « Accepter » (the relaxed spacing beyond eight); J9, the night stays the default until the operator
   approves the day in game (the operator's review in game of 2026-10-20, word for word: « tout est bien implemente mais la nuit rst toujours le
-  defaut pour le moment », journal Passe K9); then L7-6a (journal Passe D8): the day becomes the default of « Explore the district », by a
-  task of its own.
+  defaut pour le moment », journal Passe K9); then L7-6a (journal Passe D8): the day becomes the default of « Explore the district », applied
+  in journal Passe D9 (midday, the button alone).
 
 ## Camera graph (`src/app/CameraGraph.ts`)
 Four authored, semi-fixed framings, all on the canal side (+z of the pivot) looking up-canal (+x), chosen by zone with

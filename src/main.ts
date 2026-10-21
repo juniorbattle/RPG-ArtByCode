@@ -13,13 +13,22 @@ const label = loading.querySelector('#ld-label') as HTMLElement, bar = loading.q
 
 // ?play=1: the game's play mode (journal Passe L3), loaded on demand; the title screen (choice P2, journal Passe L4) on the bare address only,
 // in a browser no automation drives (navigator.webdriver: every tool and proof keeps today's game), or forced by ?title=1; its « Explore the
-// district » starts the town below, untouched; ?scene=arena: the arena of the Cité du Tournoi (journal Passe P1), loaded on demand; any other
-// address runs the town exactly as before
+// district » starts the town below at midday (exploreByDay); ?scene=arena: the arena of the Cité du Tournoi (journal Passe P1), loaded on
+// demand; any other address runs the town exactly as before (no time= = the night)
 const title = params.get('title') === '1' || (location.search === '' && !navigator.webdriver);
 if (params.has('play')) void import('./ui/play').then((m) => m.startPlay({ canvas, params, label, bar, loading }));
-else if (title) void import('./ui/title').then((m) => m.showTitle({ explore: startTown }));
+else if (title) void import('./ui/title').then((m) => m.showTitle({ explore: exploreByDay }));
 else if (params.get('scene') === 'arena') void startArena();
 else startTown();
+
+/** « Explore the district » opens the day: midday (the operator's decision L7-6a, « Le jour devient le défaut d’« Explore the district » »,
+ *  with midday and the button alone as its scope, journal Passes D8 / D9): the town below with ?time=midday's params, the address unchanged
+ *  (a reload shows the title screen again); every address with parameters keeps the night without time= (tools, proofs, the play mode) */
+function exploreByDay(): void {
+  if (!params.has('time')) params.set('time', 'midday');
+  label.textContent = 'PAINTING THE DAY...';
+  startTown();
+}
 
 async function startArena(): Promise<void> {
   const onProgress = (l: string, f: number) => { label.textContent = `GENERATING ${l.toUpperCase()}`; bar.style.width = `${Math.round(f * 100)}%`; };

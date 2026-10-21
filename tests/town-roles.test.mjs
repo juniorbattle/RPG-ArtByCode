@@ -136,14 +136,17 @@ test('every person has words in every slot they are there, and the people\'s opt
   }
 });
 
-test('« Explore the district » runs today\'s town path: main.ts\'s startTown is main d129433\'s, called with no other parameter', () => {
+test('« Explore the district » runs today\'s town path at midday (decision L7-6a, journal Passe D9): main.ts\'s startTown is main d129433\'s, called with time=midday only', () => {
   // line endings normalised: a Windows checkout (core.autocrlf) has CRLF on disk, `git show` gives the index's LF (journal Passe Q3)
   const lf = (t) => t.replace(/\r\n/g, '\n');
   const now = lf(fs.readFileSync(path.join(ROOT, 'src/main.ts'), 'utf8'));
   let base;
   try { base = lf(execFileSync('git', ['show', 'd129433:src/main.ts'], { cwd: ROOT, encoding: 'utf8' })); } catch { base = null; }
   const fn = (src) => src.slice(src.indexOf('function startTown(): void {'));
-  assert.match(now, /m\.showTitle\(\{ explore: startTown \}\)/);
+  assert.match(now, /m\.showTitle\(\{ explore: exploreByDay \}\)/);
+  // the button's day: midday, set only when the address names no state, then the town path itself
+  const day = now.slice(now.indexOf('function exploreByDay(): void {'), now.indexOf('async function startArena'));
+  assert.match(day, /^function exploreByDay\(\): void \{\n  if \(!params\.has\('time'\)\) params\.set\('time', 'midday'\);\n  label\.textContent = 'PAINTING THE DAY\.\.\.';\n  startTown\(\);\n\}\n/);
   assert.match(now, /const title = params\.get\('title'\) === '1' \|\| \(location\.search === '' && !navigator\.webdriver\);/);
   if (base) {
     assert.equal(fn(now), fn(base), 'startTown is unchanged');

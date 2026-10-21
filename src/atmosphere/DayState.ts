@@ -3,7 +3,8 @@ import type { PostParams } from './PostFX';
 
 /** The day states (`?time=morning`, `?time=midday` (alias `?time=day`), `?time=afternoon`; journal Passes Y1, Y2, Y4): the operator's day
  *  direction (AGENTS.md "Art direction", journal Passes D4 and D6) laid over the night. Absent (or `night`) = nothing created and no uniform
- *  written: the night stays pixel-identical, and stays the default until the operator approves the day in game (J9). Four fixed states (D6):
+ *  written: the night stays pixel-identical, the default of every address; the title screen's « Explore the district » sets midday (the
+ *  operator's decision L7-6a after the review in game J9, scope « Le bouton seul », journal Passe D9, main.ts). Four fixed states (D6):
  *  the morning, midday (the tournament's launch), the end of day (after the tournament) and the evening, which is the night. */
 export type TimeOfDay = 'night' | 'morning' | 'midday' | 'afternoon';
 export type DayTime = Exclude<TimeOfDay, 'night'>;

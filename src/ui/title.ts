@@ -3,7 +3,7 @@ import { cleanName } from '../simulation';
 import { el, esc, injectStyle } from './style';
 
 /** The title screen (choice P2, journal Passe L4): « New game » (it asks the player's name, choice K2), « Explore the district » (today's
- *  game, untouched: the night and the DEV panel) and « Continue » when a save exists. DOM, shown before anything is generated, over the
+ *  town at midday and the DEV panel: the operator's decision L7-6a, journal Passes D8 / D9) and « Continue » when a save exists. DOM, shown before anything is generated, over the
  *  loading screen; English (choice K1). Shown on the bare address only (main.ts), and forced by `?title=1`. */
 
 export interface TitleChoice { explore: () => void }
@@ -29,7 +29,7 @@ export function showTitle(c: TitleChoice): void {
     };
     const first = save ? add('continue', 'Continue', `${save.player.name} · day ${save.day}, ${save.slot}${save.over ? ' · the slice is over' : ''}`, () => location.assign('?play=1'), true) : null;
     add('new', 'New game', 'Enter the tournament under your own name', askName, !save);
-    add('explore', 'Explore the district', 'The Merchant District at night, free roaming', () => { root.remove(); c.explore(); });
+    add('explore', 'Explore the district', 'The Merchant District at midday, free roaming', () => { root.remove(); c.explore(); });
     ((first ?? menu.querySelector('.pm-btn')) as HTMLButtonElement).focus();
   };
   const askName = (): void => {
