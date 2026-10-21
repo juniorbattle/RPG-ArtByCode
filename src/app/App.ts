@@ -225,6 +225,10 @@ export class App {
     const facing = this.opts.params.get('facing');
     if (facing === 'ray') this.actors.facingRay = true;
     if (facing === 'screen') this.actors.facingRayPlayer = false;
+    // the baked sheets' edge (journal Passe S3, the operator's « contours blancs »): ?spriteedge=norim (no crown rim) | dark (no rim, outer
+    // ring darkened); absent = as before, until the operator decides
+    const edge = this.opts.params.get('spriteedge');
+    if (edge === 'norim' || edge === 'dark') this.sprites.setEdgeMode(edge);
     if (baked) this.actors.authored = baked.spawns;
     this.actors.onInteractForge = () => this.setForgeState(this.config.forgeState === 'NORMAL_FORGE' ? 'SABOTAGED_FORGE' : 'NORMAL_FORGE');
     this.scene.add(this.sprites.group);

@@ -23,6 +23,8 @@ export const SPRITE_DEPTH_CARD = 0.2;
 /** walk (and carry) frames per second at the actor's animation clock; a baked walker's clock runs at its speed over the speed its cycle
  *  draws (ActorSystem.walkClock), so its planted foot stays on the ground */
 export const WALK_CADENCE = 7.5;
+/** ?spriteedge=dark: a baked sheet's outer texel ring keeps this share of its colour (journal Passe S3) */
+export const EDGE_INK = 0.25;
 
 export interface Actor {
   id: number;
@@ -194,9 +196,21 @@ void main(){
   float shdEdge = (1.0 - (side >= 0.0 ? aL : aR)) * abs(side);
   vec3 key = mix(uMoonCol * 1.6, vec3(1.0, 0.64, 0.34) * 0.9, vFx.z);
   col += key * (0.1 + 0.5 * dot(albedo, vec3(0.3, 0.55, 0.15))) * litEdge * amt;
+#ifdef SPRITE_NORIM
+  // ?spriteedge (journal Passe S3): the crown rim lights a baked sheet's top edge with uMoonCol, the sun by day (2.9: +0.64 on every top
+  // edge texel, the white contour the operator saw), so a baked sheet takes none; generated sprites keep it
+  if (!baked) col += uMoonCol * 0.22 * (1.0 - aU) * amt * sh;
+#else
   col += uMoonCol * 0.22 * (1.0 - aU) * amt * sh;
+#endif
   col *= 1.0 - shdEdge * amt * vec3(0.3, 0.26, 0.12);
   col = col / (1.0 + 0.18 * col);
+#ifdef SPRITE_DARK
+  // ?spriteedge=dark: a baked sheet's outer texel ring (any transparent 4-neighbour) darkened toward black, its hue kept
+  float mD = bakedAlpha(vCell, bt - vec2(0.0, 1.0));
+  float ring = baked ? 1.0 - aR * aL * aU * step(0.5, mD) : 0.0;
+  col *= 1.0 - ring * (1.0 - EDGE_INK);
+#endif
   col += albedo * em * 2.6;
   gl_FragColor = vec4(applyFog(col, vWorld), prot);
 }
@@ -273,6 +287,17 @@ export class SpriteRenderer {
   charScale = 1;
   /** DOF protection per detail tier (1 = never blurred); the player and the interaction target are always 1 */
   protect = { hero: 1, mid: 1, crowd: 0.8 };
+
+  /** baked sheets' silhouette edge (?spriteedge, journal Passe S3): 'norim' = no crown rim (the white contour by day), 'dark' = no rim and
+   *  the outer texel ring darkened to `ink` x its colour; null = as before (the shader compiles without either branch) */
+  setEdgeMode(mode: 'norim' | 'dark' | null, ink = EDGE_INK): void {
+    const d = this.bodyMat.defines as Record<string, string | number>;
+    // #ifdef only: an undefined macro in an #if expression does not compile in GLSL ES
+    delete d.SPRITE_NORIM; delete d.SPRITE_DARK; delete d.EDGE_INK;
+    if (mode) d.SPRITE_NORIM = '';
+    if (mode === 'dark') { d.SPRITE_DARK = ''; d.EDGE_INK = ink.toFixed(3); }
+    this.bodyMat.needsUpdate = true;
+  }
 
   /** `frame`: the texel size of the atlas' cells and their foot row (the town's 32 x 48 frames by default; the arena's fighters use larger
    *  cells at the same texel size, journal Passe P1) */
