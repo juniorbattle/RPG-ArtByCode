@@ -302,9 +302,10 @@ by the line of sight, `screen` = everyone by the screen, for comparison, journal
 views, journal Passe F2, the operator's decision pending (K9); absent = the screen rule above, unchanged): the five townsfolk's `down` is drawn
 turned left (their reference sheet has no true front; `frontLeft` in `BakedCast.ts`); `mirror` turns it toward a rightward step (held within 8
 deg of the vertical), `34` = mirror + that view kept up to 67.5 deg from the vertical for a step going down the screen (profile beyond), `wide` =
-34 + every NPC's front / back up to 60 deg; carried into the play mode · `spriteedge=norim|dark` (the baked sheets' silhouette edge, journal Passe S3, the operator's
-« contours blancs »: `norim` = no crown rim, the shader's top-edge light that the sun turns white by day; `dark` = no rim and the outer texel
-ring darkened to a quarter of its colour; absent = as before, until the operator decides; carried into the play mode's town) · DEV server only:
+34 + every NPC's front / back up to 60 deg; carried into the play mode · `spriteedge=rim|norim` (the baked sheets' silhouette edge, journal Passes S3 / S3b, the
+operator's « contours blancs »: absent = a dark outline, day and night, the operator's decision « Contour noir 25 %, de jour et de nuit :
+applique-le par défaut. » - no crown rim (the shader's top-edge light, that the sun turned white by day) and the outer texel ring at a quarter
+of its colour; `rim` = the crown rim as before, for comparison; `norim` = no rim, no dark ring; carried into the play mode's town) · DEV server only:
 `variants=candidate` (apply the NPC variants file `art-lab/characters/variants/variants.json` while it waits for the operator's approval; production
 applies it only once approved, its mask fingerprints checked, journal Passe V1) · `scene=arena` (the arena of the Cité du Tournoi instead of the
 town, `src/arena/ArenaApp.ts`, loaded on demand; journal Passe P1; absent = the town, unchanged) with `assist=subtle|full|off` (the prototype's
@@ -482,7 +483,10 @@ banner, the boat's rig (mast / yard / sail) and the 7 quay lamps. Never tag smal
   mask (1 - protection), written by the opaque pass only: everything drawn after it (particles, decals, contact shadows, the bloom's
   composite) blends with `maskSafeBlending` (`SceneUniforms.ts`), which keeps the destination alpha. The DOF carries the mask on in its
   alpha and the grade applies the in-scatter protection at full resolution (no second pass of the characters: the old 55 % overlay
-  is gone, journal Passe S1).
+  is gone, journal Passe S1). A baked sheet's silhouette: no lit-side lift (Passe S1), no crown rim and its outer texel ring at `EDGE_INK`
+  (0.25) of its colour (Passe S3b), compiled in by `SpriteRenderer.setEdgeMode` (optional macros tested with `#ifdef` only: in GLSL ES an
+  undefined macro inside an `#if` expression does not compile and the sprites vanish). `uMoonCol` is the sun by day: an effect tuned for
+  the moon is re-measured under it.
 
 Detail tiers: anything that can sit in the foreground / midground of that camera (the whole north frontage up to the
 bridge, plus the two houses just past it) is a generated building at full detail. Simplified modules

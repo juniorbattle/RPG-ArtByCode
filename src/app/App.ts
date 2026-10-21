@@ -228,10 +228,11 @@ export class App {
     // ?npcfacing=mirror|34|wide (journal Passe F2): the NPCs' walking views for a step going down the screen; absent = the screen rule
     const npcFacing = this.opts.params.get('npcfacing');
     if (npcFacing === 'mirror' || npcFacing === '34' || npcFacing === 'wide') this.actors.npcFacing = npcFacing;
-    // the baked sheets' edge (journal Passe S3, the operator's « contours blancs »): ?spriteedge=norim (no crown rim) | dark (no rim, outer
-    // ring darkened); absent = as before, until the operator decides
+    // the baked sheets' edge (journal Passes S3 / S3b, the operator's « contours blancs »): a dark outer ring and no crown rim by default, day
+    // and night (the operator's decision: « Contour noir 25 %, de jour et de nuit : applique-le par défaut. »); for comparison ?spriteedge=rim
+    // = the crown rim as before, ?spriteedge=norim = no rim, no dark ring
     const edge = this.opts.params.get('spriteedge');
-    if (edge === 'norim' || edge === 'dark') this.sprites.setEdgeMode(edge);
+    if (edge !== 'rim') this.sprites.setEdgeMode(edge === 'norim' ? 'norim' : 'dark');
     if (baked) this.actors.authored = baked.spawns;
     this.actors.onInteractForge = () => this.setForgeState(this.config.forgeState === 'NORMAL_FORGE' ? 'SABOTAGED_FORGE' : 'NORMAL_FORGE');
     this.scene.add(this.sprites.group);

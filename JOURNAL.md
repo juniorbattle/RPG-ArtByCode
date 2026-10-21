@@ -640,6 +640,41 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une mesure de glissade se rapporte à l'axe dessiné de la vue, pas à son nom : la mesure K9 (vertical pour toute face) et l'axe estimé
   n'ont pas dit la même chose ici ; les deux sont rapportés, et l'œil tranche sur les flipbooks.
 
+## Passe S3b — Le contour noir des sprites cuits par défaut, de jour et de nuit (décision de l'opérateur) (2026-10-20)
+
+### Décision de l'opérateur, mot pour mot
+- Après les avant / après de la Passe S3 (`screenshots/calibration/sprite-e1/`) : « Contour noir 25 %, de jour et de nuit : applique-le par
+  défaut. » C'était la recommandation de la séance.
+- Le dossier partagé était sur la branche de la séance de l'orientation des PNJ (`npc-facing-n1`, modifications non commitées des mêmes
+  fichiers) : rien n'a été touché avant sa fusion (`9ac64d1`, Passe F2), annoncée par message. Branche `sprite-edge-default` depuis `main`
+  (`9ac64d1`).
+
+### Fait — [OK]
+- `App` : le contour noir est le défaut (`setEdgeMode('dark')` : pas de liseré de sommet, anneau extérieur d'une feuille cuite à 25 % de sa
+  couleur), de jour et de nuit, dans la ville et dans la ville du mode jouable. Pour comparer : `?spriteedge=rim` (le liseré d'avant, sans
+  anneau sombre) et `?spriteedge=norim` (ni liseré ni anneau). Le shader ne change pas (Passe S3). L'arène, le parvis et Lantern Row ne
+  passent pas par `App` : leurs sprites sont générés, inchangés.
+- `AGENTS.md` : la ligne du paramètre, et une note du rendu des sprites (la silhouette des feuilles cuites, `#ifdef`, `uMoonCol` le jour).
+
+### Preuves
+- **Dans les deux sens, à 0 px** (`tools/detshots.mjs`, 120 pas, seuil 0 ; `main` figé `9ac64d1` sur :5187, la branche sur :5186) ; témoin de
+  répétition (deux chargements de `main`) 0 px. Douze vues : nuit A, B, C, D, B statique, midi B et D, matin B, fin de journée C, joueur
+  placé en A (`player=-12,2`), et le mode jouable (`play=1&state=day1-morning`, `play=1&state=day2-afternoon`) :
+  - **le nouveau défaut = `main` avec `?spriteedge=dark`** : 0 px les douze ;
+  - **`?spriteedge=rim` = `main` sans paramètre** (l'ancien rendu) : 0 px les douze ;
+  - `?spriteedge=norim` (midi B) : 0 px contre `main` avec le même paramètre.
+- **Contrôle** : le nouveau défaut contre `main` sans paramètre change 0,31 à 0,85 % des pixels la nuit (jusqu'à 134 niveaux), 1,18 à 1,69 %
+  le jour (jusqu'à 219), 0,69 et 1,45 % dans le mode jouable ; 0 px sur la vue statique (sans personnages).
+- **Références** `screenshots/calibration/cam{A,B,C,D}-*.png` refaites (requêtes de `tools/screenshots.mjs`, capture déterministe, 120 pas,
+  témoin 0 px pour chacune) : contre les anciennes, 0,18 à 0,95 % des pixels, autour des personnages.
+- **Validation** : typecheck, `npm test` **149 / 149**, build, `art:validate`.
+
+### Pensée
+- Une décision d'image qui change le défaut garde l'ancien rendu derrière un paramètre et se prouve dans les deux sens : le nouveau défaut égal
+  à la variante approuvée de `main`, l'ancien paramètre égal au `main` d'avant, à 0 px.
+- Un dossier partagé par deux séances se lit avant d'ouvrir une branche : la branche d'une autre séance, avec ses fichiers modifiés, attend
+  sa fusion.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -727,7 +762,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **3. `SpriteRenderer`** (Passe S1 : superposition retirée, masque de protection propre, auréole mesurée en mouvement ; Passe S1b : une seule
 profondeur par sprite, le décor derrière un personnage ne le coupe plus ; l'enseigne devant le forgeron est voulue, opérateur, Passe H0) —
-restent des décisions d'image : le bord des feuilles cuites ×2 (décision du 18/10 : contour d'auteur gardé ; Passe S3 : le liseré clair signalé par l'opérateur est le liseré de sommet du shader, que le soleil rend blanc de jour ; remède derrière `?spriteedge=norim|dark`, **le choix et sa portée jour / nuit attendent l'opérateur**, puis une ligne dans `App` et un PD) ;
+restent des décisions d'image : le bord des feuilles cuites ×2 (décision du 18/10 : contour d'auteur gardé ; Passe S3 : le liseré clair signalé par l'opérateur est le liseré de sommet du shader, que le soleil rend blanc de jour ; remède décidé par l'opérateur, « Contour noir 25 %, de jour et de nuit : applique-le par défaut. », appliqué par défaut en Passe S3b, `?spriteedge=rim` pour l'ancien rendu) ;
 la lisibilité du forgeron dans l'in-scatter de la forge (part des personnages 45 %, `known-issues/forge-smith-inscatter-C.png`) ; un halo placé
 devant un personnage s'applique désormais entièrement (B : héros sous la lanterne, plus clair au visage).
 
