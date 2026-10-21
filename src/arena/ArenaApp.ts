@@ -7,6 +7,7 @@ import { LightRig, type LightSource } from '../atmosphere/LightRig';
 import { ParticleSystem } from '../atmosphere/Particles';
 import { U } from '../atmosphere/SceneUniforms';
 import { buildSky } from '../atmosphere/Sky';
+import { LOOKS, arenaLitByDay, arenaSunDir, parseTime, type DayLook } from '../atmosphere/DayState';
 import { applyPose, type CamPose } from '../app/CameraRig';
 import { FrameCap, parseFrameCap } from '../app/FrameCap';
 import { PerfMonitor } from '../debug/PerfMonitor';
@@ -24,8 +25,9 @@ import { FloorUI } from './FloorUI';
  *  DOF, bloom, palette grade); the fighters are generated sprites drawn by the town's SpriteRenderer; the HUD is DOM in the game's UI style.
  *  The town (the default scene) is untouched by it: nothing here runs unless the parameter asks for it.
  *  Parameters: `assist=subtle|full|off` (the prototype's visual assistance; default subtle), `hud=0` / `clean=1` (no HUD), `fps=` (the
- *  game's frame cap), `freeze=<s>` (fixed shader time), `seed=` (the stands' spectators and the town houses). Keys: 1-6 attacks and
- *  techniques, A dodge, B guard (hold), R restart, Space pause, H HUD. */
+ *  game's frame cap), `freeze=<s>` (fixed shader time), `seed=` (the stands' spectators and the town houses), `time=morning|midday|afternoon`
+ *  (a day state, DayState.ts: the play mode's pages set it from the slot, journal Passe AD1; absent = the night, exactly as before). Keys: 1-6
+ *  attacks and techniques, A dodge, B guard (hold), R restart, Space pause, H HUD. */
 
 /** an official bout of the game's play mode (journal Passe L3): its data (a variant of CombatData, src/combat/match.ts), who sits in the
  *  opponent's seat, the assistance the preparation earned, the play mode's words; no restart, and `onOver` once the bout is decided */
@@ -46,6 +48,9 @@ const IMPACT_FRAME: Record<string, number> = { strike: 1, heavy: 2, skill: 1, sl
 const HOME = { ren: -2.15, marek: 2.15 };
 const CHAR_SCALE = 1.42;
 const BASE_POSE: CamPose = { yaw: 0, pitch: THREE.MathUtils.degToRad(3.5), dist: 15.6, fov: 34, shift: 0, tx: 0, ty: 2.3, tz: -0.6 };
+/** the moon's colour (cool, faint), and a colour's luminance (the sprites' LUM) */
+const NIGHT_MOON = new THREE.Color(0.27, 0.37, 0.58);
+const lum = (c: THREE.Color): number => 0.3 * c.r + 0.55 * c.g + 0.15 * c.b;
 /** the low moon behind the grand gate, a little right of it: elevation 6.5 deg, azimuth 4 deg */
 const MOON_DIR = new THREE.Vector3(Math.sin(THREE.MathUtils.degToRad(4)) * Math.cos(THREE.MathUtils.degToRad(6.5)), Math.sin(THREE.MathUtils.degToRad(6.5)), -Math.cos(THREE.MathUtils.degToRad(4)) * Math.cos(THREE.MathUtils.degToRad(6.5))).normalize();
 
@@ -64,6 +69,11 @@ export class ArenaApp {
   /** frame time, draws and (?gpuprof=1, or tools/perf.mjs) GPU ms per pass, as the town's App */
   readonly perf = new PerfMonitor();
   buildMs = 0;
+  /** a day state (?time=, the operator's decision L7-2, journal Passe AD1): the sun in the moon's place, turned into the arena's frame, the
+   *  state's sky, haze, grade and lights; null = the night, untouched */
+  readonly look: DayLook | null;
+  /** the key light's direction: the low moon behind the gate at night, the state's sun by day */
+  readonly keyDir: THREE.Vector3;
   readonly sim: CombatSim;
   lib!: MaterialLibrary;
   arena!: ArenaBuild;
@@ -132,10 +142,14 @@ export class ArenaApp {
     this.reducedMotion = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.scene.add(this.camera);
     this.camera.layers.enable(2);
-    this.scene.add(buildSky());
+    const t = parseTime(q);
+    this.look = t ? LOOKS[t] : null;
+    this.keyDir = t ? arenaSunDir(t, MOON_DIR) : MOON_DIR.clone();
+    this.scene.add(buildSky(this.look?.sky ?? null));
     this.reflection.clipY = 0;
-    U.uMoonDir.value.copy(MOON_DIR);
-    U.uMoonCol.value.setRGB(0.27, 0.37, 0.58);
+    U.uMoonDir.value.copy(this.keyDir);
+    U.uMoonCol.value.copy(NIGHT_MOON);
+    if (this.look) this.applyDay(this.look);
     const fighter = (id: FighterId): Actor => ({
       id: id === 'ren' ? 1 : 2, spec: id, role: 'fighter', detail: 'hero', pos: new THREE.Vector3(HOME[id], 0, 0), facing: 'side', dir: 'side', flip: id === 'ren',
       anim: 'idle.0' as Anim, t: 0, speed: 0, tint: [1, 1, 1], scale: 1, height: 1.95, radius: 0.4,
@@ -144,20 +158,53 @@ export class ArenaApp {
     window.addEventListener('resize', () => this.resize());
   }
 
+  /** the day look over the night's values (as the town's App.applyDay): the sun in the moon's uniforms, the sky's ambient, the haze, the
+   *  cobbles' wetness, the grade; the warm city glow off */
+  private applyDay(L: DayLook): void {
+    U.uMoonCol.value.copy(L.sunCol);
+    U.uSkyAmb.value.copy(L.skyAmb); U.uGroundAmb.value.copy(L.groundAmb); U.uFillCol.value.copy(L.fillCol);
+    U.uFogColor.value.copy(L.fogColor); U.uSkyZenith.value.copy(L.skyZenith); U.uCityGlow.value.setRGB(0, 0, 0);
+    U.uFogDensity.value = L.fogDensity; U.uMist.value = L.mist; U.uWet.value = L.wet;
+    Object.assign(this.post.params, L.post, { shadowTint: L.post.shadowTint!.clone(), highlightTint: L.post.highlightTint!.clone() });
+  }
+
   async init(): Promise<void> {
     const pq = this.opts.params.get('painters');
     const painters = pq === 'main' ? 0 : pq !== null && /^\d+$/.test(pq) ? +pq : defaultPainters();
     this.frameCap.probe();
     this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress, painters);
+    // by day (J4 transposed): the window and lantern glass dims, the braziers' coals keep the night's glow on their own copy of the material;
+    // the town houses' shop windows dim and their roofs take the state's tint, as in the district
+    let fireGlow: THREE.ShaderMaterial | null = null;
+    if (this.look) {
+      const g = this.lib.slot.glow;
+      fireGlow = new THREE.ShaderMaterial({ uniforms: { ...g.uniforms, uEmissive: { value: g.uniforms.uEmissive.value } }, vertexShader: g.vertexShader, fragmentShader: g.fragmentShader, defines: { ...g.defines }, side: g.side });
+      fireGlow.name = 'glow:fire-day';
+      g.uniforms.uEmissive.value = this.look.glowEmissive;
+      this.lib.slot.shop.uniforms.uEmissive.value = this.look.shopEmissive;
+      this.lib.slot.roof.uniforms.uBase.value.copy(this.look.roofTint);
+    }
     this.frameCap.endProbe();
     this.opts.onProgress('arena', 0.96);
     await new Promise((r) => setTimeout(r, 0));
     const seed = (parseInt(this.opts.params.get('seed') ?? '1842', 10) >>> 0) || 1842;
     const tb = performance.now();
-    this.arena = buildArena(this.lib, seed);
+    this.arena = buildArena(this.lib, seed, { fireApart: !!this.look });
     this.buildMs = performance.now() - tb;
     this.scene.add(this.arena.group);
-    for (const l of this.arena.lights) this.lights.add(l, 'static', Math.abs(Math.sin(l.pos[0] * 12.9 + l.pos[2] * 78.2)));
+    for (const l of this.arena.lights) {
+      const s = this.lights.add(l, 'static', Math.abs(Math.sin(l.pos[0] * 12.9 + l.pos[2] * 78.2)));
+      // by day only the fires burn: a light at 0 leaves the upload, the in-scatter, the halos and the sprite light shadows (as App.syncLights)
+      if (this.look && !arenaLitByDay(l)) s.scale = s.targetScale = 0;
+    }
+    if (this.look) {
+      if (this.arena.fire && fireGlow) this.arena.fire.material = fireGlow;
+      // the far city's day variant (its lamps and windows unlit)
+      this.arena.group.traverse((o) => {
+        const m = (o as THREE.Mesh).material as THREE.ShaderMaterial | undefined;
+        if (m && m.name === 'far' && !m.defines?.DAY) { m.defines = { ...m.defines, DAY: 1 }; m.needsUpdate = true; }
+      });
+    }
     // two dynamic lights: Marek's charged blade (the heavy's tell) and the flash of a landed blow
     this.castLight = this.lights.add({ pos: [HOME.marek + 0.2, 3.2, -0.6], color: [1.0, 0.46, 0.2], intensity: 2.4, radius: 6, kind: 'steady', priority: 9 }, 'fx', 0);
     this.hitLight = this.lights.add({ pos: [0, 1.4, 0.5], color: [1.0, 0.86, 0.66], intensity: 1.5, radius: 4.5, kind: 'steady', priority: 10 }, 'fx', 0);
@@ -168,6 +215,9 @@ export class ArenaApp {
     this.sprites = new SpriteRenderer(this.set.atlas, 96, { w: CELL_W, h: CELL_H, foot: CELL_FOOT });
     this.sprites.charScale = CHAR_SCALE;
     this.sprites.protect.crowd = 0.35;
+    // by day the silhouette treatment (lit-side lift, crown rim, shadow side: uMoonCol, the sun) keeps the night's strength: scaled by the
+    // moon's luminance over the sun's (journal Passe AD1)
+    if (this.look) this.sprites.setEdgeGain(lum(NIGHT_MOON) / lum(this.look.sunCol));
     this.scene.add(this.sprites.group);
     this.scene.add(this.floor.mesh);
     // spectators on the tiers: the town's crowd archetypes, front view, idling and cheering in turn
@@ -184,7 +234,9 @@ export class ArenaApp {
     this.resize();
     this.applyCamera(0);
     this.lights.update(this.time, 0, this.camera);
-    this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 3.5, -6), MOON_DIR, 24, 9);
+    // the moon's box is narrow (it lies low behind the gate); a high sun sees the floor and the stands from above: a wider box
+    if (this.look) this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 2, -4), this.keyDir, 30, 30);
+    else this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 3.5, -6), MOON_DIR, 24, 9);
     if (!this.opts.params.has('clean')) this.hud = new ArenaHud(this.sim, this.set.portraits, this.opts.match?.texts);
     if (this.hud) {
       this.hud.onAction = (id, down) => this.action(id, down);
@@ -419,7 +471,7 @@ export class ArenaApp {
   update(dt: number): void {
     this.time = this.frozen ?? this.time + dt;
     U.uTime.value = this.time;
-    U.uMoonDir.value.copy(MOON_DIR);
+    U.uMoonDir.value.copy(this.keyDir);
     this.pollPad();
     if (!this.paused) {
       this.acc += dt * this.timeScale;
@@ -439,7 +491,7 @@ export class ArenaApp {
     const v = new THREE.Vector3(0, 1.2, 0).applyMatrix4(this.camera.matrixWorldInverse);
     this.post.params.dofFocus = THREE.MathUtils.clamp(-v.z, 6, 40);
     this.lights.update(this.time, pdt, this.camera);
-    this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...this.fans], this.lights, this.camera, MOON_DIR, null, this.fighters.ren);
+    this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...this.fans], this.lights, this.camera, this.keyDir, null, this.fighters.ren);
     this.particles.update(pdt, this.time, this.camera, this.post.height, this.lights, null);
     this.hud?.update(this.sim, this.assist, this.hudVisible, this.paused && !this.moment);
     // an official bout: told once the KO has had its moment on screen

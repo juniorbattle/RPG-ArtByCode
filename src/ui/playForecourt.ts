@@ -1,5 +1,5 @@
 import { ArenaApp } from '../arena/ArenaApp';
-import { lookOf, type GameState } from '../simulation';
+import { arenaQuery, lookOf, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
 
@@ -10,7 +10,8 @@ const SPOTS: Array<{ x: number; who: string }> = [{ x: -5.6, who: 'odo' }, { x: 
 export async function startPlayForecourt(b: Boot, st0: GameState): Promise<void> {
   let st = st0;
   installGameApi(() => st, (s) => { st = s; }, (prev, next) => lookOf(prev) !== lookOf(next) || prev.place !== next.place || next.over !== prev.over);
-  const q = new URLSearchParams({ seed: '1842', hud: '0' });
+  // the slot's day state (journal Passe AD1): the morning, midday, the end of day after a bout, the night
+  const q = new URLSearchParams({ ...arenaQuery(st), hud: '0' });
   for (const k of ['fps', 'freeze', 'painters', 'gpuprof']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   const app = new ArenaApp({ canvas: b.canvas, params: q, onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; }, forecourt: { marek: st.slot !== 'evening' } });
   (window as any).__arena = app;

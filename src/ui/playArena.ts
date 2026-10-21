@@ -3,7 +3,7 @@ import { TEXTS_EN } from '../arena/ArenaHud';
 import { matchSheetFor, sheetData } from '../combat/match';
 import { RIVALS } from '../narrative/roster';
 import { ACTION_NAMES_EN } from '../narrative/texts';
-import { lookOf, standings, type GameState } from '../simulation';
+import { arenaQuery, lookOf, standings, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { writeSave } from './save';
 import { esc, overlay } from './style';
@@ -25,7 +25,8 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     return;
   }
   const opp = RIVALS[sheet.sides[1].fighters[0].id];
-  const q = new URLSearchParams({ seed: '1842' });
+  // the slot's day state (the afternoon's bout at midday, journal Passe AD1)
+  const q = new URLSearchParams(arenaQuery(st));
   for (const k of ['fps', 'freeze', 'painters', 'hud', 'gpuprof']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   const app = new ArenaApp({
     canvas: b.canvas, params: q,

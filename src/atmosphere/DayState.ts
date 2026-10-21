@@ -136,3 +136,32 @@ export function skyDefines(look: DayLook | null, overcast: boolean): Record<stri
 export function litByDay(l: { group: string; kind: string; tag?: string }): boolean {
   return (l.group === 'forge' && l.kind !== 'lantern') || l.tag === 'forge-fill';
 }
+
+/** the arena (duel and forecourt, the operator's decision L7-2, journal Passe AD1): the same rule transposed, its fires burn by day (the
+ *  braziers and the tunnels' hearths, its « forge »); its lanterns and lamp posts are off, and so is the cool moon bounce that lights the
+ *  fighters at night (a 'steady' light: the sun and the sky take its place) */
+export function arenaLitByDay(l: { kind: string }): boolean {
+  return l.kind === 'fire';
+}
+
+/** a day state's sun turned about the vertical by `yawDeg` (positive = from +z toward +x): its elevation unchanged */
+export function turnSun(dir: THREE.Vector3, yawDeg: number): THREE.Vector3 {
+  const a = Math.atan2(dir.x, dir.z) + THREE.MathUtils.degToRad(yawDeg), h = Math.hypot(dir.x, dir.z);
+  return new THREE.Vector3(Math.sin(a) * h, dir.y, Math.cos(a) * h).normalize();
+}
+
+/** the yaw between the district's moon (App.moonDir, azimuth 78.5 deg) and the arena's (ArenaApp's MOON_DIR, low in the grand gate, 176 deg) */
+export const ARENA_SUN_YAW = 97.5;
+
+/** the arena's sun for a day state (journal Passe AD1). Each scene was composed around its moon (« Composition et lumière sont une seule
+ *  décision », journal Passe P1): the morning's and midday's suns keep the place they have against the district's moon, turned by the yaw
+ *  between the two moons; the end of day's low sun stands where the moon hangs at night, as on its track (« at the far end of the canal
+ *  (where the moon hangs at night) », AFTERNOON above): in the gate, at the state's elevation, its light laid through the gate across the
+ *  duel. [KO] the first rule, every sun at its place in the frame of B (57.5 deg): the end of day's sun came from behind the right-hand
+ *  stands and the whole floor lay in their shadow; turned from the moon (97.5 deg) it still fell on the right tower. */
+export function arenaSunDir(t: DayTime, moon: THREE.Vector3): THREE.Vector3 {
+  const L = LOOKS[t];
+  if (t !== 'afternoon') return turnSun(L.sunDir, ARENA_SUN_YAW);
+  const h = Math.hypot(moon.x, moon.z), c = Math.sqrt(1 - L.sunDir.y * L.sunDir.y);
+  return new THREE.Vector3((moon.x / h) * c, L.sunDir.y, (moon.z / h) * c).normalize();
+}

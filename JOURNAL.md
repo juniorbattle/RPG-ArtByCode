@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3 et D9) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9 et AD1) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -31,137 +31,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/18-passes-L2-L3.md`](journal/18-passes-L2-L3.md) | L2, L3 | 20/10 |
 | [`journal/19-passes-L4-L6.md`](journal/19-passes-L4-L6.md) | L4, L5, L6 | 20/10 |
 | [`journal/20-passes-L7-L7b.md`](journal/20-passes-L7-L7b.md) | L7, Q3, L7b | 20/10 |
+| [`journal/21-passes-Q4-Q4b.md`](journal/21-passes-Q4-Q4b.md) | Q4, Q4b | 20/10 |
 
 ---
-
-## Passe Q4 — Relais local : les requêtes `000` (état de la machine) et `001` (temps GPU du mode jouable sur la 780M) répondues (2026-10-20)
-
-### Demande
-- Séance locale lancée par la séance parente : répondre sur cette machine aux deux requêtes du relais restées ouvertes (Passes L7, Q3), dans
-  la section « Réponse » de chaque fichier de `briefs/local-requests/`.
-- Branche `relay-gpu-q4` depuis `main` (`94aa82f`). La séance cloud étant close, tout a tourné sur `main` (même code de jeu que `7b7a966`).
-
-### Requête `000` — [OK] répondue
-- **Aseprite** : oui, 1.3.18.6-x64 (`art:doctor`) ; l'extension et le plugin Aseprite AI Artist 0.8.2 configurés, le lien vivant non testé.
-- **Clé OpenAI** : présente, dans `.env.local` (ignoré par Git), absente de l'environnement. La présence vient de la fonction `readKey()` de
-  l'outil, qui n'a affiché qu'un booléen : la valeur n'a été ni lue, ni affichée, ni recopiée. Registre des dépenses : trois tâches, 0,36 /
-  0,53 / 0,77 $ sur 5 $.
-- **GPU** : Chrome rend sur la Radeon 780M (ANGLE D3D11), pilote AMD 32.0.21030.14003 ; la RTX 4060 (pilote 32.0.15.7702) n'est prise
-  qu'avec `--gpu=dgpu`. Chrome 155.0.8059.80 ; écran 2560 × 1600 à 165 Hz.
-
-### Requête `001` — [OK] répondue, [?] mesurée sous contention
-- **Conditions** : serveur DEV `dev-strict` (:5186) lancé par `preview_start`, son onglet fermé aussitôt, le panneau navigateur resté fermé ;
-  chaque série en arrière-plan, attendue jusqu'au bout dans le tour ; témoin de contention au seuil de 15 %. La série 1080p en 5 tours, la
-  série 2560 × 1440 en 3 tours.
-- **[?] La contention** : le processus GPU d'un Firefox de l'opérateur (PID 10840, ouvert depuis le 19/10) a occupé **13 à 38 % de la 780M**
-  pendant toute la séance (médiane 17 % sur un journal complet du témoin tenu pendant la série 1440p). Il n'a pas été touché. **Aucun tour
-  n'est sans contention** : les tours « clean » ne sont que ceux où Firefox est resté entre 13 et 15 %. Les variantes étant entrelacées, la
-  comparaison entre pages tient ; les temps absolus non.
-- **Résultats** (ms de GPU, médiane des tours ; écart à la nuit B de la même série) :
-
-| Page | 1920 × 1080 | 2560 × 1440 |
-|---|---|---|
-| nuit B (`seed=1842&clean=1&camera=B`) | 13,77 [13,44-16,45] | 22,25 [21,48-23,35] |
-| jeu, matin (`day1-morning`) | 12,63 (−8 %) | 20,05 (−10 %) |
-| jeu, midi (`day2-afternoon`) | 12,51 (−9 %) | 20,44 (−8 %) |
-| jeu, fin de journée (`day2-dusk-won`) | 13,58 (−1 %) | 19,76 (−11 %) |
-| duel (`scene=arena`, jour 2) | 12,82 (−7 %) | 20,82 (−6 %) |
-| parvis (`forecourt-morning`) | 12,36 (−10 %) | 20,75 (−7 %) |
-| Lantern Row (`lanterns-night`) | 12,52 (−9 %) | 20,68 (−7 %) |
-| arène par défaut (`scene=arena`) | 13,01 (−5 %) | 21,02 (−6 %) |
-
-- **Lecture** :
-  - Chaque page du mode jouable coûte au plus ce que coûte la nuit par défaut dans la même série (−1 à −11 %). Les pages de jour gagnent leurs
-    lumières éteintes (4 allumées sur 24) ; mêmes appels de dessin que la nuit (107), ≈ 2 000 triangles de plus (le pavois), comme le comptait
-    le cloud (Passe L7).
-  - Contre les références : la nuit B fait +3,0 ms en 1080p et +2,6 ms en 1440p de plus qu'à la Passe G1 (10,81 [9,88-10,95] et 19,65
-    [18,60-20,04], tours propres), hors de la fourchette de la Passe 6 en 1080p (10-12 ms), dedans en 1440p (16-21 ms). L'arène garde son
-    rapport à la ville : −6 % à la Passe G1 (9,30 contre 9,88 ms), −5 % ici.
-  - **[?] Estimation non vérifiée** : si cet excès tient tout entier à Firefox et pèse autant sur chaque page, les pages du jeu tiendraient
-    9,4 à 10,6 ms en 1080p et 17,2 à 18,2 ms en 1440p, dans le budget de la Passe 6. À remesurer Firefox fermé.
-  - `js ren` suit le temps GPU sur toutes les pages : le rendu semble attendre le GPU dans ce harnais sans plafond (hypothèse, non vérifiée).
-- **Cadence** (`tools/cadence.mjs`, fenêtre discrète, `max`, plafond `a60`) : 37 à 44 images/s sur la nuit B et trois pages de jeu, le plafond
-  à 4 vsyncs ; à la Passe 6h, au calme 55,0 images/s à 3 vsyncs, sous une charge de +5,5 ms 41,6 images/s à 4 vsyncs. Aujourd'hui, la nuit
-  comme le jeu sont dans le cas chargé.
-- **Démarrage** (`tools/startup.mjs`, 1080p, 4 chargements, serveur DEV) : la page du premier matin est prête en 2,86 s [2,53-3,29], la
-  nuit B en 2,66 s [2,44-2,79] ; le premier chargement de la session rate le cache du bake (bake 339 ms, prêt en 3,29 s), les suivants le
-  relisent (bake 18-21 ms). C'est l'attente du joueur à chaque créneau, sur un serveur DEV. La bascule de la forge ne fait rien dans le mode
-  jouable (0-0,2 ms), comme le veut la Passe L4.
-- Les sorties complètes sont recopiées dans `briefs/local-requests/001-gpu-budget.md`.
-
-### [KO → corrigé] `tools/perf.mjs` plantait au résumé sur Lantern Row
-- Une première série 1080p de 3 tours a donné tous ses tours, puis le résumé s'est arrêté sur `play-lanterns` (`TypeError … reading
-  'toFixed'`), sans écrire son JSON : la page de Lantern Row (`PlaceApp.snapshot()`) ne publie ni `textures` ni `textureMB`. La Passe L7 avait
-  ajouté cette page à l'outil (`window.__place`) dans le cloud ; le résumé, lui, ne prévoyait pas une page sans ces compteurs.
-- Correctif : le résumé affiche `-` pour un compteur absent (deux lignes, aucune mesure changée). La série refaite en 5 tours l'a traversé.
-
-### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
-- Avant cette passe, les passes gardées faisaient 60 533 octets. L2 et L3, closes (fusionnées), partent d'un seul bloc, dans leur ordre et à
-  l'octet, vers `journal/18-passes-L2-L3.md` : en-tête, ligne `---`, puis les 19 559 octets inchangés (SHA-256 `cd45c00274fccb6b…`). La ligne
-  d'index et la phrase d'en-tête sont mises à jour.
-- **Preuve** (script hors dépôt, contre la copie de `JOURNAL.md` faite juste avant le déplacement) : **9 / 9** (le corps de l'archive égal au
-  bloc retiré ; un bloc contigu L2-L3 suivi de L4 ; chaque section dans un seul fichier de `journal/` et plus dans `JOURNAL.md` ; `JOURNAL.md`
-  inchangé à partir de L4 ; seules la phrase d'en-tête et une ligne d'index changent ; l'en-tête de l'archive comme celui de `journal/17` ;
-  CRLF seuls dans les deux fichiers de la copie de travail ; aucune autre archive touchée). Contrôle négatif : une lettre changée dans une copie
-  de l'archive → 7 / 9.
-
-### Validation
-- typecheck, `npm test` **148 / 148**, build, `art:validate`.
-
-### Restes [?]
-- Les temps absolus : remesurer la série `001` (1080p au moins) et la cadence avec Firefox fermé, témoin à l'appui, avant de les tenir pour le
-  budget du contrat projet § 14.
-
-### Pensée
-- Un témoin de contention qui ne descend jamais sous son seuil ne laisse aucun tour propre : un tour « clean » au seuil de 15 % peut porter
-  13 % d'un autre programme. Un journal complet du témoin pendant la série le montre ; la comparaison entrelacée reste, les temps absolus non.
-- Un outil étendu à une page nouvelle s'essaie jusqu'à sa dernière ligne, résumé compris, avant de partir au relais.
-
-## Passe Q4b — Requête `001` : la série 1080p et la cadence remesurées, Firefox arrêté (2026-10-20)
-
-### Demande, mot pour mot
-- Opérateur : « Firefox est fermé : refais la série 001 en 1080p (et la cadence) avec le témoin, puis mets à jour la réponse et le journal. »
-- Branche `relay-gpu-q4b` depuis `main` (`aeefedd`).
-
-### Constat — [KO → réglé avec l'opérateur] le Firefox « fermé » tournait encore
-- Le témoin, avant la série (16 h 59) : le processus `firefox` 10840 (lancé le 19/10 à 8 h 12) toujours vivant, à 30 % de la 780M.
-- Question posée ; réponse de l'opérateur : « Arrête-le (PID 10840) ». Arrêté seul (`Stop-Process -Id 10840`), après avoir revérifié son nom et
-  son heure de lancement ; il n'est plus reparu au témoin.
-- Une autre séance (projet RPGCards, en cours) lançait des Chrome sans fenêtre, par à-coups jusqu'à 94 % de la 780M. Non touchée ; un journal
-  complet du témoin (166 échantillons) dit quels tours sont **vraiment calmes** (aucun autre programme au-dessus de 5 % pendant le tour).
-
-### Mesures — [OK]
-- Même serveur DEV (:5186), même commande, 5 tours, aucun onglet du jeu ouvert, série et cadence attendues jusqu'au bout.
-
-| 1920 × 1080 | tours calmes | minimum des 5 tours | écart à la nuit B (minimum) |
-|---|---|---|---|
-| nuit B | 10,72 ; 10,57 | 10,57 | — |
-| jeu, matin | 8,74 | 8,74 | −17 % |
-| jeu, midi | 9,08 | 9,08 | −14 % |
-| jeu, fin de journée | — | 9,42 | −11 % |
-| duel | — | 9,82 | −7 % |
-| parvis | 9,19 | 9,02 | −15 % |
-| Lantern Row | 9,30 | 9,30 | −12 % |
-| arène par défaut | — | 9,24 | −13 % |
-
-- **La nuit par défaut retrouve la Passe G1** (10,81 [9,88-10,95]) et la fourchette de la Passe 6 (10-12 ms) : les +3 ms de la Passe Q4 étaient
-  la contention de Firefox.
-- **Les pages du mode jouable tiennent le budget** : 8,7 à 9,8 ms en 1080p, toutes sous la nuit par défaut. L'arène : 9,24 ms (9,30 à la Passe
-  G1). L'estimation de la Passe Q4 (9,4 à 10,6 ms) était un peu haute.
-- **Cadence** (`tools/cadence.mjs`, `max`, `a60`) : **55,0 images/s, 3 vsyncs 100 %, aucun changement de pas**, nuit B et trois pages de jeu,
-  deux tours ; SoC 30,5 à 39,4 W. C'est le cas calme de la Passe 6h (55,0 images/s à 3 vsyncs), contre 37-44 images/s sous Firefox.
-- Les sorties complètes sont en tête de la réponse de `briefs/local-requests/001-gpu-budget.md`, la première mesure gardée dessous.
-
-### Validation
-- typecheck, `npm test` **148 / 148**, build, `art:validate`.
-
-### Restes [?]
-- Non refaits au calme : la série 2560 × 1440 (Passe Q4 : 19,8 à 20,8 ms pour les pages du jeu, sous Firefox) et le démarrage.
-- Trois pages sans tour calme (fin de journée, duel, arène) : leur minimum est une borne haute.
-
-### Pensée
-- Une fenêtre fermée ne prouve pas un programme arrêté : un processus du navigateur peut rester vivant et tenir le GPU. Le témoin se relit
-  juste avant la série, pas sur la parole d'un « c'est fermé ».
 
 ## Passe D8 — La fiche d'arbitrages de la tranche jouable : les six décisions de la Passe L7 et six écarts, tranchés par l'opérateur (2026-10-20)
 
@@ -590,6 +462,124 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Une séance qui attend la fusion d'une autre n'en est pas prévenue : la séance qui les a lancées le lui dit dès la fusion.
 
+## Passe AD1 — L'arène du mode jouable prend l'état du jour par `DayState` : le duel à midi, le parvis selon son créneau (décision L7-2 de l'opérateur) (2026-10-21)
+
+### Décision et départ, mot pour mot
+- Décision L7-2 (fiche de la Passe D8) : « Oui, après la revue du jour (J9), par DayState ». Elle répond à l'écart E26 (l'arène de nuit à toute
+  heure, Passe L7). Séance locale lancée par la séance de la fiche.
+- Condition : commencer une fois la tâche du jour par défaut (L7-6a) fusionnée. Confirmation de l'opérateur, mot pour mot : « Oui : commence
+  l'arène de jour (L7-2) dès que la tâche du jour par défaut est fusionnée dans main. » Fusion annoncée par la séance parente (D9 `ff4caa2`, puis
+  FR1 `eebbcd3`), vérifiée sur `origin/main` avant d'ouvrir la branche.
+- Branche `arena-day-l7-2` depuis `main` (`eebbcd3`). Serveurs : `dev-strict` (:5186), `main` figé (`eebbcd3`, copie hors dépôt, :5194) et la
+  branche figée (la même copie avec les fichiers de la branche, :5195), entrées locales `arena-frozen-main` / `arena-frozen-branch`.
+
+### Fait — [OK]
+- **`ArenaApp`** lit `?time=morning|midday|afternoon` (`parseTime`, comme la ville) ; absent = la nuit, exactement comme avant. Un état du jour :
+  - le ciel de l'état (`buildSky(look.sky)`), le soleil dans les uniformes de la lune, l'ambiance du ciel et du sol, la brume, `uWet`, la lueur
+    chaude de la ville éteinte, l'étalonnage de l'état (comme `App.applyDay`) ;
+  - J4 transposé (`arenaLitByDay`, `DayState.ts`) : les feux brûlent (braseros, foyers des tunnels), les lanternes, les lampadaires et le rebond
+    de lune froid qui éclaire les combattants la nuit sont éteints (6 sources allumées sur 23) ; le verre des fenêtres et des lanternes baisse,
+    les braises des braseros gardent leur lueur sur leur propre copie du matériau (`buildArena(..., { fireApart })` les met dans un maillage à
+    part, seulement de jour) ; les boutiques des maisons baissent, leurs toits prennent la teinte de l'état ; la ville lointaine prend sa
+    variante de jour (fenêtres éteintes) ;
+  - l'ombre du soleil dans une boîte plus large (30 × 30 m : un soleil haut voit le sol et les gradins de dessus ; la boîte de la lune, 24 × 9,
+    reste la nuit) ;
+  - le traitement de silhouette des combattants générés (bord éclairé, liseré de sommet, côté ombre : tous en `uMoonCol`, le soleil le jour)
+    garde sa force de nuit : `SpriteRenderer.setEdgeGain`, gain = luminance de la lune / luminance du soleil (0,11 à midi). Leçon de la Passe S3.
+- **Le soleil de l'arène** (`arenaSunDir`) : chaque lieu a été composé autour de sa lune (Passe P1 : « Composition et lumière sont une seule
+  décision ») :
+  - le matin et midi gardent la place qu'ont leurs soleils par rapport à la lune du district, tournés de l'écart entre les deux lunes (97,5°) :
+    midi haut (55°) derrière la droite de l'anneau, le matin de la droite à 30° ;
+  - la fin de journée met son soleil bas (16°) là où la lune pend la nuit, dans la porte, comme sa piste (« at the far end of the canal (where the
+    moon hangs at night) », `AFTERNOON`) : une bande dorée traverse le duel par la porte, le reste dans l'ombre des tours.
+  - **[KO]** première règle, chaque soleil à sa place dans le cadre de B (57,5°) : le soleil bas de la fin de journée venait de derrière les
+    gradins de droite, tout le sol dans leur ombre (une arène de nuit dorée). **[KO]** tourné depuis la lune (97,5°), il tombait encore sur la
+    tour de droite.
+- **Le mode jouable** : `arenaQuery` (`src/simulation/look.ts`, pure, à côté de `townQuery`) donne la graine et l'état du créneau ; le duel
+  (`playArena.ts`, l'après-midi : midi) et le parvis (`playForecourt.ts` : le matin, midi, la fin de journée après un duel, la nuit) en partent.
+- `AGENTS.md` : le statut et le paramètre `time=` de l'arène.
+
+### Preuves
+- **L'arène par défaut à 0 px contre `main` figé** (`tools/arena-scene-shots.mjs`, `HOLD=1`, 1280 × 720, seuil 0) : un moment de chauffe qui retire
+  l'écran de chargement et coupe les transitions et animations CSS (le même JS des deux côtés), puis dix moments (`calm`, `charging`, `window`
+  en aide complète, `combo`, `guardbreak`, `impact`, `technique`, `ko`, `strike`, `heavyRen`) :
+  - témoin de répétition (deux chargements de `main`) : **0 px les dix** ; la branche : **0 px les dix** ;
+  - la branche avec `time=night` contre `main` : **0 px les dix** ;
+  - contrôle : la branche avec `time=midday` contre `main` : 90,6 à 90,9 % des pixels (jusqu'à 235 niveaux).
+  - **[KO → compris]** sans ce moment de chauffe, deux chargements de `main` différaient entre eux (29 % des pixels sur `calm`, des traces sur
+    `charging`, `window`, `impact`, `ko`) : la capture tombait pendant le fondu de 0,8 s de l'écran de chargement et les transitions du HUD.
+- **La ville inchangée** (`tools/detshots.mjs`, 120 pas, seuil 0 ; `SpriteRenderer` et `DayState` sont partagés) : nuit B, midi B et le mode
+  jouable (`play=1&state=day1-morning`) : témoin 0 px, branche **0 px**.
+- **`tools/arena-scene-check.mjs`** sur la branche figée : **PASS** les quatre (défaut, `time=morning`, `time=midday`, `time=afternoon`) :
+  empreinte de la simulation égale au prototype (`ARENA_SIM_HASH`), 42 rendus sans erreur, la boucle vivante avance et prend les touches.
+  Contraste du télégraphe dans la fenêtre d'esquive (aide complète) :
+
+| | nuit | matin | midi | fin de journée |
+|---|---|---|---|---|
+| contraste | 6,94:1 | 3,37:1 | 4,31:1 | 2,33:1 |
+| deutéranopie | 7,15:1 | 3,43:1 | 4,44:1 | 2,32:1 |
+
+  - Les contrastes s'inversent de jour (Passes A1 / A2) : la bande claire contre un sol éclairé. Le plus mince, la fin de journée, tient au-dessus
+    de 2:1 : la bande dorée de la porte passe sous le télégraphe. **En jeu**, le télégraphe ne paraît que dans un duel, et les duels se jouent
+    l'après-midi, donc à midi (4,31:1) ; le matin et la fin de journée ne s'y voient qu'au parvis, sans HUD ni télégraphe.
+- **Dans le navigateur** (branche figée, `tools/play-shots.mjs`) : le duel du jour 2 (`day2-afternoon`, `scene=arena`) à midi ; le parvis au matin
+  (1280 × 720 et 844 × 390), à la fin de journée (`forecourt-dusk-lost`) et le soir, la nuit (`trained-day1-evening`) ; 0 erreur de page.
+  `tools/play-flow.mjs` : victoire contre Vessa (graine 1842, jour 2) et défaite contre Marek (7719, jour 3), le duel de jour joué jusqu'au bout,
+  l'état final rejoué en Node avec la même empreinte, 0 erreur de page.
+- **Tests** (`tests/arena-day.test.mjs`, 4) : `arenaQuery` sur onze états nommés (l'oracle : leur créneau écrit à la main, pas `lookOf`) ; les deux
+  pages partent d'`arenaQuery` ; l'arène lit `time=` par `parseTime` et garde les appels de la nuit ; `arenaLitByDay` contre les sortes de lumière
+  de `ArenaScene.ts` ; `arenaSunDir` contre une lune recalculée de ses angles (élévation de l'état, azimut +97,5° ou celui de la lune). **Six
+  fautes injectées une à une, toutes attrapées**, fichiers rendus à l'octet : le duel sans `arenaQuery`, la fin de journée oubliée par
+  `arenaQuery`, le rebond de lune allumé de jour, le soleil de la fin de journée tourné comme les autres, la boîte d'ombre de la nuit changée,
+  le parvis sans `arenaQuery`.
+- **Temps GPU** (`tools/perf.mjs`, la branche figée, Radeon 780M, témoin de contention à 15 %) — budget E24, « Pas plus cher que la nuit B, à
+  définition égale » :
+
+| ms de GPU | 1920 × 1080 : propre (tours) · minimum | 2560 × 1440 : propre (4 / 4 tours) |
+|---|---|---|
+| nuit B | 10,02 (1 / 5) · 10,02 | 16,76 |
+| arène de nuit (`scene=arena`) | 10,33 (2 / 5) · 9,20 | 15,68 |
+| arène, matin | 8,82 (3 / 5) · 8,39 | — |
+| arène, midi | 8,56 (3 / 5) · 8,43 | — |
+| arène, fin de journée | 8,93 (4 / 5) · 8,28 | — |
+| duel du jour 2 (mode jouable, midi) | 8,74 (4 / 5) · 8,20 | 13,65 |
+| parvis, matin | 8,56 (3 / 5) · 8,28 | 13,93 |
+| parvis, fin de journée | 8,56 (3 / 5) · 8,25 | 13,90 |
+| parvis, soir (nuit) | 8,82 (2 / 5) · 8,78 | — |
+
+  - **Le budget tient** : toutes les pages de l'arène sous la nuit B, de jour 13 à 17 % de moins qu'elle ; le jour coûte moins que la nuit de
+    l'arène (6 lumières sur 23 : in-scatter, bloom et reflets plus légers). 94 appels de dessin de jour contre 92 la nuit (le maillage des braises).
+  - **[?] La série 1080p était chargée** : d'autres programmes (le processus GPU de l'application Claude, des Chrome d'autres séances) ont pris 17
+    à 38 % de la 780M pendant les trois premiers tours ; les tours 4 et 5 étaient presque tous propres. Les valeurs propres et les minimums
+    retrouvent la Passe Q4b (nuit B 10,57, arène 9,24) ; la série 2560 × 1440 a ses quatre tours propres.
+- **Validation** : typecheck, `npm test` **153 / 153**, build, `art:validate` (18 manifestes, 21 sources, 0 erreur).
+- Images gardées : `screenshots/calibration/ad1-arena/` (`arena-night-midday.png`, `arena-morning-afternoon.png`,
+  `telegraph-midday-afternoon.png`, `play-duel-forecourt-morning.png`, `play-forecourt-dusk-night.png`).
+
+### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
+- Cette passe écrite, les passes gardées faisaient 60 231 octets. Q4 et Q4b, closes (fusionnées), partent d'un seul bloc vers
+  `journal/21-passes-Q4-Q4b.md` (10 332 octets, SHA-256 du bloc `2dbdd4bc2079c774…`) ; restent 49 899 octets. Preuve **8 / 8** (script hors
+  dépôt, contre la copie de `JOURNAL.md` d'avant le déplacement : corps de l'archive égal au bloc ; Q4, Q4b contigus, suivis de D8 ; plus dans
+  `JOURNAL.md` ; chacun dans un seul fichier de `journal/` ; `JOURNAL.md` inchangé à partir de D8 ; seules la phrase d'en-tête et une ligne
+  d'index changent ; en-tête comme `journal/20` ; CRLF seuls). Contrôle négatif : un bit changé dans une copie de l'archive → 7 / 8.
+  **[KO → corrigé]** la première version du sixième contrôle comparait les lignes à la même position alors qu'une ligne d'index s'insère :
+  le contrôle a été corrigé, pas les fichiers.
+
+### Restes [?]
+- **La revue de l'opérateur en jeu** : le duel à midi, le parvis selon l'heure ; les choix de la séance à juger (le soleil de la fin de journée
+  dans la porte, les braseros allumés de jour, le gain de silhouette).
+- Le liseré froid **peint** dans les images des combattants (Passe P2, « la lune derrière le duel ») reste le même de jour ; les cheveux blancs de
+  Marek se lisent clairs au soleil. Les sprites de l'arène se jugeront de jour comme de nuit à l'étape 1 de la feuille de route.
+- Pas de météo dans l'arène (la ville du jour 3 peut pleuvoir, `townQuery`) ; Lantern Row reste de nuit (L7-3).
+- L'artefact publié de l'arène (Passe P2) montre toujours la nuit : à republier avec `tools/arena-scene-page.mjs` si l'opérateur le veut.
+
+### Pensée
+- Un soleil se transpose d'un lieu à l'autre par ce autour de quoi chaque lieu a été composé (sa lune), pas par le cadre de la caméra : la règle
+  du cadre a mis l'arène dans l'ombre de ses gradins.
+- Un effet réglé pour la lune se remesure sous le soleil (Passe S3) ; quand il passe par un uniforme de gain, il se rapporte à la nuit par le
+  rapport des luminances, sans recompiler.
+- Un témoin de répétition qui échoue dit d'abord ce que la capture attrape d'autre que le rendu : un fondu de chargement, des transitions CSS.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -609,9 +599,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   - les requêtes au relais `000-handshake` et `001-gpu-budget` : répondues (Passes Q4, Q4b) ; au calme, les pages du jeu font 8,7 à 9,8 ms en
     1080p, sous la nuit par défaut (10,6 ms), et la cadence tient 55 images/s ; restent à refaire au calme la série 2560 × 1440 et le démarrage ;
   - la revue en jeu de l'opérateur et les six décisions de la Passe L7 : faites, tranchées sur la fiche de la Passe D8 avec six écarts
-    (E24, E30, E1 / E16, E14 / E15, E11, E25). Restent quatre des cinq tâches à part de la Passe D8 (le jour par défaut d'« Explore the district »,
-    L7-6a, fait en Passe D9) : l'équilibrage vers « modéré » (L7-4), les états du jour de l'arène (L7-2, qui suivait L7-6a), l'amendement du contrat projet (E14 / E15,
-    avec l'opérateur), la tâche « système de combat » (E1 / E16, avec l'opérateur) ;
+    (E24, E30, E1 / E16, E14 / E15, E11, E25). Restent trois des cinq tâches à part de la Passe D8 (le jour par défaut d'« Explore the district »,
+    L7-6a, fait en Passe D9 ; les états du jour de l'arène, L7-2, faits en Passe AD1, la revue de l'opérateur en jeu à venir) : l'équilibrage vers
+    « modéré » (L7-4), l'amendement du contrat projet (E14 / E15, avec l'opérateur), la tâche « système de combat » (E1 / E16, avec l'opérateur) ;
   - feuille de route après la tranche (Passe FR1) : `briefs/roadmap-2026-10.md` (arène, interface, districts dont le parvis d’abord, peuplement, gameplay) ;
   - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
@@ -734,6 +724,8 @@ republier avec `tools/arena-scene-page.mjs` après un changement). Le prototype 
 « Régler après essai » ; assistance « Discrète ». Temps GPU mesuré sur la 780M (Passe G1 : 9,3 ms en 1080p). **À voir sur sa machine** : cadence, lecture en mouvement,
 la page publiée dans le visualiseur. Restes : visages des combattants (la grammaire du générateur), anneau de dalles peu visible (l'occlusion
 de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sources de lumière sur 24, ralenti sous 20 images/s.
+**De jour depuis la Passe AD1** (décision L7-2) : le duel et le parvis du mode jouable prennent l'état du créneau (`?time=`, `arenaQuery`) ; à voir
+en jeu par l'opérateur ; le liseré froid peint des combattants reste le même de jour ; l'artefact publié montre la nuit.
 
 **6d. Jour et nuit (note de l'opérateur, Passe D1)** — mot pour mot : « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Le jeu n'a aujourd'hui que la nuit (direction
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
@@ -746,7 +738,7 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -872,7 +864,10 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
   se lit dans la sortie gardée.
 - Passer du jour à la nuit inverse les contrastes : un repère « plus sombre que le sol » doit devenir « plus clair » ; un seuil chiffré
   (contraste du télégraphe) le voit, l'œil sur une capture non ; une critique d'art qui contredit le seuil garde sa teinte et prend la
-  luminance ailleurs (Passes A1 / A2).
+  luminance ailleurs (Passes A1 / A2). Il se mesure dans chaque état, et se lit avec l'endroit où le jeu montre le repère (Passe AD1 : le
+  télégraphe ne paraît qu'au duel de l'après-midi, à midi).
+- Une lumière se transpose d'un lieu à l'autre par ce autour de quoi chaque lieu a été composé (sa lune), pas par le cadre de la caméra
+  (Passe AD1).
 - Une propriété aléatoire se teste sur plusieurs tirages (dix éclairs, deux caps de caméra), un repli dans ses deux sens (±π) : un seul cas
   laisse passer une faute injectée (Passes Q2, W3).
 ### Personnages : art et critique

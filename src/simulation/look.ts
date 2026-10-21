@@ -27,3 +27,12 @@ export function townQuery(s: GameState): Record<string, string> {
   if (s.flags.weather === 'rain' && s.day === 3) q.rain = '0.6';
   return q;
 }
+
+/** the arena's query for the state, duel and forecourt (the operator's decision L7-2, « Oui, après la revue du jour (J9), par DayState »,
+ *  journal Passe AD1): the canonical seed and the slot's day state, as the town's (the duel's afternoon is midday; the forecourt shows the
+ *  morning, midday, the end of day after a bout, or the night) */
+export function arenaQuery(s: GameState): Record<string, string> {
+  const look = lookOf(s), q: Record<string, string> = { seed: '1842' };
+  if (look !== 'night') q.time = look;
+  return q;
+}

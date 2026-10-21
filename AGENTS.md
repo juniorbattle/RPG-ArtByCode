@@ -10,7 +10,10 @@ decided (journal Passes D4, D6; see "Art direction"): the morning, midday and th
 the weather applies to each state (journal Passe Y5); the day's crowd is decided and applied (J7, journal Passes R3 / D7). After the operator's
 review in game, the day is the default of « Explore the district » (L7-6a, journal Passe D8, applied in journal Passe D9 with the operator's
 scope, « Midi » and « Le bouton seul »): the title screen's « Explore the district » opens midday; every address with parameters, and the bare
-address in a driven browser, keeps the night without `time=`. Still not Gold Master (L7-6b « Pas encore (RJ3 inchangé) », journal Passe D8).
+address in a driven browser, keeps the night without `time=`. The arena of the play mode (the duel and the forecourt) takes the slot's day state
+by `DayState` (L7-2 « Oui, après la revue du jour (J9), par DayState », journal Passe AD1): the afternoon's bout at midday, the forecourt in the
+morning, at midday, at the end of day or at night; `?scene=arena` without `time=` keeps the night. Still not Gold Master (L7-6b « Pas encore
+(RJ3 inchangé) », journal Passe D8).
 
 The playable slice (the gameplay contract's § 13, cloud session « version jouable », journal Passes L0-L7, its review in Passe L7) is on
 `main`: the bare address shows the title screen to a person (New game / Continue / Explore the district; « Explore the district » is the game
@@ -318,7 +321,11 @@ of its colour; `rim` = the crown rim as before, for comparison; `norim` = no rim
 applies it only once approved, its mask fingerprints checked, journal Passe V1) · `scene=arena` (the arena of the Cité du Tournoi instead of the
 town, `src/arena/ArenaApp.ts`, loaded on demand; journal Passe P1; absent = the town, unchanged) with `assist=subtle|full|off` (the prototype's
 visual assistance, default subtle; full adds the floor telegraph, the alert and the reaction window's bar), `hud=0` (or `clean=1`: no HUD),
-`cam=pitchDeg,dist,fov,ty,tz,tx` (the arena's framing while tuning; blank = keep); keys 1-6, A dodge, B guard (hold), R restart, Space pause, H HUD
+`cam=pitchDeg,dist,fov,ty,tz,tx` (the arena's framing while tuning; blank = keep), `time=morning|midday|afternoon` (a day state of the arena,
+journal Passe AD1: the state's sky, haze, grade, its sun turned into the arena - morning and midday keep their place against the moon, the end of
+day's low sun stands in the gate where the moon hangs at night - only the fires lit (braziers, the tunnels' hearths), the fighters' silhouette
+treatment at the night's strength; the play mode's duel and forecourt set it from the slot, `arenaQuery`; absent = the night, unchanged); keys
+1-6, A dodge, B guard (hold), R restart, Space pause, H HUD
 
 ## Art production principle
 Maximise perceptual complexity while minimising runtime complexity.

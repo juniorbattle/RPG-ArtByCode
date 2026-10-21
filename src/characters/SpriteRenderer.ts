@@ -299,6 +299,10 @@ export class SpriteRenderer {
     this.bodyMat.needsUpdate = true;
   }
 
+  /** the silhouette treatment's gain (lit-side lift, crown rim, shadow side; 1 = as before): the arena by day keeps them at the night's
+   *  strength under a sun many times the moon (journal Passe AD1); a uniform, no recompilation */
+  setEdgeGain(k: number): void { this.bodyMat.uniforms.uEdge.value = k; }
+
   /** `frame`: the texel size of the atlas' cells and their foot row (the town's 32 x 48 frames by default; the arena's fighters use larger
    *  cells at the same texel size, journal Passe P1) */
   constructor(private atlas: SpriteAtlas, capacity = 48, frame: { w: number; h: number; foot: number } = { w: FRAME_W, h: FRAME_H, foot: FOOT_Y }) {

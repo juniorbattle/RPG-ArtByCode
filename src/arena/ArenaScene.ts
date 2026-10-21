@@ -29,6 +29,9 @@ export interface ArenaBuild {
   /** where the spectators stand: feet position and the tier (0 = lowest) */
   stands: Array<{ pos: V3; tier: number }>;
   stats: { triangles: number; instances: number };
+  /** the braziers' coals in a mesh of their own (`fireApart`, by day: journal Passe AD1), so they keep their glow while the window glass dims;
+   *  null at night (the coals stay in the glow slot's mesh, as before) */
+  fire: THREE.Mesh | null;
   dispose(): void;
 }
 
@@ -42,10 +45,12 @@ const FIRE: [number, number, number] = [1.0, 0.52, 0.2];
 const onArc = (theta: number, r = ARC.r): V3 => [ARC.cx + r * Math.sin(theta), 0, ARC.cz - r * Math.cos(theta)];
 const xf = (p: V3, pos: V3, yaw: number): V3 => { const c = Math.cos(yaw), s = Math.sin(yaw); return [pos[0] + p[0] * c + p[2] * s, pos[1] + p[1], pos[2] - p[0] * s + p[2] * c]; };
 
-export function buildArena(lib: MaterialLibrary, seed: number): ArenaBuild {
+export function buildArena(lib: MaterialLibrary, seed: number, opts: { fireApart?: boolean } = {}): ArenaBuild {
   const rng = new Rng(seed).fork('arena');
   const group = new THREE.Group(); group.name = 'arena';
   const W = new SlotSet();
+  // by day the braziers' coals go to a set of their own (their own mesh below); at night they stay in W, written as before
+  const F = opts.fireApart ? new SlotSet() : W;
   const batch = new InstanceBatch(seed ^ 0xa7e4, 3);
   const lights: LightDef[] = [];
   const emitters: Emitter[] = [];
@@ -170,7 +175,7 @@ export function buildArena(lib: MaterialLibrary, seed: number): ArenaBuild {
     addBanner(W, { pos: bp, yaw, w: 1.55, h: 3.9, emblem: 'fleur', shape: 'swallow', loose: 0.35, rod: true });
     // braziers at the gate's inner corners: fire, embers, a little smoke
     const br: V3 = [side * 6.0, 0, -5.4];   // in front of the towers, clear of the fighters' heads and of the walls (critiques of Passe P2)
-    brazier(W, br);
+    brazier(W, br, F);
     lights.push({ pos: [br[0], 1.75, br[2]], color: FIRE, intensity: 2.0, radius: 4.8, kind: 'fire', halo: 1.3, priority: 8 });
     emitters.push({ kind: 'forge', tag: 'flame', pos: [br[0], 1.32, br[2]], rate: 0.5 }, { kind: 'forge', tag: 'embers', pos: [br[0], 1.45, br[2]], rate: 1 }, { kind: 'chimney', pos: [br[0], 1.9, br[2]], rate: 0.35 });
     // the gate passage's side walls between the towers' backs and the terrace
@@ -222,7 +227,7 @@ export function buildArena(lib: MaterialLibrary, seed: number): ArenaBuild {
   // ---------------------------------------------------------------- the front braziers, just outside the frame: warm pools in the corners
   for (const side of [-1, 1]) {
     const pos: V3 = [side * 7.4, 0, 4.6];
-    brazier(W, pos);
+    brazier(W, pos, F);
     lights.push({ pos: [pos[0], 1.75, pos[2]], color: FIRE, intensity: 1.5, radius: 5.5, kind: 'fire', halo: 1.4, priority: 9 });
     emitters.push({ kind: 'forge', tag: 'flame', pos: [pos[0], 1.32, pos[2]], rate: 0.5 }, { kind: 'forge', tag: 'embers', pos: [pos[0], 1.45, pos[2]], rate: 1 });
   }
@@ -307,11 +312,18 @@ export function buildArena(lib: MaterialLibrary, seed: number): ArenaBuild {
     group.add(mesh);
   }
   triangles += far.triCount;
+  let fire: THREE.Mesh | null = null;
+  if (F !== W) {
+    const b = F.get('glow');
+    fire = new THREE.Mesh(b.toGeometry(), lib.slot.glow); fire.name = 'arena:fire'; fire.frustumCulled = false;
+    triangles += b.triCount;
+    group.add(fire);
+  }
   const props = batch.build(lib.slot, (o, s) => { if (s !== 'leaf' && s !== 'cloth' && s !== 'glow') o.layers.enable(LAYER_CAST); });
   group.add(props);
   const instances = batch.instanceCount;
   return {
-    group, lights, emitters, stands, stats: { triangles, instances },
+    group, lights, emitters, stands, stats: { triangles, instances }, fire,
     dispose() {
       group.traverse((o) => { const m = o as THREE.Mesh; if (m.geometry) m.geometry.dispose(); });
       batch.dispose(); for (const d of disposables) d.dispose();
@@ -362,8 +374,9 @@ function weaponRack(W: SlotSet, pos: V3, yaw: number): void {
   });
 }
 
-/** an iron brazier on a tripod: the bowl, glowing coals (the window glow material), a few iron bands */
-function brazier(W: SlotSet, pos: V3): void {
+/** an iron brazier on a tripod: the bowl, glowing coals (the window glow material; in `F` when it is a set apart), a few iron bands */
+function brazier(W: SlotSet, pos: V3, F: SlotSet = W): void {
+  const coals = (S: SlotSet) => S.glow.box(0, 1.41, 0, 0.66, 0.05, 0.66, { uvs: [0.06, 0.66, 0.2, 0.66, 0.2, 0.8, 0.06, 0.8], aux: [0, 1, 0.7, 0], skip: ['-y'] });
   W.at(pos, 0, () => {
     const iron: V3 = [0.38, 0.38, 0.42];
     for (let k = 0; k < 3; k++) {
@@ -371,8 +384,9 @@ function brazier(W: SlotSet, pos: V3): void {
       W.metal.sweep([[ax * 0.42, 0, az * 0.42], [ax * 0.2, 0.7, az * 0.2], [ax * 0.28, 1.2, az * 0.28]], 0.03, 5, { tint: iron });
     }
     W.metal.lathe([[0.12, 1.08], [0.3, 1.16], [0.44, 1.3], [0.5, 1.42], [0.46, 1.44]], 10, { tint: iron, aoY: [0.6, 1] });
-    W.glow.box(0, 1.41, 0, 0.66, 0.05, 0.66, { uvs: [0.06, 0.66, 0.2, 0.66, 0.2, 0.8, 0.06, 0.8], aux: [0, 1, 0.7, 0], skip: ['-y'] });
+    if (F === W) coals(W);
   });
+  if (F !== W) F.at(pos, 0, () => coals(F));
 }
 
 /** the arena floor's mask (the ground shader's channels: puddles, grime, wear, contact AO): sand-worn along the dueling line and the ring,
