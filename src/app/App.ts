@@ -225,9 +225,11 @@ export class App {
     const facing = this.opts.params.get('facing');
     if (facing === 'ray') this.actors.facingRay = true;
     if (facing === 'screen') this.actors.facingRayPlayer = false;
-    // ?npcfacing=mirror|34|wide (journal Passe F2): the NPCs' walking views for a step going down the screen; absent = the screen rule
+    // the NPCs' walking views (journal Passes F2 / F3): '34' by default (the operator's decision of 2026-10-20); ?npcfacing=mirror|wide for
+    // comparison, ?npcfacing=screen the former screen rule
     const npcFacing = this.opts.params.get('npcfacing');
     if (npcFacing === 'mirror' || npcFacing === '34' || npcFacing === 'wide') this.actors.npcFacing = npcFacing;
+    if (npcFacing === 'screen') this.actors.npcFacing = '';
     // the baked sheets' edge (journal Passes S3 / S3b, the operator's « contours blancs »): a dark outer ring and no crown rim by default, day
     // and night (the operator's decision: « Contour noir 25 %, de jour et de nuit : applique-le par défaut. »); for comparison ?spriteedge=rim
     // = the crown rim as before, ?spriteedge=norim = no rim, no dark ring

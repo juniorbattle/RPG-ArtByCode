@@ -42,7 +42,8 @@ export function fiveViewFacing(prev: Dir, dx: number, dy: number): Dir {
   if (ang >= edge1) return up ? 'upSide' : 'downSide';
   return up ? 'up' : 'down';
 }
-/** `?npcfacing=` (journal Passe F2; absent = the screen rule of Passe F1 for the NPCs, unchanged): the sector edges (deg from the screen
+/** the NPCs' walking views (journal Passe F2; '34' the default since the operator's decision of 2026-10-20, « Applique npcfacing=34 comme
+ *  règle par défaut des PNJ. », journal Passe F3; `?npcfacing=screen` = the screen rule of Passe F1, for comparison): the sector edges (deg from the screen
  *  vertical, [enter profile, leave profile]) of an NPC's walking view. 'mirror': a frontLeft sheet's 'down' (drawn turned left) mirrored
  *  toward a rightward step, held within MIRROR_HOLD deg of the vertical; '34': mirror + that 'down' kept as a three-quarter front up to
  *  67.5 deg for a step going down the screen; 'wide': 34 + every NPC's front / back sector up to 60 deg; 5 deg held either side */
@@ -93,8 +94,9 @@ export class ActorSystem {
    *  les PNJ gardent la règle de l'écran jusqu'à leurs trois-quarts », journal Passe K10): « up » shows the hero's back even where the low
    *  pitch of A turns the walk into a slide; `?facing=screen` turns it off */
   facingRayPlayer = true;
-  /** `?npcfacing=mirror|34|wide` (journal Passe F2, npcSideEdges; '' = the screen rule, the default until the operator decides, K9) */
-  npcFacing = '';
+  /** the NPCs' walking views (npcSideEdges): '34' by default (the operator's decision, journal Passe F3); `?npcfacing=mirror|wide` for
+   *  comparison, `?npcfacing=screen` = '' (the screen rule of Passe F1, the game before) */
+  npcFacing = '34';
   private has34 = new Map<string, boolean>();
 
   /** camera: shows a walking facing by its on-screen direction (null: the world rule for every facing) */

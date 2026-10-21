@@ -297,12 +297,14 @@ decision J7a, Passe D7) · `cast=generated`
 keeps the three views; the default since the operator's decision of 2026-10-19, « Par défaut avec le héros », journal Passes D3 / H10) ·
 `facing=ray|screen` (walking views; absent = the hero by the line of sight - the heading's angle to the ground direction from the walker to
 the camera, so a walk away shows his back even where the low pitch of A turns it into a slide toward the vanishing point - and the NPCs by
-their step on screen, journal Passe F1, until they have three-quarter views: the operator's decision K9, journal Passe K10; `ray` = everyone
-by the line of sight, `screen` = everyone by the screen, for comparison, journal Passe K9) · `npcfacing=mirror|34|wide` (the NPCs' walking
-views, journal Passe F2, the operator's decision pending (K9); absent = the screen rule above, unchanged): the five townsfolk's `down` is drawn
-turned left (their reference sheet has no true front; `frontLeft` in `BakedCast.ts`); `mirror` turns it toward a rightward step (held within 8
-deg of the vertical), `34` = mirror + that view kept up to 67.5 deg from the vertical for a step going down the screen (profile beyond), `wide` =
-34 + every NPC's front / back up to 60 deg; carried into the play mode · `spriteedge=rim|norim` (the baked sheets' silhouette edge, journal Passes S3 / S3b, the
+their step on screen, journal Passe F1, until they have three-quarter views: the operator's decision K9, journal Passe K10, refined by
+`npcfacing` below; `ray` = everyone by the line of sight, `screen` = everyone by the screen, for comparison, journal Passe K9) ·
+`npcfacing=screen|mirror|34|wide` (the NPCs' walking views, journal Passe F2; absent = `34`, the default since the operator's decision of
+2026-10-20, « Applique npcfacing=34 comme règle par défaut des PNJ. », journal Passe F3): the five townsfolk's `down` is drawn turned left (their
+reference sheet has no true front; `frontLeft` in `BakedCast.ts`); `34` turns it toward a rightward step (held within 8 deg of the vertical) and
+keeps it up to 67.5 deg from the vertical for a step going down the screen (profile beyond), every other sheet keeping the screen rule;
+`screen` = the screen rule of Passe F1 for every NPC (the game before), `mirror` = the turn only, `wide` = 34 + every NPC's front / back up to 60
+deg; carried into the play mode · `spriteedge=rim|norim` (the baked sheets' silhouette edge, journal Passes S3 / S3b, the
 operator's « contours blancs »: absent = a dark outline, day and night, the operator's decision « Contour noir 25 %, de jour et de nuit :
 applique-le par défaut. » - no crown rim (the shader's top-edge light, that the sun turned white by day) and the outer texel ring at a quarter
 of its colour; `rim` = the crown rim as before, for comparison; `norim` = no rim, no dark ring; carried into the play mode's town) · DEV server only:

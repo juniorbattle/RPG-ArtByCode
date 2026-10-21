@@ -675,6 +675,41 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un dossier partagé par deux séances se lit avant d'ouvrir une branche : la branche d'une autre séance, avec ses fichiers modifiés, attend
   sa fusion.
 
+## Passe F3 — `npcfacing=34`, règle par défaut des PNJ (décision de l'opérateur) (2026-10-20)
+
+### Décision, mot pour mot
+- À la question « Quelle règle veux-tu par défaut pour les PNJ (décision K9) ? » (Passe F2), l'opérateur : « Applique npcfacing=34 comme règle
+  par défaut des PNJ. »
+- Branche `npc-facing-default-f3` depuis `main` (`22c4feb`, après la Passe S3b de la séance du liseré, qui tenait le dossier : la branche n'a été
+  ouverte qu'à sa fusion). Serveurs : `main` figé `22c4feb` (copie hors dépôt, :5188) et la branche figée (copie hors dépôt, :5191).
+
+### Fait — [OK]
+- `ActorSystem.npcFacing` vaut `'34'` par défaut : le `down` des cinq citadins (dessiné tourné à gauche, Passe F2) est retourné vers un pas qui
+  va à droite et gardé jusqu'à 67,5° de la verticale quand le pas descend l'écran ; les autres feuilles gardent la règle de l'écran (pour elles,
+  `34` donne les mêmes bords, 50° / 40°, et aucun miroir de face) ; le héros garde la ligne de visée (K10).
+- `?npcfacing=screen` : la règle de l'écran de la Passe F1 pour tous les PNJ (le jeu d'avant), pour comparer ; `mirror` et `wide` restent.
+- `AGENTS.md` : la ligne du paramètre et la phrase des vues de marche.
+
+### Preuves
+- `tools/detshots.mjs`, 300 pas, graine 1842, seuil 0 ; témoin de répétition (deux chargements de `main`) 0 px :
+  - **le défaut de la branche = `main` figé avec `?npcfacing=34`** : A, B, C, D, midi B et le mode jouable (`play=1&state=day1-morning`) :
+    **0 px (écart max 0)** les six ;
+  - **`?npcfacing=screen` sur la branche = le défaut de `main` figé** : les six à **0 px** ;
+  - contrôle, le défaut de la branche contre celui de `main` : A 492, B 2 963, C 6 847, midi B 3 679, jeu 1 434 px ; D 0 (aucun pas de D dans le
+    secteur changé, comme en Passe F2).
+- **Tests** (`tests/views.test.mjs`) : `34` par défaut ; les tests qui supposaient la règle de l'écran pour un PNJ (feuilles sans `frontLeft`)
+  passent tels quels. Faute injectée (le défaut remis à `''`) : attrapée.
+- **Validation** : typecheck, `npm test` **149 / 149**, build, `art:validate`.
+
+### Restes [?]
+- La face des citadins reste un trois-quarts léger tourné à gauche : les pas qui descendent à 55-75° montrent une vue dessinée vers 35°. La
+  voie de l'art (RH4) : la vue 2 des planches comme `downSide` des citadins (Passe F2), une tâche à part, critique à l'aveugle et approbation.
+- Les trois-quarts dos des PNJ n'existent sur aucune planche.
+
+### Pensée
+- Une règle nouvelle qui ne touche que les feuilles marquées se pose en défaut sans risque pour les autres : sa preuve est double, nouveau
+  défaut = ancien paramètre, ancien défaut = nouveau paramètre de retour.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -682,7 +717,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
-  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5) ; la foule du jour (J7) décidée et appliquée (Passes R3 / D7 : matin 6, midi 12, fin de journée 9 ; la nuit garde cinq). Les tâches de la Passe D6 sont faites. Revue de l'opérateur en jeu (Passe K9) : tout est bien implémenté, la nuit reste le défaut pour le moment (J9). Orientation (Passe K10) : le héros selon la ligne de visée, les PNJ selon l'écran (décision K9). Les cycles de face et de dos du héros et son trois-quarts dos : `hero-x2-v4` (Passe K11, courses dessinées, gagnant à l'aveugle), en production depuis la Passe H11 (« Production : mets hero-x2-v4 en production à la place de hero-x2-v3. »). Ouverts : les trois-quarts des PNJ (RH4) ; la « face » des cinq citadins est un trois-quarts tourné à gauche : une règle prête derrière `?npcfacing=`, la règle par défaut des PNJ à décider par l'opérateur (Passe F2, recommandation `34`). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
+  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5) ; la foule du jour (J7) décidée et appliquée (Passes R3 / D7 : matin 6, midi 12, fin de journée 9 ; la nuit garde cinq). Les tâches de la Passe D6 sont faites. Revue de l'opérateur en jeu (Passe K9) : tout est bien implémenté, la nuit reste le défaut pour le moment (J9). Orientation (Passe K10) : le héros selon la ligne de visée, les PNJ selon l'écran (décision K9). Les cycles de face et de dos du héros et son trois-quarts dos : `hero-x2-v4` (Passe K11, courses dessinées, gagnant à l'aveugle), en production depuis la Passe H11 (« Production : mets hero-x2-v4 en production à la place de hero-x2-v3. »). Ouverts : les trois-quarts des PNJ (RH4) ; la « face » des cinq citadins est un trois-quarts tourné à gauche : `npcfacing=34` est la règle par défaut des PNJ depuis la décision de l'opérateur (Passes F2 / F3 : la face retournée dans le sens de la marche, gardée jusqu'à 67,5° en descendant) ; reste la voie de l'art, la vue 2 des planches comme trois-quarts face. Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
   midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
   défaut : décidé en Passe D8 (L7-6a, « Le jour devient le défaut d’« Explore the district » (tâche à part) »), la nuit restant le défaut
   jusqu'à sa tâche. Restes vus sur les captures : Passe Y1.

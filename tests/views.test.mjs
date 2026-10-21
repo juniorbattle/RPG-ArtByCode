@@ -109,13 +109,13 @@ test('by default the hero walks by the line of sight, the NPCs by the screen (de
 
 // ?npcfacing= (journal Passe F2): the five townsfolk's 'down' is drawn turned left (no true front on their reference sheet: BakedCast's
 // frontLeft). Oracle: the step's on-screen angle from the vertical, computed here from the camera, and the edges written out in degrees.
-test('?npcfacing=: mirror turns a frontLeft "down" toward a rightward step, 34 keeps it to 67.5 deg going down, wide widens every front / back to 60; absent = unchanged', () => {
+test('npcfacing: mirror turns a frontLeft "down" toward a rightward step, 34 (the default, Passe F3) keeps it to 67.5 deg going down, wide widens every front / back to 60; screen (\'\') = the rule of Passe F1', () => {
   const rig = (frontLeft, mode) => { const { sys, a } = system(false, true); sys.cast = new Map([['crowd0', { id: 'sheet', scale: 0.9, height: 1.7, walkSpeed: null, ...(frontLeft ? { frontLeft: true } : {}) }]]); sys.npcFacing = mode; return { sys, a }; };
   const screen = (h) => { const c = new THREE.PerspectiveCamera(30, 16 / 9, 0.1, 200); c.position.set(-20, 5.5, 15); c.lookAt(0, 1, 0); c.updateMatrixWorld(); c.updateProjectionMatrix();
     const p0 = new THREE.Vector3(0, 0, 0).project(c), p1 = new THREE.Vector3(Math.sin(h) * 0.05, 0, Math.cos(h) * 0.05).project(c), dx = (p1.x - p0.x) * c.aspect, dy = p1.y - p0.y;
     return { dx, dy, ang: Math.atan2(Math.abs(dx), Math.abs(dy)) * 180 / Math.PI }; };
   const shown = (r, h, prev) => { r.a.dir = prev; r.a.flip = false; r.sys.face(r.a, new THREE.Vector3(Math.sin(h), 0, Math.cos(h)), true); return { dir: r.a.dir, flip: r.a.flip }; };
-  assert.equal(system(false, true).sys.npcFacing, '', 'absent = the screen rule: the default until the operator decides (K9)');
+  assert.equal(system(false, true).sys.npcFacing, '34', '34 by default (the operator\'s decision, journal Passe F3)');
   const fine = [...Array(360).keys()].map((i) => (i * Math.PI) / 180);
   let checked = { mirror: 0, near: 0, keep34: 0, side34: 0, wide: 0 };
   for (const h of fine) {
