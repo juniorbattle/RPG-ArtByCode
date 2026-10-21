@@ -106,3 +106,40 @@ test('by default the hero walks by the line of sight, the NPCs by the screen (de
   sys.face(hero, fwd, true);
   assert.equal(hero.dir, npc.dir, '?facing=screen: the hero takes the screen rule like the NPCs');
 });
+
+// ?npcfacing= (journal Passe F2): the five townsfolk's 'down' is drawn turned left (no true front on their reference sheet: BakedCast's
+// frontLeft). Oracle: the step's on-screen angle from the vertical, computed here from the camera, and the edges written out in degrees.
+test('?npcfacing=: mirror turns a frontLeft "down" toward a rightward step, 34 keeps it to 67.5 deg going down, wide widens every front / back to 60; absent = unchanged', () => {
+  const rig = (frontLeft, mode) => { const { sys, a } = system(false, true); sys.cast = new Map([['crowd0', { id: 'sheet', scale: 0.9, height: 1.7, walkSpeed: null, ...(frontLeft ? { frontLeft: true } : {}) }]]); sys.npcFacing = mode; return { sys, a }; };
+  const screen = (h) => { const c = new THREE.PerspectiveCamera(30, 16 / 9, 0.1, 200); c.position.set(-20, 5.5, 15); c.lookAt(0, 1, 0); c.updateMatrixWorld(); c.updateProjectionMatrix();
+    const p0 = new THREE.Vector3(0, 0, 0).project(c), p1 = new THREE.Vector3(Math.sin(h) * 0.05, 0, Math.cos(h) * 0.05).project(c), dx = (p1.x - p0.x) * c.aspect, dy = p1.y - p0.y;
+    return { dx, dy, ang: Math.atan2(Math.abs(dx), Math.abs(dy)) * 180 / Math.PI }; };
+  const shown = (r, h, prev) => { r.a.dir = prev; r.a.flip = false; r.sys.face(r.a, new THREE.Vector3(Math.sin(h), 0, Math.cos(h)), true); return { dir: r.a.dir, flip: r.a.flip }; };
+  assert.equal(system(false, true).sys.npcFacing, '', 'absent = the screen rule: the default until the operator decides (K9)');
+  const fine = [...Array(360).keys()].map((i) => (i * Math.PI) / 180);
+  let checked = { mirror: 0, near: 0, keep34: 0, side34: 0, wide: 0 };
+  for (const h of fine) {
+    const { dx, dy, ang } = screen(h), down = dy <= 0;
+    for (const prev of ['down', 'up', 'side']) {
+      const base = shown(rig(true, ''), h, prev);
+      // absent: a frontLeft sheet and a plain sheet show the same view (the screen rule, 50 / 40 deg)
+      assert.deepEqual(base, shown(rig(false, ''), h, prev));
+      assert.equal(base.dir === 'side', ang > (prev === 'side' ? 40 : 50), `screen rule at ${ang.toFixed(1)} deg from ${prev}`);
+      // mirror: the same view; a frontLeft 'down' turned toward the step beyond 8 deg (from a 'down' start) or at once (from another view)
+      const m = shown(rig(true, 'mirror'), h, prev);
+      assert.equal(m.dir, base.dir);
+      if (m.dir === 'down' && (prev !== 'down' || ang >= 8)) { assert.equal(m.flip, dx > 0, `mirror at ${ang.toFixed(1)} deg`); checked.mirror++; }
+      if (m.dir === 'down' && prev === 'down' && ang < 8) { assert.equal(m.flip, false, 'held within 8 deg of the vertical'); checked.near++; }
+      assert.deepEqual(shown(rig(false, 'mirror'), h, prev), base, 'a sheet with a true front is untouched by mirror');
+      // 34: a frontLeft step going down keeps 'down' up to 72.5 deg (from down) / 62.5 (from the profile); a plain sheet is untouched
+      const q = shown(rig(true, '34'), h, prev);
+      if (down) { const isSide = ang > (prev === 'side' ? 62.5 : 72.5); assert.equal(q.dir === 'side', isSide, `34 at ${ang.toFixed(1)} deg from ${prev}`); if (!isSide && ang > 50) checked.keep34++; if (isSide) checked.side34++; if (!isSide) assert.equal(q.flip, prev === 'down' && ang < 8 ? false : dx > 0); }
+      else assert.deepEqual(q, base, 'a step going up keeps the screen rule under 34');
+      assert.deepEqual(shown(rig(false, '34'), h, prev), base, 'a sheet with a true front is untouched by 34');
+      // wide: a plain sheet's front / back up to 65 deg (from front / back) / 55 (from the profile)
+      const w = shown(rig(false, 'wide'), h, prev);
+      assert.equal(w.dir === 'side', ang > (prev === 'side' ? 55 : 65), `wide at ${ang.toFixed(1)} deg from ${prev}`); checked.wide++;
+    }
+  }
+  for (const [k, n] of Object.entries(checked)) assert.ok(n > 0, `case ${k} reached (${n})`);
+});

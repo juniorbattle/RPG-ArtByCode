@@ -11,7 +11,7 @@ import { readSave, writeSave } from './save';
 export interface Boot { canvas: HTMLCanvasElement; params: URLSearchParams; label: HTMLElement; bar: HTMLElement; loading: HTMLElement }
 
 /** the tools' parameters carried from the address into every play-mode page (measurements, captures, culling checks) */
-const CARRY = ['fps', 'vis', 'viscache', 'painters', 'res', 'msaa', 'refl', 'camera', 'player', 'static', 'occ', 'freeze', 'gpuprof', 'noreload', 'spriteedge'];
+const CARRY = ['fps', 'vis', 'viscache', 'painters', 'res', 'msaa', 'refl', 'camera', 'player', 'static', 'occ', 'freeze', 'gpuprof', 'noreload', 'spriteedge', 'npcfacing'];
 
 /** the address of a play-mode page, the carried parameters kept */
 export function playUrl(params: URLSearchParams, extra: Record<string, string> = {}): string {

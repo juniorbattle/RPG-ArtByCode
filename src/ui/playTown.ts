@@ -9,7 +9,7 @@ import { esc, overlay } from './style';
  *  The district's people are found by their archetype next to the player (E to talk); the DEV forge switch (F, and E at the forge) is off:
  *  the forge's state is the game's. A significant action ends the slot: the state is saved and the page reloads into the next look. */
 
-const CARRY_TOWN = ['fps', 'vis', 'viscache', 'painters', 'res', 'msaa', 'refl', 'camera', 'player', 'static', 'occ', 'freeze', 'gpuprof', 'spriteedge'];
+const CARRY_TOWN = ['fps', 'vis', 'viscache', 'painters', 'res', 'msaa', 'refl', 'camera', 'player', 'static', 'occ', 'freeze', 'gpuprof', 'spriteedge', 'npcfacing'];
 /** the district's archetypes standing for the game's people (choice P4: their existing sprites) */
 const PERSON_OF: Record<string, string> = { merchant: 'mara', blacksmith: 'bram', guardA: 'hale', guardB: 'wynn', hooded: 'stranger', porter: 'tam' };
 const SEEN = 'cite-du-tournoi.seen';

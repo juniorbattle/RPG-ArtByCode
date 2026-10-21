@@ -225,6 +225,9 @@ export class App {
     const facing = this.opts.params.get('facing');
     if (facing === 'ray') this.actors.facingRay = true;
     if (facing === 'screen') this.actors.facingRayPlayer = false;
+    // ?npcfacing=mirror|34|wide (journal Passe F2): the NPCs' walking views for a step going down the screen; absent = the screen rule
+    const npcFacing = this.opts.params.get('npcfacing');
+    if (npcFacing === 'mirror' || npcFacing === '34' || npcFacing === 'wide') this.actors.npcFacing = npcFacing;
     // the baked sheets' edge (journal Passe S3, the operator's « contours blancs »): ?spriteedge=norim (no crown rim) | dark (no rim, outer
     // ring darkened); absent = as before, until the operator decides
     const edge = this.opts.params.get('spriteedge');

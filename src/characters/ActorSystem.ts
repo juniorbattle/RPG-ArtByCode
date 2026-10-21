@@ -42,6 +42,15 @@ export function fiveViewFacing(prev: Dir, dx: number, dy: number): Dir {
   if (ang >= edge1) return up ? 'upSide' : 'downSide';
   return up ? 'up' : 'down';
 }
+/** `?npcfacing=` (journal Passe F2; absent = the screen rule of Passe F1 for the NPCs, unchanged): the sector edges (deg from the screen
+ *  vertical, [enter profile, leave profile]) of an NPC's walking view. 'mirror': a frontLeft sheet's 'down' (drawn turned left) mirrored
+ *  toward a rightward step, held within MIRROR_HOLD deg of the vertical; '34': mirror + that 'down' kept as a three-quarter front up to
+ *  67.5 deg for a step going down the screen; 'wide': 34 + every NPC's front / back sector up to 60 deg; 5 deg held either side */
+const MIRROR_HOLD = 8;
+export function npcSideEdges(mode: string, frontLeft: boolean, down: boolean): [number, number] {
+  if (mode === '34' || mode === 'wide') { if (frontLeft && down) return [72.5, 62.5]; if (mode === 'wide') return [65, 55]; }
+  return [50, 40];
+}
 const _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3();
 
 export class ActorSystem {
@@ -84,6 +93,8 @@ export class ActorSystem {
    *  les PNJ gardent la règle de l'écran jusqu'à leurs trois-quarts », journal Passe K10): « up » shows the hero's back even where the low
    *  pitch of A turns the walk into a slide; `?facing=screen` turns it off */
   facingRayPlayer = true;
+  /** `?npcfacing=mirror|34|wide` (journal Passe F2, npcSideEdges; '' = the screen rule, the default until the operator decides, K9) */
+  npcFacing = '';
   private has34 = new Map<string, boolean>();
 
   /** camera: shows a walking facing by its on-screen direction (null: the world rule for every facing) */
@@ -257,11 +268,27 @@ export class ActorSystem {
       a.flip = a.dir === 'side' || a.dir === 'downSide' || a.dir === 'upSide' ? dx > 0 : false;   // profile and three-quarters drawn facing left
       return true;
     }
+    if (this.npcFacing && a !== this.player) {
+      const fl = this.frontLeft(a.spec), down = dy <= 0, ang = THREE.MathUtils.radToDeg(Math.atan2(Math.abs(dx), Math.abs(dy)));
+      const [inE, outE] = npcSideEdges(this.npcFacing, fl, down);
+      a.sideFlip = dx > 0;
+      if (ang > (a.dir === 'side' ? outE : inE)) { a.dir = 'side'; a.flip = dx > 0; return true; }
+      const wasDown = a.dir === 'down', prevFlip = a.flip;
+      a.dir = down ? 'down' : 'up';
+      a.flip = a.dir === 'down' && fl ? (wasDown && ang < MIRROR_HOLD ? prevFlip : dx > 0) : false;
+      return true;
+    }
     const side = Math.abs(dx) > Math.abs(dy) * (a.dir === 'side' ? SIDE_OUT : SIDE_IN);
     a.sideFlip = dx > 0;
     if (side) { a.dir = 'side'; a.flip = dx > 0; }
     else { a.dir = dy > 0 ? 'up' : 'down'; a.flip = false; }
     return true;
+  }
+
+  /** a cast sheet whose 'down' is drawn turned left (BakedCast's frontLeft) */
+  private frontLeft(spec: string): boolean {
+    for (const m of this.cast.values()) if (m.id === spec) return !!m.frontLeft;
+    return false;
   }
 
   /** a sheet with both three-quarter facings, idle and walk (the five-view rule falls back to three views without them) */

@@ -60,8 +60,10 @@ import { sheetMasks, maskFingerprint, materialRange, rampTable, type VariantsFil
 
 // only the gate fields of a manifest reach the bundle (named JSON exports are tree-shaken)
 interface Manifest { id: string; status: string; approved: boolean; runtimeUse: string }
-/** replaces: the generated archetype(s) the sheet stands in for; needs: frames its archetypes' behaviours ask for beyond idle + walk */
-interface Entry { manifest: Manifest; png: string; json: unknown; files: Record<string, string>; replaces: string[]; scale: number; needs?: string[] }
+/** replaces: the generated archetype(s) the sheet stands in for; needs: frames its archetypes' behaviours ask for beyond idle + walk;
+ *  frontLeft: its 'down' facing is drawn turned to the LEFT, a light three-quarter front (the reference sheet draws no true front for it,
+ *  journal Passe F2): read only by ?npcfacing= (ActorSystem.npcFacing) */
+interface Entry { manifest: Manifest; png: string; json: unknown; files: Record<string, string>; replaces: string[]; scale: number; needs?: string[]; frontLeft?: boolean }
 
 const ENTRIES: Entry[] = [
   // the dock worker of the reference sheet takes the porter's walks (the quay wanderer and the forge yard's patrol)
@@ -79,11 +81,11 @@ const ENTRIES: Entry[] = [
   // the ambient crowd (Pass 4A-tervicies, approved for production on 2026-10-17): five townsfolk of the reference sheets stand in for the
   // five generated crowd variants the wanderers pick from (ActorSystem.populate); the taller ones are reconstructed at a coarser pitch
   // (1.8-2.0 sheet pixels per texel against the merchant's 1.775, see their rig scripts), all at the cast's scale
-  { manifest: { id: arId, status: arStatus, approved: arApproved, runtimeUse: arUse }, png: artisanPng, json: artisanJson, files: artisanFiles, replaces: ['crowd0'], scale: 0.9 },
-  { manifest: { id: trId, status: trStatus, approved: trApproved, runtimeUse: trUse }, png: travelerPng, json: travelerJson, files: travelerFiles, replaces: ['crowd1'], scale: 0.9 },
-  { manifest: { id: twId, status: twStatus, approved: twApproved, runtimeUse: twUse }, png: townswomanPng, json: townswomanJson, files: townswomanFiles, replaces: ['crowd2'], scale: 0.9 },
-  { manifest: { id: omId, status: omStatus, approved: omApproved, runtimeUse: omUse }, png: olderMerchantPng, json: olderMerchantJson, files: olderMerchantFiles, replaces: ['crowd3'], scale: 0.9 },
-  { manifest: { id: coId, status: coStatus, approved: coApproved, runtimeUse: coUse }, png: courierPng, json: courierJson, files: courierFiles, replaces: ['crowd4'], scale: 0.9 },
+  { manifest: { id: arId, status: arStatus, approved: arApproved, runtimeUse: arUse }, png: artisanPng, json: artisanJson, files: artisanFiles, replaces: ['crowd0'], scale: 0.9, frontLeft: true },
+  { manifest: { id: trId, status: trStatus, approved: trApproved, runtimeUse: trUse }, png: travelerPng, json: travelerJson, files: travelerFiles, replaces: ['crowd1'], scale: 0.9, frontLeft: true },
+  { manifest: { id: twId, status: twStatus, approved: twApproved, runtimeUse: twUse }, png: townswomanPng, json: townswomanJson, files: townswomanFiles, replaces: ['crowd2'], scale: 0.9, frontLeft: true },
+  { manifest: { id: omId, status: omStatus, approved: omApproved, runtimeUse: omUse }, png: olderMerchantPng, json: olderMerchantJson, files: olderMerchantFiles, replaces: ['crowd3'], scale: 0.9, frontLeft: true },
+  { manifest: { id: coId, status: coStatus, approved: coApproved, runtimeUse: coUse }, png: courierPng, json: courierJson, files: courierFiles, replaces: ['crowd4'], scale: 0.9, frontLeft: true },
   // the premium hero on the player: hero-x2-v4, drawn front / back / three-quarter runs (journal Passe K11; approved for production on 2026-10-20,
   // « Production : mets hero-x2-v4 en production à la place de hero-x2-v3. », Passe H11), in place of hero-x2-v3 (Passes H8-H10); its
   // three-quarter facings through the five-view rule, the default (?views=3: three views). LAST in the list: its 60 frames come after the NPCs'
@@ -95,7 +97,7 @@ const ENTRIES: Entry[] = [
  *  hair / skin, and the variant the operator fixed (per archetype) */
 export interface CastVariants { list: Array<[number, number]>; hair: [number, number] | null; skin: [number, number] | null; fixed?: Record<string, number> }
 /** `walkSpeed`: the ground speed its walk cycle draws, in m/s at character scale 1 and the base walk cadence (Stride.ts); null = unknown */
-export interface CastMember { id: string; scale: number; height: number; walkSpeed: number | null; variants?: CastVariants }
+export interface CastMember { id: string; scale: number; height: number; walkSpeed: number | null; variants?: CastVariants; frontLeft?: boolean }
 
 /** every behaviour of the replaced archetypes (idle, turned to talk, wander, patrol) needs these frames (contract amendment B: a missing
  *  frame in production is a load error, never a silent fallback) */
@@ -142,7 +144,7 @@ export async function loadProductionCast(candidates = false, variants: 'approved
       sheet.materials = masks;
       vars = { list: sv.variants.map((v) => [v.hair ? ramps.hair[v.hair] ?? -1 : -1, v.skin ? ramps.skin[v.skin] ?? -1 : -1]), hair: materialRange(frames, masks, 1), skin: materialRange(frames, masks, 2), fixed: sv.fixed };
     }
-    for (const r of e.replaces) cast.set(r, { id, scale: e.scale, height, walkSpeed, ...(vars ? { variants: vars } : {}) });
+    for (const r of e.replaces) cast.set(r, { id, scale: e.scale, height, walkSpeed, ...(vars ? { variants: vars } : {}), ...(e.frontLeft ? { frontLeft: true } : {}) });
   }
   return { sheets, cast };
 }

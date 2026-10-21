@@ -298,7 +298,11 @@ keeps the three views; the default since the operator's decision of 2026-10-19, 
 `facing=ray|screen` (walking views; absent = the hero by the line of sight - the heading's angle to the ground direction from the walker to
 the camera, so a walk away shows his back even where the low pitch of A turns it into a slide toward the vanishing point - and the NPCs by
 their step on screen, journal Passe F1, until they have three-quarter views: the operator's decision K9, journal Passe K10; `ray` = everyone
-by the line of sight, `screen` = everyone by the screen, for comparison, journal Passe K9) · `spriteedge=norim|dark` (the baked sheets' silhouette edge, journal Passe S3, the operator's
+by the line of sight, `screen` = everyone by the screen, for comparison, journal Passe K9) · `npcfacing=mirror|34|wide` (the NPCs' walking
+views, journal Passe F2, the operator's decision pending (K9); absent = the screen rule above, unchanged): the five townsfolk's `down` is drawn
+turned left (their reference sheet has no true front; `frontLeft` in `BakedCast.ts`); `mirror` turns it toward a rightward step (held within 8
+deg of the vertical), `34` = mirror + that view kept up to 67.5 deg from the vertical for a step going down the screen (profile beyond), `wide` =
+34 + every NPC's front / back up to 60 deg; carried into the play mode · `spriteedge=norim|dark` (the baked sheets' silhouette edge, journal Passe S3, the operator's
 « contours blancs »: `norim` = no crown rim, the shader's top-edge light that the sun turns white by day; `dark` = no rim and the outer texel
 ring darkened to a quarter of its colour; absent = as before, until the operator decides; carried into the play mode's town) · DEV server only:
 `variants=candidate` (apply the NPC variants file `art-lab/characters/variants/variants.json` while it waits for the operator's approval; production

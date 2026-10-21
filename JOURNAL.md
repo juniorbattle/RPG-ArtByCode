@@ -559,6 +559,87 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Avant d'accuser le post-traitement d'une auréole, couper chaque effet sur la même image et comparer le bord intérieur au reste du sprite :
   un voile uniforme n'est pas un liseré.
 
+## Passe F2 — Les PNJ qui descendent l'écran : leur « face » est un trois-quarts tourné à gauche ; une règle préparée derrière `?npcfacing=` (2026-10-20)
+
+### Demande
+- Séance locale lancée par la séance parente. Signalement de l'opérateur, mot pour mot : « on a toujours ce probleme d'angle position de npcs
+  lorsqu'il marche vers le bas de la zone du district merchant, et je pense que l'animation de marche vers la et l'aanimation de marche vers le
+  bas sont similaire car ils ont les memes angles, il regarde vers la gauche et donc l'un avance vers la gauche ( ce qui est bon et coherent ) et
+  l'autre marche vers le bas, ce qui 'est pas bon car cela donne une marche de travers car l'orientation du corps n'est pas bon il est cense
+  marche droit vers le bas ».
+- Consigne : mesurer (vue montrée quand le pas descend l'écran, angle du passage au profil, feuilles), proposer derrière un paramètre d'URL sans
+  changer le défaut, chiffrer la glissade, montrer avant / après ; changer la règle des PNJ est la décision de l'opérateur (K9).
+- Mesures et prototype d'abord hors dépôt (le dossier était sur la branche de la séance du liseré) ; puis branche `npc-facing-n1` depuis
+  `main` (`70be38d`). Serveurs : `main` figé (copie hors dépôt, :5188) et la branche figée (copie hors dépôt, :5191), entrées locales
+  `facing-frozen` / `facing-proto`.
+
+### Les feuilles — [OK] ni tag ni miroir faux ; [KO] aucune vraie face pour les citadins
+- `walk-down` ≠ `walk-side` sur les dix feuilles de PNJ (aucune image égale ; masques : 18 à 36 % d'écart contre le profil, 6 à 9 % contre
+  `idle-down`).
+- **Les cinq citadins** (artisane, voyageur, citadine, vieux marchand, coursier) : leur vue `down` est un **trois-quarts face léger tourné vers
+  la gauche** (visage, regard, buste). Leurs planches (01-16, 17-24) ne dessinent **aucune vue de face** : les vues 1 et 2 regardent toutes deux
+  à gauche (trois-quarts léger, trois-quarts marqué), les rigs ont pris la vue 1. Docker et capuche : presque de face ; garde : de face ; le
+  héros a une vraie face et ses trois-quarts.
+- L'opérateur a donc raison : la marche « vers le bas » de ces PNJ montre un corps tourné à gauche, comme leur profil.
+
+### Mesures — [OK] (harnais de `tools/step-angles.mjs` étendu hors dépôt, 40 s, graine 1842)
+- **Pas vers le bas de l'écran** : en A, B, C, presque tous partent **entre 50 et 90° de la verticale** (le quai se descend en diagonale), **tous
+  montrés de profil** (la règle de l'écran passe au profil à 50°, revient à 40°). Sous 50° (peu de pas : A, midi), la « face » tournée à gauche,
+  **y compris quand le pas va à droite** : regard contraire 2 % des pas en C et en B à midi, 3 % en A à midi. Un marcheur ne change pas de vue au
+  milieu d'un trajet (segments droits). Le mode jouable fait les pas de la nuit B.
+- Deux mesures par variante : la part des pas à 20-40° de l'axe de la vue montrée (celle de la Passe K9, axe vertical pour face / dos) et
+  l'écart moyen à l'axe **dessiné** (la face des citadins comptée à 35° : une estimation sur les feuilles ; un regard contraire compte en entier).
+
+| 40 s, 1842 | A | B | C | D | B midi | A midi | jeu (matin) |
+|---|---|---|---|---|---|---|---|
+| pas de travers (K9) — aujourd'hui | 55 % | 44 % | 66 % | 3 % | 48 % | 46 % | 44 % |
+| `mirror` | 55 | 44 | 66 | 3 | 48 | 46 | — |
+| `34` | 29 | 31 | 41 | 3 | 33 | 25 | 31 |
+| `wide` | 26 | 21 | 21 | 3 | 19 | 22 | — |
+| écart à l'axe dessiné — aujourd'hui | 26,2° | 20,4° | 22,3° | 7,4° | 24,9° | 24,4° | 20,4° |
+| `mirror` | 26,2 | 20,4 | 20,8 | 7,4 | 24,3 | 23,8 | — |
+| `34` | 24,6 | 20,4 | 20,6 | 7,4 | 20,6 | 23,0 | 20,4 |
+| `wide` | 25,6 | 23,6 | 26,5 | 7,4 | 24,1 | 23,7 | — |
+| regard contraire — aujourd'hui | 0 % | 0 % | 2 % | 0 % | 2 % | 3 % | 0 % |
+| `mirror`, `34`, `wide` | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+
+### Fait — [OK] `?npcfacing=`, défaut inchangé
+- `BakedCast` : `frontLeft` sur les cinq citadins (leur `down` dessiné tourné à gauche), porté par `CastMember`.
+- `ActorSystem.npcFacing` (`npcSideEdges`), PNJ seulement :
+  - `mirror` : le `down` d'une feuille `frontLeft` retourné vers un pas qui va à droite, tenu à moins de 8° de la verticale ;
+  - `34` : `mirror` + ce `down` gardé comme trois-quarts face jusqu'à 67,5° de la verticale pour un pas qui descend (± 5° tenus), profil
+    au-delà ; les feuilles à vraie face et les pas qui montent gardent la règle de l'écran ;
+  - `wide` : `34` + face / dos jusqu'à 60° (± 5°) pour tous.
+- `App` lit le paramètre ; le mode jouable le transporte (`CARRY`, `CARRY_TOWN`). `AGENTS.md` : la ligne du paramètre.
+
+### Preuves
+- **Défaut à 0 px contre `main` figé** (`tools/detshots.mjs`, 300 pas) : témoin de répétition 0 px ; A, B, C, D, midi B et le mode jouable
+  (`play=1&state=day1-morning`) avec personnages : **0 px (écart max 0)**. Contrôle `npcfacing=34` : A 479, B 2 969, C 6 881, midi B 3 782, jeu
+  1 489 px (D 0 : aucun pas de D ne tombe dans le secteur changé). La grille des pas de la branche par défaut égale celle de `main` au caractère près.
+- **Tests** (`tests/views.test.mjs` +1, oracle : l'angle du pas recalculé depuis la caméra, les bords écrits en degrés ; 360 caps × trois vues
+  de départ) : absent = la règle de l'écran, la feuille `frontLeft` comme une autre ; `mirror` ne change que le miroir ; `34` et ses bords tenus,
+  pour les seules feuilles `frontLeft` ; `wide`. **Six fautes injectées une à une, toutes attrapées** : `34` par défaut (attrapée après ajout de
+  l'assertion du défaut : le premier test fixait toujours le mode), miroir inversé, bord sans tenue, `frontLeft` ignoré, `wide` décalé, miroir
+  sans tenue.
+- **Flipbooks** (avant / `34` / `wide`, synchronisés ; hors dépôt, montrés à l'opérateur) : B, le vieux marchand descend à 54° vers la gauche ;
+  B, le voyageur à 52° vers la droite ; A midi, l'artisane à 13° vers la droite et à 60° vers la gauche. Images gardées :
+  `screenshots/calibration/f2-npc-facing/` (`faces.png` : les faces des citadins tournées à gauche, le héros à gauche de l'image ;
+  `B-frames.png` : le vieux marchand et le voyageur, avant / `34`).
+- **Validation** : typecheck, `npm test` **149 / 149**, build, `art:validate` (18 manifestes, 21 sources, 0 erreur).
+
+### À décider par l'opérateur (décision K9 : la règle des PNJ)
+- Aujourd'hui (la règle de l'écran), `mirror`, `34` ou `wide`. **Recommandation de la séance : `34`** : un citadin qui descend montre son
+  devant, tourné dans le sens de sa marche, et plus jamais un regard contraire ; son gain se lit sur la mesure K9, peu sur l'axe dessiné (la face
+  n'est qu'un trois-quarts léger, les pas vont à 55-75°). `wide` fait monter l'écart à l'axe dessiné en B et C.
+- **Voie de l'art (RH4)** : la vue 2 des planches (trois-quarts marqué, jamais utilisée) est une source de `downSide` pour les cinq citadins,
+  sans génération ; ni vraie face ni trois-quarts dos. Une tâche de rig, une critique à l'aveugle et l'approbation de l'opérateur.
+
+### Pensée
+- Avant de régler une règle de vue, regarder ce que la feuille dessine vraiment : une « face » peut être un trois-quarts, et le meilleur
+  secteur ne corrige pas un dessin tourné.
+- Une mesure de glissade se rapporte à l'axe dessiné de la vue, pas à son nom : la mesure K9 (vertical pour toute face) et l'axe estimé
+  n'ont pas dit la même chose ici ; les deux sont rapportés, et l'œil tranche sur les flipbooks.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -566,7 +647,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans
-  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5) ; la foule du jour (J7) décidée et appliquée (Passes R3 / D7 : matin 6, midi 12, fin de journée 9 ; la nuit garde cinq). Les tâches de la Passe D6 sont faites. Revue de l'opérateur en jeu (Passe K9) : tout est bien implémenté, la nuit reste le défaut pour le moment (J9). Orientation (Passe K10) : le héros selon la ligne de visée, les PNJ selon l'écran (décision K9). Les cycles de face et de dos du héros et son trois-quarts dos : `hero-x2-v4` (Passe K11, courses dessinées, gagnant à l'aveugle), en production depuis la Passe H11 (« Production : mets hero-x2-v4 en production à la place de hero-x2-v3. »). Ouverts : les trois-quarts des PNJ (RH4). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
+  `AGENTS.md`). Premier jet derrière `?time=day` (Passe Y1) ; midi d'après la piste de midi derrière `?time=midday` (Passe Y2), le pavois du tournoi de jour (Passe Y3), le matin et la fin de journée derrière `?time=morning` / `?time=afternoon` (Passe Y4), la météo sur chaque état (Passe Y5) ; la foule du jour (J7) décidée et appliquée (Passes R3 / D7 : matin 6, midi 12, fin de journée 9 ; la nuit garde cinq). Les tâches de la Passe D6 sont faites. Revue de l'opérateur en jeu (Passe K9) : tout est bien implémenté, la nuit reste le défaut pour le moment (J9). Orientation (Passe K10) : le héros selon la ligne de visée, les PNJ selon l'écran (décision K9). Les cycles de face et de dos du héros et son trois-quarts dos : `hero-x2-v4` (Passe K11, courses dessinées, gagnant à l'aveugle), en production depuis la Passe H11 (« Production : mets hero-x2-v4 en production à la place de hero-x2-v3. »). Ouverts : les trois-quarts des PNJ (RH4) ; la « face » des cinq citadins est un trois-quarts tourné à gauche : une règle prête derrière `?npcfacing=`, la règle par défaut des PNJ à décider par l'opérateur (Passe F2, recommandation `34`). Nouvelle direction de l'opérateur (Passe D6) : midi est la piste de midi ; quatre états (matin,
   midi, fin de journée, soir = la nuit), la météo sur chacun ; le pavois comme l'image. À appliquer dans l'ordre de la Passe D6 ; le jour par
   défaut : décidé en Passe D8 (L7-6a, « Le jour devient le défaut d’« Explore the district » (tâche à part) »), la nuit restant le défaut
   jusqu'à sa tâche. Restes vus sur les captures : Passe Y1.
