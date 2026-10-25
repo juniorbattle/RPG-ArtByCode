@@ -71,7 +71,10 @@ Puis : « Le district en cours, c'est le parvis de l'arène (la place principale
    **Première feuille de Ren (Passe RC1, 25/10)** : `hero-x3-combat` (labo), les 22 images des clés que l'essai C2 ne touche pas (« Clés hors C2
    (Recommandé) »), tirées de trois planches générées (« Génération (Recommandé) ») et reconstruites à ×3 sur la palette de `hero-x2-v4` ; dans le
    duel derrière `?scene=arena&fighterdensity=combat` (DEV) ; 2,34 px par texel en 1080p, même coût GPU. Restent les 12 images (`dodge`, `skillOff`,
-   `skillDef`, `skillSup`) après la fiche C2, et la fiche RC1 (la feuille, le bord la nuit, la production, les feuilles d'essai).
+   `skillDef`, `skillSup`) après la fiche C2.
+   La fiche RC1, tout à la recommandation : « Bonne base : compléter après la fiche C2, avec les reprises » (la victoire de profil, une vraie taille
+   pour la coupe, la lame à deux texels), « Liseré peint la nuit, contour noir de jour », « Pas encore : en labo jusqu'à la feuille complète »,
+   « Les retirer, garder fighterdensity=combat » (les feuilles d'essai retirées).
 3. **Les spectateurs** : une foule bon marché (quelques silhouettes, variantes de couleurs par les masques de la Passe V1, une boucle d'acclamation,
    un seul appel de dessin) plutôt qu'un personnage complet par spectateur.
 
@@ -126,6 +129,11 @@ d'entraînement.
 - La densité des feuilles de combat : « ×3 » (AA2-1).
 - Le bord d'un combattant cuit la nuit : « Trancher sur la première feuille de Ren » (AA2-2).
 - Les feuilles d'essai (`hero-x3-trial`, `hero-x4-trial`) et `?fighterdensity=` : « Les garder jusqu'à la feuille de Ren » (AA2-3).
+
+## Tranché (fiche de la feuille de combat de Ren, Passe RC1, 25/10)
+
+- La feuille : « Bonne base : compléter après la fiche C2, avec les reprises » (RC1-1) ; le bord : « Liseré peint la nuit, contour noir de jour » (RC1-2).
+- La production : « Pas encore : en labo jusqu'à la feuille complète » (RC1-3) ; les feuilles d'essai : « Les retirer, garder fighterdensity=combat » (RC1-4).
 
 ## Tranché (fiche de l'atelier combat, Passe CB1, 25/10)
 

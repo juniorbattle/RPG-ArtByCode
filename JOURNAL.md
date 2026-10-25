@@ -440,13 +440,50 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   aucun fichier de `src/` hors `src/lab` ne nomme la feuille. **10 fautes injectées sur 10 attrapées** (manifeste approuvé, manifeste en
   production, esquive non prêtée, horloge du K.O. décalée, K.O. à deux images, liseré à l'intérieur, liseré sur la rangée du sol, feuille nommée
   hors du labo, source déclarée canonique, empreinte de source du rig), fichiers rendus à l'octet (SHA-256).
-- **Validation** : typecheck, `npm test` **197 / 197** (191 + 6), build, `art:validate` (21 manifestes, 33 sources, 0 erreur), `build-combat.mjs --check`.
+- **Validation** : typecheck, `npm test` **197 / 197** (191 + 6), build, `art:validate` (21 manifestes, 33 sources, 0 erreur), `build-combat.mjs --check` ;
+  après la fiche (ci-dessous) : `npm test` **195 / 195** (les 3 tests des feuilles d'essai retirés, un ajouté), `art:validate` (19 manifestes, 33
+  sources, 0 erreur).
 
-### La fiche — publiée
+### La fiche — [OK] publiée, 4 choix sur 4 enregistrés et relus
 - Page privée https://claude.ai/artifact/KxFxjXUajBWpgsxcfJo2WC, collection `decisions`, relue vide après publication ; les protections des fiches
-  précédentes (pont attendu 10 s, chaque écriture relue). Quatre points : RC1-1 la feuille (recommandé : bonne base, la compléter après la fiche
-  C2 avec les reprises), RC1-2 le bord la nuit (recommandé : liseré peint la nuit, contour noir de jour), RC1-3 la production (recommandé : pas
-  encore), RC1-4 les feuilles d'essai (recommandé : les retirer, garder `fighterdensity=combat`).
+  précédentes (pont attendu 10 s, chaque écriture relue). Relue après « La fiche de la feuille de combat de Ren est remplie. » : **4 documents sur
+  4**, cliqués le 25/10 entre 22 h 21 min 10 s et 22 h 21 min 30 s UTC, aucune note.
+
+### Les choix de l'opérateur, mot pour mot
+« = » : la recommandation de la fiche est suivie.
+
+| # | Décision | Recommandation | Choix de l'opérateur | Note | |
+|---|---|---|---|---|---|
+| RC1-1 | La première feuille de combat de Ren (22 images) | « Bonne base : compléter après la fiche C2, avec les reprises » | « Bonne base : compléter après la fiche C2, avec les reprises » | — | = |
+| RC1-2 | Le bord de Ren contre le contre-jour de la lune | « Liseré peint la nuit, contour noir de jour » | « Liseré peint la nuit, contour noir de jour » | — | = |
+| RC1-3 | L'entrée en production de la feuille | « Pas encore : en labo jusqu'à la feuille complète » | « Pas encore : en labo jusqu'à la feuille complète » | — | = |
+| RC1-4 | Les feuilles d'essai hero-x3-trial, hero-x4-trial et fighterdensity=x2\|x3\|x4 | « Les retirer, garder fighterdensity=combat » | « Les retirer, garder fighterdensity=combat » | — | = |
+
+- **Ce qui en suit** :
+  - RC1-1 : la feuille est une bonne base ; les 12 images qui restent (`dodge`, `skillOff`, `skillDef`, `skillSup`) se font **après la fiche C2**,
+    par la même voie (génération puis reconstruction), et la même génération **reprend** la victoire de profil, une vraie taille pour la coupe et
+    la lame à deux texels. Tâche à part, après la fiche C2.
+  - RC1-2 : **le liseré peint la nuit, le contour noir 25 % de jour** ; appliqué ci-dessous comme défaut du paramètre DEV ; dans la feuille
+    complète, le liseré se fera dans les texels (une variante de nuit des images, ou une règle du rendu des feuilles cuites de l'arène), à
+    trancher par la tâche qui les produit.
+  - RC1-3 : **pas de production** : la feuille reste en labo jusqu'à la feuille complète (34 images) avec son bord ; puis une tâche
+    d'intégration avec l'approbation du manifeste par l'opérateur.
+  - RC1-4 : appliqué ci-dessous.
+
+### Après la fiche — [OK] RC1-4 et RC1-2 appliqués
+- **RC1-4** : `hero-x3-trial` et `hero-x4-trial` retirés (manifestes, exports, sources `.aseprite`, paquets de provenance, rigs, et la recette
+  commune `hero-trial.common.mjs` : 17 fichiers, 438 577 octets, gardés dans l'historique git) ; `tests/fighter-density.test.mjs`, qui les testait,
+  retiré (sa garde « derrière `import.meta.env.DEV` » passe dans `tests/combat-sheet.test.mjs`) ; `src/lab/fighterDensity.ts` ne garde que
+  `fighterdensity=combat` et refuse toute autre valeur (`fighterdensity "x3": combat`) ; `tools/art-lab/build-trial.mjs` reste (outil générique,
+  sa première utilisation notée retirée) ; les commentaires d'`ArenaApp.ts` et de `bakedLoader.ts` mis à jour (aucun code).
+- **RC1-2** : sans `fighteredge`, le bord suit l'état du jour de la page (`edgeFor`) : la nuit (pas de `time`, ou `time=night`) le liseré peint
+  (8 148 texels de liseré sur les 22 images, mesuré en page), de jour le contour noir. Vérifié dans la page : nuit `painted`, midi et matin
+  `dark`, `fighteredge=dark` la nuit `dark`.
+- **Tests** : `tests/combat-sheet.test.mjs` (7) : le bord selon l'état du jour, les valeurs `x2`, `x3`, `x4` et vide refusées, les manifestes
+  d'essai absents, la garde DEV d'`ArenaApp` reprise. **13 fautes injectées sur 13 attrapées** (les 10 d'avant et : bord inversé, valeur d'essai
+  acceptée, garde DEV retirée), fichiers rendus à l'octet.
+- **Preuves** : l'arène par défaut contre `main` figé refaite : **54 sur 54 à 0 px** (mêmes moments, scène seule la nuit et à midi, HUD figé, ancien et
+  nouveau duel) ; bundle de production identique à l'octet (31 fichiers) ; `build-combat.mjs --check` identique.
 
 ### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
 - Avec cette passe, les passes gardées dépassaient 70 Ko. CB1 et C1, closes (fusionnées), partent d'un seul bloc vers
@@ -613,7 +650,7 @@ republier avec `tools/arena-scene-page.mjs` après un changement). Le prototype 
 la page publiée dans le visualiseur. Restes : visages des combattants (la grammaire du générateur), anneau de dalles peu visible (l'occlusion
 de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sources de lumière sur 24, ralenti sous 20 images/s.
 **De jour depuis la Passe AD1** (décision L7-2) : le duel et le parvis du mode jouable prennent l'état du créneau (`?time=`, `arenaQuery`) ; à voir
-en jeu par l'opérateur ; le liseré froid peint des combattants reste le même de jour ; l'artefact publié montre la nuit. **Audit des sprites (Passe AA1)** : le joueur est Ren généré à l'arène et `hero-x2-v4` en ville ; un texel de combattant fait 3,9 px en 1080p contre ~1,5 en ville ; jeux d'images courts (Ren 29, Marek 17). Décisions AA1-1 à AA1-6 (toutes à la recommandation) : Ren = `hero-x2-v4` avec une feuille de combat ; feuilles cuites (Ren, puis Marek, puis Vessa) après l'atelier combat ; en attendant, l'essai de densité ×2 contre ×4 et le public des citadins cuits + variantes V1, chacun derrière un paramètre ; les générés ne sont pas retouchés. **Essai de densité fait (Passe AA2)** : le héros cuit dans le duel à ×2, ×3, ×4 (DEV, `?scene=arena&fighterdensity=`), le texel du héros en ville remesuré (2,0-2,3 px en B / C / D, pas 1,5) ; décision AA2-1 « ×3 » : les feuilles de combat se font à ×3 (2,3 px, une texture par duel) ; AA2-2 « Trancher sur la première feuille de Ren » (le bord la nuit) ; AA2-3 « Les garder jusqu'à la feuille de Ren » (`hero-x3-trial`, `hero-x4-trial`, le paramètre). Reste le public (AA1-4), dans sa séance. **Première feuille de combat de Ren (Passe RC1)** : `hero-x3-combat` (labo), les 22 images des clés hors C2 (« Clés hors C2 (Recommandé) »), tirées de trois planches générées (« Génération (Recommandé) ») et reconstruites à ×3 sur la palette de `hero-x2-v4`, dans le duel derrière `?scene=arena&fighterdensity=combat` (DEV) ; fiche RC1 https://claude.ai/artifact/KxFxjXUajBWpgsxcfJo2WC (la feuille, le bord la nuit, la production, les feuilles d'essai) ; restent les 12 images (`dodge`, `skillOff`, `skillDef`, `skillSup`) après la fiche C2.
+en jeu par l'opérateur ; le liseré froid peint des combattants reste le même de jour ; l'artefact publié montre la nuit. **Audit des sprites (Passe AA1)** : le joueur est Ren généré à l'arène et `hero-x2-v4` en ville ; un texel de combattant fait 3,9 px en 1080p contre ~1,5 en ville ; jeux d'images courts (Ren 29, Marek 17). Décisions AA1-1 à AA1-6 (toutes à la recommandation) : Ren = `hero-x2-v4` avec une feuille de combat ; feuilles cuites (Ren, puis Marek, puis Vessa) après l'atelier combat ; en attendant, l'essai de densité ×2 contre ×4 et le public des citadins cuits + variantes V1, chacun derrière un paramètre ; les générés ne sont pas retouchés. **Essai de densité fait (Passe AA2)** : le héros cuit dans le duel à ×2, ×3, ×4 (DEV, `?scene=arena&fighterdensity=`), le texel du héros en ville remesuré (2,0-2,3 px en B / C / D, pas 1,5) ; décision AA2-1 « ×3 » : les feuilles de combat se font à ×3 (2,3 px, une texture par duel) ; AA2-2 tranché en RC1-2 (le bord la nuit) ; AA2-3 suivi de RC1-4 (les feuilles d'essai retirées). Reste le public (AA1-4), dans sa séance. **Première feuille de combat de Ren (Passe RC1)** : `hero-x3-combat` (labo), les 22 images des clés hors C2 (« Clés hors C2 (Recommandé) »), tirées de trois planches générées (« Génération (Recommandé) ») et reconstruites à ×3 sur la palette de `hero-x2-v4`, dans le duel derrière `?scene=arena&fighterdensity=combat` (DEV) ; fiche RC1 relue 4 / 4, tout à la recommandation : RC1-1 « Bonne base : compléter après la fiche C2, avec les reprises », RC1-2 « Liseré peint la nuit, contour noir de jour » (défaut du paramètre), RC1-3 « Pas encore : en labo jusqu'à la feuille complète », RC1-4 « Les retirer, garder fighterdensity=combat » (feuilles d'essai et `x2` / `x3` / `x4` retirés). **Suite, après la fiche C2** : les 12 images (`dodge`, `skillOff`, `skillDef`, `skillSup`) par la même voie, avec la victoire de profil, une vraie taille pour la coupe, la lame à deux texels et le liseré peint de nuit dans la feuille ; puis la feuille complète vers la production (tâche d'intégration, approbation du manifeste) ; ensuite Marek et Vessa à ×3.
 **Le système de combat (Passe CB1)** : spécification `briefs/combat-system.md`, approuvée (« tour par tour dynamique » ; contrats amendés, A3 ;
 liste des animations : 34 images pour Ren). **C1 fait (Passe C1)** : le cœur du duel en simulation pure (`src/combat/dynamic.ts`), son bot et sa
 course hors écran, derrière `flags.combat = 'dynamic'` (`tournament-lab --rules=dynamic`) ; l'arène actuelle reste le défaut ; un soin sans recharge
@@ -952,3 +989,8 @@ sous 1 241 px les sous-libellés masqués (61,6 px), l'écran de chargement, le 
   entre d'autres se vérifie à chaque largeur où ses voisins changent de taille (Passe C2).
 - Un mode ajouté derrière un paramètre dans une page existante se prouve par la scène seule à 0 px (`clean=1`), puis par l'interface, dont
   chaque changement voulu se borne (rectangle, halo) ; un moment scripté se vérifie aussi à son instant (Passe C2).
+- Un outil qui nomme ses sorties à la seconde et réécrit un registre lu au départ (`gen-image.mjs`) se lance une requête à la fois : deux en
+  parallèle se sont écrasé leurs images et le registre a perdu une écriture (Passe RC1). Une capture d'interface se fige (transitions et
+  animations CSS coupées) et se prouve par son témoin avant toute comparaison (Passe RC1).
+- Des planches générées n'ont pas toutes la même échelle : chaque figure se reconstruit au pas de sa planche, réglé sur une hauteur commune, et
+  un nettoyage par couleur (le halo du fond) se relit contre la matière nouvelle qui partage ses gris (une lame d'acier) (Passe RC1).

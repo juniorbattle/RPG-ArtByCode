@@ -96,8 +96,20 @@ test('the painted rim lights only the silhouette\'s border texels, never the ins
   for (let x = 0; x < W; x++) { const i = (11 * W + x) * 4; assert.equal(px[i], before[i], `(${x}, 11)`); }
 });
 
-test('the arena still reaches the combat sheet only through the DEV-guarded trial module', () => {
+test('the edge by the day state (RC1-2 « Liseré peint la nuit, contour noir de jour »), and only the combat sheet left (RC1-4)', async () => {
+  assert.deepEqual([null, 'night', 'morning', 'midday', 'afternoon', 'day'].map(lab.edgeFor), ['painted', 'painted', 'dark', 'dark', 'dark', 'dark']);
+  for (const d of ['x2', 'x3', 'x4', '']) await assert.rejects(lab.installFighterDensity({}, new URLSearchParams(`fighterdensity=${d}`)), /fighterdensity/, d);
+  for (const id of ['hero-x3-trial', 'hero-x4-trial']) assert.ok(!fs.existsSync(path.join(ROOT, `art-lab/characters/manifests/${id}.manifest.json`)), `${id} removed`);
+});
+
+test('the arena reaches the combat sheet only through the DEV module, behind import.meta.env.DEV', () => {
+  const src = read('src/arena/ArenaApp.ts').toString('utf8').split(/\r?\n/);
+  const uses = src.filter((l) => /densityTrial|fighterDensity/.test(l) && !/^\s*(\/\/|\/\*\*|\*)/.test(l));
+  assert.ok(uses.length >= 4, 'the module is wired');
+  for (const l of uses) assert.ok(/import\.meta\.env\.DEV &&/.test(l) || /private declare densityTrial/.test(l), `unguarded: ${l.trim()}`);
   for (const f of fs.readdirSync(path.join(ROOT, 'src'), { recursive: true }).filter((f) => /\.ts$/.test(f) && !f.startsWith('lab'))) {
-    assert.ok(!read(`src/${f}`).toString('utf8').includes(ID), `src/${f} does not name the combat sheet`);
+    const s = read(`src/${f}`).toString('utf8');
+    assert.ok(!s.includes(ID), `src/${f} does not name the combat sheet`);
+    if (f.replace(/\\/g, '/') !== 'arena/ArenaApp.ts') assert.ok(!/fighterDensity/.test(s), `src/${f} does not reach the DEV module`);
   }
 });

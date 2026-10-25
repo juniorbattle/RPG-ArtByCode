@@ -8,7 +8,8 @@
 //   -> every exported frame compared pixel for pixel with the rig's frame.
 // Writes art-lab/characters/provenance/<id>/view-<dir>.png and build.json, source/<id>.aseprite, exports/<id>.png|json, and the file table of
 // provenance/<id>/PROVENANCE.json (written first by hand). --check rebuilds into a temporary folder and compares with the committed files.
-// First use: hero-x4-trial, the arena fighters' density trial (journal Passe AA2).
+// First use: hero-x3-trial / hero-x4-trial, the arena fighters' density trial (journal Passe AA2), removed by the operator's decision RC1-4
+// « Les retirer, garder fighterdensity=combat » (journal Passe RC1; their rigs and packs are in the git history).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
