@@ -35,8 +35,9 @@ async function getJson(url: string): Promise<any> {
 
 export { decodePng };
 
-/** One manifest id -> a validated BakedSheet (hash, manifest gate, frame invariant). */
-async function loadSheet(id: string, fallback: BakedSheet['fallback']): Promise<BakedSheet & { decodeMs: number }> {
+/** One manifest id -> a validated BakedSheet (hash, manifest gate, frame invariant). Also read by the arena's density trial
+ *  (src/lab/fighterDensity.ts). */
+export async function loadSheet(id: string, fallback: BakedSheet['fallback']): Promise<BakedSheet & { decodeMs: number }> {
   if (!/^[a-z0-9-]+$/.test(id)) throw new Error(`baked "${id}" is not a manifest id`);
   const man = await getJson(`${ROOT}/manifests/${id}.manifest.json`);
   if (man.runtimeUse !== 'lab' && man.runtimeUse !== 'production') throw new Error(`${id}: manifest runtimeUse "${man.runtimeUse}" does not allow runtime use`);

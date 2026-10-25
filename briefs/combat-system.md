@@ -273,6 +273,8 @@ compétence signature d'un personnage.
 - À ×2, l'atlas de l'arène garde environ 131 cases pour les deux combattants d'un duel. Deux combattants complets (34 + 34) y tiennent, avec
   de la place pour quelques compétences signature.
 - À ×4 (l'essai de densité AA1-3), une texture prend 40 cases : il faudra une texture par combattant.
+- **Décidé (Passe AA2, AA2-1 « ×3 »)** : les feuilles se font à ×3 (cases de 192 × 288 texels). Une texture de 2 048 en prend 70 : Ren et Marek
+  complets (68) y tiennent, avec 2 cases libres ; les compétences signature demanderont une seconde texture ou des cases ajustées à la figure.
 
 ## 15. L'ordre de mise en œuvre (choisi par la séance, sur délégation de l'opérateur)
 

@@ -464,6 +464,117 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un mode ajouté derrière un paramètre dans une page existante se prouve par la scène seule (`clean=1`) à 0 px, puis par l'interface, dont
   chaque changement voulu se borne (rectangle, halo) et se nomme.
 
+## Passe AA2 — L'essai de densité des combattants de l'arène (décision AA1-3) : le héros cuit dans le duel à ×2, ×3 et ×4, une fiche d'arbitrages (2026-10-25)
+
+### Demande
+- Séance locale lancée par la séance parente, pendant l'essai du duel C2 par l'opérateur : l'essai décidé en AA1-3, « Essai en scène ×2 contre ×4
+  d'abord ». `hero-x2-v4` dans le cadrage du duel à ×2 tel quel, puis reconstruit à ×4 depuis ses planches archivées par la chaîne du héros (rig de
+  labo, manifeste `lab`) ; derrière un paramètre réservé au serveur DEV ; l'arène par défaut à 0 px contre `main` figé, ancien duel et
+  `combat=dynamic` ; captures côte à côte (×2, ×4, Ren généré, la ville), recadrages, texel mesuré, coût dans l'atlas, temps GPU (E24), ce que
+  chaque densité implique pour les feuilles de combat ; une fiche d'arbitrages, relue et consignée. La tâche demande aussi de chiffrer « un autre
+  facteur » : le ×3 est construit par la même recette pour être montré.
+- Branche `arena-density-aa2` depuis `main` (`5ce9d5b`), seule branche de travail (`git fetch --prune`, `git branch -a`). `.gitignore` et `.claude/`
+  jamais commités. Serveurs : `dev-strict` (:5186) et `main` figé (`5ce9d5b`, copie hors dépôt, :5201, entrée locale `aa2-frozen-main`), par
+  `preview_start` / `preview_stop`. Aucune image générée ; la fiche de l'essai C2 n'est pas touchée.
+
+### Fait — [OK] le paramètre, réservé au serveur DEV
+- **`src/lab/fighterDensity.ts`** (nouveau, DEV) : `?scene=arena&fighterdensity=x2|x3|x4` charge `hero-x2-v4` (production), `hero-x3-trial` ou
+  `hero-x4-trial` (labo) par le chargeur de `?baked=` (`loadSheet`, exporté de `src/lab/bakedLoader.ts` : manifeste, SHA-256 contre le paquet de
+  provenance, décodage à l'octet) ; chaque image de profil (repos 4, marche 8) est posée dans une case d'arène (64 × 96 pixels de la ville à k
+  texels par pixel, pieds sur la rangée 90 k, comme `FighterArt` place une image de la ville) d'une texture cuite rangée en cases entières (la voie
+  « baked » du `SpriteRenderer`, adressage par case entière). Ren garde la pose choisie pendant tout le duel (`fighterpose=idle|walk|idle.<i>|walk.<i>`),
+  à l'échelle de présentation du héros en ville (0,9) et avec son contour noir (S3b ; `fighteredge=rim` : le liseré du shader) ; Marek reste le
+  combattant généré ×2, témoin de la densité d'aujourd'hui. `window.__density` : la feuille, la case, la texture, `measure()` (le texel à l'écran).
+- **`src/arena/ArenaApp.ts`** : trois lignes derrière `import.meta.env.DEV &&` et un champ `declare` (jamais émis).
+- **Preuves du défaut** : `tools/arena-scene-shots.mjs` (`HOLD=1`, 1920 × 1080, graine 1842 ; une capture de chauffe qui retire le voile de
+  chargement et coupe les transitions CSS, **[KO → corrigé]** la première série la prenait dans son fondu : 1,1 à 2 millions de pixels entre deux
+  chargements de `main`) : ancien duel 9 moments, nouveau duel 9 moments, la nuit et à midi en scène seule, et HUD affiché : **témoin 0 px sur 54,
+  branche contre `main` figé 0 px sur 54**. **Bundle de production identique à l'octet** à celui de `main` figé (31 fichiers, même configuration) :
+  le paramètre et le module de labo en sont retirés.
+
+### Fait — [OK] le héros reconstruit à ×3 et ×4 (rigs de labo)
+- **`art-lab/characters/rigs/hero-trial.common.mjs`** : `trialRig(K)`, la recette de `hero-x2-v3` pour la vue de profil, toutes ses longueurs
+  multipliées par S = K / 2 (arrondies au texel) : le profil de la planche v4-b (même recadrage) reconstruit au pas 3,4 / S, la palette de
+  `hero-x2-v4` épinglée (aucune couleur nouvelle), la préparation (halo, mèches, fentes, pieds centrés), le souffle du repos, et la course de la
+  planche v3 (rangée du bas, huit images) passée par le rig de course (découpe, cisaillement depuis la hanche, enjambée, vol). **Aucune retouche
+  du visage** : à ×3 et ×4 la reconstruction garde l'œil et la bouche que `hero-x2-v3` avait dû redessiner à ×2 (Passe H9).
+  `hero-x4-trial.rig.mjs` = `trialRig(4)` (128 × 192, pieds rangée 180, pas 1,7), `hero-x3-trial.rig.mjs` = `trialRig(3)` (96 × 144, pieds 135,
+  pas 2,2667). Les planches et la palette sont vérifiées par SHA-256 avant usage.
+- **`tools/art-lab/build-trial.mjs`** (nouveau) : la chaîne de `build-character.mjs` à la taille de cadre que déclare le rig (reconstruction,
+  palette épinglée, contrat d'image, Aseprite 1.3.18.6, chaque image exportée comparée) ; `build-character.mjs` et `rig-engine.mjs` ne changent
+  pas (leurs empreintes sont dans les paquets approuvés). `--check` : **reconstruits identiques**, les deux.
+- **Manifestes `lab`, non approuvés** (`experimental`), paquets de provenance (sources, chaîne, table des fichiers), hors de la distribution
+  (aucune entrée de `BakedCast`). Pas de pose de combat : les planches archivées dessinent le héros sans épée ; aucune image générée.
+- Figure de repos de profil : ×2 1 875 texels opaques sur 84 rangées, ×3 4 220 sur 127, ×4 7 467 sur 170 ; 60 à 63 couleurs de la même palette.
+
+### Les mesures
+- **Le texel à l'écran**, mesuré dans la page (largeur du quad de Ren projetée, échelle 0,9) : ×2 **3,50 px** en 1080p (4,67 en 1440p), ×3
+  **2,34** (3,11), ×4 **1,75** (2,34) ; Ren généré (échelle 1) 3,89 (5,19).
+- **[KO → corrigé] la référence de la ville** : l'audit AA1 donnait « environ 1,5 » pour la distribution cuite. Mesuré pour le héros (`hero-x2-v4`,
+  ×2, échelle 0,9) à 1920 × 1080, graine 1842 : A 1,23 ; B 2,04 à 2,10 ; C 2,32 ; D 2,04 ; en 2560 × 1440, B 2,88. Le 1,5 vient des PNJ en B (0,65
+  à 1,68, Passe S2). Le héros cuit posé à ×2 dans le duel a donc des texels **1,7 fois** plus gros qu'en ville (pas 2,5) ; le ×3 tombe sur le texel
+  du héros dans les cadrages proches de la ville.
+- **L'atlas** (case d'arène = 64 × 96 pixels de la ville) : ×2 case 128 × 192, 160 par texture de 2 048, 96 Ko ; ×3 192 × 288, 70, 216 Ko ; ×4
+  256 × 384, **40**, 384 Ko. Un duel complet de la liste CB1 (Ren 34 + Marek 34 = 68 images) : ×2 une texture 2 048 × 960, 7,5 Mo ; ×3 une
+  texture 1 920 × 2 016, 14,8 Mo, **2 cases libres** ; ×4 **deux textures** (34 par combattant), 2 × 15 Mo, et le `SpriteRenderer` ne lit
+  aujourd'hui qu'une texture cuite.
+- **GPU** (`tools/perf.mjs`, serveur de la branche, 1920 × 1080, 5 tours entrelacés, `fps=off`, témoin de contention au seuil de 15 %, aucun onglet
+  du jeu dans le panneau : **5 tours propres sur 5**, Radeon 780M) : nuit B **9,80** ms [9,54-9,91] ; arène d'aujourd'hui **8,88** [8,74-9,23] ; ×2
+  **9,14** [8,68-9,37] ; ×3 **9,06** [8,77-12,37 : un tour plus lent sur toutes les passes, propre selon le témoin] ; ×4 **9,07** [8,79-9,18]. Mêmes 92
+  appels de dessin, 133 k triangles. **E24 tenu** pour les trois densités ; la densité ne change pas le coût du duel (la surface du quad est la
+  même, seule la texture lue change).
+
+### Captures (`screenshots/calibration/aa2-fighter-density/`)
+- Au moment `charging` (Ren au repos), `clean=1`, la nuit et à midi, 1920 × 1080 et 2560 × 1440 : la ville en référence (B, `player=-1,2`, `crowd=0`
+  — **[KO → refait]** un passant cachait le héros), Ren généré, ×2, ×3, ×4, recadrés au même agrandissement ; la tête au plus proche ; la marche ;
+  la nuit avec le contour de la ville et avec le liseré du shader. À l'œil : le ×3 et le ×4 montrent l'œil, les mèches, les boucles et le bord de
+  la cape que le ×2 fond en blocs ; l'écart ×3 → ×4 est plus petit que ×2 → ×3.
+- **[?] La nuit** : la lune est derrière la porte de l'arène ; les générés portent un liseré froid peint dans leurs images (`rimLight`), le héros cuit
+  avec le contour noir de S3b se détache mal du pavé ; le liseré du shader le borde d'un trait fin et pointillé. Sur la fiche (AA2-2).
+
+### La fiche — [OK] publiée, 3 choix sur 3 enregistrés et relus
+- Page privée https://claude.ai/artifact/Y6Ur6JL2TDrrMR4rhve9oP, collection `decisions`, relue vide après publication ; les protections des fiches
+  précédentes (pont attendu 10 s, chaque écriture relue). Trois points : AA2-1 la densité (recommandé ×3), AA2-2 le bord la nuit (recommandé :
+  trancher sur la première feuille de Ren), AA2-3 les feuilles d'essai (recommandé : les garder jusqu'à la feuille de Ren).
+
+### Les choix de l'opérateur, mot pour mot
+« = » : la recommandation de la fiche est suivie.
+
+| # | Décision | Recommandation | Choix de l'opérateur | Note | |
+|---|---|---|---|---|---|
+| AA2-1 | La densité des feuilles de combat de Ren, Marek et Vessa | « ×3 » | « ×3 » | — | = |
+| AA2-2 | Le bord d'un combattant cuit contre le contre-jour de la lune | « Trancher sur la première feuille de Ren » | « Trancher sur la première feuille de Ren » | — | = |
+| AA2-3 | Les feuilles d'essai et le paramètre `fighterdensity` | « Les garder jusqu'à la feuille de Ren » | « Les garder jusqu'à la feuille de Ren » | — | = |
+
+- Relue après « La fiche de densité des combattants est remplie. » : **3 documents sur 3** dans `decisions`, cliqués le 25/10 entre 09 h 42 et
+  09 h 43 UTC, aucune note ; chaque écriture relue par la page avant « Enregistré et relu ».
+- **Ce qui en suit** (rien d'autre n'est appliqué par cette passe) :
+  - les feuilles de combat de Ren (34 images, CB-2), puis de Marek et de Vessa, se produisent **à ×3** : cases de 192 × 288 texels (cadre 96 × 144
+    par image de la ville, pieds rangée 135), reconstruction au pas 2,27 des planches générées, une seule texture cuite par duel (70 cases ; 68 pour
+    Ren + Marek complets) ; les compétences signature demanderont une seconde texture ou des cases ajustées à la figure ;
+  - le héros aura deux feuilles : la ville garde `hero-x2-v4` (×2), l'arène prend sa feuille de combat ×3, repos et marche refaits par la même
+    recette (`trialRig(3)` en montre la voie) ; rien n'entre en production sans manifeste approuvé par l'opérateur ;
+  - le bord la nuit (contour noir, liseré du shader, liseré peint) se tranche sur la première feuille de Ren, rendus côte à côte ;
+  - `hero-x3-trial`, `hero-x4-trial` et `?fighterdensity=` restent, en labo et sur le serveur DEV, jusqu'à la feuille de Ren ; puis on les retire.
+
+### Tests et validation
+- `tests/fighter-density.test.mjs` (3) : les feuilles d'essai sont `lab`, non approuvées, hors de la distribution (candidats compris), leur export
+  contre leur paquet ; chacune est le profil du héros de production (repos et marche, mêmes nombres d'images) à sa densité ; l'arène n'atteint
+  l'essai que derrière `import.meta.env.DEV`, et aucun autre fichier de `src/` hors `src/lab`. **4 fautes injectées sur 4 attrapées** (manifeste
+  approuvé, une image de marche retirée, une garde DEV retirée, une importation hors de l'arène), fichiers rendus à l'octet (SHA-256).
+- Typecheck, `npm test` **191 / 191**, build, `art:validate` (20 manifestes, 30 sources, 0 erreur), `build-trial.mjs --check` ×2.
+- Journal : avec cette passe, les passes gardées font 59,2 Ko, sous le seuil d'environ 60 Ko : pas d'archivage.
+
+### Pensée
+- Une référence chiffrée d'un audit se remesure avant de fonder une décision : « environ 1,5 » était la foule, le héros fait 2,0 à 2,3 ; l'écart à
+  combler passait de 2,5 à 1,7, et le facteur qui le comble devient ×3.
+- Une capture de chauffe se vérifie par son témoin : sans elle, le voile de chargement en fondu donnait des millions de pixels d'écart entre deux
+  chargements du même `main`.
+- Un outil dont l'empreinte est épinglée dans des paquets approuvés ne s'étend pas en place pour un essai : un pilote voisin qui reprend sa chaîne
+  garde les paquets valides et se prouve par son propre `--check`.
+- Une recette paramétrée par la densité (`trialRig(K)`) se prouve en reconstruisant à l'identique la première sortie après le refactoring, avant
+  d'en tirer une seconde.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -542,7 +653,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   plus la voie principale (Passes 4A-quater / quinquies).
 - **Point de QA (pas une tâche)** : PNJ ×2 près de 1 px écran / texel (caméra A, PNJ lointains) : détails d'un texel qui clignotent ;
   surveiller à chaque nouveau PNJ. Mesuré en Passe S2 (graine 1842) : distribution ×2 à 0,35-0,78 px / texel en A, 0,65-1,68 en B, 0,97-2,02
-  en C, 1,15-1,29 en D ; héros ×1 à 1,6 / 3,0 / 3,3 / 2,9.
+  en C, 1,15-1,29 en D ; héros ×1 à 1,6 / 3,0 / 3,3 / 2,9. Héros cuit `hero-x2-v4` (Passe AA2, 1080p) : A 1,23, B 2,04-2,10, C 2,32, D 2,04 ; dans le duel de l'arène, ×2 3,50, ×3 2,34 (décidé pour les feuilles de combat), ×4 1,75.
 
 **2. Occlusion du joueur (Passes 3 / 3b)**
 - Un montant sombre de la bannière du bateau n'est pas découpé par le reveal et coupe le joueur ; la casquette tombe dans la bande tramée ;
@@ -611,7 +722,7 @@ republier avec `tools/arena-scene-page.mjs` après un changement). Le prototype 
 la page publiée dans le visualiseur. Restes : visages des combattants (la grammaire du générateur), anneau de dalles peu visible (l'occlusion
 de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sources de lumière sur 24, ralenti sous 20 images/s.
 **De jour depuis la Passe AD1** (décision L7-2) : le duel et le parvis du mode jouable prennent l'état du créneau (`?time=`, `arenaQuery`) ; à voir
-en jeu par l'opérateur ; le liseré froid peint des combattants reste le même de jour ; l'artefact publié montre la nuit. **Audit des sprites (Passe AA1)** : le joueur est Ren généré à l'arène et `hero-x2-v4` en ville ; un texel de combattant fait 3,9 px en 1080p contre ~1,5 en ville ; jeux d'images courts (Ren 29, Marek 17). Décisions AA1-1 à AA1-6 (toutes à la recommandation) : Ren = `hero-x2-v4` avec une feuille de combat ; feuilles cuites (Ren, puis Marek, puis Vessa) après l'atelier combat ; en attendant, l'essai de densité ×2 contre ×4 et le public des citadins cuits + variantes V1, chacun derrière un paramètre ; les générés ne sont pas retouchés.
+en jeu par l'opérateur ; le liseré froid peint des combattants reste le même de jour ; l'artefact publié montre la nuit. **Audit des sprites (Passe AA1)** : le joueur est Ren généré à l'arène et `hero-x2-v4` en ville ; un texel de combattant fait 3,9 px en 1080p contre ~1,5 en ville ; jeux d'images courts (Ren 29, Marek 17). Décisions AA1-1 à AA1-6 (toutes à la recommandation) : Ren = `hero-x2-v4` avec une feuille de combat ; feuilles cuites (Ren, puis Marek, puis Vessa) après l'atelier combat ; en attendant, l'essai de densité ×2 contre ×4 et le public des citadins cuits + variantes V1, chacun derrière un paramètre ; les générés ne sont pas retouchés. **Essai de densité fait (Passe AA2)** : le héros cuit dans le duel à ×2, ×3, ×4 (DEV, `?scene=arena&fighterdensity=`), le texel du héros en ville remesuré (2,0-2,3 px en B / C / D, pas 1,5) ; décision AA2-1 « ×3 » : les feuilles de combat se font à ×3 (2,3 px, une texture par duel) ; AA2-2 « Trancher sur la première feuille de Ren » (le bord la nuit) ; AA2-3 « Les garder jusqu'à la feuille de Ren » (`hero-x3-trial`, `hero-x4-trial`, le paramètre). Reste le public (AA1-4), dans sa séance.
 **Le système de combat (Passe CB1)** : spécification `briefs/combat-system.md`, approuvée (« tour par tour dynamique » ; contrats amendés, A3 ;
 liste des animations : 34 images pour Ren). **C1 fait (Passe C1)** : le cœur du duel en simulation pure (`src/combat/dynamic.ts`), son bot et sa
 course hors écran, derrière `flags.combat = 'dynamic'` (`tournament-lab --rules=dynamic`) ; l'arène actuelle reste le défaut ; un soin sans recharge
@@ -621,7 +732,7 @@ design (jauges, barre de break, PA, compétences et coûts, priorité), clips d'
 le défaut inchangé (0 px). **Suite : l'essai de l'opérateur en jeu** (guide `briefs/combat-trial-c2.md` ; page jouable
 https://claude.ai/artifact/HnfCTWXSggDVVyVUskTBJK ; fiche https://claude.ai/artifact/2BFmUTe6GFRAjq92TEHNPc : le défaut, le § 11, le HUD, les
 écarts de l'interface), à relire puis consigner ; ensuite, chacun dans sa séance : C3 les adversaires (avec L7-4 et l'alerte légère des
-compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis les feuilles de combat (après l'essai et AA1-3) ; plus tard les
+compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis les feuilles de combat à ×3 (AA2-1 ; après l'essai du duel) ; plus tard les
 équipes et les options. Le contrat de combat s'écrira après l'essai (CB-9).
 
 **6d. Jour et nuit (note de l'opérateur, Passe D1)** — mot pour mot : « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Le jeu n'a aujourd'hui que la nuit (direction

@@ -1,0 +1,33 @@
+{
+ "id": "hero-x3-trial",
+ "frame": [
+  96,
+  144,
+  135
+ ],
+ "frames": 12,
+ "tags": "idle-side:0-3 walk-side:4-11",
+ "sheet": [
+  576,
+  288
+ ],
+ "palette": {
+  "mode": "palette-from hero-x2-v4.png",
+  "colours": 64,
+  "views": {
+   "recon-side-full-q.png": {
+    "texels": 4260,
+    "meanOklabErrPermille": 12.5,
+    "maxOklabErrPermille": 56.1
+   }
+  }
+ },
+ "views": {
+  "side": "d7e90466610d78546e45882f6452b57c413b0dc06e581bc314bcac62d5e598f7"
+ },
+ "exports": {
+  "png": "ebe028777a9e587d276ce49da8c617de87d3bd0338aef577c4d789e6df85862c",
+  "json": "a92f6f6863c5a2c9d0e6e799eda13fe8737a3dc6b9d32f631b76269b4425e168",
+  "aseprite": "a3ae5a0d66c9b6df4f137dbf73c078100a91ad9bd322beaeb6577561d70d7f49"
+ }
+}

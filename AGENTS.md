@@ -244,6 +244,10 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   `node tools/perf.mjs "arena|scene=arena"` (the tool drives `window.__arena` when there is no `__app`; `?gpuprof=1` for the panel-less timer)
 - Character Lab (dev only): `npm run dev`, then `/character-lab.html` (or `npm run art:lab`) — shows an exported PNG sheet through
   Three.js at 1x / 4x / runtime scale; `window.__lab.selfTest()` checks nearest filtering texel-for-texel. Not part of the game or its build.
+- `node tools/art-lab/build-trial.mjs art-lab/characters/rigs/<id>.rig.mjs [--check]` — a LAB character at another density than x2 (the rig's
+  `frame`: 32k x 48k, feet on 45k): build-character.mjs's chain (reconstruct-grid, quantize-palette with a pinned palette, rig-engine, the
+  frame contract, Aseprite, every exported frame compared), build-character.mjs left as it is (its SHA-256 is pinned in the approved packs);
+  first use: `hero-x3-trial` / `hero-x4-trial`, `trialRig(K)` of `rigs/hero-trial.common.mjs` (journal Passe AA2)
 - `node tools/art-lab/gen-image.mjs --task=<name> --prompt-file=<f.txt> [--ref=<image> ...] [--n=1] [--size=1536x1024] [--quality=high]
   [--dry-run]` — images through the OpenAI Images API, under the rule "Image generation" below (`--list-models`, `--spent`,
   `--archive=<generated.png> --name=<base>`; journal Passe I1)
@@ -353,7 +357,11 @@ treatment at the night's strength; the play mode's duel and forecourt set it fro
 `combat=dynamic` (the duel of the « tour par tour dynamique », lot C2, journal Passe C2: `DynamicSim` and its HUD, keys 3-6 the four skill slots;
 `dyn=apMax:5,apStart:1,apRegen:0,gauge:100,decay:1.8,stun:6,breakDmg:1.2,guard:0.6,level:3,foeHp:8000,renHp:2200` sets the trial's numbers, each
 bounded, any other key or value refused; absent = today's CombatSim, unchanged; the play mode: `&combat=dynamic` with `new=1` or `state=`); keys
-1-6, A dodge, B guard (hold), R restart, Space pause, H HUD
+1-6, A dodge, B guard (hold), R restart, Space pause, H HUD; DEV server only, the fighters' density trial (journal Passe AA2, decision AA1-3;
+`src/lab/fighterDensity.ts`, compiled out of production builds): `fighterdensity=x2|x3|x4` (Ren drawn by the hero's baked sheet: `hero-x2-v4` as it is, or
+the lab rebuilds `hero-x3-trial` / `hero-x4-trial`, idle and walk only, at the hero's scale 0.9), `fighterpose=idle|walk|idle.<i>|walk.<i>`,
+`fighteredge=dark|rim` (the town's dark outline, default, or the shader's crown rim); `window.__density` (the sheet, its atlas cost, `measure()` the
+texel on screen); absent = the arena as before (0 px against frozen main, the production bundle identical)
 
 ## Art production principle
 Maximise perceptual complexity while minimising runtime complexity.
@@ -372,7 +380,8 @@ cost, reproducibility and operator approval — not procedural purity.
   place of `hero-x2-v3` (approved on 2026-10-19, journal Passes D3 / H10, now superseded); the cat is still generated. The arena scene (`?scene=arena`, journal
   Passe P1) generates its fighters (Ren with the hero's palette, Marek, and the play mode's Vessa Lark, kept generated for the slice: L7-1 « La
   garder pour la tranche », journal Passe D8) with the town generator's rules at x2 density (`src/arena/FighterArt.ts`);
-  a baked sheet can take their place by the same frame keys only through an approved manifest.
+  a baked sheet can take their place by the same frame keys only through an approved manifest; the combat sheets are made at x3 (the
+  operator's decision AA2-1 « ×3 », journal Passe AA2: 2.3 px per texel in the duel at 1080p, as the hero in the town's close framings).
 - A baked asset may reach the runtime only through an approved provenance manifest (`approved: true`, `runtimeUse: "production"`)
   and an explicit operator-approved task. Generated output never becomes canonical production art silently.
 - `*.aseprite` files are production sources (tracked); the sheet PNG + metadata JSON exports are the baked, runtime-ready outputs.

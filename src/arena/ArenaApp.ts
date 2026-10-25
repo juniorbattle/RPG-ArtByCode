@@ -145,6 +145,8 @@ export class ArenaApp {
   private walkerZ = 0.6;
   private walkT = 0;
   private walkFrames = 0;
+  /** DEV only: the fighters' density trial (?fighterdensity=x2|x4, src/lab/fighterDensity.ts, journal Passe AA2); declared, never emitted */
+  private declare densityTrial?: import('../lab/fighterDensity').DensityTrial;
 
   constructor(private opts: ArenaOptions) {
     this.rules = arenaRules(opts.params, opts.match);
@@ -241,10 +243,14 @@ export class ArenaApp {
     this.castLight.scale = this.castLight.targetScale = 0; this.hitLight.scale = this.hitLight.targetScale = 0;
     this.opts.onProgress('fighters', 0.98);
     this.set = buildArenaAtlas(seed, 5, this.opts.match?.foe, !!this.opts.forecourt);
+    // DEV only: the fighters' density trial (?fighterdensity=x2|x4: Ren drawn by the hero's baked sheet, src/lab/fighterDensity.ts, journal
+    // Passe AA2); compiled out of production builds, absent = the arena as before
+    if (import.meta.env.DEV && this.opts.params.has('fighterdensity')) this.densityTrial = await (await import('../lab/fighterDensity')).installFighterDensity(this.set, this.opts.params);
     this.walkFrames = [...this.set.atlas.frames.keys()].filter((x) => x.startsWith('ren/side/walk.')).length;
     this.sprites = new SpriteRenderer(this.set.atlas, 96, { w: CELL_W, h: CELL_H, foot: CELL_FOOT });
     this.sprites.charScale = CHAR_SCALE;
     this.sprites.protect.crowd = 0.35;
+    if (import.meta.env.DEV && this.densityTrial) this.densityTrial.attach(this.sprites, this.camera, () => this.post.width);
     // by day the silhouette treatment (lit-side lift, crown rim, shadow side: uMoonCol, the sun) keeps the night's strength: scaled by the
     // moon's luminance over the sun's (journal Passe AD1)
     if (this.look) this.sprites.setEdgeGain(lum(NIGHT_MOON) / lum(this.look.sunCol));
@@ -429,6 +435,7 @@ export class ArenaApp {
       a.t = 0;
       p.lastClip = clip;
     }
+    if (import.meta.env.DEV && this.densityTrial) this.densityTrial.present(this.fighters.ren, this.time);
   }
 
   private presentFans(): void {

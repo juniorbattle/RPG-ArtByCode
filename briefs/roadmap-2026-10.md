@@ -65,6 +65,9 @@ Puis : « Le district en cours, c'est le parvis de l'arène (la place principale
    `ready` 2, `strike` 3, `heavy` 4, `skillOff` 4, `skillDef` 3, `skillSup` 3, `block` 2, `dodge` 2, `hit` 2, `recover` 2, `ko` 3, `victory` 2),
    une animation par famille de compétences, des compétences signature plus tard ; Marek de 24 à 34 images selon sa défense et ses familles ;
    Vessa comme Ren. Les feuilles attendent C1-C2 (les durées) et l'essai de densité ×2 / ×4 (AA1-3).
+   **Essai de densité fait (Passe AA2, 25/10)** : le héros cuit dans le cadrage du duel à ×2, ×3 et ×4 (serveur DEV, `?scene=arena&fighterdensity=`) ;
+   décision AA2-1 « ×3 » : les feuilles de combat se font **à ×3** (cases de 192 × 288 texels, 2,3 px par texel en 1080p comme le héros dans les
+   cadrages proches de la ville, un duel complet dans une seule texture cuite ; même coût GPU que ×2 et ×4).
 3. **Les spectateurs** : une foule bon marché (quelques silhouettes, variantes de couleurs par les masques de la Passe V1, une boucle d'acclamation,
    un seul appel de dessin) plutôt qu'un personnage complet par spectateur.
 
@@ -113,6 +116,12 @@ d'entraînement.
 - Les spectateurs : « Les citadins cuits de la ville + variantes V1 » (AA1-4).
 - L'étape 1 devient donc : l'atelier combat (étape 0), et en attendant l'essai de densité et le public, chacun dans sa séance et derrière un
   paramètre ; puis les feuilles de combat de Ren, Marek et Vessa.
+
+## Tranché (fiche de l'essai de densité, Passe AA2, 25/10)
+
+- La densité des feuilles de combat : « ×3 » (AA2-1).
+- Le bord d'un combattant cuit la nuit : « Trancher sur la première feuille de Ren » (AA2-2).
+- Les feuilles d'essai (`hero-x3-trial`, `hero-x4-trial`) et `?fighterdensity=` : « Les garder jusqu'à la feuille de Ren » (AA2-3).
 
 ## Tranché (fiche de l'atelier combat, Passe CB1, 25/10)
 
