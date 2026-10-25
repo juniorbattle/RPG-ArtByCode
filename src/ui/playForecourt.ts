@@ -2,6 +2,8 @@ import { ArenaApp } from '../arena/ArenaApp';
 import { arenaQuery, lookOf, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
+import { fontsReady, installDesign } from './design/system';
+import { preloadPortraits } from './portraits';
 
 /** The Arena Forecourt (journal Passes L4 / L6): the arena's sand outside the bouts, walkable (the hero walks it, arrows or A / D, W / S),
  *  Marek drilling by the ring by day; the registrar's table, the practice post where Orla trains and the healer's corner are spots on
@@ -15,6 +17,7 @@ export async function startPlayForecourt(b: Boot, st0: GameState): Promise<void>
   for (const k of ['fps', 'freeze', 'painters', 'gpuprof']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   const app = new ArenaApp({ canvas: b.canvas, params: q, onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; }, forecourt: { marek: st.slot !== 'evening' } });
   (window as any).__arena = app;
+  installDesign(lookOf(st));
   await app.init();
   // nobody fights on the forecourt: the simulation holds, without the pause screen
   app.paused = true; app.moment = true;
@@ -31,6 +34,7 @@ export async function startPlayForecourt(b: Boot, st0: GameState): Promise<void>
   const frame = () => { ui.update(); requestAnimationFrame(frame); };
   frame();
   app.start();
+  await Promise.all([fontsReady(), preloadPortraits()]);
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();

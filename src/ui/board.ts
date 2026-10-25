@@ -9,9 +9,9 @@ export function standingsHtml(st: GameState, rows: Array<{ id: string; points: n
   const tr = rows.map((r, i) => {
     const me = r.id === PLAYER_ID, c = st.competitors[r.id];
     const name = me ? st.player.name : RIVALS[r.id].name, hurt = c && c.healthState !== 'fit' ? ' <span class="pm-sub">(hurt)</span>' : '';
-    return `<tr${me ? ' style="color:#f6e7c4"' : ''}><td>${i + 1}.</td><td>${esc(name)}${hurt}</td><td style="text-align:right">${r.points} pts</td></tr>`;
+    return `<tr${me ? ' class="me"' : ''}><td>${i + 1}.</td><td>${esc(name)}${hurt}</td><td class="pts"><span class="pm-num">${r.points}</span> pts</td></tr>`;
   }).join('');
-  return `<table style="width:100%;border-collapse:collapse;font-size:13px">${tr}</table>`;
+  return `<table class="pm-table">${tr}</table>`;
 }
 
 export function boardHtml(st: GameState, rows: Array<{ id: string; points: number; reputation: number }>): string {
@@ -23,8 +23,8 @@ export function boardHtml(st: GameState, rows: Array<{ id: string; points: numbe
     <p class="pm-sub">Phase I · the pool of eight</p>
     <p><b>Next:</b> ${esc(deadline)}</p>
     ${standingsHtml(st, rows)}
-    <p class="pm-sub" style="margin-top:8px">Rules of the pool</p>
+    <p class="pm-sub pm-gap">Rules of the pool</p>
     <p>A win earns ${POINTS.win} points, a close defeat ${POINTS.close}, a defeat ${POINTS.loss}. A defeat costs points and reputation, sometimes a wound: it never ends your tournament.</p>
     <p>After the pool, the best four go on to the transition phase: trials and the first allies. Teams come later in the tournament. (The slice ends with the pool's second round.)</p>
-    ${results ? `<p class="pm-sub" style="margin-top:8px">Results</p>${results}` : ''}`;
+    ${results ? `<p class="pm-sub pm-gap">Results</p>${results}` : ''}`;
 }

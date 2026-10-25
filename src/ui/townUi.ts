@@ -23,24 +23,58 @@ export interface UiHost {
   nearby?(): string | null;
 }
 
+/** on a computer: the status panel top left, the bar top right, « Here » under it; on a phone (the operator's decision L3, « Avec le système de
+ *  design »; touch stays out of the slice, E30): a strip along the top, tabs along the bottom (« Here » the first, its list a sheet above them),
+ *  the dialogue and the other cards sheets at the bottom of the screen */
 const CSS = `
-#pm-status{left:12px;top:12px;width:min(330px,calc(100vw - 24px));padding:10px 13px}
-#pm-status .clock{font-size:15px;letter-spacing:.28em;text-transform:uppercase;color:#f1d9a0}
-#pm-status .next{margin-top:5px;font-size:12px;color:#e9c890}
-#pm-bar{right:12px;top:12px;display:flex;gap:5px}
-#pm-bar .pm-btn{width:auto;margin:0;padding:6px 9px;font-size:12px}
-#pm-here{right:12px;top:56px;width:min(320px,calc(100vw - 24px));max-height:calc(100vh - 140px);overflow:auto;padding:10px 12px}
+#pm-status{left:12px;top:12px;width:min(390px,calc(100vw - 24px));padding:2px 6px}
+#pm-status .clock{font:400 var(--ds-fs-pixel)/1.2 var(--ds-pixel);letter-spacing:.04em;color:var(--ds-goldHi);text-shadow:0 var(--ds-px) 0 var(--ds-ink)}
+#pm-status .stats{margin-top:2px}
+#pm-status .next{margin-top:4px;font-size:var(--ds-fs-small);color:var(--ds-goldHi)}
+#pm-status .hurt{color:var(--ds-amberHi)}
+#pm-bar{right:12px;top:12px;display:flex;gap:6px}
+#pm-bar .pm-btn{width:auto;margin:0;padding:1px 6px 1px 2px}
+#pm-bar .tab-here{display:none}
+#pm-here{right:12px;top:78px;width:min(380px,calc(100vw - 24px));max-height:calc(100vh - 160px);overflow:auto;padding:2px 6px}
 #pm-here.min .list{display:none}
 .pm-btn .cost+.cost{margin-left:0}
-#pm-prompt{left:50%;bottom:24px;transform:translateX(-50%);padding:7px 16px;border-radius:20px;background:rgba(8,12,22,.82);border:1px solid rgba(233,166,76,.5);color:#f6e7c4;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+#pm-prompt{left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:2px 10px 2px 2px;color:var(--ds-ivory);font-size:var(--ds-fs-label);border:calc(4 * var(--ds-px)) solid transparent;border-image:var(--ds-f-btnHi) 4 fill / calc(4 * var(--ds-px)) stretch;image-rendering:pixelated;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
 #pm-prompt.on{opacity:1}
-#pm-toast{left:50%;top:12px;transform:translateX(-50%);width:min(520px,calc(100vw - 24px));padding:10px 14px;display:none}
+#pm-toast{left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100vw - 24px));padding:2px 8px;display:none}
 #pm-toast.on{display:block}
+#pm-toast p{margin:4px 0}
+#pm-place-tag{left:50%;bottom:10px;transform:translateX(-50%);opacity:.8;white-space:nowrap;pointer-events:none}
 .pm-dlg{display:flex;gap:14px;align-items:flex-start}
-.pm-dlg img{width:84px;height:84px;flex:none;image-rendering:pixelated;border:2px solid #0a0d16;box-shadow:0 0 0 1px rgba(233,166,76,.55);background:linear-gradient(#24304c,#0b1020)}
-.pm-dlg q{display:block;margin:4px 0;quotes:none;color:#efe3c4}
-@media (max-width:700px){#pm-status{width:calc(100vw - 24px)}#pm-bar{top:auto;bottom:12px;right:12px;left:12px;justify-content:space-between}#pm-here{top:auto;bottom:56px;left:12px;right:12px;width:auto;max-height:38vh}#pm-prompt{bottom:auto;top:46%}.pm-dlg img{width:56px;height:56px}}
-@media (max-height:480px){#pm-status{padding:6px 10px;width:300px}#pm-status .next{display:none}#pm-here{max-height:calc(100vh - 110px);top:48px;bottom:auto;width:300px;left:auto}#pm-bar{top:8px;bottom:auto;left:auto}}
+.pm-dlg .port{flex:none;line-height:0;border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-gauge) 3 fill / calc(3 * var(--ds-px)) stretch;image-rendering:pixelated}
+.pm-dlg img{width:96px;height:96px;image-rendering:pixelated}
+.pm-dlg .who{flex:1;min-width:0}
+.pm-parch q{display:block;margin:4px 0;quotes:none}
+@media (max-width:700px){
+  #pm-status{left:6px;right:6px;top:6px;width:auto;padding:0 4px}
+  #pm-status .next{margin-top:0}
+  #pm-bar{top:auto;bottom:6px;left:6px;right:6px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+  #pm-bar .pm-btn{justify-content:center;padding:4px 0;font-size:var(--ds-fs-small)}
+  #pm-bar .pm-btn kbd{display:none}
+  #pm-bar .tab-here{display:flex}
+  #pm-here{top:auto;bottom:62px;left:6px;right:6px;width:auto;max-height:46vh}
+  #pm-here.min{display:none}
+  #pm-prompt{bottom:auto;top:44%}
+  #pm-toast{top:auto;bottom:62px}
+  #pm-place-tag{bottom:62px;width:calc(100vw - 24px);white-space:normal;text-align:center}
+  .pm-dlg img{width:64px;height:64px}
+}
+@media (max-height:480px) and (min-width:701px){
+  #pm-status{left:6px;top:6px;width:380px;padding:0 4px}
+  #pm-status .next{display:none}
+  #pm-bar{top:auto;bottom:6px;right:6px;left:auto}
+  #pm-bar .pm-btn{padding:0 6px 0 2px;font-size:var(--ds-fs-small)}
+  #pm-bar .tab-here{display:flex}
+  #pm-here{top:6px;right:6px;bottom:auto;width:340px;max-height:calc(100vh - 70px)}
+  #pm-here.min{display:none}
+  #pm-toast{top:auto;bottom:60px;width:min(560px,calc(100vw - 12px))}
+  #pm-place-tag{bottom:60px}
+  .pm-dlg img{width:48px;height:48px}
+}
 `;
 
 /** what an action takes, one tag per currency (the operator's decision P2, journal Passes UI1 / UI2): its coins (from the simulation, not
@@ -66,6 +100,8 @@ export class TownUi {
     this.status.id = 'pm-status'; this.bar.id = 'pm-bar'; this.here.id = 'pm-here'; this.prompt.id = 'pm-prompt'; this.toast.id = 'pm-toast';
     this.status.setAttribute('aria-live', 'polite');
     document.body.append(this.status, this.bar, this.here, this.prompt, this.toast);
+    // a phone's first tab: « Here », whose list is a sheet above the tabs (a computer shows the panel itself)
+    const tab = el('button', 'pm-btn tab-here', 'Here'); tab.addEventListener('click', () => this.here.classList.toggle('min')); this.bar.appendChild(tab);
     for (const [k, label, f] of [['M', 'Map', () => this.openMap()], ['J', 'Journal', () => this.openJournal()], ['T', 'Tournament', () => this.openBoard()], ['Esc', 'Menu', () => this.openMenu()]] as const) {
       const b = el('button', 'pm-btn', `<kbd>${k}</kbd>${label}`); b.addEventListener('click', f); this.bar.appendChild(b);
     }
@@ -93,7 +129,7 @@ export class TownUi {
     else if (s.facts.includes('orla-introduced')) told.push('Orla Brask is looking for comrades for the team bouts to come.');
     told.push(rank <= 4 ? 'The best four go on to the transition phase: trials, and the first allies.' : 'Only the best four go on; the others will look for a team, or for revenge.');
     this.modal = true;
-    const o = overlay(`<p class="pm-big">End of the slice</p><p class="pm-sub" style="text-align:center">Day 3 is over · to be continued</p>${told.map((t) => `<p>${t}</p>`).join('')}<p class="pm-sub">The pool</p>${standingsHtmlRows(s, rows)}`,
+    const o = overlay(`<p class="pm-big">End of the slice</p><p class="pm-sub pm-center">Day 3 is over · to be continued</p>${told.map((t) => `<p>${t}</p>`).join('')}<p class="pm-sub">The pool</p>${standingsHtmlRows(s, rows)}`,
       [{ id: 'stay', label: 'Keep walking the district', primary: true }, { id: 'title', label: 'Back to the title screen' }]);
     this.current = o.root;
     const r = await o.done;
@@ -109,7 +145,7 @@ export class TownUi {
     if (n !== this.near) {
       this.near = n;
       const p = n ? PEOPLE[n] : null;
-      this.prompt.innerHTML = p ? `<kbd style="padding:0 5px;margin-right:6px;color:#05070d;background:#d9c9a8;border-radius:2px">E</kbd>Talk to ${esc(p.name)}, ${esc(p.title)}` : '';
+      this.prompt.innerHTML = p ? `<kbd>E</kbd>Talk to ${esc(p.name)}, ${esc(p.title)}` : '';
       this.prompt.classList.toggle('on', !!p && !this.modal);
     }
   }
@@ -123,7 +159,7 @@ export class TownUi {
     const next = s.over ? 'The slice is over: to be continued.' : opp ? `Next bout: ${opp.name}, day ${m!.day} afternoon${m!.day === s.day ? (s.slot === 'afternoon' ? ' — now' : ' — today') : ''}` : 'Your bouts of the pool are fought.';
     const slotName = s.slot === 'evening' ? (dusk(s) ? 'evening · sunset' : 'evening') : s.slot;
     this.status.innerHTML = `<div class="clock">Day ${s.day} / 3 · ${slotName}</div><div class="pm-sub">${esc(P.name)} · ${esc(placeName(s.place))}</div>
-      <div style="margin-top:4px">${P.coins} coins · reputation ${P.reputation} · ${P.injury ? `<span style="color:#e9a64c">${P.injury > 1 ? 'badly hurt' : 'hurt'}</span>` : 'fit'}${P.items.length ? ` · ${esc(P.items.map((i) => i.replace('-', ' ')).join(', '))}` : ''}</div>
+      <div class="stats"><span class="pm-num">${P.coins}</span> coins · reputation <span class="pm-num">${P.reputation}</span> · ${P.injury ? `<span class="hurt">${P.injury > 1 ? 'badly hurt' : 'hurt'}</span>` : 'fit'}${P.items.length ? ` · ${esc(P.items.map((i) => i.replace('-', ' ')).join(', '))}` : ''}</div>
       <div class="next">${esc(next)}</div>`;
     this.renderHere();
   }
@@ -133,7 +169,7 @@ export class TownUi {
     const s = this.st, opts = actions(s).filter((o) => { const by = offeredBy(o.action as never); return o.action.type !== 'talk' && o.action.type !== 'move' && (by === null || by === 'forge'); });
     const fight = s.slot === 'afternoon' && s.tournament.matches.some((m) => m.day === s.day && !m.winner && (m.a === 'player' || m.b === 'player'));
     const people = actions(s).filter((o) => o.action.type === 'talk');
-    this.here.innerHTML = `<h2 class="pm-h" style="cursor:pointer" tabindex="0" title="Show / hide">Here</h2><div class="list"></div>`;
+    this.here.innerHTML = `<h2 class="pm-h pm-toggle" tabindex="0" title="Show / hide">Here</h2><div class="list"></div>`;
     const list = this.here.querySelector('.list')!, h = this.here.querySelector('h2')!;
     h.addEventListener('click', () => this.here.classList.toggle('min'));
     if (fight) {
@@ -144,7 +180,7 @@ export class TownUi {
     if (people.length) {
       list.appendChild(el('p', 'pm-sub', 'People here'));
       for (const o of people) {
-        const who = (o.action as { who: string }).who, b = el('button', 'pm-btn', `<span>${esc(PEOPLE[who].name)}<span class="why" style="color:#9aa3b8">${o.ok ? esc(PEOPLE[who].title) : esc(o.reason ?? '')}</span></span>`);
+        const who = (o.action as { who: string }).who, b = el('button', 'pm-btn', `<span>${esc(PEOPLE[who].name)}<span class="why${o.ok ? ' title' : ''}">${o.ok ? esc(PEOPLE[who].title) : esc(o.reason ?? '')}</span></span>`);
         b.disabled = !o.ok; b.addEventListener('click', () => this.openPerson(who)); list.appendChild(b);
       }
     }
@@ -168,7 +204,7 @@ export class TownUi {
   }
 
   private flash(lines: string[]): void {
-    this.toast.innerHTML = lines.map((x) => `<p style="margin:3px 0">${esc(x)}</p>`).join('');
+    this.toast.innerHTML = lines.map((x) => `<p>${esc(x)}</p>`).join('');
     this.toast.classList.add('on');
     clearTimeout((this.toast as any).t);
     (this.toast as any).t = setTimeout(() => this.toast.classList.remove('on'), 6500);
@@ -204,7 +240,7 @@ export class TownUi {
     this.modal = true; this.prompt.classList.remove('on');
     const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card');
     card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', p.name);
-    card.innerHTML = `<div class="pm-dlg">${url ? `<img src="${url}" alt="">` : ''}<div><h2 class="pm-h">${esc(p.name)}</h2><p class="pm-sub">${esc(p.title)}</p>${lines.map((l) => `<q>${esc(l)}</q>`).join('')}</div></div>`;
+    card.innerHTML = `<div class="pm-dlg">${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(p.name)}</h2><p class="pm-sub">${esc(p.title)}</p></div></div><div class="pm-parch">${lines.map((l) => `<q>${esc(l)}</q>`).join('')}</div>`;
     for (const o of opts) card.appendChild(this.optionButton(o, () => { if (this.current === root) this.openPerson(who); }));
     const leave = el('button', 'pm-btn', '<kbd>Esc</kbd>Leave');
     leave.addEventListener('click', () => this.closeModal());
@@ -228,7 +264,7 @@ export class TownUi {
   private openJournal(): void {
     const s = this.st, facts = s.log.filter((e) => e.visible).slice(-30).reverse();
     this.closeModal();
-    void this.card(`<h2 class="pm-h">Journal</h2>${facts.map((e) => `<p><span class="pm-sub">Day ${e.day} · ${e.slot}</span><br>${esc(e.text)}${e.kind === 'consequence' || e.kind === 'sign' ? `<br><span class="pm-sub" style="text-transform:none;letter-spacing:.02em">Why: ${esc(e.cause)}</span>` : ''}</p>`).join('')}`);
+    void this.card(`<h2 class="pm-h">Journal</h2>${facts.map((e) => `<p><span class="pm-sub">Day ${e.day} · ${e.slot}</span><br>${esc(e.text)}${e.kind === 'consequence' || e.kind === 'sign' ? `<br><span class="pm-sub why">Why: ${esc(e.cause)}</span>` : ''}</p>`).join('')}`);
   }
 
   private openBoard(): void { this.closeModal(); void this.card(boardHtml(this.st, standings(this.st))); }

@@ -89,7 +89,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `npm test` — unit tests of the pure logic (`tests/*.test.mjs`, built-in `node --test`, ~2 s, no browser or GPU): camera zone hysteresis,
   `planDraw`, the production cast's gate (manifest approval, SHA-256 against the provenance pack), sheet metadata, PNG decoding, the baked walk
   cycles' ground speed and the walkers' animation clock (journal Passe S2), the image generation tool offline (a fake API and key, journal Passe I1), the game's headless core and the tournament (journal Passes L1 / L2: determinism, saves, the pure modules, the off-screen resolution against full duels, the events and the sabotage chain), the arena's combat simulation against the prototype's own script
-  read out of `arena/arena.html` (same events and state at every step, journal Passe P1) and the arena fighters' atlas.
+  read out of `arena/arena.html` (same events and state at every step, journal Passe P1), the arena fighters' atlas and the interface's design
+  system (the fonts' bytes, the palette's tones and contrasts, the frames, the sizes, journal Passe UI3).
   `tests/load.mjs` loads `src/` through Vite's SSR loader (extensionless imports, `?url`, named JSON imports, as the bundle resolves
   them; `--experimental-strip-types` alone cannot), with its own cache folder (`node_modules/.vite-test`), no file watcher and no
   `vite.config.ts` (`configFile: false` + `server.watch: null`: a merged config drops the null, and the watcher crawled the ignored Art Lab
@@ -112,6 +113,10 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   negative control; compare the two captures with `tools/diff.mjs`). Explore's DEV panel starts closed (journal Passe UI2): the base page gets
   `BASE_KEYS` before its capture (default `h`, its panel closed by H; `BASE_KEYS=` = the panel open, the negative control); Explore after H
   and the branch's own `BASE_QUERY` address (panel open) are captured against the base without keys; every page's panel state is checked
+- `node tools/ui-text.mjs [--json=f] "name|<query>|<WxH,..>|<js>" ...` — the interface's text measured in the page (journal Passe UI3, S1 / S4):
+  every visible text node's computed size and font, every character against the embedded fonts' subset; fails under 16 px on a computer or
+  14 px on a phone (the design system's phone query), on a font other than the two embedded ones, on a character outside their subset, on fonts
+  not loaded (DEV server for named states; `?title=1` for the title screen; `__arena.jump(...)` on arena pages)
 - CI (`.github/workflows/ci.yml`, GitHub Actions, every push and pull request): Node 22 on `ubuntu-24.04` (pinned, operator decision of 2026-10-19), `npm ci`, `npm run typecheck`,
   `npm run build`, `npm run art:validate`, `npm test`. The runner has no Chrome, GPU or Aseprite (`puppeteer-core` downloads no browser at
   install): every other tool below (screenshots, perf / cadence / startup / overdraw measurements, visibility and viewport proofs, camera
@@ -422,8 +427,18 @@ Interface (decided, journal Passe UI1: the operator's UI sheet, 14 choices of 14
 - Order: P1 « Fermé par défaut, H l'ouvre » (Explore's DEV panel closed, H opens it), P2 « En premier » (one cost tag per currency: coins from
   the simulation's `ActionOption.coins`, the slot, « free » only when nothing is spent) and P3 « En premier » (the arena's action bar 60 px
   high on a computer, its sub-labels whole), done before the design system (journal Passe UI2); then the design system
-  (roadmap step 2.3: S1-S4, L2, L3, L4), and screen by screen P4 (the dialogue at the bottom, the speaker visible), P5 (« Here » reduced to the
+  (roadmap step 2.3: S1-S4, L2, L3, L4; built in journal Passe UI3, see below), and screen by screen P4 (the dialogue at the bottom, the speaker visible), P5 (« Here » reduced to the
   place's actions) and P6 (the match sheet and the victory), « Avec la direction choisie ».
+- **The design system** (journal Passe UI3, `src/ui/design/`): `tokens.ts` holds every colour of the interface (four tones, `TONES`: night =
+  the evening, morning, midday, end of day; the provisional palette S3 is changed there and only there), the type scale and its phone sizes
+  (`TYPE`, `MIN_TEXT`, `PHONE_QUERY`) and the frames' texel (`TEXEL_PX` = 2 CSS px); `frames.ts` paints the nine-slice frames (panel, parchment,
+  buttons, tags, keycaps, gauge) from a tone, pure; `system.ts` installs the fonts, the page's tone (`installDesign(time)`: the page's `DayState`)
+  and the base components. The fonts (Pixelify Sans for titles, numbers and keys; Alegreya Sans for text; SIL OFL 1.1, chosen by the operator on
+  2026-10-25) and their record (source, licence, SHA-256): `src/ui/fonts/FONTS.md`. The play mode's screens (`src/ui`), the forecourt and Lantern
+  Row pages and the arena's HUD use it; the free-roaming town, its DEV panel and HUD and the loading screen do not (unchanged). Portraits: the
+  face of the baked sheet (`preloadPortraits`), the generator's portrait where no baked sheet stands for the person. The arena's HUD with the HUD
+  hidden (`hud=0`, H) keeps its KO and pause screens as before. On a phone (`PHONE_QUERY`): a strip along the top, tabs along the bottom
+  (« Here » first), every card a sheet at the bottom of the screen. Proofs: `tests/ui-design.test.mjs`, `tools/ui-text.mjs`.
 
 ## Camera graph (`src/app/CameraGraph.ts`)
 Four authored, semi-fixed framings, all on the canal side (+z of the pivot) looking up-canal (+x), chosen by zone with

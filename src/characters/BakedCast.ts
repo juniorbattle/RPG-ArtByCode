@@ -113,6 +113,13 @@ export function castEntries(candidates: boolean, entries: readonly Entry[] = ENT
   });
 }
 
+/** the export of an approved production sheet (its PNG's URL, its JSON, the SHA-256 its provenance pack holds), for the interface's portraits:
+ *  a character's face is first the face of its baked sheet (the operator's decision L4, journal Passes UI1 / UI3); null if no production entry */
+export function castSource(id: string): { png: string; json: unknown; sha256: string } | null {
+  const e = castEntries(false).find((x) => x.manifest.id === id);
+  return e ? { png: e.png, json: e.json, sha256: e.files[`art-lab/characters/exports/${id}.png`] } : null;
+}
+
 /** `variants`: 'approved' (production: only an approved variants file is applied), 'candidate' (DEV review of an unapproved one), 'off';
  *  `entries`: the list to load, the cast's own by default (the unit tests pass their own, tests/baked-cast.test.mjs) */
 export async function loadProductionCast(candidates = false, variants: 'approved' | 'candidate' | 'off' = 'approved', file: VariantsFile = variantsFile as unknown as VariantsFile, entries: readonly Entry[] = ENTRIES): Promise<{ sheets: BakedSheet[]; cast: Map<string, CastMember> }> {

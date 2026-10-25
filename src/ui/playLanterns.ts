@@ -3,6 +3,8 @@ import { lookOf, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
 import { el } from './style';
+import { fontsReady, installDesign } from './design/system';
+import { preloadPortraits } from './portraits';
 
 /** Lantern Row (choice P3, journal Passe L6): the slice's light third place, a mock-up built from the district's generators and seen from one
  *  fixed framing, always at night (its day look would be a new aspect, a decision prepared for the operator); the tavern's innkeeper by any
@@ -14,6 +16,8 @@ export async function startPlayLanterns(b: Boot, st0: GameState): Promise<void> 
   for (const k of ['fps', 'freeze', 'painters', 'gpuprof']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   const app = new PlaceApp({ canvas: b.canvas, params: q, onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; } });
   (window as any).__place = app;
+  // Lantern Row is always at night (L7-3): the night's tone
+  installDesign('night');
   await app.init();
   b.loading.style.opacity = '0';
   setTimeout(() => b.loading.remove(), 900);
@@ -22,9 +26,10 @@ export async function startPlayLanterns(b: Boot, st0: GameState): Promise<void> 
   (window as any).__ui = ui;
   (window as any).__game.subscribe(() => ui.render());
   const tag = el('div', 'pm pm-sub', 'Lantern Row · a mock-up of the third place, built from the district\'s generators');
-  tag.style.cssText = 'left:50%;bottom:10px;transform:translateX(-50%);opacity:.75;white-space:nowrap;pointer-events:none';
+  tag.id = 'pm-place-tag';
   document.body.appendChild(tag);
   app.start();
+  await Promise.all([fontsReady(), preloadPortraits()]);
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();

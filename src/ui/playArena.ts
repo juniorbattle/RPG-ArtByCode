@@ -8,6 +8,7 @@ import { go, installGameApi, type Boot } from './play';
 import { writeSave } from './save';
 import { esc, overlay } from './style';
 import { standingsHtml } from './board';
+import { fontsReady, installDesign } from './design/system';
 
 /** The official bout (journal Passe L3; choice G1: the arena as it is, played from a match sheet): the day's opponent in Marek's seat, the
  *  player's name and preparation in Ren's, the English HUD (choice K1). A scouting report before the first blow; once the KO has had its
@@ -17,6 +18,8 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   let st = st0;
   const sheet = matchSheetFor(st), m = st.tournament.matches.find((x) => x.day === st.day && (x.a === 'player' || x.b === 'player'));
   installGameApi(() => st, (s) => { st = s; }, (prev, next) => lookOf(prev) !== lookOf(next));
+  // the interface's tone: the slot's day state, as the arena's (the afternoon's bout at midday)
+  installDesign(lookOf(st));
   if (!sheet || st.slot !== 'afternoon' || m?.winner) {
     b.loading.remove();
     (window as any).__ready = true;
@@ -45,12 +48,13 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   // the bout waits for the player: the simulation holds (no pause screen) until « Fight »
   app.paused = true; app.moment = true;
   app.start();
+  await fontsReady();
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();
   const report = sheet.intel.length ? `<p class="pm-sub">Your scouting report</p>${sheet.intel.map((x) => `<p>${esc(x)}</p>`).join('')}` : '<p class="pm-sub">You have not watched this opponent train.</p>';
   const mods = sheet.sides[0].fighters[0].mods, prep = [mods.hp !== undefined && mods.hp < 1 ? `wounded: ${Math.round(mods.hp * 100)} % health` : '', mods.damage && mods.damage > 1 ? `+${Math.round((mods.damage - 1) * 100)} % damage (${st.player.items.length ? 'your blade' : ''}${st.player.items.length && st.player.training ? ', ' : ''}${st.player.training ? 'training' : ''})` : ''].filter(Boolean);
-  await overlay(`<h2 class="pm-h">Round ${sheet.round} · day ${sheet.day}</h2><p class="pm-big">${esc(opp.name)}</p><p style="text-align:center" class="pm-sub">${esc(opp.epithet)}</p><p>${esc(opp.bio)}</p>${report}
+  await overlay(`<h2 class="pm-h">Round ${sheet.round} · day ${sheet.day}</h2><p class="pm-big">${esc(opp.name)}</p><p class="pm-sub pm-center">${esc(opp.epithet)}</p><p>${esc(opp.bio)}</p>${report}
     ${prep.length ? `<p class="pm-sub">Your preparation</p><p>${esc(prep.join(' · '))}</p>` : ''}
     <p class="pm-sub">Keys</p><p>1 quick · 2 heavy · 3-6 techniques · B hold to guard · A dodge in the window · Space pause</p>`, [{ id: 'fight', label: 'Fight', primary: true }]).done;
   app.paused = false; app.moment = false;

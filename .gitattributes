@@ -5,3 +5,7 @@
 *.webp binary
 # Arena prototype archive (journal Passe A1): the served page is kept byte for byte, never line-ending-normalised.
 arena/source/*.html -text
+
+# Embedded fonts (journal Passe UI3): binary; their licences kept byte for byte (their SHA-256 is checked by tests/ui-design.test.mjs).
+*.woff2 binary
+src/ui/fonts/*.txt -text

@@ -237,7 +237,7 @@ export class ArenaApp {
     // the moon's box is narrow (it lies low behind the gate); a high sun sees the floor and the stands from above: a wider box
     if (this.look) this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 2, -4), this.keyDir, 30, 30);
     else this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 3.5, -6), MOON_DIR, 24, 9);
-    if (!this.opts.params.has('clean')) this.hud = new ArenaHud(this.sim, this.set.portraits, this.opts.match?.texts);
+    if (!this.opts.params.has('clean')) this.hud = new ArenaHud(this.sim, this.set.portraits, this.opts.match?.texts, parseTime(this.opts.params));
     if (this.hud) {
       this.hud.onAction = (id, down) => this.action(id, down);
       this.hud.project = (who) => this.headScreen(who);
@@ -250,6 +250,8 @@ export class ArenaApp {
     const linked = this.renderer.compileAsync(this.scene, this.camera);
     this.renderer.setRenderTarget(prev);
     await linked;
+    // the HUD's embedded fonts (journal Passe UI3): loaded before the first frame a capture could take
+    await this.hud?.ready;
     this.render();
     this.ready = true;
   }

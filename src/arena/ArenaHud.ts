@@ -1,79 +1,87 @@
 import type { CombatSim, CombatEvent, FighterId, ActionId } from './CombatSim';
+import type { TimeOfDay } from '../atmosphere/DayState';
+import { fontsReady, installDesign } from '../ui/design/system';
 
-/** The arena's HUD (journal Passe P1): DOM over the canvas, in the game's own UI language (the loading screen: night ink #05070d, ivory
- *  #d9c9a8, pale gold #f1d9a0 for titles, the lamps' amber #e9a64c as the only accent, Segoe UI with wide letter-spacing, no external
- *  font). From the prototype's lean HUD (pass 11 of its report): two fighter panels (portrait, name, health with a damage trail, Ren's
+/** The arena's HUD (journal Passe P1; the interface's design system since journal Passe UI3: direction C « Héraldique pixel », its tone
+ *  following the arena's day state). From the prototype's lean HUD (pass 11 of its report): two fighter panels (portrait, name, health with a damage trail, Ren's
  *  action points), the action bar grouped as defence | attacks | techniques with costs, cooldowns and the reaction cue, floating damage,
  *  and with the full assistance only the attack alert and the reaction window's bar. Every DOM write goes through a cache. */
 
 export type Assist = 'subtle' | 'full' | 'off';
 
+/** built from the interface's design system (journal Passe UI3): the tone's colours (`--ds-*`), the code-painted nine-slice frames, the pixel
+ *  font for titles, names, numbers and keys, the text font for words; no text under 16 px on a computer, 14 px on a phone (S4). The gauges stay
+ *  in the palette (S3): the challenger's light blue, the opponent's amber. With the HUD hidden (`hud=0`, H), the KO and pause screens keep the
+ *  look they had before the system, unchanged (journal Passe UI3: every hud=0 address at 0 px) */
 const CSS = `
-#arena-hud{position:fixed;inset:0;pointer-events:none;color:#d9c9a8;font:14px/1.4 "Segoe UI",system-ui,sans-serif;z-index:20;user-select:none;-webkit-user-select:none}
+#arena-hud{position:fixed;inset:0;pointer-events:none;color:var(--ds-ivory);font:400 var(--ds-fs-body)/1.3 var(--ds-text);z-index:20;user-select:none;-webkit-user-select:none}
 #arena-hud.off>*:not(#ah-ko):not(#ah-pause){opacity:0}
-#arena-hud .top{position:absolute;left:0;right:0;top:0;height:120px;background:linear-gradient(rgba(5,7,13,.62),rgba(5,7,13,0))}
-#ah-title{position:absolute;left:18px;top:12px;letter-spacing:.3em;text-transform:uppercase;font-size:13px;color:#f1d9a0;text-shadow:0 1px 0 #05070d,0 0 8px #05070d,0 0 14px #05070d}
-#ah-title small{display:block;margin-top:3px;font-size:10px;letter-spacing:.16em;color:#d9c9a8;opacity:.75}
-#ah-title::after{content:'';display:block;width:132px;height:2px;margin-top:6px;background:linear-gradient(90deg,#e9a64c,rgba(233,166,76,0))}
-.ah-f{position:absolute;top:58px;display:flex;gap:10px;align-items:flex-start}
+#arena-hud .top{position:absolute;left:0;right:0;top:0;height:150px;background:linear-gradient(color-mix(in srgb,var(--ds-ink) 62%,transparent),transparent)}
+#ah-title{position:absolute;left:18px;top:12px;font:400 var(--ds-fs-pixel)/1.2 var(--ds-pixel);letter-spacing:.04em;color:var(--ds-goldHi);text-shadow:0 var(--ds-px) 0 var(--ds-ink),0 0 8px var(--ds-ink)}
+#ah-title small{display:block;margin-top:2px;font:400 var(--ds-fs-small)/1.2 var(--ds-text);letter-spacing:.06em;color:var(--ds-ivory);text-shadow:0 1px 0 var(--ds-ink),0 0 6px var(--ds-ink)}
+#ah-title::after{content:'';display:block;width:140px;height:var(--ds-px);margin-top:6px;background:var(--ds-gold);box-shadow:0 var(--ds-px) 0 var(--ds-goldLo)}
+.ah-f{position:absolute;top:76px;display:flex;gap:8px;align-items:flex-start}
 .ah-f.l{left:18px}.ah-f.r{right:18px;flex-direction:row-reverse;text-align:right}
-.ah-port{width:52px;height:52px;flex:none;image-rendering:pixelated;border:2px solid #0a0d16;box-shadow:0 0 0 1px rgba(233,166,76,.55),0 3px 0 1px rgba(0,0,0,.45);background:linear-gradient(#24304c,#0b1020)}
-.ah-f.r .ah-port{box-shadow:0 0 0 1px rgba(198,90,74,.6),0 3px 0 1px rgba(0,0,0,.45);background:linear-gradient(#34262c,#120c10)}
-.ah-card{position:relative;width:min(25vw,280px);padding:6px 11px 8px;background:rgba(6,9,18,.95);border:1px solid rgba(233,166,76,.4)}
-.ah-f.r .ah-card{border-color:rgba(198,90,74,.55)}
-.ah-nm{display:flex;align-items:baseline;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#efe3c4}
-.ah-nm span{margin-left:8px;font-size:11px;letter-spacing:.12em;color:#9aa3b8}
-.ah-nm em{margin-left:auto;font:700 12px/1 "Segoe UI",system-ui,sans-serif;font-style:normal;letter-spacing:.04em;color:#f3e9d2;font-variant-numeric:tabular-nums}
+.ah-port{width:calc(48px + 6 * var(--ds-px));height:calc(48px + 6 * var(--ds-px));flex:none;image-rendering:pixelated;border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-gauge) 3 fill / calc(3 * var(--ds-px)) stretch}
+.ah-card{position:relative;width:min(27vw,330px);padding:0 4px 2px;border:calc(8 * var(--ds-px)) solid transparent;border-image:var(--ds-f-panel) 8 fill / calc(8 * var(--ds-px)) stretch;image-rendering:pixelated}
+.ah-nm{display:flex;align-items:baseline;font:400 var(--ds-fs-pixel)/1.2 var(--ds-pixel);letter-spacing:.02em;color:var(--ds-ivory)}
+.ah-nm span{margin-left:8px;font:400 var(--ds-fs-small)/1.2 var(--ds-text);letter-spacing:.04em;color:var(--ds-muted)}
+.ah-nm em{margin-left:auto;font:400 var(--ds-fs-pixel)/1 var(--ds-pixel);font-style:normal;color:var(--ds-goldHi)}
 .ah-f.r .ah-nm{flex-direction:row-reverse}.ah-f.r .ah-nm span{margin:0 8px 0 0}.ah-f.r .ah-nm em{margin:0 auto 0 0}
-.ah-hp{position:relative;height:15px;margin-top:4px;background:#141a28;border:2px solid #0a0d16;box-shadow:0 0 0 1px rgba(207,196,168,.6)}
+.ah-hp{position:relative;height:calc(8px + 6 * var(--ds-px));margin-top:4px;border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-gauge) 3 fill / calc(3 * var(--ds-px)) stretch;image-rendering:pixelated}
 .ah-hp i,.ah-hp u{position:absolute;top:0;bottom:0;left:0}
 .ah-f.r .ah-hp i,.ah-f.r .ah-hp u{left:auto;right:0}
-.ah-hp u{background:#e9a64c;opacity:.85;transition:width .45s ease-in .35s}
-.ah-hp i{background:repeating-linear-gradient(90deg,#b4cbe8 0 6px,#7290bc 6px 8px)}
-.ah-f.r .ah-hp i{background:repeating-linear-gradient(90deg,#c8604e 0 6px,#8a3428 6px 8px)}
-.ah-pips{display:flex;gap:9px;margin-top:7px;padding-left:3px}
-.ah-pips b{width:10px;height:10px;transform:rotate(45deg);border:1.5px solid rgba(233,166,76,.65);display:block}
-.ah-pips b.on{background:#e9a64c;box-shadow:0 0 8px rgba(233,166,76,.8)}
+.ah-hp u{background:var(--ds-goldHi);opacity:.85;transition:width .45s ease-in .35s}
+.ah-hp i{background:repeating-linear-gradient(90deg,var(--ds-blue3) 0 6px,var(--ds-blue2) 6px 8px)}
+.ah-f.r .ah-hp u{background:var(--ds-ivory)}
+.ah-f.r .ah-hp i{background:repeating-linear-gradient(90deg,var(--ds-amber) 0 6px,var(--ds-amberLo) 6px 8px)}
+.ah-pips{display:flex;gap:10px;margin-top:8px;padding-left:4px}
+.ah-pips b{width:10px;height:10px;transform:rotate(45deg);border:var(--ds-px) solid var(--ds-amber);display:block;background:var(--ds-ink)}
+.ah-pips b.on{background:var(--ds-amber);box-shadow:0 0 8px var(--ds-amber)}
 .ah-pips b.gain{animation:ahg .4s}
 @keyframes ahg{40%{transform:rotate(45deg) scale(1.5)}}
-.ah-state{position:absolute;left:0;right:0;top:100%;margin-top:4px;padding:0 11px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#f1d9a0;text-shadow:0 1px 2px #000,0 0 6px #05070d;opacity:0;transition:opacity .15s}
+.ah-state{position:absolute;left:0;right:0;top:100%;margin-top:6px;padding:0 4px;font-size:var(--ds-fs-small);letter-spacing:.12em;text-transform:uppercase;color:var(--ds-goldHi);text-shadow:0 1px 0 var(--ds-ink),0 0 6px var(--ds-ink);opacity:0;transition:opacity .15s}
 .ah-state.on{opacity:1}
-/* 60 px: the sub-label (« hold », « 1 AP », « breaks guard ») below the name, whole (54 px cut its lower half: the operator's decision P3, journal
-   Passes UI1 / UI2); the phone rules below keep their 48 / 42 px */
-#ah-bar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:5px;pointer-events:auto;transition:opacity .15s}
-.ah-sep{width:2px;align-self:stretch;margin:6px 4px;background:rgba(233,166,76,.25)}
-.ah-b{position:relative;width:80px;height:60px;padding:6px 7px 5px;text-align:left;font:inherit;color:#d9c9a8;background:linear-gradient(#131b2e,#0a0f1c);border:1.5px solid rgba(120,130,156,.35);border-radius:3px;cursor:pointer;overflow:hidden;transition:border-color .1s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.ah-b.wide{width:118px}.ah-b.tech b{font-size:11px;letter-spacing:.04em}
-.ah-b kbd{position:absolute;top:5px;right:6px;min-width:17px;padding:0 4px;font:700 11px/16px "Segoe UI",system-ui,sans-serif;text-align:center;color:#05070d;background:#d9c9a8;border-radius:2px}
-.ah-b b{display:block;margin-top:15px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;color:#7f889c}
-.ah-b em{display:block;margin-top:2px;font-size:11px;font-style:normal;color:#858da0;white-space:nowrap}
-.ah-b.on b{color:#f3e9d2}.ah-b.on em{color:#aab2c4}
-.ah-b em q{quotes:none;color:#e9a64c;letter-spacing:1px}
-.ah-b.on{border-color:rgba(233,166,76,.85)}
-.ah-b.noap{border-color:rgba(90,96,116,.3)}.ah-b.noap b{color:#5d6577}.ah-b.noap em{color:#b0705a}.ah-b.noap kbd{background:#6c7488}
-.ah-b .cd{position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(5,8,18,.8)}
-.ah-b s{position:absolute;inset:0;display:none;place-items:center;font:700 20px "Segoe UI",system-ui,sans-serif;text-decoration:none;color:#f3e9d2;text-shadow:0 1px 3px #000;font-variant-numeric:tabular-nums}
+/* the sub-label (« hold », « 1 AP », « breaks guard ») below the name, whole (the operator's decision P3, journal Passes UI1 / UI2): the key
+   beside the name, the sub-label under them, both at the system's sizes */
+#ah-bar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto;transition:opacity .15s}
+.ah-sep{width:var(--ds-px);align-self:stretch;margin:8px 4px;background:var(--ds-gold);box-shadow:var(--ds-px) 0 0 var(--ds-goldLo)}
+.ah-b{position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:6px;align-items:center;min-width:104px;padding:2px 6px 2px 2px;text-align:left;font:inherit;color:var(--ds-ivory);background:none;border:calc(4 * var(--ds-px)) solid transparent;border-image:var(--ds-f-btnOff) 4 fill / calc(4 * var(--ds-px)) stretch;image-rendering:pixelated;cursor:pointer;overflow:hidden;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.ah-b.wide{min-width:132px}
+.ah-b kbd{grid-row:1;grid-column:1;min-width:calc(20px + 6 * var(--ds-px));padding:0 2px;font:400 var(--ds-fs-pixel)/1.1 var(--ds-pixel);text-align:center;color:var(--ds-ink);border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-key) 3 fill / calc(3 * var(--ds-px)) stretch}
+.ah-b b{grid-row:1;grid-column:2;font-size:var(--ds-fs-label);font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;color:var(--ds-muted)}
+.ah-b em{grid-row:2;grid-column:1 / span 2;margin-top:2px;font-size:var(--ds-fs-small);font-style:normal;color:var(--ds-muted);white-space:nowrap}
+.ah-b.on{border-image-source:var(--ds-f-btn)}
+.ah-b.on b{color:var(--ds-ivory)}.ah-b.on em{color:var(--ds-ivory)}
+.ah-b em q{quotes:none}
+.ah-b em q i{display:inline-block;width:8px;height:8px;margin:0 4px 1px 2px;transform:rotate(45deg);background:var(--ds-amber)}
+.ah-b.noap b{color:var(--ds-muted)}.ah-b.noap em{color:var(--ds-amberHi)}
+.ah-b .cd{position:absolute;left:0;right:0;bottom:0;height:0;background:color-mix(in srgb,var(--ds-ink) 80%,transparent)}
+.ah-b s{position:absolute;inset:0;display:none;place-items:center;font:400 var(--ds-fs-pixel-big) var(--ds-pixel);text-decoration:none;color:var(--ds-ivory);text-shadow:0 var(--ds-px) 0 var(--ds-ink)}
 .ah-b.cool s{display:grid}.ah-b.cool b,.ah-b.cool em{visibility:hidden}
-.ah-b.open{border-color:#e9a64c;background:linear-gradient(#3a2a12,#1a1208);box-shadow:0 0 16px rgba(233,166,76,.75);animation:ahp .45s infinite alternate}
-.ah-b.open kbd{background:#e9a64c}
+.ah-b.open{border-image-source:var(--ds-f-btnAct);box-shadow:0 0 16px color-mix(in srgb,var(--ds-amber) 75%,transparent);animation:ahp .45s infinite alternate}
 @keyframes ahp{to{transform:translateY(-4px)}}
-.ah-b.warn{border-color:#d0714e;box-shadow:0 0 12px rgba(208,113,78,.6)}
-.ah-b.active{border-color:#a9c4e8;background:linear-gradient(#1c2c4a,#0b1424);box-shadow:0 0 14px rgba(143,180,224,.5)}
+.ah-b.warn{border-image-source:var(--ds-f-btnAct)}
+.ah-b.active{border-image-source:var(--ds-f-btnHi);box-shadow:0 0 14px color-mix(in srgb,var(--ds-blue3) 50%,transparent)}
 .ah-b.hit{animation:ahk .18s}.ah-b.deny{animation:ahd .25s}
 @keyframes ahk{50%{transform:scale(.92)}}@keyframes ahd{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
-#ah-wbar{position:absolute;left:50%;bottom:80px;width:min(440px,70vw);height:8px;transform:translateX(-50%);background:rgba(5,8,16,.9);border:1px solid rgba(233,166,76,.7);opacity:0}
+/* the reaction window's bar right above the action bar, its label on its left: the floor in front of the telegraph stays clear (the
+   telegraph's contrast is read there, tools/arena-scene-check.mjs) */
+#ah-wbar{position:absolute;left:50%;bottom:94px;width:min(460px,70vw);height:calc(8px + 6 * var(--ds-px));transform:translateX(-50%);border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-gauge) 3 fill / calc(3 * var(--ds-px)) stretch;image-rendering:pixelated;opacity:0}
 #ah-wbar.on{opacity:1}
-#ah-wbar i{position:absolute;left:0;top:0;bottom:0;width:100%;transform-origin:left center;background:#e9a64c;box-shadow:0 0 8px rgba(233,166,76,.8)}
-#ah-wbar b{position:absolute;left:0;bottom:12px;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#f3e3bf;text-shadow:0 1px 2px #000,0 0 6px #05070d;white-space:nowrap}
-#ah-wbar b kbd{display:inline-block;margin-left:6px;padding:0 4px;font:700 11px/15px "Segoe UI",system-ui,sans-serif;color:#05070d;background:#e9a64c;border-radius:2px}
-#ah-alert{position:absolute;left:50%;top:27%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;padding:8px 22px 8px 10px;background:rgba(8,11,20,.94);border:1px solid rgba(208,113,78,.6);opacity:0;transition:opacity .12s}
+#ah-wbar i{position:absolute;left:0;top:0;bottom:0;width:100%;transform-origin:left center;background:var(--ds-amber);box-shadow:0 0 6px var(--ds-amber)}
+#ah-wbar b{position:absolute;right:calc(100% + 14px);top:50%;transform:translateY(-50%);font-size:var(--ds-fs-small);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ds-ivory);text-shadow:0 1px 0 var(--ds-ink),0 0 6px var(--ds-ink);white-space:nowrap}
+#ah-wbar b kbd{display:inline-block;margin-left:8px;padding:0 2px;font:400 var(--ds-fs-pixel)/1.1 var(--ds-pixel);letter-spacing:0;color:var(--ds-ink);border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-btnAct) 4 fill / calc(3 * var(--ds-px)) stretch;background:var(--ds-amber)}
+#ah-alert{position:absolute;left:50%;top:27%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;padding:0 14px 0 2px;border:calc(8 * var(--ds-px)) solid transparent;border-image:var(--ds-f-panel) 8 fill / calc(8 * var(--ds-px)) stretch;image-rendering:pixelated;opacity:0;transition:opacity .12s}
 #ah-alert.on{opacity:1}
-#ah-alert svg{width:36px;height:36px}
-#ah-alert b{display:block;font-size:17px;letter-spacing:.2em;text-transform:uppercase;color:#f1d9a0}
-#ah-alert span{display:block;margin-top:2px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#f3e3bf}
-#ah-dmg div{position:absolute;transform:translate(-50%,0);font-weight:800;font-size:22px;letter-spacing:.04em;text-shadow:0 2px 0 rgba(0,0,0,.6),0 0 8px rgba(0,0,0,.5);animation:ahf 1.05s ease-out forwards;white-space:nowrap;font-variant-numeric:tabular-nums}
-#ah-dmg .hit{color:#f6e2b0}#ah-dmg .guarded{color:#a9c4e8;font-size:17px}#ah-dmg .guardbreak{color:#e9a64c;font-size:24px}#ah-dmg .dodged{color:#cfdcf0;font-size:16px;letter-spacing:.2em}
-#ah-dmg .ap{color:#e9a64c;font-size:15px}#ah-dmg .stun{color:#f1d9a0;font-size:15px;letter-spacing:.2em}
+#ah-alert svg{width:40px;height:40px;shape-rendering:crispEdges}
+#ah-alert svg path{fill:var(--ds-amberLo);stroke:var(--ds-amber)}
+#ah-alert svg rect{fill:var(--ds-ivory)}
+#ah-alert b{display:block;font:400 var(--ds-fs-pixel)/1.2 var(--ds-pixel);letter-spacing:.04em;color:var(--ds-goldHi)}
+#ah-alert span{display:block;margin-top:2px;font-size:var(--ds-fs-small);letter-spacing:.12em;text-transform:uppercase;color:var(--ds-ivory)}
+#ah-dmg div{position:absolute;transform:translate(-50%,0);font:400 var(--ds-fs-pixel-big)/1 var(--ds-pixel);letter-spacing:.02em;text-shadow:0 var(--ds-px) 0 var(--ds-ink),var(--ds-px) 0 0 var(--ds-ink),calc(-1 * var(--ds-px)) 0 0 var(--ds-ink),0 calc(-1 * var(--ds-px)) 0 var(--ds-ink),0 0 8px rgba(0,0,0,.5);animation:ahf 1.05s ease-out forwards;white-space:nowrap}
+#ah-dmg .hit{color:var(--ds-ivory)}#ah-dmg .guarded{color:var(--ds-blue3);font-size:var(--ds-fs-pixel)}#ah-dmg .guardbreak{color:var(--ds-amber)}#ah-dmg .dodged{color:var(--ds-blue3);font-size:var(--ds-fs-pixel)}
+#ah-dmg .ap{color:var(--ds-amber);font-size:var(--ds-fs-pixel)}#ah-dmg .stun{color:var(--ds-goldHi);font-size:var(--ds-fs-pixel)}
 @keyframes ahf{0%{opacity:0;margin-top:6px}12%{opacity:1}100%{opacity:0;margin-top:-48px}}
 #arena-hud.still #ah-dmg div{animation-delay:-.22s;animation-play-state:paused}
 #ah-ko,#ah-pause{position:absolute;inset:0;display:none;place-items:center;background:rgba(5,7,13,.58);text-align:center;pointer-events:none}
@@ -81,18 +89,25 @@ const CSS = `
 #ah-ko b,#ah-pause b{display:block;font-weight:400;font-size:26px;letter-spacing:.34em;text-transform:uppercase;color:#f1d9a0}
 #ah-ko b::after{content:'';display:block;width:180px;height:2px;margin:12px auto 0;background:linear-gradient(90deg,rgba(233,166,76,0),#e9a64c,rgba(233,166,76,0))}
 #ah-ko span,#ah-pause span{display:block;margin-top:12px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#d9c9a8;opacity:.8}
-#ah-rotate{position:absolute;inset:0;display:none;place-items:center;padding:24px;text-align:center;background:#05070d;pointer-events:auto}
-#ah-rotate b{display:block;font-weight:400;font-size:15px;letter-spacing:.3em;text-transform:uppercase;color:#f1d9a0}
-#ah-rotate span{display:block;margin-top:14px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+#arena-hud.off #ah-ko,#arena-hud.off #ah-pause{color:#d9c9a8;font:14px/1.4 "Segoe UI",system-ui,sans-serif}
+#arena-hud:not(.off) #ah-ko,#arena-hud:not(.off) #ah-pause{background:color-mix(in srgb,var(--ds-ink) 58%,transparent)}
+#arena-hud:not(.off) #ah-ko b,#arena-hud:not(.off) #ah-pause b{font:400 var(--ds-fs-pixel-huge)/1.2 var(--ds-pixel);letter-spacing:.08em;text-transform:none;color:var(--ds-goldHi);text-shadow:0 var(--ds-px) 0 var(--ds-ink),0 calc(2 * var(--ds-px)) 0 var(--ds-goldLo)}
+#arena-hud:not(.off) #ah-ko b::after{width:200px;height:var(--ds-px);background:var(--ds-gold);box-shadow:0 var(--ds-px) 0 var(--ds-goldLo)}
+#arena-hud:not(.off) #ah-ko span,#arena-hud:not(.off) #ah-pause span{font-size:var(--ds-fs-small);letter-spacing:.12em;color:var(--ds-ivory);opacity:1}
+#ah-rotate{position:absolute;inset:0;display:none;place-items:center;padding:24px;text-align:center;background:var(--ds-ink);pointer-events:auto}
+#ah-rotate b{display:block;font:400 var(--ds-fs-pixel)/1.2 var(--ds-pixel);letter-spacing:.06em;color:var(--ds-goldHi)}
+#ah-rotate span{display:block;margin-top:14px;font-size:var(--ds-fs-small);letter-spacing:.06em;color:var(--ds-ivory)}
 @media (orientation:portrait) and (max-width:820px){#ah-rotate{display:grid}}
-@media (max-width:900px){.ah-b{width:56px;height:48px}.ah-b.wide{width:72px}.ah-b em{display:none}.ah-b b{font-size:10px;margin-top:17px}.ah-b.tech b{font-size:9px}.ah-sep{margin:6px 2px}#ah-bar{gap:3px}.ah-card{width:30vw}}
 .ah-b .sn{display:none}
-@media (max-width:900px){.ah-b .fn{display:none}.ah-b .sn{display:inline}}
+/* a laptop window: the short technique names, the labels at the smallest size, so the bar fits (1 196 px wide, measured) */
+@media (max-width:1500px){.ah-b,.ah-b.wide{min-width:0}.ah-b b{font-size:var(--ds-fs-small);letter-spacing:.02em}.ah-b .fn{display:none}.ah-b .sn{display:inline}}
+/* a narrow window or a phone (L3): the key over the name, the sub-labels away */
+@media (max-width:1240px){#ah-bar{gap:4px}.ah-sep{margin:8px 2px}.ah-b,.ah-b.wide{min-width:0;grid-template-columns:auto;justify-items:center;padding:0 4px}.ah-b kbd{grid-row:1;grid-column:1;font-size:var(--ds-fs-small);min-width:calc(14px + 6 * var(--ds-px))}.ah-b b{grid-row:2;grid-column:1;font-size:var(--ds-fs-small);letter-spacing:0;text-transform:none}.ah-b em{display:none}.ah-b .fn{display:none}.ah-b .sn{display:inline}.ah-card{width:30vw}}
 /* phone in landscape: the cards, the alert and the bars shrink so the duel stays in view */
-@media (max-height:480px){#ah-title{display:none}.ah-f{top:8px}.ah-port{width:36px;height:36px}.ah-card{padding:4px 8px 5px}.ah-nm{font-size:11px}.ah-nm span{display:none}.ah-hp{height:11px}.ah-pips{margin-top:4px;gap:7px}.ah-pips b{width:8px;height:8px}
-  #ah-alert{top:24%;padding:4px 14px 4px 6px}#ah-alert svg{width:24px;height:24px}#ah-alert b{font-size:12px}#ah-alert span{font-size:10px}
-  #ah-wbar{bottom:58px;height:6px}#ah-wbar b{font-size:9px;bottom:9px}#ah-bar{bottom:6px}.ah-b{height:42px}.ah-b b{margin-top:14px}.ah-top{height:70px}}
-button:focus-visible{outline:3px solid #f1d9a0;outline-offset:2px}
+@media (max-height:480px){#ah-title{display:none}#arena-hud .top{height:90px}.ah-f{top:6px}.ah-card,#ah-alert{border-width:calc(4 * var(--ds-px));border-image:var(--ds-f-btn) 4 fill / calc(4 * var(--ds-px)) stretch}.ah-card{width:min(30vw,250px)}.ah-port{width:calc(32px + 6 * var(--ds-px));height:calc(32px + 6 * var(--ds-px))}.ah-card{padding:0 2px}.ah-nm span{display:none}.ah-hp{height:calc(4px + 6 * var(--ds-px))}.ah-pips{margin-top:5px;gap:8px}.ah-pips b{width:8px;height:8px}
+  #ah-alert{top:30%;padding:0 10px 0 0}#ah-alert svg{width:28px;height:28px}
+  #ah-wbar{bottom:72px;width:min(380px,46vw);height:calc(4px + 6 * var(--ds-px))}#ah-bar{bottom:4px}.ah-state{margin-top:2px}}
+#arena-hud button:focus-visible{outline:var(--ds-px) solid var(--ds-goldHi);outline-offset:var(--ds-px)}
 @media (prefers-reduced-motion:reduce){.ah-b.open,.ah-b.hit,.ah-b.deny,.ah-pips b.gain{animation:none}#ah-dmg div{animation-duration:.01s}}
 `;
 
@@ -147,19 +162,25 @@ export class ArenaHud {
   /** screen position (CSS px) of a fighter's head, for floating text */
   project: (who: FighterId) => { x: number; y: number } = () => ({ x: 0, y: 0 });
 
-  constructor(sim: CombatSim, portraits: Record<FighterId, HTMLCanvasElement | null>, private t: ArenaTexts = TEXTS_FR) {
+  /** resolves once the system's fonts are loaded (ArenaApp.init waits for it) */
+  readonly ready: Promise<void>;
+
+  /** time: the arena's day state, the HUD's tone (the operator's decision L2; absent = the night) */
+  constructor(sim: CombatSim, portraits: Record<FighterId, HTMLCanvasElement | null>, private t: ArenaTexts = TEXTS_FR, time: TimeOfDay | null = null) {
+    installDesign(time);
+    this.ready = fontsReady();
     if (!document.getElementById('arena-hud-css')) { const st = document.createElement('style'); st.id = 'arena-hud-css'; st.textContent = CSS; document.head.appendChild(st); }
     this.el = document.createElement('div'); this.el.id = 'arena-hud';
     const D = sim.D, buttons = bar(t).map((b) => {
       if (b === '|') return '<span class="ah-sep"></span>';
       const d = b.id === 'guard' || b.id === 'dodge' ? null : D.actions[b.id];
-      const nm = b.name ?? d?.short ?? d?.name ?? b.id, label = b.short ? `<span class="fn">${nm}</span><span class="sn">${b.short}</span>` : nm, sub = b.sub ?? `<q>${'◆'.repeat(d?.apCost ?? 0)}</q> ${d?.cooldown ?? 0} s`;
+      const nm = b.name ?? d?.short ?? d?.name ?? b.id, label = b.short ? `<span class="fn">${nm}</span><span class="sn">${b.short}</span>` : nm, sub = b.sub ?? `<q>${'<i></i>'.repeat(d?.apCost ?? 0)}</q> ${d?.cooldown ?? 0} s`;
       return `<button class="ah-b${b.wide || (d && d.kind === 'tech') ? ' wide' : ''}${d && d.kind === 'tech' ? ' tech' : ''}" data-act="${b.id}" aria-label="${nm} (${b.key})"><kbd>${b.key}</kbd><b>${label}</b><em>${sub}</em><i class="cd"></i><s></s></button>`;
     }).join('');
     const card = (who: FighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<span>${sub}</span><em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(D.fighters[who].name)}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i></div>${who === 'ren' ? `<div class="ah-pips" aria-label="${t.apLabel}">` + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-state"></div></div></div>`;
     this.el.innerHTML = `<div class="top"></div><div id="ah-title">${t.title}<small>${t.subtitle}</small></div>
       ${card('ren', 'l', t.subRen)}${card('marek', 'r', t.subMarek)}
-      <div id="ah-alert"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2l18 18-18 18L2 20z" fill="#3a1812" stroke="#d0714e" stroke-width="2.4"/><rect x="18" y="9" width="4" height="14" fill="#f3e3bf"/><rect x="18" y="26" width="4" height="4" fill="#f3e3bf"/></svg><div><b></b><span></span></div></div>
+      <div id="ah-alert"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2l18 18-18 18L2 20z" stroke-width="2.4"/><rect x="18" y="9" width="4" height="14"/><rect x="18" y="26" width="4" height="4"/></svg><div><b></b><span></span></div></div>
       <div id="ah-dmg"></div><div id="ah-wbar" aria-hidden="true"><i></i><b>${t.window}<kbd>A</kbd></b></div><div id="ah-bar">${buttons}</div>
       <div id="ah-ko" role="status"><div><b></b><span>${t.restart}</span></div></div>
       <div id="ah-pause" role="status"><div><b>${t.pause}</b><span>${t.resume}</span></div></div>

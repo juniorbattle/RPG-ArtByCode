@@ -1,33 +1,50 @@
-/** The play mode's interface style (journal Passes L3 / L4): the game's own UI language, as the loading screen and the arena's HUD (night
- *  ink #05070d, ivory #d9c9a8, pale gold #f1d9a0 for titles, the lamps' amber #e9a64c as the only accent, Segoe UI with wide letter-spacing,
- *  no external font). DOM over the canvas, keyboard reachable, readable at phone size. */
+import { installDesign } from './design/system';
+import { PHONE_QUERY } from './design/tokens';
+
+/** The play mode's interface style, built from the design system (journal Passe UI3; direction C « Héraldique pixel », the operator's sheet of
+ *  Passe UI1): the tone's colours (`--ds-*`, src/ui/design/tokens.ts), the code-painted nine-slice frames (panel, parchment, buttons, tags,
+ *  keycaps), the embedded pixel font for titles, numbers and keys and the embedded text font for sentences, no text under 16 px on a computer
+ *  or 14 px on a phone. DOM over the canvas, keyboard reachable. On a phone (L3) a modal card is a sheet at the bottom of the screen. */
 
 const CSS = `
-.pm{position:fixed;z-index:30;color:#d9c9a8;font:14px/1.45 "Segoe UI",system-ui,sans-serif;letter-spacing:.02em}
-.pm *{box-sizing:border-box}
-.pm-card{background:rgba(6,9,18,.93);border:1px solid rgba(233,166,76,.38);box-shadow:0 6px 24px rgba(0,0,0,.45)}
-.pm-h{margin:0 0 6px;font-weight:400;font-size:13px;letter-spacing:.28em;text-transform:uppercase;color:#f1d9a0}
-.pm-h::after{content:'';display:block;width:110px;height:2px;margin-top:5px;background:linear-gradient(90deg,#e9a64c,rgba(233,166,76,0))}
-.pm-sub{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9aa3b8}
-.pm-btn{display:flex;align-items:center;gap:8px;width:100%;margin:3px 0;padding:7px 10px;text-align:left;font:inherit;font-size:13px;color:#efe3c4;background:linear-gradient(#131b2e,#0a0f1c);border:1px solid rgba(120,130,156,.4);border-radius:3px;cursor:pointer}
-.pm-btn:hover:not(:disabled),.pm-btn:focus-visible{border-color:rgba(233,166,76,.9)}
-.pm-btn:disabled{cursor:default;color:#6d7487;border-color:rgba(90,96,116,.25)}
-.pm-btn .why{display:block;font-size:11px;color:#b0705a}
-.pm-btn .cost{margin-left:auto;flex:none;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#e9a64c;border:1px solid rgba(233,166,76,.5);padding:1px 5px;border-radius:2px}
-.pm-btn .cost.free{color:#8fa6c4;border-color:rgba(143,166,196,.45)}
-.pm-btn.primary{border-color:#e9a64c;background:linear-gradient(#3a2a12,#1a1208);color:#f6e7c4}
-.pm-btn kbd{flex:none;min-width:18px;padding:0 4px;font:700 11px/16px "Segoe UI",system-ui,sans-serif;text-align:center;color:#05070d;background:#d9c9a8;border-radius:2px}
-.pm button:focus-visible,.pm input:focus-visible{outline:3px solid #f1d9a0;outline-offset:2px}
-.pm-log p{margin:3px 0;font-size:12.5px;color:#cfc2a3}
-.pm-log p.new{color:#f6e7c4}
-.pm-overlay{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(5,7,13,.62);padding:16px}
-.pm-overlay .pm-card{width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:18px 20px}
-.pm-big{font-size:26px;letter-spacing:.3em;text-transform:uppercase;color:#f1d9a0;text-align:center;margin:6px 0 4px}
-@media (max-width:640px){.pm{font-size:13px}.pm-btn{padding:9px 10px}}
+.pm{position:fixed;z-index:30;color:var(--ds-ivory);font:400 var(--ds-fs-body)/1.35 var(--ds-text);letter-spacing:.01em}
+.pm,.pm *{box-sizing:border-box;scrollbar-color:var(--ds-gold) var(--ds-blue0);scrollbar-width:thin}
+.pm-card{border:calc(8 * var(--ds-px)) solid transparent;border-image:var(--ds-f-panel) 8 fill / calc(8 * var(--ds-px)) stretch;image-rendering:pixelated;filter:drop-shadow(0 var(--ds-px) 0 var(--ds-ink)) drop-shadow(0 calc(3 * var(--ds-px)) 0 rgba(0,0,0,.28))}
+.pm-h{margin:0 0 8px;font:400 var(--ds-fs-pixel)/1.2 var(--ds-pixel);letter-spacing:.04em;color:var(--ds-goldHi);text-shadow:0 var(--ds-px) 0 var(--ds-ink)}
+.pm-h::after{content:'';display:block;width:120px;height:var(--ds-px);margin-top:6px;background:var(--ds-gold);box-shadow:0 var(--ds-px) 0 var(--ds-goldLo)}
+.pm-sub{font-size:var(--ds-fs-small);letter-spacing:.06em;text-transform:uppercase;color:var(--ds-muted)}
+.pm-num{font:400 var(--ds-fs-pixel)/1 var(--ds-pixel);letter-spacing:0;color:var(--ds-goldHi)}
+.pm-btn{display:flex;align-items:center;gap:10px;width:100%;margin:4px 0;padding:3px 6px;text-align:left;font:inherit;font-size:var(--ds-fs-label);line-height:1.25;color:var(--ds-ivory);background:none;border:calc(4 * var(--ds-px)) solid transparent;border-image:var(--ds-f-btn) 4 fill / calc(4 * var(--ds-px)) stretch;image-rendering:pixelated;cursor:pointer}
+.pm-btn:hover:not(:disabled),.pm-btn:focus-visible{border-image-source:var(--ds-f-btnHi)}
+.pm-btn:disabled{cursor:default;color:var(--ds-muted);border-image-source:var(--ds-f-btnOff)}
+.pm-btn .why{display:block;font-size:var(--ds-fs-small);color:var(--ds-amberHi)}
+.pm-btn .cost{margin-left:auto;flex:none;padding:0 3px;font:400 var(--ds-fs-pixel)/1.1 var(--ds-pixel);letter-spacing:0;white-space:nowrap;color:var(--ds-amberHi);border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-tag) 3 fill / calc(3 * var(--ds-px)) stretch}
+.pm-btn .cost.free{color:var(--ds-blue3);border-image-source:var(--ds-f-tagFree)}
+.pm-btn.primary{border-image-source:var(--ds-f-btnAct);color:var(--ds-ivory)}
+.pm-btn.primary:hover,.pm-btn.primary:focus-visible{border-image-source:var(--ds-f-btnHi)}
+.pm kbd{flex:none;display:inline-block;min-width:calc(20px + 6 * var(--ds-px));padding:0 2px;font:400 var(--ds-fs-pixel)/1.1 var(--ds-pixel);letter-spacing:0;text-align:center;color:var(--ds-ink);border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-key) 3 fill / calc(3 * var(--ds-px)) stretch;image-rendering:pixelated}
+.pm button:focus-visible,.pm input:focus-visible{outline:var(--ds-px) solid var(--ds-goldHi);outline-offset:var(--ds-px)}
+.pm-parch{margin:6px 0 8px;padding:4px 8px;color:var(--ds-parchInk);border:calc(8 * var(--ds-px)) solid transparent;border-image:var(--ds-f-parch) 8 fill / calc(8 * var(--ds-px)) stretch;image-rendering:pixelated}
+.pm-parch .pm-sub{color:var(--ds-parchInk);opacity:.8}
+.pm-overlay{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:var(--ds-scrim);padding:16px}
+.pm-overlay .pm-card{width:min(600px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:8px 12px}
+.pm-overlay .pm-card p{margin:6px 0}
+.pm-big{font:400 var(--ds-fs-pixel-huge)/1.2 var(--ds-pixel);letter-spacing:.06em;color:var(--ds-goldHi);text-align:center;margin:6px 0 4px;text-shadow:0 var(--ds-px) 0 var(--ds-ink),0 calc(2 * var(--ds-px)) 0 var(--ds-goldLo)}
+.pm-btn .why.title{color:var(--ds-muted)}
+.pm-sub.why{text-transform:none;letter-spacing:.01em}
+.pm-table{width:100%;border-collapse:collapse}
+.pm-table td{padding:2px 4px}
+.pm-table tr.me{color:var(--ds-goldHi)}
+.pm-table td.pts{text-align:right;white-space:nowrap}
+.pm-gap{margin-top:12px!important}
+.pm-center{text-align:center}
+.pm-toggle{cursor:pointer}
+@media ${PHONE_QUERY}{.pm-overlay{place-items:end center;padding:0}.pm-overlay .pm-card{width:100%;max-height:82vh}}
 @media (prefers-reduced-motion:reduce){.pm *{transition:none!important;animation:none!important}}
 `;
 
 export function injectStyle(): void {
+  installDesign();
   if (document.getElementById('pm-css')) return;
   const st = document.createElement('style');
   st.id = 'pm-css'; st.textContent = CSS;
@@ -58,6 +75,7 @@ export function overlay(html: string, buttons: Array<{ id: string; label: string
     }
   });
   document.body.appendChild(root);
-  (card.querySelector('.pm-btn.primary') as HTMLButtonElement | null ?? card.querySelector('.pm-btn') as HTMLButtonElement | null)?.focus();
+  // the card opens at its top (a long journal is read from its title), its button focused
+  (card.querySelector('.pm-btn.primary') as HTMLButtonElement | null ?? card.querySelector('.pm-btn') as HTMLButtonElement | null)?.focus({ preventScroll: true });
   return { root, done };
 }

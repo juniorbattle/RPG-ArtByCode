@@ -3,6 +3,8 @@ import { lookOf, townQuery, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
 import { esc, overlay } from './style';
+import { fontsReady, installDesign } from './design/system';
+import { preloadPortraits } from './portraits';
 
 /** The city in the play mode (journal Passes L3 / L4): the frozen Merchant District as it is, its day state, forge, crowd and weather taken
  *  from the game state (choice P4: game layers only, no geometry, framing, cast or look change), and the play mode's interface over it.
@@ -20,6 +22,8 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   for (const k of CARRY_TOWN) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   const app = new App({ canvas: b.canvas, params: q, onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; } });
   (window as any).__app = app;
+  // the interface's tone follows the page's day state (the operator's decision L2, journal Passe UI3)
+  installDesign(lookOf(st));
   installGameApi(() => st, (s) => { st = s; }, (prev, next) => lookOf(prev) !== lookOf(next) || prev.services.forge !== next.services.forge || prev.place !== next.place || next.over !== prev.over);
   await app.init();
   // the forge is the game's: the DEV switch of the free-roaming district is off in the play mode
@@ -57,6 +61,7 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   const frame = () => { if (ui.modal) app.actors.keys.clear(); ui.update(); requestAnimationFrame(frame); };
   app.start();
   frame();
+  await Promise.all([fontsReady(), preloadPortraits()]);
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();
