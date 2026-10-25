@@ -1,0 +1,79 @@
+{
+  "kind": "generated-image",
+  "file": "ui-direction-a-town-2026-10-24.png",
+  "sha256": "db5afb0ffdbc15f6984964668d39abfb23ed98e889c3394d3be79274e3ecc6b2",
+  "bytes": 2712181,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 1,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Use the attached screenshot as the game scene: keep its HD-2D look exactly (pixel-art character sprites on a 3D half-timbered canal street, blue slate roofs, blue and ivory tournament bunting, bright midday light, tilt-shift depth of field). Redesign ONLY the user interface laid over it, as a polished mock-up of a finished console-quality JRPG screen at 1920x1080 proportions. Interface content, in English, all text crisp and legible: (1) a compact status plaque top-left: \"Day 2 / 3 - Afternoon\", \"Aster - The Merchant District\", \"60 coins\", \"Reputation 10\", \"Next bout: Vessa Lark, today\"; (2) small key hints top-right: M Map, J Journal, T Tournament, Esc Menu; (3) a dialogue box across the lower third, not covering the speaker: a large pixel-art portrait of Mara (a merchant woman, auburn hair, white headscarf, blue dress, apron), her name plate \"Mara - the merchant\", her line \"Whetstones, salves, a good imported blade. Everything a fighter needs.\", and four answer choices with clear cost tags: \"Buy a whetstone [8 coins]\", \"Buy an imported blade [30 coins]\", \"Help Mara unload her crates [1 slot]\", \"Leave [Esc]\"; the first choice highlighted. Keep the scene visible around the interface; no other text, no watermark, no logo.\nInterface direction \"Ink and brass\" (an evolution of the current interface): deep indigo-black ink panels with soft translucency, hairline brass frames with small engraved corner ornaments, ivory text, pale gold titles in an elegant engraved serif with wide letter-spacing, a clean humanist sans for body text, the warm lamp amber as the only accent colour. Restrained and elegant; panels slimmer and smaller than a web page, generous spacing, strong hierarchy.\n",
+    "promptSha256": "e418b8dcfbe34b51583cc978bf6776b29a8de45a42c1ebb8a8f2c5c42af546c6",
+    "promptFile": "(outside the repository) A-town.txt",
+    "references": [
+      {
+        "file": "(outside the repository) town-clean-1536x1024.png",
+        "sha256": "50d031af60807da5d43367a23c7ae23be1964f8cbe800094ff51056cff9712de",
+        "bytes": 2690401
+      }
+    ],
+    "image": "1 of 1",
+    "task": "ui-directions",
+    "requestedAt": "2026-10-25T03:22:10.362Z",
+    "response": {
+      "requestId": "req_08070b0625aa4d3699ba2397583d2316",
+      "created": "2026-10-25T03:23:32.000Z",
+      "processingMs": 80570
+    },
+    "usage": {
+      "input_tokens": 1943,
+      "input_tokens_details": {
+        "image_tokens": 1536,
+        "text_tokens": 407
+      },
+      "output_tokens": 5488,
+      "output_tokens_details": {
+        "image_tokens": 5488,
+        "text_tokens": 0
+      },
+      "total_tokens": 7431
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 0.62698,
+        "fromUsage": 0.178963
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-10-25",
+    "from": "ui-directions-20261025T032210Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

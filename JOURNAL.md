@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9 et AD1) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1 et UI2) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -32,282 +32,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/19-passes-L4-L6.md`](journal/19-passes-L4-L6.md) | L4, L5, L6 | 20/10 |
 | [`journal/20-passes-L7-L7b.md`](journal/20-passes-L7-L7b.md) | L7, Q3, L7b | 20/10 |
 | [`journal/21-passes-Q4-Q4b.md`](journal/21-passes-Q4-Q4b.md) | Q4, Q4b | 20/10 |
+| [`journal/22-passes-D8-F2.md`](journal/22-passes-D8-F2.md) | D8, S3, F2 | 20/10 |
 
 ---
-
-## Passe D8 — La fiche d'arbitrages de la tranche jouable : les six décisions de la Passe L7 et six écarts, tranchés par l'opérateur (2026-10-20)
-
-### Demande
-- Séance locale lancée par la séance parente : rassembler sur une fiche d'arbitrages les six décisions préparées par la séance cloud (Passe
-  L7), avec seulement les écarts E1 à E30 qui demandent vraiment une décision de l'opérateur ; chiffrer l'équilibrage avec
-  `tools/tournament-lab.mjs` ; mettre en tête le budget GPU dès qu'il est mesuré ; consigner les choix mot pour mot, sans rien appliquer
-  d'autre : chaque décision qui demande du travail devient une tâche à part, dans sa propre séance.
-- Pendant la préparation, le dossier était sur la branche de la séance GPU (`relay-gpu-q4`) : ni branche, ni commit, ni navigateur, ni serveur ;
-  seulement des lectures et des calculs en Node.
-- Opérateur, mot pour mot : « arbitrages rempli ».
-- Branche `decisions-d8` depuis `main` (`2c9f318`).
-
-### La fiche — [OK] les choix se sont enregistrés
-- Page privée https://claude.ai/artifact/NAcnnZAm6Vcu1CRtofLVFD, collection `decisions`, vide à chaque publication (relue par `list`) : version 1,
-  puis 2 avec le budget de la Passe Q4, puis 3 avec celui de la Passe Q4b, qui le remplace (la série 2560 × 1440 et le démarrage, non refaits sans
-  Firefox, y sont dits tels).
-- **13 entrées** : les six décisions de la Passe L7, la sixième coupée en deux (le jour par défaut, le Gold Master), et six écarts : E24, E30,
-  E1 / E16, E14 / E15, E11, E25. Les autres écarts sont faits, tranchés par la fiche de la Passe N2, ou sans décision (E19 : le contrat projet
-  § 8.2 admet un Colisée « suggéré »). En tête : comment jouer la tranche (les points 1 à 5 de « À vérifier » de la Passe L7) et le budget GPU.
-- Avant la première version, une écriture d'essai dans une autre collection (`probe`), supprimée aussitôt : la base de l'artefact répondait.
-- **Relue après « arbitrages rempli » : 13 documents sur 13**, cliqués entre 21 h 50 et 21 h 57 UTC, trois notes. La fiche de la Passe D7 n'avait
-  rien enregistré. Ce qui a changé cette fois :
-  - la page attend le pont du visualiseur jusqu'à 10 s, contre 3 s dans le gabarit ;
-  - chaque écriture est relue (`get`) avant d'afficher « Enregistré et relu » ; un échec s'affiche dans un bandeau ;
-  - une copie des choix reste dans le navigateur, et les choix faits avant la connexion sont écrits dès qu'elle arrive.
-  La cause de l'échec de la Passe D7 n'est pas prouvée pour autant.
-
-### Le chiffrage de l'équilibrage pour la fiche (E28) — Node seul, scripts hors dépôt
-- Le bot dans le `CombatSim` complet ; les réglages ne touchent que les points de vie et les dégâts de Vessa et de Marek, passés par
-  `duelData` (`COMBAT_DATA` intact). « Préparé » : la lame trempée (+15 %) et deux entraînements (+10 %). Victoires du joueur en %, aux
-  adresses 0 / 0,45 / 0,6 :
-
-| Réglage | Vessa, nu | Vessa, préparé | Marek, nu | Marek, préparé |
-|---|---|---|---|---|
-| aujourd'hui (200 graines) | 68 / 91 / 97 | 100 / 100 / 100 | 67 / 87 / 92 | 90 / 99 / 100 |
-| « modéré » : Vessa PV ×1,2 ; Marek PV ×1,25, dégâts ×1,1 (150 graines) | 35 / 70 / 79 | 81 / 96 / 99 | 23 / 57 / 67 | 61 / 80 / 88 |
-| « disputé » : Vessa PV ×1,2, dégâts ×1,1 ; Marek PV ×1,25, dégâts ×1,25 | 19 / 55 / 61 | 68 / 95 / 98 | 13 / 43 / 51 | 37 / 66 / 74 |
-
-- Parties entières du TournamentLab (50 graines ; `PROFILES` modifié en mémoire, donc les duels et les matchs hors écran) : duels gagnés % ·
-  1re place % · forge brûlée % :
-
-| Politique | aujourd'hui | « modéré » | « disputé » |
-|---|---|---|---|
-| idle | 74 · 6 · 96 | 34 · 0 · 58 | 18 · 0 · 34 |
-| négligente | 85 · 22 · 98 | 53 · 12 · 76 | 43 · 4 · 68 |
-| diligente | 97 · 36 · 18 | 72 · 14 · 32 | 54 · 6 · 28 |
-| prudente | 99 · 24 · 0 | 79 · 20 · 8 | 62 · 18 · 10 |
-| perdante | 0 · 0 · 0 | 0 · 0 · 0 | 0 · 0 · 0 |
-
-- Contrôle : les chiffres « aujourd'hui » redonnent ceux de `tools/tournament-lab.mjs` (idle 74 %, diligente 97 %, prudente 99 %, négligente
-  85 %, perdante 0 %). Un réglage uniforme des rivaux rendait Vessa (jour 2) plus dure que Marek (jour 3) : d'où des multiplicateurs par rival.
-- Effet de bord mesuré : la chaîne de sabotage naît de la première victoire du joueur ; des duels plus durs la déclenchent moins.
-
-### Les choix de l'opérateur, mot pour mot
-« = » : la recommandation de la fiche est suivie ; « ≠ » : le choix diffère, et c'est lui qui fait foi.
-
-| # | Décision | Choix de l'opérateur | Note de l'opérateur | |
-|---|---|---|---|---|
-| L7-1 | Vessa Lark, une combattante générée | « La garder pour la tranche » | — | = |
-| L7-2 | L'arène reste de nuit à toute heure (E26) | « Oui, après la revue du jour (J9), par DayState » | — | = |
-| L7-3 | Lantern Row, une maquette du troisième lieu (E27) | « La garder telle quelle pour la tranche » | — | = |
-| L7-4 | Les duels sont-ils assez disputés ? (E28) | « Régler vers « modéré » (tâche à part) » | — | = |
-| L7-5 | L'écran titre caché aux navigateurs pilotés (E29) | « Le garder » | — | = |
-| L7-6a | Le jour par défaut (J9) | « Le jour devient le défaut d’« Explore the district » (tâche à part) » | — | ≠ |
-| L7-6b | Le Gold Master | « Pas encore (RJ3 inchangé) » | — | = |
-| E24 | Quel seuil pour le budget de performance ? | « Pas plus cher que la nuit B, à définition égale » | « Mais rien n'est confirme car il y a peut etre des zones plus grande et dense » | = |
-| E30 | Jouer au toucher | « Hors tranche, plus tard » | — | = |
-| E1 / E16 | Le combat au-delà de la tranche | « Écart consigné jusqu’à la phase d’équipe » | « Nous devons faire une tache entiere concernant le systeme de combat et la logique car c'est quelque chose de nouveau que seul moi a l'entiere comprehension » | = |
-| E14 / E15 | Blender et glTF contre une ville générée par le code | « Amender le contrat : la génération par le code est la voie du projet » | — | ≠ |
-| E11 | Ce que veut dire « décision A3 » | « A3 = ma décision citée mot pour mot au journal » | — | = |
-| E25 | La version du contrat projet | « 1.2 : l’en-tête fait foi » | — | = |
-
-- L7-4 : la séance cloud recommandait « régler après votre essai » ; l'option recommandée de la fiche, « modéré », venait du chiffrage
-  ci-dessus. Les deux notes (E24, E1 / E16) précisent leur option sans la contredire.
-
-### Ce qui change — [OK] consigné, rien appliqué
-- **Dans `AGENTS.md`** (des règles changent) :
-  - « décision A3 » : la décision explicite de l'opérateur, citée mot pour mot et datée dans une passe du journal (E11). Cette passe est donc la
-    décision A3 du choix E14 / E15 ;
-  - le contrat projet : la version 1.2 fait foi (E25) ; la génération par le code est la voie du projet (E14 / E15), le texte collé restant tel
-    quel jusqu'à la tâche qui l'amende ; le combat sans tour reste un écart consigné jusqu'à la phase d'équipe (E1 / E16) ;
-  - le budget de performance (E24), avec la note de l'opérateur ;
-  - l'écran titre caché aux navigateurs pilotés, gardé par l'opérateur (L7-5) ; Vessa générée pour la tranche (L7-1) ; toujours pas Gold
-    Master (L7-6b) ;
-  - le jour décidé comme défaut d'« Explore the district » (L7-6a) : **la nuit reste le défaut jusqu'à la tâche qui l'applique**.
-- **Sans travail** : L7-1, L7-3, L7-5, L7-6b, E11, E25, E30.
-- **Tâches à part, chacune dans sa séance, une branche à la fois** :
-  1. **L7-4** : régler Vessa et Marek vers « modéré » ; recaler la résolution hors écran (`PLAYER_EDGE`, `READ_AVAIL`, `RACE_SLOPE`, tolérance
-     0,2) et les attentes des parties scriptées ; les chiffres ci-dessus comme point de départ.
-  2. **L7-6a** : le jour comme défaut d'« Explore the district ». L'état à prendre se vérifie dans la tâche (midi, `time=day`, d'après la
-     direction D6).
-  3. **L7-2** : les états du jour pour l'arène (duel et parvis) par `DayState`. Condition de l'opérateur : « après la revue du jour (J9) ». Le
-     choix L7-6a fait du jour le défaut, ce que J9 attendait ; la tâche suit celle du jour par défaut.
-  4. **E14 / E15** : amender le texte du contrat projet. C'est le document de l'opérateur : la rédaction se fait avec lui.
-  5. **E1 / E16** : la tâche « système de combat et sa logique » que demande la note de l'opérateur. Elle part de ses explications (« seul moi a
-     l'entiere comprehension »), pas d'une proposition d'agent.
-
-### Validation
-- Documentation seule : typecheck, `npm test` **148 / 148**, build, `art:validate`.
-- Journal : avec cette passe, les passes gardées font 60 040 octets dans la copie de travail (CRLF), à la limite d'environ 60 Ko ; l'archivage
-  vient avec la passe suivante.
-
-### Pensée
-- Une fiche dont le pont du visualiseur arrive tard perd ses choix sans bruit. Attendre le pont plus longtemps, relire chaque écriture et dire
-  l'échec en clair ont suffi ici (13 / 13), sans prouver la cause de la Passe D7.
-- Une note qui ajoute une tâche ne contredit pas l'option cliquée : elle se consigne avec elle, et la tâche part à part.
-- Un réglage d'équilibre se chiffre par adversaire et dans l'ordre du calendrier : un multiplicateur commun rendait le jour 2 plus dur que le
-  jour 3.
-
-## Passe S3 — Le liseré clair autour des sprites cuits : diagnostiqué (le liseré de sommet du shader, éclairé par le soleil), remède derrière `?spriteedge=` (2026-10-20)
-
-### Demande
-- Séance locale lancée par la séance parente. Signalement de l'opérateur, mot pour mot : « je remarque des contours blancs autour de nos sprites
-  traavaille sur aseprite, peut etre les enlever ou les mettre de couleur noir afin qu''ils se fondent mieux au decors, car c'est tres visible
-  surtout en journee ».
-- Consigne : diagnostiquer avec des preuves (texels des feuilles, post-traitement, échantillonnage ; jour et nuit ; héros et PNJ), proposer un
-  remède au rendu sans toucher les feuilles approuvées, montrer un avant / après (contour noir, contour retiré) ; le jeu par défaut ne change
-  qu'après la décision de l'opérateur, prouvé à 0 px contre `main` figé d'ici là.
-- Branche `sprite-edge-tone` depuis `main` (`96f362f`). Serveurs : `dev-strict` (:5186), `main` figé (`96f362f`, copie hors dépôt, :5187,
-  entrée locale `frozen-main-edge`).
-
-### Diagnostic — [OK] la cause est le liseré de sommet du shader des sprites
-- **Les feuilles** (lecture des exports PNG, scripts hors dépôt) : les dix PNJ portent un contour d'auteur sombre ; clarté OKLab médiane des
-  texels du bord 0,19-0,23 contre 0,33-0,49 à l'intérieur ; texels du bord plus clairs que 0,5 : 0,1 à 7 % (coiffes, manches, tabliers) ; gris
-  neutre clair (reste de fond de planche) 0 à 2,9 %. Le héros `hero-x2-v4` : bord 0,29 contre 0,395, 4,7 % de gris neutre clair (son rig a déjà
-  son `dehalo`). Les feuilles ne font pas un liseré clair.
-- **Le post-traitement** (`tools/sprite-halo.mjs`, B, graine 1842, 4 s, `POST=` effet par effet ; puis la même image post coupé / actif,
-  anneau intérieur de la silhouette) :
-  - de jour (midi B), l'anneau hors silhouette reste faible (médiane 1,33 niveau, presque tout le DOF) et le post n'éclaircit le bord intérieur
-    que de **0,8 niveau** (in-scatter 0,4, DOF 0,5, bloom 0) : **le post n'est pas la cause de jour** ;
-  - de nuit, l'in-scatter éclaircit le bord comme l'intérieur (+15,7 contre +13,3 niveaux : la brume, protégée à 45 % sur les personnages,
-    Passe S1) : un voile, pas un liseré propre au bord.
-- **Le liseré de sommet** (`BODY_FRAG`, `col += uMoonCol * 0.22 * (1 - aU) * amt * sh` : le « liseré de lune » des texels du bord au-dessus
-  desquels il n'y a rien, gardé à la Passe S2) : la nuit `uMoonCol` est la lune (0,30 / 0,38 / 0,55) ; **le jour, c'est le soleil** (`DayState`,
-  midi 2,9 / 2,72 / 2,35), soit **+0,64 de lumière** sur chaque texel du haut des têtes, des épaules et des bras. Même image, `uEdge` à 0 :
-  bord intérieur de midi B moyenne 102,6 → 88,9 niveaux, p90 200 → 164 ; 5 594 px changés (0,27 % de l'image), jusqu'à 215 niveaux. Au texel :
-  la chevelure du voyageur cernée de points blancs, qui disparaissent (`sprite-e1/midday-B-heads-x5.png`). C'est la « frange bleutée » de la
-  Passe S1 la nuit, et un liseré blanc le jour.
-- **Une piste secondaire** : la variante « ash » des cheveux (rampe `#5a4e40` → `#d8c6a2`) recolore aussi le contour sombre de la chevelure
-  (rang de clarté 0 → `#5a4e40`) : une citadine blonde n'a plus de contour sombre aux cheveux. Couverte par le contour noir ci-dessous.
-- L'échantillonnage n'y est pour rien : texel au plus proche, cellule entière (Passe T1), alpha binaire.
-
-### Remède — [OK] derrière `?spriteedge=`, jeu par défaut inchangé
-- `SpriteRenderer.setEdgeMode` compile le shader des sprites avec des macros, seulement si le paramètre est là :
-  - `spriteedge=norim` (« liseré retiré ») : une feuille cuite ne prend plus le liseré de sommet ; les sprites générés (le chat, les
-    combattants de l'arène) le gardent ;
-  - `spriteedge=dark` (« contour noir ») : pas de liseré, et l'anneau extérieur d'une feuille cuite (un texel dont un voisin en croix est
-    transparent) garde 25 % de sa couleur (`EDGE_INK`, teinte gardée) ;
-  - absent : le shader compile sans aucune des deux branches.
-- `App` lit le paramètre ; le mode jouable le transporte dans la ville (`CARRY`, `CARRY_TOWN`). `AGENTS.md` : la ligne du paramètre.
-- **[KO → corrigé]** première version : `#if SPRITE_EDGE == 2` sur une macro non définie ne compile pas en GLSL ES : sans paramètre, plus aucun
-  personnage à l'écran (vu sur une capture avant toute preuve). Deux macros testées par `#ifdef` (`SPRITE_NORIM`, `SPRITE_DARK`).
-- **[KO → compris]** une capture prise juste après un changement de macros montre la scène sans personnages : le programme recompilé n'est pas
-  encore prêt (compilation parallèle, l'objet est sauté). Les variantes rendent une image de chauffe et attendent 1,5 s.
-
-### Preuves
-- **Jeu par défaut à 0 px contre `main` figé** (`tools/detshots.mjs`, 120 pas, seuil 0) : témoin de répétition (deux chargements de `main`)
-  0 px ; nuit A, B, C, D avec personnages, B et D statiques, midi B et D, matin B, fin de journée C, joueur placé en A (`player=-12,2`) :
-  **0 px les douze**. Sur la même page, `setEdgeMode(null)` après les autres modes : 0 px (le retour arrière recompile à l'identique).
-- **Contrôle négatif** : la même comparaison voit `norim` (midi B : 17 622 px, jusqu'à 215 niveaux ; nuit : 5 056 px) et `dark` (30 786 /
-  12 819 px), et la première version du shader (personnages absents).
-- **L'arène par défaut** (`tools/arena-scene-shots.mjs`, `HOLD=1`, un moment de chauffe) : `charging` et `combo` à 0 px entre deux chargements
-  de `main` et la branche ; `ko` varie entre chargements de `main` (2 701 px, jusqu'à 10 niveaux), la branche en est à 104 px d'un niveau. Un
-  troisième chargement de `main` différait des deux autres sur les trois moments (jusqu'à 13 niveaux) : l'arène n'est pas déterministe d'un
-  chargement à l'autre (comme `strike` / `heavyRen` à la Passe L6).
-- **Mesure du remède** (bord intérieur, midi B) : `norim` moyenne 89,5, p90 167 (comme `uEdge` à 0) ; de nuit l'écart est faible (73,8 → 71,9) :
-  la nuit, le liseré de lune est bleu sombre.
-- **Avant / après** (même image, graine 1842, 120 pas ; aujourd'hui / liseré retiré / contour noir 0,25 / contour noir doux 0,40) :
-  `screenshots/calibration/sprite-e1/` : `morning-B.png`, `midday-B.png`, `afternoon-B.png`, `night-B.png`, `midday-D.png`,
-  `midday-B-heads-x5.png`.
-- **Validation** : typecheck, `npm test` **148 / 148**, build, `art:validate` (18 manifestes, 21 sources, 0 erreur).
-
-### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
-- Avant cette passe, les passes gardées faisaient 60 872 octets (la Passe D8 l'annonçait). L4, L5 et L6, closes (fusionnées), partent d'un seul
-  bloc vers `journal/19-passes-L4-L6.md` (21 817 octets, SHA-256 `793ff78e2c9fe642…`). Preuve **8 / 8** (script hors dépôt, contre la copie de
-  `JOURNAL.md` d'avant le déplacement : corps de l'archive égal au bloc ; L4-L6 contigus, suivis de L7 ; plus dans `JOURNAL.md` ; chacun dans un
-  seul fichier de `journal/` ; `JOURNAL.md` inchangé à partir de L7 ; seules la phrase d'en-tête et une ligne d'index changent ; en-tête comme
-  `journal/18` ; CRLF seuls). Contrôle négatif : un bit changé dans une copie de l'archive → 7 / 8.
-
-### À décider par l'opérateur
-- Le traitement du bord des feuilles cuites : aujourd'hui (rien), **liseré retiré** (`norim`), **contour noir** (`dark`, 25 %), ou un noir plus
-  doux (40 %) ; et sa portée : le jour et la nuit, ou le jour seulement. Recommandation de la séance : le contour noir à 25 %, jour et nuit (il
-  retire le liseré, couvre les texels clairs d'auteur et les cheveux « ash », et fond les personnages dans le décor de jour comme de nuit).
-- Rien ne change au jeu par défaut avant sa réponse ; l'appliquer est une ligne (`App` : le mode par défaut), avec un nouveau PD.
-
-### Pensée
-- Un uniforme partagé change de sens avec l'état : `uMoonCol` est la lune la nuit et le soleil le jour. Tout effet écrit pour la lune (ici un
-  liseré de 0,22) se remesure sous le soleil : à midi, sept fois la lune en luminance.
-- Une macro de shader se teste par `#ifdef` : en GLSL ES, une macro absente dans une expression `#if` ne compile pas, et le seul symptôme est un
-  objet qui ne se dessine plus.
-- Avant d'accuser le post-traitement d'une auréole, couper chaque effet sur la même image et comparer le bord intérieur au reste du sprite :
-  un voile uniforme n'est pas un liseré.
-
-## Passe F2 — Les PNJ qui descendent l'écran : leur « face » est un trois-quarts tourné à gauche ; une règle préparée derrière `?npcfacing=` (2026-10-20)
-
-### Demande
-- Séance locale lancée par la séance parente. Signalement de l'opérateur, mot pour mot : « on a toujours ce probleme d'angle position de npcs
-  lorsqu'il marche vers le bas de la zone du district merchant, et je pense que l'animation de marche vers la et l'aanimation de marche vers le
-  bas sont similaire car ils ont les memes angles, il regarde vers la gauche et donc l'un avance vers la gauche ( ce qui est bon et coherent ) et
-  l'autre marche vers le bas, ce qui 'est pas bon car cela donne une marche de travers car l'orientation du corps n'est pas bon il est cense
-  marche droit vers le bas ».
-- Consigne : mesurer (vue montrée quand le pas descend l'écran, angle du passage au profil, feuilles), proposer derrière un paramètre d'URL sans
-  changer le défaut, chiffrer la glissade, montrer avant / après ; changer la règle des PNJ est la décision de l'opérateur (K9).
-- Mesures et prototype d'abord hors dépôt (le dossier était sur la branche de la séance du liseré) ; puis branche `npc-facing-n1` depuis
-  `main` (`70be38d`). Serveurs : `main` figé (copie hors dépôt, :5188) et la branche figée (copie hors dépôt, :5191), entrées locales
-  `facing-frozen` / `facing-proto`.
-
-### Les feuilles — [OK] ni tag ni miroir faux ; [KO] aucune vraie face pour les citadins
-- `walk-down` ≠ `walk-side` sur les dix feuilles de PNJ (aucune image égale ; masques : 18 à 36 % d'écart contre le profil, 6 à 9 % contre
-  `idle-down`).
-- **Les cinq citadins** (artisane, voyageur, citadine, vieux marchand, coursier) : leur vue `down` est un **trois-quarts face léger tourné vers
-  la gauche** (visage, regard, buste). Leurs planches (01-16, 17-24) ne dessinent **aucune vue de face** : les vues 1 et 2 regardent toutes deux
-  à gauche (trois-quarts léger, trois-quarts marqué), les rigs ont pris la vue 1. Docker et capuche : presque de face ; garde : de face ; le
-  héros a une vraie face et ses trois-quarts.
-- L'opérateur a donc raison : la marche « vers le bas » de ces PNJ montre un corps tourné à gauche, comme leur profil.
-
-### Mesures — [OK] (harnais de `tools/step-angles.mjs` étendu hors dépôt, 40 s, graine 1842)
-- **Pas vers le bas de l'écran** : en A, B, C, presque tous partent **entre 50 et 90° de la verticale** (le quai se descend en diagonale), **tous
-  montrés de profil** (la règle de l'écran passe au profil à 50°, revient à 40°). Sous 50° (peu de pas : A, midi), la « face » tournée à gauche,
-  **y compris quand le pas va à droite** : regard contraire 2 % des pas en C et en B à midi, 3 % en A à midi. Un marcheur ne change pas de vue au
-  milieu d'un trajet (segments droits). Le mode jouable fait les pas de la nuit B.
-- Deux mesures par variante : la part des pas à 20-40° de l'axe de la vue montrée (celle de la Passe K9, axe vertical pour face / dos) et
-  l'écart moyen à l'axe **dessiné** (la face des citadins comptée à 35° : une estimation sur les feuilles ; un regard contraire compte en entier).
-
-| 40 s, 1842 | A | B | C | D | B midi | A midi | jeu (matin) |
-|---|---|---|---|---|---|---|---|
-| pas de travers (K9) — aujourd'hui | 55 % | 44 % | 66 % | 3 % | 48 % | 46 % | 44 % |
-| `mirror` | 55 | 44 | 66 | 3 | 48 | 46 | — |
-| `34` | 29 | 31 | 41 | 3 | 33 | 25 | 31 |
-| `wide` | 26 | 21 | 21 | 3 | 19 | 22 | — |
-| écart à l'axe dessiné — aujourd'hui | 26,2° | 20,4° | 22,3° | 7,4° | 24,9° | 24,4° | 20,4° |
-| `mirror` | 26,2 | 20,4 | 20,8 | 7,4 | 24,3 | 23,8 | — |
-| `34` | 24,6 | 20,4 | 20,6 | 7,4 | 20,6 | 23,0 | 20,4 |
-| `wide` | 25,6 | 23,6 | 26,5 | 7,4 | 24,1 | 23,7 | — |
-| regard contraire — aujourd'hui | 0 % | 0 % | 2 % | 0 % | 2 % | 3 % | 0 % |
-| `mirror`, `34`, `wide` | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-
-### Fait — [OK] `?npcfacing=`, défaut inchangé
-- `BakedCast` : `frontLeft` sur les cinq citadins (leur `down` dessiné tourné à gauche), porté par `CastMember`.
-- `ActorSystem.npcFacing` (`npcSideEdges`), PNJ seulement :
-  - `mirror` : le `down` d'une feuille `frontLeft` retourné vers un pas qui va à droite, tenu à moins de 8° de la verticale ;
-  - `34` : `mirror` + ce `down` gardé comme trois-quarts face jusqu'à 67,5° de la verticale pour un pas qui descend (± 5° tenus), profil
-    au-delà ; les feuilles à vraie face et les pas qui montent gardent la règle de l'écran ;
-  - `wide` : `34` + face / dos jusqu'à 60° (± 5°) pour tous.
-- `App` lit le paramètre ; le mode jouable le transporte (`CARRY`, `CARRY_TOWN`). `AGENTS.md` : la ligne du paramètre.
-
-### Preuves
-- **Défaut à 0 px contre `main` figé** (`tools/detshots.mjs`, 300 pas) : témoin de répétition 0 px ; A, B, C, D, midi B et le mode jouable
-  (`play=1&state=day1-morning`) avec personnages : **0 px (écart max 0)**. Contrôle `npcfacing=34` : A 479, B 2 969, C 6 881, midi B 3 782, jeu
-  1 489 px (D 0 : aucun pas de D ne tombe dans le secteur changé). La grille des pas de la branche par défaut égale celle de `main` au caractère près.
-- **Tests** (`tests/views.test.mjs` +1, oracle : l'angle du pas recalculé depuis la caméra, les bords écrits en degrés ; 360 caps × trois vues
-  de départ) : absent = la règle de l'écran, la feuille `frontLeft` comme une autre ; `mirror` ne change que le miroir ; `34` et ses bords tenus,
-  pour les seules feuilles `frontLeft` ; `wide`. **Six fautes injectées une à une, toutes attrapées** : `34` par défaut (attrapée après ajout de
-  l'assertion du défaut : le premier test fixait toujours le mode), miroir inversé, bord sans tenue, `frontLeft` ignoré, `wide` décalé, miroir
-  sans tenue.
-- **Flipbooks** (avant / `34` / `wide`, synchronisés ; hors dépôt, montrés à l'opérateur) : B, le vieux marchand descend à 54° vers la gauche ;
-  B, le voyageur à 52° vers la droite ; A midi, l'artisane à 13° vers la droite et à 60° vers la gauche. Images gardées :
-  `screenshots/calibration/f2-npc-facing/` (`faces.png` : les faces des citadins tournées à gauche, le héros à gauche de l'image ;
-  `B-frames.png` : le vieux marchand et le voyageur, avant / `34`).
-- **Validation** : typecheck, `npm test` **149 / 149**, build, `art:validate` (18 manifestes, 21 sources, 0 erreur).
-
-### À décider par l'opérateur (décision K9 : la règle des PNJ)
-- Aujourd'hui (la règle de l'écran), `mirror`, `34` ou `wide`. **Recommandation de la séance : `34`** : un citadin qui descend montre son
-  devant, tourné dans le sens de sa marche, et plus jamais un regard contraire ; son gain se lit sur la mesure K9, peu sur l'axe dessiné (la face
-  n'est qu'un trois-quarts léger, les pas vont à 55-75°). `wide` fait monter l'écart à l'axe dessiné en B et C.
-- **Voie de l'art (RH4)** : la vue 2 des planches (trois-quarts marqué, jamais utilisée) est une source de `downSide` pour les cinq citadins,
-  sans génération ; ni vraie face ni trois-quarts dos. Une tâche de rig, une critique à l'aveugle et l'approbation de l'opérateur.
-
-### Pensée
-- Avant de régler une règle de vue, regarder ce que la feuille dessine vraiment : une « face » peut être un trois-quarts, et le meilleur
-  secteur ne corrige pas un dessin tourné.
-- Une mesure de glissade se rapporte à l'axe dessiné de la vue, pas à son nom : la mesure K9 (vertical pour toute face) et l'axe estimé
-  n'ont pas dit la même chose ici ; les deux sont rapportés, et l'œil tranche sur les flipbooks.
 
 ## Passe S3b — Le contour noir des sprites cuits par défaut, de jour et de nuit (décision de l'opérateur) (2026-10-20)
 
@@ -680,6 +407,146 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   changeant de cadrage.
 - Un outil de comparaison nomme ce qu'il compare : une étiquette par défaut (« avant / après ») dit autre chose que l'image.
 
+## Passe UI1 — L'audit de l'interface et sa ligne directrice : trois directions en images générées, une fiche d'arbitrages (étapes 2.1 et 2.2 de la feuille de route) (2026-10-24)
+
+### Demande, mot pour mot
+- Opérateur (feuille de route, Passe FR1) : « Puis UI/HUD car ce n'est vraiment pas optimale, mais on commencera par fait un audit et des passes
+  visuels via des images references generes pour valider la ligne directrice, pour bien implementer. »
+- Séance locale lancée par la séance parente le 21/10 ; interrompue, puis reprise le 24/10 sur « reprend ». Consignes : ni branche ni commit ;
+  aucun fichier suivi modifié, sauf les images archivées et leurs `.source.json` ; serveur `dev-ui` sur :5187, jamais :5186 (séance d'audit de
+  l'arène en parallèle).
+- `main` = `c431295`. Serveur : entrée locale `dev-ui` ajoutée à `.claude/launch.json` (non suivi), le dépôt sur :5187 en `--strictPort`.
+
+### L'audit — [OK] 45 captures, aucune erreur de page
+- **Ordinateur 1920 × 1080, téléphone 375 × 812**, et 812 × 375 pour le paysage :
+  - `tools/play-shots.mjs` : la ville au matin, à l'après-midi et le soir ; « Here » ouvert au téléphone ; le dialogue de Mara ; la carte ; le
+    journal ; le tableau ; le menu ; les nouvelles ; le parvis et son dialogue ; Lantern Row ; la fiche de match ; la fin de la tranche ; le HUD de
+    l'arène (`window` en aide complète, `combo`, `ko`) ;
+  - un script hors dépôt : l'écran titre (`?title=1`, sans puis avec une vraie sauvegarde, et la saisie du nom) et la vue d'« Explore the district »
+    (`?time=midday`).
+- **[KO → compris]** `play-shots` ferme la première carte de la page (`.pm-overlay .pm-btn`) quand son JS ne contient pas « news ». Sur le duel,
+  c'est la fiche de match : il cliquait « Fight » avant la capture. Refait avec `/*news*/0`.
+- **Code lu** : `src/ui/*`, `src/arena/ArenaHud.ts`, `FloorUI.ts`, `src/main.ts`, `src/debug/Hud.ts`, `DebugPanel.ts`.
+- **Constat** : un seul langage (encre de nuit à 93 %, ivoire, or pâle, ambre, Segoe UI espacé), fidèle à la nuit verrouillée, mais habillé
+  comme une page web. Trois défauts principaux :
+  1. une seule apparence, de nuit, à toute heure : l'UI ne lit pas `DayState` ;
+  2. une hiérarchie de page web : texte de 10 à 13 px, « Here » sur un quart de l'écran avec les absents, la moitié de l'écran au téléphone,
+     sous-libellés de la barre d'actions de l'arène rognés en 1080p (`overflow:hidden`) ;
+  3. « Explore the district » s'ouvre sur le panneau DEV déplié, avec un second style de HUD (Palatino, mini-carte) ; `main.ts` le crée dès que
+     `clean` est absent, donc aussi en production. C'est dans la décision L7-6a (« … and the DEV panel ») : une question, pas un correctif d'office.
+- Autres relevés : « FREE » sur des achats payés en pièces (le coût montré est le créneau) ; le dialogue au centre cache celui qui parle ; le
+  portrait du générateur ne ressemble pas au sprite cuit ; la carte n'est qu'une liste ; la fiche de match et la victoire sont du texte nu ; la
+  sauvegarde ne se voit pas. Le détail écran par écran est dans le rapport.
+
+### Les images de référence — [OK] 9 images, 1,61 $ sur 5 $
+- `tools/art-lab/gen-image.mjs`, tâche `ui-directions`, `gpt-image-2`, `/images/edits`, qualité haute ; une capture du jeu **sans interface** en
+  référence (`clean=1` en B, `hud=0` dans l'arène). Une première référence de la ville était le cadrage A, trop lointain : refaite en B
+  (`camera=B&intro=0`).
+- `--dry-run` d'abord : au pire 0,627 $ par image. **Coût réel : 0,1786 à 0,1793 $ par image, 1,6109 $ pour les neuf** (registre `--spent`).
+- Trois directions, chacune sur la ville (dialogue de Mara, midi) et sur le duel de midi :
+  - **A « Encre et laiton »** : l'interface actuelle affinée (encre, filets de laiton, serif gravée) ;
+  - **B « Vélin du tournoi »** : parchemin ivoire, lettrines, écus ;
+  - **C « Héraldique pixel »** : cadres en pixel art sur la grille des sprites, bleu royal, ivoire et or du tournoi, onglets en fanions.
+  - En plus : B et C la nuit, et C au téléphone (1024 × 1536).
+- **Archivées** (`--archive`, octets inchangés, avec leur `.source.json`) dans `art-lab/characters/reference/sources/` :
+  `ui-direction-{a-town, a-arena, b-town, b-arena, c-town, c-arena, b-town-night, c-town-night, c-phone}-2026-10-24.png`. `npm run art:validate` :
+  18 manifestes, 30 sources, 0 erreur. **Non canoniques**, et non commitées par cette séance.
+- **[?] Ce que l'outil a ajouté** : la nuit, il a redessiné la scène et laissé le pavois, que J6 réserve au jour ; les trois directions dessinent
+  de grands bustes illustrés, de l'art qui n'existe pas dans le jeu ; C met des jauges vertes et rouges, hors palette. Sur la fiche, chaque point
+  est dit à côté de l'image.
+
+### La fiche d'arbitrages — publiée
+- Page privée https://claude.ai/artifact/7PeQMRJKDku4hdN5wuuC3y, collection `decisions`, relue vide après publication (`list`). Le script reprend
+  ce qui a marché en Passe D8 : il attend le pont jusqu'à 10 s, relit chaque écriture (`get`) avant d'afficher « Enregistré et relu », garde
+  une copie locale, et écrit à la connexion les choix faits avant elle.
+- **14 entrées** :
+  - **La ligne directrice** : L1 la direction (recommandée : C) ; L2 le jour et la nuit (un style, des tons qui suivent `DayState`) ; L3 le téléphone
+    (avec le système de design, le toucher restant hors tranche, E30) ; L4 les portraits (le visage de la feuille cuite d'abord, des bustes plus
+    tard).
+  - **Les défauts à corriger en premier** : P1 le panneau DEV d'Explore (fermé par défaut, H l'ouvre) ; P2 « FREE » (en premier) ; P3 la barre
+    rognée (en premier) ; P4 le dialogue, P5 « Here », P6 la fiche de match et la victoire (avec la direction choisie).
+  - **Le système de design (2.3)** : S1 les polices (pixel pour les titres et un texte lisible, embarquées) ; S2 les cadres (générés par le code,
+    en neuf tranches) ; S3 la palette (bleu, ivoire, or ; ambre pour l'action ; jauges dans la palette) ; S4 la taille minimale (16 px ordinateur,
+    14 px téléphone).
+
+### Les choix de l'opérateur, mot pour mot
+- Opérateur, mot pour mot : « La fiche UI est remplie. » Collection `decisions` relue (`ArtifactData list`) : **14 documents sur 14**, cliqués le
+  25/10 entre 03 h 44 et 03 h 48 UTC, une note. « = » : la recommandation de la fiche est suivie.
+
+| # | Décision | Choix de l'opérateur | Note de l'opérateur | |
+|---|---|---|---|---|
+| L1 | La direction de l'interface | « C · Héraldique pixel » | — | = |
+| L2 | Jour et nuit | « Un style, des tons qui suivent DayState » | — | = |
+| L3 | Le téléphone | « Avec le système de design » | — | = |
+| L4 | Les portraits | « Visage cuit d'abord, bustes plus tard » | — | = |
+| P1 | Explore et le panneau DEV | « Fermé par défaut, H l'ouvre » | — | = |
+| P2 | « FREE » sur les achats | « En premier » | — | = |
+| P3 | La barre d'actions rognée | « En premier » | — | = |
+| P4 | Le dialogue au centre | « Avec la direction choisie » | — | = |
+| P5 | Le panneau « Here » | « Avec la direction choisie » | — | = |
+| P6 | La fiche de match et la victoire | « Avec la direction choisie » | — | = |
+| S1 | Les polices | « Pixel pour les titres + texte lisible » | — | = |
+| S2 | Les cadres | « Générés par le code (neuf tranches) » | — | = |
+| S3 | La palette | « Bleu, ivoire, or ; ambre pour l'action » | « Cela peut changer par la suite » | = |
+| S4 | La taille du texte | « 16 px ordinateur, 14 px téléphone » | — | = |
+
+### Ce qui en découle — [OK] consigné, rien appliqué par cette séance
+- **La ligne directrice** de l'étape 2 est **C « Héraldique pixel »** : cadres en pixel art générés par le code (neuf tranches, densité des
+  sprites), bleu royal, ivoire et or du tournoi, ambre pour l'action, jauges dans la palette (S3 provisoire, d'après la note de l'opérateur) ;
+  un seul style dont les tons suivent `DayState` ; une police pixel embarquée pour les titres, chiffres et touches, et une police de texte lisible
+  embarquée (licence libre) ; texte de 16 px au moins sur ordinateur, 14 px au téléphone ; une mise en page téléphone (bandeau, feuille de dialogue,
+  onglets) dans le système de design, le toucher restant hors tranche (E30). Les images C (`ui-direction-c-*-2026-10-24`) sont la référence de
+  direction, **non canoniques** : ni leurs bustes, ni leurs jauges vertes et rouges, ni la scène redessinée ne sont des cibles.
+- **Portraits** : le visage de la feuille cuite de chaque personnage d'abord ; des bustes pour les personnages principaux plus tard, par la
+  chaîne d'art (manifeste, critique, approbation), dans une tâche à part.
+- **Tâches à part, chacune dans sa séance, une branche à la fois** :
+  1. **« En premier »** (avant le système de design), une petite tâche : P2, une étiquette par monnaie (pièces, créneaux), « free » seulement
+     quand rien n'est dépensé ; P3, les sous-libellés de la barre d'actions de l'arène lisibles en 1080p (change les pixels de `?scene=arena` :
+     preuve contre `main` figé) ; P1, le panneau DEV fermé par défaut quand on arrive par le bouton « Explore the district », H l'ouvre (les adresses
+     des outils inchangées, preuve à 0 px).
+  2. **L'étape 2.3, le système de design** (S1 à S4, L2, L3, L4 en première partie), puis la mise en œuvre écran par écran avec captures avant /
+     après, dont P4 (le dialogue en bas, le locuteur visible), P5 (« Here » réduit aux actions du lieu, les absents retirés) et P6 (la fiche de
+     match, la victoire, le journal et le tableau).
+- `AGENTS.md` (à mettre à jour par la séance qui versionne) : la ligne directrice de l'interface sous « Art direction », avec les règles S1 à S4
+  et L2, et la note de l'opérateur sur la palette.
+
+### Validation
+- Aucun code touché. `npm run art:validate` : 0 erreur avec les neuf sources archivées. Serveur `dev-ui` arrêté à la fin de la séance.
+- À versionner par la séance parente : les neuf PNG et leurs `.source.json`, et cette passe. Rapport et captures (hors dépôt) : dossier de notes
+  partagé, `ui-audit/`.
+
+### Pensée
+- Une image de référence d'interface se demande sur une capture du jeu **sans interface** : avec l'ancienne interface en référence, le modèle
+  la recopie.
+- Un générateur d'images « redessine » ce qu'il n'a pas reçu l'ordre de garder (le pavois la nuit, des bustes illustrés) : chaque écart se dit à
+  côté de l'image, avant que l'opérateur ne la prenne pour une cible.
+- Un outil de capture qui ferme la première carte d'une page se lit avant de lui confier un écran fait d'une carte (la fiche de match).
+- Ce qui ressemble à un bug (le panneau DEV d'Explore) se vérifie contre les décisions consignées avant d'être rangé parmi les défauts.
+
+## Passe UI2 — Les trois corrections « En premier » de l'interface (P1, P2, P3), et le versement de la Passe UI1 (2026-10-24)
+
+### Demande
+- Séance locale lancée par la séance parente (celle de l'audit de l'interface) : verser la Passe UI1 (le texte de la séance d'audit, collé tel
+  quel ; les neuf images de référence et leurs fiches ; la ligne directrice dans `AGENTS.md`), puis les trois corrections que l'opérateur a
+  mises « En premier » sur la fiche de la Passe UI1 : P1 « Fermé par défaut, H l'ouvre », P2 « En premier », P3 « En premier ».
+- Branche `ui-premier` depuis `main` (`21b8c8b`) ; aucune autre branche de travail (`git branch -a`). Une séance d'audit de l'arène peut
+  travailler dans le même dossier : le port 5186 et `.gitignore` (modifié par une autre séance, laissé non commité) ne sont pas touchés.
+
+### Versement de la Passe UI1 — [OK]
+- La Passe UI1 est collée telle quelle depuis `PASSE-UI1.md` (dossier de notes de la séance d'audit), fins de ligne passées en CRLF. Sa ligne
+  « Serveur `dev-ui` arrêté à la fin de la séance » reste juste : aucun port de 5170 à 5200 n'écoutait au versement.
+- Les neuf images `ui-direction-*-2026-10-24.png` et leurs `.source.json` : SHA-256 et tailles égaux à leurs fiches (`art:validate` : 18
+  manifestes, 30 sources, 0 erreur ; recalcul à part, 9 / 9) ; ni clé ni chemin de la machine dans les fiches.
+- `AGENTS.md`, « Art direction » : la ligne directrice de l'interface (C, L2, L3, L4, S1 à S4, et la note de l'opérateur sur la palette).
+
+### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
+- Avant ce versement, les passes gardées faisaient 61 210 octets ; avec la Passe UI1 et le début de cette passe, 73 890. D8, S3 et F2, closes
+  (fusionnées), partent d'un seul bloc vers `journal/22-passes-D8-F2.md` (25 831 octets, SHA-256 du bloc `9ad5d0928d2b5663…`) ; restent 48 059
+  octets. Preuve **8 / 8** (script hors dépôt, contre la copie de `JOURNAL.md` d'avant le déplacement : corps de l'archive égal au bloc ; D8, S3,
+  F2 contigus, suivis de S3b ; plus dans `JOURNAL.md` ; chacune dans un seul fichier de `journal/` ; `JOURNAL.md` inchangé à partir de S3b ;
+  seules la phrase d'en-tête et une ligne d'index changent ; en-tête comme `journal/21` ; CRLF seuls). Contrôle négatif : un bit changé dans une
+  copie de l'archive → 7 / 8. Le même script vérifie que la Passe UI1 du journal est le texte de `PASSE-UI1.md` (fins de ligne mises à part).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -831,6 +698,16 @@ en jeu par l'opérateur ; le liseré froid peint des combattants reste le même 
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
+**6e. Interface (étape 2 de la feuille de route ; Passes UI1, UI2)** — ligne directrice décidée sur la fiche de la Passe UI1 (14 choix sur 14,
+tous à la recommandation) : C « Héraldique pixel » (L1), un style dont les tons suivent `DayState` (L2), le téléphone avec le système de design
+(L3), le visage cuit d'abord et les bustes plus tard (L4), les règles S1 à S4 ; consignée dans `AGENTS.md` (« Art direction »). Références
+`ui-direction-c-*-2026-10-24` non canoniques (ni bustes, ni jauges vertes et rouges, ni scène redessinée). « En premier » : P1, P2, P3 (Passe UI2).
+Reste **l'étape 2.3, le système de design** (S1 polices embarquées, S2 cadres en neuf tranches générés par le code, S3 palette, provisoire : « Cela
+peut changer par la suite », S4 16 px / 14 px ; L2 ; L3 ; L4), puis la mise en œuvre écran par écran avec avant / après : P4 (le dialogue en bas,
+le locuteur visible), P5 (« Here » réduit aux actions du lieu, les absents retirés), P6 (la fiche de match, la victoire, le journal, le tableau).
+Relevés de l'audit sans décision propre (rapport de la séance d'audit) : l'écran titre au fond vide, l'état en une ligne de texte, la carte en
+liste, la sauvegarde silencieuse, le titre de l'arène perdu sur le ciel de jour, « Turn your device » qui couvre la fiche de match.
+
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
   appli. Servir les baselines sur `:518x --strictPort` ; décision « strictPort » (Passe D1), appliquée (Passe O1).
@@ -838,7 +715,7 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 

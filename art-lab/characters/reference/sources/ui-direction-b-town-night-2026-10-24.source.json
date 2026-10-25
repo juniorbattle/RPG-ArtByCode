@@ -1,0 +1,79 @@
+{
+  "kind": "generated-image",
+  "file": "ui-direction-b-town-night-2026-10-24.png",
+  "sha256": "9bfc011737c12e405dd4412d5b7ea02c454956d52a6a4ca789068bb1ad432f4d",
+  "bytes": 2673163,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 1,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Use the attached screenshot as the game scene: keep its HD-2D look exactly (pixel-art character sprites on a 3D half-timbered canal street, blue slate roofs, blue and ivory tournament bunting, the night lighting of the screenshot, tilt-shift depth of field). Redesign ONLY the user interface laid over it, as a polished mock-up of a finished console-quality JRPG screen at 1920x1080 proportions. Interface content, in English, all text crisp and legible: (1) a compact status plaque top-left: \"Day 2 / 3 - Afternoon\", \"Aster - The Merchant District\", \"60 coins\", \"Reputation 10\", \"Next bout: Vessa Lark, today\"; (2) small key hints top-right: M Map, J Journal, T Tournament, Esc Menu; (3) a dialogue box across the lower third, not covering the speaker: a large pixel-art portrait of Mara (a merchant woman, auburn hair, white headscarf, blue dress, apron), her name plate \"Mara - the merchant\", her line \"Whetstones, salves, a good imported blade. Everything a fighter needs.\", and four answer choices with clear cost tags: \"Buy a whetstone [8 coins]\", \"Buy an imported blade [30 coins]\", \"Help Mara unload her crates [1 slot]\", \"Leave [Esc]\"; the first choice highlighted. Keep the scene visible around the interface; no other text, no watermark, no logo.\nInterface direction \"Tournament vellum\": light, daylight-friendly panels of warm ivory vellum / parchment with subtle paper grain, framed by thin dark-ink rules and gilt corner flourishes like an illuminated tournament roll; dark sepia-ink text, red and gold illuminated initial letters, small heraldic details (a shield, a ribbon), titles in a classical serif. Warm, readable in bright daylight, storybook-medieval but uncluttered.\nIt is now NIGHT in the scene (lamp-lit, indigo, wet cobbles): keep the night exactly as in the screenshot and show how this same interface style adapts to the night while staying readable.\n",
+    "promptSha256": "1fdf2057ce551b765a3d4bc3261f24f15f189545116795288151b4fba9f37f38",
+    "promptFile": "(outside the repository) B-night.txt",
+    "references": [
+      {
+        "file": "(outside the repository) town-night-clean-1536x1024.png",
+        "sha256": "171dd7a0232348bb3a2f5916784777f8627b8510e203e063e764be8fe03c5127",
+        "bytes": 2287467
+      }
+    ],
+    "image": "1 of 1",
+    "task": "ui-directions",
+    "requestedAt": "2026-10-25T03:32:42.828Z",
+    "response": {
+      "requestId": "req_2012cf5be1194f66956759695eee50b6",
+      "created": "2026-10-25T03:34:01.000Z",
+      "processingMs": 77458
+    },
+    "usage": {
+      "input_tokens": 1986,
+      "input_tokens_details": {
+        "image_tokens": 1536,
+        "text_tokens": 450
+      },
+      "output_tokens": 5488,
+      "output_tokens_details": {
+        "image_tokens": 5488,
+        "text_tokens": 0
+      },
+      "total_tokens": 7474
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 0.62742,
+        "fromUsage": 0.179178
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 23664 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-10-25",
+    "from": "ui-directions-20261025T033242Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

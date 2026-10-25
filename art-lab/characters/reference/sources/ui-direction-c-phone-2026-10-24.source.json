@@ -1,0 +1,79 @@
+{
+  "kind": "generated-image",
+  "file": "ui-direction-c-phone-2026-10-24.png",
+  "sha256": "4378b0bdbcd821bb54bf45d98913b3723f2725c61c7abe4b76a126950a711788",
+  "bytes": 2655366,
+  "format": "PNG 1024 x 1536, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 1,
+      "size": "1024x1536",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Use the attached screenshot as the game scene: keep its HD-2D look exactly (pixel-art sprites on a 3D half-timbered canal street, blue slate roofs, blue and ivory tournament bunting, bright midday light). Redesign ONLY the interface for a PHONE held upright (portrait, 9:16-like proportions, thumb-reachable controls), as a polished mock-up of a finished mobile JRPG screen. Interface content, in English, crisp and legible at phone size: a slim status ribbon at the top (\"Day 2 / 3 - Afternoon\", \"60 coins\", \"Rep 10\", \"Next bout: Vessa Lark, today\"); the scene visible in the middle with the player; a dialogue sheet in the lower part: Mara's pixel-art portrait (a merchant woman, auburn hair, white headscarf, blue dress, apron), \"Mara - the merchant\", her line \"Whetstones, salves, a good imported blade.\", then large touch-size choices \"Buy a whetstone [8 coins]\", \"Buy an imported blade [30 coins]\", \"Help Mara unload her crates [1 slot]\", \"Leave\"; a bottom tab bar with Map, Journal, Tournament, Menu icons. Interface direction \"Heraldic pixel\": pixel-art nine-slice frames on the sprites' pixel grid in the tournament's royal blue and ivory with small gold rivets, pennant-shaped tabs, a pixel bitmap serif for titles and a clean pixel font for body text, warm lamp amber as the highlight. No other text, no watermark, no logo.\n",
+    "promptSha256": "b4b08355cff1168a8aca1a960a368485fd09305f653d22ddd57cfb4176c21407",
+    "promptFile": "(outside the repository) C-phone.txt",
+    "references": [
+      {
+        "file": "(outside the repository) town-phone-clean-1024x1536.png",
+        "sha256": "57855c0b1344d9298947b6e02b29e59105432cc6236e767fd2fc04c144a0cbf6",
+        "bytes": 2540346
+      }
+    ],
+    "image": "1 of 1",
+    "task": "ui-directions",
+    "requestedAt": "2026-10-25T03:34:01.408Z",
+    "response": {
+      "requestId": "req_f0864b2ddfa44901b14e8bd2108e5e45",
+      "created": "2026-10-25T03:35:23.000Z",
+      "processingMs": 80678
+    },
+    "usage": {
+      "input_tokens": 1865,
+      "input_tokens_details": {
+        "image_tokens": 1536,
+        "text_tokens": 329
+      },
+      "output_tokens": 5488,
+      "output_tokens_details": {
+        "image_tokens": 5488,
+        "text_tokens": 0
+      },
+      "total_tokens": 7353
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 0.62894,
+        "fromUsage": 0.178573
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-10-25",
+    "from": "ui-directions-20261025T033401Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

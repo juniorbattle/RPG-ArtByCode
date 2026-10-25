@@ -1,0 +1,79 @@
+{
+  "kind": "generated-image",
+  "file": "ui-direction-c-arena-2026-10-24.png",
+  "sha256": "a4b2c973006f245d9be007808cb89263206325fd9e106a3f1b3e65a9de3827d0",
+  "bytes": 2645355,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 1,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Use the attached screenshot as the game scene: keep its HD-2D look exactly (two pixel-art duellists facing each other on a cobbled arena floor between stone towers with blue fleur-de-lis banners, spectators in the stands, bright midday sky). Redesign ONLY the battle HUD laid over it, as a polished mock-up of a finished console-quality JRPG duel screen at 1920x1080 proportions. HUD content, in English, all text crisp and legible: top-left the player card (portrait, \"ASTER - challenger\", a health bar \"164 / 200\", five action-point gems, three lit); top-right the opponent card mirrored (portrait, \"VESSA LARK - the quickblade\", health bar \"410 / 600\"); a centred alert \"HEAVY ATTACK! - React now\" with a short dodge-window timer bar; along the bottom an action bar of eight commands grouped Defence | Attacks | Techniques with key caps and costs: \"B Guard\", \"A Dodge 1 AP\", \"1 Quick +1 AP\", \"2 Heavy\", \"3 Flash Cut\", \"4 Lunge\", \"5 Whirlwind\", \"6 Thrust (cooldown 14 s)\", the Dodge command glowing as ready. A thin line \"Pool of eight - Round 1\" near the top. No other text, no watermark, no logo.\nInterface direction \"Heraldic pixel\": the HUD itself is pixel art on the same pixel grid as the sprites (crisp 2-3 screen pixels per texel, no smoothing): nine-slice pixel frames in the tournament's royal blue and ivory with small gold rivets, each fighter card hung like a pennant banner, segmented pixel health bars, gem-shaped action points, key caps as small pixel shields, a pixel bitmap serif for names and a clean pixel font for numbers, warm lamp amber as the highlight. Like a modern HD-2D JRPG battle HUD in the colours of the tournament: bold and legible.\n",
+    "promptSha256": "e4c5e1ebfec1849ae78ff3ed227a730a0fa55e96b79d9d4a33779f33f9d8a217",
+    "promptFile": "(outside the repository) C-arena.txt",
+    "references": [
+      {
+        "file": "(outside the repository) arena-clean-1536x1024.png",
+        "sha256": "e42590a9b411a9aa3b9807c32a2de45cb3363c6227a11e56bdeebf73c8cba714",
+        "bytes": 2442548
+      }
+    ],
+    "image": "1 of 1",
+    "task": "ui-directions",
+    "requestedAt": "2026-10-25T03:29:01.133Z",
+    "response": {
+      "requestId": "req_eba0e83454b442f798186741114dae77",
+      "created": "2026-10-25T03:30:24.000Z",
+      "processingMs": 82408
+    },
+    "usage": {
+      "input_tokens": 1953,
+      "input_tokens_details": {
+        "image_tokens": 1536,
+        "text_tokens": 417
+      },
+      "output_tokens": 5488,
+      "output_tokens_details": {
+        "image_tokens": 5488,
+        "text_tokens": 0
+      },
+      "total_tokens": 7441
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 0.62689,
+        "fromUsage": 0.179013
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 23664 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-10-25",
+    "from": "ui-directions-20261025T032901Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}
