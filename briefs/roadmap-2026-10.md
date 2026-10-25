@@ -86,7 +86,13 @@ d'entraînement.
 
 ## Questions ouvertes pour l'opérateur
 
-- Le calendrier de l'atelier combat : avant ou après les combattants de l'étape 1.
-- Ren : devient-il le héros `hero-x2-v4` avec des animations de combat ?
-- Les spectateurs : foule générée simple ou feuilles cuites.
 - La ligne directrice de l'interface (étape 2) et la forme du parvis une fois montré (étape 3).
+
+## Tranché (fiche de l'audit de l'arène, Passe AA1, 24/10)
+
+- Le calendrier de l'atelier combat : « Atelier avant les feuilles ; densité et public en attendant » (AA1-5).
+- Ren : « Oui : Ren = hero-x2-v4, feuille de combat à produire » (AA1-1) ; « Feuilles cuites (Ren, puis Marek, puis Vessa) » (AA1-2) ;
+  densité : « Essai en scène ×2 contre ×4 d'abord » (AA1-3) ; les générés : « Non, attendre les feuilles » (AA1-6).
+- Les spectateurs : « Les citadins cuits de la ville + variantes V1 » (AA1-4).
+- L'étape 1 devient donc : l'atelier combat (étape 0), et en attendant l'essai de densité et le public, chacun dans sa séance et derrière un
+  paramètre ; puis les feuilles de combat de Ren, Marek et Vessa.

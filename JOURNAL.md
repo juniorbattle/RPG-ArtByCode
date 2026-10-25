@@ -580,6 +580,106 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   rapport des luminances, sans recompiler.
 - Un témoin de répétition qui échoue dit d'abord ce que la capture attrape d'autre que le rendu : un fondu de chargement, des transitions CSS.
 
+## Passe AA1 — Audit des sprites de l'arène (étape 1.1 de la feuille de route) : combattants, gradins, cadre ; fiche d'arbitrages (2026-10-24)
+
+### Demande
+- Séance locale lancée par la séance parente, le 21/10, reprise le 24/10 : l'audit des sprites de l'arène, étape 1.1 de
+  `briefs/roadmap-2026-10.md` (combattants de `src/arena/FighterArt.ts`, gradins, place dans les textures, budget GPU, captures de jour et de nuit,
+  comparaison avec `hero-x2-v4` et les PNJ cuits), puis une fiche d'arbitrages.
+- Règles de la séance : ni branche ni commit, aucun fichier suivi modifié, aucune image générée ; serveur `dev-strict` (:5186) ; une autre séance
+  d'audit (l'interface, :5187) travaillait dans le même dossier. Rapport, captures et cette passe dans le dossier de notes partagé
+  (`arena-sprites-AA1/`) ; la séance parente versionne.
+- `main` à `c431295` (Passe AD1), aucun changement de code depuis.
+
+### Constats — [OK] mesurés
+- **Le joueur change de dessin entre la ville et l'arène.** En ville, Aster est `hero-x2-v4` (Passe H11) ; au parvis et au duel, c'est Ren, le
+  héros généré d'avant (`REN = { ...PLAYER }`) : grosse tête, profil, cape rouge, tunique bleue. Toute l'arène (Ren, Marek, Vessa, le public)
+  suit l'ancienne grammaire du générateur.
+- **Densité à l'écran** : un texel de combattant (×2, `CHAR_SCALE` 1,42) fait **3,9 px en 1080p** (mesuré dans la page, 3,89 ; calcul : distance
+  14,97 m, champ 34°, texel 0,0334 m → 3,94). La distribution cuite ×2 de la ville : 0,65 à 1,68 px en B (Passe S2), environ 1,5 pour le héros.
+  Une feuille ×2 du héros posée telle quelle dans le duel aurait des pixels environ 2,5 fois plus gros qu'en ville.
+- **Le jeu d'images** (atlas à graine 1842, script hors dépôt) : clés `<id>/side/<clip>.<i>/0`, cases de 128 × 192 texels (64 × 96 à ×2, pieds
+  rangée 180). Ren (et Vessa) : 12 clips, **29 images** ; Marek : 7 clips à lui, **17 images** (`block` et `victory` = `ready`, `dodge` = `hit`,
+  `strike` et `skill` = `slash`). Boîtes maximales : Ren 96 × 103, Marek 110 × 115, Vessa 100 × 105. Palette du générateur sans palette épinglée :
+  256 couleurs (Ren), 203 (Marek), 238 (Vessa).
+- **Moments sans image propre** : trois techniques sur quatre jouent le même `skill` (Coup éclair, Fente perçante, Estocade), Tourbillon la
+  taille `slash` ; Marek n'a ni garde, ni esquive, ni victoire à lui (quand Ren tombe, il reste en garde) ; aucun pas (élan, esquive et recul
+  sont des glissements d'images fixes) ; la charge de Marek tient une image 0,75 s ; le K.O. s'arrête à genoux ; une seule vue, le profil, même
+  au parvis quand le héros marche en profondeur (marche du générateur à ×1, doublée).
+- **Au soleil** : Marek se lit en masse blanche (cheveux, barbe, plaque), son visage se perd ; le contour noir de S3b ne touche pas l'arène
+  (sprites générés).
+- **Ce qu'une feuille cuite doit fournir** : les mêmes clés et nombres d'images (ou `IMPACT_FRAME` / `clipFrame` mis à jour), le personnage tourné
+  à gauche, des cases à la densité choisie, une couche émissive pour traînées et lame chauffée (ou des effets à part), la pointe de lame dans la
+  silhouette (`reach`), un portrait de face, un manifeste approuvé. `hero-x2-v4` n'a que repos et marche (60 images).
+- **Les gradins** : 25 spectateurs (rangs 0 et 1 : 11 + 14), près de la porte ; les cinq archétypes de foule générés de la ville, de face, repos
+  et bouche ouverte (4 images chacun), peints à ×1 et doublés (20 cases) ; échelle 0,62, teinte froide fixe [0,5 ; 0,56 ; 0,74] de jour comme de
+  nuit (bleu pâle à midi) ; acclamation = bouche ouverte + saut de 7 cm pendant 1,4 s ; 2,9 à 3,6 px par texel ; debout, même hauteur.
+  **Coût** : 2,7 ms de peinture (Node, médiane de 5) ; **aucun appel de dessin en plus** (l'appel instancié des sprites, 96 instances au plus).
+- **Le cadre** :
+  - l'arène a **son propre atlas**, pas la texture cuite de la ville : duel contre Marek **2 048 × 960, 75 cases** ; contre Vessa 2 048 × 1 152,
+    87 ; le parvis + 4 ; plafond garanti 160 cases (85 / 73 libres) ; à ×4, 40 cases par texture ;
+  - la texture cuite de la ville : **382 images sur 672**, 290 libres ;
+  - peinture de l'atlas : 126 ms (Marek), 140 ms (Vessa), 2,2 ms par image de combattant (Node, médiane de 5).
+- **Budget GPU (E24)** : non remesuré (`main` inchangé depuis AD1 ; la séance de l'interface utilisait la même machine). Chiffres de la Passe AD1 :
+  nuit B 10,02 ms en 1080p, arène de nuit 10,33 (min 9,20), de jour 8,56 à 8,93, duel du jour 2 8,74 ; en 2560 × 1440, arène 13,65 à 15,68 contre
+  16,76. Le budget tient, avec peu de marge la nuit ; les sprites y sont deux appels instanciés.
+
+### Captures
+- `tools/arena-scene-shots.mjs` (`HOLD=1`, 1920 × 1080, `clean=1`, graine 1842) : nuit, midi, fin de journée × `calm`, `charging`, `combo`,
+  `technique`, `dodge`, `block`, `guardbreak`, `heavyRen`, `ko` ; `tools/play-shots.mjs` : le duel contre Vessa (jour 2, midi), le parvis au matin et
+  le soir ; `tools/detshots.mjs` : la ville en B, nuit et midi ; recadrages `tools/zoom.mjs` ×2 (combattants) et ×3 (public).
+- **[KO → corrigé]** la comparaison ville / arène portait « BEFORE / AFTER » (écrits en dur par `tools/compare.mjs`) ; l'opérateur, mot pour mot :
+  « comment ca avant / apres ? le district merchant est la version la plus avance niveau sprite personnages ». Refaite avec « La ville —
+  référence » / « L'arène — aujourd'hui » (copie de l'outil hors dépôt, le dépôt intact).
+- **[KO → compris]** une capture du parvis par l'état `day1-morning` avec `scene=arena` restait noire (pas de duel ce jour-là) ; l'état
+  `forecourt-morning` la donne.
+- Images à garder dans `screenshots/calibration/aa1-arena-sprites/` si la séance parente les versionne : `ville-reference-vs-arene-midi.png`,
+  `forecourt-morning-1920x1080.png`, `fighters-ko-midday.png`, `crowd-right-midday.png`.
+
+### La fiche — [OK] publiée, 6 choix sur 6 enregistrés et relus
+- Page privée https://claude.ai/artifact/XZcegW4866uD7opjE6qKtP, collection `decisions` (vide à la publication, relue par `list`). Les
+  protections de la Passe D8 : pont attendu 10 s, chaque écriture relue (`get`) avant « Enregistré et relu », copie locale, choix faits avant la
+  connexion écrits à la connexion, échec dit dans un bandeau.
+- Six entrées : AA1-1 Ren = `hero-x2-v4` ; AA1-2 feuilles cuites ou générateur amélioré ; AA1-3 densité des combattants cuits ; AA1-4 les
+  spectateurs ; AA1-5 l'atelier combat, avant ou après ; AA1-6 retoucher les générés en attendant.
+
+### Les choix de l'opérateur, mot pour mot
+« = » : la recommandation de la fiche est suivie ; « ≠ » : le choix diffère, et c'est lui qui fait foi.
+
+| # | Décision | Recommandation | Choix de l'opérateur | Note | |
+|---|---|---|---|---|---|
+| AA1-1 | Ren devient `hero-x2-v4` avec des animations de combat | « Oui : Ren = hero-x2-v4, feuille de combat à produire » | « Oui : Ren = hero-x2-v4, feuille de combat à produire » | — | = |
+| AA1-2 | Feuilles cuites ou générateur amélioré | « Feuilles cuites (Ren, puis Marek, puis Vessa) » | « Feuilles cuites (Ren, puis Marek, puis Vessa) » | — | = |
+| AA1-3 | Densité des combattants cuits | « Essai en scène ×2 contre ×4 d'abord » | « Essai en scène ×2 contre ×4 d'abord » | — | = |
+| AA1-4 | Les spectateurs | « Les citadins cuits de la ville + variantes V1 » | « Les citadins cuits de la ville + variantes V1 » | — | = |
+| AA1-5 | L'atelier combat, avant ou après | « Atelier avant les feuilles ; densité et public en attendant » | « Atelier avant les feuilles ; densité et public en attendant » | — | = |
+| AA1-6 | Retoucher les générés en attendant | « Non, attendre les feuilles » | « Non, attendre les feuilles » | — | = |
+
+- Relue après « La fiche des sprites de l'arène est remplie. » : **6 documents sur 6** dans `decisions`, cliqués le 25/10 entre 03 h 28 et 03 h 30
+  UTC, aucune note ; chaque écriture relue par la page avant « Enregistré et relu ».
+- **Ce qui suit, chacun dans sa séance, une branche à la fois** (rien n'est appliqué par cette passe) :
+  1. **L'atelier « système de combat »** (E1 / E16, mené par l'opérateur) : il fixe la liste des animations ; les feuilles de combat l'attendent
+     (AA1-5).
+  2. **En attendant, l'essai de densité** (AA1-3) : `hero-x2-v4` dans le cadrage du duel, à ×2 tel quel et reconstruit à ×4 depuis sa planche,
+     côte à côte, à juger à l'œil ; derrière un paramètre, le défaut inchangé à 0 px.
+  3. **En attendant, le public** (AA1-4) : les cinq citadins cuits de la ville (repos de face) et leurs variantes V1 dans les gradins, saut
+     d'acclamation sans nouvelle image ; une pose d'acclamation plus tard, par la chaîne et l'approbation de l'opérateur ; derrière un paramètre.
+  4. **Après l'atelier** : la feuille de combat de Ren = `hero-x2-v4` (AA1-1), par la chaîne du héros (AA1-2), à la densité choisie ; puis Marek,
+     puis Vessa (gardée générée jusque-là, L7-1).
+  - Les combattants générés ne sont pas retouchés d'ici là (AA1-6).
+
+### Restes [?]
+- Rien n'est appliqué : chaque décision qui demande du travail part dans sa propre séance, une branche à la fois.
+- `tools/compare.mjs` écrit « BEFORE / AFTER » en dur : des libellés en paramètre éviteraient l'erreur de cette passe (petite tâche d'outillage).
+- Le budget GPU de l'arène est celui de la Passe AD1 ; à remesurer avec les premières feuilles cuites ou un public plus dense.
+
+### Pensée
+- Avant de juger un lieu, comparer ses personnages à la distribution de référence dans les mêmes conditions (même état du jour, même
+  agrandissement) : l'écart de dessin et de densité se voit d'un coup d'œil, et il change l'ordre des décisions.
+- La densité d'un sprite se mesure à l'écran dans le cadrage où il vit (Passe P1) ; une feuille approuvée ailleurs ne garde pas son aspect en
+  changeant de cadrage.
+- Un outil de comparaison nomme ce qu'il compare : une étiquette par défaut (« avant / après ») dit autre chose que l'image.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -725,7 +825,7 @@ republier avec `tools/arena-scene-page.mjs` après un changement). Le prototype 
 la page publiée dans le visualiseur. Restes : visages des combattants (la grammaire du générateur), anneau de dalles peu visible (l'occlusion
 de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sources de lumière sur 24, ralenti sous 20 images/s.
 **De jour depuis la Passe AD1** (décision L7-2) : le duel et le parvis du mode jouable prennent l'état du créneau (`?time=`, `arenaQuery`) ; à voir
-en jeu par l'opérateur ; le liseré froid peint des combattants reste le même de jour ; l'artefact publié montre la nuit.
+en jeu par l'opérateur ; le liseré froid peint des combattants reste le même de jour ; l'artefact publié montre la nuit. **Audit des sprites (Passe AA1)** : le joueur est Ren généré à l'arène et `hero-x2-v4` en ville ; un texel de combattant fait 3,9 px en 1080p contre ~1,5 en ville ; jeux d'images courts (Ren 29, Marek 17). Décisions AA1-1 à AA1-6 (toutes à la recommandation) : Ren = `hero-x2-v4` avec une feuille de combat ; feuilles cuites (Ren, puis Marek, puis Vessa) après l'atelier combat ; en attendant, l'essai de densité ×2 contre ×4 et le public des citadins cuits + variantes V1, chacun derrière un paramètre ; les générés ne sont pas retouchés.
 
 **6d. Jour et nuit (note de l'opérateur, Passe D1)** — mot pour mot : « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Le jeu n'a aujourd'hui que la nuit (direction
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
