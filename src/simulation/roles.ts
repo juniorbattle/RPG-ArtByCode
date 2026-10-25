@@ -62,6 +62,7 @@ export const ROLE_ACTIONS: T = {
     list: (st) => (st.place === 'district' ? (Object.keys(ITEMS) as ShopItem[]).map((item) => ({ type: 'buy', item })) : []),
     label: (st, a) => `Buy ${ITEMS[a.item].name} (${priceOf(st, a.item)} coins: ${ITEMS[a.item].about})`,
     cost: () => 0,
+    coins: (st, a) => priceOf(st, a.item),
     check: (st, a) => available(st, 'mara') ?? (!day(st) ? 'Mara\'s stall is shut for the night.' : st.player.coins < priceOf(st, a.item) ? 'You cannot afford it.'
       : a.item === 'salve' && st.player.injury === 0 ? 'You are not hurt.' : a.item === 'imported-blade' && blade(st) ? 'You already carry a fine blade.'
         : a.item === 'whetstone' && st.player.items.includes('whetstone') ? 'You have a whetstone.' : null),
@@ -107,6 +108,7 @@ export const ROLE_ACTIONS: T = {
     list: (st) => (st.place === 'district' && st.quests.cargo === 'delivered' ? [{ type: 'temper' }] : []),
     label: () => 'Have Bram temper your blade in the Wyrmsteel (10 coins: +15 % damage)',
     cost: () => 1,
+    coins: () => 10,
     check: (st) => available(st, 'bram') ?? (st.services.forge === 'sabotaged' ? 'The forge is cold.' : blade(st) ? 'You already carry a fine blade.' : st.player.coins < 10 ? 'You cannot pay Bram (10 coins).' : null),
     apply: (s, _a, _r, emit) => { s.player.coins -= 10; s.player.items.push('tempered-blade'); s.quests.cargo = 'done'; add(s, 'bram', 10); emit({ kind: 'action', id: 'temper', cause: 'quest:cargo', text: 'Bram folds the Wyrmsteel into your blade through the afternoon heat. It rings like a bell.', visible: true }); },
   },
@@ -115,6 +117,7 @@ export const ROLE_ACTIONS: T = {
     list: (st) => (st.place === 'district' && st.services.forge === 'sabotaged' ? [{ type: 'repair' }] : []),
     label: (st) => `Help Bram rebuild the forge (${repairCost(st)} coins)`,
     cost: () => 1,
+    coins: (st) => repairCost(st),
     check: (st) => (st.services.forge !== 'sabotaged' ? 'The forge is working.' : !day(st) ? 'Bram will not rebuild in the dark.' : st.player.coins < repairCost(st) ? `You cannot buy the new bellows (${repairCost(st)} coins).` : null),
     apply: (s, _a, _r, emit) => {
       const c = repairCost(s);
@@ -136,6 +139,7 @@ export const ROLE_ACTIONS: T = {
     list: (st) => (st.place === 'district' ? [{ type: 'buyInfo' }] : []),
     label: () => 'Pay the hooded stranger for what he knows (10 coins)',
     cost: () => 0,
+    coins: () => 10,
     check: (st) => available(st, 'stranger') ?? (st.player.coins < 10 ? 'He wants ten coins.' : st.flags['culprit-known'] ? 'He has told you all he knows.' : null),
     apply: (s, _a, _r, emit) => {
       s.player.coins -= 10;
@@ -174,6 +178,7 @@ export const ROLE_ACTIONS: T = {
     list: (st) => (st.place === 'forecourt' ? [{ type: 'heal' }] : []),
     label: (st) => `Let Sister Anwen treat your wounds (${st.flags['free-care'] ? 'free, the Temple pays' : '8 coins'})`,
     cost: () => 1,
+    coins: (st) => (st.flags['free-care'] ? 0 : 8),
     check: (st) => available(st, 'anwen') ?? (st.player.injury === 0 ? 'You are not hurt.' : !st.flags['free-care'] && st.player.coins < 8 ? 'You cannot pay the healer (8 coins).' : null),
     apply: (s, _a, _r, emit) => { if (!s.flags['free-care']) s.player.coins -= 8; s.player.injury = 0; emit({ kind: 'action', id: 'heal', cause: 'action:heal', text: 'Sister Anwen cleans and binds your wounds, and makes you sit out the hour. You are whole again.', visible: true }); },
   },

@@ -109,7 +109,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `node tools/title-proof.mjs <outDir> <base url> <branch url> [steps]` — the title screen's proof (journal Passe L4): in a browser that does not
   announce automation, the bare address shows the title screen (« Continue » only with a save); « Explore the district » then gives the frozen
   main's `?time=midday` at threshold 0 (journal Passe D9; `BASE_QUERY` changes that query, `BASE_QUERY=` = main's bare address, the night: the
-  negative control; compare the two captures with `tools/diff.mjs`)
+  negative control; compare the two captures with `tools/diff.mjs`). Explore's DEV panel starts closed (journal Passe UI2): the base page gets
+  `BASE_KEYS` before its capture (default `h`, its panel closed by H; `BASE_KEYS=` = the panel open, the negative control); Explore after H
+  and the branch's own `BASE_QUERY` address (panel open) are captured against the base without keys; every page's panel state is checked
 - CI (`.github/workflows/ci.yml`, GitHub Actions, every push and pull request): Node 22 on `ubuntu-24.04` (pinned, operator decision of 2026-10-19), `npm ci`, `npm run typecheck`,
   `npm run build`, `npm run art:validate`, `npm test`. The runner has no Chrome, GPU or Aseprite (`puppeteer-core` downloads no browser at
   install): every other tool below (screenshots, perf / cadence / startup / overdraw measurements, visibility and viewport proofs, camera
@@ -249,7 +251,7 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 `title=1` (the title screen, journal Passe L4, choice P2: « New game », « Explore the district », « Continue » with a save; it shows by itself
 on the bare address only, and only in a browser no automation drives (`navigator.webdriver`), kept by the operator (L7-5 « Le garder », journal
 Passe D8): every tool and proof keeps today's game; its
-« Explore the district » runs today's town at midday, as `time=midday` without changing the address, and the DEV panel: decision L7-6a, journal Passe D9) · `play=1` (the game's play mode, journal Passe L3, loaded on demand: the state from the browser's save, or `&new=1&name=<name>&seed=<n>` for a
+« Explore the district » runs today's town at midday, as `time=midday` without changing the address, and the DEV panel: decision L7-6a, journal Passe D9; that panel closed, H opens it: decision P1, journal Passe UI2) · `play=1` (the game's play mode, journal Passe L3, loaded on demand: the state from the browser's save, or `&new=1&name=<name>&seed=<n>` for a
 new game; DEV only `&state=<named state>` of `src/simulation/named.ts`; the page shown is the state's place, or the day's bout with
 `&scene=arena`; moving to another slot or place saves and reloads; `&noreload=1` keeps the page and leaves the next address in `window.__go`;
 `window.__game` drives it: `state()`, `actions()`, `act(action)`, `hash()`; the tools' parameters `fps`, `vis`, `viscache`, `painters`, `res`,
@@ -417,7 +419,9 @@ Interface (decided, journal Passe UI1: the operator's UI sheet, 14 choices of 14
 - **S4 « 16 px ordinateur, 14 px téléphone »**: no text under 16 px on a computer, under 14 px on a phone.
 - References: `art-lab/characters/reference/sources/ui-direction-c-{town,arena,town-night,phone}-2026-10-24.png`, **non-canonical**
   (generated): their illustrated busts, their green and red gauges and the scene they redrew are not targets.
-- Order: P1 « Fermé par défaut, H l'ouvre », P2 and P3 « En premier », before the design system (journal Passe UI2); then the design system
+- Order: P1 « Fermé par défaut, H l'ouvre » (Explore's DEV panel closed, H opens it), P2 « En premier » (one cost tag per currency: coins from
+  the simulation's `ActionOption.coins`, the slot, « free » only when nothing is spent) and P3 « En premier » (the arena's action bar 60 px
+  high on a computer, its sub-labels whole), done before the design system (journal Passe UI2); then the design system
   (roadmap step 2.3: S1-S4, L2, L3, L4), and screen by screen P4 (the dialogue at the bottom, the speaker visible), P5 (« Here » reduced to the
   place's actions) and P6 (the match sheet and the victory), « Avec la direction choisie ».
 

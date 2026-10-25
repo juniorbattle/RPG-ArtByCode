@@ -27,6 +27,8 @@ export interface ActionDef<A extends Action = Action> {
   list(st: GameState): A[];
   label(st: GameState, a: A): string;
   cost(st: GameState, a: A): number;
+  /** the coins it takes from the player's purse (absent = none): the interface shows it beside the slot (journal Passe UI2) */
+  coins?(st: GameState, a: A): number;
   /** null = allowed, otherwise why not */
   check(st: GameState, a: A): string | null;
   apply(s: GameState, a: A, rng: Rng, emit: Emit): void;
@@ -97,6 +99,7 @@ const BASE: Table = {
     list: (st) => (st.place === 'district' && st.slot === 'evening' ? [{ type: 'payWatch' }] : []),
     label: () => 'Pay Sergeant Hale to watch the forge tonight (15 coins)',
     cost: () => 0,
+    coins: () => 15,
     check: (st) => (st.place !== 'district' ? 'Sergeant Hale is on the quay.' : st.slot !== 'evening' ? 'The night watch is hired at dusk.' : st.services.forgeWatch ? 'The watch is already posted.' : st.player.coins < 15 ? 'You cannot pay the watch (15 coins).' : null),
     apply: (s, _a, _r, emit) => {
       s.player.coins -= 15; s.services.forgeWatch = true; s.town.hale = clamp((s.town.hale ?? 0) + 5, -100, 100);

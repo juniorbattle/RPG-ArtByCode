@@ -23,11 +23,12 @@ else startTown();
 
 /** « Explore the district » opens the day: midday (the operator's decision L7-6a, « Le jour devient le défaut d’« Explore the district » »,
  *  with midday and the button alone as its scope, journal Passes D8 / D9): the town below with ?time=midday's params, the address unchanged
- *  (a reload shows the title screen again); every address with parameters keeps the night without time= (tools, proofs, the play mode) */
+ *  (a reload shows the title screen again); every address with parameters keeps the night without time= (tools, proofs, the play mode).
+ *  Its DEV panel starts closed, H opens it (the operator's decision P1, « Fermé par défaut, H l'ouvre », journal Passes UI1 / UI2) */
 function exploreByDay(): void {
   if (!params.has('time')) params.set('time', 'midday');
   label.textContent = 'PAINTING THE DAY...';
-  startTown();
+  startTown({ panelClosed: true });
 }
 
 async function startArena(): Promise<void> {
@@ -47,7 +48,9 @@ async function startArena(): Promise<void> {
   } catch (e: any) { console.error(e); label.textContent = 'ERROR: ' + (e?.message ?? e); (window as any).__error = String(e?.stack ?? e); }
 }
 
-function startTown(): void {
+/** panelClosed: the DEV panel starts hidden and the minimap takes its place, as after H (« Explore the district » only); every other address
+ *  opens it as before */
+function startTown({ panelClosed = false } = {}): void {
   const opts: AppOptions = {
     canvas, params,
     onProgress: (l, f) => { label.textContent = `GENERATING ${l.toUpperCase()}`; bar.style.width = `${Math.round(f * 100)}%`; },
@@ -83,6 +86,7 @@ function startTown(): void {
     (window as any).__stats = () => app.snapshot();
     if (!params.has('clean')) {
       const panel = new DebugPanel(app); const hud = new Hud(app);
+      if (panelClosed) { panel.el.style.display = 'none'; hud.setMapRight(14); }
       let tick = 0;
       const loop = () => { hud.update(); if ((tick++ % 12) === 0) panel.update(); requestAnimationFrame(loop); };
       loop();

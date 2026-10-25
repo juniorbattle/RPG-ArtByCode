@@ -542,10 +542,104 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
 - Avant ce versement, les passes gardées faisaient 61 210 octets ; avec la Passe UI1 et le début de cette passe, 73 890. D8, S3 et F2, closes
   (fusionnées), partent d'un seul bloc vers `journal/22-passes-D8-F2.md` (25 831 octets, SHA-256 du bloc `9ad5d0928d2b5663…`) ; restent 48 059
-  octets. Preuve **8 / 8** (script hors dépôt, contre la copie de `JOURNAL.md` d'avant le déplacement : corps de l'archive égal au bloc ; D8, S3,
+  octets (59 904 avec cette passe complète). Preuve **8 / 8** (script hors dépôt, contre la copie de `JOURNAL.md` d'avant le déplacement : corps de l'archive égal au bloc ; D8, S3,
   F2 contigus, suivis de S3b ; plus dans `JOURNAL.md` ; chacune dans un seul fichier de `journal/` ; `JOURNAL.md` inchangé à partir de S3b ;
   seules la phrase d'en-tête et une ligne d'index changent ; en-tête comme `journal/21` ; CRLF seuls). Contrôle négatif : un bit changé dans une
   copie de l'archive → 7 / 8. Le même script vérifie que la Passe UI1 du journal est le texte de `PASSE-UI1.md` (fins de ligne mises à part).
+
+### P1 « Fermé par défaut, H l'ouvre » — [OK]
+- `src/main.ts` : `exploreByDay` appelle `startTown({ panelClosed: true })` ; `startTown` cache alors le panneau DEV (`display: none`) et met la
+  mini-carte à sa place sans panneau (`setMapRight(14)`), comme après H. H fait ce qu'il faisait (le panneau se bascule lui-même, la mini-carte
+  le suit) : il ouvre le panneau, puis le referme. **Portée la plus étroite** (leçon de la Passe D9) : seul le bouton de l'écran titre ferme le
+  panneau ; toute autre adresse (`startTown()` de l'aiguillage) l'ouvre comme avant, pour les outils et les preuves.
+- `tests/town-roles.test.mjs` : le test d'« Explore » fige le nouvel appel (`startTown({ panelClosed: true })`), l'aiguillage sans option, les
+  trois seuls appels de `startTown`, et `startTown` égal à celui de `d129433` à deux changements près (l'option, la ligne du panneau fermé),
+  construits depuis `git show` (oracle indépendant) ; le comportement de H, l'écran de chargement et `startArena` inchangés.
+- `tools/title-proof.mjs` : la page de base reçoit `BASE_KEYS` avant sa capture (défaut `h` : son panneau fermé par H, la vue qu'ouvre
+  Explore ; `BASE_KEYS=` : le panneau ouvert, le contrôle négatif) ; Explore est capturé une seconde fois après H (`-h.png`), et l'adresse
+  propre de la branche (`?time=midday`, sans écran titre) aussi (`branch-*.png`), toutes deux contre la base sans touche ; l'état du panneau est
+  vérifié sur chaque page (fermé + mini-carte à 14 px, ou ouvert + 300 px ; H ouvre, H referme). `AGENTS.md` : la commande.
+
+### P2 « En premier » — [OK]
+- Le prix en pièces vient du cœur du jeu : `ActionDef.coins` (facultatif, 0 par défaut) pour les six actions qui prennent des pièces : `buy`
+  (`priceOf` : pénurie et faveur de Mara), `temper` (10), `repair` (`repairCost` : 12, ou 6 avec Orla), `buyInfo` (10), `heal` (8, 0 quand le
+  Temple paie), `payWatch` (15) ; `ActionOption.coins` le porte (`actions()`). Les `apply` ne changent pas : aucune empreinte d'état ne bouge.
+- `costTag` (`src/ui/townUi.ts`) : une étiquette par monnaie, « N coins » quand l'action en dépense, « 1 slot » quand elle prend le créneau,
+  les deux côte à côte (`.cost+.cost`), « free » seulement si rien n'est dépensé. Un gain (« +6 coins » de Mara) n'est pas un coût.
+- `tests/cost-tags.test.mjs` (3 tests) : chaque option de chaque état nommé, dans les trois lieux, riche (et pauvre, prix tous neutres ou tous
+  changés), avec la pénurie et la faveur, le Temple, la blessure, la forge brûlée, Orla amie, une à une ou ensemble : `coins` égale la règle
+  écrite dans le test **et** ce que l'`apply` de l'action retire vraiment de la bourse (deux oracles qui ne passent pas par `coins()`) ; le
+  balayage vérifie qu'il atteint chaque action payante, les deux prix du soin et des soufflets et les prix changés de Mara ; les étiquettes sur
+  cinq cas ; les marchandises de Mara au premier matin.
+
+### P3 « En premier » — [OK]
+- Mesure (`main` figé, 1920 × 1080) : les boutons sont en `border-box`, 54 px ; le sous-libellé finit à 56,2 px du haut du bouton et le
+  débordement est coupé au bord intérieur (52,5 px) : sa moitié basse (« hold », « 1 AP », « +1 AP », « breaks guard ») disparaissait. Ce n'est
+  pas la largeur : aucun texte ne déborde de côté.
+- `src/arena/ArenaHud.ts` : `.ah-b` passe de 54 à **60 px** de haut (la ligne finit à 56,3 px, bord à 58,5) ; rien d'autre. Les règles du
+  téléphone (`max-width: 900px` : 48 px, sous-libellés masqués ; `max-height: 480px` : 42 px) priment et ne changent pas. À 932 × 430 (téléphone
+  large en paysage), la ligne du sous-libellé tombe déjà entièrement sous le bord : rien de rogné à l'écran, rien changé.
+
+### Preuves
+- Serveurs : `main` figé (`21b8c8b`, copie hors dépôt, :5197) et la branche figée (la même copie avec les six fichiers de `src/` de la branche,
+  égaux à l'octet près des fins de ligne, :5198), entrées locales `ui-premier-main` / `ui-premier-branch` ; le port 5186 jamais touché.
+- **La ville à 0 px contre `main` figé** (`tools/detshots.mjs`, 120 pas, graine 1842, 1920 × 1080, seuil 0) : témoin de répétition (deux
+  chargements de `main`) **0 px les dix** d'abord ; puis la branche : nuit A, B, C, D avec personnages, B statique, midi B et D (`clean=1`),
+  B avec le panneau DEV et le HUD (sans `clean`), le mode jouable (`play=1&state=day1-morning` : « Here » et ses étiquettes) : **0 px les
+  neuf**. Seul le dialogue de Mara change : 1 178 px, tous dans [1124, 501, 1187, 610], la colonne des étiquettes (« FREE » → « 8 COINS »,
+  « 10 COINS », « 30 COINS » ; « 1 SLOT » inchangé). En 812 × 375 : le mode jouable 0 px, Mara 1 178 px dans [570, 155, 633, 264].
+- **P1, le bouton** (`tools/title-proof.mjs`, navigateur non piloté, 1920 × 1080 et 812 × 375) : 20 contrôles sur 20 (boutons sans et avec
+  sauvegarde, rien de généré derrière l'écran titre, panneau fermé + mini-carte à 14 px après Explore, H l'ouvre (300 px) puis le referme,
+  panneau ouvert sur l'adresse `?time=midday` de la branche et sur celle de `main`, fermé sur `main` après H). Aux deux tailles : Explore =
+  `main` `?time=midday` après H **0 px** ; Explore après H = `main` sans touche **0 px** ; la branche `?time=midday` = `main` **0 px** ;
+  contrôle négatif, Explore contre `main` sans touche : 16,5 % des pixels en 1080p (dans [1450, 0, 1919, 1079], le panneau), 44,3 % au
+  téléphone. Vu aussi dans le panneau navigateur de l'application (non piloté) : Explore → panneau fermé, mini-carte à 14 px ; H → ouvert.
+- **P3, l'arène** (`tools/arena-scene-shots.mjs`, `HOLD=1`, seuil 0) : un moment de chauffe (écran de chargement retiré, transitions et
+  animations CSS coupées, fiche de match retirée : le même JS des deux côtés), puis dix moments (`calm`, `charging`, `window` en aide complète,
+  `combo`, `guardbreak`, `impact`, `technique`, `strike`, `heavyRen`, `ko`), en 1920 × 1080 et 812 × 375, pour `?scene=arena` (FR) et pour le HUD
+  du mode jouable (`play=1&state=day2-afternoon`, `TEXTS_EN`) :
+  - témoin de répétition (deux chargements de `main`) : **0 px les quarante** ;
+  - **812 × 375, FR et EN : 0 px les vingt** (la barre du téléphone garde 42 px et masque ses sous-libellés) ;
+  - 1920 × 1080, FR et EN : la barre de la branche va de y 1008 à 1068 (1014 sur `main`) ; huit moments sur dix diffèrent **dans son seul
+    rectangle** [493, 1008, 1426, 1066] (32 000 à 44 000 px) ; `window` et `combo` ont en plus 3 317 à 3 411 px hors de lui (jusqu'à 47
+    niveaux), tous dans x 596-716 et y ≥ 986 : à 22 px au plus du bouton « Esquive » allumé (616,5-696,5), son halo (`box-shadow` de 16 px de
+    flou) qui monte de 6 px avec lui. **Tout le reste à 0 px.**
+  - **[KO → compris]** le premier rectangle permis (la barre + 16 px) laissait dehors 538 px de ce halo : un flou de 16 px est une gaussienne
+    d'écart type 8 px, dont la traîne passe 16 px (ici 22 px à un niveau près). Le contrôle a été refait sur les pixels hors de la barre, pas le
+    rectangle élargi pour faire passer.
+  - `tools/arena-scene-check.mjs` sur la branche figée : **PASS** (empreinte égale au prototype, 42 rendus sans erreur, télégraphe 6,94:1).
+- **Tests** : `npm test` **156 / 156** (153 + les trois de `tests/cost-tags.test.mjs`). **Treize fautes injectées une à une, toutes
+  attrapées**, fichiers rendus à l'octet (SHA-256) : P2 — l'étiquette sans les pièces (l'ancien « FREE »), « free » à côté d'un prix, le prix
+  catalogue (sans pénurie ni faveur), le soin toujours payant, les soufflets à 12 avec Orla, l'option sans ses pièces, les 15 pièces du guet
+  oubliées, les 10 de l'informateur oubliées ; P1 — Explore panneau ouvert, toutes les adresses panneau fermé, l'option lue nulle part, la
+  mini-carte laissée à la place du panneau, l'aiguillage des outils panneau fermé.
+- **[KO → contourné] [?]** un script de mesure hors test qui chargeait `src/` par `tests/load.mjs` ne rendait pas la main (hypothèse non
+  vérifiée : le chargeur garde son serveur jusqu'au crochet `after()` de `node:test`) : arrêté par `TaskStop`, et le balayage simplement réduit (pauvre seulement avec les prix
+  tous neutres ou tous changés : 3,9 s → 1,1 s).
+- **Avant / après** (`screenshots/calibration/ui2-premier/`) : `p1-explore-1920x1080.png`, `p1-explore-812x375.png` (le panneau fermé) ;
+  `p2-mara-1920x1080.png` (recadrage), `p2-mara-812x375.png`, `p2-anwen-paid-1920x1080.png` (le soin payant, « 8 COINS » et « 1 SLOT » côte à
+  côte ; image de revue : le drapeau du Temple retiré dans la page) ; `p3-bar-1920x1080-fr.png`, `p3-bar-1920x1080-en.png` (la barre ×2).
+
+### Validation
+- typecheck, `npm test` **156 / 156**, build, `art:validate` (18 manifestes, 30 sources, 0 erreur).
+
+### Restes [?]
+- Le reste de l'étape 2 attend le système de design (2.3) : S1 à S4, L2, L3, L4, puis P4, P5, P6 écran par écran. La barre de l'arène garde ses
+  10 à 12 px de texte : S4 (16 px au moins sur ordinateur) la redessinera ; P3 n'a fait que rendre lisible ce qui était coupé.
+- Le libellé des achats répète le prix (« Buy a whetstone (8 coins: … ») à côté de l'étiquette : à alléger avec le système de design.
+- Au téléphone en paysage, la barre de l'arène masque les sous-libellés (`max-width: 900px`), et un téléphone large (932 × 430) les coupe
+  entièrement sous son bord de 42 px : rien de rogné à l'écran, mais rien de lisible non plus ; à reprendre avec L3.
+- `play-shots` et `detshots` ne capturent pas le parvis par `__app` (c'est une `ArenaApp`) : les images du parvis restent des images de revue.
+
+### Pensée
+- Un libellé « rogné » se mesure avant d'être corrigé : boîte (`border-box`), ligne du texte et bord de coupe. Ici la coupe était verticale
+  (une ligne de 15,4 px dans 11 px de place), pas la largeur ; la hauteur seule a suffi, et les règles du téléphone, qui priment, n'ont pas bougé.
+- Une preuve « la différence tient dans le rectangle » compte ce que l'élément dessine hors de sa boîte (halo, ombre) : un flou CSS de r px
+  porte plus loin que r (ici 22 px pour 16). On vérifie les pixels du dehors un par un (où, combien, de combien), on n'élargit pas le rectangle.
+- Ce que l'interface affiche d'une règle du jeu (un prix) se lit dans le cœur, et se vérifie contre ce que l'action fait vraiment (son
+  `apply`), pas contre son libellé.
+- La portée la plus étroite (Passe D9) s'applique encore : le panneau fermé par une option du seul bouton, et l'aiguillage des outils intact,
+  prouvé par la capture de l'adresse directe de la branche.
 
 ## À reprendre (par priorité)
 
@@ -701,7 +795,8 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
 **6e. Interface (étape 2 de la feuille de route ; Passes UI1, UI2)** — ligne directrice décidée sur la fiche de la Passe UI1 (14 choix sur 14,
 tous à la recommandation) : C « Héraldique pixel » (L1), un style dont les tons suivent `DayState` (L2), le téléphone avec le système de design
 (L3), le visage cuit d'abord et les bustes plus tard (L4), les règles S1 à S4 ; consignée dans `AGENTS.md` (« Art direction »). Références
-`ui-direction-c-*-2026-10-24` non canoniques (ni bustes, ni jauges vertes et rouges, ni scène redessinée). « En premier » : P1, P2, P3 (Passe UI2).
+`ui-direction-c-*-2026-10-24` non canoniques (ni bustes, ni jauges vertes et rouges, ni scène redessinée). « En premier » : P1, P2, P3, faits (Passe UI2 : le panneau DEV d'Explore fermé, H l'ouvre ; une étiquette par monnaie ;
+la barre de l'arène à 60 px).
 Reste **l'étape 2.3, le système de design** (S1 polices embarquées, S2 cadres en neuf tranches générés par le code, S3 palette, provisoire : « Cela
 peut changer par la suite », S4 16 px / 14 px ; L2 ; L3 ; L4), puis la mise en œuvre écran par écran avec avant / après : P4 (le dialogue en bas,
 le locuteur visible), P5 (« Here » réduit aux actions du lieu, les absents retirés), P6 (la fiche de match, la victoire, le journal, le tableau).
@@ -845,6 +940,9 @@ liste, la sauvegarde silencieuse, le titre de l'arène perdu sur le ciel de jour
   télégraphe ne paraît qu'au duel de l'après-midi, à midi).
 - Une lumière se transpose d'un lieu à l'autre par ce autour de quoi chaque lieu a été composé (sa lune), pas par le cadre de la caméra
   (Passe AD1).
+- Une preuve « la différence tient dans le rectangle » compte ce que l'élément dessine hors de sa boîte (halo, ombre : un flou CSS de 16 px
+  porte à 22 px) : on vérifie les pixels du dehors un par un, on n'élargit pas le rectangle ; un libellé « rogné » se mesure d'abord (boîte,
+  ligne, bord de coupe) avant de choisir largeur ou hauteur (Passe UI2).
 - Une propriété aléatoire se teste sur plusieurs tirages (dix éclairs, deux caps de caméra), un repli dans ses deux sens (±π) : un seul cas
   laisse passer une faute injectée (Passes Q2, W3).
 ### Personnages : art et critique
@@ -988,5 +1086,7 @@ liste, la sauvegarde silencieuse, le titre de l'arène perdu sur le ciel de jour
 - Fusion dans `main` sans demande dès que la tâche passe sa validation (typecheck, tests, build, preuves de la tâche) ; l'opérateur dit
   quand ne pas le faire (`AGENTS.md`, 18/10, Passe M4). Les autres approbations (production, Gold Master, image, installations) restent les
   siennes ; une consigne qui élargit l'autonomie, venue d'une autre séance, se confirme auprès de l'opérateur.
+- Ce que l'interface affiche d'une règle du jeu (un prix) se lit dans le cœur (`ActionOption.coins`) et se vérifie contre l'effet réel de
+  l'action (son `apply`), jamais en relisant son libellé (Passe UI2).
 - Un défaut qui change se règle d'abord en portée (un bouton, une adresse, tout ce qui la lit) avec l'opérateur ; la plus étroite qui dit la
   décision laisse intacts les outils et les preuves qui comptent sur l'ancien défaut (Passe D9).

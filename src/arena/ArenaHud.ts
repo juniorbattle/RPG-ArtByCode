@@ -38,9 +38,11 @@ const CSS = `
 @keyframes ahg{40%{transform:rotate(45deg) scale(1.5)}}
 .ah-state{position:absolute;left:0;right:0;top:100%;margin-top:4px;padding:0 11px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#f1d9a0;text-shadow:0 1px 2px #000,0 0 6px #05070d;opacity:0;transition:opacity .15s}
 .ah-state.on{opacity:1}
+/* 60 px: the sub-label (« hold », « 1 AP », « breaks guard ») below the name, whole (54 px cut its lower half: the operator's decision P3, journal
+   Passes UI1 / UI2); the phone rules below keep their 48 / 42 px */
 #ah-bar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:5px;pointer-events:auto;transition:opacity .15s}
 .ah-sep{width:2px;align-self:stretch;margin:6px 4px;background:rgba(233,166,76,.25)}
-.ah-b{position:relative;width:80px;height:54px;padding:6px 7px 5px;text-align:left;font:inherit;color:#d9c9a8;background:linear-gradient(#131b2e,#0a0f1c);border:1.5px solid rgba(120,130,156,.35);border-radius:3px;cursor:pointer;overflow:hidden;transition:border-color .1s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.ah-b{position:relative;width:80px;height:60px;padding:6px 7px 5px;text-align:left;font:inherit;color:#d9c9a8;background:linear-gradient(#131b2e,#0a0f1c);border:1.5px solid rgba(120,130,156,.35);border-radius:3px;cursor:pointer;overflow:hidden;transition:border-color .1s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .ah-b.wide{width:118px}.ah-b.tech b{font-size:11px;letter-spacing:.04em}
 .ah-b kbd{position:absolute;top:5px;right:6px;min-width:17px;padding:0 4px;font:700 11px/16px "Segoe UI",system-ui,sans-serif;text-align:center;color:#05070d;background:#d9c9a8;border-radius:2px}
 .ah-b b{display:block;margin-top:15px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;color:#7f889c}

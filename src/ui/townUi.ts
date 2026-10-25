@@ -31,6 +31,7 @@ const CSS = `
 #pm-bar .pm-btn{width:auto;margin:0;padding:6px 9px;font-size:12px}
 #pm-here{right:12px;top:56px;width:min(320px,calc(100vw - 24px));max-height:calc(100vh - 140px);overflow:auto;padding:10px 12px}
 #pm-here.min .list{display:none}
+.pm-btn .cost+.cost{margin-left:0}
 #pm-prompt{left:50%;bottom:24px;transform:translateX(-50%);padding:7px 16px;border-radius:20px;background:rgba(8,12,22,.82);border:1px solid rgba(233,166,76,.5);color:#f6e7c4;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
 #pm-prompt.on{opacity:1}
 #pm-toast{left:50%;top:12px;transform:translateX(-50%);width:min(520px,calc(100vw - 24px));padding:10px 14px;display:none}
@@ -42,7 +43,12 @@ const CSS = `
 @media (max-height:480px){#pm-status{padding:6px 10px;width:300px}#pm-status .next{display:none}#pm-here{max-height:calc(100vh - 110px);top:48px;bottom:auto;width:300px;left:auto}#pm-bar{top:8px;bottom:auto;left:auto}}
 `;
 
-function costTag(o: ActionOption): string { return `<span class="cost${o.cost ? '' : ' free'}">${o.cost ? '1 slot' : 'free'}</span>`; }
+/** what an action takes, one tag per currency (the operator's decision P2, journal Passes UI1 / UI2): its coins (from the simulation, not
+ *  the label), its slot; « free » only when it takes neither */
+export function costTag(o: Pick<ActionOption, 'cost' | 'coins'>): string {
+  const tags = [o.coins ? `${o.coins} coin${o.coins === 1 ? '' : 's'}` : '', o.cost ? '1 slot' : ''].filter(Boolean);
+  return tags.length ? tags.map((t) => `<span class="cost">${t}</span>`).join('') : '<span class="cost free">free</span>';
+}
 
 export class TownUi {
   private status = el('div', 'pm pm-card');
