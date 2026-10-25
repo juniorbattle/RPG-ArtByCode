@@ -248,6 +248,10 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   `frame`: 32k x 48k, feet on 45k): build-character.mjs's chain (reconstruct-grid, quantize-palette with a pinned palette, rig-engine, the
   frame contract, Aseprite, every exported frame compared), build-character.mjs left as it is (its SHA-256 is pinned in the approved packs);
   first use: `hero-x3-trial` / `hero-x4-trial`, `trialRig(K)` of `rigs/hero-trial.common.mjs` (journal Passe AA2)
+- `node tools/art-lab/build-combat.mjs art-lab/characters/rigs/<id>.rig.mjs [--check]` — a fighter's COMBAT sheet for the arena (journal Passe RC1):
+  frames of the arena cell at density k (64k x 96k, feet on row 90k, body axis on column 32k, facing left), one tag per clip `<clip>-side`; the
+  assembly and checks of `build-trial.mjs` (Aseprite, every exported frame compared), the rig doing its own reconstruction; first use:
+  `hero-x3-combat` (`rigs/hero-x3-combat.rig.mjs`: three generated pose sheets, each figure at its sheet's pitch, hero-x2-v4's palette pinned)
 - `node tools/art-lab/gen-image.mjs --task=<name> --prompt-file=<f.txt> [--ref=<image> ...] [--n=1] [--size=1536x1024] [--quality=high]
   [--dry-run]` — images through the OpenAI Images API, under the rule "Image generation" below (`--list-models`, `--spent`,
   `--archive=<generated.png> --name=<base>`; journal Passe I1)
@@ -360,8 +364,11 @@ bounded, any other key or value refused; absent = today's CombatSim, unchanged; 
 1-6, A dodge, B guard (hold), R restart, Space pause, H HUD; DEV server only, the fighters' density trial (journal Passe AA2, decision AA1-3;
 `src/lab/fighterDensity.ts`, compiled out of production builds): `fighterdensity=x2|x3|x4` (Ren drawn by the hero's baked sheet: `hero-x2-v4` as it is, or
 the lab rebuilds `hero-x3-trial` / `hero-x4-trial`, idle and walk only, at the hero's scale 0.9), `fighterpose=idle|walk|idle.<i>|walk.<i>`,
-`fighteredge=dark|rim` (the town's dark outline, default, or the shader's crown rim); `window.__density` (the sheet, its atlas cost, `measure()` the
-texel on screen); absent = the arena as before (0 px against frozen main, the production bundle identical)
+`fighteredge=dark|rim` (the town's dark outline, default, or the shader's crown rim); `fighterdensity=combat` (journal Passe RC1: Ren's first
+combat sheet `hero-x3-combat`, lab, 22 frames of the CB-2 keys outside the C2 trial in the arena's cells at x3, on Ren's own keys: the duel plays them on
+its moments, `dodge` / `skill` / `slash` borrow `hit` / `strike`, the knockout plays its three frames; `fighterpose=<clip>.<i>` holds one,
+`fighteredge=dark|rim|painted`, painted = a cool one-texel rim painted into the texels, FighterArt's `rimLight`); `window.__density` (the sheet, its
+atlas cost, `measure()` the texel on screen, `setPose()`); absent = the arena as before (0 px against frozen main, the production bundle identical)
 
 ## Art production principle
 Maximise perceptual complexity while minimising runtime complexity.

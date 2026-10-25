@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "hero-x3-combat",
+  "kind": "character",
+  "status": "experimental",
+  "source": "art-lab/characters/source/hero-x3-combat.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/hero-x3-combat.png",
+    "metadata": "art-lab/characters/exports/hero-x3-combat.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-combat.mjs (reconstruct-grid + rig-engine, rig art-lab/characters/rigs/hero-x3-combat.rig.mjs, the arena cell at x3: 192 x 288, feet on row 270, axis on column 96); Aseprite 1.3.18.6 (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "Three generated pose sheets of the hero with a sword (NON-CANONICAL): the figures of the sheet",
+      "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+      "note": "with ren-combat-x3-2026-10-25-a1.png (the hit recovery) and ren-combat-x3-2026-10-25-b2.png (the heavy attack, the victory, the knockout); generated in this session on the operator's choice « Génération (Recommandé) »"
+    },
+    {
+      "category": "C",
+      "label": "The v4-b turnaround (generated, NON-CANONICAL): the hero's design, a reference of the generation",
+      "path": "art-lab/characters/reference/sources/hero-turnaround-v4-2026-10-19-b.png",
+      "note": "chosen by the operator as the hero's source (journal Passe D1)"
+    },
+    {
+      "category": "B",
+      "label": "hero-x2-v4, the production hero: its palette (pinned)",
+      "path": "art-lab/characters/provenance/hero-x2-v4",
+      "note": "approved for production by the operator on 2026-10-20 (journal Passe H11); the town keeps it, the arena takes its own x3 sheet (AA2-1)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "LAB, NOT APPROVED (journal Passe RC1): Ren's first combat sheet at x3 (AA2-1 « ×3 »), 22 frames of the CB-2 list for the keys the C2 trial does not touch (« Clés hors C2 (Recommandé) »): idle 2, ready 2, strike 3, heavy 4, block 2, hit 2, recover 2, ko 3, victory 2; dodge, skillOff, skillDef, skillSup wait for the C2 decision sheet. Cells of 192 x 288 texels (the arena cell at x3), feet on row 270, hips on column 96, facing left. Shown only in the arena behind the DEV parameter ?scene=arena&fighterdensity=combat (src/lab/fighterDensity.ts, compiled out of production builds), in place of the generated Ren's frames. Never in the cast. Rebuild: node tools/art-lab/build-combat.mjs art-lab/characters/rigs/hero-x3-combat.rig.mjs --check"
+}

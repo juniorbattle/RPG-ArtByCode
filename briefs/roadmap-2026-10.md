@@ -68,6 +68,10 @@ Puis : « Le district en cours, c'est le parvis de l'arène (la place principale
    **Essai de densité fait (Passe AA2, 25/10)** : le héros cuit dans le cadrage du duel à ×2, ×3 et ×4 (serveur DEV, `?scene=arena&fighterdensity=`) ;
    décision AA2-1 « ×3 » : les feuilles de combat se font **à ×3** (cases de 192 × 288 texels, 2,3 px par texel en 1080p comme le héros dans les
    cadrages proches de la ville, un duel complet dans une seule texture cuite ; même coût GPU que ×2 et ×4).
+   **Première feuille de Ren (Passe RC1, 25/10)** : `hero-x3-combat` (labo), les 22 images des clés que l'essai C2 ne touche pas (« Clés hors C2
+   (Recommandé) »), tirées de trois planches générées (« Génération (Recommandé) ») et reconstruites à ×3 sur la palette de `hero-x2-v4` ; dans le
+   duel derrière `?scene=arena&fighterdensity=combat` (DEV) ; 2,34 px par texel en 1080p, même coût GPU. Restent les 12 images (`dodge`, `skillOff`,
+   `skillDef`, `skillSup`) après la fiche C2, et la fiche RC1 (la feuille, le bord la nuit, la production, les feuilles d'essai).
 3. **Les spectateurs** : une foule bon marché (quelques silhouettes, variantes de couleurs par les masques de la Passe V1, une boucle d'acclamation,
    un seul appel de dessin) plutôt qu'un personnage complet par spectateur.
 
