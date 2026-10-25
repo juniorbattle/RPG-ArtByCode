@@ -1,8 +1,9 @@
 import type { CombatData } from '../arena/CombatSim';
+import type { DynData } from './dynamic';
 import type { GameState } from '../simulation/state';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
 import { matchId, opponentOf, playerMatch, rivalMods } from '../tournament/pool';
-import { duelData, PROFILES, type Mods } from './profiles';
+import { duelData, dynDuelData, DYN_PROFILES, PROFILES, type Mods } from './profiles';
 import { mix32, hashString } from '../core/rng';
 
 /** A match sheet (journal Passe L2, used by the arena's play mode in Passe L3): who fights whom, with what the preparation changed. The
@@ -52,4 +53,13 @@ export function sheetData(sh: MatchSheet, names?: Partial<Record<string, string>
   const p = a.fighters[0], o = b.fighters[0], prof = PROFILES[o.profile ?? ''];
   if (!prof) throw new Error(`match ${sh.id}: no combat profile "${o.profile}"`);
   return duelData(prof, { seed: sh.seed, playerName: p.name, opponentName: o.name, player: p.mods, enemy: o.mods, names });
+}
+
+/** the same sheet under the rules of the « tour par tour dynamique » (src/combat/dynamic.ts, journal Passe C1; behind its parameter, CB-10) */
+export function dynSheetData(sh: MatchSheet, names?: Partial<Record<string, string>>): DynData {
+  const [a, b] = sh.sides;
+  if (a.fighters.length !== 1 || b.fighters.length !== 1) throw new Error(`match ${sh.id}: team formats (${a.fighters.length}v${b.fighters.length}) are outside the slice; the arena seats one fighter per side`);
+  const p = a.fighters[0], o = b.fighters[0], prof = DYN_PROFILES[o.profile ?? ''];
+  if (!prof) throw new Error(`match ${sh.id}: no combat profile "${o.profile}"`);
+  return dynDuelData(prof, { seed: sh.seed, playerName: p.name, opponentName: o.name, player: p.mods, enemy: o.mods, names });
 }

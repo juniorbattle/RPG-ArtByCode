@@ -36,7 +36,10 @@ The operator's master contracts live in `contracts/`, versioned and therefore pu
     dodge, one resistance gauge per fighter whose break stuns 5-10 s, K.O. only). The operator amended the three « tour par tour » sentences
     of the project (§ 1, § 6.1) and gameplay (§ 1) contracts (A3, CB-8 « Amender maintenant, ces trois phrases »), each contract noting the
     change in its header; the rest of their text is unchanged. Until the operator's play test, the new rules stay behind a parameter and
-    today's arena stays the default (CB-10).
+    today's arena stays the default (CB-10). Lot C1 (journal Passe C1): the duel's rules as a pure simulation, `src/combat/dynamic.ts`
+    (`DynamicSim`, `DYNAMIC_DATA`), its bot (`runDynamicBotDuel`, `src/combat/bot.ts`) and its off-screen race (`dyn*` in
+    `src/combat/profiles.ts`); a game plays them only with `flags.combat = 'dynamic'` (the TournamentLab's `--rules=dynamic`); nothing under
+    `src/arena` loads them.
 
 They govern gameplay and the tournament; this file keeps the repository's rules (branches, journal, proofs, art). Two rules follow from
 decision C3 (« Aucun verrou modifié, écarts consignés »):
@@ -95,7 +98,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   `planDraw`, the production cast's gate (manifest approval, SHA-256 against the provenance pack), sheet metadata, PNG decoding, the baked walk
   cycles' ground speed and the walkers' animation clock (journal Passe S2), the image generation tool offline (a fake API and key, journal Passe I1), the game's headless core and the tournament (journal Passes L1 / L2: determinism, saves, the pure modules, the off-screen resolution against full duels, the events and the sabotage chain), the arena's combat simulation against the prototype's own script
   read out of `arena/arena.html` (same events and state at every step, journal Passe P1), the arena fighters' atlas and the interface's design
-  system (the fonts' bytes, the palette's tones and contrasts, the frames, the sizes, journal Passe UI3).
+  system (the fonts' bytes, the palette's tones and contrasts, the frames, the sizes, journal Passe UI3), the duel of the « tour par tour
+  dynamique » (`tests/combat-dynamic.test.mjs`, journal Passe C1: each rule against an oracle, the duels' length, the bot, the off-screen race
+  against full duels on held-out seeds, the arena of today untouched; ~15 s, the suite's longest file).
   `tests/load.mjs` loads `src/` through Vite's SSR loader (extensionless imports, `?url`, named JSON imports, as the bundle resolves
   them; `--experimental-strip-types` alone cannot), with its own cache folder (`node_modules/.vite-test`), no file watcher and no
   `vite.config.ts` (`configFile: false` + `server.watch: null`: a merged config drops the null, and the watcher crawled the ignored Art Lab
@@ -103,7 +108,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `node tools/tournament-lab.mjs [--seeds=1..50 | --seeds=a,b] [--policy=idle|diligent] [--json=f]` — the TournamentLab (tournament contract
   § 13, journal Passe L2): whole games of the playable slice headless (the game's pure modules, the player's duels fought by a bot in the arena's
   full simulation): win, injury, upset and sabotage rates, events fired, forgotten participants; `--state=<named>` / `--save=<file>` `[--days=N]`
-  loads a state and plays on; `--compare=a,b` two seeds side by side. No browser
+  loads a state and plays on; `--compare=a,b` two seeds side by side; `--rules=dynamic` plays the games under the rules of the « tour par tour
+  dynamique » (journal Passe C1: their duels in `DynamicSim`, their off-screen matches in its race; absent = the arena of today). No browser
 - `node tools/play-flow.mjs <outDir> <win|lose> [seed] [day]` — the play mode's scene change in a browser (journal Passe L3): a new game in the town
   page, the clock driven by `window.__game` to the day's bout, the arena page loaded from the save, the bout decided by scripted inputs on
   `window.__arena`, the town page again from the save; the browser's final state replayed in Node must give the same fingerprint (DEV or

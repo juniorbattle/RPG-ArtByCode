@@ -1,4 +1,5 @@
 import { COMBAT_DATA, type CombatData } from '../arena/CombatSim';
+import { checkDynData, DYNAMIC_DATA, type DynActionId, type DynData } from './dynamic';
 
 /** The competitors' combat profiles (journal Passe L2): each is a set of numbers for the arena's enemy slot of `CombatData` (the AI kit:
  *  health, its light and heavy attacks, how it strings them), so the duel the player fights and the matches played off screen read the
@@ -108,9 +109,9 @@ export const RACE_SLOPE = 3.2;
  *  second before its first sequence, so an even race is not an even duel (fitted on the calibration seeds, journal Passe L2) */
 export const PLAYER_EDGE = 0.75;
 /** P(a beats b) in a damage race: each needs the other's health over its own damage per second; `edge` = a's head start (logit) */
-export function raceWinChance(a: Racer, b: Racer, edge = 0): number {
+export function raceWinChance(a: Racer, b: Racer, edge = 0, slope = RACE_SLOPE): number {
   const ta = b.hp / Math.max(1e-6, a.dps), tb = a.hp / Math.max(1e-6, b.dps);
-  return 1 / (1 + Math.exp(-(RACE_SLOPE * Math.log(tb / ta) + edge)));
+  return 1 / (1 + Math.exp(-(slope * Math.log(tb / ta) + edge)));
 }
 /** P(the player kit at skill s, with its modifiers, beats this profile): the off-screen reading of a duel the player did not fight */
 export function playerWinChance(p: CombatProfile, s: number, pm: Mods = {}, em: Mods = {}): number {
@@ -120,3 +121,139 @@ export function playerWinChance(p: CombatProfile, s: number, pm: Mods = {}, em: 
 /** the reference defender's skill the competitors' damage is read against */
 export const REFERENCE_SKILL = 0.5;
 export function racerOf(p: CombatProfile, m: Mods = {}): Racer { return { hp: p.maxHp * (m.hp ?? 1), dps: enemyDps(p, REFERENCE_SKILL, m.damage ?? 1) }; }
+
+// ------------------------------------------------------------------------------------------- the « tour par tour dynamique » (lot C1)
+
+/** The same competitors under the rules of the « tour par tour dynamique » (src/combat/dynamic.ts, journal Passe C1), behind its parameter
+ *  (CB-10): `PROFILES` and everything above stay the arena's of today. Each kit keeps its attacks' timings, weights and combos; its pauses
+ *  come from its level (`DYNAMIC_DATA.restByLevel`), the levels read from today's rests; health and damage aim at duels of 5 to 10 minutes,
+ *  « selon la complexite de l'adversaire et ces points de vie » [G5]. The opponents' guard, dodge and skills, and the balancing of the seven
+ *  profiles (L7-4 folded in, CB-11), are lot C3. Numbers are starting points, « à régler » at the operator's trial. */
+
+export interface DynAttackProfile { damage: number; impactAt: number; windowDur: number; resist: number }
+export interface DynProfile {
+  id: string; style: string; level: number; maxHp: number; light: DynAttackProfile; heavy: DynAttackProfile;
+  weights: { combo: number; singleLight: number; singleHeavy: number }; comboLen: [number, number]; comboGap: [number, number];
+}
+
+/** the levels: today's rests (tobin 6-12 s ... vessa 3.5-7 s) placed on the level table's pauses */
+export const DYN_LEVELS: Record<string, number> = { tobin: 1, cassius: 2, ilse: 2, rhosk: 2, orla: 3, marek: 3, vessa: 4 };
+/** health against today's (a duel ten to twenty times longer) and each rival's own adjustment; what an enemy blow adds to the gauge */
+export const DYN_HP_SCALE = 10;
+export const DYN_TUNE: Record<string, { hp?: number; damage?: number }> = { marek: { damage: 1.25 }, vessa: { hp: 0.8 }, tobin: { hp: 1.15 } };
+export const DYN_RESIST = { light: 6, heavy: 16 };
+
+export const DYN_PROFILES: Record<string, DynProfile> = Object.fromEntries(Object.values(PROFILES).map((p): [string, DynProfile] => {
+  const t = DYN_TUNE[p.id] ?? {}, dmg = (n: number) => Math.round(n * (t.damage ?? 1));
+  return [p.id, {
+    id: p.id, style: p.style, level: DYN_LEVELS[p.id], maxHp: Math.round(p.maxHp * DYN_HP_SCALE * (t.hp ?? 1)),
+    light: { ...p.light, damage: dmg(p.light.damage), resist: DYN_RESIST.light }, heavy: { ...p.heavy, damage: dmg(p.heavy.damage), resist: DYN_RESIST.heavy },
+    weights: { ...p.weights }, comboLen: [...p.comboLen], comboGap: [...p.comboGap],
+  }];
+}));
+
+/** a duel's data under the new rules: DYNAMIC_DATA with the player's name, modifiers and four skills in Ren's seat, the opponent's profile in
+ *  Marek's (the seats' ids stay `ren` / `marek`, as in duelData) */
+export function dynDuelData(opponent: DynProfile, o: { seed: number; playerName: string; opponentName: string; player?: Mods; enemy?: Mods; names?: Partial<Record<string, string>>; loadout?: DynActionId[] }): DynData {
+  const d: DynData = JSON.parse(JSON.stringify(DYNAMIC_DATA));
+  const pm = o.player ?? {}, em = o.enemy ?? {};
+  d.ai = { ...d.ai, seed: o.seed >>> 0 || 1, level: opponent.level, weights: { ...opponent.weights }, comboLen: [...opponent.comboLen], comboGap: [...opponent.comboGap] };
+  d.fighters.ren = { ...d.fighters.ren, name: o.playerName, maxHp: Math.round(d.fighters.ren.maxHp * (pm.hp ?? 1)) };
+  d.fighters.marek = { ...d.fighters.marek, name: o.opponentName, maxHp: Math.round(opponent.maxHp * (em.hp ?? 1)) };
+  d.ap = { ...d.ap, start: Math.min(d.ap.max, d.ap.start + (pm.ap ?? 0)) };
+  if (o.loadout) d.loadout = [...o.loadout];
+  for (const a of Object.values(d.actions)) {
+    if (a.owner === 'ren') a.damage = Math.round(a.damage * (pm.damage ?? 1));
+    if (o.names?.[a.id]) { a.name = o.names[a.id]!; delete a.short; }
+  }
+  const ed = em.damage ?? 1;
+  for (const [k, p] of [['m_slash', opponent.light], ['m_heavy', opponent.heavy]] as const) Object.assign(d.actions[k], { damage: Math.round(p.damage * ed), impactAt: p.impactAt, windowDur: p.windowDur, resist: p.resist });
+  checkDynData(d);
+  return d;
+}
+
+// ------------------------------------------------------------------------- the simplified resolution under the new rules (off screen, E6)
+
+/** The damage race of the new rules, from a kit's numbers: the opponent's cycle (its sequences, the player's defence; its pauses, the
+ *  player's time to attack), what a sequence costs the reference defender (the dynamic bot's reading at skill s: the guard held through a
+ *  sequence, the heavies dodged, the first blow taken when the bot is pushed back), the breaks of the opponent's gauge (a stun in which it
+ *  deals nothing) and the player's ward (Rempart, cast when its own gauge fills). Its constants were measured on calibration seeds 1..20 of
+ *  full duels (tools: the dynamic bot in DynamicSim, infinite health for the rates), never on the held-out seeds of the test
+ *  (tests/combat-dynamic.test.mjs); the player's side reads DYNAMIC_DATA's kit and its default four skills (another loadout, C4, needs them
+ *  measured again). */
+export const DYN_RACE = {
+  /** sequences that push the bot back (CB-3): their first blow lands whole */
+  push: 0.33,
+  /** the share of the dodges it means that find an action point: below skill 0.5 it keeps none, from 0.5 one */
+  availLow: 0.66, availKeep: 0.93,
+  /** the bot's damage per second while the opponent pauses, at skills 0, 0.25, 0.5, 0.75, 1 (the default kit, without a ward) */
+  rate: [17.0, 18.9, 20.5, 21.4, 21.5],
+  /** while the opponent is broken: rate0 + rate1 x skill */
+  stunRate: [25.7, 3.3] as [number, number],
+  /** the opponent's resistance the bot fills per point of damage */
+  kappa: 0.27,
+  /** the ward's share of the time, linear in the bot's gauge gain per second from `from` to `to` (up to `max`); what it costs the attack
+   *  (`cost` x share) and the share of its protection the blows meet (`hit`) */
+  ward: { from: 1.55, to: 2.4, max: 0.44, cost: 0.45, hit: 0.8 },
+};
+/** how sharply the race decides a duel of 5 to 10 minutes (fitted with the constants above: long duels leave little to chance) */
+export const DYN_RACE_SLOPE = 14;
+
+const meanOf = (r: [number, number]) => (r[0] + r[1]) / 2;
+function seqMix(p: DynProfile) {
+  const W = p.weights, tot = W.combo + W.singleLight + W.singleHeavy, ns: number[] = [];
+  for (let n = p.comboLen[0]; n <= p.comboLen[1]; n++) ns.push(n);
+  return { wc: W.combo / tot, wl: W.singleLight / tot, wh: W.singleHeavy / tot, ns, nMean: ns.reduce((a, n) => a + n, 0) / ns.length };
+}
+
+/** the opponent's mean cycle (s): a sequence (from its first blow's start to the end of its last), then the time it leaves (its last
+ *  recovery and its pause) */
+export function dynCycle(p: DynProfile): { seq: number; free: number; T: number; phi: number } {
+  const A = DYNAMIC_DATA.actions, L = A.m_slash, H = A.m_heavy, k = seqMix(p);
+  const lT = p.light.impactAt + L.follow, hT = p.heavy.impactAt + H.follow, gap = meanOf(p.comboGap);
+  const combo = k.ns.reduce((a, n) => a + (n - 1) * (lT + L.recover + gap) + hT, 0) / k.ns.length;
+  const seq = k.wc * combo + k.wl * lT + k.wh * hT;
+  const free = (k.wc + k.wh) * H.recover + k.wl * L.recover + meanOf(DYNAMIC_DATA.restByLevel[p.level]);
+  return { seq, free, T: seq + free, phi: free / (seq + free) };
+}
+
+/** a sequence against the reference defender at skill s, without its ward: the damage it takes and what its gauge takes */
+export function dynPerSequence(p: DynProfile, s: number, damage = 1): { dmg: number; res: number } {
+  const D = DYNAMIC_DATA, R = DYN_RACE, gr = D.guard.reduce, k = seqMix(p);
+  const G = 0.2 + 0.6 * s, Dh = (0.25 + 0.65 * s) * (s >= 0.5 ? R.availKeep : R.availLow), pi = R.push;
+  // the guard raised after the bot's reaction delay meets the first blow only if it is up before the impact
+  const react0 = 0.32 - 0.22 * s, inTime = (impact: number) => Math.max(0, Math.min(1, (impact - D.guard.raiseTime - react0) / 0.08));
+  const mL = 1 - gr * G, mH = (1 - Dh) * (1 - gr * G);
+  const fL = pi + (1 - pi) * (1 - gr * G * inTime(p.light.impactAt)), fH = pi + (1 - pi) * (1 - Dh) * (1 - gr * G * inTime(p.heavy.impactAt));
+  const l = p.light.damage * damage, h = p.heavy.damage * damage, rl = p.light.resist, rh = p.heavy.resist;
+  const dmg = k.wc * (l * fL + (k.nMean - 2) * l * mL + h * mH) + k.wl * l * fL + k.wh * h * fH;
+  const res = k.wc * ((k.nMean - 1) * rl + rh * (1 - Dh)) + k.wl * rl + k.wh * rh * (1 - (1 - pi) * Dh);
+  return { dmg, res };
+}
+
+/** both sides' damage per second in a duel against this profile, the reference defender at skill s (pd, ed: damage multipliers) */
+export function dynRates(p: DynProfile, s: number, pd = 1, ed = 1): { player: number; enemy: number; ward: number; stun: number } {
+  const D = DYNAMIC_DATA, R = DYN_RACE, c = dynCycle(p), q = dynPerSequence(p, s, ed), Tb = D.resist.breakStun + D.ai.afterStun;
+  const t = Math.max(0, Math.min(1, s)) * 4, i = Math.min(3, Math.floor(t)), base = R.rate[i] + (R.rate[i + 1] - R.rate[i]) * (t - i);
+  // the opponent's stun share: its gauge filled during its pauses, emptied by time
+  const stunShare = (rate: number) => { const fill = R.kappa * rate * c.phi - D.resist.decay; return fill > 0 ? D.resist.breakStun / (D.resist.max / fill + Tb) : 0; };
+  // the ward's share, from what the bot's own gauge takes per second
+  const gamma = (1 - stunShare(base)) * q.res / c.T;
+  const ward = R.ward.max * Math.max(0, Math.min(1, (gamma - R.ward.from) / (R.ward.to - R.ward.from)));
+  const rate = base * (1 - R.ward.cost * ward), stun = stunShare(rate);
+  // a break comes in a pause: it replaces what is left of it (half, on average) by the stun and the wait after it
+  const lost = stun > 0 ? Math.max(0, Tb - c.free / 2) / D.resist.breakStun * stun : 0;
+  const player = ((1 - stun) * c.phi * rate + stun * (R.stunRate[0] + R.stunRate[1] * s)) * pd;
+  const enemy = (1 - lost) * q.dmg * (1 - (1 - D.actions.d1.ward!.damage) * R.ward.hit * ward) / c.T;
+  return { player, enemy, ward, stun };
+}
+/** an opponent kit's damage per second against the reference defender at skill s, under the new rules */
+export function dynEnemyDps(p: DynProfile, s: number, damage = 1): number { return dynRates(p, s, 1, damage).enemy; }
+
+/** P(the player kit at skill s, with its modifiers, beats this profile) under the new rules: each side's time to the K.O. */
+export function dynPlayerWinChance(p: DynProfile, s: number, pm: Mods = {}, em: Mods = {}): number {
+  const r = dynRates(p, s, pm.damage ?? 1, em.damage ?? 1);
+  return raceWinChance({ hp: DYNAMIC_DATA.fighters.ren.maxHp * (pm.hp ?? 1), dps: r.player }, { hp: p.maxHp * (em.hp ?? 1), dps: r.enemy }, 0, DYN_RACE_SLOPE);
+}
+/** a competitor in the off-screen race of the new rules: its health and its damage against the reference defender */
+export function dynRacerOf(p: DynProfile, m: Mods = {}): Racer { return { hp: p.maxHp * (m.hp ?? 1), dps: dynEnemyDps(p, REFERENCE_SKILL, m.damage ?? 1) }; }

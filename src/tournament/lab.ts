@@ -1,21 +1,26 @@
 import { advance, actions, newGame, hash } from '../simulation/advance';
 import type { Action } from '../simulation/actions';
 import type { GameEvent, GameState } from '../simulation/state';
-import { runBotDuel } from '../combat/bot';
-import { matchSheetFor, sheetData } from '../combat/match';
+import { runBotDuel, runDynamicBotDuel } from '../combat/bot';
+import { dynSheetData, matchSheetFor, sheetData } from '../combat/match';
 import { RIVALS, PLAYER_ID } from '../narrative/roster';
 import type { DuelOutcome } from './pool';
-import { standings } from './pool';
+import { dynamicRules, standings } from './pool';
 
 /** The TournamentLab's library (TOURNAMENT_MASTER_CONTRACT § 13, journal Passe L2; the CLI is tools/tournament-lab.mjs): play whole games
  *  headless with a player policy, the player's duels fought by the bot in the arena's full simulation; find the forgotten participants;
- *  measure eliminations, injuries, upsets and events over many seeds. Pure and deterministic: the same seeds give the same report. */
+ *  measure eliminations, injuries, upsets and events over many seeds. Pure and deterministic: the same seeds give the same report. A game
+ *  can be played under the rules of the « tour par tour dynamique » (`rules: 'dynamic'`, journal Passe C1): its duels in DynamicSim, its
+ *  off-screen matches in the same rules' race (pool.ts). */
 
-/** the player's duel today, fought by the bot at this skill in the arena's simulation (the match sheet's data) */
+export type CombatRules = 'classic' | 'dynamic';
+
+/** the player's duel today, fought by the bot at this skill in the arena's simulation (the match sheet's data), or in the new rules' */
 export function botOutcome(st: GameState, skill: number): DuelOutcome {
   const sh = matchSheetFor(st);
   if (!sh) throw new Error('no duel today');
-  const r = runBotDuel(sheetData(sh), { skill, seed: sh.seed ^ 0x5bd1e995 });
+  const seed = sh.seed ^ 0x5bd1e995, r = dynamicRules(st) ? runDynamicBotDuel(dynSheetData(sh), { skill, seed }) : runBotDuel(sheetData(sh), { skill, seed });
+  if (!r.winner) throw new Error(`match ${sh.id}: no K.O. after ${r.t} s`);
   return { winner: r.winner === 'player' ? 'player' : 'opponent', playerHp: r.playerHp, playerMaxHp: r.playerMaxHp, opponentHp: r.opponentHp, opponentMaxHp: r.opponentMaxHp, finisher: r.finisher };
 }
 
@@ -88,8 +93,9 @@ export const SCRIPTS: Record<string, () => Policy> = {
 };
 
 export interface GameRun { seed: number; state: GameState; events: GameEvent[]; hash: string }
-export function autoplay(seed: number, policy: Policy, name = 'Ren', maxActions = 200): GameRun {
+export function autoplay(seed: number, policy: Policy, name = 'Ren', maxActions = 200, rules: CombatRules = 'classic'): GameRun {
   let st = newGame(seed, name);
+  if (rules === 'dynamic') st.flags.combat = 'dynamic';
   const events: GameEvent[] = [];
   for (let i = 0; i < maxActions && !st.over; i++) {
     const r = advance(st, policy.choose(st));
@@ -111,7 +117,7 @@ export function forgotten(st: GameState): Array<{ id: string; day: number }> {
 }
 
 export interface LabReport {
-  policy: string; seeds: number; games: Array<{ seed: number; hash: string; points: number; rank: number; wins: number; injuries: number; forge: string; events: string[] }>;
+  policy: string; rules: CombatRules; seeds: number; games: Array<{ seed: number; hash: string; points: number; rank: number; wins: number; injuries: number; forge: string; events: string[] }>;
   rates: { playerWins: number; playerInjured: number; rivalInjured: number; eliminations: number; upsets: number; sabotaged: number; foiled: number };
   eventCounts: Record<string, number>;
   forgotten: number;
@@ -119,11 +125,11 @@ export interface LabReport {
   teamTransition: string;
 }
 
-export function labReport(seeds: number[], policy: Policy): LabReport {
+export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 'classic'): LabReport {
   const games: LabReport['games'] = [], eventCounts: Record<string, number> = {};
   let wins = 0, inj = 0, rivalInj = 0, elim = 0, upsets = 0, sab = 0, foil = 0, forg = 0;
   for (const seed of seeds) {
-    const g = autoplay(seed, policy), st = g.state;
+    const g = autoplay(seed, policy, undefined, undefined, rules), st = g.state;
     const fired = st.log.filter((e) => e.kind === 'event' || e.kind === 'sign' || e.kind === 'consequence').map((e) => e.id);
     for (const id of fired) eventCounts[id] = (eventCounts[id] ?? 0) + 1;
     const w = st.tournament.matches.filter((m) => m.winner === PLAYER_ID).length;
@@ -139,7 +145,7 @@ export function labReport(seeds: number[], policy: Policy): LabReport {
   }
   const n = seeds.length;
   return {
-    policy: policy.name, seeds: n, games, eventCounts, forgotten: forg,
+    policy: policy.name, rules, seeds: n, games, eventCounts, forgotten: forg,
     rates: { playerWins: wins / (2 * n), playerInjured: inj / n, rivalInjured: rivalInj / n, eliminations: elim / n, upsets: upsets / n, sabotaged: sab / n, foiled: foil / n },
     teamTransition: 'outside the slice: phase I (a points pool, 1v1) only; teams are typed (TeamState), never formed',
   };

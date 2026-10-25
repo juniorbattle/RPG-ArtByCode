@@ -2,7 +2,7 @@ import type { Rng } from '../core/rng';
 import { clamp, type CompetitorState, type GameState, type MatchRecord } from '../simulation/state';
 import type { Emit } from '../simulation/advance';
 import { PLAYER_ID, POINTS, RIVALS, ROUNDS } from '../narrative/roster';
-import { PROFILES, raceWinChance, racerOf, type Mods } from '../combat/profiles';
+import { DYN_PROFILES, DYN_RACE_SLOPE, dynRacerOf, PROFILES, raceWinChance, racerOf, type Mods } from '../combat/profiles';
 
 /** The pool of phase I (choice G3, journal Passe L2): eight competitors, two rounds in the slice, points (a defeat costs points, reputation,
  *  sometimes an injury, never the tournament). The matches the player does not fight are resolved by the damage race of the same combat
@@ -58,12 +58,18 @@ function rivalry(s: GameState, loser: string, winner: string, humiliating: boole
   if (!c.knownFacts.includes(`lost-to:${winner}`)) c.knownFacts.push(`lost-to:${winner}`);
 }
 
+/** the combat rules a game is played under: `flags.combat = 'dynamic'` for the « tour par tour dynamique » (src/combat/dynamic.ts, journal
+ *  Passe C1; behind its parameter, CB-10: the TournamentLab's `--rules=dynamic` sets it); absent = the arena of today */
+export function dynamicRules(s: GameState): boolean { return s.flags.combat === 'dynamic'; }
+
 /** the round's matches without the player, at the end of the match afternoon */
 export function playOffscreenMatches(s: GameState, emit: Emit, rng: Rng): void {
   for (const m of s.tournament.matches) {
     if (m.day !== s.day || m.seen || m.winner) continue;
     const A = s.competitors[m.a], B = s.competitors[m.b];
-    const p = raceWinChance(racerOf(PROFILES[A.combatProfile], rivalMods(A)), racerOf(PROFILES[B.combatProfile], rivalMods(B)));
+    const p = dynamicRules(s)
+      ? raceWinChance(dynRacerOf(DYN_PROFILES[A.combatProfile], rivalMods(A)), dynRacerOf(DYN_PROFILES[B.combatProfile], rivalMods(B)), 0, DYN_RACE_SLOPE)
+      : raceWinChance(racerOf(PROFILES[A.combatProfile], rivalMods(A)), racerOf(PROFILES[B.combatProfile], rivalMods(B)));
     const r = rng.fork(matchId(m)), aWins = r.next() < p;
     const [w, l] = aWins ? [A, B] : [B, A], pw = aWins ? p : 1 - p;
     m.winner = w.id; m.close = pw < 0.62;
