@@ -13,11 +13,15 @@ import { FrameCap, parseFrameCap } from '../app/FrameCap';
 import { PerfMonitor } from '../debug/PerfMonitor';
 import { SpriteRenderer, PIXEL_WORLD, type Actor } from '../characters/SpriteRenderer';
 import type { Anim } from '../characters/SpriteGenerator';
-import { CombatSim, type CombatData, type CombatEvent, type FighterId, type ActionId } from './CombatSim';
+import { CombatSim, type CombatData, type CombatEvent, type FighterId } from './CombatSim';
+import { DynamicSim, DYNAMIC_DATA, type DynData, type DynEvent } from '../combat/dynamic';
 import { buildArena, type ArenaBuild } from './ArenaScene';
 import { buildArenaAtlas, clipFrame, CELL_W, CELL_H, CELL_FOOT, type ArenaSpriteSet } from './FighterArt';
 import { ArenaHud, type Assist, type ArenaTexts } from './ArenaHud';
+import { DynamicHud, type DynTexts } from './DynamicHud';
 import { PRESETS, runScript } from './Presets';
+import { DYN_PRESETS, runDynScript } from './DynPresets';
+import { arenaRules, dynClip, dynClipFrame, dynKeys, dynPad, tuneDyn, type ArenaRules } from './dynamicView';
 import { FloorUI } from './FloorUI';
 
 /** The arena scene of the game (journal Passe P1): `?scene=arena`. The prototype's duel (CombatSim, ported rule for rule) staged with
@@ -26,13 +30,33 @@ import { FloorUI } from './FloorUI';
  *  The town (the default scene) is untouched by it: nothing here runs unless the parameter asks for it.
  *  Parameters: `assist=subtle|full|off` (the prototype's visual assistance; default subtle), `hud=0` / `clean=1` (no HUD), `fps=` (the
  *  game's frame cap), `freeze=<s>` (fixed shader time), `seed=` (the stands' spectators and the town houses), `time=morning|midday|afternoon`
- *  (a day state, DayState.ts: the play mode's pages set it from the slot, journal Passe AD1; absent = the night, exactly as before). Keys: 1-6
- *  attacks and techniques, A dodge, B guard (hold), R restart, Space pause, H HUD. */
+ *  (a day state, DayState.ts: the play mode's pages set it from the slot, journal Passe AD1; absent = the night, exactly as before),
+ *  `combat=dynamic` (the duel of the « tour par tour dynamique », src/combat/dynamic.ts, with its HUD, DynamicHud.ts, lot C2 of
+ *  briefs/combat-system.md, journal Passe C2; behind this parameter until the operator's trial, CB-10; `dyn=key:value,...` sets the trial's
+ *  numbers, dynamicView.ts; absent = the arena of today, CombatSim, unchanged). Keys: 1-6 attacks and techniques (under the new rules: 3-6
+ *  the four skill slots), A dodge, B guard (hold), R restart, Space pause, H HUD. */
+
+/** what the presentation reads of a duel's simulation: today's CombatSim and the new rules' DynamicSim both have it */
+interface DuelFighter { hp: number; maxHp: number; ap: number; state: string; stateT: number; guarding: boolean; anim: { name: string; t: number; dur: number; impactAt?: number; prep?: number; loop?: boolean } | null }
+export interface DuelSim {
+  readonly D: { dt: number };
+  t: number; over: boolean;
+  f: Record<FighterId, DuelFighter>;
+  incoming(): { kind: string; action: string; castProgress: number; windowOpen: boolean } | null;
+  command(who: FighterId, id: string): unknown;
+  react(who: FighterId, type: 'dodge'): boolean;
+  setGuard(who: FighterId, on: boolean): void;
+  step(dt?: number): void;
+  drain(): Array<CombatEvent | DynEvent>;
+  reset(): void;
+  hash(): string;
+}
 
 /** an official bout of the game's play mode (journal Passe L3): its data (a variant of CombatData, src/combat/match.ts), who sits in the
  *  opponent's seat, the assistance the preparation earned, the play mode's words; no restart, and `onOver` once the bout is decided */
 export interface ArenaMatch {
-  data: CombatData; foe: string; assist: Assist; texts: ArenaTexts;
+  /** today's data, or the new rules' (with `rules: 'dynamic'`, the game's `flags.combat`, journal Passe C2) */
+  data: CombatData | DynData; rules?: ArenaRules; foe: string; assist: Assist; texts: ArenaTexts | DynTexts;
   onOver?: (r: { winner: FighterId; hp: Record<FighterId, number>; maxHp: Record<FighterId, number>; finisher: string | null; t: number }) => void;
 }
 /** the forecourt's walking mode (journal Passe L6): no bout; the hero walks the sand (arrows or A / D, W / S), Marek drills by the ring; the
@@ -74,13 +98,17 @@ export class ArenaApp {
   readonly look: DayLook | null;
   /** the key light's direction: the low moon behind the gate at night, the state's sun by day */
   readonly keyDir: THREE.Vector3;
-  readonly sim: CombatSim;
+  /** the duel's simulation: today's (`classic`) or the new rules' (`dyn`, ?combat=dynamic or the play mode's dynamic game) */
+  readonly sim: DuelSim;
+  readonly rules: ArenaRules;
+  readonly classic: CombatSim | null = null;
+  readonly dyn: DynamicSim | null = null;
   lib!: MaterialLibrary;
   arena!: ArenaBuild;
   set!: ArenaSpriteSet;
   sprites!: SpriteRenderer;
   particles!: ParticleSystem;
-  hud: ArenaHud | null = null;
+  hud: ArenaHud | DynamicHud | null = null;
   readonly floor = new FloorUI();
   assist: Assist = 'subtle';
   hudVisible = true;
@@ -119,7 +147,9 @@ export class ArenaApp {
   private walkFrames = 0;
 
   constructor(private opts: ArenaOptions) {
-    this.sim = new CombatSim(opts.match?.data);
+    this.rules = arenaRules(opts.params, opts.match);
+    if (this.rules === 'dynamic') this.sim = this.dyn = new DynamicSim(tuneDyn((opts.match?.data as DynData | undefined) ?? DYNAMIC_DATA, opts.params.get('dyn')));
+    else this.sim = this.classic = new CombatSim(opts.match?.data as CombatData | undefined);
     this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: false, powerPreference: 'high-performance', stencil: false, alpha: false });
     this.renderer.autoClear = false;
     this.renderer.info.autoReset = false;
@@ -237,7 +267,10 @@ export class ArenaApp {
     // the moon's box is narrow (it lies low behind the gate); a high sun sees the floor and the stands from above: a wider box
     if (this.look) this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 2, -4), this.keyDir, 30, 30);
     else this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 3.5, -6), MOON_DIR, 24, 9);
-    if (!this.opts.params.has('clean')) this.hud = new ArenaHud(this.sim, this.set.portraits, this.opts.match?.texts, parseTime(this.opts.params));
+    if (!this.opts.params.has('clean')) {
+      this.hud = this.dyn ? new DynamicHud(this.dyn, this.set.portraits, this.opts.match?.texts as DynTexts | undefined, parseTime(this.opts.params))
+        : new ArenaHud(this.classic!, this.set.portraits, this.opts.match?.texts, parseTime(this.opts.params));
+    }
     if (this.hud) {
       this.hud.onAction = (id, down) => this.action(id, down);
       this.hud.project = (who) => this.headScreen(who);
@@ -273,7 +306,7 @@ export class ArenaApp {
     if (id === 'dodge') s.react('ren', 'dodge');
     else if (id === 'reset') { if (!this.opts.match) this.restart(); }
     else if (id === 'pause') { this.paused = !this.paused && !this.moment ? true : false; this.moment = false; this.hud?.still(false); }
-    else s.command('ren', id as ActionId);
+    else s.command('ren', id);
   }
 
   private bindInput(): void {
@@ -283,7 +316,7 @@ export class ArenaApp {
       window.addEventListener('blur', () => this.walkKeys.clear());
       return;
     }
-    const KEYS: Record<string, string> = { '1': 'light', '2': 'heavy', '3': 't1', '4': 't2', '5': 't3', '6': 't4', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
+    const KEYS: Record<string, string> = this.dyn ? dynKeys(this.dyn.D.loadout) : { '1': 'light', '2': 'heavy', '3': 't1', '4': 't2', '5': 't3', '6': 't4', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
     window.addEventListener('keydown', (e) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || !this.ready) return;
       const k = e.key.toLowerCase(), m = KEYS[k];
@@ -299,7 +332,7 @@ export class ArenaApp {
   private pollPad(): void {
     const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
     const p = pads && pads[0]; if (!p) return;
-    const PAD: Record<number, string> = { 0: 'dodge', 1: 'guard', 2: 'light', 3: 'heavy', 4: 't1', 5: 't2', 6: 't3', 7: 't4', 9: 'pause', 8: 'reset' };
+    const PAD: Record<number, string> = this.dyn ? dynPad(this.dyn.D.loadout) : { 0: 'dodge', 1: 'guard', 2: 'light', 3: 'heavy', 4: 't1', 5: 't2', 6: 't3', 7: 't4', 9: 'pause', 8: 'reset' };
     for (const [b, id] of Object.entries(PAD)) {
       const i = +b, down = !!p.buttons[i]?.pressed;
       if (down && !this.padPrev[i]) { this.action(id, true); this.hud?.flash(id); }
@@ -315,7 +348,7 @@ export class ArenaApp {
   }
 
   // ---------------------------------------------------------------- simulation -> presentation
-  private onEvents(evs: CombatEvent[]): void {
+  private onEvents(evs: Array<CombatEvent | DynEvent>): void {
     for (const e of evs) {
       if (e.type === 'impact') {
         if (e.hp <= 0) this.finisher = e.kind;
@@ -329,6 +362,14 @@ export class ArenaApp {
         }
         this.cheer(e.result === 'hit' && heavy ? 0.9 : e.result === 'guardbreak' ? 0.8 : e.result === 'hit' ? 0.35 : 0.2);
       } else if (e.type === 'ko') { this.koT = this.sim.t; this.cheer(1); }
+      // the new rules' moments (DynamicSim only): a gauge breaks, the player is pushed back, a skill's effect takes hold
+      else if (e.type === 'break') {
+        const p = this.pres[e.who], a = this.fighters[e.who];
+        p.knock = -0.5; p.flash = 1; this.shake = Math.max(this.shake, 1.2); this.spawnFx('ember', a, e.who); this.spawnFx('guard', a, e.who);
+        if (this.hitLight) { this.hitLight.pos.set(a.pos.x - (e.who === 'ren' ? -0.3 : 0.3), 1.45, 1.2); this.hitLight.scale = this.hitLight.targetScale = 1; }
+        this.cheer(0.8);
+      } else if (e.type === 'pushed') { this.pres[e.who].knock = -0.35; this.shake = Math.max(this.shake, 0.3); }
+      else if (e.type === 'effect') { this.pres[e.who].flash = 0.6; this.spawnFx(e.family === 'defensive' ? 'guard' : 'spark', this.fighters[e.who], e.who === 'ren' ? 'marek' : 'ren'); }
       else if (e.type === 'reset') {
         this.koT = -1; this.shake = 0; this.push = 0;
         for (const p of Object.values(this.pres)) { p.off = p.knock = p.flash = p.guardHit = 0; }
@@ -336,7 +377,8 @@ export class ArenaApp {
         this.fx = [];
       }
     }
-    this.hud?.onEvents(evs, this.sim);
+    if (this.hud instanceof DynamicHud) this.hud.onEvents(evs as DynEvent[], this.dyn!);
+    else this.hud?.onEvents(evs as CombatEvent[], this.classic!);
   }
 
   /** a share of the stands react (deterministic: by seat and sim time) */
@@ -356,12 +398,13 @@ export class ArenaApp {
     const s = this.sim;
     for (const id of ['ren', 'marek'] as FighterId[]) {
       const f = s.f[id], a = this.fighters[id], p = this.pres[id], an = f.anim!;
-      let clip = an.name;
+      // under the new rules, today's clips on the new moments (dynamicView.ts: skills, the preparation held on the first frame)
+      let clip = this.dyn ? dynClip(an.name) : an.name;
       const clips = this.set.clips[id];
       if (s.over && f.state !== 'down') clip = 'victory';
       if (!clips[clip]) clip = id === 'marek' || f.ap >= 2 ? 'ready' : 'idle';
       const def = clips[clip], n = def.frames.length;
-      let fi = clipFrame(clip, n, an.t, an.impactAt ?? 0, def.loop ?? 0);
+      let fi = this.dyn ? dynClipFrame(clip === dynClip(an.name) ? an.name : clip, clip, n, an, def.loop ?? 0) : clipFrame(clip, n, an.t, an.impactAt ?? 0, def.loop ?? 0);
       if (clip === 'block' && p.guardHit > 0) fi = 1;
       a.anim = `${clip}.${fi}` as Anim;
       // lunges: an attack closes the gap so its blade lands on the opponent at the impact; a dodge leaps back; hits knock back
@@ -370,7 +413,8 @@ export class ArenaApp {
         const reach = (this.set.reach[`${id}/${clip}.${IMPACT_FRAME[clip]}`] ?? 20) * PIXEL_WORLD * CHAR_SCALE;
         const A = Math.max(0, Math.min(2.4, gap - reach - 0.12)), ia = an.impactAt, t = an.t;
         // the heavy closes the gap only in its last 0.16 s (gap and telegraph stay open through the charge, critique n° 3 of Passe P2)
-        const t0 = clip === 'heavy' ? Math.max(0, ia - 0.16) : ia * 0.35;
+        // under the new rules a skill's lunge waits for the end of its preparation
+        const pr = an.prep ?? 0, t0 = clip === 'heavy' ? Math.max(0, ia - 0.16) : pr > 0 ? pr + (ia - pr) * 0.35 : ia * 0.35;
         if (t <= ia + 0.12) p.off = A * smooth((t - t0) / Math.max(0.05, ia - t0));
         else p.off *= Math.exp(-dt * 5);
       } else if (clip === 'dodge') p.off = Math.min(p.off, -1.05 * smooth(an.t / 0.16));
@@ -495,7 +539,8 @@ export class ArenaApp {
     this.lights.update(this.time, pdt, this.camera);
     this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...this.fans], this.lights, this.camera, this.keyDir, null, this.fighters.ren);
     this.particles.update(pdt, this.time, this.camera, this.post.height, this.lights, null);
-    this.hud?.update(this.sim, this.assist, this.hudVisible, this.paused && !this.moment);
+    if (this.hud instanceof DynamicHud) this.hud.update(this.dyn!, this.assist, this.hudVisible, this.paused && !this.moment);
+    else this.hud?.update(this.classic!, this.assist, this.hudVisible, this.paused && !this.moment);
     // an official bout: told once the KO has had its moment on screen
     const m = this.opts.match;
     if (m?.onOver && this.sim.over && !this.told && this.koT >= 0 && this.sim.t - this.koT >= 1.6) {
@@ -535,20 +580,25 @@ export class ArenaApp {
   /** the prototype's `jump`: a scripted moment from a reset, every step delivered to the presentation at the simulation's fixed step (the
    *  prototype delivered its last half second only: a KO before it never reached the screen), then held */
   jump(name: string): boolean {
-    const p = PRESETS[name]; if (!p) return false;
+    const p = this.dyn ? DYN_PRESETS[name] : PRESETS[name]; if (!p) return false;
     this.sim.reset(); this.hud?.still(false); this.onEvents(this.sim.drain());
     const dt = this.sim.D.dt;
-    runScript(this.sim, p.script, () => true, () => {
+    const onStep = () => {
       this.onEvents(this.sim.drain());
       this.presentFighters(dt); this.presentFans(); this.presentFx(dt); this.updateDynamicLights(); this.applyCamera(dt);
       this.particles.update(dt, this.time, this.camera, this.post.height, this.lights, null);
-    });
+    };
+    if (this.dyn) runDynScript(this.dyn, DYN_PRESETS[name].script, onStep);
+    else runScript(this.classic!, PRESETS[name].script, () => true, onStep);
     this.paused = true; this.moment = true; this.hud?.still(true);
     this.update(0);
     return true;
   }
 
   renderOnce(): void { this.update(0); this.render(); }
+
+  /** the scripted moments `jump` knows under this page's rules */
+  presetNames(): string[] { return Object.keys(this.dyn ? DYN_PRESETS : PRESETS); }
 
   snapshot(): Record<string, unknown> {
     const r = this.renderer.info, p = this.perf, gpu = p.gpu.enabled ? { ...p.gpu.ms } : undefined;
@@ -560,6 +610,7 @@ export class ArenaApp {
       lights: this.lights.sources.length, lightsOnScreen: this.lights.active, fans: this.fans.length, instances: this.arena?.stats.instances,
       atlas: this.set ? `${this.set.atlas.width}x${this.set.atlas.height} (${this.set.atlas.frameCount} cells)` : null, drawCalls: p.drawCalls, frameTriangles: p.triangles, arenaTriangles: this.arena?.stats.triangles, resolution: `${this.post.width}x${this.post.height}`,
       pose: this.pose, assist: this.assist,
+      ...(this.dyn ? { rules: this.rules, resist: { ren: +this.dyn.f.ren.resist.toFixed(2), marek: +this.dyn.f.marek.resist.toFixed(2) }, phase: this.dyn.inSequence() ? 'defense' : 'open' } : {}),
     };
   }
 }

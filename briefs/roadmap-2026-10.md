@@ -48,7 +48,12 @@ Puis : « Le district en cours, c'est le parvis de l'arène (la place principale
 - **C1 fait (Passe C1, 25/10)** : le cœur du duel en simulation pure, `src/combat/dynamic.ts` (jauge et break, garde sans bris, priorité de
   l'adversaire et « repoussé », préparation automatique, PA, quatre emplacements, K.O. seul, pauses par niveau, duels de 5 à 9 minutes), son bot
   et sa résolution hors écran ; derrière son paramètre (`flags.combat = 'dynamic'`, `tools/tournament-lab.mjs --rules=dynamic`), l'arène
-  d'aujourd'hui inchangée. Suite : C2.
+  d'aujourd'hui inchangée.
+- **C2 fait (Passe C2, 25/10)** : l'arène montre le nouveau duel derrière `?scene=arena&combat=dynamic` (et le mode jouable avec
+  `&combat=dynamic`), avec son HUD bâti sur le système de design (les deux jauges, la barre de break, les PA, les quatre compétences et leur coût,
+  la priorité de l'adversaire), les clips d'aujourd'hui sur les nouveaux moments et les réglages de l'essai dans l'adresse (`dyn=`) ; le défaut
+  inchangé ; l'interface UI3 vérifiée sur tout le parcours de l'arène. **Suite : l'essai de l'opérateur** (guide `briefs/combat-trial-c2.md`,
+  fiche d'arbitrages de la Passe C2), puis C3.
 
 ## Étape 1. Les sprites de l'arène
 

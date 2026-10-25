@@ -1,5 +1,7 @@
 // Checks of the game's arena scene (`?scene=arena`, journal Passe P1) on a running dev server, same harness as tools/arena-scene-shots.mjs:
 //   1. the simulation in the page (the ported CombatSim): the fixed input script of tools/arena-check.mjs, its hash against the prototype's;
+//      under the new rules (`combat=dynamic` in the extra query, journal Passe C2): DynamicSim's own script (runDynamicFingerprint, 300 s),
+//      its hash against DYNAMIC_SIM_HASH, the value recorded with the rules (journal Passe C1);
 //   2. every scripted moment in every assistance mode (subtle, full, off): jump, one render, page errors and console errors counted;
 //   3. the floor telegraph's contrast in the reaction window (full assistance), read back from a capture: the band against the floor just
 //      behind and just in front of it (threshold 2:1, also with a deuteranopia simulation), as the prototype's device test.
@@ -12,6 +14,8 @@ const puppeteer = createRequire(import.meta.url)('puppeteer-core');
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', '/usr/bin/google-chrome'].find((p) => p && fs.existsSync(p));
 const SEED = `(() => { let s = 1842; Math.random = () => { s |= 0; s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();`;
 const PROTOTYPE_HASH = '152:1:idle:20.233:0.00,0.00,0.00,0.00;800:0:idle:5.283:0.00,0.00,0.00,0.00;20.233';
+// src/combat/dynamic.ts DYNAMIC_SIM_HASH (journal Passe C1)
+const DYNAMIC_HASH = '1687:1:idle:0.483:0.000:-:-;4989:0:idle:1.500:61.275:-:-;300.000';
 const extra = process.argv[2] ?? '';
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720);
 const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];
@@ -36,6 +40,17 @@ try {
     const A = window.__arena;
     // 1. the simulation alone (a fresh instance of the page's class), the fingerprint script
     const sim = new A.sim.constructor(), dt = sim.D.dt; let nextAct = 0.5, n = 0;
+    if (A.rules === 'dynamic') {
+      // runDynamicFingerprint (src/combat/dynamic.ts), on a fresh DynamicSim of the default data
+      const ids = ['light', 'light', 'heavy', 't1', 'light', 'd1', 'light', 't4', 's1', 'light', 'heavy'];
+      for (let i = 0; i < Math.round(300 / dt); i++) {
+        const inc = sim.incoming();
+        if (inc && inc.windowOpen && inc.kind === 'heavy') sim.react('ren', 'dodge');
+        sim.setGuard('ren', !!(inc && inc.kind === 'light'));
+        if (sim.t >= nextAct) { sim.command('ren', ids[n++ % ids.length]); nextAct += 0.45; }
+        sim.step(dt); sim.drain(); if (sim.over) sim.reset();
+      }
+    } else
     for (let i = 0; i < Math.round(120 / dt); i++) {
       const inc = sim.incoming();
       if (inc && inc.windowOpen && inc.kind === 'heavy') sim.react('ren', 'dodge');
@@ -44,7 +59,7 @@ try {
       sim.step(dt); sim.drain(); if (sim.over) sim.reset();
     }
     // 2. every moment in every assistance mode
-    const presets = ['charging', 'ready', 'casting', 'window', 'impact', 'block', 'guardbreak', 'dodge', 'combo', 'single', 'technique', 'strike', 'heavyRen', 'ko'];
+    const presets = A.rules === 'dynamic' ? A.presetNames() : ['charging', 'ready', 'casting', 'window', 'impact', 'block', 'guardbreak', 'dodge', 'combo', 'single', 'technique', 'strike', 'heavyRen', 'ko'];
     let renders = 0;
     for (const mode of ['subtle', 'full', 'off']) { A.assist = mode; for (const p of presets) { if (!A.jump(p)) throw new Error('preset ' + p); A.renderOnce(); renders++; } }
     // 3. the telegraph moment, its rectangles projected to the screen
@@ -55,7 +70,7 @@ try {
       const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
       return [Math.floor(Math.min(...xs)), Math.floor(Math.min(...ys)), Math.ceil(Math.max(...xs)), Math.ceil(Math.max(...ys))];
     };
-    return { simHash: sim.hash(), renders, band: rect(-0.7, 0.7), behind: rect(-2.3, -1.4), front: rect(1.4, 2.3) };
+    return { simHash: sim.hash(), rules: A.rules ?? 'classic', renders, band: rect(-0.7, 0.7), behind: rect(-2.3, -1.4), front: rect(1.4, 2.3) };
   });
   const shot = decodePng(Buffer.from(await page.screenshot({ type: 'png' }))), png = { width: shot.W, height: shot.H, data: shot.rgba };
   const mean = ([x0, y0, x1, y1]) => { const s = [0, 0, 0]; let n = 0; for (let y = Math.max(0, y0); y < Math.min(png.height, y1); y++) for (let x = Math.max(0, x0); x < Math.min(png.width, x1); x++) { const i = (y * png.width + x) * 4; s[0] += png.data[i]; s[1] += png.data[i + 1]; s[2] += png.data[i + 2]; n++; } return s.map((v) => v / Math.max(1, n)); };
@@ -65,8 +80,9 @@ try {
   const ratio = (x, y) => (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
   const tc = mean(res.band), fb = mean(res.behind), ff = mean(res.front);
   const contrast = +Math.min(ratio(lum(tc), lum(fb)), ratio(lum(tc), lum(ff))).toFixed(2), contrastDeuteranopia = +Math.min(ratio(deut(tc), deut(fb)), ratio(deut(tc), deut(ff))).toFixed(2);
-  const bad = errors.length > 0 || res.simHash !== PROTOTYPE_HASH || contrast < 2 || contrastDeuteranopia < 2 || !(live.advanced > 0) || !live.lastAction;
+  const wantHash = res.rules === 'dynamic' ? DYNAMIC_HASH : PROTOTYPE_HASH;
+  const bad = errors.length > 0 || res.simHash !== wantHash || contrast < 2 || contrastDeuteranopia < 2 || !(live.advanced > 0) || !live.lastAction;
   failed = bad;
-  console.log(JSON.stringify({ live: { advanced: live.advanced, lastAction: live.lastAction, marekHp: live.marekHp, frames: live.frames, drawCalls: live.stats.drawCalls, frameTriangles: live.stats.frameTriangles, triangles: live.stats.arenaTriangles, instances: live.stats.instances, lights: live.stats.lights, atlas: live.stats.atlas }, simHash: res.simHash, sameAsPrototype: res.simHash === PROTOTYPE_HASH, renders: res.renders, telegraph: { band: tc.map(Math.round), behind: fb.map(Math.round), front: ff.map(Math.round), contrast, contrastDeuteranopia }, errors: errors.slice(0, 10), errorCount: errors.length, verdict: bad ? 'FAIL' : 'PASS' }));
+  console.log(JSON.stringify({ live: { advanced: live.advanced, lastAction: live.lastAction, marekHp: live.marekHp, frames: live.frames, drawCalls: live.stats.drawCalls, frameTriangles: live.stats.frameTriangles, triangles: live.stats.arenaTriangles, instances: live.stats.instances, lights: live.stats.lights, atlas: live.stats.atlas }, rules: res.rules, simHash: res.simHash, sameAsPrototype: res.simHash === PROTOTYPE_HASH, sameAsRecorded: res.simHash === wantHash, renders: res.renders, telegraph: { band: tc.map(Math.round), behind: fb.map(Math.round), front: ff.map(Math.round), contrast, contrastDeuteranopia }, errors: errors.slice(0, 10), errorCount: errors.length, verdict: bad ? 'FAIL' : 'PASS' }));
 } finally { await b.close(); }
 process.exit(failed ? 1 : 0);

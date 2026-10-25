@@ -11,11 +11,14 @@ export type Assist = 'subtle' | 'full' | 'off';
 
 /** built from the interface's design system (journal Passe UI3): the tone's colours (`--ds-*`), the code-painted nine-slice frames, the pixel
  *  font for titles, names, numbers and keys, the text font for words; no text under 16 px on a computer, 14 px on a phone (S4). The gauges stay
- *  in the palette (S3): the challenger's light blue, the opponent's amber. With the HUD hidden (`hud=0`, H), the KO and pause screens keep the
- *  look they had before the system, unchanged (journal Passe UI3: every hud=0 address at 0 px) */
-const CSS = `
+ *  in the palette (S3): the challenger's light blue, the opponent's amber. With the HUD hidden (`hud=0`, H), the KO and pause screens stay, in
+ *  the system's look too (journal Passe C2; until then they kept the look they had before it, journal Passe UI3). Exported: the HUD of the
+ *  « tour par tour dynamique » (DynamicHud.ts) is built on the same rules */
+export const CSS = `
 #arena-hud{position:fixed;inset:0;pointer-events:none;color:var(--ds-ivory);font:400 var(--ds-fs-body)/1.3 var(--ds-text);z-index:20;user-select:none;-webkit-user-select:none}
 #arena-hud.off>*:not(#ah-ko):not(#ah-pause){opacity:0}
+/* the HUD hidden: the « turn your device » layer (transparent) leaves, so it neither covers the KO and pause screens nor takes the touches */
+#arena-hud.off #ah-rotate{display:none}
 #arena-hud .top{position:absolute;left:0;right:0;top:0;height:150px;background:linear-gradient(color-mix(in srgb,var(--ds-ink) 62%,transparent),transparent)}
 #ah-title{position:absolute;left:18px;top:12px;font:400 var(--ds-fs-pixel)/1.2 var(--ds-pixel);letter-spacing:.04em;color:var(--ds-goldHi);text-shadow:0 var(--ds-px) 0 var(--ds-ink),0 0 8px var(--ds-ink)}
 #ah-title small{display:block;margin-top:2px;font:400 var(--ds-fs-small)/1.2 var(--ds-text);letter-spacing:.06em;color:var(--ds-ivory);text-shadow:0 1px 0 var(--ds-ink),0 0 6px var(--ds-ink)}
@@ -42,15 +45,15 @@ const CSS = `
 @keyframes ahg{40%{transform:rotate(45deg) scale(1.5)}}
 .ah-state{position:absolute;left:0;right:0;top:100%;margin-top:6px;padding:0 4px;font-size:var(--ds-fs-small);letter-spacing:.12em;text-transform:uppercase;color:var(--ds-goldHi);text-shadow:0 1px 0 var(--ds-ink),0 0 6px var(--ds-ink);opacity:0;transition:opacity .15s}
 .ah-state.on{opacity:1}
-/* the sub-label (« hold », « 1 AP », « breaks guard ») below the name, whole (the operator's decision P3, journal Passes UI1 / UI2): the key
-   beside the name, the sub-label under them, both at the system's sizes */
+/* the sub-label (« hold », « 1 AP », « breaks guard ») below the name, whole, in a bar 60 px high (the operator's decision P3, journal Passes
+   UI1 / UI2) at the system's sizes (S4): the key beside both lines (journal Passe C2; 76 px with the key above the sub-label, Passe UI3) */
 #ah-bar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto;transition:opacity .15s}
 .ah-sep{width:var(--ds-px);align-self:stretch;margin:8px 4px;background:var(--ds-gold);box-shadow:var(--ds-px) 0 0 var(--ds-goldLo)}
-.ah-b{position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:6px;align-items:center;min-width:104px;padding:2px 6px 2px 2px;text-align:left;font:inherit;color:var(--ds-ivory);background:none;border:calc(4 * var(--ds-px)) solid transparent;border-image:var(--ds-f-btnOff) 4 fill / calc(4 * var(--ds-px)) stretch;image-rendering:pixelated;cursor:pointer;overflow:hidden;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.ah-b{position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:6px;align-items:center;align-content:center;min-width:104px;height:60px;padding:0 6px 0 2px;text-align:left;font:inherit;line-height:1.1;color:var(--ds-ivory);background:none;border:calc(4 * var(--ds-px)) solid transparent;border-image:var(--ds-f-btnOff) 4 fill / calc(4 * var(--ds-px)) stretch;image-rendering:pixelated;cursor:pointer;overflow:hidden;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .ah-b.wide{min-width:132px}
-.ah-b kbd{grid-row:1;grid-column:1;min-width:calc(20px + 6 * var(--ds-px));padding:0 2px;font:400 var(--ds-fs-pixel)/1.1 var(--ds-pixel);text-align:center;color:var(--ds-ink);border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-key) 3 fill / calc(3 * var(--ds-px)) stretch}
+.ah-b kbd{grid-row:1 / span 2;grid-column:1;min-width:calc(20px + 6 * var(--ds-px));padding:0 2px;font:400 var(--ds-fs-pixel)/1.1 var(--ds-pixel);text-align:center;color:var(--ds-ink);border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-key) 3 fill / calc(3 * var(--ds-px)) stretch}
 .ah-b b{grid-row:1;grid-column:2;font-size:var(--ds-fs-label);font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;color:var(--ds-muted)}
-.ah-b em{grid-row:2;grid-column:1 / span 2;margin-top:2px;font-size:var(--ds-fs-small);font-style:normal;color:var(--ds-muted);white-space:nowrap}
+.ah-b em{grid-row:2;grid-column:2;font-size:var(--ds-fs-small);font-style:normal;color:var(--ds-muted);white-space:nowrap}
 .ah-b.on{border-image-source:var(--ds-f-btn)}
 .ah-b.on b{color:var(--ds-ivory)}.ah-b.on em{color:var(--ds-ivory)}
 .ah-b em q{quotes:none}
@@ -84,16 +87,11 @@ const CSS = `
 #ah-dmg .ap{color:var(--ds-amber);font-size:var(--ds-fs-pixel)}#ah-dmg .stun{color:var(--ds-goldHi);font-size:var(--ds-fs-pixel)}
 @keyframes ahf{0%{opacity:0;margin-top:6px}12%{opacity:1}100%{opacity:0;margin-top:-48px}}
 #arena-hud.still #ah-dmg div{animation-delay:-.22s;animation-play-state:paused}
-#ah-ko,#ah-pause{position:absolute;inset:0;display:none;place-items:center;background:rgba(5,7,13,.58);text-align:center;pointer-events:none}
+#ah-ko,#ah-pause{position:absolute;inset:0;display:none;place-items:center;background:color-mix(in srgb,var(--ds-ink) 58%,transparent);text-align:center;pointer-events:none}
 #ah-ko.on,#ah-pause.on{display:grid}
-#ah-ko b,#ah-pause b{display:block;font-weight:400;font-size:26px;letter-spacing:.34em;text-transform:uppercase;color:#f1d9a0}
-#ah-ko b::after{content:'';display:block;width:180px;height:2px;margin:12px auto 0;background:linear-gradient(90deg,rgba(233,166,76,0),#e9a64c,rgba(233,166,76,0))}
-#ah-ko span,#ah-pause span{display:block;margin-top:12px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#d9c9a8;opacity:.8}
-#arena-hud.off #ah-ko,#arena-hud.off #ah-pause{color:#d9c9a8;font:14px/1.4 "Segoe UI",system-ui,sans-serif}
-#arena-hud:not(.off) #ah-ko,#arena-hud:not(.off) #ah-pause{background:color-mix(in srgb,var(--ds-ink) 58%,transparent)}
-#arena-hud:not(.off) #ah-ko b,#arena-hud:not(.off) #ah-pause b{font:400 var(--ds-fs-pixel-huge)/1.2 var(--ds-pixel);letter-spacing:.08em;text-transform:none;color:var(--ds-goldHi);text-shadow:0 var(--ds-px) 0 var(--ds-ink),0 calc(2 * var(--ds-px)) 0 var(--ds-goldLo)}
-#arena-hud:not(.off) #ah-ko b::after{width:200px;height:var(--ds-px);background:var(--ds-gold);box-shadow:0 var(--ds-px) 0 var(--ds-goldLo)}
-#arena-hud:not(.off) #ah-ko span,#arena-hud:not(.off) #ah-pause span{font-size:var(--ds-fs-small);letter-spacing:.12em;color:var(--ds-ivory);opacity:1}
+#ah-ko b,#ah-pause b{display:block;font:400 var(--ds-fs-pixel-huge)/1.2 var(--ds-pixel);letter-spacing:.08em;color:var(--ds-goldHi);text-shadow:0 var(--ds-px) 0 var(--ds-ink),0 calc(2 * var(--ds-px)) 0 var(--ds-goldLo)}
+#ah-ko b::after{content:'';display:block;width:200px;height:var(--ds-px);margin:12px auto 0;background:var(--ds-gold);box-shadow:0 var(--ds-px) 0 var(--ds-goldLo)}
+#ah-ko span,#ah-pause span{display:block;margin-top:12px;font-size:var(--ds-fs-small);letter-spacing:.12em;text-transform:uppercase;color:var(--ds-ivory)}
 #ah-rotate{position:absolute;inset:0;display:none;place-items:center;padding:24px;text-align:center;background:var(--ds-ink);pointer-events:auto}
 #ah-rotate b{display:block;font:400 var(--ds-fs-pixel)/1.2 var(--ds-pixel);letter-spacing:.06em;color:var(--ds-goldHi)}
 #ah-rotate span{display:block;margin-top:14px;font-size:var(--ds-fs-small);letter-spacing:.06em;color:var(--ds-ivory)}
@@ -102,7 +100,7 @@ const CSS = `
 /* a laptop window: the short technique names, the labels at the smallest size, so the bar fits (1 196 px wide, measured) */
 @media (max-width:1500px){.ah-b,.ah-b.wide{min-width:0}.ah-b b{font-size:var(--ds-fs-small);letter-spacing:.02em}.ah-b .fn{display:none}.ah-b .sn{display:inline}}
 /* a narrow window or a phone (L3): the key over the name, the sub-labels away */
-@media (max-width:1240px){#ah-bar{gap:4px}.ah-sep{margin:8px 2px}.ah-b,.ah-b.wide{min-width:0;grid-template-columns:auto;justify-items:center;padding:0 4px}.ah-b kbd{grid-row:1;grid-column:1;font-size:var(--ds-fs-small);min-width:calc(14px + 6 * var(--ds-px))}.ah-b b{grid-row:2;grid-column:1;font-size:var(--ds-fs-small);letter-spacing:0;text-transform:none}.ah-b em{display:none}.ah-b .fn{display:none}.ah-b .sn{display:inline}.ah-card{width:30vw}}
+@media (max-width:1240px){#ah-bar{gap:4px}.ah-sep{margin:8px 2px}.ah-b,.ah-b.wide{min-width:0;height:auto;grid-template-columns:auto;justify-items:center;padding:0 4px}.ah-b kbd{grid-row:1;grid-column:1;font-size:var(--ds-fs-small);line-height:1;min-width:calc(14px + 6 * var(--ds-px))}.ah-b b{grid-row:2;grid-column:1;font-size:var(--ds-fs-small);letter-spacing:0;text-transform:none}.ah-b em{display:none}.ah-b .fn{display:none}.ah-b .sn{display:inline}.ah-card{width:30vw}}
 /* phone in landscape: the cards, the alert and the bars shrink so the duel stays in view */
 @media (max-height:480px){#ah-title{display:none}#arena-hud .top{height:90px}.ah-f{top:6px}.ah-card,#ah-alert{border-width:calc(4 * var(--ds-px));border-image:var(--ds-f-btn) 4 fill / calc(4 * var(--ds-px)) stretch}.ah-card{width:min(30vw,250px)}.ah-port{width:calc(32px + 6 * var(--ds-px));height:calc(32px + 6 * var(--ds-px))}.ah-card{padding:0 2px}.ah-nm span{display:none}.ah-hp{height:calc(4px + 6 * var(--ds-px))}.ah-pips{margin-top:5px;gap:8px}.ah-pips b{width:8px;height:8px}
   #ah-alert{top:30%;padding:0 10px 0 0}#ah-alert svg{width:28px;height:28px}

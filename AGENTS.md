@@ -38,8 +38,11 @@ The operator's master contracts live in `contracts/`, versioned and therefore pu
     change in its header; the rest of their text is unchanged. Until the operator's play test, the new rules stay behind a parameter and
     today's arena stays the default (CB-10). Lot C1 (journal Passe C1): the duel's rules as a pure simulation, `src/combat/dynamic.ts`
     (`DynamicSim`, `DYNAMIC_DATA`), its bot (`runDynamicBotDuel`, `src/combat/bot.ts`) and its off-screen race (`dyn*` in
-    `src/combat/profiles.ts`); a game plays them only with `flags.combat = 'dynamic'` (the TournamentLab's `--rules=dynamic`); nothing under
-    `src/arena` loads them.
+    `src/combat/profiles.ts`); a game plays them only with `flags.combat = 'dynamic'` (the TournamentLab's `--rules=dynamic`). Lot C2 (journal
+    Passe C2): the arena shows them behind `?scene=arena&combat=dynamic` (`src/arena/dynamicView.ts`, `DynPresets.ts`, `DynamicHud.ts`: today's
+    clips on the new moments, the HUD of the design system with both gauges, the AP, the four skills and the opponent's priority; `dyn=` the
+    trial's numbers), and the play mode with `&combat=dynamic` on a new game (the game's flag, in the save); today's arena modules never load
+    them. The operator's trial: `briefs/combat-trial-c2.md` and the decision sheet of journal Passe C2.
 
 They govern gameplay and the tournament; this file keeps the repository's rules (branches, journal, proofs, art). Two rules follow from
 decision C3 (« Aucun verrou modifié, écarts consignés »):
@@ -100,7 +103,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   read out of `arena/arena.html` (same events and state at every step, journal Passe P1), the arena fighters' atlas and the interface's design
   system (the fonts' bytes, the palette's tones and contrasts, the frames, the sizes, journal Passe UI3), the duel of the « tour par tour
   dynamique » (`tests/combat-dynamic.test.mjs`, journal Passe C1: each rule against an oracle, the duels' length, the bot, the off-screen race
-  against full duels on held-out seeds, the arena of today untouched; ~15 s, the suite's longest file).
+  against full duels on held-out seeds, the arena of today untouched; ~15 s, the suite's longest file), the arena of the new duel
+  (`tests/arena-dynamic.test.mjs`, journal Passe C2: the parameter, the keys, the trial's settings, today's clips on the new moments, the HUD's
+  reading at every step of a duel, every scripted moment, the play mode's flag).
   `tests/load.mjs` loads `src/` through Vite's SSR loader (extensionless imports, `?url`, named JSON imports, as the bundle resolves
   them; `--experimental-strip-types` alone cannot), with its own cache folder (`node_modules/.vite-test`), no file watcher and no
   `vite.config.ts` (`configFile: false` + `server.watch: null`: a merged config drops the null, and the watcher crawled the ignored Art Lab
@@ -113,7 +118,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `node tools/play-flow.mjs <outDir> <win|lose> [seed] [day]` — the play mode's scene change in a browser (journal Passe L3): a new game in the town
   page, the clock driven by `window.__game` to the day's bout, the arena page loaded from the save, the bout decided by scripted inputs on
   `window.__arena`, the town page again from the save; the browser's final state replayed in Node must give the same fingerprint (DEV or
-  production server; `BASE_URL`, `CHROME_PATH` / `CHROME_ARGS` / `READY_MS` as `detshots`)
+  production server; `BASE_URL`, `CHROME_PATH` / `CHROME_ARGS` / `READY_MS` as `detshots`; `COMBAT=dynamic`: the game under the rules of the
+  « tour par tour dynamique », journal Passe C2)
 - `node tools/play-day.mjs <outDir> [seed]` — the first day in the town page (journal Passe L4): E next to Mara opens her dialogue, the day through
   `window.__game` (the steel cargo, the forecourt), every reload from the save, Node's replay with the same fingerprint
 - `node tools/play-shots.mjs <outDir> "name|<named state>|<WxH,..>|<js>|<extra query>" ...` — review captures of the play mode at window sizes (DEV
@@ -230,8 +236,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - Arena scene of the game (`?scene=arena`, `src/arena/`, journal Passe P1), on a running dev server (`BASE_URL`): `node tools/arena-scene-shots.mjs
   <outDir> "<extra query>" "name|moment|js" ...` — captures of the scripted moments (`__arena.jump`: the prototype's eleven plus `strike`,
   `heavyRen`, `ko`; deterministic, every step delivered to the presentation); `node tools/arena-scene-check.mjs ["<extra query>"]` — live play
-  (keys pressed while the loop runs), the simulation's hash against the prototype's, every moment in every assistance mode without a page
-  error, the floor telegraph's contrast (>= 2:1, also deuteranopia); exit 1 on a failure; `node tools/arena-scene-page.mjs <outDir>` — a
+  (keys pressed while the loop runs), the simulation's hash against the prototype's (with `combat=dynamic`: DynamicSim's own script against
+  `DYNAMIC_SIM_HASH`, journal Passe C2), every moment in every assistance mode without a page error, the floor telegraph's contrast (>= 2:1,
+  also deuteranopia); exit 1 on a failure; `node tools/arena-scene-page.mjs <outDir> [query] [title]` (query default `scene=arena`) — a
   production build with relative paths and the page to publish as an artifact (`arena-page.html`, no document skeleton, sets `?scene=arena`
   itself: the service hands no query string; its supporting files are `assets/*`; journal Passe P2). GPU time per pass of the arena:
   `node tools/perf.mjs "arena|scene=arena"` (the tool drives `window.__arena` when there is no `__app`; `?gpuprof=1` for the panel-less timer)
@@ -342,7 +349,10 @@ visual assistance, default subtle; full adds the floor telegraph, the alert and 
 `cam=pitchDeg,dist,fov,ty,tz,tx` (the arena's framing while tuning; blank = keep), `time=morning|midday|afternoon` (a day state of the arena,
 journal Passe AD1: the state's sky, haze, grade, its sun turned into the arena - morning and midday keep their place against the moon, the end of
 day's low sun stands in the gate where the moon hangs at night - only the fires lit (braziers, the tunnels' hearths), the fighters' silhouette
-treatment at the night's strength; the play mode's duel and forecourt set it from the slot, `arenaQuery`; absent = the night, unchanged); keys
+treatment at the night's strength; the play mode's duel and forecourt set it from the slot, `arenaQuery`; absent = the night, unchanged),
+`combat=dynamic` (the duel of the « tour par tour dynamique », lot C2, journal Passe C2: `DynamicSim` and its HUD, keys 3-6 the four skill slots;
+`dyn=apMax:5,apStart:1,apRegen:0,gauge:100,decay:1.8,stun:6,breakDmg:1.2,guard:0.6,level:3,foeHp:8000,renHp:2200` sets the trial's numbers, each
+bounded, any other key or value refused; absent = today's CombatSim, unchanged; the play mode: `&combat=dynamic` with `new=1` or `state=`); keys
 1-6, A dodge, B guard (hold), R restart, Space pause, H HUD
 
 ## Art production principle
@@ -448,7 +458,7 @@ Interface (decided, journal Passe UI1: the operator's UI sheet, 14 choices of 14
   2026-10-25) and their record (source, licence, SHA-256): `src/ui/fonts/FONTS.md`. The play mode's screens (`src/ui`), the forecourt and Lantern
   Row pages and the arena's HUD use it; the free-roaming town, its DEV panel and HUD and the loading screen do not (unchanged). Portraits: the
   face of the baked sheet (`preloadPortraits`), the generator's portrait where no baked sheet stands for the person. The arena's HUD with the HUD
-  hidden (`hud=0`, H) keeps its KO and pause screens as before. On a phone (`PHONE_QUERY`): a strip along the top, tabs along the bottom
+  hidden (`hud=0`, H) keeps its KO and pause screens, in the system's look since journal Passe C2. On a phone (`PHONE_QUERY`): a strip along the top, tabs along the bottom
   (« Here » first), every card a sheet at the bottom of the screen. Proofs: `tests/ui-design.test.mjs`, `tools/ui-text.mjs`.
 
 ## Camera graph (`src/app/CameraGraph.ts`)

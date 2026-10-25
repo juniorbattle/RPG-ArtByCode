@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3 et CB1) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1 et C2) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -35,262 +35,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/22-passes-D8-F2.md`](journal/22-passes-D8-F2.md) | D8, S3, F2 | 20/10 |
 | [`journal/23-passes-S3b-AD1.md`](journal/23-passes-S3b-AD1.md) | S3b, F3, D9, FR1, AD1 | 20/10 → 21/10 |
 | [`journal/24-passes-AA1-UI1.md`](journal/24-passes-AA1-UI1.md) | AA1, UI1 | 24/10 |
+| [`journal/25-passes-UI2-UI3.md`](journal/25-passes-UI2-UI3.md) | UI2, UI3 | 24/10 → 25/10 |
 
 ---
-
-## Passe UI2 — Les trois corrections « En premier » de l'interface (P1, P2, P3), et le versement de la Passe UI1 (2026-10-24)
-
-### Demande
-- Séance locale lancée par la séance parente (celle de l'audit de l'interface) : verser la Passe UI1 (le texte de la séance d'audit, collé tel
-  quel ; les neuf images de référence et leurs fiches ; la ligne directrice dans `AGENTS.md`), puis les trois corrections que l'opérateur a
-  mises « En premier » sur la fiche de la Passe UI1 : P1 « Fermé par défaut, H l'ouvre », P2 « En premier », P3 « En premier ».
-- Branche `ui-premier` depuis `main` (`21b8c8b`) ; aucune autre branche de travail (`git branch -a`). Une séance d'audit de l'arène peut
-  travailler dans le même dossier : le port 5186 et `.gitignore` (modifié par une autre séance, laissé non commité) ne sont pas touchés.
-
-### Versement de la Passe UI1 — [OK]
-- La Passe UI1 est collée telle quelle depuis `PASSE-UI1.md` (dossier de notes de la séance d'audit), fins de ligne passées en CRLF. Sa ligne
-  « Serveur `dev-ui` arrêté à la fin de la séance » reste juste : aucun port de 5170 à 5200 n'écoutait au versement.
-- Les neuf images `ui-direction-*-2026-10-24.png` et leurs `.source.json` : SHA-256 et tailles égaux à leurs fiches (`art:validate` : 18
-  manifestes, 30 sources, 0 erreur ; recalcul à part, 9 / 9) ; ni clé ni chemin de la machine dans les fiches.
-- `AGENTS.md`, « Art direction » : la ligne directrice de l'interface (C, L2, L3, L4, S1 à S4, et la note de l'opérateur sur la palette).
-
-### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
-- Avant ce versement, les passes gardées faisaient 61 210 octets ; avec la Passe UI1 et le début de cette passe, 73 890. D8, S3 et F2, closes
-  (fusionnées), partent d'un seul bloc vers `journal/22-passes-D8-F2.md` (25 831 octets, SHA-256 du bloc `9ad5d0928d2b5663…`) ; restent 48 059
-  octets (59 904 avec cette passe complète). Preuve **8 / 8** (script hors dépôt, contre la copie de `JOURNAL.md` d'avant le déplacement : corps de l'archive égal au bloc ; D8, S3,
-  F2 contigus, suivis de S3b ; plus dans `JOURNAL.md` ; chacune dans un seul fichier de `journal/` ; `JOURNAL.md` inchangé à partir de S3b ;
-  seules la phrase d'en-tête et une ligne d'index changent ; en-tête comme `journal/21` ; CRLF seuls). Contrôle négatif : un bit changé dans une
-  copie de l'archive → 7 / 8. Le même script vérifie que la Passe UI1 du journal est le texte de `PASSE-UI1.md` (fins de ligne mises à part).
-
-### P1 « Fermé par défaut, H l'ouvre » — [OK]
-- `src/main.ts` : `exploreByDay` appelle `startTown({ panelClosed: true })` ; `startTown` cache alors le panneau DEV (`display: none`) et met la
-  mini-carte à sa place sans panneau (`setMapRight(14)`), comme après H. H fait ce qu'il faisait (le panneau se bascule lui-même, la mini-carte
-  le suit) : il ouvre le panneau, puis le referme. **Portée la plus étroite** (leçon de la Passe D9) : seul le bouton de l'écran titre ferme le
-  panneau ; toute autre adresse (`startTown()` de l'aiguillage) l'ouvre comme avant, pour les outils et les preuves.
-- `tests/town-roles.test.mjs` : le test d'« Explore » fige le nouvel appel (`startTown({ panelClosed: true })`), l'aiguillage sans option, les
-  trois seuls appels de `startTown`, et `startTown` égal à celui de `d129433` à deux changements près (l'option, la ligne du panneau fermé),
-  construits depuis `git show` (oracle indépendant) ; le comportement de H, l'écran de chargement et `startArena` inchangés.
-- `tools/title-proof.mjs` : la page de base reçoit `BASE_KEYS` avant sa capture (défaut `h` : son panneau fermé par H, la vue qu'ouvre
-  Explore ; `BASE_KEYS=` : le panneau ouvert, le contrôle négatif) ; Explore est capturé une seconde fois après H (`-h.png`), et l'adresse
-  propre de la branche (`?time=midday`, sans écran titre) aussi (`branch-*.png`), toutes deux contre la base sans touche ; l'état du panneau est
-  vérifié sur chaque page (fermé + mini-carte à 14 px, ou ouvert + 300 px ; H ouvre, H referme). `AGENTS.md` : la commande.
-
-### P2 « En premier » — [OK]
-- Le prix en pièces vient du cœur du jeu : `ActionDef.coins` (facultatif, 0 par défaut) pour les six actions qui prennent des pièces : `buy`
-  (`priceOf` : pénurie et faveur de Mara), `temper` (10), `repair` (`repairCost` : 12, ou 6 avec Orla), `buyInfo` (10), `heal` (8, 0 quand le
-  Temple paie), `payWatch` (15) ; `ActionOption.coins` le porte (`actions()`). Les `apply` ne changent pas : aucune empreinte d'état ne bouge.
-- `costTag` (`src/ui/townUi.ts`) : une étiquette par monnaie, « N coins » quand l'action en dépense, « 1 slot » quand elle prend le créneau,
-  les deux côte à côte (`.cost+.cost`), « free » seulement si rien n'est dépensé. Un gain (« +6 coins » de Mara) n'est pas un coût.
-- `tests/cost-tags.test.mjs` (3 tests) : chaque option de chaque état nommé, dans les trois lieux, riche (et pauvre, prix tous neutres ou tous
-  changés), avec la pénurie et la faveur, le Temple, la blessure, la forge brûlée, Orla amie, une à une ou ensemble : `coins` égale la règle
-  écrite dans le test **et** ce que l'`apply` de l'action retire vraiment de la bourse (deux oracles qui ne passent pas par `coins()`) ; le
-  balayage vérifie qu'il atteint chaque action payante, les deux prix du soin et des soufflets et les prix changés de Mara ; les étiquettes sur
-  cinq cas ; les marchandises de Mara au premier matin.
-
-### P3 « En premier » — [OK]
-- Mesure (`main` figé, 1920 × 1080) : les boutons sont en `border-box`, 54 px ; le sous-libellé finit à 56,2 px du haut du bouton et le
-  débordement est coupé au bord intérieur (52,5 px) : sa moitié basse (« hold », « 1 AP », « +1 AP », « breaks guard ») disparaissait. Ce n'est
-  pas la largeur : aucun texte ne déborde de côté.
-- `src/arena/ArenaHud.ts` : `.ah-b` passe de 54 à **60 px** de haut (la ligne finit à 56,3 px, bord à 58,5) ; rien d'autre. Les règles du
-  téléphone (`max-width: 900px` : 48 px, sous-libellés masqués ; `max-height: 480px` : 42 px) priment et ne changent pas. À 932 × 430 (téléphone
-  large en paysage), la ligne du sous-libellé tombe déjà entièrement sous le bord : rien de rogné à l'écran, rien changé.
-
-### Preuves
-- Serveurs : `main` figé (`21b8c8b`, copie hors dépôt, :5197) et la branche figée (la même copie avec les six fichiers de `src/` de la branche,
-  égaux à l'octet près des fins de ligne, :5198), entrées locales `ui-premier-main` / `ui-premier-branch` ; le port 5186 jamais touché.
-- **La ville à 0 px contre `main` figé** (`tools/detshots.mjs`, 120 pas, graine 1842, 1920 × 1080, seuil 0) : témoin de répétition (deux
-  chargements de `main`) **0 px les dix** d'abord ; puis la branche : nuit A, B, C, D avec personnages, B statique, midi B et D (`clean=1`),
-  B avec le panneau DEV et le HUD (sans `clean`), le mode jouable (`play=1&state=day1-morning` : « Here » et ses étiquettes) : **0 px les
-  neuf**. Seul le dialogue de Mara change : 1 178 px, tous dans [1124, 501, 1187, 610], la colonne des étiquettes (« FREE » → « 8 COINS »,
-  « 10 COINS », « 30 COINS » ; « 1 SLOT » inchangé). En 812 × 375 : le mode jouable 0 px, Mara 1 178 px dans [570, 155, 633, 264].
-- **P1, le bouton** (`tools/title-proof.mjs`, navigateur non piloté, 1920 × 1080 et 812 × 375) : 20 contrôles sur 20 (boutons sans et avec
-  sauvegarde, rien de généré derrière l'écran titre, panneau fermé + mini-carte à 14 px après Explore, H l'ouvre (300 px) puis le referme,
-  panneau ouvert sur l'adresse `?time=midday` de la branche et sur celle de `main`, fermé sur `main` après H). Aux deux tailles : Explore =
-  `main` `?time=midday` après H **0 px** ; Explore après H = `main` sans touche **0 px** ; la branche `?time=midday` = `main` **0 px** ;
-  contrôle négatif, Explore contre `main` sans touche : 16,5 % des pixels en 1080p (dans [1450, 0, 1919, 1079], le panneau), 44,3 % au
-  téléphone. Vu aussi dans le panneau navigateur de l'application (non piloté) : Explore → panneau fermé, mini-carte à 14 px ; H → ouvert.
-- **P3, l'arène** (`tools/arena-scene-shots.mjs`, `HOLD=1`, seuil 0) : un moment de chauffe (écran de chargement retiré, transitions et
-  animations CSS coupées, fiche de match retirée : le même JS des deux côtés), puis dix moments (`calm`, `charging`, `window` en aide complète,
-  `combo`, `guardbreak`, `impact`, `technique`, `strike`, `heavyRen`, `ko`), en 1920 × 1080 et 812 × 375, pour `?scene=arena` (FR) et pour le HUD
-  du mode jouable (`play=1&state=day2-afternoon`, `TEXTS_EN`) :
-  - témoin de répétition (deux chargements de `main`) : **0 px les quarante** ;
-  - **812 × 375, FR et EN : 0 px les vingt** (la barre du téléphone garde 42 px et masque ses sous-libellés) ;
-  - 1920 × 1080, FR et EN : la barre de la branche va de y 1008 à 1068 (1014 sur `main`) ; huit moments sur dix diffèrent **dans son seul
-    rectangle** [493, 1008, 1426, 1066] (32 000 à 44 000 px) ; `window` et `combo` ont en plus 3 317 à 3 411 px hors de lui (jusqu'à 47
-    niveaux), tous dans x 596-716 et y ≥ 986 : à 22 px au plus du bouton « Esquive » allumé (616,5-696,5), son halo (`box-shadow` de 16 px de
-    flou) qui monte de 6 px avec lui. **Tout le reste à 0 px.**
-  - **[KO → compris]** le premier rectangle permis (la barre + 16 px) laissait dehors 538 px de ce halo : un flou de 16 px est une gaussienne
-    d'écart type 8 px, dont la traîne passe 16 px (ici 22 px à un niveau près). Le contrôle a été refait sur les pixels hors de la barre, pas le
-    rectangle élargi pour faire passer.
-  - `tools/arena-scene-check.mjs` sur la branche figée : **PASS** (empreinte égale au prototype, 42 rendus sans erreur, télégraphe 6,94:1).
-- **Tests** : `npm test` **156 / 156** (153 + les trois de `tests/cost-tags.test.mjs`). **Treize fautes injectées une à une, toutes
-  attrapées**, fichiers rendus à l'octet (SHA-256) : P2 — l'étiquette sans les pièces (l'ancien « FREE »), « free » à côté d'un prix, le prix
-  catalogue (sans pénurie ni faveur), le soin toujours payant, les soufflets à 12 avec Orla, l'option sans ses pièces, les 15 pièces du guet
-  oubliées, les 10 de l'informateur oubliées ; P1 — Explore panneau ouvert, toutes les adresses panneau fermé, l'option lue nulle part, la
-  mini-carte laissée à la place du panneau, l'aiguillage des outils panneau fermé.
-- **[KO → contourné] [?]** un script de mesure hors test qui chargeait `src/` par `tests/load.mjs` ne rendait pas la main (hypothèse non
-  vérifiée : le chargeur garde son serveur jusqu'au crochet `after()` de `node:test`) : arrêté par `TaskStop`, et le balayage simplement réduit (pauvre seulement avec les prix
-  tous neutres ou tous changés : 3,9 s → 1,1 s).
-- **Avant / après** (`screenshots/calibration/ui2-premier/`) : `p1-explore-1920x1080.png`, `p1-explore-812x375.png` (le panneau fermé) ;
-  `p2-mara-1920x1080.png` (recadrage), `p2-mara-812x375.png`, `p2-anwen-paid-1920x1080.png` (le soin payant, « 8 COINS » et « 1 SLOT » côte à
-  côte ; image de revue : le drapeau du Temple retiré dans la page) ; `p3-bar-1920x1080-fr.png`, `p3-bar-1920x1080-en.png` (la barre ×2).
-
-### Validation
-- typecheck, `npm test` **156 / 156**, build, `art:validate` (18 manifestes, 30 sources, 0 erreur).
-
-### Restes [?]
-- Le reste de l'étape 2 attend le système de design (2.3) : S1 à S4, L2, L3, L4, puis P4, P5, P6 écran par écran. La barre de l'arène garde ses
-  10 à 12 px de texte : S4 (16 px au moins sur ordinateur) la redessinera ; P3 n'a fait que rendre lisible ce qui était coupé.
-- Le libellé des achats répète le prix (« Buy a whetstone (8 coins: … ») à côté de l'étiquette : à alléger avec le système de design.
-- Au téléphone en paysage, la barre de l'arène masque les sous-libellés (`max-width: 900px`), et un téléphone large (932 × 430) les coupe
-  entièrement sous son bord de 42 px : rien de rogné à l'écran, mais rien de lisible non plus ; à reprendre avec L3.
-- `play-shots` et `detshots` ne capturent pas le parvis par `__app` (c'est une `ArenaApp`) : les images du parvis restent des images de revue.
-
-### Pensée
-- Un libellé « rogné » se mesure avant d'être corrigé : boîte (`border-box`), ligne du texte et bord de coupe. Ici la coupe était verticale
-  (une ligne de 15,4 px dans 11 px de place), pas la largeur ; la hauteur seule a suffi, et les règles du téléphone, qui priment, n'ont pas bougé.
-- Une preuve « la différence tient dans le rectangle » compte ce que l'élément dessine hors de sa boîte (halo, ombre) : un flou CSS de r px
-  porte plus loin que r (ici 22 px pour 16). On vérifie les pixels du dehors un par un (où, combien, de combien), on n'élargit pas le rectangle.
-- Ce que l'interface affiche d'une règle du jeu (un prix) se lit dans le cœur, et se vérifie contre ce que l'action fait vraiment (son
-  `apply`), pas contre son libellé.
-- La portée la plus étroite (Passe D9) s'applique encore : le panneau fermé par une option du seul bouton, et l'aiguillage des outils intact,
-  prouvé par la capture de l'adresse directe de la branche.
-
-## Passe UI3 — Le système de design de l'interface (étape 2.3 de la feuille de route) : jetons, cadres en neuf tranches, polices embarquées, composants, téléphone (2026-10-25)
-
-### Demande
-- Séance locale lancée par la séance parente : construire le système de design décidé sur la fiche de la Passe UI1 (S1 à S4, L2, L3, L4, direction C
-  « Héraldique pixel »), l'appliquer aux écrans de `src/ui`, `src/world` et au HUD de l'arène ; P4 à P6 restent des tâches à part, sauf ce que le
-  système impose en passant ; la ville sans le mode jouable et toute adresse `clean=1` / `hud=0` à 0 px contre `main` figé. L'atelier « système de
-  combat » travaille en parallèle sans branche ni fichier suivi : cette séance tient la seule branche.
-- Branche `ui-design-system` depuis `main` (`ae52d37`), seule branche de travail. Serveurs : `dev-ui` (le dépôt, :5187) et `main` figé (`ae52d37`,
-  copie hors dépôt, :5188, entrée locale `ui-ds-main`) ; le port 5186 jamais touché.
-
-### Les polices (S1) — choix de l'opérateur, mot pour mot
-- Aucune police libre n'était sur la machine. Question posée (téléchargement et couple), réponse de l'opérateur : « Pixelify + Alegreya
-  (Recommandé) ». Téléchargées le 25/10 depuis Google Fonts (`fonts.gstatic.com`, sous-ensemble latin, accents compris) avec leurs licences
-  (`github.com/google/fonts`, SIL OFL 1.1) : Pixelify Sans (titres, noms, nombres, touches ; 12 016 octets, police variable) ; Alegreya Sans 400 et
-  700 (texte ; 23 708 et 23 976 octets). Source, licence, droits d'auteur et SHA-256 de chaque fichier : `src/ui/fonts/FONTS.md` ; `.gitattributes` :
-  `*.woff2` binaire, les `OFL-*.txt` gardés à l'octet.
-- **[?]** Pixelify Sans est dessinée sur un dixième de son em (mesuré : un fût de 20 px à 200 px) : la gamme garde 20, 30 et 40 px (pixel de 2, 3,
-  4 px). Ses contours tombent à un demi-pixel de la grille à 20 px : les bords sont adoucis par l'anticrénelage du navigateur (mesuré au canevas :
-  82 % des pixels de bord partiels à 20 px), aucune taille ne les rend nets.
-
-### Fait — [OK]
-- **`src/ui/design/tokens.ts`** : toutes les couleurs de l'interface, en jetons (S3 : bleu royal, ivoire, or, ambre de l'action ; provisoire,
-  « Cela peut changer par la suite » : un changement de palette est un changement de ce fichier), en **quatre tons** (L2 : la nuit, qui est aussi le
-  soir, le matin, midi, la fin de journée) ; la gamme des tailles (S4 : 16 px au moins sur ordinateur, 14 au téléphone, `PHONE_QUERY` =
-  `(max-width:700px),(max-height:480px)`) ; le texel des cadres (2 px CSS).
-- **`src/ui/design/frames.ts`** (S2) : les cadres en pixel art peints par le code, un texel par pixel, en neuf tranches (`border-image`, `stretch`,
-  `image-rendering: pixelated`) : panneau (bleu, bordure d'or, un clou d'or à chaque coin), parchemin (dialogues), boutons (repos, survol / focus en
-  or, action en ambre, indisponible), étiquettes de coût (ambre ; bleu clair pour « free »), touches (ivoire, ombrées), jauge. Fonction pure : la
-  même en Node (tests) et dans la page.
-- **`src/ui/design/system.ts`** : les `@font-face` (familles `"CdT Pixel"` et `"CdT Text"`, `unicode-range` du sous-ensemble latin, `font-display:
-  block`), le ton de la page en propriétés CSS (`installDesign(time)`), les cadres en images PNG du ton, `fontsReady()`. Le système vit dans son propre
-  morceau du bundle (`system-*.js`) : le morceau principal de la ville ne le contient pas (vérifié dans `dist/`).
-- **Les écrans** : `style.ts` (cartes, titres en police pixel, boutons, étiquettes, touches, parchemin, tableaux), `townUi.ts` (état, barre, « Here »,
-  invite, nouvelles, dialogue sur parchemin), `board.ts`, `title.ts` (ton de la nuit), `playArena.ts` (fiche de match, victoire), `playForecourt.ts`,
-  `playLanterns.ts` ; chaque page pose le ton de son créneau (`lookOf`, l'arène par `arenaQuery`, Lantern Row la nuit) et attend les polices (et les
-  portraits) avant `__ready`. Les cartes s'ouvrent en haut (`focus({ preventScroll })` : le journal se lit depuis son titre).
-- **Le téléphone (L3)** : une bande en haut (l'état), des onglets en bas (« Here » d'abord, puis carte, journal, tournoi, menu ; touches masquées),
-  la liste de « Here » en feuille au-dessus des onglets, chaque carte (dialogue compris) en feuille au bas de l'écran ; en paysage, l'état en haut à
-  gauche, « Here » en haut à droite, les onglets en bas.
-- **Les portraits (L4)** : `portraits.ts` peint le visage de la feuille cuite (image de face au repos, 32 × 32 texels depuis la rangée du haut,
-  centrés sur la tête ; SHA-256 contrôlé contre le paquet de provenance, comme la distribution) pour Mara, Bram, Hale et Wynn (la même feuille : la
-  variante de Wynn n'est pas peinte), l'inconnu encapuchonné, Tam, les citadins et le joueur ; le portrait du générateur reste pour les rivaux, les
-  officiels, l'aubergiste et les combattants de l'arène (aucune feuille cuite ne les porte). `BakedCast.castSource(id)` donne l'export d'une feuille
-  de production.
-- **Le HUD de l'arène** (`ArenaHud.ts`) : le même système, le ton de l'état du jour de l'arène (`parseTime`) ; cartes des combattants en panneaux,
-  noms et nombres en police pixel, jauges dans la palette (le challenger en bleu clair, l'adversaire en ambre : plus de rouge), barre d'actions en
-  boutons du système (touche à côté du nom, sous-libellé dessous), diamants de coût dessinés en CSS (le « ◆ » n'est pas dans le sous-ensemble),
-  alerte, fenêtre d'esquive, chiffres flottants, K.O. et pause. `ArenaApp.init` attend les polices.
-  - **Le HUD masqué** (`hud=0`, H) garde ses écrans de K.O. et de pause d'avant (règles `#arena-hud.off`) : toute adresse `hud=0` reste à 0 px.
-  - **La barre d'actions** fait 76 px de haut à 1920 × 1080 (60 px décidés en P3 : le texte à 16-18 px demande la place) ; les sous-libellés restent
-    entiers (bas à 66,2 px pour un bord intérieur à 68,2), aucun nom coupé. **[KO → corrigé]** à pleine largeur elle mesurait 1 411 px et sortait
-    d'une fenêtre de 1 280 px (x = -65) : de 1 241 à 1 500 px, noms courts des techniques et libellés à 16 px (1 196 px de large) ; jusqu'à 1 240 px,
-    la touche sur le nom et les sous-libellés masqués (comme le téléphone auparavant sous 900 px).
-  - **[KO → corrigé]** la fenêtre d'esquive, montée avec la barre (116 px du bas), passait sur le sol devant le télégraphe, là où
-    `arena-scene-check` lit son contraste (2,19:1 lu au lieu de 6,94:1 : la couleur relevée était l'ambre de la barre). Elle est revenue juste
-    au-dessus de la barre d'actions (94 px du bas, lueur de 6 px), son libellé à sa gauche.
-- `FloorUI.ts` n'a pas changé : ses anneaux (bleu, ambre) et son télégraphe (ambre, ivoire) sont déjà dans la palette.
-
-### Les outils
-- **`tools/ui-text.mjs`** (nouveau) : dans la page, chaque nœud de texte visible (élément et ancêtres affichés, visibles, non transparents ; le plus
-  haut élément au centre du texte est le sien, sinon il est couvert) : taille et police calculées, chaque caractère contre le sous-ensemble des
-  polices, texte coupé par la fenêtre ou par un ancêtre `overflow: hidden` (une boîte qui défile n'est pas une coupe). Échoue sous 16 px (ordinateur)
-  ou 14 px (téléphone), sur une autre police que les deux embarquées, sur un caractère hors sous-ensemble, sur un texte coupé, sur des polices non
-  chargées.
-  - **[KO → compris]** premier passage, 80 pages sur 88 : l'écran de chargement, sous l'écran titre, était compté (d'où le test de recouvrement).
-    Deuxième : les textes d'une carte qui défile (journal, tableau) comptés comme coupés par la fenêtre (corrigé dans l'outil) ; un vrai défaut :
-    la légende de Lantern Row sur un téléphone en portrait (`nowrap`, coupée, et posée sur les onglets) : elle passe à la ligne au-dessus des onglets.
-
-### Preuves
-- **La ville sans le mode jouable à 0 px** (`tools/detshots.mjs`, 120 pas, graine 1842, 1920 × 1080, seuil 0) : témoin de répétition (deux
-  chargements de `main` figé) **0 px les neuf** ; la branche : nuit A, B, C, D, B statique, midi B et D (`clean=1`), B avec le panneau DEV et le HUD,
-  de nuit et à midi : **0 px les neuf**. Les fichiers changés depuis (`src/ui`, `ArenaHud.ts`) ne sont pas chargés par la ville.
-- **L'écran titre** (`tools/title-proof.mjs`, navigateur non piloté, 1920 × 1080 et 812 × 375) : 10 contrôles sur 10 aux deux tailles ; « Explore the
-  district » = `main` `?time=midday` après H, Explore après H = `main`, la branche `?time=midday` = `main` : **0 px les six**.
-- **L'arène, `hud=0` et `clean=1`, à 0 px** (`tools/arena-scene-shots.mjs`, `HOLD=1`, moment de chauffe, seuil 0) : dix moments (`calm`, `charging`,
-  `window` en aide complète, `combo`, `guardbreak`, `impact`, `technique`, `strike`, `heavyRen`, `ko`), en 1920 × 1080 et 812 × 375 : témoin
-  (`hud=0`, 1920) 0 px les dix ; la branche **0 px les quarante**, K.O. compris (refait après la dernière retouche du HUD : 0 px).
-- **`tools/arena-scene-check.mjs`** sur la branche : **PASS** la nuit et à midi (`time=midday`) : empreinte de la simulation égale au
-  prototype, 42 rendus sans erreur ; contraste du télégraphe **6,94:1** la nuit (deutéranopie 7,15) et **4,31:1** à midi (4,44), **égal à `main`
-  figé** mesuré de même (et à la Passe AD1). La zone « devant » du télégraphe reçoit encore la traîne de la lueur de la fenêtre d'esquive sur ses
-  premières rangées (moyenne [34, 37, 48] contre [21, 28, 50] sur `main`, la nuit) ; le contraste retenu est celui du fond, inchangé.
-- **`tools/play-flow.mjs`** : victoire contre Vessa (1842, jour 2) et défaite contre Marek (7719, jour 3), l'état final rejoué en Node avec la même
-  empreinte (`0025acce7a403773`, `397959404c18f714`), 0 erreur de page.
-- **La taille du texte mesurée dans la page** (`tools/ui-text.mjs`, 22 écrans × 1920 × 1080, 1280 × 720, 375 × 812, 812 × 375 : titre et saisie du
-  nom, ville au matin, le soir, à la fin de journée, « Here » au téléphone, nouvelles, dialogue de Mara, journal, tableau, carte, menu, parvis,
-  dialogue d'Orla, Lantern Row, fiche de match, duel dans la fenêtre d'esquive, fin de la tranche, arène `?scene=arena` dans la fenêtre, à l'impact,
-  au K.O., en pause) : **88 pages sur 88**, 1 522 textes ; le plus petit texte : **16 px sur ordinateur, 14 px au téléphone** ; polices chargées,
-  aucune autre police, aucun caractère hors sous-ensemble, aucun texte coupé. Après la dernière retouche du HUD, les pages de l'arène, du duel et du
-  parvis repassées : **28 pages sur 28**. **Contrôle négatif** (un texte de 12 px en Segoe UI avec « ✓ », un autre sorti de l'écran) : les quatre
-  défauts trouvés, 0 page sur 2.
-- **Tests** : `tests/ui-design.test.mjs` (6) : les polices contre la table de `FONTS.md` (taille, SHA-256, WOFF2, OFL, aucun fichier sans fiche) ;
-  aucune police système dans les écrans (sauf les écrans du HUD masqué) ; quatre tons aux mêmes jetons, teintes dans la palette (bleus et indigos,
-  ors et ambres, ou presque neutres ; ni vert ni rouge), contrastes WCAG des paires de texte (7:1 pour la lecture, 4,5:1 sinon ; formule écrite dans
-  le test) ; la gamme des tailles et aucune taille littérale sous 16 px dans le CSS des écrans ; chaque cadre en neuf tranches (couleurs du ton,
-  alpha binaire et symétrique, bords constants sur leur longueur, centre uni, contour d'encre) ; le recadrage du visage. **Huit fautes injectées une à
-  une, toutes attrapées**, fichiers rendus à l'octet (SHA-256) : un jeton vert, un texte secondaire illisible, un bord de cadre non uniforme, un
-  bouton entaillé à un seul coin, une police à la mauvaise taille dans `FONTS.md`, un texte de 12 px, une police système, le visage recadré une rangée
-  trop bas. **[KO → compris]** une première faute (la pointe d'un clou retirée) ne changeait rien (la pointe tombe sur le contour, déjà d'encre) :
-  remplacée, le test n'a pas été touché.
-- **Validation** : typecheck, `npm test` **162 / 162**, build, `art:validate` (18 manifestes, 30 sources, 0 erreur).
-- **Avant / après** (`screenshots/calibration/ui3-design/`, `main` figé à gauche) : `town-mara-morning-1920x1080.png`, `town-night-1920x1080.png`,
-  `matchsheet-1920x1080.png`, `mara-phone-375x812.png`, `town-morning-phone-375x812.png`, `forecourt-morning-812x375.png`,
-  `arena-window-night-1920x1080.png`, `arena-window-midday-1280x720.png`, `arena-window-midday-812x375.png`, `title-1920x1080.png`.
-
-### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
-- Avant cette passe, les passes gardées faisaient 59 904 octets ; avec elle, plus de 76 000. S3b, F3, D9, FR1 et AD1, closes (fusionnées), partent
-  d'un seul bloc vers `journal/23-passes-S3b-AD1.md` (25 051 octets, SHA-256 du bloc `71b28f3af1e03ec5…`) ; restent 34 853 octets avant cette passe.
-  Preuve **8 / 8** (script hors dépôt, contre la copie de `JOURNAL.md` d'avant le déplacement : corps de l'archive égal au bloc ; S3b, F3, D9, FR1,
-  AD1 contigus, suivis d'AA1 ; plus dans `JOURNAL.md` ; chacune dans un seul fichier de `journal/` ; `JOURNAL.md` inchangé à partir d'AA1 ; seules la
-  phrase d'en-tête et une ligne d'index changent ; en-tête comme `journal/22` ; CRLF seuls). Contrôle négatif : un bit changé dans une copie de
-  l'archive → 7 / 8. **[KO → corrigé]** un premier déplacement (S3b à FR1) laissait 62 Ko avec cette passe : refait depuis la copie d'avant, AD1
-  compris ; le sixième contrôle cherchait encore l'ancien nom de fichier : le contrôle a été corrigé, pas les fichiers.
-
-### Restes [?]
-- **Hors portée, inchangés** : l'écran de chargement (créé par `main.ts` pour toutes les pages, police système), le panneau DEV et le HUD de la ville
-  libre ; ils ne sont pas dans le mode jouable, sauf l'écran de chargement, visible pendant la génération.
-- P4 (le dialogue en bas sur ordinateur, le locuteur visible), P5 (« Here » réduit aux actions du lieu), P6 (la fiche de match, la victoire, le
-  journal, le tableau) : tâches à part. Le libellé des achats répète toujours le prix à côté de l'étiquette.
-- Au téléphone, l'invite « E Talk to … » (inutile sans clavier) passe sur la feuille de « Here » quand elle est ouverte ; les tactiles restent hors
-  tranche (E30).
-- La barre d'actions de l'arène est plus haute que les 60 px de P3 (76 px) ; sous 1 241 px de large, ses sous-libellés sont masqués.
-- Les bustes des personnages principaux (L4, plus tard) ; le visage de Wynn sans sa variante ; le joueur montre le visage de `hero-x2-v4` dans les
-  dialogues alors que l'arène montre Ren généré (AA1-1 l'attend).
-- La palette reste provisoire (note de l'opérateur) : à juger en jeu par l'opérateur, de jour et de nuit.
-- L'artefact publié de l'arène (Passe P2) montre l'ancien HUD.
-
-### Pensée
-- Un « 0 px » se mesure sur ce qu'une adresse montre vraiment : sous `hud=0`, les écrans de K.O. et de pause restent visibles ; ils gardent leur
-  ancien aspect derrière la classe qui masque le HUD, prouvé sur le moment du K.O.
-- Un outil qui mesure le texte d'une page se trompe de deux façons opposées : il compte ce qui est caché sous un autre élément, ou il prend pour une
-  coupe ce qui défile. Son contrôle négatif porte les quatre défauts qu'il doit trouver.
-- Une mesure qui lit des pixels (le contraste du télégraphe) lit aussi ce que l'interface pose dessus : une barre déplacée a fait tomber le chiffre
-  sans changer le télégraphe. La règle de l'outil (le sol devant le télégraphe) devient une règle de mise en page.
-- Une barre qui grandit avec la taille du texte se mesure à chaque largeur de fenêtre, pas seulement en 1080p : 1 411 px ne tiennent pas dans 1 280.
-- Une faute injectée qui ne change rien n'est pas une faute : elle se vérifie avant de conclure qu'un test est faible.
 
 ## Passe CB1 — L'atelier « système de combat » (étape 0 de la feuille de route, E1 / E16) : la spécification du « tour par tour dynamique », mené par l'opérateur (2026-10-25)
 
@@ -540,6 +287,183 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un oracle de test vient de la règle écrite (« impact = départ + préparation + élan »), une empreinte de `main` figé épingle le chemin par défaut,
   et une faute qui ne change rien d'observable n'est pas une faute (la jauge « remplie pendant le break » plafonne déjà à 100 : écartée).
 
+## Passe C2 — L'arène montre le duel du « tour par tour dynamique » (lot C2 de `briefs/combat-system.md`), derrière son paramètre ; l'interface UI3 vérifiée sur tout le parcours de l'arène ; l'essai de l'opérateur préparé (2026-10-25)
+
+### Demande
+- Séance locale lancée par la séance parente : le lot C2 de la spécification (§ 15 : « les jauges et l'alerte légère au HUD ; les clips
+  d'aujourd'hui branchés sur les nouveaux moments ; le paramètre de comparaison avec l'ancien combat »), derrière le paramètre de la décision
+  CB-10 (« Derrière un paramètre, défaut après mon essai ») ; le HUD du nouveau duel bâti avec le système UI3 ; la demande de l'opérateur, mot
+  pour mot : « Profitions aussi pour nous assurer que le nouveau UI/HUD est bien integre » (le parvis, le duel, la pause, le K.O., la victoire
+  et la défaite, le retour en ville ; ordinateur et téléphone ; jour et nuit) ; l'essai de l'opérateur préparé sans l'accomplir (adresse, guide,
+  fiche). Le défaut ne change pas.
+- Branche `combat-c2` depuis `main` (`a954902`), seule branche de travail (`git fetch --prune`, `git branch -a`). `.gitignore` et `.claude/`,
+  modifiés hors de cette tâche, jamais commités. Serveurs : `dev-strict` (:5186) et `main` figé (`a954902`, copie hors dépôt, :5199, entrée
+  locale `c2-frozen-main`), et le build de l'essai (:5200, `c2-trial`), par `preview_start` / `preview_stop`.
+- Nom : « Passe C2 » est le lot C2 du combat ; la Passe C2 du 19/10 (la foule, « Cinq par défaut ») est dans `journal/11-passes-H7-D2.md`.
+
+### Fait — [OK] le duel dynamique dans l'arène, derrière son paramètre
+- **Le paramètre** (CB-10) : `?scene=arena&combat=dynamic` ; dans le mode jouable, `&combat=dynamic` sur une partie neuve (ou un état nommé)
+  pose `flags.combat = 'dynamic'` (`withRules`, `src/ui/play.ts`), gardé dans la sauvegarde : ses duels se jouent dans `DynamicSim` avec son HUD,
+  ses matchs hors écran dans la course de ces règles (Passe C1). Sans lui, l'arène et le tournoi d'aujourd'hui. `arenaRules`
+  (`src/arena/dynamicView.ts`) : un duel du mode jouable suit le drapeau de sa partie, jamais l'adresse.
+- **`src/arena/dynamicView.ts`** (nouveau, pur, testé en Node) : le choix des règles ; les touches (1 légère, 2 puissante, 3-6 les quatre
+  emplacements dans leur ordre, A esquive, B garde ; la manette de même) ; **les réglages de l'essai** dans l'adresse (`&dyn=clé:valeur,...` : PA
+  au plus, au départ, regain ; taille et vidange de la jauge ; durée et dégâts du break ; garde ; niveau de l'adversaire ; PV), chaque valeur
+  bornée, une clé inconnue ou une valeur hors plage refusée avec un message ; les clips d'aujourd'hui sur les nouveaux moments (offensive →
+  `skill`, défensive → la garde `block`, soutien → la lame levée `victory` ; la préparation tient la première image, § 14 ; sans préparation,
+  `clipFrame` d'aujourd'hui, image pour image) ; **le modèle du HUD** (`dynHudModel`) lu des requêtes des règles.
+- **`src/arena/DynPresets.ts`** : 21 moments scriptés du nouveau duel (calme, légère, préparation de la puissante et d'Estocade, compétence,
+  Rempart, Ferveur, séquence adverse, attaque refusée en défense, fenêtre d'esquive, garde, puissante gardée, esquive, impact, repoussé, break
+  de l'adversaire, break du joueur, K.O. de chaque côté), pour les captures, la mesure du texte et le guide.
+- **`src/arena/ArenaApp.ts`** : la simulation du duel est `CombatSim` (aujourd'hui) ou `DynamicSim` selon `arenaRules` ; la présentation lit
+  l'interface commune (`DuelSim`). Sous les nouvelles règles seulement : les touches des emplacements, les clips et images de `dynamicView`,
+  l'élan d'une compétence qui attend la fin de sa préparation, et trois moments : le break (éclair, secousse, braises, acclamation), le repoussé
+  (recul), l'effet d'une compétence (lueur). Le chemin d'aujourd'hui garde son code (prouvé ci-dessous).
+- **Le mode jouable** (`playArena.ts`) : une partie « dynamique » joue son duel dans `DynamicSim` (`dynSheetData`), avec le HUD anglais du
+  nouveau duel et **l'aide discrète pour tous** (CB-7) : le repérage de l'adversaire donne un rapport à l'écran de préparation
+  (`dynSheetView`, `src/combat/match.ts` : son style, ses pauses par niveau, son coup puissant) au lieu d'allumer le sol ; la ligne des touches
+  dit la priorité de l'adversaire. Rempart et Ferveur ont leurs noms anglais (Rampart, Fervour). `dyn=` passe de la ville à l'arène (`CARRY`).
+
+### Le HUD du nouveau duel — [OK] (`src/arena/DynamicHud.ts`)
+- Bâti sur les règles du HUD de l'arène (`ArenaHud.ts`, système de design de la Passe UI3, exportées pour lui) et sur ses jetons : le ton du
+  jour de l'arène, les cadres en neuf tranches, Pixelify pour les noms et nombres, Alegreya pour les mots, rien sous 16 px (ordinateur) ni 14 px
+  (téléphone). Ce qu'il lit (CB-6 « Comme recommandé ») vient de `dynHudModel` :
+  - sous les PV de chaque carte, la jauge de résistance (« Résistance » pour Ren, « Break » pour l'adversaire, or rayé) ; brisée, elle reste
+    pleine en ambre qui palpite, son libellé devient « Brisé · 6 s » et le temps écoulé de l'étourdissement la grise ;
+  - les PA en losanges (cinq, un allumé au départ) ; les quatre emplacements sur la barre (touches 3 à 6), chacun avec son coût en losanges et
+    sa famille (« offensive », « défense », « soutien » ; la famille masquée jusqu'à 1 500 px de large pour que la barre tienne) ; aucune recharge ;
+  - la priorité de l'adversaire (CB-4) : pendant toute sa séquence, la légère, la puissante et les compétences s'assombrissent, la garde et
+    l'esquive restent ; un signe « Marek attaque · Garde ou esquive » (ou « Marek brisé — frappez ! », « Résistance brisée ») en haut au
+    centre, au-dessus de la barre sur un téléphone ou une fenêtre de moins de 1 241 px ; une attaque tentée fait trembler son bouton et le signe ;
+  - la préparation : le bouton de l'action s'allume et un trait ambré se remplit à son pied ; « Préparation » sous la carte de Ren ;
+  - Rempart et Ferveur : une étiquette avec le temps restant sous la carte, le bouton bordé de bleu ; le repoussé : « Repoussé · 4 PA rendus » ;
+    le break : « Brisé ! » au-dessus du combattant ;
+  - l'aide (CB-7) : le signe de la priorité dans l'aide discrète (le défaut) et complète, pas avec `assist=off` ; l'aide complète ajoute
+    l'alerte, la barre de la fenêtre d'esquive et le télégraphe d'aujourd'hui. L'alerte légère « surtout pour les compétences » attend les
+    compétences des adversaires (C3).
+- **Textes** : français pour `?scene=arena`, anglais pour le mode jouable ; chaque caractère dans le sous-ensemble des polices (test).
+
+### L'interface UI3 sur tout le parcours de l'arène — la demande de l'opérateur
+- **Mesuré dans la page** (`tools/ui-text.mjs`, 31 écrans × 1920 × 1080, 1280 × 720, 812 × 375, 375 × 812 : l'arène la nuit et à midi dans la
+  fenêtre, en séquence, au K.O., en pause, sous `hud=0` au K.O. et en pause ; la fiche de match, le duel, le K.O., la victoire et la défaite du
+  mode jouable ; le parvis le matin et à la fin de journée ; la ville au retour ; sous les deux règles, et pour le nouveau duel le break de
+  chaque côté, Rempart, le repoussé) : premier passage **120 pages sur 124** ; après les corrections ci-dessous, les 84 pages qu'elles touchent
+  remesurées : **84 sur 84**. Plus petit texte : 16 px sur ordinateur, 14 px au téléphone ; polices embarquées seules ; aucun caractère hors
+  sous-ensemble ; aucun texte coupé.
+- **Corrigé dans le système** (rien d'une décision de l'opérateur) :
+  - **les écrans de K.O. et de pause sous `hud=0`** (ou H) gardaient l'ancien aspect (Segoe UI, Passe UI3) : ils prennent celui du système, HUD
+    affiché ou masqué ;
+  - **la barre d'actions revient à 60 px** (P3) avec ses textes du système (S4) : la touche à côté des deux lignes au lieu d'au-dessus du
+    sous-libellé (76,8 px depuis la Passe UI3). Mesurée de 1 241 à 1 920 px de large, sous les deux règles : 60 px, sous-libellés entiers (3,3
+    à 4,4 px sous leur bord), rien hors de l'écran. **[KO → corrigé]** une première version faisait bien 60 px, mais par sa hauteur fixe : la
+    hauteur de ligne posée avant `font:inherit` était effacée par lui, et le sous-libellé passait le bord de 0,1 px à 1 920 px ;
+  - **[KO → corrigé]** la barre du nouveau duel (huit boutons, coût et famille) sortait de l'écran de 23 px à 1 280 px et de 42 px à 1 241 : la
+    famille se masque jusqu'à 1 500 px (le coût reste) ;
+  - **[KO → corrigé]** téléphone tenu droit avec le HUD masqué : la couche « Tournez l'appareil », à opacité 0, restait au-dessus du K.O. et de la
+    pause (la mesure les comptait couverts, 0 texte) et prenait les touchers : elle sort du rendu quand le HUD est masqué ;
+  - **[KO → corrigé]** le signe de la priorité passait sous la barre de la fenêtre d'esquive (téléphone) puis sur la carte de Ren (667 px de
+    large) : au-dessus de la barre sur les fenêtres de moins de 1 241 px et les téléphones, effacé quand la barre de la fenêtre paraît ; la barre
+    éteinte est cachée (`visibility`) et ne recouvre plus rien.
+- **Écarts relevés, sur la fiche** (C2-13 à C2-16) : sous 1 241 px de large, les sous-libellés de la barre restent masqués et la barre fait 61,6
+  px (57,4 au téléphone) ; l'écran de chargement (police du système, palette à part) ; tenu droit, « Tournez l'appareil » couvre le duel, la fiche
+  de match passe au-dessus et en cache le bas ; la page publiée de la Passe P2 montre l'ancien HUD. Sans décision propre, gardés de l'audit : le
+  titre de l'arène sur le ciel de jour (non rejugé ici).
+
+### Les preuves
+- **L'arène d'aujourd'hui contre `main` figé** (`tools/arena-scene-shots.mjs`, `HOLD=1`, graine 1842, un moment de chauffe : écran de chargement
+  retiré, transitions coupées, animations figées ; dix moments : `charging`, `window` en aide complète, `combo`, `guardbreak`, `impact`,
+  `technique`, `strike`, `heavyRen`, `ko`, la pause ; 1920 × 1080 et 812 × 375 ; `clean=1`, `hud=0`, le HUD affiché ; la nuit et à midi) :
+  - témoin (deux chargements de `main`) : **0 px les 110** ;
+  - **`clean=1` (la scène seule), la nuit et à midi : 0 px les 44** ; **`hud=0` (la nuit) : 0 px les 18 autres que le K.O. et la pause**, qui changent
+    d'aspect (voulu, ci-dessus) ;
+  - **le HUD affiché** : chaque moment ne diffère que dans le rectangle de la barre (1 920 : [249, 991, 1670, 1068] ; 812 : [99, 309, 713, 361])
+    ; au moment `window`, 4 751 px (1 920) et 1 696 px (812) hors de lui, tous à 23 px au plus du bouton « Esquive » allumé de `main` (son halo,
+    comme en Passe UI2) ; l'écran de K.O. affiché avec le HUD : identique hors de la barre.
+- **La ville** (`tools/detshots.mjs`, 120 pas, 1920 × 1080) : nuit A, B, C, D, B avec panneau et HUD, midi B et D, le mode jouable au premier
+  matin : témoin **0 px**, la branche **0 px les huit**.
+- **Le bundle** (même configuration pour `main` figé et la branche) : 17 fichiers sur 30 identiques à l'octet ; le morceau de la ville (`index`)
+  égal à celui de `main` une fois les noms hachés remplacés, sauf un nom de morceau préchargé (`CombatSim` → `dynamic` : Rollup range
+  `CombatSim` dans le morceau qu'il partage désormais avec les nouvelles règles) ; les autres morceaux du mode jouable ne changent que par les
+  noms hachés et les alias d'import.
+- **`tools/arena-scene-check.mjs`** : l'arène d'aujourd'hui sur `main` figé et sur la branche, la nuit et à midi : **PASS**, empreinte égale au
+  prototype, 42 rendus, télégraphe **6,94:1** la nuit (deutéranopie 7,15) et **4,31:1** à midi (4,44), égaux à `main` ; le nouveau duel (l'outil
+  rejoue alors le script de `runDynamicFingerprint`) : **PASS**, empreinte égale à `DYNAMIC_SIM_HASH`, 63 rendus (21 moments × 3 aides),
+  télégraphe 6,77:1 / 4,26:1.
+- **`tools/play-flow.mjs`** (nouveau : `COMBAT=dynamic`) : victoire contre Vessa (1842, jour 2) et défaite contre Marek (7719, jour 3), sous les
+  deux règles, l'état final rejoué en Node : **mêmes empreintes** ; l'ancien duel redonne celles de la Passe UI3 (`0025acce7a403773`,
+  `397959404c18f714`) ; le nouveau, `6c88371709600791` et `7a997ae3e081be92`.
+- **Tests** : `tests/arena-dynamic.test.mjs` (9) : le choix des règles ; les touches et la manette ; chaque réglage de l'essai contre la donnée
+  attendue, les refus, la donnée de départ intacte ; les images (préparation tenue, § 14) contre des oracles écrits d'après le texte, et
+  `clipFrame` d'aujourd'hui image pour image sans préparation ; chaque clip demandé par un duel présent chez Ren, Marek et Vessa ; **le modèle
+  du HUD à chaque pas** d'un duel de 300 s et des 21 moments (plus de 30 000 pas : phase, PV, jauge, break, PA, coûts, attaques verrouillées
+  pendant toute séquence, garde et esquive jamais verrouillées, préparation, effets) ; chaque moment atteint son état ; les textes dans le
+  sous-ensemble ; le drapeau du mode jouable et l'aide discrète du repérage ; l'arène d'aujourd'hui ne charge pas les nouvelles règles. Le test
+  de la Passe C1 « rien sous `src/arena` n'importe les nouvelles règles » est restreint aux modules de l'arène d'aujourd'hui (l'`ArenaApp`
+  choisit désormais, par son paramètre).
+- **25 fautes injectées une à une** (fichiers rendus à l'octet, SHA-256) : **23 attrapées** au premier passage. Les deux autres : « la jauge
+  brisée non tenue pleine » ne change rien d'observable (la règle la garde déjà à son maximum pendant le break) : écartée ; « le repoussé sans sa
+  séquence » retombait sur la première séquence de Marek à 1 s : **[KO → corrigé]** le test vérifie aussi l'instant du repoussé (avant
+  `ai.start`), la faute rejouée seule est attrapée. Soit **24 sur 24**.
+- **Validation** : typecheck, `npm test` **188 / 188**, build, `art:validate` (18 manifestes, 30 sources, 0 erreur).
+
+### Le budget GPU (E24 : « Pas plus cher que la nuit B, à définition égale »)
+- `tools/perf.mjs` sur le serveur de la branche, 1920 × 1080, 5 tours entrelacés, `fps=off`, témoin de contention au seuil de 15 % : **5 tours
+  propres sur 5** pour chaque page, adaptateur Radeon 780M, aucun onglet du jeu ouvert dans le panneau de la séance.
+
+| Page | ms de GPU, médiane [min-max] | écart à la nuit B (médiane) |
+|---|---|---|
+| nuit B (`seed=1842&clean=1&camera=B`) | 9,98 [9,47-10,99] | — |
+| arène d'aujourd'hui (`scene=arena`) | 9,27 [8,93-9,53] | −7 % |
+| arène, nouveau duel (`scene=arena&combat=dynamic`) | 9,19 [8,75-9,70] | −8 % |
+| duel du mode jouable, nouveau duel, midi (`day2-afternoon`) | 8,57 [7,82-9,49] | −14 % |
+
+- Le nouveau duel coûte ce que coûte l'arène d'aujourd'hui (mêmes 92 appels de dessin, 133 k triangles ; le HUD est du DOM) : **sous la nuit B**,
+  à définition égale (E24 tenu, avec la réserve de l'opérateur sur les zones plus grandes). Seul le JS de mise à jour monte un peu (0,60 → 0,68 ms
+  par image, médiane : le modèle du HUD).
+
+### L'essai de l'opérateur — préparé
+- **Le guide** : `briefs/combat-trial-c2.md` (les adresses, les réglages `dyn=`, les touches, ce qu'il faut regarder, ce que C2 ne fait pas).
+- **Les adresses** (serveur de développement) : `?scene=arena&combat=dynamic` ; de jour `&time=midday` ; l'ancien `?scene=arena` ; une partie
+  `?play=1&new=1&combat=dynamic&name=Ren` ; directement aux duels `?play=1&state=day2-afternoon&scene=arena&combat=dynamic` (`day3-afternoon`).
+- **La page jouable sans serveur** : https://claude.ai/artifact/HnfCTWXSggDVVyVUskTBJK (privée ; build de production par
+  `tools/arena-scene-page.mjs <dir> "scene=arena&combat=dynamic"`, l'outil prend désormais l'adresse et le titre) ; le même build servi en local
+  (:5200) joue les nouvelles règles, polices chargées. La page publiée demande une connexion dans le panneau navigateur de la séance : non
+  ouverte là.
+- **La fiche d'arbitrages** : https://claude.ai/artifact/2BFmUTe6GFRAjq92TEHNPc (privée, collection `decisions`, relue vide après publication ;
+  les protections des fiches précédentes : pont attendu 10 s, chaque écriture relue). Seize points : le défaut (C2-1) et la durée des duels ;
+  les nombres du § 11 (PA au plus, regain, recharges, action objet, esquive, jauge, break, Rempart et Ferveur) ; le HUD et le signe de la
+  priorité ; les écarts de l'interface. Images : `screenshots/calibration/c2-arena/`.
+
+### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
+- Avant cette passe, les passes gardées faisaient 57 009 octets ; avec elle, plus de 75 000. UI2 et UI3, closes (fusionnées), partent d'un seul
+  bloc vers `journal/25-passes-UI2-UI3.md` (29 597 octets, SHA-256 du bloc `63328e12a5be10b9…`). Preuve **8 / 8** (script hors dépôt, contre la
+  copie de `JOURNAL.md` d'avant le déplacement : corps de l'archive égal au bloc ; UI2, UI3 contigus, suivis de CB1 ; plus dans `JOURNAL.md` ;
+  chacune dans un seul fichier de `journal/` ; CB1 inchangée à l'octet ; seules la phrase d'en-tête et une ligne d'index changent ; en-tête comme
+  `journal/24` ; CRLF seuls). Contrôle négatif : un bit changé dans une copie de l'archive → 7 / 8.
+
+### Restes [?]
+- **L'essai de l'opérateur en jeu**, puis sa fiche ; le défaut reste l'arène d'aujourd'hui jusqu'à sa décision (CB-10).
+- **C3** (garde, esquive et compétences des rivaux ; l'alerte légère des compétences ; L7-4), C4, C5, chacun dans sa séance ; les feuilles de
+  combat après l'essai et AA1-3.
+- Les images d'aujourd'hui sur les nouveaux moments sont des emprunts : Rempart joue la garde, Ferveur la lame levée, la préparation tient la
+  première image (§ 14 attend `skillOff`, `skillDef`, `skillSup`, `ko` jusqu'à terre).
+- Les nombres flottants des moments figés (`jump`) sont saisis à l'opacité 0 par les captures, comme avant cette passe (ancien duel compris) ;
+  les images de revue les figent visibles par un style de capture.
+- Le contraste du télégraphe du nouveau duel (6,77:1) se lit sur son moment `window`, un peu plus tôt dans la charge que celui d'aujourd'hui.
+- Les écarts de l'interface relevés ci-dessus, sur la fiche.
+
+### Pensée
+- Une propriété posée avant un raccourci (`line-height` puis `font:inherit`) est effacée par lui : une hauteur se mesure dans la page, ligne et
+  bord de coupe compris, pas seulement la boîte (la barre « faisait 60 px », le sous-libellé débordait).
+- `opacity: 0` ne retire pas un élément : il garde le pointeur et recouvre ce qui est dessous ; un outil qui teste le recouvrement le voit,
+  l'œil non. Une couche cachée sort du rendu (`display`, `visibility`).
+- Un signe placé « au centre entre les cartes » se vérifie à chaque largeur où les cartes changent de taille (30vw sous 1 241 px) et sur les
+  téléphones étroits (667 px), contre tout ce qui partage sa place (la barre de la fenêtre d'esquive).
+- Un moment scripté se vérifie à son instant aussi : sans sa séquence forcée, le « repoussé » arrivait quand même, par la première séquence
+  naturelle de l'adversaire.
+- Un mode ajouté derrière un paramètre dans une page existante se prouve par la scène seule (`clean=1`) à 0 px, puis par l'interface, dont
+  chaque changement voulu se borne (rectangle, halo) et se nomme.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -692,9 +616,13 @@ en jeu par l'opérateur ; le liseré froid peint des combattants reste le même 
 liste des animations : 34 images pour Ren). **C1 fait (Passe C1)** : le cœur du duel en simulation pure (`src/combat/dynamic.ts`), son bot et sa
 course hors écran, derrière `flags.combat = 'dynamic'` (`tournament-lab --rules=dynamic`) ; l'arène actuelle reste le défaut ; un soin sans recharge
 écarté (mesuré sans borne), Rempart et Ferveur proposés à l'essai ; duels de 5 à 9 minutes, victoire en marche d'escalier selon l'adresse.
-**À faire, chacun dans sa séance, dans l'ordre** : C2 l'arène qui le montre puis l'essai de l'opérateur en jeu (il règle le § 11 de la
-spécification et décide du défaut), C3 les adversaires (avec L7-4), C4 le choix des compétences, C5 l'arme et les accessoires ; puis les
-feuilles de combat (après C1-C2 et AA1-3) ; plus tard les équipes et les options. Le contrat de combat s'écrira après l'essai (CB-9).
+**C2 fait (Passe C2)** : l'arène le montre derrière `?scene=arena&combat=dynamic` (le mode jouable : `&combat=dynamic`), HUD du système de
+design (jauges, barre de break, PA, compétences et coûts, priorité), clips d'aujourd'hui sur les nouveaux moments, réglages de l'essai `dyn=` ;
+le défaut inchangé (0 px). **Suite : l'essai de l'opérateur en jeu** (guide `briefs/combat-trial-c2.md` ; page jouable
+https://claude.ai/artifact/HnfCTWXSggDVVyVUskTBJK ; fiche https://claude.ai/artifact/2BFmUTe6GFRAjq92TEHNPc : le défaut, le § 11, le HUD, les
+écarts de l'interface), à relire puis consigner ; ensuite, chacun dans sa séance : C3 les adversaires (avec L7-4 et l'alerte légère des
+compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis les feuilles de combat (après l'essai et AA1-3) ; plus tard les
+équipes et les options. Le contrat de combat s'écrira après l'essai (CB-9).
 
 **6d. Jour et nuit (note de l'opérateur, Passe D1)** — mot pour mot : « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Le jeu n'a aujourd'hui que la nuit (direction
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
@@ -712,6 +640,9 @@ par l'opérateur. Restent, écran par écran avec avant / après : P4 (le dialog
 actions du lieu, les absents retirés), P6 (la fiche de match, la victoire, le journal, le tableau) ; l'écran de chargement (police système) ; les bustes (L4).
 Relevés de l'audit sans décision propre (rapport de la séance d'audit) : l'écran titre au fond vide, l'état en une ligne de texte, la carte en
 liste, la sauvegarde silencieuse, le titre de l'arène perdu sur le ciel de jour, « Turn your device » qui couvre la fiche de match.
+**Le parcours de l'arène vérifié (Passe C2)** : 124 pages mesurées, ancien et nouveau duel ; corrigés : K.O. et pause sous `hud=0` dans le
+système, la barre à 60 px avec ses textes à 16 px (P3 et S4 ensemble), la couche « Tournez l'appareil » sous `hud=0`. Écarts sur la fiche C2 :
+sous 1 241 px les sous-libellés masqués (61,6 px), l'écran de chargement, le téléphone tenu droit, la page publiée de la Passe P2.
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
@@ -720,7 +651,7 @@ liste, la sauvegarde silencieuse, le titre de l'arène perdu sur le ciel de jour
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -1014,3 +945,8 @@ liste, la sauvegarde silencieuse, le titre de l'arène perdu sur le ciel de jour
   un contrôle négatif qui porte chaque défaut cherché (Passe UI3).
 - Une mesure qui lit des pixels lit aussi l'interface posée dessus : déplacer un élément du HUD se revérifie contre les zones que les outils lisent
   (le sol devant le télégraphe, Passe UI3).
+- Une hauteur d'interface se mesure avec sa ligne et son bord de coupe : une propriété posée avant un raccourci (`line-height` puis `font:`) est
+  effacée par lui. `opacity: 0` ne retire pas un élément (il garde le pointeur et recouvre) : une couche cachée sort du rendu. Un élément placé
+  entre d'autres se vérifie à chaque largeur où ses voisins changent de taille (Passe C2).
+- Un mode ajouté derrière un paramètre dans une page existante se prouve par la scène seule à 0 px (`clean=1`), puis par l'interface, dont
+  chaque changement voulu se borne (rectangle, halo) ; un moment scripté se vérifie aussi à son instant (Passe C2).

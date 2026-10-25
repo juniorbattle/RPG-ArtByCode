@@ -377,9 +377,9 @@ test('a game under the new rules (flags.combat): its duels in DynamicSim, its of
   assert.equal(L.autoplay(12, L.SCRIPTS.careful()).hash, 'fff4c51dd69cec8a');
 });
 
-test('the arena of today is untouched: nothing it loads imports the new rules; the classic race keeps its slope', () => {
+test('the arena of today is untouched: its modules never load the new rules (the arena page picks them by its parameter since lot C2, tests/arena-dynamic.test.mjs); the classic race keeps its slope', () => {
   const imports = (f) => [...fs.readFileSync(path.join(ROOT, f), 'utf8').matchAll(/from\s+['"]([^'"]+)['"]/g)].map((m) => m[1]);
-  for (const f of fs.readdirSync(path.join(ROOT, 'src/arena'))) assert.ok(!imports(`src/arena/${f}`).some((i) => /combat\/(dynamic|bot)/.test(i)), f);
+  for (const f of ['CombatSim.ts', 'Presets.ts', 'ArenaHud.ts', 'FighterArt.ts', 'ArenaScene.ts', 'FloorUI.ts']) assert.ok(!imports(`src/arena/${f}`).some((i) => /combat\/(dynamic|bot)/.test(i)), f);
   const a = { hp: 600, dps: 9 }, b = { hp: 700, dps: 7.5 }, ta = b.hp / a.dps, tb = a.hp / b.dps;
   assert.equal(P.raceWinChance(a, b), 1 / (1 + Math.exp(-(3.2 * Math.log(tb / ta)))));
   assert.equal(P.RACE_SLOPE, 3.2);

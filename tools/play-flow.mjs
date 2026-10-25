@@ -3,7 +3,8 @@
 // scripted inputs on window.__arena (win: the opponent brought down by a technique; lose: the player struck by heavy blows), the result
 // screen's button, then the town page loaded again from the save. At the end the browser's state is replayed in Node (src/simulation, the
 // same actions and the outcome the arena handed in) and both fingerprints must match.
-//   node tools/play-flow.mjs <outDir> <win|lose> [seed] [day=2|3]   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs)
+//   node tools/play-flow.mjs <outDir> <win|lose> [seed] [day=2|3]   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs;
+//   COMBAT=dynamic: the new game under the rules of the « tour par tour dynamique », &combat=dynamic, its bout in DynamicSim, journal Passe C2)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,7 +15,7 @@ const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Applicatio
 const [outDir, mode, seedS = '1842', dayS = '2'] = process.argv.slice(2);
 if (!outDir || !['win', 'lose'].includes(mode)) throw new Error('usage: node tools/play-flow.mjs <outDir> <win|lose> [seed] [day]');
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720), day = +dayS;
-const READY = +(process.env.READY_MS || 600000);
+const READY = +(process.env.READY_MS || 600000), DYN = process.env.COMBAT === 'dynamic';
 fs.mkdirSync(outDir, { recursive: true });
 const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];
 const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 }, protocolTimeout: READY });
@@ -27,7 +28,8 @@ try {
   const open = async (q) => { await page.goto(`${BASE}${q}`, { waitUntil: 'load', timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); const e = await page.evaluate(() => window.__error ?? null); check(!e, `page ${q} ready${e ? `: ${e}` : ''}`); };
   const act = async (a) => { const r = await page.evaluate((x) => window.__game.act(x), a); check(r.ok, `act ${JSON.stringify(a).slice(0, 60)}${r.ok ? '' : `: ${r.reason}`}`); if (r.ok) actionsDone.push(a); return r; };
   // 1. the town: a new game, the clock to the bout's afternoon
-  await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1`);
+  await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1${DYN ? '&combat=dynamic' : ''}`);
+  check((await page.evaluate(() => window.__game.state().flags.combat ?? null)) === (DYN ? 'dynamic' : null), `the game's rules: ${DYN ? 'dynamic' : 'today'}`);
   const waits = day === 2 ? 4 : 7;
   for (let i = 0; i < waits; i++) {
     const st = await page.evaluate(() => window.__game.state());
@@ -48,7 +50,8 @@ try {
   const to = await page.evaluate(() => window.__go);
   check(/scene=arena/.test(to ?? ''), `the town goes to ${to}`);
   await open(to);
-  const sheet = await page.evaluate(() => ({ names: [window.__arena.sim.D.fighters.ren.name, window.__arena.sim.D.fighters.marek.name], assist: window.__arena.assist, hud: document.querySelector('#ah-title')?.textContent }));
+  const sheet = await page.evaluate(() => ({ names: [window.__arena.sim.D.fighters.ren.name, window.__arena.sim.D.fighters.marek.name], assist: window.__arena.assist, rules: window.__arena.rules, hud: document.querySelector('#ah-title')?.textContent }));
+  check(sheet.rules === (DYN ? 'dynamic' : 'classic'), `the arena plays ${sheet.rules}`);
   check(sheet.names[0] === 'Aster' && sheet.names[1] === (day === 2 ? 'Vessa Lark' : 'Marek Varn'), `the arena seats ${sheet.names.join(' vs ')}`);
   check(/Pool of eight/.test(sheet.hud ?? ''), `English HUD: ${sheet.hud}`);
   await page.screenshot({ path: path.join(outDir, `${mode}-2-report.png`) });
@@ -59,7 +62,7 @@ try {
     for (let i = 0; i < 60 * 90 && !(window.__go); i++) {
       if (!s.over) {
         if (m === 'win') { if (s.f.marek.hp > 25) s.f.marek.hp = 25; if (s.f.ren.state === 'idle') { s.f.ren.ap = 5; a.action('t4'); } }
-        else { s.f.ren.hp = Math.min(s.f.ren.hp, 30); if (s.f.marek.state === 'idle') s.forceAction('marek', 'm_heavy'); }
+        else { s.f.ren.hp = Math.min(s.f.ren.hp, 30); if (s.f.marek.state === 'idle') { if (s.forceAction) s.forceAction('marek', 'm_heavy'); else s.forceSequence(['m_heavy']); } }
       }
       a.update(1 / 60);
       if (s.over && document.querySelector('.pm-overlay')) break;
@@ -85,6 +88,7 @@ try {
   try {
     const G = await server.ssrLoadModule('/src/simulation/index.ts');
     let s = G.newGame(+seedS >>> 0, 'Aster');
+    if (DYN) s.flags.combat = 'dynamic';
     for (const a of actionsDone) s = G.advance(s, a).state;
     const last = st3.s.log.findLast((e) => e.id === 'player-won' || e.id === 'player-lost');
     s = G.advance(s, { type: 'fight', outcome }).state;

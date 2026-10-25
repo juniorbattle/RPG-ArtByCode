@@ -3,23 +3,25 @@
 // viewport, body). The service hands no query string to the page, so a first inline script sets `?scene=arena` on its own URL
 // (history.replaceState) before the game's module reads it; the game itself is unchanged. Publish the page with every file of <outDir>/assets
 // as supporting files (published path `assets/<name>`).
-//   node tools/arena-scene-page.mjs <outDir>
+//   node tools/arena-scene-page.mjs <outDir> [query] [title]   (query: default `scene=arena`; `scene=arena&combat=dynamic` for the duel of the
+//   « tour par tour dynamique », the operator's trial, journal Passe C2)
 import fs from 'node:fs';
 import path from 'node:path';
 import { build } from 'vite';
 
-const out = process.argv[2];
-if (!out) throw new Error('usage: node tools/arena-scene-page.mjs <outDir>');
+const [out, query = 'scene=arena', title = 'Arène des Champions'] = process.argv.slice(2);
+if (!out) throw new Error('usage: node tools/arena-scene-page.mjs <outDir> [query] [title]');
+if (!/^scene=arena(&[a-z]+=[\w.:,-]*)*$/.test(query)) throw new Error(`query: scene=arena[&key=value...], got "${query}"`);
 const root = path.resolve(import.meta.dirname, '..');
 await build({ root, base: './', logLevel: 'warn', build: { outDir: path.resolve(out), emptyOutDir: true, target: 'es2022', chunkSizeWarningLimit: 1200 } });
 const html = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
 const src = html.match(/<script type="module" crossorigin src="([^"]+)"><\/script>/)?.[1];
 const style = html.match(/<style>([^<]*)<\/style>/)?.[1];
 if (!src || !style) throw new Error('index.html: module script or style not found');
-const page = `<title>Arène des Champions</title>
+const page = `<title>${title}</title>
 <style>:root{color-scheme:dark}${style}</style>
 <canvas id="view"></canvas>
-<script>try { if (!/[?&]scene=/.test(location.search)) history.replaceState(history.state, '', location.pathname + '?scene=arena' + location.hash); } catch (e) { console.warn('scene=arena not set', e); }</script>
+<script>try { if (!/[?&]scene=/.test(location.search)) history.replaceState(history.state, '', location.pathname + '?${query}' + location.hash); } catch (e) { console.warn('${query} not set', e); }</script>
 <script type="module" src="${src.replace(/^\.\//, '')}"></script>
 `;
 fs.writeFileSync(path.join(out, 'arena-page.html'), page);

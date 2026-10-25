@@ -46,6 +46,14 @@ export function matchSheetFor(s: GameState): MatchSheet | null {
   };
 }
 
+/** a sheet's assistance and scouting report under the rules of the « tour par tour dynamique » (CB-7, « Comme recommandé », journal Passe CB1):
+ *  the discreet assistance for every bout; scouting the opponent tells what it is like at the preparation screen, it no longer lights the floor */
+export function dynSheetView(sh: MatchSheet, opponentName: string, opponentId: string): { assist: 'subtle'; intel: string[] } {
+  const p = DYN_PROFILES[sh.sides[1].fighters[0].profile ?? ''], his = opponentId === 'marek' ? 'His' : 'Her';
+  if (!sh.intel.length || !p) return { assist: 'subtle', intel: [] };
+  return { assist: 'subtle', intel: [`${opponentName}: ${p.style}; pauses of level ${p.level} (1 long, 5 short).`, `${his} heavy blow comes slowly: guard it, or dodge [A] (1 AP) as it lands.`] };
+}
+
 /** a 1v1 sheet as the arena's data (action names given in the play mode's language); refuses team sheets, outside the slice */
 export function sheetData(sh: MatchSheet, names?: Partial<Record<string, string>>): CombatData {
   const [a, b] = sh.sides;

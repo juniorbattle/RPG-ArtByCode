@@ -11,7 +11,7 @@ import { readSave, writeSave } from './save';
 export interface Boot { canvas: HTMLCanvasElement; params: URLSearchParams; label: HTMLElement; bar: HTMLElement; loading: HTMLElement }
 
 /** the tools' parameters carried from the address into every play-mode page (measurements, captures, culling checks) */
-const CARRY = ['fps', 'vis', 'viscache', 'painters', 'res', 'msaa', 'refl', 'camera', 'player', 'static', 'occ', 'freeze', 'gpuprof', 'noreload', 'spriteedge', 'npcfacing'];
+const CARRY = ['fps', 'vis', 'viscache', 'painters', 'res', 'msaa', 'refl', 'camera', 'player', 'static', 'occ', 'freeze', 'gpuprof', 'noreload', 'spriteedge', 'npcfacing', 'dyn'];
 
 /** the address of a play-mode page, the carried parameters kept */
 export function playUrl(params: URLSearchParams, extra: Record<string, string> = {}): string {
@@ -27,10 +27,18 @@ export function go(params: URLSearchParams, extra: Record<string, string> = {}):
   if (!params.has('noreload')) location.assign(playUrl(params, extra));
 }
 
+/** `&combat=dynamic` on a new game (or a named state): the game is played under the rules of the « tour par tour dynamique »
+ *  (`flags.combat`, src/tournament/pool.ts `dynamicRules`; journal Passes C1 / C2), its duels in the arena's DynamicSim and its off-screen
+ *  matches in their race; the flag lives in the save. Behind this parameter until the operator's trial (CB-10); absent = the game of today */
+export function withRules(s: GameState, params: URLSearchParams): GameState {
+  if (params.get('combat') === 'dynamic') s.flags.combat = 'dynamic';
+  return s;
+}
+
 export function startingState(params: URLSearchParams): { state: GameState; note?: string } {
   // DEV only: a named state (PROJECT § 10.3) for reviews and proofs
-  if (import.meta.env.DEV && params.has('state')) return { state: namedState(params.get('state')!, Number(params.get('seed') ?? 1842) >>> 0, params.get('name') ?? 'Ren') };
-  if (params.has('new')) return { state: newGame(Number(params.get('seed') ?? 1842) >>> 0, params.get('name') ?? 'Ren') };
+  if (import.meta.env.DEV && params.has('state')) return { state: withRules(namedState(params.get('state')!, Number(params.get('seed') ?? 1842) >>> 0, params.get('name') ?? 'Ren'), params) };
+  if (params.has('new')) return { state: withRules(newGame(Number(params.get('seed') ?? 1842) >>> 0, params.get('name') ?? 'Ren'), params) };
   const r = readSave();
   if (r.state) return { state: r.state };
   return { state: newGame(1842, params.get('name') ?? 'Ren'), note: r.error };
