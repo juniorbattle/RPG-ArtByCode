@@ -7,10 +7,13 @@
 > - L'en-tête entre parenthèses peut être un résumé fait par la séance de transmission : s'il diffère, l'original de l'opérateur fait foi.
 > - Ce contrat se dit subordonné à `contracts/PROJECT_MASTER_CONTRACT.md`, que l'opérateur fournit avant le lancement de la séance cloud
 >   (décision C2).
+> - **Amendement du 2026-10-25** (journal, Passe CB1 ; décision A3 de l'opérateur, choix CB-8 « Amender maintenant, ces trois phrases ») : au
+>   § 1, « 1. combat tour par tour ; » devient « 1. combat en « tour par tour dynamique » (contrat projet § 6.1) ; ». Le reste du texte est
+>   inchangé.
 
 (Version 1.0, 2026-10-02, contrat maître de gameplay ; subordonné à PROJECT_MASTER_CONTRACT.md, supérieur aux contrats de tâche gameplay)
 
-1. Finalité — Le gameplay doit faire ressentir une compétition qui dépasse l'arène. Le joueur commence seul, participe à des duels officiels, se construit une réputation, découvre la ville, rencontre des alliés potentiels, puis développe progressivement un roster capable d'affronter les formats collectifs des phases avancées. Le jeu repose sur cinq systèmes indissociables : 1. combat tour par tour ; 2. préparation sous contrainte de temps ; 3. exploration d'une ville dynamique ; 4. relations et recrutement ; 5. conséquences persistantes. Aucun de ces systèmes ne doit devenir un mini-jeu isolé sans impact sur les autres.
+1. Finalité — Le gameplay doit faire ressentir une compétition qui dépasse l'arène. Le joueur commence seul, participe à des duels officiels, se construit une réputation, découvre la ville, rencontre des alliés potentiels, puis développe progressivement un roster capable d'affronter les formats collectifs des phases avancées. Le jeu repose sur cinq systèmes indissociables : 1. combat en « tour par tour dynamique » (contrat projet § 6.1) ; 2. préparation sous contrainte de temps ; 3. exploration d'une ville dynamique ; 4. relations et recrutement ; 5. conséquences persistantes. Aucun de ces systèmes ne doit devenir un mini-jeu isolé sans impact sur les autres.
 
 2. Boucle de jeu canonique — Prochaine échéance du tournoi → Informations sur le rival / la situation → Choix d'un quartier et d'une activité → Préparation / quête / enquête / relation / économie → Événement ou conséquence → Combat officiel → Résultats et blessures → Réaction de la ville et des concurrents → Nouvelle échéance. La boucle doit être compréhensible dès les premières heures et gagner en complexité à mesure que le joueur recrute.
 

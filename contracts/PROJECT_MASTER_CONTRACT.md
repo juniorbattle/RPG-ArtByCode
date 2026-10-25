@@ -3,6 +3,10 @@ Provenance (journal, Passe N3). Collé par l'opérateur dans la séance de plani
 les décisions C1 (« contracts/ à la racine (versionnés, donc publiés) ») et C2 (« Je le fournis avant le lancement »). Le texte ci-dessous est
 recopié tel quel, sans mise en forme ajoutée. Deux points relevés, non corrigés : l'en-tête dit « Version : 1.2 » et la dernière ligne
 « v1.1 » ; la « décision A3 » des autres contrats n'y est pas définie.
+Amendement du 2026-10-25 (journal, Passe CB1 ; décision A3 de l'opérateur, choix CB-8 « Amender maintenant, ces trois phrases ») : au § 1,
+« au tour par tour » devient « au combat en « tour par tour dynamique » » ; au § 6.1, la première phrase est remplacée. Textes d'avant : « …
+est un RPG narratif au tour par tour centré sur… » et « Le combat est un RPG tour par tour dont le format de départ est 1 contre 1. ». Le reste
+du texte est inchangé.
 -->
 Cité du Tournoi — PROJECT MASTER CONTRACT
 
@@ -43,7 +47,7 @@ Le projet n'impose donc ni un monde intégralement pré-rendu, ni une représent
 
 1. Vision du jeu
 
-Cité du Tournoi est un RPG narratif au tour par tour centré sur un grand tournoi évolutif organisé dans une cité-fantasy monumentale. Le joueur commence comme combattant individuel dans des duels 1 contre 1, puis rencontre et recrute progressivement d’autres combattants jusqu’à l’apparition de formats d’équipe plus avancés. Entre les matchs, il utilise un temps limité pour progresser, explorer la ville, résoudre des problèmes, développer ses relations, contrer des sabotages et exploiter des opportunités.
+Cité du Tournoi est un RPG narratif au combat en « tour par tour dynamique » centré sur un grand tournoi évolutif organisé dans une cité-fantasy monumentale. Le joueur commence comme combattant individuel dans des duels 1 contre 1, puis rencontre et recrute progressivement d’autres combattants jusqu’à l’apparition de formats d’équipe plus avancés. Entre les matchs, il utilise un temps limité pour progresser, explorer la ville, résoudre des problèmes, développer ses relations, contrer des sabotages et exploiter des opportunités.
 
 La ville n'est pas un simple hub. Elle constitue le second système principal du jeu, au même niveau que le combat.
 
@@ -233,7 +237,7 @@ Ils peuvent s’entraîner, acheter, se soigner, espionner, négocier, résoudre
 
 6.1 Forme générale
 
-Le combat est un RPG tour par tour dont le format de départ est 1 contre 1.
+Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1 : le temps ne s'arrête pas ; le joueur agit par des actions instantanées ou à délai de préparation, les compétences payées en points d'action ; l'adversaire a la priorité quand il attaque, et le joueur se défend alors par la garde ou l'esquive (spécification : briefs/combat-system.md).
 
 La première priorité de production est de rendre le duel lisible, tactique, rapide à comprendre, suffisamment profond pour valoriser la préparation et spectaculaire sans perdre la lecture des décisions.
 

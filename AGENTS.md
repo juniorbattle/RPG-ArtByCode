@@ -30,8 +30,13 @@ The operator's master contracts live in `contracts/`, versioned and therefore pu
   turn-based combat...) are listed in `briefs/cloud-session-playable.md` § 3b. Decided in journal Passe D8:
   - generation by code is the project's way (E14 / E15, « Amender le contrat : la génération par le code est la voie du projet »); the pasted
     text stays as received until the task that amends it, written with the operator;
-  - combat without turns stays a recorded gap until the team phase (E1 / E16, « Écart consigné jusqu’à la phase d’équipe »), with a task of its
-    own on the combat system and its logic, led by the operator.
+  - combat without turns stayed a recorded gap (E1 / E16, « Écart consigné jusqu’à la phase d’équipe ») until the combat-system workshop, led
+    by the operator (journal Passe CB1): its specification is `briefs/combat-system.md` (« tour par tour dynamique »: the time never stops,
+    instant actions or an automatic preparation delay, skills paid in action points, the opponent's priority while it attacks, guard and
+    dodge, one resistance gauge per fighter whose break stuns 5-10 s, K.O. only). The operator amended the three « tour par tour » sentences
+    of the project (§ 1, § 6.1) and gameplay (§ 1) contracts (A3, CB-8 « Amender maintenant, ces trois phrases »), each contract noting the
+    change in its header; the rest of their text is unchanged. Until the operator's play test, the new rules stay behind a parameter and
+    today's arena stays the default (CB-10).
 
 They govern gameplay and the tournament; this file keeps the repository's rules (branches, journal, proofs, art). Two rules follow from
 decision C3 (« Aucun verrou modifié, écarts consignés »):

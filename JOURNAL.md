@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2 et UI3) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3 et CB1) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -34,224 +34,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/21-passes-Q4-Q4b.md`](journal/21-passes-Q4-Q4b.md) | Q4, Q4b | 20/10 |
 | [`journal/22-passes-D8-F2.md`](journal/22-passes-D8-F2.md) | D8, S3, F2 | 20/10 |
 | [`journal/23-passes-S3b-AD1.md`](journal/23-passes-S3b-AD1.md) | S3b, F3, D9, FR1, AD1 | 20/10 → 21/10 |
+| [`journal/24-passes-AA1-UI1.md`](journal/24-passes-AA1-UI1.md) | AA1, UI1 | 24/10 |
 
 ---
-
-## Passe AA1 — Audit des sprites de l'arène (étape 1.1 de la feuille de route) : combattants, gradins, cadre ; fiche d'arbitrages (2026-10-24)
-
-### Demande
-- Séance locale lancée par la séance parente, le 21/10, reprise le 24/10 : l'audit des sprites de l'arène, étape 1.1 de
-  `briefs/roadmap-2026-10.md` (combattants de `src/arena/FighterArt.ts`, gradins, place dans les textures, budget GPU, captures de jour et de nuit,
-  comparaison avec `hero-x2-v4` et les PNJ cuits), puis une fiche d'arbitrages.
-- Règles de la séance : ni branche ni commit, aucun fichier suivi modifié, aucune image générée ; serveur `dev-strict` (:5186) ; une autre séance
-  d'audit (l'interface, :5187) travaillait dans le même dossier. Rapport, captures et cette passe dans le dossier de notes partagé
-  (`arena-sprites-AA1/`) ; la séance parente versionne.
-- `main` à `c431295` (Passe AD1), aucun changement de code depuis.
-
-### Constats — [OK] mesurés
-- **Le joueur change de dessin entre la ville et l'arène.** En ville, Aster est `hero-x2-v4` (Passe H11) ; au parvis et au duel, c'est Ren, le
-  héros généré d'avant (`REN = { ...PLAYER }`) : grosse tête, profil, cape rouge, tunique bleue. Toute l'arène (Ren, Marek, Vessa, le public)
-  suit l'ancienne grammaire du générateur.
-- **Densité à l'écran** : un texel de combattant (×2, `CHAR_SCALE` 1,42) fait **3,9 px en 1080p** (mesuré dans la page, 3,89 ; calcul : distance
-  14,97 m, champ 34°, texel 0,0334 m → 3,94). La distribution cuite ×2 de la ville : 0,65 à 1,68 px en B (Passe S2), environ 1,5 pour le héros.
-  Une feuille ×2 du héros posée telle quelle dans le duel aurait des pixels environ 2,5 fois plus gros qu'en ville.
-- **Le jeu d'images** (atlas à graine 1842, script hors dépôt) : clés `<id>/side/<clip>.<i>/0`, cases de 128 × 192 texels (64 × 96 à ×2, pieds
-  rangée 180). Ren (et Vessa) : 12 clips, **29 images** ; Marek : 7 clips à lui, **17 images** (`block` et `victory` = `ready`, `dodge` = `hit`,
-  `strike` et `skill` = `slash`). Boîtes maximales : Ren 96 × 103, Marek 110 × 115, Vessa 100 × 105. Palette du générateur sans palette épinglée :
-  256 couleurs (Ren), 203 (Marek), 238 (Vessa).
-- **Moments sans image propre** : trois techniques sur quatre jouent le même `skill` (Coup éclair, Fente perçante, Estocade), Tourbillon la
-  taille `slash` ; Marek n'a ni garde, ni esquive, ni victoire à lui (quand Ren tombe, il reste en garde) ; aucun pas (élan, esquive et recul
-  sont des glissements d'images fixes) ; la charge de Marek tient une image 0,75 s ; le K.O. s'arrête à genoux ; une seule vue, le profil, même
-  au parvis quand le héros marche en profondeur (marche du générateur à ×1, doublée).
-- **Au soleil** : Marek se lit en masse blanche (cheveux, barbe, plaque), son visage se perd ; le contour noir de S3b ne touche pas l'arène
-  (sprites générés).
-- **Ce qu'une feuille cuite doit fournir** : les mêmes clés et nombres d'images (ou `IMPACT_FRAME` / `clipFrame` mis à jour), le personnage tourné
-  à gauche, des cases à la densité choisie, une couche émissive pour traînées et lame chauffée (ou des effets à part), la pointe de lame dans la
-  silhouette (`reach`), un portrait de face, un manifeste approuvé. `hero-x2-v4` n'a que repos et marche (60 images).
-- **Les gradins** : 25 spectateurs (rangs 0 et 1 : 11 + 14), près de la porte ; les cinq archétypes de foule générés de la ville, de face, repos
-  et bouche ouverte (4 images chacun), peints à ×1 et doublés (20 cases) ; échelle 0,62, teinte froide fixe [0,5 ; 0,56 ; 0,74] de jour comme de
-  nuit (bleu pâle à midi) ; acclamation = bouche ouverte + saut de 7 cm pendant 1,4 s ; 2,9 à 3,6 px par texel ; debout, même hauteur.
-  **Coût** : 2,7 ms de peinture (Node, médiane de 5) ; **aucun appel de dessin en plus** (l'appel instancié des sprites, 96 instances au plus).
-- **Le cadre** :
-  - l'arène a **son propre atlas**, pas la texture cuite de la ville : duel contre Marek **2 048 × 960, 75 cases** ; contre Vessa 2 048 × 1 152,
-    87 ; le parvis + 4 ; plafond garanti 160 cases (85 / 73 libres) ; à ×4, 40 cases par texture ;
-  - la texture cuite de la ville : **382 images sur 672**, 290 libres ;
-  - peinture de l'atlas : 126 ms (Marek), 140 ms (Vessa), 2,2 ms par image de combattant (Node, médiane de 5).
-- **Budget GPU (E24)** : non remesuré (`main` inchangé depuis AD1 ; la séance de l'interface utilisait la même machine). Chiffres de la Passe AD1 :
-  nuit B 10,02 ms en 1080p, arène de nuit 10,33 (min 9,20), de jour 8,56 à 8,93, duel du jour 2 8,74 ; en 2560 × 1440, arène 13,65 à 15,68 contre
-  16,76. Le budget tient, avec peu de marge la nuit ; les sprites y sont deux appels instanciés.
-
-### Captures
-- `tools/arena-scene-shots.mjs` (`HOLD=1`, 1920 × 1080, `clean=1`, graine 1842) : nuit, midi, fin de journée × `calm`, `charging`, `combo`,
-  `technique`, `dodge`, `block`, `guardbreak`, `heavyRen`, `ko` ; `tools/play-shots.mjs` : le duel contre Vessa (jour 2, midi), le parvis au matin et
-  le soir ; `tools/detshots.mjs` : la ville en B, nuit et midi ; recadrages `tools/zoom.mjs` ×2 (combattants) et ×3 (public).
-- **[KO → corrigé]** la comparaison ville / arène portait « BEFORE / AFTER » (écrits en dur par `tools/compare.mjs`) ; l'opérateur, mot pour mot :
-  « comment ca avant / apres ? le district merchant est la version la plus avance niveau sprite personnages ». Refaite avec « La ville —
-  référence » / « L'arène — aujourd'hui » (copie de l'outil hors dépôt, le dépôt intact).
-- **[KO → compris]** une capture du parvis par l'état `day1-morning` avec `scene=arena` restait noire (pas de duel ce jour-là) ; l'état
-  `forecourt-morning` la donne.
-- Images à garder dans `screenshots/calibration/aa1-arena-sprites/` si la séance parente les versionne : `ville-reference-vs-arene-midi.png`,
-  `forecourt-morning-1920x1080.png`, `fighters-ko-midday.png`, `crowd-right-midday.png`.
-
-### La fiche — [OK] publiée, 6 choix sur 6 enregistrés et relus
-- Page privée https://claude.ai/artifact/XZcegW4866uD7opjE6qKtP, collection `decisions` (vide à la publication, relue par `list`). Les
-  protections de la Passe D8 : pont attendu 10 s, chaque écriture relue (`get`) avant « Enregistré et relu », copie locale, choix faits avant la
-  connexion écrits à la connexion, échec dit dans un bandeau.
-- Six entrées : AA1-1 Ren = `hero-x2-v4` ; AA1-2 feuilles cuites ou générateur amélioré ; AA1-3 densité des combattants cuits ; AA1-4 les
-  spectateurs ; AA1-5 l'atelier combat, avant ou après ; AA1-6 retoucher les générés en attendant.
-
-### Les choix de l'opérateur, mot pour mot
-« = » : la recommandation de la fiche est suivie ; « ≠ » : le choix diffère, et c'est lui qui fait foi.
-
-| # | Décision | Recommandation | Choix de l'opérateur | Note | |
-|---|---|---|---|---|---|
-| AA1-1 | Ren devient `hero-x2-v4` avec des animations de combat | « Oui : Ren = hero-x2-v4, feuille de combat à produire » | « Oui : Ren = hero-x2-v4, feuille de combat à produire » | — | = |
-| AA1-2 | Feuilles cuites ou générateur amélioré | « Feuilles cuites (Ren, puis Marek, puis Vessa) » | « Feuilles cuites (Ren, puis Marek, puis Vessa) » | — | = |
-| AA1-3 | Densité des combattants cuits | « Essai en scène ×2 contre ×4 d'abord » | « Essai en scène ×2 contre ×4 d'abord » | — | = |
-| AA1-4 | Les spectateurs | « Les citadins cuits de la ville + variantes V1 » | « Les citadins cuits de la ville + variantes V1 » | — | = |
-| AA1-5 | L'atelier combat, avant ou après | « Atelier avant les feuilles ; densité et public en attendant » | « Atelier avant les feuilles ; densité et public en attendant » | — | = |
-| AA1-6 | Retoucher les générés en attendant | « Non, attendre les feuilles » | « Non, attendre les feuilles » | — | = |
-
-- Relue après « La fiche des sprites de l'arène est remplie. » : **6 documents sur 6** dans `decisions`, cliqués le 25/10 entre 03 h 28 et 03 h 30
-  UTC, aucune note ; chaque écriture relue par la page avant « Enregistré et relu ».
-- **Ce qui suit, chacun dans sa séance, une branche à la fois** (rien n'est appliqué par cette passe) :
-  1. **L'atelier « système de combat »** (E1 / E16, mené par l'opérateur) : il fixe la liste des animations ; les feuilles de combat l'attendent
-     (AA1-5).
-  2. **En attendant, l'essai de densité** (AA1-3) : `hero-x2-v4` dans le cadrage du duel, à ×2 tel quel et reconstruit à ×4 depuis sa planche,
-     côte à côte, à juger à l'œil ; derrière un paramètre, le défaut inchangé à 0 px.
-  3. **En attendant, le public** (AA1-4) : les cinq citadins cuits de la ville (repos de face) et leurs variantes V1 dans les gradins, saut
-     d'acclamation sans nouvelle image ; une pose d'acclamation plus tard, par la chaîne et l'approbation de l'opérateur ; derrière un paramètre.
-  4. **Après l'atelier** : la feuille de combat de Ren = `hero-x2-v4` (AA1-1), par la chaîne du héros (AA1-2), à la densité choisie ; puis Marek,
-     puis Vessa (gardée générée jusque-là, L7-1).
-  - Les combattants générés ne sont pas retouchés d'ici là (AA1-6).
-
-### Restes [?]
-- Rien n'est appliqué : chaque décision qui demande du travail part dans sa propre séance, une branche à la fois.
-- `tools/compare.mjs` écrit « BEFORE / AFTER » en dur : des libellés en paramètre éviteraient l'erreur de cette passe (petite tâche d'outillage).
-- Le budget GPU de l'arène est celui de la Passe AD1 ; à remesurer avec les premières feuilles cuites ou un public plus dense.
-
-### Pensée
-- Avant de juger un lieu, comparer ses personnages à la distribution de référence dans les mêmes conditions (même état du jour, même
-  agrandissement) : l'écart de dessin et de densité se voit d'un coup d'œil, et il change l'ordre des décisions.
-- La densité d'un sprite se mesure à l'écran dans le cadrage où il vit (Passe P1) ; une feuille approuvée ailleurs ne garde pas son aspect en
-  changeant de cadrage.
-- Un outil de comparaison nomme ce qu'il compare : une étiquette par défaut (« avant / après ») dit autre chose que l'image.
-
-## Passe UI1 — L'audit de l'interface et sa ligne directrice : trois directions en images générées, une fiche d'arbitrages (étapes 2.1 et 2.2 de la feuille de route) (2026-10-24)
-
-### Demande, mot pour mot
-- Opérateur (feuille de route, Passe FR1) : « Puis UI/HUD car ce n'est vraiment pas optimale, mais on commencera par fait un audit et des passes
-  visuels via des images references generes pour valider la ligne directrice, pour bien implementer. »
-- Séance locale lancée par la séance parente le 21/10 ; interrompue, puis reprise le 24/10 sur « reprend ». Consignes : ni branche ni commit ;
-  aucun fichier suivi modifié, sauf les images archivées et leurs `.source.json` ; serveur `dev-ui` sur :5187, jamais :5186 (séance d'audit de
-  l'arène en parallèle).
-- `main` = `c431295`. Serveur : entrée locale `dev-ui` ajoutée à `.claude/launch.json` (non suivi), le dépôt sur :5187 en `--strictPort`.
-
-### L'audit — [OK] 45 captures, aucune erreur de page
-- **Ordinateur 1920 × 1080, téléphone 375 × 812**, et 812 × 375 pour le paysage :
-  - `tools/play-shots.mjs` : la ville au matin, à l'après-midi et le soir ; « Here » ouvert au téléphone ; le dialogue de Mara ; la carte ; le
-    journal ; le tableau ; le menu ; les nouvelles ; le parvis et son dialogue ; Lantern Row ; la fiche de match ; la fin de la tranche ; le HUD de
-    l'arène (`window` en aide complète, `combo`, `ko`) ;
-  - un script hors dépôt : l'écran titre (`?title=1`, sans puis avec une vraie sauvegarde, et la saisie du nom) et la vue d'« Explore the district »
-    (`?time=midday`).
-- **[KO → compris]** `play-shots` ferme la première carte de la page (`.pm-overlay .pm-btn`) quand son JS ne contient pas « news ». Sur le duel,
-  c'est la fiche de match : il cliquait « Fight » avant la capture. Refait avec `/*news*/0`.
-- **Code lu** : `src/ui/*`, `src/arena/ArenaHud.ts`, `FloorUI.ts`, `src/main.ts`, `src/debug/Hud.ts`, `DebugPanel.ts`.
-- **Constat** : un seul langage (encre de nuit à 93 %, ivoire, or pâle, ambre, Segoe UI espacé), fidèle à la nuit verrouillée, mais habillé
-  comme une page web. Trois défauts principaux :
-  1. une seule apparence, de nuit, à toute heure : l'UI ne lit pas `DayState` ;
-  2. une hiérarchie de page web : texte de 10 à 13 px, « Here » sur un quart de l'écran avec les absents, la moitié de l'écran au téléphone,
-     sous-libellés de la barre d'actions de l'arène rognés en 1080p (`overflow:hidden`) ;
-  3. « Explore the district » s'ouvre sur le panneau DEV déplié, avec un second style de HUD (Palatino, mini-carte) ; `main.ts` le crée dès que
-     `clean` est absent, donc aussi en production. C'est dans la décision L7-6a (« … and the DEV panel ») : une question, pas un correctif d'office.
-- Autres relevés : « FREE » sur des achats payés en pièces (le coût montré est le créneau) ; le dialogue au centre cache celui qui parle ; le
-  portrait du générateur ne ressemble pas au sprite cuit ; la carte n'est qu'une liste ; la fiche de match et la victoire sont du texte nu ; la
-  sauvegarde ne se voit pas. Le détail écran par écran est dans le rapport.
-
-### Les images de référence — [OK] 9 images, 1,61 $ sur 5 $
-- `tools/art-lab/gen-image.mjs`, tâche `ui-directions`, `gpt-image-2`, `/images/edits`, qualité haute ; une capture du jeu **sans interface** en
-  référence (`clean=1` en B, `hud=0` dans l'arène). Une première référence de la ville était le cadrage A, trop lointain : refaite en B
-  (`camera=B&intro=0`).
-- `--dry-run` d'abord : au pire 0,627 $ par image. **Coût réel : 0,1786 à 0,1793 $ par image, 1,6109 $ pour les neuf** (registre `--spent`).
-- Trois directions, chacune sur la ville (dialogue de Mara, midi) et sur le duel de midi :
-  - **A « Encre et laiton »** : l'interface actuelle affinée (encre, filets de laiton, serif gravée) ;
-  - **B « Vélin du tournoi »** : parchemin ivoire, lettrines, écus ;
-  - **C « Héraldique pixel »** : cadres en pixel art sur la grille des sprites, bleu royal, ivoire et or du tournoi, onglets en fanions.
-  - En plus : B et C la nuit, et C au téléphone (1024 × 1536).
-- **Archivées** (`--archive`, octets inchangés, avec leur `.source.json`) dans `art-lab/characters/reference/sources/` :
-  `ui-direction-{a-town, a-arena, b-town, b-arena, c-town, c-arena, b-town-night, c-town-night, c-phone}-2026-10-24.png`. `npm run art:validate` :
-  18 manifestes, 30 sources, 0 erreur. **Non canoniques**, et non commitées par cette séance.
-- **[?] Ce que l'outil a ajouté** : la nuit, il a redessiné la scène et laissé le pavois, que J6 réserve au jour ; les trois directions dessinent
-  de grands bustes illustrés, de l'art qui n'existe pas dans le jeu ; C met des jauges vertes et rouges, hors palette. Sur la fiche, chaque point
-  est dit à côté de l'image.
-
-### La fiche d'arbitrages — publiée
-- Page privée https://claude.ai/artifact/7PeQMRJKDku4hdN5wuuC3y, collection `decisions`, relue vide après publication (`list`). Le script reprend
-  ce qui a marché en Passe D8 : il attend le pont jusqu'à 10 s, relit chaque écriture (`get`) avant d'afficher « Enregistré et relu », garde
-  une copie locale, et écrit à la connexion les choix faits avant elle.
-- **14 entrées** :
-  - **La ligne directrice** : L1 la direction (recommandée : C) ; L2 le jour et la nuit (un style, des tons qui suivent `DayState`) ; L3 le téléphone
-    (avec le système de design, le toucher restant hors tranche, E30) ; L4 les portraits (le visage de la feuille cuite d'abord, des bustes plus
-    tard).
-  - **Les défauts à corriger en premier** : P1 le panneau DEV d'Explore (fermé par défaut, H l'ouvre) ; P2 « FREE » (en premier) ; P3 la barre
-    rognée (en premier) ; P4 le dialogue, P5 « Here », P6 la fiche de match et la victoire (avec la direction choisie).
-  - **Le système de design (2.3)** : S1 les polices (pixel pour les titres et un texte lisible, embarquées) ; S2 les cadres (générés par le code,
-    en neuf tranches) ; S3 la palette (bleu, ivoire, or ; ambre pour l'action ; jauges dans la palette) ; S4 la taille minimale (16 px ordinateur,
-    14 px téléphone).
-
-### Les choix de l'opérateur, mot pour mot
-- Opérateur, mot pour mot : « La fiche UI est remplie. » Collection `decisions` relue (`ArtifactData list`) : **14 documents sur 14**, cliqués le
-  25/10 entre 03 h 44 et 03 h 48 UTC, une note. « = » : la recommandation de la fiche est suivie.
-
-| # | Décision | Choix de l'opérateur | Note de l'opérateur | |
-|---|---|---|---|---|
-| L1 | La direction de l'interface | « C · Héraldique pixel » | — | = |
-| L2 | Jour et nuit | « Un style, des tons qui suivent DayState » | — | = |
-| L3 | Le téléphone | « Avec le système de design » | — | = |
-| L4 | Les portraits | « Visage cuit d'abord, bustes plus tard » | — | = |
-| P1 | Explore et le panneau DEV | « Fermé par défaut, H l'ouvre » | — | = |
-| P2 | « FREE » sur les achats | « En premier » | — | = |
-| P3 | La barre d'actions rognée | « En premier » | — | = |
-| P4 | Le dialogue au centre | « Avec la direction choisie » | — | = |
-| P5 | Le panneau « Here » | « Avec la direction choisie » | — | = |
-| P6 | La fiche de match et la victoire | « Avec la direction choisie » | — | = |
-| S1 | Les polices | « Pixel pour les titres + texte lisible » | — | = |
-| S2 | Les cadres | « Générés par le code (neuf tranches) » | — | = |
-| S3 | La palette | « Bleu, ivoire, or ; ambre pour l'action » | « Cela peut changer par la suite » | = |
-| S4 | La taille du texte | « 16 px ordinateur, 14 px téléphone » | — | = |
-
-### Ce qui en découle — [OK] consigné, rien appliqué par cette séance
-- **La ligne directrice** de l'étape 2 est **C « Héraldique pixel »** : cadres en pixel art générés par le code (neuf tranches, densité des
-  sprites), bleu royal, ivoire et or du tournoi, ambre pour l'action, jauges dans la palette (S3 provisoire, d'après la note de l'opérateur) ;
-  un seul style dont les tons suivent `DayState` ; une police pixel embarquée pour les titres, chiffres et touches, et une police de texte lisible
-  embarquée (licence libre) ; texte de 16 px au moins sur ordinateur, 14 px au téléphone ; une mise en page téléphone (bandeau, feuille de dialogue,
-  onglets) dans le système de design, le toucher restant hors tranche (E30). Les images C (`ui-direction-c-*-2026-10-24`) sont la référence de
-  direction, **non canoniques** : ni leurs bustes, ni leurs jauges vertes et rouges, ni la scène redessinée ne sont des cibles.
-- **Portraits** : le visage de la feuille cuite de chaque personnage d'abord ; des bustes pour les personnages principaux plus tard, par la
-  chaîne d'art (manifeste, critique, approbation), dans une tâche à part.
-- **Tâches à part, chacune dans sa séance, une branche à la fois** :
-  1. **« En premier »** (avant le système de design), une petite tâche : P2, une étiquette par monnaie (pièces, créneaux), « free » seulement
-     quand rien n'est dépensé ; P3, les sous-libellés de la barre d'actions de l'arène lisibles en 1080p (change les pixels de `?scene=arena` :
-     preuve contre `main` figé) ; P1, le panneau DEV fermé par défaut quand on arrive par le bouton « Explore the district », H l'ouvre (les adresses
-     des outils inchangées, preuve à 0 px).
-  2. **L'étape 2.3, le système de design** (S1 à S4, L2, L3, L4 en première partie), puis la mise en œuvre écran par écran avec captures avant /
-     après, dont P4 (le dialogue en bas, le locuteur visible), P5 (« Here » réduit aux actions du lieu, les absents retirés) et P6 (la fiche de
-     match, la victoire, le journal et le tableau).
-- `AGENTS.md` (à mettre à jour par la séance qui versionne) : la ligne directrice de l'interface sous « Art direction », avec les règles S1 à S4
-  et L2, et la note de l'opérateur sur la palette.
-
-### Validation
-- Aucun code touché. `npm run art:validate` : 0 erreur avec les neuf sources archivées. Serveur `dev-ui` arrêté à la fin de la séance.
-- À versionner par la séance parente : les neuf PNG et leurs `.source.json`, et cette passe. Rapport et captures (hors dépôt) : dossier de notes
-  partagé, `ui-audit/`.
-
-### Pensée
-- Une image de référence d'interface se demande sur une capture du jeu **sans interface** : avec l'ancienne interface en référence, le modèle
-  la recopie.
-- Un générateur d'images « redessine » ce qu'il n'a pas reçu l'ordre de garder (le pavois la nuit, des bustes illustrés) : chaque écart se dit à
-  côté de l'image, avant que l'opérateur ne la prenne pour une cible.
-- Un outil de capture qui ferme la première carte d'une page se lit avant de lui confier un écran fait d'une carte (la fiche de match).
-- Ce qui ressemble à un bug (le panneau DEV d'Explore) se vérifie contre les décisions consignées avant d'être rangé parmi les défauts.
 
 ## Passe UI2 — Les trois corrections « En premier » de l'interface (P1, P2, P3), et le versement de la Passe UI1 (2026-10-24)
 
@@ -507,6 +292,124 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une barre qui grandit avec la taille du texte se mesure à chaque largeur de fenêtre, pas seulement en 1080p : 1 411 px ne tiennent pas dans 1 280.
 - Une faute injectée qui ne change rien n'est pas une faute : elle se vérifie avant de conclure qu'un test est faible.
 
+## Passe CB1 — L'atelier « système de combat » (étape 0 de la feuille de route, E1 / E16) : la spécification du « tour par tour dynamique », mené par l'opérateur (2026-10-25)
+
+### Demande, mot pour mot
+- Note de l'opérateur sur E1 / E16 (fiche de la Passe D8) : « Nous devons faire une tache entiere concernant le systeme de combat et la logique car
+  c'est quelque chose de nouveau que seul moi a l'entiere comprehension ». Séance locale lancée par la séance parente, en parallèle du système de
+  design de l'interface (« si il y a pas de conflit ») : l'opérateur mène, la séance prépare, interroge, consigne et rédige ; aucun code de combat.
+- Cadre : tant que la séance de l'interface tenait la seule branche, ni branche, ni commit, ni fichier suivi touché ; tout le travail dans le
+  dossier de notes partagé (`combat-workshop/` : état des lieux, réponses mot pour mot, référence Unity, brouillon, fiche). Aucun serveur lancé.
+  Branche `combat-system-cb1` ouverte depuis `main` (`f17daf6`) après la fusion de la Passe UI3, annoncée par la séance parente et vérifiée
+  (`git fetch --prune`, `git branch -a` : aucune autre branche).
+
+### Méthode
+- **État des lieux** (lu : `AGENTS.md`, ce journal, la feuille de route, les Passes A1 à A3, P1, P2, L7, D8, AA1, les trois contrats, `src/combat`,
+  `src/arena/CombatSim.ts`, `FighterArt.ts`, le prototype et son rapport) : le combat de l'arène est en temps réel, sans attente, avec des PA, une
+  garde tenue, une esquive dans une fenêtre et des techniques à recharge. Le rapport du prototype (`arena/source/runtime-bakeoff-report.txt`,
+  passe 9) le donne pour la spécification de l'opérateur, venue après une version « Dynamic Turn-Based » à jauge. Les contrats disent « tour
+  par tour ».
+- **Cinq groupes de questions** posés dans la conversation, ouverts, chacun avec ce que le code fait comme repère : le modèle et la boucle ; les
+  actions ; la résistance, la défense, l'adversaire, la fin ; les ressources, la préparation, les équipes ; les points ouverts, l'écran, les
+  animations, les contrats, l'ordre. Chaque réponse recopiée mot pour mot (annexe A de la spécification).
+- **La référence de l'opérateur** (G1) : son ancien combat Unity (`…\Unity\MyGame\Assets\game\Base\Battle`, C#, 6 057 lignes), lu en lecture
+  seule comme concept : charge tenue d'une barre, file d'exécution une action à la fois, garde tenue (miroir, regain), « Transe », effets d'état,
+  1 contre N. Aucun code repris ; l'opérateur en retire ensuite la charge tenue, les gardes spéciales et la Transe (G2).
+
+### Les mots de l'opérateur qui fondent le système (extraits ; le texte entier est l'annexe A de `briefs/combat-system.md`)
+- Le modèle (G1) : « Il propose une tour par tour dynamique... et ou chaque actions demandent un temps de chargement pour exexcuter, une garde
+  pour se proteger » ; « on dirait meme une inspiration de expedition 33 sauf que nous on est toujours actif dans le combat pas de temps de
+  pause. l'adversaire IA a la priorite donc quand ll attaque rien ne l'empeche et si on a le meme timing d'attaque que lui on peut etre
+  repousser. »
+- Les actions (G1) : « 2 aactions de defense : esquive (utilise les points d'action PA), garde ( utilise pas les PA mais subit des degats reduit
+  et peut parfois etourdir selon l'attaque ). 2 attaques simples : leeger (accumule des PA) et puissante (propose une attaque puissante et peut
+  etourdir parfois si jauge de resistance est brise ), et 4 competences speciales ( offensive, defensive, soutien) ».
+- Sans charge (G2) : « les touches seront instantanee pour le joueur, juste donc pas de charge ni garde specia et pas de transe. a la place de
+  charge, par exemple l'attaque lourde ou les competences auront un temps de delai ( preparation auto ) ».
+- La défense (G3) : « seulement garder et esquiver, il peut tenter d'attaquer maiis aucune execution se fera et il se prendra des degats car
+  l'adversaires sera toujours en pleine execution ».
+- La résistance (G2, G3, G4, G5) : « tous les cousps » ; « Oui une seul regle me va » ; « un etourdissement de 5-10s, degats legerement accrus
+  .... le but est de donner  un avantage sans briser le combat » ; « elle peut baisser legerement et progressivement avec le temps pour faire
+  simplle » ; « Oui surtout pour l'adversaire c;est une barre de break » ; sur un coup lourd contre une garde : « seulement monter la jauge plus
+  vite ».
+- La fin et la durée (G4, G5) : « Oui KO pour la fin du duel » ; « 5-10min selon la complexite de l'adversaire et ces points de vie ».
+- Les équipes, plus tard (G4) : « un concept de switch pour le joueur [...] je prefere tous les adversares max 3 ».
+- Les contrats et l'ordre (G5) : « Je te laisse gerer mais il est sur qu'il faut mettre a jour au besoin afin de commencer sur une base saine » ;
+  « je te laisse la liberte de choisir selon ce que tu penses le plus judicieux ».
+
+### La fiche — [OK] 11 choix sur 11 enregistrés et relus
+- Page privée https://claude.ai/artifact/97p5rqdpTgrqLNLcsBXVNi, collection `decisions`, relue vide après publication. Les protections de la Passe
+  D8, reprises dans le gabarit : pont attendu 10 s, chaque écriture relue (`get`) avant « Enregistré et relu », copie locale, choix faits avant
+  la connexion écrits à la connexion. Relue après « La fiche du combat est remplie. » : **11 documents sur 11**, cliqués le 25/10 entre 06 h 03
+  et 06 h 06 UTC, une note.
+
+| # | Décision | Choix de l'opérateur, mot pour mot | Note | |
+|---|---|---|---|---|
+| CB-1 | La spécification | « Approuvée » | — | = |
+| CB-2 | La liste des animations | « Approuvée pour Ren, puis Marek et Vessa » | — | = |
+| CB-3 | Une action lancée juste avant une attaque adverse | « Annulée, PA rendus » | — | = |
+| CB-4 | Jusqu'où va la phase de défense | « Toute la séquence, intervalles compris » | — | = |
+| CB-5 | Les valeurs de départ | « D'autres valeurs (ma note) » | « 1 par defaut » | ≠ |
+| CB-6 | Ce que montre le HUD | « Comme recommandé » | — | = |
+| CB-7 | L'aide complète et le repérage | « Comme recommandé » | — | = |
+| CB-8 | Amender « tour par tour » (décision A3) | « Amender maintenant, ces trois phrases » | — | = |
+| CB-9 | Le contrat de combat | « Plus tard, après l'essai » | — | = |
+| CB-10 | Le combat par défaut pendant la mise en œuvre | « Derrière un paramètre, défaut après mon essai » | — | = |
+| CB-11 | L'équilibrage « modéré » (L7-4) | « Intégré à C1 / C3 » | — | = |
+
+- **CB-5** : la note se lisait de deux façons. Question posée : « Sur CB-5, votre note dit « 1 par defaut ». Quelle valeur passe à 1 ? » ;
+  réponse : « Les PA au départ » (le duel commence avec 1 PA au lieu de 3 ; les autres valeurs restent un point de départ, à régler à l'essai).
+
+### Fait — [OK]
+- `briefs/combat-system.md` : la spécification approuvée, avec les choix de la fiche intégrés (§ 16) et les réponses mot pour mot (annexe A).
+  - Le modèle : temps continu ; l'attaque légère instantanée, l'attaque puissante et les compétences avec un délai de préparation automatique ;
+    les PA dépensés par les compétences et l'esquive (1 au départ, 5 au plus comme point de départ, +1 par légère qui touche, aucune recharge) ;
+    l'adversaire prioritaire pendant toute sa séquence, le joueur ne pouvant que garder ou esquiver ; une jauge de résistance par combattant, une
+    seule règle, remplie par les coups reçus et la garde, vidée lentement par le temps, son break étourdit 5 à 10 s avec des dégâts légèrement
+    accrus puis repart de zéro ; le K.O. seul ; des duels de 5 à 10 minutes.
+  - L'adversaire : des pauses plus courtes selon son niveau, garde et esquive pour certains, 2 à 4 compétences.
+  - La préparation : quatre compétences choisies avant le duel, obtenues par achats, entraînement et duels en ville ; une arme améliorable et 2
+    ou 3 accessoires.
+  - L'écran : l'aide discrète avec une légère alerte, les jauges des deux combattants.
+  - Les équipes plus tard : un personnage actif changé par un bouton, trois adversaires au plus.
+  - Les points laissés à l'essai (§ 11), les écarts avec le code (§ 12) et les contrats (§ 13).
+  - **La liste des animations** (§ 14) : 13 clés, 34 images pour Ren, une par famille de compétences ; Marek de 24 à 34.
+  - L'ordre de mise en œuvre (§ 15), choisi par la séance sur délégation : C1 à C5, puis les feuilles de combat.
+- **Les contrats, décision A3 (CB-8)** : `contracts/PROJECT_MASTER_CONTRACT.md` § 1 et § 6.1 et `contracts/GAMEPLAY_MASTER_CONTRACT.md` § 1 :
+  les trois phrases « tour par tour » remplacées par le texte montré sur la fiche, mot pour mot ; une note d'amendement datée dans l'en-tête de
+  chacun, avec le texte d'avant ; rien d'autre ne change. **L'écart E1 / E16 est clos.** E14 / E15 reste une tâche à part.
+- `AGENTS.md` (contrats maîtres), `briefs/roadmap-2026-10.md` (étape 0 faite, la liste des animations à l'étape 1, les choix de la fiche), « À
+  reprendre » (0b, 6c).
+- Aucun code ne change.
+
+### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
+- Cette passe écrite, les passes gardées faisaient 61 536 octets. AA1 et UI1, closes (fusionnées), partent d'un seul bloc vers
+  `journal/24-passes-AA1-UI1.md` (21 433 octets de passes, SHA-256 du bloc `556f3f7cd668104c…`) ; restent 40 319 octets. Preuve **8 / 8** (script
+  hors dépôt, contre la copie de `JOURNAL.md` d'avant le déplacement : corps de l'archive égal au bloc ; AA1, UI1 contigus, suivis de UI2 ; plus
+  dans `JOURNAL.md` ; chacune dans un seul fichier de `journal/` ; `JOURNAL.md` inchangé à partir de UI2 ; seules la phrase d'en-tête et une
+  ligne d'index changent ; en-tête comme `journal/23` ; CRLF seuls). Contrôle négatif : un bit changé dans une copie de l'archive → 7 / 8.
+
+### Validation
+- Documentation seule : typecheck, `npm test` **162 / 162**, build, `art:validate` (18 manifestes, 30 sources, 0 erreur).
+
+### Restes [?]
+- **La mise en œuvre**, chaque lot dans sa séance : C1 d'abord (le cœur du duel, en simulation pure, derrière un paramètre ; l'arène d'aujourd'hui
+  reste le défaut, prouvée à 0 px, et son empreinte contre le prototype reste valable).
+- **À l'essai de l'opérateur** (après C2) : le maximum de PA (4 ou 5), le regain de PA avec le temps, les recharges, l'action objet, l'esquive en
+  arrière ou de côté, la taille et la vitesse de la jauge, le surplus de dégâts du break, la durée réelle des duels ; puis le défaut (CB-10).
+- **Non tranché, à définir à la phase d'équipe** : la priorité quand plusieurs adversaires attaquent. **Hors de cette spécification** : les effets
+  d'état (« autre statut handicapant », G1), à décider si l'arme ou les compétences en demandent.
+- Le contrat de combat (`COMBAT_MASTER_CONTRACT.md`) s'écrira après l'essai (CB-9).
+
+### Pensée
+- Avant de questionner l'opérateur sur « ses » règles, chercher d'où viennent celles du code : ici, le prototype appliquait déjà sa spécification
+  (passe 9 du rapport). L'écart avec le contrat était un mot (« tour par tour ») plus qu'un système, et l'opérateur l'a nommé « tour par tour
+  dynamique ».
+- Des questions ouvertes posées par petits groupes, avec le code comme repère et une relecture de « ce que j'ai compris » en tête du groupe
+  suivant, font ressortir les trous un à un (le « repoussé », l'étendue de la défense) ; ce que la séance comble se marque et passe sur la fiche.
+- Une note qui se lit de deux façons (« 1 par defaut ») se fait préciser par une question courte avant d'être consignée : on ne choisit pas la
+  lecture.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -527,8 +430,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
     1080p, sous la nuit par défaut (10,6 ms), et la cadence tient 55 images/s ; restent à refaire au calme la série 2560 × 1440 et le démarrage ;
   - la revue en jeu de l'opérateur et les six décisions de la Passe L7 : faites, tranchées sur la fiche de la Passe D8 avec six écarts
     (E24, E30, E1 / E16, E14 / E15, E11, E25). Restent trois des cinq tâches à part de la Passe D8 (le jour par défaut d'« Explore the district »,
-    L7-6a, fait en Passe D9 ; les états du jour de l'arène, L7-2, faits en Passe AD1, la revue de l'opérateur en jeu à venir) : l'équilibrage vers
-    « modéré » (L7-4), l'amendement du contrat projet (E14 / E15, avec l'opérateur), la tâche « système de combat » (E1 / E16, avec l'opérateur) ;
+    L7-6a, fait en Passe D9 ; les états du jour de l'arène, L7-2, faits en Passe AD1, la revue de l'opérateur en jeu à venir ; la tâche « système
+    de combat », E1 / E16, faite en Passe CB1) : l'équilibrage vers « modéré » (L7-4, désormais intégré aux lots C1 / C3 du combat, CB-11),
+    l'amendement du contrat projet (E14 / E15, avec l'opérateur) ;
   - feuille de route après la tranche (Passe FR1) : `briefs/roadmap-2026-10.md` (arène, interface, districts dont le parvis d’abord, peuplement, gameplay) ;
   - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
@@ -653,6 +557,11 @@ la page publiée dans le visualiseur. Restes : visages des combattants (la gramm
 de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sources de lumière sur 24, ralenti sous 20 images/s.
 **De jour depuis la Passe AD1** (décision L7-2) : le duel et le parvis du mode jouable prennent l'état du créneau (`?time=`, `arenaQuery`) ; à voir
 en jeu par l'opérateur ; le liseré froid peint des combattants reste le même de jour ; l'artefact publié montre la nuit. **Audit des sprites (Passe AA1)** : le joueur est Ren généré à l'arène et `hero-x2-v4` en ville ; un texel de combattant fait 3,9 px en 1080p contre ~1,5 en ville ; jeux d'images courts (Ren 29, Marek 17). Décisions AA1-1 à AA1-6 (toutes à la recommandation) : Ren = `hero-x2-v4` avec une feuille de combat ; feuilles cuites (Ren, puis Marek, puis Vessa) après l'atelier combat ; en attendant, l'essai de densité ×2 contre ×4 et le public des citadins cuits + variantes V1, chacun derrière un paramètre ; les générés ne sont pas retouchés.
+**Le système de combat (Passe CB1)** : spécification `briefs/combat-system.md`, approuvée (« tour par tour dynamique » ; contrats amendés, A3 ;
+liste des animations : 34 images pour Ren). **À faire, chacun dans sa séance, dans l'ordre** : C1 le cœur du duel (simulation pure, derrière
+un paramètre, l'arène actuelle par défaut à 0 px, CB-10), C2 l'arène qui le montre puis l'essai de l'opérateur en jeu (il règle le § 11 de la
+spécification et décide du défaut), C3 les adversaires (avec L7-4), C4 le choix des compétences, C5 l'arme et les accessoires ; puis les
+feuilles de combat (après C1-C2 et AA1-3) ; plus tard les équipes et les options. Le contrat de combat s'écrira après l'essai (CB-9).
 
 **6d. Jour et nuit (note de l'opérateur, Passe D1)** — mot pour mot : « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Le jeu n'a aujourd'hui que la nuit (direction
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
@@ -678,7 +587,7 @@ liste, la sauvegarde silencieuse, le titre de l'arène perdu sur le ciel de jour
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -897,7 +806,10 @@ liste, la sauvegarde silencieuse, le titre de l'arène perdu sur le ciel de jour
 - Une fiche d'arbitrages se bâtit sur l'état du dépôt (fichiers approuvés, code), pas sur « À reprendre » seul : une ligne restée à l'ancien
   état fait reposer une question déjà tranchée (Passe D1, V1 et S2). Une note qui contredit l'option cliquée suspend la décision.
 - Une fiche attend le pont du visualiseur assez longtemps (10 s), relit chaque écriture avant d'afficher « enregistré » et dit l'échec en clair ;
-  sa collection se relit dès que l'opérateur la dit remplie (Passes D7, D8).
+  sa collection se relit dès que l'opérateur la dit remplie (Passes D7, D8). Une note qui se lit de deux façons se fait préciser par une
+  question courte avant d'être consignée (Passe CB1).
+- Une règle que l'opérateur est seul à comprendre se recueille en questions ouvertes, par petits groupes, avec le code comme repère ; ses
+  réponses se recopient mot pour mot et restent la source du texte ; ce que la séance complète se marque et passe sur la fiche (Passe CB1).
 ### Provenance et approbations
 - Rien d'externe ne devient « canon » en silence : un manifeste de provenance (`art-lab/characters/manifests`) avec approbation nommée et
   datée est la seule voie vers `runtimeUse: production`. Deux niveaux d'approbation distincts : *approved visual baseline*

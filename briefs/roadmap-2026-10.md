@@ -41,13 +41,21 @@ Puis : « Le district en cours, c'est le parvis de l'arène (la place principale
 - **L'atelier « système de combat »** (E1 / E16, mené par l'opérateur : « Nous devons faire une tache entiere concernant le systeme de combat et la
   logique car c'est quelque chose de nouveau que seul moi a l'entiere comprehension »). Il fixe la liste des animations (attaques, garde, esquive,
   coups reçus, K.O., charge). Sans lui, les sprites de l'étape 1 se limitent au jeu d'images actuel de l'arène.
+- **Fait (Passe CB1, 25/10)** : la spécification `briefs/combat-system.md`, approuvée par l'opérateur (« tour par tour dynamique » ; contrats
+  amendés, A3). Sa mise en œuvre, dans l'ordre choisi (§ 15) : C1 le cœur du duel (simulation pure), C2 l'arène qui le montre puis l'essai de
+  l'opérateur, C3 les adversaires (avec l'équilibrage L7-4), C4 le choix des compétences, C5 l'arme et les accessoires ; les nouvelles règles
+  derrière un paramètre jusqu'à l'essai (CB-10). Chaque lot est une tâche à part.
 
 ## Étape 1. Les sprites de l'arène
 
 1. **Audit** : ce que génère `src/arena/FighterArt.ts` (Ren, Marek, Vessa), les images que l'arène attend, la taille d'un texel à l'écran dans son
    cadrage, les gradins tels qu'ils sont.
 2. **Les combattants**, par la chaîne du héros : planches générées, reconstruction, rig, Aseprite, manifeste, critique à l'aveugle, approbation de
-   l'opérateur ; une feuille cuite remplace un combattant généré par les mêmes clés d'images.
+   l'opérateur ; une feuille cuite remplace un combattant généré par les mêmes clés d'images. **La liste des animations est fixée**
+   (`briefs/combat-system.md` § 14, CB-2 « Approuvée pour Ren, puis Marek et Vessa ») : 13 clés, **34 images** pour Ren = `hero-x2-v4` (`idle` 2,
+   `ready` 2, `strike` 3, `heavy` 4, `skillOff` 4, `skillDef` 3, `skillSup` 3, `block` 2, `dodge` 2, `hit` 2, `recover` 2, `ko` 3, `victory` 2),
+   une animation par famille de compétences, des compétences signature plus tard ; Marek de 24 à 34 images selon sa défense et ses familles ;
+   Vessa comme Ren. Les feuilles attendent C1-C2 (les durées) et l'essai de densité ×2 / ×4 (AA1-3).
 3. **Les spectateurs** : une foule bon marché (quelques silhouettes, variantes de couleurs par les masques de la Passe V1, une boucle d'acclamation,
    un seul appel de dessin) plutôt qu'un personnage complet par spectateur.
 
@@ -96,3 +104,10 @@ d'entraînement.
 - Les spectateurs : « Les citadins cuits de la ville + variantes V1 » (AA1-4).
 - L'étape 1 devient donc : l'atelier combat (étape 0), et en attendant l'essai de densité et le public, chacun dans sa séance et derrière un
   paramètre ; puis les feuilles de combat de Ren, Marek et Vessa.
+
+## Tranché (fiche de l'atelier combat, Passe CB1, 25/10)
+
+- La spécification : « Approuvée » (CB-1) ; la liste des animations : « Approuvée pour Ren, puis Marek et Vessa » (CB-2).
+- Les contrats : « Amender maintenant, ces trois phrases » (CB-8, décision A3) ; le contrat de combat : « Plus tard, après l'essai » (CB-9).
+- La suite : « Derrière un paramètre, défaut après mon essai » (CB-10) ; L7-4 « Intégré à C1 / C3 » (CB-11).
+- Le reste des choix (CB-3 à CB-7) est dans la spécification, § 16.
