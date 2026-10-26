@@ -456,6 +456,117 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une preuve « une fois l'écran retiré » retire l'écran dans le harnais, quel que soit son aspect des deux côtés, et se double d'un contrôle sans
   ce retrait (12 181 px) : sinon le 0 px pourrait venir d'un écran absent des deux captures.
 
+## Passe AF1 — La bande au sol et les anneaux de l'arène sous le HUD des fenêtres basses : la fenêtre d'esquive passe sur le bouton Esquive, le signe de priorité en haut (2026-10-26)
+
+### Demande
+- Dans cette séance, après la Passe AP1, l'opérateur : « Do this task here: “Bande au sol de l'arène absente en 812 × 375” » (la tâche proposée
+  à la fin de la Passe AP1). Branche `arena-floor-phone` depuis `main` (`e8970b1`), dans un worktree hors du dossier partagé (comme en AP1 : le
+  dossier partagé est sur la branche d'une autre séance). Serveurs : `afp-branch` (:5224, le worktree) et `afp-frozen-main` (:5225, `e8970b1`
+  figé hors dépôt), par `preview_start` / `preview_stop`.
+- `main` a reçu la Passe UI4 (l'écran de chargement, `2225bf7`) pendant la tâche : avance rapide impossible. Question à l'opérateur, réponse
+  mot pour mot : « Rebaser + push forcé (Recommandé) » (écarté : « Commit de fusion »). La branche est rejouée sur `2225bf7` (conflits dans
+  `JOURNAL.md` seulement : les deux passes et les deux principes gardés, la ligne de 6e fusionnée) et repoussée avec `--force-with-lease` ; les
+  contrôles de l'arène sont rejoués sur le résultat contre `2225bf7` figé (ci-dessous).
+
+### La cause — [OK] : la bande n'était pas absente, la barre du HUD la couvrait
+- **[KO → corrigé] le relevé de la Passe AP1** : « la bande au sol et les anneaux ne paraissent pas » était une lecture d'image. La capture
+  `hud=0` qui semblait le confirmer ne prouvait rien : sans HUD, `FloorUI` n'est pas dessiné du tout (`updateFloor` lie les anneaux et le
+  télégraphe à `hudVisible`). Mesuré : la bande et les anneaux sont dessinés ; **la barre « Fenêtre d'esquive » les couvre**.
+- La mesure (dans la page, transitions figées) : la bande et les anneaux échantillonnés sur le sol (441 et 96 points), projetés par la caméra de
+  l'arène, contre les boîtes que peint le HUD (fond, cadre, image, texte). La bande occupe toujours la même fraction de la hauteur (0,739 à
+  0,784 H : le champ vertical est fixe), la barre est à une distance fixe du bas (94 px, 72 px au téléphone) : elle la couvre sous ~582 px de
+  haut. Ancien duel, aide complète, moment `window` : 0 de 1920 × 1080 à 1280 × 600 ; bande couverte à 33 % en 1024 × 540 et 960 × 540, 78 % en
+  900 × 500, 89 % en 844 × 390, 100 % en 812 × 375, 740 × 360 et 667 × 375, 78 % en 568 × 320 (anneaux de 35 à 100 %) ; pendant **toute la
+  fenêtre de réaction**, l'instant où la bande vire à l'ivoire et pulse.
+- Introduit par la Passe UI3 (`f17daf6`) : la barre monte de 80 à 94 px du bas (58 → 72 au téléphone) et s'épaissit (cadre en neuf tranches).
+  La Passe P2 la posait plus bas et plus fine : l'ancienne page (Passe AP1) montre la bande en 812 × 375.
+- **Second recouvrement, trouvé par la même mesure** : dans le nouveau duel, le signe de priorité (« Marek attaque ») est posé, sur les fenêtres
+  de moins de 1 241 px de large et les téléphones, à la place de la barre (Passe C2) : il couvre 28 à 45 % des anneaux pendant chaque séquence
+  adverse, **aide discrète (le défaut) comprise**, sous 600 px de haut.
+
+### Les choix de l'opérateur, mot pour mot
+« = » : la recommandation est suivie. Questions posées dans la séance (AskUserQuestion), avec un aperçu de chaque option.
+
+| # | Question | Recommandation | Choix de l'opérateur | |
+|---|---|---|---|---|
+| AF1-1 | Sous ~600 px de haut, où va le compte à rebours de la fenêtre d'esquive ? | « Sur le bouton Esquive (Recommandé) » | « Sur le bouton Esquive (Recommandé) » | = |
+| AF1-2 | Nouveau duel, sous ~600 px de haut : où va le signe de priorité ? | « À la place de l'alerte (Recommandé) » | « À la place de l'alerte (Recommandé) » | = |
+
+- Écartés : « Retirer la barre », « Recadrer l'arène » (AF1-1) ; « Ne pas y toucher ici » (AF1-2).
+- **AF1-2 appliqué au plus près, avec un écart que je signale** : l'option disait « en haut au centre, à la hauteur de l'alerte (30 %), entre les
+  cartes et les têtes ». Les cartes du nouveau duel (PV, résistance, PA, étiquettes) sont plus hautes que celles de l'ancien : à 27 % le signe
+  tombait **sur les cartes** (1024 × 540 : sur les jauges, entre les deux cartes ; 812 × 375 : sur le coin de la carte de Ren) — **[KO → refait]**
+  ma première version. Et en 900 × 500 il n'y a plus de place entre le bas des cartes (230 px) et le haut des têtes (~239 px) : le signe couvrait
+  le haut des deux têtes — **[KO → refait]** ma deuxième version (sous les cartes partout). Retenu : en haut au centre dans les deux cas, **au-dessus
+  des cartes, à côté du titre**, tant que la fenêtre garde la mise en page d'ordinateur (481 à 600 px de haut, moins de 1 241 px de large) ; **sous
+  les cartes** sur un téléphone (480 px de haut ou moins), où le titre est masqué et les cartes collées en haut. Les fenêtres larges gardent leur
+  place d'aujourd'hui (entre les cartes, `top:84px`), qui ne touchait pas le sol. À revoir en jeu par l'opérateur.
+
+### Fait — [OK]
+- **`src/arena/ArenaHud.ts`** (ancien duel, et les règles communes) : un trait `.wl` au pied du bouton Esquive, le trait de préparation du
+  système (2 texels, ambre, lueur), avec la même condition (`win` = barre allumée) et le même compte à rebours (`scaleX` du temps restant) que la
+  barre ; `@media (max-height:600px)` : la barre retirée (`display:none`), le trait affiché. Au-dessus de 600 px : rien ne change (le trait est
+  `display:none`, la classe `win` n'y a pas d'effet).
+- **`src/arena/DynamicHud.ts`** (nouveau duel) : le même trait ; le signe : `(max-width:1240px) and (max-height:600px)` → en haut au centre
+  (`top:12px`, une ligne) ; `(max-height:480px)` → sous la plus basse des deux cartes (+6 px, calculé dans `update` depuis leurs boîtes : elles
+  grandissent avec les étiquettes Rempart / Ferveur) ; dans les deux cas il s'efface pendant que l'alerte est affichée (aide complète : classe
+  `al` sur la racine, comme `wb` pour la barre).
+- **`tools/arena-scene-check.mjs`**, contrôle 4 « les marques du sol hors du HUD » : à chaque taille de `FLOOR_SIZES` (par défaut de 1920 × 1080 à
+  568 × 320, onze tailles), aux moments où le HUD montre une barre ou un signe au-dessus du sol (`window` ; sous les nouvelles règles aussi
+  `denied`), en aide complète (bande et anneaux) et discrète (anneaux), aucun point échantillonné ne doit tomber dans une boîte que peint le HUD.
+- Images : `screenshots/calibration/af1-arena-floor/` (quatre avant / après : 812 × 375 ancien duel à la fenêtre, 812 × 375 et 900 × 500 nouveau
+  duel en aide discrète, 1024 × 540 nouveau duel à la fenêtre). `known-issues/arena-floor-band-812x375.png` (Passe AP1) retirée : le problème est
+  résolu (elle reste dans l'historique, `e8970b1`).
+
+### Les preuves
+- **Le contrôle 4 peut échouer** : sur `main` figé, **FAIL** — ancien duel 8 cas couverts sur 22 (les huit tailles sous 600 px de haut), nouveau
+  duel 32 sur 44 (la barre et le signe). Sur la branche : **PASS, 0 sur 22 et 0 sur 44**.
+- **Fautes injectées une à une** (fichiers rendus à l'octet, SHA-256), chacune attrapée : la barre gardée sur fenêtre basse → FAIL (bande et
+  anneaux sous la barre, 1024 × 540 et 812 × 375) ; la règle finale du signe des fenêtres basses retirée → FAIL, 4 cas sur 12 (les anneaux sous le
+  signe, aide discrète, 1024 × 540 et 900 × 500) ; sur la première version, la règle du signe retirée → FAIL aussi (1024 × 540 et 812 × 375).
+- **`arena-scene-check`** sur la branche, code final : ancien duel **PASS** (jeu en direct 4,8 s, dernière action `heavy` ; empreinte du
+  prototype ; 42 rendus ; télégraphe 6,94:1, deutéranopie 7,15, comme `main` ; 0 erreur ; sol dégagé 22 cas sur 22) ; nouveau duel **PASS**
+  (`DYNAMIC_SIM_HASH` ; 63 rendus ; 6,77:1 / 6,98 ; 0 erreur ; sol dégagé 44 sur 44).
+- **Le HUD contre `main` figé** (scripts hors dépôt, harnais de `arena-scene-shots` : `Math.random` à graine 1842, boucle tenue, capture de
+  chauffe, transitions et animations figées ; 19 moments sous les deux règles et les deux aides, 7 tailles, 133 paires) :
+  - témoin (deux chargements de `main`) : 132 sur 133 à 0 px ; la dernière, 27 px à ±1 niveau dans un petit rectangle de la scène
+    (147-200 × 157-207, en 1280 × 600 et 1280 × 720 selon le chargement : un bruit de chargement de `main` lui-même, vu aussi dans une première série) ;
+  - **1920 × 1080 et 1280 × 720 : 0 px** sur les 38 paires, à ce même bruit près (7 paires en 1280 × 720, 11 à 27 px à ±1, le même rectangle) ;
+  - sous 600 px de haut, l'écart vient de **trois choses seulement**, prouvées une à une : (1) **la barre retirée** — visible pendant la fenêtre ;
+    invisible (opacité 0) le reste du temps, mais présente dans l'arbre de calques de `main` : la retirer change l'arrondi du compositeur de ±1
+    niveau sur l'image entière à certaines tailles (900 × 500 : ~45 000 px ; 568 × 320 : 3 370 px en haut) — **`main` avec la seule barre retirée
+    est identique à la branche, 0 px** ; (2) le trait du bouton Esquive ; (3) le signe déplacé. Contre « `main` sans la barre », 95 paires : 51 à
+    0 px, toutes les autres ne diffèrent que dans le bouton Esquive et le signe, sauf 5 en 1280 × 600 (11 à 27 px à ±1, le rectangle du bruit). En
+    1024 × 540, 2 px à ±1 sous la barre retirée : les mêmes que donne `main` quand on n'y retire que la barre.
+- **Le signe** (script hors dépôt, boîtes dans la page, transitions figées ; `denied`, `foeBreak`, `broken`, `ward` ; neuf tailles de 1280 × 600 à
+  568 × 320) : jamais sur une carte ni sur le titre ; en haut, au-dessus des cartes de 1024 × 540 à 900 × 500 ; sous les cartes, avec une marge sous
+  les têtes, en 844 × 390, 812 × 375, 740 × 360 et 667 × 375 ; en 568 × 320 il touche le haut des têtes (ci-dessous).
+- **`tools/ui-text.mjs`** sur la branche, code final : **34 pages sur 34** (les deux règles, aide complète et discrète, de 1920 × 1080 à 740 × 360 ; le
+  mode jouable en 812 × 375 et 1024 × 540) : rien sous 16 / 14 px, les polices embarquées seules, aucun texte coupé ; plus aucun texte couvert sur
+  les fenêtres basses à mise en page d'ordinateur (2 avec la première version du signe, posée sur les cartes).
+- Typecheck ; `npm test` et build par la CI de la branche (le worktree n'a pas toutes les dépendances de développement). Pas de mesure GPU : le
+  changement est du DOM, la scène ne change pas (`main` sans la barre = branche hors du bouton et du signe).
+
+### [?] Relevé en passant, hors de la tâche (rien changé)
+- **568 × 320** (petit téléphone en paysage) : la barre d'actions est plus large que l'écran, « Garde » et le dernier bouton coupés
+  (`ui-text`, ancien et nouveau duel, déjà sur `main`) ; le signe sous les cartes y touche le haut des têtes (22 px entre les cartes et les têtes
+  pour un signe de 29 px).
+- **L'alerte du nouveau duel** (aide complète, à 27 % / 30 %) chevauche les cartes sur les fenêtres basses (1024 × 540, 812 × 375), déjà sur `main`
+  : les cartes du nouveau duel sont plus hautes que celles pour lesquelles l'alerte a été placée.
+- À 900 × 500, la carte de Marek passe « 7990 / 8000 » et « le champion » sur deux lignes (déjà sur `main`).
+
+### Restes [?]
+- La lecture en jeu par l'opérateur : le trait au pied d'Esquive (à côté du bouton qui pulse) et le signe en haut / sous les cartes.
+- Les trois relevés ci-dessus, à décider (tâche à part).
+
+### Pensée
+- « Ne paraît pas » se mesure avant d'être cru : une bande « absente » était couverte, et la capture sans HUD qui semblait le confirmer ne dessine
+  pas le sol du tout.
+- Un élément d'interface placé à une distance fixe du bas rencontre ce que la caméra place à une fraction fixe de la hauteur : la limite se
+  calcule (ici ~582 px) et se vérifie à toutes les hauteurs, pas seulement aux tailles mesurées jusque-là (1920 × 1080, 1280 × 720, 812 × 375).
+- Un choix d'interface décrit en mots (« à la hauteur de l'alerte, entre les cartes et les têtes ») se vérifie à chaque taille : quand ses deux
+  moitiés se contredisent, l'écart se dit à l'opérateur au lieu d'en garder une en silence.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -598,8 +709,10 @@ au sol, neige sur les personnages. Éclair dessiné dans le ciel : Passe W3. De 
 prototype, décor du district, combattants générés ×2, HUD au style du jeu ; la ville inchangée, 0 px ; Passe P2 : quatre critiques à
 l'aveugle, de 6,5 / 7 à 7,5 / 5,5 contre le prototype). Jouable en artefact privé : https://claude.ai/artifact/EzSKUGk1jrCSxLENY5CC44 (à
 republier avec `tools/arena-scene-page.mjs` après un changement ; republiée avec le HUD d'aujourd'hui en Passe AP1, C2-16, sa lecture dans le
-visualiseur de claude.ai à voir par l'opérateur). **[?] Passe AP1** : en 812 × 375, aide complète, la bande au sol et les anneaux ne paraissent pas
-(uniformes posés ; visibles en 1920 × 1080, 1280 × 720 et dans l'ancienne page à la même taille) : à diagnostiquer, tâche à part. Le prototype `arena/arena.html` reste la référence de ses règles.
+visualiseur de claude.ai à voir par l'opérateur). La bande au sol et les anneaux
+« absents » en 812 × 375 (Passe AP1) étaient sous la barre de la fenêtre d'esquive, sous ~600 px de haut : **corrigé en Passe AF1** (AF1-1 « Sur le
+bouton Esquive », AF1-2 « À la place de l'alerte » ; contrôle 4 d'`arena-scene-check`, onze tailles jusqu'à 568 × 320), à revoir en jeu par
+l'opérateur ; les pages publiées de l'arène (AP1, essai C2) montrent encore l'état d'avant. Le prototype `arena/arena.html` reste la référence de ses règles.
 **Décisions de l'opérateur (Passe D1)** : entrée depuis la ville « Plus tard » ; combattants « Générés pour l'instant » ; nombres du combat
 « Régler après essai » ; assistance « Discrète ». Temps GPU mesuré sur la 780M (Passe G1 : 9,3 ms en 1080p). **À voir sur sa machine** : cadence, lecture en mouvement,
 la page publiée dans le visualiseur. Restes : visages des combattants (la grammaire du générateur), anneau de dalles peu visible (l'occlusion
@@ -638,7 +751,9 @@ liste, la sauvegarde silencieuse, le titre de l'arène perdu sur le ciel de jour
 **Le parcours de l'arène vérifié (Passe C2)** : 124 pages mesurées, ancien et nouveau duel ; corrigés : K.O. et pause sous `hud=0` dans le
 système, la barre à 60 px avec ses textes à 16 px (P3 et S4 ensemble), la couche « Tournez l'appareil » sous `hud=0`. Écarts sur la fiche C2 :
 sous 1 241 px les sous-libellés masqués (61,6 px), l'écran de chargement (passé au système, Passe UI4), le téléphone tenu droit, la page publiée
-de la Passe P2 (republiée avec le HUD d'aujourd'hui, Passe AP1).
+de la Passe P2 (republiée avec le HUD d'aujourd'hui, Passe AP1). **Fenêtres basses (Passe AF1)** : la barre de la fenêtre d'esquive et le signe de priorité couvraient les
+marques du sol sous ~600 px de haut, corrigé ; relevés sans décision : en 568 × 320 la barre d'actions dépasse l'écran et le signe touche les têtes ;
+l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres basses ; à 900 × 500 la carte de Marek passe ses PV sur deux lignes.
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
@@ -957,3 +1072,7 @@ de la Passe P2 (republiée avec le HUD d'aujourd'hui, Passe AP1).
 - Un écran écrit dans une police embarquée montre son contenu une fois ses polices chargées, attente bornée et mesurée, avant que la scène prenne
   le fil principal ; une preuve « l'écran retiré » retire l'écran dans le harnais des deux côtés et se double d'un contrôle sans ce retrait ; un
   test qui fige un fichier contre un ancien commit se met à jour en nommant chaque changement voulu (Passe UI4).
+- Ce que la caméra place à une fraction de la hauteur et ce que l'interface place à une distance fixe du bas se rencontrent à une hauteur qui se
+  calcule : un contrôle qui projette les marques du sol et les compare aux boîtes du HUD, à toutes les tailles jusqu'au petit téléphone, le voit ;
+  « ne paraît pas » se mesure avant d'être cru (Passe AF1). Une différence de ±1 niveau sur toute l'image peut venir d'un élément invisible retiré
+  de l'arbre de calques : elle s'attribue en ne retirant que lui (Passe AF1).

@@ -242,7 +242,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   `heavyRen`, `ko`; deterministic, every step delivered to the presentation); `node tools/arena-scene-check.mjs ["<extra query>"]` — live play
   (keys pressed while the loop runs), the simulation's hash against the prototype's (with `combat=dynamic`: DynamicSim's own script against
   `DYNAMIC_SIM_HASH`, journal Passe C2), every moment in every assistance mode without a page error, the floor telegraph's contrast (>= 2:1,
-  also deuteranopia); exit 1 on a failure; `node tools/arena-scene-page.mjs <outDir> [query] [title]` (query default `scene=arena`) — a
+  also deuteranopia), the floor's marks (the band, the rings) clear of the HUD at every window size of `FLOOR_SIZES` down to a 568 x 320 phone
+  (journal Passe AF1); exit 1 on a failure; `node tools/arena-scene-page.mjs <outDir> [query] [title]` (query default `scene=arena`) — a
   production build with relative paths and the page to publish as an artifact (`arena-page.html`, no document skeleton, sets `?scene=arena`
   itself: the service hands no query string; its supporting files are `assets/*`; journal Passe P2). GPU time per pass of the arena:
   `node tools/perf.mjs "arena|scene=arena"` (the tool drives `window.__arena` when there is no `__app`; `?gpuprof=1` for the panel-less timer)

@@ -73,6 +73,12 @@ const DYN_CSS = `
 /* a narrow window: the cards widen (30vw), the sign leaves the top for the dodge window's place above the bar (the bar takes it when it shows) */
 @media (max-width:1240px){#ah-phase{top:auto;bottom:94px}#arena-hud.wb #ah-phase{opacity:0}}
 @media (max-height:480px){#arena-hud .ah-rs>span{display:none}#arena-hud .ah-rb{height:calc(2px + 6 * var(--ds-px))}#arena-hud .ah-rs{margin-top:3px}#arena-hud .ah-tags{margin-top:3px}#ah-phase{top:auto;bottom:72px;padding:0 8px;border-width:calc(3 * var(--ds-px))}#arena-hud.wb #ah-phase{opacity:0}#ah-phase b{font-size:var(--ds-fs-small)}#ah-phase span{display:none}}
+/* a short window (600 px high or less) where the sign sat in the bar's place: that place reaches the floor's marks (the rings, the telegraph).
+   The sign goes up to the top centre on one line and gives way while the alert shows (the operator's choice « À la place de l'alerte », journal
+   Passe AF1): above the cards, beside the title, while the window keeps the computer's layout (between the cards and the fighters' heads
+   there is no room left: 900 x 500, measured); right under the cards on a phone (its top set by DynamicHud.update from their bottoms) */
+@media (max-width:1240px) and (max-height:600px){#ah-phase{top:12px;bottom:auto}#ah-phase span{display:none}#arena-hud.al #ah-phase{opacity:0}}
+@media (max-height:480px){#ah-phase{top:30%;bottom:auto}#arena-hud.al #ah-phase{opacity:0}}
 @media (prefers-reduced-motion:reduce){#arena-hud .ah-rs.brk .ah-rb i,#ah-phase.nudge{animation:none}}
 `;
 
@@ -83,6 +89,8 @@ export class DynamicHud {
   private c = new Map<string, unknown>();
   private btn = new Map<string, HTMLButtonElement>();
   private q = <T extends Element>(s: string) => this.el.querySelector(s) as T;
+  /** a phone (journal Passe AF1): the sign sits under the cards */
+  private phone = typeof matchMedia === 'function' ? matchMedia('(max-height:480px)') : null;
   onAction: (id: string, down: boolean) => void = () => {};
   project: (who: DynFighterId) => { x: number; y: number } = () => ({ x: 0, y: 0 });
   readonly ready: Promise<void>;
@@ -103,7 +111,7 @@ export class DynamicHud {
     const buttons = items.map((b) => {
       if (b === '|') return '<span class="ah-sep"></span>';
       const label = b.short ? `<span class="fn">${b.name}</span><span class="sn">${b.short}</span>` : b.name;
-      return `<button class="ah-b${b.wide ? ' wide' : ''}" data-act="${b.id}" aria-label="${b.name} (${b.key})"><kbd>${b.key}</kbd><b>${label}</b><em>${b.sub}</em><i class="pg"></i></button>`;
+      return `<button class="ah-b${b.wide ? ' wide' : ''}" data-act="${b.id}" aria-label="${b.name} (${b.key})"><kbd>${b.key}</kbd><b>${label}</b><em>${b.sub}</em><i class="pg"></i>${b.id === 'dodge' ? '<i class="wl"></i>' : ''}</button>`;
     }).join('');
     const card = (who: DynFighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<span>${sub}</span><em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(D.fighters[who].name)}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${who === 'ren' ? t.resist : t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${who === 'ren' ? t.resist : t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div>${who === 'ren' ? `<div class="ah-pips" aria-label="${t.apLabel}">` + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-tags"><b class="wd"></b><b class="bs"></b></div><div class="ah-state"></div></div></div>`;
     this.el.innerHTML = `<div class="top"></div><div id="ah-title">${t.title}<small>${t.subtitle}</small></div>
@@ -195,13 +203,20 @@ export class DynamicHud {
       ph.querySelector('b')!.textContent = sign === 'defense' ? t.defense(foe) : sign === 'foeBroken' ? t.foeBroken(foe) : t.youBroken;
       ph.querySelector('span')!.textContent = sign === 'defense' ? t.defenseHint : '';
     });
+    // a phone: the sign right under the lower of the two cards (their height follows the gauges and tags); elsewhere the CSS places it
+    const y = sign && this.phone?.matches ? Math.round(Math.max(this.q('#ah-ren .ah-card').getBoundingClientRect().bottom, this.q('#ah-marek .ah-card').getBoundingClientRect().bottom)) + 6 : -1;
+    this.set('phY', y, () => { ph.style.top = y >= 0 ? `${y}px` : ''; });
     const wb = this.q<HTMLElement>('#ah-wbar');
     this.cls('wb', wb, 'on', up && !R.react);
-    // on a phone the sign sits where the dodge window's bar does: the bar, when it shows (full assistance), takes its place
+    // on a narrow window the sign sits where the dodge window's bar does: the bar, when it shows (full assistance), takes its place
     this.cls('wbroot', this.el, 'wb', up && !R.react);
-    if (up) (wb.firstElementChild as HTMLElement).style.transform = `scaleX(${Math.max(0, inc!.windowRemaining / inc!.windowDur).toFixed(2)})`;
+    // a short window shows the bar's countdown along the dodge button's foot instead (the CSS picks one)
+    this.cls('dgw', dg, 'win', up && !R.react);
+    if (up) { const left = `scaleX(${Math.max(0, inc!.windowRemaining / inc!.windowDur).toFixed(2)})`; (wb.firstElementChild as HTMLElement).style.transform = left; (dg.querySelector('.wl') as HTMLElement).style.transform = left; }
     const al = this.q<HTMLElement>('#ah-alert'), show = !!inc && full && visible;
     this.cls('al', al, 'on', show);
+    // a short window: the sign, at the top, gives way while the alert shows (the CSS reads this class)
+    this.cls('alroot', this.el, 'al', show);
     if (show) {
       this.set('alT', inc!.action, () => { al.querySelector('b')!.textContent = inc!.action === 'm_heavy' ? t.alertHeavy : t.alertLight; });
       this.set('alS', inc!.windowOpen, () => { al.querySelector('span')!.textContent = inc!.windowOpen ? t.reactNow : ''; });

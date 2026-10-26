@@ -60,6 +60,7 @@ export const CSS = `
 .ah-b em q i{display:inline-block;width:8px;height:8px;margin:0 4px 1px 2px;transform:rotate(45deg);background:var(--ds-amber)}
 .ah-b.noap b{color:var(--ds-muted)}.ah-b.noap em{color:var(--ds-amberHi)}
 .ah-b .cd{position:absolute;left:0;right:0;bottom:0;height:0;background:color-mix(in srgb,var(--ds-ink) 80%,transparent)}
+.ah-b .wl{display:none;position:absolute;left:0;bottom:0;width:100%;height:calc(2 * var(--ds-px));transform-origin:left center;background:var(--ds-amber);box-shadow:0 0 6px var(--ds-amber)}
 .ah-b s{position:absolute;inset:0;display:none;place-items:center;font:400 var(--ds-fs-pixel-big) var(--ds-pixel);text-decoration:none;color:var(--ds-ivory);text-shadow:0 var(--ds-px) 0 var(--ds-ink)}
 .ah-b.cool s{display:grid}.ah-b.cool b,.ah-b.cool em{visibility:hidden}
 .ah-b.open{border-image-source:var(--ds-f-btnAct);box-shadow:0 0 16px color-mix(in srgb,var(--ds-amber) 75%,transparent);animation:ahp .45s infinite alternate}
@@ -105,6 +106,10 @@ export const CSS = `
 @media (max-height:480px){#ah-title{display:none}#arena-hud .top{height:90px}.ah-f{top:6px}.ah-card,#ah-alert{border-width:calc(4 * var(--ds-px));border-image:var(--ds-f-btn) 4 fill / calc(4 * var(--ds-px)) stretch}.ah-card{width:min(30vw,250px)}.ah-port{width:calc(32px + 6 * var(--ds-px));height:calc(32px + 6 * var(--ds-px))}.ah-card{padding:0 2px}.ah-nm span{display:none}.ah-hp{height:calc(4px + 6 * var(--ds-px))}.ah-pips{margin-top:5px;gap:8px}.ah-pips b{width:8px;height:8px}
   #ah-alert{top:30%;padding:0 10px 0 0}#ah-alert svg{width:28px;height:28px}
   #ah-wbar{bottom:72px;width:min(380px,46vw);height:calc(4px + 6 * var(--ds-px))}#ah-bar{bottom:4px}.ah-state{margin-top:2px}}
+/* a short window (600 px high or less): the floor's marks (the rings, the telegraph) reach the reaction window's bar, which covered them through
+   the whole window; the bar gives way to the same countdown along the dodge button's foot, the system's preparation line (the operator's
+   choice « Sur le bouton Esquive », journal Passe AF1) */
+@media (max-height:600px){#ah-wbar{display:none}.ah-b.win .wl{display:block}}
 #arena-hud button:focus-visible{outline:var(--ds-px) solid var(--ds-goldHi);outline-offset:var(--ds-px)}
 @media (prefers-reduced-motion:reduce){.ah-b.open,.ah-b.hit,.ah-b.deny,.ah-pips b.gain{animation:none}#ah-dmg div{animation-duration:.01s}}
 `;
@@ -173,7 +178,7 @@ export class ArenaHud {
       if (b === '|') return '<span class="ah-sep"></span>';
       const d = b.id === 'guard' || b.id === 'dodge' ? null : D.actions[b.id];
       const nm = b.name ?? d?.short ?? d?.name ?? b.id, label = b.short ? `<span class="fn">${nm}</span><span class="sn">${b.short}</span>` : nm, sub = b.sub ?? `<q>${'<i></i>'.repeat(d?.apCost ?? 0)}</q> ${d?.cooldown ?? 0} s`;
-      return `<button class="ah-b${b.wide || (d && d.kind === 'tech') ? ' wide' : ''}${d && d.kind === 'tech' ? ' tech' : ''}" data-act="${b.id}" aria-label="${nm} (${b.key})"><kbd>${b.key}</kbd><b>${label}</b><em>${sub}</em><i class="cd"></i><s></s></button>`;
+      return `<button class="ah-b${b.wide || (d && d.kind === 'tech') ? ' wide' : ''}${d && d.kind === 'tech' ? ' tech' : ''}" data-act="${b.id}" aria-label="${nm} (${b.key})"><kbd>${b.key}</kbd><b>${label}</b><em>${sub}</em><i class="cd"></i>${b.id === 'dodge' ? '<i class="wl"></i>' : ''}<s></s></button>`;
     }).join('');
     const card = (who: FighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<span>${sub}</span><em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(D.fighters[who].name)}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i></div>${who === 'ren' ? `<div class="ah-pips" aria-label="${t.apLabel}">` + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-state"></div></div></div>`;
     this.el.innerHTML = `<div class="top"></div><div id="ah-title">${t.title}<small>${t.subtitle}</small></div>
@@ -241,7 +246,9 @@ export class ArenaHud {
     this.cls('gd', gd, 'on', R.state === 'idle'); this.cls('gd', gd, 'active', R.guarding); this.cls('gd', gd, 'warn', up && !!inc && inc.kind === 'heavy' && R.guarding);
     const wb = this.q<HTMLElement>('#ah-wbar');
     this.cls('wb', wb, 'on', up && !R.react);
-    if (up) (wb.firstElementChild as HTMLElement).style.transform = `scaleX(${Math.max(0, inc!.windowRemaining / inc!.windowDur).toFixed(2)})`;
+    // a short window shows the bar's countdown along the dodge button's foot instead (the CSS picks one)
+    this.cls('dgw', dg, 'win', up && !R.react);
+    if (up) { const left = `scaleX(${Math.max(0, inc!.windowRemaining / inc!.windowDur).toFixed(2)})`; (wb.firstElementChild as HTMLElement).style.transform = left; (dg.querySelector('.wl') as HTMLElement).style.transform = left; }
     const al = this.q<HTMLElement>('#ah-alert'), show = !!inc && full && visible;
     this.cls('al', al, 'on', show);
     if (show) {

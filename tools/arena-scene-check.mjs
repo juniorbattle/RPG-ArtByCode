@@ -4,9 +4,14 @@
 //      its hash against DYNAMIC_SIM_HASH, the value recorded with the rules (journal Passe C1);
 //   2. every scripted moment in every assistance mode (subtle, full, off): jump, one render, page errors and console errors counted;
 //   3. the floor telegraph's contrast in the reaction window (full assistance), read back from a capture: the band against the floor just
-//      behind and just in front of it (threshold 2:1, also with a deuteranopia simulation), as the prototype's device test.
-//   node tools/arena-scene-check.mjs ["<extra query>"]      (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/arena-scene-shots.mjs;
-//   exit 1 on an error, a wrong hash or a contrast under 2:1)
+//      behind and just in front of it (threshold 2:1, also with a deuteranopia simulation), as the prototype's device test;
+//   4. the floor's marks clear of the HUD at every window size of FLOOR_SIZES (default from 1920 x 1080 down to a 568 x 320 phone; journal
+//      Passe AF1: under 600 px high the reaction window's bar covered them through the whole window): at the moments where the HUD shows a
+//      bar or a sign over the floor (the window, under the new rules also an attack refused while the opponent attacks), the band (full
+//      assistance) and the fighters' rings (both assistances) sampled on the floor, projected to the screen, and none of their points may lie
+//      inside a box the HUD paints (a background, a frame, an image or text; transitions frozen).
+//   node tools/arena-scene-check.mjs ["<extra query>"]      (BASE_URL, W / H, FLOOR_SIZES=WxH,..., CHROME_PATH / CHROME_ARGS / READY_MS as
+//   tools/arena-scene-shots.mjs; exit 1 on an error, a wrong hash, a contrast under 2:1 or a floor mark under the HUD)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import { decodePng } from './art-lab/png.mjs';
@@ -80,9 +85,41 @@ try {
   const ratio = (x, y) => (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
   const tc = mean(res.band), fb = mean(res.behind), ff = mean(res.front);
   const contrast = +Math.min(ratio(lum(tc), lum(fb)), ratio(lum(tc), lum(ff))).toFixed(2), contrastDeuteranopia = +Math.min(ratio(deut(tc), deut(fb)), ratio(deut(tc), deut(ff))).toFixed(2);
+  // 4. the floor's marks clear of the HUD, window size by window size
+  await page.addStyleTag({ content: '*,*::before,*::after{transition:none!important;animation:none!important}' });
+  const floor = [];
+  for (const size of (process.env.FLOOR_SIZES || '1920x1080,1280x720,1280x600,1024x540,960x540,900x500,844x390,812x375,740x360,667x375,568x320').split(',')) {
+    const [w, h] = size.split('x').map(Number);
+    await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
+    floor.push(...await page.evaluate((size) => {
+      const A = window.__arena, out = [];
+      A.resize();
+      const shown =(el) => { for (let e = el; e && e !== document.body; e = e.parentElement) { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false; } return true; };
+      const painted = () => [...document.querySelectorAll('#arena-hud *')].filter((el) => {
+        const cs = getComputedStyle(el), rc = el.getBoundingClientRect();
+        if (!rc.width || !rc.height || !shown(el)) return false;
+        return !/^(transparent|rgba\(0, 0, 0, 0\))$/.test(cs.backgroundColor) || cs.borderImageSource !== 'none' || cs.backgroundImage !== 'none'
+          || [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) || /^(svg|img|canvas)$/i.test(el.tagName);
+      }).map((el) => ({ id: el.id || String(el.className?.baseVal ?? el.className ?? '').split(' ')[0] || el.tagName.toLowerCase(), r: el.getBoundingClientRect() }));
+      const scr = (x, z) => { const v = new A.camera.position.constructor(x, 0.012, z).project(A.camera); return [(v.x * 0.5 + 0.5) * innerWidth, (-v.y * 0.5 + 0.5) * innerHeight]; };
+      const cases = [['window', 'full'], ['window', 'subtle'], ...(A.rules === 'dynamic' ? [['denied', 'full'], ['denied', 'subtle']] : [])];
+      for (const [moment, mode] of cases) {
+        A.assist = mode; A.jump(moment); A.renderOnce();
+        const r = A.fighters.ren.pos.x, m = A.fighters.marek.pos.x, x0 = Math.min(r, m) - 0.9, x1 = Math.max(r, m) - 0.35, pts = [];
+        // the band (as FloorUI draws it: from Marek's ring to past Ren, its ivory rim at |z| 0.86) and both rings (radius 0.8 / 0.9, z squeezed 1.6)
+        if (mode === 'full') for (let i = 0; i <= 48; i++) for (let j = 0; j <= 8; j++) pts.push(['band', ...scr(x0 + (x1 - x0) * i / 48, -0.86 + 1.72 * j / 8)]);
+        for (const [c, rad] of [[r, 0.8], [m, 0.9]]) for (let k = 0; k < 48; k++) { const t = k / 48 * Math.PI * 2; pts.push(['rings', ...scr(c + Math.cos(t) * rad, Math.sin(t) * rad / 1.6)]); }
+        const boxes = painted(), hits = {};
+        for (const [what, x, y] of pts) { const bx = boxes.find((q) => x >= q.r.left && x <= q.r.right && y >= q.r.top && y <= q.r.bottom); if (bx) hits[`${what}:${bx.id}`] = (hits[`${what}:${bx.id}`] ?? 0) + 1; }
+        out.push({ size, moment, mode, points: pts.length, covered: hits });
+      }
+      return out;
+    }, size));
+  }
+  const floorBad = floor.filter((c) => Object.keys(c.covered).length);
   const wantHash = res.rules === 'dynamic' ? DYNAMIC_HASH : PROTOTYPE_HASH;
-  const bad = errors.length > 0 || res.simHash !== wantHash || contrast < 2 || contrastDeuteranopia < 2 || !(live.advanced > 0) || !live.lastAction;
+  const bad = errors.length > 0 || res.simHash !== wantHash || contrast < 2 || contrastDeuteranopia < 2 || !(live.advanced > 0) || !live.lastAction || floorBad.length > 0;
   failed = bad;
-  console.log(JSON.stringify({ live: { advanced: live.advanced, lastAction: live.lastAction, marekHp: live.marekHp, frames: live.frames, drawCalls: live.stats.drawCalls, frameTriangles: live.stats.frameTriangles, triangles: live.stats.arenaTriangles, instances: live.stats.instances, lights: live.stats.lights, atlas: live.stats.atlas }, rules: res.rules, simHash: res.simHash, sameAsPrototype: res.simHash === PROTOTYPE_HASH, sameAsRecorded: res.simHash === wantHash, renders: res.renders, telegraph: { band: tc.map(Math.round), behind: fb.map(Math.round), front: ff.map(Math.round), contrast, contrastDeuteranopia }, errors: errors.slice(0, 10), errorCount: errors.length, verdict: bad ? 'FAIL' : 'PASS' }));
+  console.log(JSON.stringify({ live: { advanced: live.advanced, lastAction: live.lastAction, marekHp: live.marekHp, frames: live.frames, drawCalls: live.stats.drawCalls, frameTriangles: live.stats.frameTriangles, triangles: live.stats.arenaTriangles, instances: live.stats.instances, lights: live.stats.lights, atlas: live.stats.atlas }, rules: res.rules, simHash: res.simHash, sameAsPrototype: res.simHash === PROTOTYPE_HASH, sameAsRecorded: res.simHash === wantHash, renders: res.renders, telegraph: { band: tc.map(Math.round), behind: fb.map(Math.round), front: ff.map(Math.round), contrast, contrastDeuteranopia }, floorClear: { cases: floor.length, covered: floorBad.map((c) => `${c.size} ${c.moment} ${c.mode} ${JSON.stringify(c.covered)}`) }, errors: errors.slice(0, 10), errorCount: errors.length, verdict: bad ? 'FAIL' : 'PASS' }));
 } finally { await b.close(); }
 process.exit(failed ? 1 : 0);
