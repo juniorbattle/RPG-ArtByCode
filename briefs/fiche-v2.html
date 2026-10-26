@@ -1,0 +1,385 @@
+<title>Essai de la version 2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f2f3f6;
+  --surface: #ffffff;
+  --fg: #1c2030;
+  --muted: #586078;
+  --line: #d6dae4;
+  --brass: #8a6416;
+  --brass-soft: #f3ead4;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #b8471a;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #13151c; --surface: #1c1f28; --fg: #e8e9ee; --muted: #a2a9ba; --line: #313645;
+    --brass: #d9b45a; --brass-soft: #2d2818; --rec: #7cc48e; --rec-soft: #1b2b21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #13151c; --surface: #1c1f28; --fg: #e8e9ee; --muted: #a2a9ba; --line: #313645;
+  --brass: #d9b45a; --brass-soft: #2d2818; --rec: #7cc48e; --rec-soft: #1b2b21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.status.err { color: var(--cendre); font-weight: 600; }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.quote { border-left: 3px solid var(--line); padding-left: 10px; font-style: italic; }
+.extra { min-width: 0; overflow-x: auto; }
+.extra table { border-collapse: collapse; font-size: 14px; width: 100%; }
+.extra th, .extra td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.extra th { font-weight: 600; color: var(--muted); }
+.extra td.n { font-variant-numeric: tabular-nums; text-align: right; }
+.extra code { font-family: var(--font-mono); font-size: 12.5px; }
+.amend { display: flex; flex-direction: column; gap: 10px; }
+.amend div { display: flex; flex-direction: column; gap: 2px; }
+.amend b { font-size: 13px; color: var(--muted); }
+.amend del { color: var(--muted); }
+.amend ins { text-decoration: none; background: var(--rec-soft); border-radius: 3px; padding: 0 2px; }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.saved { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p, .after ol { margin: 0; max-width: 68ch; }
+.after ol { padding-left: 22px; display: flex; flex-direction: column; gap: 4px; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · après la séance cloud « Version 2 » · 26 octobre 2026</span>
+    <h1>L'essai de la version 2</h1>
+    <p class="lede">La séance cloud a construit la version 2 derrière le drapeau <code>flags.v2</code> : la charge par paliers, les compétences, l'équipement, marchander, défier, voler, trois places ouvertes, les dix jours, les cinématiques, les événements, le son et les écrans P4 à P6. Le jeu par défaut n'a pas changé. Elle a tranché seule les détails, chacun « proposé » au journal ; voici les plus importants, à juger après votre essai (le guide : <code>briefs/v2-trial.md</code>). Pour chaque point : ce qui est fait, ma recommandation et vos options. Une note est facultative. Chaque choix est enregistré, puis relu avant d'afficher « Enregistré et relu ».</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dites-le dans la conversation. Une séance locale relit vos choix et les verse au journal mot pour mot ; ce qui demande du travail devient une tâche à part, chacune sur sa branche.</p>
+    <p>Ce qui reste local, quelle que soit votre décision :</p>
+    <ol>
+      <li><b>Les mesures GPU</b> des trois places et des pages de la version 2 (budget « Pas plus cher que la nuit B »).</li>
+      <li><b>La revue visuelle</b> des places, des cinématiques et des écrans en rendu matériel ; le contrôle vivant de l'arène.</li>
+      <li><b>L'art</b> : les cinq poses de charge (spécification § 14), la feuille de Marek (AV-10), les personnages à cuire (journal, Passe V5).</li>
+    </ol>
+    <p class="src">Sources : <code>briefs/v2-trial.md</code>, <code>briefs/cloud-session-v2-brief.md</code>, <code>briefs/combat-system.md</code> § 4b et § 14, journal Passes V0 à V10.</p>
+  </section>
+</div>
+
+<script>
+const GROUPS = [
+  { id: "combat", title: "Le combat", sub: "La charge par paliers (A3, AV-5), C3 et l’équilibrage.", fam: "var(--cendre)", items: [
+    { id: "V2-1", tag: "charge", title: "Les temps de charge",
+      ctx: "La puissante part à 2 s de tenue ; les compétences de 2,7 s (Rampart au niveau 5) à 9 s (Estocade au niveau 1) ; un palier de compétence au moins 0,25 s après la puissante. Un coup chargé paie sa tenue (puissante ×2,2, Éclair ×4…).",
+      rec: "Garder ces temps : ils suivent votre exemple (« 2-3 s », « peut-être 10 s ») et rendent chaque palier rentable.",
+      opts: ["Garder", "Plus courts", "Plus longs"], recIdx: 0,
+      src: "briefs/combat-system.md § 4b ; journal Passe V1" },
+    { id: "V2-2", tag: "charge", title: "Ce qui coupe une charge",
+      ctx: "Un coup reçu sans garde, l'esquive du joueur, son break ou le K.O. coupent la charge ; un coup gardé la garde ; relâchée pendant la séquence de l'adversaire, elle est perdue.",
+      rec: "Garder : la charge est un risque lisible.",
+      opts: ["Garder", "Seul un coup reçu la coupe", "Rien ne la coupe"], recIdx: 0,
+      src: "src/combat/charge.ts ; journal Passe V1" },
+    { id: "V2-3", tag: "équilibrage", title: "L’équilibrage « modéré »",
+      ctx: "Chaque rival a son seuil d'adresse : Tobin facile, Orla à 0,4-0,5, Marek le plus dur (25 % de victoires à 0,5, 60 % à 0,6). Au TournamentLab sur dix jours, le joueur diligent passe toujours la coupe, atteint la finale deux fois sur trois et la gagne une fois sur dix.",
+      rec: "Garder pour l'essai, puis ajuster rival par rival.",
+      opts: ["Garder", "Plus facile", "Plus dur"], recIdx: 0,
+      src: "src/combat/v2duel.ts (V2_FOES) ; journal Passes V1, V6" },
+    { id: "V2-4", tag: "blessures", title: "Les blessures sous la version 2",
+      ctx: "La règle d'aujourd'hui (une victoire à moins de 15 % des PV blesse) frappe souvent sous la charge : 1,96 blessure par partie de dix jours au TournamentLab.",
+      rec: "Revoir la règle dans une tâche à part (par exemple : seulement un K.O. par un coup puissant).",
+      opts: ["Revoir (tâche à part)", "Garder"], recIdx: 0,
+      src: "src/tournament/pool.ts (applyPlayerDuel) ; journal Passe V6" },
+    { id: "V2-5", tag: "comparaison", title: "L’ancien schéma (touches 1-6)",
+      ctx: "`&input=keys` garde la commande de C2 sur le même duel de la version 2, pour comparer.",
+      rec: "Le garder jusqu'à votre choix définitif de la commande.",
+      opts: ["Le garder pour comparer", "Le retirer"], recIdx: 0,
+      src: "src/arena/v2Arena.ts" },
+  ]},
+  { id: "systemes", title: "Les systèmes", sub: "Compétences, équipement, actions en ville.", fam: "var(--astre)", items: [
+    { id: "V2-6", tag: "compétences", title: "Le catalogue et ses sources",
+      ctx: "Douze compétences (cinq offensives, quatre défensives, trois de soutien), niveaux 1 à 5 ; achat chez Corvin (35 à 45 pièces), l'entraînement jusqu'au niveau 3, le défi au-delà (Orla, Ilse, Vessa enseignent chacune la sienne).",
+      rec: "Garder.",
+      opts: ["Garder", "Revoir les prix", "Revoir le catalogue"], recIdx: 0,
+      src: "src/combat/skillbook.ts, src/simulation/v2skills.ts ; journal Passe V2" },
+    { id: "V2-7", tag: "équipement", title: "L’équipement et les prix",
+      ctx: "Une arme à trois paliers (Bram, 10 / 25 / 40 pièces), une armure, deux accessoires ; quatre boutiques. Les prix : district, réputation (jusqu'à -15 %), relation (-10 %), pénurie d'acier, nuit (+20 %), un marchandage du jour.",
+      rec: "Garder.",
+      opts: ["Garder", "Moins de modificateurs", "Revoir"], recIdx: 0,
+      src: "src/simulation/gear.ts, v2gear.ts ; journal Passe V3" },
+    { id: "V2-8", tag: "vol", title: "Le vol et ses conséquences",
+      ctx: "Réussi : la pièce la moins chère. Pris : réputation -8 (-12 si la bourse est vide), amende de 15 pièces au plus, porte fermée pour la journée, prix +25 % le lendemain, la garde en alerte. Jamais de prison.",
+      rec: "Garder.",
+      opts: ["Garder", "Plus sévère", "Plus doux"], recIdx: 0,
+      src: "src/simulation/v2town.ts ; journal Passe V4" },
+    { id: "V2-9", tag: "défi", title: "Les défis en ville",
+      ctx: "Un duel à mi-vie, un créneau, une fois par jour par combattant ; gagné : la compétence apprise ou montée, +3 de réputation ; perdu : -1, sans blessure.",
+      rec: "Garder.",
+      opts: ["Garder", "Revoir"], recIdx: 0,
+      src: "src/simulation/v2town.ts ; journal Passe V4" },
+  ]},
+  { id: "monde", title: "Les districts et l’histoire", sub: "Les places, les dix jours, les cinématiques, les événements.", fam: "var(--voile)", items: [
+    { id: "V2-10", tag: "districts", title: "Les trois places",
+      ctx: "Le parvis, le terrain d'entraînement et la place festive (à la place de Lantern Row) : des places ouvertes de 22 x 19 m, bâties avec les générateurs du Merchant District, une caméra qui suit le héros, les feuilles cuites approuvées par rôle et des sprites générés provisoires pour les autres.",
+      rec: "Les garder pour la revue locale (GPU, visibilité, regard).",
+      opts: ["Garder pour la revue locale", "Revoir leur taille", "Revoir leur composition"], recIdx: 0,
+      src: "src/world/Plazas.ts, PlazaApp.ts ; journal Passe V5" },
+    { id: "V2-11", tag: "structure", title: "Les dix jours",
+      ctx: "Poule en trois tours (jours 2, 4, 5), la coupe des quatre meilleurs (soir du jour 5), demi-finales et combats de la Porte (jour 6), troisième place et finale de la Porte (jour 8), finale (jour 10) ; jours 3, 7, 9 libres. La phase d'équipe reste un écart consigné.",
+      rec: "Garder.",
+      opts: ["Garder", "Revoir"], recIdx: 0,
+      src: "src/tournament/v2calendar.ts ; contrat projet § 4 ; journal Passe V6" },
+    { id: "V2-12", tag: "Orla", title: "Orla alliée",
+      ctx: "Le jour 7, si elle est devenue une amie (entraînement), Orla demande à vous rejoindre : alliée pour la phase d'équipe, et +1 PA au début de vos duels d'ici là.",
+      rec: "Garder.",
+      opts: ["Garder", "Un autre effet", "Sans effet en duel"], recIdx: 0,
+      src: "src/narrative/v2story.ts ; journal Passe V6" },
+    { id: "V2-13", tag: "cinématiques", title: "Les cinq cinématiques",
+      ctx: "L'arrivée, la coupe, Orla, la veille de la finale, le matin de la finale : jouées en direct sur les places (caméra, répliques, marche), passables par Échap.",
+      rec: "Garder et en écrire d'autres plus tard.",
+      opts: ["Garder", "En vouloir plus", "Moins"], recIdx: 0,
+      src: "src/narrative/v2story.ts, src/ui/cutscene.ts ; journal Passe V6" },
+    { id: "V2-14", tag: "événements", title: "Les événements de la version 2",
+      ctx: "Quatorze nouveaux, chaque district de jour et de nuit ; le sabotage ciblé de l'équipement avant un combat du tableau, avec deux signes et quatre réponses (Hilde vérifie, la garde payée, le signalement, la confrontation).",
+      rec: "Garder.",
+      opts: ["Garder", "Revoir"], recIdx: 0,
+      src: "src/events/v2catalog.ts ; journal Passe V7" },
+  ]},
+  { id: "forme", title: "Le son et l’interface", sub: "Ce qu’on entend, et les écrans P4 à P6.", fam: "var(--ronce)", items: [
+    { id: "V2-15", tag: "son", title: "Le son par le code",
+      ctx: "Effets du duel et de l'interface, ambiances par lieu et moment, un air pincé sur le mode de l'état du jour ; volume, musique, coupure ; rien avant un geste.",
+      rec: "Garder pour l'essai.",
+      opts: ["Garder", "Revoir les ambiances", "Revoir la musique"], recIdx: 0,
+      src: "src/audio/ ; journal Passe V8" },
+    { id: "V2-16", tag: "écrans", title: "P4, P5, P6",
+      ctx: "Le dialogue en bas, la caméra tournée vers l'orateur ; « Here » réduit aux actions du lieu, repos et attente sous l'état ; la fiche de match et la victoire en grand.",
+      rec: "Garder.",
+      opts: ["Garder", "Revoir"], recIdx: 0,
+      src: "src/ui/townUi.ts ; journal Passe V9" },
+  ]},
+  { id: "suite", title: "La suite", sub: "Ce qui reste à décider après l’essai.", fam: "var(--cendre)", items: [
+    { id: "V2-17", tag: "défaut", title: "Le passage au défaut",
+      ctx: "La version 2 reste derrière son drapeau. Avant d'en faire le défaut : les mesures GPU, la revue visuelle, les poses de charge.",
+      rec: "Pas encore : après les preuves locales et votre essai.",
+      opts: ["Pas encore", "La version 2 devient le défaut d'une nouvelle partie (tâche à part)"], recIdx: 0,
+      src: "briefs/cloud-session-v2-brief.md § 2" },
+    { id: "V2-18", tag: "art", title: "Les personnages à cuire d’abord",
+      ctx: "Treize rôles sans feuille cuite jouent en sprites générés provisoires.",
+      rec: "Les rivaux d'abord (Orla, Vessa, Marek, Ilse, Cassius), puis les maîtres des places.",
+      opts: ["Les rivaux d'abord", "Les maîtres des places d'abord (Hilde, Corvin, Odo, Anwen)"], recIdx: 0,
+      src: "journal Passe V5" },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const LS = 'fiche-v2-v1';
+let state = {};
+try { state = JSON.parse(localStorage.getItem(LS) || '{}') || {}; } catch { state = {}; }
+const pending = new Set(Object.keys(state));
+let db = null;
+const saveLocal = () => { try { localStorage.setItem(LS, JSON.stringify(state)); } catch { /* local copy only */ } };
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.extra) { const x = el('div', { class: 'extra' }); x.innerHTML = it.extra; c.append(x); }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Votre choix pour ' + it.id });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, une correction, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value));
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'saved', id: 'saved-' + it.id }, ''));
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t, err) => { const s = document.getElementById('save'); s.textContent = t; s.classList.toggle('err', !!err); };
+const setCard = (id, t) => { const p = document.getElementById('saved-' + id); if (p) p.textContent = t; };
+const writing = {};
+async function write(id) {
+  saveLocal();
+  if (!db) { pending.add(id); setCard(id, 'Gardé dans ce navigateur, en attente de l\'enregistrement.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      const body = { choice: s.choice || '', note: s.note || '', at: new Date().toISOString() };
+      setSave('Enregistrement…'); setCard(id, 'Enregistrement…');
+      await db.doc('decisions/' + id).set(body);
+      const back = await db.doc('decisions/' + id).get();
+      const v = back.exists ? (back.data() || {}) : null;
+      if (!v || v.choice !== body.choice || v.note !== body.note) throw new Error('relecture différente');
+    } while (writing[id].again);
+    pending.delete(id);
+    setSave('Enregistré et relu'); setCard(id, 'Enregistré et relu.');
+  } catch (e) {
+    pending.add(id);
+    const ro = e && e.code === 'invalid_argument';
+    setSave(ro ? 'Lecture seule : vos choix ne sont pas enregistrés. Copiez le récapitulatif dans la conversation.' : 'Échec de l\'enregistrement : cliquez de nouveau, ou copiez le récapitulatif dans la conversation.', true);
+    setCard(id, 'Pas enregistré.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche de l\'essai de la version 2 (V2) — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copiez avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copiez le récapitulatif dans la conversation.', true); return; }
+  setSave('Prêt');
+  try {
+    const snap = await db.collection('decisions').get();
+    for (const d of snap.docs) { if (pending.has(d.id)) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+  } catch { /* the live listener below fills in */ }
+  update(); saveLocal();
+  for (const id of [...pending]) await write(id);
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { if (pending.has(d.id) || writing[d.id]) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update(); saveLocal();
+  }, () => setSave('Connexion à l\'enregistrement perdue : rechargez la page.', true));
+})();
+</script>

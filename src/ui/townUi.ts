@@ -61,6 +61,8 @@ const CSS = `
 .pm-parch q{display:block;margin:4px 0;quotes:none}
 .pm-talk{place-items:end center;background:transparent;padding:0 16px 16px}
 .pm-talk .pm-card{width:min(760px,100%);max-height:52vh}
+.pm-card input[type=range]{accent-color:var(--ds-goldHi);width:min(320px,100%)}
+@media (max-height:500px){.pm-talk{padding:0}.pm-talk .pm-card{max-height:82vh}}
 #pm-status .pm-self{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
 #pm-status .pm-self .pm-btn{flex:1 1 auto;margin:0;padding:2px 8px}
 .pm-result .pm-big{text-align:center}
@@ -337,7 +339,7 @@ export class TownUi {
     const id = opponentOf(m), r = RIVALS[id], url = portraitUrl(id), g = s.v2?.gear;
     const stage = m.stage === 'semi' ? tx('v2.stage.semi') : m.stage === 'gate' ? tx('v2.stage.gate') : m.stage === 'third' ? tx('v2.stage.third') : m.stage === 'gateFinal' ? tx('v2.stage.gateFinal') : m.stage === 'final' ? tx('v2.stage.final') : tx('v2.stage.pool', { round: m.round });
     const intel = s.facts.includes(`scouted:${id}`) ? tx('ui.arena.foeSkills', { name: r.name, skills: (V2_FOES[id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') }) : tx('v2.sheet.unknown', { name: r.name });
-    const gear = g ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: g.armour ? itemName(g.armour) : tx('v2.gear.none') }) : '';
+    const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
     return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h3 class="pm-h">${esc(r.name)}</h3><p class="pm-sub">${esc(r.epithet)}</p><p>${esc(r.bio)}</p></div></div>`
       + `<p class="pm-sub">${esc(intel)}</p><p class="pm-sub">${esc(gear)}</p>${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
   }

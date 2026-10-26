@@ -454,6 +454,7 @@ export const EN = {
   'v2.stage.final': 'The final',
   'v2.sheet.unknown': 'You know little of {name}\'s skills: scouting would tell you more.',
   'v2.sheet.gear': 'You bring {weapon} (tier {tier}) and {armour}.',
+  'v2.sheet.gearBare': 'You bring {weapon} (tier {tier}), and no armour.',
   'v2.sheet.ally': 'Orla watches from the gate: one action point more at the start.',
   'v2.result.won': 'Victory',
   'v2.result.lost': 'Defeat',

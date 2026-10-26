@@ -19,6 +19,7 @@ export interface SceneStage {
 
 const CSS = `.pm-bands::before,.pm-bands::after{content:'';position:fixed;left:0;right:0;height:9vh;background:#000;z-index:38;pointer-events:none}
 .pm-bands::before{top:0}.pm-bands::after{bottom:0}
+body.pm-bands .pm:not(.pm-scene){visibility:hidden}
 .pm-scene{position:fixed;left:50%;bottom:calc(9vh + 12px);transform:translateX(-50%);width:min(760px,calc(100% - 32px));z-index:41;padding:8px 12px}
 .pm-scene .pm-parch q{display:block;quotes:none}
 .pm-scene .pm-row{display:flex;justify-content:flex-end;gap:8px}`;
