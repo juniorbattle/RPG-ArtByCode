@@ -1,0 +1,50 @@
+import { PlazaApp } from '../world/PlazaApp';
+import { lookOf, placeName, type GameState } from '../simulation';
+import { PLAZA_CROWD, PLAZA_OF, plazaPeople } from '../simulation/v2places';
+import { PEOPLE } from '../narrative/people';
+import { go, installGameApi, type Boot } from './play';
+import { TownUi } from './townUi';
+import { el } from './style';
+import { tx } from '../narrative/text';
+import { fontsReady, installDesign } from './design/system';
+import { preloadPortraits } from './portraits';
+
+/** The version 2's open places (lot V5, journal Passe V5): the Arena Forecourt, the Training Ground and the Festival Square (in place of
+ *  Lantern Row's mock-up), each a square of src/world/Plazas.ts walked across in the slot's day state; the people there at this hour stand
+ *  at their spots (E next to one opens the dialogue), the guards at the forecourt's gate, the hooded stranger on the square at night, the
+ *  crowd walking between the square's points. */
+export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
+  let st = st0;
+  installGameApi(() => st, (s) => { st = s; }, (prev, next) => lookOf(prev) !== lookOf(next) || prev.place !== next.place || next.over !== prev.over);
+  const q = new URLSearchParams();
+  for (const k of ['fps', 'freeze', 'painters', 'gpuprof', 'cast']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
+  const look = lookOf(st), kind = PLAZA_OF[st.place]!;
+  const app = new PlazaApp({
+    canvas: b.canvas, params: q, kind, time: look === 'night' ? null : look, people: plazaPeople(st), crowd: PLAZA_CROWD[look],
+    onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; },
+  });
+  (window as any).__plaza = app;
+  installDesign(look);
+  await app.init();
+  b.loading.style.opacity = '0';
+  setTimeout(() => b.loading.remove(), 900);
+  (window as any).__stats = () => app.snapshot();
+  const ui = new TownUi({
+    state: () => st, act: (a) => (window as any).__game.act(a), reload: (extra) => go(b.params, extra),
+    // only the people of the simulation talk (the guards and the stranger on a square are its extras)
+    nearby: () => { const w = app.nearby(); return w && PEOPLE[w] ? w : null; },
+  }, st.log.length - 1);
+  (window as any).__ui = ui;
+  (window as any).__game.subscribe(() => ui.render());
+  window.addEventListener('keydown', (e) => { const k = e.key.toLowerCase(); if ((k === 'e' || k === ' ') && !e.repeat) { e.preventDefault(); ui.interact(); } });
+  const tag = el('div', 'pm pm-sub', tx('ui.plazaTag', { place: placeName(st.place, true) }));
+  tag.id = 'pm-place-tag';
+  document.body.appendChild(tag);
+  const frame = () => { ui.update(); requestAnimationFrame(frame); };
+  frame();
+  app.start();
+  await Promise.all([fontsReady(), preloadPortraits()]);
+  let n = 0;
+  const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
+  wait();
+}

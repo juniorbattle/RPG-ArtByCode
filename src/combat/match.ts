@@ -75,9 +75,24 @@ export function dynSheetData(sh: MatchSheet, names?: Partial<Record<string, stri
 
 /** the same sheet as a duel of the version 2 (src/combat/v2duel.ts, journal Passe V1): the three buttons, the charge, the skills at their
  *  levels, the opponent's defence and skills (C3); its kit is the player's (lot V2), today's four skills at level 1 by default */
-export function v2SheetData(sh: MatchSheet, names?: Partial<Record<string, string>>, kit?: V2Kit): V2Duel {
+export function v2SheetData(sh: MatchSheet, names?: Partial<Record<string, string>>, kit?: V2Kit, player?: Mods & { taken?: number; gauge?: number; charge?: number; effect?: number }): V2Duel {
   const [a, b] = sh.sides;
   if (a.fighters.length !== 1 || b.fighters.length !== 1) throw new Error(`match ${sh.id}: team formats (${a.fighters.length}v${b.fighters.length}) are outside the slice; the arena seats one fighter per side`);
   const p = a.fighters[0], o = b.fighters[0];
-  return v2DuelData(o.profile ?? o.id, { seed: sh.seed, playerName: p.name, opponentName: o.name, player: p.mods, enemy: o.mods, names, kit });
+  // a version 2 player's preparation (its gear, lot V3: src/simulation/v2gear.ts v2Mods) replaces today's mods of the sheet
+  const pm = player ?? p.mods, gear = player ? { taken: player.taken ?? 1, gauge: player.gauge ?? 1, charge: player.charge ?? 1, effect: player.effect ?? 1 } : undefined;
+  return v2DuelData(o.profile ?? o.id, { seed: sh.seed, playerName: p.name, opponentName: o.name, player: { hp: pm.hp, damage: pm.damage, ap: pm.ap }, enemy: o.mods, names, kit, gear });
+}
+
+/** the sheet of a challenge in town (the version 2, lot V4, src/simulation/v2town.ts): the player against the fighter challenged, on the
+ *  arena's sand at half health (sparring: « proposé »), the discreet assistance; null when no challenge waits */
+export function challengeSheetFor(s: GameState): MatchSheet | null {
+  const ch = s.v2?.challenge;
+  if (!ch || !RIVALS[ch.who]) return null;
+  const c = s.competitors[ch.who], rm = rivalMods(c), id = `ch:${ch.who}:${ch.day}`;
+  return {
+    id, round: 0, day: s.day,
+    sides: [{ fighters: [{ id: PLAYER_ID, name: s.player.name, mods: playerMods(s) }] }, { fighters: [{ id: ch.who, name: RIVALS[ch.who].name, profile: c.combatProfile, mods: { ...rm, hp: (rm.hp ?? 1) * 0.5 } }] }],
+    assist: 'subtle', intel: [], seed: mix32(s.seed, hashString(id)),
+  };
 }

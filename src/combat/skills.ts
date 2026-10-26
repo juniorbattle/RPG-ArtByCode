@@ -30,6 +30,13 @@ export const SKILLS: Record<string, SkillDef> = {
   t4: { id: 't4', charge: [9.0, 8.2, 7.4, 6.7, 6.0], source: 'start' },
   d1: { id: 'd1', charge: [3.5, 3.3, 3.1, 2.9, 2.7], source: 'start' },
   s1: { id: 's1', charge: [5.0, 4.7, 4.4, 4.1, 3.8], source: 'start' },
+  // the six the version 2 adds (lot V2, src/combat/skillbook.ts: their actions and how they are obtained)
+  k_sunder: { id: 'k_sunder', charge: [5.5, 5.1, 4.7, 4.4, 4.0], source: 'buy' },
+  k_feint: { id: 'k_feint', charge: [3.0, 2.9, 2.8, 2.7, 2.6], source: 'train' },
+  k_iron: { id: 'k_iron', charge: [4.5, 4.2, 3.9, 3.6, 3.3], source: 'buy' },
+  k_parry: { id: 'k_parry', charge: [2.8, 2.7, 2.6, 2.5, 2.4], source: 'challenge' },
+  k_cry: { id: 'k_cry', charge: [4.2, 3.9, 3.6, 3.4, 3.2], source: 'challenge' },
+  k_focus: { id: 'k_focus', charge: [6.5, 6.0, 5.5, 5.0, 4.6], source: 'challenge' },
 };
 
 export const clampLevel = (n: number): number => Math.max(1, Math.min(MAX_LEVEL, Math.round(n)));

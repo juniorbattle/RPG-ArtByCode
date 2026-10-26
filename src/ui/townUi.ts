@@ -7,7 +7,11 @@ import { boardHtml, standingsHtml as standingsHtmlRows } from './board';
 import { portraitUrl } from './portraits';
 import { downloadSave, loadSaveFile, writeSave } from './save';
 import { el, esc, injectStyle, overlay } from './style';
-import { tx } from '../narrative/text';
+import { skillName, tx } from '../narrative/text';
+import { isV2, v2KitOf } from '../simulation/v2';
+import { SKILL_BOOK, skillAction } from '../combat/skillbook';
+import { chargeTime } from '../combat/skills';
+import { itemAbout, itemName, weaponTier } from '../simulation/v2gear';
 
 /** The play mode's interface in a place (journal Passe L4; choice K1: English): the clock and the next deadline (TOURNAMENT § 11), what
  *  the player can do here and what it costs in slots (GAMEPLAY § 4), the people to talk to (a portrait, their words, the options they
@@ -106,11 +110,17 @@ export class TownUi {
     for (const [k, label, f] of [['M', tx('ui.map'), () => this.openMap()], ['J', tx('ui.journal'), () => this.openJournal()], ['T', tx('ui.tournament'), () => this.openBoard()], ['Esc', tx('ui.menu'), () => this.openMenu()]] as const) {
       const b = el('button', 'pm-btn', `<kbd>${k}</kbd>${label}`); b.addEventListener('click', f); this.bar.appendChild(b);
     }
+    // the version 2: the skills (K), their levels and the four brought
+    if (isV2(this.st)) {
+      const b = el('button', 'pm-btn', `<kbd>K</kbd>${tx('v2.skills.view')}`); b.addEventListener('click', () => this.openSkills(false)); this.bar.insertBefore(b, this.bar.lastElementChild);
+      const g = el('button', 'pm-btn', `<kbd>G</kbd>${tx('v2.gear.view')}`); g.addEventListener('click', () => this.openGear()); this.bar.insertBefore(g, this.bar.lastElementChild);
+    }
     window.addEventListener('keydown', (e) => {
       if (e.repeat || (e.target instanceof HTMLInputElement)) return;
       const k = e.key.toLowerCase();
       if (this.modal) { if (k === 'escape') this.closeModal(); return; }
       if (k === 'm') this.openMap(); else if (k === 'j') this.openJournal(); else if (k === 't') this.openBoard(); else if (k === 'escape') this.openMenu();
+      else if (k === 'k' && isV2(this.st)) this.openSkills(false); else if (k === 'g' && isV2(this.st)) this.openGear();
     });
     this.render();
     // a phone's screen keeps the scene: the list opens from its title
@@ -159,7 +169,7 @@ export class TownUi {
     const opp = m ? RIVALS[m.a === 'player' ? m.b : m.a] : null;
     const next = s.over ? tx('ui.next.over') : opp ? tx('ui.next.bout', { name: opp.name, day: m!.day, when: m!.day === s.day ? (s.slot === 'afternoon' ? tx('ui.next.now') : tx('ui.next.today')) : '' }) : tx('ui.next.done');
     const slotName = s.slot === 'evening' ? (dusk(s) ? tx('ui.slot.sunset') : 'evening') : s.slot;
-    this.status.innerHTML = `<div class="clock">${tx('ui.clock', { day: s.day, slot: slotName })}</div><div class="pm-sub">${esc(P.name)} · ${esc(placeName(s.place))}</div>
+    this.status.innerHTML = `<div class="clock">${tx('ui.clock', { day: s.day, slot: slotName })}</div><div class="pm-sub">${esc(P.name)} · ${esc(placeName(s.place, isV2(s)))}</div>
       <div class="stats"><span class="pm-num">${P.coins}</span> ${tx('ui.coins')} · ${tx('ui.reputation')} <span class="pm-num">${P.reputation}</span> · ${P.injury ? `<span class="hurt">${P.injury > 1 ? tx('ui.badlyHurt') : tx('ui.hurt')}</span>` : tx('ui.fit')}${P.items.length ? ` · ${esc(P.items.map((i) => i.replace('-', ' ')).join(', '))}` : ''}</div>
       <div class="next">${esc(next)}</div>`;
     this.renderHere();
@@ -175,7 +185,13 @@ export class TownUi {
     h.addEventListener('click', () => this.here.classList.toggle('min'));
     if (fight) {
       const b = el('button', 'pm-btn primary', `<span>${tx('ui.enterArena')}</span><span class="cost">${tx('ui.oneSlot')}</span>`);
-      b.addEventListener('click', () => { writeSave(s); this.host.reload({ scene: 'arena' }); }); list.appendChild(b);
+      // the version 2: the match sheet chooses the four skills first (lot V2, journal Passe V2)
+      b.addEventListener('click', () => { if (isV2(s)) { this.openSkills(true); return; } writeSave(s); this.host.reload({ scene: 'arena' }); }); list.appendChild(b);
+    }
+    // the version 2: a challenge waits on the sand (lot V4)
+    if (s.v2?.challenge) {
+      const b = el('button', 'pm-btn primary', `<span>${tx('v2.challenge.enter')}</span><span class="cost">${tx('ui.oneSlot')}</span>`);
+      b.addEventListener('click', () => { writeSave(s); this.host.reload({ scene: 'arena', challenge: '1' }); }); list.appendChild(b);
     }
     for (const o of opts) list.appendChild(this.optionButton(o));
     if (people.length) {
@@ -252,10 +268,59 @@ export class TownUi {
     ((card.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? leave).focus();
   }
 
+  /** the version 2's skills (lot V2): each owned skill with its level, its charge time, its AP and family; four chosen (the match sheet's
+   *  preparation, CB-1 § 8); `enter`: the bout follows (the four applied, then the arena) */
+  openSkills(enter: boolean): void {
+    const s = this.st, kit = v2KitOf(s) as { loadout: string[]; levels: Record<string, number> }, chosen = new Set<string>(kit.loadout);
+    this.closeModal(); this.modal = true; this.prompt.classList.remove('on');
+    const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">${tx('v2.skills.title')}</h2><p class="pm-sub">${tx('v2.skills.sub')}</p>`);
+    card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('v2.skills.title'));
+    const go = el('button', 'pm-btn primary', `<span>${enter ? tx('v2.skills.keep') : tx('ui.close')}</span>`);
+    const sync = () => { go.disabled = enter && chosen.size !== 4; };
+    for (const id of Object.keys(kit.levels).filter((k) => kit.levels[k] > 0)) {
+      const lv = kit.levels[id], fam = SKILL_BOOK[id]?.family ?? 'offensive', ap = skillAction(id).apCost ?? 0;
+      const b = el('button', `pm-btn${chosen.has(id) ? ' primary' : ''}`, `<span>${esc(skillName(id))}<span class="why title">${tx('v2.skills.level', { level: lv })} · ${tx(fam === 'offensive' ? 'v2.family.offensive' : fam === 'defensive' ? 'v2.family.defensive' : 'v2.family.support')} · ${tx('v2.skills.charge', { charge: chargeTime(id, lv) })}</span></span><span class="cost">${tx('v2.skills.ap', { ap })}</span>`);
+      b.setAttribute('aria-pressed', String(chosen.has(id)));
+      b.addEventListener('click', () => {
+        if (chosen.has(id)) chosen.delete(id); else if (chosen.size < 4) chosen.add(id);
+        b.classList.toggle('primary', chosen.has(id)); b.setAttribute('aria-pressed', String(chosen.has(id))); sync();
+      });
+      card.appendChild(b);
+    }
+    if (enter) card.appendChild(el('p', 'pm-sub', tx('v2.skills.pick')));
+    go.addEventListener('click', () => {
+      const four = kit.loadout.filter((x) => chosen.has(x)).concat([...chosen].filter((x) => !kit.loadout.includes(x)));
+      if (chosen.size === 4 && four.join() !== kit.loadout.join()) this.host.act({ type: 'setLoadout', skills: four });
+      if (!enter) { this.closeModal(); return; }
+      writeSave(this.st); this.closeModal(); this.host.reload({ scene: 'arena' });
+    });
+    card.appendChild(go); sync();
+    root.appendChild(card); document.body.appendChild(root); this.current = root;
+    go.focus();
+  }
+
+  /** the version 2's gear (lot V3): the weapon and its tier, the armour, both accessories, and the bag (each owned piece worn by a click) */
+  openGear(): void {
+    const s = this.st, g = s.v2?.gear;
+    if (!g) return;
+    this.closeModal(); this.modal = true; this.prompt.classList.remove('on');
+    const row = (label: string, id: string | null, extra = '') => `<p><span class="pm-sub">${label}</span><br>${id ? `${esc(itemName(id))}${extra} <span class="pm-sub">${esc(itemAbout(id))}</span>` : tx('v2.gear.none')}</p>`;
+    const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">${tx('v2.gear.title')}</h2>${row(tx('v2.gear.weapon'), g.weapon, ` · ${tx('v2.gear.tier', { tier: weaponTier(s) })}`)}${row(tx('v2.gear.armour'), g.armour)}${row(tx('v2.gear.acc'), g.acc[0])}${row(tx('v2.gear.acc'), g.acc[1])}`);
+    card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('v2.gear.title'));
+    if (g.bag.length) card.appendChild(el('p', 'pm-sub', tx('v2.gear.bag')));
+    for (const id of g.bag) {
+      const b = el('button', 'pm-btn', `<span>${esc(tx('v2.equip.label', { item: itemName(id) }))}<span class="why title">${esc(itemAbout(id))}</span></span>${costTag({ cost: 0, coins: 0 })}`);
+      b.addEventListener('click', () => { this.run({ type: 'equip', item: id }); this.openGear(); });
+      card.appendChild(b);
+    }
+    const close = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.close')}`); close.addEventListener('click', () => this.closeModal()); card.appendChild(close);
+    root.appendChild(card); document.body.appendChild(root); this.current = root; close.focus();
+  }
+
   private openMap(): void {
     const s = this.st, moves = actions(s).filter((o) => o.action.type === 'move');
     this.closeModal(); this.modal = true;
-    const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">${tx('ui.cite')}</h2><p class="pm-sub">${tx('ui.youAreIn', { place: esc(placeName(s.place)) })}</p>`);
+    const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">${tx('ui.cite')}</h2><p class="pm-sub">${tx('ui.youAreIn', { place: esc(placeName(s.place, isV2(s))) })}</p>`);
     for (const o of moves) card.appendChild(this.optionButton(o));
     const close = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.close')}`); close.addEventListener('click', () => this.closeModal()); card.appendChild(close);
     root.appendChild(card); document.body.appendChild(root); this.current = root;

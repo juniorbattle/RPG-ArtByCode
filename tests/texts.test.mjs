@@ -66,7 +66,7 @@ test('the default game\'s texts are main\'s word for word: fingerprints and ever
     const pol = L.SCRIPTS[sc](); let st = G.newGame(s, 'Ren'); const texts = [];
     while (!st.over) {
       for (const o of G.actions(st)) texts.push(o.label + '|' + (o.reason ?? ''));
-      for (const id of Object.keys(PEOPLE)) texts.push(id + ':' + linesOf(st, id).join('/'));
+      for (const id of Object.keys(PEOPLE).filter((k) => !PEOPLE[k].v2)) texts.push(id + ':' + linesOf(st, id).join('/'));
       st = G.advance(st, pol.choose(st)).state;
     }
     got[`${sc}:${s}`] = G.hash(st) + ':' + sha(texts.join('\n'));

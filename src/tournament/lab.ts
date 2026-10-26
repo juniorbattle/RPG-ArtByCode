@@ -7,6 +7,7 @@ import { RIVALS, PLAYER_ID } from '../narrative/roster';
 import type { DuelOutcome } from './pool';
 import { dynamicRules, standings } from './pool';
 import { isV2, makeV2, v2KitOf } from '../simulation/v2';
+import { v2Mods } from '../simulation/v2gear';
 
 /** The TournamentLab's library (TOURNAMENT_MASTER_CONTRACT § 13, journal Passe L2; the CLI is tools/tournament-lab.mjs): play whole games
  *  headless with a player policy, the player's duels fought by the bot in the arena's full simulation; find the forgotten participants;
@@ -21,7 +22,7 @@ export type CombatRules = 'classic' | 'dynamic' | 'v2';
 export function botOutcome(st: GameState, skill: number): DuelOutcome {
   const sh = matchSheetFor(st);
   if (!sh) throw new Error('no duel today');
-  const seed = sh.seed ^ 0x5bd1e995, v2 = isV2(st) ? v2SheetData(sh, undefined, v2KitOf(st)) : null;
+  const seed = sh.seed ^ 0x5bd1e995, v2 = isV2(st) ? v2SheetData(sh, undefined, v2KitOf(st), v2Mods(st)) : null;
   const r = v2 ? runV2BotDuel(v2.data, v2.tiers, { skill, seed }) : dynamicRules(st) ? runDynamicBotDuel(dynSheetData(sh), { skill, seed }) : runBotDuel(sheetData(sh), { skill, seed });
   if (!r.winner) throw new Error(`match ${sh.id}: no K.O. after ${r.t} s`);
   return { winner: r.winner === 'player' ? 'player' : 'opponent', playerHp: r.playerHp, playerMaxHp: r.playerMaxHp, opponentHp: r.opponentHp, opponentMaxHp: r.opponentMaxHp, finisher: r.finisher };

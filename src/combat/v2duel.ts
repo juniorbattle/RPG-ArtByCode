@@ -1,7 +1,8 @@
-import type { DynActionDef, DynActionId, DynData } from './dynamic';
+import { checkDynData, type DynActionDef, type DynActionId, type DynData } from './dynamic';
+import { skillAction } from './skillbook';
 import { DYN_PROFILES, dynDuelData, type DynProfile, type Mods } from './profiles';
 import { chargeTiers, type ChargeTier } from './charge';
-import { atLevel, chargeTime } from './skills';
+import { atLevel, chargeTime, HEAVY_AT } from './skills';
 
 /** The duel of the version 2 (lot V1 of briefs/cloud-session-v2-brief.md, journal Passe V1): the rules of the « tour par tour dynamique »
  *  (DynamicSim) under the three-button command and its charged attack (src/combat/charge.ts, the operator's decision A3 / AV-5), the player's
@@ -71,6 +72,9 @@ export interface V2Duel { data: DynData; tiers: ChargeTier[] }
 export const V2_POWER: Record<string, { damage: number; resist: number; dur?: number }> = {
   heavy: { damage: 2.2, resist: 2 }, t1: { damage: 4, resist: 2 }, t2: { damage: 4.2, resist: 2 }, t3: { damage: 3.2, resist: 2 }, t4: { damage: 3.4, resist: 2.5 },
   d1: { damage: 1, resist: 1, dur: 1.5 }, s1: { damage: 1, resist: 1, dur: 1.5 },
+  // the catalogue's new skills (lot V2, « proposé »)
+  k_sunder: { damage: 5, resist: 2 }, k_feint: { damage: 3.2, resist: 2 }, k_iron: { damage: 1, resist: 1, dur: 1.4 }, k_parry: { damage: 1, resist: 1, dur: 1.6 },
+  k_cry: { damage: 1, resist: 1, dur: 1.5 }, k_focus: { damage: 1, resist: 1, dur: 1.3 },
 };
 function charged(a: DynActionDef): DynActionDef {
   const p = V2_POWER[a.id] ?? { damage: 1, resist: 1 }, out: DynActionDef = JSON.parse(JSON.stringify(a));
@@ -84,10 +88,17 @@ function charged(a: DynActionDef): DynActionDef {
  *  without their automatic preparation: the charge is it), the skills at their levels, the opponent's defence and skills (C3) */
 /** `input: 'keys'` keeps the C2 command (keys 1-6, each action's automatic preparation, today's numbers) on the same opponent and the same
  *  levels: the old scheme kept for comparing at the trial (AV-5, « l'ancien schéma gardé pour comparer »); its tiers are unused */
-export function v2DuelData(foe: string, o: { seed: number; playerName: string; opponentName: string; player?: Mods; enemy?: Mods; names?: Partial<Record<string, string>>; kit?: V2Kit; input?: 'charge' | 'keys' }): V2Duel {
+/** `gear` (lot V3): what the player wears changes the damage taken (the opponent's blows), what they add to the player's gauge, the charge
+ *  times and the effects' durations */
+export interface V2GearFx { taken: number; gauge: number; charge: number; effect: number }
+export function v2DuelData(foe: string, o: { seed: number; playerName: string; opponentName: string; player?: Mods; enemy?: Mods; names?: Partial<Record<string, string>>; kit?: V2Kit; input?: 'charge' | 'keys'; gear?: V2GearFx }): V2Duel {
   const prof: DynProfile = DYN_PROFILES[foe] ?? DYN_PROFILES.marek, F = V2_FOES[foe] ?? V2_FOES.marek, kit = o.kit ?? V2_START_KIT;
-  const em = o.enemy ?? {};
-  const d = dynDuelData(prof, { seed: o.seed, playerName: o.playerName, opponentName: o.opponentName, player: o.player, enemy: { ...em, hp: (em.hp ?? 1) * F.hp, damage: (em.damage ?? 1) * F.damage }, names: o.names, loadout: kit.loadout });
+  const gfx = o.gear ?? { taken: 1, gauge: 1, charge: 1, effect: 1 }, em0 = o.enemy ?? {}, em = { ...em0, damage: (em0.damage ?? 1) * gfx.taken };
+  const d = dynDuelData(prof, { seed: o.seed, playerName: o.playerName, opponentName: o.opponentName, player: o.player, enemy: { ...em, hp: (em.hp ?? 1) * F.hp, damage: (em.damage ?? 1) * F.damage }, names: o.names });
+  // the catalogue's new skills (lot V2) join the player's actions, with the player's damage as today's skills take it
+  for (const id of kit.loadout) if (!d.actions[id]) { const a = skillAction(id); a.damage = Math.round(a.damage * (o.player?.damage ?? 1)); if (o.names?.[id]) a.name = o.names[id]!; d.actions[id] = a; }
+  d.loadout = [...kit.loadout];
+  checkDynData(d);
   const keys = o.input === 'keys', c = (a: DynActionDef) => (keys ? a : charged(a));
   d.actions.heavy = c(d.actions.heavy);
   for (const id of kit.loadout) d.actions[id] = atLevel(c(d.actions[id]), kit.levels[id] ?? 1);
@@ -98,8 +109,11 @@ export function v2DuelData(foe: string, o: { seed: number; playerName: string; o
     d.actions[k.id] = a;
   }
   d.ai = { ...d.ai, ...(F.defense ? { defense: { ...F.defense } } : {}), skills: { chance: F.skills.chance, list: F.skills.list.map((x) => ({ ...x })) } };
-  const charge = Object.fromEntries(kit.loadout.map((id) => [id, chargeTime(id, kit.levels[id] ?? 1)]));
-  return { data: d, tiers: chargeTiers(kit.loadout, charge, d) };
+  // the gear: the opponent's blows fill the player's gauge by `gauge`, the player's wards and boosts last `effect` longer
+  if (gfx.gauge !== 1) for (const a of Object.values(d.actions)) if (a.owner === 'marek') a.resist = +(a.resist * gfx.gauge).toFixed(2);
+  if (gfx.effect !== 1) for (const id of kit.loadout) { const a = d.actions[id]; if (a.ward) a.ward.dur = +(a.ward.dur * gfx.effect).toFixed(2); if (a.boost) a.boost.dur = +(a.boost.dur * gfx.effect).toFixed(2); }
+  const charge = Object.fromEntries(kit.loadout.map((id) => [id, +(chargeTime(id, kit.levels[id] ?? 1) * gfx.charge).toFixed(3)]));
+  return { data: d, tiers: chargeTiers(kit.loadout, charge, d, +(HEAVY_AT * gfx.charge).toFixed(3)) };
 }
 
 // ------------------------------------------------------------------------------------------- the off-screen race of the version 2 (E6, C3)

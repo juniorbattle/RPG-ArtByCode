@@ -20,6 +20,16 @@ function rule(st, a) {
     case 'payWatch': return 15;
     case 'heal': return st.flags['free-care'] ? 0 : 8;
     case 'repair': return (st.competitors.orla?.relationships.player ?? 0) >= 20 ? 6 : 12;
+    // the version 2 (journal Passe V2): the weapon master's skills, a tenth off for a reputation of 40 or more
+    case 'shopBuy': {
+      const LISTV2 = { 'imported-blade': 30, 'duelist-sabre': 55, 'padded-jack': 18, 'mail-shirt': 40, 'dock-leathers': 26, 'lucky-ribbon': 12, 'iron-ring': 24, 'swift-boots': 30, 'fervour-charm': 16, 'docker-wrap': 14, whetstone: 8, salve: 10 };
+      const FACTOR = { mara: 1, armourer: 1.15, master: 1.1, trinkets: 0.9 }, KEEPER = { mara: 'mara', armourer: 'hilde', master: 'corvin', trinkets: 'pip' };
+      const steel = ['imported-blade', 'duelist-sabre', 'padded-jack', 'mail-shirt', 'dock-leathers'].includes(a.item) ? st.services.shopFactor : 1;
+      const k = Math.min(0.15, st.player.reputation / 400), rel = (st.town[KEEPER[a.shop]] ?? 0) >= 15 ? 0.9 : 1, night = st.slot === 'evening' ? 1.2 : 1;
+      return Math.max(1, Math.round(LISTV2[a.item] * FACTOR[a.shop] * (1 - k) * rel * steel * night));
+    }
+    case 'upgradeWeapon': { const tier = Math.min(3, st.v2.gear.tier + (st.player.items.includes('tempered-blade') ? 1 : 0)); return tier >= 3 ? 0 : [10, 25, 40][tier]; }
+    case 'buySkill': return Math.round({ t3: 45, k_sunder: 40, k_iron: 35 }[a.skill] * (st.player.reputation >= 40 ? 0.9 : 1));
     default: return 0;
   }
 }
@@ -35,7 +45,7 @@ function spent(st, a) {
 function* states() {
   for (const name of Object.keys(G.NAMED_STATES)) {
     const base = G.namedState(name);
-    for (const place of ['district', 'forecourt', 'lanterns']) for (let v = 0; v < 32; v++) for (const coins of v % 31 ? [200] : [0, 200]) {
+    for (const place of G.NAMED_STATES[name].v2 ? ['district', 'forecourt', 'lanterns', 'training'] : ['district', 'forecourt', 'lanterns']) for (let v = 0; v < 32; v++) for (const coins of v % 31 ? [200] : [0, 200]) {
       const s = structuredClone(base); s.place = place; s.player.coins = coins;
       if (v & 1) { s.flags['discount:mara'] = true; s.services.shopFactor = 1.4; }
       if (v & 2) s.flags['free-care'] = true;
@@ -53,7 +63,9 @@ test('every option\'s coins are the game\'s price, and what its action really ta
   for (const st of states()) for (const o of G.actions(st)) {
     const a = o.action, want = rule(st, a);
     assert.equal(o.coins, want, `${o.label} (day ${st.day} ${st.slot}, ${st.place})`);
-    if (o.ok) { assert.equal(o.coins, spent(st, a), `${o.label}: its apply`); seen.add(`${a.type}:${a.type === 'buy' ? a.item + ':' : ''}${o.coins}`); n++; }
+    // a theft's fine is a risk, not a price (journal Passe V4): its tag is « free », its apply may take up to 15 coins when caught
+    if (o.ok && a.type === 'steal') assert.ok(spent(st, a) <= 15, `${o.label}: the fine`);
+    else if (o.ok) { assert.equal(o.coins, spent(st, a), `${o.label}: its apply`); seen.add(`${a.type}:${a.type === 'buy' ? a.item + ':' : ''}${o.coins}`); n++; }
   }
   // the sweep reaches every paid action, both prices of the healer and of the bellows, and Mara's changed prices
   for (const k of ['buy:whetstone:8', 'buy:salve:10', 'buy:imported-blade:30', 'buy:whetstone:10', 'buy:imported-blade:38', 'temper:10', 'buyInfo:10', 'payWatch:15', 'heal:8', 'heal:0', 'repair:12', 'repair:6', 'restock:0']) {

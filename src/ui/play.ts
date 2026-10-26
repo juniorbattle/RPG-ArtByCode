@@ -1,5 +1,5 @@
 import type { TimeOfDay } from '../atmosphere/DayState';
-import { actions, advance, hash, lookOf, makeV2, namedState, newGame, wantsV2, type Action, type GameState } from '../simulation';
+import { actions, advance, hash, isV2, lookOf, makeV2, namedState, newGame, wantsV2, type Action, type GameState } from '../simulation';
 import { loadingError, toneLoading } from './loading';
 import { readSave, writeSave } from './save';
 
@@ -70,7 +70,8 @@ export function installGameApi(get: () => GameState, set: (s: GameState) => void
 /** the interface's tone of the page a state opens (each page installs the same): the slot's look (the arena's bout, the forecourt, the
  *  town), Lantern Row the night's */
 export function pageTone(params: URLSearchParams, s: GameState): TimeOfDay {
-  return params.get('scene') !== 'arena' && s.place === 'lanterns' ? 'night' : lookOf(s);
+  // the version 2's festival square follows the slot (lot V5)
+  return params.get('scene') !== 'arena' && s.place === 'lanterns' && !isV2(s) ? 'night' : lookOf(s);
 }
 
 export async function startPlay(b: Boot): Promise<void> {
@@ -80,6 +81,8 @@ export async function startPlay(b: Boot): Promise<void> {
     toneLoading(b.label, pageTone(b.params, state));
     writeSave(state);
     if (b.params.get('scene') === 'arena') await (await import('./playArena')).startPlayArena(b, state);
+    // the version 2's open places (lot V5): the forecourt, the training ground, the festival square
+    else if (isV2(state) && state.place !== 'district') await (await import('./playPlaza')).startPlayPlaza(b, state);
     else if (state.place === 'forecourt') await (await import('./playForecourt')).startPlayForecourt(b, state);
     else if (state.place === 'lanterns') await (await import('./playLanterns')).startPlayLanterns(b, state);
     else await (await import('./playTown')).startPlayTown(b, state, note);

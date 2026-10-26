@@ -86,6 +86,20 @@ export function linesOf(s: GameState, who: string): string[] {
       return [rival(s, 'marek') > 0 ? tx('line.marek.watched') : tx('line.marek.before')];
     case 'cassius':
       return [s.flags['culprit-known'] ? tx('line.cassius.prove') : rival(s, 'cassius') <= -25 ? tx('line.cassius.hostile', { name }) : tx('line.cassius.salute')];
+    // the version 2 (journal Passe V2): the weapon master
+    case 'corvin':
+      return [night ? tx('line.corvin.night') : s.player.coins >= 45 && !(s.v2?.kit.levels.t3) ? tx('line.corvin.rich') : tx('line.corvin.pitch')];
+    case 'hilde':
+      return [s.services.shopFactor > 1 ? tx('line.hilde.shortage') : tx('line.hilde.pitch')];
+    case 'ilse':
+      return [s.v2?.challenged?.ilse ? tx('line.ilse.after') : tx('line.ilse.pitch')];
+    case 'pip':
+      return [tx('line.pip.pitch')];
+    // the version 2's districts (lot V5): the drill master, the bard
+    case 'drill':
+      return [s.slot === 'morning' ? tx('line.drill.bout') : tx('line.drill.day')];
+    case 'bard':
+      return [s.player.reputation >= 40 ? tx('line.bard.famous', { name }) : night ? tx('line.bard.night') : tx('line.bard.day')];
     case 'lio':
       return [tx('line.lio.talk', { rhosk: RIVALS.rhosk.name, ilse: RIVALS.ilse.name, cassius: RIVALS.cassius.name })];
     default:

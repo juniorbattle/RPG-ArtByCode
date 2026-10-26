@@ -12,8 +12,10 @@ export const SLOTS: readonly SlotId[] = ['morning', 'afternoon', 'evening'];
 export const DAYS = 3;
 
 /** the slice's places (choice P3: the district, the arena's forecourt, a light third place) */
-export type PlaceId = 'district' | 'forecourt' | 'lanterns';
+export type PlaceId = 'district' | 'forecourt' | 'lanterns' | 'training';
 export const PLACES: readonly PlaceId[] = ['district', 'forecourt', 'lanterns'];
+/** the version 2's places (lot V5, journal Passe V5): the training ground added, Lantern Row's street become the Festival Square */
+export const V2_PLACES: readonly PlaceId[] = ['district', 'forecourt', 'training', 'lanterns'];
 
 export interface PlayerState {
   name: string;
@@ -104,10 +106,28 @@ export interface GameState {
   log: GameEvent[];
   /** the duel waiting to be fought (set when the afternoon of a match day starts the duel, cleared by its result) */
   pendingMatch: string | null;
+  /** a version 2 game's own state (src/simulation/v2.ts, journal Passes V0-V9): absent in today's game (the canonical text skips it) */
+  v2?: V2State;
 }
 
+/** the version 2's state: the skills and their levels, the four brought (lot V2); the lots after it add their parts */
+export interface V2State {
+  kit: { loadout: string[]; levels: Record<string, number> };
+  /** the gear carried (lot V3): the weapon and its tier, the armour, the two accessories, the bag of what is owned and not worn */
+  gear?: V2Gear;
+  /** the shops' day-long states (lot V4): a bargain or a grudge of the day, closed to the player for the day, a markup until a day */
+  shops?: Record<string, { deal?: number; sour?: number; closed?: number; markup?: number; haggled?: number }>;
+  /** a challenge put to a fighter in town, waiting for its bout on the sand (lot V4), and the day each fighter was last challenged */
+  challenge?: { who: string; day: number };
+  challenged?: Record<string, number>;
+}
+export interface V2Gear { weapon: string; tier: number; armour: string | null; acc: [string | null, string | null]; bag: string[] }
+
 export function slotName(s: SlotId): string { return s; }
-export function placeName(p: PlaceId): string { return p === 'district' ? 'the Merchant District' : p === 'forecourt' ? 'the Arena Forecourt' : 'Lantern Row'; }
+export function placeName(p: PlaceId, v2 = false): string {
+  if (v2 && p === 'lanterns') return 'the Festival Square';
+  return p === 'district' ? 'the Merchant District' : p === 'forecourt' ? 'the Arena Forecourt' : p === 'training' ? 'the Training Ground' : 'Lantern Row';
+}
 export function slotIndex(s: SlotId): number { return SLOTS.indexOf(s); }
 /** 0..8 over the slice */
 export function slotNumber(st: Pick<GameState, 'day' | 'slot'>): number { return (st.day - 1) * 3 + slotIndex(st.slot); }

@@ -14,6 +14,8 @@ export function isV2(s: Pick<GameState, 'flags'>): boolean { return s.flags.v2 =
 export function makeV2(s: GameState): GameState {
   s.flags.v2 = true;
   s.flags.combat = 'dynamic';
+  // the version 2's own state: today's four skills at level 1 (lot V2), the training sword and nothing else (lot V3), the shops untouched
+  s.v2 = { kit: { loadout: [...V2_START_KIT.loadout], levels: { ...V2_START_KIT.levels } }, gear: { weapon: 'training-sword', tier: 0, armour: null, acc: [null, null], bag: [] }, shops: {} };
   return s;
 }
 
@@ -25,7 +27,7 @@ export function wantsV2(get: (k: string) => string | null): boolean {
 
 /** the player's duel kit in a version 2 game: the four skills brought and every skill's level (lot V2 makes it the player's own; until then
  *  today's four skills at level 1, V2_START_KIT) */
-export function v2KitOf(s: Pick<GameState, 'flags'> & { v2?: { kit?: V2Kit } }): V2Kit {
+export function v2KitOf(s: Pick<GameState, 'flags' | 'v2'>): V2Kit {
   const k = s.v2?.kit;
-  return k ? { loadout: [...k.loadout], levels: { ...k.levels } } : { loadout: [...V2_START_KIT.loadout], levels: { ...V2_START_KIT.levels } };
+  return k ? { loadout: [...k.loadout] as V2Kit['loadout'], levels: { ...k.levels } } : { loadout: [...V2_START_KIT.loadout], levels: { ...V2_START_KIT.levels } };
 }

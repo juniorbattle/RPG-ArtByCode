@@ -1,9 +1,15 @@
 import { clamp, type GameState } from './state';
 import type { Emit } from './advance';
 import type { ActionDef } from './actions';
-import { PEOPLE, presentAt } from '../narrative/people';
+import { PEOPLE, placeOf, presentAt } from '../narrative/people';
 import { RIVALS } from '../narrative/roster';
 import { tx } from '../narrative/text';
+import { isV2 } from './v2';
+import { V2_SKILL_ACTIONS } from './v2skills';
+import { V2_GEAR_ACTIONS } from './v2gear';
+import { V2_TOWN_ACTIONS } from './v2town';
+
+const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS };
 
 /** The town's people in game roles (choice P4, journal Passe L4): the district's existing characters offer services, quests and clues;
  *  the forecourt's officials and the rivals offer care, sparring and scouting (choice K3: portraits and dialogues). Each action names who
@@ -44,10 +50,10 @@ export function priceOf(st: GameState, item: ShopItem): number {
 /** is this person there to talk to now (their hours, their place, and what the story did to them) */
 export function available(st: GameState, who: string): string | null {
   const p = PEOPLE[who];
-  if (!p) return tx('avail.nobody');
-  if (p.place !== st.place) return tx('avail.notHere', { name: p.name });
+  if (!p || (p.v2 && !isV2(st))) return tx('avail.nobody');
+  if (placeOf(p, isV2(st)) !== st.place) return tx('avail.notHere', { name: p.name });
   if (who === 'bram' && st.services.forge === 'sabotaged') return tx('avail.bramGone');
-  return presentAt(p, st.place, st.slot) ? null : tx('avail.notNow', { name: p.name });
+  return presentAt(p, st.place, st.slot, isV2(st)) ? null : tx('avail.notNow', { name: p.name });
 }
 
 const blade = (st: GameState) => st.player.items.includes('tempered-blade') || st.player.items.includes('imported-blade');
@@ -60,7 +66,8 @@ export const ROLE_ACTIONS: T = {
   // ---------------------------------------------------------------- Mara, the merchant: the shop (open by day), rumours, a good turn
   buy: {
     by: 'mara',
-    list: (st) => (st.place === 'district' ? (Object.keys(ITEMS) as ShopItem[]).map((item) => ({ type: 'buy', item })) : []),
+    // a version 2 game buys from the shops of its gear system (v2gear.ts: Mara's stall is its general store)
+    list: (st) => (st.place === 'district' && !isV2(st) ? (Object.keys(ITEMS) as ShopItem[]).map((item) => ({ type: 'buy', item })) : []),
     label: (st, a) => tx('buy.label', { item: ITEMS[a.item].name, price: priceOf(st, a.item), about: ITEMS[a.item].about }),
     cost: () => 0,
     coins: (st, a) => priceOf(st, a.item),
@@ -185,7 +192,8 @@ export const ROLE_ACTIONS: T = {
   },
   spar: {
     by: 'orla',
-    list: (st) => (st.place === 'forecourt' ? [{ type: 'spar' }] : []),
+    // Orla trains at the version 2's training ground (lot V5)
+    list: (st) => (st.place === placeOf(PEOPLE.orla, isV2(st)) ? [{ type: 'spar' }] : []),
     label: () => tx('spar.label'),
     cost: () => 1,
     check: (st) => available(st, 'orla') ?? (st.player.training >= 2 ? tx('spar.sharp') : null),
@@ -254,7 +262,8 @@ export function repairCost(st: GameState): number { return (st.competitors.orla?
 
 /** who offers an action (for the dialogue's options), or null for the player's own (rest, wait, moves) */
 export function offeredBy(a: { type: string } & Record<string, unknown>): string | null {
-  const d = (ROLE_ACTIONS as Record<string, { by: string | ((a: never) => string) }>)[a.type];
+  // the version 2's offers (its weapon master, its shops' keepers) after today's
+  const d = (ROLE_ACTIONS as Record<string, { by: string | ((a: never) => string) }>)[a.type] ?? (V2_OFFERS as Record<string, { by: string | ((a: never) => string) | null }>)[a.type] ?? undefined;
   if (!d) return a.type === 'payWatch' ? 'hale' : null;
   return typeof d.by === 'function' ? (d.by as (a: unknown) => string)(a) : d.by;
 }

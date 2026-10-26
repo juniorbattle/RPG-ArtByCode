@@ -38,6 +38,12 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   'trained-day1-evening': { about: 'trained twice on day 1', script: [{ type: 'move', to: 'forecourt' }, { type: 'train' }, { type: 'train' }] },
   // the version 2 (src/simulation/v2.ts, journal Passe V0): a new game with the flag
   'v2-day1-morning': { about: 'a version 2 game, the first morning', script: [], v2: true },
+  // the version 2's squares (lot V5, journal Passe V5)
+  'v2-forecourt-morning': { about: 'a version 2 game, the first morning, on the Arena Forecourt', script: [{ type: 'move', to: 'forecourt' }], v2: true },
+  'v2-training-morning': { about: 'a version 2 game, the first morning, at the Training Ground', script: [{ type: 'move', to: 'training' }], v2: true },
+  'v2-square-afternoon': { about: 'a version 2 game, the first afternoon, on the Festival Square', script: [W, { type: 'move', to: 'lanterns' }], v2: true },
+  'v2-square-night': { about: 'a version 2 game, the first evening, on the Festival Square', script: [W, W, { type: 'move', to: 'lanterns' }], v2: true },
+  'v2-training-dusk': { about: 'a version 2 game, back from a won first bout, at the Training Ground at sunset', script: [W, W, W, W, WON, { type: 'move', to: 'training' }], v2: true },
 };
 
 export function namedState(name: string, seed = NAMED_SEED, player = 'Ren'): GameState {

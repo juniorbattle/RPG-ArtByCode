@@ -236,7 +236,7 @@ test('the version 2 reaches the arena and the play mode only through its flag; t
   const app = fs.readFileSync(path.join(ROOT, 'src/arena/ArenaApp.ts'), 'utf8');
   assert.match(app, /else if \(this\.rules === 'v2'\) \{ const v = makeV2Duel\(/);
   const pa = fs.readFileSync(path.join(ROOT, 'src/ui/playArena.ts'), 'utf8');
-  assert.match(pa, /const v2d = v2 \? v2SheetData\(sheet, ACTION_NAMES_EN, v2KitOf\(st\)\) : null;/);
+  assert.match(pa, /const v2d = v2 \? v2SheetData\(sheet, ACTION_NAMES_EN, v2KitOf\(st\), v2Mods\(st\)\) : null;/);
   // a version 2 game's bout is the version 2's: its data and tiers come from the sheet, its kit the player's
   const st = G.makeV2(G.namedState('day2-afternoon'));
   const lab = L.botOutcome(st, 0.6);

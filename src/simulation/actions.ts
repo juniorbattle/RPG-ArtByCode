@@ -1,18 +1,22 @@
 import type { Rng } from '../core/rng';
-import { PLACES, clamp, placeName, type GameState, type PlaceId } from './state';
+import { PLACES, V2_PLACES, clamp, placeName, type GameState, type PlaceId } from './state';
 import type { Emit } from './advance';
-import { PEOPLE } from '../narrative/people';
+import { PEOPLE, placeOf } from '../narrative/people';
 import { ROLE_ACTIONS, available, type RoleAction } from './roles';
 import { onTalk } from '../narrative/dialogue';
 import { applyPlayerDuel, playerMatch, opponentOf, type DuelOutcome } from '../tournament/pool';
 import { RIVALS } from '../narrative/roster';
 import { tx } from '../narrative/text';
+import { V2_SKILL_ACTIONS, type V2SkillAction } from './v2skills';
+import { isV2 } from './v2';
+import { V2_GEAR_ACTIONS, type V2GearAction } from './v2gear';
+import { V2_TOWN_ACTIONS, type V2TownAction } from './v2town';
 
 /** The player's actions (journal Passe L1). Each says what it costs (0 = a minor action that takes no slot: moving between places,
  *  talking, consulting, GAMEPLAY § 4.2; 1 = a significant action that takes the slot, § 4.1), when it is refused and why (a readable
  *  reason, the state untouched), and what it changes (`apply` works on the copy `advance` made). */
 
-export type Action = BaseAction | RoleAction;
+export type Action = BaseAction | RoleAction | V2SkillAction | V2GearAction | V2TownAction;
 type BaseAction =
   | { type: 'move'; to: PlaceId }
   | { type: 'talk'; who: string }
@@ -35,18 +39,22 @@ export interface ActionDef<A extends Action = Action> {
   apply(s: GameState, a: A, rng: Rng, emit: Emit): void;
 }
 
+/** where the player trains: the forecourt's practice sand, or the version 2's training ground (lot V5) */
+const trainAt = (st: GameState): PlaceId => (isV2(st) ? 'training' : 'forecourt');
+
 type Table = { [K in BaseAction['type']]: ActionDef<Extract<BaseAction, { type: K }>> };
 
 const BASE: Table = {
   move: {
-    list: (st) => PLACES.filter((p) => p !== st.place).map((to) => ({ type: 'move', to })),
-    label: (_, a) => tx('move.label', { place: placeName(a.to) }),
+    // the version 2's places (lot V5): the training ground, and the festival square, open by day as by night, where Lantern Row was
+    list: (st) => (isV2(st) ? V2_PLACES : PLACES).filter((p) => p !== st.place).map((to) => ({ type: 'move', to })),
+    label: (st, a) => tx('move.label', { place: placeName(a.to, isV2(st)) }),
     cost: () => 0,
-    check: (st, a) => (!PLACES.includes(a.to) ? tx('move.noPlace') : a.to === st.place ? tx('move.there') : a.to === 'lanterns' && st.slot !== 'evening' ? tx('move.lanternsShut') : null),
-    apply: (s, a, _r, emit) => { s.place = a.to; emit({ kind: 'action', id: 'move', cause: 'action:move', text: tx('move.log', { place: placeName(a.to) }), visible: false }); },
+    check: (st, a) => (!(isV2(st) ? V2_PLACES : PLACES).includes(a.to) ? tx('move.noPlace') : a.to === st.place ? tx('move.there') : a.to === 'lanterns' && st.slot !== 'evening' && !isV2(st) ? tx('move.lanternsShut') : null),
+    apply: (s, a, _r, emit) => { s.place = a.to; emit({ kind: 'action', id: 'move', cause: 'action:move', text: tx('move.log', { place: placeName(a.to, isV2(s)) }), visible: false }); },
   },
   talk: {
-    list: (st) => Object.values(PEOPLE).filter((p) => p.place === st.place).map((p) => ({ type: 'talk', who: p.id })),
+    list: (st) => Object.values(PEOPLE).filter((p) => placeOf(p, isV2(st)) === st.place && (!p.v2 || isV2(st))).map((p) => ({ type: 'talk', who: p.id })),
     label: (_, a) => tx('talk.label', { name: PEOPLE[a.who]?.name ?? a.who }),
     cost: () => 0,
     check: (st, a) => available(st, a.who),
@@ -64,10 +72,11 @@ const BASE: Table = {
     apply: (s, _a, _r, emit) => { s.player.injury = Math.max(0, s.player.injury - 1); emit({ kind: 'action', id: 'rest', cause: 'action:rest', text: tx('rest.log'), visible: true }); },
   },
   train: {
-    list: (st) => (st.place === 'forecourt' ? [{ type: 'train' }] : []),
+    // the version 2 trains at the training ground (lot V5)
+    list: (st) => (st.place === trainAt(st) ? [{ type: 'train' }] : []),
     label: () => tx('train.label'),
     cost: () => 1,
-    check: (st) => (st.place !== 'forecourt' ? tx('train.notHere') : st.slot === 'evening' ? tx('train.closed') : st.player.training >= 2 ? tx('train.sharp') : null),
+    check: (st) => (st.place !== trainAt(st) ? (isV2(st) ? tx('v2.train.notHere') : tx('train.notHere')) : st.slot === 'evening' ? tx('train.closed') : st.player.training >= 2 ? tx('train.sharp') : null),
     apply: (s, _a, _r, emit) => {
       s.player.training++; s.player.reputation = clamp(s.player.reputation + 1);
       emit({ kind: 'action', id: 'train', cause: 'action:train', text: tx('train.log'), visible: true });
@@ -117,4 +126,6 @@ const BASE: Table = {
 };
 
 /** every action: the player's own, and those the town's people offer (roles.ts) */
-export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS };
+/** every action: the player's own, those the town's people offer (roles.ts), and the version 2's (listed only in a version 2 game, after
+ *  today's: the default game's options keep their order) */
+export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS, ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS };
