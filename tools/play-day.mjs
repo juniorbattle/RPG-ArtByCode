@@ -41,7 +41,9 @@ try {
   if (dlg) done.push({ type: 'talk', who: 'mara' });
   // 2. the day, through the game API; each reload goes through the save
   const steps = [{ type: 'talk', who: 'tam' }, { type: 'talk', who: 'hale' }, { type: 'askPapers' }, { type: 'haul' },
-    { type: 'move', to: 'forecourt' }, { type: 'talk', who: 'odo' }, { type: 'register' }, { type: 'talk', who: 'orla' }, { type: 'spar' },
+    { type: 'move', to: 'forecourt' }, { type: 'talk', who: 'odo' }, { type: 'register' },
+    // the version 2: Orla drills at the training ground (lot V5)
+    ...(V2 ? [{ type: 'move', to: 'training' }] : []), { type: 'talk', who: 'orla' }, { type: 'spar' },
     { type: 'move', to: 'district' }, { type: 'wait' }];
   for (const a of steps) {
     const r = await page.evaluate((x) => window.__game.act(x), a);
@@ -58,7 +60,7 @@ try {
   check(st.day === 2 && st.slot === 'morning', `the second morning: day ${st.day} ${st.slot}`);
   check(st.quests.cargo === 'delivered' && st.facts.includes('orla-recruitable'), `the cargo delivered (${st.quests.cargo}), Orla a friend (${st.facts.includes('orla-recruitable')})`);
   const ui = await page.evaluate(() => ({ clock: document.querySelector('#pm-status .clock')?.textContent, next: document.querySelector('#pm-status .next')?.textContent }));
-  check(/Day 2 \/ 3 · morning/i.test(ui.clock ?? '') && /Vessa Lark/.test(ui.next ?? ''), `the clock and the next deadline: ${ui.clock} — ${ui.next}`);
+  check(new RegExp(`Day 2 / ${V2 ? 10 : 3} · morning`, 'i').test(ui.clock ?? '') && /Vessa Lark/.test(ui.next ?? ''), `the clock and the next deadline: ${ui.clock} — ${ui.next}`);
   await page.screenshot({ path: path.join(outDir, 'day2-morning.png') });
   const server = await createServer({ root: path.resolve(import.meta.dirname, '..'), configFile: false, logLevel: 'error', appType: 'custom', cacheDir: 'node_modules/.vite-test', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, optimizeDeps: { noDiscovery: true } });
   try {
