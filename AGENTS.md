@@ -113,7 +113,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   (`tests/arena-dynamic.test.mjs`, journal Passe C2: the parameter, the keys, the trial's settings, today's clips on the new moments, the HUD's
   reading at every step of a duel, every scripted moment, the play mode's flag), the loading screen (`tests/loading-screen.test.mjs`, journal
   Passe UI4: its tone and opening line by day state, its content held until both fonts load and never more than a second, its error, the play
-  mode's page tone, its CSS from the design system's tokens only).
+  mode's page tone, its CSS from the design system's tokens only), the texts' tables and the version 2's flag (`tests/texts.test.mjs`, journal
+  Passe V0: every key used and defined, the default game's texts pinned word for word from main).
   `tests/load.mjs` loads `src/` through Vite's SSR loader (extensionless imports, `?url`, named JSON imports, as the bundle resolves
   them; `--experimental-strip-types` alone cannot), with its own cache folder (`node_modules/.vite-test`), no file watcher and no
   `vite.config.ts` (`configFile: false` + `server.watch: null`: a merged config drops the null, and the watcher crawled the ignored Art Lab
@@ -122,14 +123,15 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   § 13, journal Passe L2): whole games of the playable slice headless (the game's pure modules, the player's duels fought by a bot in the arena's
   full simulation): win, injury, upset and sabotage rates, events fired, forgotten participants; `--state=<named>` / `--save=<file>` `[--days=N]`
   loads a state and plays on; `--compare=a,b` two seeds side by side; `--rules=dynamic` plays the games under the rules of the « tour par tour
-  dynamique » (journal Passe C1: their duels in `DynamicSim`, their off-screen matches in its race; absent = the arena of today). No browser
+  dynamique » (journal Passe C1: their duels in `DynamicSim`, their off-screen matches in its race; absent = the arena of today); `--rules=v2`
+  plays version 2 games (`flags.v2`, journal Passe V0: the flag, the dynamic rules with it). No browser
 - `node tools/play-flow.mjs <outDir> <win|lose> [seed] [day]` — the play mode's scene change in a browser (journal Passe L3): a new game in the town
   page, the clock driven by `window.__game` to the day's bout, the arena page loaded from the save, the bout decided by scripted inputs on
   `window.__arena`, the town page again from the save; the browser's final state replayed in Node must give the same fingerprint (DEV or
   production server; `BASE_URL`, `CHROME_PATH` / `CHROME_ARGS` / `READY_MS` as `detshots`; `COMBAT=dynamic`: the game under the rules of the
-  « tour par tour dynamique », journal Passe C2)
+  « tour par tour dynamique », journal Passe C2; `V2=1`: a version 2 game, `&v2=1`, journal Passe V0)
 - `node tools/play-day.mjs <outDir> [seed]` — the first day in the town page (journal Passe L4): E next to Mara opens her dialogue, the day through
-  `window.__game` (the steel cargo, the forecourt), every reload from the save, Node's replay with the same fingerprint
+  `window.__game` (the steel cargo, the forecourt), every reload from the save, Node's replay with the same fingerprint (`V2=1`: a version 2 game)
 - `node tools/play-shots.mjs <outDir> "name|<named state>|<WxH,..>|<js>|<extra query>" ...` — review captures of the play mode at window sizes (DEV
   server: named states; `vis=0` unless the query sets `vis`), a panel opened by its JS (`__ui.openPerson('mara')`); not pixel proofs
 - `node tools/title-proof.mjs <outDir> <base url> <branch url> [steps]` — the title screen's proof (journal Passe L4): in a browser that does not
@@ -289,7 +291,9 @@ while D is on screen the follow never overtakes the player on screen, the focus 
 the default since the operator's decision of 2026-10-19, « Adopter (avec la preuve) », journal Passes D3 / K7) · `camD=yaw,pitch,dist,fov,shift,hx,hy,hz[,gainX,gainZ,refX,refZ,charScale]` (override
 a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition, with the blend's visible set) · `intro=0` (no arrival hold) ·
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
-`title=1` (the title screen, journal Passe L4, choice P2: « New game », « Explore the district », « Continue » with a save; it shows by itself
+`v2=1` (the version 2 of the cloud session « Version 2 », journal Passes AV1 / V0, `briefs/cloud-session-v2-brief.md`: with `play=1&new=1` (or a
+named state, DEV), a game with the flag `flags.v2` (`src/simulation/v2.ts`), kept in the save, every system of that session switched on together
+and the dynamic rules with it; absent = today's game, unchanged; the named state `v2-day1-morning`) · `title=1` (the title screen, journal Passe L4, choice P2: « New game », « Explore the district », « Continue » with a save; it shows by itself
 on the bare address only, and only in a browser no automation drives (`navigator.webdriver`), kept by the operator (L7-5 « Le garder », journal
 Passe D8): every tool and proof keeps today's game; its
 « Explore the district » runs today's town at midday, as `time=midday` without changing the address, and the DEV panel: decision L7-6a, journal Passe D9; that panel closed, H opens it: decision P1, journal Passe UI2) · `play=1` (the game's play mode, journal Passe L3, loaded on demand: the state from the browser's save, or `&new=1&name=<name>&seed=<n>` for a

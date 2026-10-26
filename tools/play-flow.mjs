@@ -4,7 +4,8 @@
 // screen's button, then the town page loaded again from the save. At the end the browser's state is replayed in Node (src/simulation, the
 // same actions and the outcome the arena handed in) and both fingerprints must match.
 //   node tools/play-flow.mjs <outDir> <win|lose> [seed] [day=2|3]   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs;
-//   COMBAT=dynamic: the new game under the rules of the « tour par tour dynamique », &combat=dynamic, its bout in DynamicSim, journal Passe C2)
+//   COMBAT=dynamic: the new game under the rules of the « tour par tour dynamique », &combat=dynamic, its bout in DynamicSim, journal Passe C2;
+//   V2=1: a version 2 game, &v2=1, its flag and the dynamic rules with it, journal Passe V0)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -15,7 +16,7 @@ const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Applicatio
 const [outDir, mode, seedS = '1842', dayS = '2'] = process.argv.slice(2);
 if (!outDir || !['win', 'lose'].includes(mode)) throw new Error('usage: node tools/play-flow.mjs <outDir> <win|lose> [seed] [day]');
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720), day = +dayS;
-const READY = +(process.env.READY_MS || 600000), DYN = process.env.COMBAT === 'dynamic';
+const READY = +(process.env.READY_MS || 600000), V2 = process.env.V2 === '1', DYN = process.env.COMBAT === 'dynamic' || V2;
 fs.mkdirSync(outDir, { recursive: true });
 const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];
 const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 }, protocolTimeout: READY });
@@ -28,7 +29,8 @@ try {
   const open = async (q) => { await page.goto(`${BASE}${q}`, { waitUntil: 'load', timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); const e = await page.evaluate(() => window.__error ?? null); check(!e, `page ${q} ready${e ? `: ${e}` : ''}`); };
   const act = async (a) => { const r = await page.evaluate((x) => window.__game.act(x), a); check(r.ok, `act ${JSON.stringify(a).slice(0, 60)}${r.ok ? '' : `: ${r.reason}`}`); if (r.ok) actionsDone.push(a); return r; };
   // 1. the town: a new game, the clock to the bout's afternoon
-  await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1${DYN ? '&combat=dynamic' : ''}`);
+  await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1${V2 ? '&v2=1' : DYN ? '&combat=dynamic' : ''}`);
+  check((await page.evaluate(() => window.__game.state().flags.v2 ?? null)) === (V2 ? true : null), `the version 2's flag: ${V2 ? 'on' : 'absent'}`);
   check((await page.evaluate(() => window.__game.state().flags.combat ?? null)) === (DYN ? 'dynamic' : null), `the game's rules: ${DYN ? 'dynamic' : 'today'}`);
   const waits = day === 2 ? 4 : 7;
   for (let i = 0; i < waits; i++) {
@@ -89,6 +91,7 @@ try {
     const G = await server.ssrLoadModule('/src/simulation/index.ts');
     let s = G.newGame(+seedS >>> 0, 'Aster');
     if (DYN) s.flags.combat = 'dynamic';
+    if (V2) G.makeV2(s);
     for (const a of actionsDone) s = G.advance(s, a).state;
     const last = st3.s.log.findLast((e) => e.id === 'player-won' || e.id === 'player-lost');
     s = G.advance(s, { type: 'fight', outcome }).state;

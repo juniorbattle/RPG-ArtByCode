@@ -12,7 +12,8 @@ const puppeteer = createRequire(import.meta.url)('puppeteer-core');
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/google-chrome'].find((p) => p && fs.existsSync(p));
 const [outDir, seedS = '1842'] = process.argv.slice(2);
 if (!outDir) throw new Error('usage: node tools/play-day.mjs <outDir> [seed]');
-const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720), READY = +(process.env.READY_MS || 600000);
+// V2=1: a version 2 game (&v2=1, its flag in the save and the Node replay, journal Passe V0)
+const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720), READY = +(process.env.READY_MS || 600000), V2 = process.env.V2 === '1';
 fs.mkdirSync(outDir, { recursive: true });
 const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];
 const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 }, protocolTimeout: READY });
@@ -23,14 +24,17 @@ try {
   const page = await b.newPage();
   page.on('pageerror', (e) => { errors++; console.log('[pageerror]', e.message); });
   const open = async (q) => { await page.goto(`${BASE}${q}`, { waitUntil: 'load', timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); check(!(await page.evaluate(() => window.__error ?? null)), `page ${q} ready`); await new Promise((r) => setTimeout(r, 1200)); await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click()); };
-  await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1`);
+  await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1${V2 ? '&v2=1' : ''}`);
+  check((await page.evaluate(() => window.__game.state().flags.v2 ?? null)) === (V2 ? true : null), `the version 2's flag: ${V2 ? 'on' : 'absent'}`);
   // 1. the keyboard: next to Mara, E opens her dialogue
   await page.evaluate(() => { const A = window.__app, m = A.actors.actors.find((a) => (a.base ?? a.spec) === 'merchant'); A.actors.player.pos.set(m.pos.x + 0.9, 0, m.pos.z + 0.6); });
   // a software renderer draws about one frame a second: wait for the prompt to know who stands there
   await page.waitForFunction("window.__ui.near === 'mara'", { timeout: 120000 }).catch(() => {});
   await page.keyboard.press('e');
   await page.waitForSelector('.pm-overlay .pm-dlg', { timeout: 20000 }).catch(() => {});
-  const dlg = await page.evaluate(() => { const d = document.querySelector('.pm-overlay .pm-dlg'); return d ? { name: d.querySelector('h2')?.textContent, words: d.querySelectorAll('q').length, img: !!d.querySelector('img'), options: document.querySelectorAll('.pm-overlay .pm-btn').length } : null; });
+  const dlg = await page.evaluate(() => { const d = document.querySelector('.pm-overlay .pm-dlg'); // the person's words are in the parchment under the portrait's row since the design system (journal Passe UI3; this check counted the row's own,
+  // always 0, until journal Passe V0)
+  return d ? { name: d.querySelector('h2')?.textContent, words: document.querySelectorAll('.pm-overlay .pm-parch q').length, img: !!d.querySelector('img'), options: document.querySelectorAll('.pm-overlay .pm-btn').length } : null; });
   check(dlg?.name === 'Mara' && dlg.words > 0 && dlg.img && dlg.options >= 4, `E next to Mara opens her dialogue: ${JSON.stringify(dlg)}`);
   await page.screenshot({ path: path.join(outDir, 'day1-mara-dialogue.png') });
   await page.keyboard.press('Escape');
@@ -60,6 +64,7 @@ try {
   try {
     const G = await server.ssrLoadModule('/src/simulation/index.ts');
     let s = G.newGame(+seedS >>> 0, 'Aster');
+    if (V2) G.makeV2(s);
     for (const a of done) s = G.advance(s, a).state;
     check(G.hash(s) === await page.evaluate(() => window.__game.hash()), `Node replay ${G.hash(s)} = browser`);
   } finally { await server.close(); }
