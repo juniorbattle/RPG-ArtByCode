@@ -129,6 +129,20 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   - **gardé** : les réverbères de jour (« des bâtons gris ») sont le prototype même du quai du district ; les passants coupés au bas de l'image
     (comme C midi dans la référence).
 
+### La troisième critique à l'aveugle — [?] « pas encore »
+- Agent neuf, plus sévère et qui mesure (la couleur du quart le plus clair des images de nuit) ; six planches tirées au sort : les places de
+  la deuxième critique et celles d'après ses corrections. Chaque paire : **les corrigées devant** (parvis 5 → 6, entraînement 5,5 → 6,5, place
+  festive 5,5 → 7 ; qualité 4,5 → 5, 5 → 6, 5,5 → 6,5). Son verdict à côté du district : **« pas encore »** ; ce qui bloque : le Colisée qui ne
+  se lit pas comme tel (son haut jamais dans l'image), des nuits lilas (le quart le plus clair : parvis 100 / 90 / 100, entraînement 120 / 108 /
+  112, place festive 137 / 124 / 128 contre 140 / 117 / 104 au district : le plâtre sous la lune plus clair que les lampes), des auvents blancs
+  brûlés, des accessoires coupés au bord de l'image, le bas des cadrages larges vide.
+- Les deux critiques ne s'accordent pas sur l'attique (la deuxième : « pas de bord haut, pas de ciel » ; la troisième : « ajoutez un attique et
+  montrez le haut ») mais bien sur la cause : à 11,25 m, le haut de la façade sort du cadre de la caméra des places (le haut de l'image à
+  10,7-11,2 m à sa distance). Repris (itération 5, captures en cours) : l'arcade sur deux étages de 5,3 et 8,9 m, la corniche à 9,35 m (le rebord de
+  la cavea à 15,5 m et une bande de ciel au-dessus) ; la lune des places à 0,8 x et les lampes plus chaudes et plus larges (4,6 et 12 m, 3,2 et
+  9 m ; lanternes murales 2,7 et 9 m) ; le bord sud ouvert : une bordure de pierre, les pavés plus sombres de la ruelle et une borne entre
+  chaque paire de réverbères ; les bras des mannequins d'une seule barre de paille.
+
 ### Le bake, suite
 - Les poses de transition (Passe VP1, suite) : la page amène chaque champ de la pose vers sa cible ; un dialogue ou une cinématique passe donc
   par les mélanges de deux regards, que la grille n'échantillonne pas (le district échantillonne ses fondus AB, BC, CD, BD) : le chemin du

@@ -66,7 +66,9 @@ export function plazaCamPose(kind: PlazaKind, px: number, pz: number, dist: numb
 }
 /** the characters' scale in the squares: B's (journal Passe VP1) */
 const CHAR_SCALE = 1.12;
-const NIGHT_MOON = new THREE.Color(0.27, 0.37, 0.58);
+/** the squares' moon: a fifth below the first build's (journal Passe VP1, third critique: the moonlit plaster outshone the lamps, the night's
+ *  brightest quarter lilac where the district's is amber) */
+const NIGHT_MOON = new THREE.Color(0.27, 0.37, 0.58).multiplyScalar(0.8);
 
 export class PlazaApp {
   readonly renderer: THREE.WebGLRenderer;

@@ -133,11 +133,19 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   // ---------------------------------------------------------------- the lamps: a rhythm along the open south side (the quay's), a few inside
   const lamp = (x: number, z: number, strong = true) => {
     batch.add('lampPost', { pos: [x, 0, z], yaw: Math.PI / 2, scale: 1 }, 0);
-    lights.push({ pos: xf([0.52, 3.2 - 0.38, 0], [x, 0, z], Math.PI / 2), color: WARM, intensity: strong ? 4.0 : 2.8, radius: strong ? 10.5 : 8, kind: 'lantern', halo: strong ? 1.8 : 1.4, priority: strong ? 6 : 5 });
+    lights.push({ pos: xf([0.52, 3.2 - 0.38, 0], [x, 0, z], Math.PI / 2), color: WARM, intensity: strong ? 4.6 : 3.2, radius: strong ? 12 : 9, kind: 'lantern', halo: strong ? 1.8 : 1.4, priority: strong ? 6 : 5 });
     blockers.push({ x, z, r: 0.35 }); obstacles.push({ x0: x - 0.25, x1: x + 0.25, z0: z - 0.25, z1: z + 0.25, grime: 0.4 });
     puddles.push({ x: x + 0.8, z: z - 1.4, r: 1.6, amount: 0.85 });
   };
   for (const x of [-10.2, -3.4, 3.4, 10.2]) lamp(x, 3.9);
+  // the open south edge (journal Passe VP1, third critique: « the bottom 40 % of every wide framing is empty cobble »; the district's quay edge
+  // gives its frame that structure): a stone kerb along the square and the lane's darker setts beyond it, a bollard between each pair of lamps
+  tracked(() => {
+    const St = S.get('stone');
+    St.boxMM(-16, 0, 4.6, 16, 0.16, 4.95, { tint: [0.62, 0.6, 0.57], uvScale: 0.8 });
+    St.quad([-16, 0.012, 6.6], [16, 0.012, 6.6], [16, 0.012, 4.95], [-16, 0.012, 4.95], { tint: [0.42, 0.41, 0.42], uvScale: 1.4 });
+  });
+  for (const x of [-6.8, 0, 6.8]) { batch.add('bollard', { pos: [x, 0, 4.2], yaw: x }); obstacles.push({ x0: x - 0.2, x1: x + 0.2, z0: 4.0, z1: 4.4, grime: 0.5 }); }
   // the tops of the south lamps carry the day's bunting
   const lampTops: V3[] = [-10.2, -3.4, 3.4, 10.2].map((x) => [x, 3.05, 3.9]);
   const brazier = (x: number, z: number) => {
@@ -229,7 +237,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   for (const s of wallLamps) {
     if (day || !litSet.has(s)) { batch.add('lanternDark', { pos: [s.pos[0], s.pos[1] - 0.2, s.pos[2]], yaw: Math.atan2(s.dir[0], s.dir[2]) }, 0); continue; }
     batch.add('lantern', { pos: [s.pos[0], s.pos[1] - 0.22, s.pos[2]], yaw: Math.atan2(s.dir[0], s.dir[2]) }, 0);
-    lights.push({ pos: [s.pos[0], s.pos[1] + 0.02, s.pos[2]], color: WARM, intensity: 2.3, radius: 8, kind: 'lantern', halo: 1.4, priority: 5 });
+    lights.push({ pos: [s.pos[0], s.pos[1] + 0.02, s.pos[2]], color: WARM, intensity: 2.7, radius: 9, kind: 'lantern', halo: 1.4, priority: 5 });
   }
   // heraldry as a focal accent: one guild banner on the house nearest the focal point (the district's buildBanners)
   const banner = [...sockets.filter((s) => s.kind === 'banner')].sort((a, b) => Math.hypot(a.pos[0] - fx, a.pos[2] - fz) - Math.hypot(b.pos[0] - fx, b.pos[2] - fz))[0];
@@ -337,6 +345,9 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
   // at night a shade darker still: the moon faces the facade, which read brighter than the district's moonlit plaster
   const nk = day ? 1 : 0.84, R = 52, C: V3 = [0, 0, -71.2], stone: V3 = [0.7 * nk, 0.67 * nk, 0.62 * nk], stoneLt: V3 = [0.76 * nk, 0.72 * nk, 0.66 * nk], dark: V3 = [0.07, 0.07, 0.09], uv = 0.6;
   const St = S.get('stone'), Dk = S.get('dark');
+  // two tiers, 5.3 and 8.9 m, the cornice at 9.35 (journal Passe VP1, third critique: at 11.25 m the facade's top never entered the frame of
+  // the square's camera and it read as a wall; lower, the cavea's rim and a band of sky show above it, the drum reads as a drum)
+  const TIER_G = 5.3, TIER_U = 8.9;
   const bayW = 3.7, gateW = 5.6;
   // bay centres along the arc: the gate at 0, five bays each side
   const angles: Array<{ a: number; w: number; gate: boolean }> = [{ a: 0, w: gateW, gate: true }];
@@ -365,37 +376,37 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
       const hw = b.w / 2;
       // the piers (one per bay edge; the facade wall behind the openings is the recess)
       for (const s of [-1, 1]) {
-        St.boxMM(s * hw - 0.42, 0, -0.5, s * hw + 0.42, 6.4, 0.3, { uvScale: uv, tint: stoneLt, aoY: [0.7, 1] });
-        St.boxMM(s * hw - 0.26, 6.4, -0.4, s * hw + 0.26, 10.8, 0.18, { uvScale: uv, tint: stoneLt, aoY: [0.8, 1] });
+        St.boxMM(s * hw - 0.42, 0, -0.5, s * hw + 0.42, TIER_G, 0.3, { uvScale: uv, tint: stoneLt, aoY: [0.7, 1] });
+        St.boxMM(s * hw - 0.26, TIER_G, -0.4, s * hw + 0.26, TIER_U, 0.18, { uvScale: uv, tint: stoneLt, aoY: [0.8, 1] });
       }
       // the ground tier's arch (the gate wider and taller), the upper tier's
-      if (b.gate) arch(0, 0, 2.1, 4.0, 0, stoneLt); else arch(0, 0, 1.25, 3.4, 0, stoneLt);
-      arch(0, 6.95, 0.95, 1.6, -0.1, stoneLt);
+      if (b.gate) arch(0, 0, 2.0, 3.1, 0, stoneLt); else arch(0, 0, 1.25, 2.6, 0, stoneLt);
+      arch(0, TIER_G + 0.65, 0.9, 1.25, -0.1, stoneLt);
       // the wall between the arches' heads and the string course above them (the first try left both open onto the sky)
-      const top = b.gate ? 6.1 : 4.65;
-      if (top < 6.2) St.boxMM(-hw + 0.42, top, -0.12, hw - 0.42, 6.25, -0.02, { uvScale: uv, tint: stone });
-      St.boxMM(-0.97, 9.5, -0.12, 0.97, 10.82, -0.1, { uvScale: uv, tint: stone });
+      const top = b.gate ? 5.1 : 3.85, upTop = TIER_G + 0.65 + 1.25 + 0.9;
+      St.boxMM(-hw + 0.42, top, -0.12, hw - 0.42, TIER_G + 0.05, -0.02, { uvScale: uv, tint: stone });
+      St.boxMM(-0.92, upTop, -0.12, 0.92, TIER_U + 0.02, -0.1, { uvScale: uv, tint: stone });
       // the wall around the upper arch, the string courses, the cornice (the top: no attic)
-      St.boxMM(-hw + 0.26, 6.4, -0.12, hw - 0.26, 6.95, -0.1, { uvScale: uv, tint: stone });
-      for (const s of [-1, 1]) St.boxMM(s > 0 ? 0.95 : -hw + 0.26, 6.95, -0.12, s > 0 ? hw - 0.26 : -0.95, 10.8, -0.1, { uvScale: uv, tint: stone });
-      St.boxMM(-hw - 0.45, 6.2, -0.55, hw + 0.45, 6.55, 0.42, { uvScale: uv, tint: stoneLt });
-      St.boxMM(-hw - 0.3, 10.8, -0.6, hw + 0.3, 11.25, 0.35, { uvScale: uv, tint: stoneLt });
+      St.boxMM(-hw + 0.26, TIER_G, -0.12, hw - 0.26, TIER_G + 0.65, -0.1, { uvScale: uv, tint: stone });
+      for (const s of [-1, 1]) St.boxMM(s > 0 ? 0.9 : -hw + 0.26, TIER_G + 0.65, -0.12, s > 0 ? hw - 0.26 : -0.9, TIER_U, -0.1, { uvScale: uv, tint: stone });
+      St.boxMM(-hw - 0.45, TIER_G - 0.2, -0.55, hw + 0.45, TIER_G + 0.15, 0.42, { uvScale: uv, tint: stoneLt });
+      St.boxMM(-hw - 0.3, TIER_U, -0.6, hw + 0.3, TIER_U + 0.45, 0.35, { uvScale: uv, tint: stoneLt });
       // a mast and its pennant on every other bay, the tournament's colours
       if (b.gate || Math.round(b.a * R / bayW) % 2 === 0) {
-        S.get('timber').boxMM(-0.06, 11.25, -0.2, 0.06, 14.6, -0.08, { tint: [0.5, 0.42, 0.34], grain: 'y' });
-        addBanner(S, { pos: [0.12, 14.3, -0.14], yaw: Math.PI / 2, w: 0.5, h: 1.5, emblem: 'fleur', shape: 'pennant', loose: 0.7, rod: false, tint: b.gate ? [0.95, 0.88, 0.62] : [0.5, 0.6, 0.95] });
+        S.get('timber').boxMM(-0.06, TIER_U + 0.45, -0.2, 0.06, TIER_U + 3.8, -0.08, { tint: [0.5, 0.42, 0.34], grain: 'y' });
+        addBanner(S, { pos: [0.12, TIER_U + 3.5, -0.14], yaw: Math.PI / 2, w: 0.5, h: 1.5, emblem: 'fleur', shape: 'pennant', loose: 0.7, rod: false, tint: b.gate ? [0.95, 0.88, 0.62] : [0.5, 0.6, 0.95] });
       }
       if (b.gate) {
         // the portcullis: raised by day (its teeth under the head), shut at night with the doors behind it
-        const M = S.get('metal'), y0 = day ? 3.4 : 0;
-        for (let i = -4; i <= 4; i++) M.boxMM(i * 0.45 - 0.04, y0, -0.32, i * 0.45 + 0.04, 6.1, -0.26, { tint: [0.3, 0.3, 0.32] });
-        for (let y = y0 + 0.3; y < 6.1; y += 0.55) M.boxMM(-2.05, y, -0.33, 2.05, y + 0.06, -0.27, { tint: [0.3, 0.3, 0.32] });
-        if (!day) S.get('planks').boxMM(-2.1, 0, -0.6, 2.1, 5.9, -0.5, { grain: 'y', tint: [0.42, 0.32, 0.24] });
+        const M = S.get('metal'), y0 = day ? 2.6 : 0;
+        for (let i = -4; i <= 4; i++) M.boxMM(i * 0.43 - 0.04, y0, -0.32, i * 0.43 + 0.04, 5.1, -0.26, { tint: [0.3, 0.3, 0.32] });
+        for (let y = y0 + 0.3; y < 5.1; y += 0.55) M.boxMM(-1.95, y, -0.33, 1.95, y + 0.06, -0.27, { tint: [0.3, 0.3, 0.32] });
+        if (!day) S.get('planks').boxMM(-2.0, 0, -0.6, 2.0, 4.9, -0.5, { grain: 'y', tint: [0.42, 0.32, 0.24] });
         // the great banner over the gate
-        addBanner(S, { pos: [0, 10.55, 0.4], yaw: 0, w: 1.6, h: 3.0, emblem: 'fleur', shape: 'swallow', loose: 0.35, tint: [0.95, 0.88, 0.62] });
+        addBanner(S, { pos: [0, TIER_U - 0.15, 0.4], yaw: 0, w: 1.5, h: 2.4, emblem: 'fleur', shape: 'swallow', loose: 0.35, tint: [0.95, 0.88, 0.62] });
       } else if (Math.abs(b.a) * R < bayW * 2.2) {
         // long banners on the bays beside the gate
-        addBanner(S, { pos: [0, 10.55, 0.4], yaw: 0, w: 1.1, h: 3.2, emblem: 'fleur', shape: 'swallow', loose: 0.4, tint: [0.5, 0.6, 0.95] });
+        addBanner(S, { pos: [0, TIER_U - 0.15, 0.4], yaw: 0, w: 1.05, h: 2.6, emblem: 'fleur', shape: 'swallow', loose: 0.4, tint: [0.5, 0.6, 0.95] });
       }
     });
   });
@@ -413,8 +424,8 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
   // inside a few ground arches: the tunnels' torches (warm accents at the focal point, lit day and night like the arena's fires)
   for (const s of [-1, 1]) {
     const a = s * (gateW / 2 + bayW / 2) / R, x = Math.sin(a) * R, z = C[2] + Math.cos(a) * R - 0.6;
-    S.get('glow').box(x, 2.6, z, 0.18, 0.4, 0.1, { tint: [1, 0.55, 0.2] });
-    lights.push({ pos: [x, 2.6, z + 0.5], color: FIRE, intensity: 1.8, radius: 5.5, kind: 'fire', halo: 1.1, priority: 8, day: true });
+    S.get('glow').box(x, 2.1, z, 0.18, 0.4, 0.1, { tint: [1, 0.55, 0.2] });
+    lights.push({ pos: [x, 2.1, z + 0.5], color: FIRE, intensity: 1.8, radius: 5.5, kind: 'fire', halo: 1.1, priority: 8, day: true });
   }
   void emitters;
   blockers.push({ x: 0, z: -18.6, r: 0.1 });
@@ -469,8 +480,8 @@ function sandRing(S: SlotSet, batch: InstanceBatch, cx: number, cz: number, r: n
   S.at([cx, 0, cz], 0.4, () => {
     const straw: V3 = [0.56, 0.45, 0.27], sack: V3 = [0.5, 0.43, 0.34];
     T.cylinder(0.08, 0, 1.75, 6, { tint: [0.42, 0.33, 0.25], capTop: true });
-    T.box(0, 1.36, 0, 1.3, 0.13, 0.13, { tint: [0.44, 0.35, 0.27], grain: 'x' });
-    for (const a of [-0.58, 0.58]) S.get('cloth').box(a, 1.36, 0, 0.2, 0.2, 0.2, { tint: straw });
+    S.get('cloth').box(0, 1.36, 0, 1.3, 0.17, 0.17, { tint: straw });
+    for (const a of [-0.58, 0.58]) S.get('cloth').box(a, 1.36, 0, 0.2, 0.22, 0.22, { tint: [0.6, 0.49, 0.3] });
     S.get('cloth').cylinder(0.25, 0.8, 1.48, 7, { tint: straw, capTop: true, capBottom: true, r1: 0.19 });
     S.get('dark').cylinder(0.215, 1.1, 1.15, 7, { tint: [0.16, 0.13, 0.11] });
     S.get('cloth').cylinder(0.15, 1.52, 1.86, 7, { tint: sack, capTop: true, capBottom: true, r1: 0.12 });
