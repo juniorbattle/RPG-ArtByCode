@@ -158,7 +158,14 @@ export class ArenaApp {
   constructor(private opts: ArenaOptions) {
     this.rules = arenaRules(opts.params, opts.match);
     if (this.rules === 'dynamic') this.sim = this.dyn = new DynamicSim(tuneDyn((opts.match?.data as DynData | undefined) ?? DYNAMIC_DATA, opts.params.get('dyn')));
-    else if (this.rules === 'v2') { const v = makeV2Duel(opts.params, opts.match ? { data: opts.match.data as DynData, tiers: opts.match.tiers } : undefined); this.dyn = v.dyn; this.charge = v.charge; this.sim = (v.charge ?? v.dyn) as unknown as DuelSim; }
+    else if (this.rules === 'v2') { const v = makeV2Duel(opts.params, opts.match ? { data: opts.match.data as DynData, tiers: opts.match.tiers } : undefined); this.dyn = v.dyn; this.charge = v.charge; this.sim = (v.charge ?? v.dyn) as unknown as DuelSim;
+      // the version 2's sound (lot V8): the arena's roar and the duel's effects, after the person's first gesture; N mutes
+      const t = opts.params.get('time'), look = t === 'morning' || t === 'midday' || t === 'afternoon' ? t : 'night';
+      void import('../audio/Sound').then((m) => {
+        const snd = m.sound(); this.snd = snd as unknown as { play(e: string, gain?: number): void }; snd.setScene('arena', look);
+        window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'n' && !e.repeat) snd.set({ muted: !snd.settings.muted }); });
+      });
+    }
     else this.sim = this.classic = new CombatSim(opts.match?.data as CombatData | undefined);
     this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: false, powerPreference: 'high-performance', stencil: false, alpha: false });
     this.renderer.autoClear = false;
@@ -364,8 +371,22 @@ export class ArenaApp {
   }
 
   // ---------------------------------------------------------------- simulation -> presentation
+  /** the version 2's sound (lot V8, src/audio/Sound.ts): loaded on demand by a version 2 duel only; today's arena makes none */
+  snd: { play(e: string, gain?: number): void } | null = null;
+  private soundOf(e: { type: string } & Record<string, unknown>): void {
+    const s = this.snd; if (!s) return;
+    if (e.type === 'impact') s.play(e.result === 'dodged' ? 'dodge' : e.result === 'guarded' ? 'guard' : e.result === 'guardbreak' ? 'break' : e.kind === 'heavy' || (e.damage as number) >= 20 ? 'heavy' : 'hit');
+    else if (e.type === 'ko') s.play('ko');
+    else if (e.type === 'break') s.play('break');
+    else if (e.type === 'chargeTier') s.play('tier');
+    else if (e.type === 'chargeRelease') s.play('release');
+    else if (e.type === 'commandDenied' && e.who === 'ren') s.play('denied');
+    else if (e.type === 'reactStart' && e.who === 'ren') s.play('dodge', 0.6);
+  }
+
   private onEvents(evs: Array<CombatEvent | DynEvent>): void {
     for (const e of evs) {
+      if (this.snd) this.soundOf(e as never);
       if (e.type === 'impact') {
         if (e.hp <= 0) this.finisher = e.kind;
         const to = this.pres[e.to], tgt = this.fighters[e.to], heavy = e.kind === 'heavy' || e.damage >= 20;

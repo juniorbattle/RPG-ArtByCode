@@ -1,5 +1,5 @@
 import { App } from '../app/App';
-import { lookOf, townQuery, type GameState } from '../simulation';
+import { isV2, lookOf, townQuery, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
 import { esc, overlay } from './style';
@@ -61,6 +61,8 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   app.actors.interact = () => { interact(); ui.interact(); };
   const frame = () => { if (ui.modal) app.actors.keys.clear(); ui.update(); requestAnimationFrame(frame); };
   app.start();
+  // the version 2's sound (lot V8): the district's ambience and the day state's music; today's game makes none
+  if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed));
   frame();
   await Promise.all([fontsReady(), preloadPortraits()]);
   let n = 0;

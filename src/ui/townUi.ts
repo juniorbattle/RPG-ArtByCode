@@ -115,13 +115,15 @@ export class TownUi {
     if (isV2(this.st)) {
       const b = el('button', 'pm-btn', `<kbd>K</kbd>${tx('v2.skills.view')}`); b.addEventListener('click', () => this.openSkills(false)); this.bar.insertBefore(b, this.bar.lastElementChild);
       const g = el('button', 'pm-btn', `<kbd>G</kbd>${tx('v2.gear.view')}`); g.addEventListener('click', () => this.openGear()); this.bar.insertBefore(g, this.bar.lastElementChild);
+      const v = el('button', 'pm-btn', `<kbd>V</kbd>${tx('v2.sound.view')}`); v.addEventListener('click', () => void this.openSound()); this.bar.insertBefore(v, this.bar.lastElementChild);
     }
     window.addEventListener('keydown', (e) => {
       if (e.repeat || (e.target instanceof HTMLInputElement)) return;
       const k = e.key.toLowerCase();
+      if (k === 'n' && isV2(this.st)) { void import('../audio/Sound').then((m) => { const s = m.sound(); s.set({ muted: !s.settings.muted }); if (this.current?.querySelector('input[type=range]')) void this.openSound(); }); return; }
       if (this.modal) { if (k === 'escape') this.closeModal(); return; }
       if (k === 'm') this.openMap(); else if (k === 'j') this.openJournal(); else if (k === 't') this.openBoard(); else if (k === 'escape') this.openMenu();
-      else if (k === 'k' && isV2(this.st)) this.openSkills(false); else if (k === 'g' && isV2(this.st)) this.openGear();
+      else if (k === 'k' && isV2(this.st)) this.openSkills(false); else if (k === 'g' && isV2(this.st)) this.openGear(); else if (k === 'v' && isV2(this.st)) void this.openSound();
     });
     this.render();
     // a phone's screen keeps the scene: the list opens from its title
@@ -316,6 +318,25 @@ export class TownUi {
       b.addEventListener('click', () => { this.run({ type: 'equip', item: id }); this.openGear(); });
       card.appendChild(b);
     }
+    const close = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.close')}`); close.addEventListener('click', () => this.closeModal()); card.appendChild(close);
+    root.appendChild(card); document.body.appendChild(root); this.current = root; close.focus();
+  }
+
+  /** the version 2's sound (lot V8): the volume, the music's share, the mute; the engine loaded on demand (src/audio/Sound.ts) */
+  async openSound(): Promise<void> {
+    const snd = (await import('../audio/Sound')).sound();
+    this.closeModal(); this.modal = true; this.prompt.classList.remove('on');
+    const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">${tx('v2.sound.title')}</h2><p class="pm-sub">${tx('v2.sound.sub')}</p>`);
+    card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('v2.sound.title'));
+    const slider = (label: string, key: 'volume' | 'music') => {
+      const p = el('p', '', `<label>${label}<br><input type="range" min="0" max="100" step="5" value="${Math.round(snd.settings[key] * 100)}" aria-label="${label}"></label>`);
+      p.querySelector('input')!.addEventListener('input', (e) => snd.set({ [key]: +(e.target as HTMLInputElement).value / 100 }));
+      card.appendChild(p);
+    };
+    slider(tx('v2.sound.volume'), 'volume'); slider(tx('v2.sound.music'), 'music');
+    const mute = el('button', 'pm-btn', `<kbd>N</kbd>${snd.settings.muted ? tx('v2.sound.unmute') : tx('v2.sound.mute')}`);
+    mute.addEventListener('click', () => { snd.set({ muted: !snd.settings.muted }); void this.openSound(); });
+    card.appendChild(mute);
     const close = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.close')}`); close.addEventListener('click', () => this.closeModal()); card.appendChild(close);
     root.appendChild(card); document.body.appendChild(root); this.current = root; close.focus();
   }
