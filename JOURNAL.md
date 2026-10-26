@@ -271,7 +271,10 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   hérauts) ; `play-day V2=1` OK ; le TournamentLab v2 rejoué identique ; `ui-text` : le tableau du tournoi v2 à 1 920 x 1 080, 1 280 x 720 et au
   téléphone OK ; le parvis à 812 x 375 **[KO] déjà sur `main`** (l'onglet « Here » coupé par le bas de l'écran du téléphone couché : le même
   échec sur `main` figé ; l'interface est celle du jeu par défaut : laissé à une tâche à part, noté dans « À reprendre »).
-- `npm run typecheck`, `npm test` (**263 tests**, 0 échec), `npm run build`, `npm run art:validate` (0 erreur) ; CI verte sur la branche.
+- `npm run typecheck`, `npm test` (**263 tests**, 0 échec), `npm run build`, `npm run art:validate` (0 erreur) ; CI verte sur la branche
+  (`1711656`).
+- **La branche** : `claude/friendly-davinci-17lk4m` fusionnée dans `main` par avance rapide (`1289683` → la tête de ces deux passes), après la CI
+  verte ; sa suppression locale et distante suit (le dépôt distant l'avait refusée depuis le cloud en Passe V10 : à refaire en local si besoin).
 
 ### Les « proposé »
 - Les seuils du premier signe (2e manche, rang 1 à 4), le + 3 d'excitation par ligne du calendrier, les textes nouveaux, la politique
