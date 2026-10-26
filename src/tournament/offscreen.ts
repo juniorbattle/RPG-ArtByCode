@@ -2,6 +2,7 @@ import type { Rng } from '../core/rng';
 import { clamp, type CompetitorState, type GameState } from '../simulation/state';
 import type { Emit } from '../simulation/advance';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
+import { tx } from '../narrative/text';
 
 /** What the rivals do while the player spends a slot (TOURNAMENT_MASTER_CONTRACT § 6, GAMEPLAY § 14 verrou 7: the competitors move without
  *  waiting for the player; journal Passe L2). Each rival picks one activity per slot, weighted by its state, objectives and the hour, from
@@ -31,22 +32,22 @@ export function rivalsAct(s: GameState, emit: Emit, rng: Rng): void {
     const name = RIVALS[id].name;
     let text = '';
     switch (a) {
-      case 'train': c.preparation = clamp(c.preparation + 6 + r.int(0, 4)); text = `${name} trains.`; break;
+      case 'train': c.preparation = clamp(c.preparation + 6 + r.int(0, 4)); text = tx('off.train', { name }); break;
       case 'rest':
         if (c.healthState === 'injured') c.healthState = 'hurt'; else if (c.healthState === 'hurt') c.healthState = 'fit';
-        text = `${name} rests${c.healthState === 'fit' ? ' and is fit again' : ''}.`; break;
-      case 'buy': c.wealth -= 15; c.preparation = clamp(c.preparation + 5); text = `${name} buys gear in the market.`; break;
+        text = tx(c.healthState === 'fit' ? 'off.restFit' : 'off.rest', { name }); break;
+      case 'buy': c.wealth -= 15; c.preparation = clamp(c.preparation + 5); text = tx('off.buy', { name }); break;
       case 'spy': {
         const f = s.player.training > 0 ? 'player-trains' : s.player.items.length ? 'player-gear' : 'player-arrived';
         if (!c.knownFacts.includes(f)) c.knownFacts.push(f);
-        text = `${name} watches the other fighters.`; break;
+        text = tx('off.spy', { name }); break;
       }
       case 'socialise': {
         const others = ids.filter((o) => o !== id), o = r.pick(others), d = r.int(-6, 8);
         c.relationships[o] = clamp((c.relationships[o] ?? 0) + d, -100, 100);
-        text = `${name} drinks with ${RIVALS[o].name}${d < 0 ? '; words are exchanged' : ''}.`; break;
+        text = tx(d < 0 ? 'off.socialiseWords' : 'off.socialise', { name, other: RIVALS[o].name }); break;
       }
-      case 'plot': s.flags['plot:forge'] = ((s.flags['plot:forge'] as number) ?? 0) + 1; text = `${name} meets someone in a hood behind the tannery.`; break;
+      case 'plot': s.flags['plot:forge'] = ((s.flags['plot:forge'] as number) ?? 0) + 1; text = tx('off.plot', { name }); break;
     }
     emit({ kind: 'offscreen', id: `${id}:${a}`, cause: `offscreen:${id}`, text, visible: false });
   }

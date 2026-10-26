@@ -2,6 +2,7 @@ import type { Rng } from '../core/rng';
 import { clamp, type CompetitorState, type GameState, type MatchRecord } from '../simulation/state';
 import type { Emit } from '../simulation/advance';
 import { PLAYER_ID, POINTS, RIVALS, ROUNDS } from '../narrative/roster';
+import { tx } from '../narrative/text';
 import { DYN_PROFILES, DYN_RACE_SLOPE, dynRacerOf, PROFILES, raceWinChance, racerOf, type Mods } from '../combat/profiles';
 
 /** The pool of phase I (choice G3, journal Passe L2): eight competitors, two rounds in the slice, points (a defeat costs points, reputation,
@@ -82,7 +83,7 @@ export function playOffscreenMatches(s: GameState, emit: Emit, rng: Rng): void {
     if (upset) s.flags.upsets = ((s.flags.upsets as number) ?? 0) + 1;
     emit({
       kind: 'match', id: upset ? 'upset' : 'result', cause: `match:${matchId(m)}`, visible: true,
-      text: `${RIVALS[w.id].name} beat ${RIVALS[l.id].name}${m.close ? ' by a hair' : ''}${upset ? ', against the odds' : ''}${l.healthState === 'hurt' ? `; ${RIVALS[l.id].name} leaves the sand limping` : ''}.`,
+      text: tx('match.result', { winner: RIVALS[w.id].name, loser: RIVALS[l.id].name, close: m.close ? tx('match.close') : '', upset: upset ? tx('match.upset') : '', limp: l.healthState === 'hurt' ? tx('match.limp', { loser: RIVALS[l.id].name }) : '' }),
     });
   }
 }
@@ -120,8 +121,8 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
   P.items = P.items.filter((i) => i !== 'whetstone');
   emit({
     kind: 'match', id: won ? 'player-won' : 'player-lost', cause: `match:${matchId(m)}`, visible: true,
-    text: won ? `You beat ${name}${close ? ' with your last breath' : ''}. +${opp === 'marek' ? 20 : 15} reputation, a purse of 20 coins.`
-      : `${name} beats you${close ? ', but only just: the pool gives you a point' : ''}. The pool goes on: a defeat costs points, not the tournament.`,
+    text: won ? tx('duel.won', { name, close: close ? tx('duel.wonClose') : '', rep: opp === 'marek' ? 20 : 15 })
+      : tx('duel.lost', { name, close: close ? tx('duel.lostClose') : '' }),
   });
-  if (hurt) emit({ kind: 'consequence', id: 'player-injured', cause: `match:${matchId(m)}`, visible: true, text: 'You are hurt: rest, or see Sister Anwen at the forecourt, before your next bout.' });
+  if (hurt) emit({ kind: 'consequence', id: 'player-injured', cause: `match:${matchId(m)}`, visible: true, text: tx('duel.injured') });
 }

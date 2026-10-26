@@ -1,6 +1,7 @@
 import { advance, newGame } from './advance';
 import type { Action } from './actions';
 import type { GameState } from './state';
+import { makeV2 } from './v2';
 
 /** Named states for tests, the lab and `?state=<name>` (DEV) (PROJECT_MASTER_CONTRACT § 10.3: « hooks de test permettant de charger des
  *  états nommés »). Each is reached by playing a script of actions from a new game (seed 1842 unless given), never by writing fields, so
@@ -22,7 +23,7 @@ const W: Action = { type: 'wait' };
 const WON: Action = { type: 'fight', outcome: { winner: 'player', playerHp: 120, playerMaxHp: 200, opponentHp: 0, opponentMaxHp: 600, finisher: 'tech' } };
 const LOST: Action = { type: 'fight', outcome: { winner: 'opponent', playerHp: 0, playerMaxHp: 200, opponentHp: 300, opponentMaxHp: 600, finisher: 'heavy' } };
 
-export const NAMED_STATES: Record<string, { about: string; script: readonly Action[] }> = {
+export const NAMED_STATES: Record<string, { about: string; script: readonly Action[]; v2?: boolean }> = {
   'day1-morning': { about: 'a new game, the first morning', script: [] },
   'day1-evening': { about: 'the first evening, nothing done', script: [W, W] },
   'day2-morning': { about: 'the second morning, nothing done', script: [W, W, W] },
@@ -35,10 +36,13 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   'lanterns-night': { about: 'the first evening, on Lantern Row', script: [W, W, { type: 'move', to: 'lanterns' }] },
   'slice-end': { about: 'the slice played to its end: both bouts won, nothing else done', script: [W, W, W, W, WON, W, W, WON, W] },
   'trained-day1-evening': { about: 'trained twice on day 1', script: [{ type: 'move', to: 'forecourt' }, { type: 'train' }, { type: 'train' }] },
+  // the version 2 (src/simulation/v2.ts, journal Passe V0): a new game with the flag
+  'v2-day1-morning': { about: 'a version 2 game, the first morning', script: [], v2: true },
 };
 
 export function namedState(name: string, seed = NAMED_SEED, player = 'Ren'): GameState {
   const n = NAMED_STATES[name];
   if (!n) throw new Error(`no named state "${name}" (known: ${Object.keys(NAMED_STATES).join(', ')})`);
-  return play(newGame(seed, player), n.script);
+  const st = newGame(seed, player);
+  return play(n.v2 ? makeV2(st) : st, n.script);
 }

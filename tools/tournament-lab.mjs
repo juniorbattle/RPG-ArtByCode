@@ -8,6 +8,7 @@
 //   node tools/tournament-lab.mjs --compare=1842,7719 [--policy=..]   two seeds side by side: standings and results
 //   --rules=dynamic (any of the above): the games under the rules of the « tour par tour dynamique » (src/combat/dynamic.ts, journal Passe C1),
 //       their duels in DynamicSim and their off-screen matches in the same rules' race; absent = the arena of today
+//   --rules=v2: version 2 games (src/simulation/v2.ts, journal Passe V0: the flag `flags.v2`, the dynamic rules with it)
 import fs from 'node:fs';
 import path from 'node:path';
 import { createServer } from 'vite';
@@ -25,12 +26,13 @@ try {
   const pn = arg('policy', 'diligent'), policy = L.POLICIES[pn] ?? L.SCRIPTS[pn]?.();
   if (!policy) throw new Error(`no policy "${pn}" (known: ${[...Object.keys(L.POLICIES), ...Object.keys(L.SCRIPTS)].join(', ')})`);
   const out = arg('json'), rules = arg('rules', 'classic');
-  if (rules !== 'classic' && rules !== 'dynamic') throw new Error(`no rules "${rules}" (known: classic, dynamic)`);
+  if (rules !== 'classic' && rules !== 'dynamic' && rules !== 'v2') throw new Error(`no rules "${rules}" (known: classic, dynamic, v2)`);
   const table = (st) => T.standings(st).map((r, i) => `  ${String(i + 1).padStart(2)}. ${(r.id === 'player' ? st.player.name : RIVALS[r.id].name).padEnd(14)} ${String(r.points).padStart(2)} pts  rep ${String(r.reputation).padStart(3)}${r.id === 'player' ? '' : `  ${st.competitors[r.id].healthState.padEnd(7)} prep ${st.competitors[r.id].preparation}`}`).join('\n');
 
   if (arg('state') || arg('save')) {
     let st = arg('save') ? G.deserialize(fs.readFileSync(arg('save'), 'utf8')) : G.namedState(arg('state'));
     if (rules === 'dynamic') st.flags.combat = 'dynamic';
+    if (rules === 'v2') G.makeV2(st);
     const target = st.day + +(arg('days', '0'));
     while (!st.over && st.day < target) { const r = G.advance(st, policy.choose(st)); if (!r.ok) throw new Error(r.reason); st = r.state; }
     console.log(`day ${st.day} ${st.slot}${st.over ? ' (slice over)' : ''}, hash ${G.hash(st)}\n${table(st)}`);

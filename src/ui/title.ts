@@ -1,6 +1,7 @@
 import { readSave } from './save';
 import { cleanName } from '../simulation';
 import { el, esc, injectStyle } from './style';
+import { tx } from '../narrative/text';
 
 /** The title screen (choice P2, journal Passe L4): « New game » (it asks the player's name, choice K2), « Explore the district » (today's
  *  town at midday and the DEV panel: the operator's decision L7-6a, journal Passes D8 / D9) and « Continue » when a save exists. DOM, shown before anything is generated, over the
@@ -29,9 +30,9 @@ export function showTitle(c: TitleChoice): void {
   root.id = 'title-screen';
   root.innerHTML = `<div class="wrap">
     <div class="name">CITÉ DU TOURNOI</div>
-    <div class="pm-sub tag">The pool of eight · a playable slice</div>
+    <div class="pm-sub tag">${tx('ui.title.tag')}</div>
     <div class="pm-card" id="title-menu"></div>
-    <p class="pm-sub keys">Keyboard: arrows or WASD to walk, E to talk</p></div>`;
+    <p class="pm-sub keys">${tx('ui.title.keys')}</p></div>`;
   document.body.appendChild(root);
   const menu = root.querySelector('#title-menu')!;
   const menuButtons = (): void => {
@@ -41,17 +42,17 @@ export function showTitle(c: TitleChoice): void {
       b.dataset.id = id; b.addEventListener('click', f); menu.appendChild(b);
       return b;
     };
-    const first = save ? add('continue', 'Continue', `${save.player.name} · day ${save.day}, ${save.slot}${save.over ? ' · the slice is over' : ''}`, () => location.assign('?play=1'), true) : null;
-    add('new', 'New game', 'Enter the tournament under your own name', askName, !save);
-    add('explore', 'Explore the district', 'The Merchant District at midday, free roaming', () => { root.remove(); c.explore(); });
+    const first = save ? add('continue', tx('ui.title.continue'), tx('ui.title.save', { name: save.player.name, day: save.day, slot: save.slot, over: save.over ? tx('ui.title.over') : '' }), () => location.assign('?play=1'), true) : null;
+    add('new', tx('ui.title.new'), tx('ui.title.newSub'), askName, !save);
+    add('explore', tx('ui.title.explore'), tx('ui.title.exploreSub'), () => { root.remove(); c.explore(); });
     ((first ?? menu.querySelector('.pm-btn')) as HTMLButtonElement).focus();
   };
   const askName = (): void => {
-    menu.innerHTML = `<h2 class="pm-h">New game</h2><label for="title-name" class="pm-sub">Your fighter's name</label>
+    menu.innerHTML = `<h2 class="pm-h">${tx('ui.title.new')}</h2><label for="title-name" class="pm-sub">${tx('ui.title.name')}</label>
       <input id="title-name" maxlength="20" autocomplete="off" spellcheck="false" placeholder="Ren">
-      ${save ? '<p class="pm-sub warn">This replaces your saved game.</p>' : ''}`;
+      ${save ? `<p class="pm-sub warn">${tx('ui.title.replaces')}</p>` : ''}`;
     const input = menu.querySelector('input') as HTMLInputElement;
-    const go = el('button', 'pm-btn primary', 'Enter the Cité'), back = el('button', 'pm-btn', 'Back');
+    const go = el('button', 'pm-btn primary', tx('ui.title.enter')), back = el('button', 'pm-btn', tx('ui.title.back'));
     const start = () => location.assign(`?play=1&new=1&name=${encodeURIComponent(cleanName(input.value))}`);
     go.addEventListener('click', start); back.addEventListener('click', menuButtons);
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') start(); if (e.key === 'Escape') menuButtons(); });

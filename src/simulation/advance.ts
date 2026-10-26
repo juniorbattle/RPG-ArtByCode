@@ -6,6 +6,7 @@ import { endSlot } from './slot';
 import { initialState, CONTENT_ID } from './content';
 import { playerMatch } from '../tournament/pool';
 import { computePulse } from '../tournament/pulse';
+import { tx } from '../narrative/text';
 
 /** The simulation's entry points (PROJECT_MASTER_CONTRACT § 10.2, journal Passe L1):
  *  - `newGame(seed, name)`: the slice's first morning;
@@ -48,7 +49,7 @@ export function actions(st: GameState): ActionOption[] {
 function slotRule(st: GameState, def: ActionDef, a: Action): string | null {
   if (a.type === 'fight' || def.cost(st, a) === 0) return null;
   const m = playerMatch(st);
-  return m && st.slot === 'afternoon' && !m.winner ? 'Your bout is this afternoon: the arena is waiting.' : null;
+  return m && st.slot === 'afternoon' && !m.winner ? tx('refuse.boutFirst') : null;
 }
 
 function option(st: GameState, def: ActionDef, a: Action): ActionOption {
@@ -57,9 +58,9 @@ function option(st: GameState, def: ActionDef, a: Action): ActionOption {
 }
 
 export function advance(st: GameState, action: Action, rng?: Rng): Advance {
-  if (st.over) return { state: st, events: [], ok: false, reason: 'The slice is over.' };
+  if (st.over) return { state: st, events: [], ok: false, reason: tx('refuse.over') };
   const def = ACTIONS[action.type] as ActionDef | undefined;
-  if (!def) return { state: st, events: [], ok: false, reason: `Unknown action "${action.type}".` };
+  if (!def) return { state: st, events: [], ok: false, reason: tx('refuse.unknown', { type: action.type }) };
   const reason = def.check(st, action) ?? slotRule(st, def, action);
   if (reason !== null) return { state: st, events: [], ok: false, reason };
   const s = clone(st), events: GameEvent[] = [];
@@ -84,9 +85,9 @@ function passSlot(s: GameState, emit: Emit, cause: string): void {
   const i = slotIndex(s.slot);
   if (i < SLOTS.length - 1) s.slot = SLOTS[i + 1];
   else if (s.day < DAYS) { s.day++; s.slot = 'morning'; }
-  else { s.over = true; emit({ kind: 'slot', id: 'slice-over', cause, text: 'The third day ends. The pool goes on without you for now: to be continued.', visible: true }); return; }
+  else { s.over = true; emit({ kind: 'slot', id: 'slice-over', cause, text: tx('clock.sliceOver'), visible: true }); return; }
   s.pulse = computePulse(s);
-  emit({ kind: 'slot', id: `slot:${s.day}:${s.slot}`, cause, text: `Day ${s.day}, ${slotName(s.slot)}.`, visible: false });
+  emit({ kind: 'slot', id: `slot:${s.day}:${s.slot}`, cause, text: tx('clock.slot', { day: s.day, slot: slotName(s.slot) }), visible: false });
 }
 
 

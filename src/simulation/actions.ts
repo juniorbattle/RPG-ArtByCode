@@ -6,6 +6,7 @@ import { ROLE_ACTIONS, available, type RoleAction } from './roles';
 import { onTalk } from '../narrative/dialogue';
 import { applyPlayerDuel, playerMatch, opponentOf, type DuelOutcome } from '../tournament/pool';
 import { RIVALS } from '../narrative/roster';
+import { tx } from '../narrative/text';
 
 /** The player's actions (journal Passe L1). Each says what it costs (0 = a minor action that takes no slot: moving between places,
  *  talking, consulting, GAMEPLAY § 4.2; 1 = a significant action that takes the slot, § 4.1), when it is refused and why (a readable
@@ -39,79 +40,79 @@ type Table = { [K in BaseAction['type']]: ActionDef<Extract<BaseAction, { type: 
 const BASE: Table = {
   move: {
     list: (st) => PLACES.filter((p) => p !== st.place).map((to) => ({ type: 'move', to })),
-    label: (_, a) => `Go to ${placeName(a.to)}`,
+    label: (_, a) => tx('move.label', { place: placeName(a.to) }),
     cost: () => 0,
-    check: (st, a) => (!PLACES.includes(a.to) ? 'No such place.' : a.to === st.place ? 'You are already there.' : a.to === 'lanterns' && st.slot !== 'evening' ? 'Lantern Row sleeps until dusk: its taverns open at night.' : null),
-    apply: (s, a, _r, emit) => { s.place = a.to; emit({ kind: 'action', id: 'move', cause: 'action:move', text: `You walk to ${placeName(a.to)}.`, visible: false }); },
+    check: (st, a) => (!PLACES.includes(a.to) ? tx('move.noPlace') : a.to === st.place ? tx('move.there') : a.to === 'lanterns' && st.slot !== 'evening' ? tx('move.lanternsShut') : null),
+    apply: (s, a, _r, emit) => { s.place = a.to; emit({ kind: 'action', id: 'move', cause: 'action:move', text: tx('move.log', { place: placeName(a.to) }), visible: false }); },
   },
   talk: {
     list: (st) => Object.values(PEOPLE).filter((p) => p.place === st.place).map((p) => ({ type: 'talk', who: p.id })),
-    label: (_, a) => `Talk to ${PEOPLE[a.who]?.name ?? a.who}`,
+    label: (_, a) => tx('talk.label', { name: PEOPLE[a.who]?.name ?? a.who }),
     cost: () => 0,
     check: (st, a) => available(st, a.who),
     apply: (s, a, _r, emit) => {
       const k = `met:${a.who}`;
-      if (!s.flags[k]) { s.flags[k] = true; emit({ kind: 'action', id: 'meet', cause: 'action:talk', text: `You meet ${PEOPLE[a.who].name}, ${PEOPLE[a.who].title}.`, visible: true }); }
+      if (!s.flags[k]) { s.flags[k] = true; emit({ kind: 'action', id: 'meet', cause: 'action:talk', text: tx('talk.meet', { name: PEOPLE[a.who].name, title: PEOPLE[a.who].title }), visible: true }); }
       onTalk(s, a.who, emit);
     },
   },
   rest: {
     list: () => [{ type: 'rest' }],
-    label: () => 'Rest (heals one level of injury)',
+    label: () => tx('rest.label'),
     cost: () => 1,
-    check: (st) => (st.player.injury > 0 ? null : 'You are not hurt.'),
-    apply: (s, _a, _r, emit) => { s.player.injury = Math.max(0, s.player.injury - 1); emit({ kind: 'action', id: 'rest', cause: 'action:rest', text: 'You rest; your wounds ease.', visible: true }); },
+    check: (st) => (st.player.injury > 0 ? null : tx('rest.notHurt')),
+    apply: (s, _a, _r, emit) => { s.player.injury = Math.max(0, s.player.injury - 1); emit({ kind: 'action', id: 'rest', cause: 'action:rest', text: tx('rest.log'), visible: true }); },
   },
   train: {
     list: (st) => (st.place === 'forecourt' ? [{ type: 'train' }] : []),
-    label: () => 'Train on the practice sand (+5 % damage at your next bout)',
+    label: () => tx('train.label'),
     cost: () => 1,
-    check: (st) => (st.place !== 'forecourt' ? 'The practice sand is at the Arena Forecourt.' : st.slot === 'evening' ? 'The practice sand closes at dusk.' : st.player.training >= 2 ? 'You are as sharp as training can make you before the next bout.' : null),
+    check: (st) => (st.place !== 'forecourt' ? tx('train.notHere') : st.slot === 'evening' ? tx('train.closed') : st.player.training >= 2 ? tx('train.sharp') : null),
     apply: (s, _a, _r, emit) => {
       s.player.training++; s.player.reputation = clamp(s.player.reputation + 1);
-      emit({ kind: 'action', id: 'train', cause: 'action:train', text: 'You drill on the practice sand until your arms burn.', visible: true });
+      emit({ kind: 'action', id: 'train', cause: 'action:train', text: tx('train.log'), visible: true });
     },
   },
   fight: {
     // the arena (or the bot, headless) fights the duel and hands its result in; offered as « enter the arena » by the interface
     list: () => [],
-    label: (st) => { const m = playerMatch(st); return m ? `Fight ${RIVALS[opponentOf(m)].name} in the arena` : 'Fight'; },
+    label: (st) => { const m = playerMatch(st); return m ? tx('fight.label', { name: RIVALS[opponentOf(m)].name }) : tx('fight.labelPlain'); },
     cost: () => 1,
     check: (st, a) => {
       const m = playerMatch(st);
-      if (!m) return 'You have no bout today.';
-      if (st.slot !== 'afternoon') return 'Your bout is this afternoon.';
-      if (m.winner) return 'You have fought today.';
+      if (!m) return tx('fight.noBout');
+      if (st.slot !== 'afternoon') return tx('fight.afternoon');
+      if (m.winner) return tx('fight.fought');
       const o = a.outcome;
-      return o && (o.winner === 'player' || o.winner === 'opponent') && o.playerMaxHp > 0 && o.opponentMaxHp > 0 ? null : 'No result from the arena.';
+      return o && (o.winner === 'player' || o.winner === 'opponent') && o.playerMaxHp > 0 && o.opponentMaxHp > 0 ? null : tx('fight.noResult');
     },
     apply: (s, a, _r, emit) => { applyPlayerDuel(s, a.outcome, emit); s.pendingMatch = null; s.flags.dusk = s.day; },
   },
   nightfall: {
     // back from a bout the evening opens at the end of day (choice G2: `afternoon` as the transition); the night falls when the player says
     list: (st) => (st.slot === 'evening' && st.flags.dusk === st.day && !st.flags[`night:${st.day}`] ? [{ type: 'nightfall' }] : []),
-    label: () => 'Let the night fall',
+    label: () => tx('nightfall.label'),
     cost: () => 0,
-    check: (st) => (st.slot === 'evening' && st.flags.dusk === st.day && !st.flags[`night:${st.day}`] ? null : 'The sun is not setting on a bout.'),
-    apply: (s, _a, _r, emit) => { s.flags[`night:${s.day}`] = true; emit({ kind: 'action', id: 'nightfall', cause: 'action:nightfall', text: 'The sun sinks behind the Colosseum; the lanterns of the Cité are lit.', visible: true }); },
+    check: (st) => (st.slot === 'evening' && st.flags.dusk === st.day && !st.flags[`night:${st.day}`] ? null : tx('nightfall.notNow')),
+    apply: (s, _a, _r, emit) => { s.flags[`night:${s.day}`] = true; emit({ kind: 'action', id: 'nightfall', cause: 'action:nightfall', text: tx('nightfall.log'), visible: true }); },
   },
   payWatch: {
     list: (st) => (st.place === 'district' && st.slot === 'evening' ? [{ type: 'payWatch' }] : []),
-    label: () => 'Pay Sergeant Hale to watch the forge tonight (15 coins)',
+    label: () => tx('payWatch.label'),
     cost: () => 0,
     coins: () => 15,
-    check: (st) => (st.place !== 'district' ? 'Sergeant Hale is on the quay.' : st.slot !== 'evening' ? 'The night watch is hired at dusk.' : st.services.forgeWatch ? 'The watch is already posted.' : st.player.coins < 15 ? 'You cannot pay the watch (15 coins).' : null),
+    check: (st) => (st.place !== 'district' ? tx('payWatch.notHere') : st.slot !== 'evening' ? tx('payWatch.dusk') : st.services.forgeWatch ? tx('payWatch.posted') : st.player.coins < 15 ? tx('payWatch.poor') : null),
     apply: (s, _a, _r, emit) => {
       s.player.coins -= 15; s.services.forgeWatch = true; s.town.hale = clamp((s.town.hale ?? 0) + 5, -100, 100);
-      emit({ kind: 'action', id: 'pay-watch', cause: 'action:payWatch', text: 'You pay Sergeant Hale: two of his men will stand by Bram\'s forge tonight.', visible: true });
+      emit({ kind: 'action', id: 'pay-watch', cause: 'action:payWatch', text: tx('payWatch.log'), visible: true });
     },
   },
   wait: {
     list: () => [{ type: 'wait' }],
-    label: () => 'Let the time pass',
+    label: () => tx('wait.label'),
     cost: () => 1,
     check: () => null,
-    apply: (_s, _a, _r, emit) => { emit({ kind: 'action', id: 'wait', cause: 'action:wait', text: 'You let the hours go by.', visible: false }); },
+    apply: (_s, _a, _r, emit) => { emit({ kind: 'action', id: 'wait', cause: 'action:wait', text: tx('wait.log'), visible: false }); },
   },
 };
 

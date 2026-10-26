@@ -1,5 +1,5 @@
 import type { TimeOfDay } from '../atmosphere/DayState';
-import { actions, advance, hash, lookOf, namedState, newGame, type Action, type GameState } from '../simulation';
+import { actions, advance, hash, lookOf, makeV2, namedState, newGame, wantsV2, type Action, type GameState } from '../simulation';
 import { loadingError, toneLoading } from './loading';
 import { readSave, writeSave } from './save';
 
@@ -34,6 +34,8 @@ export function go(params: URLSearchParams, extra: Record<string, string> = {}):
  *  matches in their race; the flag lives in the save. Behind this parameter until the operator's trial (CB-10); absent = the game of today */
 export function withRules(s: GameState, params: URLSearchParams): GameState {
   if (params.get('combat') === 'dynamic') s.flags.combat = 'dynamic';
+  // `&v2=1`: the version 2 (src/simulation/v2.ts, the operator's decision AV-2), the dynamic rules with it; absent = the game of today
+  if (wantsV2((k) => params.get(k))) makeV2(s);
   return s;
 }
 

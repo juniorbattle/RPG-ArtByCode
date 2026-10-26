@@ -3,6 +3,7 @@ import { lookOf, townQuery, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
 import { esc, overlay } from './style';
+import { tx } from '../narrative/text';
 import { fontsReady, installDesign } from './design/system';
 import { preloadPortraits } from './portraits';
 
@@ -65,5 +66,5 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();
-  if (note) void overlay(`<h2 class="pm-h">A new game</h2><p>${esc(note)}</p>`, [{ id: 'ok', label: 'Continue', primary: true }]).done;
+  if (note) void overlay(`<h2 class="pm-h">${tx('ui.newGame')}</h2><p>${esc(note)}</p>`, [{ id: 'ok', label: tx('ui.continue'), primary: true }]).done;
 }

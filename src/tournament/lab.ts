@@ -6,6 +6,7 @@ import { dynSheetData, matchSheetFor, sheetData } from '../combat/match';
 import { RIVALS, PLAYER_ID } from '../narrative/roster';
 import type { DuelOutcome } from './pool';
 import { dynamicRules, standings } from './pool';
+import { makeV2 } from '../simulation/v2';
 
 /** The TournamentLab's library (TOURNAMENT_MASTER_CONTRACT § 13, journal Passe L2; the CLI is tools/tournament-lab.mjs): play whole games
  *  headless with a player policy, the player's duels fought by the bot in the arena's full simulation; find the forgotten participants;
@@ -13,7 +14,8 @@ import { dynamicRules, standings } from './pool';
  *  can be played under the rules of the « tour par tour dynamique » (`rules: 'dynamic'`, journal Passe C1): its duels in DynamicSim, its
  *  off-screen matches in the same rules' race (pool.ts). */
 
-export type CombatRules = 'classic' | 'dynamic';
+/** 'v2': a version 2 game (src/simulation/v2.ts: its flag, the dynamic rules with it, journal Passe V0) */
+export type CombatRules = 'classic' | 'dynamic' | 'v2';
 
 /** the player's duel today, fought by the bot at this skill in the arena's simulation (the match sheet's data), or in the new rules' */
 export function botOutcome(st: GameState, skill: number): DuelOutcome {
@@ -96,6 +98,7 @@ export interface GameRun { seed: number; state: GameState; events: GameEvent[]; 
 export function autoplay(seed: number, policy: Policy, name = 'Ren', maxActions = 200, rules: CombatRules = 'classic'): GameRun {
   let st = newGame(seed, name);
   if (rules === 'dynamic') st.flags.combat = 'dynamic';
+  if (rules === 'v2') makeV2(st);
   const events: GameEvent[] = [];
   for (let i = 0; i < maxActions && !st.over; i++) {
     const r = advance(st, policy.choose(st));

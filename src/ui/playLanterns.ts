@@ -3,6 +3,7 @@ import { lookOf, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
 import { el } from './style';
+import { tx } from '../narrative/text';
 import { fontsReady, installDesign } from './design/system';
 import { preloadPortraits } from './portraits';
 
@@ -25,7 +26,7 @@ export async function startPlayLanterns(b: Boot, st0: GameState): Promise<void> 
   const ui = new TownUi({ state: () => st, act: (a) => (window as any).__game.act(a), reload: (extra) => go(b.params, extra) }, st.log.length - 1);
   (window as any).__ui = ui;
   (window as any).__game.subscribe(() => ui.render());
-  const tag = el('div', 'pm pm-sub', 'Lantern Row · a mock-up of the third place, built from the district\'s generators');
+  const tag = el('div', 'pm pm-sub', tx('ui.lanternsTag'));
   tag.id = 'pm-place-tag';
   document.body.appendChild(tag);
   app.start();

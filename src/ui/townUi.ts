@@ -7,6 +7,7 @@ import { boardHtml, standingsHtml as standingsHtmlRows } from './board';
 import { portraitUrl } from './portraits';
 import { downloadSave, loadSaveFile, writeSave } from './save';
 import { el, esc, injectStyle, overlay } from './style';
+import { tx } from '../narrative/text';
 
 /** The play mode's interface in a place (journal Passe L4; choice K1: English): the clock and the next deadline (TOURNAMENT § 11), what
  *  the player can do here and what it costs in slots (GAMEPLAY § 4), the people to talk to (a portrait, their words, the options they
@@ -80,8 +81,8 @@ const CSS = `
 /** what an action takes, one tag per currency (the operator's decision P2, journal Passes UI1 / UI2): its coins (from the simulation, not
  *  the label), its slot; « free » only when it takes neither */
 export function costTag(o: Pick<ActionOption, 'cost' | 'coins'>): string {
-  const tags = [o.coins ? `${o.coins} coin${o.coins === 1 ? '' : 's'}` : '', o.cost ? '1 slot' : ''].filter(Boolean);
-  return tags.length ? tags.map((t) => `<span class="cost">${t}</span>`).join('') : '<span class="cost free">free</span>';
+  const tags = [o.coins ? tx(o.coins === 1 ? 'ui.coin' : 'ui.coinsN', { n: o.coins }) : '', o.cost ? tx('ui.oneSlot') : ''].filter(Boolean);
+  return tags.length ? tags.map((t) => `<span class="cost">${t}</span>`).join('') : `<span class="cost free">${tx('ui.free')}</span>`;
 }
 
 export class TownUi {
@@ -101,8 +102,8 @@ export class TownUi {
     this.status.setAttribute('aria-live', 'polite');
     document.body.append(this.status, this.bar, this.here, this.prompt, this.toast);
     // a phone's first tab: « Here », whose list is a sheet above the tabs (a computer shows the panel itself)
-    const tab = el('button', 'pm-btn tab-here', 'Here'); tab.addEventListener('click', () => this.here.classList.toggle('min')); this.bar.appendChild(tab);
-    for (const [k, label, f] of [['M', 'Map', () => this.openMap()], ['J', 'Journal', () => this.openJournal()], ['T', 'Tournament', () => this.openBoard()], ['Esc', 'Menu', () => this.openMenu()]] as const) {
+    const tab = el('button', 'pm-btn tab-here', tx('ui.here')); tab.addEventListener('click', () => this.here.classList.toggle('min')); this.bar.appendChild(tab);
+    for (const [k, label, f] of [['M', tx('ui.map'), () => this.openMap()], ['J', tx('ui.journal'), () => this.openJournal()], ['T', tx('ui.tournament'), () => this.openBoard()], ['Esc', tx('ui.menu'), () => this.openMenu()]] as const) {
       const b = el('button', 'pm-btn', `<kbd>${k}</kbd>${label}`); b.addEventListener('click', f); this.bar.appendChild(b);
     }
     window.addEventListener('keydown', (e) => {
@@ -122,15 +123,15 @@ export class TownUi {
     const s = this.st, rows = standings(s), rank = rows.findIndex((r) => r.id === 'player') + 1, wins = s.tournament.matches.filter((m) => m.winner === 'player').length;
     const told: string[] = [];
     told.push(`${esc(s.player.name)} ends the pool's two rounds ${rank === 1 ? 'at its head' : `in ${rank}${rank === 2 ? 'nd' : rank === 3 ? 'rd' : 'th'} place`}: ${wins} win${wins === 1 ? '' : 's'}, ${s.tournament.points.player} points.`);
-    told.push(s.facts.includes('saboteur-caught') ? 'Bram\'s forge stands, and Cassius Dree was caught paying for its ruin.'
-      : s.facts.includes('forge-burned') ? (s.flags.reported ? 'The forge burned, but you named Cassius Dree to the watch.' : s.services.forge === 'repaired' ? 'The forge burned, and you helped Bram rebuild it.' : 'The forge burned. Who paid for it is still a whisper in the night.')
-        : 'Nobody dared touch Bram\'s forge.');
-    if (s.facts.includes('orla-recruitable')) told.push('Orla Brask will stand with you when the pool turns to teams.');
-    else if (s.facts.includes('orla-introduced')) told.push('Orla Brask is looking for comrades for the team bouts to come.');
-    told.push(rank <= 4 ? 'The best four go on to the transition phase: trials, and the first allies.' : 'Only the best four go on; the others will look for a team, or for revenge.');
+    told.push(s.facts.includes('saboteur-caught') ? tx('ui.end.forgeCaught')
+      : s.facts.includes('forge-burned') ? (s.flags.reported ? tx('ui.end.forgeReported') : s.services.forge === 'repaired' ? tx('ui.end.forgeRepaired') : tx('ui.end.forgeWhisper'))
+        : tx('ui.end.forgeSafe'));
+    if (s.facts.includes('orla-recruitable')) told.push(tx('ui.end.orlaRecruit'));
+    else if (s.facts.includes('orla-introduced')) told.push(tx('ui.end.orlaIntro'));
+    told.push(rank <= 4 ? tx('ui.end.top4') : tx('ui.end.out'));
     this.modal = true;
-    const o = overlay(`<p class="pm-big">End of the slice</p><p class="pm-sub pm-center">Day 3 is over · to be continued</p>${told.map((t) => `<p>${t}</p>`).join('')}<p class="pm-sub">The pool</p>${standingsHtmlRows(s, rows)}`,
-      [{ id: 'stay', label: 'Keep walking the district', primary: true }, { id: 'title', label: 'Back to the title screen' }]);
+    const o = overlay(`<p class="pm-big">${tx('ui.end.title')}</p><p class="pm-sub pm-center">${tx('ui.end.sub')}</p>${told.map((t) => `<p>${t}</p>`).join('')}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtmlRows(s, rows)}`,
+      [{ id: 'stay', label: tx('ui.end.stay'), primary: true }, { id: 'title', label: tx('ui.end.back') }]);
     this.current = o.root;
     const r = await o.done;
     this.modal = false; this.current = null;
@@ -145,7 +146,7 @@ export class TownUi {
     if (n !== this.near) {
       this.near = n;
       const p = n ? PEOPLE[n] : null;
-      this.prompt.innerHTML = p ? `<kbd>E</kbd>Talk to ${esc(p.name)}, ${esc(p.title)}` : '';
+      this.prompt.innerHTML = p ? `<kbd>E</kbd>${tx('ui.talkTo', { name: esc(p.name), title: esc(p.title) })}` : '';
       this.prompt.classList.toggle('on', !!p && !this.modal);
     }
   }
@@ -156,10 +157,10 @@ export class TownUi {
   render(): void {
     const s = this.st, P = s.player, m = s.tournament.matches.find((x) => x.day >= s.day && !x.winner && (x.a === 'player' || x.b === 'player'));
     const opp = m ? RIVALS[m.a === 'player' ? m.b : m.a] : null;
-    const next = s.over ? 'The slice is over: to be continued.' : opp ? `Next bout: ${opp.name}, day ${m!.day} afternoon${m!.day === s.day ? (s.slot === 'afternoon' ? ' — now' : ' — today') : ''}` : 'Your bouts of the pool are fought.';
-    const slotName = s.slot === 'evening' ? (dusk(s) ? 'evening · sunset' : 'evening') : s.slot;
-    this.status.innerHTML = `<div class="clock">Day ${s.day} / 3 · ${slotName}</div><div class="pm-sub">${esc(P.name)} · ${esc(placeName(s.place))}</div>
-      <div class="stats"><span class="pm-num">${P.coins}</span> coins · reputation <span class="pm-num">${P.reputation}</span> · ${P.injury ? `<span class="hurt">${P.injury > 1 ? 'badly hurt' : 'hurt'}</span>` : 'fit'}${P.items.length ? ` · ${esc(P.items.map((i) => i.replace('-', ' ')).join(', '))}` : ''}</div>
+    const next = s.over ? tx('ui.next.over') : opp ? tx('ui.next.bout', { name: opp.name, day: m!.day, when: m!.day === s.day ? (s.slot === 'afternoon' ? tx('ui.next.now') : tx('ui.next.today')) : '' }) : tx('ui.next.done');
+    const slotName = s.slot === 'evening' ? (dusk(s) ? tx('ui.slot.sunset') : 'evening') : s.slot;
+    this.status.innerHTML = `<div class="clock">${tx('ui.clock', { day: s.day, slot: slotName })}</div><div class="pm-sub">${esc(P.name)} · ${esc(placeName(s.place))}</div>
+      <div class="stats"><span class="pm-num">${P.coins}</span> ${tx('ui.coins')} · ${tx('ui.reputation')} <span class="pm-num">${P.reputation}</span> · ${P.injury ? `<span class="hurt">${P.injury > 1 ? tx('ui.badlyHurt') : tx('ui.hurt')}</span>` : tx('ui.fit')}${P.items.length ? ` · ${esc(P.items.map((i) => i.replace('-', ' ')).join(', '))}` : ''}</div>
       <div class="next">${esc(next)}</div>`;
     this.renderHere();
   }
@@ -169,16 +170,16 @@ export class TownUi {
     const s = this.st, opts = actions(s).filter((o) => { const by = offeredBy(o.action as never); return o.action.type !== 'talk' && o.action.type !== 'move' && (by === null || by === 'forge'); });
     const fight = s.slot === 'afternoon' && s.tournament.matches.some((m) => m.day === s.day && !m.winner && (m.a === 'player' || m.b === 'player'));
     const people = actions(s).filter((o) => o.action.type === 'talk');
-    this.here.innerHTML = `<h2 class="pm-h pm-toggle" tabindex="0" title="Show / hide">Here</h2><div class="list"></div>`;
+    this.here.innerHTML = `<h2 class="pm-h pm-toggle" tabindex="0" title="${tx('ui.showHide')}">${tx('ui.here')}</h2><div class="list"></div>`;
     const list = this.here.querySelector('.list')!, h = this.here.querySelector('h2')!;
     h.addEventListener('click', () => this.here.classList.toggle('min'));
     if (fight) {
-      const b = el('button', 'pm-btn primary', `<span>Enter the arena for your bout</span><span class="cost">1 slot</span>`);
+      const b = el('button', 'pm-btn primary', `<span>${tx('ui.enterArena')}</span><span class="cost">${tx('ui.oneSlot')}</span>`);
       b.addEventListener('click', () => { writeSave(s); this.host.reload({ scene: 'arena' }); }); list.appendChild(b);
     }
     for (const o of opts) list.appendChild(this.optionButton(o));
     if (people.length) {
-      list.appendChild(el('p', 'pm-sub', 'People here'));
+      list.appendChild(el('p', 'pm-sub', tx('ui.peopleHere')));
       for (const o of people) {
         const who = (o.action as { who: string }).who, b = el('button', 'pm-btn', `<span>${esc(PEOPLE[who].name)}<span class="why${o.ok ? ' title' : ''}">${o.ok ? esc(PEOPLE[who].title) : esc(o.reason ?? '')}</span></span>`);
         b.disabled = !o.ok; b.addEventListener('click', () => this.openPerson(who)); list.appendChild(b);
@@ -196,7 +197,7 @@ export class TownUi {
   /** applies an action: a reload for a new slot or place, otherwise the panels and the news */
   run(a: Action): void {
     const r = this.host.act(a);
-    if (!r.ok) { void this.card(`<p>${esc(r.reason ?? 'You cannot do that.')}</p>`); return; }
+    if (!r.ok) { void this.card(`<p>${esc(r.reason ?? tx('ui.cannot'))}</p>`); return; }
     if (r.reload) { this.closeModal(); this.host.reload(); return; }
     this.render();
     const news = (r.events ?? []).filter((e) => e.visible);
@@ -214,10 +215,10 @@ export class TownUi {
   private showNews(): void {
     const news = this.st.log.filter((e) => e.visible && e.seq > this.seenSeq);
     if (!news.length) return;
-    void this.card(`<h2 class="pm-h">${news.length > 1 ? 'Meanwhile in the Cité' : 'News'}</h2>${news.slice(-8).map((e) => `<p>${esc(e.text)}</p>`).join('')}`, 'Go on');
+    void this.card(`<h2 class="pm-h">${news.length > 1 ? tx('ui.meanwhile') : tx('ui.news')}</h2>${news.slice(-8).map((e) => `<p>${esc(e.text)}</p>`).join('')}`, tx('ui.goOn'));
   }
 
-  private async card(html: string, ok = 'Close'): Promise<string> {
+  private async card(html: string, ok = tx('ui.close')): Promise<string> {
     this.modal = true; this.prompt.classList.remove('on');
     const o = overlay(html, [{ id: 'ok', label: ok, primary: true }]);
     this.current = o.root;
@@ -242,7 +243,7 @@ export class TownUi {
     card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', p.name);
     card.innerHTML = `<div class="pm-dlg">${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(p.name)}</h2><p class="pm-sub">${esc(p.title)}</p></div></div><div class="pm-parch">${lines.map((l) => `<q>${esc(l)}</q>`).join('')}</div>`;
     for (const o of opts) card.appendChild(this.optionButton(o, () => { if (this.current === root) this.openPerson(who); }));
-    const leave = el('button', 'pm-btn', '<kbd>Esc</kbd>Leave');
+    const leave = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.leave')}`);
     leave.addEventListener('click', () => this.closeModal());
     card.appendChild(leave);
     root.appendChild(card);
@@ -254,9 +255,9 @@ export class TownUi {
   private openMap(): void {
     const s = this.st, moves = actions(s).filter((o) => o.action.type === 'move');
     this.closeModal(); this.modal = true;
-    const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">The Cité</h2><p class="pm-sub">You are in ${esc(placeName(s.place))}. Walking between places takes no time.</p>`);
+    const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">${tx('ui.cite')}</h2><p class="pm-sub">${tx('ui.youAreIn', { place: esc(placeName(s.place)) })}</p>`);
     for (const o of moves) card.appendChild(this.optionButton(o));
-    const close = el('button', 'pm-btn', '<kbd>Esc</kbd>Close'); close.addEventListener('click', () => this.closeModal()); card.appendChild(close);
+    const close = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.close')}`); close.addEventListener('click', () => this.closeModal()); card.appendChild(close);
     root.appendChild(card); document.body.appendChild(root); this.current = root;
     ((card.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement) ?? close).focus();
   }
@@ -264,23 +265,23 @@ export class TownUi {
   private openJournal(): void {
     const s = this.st, facts = s.log.filter((e) => e.visible).slice(-30).reverse();
     this.closeModal();
-    void this.card(`<h2 class="pm-h">Journal</h2>${facts.map((e) => `<p><span class="pm-sub">Day ${e.day} · ${e.slot}</span><br>${esc(e.text)}${e.kind === 'consequence' || e.kind === 'sign' ? `<br><span class="pm-sub why">Why: ${esc(e.cause)}</span>` : ''}</p>`).join('')}`);
+    void this.card(`<h2 class="pm-h">${tx('ui.journal')}</h2>${facts.map((e) => `<p><span class="pm-sub">${tx('ui.day', { day: e.day, slot: e.slot })}</span><br>${esc(e.text)}${e.kind === 'consequence' || e.kind === 'sign' ? `<br><span class="pm-sub why">${tx('ui.why', { cause: esc(e.cause) })}</span>` : ''}</p>`).join('')}`);
   }
 
   private openBoard(): void { this.closeModal(); void this.card(boardHtml(this.st, standings(this.st))); }
 
   private openMenu(): void {
     this.closeModal(); this.modal = true;
-    const s = this.st, root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">Menu</h2><p class="pm-sub">The game saves itself after every action.</p>`);
+    const s = this.st, root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">${tx('ui.menu')}</h2><p class="pm-sub">${tx('ui.menu.saves')}</p>`);
     const add = (label: string, f: () => void) => { const b = el('button', 'pm-btn', esc(label)); b.addEventListener('click', f); card.appendChild(b); };
-    add('Save to a file', () => downloadSave(s));
-    add('Load a save file', () => {
+    add(tx('ui.menu.saveFile'), () => downloadSave(s));
+    add(tx('ui.menu.loadFile'), () => {
       const i = el('input'); i.type = 'file'; i.accept = 'application/json,.json';
       i.addEventListener('change', async () => { const f = i.files?.[0]; if (!f) return; try { writeSave(await loadSaveFile(f)); this.host.reload(); } catch (e) { this.closeModal(); void this.card(`<p>${esc((e as Error).message)}</p>`); } });
       i.click();
     });
-    add('Quit to the title screen', () => location.assign(location.pathname));
-    add('Back to the game', () => this.closeModal());
+    add(tx('ui.menu.quit'), () => location.assign(location.pathname));
+    add(tx('ui.menu.back'), () => this.closeModal());
     root.appendChild(card); document.body.appendChild(root); this.current = root;
     (card.querySelector('.pm-btn') as HTMLButtonElement).focus();
   }
