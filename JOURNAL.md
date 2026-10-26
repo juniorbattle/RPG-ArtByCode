@@ -142,6 +142,10 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   la cavea à 15,5 m et une bande de ciel au-dessus) ; la lune des places à 0,8 x et les lampes plus chaudes et plus larges (4,6 et 12 m, 3,2 et
   9 m ; lanternes murales 2,7 et 9 m) ; le bord sud ouvert : une bordure de pierre, les pavés plus sombres de la ruelle et une borne entre
   chaque paire de réverbères ; les bras des mannequins d'une seule barre de paille.
+- Itération 5 vue : le haut du Colisée, ses mâts et le ciel dans le cadre ; des mannequins qui se lisent ; la bordure et les bornes au bas de
+  l'image. La nuit (luminance moyenne ; couleur moyenne du quart le plus clair) : parvis 44,8 → 47,0 (100 / 89 / 99 → 105 / 92 / 97),
+  entraînement 54,6 → 57,3 (122 / 107 / 111 → 129 / 111 / 110), place festive 57,1 → 57,3 (137 / 124 / 131 → 141 / 126 / 127), contre B nuit
+  57,7 (142 / 118 / 105) : plus chaude à moitié chemin ; la lune passe à 0,68 x.
 
 ### Le bake, suite
 - Les poses de transition (Passe VP1, suite) : la page amène chaque champ de la pose vers sa cible ; un dialogue ou une cinématique passe donc
