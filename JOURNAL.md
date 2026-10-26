@@ -567,6 +567,32 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un choix d'interface décrit en mots (« à la hauteur de l'alerte, entre les cartes et les têtes ») se vérifie à chaque taille : quand ses deux
   moitiés se contredisent, l'écart se dit à l'opérateur au lieu d'en garder une en silence.
 
+## Passe AP2 — Les deux pages publiées de l'arène republiées avec le build de `main` (`1ee9752`, Passe AF1) (2026-10-26)
+
+### Demande
+- Dans cette séance, après la Passe AF1, l'opérateur, mot pour mot : « Oui : republie les deux pages de l'arène
+  (https://claude.ai/artifact/EzSKUGk1jrCSxLENY5CC44 et https://claude.ai/artifact/HnfCTWXSggDVVyVUskTBJK) au même lien, avec le build de main
+  d'aujourd'hui. » Branche `arena-pages-republish` depuis `main` (`1ee9752`), worktree hors du dossier partagé (journal seulement).
+
+### Fait — [OK]
+- `tools/arena-scene-page.mjs` sur le worktree (même voie qu'en Passe AP1 : le vite du dépôt par son chemin, `configFile: false`), deux fois :
+  `scene=arena` « Arène des Champions » et `scene=arena&combat=dynamic` « Arène de l'essai C2 » (le titre que porte la page publiée) ; les deux
+  builds donnent les mêmes **29 fichiers** (le morceau `system` est désormais dans `index` : l'écran de chargement de la Passe UI4 installe le système
+  de design sur chaque page) ; `index.html` n'a pas changé depuis la Passe AP1, l'outil reste valable.
+- **Vérifié avant de publier**, chaque page dans le squelette du service, servie en local : `arena-scene-check` **PASS** (ancien duel : empreinte du
+  prototype, 42 rendus, télégraphe 6,94:1, sol dégagé 22 cas sur 22 ; nouveau duel : `DYNAMIC_SIM_HASH`, 63 rendus, 6,77:1, 44 sur 44 ; 0 erreur) ;
+  `ui-text` **6 pages sur 6** pour chacune (dont 812 × 375 et 1024 × 540).
+- **Publiées par leur `url`** : la page des Champions en version 3 (`1792983508-403e`), celle de l'essai C2 en version 2 (`1792983522-8e38`) ; les 14
+  anciens scripts devenus orphelins retirés. **Relues** (les 30 fichiers de chacune) : **29 sur 29 identiques à l'octet** au build, et la page que sert
+  le service identique à la page contrôlée ; 30 fichiers publiés chacune, aucun reste.
+
+### Restes [?]
+- Comme en Passe AP1, la lecture dans le visualiseur de claude.ai n'est pas vérifiée d'ici (le panneau navigateur de la séance demande une connexion).
+
+### Pensée
+- Un build se compare d'un jour à l'autre par ses noms hachés : la liste des fichiers à retirer d'une page publiée se calcule (anciens moins
+  nouveaux), sinon les anciens morceaux restent publiés à côté des nouveaux.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -712,7 +738,7 @@ republier avec `tools/arena-scene-page.mjs` après un changement ; republiée av
 visualiseur de claude.ai à voir par l'opérateur). La bande au sol et les anneaux
 « absents » en 812 × 375 (Passe AP1) étaient sous la barre de la fenêtre d'esquive, sous ~600 px de haut : **corrigé en Passe AF1** (AF1-1 « Sur le
 bouton Esquive », AF1-2 « À la place de l'alerte » ; contrôle 4 d'`arena-scene-check`, onze tailles jusqu'à 568 × 320), à revoir en jeu par
-l'opérateur ; les pages publiées de l'arène (AP1, essai C2) montrent encore l'état d'avant. Le prototype `arena/arena.html` reste la référence de ses règles.
+l'opérateur ; les deux pages publiées de l'arène (AP1, essai C2) republiées avec ce correctif (Passe AP2). Le prototype `arena/arena.html` reste la référence de ses règles.
 **Décisions de l'opérateur (Passe D1)** : entrée depuis la ville « Plus tard » ; combattants « Générés pour l'instant » ; nombres du combat
 « Régler après essai » ; assistance « Discrète ». Temps GPU mesuré sur la 780M (Passe G1 : 9,3 ms en 1080p). **À voir sur sa machine** : cadence, lecture en mouvement,
 la page publiée dans le visualiseur. Restes : visages des combattants (la grammaire du générateur), anneau de dalles peu visible (l'occlusion
