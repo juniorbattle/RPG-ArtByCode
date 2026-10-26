@@ -23,6 +23,9 @@ import { PRESETS, runScript } from './Presets';
 import { DYN_PRESETS, runDynScript } from './DynPresets';
 import { arenaRules, dynClip, dynClipFrame, dynKeys, dynPad, tuneDyn, type ArenaRules } from './dynamicView';
 import { FloorUI } from './FloorUI';
+import { chargeHudModel, makeV2Duel, runV2Script, V2_HELD, V2_KEYS, V2_PAD, V2_PRESETS } from './v2Arena';
+import { CHARGE_TEXTS_EN, CHARGE_TEXTS_FR } from './DynamicHud';
+import type { ChargedDuel, ChargeTier } from '../combat/charge';
 
 /** The arena scene of the game (journal Passe P1): `?scene=arena`. The prototype's duel (CombatSim, ported rule for rule) staged with
  *  the town's renderer: the same materials, lights (LightRig), sky, moon shadow, planar reflection in the puddles and post chain (in-scatter,
@@ -57,6 +60,8 @@ export interface DuelSim {
 export interface ArenaMatch {
   /** today's data, or the new rules' (with `rules: 'dynamic'`, the game's `flags.combat`, journal Passe C2) */
   data: CombatData | DynData; rules?: ArenaRules; foe: string; assist: Assist; texts: ArenaTexts | DynTexts;
+  /** the version 2's charge tiers (with `rules: 'v2'`, src/combat/v2duel.ts, journal Passe V1) */
+  tiers?: ChargeTier[];
   onOver?: (r: { winner: FighterId; hp: Record<FighterId, number>; maxHp: Record<FighterId, number>; finisher: string | null; t: number }) => void;
 }
 /** the forecourt's walking mode (journal Passe L6): no bout; the hero walks the sand (arrows or A / D, W / S), Marek drills by the ring; the
@@ -103,6 +108,8 @@ export class ArenaApp {
   readonly rules: ArenaRules;
   readonly classic: CombatSim | null = null;
   readonly dyn: DynamicSim | null = null;
+  /** the version 2's three buttons and charge (`v2`: ?v2=1 or a version 2 game; its inner simulation is `dyn`); null with `input=keys` */
+  readonly charge: ChargedDuel | null = null;
   lib!: MaterialLibrary;
   arena!: ArenaBuild;
   set!: ArenaSpriteSet;
@@ -151,6 +158,7 @@ export class ArenaApp {
   constructor(private opts: ArenaOptions) {
     this.rules = arenaRules(opts.params, opts.match);
     if (this.rules === 'dynamic') this.sim = this.dyn = new DynamicSim(tuneDyn((opts.match?.data as DynData | undefined) ?? DYNAMIC_DATA, opts.params.get('dyn')));
+    else if (this.rules === 'v2') { const v = makeV2Duel(opts.params, opts.match ? { data: opts.match.data as DynData, tiers: opts.match.tiers } : undefined); this.dyn = v.dyn; this.charge = v.charge; this.sim = (v.charge ?? v.dyn) as unknown as DuelSim; }
     else this.sim = this.classic = new CombatSim(opts.match?.data as CombatData | undefined);
     this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: false, powerPreference: 'high-performance', stencil: false, alpha: false });
     this.renderer.autoClear = false;
@@ -274,7 +282,7 @@ export class ArenaApp {
     if (this.look) this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 2, -4), this.keyDir, 30, 30);
     else this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 3.5, -6), MOON_DIR, 24, 9);
     if (!this.opts.params.has('clean')) {
-      this.hud = this.dyn ? new DynamicHud(this.dyn, this.set.portraits, this.opts.match?.texts as DynTexts | undefined, parseTime(this.opts.params))
+      this.hud = this.dyn ? new DynamicHud(this.dyn, this.set.portraits, this.opts.match?.texts as DynTexts | undefined, parseTime(this.opts.params), this.charge ? { texts: this.opts.match ? CHARGE_TEXTS_EN : CHARGE_TEXTS_FR, tiers: this.charge.tiers } : null)
         : new ArenaHud(this.classic!, this.set.portraits, this.opts.match?.texts, parseTime(this.opts.params));
     }
     if (this.hud) {
@@ -308,6 +316,8 @@ export class ArenaApp {
   action(id: string, down = true): void {
     const s = this.sim;
     if (id === 'guard') { s.setGuard('ren', down); return; }
+    // the version 2's attack: held, it charges; released, it launches the tier reached (src/combat/charge.ts)
+    if (id === 'attack') { this.charge?.attack(down); return; }
     if (!down) return;
     if (id === 'dodge') s.react('ren', 'dodge');
     else if (id === 'reset') { if (!this.opts.match) this.restart(); }
@@ -322,15 +332,15 @@ export class ArenaApp {
       window.addEventListener('blur', () => this.walkKeys.clear());
       return;
     }
-    const KEYS: Record<string, string> = this.dyn ? dynKeys(this.dyn.D.loadout) : { '1': 'light', '2': 'heavy', '3': 't1', '4': 't2', '5': 't3', '6': 't4', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
+    const KEYS: Record<string, string> = this.charge ? V2_KEYS : this.dyn ? dynKeys(this.dyn.D.loadout) : { '1': 'light', '2': 'heavy', '3': 't1', '4': 't2', '5': 't3', '6': 't4', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
     window.addEventListener('keydown', (e) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || !this.ready) return;
       const k = e.key.toLowerCase(), m = KEYS[k];
       if (m) { e.preventDefault(); this.action(m, true); this.hud?.flash(m); }
       else if (k === 'h') this.hudVisible = !this.hudVisible;
     });
-    window.addEventListener('keyup', (e) => { if (e.key.toLowerCase() === 'b') this.action('guard', false); });
-    window.addEventListener('blur', () => this.action('guard', false));
+    window.addEventListener('keyup', (e) => { const k = e.key.toLowerCase(); if (this.charge) { if (V2_HELD[k]) this.action(V2_HELD[k], false); } else if (k === 'b') this.action('guard', false); });
+    window.addEventListener('blur', () => { this.action('guard', false); if (this.charge) this.action('attack', false); });
   }
 
   private padPrev: boolean[] = [];
@@ -338,11 +348,11 @@ export class ArenaApp {
   private pollPad(): void {
     const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
     const p = pads && pads[0]; if (!p) return;
-    const PAD: Record<number, string> = this.dyn ? dynPad(this.dyn.D.loadout) : { 0: 'dodge', 1: 'guard', 2: 'light', 3: 'heavy', 4: 't1', 5: 't2', 6: 't3', 7: 't4', 9: 'pause', 8: 'reset' };
+    const PAD: Record<number, string> = this.charge ? V2_PAD : this.dyn ? dynPad(this.dyn.D.loadout) : { 0: 'dodge', 1: 'guard', 2: 'light', 3: 'heavy', 4: 't1', 5: 't2', 6: 't3', 7: 't4', 9: 'pause', 8: 'reset' };
     for (const [b, id] of Object.entries(PAD)) {
       const i = +b, down = !!p.buttons[i]?.pressed;
       if (down && !this.padPrev[i]) { this.action(id, true); this.hud?.flash(id); }
-      if (!down && this.padPrev[i] && id === 'guard') this.action('guard', false);
+      if (!down && this.padPrev[i] && (id === 'guard' || id === 'attack')) this.action(id, false);
       this.padPrev[i] = down;
     }
   }
@@ -375,6 +385,8 @@ export class ArenaApp {
         if (this.hitLight) { this.hitLight.pos.set(a.pos.x - (e.who === 'ren' ? -0.3 : 0.3), 1.45, 1.2); this.hitLight.scale = this.hitLight.targetScale = 1; }
         this.cheer(0.8);
       } else if (e.type === 'pushed') { this.pres[e.who].knock = -0.35; this.shake = Math.max(this.shake, 0.3); }
+      // the version 2: each tier the charge reaches lights the player a moment
+      else if ((e as { type: string }).type === 'chargeTier') this.pres.ren.flash = Math.max(this.pres.ren.flash, 0.45);
       else if (e.type === 'effect') { this.pres[e.who].flash = 0.6; this.spawnFx(e.family === 'defensive' ? 'guard' : 'spark', this.fighters[e.who], e.who === 'ren' ? 'marek' : 'ren'); }
       else if (e.type === 'reset') {
         this.koT = -1; this.shake = 0; this.push = 0;
@@ -409,8 +421,12 @@ export class ArenaApp {
       const clips = this.set.clips[id];
       if (s.over && f.state !== 'down') clip = 'victory';
       if (!clips[clip]) clip = id === 'marek' || f.ap >= 2 ? 'ready' : 'idle';
+      // the version 2's charge, shown with today's images (the operator's brief, lot V1): the heavy attack's preparation held while the
+      // attack is held and the player is free (not guarding: the guard's brace shows then)
+      const charging = id === 'ren' && !!this.charge && this.charge.view().held && f.state === 'idle' && !f.guarding && !!clips.heavy;
+      if (charging) clip = 'heavy';
       const def = clips[clip], n = def.frames.length;
-      let fi = this.dyn ? dynClipFrame(clip === dynClip(an.name) ? an.name : clip, clip, n, an, def.loop ?? 0) : clipFrame(clip, n, an.t, an.impactAt ?? 0, def.loop ?? 0);
+      let fi = charging ? 0 : this.dyn ? dynClipFrame(clip === dynClip(an.name) ? an.name : clip, clip, n, an, def.loop ?? 0) : clipFrame(clip, n, an.t, an.impactAt ?? 0, def.loop ?? 0);
       if (clip === 'block' && p.guardHit > 0) fi = 1;
       a.anim = `${clip}.${fi}` as Anim;
       // lunges: an attack closes the gap so its blade lands on the opponent at the impact; a dodge leaps back; hits knock back
@@ -546,7 +562,7 @@ export class ArenaApp {
     this.lights.update(this.time, pdt, this.camera);
     this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...this.fans], this.lights, this.camera, this.keyDir, null, this.fighters.ren);
     this.particles.update(pdt, this.time, this.camera, this.post.height, this.lights, null);
-    if (this.hud instanceof DynamicHud) this.hud.update(this.dyn!, this.assist, this.hudVisible, this.paused && !this.moment);
+    if (this.hud instanceof DynamicHud) this.hud.update(this.dyn!, this.assist, this.hudVisible, this.paused && !this.moment, this.charge ? chargeHudModel(this.charge.view()) : undefined);
     else this.hud?.update(this.classic!, this.assist, this.hudVisible, this.paused && !this.moment);
     // an official bout: told once the KO has had its moment on screen
     const m = this.opts.match;
@@ -587,7 +603,8 @@ export class ArenaApp {
   /** the prototype's `jump`: a scripted moment from a reset, every step delivered to the presentation at the simulation's fixed step (the
    *  prototype delivered its last half second only: a KO before it never reached the screen), then held */
   jump(name: string): boolean {
-    const p = this.dyn ? DYN_PRESETS[name] : PRESETS[name]; if (!p) return false;
+    const v2p = this.charge ? V2_PRESETS[name] : undefined;
+    const p = v2p ?? (this.dyn ? DYN_PRESETS[name] : PRESETS[name]); if (!p) return false;
     this.sim.reset(); this.hud?.still(false); this.onEvents(this.sim.drain());
     const dt = this.sim.D.dt;
     const onStep = () => {
@@ -595,7 +612,8 @@ export class ArenaApp {
       this.presentFighters(dt); this.presentFans(); this.presentFx(dt); this.updateDynamicLights(); this.applyCamera(dt);
       this.particles.update(dt, this.time, this.camera, this.post.height, this.lights, null);
     };
-    if (this.dyn) runDynScript(this.dyn, DYN_PRESETS[name].script, onStep);
+    if (v2p) runV2Script(this.charge!, v2p.script, onStep);
+    else if (this.dyn) runDynScript(this.dyn, DYN_PRESETS[name].script, onStep);
     else runScript(this.classic!, PRESETS[name].script, () => true, onStep);
     this.paused = true; this.moment = true; this.hud?.still(true);
     this.update(0);
@@ -605,7 +623,7 @@ export class ArenaApp {
   renderOnce(): void { this.update(0); this.render(); }
 
   /** the scripted moments `jump` knows under this page's rules */
-  presetNames(): string[] { return Object.keys(this.dyn ? DYN_PRESETS : PRESETS); }
+  presetNames(): string[] { return this.charge ? [...Object.keys(V2_PRESETS), ...Object.keys(DYN_PRESETS)] : Object.keys(this.dyn ? DYN_PRESETS : PRESETS); }
 
   snapshot(): Record<string, unknown> {
     const r = this.renderer.info, p = this.perf, gpu = p.gpu.enabled ? { ...p.gpu.ms } : undefined;
@@ -617,6 +635,7 @@ export class ArenaApp {
       lights: this.lights.sources.length, lightsOnScreen: this.lights.active, fans: this.fans.length, instances: this.arena?.stats.instances,
       atlas: this.set ? `${this.set.atlas.width}x${this.set.atlas.height} (${this.set.atlas.frameCount} cells)` : null, drawCalls: p.drawCalls, frameTriangles: p.triangles, arenaTriangles: this.arena?.stats.triangles, resolution: `${this.post.width}x${this.post.height}`,
       pose: this.pose, assist: this.assist,
+      ...(this.charge ? { charge: this.charge.view() } : {}),
       ...(this.dyn ? { rules: this.rules, resist: { ren: +this.dyn.f.ren.resist.toFixed(2), marek: +this.dyn.f.marek.resist.toFixed(2) }, phase: this.dyn.inSequence() ? 'defense' : 'open' } : {}),
     };
   }

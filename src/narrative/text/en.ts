@@ -301,6 +301,8 @@ export const EN = {
   'ui.arena.keys': 'Keys',
   'ui.arena.keysClassic': '1 quick · 2 heavy · 3-6 techniques · B hold to guard · A dodge in the window · Space pause',
   'ui.arena.keysDynamic': '1 quick (+1 AP) · 2 heavy (prepared) · 3-6 your four skills (AP) · B hold to guard · A dodge (1 AP) · while your opponent attacks, only guard and dodge work · Space pause',
+  'ui.arena.keysV2': 'J (or 1) hold to charge: a tap is a quick strike, about 2 s a heavy one, then your skills one after the other, each paid in AP · release to strike · K (or B) hold to guard, the charge kept · L (or A) dodge (1 AP, the charge lost) · while your opponent attacks, only guard and dodge work · Space pause',
+  'ui.arena.foeSkills': '{name}\'s skills: {skills}. A light alert announces them.',
   'ui.arena.fight': 'Fight',
   'ui.arena.victory': 'Victory',
   'ui.arena.defeat': 'Defeat',

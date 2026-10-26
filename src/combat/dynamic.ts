@@ -22,7 +22,8 @@
 export type DynFighterId = 'ren' | 'marek';
 export type DynKind = 'light' | 'heavy' | 'skill';
 export type SkillFamily = 'offensive' | 'defensive' | 'support';
-export type DynActionId = 'light' | 'heavy' | 't1' | 't2' | 't3' | 't4' | 'd1' | 's1' | 'm_slash' | 'm_heavy';
+/** today's actions; `m_<name>`: an opponent's skill, `k_<name>`: a skill of the version 2's catalogue (src/combat/skills.ts, lots V1 / V2) */
+export type DynActionId = 'light' | 'heavy' | 't1' | 't2' | 't3' | 't4' | 'd1' | 's1' | 'm_slash' | 'm_heavy' | `m_${string}` | `k_${string}`;
 export type DynState = 'idle' | 'acting' | 'recovering' | 'pushed' | 'stunned' | 'down';
 
 export interface DynActionDef {
@@ -51,7 +52,15 @@ export interface DynData {
   /** the gauge: its size, what time takes off per second, the share a guarded blow adds, the break's stun and damage multiplier */
   resist: { max: number; decay: number; guard: number; breakStun: number; breakDamage: number };
   /** the opponent: its level sets its pauses (`restByLevel`); `afterStun` = its wait before the next sequence once a stun ends */
-  ai: { seed: number; start: number; afterStun: number; level: number; comboGap: [number, number]; comboLen: [number, number]; weights: { combo: number; singleLight: number; singleHeavy: number }; light: DynActionId; heavy: DynActionId };
+  ai: {
+    seed: number; start: number; afterStun: number; level: number; comboGap: [number, number]; comboLen: [number, number]; weights: { combo: number; singleLight: number; singleHeavy: number }; light: DynActionId; heavy: DynActionId;
+    /** lot C3 (the version 2, journal Passe V1): the « sophisticated » opponent's defence in its pauses [G3]: once per attack of the player, the
+     *  share it dodges (the heavy and the skills only) and the share it guards; absent = no defence (today's opponents) */
+    defense?: { guard: number; dodge: number };
+    /** lot C3: its 2 to 4 skills [G3], each a sequence of its own: `chance` = the share of its sequences that is a skill when one is ready, a
+     *  skill's `cooldown` (s) its own pacing (the opponent has no AP, CB-1); absent = no skill */
+    skills?: { chance: number; list: Array<{ id: DynActionId; weight: number; cooldown: number }> };
+  };
   /** the pauses between sequences per level (s): shorter as the level rises, « presque le combat full actif » [G1] */
   restByLevel: Record<number, [number, number]>;
   fighters: Record<DynFighterId, { name: string; maxHp: number; usesAp?: boolean; ai?: boolean }>;
@@ -139,6 +148,8 @@ export interface DynFighter {
   /** the opponent: its sequence (`inSeq` from the first blow's start to the end of the last one, gaps included: the player's defence) */
   plan: DynActionId[]; seqLen: number; seqIdx: number; inSeq: boolean; resting: boolean; aiWait: number;
   anim: DynAnimState | null; lastAction: DynActionId | null;
+  /** lot C3 (only with `ai.defense` / `ai.skills`): a dodge waiting for the player's blow, the guard's release time, the skills' cooldowns */
+  dodgeAt: number | null; guardUntil: number; skillReady: Record<string, number>;
 }
 
 export interface DynIncoming {
@@ -178,6 +189,7 @@ export class DynamicSim {
         recoverLeft: 0, recoverDur: 0, stunLeft: 0, stunDur: 0, flinch: 0, react: null, guardHeld: false, guarding: false, guardT: 0, buffer: null,
         resist: 0, broken: false, ward: null, boost: null, apClock: 0,
         plan: [], seqLen: 0, seqIdx: 0, inSeq: false, resting: false, aiWait: D.ai.start, anim: null, lastAction: null,
+        dodgeAt: null, guardUntil: 0, skillReady: {},
       };
     }
     this.ar = (D.ai.seed >>> 0) || 1; this.refreshAnims(); this.emit({ type: 'reset' });
@@ -189,7 +201,18 @@ export class DynamicSim {
   /** the opponent's pause after a sequence: drawn in its level's range */
   restRange(): [number, number] { return this.D.restByLevel[this.D.ai.level]; }
   private newSequence(): DynActionId[] {
-    const A = this.D.ai, W = A.weights, x = this.rand() * (W.combo + W.singleLight + W.singleHeavy);
+    const A = this.D.ai, W = A.weights;
+    // lot C3: a skill of its own when one is ready (draws only for an opponent that has skills: today's keep their stream)
+    if (A.skills) {
+      const ready = A.skills.list.filter((k) => (this.f.marek.skillReady[k.id] ?? 0) <= this.t);
+      if (ready.length && this.rand() < A.skills.chance) {
+        let r = this.rand() * ready.reduce((n, k) => n + k.weight, 0), pick = ready[ready.length - 1];
+        for (const k of ready) { r -= k.weight; if (r <= 0) { pick = k; break; } }
+        this.f.marek.skillReady[pick.id] = this.t + pick.cooldown;
+        return [pick.id];
+      }
+    }
+    const x = this.rand() * (W.combo + W.singleLight + W.singleHeavy);
     let plan: DynActionId[];
     if (x < W.combo) { const n = A.comboLen[0] + Math.floor(this.rand() * (A.comboLen[1] - A.comboLen[0] + 1)); plan = []; for (let i = 0; i < n - 1; i++) plan.push(A.light); plan.push(A.heavy); }
     else if (x < W.combo + W.singleLight) plan = [A.light]; else plan = [A.heavy];
@@ -221,6 +244,7 @@ export class DynamicSim {
     f.buffer = null; f.ap -= (a.apCost || 0);
     f.act = { def: a, t: 0, impacted: false, windowOpened: false }; f.lastAction = a.id; this.set(f, 'acting');
     if (a.apCost) this.emit({ type: 'apSpend', who: f.id, amount: a.apCost, ap: f.ap });
+    if (f.id === 'ren' && this.D.ai.defense) this.aiDefend(a);
     this.emit({ type: 'commandStart', who: f.id, action: a.id, kind: a.kind, prep: a.prep, impactAt: impactTime(a), reactable: !!a.reactable, seqIdx: f.seqIdx || 0, seqLen: f.seqLen || 0 });
   }
   command(who: DynFighterId, actionId: DynActionId): boolean | 'buffered' {
@@ -273,6 +297,17 @@ export class DynamicSim {
     f.ap -= R.apCost; const impactAbs = this.t + inc.timeToImpact;
     f.react = { type, tStart: this.t, impactAbs, until: Math.max(this.t + this.D.dodgeMin, impactAbs + this.D.reactLinger) };
     this.emit({ type: 'apSpend', who, amount: R.apCost, ap: f.ap }); this.emit({ type: 'reactStart', who, kind: type, cost: R.apCost, early: !inc.windowOpen }); return true;
+  }
+
+  /** lot C3: the opponent, in its pause, reads the player's attack once: a dodge (the heavy and the skills) or a guard, by its shares */
+  private aiDefend(a: DynActionDef): void {
+    const m = this.f.marek, d = this.D.ai.defense!;
+    if (this.over || m.state !== 'idle' || m.inSeq || a.ward || a.boost) return;
+    const x = this.rand(), hit = this.t + impactTime(a);
+    // the light attack is never dodged: its draw reads the guard's share only
+    const dodges = a.kind !== 'light', guards = dodges ? x >= d.dodge && x < d.dodge + d.guard : x < d.guard;
+    if (dodges && x < d.dodge) m.dodgeAt = hit - 0.12;
+    else if (guards) { m.guardHeld = true; m.guardUntil = hit + a.follow; }
   }
 
   /** the opponent starts a sequence: the player's defence phase begins; a player's action that has not landed is cancelled (CB-3) */
@@ -352,11 +387,17 @@ export class DynamicSim {
       if (f.boost) { f.boost.left -= dt; if (f.boost.left <= 0) { f.boost = null; this.emit({ type: 'boostEnd', who: id }); } }
       if (f.usesAp && D.ap.regen > 0 && f.state !== 'down' && !this.over) { f.apClock += dt; if (f.apClock >= D.ap.regen) { f.apClock -= D.ap.regen; if (f.ap < D.ap.max) { f.ap++; this.emit({ type: 'apGain', who: id, amount: 1, ap: f.ap, why: 'regen' }); } } }
       if (f.react && this.t > f.react.until) { this.emit({ type: 'reactEnd', who: id, kind: f.react.type }); f.react = null; }
+      // lot C3: the opponent's guard released after the blow it waited for; its dodge taken just before that blow lands
+      if (f.guardUntil && this.t >= f.guardUntil) { f.guardHeld = false; f.guardUntil = 0; }
+      if (f.dodgeAt !== null && this.t >= f.dodgeAt) {
+        f.dodgeAt = null;
+        if (f.state === 'idle' && !f.react && !this.over) { f.react = { type: 'dodge', tStart: this.t, impactAbs: this.t + 0.12, until: this.t + this.D.dodgeMin }; this.emit({ type: 'reactStart', who: id, kind: 'dodge', cost: 0, early: false }); }
+      }
       const g = f.guardHeld && f.state === 'idle' && !this.over; if (g !== f.guarding) { f.guarding = g; this.emit({ type: g ? 'guardUp' : 'guardDown', who: id }); } f.guardT = f.guarding ? f.guardT + dt : 0;
       switch (f.state) {
         case 'idle':
           if (f.buffer) { if (f.buffer.until < this.t) f.buffer = null; else if (this.canUse(id, f.buffer.id)) { const ba = D.actions[f.buffer.id]; f.buffer = null; this.start(f, ba); break; } }
-          if (id === 'marek' && !this.over) { f.aiWait -= dt; if (f.aiWait <= 0) this.aiNext(f); }
+          if (id === 'marek' && !this.over && !f.react) { f.aiWait -= dt; if (f.aiWait <= 0) this.aiNext(f); }
           break;
         case 'stunned':
           f.stunLeft -= dt;

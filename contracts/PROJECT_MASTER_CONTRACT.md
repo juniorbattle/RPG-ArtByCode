@@ -7,6 +7,11 @@ Amendement du 2026-10-25 (journal, Passe CB1 ; décision A3 de l'opérateur, cho
 « au tour par tour » devient « au combat en « tour par tour dynamique » » ; au § 6.1, la première phrase est remplacée. Textes d'avant : « …
 est un RPG narratif au tour par tour centré sur… » et « Le combat est un RPG tour par tour dont le format de départ est 1 contre 1. ». Le reste
 du texte est inchangé.
+Amendement du 2026-10-26 (journal, Passes AV1 et V1 ; décision A3 de l'opérateur, choix AV-5 « Oui, amender (A3), l'ancien schéma gardé
+pour comparer ») : au § 6.1, « le joueur agit par des actions instantanées ou à délai de préparation, les compétences payées en points
+d'action » devient « le joueur agit par trois commandes, la garde, l'esquive et l'attaque, l'attaque chargée en la tenant, par paliers, de
+l'attaque légère à l'attaque puissante puis aux compétences, les compétences payées en points d'action et réglées par leur niveau ». La
+demande de l'opérateur, mot pour mot : « Ah et enfin on aura une dernier optimisation pour le systeme de combat. surtout cote joueur, au lieu d'avoir plusieurs touches d'action on en aura 3 ( garde, esquive, attaque ) sauf que l'attaque sera comme une charge a niveau : donc une simple pression permet de faire une attaque simple, en restant legerement appuye pendant 2-3s, on utilise une attaque lourde, si on reste 5 seconde de plus on debloque une action de competences et ainsi de suite, les competences les plus puissantes nous obligerait a charger pendant peut etre 10s ( ce n'est qu'un exemple ) mais donc peut etre quee nous aurrions des niveau de competences qui determine le puissance et le temps de charge ( exemple de final fantasy 6 avec le personnage Cyan ) ». Le reste du texte est inchangé.
 -->
 Cité du Tournoi — PROJECT MASTER CONTRACT
 
@@ -237,7 +242,7 @@ Ils peuvent s’entraîner, acheter, se soigner, espionner, négocier, résoudre
 
 6.1 Forme générale
 
-Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1 : le temps ne s'arrête pas ; le joueur agit par des actions instantanées ou à délai de préparation, les compétences payées en points d'action ; l'adversaire a la priorité quand il attaque, et le joueur se défend alors par la garde ou l'esquive (spécification : briefs/combat-system.md).
+Le combat est un « tour par tour dynamique » dont le format de départ est 1 contre 1 : le temps ne s'arrête pas ; le joueur agit par trois commandes, la garde, l'esquive et l'attaque, l'attaque chargée en la tenant, par paliers, de l'attaque légère à l'attaque puissante puis aux compétences, les compétences payées en points d'action et réglées par leur niveau ; l'adversaire a la priorité quand il attaque, et le joueur se défend alors par la garde ou l'esquive (spécification : briefs/combat-system.md).
 
 La première priorité de production est de rendre le duel lisible, tactique, rapide à comprendre, suffisamment profond pour valoriser la préparation et spectaculaire sans perdre la lecture des décisions.
 

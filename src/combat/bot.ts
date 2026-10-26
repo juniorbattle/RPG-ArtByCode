@@ -1,6 +1,7 @@
 import { Rng } from '../core/rng';
 import { CombatSim, type ActionId, type CombatData } from '../arena/CombatSim';
-import { DynamicSim, impactTime, type DynActionId, type DynData } from './dynamic';
+import { DynamicSim, impactTime, type DynActionDef, type DynActionId, type DynData } from './dynamic';
+import { ChargedDuel, type ChargeTier } from './charge';
 
 /** A scripted player for the arena's simulation (journal Passe L2): it drives the player's slot (`ren`) of a full CombatSim, so a duel can be
  *  played to its end headless (the scripted games, the TournamentLab, the check of the off-screen resolution). `skill` (0..1) sets how
@@ -110,4 +111,69 @@ function pickDynamic(sim: DynamicSim, s: number, rng: Rng): DynActionId {
   for (const a of off) if (r.ap - (a.apCost || 0) >= keep && ok(a.id)) return a.id;
   if ((r.ap >= D.ap.max || m.broken) && ok('heavy')) return 'heavy';
   return 'light';
+}
+
+// ------------------------------------------------------------------------------------------- the version 2: three buttons, the charge (lot V1)
+
+/** The same scripted player under the version 2's command (src/combat/charge.ts, the operator's decision AV-5, journal Passe V1): three
+ *  buttons. In the opponent's sequences it defends as runDynamicBotDuel does (the guard held through a sequence or not, decided once; a dodge
+ *  per heavy blow or skill, decided once); a charge it holds is kept by guarding (a careful bot guards whenever it holds one). In the pauses it
+ *  picks a tier as pickDynamic picks an action (the ward when its gauge fills, the boost, the strongest offensive skill its AP allow, a heavy
+ *  when its AP are full or the opponent is broken, else a light) among the tiers open now, holds the attack for that tier's charge (plus a
+ *  reaction delay that shrinks with `skill`), then releases; a careful bot only starts a charge the opponent's shortest pause leaves the time
+ *  for. A negative skill does not play. Pure: no DOM, no clock. */
+export function runV2BotDuel(data: DynData, tiers: ChargeTier[], o: BotOptions): DuelResult {
+  const duel = new ChargedDuel(data, tiers), sim = duel.sim, rng = new Rng(o.seed >>> 0 || 1), dt = data.dt, s = o.skill;
+  let decided: unknown = null, seqSeen = false, guardSeq = false, dodge = false, react = 0, nextAct = 0.4 + rng.next() * 0.3, finisher: string | null = null;
+  let target = -1, releaseAt = 0;
+  const maxT = o.maxSecs ?? 1800;
+  const drain = () => { for (const e of duel.drain()) if (e.type === 'impact' && e.hp <= 0) finisher = e.kind; };
+  while (!sim.over && sim.t < maxT) {
+    if (s < 0) { duel.step(dt); drain(); continue; }
+    const inc = sim.incoming(), m = sim.f.marek, r = sim.f.ren, v = duel.view();
+    if (sim.inSequence() && !seqSeen) { seqSeen = true; guardSeq = rng.next() < 0.2 + 0.6 * s; }
+    if (!sim.inSequence()) seqSeen = false;
+    if (inc && m.act !== decided) {
+      decided = m.act;
+      dodge = inc.kind !== 'light' && rng.next() < 0.25 + 0.65 * s;
+      react = 0.32 - 0.22 * s + rng.next() * 0.08;
+    }
+    if (!inc) decided = null;
+    if (inc && dodge && !v.held && inc.windowOpen && inc.t >= inc.windowOpensAt + react * 0.5) sim.react('ren', 'dodge');
+    const keep = v.held && s >= 0.5;
+    duel.setGuard('ren', sim.inSequence() && (guardSeq || keep) && !(inc && inc.t < react && m.seqIdx === 1));
+    if (v.held) {
+      // the opponent's sequence started while charging: a careless bot lets go (refused, the charge lost); a careful one holds on
+      if (sim.inSequence() && !keep) { duel.attack(false); target = -1; }
+      else if (!sim.inSequence() && v.t >= releaseAt) { duel.attack(false); target = -1; nextAct = sim.t + 0.25 + (1 - s) * 0.45 + rng.next() * 0.25; }
+    } else if (!sim.inSequence() && sim.t >= nextAct && r.state === 'idle') {
+      target = pickTier(duel, s, rng);
+      releaseAt = tiers[target].at + (target === 0 ? 0 : (1 - s) * 0.4 * rng.next());
+      duel.attack(true);
+    }
+    duel.step(dt);
+    drain();
+  }
+  const r = sim.f.ren, k = sim.f.marek;
+  const winner = r.state === 'down' ? 'opponent' : k.state === 'down' ? 'player' : null;
+  return { winner, playerHp: r.hp, opponentHp: k.hp, playerMaxHp: r.maxHp, opponentMaxHp: k.maxHp, t: +sim.t.toFixed(3), finisher, hash: duel.hash() };
+}
+
+/** the bot's tier in a pause under the version 2 (see runV2BotDuel) */
+function pickTier(duel: ChargedDuel, s: number, rng: Rng): number {
+  const sim = duel.sim, D = sim.D, r = sim.f.ren, m = sim.f.marek, rest = sim.restRange(), T = duel.tiers;
+  const margin = m.state === 'stunned' ? m.stunLeft + D.ai.afterStun : m.state === 'recovering' ? m.recoverLeft + rest[0] : m.resting ? rest[0] - m.stateT : 0;
+  const careful = rng.next() < s, keep = s >= 0.5 ? D.reactions.dodge.apCost : 0;
+  // a skill's long charge may run through a sequence (held under the guard): only the light and the heavy must fit in the pause
+  const fits = (i: number) => !careful || i >= 2 || T[i].at + impactTime(D.actions[T[i].id]) < margin;
+  const ok = (i: number) => r.ap >= T[i].ap && fits(i);
+  const idx = (pred: (a: DynActionDef) => boolean) => T.findIndex((x, i) => i >= 2 && pred(D.actions[x.id]) && ok(i));
+  let i = idx((a) => !!a.ward && !r.ward && r.resist >= 0.5 * D.resist.max);
+  if (i >= 0) return i;
+  i = idx((a) => !!a.boost && !r.boost && r.ap - (a.apCost || 0) >= keep);
+  if (i >= 0) return i;
+  const offs = T.map((x, j) => ({ j, a: D.actions[x.id] })).filter((x) => x.j >= 2 && x.a.family === 'offensive' && r.ap - (x.a.apCost || 0) >= keep && ok(x.j)).sort((a, b) => b.a.damage - a.a.damage);
+  if (offs.length) return offs[0].j;
+  if ((r.ap >= D.ap.max || m.broken) && ok(1)) return 1;
+  return 0;
 }

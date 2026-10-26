@@ -3,6 +3,13 @@
 **Statut : approuvée par l'opérateur le 25/10/2026** (fiche de l'atelier, CB-1 « Approuvée » ; les dix autres décisions de la fiche sont
 intégrées au texte et listées au § 16). Étape 0 de `briefs/roadmap-2026-10.md`, écarts E1 / E16 (journal, Passe CB1).
 
+**Amendement du 26/10/2026 (décision A3 de l'opérateur, choix AV-5 « Oui, amender (A3), l'ancien schéma gardé pour comparer », journal
+Passes AV1 et V1).** La demande de l'opérateur, mot pour mot : « Ah et enfin on aura une dernier optimisation pour le systeme de combat. surtout cote joueur, au lieu d'avoir plusieurs touches d'action on en aura 3 ( garde, esquive, attaque ) sauf que l'attaque sera comme une charge a niveau : donc une simple pression permet de faire une attaque simple, en restant legerement appuye pendant 2-3s, on utilise une attaque lourde, si on reste 5 seconde de plus on debloque une action de competences et ainsi de suite, les competences les plus puissantes nous obligerait a charger pendant peut etre 10s ( ce n'est qu'un exemple ) mais donc peut etre quee nous aurrions des niveau de competences qui determine le puissance et le temps de charge ( exemple de final fantasy 6 avec le personnage Cyan ) ». Avec ses choix AV-6 « Garder les PA en plus de la charge », AV-7
+« Comme Cyan, paliers successifs » et AV-8 « Un niveau par compétence ». Amendés : le § 1 (les trois touches), le § 4 (« pas de charge tenue »
+devient la charge par paliers, § 4b) et le § 14 (les poses de charge à ajouter aux feuilles). La commande à trois touches vit derrière le
+drapeau de la version 2 (`flags.v2`, AV-2) ; l'ancien schéma de C2 (touches 1-6) reste derrière `input=keys` pour comparer à l'essai ; le reste
+du texte est inchangé. Les nombres du § 4b sont « proposé » par la séance cloud.
+
 **Autorité.** L'atelier est mené par l'opérateur. Son mot d'ordre (note E1 / E16, Passe D8) : « Nous devons faire une tache entiere concernant le
 systeme de combat et la logique car c'est quelque chose de nouveau que seul moi a l'entiere comprehension ». Ses réponses sont la source de ce
 texte. Elles sont recopiées mot pour mot en annexe A (groupes G1 à G5). Chaque règle renvoie à la réponse qui la fonde, par exemple [G3].
@@ -26,6 +33,9 @@ Transe, la file d'exécution et les effets d'état [G2].
   - 2 actions de défense : la garde et l'esquive ;
   - 2 attaques simples : la légère et la puissante ;
   - 4 compétences.
+- **Amendé le 26/10/2026 (AV-5)** : côté joueur, trois touches, la garde (tenue), l'esquive et l'attaque ; l'attaque se charge en la tenant, de
+  l'attaque légère (une pression) à l'attaque puissante puis aux compétences, palier après palier (§ 4b). Les deux attaques et les quatre
+  compétences restent les actions du joueur ; seule la commande change.
 - But d'un duel [G1] : « donner le plus de cooup possible pour briser la resistance de l'adversaire et lancer des actions devastratrice mais
   aussi esquiper les attaques et combos des adversaires et donc bien gerer ces AP ».
 - Les « actions dévastatrices » ne sont pas une action à part : « nous utilisons nos actions definies » [G5].
@@ -57,6 +67,9 @@ Transe, la file d'exécution et les effets d'état [G2].
 
 ## 4. Les actions du joueur
 
+**Amendé le 26/10/2026 (AV-5)** : sous la version 2, la phrase qui suit (« pas de charge tenue ») est remplacée par la charge par paliers du
+§ 4b ; elle reste celle de l'ancien schéma (touches 1-6), gardé derrière `input=keys` pour comparer.
+
 Les touches sont **instantanées** : pas de charge tenue [G2]. Certaines actions ont un **délai de préparation automatique** avant de partir,
 « ce qui fait naturellement perdre du temps » [G2].
 
@@ -71,6 +84,29 @@ Les touches sont **instantanées** : pas de charge tenue [G2]. Certaines actions
 - Pas de charge tenue, pas de garde spéciale (miroir, regain), pas de Transe [G2].
 - Point de départ (comme aujourd'hui) [CB-5] : une commande pressée pendant les 0,2 dernières secondes de l'action en cours est gardée en
   attente ; plus tôt, elle est refusée.
+
+## 4b. La commande à trois touches et la charge par paliers (amendement AV-5, 26/10/2026)
+
+La règle de l'opérateur (AV-5, AV-6, AV-7, AV-8) ; ce que la séance a fixé est marqué « proposé » (journal Passe V1). Code :
+`src/combat/charge.ts` (`ChargedDuel`, `chargeTiers`), `src/combat/skills.ts` (niveaux), `src/combat/v2duel.ts` (le duel de la version 2).
+
+- **Trois touches** : la garde (tenue), l'esquive, l'attaque. Clavier : J (ou 1) l'attaque, K (ou B) la garde, L (ou A) l'esquive ; aucune n'est
+  une touche de marche du parvis (WASD, flèches). Manette : X l'attaque, B la garde, A l'esquive. Tactile : le bouton Attaque se tient.
+- **La charge** : tenir l'attaque la charge ; une pression lance l'attaque légère ; tenue **2 s** (« proposé », le bas des « 2-3 s » de
+  l'opérateur), l'attaque puissante ; puis les quatre compétences emportées, rangées par leur temps de charge à leur niveau (de 2,7 à 9 s au
+  niveau 1-5, « proposé » ; un palier de compétence vient au moins 0,25 s après la puissante). **Relâcher lance le palier atteint** (comme Cyan).
+- **Les PA restent** (AV-6) : une compétence coûte toujours ses PA ; un palier dont les PA manquent ne s'ouvre pas : relâcher lance le meilleur
+  palier ouvert atteint, et le HUD barre le palier fermé.
+- **Un niveau par compétence** (AV-8), de 1 à 5 : il fixe sa puissance (+10 % par niveau : dégâts, jauge, durée d'un effet) et son temps de
+  charge (plus court). Pas de niveau du joueur (contrat projet § 7).
+- **La charge remplace la préparation automatique** (« proposé ») : sous la commande à trois touches, l'attaque puissante et les compétences
+  partent sans délai ; un coup chargé paie sa tenue (l'attaque légère garde ses nombres ; la puissante ×2,2 de dégâts, les compétences ×3,2 à
+  ×4,2, leur jauge ×2, Rempart et Ferveur ×1,5 de durée : `V2_POWER`).
+- **Ce qui coupe une charge** (« proposé ») : un coup reçu sans garde, l'esquive du joueur, le break du joueur (et le K.O.). Un coup gardé la
+  garde (on peut tenir la garde et l'attaque ensemble ; la jauge monte comme toujours). La charge ne monte que joueur libre (au repos ou en
+  garde : pas pendant une action, repoussé ou étourdi). Relâcher pendant la séquence adverse est refusé comme toute attaque de la phase de
+  défense (G3) : la charge est perdue. Le « repoussé » (CB-3) vaut pour l'action lancée, comme avant.
+- **L'ancien schéma** (touches 1-6, la préparation automatique) reste derrière `input=keys`, sur le même adversaire et les mêmes niveaux.
 
 ## 5. L'adversaire et sa priorité
 
@@ -266,6 +302,20 @@ avec la feuille de Marek ».
 - `skillOff`, `skillDef`, `skillSup` seulement pour les familles de ses 2 à 4 compétences [G3].
 - Son attaque légère devient `strike` (aujourd'hui `slash`).
 - Minimum, pour un rival sans défense et aux compétences offensives seules : 24 images ; complet : 34.
+
+**Les poses de charge à ajouter aux feuilles cuites (amendement AV-5, 26/10/2026)** — en attendant, la charge se montre avec les images
+d'aujourd'hui (l'image 0 de `heavy`, la préparation, tenue tant que l'attaque est tenue ; un éclat à chaque palier atteint ; la garde la
+remplace quand elle est tenue). Liste « proposé » pour Ren (et Vessa), à reprendre avec la feuille de Marek (AV-10) :
+
+| Clé | Moment | Images | Boucle / durée | Découpage |
+|---|---|---|---|---|
+| `charge` | l'attaque tenue, avant le palier de la puissante | 2 | boucle, ≈ 0,8 s | alternance (lame basse, souffle) |
+| `chargeHi` | l'attaque tenue au-delà de la puissante (un palier de compétence) | 2 | boucle, ≈ 0,6 s | alternance (lame haute, lueur) |
+| `chargeGuard` | la garde tenue pendant une charge | 1 | tenue | — |
+| **Total** | | **5** | | (avec les 34 du tableau : 39 ; une case ×3 de 70 en reste une pour Marek complet) |
+
+Pour Marek et tout rival qui en a : ses compétences (C3) jouent `skillOff` / `skillDef` / `skillSup` de sa famille (déjà au tableau) ; aucune
+pose de charge (l'adversaire ne charge pas).
 
 **Compétences signature** (plus tard, optionnelles) : `sig<Nom>`, 4 images (préparation tenue, élan, frappe, suite ; impact 2), une par
 compétence signature d'un personnage.

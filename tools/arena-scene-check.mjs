@@ -5,6 +5,8 @@
 //   2. every scripted moment in every assistance mode (subtle, full, off): jump, one render, page errors and console errors counted;
 //   3. the floor telegraph's contrast in the reaction window (full assistance), read back from a capture: the band against the floor just
 //      behind and just in front of it (threshold 2:1, also with a deuteranopia simulation), as the prototype's device test;
+//   under the version 2 (`v2=1`, journal Passe V1): the charged duel's script (runV2Fingerprint), its hash against V2_SIM_HASH; check 4 also
+//      at the charge's moments (a skill's tier, a tier locked, the opponent's skill and its alert);
 //   4. the floor's marks clear of the HUD at every window size of FLOOR_SIZES (default from 1920 x 1080 down to a 568 x 320 phone; journal
 //      Passe AF1: under 600 px high the reaction window's bar covered them through the whole window): at the moments where the HUD shows a
 //      bar or a sign over the floor (the window, under the new rules also an attack refused while the opponent attacks), the band (full
@@ -21,6 +23,8 @@ const SEED = `(() => { let s = 1842; Math.random = () => { s |= 0; s = (s + 0x6D
 const PROTOTYPE_HASH = '152:1:idle:20.233:0.00,0.00,0.00,0.00;800:0:idle:5.283:0.00,0.00,0.00,0.00;20.233';
 // src/combat/dynamic.ts DYNAMIC_SIM_HASH (journal Passe C1)
 const DYNAMIC_HASH = '1687:1:idle:0.483:0.000:-:-;4989:0:idle:1.500:61.275:-:-;300.000';
+// src/arena/v2Arena.ts V2_SIM_HASH (`v2=1`: the version 2's charged duel, journal Passe V1)
+const V2_HASH = '1279:1:recovering:0.100:90.750:-:-;4127:0:idle:2.317:43.980:-:-;300.000|0:0.000';
 const extra = process.argv[2] ?? '';
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720);
 const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];
@@ -44,8 +48,19 @@ try {
   const res = await page.evaluate(() => {
     const A = window.__arena;
     // 1. the simulation alone (a fresh instance of the page's class), the fingerprint script
-    const sim = new A.sim.constructor(), dt = sim.D.dt; let nextAct = 0.5, n = 0;
-    if (A.rules === 'dynamic') {
+    const sim = A.rules === 'v2' ? new A.sim.constructor(A.sim.D, A.sim.tiers) : new A.sim.constructor(), dt = sim.D.dt; let nextAct = 0.5, n = 0;
+    if (A.rules === 'v2') {
+      // runV2Fingerprint (src/arena/v2Arena.ts), on a fresh charged duel of the page's own data (no dyn= in the address)
+      const holds = [0.05, 2.1, 0.05, 3.7, 0.05, 4.2, 5.3, 0.05, 9.4, 2.4]; let next = 0.5, until = -1;
+      for (let i = 0; i < Math.round(300 / dt); i++) {
+        const inc = sim.incoming(), v = sim.view();
+        if (inc && inc.windowOpen && inc.kind !== 'light' && !v.held) sim.react('ren', 'dodge');
+        sim.setGuard('ren', !!(inc && (inc.kind === 'light' || v.held)));
+        if (!v.held && sim.t >= next) { sim.attack(true); until = sim.t + holds[n++ % holds.length]; }
+        else if (v.held && sim.t >= until && !sim.sim.inSequence()) { sim.attack(false); next = sim.t + 0.3; }
+        sim.step(dt); sim.drain(); if (sim.over) sim.reset();
+      }
+    } else if (A.rules === 'dynamic') {
       // runDynamicFingerprint (src/combat/dynamic.ts), on a fresh DynamicSim of the default data
       const ids = ['light', 'light', 'heavy', 't1', 'light', 'd1', 'light', 't4', 's1', 'light', 'heavy'];
       for (let i = 0; i < Math.round(300 / dt); i++) {
@@ -64,7 +79,7 @@ try {
       sim.step(dt); sim.drain(); if (sim.over) sim.reset();
     }
     // 2. every moment in every assistance mode
-    const presets = A.rules === 'dynamic' ? A.presetNames() : ['charging', 'ready', 'casting', 'window', 'impact', 'block', 'guardbreak', 'dodge', 'combo', 'single', 'technique', 'strike', 'heavyRen', 'ko'];
+    const presets = A.rules === 'dynamic' || A.rules === 'v2' ? A.presetNames() : ['charging', 'ready', 'casting', 'window', 'impact', 'block', 'guardbreak', 'dodge', 'combo', 'single', 'technique', 'strike', 'heavyRen', 'ko'];
     let renders = 0;
     for (const mode of ['subtle', 'full', 'off']) { A.assist = mode; for (const p of presets) { if (!A.jump(p)) throw new Error('preset ' + p); A.renderOnce(); renders++; } }
     // 3. the telegraph moment, its rectangles projected to the screen
@@ -102,7 +117,7 @@ try {
           || [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) || /^(svg|img|canvas)$/i.test(el.tagName);
       }).map((el) => ({ id: el.id || String(el.className?.baseVal ?? el.className ?? '').split(' ')[0] || el.tagName.toLowerCase(), r: el.getBoundingClientRect() }));
       const scr = (x, z) => { const v = new A.camera.position.constructor(x, 0.012, z).project(A.camera); return [(v.x * 0.5 + 0.5) * innerWidth, (-v.y * 0.5 + 0.5) * innerHeight]; };
-      const cases = [['window', 'full'], ['window', 'subtle'], ...(A.rules === 'dynamic' ? [['denied', 'full'], ['denied', 'subtle']] : [])];
+      const cases = [['window', 'full'], ['window', 'subtle'], ...(A.rules === 'dynamic' || A.rules === 'v2' ? [['denied', 'full'], ['denied', 'subtle']] : []), ...(A.rules === 'v2' ? [['chargeSkill', 'subtle'], ['chargeLocked', 'full'], ['foeSkill', 'subtle']] : [])];
       for (const [moment, mode] of cases) {
         A.assist = mode; A.jump(moment); A.renderOnce();
         const r = A.fighters.ren.pos.x, m = A.fighters.marek.pos.x, x0 = Math.min(r, m) - 0.9, x1 = Math.max(r, m) - 0.35, pts = [];
@@ -117,7 +132,7 @@ try {
     }, size));
   }
   const floorBad = floor.filter((c) => Object.keys(c.covered).length);
-  const wantHash = res.rules === 'dynamic' ? DYNAMIC_HASH : PROTOTYPE_HASH;
+  const wantHash = res.rules === 'v2' ? V2_HASH : res.rules === 'dynamic' ? DYNAMIC_HASH : PROTOTYPE_HASH;
   const bad = errors.length > 0 || res.simHash !== wantHash || contrast < 2 || contrastDeuteranopia < 2 || !(live.advanced > 0) || !live.lastAction || floorBad.length > 0;
   failed = bad;
   console.log(JSON.stringify({ live: { advanced: live.advanced, lastAction: live.lastAction, marekHp: live.marekHp, frames: live.frames, drawCalls: live.stats.drawCalls, frameTriangles: live.stats.frameTriangles, triangles: live.stats.arenaTriangles, instances: live.stats.instances, lights: live.stats.lights, atlas: live.stats.atlas }, rules: res.rules, simHash: res.simHash, sameAsPrototype: res.simHash === PROTOTYPE_HASH, sameAsRecorded: res.simHash === wantHash, renders: res.renders, telegraph: { band: tc.map(Math.round), behind: fb.map(Math.round), front: ff.map(Math.round), contrast, contrastDeuteranopia }, floorClear: { cases: floor.length, covered: floorBad.map((c) => `${c.size} ${c.moment} ${c.mode} ${JSON.stringify(c.covered)}`) }, errors: errors.slice(0, 10), errorCount: errors.length, verdict: bad ? 'FAIL' : 'PASS' }));

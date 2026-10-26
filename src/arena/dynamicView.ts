@@ -8,11 +8,15 @@ import type { DynActionId, DynAnimState, DynData, DynamicSim, DynFighterId } fro
  *  Behind its parameter (CB-10, « Derrière un paramètre, défaut après mon essai »): `?combat=dynamic`, or a game whose `flags.combat` is
  *  'dynamic'; absent = the arena of today (`CombatSim`), unchanged. */
 
-export type ArenaRules = 'classic' | 'dynamic';
+/** 'v2': the version 2's duel (the three buttons and the charge, the opponents of C3; src/arena/v2Arena.ts, journal Passe V1) */
+export type ArenaRules = 'classic' | 'dynamic' | 'v2';
 
-/** the rules of an arena page: the play mode's bout says (its game's flag), else `?combat=dynamic`; anything else is the arena of today */
+/** the rules of an arena page: the play mode's bout says (its game's flags), else `?v2=1`, then `?combat=dynamic`; anything else is the arena
+ *  of today */
 export function arenaRules(params: URLSearchParams, match?: { rules?: ArenaRules }): ArenaRules {
-  if (match) return match.rules === 'dynamic' ? 'dynamic' : 'classic';
+  if (match) return match.rules === 'dynamic' || match.rules === 'v2' ? match.rules : 'classic';
+  const v2 = params.get('v2');
+  if (v2 === '' || v2 === '1') return 'v2';
   return params.get('combat') === 'dynamic' ? 'dynamic' : 'classic';
 }
 

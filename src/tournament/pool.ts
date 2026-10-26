@@ -3,6 +3,8 @@ import { clamp, type CompetitorState, type GameState, type MatchRecord } from '.
 import type { Emit } from '../simulation/advance';
 import { PLAYER_ID, POINTS, RIVALS, ROUNDS } from '../narrative/roster';
 import { tx } from '../narrative/text';
+import { isV2 } from '../simulation/v2';
+import { v2RacerOf, V2_RACE_SLOPE } from '../combat/v2duel';
 import { DYN_PROFILES, DYN_RACE_SLOPE, dynRacerOf, PROFILES, raceWinChance, racerOf, type Mods } from '../combat/profiles';
 
 /** The pool of phase I (choice G3, journal Passe L2): eight competitors, two rounds in the slice, points (a defeat costs points, reputation,
@@ -68,7 +70,9 @@ export function playOffscreenMatches(s: GameState, emit: Emit, rng: Rng): void {
   for (const m of s.tournament.matches) {
     if (m.day !== s.day || m.seen || m.winner) continue;
     const A = s.competitors[m.a], B = s.competitors[m.b];
-    const p = dynamicRules(s)
+    const p = isV2(s)
+      ? raceWinChance(v2RacerOf(A.id, rivalMods(A)), v2RacerOf(B.id, rivalMods(B)), 0, V2_RACE_SLOPE)
+      : dynamicRules(s)
       ? raceWinChance(dynRacerOf(DYN_PROFILES[A.combatProfile], rivalMods(A)), dynRacerOf(DYN_PROFILES[B.combatProfile], rivalMods(B)), 0, DYN_RACE_SLOPE)
       : raceWinChance(racerOf(PROFILES[A.combatProfile], rivalMods(A)), racerOf(PROFILES[B.combatProfile], rivalMods(B)));
     const r = rng.fork(matchId(m)), aWins = r.next() < p;

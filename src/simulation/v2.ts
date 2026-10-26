@@ -1,4 +1,5 @@
 import type { GameState } from './state';
+import { V2_START_KIT, type V2Kit } from '../combat/v2duel';
 
 /** The « version 2 » of the game (the operator's decision AV-2, « Un drapeau « version 2 » pour tout, défaut inchangé », journal Passes AV1 /
  *  V0): every system of the cloud session « Version 2 » (the three-button command and its charged attack, the skills, the equipment and the
@@ -20,4 +21,11 @@ export function makeV2(s: GameState): GameState {
 export function wantsV2(get: (k: string) => string | null): boolean {
   const v = get('v2');
   return v === '' || v === '1';
+}
+
+/** the player's duel kit in a version 2 game: the four skills brought and every skill's level (lot V2 makes it the player's own; until then
+ *  today's four skills at level 1, V2_START_KIT) */
+export function v2KitOf(s: Pick<GameState, 'flags'> & { v2?: { kit?: V2Kit } }): V2Kit {
+  const k = s.v2?.kit;
+  return k ? { loadout: [...k.loadout], levels: { ...k.levels } } : { loadout: [...V2_START_KIT.loadout], levels: { ...V2_START_KIT.levels } };
 }

@@ -3,6 +3,7 @@ import type { TimeOfDay } from '../atmosphere/DayState';
 import { fontsReady, installDesign } from '../ui/design/system';
 import { CSS, TEXTS_EN, TEXTS_FR, type ArenaTexts, type Assist } from './ArenaHud';
 import { dynHudModel, type DynGauge } from './dynamicView';
+import type { ChargeHudModel } from './v2Arena';
 
 /** The HUD of the « tour par tour dynamique » (lot C2, journal Passe C2), behind its parameter (CB-10). Built on the arena HUD's rules
  *  (ArenaHud.ts, the interface's design system: direction C « Héraldique pixel », its tone following the arena's day state, the embedded fonts,
@@ -39,6 +40,32 @@ export const DYN_TEXTS_EN: DynTexts = {
   skillShorts: { t1: 'Flash', t2: 'Lunge', t3: 'Whirl', t4: 'Thrust', d1: 'Rampart', s1: 'Fervour' }, preparing: 'Preparing',
   wardTag: (s) => `Rampart ${s} s`, boostTag: (s) => `Fervour ${s} s`, wardOn: 'Rampart', boostOn: 'Fervour',
 };
+
+/** the version 2's words (lot V1, journal Passe V1): the attack button of the three-button command and its tiers */
+export interface ChargeTexts { attack: string; holdSub: string; tierLight: string; tierHeavy: string; locked: string; foeSkill: (name: string) => string }
+export const CHARGE_TEXTS_FR: ChargeTexts = { attack: 'Attaque', holdSub: 'tenir : charge', tierLight: 'Légère', tierHeavy: 'Puissante', locked: 'PA manquants', foeSkill: (n) => `Compétence : ${n}` };
+export const CHARGE_TEXTS_EN: ChargeTexts = { attack: 'Attack', holdSub: 'hold: charge', tierLight: 'Quick', tierHeavy: 'Heavy', locked: 'AP missing', foeSkill: (n) => `Skill: ${n}` };
+
+/** the tier strip of the charge (the version 2 only): in the dodge window's bar's place above the bar (the bar, when it shows with the full
+ *  assistance, takes it); a short window (600 px high or less, journal Passe AF1) keeps only the attack button, its label the tier a release
+ *  launches */
+const CHARGE_CSS = `
+#ah-tiers{position:absolute;left:50%;bottom:94px;transform:translateX(-50%);display:flex;gap:4px;pointer-events:none;opacity:.55;transition:opacity .12s}
+#ah-tiers.on{opacity:1}
+#arena-hud.wb #ah-tiers{opacity:0}
+#ah-tiers .tr{position:relative;display:flex;align-items:center;gap:4px;padding:0 6px;font:400 var(--ds-fs-small)/1.3 var(--ds-text);color:var(--ds-muted);white-space:nowrap;border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-btnOff) 3 fill / calc(3 * var(--ds-px)) stretch;image-rendering:pixelated;overflow:hidden}
+#ah-tiers .tr q{display:flex;gap:2px;quotes:none}
+#ah-tiers .tr q i{width:6px;height:6px;transform:rotate(45deg);background:var(--ds-amber)}
+#ah-tiers .tr>i{position:absolute;left:0;bottom:0;height:calc(2 * var(--ds-px));width:0;background:var(--ds-amber);box-shadow:0 0 6px var(--ds-amber)}
+#ah-tiers .tr.reached{color:var(--ds-ivory);border-image-source:var(--ds-f-btnHi)}
+#ah-tiers .tr.launch{color:var(--ds-ink);border-image-source:var(--ds-f-btnAct)}
+#ah-tiers .tr.next{color:var(--ds-ivory)}
+#ah-tiers .tr.locked{color:var(--ds-muted);opacity:.6;text-decoration:line-through}
+.ah-b.charging{border-image-source:var(--ds-f-btnAct)}
+.ah-b.charging b,.ah-b.charging em{color:var(--ds-ink)}
+@media (max-width:1240px){#ah-tiers{bottom:72px}}
+@media (max-height:600px){#ah-tiers{display:none}}
+`;
 
 /** the additions to the arena HUD's rules: the resistance gauges, the effect tags, the phase sign, the locked and preparing buttons */
 const DYN_CSS = `
@@ -95,15 +122,21 @@ export class DynamicHud {
   project: (who: DynFighterId) => { x: number; y: number } = () => ({ x: 0, y: 0 });
   readonly ready: Promise<void>;
 
-  constructor(sim: DynamicSim, portraits: Record<DynFighterId, HTMLCanvasElement | null>, private t: DynTexts = DYN_TEXTS_FR, time: TimeOfDay | null = null) {
+  /** `charge`: the version 2's three buttons and the tier strip (src/arena/v2Arena.ts); absent: the C2 bar (keys 1-6), as before */
+  constructor(sim: DynamicSim, portraits: Record<DynFighterId, HTMLCanvasElement | null>, private t: DynTexts = DYN_TEXTS_FR, time: TimeOfDay | null = null, private charge: { texts: ChargeTexts; tiers: Array<{ id: string; ap: number }> } | null = null) {
     installDesign(time);
     this.ready = fontsReady();
     if (!document.getElementById('arena-hud-css')) { const st = document.createElement('style'); st.id = 'arena-hud-css'; st.textContent = CSS; document.head.appendChild(st); }
     if (!document.getElementById('arena-dyn-css')) { const st = document.createElement('style'); st.id = 'arena-dyn-css'; st.textContent = DYN_CSS; document.head.appendChild(st); }
+    if (charge && !document.getElementById('arena-charge-css')) { const st = document.createElement('style'); st.id = 'arena-charge-css'; st.textContent = CHARGE_CSS; document.head.appendChild(st); }
     this.el = document.createElement('div'); this.el.id = 'arena-hud'; this.el.classList.add('dyn');
     const D = sim.D, A = D.actions;
     const diamonds = (n: number) => `<q>${'<i></i>'.repeat(n)}</q>`;
-    const items: BarItem[] = [
+    const ct = charge?.texts;
+    const items: BarItem[] = ct ? [
+      { id: 'guard', key: 'K', name: t.guard, sub: t.hold, wide: true }, { id: 'dodge', key: 'L', name: t.dodge, sub: t.ap1 }, '|',
+      { id: 'attack', key: 'J', name: ct.attack, sub: ct.holdSub, wide: true },
+    ] : [
       { id: 'guard', key: 'B', name: t.guard, sub: t.hold, wide: true }, { id: 'dodge', key: 'A', name: t.dodge, sub: t.ap1 }, '|',
       { id: 'light', key: '1', name: t.light, sub: t.apGain }, { id: 'heavy', key: '2', name: t.heavy, sub: t.heavySub, wide: true }, '|',
       ...D.loadout.map((id, i) => ({ id, key: String(3 + i), name: A[id].short ?? A[id].name, short: t.skillShorts[id] ?? A[id].short ?? A[id].name, sub: `${diamonds(A[id].apCost ?? 0)} <span class="fam">${t.families[A[id].family ?? ''] ?? ''}</span>`, wide: true })),
@@ -113,12 +146,14 @@ export class DynamicHud {
       const label = b.short ? `<span class="fn">${b.name}</span><span class="sn">${b.short}</span>` : b.name;
       return `<button class="ah-b${b.wide ? ' wide' : ''}" data-act="${b.id}" aria-label="${b.name} (${b.key})"><kbd>${b.key}</kbd><b>${label}</b><em>${b.sub}</em><i class="pg"></i>${b.id === 'dodge' ? '<i class="wl"></i>' : ''}</button>`;
     }).join('');
+    const tierName = (id: string) => (id === 'light' ? ct!.tierLight : id === 'heavy' ? ct!.tierHeavy : t.skillShorts[id as DynActionId] ?? A[id as DynActionId]?.short ?? A[id as DynActionId]?.name ?? id);
+    const tiers = charge ? `<div id="ah-tiers" aria-hidden="true">${charge.tiers.map((x, i) => `<span class="tr" data-i="${i}"><b>${tierName(x.id)}</b>${x.ap ? diamonds(x.ap) : ''}<i></i></span>`).join('')}</div>` : '';
     const card = (who: DynFighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<span>${sub}</span><em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(D.fighters[who].name)}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${who === 'ren' ? t.resist : t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${who === 'ren' ? t.resist : t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div>${who === 'ren' ? `<div class="ah-pips" aria-label="${t.apLabel}">` + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-tags"><b class="wd"></b><b class="bs"></b></div><div class="ah-state"></div></div></div>`;
     this.el.innerHTML = `<div class="top"></div><div id="ah-title">${t.title}<small>${t.subtitle}</small></div>
       ${card('ren', 'l', t.subRen)}${card('marek', 'r', t.subMarek)}
       <div id="ah-phase" role="status"><b></b><span></span></div>
       <div id="ah-alert"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2l18 18-18 18L2 20z" stroke-width="2.4"/><rect x="18" y="9" width="4" height="14"/><rect x="18" y="26" width="4" height="4"/></svg><div><b></b><span></span></div></div>
-      <div id="ah-dmg"></div><div id="ah-wbar" aria-hidden="true"><i></i><b>${t.window}<kbd>A</kbd></b></div><div id="ah-bar">${buttons}</div>
+      <div id="ah-dmg"></div><div id="ah-wbar" aria-hidden="true"><i></i><b>${t.window}<kbd>${charge ? 'L' : 'A'}</kbd></b></div>${tiers}<div id="ah-bar">${buttons}</div>
       <div id="ah-ko" role="status"><div><b></b><span>${t.restart}</span></div></div>
       <div id="ah-pause" role="status"><div><b>${t.pause}</b><span>${t.resume}</span></div></div>
       <div id="ah-rotate" role="alert"><div><b>${t.title}</b><span>${t.rotate}</span></div></div>`;
@@ -131,7 +166,7 @@ export class DynamicHud {
       const id = b.dataset.act!;
       this.btn.set(id, b);
       b.addEventListener('pointerdown', (e) => { e.preventDefault(); this.onAction(id, true); this.flash(id); });
-      if (id === 'guard') for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, () => this.onAction(id, false));
+      if (id === 'guard' || id === 'attack') for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, () => this.onAction(id, false));
     });
   }
 
@@ -169,7 +204,7 @@ export class DynamicHud {
   }
 
   /** per frame: the simulation's state to the DOM (cached writes only) */
-  update(sim: DynamicSim, assist: Assist, visible: boolean, paused: boolean): void {
+  update(sim: DynamicSim, assist: Assist, visible: boolean, paused: boolean, cv?: ChargeHudModel): void {
     const M = dynHudModel(sim), R = sim.f.ren, F = sim.f.marek, t = this.t, inc = sim.incoming(), full = assist === 'full', up = !!inc && inc.windowOpen && full;
     this.cls('hud', this.el, 'off', !visible);
     const renSt = R.state === 'stunned' ? t.stunned : R.state === 'down' ? t.down : R.state === 'pushed' ? t.pushed : M.prep ? t.preparing : R.guarding ? t.guarding : '';
@@ -185,7 +220,8 @@ export class DynamicHud {
     }
     // the action in its preparation: its button lit, the delay filling along its foot
     for (const id of ['heavy', ...sim.D.loadout]) {
-      const b = this.btn.get(id)!, p = M.prep && M.prep.action === id ? M.prep.pct : -1;
+      const b = this.btn.get(id), p = M.prep && M.prep.action === id ? M.prep.pct : -1;
+      if (!b) continue;
       this.cls(`${id}p`, b, 'prep', p >= 0);
       const w = Math.max(0, Math.round(p));
       this.set(`${id}pg`, w, () => { (b.querySelector('.pg') as HTMLElement).style.width = `${w}%`; });
@@ -213,15 +249,37 @@ export class DynamicHud {
     // a short window shows the bar's countdown along the dodge button's foot instead (the CSS picks one)
     this.cls('dgw', dg, 'win', up && !R.react);
     if (up) { const left = `scaleX(${Math.max(0, inc!.windowRemaining / inc!.windowDur).toFixed(2)})`; (wb.firstElementChild as HTMLElement).style.transform = left; (dg.querySelector('.wl') as HTMLElement).style.transform = left; }
-    const al = this.q<HTMLElement>('#ah-alert'), show = !!inc && full && visible;
+    // the version 2: the light alert before the opponent's skills, in the discreet assistance too (§ 9, « surtout pour les competences »)
+    const foeSkill = !!this.charge && !!inc && inc.kind === 'skill' && assist !== 'off';
+    const al = this.q<HTMLElement>('#ah-alert'), show = !!inc && (full || foeSkill) && visible;
     this.cls('al', al, 'on', show);
     // a short window: the sign, at the top, gives way while the alert shows (the CSS reads this class)
     this.cls('alroot', this.el, 'al', show);
     if (show) {
-      this.set('alT', inc!.action, () => { al.querySelector('b')!.textContent = inc!.action === 'm_heavy' ? t.alertHeavy : t.alertLight; });
+      this.set('alT', inc!.action, () => { al.querySelector('b')!.textContent = inc!.kind === 'skill' && this.charge ? this.charge.texts.foeSkill(inc!.name) : inc!.action === 'm_heavy' ? t.alertHeavy : t.alertLight; });
       this.set('alS', inc!.windowOpen, () => { al.querySelector('span')!.textContent = inc!.windowOpen ? t.reactNow : ''; });
     }
     this.cls('pause', this.q('#ah-pause'), 'on', paused && !sim.over);
+    if (this.charge && cv) this.chargeUpdate(M.buttons.light, cv);
+  }
+
+  /** the version 2: the attack button (its state the light attack's; lit while charging, its label the tier a release launches) and the
+   *  tier strip (reached, the one launched, the next and the charge toward it, the tiers locked by the AP) */
+  private chargeUpdate(state: string, cv: ChargeHudModel): void {
+    const b = this.btn.get('attack')!, ct = this.charge!.texts;
+    this.cls('atk', b, 'on', state === 'on'); this.cls('atk', b, 'noap', false); this.cls('atk', b, 'lock', state === 'locked');
+    this.cls('atkc', b, 'charging', cv.held);
+    const tierName = (id: string) => (id === 'light' ? ct.tierLight : id === 'heavy' ? ct.tierHeavy : this.t.skillShorts[id as DynActionId] ?? id);
+    const sub = cv.held ? tierName(cv.launch) : ct.holdSub;
+    this.set('atksub', sub, () => { b.querySelector('em')!.textContent = sub; });
+    const strip = this.q<HTMLElement>('#ah-tiers');
+    this.cls('tiers', strip, 'on', cv.held);
+    strip.querySelectorAll<HTMLElement>('.tr').forEach((el, i) => {
+      const st = cv.tiers[i]?.state ?? 'ahead';
+      this.set(`tr${i}`, st, () => { el.className = `tr ${st}`; el.title = st === 'locked' ? ct.locked : ''; });
+      const w = st === 'next' ? cv.toNext : 0;
+      this.set(`trw${i}`, w, () => { (el.querySelector(':scope > i') as HTMLElement).style.width = `${w}%`; });
+    });
   }
 
   /** the events' feedback: floating numbers, the break, a push back and its points given back, a denied command, the KO screen */

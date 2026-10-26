@@ -5,6 +5,7 @@ import { PLAYER_ID, RIVALS } from '../narrative/roster';
 import { matchId, opponentOf, playerMatch, rivalMods } from '../tournament/pool';
 import { duelData, dynDuelData, DYN_PROFILES, PROFILES, type Mods } from './profiles';
 import { mix32, hashString } from '../core/rng';
+import { v2DuelData, type V2Duel, type V2Kit } from './v2duel';
 
 /** A match sheet (journal Passe L2, used by the arena's play mode in Passe L3): who fights whom, with what the preparation changed. The
  *  game's side of the interface takes lists of fighters per side (PROJECT_MASTER_CONTRACT § 6.1, gap E17: a combat « extensible vers
@@ -70,4 +71,13 @@ export function dynSheetData(sh: MatchSheet, names?: Partial<Record<string, stri
   const p = a.fighters[0], o = b.fighters[0], prof = DYN_PROFILES[o.profile ?? ''];
   if (!prof) throw new Error(`match ${sh.id}: no combat profile "${o.profile}"`);
   return dynDuelData(prof, { seed: sh.seed, playerName: p.name, opponentName: o.name, player: p.mods, enemy: o.mods, names });
+}
+
+/** the same sheet as a duel of the version 2 (src/combat/v2duel.ts, journal Passe V1): the three buttons, the charge, the skills at their
+ *  levels, the opponent's defence and skills (C3); its kit is the player's (lot V2), today's four skills at level 1 by default */
+export function v2SheetData(sh: MatchSheet, names?: Partial<Record<string, string>>, kit?: V2Kit): V2Duel {
+  const [a, b] = sh.sides;
+  if (a.fighters.length !== 1 || b.fighters.length !== 1) throw new Error(`match ${sh.id}: team formats (${a.fighters.length}v${b.fighters.length}) are outside the slice; the arena seats one fighter per side`);
+  const p = a.fighters[0], o = b.fighters[0];
+  return v2DuelData(o.profile ?? o.id, { seed: sh.seed, playerName: p.name, opponentName: o.name, player: p.mods, enemy: o.mods, names, kit });
 }

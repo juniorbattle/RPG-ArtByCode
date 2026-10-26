@@ -1,7 +1,9 @@
 import { ArenaApp } from '../arena/ArenaApp';
 import { TEXTS_EN } from '../arena/ArenaHud';
 import { DYN_TEXTS_EN } from '../arena/DynamicHud';
-import { dynSheetData, dynSheetView, matchSheetFor, sheetData } from '../combat/match';
+import { dynSheetData, dynSheetView, matchSheetFor, sheetData, v2SheetData } from '../combat/match';
+import { V2_FOES, FOE_SKILLS } from '../combat/v2duel';
+import { isV2, v2KitOf } from '../simulation/v2';
 import { dynamicRules } from '../tournament/pool';
 import { RIVALS } from '../narrative/roster';
 import { ACTION_NAMES_EN } from '../narrative/texts';
@@ -38,14 +40,19 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   const opp = RIVALS[sheet.sides[1].fighters[0].id];
   // the slot's day state (the afternoon's bout at midday, journal Passe AD1)
   const q = new URLSearchParams(arenaQuery(st));
-  for (const k of ['fps', 'freeze', 'painters', 'hud', 'gpuprof']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
-  const dyn = dynamicRules(st), view = dyn ? dynSheetView(sheet, opp.name, opp.id) : { assist: sheet.assist, intel: sheet.intel };
+  for (const k of ['fps', 'freeze', 'painters', 'hud', 'gpuprof', 'input']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
+  const dyn = dynamicRules(st), v2 = isV2(st), view = dyn ? dynSheetView(sheet, opp.name, opp.id) : { assist: sheet.assist, intel: sheet.intel };
+  // the version 2 (journal Passe V1): scouting also names the opponent's skills (C3), announced in the duel by the light alert
+  if (v2 && view.intel.length) view.intel.push(tx('ui.arena.foeSkills', { name: opp.name, skills: (V2_FOES[opp.id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') }));
+  const v2d = v2 ? v2SheetData(sheet, ACTION_NAMES_EN, v2KitOf(st)) : null;
   if (dyn && b.params.has('dyn')) q.set('dyn', b.params.get('dyn')!);
   const texts = { ...(dyn ? DYN_TEXTS_EN : TEXTS_EN), subtitle: tx('ui.arena.subtitle', { round: sheet.round }), subMarek: opp.epithet };
   const app = new ArenaApp({
     canvas: b.canvas, params: q,
     onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; },
-    match: dyn
+    match: v2d
+      ? { data: v2d.data, tiers: v2d.tiers, rules: 'v2', foe: opp.id, assist: view.assist, texts, onOver: (r) => void finish(r) }
+      : dyn
       ? { data: dynSheetData(sheet, ACTION_NAMES_EN), rules: 'dynamic', foe: opp.id, assist: view.assist, texts, onOver: (r) => void finish(r) }
       : { data: sheetData(sheet, ACTION_NAMES_EN), foe: opp.id, assist: sheet.assist, texts, onOver: (r) => void finish(r) },
   });
@@ -65,7 +72,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   const mods = sheet.sides[0].fighters[0].mods, prep = [mods.hp !== undefined && mods.hp < 1 ? tx('ui.arena.wounded', { pct: Math.round(mods.hp * 100) }) : '', mods.damage && mods.damage > 1 ? tx('ui.arena.damage', { pct: Math.round((mods.damage - 1) * 100), why: `${st.player.items.length ? tx('ui.arena.blade') : ''}${st.player.items.length && st.player.training ? ', ' : ''}${st.player.training ? tx('ui.arena.training') : ''}` }) : ''].filter(Boolean);
   await overlay(`<h2 class="pm-h">${tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</h2><p class="pm-big">${esc(opp.name)}</p><p class="pm-sub pm-center">${esc(opp.epithet)}</p><p>${esc(opp.bio)}</p>${report}
     ${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}
-    <p class="pm-sub">${tx('ui.arena.keys')}</p><p>${dyn ? KEYS_DYNAMIC : tx('ui.arena.keysClassic')}</p>`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }]).done;
+    <p class="pm-sub">${tx('ui.arena.keys')}</p><p>${v2 && b.params.get('input') !== 'keys' ? tx('ui.arena.keysV2') : dyn ? KEYS_DYNAMIC : tx('ui.arena.keysClassic')}</p>`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }]).done;
   app.paused = false; app.moment = false;
 
   async function finish(r: { winner: 'ren' | 'marek'; hp: Record<string, number>; maxHp: Record<string, number>; finisher: string | null }): Promise<void> {
