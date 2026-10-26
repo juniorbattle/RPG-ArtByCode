@@ -53,7 +53,7 @@ try {
   check(/scene=arena/.test(to ?? ''), `the town goes to ${to}`);
   await open(to);
   const sheet = await page.evaluate(() => ({ names: [window.__arena.sim.D.fighters.ren.name, window.__arena.sim.D.fighters.marek.name], assist: window.__arena.assist, rules: window.__arena.rules, hud: document.querySelector('#ah-title')?.textContent }));
-  check(sheet.rules === (DYN ? 'dynamic' : 'classic'), `the arena plays ${sheet.rules}`);
+  check(sheet.rules === (V2 ? 'v2' : DYN ? 'dynamic' : 'classic'), `the arena plays ${sheet.rules}`);
   check(sheet.names[0] === 'Aster' && sheet.names[1] === (day === 2 ? 'Vessa Lark' : 'Marek Varn'), `the arena seats ${sheet.names.join(' vs ')}`);
   check(/Pool of eight/.test(sheet.hud ?? ''), `English HUD: ${sheet.hud}`);
   await page.screenshot({ path: path.join(outDir, `${mode}-2-report.png`) });

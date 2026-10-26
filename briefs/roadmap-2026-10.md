@@ -23,6 +23,9 @@ Puis : « Le district en cours, c'est le parvis de l'arène (la place principale
 La fiche du mandat (19 choix de l'opérateur) lance une séance cloud autonome, sans outil externe : la commande à trois touches et l'attaque chargée (A3, AV-5), C3 à C5, les compétences, l'équipement (arme, armure, deux accessoires), marchander, défier, voler, les trois districts, la narration et les cinématiques, les événements, le son par le code, l'interface P4-P6. Tout derrière le drapeau `flags.v2`, le défaut inchangé jusqu'à l'essai de l'opérateur. Le brief : `briefs/cloud-session-v2-brief.md`. Marek est en pause jusqu'à la nouvelle commande (AV-10).
 
 - **V0 fait (Passe V0, 26/10)** : le drapeau `flags.v2` et les textes du jeu en tables (`src/narrative/text/`), le jeu par défaut inchangé à l'octet.
+- **V1 fait (Passe V1, 26/10)** : la commande à trois touches et l'attaque chargée par paliers (A3, AV-5 à AV-8 ; `combat-system.md` § 4b et le
+  contrat projet § 6.1 amendés), C3 (garde, esquive et compétences des rivaux), l'équilibrage « modéré » proposé, le bot et la course recalés ;
+  `?scene=arena&v2=1`, `&input=keys` pour l'ancien schéma. Les poses de charge à cuire : § 14 de la spécification.
 
 ## Règles de fonctionnement
 

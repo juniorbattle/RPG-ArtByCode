@@ -111,7 +111,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   dynamique » (`tests/combat-dynamic.test.mjs`, journal Passe C1: each rule against an oracle, the duels' length, the bot, the off-screen race
   against full duels on held-out seeds, the arena of today untouched; ~15 s, the suite's longest file), the arena of the new duel
   (`tests/arena-dynamic.test.mjs`, journal Passe C2: the parameter, the keys, the trial's settings, today's clips on the new moments, the HUD's
-  reading at every step of a duel, every scripted moment, the play mode's flag), the loading screen (`tests/loading-screen.test.mjs`, journal
+  reading at every step of a duel, every scripted moment, the play mode's flag), the version 2's charged command (`tests/combat-charge.test.mjs`, journal Passe V1: the tiers, the AP, the levels, what cuts a
+  charge, C3's defence and skills, the bot, the off-screen race, `V2_SIM_HASH`), the loading screen (`tests/loading-screen.test.mjs`, journal
   Passe UI4: its tone and opening line by day state, its content held until both fonts load and never more than a second, its error, the play
   mode's page tone, its CSS from the design system's tokens only), the texts' tables and the version 2's flag (`tests/texts.test.mjs`, journal
   Passe V0: every key used and defined, the default game's texts pinned word for word from main).
@@ -293,7 +294,11 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 `cam=dist,pitchDeg,yawDeg,shift,tx,ty,tz[,fov]` (manual camera) · `vis=0` (no visibility bake: keep everything) ·
 `v2=1` (the version 2 of the cloud session « Version 2 », journal Passes AV1 / V0, `briefs/cloud-session-v2-brief.md`: with `play=1&new=1` (or a
 named state, DEV), a game with the flag `flags.v2` (`src/simulation/v2.ts`), kept in the save, every system of that session switched on together
-and the dynamic rules with it; absent = today's game, unchanged; the named state `v2-day1-morning`) · `title=1` (the title screen, journal Passe L4, choice P2: « New game », « Explore the district », « Continue » with a save; it shows by itself
+and the dynamic rules with it; absent = today's game, unchanged; the named state `v2-day1-morning`; on the arena page, `?scene=arena&v2=1`: the
+version 2's duel, journal Passe V1, the three-button command of decision A3 / AV-5 - J (or 1) attack, held to charge it tier by tier (light,
+heavy at 2 s, then the four skills by their charge time at their level, AV-7 / AV-8, each still paid in AP, AV-6), K (or B) guard held, L (or A)
+dodge, the gamepad's X / B / A; `src/combat/charge.ts`, `src/combat/v2duel.ts`, `src/arena/v2Arena.ts`; C3's opponents, their guard, dodge and
+skills; `&input=keys` the former keys 1-6 of C2 on the same duel, for comparison) · `title=1` (the title screen, journal Passe L4, choice P2: « New game », « Explore the district », « Continue » with a save; it shows by itself
 on the bare address only, and only in a browser no automation drives (`navigator.webdriver`), kept by the operator (L7-5 « Le garder », journal
 Passe D8): every tool and proof keeps today's game; its
 « Explore the district » runs today's town at midday, as `time=midday` without changing the address, and the DEV panel: decision L7-6a, journal Passe D9; that panel closed, H opens it: decision P1, journal Passe UI2) · `play=1` (the game's play mode, journal Passe L3, loaded on demand: the state from the browser's save, or `&new=1&name=<name>&seed=<n>` for a

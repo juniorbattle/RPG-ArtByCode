@@ -7,6 +7,7 @@
 //   BASE_URL (default http://127.0.0.1:5173/), W / H (viewport, default 1280 x 720), CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs;
 //   HOLD=1: the page's loop never starts (ArenaApp.start a no-op, as tools/detshots.mjs holds the town): without it the live seconds between
 //   the boot and the first moment leave their mark (the stands' cheers, the particles), so two loads differ on a slow renderer (journal Passe L3)
+//   FREEZE_CSS=1: the HUD's CSS transitions and animations stopped before the captures (pulses: journal Passe V1)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -32,6 +33,8 @@ try {
   const err = await page.evaluate(() => window.__error);
   if (err) throw new Error(err);
   // the page's own loop keeps running: stop it from advancing the paused moment (a jump pauses the simulation; the loop only redraws)
+  // FREEZE_CSS=1: the HUD's transitions and animations stopped (a pulse's phase differs from one load to the next; journal Passe V1)
+  if (process.env.FREEZE_CSS === '1') await page.addStyleTag({ content: '*,*::before,*::after{transition:none!important;animation:none!important}' });
   for (const v of vars) {
     const [label, preset, js] = v.split('|');
     const t0 = Date.now();

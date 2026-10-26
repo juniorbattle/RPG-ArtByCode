@@ -206,6 +206,105 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Sans serveur de prévisualisation, deux instantanés figés (`git archive`) servis par le vite du dépôt, chacun son cache, laissent l'arbre de
   travail libre pendant les 40 minutes d'une série en rendu logiciel.
 
+## Passe V1 — Séance cloud « Version 2 », lot V1 : la commande à trois touches et l'attaque chargée par paliers (A3, AV-5), les niveaux par compétence, C3 (les adversaires), l'équilibrage, le bot et la course recalés (2026-10-26)
+
+### Demande
+- Lot V1 du brief (`briefs/cloud-session-v2-brief.md` § 3) : l'amendement A3 décidé par l'opérateur (AV-5 « Oui, amender (A3), l'ancien schéma
+  gardé pour comparer »), la règle des trois touches et de la charge (AV-6 « Garder les PA en plus de la charge », AV-7 « Comme Cyan, paliers
+  successifs », AV-8 « Un niveau par compétence »), puis C3 (garde, esquive et 2 à 4 compétences des rivaux, sept profils plus Marek et Vessa,
+  l'équilibrage vers « modéré », L7-4 / CB-11), le bot et la course hors écran recalés. Tout derrière `flags.v2`.
+
+### L'amendement — [OK] (décision A3, citée mot pour mot et datée)
+- `briefs/combat-system.md` : en tête, l'amendement du 26/10/2026 avec la demande de l'opérateur mot pour mot et AV-5 à AV-8 ; § 1 (trois touches),
+  § 4 (« pas de charge tenue » remplacé, sous la version 2, par la charge par paliers ; gardé pour l'ancien schéma), un nouveau § 4b (la règle,
+  ses nombres « proposé ») et, au § 14, la liste des poses de charge à ajouter aux feuilles (5 images pour Ren et Vessa ; aucune pour Marek, qui
+  ne charge pas) : elle servira à reprendre la feuille de Marek (AV-10), à laquelle rien n'est touché.
+- `contracts/PROJECT_MASTER_CONTRACT.md` § 6.1 : « le joueur agit par des actions instantanées ou à délai de préparation, les compétences payées en
+  points d'action » devient « le joueur agit par trois commandes, la garde, l'esquive et l'attaque, l'attaque chargée en la tenant, par paliers,
+  de l'attaque légère à l'attaque puissante puis aux compétences, les compétences payées en points d'action et réglées par leur niveau » ; l'en-tête
+  note l'amendement (AV-5, mot pour mot, daté). Le reste des contrats ne change pas.
+
+### Fait — [OK]
+- **La charge** (`src/combat/charge.ts`, pur) : `ChargedDuel` enveloppe `DynamicSim`, qui ne change pas de règle : `attack(true)` commence une
+  charge, `attack(false)` lance le palier atteint ; `chargeTiers` : la légère (une pression), la puissante à 2 s, puis les quatre compétences par
+  leur temps de charge à leur niveau ; un palier dont les PA manquent ne s'ouvre pas (le meilleur palier ouvert atteint part) ; les événements
+  `chargeStart`, `chargeTier`, `chargeCut`, `chargeRelease`.
+- **Les niveaux** (`src/combat/skills.ts`) : un niveau 1 à 5 par compétence, +10 % de puissance par niveau, un temps de charge plus court ; aucun
+  niveau du joueur.
+- **Le duel de la version 2** (`src/combat/v2duel.ts`) : `v2DuelData(rival)` = le duel dynamique d'aujourd'hui, la puissante et les compétences
+  sans préparation automatique (la charge en tient lieu), un coup chargé payé par sa tenue (`V2_POWER`), les compétences à leur niveau, la
+  défense et les compétences de l'adversaire ; `input: 'keys'` garde la commande C2 sur le même adversaire et les mêmes niveaux.
+- **C3** (`src/combat/dynamic.ts`, par des champs optionnels de `DynData.ai` : sans eux, rien ne change, `DYNAMIC_SIM_HASH` tenu) : `ai.defense`
+  (dans ses pauses, une fois par attaque du joueur, la part qu'il esquive — la puissante et les compétences seulement — et la part qu'il garde) ;
+  `ai.skills` (ses compétences, chacune une séquence à elle, cadencées par leur recharge : l'adversaire n'a pas de PA) ; 17 compétences adverses
+  (`FOE_SKILLS` : offensives longues et annoncées, défensives, de soutien) ; `V2_FOES` : les sept rivaux, 2 à 4 compétences chacun, la défense
+  des « sophistiqués ».
+- **Le bot** (`runV2BotDuel`, `src/combat/bot.ts`) : trois touches ; il choisit un palier comme le bot dynamique choisit une action, tient la
+  charge le temps du palier, garde pour la garder pendant une séquence (adresse ≥ 0,5).
+- **La course hors écran** (`V2_RACERS`, `v2RacerOf`, `V2_RACE_SLOPE` 8) : chaque rival par le temps que met le bot de référence (adresse 0,5) à
+  l'abattre et les dégâts par seconde qu'il lui fait ; mesurée sur les graines 1-20, vérifiée sur les graines 21-26 (12 %) ; les matchs hors
+  écran d'une partie v2 la prennent (`pool.ts`), le bot de la partie v2 joue la fiche v2 (`lab.ts`, `match.ts` `v2SheetData`).
+- **L'arène** : `?scene=arena&v2=1` (Ren contre Marek de C3), le duel d'une partie v2 (`playArena.ts`), `&input=keys` pour l'ancien schéma
+  (`src/arena/v2Arena.ts`) ; touches J (ou 1) attaque tenue, K (ou B) garde tenue, L (ou A) esquive, aucune touche de marche du parvis ; manette
+  X / B / A ; le bouton Attaque se tient au toucher. HUD (`DynamicHud` avec son option `charge`, absente = le HUD de C2 tel quel) : trois boutons,
+  la bande des paliers (atteints, celui qui part, le suivant et sa progression, les fermés barrés), l'alerte légère avant les compétences
+  adverses, aide discrète comprise ; sous 600 px de haut, la bande se retire et le bouton dit le palier. La charge se montre avec les images
+  d'aujourd'hui : l'image 0 de `heavy` tenue, un éclat à chaque palier.
+
+### Les « proposé » du lot (à l'essai de l'opérateur)
+- La puissante à **2 s** de tenue (le bas des « 2-3 s ») ; les compétences de **2,7 à 9 s** selon leur niveau (Estocade 9 → 6 s, « les plus
+  puissantes ~10 s ») ; un palier de compétence au moins 0,25 s après la puissante.
+- **La charge remplace la préparation automatique** ; un coup chargé paie sa tenue : puissante ×2,2 de dégâts, Éclair ×4, Fente ×4,2,
+  Tourbillon ×3,2, Estocade ×3,4, leur jauge ×2 à ×2,5 ; Rempart et Ferveur ×1,5 de durée ; la légère inchangée.
+- **Ce qui coupe une charge** : un coup reçu sans garde, l'esquive du joueur, son break, le K.O. ; un coup gardé la garde ; elle ne monte que
+  joueur libre ; relâchée pendant la séquence adverse : refusée, perdue.
+- **Touches** : J / K / L (et 1 / B / A) ; manette X / B / A.
+- **C3** : défense de Marek (garde 0,35), Vessa (esquive 0,35, garde 0,1), Cassius (0,2 / 0,2), Ilse (garde 0,3), Rhosk et Orla (garde 0,15),
+  Tobin aucune ; compétences adverses à recharge (16 à 40 s), 22 à 32 % des séquences quand une est prête ; leurs nombres (`FOE_SKILLS`).
+- **L'équilibrage « modéré »** (`V2_FOES` : PV et dégâts par rival) : une marche d'escalier selon l'adresse du bot, chaque rival son seuil ; Marek
+  le plus dur. Mesuré (20 duels par case, graines 1001-1020) :
+
+| Rival | adresse 0,2 | 0,4 | 0,5 | 0,6 | 0,9 | durée |
+|---|---|---|---|---|---|---|
+| Tobin | 100 % | 100 % | 100 % | 100 % | 100 % | 5,4-7,6 min |
+| Orla | 0 % | 40 % | 100 % | 100 % | 100 % | 7,3-8,8 min |
+| Cassius | 35 % | 95 % | 100 % | 100 % | 100 % | 7,1-11,1 min |
+| Ilse | 15 % | 50 % | 100 % | 100 % | 100 % | 7,8-11,2 min |
+| Rhosk | 15 % | 55 % | 100 % | 100 % | 100 % | 8,3-12,0 min |
+| Vessa | 0 % | 40 % | 90 % | 90 % | 100 % | 7,6-10,1 min |
+| Marek | 0 % | 0 % | 25 % | 60 % | 100 % | 7,4-9,4 min |
+
+  Tobin reste facile (« the Hopeful », adresse < 0,2 suffit) ; des duels de Rhosk et d'Ilse dépassent 10 min à adresse 0,4.
+- TournamentLab `--rules=v2` (50 graines) : diligent (adresse 0,6) **69 %** de victoires, oisif (0,3) **1 %** ; blessures du joueur 0,98 par partie
+  en diligent (la règle des blessures d'aujourd'hui, une victoire à moins de 15 % des PV, frappe souvent sous la version 2 : à revoir, noté).
+- La pente de la course v2 : 8 (contre 14 aujourd'hui), pour qu'un rival d'un tiers plus faible gagne encore une fois sur dix.
+
+### Les preuves
+- **Le défaut inchangé** (`main` figé `5c6259d` servi sur :5201, l'instantané du lot `45c0439` sur :5202, SwiftShader, `fps=off`) : la ville A, B, C,
+  D de nuit et à midi et B avec son panneau, **9 / 9 identiques à l'octet** ; l'arène `clean=1` sous CombatSim et sous `combat=dynamic`, **14 / 14
+  identiques** ; l'arène avec son HUD : 10 / 14 identiques au premier passage, les quatre autres (la pulsation CSS des boutons et de l'alerte,
+  dont la phase dépend du temps de chargement) **identiques une fois les animations CSS figées** (`FREEZE_CSS=1`, nouvelle option de
+  `tools/arena-scene-shots.mjs` : 8 / 8) ; l'écran titre et « Explore the district » (`tools/title-proof.mjs`) : tous les contrôles OK, les trois
+  paires **identiques à l'octet** ; `play-flow` victoire `0025acce7a403773` et défaite `397959404c18f714` des deux côtés, les empreintes de UI3.
+- **Le drapeau** : `arena-scene-check "v2=1&fps=off"` **PASS** (le hachage `V2_SIM_HASH` du script de la version 2, aucune erreur dans les moments,
+  le télégraphe 6,76:1 et 6,97:1 en deutéranopie, le sol dégagé du HUD aux 77 cas, et le contrôle vivant a avancé de 0,05 s cette fois) ; les huit
+  moments de la charge capturés (`chargeHeavy`, `chargeSkill`, `chargeLocked`, `chargeGuard`, `foeSkill`, `released`...) et à 812 x 375 à midi ;
+  `ui-text` 5 / 5 pages (16 px sur ordinateur, 14 px au téléphone, polices chargées) ; `play-flow V2=1` victoire `768c3c42c6ddcfa7` et défaite
+  `37d81c372d3b1e92` rejouées en Node à la même empreinte, mais **[KO] de l'outil** : son contrôle « the arena plays » attendait `dynamic` (écrit en
+  V0, avant les règles `v2`) ; l'arène joue bien `v2` ; contrôle corrigé (`V2 ? 'v2'`), repassé au lot V2 ; `play-day V2=1` OK (`9bf8024c0810a17f`).
+- **TournamentLab `--rules=v2`**, 50 graines, deux passages au JSON **identique à l'octet** : diligent 72 % de victoires du joueur, blessé 0,8 par
+  partie, 0 participant oublié, les 18 événements tirés ; oisif 2 %.
+- typecheck, `npm test` (218 tests, dont `tests/combat-charge.test.mjs`, 11 tests, **14 / 14 fautes injectées attrapées**, fichiers rendus à
+  l'octet), build et `art:validate` sur l'instantané propre (`git archive`) du commit `45c0439`.
+- **Reste local** : l'essai en main de la charge (le ressenti des 2 s et des paliers), le contrôle vivant d'`arena-scene-check` en rendu matériel,
+  les poses de charge à dessiner (§ 14), la reprise de la feuille de Marek (AV-10).
+
+### Pensée
+- Un coup qui demande du temps doit le rendre : la première mesure (dégâts d'aujourd'hui sous la charge) donnait 0 % de victoires à toute adresse
+  sous 0,9 ; la charge n'a de sens que si un palier rapporte plus que les attaques légères qu'il remplace.
+- Un tirage qui sert à deux décisions (esquiver ou garder) se lit par cas : la part d'esquive comptée pour une attaque légère qu'on n'esquive pas
+  la faisait garder à coup sûr ; le test l'a vu avant le bot.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -221,6 +320,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **0c. Séance cloud « Version 2 » (Passe AV1)** : mandat fixé par la fiche de l'opérateur (19 choix), brief `briefs/cloud-session-v2-brief.md`, lots V0 à V10 derrière `flags.v2`, le défaut inchangé ; la commande chargée décidée en A3 (AV-5) ; Marek en pause jusqu'à la nouvelle commande (AV-10) ; la séance part en exception à la règle d'une branche (AV-18). Après elle, en local : mesures GPU, revue visuelle des districts, poses de charge, personnages à cuire.
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
+  - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : la règle des blessures sous la version 2 (0,98 par partie en diligent), des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
 
 **0b. Version jouable — séance cloud (Passes N1 à N4, puis L0 à L7)** : plan v4 `briefs/cloud-session-playable.md`, brief
   `briefs/cloud-session-playable-brief.md`, contrats dans `contracts/`. **Séance close** : lots L0 à L7 fusionnés dans `main` ; bilan, mesures,
