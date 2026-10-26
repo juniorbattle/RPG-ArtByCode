@@ -14,9 +14,10 @@ import type { VisSet } from '../app/CameraGraph';
 
 export type BakeCacheMode = 'on' | 'off' | 'verify';
 
-const STORE_PREFIX = 'hd2d.visbake.';
-const STORE_INDEX = 'hd2d.visbake.index';
-const STORE_MAX = 6;
+/** where a cache keeps its entries in localStorage, and how many: the district's own (the default), or another page's (the version 2's
+ *  squares, journal Passe VP1: their own entries, so they never push the district's out) */
+export interface BakeStore { prefix: string; index: string; max: number }
+const DISTRICT_STORE: BakeStore = { prefix: 'hd2d.visbake.', index: 'hd2d.visbake.index', max: 6 };
 const FORMAT = 1;
 const memory = new Map<string, VisResult>();
 
@@ -132,40 +133,40 @@ function unpack(raw: string, nParts: number, poses: BakePose[], wantBehind: bool
 
 const storage = (): Storage | null => { try { return window.localStorage; } catch { return null; } };
 
-function load(key: string, i: BakeInputs): VisResult | null {
+function load(key: string, i: BakeInputs, S: BakeStore): VisResult | null {
   const mem = memory.get(key);
   if (mem) return mem;
   const st = storage();
   let raw: string | null = null;
-  try { raw = st?.getItem(STORE_PREFIX + key) ?? null; } catch { raw = null; }
+  try { raw = st?.getItem(S.prefix + key) ?? null; } catch { raw = null; }
   if (!raw) return null;
   const v = unpack(raw, i.nParts, i.poses, !!i.behind);
-  if (!v) { try { st?.removeItem(STORE_PREFIX + key); } catch { /* storage unavailable */ } return null; }
+  if (!v) { try { st?.removeItem(S.prefix + key); } catch { /* storage unavailable */ } return null; }
   memory.set(key, v);
-  touch(key);
+  touch(key, S);
   return v;
 }
 
-function touch(key: string): void {
+function touch(key: string, S: BakeStore): void {
   const st = storage();
   if (!st) return;
   try {
     let idx: string[] = [];
-    try { idx = JSON.parse(st.getItem(STORE_INDEX) ?? '[]'); } catch { idx = []; }
+    try { idx = JSON.parse(st.getItem(S.index) ?? '[]'); } catch { idx = []; }
     idx = [key, ...idx.filter((k) => k !== key)];
-    for (const old of idx.slice(STORE_MAX)) st.removeItem(STORE_PREFIX + old);
-    st.setItem(STORE_INDEX, JSON.stringify(idx.slice(0, STORE_MAX)));
+    for (const old of idx.slice(S.max)) st.removeItem(S.prefix + old);
+    st.setItem(S.index, JSON.stringify(idx.slice(0, S.max)));
   } catch { /* storage full or unavailable: the memory cache still works */ }
 }
 
-function save(key: string, v: VisResult): void {
+function save(key: string, v: VisResult, S: BakeStore): void {
   memory.set(key, v);
   const st = storage();
   if (!st) return;
   try {
     const p = pack(v);
-    st.setItem(STORE_PREFIX + key, JSON.stringify({ format: FORMAT, n: p.n, hasBehind: !!v.behind, data: p.data, sum: p.sum, poses: v.poses, pages: v.pages, page: v.page, targetBytes: v.targetBytes }));
-    touch(key);
+    st.setItem(S.prefix + key, JSON.stringify({ format: FORMAT, n: p.n, hasBehind: !!v.behind, data: p.data, sum: p.sum, poses: v.poses, pages: v.pages, page: v.page, targetBytes: v.targetBytes }));
+    touch(key, S);
   } catch { /* quota: memory only */ }
 }
 
@@ -182,16 +183,16 @@ const sameCounts = (a: VisResult, b: VisResult) =>
     && (!a.behind || (!!b.behind && a.behind[s].every((x, k) => x === b.behind![s][k]))));
 
 /** bakeVisibility through the cache (same arguments and result; `cache` / `keyMs` say what happened). Throws what the bake throws. */
-export function bakeVisibilityCached(i: BakeInputs, mode: BakeCacheMode = 'on'): VisResult {
+export function bakeVisibilityCached(i: BakeInputs, mode: BakeCacheMode = 'on', store: BakeStore = DISTRICT_STORE): VisResult {
   if (mode === 'off' || i.opts.fail) return { ...bakeVisibility(i.renderer, i.scene, i.nParts, i.poses, i.aspect, i.waterY, i.behind, i.opts), cache: 'off' };
   const t0 = performance.now();
   const key = bakeKey(i);
   const keyMs = performance.now() - t0;
-  const stored = load(key, i);
+  const stored = load(key, i, store);
   if (stored && mode === 'on') return { ...copy(stored), ms: performance.now() - t0, split: { render: 0, readback: 0, decode: performance.now() - t0 - keyMs }, cache: 'hit', keyMs };
   const v = bakeVisibility(i.renderer, i.scene, i.nParts, i.poses, i.aspect, i.waterY, i.behind, i.opts);
   const cache = mode === 'verify' ? (stored ? (sameCounts(v, stored) ? 'verify-ok' : 'verify-mismatch') : 'verify-miss') : 'miss';
   if (cache === 'verify-mismatch') console.error('visibility bake cache: a stored result differs from a fresh bake of the same key; the fresh one is kept');
-  save(key, copy(v));
+  save(key, copy(v), store);
   return { ...v, cache, keyMs };
 }

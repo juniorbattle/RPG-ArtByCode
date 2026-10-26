@@ -59,7 +59,7 @@ function option(st: GameState, def: ActionDef, a: Action): ActionOption {
 }
 
 export function advance(st: GameState, action: Action, rng?: Rng): Advance {
-  if (st.over) return { state: st, events: [], ok: false, reason: tx('refuse.over') };
+  if (st.over) return { state: st, events: [], ok: false, reason: st.flags.v2 === true ? tx('v2.over') : tx('refuse.over') };
   const def = ACTIONS[action.type] as ActionDef | undefined;
   if (!def) return { state: st, events: [], ok: false, reason: tx('refuse.unknown', { type: action.type }) };
   const reason = def.check(st, action) ?? slotRule(st, def, action);

@@ -1,7 +1,7 @@
 import type { Rng } from '../core/rng';
 import { PLACES, V2_PLACES, clamp, placeName, type GameState, type PlaceId } from './state';
 import type { Emit } from './advance';
-import { PEOPLE, placeOf } from '../narrative/people';
+import { PEOPLE, placeOf, titleOf } from '../narrative/people';
 import { ROLE_ACTIONS, available, type RoleAction } from './roles';
 import { onTalk } from '../narrative/dialogue';
 import { applyPlayerDuel, playerMatch, opponentOf, type DuelOutcome } from '../tournament/pool';
@@ -61,7 +61,7 @@ const BASE: Table = {
     check: (st, a) => available(st, a.who),
     apply: (s, a, _r, emit) => {
       const k = `met:${a.who}`;
-      if (!s.flags[k]) { s.flags[k] = true; emit({ kind: 'action', id: 'meet', cause: 'action:talk', text: tx('talk.meet', { name: PEOPLE[a.who].name, title: PEOPLE[a.who].title }), visible: true }); }
+      if (!s.flags[k]) { s.flags[k] = true; emit({ kind: 'action', id: 'meet', cause: 'action:talk', text: tx('talk.meet', { name: PEOPLE[a.who].name, title: titleOf(PEOPLE[a.who], isV2(s)) }), visible: true }); }
       onTalk(s, a.who, emit);
     },
   },
@@ -108,13 +108,14 @@ const BASE: Table = {
   },
   payWatch: {
     list: (st) => (st.place === 'district' && st.slot === 'evening' ? [{ type: 'payWatch' }] : []),
-    label: () => tx('payWatch.label'),
+    // a version 2 game (journal Passe VP1): Hale's men also watch the arena's lockers, the gear's sabotage's answer (src/events/v2catalog.ts)
+    label: (st) => tx(isV2(st) ? 'v2.payWatch.label' : 'payWatch.label'),
     cost: () => 0,
     coins: () => 15,
     check: (st) => (st.place !== 'district' ? tx('payWatch.notHere') : st.slot !== 'evening' ? tx('payWatch.dusk') : st.services.forgeWatch ? tx('payWatch.posted') : st.player.coins < 15 ? tx('payWatch.poor') : null),
     apply: (s, _a, _r, emit) => {
       s.player.coins -= 15; s.services.forgeWatch = true; s.town.hale = clamp((s.town.hale ?? 0) + 5, -100, 100);
-      emit({ kind: 'action', id: 'pay-watch', cause: 'action:payWatch', text: tx('payWatch.log'), visible: true });
+      emit({ kind: 'action', id: 'pay-watch', cause: 'action:payWatch', text: tx(isV2(s) ? 'v2.payWatch.log' : 'payWatch.log'), visible: true });
     },
   },
   wait: {

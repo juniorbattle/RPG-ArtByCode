@@ -16,7 +16,7 @@ export interface Person {
   /** a person of the version 2 only (src/simulation/v2.ts): today's game never lists them */
   v2?: boolean;
   /** where and when a person of today's game stands in a version 2 game (lot V5: the training ground, the festival square) */
-  v2at?: { place?: PlaceId; hours?: readonly SlotId[] };
+  v2at?: { place?: PlaceId; hours?: readonly SlotId[]; title?: string };
 }
 
 const DAY: readonly SlotId[] = ['morning', 'afternoon'];
@@ -37,7 +37,7 @@ export const PEOPLE: Record<string, Person> = {
   vessa: { id: 'vessa', name: 'Vessa Lark', title: 'the Quickblade', place: 'forecourt', hours: DAY, rival: 'vessa' },
   marek: { id: 'marek', name: 'Marek Varn', title: 'the Iron Gate, last year\'s champion', place: 'forecourt', hours: DAY, rival: 'marek' },
   cassius: { id: 'cassius', name: 'Cassius Dree', title: 'a noble in the pool', place: 'lanterns', hours: NIGHT, rival: 'cassius' },
-  lio: { id: 'lio', name: 'Lio', title: 'the lantern-row innkeeper', place: 'lanterns', hours: ALL },
+  lio: { id: 'lio', name: 'Lio', title: 'the lantern-row innkeeper', place: 'lanterns', hours: ALL, v2at: { title: 'the festival square\'s innkeeper' } },
   // the version 2 (journal Passe V2): the weapon master, at the training ground (lot V5)
   corvin: { id: 'corvin', name: 'Master Corvin', title: 'the weapon master', place: 'training', hours: DAY, v2: true },
   // the version 2's shops (journal Passe V3): the armourer by the arena's gate, the trinket seller who opens at dusk
@@ -52,6 +52,9 @@ export const PEOPLE: Record<string, Person> = {
 
 /** where a person stands in this game (a version 2 game moves some of today's people: lot V5) */
 export function placeOf(p: Person, v2: boolean): PlaceId { return (v2 && p.v2at?.place) || p.place; }
+
+/** what this person is called in this game (a version 2 game's festival square stands in Lantern Row's place: journal Passe VP1) */
+export function titleOf(p: Person, v2: boolean): string { return (v2 && p.v2at?.title) || p.title; }
 
 /** is this person there to talk to, at this place and slot? (the content can add conditions: the blacksmith leaves a sabotaged forge) */
 export function presentAt(p: Person, place: PlaceId, slot: SlotId, v2 = false): boolean { return placeOf(p, v2) === place && ((v2 && p.v2at?.hours) || p.hours).includes(slot); }

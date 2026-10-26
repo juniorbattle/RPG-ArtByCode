@@ -42,7 +42,7 @@ export function showTitle(c: TitleChoice): void {
       b.dataset.id = id; b.addEventListener('click', f); menu.appendChild(b);
       return b;
     };
-    const first = save ? add('continue', tx('ui.title.continue'), tx('ui.title.save', { name: save.player.name, day: save.day, slot: save.slot, over: save.over ? tx('ui.title.over') : '' }), () => location.assign('?play=1'), true) : null;
+    const first = save ? add('continue', tx('ui.title.continue'), tx('ui.title.save', { name: save.player.name, day: save.day, slot: save.slot, over: save.over ? (save.flags.v2 === true ? tx('v2.title.over') : tx('ui.title.over')) : '' }), () => location.assign('?play=1'), true) : null;
     add('new', tx('ui.title.new'), tx('ui.title.newSub'), askName, !save);
     add('explore', tx('ui.title.explore'), tx('ui.title.exploreSub'), () => { root.remove(); c.explore(); });
     ((first ?? menu.querySelector('.pm-btn')) as HTMLButtonElement).focus();

@@ -3,6 +3,8 @@ import type { Emit } from '../simulation/advance';
 import { RIVALS } from './roster';
 import { tx } from './text';
 import { v2Lines } from './v2story';
+import { isV2 } from '../simulation/v2';
+import { skillPrice } from '../simulation/v2skills';
 
 /** What the town's people say (journal Passe L4; GAMEPLAY § 8: the city reacts to the tournament, the player's fame, the sabotage, the
  *  hour, readable without a debug screen). Lines are chosen from the state: the slot, the pulse, the facts learnt, the quests, the results.
@@ -64,9 +66,11 @@ export function linesOf(s: GameState, who: string): string[] {
       if (s.quests.cargo === 'delivered' || s.quests.cargo === 'done') return [tx('line.tam.done')];
       return [tx('line.tam.offer')];
     case 'folk': {
-      const out: string[] = [];
-      if (fought(s, s.day) || fought(s, s.day - 1)) out.push(won(s, s.day) || won(s, s.day - 1) ? tx('line.folk.won', { name }) : tx('line.folk.lost', { name }));
-      if (P.excitement >= 70) out.push(tx('line.folk.roar'));
+      const out: string[] = [], v2 = isV2(s);
+      if (fought(s, s.day) || fought(s, s.day - 1)) out.push(won(s, s.day) || won(s, s.day - 1) ? tx('line.folk.won', { name }) : v2 && s.day >= 6 ? tx('v2.line.folk.lost', { name }) : tx('line.folk.lost', { name }));
+      // the version 2's ten days (journal Passe VP1): the roar on a day of bouts only, the bracket and the final talked of after the pool
+      if (v2) out.push(P.excitement >= 70 && s.tournament.matches.some((m) => m.day === s.day) ? tx('line.folk.roar') : s.day >= 9 ? tx('v2.line.folk.final') : s.day >= 6 ? tx('v2.line.folk.bracket') : tx('line.folk.heralds'));
+      else if (P.excitement >= 70) out.push(tx('line.folk.roar'));
       else out.push(tx('line.folk.heralds'));
       if (s.facts.includes('forge-burned')) out.push(tx('line.folk.forge'));
       if (s.facts.includes('dree-temple-feud')) out.push(tx('line.folk.feud'));
@@ -74,6 +78,7 @@ export function linesOf(s: GameState, who: string): string[] {
       return out;
     }
     case 'odo':
+      if (isV2(s)) return [s.day >= 6 ? tx('v2.line.odo.bracket') : s.flags.registered ? tx('v2.line.odo.signed') : tx('v2.line.odo.sign')];
       return [s.flags.registered ? tx('line.odo.signed') : tx('line.odo.sign')];
     case 'anwen':
       return [s.player.injury ? tx('line.anwen.hurt') : tx('line.anwen.well'), ...(s.flags['free-care'] ? [tx('line.anwen.free')] : [])];
@@ -92,7 +97,8 @@ export function linesOf(s: GameState, who: string): string[] {
       return [s.flags['culprit-known'] ? tx('line.cassius.prove') : rival(s, 'cassius') <= -25 ? tx('line.cassius.hostile', { name }) : tx('line.cassius.salute')];
     // the version 2 (journal Passe V2): the weapon master
     case 'corvin':
-      return [night ? tx('line.corvin.night') : s.player.coins >= 45 && !(s.v2?.kit.levels.t3) ? tx('line.corvin.rich') : tx('line.corvin.pitch')];
+      // « rich »: the player can pay for the Whirlwind he teaches, at its price today (journal Passe VP1)
+      return [night ? tx('line.corvin.night') : s.player.coins >= skillPrice(s, 't3') && !(s.v2?.kit.levels.t3) ? tx('line.corvin.rich') : tx('line.corvin.pitch')];
     case 'hilde':
       return [s.services.shopFactor > 1 ? tx('line.hilde.shortage') : tx('line.hilde.pitch')];
     case 'ilse':

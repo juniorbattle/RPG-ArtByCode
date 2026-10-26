@@ -48,13 +48,21 @@ const match = (round: number, day: number, a: string, b: string, stage: Stage): 
 const winnerOf = (m: MatchRecord) => m.winner!;
 const loserOf = (m: MatchRecord) => (m.winner === m.a ? m.b : m.a);
 export const stageMatches = (s: GameState, stage: Stage): MatchRecord[] => s.tournament.matches.filter((m) => m.stage === stage);
+/** a match's name: its round of the pool, or its stage of the bracket */
+export function stageName(m: MatchRecord): string {
+  return m.stage === 'semi' ? tx('v2.stage.semi') : m.stage === 'gate' ? tx('v2.stage.gate') : m.stage === 'third' ? tx('v2.stage.third') : m.stage === 'gateFinal' ? tx('v2.stage.gateFinal') : m.stage === 'final' ? tx('v2.stage.final') : tx('v2.stage.pool', { round: m.round });
+}
 
 /** after a slot of a version 2 game: the bracket's next round once the day's bouts are fought (the cut after day 5's afternoon, the major
  *  match after day 6's, the final after day 8's) */
 export function v2AfterSlot(s: GameState, ended: string, emit: Emit): void {
   if (!isV2(s)) return;
-  // the heralds cry the next day's kind at nightfall (the board's line of the morning)
-  if (ended === 'evening' && s.day < V2_DAYS) emit({ kind: 'slot', id: `v2:day:${s.day + 1}`, cause: 'the tournament calendar', visible: true, day: s.day + 1, slot: 'morning', text: DAY_LINE[s.day + 1]() });
+  // the heralds cry the next day's kind at nightfall (the board's line of the morning); their cry stirs the town as today's heralds do every
+  // morning (src/events/catalog.ts, which a version 2 game keeps for the first day only: journal Passe VP1)
+  if (ended === 'evening' && s.day < V2_DAYS) {
+    s.flags['pulse:excitement'] = ((s.flags['pulse:excitement'] as number) ?? 0) + 3;
+    emit({ kind: 'slot', id: `v2:day:${s.day + 1}`, cause: 'the tournament calendar', visible: true, day: s.day + 1, slot: 'morning', text: DAY_LINE[s.day + 1]() });
+  }
   if (ended !== 'afternoon') return;
   if (s.day === 5) cut(s, emit);
   else if (s.day === 6) major(s, emit);

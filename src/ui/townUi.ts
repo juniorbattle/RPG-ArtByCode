@@ -1,6 +1,6 @@
 import { actions, placeName, standings, dusk, type Action, type ActionOption, type GameEvent, type GameState } from '../simulation';
 import { offeredBy } from '../simulation/roles';
-import { PEOPLE } from '../narrative/people';
+import { PEOPLE, titleOf } from '../narrative/people';
 import { linesOf } from '../narrative/dialogue';
 import { RIVALS } from '../narrative/roster';
 import { boardHtml, standingsHtml as standingsHtmlRows } from './board';
@@ -9,7 +9,7 @@ import { downloadSave, loadSaveFile, writeSave } from './save';
 import { el, esc, injectStyle, overlay } from './style';
 import { skillName, tx } from '../narrative/text';
 import { isV2, v2KitOf } from '../simulation/v2';
-import { v2EndLine } from '../tournament/v2calendar';
+import { stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
 import { SKILL_BOOK, skillAction } from '../combat/skillbook';
 import { chargeTime } from '../combat/skills';
 import { itemAbout, itemName, weaponTier } from '../simulation/v2gear';
@@ -157,7 +157,9 @@ export class TownUi {
     else if (s.facts.includes('orla-introduced')) told.push(tx('ui.end.orlaIntro'));
     if (!v2) told.push(rank <= 4 ? tx('ui.end.top4') : tx('ui.end.out'));
     this.modal = true;
-    const o = overlay(`<p class="pm-big">${v2 ? tx('v2.end.title') : tx('ui.end.title')}</p><p class="pm-sub pm-center">${v2 ? tx('v2.end.sub') : tx('ui.end.sub')}</p>${told.map((t) => `<p>${t}</p>`).join('')}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtmlRows(s, rows)}`,
+    // the version 2's final order (the bracket's results first, then the pool's), with the pool's points
+    const shown = v2 ? v2Ranking(s).map((id) => rows.find((r) => r.id === id)!) : rows;
+    const o = overlay(`<p class="pm-big">${v2 ? tx('v2.end.title') : tx('ui.end.title')}</p><p class="pm-sub pm-center">${v2 ? tx('v2.end.sub') : tx('ui.end.sub')}</p>${told.map((t) => `<p>${t}</p>`).join('')}<p class="pm-sub">${v2 ? tx('v2.end.order') : tx('ui.pool')}</p>${standingsHtmlRows(s, shown)}`,
       [{ id: 'stay', label: tx('ui.end.stay'), primary: true }, { id: 'title', label: tx('ui.end.back') }]);
     this.current = o.root;
     const r = await o.done;
@@ -173,7 +175,7 @@ export class TownUi {
     if (n !== this.near) {
       this.near = n;
       const p = n ? PEOPLE[n] : null;
-      this.prompt.innerHTML = p ? `<kbd>E</kbd>${tx('ui.talkTo', { name: esc(p.name), title: esc(p.title) })}` : '';
+      this.prompt.innerHTML = p ? `<kbd>E</kbd>${tx('ui.talkTo', { name: esc(p.name), title: esc(titleOf(p, isV2(this.st))) })}` : '';
       this.prompt.classList.toggle('on', !!p && !this.modal);
     }
   }
@@ -184,7 +186,10 @@ export class TownUi {
   render(): void {
     const s = this.st, P = s.player, m = s.tournament.matches.find((x) => x.day >= s.day && !x.winner && (x.a === 'player' || x.b === 'player'));
     const opp = m ? RIVALS[m.a === 'player' ? m.b : m.a] : null;
-    const next = s.over ? tx('ui.next.over') : opp ? tx('ui.next.bout', { name: opp.name, day: m!.day, when: m!.day === s.day ? (s.slot === 'afternoon' ? tx('ui.next.now') : tx('ui.next.today')) : '' }) : tx('ui.next.done');
+    const when = m && m.day === s.day ? (s.slot === 'afternoon' ? tx('ui.next.now') : tx('ui.next.today')) : '';
+    // the version 2 (journal Passe VP1): the bout's stage, the ten days' end
+    const next = isV2(s) ? (s.over ? tx('v2.over') : opp ? tx('v2.next.bout', { stage: stageName(m!), name: opp.name, day: m!.day, when }) : tx('v2.next.done'))
+      : s.over ? tx('ui.next.over') : opp ? tx('ui.next.bout', { name: opp.name, day: m!.day, when }) : tx('ui.next.done');
     const slotName = s.slot === 'evening' ? (dusk(s) ? tx('ui.slot.sunset') : 'evening') : s.slot;
     this.status.innerHTML = `<div class="clock">${(isV2(s) ? tx('ui.clockV2', { day: s.day, slot: slotName }) : tx('ui.clock', { day: s.day, slot: slotName }))}</div><div class="pm-sub">${esc(P.name)} · ${esc(placeName(s.place, isV2(s)))}</div>
       <div class="stats"><span class="pm-num">${P.coins}</span> ${tx('ui.coins')} · ${tx('ui.reputation')} <span class="pm-num">${P.reputation}</span> · ${P.injury ? `<span class="hurt">${P.injury > 1 ? tx('ui.badlyHurt') : tx('ui.hurt')}</span>` : tx('ui.fit')}${P.items.length ? ` · ${esc(P.items.map((i) => i.replace('-', ' ')).join(', '))}` : ''}</div>
@@ -289,7 +294,7 @@ export class TownUi {
     const root = el('div', isV2(st) ? 'pm pm-overlay pm-talk' : 'pm pm-overlay'), card = el('div', 'pm-card');
     if (isV2(st)) this.host.focus?.(who);
     card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', p.name);
-    card.innerHTML = `<div class="pm-dlg">${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(p.name)}</h2><p class="pm-sub">${esc(p.title)}</p></div></div><div class="pm-parch">${lines.map((l) => `<q>${esc(l)}</q>`).join('')}</div>`;
+    card.innerHTML = `<div class="pm-dlg">${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(p.name)}</h2><p class="pm-sub">${esc(titleOf(p, isV2(this.st)))}</p></div></div><div class="pm-parch">${lines.map((l) => `<q>${esc(l)}</q>`).join('')}</div>`;
     for (const o of opts) card.appendChild(this.optionButton(o, () => { if (this.current === root) this.openPerson(who); }));
     const leave = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.leave')}`);
     leave.addEventListener('click', () => this.closeModal());
@@ -337,7 +342,7 @@ export class TownUi {
   private matchSheetHtml(s: GameState): string {
     const m = playerMatch(s); if (!m) return '';
     const id = opponentOf(m), r = RIVALS[id], url = portraitUrl(id), g = s.v2?.gear;
-    const stage = m.stage === 'semi' ? tx('v2.stage.semi') : m.stage === 'gate' ? tx('v2.stage.gate') : m.stage === 'third' ? tx('v2.stage.third') : m.stage === 'gateFinal' ? tx('v2.stage.gateFinal') : m.stage === 'final' ? tx('v2.stage.final') : tx('v2.stage.pool', { round: m.round });
+    const stage = stageName(m);
     const intel = s.facts.includes(`scouted:${id}`) ? tx('ui.arena.foeSkills', { name: r.name, skills: (V2_FOES[id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') }) : tx('v2.sheet.unknown', { name: r.name });
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
     return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h3 class="pm-h">${esc(r.name)}</h3><p class="pm-sub">${esc(r.epithet)}</p><p>${esc(r.bio)}</p></div></div>`

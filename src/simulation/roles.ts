@@ -180,7 +180,7 @@ export const ROLE_ACTIONS: T = {
     label: () => tx('register.label'),
     cost: () => 0,
     check: (st) => available(st, 'odo') ?? (st.flags.registered ? tx('register.done') : null),
-    apply: (s, _a, _r, emit) => { s.flags.registered = true; s.player.reputation = clamp(s.player.reputation + 2); emit({ kind: 'action', id: 'register', cause: 'action:register', text: tx('register.log', { name: s.player.name }), visible: true }); },
+    apply: (s, _a, _r, emit) => { s.flags.registered = true; s.player.reputation = clamp(s.player.reputation + 2); emit({ kind: 'action', id: 'register', cause: 'action:register', text: tx(isV2(s) ? 'v2.register.log' : 'register.log', { name: s.player.name }), visible: true }); },
   },
   heal: {
     by: 'anwen',

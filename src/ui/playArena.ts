@@ -6,6 +6,7 @@ import { V2_FOES, FOE_SKILLS } from '../combat/v2duel';
 import { isV2, v2KitOf } from '../simulation/v2';
 import { v2Mods } from '../simulation/v2gear';
 import { dynamicRules } from '../tournament/pool';
+import { stageName } from '../tournament/v2calendar';
 import { RIVALS } from '../narrative/roster';
 import { ACTION_NAMES_EN } from '../narrative/texts';
 import { tx } from '../narrative/text';
@@ -49,7 +50,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   if (v2 && view.intel.length) view.intel.push(tx('ui.arena.foeSkills', { name: opp.name, skills: (V2_FOES[opp.id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') }));
   const v2d = v2 ? v2SheetData(sheet, ACTION_NAMES_EN, v2KitOf(st), v2Mods(st)) : null;
   if (dyn && b.params.has('dyn')) q.set('dyn', b.params.get('dyn')!);
-  const texts = { ...(dyn ? DYN_TEXTS_EN : TEXTS_EN), subtitle: challenge ? tx('v2.challenge.title') : tx('ui.arena.subtitle', { round: sheet.round }), subMarek: opp.epithet };
+  const texts = { ...(dyn ? DYN_TEXTS_EN : TEXTS_EN), subtitle: challenge ? tx('v2.challenge.title') : v2 && m ? stageName(m) : tx('ui.arena.subtitle', { round: sheet.round }), subMarek: opp.epithet };
   const app = new ArenaApp({
     canvas: b.canvas, params: q,
     onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; },
@@ -73,7 +74,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   wait();
   const report = view.intel.length ? `<p class="pm-sub">${tx('ui.arena.report')}</p>${view.intel.map((x) => `<p>${esc(x)}</p>`).join('')}` : `<p class="pm-sub">${tx('ui.arena.noReport')}</p>`;
   const mods = sheet.sides[0].fighters[0].mods, prep = [mods.hp !== undefined && mods.hp < 1 ? tx('ui.arena.wounded', { pct: Math.round(mods.hp * 100) }) : '', mods.damage && mods.damage > 1 ? tx('ui.arena.damage', { pct: Math.round((mods.damage - 1) * 100), why: `${st.player.items.length ? tx('ui.arena.blade') : ''}${st.player.items.length && st.player.training ? ', ' : ''}${st.player.training ? tx('ui.arena.training') : ''}` }) : ''].filter(Boolean);
-  await overlay(`<h2 class="pm-h">${challenge ? tx('v2.challenge.title') : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</h2><p class="pm-big">${esc(opp.name)}</p><p class="pm-sub pm-center">${esc(opp.epithet)}</p><p>${esc(opp.bio)}</p>${report}
+  await overlay(`<h2 class="pm-h">${challenge ? tx('v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</h2><p class="pm-big">${esc(opp.name)}</p><p class="pm-sub pm-center">${esc(opp.epithet)}</p><p>${esc(opp.bio)}</p>${report}
     ${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}
     <p class="pm-sub">${tx('ui.arena.keys')}</p><p>${v2 && b.params.get('input') !== 'keys' ? tx('ui.arena.keysV2') : dyn ? KEYS_DYNAMIC : tx('ui.arena.keysClassic')}</p>`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }]).done;
   app.paused = false; app.moment = false;

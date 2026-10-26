@@ -1,5 +1,5 @@
 import { PlazaApp } from '../world/PlazaApp';
-import { lookOf, placeName, type GameState } from '../simulation';
+import { lookOf, placeName, rainOf, type GameState } from '../simulation';
 import { playerMatch } from '../tournament/pool';
 import { PLAZA_CROWD, PLAZA_OF, plazaPeople } from '../simulation/v2places';
 import { PEOPLE } from '../narrative/people';
@@ -14,13 +14,15 @@ import { preloadPortraits } from './portraits';
 
 /** The version 2's open places (lot V5, journal Passe V5): the Arena Forecourt, the Training Ground and the Festival Square (in place of
  *  Lantern Row's mock-up), each a square of src/world/Plazas.ts walked across in the slot's day state; the people there at this hour stand
- *  at their spots (E next to one opens the dialogue), the guards at the forecourt's gate, the hooded stranger on the square at night, the
- *  crowd walking between the square's points. */
+ *  at their spots (E next to one opens the dialogue), the guards at the forecourt's gate, the crowd walking between the square's points,
+ *  the rain of a wet day (journal Passe VP1). */
 export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   let st = st0;
   installGameApi(() => st, (s) => { st = s; }, (prev, next) => lookOf(prev) !== lookOf(next) || prev.place !== next.place || next.over !== prev.over);
   const q = new URLSearchParams();
-  for (const k of ['fps', 'freeze', 'painters', 'gpuprof', 'cast', 'static', 'vis']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
+  for (const k of ['fps', 'freeze', 'painters', 'gpuprof', 'cast', 'static', 'vis', 'viscache', 'visstep', 'visfine', 'visscale', 'rain', 'snow', 'storm', 'wind']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
+  // the day's weather, as the town's (src/simulation/look.ts): the rain front's wet day falls on the squares too
+  const rain = rainOf(st); if (rain && !q.has('rain')) q.set('rain', rain);
   const look = lookOf(st), kind = PLAZA_OF[st.place]!;
   // a cutscene of this moment (lot V6): its cast stands on the square even out of their hours
   const scene = pendingScene(st), people = plazaPeople(st);
@@ -37,7 +39,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   (window as any).__stats = () => app.snapshot();
   const ui = new TownUi({
     state: () => st, act: (a) => (window as any).__game.act(a), reload: (extra) => go(b.params, extra),
-    // only the people of the simulation talk (the guards and the stranger on a square are its extras)
+    // only the people of the simulation talk (the guards at the forecourt's gate are its extras)
     nearby: () => { const w = app.nearby(); return w && PEOPLE[w] ? w : null; },
     // P4 (lot V9): the camera turns to the person spoken to
     focus: (who) => { const at = who ? app.spotOf(who) : null; void app.lookAt(at, 9, 0); },

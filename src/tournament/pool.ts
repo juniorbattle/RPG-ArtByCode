@@ -78,7 +78,8 @@ export function playOffscreenMatches(s: GameState, emit: Emit, rng: Rng): void {
     const r = rng.fork(matchId(m)), aWins = r.next() < p;
     const [w, l] = aWins ? [A, B] : [B, A], pw = aWins ? p : 1 - p;
     m.winner = w.id; m.close = pw < 0.62;
-    s.tournament.points[w.id] += POINTS.win; s.tournament.points[l.id] += m.close ? POINTS.close : POINTS.loss;
+    // the pool's points: a bout of the version 2's bracket (its `stage`) gives none (journal Passe VP1: the standings stay the pool's)
+    if (!m.stage) { s.tournament.points[w.id] += POINTS.win; s.tournament.points[l.id] += m.close ? POINTS.close : POINTS.loss; }
     w.reputation = clamp(w.reputation + (pw < 0.4 ? 10 : 5)); l.reputation = clamp(l.reputation - (m.close ? 1 : 3));
     rivalry(s, l.id, w.id, pw > 0.85);
     if (r.next() < (m.close ? 0.35 : 0.2)) l.healthState = 'hurt';
@@ -106,8 +107,10 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
   const opp = opponentOf(m), c = s.competitors[opp], won = o.winner === 'player';
   const close = won ? o.playerHp / o.playerMaxHp <= 0.25 : o.opponentHp / o.opponentMaxHp <= 0.25;
   m.winner = won ? PLAYER_ID : opp; m.close = close;
-  s.tournament.points[won ? PLAYER_ID : opp] += POINTS.win;
-  s.tournament.points[won ? opp : PLAYER_ID] += close ? POINTS.close : POINTS.loss;
+  if (!m.stage) {
+    s.tournament.points[won ? PLAYER_ID : opp] += POINTS.win;
+    s.tournament.points[won ? opp : PLAYER_ID] += close ? POINTS.close : POINTS.loss;
+  }
   const P = s.player, name = RIVALS[opp].name;
   if (won) {
     P.reputation = clamp(P.reputation + (opp === 'marek' ? 20 : 15)); P.coins += 20;
@@ -126,6 +129,8 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
   emit({
     kind: 'match', id: won ? 'player-won' : 'player-lost', cause: `match:${matchId(m)}`, visible: true,
     text: won ? tx('duel.won', { name, close: close ? tx('duel.wonClose') : '', rep: opp === 'marek' ? 20 : 15 })
+      // a defeat in the version 2's bracket says what it costs there (journal Passe VP1), not the pool's rule
+      : m.stage ? tx(m.stage === 'semi' ? 'v2.duel.lostSemi' : m.stage === 'gate' ? 'v2.duel.lostGate' : m.stage === 'final' ? 'v2.duel.lostFinal' : 'v2.duel.lostLast', { name, close: close ? tx('v2.duel.lostClose') : '' })
       : tx('duel.lost', { name, close: close ? tx('duel.lostClose') : '' }),
   });
   if (hurt) emit({ kind: 'consequence', id: 'player-injured', cause: `match:${matchId(m)}`, visible: true, text: tx('duel.injured') });

@@ -14,7 +14,8 @@ export const EVENTS: readonly EventDef[] = [
   // ---------------------------------------------------------------- tournament
   {
     id: 'heralds', type: 'tournament', about: 'The heralds cry the day from the Colosseum steps (PROJECT § 8.2: the Colosseum suggested).',
-    slots: ['morning'], once: false, cooldown: 3, when: { day: true, gte: 1 }, cause: 'the tournament calendar',
+    // a version 2 game: the first morning only (from the second day the calendar's own line cries the day: src/tournament/v2calendar.ts)
+    slots: ['morning'], once: false, cooldown: 3, when: { all: [{ day: true, gte: 1 }, { any: [{ not: { v2: true } }, { day: true, lte: 1 }] }] }, cause: 'the tournament calendar',
     outcomes: [
       { when: { day: true, lte: 1 }, effects: [{ pulse: 'excitement', add: 2 }], text: 'From the Colosseum steps the heralds cry the pool of eight: the first bouts are tomorrow.' },
       { effects: [{ pulse: 'excitement', add: 3 }], text: 'Drums from the Colosseum: the heralds cry this afternoon\'s bouts across the rooftops.' },
@@ -22,8 +23,13 @@ export const EVENTS: readonly EventDef[] = [
   },
   {
     id: 'colosseum-roar', type: 'tournament', about: 'The Colosseum\'s roar over the rooftops on the afternoons of the bouts (PROJECT § 8.2: the Colosseum audible).',
-    slots: ['afternoon'], once: false, cooldown: 3, when: { day: true, gte: 2 }, cause: 'the pool\'s bouts at the Colosseum',
-    outcomes: [{ effects: [{ pulse: 'excitement', add: 3 }], text: 'A roar rolls over the rooftops from the Colosseum: the pool\'s other bouts are being fought.' }],
+    // a version 2 game: only on an afternoon of bouts the player does not fight (its free days are quiet; the final alone is the player's own)
+    slots: ['afternoon'], once: false, cooldown: 3, when: { all: [{ day: true, gte: 2 }, { any: [{ not: { v2: true } }, { others: true }] }] }, cause: 'the pool\'s bouts at the Colosseum',
+    outcomes: [
+      { when: { all: [{ v2: true }, { day: true, gte: 10 }] }, effects: [{ pulse: 'excitement', add: 3 }], text: 'The Colosseum roars as one over the rooftops: the final is being fought.' },
+      { when: { all: [{ v2: true }, { day: true, gte: 6 }] }, effects: [{ pulse: 'excitement', add: 3 }], text: 'A roar rolls over the rooftops from the Colosseum: the bracket\'s other bouts are being fought.' },
+      { effects: [{ pulse: 'excitement', add: 3 }], text: 'A roar rolls over the rooftops from the Colosseum: the pool\'s other bouts are being fought.' },
+    ],
   },
   {
     id: 'crowd-swell', type: 'tournament', about: 'A big crowd fills the streets once the excitement is high.',

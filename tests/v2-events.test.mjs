@@ -47,7 +47,7 @@ test('the gear\'s sabotage: two signs, at least two answers; the strap cut makes
   const ev = byId['v2-gear-tamper'];
   assert.ok(ev.major.signs.length >= 2 && ev.major.answers.length >= 2);
   for (const sign of ev.major.signs) assert.ok(byId[sign], sign);
-  const base = () => { const s = v2(); s.competitors.cassius.relationships.player = -40; s.tournament.matches.push({ round: 4, a: 'player', b: 'marek', winner: null, close: false, day: 6, seen: true, stage: 'semi' }); s.day = 5; s.slot = 'evening'; s.flags['ev:v2-sign-armourer'] = 10; return s; };
+  const base = () => { const s = v2(); s.competitors.cassius.relationships.player = -40; s.tournament.matches.push({ round: 4, a: 'player', b: 'marek', winner: null, close: false, day: 6, seen: true, stage: 'semi' }); s.day = 5; s.slot = 'evening'; s.flags['ev:v2-sign-armourer'] = 10; s.flags['ev:v2-sign-locker'] = 12; return s; };
   const s = base(); assert.equal(run(s, ['v2-gear-tamper'])[0].id, 'v2-gear-tamper');
   assert.ok(s.flags['tampered:6'] && !s.flags['tampered:5']);
   s.day = 6; s.slot = 'morning'; s.place = 'forecourt';

@@ -38,7 +38,7 @@ try {
     await page.evaluate(([px, pz]) => window.__plaza.posePlayer(px, pz), [x, z]);
     const file = path.join(outDir, `${name}.png`);
     await page.screenshot({ path: file });
-    console.log('shot', file, JSON.stringify(await page.evaluate(() => { const s = window.__plaza.snapshot(); return { drawCalls: s.drawCalls, triangles: s.triangles, placeTriangles: s.placeTriangles }; })));
+    console.log('shot', file, JSON.stringify(await page.evaluate(() => { const s = window.__plaza.snapshot(); return { drawCalls: s.drawCalls, triangles: s.triangles, placeTriangles: s.placeTriangles, visibility: s.visibility }; })));
   }
 } finally { await b.close(); }
 if (failed) { console.log(`${failed} page error(s)`); process.exit(1); }

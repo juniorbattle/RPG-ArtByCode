@@ -42,6 +42,7 @@ export const POLICIES: Record<string, Policy> = {
   diligent: {
     name: 'diligent', skill: 0.6,
     choose: (st) => {
+      if (isV2(st)) return diligentV2(st);
       for (const a of [{ type: 'payWatch' }, { type: 'rest' }] as Action[]) if (has(st, a)) return a;
       if (st.slot === 'evening' && st.place !== 'district') return { type: 'move', to: 'district' };
       if (st.slot !== 'evening' && !(st.slot === 'afternoon' && matchSheetFor(st))) {
@@ -52,6 +53,23 @@ export const POLICIES: Record<string, Policy> = {
     },
   },
 };
+
+/** the same diligence in a version 2 game (journal Passe VP1: today's policy only waited there, its practice sand moved to the training
+ *  ground): the healer when hurt (the forecourt, else rest), the watch paid at dusk, Hilde's look at the gear on the morning of a bout once a
+ *  sign was seen, the armourer's padded jack then mail shirt when the purse allows (worn at once), and the training ground's sand by day */
+function diligentV2(st: GameState): Action {
+  const bout = st.slot === 'afternoon' && !!matchSheetFor(st), hurt = st.player.injury > 0;
+  // an action that holds at a place (moves take no time: the policy walks there only for what it can do there)
+  const at = (place: string, a: Action): Action | null => (has(st.place === place ? st : { ...st, place: place as GameState['place'] }, a) ? (st.place === place ? a : { type: 'move', to: place } as Action) : null);
+  if (st.slot === 'evening') return at('district', { type: 'payWatch' }) ?? (hurt && has(st, { type: 'rest' }) ? { type: 'rest' } : fallback(st, 0.6));
+  if (bout) return fallback(st, 0.6);
+  if (hurt) { const h = at('forecourt', { type: 'heal' }); if (h) return h; if (has(st, { type: 'rest' })) return { type: 'rest' }; }
+  const boutToday = st.tournament.matches.some((m) => m.day === st.day && (m.a === PLAYER_ID || m.b === PLAYER_ID));
+  if (st.slot === 'morning' && boutToday && st.facts.includes('armour-asked')) { const c = at('forecourt', { type: 'checkGear' }); if (c) return c; }
+  const armour = st.v2?.gear?.armour, want = !armour ? 'padded-jack' : armour === 'padded-jack' ? 'mail-shirt' : null;
+  if (want && st.player.coins >= (want === 'padded-jack' ? 25 : 50)) { const b = at('forecourt', { type: 'shopBuy', shop: 'armourer', item: want }); if (b) return b; }
+  return at('training', { type: 'train' }) ?? fallback(st, 0.6);
+}
 
 /** a scripted game (journal Passe L5): per slot, the actions to try in order (each once, when the state allows it), then the slot's end
  *  (the bout on a match afternoon, fought by the bot at `skill`; otherwise the time let pass) */

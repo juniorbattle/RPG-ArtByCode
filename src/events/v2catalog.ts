@@ -59,8 +59,8 @@ export const V2_EVENTS: readonly EventDef[] = [
     id: 'v2-card-sharps', type: 'district', about: 'Card sharps on the festival square at night, when the watch is thin.',
     slots: ['evening'], chance: 0.4, when: { all: [{ pulse: 'festivity', gte: 45 }, { pulse: 'security', lte: 55 }] }, cause: 'a festive night and a thin watch',
     outcomes: [
-      { when: { town: 'lio', gte: 10 }, effects: [{ town: 'lio', add: 2 }], text: 'Lio warns you off the card sharps by the fountain: friends of the house do not lose their purse here.' },
-      { effects: [{ coins: -5 }], text: 'A friendly game by the fountain costs you 5 coins before you see the marked cards.' },
+      { when: { town: 'lio', gte: 10 }, effects: [{ town: 'lio', add: 2 }], text: 'Lio warns you off the card sharps by the stage: friends of the house do not lose their purse here.' },
+      { effects: [{ coins: -5 }], text: 'A friendly game by the stage costs you 5 coins before you see the marked cards.' },
     ],
   },
   // ---------------------------------------------------------------- the new systems: thefts, challenges
@@ -76,18 +76,21 @@ export const V2_EVENTS: readonly EventDef[] = [
   },
   // ---------------------------------------------------------------- targeted: the gear tampered with before a bracket bout (signs, attempt, answers)
   {
+    // journal Passe VP1: from the pool's second round, as soon as the player is among its best four (the semi-finals in sight), so that both
+    // signs come before the attempt with a slot left to answer them
     id: 'v2-sign-armourer', type: 'targeted', about: 'First sign: a stranger asks Hilde about the player\'s armour.',
-    slots: ['afternoon', 'evening'], when: { all: [HOSTILE, { semi: true }] }, cause: 'Cassius\'s grudge, and you in the semi-finals',
+    when: { all: [HOSTILE, { any: [{ semi: true }, { all: [{ day: true, gte: 4, lte: 5 }, { rank: true, lte: 4 }] }] }] }, cause: 'Cassius\'s grudge, and you among the pool\'s best four',
     outcomes: [{ effects: [{ fact: 'armour-asked' }, { pulse: 'sabotageRisk', add: 8 }], text: 'Hilde the armourer frowns: a well-dressed servant asked her which straps of your armour hold the plates.' }],
   },
   {
     id: 'v2-sign-locker', type: 'targeted', about: 'Second sign: the arena\'s locker room found unlocked.',
-    slots: ['evening'], when: { all: [{ fired: 'v2-sign-armourer' }, { pulse: 'security', lte: 64 }] }, cause: 'the first sign, and the arena\'s doors unguarded',
+    when: { all: [{ firedBefore: 'v2-sign-armourer' }, { pulse: 'security', lte: 64 }] }, cause: 'the first sign, and the arena\'s doors unguarded',
     outcomes: [{ effects: [{ fact: 'locker-open' }], text: 'Clerk Odo mutters that the fighters\' lockers were found open last night. Nothing missing, he says. Nothing he saw.' }],
   },
   {
     id: 'v2-gear-tamper', type: 'targeted', about: 'The attempt: a strap of the player\'s armour cut the night before a bracket bout (the elimination phase\'s targeted sabotage).',
-    slots: ['evening'], when: { all: [HOSTILE, { semi: true }, { fired: 'v2-sign-armourer' }, { not: { flagSet: 'tamper-done' } }, { any: [{ day: true, gte: 5, lte: 5 }, { day: true, gte: 7, lte: 7 }, { day: true, gte: 9, lte: 9 }] }] }, cause: 'Cassius\'s grudge, and a bout of the bracket tomorrow',
+    // both signs strictly before the attempt (journal Passe VP1: a sign the same night as what it announces gives no time to answer it)
+    slots: ['evening'], when: { all: [HOSTILE, { semi: true }, { firedBefore: 'v2-sign-locker' }, { not: { flagSet: 'tamper-done' } }, { any: [{ day: true, gte: 5, lte: 5 }, { day: true, gte: 7, lte: 7 }, { day: true, gte: 9, lte: 9 }] }] }, cause: 'Cassius\'s grudge, and a bout of the bracket tomorrow',
     major: {
       signs: ['v2-sign-armourer', 'v2-sign-locker'],
       answers: ['have Hilde check your gear on the morning of the bout', 'pay the night watch (Sergeant Hale)', 'report the culprit to the watch', 'confront Cassius on the festival square'],

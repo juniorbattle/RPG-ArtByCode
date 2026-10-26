@@ -32,6 +32,8 @@ export function v2Lines(s: GameState, who: string): string[] | null {
     case 'vessa':
       if (act >= 2 && beatBy(s, 'vessa')) return [tx('v2.line.vessa.grudge')];
       if (act >= 2) return [tx('v2.line.vessa.act2')];
+      // beaten in the pool's first round: the tournament is long (journal Passe VP1; today's line says « next year »)
+      if (beatBy(s, 'vessa')) return [tx('v2.line.vessa.lost')];
       return null;
     case 'cassius':
       if (metIn(s, 'cassius')) return [lostTo(s, 'cassius') ? tx('v2.line.cassius.won') : tx('v2.line.cassius.lost')];

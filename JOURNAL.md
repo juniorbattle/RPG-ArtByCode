@@ -551,6 +551,139 @@ barde Wren. Les feuilles de combat x3 de Ren et Marek suivent leur propre chemin
 - Les outils de preuve écrits avant un système le manquent (`play-flow`, `play-day`) : leurs contrôles de la version 2 ont échoué pour de
   mauvaises raisons ; un lot qui change un parcours change aussi l'outil qui le parcourt, dans le même commit.
 
+## Passe VP1 — Les décors des places de la version 2 contre le Merchant District : audit, reprise, visibilité (2026-10-26, en cours)
+
+### Demande
+- L'opérateur, mot pour mot : « je vais te demander une nouvelle passe d'optimisation concernant la génération de décors/environnement par code
+  pour nos nouveaux districts afin qui atteigne un niveau aussi optimale que merchant district. ( le but est de determiner si le decors
+  artistique tient bien la route de maniere coherente ) C'est une passe que tu peux prendre le temps de faire de manière autonome. Avant que
+  nous repassons en local. Refais aussi une revue sur la cohérence gameplay général hors combat et donc les événements dynamiques. » (la
+  revue du gameplay : Passe VP2).
+
+### Les outils (commits `8c01978`, `773b646`)
+- `tools/plaza-shots.mjs <outDir> "<état nommé>" "<requête>" "nom|x,z[|js]" ...` : captures déterministes d'une place (le héros posé en x, z par
+  `PlazaApp.posePlayer`, la caméra posée d'un coup, `Math.random` semé, la boucle jamais lancée), `?static=1` sur les places (sans personnages ni
+  particules : le décor seul), le rapport `__stats()` imprimé ; les états nommés de chaque place à chaque moment (`v2-forecourt-midday`,
+  `v2-forecourt-night`, `v2-training-midday`, `v2-training-night`, `v2-square-morning`, en plus de ceux de la Passe V5).
+
+### L'audit — [KO] du premier jet (V5)
+- Critique à l'aveugle (agent neuf, étiquettes tirées au sort, la vue B du district comme référence, 10 captures) : cohérence avec le district
+  **parvis 3 / 10** (qualité 3), **entraînement 4** (3,5), **place festive 5** (4,5). Causes relevées : le cadrage (trop haut et trop loin : la place
+  vue d'avion, les façades en bande au fond), l'habillage (pas de pavois de jour, des primitives nues, des auvents pastel), la lumière (la nuit
+  à une luminance moyenne de 27 à 37 contre 52 à 59 pour le district B : des places noires, sans le rythme des lampes), des maisons au bois plus
+  serré et aux fenêtres plus allumées que celles du district.
+
+### La reprise (`src/world/Plazas.ts`, `src/world/PlazaApp.ts`) — dans la langue du district
+- **Les façades** : les nombres du district (`COMMON` : asymétrie 0,42, part de bois 0,32, toits 0,95 ; fenêtres allumées 0,46), un second
+  rang derrière chaque côté dont l'étage passe au-dessus du faîte du premier, des rangs latéraux ; chaque mur par étage et chaque toit est une
+  pièce de visibilité.
+- **Les points focaux** : le parvis a la façade courbe à arcades du Colisée et sa porte au nord (le tambour du Colisée vu de loin depuis les
+  deux autres places), la fontaine au centre ; le terrain d'entraînement trois cercles de sable surélevés (teinte sable, plus de vert), leurs
+  barrières et mannequins, des râteliers, la remise du maître, du foin ; la place festive la scène, les étals du marché du district
+  (`MarketGenerator`, leur lumière sous la toile), la taverne.
+- **La lumière, ressource rare** : un rythme de réverbères sur le côté ouvert (z 3,9), trois lanternes murales allumées près du point focal
+  (`FOCUS`), les autres éteintes ; une bannière sur la prise la plus proche ; les cordons de lanternes la nuit, le pavois du tournoi de jour
+  seulement (J6, `garland`).
+- **Le sol** : un masque comme celui du district (`plazaMask` : la crasse au pied des murs, les chemins usés entre les points focaux, des
+  flaques où les lampes les prennent).
+- **Le lointain** : un anneau de 26 maisons lointaines (pièces de visibilité) de 52 à 92 m.
+- **Le cadrage** : plus bas et plus serré (tangage 10 → 8,5° vers le nord, 23 → 20 m, focale 32°, lacet par place, les personnages x 1,12 comme B),
+  une lumière clé par état du jour (`plazaKeyLight`), le cadre de 2,4 (`PLAZA_FRAME` : une fenêtre plus large voit un recadrage, jamais une pièce
+  coupée).
+- Trois itérations de captures (de jour, au crépuscule, de nuit, au téléphone) ; corrigés en route : des têtes d'arcs blanches (éventails tournés
+  du mauvais côté), des trous entre les arcs et les bandeaux (des panneaux de mur ajoutés), des cercles de sable verts (la texture de pierre
+  teintée de sable : la teinte du plâtre), du foin surexposé (la teinte des accessoires du district, x 1,5 : un foin local).
+
+### La visibilité des places (`src/world/PlazaVisibility.ts`) — [OK]
+- La règle du district sur un espace ouvert : chaque mur et chaque toit est une pièce ; la caméra (une fonction lisse de la place du héros,
+  `plazaCamPose`) est échantillonnée sur toute la surface praticable tous les 1,5 m et sur ses bords, à chaque point de personne cadré par un
+  dialogue (9 m), à chaque regard des cinématiques jouées sur la place, au cadre de 2,4 et avec le miroir des flaques ; une pièce qu'aucun
+  échantillon ne montre quitte toutes les passes de l'image (une pièce cachée qui porte une ombre reste dans la passe d'ombre). Un seul
+  ensemble (`A`), pas de classes de dessin. Un bake qui échoue garde tout (`?vis=0` : sans bake).
+- Mesures (SwiftShader, 1280 x 720) : parvis 264 poses, **75 pièces sur 211 cachées**, triangles de la place 96 300 → 64 500 (**- 33 %**), triangles
+  de l'image 216 000 → 153 000 ; entraînement 257 poses, 122 900 → 84 600 (- 31 %) ; place festive 256 poses, 112 100 → 89 600 (- 20 %).
+- **Preuve « élagué contre `vis=0` »** (`static=1`, 9 poses par place dont 5 hors de la grille du bake, 4 états) : **34 / 36 identiques au pixel** ;
+  deux résidus de 13 et 19 pixels isolés. Expliqués par deux essais DEV (`?visstep=0,75` : une grille deux fois plus fine ; `?visfine=A:2` : une
+  tuile deux fois plus fine) : le premier (entraînement, coin est) disparaît avec la grille plus fine (une lamelle vue **entre deux poses
+  échantillonnées**), le second (place festive) a deux points dont l'un part avec la grille et l'autre avec la tuile (une lamelle **plus mince
+  qu'un pixel du bake**) : les deux classes du résidu connu du district (Passe 5b). Gardé : la grille de 1,5 m sans tuile fine (le bake quatre
+  fois plus long pour quelques pixels isolés).
+- **Le cache** : le bake des places passe par celui du district (`bakeVisibilityCached`, sa clé couvre toutes les entrées) dans des entrées à
+  lui (`PLAZA_STORE`, 6 : trois places de jour et de nuit), pour ne jamais chasser celles du district ; `?viscache=0 | verify` comme en ville.
+  Chaque déplacement entre lieux recharge une page : une place relue coûte quelques millisecondes au lieu d'un bake.
+
+### Pensée
+- Un décor « cohérent » se mesure contre la référence, pas dans l'absolu : la critique à l'aveugle avec le district B comme témoin a nommé des
+  causes précises (cadrage, luminance moyenne, habillage), chacune corrigeable dans la langue du district plutôt que par des ajouts.
+- La visibilité d'un espace ouvert se cuit comme celle d'un couloir : il suffit que la caméra soit une fonction de la place du héros pour
+  l'échantillonner sur une grille.
+
+## Passe VP2 — La cohérence du gameplay hors combat de la version 2 et ses événements dynamiques (2026-10-26)
+
+### La revue
+- Quatre parties v2 entières (graines 1, 7, 11, 42, politique `diligent`) parcourues lieu par lieu et créneau par créneau : chaque texte
+  lisible (le journal, les mots des gens, les libellés, les refus, le tableau du tournoi) récolté et relu ; les journaux d'événements de
+  50 parties au TournamentLab. Ce qui ne tenait pas (G1 à G11) :
+  - **G1** le tableau du tournoi d'une partie v2 était celui de la tranche (« Phase I · the pool of eight », « The slice ends with the pool's
+    second round », la prochaine échéance cherchée dans les tours de la tranche) ;
+  - **G2** des textes de la tranche dans la version 2 : le greffier (« days two and three », « two rounds »), l'inscription (« two bouts »),
+    le refus de fin (« The slice is over. »), la ligne du prochain combat et de fin, « Continue » à l'écran titre, Lio « the lantern-row
+    innkeeper » sur la place festive ; l'en-tête de l'arène (« Pool of eight · round 4 » pour une demi-finale) ;
+  - **G3** les hérauts criaient chaque matin « this afternoon's bouts » en double de la ligne du calendrier, même les jours sans combat (3, 7,
+    9) ; la clameur du Colisée (« the pool's other bouts ») tous les après-midi, jours libres compris, et pendant la finale du joueur ; la pluie
+    du troisième jour ne tombait qu'en ville ;
+  - **G4** les tricheurs aux cartes « by the fountain » sur la place festive (la fontaine est au parvis) ; le barde aussi ;
+  - **G5** le sabotage de l'équipement : ses deux signes et la tentative tombaient le même soir (le 5e : la demi-finale n'est connue qu'à la
+    coupe), sans un créneau pour y répondre ; la garde payée ne parlait que de la forge ;
+  - **G6** les combats du tableau final donnaient des points de poule (le classement de fin les mêlait), et une défaite en demi-finale disait
+    « The pool goes on: a defeat costs points, not the tournament » ;
+  - **G7** les passants : « The pool isn't over » après la coupe, « Listen to them roar » les jours libres (l'excitation saturée dès le 4e jour) ;
+  - **G8** Vessa battue le 2e jour : « Next year, I'll have you » (huit jours de tournoi restent) ;
+  - **G9** Corvin « riche » à 45 pièces, le prix catalogue, quand sa leçon ou la réputation baissent le prix ;
+  - **G10** un encapuchonné figurant la nuit sur la place festive, qu'on ne pouvait pas aborder et qui se lisait comme l'informateur (qui est
+    au quai) ;
+  - **G11** la politique `diligent` du TournamentLab ne faisait qu'attendre dans une partie v2 (son terrain d'entraînement a quitté le parvis) :
+    les mesures v2 de la Passe V10 sont celles d'un joueur qui ne prépare rien.
+
+### Fait — [OK], tout derrière `flags.v2` (le jeu par défaut inchangé)
+- **G1** `v2BoardHtml` (`src/ui/board.ts`) : l'acte, le prochain combat de poule ou du tableau par son nom (`stageName`), le classement de poule,
+  les règles de la poule, de la coupe et du tableau, chaque résultat par son étape.
+- **G2** des textes v2 (`v2.register.log`, `v2.line.odo.*`, `v2.next.*`, `v2.title.over`, `v2.arena.round`, `v2.end.order`), le refus de fin
+  « The tournament is over. », `titleOf` (Lio « the festival square's innkeeper »), l'arène nommant l'étape ; l'écran de fin v2 classe par
+  l'ordre final (le tableau d'abord, puis la poule).
+- **G3** les hérauts au premier matin seulement dans une partie v2 ; la ligne du calendrier à la tombée de la nuit ajoute leur + 3 d'excitation ;
+  la clameur seulement un après-midi de combats que le joueur ne livre pas (`{ others: true }`), avec le texte du tableau (jours 6, 8) ou de la
+  finale (jour 10) ; la pluie du jour humide sur les places aussi (`rainOf`, la météo de la ville dans `PlazaApp`).
+- **G4** « by the stage » (tricheurs, barde). **G5** un nouveau `{ firedBefore }` (un événement d'un créneau antérieur) : le premier signe dès la
+  2e manche de poule si le joueur est parmi les quatre premiers (la demi-finale en vue), le second au créneau suivant au plus tôt, la tentative
+  seulement après les deux ; la garde payée veille aussi sur les casiers (`v2.payWatch.*`). Sur 40 parties oisives : signes les 5e après-midi
+  et 5e soir, tentative le 7e soir.
+- **G6** les combats du tableau (`stage`) ne donnent plus de points de poule ; une défaite y dit ce qu'elle coûte (`v2.duel.lost*`).
+- **G7** les passants parlent du tableau et de la finale, la clameur seulement un jour de combats. **G8** `v2.line.vessa.lost`. **G9** le prix du
+  jour (`skillPrice`). **G10** plus d'encapuchonné figurant sur la place festive.
+- **G11** `diligent` dans une partie v2 (`diligentV2`) : la guérisseuse quand il est blessé (sinon le repos), la garde payée au crépuscule, le
+  regard de Hilde le matin d'un combat une fois un signe vu, la veste rembourrée puis la cotte de mailles quand la bourse le permet, le sable du
+  terrain d'entraînement de jour.
+- `tests/v2-coherence.test.mjs` (6 tests) : **13 / 13 fautes attrapées** ; `tests/v2-events` et `tests/v2-places` mis à jour (les deux signes
+  avant la tentative ; aucun encapuchonné sur la place).
+
+### Mesures (TournamentLab `--rules=v2`, 50 graines)
+- `diligent` : avant (V10, la politique qui attend) victoires 75,6 %, blessures 1,96 par partie, champion 10 %, finaliste 64 % ; après
+  (`diligentV2`) victoires 85,2 %, blessures **1,08**, champion 28 %, finaliste 96 % (l'ordre final : 14 champions, 34 seconds, 2 troisièmes :
+  Marek reste le mur). `idle` : victoires 2,5 %, blessures 1,74 par partie, tentative sur l'équipement 2 parties sur 50.
+- **Le jeu par défaut** : le JSON du TournamentLab (`diligent`, `idle`, `careful`, `careless`, `losing`, en `classic` et `dynamic`, 50 graines)
+  **identique à l'octet** à celui de `main` figé (`1289683`).
+
+### Les « proposé »
+- Les seuils du premier signe (2e manche, rang 1 à 4), le + 3 d'excitation par ligne du calendrier, les textes nouveaux, la politique
+  `diligentV2`.
+
+### Pensée
+- Un système conçu pour trois jours garde ses hypothèses dans ses textes et ses conditions (« demain », « la poule continue », « tous les
+  matins ») : récolter tout ce qu'un joueur peut lire sur des parties entières, puis chercher les mots de l'ancien format, les trouve mieux
+  qu'une relecture du code.
+- Un signe n'annonce que s'il précède : une condition « a eu lieu » vraie dans le même créneau donne un signe et son événement d'un même coup.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

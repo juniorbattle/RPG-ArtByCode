@@ -24,9 +24,12 @@ export function townQuery(s: GameState): Record<string, string> {
   // the crowd follows the tournament's excitement around the day state's own count (night 5; morning 6, midday 12, end of day 9)
   const base = look === 'night' ? 5 : look === 'morning' ? 6 : look === 'midday' ? 12 : 9;
   q.crowd = String(Math.max(3, Math.min(12, base + Math.round((s.pulse.excitement - 60) / 12))));
-  if (s.flags.weather === 'rain' && s.day === 3) q.rain = '0.6';
+  const rain = rainOf(s); if (rain) q.rain = rain;
   return q;
 }
+
+/** the day's rain (the rain front of the second evening wets the third day: src/events/catalog.ts), or null */
+export function rainOf(s: GameState): string | null { return s.flags.weather === 'rain' && s.day === 3 ? '0.6' : null; }
 
 /** the arena's query for the state, duel and forecourt (the operator's decision L7-2, « Oui, après la revue du jour (J9), par DayState »,
  *  journal Passe AD1): the canonical seed and the slot's day state, as the town's (the duel's afternoon is midday; the forecourt shows the

@@ -5,5 +5,5 @@ export type { Action } from './actions';
 export { namedState, NAMED_STATES, play } from './named';
 export { CONTENT_ID } from './content';
 export { isV2, makeV2, wantsV2, v2KitOf } from './v2';
-export { lookOf, dusk, townQuery, arenaQuery, type Look } from './look';
+export { lookOf, dusk, townQuery, arenaQuery, rainOf, type Look } from './look';
 export { standings, rankOf, playerMatch, opponentOf, nameOf, type DuelOutcome } from '../tournament/pool';

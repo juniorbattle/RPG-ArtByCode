@@ -32,7 +32,10 @@ export type Cond =
   /** this event (or another) has fired */
   | { fired: string }
   /** the version 2 (lot V7): a version 2 game; a flag of today (`<name>:<day>`); the player in the bracket's semi-finals */
-  | { v2: true } | { today: string } | { semi: true };
+  | { v2: true } | { today: string } | { semi: true }
+  /** the version 2 (journal Passe VP1): a bout today the player does not fight; an event fired in an earlier slot (a sign strictly before what
+   *  it announces) */
+  | { others: true } | { firedBefore: string };
 
 export type Effect =
   /** a lasting shift of a pulse field (read by computePulse) */

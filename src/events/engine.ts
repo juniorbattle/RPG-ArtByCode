@@ -37,6 +37,8 @@ export function holds(c: Cond, s: GameState, pulse: WorldPulse): boolean {
   if ('v2' in c) return s.flags.v2 === true;
   if ('today' in c) return s.flags[`${c.today}:${s.day}`] !== undefined;
   if ('semi' in c) return s.tournament.matches.some((m) => m.stage === 'semi' && (m.a === PLAYER_ID || m.b === PLAYER_ID));
+  if ('others' in c) return s.tournament.matches.some((m) => m.day === s.day && m.a !== PLAYER_ID && m.b !== PLAYER_ID);
+  if ('firedBefore' in c) { const at = s.flags[`ev:${c.firedBefore}`]; return typeof at === 'number' && at < slotNumber(s); }
   throw new Error(`unknown condition ${JSON.stringify(c)}`);
 }
 

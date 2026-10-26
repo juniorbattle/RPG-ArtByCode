@@ -58,9 +58,10 @@ test('every person on a square, at every hour of every named state, has a spot i
     if (!s.over) for (const p of VP.plazaPeople(s)) if (P.PEOPLE[p]) assert.ok(talks(s).includes(p), `${p} on the ${kind} can be talked to`);
   }
   for (const kind of ['forecourt', 'training', 'festival']) { assert.ok(PZ.PLAZA_WANDER[kind].length >= 5); for (const w of PZ.PLAZA_WANDER[kind]) assert.ok(inside(w), `${kind} wander ${w}`); }
-  // the extras: the guards at the forecourt's gate, the hooded stranger on the square at night only
+  // the extras: the guards at the forecourt's gate; no hooded figure on the square at any hour (journal Passe VP1: the stranger of the
+  // simulation is on the quay, and an extra one could not talk to read as him)
   const fc = v2(); fc.place = 'forecourt'; assert.ok(VP.plazaPeople(fc).includes('guardA'));
-  const sq = v2(); sq.place = 'lanterns'; sq.slot = 'afternoon'; assert.ok(!VP.plazaPeople(sq).includes('hooded')); sq.slot = 'evening'; assert.ok(VP.plazaPeople(sq).includes('hooded'));
+  for (const slot of SLOTS) { const sq = v2(); sq.place = 'lanterns'; sq.slot = slot; assert.ok(!VP.plazaPeople(sq).includes('hooded'), slot); }
   assert.ok(VP.PLAZA_CROWD.midday > VP.PLAZA_CROWD.night);
 });
 
