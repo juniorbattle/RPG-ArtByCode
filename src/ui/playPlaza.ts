@@ -39,6 +39,8 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
     state: () => st, act: (a) => (window as any).__game.act(a), reload: (extra) => go(b.params, extra),
     // only the people of the simulation talk (the guards and the stranger on a square are its extras)
     nearby: () => { const w = app.nearby(); return w && PEOPLE[w] ? w : null; },
+    // P4 (lot V9): the camera turns to the person spoken to
+    focus: (who) => { const at = who ? app.spotOf(who) : null; void app.lookAt(at, 9, 0); },
   }, st.log.length - 1);
   (window as any).__ui = ui;
   (window as any).__game.subscribe(() => ui.render());

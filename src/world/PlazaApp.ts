@@ -232,6 +232,9 @@ export class PlazaApp {
     return new Promise((done) => this.walking.set(a, { to, done }));
   }
 
+  /** where a person stands now (null: not on the square) */
+  spotOf(who: string): [number, number] | null { const a = [...this.who].find(([, id]) => id === who)?.[0]; return a ? [a.pos.x, a.pos.z] : null; }
+
   /** the person the hero stands next to, if any (the play mode's E) */
   nearby(): string | null {
     let best: string | null = null, bd = 2.2 * 2.2;
