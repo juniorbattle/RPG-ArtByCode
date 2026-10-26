@@ -261,8 +261,11 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   sous CombatSim **7 / 7** et `combat=dynamic` **7 / 7** ; leurs HUD à animations CSS figées des deux côtés (`FREEZE_CSS=1`) **4 / 4 et 4 / 4**
   (sans le gel, quatre captures du HUD diffèrent des deux côtés comme en Passe V10 : les animations) ; `play-flow` victoire `0025acce7a403773`
   et défaite `397959404c18f714`, les empreintes de UI3 ; le TournamentLab (cinq politiques en `classic` et `dynamic`, 50 graines) **JSON
-  identique à l'octet** ; l'écran titre : 7 contrôles OK, deux paires de captures identiques, la troisième (Explore puis H contre `?time=midday` panneau ouvert) à 2
-  pixels d'un niveau, reproduite seule : [?] contrôle `main` contre `main` en cours.
+  identique à l'octet** ; l'écran titre : 7 contrôles OK, deux paires de captures identiques ; la troisième (Explore puis H contre `?time=midday` panneau ouvert) à
+  2 pixels d'un niveau, dans l'anticrénelage du texte du panneau DEV ouvert par H (« low mist », « ember »), deux fois de suite ; **[OK] après
+  contrôle** : `main` contre `main` 0 px, la branche contre elle-même 0 px, et la capture « Explore puis H » de la branche identique à celle de
+  `main` (0 px) dans ce troisième passage : la même construction donne les deux images, une variation d'un passage à l'autre du panneau ouvert
+  par H, pas un changement du code (les passes précédentes l'avaient toujours eue à 0).
 - **Le drapeau** : `play-flow V2=1` victoire (jour 2, Vessa, « The pool · round 1 » dans le HUD) `5cfe614a12cc08bd` et défaite (jour 4, Orla)
   `879ce64069698f77`, chacune rejouée en Node à la même empreinte (elles changent depuis V10 : la ligne du calendrier ajoute l'excitation des
   hérauts) ; `play-day V2=1` OK ; le TournamentLab v2 rejoué identique ; `ui-text` : le tableau du tournoi v2 à 1 920 x 1 080, 1 280 x 720 et au
@@ -806,6 +809,9 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Un écran écrit dans une police embarquée montre son contenu une fois ses polices chargées, attente bornée et mesurée, avant que la scène prenne
   le fil principal ; une preuve « l'écran retiré » retire l'écran dans le harnais des deux côtés et se double d'un contrôle sans ce retrait ; un
   test qui fige un fichier contre un ancien commit se met à jour en nommant chaque changement voulu (Passe UI4).
+- Une différence d'un niveau sur quelques pixels se juge par ses contrôles avant d'être attribuée : la base contre elle-même, la branche contre
+  elle-même, et la même capture d'un passage à l'autre (l'écran titre « Explore puis H » : 2 pixels qui viennent et partent avec la même
+  construction, Passe VP2).
 - Un décor se juge à l'aveugle contre sa référence, par un agent neuf qui ne sait pas quelle planche est l'avant ou l'après, et deux versions
   d'un même lieu sur la même feuille : les notes absolues varient d'un critique à l'autre (de 7 à 6 pour les mêmes images), l'ordre des paires
   ne varie pas ; une correction qu'un critique demande (« montrez le haut du Colisée ») peut en défaire une autre qu'un autre aimait (sa masse) :
