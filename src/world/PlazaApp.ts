@@ -63,6 +63,10 @@ export class PlazaApp {
   frameCount = 0;
   buildMs = 0;
   keys = new Set<string>();
+  /** a cutscene's camera focus (x, z, distance) and its walkers (lot V6); the hero's keys held off while one plays */
+  focus: { x: number; z: number; dist: number } | null = null;
+  locked = false;
+  private walking = new Map<Actor, { to: [number, number]; done: () => void }>();
   private pose: CamPose = { yaw: 0, pitch: THREE.MathUtils.degToRad(22), dist: 17, fov: 40, shift: 0, tx: 0, ty: 1.2, tz: -6 };
   private lastT = performance.now();
   private cast: Map<string, CastMember> | null = null;
@@ -177,9 +181,9 @@ export class PlazaApp {
    *  walks to (yaw), comes nearer toward the north wall and rises a little at the square's mouth; every value a smooth function of where the
    *  hero stands, eased (no cut, no blend to author) */
   private applyCamera(k: number): void {
-    const p = this.player?.pos ?? new THREE.Vector3(0, 0, -2), x = THREE.MathUtils.clamp(p.x, -9, 9), z = THREE.MathUtils.clamp(p.z, -15, 2);
+    const f = this.focus, p = f ? new THREE.Vector3(f.x, 0, f.z) : this.player?.pos ?? new THREE.Vector3(0, 0, -2), x = THREE.MathUtils.clamp(p.x, -9, 9), z = THREE.MathUtils.clamp(p.z, -15, 2);
     const north = THREE.MathUtils.smoothstep(-z, 2, 14);
-    const want: CamPose = { yaw: THREE.MathUtils.degToRad(-x * 1.6), pitch: THREE.MathUtils.degToRad(24 - 6 * north), dist: 18 - 4 * north, fov: 40, shift: 0, tx: x * 0.75, ty: 1.3, tz: z * 0.85 - 1.5 };
+    const want: CamPose = { yaw: THREE.MathUtils.degToRad(-x * 1.6), pitch: THREE.MathUtils.degToRad(24 - 6 * north), dist: f ? f.dist : 18 - 4 * north, fov: 40, shift: 0, tx: x * 0.75, ty: 1.3, tz: f ? z : z * 0.85 - 1.5 };
     const P = this.pose;
     for (const key of ['yaw', 'pitch', 'dist', 'tx', 'ty', 'tz'] as const) P[key] += (want[key] - P[key]) * k;
     applyPose(this.camera, P, window.innerWidth / Math.max(1, window.innerHeight));
@@ -189,7 +193,7 @@ export class PlazaApp {
   private walk(dt: number): void {
     const k = this.keys, ix = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0), iz = (k.has('s') || k.has('arrowdown') ? 1 : 0) - (k.has('w') || k.has('arrowup') ? 1 : 0);
     const P = this.player, speed = (this.cast?.get('player')?.walkSpeed ?? 3.2) * (k.has('shift') ? 1.2 : 1);
-    if (ix || iz) {
+    if ((ix || iz) && !this.locked) {
       const yaw = this.pose.yaw, c = Math.cos(yaw), s = Math.sin(yaw), n = Math.hypot(ix, iz);
       const dx = (ix * c + iz * s) / n, dz = (-ix * s + iz * c) / n;
       const [nx, nz] = walkTo(this.place, P.pos.x, P.pos.z, P.pos.x + dx * speed * dt, P.pos.z + dz * speed * dt);
@@ -198,6 +202,16 @@ export class PlazaApp {
     } else { P.anim = 'idle' as Anim; P.t += dt; if (P.dir === 'downSide' || P.dir === 'upSide') P.dir = 'side'; }
     for (const a of this.people) {
       a.t += dt;
+      // a cutscene's walker: straight to its point, then idle
+      const w = this.walking.get(a);
+      if (w) {
+        const dx = w.to[0] - a.pos.x, dz = w.to[1] - a.pos.z, d = Math.hypot(dx, dz);
+        if (d < 0.08) { a.anim = 'idle' as Anim; a.dir = 'down'; this.walking.delete(a); w.done(); continue; }
+        const v = Math.min(d, 1.5 * dt);
+        a.pos.x += (dx / d) * v; a.pos.z += (dz / d) * v; a.anim = 'walk' as Anim;
+        a.dir = Math.abs(dx) > Math.abs(dz) * 1.2 ? 'side' : dz > 0 ? 'down' : 'up'; a.flip = dx > 0;
+        continue;
+      }
       const b = a.behaviour; if (!b || b.kind !== 'wander') continue;
       if ((b.wait ?? 0) > 0) { b.wait! -= dt; a.anim = 'idle' as Anim; continue; }
       const tgt = this.place.wander[b.idx ?? 0], dx = tgt[0] - a.pos.x, dz = tgt[1] - a.pos.z, d = Math.hypot(dx, dz), v = (this.cast?.get(a.base ?? '')?.walkSpeed ?? 1.4) * 0.8;
@@ -205,6 +219,17 @@ export class PlazaApp {
       a.pos.x += (dx / d) * v * dt; a.pos.z += (dz / d) * v * dt; a.anim = 'walk' as Anim;
       a.dir = Math.abs(dx) > Math.abs(dz) * 1.2 ? 'side' : dz > 0 ? 'down' : 'up'; a.flip = dx > 0;
     }
+  }
+
+  /** a cutscene's stage (src/ui/cutscene.ts): the camera's focus eased by the follow's own smoothing, a person walking to a point */
+  lookAt(at: [number, number] | null, dist = 14, secs = 1.5): Promise<void> {
+    this.focus = at ? { x: at[0], z: at[1], dist } : null;
+    return new Promise((r) => setTimeout(r, secs * 1000));
+  }
+  walkTo(who: string, to: [number, number]): Promise<void> {
+    const a = [...this.who].find(([, id]) => id === who)?.[0];
+    if (!a) return Promise.resolve();
+    return new Promise((done) => this.walking.set(a, { to, done }));
   }
 
   /** the person the hero stands next to, if any (the play mode's E) */

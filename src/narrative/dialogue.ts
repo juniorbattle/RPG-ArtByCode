@@ -2,6 +2,7 @@ import type { GameState } from '../simulation/state';
 import type { Emit } from '../simulation/advance';
 import { RIVALS } from './roster';
 import { tx } from './text';
+import { v2Lines } from './v2story';
 
 /** What the town's people say (journal Passe L4; GAMEPLAY § 8: the city reacts to the tournament, the player's fame, the sabotage, the
  *  hour, readable without a debug screen). Lines are chosen from the state: the slot, the pulse, the facts learnt, the quests, the results.
@@ -24,6 +25,9 @@ export function onTalk(s: GameState, who: string, emit: Emit): void {
 }
 
 export function linesOf(s: GameState, who: string): string[] {
+  // the version 2's rivals speak by the act and what happened between you (lot V6)
+  const arc = v2Lines(s, who);
+  if (arc) return arc;
   const P = s.pulse, night = s.slot === 'evening', name = s.player.name;
   switch (who) {
     case 'mara': {

@@ -8,8 +8,9 @@ import { isV2 } from './v2';
 import { V2_SKILL_ACTIONS } from './v2skills';
 import { V2_GEAR_ACTIONS } from './v2gear';
 import { V2_TOWN_ACTIONS } from './v2town';
+import { V2_STORY_ACTIONS } from '../narrative/v2story';
 
-const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS };
+const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS };
 
 /** The town's people in game roles (choice P4, journal Passe L4): the district's existing characters offer services, quests and clues;
  *  the forecourt's officials and the rivals offer care, sparring and scouting (choice K3: portraits and dialogues). Each action names who

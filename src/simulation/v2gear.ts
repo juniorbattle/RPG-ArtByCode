@@ -3,6 +3,7 @@ import type { ActionDef } from './actions';
 import { isV2 } from './v2';
 import { GEAR, MAX_WEAPON_TIER, SHOPS, TIER_PRICE, WEAPON_TIER_DAMAGE, type GearFx, type ShopId } from './gear';
 import { itemText, tx } from '../narrative/text';
+import { allyAp } from '../narrative/v2story';
 import type { Mods } from '../combat/profiles';
 
 /** The equipment and the shops of a version 2 game (lot V3, C5; the operator's decision AV-12, with its note « arme + armure + 2 accessoires »,
@@ -42,7 +43,7 @@ export function wornFx(s: GameState): Required<GearFx> {
 export function v2Mods(s: GameState): Mods & { taken: number; gauge: number; charge: number; effect: number } {
   const fx = wornFx(s), stone = s.player.items.includes('whetstone') ? 1.05 : 1;
   return {
-    hp: +((1 - 0.2 * s.player.injury) * fx.hp).toFixed(4), damage: +(fx.damage * stone * (1 + 0.05 * Math.min(2, s.player.training))).toFixed(4), ap: fx.ap,
+    hp: +((1 - 0.2 * s.player.injury) * fx.hp).toFixed(4), damage: +(fx.damage * stone * (1 + 0.05 * Math.min(2, s.player.training))).toFixed(4), ap: fx.ap + allyAp(s),
     taken: +fx.taken.toFixed(4), gauge: +fx.gauge.toFixed(4), charge: +fx.charge.toFixed(4), effect: +fx.effect.toFixed(4),
   };
 }

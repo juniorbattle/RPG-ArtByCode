@@ -9,6 +9,7 @@ import { downloadSave, loadSaveFile, writeSave } from './save';
 import { el, esc, injectStyle, overlay } from './style';
 import { skillName, tx } from '../narrative/text';
 import { isV2, v2KitOf } from '../simulation/v2';
+import { v2EndLine } from '../tournament/v2calendar';
 import { SKILL_BOOK, skillAction } from '../combat/skillbook';
 import { chargeTime } from '../combat/skills';
 import { itemAbout, itemName, weaponTier } from '../simulation/v2gear';
@@ -131,16 +132,18 @@ export class TownUi {
   /** the end of the slice: the pool after its second round, what the player's choices left in the Cité, what comes next */
   private async showEnd(): Promise<void> {
     const s = this.st, rows = standings(s), rank = rows.findIndex((r) => r.id === 'player') + 1, wins = s.tournament.matches.filter((m) => m.winner === 'player').length;
-    const told: string[] = [];
-    told.push(`${esc(s.player.name)} ends the pool's two rounds ${rank === 1 ? 'at its head' : `in ${rank}${rank === 2 ? 'nd' : rank === 3 ? 'rd' : 'th'} place`}: ${wins} win${wins === 1 ? '' : 's'}, ${s.tournament.points.player} points.`);
+    const told: string[] = [], v2 = isV2(s);
+    // the version 2's ten days (lot V6): the final order's line
+    if (v2) told.push(v2EndLine(s));
+    else told.push(`${esc(s.player.name)} ends the pool's two rounds ${rank === 1 ? 'at its head' : `in ${rank}${rank === 2 ? 'nd' : rank === 3 ? 'rd' : 'th'} place`}: ${wins} win${wins === 1 ? '' : 's'}, ${s.tournament.points.player} points.`);
     told.push(s.facts.includes('saboteur-caught') ? tx('ui.end.forgeCaught')
       : s.facts.includes('forge-burned') ? (s.flags.reported ? tx('ui.end.forgeReported') : s.services.forge === 'repaired' ? tx('ui.end.forgeRepaired') : tx('ui.end.forgeWhisper'))
         : tx('ui.end.forgeSafe'));
     if (s.facts.includes('orla-recruitable')) told.push(tx('ui.end.orlaRecruit'));
     else if (s.facts.includes('orla-introduced')) told.push(tx('ui.end.orlaIntro'));
-    told.push(rank <= 4 ? tx('ui.end.top4') : tx('ui.end.out'));
+    if (!v2) told.push(rank <= 4 ? tx('ui.end.top4') : tx('ui.end.out'));
     this.modal = true;
-    const o = overlay(`<p class="pm-big">${tx('ui.end.title')}</p><p class="pm-sub pm-center">${tx('ui.end.sub')}</p>${told.map((t) => `<p>${t}</p>`).join('')}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtmlRows(s, rows)}`,
+    const o = overlay(`<p class="pm-big">${v2 ? tx('v2.end.title') : tx('ui.end.title')}</p><p class="pm-sub pm-center">${v2 ? tx('v2.end.sub') : tx('ui.end.sub')}</p>${told.map((t) => `<p>${t}</p>`).join('')}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtmlRows(s, rows)}`,
       [{ id: 'stay', label: tx('ui.end.stay'), primary: true }, { id: 'title', label: tx('ui.end.back') }]);
     this.current = o.root;
     const r = await o.done;
@@ -169,7 +172,7 @@ export class TownUi {
     const opp = m ? RIVALS[m.a === 'player' ? m.b : m.a] : null;
     const next = s.over ? tx('ui.next.over') : opp ? tx('ui.next.bout', { name: opp.name, day: m!.day, when: m!.day === s.day ? (s.slot === 'afternoon' ? tx('ui.next.now') : tx('ui.next.today')) : '' }) : tx('ui.next.done');
     const slotName = s.slot === 'evening' ? (dusk(s) ? tx('ui.slot.sunset') : 'evening') : s.slot;
-    this.status.innerHTML = `<div class="clock">${tx('ui.clock', { day: s.day, slot: slotName })}</div><div class="pm-sub">${esc(P.name)} · ${esc(placeName(s.place, isV2(s)))}</div>
+    this.status.innerHTML = `<div class="clock">${(isV2(s) ? tx('ui.clockV2', { day: s.day, slot: slotName }) : tx('ui.clock', { day: s.day, slot: slotName }))}</div><div class="pm-sub">${esc(P.name)} · ${esc(placeName(s.place, isV2(s)))}</div>
       <div class="stats"><span class="pm-num">${P.coins}</span> ${tx('ui.coins')} · ${tx('ui.reputation')} <span class="pm-num">${P.reputation}</span> · ${P.injury ? `<span class="hurt">${P.injury > 1 ? tx('ui.badlyHurt') : tx('ui.hurt')}</span>` : tx('ui.fit')}${P.items.length ? ` · ${esc(P.items.map((i) => i.replace('-', ' ')).join(', '))}` : ''}</div>
       <div class="next">${esc(next)}</div>`;
     this.renderHere();

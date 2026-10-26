@@ -46,7 +46,11 @@ export interface WorldPulse {
   festivity: number; sabotageRisk: number;
 }
 
-export interface MatchRecord { round: number; a: string; b: string; winner: string | null; close: boolean; day: number; seen: boolean }
+export interface MatchRecord {
+  round: number; a: string; b: string; winner: string | null; close: boolean; day: number; seen: boolean;
+  /** the version 2's bracket after the pool (src/tournament/v2calendar.ts): absent in today's game */
+  stage?: string;
+}
 export interface TournamentState {
   phase: 'I';
   /** points per competitor (choice G3: a points pool, a defeat costs but does not eliminate) */

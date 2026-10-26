@@ -52,6 +52,7 @@ try {
     const t0 = performance.now(), r = L.labReport(seeds, policy, rules), ms = performance.now() - t0;
     console.log(`${r.seeds} games, policy ${r.policy}, rules ${r.rules}, ${ms.toFixed(0)} ms (${(ms / r.seeds).toFixed(1)} ms / game, Node, indicative)`);
     console.log('rates', JSON.stringify(r.rates));
+    if (r.v2) console.log('ten days (v2)', JSON.stringify(r.v2));
     console.log('forgotten participants', r.forgotten);
     console.log('events fired (games)', JSON.stringify(r.eventCounts));
     console.log('team transition:', r.teamTransition);

@@ -2,6 +2,8 @@ import { PlazaApp } from '../world/PlazaApp';
 import { lookOf, placeName, type GameState } from '../simulation';
 import { PLAZA_CROWD, PLAZA_OF, plazaPeople } from '../simulation/v2places';
 import { PEOPLE } from '../narrative/people';
+import { pendingScene } from '../narrative/v2story';
+import { playCutscene } from './cutscene';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
 import { el } from './style';
@@ -19,8 +21,11 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   const q = new URLSearchParams();
   for (const k of ['fps', 'freeze', 'painters', 'gpuprof', 'cast']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   const look = lookOf(st), kind = PLAZA_OF[st.place]!;
+  // a cutscene of this moment (lot V6): its cast stands on the square even out of their hours
+  const scene = pendingScene(st), people = plazaPeople(st);
+  for (const id of scene?.cast ?? []) if (!people.includes(id)) people.push(id);
   const app = new PlazaApp({
-    canvas: b.canvas, params: q, kind, time: look === 'night' ? null : look, people: plazaPeople(st), crowd: PLAZA_CROWD[look],
+    canvas: b.canvas, params: q, kind, time: look === 'night' ? null : look, people, crowd: PLAZA_CROWD[look],
     onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; },
   });
   (window as any).__plaza = app;
@@ -47,4 +52,10 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();
+  // a browser driven by a tool keeps today's flow (as the title screen: navigator.webdriver) unless the address asks for the scene (cutscene=1)
+  const scenes = b.params.get('cutscene') === '1' || (!navigator.webdriver && b.params.get('cutscene') !== '0');
+  if (scene && scenes) {
+    await playCutscene(st, scene, { look: (at, dist, secs) => app.lookAt(at, dist, secs), walk: (who, to) => app.walkTo(who, to), lock: (on) => { app.locked = on; } });
+    (window as any).__game.act({ type: 'watched', scene: scene.id });
+  }
 }

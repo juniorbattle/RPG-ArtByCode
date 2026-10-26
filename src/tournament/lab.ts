@@ -8,6 +8,7 @@ import type { DuelOutcome } from './pool';
 import { dynamicRules, standings } from './pool';
 import { isV2, makeV2, v2KitOf } from '../simulation/v2';
 import { v2Mods } from '../simulation/v2gear';
+import { v2Ranking } from './v2calendar';
 
 /** The TournamentLab's library (TOURNAMENT_MASTER_CONTRACT § 13, journal Passe L2; the CLI is tools/tournament-lab.mjs): play whole games
  *  headless with a player policy, the player's duels fought by the bot in the arena's full simulation; find the forgotten participants;
@@ -128,16 +129,27 @@ export interface LabReport {
   forgotten: number;
   /** TOURNAMENT § 13 « vérifier la transition vers les formats d'équipe »: outside the slice (phase I only) */
   teamTransition: string;
+  /** a version 2 game's ten days (lot V6): the player's bouts, the cut, the final and the crown, the final order's histogram */
+  v2?: { bouts: number; madeCut: number; finalist: number; champion: number; ranks: number[] };
 }
 
 export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 'classic'): LabReport {
   const games: LabReport['games'] = [], eventCounts: Record<string, number> = {};
+  let bouts = 0, cutIn = 0, finals = 0, crowns = 0;
+  const ranks = [0, 0, 0, 0, 0, 0, 0, 0];
   let wins = 0, inj = 0, rivalInj = 0, elim = 0, upsets = 0, sab = 0, foil = 0, forg = 0;
   for (const seed of seeds) {
     const g = autoplay(seed, policy, undefined, undefined, rules), st = g.state;
     const fired = st.log.filter((e) => e.kind === 'event' || e.kind === 'sign' || e.kind === 'consequence').map((e) => e.id);
     for (const id of fired) eventCounts[id] = (eventCounts[id] ?? 0) + 1;
     const w = st.tournament.matches.filter((m) => m.winner === PLAYER_ID).length;
+    bouts += st.tournament.matches.filter((m) => m.a === PLAYER_ID || m.b === PLAYER_ID).length;
+    if (rules === 'v2') {
+      const r = v2Ranking(st).indexOf(PLAYER_ID); ranks[r]++;
+      if (st.tournament.matches.some((m) => m.stage === 'semi' && (m.a === PLAYER_ID || m.b === PLAYER_ID))) cutIn++;
+      if (st.tournament.matches.some((m) => m.stage === 'final' && (m.a === PLAYER_ID || m.b === PLAYER_ID))) finals++;
+      if (st.flags.champion === PLAYER_ID) crowns++;
+    }
     wins += w; inj += st.log.filter((e) => e.id === 'player-injured').length;
     rivalInj += Object.values(st.competitors).filter((c) => c.healthState !== 'fit').length;
     elim += Object.values(st.competitors).filter((c) => c.phaseStatus === 'eliminated').length;
@@ -145,13 +157,14 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
     if (st.facts.includes('forge-burned')) sab++;
     if (st.facts.includes('saboteur-caught')) foil++;
     forg += forgotten(st).length;
-    const rank = standings(st).findIndex((r) => r.id === PLAYER_ID) + 1;
+    const rank = rules === 'v2' ? v2Ranking(st).indexOf(PLAYER_ID) + 1 : standings(st).findIndex((r) => r.id === PLAYER_ID) + 1;
     games.push({ seed, hash: g.hash, points: st.tournament.points[PLAYER_ID], rank, wins: w, injuries: st.player.injury, forge: st.services.forge, events: fired });
   }
   const n = seeds.length;
   return {
     policy: policy.name, rules, seeds: n, games, eventCounts, forgotten: forg,
-    rates: { playerWins: wins / (2 * n), playerInjured: inj / n, rivalInjured: rivalInj / n, eliminations: elim / n, upsets: upsets / n, sabotaged: sab / n, foiled: foil / n },
+    rates: { playerWins: wins / bouts, playerInjured: inj / n, rivalInjured: rivalInj / n, eliminations: elim / n, upsets: upsets / n, sabotaged: sab / n, foiled: foil / n },
     teamTransition: 'outside the slice: phase I (a points pool, 1v1) only; teams are typed (TeamState), never formed',
+    ...(rules === 'v2' ? { v2: { bouts: bouts / n, madeCut: cutIn / n, finalist: finals / n, champion: crowns / n, ranks } } : {}),
   };
 }

@@ -11,12 +11,13 @@ import { V2_SKILL_ACTIONS, type V2SkillAction } from './v2skills';
 import { isV2 } from './v2';
 import { V2_GEAR_ACTIONS, type V2GearAction } from './v2gear';
 import { V2_TOWN_ACTIONS, type V2TownAction } from './v2town';
+import { V2_STORY_ACTIONS, type V2StoryAction } from '../narrative/v2story';
 
 /** The player's actions (journal Passe L1). Each says what it costs (0 = a minor action that takes no slot: moving between places,
  *  talking, consulting, GAMEPLAY § 4.2; 1 = a significant action that takes the slot, § 4.1), when it is refused and why (a readable
  *  reason, the state untouched), and what it changes (`apply` works on the copy `advance` made). */
 
-export type Action = BaseAction | RoleAction | V2SkillAction | V2GearAction | V2TownAction;
+export type Action = BaseAction | RoleAction | V2SkillAction | V2GearAction | V2TownAction | V2StoryAction;
 type BaseAction =
   | { type: 'move'; to: PlaceId }
   | { type: 'talk'; who: string }
@@ -128,4 +129,4 @@ const BASE: Table = {
 /** every action: the player's own, and those the town's people offer (roles.ts) */
 /** every action: the player's own, those the town's people offer (roles.ts), and the version 2's (listed only in a version 2 game, after
  *  today's: the default game's options keep their order) */
-export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS, ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS };
+export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS, ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS };

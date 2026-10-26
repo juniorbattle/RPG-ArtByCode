@@ -7,6 +7,7 @@ import { initialState, CONTENT_ID } from './content';
 import { playerMatch } from '../tournament/pool';
 import { computePulse } from '../tournament/pulse';
 import { tx } from '../narrative/text';
+import { daysOf, v2AfterSlot } from '../tournament/v2calendar';
 
 /** The simulation's entry points (PROJECT_MASTER_CONTRACT § 10.2, journal Passe L1):
  *  - `newGame(seed, name)`: the slice's first morning;
@@ -82,10 +83,12 @@ export type Emit = (e: Omit<GameEvent, 'seq' | 'day' | 'slot'> & Partial<Pick<Ga
 /** the slot ends: the world moves (off screen, pulse, events), then the clock */
 function passSlot(s: GameState, emit: Emit, cause: string): void {
   endSlot(s, emit, rngFor(s, 'slot'));
+  // the version 2's bracket (lot V6): the cut, the major match, the final, the champion, once the day's bouts are fought
+  v2AfterSlot(s, s.slot, emit);
   const i = slotIndex(s.slot);
   if (i < SLOTS.length - 1) s.slot = SLOTS[i + 1];
-  else if (s.day < DAYS) { s.day++; s.slot = 'morning'; }
-  else { s.over = true; emit({ kind: 'slot', id: 'slice-over', cause, text: tx('clock.sliceOver'), visible: true }); return; }
+  else if (s.day < daysOf(s)) { s.day++; s.slot = 'morning'; }
+  else { s.over = true; emit({ kind: 'slot', id: 'slice-over', cause, text: s.flags.v2 === true ? tx('v2.over') : tx('clock.sliceOver'), visible: true }); return; }
   s.pulse = computePulse(s);
   emit({ kind: 'slot', id: `slot:${s.day}:${s.slot}`, cause, text: tx('clock.slot', { day: s.day, slot: slotName(s.slot) }), visible: false });
 }
@@ -115,7 +118,7 @@ export function deserialize(text: string): GameState {
     if (!m) throw new Error(`This save's format (${v}) can no longer be read.`);
     st = m(st); v++;
   }
-  if (st.schemaVersion !== v || st.content !== CONTENT_ID || !SLOTS.includes(st.slot) || !(st.day >= 1 && st.day <= DAYS) || !st.player) {
+  if (st.schemaVersion !== v || st.content !== CONTENT_ID || !SLOTS.includes(st.slot) || !(st.day >= 1 && st.day <= (st.flags ? daysOf(st) : DAYS)) || !st.player) {
     throw new Error('This save is damaged or was made with other content.');
   }
   return st;

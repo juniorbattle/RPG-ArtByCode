@@ -1,5 +1,6 @@
 import type { GameState } from './state';
 import { V2_START_KIT, type V2Kit } from '../combat/v2duel';
+import { v2Matches } from '../tournament/v2calendar';
 
 /** The « version 2 » of the game (the operator's decision AV-2, « Un drapeau « version 2 » pour tout, défaut inchangé », journal Passes AV1 /
  *  V0): every system of the cloud session « Version 2 » (the three-button command and its charged attack, the skills, the equipment and the
@@ -15,6 +16,9 @@ export function makeV2(s: GameState): GameState {
   s.flags.v2 = true;
   s.flags.combat = 'dynamic';
   // the version 2's own state: today's four skills at level 1 (lot V2), the training sword and nothing else (lot V3), the shops untouched
+  // the ten days' tournament (lot V6): the pool's three rounds; a bout already fought keeps its result (a named state made a version 2 game)
+  const fought = new Map(s.tournament.matches.filter((m) => m.winner).map((m) => [`${m.day}:${m.a}:${m.b}`, m]));
+  s.tournament.matches = v2Matches().map((m) => fought.get(`${m.day}:${m.a}:${m.b}`) ?? m);
   s.v2 = { kit: { loadout: [...V2_START_KIT.loadout], levels: { ...V2_START_KIT.levels } }, gear: { weapon: 'training-sword', tier: 0, armour: null, acc: [null, null], bag: [] }, shops: {} };
   return s;
 }
