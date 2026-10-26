@@ -345,6 +345,35 @@ point de départ, à régler à l'essai. »).
 
 ---
 
+## 17. Les décisions de l'essai C2 (26/10/2026)
+
+Fiche de l'essai du lot C2, page privée https://claude.ai/artifact/2BFmUTe6GFRAjq92TEHNPc, collection `decisions`, relue après « done » :
+16 documents sur 16, tous à la recommandation, sans note (journal Passe C2F).
+
+| # | Décision | Recommandation | Choix de l'opérateur | Note | |
+|---|---|---|---|---|---|
+| C2-1 | Le nouveau duel devient-il le défaut ? (CB-10) | « Pas encore : après C3 et un second essai » | « Pas encore : après C3 et un second essai » | — | = |
+| C2-2 | La durée des duels | « Comme mesurées (5 à 9 min) » | « Comme mesurées (5 à 9 min) » | — | = |
+| C2-3 | Le maximum de points d'action | « 5 PA » | « 5 PA » | — | = |
+| C2-4 | Un PA rendu avec le temps | « Aucun » | « Aucun » | — | = |
+| C2-5 | Les recharges des compétences | « Aucune » | « Aucune » | — | = |
+| C2-6 | L'action objet en combat | « Plus tard (C4 / C5) » | « Plus tard (C4 / C5) » | — | = |
+| C2-7 | La direction de l'esquive | « En arrière » | « En arrière » | — | = |
+| C2-8 | La jauge de résistance | « Comme aujourd'hui » | « Comme aujourd'hui » | — | = |
+| C2-9 | Le break : étourdissement et dégâts | « 6 s, ×1,2 » | « 6 s, ×1,2 » | — | = |
+| C2-10 | Rempart et Ferveur | « Les garder » | « Les garder » | — | = |
+| C2-11 | Ce que montre le HUD (CB-6) | « Approuvé » | « Approuvé » | — | = |
+| C2-12 | Le signe de la priorité dans l'aide discrète | « Dans l'aide discrète » | « Dans l'aide discrète » | — | = |
+| C2-13 | La barre d'actions dans une fenêtre étroite | « Accepter » | « Accepter » | — | = |
+| C2-14 | L'écran de chargement | « Tâche à part » | « Tâche à part » | — | = |
+| C2-15 | Le téléphone tenu droit | « Le garder » | « Le garder » | — | = |
+| C2-16 | La page publiée de l'ancienne arène | « La republier » | « La republier » | — | = |
+
+Le défaut reste l'arène d'aujourd'hui jusqu'à C3 et un second essai ; les nombres d'aujourd'hui (§ 3, § 6) sont tenus ; l'esquive est en
+arrière (§ 14 : `dodge`) ; Rempart et Ferveur restent les familles défensive et soutien.
+
+---
+
 ## Annexe A — Les réponses de l'opérateur, mot pour mot (25/10/2026)
 
 Recopiées depuis la conversation de l'atelier. Les questions et le contexte sont dans le journal (Passe CB1). Une seule retouche : le chemin

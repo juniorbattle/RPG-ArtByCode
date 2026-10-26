@@ -54,6 +54,8 @@ Puis : « Le district en cours, c'est le parvis de l'arène (la place principale
   la priorité de l'adversaire), les clips d'aujourd'hui sur les nouveaux moments et les réglages de l'essai dans l'adresse (`dyn=`) ; le défaut
   inchangé ; l'interface UI3 vérifiée sur tout le parcours de l'arène. **Suite : l'essai de l'opérateur** (guide `briefs/combat-trial-c2.md`,
   fiche d'arbitrages de la Passe C2), puis C3.
+- **Essai C2 consigné (Passe C2F, 26/10)** : 16 choix sur 16 à la recommandation : le défaut « Pas encore : après C3 et un second essai », les
+  nombres d'aujourd'hui tenus, l'esquive « En arrière », Rempart et Ferveur « Les garder », le HUD « Approuvé » (`briefs/combat-system.md` § 17).
 
 ## Étape 1. Les sprites de l'arène
 

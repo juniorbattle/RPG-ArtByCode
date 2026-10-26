@@ -42,7 +42,9 @@ The operator's master contracts live in `contracts/`, versioned and therefore pu
     Passe C2): the arena shows them behind `?scene=arena&combat=dynamic` (`src/arena/dynamicView.ts`, `DynPresets.ts`, `DynamicHud.ts`: today's
     clips on the new moments, the HUD of the design system with both gauges, the AP, the four skills and the opponent's priority; `dyn=` the
     trial's numbers), and the play mode with `&combat=dynamic` on a new game (the game's flag, in the save); today's arena modules never load
-    them. The operator's trial: `briefs/combat-trial-c2.md` and the decision sheet of journal Passe C2.
+    them. The operator's trial: `briefs/combat-trial-c2.md` and the decision sheet of journal Passe C2, read back in journal Passe C2F (16 of 16 at
+    the recommendation, `briefs/combat-system.md` § 17): the default waits for C3 and a second trial (C2-1 « Pas encore : après C3 et un second
+    essai »), today's numbers are kept, the dodge goes back, Rampart and Fervour stay.
 
 They govern gameplay and the tournament; this file keeps the repository's rules (branches, journal, proofs, art). Two rules follow from
 decision C3 (« Aucun verrou modifié, écarts consignés »):

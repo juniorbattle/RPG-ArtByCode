@@ -4,6 +4,9 @@ Le lot C2 de `briefs/combat-system.md` (§ 15) met le nouveau duel dans l'arène
 après mon essai ») : l'arène et le tournoi d'aujourd'hui restent le défaut. Ce guide sert à votre essai en jeu, qui règle les points du § 11 et
 décide du défaut. Vos retours et vos décisions vont sur la fiche d'arbitrages de la Passe C2 (journal).
 
+**Fait (26/10/2026)** : la fiche est remplie et consignée (journal Passe C2F, `briefs/combat-system.md` § 17) : 16 choix sur 16 à la recommandation ;
+le défaut attend C3 et un second essai.
+
 ## Les adresses
 
 Sur votre machine : `npm run dev`, puis http://127.0.0.1:5173/ suivi de l'une de ces adresses.

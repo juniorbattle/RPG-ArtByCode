@@ -503,6 +503,62 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   se nomme.
 - Une capture d'interface se fige par son témoin : sans transitions coupées, deux chargements du même `main` différaient dans le HUD.
 
+## Passe C2F — La fiche de l'essai C2 relue et consignée : 16 choix sur 16, le défaut après C3 (2026-10-26)
+
+### Demande
+- Dans la séance de la feuille de combat de Ren (Passe RC1), l'opérateur : « cest rempli non », puis « done ». La fiche de la Passe C2
+  (https://claude.ai/artifact/2BFmUTe6GFRAjq92TEHNPc, collection `decisions`) était vide à la première relecture (0 document) : les choix
+  pouvaient être restés dans le navigateur (la page les garde et les renvoie à la connexion) ; l'opérateur l'a rouverte, puis « done ».
+- Branche `c2-sheet-record` depuis `main` (`8babb52`), seule branche de travail. Documentation seule : aucun code ne change.
+
+### La fiche — [OK] 16 choix sur 16 enregistrés et relus
+- Relue après « done » : **16 documents sur 16**, cliqués le 26/10 entre 00 h 49 min 30 s et 00 h 53 min 06 s UTC, aucune note ; chaque écriture
+  relue par la page avant « Enregistré et relu ».
+
+### Les choix de l'opérateur, mot pour mot
+« = » : la recommandation de la fiche est suivie.
+
+| # | Décision | Recommandation | Choix de l'opérateur | Note | |
+|---|---|---|---|---|---|
+| C2-1 | Le nouveau duel devient-il le défaut ? (CB-10) | « Pas encore : après C3 et un second essai » | « Pas encore : après C3 et un second essai » | — | = |
+| C2-2 | La durée des duels | « Comme mesurées (5 à 9 min) » | « Comme mesurées (5 à 9 min) » | — | = |
+| C2-3 | Le maximum de points d'action | « 5 PA » | « 5 PA » | — | = |
+| C2-4 | Un PA rendu avec le temps | « Aucun » | « Aucun » | — | = |
+| C2-5 | Les recharges des compétences | « Aucune » | « Aucune » | — | = |
+| C2-6 | L'action objet en combat | « Plus tard (C4 / C5) » | « Plus tard (C4 / C5) » | — | = |
+| C2-7 | La direction de l'esquive | « En arrière » | « En arrière » | — | = |
+| C2-8 | La jauge de résistance | « Comme aujourd'hui » | « Comme aujourd'hui » | — | = |
+| C2-9 | Le break : étourdissement et dégâts | « 6 s, ×1,2 » | « 6 s, ×1,2 » | — | = |
+| C2-10 | Rempart et Ferveur | « Les garder » | « Les garder » | — | = |
+| C2-11 | Ce que montre le HUD (CB-6) | « Approuvé » | « Approuvé » | — | = |
+| C2-12 | Le signe de la priorité dans l'aide discrète | « Dans l'aide discrète » | « Dans l'aide discrète » | — | = |
+| C2-13 | La barre d'actions dans une fenêtre étroite | « Accepter » | « Accepter » | — | = |
+| C2-14 | L'écran de chargement | « Tâche à part » | « Tâche à part » | — | = |
+| C2-15 | Le téléphone tenu droit | « Le garder » | « Le garder » | — | = |
+| C2-16 | La page publiée de l'ancienne arène | « La republier » | « La republier » | — | = |
+
+### Ce qui en suit (rien d'autre n'est appliqué par cette passe)
+- **Le défaut (C2-1)** : l'arène et le tournoi d'aujourd'hui restent le défaut ; le nouveau duel y passera **après C3** (les adversaires avec
+  garde, esquive et compétences) **et un second essai** de l'opérateur. Le contrat de combat (CB-9) attend toujours ce second essai.
+- **Les nombres du § 11 (C2-2 à C2-9)** : ceux d'aujourd'hui sont tenus : durées de 5 à 9 minutes, **5 PA** au plus (1 au départ, CB-5), **aucun
+  regain** de PA avec le temps, **aucune recharge**, l'**action objet plus tard** (C4 / C5), l'**esquive en arrière**, la jauge comme aujourd'hui
+  (100, 1,8 / s), le **break de 6 s à ×1,2**. Aucune valeur de `DYNAMIC_DATA` ne change.
+- **Les compétences (C2-10)** : Rempart (défensive) et Ferveur (soutien) sont gardées pour C3 / C4 : les familles défensive et soutien restent.
+- **Le HUD (C2-11, C2-12)** : approuvé ; le signe de la priorité reste dans l'aide discrète.
+- **L'interface (C2-13 à C2-16)** : la barre sous 1 241 px acceptée telle quelle ; « Tournez l'appareil » gardé ; deux tâches à part :
+  **l'écran de chargement** dans le système de design (C2-14, avec P6) et **la page publiée de l'ancienne arène** (Passe P2) à republier au même
+  lien avec le HUD d'aujourd'hui (C2-16, `tools/arena-scene-page.mjs`).
+- **Pour la feuille de combat de Ren (Passe RC1)** : la fiche C2 débloque les 12 images restantes : `dodge` **en arrière** (C2-7), `skillOff`,
+  `skillDef` (Rempart) et `skillSup` (Ferveur) (C2-10) ; RC1-1 les veut par la même voie, avec les reprises (la victoire de profil, une vraie
+  taille pour la coupe, la lame à deux texels) et le liseré peint de nuit (RC1-2).
+
+### Validation
+- Documentation seule : typecheck, `npm test` **195 / 195**, build, `art:validate` (19 manifestes, 33 sources, 0 erreur).
+
+### Pensée
+- Une collection vide après « c'est rempli » ne dit pas que l'opérateur n'a rien choisi : la page garde les choix non enregistrés dans le
+  navigateur et les renvoie à la connexion. Le dire, faire rouvrir la page (ou copier le récapitulatif), relire ensuite.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -657,7 +713,7 @@ course hors écran, derrière `flags.combat = 'dynamic'` (`tournament-lab --rule
 écarté (mesuré sans borne), Rempart et Ferveur proposés à l'essai ; duels de 5 à 9 minutes, victoire en marche d'escalier selon l'adresse.
 **C2 fait (Passe C2)** : l'arène le montre derrière `?scene=arena&combat=dynamic` (le mode jouable : `&combat=dynamic`), HUD du système de
 design (jauges, barre de break, PA, compétences et coûts, priorité), clips d'aujourd'hui sur les nouveaux moments, réglages de l'essai `dyn=` ;
-le défaut inchangé (0 px). **Suite : l'essai de l'opérateur en jeu** (guide `briefs/combat-trial-c2.md` ; page jouable
+le défaut inchangé (0 px). **Fiche de l'essai relue (Passe C2F), 16 / 16 à la recommandation** : le défaut « Pas encore : après C3 et un second essai », les nombres du § 11 tenus (5 PA, aucun regain, aucune recharge, esquive « En arrière », break « 6 s, ×1,2 »), Rempart et Ferveur gardés, le HUD « Approuvé » ; deux tâches à part : l'écran de chargement dans le système de design (C2-14), la page de l'ancienne arène à republier (C2-16). Historique : l'essai de l'opérateur en jeu (guide `briefs/combat-trial-c2.md` ; page jouable
 https://claude.ai/artifact/HnfCTWXSggDVVyVUskTBJK ; fiche https://claude.ai/artifact/2BFmUTe6GFRAjq92TEHNPc : le défaut, le § 11, le HUD, les
 écarts de l'interface), à relire puis consigner ; ensuite, chacun dans sa séance : C3 les adversaires (avec L7-4 et l'alerte légère des
 compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis les feuilles de combat à ×3 (AA2-1 ; après l'essai du duel) ; plus tard les
