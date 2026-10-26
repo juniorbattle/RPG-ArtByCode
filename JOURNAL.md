@@ -147,6 +147,23 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   entraînement 54,6 → 57,3 (122 / 107 / 111 → 129 / 111 / 110), place festive 57,1 → 57,3 (137 / 124 / 131 → 141 / 126 / 127), contre B nuit
   57,7 (142 / 118 / 105) : plus chaude à moitié chemin ; la lune passe à 0,68 x.
 
+### La quatrième critique à l'aveugle — [OK] avec réserves (entraînement, place festive), [?] pas encore (parvis)
+- Agent neuf ; six planches : celles de la troisième critique et celles de l'itération 5. Chaque paire : entraînement **7 / 6** (itération 5)
+  contre 6,5 / 5, place festive **7 / 6,5** contre 7 / 6, parvis **6 / 5,5 (l'itération 4, le Colisée haut)** contre 5,5 / 5 (abaissé : son haut plat
+  et ses mâts nus « une boîte à antennes », le monument a perdu sa masse). Verdict : l'entraînement et la place festive **tiennent à côté du
+  district « avec des réserves »**, le parvis **« pas encore »** (le Colisée ne se lit pas comme tel : droit, plat, pas plus haut que les maisons).
+  « Les nuits sont le point fort : le rythme des fenêtres allumées, les flaques ambrées des lampes, les pavés mouillés » ; de jour, la palette, les
+  toits bleus et le pavois sont justes.
+- Repris : le Colisée revient à ses deux étages hauts (6,4 et 10,8 m, la corniche à 11,25) ; toutes les lanternes des cordes de la place festive
+  allumées (la moitié pendait en boîtes noires), la scène éclairée de sa lumière chaude la nuit et l'ivoire de sa toile de fond assombri (« un bloc
+  lavande froid »), le barde devant la scène (il se tenait derrière son plancher, la tête au-dessus d'un comptoir), plus de guirlande des façades
+  aux réverbères sur la place festive (les cordes en travers suffisent), la ruelle d'une teinte plus claire (« une bande noire la nuit »).
+- **Gardé pour la revue locale** (les réserves) : la composition frontale et symétrique (le district mène l'œil par une diagonale vers des points
+  focaux en couches, doublés de reflets) ; le Colisée qui demande un vrai travail de monument (une façade courbe qui fuit aux deux bouts, trois
+  ordres, plus haut que les maisons, et un cadrage qui en montre le haut : la caméra des places ne le permet pas sans changer de point de vue) ;
+  les cercles de sable sans bordure de bois visible ; les étals tous du même modèle (le générateur du district, inchangé) ; des personnages coupés
+  au bas de l'image (une caméra qui suit le héros sur une place ouverte passe derrière les autres) ; la fontaine sans eau.
+
 ### Le bake, suite
 - Les poses de transition (Passe VP1, suite) : la page amène chaque champ de la pose vers sa cible ; un dialogue ou une cinématique passe donc
   par les mélanges de deux regards, que la grille n'échantillonne pas (le district échantillonne ses fondus AB, BC, CD, BD) : le chemin du

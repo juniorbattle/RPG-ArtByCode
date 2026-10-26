@@ -64,7 +64,7 @@ export const PLAZA_WALK: Readonly<typeof W> = W;
 export const PLAZA_SPOTS: Record<PlazaKind, Record<string, [number, number]>> = {
   forecourt: { odo: [-6.5, -9.2], hilde: [7.0, -10.2], anwen: [7.0, -1.0], guardA: [-3.2, -15.4], guardB: [3.2, -15.4], marek: [3.5, -5.0], orla: [-3.5, -3.5], vessa: [-1.5, -12.0], ilse: [4.8, -13.0] },
   training: { corvin: [-5.5, -14.6], orla: [4.5, -7.6], ilse: [-2.4, -7.0], vessa: [1.0, -10.0], drill: [-6.2, -4.2] },
-  festival: { pip: [-7.0, -6.0], lio: [-6.0, -14.6], cassius: [2.2, -10.6], bard: [0, -14.0] },
+  festival: { pip: [-7.0, -6.0], lio: [-6.0, -14.6], cassius: [2.2, -10.6], bard: [1.2, -12.6] },
 };
 /** the points the crowd walks between */
 export const PLAZA_WANDER: Record<PlazaKind, Array<[number, number]>> = {
@@ -143,7 +143,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   tracked(() => {
     const St = S.get('stone');
     St.boxMM(-16, 0, 4.6, 16, 0.16, 4.95, { tint: [0.62, 0.6, 0.57], uvScale: 0.8 });
-    St.quad([-16, 0.012, 6.6], [16, 0.012, 6.6], [16, 0.012, 4.95], [-16, 0.012, 4.95], { tint: [0.42, 0.41, 0.42], uvScale: 1.4 });
+    St.quad([-16, 0.012, 6.6], [16, 0.012, 6.6], [16, 0.012, 4.95], [-16, 0.012, 4.95], { tint: [0.56, 0.55, 0.56], uvScale: 1.4 });
   });
   for (const x of [-6.8, 0, 6.8]) { batch.add('bollard', { pos: [x, 0, 4.2], yaw: x }); obstacles.push({ x0: x - 0.2, x1: x + 0.2, z0: 4.0, z1: 4.4, grime: 0.5 }); }
   // the tops of the south lamps carry the day's bunting
@@ -204,6 +204,8 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   } else {
     // the stage: a timber platform with its steps, skirt, posts, canopy and the festival's banner
     stage(S, batch, 0, -15.2);
+    // the stage's own warm light at night (its backdrop read as a cold lavender block, the brightest surface that was not a light)
+    if (!day) lights.push({ pos: [0, 3.3, -14.2], color: WARM, intensity: 2.6, radius: 7, kind: 'lantern', halo: 1.2, priority: 8 });
     blockers.push({ x: -1.8, z: -15.4, r: 1.9 }, { x: 1.8, z: -15.4, r: 1.9 });
     obstacles.push({ x0: -3.6, x1: 3.6, z0: -17, z1: -13.6, grime: 0.6 });
     marketStall(-7.4, -7.6, 0.55, 'candles', 3.0, true);
@@ -221,7 +223,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       if (day) { if (k % 2) garland(S, [a[0], 5.4, a[2]], [b[0], 5.4, b[2]], 1.0, { size: 0.42, width: 0.34, spacing: 0.56, phase: k }); }
       else {
         cord(S, a, b, 0.9);
-        for (let t = 1; t < 8; t++) { const u = t / 8, p = sag(a, b, 0.9, u); batch.add(k % 2 ? 'lantern' : 'lanternDark', { pos: [p[0], p[1] - 0.32, p[2]], yaw: t, scale: 1.1 }, 0); }
+        for (let t = 1; t < 8; t++) { const u = t / 8, p = sag(a, b, 0.9, u); batch.add('lantern', { pos: [p[0], p[1] - 0.32, p[2]], yaw: t, scale: 1.1 }, 0); }
         if (k % 2) lights.push({ pos: [0, 3.9, z - 0.3], color: WARM, intensity: 2.2, radius: 8.5, kind: 'lantern', halo: 1.3, priority: 7 });
       }
     }
@@ -249,7 +251,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     for (const s of front) byHouse.set(s.building, [...(byHouse.get(s.building) ?? []), s.pos]);
     let phase = 0;
     for (const pts of byHouse.values()) if (pts.length === 2) garland(S, pts[0], pts[1], 0.5, { size: 0.42, width: 0.34, spacing: 0.42, phase: phase++ });
-    for (const top of lampTops) {
+    for (const top of kind === 'festival' ? [] : lampTops) {
       let best: V3 | null = null;
       for (const s of front) if (!best || Math.hypot(s.pos[0] - top[0], s.pos[2] - top[2]) < Math.hypot(best[0] - top[0], best[2] - top[2])) best = s.pos;
       if (best && Math.hypot(best[0] - top[0], best[2] - top[2]) < 6.5) garland(S, best, top, 0.45, { size: 0.34, width: 0.28, spacing: 0.4 });
@@ -345,9 +347,9 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
   // at night a shade darker still: the moon faces the facade, which read brighter than the district's moonlit plaster
   const nk = day ? 1 : 0.84, R = 52, C: V3 = [0, 0, -71.2], stone: V3 = [0.7 * nk, 0.67 * nk, 0.62 * nk], stoneLt: V3 = [0.76 * nk, 0.72 * nk, 0.66 * nk], dark: V3 = [0.07, 0.07, 0.09], uv = 0.6;
   const St = S.get('stone'), Dk = S.get('dark');
-  // two tiers, 5.3 and 8.9 m, the cornice at 9.35 (journal Passe VP1, third critique: at 11.25 m the facade's top never entered the frame of
-  // the square's camera and it read as a wall; lower, the cavea's rim and a band of sky show above it, the drum reads as a drum)
-  const TIER_G = 5.3, TIER_U = 8.9;
+  // two tiers, 6.4 and 10.8 m, the cornice at 11.25 (journal Passe VP1: the third critique asked for the top in the frame; lowered to 5.3 /
+  // 8.9 m, the fourth judged it worse, 5.5 / 10 against 6: its flat top and bare masts read as a box with antennae, the landmark lost its mass)
+  const TIER_G = 6.4, TIER_U = 10.8;
   const bayW = 3.7, gateW = 5.6;
   // bay centres along the arc: the gate at 0, five bays each side
   const angles: Array<{ a: number; w: number; gate: boolean }> = [{ a: 0, w: gateW, gate: true }];
@@ -380,15 +382,15 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
         St.boxMM(s * hw - 0.26, TIER_G, -0.4, s * hw + 0.26, TIER_U, 0.18, { uvScale: uv, tint: stoneLt, aoY: [0.8, 1] });
       }
       // the ground tier's arch (the gate wider and taller), the upper tier's
-      if (b.gate) arch(0, 0, 2.0, 3.1, 0, stoneLt); else arch(0, 0, 1.25, 2.6, 0, stoneLt);
-      arch(0, TIER_G + 0.65, 0.9, 1.25, -0.1, stoneLt);
+      if (b.gate) arch(0, 0, 2.1, 4.0, 0, stoneLt); else arch(0, 0, 1.25, 3.4, 0, stoneLt);
+      arch(0, TIER_G + 0.55, 0.95, 1.6, -0.1, stoneLt);
       // the wall between the arches' heads and the string course above them (the first try left both open onto the sky)
-      const top = b.gate ? 5.1 : 3.85, upTop = TIER_G + 0.65 + 1.25 + 0.9;
+      const top = b.gate ? 6.1 : 4.65, upTop = TIER_G + 0.55 + 1.6 + 0.95;
       St.boxMM(-hw + 0.42, top, -0.12, hw - 0.42, TIER_G + 0.05, -0.02, { uvScale: uv, tint: stone });
-      St.boxMM(-0.92, upTop, -0.12, 0.92, TIER_U + 0.02, -0.1, { uvScale: uv, tint: stone });
+      St.boxMM(-0.97, upTop, -0.12, 0.97, TIER_U + 0.02, -0.1, { uvScale: uv, tint: stone });
       // the wall around the upper arch, the string courses, the cornice (the top: no attic)
-      St.boxMM(-hw + 0.26, TIER_G, -0.12, hw - 0.26, TIER_G + 0.65, -0.1, { uvScale: uv, tint: stone });
-      for (const s of [-1, 1]) St.boxMM(s > 0 ? 0.9 : -hw + 0.26, TIER_G + 0.65, -0.12, s > 0 ? hw - 0.26 : -0.9, TIER_U, -0.1, { uvScale: uv, tint: stone });
+      St.boxMM(-hw + 0.26, TIER_G, -0.12, hw - 0.26, TIER_G + 0.55, -0.1, { uvScale: uv, tint: stone });
+      for (const s of [-1, 1]) St.boxMM(s > 0 ? 0.95 : -hw + 0.26, TIER_G + 0.55, -0.12, s > 0 ? hw - 0.26 : -0.95, TIER_U, -0.1, { uvScale: uv, tint: stone });
       St.boxMM(-hw - 0.45, TIER_G - 0.2, -0.55, hw + 0.45, TIER_G + 0.15, 0.42, { uvScale: uv, tint: stoneLt });
       St.boxMM(-hw - 0.3, TIER_U, -0.6, hw + 0.3, TIER_U + 0.45, 0.35, { uvScale: uv, tint: stoneLt });
       // a mast and its pennant on every other bay, the tournament's colours
@@ -398,15 +400,15 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
       }
       if (b.gate) {
         // the portcullis: raised by day (its teeth under the head), shut at night with the doors behind it
-        const M = S.get('metal'), y0 = day ? 2.6 : 0;
-        for (let i = -4; i <= 4; i++) M.boxMM(i * 0.43 - 0.04, y0, -0.32, i * 0.43 + 0.04, 5.1, -0.26, { tint: [0.3, 0.3, 0.32] });
-        for (let y = y0 + 0.3; y < 5.1; y += 0.55) M.boxMM(-1.95, y, -0.33, 1.95, y + 0.06, -0.27, { tint: [0.3, 0.3, 0.32] });
-        if (!day) S.get('planks').boxMM(-2.0, 0, -0.6, 2.0, 4.9, -0.5, { grain: 'y', tint: [0.42, 0.32, 0.24] });
+        const M = S.get('metal'), y0 = day ? 3.4 : 0;
+        for (let i = -4; i <= 4; i++) M.boxMM(i * 0.45 - 0.04, y0, -0.32, i * 0.45 + 0.04, 6.1, -0.26, { tint: [0.3, 0.3, 0.32] });
+        for (let y = y0 + 0.3; y < 6.1; y += 0.55) M.boxMM(-2.05, y, -0.33, 2.05, y + 0.06, -0.27, { tint: [0.3, 0.3, 0.32] });
+        if (!day) S.get('planks').boxMM(-2.1, 0, -0.6, 2.1, 5.9, -0.5, { grain: 'y', tint: [0.42, 0.32, 0.24] });
         // the great banner over the gate
-        addBanner(S, { pos: [0, TIER_U - 0.15, 0.4], yaw: 0, w: 1.5, h: 2.4, emblem: 'fleur', shape: 'swallow', loose: 0.35, tint: [0.95, 0.88, 0.62] });
+        addBanner(S, { pos: [0, TIER_U - 0.25, 0.4], yaw: 0, w: 1.6, h: 3.0, emblem: 'fleur', shape: 'swallow', loose: 0.35, tint: [0.95, 0.88, 0.62] });
       } else if (Math.abs(b.a) * R < bayW * 2.2) {
         // long banners on the bays beside the gate
-        addBanner(S, { pos: [0, TIER_U - 0.15, 0.4], yaw: 0, w: 1.05, h: 2.6, emblem: 'fleur', shape: 'swallow', loose: 0.4, tint: [0.5, 0.6, 0.95] });
+        addBanner(S, { pos: [0, TIER_U - 0.25, 0.4], yaw: 0, w: 1.1, h: 3.2, emblem: 'fleur', shape: 'swallow', loose: 0.4, tint: [0.5, 0.6, 0.95] });
       }
     });
   });
@@ -424,8 +426,8 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
   // inside a few ground arches: the tunnels' torches (warm accents at the focal point, lit day and night like the arena's fires)
   for (const s of [-1, 1]) {
     const a = s * (gateW / 2 + bayW / 2) / R, x = Math.sin(a) * R, z = C[2] + Math.cos(a) * R - 0.6;
-    S.get('glow').box(x, 2.1, z, 0.18, 0.4, 0.1, { tint: [1, 0.55, 0.2] });
-    lights.push({ pos: [x, 2.1, z + 0.5], color: FIRE, intensity: 1.8, radius: 5.5, kind: 'fire', halo: 1.1, priority: 8, day: true });
+    S.get('glow').box(x, 2.6, z, 0.18, 0.4, 0.1, { tint: [1, 0.55, 0.2] });
+    lights.push({ pos: [x, 2.6, z + 0.5], color: FIRE, intensity: 1.8, radius: 5.5, kind: 'fire', halo: 1.1, priority: 8, day: true });
   }
   void emitters;
   blockers.push({ x: 0, z: -18.6, r: 0.1 });
@@ -541,7 +543,7 @@ function stage(S: SlotSet, batch: InstanceBatch, x: number, z: number): void {
     // the platform's edge, a striped backdrop behind the players, the canopy in the tournament's deep blue
     for (const a of [-3.2, 3.2]) T.boxMM(a - 0.07, 0.95, 0.32, a + 0.07, 3.8, 0.46, { tint: [0.5, 0.4, 0.32], grain: 'y' });
     T.boxMM(-3.45, 0.74, 1.6, 3.45, 0.98, 1.7, { tint: [0.4, 0.31, 0.24], grain: 'x' });
-    for (let i = 0; i < 10; i++) { const x0 = -3.12 + (6.24 * i) / 10, x1 = x0 + 6.24 / 10; C.quad([x0, 0.95, -1.36], [x1, 0.95, -1.36], [x1, 3.7, -1.36], [x0, 3.7, -1.36], { tint: i % 2 ? [0.3, 0.36, 0.62] : [0.74, 0.7, 0.6], swayArr: [0, 0, 0.15, 0.15] }); }
+    for (let i = 0; i < 10; i++) { const x0 = -3.12 + (6.24 * i) / 10, x1 = x0 + 6.24 / 10; C.quad([x0, 0.95, -1.36], [x1, 0.95, -1.36], [x1, 3.7, -1.36], [x0, 3.7, -1.36], { tint: i % 2 ? [0.3, 0.36, 0.62] : [0.62, 0.58, 0.5], swayArr: [0, 0, 0.15, 0.15] }); }
     for (let i = 0; i < 8; i++) { const x0 = -3.3 + (6.6 * i) / 8, x1 = x0 + 6.6 / 8; C.quad([x0, 4.2, -1.5], [x1, 4.2, -1.5], [x1, 3.75, 0.4], [x0, 3.75, 0.4], { tint: i % 2 ? [0.34, 0.4, 0.68] : [0.3, 0.35, 0.62], flip: true, swayArr: [0, 0, 0.5, 0.5] }); }
     addBanner(S, { pos: [0, 3.5, -1.3], yaw: 0, w: 1.4, h: 2.2, emblem: 'fleur', shape: 'swallow', loose: 0.4, rod: true, tint: [0.95, 0.88, 0.62] });
   });
