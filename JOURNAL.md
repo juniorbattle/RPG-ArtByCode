@@ -267,6 +267,13 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : la règle des blessures sous la version 2 (0,98 par partie en diligent), des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
   - **À faire en local** : supprimer la branche distante `claude/friendly-davinci-17lk4m` (fusionnée ; le cloud n'a pas pu, Passe V10).
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : la règle des blessures sous la charge, le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
+  - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
+    la version 2 cohérente hors combat (ses dix jours, ses événements dans l'ordre). À faire en local : les mesures GPU des places (budget E24 ;
+    le bake neuf d'une place, ~200 poses, à mesurer : en cache ensuite), leur revue visuelle en rendu matériel ; **le parvis à reprendre** (la
+    quatrième critique : « pas encore ») : un Colisée qui se lise comme tel (une façade courbe qui fuit, trois ordres, plus haut que les maisons, et
+    un cadrage qui en montre le haut, la caméra des places le coupe) ; les réserves de la Passe VP1 (la composition frontale, les cercles de sable,
+    les étals d'un seul modèle, les personnages coupés au bas de l'image, la fontaine sans eau) ; la règle des blessures sous la charge (1,08 par
+    partie de dix jours pour un joueur préparé, 1,74 pour un joueur qui ne prépare rien, Passe VP2).
 
 **0b. Version jouable — séance cloud (Passes N1 à N4, puis L0 à L7)** : plan v4 `briefs/cloud-session-playable.md`, brief
   `briefs/cloud-session-playable-brief.md`, contrats dans `contracts/`. **Séance close** : lots L0 à L7 fusionnés dans `main` ; bilan, mesures,
@@ -767,6 +774,13 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Un écran écrit dans une police embarquée montre son contenu une fois ses polices chargées, attente bornée et mesurée, avant que la scène prenne
   le fil principal ; une preuve « l'écran retiré » retire l'écran dans le harnais des deux côtés et se double d'un contrôle sans ce retrait ; un
   test qui fige un fichier contre un ancien commit se met à jour en nommant chaque changement voulu (Passe UI4).
+- Un décor se juge à l'aveugle contre sa référence, par un agent neuf qui ne sait pas quelle planche est l'avant ou l'après, et deux versions
+  d'un même lieu sur la même feuille : les notes absolues varient d'un critique à l'autre (de 7 à 6 pour les mêmes images), l'ordre des paires
+  ne varie pas ; une correction qu'un critique demande (« montrez le haut du Colisée ») peut en défaire une autre qu'un autre aimait (sa masse) :
+  la paire tranche (Passe VP1).
+- Un texte écrit pour un format garde ses hypothèses (« demain », « la poule continue », « chaque matin ») : on les trouve en récoltant tout ce
+  qu'un joueur peut lire sur des parties entières et en y cherchant les mots de l'ancien format ; un signe n'annonce que ce qui vient après lui
+  (`firedBefore`), et la description d'un événement ne promet que ce que font ses effets (Passe VP2).
 - Ce que la caméra place à une fraction de la hauteur et ce que l'interface place à une distance fixe du bas se rencontrent à une hauteur qui se
   calcule : un contrôle qui projette les marques du sol et les compare aux boîtes du HUD, à toutes les tailles jusqu'au petit téléphone, le voit ;
   « ne paraît pas » se mesure avant d'être cru (Passe AF1). Une différence de ±1 niveau sur toute l'image peut venir d'un élément invisible retiré
