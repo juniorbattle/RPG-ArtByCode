@@ -55,7 +55,9 @@ d'arbitrages `briefs/fiche-v2.html` recueille vos choix.
 - **L'équilibrage « modéré »** : Tobin facile, Marek le plus dur ; des duels longs (Rhosk, Ilse) ; les blessures fréquentes (0,98 par partie
   de trois jours, 1,96 sur dix jours au TournamentLab).
 - **Les trois places** : leur identité, leur taille, le cadrage qui suit le héros, les sprites provisoires (générés) des personnages sans feuille
-  cuite ; de jour et de nuit.
+  cuite ; de jour et de nuit. Refaites dans la langue du Merchant District (Passe VP1 : la façade à arcades du Colisée, les cercles de sable,
+  la scène et les étals du marché, la lumière rare, le pavois de jour, la pluie du jour humide) : leur cohérence avec le district est la
+  question de cette revue.
 - **Les dix jours** : le rythme (cinq combats au moins, des jours libres), la coupe, la finale ; le recrutement d'Orla (la phase d'équipe est un
   écart consigné).
 - **Le son** : les effets du duel, les ambiances par lieu et moment, l'air de chaque état du jour.
@@ -64,8 +66,8 @@ d'arbitrages `briefs/fiche-v2.html` recueille vos choix.
 
 ## Ce qui reste local (sans quoi la version 2 ne peut pas devenir le défaut)
 
-- Les mesures GPU des trois places (budget « Pas plus cher que la nuit B ») et leur visibilité (aucune pièce cuite : les places n'ont pas de
-  bake de visibilité, tout est dessiné).
+- Les mesures GPU des trois places (budget « Pas plus cher que la nuit B ») ; leur bake de visibilité est fait et prouvé en rendu logiciel
+  (Passe VP1 : 20 à 33 % de triangles en moins, l'image identique à `vis=0` sauf des lamelles d'un pixel), à mesurer sur le GPU.
 - La revue visuelle des places, des cinématiques et des écrans en rendu matériel.
 - Les poses de charge à dessiner (`briefs/combat-system.md` § 14) et la feuille de Marek (AV-10).
 - Les personnages à cuire (liste au journal, Passe V5).

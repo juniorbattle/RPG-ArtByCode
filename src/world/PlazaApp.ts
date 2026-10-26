@@ -50,7 +50,7 @@ export function plazaKeyLight(look: DayLook | null, t: DayTime | null): THREE.Ve
 /** the squares' camera (journal Passe VP1): the Merchant District's language (a low pitch, a long lens, the facades as the backdrop, the
  *  characters at B's size on screen: B is 8 deg / 26 m / fov 30 with characters x 1.12) instead of the first build's high, wide view (22 deg,
  *  17 m, fov 40) that showed mostly the floor; each square turned a little toward the side that composes best */
-const CAM = { pitch: 10, pitchNorth: 8.5, dist: 23, distNorth: 20, fov: 32, ty: 2.6, lead: 2.5 };
+const CAM = { pitch: 8.5, pitchNorth: 7.5, dist: 23, distNorth: 20, fov: 32, ty: 2.6, lead: 2.5 };
 const BASE_YAW: Record<PlazaKind, number> = { forecourt: -8, training: 9, festival: -5 };
 /** the widest frame the squares' visibility bake covers (src/world/PlazaVisibility.ts) */
 export const PLAZA_FRAME = 2.4;

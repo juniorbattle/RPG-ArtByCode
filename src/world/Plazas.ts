@@ -53,7 +53,9 @@ const FIRE: V3 = [1.0, 0.5, 0.2];
 /** the Merchant District's frontage numbers (DEFAULT_CONFIG): the squares' houses share them (the first build used more timber and more lit
  *  windows than the district) */
 const COMMON = { asymmetry: 0.42, timberRatio: 0.32, roofExaggeration: 0.95, verticality: 1 } as const;
-const LIT_WINDOWS = 0.46;
+/** the share of lit windows at night (the first number, 0.46, lit nine windows in fourteen on a house: the district's frontage reads about a
+ *  quarter lit, journal Passe VP1) */
+const LIT_WINDOWS = 0.3;
 const W = { x0: -11, x1: 11, z0: -16, z1: 3 };
 /** the walkable surface of every square (metres) */
 export const PLAZA_WALK: Readonly<typeof W> = W;
@@ -123,6 +125,10 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       zb -= width + r.range(0.6, 1.6);
     }
   }
+
+  // the north corners behind the side rows (the forecourt's are the Colosseum's): a back-row house each (journal Passe VP1: the square opened
+  // there onto a cobbled plain to the horizon)
+  if (kind !== 'forecourt') for (const side of [-1, 1]) house(`corner${side}`, [side * 16.5, 0, -26], 0, rng.fork(`corner${side}`), { width: 9, floors: 4, back: true });
 
   // ---------------------------------------------------------------- the lamps: a rhythm along the open south side (the quay's), a few inside
   const lamp = (x: number, z: number, strong = true) => {
@@ -200,10 +206,11 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     house('north0', [-6, 0, -18.4], 0, rng.fork('north0'), { width: 8, floors: 3, shop: 'tavern' });
     house('north1', [5.5, 0, -18.4], 0, rng.fork('north1'), { width: 9, floors: 3, shop: 'general' });
     house('northB0', [-1.5, 0, -27], 0, rng.fork('nb0'), { width: 9, floors: 5, back: true });
-    // strings across the square: lanterns at night (lit on every other string), the tournament's pennants by day (J4, J6)
+    // strings across the square: lanterns at night (lit on every other string), the tournament's pennants by day (J4, J6) on two of the four,
+    // higher (four strings of pennants read as a wall between the camera and the stage: the district's street has one, journal Passe VP1)
     for (let k = 0; k < 4; k++) {
       const z = -2 - k * 3.6, a: V3 = [-12.4, 4.6, z], b: V3 = [12.4, 4.6, z - 0.6];
-      if (day) garland(S, a, b, 0.9, { size: 0.42, width: 0.34, spacing: 0.5, phase: k });
+      if (day) { if (k % 2) garland(S, [a[0], 5.4, a[2]], [b[0], 5.4, b[2]], 1.0, { size: 0.42, width: 0.34, spacing: 0.56, phase: k }); }
       else {
         cord(S, a, b, 0.9);
         for (let t = 1; t < 8; t++) { const u = t / 8, p = sag(a, b, 0.9, u); batch.add(k % 2 ? 'lantern' : 'lanternDark', { pos: [p[0], p[1] - 0.32, p[2]], yaw: t, scale: 1.1 }, 0); }
@@ -226,7 +233,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   }
   // heraldry as a focal accent: one guild banner on the house nearest the focal point (the district's buildBanners)
   const banner = [...sockets.filter((s) => s.kind === 'banner')].sort((a, b) => Math.hypot(a.pos[0] - fx, a.pos[2] - fz) - Math.hypot(b.pos[0] - fx, b.pos[2] - fz))[0];
-  if (banner) addBanner(S, { pos: [banner.pos[0] + banner.dir[0] * 0.18, banner.pos[1] + 0.3, banner.pos[2] + banner.dir[2] * 0.18], yaw: Math.atan2(banner.dir[0], banner.dir[2]), w: 1.2, h: 2.6, emblem: kind === 'training' ? 'scales' : 'tankard', shape: 'swallow', loose: 0.5 });
+  if (banner) addBanner(S, { pos: [banner.pos[0] + banner.dir[0] * 0.18, banner.pos[1] + 0.3, banner.pos[2] + banner.dir[2] * 0.18], yaw: Math.atan2(banner.dir[0], banner.dir[2]), w: 1.2, h: 2.6, emblem: kind === 'training' ? 'hammers' : kind === 'forecourt' ? 'fleur' : 'tankard', shape: 'swallow', loose: 0.5 });
   // the tournament's bunting by day only (J6): a swag across each house's first upper floor, and from the nearest façade to each south lamp
   if (day) {
     const front = sockets.filter((s) => s.kind === 'bunting' && (s.tag === 'left1' || s.tag === 'right1'));
@@ -246,17 +253,17 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   {
     const r = rng.fork('far');
     for (let n = 0; n < 26; n++) {
-      const a = r.range(-1.05, 1.05), d = r.range(52, 92);
+      const a = r.range(-1.05, 1.05), d = r.range(62, 104);
       far.frame.part = part();
-      farHouse(far, { x: Math.sin(a) * d, y: r.range(-0.5, 1.5), z: -Math.cos(a) * d - 6, w: r.range(6, 10), d: r.range(5, 8), h: r.range(8, 14), wall: [0.3, 0.31, 0.36], roof: [0.12, 0.14, 0.2], id: 500 + n, lit: day ? 0 : r.range(0.2, 0.6), hip: r.bool(0.3), chimney: r.bool(0.4) });
+      farHouse(far, { x: Math.sin(a) * d, y: r.range(-0.5, 1.5), z: -Math.cos(a) * d - 6, w: r.range(6, 10), d: r.range(5, 8), h: r.range(5, 9), wall: [0.3, 0.31, 0.36], roof: [0.12, 0.14, 0.2], id: 500 + n, lit: day ? 0 : r.range(0.2, 0.6), hip: r.bool(0.3), chimney: r.bool(0.4) });
     }
     far.frame.part = 0;
   }
   // the Colosseum seen from the other squares: its drum above the roofs to the north-east (the forecourt stands at its foot)
-  if (kind !== 'forecourt') tracked(() => S.at([kind === 'training' ? 70 : -64, 0, -150], 0, () => {
-    S.get('stone').cylinder(30, 0, 24, 36, { tint: [0.6, 0.58, 0.56] });
-    S.get('stone').cylinder(30.6, 23.4, 25, 36, { tint: [0.66, 0.63, 0.6] });
-    for (const y of [5, 13]) S.get('dark').cylinder(30.05, y, y + 4.5, 36, { tint: [0.12, 0.12, 0.15] });
+  if (kind !== 'forecourt') tracked(() => S.at([kind === 'training' ? 76 : -70, 0, -178], 0, () => {
+    S.get('stone').cylinder(30, 0, 21, 36, { tint: [0.5, 0.49, 0.5] });
+    S.get('stone').cylinder(30.6, 20.4, 22, 36, { tint: [0.54, 0.52, 0.52] });
+    for (const y of [4.5, 11.5]) S.get('dark').cylinder(30.05, y, y + 4, 36, { tint: [0.12, 0.12, 0.15] });
   }));
   const farMat = farMaterial(); disposables.push(farMat);
   if (day) { farMat.defines = { ...farMat.defines, DAY: 1 }; farMat.needsUpdate = true; }
@@ -321,10 +328,14 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
 // ---------------------------------------------------------------- pieces of the squares
 
 /** The Colosseum's outer wall seen from its forecourt: a curved arcade facade (an arc of the drum, convex toward the square) of two tiers of
- *  arches between piers and an attic, string courses and a cornice, the masts and pennants of the tournament along the attic, the great
+ *  arches between piers, string courses and a cornice, the masts and pennants of the tournament along the cornice, the great
  *  gate in the middle (its portcullis raised by day, its doors shut at night) and the cavea's inner wall rising behind; each bay a part. */
 function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, lights: PlazaBuild['lights'], emitters: Emitter[], blockers: PlazaBuild['blockers'], obstacles: MaskObstacle[]): void {
-  const R = 52, C: V3 = [0, 0, -71.2], stone: V3 = [0.8, 0.76, 0.7], stoneLt: V3 = [0.86, 0.82, 0.75], dark: V3 = [0.07, 0.07, 0.09];
+  // journal Passe VP1, after the second blind critique: darker stone (it went blue-white at night) in larger blocks (uvScale: the wall's bricks
+  // read as tiles at the district's scale), no attic (the facade filled every frame to its top: its cornice is now the top, the masts and their
+  // pennants stand against the sky), the tournament's fleur-de-lis on its banners (the tavern's tankard was on them)
+  // at night a shade darker still: the moon faces the facade, which read brighter than the district's moonlit plaster
+  const nk = day ? 1 : 0.84, R = 52, C: V3 = [0, 0, -71.2], stone: V3 = [0.7 * nk, 0.67 * nk, 0.62 * nk], stoneLt: V3 = [0.76 * nk, 0.72 * nk, 0.66 * nk], dark: V3 = [0.07, 0.07, 0.09], uv = 0.6;
   const St = S.get('stone'), Dk = S.get('dark');
   const bayW = 3.7, gateW = 5.6;
   // bay centres along the arc: the gate at 0, five bays each side
@@ -337,14 +348,16 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
     for (let i = 0; i < n; i++) {
       const a0 = (i / n) * Math.PI, a1 = ((i + 1) / n) * Math.PI;
       Dk.tri([cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z - 0.72], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z - 0.72], [cx, yc, z - 0.72], { tint: dark });
+      // the head's intrados, from the front plane to the recess (without it a pale crescent of whatever stands behind showed beside each head)
+      St.quad([cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z - 0.72], [cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z - 0.72], { uvScale: uv, tint: [0.54, 0.51, 0.47] });
       // the spandrel between the head and the bay's corners (front plane)
       const corner: V3 = [cx + (a0 < Math.PI / 2 ? hw + 0.02 : -hw - 0.02), yc + hw + 0.02, z];
-      St.tri([cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z], corner, { tint: stone, flip: true });
+      St.tri([cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z], corner, { uvScale: uv, tint: stone, flip: true });
       if (i % 2 === 0) { const am = (a0 + a1) / 2; St.box(cx + Math.cos(am) * (hw + 0.12), yc + Math.sin(am) * (hw + 0.12), z + 0.04, 0.26, 0.3, 0.16, { tint: ring }); }
     }
-    St.boxMM(cx - hw - 0.02, yc + hw, z - 0.02, cx + hw + 0.02, yc + hw + 0.04, z, { tint: stone });
+    St.boxMM(cx - hw - 0.02, yc + hw, z - 0.02, cx + hw + 0.02, yc + hw + 0.04, z, { uvScale: uv, tint: stone });
     // the reveal: the arch's sides seen in depth
-    for (const s of [-1, 1]) St.boxMM(cx + s * hw - (s > 0 ? 0.04 : 0), yb, z - 0.72, cx + s * hw + (s < 0 ? 0.04 : 0), yb + hRect, z, { tint: [0.6, 0.57, 0.53] });
+    for (const s of [-1, 1]) St.boxMM(cx + s * hw - (s > 0 ? 0.04 : 0), yb, z - 0.72, cx + s * hw + (s < 0 ? 0.04 : 0), yb + hRect, z, { uvScale: uv, tint: [0.54, 0.51, 0.47] });
   };
   for (const b of angles) tracked(() => {
     const pos: V3 = [C[0] + Math.sin(b.a) * R, 0, C[2] + Math.cos(b.a) * R];
@@ -352,28 +365,25 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
       const hw = b.w / 2;
       // the piers (one per bay edge; the facade wall behind the openings is the recess)
       for (const s of [-1, 1]) {
-        St.boxMM(s * hw - 0.42, 0, -0.5, s * hw + 0.42, 6.4, 0.3, { tint: stoneLt, aoY: [0.7, 1] });
-        St.boxMM(s * hw - 0.26, 6.4, -0.4, s * hw + 0.26, 10.8, 0.18, { tint: stoneLt, aoY: [0.8, 1] });
+        St.boxMM(s * hw - 0.42, 0, -0.5, s * hw + 0.42, 6.4, 0.3, { uvScale: uv, tint: stoneLt, aoY: [0.7, 1] });
+        St.boxMM(s * hw - 0.26, 6.4, -0.4, s * hw + 0.26, 10.8, 0.18, { uvScale: uv, tint: stoneLt, aoY: [0.8, 1] });
       }
       // the ground tier's arch (the gate wider and taller), the upper tier's
       if (b.gate) arch(0, 0, 2.1, 4.0, 0, stoneLt); else arch(0, 0, 1.25, 3.4, 0, stoneLt);
       arch(0, 6.95, 0.95, 1.6, -0.1, stoneLt);
       // the wall between the arches' heads and the string course above them (the first try left both open onto the sky)
       const top = b.gate ? 6.1 : 4.65;
-      if (top < 6.2) St.boxMM(-hw + 0.42, top, -0.12, hw - 0.42, 6.25, -0.02, { tint: stone });
-      St.boxMM(-0.97, 9.5, -0.12, 0.97, 10.82, -0.1, { tint: stone });
-      // the wall around the upper arch, the string courses, the attic, the cornice
-      St.boxMM(-hw + 0.26, 6.4, -0.12, hw - 0.26, 6.95, -0.1, { tint: stone });
-      for (const s of [-1, 1]) St.boxMM(s > 0 ? 0.95 : -hw + 0.26, 6.95, -0.12, s > 0 ? hw - 0.26 : -0.95, 10.8, -0.1, { tint: stone });
-      St.boxMM(-hw - 0.45, 6.2, -0.55, hw + 0.45, 6.55, 0.42, { tint: stoneLt });
-      St.boxMM(-hw - 0.3, 10.8, -0.5, hw + 0.3, 11.1, 0.3, { tint: stoneLt });
-      St.boxMM(-hw - 0.02, 11.1, -0.3, hw + 0.02, 12.9, 0.0, { tint: stone, aoY: [0.85, 1] });
-      Dk.boxMM(-0.45, 11.6, -0.31, 0.45, 12.3, -0.29, { tint: dark });
-      St.boxMM(-hw - 0.3, 12.9, -0.6, hw + 0.3, 13.35, 0.35, { tint: stoneLt });
+      if (top < 6.2) St.boxMM(-hw + 0.42, top, -0.12, hw - 0.42, 6.25, -0.02, { uvScale: uv, tint: stone });
+      St.boxMM(-0.97, 9.5, -0.12, 0.97, 10.82, -0.1, { uvScale: uv, tint: stone });
+      // the wall around the upper arch, the string courses, the cornice (the top: no attic)
+      St.boxMM(-hw + 0.26, 6.4, -0.12, hw - 0.26, 6.95, -0.1, { uvScale: uv, tint: stone });
+      for (const s of [-1, 1]) St.boxMM(s > 0 ? 0.95 : -hw + 0.26, 6.95, -0.12, s > 0 ? hw - 0.26 : -0.95, 10.8, -0.1, { uvScale: uv, tint: stone });
+      St.boxMM(-hw - 0.45, 6.2, -0.55, hw + 0.45, 6.55, 0.42, { uvScale: uv, tint: stoneLt });
+      St.boxMM(-hw - 0.3, 10.8, -0.6, hw + 0.3, 11.25, 0.35, { uvScale: uv, tint: stoneLt });
       // a mast and its pennant on every other bay, the tournament's colours
       if (b.gate || Math.round(b.a * R / bayW) % 2 === 0) {
-        S.get('timber').boxMM(-0.06, 13.35, -0.2, 0.06, 16.4, -0.08, { tint: [0.5, 0.42, 0.34], grain: 'y' });
-        addBanner(S, { pos: [0.12, 16.1, -0.14], yaw: Math.PI / 2, w: 0.5, h: 1.5, emblem: 'scales', shape: 'pennant', loose: 0.7, rod: false, tint: b.gate ? [0.95, 0.88, 0.62] : [0.5, 0.6, 0.95] });
+        S.get('timber').boxMM(-0.06, 11.25, -0.2, 0.06, 14.6, -0.08, { tint: [0.5, 0.42, 0.34], grain: 'y' });
+        addBanner(S, { pos: [0.12, 14.3, -0.14], yaw: Math.PI / 2, w: 0.5, h: 1.5, emblem: 'fleur', shape: 'pennant', loose: 0.7, rod: false, tint: b.gate ? [0.95, 0.88, 0.62] : [0.5, 0.6, 0.95] });
       }
       if (b.gate) {
         // the portcullis: raised by day (its teeth under the head), shut at night with the doors behind it
@@ -382,10 +392,10 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
         for (let y = y0 + 0.3; y < 6.1; y += 0.55) M.boxMM(-2.05, y, -0.33, 2.05, y + 0.06, -0.27, { tint: [0.3, 0.3, 0.32] });
         if (!day) S.get('planks').boxMM(-2.1, 0, -0.6, 2.1, 5.9, -0.5, { grain: 'y', tint: [0.42, 0.32, 0.24] });
         // the great banner over the gate
-        addBanner(S, { pos: [0, 12.6, 0.2], yaw: 0, w: 1.6, h: 3.0, emblem: 'scales', shape: 'swallow', loose: 0.35, tint: [0.95, 0.88, 0.62] });
+        addBanner(S, { pos: [0, 10.55, 0.4], yaw: 0, w: 1.6, h: 3.0, emblem: 'fleur', shape: 'swallow', loose: 0.35, tint: [0.95, 0.88, 0.62] });
       } else if (Math.abs(b.a) * R < bayW * 2.2) {
         // long banners on the bays beside the gate
-        addBanner(S, { pos: [0, 10.4, 0.25], yaw: 0, w: 1.1, h: 3.2, emblem: 'tankard', shape: 'swallow', loose: 0.4, tint: [0.5, 0.6, 0.95] });
+        addBanner(S, { pos: [0, 10.55, 0.4], yaw: 0, w: 1.1, h: 3.2, emblem: 'fleur', shape: 'swallow', loose: 0.4, tint: [0.5, 0.6, 0.95] });
       }
     });
   });
@@ -395,9 +405,9 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
     for (let i = 0; i < n; i++) {
       const u0 = a0 + (a1 - a0) * (i / n), u1 = a0 + (a1 - a0) * ((i + 1) / n);
       const p = (u: number, y: number): V3 => [Math.sin(u) * r, y, Math.cos(u) * r - r + 4];
-      St.quad(p(u0, 0), p(u1, 0), p(u1, 17.5), p(u0, 17.5), { tint: [0.68, 0.65, 0.6], flip: true, ao: [0.7, 0.7, 1, 1] });
-      St.quad(p(u0, 17.5), p(u1, 17.5), [p(u1, 18.1)[0] * 1.01, 18.1, p(u1, 18.1)[2] + 0.4], [p(u0, 18.1)[0] * 1.01, 18.1, p(u0, 18.1)[2] + 0.4], { tint: [0.78, 0.74, 0.68], flip: true });
-      if (i % 2) Dk.quad(p(u0 + 0.004, 14.2), p(u1 - 0.004, 14.2), p(u1 - 0.004, 16.2), p(u0 + 0.004, 16.2), { tint: dark, flip: true });
+      St.quad(p(u0, 0), p(u1, 0), p(u1, 15.5), p(u0, 15.5), { tint: [0.68, 0.65, 0.6], flip: true, ao: [0.7, 0.7, 1, 1] });
+      St.quad(p(u0, 15.5), p(u1, 15.5), [p(u1, 16.1)[0] * 1.01, 16.1, p(u1, 16.1)[2] + 0.4], [p(u0, 16.1)[0] * 1.01, 16.1, p(u0, 16.1)[2] + 0.4], { tint: [0.78, 0.74, 0.68], flip: true });
+      if (i % 2) Dk.quad(p(u0 + 0.004, 12.4), p(u1 - 0.004, 12.4), p(u1 - 0.004, 14.4), p(u0 + 0.004, 14.4), { tint: dark, flip: true });
     }
   }));
   // inside a few ground arches: the tunnels' torches (warm accents at the focal point, lit day and night like the arena's fires)
@@ -428,6 +438,16 @@ function sandRing(S: SlotSet, batch: InstanceBatch, cx: number, cz: number, r: n
   const n = 28, poly: Array<[number, number]> = Array.from({ length: n }, (_, i) => [cx + Math.cos((i / n) * Math.PI * 2) * r, cz + Math.sin((i / n) * Math.PI * 2) * r]);
   // sand: the plaster's ivory warmed (the stone's grey-blue under a sand tint read green)
   S.get('plaster').prism(poly, 0, 0.05, { tint: [0.82, 0.72, 0.57], capTop: true });
+  // the sand's worn edge and the rake's arcs (journal Passe VP1: a flat disc read as a puddle at night): a darker band inside the kerb, two raked
+  // rings of a shade between
+  const band = (r0: number, r1: number, tint: V3) => {
+    for (let i = 0; i < n; i++) {
+      const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2, y = 0.052;
+      S.get('plaster').quad([cx + Math.cos(a0) * r1, y, cz + Math.sin(a0) * r1], [cx + Math.cos(a1) * r1, y, cz + Math.sin(a1) * r1], [cx + Math.cos(a1) * r0, y, cz + Math.sin(a1) * r0], [cx + Math.cos(a0) * r0, y, cz + Math.sin(a0) * r0], { tint, flip: true });
+    }
+  };
+  band(r - 0.42, r, [0.62, 0.53, 0.41]);
+  for (const k of [0.42, 0.68]) band(r * k, r * k + 0.07, [0.72, 0.62, 0.48]);
   const T = S.get('timber');
   for (let i = 0; i < n; i++) {
     const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2, rk = r + 0.06;
@@ -444,12 +464,16 @@ function sandRing(S: SlotSet, batch: InstanceBatch, cx: number, cz: number, r: n
       S.at([(p0[0] + p1[0]) / 2, y, (p0[2] + p1[2]) / 2], yaw, () => T.box(0, 0, 0, 0.06, 0.07, len, { tint: [0.5, 0.4, 0.3], grain: 'z' }));
     }
   }
-  // the practice dummy: a post, a crossbar for arms, a straw body
+  // the practice dummy: a post, arms on a crossbar wrapped in straw at their ends, a straw body bound by a dark rope, a sacking head (journal
+  // Passe VP1: the first one, a pale cylinder on a stake, read as a bollard)
   S.at([cx, 0, cz], 0.4, () => {
-    T.cylinder(0.08, 0, 1.75, 6, { tint: [0.5, 0.4, 0.3], capTop: true });
-    T.box(0, 1.35, 0, 1.1, 0.08, 0.08, { tint: [0.5, 0.4, 0.3], grain: 'x' });
-    S.get('cloth').cylinder(0.24, 0.85, 1.5, 7, { tint: [0.5, 0.42, 0.3], capTop: true, r1: 0.2 });
-    S.get('cloth').cylinder(0.16, 1.5, 1.82, 7, { tint: [0.48, 0.4, 0.28], capTop: true });
+    const straw: V3 = [0.56, 0.45, 0.27], sack: V3 = [0.5, 0.43, 0.34];
+    T.cylinder(0.08, 0, 1.75, 6, { tint: [0.42, 0.33, 0.25], capTop: true });
+    T.box(0, 1.36, 0, 1.3, 0.13, 0.13, { tint: [0.44, 0.35, 0.27], grain: 'x' });
+    for (const a of [-0.58, 0.58]) S.get('cloth').box(a, 1.36, 0, 0.2, 0.2, 0.2, { tint: straw });
+    S.get('cloth').cylinder(0.25, 0.8, 1.48, 7, { tint: straw, capTop: true, capBottom: true, r1: 0.19 });
+    S.get('dark').cylinder(0.215, 1.1, 1.15, 7, { tint: [0.16, 0.13, 0.11] });
+    S.get('cloth').cylinder(0.15, 1.52, 1.86, 7, { tint: sack, capTop: true, capBottom: true, r1: 0.12 });
   });
   batch.add('bucket', { pos: [cx + r * 0.7, 0, cz + r * 0.75], yaw: cx });
 }
@@ -484,7 +508,7 @@ function healer(S: SlotSet, batch: InstanceBatch, x: number, z: number, yaw: num
     const T = S.get('timber'), C = S.get('cloth');
     for (const [a, b, h] of [[-1.3, -0.6, 2.4], [1.3, -0.6, 2.4], [-1.3, 0.8, 1.9], [1.3, 0.8, 1.9]] as Array<[number, number, number]>) T.boxMM(a - 0.05, 0, b - 0.05, a + 0.05, h, b + 0.05, { tint: [0.6, 0.52, 0.44], grain: 'y' });
     const n = 6;
-    for (let i = 0; i < n; i++) { const x0 = -1.45 + (2.9 * i) / n, x1 = x0 + 2.9 / n; C.quad([x0, 2.42, -0.7], [x1, 2.42, -0.7], [x1, 1.86, 0.95], [x0, 1.86, 0.95], { tint: i % 2 ? [0.74, 0.71, 0.64] : [0.7, 0.67, 0.6], flip: true, swayArr: [0, 0, 0.5, 0.5] }); }
+    for (let i = 0; i < n; i++) { const x0 = -1.45 + (2.9 * i) / n, x1 = x0 + 2.9 / n; C.quad([x0, 2.42, -0.7], [x1, 2.42, -0.7], [x1, 1.86, 0.95], [x0, 1.86, 0.95], { tint: i % 2 ? [0.4, 0.46, 0.62] : [0.64, 0.62, 0.57], flip: true, swayArr: [0, 0, 0.5, 0.5] }); }
     S.get('planks').boxMM(-1.1, 0.42, -0.4, 1.1, 0.5, 0.0, { grain: 'x', tint: [0.7, 0.6, 0.5] });
     for (const a of [-0.9, 0.9]) T.boxMM(a - 0.04, 0, -0.36, a + 0.04, 0.42, -0.04, { tint: [0.6, 0.52, 0.44] });
   });
@@ -502,8 +526,13 @@ function stage(S: SlotSet, batch: InstanceBatch, x: number, z: number): void {
     for (let i = 0; i < n; i++) { const x0 = -3.4 + (6.8 * i) / n, x1 = x0 + 6.8 / n; C.quad([x0, 0.78, 1.62], [x1, 0.78, 1.62], [x1, 0.04, 1.66], [x0, 0.04, 1.66], { tint: i % 2 ? [0.32, 0.38, 0.72] : [0.86, 0.82, 0.7], swayArr: [0, 0, 0.3, 0.3] }); }
     for (let k = 0; k < 3; k++) P.boxMM(-0.9, 0.27 * k, 1.66 + 0.32 * (2 - k), 0.9, 0.27 * (k + 1), 1.98 + 0.32 * (2 - k), { grain: 'x', tint: [0.62, 0.5, 0.4] });
     for (const a of [-3.2, 3.2]) T.boxMM(a - 0.08, 0.95, -1.5, a + 0.08, 4.2, -1.34, { tint: [0.5, 0.4, 0.32], grain: 'y' });
-    for (let i = 0; i < 8; i++) { const x0 = -3.3 + (6.6 * i) / 8, x1 = x0 + 6.6 / 8; C.quad([x0, 4.2, -1.5], [x1, 4.2, -1.5], [x1, 3.75, 0.4], [x0, 3.75, 0.4], { tint: i % 2 ? [0.56, 0.62, 0.92] : [0.5, 0.56, 0.86], flip: true, swayArr: [0, 0, 0.5, 0.5] }); }
-    addBanner(S, { pos: [0, 3.5, -1.42], yaw: 0, w: 1.4, h: 2.2, emblem: 'tankard', shape: 'swallow', loose: 0.4, rod: true, tint: [0.95, 0.88, 0.62] });
+    // journal Passe VP1 (the second blind critique: « a flat slab under a white board »): the front posts holding the canopy, a fascia along
+    // the platform's edge, a striped backdrop behind the players, the canopy in the tournament's deep blue
+    for (const a of [-3.2, 3.2]) T.boxMM(a - 0.07, 0.95, 0.32, a + 0.07, 3.8, 0.46, { tint: [0.5, 0.4, 0.32], grain: 'y' });
+    T.boxMM(-3.45, 0.74, 1.6, 3.45, 0.98, 1.7, { tint: [0.4, 0.31, 0.24], grain: 'x' });
+    for (let i = 0; i < 10; i++) { const x0 = -3.12 + (6.24 * i) / 10, x1 = x0 + 6.24 / 10; C.quad([x0, 0.95, -1.36], [x1, 0.95, -1.36], [x1, 3.7, -1.36], [x0, 3.7, -1.36], { tint: i % 2 ? [0.3, 0.36, 0.62] : [0.74, 0.7, 0.6], swayArr: [0, 0, 0.15, 0.15] }); }
+    for (let i = 0; i < 8; i++) { const x0 = -3.3 + (6.6 * i) / 8, x1 = x0 + 6.6 / 8; C.quad([x0, 4.2, -1.5], [x1, 4.2, -1.5], [x1, 3.75, 0.4], [x0, 3.75, 0.4], { tint: i % 2 ? [0.34, 0.4, 0.68] : [0.3, 0.35, 0.62], flip: true, swayArr: [0, 0, 0.5, 0.5] }); }
+    addBanner(S, { pos: [0, 3.5, -1.3], yaw: 0, w: 1.4, h: 2.2, emblem: 'fleur', shape: 'swallow', loose: 0.4, rod: true, tint: [0.95, 0.88, 0.62] });
   });
   batch.add('barrel', { pos: [x - 2.6, 0.95, z - 0.9], yaw: 0.3 }); batch.add('stool', { pos: [x + 1.8, 0.95, z - 0.6], yaw: 1.2 });
 }

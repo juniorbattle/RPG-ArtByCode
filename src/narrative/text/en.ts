@@ -574,6 +574,7 @@ export const EN = {
   'v2.board.bracket': 'Day 8, the major match: the semi-finals\' losers fight for the third place, the Gate bouts\' winners the Gate final. Day 10, the final. Days 3, 7 and 9 have no bout.',
   'v2.board.result': '{stage}: {winner} beat {loser}{close}',
   'v2.board.fought': 'Your bouts are fought: the tournament ends on the tenth day.',
+  'v2.line.drill.brawl': '« Half my recruits have black eyes this morning, and the other half have sore heads. Mind the broken bottles by the barracks. »',
 } as const;
 
 export type TextKey = keyof typeof EN;

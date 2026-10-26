@@ -28,10 +28,33 @@ export function plazaBakePoses(kind: PlazaKind, place: Pick<PlazaBuild, 'walk' |
   // the squares' edges exactly (the step does not land on them)
   for (const x of [W.x0, W.x1]) for (let z = W.z0; z <= W.z1 + 1e-6; z += step) out.push({ set: 'A', pose: poseOf(x, z, null), player: [x, z] });
   for (const z of [W.z0, W.z1]) for (let x = W.x0; x <= W.x1 + 1e-6; x += step) out.push({ set: 'A', pose: poseOf(x, z, null), player: [x, z] });
-  // a dialogue turns the camera to the person spoken to (9 m, playPlaza's focus)
-  for (const [x, z] of Object.values(place.spots)) out.push({ set: 'A', pose: poseOf(x, z, 9) });
-  // the cutscenes played on this square: each look of their scripts
-  for (const c of Object.values(CUTSCENES)) if (PLAZA_OF[c.place] === kind) for (const st of c.steps) if ('cam' in st) out.push({ set: 'A', pose: poseOf(st.cam[0], st.cam[1], st.dist ?? 14) });
+  // a dialogue turns the camera to the person spoken to (9 m, playPlaza's focus), from the hero's pose beside them: the look and the way there
+  // (the page eases every field of the pose toward its target, so a move between two looks passes through their blends: the district's
+  // blend poses, journal Passe VP1)
+  for (const [x, z] of Object.values(place.spots)) {
+    const from = poseOf(x, z, null), to = poseOf(x, z, 9);
+    out.push({ set: 'A', pose: to });
+    for (const t of BLEND) out.push({ set: 'A', pose: lerpPose(from, to, t) });
+  }
+  // the cutscenes played on this square: each look of their scripts, and the moves between them (from the hero's pose at the start, back to it
+  // at the end)
+  for (const c of Object.values(CUTSCENES)) if (PLAZA_OF[c.place] === kind) {
+    const looks = c.steps.flatMap((st) => ('cam' in st ? [poseOf(st.cam[0], st.cam[1], st.dist ?? 14)] : []));
+    const start = poseOf(0, 1.5, null), path = [start, ...looks, start];
+    for (const l of looks) out.push({ set: 'A', pose: l });
+    for (let i = 0; i + 1 < path.length; i++) for (const t of BLEND) out.push({ set: 'A', pose: lerpPose(path[i], path[i + 1], t) });
+  }
+  // the camera holds its edge pose beyond x ± 9 and z - 15..2 (plazaCamPose): the margins' samples repeat poses, baked once
+  const seen = new Set<string>();
+  return out.filter((p) => { const k = JSON.stringify(p.pose); if (seen.has(k)) return false; seen.add(k); return true; });
+}
+
+/** the blends sampled on a move between two looks */
+const BLEND = [0.25, 0.5, 0.75];
+/** a pose between two, field by field (the page's easing) */
+export function lerpPose(a: CamPose, b: CamPose, t: number): CamPose {
+  const out = { ...a } as CamPose;
+  for (const k of Object.keys(a) as Array<keyof CamPose>) if (typeof a[k] === 'number' && typeof b[k] === 'number') (out[k] as number) = (a[k] as number) + ((b[k] as number) - (a[k] as number)) * t;
   return out;
 }
 

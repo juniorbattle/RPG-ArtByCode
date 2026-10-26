@@ -111,7 +111,7 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   dynamique » (`tests/combat-dynamic.test.mjs`, journal Passe C1: each rule against an oracle, the duels' length, the bot, the off-screen race
   against full duels on held-out seeds, the arena of today untouched; ~15 s, the suite's longest file), the arena of the new duel
   (`tests/arena-dynamic.test.mjs`, journal Passe C2: the parameter, the keys, the trial's settings, today's clips on the new moments, the HUD's
-  reading at every step of a duel, every scripted moment, the play mode's flag), the version 2's systems (`tests/v2-skills`, `v2-gear`, `v2-town`, `v2-places`, `v2-story`, `v2-events`, `v2-sound`: journal Passes V2-V8), the version 2's charged command (`tests/combat-charge.test.mjs`, journal Passe V1: the tiers, the AP, the levels, what cuts a
+  reading at every step of a duel, every scripted moment, the play mode's flag), the version 2's systems (`tests/v2-skills`, `v2-gear`, `v2-town`, `v2-places`, `v2-story`, `v2-events`, `v2-sound`: journal Passes V2-V8; `v2-plaza-vis`, the squares' visibility, their poses and their light, journal Passe VP1; `v2-coherence`, the ten days told as they are and the events in their order, journal Passe VP2), the version 2's charged command (`tests/combat-charge.test.mjs`, journal Passe V1: the tiers, the AP, the levels, what cuts a
   charge, C3's defence and skills, the bot, the off-screen race, `V2_SIM_HASH`), the loading screen (`tests/loading-screen.test.mjs`, journal
   Passe UI4: its tone and opening line by day state, its content held until both fonts load and never more than a second, its error, the play
   mode's page tone, its CSS from the design system's tokens only), the texts' tables and the version 2's flag (`tests/texts.test.mjs`, journal
@@ -134,6 +134,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   « tour par tour dynamique », journal Passe C2; `V2=1`: a version 2 game, `&v2=1`, journal Passe V0)
 - `node tools/play-day.mjs <outDir> [seed]` — the first day in the town page (journal Passe L4): E next to Mara opens her dialogue, the day through
   `window.__game` (the steel cargo, the forecourt), every reload from the save, Node's replay with the same fingerprint (`V2=1`: a version 2 game)
+- `node tools/plaza-shots.mjs <outDir> "<named state>" "<extra query>" "name|x,z[|js]" ...` — deterministic captures of a version 2 square (journal
+  Passe VP1): the hero posed at x, z and the camera settled on it at once (`__plaza.posePlayer`), `Math.random` seeded, the loop never started, one
+  frame per pose, `__stats()` printed (the visibility bake's report among it); `static=1` the decor alone; DEV server (named states)
 - `node tools/play-shots.mjs <outDir> "name|<named state>|<WxH,..>|<js>|<extra query>" ...` — review captures of the play mode at window sizes (DEV
   server: named states; `vis=0` unless the query sets `vis`), a panel opened by its JS (`__ui.openPerson('mara')`); not pixel proofs
 - `node tools/title-proof.mjs <outDir> <base url> <branch url> [steps]` — the title screen's proof (journal Passe L4): in a browser that does not
@@ -304,7 +307,10 @@ haggle / challenge / steal, three open squares - the forecourt, the training gro
 `src/world/Plazas.ts`, `PlazaApp.ts`, `src/ui/playPlaza.ts` - the ten days of the tournament and their live cutscenes (`src/tournament/v2calendar.ts`,
 `src/narrative/v2story.ts`; a browser driven by a tool plays them only with `&cutscene=1`), the version 2's events (`src/events/v2catalog.ts`), the
 sound made by the code (`src/audio/`, after a gesture; V settings, N mute), P4-P6; DEV named states `v2-forecourt-morning`, `v2-training-morning`,
-`v2-square-afternoon`, `v2-square-night`, `v2-day2-afternoon`, `v2-training-dusk`; the trial: `briefs/v2-trial.md`, `briefs/fiche-v2.html`) · `title=1` (the title screen, journal Passe L4, choice P2: « New game », « Explore the district », « Continue » with a save; it shows by itself
+`v2-square-afternoon`, `v2-square-night`, `v2-day2-afternoon`, `v2-training-dusk`, and every square at every moment (`v2-forecourt-midday`,
+`v2-forecourt-night`, `v2-training-midday`, `v2-training-night`, `v2-square-morning`, journal Passe VP1); the squares take `static=1`, `vis=0` (no
+visibility bake), `viscache=0|verify`, DEV `visstep=<m>` / `visfine=A:<k>` / `visscale=<k>` (the bake's grid, a finer main tile, every tile k x) and
+the weather (`rain`, `snow`, `storm`, `wind`; the rain of the wet day from the game's state), journal Passes VP1 / VP2; the trial: `briefs/v2-trial.md`, `briefs/fiche-v2.html`) · `title=1` (the title screen, journal Passe L4, choice P2: « New game », « Explore the district », « Continue » with a save; it shows by itself
 on the bare address only, and only in a browser no automation drives (`navigator.webdriver`), kept by the operator (L7-5 « Le garder », journal
 Passe D8): every tool and proof keeps today's game; its
 « Explore the district » runs today's town at midday, as `time=midday` without changing the address, and the DEV panel: decision L7-6a, journal Passe D9; that panel closed, H opens it: decision P1, journal Passe UI2) · `play=1` (the game's play mode, journal Passe L3, loaded on demand: the state from the browser's save, or `&new=1&name=<name>&seed=<n>` for a

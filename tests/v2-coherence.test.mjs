@@ -119,6 +119,12 @@ test('the ten days told as they are: the board, the clerk, the registry, the end
   // Corvin's « rich » line when the purse pays the Whirlwind at today's price
   const co = v2(); co.place = 'training'; co.player.reputation = 50; co.player.coins = VS.skillPrice(co, 't3');
   assert.ok(co.player.coins < 45); assert.match(D.linesOf(co, 'corvin')[0], /Whirlwind/);
+  // a brawl at the barracks: the drill master speaks of it the next morning, not before, not after
+  const br = v2(); br.day = 4; br.slot = 'evening'; br.place = 'training'; br.flags['pulse:security'] = -30; br.pulse = computePulse(br);
+  const fired = []; E.runEvents(br, br.pulse, (e) => fired.push(e.id), { fork: () => ({ next: () => 0 }) }, [byId['v2-barracks-brawl']]);
+  assert.deepEqual(fired, ['v2-barracks-brawl']);
+  assert.doesNotMatch(D.linesOf(br, 'drill')[0], /black eyes/); br.day = 5; br.slot = 'morning'; assert.match(D.linesOf(br, 'drill')[0], /black eyes/);
+  br.day = 6; assert.doesNotMatch(D.linesOf(br, 'drill')[0], /black eyes/);
   // the festival square shows no hooded extra; the card sharps play by its stage
   assert.ok(V.V2_EVENTS.find((e) => e.id === 'v2-card-sharps').outcomes.every((o) => /by the stage/.test(o.text)));
   // every text a version 2 game shows over three whole games (the log, the people's words, the labels and the refusals)

@@ -40,9 +40,10 @@ export const V2_EVENTS: readonly EventDef[] = [
     outcomes: [{ effects: [{ today: 'lesson' }], text: 'Master Corvin opens his school to all comers today: every skill he teaches costs a fifth less until dusk.' }],
   },
   {
-    id: 'v2-barracks-brawl', type: 'district', about: 'A brawl at the barracks when the watch is thin: the training ground is shut the next morning.',
+    // journal Passe VP1: its first `about` promised the training ground shut the next morning, which nothing did; the drill master speaks of it
+    id: 'v2-barracks-brawl', type: 'district', about: 'A brawl at the barracks when the watch is thin: the drill master talks of his bruised recruits the next morning.',
     slots: ['evening'], chance: 0.4, when: { all: [{ pulse: 'security', lte: 50 }, { day: true, gte: 3 }] }, cause: 'a thin watch and the soldiers\' wine',
-    outcomes: [{ effects: [{ pulse: 'security', add: -3 }, { fact: 'barracks-brawl' }], text: 'Shouts from the barracks by the training ground: the soldiers\' wine ran out before their tempers did.' }],
+    outcomes: [{ effects: [{ pulse: 'security', add: -3 }, { fact: 'barracks-brawl' }, { tomorrow: 'brawl' }], text: 'Shouts from the barracks by the training ground: the soldiers\' wine ran out before their tempers did.' }],
   },
   // ---------------------------------------------------------------- the festival square: the puppets by day, the parade at night
   {

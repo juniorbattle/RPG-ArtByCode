@@ -107,6 +107,8 @@ export function linesOf(s: GameState, who: string): string[] {
       return [tx('line.pip.pitch')];
     // the version 2's districts (lot V5): the drill master, the bard
     case 'drill':
+      // the morning after a brawl at the barracks (src/events/v2catalog.ts)
+      if (s.flags[`brawl:${s.day}`]) return [tx('v2.line.drill.brawl')];
       return [s.slot === 'morning' ? tx('line.drill.bout') : tx('line.drill.day')];
     case 'bard':
       return [s.player.reputation >= 40 ? tx('line.bard.famous', { name }) : night ? tx('line.bard.night') : tx('line.bard.day')];
