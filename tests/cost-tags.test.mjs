@@ -29,7 +29,8 @@ function rule(st, a) {
       return Math.max(1, Math.round(LISTV2[a.item] * FACTOR[a.shop] * (1 - k) * rel * steel * night));
     }
     case 'upgradeWeapon': { const tier = Math.min(3, st.v2.gear.tier + (st.player.items.includes('tempered-blade') ? 1 : 0)); return tier >= 3 ? 0 : [10, 25, 40][tier]; }
-    case 'buySkill': return Math.round({ t3: 45, k_sunder: 40, k_iron: 35 }[a.skill] * (st.player.reputation >= 40 ? 0.9 : 1));
+    case 'buySkill': return Math.round({ t3: 45, k_sunder: 40, k_iron: 35 }[a.skill] * (st.player.reputation >= 40 ? 0.9 : 1) * (st.flags[`lesson:${st.day}`] ? 0.8 : 1));
+    case 'checkGear': return 5;
     default: return 0;
   }
 }

@@ -43,7 +43,8 @@ export function learnFromChallenge(s: GameState, fighter: string, emit: Emit): s
 /** the weapon master's price for a skill: its list price, less a tenth for a good name in the pool (reputation 40 or more) (« proposé ») */
 export function skillPrice(s: GameState, id: string): number {
   const p = SKILL_BOOK[id]?.price ?? 0;
-  return Math.round(p * (s.player.reputation >= 40 ? 0.9 : 1));
+  // the master's open lesson (lot V7, the event v2-masterclass): a fifth less that day
+  return Math.round(p * (s.player.reputation >= 40 ? 0.9 : 1) * (s.flags[`lesson:${s.day}`] ? 0.8 : 1));
 }
 
 export type V2SkillAction =

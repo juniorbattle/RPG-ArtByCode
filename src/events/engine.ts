@@ -34,6 +34,9 @@ export function holds(c: Cond, s: GameState, pulse: WorldPulse): boolean {
   if ('rivalHurt' in c) return Object.values(s.competitors).some((x) => x.healthState !== 'fit');
   if ('rivalFact' in c) return !!s.competitors[c.rivalFact[0]]?.knownFacts.some((f) => f.startsWith(c.rivalFact[1]));
   if ('fired' in c) return s.flags[`ev:${c.fired}`] !== undefined;
+  if ('v2' in c) return s.flags.v2 === true;
+  if ('today' in c) return s.flags[`${c.today}:${s.day}`] !== undefined;
+  if ('semi' in c) return s.tournament.matches.some((m) => m.stage === 'semi' && (m.a === PLAYER_ID || m.b === PLAYER_ID));
   throw new Error(`unknown condition ${JSON.stringify(c)}`);
 }
 
@@ -50,6 +53,8 @@ export function applyEffect(e: Effect, s: GameState): void {
   else if ('points' in e) s.tournament.points[e.points] = (s.tournament.points[e.points] ?? 0) + e.add;
   else if ('rivalRep' in e) { const c = s.competitors[e.rivalRep]; if (c) c.reputation = clamp(c.reputation + e.add); }
   else if ('quest' in e) s.quests[e.quest] = e.stage;
+  else if ('today' in e) s.flags[`${e.today}:${s.day}`] = true;
+  else if ('tomorrow' in e) s.flags[`${e.tomorrow}:${s.day + 1}`] = true;
 }
 
 /** is this event a candidate now (slot, once / cooldown, causes)? */

@@ -6,6 +6,10 @@ import { rivalsAct } from '../tournament/offscreen';
 import { computePulse } from '../tournament/pulse';
 import { runEvents } from '../events/engine';
 import { tx } from '../narrative/text';
+import { EVENTS } from '../events/catalog';
+import { V2_EVENTS } from '../events/v2catalog';
+
+const V2_CATALOG = [...EVENTS, ...V2_EVENTS];
 
 /** The end of a slot (journal Passes L1 / L2): what the world does while the player spends it, in this order: the pool's other bouts (on a
  *  match afternoon), the rivals' off-screen activity, the events (read against the pulse of the slot ending), then the pulse published for
@@ -13,7 +17,8 @@ import { tx } from '../narrative/text';
 export function endSlot(s: GameState, emit: Emit, rng: Rng): void {
   if (s.slot === 'afternoon') playOffscreenMatches(s, emit, rng.fork('matches'));
   rivalsAct(s, emit, rng.fork('rivals'));
-  runEvents(s, computePulse(s), emit, rng.fork('events'));
+  // a version 2 game reads the version 2's own events after today's eighteen (lot V7)
+  runEvents(s, computePulse(s), emit, rng.fork('events'), s.flags.v2 === true ? V2_CATALOG : EVENTS);
   if (s.slot === 'evening') s.services.forgeWatch = false;
   emit({ kind: 'slot', id: 'slot-end', cause: 'clock', text: tx('clock.slotEnd', { slot: s.slot, day: s.day }), visible: false });
 }

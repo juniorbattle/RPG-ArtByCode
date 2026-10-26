@@ -44,7 +44,8 @@ export function v2Mods(s: GameState): Mods & { taken: number; gauge: number; cha
   const fx = wornFx(s), stone = s.player.items.includes('whetstone') ? 1.05 : 1;
   return {
     hp: +((1 - 0.2 * s.player.injury) * fx.hp).toFixed(4), damage: +(fx.damage * stone * (1 + 0.05 * Math.min(2, s.player.training))).toFixed(4), ap: fx.ap + allyAp(s),
-    taken: +fx.taken.toFixed(4), gauge: +fx.gauge.toFixed(4), charge: +fx.charge.toFixed(4), effect: +fx.effect.toFixed(4),
+    // the gear tampered with in the night (lot V7, the event v2-gear-tamper): 15 % more damage taken that day, unless Hilde checked it
+    taken: +(fx.taken * (s.flags[`tampered:${s.day}`] && !s.flags[`checked:${s.day}`] ? 1.15 : 1)).toFixed(4), gauge: +fx.gauge.toFixed(4), charge: +fx.charge.toFixed(4), effect: +fx.effect.toFixed(4),
   };
 }
 

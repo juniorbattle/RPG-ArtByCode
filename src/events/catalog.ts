@@ -38,7 +38,11 @@ export const EVENTS: readonly EventDef[] = [
   {
     id: 'upset-talk', type: 'tournament', about: 'An underdog\'s win sets the betting halls alight.',
     when: { flag: 'upsets', gte: 1 }, cause: 'an upset in the pool',
-    outcomes: [{ effects: [{ pulse: 'excitement', add: 8 }], text: 'An upset! The betting halls of Lantern Row are in uproar.' }],
+    outcomes: [
+      // the version 2's festival square in Lantern Row's place (lot V7)
+      { when: { v2: true }, effects: [{ pulse: 'excitement', add: 8 }], text: 'An upset! The betting tents of the festival square are in uproar.' },
+      { effects: [{ pulse: 'excitement', add: 8 }], text: 'An upset! The betting halls of Lantern Row are in uproar.' },
+    ],
   },
   // ---------------------------------------------------------------- targeted: the forge chain (signs, attempt, consequence)
   {
@@ -93,7 +97,10 @@ export const EVENTS: readonly EventDef[] = [
   {
     id: 'night-market', type: 'district', about: 'Lantern Row comes alive at night.',
     slots: ['afternoon'], once: false, cooldown: 3, when: { pulse: 'festivity', gte: 30 }, cause: 'the tournament\'s crowds',
-    outcomes: [{ effects: [{ pulse: 'commerce', add: 2 }], text: 'As the sun goes down, Lantern Row lights its paper lanterns: the night market opens.' }],
+    outcomes: [
+      { when: { v2: true }, effects: [{ pulse: 'commerce', add: 2 }], text: 'As the sun goes down, the festival square lights its paper lanterns: the night market opens.' },
+      { effects: [{ pulse: 'commerce', add: 2 }], text: 'As the sun goes down, Lantern Row lights its paper lanterns: the night market opens.' },
+    ],
   },
   // ---------------------------------------------------------------- faction
   {

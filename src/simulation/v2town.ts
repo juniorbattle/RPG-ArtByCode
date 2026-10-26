@@ -9,6 +9,7 @@ import { playerMatch } from '../tournament/pool';
 import { PEOPLE, placeOf, presentAt } from '../narrative/people';
 import { RIVALS } from '../narrative/roster';
 import { tx } from '../narrative/text';
+import { available } from './roles';
 import type { DuelOutcome } from '../tournament/pool';
 
 /** The town's actions of the version 2 (lot V4; the operator's decision AV-11 « Les trois, le vol avec ses conséquences », journal Passe V4):
@@ -30,7 +31,8 @@ export function haggleChance(s: GameState, shop: ShopId): number {
   return clamp(0.25 + s.player.reputation / 200 + (s.town[SHOPS[shop].keeper] ?? 0) / 200, 0.1, 0.85);
 }
 export function stealChance(s: GameState, shop: ShopId): number {
-  return clamp((s.slot === 'evening' ? 0.6 : 0.3) + (60 - s.pulse.security) / 200 - (s.town[SHOPS[shop].keeper] ?? 0) / 400, 0.05, 0.85);
+  // the watch on alert the day after a theft was caught (lot V7, the event v2-quay-alert): a sixth less
+  return clamp((s.slot === 'evening' ? 0.6 : 0.3) + (60 - s.pulse.security) / 200 - (s.town[SHOPS[shop].keeper] ?? 0) / 400 - (s.flags[`alert:${s.day}`] ? 0.15 : 0), 0.05, 0.85);
 }
 /** what a theft takes: the shop's cheapest piece the player does not own (a whetstone only if none held) */
 export function stealTarget(s: GameState, shop: ShopId): string | null {
@@ -47,7 +49,8 @@ export type V2TownAction =
   | { type: 'steal'; shop: ShopId }
   | { type: 'challenge'; who: string }
   | { type: 'challengeResult'; outcome: DuelOutcome }
-  | { type: 'cancelChallenge' };
+  | { type: 'cancelChallenge' }
+  | { type: 'checkGear' };
 
 export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V2TownAction, { type: K }>> & { by: string | ((a: Extract<V2TownAction, { type: K }>) => string) | null } } = {
   haggle: {
@@ -110,6 +113,23 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
     check: (s, a) => (!isV2(s) ? tx('v2.only') : !s.v2?.challenge ? tx('v2.challenge.none') : !a.outcome || (a.outcome.winner !== 'player' && a.outcome.winner !== 'opponent') ? tx('fight.noResult') : null),
     apply: (s, a, _r, emit) => applyChallenge(s, a.outcome, emit),
   },
+  // an answer to the gear's sabotage (lot V7, the event v2-gear-tamper): Hilde looks over every strap for 5 coins, the day it matters
+  checkGear: {
+    by: 'hilde',
+    list: (s) => (isV2(s) && s.place === 'forecourt' ? [{ type: 'checkGear' }] : []),
+    label: () => tx('v2.check.label'),
+    cost: () => 0,
+    coins: () => 5,
+    check: (s) => (!isV2(s) ? tx('v2.only') : available(s, 'hilde') ?? (s.flags[`checked:${s.day}`] ? tx('v2.check.done') : s.player.coins < 5 ? tx('v2.check.poor') : null)),
+    apply: (s, _a, _r, emit) => {
+      s.player.coins -= 5; s.flags[`checked:${s.day}`] = true;
+      if (s.flags[`tampered:${s.day}`]) {
+        if (!s.facts.includes('tamper-found')) s.facts.push('tamper-found');
+        if (s.facts.includes('armour-asked') && !s.flags['culprit-known']) s.flags['culprit-known'] = 'cassius';
+        emit({ kind: 'consequence', id: 'check:found', cause: 'action:checkGear', visible: true, text: tx('v2.check.found') });
+      } else emit({ kind: 'action', id: 'check:clean', cause: 'action:checkGear', visible: true, text: tx('v2.check.clean') });
+    },
+  },
   cancelChallenge: {
     by: null,
     list: (s) => (isV2(s) && s.v2?.challenge ? [{ type: 'cancelChallenge' }] : []),
@@ -134,6 +154,7 @@ export function applyChallenge(s: GameState, o: DuelOutcome, emit: Emit): void {
   delete v.challenge;
   (v.challenged ??= {})[who] = s.day;
   if (won) {
+    s.flags['challenge-won'] = true;
     s.player.reputation = clamp(s.player.reputation + 3);
     const c = s.competitors[who]; if (c) c.relationships.player = clamp((c.relationships.player ?? 0) + (temper === 'proud' ? -6 : 10), -100, 100);
     emit({ kind: 'action', id: 'challenge:won', cause: `challenge:${who}`, visible: true, text: tx('v2.challenge.won', { name: PEOPLE[who].name }) });

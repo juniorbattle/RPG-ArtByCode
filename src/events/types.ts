@@ -30,7 +30,9 @@ export type Cond =
   /** a rival knows a fact starting with this prefix (e.g. it won a bout: 'beat:') */
   | { rivalFact: [string, string] }
   /** this event (or another) has fired */
-  | { fired: string };
+  | { fired: string }
+  /** the version 2 (lot V7): a version 2 game; a flag of today (`<name>:<day>`); the player in the bracket's semi-finals */
+  | { v2: true } | { today: string } | { semi: true };
 
 export type Effect =
   /** a lasting shift of a pulse field (read by computePulse) */
@@ -45,7 +47,9 @@ export type Effect =
   | { rel: [string, string]; add: number }
   | { points: string; add: number }
   | { rivalRep: string; add: number }
-  | { quest: string; stage: string };
+  | { quest: string; stage: string }
+  /** the version 2 (lot V7): a flag of today (`<name>:<day>`) or of tomorrow */
+  | { today: string } | { tomorrow: string };
 
 export type EventType = 'global' | 'district' | 'faction' | 'tournament' | 'targeted' | 'personal';
 
