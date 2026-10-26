@@ -64,7 +64,8 @@ try {
   const sheet = await page.evaluate(() => ({ names: [window.__arena.sim.D.fighters.ren.name, window.__arena.sim.D.fighters.marek.name], assist: window.__arena.assist, rules: window.__arena.rules, hud: document.querySelector('#ah-title')?.textContent }));
   check(sheet.rules === (V2 ? 'v2' : DYN ? 'dynamic' : 'classic'), `the arena plays ${sheet.rules}`);
   check(sheet.names[0] === 'Aster' && sheet.names[1] === FOE[day], `the arena seats ${sheet.names.join(' vs ')}`);
-  check(/Pool of eight/.test(sheet.hud ?? ''), `English HUD: ${sheet.hud}`);
+  // the version 2's bout names its stage (journal Passe VP2: « The pool · round 1 », « Semi-final »...), today's the slice's pool
+  check((V2 ? /The pool · round \d/ : /Pool of eight/).test(sheet.hud ?? ''), `English HUD: ${sheet.hud}`);
   await page.screenshot({ path: path.join(outDir, `${mode}-2-report.png`) });
   await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn').click());
   // 3. the bout, by scripted inputs, the loop stepped from here

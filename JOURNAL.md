@@ -229,6 +229,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - **G11** `diligent` dans une partie v2 (`diligentV2`) : la guérisseuse quand il est blessé (sinon le repos), la garde payée au crépuscule, le
   regard de Hilde le matin d'un combat une fois un signe vu, la veste rembourrée puis la cotte de mailles quand la bourse le permet, le sable du
   terrain d'entraînement de jour.
+- `tools/play-flow.mjs` : une partie v2 nomme l'étape de son combat dans le HUD de l'arène (« The pool · round 1 ») ; l'outil l'attendait sous le
+  nom de la tranche (« Pool of eight ») : sa vérification suit le jeu (le défaut garde la sienne).
 - `tests/v2-coherence.test.mjs` (6 tests) : **13 / 13 fautes attrapées** ; `tests/v2-events` et `tests/v2-places` mis à jour (les deux signes
   avant la tentative ; aucun encapuchonné sur la place).
 
