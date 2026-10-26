@@ -58,6 +58,10 @@ The plan of the cloud session « version jouable » (the gameplay contract's ver
 
 The roadmap after the playable slice (the operator's five points, in order: the arena's sprites, the UI / HUD, the districts with the arena's
 forecourt first, populating them, then gameplay) is `briefs/roadmap-2026-10.md` (journal Passe FR1); each of its tasks runs in a session of its own.
+The cloud session « Version 2 » (journal Passe AV1, the operator's sheet of 19 choices) works by its brief `briefs/cloud-session-v2-brief.md`: every
+new system behind one game flag, `flags.v2`, the default game unchanged until the operator's trial; the three-button charged attack decided
+as A3 (AV-5); Marek's combat sheet paused until that new input (AV-10); the session started while that local branch exists (AV-18, an exception
+to the one-branch rule).
 
 ## Project journal (MANDATORY workflow)
 `JOURNAL.md` is the project's memory: what was done, what worked, what failed and why, open problems, lessons. It holds the

@@ -539,6 +539,93 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Mes auto-critiques écrites avant le verdict se sont trompées trois fois sur six dans cette passe : elles mesurent mon biais, elles ne choisissent
   pas.
 
+## Passe AV1 — Le mandat de la séance cloud « Version 2 » : la fiche de l'opérateur (19 sur 19) et le brief (2026-10-26)
+
+### Demande, mot pour mot
+- Opérateur : « par la suite nous allons continuer notre travail sur les feuilles de combat des personnages puis on va aussi finaliser les
+  environnement de chaque district ( merchant est deja fait ) avec leur pnj integre, on recupera certains pnjs re-utilisable puis en integrons de
+  nouveau selon le besoin. Enfin on construira enfin notre systeme d'evenement dynamique. il faut prevoir d'optimiser les boutiques d'equipement,
+  ( et donc le systeme d'equipement ), le systeme de gain de competences ( peut etre proposer des duels en ville afin d'acquerir une nouvelle
+  comptences comme octopah traveler cela permet aussi de monter en niveau ), je pense a integrer un systeme interactif comme octopath traveler :
+  vol, marchander, defier qui peut etre interessant en ville mais on doit rester structurer et simple dans notre jeu sinon il prendra trop de
+  temps a finir de developper. donc on a une grosse tache a faire que nous pouvons lancer en session cloud pendant plusieurs heures de maniere
+  autonome ( cela ne doit pas necessiter une utilisation d'outils externe ) »
+- Puis, sur le combat : « Ah et enfin on aura une dernier optimisation pour le systeme de combat. surtout cote joueur, au lieu d'avoir plusieurs
+  touches d'action on en aura 3 ( garde, esquive, attaque ) sauf que l'attaque sera comme une charge a niveau : donc une simple pression permet de
+  faire une attaque simple, en restant legerement appuye pendant 2-3s, on utilise une attaque lourde, si on reste 5 seconde de plus on debloque
+  une action de competences et ainsi de suite, les competences les plus puissantes nous obligerait a charger pendant peut etre 10s ( ce n'est
+  qu'un exemple ) mais donc peut etre quee nous aurrions des niveau de competences qui determine le puissance et le temps de charge ( exemple de
+  final fantasy 6 avec le personnage Cyan ) »
+- Puis, sur la fiche : « oui prepare la fiche mais comprends que je veux que la session cloud soit full autonome en avancant sur tous les aspects
+  possible sans mon interventions sans le bsoin des outils externes... cela comprend : narration, structure, gameplay, sons, bref je veux une
+  avance concrete afin que nous puissons nous concentre sur les details restants qui demandent une supervision »
+- Branche `cloud-brief-av1` depuis `main` (`306dbb1`).
+
+### Constats avant la fiche — [OK]
+- Un relevé en lecture seule des contrats, de la spécification du combat, de la feuille de route et du code a trouvé quatre heurts :
+  - la charge tenue contredit la spécification approuvée (« Les touches sont instantanées : pas de charge tenue », choix G2) et la phrase amendée
+    du contrat projet § 6.1 ;
+  - un niveau global se heurte au contrat projet § 7 (« éviter qu'une unique statistique de niveau rende toutes les autres décisions
+    secondaires ») ;
+  - le vol est, dans le contrat projet (§§ 3.4, 9.2), une menace contre le joueur ; un vol par le joueur est nouveau ;
+  - les districts demandent le GPU et la revue visuelle de l'opérateur.
+- Dans le code : une boutique (Mara, trois objets), aucun emplacement d'équipement, aucune acquisition de compétence (six compétences codées en dur,
+  la composition fixe `['t1','t4','d1','s1']`), aucun niveau du joueur, dix-huit événements, le parvis = le sable de l'arène réutilisé.
+
+### La fiche — [OK] publiée, 19 choix sur 19 enregistrés et relus
+- Page privée https://claude.ai/artifact/85frj6Jpc8GqfGvwgXKAid, collection `decisions` (vide à la publication, relue par `list`), bâtie sur la page de
+  la fiche CB1 (pont attendu 10 s, chaque écriture relue).
+- Relue après « fiche remplie » : 19 documents, cliqués le 26/10 entre 04 h 31 et 04 h 41 UTC, une note.
+
+### Les choix de l'opérateur, mot pour mot
+« = » : la recommandation de la fiche est suivie ; « ≠ » : le choix diffère, et c'est lui qui fait foi.
+
+| # | Décision | Recommandation | Choix de l'opérateur | Note | |
+|---|---|---|---|---|---|
+| AV-1 | Le périmètre | « Tout ce qui se fait par le code » | « Tout ce qui se fait par le code » | — | = |
+| AV-2 | Le jeu par défaut | « Un drapeau « version 2 » pour tout, défaut inchangé » | « Un drapeau « version 2 » pour tout, défaut inchangé » | — | = |
+| AV-3 | Les détails non fixés | « Elle tranche les détails, notés « proposé » » | « Elle tranche les détails, notés « proposé » » | — | = |
+| AV-4 | La langue des textes | « Anglais, textes rassemblés » | « Anglais, textes rassemblés » | — | = |
+| AV-5 | A3 · trois touches et la charge | « Oui, amender (A3), l'ancien schéma gardé pour comparer » | « Oui, amender (A3), l'ancien schéma gardé pour comparer » | — | = |
+| AV-6 | Les PA et les emplacements | « Plus de PA, la charge est le prix » | « Garder les PA en plus de la charge » | — | ≠ |
+| AV-7 | Les paliers | « Comme Cyan, paliers successifs » | « Comme Cyan, paliers successifs » | — | = |
+| AV-8 | Les niveaux | « Un niveau par compétence » | « Un niveau par compétence » | — | = |
+| AV-9 | Obtenir une compétence | « Achat, entraînement et défi » | « Achat, entraînement et défi » | — | = |
+| AV-10 | Les feuilles de combat | « Marek continue, poses de charge après » | « Mettre Marek en pause jusqu'à la nouvelle commande » | — | ≠ |
+| AV-11 | Les actions en ville | « Les trois, le vol avec ses conséquences » | « Les trois, le vol avec ses conséquences » | — | = |
+| AV-12 | L'équipement | « Arme + 3 accessoires, une boutique par district » | « Arme + 3 accessoires, une boutique par district » | « arme + armure + 2 accessoires » | = (la note fait foi) |
+| AV-13 | Les districts | « Le cloud les bâtit, la revue en local après » | « Le cloud les bâtit, la revue en local après » | — | = |
+| AV-14 | Les PNJ | « Cuits réutilisés, générés provisoires pour le reste » | « Cuits réutilisés, générés provisoires pour le reste » | — | = |
+| AV-15 | La narration | « Structure, dialogues et cinématiques » | « Structure, dialogues et cinématiques » | — | = |
+| AV-16 | Les événements | « Relier et compléter » | « Relier et compléter » | — | = |
+| AV-17 | Le son | « Effets, ambiances et musique simple » | « Effets, ambiances et musique simple » | — | = |
+| AV-18 | Le départ | « Après la fusion de Marek » | « Tout de suite, en exception à la règle » | — | ≠ |
+| AV-19 | Le relais local | « Pas de relais » | « Pas de relais » | — | = |
+
+- **AV-5 est la décision A3** de l'opérateur, datée du 26/10/2026 : elle autorise l'amendement de `briefs/combat-system.md` et de la phrase du
+  contrat projet § 6.1 pour la charge par paliers, fait par la séance cloud (lot V1), l'ancien schéma gardé derrière un paramètre.
+- **AV-10** : la séance locale de la feuille de Marek était déjà en pause à la demande de l'opérateur (« je veux une pause. »), sa branche
+  `marek-combat-x3` locale à `306dbb1`, sans commit, avec deux sources archivées non suivies (`marek-turnaround-2026-10-26-a1` et `-b1`). Elle
+  reste en pause jusqu'à la nouvelle commande.
+- **AV-18** : la règle d'une branche à la fois a une exception, décidée par l'opérateur : la séance cloud part pendant que `marek-combat-x3` existe
+  en local, en pause.
+
+### Fait — [OK]
+- `briefs/cloud-session-v2-brief.md` : le brief de la séance cloud, à partir de ces choix. Le drapeau `flags.v2` (le jeu par défaut inchangé), onze
+  lots V0 à V10 dans l'ordre (le drapeau et les textes ; la commande chargée et C3 ; les compétences ; l'équipement et les boutiques ; marchander,
+  défier, voler ; les trois districts ; la narration et les cinématiques ; les événements ; le son par le code ; l'interface P4-P6 ; le bilan et la
+  fiche d'essai), les limites, les preuves et les leçons de la première séance cloud.
+- `briefs/roadmap-2026-10.md` et `AGENTS.md` renvoient au brief. Aucun code ne change.
+
+### Restes [?]
+- La séance cloud elle-même, lancée après cette passe.
+- Ce qui restera local après elle : les mesures GPU, les preuves de visibilité sur GPU et la revue visuelle des districts, les poses de charge des
+  feuilles cuites (Marek repris), les personnages à cuire.
+
+### Pensée
+- Une demande nouvelle qui contredit une décision déjà prise (ici « pas de charge ») se tranche sur la fiche avant le lancement : une séance cloud
+  ne peut pas demander, et l'amendement doit citer la décision de l'opérateur.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -551,6 +638,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   défaut : décidé en Passe D8 (L7-6a, « Le jour devient le défaut d’« Explore the district » (tâche à part) »), appliqué en Passe D9 (midi, le
   bouton seul : toute adresse sans `time=` garde la nuit). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
+
+**0c. Séance cloud « Version 2 » (Passe AV1)** : mandat fixé par la fiche de l'opérateur (19 choix), brief `briefs/cloud-session-v2-brief.md`, lots V0 à V10 derrière `flags.v2`, le défaut inchangé ; la commande chargée décidée en A3 (AV-5) ; Marek en pause jusqu'à la nouvelle commande (AV-10) ; la séance part en exception à la règle d'une branche (AV-18). Après elle, en local : mesures GPU, revue visuelle des districts, poses de charge, personnages à cuire.
 
 **0b. Version jouable — séance cloud (Passes N1 à N4, puis L0 à L7)** : plan v4 `briefs/cloud-session-playable.md`, brief
   `briefs/cloud-session-playable-brief.md`, contrats dans `contracts/`. **Séance close** : lots L0 à L7 fusionnés dans `main` ; bilan, mesures,

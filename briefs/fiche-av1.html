@@ -1,0 +1,391 @@
+<title>Mandat cloud autonome</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f2f3f6;
+  --surface: #ffffff;
+  --fg: #1c2030;
+  --muted: #586078;
+  --line: #d6dae4;
+  --brass: #8a6416;
+  --brass-soft: #f3ead4;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #b8471a;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #13151c; --surface: #1c1f28; --fg: #e8e9ee; --muted: #a2a9ba; --line: #313645;
+    --brass: #d9b45a; --brass-soft: #2d2818; --rec: #7cc48e; --rec-soft: #1b2b21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #13151c; --surface: #1c1f28; --fg: #e8e9ee; --muted: #a2a9ba; --line: #313645;
+  --brass: #d9b45a; --brass-soft: #2d2818; --rec: #7cc48e; --rec-soft: #1b2b21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.status.err { color: var(--cendre); font-weight: 600; }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.quote { border-left: 3px solid var(--line); padding-left: 10px; font-style: italic; }
+.extra { min-width: 0; overflow-x: auto; }
+.extra table { border-collapse: collapse; font-size: 14px; width: 100%; }
+.extra th, .extra td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.extra th { font-weight: 600; color: var(--muted); }
+.extra td.n { font-variant-numeric: tabular-nums; text-align: right; }
+.extra code { font-family: var(--font-mono); font-size: 12.5px; }
+.amend { display: flex; flex-direction: column; gap: 10px; }
+.amend div { display: flex; flex-direction: column; gap: 2px; }
+.amend b { font-size: 13px; color: var(--muted); }
+.amend del { color: var(--muted); }
+.amend ins { text-decoration: none; background: var(--rec-soft); border-radius: 3px; padding: 0 2px; }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.saved { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p, .after ol { margin: 0; max-width: 68ch; }
+.after ol { padding-left: 22px; display: flex; flex-direction: column; gap: 4px; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · avant la séance cloud « avance autonome » · 26 octobre 2026</span>
+    <h1>Le mandat de la séance cloud</h1>
+    <p class="lede">Vous voulez une séance cloud en pleine autonomie, sans outil externe, qui avance concrètement sur tout ce qui ne demande pas votre supervision : narration, structure, gameplay, son. Une séance cloud ne peut rien vous demander une fois lancée : ce qui suit fixe son cadre. Quatre points de votre demande touchent des décisions déjà prises (la charge, les niveaux, le vol, les districts) ; ils sont marqués. Pour chaque point : le contexte, ma recommandation et vos options. Une note est facultative. Chaque choix est enregistré, puis relu avant d'afficher « Enregistré et relu ».</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dites-le dans la conversation. Je relis vos choix, puis j'écris le plan et le brief de la séance cloud à partir d'eux. Je les verse dans <code>briefs/</code> avec une passe du journal qui cite vos choix mot pour mot ; une décision A3 y figure telle que vous l'avez écrite. Je vous montre le brief, puis je lance la séance sur votre accord.</p>
+    <p>Ce qui vaut pour toute la séance et n'attend pas de décision :</p>
+    <ol>
+      <li><b>Les règles du dépôt</b> (<code>AGENTS.md</code>) : une branche, chaque lot fusionné dans <code>main</code> une fois prouvé, le journal en français dans le même commit, aucun secret.</li>
+      <li><b>Aucun verrou de contrat ne change</b> sans une décision A3 de votre main ; un écart avec un contrat est consigné, jamais tranché par la séance.</li>
+      <li><b>Les leçons de la première séance cloud</b> : du temps prévu pour les preuves en rendu logiciel, des tests qui passent sous Windows, des commits « (en cours) » permis, la branche supprimée à la fin.</li>
+      <li><b>À la fin</b> : un bilan, une adresse d'essai et une fiche pour votre essai en jeu.</li>
+    </ol>
+    <p class="src">Sources : <code>briefs/roadmap-2026-10.md</code>, <code>briefs/combat-system.md</code>, les contrats de <code>contracts/</code>, <code>briefs/cloud-session-playable-feedback.md</code>, le code de <code>src/simulation</code>, <code>src/events</code>, <code>src/narrative</code>, <code>src/combat</code>, journal Passes CB1, C1, C2, C2F, AA1, AA2, RC1, RC2, UI1 à UI4.</p>
+  </section>
+</div>
+
+<script>
+const GROUPS = [
+  { id: 'mandat', title: "Le mandat de la séance", sub: "Ce qu'elle a le droit de faire, et comment elle décide seule.", fam: 'var(--astre)', items: [
+    { id: 'AV-1', tag: 'périmètre', title: "Ce que la séance cloud prend en charge",
+      ctx: "Sans outil externe (ni génération d'images, ni Aseprite, ni votre GPU), la séance peut écrire tout ce qui se fait par le code : les règles du jeu, l'interface, la narration et les dialogues, les événements, le son synthétisé, la structure des districts. Elle ne peut ni dessiner de nouveaux personnages cuits, ni mesurer le GPU, ni juger l'image à votre place.",
+      rec: "Tout ce périmètre, lot par lot, chaque lot fusionné dans main dès qu'il est prouvé : vous retrouvez une avance concrète, et seuls les détails à superviser restent pour vous.",
+      opts: ["Tout ce qui se fait par le code", "Tout sauf les districts", "Le gameplay seulement"], recIdx: 0,
+      src: "votre demande du 26/10 ; briefs/roadmap-2026-10.md (étapes 0 à 5)" },
+    { id: 'AV-2', tag: 'défaut', title: "Le jeu par défaut pendant et après la séance",
+      ctx: "Jusqu'ici, toute nouveauté reste derrière un paramètre, et le jeu par défaut ne change qu'après votre essai (C2 : « Derrière un paramètre, défaut après mon essai »). Avec une dizaine de systèmes nouveaux, un paramètre par système rendrait l'essai d'ensemble difficile.",
+      rec: "Un seul drapeau de partie, la « version 2 », pris par une nouvelle partie (comme combat=dynamic) : tous les nouveaux systèmes ensemble, le jeu d'aujourd'hui inchangé et prouvé à 0 px jusqu'à votre essai. Vous jouez l'ensemble d'un coup.",
+      opts: ["Un drapeau « version 2 » pour tout, défaut inchangé", "Un paramètre par système, défaut inchangé", "La séance peut changer le défaut d'une nouvelle partie"], recIdx: 0,
+      src: "journal Passes C2, C2F ; AGENTS.md (combat=dynamic)" },
+    { id: 'AV-3', tag: 'autonomie', title: "Les détails que vos réponses ne fixent pas",
+      ctx: "Une séance cloud ne peut rien demander. Jusqu'ici, ce qui vous revenait était seulement préparé, derrière un paramètre, avec une recommandation. Pour une avance concrète, la séance doit aussi trancher des détails de conception (nombres, contenus, textes).",
+      rec: "Elle tranche elle-même les détails dans le cadre de cette fiche et des contrats, chacun noté « proposé » au journal pour votre revue ; elle ne touche à aucun verrou et ne prend aucune décision réservée (art en production, Gold Master, verrous, défaut du jeu).",
+      opts: ["Elle tranche les détails, notés « proposé »", "Elle prépare des variantes sans trancher"], recIdx: 0,
+      src: "AGENTS.md (Master contracts, C3) ; brief de la séance cloud précédente § 0" },
+    { id: 'AV-4', tag: 'langue', title: "La langue des textes du jeu",
+      ctx: "L'interface du jeu est aujourd'hui en anglais (« Explore the district », « Here », les dialogues de Mara et d'Orla), alors que nos documents sont en français. La séance va écrire beaucoup de texte (quêtes, dialogues, cinématiques).",
+      rec: "Garder l'anglais d'aujourd'hui, avec tous les textes rassemblés dans des tables, pour qu'une traduction reste une tâche à part.",
+      opts: ["Anglais, textes rassemblés", "Français", "Les deux, avec un choix de langue"], recIdx: 0,
+      src: "src/narrative/dialogue.ts, src/ui ; journal Passe UI1" },
+  ]},
+  { id: 'combat', title: "Le combat", sub: "Votre nouvelle commande, et ce qu'elle change dans la spécification.", fam: 'var(--cendre)', items: [
+    { id: 'AV-5', tag: 'A3 · commande', title: "Trois touches et l'attaque chargée par paliers",
+      ctx: "Votre demande : garde, esquive, attaque ; une pression = attaque simple, 2-3 s tenues = attaque lourde, 5 s de plus = une compétence, les plus puissantes jusqu'à 10 s, comme Cyan dans Final Fantasy VI. Cela contredit la spécification approuvée : « Les touches sont instantanées : pas de charge tenue », votre choix G2 (« pas de charge »), et la phrase amendée du contrat projet § 6.1 (« actions instantanées ou à délai de préparation, les compétences payées en points d'action »). Votre choix ici, avec votre note, est la décision A3 citée au journal.",
+      rec: "Oui : la charge remplace « pas de charge » ; la spécification et la phrase du § 6.1 sont amendées en conséquence ; l'ancien schéma reste derrière un paramètre pour les comparer à l'essai.",
+      opts: ["Oui, amender (A3), l'ancien schéma gardé pour comparer", "Oui, amender (A3), l'ancien schéma supprimé", "Non, garder la spécification CB1"], recIdx: 0,
+      src: "briefs/combat-system.md §§ 1, 4 (G2) ; contracts/PROJECT_MASTER_CONTRACT.md § 6.1 ; journal Passe CB1" },
+    { id: 'AV-6', tag: 'ressources', title: "Ce que deviennent les points d'action et les quatre emplacements",
+      ctx: "Aujourd'hui : on démarre à 1 PA, au plus 5, gagnés en touchant ; l'esquive coûte 1 PA, les compétences 2 à 4 ; quatre emplacements de compétences choisis avant le duel. Avec la charge, le temps tenu devient le prix d'une action forte, et la priorité de l'adversaire peut couper une charge.",
+      rec: "Plus de PA : le temps de charge est le prix, une charge interrompue par un coup est perdue ; l'esquive sans coût mais avec un court temps de récupération ; quatre compétences emportées au duel, placées sur les paliers de charge.",
+      opts: ["Plus de PA, la charge est le prix", "Garder les PA en plus de la charge", "La séance propose après essai des deux"], recIdx: 0,
+      src: "briefs/combat-system.md §§ 6-8 ; src/combat/dynamic.ts" },
+    { id: 'AV-7', tag: 'paliers', title: "Quelle compétence part au relâcher",
+      ctx: "Chez Cyan, tenir plus longtemps fait passer d'une technique apprise à la suivante, et relâcher lance celle du palier atteint. Il faut aussi dire ce qui se passe quand l'adversaire attaque pendant la charge.",
+      rec: "Comme Cyan : légère, puis lourde, puis les compétences emportées, rangées par temps de charge ; relâcher lance celle du palier atteint ; le HUD montre le palier ; un coup reçu pendant la charge l'annule, la garde et l'esquive restent possibles en relâchant.",
+      opts: ["Comme Cyan, paliers successifs", "Un palier par touche de compétence choisie avant", "La séance propose"], recIdx: 0,
+      src: "votre demande du 26/10 ; briefs/combat-system.md § 5 (repoussé)" },
+    { id: 'AV-8', tag: 'niveaux', title: "Les niveaux : par compétence ou un niveau global",
+      ctx: "Le contrat projet § 7 : « Le jeu doit éviter qu'une unique statistique de niveau rende toutes les autres décisions secondaires. » Votre idée : des niveaux de compétences qui fixent la puissance et le temps de charge. Aujourd'hui, seul l'adversaire a un niveau.",
+      rec: "Un niveau par compétence (puissance plus forte, charge plus courte), gagné en l'utilisant en duel, en s'entraînant et en défiant en ville ; pas de niveau global. C'est votre idée, et le contrat la permet sans écart.",
+      opts: ["Un niveau par compétence", "Par compétence, plus un rang de combattant (PV)", "Un niveau global"], recIdx: 0,
+      src: "contracts/PROJECT_MASTER_CONTRACT.md § 7 ; briefs/combat-system.md § 8" },
+    { id: 'AV-9', tag: 'apprendre', title: "Comment on obtient une compétence",
+      ctx: "La spécification prévoit « achats, entrainement, duel en ville » (G4), sans les détailler. Aujourd'hui, le joueur a six compétences codées en dur, et aucune ne s'acquiert.",
+      rec: "Les trois : l'achat (un maître d'armes, cher), l'entraînement (un créneau, une compétence de base), le défi en ville (battre un combattant apprend sa compétence et fait monter les niveaux, comme Octopath). Un petit nombre de compétences, une douzaine au plus.",
+      opts: ["Achat, entraînement et défi", "Défi et entraînement seulement", "La séance propose"], recIdx: 0,
+      src: "briefs/combat-system.md § 8 (G4) ; src/combat/dynamic.ts" },
+    { id: 'AV-10', tag: 'feuilles', title: "Les feuilles de combat pendant la séance",
+      ctx: "Ren est fait (34 images, en labo), Marek est en cours en local. Leurs clips (légère, lourde, compétences, garde, esquive, coups, K.O.) restent utiles avec la charge ; il manquerait des poses de charge.",
+      rec: "Marek continue tel quel en local ; les poses de charge s'ajoutent ensuite par une tâche locale, quand la commande est jouée. La séance cloud montre la charge avec les images existantes.",
+      opts: ["Marek continue, poses de charge après", "Mettre Marek en pause jusqu'à la nouvelle commande"], recIdx: 0,
+      src: "journal Passes RC1, RC2 ; séance de Marek en cours" },
+  ]},
+  { id: 'ville', title: "La ville", sub: "Équipement, actions et districts.", fam: 'var(--ronce)', items: [
+    { id: 'AV-11', tag: 'actions', title: "Les actions en ville : marchander, défier, voler",
+      ctx: "Le contrat demande qu'aucun système ne soit « un mini-jeu isolé sans impact sur les autres », et l'économie ne doit pas devenir « une simulation financière lourde ». Dans le contrat, le vol est une menace contre le joueur ; un vol par le joueur est nouveau. Marchander et défier se rattachent déjà aux prix, à la réputation et aux compétences.",
+      rec: "Les trois, chacun relié : marchander selon la réputation et la relation ; défier pour apprendre une compétence et monter de niveau ; voler avec un vrai risque (pris, la réputation baisse, la garde, des prix plus chers ou une boutique fermée pour la journée), plus facile de nuit.",
+      opts: ["Les trois, le vol avec ses conséquences", "Marchander et défier", "Défier seulement"], recIdx: 0,
+      src: "contracts/GAMEPLAY_MASTER_CONTRACT.md §§ 1, 5, 10 ; PROJECT § 9.2" },
+    { id: 'AV-12', tag: 'équipement', title: "L'équipement et les boutiques",
+      ctx: "Aujourd'hui : la boutique de Mara (pierre à aiguiser, onguent, lame importée), la trempe de Bram, des objets qui deviennent des bonus. La spécification prévoit une arme prédéfinie avec amélioration et 2-3 emplacements d'accessoires (C5).",
+      rec: "Une arme améliorable par paliers et trois accessoires ; une boutique par district avec sa spécialité, des prix qui suivent le district, la réputation, les événements et le jour ; les objets d'aujourd'hui repris dans ce système.",
+      opts: ["Arme + 3 accessoires, une boutique par district", "Arme + 2 accessoires", "La séance propose"], recIdx: 0,
+      src: "briefs/combat-system.md § 9 (C5) ; src/simulation/roles.ts" },
+    { id: 'AV-13', tag: 'districts', title: "Les districts dans la séance cloud",
+      ctx: "Le parvis est aujourd'hui le sable de l'arène réutilisé ; Lantern Row, une maquette de nuit. Vous voulez des places ouvertes, pas un couloir. Le cloud peut composer leur structure et leur génération par le code, mais ses preuves passent par un rendu logiciel lent, sans mesure GPU, et il ne peut pas juger l'image comme vous.",
+      rec: "Le cloud bâtit les trois districts (le parvis d'abord, puis l'entraînement, puis la place festive qui remplace Lantern Row) derrière le drapeau « version 2 » ; ensuite, en local, les mesures GPU, les preuves de visibilité et votre revue visuelle.",
+      opts: ["Le cloud les bâtit, la revue en local après", "Le parvis seulement dans le cloud", "Tout en local, après le cloud"], recIdx: 0,
+      src: "briefs/roadmap-2026-10.md étape 3 ; src/ui/playForecourt.ts ; src/world/LanternRow.ts" },
+    { id: 'AV-14', tag: 'PNJ', title: "Les PNJ des nouveaux districts",
+      ctx: "Onze feuilles cuites approuvées, et deux variantes de couleurs par citadin. Les réutiliser ajoute des placements, pas d'images. Le cloud ne peut pas créer de nouveaux personnages cuits.",
+      rec: "Réutiliser les feuilles cuites et leurs variantes ; pour un rôle sans feuille, un sprite généré par le code, marqué provisoire, et la liste des personnages à cuire plus tard au journal.",
+      opts: ["Cuits réutilisés, générés provisoires pour le reste", "Cuits réutilisés seulement"], recIdx: 0,
+      src: "src/characters/BakedCast.ts ; journal Passe V1" },
+  ]},
+  { id: 'recit', title: "Narration, événements et son", sub: "Le reste de l'avance concrète.", fam: 'var(--voile)', items: [
+    { id: 'AV-15', tag: 'narration', title: "La structure narrative et les cinématiques",
+      ctx: "Aujourd'hui : quatorze personnages avec horaires et lieux, sept rivaux, la quête de la cargaison et la présentation d'Orla, sans arbre de dialogue. Le contrat fixe dix jours de tournoi.",
+      rec: "La séance écrit la structure des dix jours (actes, fil principal, arcs des rivaux, recrutement d'Orla), les dialogues, et des cinématiques jouées en direct (caméra scriptée, dialogues, mouvements des sprites) aux moments clés ; chaque texte marqué « proposé » pour votre relecture.",
+      opts: ["Structure, dialogues et cinématiques", "La structure seulement, les dialogues après ma relecture"], recIdx: 0,
+      src: "src/narrative ; contracts/TOURNAMENT_MASTER_CONTRACT.md ; PROJECT § 4" },
+    { id: 'AV-16', tag: 'événements', title: "Le système d'événements dynamiques",
+      ctx: "Dix-huit événements existent, des six types du contrat, évalués à la fin de chaque créneau. Ils ne touchent ni l'équipement, ni les défis, ni les nouveaux districts.",
+      rec: "Les relier aux nouveaux systèmes (boutiques, équipement, défis, vols, districts), en ajouter pour que chaque district ait les siens, de jour et de nuit, toujours avec signes et réponses pour les sabotages ; prouvés par le TournamentLab.",
+      opts: ["Relier et compléter", "Relier seulement"], recIdx: 0,
+      src: "src/events/catalog.ts ; contracts/PROJECT_MASTER_CONTRACT.md §§ 9, 14" },
+    { id: 'AV-17', tag: 'son', title: "Le son, généré par le code",
+      ctx: "Le jeu n'a aucun son. Sans fichier audio externe, tout se synthétise par le code (Web Audio), comme le reste du jeu.",
+      rec: "Les effets (combat, interface, pas), des ambiances par lieu et par moment de la journée, et une musique simple, tout par le code ; un réglage de volume et une coupure ; derrière le drapeau « version 2 ».",
+      opts: ["Effets, ambiances et musique simple", "Effets et ambiances seulement", "Pas de son pour l'instant"], recIdx: 0,
+      src: "contracts/PROJECT_MASTER_CONTRACT.md ; AGENTS.md (tout est généré par le code)" },
+  ]},
+  { id: 'deroule', title: "Le déroulé", sub: "Quand et comment elle part.", fam: 'var(--brass)', items: [
+    { id: 'AV-18', tag: 'départ', title: "Quand lancer la séance",
+      ctx: "La règle est une branche de travail à la fois. La séance de Marek tient aujourd'hui la seule branche ouverte.",
+      rec: "Après la fusion de Marek : la séance cloud a alors la seule branche, sans conflit.",
+      opts: ["Après la fusion de Marek", "Tout de suite, en exception à la règle"], recIdx: 0,
+      src: "AGENTS.md (Git workflow)" },
+    { id: 'AV-19', tag: 'relais', title: "Le relais local pendant la séance",
+      ctx: "La première séance cloud avait un relais local (images, Aseprite, GPU) par des fichiers de requête ; il est resté muet. Vous voulez une séance qui ne dépend d'aucun outil externe.",
+      rec: "Pas de relais : la séance ne demande rien, et note au journal ce qui devra être refait en local (mesures GPU, preuves de visibilité, art).",
+      opts: ["Pas de relais", "Un relais local, le PC allumé"], recIdx: 0,
+      src: "journal Passes N4, L7b ; briefs/cloud-session-playable-feedback.md" },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const LS = 'fiche-av-v1';
+let state = {};
+try { state = JSON.parse(localStorage.getItem(LS) || '{}') || {}; } catch { state = {}; }
+const pending = new Set(Object.keys(state));
+let db = null;
+const saveLocal = () => { try { localStorage.setItem(LS, JSON.stringify(state)); } catch { /* local copy only */ } };
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.extra) { const x = el('div', { class: 'extra' }); x.innerHTML = it.extra; c.append(x); }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Votre choix pour ' + it.id });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, une correction, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value));
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'saved', id: 'saved-' + it.id }, ''));
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t, err) => { const s = document.getElementById('save'); s.textContent = t; s.classList.toggle('err', !!err); };
+const setCard = (id, t) => { const p = document.getElementById('saved-' + id); if (p) p.textContent = t; };
+const writing = {};
+async function write(id) {
+  saveLocal();
+  if (!db) { pending.add(id); setCard(id, 'Gardé dans ce navigateur, en attente de l\'enregistrement.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      const body = { choice: s.choice || '', note: s.note || '', at: new Date().toISOString() };
+      setSave('Enregistrement…'); setCard(id, 'Enregistrement…');
+      await db.doc('decisions/' + id).set(body);
+      const back = await db.doc('decisions/' + id).get();
+      const v = back.exists ? (back.data() || {}) : null;
+      if (!v || v.choice !== body.choice || v.note !== body.note) throw new Error('relecture différente');
+    } while (writing[id].again);
+    pending.delete(id);
+    setSave('Enregistré et relu'); setCard(id, 'Enregistré et relu.');
+  } catch (e) {
+    pending.add(id);
+    const ro = e && e.code === 'invalid_argument';
+    setSave(ro ? 'Lecture seule : vos choix ne sont pas enregistrés. Copiez le récapitulatif dans la conversation.' : 'Échec de l\'enregistrement : cliquez de nouveau, ou copiez le récapitulatif dans la conversation.', true);
+    setCard(id, 'Pas enregistré.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche du mandat de la séance cloud (AV) — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copiez avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copiez le récapitulatif dans la conversation.', true); return; }
+  setSave('Prêt');
+  try {
+    const snap = await db.collection('decisions').get();
+    for (const d of snap.docs) { if (pending.has(d.id)) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+  } catch { /* the live listener below fills in */ }
+  update(); saveLocal();
+  for (const id of [...pending]) await write(id);
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { if (pending.has(d.id) || writing[d.id]) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update(); saveLocal();
+  }, () => setSave('Connexion à l\'enregistrement perdue : rechargez la page.', true));
+})();
+</script>
