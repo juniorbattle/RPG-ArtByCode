@@ -20,7 +20,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   let st = st0;
   installGameApi(() => st, (s) => { st = s; }, (prev, next) => lookOf(prev) !== lookOf(next) || prev.place !== next.place || next.over !== prev.over);
   const q = new URLSearchParams();
-  for (const k of ['fps', 'freeze', 'painters', 'gpuprof', 'cast']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
+  for (const k of ['fps', 'freeze', 'painters', 'gpuprof', 'cast', 'static', 'vis']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   const look = lookOf(st), kind = PLAZA_OF[st.place]!;
   // a cutscene of this moment (lot V6): its cast stands on the square even out of their hours
   const scene = pendingScene(st), people = plazaPeople(st);

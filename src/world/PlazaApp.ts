@@ -134,6 +134,8 @@ export class PlazaApp {
     this.sprites = new SpriteRenderer(this.atlas, 64);
     this.sprites.setEdgeMode('dark');
     this.scene.add(this.sprites.group);
+    // ?static=1: the decor alone (no character, no particle), for the reviews and proofs of the squares (journal Passe VP1)
+    if (this.opts.params.get('static') === '1') { this.sprites.group.visible = false; this.particles.group.visible = false; }
     this.player = this.actor('player', 'player', 0, 1.5, 1);
     this.player.dir = 'up'; this.player.facing = 'up';
     for (const id of this.opts.people) {
@@ -265,6 +267,13 @@ export class PlazaApp {
     gpu.end(); gpu.poll();
     this.perf.endFrame(r);
     this.frameCount++;
+  }
+
+  /** the review / proof pose (tools/plaza-shots.mjs): the hero at (x, z), the camera settled on it at once (no easing), one frame drawn */
+  posePlayer(x: number, z: number, dir: Dir = 'up'): void {
+    this.player.pos.set(x, 0, z); this.player.dir = dir; this.player.anim = 'idle' as Anim;
+    this.focus = null;
+    this.update(0); this.render();
   }
 
   start(): void {
