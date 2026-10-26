@@ -1,15 +1,15 @@
 {
  "id": "hero-x3-combat",
- "status": "LAB ASSET, NOT APPROVED - Ren's first combat sheet at x3 (the operator's decision AA2-1 « ×3 », journal Passes AA2 / RC1); never in production without the operator's approval, shown only behind the DEV parameter ?scene=arena&fighterdensity=combat",
+ "status": "LAB ASSET, NOT APPROVED - Ren's combat sheet at x3, the 34 frames of the CB-2 list (the operator's decision AA2-1 « ×3 », journal Passes AA2 / RC1 / RC2); never in production without the operator's approval, shown only behind the DEV parameter ?scene=arena&fighterdensity=combat",
  "request": {
-  "date": "2026-10-25",
-  "by": "operator (git user wonmii): decisions AA2-1, AA2-2, AA2-3 (journal Passe AA2), then in this session « Génération (Recommandé) » (the way to draw the sword and the poses) and « Clés hors C2 (Recommandé) » (the keys the C2 trial does not touch); task given to this session by the parent session",
-  "text": "the first combat sheet of Ren (the hero, hero-x2-v4) at x3, step 1 of briefs/roadmap-2026-10.md: cells of 192 x 288 texels, feet on row 270, the CB-2 list (briefs/combat-system.md § 14) for the keys outside the C2 trial: idle 2, ready 2, strike 3, heavy 4, block 2, hit 2, recover 2, ko 3, victory 2"
+  "date": "2026-10-26",
+  "by": "operator (git user wonmii): decisions AA2-1 (journal Passe AA2), « Génération (Recommandé) » and « Clés hors C2 (Recommandé) » (Passe RC1, the first 22 frames), RC1-1 « Bonne base : compléter après la fiche C2, avec les reprises », RC1-2 « Liseré peint la nuit, contour noir de jour », C2-7 « En arrière », C2-10 « Les garder » (Passes RC1, C2F), and in the session of Passe RC2 « Règle du rendu (Recommandé) » (the edge); task given to that session by the parent session",
+  "text": "complete Ren's combat sheet hero-x3-combat to the 34 frames of the CB-2 list (briefs/combat-system.md § 14): the 12 missing frames (dodge 2 backward, skillOff 4, skillDef 3 Rampart, skillSup 3 Fervour) by the same way as Passe RC1, with the retakes RC1-1 decided (the victory in profile, a real cut for strike 1, the blade at two texels)"
  },
  "approvals": [],
  "source": {
   "sheets": {
-   "description": "three generated pose sheets of the hero with a sword, left-facing profile (gpt-image-2 through tools/art-lab/gen-image.mjs, task ren-combat-x3, references: the v4-b turnaround and the v3 sheet), NON-CANONICAL, archived byte for byte with their records; the figures chosen by a blind critique (a2 and b2 preferred, a1 for the hit recovery)",
+   "description": "ten generated pose sheets of the hero with a sword, left-facing profile (gpt-image-2 through tools/art-lab/gen-image.mjs; Passe RC1, task ren-combat-x3: a1, a2, b2, references the v4-b turnaround and the v3 sheet; Passe RC2, task ren-combat-x3-full: c1, c2, d1, d2, e1, e2, f2, references the same two plus a2 and b2), NON-CANONICAL, archived byte for byte with their records; the figures chosen by blind critiques",
    "a1": {
     "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a1.png",
     "sha256": "7455dfa020a4ec7d8a833b4785bd25deaa526675b229b6c52eca204db0d92fed"
@@ -22,6 +22,34 @@
     "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
     "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76"
    },
+   "c1": {
+    "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-c1.png",
+    "sha256": "46c21a063f659bf10832803b24447a7eb9848981d1d064e75fa785741587b405"
+   },
+   "c2": {
+    "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-c2.png",
+    "sha256": "dcdbddba587678deae68a8b155baa667aa34430e4abc052322870edee9e41f9f"
+   },
+   "d1": {
+    "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-d1.png",
+    "sha256": "ac4b8b9335ceee927e3c343c7435735f5b4e22abb0317a85eb6ea40cda2e9357"
+   },
+   "d2": {
+    "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-d2.png",
+    "sha256": "5914d20addfa19db1d78a0eec556c7dfd1ca4de4bdfb2ba6a001dba46dcae9fa"
+   },
+   "e1": {
+    "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-e1.png",
+    "sha256": "1193d4b4efd1477c7e57bcbcab86e44827b2e839cc884a7a0ee08594487fcbd7"
+   },
+   "e2": {
+    "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-e2.png",
+    "sha256": "2fe682c35284825f4adbd5c3c13734662913426159bfcbdac7dc73876eef5cb0"
+   },
+   "f2": {
+    "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-f2.png",
+    "sha256": "579ce9bfe118bfc4aef8111a174387ea997a2797db3ab1801cb39f27e370d2a4"
+   },
    "check": "the rig refuses a different file (SHA-256 checked before use)"
   },
   "palette": {
@@ -31,21 +59,29 @@
   }
  },
  "chain": [
-  "per figure: the figure alone on its sheet (the other figures painted with the background) -> reconstruct-grid.mjs at the sheet's pitch (its standing figure's height over the 128 rows of hero-x3-trial's idle: a1 2.1875, a2 1.875, b2 2.2266) into a 384 x 288 frame, feet on row 270, --holes --no-shadow --closing-from=207 -> the grey halo peeled on the full colours -> nearest OKLab colour of the pinned palette -> islands under 12 texels removed -> the hips (the feet's midpoint; set by eye for the three knockout figures) on column 96, moved forward by the least that keeps the blade inside the cell (ready 8, strike cut 34, knockout kneel 24 texels), the sole back on row 270",
+  "per figure: the figure alone on its sheet (the other figures painted with the background) -> reconstruct-grid.mjs at the sheet's pitch (its standing figure's height over the 128 rows of the hero's x3 idle: a1 2.1875, a2 1.875, b2 2.2266, d1 2.4453, d2 2.4063, e1 2.2813, e2 2.2578, f2 2.1328; c1 / c2 1.797, between the pitch of their stand, 1.672, and the pitch that gives the RC1 frames' head, about 1.95: heads 7 % larger, bodies 7 % shorter) into a 384 x 288 frame, feet on row 270, --holes --no-shadow --closing-from=207 -> the grey halo peeled on the full colours -> nearest OKLab colour of the pinned palette -> islands under 12 texels removed -> the hips (the feet's midpoint; set by eye for the three knockout figures) on column 96, moved by the least that keeps the blade inside the cell (ready 8, strike cut 21, skillOff surge 52, skillOff thrust 34, dodge landing 15, knockout kneel 24 texels), the sole back on row 270",
+  "the blade at two texels (blade2): from the hilt end to the tip pinned per figure (BLADES, proposed by a RANSAC over the steel texels, checked on overlays), the old blade's loose neutral texels within 5 texels removed, a row of 248,233,216 along the segment and a row of 50,46,50 beside it (below a flat blade, behind a steep one), only where the figure was transparent or neutral; the tip on the foot row where the blade was the figure's lowest point",
   "the rig: idle, ready and victory frame 1 = rig-engine's breath (inhale, lifts of 2 rows) of frame 0; recover frame 1 = the exhale (head lower); block frame 1 = the upper body sheared 3 texels back (the guard taking a blow); the recipe: rigs/hero-x3-combat.rig.mjs",
   "Aseprite 1.3.18.6 (batch): source/hero-x3-combat.aseprite + exports/hero-x3-combat.png|json, tags <clip>-side, every exported frame compared with the rig's frame (tools/art-lab/build-combat.mjs)"
  ],
  "rebuild": "node tools/art-lab/build-combat.mjs art-lab/characters/rigs/hero-x3-combat.rig.mjs --check",
  "files": {
-  "art-lab/characters/exports/hero-x3-combat.png": "a201ac3e62891321f053d1bee2396b8696f36853c9a8bf42bd360168e4f6415d",
-  "art-lab/characters/exports/hero-x3-combat.json": "44612f1cc167bf517a01ba15013029e5d6613bb6adadac02bc159c49bd21aa92",
-  "art-lab/characters/source/hero-x3-combat.aseprite": "035d495bf101a9d35f18ce30b7ef26f0bd3c73cc2b84a81034e440f3be478f33",
-  "art-lab/characters/provenance/hero-x3-combat/build.json": "679a6d7c2270a544625ee01367be15f3746bb9df3bab04abc732630782182bd7",
+  "art-lab/characters/exports/hero-x3-combat.png": "1fb854b7e3cd86c59c6f0d41983204a2ce3d814cfedb7125fe3ff8fd3deeb616",
+  "art-lab/characters/exports/hero-x3-combat.json": "98e27a3efb63425528f2d3bebd69f81c24c27ffba4892ce26f0304b7e879cb40",
+  "art-lab/characters/source/hero-x3-combat.aseprite": "8d32c14a2b73574e401f96b35d2f116aba53e5b18ca2ccbc6ed94713f386d86c",
+  "art-lab/characters/provenance/hero-x3-combat/build.json": "4547cb6e99ac6ba4432ef50a798025d3a62c720596e323a9de086e0e45c5e659",
   "art-lab/characters/exports/hero-x2-v4.png": "06a7fab7c90ee0d83b97477c3276710bb217161c2be32b12ab4143c338c603f1",
   "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a1.png": "7455dfa020a4ec7d8a833b4785bd25deaa526675b229b6c52eca204db0d92fed",
   "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
   "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
-  "art-lab/characters/rigs/hero-x3-combat.rig.mjs": "8d0531aff9d854b27a97b4e2515db643c0bf390b0baba1b108d5ac2b3c550d2b",
+  "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-c1.png": "46c21a063f659bf10832803b24447a7eb9848981d1d064e75fa785741587b405",
+  "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-c2.png": "dcdbddba587678deae68a8b155baa667aa34430e4abc052322870edee9e41f9f",
+  "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-d1.png": "ac4b8b9335ceee927e3c343c7435735f5b4e22abb0317a85eb6ea40cda2e9357",
+  "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-d2.png": "5914d20addfa19db1d78a0eec556c7dfd1ca4de4bdfb2ba6a001dba46dcae9fa",
+  "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-e1.png": "1193d4b4efd1477c7e57bcbcab86e44827b2e839cc884a7a0ee08594487fcbd7",
+  "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-e2.png": "2fe682c35284825f4adbd5c3c13734662913426159bfcbdac7dc73876eef5cb0",
+  "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-f2.png": "579ce9bfe118bfc4aef8111a174387ea997a2797db3ab1801cb39f27e370d2a4",
+  "art-lab/characters/rigs/hero-x3-combat.rig.mjs": "3a4906241fb32df381ab451b4e5f4abc21c53a8965a9c82e12b5cf9fc2ddc376",
   "tools/art-lab/build-combat.mjs": "13ecd73e7886e0e0a8ee73929b3fe993d23b668dc80d7e40f654e95688edf14b",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
   "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",

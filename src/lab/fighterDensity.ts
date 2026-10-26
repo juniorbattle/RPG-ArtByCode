@@ -2,10 +2,11 @@
  *  x2 / x3 / x4 were removed by the operator's decision RC1-4 « Les retirer, garder fighterdensity=combat »). The sheet is judged in the scene
  *  where it will live. Reached only through a dynamic import that `ArenaApp` guards with `import.meta.env.DEV`: production builds compile it
  *  out, and the arena without the parameter is untouched. Nothing becomes canonical: the sheet joins the arena's atlas for this page load.
- *    ?scene=arena&fighterdensity=combat  hero-x3-combat, Ren's first COMBAT sheet at x3 (manifest `lab`): cells of the arena (192 x 288 texels,
- *                                        feet on row 270), its frames take Ren's own keys (`ren/side/<clip>.<i>/0`), so the duel plays them on
- *                                        its moments; the clips it does not draw yet borrow its frames (dodge = hit, skill and slash = strike),
- *                                        the knockout plays its three frames (fall, knee, ground) on its own clock
+ *    ?scene=arena&fighterdensity=combat  hero-x3-combat, Ren's COMBAT sheet at x3 (manifest `lab`; its 34 frames of the CB-2 list since
+ *                                        journal Passe RC2, the first 22 in Passe RC1): cells of the arena (192 x 288 texels, feet on row 270),
+ *                                        its frames take Ren's own keys (`ren/side/<clip>.<i>/0`), so the duel plays them on its moments
+ *                                        (sheetFrame: today's techniques and the offensive skills play `skillOff`, Rampart `skillDef`, Fervour
+ *                                        `skillSup`), the knockout its three frames (fall, knee, ground) on its own clock
  *    &fighteredge=dark|rim|painted       the sheet's edge; absent = the operator's decision RC1-2 « Liseré peint la nuit, contour noir de
  *                                        jour »: painted at night (a one-texel cool rim painted into the texels on the sides the backlight
  *                                        catches, FighterArt's rimLight, the generated fighters' treatment, with the shader's crown rim), the
@@ -29,8 +30,9 @@ const MAX = 2048;
 
 export interface DensityTrial {
   id: string; k: number; scale: number;
-  /** after the presentation chose Ren's frame: the sheet's knockout clock, a held pose */
-  present(ren: Actor, time: number): void;
+  /** after the presentation chose Ren's frame: the sheet's frame for that moment (sheetFrame, from the simulation's animation and whether
+   *  the duel is over), the knockout's clock, a held pose */
+  present(ren: Actor, time: number, an: SimAnim | null, over: boolean): void;
   /** the renderer the arena built (its edge mode for the sheet) */
   attach(sprites: SpriteRenderer, camera: THREE.Camera, renderWidth: () => number): void;
   info: Record<string, unknown>;
@@ -47,8 +49,9 @@ export async function installFighterDensity(set: ArenaSpriteSet, params: URLSear
 /** Ren's combat sheet and how the duel reads it */
 export const COMBAT = {
   param: 'combat', id: 'hero-x3-combat',
-  /** Ren's clips the sheet does not draw yet (they wait for the C2 decision sheet): the frames they borrow */
-  borrow: { dodge: 'hit', skill: 'strike', slash: 'strike' } as Record<string, string>,
+  /** the duel's clips of today that the CB-2 list renames (briefs/combat-system.md § 14: `skill` becomes `skillOff`; Tourbillon's `slash`
+   *  becomes an offensive skill): they play the offensive family's frames, on its own cut (sheetFrame) */
+  renamed: { skill: 'skillOff', slash: 'skillOff' } as Record<string, string>,
   /** the knockout's three frames on its own clock (briefs/combat-system.md § 14: 0 fall t < 0.25, 1 on one knee t < 0.6, 2 on the ground) */
   ko: [0.25, 0.6],
 };
@@ -56,6 +59,26 @@ export const COMBAT = {
 export const edgeFor = (time: string | null): 'painted' | 'dark' => (!time || time === 'night' ? 'painted' : 'dark');
 /** the knockout's frame `e` seconds after its first frame was asked */
 export const koFrame = (e: number): number => (e < COMBAT.ko[0] ? 0 : e < COMBAT.ko[1] ? 1 : 2);
+/** the skill families' frame counts (§ 14), and the offensive family's impact frame */
+export const SKILL_FRAMES: Record<string, number> = { skillOff: 4, skillDef: 3, skillSup: 3 };
+const SKILL_IMPACT = 2;
+/** what the sheet reads of the simulation's animation (CombatSim and DynamicSim both have it) */
+export interface SimAnim { name: string; t: number; dur?: number; impactAt?: number; prep?: number }
+/** the sheet's frame for a moment of the duel (briefs/combat-system.md § 14), from the frame the duel chose (`<clip>.<i>`: today's clips,
+ *  and dynamicView's on the new moments) and the simulation's animation. Today's techniques and the offensive skills play `skillOff`: 0 the
+ *  preparation, held while it lasts (without one, the first half of the run-up), 1 the surge, 2 the strike until the impact + 0.12 s
+ *  (today's `skill` cut), 3 the follow-through. A defensive or support skill (dynamicView shows the guard or the raised blade) plays its own
+ *  family: 0 the preparation until the impact, 1 the effect through the follow-through (the animation's `dur`; without it 0.12 s), 2 the
+ *  return in the recovery. Every other clip is the sheet's own, frame for frame
+ *  (the same counts as the duel's); the duel over, its victory. The knockout's third frame is koFrame's. */
+export function sheetFrame(chosen: string, an: SimAnim | null, over: boolean): string {
+  const clip = chosen.slice(0, chosen.indexOf('.'));
+  if (!an) return chosen;
+  const t = an.t, ia = an.impactAt ?? 0, prep = an.prep ?? 0;
+  if (COMBAT.renamed[clip]) return `${COMBAT.renamed[clip]}.${t < prep || (!prep && t < ia * 0.5) ? 0 : t < ia - 0.04 ? 1 : t < ia + 0.12 ? 2 : 3}`;
+  if (!over && (an.name === 'skillDef' || an.name === 'skillSup')) return `${an.name}.${t < ia ? 0 : t < (an.dur ?? ia + 0.12) ? 1 : 2}`;
+  return chosen;
+}
 const LAB = '/art-lab/characters';
 async function json(url: string): Promise<any> {
   const r = await fetch(url);
@@ -107,10 +130,11 @@ async function installCombat(set: ArenaSpriteSet, params: URLSearchParams): Prom
   }
   const counts: Record<string, number> = {};
   for (const c of cells) counts[c.clip] = Math.max(counts[c.clip] ?? 0, c.i + 1);
-  for (const [clip, n] of Object.entries(counts)) {
-    const duel = clip === 'ko' ? 3 : set.clips.ren[clip]?.frames.length;
-    if (duel !== undefined && duel !== n) throw new Error(`${id}: ${clip} has ${n} frames, the duel's clip ${duel}`);
-  }
+  // every frame sheetFrame can ask for is the sheet's own: the duel's clips (the renamed ones by their new name, the knockout's three), the
+  // three skill families
+  const need: Record<string, number> = { ...SKILL_FRAMES };
+  for (const [clip, c] of Object.entries(set.clips.ren)) if (!COMBAT.renamed[clip]) need[clip] = clip === 'ko' ? 3 : c.frames.length;
+  for (const [clip, n] of Object.entries(need)) if (counts[clip] !== n) throw new Error(`${id}: ${clip} has ${counts[clip] ?? 0} frames, the duel plays ${n}`);
   const cols = Math.floor(MAX / cw), rows = Math.ceil(cells.length / cols), W = Math.min(cells.length, cols) * cw, H = rows * ch;
   if (H > MAX) throw new Error(`${id}: ${cells.length} cells of ${cw} x ${ch} need ${W} x ${H}, beyond ${MAX}`);
   const data = new Uint8ClampedArray(W * H * 4), atlas = set.atlas;
@@ -126,14 +150,8 @@ async function installCombat(set: ArenaSpriteSet, params: URLSearchParams): Prom
     for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) if (c.rgba[(y * cw + x) * 4 + 3] > 0) r = Math.max(r, (cw / 2 - x) / k);
     set.reach[`ren/${c.clip}.${c.i}`] = r * HERO_SCALE;
   });
-  for (const [clip, from] of Object.entries(COMBAT.borrow)) {
-    const n = set.clips.ren[clip]?.frames.length ?? 0;
-    for (let i = 0; i < n; i++) {
-      const j = Math.min(i, counts[from] - 1);
-      atlas.frames.set(`ren/side/${clip}.${i}/0`, atlas.frames.get(`ren/side/${from}.${j}/0`)!); atlas.counts.set(`ren/${clip}.${i}`, 1);
-      set.reach[`ren/${clip}.${i}`] = set.reach[`ren/${from}.${j}`];
-    }
-  }
+  // today's techniques lunge as far as the offensive skill's strike reaches (the duel measures the reach on its clip's impact frame)
+  for (const [clip, to] of Object.entries(COMBAT.renamed)) set.clips.ren[clip]?.frames.forEach((_, i) => { set.reach[`ren/${clip}.${i}`] = set.reach[`ren/${to}.${SKILL_IMPACT}`]; });
   const t = new THREE.DataTexture(new Uint8Array(data.buffer), W, H, THREE.RGBAFormat, THREE.UnsignedByteType);
   t.colorSpace = THREE.SRGBColorSpace; t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false;
   t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; t.needsUpdate = true;
@@ -147,7 +165,7 @@ async function installCombat(set: ArenaSpriteSet, params: URLSearchParams): Prom
   let camera: THREE.Camera | null = null, sprites: SpriteRenderer | null = null, ren: Actor | null = null, renderWidth: () => number = () => 0;
   let koFrom = -1;
   const info: Record<string, unknown> = {
-    id, k, sha256, runtimeUse: man.runtimeUse, scale: HERO_SCALE, frames: counts, borrowed: COMBAT.borrow, edge, rimTexels, pose,
+    id, k, sha256, runtimeUse: man.runtimeUse, scale: HERO_SCALE, frames: counts, renamed: COMBAT.renamed, edge, rimTexels, pose,
     cell: [cw, ch], texture: [W, H], cellsPerTexture: cols * Math.floor(MAX / ch), cellsUsed: cells.length, textureBytes: W * H * 4, bytesPerCell: cw * ch * 4,
   };
   Object.defineProperty(info, 'measure', {
@@ -171,12 +189,13 @@ async function installCombat(set: ArenaSpriteSet, params: URLSearchParams): Prom
       s.setEdgeMode(edge === 'dark' ? 'dark' : null);
       sprites = s; camera = cam; renderWidth = width;
     },
-    present(a, time) {
+    present(a, time, an, over) {
       ren = a; a.scale = HERO_SCALE;
       if (pose !== null) { a.anim = pose as Anim; return; }
       // the knockout's third frame: the duel's clip has two; its clock is the time since the knockout's first frame was asked
-      if (a.anim.startsWith('ko.')) { if (koFrom < 0) koFrom = time; a.anim = `ko.${koFrame(time - koFrom)}` as Anim; }
-      else koFrom = -1;
+      if (a.anim.startsWith('ko.')) { if (koFrom < 0) koFrom = time; a.anim = `ko.${koFrame(time - koFrom)}` as Anim; return; }
+      koFrom = -1;
+      a.anim = sheetFrame(a.anim, an, over) as Anim;
     },
   };
 }

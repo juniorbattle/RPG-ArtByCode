@@ -16,9 +16,9 @@
   "references": [
     {
       "category": "C",
-      "label": "Three generated pose sheets of the hero with a sword (NON-CANONICAL): the figures of the sheet",
+      "label": "Ten generated pose sheets of the hero with a sword (NON-CANONICAL): the figures of the sheet",
       "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
-      "note": "with ren-combat-x3-2026-10-25-a1.png (the hit recovery) and ren-combat-x3-2026-10-25-b2.png (the heavy attack, the victory, the knockout); generated in this session on the operator's choice « Génération (Recommandé) »"
+      "note": "with ren-combat-x3-2026-10-25-a1 and -b2 (Passe RC1, on the operator's choice « Génération (Recommandé) ») and ren-combat-x3-2026-10-26-c1, -c2, -d1, -d2, -e1, -e2, -f2 (Passe RC2, on RC1-1 « Bonne base : compléter après la fiche C2, avec les reprises »); the figures chosen by blind critiques"
     },
     {
       "category": "C",
@@ -35,5 +35,5 @@
   ],
   "approved": false,
   "runtimeUse": "lab",
-  "notes": "LAB, NOT APPROVED (journal Passe RC1): Ren's first combat sheet at x3 (AA2-1 « ×3 »), 22 frames of the CB-2 list for the keys the C2 trial does not touch (« Clés hors C2 (Recommandé) »): idle 2, ready 2, strike 3, heavy 4, block 2, hit 2, recover 2, ko 3, victory 2; dodge, skillOff, skillDef, skillSup wait for the C2 decision sheet. Cells of 192 x 288 texels (the arena cell at x3), feet on row 270, hips on column 96, facing left. Shown only in the arena behind the DEV parameter ?scene=arena&fighterdensity=combat (src/lab/fighterDensity.ts, compiled out of production builds), in place of the generated Ren's frames. Never in the cast. Rebuild: node tools/art-lab/build-combat.mjs art-lab/characters/rigs/hero-x3-combat.rig.mjs --check"
+  "notes": "LAB, NOT APPROVED (journal Passes RC1, RC2): Ren's combat sheet at x3 (AA2-1 « ×3 »), the 34 frames of the CB-2 list (briefs/combat-system.md § 14): idle 2, ready 2, strike 3, heavy 4, skillOff 4, skillDef 3 (Rampart), skillSup 3 (Fervour), block 2, dodge 2 (backward, C2-7 « En arrière »), hit 2, recover 2, ko 3, victory 2 (in profile since RC2); every blade at two texels. Cells of 192 x 288 texels (the arena cell at x3), feet on row 270, hips on column 96, facing left. Its edge is a rule of the renderer, not of the texels (the operator's answer in Passe RC2, « Règle du rendu (Recommandé) »): the painted rim at night, the town's dark outline by day (RC1-2). Shown only in the arena behind the DEV parameter ?scene=arena&fighterdensity=combat (src/lab/fighterDensity.ts, compiled out of production builds), in place of the generated Ren's frames. The operator's decision sheet of Passe RC2: « Complète : la garder en labo comme base » (RC2-1), « Pas encore : avec la feuille de Marek » (RC2-5): it enters production with Marek's sheet, through an integration task and the approval of both manifests. Never in the cast until then. Rebuild: node tools/art-lab/build-combat.mjs art-lab/characters/rigs/hero-x3-combat.rig.mjs --check"
 }

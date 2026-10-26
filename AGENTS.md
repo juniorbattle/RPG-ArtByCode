@@ -256,7 +256,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `node tools/art-lab/build-combat.mjs art-lab/characters/rigs/<id>.rig.mjs [--check]` — a fighter's COMBAT sheet for the arena (journal Passe RC1):
   frames of the arena cell at density k (64k x 96k, feet on row 90k, body axis on column 32k, facing left), one tag per clip `<clip>-side`; the
   assembly and checks of `build-trial.mjs` (Aseprite, every exported frame compared), the rig doing its own reconstruction; first use:
-  `hero-x3-combat` (`rigs/hero-x3-combat.rig.mjs`: three generated pose sheets, each figure at its sheet's pitch, hero-x2-v4's palette pinned)
+  `hero-x3-combat` (`rigs/hero-x3-combat.rig.mjs`: ten generated pose sheets, each figure at its sheet's pitch, hero-x2-v4's palette pinned,
+  every blade redrawn at two texels from a segment pinned per figure, journal Passes RC1 / RC2)
 - `node tools/art-lab/gen-image.mjs --task=<name> --prompt-file=<f.txt> [--ref=<image> ...] [--n=1] [--size=1536x1024] [--quality=high]
   [--dry-run]` — images through the OpenAI Images API, under the rule "Image generation" below (`--list-models`, `--spent`,
   `--archive=<generated.png> --name=<base>`; journal Passe I1)
@@ -368,11 +369,13 @@ treatment at the night's strength; the play mode's duel and forecourt set it fro
 bounded, any other key or value refused; absent = today's CombatSim, unchanged; the play mode: `&combat=dynamic` with `new=1` or `state=`); keys
 1-6, A dodge, B guard (hold), R restart, Space pause, H HUD; DEV server only (`src/lab/fighterDensity.ts`, compiled out of production builds; the
 density trial's `x2` / `x3` / `x4` of journal Passe AA2 removed by the operator's decision RC1-4 « Les retirer, garder fighterdensity=combat »):
-`fighterdensity=combat` (journal Passe RC1: Ren's first combat sheet `hero-x3-combat`, lab, 22 frames of the CB-2 keys outside the C2 trial in the arena's cells at x3, on Ren's own keys: the duel plays them on
-its moments, `dodge` / `skill` / `slash` borrow `hit` / `strike`, the knockout plays its three frames; `fighterpose=<clip>.<i>` holds one,
+`fighterdensity=combat` (journal Passes RC1 / RC2: Ren's combat sheet `hero-x3-combat`, lab, the 34 frames of the CB-2 list in the arena's cells at x3, on Ren's own keys: the duel plays them on
+its moments, no borrowed frame (`sheetFrame`: today's techniques and the offensive skills play `skillOff`, Rampart `skillDef`, Fervour `skillSup`, on
+the cut of § 14), the knockout plays its three frames; `fighterpose=<clip>.<i>` holds one,
 `fighteredge=dark|rim|painted`, painted = a cool one-texel rim painted into the texels, FighterArt's `rimLight`; absent = the operator's decision RC1-2
-« Liseré peint la nuit, contour noir de jour »: painted at night, the town's dark outline with `time=`; the sheet stays lab, RC1-3 « Pas encore :
-en labo jusqu'à la feuille complète »); `window.__density` (the sheet, its
+« Liseré peint la nuit, contour noir de jour »: painted at night, the town's dark outline with `time=`, a rule of the renderer and not of the
+texels (the operator's answer in journal Passe RC2, « Règle du rendu (Recommandé) », confirmed RC2-4 « Confirmé »); the sheet stays lab, RC2-5
+« Pas encore : avec la feuille de Marek »: both sheets enter production together); `window.__density` (the sheet, its
 atlas cost, `measure()` the texel on screen, `setPose()`); absent = the arena as before (0 px against frozen main, the production bundle identical)
 
 ## Art production principle

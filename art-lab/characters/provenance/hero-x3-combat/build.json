@@ -7,11 +7,11 @@
   96
  ],
  "k": 3,
- "frames": 22,
- "tags": "idle-side:0-1 ready-side:2-3 strike-side:4-6 heavy-side:7-10 block-side:11-12 hit-side:13-14 recover-side:15-16 ko-side:17-19 victory-side:20-21",
+ "frames": 34,
+ "tags": "idle-side:0-1 ready-side:2-3 strike-side:4-6 heavy-side:7-10 skillOff-side:11-14 skillDef-side:15-17 skillSup-side:18-20 block-side:21-22 dodge-side:23-24 hit-side:25-26 recover-side:27-28 ko-side:29-31 victory-side:32-33",
  "sheet": [
   1152,
-  1152
+  1728
  ],
  "colours": 64,
  "palette": "art-lab/characters/exports/hero-x2-v4.png",
@@ -27,6 +27,34 @@
   "b2": {
    "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
    "pitch": 2.2266
+  },
+  "c1": {
+   "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-c1.png",
+   "pitch": 1.797
+  },
+  "c2": {
+   "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-c2.png",
+   "pitch": 1.797
+  },
+  "d1": {
+   "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-d1.png",
+   "pitch": 2.4453
+  },
+  "d2": {
+   "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-d2.png",
+   "pitch": 2.4063
+  },
+  "e1": {
+   "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-e1.png",
+   "pitch": 2.2813
+  },
+  "e2": {
+   "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-e2.png",
+   "pitch": 2.2578
+  },
+  "f2": {
+   "path": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-26-f2.png",
+   "pitch": 2.1328
   }
  },
  "placement": {
@@ -45,9 +73,14 @@
    "pushed": 0,
    "lifted": 0
   },
-  "cut": {
+  "thrust": {
    "hips": 231,
    "pushed": 34,
+   "lifted": 0
+  },
+  "cut": {
+   "hips": 217,
+   "pushed": 21,
    "lifted": 0
   },
   "follow": {
@@ -90,11 +123,6 @@
    "pushed": 0,
    "lifted": 0
   },
-  "victory": {
-   "hips": 192,
-   "pushed": 0,
-   "lifted": 0
-  },
   "through": {
    "hips": 210,
    "pushed": 0,
@@ -114,11 +142,71 @@
    "hips": 178,
    "pushed": 0,
    "lifted": 0
+  },
+  "lungePrep": {
+   "hips": 197,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "surge": {
+   "hips": 249,
+   "pushed": 52,
+   "lifted": 0
+  },
+  "lungeBack": {
+   "hips": 210,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "wardPrep": {
+   "hips": 189,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "ward": {
+   "hips": 194,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "wardBack": {
+   "hips": 211,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "fervourPrep": {
+   "hips": 171,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cry": {
+   "hips": 170,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "fervourBack": {
+   "hips": 207,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "hop": {
+   "hips": 180,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "land": {
+   "hips": 222,
+   "pushed": 15,
+   "lifted": 1
+  },
+  "victory": {
+   "hips": 207,
+   "pushed": 0,
+   "lifted": 0
   }
  },
  "exports": {
-  "png": "a201ac3e62891321f053d1bee2396b8696f36853c9a8bf42bd360168e4f6415d",
-  "json": "b2b2ddd0edc198abf6b13c9f26481a67399d251c3b1d20af2b2c0a00c6461f66",
-  "aseprite": "035d495bf101a9d35f18ce30b7ef26f0bd3c73cc2b84a81034e440f3be478f33"
+  "png": "1fb854b7e3cd86c59c6f0d41983204a2ce3d814cfedb7125fe3ff8fd3deeb616",
+  "json": "87178b6e724e1f4f01e7a8f7422a4e0dc601ca59199b51df3deb8507adc5c792",
+  "aseprite": "8d32c14a2b73574e401f96b35d2f116aba53e5b18ca2ccbc6ed94713f386d86c"
  }
 }

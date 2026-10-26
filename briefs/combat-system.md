@@ -253,6 +253,13 @@ adversares max 3 ».
   compétence offensive).
 - `ko` va jusqu'à terre (3 images).
 
+**La feuille de Ren** (`hero-x3-combat`, ×3, labo, journal Passes RC1 et RC2) : les 34 images de cette liste. Derrière
+`?scene=arena&fighterdensity=combat` (DEV), le duel les joue sur ses propres moments : les techniques d'aujourd'hui (`skill`, et `slash` de
+Tourbillon) et les compétences offensives sur `skillOff`, Rempart sur `skillDef`, Ferveur sur `skillSup`, chacune avec le découpage du tableau ;
+l'esquive est un pas en arrière (C2-7). Fiche RC2 : « Complète : la garder en labo comme base » ; la coupe « La garder ; reprise dédiée plus
+tard » ; la lame « Deux texels d'acier et un bord sombre (comme fait) » ; le bord, une règle du rendu, « Confirmé » ; la production « Pas encore :
+avec la feuille de Marek ».
+
 **Marek** (puis tout rival)
 - La même liste.
 - `block` et `dodge` seulement si le rival garde ou esquive [G3].

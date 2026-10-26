@@ -435,7 +435,7 @@ export class ArenaApp {
       a.t = 0;
       p.lastClip = clip;
     }
-    if (import.meta.env.DEV && this.densityTrial) this.densityTrial.present(this.fighters.ren, this.time);
+    if (import.meta.env.DEV && this.densityTrial) this.densityTrial.present(this.fighters.ren, this.time, s.f.ren.anim, s.over);
   }
 
   private presentFans(): void {

@@ -77,6 +77,13 @@ Puis : « Le district en cours, c'est le parvis de l'arène (la place principale
    La fiche RC1, tout à la recommandation : « Bonne base : compléter après la fiche C2, avec les reprises » (la victoire de profil, une vraie taille
    pour la coupe, la lame à deux texels), « Liseré peint la nuit, contour noir de jour », « Pas encore : en labo jusqu'à la feuille complète »,
    « Les retirer, garder fighterdensity=combat » (les feuilles d'essai retirées).
+   **La feuille de Ren complète (Passe RC2, 26/10)** : les **34 images** de la liste CB-2, dont les 12 débloquées par la fiche C2 (`dodge` en
+   arrière, `skillOff`, `skillDef` Rempart, `skillSup` Ferveur), avec les reprises de RC1-1 (la victoire de profil, une taille pour la coupe, toutes
+   les lames à deux texels) ; sept planches générées de plus (1,75 $) ; le duel joue ses propres images sur chaque moment, sans emprunt ; le bord
+   est une règle du rendu (« Règle du rendu (Recommandé) »). Toujours en labo derrière `?scene=arena&fighterdensity=combat` (DEV).
+   La fiche RC2, tout à la recommandation : « Complète : la garder en labo comme base », la coupe « La garder ; reprise dédiée plus tard », la lame
+   « Deux texels d'acier et un bord sombre (comme fait) », le bord « Confirmé », la production « Pas encore : avec la feuille de Marek ». **Suite** :
+   la feuille de Marek à ×3 par la même voie, avec la reprise de la coupe de Ren ; puis les deux feuilles vers la production ensemble ; ensuite Vessa.
 3. **Les spectateurs** : une foule bon marché (quelques silhouettes, variantes de couleurs par les masques de la Passe V1, une boucle d'acclamation,
    un seul appel de dessin) plutôt qu'un personnage complet par spectateur.
 
@@ -131,6 +138,12 @@ d'entraînement.
 - La densité des feuilles de combat : « ×3 » (AA2-1).
 - Le bord d'un combattant cuit la nuit : « Trancher sur la première feuille de Ren » (AA2-2).
 - Les feuilles d'essai (`hero-x3-trial`, `hero-x4-trial`) et `?fighterdensity=` : « Les garder jusqu'à la feuille de Ren » (AA2-3).
+
+## Tranché (fiche de la feuille complète de Ren, Passe RC2, 26/10)
+
+- La feuille : « Complète : la garder en labo comme base » (RC2-1) ; la coupe : « La garder ; reprise dédiée plus tard » (RC2-2).
+- La lame : « Deux texels d'acier et un bord sombre (comme fait) » (RC2-3) ; le bord, une règle du rendu : « Confirmé » (RC2-4).
+- La production : « Pas encore : avec la feuille de Marek » (RC2-5).
 
 ## Tranché (fiche de la feuille de combat de Ren, Passe RC1, 25/10)
 

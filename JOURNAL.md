@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1 et AP1) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1 et RC2) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -38,239 +38,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/25-passes-UI2-UI3.md`](journal/25-passes-UI2-UI3.md) | UI2, UI3 | 24/10 → 25/10 |
 | [`journal/26-passes-CB1-C1.md`](journal/26-passes-CB1-C1.md) | CB1, C1 | 25/10 |
 | [`journal/27-passes-C2-AA2.md`](journal/27-passes-C2-AA2.md) | C2, AA2 | 25/10 |
+| [`journal/28-passes-RC1-C2F.md`](journal/28-passes-RC1-C2F.md) | RC1, C2F | 25/10 → 26/10 |
 
 ---
-
-## Passe RC1 — La première feuille de combat de Ren à ×3 (étape 1 de la feuille de route, décision AA2-1) : 22 images générées puis reconstruites, dans le duel derrière un paramètre DEV, une fiche d'arbitrages (2026-10-25)
-
-### Demande
-- Séance locale lancée par la séance parente : la première feuille de combat de Ren (`hero-x2-v4`) à la densité ×3 décidée en AA2-1 (« ×3 »), étape 1
-  de `briefs/roadmap-2026-10.md` : une feuille de labo `hero-x3-combat` (cases de 192 × 288 texels, pieds rangée 270, palette de `hero-x2-v4`
-  épinglée), montrée dans le duel derrière un paramètre DEV ; le bord la nuit (AA2-2 « Trancher sur la première feuille de Ren ») ; les mesures
-  (texel, texture, GPU) ; une fiche d'arbitrages. Les planches du héros ne dessinant ni épée ni pose de combat, la voie se propose à l'opérateur
-  avant toute génération.
-- Branche `ren-combat-x3` depuis `main` (`8c9a4ad`), seule branche de travail (`git fetch --prune`, `git branch -a`). `.gitignore` et `.claude/`,
-  modifiés hors de cette tâche, jamais commités. Serveurs : `dev-strict` (:5186) et `main` figé (`8c9a4ad`, copie hors dépôt, :5202, entrée
-  locale `rc1-frozen-main`), par `preview_start` / `preview_stop`.
-- **L'essai C2** : sa fiche (https://claude.ai/artifact/2BFmUTe6GFRAjq92TEHNPc) est encore vide (0 document dans `decisions`, relu au début de la
-  séance). Elle peut changer l'esquive (en arrière ou de côté) et les compétences.
-
-### Les choix de l'opérateur avant de dessiner, mot pour mot
-- Question : « Les planches du héros n'ont ni épée ni pose de combat. Par quelle voie dessine-t-on l'épée et les poses de la feuille ×3 de Ren ? »
-  Réponse : **« Génération (Recommandé) »** (deux requêtes par `tools/art-lab/gen-image.mjs`, gpt-image-2, références v4-b et v3 ; le rig fait
-  le souffle et l'encaisse). Écartés : « Dessin par rig seul » (de profil, le bras n'est pas séparable du buste), « Hybride ».
-- Question : « La fiche C2 n'est pas encore remplie, et elle peut changer l'esquive (en arrière ou de côté) et les compétences. Que met-on dans
-  cette première feuille ? » Réponse : **« Clés hors C2 (Recommandé) »** : idle, ready, strike, heavy, block, hit, recover, ko, victory, 22
-  images sur 34 ; `dodge`, `skillOff`, `skillDef`, `skillSup` attendent la fiche C2.
-
-### La génération — [OK], avec un incident [KO → consigné]
-- Deux prompts (`art-lab/characters/scratch/ren-combat/prompts/ren-combat-a.txt`, `-b.txt`, dans le dossier ignoré) : le même héros de profil
-  tourné à gauche, une épée simple (lame d'acier, garde et pommeau en laiton comme ses boucles, poignée de cuir), dans sa main proche ; A : repos,
-  posture, armé, coupe, suite, garde, coup reçu, reprise, étourdi ; B : rassemblement, lame levée, coup puissant, victoire, suite, chute, genou,
-  au sol ; fond gris uni, aucune traînée, aucun effet. Chaque requête : n = 2, haute qualité, 1536 × 1024, références `hero-turnaround-v4-2026-10-19-b`
-  et `hero-turnaround-v3-2026-10-19`.
-- **[KO] Deux requêtes lancées en parallèle** : elles ont démarré dans la même seconde, leurs images portent le même nom
-  (`ren-combat-x3-<horodatage>-<n>.png`) : les deux images de la requête A ont été **écrasées** par celles de B (0,39 $ perdus), et le registre
-  (« ledger »), lu par les deux au départ et réécrit par chacune, garde la réservation non soldée de A (2,03 $ inscrits pour 1,16 $ réels :
-  surestimé de 0,87 $, du côté prudent). A relancée seule ensuite. **Leçon** : une requête de `gen-image.mjs` à la fois (noms à la seconde,
-  registre sans verrou).
-- **Coût réel** : trois requêtes, 0,3857 + 0,3860 + 0,3857 = **1,16 $** (sous le plafond de 5 $ de la tâche).
-- **Critique à l'aveugle des variantes** (agent neuf, étiquettes tirées au sort, clé hors de son champ) : planche A, **A-2 6,5 contre A-1 6** (la
-  garde et l'étourdi plus lisibles ; la reprise du coup reçu de A-1 « nettement meilleure ») ; planche B, **B-2 6,5 contre B-1 5,5** (lame levée
-  au sol et non en saut, genou à terre et non à quatre pattes). Auto-critique écrite avant le verdict : A-1 (figures plus grandes), B-2. Relevé
-  par le critique sur les quatre : la victoire de face, le torse du repos de trois-quarts, un détail (mèches, plis) trop fin pour 42 pixels.
-- **Archivées** comme sources non canoniques (`--archive`, octets et records) : `ren-combat-x3-2026-10-25-a1`, `-a2`, `-b2` dans
-  `art-lab/characters/reference/sources/` ; B-1 reste dans le dossier ignoré.
-
-### La feuille `hero-x3-combat` — [OK] (manifeste `lab`, non approuvé)
-- **`art-lab/characters/rigs/hero-x3-combat.rig.mjs`** : par figure, la figure seule sur sa planche (les autres repeintes du fond), reconstruite
-  par `reconstruct-grid.mjs` au **pas de sa planche** (hauteur de la figure debout sur les 128 rangées du repos de `hero-x3-trial` : a1 2,1875, a2
-  1,875, b2 2,2266 ; A-2 dessine son héros plus petit) dans un cadre de 384 × 288, pieds rangée 270 ; le halo gris retiré sur les couleurs
-  pleines (avant la palette : la lame grise est au bord partout et la règle de couleur des essais l'aurait effacée) ; la couleur OKLab la plus
-  proche de la palette de `hero-x2-v4` (aucune couleur nouvelle : **64 couleurs**, toutes de cette palette) ; îlots de moins de 12 texels
-  retirés ; **les hanches sur la colonne 96** (le milieu des deux pieds, l'axe de `FighterArt` entre pied avant et pied arrière ; réglées à l'œil
-  pour les trois images du K.O.), avancées du moins qu'il faut pour que la lame tienne dans la case : **coupe 34 texels, genou à terre 24,
-  posture 8** (la case fait 64 pixels de ville de large, l'épée générée est plus longue que celle de Ren généré) ; la semelle remise sur la rangée
-  270. Puis le rig : l'image 1 de `idle`, `ready`, `victory` = le souffle (inspiration, levée de 2 rangées) de l'image 0 ; `recover` 1 = l'expiration
-  (tête plus basse) ; `block` 1 (l'encaisse) = le haut du corps cisaillé de 3 texels en arrière.
-- **`tools/art-lab/build-combat.mjs`** (nouveau) : la chaîne d'assemblage de `build-trial.mjs` pour la case d'arène (64k × 96k, pieds 90k, axe
-  32k) et les clés de combat (étiquettes `<clé>-side`) ; contrôle d'image (alpha binaire, anneau transparent, chaque image sur la rangée des
-  pieds), Aseprite 1.3.18.6, chaque image exportée comparée à celle du rig ; `build-trial.mjs`, `build-character.mjs` et `rig-engine.mjs` ne
-  changent pas. `--check` : **reconstruite identique**.
-- Export : **22 images** (idle 2, ready 2, strike 3, heavy 4, block 2, hit 2, recover 2, ko 3, victory 2), feuille 1152 × 1152 ; paquet de
-  provenance (sources, chaîne, table des fichiers), manifeste `lab`, hors de la distribution.
-
-### Dans le duel — [OK] derrière le paramètre DEV
-- **`src/lab/fighterDensity.ts`** : `?scene=arena&fighterdensity=combat` charge la feuille (manifeste, SHA-256 contre le paquet, décodage exact,
-  contrat d'image vérifié) dans la texture cuite de l'arène ; ses images prennent **les clés de Ren** (`ren/side/<clé>.<i>/0`) : le duel les joue
-  sur ses propres moments, sous les deux règles, à l'échelle 0,9 du héros. Les clips que la feuille ne dessine pas encore **empruntent** ses
-  images (`dodge` = `hit`, `skill` et `slash` = `strike`) ; **le K.O. joue ses trois images** sur sa propre horloge (`koFrame` : chute avant 0,25 s,
-  genou avant 0,6 s, au sol ensuite ; le clip du duel n'en a que deux) ; la portée (`reach`) est mesurée sur la lame (la frappe touche Marek).
-  `&fighterpose=<clé>.<i>` tient une image, `__density.setPose()` la change sans recharger (captures) ; `&fighteredge=dark|rim|painted`.
-  Marek reste généré ×2. Les valeurs `x2`, `x3`, `x4` de l'essai AA2 ne changent pas.
-- **Vérifié en jeu** : `strike`, `heavyRen`, `block`, `dodge` (emprunt), `impact`, `technique` (emprunt), la victoire ; le nouveau duel : `prep`,
-  `ward` (Rempart sur la garde), `boost` (Ferveur sur la victoire), `pushed`, `broken` (étourdi), `koRen` (le K.O. passe par 0, 1, 2 à 0,25 et
-  0,6 s, pas à pas de 1/60 s).
-
-### Le bord la nuit (AA2-2) — rendus côte à côte
-- Trois bords : le contour noir 25 % de la ville (S3b, défaut du paramètre), le liseré du shader (`rim`), et **un liseré peint** dans les texels
-  (`painted`, la règle `rimLight` de `FighterArt` : un texel froid sur les bords haut et arrière que la lune attrape, un peu sur l'avant, jamais la
-  rangée des pieds ; avec le liseré du shader, comme les générés). La nuit : au contour noir, la cape et le pantalon tombent dans le pavé ; le
-  liseré du shader trace un pointillé ; le liseré peint détache la tête, la cape et la jambe arrière d'un trait continu. À midi, les trois se
-  lisent, le liseré peint y ajoute un bord clair bleuté. Sur la fiche (RC1-2) ; le liseré peint n'est qu'un aperçu du module DEV (couleurs hors de
-  la palette, appliquées au chargement).
-
-### Les mesures
-- **Texel à l'écran** (quad de Ren projeté, échelle 0,9) : **2,34 px** en 1920 × 1080, **3,11** en 2560 × 1440, la nuit et à midi (le héros en ville :
-  2,0 à 2,3 ; Ren généré 3,89).
-- **Texture** : case de 192 × 288, **70 cases** par texture de 2 048 ; les 22 cases prennent 1 920 × 864 (6,6 Mo) ; Ren complet (34) et Marek
-  complet (34) : 68 cases, 2 libres, comme prévu en AA2.
-- **GPU** (`tools/perf.mjs`, serveur de la branche, 1920 × 1080, 5 tours entrelacés, `fps=off`, témoin de contention au seuil de 15 %, onglets de la
-  séance fermés : **5 tours propres sur 5**, Radeon 780M) : nuit B **8,78** ms [8,63-8,96] ; arène d'aujourd'hui **8,02** [7,95-8,20] ; feuille ×3
-  **7,98** [7,98-8,12] ; liseré peint **7,97** [7,93-8,02] ; nouveau duel avec la feuille **8,01** [7,94-8,16]. Mêmes 92 appels de dessin, 133 k
-  triangles. **E24 tenu**.
-
-### Critique à l'aveugle de la feuille dans la scène
-- Agent neuf, étiquettes tirées au sort : six moments du duel la nuit (repos, attaque légère, élan de la puissante, garde, coup reçu, victoire),
-  Ren généré contre la feuille. **La feuille 6, Ren généré 5** ; « à ne pas expédier tel quel » (7 ou plus). La feuille : ses six moments se lisent,
-  la fente, l'élan de la puissante et le coup reçu mieux que chez le généré (dont le coup reçu se lit comme une garde). Ses défauts : la lame d'un
-  texel se perd sur le pavé et le fond clair ; la cape et le pantalon tombent dans le pavé la nuit ; les ceinturons font un fourmillement
-  sombre ; Ren n'est plus « du même monde » que Marek resté ×2 (attendu jusqu'à sa feuille, AA2-1). Auto-critique écrite avant : la feuille 7,
-  le généré 5 (surestimée d'un point).
-
-### Les preuves
-- **L'arène par défaut contre `main` figé** (`tools/arena-scene-shots.mjs`, `HOLD=1`, 1920 × 1080, graine 1842, deux captures de chauffe) : ancien duel
-  9 moments (`charging`, `strike`, `heavyRen`, `block`, `dodge`, `impact`, `technique`, `combo`, `ko`), nouveau duel 9 (`charging`, `strike`, `prep`,
-  `ward`, `combo`, `pushed`, `foeBreak`, `broken`, `koRen`), scène seule la nuit et à midi, et le HUD affiché la nuit : **54 sur 54 à 0 px**,
-  témoin (deux chargements de `main`) **54 sur 54**. **[KO → corrigé]** une première série du HUD différait aussi au témoin (10 captures sur 18,
-  dans les cartes et le signe : les transitions CSS) : refaite avec les transitions et animations coupées à la chauffe, 18 sur 18.
-- **Bundle de production** identique à l'octet à celui de `main` figé (même configuration, **31 fichiers**), avant et après le dernier changement
-  du module DEV.
-- **Tests** : `tests/combat-sheet.test.mjs` (6) : la feuille `lab`, non approuvée, hors de la distribution, chaque fichier de son paquet à son
-  empreinte ; ses sources archivées, non canoniques, celles que lit le rig, la palette épinglée ; ses images : les clés hors C2 avec leurs nombres
-  (oracle écrit d'après le § 14), la case ×3, le contrat d'image, les seules couleurs de `hero-x2-v4` ; chaque image que le duel demande à Ren
-  trouvée (la feuille ou un emprunt) et l'horloge du K.O. ; le liseré peint sur les seuls texels de bord, jamais l'alpha ni la rangée du sol ;
-  aucun fichier de `src/` hors `src/lab` ne nomme la feuille. **10 fautes injectées sur 10 attrapées** (manifeste approuvé, manifeste en
-  production, esquive non prêtée, horloge du K.O. décalée, K.O. à deux images, liseré à l'intérieur, liseré sur la rangée du sol, feuille nommée
-  hors du labo, source déclarée canonique, empreinte de source du rig), fichiers rendus à l'octet (SHA-256).
-- **Validation** : typecheck, `npm test` **197 / 197** (191 + 6), build, `art:validate` (21 manifestes, 33 sources, 0 erreur), `build-combat.mjs --check` ;
-  après la fiche (ci-dessous) : `npm test` **195 / 195** (les 3 tests des feuilles d'essai retirés, un ajouté), `art:validate` (19 manifestes, 33
-  sources, 0 erreur).
-
-### La fiche — [OK] publiée, 4 choix sur 4 enregistrés et relus
-- Page privée https://claude.ai/artifact/KxFxjXUajBWpgsxcfJo2WC, collection `decisions`, relue vide après publication ; les protections des fiches
-  précédentes (pont attendu 10 s, chaque écriture relue). Relue après « La fiche de la feuille de combat de Ren est remplie. » : **4 documents sur
-  4**, cliqués le 25/10 entre 22 h 21 min 10 s et 22 h 21 min 30 s UTC, aucune note.
-
-### Les choix de l'opérateur, mot pour mot
-« = » : la recommandation de la fiche est suivie.
-
-| # | Décision | Recommandation | Choix de l'opérateur | Note | |
-|---|---|---|---|---|---|
-| RC1-1 | La première feuille de combat de Ren (22 images) | « Bonne base : compléter après la fiche C2, avec les reprises » | « Bonne base : compléter après la fiche C2, avec les reprises » | — | = |
-| RC1-2 | Le bord de Ren contre le contre-jour de la lune | « Liseré peint la nuit, contour noir de jour » | « Liseré peint la nuit, contour noir de jour » | — | = |
-| RC1-3 | L'entrée en production de la feuille | « Pas encore : en labo jusqu'à la feuille complète » | « Pas encore : en labo jusqu'à la feuille complète » | — | = |
-| RC1-4 | Les feuilles d'essai hero-x3-trial, hero-x4-trial et fighterdensity=x2\|x3\|x4 | « Les retirer, garder fighterdensity=combat » | « Les retirer, garder fighterdensity=combat » | — | = |
-
-- **Ce qui en suit** :
-  - RC1-1 : la feuille est une bonne base ; les 12 images qui restent (`dodge`, `skillOff`, `skillDef`, `skillSup`) se font **après la fiche C2**,
-    par la même voie (génération puis reconstruction), et la même génération **reprend** la victoire de profil, une vraie taille pour la coupe et
-    la lame à deux texels. Tâche à part, après la fiche C2.
-  - RC1-2 : **le liseré peint la nuit, le contour noir 25 % de jour** ; appliqué ci-dessous comme défaut du paramètre DEV ; dans la feuille
-    complète, le liseré se fera dans les texels (une variante de nuit des images, ou une règle du rendu des feuilles cuites de l'arène), à
-    trancher par la tâche qui les produit.
-  - RC1-3 : **pas de production** : la feuille reste en labo jusqu'à la feuille complète (34 images) avec son bord ; puis une tâche
-    d'intégration avec l'approbation du manifeste par l'opérateur.
-  - RC1-4 : appliqué ci-dessous.
-
-### Après la fiche — [OK] RC1-4 et RC1-2 appliqués
-- **RC1-4** : `hero-x3-trial` et `hero-x4-trial` retirés (manifestes, exports, sources `.aseprite`, paquets de provenance, rigs, et la recette
-  commune `hero-trial.common.mjs` : 17 fichiers, 438 577 octets, gardés dans l'historique git) ; `tests/fighter-density.test.mjs`, qui les testait,
-  retiré (sa garde « derrière `import.meta.env.DEV` » passe dans `tests/combat-sheet.test.mjs`) ; `src/lab/fighterDensity.ts` ne garde que
-  `fighterdensity=combat` et refuse toute autre valeur (`fighterdensity "x3": combat`) ; `tools/art-lab/build-trial.mjs` reste (outil générique,
-  sa première utilisation notée retirée) ; les commentaires d'`ArenaApp.ts` et de `bakedLoader.ts` mis à jour (aucun code).
-- **RC1-2** : sans `fighteredge`, le bord suit l'état du jour de la page (`edgeFor`) : la nuit (pas de `time`, ou `time=night`) le liseré peint
-  (8 148 texels de liseré sur les 22 images, mesuré en page), de jour le contour noir. Vérifié dans la page : nuit `painted`, midi et matin
-  `dark`, `fighteredge=dark` la nuit `dark`.
-- **Tests** : `tests/combat-sheet.test.mjs` (7) : le bord selon l'état du jour, les valeurs `x2`, `x3`, `x4` et vide refusées, les manifestes
-  d'essai absents, la garde DEV d'`ArenaApp` reprise. **13 fautes injectées sur 13 attrapées** (les 10 d'avant et : bord inversé, valeur d'essai
-  acceptée, garde DEV retirée), fichiers rendus à l'octet.
-- **Preuves** : l'arène par défaut contre `main` figé refaite : **54 sur 54 à 0 px** (mêmes moments, scène seule la nuit et à midi, HUD figé, ancien et
-  nouveau duel) ; bundle de production identique à l'octet (31 fichiers) ; `build-combat.mjs --check` identique.
-
-### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
-- Avec cette passe, les passes gardées dépassaient 70 Ko. CB1 et C1, closes (fusionnées), partent d'un seul bloc vers
-  `journal/26-passes-CB1-C1.md` (27 412 octets) ; restent 46 Ko. Preuve **8 / 8** (script hors dépôt, contre la copie de `JOURNAL.md` d'avant le
-  déplacement : corps de l'archive égal au bloc ; CB1, C1 contigus, suivis de C2 ; plus dans `JOURNAL.md` ; chacune dans un seul fichier de
-  `journal/`, par sa ligne de titre entière ; C2 et AA2 inchangées à l'octet ; seules la phrase d'en-tête et une ligne d'index changent ; en-tête
-  comme `journal/25` ; CRLF seuls). **[KO → corrigé]** le contrôle 4 cherchait le début de titre « Passe C1 » : une autre Passe C1 (la foule, 19/10) vit dans
-  `journal/10` ; il compare désormais la ligne de titre entière. Contrôle négatif : un bit changé dans une copie de l'archive → 7 / 8.
-
-### Pensée
-- Deux appels d'un outil qui nomme ses fichiers à la seconde et réécrit un registre lu au départ ne se lancent pas en parallèle : l'un écrase
-  l'autre, et le registre perd une écriture. Un outil à registre se sert une requête à la fois.
-- Une règle de nettoyage par couleur (le halo gris du fond) se relit contre ce que la nouvelle matière dessine en gris (une lame d'acier, toute en
-  bord) : avant la palette, sur la distance au fond lui-même, pas sur une plage de gris.
-- Plusieurs planches générées n'ont pas la même échelle : chaque figure se reconstruit au pas de sa planche, réglé sur une hauteur commune, et
-  l'ancrage (les hanches, entre les deux pieds) se fixe avant de juger le mouvement ; ce que la case refuse (une lame trop longue) se chiffre et
-  se nomme.
-- Une capture d'interface se fige par son témoin : sans transitions coupées, deux chargements du même `main` différaient dans le HUD.
-
-## Passe C2F — La fiche de l'essai C2 relue et consignée : 16 choix sur 16, le défaut après C3 (2026-10-26)
-
-### Demande
-- Dans la séance de la feuille de combat de Ren (Passe RC1), l'opérateur : « cest rempli non », puis « done ». La fiche de la Passe C2
-  (https://claude.ai/artifact/2BFmUTe6GFRAjq92TEHNPc, collection `decisions`) était vide à la première relecture (0 document) : les choix
-  pouvaient être restés dans le navigateur (la page les garde et les renvoie à la connexion) ; l'opérateur l'a rouverte, puis « done ».
-- Branche `c2-sheet-record` depuis `main` (`8babb52`), seule branche de travail. Documentation seule : aucun code ne change.
-
-### La fiche — [OK] 16 choix sur 16 enregistrés et relus
-- Relue après « done » : **16 documents sur 16**, cliqués le 26/10 entre 00 h 49 min 30 s et 00 h 53 min 06 s UTC, aucune note ; chaque écriture
-  relue par la page avant « Enregistré et relu ».
-
-### Les choix de l'opérateur, mot pour mot
-« = » : la recommandation de la fiche est suivie.
-
-| # | Décision | Recommandation | Choix de l'opérateur | Note | |
-|---|---|---|---|---|---|
-| C2-1 | Le nouveau duel devient-il le défaut ? (CB-10) | « Pas encore : après C3 et un second essai » | « Pas encore : après C3 et un second essai » | — | = |
-| C2-2 | La durée des duels | « Comme mesurées (5 à 9 min) » | « Comme mesurées (5 à 9 min) » | — | = |
-| C2-3 | Le maximum de points d'action | « 5 PA » | « 5 PA » | — | = |
-| C2-4 | Un PA rendu avec le temps | « Aucun » | « Aucun » | — | = |
-| C2-5 | Les recharges des compétences | « Aucune » | « Aucune » | — | = |
-| C2-6 | L'action objet en combat | « Plus tard (C4 / C5) » | « Plus tard (C4 / C5) » | — | = |
-| C2-7 | La direction de l'esquive | « En arrière » | « En arrière » | — | = |
-| C2-8 | La jauge de résistance | « Comme aujourd'hui » | « Comme aujourd'hui » | — | = |
-| C2-9 | Le break : étourdissement et dégâts | « 6 s, ×1,2 » | « 6 s, ×1,2 » | — | = |
-| C2-10 | Rempart et Ferveur | « Les garder » | « Les garder » | — | = |
-| C2-11 | Ce que montre le HUD (CB-6) | « Approuvé » | « Approuvé » | — | = |
-| C2-12 | Le signe de la priorité dans l'aide discrète | « Dans l'aide discrète » | « Dans l'aide discrète » | — | = |
-| C2-13 | La barre d'actions dans une fenêtre étroite | « Accepter » | « Accepter » | — | = |
-| C2-14 | L'écran de chargement | « Tâche à part » | « Tâche à part » | — | = |
-| C2-15 | Le téléphone tenu droit | « Le garder » | « Le garder » | — | = |
-| C2-16 | La page publiée de l'ancienne arène | « La republier » | « La republier » | — | = |
-
-### Ce qui en suit (rien d'autre n'est appliqué par cette passe)
-- **Le défaut (C2-1)** : l'arène et le tournoi d'aujourd'hui restent le défaut ; le nouveau duel y passera **après C3** (les adversaires avec
-  garde, esquive et compétences) **et un second essai** de l'opérateur. Le contrat de combat (CB-9) attend toujours ce second essai.
-- **Les nombres du § 11 (C2-2 à C2-9)** : ceux d'aujourd'hui sont tenus : durées de 5 à 9 minutes, **5 PA** au plus (1 au départ, CB-5), **aucun
-  regain** de PA avec le temps, **aucune recharge**, l'**action objet plus tard** (C4 / C5), l'**esquive en arrière**, la jauge comme aujourd'hui
-  (100, 1,8 / s), le **break de 6 s à ×1,2**. Aucune valeur de `DYNAMIC_DATA` ne change.
-- **Les compétences (C2-10)** : Rempart (défensive) et Ferveur (soutien) sont gardées pour C3 / C4 : les familles défensive et soutien restent.
-- **Le HUD (C2-11, C2-12)** : approuvé ; le signe de la priorité reste dans l'aide discrète.
-- **L'interface (C2-13 à C2-16)** : la barre sous 1 241 px acceptée telle quelle ; « Tournez l'appareil » gardé ; deux tâches à part :
-  **l'écran de chargement** dans le système de design (C2-14, avec P6) et **la page publiée de l'ancienne arène** (Passe P2) à republier au même
-  lien avec le HUD d'aujourd'hui (C2-16, `tools/arena-scene-page.mjs`).
-- **Pour la feuille de combat de Ren (Passe RC1)** : la fiche C2 débloque les 12 images restantes : `dodge` **en arrière** (C2-7), `skillOff`,
-  `skillDef` (Rempart) et `skillSup` (Ferveur) (C2-10) ; RC1-1 les veut par la même voie, avec les reprises (la victoire de profil, une vraie
-  taille pour la coupe, la lame à deux texels) et le liseré peint de nuit (RC1-2).
-
-### Validation
-- Documentation seule : typecheck, `npm test` **195 / 195**, build, `art:validate` (19 manifestes, 33 sources, 0 erreur).
-
-### Pensée
-- Une collection vide après « c'est rempli » ne dit pas que l'opérateur n'a rien choisi : la page garde les choix non enregistrés dans le
-  navigateur et les renvoie à la connexion. Le dire, faire rouvrir la page (ou copier le récapitulatif), relire ensuite.
 
 ## Passe AP1 — La page publiée de l'arène republiée au même lien avec le HUD d'aujourd'hui (décision C2-16) (2026-10-26)
 
@@ -593,6 +363,182 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un build se compare d'un jour à l'autre par ses noms hachés : la liste des fichiers à retirer d'une page publiée se calcule (anciens moins
   nouveaux), sinon les anciens morceaux restent publiés à côté des nouveaux.
 
+## Passe RC2 — La feuille de combat de Ren complète : les 34 images de la liste CB-2, les reprises de RC1-1, la lame redessinée, le bord en règle du rendu, une fiche d'arbitrages (2026-10-26)
+
+### Demande
+- Séance locale lancée par la séance parente : compléter `hero-x3-combat` (labo) jusqu'aux 34 images de la liste CB-2 (`briefs/combat-system.md`
+  § 14) : les 12 images manquantes (`dodge` 2 **en arrière**, C2-7 ; `skillOff` 4 ; `skillDef` 3, Rempart ; `skillSup` 3, Ferveur, C2-10) par la
+  voie de RC1 (génération par `tools/art-lab/gen-image.mjs`, une requête à la fois, reconstruction au pas de chaque planche sur la palette de
+  `hero-x2-v4`) ; les reprises de RC1-1 (la victoire de profil, une vraie taille pour la coupe, la lame à deux texels) ; le bord (RC1-2) dans la
+  feuille complète, sa forme proposée à l'opérateur avant de la faire ; les emprunts du module DEV retirés, `koFrame` gardé ; une critique à
+  l'aveugle dans la scène contre la première feuille ; les preuves de RC1 ; une fiche d'arbitrages.
+- Branche `ren-combat-x3-full` depuis `main` (`d604a3b`), rejouée sur `main` (`d41bf36`) avant la fusion (plus bas). Une autre séance tient `arena-page-republish` (C2-16) dans son propre worktree.
+  `.gitignore` et `.claude/`, modifiés hors de cette tâche, jamais commités. Serveurs : `dev-strict` (:5186) et `main` figé (`d604a3b`, copie hors
+  dépôt, :5203, entrée locale `rc2-frozen-main`), par `preview_start` / `preview_stop`.
+
+### La question à l'opérateur, mot pour mot
+- « Le bord de Ren (RC1-2 « Liseré peint la nuit, contour noir de jour ») : sous quelle forme le met-on dans la feuille complète de 34 images ? »
+  Réponse : **« Règle du rendu (Recommandé) »** : une seule feuille de 34 images ; le liseré froid peint dans les texels au chargement des
+  feuilles cuites de l'arène quand la page est la nuit (la règle `rimLight` des générés, déjà celle du module DEV) ; de jour le contour noir 25 % ;
+  aucune case de plus ; ses couleurs calculées, hors de la palette ; la même règle pour Marek et Vessa. Écartée : « Variante de nuit des images »
+  (34 images de plus, Marek ne tient plus dans la texture de 2 048).
+
+### La génération — [OK] sept planches archivées sur douze images, une requête à la fois
+- Tâche `ren-combat-x3-full`, gpt-image-2, n = 2, haute qualité, 1536 × 1024 ; références : la planche v4-b, la planche v3 et les planches a2 et
+  b2 de RC1 (pour H : v4-b, a2, b2 et un recadrage de l'armé et de la suite de a2). Prompts dans le dossier ignoré
+  `art-lab/characters/scratch/ren-combat-full/prompts/` (`ren-combat-c.txt` à `-h.txt`).
+  - C (fente, coupe, esquive, victoire) : la fente et l'esquive arrivent ; la victoire reste de face dans les deux variantes, la poussée en l'air.
+  - D (Rempart, Ferveur) : **[KO]** le « mur » de Rempart, demandé « horizontal en travers de la poitrine », est vu de bout de profil : le
+    générateur dessine une pointe tendue ; le cri de Ferveur est de trois-quarts.
+  - E (reprise ciblée, « profil strict » répété) : la victoire de profil, une parade haute (la lame horizontale au-dessus de la tête, demandée
+    dans le plan de l'image), le cri de profil, une poussée pied au sol.
+  - F, G, H : la coupe (plus bas), et dans F et G deux poussées d'esquive (trop larges pour la case, ou un coup de pied).
+- Coût : six requêtes, 0,4365 + 0,4353 + 0,4369 + 0,4380 + 0,4385 + 0,4194 = **2,60 $** (plafond de 5 $ de la tâche).
+- **Archivées** comme sources non canoniques (`--archive`, octets et records) : `ren-combat-x3-2026-10-26-c1`, `-c2`, `-d1`, `-d2`, `-e1`, `-e2`,
+  `-f2` ; G et H restent dans le dossier ignoré (aucune figure retenue).
+
+### Le choix des figures — critiques à l'aveugle (agents neufs, lettres tirées au sort, clé hors de leur champ)
+- n° 1, onze emplacements : la fente de `c2` (préparation, élan ; 7) avec la reprise de `c1` (le critique propose ce mélange) ; la poussée de
+  l'esquive `c2` (5,5 : un saut groupé, faute de mieux) et sa réception `c1` (6,5) ; Rempart : préparation `d2` (7), parade haute `e2` (6),
+  retour `d1` (le retour de Ferveur de D-1, que le critique juge mieux placé après la parade) ; Ferveur : préparation `d2` (7,5), cri `e2` (7,5),
+  retour `d2` (7) ; la victoire `e1` (la lame levée vers l'avant, un cri : 8). Auto-critique écrite avant : 6 choix sur 11 concordants.
+- **[KO → contourné]** la fente profonde de C ne tient pas dans la case à la hauteur du héros (202 à 236 texels pour 190) : la frappe de
+  `skillOff` reprend la fente de RC1 (a2), que la reprise de la coupe sort de `strike`.
+- La coupe, quatre essais : n° 2, la coupe de E-1 3 (« une estocade ») contre la taille A de F-2 6 (« la seule qui se lise comme une taille ») ;
+  n° 4, F-2 3 (« la lame au-dessus de la tête de l'adversaire ») contre G-1 3 (« une estocade ») ; n° 5, F-2 5 (« la seule vraie taille, trop tôt
+  dans le geste ») devant quatre tailles à deux mains de H (2 à 4 : estocades ou doublons de la suite). Retenue : la taille de F-2 ; la case
+  interdit d'abaisser sa lame au rig (sous 36°, la pointe sortirait de la case) ; réserve sur la fiche (RC2-2). Mes auto-critiques ont choisi G-1
+  puis H-2 : classées dernières ou presque.
+
+### La feuille — [OK] 34 images (manifeste `lab`, non approuvé)
+- `art-lab/characters/rigs/hero-x3-combat.rig.mjs` : dix planches, `clips` dans l'ordre du § 14 (idle 2, ready 2, strike 3, heavy 4, skillOff 4,
+  skillDef 3, skillSup 3, block 2, dodge 2, hit 2, recover 2, ko 3, victory 2).
+- Échelle : le pas de chaque planche par sa figure debout (D-1 2,4453, D-2 2,4063, E-1 2,2813, E-2 2,2578, F-2 2,1328). **[KO → réglé]** pour C-1 et
+  C-2, la hauteur debout (214, la victoire de C-1) donnait des têtes 15 % plus grandes que celles de RC1, vues côte à côte sur les reconstructions :
+  leur pas partage l'écart (1,797 : têtes 7 % plus grandes, corps 7 % plus courts). Le visage mesuré par la peau n'est pas un étalon (12 à 19
+  texels sur les seules images de RC1).
+- Placement : la case pousse le corps pour que la lame tienne (posture 8, coupe 21, élan de la fente 52, fente 34, réception de l'esquive 15,
+  genou à terre 24 texels).
+- **La lame redessinée** (reprise « la lame à deux texels ») : la reconstruction la cassait (son gris moyen, proche du fond, partait avec le fond).
+  `blade2` la redessine sur chaque figure de la garde à la pointe, épinglées par figure (`BLADES`, proposées par un RANSAC sur les texels neutres,
+  vérifiées sur calques) : les éclats neutres à moins de 5 texels du segment retirés (sauf contre le corps, hors de la garde), puis les lignes de
+  la lame, posées seulement sur le vide ou le neutre (une main devant la lame reste devant). **[KO → corrigé]** deux texels « clair + gris moyen »
+  se perdaient sur le pavé de midi ; « clair + foncé » ne montrait qu'un texel par lumière dans la scène (la nuit le foncé disparaît sur le pavé,
+  le jour le clair) : la critique n° 3 lit « un fil d'un pixel ». **Maintenant deux texels clairs (248,233,216 et 230,201,183) et un bord sombre
+  (50,46,50)**, chaque ligne plus courte d'un texel vers la pointe. **[KO → corrigé]** là où la pointe générée était le point le plus bas de la
+  figure (la puissante, l'épée plantée, l'épée au sol), la lame redessinée ne touchait plus la rangée 270 et le contrat d'image refusait la
+  feuille : ces pointes sont épinglées sur la rangée 270.
+- Export : 34 images, feuille 1152 × 1728, **64 couleurs, toutes de la palette de `hero-x2-v4`** ; paquet de provenance (dix sources, chaîne, table
+  des fichiers), manifeste `lab` (ses notes disent la règle du bord) ; `build-combat.mjs --check` : **reconstruite identique**.
+
+### Dans le duel — [OK] sans emprunt, derrière le paramètre DEV
+- `src/lab/fighterDensity.ts` : `COMBAT.borrow` retiré ; `sheetFrame` (pure) choisit l'image de la feuille d'après l'image que le duel a choisie et
+  l'animation de la simulation : `skill` et `slash` (renommés par le § 14) et les compétences offensives jouent `skillOff` (0 la préparation tenue,
+  sans préparation la première moitié de l'élan ; 1 l'élan ; 2 la frappe jusqu'à l'impact + 0,12 s ; 3 la suite) ; Rempart et Ferveur leurs
+  familles (0 jusqu'à l'impact, 1 l'effet pendant toute la suite du geste, `dur`, 2 le retour pendant la récupération) ; tout autre clip image
+  pour image ; la victoire une fois le duel fini ; `koFrame` gardé. À l'installation, toute image que `sheetFrame` peut demander doit exister dans
+  la feuille. La portée des techniques se mesure sur la frappe de `skillOff`. `ArenaApp` passe l'animation et la fin du duel à `present` (ligne
+  derrière `import.meta.env.DEV &&`).
+- **[KO → corrigé]** l'effet de Rempart et de Ferveur ne durait d'abord que 0,12 s : les moments scriptés `ward` et `boost` tombaient sur l'image de
+  retour, et la critique n° 3 a comparé ces retours aux images empruntées de la première feuille.
+- Vérifié dans la page : ancien duel (repos, attaque, puissante, technique sur `skillOff.2`, garde, esquive `dodge.1`, coup reçu) ; nouveau duel
+  (préparation de la puissante, préparation de compétence `skillOff.0`, technique, Rempart, Ferveur, repoussé, étourdi, K.O.).
+
+### Critique à l'aveugle dans la scène, contre la première feuille
+- Huit moments (repos, frappe, technique, esquive, victoire, préparation de compétence, Rempart, Ferveur), la nuit et à midi : `main` figé (la
+  première feuille et ses emprunts) contre la branche, recadrés sur les deux combattants, lettres tirées au sort par moment.
+- n° 3 : **la première feuille 6, la complète 5** (la première gagne 6 moments sur 8 dans chaque lumière : la lame en fil, Rempart et Ferveur sur
+  leur retour). Auto-critique écrite avant : la complète 7, la première 5,5.
+- n° 6, après les deux corrections (agent neuf) : **la complète 6, la première 4,5**, meilleure ou égale sur 13 captures sur 16 ; le critique a
+  regroupé les captures par version sans erreur. Restes relevés : la lame en bande uniforme, sans effilement, en marches à midi ; l'impact de la
+  coupe (la lame au-dessus de la tête de Marek) ; la réception de l'esquive proche de la posture, la cape coupée par le bord de l'écran quand Ren
+  recule au bord ; le torse de trois-quarts de la parade de Rempart ; la nuit, le pantalon et les bottes fondus dans le pavé. Auto-critique : 6,5
+  contre 5,5.
+
+### Les mesures
+- Texture : 34 cases, 1920 × 1152 (avec Marek complet : 68 cases sur 70) ; texel 2,34 px en 1080p (les cases de RC1).
+- GPU (`tools/perf.mjs`, serveur de la branche, 1920 × 1080, 5 tours entrelacés, `fps=off`, témoin de contention au seuil de 15 %, onglets du
+  panneau fermés : **5 tours propres sur 5**, Radeon 780M ; mesuré avec la lame « clair + foncé », mêmes cases et même texture) : nuit B **10,25** ms
+  [10,00-12,06] ; arène d'aujourd'hui **9,73** ; feuille complète **9,41** ; à midi 8,88 ; nouveau duel avec la feuille 9,49. Mêmes 92 appels de
+  dessin, 133 k triangles. **E24 tenu**.
+
+### Les preuves
+- L'arène par défaut contre `main` figé (`tools/arena-scene-shots.mjs`, `HOLD=1`, 1920 × 1080, graine 1842, deux captures de chauffe : voile de
+  chargement retiré, transitions et animations CSS coupées) : 9 moments par règle, ancien et nouveau duel, scène seule la nuit et à midi, HUD la
+  nuit : **54 sur 54 à 0 px**, témoin (deux chargements de `main`) **54 sur 54** ; contrôles négatifs (la même capture avec la feuille ; avec et sans
+  HUD) : 16 % et 19 % des pixels diffèrent.
+- Bundle de production (même configuration que `main` figé) : **31 fichiers sur 31 identiques à l'octet**, refait après le dernier changement du
+  module DEV.
+- `tests/combat-sheet.test.mjs` (9) : la feuille `lab` hors de la distribution et son paquet ; les dix sources archivées non canoniques, celles que
+  lit le rig ; les 34 images de la liste CB-2 (oracle écrit d'après le § 14), la case ×3, le contrat d'image, les seules couleurs de
+  `hero-x2-v4` ; aucun emprunt, `skill` et `slash` sur `skillOff` ; `sheetFrame` contre un oracle écrit d'après le tableau, bords compris ;
+  chaque lame de base en deux clairs et un bord sombre le long du segment épinglé ; le liseré peint, le bord selon l'état du jour, la garde DEV.
+  **18 fautes injectées sur 18 attrapées** (fichiers rendus à l'octet, SHA-256). **[KO → corrigé]** le décalage de l'horloge du K.O. (0,25 → 0,3)
+  passait d'abord entre les points de l'oracle : bords 0,24 / 0,25 / 0,26 ajoutés.
+- Validation : typecheck, `npm test` **197 / 197**, `art:validate` (19 manifestes, 40 sources, 0 erreur), `build-combat.mjs --check` identique.
+
+### La fiche — [OK] 5 choix sur 5 enregistrés et relus
+- Page privée https://claude.ai/artifact/Qp6XpMixMBX25YkJNJZVCX, collection `decisions`, relue vide après publication ; les protections des fiches
+  précédentes (pont attendu 10 s, chaque écriture relue). Relue après « La fiche de la feuille complète de Ren (RC2) est remplie. » : **5 documents
+  sur 5**, cliqués le 26/10 entre 03 h 04 min 04 s et 03 h 04 min 06 s UTC, aucune note.
+
+### Les choix de l'opérateur, mot pour mot
+« = » : la recommandation de la fiche est suivie.
+
+| # | Décision | Recommandation | Choix de l'opérateur | Note | |
+|---|---|---|---|---|---|
+| RC2-1 | La feuille de combat de Ren, complète (34 images) | « Complète : la garder en labo comme base » | « Complète : la garder en labo comme base » | — | = |
+| RC2-2 | La coupe (l'image d'impact de l'attaque légère) | « La garder ; reprise dédiée plus tard » | « La garder ; reprise dédiée plus tard » | — | = |
+| RC2-3 | La lame : deux texels d'acier et un bord sombre | « Deux texels d'acier et un bord sombre (comme fait) » | « Deux texels d'acier et un bord sombre (comme fait) » | — | = |
+| RC2-4 | Le bord de la feuille : une règle du rendu | « Confirmé » | « Confirmé » | — | = |
+| RC2-5 | L'entrée en production de la feuille | « Pas encore : avec la feuille de Marek » | « Pas encore : avec la feuille de Marek » | — | = |
+
+- **Ce qui en suit** (rien d'autre n'est appliqué : la feuille est déjà celle que la fiche décrit) :
+  - RC2-1 : la feuille reste en labo, base de la feuille de production ; ses réserves se reprennent par passes ciblées.
+  - RC2-2 : la taille de F-2 reste l'image d'impact de `strike` ; une reprise dédiée plus tard, avec la feuille de Marek, d'après la spécification
+    du critique (les deux mains à hauteur d'épaule, la lame de 0 à 15° au-dessus de l'horizontale, les poignets cassés, le visage de profil, la
+    cape qui suit ; une traînée dans la couche d'effets).
+  - RC2-3 : deux texels d'acier clairs et un bord sombre (trois texels de large) : la règle de lame des feuilles de combat suivantes.
+  - RC2-4 : le bord est une règle du rendu (le liseré peint au chargement la nuit, le contour noir de jour) ; à l'entrée en production, elle passe
+    dans le chargeur des feuilles cuites de l'arène, pour Ren, Marek et Vessa.
+  - RC2-5 : pas de production : la feuille entre avec celle de Marek (la suivante de la feuille de route, ×3, même voie), dans une tâche
+    d'intégration avec l'approbation des deux manifestes.
+
+### L'intégration dans `main` — [OK] rejouée sur `main`
+- Pendant la tâche, `main` a avancé de quatre passes (AP1, UI4, AF1, AP2 ; AP1 avait archivé C2 et AA2 dans `journal/27`). Question à
+  l'opérateur : « main a avancé de quatre passes pendant la tâche (AP1, UI4, AF1, AP2). Comment j'intègre la feuille de Ren dans main ? »
+  Réponse : **« Rebaser la branche (Recommandé) »** (le commit rejoué sur `main`, la branche de tâche seule poussée en forçant ; `main` reste
+  linéaire). Écarté : « Commit de fusion ».
+- Une modification de `.gitignore`, hors de cette tâche, empêchait le rebase en place sans la ranger : le commit a été picoré sur `main` (`HEAD`
+  détachée), `JOURNAL.md` et `journal/27` repris de `main` (son archivage C2-AA2 gardé, celui de la branche retiré), cette passe réappliquée ; la
+  branche déplacée sur le résultat et poussée avec `--force-with-lease`.
+- Refait contre `main` d'après (`d41bf36`, copie hors dépôt, :5204 ; sa chauffe retire aussi l'écran de chargement de la Passe UI4) : l'arène
+  par défaut **54 sur 54 à 0 px** (témoin 54 / 54, contrôle négatif avec et sans HUD : 19 % des pixels) ; le bundle de production **30 fichiers sur
+  30 identiques à l'octet** ; typecheck, `npm test` **202 / 202**, `art:validate` (19 manifestes, 40 sources, 0 erreur), `build-combat.mjs --check`
+  identique ; le déplacement du journal 8 / 8. Le temps GPU n'est pas remesuré : la feuille et sa texture sont les mêmes, et UI4, AF1 ne changent
+  que l'interface (DOM).
+
+### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
+- La Passe AP1 a archivé C2 et AA2 pendant la tâche (l'archivage des mêmes passes, fait sur la branche, est retiré au rebase). Avec cette passe,
+  les passes gardées dépassaient 60 Ko (58 Ko avant elle) : RC1 et C2F, closes (fusionnées), partent d'un seul bloc vers
+  `journal/28-passes-RC1-C2F.md` (24 055 octets) ; restent 51,9 Ko. Preuve **8 / 8** (script hors dépôt, contre la copie de `JOURNAL.md` d'avant le
+  déplacement : corps de l'archive égal au bloc ; RC1, C2F contigus, suivis de AP1 ; plus dans `JOURNAL.md` ; chacune dans un seul fichier de
+  `journal/`, par sa ligne de titre entière ; AP1, UI4, AF1 et AP2 inchangées à l'octet ; seules la phrase d'en-tête et une ligne d'index
+  changent ; en-tête comme `journal/27` ; CRLF seuls). Contrôle négatif : un bit changé dans une copie de l'archive → 7 / 8.
+
+### Pensée
+- Un trait fin se dimensionne par ce qui en reste visible sur chaque fond : une lame « un clair, un foncé » n'a qu'un texel visible par lumière ;
+  deux clairs bordés d'un foncé tiennent la nuit et le jour.
+- Un moment scripté se vérifie sur l'image qu'il montre avant une critique comparative : un découpage trop court a fait juger un retour à la
+  place d'un effet.
+- Une pose dont la géométrie se voit de bout en profil (« en travers de la poitrine ») se décrit au générateur dans le plan de l'image.
+- Les planches d'une même série n'ont pas les mêmes proportions : la hauteur debout et la tête donnent des pas qui diffèrent jusqu'à 15 % ; on les
+  compare sur les reconstructions côte à côte, et un écart qu'on ne peut pas éviter se partage et se nomme.
+- Une image d'impact (la coupe) est un geste que la génération rend mal : après deux échecs sur la même pose, le poser à l'opérateur plutôt que
+  dépenser davantage.
+- Mes auto-critiques écrites avant le verdict se sont trompées trois fois sur six dans cette passe : elles mesurent mon biais, elles ne choisissent
+  pas.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -744,7 +690,7 @@ l'opérateur ; les deux pages publiées de l'arène (AP1, essai C2) republiées 
 la page publiée dans le visualiseur. Restes : visages des combattants (la grammaire du générateur), anneau de dalles peu visible (l'occlusion
 de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sources de lumière sur 24, ralenti sous 20 images/s.
 **De jour depuis la Passe AD1** (décision L7-2) : le duel et le parvis du mode jouable prennent l'état du créneau (`?time=`, `arenaQuery`) ; à voir
-en jeu par l'opérateur ; le liseré froid peint des combattants reste le même de jour ; l'artefact publié montre la nuit. **Audit des sprites (Passe AA1)** : le joueur est Ren généré à l'arène et `hero-x2-v4` en ville ; un texel de combattant fait 3,9 px en 1080p contre ~1,5 en ville ; jeux d'images courts (Ren 29, Marek 17). Décisions AA1-1 à AA1-6 (toutes à la recommandation) : Ren = `hero-x2-v4` avec une feuille de combat ; feuilles cuites (Ren, puis Marek, puis Vessa) après l'atelier combat ; en attendant, l'essai de densité ×2 contre ×4 et le public des citadins cuits + variantes V1, chacun derrière un paramètre ; les générés ne sont pas retouchés. **Essai de densité fait (Passe AA2)** : le héros cuit dans le duel à ×2, ×3, ×4 (DEV, `?scene=arena&fighterdensity=`), le texel du héros en ville remesuré (2,0-2,3 px en B / C / D, pas 1,5) ; décision AA2-1 « ×3 » : les feuilles de combat se font à ×3 (2,3 px, une texture par duel) ; AA2-2 tranché en RC1-2 (le bord la nuit) ; AA2-3 suivi de RC1-4 (les feuilles d'essai retirées). Reste le public (AA1-4), dans sa séance. **Première feuille de combat de Ren (Passe RC1)** : `hero-x3-combat` (labo), les 22 images des clés hors C2 (« Clés hors C2 (Recommandé) »), tirées de trois planches générées (« Génération (Recommandé) ») et reconstruites à ×3 sur la palette de `hero-x2-v4`, dans le duel derrière `?scene=arena&fighterdensity=combat` (DEV) ; fiche RC1 relue 4 / 4, tout à la recommandation : RC1-1 « Bonne base : compléter après la fiche C2, avec les reprises », RC1-2 « Liseré peint la nuit, contour noir de jour » (défaut du paramètre), RC1-3 « Pas encore : en labo jusqu'à la feuille complète », RC1-4 « Les retirer, garder fighterdensity=combat » (feuilles d'essai et `x2` / `x3` / `x4` retirés). **Suite, après la fiche C2** : les 12 images (`dodge`, `skillOff`, `skillDef`, `skillSup`) par la même voie, avec la victoire de profil, une vraie taille pour la coupe, la lame à deux texels et le liseré peint de nuit dans la feuille ; puis la feuille complète vers la production (tâche d'intégration, approbation du manifeste) ; ensuite Marek et Vessa à ×3.
+en jeu par l'opérateur ; le liseré froid peint des combattants reste le même de jour ; l'artefact publié montre la nuit. **Audit des sprites (Passe AA1)** : le joueur est Ren généré à l'arène et `hero-x2-v4` en ville ; un texel de combattant fait 3,9 px en 1080p contre ~1,5 en ville ; jeux d'images courts (Ren 29, Marek 17). Décisions AA1-1 à AA1-6 (toutes à la recommandation) : Ren = `hero-x2-v4` avec une feuille de combat ; feuilles cuites (Ren, puis Marek, puis Vessa) après l'atelier combat ; en attendant, l'essai de densité ×2 contre ×4 et le public des citadins cuits + variantes V1, chacun derrière un paramètre ; les générés ne sont pas retouchés. **Essai de densité fait (Passe AA2)** : le héros cuit dans le duel à ×2, ×3, ×4 (DEV, `?scene=arena&fighterdensity=`), le texel du héros en ville remesuré (2,0-2,3 px en B / C / D, pas 1,5) ; décision AA2-1 « ×3 » : les feuilles de combat se font à ×3 (2,3 px, une texture par duel) ; AA2-2 tranché en RC1-2 (le bord la nuit) ; AA2-3 suivi de RC1-4 (les feuilles d'essai retirées). Reste le public (AA1-4), dans sa séance. **Première feuille de combat de Ren (Passe RC1)** : `hero-x3-combat` (labo), les 22 images des clés hors C2 (« Clés hors C2 (Recommandé) »), tirées de trois planches générées (« Génération (Recommandé) ») et reconstruites à ×3 sur la palette de `hero-x2-v4`, dans le duel derrière `?scene=arena&fighterdensity=combat` (DEV) ; fiche RC1 relue 4 / 4, tout à la recommandation : RC1-1 « Bonne base : compléter après la fiche C2, avec les reprises », RC1-2 « Liseré peint la nuit, contour noir de jour » (défaut du paramètre), RC1-3 « Pas encore : en labo jusqu'à la feuille complète », RC1-4 « Les retirer, garder fighterdensity=combat » (feuilles d'essai et `x2` / `x3` / `x4` retirés). **Feuille complète (Passe RC2)** : les 34 images de la liste CB-2 (sept planches générées de plus, 2,60 $), la lame redessinée (deux texels clairs et un bord sombre), sans emprunt dans le duel (`sheetFrame`), le bord en règle du rendu (« Règle du rendu (Recommandé) ») ; à l'aveugle dans la scène, 6 contre 4,5 pour la première feuille ; fiche RC2 relue 5 / 5, tout à la recommandation : « Complète : la garder en labo comme base », la coupe « La garder ; reprise dédiée plus tard », la lame « Deux texels d'acier et un bord sombre (comme fait) », le bord « Confirmé », la production « Pas encore : avec la feuille de Marek ». **Suite** : la feuille de Marek à ×3 par la même voie, avec la reprise de la coupe de Ren (spécification du critique, Passe RC2) ; puis les deux feuilles vers la production (tâche d'intégration, approbation des manifestes, la règle du bord dans le chargeur de l'arène) ; ensuite Vessa. Réserves de la feuille de Ren : la réception de l'esquive proche de la posture, le torse de trois-quarts de Rempart, la lame sans effilement.
 **Le système de combat (Passe CB1)** : spécification `briefs/combat-system.md`, approuvée (« tour par tour dynamique » ; contrats amendés, A3 ;
 liste des animations : 34 images pour Ren). **C1 fait (Passe C1)** : le cœur du duel en simulation pure (`src/combat/dynamic.ts`), son bot et sa
 course hors écran, derrière `flags.combat = 'dynamic'` (`tournament-lab --rules=dynamic`) ; l'arène actuelle reste le défaut ; un soin sans recharge
@@ -788,7 +734,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -1017,6 +963,12 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   question courte avant d'être consignée (Passe CB1).
 - Une règle que l'opérateur est seul à comprendre se recueille en questions ouvertes, par petits groupes, avec le code comme repère ; ses
   réponses se recopient mot pour mot et restent la source du texte ; ce que la séance complète se marque et passe sur la fiche (Passe CB1).
+- Un trait fin (une lame) se dimensionne par ce qui en reste visible sur chaque fond : deux texels « un clair, un foncé » n'en montrent qu'un par
+  lumière ; deux clairs bordés d'un foncé tiennent la nuit et le jour. Un moment scripté se vérifie sur l'image qu'il montre avant une critique
+  comparative (Passe RC2 : un découpage trop court a fait juger un retour à la place d'un effet).
+- Une pose vue de bout en profil (« en travers de la poitrine ») se décrit au générateur dans le plan de l'image ; des planches générées de la même
+  série n'ont pas les mêmes proportions (hauteur debout et tête : jusqu'à 15 % d'écart) : on les compare reconstruites côte à côte, et l'écart
+  qu'on ne peut pas éviter se partage et se nomme (Passe RC2).
 ### Provenance et approbations
 - Rien d'externe ne devient « canon » en silence : un manifeste de provenance (`art-lab/characters/manifests`) avec approbation nommée et
   datée est la seule voie vers `runtimeUse: production`. Deux niveaux d'approbation distincts : *approved visual baseline*

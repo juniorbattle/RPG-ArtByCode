@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "ren-combat-x3-2026-10-26-f2.png",
+  "sha256": "579ce9bfe118bfc4aef8111a174387ea997a2797db3ab1801cb39f27e370d2a4",
+  "bytes": 1954972,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 is the turnaround sheet of ONE character, the protagonist of \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament). Its THIRD figure is his STRICT SIDE VIEW (profile), facing LEFT: we see only one eye and the side of his face, his chest from the side, the cloak hanging down his back. Image 2 shows the SAME character; its bottom row is his side-view run. Images 3 and 4 are two earlier sheets of the SAME character FIGHTING WITH HIS SWORD, facing left: they fix his sword, his scale and the rendering. Make a NEW sheet of the SAME character with the SAME sword, EVERY figure in that STRICT SIDE VIEW, FACING LEFT, exactly the angle of the third figure of image 1: never turned toward the viewer, never three-quarter, one eye only, his face, chest and sword point toward the left edge of the image.\n\nKeep his design, colours, proportions and pixel-art rendering exactly as in images 1, 3 and 4: brown spiky hair; plain indigo hooded cloak with a thin gold edge and NO motif on the hem; brass clasp; ecru shirt; brown leather vest, belt, pouches and gauntlets; dark grey-brown trousers; tall brown boots with turned-down cuffs. The head, hair included, stays about one third of his standing height. Every figure at the SAME scale as the figures of images 3 and 4 (a standing figure about 280 pixels tall in this 1536 x 1024 image).\n\nHis sword, the same as in images 3 and 4 and the same in every figure: a plain straight one-handed arming sword, a bright steel blade with a darker edge line, about as long as his legs (blade alone about 120 pixels at this scale), a simple brass crossguard and a round brass pommel matching his brass buckles, a short brown leather grip. He holds it in ONE hand, his NEAR hand (the hand closest to the viewer), gauntlet closed around the grip. No scabbard, no shield.\n\nIn image 3, the third figure of the top row is his sword drawn back above his near shoulder (the wind-up) and the fifth is the follow-through, the sword swung down in front of him, its point low. The first three figures below are the moment BETWEEN those two, when the swing lands: a SLASH with the edge of the blade, clearly NOT a thrust (in a thrust the blade continues the straight arm; here the blade makes a clear angle with the forearm and sweeps through an arc).\n\nTWO rows of THREE figures, in this order, left to right, all in strict profile facing left:\nRow 1, THE SLASH landing, three versions:\n1. SLASH A: the sword swinging down from above: his sword arm stretched forward and up at head height, the blade mid-arc pointing up and forward at about 45 degrees above the horizontal, the torso leaning hard into the swing, the near shoulder driving forward, the free arm swung back for balance, the front knee bent and the back leg extended, the cloak flung out behind him.\n2. SLASH B: the sword arm swept forward across his chest at shoulder height with the wrist snapped over, the blade sweeping level in front of him with its edge leading, the elbow slightly bent, the shoulders and hips twisted into the swing so that his back is a little toward the opponent, the cloak swirling around his hips.\n3. SLASH C: a fast diagonal cut seen from the side: his arm extended forward at shoulder height, the wrist bent so the blade slopes down and forward at about 30 degrees from the horizontal while his arm stays level, the body rotating into the cut, mouth open in a short cry, the cloak swinging out behind.\nRow 2:\n4. BACKSTEP, PUSH-OFF A: jumping BACKWARD, away from an opponent on the left: his FRONT (left) leg straight and pushing hard against the ground, that foot still on the ground at the left; his weight and body moving back to the right; his BACK (right) foot lifted off the ground, reaching back to land; the sword held forward in front of him in a guard; the cloak billowing FORWARD, toward the left, dragged by the backward motion.\n5. BACKSTEP, PUSH-OFF B: the same backward hop a moment later: both feet just off the ground, the body leaning back, the knees bent, the sword held forward in a guard, the cloak streaming forward toward the left.\n6. STANDING: standing at ease, relaxed, feet a little apart, the sword held low in front of him, its point down toward the ground ahead of his feet, exactly like the first figure of image 3.\n\nComposition: the feet of every figure of a row on one common ground line; plenty of empty space between the figures (blades included) so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no smear, no sparks, no glow, no effects of any kind: only the character and his sword.\n\nTechnique: premium illustrative pixel art, crisp square pixels of one uniform size across the whole sheet (the same pixel size as images 1, 3 and 4), controlled colour ramps, selective dark outlines; no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. Plain, flat, uniform neutral grey background like images 3 and 4, WITHOUT any cast shadow or floor; no text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "e0ca9752b16a3ffb4c9e160eb6f1f373a66e89bec848fba0b83a84eb1f019627",
+    "promptFile": "art-lab/characters/scratch/ren-combat-full/prompts/ren-combat-f.txt",
+    "references": [
+      {
+        "file": "art-lab/characters/reference/sources/hero-turnaround-v4-2026-10-19-b.png",
+        "sha256": "974a27d2d12c41d9f053711b6ec7bfa35bdf44d9ceb198f961bdbac3ffab791a",
+        "bytes": 1481998
+      },
+      {
+        "file": "art-lab/characters/reference/sources/hero-turnaround-v3-2026-10-19.png",
+        "sha256": "a86cea282b5645ec4ab008dd0dc469f76d5105e792a12b62ec587758385d29a1",
+        "bytes": 2280337
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "2 of 2",
+    "task": "ren-combat-x3-full",
+    "requestedAt": "2026-10-26T01:21:44.261Z",
+    "response": {
+      "requestId": "req_e9a4d9de6d0642f985d5c7567759a603",
+      "created": "2026-10-26T01:23:26.000Z",
+      "processingMs": 99944
+    },
+    "usage": {
+      "input_tokens": 14478,
+      "input_tokens_details": {
+        "image_tokens": 12120,
+        "text_tokens": 2358
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 25454
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.386045,
+        "fromUsage": 0.43803
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-10-26",
+    "from": "ren-combat-x3-full-20261026T012144Z-2.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}
