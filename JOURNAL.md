@@ -44,7 +44,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 ---
 
-## Passe VP1 — Les décors des places de la version 2 contre le Merchant District : audit, reprise, visibilité (2026-10-26, en cours)
+## Passe VP1 — Les décors des places de la version 2 contre le Merchant District : audit, reprise, visibilité (2026-10-26)
 
 ### Demande
 - L'opérateur, mot pour mot : « je vais te demander une nouvelle passe d'optimisation concernant la génération de décors/environnement par code
@@ -174,6 +174,21 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   lumière rare) : **9 / 10 fautes attrapées** ; la manquée (le bord est non échantillonné) est un mutant équivalent : la caméra bloquée à x ± 9
   donne aux bords les poses de la grille.
 
+### Les preuves de la tête finale (code `10b3e7a` pour les places, SwiftShader)
+- **Élagué contre `vis=0`** (`static=1`, six états : parvis de nuit et à midi, entraînement à midi et de nuit, place festive de nuit et l'après-midi,
+  9 poses chacun dont 5 hors de la grille, à 1 280 x 720 ; parvis à midi et place festive de nuit à 2 560 x 1 080 et à 844 x 390, 3 poses
+  chacun) : **57 / 66 identiques au pixel**, 50 pixels de résidu en tout sur 9 captures, aux mêmes quatre endroits de jour comme de nuit. Avec
+  la grille et la tuile deux fois plus fines (DEV) : trois des quatre poses tombent à 0 ; la quatrième garde 2 pixels où l'image élaguée montre
+  le ciel (110 / 151 / 197) et `vis=0` un mélange de ciel et de surface (79 / 89 / 118) : la couverture partielle (MSAA) d'une lamelle plus
+  mince que le pixel de la tuile fine (1,8 pixel d'écran) : la classe du résidu connu du district (Passe 5b).
+- Le bake : parvis 239 poses, 74 pièces sur 212 cachées, 96 500 → 64 900 triangles de place (- 33 %) ; entraînement 207 poses, 97 sur 279,
+  137 800 → 96 300 (- 30 %) ; place festive 202 poses, 65 sur 242, 126 400 → 102 600 (- 19 %) ; 26 à 34 s par bake neuf en rendu logiciel
+  (à mesurer sur le GPU, en local), en cache ensuite.
+- La nuit des places (luminance moyenne ; couleur moyenne du quart le plus clair) : parvis 44,8 - 46,1 (104 / 90 / 94 à 119 / 102 / 102),
+  entraînement 50,5 - 56,4 (122 / 111 / 118 à 128 / 110 / 108), place festive 52,1 - 69,4 (134 / 120 / 122 à 177 / 160 / 148), contre B nuit
+  57,7 (142 / 118 / 105) et D nuit 50,9 (144 / 120 / 105) : la luminance du district, une couleur plus neutre au parvis (son grand mur de
+  pierre sous la lune).
+
 ### Pensée
 - Un décor « cohérent » se mesure contre la référence, pas dans l'absolu : la critique à l'aveugle avec le district B comme témoin a nommé des
   causes précises (cadrage, luminance moyenne, habillage), chacune corrigeable dans la langue du district plutôt que par des ajouts.
@@ -241,6 +256,20 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - **Le jeu par défaut** : le JSON du TournamentLab (`diligent`, `idle`, `careful`, `careless`, `losing`, en `classic` et `dynamic`, 50 graines)
   **identique à l'octet** à celui de `main` figé (`1289683`).
 
+### Les preuves des deux passes (la branche contre `main` figé `1289683`, SwiftShader)
+- **Le jeu par défaut inchangé** : la ville A, B, C, D de nuit et à midi et B avec son panneau **9 / 9 identiques à l'octet** ; l'arène `clean=1`
+  sous CombatSim **7 / 7** et `combat=dynamic` **7 / 7** ; leurs HUD à animations CSS figées des deux côtés (`FREEZE_CSS=1`) **4 / 4 et 4 / 4**
+  (sans le gel, quatre captures du HUD diffèrent des deux côtés comme en Passe V10 : les animations) ; `play-flow` victoire `0025acce7a403773`
+  et défaite `397959404c18f714`, les empreintes de UI3 ; le TournamentLab (cinq politiques en `classic` et `dynamic`, 50 graines) **JSON
+  identique à l'octet** ; l'écran titre : 7 contrôles OK, deux paires de captures identiques, la troisième (Explore puis H contre `?time=midday` panneau ouvert) à 2
+  pixels d'un niveau, reproduite seule : [?] contrôle `main` contre `main` en cours.
+- **Le drapeau** : `play-flow V2=1` victoire (jour 2, Vessa, « The pool · round 1 » dans le HUD) `5cfe614a12cc08bd` et défaite (jour 4, Orla)
+  `879ce64069698f77`, chacune rejouée en Node à la même empreinte (elles changent depuis V10 : la ligne du calendrier ajoute l'excitation des
+  hérauts) ; `play-day V2=1` OK ; le TournamentLab v2 rejoué identique ; `ui-text` : le tableau du tournoi v2 à 1 920 x 1 080, 1 280 x 720 et au
+  téléphone OK ; le parvis à 812 x 375 **[KO] déjà sur `main`** (l'onglet « Here » coupé par le bas de l'écran du téléphone couché : le même
+  échec sur `main` figé ; l'interface est celle du jeu par défaut : laissé à une tâche à part, noté dans « À reprendre »).
+- `npm run typecheck`, `npm test` (**263 tests**, 0 échec), `npm run build`, `npm run art:validate` (0 erreur) ; CI verte sur la branche.
+
 ### Les « proposé »
 - Les seuils du premier signe (2e manche, rang 1 à 4), le + 3 d'excitation par ligne du calendrier, les textes nouveaux, la politique
   `diligentV2`.
@@ -275,7 +304,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
     quatrième critique : « pas encore ») : un Colisée qui se lise comme tel (une façade courbe qui fuit, trois ordres, plus haut que les maisons, et
     un cadrage qui en montre le haut, la caméra des places le coupe) ; les réserves de la Passe VP1 (la composition frontale, les cercles de sable,
     les étals d'un seul modèle, les personnages coupés au bas de l'image, la fontaine sans eau) ; la règle des blessures sous la charge (1,08 par
-    partie de dix jours pour un joueur préparé, 1,74 pour un joueur qui ne prépare rien, Passe VP2).
+    partie de dix jours pour un joueur préparé, 1,74 pour un joueur qui ne prépare rien, Passe VP2) ; l'onglet « Here » coupé au téléphone couché
+    (812 x 375) sur les pages de la version 2, déjà sur `main` (Passe VP2).
 
 **0b. Version jouable — séance cloud (Passes N1 à N4, puis L0 à L7)** : plan v4 `briefs/cloud-session-playable.md`, brief
   `briefs/cloud-session-playable-brief.md`, contrats dans `contracts/`. **Séance close** : lots L0 à L7 fusionnés dans `main` ; bilan, mesures,
