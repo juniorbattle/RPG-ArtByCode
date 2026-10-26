@@ -1,25 +1,25 @@
 import { App, type AppOptions } from './app/App';
+import { parseTime } from './atmosphere/DayState';
 import { DebugPanel } from './debug/DebugPanel';
 import { Hud } from './debug/Hud';
+import { loadingError, showLoading, toneLoading } from './ui/loading';
 
 const canvas = document.getElementById('view') as HTMLCanvasElement;
 const params = new URLSearchParams(location.search);
 
-const loading = document.createElement('div');
-loading.style.cssText = 'position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#05070d;color:#d9c9a8;font:14px/1.6 "Segoe UI",system-ui,sans-serif;letter-spacing:.14em;z-index:50;transition:opacity .8s';
-loading.innerHTML = '<div style="font-size:22px;letter-spacing:.3em;margin-bottom:14px;color:#f1d9a0">CITÉ DU TOURNOI</div><div id="ld-label" style="opacity:.7">PAINTING THE NIGHT...</div><div style="width:260px;height:2px;background:#1a2132;margin-top:14px"><div id="ld-bar" style="height:100%;width:0;background:#e9a64c"></div></div>';
-document.body.appendChild(loading);
-const label = loading.querySelector('#ld-label') as HTMLElement, bar = loading.querySelector('#ld-bar') as HTMLElement;
+// the loading screen in the design system, in the tone of the address's day state (journal Passe UI4; the play mode sets its page's tone)
+const ld = showLoading(parseTime(params)), { label, bar, root: loading } = ld;
 
 // ?play=1: the game's play mode (journal Passe L3), loaded on demand; the title screen (choice P2, journal Passe L4) on the bare address only,
 // in a browser no automation drives (navigator.webdriver: every tool and proof keeps today's game), or forced by ?title=1; its « Explore the
 // district » starts the town below at midday (exploreByDay); ?scene=arena: the arena of the Cité du Tournoi (journal Passe P1), loaded on
-// demand; any other address runs the town exactly as before (no time= = the night)
+// demand; any other address runs the town exactly as before (no time= = the night). Every scene starts once the loading screen shows
+// (its fonts loaded); the play mode's page sets its tone in the same task as the reveal
 const title = params.get('title') === '1' || (location.search === '' && !navigator.webdriver);
-if (params.has('play')) void import('./ui/play').then((m) => m.startPlay({ canvas, params, label, bar, loading }));
+const fail = (e: unknown) => { ld.reveal(); loadingError(label, e); };
+if (params.has('play')) void Promise.all([import('./ui/play'), ld.ready]).then(([m]) => { ld.reveal(); return m.startPlay({ canvas, params, label, bar, loading }); }).catch(fail);
 else if (title) void import('./ui/title').then((m) => m.showTitle({ explore: exploreByDay }));
-else if (params.get('scene') === 'arena') void startArena();
-else startTown();
+else void ld.ready.then(() => { ld.reveal(); if (params.get('scene') === 'arena') void startArena(); else startTown(); });
 
 /** « Explore the district » opens the day: midday (the operator's decision L7-6a, « Le jour devient le défaut d’« Explore the district » »,
  *  with midday and the button alone as its scope, journal Passes D8 / D9): the town below with ?time=midday's params, the address unchanged
@@ -27,8 +27,8 @@ else startTown();
  *  Its DEV panel starts closed, H opens it (the operator's decision P1, « Fermé par défaut, H l'ouvre », journal Passes UI1 / UI2) */
 function exploreByDay(): void {
   if (!params.has('time')) params.set('time', 'midday');
-  label.textContent = 'PAINTING THE DAY...';
-  startTown({ panelClosed: true });
+  toneLoading(label, parseTime(params));
+  void ld.ready.then(() => { ld.reveal(); startTown({ panelClosed: true }); });
 }
 
 async function startArena(): Promise<void> {
@@ -45,7 +45,7 @@ async function startArena(): Promise<void> {
     let n = 0;
     const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
     wait();
-  } catch (e: any) { console.error(e); label.textContent = 'ERROR: ' + (e?.message ?? e); (window as any).__error = String(e?.stack ?? e); }
+  } catch (e: any) { loadingError(label, e); }
 }
 
 /** panelClosed: the DEV panel starts hidden and the minimap takes its place, as after H (« Explore the district » only); every other address
@@ -96,5 +96,5 @@ function startTown({ panelClosed = false } = {}): void {
     let n = 0;
     const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
     wait();
-  }).catch((e) => { console.error(e); label.textContent = 'ERROR: ' + (e?.message ?? e); (window as any).__error = String(e?.stack ?? e); });
+  }).catch((e) => loadingError(label, e));
 }

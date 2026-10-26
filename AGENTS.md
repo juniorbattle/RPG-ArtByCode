@@ -107,7 +107,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   dynamique » (`tests/combat-dynamic.test.mjs`, journal Passe C1: each rule against an oracle, the duels' length, the bot, the off-screen race
   against full duels on held-out seeds, the arena of today untouched; ~15 s, the suite's longest file), the arena of the new duel
   (`tests/arena-dynamic.test.mjs`, journal Passe C2: the parameter, the keys, the trial's settings, today's clips on the new moments, the HUD's
-  reading at every step of a duel, every scripted moment, the play mode's flag).
+  reading at every step of a duel, every scripted moment, the play mode's flag), the loading screen (`tests/loading-screen.test.mjs`, journal
+  Passe UI4: its tone and opening line by day state, its content held until both fonts load and never more than a second, its error, the play
+  mode's page tone, its CSS from the design system's tokens only).
   `tests/load.mjs` loads `src/` through Vite's SSR loader (extensionless imports, `?url`, named JSON imports, as the bundle resolves
   them; `--experimental-strip-types` alone cannot), with its own cache folder (`node_modules/.vite-test`), no file watcher and no
   `vite.config.ts` (`configFile: false` + `server.watch: null`: a merged config drops the null, and the watcher crawled the ignored Art Lab
@@ -474,10 +476,14 @@ Interface (decided, journal Passe UI1: the operator's UI sheet, 14 choices of 14
   buttons, tags, keycaps, gauge) from a tone, pure; `system.ts` installs the fonts, the page's tone (`installDesign(time)`: the page's `DayState`)
   and the base components. The fonts (Pixelify Sans for titles, numbers and keys; Alegreya Sans for text; SIL OFL 1.1, chosen by the operator on
   2026-10-25) and their record (source, licence, SHA-256): `src/ui/fonts/FONTS.md`. The play mode's screens (`src/ui`), the forecourt and Lantern
-  Row pages and the arena's HUD use it; the free-roaming town, its DEV panel and HUD and the loading screen do not (unchanged). Portraits: the
+  Row pages and the arena's HUD use it, and the loading screen shown before every scene (`src/ui/loading.ts`, the operator's decision C2-14
+  « Tâche à part », built in journal Passe UI4: the name in the pixel font, the status in the text font, the progress in the gauge frame, in the
+  tone of the page's day state - the address's `time=`, the play mode's page; its content shows once both fonts are loaded, at most a second, and
+  every scene starts after it); the free-roaming town's DEV panel and HUD do not (unchanged). Portraits: the
   face of the baked sheet (`preloadPortraits`), the generator's portrait where no baked sheet stands for the person. The arena's HUD with the HUD
   hidden (`hud=0`, H) keeps its KO and pause screens, in the system's look since journal Passe C2. On a phone (`PHONE_QUERY`): a strip along the top, tabs along the bottom
-  (« Here » first), every card a sheet at the bottom of the screen. Proofs: `tests/ui-design.test.mjs`, `tools/ui-text.mjs`.
+  (« Here » first), every card a sheet at the bottom of the screen. Proofs: `tests/ui-design.test.mjs`, `tests/loading-screen.test.mjs`,
+  `tools/ui-text.mjs`.
 
 ## Camera graph (`src/app/CameraGraph.ts`)
 Four authored, semi-fixed framings, all on the canal side (+z of the pivot) looking up-canal (+x), chosen by zone with

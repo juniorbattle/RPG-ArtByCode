@@ -7,8 +7,8 @@ import { PHONE_QUERY, TEXEL_PX, TYPE, toneOf, type Tone } from './tokens';
 
 /** The interface's design system in the page (journal Passe UI3): the two embedded fonts (S1, `src/ui/fonts/FONTS.md`), the tone of the page's
  *  day state as CSS custom properties (L2, S3), the frames as nine-slice images (S2), the type scale with its phone sizes (S4) and the base
- *  components every screen of the play mode and the arena's HUD are built from. Installed only by those screens: the free-roaming town, its
- *  DEV panel and HUD, never load it. */
+ *  components every screen of the play mode, the arena's HUD and the loading screen are built from. The loading screen installs it on every
+ *  page (journal Passe UI4); the free-roaming town's DEV panel and HUD do not use it. */
 
 export const PIXEL = '"CdT Pixel"';
 export const TEXT = '"CdT Text"';

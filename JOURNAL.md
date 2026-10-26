@@ -357,6 +357,105 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une erreur d'un contrôle se nomme avant d'être écartée : le seul 404 était l'icône que Chrome demande au serveur statique, pas une ressource de
   la page.
 
+## Passe UI4 — L'écran de chargement dans le système de design de l'interface (décision C2-14) (2026-10-26)
+
+### Demande
+- Séance locale lancée par la séance parente : passer l'écran de chargement (affiché avant la ville, l'arène, le parvis et chaque page du mode
+  jouable ; police du système et palette à part, construit dans `src/main.ts`) au système de design de la Passe UI3 : décision C2-14 « Tâche à
+  part » (Passe C2F), avec la direction C « Héraldique pixel ». Preuves demandées : captures avant / après, `tools/ui-text.mjs` (16 px ordinateur,
+  14 px téléphone, polices embarquées seules), la ville et l'arène à 0 px contre `main` figé une fois l'écran retiré, tests, build.
+- Branche `loading-screen-ds` depuis `main` (`d604a3b`), **dans un worktree hors du dossier partagé** (d'autres séances y travaillent et en
+  changent la branche : il est passé sur `ren-combat-x3-full`) ; avancée en avance rapide sur `main` (`e8970b1`, Passe AP1 : le journal, une
+  archive et deux images, aucun fichier de `src/`, `tests/` ni `tools/`) avant le commit. `.gitignore` et `.claude/` jamais commités. Serveurs
+  (`preview_start` / `preview_stop`) : `ls-branch` (:5214, le worktree), `ls-frozen-main` (:5215, `d604a3b` hors dépôt, le code de `e8970b1`),
+  `ls-dist-branch` / `ls-dist-main` (:5216 / :5217, `vite preview` des deux builds de production).
+
+### Fait — [OK] l'écran de chargement dans le système (`src/ui/loading.ts`)
+- **Bâti sur les jetons seuls** : le nom « CITÉ DU TOURNOI » en Pixelify (taille `pixelHuge` : 40 px sur ordinateur, 30 au téléphone ; or clair
+  et ombre portée, comme l'écran titre), la progression dans le cadre de jauge peint par le code (`--ds-f-gauge`, neuf tranches ; remplissage à
+  l'ambre de l'action, filet clair en haut), le statut en Alegreya (`--ds-fs-small` : 16 / 14 px, `muted`), le fond à l'encre du ton ; aucune
+  couleur, police ni taille hors des jetons. Les textes restent ceux d'aujourd'hui (« GENERATING <phase> »), l'ellipse devient typographique
+  (« PAINTING THE NIGHT… »).
+- **Le ton suit `DayState` (L2)** : pour la ville et l'arène, celui de l'adresse (`time=`, la nuit sans lui) ; « Explore the district » passe à
+  midi ; dans le mode jouable, le ton de la page qu'ouvre la sauvegarde (`pageTone`, `src/ui/play.ts` : l'état du créneau, Lantern Row celui de
+  la nuit, comme chaque page l'installe), posé dans la même tâche que l'apparition du contenu : aucune image dans un autre ton. La ligne
+  d'ouverture suit : « PAINTING THE NIGHT… » la nuit, « PAINTING THE DAY… » de jour (avant : la nuit partout sauf « Explore »).
+- **Le contenu paraît une fois les deux polices chargées** (`ready` : `fontsReady`, ou une seconde au plus ; `reveal`) ; jusque-là l'écran n'est
+  que l'encre du ton : jamais une police de repli, jamais un texte qui surgit. Chaque scène démarre ensuite (avant, la ville démarrait dans la
+  tâche même qui créait l'écran). Mesuré dans le build de production (ville, Chrome sans tête) : les trois polices demandées à 235 ms, chargées à
+  249 ms, la première phase de la scène à 316 ms.
+- **Une erreur** dit sa raison sur l'écran, en ambre clair (`loadingError` : les trois sites d'erreur de `main.ts` et `play.ts` en un), et
+  `window.__error` comme avant ; un module du mode jouable qui ne charge pas n'est plus une erreur silencieuse.
+- `main.ts` ne construit plus d'écran ; `system.ts` dit que l'écran l'installe sur chaque page, la ville libre comprise (son panneau DEV et son
+  HUD n'en usent pas).
+- **Constat sur `main`** : la ligne « PAINTING THE NIGHT... » n'était jamais peinte pour la ville ni l'arène : leur première phase la remplaçait
+  dans la tâche qui créait l'écran (un observateur de mutations posé avant le chargement voit « GENERATING WHITE/FLAT » comme premier texte).
+
+### Avant / après (`screenshots/calibration/ui4-loading/`)
+- Harnais hors dépôt : l'écran retenu (son retrait ignoré, son fondu coupé une fois la page prête), deux états du même chargement (l'ouverture,
+  jauge vide ; la progression, « GENERATING MATERIALS » à 60 %) ; dix pages : la ville la nuit, le matin, à midi, à la fin de journée ; l'arène la
+  nuit et à midi ; le duel, le parvis et Lantern Row du mode jouable ; une erreur (`scene=arena&combat=dynamic&dyn=bogus:1`) ; en 1920 × 1080,
+  812 × 375 et 375 × 812 : 57 captures de chaque côté. Cinq paires gardées : la ville la nuit (progression), à midi (l'ouverture, le ton du jour),
+  le téléphone tenu droit à la fin de journée, le duel du mode jouable en paysage, l'erreur.
+
+### Les preuves
+- **La ville** (`tools/detshots.mjs`, 120 pas, 1920 × 1080) : nuit A, B, C, D, B avec panneau et HUD, midi B et D, le mode jouable au premier
+  matin : **8 sur 8 identiques à l'octet** à `main` figé ; témoin (deux chargements de `main`) 8 sur 8.
+- **L'arène** (`tools/arena-scene-shots.mjs`, `HOLD=1`, 1920 × 1080 ; deux captures de chauffe qui retirent l'écran, quel que soit son aspect,
+  et coupent transitions et animations CSS) : ancien duel 9 moments (`charging`, `strike`, `heavyRen`, `block`, `dodge`, `impact`, `technique`,
+  `combo`, `ko`), nouveau duel 9 (`charging`, `strike`, `prep`, `ward`, `combo`, `pushed`, `foeBreak`, `broken`, `koRen`), chacun en scène seule la
+  nuit et à midi et avec le HUD la nuit : **56 sur 56 identiques à l'octet** (54 moments et les deux chauffes) ; témoin 56 sur 56. **Contrôle
+  négatif** : sans la chauffe, la capture de `charging` diffère de 12 181 px, tous dans la boîte du contenu de l'écran ([752, 484, 1167, 592]).
+- **« Explore the district »** (`tools/title-proof.mjs`, `main` figé contre la branche) : toutes ses vérifications OK ; Explore contre
+  `?time=midday` de `main` (panneau fermé), Explore après H contre `main` (panneau ouvert), `?time=midday` de la branche contre celle de `main` :
+  **identiques à l'octet** ; témoin négatif (panneau fermé contre ouvert) : 25,7 % des pixels. Rôles inversés : **l'écran titre**, sans et avec
+  sauvegarde, **identique à l'octet** à celui de `main` (l'écran de chargement est dessous, son contenu retenu).
+- **Le mode jouable** (`tools/play-flow.mjs`) : victoire contre Vessa (1842, jour 2) et défaite contre Marek (7719, jour 3), l'état final rejoué
+  en Node : **mêmes empreintes** que la Passe UI3 (`0025acce7a403773`, `397959404c18f714`), aucune erreur de page.
+- **`tools/ui-text.mjs`** : sur la branche (serveur DEV ; l'écran montré par son propre module, `import('/src/ui/loading.ts')`, une fois la page
+  prête) : la nuit à l'ouverture et en progression, le matin, midi, la fin de journée dans l'arène, l'erreur réelle, et l'écran titre par-dessus
+  l'écran retenu, en 1920 × 1080, 1280 × 720, 812 × 375 et 375 × 812 : **26 pages sur 26** (rien sous 16 / 14 px, les deux polices chargées,
+  aucun caractère hors du sous-ensemble, aucun texte coupé ; le message d'erreur se replie sur trois lignes au téléphone) ; build de
+  production, l'erreur réelle : **4 sur 4** ; **contrôle négatif**, le build de `main` : **0 sur 2** (« Segoe UI », 14 px sur ordinateur, aucune
+  police chargée).
+- **Le bundle** (même configuration) : 30 fichiers contre 31 ; le module `system` (5,8 Ko) entre dans le morceau principal (`index` : 985,0 →
+  992,1 Ko) ; les trois polices et 13 autres fichiers identiques à l'octet ; les morceaux du mode jouable ne changent que par leurs imports.
+- **Le démarrage** (`tools/startup.mjs`, builds de production, ville, 5 tours entrelacés ; un Chrome étranger tenait 16 à 70 % de la 780M pendant
+  les tours 1 à 3) : prête en **2 792 ms [2 525-3 181]** sur `main`, **2 937 [2 472-3 193]** sur la branche ; aucun écart au-delà du bruit
+  (la branche plus rapide aux tours 3 à 5). L'attente des polices, mesurée directement : environ 14 ms.
+- **Tests** : `tests/loading-screen.test.mjs` (5, sur un faux document : ce que l'écran ajoute, où et quand son contenu paraît) : le ton et la
+  ligne d'ouverture de chaque état du jour (les couleurs lues dans la table de `tokens.ts`), le contenu retenu jusqu'à `reveal` ; `ready` après
+  les trois polices, jamais plus d'une seconde (horloge simulée) ; l'erreur, sa couleur, gardée à un changement de ton ; `pageTone` contre un
+  oracle écrit d'après les règles sur les états nommés (la fin de journée, Lantern Row la nuit, le duel selon le créneau) ; le CSS de l'écran
+  (aucune couleur littérale, polices et tailles des jetons, le cadre de jauge) et `main.ts` sans écran à lui. Deux tests mis à jour, leur
+  rigueur gardée : `tests/game-core.test.mjs` (le chemin par défaut n'atteint de `src/ui` que l'écran et le système) et
+  `tests/town-roles.test.mjs` (Passe D9 : `startTown` et `startArena` restent ceux de `d129433` à leur seule ligne d'erreur près ; avant le
+  dispatch, toutes les lignes de `d129433` hors des cinq de l'ancien écran). **20 fautes injectées sur 20 attrapées** (ton ignoré, lignes
+  inversées, contenu jamais montré, `ready` sans borne ou sans polices, erreur sans couleur ou écrasée par le ton, couleur hexadécimale,
+  autre cadre, 14 px, police système, Lantern Row ou le duel au mauvais ton, l'écran de nuit quelle que soit l'adresse, le panneau fermé
+  partout, l'erreur hors de l'écran dans `startTown` ou `startArena`, un écran du mode jouable sur le chemin par défaut, une ligne d'avant le
+  dispatch changée, un style propre à `main.ts`), fichiers rendus à l'octet (SHA-256).
+- **Validation** : typecheck, `npm test` **200 / 200** (195 + 5), build, `art:validate` (19 manifestes, 33 sources, 0 erreur).
+
+### [?] Relevé
+- Dans le panneau navigateur de la séance, caché, après « Explore » sur le build de production : la graisse 700 d'Alegreya restait « unloaded »
+  alors que son fichier avait été chargé (entrée de ressource). Non reproduit dans Chrome sans tête (adresse directe, écran titre, « Explore » :
+  les trois « loaded »). L'écran de chargement n'utilise pas la graisse 700.
+
+### Restes [?]
+- **À voir en jeu par l'opérateur** : l'écran dans ses quatre tons, avec la palette provisoire (S3, « Cela peut changer par la suite »).
+- Les autres écrans de la liste UI : P4, P5, P6 ; les bustes (L4) ; chacun dans sa séance.
+
+### Pensée
+- Un écran qui s'écrit dans une police embarquée attend ses polices avant que la scène prenne le fil principal : avec `font-display: block`, un
+  texte peut rester invisible tout un bloc synchrone. L'attente se borne (une seconde) et se mesure (14 ms ici).
+- Ce qu'un écran « montre » se vérifie dans la page avant d'être décrit : la ligne d'ouverture de `main` n'était jamais peinte, remplacée dans
+  la même tâche.
+- Un test qui fige un fichier contre un ancien commit se met à jour en nommant chaque changement voulu (une ligne remplacée, cinq lignes
+  retirées), jamais en abandonnant la comparaison ; ses fautes injectées le prouvent encore.
+- Une preuve « une fois l'écran retiré » retire l'écran dans le harnais, quel que soit son aspect des deux côtés, et se double d'un contrôle sans
+  ce retrait (12 181 px) : sinon le 0 px pourrait venir d'un écran absent des deux captures.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -513,7 +612,7 @@ course hors écran, derrière `flags.combat = 'dynamic'` (`tournament-lab --rule
 écarté (mesuré sans borne), Rempart et Ferveur proposés à l'essai ; duels de 5 à 9 minutes, victoire en marche d'escalier selon l'adresse.
 **C2 fait (Passe C2)** : l'arène le montre derrière `?scene=arena&combat=dynamic` (le mode jouable : `&combat=dynamic`), HUD du système de
 design (jauges, barre de break, PA, compétences et coûts, priorité), clips d'aujourd'hui sur les nouveaux moments, réglages de l'essai `dyn=` ;
-le défaut inchangé (0 px). **Fiche de l'essai relue (Passe C2F), 16 / 16 à la recommandation** : le défaut « Pas encore : après C3 et un second essai », les nombres du § 11 tenus (5 PA, aucun regain, aucune recharge, esquive « En arrière », break « 6 s, ×1,2 »), Rempart et Ferveur gardés, le HUD « Approuvé » ; deux tâches à part : l'écran de chargement dans le système de design (C2-14), la page de l'ancienne arène à republier (C2-16, faite en Passe AP1). Historique : l'essai de l'opérateur en jeu (guide `briefs/combat-trial-c2.md` ; page jouable
+le défaut inchangé (0 px). **Fiche de l'essai relue (Passe C2F), 16 / 16 à la recommandation** : le défaut « Pas encore : après C3 et un second essai », les nombres du § 11 tenus (5 PA, aucun regain, aucune recharge, esquive « En arrière », break « 6 s, ×1,2 »), Rempart et Ferveur gardés, le HUD « Approuvé » ; deux tâches à part : l'écran de chargement dans le système de design (C2-14, fait en Passe UI4), la page de l'ancienne arène à republier (C2-16, faite en Passe AP1). Historique : l'essai de l'opérateur en jeu (guide `briefs/combat-trial-c2.md` ; page jouable
 https://claude.ai/artifact/HnfCTWXSggDVVyVUskTBJK ; fiche https://claude.ai/artifact/2BFmUTe6GFRAjq92TEHNPc : le défaut, le § 11, le HUD, les
 écarts de l'interface), à relire puis consigner ; ensuite, chacun dans sa séance : C3 les adversaires (avec L7-4 et l'alerte légère des
 compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis les feuilles de combat à ×3 (AA2-1 ; après l'essai du duel) ; plus tard les
@@ -532,13 +631,14 @@ la barre de l'arène à 60 px).
 peut changer par la suite »), cadres en neuf tranches peints par le code, Pixelify Sans et Alegreya Sans embarquées (OFL, choix de l'opérateur),
 16 px / 14 px mesurés dans la page (`tools/ui-text.mjs`), bande et onglets au téléphone, visages des feuilles cuites, HUD de l'arène ; à voir en jeu
 par l'opérateur. Restent, écran par écran avec avant / après : P4 (le dialogue en bas sur ordinateur, le locuteur visible), P5 (« Here » réduit aux
-actions du lieu, les absents retirés), P6 (la fiche de match, la victoire, le journal, le tableau) ; l'écran de chargement (police système) ; les bustes (L4).
+actions du lieu, les absents retirés), P6 (la fiche de match, la victoire, le journal, le tableau) ; les bustes (L4). L'écran de chargement suit le
+système depuis la Passe UI4 (C2-14 : jetons, ton du `DayState`, contenu après les polices ; à voir en jeu par l'opérateur).
 Relevés de l'audit sans décision propre (rapport de la séance d'audit) : l'écran titre au fond vide, l'état en une ligne de texte, la carte en
 liste, la sauvegarde silencieuse, le titre de l'arène perdu sur le ciel de jour, « Turn your device » qui couvre la fiche de match.
 **Le parcours de l'arène vérifié (Passe C2)** : 124 pages mesurées, ancien et nouveau duel ; corrigés : K.O. et pause sous `hud=0` dans le
 système, la barre à 60 px avec ses textes à 16 px (P3 et S4 ensemble), la couche « Tournez l'appareil » sous `hud=0`. Écarts sur la fiche C2 :
-sous 1 241 px les sous-libellés masqués (61,6 px), l'écran de chargement, le téléphone tenu droit, la page publiée de la Passe P2 (republiée
-avec le HUD d'aujourd'hui, Passe AP1).
+sous 1 241 px les sous-libellés masqués (61,6 px), l'écran de chargement (passé au système, Passe UI4), le téléphone tenu droit, la page publiée
+de la Passe P2 (republiée avec le HUD d'aujourd'hui, Passe AP1).
 
 **7. Outillage, documentation, dette**
 - **Port 5173** partagé avec un autre projet local et `vite.config.ts` sans `strictPort` : les outils peuvent photographier la mauvaise
@@ -854,3 +954,6 @@ avec le HUD d'aujourd'hui, Passe AP1).
 - Une page publiée se relit après publication : ses fichiers contre le build vérifié (SHA-256), sa page contre le squelette du service où les
   contrôles l'ont jouée ; ce que seul le visualiseur montre reste nommé. Une tâche qui construit `main` pendant que d'autres séances partagent le
   dossier (et y changent de branche) le fait dans un worktree de `main` (Passe AP1).
+- Un écran écrit dans une police embarquée montre son contenu une fois ses polices chargées, attente bornée et mesurée, avant que la scène prenne
+  le fil principal ; une preuve « l'écran retiré » retire l'écran dans le harnais des deux côtés et se double d'un contrôle sans ce retrait ; un
+  test qui fige un fichier contre un ancien commit se met à jour en nommant chaque changement voulu (Passe UI4).

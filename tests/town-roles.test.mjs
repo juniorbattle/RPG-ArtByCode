@@ -136,7 +136,7 @@ test('every person has words in every slot they are there, and the people\'s opt
   }
 });
 
-test('« Explore the district » runs today\'s town path at midday, its DEV panel closed (decisions L7-6a and P1, journal Passes D9 / UI2): main.ts\'s startTown is main d129433\'s but for the closed panel, called with time=midday and panelClosed only', () => {
+test('« Explore the district » runs today\'s town path at midday, its DEV panel closed (decisions L7-6a and P1, journal Passes D9 / UI2): main.ts\'s startTown is main d129433\'s but for the closed panel (and its error line, journal Passe UI4), called with time=midday and panelClosed only', () => {
   // line endings normalised: a Windows checkout (core.autocrlf) has CRLF on disk, `git show` gives the index's LF (journal Passe Q3)
   const lf = (t) => t.replace(/\r\n/g, '\n');
   const now = lf(fs.readFileSync(path.join(ROOT, 'src/main.ts'), 'utf8'));
@@ -144,27 +144,39 @@ test('« Explore the district » runs today\'s town path at midday, its DEV pane
   try { base = lf(execFileSync('git', ['show', 'd129433:src/main.ts'], { cwd: ROOT, encoding: 'utf8' })); } catch { base = null; }
   const fn = (src) => src.slice(src.indexOf('function startTown('));
   assert.match(now, /m\.showTitle\(\{ explore: exploreByDay \}\)/);
-  // the button's day: midday, set only when the address names no state, then the town path itself with its panel closed
+  // the button's day: midday, set only when the address names no state, the loading screen in its tone, then the town path itself with its
+  // panel closed once the screen shows (journal Passe UI4)
   const day = now.slice(now.indexOf('function exploreByDay(): void {'), now.indexOf('async function startArena'));
-  assert.match(day, /^function exploreByDay\(\): void \{\n  if \(!params\.has\('time'\)\) params\.set\('time', 'midday'\);\n  label\.textContent = 'PAINTING THE DAY\.\.\.';\n  startTown\(\{ panelClosed: true \}\);\n\}\n/);
+  assert.match(day, /^function exploreByDay\(\): void \{\n  if \(!params\.has\('time'\)\) params\.set\('time', 'midday'\);\n  toneLoading\(label, parseTime\(params\)\);\n  void ld\.ready\.then\(\(\) => \{ ld\.reveal\(\); startTown\(\{ panelClosed: true \}\); \}\);\n\}\n/);
   // every other address opens the panel as before: the dispatch calls startTown without options, and only the button closes it
-  assert.match(now, /\nelse startTown\(\);\n/);
+  assert.match(now, /\nelse void ld\.ready\.then\(\(\) => \{ ld\.reveal\(\); if \(params\.get\('scene'\) === 'arena'\) void startArena\(\); else startTown\(\); \}\);\n/);
   assert.deepEqual(now.match(/startTown\([^)]*\)/g), ['startTown()', 'startTown({ panelClosed: true })', 'startTown({ panelClosed = false } = {})']);
   assert.match(now, /const title = params\.get\('title'\) === '1' \|\| \(location\.search === '' && !navigator\.webdriver\);/);
   if (base) {
-    // startTown is d129433's with two changes only: its option, and the closed panel (hidden, the minimap where H puts it without the panel)
+    // a scene's error goes to the loading screen through loadingError (journal Passe UI4): the one line changed since d129433 in startTown
+    // and in startArena
+    const ERR = "console.error(e); label.textContent = 'ERROR: ' + (e?.message ?? e); (window as any).__error = String(e?.stack ?? e);";
+    // startTown is d129433's with three changes only: its option, the closed panel (hidden, the minimap where H puts it without the panel),
+    // its error line
     const panel = '      const panel = new DebugPanel(app); const hud = new Hud(app);\n';
     const want = fn(base).replace('function startTown(): void {', 'function startTown({ panelClosed = false } = {}): void {')
-      .replace(panel, `${panel}      if (panelClosed) { panel.el.style.display = 'none'; hud.setMapRight(14); }\n`);
+      .replace(panel, `${panel}      if (panelClosed) { panel.el.style.display = 'none'; hud.setMapRight(14); }\n`)
+      .replace(`}).catch((e) => { ${ERR} });`, '}).catch((e) => loadingError(label, e));');
     assert.notEqual(want, fn(base));
-    assert.equal(fn(now), want, 'startTown is unchanged but for the closed panel');
+    assert.equal(fn(now), want, 'startTown is unchanged but for the closed panel and its error line');
     // what H does is unchanged: the panel toggles itself, the minimap follows it
     assert.match(fn(now), /window\.addEventListener\('keydown', \(e\) => \{ if \(e\.key\.toLowerCase\(\) === 'h'\) hud\.setMapRight\(panel\.el\.style\.display === 'none' \? 14 : 300\); \}\);/);
-    // everything before the dispatch (the loading screen) is unchanged too
-    const head = (src) => src.slice(0, src.indexOf('// ?'));
-    assert.equal(head(now), head(base));
+    // before the dispatch: d129433's lines but the five of the old loading screen (an inline style, a system font), and the screen of the
+    // design system in the address's day state (journal Passe UI4)
+    const head = (src) => src.slice(0, src.indexOf('// ?')).split('\n');
+    const OLD = /^(const loading = |loading\.style\.cssText = |loading\.innerHTML = |document\.body\.appendChild\(loading\);|const label = )/;
+    const kept = head(base).filter((l) => !OLD.test(l));
+    assert.equal(kept.length, head(base).length - 5, 'the old screen\'s five lines');
+    for (const l of kept) assert.ok(head(now).includes(l), `kept before the dispatch: « ${l} »`);
+    assert.ok(head(now).includes('const ld = showLoading(parseTime(params)), { label, bar, root: loading } = ld;'));
     const arena = (src) => { const i = src.indexOf('async function startArena'); return src.slice(i, src.indexOf('\n}\n', i) + 3); };
-    assert.equal(arena(now), arena(base), 'startArena is unchanged');
+    assert.equal(arena(now), arena(base).replace(`} catch (e: any) { ${ERR} }`, '} catch (e: any) { loadingError(label, e); }'), 'startArena is unchanged but for its error line');
+    assert.notEqual(arena(now), arena(base));
   }
 });
 

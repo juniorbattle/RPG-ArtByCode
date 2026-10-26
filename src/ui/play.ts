@@ -1,4 +1,6 @@
-import { actions, advance, hash, namedState, newGame, type Action, type GameState } from '../simulation';
+import type { TimeOfDay } from '../atmosphere/DayState';
+import { actions, advance, hash, lookOf, namedState, newGame, type Action, type GameState } from '../simulation';
+import { loadingError, toneLoading } from './loading';
 import { readSave, writeSave } from './save';
 
 /** The play mode's entry (journal Passe L3; `?play=1`, the tools' way in, and later the title screen's « New game » / « Continue »): the game
@@ -63,17 +65,21 @@ export function installGameApi(get: () => GameState, set: (s: GameState) => void
   };
 }
 
+/** the interface's tone of the page a state opens (each page installs the same): the slot's look (the arena's bout, the forecourt, the
+ *  town), Lantern Row the night's */
+export function pageTone(params: URLSearchParams, s: GameState): TimeOfDay {
+  return params.get('scene') !== 'arena' && s.place === 'lanterns' ? 'night' : lookOf(s);
+}
+
 export async function startPlay(b: Boot): Promise<void> {
   try {
     const { state, note } = startingState(b.params);
+    // the loading screen takes the tone of the page it opens (journal Passe UI4), before its first frame
+    toneLoading(b.label, pageTone(b.params, state));
     writeSave(state);
     if (b.params.get('scene') === 'arena') await (await import('./playArena')).startPlayArena(b, state);
     else if (state.place === 'forecourt') await (await import('./playForecourt')).startPlayForecourt(b, state);
     else if (state.place === 'lanterns') await (await import('./playLanterns')).startPlayLanterns(b, state);
     else await (await import('./playTown')).startPlayTown(b, state, note);
-  } catch (e: any) {
-    console.error(e);
-    b.label.textContent = 'ERROR: ' + (e?.message ?? e);
-    (window as any).__error = String(e?.stack ?? e);
-  }
+  } catch (e: any) { loadingError(b.label, e); }
 }

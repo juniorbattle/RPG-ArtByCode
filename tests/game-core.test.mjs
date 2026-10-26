@@ -59,7 +59,10 @@ test('the default path (src/main.ts and everything it imports statically) reache
     for (const i of staticImports(f)) if (i.startsWith('src/')) todo.push(i);
   }
   assert.ok(seen.has('src/app/App.ts'), 'the crawl reaches the town');
-  for (const f of seen) assert.ok(!PURE_DIRS.some((d) => f.startsWith(`${d}/`)) && !f.startsWith('src/ui/'), `the default path imports ${f}`);
+  // of the interface, only the loading screen and the design system it is built from (journal Passe UI4): no screen of the play mode
+  const loadingScreen = (f) => f === 'src/ui/loading.ts' || f.startsWith('src/ui/design/') || f.startsWith('src/ui/fonts/');
+  assert.ok(seen.has('src/ui/loading.ts'), 'the crawl reaches the loading screen');
+  for (const f of seen) assert.ok(!PURE_DIRS.some((d) => f.startsWith(`${d}/`)) && (!f.startsWith('src/ui/') || loadingScreen(f)), `the default path imports ${f}`);
 });
 
 /** duel results handed in by the arena (fixed here: the arena's own tests play the duels) */
