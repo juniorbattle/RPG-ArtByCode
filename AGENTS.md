@@ -111,7 +111,7 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   dynamique » (`tests/combat-dynamic.test.mjs`, journal Passe C1: each rule against an oracle, the duels' length, the bot, the off-screen race
   against full duels on held-out seeds, the arena of today untouched; ~15 s, the suite's longest file), the arena of the new duel
   (`tests/arena-dynamic.test.mjs`, journal Passe C2: the parameter, the keys, the trial's settings, today's clips on the new moments, the HUD's
-  reading at every step of a duel, every scripted moment, the play mode's flag), the version 2's charged command (`tests/combat-charge.test.mjs`, journal Passe V1: the tiers, the AP, the levels, what cuts a
+  reading at every step of a duel, every scripted moment, the play mode's flag), the version 2's systems (`tests/v2-skills`, `v2-gear`, `v2-town`, `v2-places`, `v2-story`, `v2-events`, `v2-sound`: journal Passes V2-V8), the version 2's charged command (`tests/combat-charge.test.mjs`, journal Passe V1: the tiers, the AP, the levels, what cuts a
   charge, C3's defence and skills, the bot, the off-screen race, `V2_SIM_HASH`), the loading screen (`tests/loading-screen.test.mjs`, journal
   Passe UI4: its tone and opening line by day state, its content held until both fonts load and never more than a second, its error, the play
   mode's page tone, its CSS from the design system's tokens only), the texts' tables and the version 2's flag (`tests/texts.test.mjs`, journal
@@ -125,7 +125,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   full simulation): win, injury, upset and sabotage rates, events fired, forgotten participants; `--state=<named>` / `--save=<file>` `[--days=N]`
   loads a state and plays on; `--compare=a,b` two seeds side by side; `--rules=dynamic` plays the games under the rules of the « tour par tour
   dynamique » (journal Passe C1: their duels in `DynamicSim`, their off-screen matches in its race; absent = the arena of today); `--rules=v2`
-  plays version 2 games (`flags.v2`, journal Passe V0: the flag, the dynamic rules with it). No browser
+  plays version 2 games (`flags.v2`, journal Passe V0: the flag, the dynamic rules with it; their ten days, journal Passe V6: it prints the bouts, the cut,
+  the finals and the crowns, and the final order's histogram). No browser
 - `node tools/play-flow.mjs <outDir> <win|lose> [seed] [day]` — the play mode's scene change in a browser (journal Passe L3): a new game in the town
   page, the clock driven by `window.__game` to the day's bout, the arena page loaded from the save, the bout decided by scripted inputs on
   `window.__arena`, the town page again from the save; the browser's final state replayed in Node must give the same fingerprint (DEV or
@@ -298,7 +299,12 @@ and the dynamic rules with it; absent = today's game, unchanged; the named state
 version 2's duel, journal Passe V1, the three-button command of decision A3 / AV-5 - J (or 1) attack, held to charge it tier by tier (light,
 heavy at 2 s, then the four skills by their charge time at their level, AV-7 / AV-8, each still paid in AP, AV-6), K (or B) guard held, L (or A)
 dodge, the gamepad's X / B / A; `src/combat/charge.ts`, `src/combat/v2duel.ts`, `src/arena/v2Arena.ts`; C3's opponents, their guard, dodge and
-skills; `&input=keys` the former keys 1-6 of C2 on the same duel, for comparison) · `title=1` (the title screen, journal Passe L4, choice P2: « New game », « Explore the district », « Continue » with a save; it shows by itself
+skills; `&input=keys` the former keys 1-6 of C2 on the same duel, for comparison; journal Passes V2-V10: the skills (K), the gear and the shops (G),
+haggle / challenge / steal, three open squares - the forecourt, the training ground and the festival square in Lantern Row's place,
+`src/world/Plazas.ts`, `PlazaApp.ts`, `src/ui/playPlaza.ts` - the ten days of the tournament and their live cutscenes (`src/tournament/v2calendar.ts`,
+`src/narrative/v2story.ts`; a browser driven by a tool plays them only with `&cutscene=1`), the version 2's events (`src/events/v2catalog.ts`), the
+sound made by the code (`src/audio/`, after a gesture; V settings, N mute), P4-P6; DEV named states `v2-forecourt-morning`, `v2-training-morning`,
+`v2-square-afternoon`, `v2-square-night`, `v2-day2-afternoon`, `v2-training-dusk`; the trial: `briefs/v2-trial.md`, `briefs/fiche-v2.html`) · `title=1` (the title screen, journal Passe L4, choice P2: « New game », « Explore the district », « Continue » with a save; it shows by itself
 on the bare address only, and only in a browser no automation drives (`navigator.webdriver`), kept by the operator (L7-5 « Le garder », journal
 Passe D8): every tool and proof keeps today's game; its
 « Explore the district » runs today's town at midday, as `time=midday` without changing the address, and the DEV panel: decision L7-6a, journal Passe D9; that panel closed, H opens it: decision P1, journal Passe UI2) · `play=1` (the game's play mode, journal Passe L3, loaded on demand: the state from the browser's save, or `&new=1&name=<name>&seed=<n>` for a

@@ -26,6 +26,11 @@ La fiche du mandat (19 choix de l'opérateur) lance une séance cloud autonome, 
 - **V1 fait (Passe V1, 26/10)** : la commande à trois touches et l'attaque chargée par paliers (A3, AV-5 à AV-8 ; `combat-system.md` § 4b et le
   contrat projet § 6.1 amendés), C3 (garde, esquive et compétences des rivaux), l'équilibrage « modéré » proposé, le bot et la course recalés ;
   `?scene=arena&v2=1`, `&input=keys` pour l'ancien schéma. Les poses de charge à cuire : § 14 de la spécification.
+- **V2 à V9 faits (Passes V2 à V9, 26/10)** : douze compétences (achat, entraînement, défi), l'équipement (arme à paliers, armure, deux
+  accessoires) et quatre boutiques, marchander / défier / voler, trois places ouvertes (le parvis, le terrain d'entraînement, la place festive à la
+  place de Lantern Row), les dix jours du tournoi et cinq cinématiques, quatorze événements nouveaux, le son par le code, P4 à P6.
+- **V10 (Passe V10, 26/10)** : le guide `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` pour l'essai de l'opérateur. Après lui, en local :
+  mesures GPU, revue visuelle des places, écoute du son, poses de charge, personnages à cuire, puis la décision du passage au défaut.
 
 ## Règles de fonctionnement
 

@@ -32,7 +32,10 @@ try {
   await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1${V2 ? '&v2=1' : DYN ? '&combat=dynamic' : ''}`);
   check((await page.evaluate(() => window.__game.state().flags.v2 ?? null)) === (V2 ? true : null), `the version 2's flag: ${V2 ? 'on' : 'absent'}`);
   check((await page.evaluate(() => window.__game.state().flags.combat ?? null)) === (DYN ? 'dynamic' : null), `the game's rules: ${DYN ? 'dynamic' : 'today'}`);
-  const waits = day === 2 ? 4 : 7;
+  // the slots to the bout's afternoon: (day - 1) days of three slots and the morning
+  const waits = (day - 1) * 3 + 1;
+  // the opponent of the day: today's pool (Vessa, Marek), the version 2's (Vessa, Orla, Cassius on days 2, 4, 5: journal Passe V6)
+  const FOE = V2 ? { 2: 'Vessa Lark', 4: 'Orla Brask', 5: 'Cassius Dree' } : { 2: 'Vessa Lark', 3: 'Marek Varn' };
   for (let i = 0; i < waits; i++) {
     const st = await page.evaluate(() => window.__game.state());
     if (st.slot === 'afternoon' && st.tournament.matches.some((m) => m.day === st.day && !m.winner && (m.a === 'player' || m.b === 'player'))) {
@@ -52,7 +55,7 @@ try {
   // the version 2: the match sheet first (lot V9, P6), its four skills kept
   if (V2) {
     const sheet = await page.evaluate(() => document.querySelector('.pm-overlay .pm-card')?.textContent ?? '');
-    check(/Vessa Lark|Marek Varn/.test(sheet) && /Enter the arena with these four/.test(sheet), 'the match sheet names the opponent');
+    check(sheet.includes(FOE[day]) && /Enter the arena with these four/.test(sheet), 'the match sheet names the opponent');
     await page.evaluate(() => [...document.querySelectorAll('.pm-overlay .pm-btn')].find((x) => /Enter the arena with these four/.test(x.textContent)).click());
   }
   const to = await page.evaluate(() => window.__go);
@@ -60,7 +63,7 @@ try {
   await open(to);
   const sheet = await page.evaluate(() => ({ names: [window.__arena.sim.D.fighters.ren.name, window.__arena.sim.D.fighters.marek.name], assist: window.__arena.assist, rules: window.__arena.rules, hud: document.querySelector('#ah-title')?.textContent }));
   check(sheet.rules === (V2 ? 'v2' : DYN ? 'dynamic' : 'classic'), `the arena plays ${sheet.rules}`);
-  check(sheet.names[0] === 'Aster' && sheet.names[1] === (day === 2 ? 'Vessa Lark' : 'Marek Varn'), `the arena seats ${sheet.names.join(' vs ')}`);
+  check(sheet.names[0] === 'Aster' && sheet.names[1] === FOE[day], `the arena seats ${sheet.names.join(' vs ')}`);
   check(/Pool of eight/.test(sheet.hud ?? ''), `English HUD: ${sheet.hud}`);
   await page.screenshot({ path: path.join(outDir, `${mode}-2-report.png`) });
   await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn').click());
@@ -82,7 +85,7 @@ try {
   await page.screenshot({ path: path.join(outDir, `${mode}-3-result.png`) });
   const st2 = await page.evaluate(() => window.__game.state());
   const fight = st2.log.filter((e) => e.kind === 'match' && (e.id === 'player-won' || e.id === 'player-lost'));
-  check(fight.length === (day === 2 ? 1 : 2) && fight.at(-1).id === (mode === 'win' ? 'player-won' : 'player-lost'), `the result is in the state: ${fight.at(-1)?.text}`);
+  check(fight.length === Object.keys(FOE).filter((d) => +d <= day).length && fight.at(-1).id === (mode === 'win' ? 'player-won' : 'player-lost'), `the result is in the state: ${fight.at(-1)?.text}`);
   const outcome = await page.evaluate(() => window.__outcome);
   await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn').click());
   const back = await page.evaluate(() => window.__go);

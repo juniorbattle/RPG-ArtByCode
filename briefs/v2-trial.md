@@ -37,7 +37,7 @@ d'arbitrages `briefs/fiche-v2.html` recueille vos choix.
 1. **Jour 1, matin** : nouvelle partie, puis la carte (M) → le parvis : la cinématique d'arrivée (Odo, Marek). Parlez à Hilde (armures),
    inscrivez-vous chez Odo. Regardez la place ouverte : on y marche en surface, la caméra suit et se tourne vers la personne à qui l'on parle.
 2. **Jour 1, après-midi** : le terrain d'entraînement : Corvin (compétences à acheter), le sergent Brann, Orla et Ilse (défis). Défiez Ilse
-   (« Enter the sand ») : un duel à mi-vie qui apprend Parry.
+   (« Enter the sand ») : un duel à mi-vie qui apprend Riposte Stance.
 3. **Jour 1, soir** : la place festive : Pip (accessoires, de l'après-midi au soir), Lio, Cassius la nuit, Wren le barde. Essayez de marchander, et
    un vol (plus facile la nuit : pris, la réputation, une amende, la porte fermée pour la journée, les prix en hausse le lendemain).
 4. **Jour 2, après-midi** : la fiche de match (l'adversaire, ce qu'on sait de ses compétences, l'équipement), le choix des quatre, puis le duel
