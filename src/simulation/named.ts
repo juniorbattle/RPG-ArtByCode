@@ -44,6 +44,11 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   'v2-square-afternoon': { about: 'a version 2 game, the first afternoon, on the Festival Square', script: [W, { type: 'move', to: 'lanterns' }], v2: true },
   'v2-square-night': { about: 'a version 2 game, the first evening, on the Festival Square', script: [W, W, { type: 'move', to: 'lanterns' }], v2: true },
   'v2-day2-afternoon': { about: 'a version 2 game, the first bout\'s afternoon (Vessa), nothing done', script: [W, W, W, W], v2: true },
+  'v2-forecourt-midday': { about: 'a version 2 game, the first afternoon, on the Arena Forecourt', script: [W, { type: 'move', to: 'forecourt' }], v2: true },
+  'v2-forecourt-night': { about: 'a version 2 game, the first evening, on the Arena Forecourt', script: [W, W, { type: 'move', to: 'forecourt' }], v2: true },
+  'v2-training-midday': { about: 'a version 2 game, the first afternoon, at the Training Ground', script: [W, { type: 'move', to: 'training' }], v2: true },
+  'v2-training-night': { about: 'a version 2 game, the first evening, at the Training Ground (shut)', script: [W, W, { type: 'move', to: 'training' }], v2: true },
+  'v2-square-morning': { about: 'a version 2 game, the first morning, on the Festival Square', script: [{ type: 'move', to: 'lanterns' }], v2: true },
   'v2-training-dusk': { about: 'a version 2 game, back from a won first bout, at the Training Ground at sunset', script: [W, W, W, W, WON, { type: 'move', to: 'training' }], v2: true },
 };
 
