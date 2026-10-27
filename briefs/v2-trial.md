@@ -34,11 +34,13 @@ d'arbitrages `briefs/fiche-v2.html` recueille vos choix.
 
 ## Un parcours conseillé (une heure environ)
 
-1. **Jour 1, matin** : nouvelle partie, puis la carte (M) → le parvis : la cinématique d'arrivée (Odo, Marek). Parlez à Hilde (armures),
+1. **Jour 1, matin** : nouvelle partie ; marchez vers le bout est du quai, passé la barrière des gardes (Passe VP5 : on va désormais d'un lieu à
+   l'autre à pied, par les rues et les portes, comme dans Final Fantasy IX ; une étiquette nomme chaque sortie quand on approche ; la carte M
+   reste un raccourci) → le parvis : la cinématique d'arrivée (Odo, Marek). Parlez à Hilde (armures),
    inscrivez-vous chez Odo. Regardez la place ouverte : on y marche en surface, la caméra suit et se tourne vers la personne à qui l'on parle.
-2. **Jour 1, après-midi** : le terrain d'entraînement : Corvin (compétences à acheter), le sergent Brann, Orla et Ilse (défis). Défiez Ilse
+2. **Jour 1, après-midi** : par la rue de l'est du parvis, sous la porte au heaume, le terrain d'entraînement : Corvin (compétences à acheter), le sergent Brann, Orla et Ilse (défis). Défiez Ilse
    (« Enter the sand ») : un duel à mi-vie qui apprend Riposte Stance.
-3. **Jour 1, soir** : la place festive : Pip (accessoires, de l'après-midi au soir), Lio, Cassius la nuit, Wren le barde. Essayez de marchander, et
+3. **Jour 1, soir** : par la rue de l'ouest du parvis (la porte à la trompette), la place festive : Pip (accessoires, de l'après-midi au soir), Lio, Cassius la nuit, Wren le barde. Essayez de marchander, et
    un vol (plus facile la nuit : pris, la réputation, une amende, la porte fermée pour la journée, les prix en hausse le lendemain).
 4. **Jour 2, après-midi** : la fiche de match (l'adversaire, ce qu'on sait de ses compétences, l'équipement), le choix des quatre, puis le duel
    contre Vessa : la charge, les paliers, la garde et l'esquive de l'adversaire, ses compétences annoncées par une alerte. Au retour : la
@@ -52,9 +54,14 @@ d'arbitrages `briefs/fiche-v2.html` recueille vos choix.
 
 - **La charge** : les 2 s de la puissante, les temps des compétences (2,7 à 9 s selon le niveau), ce qui coupe une charge ; l'ancien schéma pour
   comparer (`&input=keys`).
-- **L'équilibrage « modéré »** : Tobin facile, Marek le plus dur ; des duels longs (Rhosk, Ilse) ; les blessures fréquentes (0,98 par partie
-  de trois jours, 1,96 sur dix jours au TournamentLab).
-- **Les trois places** : leur identité, leur taille, le cadrage qui suit le héros, les sprites provisoires (générés) des personnages sans feuille
+- **L'équilibrage, plus rude depuis la Passe VP4** : les coups des rivaux 30 % plus forts (« proposé ») ; au TournamentLab un joueur préparé
+  de compétence moyenne gagne 60 % de ses combats (85 % avant) et n'est plus couronné, un bon joueur l'est une fois sur cinq, un excellent deux
+  fois sur trois ; Tobin le plus facile, Marek le plus dur. Est-ce le bon degré de rudesse ?
+- **Les emblèmes du tournoi** (Passe VP3) : épées croisées, duel, laurier, coupe, heaume, trompette, lances, couronne, sur les drapeaux des
+  places, du quai et de l'arène d'une partie v2.
+- **Les trois places** (reprises en Passe VP6 : les tours de porte et la voie processionnelle du parvis, la terre battue et l'estrade des
+  champions de l'entraînement, la scène sous tente, le mât de mai et la piste de danse de la place festive, le cadrage de biais) : leur identité,
+  leur taille, le cadrage qui suit le héros, les sprites provisoires (générés) des personnages sans feuille
   cuite ; de jour et de nuit. Refaites dans la langue du Merchant District (Passe VP1 : la façade à arcades du Colisée, les cercles de sable,
   la scène et les étals du marché, la lumière rare, le pavois de jour, la pluie du jour humide) : leur cohérence avec le district est la
   question de cette revue.

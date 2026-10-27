@@ -498,6 +498,14 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
 - Le jeu par défaut : le quartier en B nuit, D midi et A fin de journée sous la pluie, la branche contre `main` figé : **0 pixel** (le shader
   du sol compile les mêmes instructions sans les variantes des places).
 
+### Les tests prouvés par des défauts injectés (Passes VP3 à VP5) — [OK]
+- Cinq défauts, chacun attrapé, les fichiers rendus octet pour octet (`cmp`) : les huit emblèmes du tournoi peints aussi dans l'atlas
+  d'aujourd'hui (`v2-heraldry` : 1 échec, l'empreinte des appels), une bannière d'une place revenue à la fleur de lys (`v2-heraldry` : 1), une
+  voie qui ne revient pas par le côté opposé (`v2-exits` : 2), `walkTo` revenu au point le plus proche de tous les rectangles (`v2-exits` : 1),
+  les coups des rivaux revenus à C3 (`combat-charge` : 3, l'escalier, la course hors écran, l'empreinte).
+- La documentation : `AGENTS.md` (les tests, `tools/exits-proof.mjs`, `heraldry=tournament`, `arrive=`, `plazacam=`, `V2_FOE_HIT`) et la fiche
+  d'essai `briefs/v2-trial.md` (le parcours à pied, l'équilibrage plus rude, les emblèmes, les places reprises).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
