@@ -164,6 +164,9 @@ export class PlazaApp {
     // page's own values)
     U.uFogStart.value = PLAZA_FOG.start; U.uFogDensity.value *= PLAZA_FOG.density;
     this.post.params.dofRange = PLAZA_DOF.range; this.post.params.dofFar = PLAZA_DOF.far;
+    // the lights' in-scatter grows with the fog's density (PostFX): kept at the day state's own (seventh critique: « a milky warm haze covers
+    // the left half and flattens the values »)
+    this.post.params.airlight /= PLAZA_FOG.density;
     // after the day state: the weather scales the day's values it finds (as the town's, App.setWeather)
     if (wp && (wp.rain > 0 || wp.snow > 0 || wp.storm > 0 || wp.wind !== 1)) { this.weather = new Weather(wp, { day: !!this.look, post: this.post.params }); this.scene.add(this.weather.group); }
     window.addEventListener('resize', () => this.resize());

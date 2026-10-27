@@ -592,6 +592,31 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
   balustrade un abreuvoir (son eau dans le matériau du canal) et un banc ; les buttes de tir tournées vers le sud de la cour, le bouclier de la
   quintaine bleu à bord ivoire et umbo de laiton ; une lanterne à chaque poteau de l'estrade et sa lumière la nuit, sa toile plus sombre.
 
+### La septième critique à l'aveugle (itération 8), étalonnée — [OK] parvis et place festive « oui avec réserves », [?] entraînement
+- Agent neuf ; sept planches (itérations 7 et 8, le district caché : 10 / 8 ; la référence 8,5 pour ce critique). Itération 8 : **parvis 7 / 7**
+  (« la porte devient une destination »), **place festive 8 / 7**, **entraînement 7 / 6,5** ; chaque fois devant l'itération 7 (la place
+  festive de l'itération 7 : 6,5, « son étal proche, le pire recadrage de la série »). Verdicts : parvis et place festive « oui avec réserves »,
+  entraînement « pas encore ».
+- Ses reproches : au parvis la lumière au bout de la porte « un champ blanc vide », les chaînages « des cubes régulièrement espacés collés aux
+  angles, le signe procédural le plus net », la pierre crème hors de la palette froide, les pavés proches vides, les maisons de gauche noires la
+  nuit ; à la place festive « une brume chaude laiteuse sur la moitié gauche la nuit » (mesurée plus claire que les nuits de R), des tonneaux
+  coupés au bas du cadre proche, les tables nues ; à l'entraînement la toile de l'estrade « le plan le plus clair de chaque image », l'estrade
+  à cordes « un ring de boxe moderne », le cadre proche « un treillis de clôture sans sujet », le banc « comme un débris sur la route » ; pour
+  les trois « une caméra haute derrière une balustrade floue et massive ».
+
+### Itération 9
+- La brume laiteuse : l'in-scatter des lumières (PostFX) croît avec la densité de la brume, que l'itération 7 avait multipliée par 1,6 ; la page
+  des places divise `airlight` d'autant (l'in-scatter de l'état du jour ou de la nuit, la profondeur de la brume gardée).
+- Le parvis : la pierre et l'enduit plus froids (gris) ; les chaînages affleurants, de hauteurs et de longueurs irrégulières, d'un ton à peine
+  différent ; au bout du passage, le sable au soleil, la barrière, sept gradins dans leur ombre et une bannière ; les murs du passage plus sombres
+  vers le fond ; une lanterne murale allumée sur chaque rangée latérale la nuit (en plus des trois près du point focal).
+- Le bord sud des trois places : une balustrade plus basse (0,78 m, ses dés 0,86 m au lieu de 1,12 / 1,22), les piliers de la porte du quai
+  plus minces et plus bas.
+- L'entraînement : l'estrade sans toile ni cordes : un garde-corps de bois sur trois côtés, ses planches assombries au milieu et un cercle tracé
+  à la craie ; plus de clôture autour du mannequin, un pel (le poteau d'escrime) à côté ; le banc contre la balustrade ; la paille plus sombre.
+- La place festive : le halo de la lumière du kiosque réduit, plus de halo sous les cordes ; les tonneaux et le banc du sud-ouest contre la
+  rangée ouest.
+
 ### Les tests prouvés par des défauts injectés (Passes VP3 à VP5) — [OK]
 - Cinq défauts, chacun attrapé, les fichiers rendus octet pour octet (`cmp`) : les huit emblèmes du tournoi peints aussi dans l'atlas
   d'aujourd'hui (`v2-heraldry` : 1 échec, l'empreinte des appels), une bannière d'une place revenue à la fleur de lys (`v2-heraldry` : 1), une

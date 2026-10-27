@@ -211,11 +211,12 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     // grain, the whole a shade darker)
     const St = S.get('stone'), Pl = S.get('plaster'), wall: V3 = [0.5, 0.48, 0.46], cap: V3 = [0.62, 0.6, 0.56];
     for (const [a0, a1] of southGate ? [[-18, -2.7], [2.7, 18]] : [[-18, 18]]) {
-      St.boxMM(a0, 0, 8.0, a1, 0.34, 8.6, { tint: wall, uvScale: 0.8, aoY: [0.6, 1] });
-      St.boxMM(a0 - 0.05, 0.34, 7.96, a1 + 0.05, 0.42, 8.64, { tint: cap, uvScale: 0.8 });
-      for (let x = a0 + 0.3; x < a1 - 0.15; x += 0.32) S.at([x, 0.42, 8.3], 0, () => Pl.lathe([[0.075, 0], [0.1, 0.07], [0.055, 0.18], [0.095, 0.38], [0.055, 0.53], [0.08, 0.6]], 8, { tint: cap }));
-      St.boxMM(a0 - 0.05, 1.02, 8.0, a1 + 0.05, 1.12, 8.6, { tint: cap, uvScale: 0.8 });
-      for (let x = a0; x <= a1 + 0.01; x += (a1 - a0) / Math.max(1, Math.round((a1 - a0) / 7))) St.boxMM(x - 0.2, 0, 8.08, x + 0.2, 1.22, 8.52, { tint: wall, uvScale: 0.8 });
+      // (seventh critique: « a high camera behind a blurred, chunky balustrade » in every frame: lower, its dies slimmer)
+      St.boxMM(a0, 0, 8.0, a1, 0.24, 8.6, { tint: wall, uvScale: 0.8, aoY: [0.6, 1] });
+      St.boxMM(a0 - 0.05, 0.24, 7.96, a1 + 0.05, 0.3, 8.64, { tint: cap, uvScale: 0.8 });
+      for (let x = a0 + 0.24; x < a1 - 0.12; x += 0.26) S.at([x, 0.3, 8.3], 0, () => Pl.lathe([[0.06, 0], [0.08, 0.045], [0.044, 0.12], [0.075, 0.25], [0.044, 0.35], [0.064, 0.4]], 8, { tint: cap }));
+      St.boxMM(a0 - 0.05, 0.7, 8.04, a1 + 0.05, 0.78, 8.56, { tint: cap, uvScale: 0.8 });
+      for (let x = a0; x <= a1 + 0.01; x += (a1 - a0) / Math.max(1, Math.round((a1 - a0) / 7))) St.boxMM(x - 0.15, 0, 8.12, x + 0.15, 0.86, 8.48, { tint: wall, uvScale: 0.8 });
     }
   });
 
@@ -318,10 +319,10 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
         T.boxMM(-1.3, 0.62, -0.38, 1.3, 0.68, -0.3, { tint: [0.42, 0.34, 0.27], grain: 'x' }); T.boxMM(-1.3, 0.62, 0.3, 1.3, 0.68, 0.38, { tint: [0.42, 0.34, 0.27], grain: 'x' });
         for (const sx of [-0.7, 0.7]) S.get('metal').boxMM(sx - 0.03, -0.01, -0.36, sx + 0.03, 0.64, 0.36, { tint: [0.3, 0.3, 0.32] });
       });
-      S.at([3.4, 0, 5.6], -0.06, () => { S.get('planks').boxMM(-1.1, 0.42, -0.17, 1.1, 0.48, 0.17, { grain: 'x', tint: [0.6, 0.48, 0.38] }); for (const a of [-0.85, 0.85]) S.get('timber').boxMM(a - 0.05, 0, -0.14, a + 0.05, 0.42, 0.14, { tint: [0.46, 0.37, 0.3] }); });
+      S.at([3.4, 0, 7.5], Math.PI, () => { S.get('planks').boxMM(-1.1, 0.42, -0.17, 1.1, 0.48, 0.17, { grain: 'x', tint: [0.6, 0.48, 0.38] }); for (const a of [-0.85, 0.85]) S.get('timber').boxMM(a - 0.05, 0, -0.14, a + 0.05, 0.42, 0.14, { tint: [0.46, 0.37, 0.3] }); });
     });
     if (lib.water) { const g = new THREE.PlaneGeometry(2.3, 0.5); g.rotateX(-Math.PI / 2); g.rotateY(0.08); g.translate(-2.8, 0.5, 5.4); const m = new THREE.Mesh(g, lib.water); m.name = 'plaza:trough-water'; m.layers.set(LAYER_NOREFLECT); m.frustumCulled = false; group.add(m); }
-    blockers.push({ x: -3.6, z: 5.4, r: 0.6 }, { x: -2.0, z: 5.4, r: 0.6 }, { x: 3.4, z: 5.6, r: 0.5 });
+    blockers.push({ x: -3.6, z: 5.4, r: 0.6 }, { x: -2.0, z: 5.4, r: 0.6 }, { x: 3.4, z: 7.5, r: 0.5 });
     obstacles.push({ x0: -4.1, x1: -1.5, z0: 5.0, z1: 5.8, grime: 0.5 });
     puddles.push({ x: -2.2, z: 6.1, r: 0.9, amount: 0.9 });
 
@@ -387,9 +388,10 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     tracked(() => puppetBooth(S, -9.9, -13.6, 0.7));
     blockers.push({ x: -10.0, z: -13.8, r: 1.3 });
     // the south-west corner: a cask of ale, crates and a bench, low things (the near frames' foreground)
-    for (const [x, z, k, y] of [[-8.9, -2.6, 'barrel', 0.4], [-8.2, -3.0, 'barrel', 1.3], [-9.5, -1.8, 'crate', 0.2], [-8.6, -2.6, 'barrelLying', 1.6]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, k === 'barrelLying' ? 0.95 : 0, z], yaw: y });
-    S.at([-6.8, 0, -1.6], 0.5, () => { S.get('planks').boxMM(-1.0, 0.4, -0.16, 1.0, 0.46, 0.16, { grain: 'x', tint: [0.6, 0.48, 0.38] }); for (const a of [-0.8, 0.8]) S.get('timber').boxMM(a - 0.04, 0, -0.12, a + 0.04, 0.4, 0.12, { tint: [0.46, 0.37, 0.3] }); });
-    blockers.push({ x: -8.8, z: -2.5, r: 0.9 }, { x: -6.8, z: -1.6, r: 0.8 });
+    // (by the west row, out of the near frames' line: seventh critique, « a barrel stack half cut by the bottom edge »)
+    for (const [x, z, k, y] of [[-10.4, -3.2, 'barrel', 0.4], [-10.2, -2.4, 'barrel', 1.3], [-10.5, -1.5, 'crate', 0.2]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, 0, z], yaw: y });
+    S.at([-9.0, 0, -2.4], Math.PI / 2, () => { S.get('planks').boxMM(-1.0, 0.4, -0.16, 1.0, 0.46, 0.16, { grain: 'x', tint: [0.6, 0.48, 0.38] }); for (const a of [-0.8, 0.8]) S.get('timber').boxMM(a - 0.04, 0, -0.12, a + 0.04, 0.4, 0.12, { tint: [0.46, 0.37, 0.3] }); });
+    blockers.push({ x: -10.3, z: -2.4, r: 0.9 }, { x: -9.0, z: -2.4, r: 0.6 });
     // the candle seller on the east side, facing the square (in the south-west corner its awning filled the near frames' lower quarter, sixth
     // critique)
     marketStall(8.9, -6.2, -0.95, 'candles', 3.0, true, [[0.3, 0.37, 0.7], [0.86, 0.82, 0.72]]);
@@ -410,7 +412,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       cord(S, hub, end, sg);
       const m = Math.max(2, Math.round(len / 2.3));
       for (let t = 1; t < m; t++) { const p = sag(hub, end, sg, t / m); batch.add('lantern', { pos: [p[0], p[1] - 0.32, p[2]], yaw: t, scale: 1.1 }, 0); }
-      if (len > 10) { const p = sag(hub, end, sg, 0.55); lights.push({ pos: [p[0], 3.1, p[2]], color: WARM, intensity: 2.6, radius: 7.5, kind: 'lantern', halo: 0.6, priority: 6 }); }
+      if (len > 10) { const p = sag(hub, end, sg, 0.55); lights.push({ pos: [p[0], 3.1, p[2]], color: WARM, intensity: 2.6, radius: 7.5, kind: 'lantern', halo: 0, priority: 6 }); }
     }
     lamp(-9.6, -15.6, false); lamp(10.2, -6.4, false);
     S.append(cart(rng.fork('cart')), mat([7.8, 0, 7.0], -0.35));
@@ -437,6 +439,8 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   const wallLamps = sockets.filter((s) => s.kind === 'lamp');
   const ranked = [...wallLamps].sort((a, b) => Math.hypot(a.pos[0] - fx, a.pos[2] - fz) - Math.hypot(b.pos[0] - fx, b.pos[2] - fz));
   const litSet = new Set(ranked.slice(0, 3));
+  // and on each side row the one nearest the square's middle (seventh critique: « at night the left-hand houses sink to near black »)
+  for (const sd of [-1, 1]) { const side = wallLamps.filter((w) => w.pos[0] * sd > 8).sort((a, b) => Math.hypot(a.pos[0] - sd * 11, a.pos[2] + 5) - Math.hypot(b.pos[0] - sd * 11, b.pos[2] + 5))[0]; if (side) litSet.add(side); }
   for (const s of wallLamps) {
     if (day || !litSet.has(s)) { batch.add('lanternDark', { pos: [s.pos[0], s.pos[1] - 0.2, s.pos[2]], yaw: Math.atan2(s.dir[0], s.dir[2]) }, 0); continue; }
     batch.add('lantern', { pos: [s.pos[0], s.pos[1] - 0.22, s.pos[2]], yaw: Math.atan2(s.dir[0], s.dir[2]) }, 0);
@@ -557,10 +561,11 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
   // read as tiles at the district's scale), no attic (the facade filled every frame to its top: its cornice is now the top, the masts and their
   // pennants stand against the sky), the tournament's fleur-de-lis on its banners (the tavern's tankard was on them)
   // at night a shade darker still: the moon faces the facade, which read brighter than the district's moonlit plaster
-  const nk = day ? 1 : 0.84, R = 52, C: V3 = [0, 0, -71.2], stone: V3 = [0.7 * nk, 0.67 * nk, 0.62 * nk], stoneLt: V3 = [0.76 * nk, 0.72 * nk, 0.66 * nk], dark: V3 = day ? [0.17, 0.16, 0.17] : [0.07, 0.07, 0.09], uv = 0.6;
+  // (journal Passe VP6, seventh critique: « the warm cream stone sits outside the locked cool stone palette »: a cooler grey)
+  const nk = day ? 1 : 0.84, R = 52, C: V3 = [0, 0, -71.2], stone: V3 = [0.67 * nk, 0.66 * nk, 0.64 * nk], stoneLt: V3 = [0.73 * nk, 0.71 * nk, 0.68 * nk], dark: V3 = day ? [0.17, 0.16, 0.17] : [0.07, 0.07, 0.09], uv = 0.6;
   // journal Passe VP6, third critique (« a single flat plane with a noisy brick texture »): the stone keeps the frame (piers, arches, courses,
   // cornice), the panels between them are smooth stucco
-  const Pl = S.get('plaster'), stucco: V3 = [0.7 * nk, 0.67 * nk, 0.62 * nk];
+  const Pl = S.get('plaster'), stucco: V3 = [0.67 * nk, 0.66 * nk, 0.64 * nk];
   const St = S.get('stone'), Dk = S.get('dark');
   // two tiers, 6.4 and 10.8 m, the cornice at 11.25 (journal Passe VP1: the third critique asked for the top in the frame; lowered to 5.3 /
   // 8.9 m, the fourth judged it worse, 5.5 / 10 against 6: its flat top and bare masts read as a box with antennae, the landmark lost its mass)
@@ -577,16 +582,23 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
       // the gate's passage by day, `through` m deep, the sunlit arena at its end (sixth critique: « give the gate depth [...] a lit passage
       // behind the portcullis »): its walls and vault in the shade, its paving, the sand and the far stands in the light
       const shade: V3 = [0.4 * nk, 0.38 * nk, 0.36 * nk];
-      for (const sx of [-1, 1]) quadFacing(St, [[cx + sx * hw, yb, z - 0.72], [cx + sx * hw, yb, z - through], [cx + sx * hw, yc, z - through], [cx + sx * hw, yc, z - 0.72]], [-sx, 0, 0], { uvScale: uv, tint: shade, ao: [0.8, 0.6, 0.6, 0.8] });
+      for (const sx of [-1, 1]) quadFacing(St, [[cx + sx * hw, yb, z - 0.72], [cx + sx * hw, yb, z - through], [cx + sx * hw, yc, z - through], [cx + sx * hw, yc, z - 0.72]], [-sx, 0, 0], { uvScale: uv, tint: shade, ao: [0.75, 0.42, 0.42, 0.75] });
       for (let i = 0; i < n; i++) {
         const a0 = (i / n) * Math.PI, a1 = ((i + 1) / n) * Math.PI, am = (a0 + a1) / 2;
         quadFacing(St, [[cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z - 0.72], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z - 0.72], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z - through], [cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z - through]], [-Math.cos(am), -Math.sin(am), 0], { uvScale: uv, tint: [shade[0] * 0.85, shade[1] * 0.85, shade[2] * 0.85], ao: 0.6 });
       }
       St.boxMM(cx - hw, yb - 0.02, z - through, cx + hw, yb + 0.012, z - 0.5, { uvScale: uv, tint: [0.5, 0.48, 0.45] });
       const zf = z - through + 0.02, Pl2 = S.get('plaster');
-      Pl2.quad([cx - hw, yb, zf], [cx + hw, yb, zf], [cx + hw, yb + 1.3, zf], [cx - hw, yb + 1.3, zf], { tint: [2.3, 1.95, 1.4] });
-      Pl2.quad([cx - hw, yb + 1.3, zf], [cx + hw, yb + 1.3, zf], [cx + hw, yc + hw, zf], [cx - hw, yc + hw, zf], { tint: [1.75, 1.72, 1.7] });
-      for (const ty of [2.0, 2.7, 3.4, 4.1, 4.8]) St.boxMM(cx - hw, yb + ty, zf, cx + hw, yb + ty + 0.12, zf + 0.01, { tint: [0.9, 0.86, 0.8] });
+      // the far side of the arena seen through: the sunlit sand, the barrier, the tiers of the stands in their shade, a banner (seventh
+      // critique: « a blank white field »)
+      Pl2.quad([cx - hw, yb, zf], [cx + hw, yb, zf], [cx + hw, yb + 1.1, zf], [cx - hw, yb + 1.1, zf], { tint: [1.75, 1.48, 1.08] });
+      St.boxMM(cx - hw, yb + 1.1, zf, cx + hw, yb + 1.5, zf + 0.012, { tint: [0.62, 0.52, 0.42] });
+      for (let t = 0; t < 7; t++) {
+        const y0 = yb + 1.5 + t * 0.5;
+        Pl2.quad([cx - hw, y0, zf], [cx + hw, y0, zf], [cx + hw, y0 + 0.3, zf], [cx - hw, y0 + 0.3, zf], { tint: [1.05, 1.04, 1.06] });
+        Pl2.quad([cx - hw, y0 + 0.3, zf], [cx + hw, y0 + 0.3, zf], [cx + hw, y0 + 0.5, zf], [cx - hw, y0 + 0.5, zf], { tint: [0.56, 0.56, 0.62] });
+      }
+      S.get('cloth').boxMM(cx - 0.35, yb + 2.2, zf + 0.015, cx + 0.35, yb + 3.6, zf + 0.02, { tint: [0.4, 0.5, 0.95] });
     } else if (niche) {
       Pl.boxMM(cx - hw, yb, z - 0.75, cx + hw, yb + hRect, z - 0.7, { tint: [0.46 * nk, 0.44 * nk, 0.43 * nk], aoY: [0.85, 0.6] });
       Dk.boxMM(cx - hw * 0.42, yb, z - 0.69, cx + hw * 0.42, yb + hRect * 0.82, z - 0.68, { tint: dark });
@@ -699,9 +711,13 @@ function gateTower(S: SlotSet, day: boolean, lights: PlazaBuild['lights'], emble
   const St = S.get('stone'), w = 2.4, z0 = -0.6, z1 = 3.2, H = 15.4;
   // rendered faces framed by stone quoins (fifth critique: « one huge flat plane of tiled brick »), the render weathered darker toward the foot
   S.get('plaster').boxMM(-w, 0, z0, w, H, z1, { tint: [stone[0] * 1.02, stone[1] * 1.0, stone[2] * 0.98], aoY: [0.62, 1] });
-  for (const sx of [-1, 1]) for (let i = 0, y = 1.2; y < H - 0.7; i++, y += 0.72) {
-    const lx = i % 2 ? 0.5 : 0.95, lz = i % 2 ? 0.95 : 0.5;
-    St.boxMM(sx > 0 ? w - lx : -w - 0.04, y, z1 - lz, sx > 0 ? w + 0.04 : -w + lx, y + 0.66, z1 + 0.04, { uvScale: 0.32, tint: stoneLt });
+  // the quoins flush with the render (a few mm proud), their heights and lengths irregular, their stone a shade off the render (seventh
+  // critique: « evenly spaced cubes stuck along edges [...] the clearest procedural tell »)
+  for (const sx of [-1, 1]) for (let i = 0, y = 1.2; y < H - 0.8; i++) {
+    const r = Math.abs(Math.sin(i * 12.9898 + sx * 78.233) * 43758.5453) % 1, h = 0.48 + 0.3 * r;
+    const lx = (i % 2 ? 0.46 : 0.82) + 0.16 * r, lz = (i % 2 ? 0.82 : 0.46) + 0.12 * (1 - r);
+    St.boxMM(sx > 0 ? w - lx : -w - 0.008, y, z1 - lz, sx > 0 ? w + 0.008 : -w + lx, y + h - 0.03, z1 + 0.008, { uvScale: 0.32, tint: [stoneLt[0] * (0.97 + 0.05 * r), stoneLt[1] * (0.97 + 0.05 * r), stoneLt[2] * (0.97 + 0.05 * r)] });
+    y += h;
   }
   St.boxMM(-w - 0.12, 0, z0, w + 0.12, 1.2, z1 + 0.12, { uvScale: uv, tint: [stone[0] * 0.78, stone[1] * 0.78, stone[2] * 0.8] });
   for (const y of [6.4, 10.8]) St.boxMM(-w - 0.1, y, z0, w + 0.1, y + 0.32, z1 + 0.1, { tint: stoneLt });
@@ -753,19 +769,9 @@ function sandRing(S: SlotSet, batch: InstanceBatch, cx: number, cz: number, r: n
     const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2, rk = r + 0.06;
     T.quad([cx + Math.cos(a0) * rk, 0, cz + Math.sin(a0) * rk], [cx + Math.cos(a1) * rk, 0, cz + Math.sin(a1) * rk], [cx + Math.cos(a1) * rk, 0.12, cz + Math.sin(a1) * rk], [cx + Math.cos(a0) * rk, 0.12, cz + Math.sin(a0) * rk], { tint: [0.46, 0.38, 0.3] });
   }
-  // the fence: split rails on squared posts in weathered pale timber (fifth critique: « sparse black sticks »)
-  const m = 16, rf = r + 0.45;
-  for (let i = 0; i < m; i++) {
-    const a = (i / m) * Math.PI * 2, a1 = ((i + 1) / m) * Math.PI * 2, open = Math.sin(a) > 0.7 || Math.sin(a1) > 0.7;
-    T.box(cx + Math.cos(a) * rf, 0.5, cz + Math.sin(a) * rf, 0.15, 1.0, 0.15, { tint: [0.72, 0.6, 0.46], grain: 'y' });
-    T.box(cx + Math.cos(a) * rf, 1.02, cz + Math.sin(a) * rf, 0.19, 0.05, 0.19, { tint: [0.6, 0.5, 0.39] });
-    if (open) continue;
-    for (const y of [0.45, 0.86]) {
-      const p0: V3 = [cx + Math.cos(a) * rf, y, cz + Math.sin(a) * rf], p1: V3 = [cx + Math.cos(a1) * rf, y, cz + Math.sin(a1) * rf];
-      const len = Math.hypot(p1[0] - p0[0], p1[2] - p0[2]), yaw = Math.atan2(p1[0] - p0[0], p1[2] - p0[2]);
-      S.at([(p0[0] + p1[0]) / 2, y, (p0[2] + p1[2]) / 2], yaw, () => T.box(0, 0, 0.0, 0.09, 0.11, len + 0.12, { tint: [0.76, 0.64, 0.5], grain: 'z' }));
-    }
-  }
+  // no fence round it (seventh critique: « the close frame is a lattice of fence rails with no subject »): a pell, the post a sword is
+  // practised on, beside the dummy
+  S.at([cx + 2.0, 0, cz - 1.2], 0.3, () => { T.boxMM(-0.13, 0, -0.13, 0.13, 1.85, 0.13, { tint: [0.56, 0.45, 0.34], grain: 'y' }); for (const yy of [0.9, 1.25, 1.5]) S.get('dark').boxMM(-0.135, yy, -0.135, 0.135, yy + 0.03, 0.135, { tint: [0.5, 0.45, 0.4] }); T.boxMM(-0.4, 0, -0.4, 0.4, 0.1, 0.4, { tint: [0.44, 0.36, 0.28] }); });
   // the practice dummy: a post, arms on a crossbar wrapped in straw at their ends, a straw body bound by a dark rope, a sacking head (journal
   // Passe VP1: the first one, a pale cylinder on a stake, read as a bollard)
   S.at([cx, 0, cz], 0.4, () => {
@@ -792,7 +798,7 @@ function hay(S: SlotSet, x: number, z: number, yaw: number, y = 0): void {
     const C = S.get('cloth'), k = Math.abs(Math.sin(x * 7.1 + z * 3.7));
     for (let i = 0; i < 6; i++) {
       const j = (k * 9.7 + i * 3.3) % 1, ox = (j - 0.5) * 0.04, oz = (((j * 7.3) % 1) - 0.5) * 0.03, t = i % 2 ? 0.9 : 1;
-      C.boxMM(-0.42 + ox, i * 0.07, -0.27 + oz, 0.42 + ox, (i + 1) * 0.07, 0.27 + oz, { tint: [0.68 * t, 0.56 * t, 0.33 * t], aoY: [0.75 + i * 0.04, 0.8 + i * 0.04] });
+      C.boxMM(-0.42 + ox, i * 0.07, -0.27 + oz, 0.42 + ox, (i + 1) * 0.07, 0.27 + oz, { tint: [0.56 * t, 0.46 * t, 0.28 * t], aoY: [0.75 + i * 0.04, 0.8 + i * 0.04] });
     }
     for (const a of [-0.14, 0.14]) S.get('timber').boxMM(a - 0.014, -0.005, -0.29, a + 0.014, 0.43, 0.29, { tint: [0.3, 0.26, 0.21] });
   });
@@ -923,12 +929,13 @@ function quayGate(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights']
   const St = S.get('stone');
   for (const s of [-1, 1]) {
     const x = s * 3.1, z = 8.3;
-    St.boxMM(x - 0.42, 0, z - 0.42, x + 0.42, 0.3, z + 0.42, { tint: [0.78, 0.74, 0.68] });
-    St.boxMM(x - 0.3, 0.3, z - 0.3, x + 0.3, 1.5, z + 0.3, { tint: [0.68, 0.65, 0.6], aoY: [0.6, 1], uvScale: 0.8 });
-    St.boxMM(x - 0.36, 1.5, z - 0.36, x + 0.36, 1.6, z + 0.36, { tint: [0.8, 0.76, 0.7] });
-    S.at([x, 1.6, z], Math.PI / 4, () => St.cylinder(0.36, 0, 0.36, 4, { tint: [0.8, 0.76, 0.7], r1: 0.02 }));
-    batch.add(day ? 'lanternDark' : 'lantern', { pos: [x - s * 0.36, 1.4, z], yaw: s > 0 ? -Math.PI / 2 : Math.PI / 2 }, 0);
-    if (!day) lights.push({ pos: [x - s * 0.5, 1.4, z], color: WARM, intensity: 2.2, radius: 7, kind: 'lantern', halo: 1.4, priority: 7 });
+    // slim and as low as the balustrade's dies allow a lantern (seventh critique: « chunky, blurred cubes » across the near frames)
+    St.boxMM(x - 0.3, 0, z - 0.3, x + 0.3, 0.24, z + 0.3, { tint: [0.74, 0.72, 0.68] });
+    St.boxMM(x - 0.2, 0.24, z - 0.2, x + 0.2, 1.05, z + 0.2, { tint: [0.66, 0.65, 0.62], aoY: [0.6, 1], uvScale: 0.8 });
+    St.boxMM(x - 0.25, 1.05, z - 0.25, x + 0.25, 1.12, z + 0.25, { tint: [0.76, 0.74, 0.7] });
+    S.at([x, 1.12, z], Math.PI / 4, () => St.cylinder(0.25, 0, 0.24, 4, { tint: [0.76, 0.74, 0.7], r1: 0.02 }));
+    batch.add(day ? 'lanternDark' : 'lantern', { pos: [x - s * 0.26, 0.98, z], yaw: s > 0 ? -Math.PI / 2 : Math.PI / 2 }, 0);
+    if (!day) lights.push({ pos: [x - s * 0.4, 1.0, z], color: WARM, intensity: 2.2, radius: 7, kind: 'lantern', halo: 1.0, priority: 7 });
   }
 }
 
@@ -1136,17 +1143,27 @@ function sparringDais(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['ligh
   S.at([x, 0, z], 0, () => {
     const P = S.get('planks'), T = S.get('timber');
     P.boxMM(-hw, y - 0.1, -hw, hw, y, hw, { grain: 'x', tint: [0.64, 0.52, 0.4] });
-    // the fighters' canvas on the boards, its border in the tournament's blue, a ring painted at its heart (fifth critique: « a plain brown box »)
-    S.get('cloth').boxMM(-hw + 0.25, y, -hw + 0.25, hw - 0.25, y + 0.012, hw - 0.25, { tint: [0.3, 0.37, 0.66] });
-    S.get('cloth').boxMM(-hw + 0.45, y + 0.012, -hw + 0.45, hw - 0.45, y + 0.02, hw - 0.45, { tint: [0.4, 0.35, 0.29] });
-    S.at([0, y + 0.02, 0], 0, () => { S.get('cloth').cylinder(0.95, 0, 0.004, 20, { tint: [0.3, 0.37, 0.66], capTop: true }); S.get('cloth').cylinder(0.85, 0.004, 0.008, 20, { tint: [0.4, 0.35, 0.29], capTop: true }); });
+    // the boards scuffed dark toward the middle, a ring chalked on them (seventh critique: a canvas with ropes « reads as a modern boxing ring »,
+    // the brightest plane in every frame)
+    P.boxMM(-hw + 0.6, y, -hw + 0.6, hw - 0.6, y + 0.006, hw - 0.6, { grain: 'x', tint: [0.5, 0.4, 0.31] });
+    for (let i = 0; i < 24; i++) {
+      const a0 = (i / 24) * Math.PI * 2, a1 = ((i + 1) / 24) * Math.PI * 2, r0 = 1.25, r1 = 1.33, yy = y + 0.01;
+      quadFacing(S.get('plaster'), [[Math.cos(a0) * r0, yy, Math.sin(a0) * r0], [Math.cos(a1) * r0, yy, Math.sin(a1) * r0], [Math.cos(a1) * r1, yy, Math.sin(a1) * r1], [Math.cos(a0) * r1, yy, Math.sin(a0) * r1]], [0, 1, 0], { tint: [0.62, 0.6, 0.56] });
+    }
     T.boxMM(-hw - 0.08, 0, -hw - 0.08, hw + 0.08, y - 0.1, hw + 0.08, { tint: [0.42, 0.34, 0.27] });
     for (let k = 0; k < 3; k++) P.boxMM(-1.0, 0.2 * k, hw + 0.08 + 0.3 * (2 - k), 1.0, 0.2 * (k + 1), hw + 0.38 + 0.3 * (2 - k), { grain: 'x', tint: [0.6, 0.48, 0.38] });
     const posts: Array<[number, number]> = [[-hw, -hw], [hw, -hw], [hw, hw], [-hw, hw]];
     for (const [a, b] of posts) T.boxMM(a - 0.09, 0, b - 0.09, a + 0.09, y + 1.9, b + 0.09, { tint: [0.46, 0.37, 0.3], grain: 'y' });
-    // ropes of hemp, thin and sagging (fifth critique: « thick, bright lines that float »)
-    const rope = (a: [number, number], b: [number, number], h: number) => S.get('cloth').sweep(Array.from({ length: 9 }, (_, i) => { const t = i / 8; return [a[0] + (b[0] - a[0]) * t, y + h - 0.2 * Math.sin(t * Math.PI), a[1] + (b[1] - a[1]) * t] as V3; }), 0.014, 4, { tint: [0.5, 0.42, 0.3] });
-    for (const h of [0.6, 1.15]) { rope(posts[0], posts[1], h); rope(posts[1], posts[2], h); rope(posts[3], posts[0], h); rope(posts[2], [hw - 1.2, hw], h); rope(posts[3], [-hw + 1.2, hw], h); }
+    // a timber railing on its sides, open at the steps (the ropes of the first build read as a boxing ring)
+    const rail = (a: [number, number], b: [number, number]) => {
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(1, Math.round(len / 1.2));
+      S.at([(a[0] + b[0]) / 2, y, (a[1] + b[1]) / 2], Math.atan2(b[0] - a[0], b[1] - a[1]), () => {
+        T.boxMM(-0.05, 0.86, -len / 2, 0.05, 0.96, len / 2, { tint: [0.5, 0.4, 0.31], grain: 'z' });
+        T.boxMM(-0.035, 0.42, -len / 2, 0.035, 0.5, len / 2, { tint: [0.5, 0.4, 0.31], grain: 'z' });
+        for (let i = 1; i < n; i++) T.boxMM(-0.05, 0, -len / 2 + (len * i) / n - 0.05, 0.05, 0.96, -len / 2 + (len * i) / n + 0.05, { tint: [0.46, 0.37, 0.29], grain: 'y' });
+      });
+    };
+    rail(posts[0], posts[1]); rail(posts[1], posts[2]); rail(posts[3], posts[0]); rail(posts[2], [hw - 1.15, hw]); rail(posts[3], [-hw + 1.15, hw]);
     // the posts capped, the deck's sides hung with the tournament's striped cloth
     for (const [a, b] of posts) S.get('metal').box(a, y + 1.95, b, 0.16, 0.1, 0.16, { tint: [1.0, 0.85, 0.5] });
     for (let i = 0; i < 16; i++) {
@@ -1247,7 +1264,7 @@ function bandstand(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights'
   S.at([x, Hp - 0.85, z], 0, () => S.get('metal').cylinder(0.42, 0, 0.06, 10, { tint: [0.5, 0.42, 0.3], capTop: true, capBottom: true }));
   for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2; S.get(day ? 'plaster' : 'glow').box(x + Math.cos(a) * 0.36, Hp - 0.72, z + Math.sin(a) * 0.36, 0.05, 0.16, 0.05, { tint: day ? [0.9, 0.86, 0.76] : [1, 0.7, 0.35] }); }
   if (!day) {
-    lights.push({ pos: [x, 2.0, z], color: WARM, intensity: 4.2, radius: 9, kind: 'lantern', halo: 1.2, priority: 8 });
+    lights.push({ pos: [x, 2.0, z], color: WARM, intensity: 4.0, radius: 9, kind: 'lantern', halo: 0.45, priority: 8 });
     lights.push({ pos: [x + 2.0, 1.4, z + 2.0], color: WARM, intensity: 2.0, radius: 6, kind: 'lantern', halo: 0, priority: 7 });
   }
 }
