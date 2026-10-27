@@ -751,6 +751,45 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
   50,9 ; 23,0 / 20,8 % contre 27,0 / 39,9 %). Les nuits du parvis et de l'entraînement restent plus sombres que VP6, sans réverbère au milieu :
   un sol froid sous la lune et des flaques chaudes au bord, au monument et sur les guides, l'indigo du district.
 
+### La quatrième critique à l'aveugle (itération 4 contre VP6), deux agents — [KO] VP6 encore devant de 0,5 à 1,5 point
+- Panneau S (le district caché 7,5, R 8) : parvis VP6 **6,5** / itération 4 **6**, entraînement **6** / **5**, place festive **6,5** /
+  **5,5**. Panneau T (le district caché 7,5, R 8) : parvis **7** / **6,5**, entraînement **6,5** / **5**, place festive **6,5** / **5,5**.
+- Ce qu'ils demandent et que la direction refuse : remplir le sol (« Fill the floor between the gazebo and the stalls with clustered dressing
+  (tables, benches, barrels, a cart) », « Populate the midground floor: benches, tables, a well, a cart ») ; les deux préfèrent chaque fois
+  la version meublée. Ce qu'ils reprochent à VP6 et que la direction a retiré : « Lamp posts form tangents with characters », « A lamp post
+  grows out of the foreground couple [...] the worst tangent on any sheet ».
+- Ce qu'ils reprochent à l'itération 4 et qui ne contredit pas la direction : à l'arrivée de l'entraînement « the ring is small and far away
+  behind a band of fence and empty cobbles » ; au premier plan « two orphan balustrade posts and a stub of wall » (les piliers de pierre pâle
+  de la porte du quai, 2 m de haut), « Never crop newels at mid-height » ; « At night the tents glow ivory with no light source » ; « Under the
+  ring, a black void shows between the striped skirt panels » ; « Puddles read as white holes in the ground » ; le théâtre de marionnettes
+  vu de côté, « A tall white box at the left edge reads as an untextured placeholder » ; la nuit, « the lower half falls to near-black ».
+- Pensée : le juge à l'aveugle d'images fixes récompense la densité ; la direction de l'opérateur (« spacieux et libre ») est un choix qu'il
+  ne voit pas en jeu (marcher sans buter). Ses reproches précis restent bons à prendre ; ses demandes de meubler le sol sont écartées.
+
+### Itération 5 — [?] les reproches précis corrigés, une guirlande de lanternes sur l'entraînement
+- La porte du quai : deux dés de la balustrade, un peu plus larges et plus hauts (1,28 m), dans son plâtre sombre, une lanterne sur chacun ;
+  les travées de la balustrade finissent à leurs dés (ses dés d'extrémité retirés). [KO] les piliers de pierre pâle de 2 m.
+- Les pavillons la nuit : la toile à 0,72 de sa valeur, le fond de la porte éclairé de l'intérieur (un panneau du matériau `glow`), la
+  lumière du pavillon y avait déjà sa source.
+- Le ring : chaque marche un bloc jusqu'au sol (le vide sous l'escalier) ; ses deux flaques plus petites, devant les braseros (devant le
+  plancher, elles reflétaient sa jupe ivoire) ; les braises de tous les braseros au-dessus du bord de la vasque (dedans, elles ne se voyaient
+  pas). Le théâtre de marionnettes tourné vers l'arrivée (lacet 1,3 → 0,5 rad).
+- L'arrivée de l'entraînement plus près (21 → 17 m, le pivot 1 m plus loin) : le ring au tiers du milieu.
+- La lune des places 0,68 → 0,8 de celle de la ville : le sol froid, indigo, plus lisible la nuit.
+- L'entraînement : une guirlande d'une rangée à l'autre au-dessus de la cour (z 1,2), les fanions du tournoi le jour, onze lanternes la nuit
+  et deux flaques de lumière dessous (2,6 / 8), le sol proche éclairé sans poteau sur le sol ; ses deux lumières prises aux deux lanternes du
+  milieu de la clôture, qui brillent sans lumière à elles. Toujours 16 lumières. [KO] la même guirlande au-dessus de l'arrivée du parvis
+  (z 1,6) : elle barrait la fontaine et la porte, le centre de la place, de jour et de nuit ; retirée.
+- Mesures (moitié basse, p1 / p2) : parvis 53,2 / 56,3, entraînement 66,4 / 61,5 (était 44,7 / 49,8), place festive 62,5 / 60,8 ; VP6
+  58,4 / 59,2, 55,0 / 57,5, 54,7 / 50,9. Le sol libre (grille de 25 cm) : parvis **78,9 %** (milieu 87,4), entraînement **76,0 %** (77,3),
+  place festive **82,4 %** (92,8) ; `main` 75,3 / 69,3 / 68,5 %.
+
+### Les tests de la Passe VP7 prouvés par des défauts injectés — [OK]
+- `faults.py` (les fichiers rendus octet pour octet, SHA-256) : `tests/v2-plaza-vis.test.mjs` attrape 5 défauts sur 5 (l'hystérésis à
+  0,3 m ; l'arrivée du parvis à 8 m, le héros ou le bord proche hors règle ; la porte du parvis à 30° de champ, la fontaine coupée par le bas ;
+  l'anneau du mannequin en obstacle de 4,2 m, le sol plus libre ; les touches qui ne gardent plus leur lacet) ; `tests/v2-exits.test.mjs`
+  3 sur 3 (un halo sur chaque lanterne ; une dix-septième lumière à l'entraînement ; un point de foule du matin dans la fontaine).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

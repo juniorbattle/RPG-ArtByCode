@@ -41,7 +41,8 @@ export const PLAZA_FRAMINGS: Record<PlazaKind, PlazaFraming[]> = {
   ],
   training: [
     // the arrival from the forecourt's street: over the fence, the yard ahead, the ring before the stand
-    { id: 'entry', label: 'Arrival', yaw: 18, turn: 1.2, pitch: 6.5, dist: 21, fov: 35, home: [1.5, 2.6, -2], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
+    // (nearer since iteration 5: « In frame 1 the ring is small and far away behind a band of fence and empty cobbles »)
+    { id: 'entry', label: 'Arrival', yaw: 18, turn: 1.2, pitch: 6.5, dist: 17, fov: 35, home: [1.5, 2.6, -3], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
     // the yard: the dummy's ring, the champions' ring, the butts along the right
     // (nearer since iteration 4: « the platform is a small object in the upper middle and the lower half is empty sand »)
     { id: 'yard', label: 'Yard', yaw: 18, turn: 1.2, pitch: 6.5, dist: 17, fov: 35, home: [1.5, 2.6, -7], ref: [0, -4], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: -5, z1: 0.5 }, priority: 1 },
