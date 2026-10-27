@@ -116,7 +116,7 @@ export const PLAZA_GATHER: Record<PlazaKind, Record<PlazaPeriod, Array<[number, 
   // (the groups gather at the first points of a moment: near ones and far ones in turn, journal Passe VP7, iteration 2: three groups side by
   // side before the stage read as « two straight rows like a queue »)
   festival: {
-    morning: [[7.4, -1.6], [-5.0, -9.8], [2.4, -11.8], [7.6, -4.8], [7.2, -13.2], [-8.0, -5.4], [0, -1.0]],
+    morning: [[7.4, -1.6], [-4.6, -10.0], [2.4, -11.8], [7.6, -4.8], [7.2, -13.2], [-8.0, -5.4], [0, -1.0]],
     midday: [[-4.6, -9.8], [6.8, -1.8], [1.0, -6.0], [3.2, -11.6], [-7.6, -5.2], [7.0, -5.0], [-2.2, -2.4], [6.4, -12.8], [-1.8, -11.8], [3.4, -3.2]],
     afternoon: [[9.4, -7.6], [0.6, 0.4], [-4.6, -9.6], [6.4, -2.4], [3.2, -11.6], [-2.6, -5.2], [-7.8, -4.0]],
     night: [[-4.8, -10.2], [1.6, -12.0], [0.2, -7.6], [6.6, -1.4], [-4.6, 0.6], [4.6, 0.6]],
@@ -459,6 +459,11 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     // side, « a tall white box at the left edge reads as an untextured placeholder »)
     tracked(() => puppetBooth(S, -10.6, -8.4, 0.5));
     blockers.push({ x: -10.6, z: -8.4, r: 1.3, h: 2.8 });
+    // one feast table at the bandstand's foot, between it and the puppets (journal Passe VP7, iteration 7: the operator's « il peut en avoir
+    // mais cela doit être bien contrôlé et non en surnombre »; two panels: « Group props at the focal points (trestle tables and benches around
+    // the bandstand) », « Cluster the furniture around the gazebo and the stalls, and keep the walking lane clean »); the way to the stage free
+    tracked(() => feastTable(S, batch, -6.9, -9.4, 0.75, 3.2));
+    blockers.push({ x: -6.9, z: -9.4, r: 1.5 }); obstacles.push({ x0: -8.2, x1: -5.6, z0: -10.6, z1: -8.2, grime: 0.35 });
     // the tavern's casks in the corner behind the bandstand (the corner a southern camera cannot see past it)
     for (const [x, z, k, y] of [[-10.5, -15.4, 'barrel', 0.3], [-9.8, -15.9, 'barrel', 1.1], [-10.7, -16.2, 'crate', 0.5]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, 0, z], yaw: y });
     blockers.push({ x: -10.5, z: -15.7, r: 1.0 });
@@ -504,8 +509,10 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   if (kind === 'training') {
     // (hung higher and its pools tighter since iteration 6: « the pennant line at eye level flattens it », « the ground is lit by an even warm
     // fill rather than by visible sources »)
-    const zs = 1.2, a: V3 = [-12.4, 5.6, zs], b: V3 = [12.4, 5.6, zs], sg = 0.9;
-    if (day) garland(S, a, b, sg, { size: 0.42, width: 0.34, spacing: 0.56, phase: 3 });
+    // (the pennants smaller and the string sagging since iteration 7: « The pennants are oversized, each about the size of a window, and hang
+    // in a straight line across the facades »)
+    const zs = 1.2, a: V3 = [-12.4, 5.6, zs], b: V3 = [12.4, 5.6, zs], sg = 1.5;
+    if (day) garland(S, a, b, sg, { size: 0.3, width: 0.24, spacing: 0.42, phase: 3 });
     else {
       cord(S, a, b, sg);
       for (let t = 1; t < 11; t++) { const p = sag(a, b, sg, t / 11); batch.add('lantern', { pos: [p[0], p[1] - 0.32, p[2]], yaw: t, scale: 1.1 }, 0); }
@@ -1191,6 +1198,25 @@ function grandstand(S: SlotSet, x: number, z: number, w: number): void {
   });
 }
 
+
+/** a long feast table with its benches, its bowls and baskets (journal Passe VP6; again since journal Passe VP7, iteration 7, as the
+ *  festival's one group of furniture) */
+function feastTable(S: SlotSet, batch: InstanceBatch, x: number, z: number, yaw: number, len: number): void {
+  S.at([x, 0, z], yaw, () => {
+    const P = S.get('planks'), T = S.get('timber');
+    P.boxMM(-len / 2, 0.74, -0.42, len / 2, 0.8, 0.42, { tint: [0.62, 0.5, 0.4], grain: 'x' });
+    for (const a of [-len / 2 + 0.3, len / 2 - 0.3]) T.boxMM(a - 0.05, 0, -0.32, a + 0.05, 0.74, 0.32, { tint: [0.48, 0.38, 0.3] });
+    for (const s of [-1, 1]) {
+      P.boxMM(-len / 2 + 0.1, 0.42, s * 0.75 - 0.15, len / 2 - 0.1, 0.47, s * 0.75 + 0.15, { tint: [0.6, 0.48, 0.38], grain: 'x' });
+      for (const a of [-len / 2 + 0.3, len / 2 - 0.3]) T.boxMM(a - 0.04, 0, s * 0.75 - 0.12, a + 0.04, 0.42, s * 0.75 + 0.12, { tint: [0.48, 0.38, 0.3] });
+    }
+    S.get('cloth').boxMM(-len / 2 + 0.2, 0.8, -0.18, len / 2 - 0.2, 0.805, 0.18, { tint: [0.32, 0.38, 0.66] });
+  });
+  for (let i = 0; i < Math.round(len / 0.8); i++) {
+    const u = -len / 2 + 0.4 + i * 0.8, c = Math.cos(yaw), s = Math.sin(yaw), side = i % 2 ? 0.25 : -0.25;
+    batch.add(i % 3 === 1 ? 'basket' : 'pot', { pos: [x + u * c + side * s, 0.8, z - u * s + side * c], yaw: i, scale: i % 3 === 1 ? 0.55 : 0.5 });
+  }
+}
 
 /** the puppet booth: a tall narrow booth in striped cloth, its little stage, a valance and a painted board over it */
 function puppetBooth(S: SlotSet, x: number, z: number, yaw: number): void {

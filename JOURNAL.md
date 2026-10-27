@@ -298,8 +298,24 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Les passes VP3 à VP6 (fusionnées dans `main`, closes), 56 362 octets, déplacées mot pour mot dans `journal/32-passes-VP3-VP6.md` (un
   en-tête, une ligne `---`, puis les octets inchangés) ; la ligne de l'index ajoutée. Preuve : le corps de l'archive égale les octets retirés
   (SHA-256 `fa2a83085dd5f6fb…` des deux côtés) ; le bloc retiré était identique à celui de `origin/main` ; chaque section VP3 à VP6 dans un
-  seul fichier (les doublons de noms connus, V0 à V3, C1, C2, V5, sont antérieurs : Passe V10) ; pas de CRLF, ni avant ni après.
+  seul fichier (les doublons de noms connus, V0 à V3, C1, C2, V5, sont antérieurs à ce déplacement) ; pas de CRLF, ni avant ni après.
   `JOURNAL.md` : 163 084 → 106 855 octets.
+
+### La sixième critique à l'aveugle (itération 6 contre VP6), deux agents — [?] le parvis de VP7 devant pour un panneau, la place festive derrière
+- Panneau P6 (le district caché 7,5, R 8) : parvis VP6 **6** / itération 6 **6,5** (« Z is better than T [...] At night the lit gate and the
+  candle-lit fountain set the hero off clearly, the best night readability of any square »), entraînement **6,5** / **6**, place festive
+  **7** / **5,5**. Panneau Q6 (le district caché 8, R 8,5) : parvis **7** / **6**, entraînement **6,5** / **5**, place festive **7** / **5,5**.
+- La place festive reste la plus loin : « Half of every frame is an even cobble floor with no wear, holding one barrel and one crate. It looks
+  like an unfinished level », « Group props at the focal points (trestle tables and benches around the bandstand) ». L'entraînement : « The
+  pennants are oversized, each about the size of a window, and hang in a straight line across the facades ».
+
+### Itération 7 — [?] un seul groupe de mobilier à la place festive, des fanions plus petits
+- La place festive : une table de banquet (3,2 m, ses bancs, ses bols et ses paniers) au pied du kiosque, entre lui et le théâtre de
+  marionnettes, le seul groupe de mobilier de la place (la règle de l'opérateur : « il peut en avoir mais cela doit être bien contrôlé et non
+  en surnombre ») ; la voie vers la scène libre. Un point de foule du matin déplacé de 0,4 m. [KO] baisser la caméra de l'arrivée (tangage
+  6,5 → 4 ou 5°, le pivot remonté) : la part de sol vide ne bouge presque pas, le héros se tient près de la caméra.
+- L'entraînement : les fanions de la guirlande plus petits (0,3 m au lieu de 0,42) et plus serrés, la guirlande plus pendante (1,5 m).
+- Le sol libre : parvis **78,9 %** (milieu 87,4), entraînement **76,0 %** (77,3), place festive **80,5 %** (90,0) ; `main` 75,3 / 69,3 / 68,5 %.
 
 ## À reprendre (par priorité)
 
