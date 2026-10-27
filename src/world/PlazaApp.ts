@@ -64,7 +64,9 @@ const BASE_YAW: Record<PlazaKind, number> = { forecourt: 18, training: 22, festi
 const PLAZA_FOG = { start: 12, density: 1.6 };
 /** the squares' depth of field (journal Passe VP6): its range (m) around the hero's depth; the district's 16 m blurs only its far city, and a
  *  square stands whole within 13-40 m of the camera (DEV `plazadof=range,far`) */
-const PLAZA_DOF = { range: 9, far: 0.5 };
+const PLAZA_DOF = { range: 12, far: 0.5 };
+/** the squares' daylight (journal Passe VP6): the sun's gain and the sky's and ground's fill against the day state's */
+const PLAZA_SUN = { key: 1.18, fill: 0.86 };
 /** the widest frame the squares' visibility bake covers (src/world/PlazaVisibility.ts) */
 export const PLAZA_FRAME = 2.4;
 /** the camera of a square for a hero at (x, z), or for a focus point at distance `dist` (a dialogue, a cutscene's look): the follow's target,
@@ -170,6 +172,8 @@ export class PlazaApp {
     // the lights' in-scatter grows with the fog's density (PostFX): kept at the day state's own (seventh critique: « a milky warm haze covers
     // the left half and flattens the values »)
     this.post.params.airlight /= PLAZA_FOG.density;
+    // by day the sun a little stronger against the sky's fill (twelfth critique: « flat noon light, few cast shadows »)
+    if (this.look) { U.uMoonCol.value.multiplyScalar(PLAZA_SUN.key); U.uSkyAmb.value.multiplyScalar(PLAZA_SUN.fill); U.uGroundAmb.value.multiplyScalar(PLAZA_SUN.fill); }
     // after the day state: the weather scales the day's values it finds (as the town's, App.setWeather)
     if (wp && (wp.rain > 0 || wp.snow > 0 || wp.storm > 0 || wp.wind !== 1)) { this.weather = new Weather(wp, { day: !!this.look, post: this.post.params }); this.scene.add(this.weather.group); }
     window.addEventListener('resize', () => this.resize());

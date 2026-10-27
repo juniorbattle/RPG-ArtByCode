@@ -605,7 +605,8 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
   // at night a shade darker still: the moon faces the facade, which read brighter than the district's moonlit plaster
   // (journal Passe VP6, seventh critique: « the warm cream stone sits outside the locked cool stone palette »: a cooler grey)
   // (at night a shade darker again, so the torches' pools carry the wall: eleventh critique, « lit with no visible source and no falloff »)
-  const nk = day ? 1 : 0.72, R = 52, C: V3 = [0, 0, -71.2], stone: V3 = [0.67 * nk, 0.66 * nk, 0.64 * nk], stoneLt: V3 = [0.73 * nk, 0.71 * nk, 0.68 * nk], dark: V3 = day ? [0.17, 0.16, 0.17] : [0.07, 0.07, 0.09], uv = 0.6;
+  // (by day a step darker too, twelfth critique: « the pale limestone is much lighter than anything in R; by day it nearly clips to white »)
+  const nk = day ? 0.86 : 0.72, R = 52, C: V3 = [0, 0, -71.2], stone: V3 = [0.67 * nk, 0.66 * nk, 0.64 * nk], stoneLt: V3 = [0.73 * nk, 0.71 * nk, 0.68 * nk], dark: V3 = day ? [0.17, 0.16, 0.17] : [0.07, 0.07, 0.09], uv = 0.6;
   // journal Passe VP6, third critique (« a single flat plane with a noisy brick texture »): the stone keeps the frame (piers, arches, courses,
   // cornice), the panels between them are smooth stucco
   const Pl = S.get('plaster'), stucco: V3 = [0.67 * nk, 0.66 * nk, 0.64 * nk];
@@ -829,8 +830,21 @@ function sandRing(S: SlotSet, batch: InstanceBatch, cx: number, cz: number, r: n
     const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2, rk = r + 0.06;
     T.quad([cx + Math.cos(a0) * rk, 0, cz + Math.sin(a0) * rk], [cx + Math.cos(a1) * rk, 0, cz + Math.sin(a1) * rk], [cx + Math.cos(a1) * rk, 0.12, cz + Math.sin(a1) * rk], [cx + Math.cos(a0) * rk, 0.12, cz + Math.sin(a0) * rk], { tint: [0.46, 0.38, 0.3] });
   }
-  // no fence round it (journal Passe VP6: four critiques of five read the yard's posts and rails as « a forest of sticks », the close frame « a
-  // lattice of fence rails with no subject »): the kerb above marks the ring
+  // (iteration 13 took this fence away, four critiques of five having read the posts as « a forest of sticks »; both panels of the twelfth
+  // preferred it: « the stakes give the night close-up a foreground layer of silhouettes against the lit ground »)
+  // the fence: split rails on squared posts in weathered pale timber (fifth critique: « sparse black sticks »)
+  const m = 16, rf = r + 0.45;
+  for (let i = 0; i < m; i++) {
+    const a = (i / m) * Math.PI * 2, a1 = ((i + 1) / m) * Math.PI * 2, open = Math.sin(a) > 0.7 || Math.sin(a1) > 0.7;
+    T.box(cx + Math.cos(a) * rf, 0.5, cz + Math.sin(a) * rf, 0.15, 1.0, 0.15, { tint: [0.72, 0.6, 0.46], grain: 'y' });
+    T.box(cx + Math.cos(a) * rf, 1.02, cz + Math.sin(a) * rf, 0.19, 0.05, 0.19, { tint: [0.6, 0.5, 0.39] });
+    if (open) continue;
+    for (const y of [0.45, 0.86]) {
+      const p0: V3 = [cx + Math.cos(a) * rf, y, cz + Math.sin(a) * rf], p1: V3 = [cx + Math.cos(a1) * rf, y, cz + Math.sin(a1) * rf];
+      const len = Math.hypot(p1[0] - p0[0], p1[2] - p0[2]), yaw = Math.atan2(p1[0] - p0[0], p1[2] - p0[2]);
+      S.at([(p0[0] + p1[0]) / 2, y, (p0[2] + p1[2]) / 2], yaw, () => T.box(0, 0, 0.0, 0.09, 0.11, len + 0.12, { tint: [0.76, 0.64, 0.5], grain: 'z' }));
+    }
+  }
   // a pell, the post a sword is practised on, beside the dummy (journal Passe VP6, iteration 9)
   S.at([cx + 2.0, 0, cz - 1.2], 0.3, () => { T.boxMM(-0.13, 0, -0.13, 0.13, 1.85, 0.13, { tint: [0.56, 0.45, 0.34], grain: 'y' }); for (const yy of [0.9, 1.25, 1.5]) S.get('dark').boxMM(-0.135, yy, -0.135, 0.135, yy + 0.03, 0.135, { tint: [0.5, 0.45, 0.4] }); T.boxMM(-0.4, 0, -0.4, 0.4, 0.1, 0.4, { tint: [0.44, 0.36, 0.28] }); });
   // the practice dummy: a post, arms on a crossbar wrapped in straw at their ends, a straw body bound by a dark rope, a sacking head (journal
@@ -1048,7 +1062,8 @@ function fountainWater(S: SlotSet, x: number, z: number): void {
     const oct = (r: number): Array<[number, number]> => Array.from({ length: 8 }, (_, i) => [Math.cos((i / 8) * Math.PI * 2) * r, Math.sin((i / 8) * Math.PI * 2) * r]);
     void M; void water; void oct;
     // the foam where the falling water meets the basin, and the jet (the water itself: the canal's material, buildPlaza)
-    S.get('plaster').sweep(Array.from({ length: 17 }, (_, i) => { const a = (i / 16) * Math.PI * 2; return [Math.cos(a) * 1.32, 0.48, Math.sin(a) * 1.32] as V3; }), 0.06, 4, { tint: [1.1, 1.14, 1.2] });
+    // (thinner and greyer, twelfth critique: « a flat white band that looks like plastic »)
+    S.get('plaster').sweep(Array.from({ length: 17 }, (_, i) => { const a = (i / 16) * Math.PI * 2; return [Math.cos(a) * 1.3, 0.48, Math.sin(a) * 1.3] as V3; }), 0.035, 4, { tint: [0.72, 0.76, 0.8] });
     S.get('plaster').cylinder(0.05, 4.1, 4.55, 6, { tint: [1.15, 1.2, 1.3], r1: 0.02 });
   });
 }

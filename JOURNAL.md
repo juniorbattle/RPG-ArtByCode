@@ -711,6 +711,24 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
 - Le parvis : les meurtrières des tours à la moitié de leur taille ; la pierre de l'arène plus sombre la nuit (0,72 au lieu de 0,84) : les
   flaques des torches portent le mur.
 
+### La douzième critique à l'aveugle (itérations 12 et 13), deux agents — [?] la place festive sans puits devant, l'entraînement veut sa clôture
+- Panneaux O et P, le district caché **7,5** chez les deux. Itération 13 / itération 12 : O **parvis 6 / 6** (« aucune différence visible »),
+  **entraînement 5,5 / 6**, **place festive 7 / 6,5** ; P **6,5 / 6,5**, **6 / 6,5**, **6,5 / 6**. Les deux préfèrent la place festive sans
+  le puits et l'entraînement avec la clôture du mannequin (« les piquets donnent au gros plan de nuit une couche de silhouettes au premier
+  plan » : le contraire de quatre critiques sur cinq auparavant). Rapportées à un district à 8 : parvis 6,75, place festive 7,25,
+  entraînement 6,75 (avec sa clôture). Verdicts : place festive « oui avec réserves » (O), le reste « pas encore » (le parvis « le plus
+  proche » pour P).
+- Leurs reproches qui restent : au parvis la pierre trop claire (« presque blanche de jour »), le mur « en carton », l'eau de la fontaine
+  « une bande blanche de plastique » ; à la place festive la balustrade, le midi plat, les maisons du fond répétées ; à l'entraînement le ring
+  (« le chef de file le plus terne de l'image »), le sol, le midi « délavé » ; pour les trois le sol (40 à 50 % du cadre) et le flou du
+  premier plan (« une bouillie tilt-shift »).
+
+### Itération 14
+- La clôture du mannequin rendue (celle de l'itération 12).
+- Le parvis : sa pierre un cran plus sombre de jour aussi (0,86) ; l'anneau d'écume de la fontaine plus mince et gris.
+- Les places : le flou du premier plan réduit (`dofRange` 12 au lieu de 9, le lointain gardé à 0,5) ; de jour, le soleil plus fort (× 1,18)
+  contre le remplissage du ciel et du sol (× 0,86) : des ombres portées plus franches (`PLAZA_SUN`, ces valeurs de la page seulement).
+
 ### Les tests prouvés par des défauts injectés (Passes VP3 à VP5) — [OK]
 - Cinq défauts, chacun attrapé, les fichiers rendus octet pour octet (`cmp`) : les huit emblèmes du tournoi peints aussi dans l'atlas
   d'aujourd'hui (`v2-heraldry` : 1 échec, l'empreinte des appels), une bannière d'une place revenue à la fleur de lys (`v2-heraldry` : 1), une
