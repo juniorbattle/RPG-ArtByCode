@@ -100,3 +100,19 @@ test('the squares\' walkers: spots and crowd points clear of what stands on the 
     }
   }
 });
+
+test('the squares\' lights at night: the frame\'s 22 chosen near the hero, the lamps by him always among them, none flickering on the spot', () => {
+  for (const k of KINDS) {
+    const b = PZ.buildPlaza(lib, k, 1842, { day: false }), L = b.lights.map((l) => ({ x: l.pos[0], z: l.pos[2], priority: l.priority ?? 1, on: true }));
+    for (let hx = -9; hx <= 9; hx += 3) for (let hz = -15; hz <= 3; hz += 3) {
+      let pick = PZ.pickPlazaLights(L, hx, hz, 22);
+      assert.equal(pick.filter((p) => p.on).length, Math.min(22, L.length), `${k} ${hx},${hz}`);
+      // every lamp post within 6 m of the hero is lit (the forecourt's south lamps were never lit while 25 fires and lanterns outranked them)
+      b.lights.forEach((l, i) => { if (l.kind === 'lantern' && (l.priority ?? 1) >= 6 && l.intensity >= 3 && Math.hypot(l.pos[0] - hx, l.pos[2] - hz) < 6) assert.ok(pick[i].on, `${k} ${hx},${hz}: the lamp at ${l.pos[0].toFixed(1)},${l.pos[2].toFixed(1)} lit`); });
+      // the next frame on the same spot keeps the same set
+      const again = PZ.pickPlazaLights(L.map((l, i) => ({ ...l, on: pick[i].on })), hx, hz, 22);
+      assert.deepEqual(again.map((p) => p.on), pick.map((p) => p.on), `${k} ${hx},${hz}: steady`);
+      pick = again;
+    }
+  }
+});

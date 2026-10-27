@@ -20,7 +20,7 @@ import { loadProductionCast, type CastMember } from '../characters/BakedCast';
 import { variantOf } from '../characters/Variants';
 import { fiveViewFacing } from '../characters/ActorSystem';
 import type { Anim, Dir } from '../characters/SpriteGenerator';
-import { buildPlaza, plazaGroundDefines, steer, walkTo, type PlazaBuild, type PlazaExit, type PlazaKind } from './Plazas';
+import { buildPlaza, pickPlazaLights, plazaGroundDefines, steer, walkTo, type PlazaBuild, type PlazaExit, type PlazaKind } from './Plazas';
 import { bakePlaza, plazaBakePoses } from './PlazaVisibility';
 
 /** An open place of the version 2 (lot V5, journal Passe V5): one of the three squares of Plazas.ts, walked across by the hero (arrows or
@@ -390,11 +390,10 @@ export class PlazaApp {
    *  fades in (LightRig's scale; at once when the page is posed). The town's rig is untouched (its own priorities). */
   private pickLights(dt: number): void {
     const f = this.focus, hx = f ? f.x : this.player.pos.x, hz = f ? f.z : this.player.pos.z;
-    const ranked = [...this.lightBase].map(([s, base]) => ({ s, k: base - Math.hypot(s.pos.x - hx, s.pos.z - hz) / 6 + (s.targetScale > 0.5 ? 0.3 : 0) })).sort((a, b) => b.k - a.k);
-    ranked.forEach(({ s, k }, i) => {
-      const on = i < MAX_LIGHTS - 2;
-      s.targetScale = on ? 1 : 0;
-      s.priority = (on ? 1000 : 500) + k;
+    const L = [...this.lightBase], pick = pickPlazaLights(L.map(([s, base]) => ({ x: s.pos.x, z: s.pos.z, priority: base, on: s.targetScale > 0.5 })), hx, hz, MAX_LIGHTS - 2);
+    L.forEach(([s], i) => {
+      s.targetScale = pick[i].on ? 1 : 0;
+      s.priority = (pick[i].on ? 1000 : 500) + pick[i].k;
       if (dt === 0) s.scale = s.targetScale;
     });
   }

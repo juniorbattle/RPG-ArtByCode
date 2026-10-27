@@ -1307,6 +1307,16 @@ export function plazaMask(seed: number, rect: { x0: number; z0: number; w: numbe
 const xf = (p: V3, pos: V3, yaw: number): V3 => { const c = Math.cos(yaw), s = Math.sin(yaw); return [pos[0] + p[0] * c + p[2] * s, pos[1] + p[1], pos[2] - p[0] * s + p[2] * c]; };
 const rot = (d: V3, yaw: number): V3 => { const c = Math.cos(yaw), s = Math.sin(yaw); return [d[0] * c + d[2] * s, d[1], -d[0] * s + d[2] * c]; };
 
+/** the lights a square's frame takes among its own (journal Passe VP6: the frame's 24, MAX_LIGHTS, against the 25 to 42 a square declares at
+ *  night; sorted by their priority alone, the forecourt's south lamps were never lit): each light's rank is its priority less its distance to
+ *  the hero (or a cutscene's focus) over 6 m, 0.3 more for a light already chosen (no flicker between equals); the first `max` are on */
+export function pickPlazaLights(lights: Array<{ x: number; z: number; priority: number; on: boolean }>, hx: number, hz: number, max: number): Array<{ on: boolean; k: number }> {
+  const k = lights.map((l) => l.priority - Math.hypot(l.x - hx, l.z - hz) / 6 + (l.on ? 0.3 : 0));
+  const order = k.map((_, i) => i).sort((a, b) => k[b] - k[a]), on = new Array<boolean>(lights.length).fill(false);
+  order.slice(0, max).forEach((i) => { on[i] = true; });
+  return lights.map((_, i) => ({ on: on[i], k: k[i] }));
+}
+
 /** a crowd walker's heading (ux, uz, unit) turned round what stands on the square (journal Passe VP6: they walked through the fountain and the
  *  bandstand): within 0.8 m of a blocker's margin (its radius + 0.45, blockers of 1 m and more), the heading's part along the edge on the side
  *  the walker already stands on (head-on, either side), blended in as it nears */
