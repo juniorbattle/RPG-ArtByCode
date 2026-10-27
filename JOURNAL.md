@@ -617,6 +617,30 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
 - La place festive : le halo de la lumière du kiosque réduit, plus de halo sous les cordes ; les tonneaux et le banc du sud-ouest contre la
   rangée ouest.
 
+### La huitième critique à l'aveugle (itérations 8 et 9), étalonnée — [KO] l'itération 9 derrière la 8 partout
+- Agent neuf, plus sévère : le district caché **7** (8 la nuit, 7 le plan large de jour), la référence 8. Itération 8 / itération 9 :
+  **parvis 6 / 5,5**, **entraînement 6 / 5,5**, **place festive 7 / 6,5** ; ramenées à 8 pour le district (son écart à son propre 7) :
+  l'itération 8 à 7, 7 et 8. Verdicts : place festive « oui avec réserves » (itération 8), parvis et entraînement « pas encore ».
+- [KO] Ce que l'itération 9 a perdu : la balustrade basse et les piliers minces de la porte du quai lus comme « des moignons de mur sombres et
+  flous, comme des erreurs de géométrie » (la septième les trouvait « massifs », la huitième préfère la balustrade haute « un bord de terrasse
+  voulu, comme le quai de R ») ; l'estrade sans cordes « ne se lit plus comme un ring » et le mannequin sans clôture (la septième lisait les
+  cordes sur la toile blanche comme un ring de boxe, la huitième veut « des poteaux, des cordes, des marches, des fanions ») ; les tonneaux
+  contre la rangée ouest laissaient « la moitié basse vide, comme un parking ». Pensée : deux critiques se contredisent d'une passe à l'autre ;
+  la préférence par paires dans une même critique décide, et une seule critique ne suffit plus (la suivante : deux agents).
+- Ses reproches qui restent : au parvis la façade « plate comme un panneau » dans le cadre proche, les pavés vides à gauche de la voie ; à
+  l'entraînement les bottes de paille au premier plan ; à la place festive la tente de la scène « une boîte rayée sans pointe », le sol sans
+  dessin.
+
+### Itération 10
+- Revenu à l'itération 8 pour la balustrade, les piliers de la porte du quai, les cordes de l'estrade (sur ses planches assombries et son cercle
+  de craie de l'itération 9, sans toile) et la clôture du mannequin (avec le pel) ; gardés de l'itération 9 : la pierre froide, les chaînages
+  irréguliers, le bout du passage habité, l'in-scatter rendu, les lanternes des rangées latérales.
+- Le parvis : à gauche de la voie, un râtelier de lances de joute aux couleurs du tournoi, des caisses et un tonneau.
+- L'entraînement : les bottes de paille près des râteliers à l'ouest, le brasero du milieu retiré, le banc revenu dans la bande du sud.
+- La place festive : le sol dessiné (une voie de dalles de la porte du quai à la scène, un anneau de dalles autour du kiosque, un caniveau de
+  pavés en travers) ; la tente de la scène **en croupe, sa faîtière courte haute au milieu** et ses deux fanions (la pointe qui manquait de face) ;
+  les fûts et les caisses dans le coin sud-ouest, le banc près d'eux.
+
 ### Les tests prouvés par des défauts injectés (Passes VP3 à VP5) — [OK]
 - Cinq défauts, chacun attrapé, les fichiers rendus octet pour octet (`cmp`) : les huit emblèmes du tournoi peints aussi dans l'atlas
   d'aujourd'hui (`v2-heraldry` : 1 échec, l'empreinte des appels), une bannière d'une place revenue à la fleur de lys (`v2-heraldry` : 1), une
