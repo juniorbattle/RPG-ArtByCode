@@ -299,7 +299,7 @@ que les villes soient connecté dans qu'on puisse se déplacer d'un endroit à u
 comme je l'ai dit travaille de manière autonome et sois optimale en prenant le temps qu'il faut pour un travail magistral. »
 
 Lecture (« proposé ») : quatre lots, tous derrière `flags.v2` (la règle de la séance « Version 2 », le jeu par défaut inchangé et prouvé) : les
-emblèmes (cette passe), les entrées / sorties à pied entre le quartier et les trois places (Passe VP4), le combat de la version 2 plus rude
+emblèmes (cette passe), le combat de la version 2 plus rude (Passe VP4), les entrées / sorties à pied entre le quartier et les trois places
 (Passe VP5), le décor des trois places à 8/10 au moins en critique à l'aveugle (Passe VP6 ; « la place quartier festif » : la place festive
 existe depuis le lot V5 à la place de Lantern Row, on ne la voyait pas faute d'y aller à pied, elle est traitée comme la troisième place à
 amener à 8).
@@ -334,6 +334,49 @@ amener à 8).
 - Étendre un atlas sans toucher l'existant : peindre les cellules nouvelles **après** les anciennes et seulement dans une toile plus haute ;
   le journal des appels de dessin (une toile enregistreuse, sans navigateur) prouve que l'atlas d'aujourd'hui n'a pas changé d'un appel.
 - Un motif de champ se découpe dans sa cellule : sans découpe, les losanges débordaient sur les voisines (vu sur la première planche).
+
+## Passe VP4 — Le combat de la version 2 plus rude : les coups adverses 30 % plus forts (2026-10-27)
+
+### Demande
+La demande de la Passe VP3 : « Un joueur qui se prépare gagne 85%, c'est étrange car cela veut dire que le jeu est facilement maîtrisable, il
+faudrait donc augmenter à la porte des dégâts des ennemies pour qu'ils soient plus impactant ou rendre le gameplay combat un peu plus rude. »
+
+### Les leviers essayés (TournamentLab, parties v2 entières, graines 1..20 / 1..30, le joueur préparé = la politique `diligent` à 0,6)
+| Réglage | idle (0,3) | préparé faible (0,4) | préparé (0,6) | préparé bon (0,75) | expert (0,9) |
+|---|---|---|---|---|---|
+| aujourd'hui (C3) | 2,5 % | 33 % (0,3) | 84 % | – | 100 % |
+| fréquence des compétences + 0,08 / + 0,12 et coups × 1,2 / × 1,15 | ~0 % | 15-18 % | 80-83 % | – | 95-98 % |
+| coups × 1,2 | 0 % | 8 % (0,3) | 72 % | – | 94 % |
+| coups × 1,25 | 0 % | 19 % | 65 % | 85 % | 95 % |
+| **coups × 1,3 (retenu)** | 0 % | 15 % | 62 % | 82 % | 93 % |
+| coups × 1,5 / × 1,7 | 0 % | 0 % | 42 % / 25 % | – | 83 % / 76 % |
+
+- [KO] La fréquence des compétences adverses ne durcit presque rien : elles sont longues et télégraphiées, le bot les esquive ; plus il en
+  lance, moins il frappe. Le levier est le dégât de chaque coup, celui que nomme la demande.
+- [?] Une finale à paliers : avec × 1,3 partout, le joueur préparé moyen perd toutes ses finales contre Marek (0 sur 12) ; affaiblir Marek seul
+  (× 0,8 à 0,9 en plus) le couronne parfois (1 à 4 sur 14) mais rend la couronne presque sûre au bon joueur et à l'expert (73-97 %) : le duel
+  d'un bot à compétence fixe est un seuil. Écarté : la couronne reste au bon et à l'expert, l'essai de l'opérateur tranchera.
+
+### Fait — [OK], « proposé », derrière `flags.v2`
+- `V2_FOE_HIT = 1.3` (`src/combat/v2duel.ts`) : tous les coups et toutes les compétences des sept rivaux de la version 2 (les duels du
+  tournoi, les défis, les rixes) ; le duel d'aujourd'hui et les règles dynamiques sans le drapeau inchangés.
+- La course hors écran mesurée à nouveau (graines de calibrage 1..20) : les temps de mise à terre inchangés, chaque dégât par seconde
+  × 1,29-1,33 (`V2_RACERS`), l'ordre des forces gardé (Marek le plus fort, Tobin le plus faible) ; le rapport de deux rivaux, qui décide un
+  match hors écran, ne bouge pas.
+- `V2_SIM_HASH` (l'empreinte du duel chargé de la scène, `src/arena/v2Arena.ts`, et `tools/arena-scene-check.mjs`) : seule la santé finale
+  de Ren change (1279 -> 979).
+- Mesure (TournamentLab, 50 graines, `--rules=v2`) : préparé (`diligent`) **60,4 %** des combats gagnés (85,2 % avant), 2,1 blessures par
+  partie (1,08), qualifié 94 % (100 %), finaliste 38 % (96 %), champion 0 % (28 %) ; `idle` 0 % (2,5 %). Graines 1..30 : bon (0,75) champion
+  20 %, expert (0,9) champion 67 %.
+- Tests : `combat-charge` (un test nouveau : des parties v2 entières sur les graines 1..12, l'escalier par la compétence et la préparation ;
+  la course hors écran et l'empreinte à jour) ; `v2-coherence` : la tentative de sabotage de l'équipement demande un combat de la phase
+  finale, qu'un joueur `idle` n'atteint plus : la partie de la graine 3 (`diligent`) la porte.
+- Le jeu par défaut : le TournamentLab `classic` et `dynamic`, `diligent` et `idle`, 50 graines : JSON identiques à ceux de `main` figé
+  (`aaa48f0`).
+
+### Pensée
+- Une mesure de « difficulté » se lit par paliers de compétence, pas sur un seul joueur : le même réglage donne 0 % de couronnes au joueur
+  moyen et 67 % à l'expert. C'est la marche entre les deux qu'on règle.
 
 ## À reprendre (par priorité)
 

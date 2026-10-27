@@ -61,6 +61,11 @@ export const V2_FOES: Record<string, V2Foe> = {
   rhosk: { defense: { guard: 0.15, dodge: 0 }, skills: { chance: 0.28, list: [{ id: 'm_cleave', weight: 2, cooldown: 26 }, { id: 'm_roar', weight: 1, cooldown: 34 }, { id: 'm_hide', weight: 1, cooldown: 36 }] }, hp: 0.85, damage: 1.1 },
 };
 
+/** the opponents' blows in the version 2, 30 % harder than C3's balance (journal Passe VP4, the operator's request of 2026-10-27: « augmenter
+ *  [...] des dégâts des ennemies pour qu'ils soient plus impactant ou rendre le gameplay combat un peu plus rude »; « proposé »: the prepared
+ *  player of the TournamentLab wins about six bouts in ten instead of 85 %, the expert nine in ten). Every rival's blows and skills. */
+export const V2_FOE_HIT = 1.3;
+
 /** the player's skills in the version 2: the four brought, each at its level (default: today's loadout at level 1) */
 export interface V2Kit { loadout: DynActionId[]; levels: Record<string, number> }
 export const V2_START_KIT: V2Kit = { loadout: ['t1', 't4', 'd1', 's1'], levels: { t1: 1, t4: 1, d1: 1, s1: 1 } };
@@ -94,7 +99,7 @@ export interface V2GearFx { taken: number; gauge: number; charge: number; effect
 export function v2DuelData(foe: string, o: { seed: number; playerName: string; opponentName: string; player?: Mods; enemy?: Mods; names?: Partial<Record<string, string>>; kit?: V2Kit; input?: 'charge' | 'keys'; gear?: V2GearFx }): V2Duel {
   const prof: DynProfile = DYN_PROFILES[foe] ?? DYN_PROFILES.marek, F = V2_FOES[foe] ?? V2_FOES.marek, kit = o.kit ?? V2_START_KIT;
   const gfx = o.gear ?? { taken: 1, gauge: 1, charge: 1, effect: 1 }, em0 = o.enemy ?? {}, em = { ...em0, damage: (em0.damage ?? 1) * gfx.taken };
-  const d = dynDuelData(prof, { seed: o.seed, playerName: o.playerName, opponentName: o.opponentName, player: o.player, enemy: { ...em, hp: (em.hp ?? 1) * F.hp, damage: (em.damage ?? 1) * F.damage }, names: o.names });
+  const d = dynDuelData(prof, { seed: o.seed, playerName: o.playerName, opponentName: o.opponentName, player: o.player, enemy: { ...em, hp: (em.hp ?? 1) * F.hp, damage: (em.damage ?? 1) * F.damage * V2_FOE_HIT }, names: o.names });
   // the catalogue's new skills (lot V2) join the player's actions, with the player's damage as today's skills take it
   for (const id of kit.loadout) if (!d.actions[id]) { const a = skillAction(id); a.damage = Math.round(a.damage * (o.player?.damage ?? 1)); if (o.names?.[id]) a.name = o.names[id]!; d.actions[id] = a; }
   d.loadout = [...kit.loadout];
@@ -104,7 +109,7 @@ export function v2DuelData(foe: string, o: { seed: number; playerName: string; o
   for (const id of kit.loadout) d.actions[id] = atLevel(c(d.actions[id]), kit.levels[id] ?? 1);
   for (const k of F.skills.list) {
     const a = JSON.parse(JSON.stringify(FOE_SKILLS[k.id])) as DynActionDef;
-    a.damage = Math.round(a.damage * F.damage * (em.damage ?? 1));
+    a.damage = Math.round(a.damage * F.damage * V2_FOE_HIT * (em.damage ?? 1));
     if (o.names?.[k.id]) a.name = o.names[k.id]!;
     d.actions[k.id] = a;
   }
@@ -120,11 +125,12 @@ export function v2DuelData(foe: string, o: { seed: number; playerName: string; o
 
 /** Each rival in the off-screen race of the version 2: `kill` = the time (s) the reference player (the version 2's bot at skill 0.5, health
  *  without limit) takes to bring it down, `dps` = the damage per second it deals that player. Measured on calibration seeds 1..20 (duel seeds
- *  5001.., bot seeds 901..), checked on the held-out seeds 21..40 by tests/combat-charge.test.mjs (journal Passe V1). A rival a beats b in the
+ *  5001.., bot seeds 901..), checked on the held-out seeds 21..40 by tests/combat-charge.test.mjs (journal Passe V1; the damage measured again under
+ *  V2_FOE_HIT, journal Passe VP4: the kills unchanged, every rate about 1.3 times). A rival a beats b in the
  *  time b takes the reference to bring down over a's damage against it: the reference's own damage cancels out of the race. */
 export const V2_RACERS: Record<string, { kill: number; dps: number }> = {
-  tobin: { kill: 359, dps: 2.35 }, orla: { kill: 511.5, dps: 3.65 }, cassius: { kill: 515.8, dps: 2.74 }, ilse: { kill: 556.6, dps: 2.86 },
-  rhosk: { kill: 533, dps: 2.66 }, vessa: { kill: 590.8, dps: 3.21 }, marek: { kill: 620.3, dps: 3.89 },
+  tobin: { kill: 359, dps: 3.11 }, orla: { kill: 511.5, dps: 4.71 }, cassius: { kill: 515.8, dps: 3.57 }, ilse: { kill: 556.6, dps: 3.77 },
+  rhosk: { kill: 533, dps: 3.42 }, vessa: { kill: 590.8, dps: 4.24 }, marek: { kill: 620.3, dps: 5.05 },
 };
 /** how sharply the version 2's race decides a match (« proposé »: lower than today's 14, so a rival a third weaker still wins one in ten) */
 export const V2_RACE_SLOPE = 8;

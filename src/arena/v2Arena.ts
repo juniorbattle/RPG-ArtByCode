@@ -107,5 +107,6 @@ export function runV2Fingerprint(d: ChargedDuel): void {
     d.step(dt); d.drain(); if (d.over) d.reset();
   }
 }
-/** the hash runV2Fingerprint leaves on the scene's duel (sceneV2Duel('charge'), recorded with the rules, journal Passe V1) */
-export const V2_SIM_HASH = '1279:1:recovering:0.100:90.750:-:-;4127:0:idle:2.317:43.980:-:-;300.000|0:0.000';
+/** the hash runV2Fingerprint leaves on the scene's duel (sceneV2Duel('charge'), recorded with the rules, journal Passe V1; Ren's health
+ *  again under V2_FOE_HIT, journal Passe VP4) */
+export const V2_SIM_HASH = '979:1:recovering:0.100:90.750:-:-;4127:0:idle:2.317:43.980:-:-;300.000|0:0.000';

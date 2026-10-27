@@ -179,6 +179,19 @@ test('the balance toward « modéré » (L7-4, CB-11; « proposé »): a stairca
   for (const r of [strong, weak, m6, o6, m2]) assert.ok(r.min >= 5 && r.min <= 13, `duel length ${r.min.toFixed(1)} min`);
 });
 
+test('the harder blows (journal Passe VP4, « proposé »): whole version 2 games on seeds 1..12, a staircase by the player\'s skill and preparation', () => {
+  assert.equal(V.V2_FOE_HIT, 1.3);
+  const S = Array.from({ length: 12 }, (_, i) => i + 1);
+  const at = (skill) => ({ name: `diligent-${skill}`, skill, choose: (st) => { const a = L.POLICIES.diligent.choose(st); return a.type === 'fight' ? { type: 'fight', outcome: L.botOutcome(st, skill) } : a; } });
+  const idle = L.labReport(S, L.POLICIES.idle, 'v2'), prepared = L.labReport(S, L.POLICIES.diligent, 'v2'), expert = L.labReport(S, at(0.9), 'v2');
+  // the player who only fights wins nothing; the prepared player of average skill about six bouts in ten (85 % before), makes the cut, rarely
+  // the crown; the expert nine in ten and the crown in about half the games
+  assert.ok(idle.rates.playerWins <= 0.05, `idle ${idle.rates.playerWins}`);
+  assert.ok(prepared.rates.playerWins >= 0.5 && prepared.rates.playerWins <= 0.75, `prepared ${prepared.rates.playerWins}`);
+  assert.ok(prepared.v2.madeCut >= 0.75 && prepared.v2.champion <= 0.15, `prepared ${JSON.stringify(prepared.v2)}`);
+  assert.ok(expert.rates.playerWins >= 0.85 && expert.v2.champion >= 0.3, `expert ${expert.rates.playerWins} ${JSON.stringify(expert.v2)}`);
+});
+
 test('the off-screen race of the version 2 agrees with full duels on held-out seeds (tolerance 12 %), and decides the version 2\'s off-screen bouts', () => {
   for (const foe of ['tobin', 'orla', 'vessa', 'marek']) {
     let kill = 0, dps = 0, n = 0;
