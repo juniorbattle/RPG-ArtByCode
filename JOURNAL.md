@@ -471,6 +471,10 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Le parvis : l'arrivée et le milieu 2° plus bas (4,5°), comme les deux autres places : la crête crénelée de la porte contre le ciel.
   [KO] d'abord : l'étal de l'armurier cachait la tête du héros à l'entrée de la rue est (le test des cadrages) ; l'étal 2 m plus au sud, le
   râtelier au nord de lui, l'armurière avec lui : le pavillon est dégagé (le point de l'audit) et le test passe.
+- La place festive la nuit : l'étal du potier, au bord droit du cadre, éteint (« a large warm haze floods the right edge, and nothing
+  visible is big enough to cast it »). Les lumières de nuit : parvis 15, entraînement 16, place festive 15 (VP7 : 16 / 15 / 16), toutes
+  allumées, aucune au-delà de 16 dans un cadrage.
+- Le TournamentLab (30 graines, oisif et diligent, règles d'aujourd'hui et dynamiques) : **identique** à `main` (`e540e53`).
 
 ## À reprendre (par priorité)
 

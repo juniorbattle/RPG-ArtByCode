@@ -501,7 +501,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     for (const [x, z, k, y] of [[-10.2, -0.8, 'barrel', 0.4], [-10.4, 0.1, 'barrel', 1.3], [-9.6, -0.3, 'crate', 0.2]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, 0, z], yaw: y });
     blockers.push({ x: -10.1, z: -0.35, r: 0.9 });
     // the stalls along the east row, facing the square (the candle seller's lit at night, the potter's, the greengrocer's by the stage)
-    marketStall(9.6, 0.1, -0.6, 'pottery', 2.8, true, [[0.78, 0.6, 0.3], [0.86, 0.82, 0.72]]);
+    // (the potter's unlit at night since journal Passe VP8's first critique: at the frame's right edge its light was « a large warm haze [...]
+    // and nothing visible is big enough to cast it »)
+    marketStall(9.6, 0.1, -0.6, 'pottery', 2.8, false, [[0.78, 0.6, 0.3], [0.86, 0.82, 0.72]]);
     // (the potter's 0.7 m south and the candle seller's stall 0.2 m narrower since journal Passe VP8, « The yellow awning cuts through the
     // blue one »; the candles' stall moved north instead hid the hero's head at the east street's mouth in the stage's framing)
     marketStall(9.7, -3.4, -0.8, 'candles', 2.8, true, [[0.3, 0.37, 0.7], [0.86, 0.82, 0.72]]);
