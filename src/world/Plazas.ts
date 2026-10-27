@@ -109,11 +109,11 @@ export const PLAZA_GATHER: Record<PlazaKind, Record<PlazaPeriod, Array<[number, 
   },
   training: {
     // (none before the ring's steps since journal Passe VP8, the first critique: « A group of people stands right in front of the ring's stairs
-    // and hides the focal point »)
+    // and hides the focal point »; nor against its braziers, the third: « At night a flame sits against an NPC's body »)
     morning: [[-6.0, -0.2], [7.8, -8.0], [-2.6, -13.0], [-8.6, -5.6], [5.4, -1.6], [-8.0, -10.4]],
-    midday: [[-3.8, -3.0], [7.2, -5.6], [-6.4, -12.6], [-7.2, -7.0], [8.0, -10.2], [-5.2, -10.2], [2.6, -13.2], [-3.4, 0.4], [5.6, 0.2]],
+    midday: [[-3.8, -3.0], [7.8, -6.2], [-6.4, -12.6], [-7.2, -7.0], [8.0, -10.2], [-5.2, -10.2], [2.6, -13.2], [-3.4, 0.4], [5.6, 0.2]],
     afternoon: [[-9.8, -10.6], [5.6, -1.4], [-3.0, -12.6], [6.6, -4.4], [-7.0, -8.6], [-5.6, 0.0]],
-    night: [[-3.0, -4.4], [6.0, -4.4], [-3.6, -12.6], [-7.8, -1.0], [6.6, -13.2]],
+    night: [[-4.4, -3.0], [7.2, -3.0], [-3.6, -12.6], [-7.8, -1.0], [6.6, -13.2]],
   },
   // (the groups gather at the first points of a moment: near ones and far ones in turn, journal Passe VP7, iteration 2: three groups side by
   // side before the stage read as « two straight rows like a queue »)
@@ -144,6 +144,9 @@ const DAIS: [number, number] = [1.5, -8.4];
 const SHOP_LIGHTS: Record<PlazaKind, string[]> = { forecourt: [], training: [], festival: ['row-11', 'north0'] };
 /** the near edge's lights at night (intensity, radius; journal Passe VP7, iteration 4): the forecourt and the training ground carry the near floor
  *  on them alone; the festival square's strings light its own (stronger there, a « milky warm haze » filled the frame) */
+/** the near edge's stone by day, a third darker than at night (journal Passe VP8: under the squares' daylight it was « the brightest and
+ *  largest object in frame », « Bring the balustrade's value down by about 30% », the third critique) */
+const NEAR_WALL_DAY: V3 = [0.21, 0.2, 0.2], NEAR_CAP_DAY: V3 = [0.27, 0.26, 0.25];
 const NEAR_LIGHT: Record<PlazaKind, [number, number]> = { forecourt: [4.4, 10.5], training: [4.4, 10.5], festival: [2.4, 8] };
 /** how many wall lanterns are lit at night, the nearest the focal point (journal Passe VP7: the forecourt's gate has its own fires) */
 const WALL_LAMPS: Record<PlazaKind, number> = { forecourt: 0, training: 2, festival: 0 };
@@ -261,7 +264,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   // « streaky texture », « the brightest and blurriest object in frame », « almost black at night »: lower, darker, in the plaster's smooth
   // grain, a coping and dies, a lantern on a die every few metres lighting the near setts)
   tracked(() => {
-    const Pl = S.get('plaster'), wall: V3 = [0.3, 0.29, 0.29], cap: V3 = [0.38, 0.37, 0.36], Z = 8.3;
+    const Pl = S.get('plaster'), wall: V3 = day ? NEAR_WALL_DAY : [0.3, 0.29, 0.29], cap: V3 = day ? NEAR_CAP_DAY : [0.38, 0.37, 0.36], Z = 8.3;
     const edgeLantern = (x: number, top: number, lit: boolean) => {
       batch.add(day ? 'lanternDark' : 'lantern', { pos: [x, top + 0.02, Z], yaw: 0 }, 0);
       if (day || !lit) return;
@@ -275,8 +278,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       T.boxMM(-18, 0.95, 8.22, 18, 1.07, 8.38, { tint: [0.52, 0.42, 0.33], grain: 'x' });
       T.boxMM(-18, 0.5, 8.25, 18, 0.58, 8.35, { tint: [0.52, 0.42, 0.33], grain: 'x' });
       for (let x = -18; x <= 18.01; x += 2.4) T.boxMM(x - 0.08, 0, 8.22, x + 0.08, 1.2, 8.38, { tint: [0.46, 0.38, 0.3], grain: 'y' });
-      // (the two inner ones glow without a real light since iteration 5: the arrival's string carries the near floor)
-      for (const x of [-7.6, -2.6, 2.6, 7.6]) edgeLantern(x, 1.2, Math.abs(x) > 5);
+      // (the two inner ones glowed without a real light from iteration 5; gone since journal Passe VP8: under the framings at 3° they stood at
+      // the frame's bottom edge, « half-cropped by the bottom edge and looks stray », the third critique)
+      for (const x of [-7.6, 7.6]) edgeLantern(x, 1.2, true);
       return;
     }
     // (the spans end at the quay gate's dies, which stand for their end dies: journal Passe VP7, iteration 5)
@@ -427,6 +431,17 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     }
     // the champions' ring before the stand: the yard's monument and its key light (journal Passe VP6, third critique: « no focal prop »)
     tracked(() => sparringDais(S, batch, lights, emitters, day, DAIS[0], DAIS[1]));
+    // the yard's timber edging along its south side, toward the camera (journal Passe VP8, the third critique: « Where the sand meets the
+    // cobbles, the edge is a noisy, jagged blend rather than a built edge », « Put a timber or stone curb where the sand meets the cobbles »):
+    // sleepers set in the ground, a little out of line, the way from the quay's gate left open
+    tracked(() => {
+      const T = S.get('timber'), er = rng.fork('edging');
+      for (let x = YARD[0] + 0.25; x < YARD[2] - 0.3; x += 1.32) {
+        if (Math.abs(x + 0.62) < 2.4) continue;
+        const z = YARD[3] + er.range(-0.05, 0.05);
+        T.boxMM(x, 0, z - 0.11, x + 1.26, 0.07 + er.range(-0.015, 0.015), z + 0.11, { tint: [0.46, 0.38, 0.3], grain: 'x' });
+      }
+    });
     for (const [dx, dz] of [[-2.5, -2.5], [2.5, -2.5], [-2.5, 2.5], [2.5, 2.5], [0, 0]]) blockers.push({ x: DAIS[0] + dx, z: DAIS[1] + dz, r: 1.6 });
     blockers.push({ x: DAIS[0] + 3.45, z: DAIS[1] + 0.6, r: 0.9 }, { x: DAIS[0] - 4.1, z: DAIS[1] + 3.9, r: 0.45 }, { x: DAIS[0] + 4.1, z: DAIS[1] + 3.9, r: 0.45 });
     obstacles.push({ x0: DAIS[0] - 3.4, x1: DAIS[0] + 3.4, z0: DAIS[1] - 3.4, z1: DAIS[1] + 3.4, grime: 0.6 });
@@ -761,12 +776,10 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
       // the tunnels behind two ground arches either side lit at night (the arena's galleries; the third critique's « red slab » was an upper arch)
       // (the glass atlas's hot cell since journal Passe VP8, fading upward: without uvs a box samples the atlas's dark edge, and these tunnels
       // were black)
-      if (!day && !b.gate && [2, 4].includes(Math.abs(Math.round(b.a * R / bayW)))) S.get('glow').boxMM(-1.24, 0, -0.69, 1.24, 3.4, -0.68, { tint: [0.24, 0.14, 0.06], uvs: COAL_UV, aoY: [1, 0.15] });
+      if (!day && !b.gate && [2, 4].includes(Math.abs(Math.round(b.a * R / bayW)))) S.get('glow').boxMM(-1.24, 0, -0.69, 1.24, 3.4, -0.68, { tint: [0.15, 0.12, 0.075], uvs: COAL_UV, aoY: [1, 0.15] });
       arch(0, TIER_G + 0.55, 0.95, 1.6, -0.1, stoneLt, day);
-      // at night the galleries keep a dim light deep in a few upper arches, over the lit tunnels (journal Passe VP8, the second
-      // critique: « At night it becomes a flat ambient-blue wall over the whole upper half, lit only by the portcullis glow »; glows without a
-      // light, the light plan's ambient; the third critique's « red slab » was a whole upper arch lit, flush with the facade)
-      if (!day && !b.gate && [2, 4].includes(Math.abs(Math.round(b.a * R / bayW)))) S.get('glow').boxMM(-0.62, TIER_G + 0.62, -0.69, 0.62, TIER_G + 0.55 + 1.6 + 0.5, -0.68, { tint: [0.17, 0.1, 0.045], uvs: COAL_UV, aoY: [1, 0.15] });
+      // ([KO] journal Passe VP8, iteration 2: a dim light deep in a few upper arches, for the second critique's « flat ambient-blue wall over
+      // the whole upper half »: at the frame's edges, behind the pavilions, « saturated red lit slits [...] read as a bug », the third critique)
       // the wall between the arches' heads and the string course above them (the first try left both open onto the sky)
       const top = b.gate ? 6.1 : 4.65, upTop = TIER_G + 0.55 + 1.6 + 0.95;
       Pl.boxMM(-hw + 0.42, top, -0.12, hw - 0.42, TIER_G + 0.05, -0.02, { tint: stucco });
@@ -843,8 +856,9 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
 // first captures of VP8), a pane of its bright core
 const FLAME_UV = [0.635, 0.71, 0.66, 0.71, 0.648, 0.79], COAL_UV = [0.635, 0.71, 0.66, 0.71, 0.66, 0.79, 0.635, 0.79];
 /** a fire's glow by day (journal Passe VP8, the audit: « empty bowls on bare thin poles, with no coals or flame »): the glass's emission is
- *  the day state's 0.06 (the lanterns and windows unlit, J4), so the fires alone carry it in their tint, nine times (0.55); the night as before */
-const FIRE_DAY = 9;
+ *  the day state's 0.06 (the lanterns and windows unlit, J4), so the fires alone carry it in their tint, three times (embers under the sun;
+ *  nine times, 0.55, the third critique: « the brazier tops read as orange discs, not fire »); the night as before */
+const FIRE_DAY = 3;
 const fireTint = (day: boolean, t: V3): V3 => (day ? [t[0] * FIRE_DAY, t[1] * FIRE_DAY, t[2] * FIRE_DAY] : t);
 /** a brazier's live fire over its solid flame (journal Passe VP8): tongues the size of its bowl (Particles' 'brazier', the arena's flame
  *  narrowed) and the arena's embers; a still frame (the tools' captures, the loop never started) shows the solid flame alone */
@@ -1187,7 +1201,7 @@ function gateway(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights'],
 function quayGate(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights'], day: boolean, near: [number, number]): void {
   // (journal Passe VP7, iteration 5: two dies of the balustrade, a little broader and taller, in its dark plaster, a lantern on each; the pale
   // stone pillars 2 m high read at the frames' bottom edge as « orphan posts », « like a tombstone »)
-  const Pl = S.get('plaster'), wall: V3 = [0.3, 0.29, 0.29], cap: V3 = [0.38, 0.37, 0.36];
+  const Pl = S.get('plaster'), wall: V3 = day ? NEAR_WALL_DAY : [0.3, 0.29, 0.29], cap: V3 = day ? NEAR_CAP_DAY : [0.38, 0.37, 0.36];
   for (const s of [-1, 1]) {
     const x = s * 3.1, z = 8.3;
     Pl.boxMM(x - 0.3, 0, z - 0.3, x + 0.3, 1.2, z + 0.3, { tint: wall, aoY: [0.6, 1] });
@@ -1421,9 +1435,9 @@ function puppetBooth(S: SlotSet, x: number, z: number, yaw: number): void {
     // the stage's painted backdrop, its curtains drawn aside and two puppets on the ledge (journal Passe VP8, the audit: « The stage opening is
     // a flat black void: no curtain, no puppets, no painted backdrop »)
     S.get('plaster').quad([-w / 2, 1.55, -d * 0.8], [w / 2, 1.55, -d * 0.8], [w / 2, 2.35, -d * 0.8], [-w / 2, 2.35, -d * 0.8], { tint: [0.46, 0.6, 0.82] });
-    S.get('plaster').quad([-w / 2, 1.55, -d * 0.79], [w / 2, 1.55, -d * 0.79], [w / 2, 1.82, -d * 0.79], [-w / 2, 1.82, -d * 0.79], { tint: [0.4, 0.56, 0.36] });
-    S.get('plaster').tri([-0.3, 1.82, -d * 0.785], [0.5, 1.82, -d * 0.785], [0.1, 2.08, -d * 0.785], { tint: [0.36, 0.5, 0.34] });
-    for (const sd of [-1, 1]) C.quad([sd * w / 2, 1.55, -0.02], [sd * (w / 2 - 0.34), 1.55, -0.02], [sd * (w / 2 - 0.22), 2.35, -0.02], [sd * w / 2, 2.35, -0.02], { tint: [0.62, 0.2, 0.18], flip: sd > 0, swayArr: [0.1, 0.1, 0, 0] });
+    S.get('plaster').quad([-w / 2, 1.55, -d * 0.79], [w / 2, 1.55, -d * 0.79], [w / 2, 1.82, -d * 0.79], [-w / 2, 1.82, -d * 0.79], { tint: [0.78, 0.7, 0.5] });
+    S.get('plaster').tri([-0.3, 1.82, -d * 0.785], [0.5, 1.82, -d * 0.785], [0.1, 2.08, -d * 0.785], { tint: [0.7, 0.62, 0.44] });
+    for (const sd of [-1, 1]) C.quad([sd * w / 2, 1.55, -0.02], [sd * (w / 2 - 0.34), 1.55, -0.02], [sd * (w / 2 - 0.22), 2.35, -0.02], [sd * w / 2, 2.35, -0.02], { tint: [0.24, 0.3, 0.64], flip: sd > 0, swayArr: [0.1, 0.1, 0, 0] });
     for (const [px, body] of [[-0.35, [0.3, 0.38, 0.7]], [0.4, [0.7, 0.32, 0.24]]] as Array<[number, V3]>) {
       C.boxMM(px - 0.07, 1.58, -0.25, px + 0.07, 1.78, -0.15, { tint: body });
       S.get('plaster').box(px, 1.84, -0.2, 0.1, 0.1, 0.1, { tint: [0.9, 0.78, 0.66] });

@@ -500,6 +500,26 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   la bordure sombre des cases) : les tunnels « éclairés la nuit » depuis VP6 étaient noirs ; avec la case chaude, d'abord des rectangles
   orange saturés (« red slab », troisième critique de VP6), puis le dégradé. Les arches et les torches de l'arène lointaine de même.
 
+### La troisième critique à l'aveugle (itération 2 contre VP7), deux agents — [OK] VP8 devant sur les trois places, pour les deux panneaux
+- Panneau E (le district caché 7,5, R 8) : parvis VP7 **6,5** / VP8 **7** (« The torches give the motivated amber accent [...] the gate now
+  holds at night »), entraînement **5,5** / **6** (« there is now a back layer, and the flames at night give the light a source »), place
+  festive **6** / **6,5**. Panneau F (le district caché 7,5, R 8,5) : parvis **6** / **6,5**, entraînement **5,5** / **6**, place festive
+  **6,5** / **7** (« It has a finished foreground layer, a skyline, and warm lamps close to the camera »).
+- L'écart moyen (VP8 − VP7) : **+0,5** sur chaque place, pour la deuxième fois.
+- Ce qu'ils reprochent aux changements de l'itération 2 : les lumières des arches de l'étage, au bord du cadre, « saturated red lit slits
+  [...] read as a bug » ; de jour, le dessus des braseros « orange discs, not fire » ; une lanterne du bord proche coupée par le bas du cadre
+  (à 3°) ; la balustrade de la place festive, de jour, « the brightest and largest object in frame » ; les verts et le rouge du théâtre de
+  marionnettes hors de la palette ; le bord de la terre et des pavés, « a noisy, jagged blend rather than a built edge ».
+
+### Itération 3 — [?] les retours de la troisième critique
+- Retirées : les lumières des arches de l'étage du parvis. Les tunnels gardent la leur, ambrée et plus faible.
+- Les braises de jour à trois fois l'émission du jour au lieu de neuf : des braises sous le soleil, pas des disques orange.
+- Le bord proche en pierre un tiers plus sombre de jour (« Bring the balustrade's value down by about 30% »).
+- Le théâtre de marionnettes : son décor peint en ivoire et or, ses rideaux en bleu du tournoi.
+- L'entraînement : une bordure de traverses de bois le long du côté sud de la terre (la voie de la porte du quai ouverte), le bord de la terre
+  moins effrangé dans le shader (sous `SAND`) ; les deux lanternes intérieures de la barrière (sans lumière) retirées ; les points de foule de
+  la nuit écartés des braseros du ring (« At night a flame sits against an NPC's body »).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
