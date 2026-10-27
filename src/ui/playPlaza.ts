@@ -21,7 +21,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   let st = st0;
   installGameApi(() => st, (s) => { st = s; }, (prev, next) => lookOf(prev) !== lookOf(next) || prev.place !== next.place || next.over !== prev.over);
   const q = new URLSearchParams();
-  for (const k of ['fps', 'freeze', 'painters', 'gpuprof', 'cast', 'static', 'vis', 'viscache', 'visstep', 'visfine', 'visscale', 'rain', 'snow', 'storm', 'wind', 'plazacam']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
+  for (const k of ['fps', 'freeze', 'painters', 'gpuprof', 'cast', 'static', 'vis', 'viscache', 'visstep', 'visfine', 'visscale', 'rain', 'snow', 'storm', 'wind', 'plazaframe']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   // the day's weather, as the town's (src/simulation/look.ts): the rain front's wet day falls on the squares too
   const rain = rainOf(st); if (rain && !q.has('rain')) q.set('rain', rain);
   const look = lookOf(st), kind = PLAZA_OF[st.place]!;

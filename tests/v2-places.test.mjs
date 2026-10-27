@@ -57,7 +57,7 @@ test('every person on a square, at every hour of every named state, has a spot i
     for (const id of VP.plazaPeople(s)) { assert.ok(spots[id], `${id} has a spot on the ${kind} (${name} ${slot})`); assert.ok(inside(spots[id]), `${id} inside`); }
     if (!s.over) for (const p of VP.plazaPeople(s)) if (P.PEOPLE[p]) assert.ok(talks(s).includes(p), `${p} on the ${kind} can be talked to`);
   }
-  for (const kind of ['forecourt', 'training', 'festival']) { assert.ok(PZ.PLAZA_WANDER[kind].length >= 5); for (const w of PZ.PLAZA_WANDER[kind]) assert.ok(inside(w), `${kind} wander ${w}`); }
+  for (const kind of ['forecourt', 'training', 'festival']) for (const [period, pts] of Object.entries(PZ.PLAZA_GATHER[kind])) { assert.ok(pts.length >= 5, `${kind} ${period}`); for (const w of pts) assert.ok(inside(w) && w[1] <= 1, `${kind} ${period} point ${w}`); }
   // the extras: the guards at the forecourt's gate; no hooded figure on the square at any hour (journal Passe VP1: the stranger of the
   // simulation is on the quay, and an extra one could not talk to read as him)
   const fc = v2(); fc.place = 'forecourt'; assert.ok(VP.plazaPeople(fc).includes('guardA'));

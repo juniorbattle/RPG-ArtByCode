@@ -564,6 +564,96 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
   `npm test` 273 sur 273 ; le TournamentLab, graines 1 à 30, `idle`, `diligent` et `--rules=dynamic`, JSON **identiques** octet pour octet à
   ceux de `main`.
 
+## Passe VP7 — La direction des places : cadrages composés, sol libre, plan d'éclairage, population par période (2026-10-27)
+
+### La demande de l'opérateur, mot pour mot
+- Après la conclusion de la Passe VP6 (8/10 pas atteint), la question de l'opérateur : « Oui comment tu gérerait le budget lumière l'idée
+  et surtout d'optimiser le design et la qualité par ce jeu de lumière et d'effet. Jouer aussi sur nos angles de caméra comme district
+  merchant et proposer une direction belle, simple et épuré, par exemple je constate que tu as intégré trop d'élément et cela impacte la zone
+  de déplacement alors que les endroits se doivent d'être spacieux et libre avec de la population qui peuple les rues selon lez périodes.
+  Qu'en penses tu ? »
+- La direction proposée (cinq points) : une règle de composition (un monument par place, le centre libre, au moins 70 % du sol praticable
+  sans obstacle, les accessoires dans une bande de 2 m au pied des façades et un seul groupe au monument ; « On retire le reste : le puits, la
+  table aux tourtes, le râtelier de lances, les caisses du milieu, les poteaux superflus, les bancs isolés ») ; la population à la place des
+  objets, par moment de la journée ; trois ou quatre cadrages composés par place, comme le graphe du district, le bord proche hors du cadre par
+  construction ; le budget de lumières comme mise en scène (une lumière principale au monument, deux ou trois flaques qui guident, l'ambiance
+  hors budget, 12 à 16 vraies lumières par cadrage décidées d'avance, plus de choix automatique ; des flaques sous les lumières principales, un
+  halo sur la lumière principale seulement) ; la méthode (une place d'abord, jugée par paires contre le district).
+- La réponse de l'opérateur, mot pour mot : « " On retire le reste : le puits, la table aux tourtes, le râtelier de lances, les caisses du
+  milieu, les poteaux superflus, les bancs isolés. " il peut en avoir mais cela doit être bien contrôlé et non en surnombre. Sinon oui ton plan
+  me plaît. Exécute la tâche complète telle quelle de manière autonome, en faisant la totalité de ce qui y a à faire. Tu as tout le temps
+  qu'il faut. Sois autonome et propose moi un résultat convaincant. Merci »
+- Tout ce qui suit est derrière `flags.v2` (les pages des places), la ville et la partie par défaut inchangées ; chaque nombre « proposé ».
+
+### Lot 1 : les cadrages composés (`src/world/PlazaCamera.ts`, `src/world/PlazaApp.ts`, `src/world/PlazaVisibility.ts`) — [OK]
+- Trois cadrages par place au lieu de la caméra qui suivait le héros partout (une fonction lisse de sa place, journal Passe VP1) : l'arrivée
+  (`entry`, le héros au sud de z 0,5 : toute la place, son monument entier, les toits et la citadelle contre le ciel), le plan moyen (`court`
+  au parvis et à la place festive, `yard` à l'entraînement) et le plan du monument (`gate`, `stage`, `ring`). Chacun : un lacet, un tangage,
+  une distance, un champ, un pivot qui suit le héros par un gain et dans des bornes (la formule du graphe du district, `CameraGraph.ts`), une
+  zone ; la zone la plus prioritaire qui contient le héros l'emporte, la courante tient 0,9 m au-delà de son bord (l'hystérésis du district).
+  La page amortit chaque champ de la pose vers le cadrage voulu (le passage glisse, sans coupe). Le regard d'un dialogue ou d'une cinématique
+  garde la formule de la première version (`lookPose`). DEV : `plazaframe=<id>:yaw,pitch,dist,fov,hx,hy,hz[,gx,gz];...` règle un cadrage
+  pendant la mise au point (remplace `plazacam=`). Les touches de déplacement gardent le lacet sous lequel elles ont été pressées tant qu'elles
+  restent tenues (la règle du district) : un changement de cadrage ne tourne pas la marche.
+- Le bord proche hors du cadre par construction : le sol praticable s'arrête à z 3,6 au lieu de 6,8 (la voie de la porte du quai continue
+  jusqu'au bord). Pensée : avec une caméra basse au sud, un héros visible à 1,5 m de la balustrade la montre toujours (il faudrait une caméra
+  plongeant à près de 40°) ; à 4,4 m, aucun cadrage ne la montre.
+- Les cadrages ont été composés par le calcul avant d'être capturés (des scripts de travail, non versionnés) : sur une grille de 1 m de tout
+  le sol de chaque zone, le héros dans l'image (pieds |x| ≤ 0,9, y ≥ −0,92, tête ≤ 0,9), la balustrade sous le bas de l'image, la tête du
+  héros jamais derrière un monument (le kiosque, la scène, les pavillons, les piles de la porte), ni derrière un étal à l'emplacement d'un
+  personnage ou à l'entrée d'une rue ; puis une recherche par grille des tangage, distance, pivot et gain. Ces règles sont devenues le test.
+  Pensée : une capture SwiftShader coûte une minute, le calcul de toutes les places d'un cadrage une seconde ; la capture ne sert plus qu'au
+  jugement de l'œil.
+- La cuisson de visibilité suit : chaque cadrage sur sa zone élargie de l'hystérésis à chaque place du sol et des voies de sortie (tous les
+  1,5 m, leurs coins exacts), les passages d'un cadrage à l'autre là où les zones se touchent (à un quart, à mi-chemin, aux trois quarts,
+  le héros immobile ou un pas plus loin), les regards des dialogues et leur chemin depuis chaque cadrage, les regards des cinématiques et leurs
+  passages depuis le cadrage de chaque entrée.
+
+### Lot 2 : l'épuration contrôlée (`src/world/Plazas.ts`) — [OK]
+- La place festive : le kiosque (le monument) contre la taverne à côté de la scène, au fond de la place (au milieu, il cachait le héros qui
+  passait derrière lui à toute caméra du sud) ; le théâtre de marionnettes au pied de la rangée ouest, les trois étals au pied de la rangée
+  est, un seul tas de tonneaux au pied de la rangée ouest et un dans le coin derrière le kiosque. Retirés : la table aux tourtes, ses caisses
+  et son poteau, les deux tables de banquet, les tonneaux du marchand de cidre et son poteau, les bancs, les tabourets, le réverbère du coin
+  nord-ouest.
+- Le parvis : le monument est la porte de l'arène, la voie processionnelle y mène tout droit ; les pavillons des concurrents dans les coins
+  nord, le greffier contre la rangée ouest, l'armurier et son râtelier de lames contre la rangée est, la guérisseuse au sud-ouest. Retirés : la
+  fontaine du milieu (son eau, ses lanternes, son parvis rayonnant), le râtelier de lances et ses caisses, les quatre réverbères du milieu.
+  Ajoutés : deux mâts aux bannières du tournoi de part et d'autre de la voie, à mi-chemin de la porte, une lanterne sur chacun (les flaques
+  qui guident l'œil la nuit).
+- L'entraînement : le monument est le ring des champions, sur l'axe de la cour devant la tribune des spectateurs ; le cercle du mannequin à
+  l'ouest, les buttes de tir au pied de la rangée est, un râtelier et les bottes de paille au pied de la rangée ouest. Retirés : la barrière de
+  joute en travers de la cour, la quintaine, l'abreuvoir et le banc du bord proche, le second râtelier, le troisième brasero du ring, le
+  brasero et le réverbère du milieu.
+- La part du sol praticable libre (grille de 25 cm, le rayon du héros compris) et celle de son milieu (|x| < 9, −14 < z < 3), avant (`main`)
+  et après : parvis 75,3 → **80,8 %** (milieu 77,5 → **92,5 %**), entraînement 69,3 → **72,4 %** (70,2 → **76,0 %**, le ring de 5,8 m y
+  compte), place festive 68,5 → **79,7 %** (67,7 → **92,5 %**). Le test : au moins 70 % du sol et 75 % de son milieu.
+
+### Lot 3 : le plan d'éclairage — [OK]
+- Les lumières d'une place la nuit, avant et après : parvis 51 → **16**, entraînement 34 → **15**, place festive 48 → **16**. Toutes brûlent :
+  plus de choix à l'exécution (`pickPlazaLights` retiré), plus de lumière qui s'éteint au fond quand une autre s'allume devant ; la limite de
+  24 de la ville ne bouge pas. Au cadre le plus large, chaque cadrage voit toutes celles de sa place (la place est compacte) : 16 au plus.
+- La hiérarchie : la lumière principale au monument (le kiosque ; la lanterne de la porte et ses deux braseros ; la lanterne du ring et ses
+  deux braseros), la seule avec un halo ; les guides (les deux flaques des guirlandes sur la voie de la place festive, les deux mâts du parvis,
+  les réverbères du bord sud) ; l'ambiance hors budget : les fenêtres et les lanternes lointaines brillent sans lumière à elles (les
+  fenêtres des maisons, sauf les deux tavernes de la place festive ; la lanterne au fond de chaque rue ; les torches des travées de l'arène ;
+  les bougies des étals ; les lanternes de la balustrade et de la porte du quai). Des flaques sous les lumières principales.
+
+### Lot 4 : la population par moment de la journée — [OK]
+- `PLAZA_GATHER` (`src/world/Plazas.ts`) : les points où la foule se rassemble et marche, par place et par moment (le matin quelques mains
+  aux étals, au ring ou chez le greffier ; à midi des groupes autour du monument et des étals ; en fin de journée vers les sorties et les lieux
+  éclairés ; la nuit quelques-uns près des lumières). La page les forme seuls le matin, par trois à midi, par deux en fin de journée et la nuit,
+  chaque groupe tourné vers son premier, et les laisse s'attarder selon le moment (moins d'une seconde à 3 s le matin, 7 à 13 s à midi).
+  `PLAZA_CROWD` (`src/simulation/v2places.ts`) : 5 le matin, 12 à midi, 8 en fin de journée, 4 la nuit (6 / 9 / 7 / 4).
+
+### Les tests — [OK]
+- `tests/v2-plaza-vis.test.mjs` : les poses de la cuisson réécrites pour les cadrages ; un test des cadrages (trois ou quatre par place,
+  chaque place du sol et des voies dans la zone de l'un, chaque changement fait et défait à 0,9 m du bord, puis à chaque place du sol libre
+  et dans chaque cadrage qui peut la montrer : le héros dans l'image, la balustrade dehors, sa tête jamais derrière un monument ni derrière un
+  étal à un personnage ou à l'entrée d'une rue ; les touches gardent leur lacet) ; un test de l'espace libre. `tests/v2-exits.test.mjs` : les
+  passants de chaque moment de la journée contournent ce qui se tient sur la place ; le plan d'éclairage (12 à 16 lumières la nuit, aucun
+  choix à l'exécution, un halo seulement sur la lumière principale, au plus quatre feux le jour). `tests/v2-places.test.mjs` : les points de
+  chaque moment dans le sol praticable. `npm test` : 274 sur 274.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

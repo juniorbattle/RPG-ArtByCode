@@ -6,9 +6,10 @@ import type { CamPose } from '../app/CameraRig';
 import type { PlazaBuild, PlazaKind } from './Plazas';
 import { CUTSCENES } from '../narrative/v2story';
 import { PLAZA_OF } from '../simulation/v2places';
+import { framingAt, framingPose, framingsAround, lookPose } from './PlazaCamera';
 
 /** The squares' visibility (journal Passe VP1), the Merchant District's rule (src/district/Visibility.ts) on an open space: every wall and roof
- *  of a square is a part; the camera of the square (a smooth function of where the hero stands, `plazaCamPose`) is sampled over the whole
+ *  of a square is a part; the camera of the square (its framings, src/world/PlazaCamera.ts, journal Passe VP7) is sampled over the whole
  *  walkable surface every 1.5 m, at every person's spot as a dialogue frames it, and at every look of the cutscenes played there, in the widest
  *  frame a window shows (PLAZA_FRAME, wider windows see a crop of it) and with the puddles' mirror; what no sample shows leaves every
  *  per-frame pass (a hidden caster stays in the shadow pass). One set ('A': the square has one camera), no draw classes. A bake that fails
@@ -21,34 +22,54 @@ export const PLAZA_STORE: BakeStore = { prefix: 'hd2d.plazabake.', index: 'hd2d.
 
 export const POSE_STEP = 1.5;
 
-/** every pose the square's camera can take (its targets: the eased camera lies between neighbouring targets, 1.5 m apart) */
-export function plazaBakePoses(kind: PlazaKind, place: Pick<PlazaBuild, 'walk' | 'spots'>, poseOf: (x: number, z: number, dist: number | null) => CamPose, step = POSE_STEP): BakePose[] {
-  const out: BakePose[] = [], W = place.walk;
-  for (let x = W.x0; x <= W.x1 + 1e-6; x += step) for (let z = W.z0; z <= W.z1 + 1e-6; z += step) out.push({ set: 'A', pose: poseOf(x, z, null), player: [x, z] });
-  // the squares' edges exactly (the step does not land on them)
-  for (const x of [W.x0, W.x1]) for (let z = W.z0; z <= W.z1 + 1e-6; z += step) out.push({ set: 'A', pose: poseOf(x, z, null), player: [x, z] });
-  for (const z of [W.z0, W.z1]) for (let x = W.x0; x <= W.x1 + 1e-6; x += step) out.push({ set: 'A', pose: poseOf(x, z, null), player: [x, z] });
-  // a dialogue turns the camera to the person spoken to (9 m, playPlaza's focus), from the hero's pose beside them: the look and the way there
-  // (the page eases every field of the pose toward its target, so a move between two looks passes through their blends: the district's
-  // blend poses, journal Passe VP1)
+/** the hero's places the bake samples: the walkable surface and its ways out's lanes every `step` m, their edges exactly */
+export function heroPoints(place: Pick<PlazaBuild, 'walk' | 'lanes'>, step = POSE_STEP): Array<[number, number]> {
+  const out: Array<[number, number]> = [];
+  for (const R of [place.walk, ...place.lanes]) {
+    const xs: number[] = [], zs: number[] = [];
+    for (let x = R.x0; x <= R.x1 + 1e-6; x += step) xs.push(x);
+    for (let z = R.z0; z <= R.z1 + 1e-6; z += step) zs.push(z);
+    if (R.x1 - xs[xs.length - 1] > 1e-6) xs.push(R.x1);
+    if (R.z1 - zs[zs.length - 1] > 1e-6) zs.push(R.z1);
+    for (const x of xs) for (const z of zs) out.push([x, z]);
+  }
+  return out;
+}
+
+/** every pose the square's camera can take (journal Passe VP7): each framing over its zone grown by the hysteresis, at every hero's place; a
+ *  framing's change (the page eases every field toward the new framing while the hero walks on: between the old framing at the hero's place
+ *  and the new one at a neighbouring place, `step` m away at most, the district's blend poses); a dialogue's look at each person's spot and
+ *  the way there from every framing the spot can be seen in; the cutscenes' looks and the moves between them, from the framing of each way in */
+export function plazaBakePoses(kind: PlazaKind, place: Pick<PlazaBuild, 'walk' | 'lanes' | 'spots' | 'exits'>, step = POSE_STEP): BakePose[] {
+  const out: BakePose[] = [], push = (pose: CamPose, player?: [number, number]) => out.push({ set: 'A', pose, ...(player ? { player } : {}) });
+  for (const [x, z] of heroPoints(place, step)) {
+    const F = framingsAround(kind, x, z);
+    for (const f of F) push(framingPose(f, x, z), [x, z]);
+    if (F.length < 2) continue;
+    for (const a of F) for (const b of F) if (a !== b) for (const [dx, dz] of NEAR) for (const t of BLEND) push(lerpPose(framingPose(a, x, z), framingPose(b, x + dx * step, z + dz * step), t));
+  }
+  // a dialogue turns the camera to the person spoken to (9 m, playPlaza's focus), from the hero's framing beside them: the look and the way there
   for (const [x, z] of Object.values(place.spots)) {
-    const from = poseOf(x, z, null), to = poseOf(x, z, 9);
-    out.push({ set: 'A', pose: to });
-    for (const t of BLEND) out.push({ set: 'A', pose: lerpPose(from, to, t) });
+    const to = lookPose(kind, x, z, 9);
+    push(to);
+    for (const f of framingsAround(kind, x, z)) for (const t of BLEND) push(lerpPose(framingPose(f, x, z), to, t));
   }
-  // the cutscenes played on this square: each look of their scripts, and the moves between them (from the hero's pose at the start, back to it
-  // at the end)
+  // the cutscenes played on this square: each look of their scripts, and the moves between them, from the framing of the hero who has just
+  // arrived (at a way in, or at the square's mouth) and back to it
+  const starts = [[0, 1.5] as [number, number], ...place.exits.map((e) => e.spawn)].map(([x, z]) => framingPose(framingAt(kind, x, z), x, z));
   for (const c of Object.values(CUTSCENES)) if (PLAZA_OF[c.place] === kind) {
-    const looks = c.steps.flatMap((st) => ('cam' in st ? [poseOf(st.cam[0], st.cam[1], st.dist ?? 14)] : []));
-    const start = poseOf(0, 1.5, null), path = [start, ...looks, start];
-    for (const l of looks) out.push({ set: 'A', pose: l });
-    for (let i = 0; i + 1 < path.length; i++) for (const t of BLEND) out.push({ set: 'A', pose: lerpPose(path[i], path[i + 1], t) });
+    const looks = c.steps.flatMap((st) => ('cam' in st ? [lookPose(kind, st.cam[0], st.cam[1], st.dist ?? 14)] : []));
+    for (const l of looks) push(l);
+    for (let i = 0; i + 1 < looks.length; i++) for (const t of BLEND) push(lerpPose(looks[i], looks[i + 1], t));
+    if (looks.length) for (const s of starts) for (const t of BLEND) { push(lerpPose(s, looks[0], t)); push(lerpPose(looks[looks.length - 1], s, t)); }
   }
-  // the camera holds its edge pose beyond x ± 9 and z - 15..2 (plazaCamPose): the margins' samples repeat poses, baked once
+  // a framing holds its pose once its offsets reach their bounds: those places repeat poses, baked once
   const seen = new Set<string>();
   return out.filter((p) => { const k = JSON.stringify(p.pose); if (seen.has(k)) return false; seen.add(k); return true; });
 }
 
+/** the hero's moves during a framing's change: from the place where it starts to a neighbouring one (and staying put) */
+const NEAR: Array<[number, number]> = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]];
 /** the blends sampled on a move between two looks */
 const BLEND = [0.25, 0.5, 0.75];
 /** a pose between two, field by field (the page's easing) */

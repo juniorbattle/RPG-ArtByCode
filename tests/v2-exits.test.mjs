@@ -62,7 +62,7 @@ test('each square: its ways out are its place\'s, a row opens where a side stree
       assert.ok(Math.abs(e.anchor[2] - (L.z0 + L.z1) / 2) < 0.01 || e.side === 'south', `${k} ${e.side}: the sign over the lane`);
     }
     // outside a lane the square's edge still holds
-    assert.deepEqual(PZ.walkTo(b, -5, 2, -5, 20), [-5, b.walk.z1], `${k}: the kerb holds beside the quay's gate`);
+    assert.deepEqual(PZ.walkTo(b, -3, 2, -3, 20), [-3, b.walk.z1], `${k}: the kerb holds beside the quay's gate`);
   }
 });
 
@@ -81,8 +81,10 @@ test('the quay\'s two ends (a version 2 game\'s town only): arrivals inside its 
 });
 
 test('the squares\' walkers: spots and crowd points clear of what stands on the square, every walk between two points led round it', () => {
-  for (const k of KINDS) {
-    const b = PZ.buildPlaza(lib, k, 1842, { day: false }), big = b.blockers.filter((o) => o.r >= 1);
+  // the crowd's points of every moment of the day (journal Passe VP7)
+  for (const k of KINDS) for (const period of ['morning', 'midday', 'afternoon', 'night']) {
+    const b = PZ.buildPlaza(lib, k, 1842, { day: period !== 'night', period }), big = b.blockers.filter((o) => o.r >= 1);
+    assert.deepEqual(b.wander, PZ.PLAZA_GATHER[k][period], `${k} ${period}: the moment's points`);
     // (a person may stand at a stall or a table: the large things only, the fountain, the bandstand, the pavilions, the towers)
     for (const [id, [x, z]] of Object.entries(b.spots)) for (const o of big) if (o.r >= 2) assert.ok(Math.hypot(x - o.x, z - o.z) >= o.r, `${k}: ${id} clear of ${o.x},${o.z}`);
     for (const [x, z] of b.wander) for (const o of big) assert.ok(Math.hypot(x - o.x, z - o.z) >= o.r + 0.45, `${k}: crowd point ${x},${z} clear of ${o.x},${o.z}`);
@@ -95,24 +97,26 @@ test('the squares\' walkers: spots and crowd points clear of what stands on the 
         x += (ux * 1.12) / 60; z += (uz * 1.12) / 60;
         for (const o of big) deepest = Math.max(deepest, o.r - Math.hypot(x - o.x, z - o.z));
       }
-      assert.ok(n < 6000, `${k}: ${a} -> ${c} arrives`);
-      assert.ok(deepest < 0.5, `${k}: ${a} -> ${c} kept out of what stands there (${deepest.toFixed(2)} m in)`);
+      assert.ok(n < 6000, `${k} ${period}: ${a} -> ${c} arrives`);
+      assert.ok(deepest < 0.5, `${k} ${period}: ${a} -> ${c} kept out of what stands there (${deepest.toFixed(2)} m in)`);
     }
   }
 });
 
-test('the squares\' lights at night: the frame\'s 22 chosen near the hero, the lamps by him always among them, none flickering on the spot', () => {
+test('the squares\' light plan: 16 lights at night, every one burning, a halo round the key light only, the key light by the monument', () => {
+  // journal Passe VP7, the operator's direction (« le budget lumière [...] optimiser le design et la qualité par ce jeu de lumière ») and the
+  // plan's figure (12 to 16 real lights a frame, decided ahead): no light chosen away at run time, none popping in or out as the hero walks
+  const SU = src('src/world/PlazaApp.ts');
+  assert.ok(!/pickPlazaLights|pickLights/.test(SU), 'no light chosen at run time');
   for (const k of KINDS) {
-    const b = PZ.buildPlaza(lib, k, 1842, { day: false }), L = b.lights.map((l) => ({ x: l.pos[0], z: l.pos[2], priority: l.priority ?? 1, on: true }));
-    for (let hx = -9; hx <= 9; hx += 3) for (let hz = -15; hz <= 3; hz += 3) {
-      let pick = PZ.pickPlazaLights(L, hx, hz, 22);
-      assert.equal(pick.filter((p) => p.on).length, Math.min(22, L.length), `${k} ${hx},${hz}`);
-      // every lamp post within 6 m of the hero is lit (the forecourt's south lamps were never lit while 25 fires and lanterns outranked them)
-      b.lights.forEach((l, i) => { if (l.kind === 'lantern' && (l.priority ?? 1) >= 6 && l.intensity >= 3 && Math.hypot(l.pos[0] - hx, l.pos[2] - hz) < 6) assert.ok(pick[i].on, `${k} ${hx},${hz}: the lamp at ${l.pos[0].toFixed(1)},${l.pos[2].toFixed(1)} lit`); });
-      // the next frame on the same spot keeps the same set
-      const again = PZ.pickPlazaLights(L.map((l, i) => ({ ...l, on: pick[i].on })), hx, hz, 22);
-      assert.deepEqual(again.map((p) => p.on), pick.map((p) => p.on), `${k} ${hx},${hz}: steady`);
-      pick = again;
-    }
+    const night = PZ.buildPlaza(lib, k, 1842, { day: false }), day = PZ.buildPlaza(lib, k, 1842, { day: true });
+    assert.ok(night.lights.length >= 12 && night.lights.length <= 16, `${k}: ${night.lights.length} lights at night`);
+    // the halo, the hierarchy's top: round the key lights only, and a key light at night by the square's monument
+    for (const b of [night, day]) for (const l of b.lights) assert.ok(!(l.halo > 0) || l.key, `${k}: a halo off the key light at ${l.pos}`);
+    const keys = night.lights.filter((l) => l.key);
+    assert.ok(keys.length >= 1 && keys.length <= 3, `${k}: ${keys.length} key lights`);
+    assert.ok(keys.every((l) => l.intensity >= 2.6), `${k}: the key light the strongest kind`);
+    // by day only fires burn, and none more than four
+    assert.ok(day.lights.filter((l) => l.day).length <= 4, `${k}: the day's fires`);
   }
 });

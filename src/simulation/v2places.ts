@@ -10,7 +10,8 @@ import { PEOPLE, presentAt } from '../narrative/people';
 export type PlazaKind = 'forecourt' | 'training' | 'festival';
 export const PLAZA_OF: Partial<Record<PlaceId, PlazaKind>> = { forecourt: 'forecourt', training: 'training', lanterns: 'festival' };
 /** the crowd of a square by the look (« proposé »: a square is smaller than the quay; more people by day, as J7) */
-export const PLAZA_CROWD: Record<Look, number> = { night: 4, morning: 6, midday: 9, afternoon: 7 };
+// (journal Passe VP7: a few in the morning, the crowd at midday, fewer at the end of the day, a handful at night; « proposé »)
+export const PLAZA_CROWD: Record<Look, number> = { night: 4, morning: 5, midday: 12, afternoon: 8 };
 
 export function plazaPeople(s: GameState): string[] {
   const out = Object.values(PEOPLE).filter((p) => presentAt(p, s.place, s.slot, true)).map((p) => p.id);

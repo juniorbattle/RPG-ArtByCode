@@ -6,7 +6,7 @@ import { PostFX } from '../atmosphere/PostFX';
 import { MoonShadow, PlanarReflection, LAYER_NOREFLECT } from '../atmosphere/ShadowAndReflection';
 import { LightRig, type LightSource } from '../atmosphere/LightRig';
 import { ParticleSystem } from '../atmosphere/Particles';
-import { U, MAX_LIGHTS } from '../atmosphere/SceneUniforms';
+import { U } from '../atmosphere/SceneUniforms';
 import { buildSky } from '../atmosphere/Sky';
 import { LOOKS, skyDefines, type DayLook, type DayTime } from '../atmosphere/DayState';
 import { Weather, overcast, parseWeather } from '../atmosphere/Weather';
@@ -20,8 +20,9 @@ import { loadProductionCast, type CastMember } from '../characters/BakedCast';
 import { variantOf } from '../characters/Variants';
 import { fiveViewFacing } from '../characters/ActorSystem';
 import type { Anim, Dir } from '../characters/SpriteGenerator';
-import { buildPlaza, pickPlazaLights, plazaGroundDefines, steer, walkTo, type PlazaBuild, type PlazaExit, type PlazaKind } from './Plazas';
+import { buildPlaza, plazaGroundDefines, type PlazaPeriod, steer, walkTo, type PlazaBuild, type PlazaExit, type PlazaKind } from './Plazas';
 import { bakePlaza, plazaBakePoses } from './PlazaVisibility';
+import { framingAt, framingPose, lookPose, tuneFraming, type PlazaFraming } from './PlazaCamera';
 
 /** An open place of the version 2 (lot V5, journal Passe V5): one of the three squares of Plazas.ts, walked across by the hero (arrows or
  *  WASD), its people standing at their spots and the crowd walking between its points, seen by a camera that follows the hero across the
@@ -53,13 +54,6 @@ export function plazaKeyLight(look: DayLook | null, t: DayTime | null): THREE.Ve
   const a = THREE.MathUtils.degToRad(az), e = THREE.MathUtils.degToRad(el);
   return new THREE.Vector3(Math.sin(a) * Math.cos(e), Math.sin(e), Math.cos(a) * Math.cos(e)).normalize();
 }
-/** the squares' camera (journal Passe VP1): the Merchant District's language (a low pitch, a long lens, the facades as the backdrop, the
- *  characters at B's size on screen: B is 8 deg / 26 m / fov 30 with characters x 1.12) instead of the first build's high, wide view (22 deg,
- *  17 m, fov 40) that showed mostly the floor; each square turned a little toward the side that composes best */
-// (journal Passe VP6, iteration 11: a lower, longer lens, 5.5 deg / 22 m / fov 30, lost to the wider one in both panels of the tenth critique:
-// « the wider frame keeps the banners and the bandstand whole »)
-const CAM = { pitch: 7, pitchNorth: 6.5, dist: 21, distNorth: 18, fov: 35, ty: 2.6, lead: 2.5, yawGain: 1.2 };
-const BASE_YAW: Record<PlazaKind, number> = { forecourt: 18, training: 22, festival: -20 };
 /** the haze of the squares (journal Passe VP6): where it starts (m) and its density against the day state's (DEV `plazafog=start,density`) */
 const PLAZA_FOG = { start: 12, density: 1.6 };
 /** the squares' depth of field (journal Passe VP6): its range (m) around the hero's depth; the district's 16 m blurs only its far city, and a
@@ -69,16 +63,16 @@ const PLAZA_DOF = { range: 12, far: 0.5 };
 const PLAZA_SUN = { key: 1.18, fill: 0.86 };
 /** the widest frame the squares' visibility bake covers (src/world/PlazaVisibility.ts) */
 export const PLAZA_FRAME = 2.4;
-/** the camera of a square for a hero at (x, z), or for a focus point at distance `dist` (a dialogue, a cutscene's look): the follow's target,
- *  which the page eases toward (and which the visibility bake samples over the whole square) */
+/** the camera of a square for a hero at (x, z) (the framing of the zone they stand in, src/world/PlazaCamera.ts: journal Passe VP7), or for a
+ *  focus point at distance `dist` (a dialogue, a cutscene's look): the page eases toward it */
 export function plazaCamPose(kind: PlazaKind, px: number, pz: number, dist: number | null): CamPose {
-  const x = THREE.MathUtils.clamp(px, -9, 9), z = THREE.MathUtils.clamp(pz, -15, 2);
-  const north = THREE.MathUtils.smoothstep(-z, 2, 14);
-  return {
-    yaw: THREE.MathUtils.degToRad(BASE_YAW[kind] - x * CAM.yawGain), pitch: THREE.MathUtils.degToRad(CAM.pitch - (CAM.pitch - CAM.pitchNorth) * north),
-    dist: dist ?? CAM.dist - (CAM.dist - CAM.distNorth) * north, fov: CAM.fov, shift: 0, tx: x * 0.8, ty: CAM.ty, tz: dist !== null ? z : z - CAM.lead,
-  };
+  return dist !== null ? lookPose(kind, px, pz, dist) : framingPose(framingAt(kind, px, pz), px, pz);
 }
+/** the crowd by the moment of the day (journal Passe VP7, « proposé »): how many walk together, how long they linger at a point (s: a base and
+ *  a step, five steps by walker) */
+const CROWD: Record<PlazaPeriod, { size: number; linger: [number, number] }> = {
+  morning: { size: 1, linger: [0.8, 0.5] }, midday: { size: 3, linger: [7, 1.6] }, afternoon: { size: 2, linger: [2, 0.8] }, night: { size: 2, linger: [6, 1.5] },
+};
 /** the characters' scale in the squares: B's (journal Passe VP1) */
 const CHAR_SCALE = 1.12;
 /** the squares' moon: a third below the first build's (journal Passe VP1, third critique: the moonlit plaster outshone the lamps, the night's
@@ -116,15 +110,19 @@ export class PlazaApp {
   buildMs = 0;
   keys = new Set<string>();
   private readonly ndc = new THREE.Vector3();
-  /** each light's own priority (the page's light picking raises the chosen ones above it) and whether it burns at all (by day: the fires) */
-  private readonly lightBase = new Map<LightSource, number>();
   /** the hero walked this frame (a key held, not locked) */
   moving = false;
   /** a cutscene's camera focus (x, z, distance) and its walkers (lot V6); the hero's keys held off while one plays */
   focus: { x: number; z: number; dist: number } | null = null;
   locked = false;
   private walking = new Map<Actor, { to: [number, number]; done: () => void }>();
-  private pose: CamPose = { yaw: 0, pitch: THREE.MathUtils.degToRad(CAM.pitch), dist: CAM.dist, fov: CAM.fov, shift: 0, tx: 0, ty: CAM.ty, tz: -2.5 };
+  private pose: CamPose = lookPose('festival', 0, 0, 20);
+  /** the moment of the day: the page's day state, or the night */
+  get period(): PlazaPeriod { return this.opts.time ?? 'night'; }
+  /** the framing the hero's zone gives (held within the hysteresis), null before the first frame */
+  framing: PlazaFraming | null = null;
+  /** the yaw the movement keys were pressed under: kept until they are all released (the district's rule, AGENTS.md) */
+  private moveYaw: number | null = null;
   private lastT = performance.now();
   private cast: Map<string, CastMember> | null = null;
 
@@ -142,12 +140,8 @@ export class PlazaApp {
     this.camera.layers.enable(LAYER_NOREFLECT);
     this.look = opts.time ? LOOKS[opts.time] : null;
     this.keyDir = plazaKeyLight(this.look, opts.time);
-    // DEV only: `plazacam=yaw,pitch,dist,fov[,pitchNorth,distNorth,ty,lead,yawGain]` sets this square's framing while tuning (blank = keep)
-    if (import.meta.env.DEV && q.has('plazacam')) {
-      const v = q.get('plazacam')!.split(',').map((t) => (t.trim() === '' ? null : +t));
-      if (v[0] !== null && v[0] !== undefined) BASE_YAW[opts.kind] = v[0];
-      (['pitch', 'dist', 'fov', 'pitchNorth', 'distNorth', 'ty', 'lead', 'yawGain'] as const).forEach((k, i) => { const x = v[i + 1]; if (x !== null && x !== undefined && Number.isFinite(x)) CAM[k] = x; });
-    }
+    // DEV only: `plazaframe=<id>:yaw,pitch,dist,fov,hx,hy,hz[,gx,gz];...` changes this square's framings while composing (blank = keep)
+    if (import.meta.env.DEV && q.has('plazaframe')) tuneFraming(opts.kind, q.get('plazaframe')!);
     if (import.meta.env.DEV && q.has('plazadof')) { const [r, f] = q.get('plazadof')!.split(',').map(Number); if (r > 0) PLAZA_DOF.range = r; if (f >= 0) PLAZA_DOF.far = f; }
     if (import.meta.env.DEV && q.has('plazafog')) { const [a, b] = q.get('plazafog')!.split(',').map(Number); if (a >= 0) PLAZA_FOG.start = a; if (b > 0) PLAZA_FOG.density = b; }
     // the weather (journal Passe VP1): the town's (src/atmosphere/Weather.ts) from the same parameters, the day's rain from the state
@@ -197,7 +191,7 @@ export class PlazaApp {
     this.opts.onProgress(this.opts.kind, 0.95);
     await new Promise((r) => setTimeout(r, 0));
     const t0 = performance.now();
-    this.place = buildPlaza(this.lib, this.opts.kind, 1842, { day: !!this.look });
+    this.place = buildPlaza(this.lib, this.opts.kind, 1842, { day: !!this.look, period: this.period });
     this.buildMs = performance.now() - t0;
     this.scene.add(this.place.group);
     // the visibility bake (journal Passe VP1): what no pose of the square shows leaves the frame; ?vis=0 keeps everything; a failure keeps
@@ -208,7 +202,7 @@ export class PlazaApp {
         // DEV experiments: ?visstep=<m> (the poses' grid), ?visfine=A:<k> (a k x main-view tile of every pose), ?visscale=<k> (every tile k x)
         const q = this.opts.params, dev = import.meta.env.DEV, step = dev && Number(q.get('visstep')) > 0 ? Number(q.get('visstep')) : undefined;
         const fn = dev ? q.get('visfine')?.split(':') : undefined, sc = dev ? Number(q.get('visscale')) : 0;
-        const poses = plazaBakePoses(this.opts.kind, this.place, (x, z, d) => plazaCamPose(this.opts.kind, x, z, d), step);
+        const poses = plazaBakePoses(this.opts.kind, this.place, step);
         // the bake cache (?viscache=0 bakes and stores nothing, ?viscache=verify bakes and compares with the stored entry: the district's)
         const vc = q.get('viscache'), mode = vc === '0' || vc === 'off' ? 'off' : vc === 'verify' ? 'verify' : 'on';
         const v = bakePlaza(this.renderer, this.place, poses, PLAZA_FRAME, { ...(fn && +fn[1] > 0 ? { fine: { sets: ['A'], scale: +fn[1] } } : {}), ...(sc > 0 ? { scale: sc } : {}) }, mode);
@@ -220,10 +214,10 @@ export class PlazaApp {
       }
     }
     for (const l of this.place.lights) {
+      // the square's light plan (journal Passe VP7): every light it declares burns, under the frame's budget (src/world/Plazas.ts), none
+      // chosen away; by day only the fires burn (J4): lanterns and windows unlit
       const s: LightSource = this.lights.add(l, 'static', Math.abs(Math.sin(l.pos[0] * 12.9 + l.pos[2] * 78.2)));
-      // by day only the fires burn (J4): lanterns and windows unlit
       if (this.look && !l.day) s.scale = s.targetScale = 0;
-      else this.lightBase.set(s, s.priority);
     }
     this.particles = new ParticleSystem(this.lib);
     if (this.weather) this.particles.wind.multiplyScalar(this.weather.p.wind);
@@ -251,16 +245,18 @@ export class PlazaApp {
       const a = this.actor(ROLE_ARCHETYPE[id] ?? `prov-${id}`, 'person', at[0], at[1], 100 + this.people.length);
       this.people.push(a); this.who.set(a, id);
     }
-    // the crowd: the five townsfolk in turn (their V1 variants by id), walking between the square's points
-    // two by two at their points, each pair turned to each other (journal Passe VP6, tenth critique: « figures stand apart like pieces on a
-    // board and all face the camera »)
+    // the crowd (journal Passe VP7): the five townsfolk in turn (their V1 variants by id), gathered by the moment of the day at the square's
+    // points (PLAZA_GATHER): one by one in the morning, by threes at midday, two by two at the end of the day and at night, each group turned
+    // to its first member (journal Passe VP6, tenth critique: « figures stand apart like pieces on a board and all face the camera »)
+    const G = CROWD[this.period], W = this.place.walk;
+    const clear = (x: number, z: number) => x > W.x0 && x < W.x1 && this.place.blockers.every((o) => Math.hypot(x - o.x, z - o.z) >= o.r + 0.3);
     for (let i = 0; i < this.opts.crowd; i++) {
-      const p = this.place.wander[Math.floor(i / 2) % this.place.wander.length], second = i % 2 === 1;
-      // the partner beside the point, on the first side clear of what stands there
-      const W = this.place.walk, side = [1, -1].find((sx) => { const x = p[0] + sx * 0.8, z = p[1] + 0.15; return x > W.x0 && x < W.x1 && this.place.blockers.every((o) => Math.hypot(x - o.x, z - o.z) >= o.r + 0.3); }) ?? 0;
-      const a = this.actor(`crowd${i % 5}`, 'crowd', p[0] + (second ? side * 0.8 : 0), p[1] + (second && side ? 0.15 : 0), 200 + i);
-      a.dir = 'side'; a.flip = second ? side < 0 : side >= 0;
-      a.behaviour = { kind: 'wander', seed: 31 * i + 7, idx: (i * 3) % this.place.wander.length, wait: (i % 4) * 0.7 };
+      const m = i % G.size, p = this.place.wander[Math.floor(i / G.size) % this.place.wander.length];
+      // the second to one side of the first, the third to the other, on sides clear of what stands there
+      const sides = [1, -1].filter((sx) => clear(p[0] + sx * 0.8, p[1] + 0.15)), side = m === 0 ? 0 : (sides[m - 1] ?? 0);
+      const a = this.actor(`crowd${i % 5}`, 'crowd', p[0] + side * 0.8, p[1] + (side ? 0.15 : 0), 200 + i);
+      a.dir = 'side'; a.flip = m === 0 ? (sides[0] ?? 1) > 0 : side < 0;
+      a.behaviour = { kind: 'wander', seed: 31 * i + 7, idx: (i * 3) % this.place.wander.length, wait: G.linger[0] * (0.4 + (i % 4) * 0.2) };
       this.people.push(a);
     }
     this.resize();
@@ -292,12 +288,12 @@ export class PlazaApp {
     this.applyCamera(1);
   }
 
-  /** the open space's framing: the pivot follows the hero (held a little toward the square's heart), the camera leans toward the side it
-   *  walks to (yaw), comes nearer toward the north wall and rises a little at the square's mouth; every value a smooth function of where the
-   *  hero stands, eased (no cut, no blend to author) */
+  /** the square's framing (journal Passe VP7): the one of the zone the hero stands in (src/world/PlazaCamera.ts), its pivot following them by
+   *  its gain, or a dialogue's or a cutscene's look; the page eases every field of the pose toward it (a framing's change glides, no cut) */
   private applyCamera(k: number): void {
-    const f = this.focus, p = this.player?.pos ?? new THREE.Vector3(0, 0, -2);
-    const want = plazaCamPose(this.opts.kind, f ? f.x : p.x, f ? f.z : p.z, f ? f.dist : null);
+    const f = this.focus, p = this.player?.pos ?? new THREE.Vector3(0, 0, 1.5);
+    this.framing = framingAt(this.opts.kind, p.x, p.z, this.framing?.id ?? null);
+    const want = f ? lookPose(this.opts.kind, f.x, f.z, f.dist) : framingPose(this.framing, p.x, p.z);
     const P = this.pose;
     for (const key of ['yaw', 'pitch', 'dist', 'fov', 'tx', 'ty', 'tz'] as const) P[key] += (want[key] - P[key]) * k;
     // a window wider than the frame the visibility bake covered shows a vertical crop of it (never a culled part: AGENTS.md, window formats)
@@ -309,8 +305,9 @@ export class PlazaApp {
     const k = this.keys, ix = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0), iz = (k.has('s') || k.has('arrowdown') ? 1 : 0) - (k.has('w') || k.has('arrowup') ? 1 : 0);
     const P = this.player, speed = (this.cast?.get('player')?.walkSpeed ?? 3.2) * (k.has('shift') ? 1.2 : 1);
     this.moving = !!(ix || iz) && !this.locked;
+    if (!ix && !iz) this.moveYaw = null;
     if ((ix || iz) && !this.locked) {
-      const yaw = this.pose.yaw, c = Math.cos(yaw), s = Math.sin(yaw), n = Math.hypot(ix, iz);
+      const yaw = (this.moveYaw ??= this.pose.yaw), c = Math.cos(yaw), s = Math.sin(yaw), n = Math.hypot(ix, iz);
       const dx = (ix * c + iz * s) / n, dz = (-ix * s + iz * c) / n;
       const [nx, nz] = walkTo(this.place, P.pos.x, P.pos.z, P.pos.x + dx * speed * dt, P.pos.z + dz * speed * dt);
       P.pos.x = nx; P.pos.z = nz;
@@ -331,7 +328,7 @@ export class PlazaApp {
       const b = a.behaviour; if (!b || b.kind !== 'wander') continue;
       if ((b.wait ?? 0) > 0) { b.wait! -= dt; a.anim = 'idle' as Anim; continue; }
       const tgt = this.place.wander[b.idx ?? 0], dx = tgt[0] - a.pos.x, dz = tgt[1] - a.pos.z, d = Math.hypot(dx, dz), v = (this.cast?.get(a.base ?? '')?.walkSpeed ?? 1.4) * 0.8;
-      if (d < 0.3) { b.idx = ((b.idx ?? 0) + 1 + (b.seed % 3)) % this.place.wander.length; b.wait = 1 + ((b.seed + (b.idx ?? 0)) % 5) * 0.6; continue; }
+      if (d < 0.3) { const L = CROWD[this.period].linger; b.idx = ((b.idx ?? 0) + 1 + (b.seed % 3)) % this.place.wander.length; b.wait = L[0] + ((b.seed + (b.idx ?? 0)) % 5) * L[1]; continue; }
       // round what stands on the square (the fountain, the bandstand: journal Passe VP6)
       const [ux, uz] = steer(this.place.blockers, a.pos.x, a.pos.z, dx / d, dz / d);
       a.pos.x += ux * v * dt; a.pos.z += uz * v * dt; a.anim = 'walk' as Anim;
@@ -379,7 +376,6 @@ export class PlazaApp {
     for (const a of this.people) if (a.role === 'crowd') { this.ndc.copy(a.pos).project(this.camera); a.hidden = this.ndc.y < -0.97 || Math.abs(this.ndc.x) > 0.95; }
     const v = this.player.pos.clone().applyMatrix4(this.camera.matrixWorldInverse);
     this.post.params.dofFocus = THREE.MathUtils.clamp(-v.z, 6, 40);
-    this.pickLights(dt);
     this.lights.update(this.time, dt, this.camera);
     this.sprites.update([this.player, ...this.people], this.lights, this.camera, this.keyDir, null, this.player);
     this.particles.update(dt, this.time, this.camera, this.post.height, this.lights, null);
@@ -399,23 +395,9 @@ export class PlazaApp {
   }
 
   /** the review / proof pose (tools/plaza-shots.mjs): the hero at (x, z), the camera settled on it at once (no easing), one frame drawn */
-  /** the lights a frame takes (MAX_LIGHTS, one kept for a light fading out) among the square's 30 to 50 at night (journal Passe VP6, fifth
-   *  critique: the forecourt's south lamps were never lit, 25 lights of a higher priority took the frame's 24): the nearest to the hero (or a
-   *  cutscene's focus) first, a light's own priority worth 6 m; the chosen keep their place by 0.3 (no flicker between two equals), a light
-   *  leaving the set fades out, one entering fades in (LightRig's scale; at once when the page is posed). The town's rig is untouched. */
-  private pickLights(dt: number): void {
-    const f = this.focus, hx = f ? f.x : this.player.pos.x, hz = f ? f.z : this.player.pos.z;
-    const L = [...this.lightBase], pick = pickPlazaLights(L.map(([s, base]) => ({ x: s.pos.x, z: s.pos.z, priority: base, on: s.targetScale > 0.5 })), hx, hz, MAX_LIGHTS - 1);
-    L.forEach(([s], i) => {
-      s.targetScale = pick[i].on ? 1 : 0;
-      s.priority = (pick[i].on ? 1000 : 500) + pick[i].k;
-      if (dt === 0) s.scale = s.targetScale;
-    });
-  }
-
   posePlayer(x: number, z: number, dir: Dir = 'up'): void {
     this.player.pos.set(x, 0, z); this.player.dir = dir; this.player.anim = 'idle' as Anim;
-    this.focus = null;
+    this.focus = null; this.framing = null;
     this.update(0); this.render();
   }
 
@@ -434,7 +416,7 @@ export class PlazaApp {
       kind: this.opts.kind, visibility: this.vis, ...(this.weather ? { weather: { ...this.weather.p, drops: this.weather.drops() } } : {}), fps: p.fps, frameMs: p.frameMs, drawCalls: p.drawCalls, triangles: p.triangles, placeTriangles: this.place?.stats.triangles, instances: this.place?.stats.instances,
       buildings: this.place?.stats.buildings, generatorMs: this.buildMs, lights: this.lights.sources.length, lightsActive: this.lights.active, people: this.people.length,
       baked: this.people.filter((a) => this.atlas.baked.has(a.spec)).map((a) => a.spec), provisional: this.people.filter((a) => a.spec.startsWith('prov-')).map((a) => a.spec),
-      player: { x: +this.player.pos.x.toFixed(2), z: +this.player.pos.z.toFixed(2), spec: this.player.spec }, atlas: `${this.atlas.width}x${this.atlas.height} + baked ${this.atlas.bakedWidth}x${this.atlas.bakedHeight}`,
+      player: { x: +this.player.pos.x.toFixed(2), z: +this.player.pos.z.toFixed(2), spec: this.player.spec }, framing: this.framing?.id ?? null, atlas: `${this.atlas.width}x${this.atlas.height} + baked ${this.atlas.bakedWidth}x${this.atlas.bakedHeight}`,
     };
   }
 }
