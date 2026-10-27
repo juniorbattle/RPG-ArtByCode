@@ -522,6 +522,45 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
 - La place festive : le coin du marchand de cidre à droite (tonneaux, caisse, deux bancs, une lanterne sur poteau allumée la nuit) ; l'étal des
   chandelles proche de la caméra éteint la nuit.
 
+### La cinquième critique à l'aveugle (itération 6), étalonnée — [?] « pas encore » partout
+- Agent neuf ; sept planches (itérations 5 et 6, le district caché : 10 / 8, la référence 8). Itération 6 : **parvis 7,5 / 6,5**, **place
+  festive 7,5 / 6,5**, **entraînement 6,5 / 5,5** ; chaque fois devant l'itération 5 (l'entraînement : « ses braseros allumés font d'une cour
+  morte une flaque de lumière lisible »). Verdicts : « pas encore » partout, la place festive « la plus proche ».
+- Ses reproches communs : aucune profondeur (« ni perspective ni brume étagée »), des boîtes fermées vues d'un même balcon, la nuit sans
+  flaques de lumière ; au parvis le mur « un grand plan plat de brique en carreaux », les arcades hautes « des découpes noires », le centre noir
+  la nuit ; à l'entraînement le sable « un plan beige plat », les bottes de paille « des cubes jaunes sans texture qui semblent émissifs »,
+  l'estrade « une boîte brune », ses cordes « des lignes épaisses et claires qui flottent », la clôture « des bâtons noirs » ; à la place
+  festive le mât de mai « un cône de bandes droites sur un disque brun [...] une armature de tente », les lanternes des cordes qui « flottent »
+  (leurs fils invisibles), l'auvent proche.
+
+### Itération 7
+- La mesure d'abord : les places de nuit déclarent 25 à 41 lumières pour les 24 d'une image (`MAX_LIGHTS`) ; triées par leur seule priorité,
+  au parvis les quatre réverbères du bord sud (priorité 6) et ceux de l'intérieur (5) **n'étaient jamais allumés** (25 lumières de priorité 7
+  à 9 passaient avant). [OK] La page des places choisit ses 22 lumières par proximité du héros (ou du point d'une cinématique), la priorité
+  propre d'une lumière valant 8 m, avec 0,3 de maintien ; une lumière qui sort du choix s'éteint en fondu, une qui entre s'allume en fondu
+  (aussitôt quand la page est posée) ; la `LightRig` de la ville est inchangée. `__stats()` (et `tools/plaza-shots.mjs`) donnent
+  `lightsActive`.
+- La brume des places commence à 12 m (16 dans la ville) et 1,6 fois plus dense que celle de l'état du jour ou de la nuit (leurs rangées du fond
+  sont à 35-40 m de la caméra, les maisons lointaines du district à plus de 100 m) ; `plazafog=début,densité` (DEV) la règle.
+- La place festive : le mât de mai remplacé par **un kiosque à musique** (une base octogonale de pierre et ses trois marches, un plancher, huit
+  poteaux ivoire et leur garde-corps, un toit d'ardoise du matériau des maisons jusqu'à un fleuron de laiton et son fanion, un lambrequin rayé
+  à festons, un plafond, des lanternes allumées la nuit et sa lumière propre, un tambour, des tabourets), dans le quart nord-ouest ([KO] d'abord
+  au milieu de la place : il cachait le héros arrêté derrière lui) ; les cordes de lanternes rayonnent de son fleuron vers les rangées et la
+  scène, des cordes visibles, une flaque de lumière sous chaque longue corde, les fanions du jour sur trois d'entre elles ; le théâtre de
+  marionnettes à l'ouest, l'étal des chandelles tourné et écarté de la caméra.
+- Le parvis : les tours de la porte en enduit, chaînées de pierre aux angles (de grands blocs calmes ; [KO] d'abord des blocs de 0,5 m, une
+  « fermeture éclair » le long de chaque angle), l'enduit plus sombre vers le pied ; la pierre de l'arène en blocs plus grands ; de jour, les
+  arcades hautes sont des niches dans l'ombre de leur tête avec une porte vers la galerie ; deux réverbères où la voie rejoint le parvis de la
+  fontaine ; les lanternes de la fontaine plus fortes.
+- L'entraînement : la terre battue refaite dans la variante `SAND` du shader (des plaques sèches et humides, des mottes, du grain et des
+  graviers sombres, les arcs d'un râteau, la terre plus sombre et lisse là où l'on marche) ; les bottes de paille : [KO] dans le grain des
+  planches elles se lisaient comme des caisses ; [OK] des galettes de paille pressée de deux tons, chacune un peu décalée, et leurs liens ; le
+  cercle sans son disque de plâtre (la terre de la cour), sa clôture en bois clair et plus épaisse ; l'estrade : une toile de combat à bord bleu
+  et cercle peint, des cordes de chanvre fines qui fléchissent ; les réverbères du bord sud aussi forts que ceux des autres places.
+- Les passants contournent ce qui se tient sur la place (la fontaine, le kiosque, les pavillons, l'estrade) au lieu de le traverser
+  (`steer`, `src/world/Plazas.ts`) ; un point de la foule de l'entraînement était dans l'estrade (déplacé). Test : les places des personnes et
+  les points de la foule hors des grandes choses, chaque marche d'un point à un autre arrivée et tenue dehors (`tests/v2-exits.test.mjs`).
+
 ### Les tests prouvés par des défauts injectés (Passes VP3 à VP5) — [OK]
 - Cinq défauts, chacun attrapé, les fichiers rendus octet pour octet (`cmp`) : les huit emblèmes du tournoi peints aussi dans l'atlas
   d'aujourd'hui (`v2-heraldry` : 1 échec, l'empreinte des appels), une bannière d'une place revenue à la fleur de lys (`v2-heraldry` : 1), une

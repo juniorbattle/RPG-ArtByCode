@@ -75,14 +75,27 @@ void main(){
   A.rgb = mix(mix(texture2D(tCobble, uvA, 10.0).rgb, texture2D(tCobble, uvB, 10.0).rgb, t), A.rgb, COBBLE_CONTRAST);
 #endif
 #ifdef SAND
-  // the training ground's beaten earth (journal Passe VP6): no setts, a tonal breakup at three scales, a faint rake, the mask's grime and wear
+  // the training ground's beaten earth (journal Passe VP6): no setts; broad damp and dry patches, clods, grain and dark grit at their own
+  // scales (in metres, the setts' scale left aside), a rake's arcs that the feet erase (below, with the mask's wear); the fifth critique:
+  // « a flat beige plane with no grain, rake marks or colour variation »
+  vec2 rakeN = vec2(0.0);
+  float rakeH = 0.0;
   {
-    float s1 = vn2(gp * 0.35), s2 = vn2(gp * 1.9), s3 = vn2(gp * 7.3);
-    vec3 sand = vec3(0.074, 0.061, 0.045) * (0.6 + 0.52 * s1 + 0.26 * s2 + 0.12 * s3);
-    sand *= 0.95 + 0.05 * sin(gp.x * 6.5 + s2 * 2.5);
-    A = vec4(sand, 0.55 + 0.25 * s2);
-    nxy = (vec2(vn2(gp * 4.7 + 3.1), vn2(gp * 4.7 + 7.7)) - 0.5) * 0.22;
-    ao = 1.0; rough0 = 0.95;
+    vec2 sp = P.xz;
+    float l1 = vn2(sp * 0.13), l2 = vn2(sp * 0.47 + 4.3), g1 = vn2(sp * 2.2), g2 = vn2(sp * 8.5 + 1.7);
+    float grit = smoothstep(0.72, 0.9, vn2(sp * 21.0)) * (0.5 + 0.5 * g1);
+    vec3 dry = vec3(0.086, 0.069, 0.049), damp0 = vec3(0.058, 0.045, 0.033);
+    vec3 sand = mix(damp0, dry, smoothstep(0.25, 0.75, l1 * 0.7 + l2 * 0.3));
+    sand *= 0.78 + 0.26 * l2 + 0.2 * g1 + 0.12 * g2;
+    sand *= 1.0 - 0.38 * grit;
+    // the rake: arcs round a point off the yard, 15 cm apart, wavering
+    vec2 rc = sp - vec2(-26.0, 18.0);
+    float rr = length(rc), ph = rr * 41.0 + l2 * 4.0 + g1 * 0.8;
+    rakeH = sin(ph);
+    rakeN = (rc / rr) * cos(ph) * 0.34;
+    A = vec4(sand * (1.0 + 0.07 * rakeH), 0.5 + 0.2 * g1 + 0.08 * rakeH);
+    nxy = (vec2(vn2(sp * 3.3 + 3.1), vn2(sp * 3.3 + 7.7)) - 0.5) * 0.42 + (vec2(vn2(sp * 11.0), vn2(sp * 11.0 + 5.0)) - 0.5) * 0.18;
+    ao = 1.0 - 0.25 * grit; rough0 = 0.95;
   }
 #endif
 
@@ -98,6 +111,12 @@ void main(){
   albedo = mix(albedo, albedo * vec3(0.62, 0.52, 0.44), M.g * 0.7);
   albedo *= mix(0.72, 1.0, M.a);
   albedo = mix(albedo, albedo * vec3(1.18, 1.12, 1.08), M.b * 0.5);
+#ifdef SAND
+  // the feet tread the rake flat and darken the earth where they go (the mask's wear), the grime gathers along what stands
+  float trod = smoothstep(0.08, 0.7, M.b);
+  albedo *= mix(1.0, 0.62, trod) / mix(1.0, 1.12, M.b * 0.5);
+  nxy += rakeN * (1.0 - trod);
+#endif
 
   // wetness: water collects in joints first, then drowns the stones
   float fill = M.r * 1.3 + (1.0 - h) * 0.3 - 0.14;

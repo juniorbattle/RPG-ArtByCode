@@ -1,7 +1,8 @@
 // The version 2's ways between places (journal Passe VP5, the operator's request: « je veux que les villes soient connecté [...] via des
 // entrés/sorties comme dans un final fantasy 9 »): the graph walked both ways, each square's ways out where its rows open (a side street
 // under a gateway, the quay's gate in the kerb), each way's lane walkable from the way in to the way out, the arrival inside the square and
-// clear of what stands on it, the quay's two ends; only a version 2 game has them. The walk in a browser: tools/exits-proof.mjs.
+// clear of what stands on it, the quay's two ends; only a version 2 game has them. The walk in a browser: tools/exits-proof.mjs. And the
+// squares' own walkers: the people's spots and the crowd's points clear of what stands there, the crowd led round it (journal Passe VP6).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -77,4 +78,25 @@ test('the quay\'s two ends (a version 2 game\'s town only): arrivals inside its 
   const p = src('src/ui/playPlaza.ts');
   assert.match(p, /arriveFrom: b\.params\.get\('arrive'\)/);
   assert.match(p, /if \(r\.ok\) go\(b\.params, \{ arrive: from \}\)/);
+});
+
+test('the squares\' walkers: spots and crowd points clear of what stands on the square, every walk between two points led round it', () => {
+  for (const k of KINDS) {
+    const b = PZ.buildPlaza(lib, k, 1842, { day: false }), big = b.blockers.filter((o) => o.r >= 1);
+    // (a person may stand at a stall or a table: the large things only, the fountain, the bandstand, the pavilions, the towers)
+    for (const [id, [x, z]] of Object.entries(b.spots)) for (const o of big) if (o.r >= 2) assert.ok(Math.hypot(x - o.x, z - o.z) >= o.r, `${k}: ${id} clear of ${o.x},${o.z}`);
+    for (const [x, z] of b.wander) for (const o of big) assert.ok(Math.hypot(x - o.x, z - o.z) >= o.r + 0.45, `${k}: crowd point ${x},${z} clear of ${o.x},${o.z}`);
+    // the page's walk (PlazaApp: 0.8 x a townsperson's 1.4 m/s, 1/60 s steps), from every point to every other
+    for (const a of b.wander) for (const c of b.wander) {
+      if (a === c) continue;
+      let x = a[0], z = a[1], n = 0, deepest = 0;
+      while (Math.hypot(c[0] - x, c[1] - z) > 0.3 && n++ < 6000) {
+        const d = Math.hypot(c[0] - x, c[1] - z), [ux, uz] = PZ.steer(b.blockers, x, z, (c[0] - x) / d, (c[1] - z) / d);
+        x += (ux * 1.12) / 60; z += (uz * 1.12) / 60;
+        for (const o of big) deepest = Math.max(deepest, o.r - Math.hypot(x - o.x, z - o.z));
+      }
+      assert.ok(n < 6000, `${k}: ${a} -> ${c} arrives`);
+      assert.ok(deepest < 0.5, `${k}: ${a} -> ${c} kept out of what stands there (${deepest.toFixed(2)} m in)`);
+    }
+  }
 });
