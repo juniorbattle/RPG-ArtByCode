@@ -17,6 +17,9 @@ export interface PlazaFraming {
   home: [number, number, number]; ref: [number, number]; gain: [number, number]; min: [number, number]; max: [number, number];
   /** the hero positions this framing takes; the highest `priority` among the zones containing the hero wins */
   zone: Rect; priority: number;
+  /** degrees the camera turns per metre the hero stands east of `ref` (within 9 m): toward the side the hero walks to, so the camera stays
+   *  between the rows (the first build's follow camera, journal Passe VP6); absent = 0 */
+  turn?: number;
 }
 
 /** how far past its zone's edge the current framing holds (the district's) */
@@ -24,31 +27,31 @@ export const PLAZA_HYSTERESIS = 0.9;
 
 /** the framings of each square (« proposé », journal Passe VP7) */
 export const PLAZA_FRAMINGS: Record<PlazaKind, PlazaFraming[]> = {
-  // (journal Passe VP7, iteration 2: near and a little from the side, as the first build's follow camera and the district's B, after both
-  // panels of the first critique preferred it to the iteration 1's wide and frontal framings, « the camera is centred with the hero on the
-  // axis, where R uses diagonals »; composed under the framing test's rules: the hero in the frame, the near edge out, no monument hiding the
-  // hero or cut by the frame's bottom edge, the camera between the rows)
+  // (journal Passe VP7, iteration 3: the first build's follow camera, which both panels of two critiques preferred, near and from the side and
+  // turning toward the side the hero walks to (`turn`), over the near edge as the frames' foreground; and near the monument a framing
+  // composed for it. Under the framing test's rules: the hero in the frame and over the near edge, no monument hiding the hero or cut by the
+  // frame's bottom edge, the camera between the rows)
   forecourt: [
-    // the arrival by the quay's gate: the hero walks in at the bottom of the frame, the fountain and the arena's gate ahead
-    { id: 'entry', label: 'Arrival', yaw: 8, pitch: 6.5, dist: 19, fov: 38, home: [0, 2.6, -5], ref: [0, 2], gain: [0.7, 0.6], min: [-6, -1.5], max: [6, 1.5], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
+    // the arrival by the quay's gate: over the balustrade, the fountain and the arena's gate ahead
+    { id: 'entry', label: 'Arrival', yaw: 12, turn: 0.8, pitch: 6.5, dist: 21, fov: 35, home: [0, 2.6, -2], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
     // the court: the fountain at the heart, the gate beyond it, the hero in the lower third
-    { id: 'court', label: 'Court', yaw: 8, pitch: 7, dist: 19, fov: 36, home: [0, 3.4, -6.5], ref: [0, -4], gain: [0.7, 0.5], min: [-6, -3], max: [6, 3], zone: { x0: -99, x1: 99, z0: -10, z1: 0.5 }, priority: 1 },
+    { id: 'court', label: 'Court', yaw: 12, turn: 0.8, pitch: 6.5, dist: 21, fov: 35, home: [0, 3.2, -6.5], ref: [0, -4], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: -10, z1: 0.5 }, priority: 1 },
     // before the gate: the fountain whole in front, the arch, its braziers, the pavilions on each side
     { id: 'gate', label: 'Gate', yaw: 8, pitch: 6, dist: 21, fov: 40, home: [0, 3.6, -12], ref: [0, -13], gain: [0.5, 0.3], min: [-6, -1.5], max: [6, 1.5], zone: { x0: -99, x1: 99, z0: -99, z1: -10 }, priority: 2 },
   ],
   training: [
-    // the arrival from the forecourt's street: the yard ahead, the ring before the stand
-    { id: 'entry', label: 'Arrival', yaw: -6, pitch: 7, dist: 20, fov: 35, home: [1.5, 2.6, -5], ref: [0, 2], gain: [0.7, 0.6], min: [-9, -1.5], max: [9, 1.5], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
-    // the yard: the dummy's ring at the left, the champions' ring ahead, the butts along the right
-    { id: 'yard', label: 'Yard', yaw: -10, pitch: 6, dist: 18, fov: 38, home: [1.5, 2.6, -6.5], ref: [0, -4], gain: [0.7, 0.7], min: [-8, -3], max: [8, 3], zone: { x0: -99, x1: 99, z0: -5, z1: 0.5 }, priority: 1 },
+    // the arrival from the forecourt's street: over the fence, the yard ahead, the ring before the stand
+    { id: 'entry', label: 'Arrival', yaw: 18, turn: 1.2, pitch: 6.5, dist: 21, fov: 35, home: [1.5, 2.6, -2], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
+    // the yard: the dummy's ring, the champions' ring, the butts along the right
+    { id: 'yard', label: 'Yard', yaw: 18, turn: 1.2, pitch: 6.5, dist: 21, fov: 35, home: [1.5, 2.6, -6.5], ref: [0, -4], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: -5, z1: 0.5 }, priority: 1 },
     // the ring: the champions' boards, its braziers and the stand behind
-    { id: 'ring', label: 'Ring', yaw: -10, pitch: 6, dist: 18, fov: 38, home: [1.5, 2.8, -10], ref: [0, -10], gain: [0.5, 0.5], min: [-7, -2], max: [7, 2], zone: { x0: -99, x1: 99, z0: -99, z1: -5 }, priority: 2 },
+    { id: 'ring', label: 'Ring', yaw: 10, pitch: 6, dist: 18, fov: 38, home: [1.5, 2.8, -10], ref: [0, -10], gain: [0.5, 0.5], min: [-7, -2], max: [7, 2], zone: { x0: -99, x1: 99, z0: -99, z1: -5 }, priority: 2 },
   ],
   festival: [
-    // the arrival by the quay's gate: the stalls along the east row, the stage and the bandstand at the end
-    { id: 'entry', label: 'Arrival', yaw: -6, pitch: 6, dist: 19, fov: 38, home: [0, 2.6, -5], ref: [0, 2], gain: [0.6, 0.6], min: [-9, -1.5], max: [9, 1.5], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
+    // the arrival by the quay's gate: over the balustrade, the stalls along the east row, the stage and the bandstand at the end
+    { id: 'entry', label: 'Arrival', yaw: -18, turn: 0.8, pitch: 6.5, dist: 21, fov: 35, home: [0, 2.6, -2], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
     // the court: the strings over the hero, the stalls, the stage beyond
-    { id: 'court', label: 'Court', yaw: -12, pitch: 7, dist: 18, fov: 35, home: [0, 2.6, -6.5], ref: [0, -4], gain: [0.6, 0.7], min: [-8, -3], max: [8, 3], zone: { x0: -99, x1: 99, z0: -9, z1: 0.5 }, priority: 1 },
+    { id: 'court', label: 'Court', yaw: -18, turn: 0.8, pitch: 6.5, dist: 21, fov: 35, home: [0, 2.6, -6.5], ref: [0, -4], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: -9, z1: 0.5 }, priority: 1 },
     // before the stage: the boards, the bandstand and the tavern, from the east
     { id: 'stage', label: 'Stage', yaw: 8, pitch: 7, dist: 18, fov: 35, home: [-2, 3, -12.5], ref: [0, -12.5], gain: [0.6, 0.5], min: [-7, -2], max: [7, 2], zone: { x0: -99, x1: 99, z0: -99, z1: -9 }, priority: 2 },
   ],
@@ -74,7 +77,8 @@ export function framingsAround(kind: PlazaKind, x: number, z: number): PlazaFram
 /** a framing's pose for a hero at (x, z) */
 export function framingPose(f: PlazaFraming, x: number, z: number): CamPose {
   const ox = THREE.MathUtils.clamp(f.gain[0] * (x - f.ref[0]), f.min[0], f.max[0]), oz = THREE.MathUtils.clamp(f.gain[1] * (z - f.ref[1]), f.min[1], f.max[1]);
-  return { yaw: THREE.MathUtils.degToRad(f.yaw), pitch: THREE.MathUtils.degToRad(f.pitch), dist: f.dist, fov: f.fov, shift: 0, tx: f.home[0] + ox, ty: f.home[1], tz: f.home[2] + oz };
+  const turn = (f.turn ?? 0) * THREE.MathUtils.clamp(x - f.ref[0], -9, 9);
+  return { yaw: THREE.MathUtils.degToRad(f.yaw - turn), pitch: THREE.MathUtils.degToRad(f.pitch), dist: f.dist, fov: f.fov, shift: 0, tx: f.home[0] + ox, ty: f.home[1], tz: f.home[2] + oz };
 }
 
 /** a dialogue's or a cutscene's look at a point from `dist` (the first build's formula, journal Passe VP1: the composition its scripts were

@@ -48,9 +48,12 @@ export const PROVISIONAL = ['odo', 'anwen', 'hilde', 'corvin', 'pip', 'lio', 'or
  *  south, a little to one side (the north facades lit, the shadows falling away from the camera, the floor never swallowed by a row's
  *  shadow); the morning from the south-east, the end of day low and golden from the south-west (its long shadows), midday high. [KO] the
  *  first build's moon, from the north-west at 33 deg: the Colosseum's wall (13 m) shadowed the whole forecourt at night. */
-export function plazaKeyLight(look: DayLook | null, t: DayTime | null): THREE.Vector3 {
+export function plazaKeyLight(look: DayLook | null, t: DayTime | null, kind: PlazaKind = 'festival'): THREE.Vector3 {
   // (midday a little lower and from the side, journal Passe VP6, tenth critique: « flat daylight, no building throws a shadow across the square »)
-  const [az, el] = !look || !t ? [-25, 32] : t === 'morning' ? [40, 22] : t === 'midday' ? [32, 50] : [-55, 15];
+  // (journal Passe VP7, the plan's « un soleil choisi par place »: at midday the forecourt's sun rakes the arena's front from the east, a row's
+  // shadow across its floor; the training ground's comes from the west over its dummy's ring, the ring in the light)
+  const MIDDAY: Record<PlazaKind, [number, number]> = { forecourt: [62, 42], training: [-35, 46], festival: [32, 50] };
+  const [az, el] = !look || !t ? [-25, 32] : t === 'morning' ? [40, 22] : t === 'midday' ? MIDDAY[kind] : [-55, 15];
   const a = THREE.MathUtils.degToRad(az), e = THREE.MathUtils.degToRad(el);
   return new THREE.Vector3(Math.sin(a) * Math.cos(e), Math.sin(e), Math.cos(a) * Math.cos(e)).normalize();
 }
@@ -58,7 +61,8 @@ export function plazaKeyLight(look: DayLook | null, t: DayTime | null): THREE.Ve
 const PLAZA_FOG = { start: 12, density: 1.6 };
 /** the squares' depth of field (journal Passe VP6): its range (m) around the hero's depth; the district's 16 m blurs only its far city, and a
  *  square stands whole within 13-40 m of the camera (DEV `plazadof=range,far`) */
-const PLAZA_DOF = { range: 12, far: 0.5 };
+// (the near blur at 0.45 since journal Passe VP7, iteration 3: the near edge is the frames' foreground, « smeared by depth of field » at full)
+const PLAZA_DOF = { range: 12, far: 0.5, near: 0.45 };
 /** the squares' daylight (journal Passe VP6): the sun's gain and the sky's and ground's fill against the day state's */
 const PLAZA_SUN = { key: 1.18, fill: 0.86 };
 /** the widest frame the squares' visibility bake covers (src/world/PlazaVisibility.ts) */
@@ -139,7 +143,7 @@ export class PlazaApp {
     this.scene.add(this.camera);
     this.camera.layers.enable(LAYER_NOREFLECT);
     this.look = opts.time ? LOOKS[opts.time] : null;
-    this.keyDir = plazaKeyLight(this.look, opts.time);
+    this.keyDir = plazaKeyLight(this.look, opts.time, opts.kind);
     // DEV only: `plazaframe=<id>:yaw,pitch,dist,fov,hx,hy,hz[,gx,gz];...` changes this square's framings while composing (blank = keep)
     if (import.meta.env.DEV && q.has('plazaframe')) tuneFraming(opts.kind, q.get('plazaframe')!);
     if (import.meta.env.DEV && q.has('plazadof')) { const [r, f] = q.get('plazadof')!.split(',').map(Number); if (r > 0) PLAZA_DOF.range = r; if (f >= 0) PLAZA_DOF.far = f; }
@@ -162,7 +166,7 @@ export class PlazaApp {
     // from the camera where the district's far houses stand 100 m and more, so the haze starts nearer and thickens (the town's uniforms, this
     // page's own values)
     U.uFogStart.value = PLAZA_FOG.start; U.uFogDensity.value *= PLAZA_FOG.density;
-    this.post.params.dofRange = PLAZA_DOF.range; this.post.params.dofFar = PLAZA_DOF.far;
+    this.post.params.dofRange = PLAZA_DOF.range; this.post.params.dofFar = PLAZA_DOF.far; this.post.params.dofNear = PLAZA_DOF.near;
     // the lights' in-scatter grows with the fog's density (PostFX): kept at the day state's own (seventh critique: « a milky warm haze covers
     // the left half and flattens the values »)
     this.post.params.airlight /= PLAZA_FOG.density;

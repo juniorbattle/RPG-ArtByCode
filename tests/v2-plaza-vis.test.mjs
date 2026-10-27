@@ -79,7 +79,7 @@ test('the bake\'s poses: every framing over its zone at every place of the walk 
   for (const f of Object.keys(a)) assert.ok(Math.abs(m[f] - (a[f] + (c[f] - a[f]) * 0.25)) < 1e-12, f);
 });
 
-test('the framings: three a square chosen by the hero\'s zone and held 0.9 m past it; the hero always in the frame, the near edge always out, no monument between them and the camera nor cut by the frame, the camera between the rows', () => {
+test('the framings: three a square chosen by the hero\'s zone and held 0.9 m past it; the hero always in the frame and over the near edge, no monument between them and the camera nor cut by the frame, the camera between the rows', () => {
   const cam = new THREE.PerspectiveCamera(40, 16 / 9, 0.3, 700), v = new THREE.Vector3();
   const ndc = (x, y, z) => { v.set(x, y, z).applyMatrix4(cam.matrixWorldInverse); if (v.z > -0.3) return null; v.applyMatrix4(cam.projectionMatrix); return [v.x, v.y]; };
   const inside = (r, x, z) => x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1;
@@ -106,9 +106,9 @@ test('the framings: three a square chosen by the hero\'s zone and held 0.9 m pas
         CR.applyFrame(cam, PC.framingPose(f, x, z), 16 / 9, PA.PLAZA_FRAME, null);
         const feet = ndc(x, 0, z), head = ndc(x, 1.9, z), at = `${k} ${f.id} at ${x},${z}`;
         assert.ok(feet && Math.abs(feet[0]) <= 0.9 && feet[1] >= -0.92 && head[1] <= 0.9, `${at}: the hero in the frame (${feet})`);
-        // the near edge (the balustrade's top, the training ground's fence) below the frame (journal Passe VP6: « a dead band across every
-        // frame »)
-        for (let d = -6; d <= 6; d += 3) { const e = ndc(x + d, 1.22, 8.0); assert.ok(!e || e[1] < -1 || Math.abs(e[0]) > 1, `${at}: the near edge in the frame (${e})`); }
+        // the hero's head over the near edge, the frames' foreground (journal Passe VP7, iteration 3: the balustrade, the training ground's
+        // fence)
+        const e = ndc(x, 1.14, 8.0); assert.ok(!e || e[1] <= head[1] - 0.05, `${at}: the near edge over the hero's head (${e})`);
         // the camera between the rows (beyond them it looked at the end of a row's first house), the monuments whole or out of the frame,
         // never cut by its bottom edge
         assert.ok(Math.abs(cam.position.x) <= 11.5, `${at}: the camera at x ${cam.position.x.toFixed(1)}`);

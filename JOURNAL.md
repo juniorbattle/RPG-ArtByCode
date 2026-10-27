@@ -693,6 +693,32 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
 - La cuisson : les passages entre cadrages sur une colonne de la grille sur deux, trois voisins au lieu de cinq : 480 à 590 poses.
 - Le sol libre : parvis 76,1 % (milieu 87,0 %), entraînement 72,8 % (76,5 %), place festive 80,0 % (92,5 %) ; 15 à 16 lumières la nuit.
 
+### La deuxième critique à l'aveugle (itération 2 contre VP6), deux agents — [KO] VP6 encore devant partout
+- Panneau W (le district caché 7,5) : parvis VP6 **6,5** / itération 2 **5,5**, entraînement **7** / **5**, place festive **7** / **5**.
+  Panneau X (le district caché 7,5) : parvis **7** / **6**, entraînement **6,5** / **5,5**, place festive **7** / **6**.
+- Les deux décrivent l'itération 2 comme « low, frontal, centred camera with an empty foreground » et VP6 comme « higher three-quarter camera
+  with a foreground layer » : « the rail fence in the foreground gives a real diagonal leading line », « the balustrade [...] make three
+  layers », et pour VP7 « the bottom 40 % of every frame is empty cobble ». Leurs reproches à VP6 restent ceux de sa balustrade (« overexposed
+  and smeared », « streaky ») et des réverbères qui coupent les personnages (« a lamp post stands directly in front of the pair »), plus un
+  joint sombre en travers de la place festive (la rigole) et la voie dallée « like a decal ».
+- Pensée : la règle « le bord proche hors du cadre » de la direction proposée retirait le premier plan sans le remplacer ; la direction
+  prévoyait aussi « un élément de premier plan sur un côté, comme le bateau du district », que les itérations 1 et 2 n'avaient pas mis. Les
+  quatre panneaux de deux tours le réclament : le défaut de la balustrade de VP6 était son dessin, pas sa présence (le quai du district et son
+  eau sont le premier plan de ses cadrages).
+
+### Itération 3 — [?] le bord proche redevient le premier plan, la caméra suit de biais
+- Le bord sud : une balustrade plus basse (1,0 m, ses piliers 1,14 m), plus sombre, dans le grain lisse du plâtre (« streaky »), une
+  tablette et des piliers tous les 5 m environ avec une lanterne ; à l'entraînement la clôture de bois. Leurs lanternes (deux par balustrade,
+  trois sur la clôture) et celles de la porte du quai éclairent le premier plan la nuit, à la place des quatre réverbères du bord sud, retirés
+  (« in the way »). Le sol praticable va de nouveau jusqu'à 2 m de la balustrade (z 6,0).
+- Les cadrages : l'arrivée et le plan moyen reprennent la caméra de VP6 (de biais, 21 m, tangage 6,5°, le pivot 2,5 à 4 m devant le héros),
+  avec un lacet qui tourne vers le côté où le héros marche (`turn`, 0,8 à 1,2° par mètre : la caméra reste entre les rangées) ; les plans
+  du monument (la porte, le ring, la scène) gardent ceux de l'itération 2. Dans le test, la règle « le bord proche hors du cadre » devient
+  « la tête du héros au-dessus du bord proche » ; les autres restent.
+- Le flou de profondeur des places au premier plan à 0,45 de celui de la ville (`dofNear`, PostFX : 1 pour la ville, une multiplication par
+  1,0 exacte). Le soleil de midi choisi par place : au parvis il rase la façade de l'arène depuis l'est (62° / 42°), à l'entraînement il vient
+  de l'ouest (−35° / 46°), la place festive garde le sien.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

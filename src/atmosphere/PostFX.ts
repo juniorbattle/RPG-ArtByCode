@@ -8,6 +8,8 @@ export interface PostParams {
   exposure: number;
   bloomStrength: number; bloomRadius: number; bloomThreshold: number;
   dofStrength: number; dofFocus: number; dofRange: number; dofMaxBlur: number; dofFar: number;
+  /** the near blur's share (1: the town's; the squares' near edge, journal Passe VP7) */
+  dofNear: number;
   tiltStrength: number; tiltCenter: number; tiltWidth: number;
   vignette: number; grain: number; saturation: number; contrast: number;
   shadowTint: THREE.Color; highlightTint: THREE.Color;
@@ -22,7 +24,7 @@ export interface PostParams {
 export const defaultPost = (): PostParams => ({
   exposure: 1.2,
   bloomStrength: 0.3, bloomRadius: 0.55, bloomThreshold: 1.15,
-  dofStrength: 0.9, dofFocus: 20, dofRange: 16, dofMaxBlur: 7.5, dofFar: 0.22,
+  dofStrength: 0.9, dofFocus: 20, dofRange: 16, dofMaxBlur: 7.5, dofFar: 0.22, dofNear: 1,
   tiltStrength: 0, tiltCenter: 0.5, tiltWidth: 0.3,
   vignette: 0.34, grain: 0.01, saturation: 0.96, contrast: 1.06,
   shadowTint: new THREE.Color(0.92, 0.98, 1.22), highlightTint: new THREE.Color(1.07, 1.0, 0.9),
@@ -38,13 +40,13 @@ uniform sampler2D tColor;
 uniform sampler2D tDepth;
 uniform vec2 uTexel;
 uniform float uNear, uFar;
-uniform float uFocus, uRange, uMaxBlur, uStrength, uFarAmt;
+uniform float uFocus, uRange, uMaxBlur, uStrength, uFarAmt, uNearAmt;
 uniform float uTilt, uTiltCenter, uTiltWidth;
 varying vec2 vUv;
 float viewZ(float d){ float z = d * 2.0 - 1.0; return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear)); }
 float coc(vec2 uv, float vz){
   float dz = vz - uFocus;
-  float dofC = dz < 0.0 ? smoothstep(0.0, uRange * 0.9, -dz) : smoothstep(0.0, uRange * 3.0, dz) * uFarAmt;
+  float dofC = dz < 0.0 ? smoothstep(0.0, uRange * 0.9, -dz) * uNearAmt : smoothstep(0.0, uRange * 3.0, dz) * uFarAmt;
   float t = abs(uv.y - uTiltCenter);
   float tiltC = smoothstep(uTiltWidth, uTiltWidth + 0.36, t);
   return clamp(max(dofC, tiltC * uTilt), 0.0, 1.0) * uStrength;
@@ -217,7 +219,7 @@ export class PostFX {
     this.dofMat = new THREE.ShaderMaterial({
       uniforms: {
         tColor: { value: null }, tDepth: { value: null }, uTexel: { value: new THREE.Vector2() }, uNear: { value: 1 }, uFar: { value: 100 },
-        uFocus: { value: 44 }, uRange: { value: 14 }, uMaxBlur: { value: 7 }, uStrength: { value: 1 }, uFarAmt: { value: 0.3 }, uTilt: { value: 1 }, uTiltCenter: { value: 0.5 }, uTiltWidth: { value: 0.2 },
+        uFocus: { value: 44 }, uRange: { value: 14 }, uMaxBlur: { value: 7 }, uStrength: { value: 1 }, uFarAmt: { value: 0.3 }, uNearAmt: { value: 1 }, uTilt: { value: 1 }, uTiltCenter: { value: 0.5 }, uTiltWidth: { value: 0.2 },
       },
       vertexShader: VERT, fragmentShader: DOF_FRAG, depthTest: false, depthWrite: false,
     });
@@ -291,7 +293,7 @@ export class PostFX {
       const u = this.dofMat.uniforms;
       u.tColor.value = this.sceneRT.texture; u.tDepth.value = this.sceneRT.depthTexture;
       u.uNear.value = camera.near; u.uFar.value = camera.far;
-      u.uFocus.value = p.dofFocus; u.uRange.value = p.dofRange; u.uMaxBlur.value = p.dofMaxBlur * (this.height / 1080); u.uFarAmt.value = p.dofFar;
+      u.uFocus.value = p.dofFocus; u.uRange.value = p.dofRange; u.uMaxBlur.value = p.dofMaxBlur * (this.height / 1080); u.uFarAmt.value = p.dofFar; u.uNearAmt.value = p.dofNear;
       u.uStrength.value = p.dofStrength; u.uTilt.value = p.tiltStrength; u.uTiltCenter.value = p.tiltCenter; u.uTiltWidth.value = p.tiltWidth;
       this.quad.material = this.dofMat;
       r.setRenderTarget(this.dofRT); r.clear(); this.quad.render(r);

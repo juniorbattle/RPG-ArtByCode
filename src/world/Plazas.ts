@@ -81,9 +81,9 @@ const COMMON = { asymmetry: 0.42, timberRatio: 0.32, roofExaggeration: 0.95, ver
 /** the share of lit windows at night (the first number, 0.46, lit nine windows in fourteen on a house: the district's frontage reads about a
  *  quarter lit, journal Passe VP1) */
 const LIT_WINDOWS = 0.3;
-// (z1 3.4 since journal Passe VP7: the framings keep the near edge out of the frame only while the hero stays 4.6 m or more from it; the
-// quay's gate lane goes on to the kerb)
-const W = { x0: -11, x1: 11, z0: -16, z1: 3.4 };
+// (z1 6.0 since journal Passe VP7, iteration 3: two metres of setts before the near edge, the frames' foreground; the quay's gate lane goes on
+// to the kerb)
+const W = { x0: -11, x1: 11, z0: -16, z1: 6.0 };
 /** the walkable surface of every square (metres) */
 export const PLAZA_WALK: Readonly<typeof W> = W;
 /** where the people stand on each square (person id -> x, z): the registrar's table, the armourer's stall, the healer's corner, the champion
@@ -216,7 +216,8 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     blockers.push({ x, z, r: 0.35 }); obstacles.push({ x0: x - 0.25, x1: x + 0.25, z0: z - 0.25, z1: z + 0.25, grime: 0.4 });
     puddles.push({ x: x + 0.8, z: z - 1.4, r: 1.6, amount: 0.85 });
   };
-  for (const x of [-11.0, -5.6, 5.6, 11.0]) lamp(x, 3.9);
+  // (the four lamp posts along the open south side left with journal Passe VP7, iteration 3: both panels of its second critique saw them « in
+  // the way », cutting through the people; the near edge's lanterns light the near floor)
 
   // the sidewalks: a band of grey flagstones along each row's front (journal Passe VP6: « the floors are flat, nothing organises the ground »)
   tracked(() => { for (const sd of [-1, 1]) flagstones(S, rng.fork(`walk${sd}`), [[sd * 12.2, 3.6], [sd * 12.2, kind === 'forecourt' ? -19.4 : -21.0]], 2.0, [0.66, 0.66, 0.68]); });
@@ -248,41 +249,45 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   // quay without its water, a dead band across every frame), and at the frame's near edge a low wall of planters and their greenery, parted
   // by the quay's gate where there is one (the foreground layer the district's water and boat give its frames)
   // (journal Passe VP6, fourth critique: the line of bollards read as posts scattered over the square; the walk now runs to the balustrade)
+  // (journal Passe VP7, iteration 3: the near edge is the frames' foreground layer again, as the district's quay edge and water, after two
+  // critiques in which every panel preferred the frames that had it, « the balustrade gives a foreground plane », to the frames without it,
+  // « the bottom 40 % of every frame is empty cobble »; drawn again after their notes on the first one, « oversized », « crude block posts »,
+  // « streaky texture », « the brightest and blurriest object in frame », « almost black at night »: lower, darker, in the plaster's smooth
+  // grain, a coping and dies, a lantern on a die every few metres lighting the near setts)
   tracked(() => {
-    // journal Passe VP6, second critique: the planters' green was the most saturated thing in the frame (the district has none): a balustrade
-    // (fourth critique: « chunky low-poly posts with streaky, stretched texture, blown out by day »: finer balusters in the plaster's smooth
-    // grain, the whole a shade darker)
-    const St = S.get('stone'), Pl = S.get('plaster'), wall: V3 = [0.5, 0.48, 0.46], cap: V3 = [0.62, 0.6, 0.56];
-    // a lantern on the edge's dies or posts, lit at night, its pool on the near setts and a puddle to catch it (journal Passe VP6, twelfth and
-    // thirteenth critiques: « at night the bottom third is crushed to black, where R's wet cobbles carry the lamplight »)
-    const edgeLanterns = (xs: number[], top: number) => {
-      for (const x of xs) {
-        batch.add(day ? 'lanternDark' : 'lantern', { pos: [x, top + 0.02, 8.3], yaw: 0 }, 0);
-        // (their lights and puddles, journal Passe VP6, fourteenth critique, left with the near edge out of the framings: journal Passe VP7)
-      }
+    const Pl = S.get('plaster'), wall: V3 = [0.3, 0.29, 0.29], cap: V3 = [0.38, 0.37, 0.36], Z = 8.3;
+    const edgeLantern = (x: number, top: number, lit: boolean) => {
+      batch.add(day ? 'lanternDark' : 'lantern', { pos: [x, top + 0.02, Z], yaw: 0 }, 0);
+      if (day || !lit) return;
+      lights.push({ pos: [x, top + 0.55, Z - 0.5], color: WARM, intensity: 2.6, radius: 7.5, kind: 'lantern', halo: 0, priority: 7 });
+      puddles.push({ x: x + 0.7, z: 6.6, r: 1.4, amount: 0.9 });
     };
-    // the training ground's south edge is a timber fence for the spectators (tenth critique: « every square uses the same blurred stone rail »)
+    // the training ground's south edge is a timber fence for the spectators (tenth critique: « every square uses the same blurred stone rail »;
+    // VP7, second critique: « the rail fence gives a real diagonal leading line and a foreground layer »)
     if (kind === 'training') {
       const T = S.get('timber');
-      T.boxMM(-18, 0.95, 8.22, 18, 1.07, 8.38, { tint: [0.56, 0.46, 0.36], grain: 'x' });
-      T.boxMM(-18, 0.5, 8.25, 18, 0.58, 8.35, { tint: [0.56, 0.46, 0.36], grain: 'x' });
-      for (let x = -18; x <= 18.01; x += 2.4) T.boxMM(x - 0.08, 0, 8.22, x + 0.08, 1.2, 8.38, { tint: [0.5, 0.41, 0.32], grain: 'y' });
-      edgeLanterns([-8.4, -1.2, 6.0], 1.2);
+      T.boxMM(-18, 0.95, 8.22, 18, 1.07, 8.38, { tint: [0.52, 0.42, 0.33], grain: 'x' });
+      T.boxMM(-18, 0.5, 8.25, 18, 0.58, 8.35, { tint: [0.52, 0.42, 0.33], grain: 'x' });
+      for (let x = -18; x <= 18.01; x += 2.4) T.boxMM(x - 0.08, 0, 8.22, x + 0.08, 1.2, 8.38, { tint: [0.46, 0.38, 0.3], grain: 'y' });
+      for (const x of [-7.2, 0, 7.2]) edgeLantern(x, 1.2, true);
       return;
     }
     for (const [a0, a1] of southGate ? [[-18, -2.7], [2.7, 18]] : [[-18, 18]]) {
-      St.boxMM(a0, 0, 8.0, a1, 0.34, 8.6, { tint: wall, uvScale: 0.8, aoY: [0.6, 1] });
-      St.boxMM(a0 - 0.05, 0.34, 7.96, a1 + 0.05, 0.42, 8.64, { tint: cap, uvScale: 0.8 });
-      for (let x = a0 + 0.3; x < a1 - 0.15; x += 0.32) S.at([x, 0.42, 8.3], 0, () => Pl.lathe([[0.075, 0], [0.1, 0.07], [0.055, 0.18], [0.095, 0.38], [0.055, 0.53], [0.08, 0.6]], 8, { tint: cap }));
-      St.boxMM(a0 - 0.05, 1.02, 8.0, a1 + 0.05, 1.12, 8.6, { tint: cap, uvScale: 0.8 });
-      const dies: number[] = [];
-      for (let x = a0; x <= a1 + 0.01; x += (a1 - a0) / Math.max(1, Math.round((a1 - a0) / 7))) { St.boxMM(x - 0.2, 0, 8.08, x + 0.2, 1.22, 8.52, { tint: wall, uvScale: 0.8 }); dies.push(x); }
-      edgeLanterns(dies.filter((x) => Math.abs(x) < 12 && Math.abs(x) > 2.4), 1.22);
+      Pl.boxMM(a0, 0, 8.02, a1, 0.3, 8.58, { tint: wall, aoY: [0.6, 1] });
+      Pl.boxMM(a0 - 0.04, 0.3, 7.98, a1 + 0.04, 0.36, 8.62, { tint: cap });
+      for (let x = a0 + 0.3; x < a1 - 0.15; x += 0.3) S.at([x, 0.36, Z], 0, () => Pl.lathe([[0.07, 0], [0.095, 0.06], [0.05, 0.16], [0.088, 0.33], [0.05, 0.46], [0.075, 0.52]], 8, { tint: cap }));
+      Pl.boxMM(a0 - 0.04, 0.88, 8.0, a1 + 0.04, 0.96, 8.6, { tint: cap });
+      Pl.boxMM(a0 - 0.08, 0.96, 7.97, a1 + 0.08, 0.99, 8.63, { tint: [0.44, 0.43, 0.41] });
+      // the dies: at the span's ends and every five metres or so, their own cap; a lantern on the ones nearest the middle, lit at night
+      const n = Math.max(1, Math.round((a1 - a0) / 5)), dies = Array.from({ length: n + 1 }, (_, k) => a0 + ((a1 - a0) * k) / n);
+      for (const x of dies) {
+        Pl.boxMM(x - 0.19, 0, 8.1, x + 0.19, 1.08, 8.5, { tint: wall, aoY: [0.6, 1] });
+        Pl.boxMM(x - 0.23, 1.08, 8.06, x + 0.23, 1.14, 8.54, { tint: cap });
+      }
+      for (const x of dies.filter((q) => Math.abs(q) > 2.4 && Math.abs(q) < 12)) edgeLantern(x, 1.14, Math.abs(x) > 6 && Math.abs(x) < 9);
     }
   });
 
-  // the tops of the south lamps carry the day's bunting
-  const lampTops: V3[] = [-11.0, -5.6, 5.6, 11.0].map((x) => [x, 3.05, 3.9]);
   const brazier = (x: number, z: number, key = false) => {
     S.at([x, 0, z], 0, () => S.get('metal').cylinder(0.32, 0.9, 1.15, 8, { tint: [0.35, 0.33, 0.32], capBottom: true, r1: 0.42 }));
     S.get('metal').box(x, 0.45, z, 0.12, 0.9, 0.12);
@@ -497,11 +502,6 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     for (const s of front) byHouse.set(s.building, [...(byHouse.get(s.building) ?? []), s.pos]);
     let phase = 0;
     for (const pts of byHouse.values()) if (pts.length === 2) garland(S, pts[0], pts[1], 0.5, { size: 0.42, width: 0.34, spacing: 0.42, phase: phase++ });
-    for (const top of kind === 'festival' ? [] : lampTops) {
-      let best: V3 | null = null;
-      for (const s of front) if (!best || Math.hypot(s.pos[0] - top[0], s.pos[2] - top[2]) < Math.hypot(best[0] - top[0], best[2] - top[2])) best = s.pos;
-      if (best && Math.hypot(best[0] - top[0], best[2] - top[2]) < 6.5) garland(S, best, top, 0.45, { size: 0.34, width: 0.28, spacing: 0.4 });
-    }
   }
 
   // ---------------------------------------------------------------- the city beyond: a ring of far houses (each a part), the Colosseum's drum as the landmark
@@ -992,7 +992,8 @@ function quayGate(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights']
     St.boxMM(x - 0.36, 1.5, z - 0.36, x + 0.36, 1.6, z + 0.36, { tint: [0.8, 0.76, 0.7] });
     S.at([x, 1.6, z], Math.PI / 4, () => St.cylinder(0.36, 0, 0.36, 4, { tint: [0.8, 0.76, 0.7], r1: 0.02 }));
     batch.add(day ? 'lanternDark' : 'lantern', { pos: [x - s * 0.36, 1.4, z], yaw: s > 0 ? -Math.PI / 2 : Math.PI / 2 }, 0);
-    // (no light of its own since journal Passe VP7: the south lamps light the mouth of the square)
+    // its lantern lit at night (journal Passe VP7, iteration 3: the near edge's lights, the south lamps gone)
+    if (!day) lights.push({ pos: [x - s * 0.5, 1.4, z], color: WARM, intensity: 2.2, radius: 7, kind: 'lantern', halo: 0, priority: 7 });
   }
 }
 
