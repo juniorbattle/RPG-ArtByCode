@@ -31,6 +31,8 @@ export const PLAZA_FRAMINGS: Record<PlazaKind, PlazaFraming[]> = {
   // turning toward the side the hero walks to (`turn`), over the near edge as the frames' foreground; and near the monument a framing
   // composed for it. Under the framing test's rules: the hero in the frame and over the near edge, no monument hiding the hero or cut by the
   // frame's bottom edge, the camera between the rows)
+  // (journal Passe VP8: the training ground's and the festival square's arrival and middle framings 2° lower, 4.5° instead of 6.5°, so the arena
+  // rises over their north rows: at 6.5° the frame's top stood 11° over the horizon, the roofs' line, and the arena showed as a sliver)
   forecourt: [
     // the arrival by the quay's gate: over the balustrade, the fountain and the arena's gate ahead
     { id: 'entry', label: 'Arrival', yaw: 12, turn: 0.8, pitch: 6.5, dist: 21, fov: 35, home: [0, 2.6, -2], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
@@ -42,18 +44,18 @@ export const PLAZA_FRAMINGS: Record<PlazaKind, PlazaFraming[]> = {
   training: [
     // the arrival from the forecourt's street: over the fence, the yard ahead, the ring before the stand
     // (nearer since iteration 5: « In frame 1 the ring is small and far away behind a band of fence and empty cobbles »)
-    { id: 'entry', label: 'Arrival', yaw: 18, turn: 1.2, pitch: 6.5, dist: 17, fov: 35, home: [1.5, 2.6, -3], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
+    { id: 'entry', label: 'Arrival', yaw: 18, turn: 1.2, pitch: 4.5, dist: 17, fov: 35, home: [1.5, 2.6, -3], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
     // the yard: the dummy's ring, the champions' ring, the butts along the right
     // (nearer since iteration 4: « the platform is a small object in the upper middle and the lower half is empty sand »)
-    { id: 'yard', label: 'Yard', yaw: 18, turn: 1.2, pitch: 6.5, dist: 17, fov: 35, home: [1.5, 2.6, -7], ref: [0, -4], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: -5, z1: 0.5 }, priority: 1 },
+    { id: 'yard', label: 'Yard', yaw: 18, turn: 1.2, pitch: 4.5, dist: 17, fov: 35, home: [1.5, 2.6, -7], ref: [0, -4], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: -5, z1: 0.5 }, priority: 1 },
     // the ring: the champions' boards, its braziers and the stand behind
     { id: 'ring', label: 'Ring', yaw: 10, pitch: 6, dist: 18, fov: 38, home: [1.5, 2.8, -10], ref: [0, -10], gain: [0.5, 0.5], min: [-7, -2], max: [7, 2], zone: { x0: -99, x1: 99, z0: -99, z1: -5 }, priority: 2 },
   ],
   festival: [
     // the arrival by the quay's gate: over the balustrade, the stalls along the east row, the stage and the bandstand at the end
-    { id: 'entry', label: 'Arrival', yaw: -18, turn: 0.8, pitch: 6.5, dist: 21, fov: 35, home: [0, 2.6, -2], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
+    { id: 'entry', label: 'Arrival', yaw: -18, turn: 0.8, pitch: 4.5, dist: 21, fov: 35, home: [0, 2.6, -2], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
     // the court: the strings over the hero, the stalls, the stage beyond
-    { id: 'court', label: 'Court', yaw: -18, turn: 0.8, pitch: 6.5, dist: 21, fov: 35, home: [0, 2.6, -6.5], ref: [0, -4], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: -9, z1: 0.5 }, priority: 1 },
+    { id: 'court', label: 'Court', yaw: -18, turn: 0.8, pitch: 4.5, dist: 21, fov: 35, home: [0, 2.6, -6.5], ref: [0, -4], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: -9, z1: 0.5 }, priority: 1 },
     // before the stage: the boards, the bandstand and the tavern, from the east
     { id: 'stage', label: 'Stage', yaw: 8, pitch: 7, dist: 18, fov: 35, home: [-2, 3, -12.5], ref: [0, -12.5], gain: [0.6, 0.5], min: [-7, -2], max: [7, 2], zone: { x0: -99, x1: 99, z0: -99, z1: -9 }, priority: 2 },
   ],

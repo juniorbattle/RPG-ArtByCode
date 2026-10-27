@@ -59,12 +59,17 @@ export function plazaKeyLight(look: DayLook | null, t: DayTime | null, kind: Pla
 }
 /** the haze of the squares (journal Passe VP6): where it starts (m) and its density against the day state's (DEV `plazafog=start,density`) */
 const PLAZA_FOG = { start: 12, density: 1.6 };
+/** by day (journal Passe VP8, the audit: « a milky haze washes out the gate, the pavilions and the tower bases only about 20 m away »): from
+ *  20 m, at the day state's own density; the night keeps the haze above */
+const PLAZA_FOG_DAY = { start: 20, density: 1.0 };
 /** the squares' depth of field (journal Passe VP6): its range (m) around the hero's depth; the district's 16 m blurs only its far city, and a
  *  square stands whole within 13-40 m of the camera (DEV `plazadof=range,far`) */
 // (the near blur at 0.45 since journal Passe VP7, iteration 3: the near edge is the frames' foreground, « smeared by depth of field » at full)
 const PLAZA_DOF = { range: 12, far: 0.5, near: 0.45 };
 /** the squares' daylight (journal Passe VP6): the sun's gain and the sky's and ground's fill against the day state's */
-const PLAZA_SUN = { key: 1.18, fill: 0.86 };
+// (since journal Passe VP8 the sun a little lower and the sky's fill higher: « every cast shadow, opening and window pane flattens to one
+// textureless navy at about 21/255 », « canvas near clipping (95th percentile 243) »; before, key 1.18 and fill 0.86)
+const PLAZA_SUN = { key: 1.05, fill: 1.5, sat: 0.95 };
 /** the widest frame the squares' visibility bake covers (src/world/PlazaVisibility.ts) */
 export const PLAZA_FRAME = 2.4;
 /** the camera of a square for a hero at (x, z) (the framing of the zone they stand in, src/world/PlazaCamera.ts: journal Passe VP7), or for a
@@ -148,6 +153,7 @@ export class PlazaApp {
     // DEV only: `plazaframe=<id>:yaw,pitch,dist,fov,hx,hy,hz[,gx,gz];...` changes this square's framings while composing (blank = keep)
     if (import.meta.env.DEV && q.has('plazaframe')) tuneFraming(opts.kind, q.get('plazaframe')!);
     if (import.meta.env.DEV && q.has('plazadof')) { const [r, f] = q.get('plazadof')!.split(',').map(Number); if (r > 0) PLAZA_DOF.range = r; if (f >= 0) PLAZA_DOF.far = f; }
+    if (import.meta.env.DEV && q.has('plazasun')) { const [a, b, c] = q.get('plazasun')!.split(',').map(Number); if (a > 0) PLAZA_SUN.key = a; if (b > 0) PLAZA_SUN.fill = b; if (c > 0) PLAZA_SUN.sat = c; }
     if (import.meta.env.DEV && q.has('plazafog')) { const [a, b] = q.get('plazafog')!.split(',').map(Number); if (a >= 0) PLAZA_FOG.start = a; if (b > 0) PLAZA_FOG.density = b; }
     // the weather (journal Passe VP1): the town's (src/atmosphere/Weather.ts) from the same parameters, the day's rain from the state
     const wp = parseWeather(q);
@@ -166,13 +172,14 @@ export class PlazaApp {
     // the squares' depth (journal Passe VP6, fifth critique: « none of them has a depth vista or fog layering »): their back rows stand 35-40 m
     // from the camera where the district's far houses stand 100 m and more, so the haze starts nearer and thickens (the town's uniforms, this
     // page's own values)
-    U.uFogStart.value = PLAZA_FOG.start; U.uFogDensity.value *= PLAZA_FOG.density;
+    const fog = this.look ? PLAZA_FOG_DAY : PLAZA_FOG;
+    U.uFogStart.value = fog.start; U.uFogDensity.value *= fog.density;
     this.post.params.dofRange = PLAZA_DOF.range; this.post.params.dofFar = PLAZA_DOF.far; this.post.params.dofNear = PLAZA_DOF.near;
     // the lights' in-scatter grows with the fog's density (PostFX): kept at the day state's own (seventh critique: « a milky warm haze covers
     // the left half and flattens the values »)
-    this.post.params.airlight /= PLAZA_FOG.density;
+    this.post.params.airlight /= fog.density;
     // by day the sun a little stronger against the sky's fill (twelfth critique: « flat noon light, few cast shadows »)
-    if (this.look) { U.uMoonCol.value.multiplyScalar(PLAZA_SUN.key); U.uSkyAmb.value.multiplyScalar(PLAZA_SUN.fill); U.uGroundAmb.value.multiplyScalar(PLAZA_SUN.fill); }
+    if (this.look) { U.uMoonCol.value.multiplyScalar(PLAZA_SUN.key); U.uSkyAmb.value.multiplyScalar(PLAZA_SUN.fill); U.uGroundAmb.value.multiplyScalar(PLAZA_SUN.fill); U.uFillCol.value.multiplyScalar(PLAZA_SUN.fill); this.post.params.saturation *= PLAZA_SUN.sat; }
     // after the day state: the weather scales the day's values it finds (as the town's, App.setWeather)
     if (wp && (wp.rain > 0 || wp.snow > 0 || wp.storm > 0 || wp.wind !== 1)) { this.weather = new Weather(wp, { day: !!this.look, post: this.post.params }); this.scene.add(this.weather.group); }
     window.addEventListener('resize', () => this.resize());

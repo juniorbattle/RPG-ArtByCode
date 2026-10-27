@@ -355,6 +355,84 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Vu par tous les panneaux de tous les tours, hors de la tâche : la rive opposée du plan d'ensemble du district (le cadre « am » de la planche
   cachée), « grey boxes », « blockout » ; le district est gelé, c'est une décision de l'opérateur.
 
+## Passe VP8 — Les places peaufinées : l'arène en fond, la lumière du jour, les props complétés (2026-10-27)
+
+### La demande de l'opérateur, mot pour mot
+- « Je laisse la liberté aux juges afin de peaufiner davantage notre rendu visuel afin d'optimiser les décors et aussi les lumières. Je pense
+  que les lumières surtout en journée peuvent être encore plus optimiser mais il faut améliorer les détails de nos props car il y a certains
+  trous de conception ( des parties manquantes ) mais la position des props doit aussi être optimale et enfin je veux intégrer une visibilité
+  commune qui est la perception du grand colisee/arène de combat en fond arrière pour garde cet élément principale au jeu.  Je répète tu es
+  libre d'agir en respectant notre plan et spécification établis », puis : « Tu peux prendre aussi tout le temps qu'il te faut pour accomplir
+  ta mission. »
+- Le cadre gardé : la direction de la Passe VP7 (un monument par place, le sol libre, 16 lumières au plus toutes allumées, trois cadrages
+  par place), tout derrière `flags.v2`, la ville et la partie par défaut inchangées ; chaque nombre « proposé ».
+
+### L'audit (deux agents, les captures de VP7) — [OK] une liste de trous, de positions et de défauts de lumière
+- Deux agents ont relevé, place par place, sur des captures rapprochées (`plazaframe=`) et les six états de la critique : les trous de
+  conception (« The front wall is simply missing for about two facets: no flaps or door frame », « No guy ropes, stakes » aux pavillons ;
+  « the top is a plain white box, with no stool or ledger » chez le greffier ; « The fountain is dry » ; les braseros « empty bowls on bare
+  thin poles, with no coals or flame » ; le tableau d'affichage et sa caisse au milieu du passage ; les bords des dallages « a staircase of
+  whole flags with no kerb »), les positions (les braseros du ring posés sur ses coins ; une butte de tir devant une rue ; la table de banquet
+  dans le passage vers la scène ; l'étal de bougies et le théâtre de marionnettes trop au large) et la lumière du jour (« every cast shadow,
+  opening and window pane flattens to one textureless navy at about 21/255 », « canvas near clipping (95th percentile 243) », « a milky haze
+  washes out the gate, the pavilions and the tower bases only about 20 m away »).
+
+### Lot A : l'arène vue des autres places (`farArena`, `src/world/Plazas.ts`; `src/world/PlazaCamera.ts`) — [OK]
+- Le parvis a l'arène pour monument ; l'entraînement et la place festive la voient maintenant au-dessus de leurs rangées nord : un demi-tambour
+  de 52 m de rayon (la moitié tournée vers la place), dans la langue de la façade du parvis : deux étages d'arcades entre des piles, des
+  cordons, une corniche crénelée, le mur intérieur de la cavea qui monte derrière jusqu'à 16,1 m, ses fenêtres, des mâts aux fanions du
+  tournoi sur sa crête ; la nuit, des arches et des torches allumées sans lumière à elles (l'ambiance hors budget). Son centre à
+  (∓20, −110), sur une butte de 8 m (`y0`). [KO] à sa hauteur sur un sol plat : les toits de 13-14 m à 45 m de la caméra le cachaient tout
+  entier. Les maisons lointaines et les flèches à l'emplacement de l'arène ne sont plus construites (leurs tirages gardés : les graines
+  inchangées).
+- Les cadrages d'arrivée et du milieu de l'entraînement et de la place festive 2° plus bas (4,5° au lieu de 6,5°) : à 6,5°, le haut du cadre
+  se tenait à 11° au-dessus de l'horizon, la ligne des toits, et l'arène n'était qu'un liseré. La surface de l'arène dans le cadre au-dessus
+  des toits (1280 x 720, un script de travail qui projette la ligne des toits de chaque cadrage) : entraînement arrivée **20,9 k → 34,2 k
+  px²**, milieu **16,2 k → 25,6 k**, ring 26,0 k (inchangé) ; place festive arrivée **39,0 k → 55,5 k**, milieu **27,9 k → 44,7 k**, scène
+  2,8 k (le cadrage regarde la scène, au fond). Le test des cadrages (le héros dans le cadre et au-dessus du bord proche, aucun monument qui le
+  cache ou que le bas du cadre coupe) passe aux nouveaux tangages.
+
+### Lot B : la lumière du jour (`src/world/PlazaApp.ts`) — [OK]
+- Le soleil un peu plus bas contre le ciel (`PLAZA_SUN` : gain 1,18 → **1,05**), le remplissage du ciel, du sol et de la lumière d'appoint
+  plus haut (0,86 → **1,5**, `uFillCol` compris), la saturation × **0,95** : les ombres portées et les ouvertures ne tombent plus à un bleu
+  nuit uniforme, la toile des pavillons ne sature plus. DEV `plazasun=key,fill,sat` (porté par la page de jeu, comme `plazafog` et
+  `plazadof`, que la page ne portait pas).
+- La brume de jour à partir de 20 m et à la densité de l'état du jour (`PLAZA_FOG_DAY` ; la nuit garde 12 m et × 1,6) : la porte et les
+  pavillons à 20 m ne sont plus voilés de lait.
+- Les feux de jour : les braises, les flammes et les torches des travées de l'arène portent l'émission dans leur teinte, neuf fois
+  (`fireTint`, l'équivalent de 0,55 au lieu des 0,06 de l'état du jour) ; les lanternes et les fenêtres restent éteintes (J4). [KO] l'émission
+  du verre montée à 0,55 pour toute la page : les vitres des maisons s'allumaient en orange en plein jour (leurs cases d'intérieur éclairé).
+- Les fenêtres et les colombages plus sombres de jour qu'en VP7 (pixels sous 25 : entraînement 1,3-3,2 % → 9,2-12,8 %, parvis 1,7-4,6 % →
+  8,5-11,5 %) : c'était la brume qui les relevait ; le plan B de midi du district en a **13 %** (moyenne 101) : les places rejoignent sa
+  valeur, les ombres portées relevées par le remplissage.
+- Les flaques des braseros la nuit seulement (de jour, celle du ring « as blood » sur le sable ; celles des tours de la porte « stains »).
+
+### Lot C : les props complétés — [OK]
+- Les feux : une flamme pleine sur chaque brasero (`flameAt` : trois langues tournées autour de l'axe, chacune une lame qui s'amincit, les
+  deux faces, dans le verre allumé de l'atlas, `aux.y` = 1, le scintillement des fenêtres du district) et des braises dans la case chaude de
+  l'atlas ; une flamme vivante par-dessus (`Particles`, le mode `brazier` : les langues de la flamme de l'arène resserrées à la taille du bol,
+  et ses braises qui montent ; un nouveau mode, que la ville et l'arène n'appellent pas). [KO] les lames sans coordonnées de texture : elles
+  prenaient le bord sombre de l'atlas et brûlaient noir ; puis la case `HOT_UV` de la forge : elle traverse un barreau de plomb, une croix
+  noire sur une lame d'un mètre. Le pied de chaque brasero évasé.
+- Les pavillons : les deux pans de la porte rabattus contre la toile, quatre haubans et leurs piquets du côté opposé à la place ; de jour, la
+  face intérieure de la toile et du toit à l'ombre à la place du panneau sombre qui bouchait la porte (« a black slab standing in the tent »).
+- La fontaine du parvis : le tour du bassin et ses vasques dans le grain lisse du plâtre (le grain de pierre en faisait « a wire grid ») ;
+  l'eau qui tombe des deux vasques en gouttes (`Particles`, le mode `spray` : huit becs par vasque, des gouttes d'un bleu pâle qui gardent
+  leur couleur jusqu'à l'eau). [KO] des filets pleins (dix-huit de 3 cm, puis dix de 1,8 cm) : « a white cage » autour des vasques.
+- Le greffier : son registre ouvert, un encrier, un rouleau et son tabouret ; la guérisseuse : une poutre de façade, un lambrequin festonné,
+  une toile de fond, sa lanterne au coin de l'auvent ; le tableau d'affichage et sa caisse contre la rangée ouest (ils barraient le passage) ;
+  le réverbère du milieu et la charrette du parvis retirés.
+- Les dallages : les demi-dalles des bords gardées et une bordure de pierre plus sombre de chaque côté.
+- L'entraînement : les buttes de tir plus épaisses (deux cordes, une jambe de force, un rebord), la tribune fermée à ses bouts par des
+  planches en escalier et un garde-corps au dos, les cordes du ring qui fléchissent, les poteaux de son ouverture coiffés, les limons des
+  marches, la porte de l'enclos du mannequin ouverte ; le seau, le tonneau et les bottes de paille rangés au pied des rangées, la paille
+  éparse plus pâle.
+- La place festive : le kiosque fermé au fond par une toile or et ivoire, les haubans de la scène piquetés, les tambours cerclés et tendus ;
+  le théâtre de marionnettes avec son décor peint, ses rideaux rouges, deux marionnettes et un petit toit, au pied de la rangée ouest ; la
+  table de banquet tournée hors du passage vers la scène (et les points de foule de midi à la nuit avec elle) ; l'étal de poteries et celui
+  des bougies au pied de la rangée est. [KO] l'étal de bougies avancé à z −4,9 puis −3,9 : il cachait la tête du héros à l'entrée de la rue
+  est depuis le cadrage de la scène (le test des cadrages) ; remis à −3,4.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

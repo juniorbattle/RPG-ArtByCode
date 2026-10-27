@@ -159,11 +159,19 @@ export class ParticleSystem {
         this.acc.set(e, a);
       } else if (e.kind === 'forge') {
         let rate = 0, mode = tag;
-        if (tag === 'flame') rate = 42; else if (tag === 'embers') rate = 7; else if (tag === 'coldSmoke') rate = 2.6; else if (tag === 'steam') rate = 4.5; else if (tag === 'sparks') rate = 0;
+        if (tag === 'flame') rate = 42; else if (tag === 'brazier') rate = 14; else if (tag === 'spray') rate = 150 * e.rate; else if (tag === 'embers') rate = 7; else if (tag === 'coldSmoke') rate = 2.6; else if (tag === 'steam') rate = 4.5; else if (tag === 'sparks') rate = 0;
         let a = k;
         if (rate > 0) while (a > 1 / rate) {
           a -= 1 / rate;
           if (mode === 'flame') this.spawn(this.partsGlow, { x: e.pos[0] + R.range(-0.5, 0.5), y: e.pos[1], z: e.pos[2] + R.range(-0.18, 0.4), vx: R.range(-0.1, 0.1), vy: R.range(0.7, 1.4), vz: R.range(-0.05, 0.12), life: R.range(0.35, 0.7), size0: R.range(0.28, 0.42), size1: 0.06, r: 3.2, g: 1.3, b: 0.28, a: 0.9, kind: 3 });
+          // a brazier's bowl (the version 2's squares, journal Passe VP8): the flame's tongues within its 0.4 m
+          else if (mode === 'brazier') this.spawn(this.partsGlow, { x: e.pos[0] + R.range(-0.13, 0.13), y: e.pos[1], z: e.pos[2] + R.range(-0.13, 0.13), vx: R.range(-0.05, 0.05), vy: R.range(0.6, 1.1), vz: R.range(-0.05, 0.05), life: R.range(0.3, 0.55), size0: R.range(0.2, 0.3), size1: 0.05, r: 3.2, g: 1.3, b: 0.28, a: 0.85, kind: 3 });
+          // a fountain bowl's falling water (journal Passe VP8): drops leaving the lip (radius `size`) at its eight spouts, outward, and falling
+          // `warm` metres into the water below, a pale blue that keeps its colour (kind 7); spread round the whole lip they read as snow
+          else if (mode === 'spray') {
+            const ang = (R.int(0, 7) / 8) * 6.2832 + 0.2 + R.range(-0.03, 0.03), r = e.size ?? 1, vy = R.range(0.05, 0.3), out = R.range(0.25, 0.45), g = 9.8;
+            this.spawn(this.partsGlow, { x: e.pos[0] + Math.cos(ang) * r, y: e.pos[1], z: e.pos[2] + Math.sin(ang) * r, vx: Math.cos(ang) * out, vy, vz: Math.sin(ang) * out, life: (vy + Math.sqrt(vy * vy + 2 * g * (e.warm ?? 1))) / g, size0: R.range(0.06, 0.09), size1: 0.04, r: 0.75, g: 0.88, b: 1.0, a: 0.9, grav: g, kind: 7 });
+          }
           else if (mode === 'embers') this.spawn(this.partsGlow, { x: e.pos[0] + R.range(-0.4, 0.4), y: e.pos[1], z: e.pos[2] + R.range(-0.1, 0.3), vx: R.range(-0.25, 0.3), vy: R.range(0.8, 1.7), vz: R.range(-0.2, 0.2), life: R.range(1.6, 3.4), size0: R.range(0.035, 0.07), size1: 0.015, r: 3.5, g: 1.0, b: 0.2, a: 1, kind: 4 });
           else if (mode === 'coldSmoke') this.spawn(this.parts, { x: e.pos[0] + R.range(-0.3, 0.3), y: e.pos[1], z: e.pos[2] + R.range(-0.1, 0.4), vx: this.wind.x * 0.3, vy: R.range(0.25, 0.5), vz: 0, life: R.range(3, 5), size0: 0.3, size1: 1.3, r: 0.1, g: 0.11, b: 0.14, a: 0.2, warm: 0.2, kind: 1, drag: 0.2 });
           else if (mode === 'steam') this.spawn(this.parts, { x: e.pos[0] + R.range(-0.4, 0.4), y: e.pos[1], z: e.pos[2] + R.range(-0.3, 0.3), vx: R.range(-0.05, 0.1), vy: R.range(0.3, 0.55), vz: R.range(-0.05, 0.05), life: R.range(2, 3.4), size0: 0.3, size1: 1.1, r: 0.22, g: 0.25, b: 0.32, a: 0.16, kind: 1, drag: 0.3 });
@@ -224,7 +232,7 @@ export class ParticleSystem {
       const t = p.age / p.life;
       gl.pos[n * 3] = p.x; gl.pos[n * 3 + 1] = p.y; gl.pos[n * 3 + 2] = p.z;
       gl.size[n] = p.size0 + (p.size1 - p.size0) * t;
-      const cool = p.kind === 3 ? t : p.kind === 5 ? t * 0.5 : t * 0.6;
+      const cool = p.kind === 3 ? t : p.kind === 5 ? t * 0.5 : p.kind === 7 ? 0 : t * 0.6;
       gl.col[n * 4] = p.r * (1 - cool * 0.3); gl.col[n * 4 + 1] = p.g * (1 - cool * 0.75); gl.col[n * 4 + 2] = p.b * (1 - cool); gl.col[n * 4 + 3] = p.a * (p.kind === 3 ? Math.sin(Math.min(1, t * 1.15) * Math.PI) : 1 - t * t) * this.intensity;
       gl.rot[n] = p.rot;
       n++;
