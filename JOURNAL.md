@@ -690,6 +690,27 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
   éteint la nuit.
 - La place festive : un puits au milieu (sa margelle, ses deux montants, son treuil, son petit toit d'ardoise, un seau).
 
+### La onzième critique à l'aveugle (itérations 10 et 12), deux agents — [?] l'itération 12 devant sauf pour la place festive
+- Panneaux M et N, le district caché **8** et **7,5**. Itération 12 / itération 10 : M **parvis 6,5 / 7**, **entraînement 6 / 5,5**, **place
+  festive 7 / 7,5** ; N **7 / 6,5**, **6 / 5,5**, **6,5 / 7**. L'entraînement de l'itération 12 devant chez les deux (« la seule version dont
+  le ring se lit la nuit, sa clôture convient au lieu »), le parvis partagé (N : « les boutiques des rez-de-chaussée retirent les socles
+  morts »), la place festive de l'itération 10 devant chez les deux : [KO] le puits « un bon accessoire au mauvais endroit », collé au kiosque
+  dans le cadre proche. Rapportées à un district à 8 (moyenne des deux : 7,75) : parvis 7, place festive sans le puits 7,5, entraînement 6,25.
+  Verdicts : place festive « oui avec réserves » (les deux), parvis « oui avec réserves » (N), « pas encore, mais proche » (M), entraînement
+  « pas encore » (les deux).
+- Leurs reproches à l'entraînement, quatre critiques sur cinq : « une forêt de bâtons » (les poteaux et les lisses), l'estrade « une palette,
+  pas un ring », le sol usé illisible, le ring sombre la nuit ; au parvis le mur éclairé « sans source visible » la nuit, des meurtrières
+  « aux deux tiers de la taille d'un personnage ».
+
+### Itération 13
+- La place festive : plus de puits.
+- L'entraînement : plus de clôture autour du mannequin (sa bordure marque le cercle) ; l'estrade surélevée (plancher à 1 m, quatre marches),
+  un brasero à chacun de ses coins avant (allumés jour et nuit), sa lumière plus forte et plus près des planches ; l'usure du sol en anneaux
+  autour du mannequin et de l'estrade et une allée vers les buttes (les chemins du masque) ; Orla s'arrête devant le bord nord de l'estrade
+  agrandie (sa cinématique, `src/narrative/v2story.ts`).
+- Le parvis : les meurtrières des tours à la moitié de leur taille ; la pierre de l'arène plus sombre la nuit (0,72 au lieu de 0,84) : les
+  flaques des torches portent le mur.
+
 ### Les tests prouvés par des défauts injectés (Passes VP3 à VP5) — [OK]
 - Cinq défauts, chacun attrapé, les fichiers rendus octet pour octet (`cmp`) : les huit emblèmes du tournoi peints aussi dans l'atlas
   d'aujourd'hui (`v2-heraldry` : 1 échec, l'empreinte des appels), une bannière d'une place revenue à la fleur de lys (`v2-heraldry` : 1), une
