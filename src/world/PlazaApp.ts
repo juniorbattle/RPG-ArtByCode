@@ -399,13 +399,13 @@ export class PlazaApp {
   }
 
   /** the review / proof pose (tools/plaza-shots.mjs): the hero at (x, z), the camera settled on it at once (no easing), one frame drawn */
-  /** the lights a frame takes (MAX_LIGHTS) among the square's 30 to 40 at night (journal Passe VP6, fifth critique: the forecourt's south lamps
-   *  were never lit, 25 lights of a higher priority took the frame's 24): the nearest to the hero (or a cutscene's focus) first, a light's own
-   *  priority worth 6 m; the chosen keep their place by 0.3 (no flicker between two equals), a light leaving the set fades out, one entering
-   *  fades in (LightRig's scale; at once when the page is posed). The town's rig is untouched (its own priorities). */
+  /** the lights a frame takes (MAX_LIGHTS, one kept for a light fading out) among the square's 30 to 50 at night (journal Passe VP6, fifth
+   *  critique: the forecourt's south lamps were never lit, 25 lights of a higher priority took the frame's 24): the nearest to the hero (or a
+   *  cutscene's focus) first, a light's own priority worth 6 m; the chosen keep their place by 0.3 (no flicker between two equals), a light
+   *  leaving the set fades out, one entering fades in (LightRig's scale; at once when the page is posed). The town's rig is untouched. */
   private pickLights(dt: number): void {
     const f = this.focus, hx = f ? f.x : this.player.pos.x, hz = f ? f.z : this.player.pos.z;
-    const L = [...this.lightBase], pick = pickPlazaLights(L.map(([s, base]) => ({ x: s.pos.x, z: s.pos.z, priority: base, on: s.targetScale > 0.5 })), hx, hz, MAX_LIGHTS - 2);
+    const L = [...this.lightBase], pick = pickPlazaLights(L.map(([s, base]) => ({ x: s.pos.x, z: s.pos.z, priority: base, on: s.targetScale > 0.5 })), hx, hz, MAX_LIGHTS - 1);
     L.forEach(([s], i) => {
       s.targetScale = pick[i].on ? 1 : 0;
       s.priority = (pick[i].on ? 1000 : 500) + pick[i].k;

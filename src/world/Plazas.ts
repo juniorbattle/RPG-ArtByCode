@@ -218,7 +218,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       for (const x of xs) {
         batch.add(day ? 'lanternDark' : 'lantern', { pos: [x, top + 0.02, 8.3], yaw: 0 }, 0);
         if (day) continue;
-        lights.push({ pos: [x, top + 0.5, 7.9], color: WARM, intensity: 2.4, radius: 6.5, kind: 'lantern', halo: 0.6, priority: 7 });
+        // the lowest priority: lit when the frame's budget has room (the fourteenth critique, both panels: at priority 7 they took the slots of
+        // the stage's, the stalls' and the gate's lights, « fix that budget rather than choose between the two »)
+        lights.push({ pos: [x, top + 0.5, 7.9], color: WARM, intensity: 2.4, radius: 6.5, kind: 'lantern', halo: 0.6, priority: 4.5 });
         puddles.push({ x: x + 0.6, z: 6.4, r: 1.3, amount: 0.85 });
       }
     };
