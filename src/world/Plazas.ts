@@ -309,7 +309,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     S.at([x, 0, z], 0, () => S.get('metal').cylinder(0.3, 0, 0.34, 8, { tint: [0.3, 0.29, 0.28], r1: 0.08 }));
     S.get('metal').box(x, 0.45, z, 0.12, 0.9, 0.12);
     // (the embers heaped over the bowl's rim since journal Passe VP7, iteration 5: inside it they did not show, « dark bowls »)
-    S.get('glow').box(x, 1.2, z, 0.42, 0.16, 0.42, { tint: fireTint(day, [1, 0.55, 0.2]), uvs: COAL_UV, aux: [0, 1, 0.7, 0] });
+    if (day) S.get('dark').box(x, 1.2, z, 0.42, 0.16, 0.42, { tint: ASH }); else S.get('glow').box(x, 1.2, z, 0.42, 0.16, 0.42, { tint: [1, 0.55, 0.2], uvs: COAL_UV, aux: [0, 1, 0.7, 0] });
     // (the solid flame at night only: by day, « flat orange cones that read as traffic cones » (the first critique of journal Passe VP8); the
     // day's fire is the live flame over the embers)
     if (!day) flame(x, 1.27, z, 0.5);
@@ -433,13 +433,14 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     tracked(() => sparringDais(S, batch, lights, emitters, day, DAIS[0], DAIS[1]));
     // the yard's timber edging along its south side, toward the camera (journal Passe VP8, the third critique: « Where the sand meets the
     // cobbles, the edge is a noisy, jagged blend rather than a built edge », « Put a timber or stone curb where the sand meets the cobbles »):
-    // sleepers set in the ground, a little out of line, the way from the quay's gate left open
+    // sleepers set in the ground, a little out of line, in weathered pale timber (dark, « black edge slabs: an exposed geometry edge », the
+    // fourth critique), the way from the quay's gate left open
     tracked(() => {
       const T = S.get('timber'), er = rng.fork('edging');
       for (let x = YARD[0] + 0.25; x < YARD[2] - 0.3; x += 1.32) {
         if (Math.abs(x + 0.62) < 2.4) continue;
         const z = YARD[3] + er.range(-0.05, 0.05);
-        T.boxMM(x, 0, z - 0.11, x + 1.26, 0.07 + er.range(-0.015, 0.015), z + 0.11, { tint: [0.46, 0.38, 0.3], grain: 'x' });
+        T.boxMM(x, 0, z - 0.11, x + 1.26, 0.07 + er.range(-0.015, 0.015), z + 0.11, { tint: [0.66, 0.57, 0.46], grain: 'x' });
       }
     });
     for (const [dx, dz] of [[-2.5, -2.5], [2.5, -2.5], [-2.5, 2.5], [2.5, 2.5], [0, 0]]) blockers.push({ x: DAIS[0] + dx, z: DAIS[1] + dz, r: 1.6 });
@@ -856,9 +857,10 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
 // first captures of VP8), a pane of its bright core
 const FLAME_UV = [0.635, 0.71, 0.66, 0.71, 0.648, 0.79], COAL_UV = [0.635, 0.71, 0.66, 0.71, 0.66, 0.79, 0.635, 0.79];
 /** a fire's glow by day (journal Passe VP8, the audit: « empty bowls on bare thin poles, with no coals or flame »): the glass's emission is
- *  the day state's 0.06 (the lanterns and windows unlit, J4), so the fires alone carry it in their tint, three times (embers under the sun;
- *  nine times, 0.55, the third critique: « the brazier tops read as orange discs, not fire »); the night as before */
-const FIRE_DAY = 3;
+ *  the day state's 0.06 (the lanterns and windows unlit, J4), so a fire lit by day carries it in its tint, three times (the tunnels'
+ *  torches); the braziers' embers by day are ash (`ASH`, their live flame the particles'): nine times, then three, the third and fourth
+ *  critiques: « the brazier tops read as orange discs, not fire », « By day, the braziers' red caps look like plastic »; the night as before */
+const FIRE_DAY = 3, ASH: V3 = [0.24, 0.22, 0.21];
 const fireTint = (day: boolean, t: V3): V3 => (day ? [t[0] * FIRE_DAY, t[1] * FIRE_DAY, t[2] * FIRE_DAY] : t);
 /** a brazier's live fire over its solid flame (journal Passe VP8): tongues the size of its bowl (Particles' 'brazier', the arena's flame
  *  narrowed) and the arena's embers; a still frame (the tools' captures, the loop never started) shows the solid flame alone */
@@ -1504,7 +1506,7 @@ function sparringDais(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['ligh
     S.at([bx, 0, bz], 0, () => S.get('metal').cylinder(0.3, 1.0, 1.24, 8, { tint: [0.35, 0.33, 0.32], capBottom: true, r1: 0.4 }));
     S.at([bx, 0, bz], 0, () => S.get('metal').cylinder(0.3, 0, 0.34, 8, { tint: [0.3, 0.29, 0.28], r1: 0.08 }));
     S.get('metal').box(bx, 0.5, bz, 0.11, 1.0, 0.11);
-    S.get('glow').box(bx, 1.28, bz, 0.4, 0.16, 0.4, { tint: fireTint(day, [1, 0.55, 0.2]), uvs: COAL_UV, aux: [0, 1, 0.4, 0] });
+    if (day) S.get('dark').box(bx, 1.28, bz, 0.4, 0.16, 0.4, { tint: ASH }); else S.get('glow').box(bx, 1.28, bz, 0.4, 0.16, 0.4, { tint: [1, 0.55, 0.2], uvs: COAL_UV, aux: [0, 1, 0.4, 0] });
     if (!day) flameAt(S, day, bx, 1.35, bz, 0.5);
     emitters.push(...fireEmitters(bx, 1.36, bz));
     // (at night only since journal Passe VP8: by day the pool on the sand read « as blood »)

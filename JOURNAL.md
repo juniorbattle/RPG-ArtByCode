@@ -520,6 +520,28 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   moins effrangé dans le shader (sous `SAND`) ; les deux lanternes intérieures de la barrière (sans lumière) retirées ; les points de foule de
   la nuit écartés des braseros du ring (« At night a flame sits against an NPC's body »).
 
+### La quatrième critique à l'aveugle (itération 3 contre VP7), deux agents — [KO] VP7 devant de jour pour les deux panneaux
+- Panneau G (le district caché 8, R 8,5) : parvis VP7 **6,5** / VP8 **6** (« Only the grade differs, and W's sunlit stone with blue shadows
+  matches R. D is grey and brown »), entraînement **6** / **6** (« L keeps the stage clear and the arena wall on the skyline »), place festive
+  **6** / **6,5** (« F keeps the arena wall, shows less dead floor »). Panneau H (le district caché 7,5, R 8) : parvis **6,5** / **6**,
+  entraînement **6,5** / **5,5** (« The cobble and sand meet in a straight seam with black edge slabs: an exposed geometry edge » ; VP7 :
+  « the cobble and sand join is ragged and scattered »), place festive **7** / **6,5** (« The hazier, bluer midday is closest to R's »).
+- Pensée : les deux panneaux de ce tour lisent la différence de lumière du jour que les tours 2 et 3 préféraient (« A's shadows also stay
+  truly dark, while M's day is milky with lifted shadows ») comme un défaut ; l'écart d'un tour à l'autre sur les mêmes planches de VP7 (le
+  parvis de VP7 6 à 7 selon le tour) dit le bruit : une demi-note sur deux panneaux n'est un signal que si elle se répète. Ce qui se répète
+  ici : les ombres de jour « grey and brown » (le rebond chaud du sol relevé avec le ciel) et les braseros de jour (« red caps look like
+  plastic »). La bordure de bois : un panneau la veut (« Put a timber or stone curb », tour 3), l'autre la rejette sombre (tour 4).
+
+### Itération 4 — [?] des ombres bleues de jour, les braseros en fer de jour
+- La lumière du jour des places : le remplissage du ciel et la lumière d'appoint à × 1,5, le rebond du sol à × 0,95 (au lieu de 1,5 pour les
+  trois), la saturation × 1 (au lieu de 0,95) ; la brume de jour à partir de 16 m, × 1,25 la densité de l'état du jour (au lieu de 20 m et
+  × 1). DEV `plazasun=key,sky,ground,sat`. Saturation moyenne de la première vue (HSV, 320 x 180) : parvis VP7 0,329, itération 3 0,273,
+  itération 4 **0,305** ; entraînement 0,380 / 0,375 / **0,398** ; place festive 0,335 / 0,315 / **0,345** ; le plan B de midi du district
+  0,379.
+- Les braseros de jour : des cendres (une boîte sombre) sur le bol, sans braises qui brillent ; leur flamme vivante est celle des particules
+  (`brazier`), en jeu ; la nuit comme avant.
+- La bordure de l'entraînement en bois clair, vieilli (sombre, « black edge slabs ») ; le bord de la terre un peu plus effrangé.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

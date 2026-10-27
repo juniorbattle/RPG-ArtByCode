@@ -88,7 +88,7 @@ void main(){
     float sd = length(max(yq, 0.0)) + min(max(yq.x, yq.y), 0.0) - 1.5;
     // (frayed less since journal Passe VP8: its south edge runs along a timber edging, the third critique's « noisy, jagged blend rather than a
     // built edge »)
-    float fray = (vn2(P.xz * 0.8) - 0.5) * 0.5 + (vn2(P.xz * 3.9) - 0.5) * 0.2;
+    float fray = (vn2(P.xz * 0.8) - 0.5) * 0.8 + (vn2(P.xz * 3.9) - 0.5) * 0.32;
     yard = 1.0 - smoothstep(-0.3, 0.3, sd + fray);
   }
 #endif
