@@ -85,7 +85,7 @@ export const PLAZA_WALK: Readonly<typeof W> = W;
 export const PLAZA_SPOTS: Record<PlazaKind, Record<string, [number, number]>> = {
   forecourt: { odo: [-7.2, -9.4], hilde: [7.4, -3.0], anwen: [-7.0, 2.6], guardA: [-2.3, -15.9], guardB: [2.3, -15.9], marek: [5.6, -6.8], orla: [-5.2, -2.6], vessa: [-1.6, -12.6], ilse: [6.2, -11.6] },
   training: { corvin: [-6.2, -14.6], orla: [8.2, -7.0], ilse: [-1.8, -6.8], vessa: [1.4, -9.8], drill: [-6.4, -3.6] },
-  festival: { pip: [-7.7, -2.9], lio: [-6.2, -14.4], cassius: [1.6, -11.4], bard: [1.4, -13.2] },
+  festival: { pip: [-8.2, -12.0], lio: [-5.4, -14.6], cassius: [1.6, -11.4], bard: [1.4, -13.2] },
 };
 /** the points the crowd walks between (journal Passe VP6: none nearer the camera than z 1, where a walker filled the frame's bottom edge) */
 export const PLAZA_WANDER: Record<PlazaKind, Array<[number, number]>> = {
@@ -93,8 +93,14 @@ export const PLAZA_WANDER: Record<PlazaKind, Array<[number, number]>> = {
   training: [[-7, 1], [7, 0.5], [0, -1], [8.6, -7.8], [-8, -9], [0, -7.5]],
   festival: [[-5, 0.5], [5, 0.5], [0, -4], [-2.4, -7.4], [6.4, -7.6], [0, -11], [-1, -1]],
 };
+/** the training ground's yard of beaten earth (journal Passe VP6): x0, z0, x1, z1 */
+const YARD = [-10.4, -14.8, 10.4, 3.0];
+/** the ground shader's variants a square compiles (the town's ground compiles none): the training ground's earth within its setts */
+export function plazaGroundDefines(kind: PlazaKind): Record<string, string | number> {
+  return kind === 'training' ? { SAND: 1, SAND_RECT: `vec4(${YARD.map((v) => v.toFixed(2)).join(', ')})` } : {};
+}
 /** the festival's bandstand (journal Passe VP6) */
-const BAND: [number, number] = [-6.4, -10.2];
+const BAND: [number, number] = [-7.4, -8.6];
 /** the focal point of each square: the wall lanterns nearest it are lit, the paths lead to it */
 const FOCUS: Record<PlazaKind, [number, number]> = { forecourt: [0, -16], training: [-5.5, -15], festival: [0, -14] };
 
@@ -163,7 +169,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   // ---------------------------------------------------------------- the lamps: a rhythm along the open south side (the quay's), a few inside
   const lamp = (x: number, z: number, strong = true) => {
     batch.add('lampPost', { pos: [x, 0, z], yaw: Math.PI / 2, scale: 1 }, 0);
-    lights.push({ pos: xf([0.52, 3.2 - 0.38, 0], [x, 0, z], Math.PI / 2), color: WARM, intensity: strong ? 4.6 : 3.2, radius: strong ? 12 : 9, kind: 'lantern', halo: strong ? 1.15 : 1.0, priority: strong ? 6 : 5 });
+    lights.push({ pos: xf([0.52, 3.2 - 0.38, 0], [x, 0, z], Math.PI / 2), color: WARM, intensity: strong ? 4.6 : 3.2, radius: strong ? 12 : 9, kind: 'lantern', halo: strong ? 1.15 : 1.0, priority: strong ? 7 : 6 });
     blockers.push({ x, z, r: 0.35 }); obstacles.push({ x0: x - 0.25, x1: x + 0.25, z0: z - 0.25, z1: z + 0.25, grime: 0.4 });
     puddles.push({ x: x + 0.8, z: z - 1.4, r: 1.6, amount: 0.85 });
   };
@@ -272,6 +278,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     tracked(() => weaponRack(S, 10.5, -1.6));
     blockers.push({ x: 10.5, z: -1.6, r: 1.2 });
     healer(S, batch, -8.0, 1.2, 0.6, blockers, obstacles);
+    // her lantern under the canopy, lit at night (sixth critique: « at night the lower-left third is almost black »)
+    batch.add(day ? 'lanternDark' : 'lantern', { pos: xf([0.2, 1.75, 0.3], [-8.0, 0, 1.2], 0.6), yaw: 0.6 }, 0);
+    if (!day) lights.push({ pos: xf([0.2, 1.6, 0.9], [-8.0, 0, 1.2], 0.6), color: WARM, intensity: 2.4, radius: 6.5, kind: 'lantern', halo: 0.9, priority: 7 });
     puddles.push({ x: -5.4, z: -6.6, r: 1.2, amount: 0.7 }, { x: 5.6, z: -9.8, r: 1.4, amount: 0.8 });
     // a lantern on each of four corners of the fountain's rim, lit at night (journal Passe VP6: the fountain unlit; the first lanterns on posts
     // round it read as the legs of a table)
@@ -287,7 +296,8 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     lamp(-3.3, -2.5, false); lamp(3.3, -2.5, false);
     // the near edge: a carter's wagon by the quay's gate, crates and barrels on the other side (the frame's foreground)
     S.append(cart(rng.fork('cart')), mat([-7.6, 0, 6.9], 0.3));
-    for (const [x, z, k, y] of [[8.4, 6.2, 'crate', 0.3], [9.2, 5.7, 'barrel', 0.8], [7.6, 6.8, 'barrel', 2.1], [9.9, 6.6, 'crate', 1.2], [8.9, 6.6, 'sack', 0.4]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, 0, z], yaw: y });
+    // (the crates and barrels that stood at the frame's near corner, cut by its edge, sixth critique: the armourer's stock beside his stall)
+    for (const [x, z, k, y] of [[10.0, -6.6, 'crate', 0.3], [10.6, -7.3, 'barrel', 0.8], [9.6, -7.4, 'sack', 0.4]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, 0, z], yaw: y });
     paths.push([[0, 4], [0, -4], [0, -16.5]], [[-11, -4.3], [-4, -5.5]], [[11, -10.5], [4, -9]], [[-9, 2], [-7.4, -9.6]], [[9, 2], [8.3, -3.4]]);
     decal('grate', 3.2, -4.4, 0.9, 0.6, 0.3, 0.9); decal('manhole', -4.6, -12.2, 0.95, 0.95, 1.1, 0.85);
     scatter('crack', 6, -10, 10, -15, 3, [1.2, 2.2], [0.4, 0.7]); scatter('stain', 6, -10, 10, -15, 3, [1.6, 3.0], [0.25, 0.4], 0.014, [0.6, 0.62, 0.68]);
@@ -297,20 +307,23 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     // before the barracks, two sword rings, the archery butts along the east row, the racks by the street to the forecourt, the yard's fence
     // the yard's floor: beaten sand within a border of cobbles along the houses (journal Passe VP6: a cobbled plain with sand discs on it read
     // as a square, not as lists), worn darker where the feet go
+    // the earth is the ground's own (PLAZA_GROUND, GroundShaders' SAND_RECT): its edge frayed into the setts, no kerb (sixth critique: « a flat
+    // beige quad with hard straight edges »; the fourth's « a flat beige board with a hard black outline » was the first plane's timber frame)
+    // the band between the yard and the balustrade (sixth critique: « dead space »): a water trough, a bench
     tracked(() => {
-      const Tm = S.get('timber');
-      // a kerb of light stone where the earth meets the setts (fourth critique: « a flat beige board with a hard black outline »)
-      void Tm;
-      for (const [x0, x1, z0, z1] of [[-10.2, 10.2, 2.55, 2.85], [-10.2, 10.2, -14.85, -14.55], [-10.25, -9.95, -14.85, 2.85], [9.95, 10.25, -14.85, 2.85]]) S.get('stone').boxMM(x0, 0, z0, x1, 0.07, z1, { tint: [0.7, 0.68, 0.64], uvScale: 1.2 });
+      S.at([-2.8, 0, 5.4], 0.08, () => {
+        const P = S.get('planks'), T = S.get('timber');
+        P.boxMM(-1.2, 0, -0.34, 1.2, 0.62, -0.26, { tint: [0.52, 0.42, 0.32], grain: 'x' }); P.boxMM(-1.2, 0, 0.26, 1.2, 0.62, 0.34, { tint: [0.52, 0.42, 0.32], grain: 'x' });
+        for (const sx of [-1, 1]) P.boxMM(sx * 1.2 - 0.04, 0, -0.34, sx * 1.2 + 0.04, 0.62, 0.34, { tint: [0.48, 0.39, 0.3], grain: 'y' });
+        T.boxMM(-1.3, 0.62, -0.38, 1.3, 0.68, -0.3, { tint: [0.42, 0.34, 0.27], grain: 'x' }); T.boxMM(-1.3, 0.62, 0.3, 1.3, 0.68, 0.38, { tint: [0.42, 0.34, 0.27], grain: 'x' });
+        for (const sx of [-0.7, 0.7]) S.get('metal').boxMM(sx - 0.03, -0.01, -0.36, sx + 0.03, 0.64, 0.36, { tint: [0.3, 0.3, 0.32] });
+      });
+      S.at([3.4, 0, 5.6], -0.06, () => { S.get('planks').boxMM(-1.1, 0.42, -0.17, 1.1, 0.48, 0.17, { grain: 'x', tint: [0.6, 0.48, 0.38] }); for (const a of [-0.85, 0.85]) S.get('timber').boxMM(a - 0.05, 0, -0.14, a + 0.05, 0.42, 0.14, { tint: [0.46, 0.37, 0.3] }); });
     });
-    {
-      // the earth: the ground's own shading (light, shadows, wet, the mask's grime and wear) with its setts replaced (GroundShaders' SAND)
-      const sand = new THREE.ShaderMaterial({ uniforms: lib.ground.uniforms, vertexShader: lib.ground.vertexShader, fragmentShader: lib.ground.fragmentShader, defines: { ...lib.ground.defines, SAND: 1 } });
-      disposables.push(sand);
-      const g = new THREE.PlaneGeometry(20, 17.2); g.rotateX(-Math.PI / 2); g.translate(0, 0.012, -6.0);
-      const m = new THREE.Mesh(g, sand); m.name = 'plaza:sand'; m.layers.set(LAYER_NOREFLECT); m.frustumCulled = false; m.renderOrder = 1;
-      group.add(m);
-    }
+    if (lib.water) { const g = new THREE.PlaneGeometry(2.3, 0.5); g.rotateX(-Math.PI / 2); g.rotateY(0.08); g.translate(-2.8, 0.5, 5.4); const m = new THREE.Mesh(g, lib.water); m.name = 'plaza:trough-water'; m.layers.set(LAYER_NOREFLECT); m.frustumCulled = false; group.add(m); }
+    blockers.push({ x: -3.6, z: 5.4, r: 0.6 }, { x: -2.0, z: 5.4, r: 0.6 }, { x: 3.4, z: 5.6, r: 0.5 });
+    obstacles.push({ x0: -4.1, x1: -1.5, z0: 5.0, z1: 5.8, grime: 0.5 });
+    puddles.push({ x: -2.2, z: 6.1, r: 0.9, amount: 0.9 });
 
     tracked(() => tiltYard(S, -6.0, 7.2, -11.4));
     for (let x = -6; x <= 7.2; x += 1.1) blockers.push({ x, z: -11.4, r: 0.32 });
@@ -330,7 +343,8 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     tracked(() => sparringDais(S, batch, lights, day, 4.4, -4.2));
     for (const [x, z] of [[2.2, -2.0], [6.6, -2.0], [2.2, -6.4], [6.6, -6.4], [4.4, -4.2]]) blockers.push({ x, z, r: 1.5 });
     obstacles.push({ x0: 1.5, x1: 7.3, z0: -7.1, z1: -1.0, grime: 0.6 });
-    for (const z of [-7.6, -9.0]) { tracked(() => archeryButt(S, 10.2, z, -Math.PI / 2)); blockers.push({ x: 10.2, z, r: 0.8 }); }
+    // the butts turned toward the yard's south (sixth critique: seen edge-on from the camera they read as « pale leaning boards »)
+    for (const [x, z] of [[9.9, -7.4], [9.6, -9.6]] as Array<[number, number]>) { tracked(() => archeryButt(S, x, z, 0.35)); blockers.push({ x, z, r: 0.8 }); }
     for (const z of [-1.2, -5.6]) { tracked(() => weaponRack(S, -10.4, z)); blockers.push({ x: -10.4, z, r: 1.2 }); obstacles.push({ x0: -10.8, x1: -10.0, z0: z - 1.2, z1: z + 1.2, grime: 0.6 }); }
     for (const [x, z, k] of [[-1.4, -2.4, 'hay'], [-0.8, -3.2, 'hay'], [8.6, -9.4, 'bucket'], [7.9, -9.6, 'barrel'], [-8.6, -13.6, 'crate'], [8.8, 1.6, 'hay'], [9.5, 1.2, 'hay'], [-8.8, 2.2, 'barrel']] as Array<[number, number, string]>) {
       if (k === 'hay') hay(S, x, z, x + z); else batch.add(k, { pos: [x, 0, z], yaw: x + z }); blockers.push({ x, z, r: 0.6 });
@@ -368,9 +382,17 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     tracked(() => feastTable(S, batch, 4.2, -5.4, 0.12, 4.4));
     tracked(() => feastTable(S, batch, 3.6, -9.6, -0.08, 3.8));
     for (const [x, z, r] of [[4.2, -5.4, 2.2], [3.6, -9.6, 2.0]]) blockers.push({ x: x - 1.2, z, r: r * 0.6 }, { x, z, r: r * 0.6 }, { x: x + 1.2, z, r: r * 0.6 });
-    tracked(() => puppetBooth(S, -9.9, -4.2, 1.35));
-    blockers.push({ x: -10.1, z: -4.2, r: 1.3 });
-    marketStall(-9.9, -0.9, 0.9, 'candles', 3.0, false, [[0.3, 0.37, 0.7], [0.86, 0.82, 0.72]]);
+    // the puppet booth in the north-west corner behind the bandstand (on the west side it stood in the near frames, a tall striped panel cut
+    // by the frame's edge)
+    tracked(() => puppetBooth(S, -9.9, -13.6, 0.7));
+    blockers.push({ x: -10.0, z: -13.8, r: 1.3 });
+    // the south-west corner: a cask of ale, crates and a bench, low things (the near frames' foreground)
+    for (const [x, z, k, y] of [[-8.9, -2.6, 'barrel', 0.4], [-8.2, -3.0, 'barrel', 1.3], [-9.5, -1.8, 'crate', 0.2], [-8.6, -2.6, 'barrelLying', 1.6]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, k === 'barrelLying' ? 0.95 : 0, z], yaw: y });
+    S.at([-6.8, 0, -1.6], 0.5, () => { S.get('planks').boxMM(-1.0, 0.4, -0.16, 1.0, 0.46, 0.16, { grain: 'x', tint: [0.6, 0.48, 0.38] }); for (const a of [-0.8, 0.8]) S.get('timber').boxMM(a - 0.04, 0, -0.12, a + 0.04, 0.4, 0.12, { tint: [0.46, 0.37, 0.3] }); });
+    blockers.push({ x: -8.8, z: -2.5, r: 0.9 }, { x: -6.8, z: -1.6, r: 0.8 });
+    // the candle seller on the east side, facing the square (in the south-west corner its awning filled the near frames' lower quarter, sixth
+    // critique)
+    marketStall(8.9, -6.2, -0.95, 'candles', 3.0, true, [[0.3, 0.37, 0.7], [0.86, 0.82, 0.72]]);
     marketStall(8.3, -2.4, -0.45, 'pottery', 2.8, true, [[0.78, 0.6, 0.3], [0.86, 0.82, 0.72]]);
     marketStall(8.7, -14.2, -0.3, 'produce', 2.6, false, [[0.42, 0.46, 0.5], [0.8, 0.77, 0.7]]);
     for (const [x, z] of [[-6.4, -14.8], [6.2, -12.4]] as Array<[number, number]>) { batch.add('stool', { pos: [x, 0, z], yaw: x }); batch.add('barrel', { pos: [x + 0.6, 0, z - 0.3], yaw: z }); blockers.push({ x, z, r: 0.7 }); }
@@ -401,10 +423,13 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     if (!day) lights.push({ pos: [7.9, 2.3, -1.3], color: WARM, intensity: 2.0, radius: 6.5, kind: 'lantern', halo: 1.0, priority: 7 });
     blockers.push({ x: 6.8, z: -0.5, r: 1.1 }, { x: 4.2, z: -0.2, r: 0.9 }, { x: 5.0, z: 1.4, r: 0.9 });
     for (const [x, z, k, y] of [[-8.6, 6.2, 'crate', 0.4], [-9.4, 5.7, 'barrel', 1.0], [-7.8, 6.7, 'barrelLying', 0.2], [-10.0, 6.6, 'crate', 1.4]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, k === 'barrelLying' ? 0.3 : 0, z], yaw: y });
-    paths.push([[0, 4], [0, -13]], [[11, -10.5], [4, -11.5]], [[-9, 2], [-9.9, -0.9]], [[9, 2], [8.3, -2.4]], [[-4.4, -8.4], [-1.0, -3.0]], [[-8.0, -4.0], [-5.0, -1.5]]);
+    paths.push([[0, 4], [0, -13]], [[11, -10.5], [4, -11.5]], [[9, 2], [8.3, -2.4]], [[8.9, -6.2], [5, -7]], [[-5.6, -6.8], [-1.0, -2.0]], [[-8.6, -12.2], [-4.4, -12.0]]);
     scatter('straw', 5, -10, 10, -15, 2, [0.7, 1.2], [0.5, 0.75]); scatter('leaves', 4, -10, 10, -15, 2, [0.8, 1.3], [0.5, 0.7]);
     scatter('splinters', 3, 2, 6, -11, -4, [0.6, 1.0], [0.5, 0.7]); scatter('stain', 6, -10, 10, -15, 3, [1.6, 3.0], [0.25, 0.4], 0.014, [0.6, 0.62, 0.68]);
     scatter('crack', 4, -10, 10, -15, 3, [1.2, 2.2], [0.4, 0.7]);
+    // the festival's litter on the near setts: petals and paper in the tournament's colours (sixth critique: « the front third is empty »)
+    scatter('leaves', 9, -9, 9, -1, 6, [0.5, 0.9], [0.55, 0.8], 0.016, [0.62, 0.72, 1.25]); scatter('leaves', 7, -9, 9, -1, 6, [0.5, 0.9], [0.55, 0.8], 0.016, [1.3, 1.05, 0.6]);
+    scatter('straw', 3, -6, 6, 0, 6, [0.6, 1.0], [0.4, 0.6]);
   }
 
   // ---------------------------------------------------------------- the façades' wall lanterns: lit near the focal point, dark elsewhere (hierarchy)
@@ -544,17 +569,31 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
   // bay centres along the arc: the gate at 0, five bays each side
   const angles: Array<{ a: number; w: number; gate: boolean }> = [{ a: 0, w: gateW, gate: true }];
   for (const s of [-1, 1]) { let a = s * (gateW / 2 + bayW / 2) / R; for (let i = 0; i < 6; i++) { angles.push({ a, w: bayW, gate: false }); a += s * bayW / R; } }
-  const arch = (cx: number, yb: number, hw: number, hRect: number, z: number, ring: V3, niche = false) => {
+  const arch = (cx: number, yb: number, hw: number, hRect: number, z: number, ring: V3, niche = false, through = 0) => {
     // the dark opening (a recess: its back 0.7 m inside), its semicircular head, and the ring of voussoirs; by day the upper arcade's are
     // niches, their back in the shade of the head with a door into the gallery (fifth critique: « the upper arches are black cut-outs »)
     const n = 10, yc = yb + hRect;
-    if (niche) {
+    if (through > 0) {
+      // the gate's passage by day, `through` m deep, the sunlit arena at its end (sixth critique: « give the gate depth [...] a lit passage
+      // behind the portcullis »): its walls and vault in the shade, its paving, the sand and the far stands in the light
+      const shade: V3 = [0.4 * nk, 0.38 * nk, 0.36 * nk];
+      for (const sx of [-1, 1]) quadFacing(St, [[cx + sx * hw, yb, z - 0.72], [cx + sx * hw, yb, z - through], [cx + sx * hw, yc, z - through], [cx + sx * hw, yc, z - 0.72]], [-sx, 0, 0], { uvScale: uv, tint: shade, ao: [0.8, 0.6, 0.6, 0.8] });
+      for (let i = 0; i < n; i++) {
+        const a0 = (i / n) * Math.PI, a1 = ((i + 1) / n) * Math.PI, am = (a0 + a1) / 2;
+        quadFacing(St, [[cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z - 0.72], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z - 0.72], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z - through], [cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z - through]], [-Math.cos(am), -Math.sin(am), 0], { uvScale: uv, tint: [shade[0] * 0.85, shade[1] * 0.85, shade[2] * 0.85], ao: 0.6 });
+      }
+      St.boxMM(cx - hw, yb - 0.02, z - through, cx + hw, yb + 0.012, z - 0.5, { uvScale: uv, tint: [0.5, 0.48, 0.45] });
+      const zf = z - through + 0.02, Pl2 = S.get('plaster');
+      Pl2.quad([cx - hw, yb, zf], [cx + hw, yb, zf], [cx + hw, yb + 1.3, zf], [cx - hw, yb + 1.3, zf], { tint: [2.3, 1.95, 1.4] });
+      Pl2.quad([cx - hw, yb + 1.3, zf], [cx + hw, yb + 1.3, zf], [cx + hw, yc + hw, zf], [cx - hw, yc + hw, zf], { tint: [1.75, 1.72, 1.7] });
+      for (const ty of [2.0, 2.7, 3.4, 4.1, 4.8]) St.boxMM(cx - hw, yb + ty, zf, cx + hw, yb + ty + 0.12, zf + 0.01, { tint: [0.9, 0.86, 0.8] });
+    } else if (niche) {
       Pl.boxMM(cx - hw, yb, z - 0.75, cx + hw, yb + hRect, z - 0.7, { tint: [0.46 * nk, 0.44 * nk, 0.43 * nk], aoY: [0.85, 0.6] });
       Dk.boxMM(cx - hw * 0.42, yb, z - 0.69, cx + hw * 0.42, yb + hRect * 0.82, z - 0.68, { tint: dark });
     } else Dk.boxMM(cx - hw, yb, z - 0.75, cx + hw, yb + hRect, z - 0.7, { tint: dark });
     for (let i = 0; i < n; i++) {
       const a0 = (i / n) * Math.PI, a1 = ((i + 1) / n) * Math.PI;
-      (niche ? Pl : Dk).tri([cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z - 0.72], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z - 0.72], [cx, yc, z - 0.72], { tint: niche ? [0.36 * nk, 0.34 * nk, 0.34 * nk] : dark, ao: niche ? 0.6 : 1 });
+      if (!through) (niche ? Pl : Dk).tri([cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z - 0.72], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z - 0.72], [cx, yc, z - 0.72], { tint: niche ? [0.36 * nk, 0.34 * nk, 0.34 * nk] : dark, ao: niche ? 0.6 : 1 });
       // the head's intrados, from the front plane to the recess (without it a pale crescent of whatever stands behind showed beside each head)
       St.quad([cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z], [cx + Math.cos(a1) * hw, yc + Math.sin(a1) * hw, z - 0.72], [cx + Math.cos(a0) * hw, yc + Math.sin(a0) * hw, z - 0.72], { uvScale: uv, tint: [0.54, 0.51, 0.47] });
       // the spandrel between the head and the bay's corners (front plane)
@@ -579,7 +618,7 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
         St.boxMM(s * hw - 0.26, TIER_G, -0.4, s * hw + 0.26, TIER_U, 0.18, { uvScale: uv, tint: stoneLt, aoY: [0.8, 1] });
       }
       // the ground tier's arch (the gate wider and taller), the upper tier's
-      if (b.gate) arch(0, 0, 2.1, 4.0, 0, stoneLt); else arch(0, 0, 1.25, 3.4, 0, stoneLt);
+      if (b.gate) arch(0, 0, 2.1, 4.0, 0, stoneLt, false, day ? 7 : 0); else arch(0, 0, 1.25, 3.4, 0, stoneLt);
       // the tunnels behind two ground arches either side lit at night (the arena's galleries; the third critique's « red slab » was an upper arch)
       if (!day && !b.gate && [2, 4].includes(Math.abs(Math.round(b.a * R / bayW)))) S.get('glow').boxMM(-1.24, 0, -0.69, 1.24, 3.4, -0.68, { tint: [0.34, 0.2, 0.08] });
       arch(0, TIER_G + 0.55, 0.95, 1.6, -0.1, stoneLt, day);
@@ -1028,7 +1067,11 @@ function quintain(S: SlotSet, x: number, z: number, yaw: number): void {
     T.boxMM(-0.5, 0, -0.5, 0.5, 0.18, 0.5, { tint: [0.44, 0.36, 0.29] });
     T.cylinder(0.1, 0.18, 2.5, 8, { tint: [0.46, 0.37, 0.3], capTop: true });
     T.boxMM(-1.3, 2.25, -0.06, 1.3, 2.37, 0.06, { tint: [0.44, 0.36, 0.29], grain: 'x' });
-    S.with(mat([-1.15, 1.75, 0.08], 0, 1, Math.PI / 2), () => S.get('metal').cylinder(0.36, -0.03, 0.03, 12, { tint: [0.3, 0.38, 0.7], capTop: true, capBottom: true }));
+    S.with(mat([-1.15, 1.75, 0.08], 0, 1, Math.PI / 2), () => {
+      S.get('metal').cylinder(0.38, -0.03, 0.03, 14, { tint: [0.86, 0.8, 0.66], capTop: true, capBottom: true });
+      S.get('cloth').cylinder(0.31, 0.03, 0.045, 14, { tint: [0.34, 0.44, 0.86], capTop: true });
+      S.get('metal').cylinder(0.08, 0.045, 0.1, 8, { tint: [1.0, 0.85, 0.5], capTop: true, r1: 0.04 });
+    });
     S.get('cloth').boxMM(1.08, 1.45, -0.18, 1.38, 1.95, 0.18, { tint: [0.56, 0.48, 0.36] });
     S.get('cloth').boxMM(1.2, 1.95, -0.02, 1.26, 2.25, 0.02, { tint: [0.3, 0.26, 0.22] });
   });
@@ -1095,8 +1138,8 @@ function sparringDais(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['ligh
     P.boxMM(-hw, y - 0.1, -hw, hw, y, hw, { grain: 'x', tint: [0.64, 0.52, 0.4] });
     // the fighters' canvas on the boards, its border in the tournament's blue, a ring painted at its heart (fifth critique: « a plain brown box »)
     S.get('cloth').boxMM(-hw + 0.25, y, -hw + 0.25, hw - 0.25, y + 0.012, hw - 0.25, { tint: [0.3, 0.37, 0.66] });
-    S.get('cloth').boxMM(-hw + 0.45, y + 0.012, -hw + 0.45, hw - 0.45, y + 0.02, hw - 0.45, { tint: [0.56, 0.5, 0.41] });
-    S.at([0, y + 0.02, 0], 0, () => { S.get('cloth').cylinder(0.95, 0, 0.004, 20, { tint: [0.3, 0.37, 0.66], capTop: true }); S.get('cloth').cylinder(0.85, 0.004, 0.008, 20, { tint: [0.56, 0.5, 0.41], capTop: true }); });
+    S.get('cloth').boxMM(-hw + 0.45, y + 0.012, -hw + 0.45, hw - 0.45, y + 0.02, hw - 0.45, { tint: [0.4, 0.35, 0.29] });
+    S.at([0, y + 0.02, 0], 0, () => { S.get('cloth').cylinder(0.95, 0, 0.004, 20, { tint: [0.3, 0.37, 0.66], capTop: true }); S.get('cloth').cylinder(0.85, 0.004, 0.008, 20, { tint: [0.4, 0.35, 0.29], capTop: true }); });
     T.boxMM(-hw - 0.08, 0, -hw - 0.08, hw + 0.08, y - 0.1, hw + 0.08, { tint: [0.42, 0.34, 0.27] });
     for (let k = 0; k < 3; k++) P.boxMM(-1.0, 0.2 * k, hw + 0.08 + 0.3 * (2 - k), 1.0, 0.2 * (k + 1), hw + 0.38 + 0.3 * (2 - k), { grain: 'x', tint: [0.6, 0.48, 0.38] });
     const posts: Array<[number, number]> = [[-hw, -hw], [hw, -hw], [hw, hw], [-hw, hw]];
@@ -1116,6 +1159,9 @@ function sparringDais(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['ligh
     }
     for (const [i, [a, b]] of posts.entries()) addBanner(S, { pos: [a + 0.08, y + 1.85, b], yaw: Math.PI / 2, w: 0.42, h: 1.0, emblem: i % 2 ? 'laurel' : 'swords', shape: 'pennant', loose: 0.8, rod: false, tint: i % 2 ? [0.95, 0.88, 0.62] : [0.5, 0.6, 0.95] });
   });
+  // a lantern hung on each corner post's crown, lit at night (sixth critique), the canvas worn by the feet
+  for (const [a, b] of [[-hw, -hw], [hw, -hw], [hw, hw], [-hw, hw]] as Array<[number, number]>) batch.add(day ? 'lanternDark' : 'lantern', { pos: [x + a * 1.07, y + 1.55, z + b * 1.07], yaw: Math.atan2(a, b) }, 0);
+  if (!day) lights.push({ pos: [x, y + 2.2, z], color: WARM, intensity: 2.6, radius: 7, kind: 'lantern', halo: 0.8, priority: 7 });
   weaponRack(S, x + 3.6, z + 0.6);
   S.at([x - 3.2, 0, z - 2.6], 0, () => S.get('metal').cylinder(0.32, 0.9, 1.15, 8, { tint: [0.35, 0.33, 0.32], capBottom: true, r1: 0.42 }));
   S.get('metal').box(x - 3.2, 0.45, z - 2.6, 0.12, 0.9, 0.12);
@@ -1178,9 +1224,10 @@ function bandstand(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights'
         const t0 = i / 4, t1 = (i + 1) / 4, rv = Rr - 0.06;
         const A = at(rv, k, 0), B = at(rv, k + 1, 0);
         const P0: V3 = [A[0] + (B[0] - A[0]) * t0, Hp + 0.02, A[2] + (B[2] - A[2]) * t0], P1: V3 = [A[0] + (B[0] - A[0]) * t1, Hp + 0.02, A[2] + (B[2] - A[2]) * t1];
-        const tint: V3 = i % 2 ? [0.84, 0.8, 0.7] : [0.3, 0.37, 0.68];
+        // gold and ivory (sixth critique: in the stage's blue and ivory the two stripes « merge into one pale-blue mass »)
+        const tint: V3 = i % 2 ? [0.88, 0.84, 0.74] : [0.86, 0.64, 0.28];
         quadFacing(C, [P0, P1, [P1[0], Hp - 0.32, P1[2]], [P0[0], Hp - 0.32, P0[2]]], o, { tint, swayArr: [0, 0, 0.1, 0.1] });
-        triOut(C, [P0[0], Hp - 0.32, P0[2]], [P1[0], Hp - 0.32, P1[2]], [(P0[0] + P1[0]) / 2, Hp - 0.52, (P0[2] + P1[2]) / 2], o, { tint: i % 2 ? [0.3, 0.37, 0.68] : [0.84, 0.8, 0.7], swayArr: [0.1, 0.1, 0.35] });
+        triOut(C, [P0[0], Hp - 0.32, P0[2]], [P1[0], Hp - 0.32, P1[2]], [(P0[0] + P1[0]) / 2, Hp - 0.52, (P0[2] + P1[2]) / 2], o, { tint: i % 2 ? [0.86, 0.64, 0.28] : [0.88, 0.84, 0.74], swayArr: [0.1, 0.1, 0.35] });
       }
     }
     // the finial, its pennant
@@ -1193,14 +1240,15 @@ function bandstand(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights'
     S.at([-0.6, H0, 0.5], 0.5, () => { T.boxMM(-0.02, 0, -0.02, 0.02, 1.05, 0.02, { tint: [0.4, 0.33, 0.27] }); Pk.boxMM(-0.24, 1.0, -0.03, 0.24, 1.32, 0.0, { tint: [0.56, 0.45, 0.35], grain: 'x' }); });
   });
   for (const [dx, dz, yw] of [[-0.5, -0.9, 0.4], [0.9, 0.4, 1.6]] as Array<[number, number, number]>) batch.add('stool', { pos: [x + dx, H0, z + dz], yaw: yw });
-  for (let k = 0; k < n; k++) {
-    if (k % 2) continue;
-    const p = at(Rp + 0.04, k, 0);
-    batch.add(day ? 'lanternDark' : 'lantern', { pos: [x + p[0], Hp - 0.75, z + p[2]], yaw: k }, 0);
-  }
+  // a lantern at each post and a crown of candles hung from the ceiling: at night the square's main pool of light (sixth critique: « the
+  // bandstand's inside stays dark »)
+  for (let k = 0; k < n; k++) { const p = at(Rp + 0.04, k, 0); batch.add(day ? 'lanternDark' : 'lantern', { pos: [x + p[0], Hp - 0.75, z + p[2]], yaw: k }, 0); }
+  S.get('metal').boxMM(x - 0.02, Hp - 0.75, z - 0.02, x + 0.02, Hp + 0.1, z + 0.02, { tint: [0.3, 0.3, 0.32] });
+  S.at([x, Hp - 0.85, z], 0, () => S.get('metal').cylinder(0.42, 0, 0.06, 10, { tint: [0.5, 0.42, 0.3], capTop: true, capBottom: true }));
+  for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2; S.get(day ? 'plaster' : 'glow').box(x + Math.cos(a) * 0.36, Hp - 0.72, z + Math.sin(a) * 0.36, 0.05, 0.16, 0.05, { tint: day ? [0.9, 0.86, 0.76] : [1, 0.7, 0.35] }); }
   if (!day) {
-    lights.push({ pos: [x, Hp - 0.6, z], color: WARM, intensity: 3.2, radius: 8.5, kind: 'lantern', halo: 1.2, priority: 8 });
-    lights.push({ pos: [x + 1.4, 1.6, z + 2.6], color: WARM, intensity: 1.8, radius: 6, kind: 'lantern', halo: 0, priority: 7 });
+    lights.push({ pos: [x, 2.0, z], color: WARM, intensity: 4.2, radius: 9, kind: 'lantern', halo: 1.2, priority: 8 });
+    lights.push({ pos: [x + 2.0, 1.4, z + 2.0], color: WARM, intensity: 2.0, radius: 6, kind: 'lantern', halo: 0, priority: 7 });
   }
 }
 

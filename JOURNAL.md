@@ -561,6 +561,37 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
   (`steer`, `src/world/Plazas.ts`) ; un point de la foule de l'entraînement était dans l'estrade (déplacé). Test : les places des personnes et
   les points de la foule hors des grandes choses, chaque marche d'un point à un autre arrivée et tenue dehors (`tests/v2-exits.test.mjs`).
 
+### La sixième critique à l'aveugle (itération 7), étalonnée — [OK] parvis et place festive « oui avec réserves », [?] entraînement
+- Agent neuf ; sept planches (itérations 6 et 7, le district caché : 10 / 8, la référence 8). Itération 7 : **parvis 8 / 7** (« la hiérarchie
+  la plus claire des sept planches » ; la pierre taillée claire « s'accorde à la palette de R et garde le contraste des bannières », la brique
+  de l'itération 6 « un papier peint »), **place festive 8,5 / 7** (« son centre a une masse et la forme des toits de la ville »), **entraînement
+  8 / 6,5** (« de vraies bottes de paille », la toile du ring « un point focal qui prend la lumière ») ; chaque fois devant l'itération 6.
+  Verdicts : parvis « oui avec réserves », place festive « oui avec réserves » dans le cadre large, « pas encore » dans le cadre proche,
+  entraînement « pas encore ».
+- Ses reproches : au parvis des arcades et des fenêtres « découpes noires sans profondeur », la porte sans passage, le tiers inférieur gauche
+  noir la nuit, des caisses coupées au coin de l'image, la balustrade nette ; à la place festive le kiosque collé à la tente de la scène (« leurs
+  rayures se fondent en une masse bleu pâle »), son intérieur sombre la nuit, l'auvent proche, le tiers avant vide ; à l'entraînement la terre
+  « un quad plat aux bords droits », la toile du ring la plus claire de l'image et coupée par son bord, les objets du bord droit illisibles
+  (« des planches pâles penchées, un disque noir sur un poteau »), la bande entre la balustrade et la cour « un espace mort ».
+
+### Itération 8
+- Commun : une profondeur de champ propre aux places (`dofRange` 9 m au lieu de 16, le flou lointain jusqu'à 0,5 au lieu de 0,22 ;
+  `plazadof=` en DEV) : une place tient entière entre 13 et 40 m de la caméra, le district ne floute que sa ville lointaine ; le premier plan
+  (la balustrade) et les rangées du fond s'adoucissent, le décalage « tilt-shift » du HD-2D. Le choix des lumières pèse la distance plus fort
+  (une priorité vaut 6 m) et les réverbères des places passent de 6 / 5 à 7 / 6.
+- Le parvis : **de jour la porte est un passage** de 7 m (ses murs et sa voûte dans l'ombre, son dallage) au bout duquel l'arène est au
+  soleil (le sable, les gradins), la herse levée devant ; la nuit, les vantaux fermés comme avant ; la lanterne de la guérisseuse allumée la
+  nuit ; les caisses du coin de l'image rangées près de l'armurier.
+- La place festive : le kiosque avancé et écarté de la scène (-7,4 ; -8,6), son lambrequin or et ivoire (la scène garde le bleu et l'ivoire),
+  une lanterne à chacun de ses huit poteaux et une couronne de bougies au plafond, sa lumière plus basse et plus forte : la flaque principale de
+  la nuit ; le théâtre de marionnettes dans le coin nord-ouest derrière lui ([KO] à l'ouest il se tenait dans les cadres proches, un panneau
+  rayé coupé par le bord de l'image, et Pip devant la caméra) ; l'étal des chandelles à l'est, tourné vers la place ; au sud-ouest des fûts,
+  des caisses et un banc, des choses basses ; sur les pavés proches des pétales et des papiers aux couleurs du tournoi.
+- L'entraînement : **la terre battue dans le sol même** (`SAND_RECT` du shader, `plazaGroundDefines`) : son bord effiloché par le bruit, la
+  terre répandue sur les pavés, plus de plan séparé ni de bordure ; la cour descend jusqu'aux réverbères du sud ; dans la bande devant la
+  balustrade un abreuvoir (son eau dans le matériau du canal) et un banc ; les buttes de tir tournées vers le sud de la cour, le bouclier de la
+  quintaine bleu à bord ivoire et umbo de laiton ; une lanterne à chaque poteau de l'estrade et sa lumière la nuit, sa toile plus sombre.
+
 ### Les tests prouvés par des défauts injectés (Passes VP3 à VP5) — [OK]
 - Cinq défauts, chacun attrapé, les fichiers rendus octet pour octet (`cmp`) : les huit emblèmes du tournoi peints aussi dans l'atlas
   d'aujourd'hui (`v2-heraldry` : 1 échec, l'empreinte des appels), une bannière d'une place revenue à la fleur de lys (`v2-heraldry` : 1), une

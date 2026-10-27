@@ -75,12 +75,22 @@ void main(){
   A.rgb = mix(mix(texture2D(tCobble, uvA, 10.0).rgb, texture2D(tCobble, uvB, 10.0).rgb, t), A.rgb, COBBLE_CONTRAST);
 #endif
 #ifdef SAND
-  // the training ground's beaten earth (journal Passe VP6): no setts; broad damp and dry patches, clods, grain and dark grit at their own
-  // scales (in metres, the setts' scale left aside), a rake's arcs that the feet erase (below, with the mask's wear); the fifth critique:
-  // « a flat beige plane with no grain, rake marks or colour variation »
+  // the training ground's beaten earth (journal Passe VP6): broad damp and dry patches, clods, grain and dark grit at their own scales (in
+  // metres, the setts' scale left aside), a rake's arcs that the feet erase (below, with the mask's wear); the fifth critique: « a flat beige
+  // plane with no grain, rake marks or colour variation ». SAND_RECT (x0, z0, x1, z1): the yard within the setts, its edge frayed by noise, the
+  // earth spilt onto the stones (the sixth: « a flat beige quad with hard straight edges »); without it, the whole plane
   vec2 rakeN = vec2(0.0);
-  float rakeH = 0.0;
+  float yard = 1.0;
+#ifdef SAND_RECT
   {
+    vec4 YR = SAND_RECT;
+    vec2 yc = (YR.xy + YR.zw) * 0.5, yh = (YR.zw - YR.xy) * 0.5, yq = abs(P.xz - yc) - yh + 1.5;
+    float sd = length(max(yq, 0.0)) + min(max(yq.x, yq.y), 0.0) - 1.5;
+    float fray = (vn2(P.xz * 0.8) - 0.5) * 1.2 + (vn2(P.xz * 3.9) - 0.5) * 0.45;
+    yard = 1.0 - smoothstep(-0.3, 0.3, sd + fray);
+  }
+#endif
+  if (yard > 0.0) {
     vec2 sp = P.xz;
     float l1 = vn2(sp * 0.13), l2 = vn2(sp * 0.47 + 4.3), g1 = vn2(sp * 2.2), g2 = vn2(sp * 8.5 + 1.7);
     float grit = smoothstep(0.72, 0.9, vn2(sp * 21.0)) * (0.5 + 0.5 * g1);
@@ -91,11 +101,12 @@ void main(){
     // the rake: arcs round a point off the yard, 15 cm apart, wavering
     vec2 rc = sp - vec2(-26.0, 18.0);
     float rr = length(rc), ph = rr * 41.0 + l2 * 4.0 + g1 * 0.8;
-    rakeH = sin(ph);
-    rakeN = (rc / rr) * cos(ph) * 0.34;
-    A = vec4(sand * (1.0 + 0.07 * rakeH), 0.5 + 0.2 * g1 + 0.08 * rakeH);
-    nxy = (vec2(vn2(sp * 3.3 + 3.1), vn2(sp * 3.3 + 7.7)) - 0.5) * 0.42 + (vec2(vn2(sp * 11.0), vn2(sp * 11.0 + 5.0)) - 0.5) * 0.18;
-    ao = 1.0 - 0.25 * grit; rough0 = 0.95;
+    float rakeH = sin(ph);
+    rakeN = (rc / rr) * cos(ph) * 0.34 * yard;
+    A = mix(A, vec4(sand * (1.0 + 0.07 * rakeH), 0.5 + 0.2 * g1 + 0.08 * rakeH), yard);
+    vec2 sn = (vec2(vn2(sp * 3.3 + 3.1), vn2(sp * 3.3 + 7.7)) - 0.5) * 0.42 + (vec2(vn2(sp * 11.0), vn2(sp * 11.0 + 5.0)) - 0.5) * 0.18;
+    nxy = mix(nxy, sn, yard);
+    ao = mix(ao, 1.0 - 0.25 * grit, yard); rough0 = mix(rough0, 0.95, yard);
   }
 #endif
 
@@ -112,9 +123,9 @@ void main(){
   albedo *= mix(0.72, 1.0, M.a);
   albedo = mix(albedo, albedo * vec3(1.18, 1.12, 1.08), M.b * 0.5);
 #ifdef SAND
-  // the feet tread the rake flat and darken the earth where they go (the mask's wear), the grime gathers along what stands
+  // the feet tread the rake flat and darken the earth where they go (the mask's wear; the setts' polish undone on the earth)
   float trod = smoothstep(0.08, 0.7, M.b);
-  albedo *= mix(1.0, 0.62, trod) / mix(1.0, 1.12, M.b * 0.5);
+  albedo *= mix(1.0, 0.62, trod * yard) / mix(1.0, 1.12, M.b * 0.5 * yard);
   nxy += rakeN * (1.0 - trod);
 #endif
 

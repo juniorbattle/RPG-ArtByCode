@@ -20,7 +20,7 @@ import { loadProductionCast, type CastMember } from '../characters/BakedCast';
 import { variantOf } from '../characters/Variants';
 import { fiveViewFacing } from '../characters/ActorSystem';
 import type { Anim, Dir } from '../characters/SpriteGenerator';
-import { buildPlaza, steer, walkTo, type PlazaBuild, type PlazaExit, type PlazaKind } from './Plazas';
+import { buildPlaza, plazaGroundDefines, steer, walkTo, type PlazaBuild, type PlazaExit, type PlazaKind } from './Plazas';
 import { bakePlaza, plazaBakePoses } from './PlazaVisibility';
 
 /** An open place of the version 2 (lot V5, journal Passe V5): one of the three squares of Plazas.ts, walked across by the hero (arrows or
@@ -59,6 +59,9 @@ const CAM = { pitch: 7, pitchNorth: 6.5, dist: 21, distNorth: 18, fov: 35, ty: 2
 const BASE_YAW: Record<PlazaKind, number> = { forecourt: 18, training: 22, festival: -20 };
 /** the haze of the squares (journal Passe VP6): where it starts (m) and its density against the day state's (DEV `plazafog=start,density`) */
 const PLAZA_FOG = { start: 12, density: 1.6 };
+/** the squares' depth of field (journal Passe VP6): its range (m) around the hero's depth; the district's 16 m blurs only its far city, and a
+ *  square stands whole within 13-40 m of the camera (DEV `plazadof=range,far`) */
+const PLAZA_DOF = { range: 9, far: 0.5 };
 /** the widest frame the squares' visibility bake covers (src/world/PlazaVisibility.ts) */
 export const PLAZA_FRAME = 2.4;
 /** the camera of a square for a hero at (x, z), or for a focus point at distance `dist` (a dialogue, a cutscene's look): the follow's target,
@@ -140,6 +143,7 @@ export class PlazaApp {
       if (v[0] !== null && v[0] !== undefined) BASE_YAW[opts.kind] = v[0];
       (['pitch', 'dist', 'fov', 'pitchNorth', 'distNorth', 'ty', 'lead', 'yawGain'] as const).forEach((k, i) => { const x = v[i + 1]; if (x !== null && x !== undefined && Number.isFinite(x)) CAM[k] = x; });
     }
+    if (import.meta.env.DEV && q.has('plazadof')) { const [r, f] = q.get('plazadof')!.split(',').map(Number); if (r > 0) PLAZA_DOF.range = r; if (f >= 0) PLAZA_DOF.far = f; }
     if (import.meta.env.DEV && q.has('plazafog')) { const [a, b] = q.get('plazafog')!.split(',').map(Number); if (a >= 0) PLAZA_FOG.start = a; if (b > 0) PLAZA_FOG.density = b; }
     // the weather (journal Passe VP1): the town's (src/atmosphere/Weather.ts) from the same parameters, the day's rain from the state
     const wp = parseWeather(q);
@@ -159,6 +163,7 @@ export class PlazaApp {
     // from the camera where the district's far houses stand 100 m and more, so the haze starts nearer and thickens (the town's uniforms, this
     // page's own values)
     U.uFogStart.value = PLAZA_FOG.start; U.uFogDensity.value *= PLAZA_FOG.density;
+    this.post.params.dofRange = PLAZA_DOF.range; this.post.params.dofFar = PLAZA_DOF.far;
     // after the day state: the weather scales the day's values it finds (as the town's, App.setWeather)
     if (wp && (wp.rain > 0 || wp.snow > 0 || wp.storm > 0 || wp.wind !== 1)) { this.weather = new Weather(wp, { day: !!this.look, post: this.post.params }); this.scene.add(this.weather.group); }
     window.addEventListener('resize', () => this.resize());
@@ -176,7 +181,7 @@ export class PlazaApp {
     this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress, painters);
     // the squares' setts smaller and quieter than the quay's (journal Passe VP6, second critique: « about twice R's size against the characters,
     // a black-and-white mosaic noisier than the figures »); this page's own material, the district's unchanged
-    this.lib.ground.defines = { ...this.lib.ground.defines, COBBLE_SCALE: '2.0', COBBLE_CONTRAST: '0.55' }; this.lib.ground.needsUpdate = true;
+    this.lib.ground.defines = { ...this.lib.ground.defines, COBBLE_SCALE: '2.0', COBBLE_CONTRAST: '0.55', ...plazaGroundDefines(this.opts.kind) }; this.lib.ground.needsUpdate = true;
     if (this.look) { this.lib.slot.glow.uniforms.uEmissive.value = this.look.glowEmissive; this.lib.slot.shop.uniforms.uEmissive.value = this.look.shopEmissive; this.lib.slot.roof.uniforms.uBase.value.copy(this.look.roofTint); }
     this.frameCap.endProbe();
     this.opts.onProgress(this.opts.kind, 0.95);
@@ -381,11 +386,11 @@ export class PlazaApp {
   /** the review / proof pose (tools/plaza-shots.mjs): the hero at (x, z), the camera settled on it at once (no easing), one frame drawn */
   /** the lights a frame takes (MAX_LIGHTS) among the square's 30 to 40 at night (journal Passe VP6, fifth critique: the forecourt's south lamps
    *  were never lit, 25 lights of a higher priority took the frame's 24): the nearest to the hero (or a cutscene's focus) first, a light's own
-   *  priority worth 8 m; the chosen keep their place by 0.3 (no flicker between two equals), a light leaving the set fades out, one entering
+   *  priority worth 6 m; the chosen keep their place by 0.3 (no flicker between two equals), a light leaving the set fades out, one entering
    *  fades in (LightRig's scale; at once when the page is posed). The town's rig is untouched (its own priorities). */
   private pickLights(dt: number): void {
     const f = this.focus, hx = f ? f.x : this.player.pos.x, hz = f ? f.z : this.player.pos.z;
-    const ranked = [...this.lightBase].map(([s, base]) => ({ s, k: base - Math.hypot(s.pos.x - hx, s.pos.z - hz) / 8 + (s.targetScale > 0.5 ? 0.3 : 0) })).sort((a, b) => b.k - a.k);
+    const ranked = [...this.lightBase].map(([s, base]) => ({ s, k: base - Math.hypot(s.pos.x - hx, s.pos.z - hz) / 6 + (s.targetScale > 0.5 ? 0.3 : 0) })).sort((a, b) => b.k - a.k);
     ranked.forEach(({ s, k }, i) => {
       const on = i < MAX_LIGHTS - 2;
       s.targetScale = on ? 1 : 0;
