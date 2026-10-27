@@ -161,7 +161,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   // ---------------------------------------------------------------- the lamps: a rhythm along the open south side (the quay's), a few inside
   const lamp = (x: number, z: number, strong = true) => {
     batch.add('lampPost', { pos: [x, 0, z], yaw: Math.PI / 2, scale: 1 }, 0);
-    lights.push({ pos: xf([0.52, 3.2 - 0.38, 0], [x, 0, z], Math.PI / 2), color: WARM, intensity: strong ? 4.6 : 3.2, radius: strong ? 12 : 9, kind: 'lantern', halo: strong ? 1.8 : 1.4, priority: strong ? 6 : 5 });
+    lights.push({ pos: xf([0.52, 3.2 - 0.38, 0], [x, 0, z], Math.PI / 2), color: WARM, intensity: strong ? 4.6 : 3.2, radius: strong ? 12 : 9, kind: 'lantern', halo: strong ? 1.15 : 1.0, priority: strong ? 6 : 5 });
     blockers.push({ x, z, r: 0.35 }); obstacles.push({ x0: x - 0.25, x1: x + 0.25, z0: z - 0.25, z1: z + 0.25, grime: 0.4 });
     puddles.push({ x: x + 0.8, z: z - 1.4, r: 1.6, amount: 0.85 });
   };
@@ -201,15 +201,17 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     batch.add('bollard', { pos: [x, 0, 4.15], yaw: x }); obstacles.push({ x0: x - 0.2, x1: x + 0.2, z0: 3.95, z1: 4.35, grime: 0.5 });
   }
   tracked(() => {
-    const St = S.get('stone'), wall: V3 = [0.6, 0.58, 0.55], cap: V3 = [0.74, 0.71, 0.66];
+    // journal Passe VP6, second critique: the planters' green was the most saturated thing in the frame (the district has none): a balustrade
+    const St = S.get('stone'), wall: V3 = [0.6, 0.58, 0.55], cap: V3 = [0.76, 0.73, 0.68];
     for (const [a0, a1] of southGate ? [[-18, -2.7], [2.7, 18]] : [[-18, 18]]) {
-      St.boxMM(a0, 0, 8.0, a1, 0.62, 8.6, { tint: wall, uvScale: 0.8, aoY: [0.6, 1] });
-      St.boxMM(a0 - 0.05, 0.62, 7.94, a1 + 0.05, 0.72, 8.66, { tint: cap });
-      S.get('dark').boxMM(a0 + 0.1, 0.72, 8.06, a1 - 0.1, 0.78, 8.54, { tint: [0.16, 0.13, 0.11] });
-      const r = rng.fork(`hedge${a0}`);
-      for (let x = a0 + 1.0; x < a1 - 0.6; x += 1.8) S.append(bush(r.fork(`b${x}`), { radius: 0.62, count: 64, width: 2.2, hue: [0.4 + r.range(-0.04, 0.04), 0.5, 0.38] }), mat([x, 0.6, 8.3], r.range(-0.1, 0.1)));
+      St.boxMM(a0, 0, 8.0, a1, 0.34, 8.6, { tint: wall, uvScale: 0.8, aoY: [0.6, 1] });
+      St.boxMM(a0 - 0.05, 0.34, 7.96, a1 + 0.05, 0.42, 8.64, { tint: cap });
+      for (let x = a0 + 0.35; x < a1 - 0.2; x += 0.42) S.at([x, 0.42, 8.3], 0, () => St.lathe([[0.1, 0], [0.13, 0.08], [0.07, 0.2], [0.12, 0.4], [0.07, 0.54], [0.1, 0.6]], 6, { tint: cap }));
+      St.boxMM(a0 - 0.05, 1.02, 8.0, a1 + 0.05, 1.12, 8.6, { tint: cap });
+      for (let x = a0; x <= a1 + 0.01; x += (a1 - a0) / Math.max(1, Math.round((a1 - a0) / 7))) St.boxMM(x - 0.26, 0, 8.04, x + 0.26, 1.2, 8.56, { tint: wall, uvScale: 0.8 });
     }
   });
+
   // the tops of the south lamps carry the day's bunting
   const lampTops: V3[] = [-11.0, -5.6, 5.6, 11.0].map((x) => [x, 3.05, 3.9]);
   const brazier = (x: number, z: number) => {
@@ -268,12 +270,12 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     blockers.push({ x: 10.5, z: -1.6, r: 1.2 });
     healer(S, batch, -8.0, 1.2, 0.6, blockers, obstacles);
     puddles.push({ x: -5.4, z: -6.6, r: 1.2, amount: 0.7 }, { x: 5.6, z: -9.8, r: 1.4, amount: 0.8 });
-    // four lanterns on posts round the fountain's apron, lit at night (journal Passe VP6: the gate and the fountain unlit, the north frame murky)
-    for (const [x, z] of [[-3.0, -4.0], [3.0, -4.0], [-3.0, -10.0], [3.0, -10.0]] as Array<[number, number]>) {
-      S.get('timber').boxMM(x - 0.06, 0, z - 0.06, x + 0.06, 1.9, z + 0.06, { tint: [0.4, 0.33, 0.27], grain: 'y' });
-      batch.add(day ? 'lanternDark' : 'lantern', { pos: [x, 2.15, z], yaw: x + z }, 0);
-      if (!day) lights.push({ pos: [x, 2.0, z], color: WARM, intensity: 1.7, radius: 5.5, kind: 'lantern', halo: 1.2, priority: 8 });
-      blockers.push({ x, z, r: 0.25 });
+    // a lantern on each of four corners of the fountain's rim, lit at night (journal Passe VP6: the fountain unlit; the first lanterns on posts
+    // round it read as the legs of a table)
+    for (let k = 0; k < 4; k++) {
+      const a = (k / 4) * Math.PI * 2 + Math.PI / 8 + Math.PI / 4, x = Math.cos(a) * 2.28, z = -7 + Math.sin(a) * 2.28;
+      batch.add(day ? 'lanternDark' : 'lantern', { pos: [x, 0.8, z], yaw: a }, 0);
+      if (!day) lights.push({ pos: [x, 1.1, z], color: WARM, intensity: 1.6, radius: 5, kind: 'lantern', halo: 1.0, priority: 8 });
     }
     // the gate's braziers burn day and night (the arena's fires, as AD1)
     brazier(-3.6, -16.6); brazier(3.6, -16.6);
@@ -291,18 +293,26 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     // the yard's floor: beaten sand within a border of cobbles along the houses (journal Passe VP6: a cobbled plain with sand discs on it read
     // as a square, not as lists), worn darker where the feet go
     tracked(() => {
-      const Pl = S.get('plaster'), Tm = S.get('timber');
-      quadFacing(Pl, [[-10.0, 0.018, 2.6], [10.0, 0.018, 2.6], [10.0, 0.018, -14.6], [-10.0, 0.018, -14.6]], [0, 1, 0], { tint: [0.6, 0.56, 0.48], uvScale: 0.5 });
+      const Tm = S.get('timber');
       for (const [x0, x1, z0, z1] of [[-10.1, 10.1, 2.6, 2.72], [-10.1, 10.1, -14.72, -14.6], [-10.12, -10.0, -14.7, 2.7], [10.0, 10.12, -14.7, 2.7]]) Tm.boxMM(x0, 0, z0, x1, 0.09, z1, { tint: [0.44, 0.36, 0.28] });
-      const r = rng.fork('trample');
-      for (let k = 0; k < 14; k++) { const cx = r.range(-8.5, 8.5), cz = r.range(-13, 1.5), rr = r.range(0.9, 2.2), n = 10; Pl.prism(Array.from({ length: n }, (_, i) => [cx + Math.cos((i / n) * Math.PI * 2) * rr * (0.8 + 0.4 * r.next()), cz + Math.sin((i / n) * Math.PI * 2) * rr * (0.8 + 0.4 * r.next())] as [number, number]), 0.0, 0.026, { tint: [0.52, 0.48, 0.41], capTop: true }); }
     });
+    {
+      // the earth: the ground's own shading (light, shadows, wet, the mask's grime and wear) with its setts replaced (GroundShaders' SAND)
+      const sand = new THREE.ShaderMaterial({ uniforms: lib.ground.uniforms, vertexShader: lib.ground.vertexShader, fragmentShader: lib.ground.fragmentShader, defines: { ...lib.ground.defines, SAND: 1 } });
+      disposables.push(sand);
+      const g = new THREE.PlaneGeometry(20, 17.2); g.rotateX(-Math.PI / 2); g.translate(0, 0.012, -6.0);
+      const m = new THREE.Mesh(g, sand); m.name = 'plaza:sand'; m.layers.set(LAYER_NOREFLECT); m.frustumCulled = false; m.renderOrder = 1;
+      group.add(m);
+    }
+
     tracked(() => tiltYard(S, -6.0, 7.2, -11.4));
     for (let x = -6; x <= 7.2; x += 1.1) blockers.push({ x, z: -11.4, r: 0.32 });
     obstacles.push({ x0: -6.6, x1: 7.8, z0: -13.5, z1: -9.3, grime: 0.2 });
     tracked(() => quintain(S, 9.2, -11.4, -0.4));
     blockers.push({ x: 9.2, z: -11.4, r: 0.7 });
     tracked(() => grandstand(S, 0.8, -14.9, 7.2));
+    // the yard's fires at the stand's ends, day and night (the arena's braziers)
+    brazier(-3.6, -15.0); brazier(5.2, -15.0);
     blockers.push({ x: -1.8, z: -15.8, r: 1.2 }, { x: 0.8, z: -15.8, r: 1.2 }, { x: 3.4, z: -15.8, r: 1.2 });
     for (const [cx, cz, r] of [[-5.6, -4.2, 3.1], [5.0, -3.4, 2.7]] as Array<[number, number, number]>) {
       sandRing(S, batch, cx, cz, r);
@@ -320,8 +330,8 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     house('northB0', [-7.5, 0, -27], 0, rng.fork('nb0'), { width: 8, floors: 3, back: true });
     house('northB1', [4.5, 0, -27.5], 0, rng.fork('nb1'), { width: 8.5, floors: 3, back: true });
     lamp(-9.4, -14.4, false); lamp(9.6, -13.6, false);
-    // the yard's fence along the quay's kerb (no gate: the yard is entered from the forecourt's street)
-    tracked(() => fence(S, -15.8, 15.8, 5.3));
+    // lamps by the rings: their pools at night (journal Passe VP6: the yard a black void around the hero)
+    lamp(-9.2, -7.4, false); lamp(1.2, -6.0, false);
     paths.push([[-11, -10.4], [-5, -9], [-1.5, -8]], [[0, 4], [-1.5, -8], [-5.5, -15]], [[0, 3], [5, -1]], [[-5.6, -4.2], [1, -9.5]]);
     // the sand's marks: the tilt's lanes rutted by hooves, straw where the bales are, scuffs between the rings
     for (const s2 of [-1, 1]) for (let x = -5.4; x <= 6.8; x += 1.7) decal('ruts', x, -11.4 + s2 * 1.1, 1.8, 1.1, Math.PI / 2 + dr.range(-0.08, 0.08), dr.range(0.45, 0.65), 0.04);
@@ -335,7 +345,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     if (!day) lights.push({ pos: [0, 3.3, -14.2], color: WARM, intensity: 2.6, radius: 7, kind: 'lantern', halo: 1.2, priority: 8 });
     blockers.push({ x: -1.8, z: -15.4, r: 1.9 }, { x: 1.8, z: -15.4, r: 1.9 });
     obstacles.push({ x0: -3.6, x1: 3.6, z0: -17, z1: -13.6, grime: 0.6 });
-    tracked(() => maypole(S, -5.6, -5.4, 7.0, 2.7));
+    tracked(() => maypole(S, -5.6, -5.4, 7.0, 3.0));
     blockers.push({ x: -5.6, z: -5.4, r: 0.7 });
     tracked(() => feastTable(S, batch, 4.2, -5.4, 0.12, 4.4));
     tracked(() => feastTable(S, batch, 3.6, -9.6, -0.08, 3.8));
@@ -353,7 +363,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     // higher (four strings of pennants read as a wall between the camera and the stage: the district's street has one, journal Passe VP1)
     for (let k = 0; k < 4; k++) {
       const z = -2 - k * 3.6, a: V3 = [-12.4, 4.6, z], b: V3 = [12.4, 4.6, z - 0.6];
-      if (day) { if (k % 2) garland(S, [a[0], 5.4, a[2]], [b[0], 5.4, b[2]], 1.0, { size: 0.42, width: 0.34, spacing: 0.56, phase: k }); }
+      if (day) { if (k === 3) garland(S, [a[0], 5.4, a[2]], [b[0], 5.4, b[2]], 1.0, { size: 0.42, width: 0.34, spacing: 0.56, phase: k }); }
       else {
         cord(S, a, b, 0.9);
         for (let t = 1; t < 8; t++) { const u = t / 8, p = sag(a, b, 0.9, u); batch.add('lantern', { pos: [p[0], p[1] - 0.32, p[2]], yaw: t, scale: 1.1 }, 0); }
@@ -494,7 +504,7 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
   // read as tiles at the district's scale), no attic (the facade filled every frame to its top: its cornice is now the top, the masts and their
   // pennants stand against the sky), the tournament's fleur-de-lis on its banners (the tavern's tankard was on them)
   // at night a shade darker still: the moon faces the facade, which read brighter than the district's moonlit plaster
-  const nk = day ? 1 : 0.84, R = 52, C: V3 = [0, 0, -71.2], stone: V3 = [0.7 * nk, 0.67 * nk, 0.62 * nk], stoneLt: V3 = [0.76 * nk, 0.72 * nk, 0.66 * nk], dark: V3 = [0.07, 0.07, 0.09], uv = 0.6;
+  const nk = day ? 1 : 0.84, R = 52, C: V3 = [0, 0, -71.2], stone: V3 = [0.7 * nk, 0.67 * nk, 0.62 * nk], stoneLt: V3 = [0.76 * nk, 0.72 * nk, 0.66 * nk], dark: V3 = [0.07, 0.07, 0.09], uv = 0.85;
   const St = S.get('stone'), Dk = S.get('dark');
   // two tiers, 6.4 and 10.8 m, the cornice at 11.25 (journal Passe VP1: the third critique asked for the top in the frame; lowered to 5.3 /
   // 8.9 m, the fourth judged it worse, 5.5 / 10 against 6: its flat top and bare masts read as a box with antennae, the landmark lost its mass)
@@ -528,11 +538,16 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
       // the piers (one per bay edge; the facade wall behind the openings is the recess)
       for (const s of [-1, 1]) {
         St.boxMM(s * hw - 0.42, 0, -0.5, s * hw + 0.42, TIER_G, 0.3, { uvScale: uv, tint: stoneLt, aoY: [0.7, 1] });
+        // journal Passe VP6 (« articulate the wall »): a pilaster on each pier, its base and its capital
+        St.boxMM(s * hw - 0.3, 0.95, 0.3, s * hw + 0.3, TIER_G - 0.35, 0.5, { uvScale: uv, tint: [stoneLt[0] * 1.04, stoneLt[1] * 1.04, stoneLt[2] * 1.04] });
+        St.boxMM(s * hw - 0.38, TIER_G - 0.35, 0.28, s * hw + 0.38, TIER_G - 0.2, 0.58, { tint: stoneLt });
         St.boxMM(s * hw - 0.26, TIER_G, -0.4, s * hw + 0.26, TIER_U, 0.18, { uvScale: uv, tint: stoneLt, aoY: [0.8, 1] });
       }
       // the ground tier's arch (the gate wider and taller), the upper tier's
       if (b.gate) arch(0, 0, 2.1, 4.0, 0, stoneLt); else arch(0, 0, 1.25, 3.4, 0, stoneLt);
       arch(0, TIER_G + 0.55, 0.95, 1.6, -0.1, stoneLt);
+      // at night the arena's galleries keep a light in one upper arch out of three (journal Passe VP6: the facade a dark wall at night)
+      if (!day && Math.abs(Math.round(b.a * R / bayW)) % 3 === 1) S.get('glow').boxMM(-0.9, TIER_G + 0.55, -0.82, 0.9, TIER_G + 2.15, -0.79, { tint: [0.5, 0.28, 0.12] });
       // the wall between the arches' heads and the string course above them (the first try left both open onto the sky)
       const top = b.gate ? 6.1 : 4.65, upTop = TIER_G + 0.55 + 1.6 + 0.95;
       St.boxMM(-hw + 0.42, top, -0.12, hw - 0.42, TIER_G + 0.05, -0.02, { uvScale: uv, tint: stone });
@@ -604,7 +619,9 @@ function fountain(S: SlotSet, tracked: (fn: () => void) => void, x: number, z: n
     St.prism(oct(2.2), 0, 0.5, { tint: [0.74, 0.71, 0.66], capTop: false, aoY: [0.6, 1] });
     St.prism(oct(2.36), 0.5, 0.64, { tint: [0.84, 0.8, 0.74], capTop: true });
     S.get('dark').prism(oct(1.92), 0.4, 0.46, { tint: [0.16, 0.21, 0.27], capTop: true });
-    St.lathe([[0.62, 0.4], [0.62, 0.6], [0.32, 0.72], [0.26, 1.6], [0.8, 1.86], [0.86, 1.98], [0.2, 2.02], [0.16, 2.6], [0.24, 2.72], [0.01, 2.8]], 10, { tint: [0.8, 0.76, 0.7] });
+    // journal Passe VP6 (« a four-legged birdbath »): a heavier column, a wide lower bowl, a second tier and a finial
+    St.lathe([[0.72, 0.4], [0.7, 0.62], [0.46, 0.78], [0.38, 1.5], [0.5, 1.62], [1.15, 1.78], [1.25, 1.92], [1.2, 2.02], [0.32, 2.06], [0.26, 2.9], [0.66, 3.05], [0.7, 3.16], [0.18, 3.2], [0.15, 3.62], [0.3, 3.78], [0.22, 4.0], [0.01, 4.12]], 12, { tint: [0.8, 0.76, 0.7] });
+    for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; St.box(Math.cos(a) * 2.28, 0.72, Math.sin(a) * 2.28, 0.26, 0.16, 0.26, { tint: [0.86, 0.82, 0.76] }); }
   }));
 }
 
@@ -812,7 +829,7 @@ function pavilion(S: SlotSet, lights: PlazaBuild['lights'], day: boolean, x: num
     S.get('metal').box(0, roofH + 1.28, 0, 0.14, 0.14, 0.14, { tint: [1.2, 1.0, 0.6] });
     addBanner(S, { pos: [0.05, roofH + 1.15, 0], yaw: Math.PI / 2, w: 0.46, h: 1.25, emblem, shape: 'pennant', loose: 0.85, rod: false, tint: [0.95, 0.9, 0.75] });
   });
-  if (!day) lights.push({ pos: [x, 1.5, z], color: WARM, intensity: 2.4, radius: 6.5, kind: 'lantern', halo: 0.5, priority: 7 });
+  if (!day) lights.push({ pos: [x, 1.5, z], color: WARM, intensity: 3.4, radius: 7, kind: 'lantern', halo: 0.6, priority: 7 });
 }
 
 /** a banner mast: a tall timber mast on a stone foot, a yard and a long banner of the tournament hanging from it */
@@ -828,16 +845,19 @@ function bannerMast(S: SlotSet, x: number, z: number, h: number, yaw: number, em
 
 /** the fountain's water: a glossy surface in the basin and the bowl, the spout's jet and four streams falling from the bowl's lip */
 function fountainWater(S: SlotSet, x: number, z: number): void {
-  const M = S.get('metal'), water: V3 = [0.34, 0.5, 0.62], jet: V3 = [0.92, 0.96, 1.0];
+  const M = S.get('metal'), water: V3 = [0.34, 0.5, 0.62];
   S.at([x, 0, z], Math.PI / 8, () => {
     const oct = (r: number): Array<[number, number]> => Array.from({ length: 8 }, (_, i) => [Math.cos((i / 8) * Math.PI * 2) * r, Math.sin((i / 8) * Math.PI * 2) * r]);
     M.prism(oct(1.95), 0.44, 0.47, { tint: water, capTop: true });
-    M.cylinder(0.78, 1.9, 1.93, 12, { tint: water, capTop: true });
-    M.cylinder(0.07, 2.75, 3.35, 6, { tint: jet, r1: 0.02 });
-    for (let k = 0; k < 4; k++) {
-      const a = (k / 4) * Math.PI * 2 + Math.PI / 4, c = Math.cos(a), s = Math.sin(a);
-      const pts: V3[] = Array.from({ length: 7 }, (_, i) => { const t = i / 6, r = 0.86 + 0.32 * t; return [c * r, 1.95 - 1.45 * t * t - 0.08 * t, s * r]; });
-      M.sweep(pts, (t) => 0.06 + 0.03 * t, 5, { tint: jet });
+    M.cylinder(1.12, 1.95, 1.98, 14, { tint: water, capTop: true });
+    M.cylinder(0.6, 3.1, 3.13, 12, { tint: water, capTop: true });
+    S.get('plaster').cylinder(0.05, 4.1, 4.55, 6, { tint: [1.15, 1.2, 1.3], r1: 0.02 });
+    // the falling water: eight sheets from the lower bowl's lip, six from the upper's
+    // (in the plaster's matte white: in the metal's sheen they read as a cage of steel rods)
+    for (const [n, r0, y0, y1] of [[6, 1.22, 1.98, 0.47], [4, 0.68, 3.12, 2.0]] as Array<[number, number, number, number]>) for (let k = 0; k < n; k++) {
+      const a = (k / n) * Math.PI * 2 + Math.PI / n, c = Math.cos(a), s = Math.sin(a);
+      const pts: V3[] = Array.from({ length: 7 }, (_, i) => { const t = i / 6, r = r0 + 0.3 * t; return [c * r, y0 - (y0 - y1) * t * t, s * r]; });
+      S.get('plaster').sweep(pts, (t) => 0.035 + 0.03 * t, 5, { tint: [1.15, 1.2, 1.3] });
     }
   });
 }
@@ -901,7 +921,7 @@ function tiltYard(S: SlotSet, x0: number, x1: number, z: number): void {
   for (let i = 0; i <= n; i++) T.boxMM(x0 + i * ((x1 - x0) / n) - 0.07, 0, z - 0.07, x0 + i * ((x1 - x0) / n) + 0.07, 1.45, z + 0.07, { tint: [0.46, 0.37, 0.3], grain: 'y' });
   for (let i = 0; i < n; i++) {
     const a = x0 + i * ((x1 - x0) / n), b = a + (x1 - x0) / n;
-    S.get('plaster').boxMM(a + 0.07, 0.5, z - 0.05, b - 0.07, 1.3, z + 0.05, { tint: i % 2 ? [0.26, 0.32, 0.6] : [0.7, 0.67, 0.58] });
+    S.get('planks').boxMM(a + 0.07, 0.5, z - 0.05, b - 0.07, 1.3, z + 0.05, { tint: i % 2 ? [0.5, 0.62, 1.15] : [1.1, 1.05, 0.92], grain: 'x' });
   }
   T.boxMM(x0 - 0.05, 1.42, z - 0.09, x1 + 0.05, 1.52, z + 0.09, { tint: [0.42, 0.34, 0.27], grain: 'x' });
 }
@@ -949,17 +969,9 @@ function grandstand(S: SlotSet, x: number, z: number, w: number): void {
   });
 }
 
-/** a low timber fence along x (posts and two rails) */
-function fence(S: SlotSet, x0: number, x1: number, z: number, h = 1.05): void {
-  const T = S.get('timber'), n = Math.max(1, Math.round((x1 - x0) / 2));
-  for (let i = 0; i <= n; i++) { const x = x0 + ((x1 - x0) * i) / n; T.boxMM(x - 0.06, 0, z - 0.06, x + 0.06, h, z + 0.06, { tint: [0.48, 0.39, 0.31], grain: 'y' }); }
-  for (const y of [h * 0.42, h * 0.86]) T.boxMM(x0, y - 0.04, z - 0.035, x1, y + 0.04, z + 0.035, { tint: [0.5, 0.41, 0.32], grain: 'x' });
-}
-
 /** the maypole: a tall pole, a crown of greenery and a hoop, ribbons in the tournament's colours down to stakes in a ring, a pennant on top */
 function maypole(S: SlotSet, x: number, z: number, h: number, rr: number): void {
   const T = S.get('timber'), C = S.get('cloth');
-  void rr;
   S.at([x, 0, z], 0, () => {
     S.get('stone').cylinder(0.5, 0, 0.3, 10, { tint: [0.72, 0.69, 0.64], capTop: true });
     T.cylinder(0.12, 0.3, h, 8, { tint: [0.78, 0.7, 0.58], r1: 0.08, capTop: true });
@@ -971,16 +983,18 @@ function maypole(S: SlotSet, x: number, z: number, h: number, rr: number): void 
     for (let k = 0; k < 4; k++) { const a = (k / 4) * Math.PI * 2; T.boxMM(Math.min(0, Math.cos(a) * 0.9), h - 0.92, Math.min(0, Math.sin(a) * 0.9) - 0.02, Math.max(0, Math.cos(a) * 0.9), h - 0.88, Math.max(0, Math.sin(a) * 0.9) + 0.02, { tint: [0.6, 0.5, 0.4] }); }
     S.get('metal').box(0, h + 0.1, 0, 0.18, 0.2, 0.18, { tint: [1.2, 1.0, 0.6] });
     addBanner(S, { pos: [0.06, h + 0.05, 0], yaw: Math.PI / 2, w: 0.5, h: 1.4, emblem: 'laurel', shape: 'pennant', loose: 0.9, rod: false, tint: [0.95, 0.9, 0.75] });
-    // the ribbons hanging from the crown, loose in the wind (journal Passe VP6: tied to stakes in a ring they read as the poles of a tent)
+    // the ribbons from under the crown to pegs in a ring, each a strip with its sag (journal Passe VP6: hanging loose they read as paper strips
+    // taped to the pole; the first radial ones, hairlines without sag, as wires)
     const cols: V3[] = [[0.22, 0.32, 0.82], [0.94, 0.9, 0.78], [0.92, 0.62, 0.22]];
     for (let k = 0; k < 12; k++) {
-      const a = (k / 12) * Math.PI * 2 + 0.13, len = 1.5 + (k % 3) * 0.45, r0 = 0.95, r1 = 1.05 + (k % 2) * 0.12;
-      const side: V3 = [-Math.sin(a) * 0.12, 0, Math.cos(a) * 0.12];
-      for (let i = 0; i < 8; i++) {
-        const t0 = i / 8, t1 = (i + 1) / 8, P = (t: number): V3 => { const r = r0 + (r1 - r0) * t; return [Math.cos(a) * r, h - 0.95 - len * t, Math.sin(a) * r]; };
+      const a = (k / 12) * Math.PI * 2 + 0.13, top: V3 = [Math.cos(a) * 0.95, h - 0.95, Math.sin(a) * 0.95], foot: V3 = [Math.cos(a) * rr, 0.3, Math.sin(a) * rr];
+      const side: V3 = [-Math.sin(a) * 0.09, 0, Math.cos(a) * 0.09];
+      for (let i = 0; i < 10; i++) {
+        const t0 = i / 10, t1 = (i + 1) / 10, P = (t: number): V3 => [top[0] + (foot[0] - top[0]) * t, top[1] + (foot[1] - top[1]) * t - 0.9 * Math.sin(t * Math.PI), top[2] + (foot[2] - top[2]) * t];
         const a0 = P(t0), a1 = P(t1);
-        C.quad([a0[0] - side[0], a0[1], a0[2] - side[2]], [a0[0] + side[0], a0[1], a0[2] + side[2]], [a1[0] + side[0], a1[1], a1[2] + side[2]], [a1[0] - side[0], a1[1], a1[2] - side[2]], { tint: cols[k % 3], swayArr: [0.6 * t0, 0.6 * t0, 0.6 * t1, 0.6 * t1] });
+        C.quad([a0[0] - side[0], a0[1], a0[2] - side[2]], [a0[0] + side[0], a0[1], a0[2] + side[2]], [a1[0] + side[0], a1[1], a1[2] + side[2]], [a1[0] - side[0], a1[1], a1[2] - side[2]], { tint: cols[k % 3], swayArr: [0.35 * Math.sin(t0 * Math.PI), 0.35 * Math.sin(t0 * Math.PI), 0.35 * Math.sin(t1 * Math.PI), 0.35 * Math.sin(t1 * Math.PI)] });
       }
+      T.boxMM(foot[0] - 0.05, 0, foot[2] - 0.05, foot[0] + 0.05, 0.36, foot[2] + 0.05, { tint: [0.5, 0.41, 0.32] });
     }
     // a ring of flowers round its foot
     for (let k = 0; k < 10; k++) { const a = (k / 10) * Math.PI * 2; S.get('leaf').sweep([[Math.cos(a) * 0.62, 0.3, Math.sin(a) * 0.62], [Math.cos(a + 0.6) * 0.62, 0.34, Math.sin(a + 0.6) * 0.62]], 0.12, 5, { tint: k % 2 ? [0.55, 0.62, 0.4] : [0.86, 0.62, 0.5] }); }

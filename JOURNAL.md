@@ -447,6 +447,32 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
   provisoires (générés) d'une autre densité. Repris à l'itération 3 (ci-dessus) ; les personnages provisoires restent ceux du lot V5 (à cuire
   par la chaîne de l'art).
 
+### La deuxième critique à l'aveugle (itération 3), étalonnée — [?] « oui avec réserves » (parvis, place festive), « pas encore » (entraînement)
+- Agent neuf ; sept planches : chaque place à l'itération 2 et à l'itération 3, et **une planche cachée du district lui-même** (A midi, D midi,
+  B nuit, C nuit) pour savoir où tombe son « 8 ». Le district caché : **10 / 8** ; la référence : 8. Les places (cohérence / qualité) :
+  parvis 7,5 / 6,5 → **7 / 7**, entraînement 7 / 5,5 → **6 / 5,5**, place festive **8 / 7** (rubans en étoile, itération 2) et 7 / 6,5 (rubans
+  pendants, itération 3). Verdict : parvis et place festive « oui avec réserves », entraînement « pas encore ».
+- Ses reproches : le vert « néon » des jardinières (le district n'a aucun vert), des pavés deux fois trop gros contre les personnages (« une
+  mosaïque noir et blanc plus bruyante que les figures »), le mur de l'arène uniforme, la fontaine « une vasque à quatre pieds » (les quatre
+  poteaux de lanternes autour se lisaient comme les pieds d'une table), des halos de réverbères trop larges ; à l'entraînement un sol « dalle
+  sans texture » et une bande bleue « qui brille plus que ce qui est éclairé », la nuit un vide noir autour du héros ; à la place festive les
+  rubans pendants « des bandes de papier ».
+
+### Itération 4 — ce qui en est fait
+- Le sol des places : des pavés 1,6 fois plus petits et moins contrastés (vers leur moyenne), par deux variantes du shader du sol compilées
+  pour les places seulement (`COBBLE_SCALE`, `COBBLE_CONTRAST`, `src/materials/GroundShaders.ts` ; le district compile le code sans elles).
+- L'entraînement : une vraie terre battue (variante `SAND` du même shader : la lumière, les ombres, le mouillé et le masque du sol, des
+  nuances à trois échelles et un râteau léger ; [KO] d'abord presque blanche, ses valeurs prises comme des sRGB alors que l'albédo du sol est
+  linéaire ; divisée par trois) à la place de la dalle de plâtre ; les planches des lices en bois peint (le plâtre les faisait briller la nuit) ;
+  deux réverbères près des cercles, deux braseros aux bouts de la tribune ; plus de clôture au sud (deux barrières parallèles avec la balustrade).
+- Le premier plan : une balustrade de pierre (balustres, main courante, dés tous les 7 m) à la place des jardinières et de leur vert.
+- Le parvis : la fontaine reprise (une colonne plus lourde, une large vasque basse, un second étage, un fleuron ; l'eau en filets blancs mats :
+  en métal brillant ils se lisaient comme une cage de tiges d'acier), des lanternes sur son rebord au lieu des poteaux, des pilastres et leurs
+  chapiteaux sur les piles du Colisée et des blocs plus petits, une arcade haute sur trois éclairée la nuit, les pavillons plus lumineux, le
+  halo des réverbères réduit.
+- La place festive : les rubans du mât de mai de nouveau en étoile jusqu'à des piquets, mais larges et avec leur fléchissement ; de jour une
+  seule corde de fanions (au-dessus de la scène) pour ne pas empiler les lignes.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

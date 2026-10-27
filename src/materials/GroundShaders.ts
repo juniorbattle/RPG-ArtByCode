@@ -53,6 +53,10 @@ void main(){
   vec3 P = vWorld;
   vec3 V = normalize(cameraPosition - P);
   vec2 gp = P.xz;
+#ifdef COBBLE_SCALE
+  // the version 2's squares (journal Passe VP6): smaller setts (compiled there only; the district's ground is the code without it)
+  gp *= COBBLE_SCALE;
+#endif
   const float ca = 0.8, sa = 0.6;
   vec2 uvA = gp / 4.0;
   vec2 uvB = vec2(ca * gp.x - sa * gp.y, sa * gp.x + ca * gp.y) / 5.3 + 0.37;
@@ -66,6 +70,21 @@ void main(){
   vec2 nxy = mix(N1.xy * 2.0 - 1.0, n2, t);
   float ao = mix(N1.b, N2.b, t);
   float rough0 = mix(N1.a, N2.a, t);
+#ifdef COBBLE_CONTRAST
+  // the setts' contrast toward their mean (the coarsest mip): a quieter floor under the characters
+  A.rgb = mix(mix(texture2D(tCobble, uvA, 10.0).rgb, texture2D(tCobble, uvB, 10.0).rgb, t), A.rgb, COBBLE_CONTRAST);
+#endif
+#ifdef SAND
+  // the training ground's beaten earth (journal Passe VP6): no setts, a tonal breakup at three scales, a faint rake, the mask's grime and wear
+  {
+    float s1 = vn2(gp * 0.35), s2 = vn2(gp * 1.9), s3 = vn2(gp * 7.3);
+    vec3 sand = vec3(0.085, 0.07, 0.052) * (0.62 + 0.5 * s1 + 0.24 * s2 + 0.12 * s3);
+    sand *= 0.95 + 0.05 * sin(gp.x * 6.5 + s2 * 2.5);
+    A = vec4(sand, 0.55 + 0.25 * s2);
+    nxy = (vec2(vn2(gp * 4.7 + 3.1), vn2(gp * 4.7 + 7.7)) - 0.5) * 0.22;
+    ao = 1.0; rough0 = 0.95;
+  }
+#endif
 
   vec2 muv = (P.xz - uGroundRect.xy) / uGroundRect.zw;
   vec4 M = texture2D(tGroundMask, muv);

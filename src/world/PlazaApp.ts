@@ -165,6 +165,9 @@ export class PlazaApp {
     // the squares fly the tournament's heraldry (journal Passe VP3)
     setTournamentHeraldry(true);
     this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress, painters);
+    // the squares' setts smaller and quieter than the quay's (journal Passe VP6, second critique: « about twice R's size against the characters,
+    // a black-and-white mosaic noisier than the figures »); this page's own material, the district's unchanged
+    this.lib.ground.defines = { ...this.lib.ground.defines, COBBLE_SCALE: '1.6', COBBLE_CONTRAST: '0.7' }; this.lib.ground.needsUpdate = true;
     if (this.look) { this.lib.slot.glow.uniforms.uEmissive.value = this.look.glowEmissive; this.lib.slot.shop.uniforms.uEmissive.value = this.look.shopEmissive; this.lib.slot.roof.uniforms.uBase.value.copy(this.look.roofTint); }
     this.frameCap.endProbe();
     this.opts.onProgress(this.opts.kind, 0.95);
