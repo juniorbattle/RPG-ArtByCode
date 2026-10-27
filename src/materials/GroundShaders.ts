@@ -101,8 +101,11 @@ void main(){
     // the rake: arcs round a point off the yard, 15 cm apart, wavering
     vec2 rc = sp - vec2(-26.0, 18.0);
     float rr = length(rc), ph = rr * 41.0 + l2 * 4.0 + g1 * 0.8;
-    float rakeH = sin(ph);
-    rakeN = (rc / rr) * cos(ph) * 0.34 * yard;
+    // (faded where its arcs come closer than about ten pixels, journal Passe VP7, iteration 6: beyond the camera's feet they read as
+    // « corrugated stripes », « moiré »; the rake marks stay at the near edge)
+    float rakeA = 1.0 - smoothstep(0.25, 0.7, fwidth(ph));
+    float rakeH = sin(ph) * rakeA;
+    rakeN = (rc / rr) * cos(ph) * 0.34 * yard * rakeA;
     A = mix(A, vec4(sand * (1.0 + 0.07 * rakeH), 0.5 + 0.2 * g1 + 0.08 * rakeH), yard);
     vec2 sn = (vec2(vn2(sp * 3.3 + 3.1), vn2(sp * 3.3 + 7.7)) - 0.5) * 0.42 + (vec2(vn2(sp * 11.0), vn2(sp * 11.0 + 5.0)) - 0.5) * 0.18;
     nxy = mix(nxy, sn, yard);

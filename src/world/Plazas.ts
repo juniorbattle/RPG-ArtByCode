@@ -502,12 +502,14 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   // lanterns light the yard within 4 m of them only). [KO] the same string over the forecourt's arrival (z 1.6): it crossed the fountain and
   // the gate, the forecourt's focal stack, by day and at night
   if (kind === 'training') {
-    const zs = 1.2, a: V3 = [-12.4, 4.7, zs], b: V3 = [12.4, 4.7, zs], sg = 0.9;
+    // (hung higher and its pools tighter since iteration 6: « the pennant line at eye level flattens it », « the ground is lit by an even warm
+    // fill rather than by visible sources »)
+    const zs = 1.2, a: V3 = [-12.4, 5.6, zs], b: V3 = [12.4, 5.6, zs], sg = 0.9;
     if (day) garland(S, a, b, sg, { size: 0.42, width: 0.34, spacing: 0.56, phase: 3 });
     else {
       cord(S, a, b, sg);
       for (let t = 1; t < 11; t++) { const p = sag(a, b, sg, t / 11); batch.add('lantern', { pos: [p[0], p[1] - 0.32, p[2]], yaw: t, scale: 1.1 }, 0); }
-      for (const u of [0.36, 0.64]) { const p = sag(a, b, sg, u); lights.push({ pos: [p[0], 2.8, p[2]], color: WARM, intensity: 2.6, radius: 8, kind: 'lantern', halo: 0, priority: 6 }); puddles.push({ x: p[0] + 0.8, z: p[2] + 1.3, r: 1.1, amount: 0.85 }); }
+      for (const u of [0.36, 0.64]) { const p = sag(a, b, sg, u); lights.push({ pos: [p[0], 3.2, p[2]], color: WARM, intensity: 3.4, radius: 6.2, kind: 'lantern', halo: 0, priority: 6 }); puddles.push({ x: p[0] + 0.8, z: p[2] + 1.3, r: 1.1, amount: 0.85 }); }
     }
   }
 
@@ -566,7 +568,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   const RECT = { x0: -18, z0: -26, w: 36, h: 34 };
   {
     const mw = 384, mh = 362;
-    const mask = plazaMask(seed, RECT, mw, mh, obstacles, day ? [] : puddles, paths, day ? 0 : 1);
+    // (no puddle on the training ground's earth since journal Passe VP7, iteration 6: « Puddles on sand show as black ovals »)
+    const wet = kind === 'training' ? puddles.filter((b) => b.x < YARD[0] - 0.5 || b.x > YARD[2] + 0.5 || b.z < YARD[1] - 0.5 || b.z > YARD[3] + 0.5) : puddles;
+    const mask = plazaMask(seed, RECT, mw, mh, obstacles, day ? [] : wet, paths, day ? 0 : 1);
     const tex = new THREE.DataTexture(mask, mw, mh, THREE.RGBAFormat, THREE.UnsignedByteType);
     tex.colorSpace = THREE.NoColorSpace; tex.magFilter = THREE.LinearFilter; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.generateMipmaps = true; tex.anisotropy = 4;
     tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping; tex.needsUpdate = true; disposables.push(tex);
@@ -757,11 +761,14 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
   }));
   // at night a torch on a bracket on the gate's piers and two bays further (journal Passe VP6: the forecourt's night was the
   // darkest of the squares, its north frame a dark wall)
-  if (!day) for (const s of [-1, 1]) for (const k of [2, 4]) {
+  if (!day) for (const s of [-1, 1]) for (const k of [1, 2, 4]) {
     const a = s * (gateW / 2 + bayW * k) / R, x = Math.sin(a) * (R + 0.5), z = C[2] + Math.cos(a) * (R + 0.5);
     S.get('metal').box(x, 3.1, z, 0.1, 0.5, 0.1, { tint: [0.3, 0.28, 0.27] });
     S.get('glow').box(x, 3.45, z, 0.16, 0.22, 0.16, { tint: [1, 0.6, 0.25] });
-    // (their glow without a light since journal Passe VP7, the light plan: the piers' torches, the gate's lantern and its braziers light it)
+    // (their glow without a light from journal Passe VP7's light plan to its fifth iteration; since its sixth a pair one bay from the gate, lit,
+    // the pavilions' two lights given to them: « Light the night: sconces on the gatehouse », « the gatehouse is a flat beige wall »; the
+    // pair two bays off stood behind the pavilions)
+    if (k === 1) lights.push({ pos: [Math.sin(a) * (R + 1.1), 3.3, C[2] + Math.cos(a) * (R + 1.1)], color: FIRE, intensity: 2.6, radius: 6.5, kind: 'fire', halo: 0, priority: 8 });
   }
   // (the piers' torches lit the wall by the gate until journal Passe VP7: the gate's lantern and its braziers light it, the light plan)
   // the gate's passage lit at night (fourth critique: « the gate a black void »): a lantern hung under its arch, its light on the doors
@@ -1031,7 +1038,7 @@ function quayGate(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights']
 // ---------------------------------------------------------------- the squares' landmarks (journal Passe VP6)
 
 /** a competitor's pavilion: a round tent of striped canvas open toward the square, a scalloped valance, a conical roof, a finial and its
- *  pennant; lit from inside at night (the canvas glows) */
+ *  pennant; its doorway lit from inside at night */
 function pavilion(S: SlotSet, lights: PlazaBuild['lights'], day: boolean, x: number, z: number, yaw: number, r: number, colours: [V3, V3], emblem: EmblemKind): void {
   const C = S.get('cloth'), n = 16, wallH = 2.2, eave = 2.35, roofH = 4.4, night = (c: V3): V3 => (day ? c : [c[0] * 0.72, c[1] * 0.72, c[2] * 0.72]);
   S.at([x, 0, z], yaw, () => {
@@ -1054,7 +1061,8 @@ function pavilion(S: SlotSet, lights: PlazaBuild['lights'], day: boolean, x: num
     S.get('metal').box(0, roofH + 1.28, 0, 0.14, 0.14, 0.14, { tint: [1.2, 1.0, 0.6] });
     addBanner(S, { pos: [0.05, roofH + 1.15, 0], yaw: Math.PI / 2, w: 0.46, h: 1.25, emblem, shape: 'pennant', loose: 0.85, rod: false, tint: [0.95, 0.9, 0.75] });
   });
-  if (!day) lights.push({ pos: [x, 1.5, z], color: WARM, intensity: 3.4, radius: 7, kind: 'lantern', halo: 0.6, priority: 7 });
+  // (its lamp's light given to the gate's torches since journal Passe VP7, iteration 6: the doorway glows, the light plan's ambient)
+  void lights;
 }
 
 /** a banner mast: a tall timber mast on a stone foot, a yard and a long banner of the tournament hanging from it */

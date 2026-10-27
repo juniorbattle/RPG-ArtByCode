@@ -790,6 +790,28 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
   l'anneau du mannequin en obstacle de 4,2 m, le sol plus libre ; les touches qui ne gardent plus leur lacet) ; `tests/v2-exits.test.mjs`
   3 sur 3 (un halo sur chaque lanterne ; une dix-septième lumière à l'entraînement ; un point de foule du matin dans la fontaine).
 
+### La cinquième critique à l'aveugle (itération 5 contre VP6), deux agents — [?] l'entraînement de l'itération 5 devant VP6 pour un panneau
+- Panneau U5 (le district caché 7,5, R 8) : parvis VP6 **6,5** / itération 5 **5,5**, entraînement **6,5** / **5,5**, place festive **7** /
+  **6**. Panneau V5 (le district caché 7, R 8) : parvis **6,5** / **5,5**, entraînement **5,5** / **6** (« X is better than A [...] a ring
+  that is lit at night. A's night is a black void »), place festive **6,5** / **5**.
+- Les reproches précis à l'itération 5 : le sable, « The sand has a combed, ridged texture that causes moiré », « reads as a rendering bug » ;
+  « Puddles on sand show as black ovals » ; l'entraînement la nuit, « lit by an even warm fill rather than by visible sources » ; « the
+  pennant line at eye level flattens it » ; le parvis, « At night it is murky: only the gate glows », « Light the night: sconces on the
+  gatehouse ». Les demandes contraires à la direction reviennent (« Fill the middle ground with benches, tables, barrels, a well or a tree »)
+  et sont écartées ; les réverbères de VP6 restent son défaut principal (« There are so many lamp posts that the verticals cut through
+  characters »).
+
+### Itération 6 — [?] le sable sans stries, le mur de l'arène éclairé
+- Le râteau du sable (`GroundShaders.ts`, sous `SAND` : la ville ne le compile pas) s'efface où ses arcs se rapprochent à moins d'une
+  dizaine de pixels (`fwidth` de sa phase entre 0,25 et 0,7) : il reste au pied de la caméra, le reste de la cour est une terre battue
+  tachetée. [KO] l'effacement à deux pixels (0,9 à 2,2) : les stries restaient lisibles.
+- Plus de flaque sur la terre de l'entraînement (celles du ring et de la guirlande). La guirlande pendue plus haut (5,6 m aux rangées), ses
+  deux flaques de lumière plus serrées (3,4 / 6,2 à 3,2 m).
+- Le parvis : deux torches de la façade de l'arène allumées, une travée de part et d'autre de la porte (x ±6,6), les deux lumières prises
+  aux pavillons (leur porte brille sans lumière à elle). [KO] la paire à deux travées : elle se tenait derrière les pavillons, hors du cadre.
+- Mesures (moitié basse, p1 / p2) : parvis 51,2 / 51,6, entraînement 65,4 / 60,7, place festive 62,5 / 60,8. Toujours 16 lumières par
+  place, au plus quatre feux le jour.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
