@@ -553,6 +553,17 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
   passants sans contournement (`steer` ne tourne plus : « kept out of what stands there (0.70 m in) ») ; les lumières choisies par leur
   seule priorité (« the lamp at -9.4,-13.8 lit » : le réverbère près du héros éteint) ; un point de la foule dans le kiosque (« clear of »).
 
+### Les preuves finales de la Passe VP6 — [OK]
+- Sur l'itération 15 servie depuis un instantané (`:5202`), `main` figé `aaa48f0` à côté (`:5201`), une preuve après l'autre (jamais deux
+  navigateurs à la fois), SwiftShader : `tools/exits-proof.mjs` « every way walked both ways » ; la visibilité des places, six états (parvis
+  nuit / midi, entraînement midi / nuit, place festive nuit / fin de journée) x neuf poses du héros (le centre, les quatre coins, la porte de
+  l'arène, trois points du milieu), `static=1`, la page cuite contre `vis=0` : **0 px différent sur 54 vues** ; le district A-D de nuit et à
+  midi et B avec son panneau, 1920 x 1080, `tools/detshots.mjs` 120 pas, la branche contre `main` : **9 vues sur 9 identiques** ;
+  `tools/play-flow.mjs win` par défaut (21 contrôles) et `V2=1` (22) : « all checks passed ».
+- Sur l'arbre de la branche au réglage du budget (`6cc4bad`) : `npm run typecheck`, `npm run build`, `npm run art:validate` (0 erreur),
+  `npm test` 273 sur 273 ; le TournamentLab, graines 1 à 30, `idle`, `diligent` et `--rules=dynamic`, JSON **identiques** octet pour octet à
+  ceux de `main`.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
