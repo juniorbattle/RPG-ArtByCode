@@ -7,6 +7,7 @@ import type { LightDef } from '../atmosphere/LightRig';
 import { LAYER_CAST, LAYER_NOREFLECT } from '../atmosphere/ShadowAndReflection';
 import { InstanceBatch } from '../props/PropGenerator';
 import { addBanner } from '../props/Banners';
+import { tournamentHeraldry } from '../materials/CanvasArt';
 import { createMerchantBuilding } from '../architecture/BuildingGenerator';
 import { farHouse, tower, farMaterial, FAR_KIND } from '../district/DistantCity';
 import type { Emitter } from '../district/MerchantDistrictGenerator';
@@ -142,7 +143,7 @@ export function buildArena(lib: MaterialLibrary, seed: number, opts: { fireApart
           // a navy pennant on a pole over the back wall
           const pp = onArc(side * tm, r0 - 0.4 + 0.8);
           W.at([pp[0], hb, pp[2]], yaw, () => W.timber.boxMM(-0.05, 0, -0.05, 0.05, 3.2, 0.05, { tint: [0.5, 0.46, 0.44] }));
-          addBanner(W, { pos: [pp[0], hb + 3.05, pp[2]], yaw, w: 0.7, h: 1.5, emblem: 'fleur', shape: 'pennant', loose: 0.8, rod: true });
+          addBanner(W, { pos: [pp[0], hb + 3.05, pp[2]], yaw, w: 0.7, h: 1.5, emblem: tournamentHeraldry() ? (i % 8 === 2 ? 'swords' : 'laurel') : 'fleur', shape: 'pennant', loose: 0.8, rod: true });
         }
         if (i % 9 === 4) {
           const lp = onArc(side * tm, r0 - 0.12);
@@ -172,7 +173,7 @@ export function buildArena(lib: MaterialLibrary, seed: number, opts: { fireApart
     });
     // the banner on the tower's arena face
     const bp = xf([0, 8.1, 0.32], pos, yaw);
-    addBanner(W, { pos: bp, yaw, w: 1.55, h: 3.9, emblem: 'fleur', shape: 'swallow', loose: 0.35, rod: true });
+    addBanner(W, { pos: bp, yaw, w: 1.55, h: 3.9, emblem: tournamentHeraldry() ? (side < 0 ? 'duel' : 'crown') : 'fleur', shape: 'swallow', loose: 0.35, rod: true });
     // braziers at the gate's inner corners: fire, embers, a little smoke
     const br: V3 = [side * 6.0, 0, -5.4];   // in front of the towers, clear of the fighters' heads and of the walls (critiques of Passe P2)
     brazier(W, br, F);

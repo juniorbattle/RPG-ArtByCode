@@ -2,8 +2,8 @@ import { Rng } from '../core/rng';
 import { SlotSet, mat, type V3 } from '../core/MeshBuilder';
 import type { Socket } from '../architecture/Types';
 import type { DistrictConfig } from '../district/MerchantDistrictGenerator';
-import { atlasRect } from '../architecture/FacadeGrammar';
-import { EMBLEM_CELLS, type EmblemKind } from '../materials/CanvasArt';
+import { emblemRect } from '../architecture/FacadeGrammar';
+import { tournamentHeraldry, type EmblemKind } from '../materials/CanvasArt';
 
 export interface BannerOpts {
   pos: V3; yaw?: number; w: number; h: number; emblem: EmblemKind;
@@ -18,8 +18,7 @@ export interface BannerOpts {
 /** Cloth banner with painted heraldry (emblem atlas), wind-driven sway weight increasing toward the free edge. */
 export function addBanner(S: SlotSet, o: BannerOpts): void {
   const cols = 8, rows = 14;
-  const cell = EMBLEM_CELLS[o.emblem];
-  const [u0, v0, u1, v1] = atlasRect(cell % 4, Math.floor(cell / 4), 4, 2, 0.006);
+  const [u0, v0, u1, v1] = emblemRect(o.emblem, 0.006);
   const shape = o.shape ?? 'swallow';
   const loose = o.loose ?? 0.6;
   const tint: V3 = o.tint ?? [1, 1, 1];
@@ -60,13 +59,15 @@ export function addBanner(S: SlotSet, o: BannerOpts): void {
 export function buildBanners(rng: Rng, cfg: DistrictConfig, buildings: Array<{ id: string; result: { sockets: Socket[] }; pos: V3; yaw: number }>, sockets: Array<Socket & { building: string }>, world: SlotSet): void {
   void cfg; void rng; void buildings;
   const find = (id: string, kind: string) => sockets.find((s) => s.building === id && s.kind === kind);
-  // the great guild banner above the hero stall: the one large heraldic shape in the frontage
+  // the great guild banner above the hero stall: the one large heraldic shape in the frontage; in a version 2 game the tournament's
+  // (crossed swords; the tavern the champion's cup: journal Passe VP3)
+  const T = tournamentHeraldry();
   const g = find('guild', 'banner');
   if (g) {
     const yaw = Math.atan2(g.dir[0], g.dir[2]);
-    addBanner(world, { pos: [g.pos[0] + g.dir[0] * 0.18, g.pos[1] + 0.3, g.pos[2] + g.dir[2] * 0.18], yaw, w: 1.35, h: 2.9, emblem: 'scales', shape: 'swallow', loose: 0.5 });
+    addBanner(world, { pos: [g.pos[0] + g.dir[0] * 0.18, g.pos[1] + 0.3, g.pos[2] + g.dir[2] * 0.18], yaw, w: 1.35, h: 2.9, emblem: T ? 'swords' : 'scales', shape: 'swallow', loose: 0.5 });
   }
   // a small echo at the far end of the street
   const t = find('tavern', 'banner');
-  if (t) addBanner(world, { pos: [t.pos[0] + t.dir[0] * 0.15, t.pos[1] - 0.1, t.pos[2] + t.dir[2] * 0.15], yaw: Math.atan2(t.dir[0], t.dir[2]), w: 0.85, h: 1.6, emblem: 'tankard', shape: 'swallow', loose: 0.7 });
+  if (t) addBanner(world, { pos: [t.pos[0] + t.dir[0] * 0.15, t.pos[1] - 0.1, t.pos[2] + t.dir[2] * 0.15], yaw: Math.atan2(t.dir[0], t.dir[2]), w: 0.85, h: 1.6, emblem: T ? 'trophy' : 'tankard', shape: 'swallow', loose: 0.7 });
 }

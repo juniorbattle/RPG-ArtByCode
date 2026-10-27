@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MaterialLibrary } from '../materials/MaterialLibrary';
+import { setTournamentHeraldry } from '../materials/CanvasArt';
 import { defaultPainters } from '../materials/PainterPool';
 import { PostFX } from '../atmosphere/PostFX';
 import { MoonShadow, PlanarReflection, LAYER_NOREFLECT } from '../atmosphere/ShadowAndReflection';
@@ -148,6 +149,8 @@ export class PlazaApp {
     const pq = this.opts.params.get('painters');
     const painters = pq === 'main' ? 0 : pq !== null && /^\d+$/.test(pq) ? +pq : defaultPainters();
     this.frameCap.probe();
+    // the squares fly the tournament's heraldry (journal Passe VP3)
+    setTournamentHeraldry(true);
     this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress, painters);
     if (this.look) { this.lib.slot.glow.uniforms.uEmissive.value = this.look.glowEmissive; this.lib.slot.shop.uniforms.uEmissive.value = this.look.shopEmissive; this.lib.slot.roof.uniforms.uBase.value.copy(this.look.roofTint); }
     this.frameCap.endProbe();

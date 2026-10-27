@@ -241,9 +241,10 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     batch.add('lantern', { pos: [s.pos[0], s.pos[1] - 0.22, s.pos[2]], yaw: Math.atan2(s.dir[0], s.dir[2]) }, 0);
     lights.push({ pos: [s.pos[0], s.pos[1] + 0.02, s.pos[2]], color: WARM, intensity: 2.7, radius: 9, kind: 'lantern', halo: 1.4, priority: 5 });
   }
-  // heraldry as a focal accent: one guild banner on the house nearest the focal point (the district's buildBanners)
+  // heraldry as a focal accent: one guild banner on the house nearest the focal point (the district's buildBanners), the tournament's
+  // (journal Passe VP3: the training ground's helm, the forecourt's crossed swords, the festival's laurel)
   const banner = [...sockets.filter((s) => s.kind === 'banner')].sort((a, b) => Math.hypot(a.pos[0] - fx, a.pos[2] - fz) - Math.hypot(b.pos[0] - fx, b.pos[2] - fz))[0];
-  if (banner) addBanner(S, { pos: [banner.pos[0] + banner.dir[0] * 0.18, banner.pos[1] + 0.3, banner.pos[2] + banner.dir[2] * 0.18], yaw: Math.atan2(banner.dir[0], banner.dir[2]), w: 1.2, h: 2.6, emblem: kind === 'training' ? 'hammers' : kind === 'forecourt' ? 'fleur' : 'tankard', shape: 'swallow', loose: 0.5 });
+  if (banner) addBanner(S, { pos: [banner.pos[0] + banner.dir[0] * 0.18, banner.pos[1] + 0.3, banner.pos[2] + banner.dir[2] * 0.18], yaw: Math.atan2(banner.dir[0], banner.dir[2]), w: 1.2, h: 2.6, emblem: kind === 'training' ? 'helm' : kind === 'forecourt' ? 'swords' : 'laurel', shape: 'swallow', loose: 0.5 });
   // the tournament's bunting by day only (J6): a swag across each house's first upper floor, and from the nearest façade to each south lamp
   if (day) {
     const front = sockets.filter((s) => s.kind === 'bunting' && (s.tag === 'left1' || s.tag === 'right1'));
@@ -393,10 +394,11 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
       for (const s of [-1, 1]) St.boxMM(s > 0 ? 0.95 : -hw + 0.26, TIER_G + 0.55, -0.12, s > 0 ? hw - 0.26 : -0.95, TIER_U, -0.1, { uvScale: uv, tint: stone });
       St.boxMM(-hw - 0.45, TIER_G - 0.2, -0.55, hw + 0.45, TIER_G + 0.15, 0.42, { uvScale: uv, tint: stoneLt });
       St.boxMM(-hw - 0.3, TIER_U, -0.6, hw + 0.3, TIER_U + 0.45, 0.35, { uvScale: uv, tint: stoneLt });
-      // a mast and its pennant on every other bay, the tournament's colours
-      if (b.gate || Math.round(b.a * R / bayW) % 2 === 0) {
+      // a mast and its pennant on every other bay, the tournament's colours and its charges (the gate's crown, then swords and laurels)
+      const bay = Math.round(b.a * R / bayW);
+      if (b.gate || bay % 2 === 0) {
         S.get('timber').boxMM(-0.06, TIER_U + 0.45, -0.2, 0.06, TIER_U + 3.8, -0.08, { tint: [0.5, 0.42, 0.34], grain: 'y' });
-        addBanner(S, { pos: [0.12, TIER_U + 3.5, -0.14], yaw: Math.PI / 2, w: 0.5, h: 1.5, emblem: 'fleur', shape: 'pennant', loose: 0.7, rod: false, tint: b.gate ? [0.95, 0.88, 0.62] : [0.5, 0.6, 0.95] });
+        addBanner(S, { pos: [0.12, TIER_U + 3.5, -0.14], yaw: Math.PI / 2, w: 0.5, h: 1.5, emblem: b.gate ? 'crown' : bay % 4 === 0 ? 'swords' : 'laurel', shape: 'pennant', loose: 0.7, rod: false, tint: b.gate ? [0.95, 0.88, 0.62] : [0.5, 0.6, 0.95] });
       }
       if (b.gate) {
         // the portcullis: raised by day (its teeth under the head), shut at night with the doors behind it
@@ -404,11 +406,11 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
         for (let i = -4; i <= 4; i++) M.boxMM(i * 0.45 - 0.04, y0, -0.32, i * 0.45 + 0.04, 6.1, -0.26, { tint: [0.3, 0.3, 0.32] });
         for (let y = y0 + 0.3; y < 6.1; y += 0.55) M.boxMM(-2.05, y, -0.33, 2.05, y + 0.06, -0.27, { tint: [0.3, 0.3, 0.32] });
         if (!day) S.get('planks').boxMM(-2.1, 0, -0.6, 2.1, 5.9, -0.5, { grain: 'y', tint: [0.42, 0.32, 0.24] });
-        // the great banner over the gate
-        addBanner(S, { pos: [0, TIER_U - 0.25, 0.4], yaw: 0, w: 1.6, h: 3.0, emblem: 'fleur', shape: 'swallow', loose: 0.35, tint: [0.95, 0.88, 0.62] });
+        // the great banner over the gate: the duel itself
+        addBanner(S, { pos: [0, TIER_U - 0.25, 0.4], yaw: 0, w: 1.6, h: 3.0, emblem: 'duel', shape: 'swallow', loose: 0.35, tint: [0.95, 0.88, 0.62] });
       } else if (Math.abs(b.a) * R < bayW * 2.2) {
-        // long banners on the bays beside the gate
-        addBanner(S, { pos: [0, TIER_U - 0.25, 0.4], yaw: 0, w: 1.1, h: 3.2, emblem: 'fleur', shape: 'swallow', loose: 0.4, tint: [0.5, 0.6, 0.95] });
+        // long banners on the bays beside the gate: the lances on one side, the champion's cup on the other
+        addBanner(S, { pos: [0, TIER_U - 0.25, 0.4], yaw: 0, w: 1.1, h: 3.2, emblem: b.a < 0 ? 'lances' : 'trophy', shape: 'swallow', loose: 0.4, tint: [0.5, 0.6, 0.95] });
       }
     });
   });
@@ -545,7 +547,7 @@ function stage(S: SlotSet, batch: InstanceBatch, x: number, z: number): void {
     T.boxMM(-3.45, 0.74, 1.6, 3.45, 0.98, 1.7, { tint: [0.4, 0.31, 0.24], grain: 'x' });
     for (let i = 0; i < 10; i++) { const x0 = -3.12 + (6.24 * i) / 10, x1 = x0 + 6.24 / 10; C.quad([x0, 0.95, -1.36], [x1, 0.95, -1.36], [x1, 3.7, -1.36], [x0, 3.7, -1.36], { tint: i % 2 ? [0.3, 0.36, 0.62] : [0.62, 0.58, 0.5], swayArr: [0, 0, 0.15, 0.15] }); }
     for (let i = 0; i < 8; i++) { const x0 = -3.3 + (6.6 * i) / 8, x1 = x0 + 6.6 / 8; C.quad([x0, 4.2, -1.5], [x1, 4.2, -1.5], [x1, 3.75, 0.4], [x0, 3.75, 0.4], { tint: i % 2 ? [0.34, 0.4, 0.68] : [0.3, 0.35, 0.62], flip: true, swayArr: [0, 0, 0.5, 0.5] }); }
-    addBanner(S, { pos: [0, 3.5, -1.3], yaw: 0, w: 1.4, h: 2.2, emblem: 'fleur', shape: 'swallow', loose: 0.4, rod: true, tint: [0.95, 0.88, 0.62] });
+    addBanner(S, { pos: [0, 3.5, -1.3], yaw: 0, w: 1.4, h: 2.2, emblem: 'horn', shape: 'swallow', loose: 0.4, rod: true, tint: [0.95, 0.88, 0.62] });
   });
   batch.add('barrel', { pos: [x - 2.6, 0.95, z - 0.9], yaw: 0.3 }); batch.add('stool', { pos: [x + 1.8, 0.95, z - 0.6], yaw: 1.2 });
 }

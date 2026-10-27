@@ -1,6 +1,6 @@
 import { MeshBuilder, mat, type V3, type Slot } from '../core/MeshBuilder';
 import { BuildCtx, shopToInterior, shopToEmblem, type ShopType } from './Types';
-import { WINDOW_CELLS, SHOP_CELLS, EMBLEM_CELLS, type WindowKind, type ShopKind, type EmblemKind } from '../materials/CanvasArt';
+import { WINDOW_CELLS, SHOP_CELLS, EMBLEM_CELLS, emblemAtlasRows, type WindowKind, type ShopKind, type EmblemKind } from '../materials/CanvasArt';
 
 /** Reusable facade modules. Every module works in a WALL-LOCAL frame: x along the wall, y up, z outward,
  *  and the plaster plane at PZ. BuildingGenerator pushes the right frame for front / side / back walls. */
@@ -14,6 +14,14 @@ type Rect = [number, number, number, number];
 export function atlasRect(col: number, row: number, cols: number, rows: number, inset = 0.004): [number, number, number, number] {
   const u0 = col / cols + inset, u1 = (col + 1) / cols - inset;
   const v1 = 1 - row / rows - inset, v0 = 1 - (row + 1) / rows + inset;
+  return [u0, v0, u1, v1];
+}
+/** an emblem's cell in the page's emblem atlas (`setTournamentHeraldry`, CanvasArt.ts): the 4 x 2 atlas's inset in texels at any rows; a
+ *  tournament emblem in the 4 x 2 atlas of today throws (it is not painted there) */
+export function emblemRect(kind: EmblemKind, inset: number): [number, number, number, number] {
+  const i = EMBLEM_CELLS[kind], rows = emblemAtlasRows();
+  if (i >= rows * 4) throw new Error(`the emblem '${kind}' is the tournament's: setTournamentHeraldry(true) before the page's material library`);
+  const [u0, , u1] = atlasRect(i % 4, Math.floor(i / 4), 4, rows, inset), [, v0, , v1] = atlasRect(i % 4, Math.floor(i / 4), 4, rows, (inset * 2) / rows);
   return [u0, v0, u1, v1];
 }
 const quv = (r: [number, number, number, number]) => [r[0], r[1], r[2], r[1], r[2], r[3], r[0], r[3]];
@@ -284,8 +292,7 @@ export function hangingSign(ctx: BuildCtx, x: number, y: number, armLen: number,
   S.with(mat([x, y - 0.5, 0]), () => { S.metal.boxMM(-0.025, 0, -0.04, 0.025, 0.5, 0.0, { tint: [1, 1, 1] }); });
   // scroll curl
   S.metal.boxMM(x - 0.02, y - 0.16, armLen * 0.55, x + 0.02, y, armLen * 0.55 + 0.04, { tint: [1, 1, 1] });
-  const idx = EMBLEM_CELLS[emblem];
-  const r = atlasRect(idx % 4, Math.floor(idx / 4), 4, 2, 0.01);
+  const r = emblemRect(emblem, 0.01);
   const [u0, v0, u1, v1] = r;
   const zc = armLen - 0.08, w = 0.62, h = 0.78, ytop = y - 0.2;
   const cu = (u0 + u1) / 2;

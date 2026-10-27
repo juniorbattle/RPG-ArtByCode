@@ -7,7 +7,7 @@ import type { TexSet } from './TexturePainters';
 import type { PaintJob } from './PainterJobs';
 import { paintAll } from './PainterPool';
 import {
-  makeWindowAtlas, makeShopAtlas, makeEmblemAtlas, makeDecalAtlas, makeLeafAtlas, makeBushCard, makeHalo, makeSmokePuff, makeSoftDot,
+  makeWindowAtlas, makeShopAtlas, makeEmblemAtlas, emblemAtlasRows, makeDecalAtlas, makeLeafAtlas, makeBushCard, makeHalo, makeSmokePuff, makeSoftDot,
 } from './CanvasArt';
 
 export interface SurfaceParams {
@@ -103,7 +103,7 @@ export class MaterialLibrary {
     const tc = performance.now();
     const art = {
       halo: makeHalo(128), smoke: makeSmokePuff(128, 3), dot: makeSoftDot(32), leaf: makeLeafAtlas(5), bush: makeBushCard(8, 256),
-      window: makeWindowAtlas(21), shop: makeShopAtlas(33), emblem: makeEmblemAtlas(), decal: makeDecalAtlas(77),
+      window: makeWindowAtlas(21), shop: makeShopAtlas(33), emblem: makeEmblemAtlas(emblemAtlasRows()), decal: makeDecalAtlas(77),
     };
     this.timings['canvas atlases'] = performance.now() - tc;
     const painted = await painting;

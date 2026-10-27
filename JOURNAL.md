@@ -286,6 +286,55 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   qu'une relecture du code.
 - Un signe n'annonce que s'il précède : une condition « a eu lieu » vraie dans le même créneau donne un signe et son événement d'un même coup.
 
+## Passe VP3 — Les emblèmes du tournoi sur les drapeaux de la version 2 (2026-10-27)
+
+### Demande
+La demande de l'opérateur (séance cloud, 2026-10-27), mot pour mot : « Ok dans ce cas nous allons encore optimiser le decor de nos 2 nouvelles
+places ( je ne Pas la place quartier festif, donc une nouvelle place à ajouter ) et je veux un résultat de 8/10 au minimum, donc il faut prendre
+le temps qu'il faut pour atteindre l'objectif voulu. Sinon je remarque que nous avons beaucoup de drapeau avec des emblèmes non pertinent je veux
+des emblèmes lies a notre tournoi comme des deux épées qui se croisent ou , des silhouette de combattants bref tout ce qui est du domaine
+compétition et festivité. Un joueur qui se prépare gagne 85%, c'est étrange car cela veut dire que le jeu est facilement maîtrisable, il faudrait
+donc augmenter à la porte des dégâts des ennemies pour qu'ils soient plus impactant ou rendre le gameplay combat un peu plus rude. Sinon je veux
+que les villes soient connecté dans qu'on puisse se déplacer d'un endroit à un autre via des entrés/sorties comme dans un final fantasy 9 . Brer
+comme je l'ai dit travaille de manière autonome et sois optimale en prenant le temps qu'il faut pour un travail magistral. »
+
+Lecture (« proposé ») : quatre lots, tous derrière `flags.v2` (la règle de la séance « Version 2 », le jeu par défaut inchangé et prouvé) : les
+emblèmes (cette passe), les entrées / sorties à pied entre le quartier et les trois places (Passe VP4), le combat de la version 2 plus rude
+(Passe VP5), le décor des trois places à 8/10 au moins en critique à l'aveugle (Passe VP6 ; « la place quartier festif » : la place festive
+existe depuis le lot V5 à la place de Lantern Row, on ne la voyait pas faute d'y aller à pied, elle est traitée comme la troisième place à
+amener à 8).
+
+### Fait — [OK] : huit emblèmes du tournoi, un atlas 4 x 4 pour les pages de la version 2 seulement
+- `src/materials/CanvasArt.ts` : huit emblèmes nouveaux après les huit d'aujourd'hui (cellules 8 à 15, aucune cellule déplacée) : `swords` (deux
+  épées croisées, pointes en haut), `duel` (deux combattants face à face, lames croisées, champ parti en deux bleus), `laurel` (la couronne de
+  laurier du vainqueur autour d'une étoile), `trophy` (la coupe du champion), `helm` (le heaume de joute et son panache), `horn` (la trompette
+  du héraut et sa bannière), `lances` (deux lances de joute croisées derrière un écu), `crown` (la couronne du champion sur un phylactère) ;
+  champs dans le bleu royal du tournoi (S3 de l'interface), charges or et ivoire, motifs (parti, bande, losanges) découpés dans leur cellule.
+- L'atlas a deux tailles : `makeEmblemAtlas(rows)`, 2 rangées = l'atlas d'aujourd'hui, **les mêmes appels de dessin sur la même toile 768 x 512
+  que `main`** (empreinte du journal d'appels sous une toile enregistreuse : `1309cb6d…`, identique à celle de `main` `aaa48f0`) ; 4 rangées =
+  le même dessin puis les huit nouveaux. `setTournamentHeraldry(on)` choisit la taille avant que la bibliothèque de matériaux peigne ; les
+  bannières et les enseignes prennent leur cellule par `emblemRect` (`FacadeGrammar.ts` : à 2 rangées les rectangles d'aujourd'hui, à
+  l'identique ; à 4 les mêmes texels de retrait ; un emblème du tournoi demandé à l'atlas d'aujourd'hui lève une erreur).
+- Qui l'active : les places (toujours, `PlazaApp`), la ville d'une partie v2 (`playTown` ajoute `heraldry=tournament`, lu par `App` ; l'adresse
+  libre l'accepte aussi pour la revue), l'arène de la version 2 (`ArenaApp`, `rules === 'v2'`). Jamais les pages d'aujourd'hui (le quartier,
+  le parvis et Lantern Row de la partie d'aujourd'hui, l'arène d'aujourd'hui).
+- Les drapeaux changés : sur les places, la grande bannière de la porte du Colisée = `duel`, les deux longues bannières voisines = `lances` /
+  `trophy`, les flammes des mâts = `crown` (porte), `swords` et `laurel` en alternance ; la bannière de maison la plus proche du foyer =
+  `swords` (parvis), `helm` (terrain d'entraînement), `laurel` (place festive) ; la bannière de la scène = `horn`. Dans la ville d'une partie
+  v2 : la grande bannière de la guilde = `swords`, celle de la taverne = `trophy`, celle du bateau = `duel`. Dans l'arène v2 : les deux grandes
+  bannières des tours = `duel` / `crown`, les flammes = `swords` / `laurel`. Les enseignes de métier (clé, mortier, ciseaux, chope, enclume)
+  restent des enseignes ; les bannières de la forge (marteaux, enclume) restent celles du forgeron.
+- Tests : `tests/v2-heraldry.test.mjs` (4 tests : l'atlas d'aujourd'hui appel pour appel contre l'empreinte de `main`, les cellules et leurs
+  retraits, toute bannière des trois places de jour et de nuit sur un emblème du tournoi (seules les enseignes de métier gardent les leurs) et
+  le refus de l'atlas d'aujourd'hui, les pages qui l'activent) ; `tests/heraldry-canvas.mjs` (la toile enregistreuse) ; `v2-plaza-vis` construit
+  les places avec l'atlas du tournoi comme leur page. Capture : le parvis à midi, la porte (lances, duel, coupe ; épées croisées sur la maison
+  de droite).
+
+### Pensée
+- Étendre un atlas sans toucher l'existant : peindre les cellules nouvelles **après** les anciennes et seulement dans une toile plus haute ;
+  le journal des appels de dessin (une toile enregistreuse, sans navigateur) prouve que l'atlas d'aujourd'hui n'a pas changé d'un appel.
+- Un motif de champ se découpe dans sa cellule : sans découpe, les losanges débordaient sur les voisines (vu sur la première planche).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

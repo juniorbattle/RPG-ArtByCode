@@ -273,23 +273,53 @@ export function makeShopAtlas(seed = 33): HTMLCanvasElement {
 }
 
 /* ------------------------------------------------------------------ heraldry */
-export const EMBLEM_CELLS = { scales: 0, hammers: 1, fleur: 2, key: 3, mortar: 4, scissors: 5, tankard: 6, anvil: 7 } as const;
+export const EMBLEM_CELLS = {
+  scales: 0, hammers: 1, fleur: 2, key: 3, mortar: 4, scissors: 5, tankard: 6, anvil: 7,
+  // the tournament's eight (journal Passe VP3): competition and festivity, painted only in the version 2's 4 x 4 atlas
+  swords: 8, duel: 9, laurel: 10, trophy: 11, helm: 12, horn: 13, lances: 14, crown: 15,
+} as const;
 export type EmblemKind = keyof typeof EMBLEM_CELLS;
-/** one heraldic family: indigo / navy / slate fields, candle-gold and ivory charges */
+/** one heraldic family: indigo / navy / slate fields, candle-gold and ivory charges; the tournament's in its royal blue (the interface's S3) */
 export const EMBLEM_FIELD: Record<EmblemKind, [string, string]> = {
   scales: ['#22336a', '#0f1a40'], hammers: ['#2a3148', '#141928'], fleur: ['#203a78', '#0d1d48'], key: ['#1f2f5c', '#0f1834'],
   mortar: ['#253158', '#111a36'], scissors: ['#2a2e50', '#14182e'], tankard: ['#2e3346', '#161a26'], anvil: ['#2c2f3a', '#15161c'],
+  swords: ['#1f408e', '#0d1f52'], duel: ['#252a5e', '#101436'], laurel: ['#1d4378', '#0c2142'], trophy: ['#22346c', '#0e1940'],
+  helm: ['#283456', '#111830'], horn: ['#1f408e', '#0d1f52'], lances: ['#203a78', '#0d1d48'], crown: ['#1b3680', '#0b1744'],
 };
+/** the tournament's fields: the duel's two halves (per pale), a bend under the lances, a lozenge diaper under the trophy and the crown */
+const EMBLEM_PATTERN: Partial<Record<EmblemKind, 'pale' | 'bend' | 'diaper'>> = { duel: 'pale', horn: 'diaper', lances: 'bend', trophy: 'diaper', crown: 'diaper' };
 
-/** 4x2 atlas of vertical banner/sign textures (192x256 each). */
-export function makeEmblemAtlas(): HTMLCanvasElement {
+/** The emblem atlas's rows (journal Passe VP3): 2 = today's eight emblems, the default game's atlas byte for byte; 4 = with the tournament's
+ *  eight, for the version 2's pages (its squares, the town and the arena of a version 2 game). A page sets it before its material library
+ *  paints; the banners and signs it builds take their cells from it (`emblemRect`, FacadeGrammar.ts). */
+let emblemRows = 2;
+export function setTournamentHeraldry(on: boolean): void { emblemRows = on ? 4 : 2; }
+export const emblemAtlasRows = (): number => emblemRows;
+export const tournamentHeraldry = (): boolean => emblemRows === 4;
+
+/** 4 x rows atlas of vertical banner/sign textures (192x256 each): rows 2 = today's eight, rows 4 = with the tournament's eight. */
+export function makeEmblemAtlas(rows = 2): HTMLCanvasElement {
   const cw = 192, ch = 256;
-  const [c, x] = makeCanvas(cw * 4, ch * 2);
+  const [c, x] = makeCanvas(cw * 4, ch * rows);
   const gold = '#d6b468', goldD = '#7c6230', cream = '#e8e2d0';
+  const steel = '#dfe2e6', steelD = '#8f96a2', leather = '#5a3a1c', leaf = '#c9b45e', slit = '#0b1226';
   const draw = (kind: EmblemKind, idx: number) => {
     x.save(); x.translate((idx % 4) * cw, Math.floor(idx / 4) * ch);
     const [a, b] = EMBLEM_FIELD[kind];
     const g = x.createLinearGradient(0, 0, 0, ch); g.addColorStop(0, a); g.addColorStop(1, b); x.fillStyle = g; x.fillRect(0, 0, cw, ch);
+    const pat = EMBLEM_PATTERN[kind];
+    // a patterned field stays in its cell (today's plain fields draw no clip: their calls are main's)
+    if (pat) { x.beginPath(); x.rect(0, 0, cw, ch); x.clip(); }
+    if (pat === 'pale') {
+      // the two competitors' halves: the right half a brighter blue
+      const g2 = x.createLinearGradient(0, 0, 0, ch); g2.addColorStop(0, '#2c55b0'); g2.addColorStop(1, '#122a68'); x.fillStyle = g2; x.fillRect(cw / 2, 0, cw / 2, ch);
+    } else if (pat === 'bend') {
+      x.save(); x.beginPath(); x.moveTo(0, 30); x.lineTo(46, 0); x.lineTo(cw, 196); x.lineTo(cw, 250); x.closePath(); x.clip();
+      const g2 = x.createLinearGradient(0, 0, 0, ch); g2.addColorStop(0, '#2c55b0'); g2.addColorStop(1, '#14306e'); x.fillStyle = g2; x.fillRect(0, 0, cw, ch); x.restore();
+    } else if (pat === 'diaper') {
+      x.strokeStyle = 'rgba(214,180,104,0.13)'; x.lineWidth = 1.5;
+      for (let k = -ch; k < cw + ch; k += 32) { x.beginPath(); x.moveTo(k, 0); x.lineTo(k + ch, ch); x.moveTo(k + ch, 0); x.lineTo(k, ch); x.stroke(); }
+    }
     // weave & fold shading
     for (let i = 0; i < cw; i += 3) { x.fillStyle = `rgba(0,0,0,${0.025 + 0.03 * Math.sin(i * 0.31)})`; x.fillRect(i, 0, 1, ch); }
     // border trim
@@ -356,10 +386,147 @@ export function makeEmblemAtlas(): HTMLCanvasElement {
         x.moveTo(44 + o, 112 + o); x.lineTo(150 + o, 112 + o); x.lineTo(150 + o, 132 + o); x.lineTo(118 + o, 136 + o); x.lineTo(112 + o, 160 + o); x.lineTo(140 + o, 184 + o); x.lineTo(60 + o, 184 + o); x.lineTo(80 + o, 160 + o); x.lineTo(76 + o, 136 + o); x.lineTo(60 + o, 132 + o); x.closePath(); x.fill();
         x.fillStyle = col === gold ? '#ff8030' : col; x.beginPath(); x.arc(96 + o, 96 + o, 8, 0, Math.PI * 2); x.fill();
       });
+    } else if (kind === 'swords') {
+      // two swords crossed, points up: steel blades, gold guards and pommels
+      both((col, o) => {
+        for (const s of [-1, 1]) {
+          x.save(); x.translate(96 + o, 136 + o); x.rotate(s * 0.62);
+          x.fillStyle = col === gold ? steel : col; x.beginPath(); x.moveTo(-7, 38); x.lineTo(-7, -62); x.lineTo(0, -84); x.lineTo(7, -62); x.lineTo(7, 38); x.closePath(); x.fill();
+          if (col === gold) { x.fillStyle = steelD; x.fillRect(-1.5, -62, 3, 98); }
+          x.fillStyle = col; x.fillRect(-26, 36, 52, 9); x.beginPath(); x.arc(-26, 40.5, 6, 0, Math.PI * 2); x.arc(26, 40.5, 6, 0, Math.PI * 2); x.fill();
+          x.fillStyle = col === gold ? leather : col; x.fillRect(-5, 45, 10, 26);
+          x.fillStyle = col; x.beginPath(); x.arc(0, 78, 9, 0, Math.PI * 2); x.fill();
+          x.restore();
+        }
+      });
+    } else if (kind === 'duel') {
+      // two fighters face to face, blades crossed above them: gold the left, ivory the right
+      both((col, o) => {
+        for (const s of [-1, 1]) {
+          x.save(); x.translate(96 + o, o); x.scale(s, 1); x.translate(-96, 0);
+          const body = col === gold ? (s < 0 ? gold : cream) : col;
+          stroke(body, 11);
+          x.beginPath(); x.moveTo(60, 160); x.lineTo(76, 186); x.lineTo(84, 214); x.stroke();     // the front leg, lunging
+          x.beginPath(); x.moveTo(54, 160); x.lineTo(40, 188); x.lineTo(28, 214); x.stroke();     // the back leg
+          x.fillStyle = body; x.beginPath(); x.moveTo(48, 118); x.lineTo(68, 116); x.lineTo(66, 162); x.lineTo(50, 162); x.closePath(); x.fill();
+          x.beginPath(); x.arc(60, 102, 12, 0, Math.PI * 2); x.fill();
+          x.fillRect(54, 84, 12, 8);                                                             // the helm's crest
+          stroke(body, 9); x.beginPath(); x.moveTo(64, 124); x.lineTo(80, 110); x.stroke();       // the sword arm
+          x.fillStyle = col === gold ? steelD : col; x.beginPath(); x.arc(42, 134, 15, 0, Math.PI * 2); x.fill();   // the buckler
+          if (col === gold) { x.fillStyle = body; x.beginPath(); x.arc(42, 134, 6, 0, Math.PI * 2); x.fill(); }
+          stroke(col === gold ? steel : col, 5); x.beginPath(); x.moveTo(80, 110); x.lineTo(126, 58); x.stroke();   // the blade
+          stroke(col === gold ? gold : col, 4); x.beginPath(); x.moveTo(72, 103); x.lineTo(87, 117); x.stroke();     // its guard
+          x.restore();
+        }
+      });
+    } else if (kind === 'laurel') {
+      // the victor's wreath around a star, its ribbon crossed below
+      both((col, o) => {
+        const cx = 96 + o, cy = 132 + o, R = 56;
+        for (const s of [-1, 1]) {
+          stroke(col, 3); x.beginPath();
+          for (let i = 0; i <= 20; i++) { const a = Math.PI / 2 + s * (0.3 + (i / 20) * 2.45); const px = cx + Math.cos(a) * R, py = cy + Math.sin(a) * R; if (i) x.lineTo(px, py); else x.moveTo(px, py); }
+          x.stroke();
+          x.fillStyle = col === gold ? leaf : col;
+          for (let i = 0; i < 9; i++) {
+            const a = Math.PI / 2 + s * (0.42 + (i / 8.4) * 2.3), px = cx + Math.cos(a) * R, py = cy + Math.sin(a) * R;
+            for (const side of [-1, 1]) { x.beginPath(); x.ellipse(px + Math.cos(a) * side * 8, py + Math.sin(a) * side * 8, 12, 5, a + s * (Math.PI / 2) - side * s * 0.55, 0, Math.PI * 2); x.fill(); }
+          }
+        }
+        x.fillStyle = col; x.beginPath();
+        for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 5, r = i % 2 ? 12 : 29; x.lineTo(cx + Math.cos(a) * r, cy - 4 + Math.sin(a) * r); }
+        x.closePath(); x.fill();
+        x.fillStyle = col === gold ? cream : col;
+        for (const s of [-1, 1]) { x.beginPath(); x.moveTo(cx, cy + R - 2); x.lineTo(cx + s * 26, cy + R + 24); x.lineTo(cx + s * 16, cy + R + 28); x.lineTo(cx + s * 4, cy + R + 10); x.closePath(); x.fill(); }
+      });
+    } else if (kind === 'trophy') {
+      // the champion's cup on its plinth, a star above
+      both((col, o) => {
+        x.save(); x.translate(o, o);
+        x.fillStyle = col; x.beginPath(); x.moveTo(56, 92); x.lineTo(136, 92); x.quadraticCurveTo(134, 150, 96, 156); x.quadraticCurveTo(58, 150, 56, 92); x.fill();
+        stroke(col, 8); x.beginPath(); x.arc(56, 114, 18, Math.PI * 0.5, Math.PI * 1.5); x.stroke(); x.beginPath(); x.arc(136, 114, 18, -Math.PI * 0.5, Math.PI * 0.5); x.stroke();
+        x.fillStyle = col; x.fillRect(90, 154, 12, 26); x.beginPath(); x.ellipse(96, 166, 12, 6, 0, 0, Math.PI * 2); x.fill();
+        x.beginPath(); x.moveTo(76, 180); x.lineTo(116, 180); x.lineTo(124, 198); x.lineTo(68, 198); x.closePath(); x.fill(); x.fillRect(62, 198, 68, 10);
+        if (col === gold) { x.fillStyle = 'rgba(255,248,220,0.55)'; x.beginPath(); x.moveTo(66, 98); x.lineTo(76, 98); x.quadraticCurveTo(78, 134, 92, 148); x.quadraticCurveTo(68, 140, 66, 98); x.fill(); }
+        x.fillStyle = col === gold ? cream : col; x.beginPath();
+        for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 5, r = i % 2 ? 6 : 15; x.lineTo(96 + Math.cos(a) * r, 64 + Math.sin(a) * r); }
+        x.closePath(); x.fill();
+        x.restore();
+      });
+    } else if (kind === 'helm') {
+      // a jousting helm seen from the front, its plume falling to the right
+      both((col, o) => {
+        x.save(); x.translate(o, o);
+        x.fillStyle = col === gold ? steel : col; x.beginPath(); x.moveTo(62, 196); x.lineTo(62, 112); x.quadraticCurveTo(62, 78, 96, 76); x.quadraticCurveTo(130, 78, 130, 112); x.lineTo(130, 196); x.quadraticCurveTo(96, 206, 62, 196); x.fill();
+        if (col === gold) {
+          x.fillStyle = slit; x.fillRect(68, 122, 56, 8); x.fillRect(68, 136, 56, 5);
+          for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) { x.beginPath(); x.arc(110 + j * 9, 160 + i * 10, 2.4, 0, Math.PI * 2); x.fill(); }
+          x.fillStyle = gold; x.fillRect(93, 78, 6, 120); x.fillRect(62, 188, 68, 7);
+          x.fillStyle = steelD; x.fillRect(62, 112, 5, 76);
+        }
+        // the plume: three feathers rising from the crest and falling to the right
+        x.fillStyle = col === gold ? cream : col;
+        for (let i = 0; i < 3; i++) {
+          x.beginPath(); x.moveTo(92, 78); x.bezierCurveTo(92 + i * 4, 40 - i * 6, 132 + i * 8, 34 + i * 4, 150 + i * 6, 72 + i * 22);
+          x.bezierCurveTo(134 + i * 6, 58 + i * 10, 112 + i * 4, 56 + i * 2, 100, 80); x.closePath(); x.fill();
+        }
+        if (col === gold) { stroke(goldD, 2); for (let i = 0; i < 3; i++) { x.beginPath(); x.moveTo(96, 78); x.bezierCurveTo(98 + i * 4, 52 - i * 4, 128 + i * 8, 46 + i * 4, 146 + i * 6, 72 + i * 22); x.stroke(); } }
+        x.restore();
+      });
+    } else if (kind === 'horn') {
+      // the herald's trumpet raised for the fanfare, its banner hanging under it
+      both((col, o) => {
+        x.save(); x.translate(o, o);
+        const a = -0.44, ca = Math.cos(a), sa = Math.sin(a), at = (t: number): [number, number] => [44 + ca * t, 120 + sa * t];
+        const [p1x, p1y] = at(18), [p2x, p2y] = at(70);
+        x.fillStyle = col === gold ? cream : col; x.beginPath();
+        x.moveTo(p1x, p1y); x.lineTo(p2x, p2y); x.lineTo(p2x, p2y + 78); x.lineTo((p1x + p2x) / 2, (p1y + p2y) / 2 + 64); x.lineTo(p1x, p1y + 78); x.closePath(); x.fill();
+        if (col === gold) { x.fillStyle = '#2c55b0'; x.beginPath(); const mx = (p1x + p2x) / 2, my = (p1y + p2y) / 2 + 34; x.moveTo(mx, my - 16); x.lineTo(mx + 12, my); x.lineTo(mx, my + 16); x.lineTo(mx - 12, my); x.closePath(); x.fill(); }
+        x.save(); x.translate(44, 120); x.rotate(a);
+        stroke(col, 7); x.beginPath(); x.moveTo(-8, 0); x.lineTo(96, 0); x.stroke();
+        x.fillStyle = col; x.beginPath(); x.moveTo(90, -4); x.quadraticCurveTo(112, -6, 128, -24); x.lineTo(128, 24); x.quadraticCurveTo(112, 6, 90, 4); x.closePath(); x.fill();
+        x.beginPath(); x.arc(-10, 0, 6, 0, Math.PI * 2); x.fill(); x.beginPath(); x.arc(40, 0, 7, 0, Math.PI * 2); x.fill();
+        x.restore();
+        x.fillStyle = col; for (const [px, py] of [[p1x, p1y], [p2x, p2y]]) x.fillRect(px - 2, py - 2, 4, 6);
+        x.restore();
+      });
+    } else if (kind === 'lances') {
+      // two jousting lances crossed behind a shield, their pennants at the points
+      both((col, o) => {
+        for (const s of [-1, 1]) {
+          x.save(); x.translate(96 + o, 132 + o); x.rotate(s * 0.5);
+          stroke(col === gold ? cream : col, 6); x.beginPath(); x.moveTo(0, 92); x.lineTo(0, -86); x.stroke();
+          x.fillStyle = col; x.beginPath(); x.moveTo(-4, -86); x.lineTo(0, -100); x.lineTo(4, -86); x.closePath(); x.fill();
+          x.beginPath(); x.moveTo(-5, 44); x.lineTo(5, 44); x.lineTo(15, 66); x.lineTo(-15, 66); x.closePath(); x.fill();
+          x.fillStyle = col === gold ? cream : col; x.beginPath(); x.moveTo(0, -82); x.lineTo(s * 34, -74); x.lineTo(s * 24, -66); x.lineTo(s * 34, -58); x.lineTo(0, -54); x.closePath(); x.fill();
+          x.restore();
+        }
+        x.save(); x.translate(o, o);
+        x.fillStyle = col; x.beginPath(); x.moveTo(70, 114); x.lineTo(122, 114); x.lineTo(122, 144); x.quadraticCurveTo(122, 176, 96, 190); x.quadraticCurveTo(70, 176, 70, 144); x.closePath(); x.fill();
+        if (col === gold) {
+          x.fillStyle = cream; x.beginPath(); x.moveTo(76, 120); x.lineTo(116, 120); x.lineTo(116, 144); x.quadraticCurveTo(116, 170, 96, 182); x.quadraticCurveTo(76, 170, 76, 144); x.closePath(); x.fill();
+          x.fillStyle = '#2c55b0'; x.beginPath(); x.moveTo(76, 158); x.lineTo(96, 136); x.lineTo(116, 158); x.lineTo(116, 168); x.lineTo(96, 146); x.lineTo(76, 168); x.closePath(); x.fill();
+        }
+        x.restore();
+      });
+    } else if (kind === 'crown') {
+      // the champion's crown over a scroll
+      both((col, o) => {
+        x.save(); x.translate(o, o);
+        x.fillStyle = col; x.beginPath(); x.moveTo(56, 154); x.lineTo(48, 98); x.lineTo(74, 126); x.lineTo(96, 82); x.lineTo(118, 126); x.lineTo(144, 98); x.lineTo(136, 154); x.closePath(); x.fill();
+        x.fillRect(54, 150, 84, 22);
+        for (const [px, py, r] of [[48, 96, 7], [96, 78, 8], [144, 96, 7]] as Array<[number, number, number]>) { x.beginPath(); x.arc(px, py, r, 0, Math.PI * 2); x.fill(); }
+        if (col === gold) {
+          x.fillStyle = goldD; x.fillRect(54, 150, 84, 3); x.fillRect(54, 169, 84, 3);
+          for (const [px, c2] of [[72, '#3a64c8'], [96, '#ff9a3a'], [120, '#3a64c8']] as Array<[number, string]>) { x.fillStyle = c2; x.beginPath(); x.ellipse(px, 161, 6, 5, 0, 0, Math.PI * 2); x.fill(); }
+        }
+        x.fillStyle = col === gold ? cream : col; x.beginPath(); x.moveTo(50, 186); x.quadraticCurveTo(96, 178, 142, 186); x.lineTo(150, 206); x.lineTo(138, 202); x.quadraticCurveTo(96, 196, 54, 202); x.lineTo(42, 206); x.closePath(); x.fill();
+        x.restore();
+      });
     }
     x.restore();
   };
-  (Object.keys(EMBLEM_CELLS) as EmblemKind[]).forEach((k) => draw(k, EMBLEM_CELLS[k]));
+  (Object.keys(EMBLEM_CELLS) as EmblemKind[]).forEach((k) => { if (EMBLEM_CELLS[k] < rows * 4) draw(k, EMBLEM_CELLS[k]); });
   return c;
 }
 

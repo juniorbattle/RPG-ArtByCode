@@ -15,6 +15,8 @@ const PV = await load('/src/world/PlazaVisibility.ts');
 const ST = await load('/src/narrative/v2story.ts');
 const VP = await load('/src/simulation/v2places.ts');
 const SR = await load('/src/atmosphere/ShadowAndReflection.ts');
+// the squares fly the tournament's heraldry (journal Passe VP3): their page sets it before it builds them
+(await load('/src/materials/CanvasArt.ts')).setTournamentHeraldry(true);
 
 // the squares build without a GPU: a material library of plain materials stands in for the painted one
 const lib = { ground: Object.assign(new THREE.ShaderMaterial(), { uniforms: { tGroundMask: { value: null }, uGroundRect: { value: new THREE.Vector4() } } }), slot: new Proxy({}, { get: (o, k) => (o[k] ??= new THREE.MeshBasicMaterial()) }) };

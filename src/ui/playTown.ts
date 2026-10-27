@@ -21,6 +21,8 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   let st = st0;
   const q = new URLSearchParams(townQuery(st));
   for (const k of CARRY_TOWN) if (b.params.has(k)) q.set(k, b.params.get(k)!);
+  // a version 2 game's town flies the tournament's heraldry (journal Passe VP3); today's game keeps its banners
+  if (isV2(st)) q.set('heraldry', 'tournament');
   const app = new App({ canvas: b.canvas, params: q, onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; } });
   (window as any).__app = app;
   // the interface's tone follows the page's day state (the operator's decision L2, journal Passe UI3)

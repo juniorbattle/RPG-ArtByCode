@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MaterialLibrary } from '../materials/MaterialLibrary';
+import { setTournamentHeraldry } from '../materials/CanvasArt';
 import { defaultPainters } from '../materials/PainterPool';
 import { PostFX } from '../atmosphere/PostFX';
 import { MoonShadow, PlanarReflection } from '../atmosphere/ShadowAndReflection';
@@ -219,6 +220,8 @@ export class ArenaApp {
     const pq = this.opts.params.get('painters');
     const painters = pq === 'main' ? 0 : pq !== null && /^\d+$/.test(pq) ? +pq : defaultPainters();
     this.frameCap.probe();
+    // the version 2's arena flies the tournament's heraldry (journal Passe VP3); today's arena keeps its fleurs, byte for byte
+    setTournamentHeraldry(this.rules === 'v2');
     this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress, painters);
     // by day (J4 transposed): the window and lantern glass dims, the braziers' coals keep the night's glow on their own copy of the material;
     // the town houses' shop windows dim and their roofs take the state's tint, as in the district

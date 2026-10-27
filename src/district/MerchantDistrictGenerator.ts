@@ -13,6 +13,7 @@ import { buildMarket, HERO_STALL } from '../props/MarketGenerator';
 import { buildForgeProps, type ForgeState } from './ForgeGenerator';
 import { buildDistantCity, southShore, RIVER_END_X } from './DistantCity';
 import { addBanner, buildBanners } from '../props/Banners';
+import { tournamentHeraldry } from '../materials/CanvasArt';
 import { buildBunting } from '../props/Bunting';
 import { needMask, planDraw, ALL_MASK, FRAMINGS, SETS, idMaterial, windowIdMaterial, behindUniforms, type PartMeta, type Tier, type VisResult, type BehindPass } from './Visibility';
 import type { CamId, VisSet } from '../app/CameraGraph';
@@ -300,8 +301,9 @@ export class MerchantDistrictGenerator {
       const lp = at(bt.lantern);
       batch.add('lantern', { pos: [lp[0], lp[1] - 0.3, lp[2]], yaw: 0.3 }, 0);
       lights.push({ pos: [lp[0], lp[1] - 0.12, lp[2]], color: LAMP_WARM, intensity: 2.4, radius: 7.5, kind: 'lantern', halo: 1.3, priority: 7, group: 'static' });
-      // the canal's banner: indigo with the ivory fleur, hung from the yard and facing down the quay
-      world.inPart(bannerPart, () => addBanner(world, { pos: at(bt.yard), yaw: -Math.PI / 2, w: 1.2, h: 1.95, emblem: 'fleur', shape: 'swallow', loose: 0.55, rod: false }));
+      // the canal's banner: indigo with the ivory fleur, hung from the yard and facing down the quay; in a version 2 game the tournament's
+      // two fighters (journal Passe VP3)
+      world.inPart(bannerPart, () => addBanner(world, { pos: at(bt.yard), yaw: -Math.PI / 2, w: 1.2, h: 1.95, emblem: tournamentHeraldry() ? 'duel' : 'fleur', shape: 'swallow', loose: 0.55, rod: false }));
       // mooring lines from bow and stern to the coping
       for (const [end, bx] of [[bt.stern, BOAT_POS[0] - 3.5], [bt.bow, BOAT_POS[0] + 3.3]] as Array<[V3, number]>) {
         const a: V3 = [bx, 0.75, QUAY_Z + 0.12], b = at(end);
