@@ -83,8 +83,8 @@ export const PLAZA_WALK: Readonly<typeof W> = W;
 /** where the people stand on each square (person id -> x, z): the registrar's table, the armourer's stall, the healer's corner, the champion
  *  by the fountain, the guards at the gate; the master's shed, the rings; the stalls, the tavern's door, the stage (« proposé ») */
 export const PLAZA_SPOTS: Record<PlazaKind, Record<string, [number, number]>> = {
-  forecourt: { odo: [-7.2, -9.4], hilde: [7.4, -3.0], anwen: [-7.0, 2.6], guardA: [-3.2, -15.4], guardB: [3.2, -15.4], marek: [5.6, -6.8], orla: [-5.2, -2.6], vessa: [-1.6, -12.6], ilse: [5.4, -12.8] },
-  training: { corvin: [-6.2, -14.6], orla: [5.4, -7.6], ilse: [-1.8, -6.8], vessa: [1.4, -9.8], drill: [-6.4, -3.6] },
+  forecourt: { odo: [-7.2, -9.4], hilde: [7.4, -3.0], anwen: [-7.0, 2.6], guardA: [-2.3, -15.9], guardB: [2.3, -15.9], marek: [5.6, -6.8], orla: [-5.2, -2.6], vessa: [-1.6, -12.6], ilse: [6.2, -11.6] },
+  training: { corvin: [-6.2, -14.6], orla: [8.2, -7.0], ilse: [-1.8, -6.8], vessa: [1.4, -9.8], drill: [-6.4, -3.6] },
   festival: { pip: [-8.0, -10.6], lio: [-6.2, -14.4], cassius: [1.6, -11.4], bard: [1.4, -13.2] },
 };
 /** the points the crowd walks between (journal Passe VP6: none nearer the camera than z 1, where a walker filled the frame's bottom edge) */
@@ -252,13 +252,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     fountain(S, tracked, 0, -7);
     tracked(() => fountainWater(S, 0, -7));
     blockers.push({ x: 0, z: -7, r: 2.5 }); obstacles.push({ x0: -2.3, x1: 2.3, z0: -9.3, z1: -4.7, grime: 0.35 });
-    for (const [x, z, e, t] of [[-5.4, -15.0, 'swords', BLUE_T], [5.4, -15.0, 'crown', GOLD_T]] as Array<[number, number, EmblemKind, V3]>) {
-      tracked(() => bannerMast(S, x, z, 7.6, 0, e, t));
-      blockers.push({ x, z, r: 0.5 }); obstacles.push({ x0: x - 0.4, x1: x + 0.4, z0: z - 0.4, z1: z + 0.4, grime: 0.5 });
-    }
-    tracked(() => pavilion(S, lights, day, -8.4, -15.4, 0.55, 1.9, [[0.3, 0.37, 0.7], [0.88, 0.84, 0.72]], 'swords'));
-    tracked(() => pavilion(S, lights, day, 8.6, -15.7, -0.55, 1.9, [[0.78, 0.6, 0.3], [0.88, 0.84, 0.72]], 'lances'));
-    for (const [x, z] of [[-8.4, -15.4], [8.6, -15.7]]) { blockers.push({ x, z, r: 2.1 }); obstacles.push({ x0: x - 2, x1: x + 2, z0: z - 2, z1: z + 2, grime: 0.4 }); }
+    tracked(() => pavilion(S, lights, day, -9.4, -13.8, 0.55, 1.9, [[0.3, 0.37, 0.7], [0.88, 0.84, 0.72]], 'swords'));
+    tracked(() => pavilion(S, lights, day, 9.4, -14.4, -0.55, 1.9, [[0.78, 0.6, 0.3], [0.88, 0.84, 0.72]], 'lances'));
+    for (const [x, z] of [[-9.4, -13.8], [9.4, -14.4]]) { blockers.push({ x, z, r: 2.1 }); obstacles.push({ x0: x - 2, x1: x + 2, z0: z - 2, z1: z + 2, grime: 0.4 }); }
     // the registrar's table (a trestle, his board, the roll) north of the west street, the draw of the tournament on its board beside him
     S.append(trestle(rng.fork('registrar'), 2.4), mat([-7.4, 0, -10.6], 0.25));
     batch.add('chalkboard', { pos: [-5.9, 0, -10.3], yaw: -0.4 }); batch.add('basket', { pos: [-6.4, 1.0, -10.8], yaw: 1, scale: 0.6 }); batch.add('crate', { pos: [-8.9, 0, -11.6], yaw: 0.3 });
@@ -278,8 +274,8 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       if (!day) lights.push({ pos: [x, 1.1, z], color: WARM, intensity: 1.6, radius: 5, kind: 'lantern', halo: 1.0, priority: 8 });
     }
     // the gate's braziers burn day and night (the arena's fires, as AD1)
-    brazier(-3.6, -16.6); brazier(3.6, -16.6);
-    lamp(-10.2, -12.8, false); lamp(10.4, -13.0, false);
+    brazier(-4.6, -15.3); brazier(4.6, -15.3);
+    lamp(-10.2, -11.2, false); lamp(6.6, -9.4, false);
     // the near edge: a carter's wagon by the quay's gate, crates and barrels on the other side (the frame's foreground)
     S.append(cart(rng.fork('cart')), mat([-7.6, 0, 6.9], 0.3));
     for (const [x, z, k, y] of [[8.4, 6.2, 'crate', 0.3], [9.2, 5.7, 'barrel', 0.8], [7.6, 6.8, 'barrel', 2.1], [9.9, 6.6, 'crate', 1.2], [8.9, 6.6, 'sack', 0.4]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, 0, z], yaw: y });
@@ -314,12 +310,16 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     // the yard's fires at the stand's ends, day and night (the arena's braziers)
     brazier(-3.6, -15.0); brazier(5.2, -15.0);
     blockers.push({ x: -1.8, z: -15.8, r: 1.2 }, { x: 0.8, z: -15.8, r: 1.2 }, { x: 3.4, z: -15.8, r: 1.2 });
-    for (const [cx, cz, r] of [[-5.6, -4.2, 3.1], [5.0, -3.4, 2.7]] as Array<[number, number, number]>) {
+    for (const [cx, cz, r] of [[-5.6, -4.2, 3.1]] as Array<[number, number, number]>) {
       sandRing(S, batch, cx, cz, r);
       blockers.push({ x: cx, z: cz, r: 0.6 });
       obstacles.push({ x0: cx - r, x1: cx + r, z0: cz - r, z1: cz + r, grime: 0.25 });
     }
-    for (const z of [-6.4, -8.0]) { tracked(() => archeryButt(S, 10.2, z, -Math.PI / 2)); blockers.push({ x: 10.2, z, r: 0.8 }); }
+    // the champions' platform: the yard's focal point (journal Passe VP6, third critique: « no focal prop, the rings faint lines »)
+    tracked(() => sparringDais(S, batch, lights, day, 4.4, -4.2));
+    for (const [x, z] of [[2.2, -2.0], [6.6, -2.0], [2.2, -6.4], [6.6, -6.4], [4.4, -4.2]]) blockers.push({ x, z, r: 1.5 });
+    obstacles.push({ x0: 1.5, x1: 7.3, z0: -7.1, z1: -1.0, grime: 0.6 });
+    for (const z of [-7.6, -9.0]) { tracked(() => archeryButt(S, 10.2, z, -Math.PI / 2)); blockers.push({ x: 10.2, z, r: 0.8 }); }
     for (const z of [-1.2, -5.6]) { tracked(() => weaponRack(S, -10.4, z)); blockers.push({ x: -10.4, z, r: 1.2 }); obstacles.push({ x0: -10.8, x1: -10.0, z0: z - 1.2, z1: z + 1.2, grime: 0.6 }); }
     for (const [x, z, k] of [[-1.4, -2.4, 'hay'], [-0.8, -3.2, 'hay'], [8.6, -9.4, 'bucket'], [7.9, -9.6, 'barrel'], [-8.6, -13.6, 'crate'], [8.8, 1.6, 'hay'], [9.5, 1.2, 'hay'], [-8.8, 2.2, 'barrel']] as Array<[number, number, string]>) {
       if (k === 'hay') hay(S, x, z, x + z); else batch.add(k, { pos: [x, 0, z], yaw: x + z }); blockers.push({ x, z, r: 0.6 });
@@ -337,6 +337,8 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     for (const s2 of [-1, 1]) for (let x = -5.4; x <= 6.8; x += 1.7) decal('ruts', x, -11.4 + s2 * 1.1, 1.8, 1.1, Math.PI / 2 + dr.range(-0.08, 0.08), dr.range(0.45, 0.65), 0.04);
     scatter('straw', 5, -2.5, 0.5, -4.5, -1.2, [0.7, 1.2], [0.55, 0.8], 0.03); scatter('straw', 4, 7.5, 10, 0.5, 2.5, [0.7, 1.2], [0.55, 0.8], 0.03);
     scatter('mud', 7, -9, 9, -14, 2, [1.4, 2.6], [0.25, 0.45], 0.028, [0.85, 0.8, 0.74]);
+    // the trampled earth round the dummy and the platform's steps
+    for (const [x, z, w] of [[-5.6, -4.2, 4.2], [4.4, -0.6, 3.2], [-0.6, -10.2, 3.0]] as Array<[number, number, number]>) decal('mud', x, z, w, w * 0.8, dr.range(0, 6.28), 0.6, 0.03, [0.7, 0.66, 0.6]);
   } else {
     // journal Passe VP6: the festival square: the stage to the north, the maypole and its ribbons, the feast tables under the strings, the
     // puppet booth, stalls in striped canvas, the quay's gate, a wagon of barrels by it
@@ -345,6 +347,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     if (!day) lights.push({ pos: [0, 3.3, -14.2], color: WARM, intensity: 2.6, radius: 7, kind: 'lantern', halo: 1.2, priority: 8 });
     blockers.push({ x: -1.8, z: -15.4, r: 1.9 }, { x: 1.8, z: -15.4, r: 1.9 });
     obstacles.push({ x0: -3.6, x1: 3.6, z0: -17, z1: -13.6, grime: 0.6 });
+    tracked(() => danceFloor(S, -5.6, -5.4, 3.3));
     tracked(() => maypole(S, -5.6, -5.4, 7.0, 3.0));
     blockers.push({ x: -5.6, z: -5.4, r: 0.7 });
     tracked(() => feastTable(S, batch, 4.2, -5.4, 0.12, 4.4));
@@ -352,7 +355,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     for (const [x, z, r] of [[4.2, -5.4, 2.2], [3.6, -9.6, 2.0]]) blockers.push({ x: x - 1.2, z, r: r * 0.6 }, { x, z, r: r * 0.6 }, { x: x + 1.2, z, r: r * 0.6 });
     tracked(() => puppetBooth(S, -9.3, -12.4, 0.75));
     blockers.push({ x: -9.3, z: -12.4, r: 1.3 });
-    marketStall(-8.3, -2.2, 0.4, 'candles', 3.0, true, [[0.3, 0.37, 0.7], [0.86, 0.82, 0.72]]);
+    marketStall(-9.2, -0.6, 0.45, 'candles', 3.0, true, [[0.3, 0.37, 0.7], [0.86, 0.82, 0.72]]);
     marketStall(8.3, -2.4, -0.45, 'pottery', 2.8, true, [[0.78, 0.6, 0.3], [0.86, 0.82, 0.72]]);
     marketStall(8.7, -14.2, -0.3, 'produce', 2.6, false, [[0.42, 0.46, 0.5], [0.8, 0.77, 0.7]]);
     for (const [x, z] of [[-6.4, -14.8], [6.2, -12.4]] as Array<[number, number]>) { batch.add('stool', { pos: [x, 0, z], yaw: x }); batch.add('barrel', { pos: [x + 0.6, 0, z - 0.3], yaw: z }); blockers.push({ x, z, r: 0.7 }); }
@@ -368,12 +371,14 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
         cord(S, a, b, 0.9);
         for (let t = 1; t < 8; t++) { const u = t / 8, p = sag(a, b, 0.9, u); batch.add('lantern', { pos: [p[0], p[1] - 0.32, p[2]], yaw: t, scale: 1.1 }, 0); }
         if (k % 2) lights.push({ pos: [0, 3.9, z - 0.3], color: WARM, intensity: 2.2, radius: 8.5, kind: 'lantern', halo: 1.3, priority: 7 });
+        // pools of light on the ground under the strings (journal Passe VP6, third critique: « the lanterns light nothing »)
+        lights.push({ pos: [k % 2 ? 4.6 : -3.6, 3.2, z - 0.3], color: WARM, intensity: 1.9, radius: 6.5, kind: 'lantern', halo: 0, priority: 6 });
       }
     }
     lamp(-9.6, -15.6, false); lamp(10.2, -6.4, false);
     S.append(cart(rng.fork('cart')), mat([7.8, 0, 7.0], -0.35));
     for (const [x, z, k, y] of [[-8.6, 6.2, 'crate', 0.4], [-9.4, 5.7, 'barrel', 1.0], [-7.8, 6.7, 'barrelLying', 0.2], [-10.0, 6.6, 'crate', 1.4]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, k === 'barrelLying' ? 0.3 : 0, z], yaw: y });
-    paths.push([[0, 4], [0, -13]], [[11, -10.5], [4, -11.5]], [[-9, 2], [-8.3, -2.2]], [[9, 2], [8.3, -2.4]], [[-5.6, -5.4], [-8.6, -11.6]]);
+    paths.push([[0, 4], [0, -13]], [[11, -10.5], [4, -11.5]], [[-9, 2], [-9.2, -0.6]], [[9, 2], [8.3, -2.4]], [[-5.6, -5.4], [-8.6, -11.6]]);
     scatter('straw', 5, -10, 10, -15, 2, [0.7, 1.2], [0.5, 0.75]); scatter('leaves', 4, -10, 10, -15, 2, [0.8, 1.3], [0.5, 0.7]);
     scatter('splinters', 3, 2, 6, -11, -4, [0.6, 1.0], [0.5, 0.7]); scatter('stain', 6, -10, 10, -15, 3, [1.6, 3.0], [0.25, 0.4], 0.014, [0.6, 0.62, 0.68]);
     scatter('crack', 4, -10, 10, -15, 3, [1.2, 2.2], [0.4, 0.7]);
@@ -504,7 +509,10 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
   // read as tiles at the district's scale), no attic (the facade filled every frame to its top: its cornice is now the top, the masts and their
   // pennants stand against the sky), the tournament's fleur-de-lis on its banners (the tavern's tankard was on them)
   // at night a shade darker still: the moon faces the facade, which read brighter than the district's moonlit plaster
-  const nk = day ? 1 : 0.84, R = 52, C: V3 = [0, 0, -71.2], stone: V3 = [0.7 * nk, 0.67 * nk, 0.62 * nk], stoneLt: V3 = [0.76 * nk, 0.72 * nk, 0.66 * nk], dark: V3 = [0.07, 0.07, 0.09], uv = 0.85;
+  const nk = day ? 1 : 0.84, R = 52, C: V3 = [0, 0, -71.2], stone: V3 = [0.7 * nk, 0.67 * nk, 0.62 * nk], stoneLt: V3 = [0.76 * nk, 0.72 * nk, 0.66 * nk], dark: V3 = day ? [0.17, 0.16, 0.17] : [0.07, 0.07, 0.09], uv = 0.85;
+  // journal Passe VP6, third critique (« a single flat plane with a noisy brick texture »): the stone keeps the frame (piers, arches, courses,
+  // cornice), the panels between them are smooth stucco
+  const Pl = S.get('plaster'), stucco: V3 = [0.7 * nk, 0.67 * nk, 0.62 * nk];
   const St = S.get('stone'), Dk = S.get('dark');
   // two tiers, 6.4 and 10.8 m, the cornice at 11.25 (journal Passe VP1: the third critique asked for the top in the frame; lowered to 5.3 /
   // 8.9 m, the fourth judged it worse, 5.5 / 10 against 6: its flat top and bare masts read as a box with antennae, the landmark lost its mass)
@@ -547,14 +555,15 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
       if (b.gate) arch(0, 0, 2.1, 4.0, 0, stoneLt); else arch(0, 0, 1.25, 3.4, 0, stoneLt);
       arch(0, TIER_G + 0.55, 0.95, 1.6, -0.1, stoneLt);
       // at night the arena's galleries keep a light in one upper arch out of three (journal Passe VP6: the facade a dark wall at night)
-      if (!day && Math.abs(Math.round(b.a * R / bayW)) % 3 === 1) S.get('glow').boxMM(-0.9, TIER_G + 0.55, -0.82, 0.9, TIER_G + 2.15, -0.79, { tint: [0.5, 0.28, 0.12] });
       // the wall between the arches' heads and the string course above them (the first try left both open onto the sky)
       const top = b.gate ? 6.1 : 4.65, upTop = TIER_G + 0.55 + 1.6 + 0.95;
-      St.boxMM(-hw + 0.42, top, -0.12, hw - 0.42, TIER_G + 0.05, -0.02, { uvScale: uv, tint: stone });
-      St.boxMM(-0.97, upTop, -0.12, 0.97, TIER_U + 0.02, -0.1, { uvScale: uv, tint: stone });
+      Pl.boxMM(-hw + 0.42, top, -0.12, hw - 0.42, TIER_G + 0.05, -0.02, { tint: stucco });
+      Pl.boxMM(-0.97, upTop, -0.12, 0.97, TIER_U + 0.02, -0.1, { tint: stucco });
       // the wall around the upper arch, the string courses, the cornice (the top: no attic)
       St.boxMM(-hw + 0.26, TIER_G, -0.12, hw - 0.26, TIER_G + 0.55, -0.1, { uvScale: uv, tint: stone });
-      for (const s of [-1, 1]) St.boxMM(s > 0 ? 0.95 : -hw + 0.26, TIER_G + 0.55, -0.12, s > 0 ? hw - 0.26 : -0.95, TIER_U, -0.1, { uvScale: uv, tint: stone });
+      for (const s of [-1, 1]) Pl.boxMM(s > 0 ? 0.95 : -hw + 0.26, TIER_G + 0.55, -0.12, s > 0 ? hw - 0.26 : -0.95, TIER_U, -0.1, { tint: stucco });
+      // the gate's two towers on the bays either side of it (journal Passe VP6: a landmark, not a wall)
+      if (Math.abs(Math.round(b.a * R / bayW)) === 1) gateTower(S, day, lights, b.a < 0 ? 'swords' : 'crown', stone, stoneLt, uv);
       St.boxMM(-hw - 0.45, TIER_G - 0.2, -0.55, hw + 0.45, TIER_G + 0.15, 0.42, { uvScale: uv, tint: stoneLt });
       St.boxMM(-hw - 0.3, TIER_U, -0.6, hw + 0.3, TIER_U + 0.45, 0.35, { uvScale: uv, tint: stoneLt });
       // journal Passe VP6 (« a uniform flat plane, no parapet, no skyline »): a darker plinth along the base, a crenellated parapet on the cornice
@@ -594,21 +603,47 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
   }));
   // at night a torch on a bracket on the gate's piers and two bays further (journal Passe VP6: the forecourt's night was the
   // darkest of the squares, its north frame a dark wall)
-  if (!day) for (const s of [-1, 1]) for (const k of [0, 2]) {
+  if (!day) for (const s of [-1, 1]) for (const k of [2, 4]) {
     const a = s * (gateW / 2 + bayW * k) / R, x = Math.sin(a) * (R + 0.5), z = C[2] + Math.cos(a) * (R + 0.5);
     S.get('metal').box(x, 3.1, z, 0.1, 0.5, 0.1, { tint: [0.3, 0.28, 0.27] });
     S.get('glow').box(x, 3.45, z, 0.16, 0.22, 0.16, { tint: [1, 0.6, 0.25] });
     lights.push({ pos: [x, 3.6, z + 0.4], color: FIRE, intensity: 2.0, radius: 6.5, kind: 'fire', halo: 1.4, priority: 8 });
   }
+  if (!day) for (const s of [-1, 1]) { const a = s * (gateW / 2 + bayW / 2) / R, x = Math.sin(a) * (R + 3.4), z = C[2] + Math.cos(a) * (R + 3.4); lights.push({ pos: [x, 3.6, z + 0.3], color: FIRE, intensity: 2.4, radius: 7, kind: 'fire', halo: 1.2, priority: 9 }); }
   // inside a few ground arches: the tunnels' torches (warm accents at the focal point, lit day and night like the arena's fires)
   for (const s of [-1, 1]) {
-    const a = s * (gateW / 2 + bayW / 2) / R, x = Math.sin(a) * R, z = C[2] + Math.cos(a) * R - 0.6;
+    const a = s * (gateW / 2 + bayW * 1.5) / R, x = Math.sin(a) * R, z = C[2] + Math.cos(a) * R - 0.6;
     S.get('glow').box(x, 2.6, z, 0.18, 0.4, 0.1, { tint: [1, 0.55, 0.2] });
     lights.push({ pos: [x, 2.6, z + 0.5], color: FIRE, intensity: 1.8, radius: 5.5, kind: 'fire', halo: 1.1, priority: 8, day: true });
   }
   void emitters;
   blockers.push({ x: 0, z: -18.6, r: 0.1 });
+  for (const s of [-1, 1]) { const a = s * (gateW / 2 + bayW / 2) / R, x = Math.sin(a) * R; blockers.push({ x, z: -17.6, r: 2.4 }); obstacles.push({ x0: x - 2.5, x1: x + 2.5, z0: -20.5, z1: -16.0, grime: 0.8 }); }
   obstacles.push({ x0: -14, x1: 14, z0: -21.5, z1: -19.0, grime: 0.9 });
+}
+
+/** one of the arena gate's towers, in the frame of its bay (local z out of the facade): a square tower standing 3.2 m proud of the arcade and
+ *  5 m above its cornice, a darker plinth, the tiers' courses carried round it, arrow slits, a corbelled parapet with merlons, the tournament's
+ *  banner on its face and a pennant on a pole; a torch on its face and a lit slit at night */
+function gateTower(S: SlotSet, day: boolean, lights: PlazaBuild['lights'], emblem: EmblemKind, stone: V3, stoneLt: V3, uv: number): void {
+  const St = S.get('stone'), w = 2.4, z0 = -0.6, z1 = 3.2, H = 15.4;
+  St.boxMM(-w, 0, z0, w, H, z1, { uvScale: uv, tint: stone, aoY: [0.6, 1] });
+  St.boxMM(-w - 0.12, 0, z0, w + 0.12, 1.2, z1 + 0.12, { uvScale: uv, tint: [stone[0] * 0.78, stone[1] * 0.78, stone[2] * 0.8] });
+  for (const y of [6.4, 10.8]) St.boxMM(-w - 0.1, y, z0, w + 0.1, y + 0.32, z1 + 0.1, { tint: stoneLt });
+  St.boxMM(-w - 0.25, H - 0.4, z0 - 0.25, w + 0.25, H + 0.3, z1 + 0.25, { tint: stoneLt });
+  for (let i = 0; i < 6; i++) St.box(-w + 0.2 + (i * (2 * w - 0.4)) / 5, H - 0.6, z1 + 0.12, 0.22, 0.3, 0.26, { tint: stoneLt });
+  St.boxMM(-w - 0.25, H + 0.3, z1 - 0.2, w + 0.25, H + 0.7, z1 + 0.25, { tint: stone });
+  for (let i = 0; i < 4; i++) { const x = -w + 0.45 + (i * (2 * w - 0.9)) / 3; St.boxMM(x - 0.42, H + 0.7, z1 - 0.2, x + 0.42, H + 1.45, z1 + 0.25, { tint: stoneLt }); }
+  for (const xs of [-w - 0.05, w + 0.05]) for (let i = 0; i < 3; i++) { const zz = z0 + 0.5 + i * 1.3; St.boxMM(Math.min(xs, xs * 1.04) - 0.2, H + 0.7, zz - 0.35, Math.max(xs, xs * 1.04) + 0.2, H + 1.45, zz + 0.35, { tint: stoneLt }); }
+  const D = S.get('dark');
+  for (const [x, y] of [[-1.0, 4.2], [1.0, 4.2], [0, 8.4], [0, 12.6]] as Array<[number, number]>) D.boxMM(x - 0.12, y, z1 + 0.005, x + 0.12, y + 1.1, z1 + 0.02, { tint: [0.06, 0.06, 0.08] });
+  if (!day) S.get('glow').boxMM(-0.11, 12.62, z1 + 0.022, 0.11, 13.68, z1 + 0.03, { tint: [0.9, 0.5, 0.2] });
+  addBanner(S, { pos: [0, 10.4, z1 + 0.14], yaw: 0, w: 1.5, h: 3.6, emblem, shape: 'swallow', loose: 0.3, rod: true, tint: emblem === 'crown' ? [0.95, 0.88, 0.62] : [0.5, 0.6, 0.95] });
+  S.get('timber').boxMM(-0.06, H + 0.3, 1.2, 0.06, H + 4.0, 1.32, { tint: [0.5, 0.42, 0.34], grain: 'y' });
+  addBanner(S, { pos: [0.12, H + 3.7, 1.26], yaw: Math.PI / 2, w: 0.55, h: 1.6, emblem, shape: 'pennant', loose: 0.8, rod: false, tint: [0.95, 0.88, 0.62] });
+  S.get('metal').box(0, 3.1, z1 + 0.15, 0.1, 0.5, 0.1, { tint: [0.3, 0.28, 0.27] });
+  if (!day) S.get('glow').box(0, 3.45, z1 + 0.15, 0.16, 0.22, 0.16, { tint: [1, 0.6, 0.25] });
+  void lights;
 }
 
 /** the fountain at the forecourt's heart: an octagonal basin with its rim, dark water, a pedestal with a bowl and a spout (the first build's
@@ -727,7 +762,17 @@ function stage(S: SlotSet, batch: InstanceBatch, x: number, z: number): void {
     for (const a of [-3.2, 3.2]) T.boxMM(a - 0.07, 0.95, 0.32, a + 0.07, 3.8, 0.46, { tint: [0.5, 0.4, 0.32], grain: 'y' });
     T.boxMM(-3.45, 0.74, 1.6, 3.45, 0.98, 1.7, { tint: [0.4, 0.31, 0.24], grain: 'x' });
     for (let i = 0; i < 10; i++) { const x0 = -3.12 + (6.24 * i) / 10, x1 = x0 + 6.24 / 10; C.quad([x0, 0.95, -1.36], [x1, 0.95, -1.36], [x1, 3.7, -1.36], [x0, 3.7, -1.36], { tint: i % 2 ? [0.3, 0.36, 0.62] : [0.62, 0.58, 0.5], swayArr: [0, 0, 0.15, 0.15] }); }
-    for (let i = 0; i < 8; i++) { const x0 = -3.3 + (6.6 * i) / 8, x1 = x0 + 6.6 / 8; C.quad([x0, 4.2, -1.5], [x1, 4.2, -1.5], [x1, 3.75, 0.4], [x0, 3.75, 0.4], { tint: i % 2 ? [0.34, 0.4, 0.68] : [0.3, 0.35, 0.62], flip: true, swayArr: [0, 0, 0.5, 0.5] }); }
+    // the canopy: a striped tent roof over the boards, its ridge along the stage, a scalloped valance on its front eave, guy ropes to pegs
+    // (journal Passe VP6, third critique: « a flat striped box with no tent volume »)
+    for (let i = 0; i < 10; i++) {
+      const x0 = -3.5 + (7.0 * i) / 10, x1 = x0 + 7.0 / 10, t: V3 = i % 2 ? [0.3, 0.37, 0.68] : [0.86, 0.82, 0.7];
+      C.quad([x0, 5.3, -0.55], [x1, 5.3, -0.55], [x1, 4.0, 0.75], [x0, 4.0, 0.75], { tint: t, flip: true, swayArr: [0, 0, 0.35, 0.35] });
+      C.quad([x0, 4.0, -1.85], [x1, 4.0, -1.85], [x1, 5.3, -0.55], [x0, 5.3, -0.55], { tint: t, flip: true, swayArr: [0.35, 0.35, 0, 0] });
+      C.tri([x0, 4.0, 0.76], [x1, 4.0, 0.76], [(x0 + x1) / 2, 3.66, 0.78], { tint: i % 2 ? [0.86, 0.82, 0.7] : [0.3, 0.37, 0.68], swayArr: [0.3, 0.3, 0.6] });
+    }
+    for (const a of [-3.5, 3.5]) C.tri([a, 4.0, 0.75], [a, 4.0, -1.85], [a, 5.3, -0.55], { tint: [0.3, 0.37, 0.68] });
+    T.boxMM(-3.6, 5.28, -0.6, 3.6, 5.38, -0.5, { tint: [0.5, 0.4, 0.32], grain: 'x' });
+    for (const a of [-3.5, 3.5]) S.get('cloth').sweep([[a, 4.0, 0.75], [a * 1.25, 0, 2.6]], 0.015, 4, { tint: [0.4, 0.35, 0.3] });
     addBanner(S, { pos: [0, 3.5, -1.3], yaw: 0, w: 1.4, h: 2.2, emblem: 'horn', shape: 'swallow', loose: 0.4, rod: true, tint: [0.95, 0.88, 0.62] });
     // journal Passe VP6: pennants on the canopy's front posts, the players' things on the boards (a chest, a drum, a stool), a lantern on a post at
     // each front corner
@@ -852,13 +897,6 @@ function fountainWater(S: SlotSet, x: number, z: number): void {
     M.cylinder(1.12, 1.95, 1.98, 14, { tint: water, capTop: true });
     M.cylinder(0.6, 3.1, 3.13, 12, { tint: water, capTop: true });
     S.get('plaster').cylinder(0.05, 4.1, 4.55, 6, { tint: [1.15, 1.2, 1.3], r1: 0.02 });
-    // the falling water: eight sheets from the lower bowl's lip, six from the upper's
-    // (in the plaster's matte white: in the metal's sheen they read as a cage of steel rods)
-    for (const [n, r0, y0, y1] of [[6, 1.22, 1.98, 0.47], [4, 0.68, 3.12, 2.0]] as Array<[number, number, number, number]>) for (let k = 0; k < n; k++) {
-      const a = (k / n) * Math.PI * 2 + Math.PI / n, c = Math.cos(a), s = Math.sin(a);
-      const pts: V3[] = Array.from({ length: 7 }, (_, i) => { const t = i / 6, r = r0 + 0.3 * t; return [c * r, y0 - (y0 - y1) * t * t, s * r]; });
-      S.get('plaster').sweep(pts, (t) => 0.035 + 0.03 * t, 5, { tint: [1.15, 1.2, 1.3] });
-    }
   });
 }
 
@@ -979,25 +1017,24 @@ function maypole(S: SlotSet, x: number, z: number, h: number, rr: number): void 
     for (let y = 0.8; y < h - 1.2; y += 0.55) S.get('cloth').cylinder(0.125 - 0.04 * (y / h), y, y + 0.2, 8, { tint: [0.22, 0.32, 0.82] });
     // the crown: a hoop of greenery under the top
     const hoop: V3[] = Array.from({ length: 17 }, (_, i) => { const a = (i / 16) * Math.PI * 2; return [Math.cos(a) * 0.9, h - 0.9, Math.sin(a) * 0.9]; });
-    S.get('leaf').sweep(hoop, 0.16, 6, { tint: [0.45, 0.6, 0.38] });
+    // a crown of gold and ivory cloth (the district has no green: journal Passe VP6, second critique)
+    S.get('cloth').sweep(hoop, 0.07, 6, { tint: [0.72, 0.52, 0.26] });
     for (let k = 0; k < 4; k++) { const a = (k / 4) * Math.PI * 2; T.boxMM(Math.min(0, Math.cos(a) * 0.9), h - 0.92, Math.min(0, Math.sin(a) * 0.9) - 0.02, Math.max(0, Math.cos(a) * 0.9), h - 0.88, Math.max(0, Math.sin(a) * 0.9) + 0.02, { tint: [0.6, 0.5, 0.4] }); }
     S.get('metal').box(0, h + 0.1, 0, 0.18, 0.2, 0.18, { tint: [1.2, 1.0, 0.6] });
     addBanner(S, { pos: [0.06, h + 0.05, 0], yaw: Math.PI / 2, w: 0.5, h: 1.4, emblem: 'laurel', shape: 'pennant', loose: 0.9, rod: false, tint: [0.95, 0.9, 0.75] });
     // the ribbons from under the crown to pegs in a ring, each a strip with its sag (journal Passe VP6: hanging loose they read as paper strips
     // taped to the pole; the first radial ones, hairlines without sag, as wires)
-    const cols: V3[] = [[0.22, 0.32, 0.82], [0.94, 0.9, 0.78], [0.92, 0.62, 0.22]];
+    const cols: V3[] = [[0.16, 0.26, 0.86], [0.94, 0.9, 0.78], [0.16, 0.26, 0.86], [0.86, 0.6, 0.24]];
     for (let k = 0; k < 12; k++) {
       const a = (k / 12) * Math.PI * 2 + 0.13, top: V3 = [Math.cos(a) * 0.95, h - 0.95, Math.sin(a) * 0.95], foot: V3 = [Math.cos(a) * rr, 0.3, Math.sin(a) * rr];
       const side: V3 = [-Math.sin(a) * 0.09, 0, Math.cos(a) * 0.09];
       for (let i = 0; i < 10; i++) {
         const t0 = i / 10, t1 = (i + 1) / 10, P = (t: number): V3 => [top[0] + (foot[0] - top[0]) * t, top[1] + (foot[1] - top[1]) * t - 0.9 * Math.sin(t * Math.PI), top[2] + (foot[2] - top[2]) * t];
         const a0 = P(t0), a1 = P(t1);
-        C.quad([a0[0] - side[0], a0[1], a0[2] - side[2]], [a0[0] + side[0], a0[1], a0[2] + side[2]], [a1[0] + side[0], a1[1], a1[2] + side[2]], [a1[0] - side[0], a1[1], a1[2] - side[2]], { tint: cols[k % 3], swayArr: [0.35 * Math.sin(t0 * Math.PI), 0.35 * Math.sin(t0 * Math.PI), 0.35 * Math.sin(t1 * Math.PI), 0.35 * Math.sin(t1 * Math.PI)] });
+        C.quad([a0[0] - side[0], a0[1], a0[2] - side[2]], [a0[0] + side[0], a0[1], a0[2] + side[2]], [a1[0] + side[0], a1[1], a1[2] + side[2]], [a1[0] - side[0], a1[1], a1[2] - side[2]], { tint: cols[k % 4], swayArr: [0.35 * Math.sin(t0 * Math.PI), 0.35 * Math.sin(t0 * Math.PI), 0.35 * Math.sin(t1 * Math.PI), 0.35 * Math.sin(t1 * Math.PI)] });
       }
       T.boxMM(foot[0] - 0.05, 0, foot[2] - 0.05, foot[0] + 0.05, 0.36, foot[2] + 0.05, { tint: [0.5, 0.41, 0.32] });
     }
-    // a ring of flowers round its foot
-    for (let k = 0; k < 10; k++) { const a = (k / 10) * Math.PI * 2; S.get('leaf').sweep([[Math.cos(a) * 0.62, 0.3, Math.sin(a) * 0.62], [Math.cos(a + 0.6) * 0.62, 0.34, Math.sin(a + 0.6) * 0.62]], 0.12, 5, { tint: k % 2 ? [0.55, 0.62, 0.4] : [0.86, 0.62, 0.5] }); }
   });
 }
 
@@ -1036,6 +1073,40 @@ function puppetBooth(S: SlotSet, x: number, z: number, yaw: number): void {
     S.get('planks').boxMM(-w / 2 - 0.1, h, -0.05, w / 2 + 0.1, h + 0.45, 0.04, { tint: [0.84, 0.76, 0.5], grain: 'x' });
     for (let i = 0; i < 8; i++) { const x0 = -w / 2 + (w * i) / 8, x1 = x0 + w / 8; C.tri([x0, 2.35, 0.02], [x1, 2.35, 0.02], [(x0 + x1) / 2, 2.12, 0.03], { tint: [0.86, 0.68, 0.3], swayArr: [0.1, 0.1, 0.4] }); }
   });
+}
+
+/** the champions' platform of the training ground: a raised timber deck on posts, steps on the square's side, corner posts with ropes on three
+ *  sides and the tournament's pennants, a rack of practice blades and a brazier beside it (lit day and night, as the arena's) */
+function sparringDais(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights'], day: boolean, x: number, z: number): void {
+  const hw = 2.4, y = 0.62;
+  S.at([x, 0, z], 0, () => {
+    const P = S.get('planks'), T = S.get('timber');
+    P.boxMM(-hw, y - 0.1, -hw, hw, y, hw, { grain: 'x', tint: [0.64, 0.52, 0.4] });
+    T.boxMM(-hw - 0.08, 0, -hw - 0.08, hw + 0.08, y - 0.1, hw + 0.08, { tint: [0.42, 0.34, 0.27] });
+    for (let k = 0; k < 3; k++) P.boxMM(-1.0, 0.2 * k, hw + 0.08 + 0.3 * (2 - k), 1.0, 0.2 * (k + 1), hw + 0.38 + 0.3 * (2 - k), { grain: 'x', tint: [0.6, 0.48, 0.38] });
+    const posts: Array<[number, number]> = [[-hw, -hw], [hw, -hw], [hw, hw], [-hw, hw]];
+    for (const [a, b] of posts) T.boxMM(a - 0.09, 0, b - 0.09, a + 0.09, y + 1.9, b + 0.09, { tint: [0.46, 0.37, 0.3], grain: 'y' });
+    const rope = (a: [number, number], b: [number, number], h: number) => S.get('cloth').sweep(Array.from({ length: 7 }, (_, i) => { const t = i / 6; return [a[0] + (b[0] - a[0]) * t, y + h - 0.12 * Math.sin(t * Math.PI), a[1] + (b[1] - a[1]) * t] as V3; }), 0.025, 4, { tint: [0.78, 0.7, 0.5] });
+    for (const h of [0.6, 1.15]) { rope(posts[0], posts[1], h); rope(posts[1], posts[2], h); rope(posts[3], posts[0], h); rope(posts[2], [hw - 1.2, hw], h); rope(posts[3], [-hw + 1.2, hw], h); }
+    for (const [i, [a, b]] of posts.entries()) addBanner(S, { pos: [a + 0.08, y + 1.85, b], yaw: Math.PI / 2, w: 0.42, h: 1.0, emblem: i % 2 ? 'laurel' : 'swords', shape: 'pennant', loose: 0.8, rod: false, tint: i % 2 ? [0.95, 0.88, 0.62] : [0.5, 0.6, 0.95] });
+  });
+  weaponRack(S, x + 3.6, z + 0.6);
+  S.at([x - 3.2, 0, z - 2.6], 0, () => S.get('metal').cylinder(0.32, 0.9, 1.15, 8, { tint: [0.35, 0.33, 0.32], capBottom: true, r1: 0.42 }));
+  S.get('metal').box(x - 3.2, 0.45, z - 2.6, 0.12, 0.9, 0.12);
+  S.get('glow').box(x - 3.2, 1.12, z - 2.6, 0.5, 0.08, 0.5, { tint: [1, 0.55, 0.2] });
+  lights.push({ pos: [x - 3.2, 1.6, z - 2.6], color: FIRE, intensity: 3.0, radius: 8, kind: 'fire', halo: 1.4, priority: 9, day: true });
+  void batch; void day;
+}
+
+/** a ring of boards round the maypole: the dance floor (its planks laid radially, a timber edge) */
+function danceFloor(S: SlotSet, x: number, z: number, r: number): void {
+  const P = S.get('planks'), n = 24;
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * Math.PI * 2 + 0.01, a1 = ((i + 1) / n) * Math.PI * 2 - 0.01, k = i % 3 ? 1 : 0.9;
+    const Q = (a: number, rr: number, y: number): V3 => [x + Math.cos(a) * rr, y, z + Math.sin(a) * rr];
+    quadFacing(P, [Q(a0, 0.5, 0.06), Q(a1, 0.5, 0.06), Q(a1, r, 0.06), Q(a0, r, 0.06)], [0, 1, 0], { tint: [0.62 * k, 0.5 * k, 0.4 * k], uvScale: 0.7 });
+    quadFacing(S.get('timber'), [Q(a0 - 0.01, r, 0), Q(a1 + 0.01, r, 0), Q(a1 + 0.01, r, 0.07), Q(a0 - 0.01, r, 0.07)], [Math.cos((a0 + a1) / 2), 0, Math.sin((a0 + a1) / 2)], { tint: [0.42, 0.34, 0.27] });
+  }
 }
 
 /** a cord with a parabolic sag (the lantern strings at night) and the point at u along it */

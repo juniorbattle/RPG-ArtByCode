@@ -78,7 +78,7 @@ void main(){
   // the training ground's beaten earth (journal Passe VP6): no setts, a tonal breakup at three scales, a faint rake, the mask's grime and wear
   {
     float s1 = vn2(gp * 0.35), s2 = vn2(gp * 1.9), s3 = vn2(gp * 7.3);
-    vec3 sand = vec3(0.085, 0.07, 0.052) * (0.62 + 0.5 * s1 + 0.24 * s2 + 0.12 * s3);
+    vec3 sand = vec3(0.074, 0.061, 0.045) * (0.6 + 0.52 * s1 + 0.26 * s2 + 0.12 * s3);
     sand *= 0.95 + 0.05 * sin(gp.x * 6.5 + s2 * 2.5);
     A = vec4(sand, 0.55 + 0.25 * s2);
     nxy = (vec2(vn2(gp * 4.7 + 3.1), vn2(gp * 4.7 + 7.7)) - 0.5) * 0.22;

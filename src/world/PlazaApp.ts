@@ -167,7 +167,7 @@ export class PlazaApp {
     this.lib = await MaterialLibrary.build(this.renderer, this.opts.onProgress, painters);
     // the squares' setts smaller and quieter than the quay's (journal Passe VP6, second critique: « about twice R's size against the characters,
     // a black-and-white mosaic noisier than the figures »); this page's own material, the district's unchanged
-    this.lib.ground.defines = { ...this.lib.ground.defines, COBBLE_SCALE: '1.6', COBBLE_CONTRAST: '0.7' }; this.lib.ground.needsUpdate = true;
+    this.lib.ground.defines = { ...this.lib.ground.defines, COBBLE_SCALE: '2.0', COBBLE_CONTRAST: '0.55' }; this.lib.ground.needsUpdate = true;
     if (this.look) { this.lib.slot.glow.uniforms.uEmissive.value = this.look.glowEmissive; this.lib.slot.shop.uniforms.uEmissive.value = this.look.shopEmissive; this.lib.slot.roof.uniforms.uBase.value.copy(this.look.roofTint); }
     this.frameCap.endProbe();
     this.opts.onProgress(this.opts.kind, 0.95);
@@ -344,7 +344,7 @@ export class PlazaApp {
     // a walker of the crowd whose feet leave the frame's bottom edge is not drawn (journal Passe VP6: « heads cut at the bottom edge »; the
     // follow camera passes behind the crowd on an open square)
     this.camera.updateMatrixWorld();
-    for (const a of this.people) if (a.role === 'crowd') { this.ndc.copy(a.pos).project(this.camera); a.hidden = this.ndc.y < -0.97; }
+    for (const a of this.people) if (a.role === 'crowd') { this.ndc.copy(a.pos).project(this.camera); a.hidden = this.ndc.y < -0.97 || Math.abs(this.ndc.x) > 0.95; }
     const v = this.player.pos.clone().applyMatrix4(this.camera.matrixWorldInverse);
     this.post.params.dofFocus = THREE.MathUtils.clamp(-v.z, 6, 40);
     this.lights.update(this.time, dt, this.camera);

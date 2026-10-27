@@ -473,6 +473,31 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
 - La place festive : les rubans du mât de mai de nouveau en étoile jusqu'à des piquets, mais larges et avec leur fléchissement ; de jour une
   seule corde de fanions (au-dessus de la scène) pour ne pas empiler les lignes.
 
+### La troisième critique à l'aveugle (itération 4), étalonnée — [?] « pas encore » partout
+- Agent neuf ; sept planches (itérations 3 et 4 de chaque place, le district caché). Le district caché 10 / 8, la référence 8. Les places,
+  itération 4 : **parvis 7 / 6,5**, **entraînement 7 / 6**, **place festive 7,5 / 6,5** (chaque fois devant l'itération 3, « les jardinières
+  vertes »). Reproches : le mur de l'arène « un seul plan plat à la brique bruyante », les filets de la fontaine « des pattes d'araignée », un
+  garde qui semble debout dans la vasque, la nuit un quart d'image noir et « un bloc rouge sous deux bannières » (les arcades hautes éclairées) ;
+  à l'entraînement « pas de point focal », le sol encore plat ; à la place festive la scène « une boîte rayée sans volume de tente », les
+  lanternes « qui n'éclairent rien », le vert de la couronne du mât de mai.
+
+### Itération 5 — des points focaux monumentaux
+- Le parvis : **deux tours de porte** sur les travées qui encadrent la porte (3,2 m en avant de l'arcade, 15,4 m et un parapet crénelé sur
+  mâchicoulis, les cordons des étages, des archères, la bannière du tournoi sur leur face, une flamme sur un mât, une torche la nuit) ; entre
+  les piles et les arcs de pierre, des panneaux lisses de stuc (le mur n'est plus une seule texture) ; le fond des arcs moins noir de jour ;
+  plus d'arcades hautes « éclairées » ; les mâts retirés, les braseros devant les tours, les gardes de part et d'autre de la porte, les pavillons
+  un peu plus au sud ; la fontaine sans ses filets (le jet seul) ; un réverbère à droite.
+- L'entraînement : **l'estrade des champions** à la place du second cercle (un plancher surélevé, des marches côté place, des poteaux d'angle,
+  des cordes sur trois côtés, les flammes du tournoi, un râtelier et un brasero) ; la terre battue un peu plus sombre ; la terre piétinée autour
+  du mannequin et des marches ; les buttes de tir déplacées.
+- La place festive : la scène sous **un toit de tente rayé à faîtage**, sa frange festonnée et ses haubans ; une **piste de danse** de planches
+  rayonnantes autour du mât de mai ; la couronne du mât en tissu or et ivoire (plus de vert), des rubans plus bleus ; de la lumière au sol sous les
+  cordes de lanternes la nuit ; l'étal des chandelles écarté de la caméra.
+- Commun : les pavés deux fois plus petits et plus calmes encore (`COBBLE_SCALE` 2, `COBBLE_CONTRAST` 0,55) ; les passants coupés par les
+  bords latéraux de l'image ne sont pas dessinés non plus.
+- Le jeu par défaut : le quartier en B nuit, D midi et A fin de journée sous la pluie, la branche contre `main` figé : **0 pixel** (le shader
+  du sol compile les mêmes instructions sans les variantes des places).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
