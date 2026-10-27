@@ -132,8 +132,9 @@ export const CUTSCENES: Record<string, Cutscene> = {
     id: 'orla', place: 'training', cast: ['orla'],
     when: (s) => s.day >= RECRUIT_DAY && s.facts.includes('orla-recruitable') && !s.facts.includes('orla-recruited') && s.slot !== 'evening',
     steps: [
-      { cam: [4.5, -7.6], dist: 12, secs: 2 },
-      { walk: 'orla', to: [1.0, -2.0] },
+      // between the sword ring and the tilt's lanes (journal Passe VP6: the yard's new layout put a ring's fence on her old way)
+      { cam: [3.6, -7.4], dist: 12, secs: 2 },
+      { walk: 'orla', to: [2.0, -7.2] },
       { say: 'orla', line: () => tx('v2.scene.orla.1') },
       { say: 'player', line: () => tx('v2.scene.orla.2') },
       { say: 'orla', line: () => tx('v2.scene.orla.3') },

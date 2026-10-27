@@ -17,3 +17,20 @@ export function plazaPeople(s: GameState): string[] {
   if (s.place === 'forecourt') out.push('guardA', 'guardB');
   return out;
 }
+
+/** a side of a place where a way out opens */
+export type ExitSide = 'west' | 'east' | 'south';
+/** The version 2's walk between places (journal Passe VP5, the operator's request: « je veux que les villes soient connecté [...] via des
+ *  entrés/sorties comme dans un final fantasy 9 »): each place's ways out, where they lead and the side they open on. West to east the
+ *  Festival Square, the Arena Forecourt and the Training Ground; the Merchant Quay below the first two (its west end under the festival, its
+ *  east end, past the guards' barrier, under the forecourt). Every way is walked both ways (« proposé »). */
+export const V2_EXITS: Readonly<Record<'district' | 'forecourt' | 'training' | 'lanterns', ReadonlyArray<{ to: PlaceId; side: ExitSide }>>> = {
+  district: [{ to: 'lanterns', side: 'west' }, { to: 'forecourt', side: 'east' }],
+  forecourt: [{ to: 'lanterns', side: 'west' }, { to: 'training', side: 'east' }, { to: 'district', side: 'south' }],
+  training: [{ to: 'forecourt', side: 'west' }],
+  lanterns: [{ to: 'forecourt', side: 'east' }, { to: 'district', side: 'south' }],
+};
+/** the side of `place` one enters by, coming from `from` (null: no way between them) */
+export function arrivalSide(place: PlaceId, from: string | null): ExitSide | null {
+  return (V2_EXITS as Record<string, ReadonlyArray<{ to: PlaceId; side: ExitSide }>>)[place]?.find((e) => e.to === from)?.side ?? null;
+}

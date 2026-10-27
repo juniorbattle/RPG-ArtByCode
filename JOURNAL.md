@@ -378,6 +378,75 @@ faudrait donc augmenter à la porte des dégâts des ennemies pour qu'ils soient
 - Une mesure de « difficulté » se lit par paliers de compétence, pas sur un seul joueur : le même réglage donne 0 % de couronnes au joueur
   moyen et 67 % à l'expert. C'est la marche entre les deux qu'on règle.
 
+## Passe VP5 — La ville reliée à pied : des entrées et des sorties comme dans Final Fantasy IX (2026-10-27)
+
+### Demande
+La demande de la Passe VP3 : « je veux que les villes soient connecté dans qu'on puisse se déplacer d'un endroit à un autre via des
+entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 changeait de lieu par la carte (M), sans marcher.
+
+### Fait — derrière `flags.v2` (« proposé » : le plan, les côtés, les largeurs)
+- Le plan (`V2_EXITS`, `src/simulation/v2places.ts`, pur) : d'ouest en est la place festive, le parvis et le terrain d'entraînement ; le quai
+  en dessous des deux premiers (son bout ouest sous la place festive, son bout est, passé la barrière des gardes, sous le parvis). Chaque voie se
+  prend dans les deux sens : quai ouest ↔ place festive (porte du quai), quai est ↔ parvis (porte du quai), parvis ouest ↔ place festive est,
+  parvis est ↔ entraînement ouest. `arrivalSide` donne le côté par lequel on arrive.
+- Les places (`src/world/Plazas.ts`) : la rangée de maisons s'ouvre sur une ruelle là où la place a une sortie (`OPEN_AFTER` : après quelle
+  maison ; 4,4 m), sous une porte de pierre en arc (deux piles, l'arc, le mur et son chaperon, l'écu du lieu où elle mène : le casque pour
+  l'entraînement, la trompette pour la place festive, le duel pour le parvis ; une lanterne sur chaque pile allumée la nuit, une autre au bout de
+  la ruelle) ; les ruelles pavées plus sombre jusqu'au second rang. La sortie vers le quai : une porte de deux piliers bas au bord sud.
+  `PlazaBuild` porte ses voies (`exits` : la ruelle praticable, le rectangle au-delà duquel on part, le point d'arrivée et le regard, l'ancre
+  du panneau) et ses ruelles (`lanes`) ; `walkTo` marche dans la place et ses ruelles. [KO puis OK] la première version prenait le point le
+  plus proche de tous les rectangles : un long pas depuis la bordure « sautait » dans la porte du quai (trouvé par le test) ; désormais un pas
+  n'aboutit que dans un rectangle qui touche celui où l'on se tient, sinon il glisse le long des bords de celui-ci.
+- Le quai d'une partie v2 (`playTown`) : ses deux bouts (`WALK.x0`, `WALK.x1`) avec une touche tenue ; l'arrivée par `player=x,z`.
+- L'écran (`src/ui/exits.ts`) : au-dessus de chaque sortie une étiquette « To the … » dans le cadre de tag du système de design, qui apparaît
+  quand le héros approche (9 m) ; franchir la sortie assombrit l'écran (0,35 s), enregistre le déplacement (`move`, sans coût de temps comme la
+  carte) et ouvre la page suivante avec `arrive=<lieu quitté>` : on y arrive à l'entrée qui mène d'où l'on vient, tourné vers la place. La carte
+  (M) reste, comme raccourci.
+- Une cinématique déplacée : Orla rejoint le joueur entre le cercle d'épée et les lices (son ancien chemin traversait une clôture du nouveau
+  terrain, Passe VP6).
+- Tests : `tests/v2-exits.test.mjs` (3 : le plan pris dans les deux sens et tout lieu atteint depuis le quai ; chaque place, de jour et de nuit :
+  ses sorties sont celles de son lieu, ses rangées ouvertes du bon côté, l'arrivée dans la marche et loin de tout obstacle, la ruelle marchée
+  jusqu'à la sortie avec la marche de la page, la bordure qui tient ailleurs ; le quai : les arrivées dans sa marche, la preuve navigateur sur les
+  mêmes voies). Outil : `tools/exits-proof.mjs` (chaque voie de chaque lieu en navigateur : le héros dans la ruelle, la touche tenue, l'écran
+  noir, le déplacement enregistré, `arrive=` dans l'adresse ; puis la page suivante : le héros à l'entrée qui mène d'où il vient, la voie du
+  retour parmi ses étiquettes ; une capture par arrivée).
+
+## Passe VP6 — Le décor des trois places vers 8/10 (2026-10-27, en cours)
+
+### Ce qui change (itérations 1 à 3, `src/world/Plazas.ts`, `src/world/PlazaApp.ts`)
+- Le cadrage : de biais et plus bas (`BASE_YAW` parvis 18°, entraînement 22°, place festive −20° ; tangage 7 / 6,5°, 21 / 18 m, champ 35°)
+  au lieu de presque de face (−8, 9, −5° ; 8,5 / 7,5°, 23 / 20 m, 32°) : une rangée fuit en diagonale, la sortie du côté regardé se voit de
+  face. `plazacam=` (DEV) règle le cadrage d'une place pendant la mise au point.
+- Le parvis : une voie processionnelle dallée de la porte du quai à la porte de l'arène, un parvis rayonnant autour de la fontaine et son eau
+  (surface, jet, quatre filets), deux mâts à bannières (épées croisées, couronne) de part et d'autre de la porte, deux pavillons rayés des
+  concurrents dans les coins nord (éclairés de l'intérieur la nuit), le tableau du tournoi (l'arbre des combats peint) près du greffier,
+  l'armurier et son râtelier au sud de la rue de l'est, la guérisseuse près du quai, la charrette du charretier et des caisses au premier plan ;
+  le Colisée avec une plinthe plus sombre et un parapet crénelé sur la corniche ; la nuit, des torches sur les piles de la porte et deux travées
+  plus loin, quatre lanternes autour de la fontaine.
+- Le terrain d'entraînement : une cour de sable battu dans une bordure pavée (un pavé avec des disques de sable se lisait comme une place),
+  les lices (la barrière peinte aux couleurs du tournoi, ses deux couloirs de sable marqués d'ornières), la quintaine, une tribune rayée devant la
+  caserne, deux cercles d'épée, deux buttes de tir, les râteliers près de la rue du parvis ; des mannequins plus épais avec un heaume, un bouclier
+  rond et des pieds en croix ; une clôture le long du bord sud.
+- La place festive : un mât de mai (ruban enroulé, couronne de verdure, rubans courts libres au vent ; la première version, des rubans tendus
+  jusqu'à des piquets, se lisait comme les perches d'une tente) hors de l'axe de la scène, deux tables de banquet, un théâtre de marionnettes
+  (bleu et ivoire), les étals en toiles rayées (paramètre `stripes` de `stall`, les étals du district inchangés), la scène habillée (flammes aux
+  poteaux, coffre, tambour, deux lanternes à l'avant).
+- Commun : les trottoirs dallés le long des rangées, des décalcomanies (fissures, taches, paille, ornières, feuilles, éclats) ; le bord sud :
+  plus de bordure ni de ruelle sombre (« le quai sans son eau »), une ligne de bornes entre les réverbères (écartés de l'axe) et, au bord
+  proche de l'image, un muret de jardinières et leur verdure, ouvert par la porte du quai ; les maisons du fond plus basses (3 étages) et au-delà
+  des tours et des flèches de la citadelle, le tambour du Colisée plus proche ; les passants dont les pieds sortent du bas de l'image ne sont
+  pas dessinés (des têtes coupées au bord).
+
+### La première critique à l'aveugle (itération 2) — [?] « pas encore » partout
+- Agent neuf, six planches aux lettres tirées au sort (chaque place avant, depuis `main` `aaa48f0`, et après), la planche du district (B nuit,
+  D nuit, B midi, C midi) en référence. Cohérence / qualité : **parvis 6 / 5 → 7 / 6,5**, **entraînement 7 / 5 → 6 / 6**, **place festive
+  7,5 / 6,5 → 6,5 / 6**. Les paires : le nouveau parvis et le nouvel entraînement devant, l'ancienne place festive devant (« le mât de mai devant
+  la scène, deux points focaux sur un axe », les rubans « des fils », le théâtre rouge hors palette).
+- Ses reproches communs : la bande morte du premier plan (la bordure « le quai sans son eau » et des pavés énormes), aucune profondeur au-delà
+  de la première rangée (peu de ciel, pas de silhouette au loin), des sols plats, des têtes coupées au bas de l'image, des personnages
+  provisoires (générés) d'une autre densité. Repris à l'itération 3 (ci-dessus) ; les personnages provisoires restent ceux du lot V5 (à cuire
+  par la chaîne de l'art).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

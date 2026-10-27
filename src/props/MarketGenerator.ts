@@ -28,13 +28,15 @@ interface StallOut {
   lanterns: V3[];
 }
 
-export function stall(rng: Rng, kind: StallKind, w = 2.8): StallOut {
+/** `stripes`: the canvas in two alternating tints (the version 2's squares, journal Passe VP6); absent = the kind's tonal panels, as the
+ *  district's stalls */
+export function stall(rng: Rng, kind: StallKind, w = 2.8, stripes?: [V3, V3]): StallOut {
   const S = new SlotSet();
   const lights: StallOut['lights'] = [];
   const lanterns: V3[] = [];
   const d = 1.7, hw = w / 2;
   const tim: V3 = [0.86, 0.84, 0.86];
-  const canvas = CANVAS[kind], canvasAlt: V3 = [canvas[0] * 1.08, canvas[1] * 1.08, canvas[2] * 1.07];
+  const canvas = stripes?.[0] ?? CANVAS[kind], canvasAlt: V3 = stripes?.[1] ?? [canvas[0] * 1.08, canvas[1] * 1.08, canvas[2] * 1.07];
   // posts
   for (const [x, z, h] of [[-hw, -d / 2, 2.6], [hw, -d / 2, 2.6], [-hw, d / 2, 2.2], [hw, d / 2, 2.2]] as Array<[number, number, number]>) {
     S.timber.boxMM(x - 0.06, 0, z - 0.06, x + 0.06, h, z + 0.06, { tint: tim, grain: 'y', aoY: [0.6, 1] });

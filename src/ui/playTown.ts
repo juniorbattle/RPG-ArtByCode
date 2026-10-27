@@ -6,6 +6,9 @@ import { esc, overlay } from './style';
 import { tx } from '../narrative/text';
 import { fontsReady, installDesign } from './design/system';
 import { preloadPortraits } from './portraits';
+import { ExitMarkers } from './exits';
+import { WALK } from '../architecture/StreetComposer';
+import { V2_EXITS } from '../simulation/v2places';
 
 /** The city in the play mode (journal Passes L3 / L4): the frozen Merchant District as it is, its day state, forge, crowd and weather taken
  *  from the game state (choice P4: game layers only, no geometry, framing, cast or look change), and the play mode's interface over it.
@@ -23,6 +26,10 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   for (const k of CARRY_TOWN) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   // a version 2 game's town flies the tournament's heraldry (journal Passe VP3); today's game keeps its banners
   if (isV2(st)) q.set('heraldry', 'tournament');
+  // arriving by a way in (journal Passe VP5): from the forecourt at the quay's east end past the guards, from the festival at its west end
+  const arrive = isV2(st) ? b.params.get('arrive') : null;
+  if (arrive === 'forecourt' && !b.params.has('player')) q.set('player', `${WALK.x1 - 1.4},0`);
+  if (arrive === 'lanterns' && !b.params.has('player')) q.set('player', `${WALK.x0 + 1.2},0.6`);
   const app = new App({ canvas: b.canvas, params: q, onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; } });
   (window as any).__app = app;
   // the interface's tone follows the page's day state (the operator's decision L2, journal Passe UI3)
@@ -61,7 +68,20 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   // E / Space next to someone opens their dialogue (the district's bubble stays: its « ... » is the town's own)
   const interact = app.actors.interact.bind(app.actors);
   app.actors.interact = () => { interact(); ui.interact(); };
-  const frame = () => { if (ui.modal) app.actors.keys.clear(); ui.update(); requestAnimationFrame(frame); };
+  // a version 2 game's ways out (journal Passe VP5): the quay's west end to the Festival Square, its east end past the guards' barrier to the
+  // Arena Forecourt; walked into with a key held, the move saved and the square's page opened at its way in from the quay
+  const END: Record<string, [number, number, number]> = { west: [WALK.x0 - 0.1, 2.6, 0.4], east: [WALK.x1 + 0.3, 2.6, 0] };
+  const ways = isV2(st) ? V2_EXITS.district.map((e) => ({ ...e, anchor: END[e.side] })) : [];
+  const markers = ways.length ? new ExitMarkers(ways.map((w) => ({ to: w.to, anchor: w.anchor }))) : null;
+  if (markers) (window as any).__exits = markers;
+  const taken = () => {
+    const p = app.actors.player.pos;
+    if (ui.modal || app.actors.keys.size === 0) return null;
+    const w = ways.find((e) => (e.side === 'east' ? p.x >= WALK.x1 - 0.15 && Math.abs(p.z) < 2.2 : p.x <= WALK.x0 + 0.15));
+    return w?.to ?? null;
+  };
+  const leave = (to: typeof st.place) => { const from = st.place, r = (window as any).__game.act({ type: 'move', to }); if (r.ok) go(b.params, { arrive: from }); else location.reload(); };
+  const frame = () => { if (ui.modal) app.actors.keys.clear(); ui.update(); markers?.update(app.rig.camera, app.actors.player.pos, taken(), leave); requestAnimationFrame(frame); };
   app.start();
   // the version 2's sound (lot V8): the district's ambience and the day state's music; today's game makes none
   if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed));

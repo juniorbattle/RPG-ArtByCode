@@ -11,6 +11,7 @@ import { el } from './style';
 import { tx } from '../narrative/text';
 import { fontsReady, installDesign } from './design/system';
 import { preloadPortraits } from './portraits';
+import { ExitMarkers } from './exits';
 
 /** The version 2's open places (lot V5, journal Passe V5): the Arena Forecourt, the Training Ground and the Festival Square (in place of
  *  Lantern Row's mock-up), each a square of src/world/Plazas.ts walked across in the slot's day state; the people there at this hour stand
@@ -20,7 +21,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   let st = st0;
   installGameApi(() => st, (s) => { st = s; }, (prev, next) => lookOf(prev) !== lookOf(next) || prev.place !== next.place || next.over !== prev.over);
   const q = new URLSearchParams();
-  for (const k of ['fps', 'freeze', 'painters', 'gpuprof', 'cast', 'static', 'vis', 'viscache', 'visstep', 'visfine', 'visscale', 'rain', 'snow', 'storm', 'wind']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
+  for (const k of ['fps', 'freeze', 'painters', 'gpuprof', 'cast', 'static', 'vis', 'viscache', 'visstep', 'visfine', 'visscale', 'rain', 'snow', 'storm', 'wind', 'plazacam']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   // the day's weather, as the town's (src/simulation/look.ts): the rain front's wet day falls on the squares too
   const rain = rainOf(st); if (rain && !q.has('rain')) q.set('rain', rain);
   const look = lookOf(st), kind = PLAZA_OF[st.place]!;
@@ -28,7 +29,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   const scene = pendingScene(st), people = plazaPeople(st);
   for (const id of scene?.cast ?? []) if (!people.includes(id)) people.push(id);
   const app = new PlazaApp({
-    canvas: b.canvas, params: q, kind, time: look === 'night' ? null : look, people, crowd: PLAZA_CROWD[look],
+    canvas: b.canvas, params: q, kind, time: look === 'night' ? null : look, people, crowd: PLAZA_CROWD[look], arriveFrom: b.params.get('arrive'),
     onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; },
   });
   (window as any).__plaza = app;
@@ -50,7 +51,12 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   const tag = el('div', 'pm pm-sub', tx('ui.plazaTag', { place: placeName(st.place, true) }));
   tag.id = 'pm-place-tag';
   document.body.appendChild(tag);
-  const frame = () => { ui.update(); requestAnimationFrame(frame); };
+  // the ways out (journal Passe VP5): their tags as the hero comes near, the way walked through taken (the move saved, the next place's page
+  // opened at the way in from this one)
+  const from = st.place, ways = new ExitMarkers(app.place.exits.map((e) => ({ to: e.to, anchor: e.anchor })));
+  (window as any).__exits = ways;
+  const leave = (to: typeof from) => { const r = (window as any).__game.act({ type: 'move', to }); if (r.ok) go(b.params, { arrive: from }); else location.reload(); };
+  const frame = () => { if (ui.modal) app.keys.clear(); ui.update(); ways.update(app.camera, app.player.pos, ui.modal ? null : app.exitTaken()?.to ?? null, leave); requestAnimationFrame(frame); };
   frame();
   app.start();
   // the version 2's sound (lot V8): the square's ambience and the day state's music, after the person's first gesture

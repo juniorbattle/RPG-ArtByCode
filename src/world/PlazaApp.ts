@@ -20,7 +20,7 @@ import { loadProductionCast, type CastMember } from '../characters/BakedCast';
 import { variantOf } from '../characters/Variants';
 import { fiveViewFacing } from '../characters/ActorSystem';
 import type { Anim, Dir } from '../characters/SpriteGenerator';
-import { buildPlaza, walkTo, type PlazaBuild, type PlazaKind } from './Plazas';
+import { buildPlaza, walkTo, type PlazaBuild, type PlazaExit, type PlazaKind } from './Plazas';
 import { bakePlaza, plazaBakePoses } from './PlazaVisibility';
 
 /** An open place of the version 2 (lot V5, journal Passe V5): one of the three squares of Plazas.ts, walked across by the hero (arrows or
@@ -32,7 +32,11 @@ import { bakePlaza, plazaBakePoses } from './PlazaVisibility';
  *  district's rule (journal Passe VP1, src/world/PlazaVisibility.ts; `?vis=0` without it), the town's weather (`rain`, `snow`, `storm`,
  *  `wind`); the GPU measure is a local task. */
 
-export interface PlazaOptions { canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void; kind: PlazaKind; time: DayTime | null; people: string[]; crowd: number }
+export interface PlazaOptions {
+  canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void; kind: PlazaKind; time: DayTime | null; people: string[]; crowd: number;
+  /** the place the hero arrives from (journal Passe VP5): they stand at the way in from it, facing the square; null = the square's mouth */
+  arriveFrom?: string | null;
+}
 
 /** the roles a square shows, and the archetype standing for each (a baked sheet replaces the archetype when one is approved) */
 const ROLE_ARCHETYPE: Record<string, string> = { guardA: 'guardA', guardB: 'guardB', hooded: 'hooded', porter: 'porter' };
@@ -51,8 +55,8 @@ export function plazaKeyLight(look: DayLook | null, t: DayTime | null): THREE.Ve
 /** the squares' camera (journal Passe VP1): the Merchant District's language (a low pitch, a long lens, the facades as the backdrop, the
  *  characters at B's size on screen: B is 8 deg / 26 m / fov 30 with characters x 1.12) instead of the first build's high, wide view (22 deg,
  *  17 m, fov 40) that showed mostly the floor; each square turned a little toward the side that composes best */
-const CAM = { pitch: 8.5, pitchNorth: 7.5, dist: 23, distNorth: 20, fov: 32, ty: 2.6, lead: 2.5 };
-const BASE_YAW: Record<PlazaKind, number> = { forecourt: -8, training: 9, festival: -5 };
+const CAM = { pitch: 7, pitchNorth: 6.5, dist: 21, distNorth: 18, fov: 35, ty: 2.6, lead: 2.5, yawGain: 1.2 };
+const BASE_YAW: Record<PlazaKind, number> = { forecourt: 18, training: 22, festival: -20 };
 /** the widest frame the squares' visibility bake covers (src/world/PlazaVisibility.ts) */
 export const PLAZA_FRAME = 2.4;
 /** the camera of a square for a hero at (x, z), or for a focus point at distance `dist` (a dialogue, a cutscene's look): the follow's target,
@@ -61,7 +65,7 @@ export function plazaCamPose(kind: PlazaKind, px: number, pz: number, dist: numb
   const x = THREE.MathUtils.clamp(px, -9, 9), z = THREE.MathUtils.clamp(pz, -15, 2);
   const north = THREE.MathUtils.smoothstep(-z, 2, 14);
   return {
-    yaw: THREE.MathUtils.degToRad(BASE_YAW[kind] - x * 1.2), pitch: THREE.MathUtils.degToRad(CAM.pitch - (CAM.pitch - CAM.pitchNorth) * north),
+    yaw: THREE.MathUtils.degToRad(BASE_YAW[kind] - x * CAM.yawGain), pitch: THREE.MathUtils.degToRad(CAM.pitch - (CAM.pitch - CAM.pitchNorth) * north),
     dist: dist ?? CAM.dist - (CAM.dist - CAM.distNorth) * north, fov: CAM.fov, shift: 0, tx: x * 0.8, ty: CAM.ty, tz: dist !== null ? z : z - CAM.lead,
   };
 }
@@ -101,6 +105,9 @@ export class PlazaApp {
   vis: Record<string, unknown> = { off: true };
   buildMs = 0;
   keys = new Set<string>();
+  private readonly ndc = new THREE.Vector3();
+  /** the hero walked this frame (a key held, not locked) */
+  moving = false;
   /** a cutscene's camera focus (x, z, distance) and its walkers (lot V6); the hero's keys held off while one plays */
   focus: { x: number; z: number; dist: number } | null = null;
   locked = false;
@@ -123,6 +130,12 @@ export class PlazaApp {
     this.camera.layers.enable(LAYER_NOREFLECT);
     this.look = opts.time ? LOOKS[opts.time] : null;
     this.keyDir = plazaKeyLight(this.look, opts.time);
+    // DEV only: `plazacam=yaw,pitch,dist,fov[,pitchNorth,distNorth,ty,lead,yawGain]` sets this square's framing while tuning (blank = keep)
+    if (import.meta.env.DEV && q.has('plazacam')) {
+      const v = q.get('plazacam')!.split(',').map((t) => (t.trim() === '' ? null : +t));
+      if (v[0] !== null && v[0] !== undefined) BASE_YAW[opts.kind] = v[0];
+      (['pitch', 'dist', 'fov', 'pitchNorth', 'distNorth', 'ty', 'lead', 'yawGain'] as const).forEach((k, i) => { const x = v[i + 1]; if (x !== null && x !== undefined && Number.isFinite(x)) CAM[k] = x; });
+    }
     // the weather (journal Passe VP1): the town's (src/atmosphere/Weather.ts) from the same parameters, the day's rain from the state
     const wp = parseWeather(q);
     this.scene.add(buildSky(skyDefines(this.look, overcast(wp) > 0)));
@@ -202,6 +215,9 @@ export class PlazaApp {
     if (this.opts.params.get('static') === '1') { this.sprites.group.visible = false; this.particles.group.visible = false; }
     this.player = this.actor('player', 'player', 0, 1.5, 1);
     this.player.dir = 'up'; this.player.facing = 'up';
+    // arriving by a way in (journal Passe VP5): at its end inside the square, facing in
+    const way = this.place.exits.find((e) => e.to === this.opts.arriveFrom);
+    if (way) { this.player.pos.set(way.spawn[0], 0, way.spawn[1]); this.player.dir = way.face === 'up' ? 'up' : 'side'; this.player.flip = way.face === 'east'; }
     for (const id of this.opts.people) {
       const at = this.place.spots[id]; if (!at) continue;
       const a = this.actor(ROLE_ARCHETYPE[id] ?? `prov-${id}`, 'person', at[0], at[1], 100 + this.people.length);
@@ -259,6 +275,7 @@ export class PlazaApp {
   private walk(dt: number): void {
     const k = this.keys, ix = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0), iz = (k.has('s') || k.has('arrowdown') ? 1 : 0) - (k.has('w') || k.has('arrowup') ? 1 : 0);
     const P = this.player, speed = (this.cast?.get('player')?.walkSpeed ?? 3.2) * (k.has('shift') ? 1.2 : 1);
+    this.moving = !!(ix || iz) && !this.locked;
     if ((ix || iz) && !this.locked) {
       const yaw = this.pose.yaw, c = Math.cos(yaw), s = Math.sin(yaw), n = Math.hypot(ix, iz);
       const dx = (ix * c + iz * s) / n, dz = (-ix * s + iz * c) / n;
@@ -298,6 +315,13 @@ export class PlazaApp {
     return new Promise((done) => this.walking.set(a, { to, done }));
   }
 
+  /** the way out the hero is walking through: past the end of its lane with a key held (journal Passe VP5) */
+  exitTaken(): PlazaExit | null {
+    if (!this.moving || this.locked) return null;
+    const { x, z } = this.player.pos;
+    return this.place.exits.find((e) => x >= e.out.x0 && x <= e.out.x1 && z >= e.out.z0 && z <= e.out.z1 && x >= e.lane.x0 - 0.01 && x <= e.lane.x1 + 0.01 && z >= e.lane.z0 - 0.01 && z <= e.lane.z1 + 0.01) ?? null;
+  }
+
   /** where a person stands now (null: not on the square) */
   spotOf(who: string): [number, number] | null { const a = [...this.who].find(([, id]) => id === who)?.[0]; return a ? [a.pos.x, a.pos.z] : null; }
 
@@ -314,6 +338,10 @@ export class PlazaApp {
     U.uMoonDir.value.copy(this.keyDir);
     if (dt > 0) this.walk(dt);
     this.applyCamera(dt > 0 ? Math.min(1, dt * 3) : 1);
+    // a walker of the crowd whose feet leave the frame's bottom edge is not drawn (journal Passe VP6: « heads cut at the bottom edge »; the
+    // follow camera passes behind the crowd on an open square)
+    this.camera.updateMatrixWorld();
+    for (const a of this.people) if (a.role === 'crowd') { this.ndc.copy(a.pos).project(this.camera); a.hidden = this.ndc.y < -0.97; }
     const v = this.player.pos.clone().applyMatrix4(this.camera.matrixWorldInverse);
     this.post.params.dofFocus = THREE.MathUtils.clamp(-v.z, 6, 40);
     this.lights.update(this.time, dt, this.camera);
