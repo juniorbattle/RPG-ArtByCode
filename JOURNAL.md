@@ -729,6 +729,20 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
 - Les places : le flou du premier plan réduit (`dofRange` 12 au lieu de 9, le lointain gardé à 0,5) ; de jour, le soleil plus fort (× 1,18)
   contre le remplissage du ciel et du sol (× 0,86) : des ombres portées plus franches (`PLAZA_SUN`, ces valeurs de la page seulement).
 
+### La treizième critique à l'aveugle (itérations 13 et 14), deux agents — [?] des leviers trop fins pour être vus
+- Panneaux Q et R, le district caché **7,5** chez les deux. Les deux trouvent le parvis et la place festive des itérations 13 et 14 « sans
+  différence perceptible » (les captures diffèrent pourtant de 6 niveaux de gris en moyenne : la lumière du jour et le flou) : parvis 6,5 / 6,5
+  chez les deux, place festive 7 / 7. L'entraînement : R préfère la clôture rendue (6,5 / 6), Q la cour sans clôture (6 / 6, « de peu ») ;
+  la clôture reste. Rapportées à un district à 8 : **parvis 7, place festive 7,5, entraînement 6,75**. Verdicts : place festive « oui avec
+  réserves » (les deux), parvis « pas encore, mais proche » (Q), entraînement « pas encore ».
+- Le reproche que tous les panneaux des tours 12 et 13 répètent : la nuit, le tiers bas de chaque place sombre au noir, là où les pavés
+  mouillés du quai de R portent la lumière des réverbères ; le kiosque « vide et terne dedans ».
+
+### Itération 15
+- Une lanterne sur les dés de la balustrade (les poteaux de la clôture à l'entraînement), allumée la nuit, sa flaque de lumière sur les pavés
+  proches et une flaque d'eau pour la refléter (`edgeLanterns`) ; le choix des lumières près du héros les prend quand il est au sud.
+- Le kiosque plus clair dedans (5 au lieu de 4, et une seconde lumière basse sur ses planches).
+
 ### Les tests prouvés par des défauts injectés (Passes VP3 à VP5) — [OK]
 - Cinq défauts, chacun attrapé, les fichiers rendus octet pour octet (`cmp`) : les huit emblèmes du tournoi peints aussi dans l'atlas
   d'aujourd'hui (`v2-heraldry` : 1 échec, l'empreinte des appels), une bannière d'une place revenue à la fleur de lys (`v2-heraldry` : 1), une

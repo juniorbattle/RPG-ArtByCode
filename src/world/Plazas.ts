@@ -212,12 +212,23 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     // (fourth critique: « chunky low-poly posts with streaky, stretched texture, blown out by day »: finer balusters in the plaster's smooth
     // grain, the whole a shade darker)
     const St = S.get('stone'), Pl = S.get('plaster'), wall: V3 = [0.5, 0.48, 0.46], cap: V3 = [0.62, 0.6, 0.56];
+    // a lantern on the edge's dies or posts, lit at night, its pool on the near setts and a puddle to catch it (journal Passe VP6, twelfth and
+    // thirteenth critiques: « at night the bottom third is crushed to black, where R's wet cobbles carry the lamplight »)
+    const edgeLanterns = (xs: number[], top: number) => {
+      for (const x of xs) {
+        batch.add(day ? 'lanternDark' : 'lantern', { pos: [x, top + 0.02, 8.3], yaw: 0 }, 0);
+        if (day) continue;
+        lights.push({ pos: [x, top + 0.5, 7.9], color: WARM, intensity: 2.4, radius: 6.5, kind: 'lantern', halo: 0.6, priority: 7 });
+        puddles.push({ x: x + 0.6, z: 6.4, r: 1.3, amount: 0.85 });
+      }
+    };
     // the training ground's south edge is a timber fence for the spectators (tenth critique: « every square uses the same blurred stone rail »)
     if (kind === 'training') {
       const T = S.get('timber');
       T.boxMM(-18, 0.95, 8.22, 18, 1.07, 8.38, { tint: [0.56, 0.46, 0.36], grain: 'x' });
       T.boxMM(-18, 0.5, 8.25, 18, 0.58, 8.35, { tint: [0.56, 0.46, 0.36], grain: 'x' });
       for (let x = -18; x <= 18.01; x += 2.4) T.boxMM(x - 0.08, 0, 8.22, x + 0.08, 1.2, 8.38, { tint: [0.5, 0.41, 0.32], grain: 'y' });
+      edgeLanterns([-8.4, -1.2, 6.0], 1.2);
       return;
     }
     for (const [a0, a1] of southGate ? [[-18, -2.7], [2.7, 18]] : [[-18, 18]]) {
@@ -225,7 +236,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       St.boxMM(a0 - 0.05, 0.34, 7.96, a1 + 0.05, 0.42, 8.64, { tint: cap, uvScale: 0.8 });
       for (let x = a0 + 0.3; x < a1 - 0.15; x += 0.32) S.at([x, 0.42, 8.3], 0, () => Pl.lathe([[0.075, 0], [0.1, 0.07], [0.055, 0.18], [0.095, 0.38], [0.055, 0.53], [0.08, 0.6]], 8, { tint: cap }));
       St.boxMM(a0 - 0.05, 1.02, 8.0, a1 + 0.05, 1.12, 8.6, { tint: cap, uvScale: 0.8 });
-      for (let x = a0; x <= a1 + 0.01; x += (a1 - a0) / Math.max(1, Math.round((a1 - a0) / 7))) St.boxMM(x - 0.2, 0, 8.08, x + 0.2, 1.22, 8.52, { tint: wall, uvScale: 0.8 });
+      const dies: number[] = [];
+      for (let x = a0; x <= a1 + 0.01; x += (a1 - a0) / Math.max(1, Math.round((a1 - a0) / 7))) { St.boxMM(x - 0.2, 0, 8.08, x + 0.2, 1.22, 8.52, { tint: wall, uvScale: 0.8 }); dies.push(x); }
+      edgeLanterns(dies.filter((x) => Math.abs(x) < 12 && Math.abs(x) > 2.4), 1.22);
     }
   });
 
@@ -1348,7 +1361,10 @@ function bandstand(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights'
   S.at([x, Hp - 0.85, z], 0, () => S.get('metal').cylinder(0.42, 0, 0.06, 10, { tint: [0.5, 0.42, 0.3], capTop: true, capBottom: true }));
   for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2; S.get(day ? 'plaster' : 'glow').box(x + Math.cos(a) * 0.36, Hp - 0.72, z + Math.sin(a) * 0.36, 0.05, 0.16, 0.05, { tint: day ? [0.9, 0.86, 0.76] : [1, 0.7, 0.35] }); }
   if (!day) {
-    lights.push({ pos: [x, 2.0, z], color: WARM, intensity: 4.0, radius: 9, kind: 'lantern', halo: 0.45, priority: 8 });
+    // (brighter, and a second light low over its boards: thirteenth critique, « the bandstand is empty and dim inside: the focal object is
+    // darker than the stalls behind it »)
+    lights.push({ pos: [x, 2.0, z], color: WARM, intensity: 5.0, radius: 9, kind: 'lantern', halo: 0.45, priority: 8 });
+    lights.push({ pos: [x - 0.6, 1.4, z + 0.6], color: WARM, intensity: 2.2, radius: 4.5, kind: 'lantern', halo: 0, priority: 8 });
     lights.push({ pos: [x + 2.0, 1.4, z + 2.0], color: WARM, intensity: 2.0, radius: 6, kind: 'lantern', halo: 0, priority: 7 });
   }
 }
