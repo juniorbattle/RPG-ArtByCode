@@ -55,7 +55,9 @@ export function plazaKeyLight(look: DayLook | null, t: DayTime | null): THREE.Ve
 /** the squares' camera (journal Passe VP1): the Merchant District's language (a low pitch, a long lens, the facades as the backdrop, the
  *  characters at B's size on screen: B is 8 deg / 26 m / fov 30 with characters x 1.12) instead of the first build's high, wide view (22 deg,
  *  17 m, fov 40) that showed mostly the floor; each square turned a little toward the side that composes best */
-const CAM = { pitch: 7, pitchNorth: 6.5, dist: 21, distNorth: 18, fov: 35, ty: 2.6, lead: 2.5, yawGain: 1.2 };
+// (journal Passe VP6, ninth critique: « an open field with its props spread round the edge, where R packs its props into a narrow street;
+// almost no sky shows »: a lower, longer lens, less of the square's floor and more of its façades in the frame)
+const CAM = { pitch: 5.5, pitchNorth: 5, dist: 22, distNorth: 18.5, fov: 30, ty: 2.6, lead: 2.5, yawGain: 1.2 };
 const BASE_YAW: Record<PlazaKind, number> = { forecourt: 18, training: 22, festival: -20 };
 /** the haze of the squares (journal Passe VP6): where it starts (m) and its density against the day state's (DEV `plazafog=start,density`) */
 const PLAZA_FOG = { start: 12, density: 1.6 };

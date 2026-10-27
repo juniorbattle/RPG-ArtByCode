@@ -641,6 +641,31 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
   pavés en travers) ; la tente de la scène **en croupe, sa faîtière courte haute au milieu** et ses deux fanions (la pointe qui manquait de face) ;
   les fûts et les caisses dans le coin sud-ouest, le banc près d'eux.
 
+### La neuvième critique à l'aveugle (itérations 8 et 10), deux agents — [?] l'itération 10 devant, 7 à 7,5 rapportée au district
+- Deux agents neufs sur les mêmes planches aux lettres différentes (la variance d'un seul critique dépassait l'écart à mesurer). Le district
+  caché : **7** et **7,5** (la référence 8,5 et 8). Itération 10 / itération 8, panneau I puis J : **parvis 6 / 6** et **7 / 6,5**,
+  **entraînement 6 / 5,5** et **6 / 5**, **place festive 6,5 / 7** et **6,5 / 6** (I préférait les tonneaux près du kiosque, J les voies de
+  dalles : « elles structurent le sol et mènent l'œil »). Moyennes rapportées à un district à 8 : parvis 7,25, entraînement 6,75, place
+  festive 7,25. Verdicts : parvis « oui avec réserves » (J), place festive « oui avec réserves » (I), entraînement « pas encore » (les deux).
+- Reproches communs aux deux : chaque place est « un champ ouvert aux accessoires semés sur les bords, quand R serre les siens dans une rue
+  étroite », peu de ciel, la balustrade floue en bande grise ; la nuit « un lavis chaud » sur le mur de l'arène, une « boue brune » à
+  l'entraînement, des lanternes qui « flottent sans rien éclairer » ; au parvis la porte de jour « un vide blanc » (les deux) ; à l'entraînement
+  des poteaux minces semés partout, le réverbère qui coupe le cadre large en deux, le ring à agrandir ; à la place festive le milieu bas vide,
+  les bords des dalles en escalier.
+
+### Itération 11
+- La caméra des places plus basse et plus longue (tangage 7 → 5,5°, au nord 6,5 → 5 ; 21 → 22 m, au nord 18 → 18,5 ; champ 35 → 30°) :
+  moins de sol vide dans le cadre, plus de façades, les accessoires plus serrés (essai de trois objectifs côte à côte d'abord, `plazacam=`).
+- La nuit en flaques : les braseros des places (2,8, rayon 6,2, halo 1, au lieu de 3, 8, 1,7), les réverbères (4,2 / 3,2, rayons 10 / 8,5,
+  halo 0,7), les torches de l'arène et des tours plus courtes (rayons 4,8 et 5,2) ; sous chaque corde de lanternes de la place festive une ou
+  deux flaques au sol.
+- Le parvis : le bout du passage de la porte dans l'ombre de l'arène (le sable et les gradins assombris, la herse en silhouette devant).
+- La place festive : au milieu bas, près de la voie, une table de tourtes et de bière, sa lanterne sur poteau allumée la nuit, des caisses, un
+  tonneau, un panier.
+- L'entraînement : l'estrade agrandie (5,8 m de côté au lieu de 4,8, son plancher à 0,72 m), son râtelier contre son flanc, son brasero à
+  l'écart ; le réverbère du milieu retiré, un brasero près du mannequin pour la nuit ; l'instructeur écarté du mannequin ; un point de la foule
+  déplacé ([KO] d'abord un passant coincé entre l'estrade agrandie et son râtelier : le test des marches l'a trouvé).
+
 ### Les tests prouvés par des défauts injectés (Passes VP3 à VP5) — [OK]
 - Cinq défauts, chacun attrapé, les fichiers rendus octet pour octet (`cmp`) : les huit emblèmes du tournoi peints aussi dans l'atlas
   d'aujourd'hui (`v2-heraldry` : 1 échec, l'empreinte des appels), une bannière d'une place revenue à la fleur de lys (`v2-heraldry` : 1), une
