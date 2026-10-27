@@ -73,7 +73,8 @@ const EXIT_EMBLEM: Partial<Record<PlaceId, EmblemKind>> = { forecourt: 'duel', t
 
 const WARM: V3 = [1.0, 0.6, 0.27];
 /** the processional way's flagstones, the tournament's two banner tints (gold, blue) */
-const PAVE: V3 = [0.74, 0.73, 0.72], GOLD_T: V3 = [0.95, 0.88, 0.62], BLUE_T: V3 = [0.5, 0.6, 0.95];
+// (a shade darker since journal Passe VP7, iteration 3: the ways read « overexposed », « like a decal »)
+const PAVE: V3 = [0.64, 0.63, 0.62], GOLD_T: V3 = [0.95, 0.88, 0.62], BLUE_T: V3 = [0.5, 0.6, 0.95];
 const FIRE: V3 = [1.0, 0.5, 0.2];
 /** the Merchant District's frontage numbers (DEFAULT_CONFIG): the squares' houses share them (the first build used more timber and more lit
  *  windows than the district) */
@@ -432,9 +433,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     obstacles.push({ x0: -3.6, x1: 3.6, z0: -17, z1: -13.6, grime: 0.6 });
     puddles.push({ x: 1.4, z: -12.4, r: 1.5, amount: 0.9 });
     // the ground laid out (eighth critique: « the lower half of the wide frame is empty cobbles, like a car park »): flagstones from the quay's
-    // gate to the stage, a ring of them round the bandstand, a gutter of setts across the square
+    // gate to the stage, a ring of them round the bandstand
     tracked(() => { flagstones(S, rng.fork('fway'), [[0, 6.4], [0, -13.4]], 2.6, PAVE); apron(S, rng.fork('fapron'), BAND[0], BAND[1], 2.62, 3.6, PAVE); });
-    tracked(() => quadFacing(S.get('stone'), [[-11.0, 0.013, -1.75], [11.0, 0.013, -1.75], [11.0, 0.013, -2.05], [-11.0, 0.013, -2.05]], [0, 1, 0], { tint: [0.42, 0.42, 0.45], uvScale: 1.6 }));
+    // (the gutter of setts across the square left with journal Passe VP7, iteration 3: « a thin dark line runs across the whole ground »)
     // the musicians' bandstand, the square's monument (journal Passe VP6, fifth critique: the maypole « a cone of straight flat strips on a brown
     // disc »), before the tavern beside the stage: nothing behind it but the tavern's door; its lights the square's key light at night
     tracked(() => bandstand(S, batch, lights, day, BAND[0], BAND[1]));
@@ -1199,10 +1200,12 @@ function sparringDais(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['ligh
       const t0 = i / 16, t1 = (i + 1) / 16, tint: V3 = i % 2 ? [0.3, 0.37, 0.68] : [0.84, 0.8, 0.7];
       for (const [ax, az, bx, bz] of [[-hw - 0.1, hw + 0.1, hw + 0.1, hw + 0.1], [hw + 0.1, hw + 0.1, hw + 0.1, -hw - 0.1], [-hw - 0.1, -hw - 0.1, -hw - 0.1, hw + 0.1]] as Array<[number, number, number, number]>) {
         const p0: V3 = [ax + (bx - ax) * t0, y - 0.08, az + (bz - az) * t0], p1: V3 = [ax + (bx - ax) * t1, y - 0.08, az + (bz - az) * t1];
-        if (az === hw + 0.1 && bz === hw + 0.1 && Math.abs(p0[0]) < 1.1) continue;
+        if (az === hw + 0.1 && bz === hw + 0.1 && Math.abs(p0[0]) < 1.1) continue;  // (behind the steps: the planked riser below)
         S.get('cloth').quad(p0, p1, [p1[0], 0.06, p1[2]], [p0[0], 0.06, p0[2]], { tint, swayArr: [0, 0, 0.12, 0.12] });
       }
     }
+    // the riser behind the steps, in the boards' timber (journal Passe VP7, iteration 3: « under the stage there is a black gap »)
+    P.boxMM(-1.15, 0.06, hw + 0.02, 1.15, y - 0.1, hw + 0.1, { grain: 'x', tint: [0.5, 0.4, 0.31] });
     for (const [i, [a, b]] of posts.entries()) addBanner(S, { pos: [a + 0.08, y + 1.85, b], yaw: Math.PI / 2, w: 0.42, h: 1.0, emblem: i % 2 ? 'laurel' : 'swords', shape: 'pennant', loose: 0.8, rod: false, tint: i % 2 ? [0.95, 0.88, 0.62] : [0.5, 0.6, 0.95] });
   });
   // a lantern hung on each corner post's crown, lit at night (sixth critique), the canvas worn by the feet
