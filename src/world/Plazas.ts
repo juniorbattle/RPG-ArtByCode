@@ -91,7 +91,7 @@ export const PLAZA_WALK: Readonly<typeof W> = W;
  *  on the way, the guards at the gate; the master's shed, the rings, the butts; the puppets, the bandstand, the stage (« proposé ») */
 export const PLAZA_SPOTS: Record<PlazaKind, Record<string, [number, number]>> = {
   forecourt: { odo: [-7.9, -10.6], hilde: [7.5, -2.6], anwen: [-7.6, -0.6], guardA: [-2.3, -15.9], guardB: [2.3, -15.9], marek: [5.6, -6.8], orla: [-5.2, -2.6], vessa: [-1.6, -12.6], ilse: [6.2, -11.6] },
-  training: { corvin: [-6.2, -14.6], orla: [8.2, -8.4], ilse: [-2.8, -5.6], vessa: [-0.6, -3.6], drill: [-7.2, -2.4] },
+  training: { corvin: [-6.2, -14.6], orla: [8.2, -8.4], ilse: [-4.6, -7.0], vessa: [5.8, -2.6], drill: [-7.2, -2.4] },
   festival: { pip: [-8.0, -7.0], lio: [-4.2, -10.4], cassius: [1.6, -11.4], bard: [1.4, -13.2] },
 };
 /** the moments of a square's day: the day states' three and the night (the evening) */
@@ -109,7 +109,7 @@ export const PLAZA_GATHER: Record<PlazaKind, Record<PlazaPeriod, Array<[number, 
   },
   training: {
     morning: [[-6.0, -0.2], [7.8, -8.0], [-2.6, -13.0], [-8.6, -5.6], [3.0, -2.4], [-8.0, -10.4]],
-    midday: [[-3.4, -4.2], [6.4, -4.6], [-6.4, -12.6], [0.0, -2.4], [7.6, -7.2], [-4.4, -8.2], [2.6, -13.2], [-3.4, -0.6], [5.6, -0.8]],
+    midday: [[-3.4, -3.4], [7.2, -5.6], [-6.4, -12.6], [1.6, -1.6], [8.0, -10.2], [-5.2, -10.2], [2.6, -13.2], [-3.4, 0.4], [5.6, 0.2]],
     afternoon: [[-9.8, -10.6], [3.2, -2.0], [-3.0, -12.6], [6.6, -4.4], [-7.0, -8.6], [-5.6, 0.0]],
     night: [[-3.0, -4.4], [6.0, -4.4], [-3.6, -12.6], [-7.8, -1.0], [6.6, -13.2]],
   },
@@ -140,8 +140,11 @@ const DAIS: [number, number] = [1.5, -8.4];
 /** the houses whose shop windows cast a real light at night (journal Passe VP7, « proposé »): the festival's two taverns; every other window
  *  glows without one (the light plan: the lights a frame shows decided, under the frame's budget) */
 const SHOP_LIGHTS: Record<PlazaKind, string[]> = { forecourt: [], training: [], festival: ['row-11', 'north0'] };
+/** the near edge's lights at night (intensity, radius; journal Passe VP7, iteration 4): the forecourt and the training ground carry the near floor
+ *  on them alone; the festival square's strings light its own (stronger there, a « milky warm haze » filled the frame) */
+const NEAR_LIGHT: Record<PlazaKind, [number, number]> = { forecourt: [4.4, 10.5], training: [4.4, 10.5], festival: [2.4, 8] };
 /** how many wall lanterns are lit at night, the nearest the focal point (journal Passe VP7: the forecourt's gate has its own fires) */
-const WALL_LAMPS: Record<PlazaKind, number> = { forecourt: 0, training: 2, festival: 2 };
+const WALL_LAMPS: Record<PlazaKind, number> = { forecourt: 0, training: 2, festival: 0 };
 /** the focal point of each square: the wall lanterns nearest it are lit, the paths lead to it */
 const FOCUS: Record<PlazaKind, [number, number]> = { forecourt: [0, -16], training: [-5.5, -15], festival: [0, -14] };
 
@@ -213,7 +216,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   // ---------------------------------------------------------------- the lamps: a rhythm along the open south side (the quay's), a few inside
   const lamp = (x: number, z: number, strong = true) => {
     batch.add('lampPost', { pos: [x, 0, z], yaw: Math.PI / 2, scale: 1 }, 0);
-    lights.push({ pos: xf([0.52, 3.2 - 0.38, 0], [x, 0, z], Math.PI / 2), color: WARM, intensity: strong ? 4.2 : 3.2, radius: strong ? 10 : 8.5, kind: 'lantern', halo: 0.7, priority: strong ? 7 : 6 });
+    lights.push({ pos: xf([0.52, 3.2 - 0.38, 0], [x, 0, z], Math.PI / 2), color: WARM, intensity: strong ? 4.2 : 3.6, radius: strong ? 10 : 9.5, kind: 'lantern', halo: 0.7, priority: strong ? 7 : 6 });
     blockers.push({ x, z, r: 0.35 }); obstacles.push({ x0: x - 0.25, x1: x + 0.25, z0: z - 0.25, z1: z + 0.25, grime: 0.4 });
     puddles.push({ x: x + 0.8, z: z - 1.4, r: 1.6, amount: 0.85 });
   };
@@ -232,7 +235,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       const lane = { x0: -1.9, x1: 1.9, z0: 2.5, z1: 7.6 };
       lanes.push(lane);
       exits.push({ to: e.to, side: 'south', lane, out: { x0: -99, x1: 99, z0: 6.6, z1: 99 }, spawn: [0, 3.3], face: 'up', anchor: [0, 2.6, 7.6] });
-      tracked(() => quayGate(S, batch, lights, day));
+      tracked(() => quayGate(S, batch, lights, day, NEAR_LIGHT[kind]));
       continue;
     }
     const sd = e.side === 'west' ? -1 : 1, o = openings.find((q) => q.side === sd);
@@ -260,7 +263,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     const edgeLantern = (x: number, top: number, lit: boolean) => {
       batch.add(day ? 'lanternDark' : 'lantern', { pos: [x, top + 0.02, Z], yaw: 0 }, 0);
       if (day || !lit) return;
-      lights.push({ pos: [x, top + 0.55, Z - 0.5], color: WARM, intensity: 2.6, radius: 7.5, kind: 'lantern', halo: 0, priority: 7 });
+      lights.push({ pos: [x, top + 1.4, Z - 0.8], color: WARM, intensity: NEAR_LIGHT[kind][0], radius: NEAR_LIGHT[kind][1], kind: 'lantern', halo: 0, priority: 7 });
       puddles.push({ x: x + 0.7, z: 6.6, r: 1.4, amount: 0.9 });
     };
     // the training ground's south edge is a timber fence for the spectators (tenth critique: « every square uses the same blurred stone rail »;
@@ -270,7 +273,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       T.boxMM(-18, 0.95, 8.22, 18, 1.07, 8.38, { tint: [0.52, 0.42, 0.33], grain: 'x' });
       T.boxMM(-18, 0.5, 8.25, 18, 0.58, 8.35, { tint: [0.52, 0.42, 0.33], grain: 'x' });
       for (let x = -18; x <= 18.01; x += 2.4) T.boxMM(x - 0.08, 0, 8.22, x + 0.08, 1.2, 8.38, { tint: [0.46, 0.38, 0.3], grain: 'y' });
-      for (const x of [-7.2, 0, 7.2]) edgeLantern(x, 1.2, true);
+      for (const x of [-7.6, -2.6, 2.6, 7.6]) edgeLantern(x, 1.2, true);
       return;
     }
     for (const [a0, a1] of southGate ? [[-18, -2.7], [2.7, 18]] : [[-18, 18]]) {
@@ -341,7 +344,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     for (let k = 0; k < 4; k++) {
       const a = (k / 4) * Math.PI * 2 + Math.PI / 8 + Math.PI / 4, x = Math.cos(a) * 2.28, z = -7 + Math.sin(a) * 2.28;
       batch.add(day ? 'lanternDark' : 'lantern', { pos: [x, 0.8, z], yaw: a }, 0);
-      if (!day && z > -7) lights.push({ pos: [x, 1.1, z], color: WARM, intensity: 2.8, radius: 7.5, kind: 'lantern', halo: 0, priority: 8 });
+      if (!day && z > -7) lights.push({ pos: [x, 1.1, z], color: WARM, intensity: 3.6, radius: 9.5, kind: 'lantern', halo: 0, priority: 8 });
     }
     puddles.push({ x: -2.6, z: -3.8, r: 1.3, amount: 0.85 }, { x: 3.0, z: -4.4, r: 1.1, amount: 0.8 });
     tracked(() => pavilion(S, lights, day, -9.4, -13.8, 0.55, 1.9, [[0.3, 0.37, 0.7], [0.88, 0.84, 0.72]], 'swords'));
@@ -365,7 +368,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     healer(S, batch, -9.6, -1.4, 1.0, blockers, obstacles);
     // her lantern under the canopy, lit at night (sixth critique: « at night the lower-left third is almost black »)
     batch.add(day ? 'lanternDark' : 'lantern', { pos: xf([0.2, 1.75, 0.3], [-9.6, 0, -1.4], 1.0), yaw: 1.0 }, 0);
-    if (!day) lights.push({ pos: xf([0.2, 1.6, 0.9], [-9.6, 0, -1.4], 1.0), color: WARM, intensity: 2.4, radius: 6.5, kind: 'lantern', halo: 0, priority: 7 });
+    if (!day) lights.push({ pos: xf([0.2, 1.6, 0.9], [-9.6, 0, -1.4], 1.0), color: WARM, intensity: 3.0, radius: 8, kind: 'lantern', halo: 0, priority: 7 });
     // the gate's braziers burn day and night (the arena's fires, as AD1): the key light, its wet setts before the gate at night
     brazier(-4.6, -15.3, true); brazier(4.6, -15.3, true);
     puddles.push({ x: -2.6, z: -13.2, r: 1.6, amount: 0.95 }, { x: 2.9, z: -12.4, r: 1.3, amount: 0.85 }, { x: 0.8, z: -8.6, r: 1.2, amount: 0.8 });
@@ -389,6 +392,10 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     for (const [cx, cz, r] of [[-6.2, -3.6, 2.8]] as Array<[number, number, number]>) {
       sandRing(S, batch, cx, cz, r);
       blockers.push({ x: cx, z: cz, r: 0.6 });
+      // a lantern on the fence post by its opening, lit at night (journal Passe VP7, iteration 4: « about two-thirds of each night frame is black »)
+      const lp: V3 = [cx + Math.cos(Math.PI * 0.75) * (r + 0.45), 1.07, cz + Math.sin(Math.PI * 0.75) * (r + 0.45)];
+      batch.add(day ? 'lanternDark' : 'lantern', { pos: lp, yaw: 0.6 }, 0);
+      if (!day) lights.push({ pos: [lp[0] + 0.3, 1.6, lp[2] - 0.3], color: WARM, intensity: 3.0, radius: 8.5, kind: 'lantern', halo: 0, priority: 7 });
       obstacles.push({ x0: cx - r, x1: cx + r, z0: cz - r, z1: cz + r, grime: 0.25 });
     }
     // the champions' ring before the stand: the yard's monument and its key light (journal Passe VP6, third critique: « no focal prop »)
@@ -470,7 +477,8 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       const m = Math.max(2, Math.round(len / 2.3));
       for (let t = 1; t < m; t++) { const p = sag(hub, end, sg, t / m); batch.add('lantern', { pos: [p[0], p[1] - 0.32, p[2]], yaw: t, scale: 1.1 }, 0); }
       // (the two pools under the longest string, the one crossing the court: the guides from the stage to the stalls)
-      if (end[2] === -1.6) for (const u of [0.42, 0.74]) { const p = sag(hub, end, sg, u); lights.push({ pos: [p[0], 2.6, p[2]], color: WARM, intensity: 2.8, radius: 7.5, kind: 'lantern', halo: 0, priority: 6 }); puddles.push({ x: p[0] + 0.9, z: p[2] + 1.2, r: 1.4, amount: 0.9 }); }
+      // (four since journal Passe VP7, iteration 4, the wall lanterns' two moved here: « the lantern strings light nothing on the ground »)
+      if (end[2] === -1.6) for (const u of [0.3, 0.52, 0.74, 0.94]) { const p = sag(hub, end, sg, u); lights.push({ pos: [p[0], 2.6, p[2]], color: WARM, intensity: 2.6, radius: 8, kind: 'lantern', halo: 0, priority: 6 }); puddles.push({ x: p[0] + 0.9, z: p[2] + 1.2, r: 1.4, amount: 0.9 }); }
     }
     S.append(cart(rng.fork('cart')), mat([7.8, 0, 7.0], -0.35));
     paths.push([[0, 4], [0, -13]], [[11, -9.6], [4, -10.5]], [[8.6, -3.4], [4, -5]], [[-9.2, -8.4], [-3, -6]], [[-5.6, -12.6], [-1.0, -9.0]]);
@@ -984,7 +992,7 @@ function gateway(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights'],
 /** the gate to the quay (journal Passe VP5): two stone pillars ending the hedge wall at the frame's near edge, a lantern on each (lit at night).
  *  Low: the camera stands just behind them when the hero is at the square's far end (journal Passe VP6: posts at the kerb read as grey blocks
  *  in the middle of the frame) */
-function quayGate(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights'], day: boolean): void {
+function quayGate(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights'], day: boolean, near: [number, number]): void {
   const St = S.get('stone');
   for (const s of [-1, 1]) {
     const x = s * 3.1, z = 8.3;
@@ -994,7 +1002,7 @@ function quayGate(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights']
     S.at([x, 1.6, z], Math.PI / 4, () => St.cylinder(0.36, 0, 0.36, 4, { tint: [0.8, 0.76, 0.7], r1: 0.02 }));
     batch.add(day ? 'lanternDark' : 'lantern', { pos: [x - s * 0.36, 1.4, z], yaw: s > 0 ? -Math.PI / 2 : Math.PI / 2 }, 0);
     // its lantern lit at night (journal Passe VP7, iteration 3: the near edge's lights, the south lamps gone)
-    if (!day) lights.push({ pos: [x - s * 0.5, 1.4, z], color: WARM, intensity: 2.2, radius: 7, kind: 'lantern', halo: 0, priority: 7 });
+    if (!day) lights.push({ pos: [x - s * 0.5, 2.4, z - 0.8], color: WARM, intensity: near[0], radius: near[1], kind: 'lantern', halo: 0, priority: 7 });
   }
 }
 
@@ -1210,14 +1218,14 @@ function sparringDais(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['ligh
   });
   // a lantern hung on each corner post's crown, lit at night (sixth critique), the canvas worn by the feet
   for (const [a, b] of [[-hw, -hw], [hw, -hw], [hw, hw], [-hw, hw]] as Array<[number, number]>) batch.add(day ? 'lanternDark' : 'lantern', { pos: [x + a * 1.07, y + 1.55, z + b * 1.07], yaw: Math.atan2(a, b) }, 0);
-  if (!day) lights.push({ pos: [x, y + 1.7, z], color: WARM, intensity: 3.4, radius: 6.5, kind: 'lantern', halo: 0.8, priority: 8, key: true });
+  if (!day) lights.push({ pos: [x, y + 1.7, z], color: WARM, intensity: 4.4, radius: 9, kind: 'lantern', halo: 0.8, priority: 8, key: true });
   // a brazier at each front corner, lit day and night (eleventh critique: « light the ring with braziers or torches at its corners »)
   for (const sx of [-1, 1]) {
     const bx = x + sx * (hw + 0.55), bz = z + hw + 0.5;
     S.at([bx, 0, bz], 0, () => S.get('metal').cylinder(0.3, 1.0, 1.24, 8, { tint: [0.35, 0.33, 0.32], capBottom: true, r1: 0.4 }));
     S.get('metal').box(bx, 0.5, bz, 0.11, 1.0, 0.11);
     S.get('glow').box(bx, 1.2, bz, 0.46, 0.08, 0.46, { tint: [1, 0.55, 0.2] });
-    lights.push({ pos: [bx, 1.7, bz], color: FIRE, intensity: 2.6, radius: 5.5, kind: 'fire', halo: 0.9, priority: 9, day: true, key: true });
+    lights.push({ pos: [bx, 1.7, bz], color: FIRE, intensity: 3.2, radius: 7, kind: 'fire', halo: 0.9, priority: 9, day: true, key: true });
   }
   weaponRack(S, x + hw + 0.55, z + 0.6);
   // (the third brazier behind the ring's west corner left with journal Passe VP7: the two before its steps are its key light)

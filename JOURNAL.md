@@ -719,6 +719,38 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
   1,0 exacte). Le soleil de midi choisi par place : au parvis il rase la façade de l'arène depuis l'est (62° / 42°), à l'entraînement il vient
   de l'ouest (−35° / 46°), la place festive garde le sien.
 
+### La troisième critique à l'aveugle (itération 3 contre VP6), deux agents — [KO] VP6 encore devant, l'écart réduit au parvis
+- Panneau Y (le district caché 8,5) : parvis VP6 **7** / itération 3 **6,5**, entraînement **7** / **5,5**, place festive **7,5** / **6,5**.
+  Panneau Z (le district caché 8) : parvis **7,5** / **6,5**, entraînement **7** / **5,5**, place festive **7,5** / **6**.
+- Le jour du parvis de l'itération 3 est loué (panneau Y : « It has the best daylight of all the squares. The sunlit tower against the
+  castle's shadow across the right half gives a clear sun direction, form and depth », « the square reads as spacious ») ; ses nuits sont le
+  reproche principal (« The night collapses », « the lower half of both night frames is black »). À l'entraînement : « the platform is a small
+  object in the upper middle and the lower half is empty sand », « about two-thirds of each night frame is black » ; à la place festive :
+  « The lantern strings light nothing on the ground, so the night foreground is black ». Les reproches à VP6 restent ses réverbères au milieu
+  (« About six thin lamp posts are scattered across the open floor with no logic, one between the hero and the fountain », « a lamp post
+  stands directly in front of the talking couple ») : ce que la direction a retiré.
+- Corrections menues après ce tour (commit 273b79a) : la rigole sombre de la place festive retirée (« a dark seam across the square », tour
+  2), les voies dallées un peu plus sombres (`PAVE` 0,64 / 0,63 / 0,62 : « like a decal »), une contremarche sous les marches du ring.
+- Pensée : les deux panneaux mesurent l'écart surtout la nuit ; le sol libre au milieu ne s'éclaire plus par des réverbères posés dessus,
+  il doit recevoir la lumière du bord proche, du monument et de guides qui n'encombrent pas le sol.
+
+### Itération 4 — [?] les nuits rééquilibrées sans réverbère au milieu, l'entraînement plus près
+- Les lumières du bord proche (les lanternes de la balustrade, de la clôture et de la porte du quai) montées à 1,4 m au-dessus de leur
+  support et avancées de 0,8 m vers la place, par place (`NEAR_LIGHT`, intensité / rayon) : 4,4 / 10,5 au parvis et à l'entraînement, 2,4 / 8
+  à la place festive ; la clôture de l'entraînement porte quatre lanternes (−7,6, −2,6, 2,6, 7,6) au lieu de trois.
+- Le monument et ses guides plus forts : les lanternes de la fontaine 3,6 / 9,5, la lanterne du ring 4,4 / 9, ses deux braseros 3,2 / 7, une
+  lanterne sur le poteau d'entrée de l'anneau du mannequin (3,0 / 8,5), la lanterne de la guérisseuse 3,0 / 8. À la place festive, les deux
+  lanternes murales retirées et leurs deux lumières données aux guirlandes : quatre flaques sous la guirlande qui traverse la place (2,6 / 8)
+  au lieu de deux. Chaque place garde 16 lumières, toutes allumées.
+- Un premier essai plus fort à la place festive (le bord proche 2,8 / 9 et les guirlandes 3,2 / 9) l'a rendue trop claire et laiteuse
+  [KO] : moyenne de la moitié basse 69,7 / 69,4 (p1 / p2) contre 54,7 / 50,9 pour VP6, 17,6 / 15,8 % de pixels sous 25 contre 27 / 40 %.
+- L'entraînement : le plan moyen rapproché (21 → 17 m, « Push the camera in so the platform fills the central third »), ses personnes et
+  sa foule de midi écartées du ring (Ilse en −4,6 / −7,0, Vessa en 5,8 / −2,6 ; « eight or more silhouettes merging »).
+- Mesures (moitié basse du cadre, moyenne de luminance 0-255, p1 / p2 ; pixels sous 25) contre VP6 : parvis 52,8 / 56,6 (VP6 58,4 / 59,2 ;
+  36,5 / 38,5 % contre 29,1 / 37,4 %), entraînement 46,4 / 49,1 (55,0 / 57,5 ; 38 % contre 30 / 32 %), place festive 63,0 / 62,6 (54,7 /
+  50,9 ; 23,0 / 20,8 % contre 27,0 / 39,9 %). Les nuits du parvis et de l'entraînement restent plus sombres que VP6, sans réverbère au milieu :
+  un sol froid sous la lune et des flaques chaudes au bord, au monument et sur les guides, l'indigo du district.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
