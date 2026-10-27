@@ -751,6 +751,11 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
 - La documentation : `AGENTS.md` (les tests, `tools/exits-proof.mjs`, `heraldry=tournament`, `arrive=`, `plazacam=`, `V2_FOE_HIT`) et la fiche
   d'essai `briefs/v2-trial.md` (le parcours à pied, l'équilibrage plus rude, les emblèmes, les places reprises).
 
+### Les tests de la Passe VP6 prouvés par des défauts injectés — [OK]
+- Trois défauts, chacun attrapé par `tests/v2-exits.test.mjs` (1 échec chacun), `src/world/Plazas.ts` rendu octet pour octet (`cmp`) : les
+  passants sans contournement (`steer` ne tourne plus : « kept out of what stands there (0.70 m in) ») ; les lumières choisies par leur
+  seule priorité (« the lamp at -9.4,-13.8 lit » : le réverbère près du héros éteint) ; un point de la foule dans le kiosque (« clear of »).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
