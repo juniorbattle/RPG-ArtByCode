@@ -79,8 +79,9 @@ const CROWD: Record<PlazaPeriod, { size: number; linger: [number, number] }> = {
 };
 /** the characters' scale in the squares: B's (journal Passe VP1) */
 const CHAR_SCALE = 1.12;
-/** the squares' moon: a third below the first build's (journal Passe VP1, third critique: the moonlit plaster outshone the lamps, the night's
- *  brightest quarter lilac where the district's is amber; 0.8 x warmed it half way) */
+/** the squares' moon: below the first build's (journal Passe VP1, third critique: the moonlit plaster outshone the lamps, the night's
+ *  brightest quarter lilac where the district's is amber; 0.8 x warmed it half way); 0.68 x from VP1 to VP7's fourth iteration, 0.8 x since
+ *  its fifth, the lamp posts gone from the floor (« the night floors go warm sepia instead of indigo ») */
 const NIGHT_MOON = new THREE.Color(0.27, 0.37, 0.58).multiplyScalar(0.8);
 
 export class PlazaApp {
