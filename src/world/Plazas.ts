@@ -90,7 +90,7 @@ export const PLAZA_WALK: Readonly<typeof W> = W;
 /** where the people stand on each square (person id -> x, z): the registrar's table, the armourer's stall, the healer's corner, the champion
  *  on the way, the guards at the gate; the master's shed, the rings, the butts; the puppets, the bandstand, the stage (« proposé ») */
 export const PLAZA_SPOTS: Record<PlazaKind, Record<string, [number, number]>> = {
-  forecourt: { odo: [-7.9, -10.6], hilde: [7.5, -2.6], anwen: [-7.6, -0.6], guardA: [-2.3, -15.9], guardB: [2.3, -15.9], marek: [5.6, -6.8], orla: [-5.2, -2.6], vessa: [-1.6, -12.6], ilse: [6.2, -11.6] },
+  forecourt: { odo: [-7.9, -10.6], hilde: [7.5, -0.8], anwen: [-7.6, -0.6], guardA: [-2.3, -15.9], guardB: [2.3, -15.9], marek: [5.6, -6.8], orla: [-5.2, -2.6], vessa: [-1.6, -12.6], ilse: [6.2, -11.6] },
   training: { corvin: [-6.2, -14.6], orla: [8.2, -8.4], ilse: [-4.6, -7.0], vessa: [5.8, -2.6], drill: [-7.2, -2.4] },
   festival: { pip: [-8.0, -7.0], lio: [-4.2, -10.4], cassius: [1.6, -11.4], bard: [1.4, -13.2] },
 };
@@ -108,9 +108,11 @@ export const PLAZA_GATHER: Record<PlazaKind, Record<PlazaPeriod, Array<[number, 
     night: [[-3.0, -13.2], [3.2, -13.0], [-4.0, -5.4], [3.8, -5.4], [-6.6, 0.2]],
   },
   training: {
-    morning: [[-6.0, -0.2], [7.8, -8.0], [-2.6, -13.0], [-8.6, -5.6], [3.0, -2.4], [-8.0, -10.4]],
-    midday: [[-3.4, -3.4], [7.2, -5.6], [-6.4, -12.6], [1.6, -1.6], [8.0, -10.2], [-5.2, -10.2], [2.6, -13.2], [-3.4, 0.4], [5.6, 0.2]],
-    afternoon: [[-9.8, -10.6], [3.2, -2.0], [-3.0, -12.6], [6.6, -4.4], [-7.0, -8.6], [-5.6, 0.0]],
+    // (none before the ring's steps since journal Passe VP8, the first critique: « A group of people stands right in front of the ring's stairs
+    // and hides the focal point »)
+    morning: [[-6.0, -0.2], [7.8, -8.0], [-2.6, -13.0], [-8.6, -5.6], [5.4, -1.6], [-8.0, -10.4]],
+    midday: [[-3.8, -3.0], [7.2, -5.6], [-6.4, -12.6], [-7.2, -7.0], [8.0, -10.2], [-5.2, -10.2], [2.6, -13.2], [-3.4, 0.4], [5.6, 0.2]],
+    afternoon: [[-9.8, -10.6], [5.6, -1.4], [-3.0, -12.6], [6.6, -4.4], [-7.0, -8.6], [-5.6, 0.0]],
     night: [[-3.0, -4.4], [6.0, -4.4], [-3.6, -12.6], [-7.8, -1.0], [6.6, -13.2]],
   },
   // (the groups gather at the first points of a moment: near ones and far ones in turn, journal Passe VP7, iteration 2: three groups side by
@@ -304,7 +306,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     S.get('metal').box(x, 0.45, z, 0.12, 0.9, 0.12);
     // (the embers heaped over the bowl's rim since journal Passe VP7, iteration 5: inside it they did not show, « dark bowls »)
     S.get('glow').box(x, 1.2, z, 0.42, 0.16, 0.42, { tint: fireTint(day, [1, 0.55, 0.2]), uvs: COAL_UV, aux: [0, 1, 0.7, 0] });
-    flame(x, 1.27, z, 0.5);
+    // (the solid flame at night only: by day, « flat orange cones that read as traffic cones » (the first critique of journal Passe VP8); the
+    // day's fire is the live flame over the embers)
+    if (!day) flame(x, 1.27, z, 0.5);
     // (ninth critique: « at night a warm wash covers the whole wall », « a brown murk »: pools, not a wash; at night only since journal Passe
     // VP8, the audit: « Warm orange pools sit on the tower bases [...] With no visible flame, they read as stains »)
     lights.push({ pos: [x, 1.6, z], color: FIRE, intensity: 2.8, radius: 6.2, kind: 'fire', halo: 1.0, priority: 9, key });
@@ -380,9 +384,11 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     tracked(() => bracketBoard(S, -10.6, -7.6, 1.45));
     blockers.push({ x: -9.6, z: -9.9, r: 1.4 }, { x: -10.6, z: -12.1, r: 0.8 }); obstacles.push({ x0: -10.2, x1: -9.0, z0: -11.2, z1: -8.6, grime: 0.5 });
     // the armourer south of the east street (his stall, a rack of blades, his stock), the healer's corner by the quay
-    marketStall(9.6, -4.6, -0.75, 'cloth', 3.0, true, [[0.3, 0.37, 0.66], [0.8, 0.77, 0.68]]);
-    tracked(() => weaponRack(S, 10.5, -1.4));
-    blockers.push({ x: 10.5, z: -1.4, r: 1.2 });
+    // (2 m further south since journal Passe VP8, the rack north of it: under the arrival's and the court's framings 2° lower its canopy hid the
+    // hero at the east street's mouth, and from the arrival it hid the east pavilion, the audit's « the armourer's awning covers the tent »)
+    marketStall(9.6, -2.6, -0.75, 'cloth', 3.0, true, [[0.3, 0.37, 0.66], [0.8, 0.77, 0.68]]);
+    tracked(() => weaponRack(S, 10.5, -5.4));
+    blockers.push({ x: 10.5, z: -5.4, r: 1.2 });
     for (const [x, z, k, y] of [[10.4, -6.9, 'crate', 0.3], [10.7, -7.6, 'barrel', 0.8]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, 0, z], yaw: y });
     blockers.push({ x: 10.5, z: -7.2, r: 0.8 });
     // (north of the arrival's strip since journal Passe VP7: its canopy and the healer were cut by the frame's bottom edge)
@@ -1055,10 +1061,10 @@ function healer(S: SlotSet, batch: InstanceBatch, x: number, z: number, yaw: num
     S.get('planks').boxMM(-1.1, 0.42, -0.4, 1.1, 0.5, 0.0, { grain: 'x', tint: [0.7, 0.6, 0.5] });
     for (const a of [-0.9, 0.9]) T.boxMM(a - 0.04, 0, -0.36, a + 0.04, 0.42, -0.04, { tint: [0.6, 0.52, 0.44] });
     // journal Passe VP8 (the audit: « The canvas is a single flat sheet: no valance, no ridge, no back or sides, and it leans on nothing »): a
-    // beam between the front posts, a scalloped valance along it, a cloth hung between the back posts
+    // beam between the front posts, a scalloped valance along it. [KO] a cloth hung between the back posts: from the arrival's framing, « a
+    // closed white box » (the first critique)
     T.boxMM(-1.4, 1.8, 0.74, 1.4, 1.9, 0.86, { tint: [0.56, 0.48, 0.4], grain: 'x' });
     for (let i = 0; i < 8; i++) { const x0 = -1.45 + (2.9 * i) / 8, x1 = x0 + 2.9 / 8; for (const flip of [false, true]) C.tri([x0, 1.86, 0.96], [x1, 1.86, 0.96], [(x0 + x1) / 2, 1.68, 0.98], { tint: i % 2 ? [0.64, 0.62, 0.57] : [0.4, 0.46, 0.62], flip, swayArr: [0.2, 0.2, 0.5] }); }
-    for (const n of [[0, 0, 1], [0, 0, -1]] as V3[]) quadFacing(C, [[-1.3, 0.25, -0.62], [1.3, 0.25, -0.62], [1.3, 2.36, -0.62], [-1.3, 2.36, -0.62]], n, { tint: [0.56, 0.54, 0.5], swayArr: [0.2, 0.2, 0, 0] });
   });
   batch.add('bucket', { pos: xf([1.0, 0, 0.5], [x, 0, z], yaw), yaw: 1 }); batch.add('basket', { pos: xf([-0.8, 0, 0.6], [x, 0, z], yaw), yaw: 2 });
   blockers.push({ x, z, r: 1.4 }); obstacles.push({ x0: x - 1.4, x1: x + 1.4, z0: z - 1, z1: z + 1, grime: 0.4 });
@@ -1251,14 +1257,14 @@ function flagstones(S: SlotSet, rng: Rng, pts: Array<[number, number]>, w: numbe
       const off = r % 2 ? 0.5 : 0;
       for (let c = -off; c < cols; c++) {
         const u0 = Math.max(0, c) / cols, u1 = Math.min(cols, c + 1) / cols;
-        // (the half flags at the edges kept since journal Passe VP8: skipped, they left the edges « a staircase of whole flags with no kerb »)
-        if (u1 - u0 < 0.05) continue;
+        // (the slivers skipped: the edge's broken line of flags « fade[s] into the cobbles naturally », the first critique of journal Passe VP8;
+        // [KO] the half flags kept and a kerb along both edges, the audit's « a staircase of whole flags with no kerb »: « a ruler-edged
+        // rectangle that reads like a rug »)
+        if (u1 - u0 < 0.2) continue;
         const v0 = r / rows, v1 = (r + 1) / rows, k = 0.9 + rng.range(-0.06, 0.06);
         S.at([ax, 0, az], yaw, () => St.boxMM((u0 - 0.5) * w + 0.03, 0, v0 * len + 0.03, (u1 - 0.5) * w - 0.03, 0.035, v1 * len - 0.03, { tint: [tint[0] * k, tint[1] * k, tint[2] * k], uvScale: 0.7 }));
       }
     }
-    // a kerb of darker stone along both edges (journal Passe VP8)
-    S.at([ax, 0, az], yaw, () => { for (const sd of [-1, 1]) St.boxMM(sd * w / 2 - 0.1, 0, 0, sd * w / 2 + 0.1, 0.05, len, { tint: [tint[0] * 0.72, tint[1] * 0.72, tint[2] * 0.74], uvScale: 0.7 }); });
   }
 }
 
@@ -1279,9 +1285,9 @@ function fountain(S: SlotSet, tracked: (fn: () => void) => void, x: number, z: n
     }
     S.get('dark').prism(oct(1.95), 0.3, 0.32, { tint: [0.1, 0.13, 0.17], capTop: true });
     // journal Passe VP6 (« a four-legged birdbath »): a heavier column, a wide lower bowl, a second tier and a finial
-    // (in the plaster's smooth grain since journal Passe VP8: the stone's block texture on the small tiers « thick and black, so they read as
-    // a wire grid »)
-    S.get('plaster').lathe([[0.72, 0.4], [0.7, 0.62], [0.46, 0.78], [0.38, 1.5], [0.5, 1.62], [1.15, 1.78], [1.25, 1.92], [1.2, 2.02], [0.32, 2.06], [0.26, 2.9], [0.66, 3.05], [0.7, 3.16], [0.18, 3.2], [0.15, 3.62], [0.3, 3.78], [0.22, 4.0], [0.01, 4.12]], 12, { tint: [0.8, 0.76, 0.7] });
+    // (in the stone's grain: [KO] in the plaster's, journal Passe VP8, after the audit's close view (« thick and black, so they read as a wire
+    // grid »), the first critique of the frames: « untextured white and looks like a placeholder; at night it glows like a lamp »)
+    St.lathe([[0.72, 0.4], [0.7, 0.62], [0.46, 0.78], [0.38, 1.5], [0.5, 1.62], [1.15, 1.78], [1.25, 1.92], [1.2, 2.02], [0.32, 2.06], [0.26, 2.9], [0.66, 3.05], [0.7, 3.16], [0.18, 3.2], [0.15, 3.62], [0.3, 3.78], [0.22, 4.0], [0.01, 4.12]], 12, { tint: [0.8, 0.76, 0.7] });
     for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; St.box(Math.cos(a) * 2.28, 0.72, Math.sin(a) * 2.28, 0.26, 0.16, 0.26, { tint: [0.86, 0.82, 0.76] }); }
   }));
 }
@@ -1476,7 +1482,7 @@ function sparringDais(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['ligh
     S.at([bx, 0, bz], 0, () => S.get('metal').cylinder(0.3, 0, 0.34, 8, { tint: [0.3, 0.29, 0.28], r1: 0.08 }));
     S.get('metal').box(bx, 0.5, bz, 0.11, 1.0, 0.11);
     S.get('glow').box(bx, 1.28, bz, 0.4, 0.16, 0.4, { tint: fireTint(day, [1, 0.55, 0.2]), uvs: COAL_UV, aux: [0, 1, 0.4, 0] });
-    flameAt(S, day, bx, 1.35, bz, 0.5);
+    if (!day) flameAt(S, day, bx, 1.35, bz, 0.5);
     emitters.push(...fireEmitters(bx, 1.36, bz));
     // (at night only since journal Passe VP8: by day the pool on the sand read « as blood »)
     lights.push({ pos: [bx, 1.7, bz], color: FIRE, intensity: 3.2, radius: 7, kind: 'fire', halo: 0.9, priority: 9, key: true });

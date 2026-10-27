@@ -35,9 +35,9 @@ export const PLAZA_FRAMINGS: Record<PlazaKind, PlazaFraming[]> = {
   // rises over their north rows: at 6.5° the frame's top stood 11° over the horizon, the roofs' line, and the arena showed as a sliver)
   forecourt: [
     // the arrival by the quay's gate: over the balustrade, the fountain and the arena's gate ahead
-    { id: 'entry', label: 'Arrival', yaw: 12, turn: 0.8, pitch: 6.5, dist: 21, fov: 35, home: [0, 2.6, -2], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
+    { id: 'entry', label: 'Arrival', yaw: 12, turn: 0.8, pitch: 4.5, dist: 21, fov: 35, home: [0, 2.6, -2], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
     // the court: the fountain at the heart, the gate beyond it, the hero in the lower third
-    { id: 'court', label: 'Court', yaw: 12, turn: 0.8, pitch: 6.5, dist: 21, fov: 35, home: [0, 3.2, -6.5], ref: [0, -4], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: -10, z1: 0.5 }, priority: 1 },
+    { id: 'court', label: 'Court', yaw: 12, turn: 0.8, pitch: 4.5, dist: 21, fov: 35, home: [0, 3.2, -6.5], ref: [0, -4], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: -10, z1: 0.5 }, priority: 1 },
     // before the gate: the fountain whole in front, the arch, its braziers, the pavilions on each side
     { id: 'gate', label: 'Gate', yaw: 8, pitch: 6, dist: 21, fov: 40, home: [0, 3.6, -12], ref: [0, -13], gain: [0.5, 0.3], min: [-6, -1.5], max: [6, 1.5], zone: { x0: -99, x1: 99, z0: -99, z1: -10 }, priority: 2 },
   ],

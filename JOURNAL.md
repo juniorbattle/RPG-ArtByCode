@@ -430,13 +430,13 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   noire sur une lame d'un mètre. Le pied de chaque brasero évasé.
 - Les pavillons : les deux pans de la porte rabattus contre la toile, quatre haubans et leurs piquets du côté opposé à la place ; de jour, la
   face intérieure de la toile et du toit à l'ombre à la place du panneau sombre qui bouchait la porte (« a black slab standing in the tent »).
-- La fontaine du parvis : le tour du bassin et ses vasques dans le grain lisse du plâtre (le grain de pierre en faisait « a wire grid ») ;
-  l'eau qui tombe des deux vasques en gouttes (`Particles`, le mode `spray` : huit becs par vasque, des gouttes d'un bleu pâle qui gardent
+- La fontaine du parvis : le tour du bassin et ses vasques dans le grain lisse du plâtre (le grain de pierre en faisait « a wire grid » ;
+  remis dans la pierre à l'itération 1, ci-dessous) ; l'eau qui tombe des deux vasques en gouttes (`Particles`, le mode `spray` : huit becs par vasque, des gouttes d'un bleu pâle qui gardent
   leur couleur jusqu'à l'eau). [KO] des filets pleins (dix-huit de 3 cm, puis dix de 1,8 cm) : « a white cage » autour des vasques.
 - Le greffier : son registre ouvert, un encrier, un rouleau et son tabouret ; la guérisseuse : une poutre de façade, un lambrequin festonné,
-  une toile de fond, sa lanterne au coin de l'auvent ; le tableau d'affichage et sa caisse contre la rangée ouest (ils barraient le passage) ;
+  une toile de fond (retirée à l'itération 1), sa lanterne au coin de l'auvent ; le tableau d'affichage et sa caisse contre la rangée ouest (ils barraient le passage) ;
   le réverbère du milieu et la charrette du parvis retirés.
-- Les dallages : les demi-dalles des bords gardées et une bordure de pierre plus sombre de chaque côté.
+- Les dallages : les demi-dalles des bords gardées et une bordure de pierre plus sombre de chaque côté (retirées à l'itération 1).
 - L'entraînement : les buttes de tir plus épaisses (deux cordes, une jambe de force, un rebord), la tribune fermée à ses bouts par des
   planches en escalier et un garde-corps au dos, les cordes du ring qui fléchissent, les poteaux de son ouverture coiffés, les limons des
   marches, la porte de l'enclos du mannequin ouverte ; le seau, le tonneau et les bottes de paille rangés au pied des rangées, la paille
@@ -446,6 +446,31 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   table de banquet tournée hors du passage vers la scène (et les points de foule de midi à la nuit avec elle) ; l'étal de poteries et celui
   des bougies au pied de la rangée est. [KO] l'étal de bougies avancé à z −4,9 puis −3,9 : il cachait la tête du héros à l'entrée de la rue
   est depuis le cadrage de la scène (le test des cadrages) ; remis à −3,4.
+
+### La première critique à l'aveugle (VP8 contre VP7), deux agents — [?] la place festive devant, l'entraînement à égalité, le parvis derrière
+- Les planches : les six états de la critique (les places à l'arrivée et au milieu, de jour et de nuit) de VP7 (`e540e53`) et de VP8,
+  la planche cachée du district et R, sous des lettres tirées au sort.
+- Panneau A (le district caché 7,5, R 8) : parvis VP7 **7** / VP8 **6**, entraînement **6** / **6,5** (« The arena on the skyline is the
+  structural improvement the yard needs »), place festive **6,5** / **7** (« The arena adds a landmark and a depth layer, and the puppet booth
+  adds story »). Panneau B (le district caché 7,5, R 8) : parvis **7** / **6,5**, entraînement **6** / **5,5**, place festive **6,5** / **7**.
+- Ce qui a coûté à VP8 : la fontaine dans le grain du plâtre (« untextured white and looks like a placeholder; at night it glows like a
+  lamp »), le dallage aux demi-dalles et à la bordure (« a ruler-edged rectangle that reads like a rug » ; la ligne brisée de VP7 « fade[s]
+  into the cobbles naturally »), les flammes pleines de jour (« flat orange cones that read as traffic cones »), la toile du fond de la
+  guérisseuse (« a closed white box »). Demandé aussi : le terrain d'entraînement strié (« horizontal streaks, as if the texture were
+  stretched along the view »), la foule devant les marches du ring, la porte du parvis sans silhouette contre le ciel (« Reframe (lower the
+  pitch or pull back) so the tower tops and battlements stand against the sky »). Dans le district caché : la rive opposée du plan
+  d'ensemble, « a row of blank grey boxes » (district gelé).
+
+### Itération 1 — [?] les retours de la critique
+- Remis comme en VP7 : la fontaine dans le grain de la pierre (ses gouttes gardées), le dallage aux bords brisés sans bordure, la
+  guérisseuse sans toile de fond (sa poutre et son lambrequin gardés).
+- Les braseros : la flamme pleine la nuit seulement ; de jour, les braises (la teinte du feu) et la flamme vivante des particules.
+- L'entraînement : le grain fin de la terre (la grenaille, le bruit fin et celui des normales) s'efface où il devient plus fin qu'un ou deux
+  pixels (`fwidth`, comme les traits du râteau ; sous `SAND` seulement, la terre de l'entraînement) ; les points de foule devant les marches
+  du ring déplacés sur les côtés (matin, midi, fin de journée).
+- Le parvis : l'arrivée et le milieu 2° plus bas (4,5°), comme les deux autres places : la crête crénelée de la porte contre le ciel.
+  [KO] d'abord : l'étal de l'armurier cachait la tête du héros à l'entrée de la rue est (le test des cadrages) ; l'étal 2 m plus au sud, le
+  râtelier au nord de lui, l'armurière avec lui : le pavillon est dégagé (le point de l'audit) et le test passe.
 
 ## À reprendre (par priorité)
 

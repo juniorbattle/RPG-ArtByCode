@@ -92,8 +92,11 @@ void main(){
 #endif
   if (yard > 0.0) {
     vec2 sp = P.xz;
-    float l1 = vn2(sp * 0.13), l2 = vn2(sp * 0.47 + 4.3), g1 = vn2(sp * 2.2), g2 = vn2(sp * 8.5 + 1.7);
-    float grit = smoothstep(0.72, 0.9, vn2(sp * 21.0)) * (0.5 + 0.5 * g1);
+    // the fine grain faded where it gets finer than a pixel or two (journal Passe VP8, the first critique: « the right half of the dirt shows
+    // horizontal streaks, as if the texture were stretched along the view »: at the framings' low pitch the grit and the fine noise alias)
+    float fw = max(fwidth(sp.x), fwidth(sp.y)), aa21 = 1.0 - smoothstep(0.25, 0.6, fw * 21.0), aa9 = 1.0 - smoothstep(0.25, 0.6, fw * 8.5);
+    float l1 = vn2(sp * 0.13), l2 = vn2(sp * 0.47 + 4.3), g1 = vn2(sp * 2.2), g2 = mix(0.5, vn2(sp * 8.5 + 1.7), aa9);
+    float grit = smoothstep(0.72, 0.9, vn2(sp * 21.0)) * (0.5 + 0.5 * g1) * aa21;
     vec3 dry = vec3(0.086, 0.069, 0.049), damp0 = vec3(0.058, 0.045, 0.033);
     vec3 sand = mix(damp0, dry, smoothstep(0.25, 0.75, l1 * 0.7 + l2 * 0.3));
     sand *= 0.78 + 0.26 * l2 + 0.2 * g1 + 0.12 * g2;
@@ -107,7 +110,7 @@ void main(){
     float rakeH = sin(ph) * rakeA;
     rakeN = (rc / rr) * cos(ph) * 0.34 * yard * rakeA;
     A = mix(A, vec4(sand * (1.0 + 0.07 * rakeH), 0.5 + 0.2 * g1 + 0.08 * rakeH), yard);
-    vec2 sn = (vec2(vn2(sp * 3.3 + 3.1), vn2(sp * 3.3 + 7.7)) - 0.5) * 0.42 + (vec2(vn2(sp * 11.0), vn2(sp * 11.0 + 5.0)) - 0.5) * 0.18;
+    vec2 sn = (vec2(vn2(sp * 3.3 + 3.1), vn2(sp * 3.3 + 7.7)) - 0.5) * 0.42 + (vec2(vn2(sp * 11.0), vn2(sp * 11.0 + 5.0)) - 0.5) * 0.18 * aa9;
     nxy = mix(nxy, sn, yard);
     ao = mix(ao, 1.0 - 0.25 * grit, yard); rough0 = mix(rough0, 0.95, yard);
   }
