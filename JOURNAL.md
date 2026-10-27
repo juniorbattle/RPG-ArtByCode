@@ -317,6 +317,44 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - L'entraînement : les fanions de la guirlande plus petits (0,3 m au lieu de 0,42) et plus serrés, la guirlande plus pendante (1,5 m).
 - Le sol libre : parvis **78,9 %** (milieu 87,4), entraînement **76,0 %** (77,3), place festive **80,5 %** (90,0) ; `main` 75,3 / 69,3 / 68,5 %.
 
+### La septième critique à l'aveugle (itération 7, l'état final, contre VP6), deux agents — [?] le parvis et l'entraînement à égalité, la place festive derrière
+- Panneau M7 (le district caché 7,5, R 8) : parvis VP6 **6,5** / VP7 **5,5**, entraînement **6,5** / **5,5**, place festive **7** / **5,5**.
+  Panneau N7 (le district caché 7,5, R 8) : parvis **7** / **7,5** (« H is better than D. H has the axial composition, the value structure
+  from sunlight against shadow, and less vertical clutter. D's night is clearly better »), entraînement **6,5** / **7** (« P is better than
+  G. P has the clear centred focal point [...] P's floor material and its brown night must be fixed first »), place festive **7** / **6**.
+- L'écart moyen (VP7 − VP6) par tour, deux panneaux : parvis −1 (tour 2), −0,75, −0,5, −1, −0,25, **−0,25** (tour 7) ; entraînement −1,5,
+  −1,5, −1,25, −0,25, −1, **−0,25** ; place festive −1,5, −1,25, −1, −1,25, −1,5, **−1,25**. Les panneaux d'un même tour s'écartent d'un
+  point ou plus sur une même planche : une demi-note n'est pas un signal.
+
+### Les preuves finales de la Passe VP7 — [OK], un pixel en [?]
+- Sur un instantané figé de l'état final (`fa43dfe`, servi sur un port à part) : les sorties des places et du quai parcourues dans les deux
+  sens (`exits-proof`, « every way walked both ways ») ; la visibilité des places, élaguée contre `vis=0`, sans personnages, six états, douze
+  places du héros (les bords, les coins, les entrées des rues, le milieu) : **2 px différents sur 72 vues**, le même pixel dans les deux
+  vues de la place festive depuis le coin ouest (−11 / −9,6), de jour et de nuit, une petite tache plus sombre sur un mur de plâtre (14 et 17
+  sur 255) que `vis=0` montre et que la version élaguée ne montre pas : un éclat vu entre deux poses échantillonnées, la classe de résidu
+  connue (Passe 5b) ; `vis-why` ne sait que le district, non expliqué plus loin [?]. Le district contre `main` (`b68769d`) : A à D de nuit
+  et à midi, B avec son panneau, **identiques au pixel** (9 sur 9). `play-flow` par défaut et `V2=1` : « all checks passed », aucune erreur
+  de page. Le TournamentLab (30 graines, oisif, diligent, règles dynamiques) : **identique** à `main`.
+- `npm test` 274 sur 274, `npm run typecheck`, `npm run build`, `npm run art:validate` (0 erreur).
+- La cuisson de visibilité d'une place (neuve, rendu logiciel) : parvis 427 poses, 37-39 s ; entraînement 501, 46 s ; place festive 565, 42-44 s
+  (VP6 : environ 200 poses) ; en cache ensuite. Le coût GPU des places en rendu matériel reste à mesurer en local (budget E24).
+
+### Conclusion de la Passe VP7 — [?] la direction appliquée ; à l'aveugle, le parvis et l'entraînement rejoignent VP6, la place festive non
+- La direction de l'opérateur est appliquée et prouvée : un monument par place et le sol libre (parvis **78,9 %**, entraînement **76,0 %**,
+  place festive **80,5 %** du sol praticable, contre 75,3 / 69,3 / 68,5 % sur `main`) ; le puits, la table aux tourtes, le râtelier de
+  lances, les caisses du milieu, les poteaux superflus et les bancs isolés retirés, un seul groupe de mobilier gardé à la place festive ;
+  trois cadrages composés par place, choisis par la zone du héros comme le graphe du district ; un plan de 16 lumières par place, toutes
+  allumées, la lumière principale au monument ; la foule par moment de la journée.
+- Contre VP6 à l'aveugle, sept tours : l'écart s'est refermé sur le parvis et l'entraînement (−0,25 au dernier tour, chacun devant VP6
+  pour un panneau), pas sur la place festive (−1,25). Ce que les juges demandent encore et que la direction refuse : un sol meublé (« Fill the
+  foreground with a cart, crates, a well [...] plus lamp posts »). Ce qu'ils reprochent toujours à VP6 : ses réverbères qui coupent les
+  personnages.
+- Pensée : un juge d'images fixes récompense la densité ; l'espace libre se juge en marchant. La revue de l'opérateur en jeu décide. Si la
+  place festive doit se rapprocher des juges sans perdre son sol libre : un second groupe de mobilier aux étals (la règle « bien contrôlé »),
+  ou une arrivée plus proche (19 m, essayée en capture, non retenue).
+- Vu par tous les panneaux de tous les tours, hors de la tâche : la rive opposée du plan d'ensemble du district (le cadre « am » de la planche
+  cachée), « grey boxes », « blockout » ; le district est gelé, c'est une décision de l'opérateur.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -340,6 +378,12 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
     le bake neuf d'une place, ~200 poses, à mesurer : en cache ensuite), leur revue visuelle en rendu matériel ; la règle des blessures sous la
     charge (1,08 par partie de dix jours pour un joueur préparé, 1,74 pour un joueur qui ne prépare rien, Passe VP2) ; l'onglet « Here » coupé au
     téléphone couché (812 x 375) sur les pages de la version 2, déjà sur `main` (Passe VP2).
+  - **VP7 faite (Passe VP7)** : la direction des places de l'opérateur (un monument et le sol libre, trois cadrages par place, 16 lumières
+    toutes allumées, la foule par moment) ; à l'aveugle, le parvis et l'entraînement à égalité avec VP6, la place festive derrière (−1,25).
+    À faire en local : la revue en jeu des places par l'opérateur (rendu matériel), qui décide ; les mesures GPU des places (budget E24) et le
+    coût de leur cuisson neuve (430 à 565 poses) ; à décider avec l'opérateur : un second groupe de mobilier ou une arrivée plus proche à la
+    place festive ; le pixel de visibilité de la place festive (coin ouest) à expliquer. Vu par les juges : la rive opposée du plan
+    d'ensemble du district (district gelé, décision de l'opérateur).
   - **VP3 à VP6 faites (Passes VP3 à VP6)** : les emblèmes du tournoi sur les drapeaux de la version 2 ; les coups adverses 30 % plus forts
     (`V2_FOE_HIT`) ; la ville reliée à pied (les sorties façon Final Fantasy IX) ; le décor des trois places repris en quinze itérations. **Le
     décor à 8/10 n'est pas atteint** (environ 7 rapporté au district, l'entraînement 6,25 à 6,75 : tableau de la conclusion de la Passe VP6) ; ce
