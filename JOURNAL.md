@@ -666,6 +666,30 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
   l'écart ; le réverbère du milieu retiré, un brasero près du mannequin pour la nuit ; l'instructeur écarté du mannequin ; un point de la foule
   déplacé ([KO] d'abord un passant coincé entre l'estrade agrandie et son râtelier : le test des marches l'a trouvé).
 
+### La dixième critique à l'aveugle (itérations 10 et 11), deux agents — [KO] l'objectif plus long de l'itération 11
+- Panneaux K et L, le district caché **7,5** chez les deux. Itération 10 / itération 11 : K **parvis 6,5 / 6**, **entraînement 6,5 / 6**,
+  **place festive 7 / 6,5** ; L **6,5 / 6**, **6 / 5,5**, **6 / 6,5**. Les deux préfèrent le cadrage plus large de l'itération 10 pour le
+  parvis et l'entraînement (« il garde les bannières, la tente et les personnages entiers », « les créneaux et le ciel au-dessus des
+  bannières : on lit un château »), K aussi pour la place festive. Rapportée à un district à 8 : l'itération 10 à 7 (parvis), 6,75
+  (entraînement), 7 (place festive). Verdicts : place festive « oui avec réserves » (K), le reste « pas encore ».
+- Leurs raisons structurelles : des rez-de-chaussée morts (« pas de devantures, rien d'éclairé »), des foules réparties « comme des pions,
+  toutes tournées vers la caméra », une lumière du jour plate (aucune ombre portée à travers la place), la même balustrade dans chaque place,
+  le parvis « un mur, pas un château » (« des tours à toits d'ardoise »), le milieu de la place festive à meubler (« un puits ou une
+  charrette »).
+
+### Itération 12
+- Revenu à la caméra de l'itération 10 ; gardés de l'itération 11 : la nuit en flaques, l'ombre au bout du passage, la table de la place
+  festive, le ring agrandi et le brasero du mannequin (le panneau K : « la version qui garde le héros dans la lumière »).
+- Les rangées latérales tout en devantures (plus de maison sans boutique au rez-de-chaussée : leurs auvents, leurs intérieurs, leurs
+  enseignes).
+- La foule deux par deux à ses points, chaque paire tournée l'une vers l'autre (le second à 0,8 m, du premier côté libre de ce qui se tient
+  là).
+- Le soleil de midi des places plus bas et de côté (élévation 62 → 50°, azimut 12 → 32°) : des ombres portées à travers la place.
+- Le parvis : un toit d'ardoise en pyramide sur chaque tour de la porte, son épi de laiton et son fanion.
+- L'entraînement : son bord sud une clôture de bois pour les spectateurs (les deux autres places gardent la balustrade) ; le cercle de craie
+  éteint la nuit.
+- La place festive : un puits au milieu (sa margelle, ses deux montants, son treuil, son petit toit d'ardoise, un seau).
+
 ### Les tests prouvés par des défauts injectés (Passes VP3 à VP5) — [OK]
 - Cinq défauts, chacun attrapé, les fichiers rendus octet pour octet (`cmp`) : les huit emblèmes du tournoi peints aussi dans l'atlas
   d'aujourd'hui (`v2-heraldry` : 1 échec, l'empreinte des appels), une bannière d'une place revenue à la fleur de lys (`v2-heraldry` : 1), une

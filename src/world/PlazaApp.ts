@@ -48,16 +48,17 @@ export const PROVISIONAL = ['odo', 'anwen', 'hilde', 'corvin', 'pip', 'lio', 'or
  *  shadow); the morning from the south-east, the end of day low and golden from the south-west (its long shadows), midday high. [KO] the
  *  first build's moon, from the north-west at 33 deg: the Colosseum's wall (13 m) shadowed the whole forecourt at night. */
 export function plazaKeyLight(look: DayLook | null, t: DayTime | null): THREE.Vector3 {
-  const [az, el] = !look || !t ? [-25, 32] : t === 'morning' ? [40, 22] : t === 'midday' ? [12, 62] : [-55, 15];
+  // (midday a little lower and from the side, journal Passe VP6, tenth critique: « flat daylight, no building throws a shadow across the square »)
+  const [az, el] = !look || !t ? [-25, 32] : t === 'morning' ? [40, 22] : t === 'midday' ? [32, 50] : [-55, 15];
   const a = THREE.MathUtils.degToRad(az), e = THREE.MathUtils.degToRad(el);
   return new THREE.Vector3(Math.sin(a) * Math.cos(e), Math.sin(e), Math.cos(a) * Math.cos(e)).normalize();
 }
 /** the squares' camera (journal Passe VP1): the Merchant District's language (a low pitch, a long lens, the facades as the backdrop, the
  *  characters at B's size on screen: B is 8 deg / 26 m / fov 30 with characters x 1.12) instead of the first build's high, wide view (22 deg,
  *  17 m, fov 40) that showed mostly the floor; each square turned a little toward the side that composes best */
-// (journal Passe VP6, ninth critique: « an open field with its props spread round the edge, where R packs its props into a narrow street;
-// almost no sky shows »: a lower, longer lens, less of the square's floor and more of its façades in the frame)
-const CAM = { pitch: 5.5, pitchNorth: 5, dist: 22, distNorth: 18.5, fov: 30, ty: 2.6, lead: 2.5, yawGain: 1.2 };
+// (journal Passe VP6, iteration 11: a lower, longer lens, 5.5 deg / 22 m / fov 30, lost to the wider one in both panels of the tenth critique:
+// « the wider frame keeps the banners and the bandstand whole »)
+const CAM = { pitch: 7, pitchNorth: 6.5, dist: 21, distNorth: 18, fov: 35, ty: 2.6, lead: 2.5, yawGain: 1.2 };
 const BASE_YAW: Record<PlazaKind, number> = { forecourt: 18, training: 22, festival: -20 };
 /** the haze of the squares (journal Passe VP6): where it starts (m) and its density against the day state's (DEV `plazafog=start,density`) */
 const PLAZA_FOG = { start: 12, density: 1.6 };
@@ -247,9 +248,14 @@ export class PlazaApp {
       this.people.push(a); this.who.set(a, id);
     }
     // the crowd: the five townsfolk in turn (their V1 variants by id), walking between the square's points
+    // two by two at their points, each pair turned to each other (journal Passe VP6, tenth critique: « figures stand apart like pieces on a
+    // board and all face the camera »)
     for (let i = 0; i < this.opts.crowd; i++) {
-      const p = this.place.wander[i % this.place.wander.length];
-      const a = this.actor(`crowd${i % 5}`, 'crowd', p[0], p[1], 200 + i);
+      const p = this.place.wander[Math.floor(i / 2) % this.place.wander.length], second = i % 2 === 1;
+      // the partner beside the point, on the first side clear of what stands there
+      const W = this.place.walk, side = [1, -1].find((sx) => { const x = p[0] + sx * 0.8, z = p[1] + 0.15; return x > W.x0 && x < W.x1 && this.place.blockers.every((o) => Math.hypot(x - o.x, z - o.z) >= o.r + 0.3); }) ?? 0;
+      const a = this.actor(`crowd${i % 5}`, 'crowd', p[0] + (second ? side * 0.8 : 0), p[1] + (second && side ? 0.15 : 0), 200 + i);
+      a.dir = 'side'; a.flip = second ? side < 0 : side >= 0;
       a.behaviour = { kind: 'wander', seed: 31 * i + 7, idx: (i * 3) % this.place.wander.length, wait: (i % 4) * 0.7 };
       this.people.push(a);
     }
