@@ -476,6 +476,30 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   allumées, aucune au-delà de 16 dans un cadrage.
 - Le TournamentLab (30 graines, oisif et diligent, règles d'aujourd'hui et dynamiques) : **identique** à `main` (`e540e53`).
 
+### La deuxième critique à l'aveugle (itération 1 contre VP7), deux agents — [OK] VP8 devant sur les trois places, pour les deux panneaux
+- Panneau C (le district caché 7,5, R 8) : parvis VP7 **6,5** / VP8 **7** (« The flagpoles and the lit braziers are its only differences,
+  and both help »), entraînement **5,5** / **6** (« The lit braziers give the night its only real focal points, the arena backdrop gives
+  the place an identity »), place festive **6** / **6,5** (« The arena ties the square to the tournament and adds a far layer »).
+  Panneau D (le district caché 7,5, R 8) : parvis **6,5** / **7**, entraînement **5,5** / **6**, place festive **6** / **6,5**.
+- L'écart moyen (VP8 − VP7) : premier tour parvis −0,75, entraînement 0, place festive +0,5 ; deuxième tour **+0,5** partout.
+- Ce qui reste, commun aux deux panneaux : l'arène coupée par le haut du cadre (« it reads as a band of stone rather than a colosseum »,
+  « Frame its rim and push it back with haze ») ; la façade de la porte la nuit, « a flat ambient-blue wall over the whole upper half, lit
+  only by the portcullis glow » ; le sol vide du bas des cadres (la direction de VP7 le garde libre) ; la terre de l'entraînement encore
+  « smeared », son bord avec les pavés ; la rive opposée du plan d'ensemble du district (gelé).
+
+### Itération 2 — [?] l'arène sous une bande de ciel, la porte éclairée de l'intérieur la nuit
+- L'arrivée et le milieu de l'entraînement et de la place festive à **3°** (au lieu de 4,5°), l'arène plus basse : sur une butte de 4,5 m
+  (au lieu de 8), au centre (−20, −115) derrière l'entraînement et (20, −110) derrière la place festive. Le script de la ligne des toits :
+  sa crête **12 à 28 px sous le haut du cadre** (720 lignes) dans les quatre cadrages, au lieu de coupée de 29 à 70 px ; sa surface au-dessus
+  des toits : entraînement 23,4 k / 22,5 k px², place festive 36,4 k / 31,9 k (coupée, avant : 34,2 k / 25,6 k et 55,5 k / 44,7 k). Le
+  plan du monument (le ring, la scène) n'est pas changé. Le test des cadrages passe à 3°. [KO] 2° : à l'entraînement, ses maisons hautes
+  coupent toujours l'arène ; la reculer (−125 à −160 m) sans la hausser : elle passe sous les toits.
+- La porte du parvis la nuit : une lumière basse au fond de quelques arches de l'étage (au-dessus des tunnels éclairés, deux et quatre
+  travées de la porte), sans lumière à elle (l'ambiance hors budget), qui s'éteint vers le haut (la teinte par sommet, `aoY`, que le verre
+  multiplie). Pensée : une boîte du verre sans coordonnées de texture prend le bord de l'atlas (`boxUV` hors de [0, 1], bloqué au bord,
+  la bordure sombre des cases) : les tunnels « éclairés la nuit » depuis VP6 étaient noirs ; avec la case chaude, d'abord des rectangles
+  orange saturés (« red slab », troisième critique de VP6), puis le dégradé. Les arches et les torches de l'arène lointaine de même.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

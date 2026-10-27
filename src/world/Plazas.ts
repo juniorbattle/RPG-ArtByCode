@@ -759,9 +759,14 @@ function colosseum(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, 
       // the ground tier's arch (the gate wider and taller), the upper tier's
       if (b.gate) arch(0, 0, 2.1, 4.0, 0, stoneLt, false, day ? 7 : 0); else arch(0, 0, 1.25, 3.4, 0, stoneLt);
       // the tunnels behind two ground arches either side lit at night (the arena's galleries; the third critique's « red slab » was an upper arch)
-      if (!day && !b.gate && [2, 4].includes(Math.abs(Math.round(b.a * R / bayW)))) S.get('glow').boxMM(-1.24, 0, -0.69, 1.24, 3.4, -0.68, { tint: [0.34, 0.2, 0.08] });
+      // (the glass atlas's hot cell since journal Passe VP8, fading upward: without uvs a box samples the atlas's dark edge, and these tunnels
+      // were black)
+      if (!day && !b.gate && [2, 4].includes(Math.abs(Math.round(b.a * R / bayW)))) S.get('glow').boxMM(-1.24, 0, -0.69, 1.24, 3.4, -0.68, { tint: [0.24, 0.14, 0.06], uvs: COAL_UV, aoY: [1, 0.15] });
       arch(0, TIER_G + 0.55, 0.95, 1.6, -0.1, stoneLt, day);
-      // at night the arena's galleries keep a light in one upper arch out of three (journal Passe VP6: the facade a dark wall at night)
+      // at night the galleries keep a dim light deep in a few upper arches, over the lit tunnels (journal Passe VP8, the second
+      // critique: « At night it becomes a flat ambient-blue wall over the whole upper half, lit only by the portcullis glow »; glows without a
+      // light, the light plan's ambient; the third critique's « red slab » was a whole upper arch lit, flush with the facade)
+      if (!day && !b.gate && [2, 4].includes(Math.abs(Math.round(b.a * R / bayW)))) S.get('glow').boxMM(-0.62, TIER_G + 0.62, -0.69, 0.62, TIER_G + 0.55 + 1.6 + 0.5, -0.68, { tint: [0.17, 0.1, 0.045], uvs: COAL_UV, aoY: [1, 0.15] });
       // the wall between the arches' heads and the string course above them (the first try left both open onto the sky)
       const top = b.gate ? 6.1 : 4.65, upTop = TIER_G + 0.55 + 1.6 + 0.95;
       Pl.boxMM(-hw + 0.42, top, -0.12, hw - 0.42, TIER_G + 0.05, -0.02, { tint: stucco });
@@ -865,8 +870,10 @@ function flameAt(S: SlotSet, day: boolean, x: number, y: number, z: number, h: n
  *  rows, on its rise (`y0`: at its height on level ground the 13-14 m roofs 45 m from the camera hid it whole, a script's count of the
  *  frames' skyline), in the forecourt's language: two tiers of arches between piers, string courses, a crenellated cornice, the cavea's
  *  inner wall rising behind with the masts and pennants of the tournament on its rim; only the half facing the square, each bay a part.
- *  [KO] VP6's drum, a cylinder with two dark bands: « a long untextured grey curved wall », « a placeholder backdrop » (journal Passe VP7) */
-const FAR_ARENA: Partial<Record<PlazaKind, { c: [number, number]; y0: number }>> = { training: { c: [-20, -110], y0: 8 }, festival: { c: [20, -110], y0: 8 } };
+ *  [KO] VP6's drum, a cylinder with two dark bands: « a long untextured grey curved wall », « a placeholder backdrop » (journal Passe VP7);
+ *  on an 8 m rise under the framings at 4.5°, its rim cut by the frame, « a band of stone rather than a colosseum » (the second critique):
+ *  4.5 m under the framings at 3°, its rim 12-28 px under the frame's top at 720 lines (the script's count) */
+const FAR_ARENA: Partial<Record<PlazaKind, { c: [number, number]; y0: number }>> = { training: { c: [-20, -115], y0: 4.5 }, festival: { c: [20, -110], y0: 4.5 } };
 const ARENA_R = 52;
 function farArena(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, cx: number, cz: number, y0: number): void {
   // (its stone a step darker than the forecourt's: at 80-110 m the squares' haze lifts it toward the sky's value, the first capture « pale »)
@@ -911,14 +918,14 @@ function farArena(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, c
       for (const m of [-hw / 2, hw / 2]) St.boxMM(m - 0.45, TU + 0.95, -0.5, m + 0.45, TU + 1.6, -0.1, { tint: stoneLt });
       // at night the galleries behind one ground arch in three lit (the forecourt's tunnels), and one upper arch in four, the tier the squares
       // see over their roofs (emissive: the light plan's ambient, no light of its own)
-      if (!day && i % 3 === 1) S.get('glow').boxMM(-hw + 0.45, 0, -0.57, hw - 0.45, 3.3, -0.56, { tint: [0.34, 0.2, 0.08] });
-      if (!day && i % 4 === 2) S.get('glow').boxMM(-0.9, TG + 0.55, -0.57, 0.9, TG + 2.15, -0.56, { tint: [0.28, 0.16, 0.07] });
+      if (!day && i % 3 === 1) S.get('glow').boxMM(-hw + 0.45, 0, -0.57, hw - 0.45, 3.3, -0.56, { tint: [0.3, 0.18, 0.07], uvs: COAL_UV, aoY: [1, 0.2] });
+      if (!day && i % 4 === 2) S.get('glow').boxMM(-0.9, TG + 0.55, -0.57, 0.9, TG + 2.15, -0.56, { tint: [0.24, 0.14, 0.06], uvs: COAL_UV, aoY: [1, 0.2] });
       // the cavea's inner wall behind (the arena's upper rim: the second plane of the silhouette), a window in one bay out of two, its cornice
       Pl.quad([-ihw, TU, -IN], [ihw, TU, -IN], [ihw, RIM, -IN], [-ihw, RIM, -IN], { tint: [stone[0] * 1.02, stone[1] * 1.02, stone[2] * 1.02], ao: [0.75, 0.75, 1, 1] });
       St.boxMM(-ihw - 0.02, RIM, -IN - 0.4, ihw + 0.02, RIM + 0.5, -IN + 0.35, { tint: stoneLt });
       if (i % 2) Dk.quad([-0.6, RIM - 3.7, -IN + 0.02], [0.6, RIM - 3.7, -IN + 0.02], [0.6, RIM - 1.7, -IN + 0.02], [-0.6, RIM - 1.7, -IN + 0.02], { tint: dark });
       // at night a torch on the rim every third bay (its crown against the night sky)
-      if (!day && i % 3 === 1) S.get('glow').box(0, RIM + 0.85, -IN + 0.3, 0.3, 0.42, 0.3, { tint: [1, 0.6, 0.25] });
+      if (!day && i % 3 === 1) S.get('glow').box(0, RIM + 0.85, -IN + 0.3, 0.3, 0.42, 0.3, { tint: [1, 0.6, 0.25], uvs: COAL_UV, aux: [0, 1, (i * 0.37) % 1, 0] });
       // a mast on the rim every third bay, the tournament's pennant (the velarium's masts: the arena's crown over the roofs)
       if (i % 3 === 0) {
         S.get('timber').boxMM(-0.08, RIM + 0.5, -IN - 0.08, 0.08, RIM + 6.4, -IN + 0.08, { tint: [0.5, 0.42, 0.34], grain: 'y' });
