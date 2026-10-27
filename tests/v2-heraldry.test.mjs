@@ -82,7 +82,7 @@ test('the pages that fly it: the squares always, the town and the arena of a ver
   assert.match(src('src/world/PlazaApp.ts'), /setTournamentHeraldry\(true\);\n    this\.lib = await MaterialLibrary\.build\(/);
   assert.match(src('src/app/App.ts'), /setTournamentHeraldry\(this\.opts\.params\.get\('heraldry'\) === 'tournament'\);\n    this\.lib = await MaterialLibrary\.build\(/);
   assert.match(src('src/arena/ArenaApp.ts'), /setTournamentHeraldry\(this\.rules === 'v2'\);\n    this\.lib = await MaterialLibrary\.build\(/);
-  assert.match(src('src/ui/playTown.ts'), /if \(isV2\(st\)\) q\.set\('heraldry', 'tournament'\);/);
+  assert.match(src('src/ui/playTown.ts'), /if \(isV2\(st\)\) \{ q\.set\('heraldry', 'tournament'\); q\.set\('skyline', 'arena'\); \}/);
   assert.match(src('src/materials/MaterialLibrary.ts'), /emblem: makeEmblemAtlas\(emblemAtlasRows\(\)\)/);
   // the place apps of today's game (the forecourt and Lantern Row pages) never set it
   assert.doesNotMatch(src('src/world/PlaceApp.ts'), /setTournamentHeraldry/);

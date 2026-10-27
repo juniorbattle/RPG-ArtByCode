@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { MaterialLibrary } from '../materials/MaterialLibrary';
 import { setTournamentHeraldry } from '../materials/CanvasArt';
+import { setSkylineArena } from '../district/DistantCity';
 import { defaultPainters } from '../materials/PainterPool';
 import { FrameCap, parseFrameCap, frameCapLabel, type FrameCapMode } from './FrameCap';
 import { PostFX } from '../atmosphere/PostFX';
@@ -185,6 +186,9 @@ export class App {
     const painters = pq === 'main' ? 0 : pq !== null && /^\d+$/.test(pq) ? +pq : defaultPainters();
     // the main thread idles while the workers paint: the frame cap measures the display's vsync interval meanwhile
     this.frameCap.probe();
+    // `skyline=arena` (a version 2 game's town, journal Passe VP8): the tournament's arena on the far city's slope in the cathedral's place;
+    // absent = the cathedral, byte for byte
+    setSkylineArena(this.opts.params.get('skyline') === 'arena');
     // `heraldry=tournament` (a version 2 game's town, journal Passe VP3): the emblem atlas with the tournament's eight and its banners; absent =
     // today's atlas and banners, byte for byte
     setTournamentHeraldry(this.opts.params.get('heraldry') === 'tournament');

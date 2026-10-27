@@ -233,6 +233,38 @@ function archBridge(B: MeshBuilder, o: BridgeOpts): void {
 
 /** what the district needs to bake and finish the background: the geometry (tagged with visibility parts) and
  *  its one cheap material */
+/** `skyline=arena` (a version 2 game's town, journal Passe VP8, the operator, word for word: « je veux intégrer une visibilité commune qui
+ *  est la perception du grand colisee/arène de combat en fond arrière pour garde cet élément principale au jeu »): the tournament's arena on
+ *  the upper city's slope in the cathedral's place, left of the castle in A's vista; absent = the cathedral, byte for byte */
+let SKYLINE_ARENA = false;
+export function setSkylineArena(on: boolean): void { SKYLINE_ARENA = on; }
+
+/** the arena as the far city sees it, in its one material: a drum of three arcaded tiers (the facade kind's arched bays, one a bay and a
+ *  tier, lit at night as the far windows), cornices between them, an attic with its small windows and a parapet, the tournament's pennants
+ *  on masts round the rim; ids id..id + 2 (the cathedral's three) */
+function skylineArena(B: MeshBuilder, cx: number, cy: number, cz: number, id: number): void {
+  const R = 24, n = 40, tier = 7, top = cy + tier * 3, attic = top + 4.5, stone: V3 = [0.4, 0.38, 0.36], band: V3 = [0.46, 0.44, 0.41];
+  const P = (a: number, r: number, y: number): V3 => [cx + Math.sin(a) * r, y, cz + Math.cos(a) * r];
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2, am = (a0 + a1) / 2, out: V3 = [Math.sin(am), 0, Math.cos(am)];
+    // the arcades: the facade kind's arched windows, a bay a cell (2.2 u), a tier a cell (4.4 v), the plinth below cy (v < 0: no window)
+    qf(B, [P(a0, R, cy - 3), P(a1, R, cy - 3), P(a1, R, top), P(a0, R, top)], out, { tint: stone, aux: [0.22, cy, id, LAND], uvs: [0, -3 / tier * 4.4, 2.2, -3 / tier * 4.4, 2.2, 3 * 4.4, 0, 3 * 4.4], ao: [0.7, 0.7, 1, 1] });
+    // the attic: the plain wall's small windows, two a bay; its foot darkened as a cornice by the shader's plinth line
+    qf(B, [P(a0, R - 0.4, top), P(a1, R - 0.4, top), P(a1, R - 0.4, attic), P(a0, R - 0.4, attic)], out, { tint: stone, aux: [0.08, top, id + 1, WALL], uvs: [0, 0, 3.2, 0, 3.2, 2.6, 0, 2.6] });
+  }
+  B.frame.push(mat([cx, 0, cz]));
+  for (let k = 1; k <= 3; k++) B.cylinder(R + 0.45, cy + tier * k - 0.55, cy + tier * k + 0.15, n, { tint: band, aux: [0, cy, id + 2, PLAIN], r1: R + 0.45, capTop: false });
+  B.cylinder(R - 0.1, attic, attic + 0.7, n, { tint: band, aux: [0, cy, id + 2, PLAIN], r1: R - 0.1, capTop: false });
+  B.frame.pop();
+  // the masts and the tournament's pennants round the rim (royal blue and gold, the squares' heraldry)
+  for (let k = 0; k < 16; k++) {
+    const a = (k / 16) * Math.PI * 2 + 0.1, b = P(a, R - 0.6, attic + 0.7), t: V3 = [b[0], attic + 6, b[2]], d: V3 = [Math.cos(a) * 2.4, 0, -Math.sin(a) * 2.4];
+    B.boxMM(b[0] - 0.18, attic, b[2] - 0.18, b[0] + 0.18, attic + 6, b[2] + 0.18, { tint: [0.2, 0.17, 0.15], aux: [0, cy, id + 2, PLAIN] });
+    const pen: V3 = k % 2 ? [0.62, 0.5, 0.2] : [0.16, 0.22, 0.55];
+    B.tri([t[0], t[1] - 0.1, t[2]], [t[0], t[1] - 1.7, t[2]], [t[0] + d[0], t[1] - 0.9, t[2] + d[2]], { tint: pen, aux: [0, cy, id + 2, PLAIN] });
+  }
+}
+
 export interface DistantCityDraft { builder: MeshBuilder; material: THREE.ShaderMaterial }
 
 export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictConfig, register: (m: PartMeta) => number): DistantCityDraft {
@@ -405,7 +437,12 @@ export function buildDistantCity(rng: Rng, lib: MaterialLibrary, cfg: DistrictCo
     tower(B, cx - 5, cy + 20, cz + 4, 1.6, 6, 8, cw, cr, id++, 0.2);
   }
   // cathedral on the lower slope: nave + crossing spire + west towers, scaled down to stay subordinate
-  {
+  // (in a version 2 game's town the tournament's arena stands in its place, `skyline=arena`: journal Passe VP8)
+  if (SKYLINE_ARENA) {
+    tag({ kind: 'landmark', tier: 2, group: 'arena' });
+    skylineArena(B, 200, hill(200, -34) - 0.5, -34, id);
+    id += 3;
+  } else {
     tag({ kind: 'landmark', tier: 2, group: 'cathedral' });
     const LX = 200, LZ = -34, LY = hill(LX, LZ) - 0.5, cw: V3 = [0.31, 0.3, 0.33], cr: V3 = [0.1, 0.11, 0.16];
     B.boxMM(LX - 16, LY - 3, LZ - 5, LX + 16, LY + 12, LZ + 5, { tint: cw, aux: [0.16, LY, 950, LAND], skip: ['-y', '+y'] });

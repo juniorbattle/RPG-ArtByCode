@@ -24,8 +24,9 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   let st = st0;
   const q = new URLSearchParams(townQuery(st));
   for (const k of CARRY_TOWN) if (b.params.has(k)) q.set(k, b.params.get(k)!);
-  // a version 2 game's town flies the tournament's heraldry (journal Passe VP3); today's game keeps its banners
-  if (isV2(st)) q.set('heraldry', 'tournament');
+  // a version 2 game's town flies the tournament's heraldry (journal Passe VP3) and sees the arena over the far city (journal Passe VP8); today's
+  // game keeps its banners and its cathedral
+  if (isV2(st)) { q.set('heraldry', 'tournament'); q.set('skyline', 'arena'); }
   // arriving by a way in (journal Passe VP5): from the forecourt at the quay's east end past the guards, from the festival at its west end
   const arrive = isV2(st) ? b.params.get('arrive') : null;
   if (arrive === 'forecourt' && !b.params.has('player')) q.set('player', `${WALK.x1 - 1.4},0`);

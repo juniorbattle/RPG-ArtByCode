@@ -392,6 +392,20 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   2,8 k (le cadrage regarde la scène, au fond). Le test des cadrages (le héros dans le cadre et au-dessus du bord proche, aucun monument qui le
   cache ou que le bas du cadre coupe) passe aux nouveaux tangages.
 
+### Lot A2 : l'arène vue du quai d'une partie de la version 2 (`skyline=arena`, `src/district/DistantCity.ts`) — [OK]
+- La « visibilité commune » jusqu'au quai : dans le district, seul le plan d'ensemble A (le bout ouest du quai et l'arrivée) montre le ciel
+  de la ville lointaine (B n'en montre qu'un coin en haut à droite, D aucun : captures de travail). Dans une partie de la version 2, l'arène se
+  dresse sur la pente de la ville haute à la place de la cathédrale, à gauche du château, dans l'ouverture entre la rangée du quai et lui :
+  un tambour de 24 m de rayon, trois étages d'arcades (les baies cintrées du matériau lointain, une par travée et par étage, éclairées la nuit
+  comme ses fenêtres), des cordons, un attique et ses petites fenêtres, un parapet, seize mâts aux fanions bleus et or du tournoi ; dans le
+  seul matériau de la ville lointaine.
+- `skyline=arena`, posé par la page de jeu pour une partie de la version 2 seulement, à côté de `heraldry=tournament` ; absent = la
+  cathédrale. La ville lointaine d'aujourd'hui est construite **octet pour octet** comme sur `main` (empreinte SHA-256 de ses tampons et de
+  ses parties, `4e80a621…`, la même sur `main` et sur la branche) ; avec l'arène, toutes les autres parties (le château, la ville haute, les
+  arbres après elle) gardent leurs sommets : ni tirage du générateur ni identifiant déplacé (`tests/v2-skyline.test.mjs`, quatre tests ; six
+  fautes injectées, six prises, les fichiers rendus à l'octet près). Le test des emblèmes suit la ligne de `playTown.ts` qui pose les deux.
+- Vu en jeu (la page de jeu, une partie de la version 2, le premier matin, `camera=A`) : l'arène au-dessus de la ville dans la brume du matin.
+
 ### Lot B : la lumière du jour (`src/world/PlazaApp.ts`) — [OK]
 - Le soleil un peu plus bas contre le ciel (`PLAZA_SUN` : gain 1,18 → **1,05**), le remplissage du ciel, du sol et de la lumière d'appoint
   plus haut (0,86 → **1,5**, `uFillCol` compris), la saturation × **0,95** : les ombres portées et les ouvertures ne tombent plus à un bleu
