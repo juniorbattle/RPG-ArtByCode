@@ -38,14 +38,16 @@ export function heroPoints(place: Pick<PlazaBuild, 'walk' | 'lanes'>, step = POS
 
 /** every pose the square's camera can take (journal Passe VP7): each framing over its zone grown by the hysteresis, at every hero's place; a
  *  framing's change (the page eases every field toward the new framing while the hero walks on: between the old framing at the hero's place
- *  and the new one at a neighbouring place, `step` m away at most, the district's blend poses); a dialogue's look at each person's spot and
+ *  and the new one at the same place or a step nearer or farther, on every other column of the grid, the district's blend poses); a dialogue's look at each person's spot and
  *  the way there from every framing the spot can be seen in; the cutscenes' looks and the moves between them, from the framing of each way in */
 export function plazaBakePoses(kind: PlazaKind, place: Pick<PlazaBuild, 'walk' | 'lanes' | 'spots' | 'exits'>, step = POSE_STEP): BakePose[] {
   const out: BakePose[] = [], push = (pose: CamPose, player?: [number, number]) => out.push({ set: 'A', pose, ...(player ? { player } : {}) });
   for (const [x, z] of heroPoints(place, step)) {
     const F = framingsAround(kind, x, z);
     for (const f of F) push(framingPose(f, x, z), [x, z]);
-    if (F.length < 2) continue;
+    // (the moves on every other column of the grid: a framing's pivot follows the hero by its gain, a column apart they differ by 1.5 m at
+    // most; journal Passe VP7, every column made the bake five times the first build's)
+    if (F.length < 2 || Math.round((x - place.walk.x0) / step) % 2) continue;
     for (const a of F) for (const b of F) if (a !== b) for (const [dx, dz] of NEAR) for (const t of BLEND) push(lerpPose(framingPose(a, x, z), framingPose(b, x + dx * step, z + dz * step), t));
   }
   // a dialogue turns the camera to the person spoken to (9 m, playPlaza's focus), from the hero's framing beside them: the look and the way there
@@ -69,7 +71,7 @@ export function plazaBakePoses(kind: PlazaKind, place: Pick<PlazaBuild, 'walk' |
 }
 
 /** the hero's moves during a framing's change: from the place where it starts to a neighbouring one (and staying put) */
-const NEAR: Array<[number, number]> = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]];
+const NEAR: Array<[number, number]> = [[0, 0], [0, 1], [0, -1]];
 /** the blends sampled on a move between two looks */
 const BLEND = [0.25, 0.5, 0.75];
 /** a pose between two, field by field (the page's easing) */

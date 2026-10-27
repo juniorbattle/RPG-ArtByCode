@@ -246,16 +246,19 @@ export class PlazaApp {
       this.people.push(a); this.who.set(a, id);
     }
     // the crowd (journal Passe VP7): the five townsfolk in turn (their V1 variants by id), gathered by the moment of the day at the square's
-    // points (PLAZA_GATHER): one by one in the morning, by threes at midday, two by two at the end of the day and at night, each group turned
-    // to its first member (journal Passe VP6, tenth critique: « figures stand apart like pieces on a board and all face the camera »)
+    // points (PLAZA_GATHER): one by one in the morning, by threes at midday, two by two at the end of the day and at night, each group in a
+    // ring round its point, every member turned to its middle (journal Passe VP6, tenth critique: « figures stand apart like pieces on a board
+    // and all face the camera »; VP7, first critique: three abreast read as « queue-like rows », « a police lineup »)
     const G = CROWD[this.period], W = this.place.walk;
-    const clear = (x: number, z: number) => x > W.x0 && x < W.x1 && this.place.blockers.every((o) => Math.hypot(x - o.x, z - o.z) >= o.r + 0.3);
+    const clear = (x: number, z: number) => x > W.x0 && x < W.x1 && z > W.z0 && z < W.z1 && this.place.blockers.every((o) => Math.hypot(x - o.x, z - o.z) >= o.r + 0.3);
     for (let i = 0; i < this.opts.crowd; i++) {
-      const m = i % G.size, p = this.place.wander[Math.floor(i / G.size) % this.place.wander.length];
-      // the second to one side of the first, the third to the other, on sides clear of what stands there
-      const sides = [1, -1].filter((sx) => clear(p[0] + sx * 0.8, p[1] + 0.15)), side = m === 0 ? 0 : (sides[m - 1] ?? 0);
-      const a = this.actor(`crowd${i % 5}`, 'crowd', p[0] + side * 0.8, p[1] + (side ? 0.15 : 0), 200 + i);
-      a.dir = 'side'; a.flip = m === 0 ? (sides[0] ?? 1) > 0 : side < 0;
+      const g = Math.floor(i / G.size), m = i % G.size, p = this.place.wander[g % this.place.wander.length];
+      const a0 = 0.6 + g * 1.9 + (m * Math.PI * 2) / G.size, rr = G.size === 1 ? 0 : G.size === 2 ? 0.45 : 0.6;
+      let x = p[0] + Math.cos(a0) * rr, z = p[1] + Math.sin(a0) * rr * 0.8;
+      if (!clear(x, z)) { x = p[0]; z = p[1]; }
+      const a = this.actor(`crowd${i % 5}`, 'crowd', x, z, 200 + i);
+      const dx = p[0] - x, dz = p[1] - z;
+      if (G.size === 1 || Math.abs(dx) >= Math.abs(dz) * 0.8) { a.dir = 'side'; a.flip = G.size === 1 ? i % 2 === 0 : dx > 0; } else a.dir = dz > 0 ? 'down' : 'up';
       a.behaviour = { kind: 'wander', seed: 31 * i + 7, idx: (i * 3) % this.place.wander.length, wait: G.linger[0] * (0.4 + (i % 4) * 0.2) };
       this.people.push(a);
     }

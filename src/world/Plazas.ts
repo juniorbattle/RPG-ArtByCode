@@ -81,15 +81,15 @@ const COMMON = { asymmetry: 0.42, timberRatio: 0.32, roofExaggeration: 0.95, ver
 /** the share of lit windows at night (the first number, 0.46, lit nine windows in fourteen on a house: the district's frontage reads about a
  *  quarter lit, journal Passe VP1) */
 const LIT_WINDOWS = 0.3;
-// (z1 3.6 since journal Passe VP7: the framings keep the near edge out of the frame only while the hero stays 4.4 m or more from it; the
+// (z1 3.4 since journal Passe VP7: the framings keep the near edge out of the frame only while the hero stays 4.6 m or more from it; the
 // quay's gate lane goes on to the kerb)
-const W = { x0: -11, x1: 11, z0: -16, z1: 3.6 };
+const W = { x0: -11, x1: 11, z0: -16, z1: 3.4 };
 /** the walkable surface of every square (metres) */
 export const PLAZA_WALK: Readonly<typeof W> = W;
 /** where the people stand on each square (person id -> x, z): the registrar's table, the armourer's stall, the healer's corner, the champion
  *  on the way, the guards at the gate; the master's shed, the rings, the butts; the puppets, the bandstand, the stage (« proposé ») */
 export const PLAZA_SPOTS: Record<PlazaKind, Record<string, [number, number]>> = {
-  forecourt: { odo: [-7.9, -10.6], hilde: [7.5, -2.6], anwen: [-6.8, 2.4], guardA: [-2.3, -15.9], guardB: [2.3, -15.9], marek: [5.6, -6.8], orla: [-5.2, -2.6], vessa: [-1.6, -12.6], ilse: [6.2, -11.6] },
+  forecourt: { odo: [-7.9, -10.6], hilde: [7.5, -2.6], anwen: [-7.6, -0.6], guardA: [-2.3, -15.9], guardB: [2.3, -15.9], marek: [5.6, -6.8], orla: [-5.2, -2.6], vessa: [-1.6, -12.6], ilse: [6.2, -11.6] },
   training: { corvin: [-6.2, -14.6], orla: [8.2, -8.4], ilse: [-2.8, -5.6], vessa: [-0.6, -3.6], drill: [-7.2, -2.4] },
   festival: { pip: [-8.0, -7.0], lio: [-4.2, -10.4], cassius: [1.6, -11.4], bard: [1.4, -13.2] },
 };
@@ -102,22 +102,28 @@ export type PlazaPeriod = 'morning' | 'midday' | 'afternoon' | 'night';
 export const PLAZA_GATHER: Record<PlazaKind, Record<PlazaPeriod, Array<[number, number]>>> = {
   forecourt: {
     morning: [[-7.6, -11.6], [7.6, -3.6], [-6.6, 0.4], [0, -13.4], [5.6, -12.4], [-3.0, -3.0]],
-    midday: [[-7.4, -8.6], [7.4, -6.6], [-6.4, -0.4], [-2.8, -13.6], [3.0, -13.2], [6.4, -12.0], [-6.6, -13.8], [0.8, -3.6], [-1.4, -9.2], [4.4, -8.6]],
+    midday: [[-7.4, -8.6], [7.4, -6.6], [-6.4, -0.4], [-2.8, -13.6], [3.0, -13.2], [6.4, -12.0], [-6.6, -13.8], [2.6, -3.0], [-3.4, -10.4], [4.4, -8.6]],
     afternoon: [[-9.6, -5.0], [9.8, -11.4], [0.6, 1.0], [-2.6, -13.4], [7.2, -2.8], [-4.0, -8.0]],
     night: [[-3.0, -13.2], [3.2, -13.0], [-4.0, -5.4], [3.8, -5.4], [-6.6, 0.2]],
   },
   training: {
-    morning: [[-6.0, -0.2], [-8.6, -5.6], [7.8, -8.0], [-2.6, -13.0], [3.0, -2.4], [-8.0, -10.4]],
-    midday: [[-3.4, -4.2], [6.4, -4.2], [0.0, -3.0], [-4.4, -7.8], [-3.4, -1.0], [7.6, -6.6], [-6.4, -12.6], [2.6, -13.2], [5.6, -1.0]],
-    afternoon: [[-9.8, -10.6], [-7.0, -8.6], [-3.0, -12.6], [3.2, -2.0], [6.6, -4.4], [-5.6, 0.0]],
+    morning: [[-6.0, -0.2], [7.8, -8.0], [-2.6, -13.0], [-8.6, -5.6], [3.0, -2.4], [-8.0, -10.4]],
+    midday: [[-3.4, -4.2], [6.4, -4.6], [-6.4, -12.6], [0.0, -2.4], [7.6, -7.2], [-4.4, -8.2], [2.6, -13.2], [-3.4, -0.6], [5.6, -0.8]],
+    afternoon: [[-9.8, -10.6], [3.2, -2.0], [-3.0, -12.6], [6.6, -4.4], [-7.0, -8.6], [-5.6, 0.0]],
     night: [[-3.0, -4.4], [6.0, -4.4], [-3.6, -12.6], [-7.8, -1.0], [6.6, -13.2]],
   },
+  // (the groups gather at the first points of a moment: near ones and far ones in turn, journal Passe VP7, iteration 2: three groups side by
+  // side before the stage read as « two straight rows like a queue »)
   festival: {
-    morning: [[7.4, 0.4], [7.6, -3.2], [7.2, -13.6], [2.4, -12.2], [-5.0, -10.4], [-8.4, -6.4], [0, -1.0]],
-    midday: [[-4.8, -10.4], [-2.4, -11.6], [2.6, -11.8], [6.8, -0.6], [7.0, -4.0], [6.6, -13.2], [-7.6, -5.6], [-1.2, -6.0], [3.0, -6.8], [-4.0, -2.0]],
-    afternoon: [[9.6, -7.4], [0.6, 1.0], [-5.2, -10.6], [2.0, -12.0], [6.8, -3.4], [-3.0, -4.0], [-8.0, -6.0]],
-    night: [[-5.0, -10.8], [1.6, -12.2], [0.8, -8.6], [6.8, -0.4], [-4.6, 1.0], [4.6, 1.0]],
+    morning: [[7.4, -1.6], [-5.0, -9.8], [2.4, -11.8], [7.6, -4.8], [7.2, -13.2], [-8.0, -5.4], [0, -1.0]],
+    midday: [[-4.6, -9.8], [6.8, -1.8], [1.0, -6.0], [3.2, -11.6], [-7.6, -5.2], [7.0, -5.0], [-2.2, -2.4], [6.4, -12.8], [-1.8, -11.8], [3.4, -3.2]],
+    afternoon: [[9.4, -7.6], [0.6, 0.4], [-4.6, -9.6], [6.4, -2.4], [3.2, -11.6], [-2.6, -5.2], [-7.8, -4.0]],
+    night: [[-4.8, -10.2], [1.6, -12.0], [0.2, -7.6], [6.6, -1.4], [-4.6, 0.6], [4.6, 0.6]],
   },
+};
+/** each square's monuments (x, z, radius, height: journal Passe VP7): the framings keep them whole, never cut by the frame's bottom edge */
+export const PLAZA_MONUMENTS: Record<PlazaKind, Array<[number, number, number, number]>> = {
+  forecourt: [[0, -7, 2.4, 4.1]], training: [[1.5, -8.4, 3.4, 3.0]], festival: [[-8.3, -13.2, 2.6, 6.6], [0, -15.2, 3.6, 7.2]],
 };
 /** the training ground's yard of beaten earth (journal Passe VP6): x0, z0, x1, z1 */
 const YARD = [-10.4, -14.8, 10.4, 3.0];
@@ -313,8 +319,25 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     // the way that leads to it; the competitors' pavilions beside the gate; the registrar, the armourer and the healer at the rows' foot. The
     // fountain of the middle, the rack of lances, the crates and the lamps of the middle are gone (journal Passe VP6 had added them one by one)
     colosseum(S, tracked, day, lights, emitters, blockers, obstacles);
-    // the processional way from the quay's gate to the arena's gate: its flagstones the frame's leading line
-    tracked(() => flagstones(S, rng.fork('way0'), [[0, 6.4], [0, -19.0]], 3.2, PAVE));
+    // the processional way from the quay's gate to the arena's gate (its flagstones the frame's leading line), round the fountain at the
+    // heart (journal Passe VP7, both panels of the first critique: « a real focal point »; it was not on the operator's list): its apron, its
+    // water in the canal's material, its lanterns, two lit at night (the guides along the way to the gate)
+    tracked(() => { flagstones(S, rng.fork('way0'), [[0, 6.4], [0, -2.9]], 3.2, PAVE); flagstones(S, rng.fork('way1'), [[0, -11.1], [0, -19.0]], 3.2, PAVE); });
+    tracked(() => apron(S, rng.fork('apron'), 0, -7, 2.45, 4.15, PAVE));
+    fountain(S, tracked, 0, -7);
+    tracked(() => fountainWater(S, 0, -7));
+    if (lib.water) for (const [r, y, n] of [[1.95, 0.47, 8], [1.12, 1.98, 14], [0.6, 3.13, 12]] as Array<[number, number, number]>) {
+      const g = new THREE.CircleGeometry(r, n, Math.PI / 8); g.rotateX(-Math.PI / 2); g.translate(0, y, -7);
+      const m = new THREE.Mesh(g, lib.water); m.name = 'plaza:fountain-water'; m.layers.set(LAYER_NOREFLECT); m.frustumCulled = false; group.add(m);
+    }
+    // the basin (walked round) and its upper bowl (what can hide a head behind it)
+    blockers.push({ x: 0, z: -7, r: 2.5 }, { x: 0, z: -7, r: 1.25, h: 2.05 }); obstacles.push({ x0: -2.3, x1: 2.3, z0: -9.3, z1: -4.7, grime: 0.35 });
+    for (let k = 0; k < 4; k++) {
+      const a = (k / 4) * Math.PI * 2 + Math.PI / 8 + Math.PI / 4, x = Math.cos(a) * 2.28, z = -7 + Math.sin(a) * 2.28;
+      batch.add(day ? 'lanternDark' : 'lantern', { pos: [x, 0.8, z], yaw: a }, 0);
+      if (!day && z > -7) lights.push({ pos: [x, 1.1, z], color: WARM, intensity: 2.8, radius: 7.5, kind: 'lantern', halo: 0, priority: 8 });
+    }
+    puddles.push({ x: -2.6, z: -3.8, r: 1.3, amount: 0.85 }, { x: 3.0, z: -4.4, r: 1.1, amount: 0.8 });
     tracked(() => pavilion(S, lights, day, -9.4, -13.8, 0.55, 1.9, [[0.3, 0.37, 0.7], [0.88, 0.84, 0.72]], 'swords'));
     tracked(() => pavilion(S, lights, day, 9.4, -14.4, -0.55, 1.9, [[0.78, 0.6, 0.3], [0.88, 0.84, 0.72]], 'lances'));
     // the competitors' kit stacked in the corner behind the west pavilion (a corner a southern camera cannot see past it)
@@ -332,23 +355,15 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     blockers.push({ x: 10.5, z: -1.4, r: 1.2 });
     for (const [x, z, k, y] of [[10.4, -6.9, 'crate', 0.3], [10.7, -7.6, 'barrel', 0.8]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, 0, z], yaw: y });
     blockers.push({ x: 10.5, z: -7.2, r: 0.8 });
-    healer(S, batch, -8.6, 1.2, 0.6, blockers, obstacles);
+    // (north of the arrival's strip since journal Passe VP7: its canopy and the healer were cut by the frame's bottom edge)
+    healer(S, batch, -9.6, -1.4, 1.0, blockers, obstacles);
     // her lantern under the canopy, lit at night (sixth critique: « at night the lower-left third is almost black »)
-    batch.add(day ? 'lanternDark' : 'lantern', { pos: xf([0.2, 1.75, 0.3], [-8.6, 0, 1.2], 0.6), yaw: 0.6 }, 0);
-    if (!day) lights.push({ pos: xf([0.2, 1.6, 0.9], [-8.6, 0, 1.2], 0.6), color: WARM, intensity: 2.4, radius: 6.5, kind: 'lantern', halo: 0, priority: 7 });
+    batch.add(day ? 'lanternDark' : 'lantern', { pos: xf([0.2, 1.75, 0.3], [-9.6, 0, -1.4], 1.0), yaw: 1.0 }, 0);
+    if (!day) lights.push({ pos: xf([0.2, 1.6, 0.9], [-9.6, 0, -1.4], 1.0), color: WARM, intensity: 2.4, radius: 6.5, kind: 'lantern', halo: 0, priority: 7 });
     // the gate's braziers burn day and night (the arena's fires, as AD1): the key light, its wet setts before the gate at night
     brazier(-4.6, -15.3, true); brazier(4.6, -15.3, true);
     puddles.push({ x: -2.6, z: -13.2, r: 1.6, amount: 0.95 }, { x: 2.9, z: -12.4, r: 1.3, amount: 0.85 }, { x: 0.8, z: -8.6, r: 1.2, amount: 0.8 });
     lamp(-10.2, -6.0, false);
-    // the tournament's two masts beside the way, half way to the gate, a lantern on each lit at night: the pools that lead the eye along the
-    // way to the gate (the light plan's guides, journal Passe VP7)
-    for (const sd of [-1, 1]) {
-      tracked(() => bannerMast(S, sd * 2.7, -6.4, 7.6, 0, sd < 0 ? 'swords' : 'laurel', sd < 0 ? [0.5, 0.6, 0.95] : [0.95, 0.88, 0.62]));
-      batch.add(day ? 'lanternDark' : 'lantern', { pos: [sd * 2.7 - sd * 0.2, 2.4, -6.1], yaw: 0 }, 0);
-      if (!day) lights.push({ pos: [sd * 2.7 - sd * 0.4, 2.3, -5.8], color: WARM, intensity: 3.0, radius: 7.5, kind: 'lantern', halo: 0, priority: 7 });
-      blockers.push({ x: sd * 2.7, z: -6.4, r: 0.45 }); obstacles.push({ x0: sd * 2.7 - 0.4, x1: sd * 2.7 + 0.4, z0: -6.8, z1: -6.0, grime: 0.5 });
-    }
-    puddles.push({ x: -2.0, z: -4.6, r: 1.2, amount: 0.85 }, { x: 3.4, z: -5.0, r: 1.0, amount: 0.8 });
     // the near edge: a carter's wagon by the quay's gate (out of the framings but at the gate)
     S.append(cart(rng.fork('cart')), mat([-7.6, 0, 6.9], 0.3));
     paths.push([[0, 4], [0, -4], [0, -16.5]], [[-11, -4.3], [-4, -5.5]], [[11, -10.5], [4, -9]], [[-9, 2], [-8.4, -9.6]], [[9, 2], [8.6, -4.4]]);
@@ -381,7 +396,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     for (const [x, z] of [[9.9, -7.4], [9.6, -9.6]] as Array<[number, number]>) { tracked(() => archeryButt(S, x, z, 0.35)); blockers.push({ x, z, r: 0.8, h: 1.9 }); }
     tracked(() => weaponRack(S, -10.4, -6.8)); blockers.push({ x: -10.4, z: -6.8, r: 1.2 }); obstacles.push({ x0: -10.8, x1: -10.0, z0: -8.0, z1: -5.6, grime: 0.6 });
     // the bales and the casks at the rows' foot
-    for (const [x, z, k] of [[-9.3, -2.2, 'hay'], [-9.5, -3.1, 'hay'], [8.6, -11.6, 'bucket'], [7.9, -11.8, 'barrel'], [-8.6, -13.6, 'crate'], [9.0, 1.6, 'hay'], [9.7, 1.2, 'hay'], [-9.0, 2.2, 'barrel']] as Array<[number, number, string]>) {
+    for (const [x, z, k] of [[-9.3, -2.2, 'hay'], [-9.5, -3.1, 'hay'], [8.6, -11.6, 'bucket'], [7.9, -11.8, 'barrel'], [-8.6, -13.6, 'crate'], [9.2, -0.6, 'hay'], [9.9, -1.0, 'hay'], [-9.6, -0.2, 'barrel']] as Array<[number, number, string]>) {
       if (k === 'hay') hay(S, x, z, x + z); else batch.add(k, { pos: [x, 0, z], yaw: x + z }); blockers.push({ x, z, r: 0.6 });
     }
     hay(S, -9.4, -2.65, 1.5, 0.42);
@@ -428,11 +443,11 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     for (const [x, z, k, y] of [[-10.5, -15.4, 'barrel', 0.3], [-9.8, -15.9, 'barrel', 1.1], [-10.7, -16.2, 'crate', 0.5]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, 0, z], yaw: y });
     blockers.push({ x: -10.5, z: -15.7, r: 1.0 });
     // the west row's foot: one heap of casks and crates by the corner house
-    for (const [x, z, k, y] of [[-10.2, 1.0, 'barrel', 0.4], [-10.4, 1.9, 'barrel', 1.3], [-9.6, 1.5, 'crate', 0.2]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, 0, z], yaw: y });
-    blockers.push({ x: -10.1, z: 1.45, r: 0.9 });
+    for (const [x, z, k, y] of [[-10.2, -0.8, 'barrel', 0.4], [-10.4, 0.1, 'barrel', 1.3], [-9.6, -0.3, 'crate', 0.2]] as Array<[number, number, string, number]>) batch.add(k, { pos: [x, 0, z], yaw: y });
+    blockers.push({ x: -10.1, z: -0.35, r: 0.9 });
     // the stalls along the east row, facing the square (the candle seller's lit at night, the potter's, the greengrocer's by the stage)
-    marketStall(9.6, 1.0, -0.55, 'pottery', 2.8, true, [[0.78, 0.6, 0.3], [0.86, 0.82, 0.72]]);
-    marketStall(9.7, -2.8, -0.8, 'candles', 3.0, true, [[0.3, 0.37, 0.7], [0.86, 0.82, 0.72]]);
+    marketStall(9.6, -0.6, -0.6, 'pottery', 2.8, true, [[0.78, 0.6, 0.3], [0.86, 0.82, 0.72]]);
+    marketStall(9.7, -3.4, -0.8, 'candles', 3.0, true, [[0.3, 0.37, 0.7], [0.86, 0.82, 0.72]]);
     marketStall(9.3, -14.6, -0.35, 'produce', 2.6, false, [[0.42, 0.46, 0.5], [0.8, 0.77, 0.7]]);
     house('north0', [-6, 0, -18.4], 0, rng.fork('north0'), { width: 8, floors: 3, shop: 'tavern' });
     house('north1', [5.5, 0, -18.4], 0, rng.fork('north1'), { width: 9, floors: 3, shop: 'general' });
@@ -448,11 +463,11 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       cord(S, hub, end, sg);
       const m = Math.max(2, Math.round(len / 2.3));
       for (let t = 1; t < m; t++) { const p = sag(hub, end, sg, t / m); batch.add('lantern', { pos: [p[0], p[1] - 0.32, p[2]], yaw: t, scale: 1.1 }, 0); }
-      const u = (0 - hub[0]) / (end[0] - hub[0]);
-      if (u > 0.05 && u < 0.6) { const p = sag(hub, end, sg, u); lights.push({ pos: [p[0], 2.6, p[2]], color: WARM, intensity: 2.4, radius: 6.5, kind: 'lantern', halo: 0, priority: 6 }); puddles.push({ x: p[0] + 0.9, z: p[2] + 1.2, r: 1.3, amount: 0.85 }); }
+      // (the two pools under the longest string, the one crossing the court: the guides from the stage to the stalls)
+      if (end[2] === -1.6) for (const u of [0.42, 0.74]) { const p = sag(hub, end, sg, u); lights.push({ pos: [p[0], 2.6, p[2]], color: WARM, intensity: 2.8, radius: 7.5, kind: 'lantern', halo: 0, priority: 6 }); puddles.push({ x: p[0] + 0.9, z: p[2] + 1.2, r: 1.4, amount: 0.9 }); }
     }
     S.append(cart(rng.fork('cart')), mat([7.8, 0, 7.0], -0.35));
-    paths.push([[0, 4], [0, -13]], [[11, -9.6], [4, -10.5]], [[8.6, -2.8], [4, -5]], [[-9.2, -8.4], [-3, -6]], [[-5.6, -12.6], [-1.0, -9.0]]);
+    paths.push([[0, 4], [0, -13]], [[11, -9.6], [4, -10.5]], [[8.6, -3.4], [4, -5]], [[-9.2, -8.4], [-3, -6]], [[-5.6, -12.6], [-1.0, -9.0]]);
     scatter('straw', 4, -10, 10, -15, 2, [0.7, 1.2], [0.5, 0.75]); scatter('leaves', 3, -10, 10, -15, 2, [0.8, 1.3], [0.5, 0.7]);
     scatter('stain', 6, -10, 10, -15, 3, [1.6, 3.0], [0.25, 0.4], 0.014, [0.6, 0.62, 0.68]);
     scatter('crack', 4, -10, 10, -15, 3, [1.2, 2.2], [0.4, 0.7]);
@@ -503,19 +518,16 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   // the skyline beyond the north rows (journal Passe VP6: « no depth past the first row of façades »): the citadel's towers and spires, far
   {
     const r = rng.fork('spires');
-    for (let n = 0; n < 5; n++) {
+    // (three, farther and darker since journal Passe VP7: five near ones read by day as « plain white cones on cylinders »)
+    for (let n = 0; n < 3; n++) {
       far.frame.part = part();
-      const x = (kind === 'training' ? -1 : 1) * (-46 + n * 24 + r.range(-5, 5)), z = -120 - r.range(0, 40);
-      tower(far, x, r.range(2, 8), z, r.range(3.2, 5), r.range(18, 30), r.range(7, 12), [0.3, 0.31, 0.36], [0.12, 0.14, 0.2], 540 + n, day ? 0 : 0.2);
+      const x = (kind === 'training' ? -1 : 1) * (-40 + n * 34 + r.range(-5, 5)), z = -165 - r.range(0, 35);
+      tower(far, x, r.range(2, 8), z, r.range(3.2, 4.4), r.range(20, 28), r.range(8, 12), [0.22, 0.23, 0.28], [0.12, 0.15, 0.26], 540 + n, day ? 0 : 0.2);
     }
     far.frame.part = 0;
   }
-  // the Colosseum seen from the other squares: its drum above the roofs to the north-east (the forecourt stands at its foot)
-  if (kind !== 'forecourt') tracked(() => S.at([kind === 'training' ? 58 : -52, 0, -132], 0, () => {
-    S.get('stone').cylinder(30, 0, 21, 36, { tint: [0.5, 0.49, 0.5] });
-    S.get('stone').cylinder(30.6, 20.4, 22, 36, { tint: [0.54, 0.52, 0.52] });
-    for (const y of [4.5, 11.5]) S.get('dark').cylinder(30.05, y, y + 4, 36, { tint: [0.12, 0.12, 0.15] });
-  }));
+  // (the Colosseum's drum over the other squares' roofs left with journal Passe VP7: both panels of its first critique read it as « a long
+  // untextured grey curved wall », « a placeholder backdrop »)
   const farMat = farMaterial(); disposables.push(farMat);
   if (day) { farMat.defines = { ...farMat.defines, DAY: 1 }; farMat.needsUpdate = true; }
 
@@ -1041,6 +1053,39 @@ function flagstones(S: SlotSet, rng: Rng, pts: Array<[number, number]>, w: numbe
   }
 }
 
+/** the fountain at the forecourt's heart: an octagonal basin with its rim, dark water, a pedestal with a bowl and a spout (the first build's
+ *  glowing water ring read as a target at night) */
+function fountain(S: SlotSet, tracked: (fn: () => void) => void, x: number, z: number): void {
+  tracked(() => S.at([x, 0, z], Math.PI / 8, () => {
+    const St = S.get('stone'), oct = (r: number): Array<[number, number]> => Array.from({ length: 8 }, (_, i) => [Math.cos((i / 8) * Math.PI * 2) * r, Math.sin((i / 8) * Math.PI * 2) * r]);
+    St.prism(oct(2.2), 0, 0.5, { tint: [0.74, 0.71, 0.66], capTop: false, aoY: [0.6, 1] });
+    // the rim as a ring (journal Passe VP6: a capped prism lidded the basin at 0.64 m, the water under it never seen)
+    St.prism(oct(2.36), 0.5, 0.64, { tint: [0.84, 0.8, 0.74], capTop: false });
+    const o0 = oct(1.95), o1 = oct(2.36);
+    for (let i = 0; i < 8; i++) {
+      const j = (i + 1) % 8;
+      quadFacing(St, [[o0[i][0], 0.64, o0[i][1]], [o0[j][0], 0.64, o0[j][1]], [o1[j][0], 0.64, o1[j][1]], [o1[i][0], 0.64, o1[i][1]]], [0, 1, 0], { tint: [0.84, 0.8, 0.74] });
+      const mx = (o0[i][0] + o0[j][0]) / 2, mz = (o0[i][1] + o0[j][1]) / 2;
+      quadFacing(St, [[o0[i][0], 0.3, o0[i][1]], [o0[j][0], 0.3, o0[j][1]], [o0[j][0], 0.64, o0[j][1]], [o0[i][0], 0.64, o0[i][1]]], [-mx, 0, -mz], { tint: [0.6, 0.58, 0.54] });
+    }
+    S.get('dark').prism(oct(1.95), 0.3, 0.32, { tint: [0.1, 0.13, 0.17], capTop: true });
+    // journal Passe VP6 (« a four-legged birdbath »): a heavier column, a wide lower bowl, a second tier and a finial
+    St.lathe([[0.72, 0.4], [0.7, 0.62], [0.46, 0.78], [0.38, 1.5], [0.5, 1.62], [1.15, 1.78], [1.25, 1.92], [1.2, 2.02], [0.32, 2.06], [0.26, 2.9], [0.66, 3.05], [0.7, 3.16], [0.18, 3.2], [0.15, 3.62], [0.3, 3.78], [0.22, 4.0], [0.01, 4.12]], 12, { tint: [0.8, 0.76, 0.7] });
+    for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; St.box(Math.cos(a) * 2.28, 0.72, Math.sin(a) * 2.28, 0.26, 0.16, 0.26, { tint: [0.86, 0.82, 0.76] }); }
+  }));
+}
+/** the fountain's water: a glossy surface in the basin and the bowl, the spout's jet and four streams falling from the bowl's lip */
+function fountainWater(S: SlotSet, x: number, z: number): void {
+  const M = S.get('metal'), water: V3 = [0.34, 0.5, 0.62];
+  S.at([x, 0, z], Math.PI / 8, () => {
+    const oct = (r: number): Array<[number, number]> => Array.from({ length: 8 }, (_, i) => [Math.cos((i / 8) * Math.PI * 2) * r, Math.sin((i / 8) * Math.PI * 2) * r]);
+    void M; void water; void oct;
+    // the foam where the falling water meets the basin, and the jet (the water itself: the canal's material, buildPlaza)
+    // (thinner and greyer, twelfth critique: « a flat white band that looks like plastic »)
+    S.get('plaster').sweep(Array.from({ length: 17 }, (_, i) => { const a = (i / 16) * Math.PI * 2; return [Math.cos(a) * 1.3, 0.48, Math.sin(a) * 1.3] as V3; }), 0.035, 4, { tint: [0.72, 0.76, 0.8] });
+    S.get('plaster').cylinder(0.05, 4.1, 4.55, 6, { tint: [1.15, 1.2, 1.3], r1: 0.02 });
+  });
+}
 /** a ring of radial flagstones around a point (the fountain's apron) */
 function apron(S: SlotSet, rng: Rng, x: number, z: number, r0: number, r1: number, tint: V3): void {
   const St = S.get('plaster'), n = Math.round((Math.PI * 2 * (r0 + r1)) / 2 / 0.9);

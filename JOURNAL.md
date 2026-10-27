@@ -654,6 +654,45 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
   choix à l'exécution, un halo seulement sur la lumière principale, au plus quatre feux le jour). `tests/v2-places.test.mjs` : les points de
   chaque moment dans le sol praticable. `npm test` : 274 sur 274.
 
+### La première critique à l'aveugle de VP7 (deux agents) — [KO] l'itération 1 derrière VP6 partout
+- Le protocole de VP6 : deux agents neufs, la planche R du district, sept planches aux lettres tirées au sort (chaque place dans `main`
+  `b68769d`, la fin de VP6, et dans VP7, le district caché), quatre images par planche (le héros à l'arrivée 0 / 2 et au milieu −1,5 / −3,
+  de jour et de nuit, la caméra de chaque version).
+- Panneau U (le district caché 7,5) : parvis VP6 **6,5** / VP7 **5,5**, entraînement **6,5** / **5**, place festive **7** / **6**. Panneau V
+  (le district caché 7,5) : parvis **7** / **5,5**, entraînement **7** / **6**, place festive **7,5** / **6**. Les deux préfèrent VP6 pour
+  chaque place. Rapporté à un district à 8 : VP7 parvis 6, entraînement 5,5 à 6,5, place festive 6,5 ; VP6 7 à 8.
+- Ce que les deux disent de VP7 : un cadrage centré et symétrique (« the camera is centred with the hero on the axis, where R uses
+  diagonals »), « half of each frame is empty cobble », le monument petit au loin (le ring « tiny in a huge empty patch of sand »), la fontaine
+  regrettée au parvis (« K has a real focal point »), la foule en rangs (« queue-like rows », « a police lineup »), les tours blanches et le
+  mur gris du Colisée au fond lus comme des primitives, la nuit sombre au milieu, des accessoires et un personnage coupés par le bas de
+  l'image (la tente de la guérisseuse, l'étal du potier, la charrette).
+- Pensée : le sol libre n'est pas le défaut, c'est le cadrage qui le montre. L'arrivée large (27 à 30 m, champ 38°, de face) et les plans
+  moyens de face font du sol la moitié de l'image ; la caméra de VP6, de biais et proche (lacet ±18 à 22°, 19 à 21 m), le comprimait en bande
+  comme la caméra du district comprime le quai. La fontaine du parvis n'était pas dans la liste de l'opérateur : l'avoir retirée au nom du
+  « centre libre » a ôté le seul point focal du milieu.
+- La preuve de visibilité de l'itération 1 (`static=1`, la page cuite contre `vis=0`, six états x douze places du héros dont les coins, les
+  bords et les entrées des rues) : 2 px différents sur 72 vues (un pixel d'un écart de 1 sur 255 dans deux vues de la place festive, la même
+  place du héros : un échantillon MSAA, le résidu connu de la Passe 5b). Mais la cuisson est passée de 200 à 1 100 poses environ (90 s au lieu
+  de 16 en SwiftShader) : les passages entre cadrages, échantillonnés à chaque place du sol, cinq voisins et trois poids.
+
+### Itération 2 — [?] près et de biais, la fontaine rendue, la foule en cercles
+- Les cadrages : de biais et proches comme la caméra de VP6 (18 à 21 m, champ 35 à 40°), le héros dans le tiers inférieur des plans moyens
+  et rapprochés ; le plan d'arrivée le montre entrant par le bas de l'image (le seul moyen, avec une caméra basse, de garder la balustrade
+  dehors quand il en est à 4,6 m : le sol praticable s'arrête maintenant à z 3,4). Deux règles de plus au test : aucun monument (la fontaine,
+  le kiosque, la scène, le ring : `PLAZA_MONUMENTS`) coupé par le bas de l'image, la caméra toujours entre les deux rangées (au-delà, le
+  pignon de la première maison remplissait un côté de l'image). Les lacets trouvés sous ces règles : parvis 8° (la fontaine au centre les
+  impose : plus de biais, elle sort coupée), entraînement −6 / −10°, place festive −6 / −12 / 8°.
+- Le parvis : la fontaine rendue au milieu de la voie (son bassin, son eau, ses quatre lanternes dont deux allumées, les guides), les deux
+  mâts retirés ; dans le test, elle cache une tête par sa vasque seulement (1,25 m de rayon, 2,05 m de haut). La guérisseuse, le potier, le
+  marchand de bougies, le tas de tonneaux, les bottes de paille du sud-est remontés au nord de la bande d'arrivée (coupés par le bas de
+  l'image).
+- La foule : chaque groupe en cercle autour de son point, chacun tourné vers le milieu (trois de front se lisaient comme une file) ; les
+  points de chaque moment alternent le près et le loin (trois groupes côte à côte devant la scène faisaient un rang).
+- Le fond : le tambour du Colisée retiré du ciel de la place festive et de l'entraînement ; trois flèches de la citadelle au lieu de cinq,
+  plus loin (165 à 200 m) et plus sombres.
+- La cuisson : les passages entre cadrages sur une colonne de la grille sur deux, trois voisins au lieu de cinq : 480 à 590 poses.
+- Le sol libre : parvis 76,1 % (milieu 87,0 %), entraînement 72,8 % (76,5 %), place festive 80,0 % (92,5 %) ; 15 à 16 lumières la nuit.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

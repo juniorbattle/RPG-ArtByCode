@@ -59,10 +59,12 @@ test('the bake\'s poses: every framing over its zone at every place of the walk 
     const pts = PV.heroPoints(b);
     for (const R of [b.walk, ...b.lanes]) for (const [cx, cz] of [[R.x0, R.z0], [R.x1, R.z1]]) assert.ok(pts.some(([x, z]) => x === cx && z === cz), `${k}: the corner ${cx},${cz}`);
     for (const [x, z] of pts) for (const f of PC.framingsAround(k, x, z)) assert.ok(has(PC.framingPose(f, x, z)), `${k} ${f.id} at ${x},${z}`);
-    // the moves between two framings where their zones meet (the page eases every field: half way, the hero standing or stepping on)
+    // the moves between two framings where their zones meet (the page eases every field: half way, the hero standing or stepping on), on
+    // every other column of the grid
     let met = 0;
     for (const [x, z] of pts) {
       const F = PC.framingsAround(k, x, z);
+      if (Math.round((x - b.walk.x0) / PV.POSE_STEP) % 2) continue;
       for (const a of F) for (const c of F) if (a !== c) { met++; assert.ok(has(PV.lerpPose(PC.framingPose(a, x, z), PC.framingPose(c, x, z), 0.5)) && has(PV.lerpPose(PC.framingPose(a, x, z), PC.framingPose(c, x, z - PV.POSE_STEP), 0.5)), `${k}: ${a.id} -> ${c.id} at ${x},${z}`); }
     }
     assert.ok(met > 0, `${k}: the framings meet`);
@@ -77,7 +79,7 @@ test('the bake\'s poses: every framing over its zone at every place of the walk 
   for (const f of Object.keys(a)) assert.ok(Math.abs(m[f] - (a[f] + (c[f] - a[f]) * 0.25)) < 1e-12, f);
 });
 
-test('the framings: three a square chosen by the hero\'s zone and held 0.9 m past it; the hero always in the frame, the near edge always out, no monument between them and the camera', () => {
+test('the framings: three a square chosen by the hero\'s zone and held 0.9 m past it; the hero always in the frame, the near edge always out, no monument between them and the camera nor cut by the frame, the camera between the rows', () => {
   const cam = new THREE.PerspectiveCamera(40, 16 / 9, 0.3, 700), v = new THREE.Vector3();
   const ndc = (x, y, z) => { v.set(x, y, z).applyMatrix4(cam.matrixWorldInverse); if (v.z > -0.3) return null; v.applyMatrix4(cam.projectionMatrix); return [v.x, v.y]; };
   const inside = (r, x, z) => x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1;
@@ -107,6 +109,14 @@ test('the framings: three a square chosen by the hero\'s zone and held 0.9 m pas
         // the near edge (the balustrade's top, the training ground's fence) below the frame (journal Passe VP6: « a dead band across every
         // frame »)
         for (let d = -6; d <= 6; d += 3) { const e = ndc(x + d, 1.22, 8.0); assert.ok(!e || e[1] < -1 || Math.abs(e[0]) > 1, `${at}: the near edge in the frame (${e})`); }
+        // the camera between the rows (beyond them it looked at the end of a row's first house), the monuments whole or out of the frame,
+        // never cut by its bottom edge
+        assert.ok(Math.abs(cam.position.x) <= 11.5, `${at}: the camera at x ${cam.position.x.toFixed(1)}`);
+        for (const [mx, mz, mr, mh] of PZ.PLAZA_MONUMENTS[k]) {
+          const cs = []; for (let a = 0; a < 8; a++) for (const y of [0, mh]) cs.push(ndc(mx + Math.cos(a * Math.PI / 4) * mr, y, mz + Math.sin(a * Math.PI / 4) * mr));
+          const inn = cs.filter((q) => q && Math.abs(q[0]) < 1 && Math.abs(q[1]) < 1).length, below = cs.filter((q) => !q || (q[1] < -1 && Math.abs(q[0]) < 1)).length;
+          assert.ok(!(inn > 0 && below > 0), `${at}: the monument at ${mx},${mz} cut by the bottom edge`);
+        }
         // the hero's head never behind a monument (h 3 m and more); behind a stall only away from the people and the ways out
         const key = mouths.some((r) => inside(r, x, z)) || Object.values(b.spots).some(([sx, sz]) => Math.hypot(sx - x, sz - z) < 1.6), t = new THREE.Vector3(x, 1.75, z);
         for (const o of tall) {

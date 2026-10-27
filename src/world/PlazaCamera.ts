@@ -22,33 +22,35 @@ export interface PlazaFraming {
 /** how far past its zone's edge the current framing holds (the district's) */
 export const PLAZA_HYSTERESIS = 0.9;
 
-const ALL: Rect = { x0: -99, x1: 99, z0: -99, z1: 99 };
-
 /** the framings of each square (« proposé », journal Passe VP7) */
 export const PLAZA_FRAMINGS: Record<PlazaKind, PlazaFraming[]> = {
+  // (journal Passe VP7, iteration 2: near and a little from the side, as the first build's follow camera and the district's B, after both
+  // panels of the first critique preferred it to the iteration 1's wide and frontal framings, « the camera is centred with the hero on the
+  // axis, where R uses diagonals »; composed under the framing test's rules: the hero in the frame, the near edge out, no monument hiding the
+  // hero or cut by the frame's bottom edge, the camera between the rows)
   forecourt: [
-    // the arrival by the quay's gate: the whole forecourt, the arena's front, its towers and their roofs against the sky, the way leading in
-    { id: 'entry', label: 'Arrival', yaw: 0, pitch: 6.5, dist: 30, fov: 38, home: [0, 6.5, -4], ref: [0, 2], gain: [0.3, 0.2], min: [-2.5, -0.6], max: [2.5, 0.6], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
-    // the court: the gate at the end of the way, the pavilions on each side, the hero in the lower third
-    { id: 'court', label: 'Court', yaw: -4, pitch: 7.5, dist: 24, fov: 36, home: [0, 4.5, -6], ref: [0, -4], gain: [0.6, 0.4], min: [-6, -2.5], max: [6, 2.5], zone: { x0: -99, x1: 99, z0: -10, z1: 0.5 }, priority: 1 },
-    // before the gate: the arch, its braziers and the arena's front up to its cornice
-    { id: 'gate', label: 'Gate', yaw: 8, pitch: 8, dist: 23, fov: 40, home: [0, 6, -12], ref: [0, -13], gain: [0.5, 0.3], min: [-6, -1.5], max: [6, 1.5], zone: { x0: -99, x1: 99, z0: -99, z1: -10 }, priority: 2 },
+    // the arrival by the quay's gate: the hero walks in at the bottom of the frame, the fountain and the arena's gate ahead
+    { id: 'entry', label: 'Arrival', yaw: 8, pitch: 6.5, dist: 19, fov: 38, home: [0, 2.6, -5], ref: [0, 2], gain: [0.7, 0.6], min: [-6, -1.5], max: [6, 1.5], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
+    // the court: the fountain at the heart, the gate beyond it, the hero in the lower third
+    { id: 'court', label: 'Court', yaw: 8, pitch: 7, dist: 19, fov: 36, home: [0, 3.4, -6.5], ref: [0, -4], gain: [0.7, 0.5], min: [-6, -3], max: [6, 3], zone: { x0: -99, x1: 99, z0: -10, z1: 0.5 }, priority: 1 },
+    // before the gate: the fountain whole in front, the arch, its braziers, the pavilions on each side
+    { id: 'gate', label: 'Gate', yaw: 8, pitch: 6, dist: 21, fov: 40, home: [0, 3.6, -12], ref: [0, -13], gain: [0.5, 0.3], min: [-6, -1.5], max: [6, 1.5], zone: { x0: -99, x1: 99, z0: -99, z1: -10 }, priority: 2 },
   ],
   training: [
-    // the arrival from the forecourt's side: the whole yard, the ring before the stand, the barracks and the citadel beyond
-    { id: 'entry', label: 'Arrival', yaw: 0, pitch: 5, dist: 29, fov: 38, home: [1.5, 5.5, -6], ref: [0, 2], gain: [0.3, 0.2], min: [-2.5, -0.6], max: [2.5, 0.6], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
-    // the yard: the dummy's ring and the champions' ring, the butts along the right
-    { id: 'yard', label: 'Yard', yaw: -6, pitch: 7, dist: 20, fov: 36, home: [1.5, 2.8, -6], ref: [0, -4], gain: [0.6, 0.4], min: [-6, -2.5], max: [6, 2.5], zone: { x0: -99, x1: 99, z0: -5, z1: 0.5 }, priority: 1 },
-    // the ring: the champions' boards, its braziers and the stand behind, from the south-east
-    { id: 'ring', label: 'Ring', yaw: 12, pitch: 8, dist: 18, fov: 36, home: [1.5, 3.0, -9.5], ref: [0, -10], gain: [0.55, 0.3], min: [-6, -1.5], max: [6, 1.5], zone: { x0: -99, x1: 99, z0: -99, z1: -5 }, priority: 2 },
+    // the arrival from the forecourt's street: the yard ahead, the ring before the stand
+    { id: 'entry', label: 'Arrival', yaw: -6, pitch: 7, dist: 20, fov: 35, home: [1.5, 2.6, -5], ref: [0, 2], gain: [0.7, 0.6], min: [-9, -1.5], max: [9, 1.5], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
+    // the yard: the dummy's ring at the left, the champions' ring ahead, the butts along the right
+    { id: 'yard', label: 'Yard', yaw: -10, pitch: 6, dist: 18, fov: 38, home: [1.5, 2.6, -6.5], ref: [0, -4], gain: [0.7, 0.7], min: [-8, -3], max: [8, 3], zone: { x0: -99, x1: 99, z0: -5, z1: 0.5 }, priority: 1 },
+    // the ring: the champions' boards, its braziers and the stand behind
+    { id: 'ring', label: 'Ring', yaw: -10, pitch: 6, dist: 18, fov: 38, home: [1.5, 2.8, -10], ref: [0, -10], gain: [0.5, 0.5], min: [-7, -2], max: [7, 2], zone: { x0: -99, x1: 99, z0: -99, z1: -5 }, priority: 2 },
   ],
   festival: [
-    // the arrival by the quay's gate: the whole square, the bandstand and the stage at its end, the roofs and the citadel against the sky
-    { id: 'entry', label: 'Arrival', yaw: 0, pitch: 6, dist: 27, fov: 38, home: [-1.5, 5.5, -4], ref: [0, 2], gain: [0.3, 0.2], min: [-2.5, -0.6], max: [2.5, 0.6], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
-    // the court: the stage and the bandstand on the far side, the stalls along the right, the hero in the lower third
-    { id: 'court', label: 'Court', yaw: 10, pitch: 8.5, dist: 22, fov: 35, home: [-1.5, 3.5, -6], ref: [0, -4], gain: [0.6, 0.4], min: [-6, -2.5], max: [6, 2.5], zone: { x0: -99, x1: 99, z0: -9, z1: 0.5 }, priority: 1 },
+    // the arrival by the quay's gate: the stalls along the east row, the stage and the bandstand at the end
+    { id: 'entry', label: 'Arrival', yaw: -6, pitch: 6, dist: 19, fov: 38, home: [0, 2.6, -5], ref: [0, 2], gain: [0.6, 0.6], min: [-9, -1.5], max: [9, 1.5], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
+    // the court: the strings over the hero, the stalls, the stage beyond
+    { id: 'court', label: 'Court', yaw: -12, pitch: 7, dist: 18, fov: 35, home: [0, 2.6, -6.5], ref: [0, -4], gain: [0.6, 0.7], min: [-8, -3], max: [8, 3], zone: { x0: -99, x1: 99, z0: -9, z1: 0.5 }, priority: 1 },
     // before the stage: the boards, the bandstand and the tavern, from the east
-    { id: 'stage', label: 'Stage', yaw: 24, pitch: 8.5, dist: 21, fov: 35, home: [-2.5, 3.6, -11.5], ref: [0, -12.5], gain: [0.6, 0.3], min: [-6, -1.5], max: [7, 1.5], zone: { x0: -99, x1: 99, z0: -99, z1: -9 }, priority: 2 },
+    { id: 'stage', label: 'Stage', yaw: 8, pitch: 7, dist: 18, fov: 35, home: [-2, 3, -12.5], ref: [0, -12.5], gain: [0.6, 0.5], min: [-7, -2], max: [7, 2], zone: { x0: -99, x1: 99, z0: -99, z1: -9 }, priority: 2 },
   ],
 };
 
