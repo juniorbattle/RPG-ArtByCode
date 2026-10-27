@@ -498,6 +498,30 @@ entrés/sorties comme dans un final fantasy 9 ». Jusqu'ici une partie v2 change
 - Le jeu par défaut : le quartier en B nuit, D midi et A fin de journée sous la pluie, la branche contre `main` figé : **0 pixel** (le shader
   du sol compile les mêmes instructions sans les variantes des places).
 
+### La quatrième critique à l'aveugle (itération 5), étalonnée — [OK] « oui avec réserves » (parvis, place festive), [?] entraînement
+- Agent neuf ; sept planches (itérations 4 et 5, le district caché : 10 / 8, la référence 8). Itération 5 : **parvis 8 / 7** (« la structure la
+  plus forte des nouvelles places : une voie qui mène, un point focal centré, des tours qui donnent l'échelle du monument »), **place festive
+  8 / 7**, **entraînement 7 / 6,5** (« l'estrade est un vrai point focal »). Chaque fois devant l'itération 4. Verdicts : parvis et place festive
+  « oui avec réserves », entraînement « pas encore ».
+- Ses reproches : la fontaine sèche (le point focal mort), la porte un vide noir la nuit, la balustrade « des poteaux grossiers à la texture
+  étirée, brûlée de jour », les bornes « éparpillées sur la place », la moitié droite de la place festive « un champ de pavés mort », l'auvent
+  proche surexposé la nuit ; à l'entraînement le sable « une planche beige au contour noir », les bottes de paille « des cubes sans texture »,
+  l'estrade « une boîte brune », la moitié gauche noire la nuit.
+
+### Itération 6
+- La fontaine : son eau dans **le matériau du canal** (ses rides, le ciel et les lumières en reflet) dans la vasque et les deux coupes, un
+  anneau d'écume ; [KO] d'abord invisible : le rebord de la vasque était un prisme fermé, un couvercle à 0,64 m sur l'eau (depuis la Passe VP1) ;
+  refait en anneau (le dessus, les faces intérieure et extérieure).
+- La porte de l'arène la nuit : une lanterne sous son arc et sa lumière sur les vantaux ; les tunnels derrière deux arcades basses de chaque
+  côté éclairés d'ambre (l'arcade haute « bloc rouge » ne revient pas).
+- La balustrade : des balustres plus fins et plus serrés au grain lisse du plâtre, l'ensemble plus sombre, des dés plus minces ; plus de ligne de
+  bornes ; la marche va jusqu'à la balustrade (`z1` 3 → 6,8 ; la caméra garde son bord : aucune pose nouvelle).
+- L'entraînement : une bordure de pierre claire autour de la terre battue (plus de cadre de bois noir), les bottes de paille de l'accessoire du
+  district (texturées, teintées), un brasero entre le cercle et l'estrade ; l'estrade : des chapeaux de laiton sur les poteaux, ses flancs tendus
+  de toile rayée bleu et ivoire.
+- La place festive : le coin du marchand de cidre à droite (tonneaux, caisse, deux bancs, une lanterne sur poteau allumée la nuit) ; l'étal des
+  chandelles proche de la caméra éteint la nuit.
+
 ### Les tests prouvés par des défauts injectés (Passes VP3 à VP5) — [OK]
 - Cinq défauts, chacun attrapé, les fichiers rendus octet pour octet (`cmp`) : les huit emblèmes du tournoi peints aussi dans l'atlas
   d'aujourd'hui (`v2-heraldry` : 1 échec, l'empreinte des appels), une bannière d'une place revenue à la fleur de lys (`v2-heraldry` : 1), une
