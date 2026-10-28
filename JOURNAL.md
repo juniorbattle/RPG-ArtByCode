@@ -199,9 +199,18 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   almost black navy area » (les ouvertures des écuries). La halle : le sol vide, les flaques noires aux reflets durs, le fond derrière les
   poteaux délavé, le toit.
 
-### Itération 5 — en cours
-- Les lices : la pierre de nuit un cran plus sombre (la face 0,35, les encadrements 0,62 de leur teinte de jour) ; derrière les demi-portes des
-  écuries, leur fond de planches dans la pénombre au lieu d'un vide noir.
+- Qualité, panneau 1 : la halle 6,5 contre 6, les lices 5,5 contre 6, le quai 7. Les lices : de jour la pierre « overexposed [...] reads as
+  plaster, not R's cool slate » (la moyenne de luminance du haut du cadre à 145 / 255 contre 117 pour VP8), la galerie « a near-black navy
+  block » (à l'ombre du soleil du sud-ouest) ; la nuit, le tiers bas du cadre noir (31 / 255 contre 57 pour VP8) et la pierre « mauve-pink ».
+  La halle : pas d'ombre lisible au sol, les flaques de nuit, le toit taché de vert.
+
+### Itération 5 — [?] les lices au plus près de VP8, la halle peaufinée
+- Les lices : la pierre de nuit un cran plus sombre (la face 0,35, les encadrements 0,62 de leur teinte de jour), de jour aussi et plus froide
+  (la face 0,4, les encadrements 0,7) ; derrière les demi-portes des écuries, leur fond de planches dans la pénombre au lieu d'un vide noir ;
+  la lumière du brasero de la cour proche plus large la nuit (3,4, 9,5 m), la lanterne de l'enclos du mannequin sur son côté proche, le sable
+  de nuit un peu moins assombri : le tiers bas du cadre de nuit de 31 à 45 / 255 (première vue) et de 46 à 50 (seconde).
+- La halle : le lichen du toit d'un gris chaud ; une seule petite flaque sous la halle au lieu de deux grandes ; son soleil de fin de journée
+  un peu plus haut (28°, 24°).
 
 ### L'archivage du journal — [OK]
 - `JOURNAL.md` dépassait 60 Ko (120 Ko) : la Passe VP8 (fusionnée, `5a69031`) déplacée mot pour mot dans `journal/34-passes-VP8.md` (un

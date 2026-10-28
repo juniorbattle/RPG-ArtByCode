@@ -190,7 +190,7 @@ void main(){
   float damp = clamp(uWet * (0.5 + 0.5 * vn2(gp * 0.31)) * (0.55 + M.g * 0.5) + puddle, 0.0, 1.0);
 #ifdef SAND
   // the earth drinks the night's damp: darker evenly, matte (journal Passe VP9, the third and fourth critiques: « blotchy, oily dark smears »)
-  damp = mix(damp, uWet * 0.4, yard * (1.0 - puddle));
+  damp = mix(damp, uWet * 0.25, yard * (1.0 - puddle));
 #endif
   albedo *= mix(1.0, 0.6, damp);
   float rough = mix(rough0, 0.05, puddle);

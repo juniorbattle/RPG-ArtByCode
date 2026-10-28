@@ -491,7 +491,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       const cx = 9.8, cz = -4.8, r = 2.6;
       sandRing(S, batch, cx, cz, r);
       blockers.push({ x: cx, z: cz, r: 0.6 });
-      const lp: V3 = [cx + Math.cos(-Math.PI * 0.75) * (r + 0.45), 1.07, cz + Math.sin(-Math.PI * 0.75) * (r + 0.45)];
+      // (its lantern on the fence's near side since the fifth critique, its pool on the near yard: « the bottom third of each night shot is a
+      // black void »)
+      const lp: V3 = [cx + Math.cos(Math.PI * 0.3) * (r + 0.45), 1.07, cz + Math.sin(Math.PI * 0.3) * (r + 0.45)];
       batch.add(day ? 'lanternDark' : 'lantern', { pos: lp, yaw: 0.6 }, 0);
       if (!day) lights.push({ pos: [lp[0] - 0.3, 1.6, lp[2] + 0.3], color: WARM, intensity: 3.0, radius: 8.5, kind: 'lantern', halo: 0, priority: 7 });
       obstacles.push({ x0: cx - r, x1: cx + r, z0: cz - r, z1: cz + r, grime: 0.25 });
@@ -517,6 +519,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     }
     // a brazier on the near yard, day and night (its light at night, its fire by day; a second one by the dummy's ring stood against its fence)
     brazier(5.6, 3.2);
+    // (its pool wider at night, the near yard under the low camera: its bottom third at 31 / 255 of luminance against VP8's 57, « the bottom
+    // third of each night shot is a black void », the fifth critique)
+    Object.assign(lights[lights.length - 1], { intensity: 3.4, radius: 9.5 });
     // the knights' lances on their rack and their shields at the wall's foot past the near tower, bales on the near yard (« an empty sand plane
     // [...] no foreground props such as racks, straw or weapons », the second critique of journal Passe VP9; [KO] the rack on the near yard: the
     // gallery's framing stood its camera on it, the lances' tips as two great cones across the frame)
@@ -609,7 +614,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
         if (flag) for (const u of [0.38, 0.66]) { const p = sag(a, b, sg, u); lights.push({ pos: [p[0], 2.8, p[2]], color: WARM, intensity: 3.2, radius: 8, kind: 'lantern', halo: 0, priority: 6 }); puddles.push({ x: p[0] + 0.9, z: p[2] + 1.2, r: 1.4, amount: 0.9 }); }
       }
     }
-    puddles.push({ x: -3.0, z: -6.4, r: 1.5, amount: 0.9 }, { x: 2.6, z: -6.8, r: 1.2, amount: 0.85 });
+    // (one, small, by the hall's west posts since the fifth critique of journal Passe VP9: under its front « the night puddles look like black
+    // holes cut into the paving, each with a bright detached rectangle »)
+    puddles.push({ x: -5.6, z: -7.0, r: 0.9, amount: 0.75 });
     paths.push([[0, 4], [-1.5, -8]], [[9, -1], [2, -2.6]], [[-7.5, -9.4], [-4, -6]], [[-6.6, -1.8], [-1.0, -3.2]], [[-4, -10], [2.5, -10]]);
     scatter('straw', 4, -10, 9, -10, 4, [0.7, 1.2], [0.5, 0.75]); scatter('leaves', 3, -10, 9, -10, 4, [0.8, 1.3], [0.5, 0.7]);
     scatter('stain', 6, -10, 9, -10, 5, [1.6, 3.0], [0.25, 0.4], 0.014, [0.6, 0.62, 0.68]);
@@ -1567,8 +1574,10 @@ const wallStone = (day: boolean): { stone: V3; light: V3; dark: V3; face: V3; mo
   // (the face by day below the forecourt's stucco: the wall faces the sun, « overexposed by day »; its mortar a step under the stones, not black)
   // (a step darker again at night since the fifth critique: « the tower and wall are lit flat and too bright (grey-lavender), brighter than
   // the ground beside the braziers »)
-  const k = day ? 0.8 : 0.62, f = day ? 0.47 : 0.35, m = day ? 0.56 : 0.34;
-  return { stone: [0.64 * k, 0.62 * k, 0.6 * k], light: [0.72 * k, 0.7 * k, 0.66 * k], dark: [0.5 * k, 0.49 * k, 0.48 * k], face: [f, f * 0.99, f * 1.04], mortar: [m, m * 0.98, m * 1.0] };
+  // (by day a step darker and cooler too: « overexposed. The stone is near-white and low-contrast and reads as plaster », the fifth critique;
+  // its frames' mean 145 / 255 against VP8's 117)
+  const k = day ? 0.7 : 0.62, f = day ? 0.4 : 0.35, m = day ? 0.5 : 0.34;
+  return { stone: [0.64 * k, 0.62 * k, 0.6 * k], light: [0.72 * k, 0.7 * k, 0.66 * k], dark: [0.5 * k, 0.49 * k, 0.48 * k], face: [f * 0.97, f * 0.98, f * 1.05], mortar: [m, m * 0.98, m * 1.0] };
 };
 /** the ashlar's courses (m): a course 0.36-0.5 high, a block 0.6-1.25 long (the fourth critique of journal Passe VP9: at 0.48-0.66 by
  *  0.8-1.7, « oversized cinder-block bricks ») */
@@ -1977,7 +1986,8 @@ function marketHall(S: SlotSet, tracked: (fn: () => void) => void, batch: Instan
     const lerp3 = (p: V3, q: V3, u: number): V3 => [p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u, p[2] + (q[2] - p[2]) * u], rows = 5;
     for (let k = 0; k < rows; k++) {
       const v0 = k / rows, v1 = (k + 1) / rows, h = hash1(i * 7 + k * 3 + side * 11), lich = h > 0.74;
-      const t: V3 = lich ? [0.8, 0.9, 0.74] : [0.96 * (0.86 + 0.22 * h), 0.96 * (0.86 + 0.22 * h), 1.0 * (0.88 + 0.18 * h)];
+      // (the lichen a warm grey since the fifth critique: green, « blotchy cyan-green patches »)
+      const t: V3 = lich ? [0.86, 0.84, 0.8] : [0.96 * (0.86 + 0.22 * h), 0.96 * (0.86 + 0.22 * h), 1.0 * (0.88 + 0.18 * h)];
       const q: [V3, V3, V3, V3] = [lerp3(ea, ra, v0), lerp3(eb, rb, v0), lerp3(eb, rb, v1), lerp3(ea, ra, v1)];
       quadFacing(Rf, q, [0, 0.6, side * 0.8], { uvs: [q[0][0], v0 * slope, q[1][0], v0 * slope, q[2][0], v1 * slope, q[3][0], v1 * slope], tint: t, ao: [0.72 + 0.28 * v0, 0.72 + 0.28 * v0, 0.72 + 0.28 * v1, 0.72 + 0.28 * v1] });
     }

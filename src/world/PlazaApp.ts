@@ -60,7 +60,9 @@ export function plazaKeyLight(look: DayLook | null, t: DayTime | null, kind: Pla
   // the wall and the sand: from the south-east, behind their camera, « the walls and tower cast no shadow on the ground, so the day lighting
   // is flat », their gallery now in the shade of its own roof)
   const MIDDAY: Record<PlazaKind, [number, number]> = { forecourt: [62, 42], training: [-40, 38], festival: [35, 50] };
-  const AFTERNOON: Record<PlazaKind, [number, number]> = { forecourt: [-55, 15], training: [-55, 15], festival: [20, 16] };
+  // (the hall's square's end of day a little higher since the fifth critique, its eave's shadow on the floor under it: « The hall's roof and
+  // posts cast nothing on the paving, and the floor under the roof is the same value as the open square »)
+  const AFTERNOON: Record<PlazaKind, [number, number]> = { forecourt: [-55, 15], training: [-55, 15], festival: [28, 24] };
   const [az, el] = !look || !t ? [-25, 32] : t === 'morning' ? [40, 22] : t === 'midday' ? MIDDAY[kind] : AFTERNOON[kind];
   const a = THREE.MathUtils.degToRad(az), e = THREE.MathUtils.degToRad(el);
   return new THREE.Vector3(Math.sin(a) * Math.cos(e), Math.sin(e), Math.cos(a) * Math.cos(e)).normalize();
