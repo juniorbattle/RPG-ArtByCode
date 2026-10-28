@@ -119,7 +119,7 @@ export const PLAZA_GATHER: Record<PlazaKind, Record<PlazaPeriod, Array<[number, 
   // nearest the camera, nor before the ring's steps)
   training: {
     morning: [[-12.6, 1.6], [-2.6, -6.6], [2.4, -6.2], [-4.4, 2.6], [8.6, -5.6], [-13.2, -7.0]],
-    midday: [[-4.4, 1.8], [-3.8, -4.8], [-12.4, -2.8], [1.6, -6.4], [3.2, 0.2], [-12.0, 4.2], [-1.0, -3.0], [8.8, -6.2], [-6.0, 3.6]],
+    midday: [[-4.4, 1.8], [-3.8, -4.8], [-12.4, -2.8], [1.6, -6.4], [3.2, 0.2], [-12.0, 4.2], [-1.0, -3.0], [6.4, -6.8], [-6.0, 3.6]],
     afternoon: [[-12.6, 1.2], [-3.4, 3.4], [-1.6, -6.8], [4.0, -4.6], [-13.4, -3.2], [0.8, 1.6]],
     night: [[-3.6, 3.2], [-3.2, -6.0], [-12.2, 4.0], [1.0, -5.6], [-0.4, 1.2]],
   },
@@ -487,7 +487,8 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     // the dummy's ring in the yard's east part by the near tower (between the cameras and the yard its fence hid the hero, the first critique of
     // journal Passe VP9), a lantern on its post lit at night
     {
-      const cx = 10.6, cz = -4.4, r = 2.6;
+      // (0.8 m west since the fourth critique: « the dummy pen and weapon rack are cut at the right edge »)
+      const cx = 9.8, cz = -4.8, r = 2.6;
       sandRing(S, batch, cx, cz, r);
       blockers.push({ x: cx, z: cz, r: 0.6 });
       const lp: V3 = [cx + Math.cos(-Math.PI * 0.75) * (r + 0.45), 1.07, cz + Math.sin(-Math.PI * 0.75) * (r + 0.45)];
@@ -528,7 +529,9 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     // the night's guides: a lantern on a post at the gallery's south end, one by the near tower's door (its own, roundTower)
     if (!day) lights.push({ pos: [LISTS.t2.x + 0.95, 2.4, LISTS.t2.z + LISTS.t2.r + 0.6], color: WARM, intensity: 2.6, radius: 7.5, kind: 'lantern', halo: 0, priority: 6 });
     lamp(-13.2, 7.2, false);
-    puddles.push({ x: DAIS[0] + 4.8, z: DAIS[1] - 3.2, r: 1.2, amount: 0.85 }, { x: -1.0, z: -6.2, r: 1.1, amount: 0.8 });
+    // (the puddle before the champions' ring left with the fourth critique of journal Passe VP9: « a hard-edged mirror puddle in front of the
+    // ring reads as a hole »)
+    puddles.push({ x: -1.0, z: -6.2, r: 1.1, amount: 0.8 });
     paths.push([[14, 2], [2, 0.6], [-4.4, -1.4]], [[-13.6, 1], [-11.2, 1.6]], [[2, 0.6], [0.2, -7.0]], [[-4.6, -6.6], [-1.0, -7.6]], [[8.0, 1.2], [10.0, -1.6]]);
     paths.push(Array.from({ length: 17 }, (_, i) => [DAIS[0] + Math.cos((i / 16) * Math.PI * 2) * 4.0, DAIS[1] + Math.sin((i / 16) * Math.PI * 2) * 4.0] as [number, number]));
     // the earth's marks: straw by the bales and the gallery, scuffs, the feet's ruts along the wall
@@ -536,7 +539,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     scatter('mud', 4, -13, 14, -7.4, 4.6, [1.4, 2.6], [0.18, 0.3], 0.028, [0.85, 0.8, 0.74]);
     // the riders' runs along the yard: ruts and hoof-scuffed earth in two long lanes, the tilt's way
     for (let x = -11; x < 15; x += 2.6) for (const z of [1.8, 3.4]) decal('ruts', x + dr.range(-0.4, 0.4), z + dr.range(-0.25, 0.25), 2.8, 1.1, dr.range(-0.12, 0.12), dr.range(0.35, 0.55), 0.029, [0.78, 0.72, 0.64]);
-    for (const [x, z, w] of [[10.6, -4.4, 3.8], [DAIS[0] + 3.8, DAIS[1], 3.2], [-1.0, -7.2, 3.0], [-14.8, 1.0, 3.2]] as Array<[number, number, number]>) decal('mud', x, z, w, w * 0.8, dr.range(0, 6.28), 0.6, 0.03, [0.7, 0.66, 0.6]);
+    for (const [x, z, w] of [[9.8, -4.8, 3.8], [DAIS[0] + 3.8, DAIS[1], 3.2], [-1.0, -7.2, 3.0], [-14.8, 1.0, 3.2]] as Array<[number, number, number]>) decal('mud', x, z, w, w * 0.8, dr.range(0, 6.28), 0.6, 0.03, [0.7, 0.66, 0.6]);
   } else {
     // journal Passe VP9, the operator's choice « Place de la halle »: the great timber hall at the north end, its stage and its candle crowns
     // under it; the arcaded houses along a curve on the east side, the way to the forecourt through a gap in them; the well before them, the
@@ -1565,17 +1568,20 @@ const wallStone = (day: boolean): { stone: V3; light: V3; dark: V3; face: V3; mo
   const k = day ? 0.8 : 0.72, f = day ? 0.47 : 0.44, m = day ? 0.56 : 0.4;
   return { stone: [0.64 * k, 0.62 * k, 0.6 * k], light: [0.72 * k, 0.7 * k, 0.66 * k], dark: [0.5 * k, 0.49 * k, 0.48 * k], face: [f, f * 0.99, f * 1.04], mortar: [m, m * 0.98, m * 1.0] };
 };
+/** the ashlar's courses (m): a course 0.36-0.5 high, a block 0.6-1.25 long (the fourth critique of journal Passe VP9: at 0.48-0.66 by
+ *  0.8-1.7, « oversized cinder-block bricks ») */
+const ASHLAR = { h0: 0.36, dh: 0.14, w0: 0.6, dw: 0.65 };
 /** an ashlar band on a face toward +z, from y0 to y1, between a and b: its courses and its joints laid from the wall's start `xs` (to `xe`), so
  *  that the stretches meet without a seam (a block belongs to the stretch it starts in); each block 0.035 m proud of the mortar behind it, its
  *  own shade (a few warmer, a few cooler), its own patch of the texture, darker toward the yard's grime */
 function ashlarBand(B: MeshBuilder, xs: number, xe: number, a: number, b: number, y0: number, y1: number, z: number, tint: V3, seed: number): void {
-  const J = 0.02, R = 0.035;
+  const J = 0.018, R = 0.03;
   for (let y = y0, row = 0; y < y1 - 0.05; row++) {
-    let h = 0.48 + 0.18 * hash1(row * 7.31 + seed);
-    if (y1 - (y + h) < 0.32) h = y1 - y;
+    let h = ASHLAR.h0 + ASHLAR.dh * hash1(row * 7.31 + seed);
+    if (y1 - (y + h) < 0.24) h = y1 - y;
     const ya = y + J, yb = y + h - J, ao = 0.62 + 0.38 * smoothstep(0.5, 4.5, y + h / 2);
     for (let x = xs - 1.1 * hash1(row * 3.7 + seed + 1), k = 0; x < Math.min(b, xe); k++) {
-      const w = 0.8 + 0.9 * hash1(row * 31.7 + k * 3.31 + seed), x0 = Math.max(x, xs), x1 = Math.min(x + w, xe);
+      const w = ASHLAR.w0 + ASHLAR.dw * hash1(row * 31.7 + k * 3.31 + seed), x0 = Math.max(x, xs), x1 = Math.min(x + w, xe);
       if (x0 >= a && x0 < b && x1 - x0 > 0.1) {
         const hb = hash1(row * 13.1 + k * 7.7 + seed * 0.37), hw = hash1(row * 5.3 + k * 11.9 + seed) - 0.5, v = 0.86 + 0.26 * hb;
         B.boxMM(x0 + J, ya, z, x1 - J, yb, z + R, { tint: [tint[0] * v * (1 + 0.08 * hw), tint[1] * v, tint[2] * v * (1 - 0.08 * hw)], ao, uvScale: 0.9, uvOff: [hb * 7.3, hw * 5.1], skip: ['-z', '-y'] });
@@ -1587,17 +1593,17 @@ function ashlarBand(B: MeshBuilder, xs: number, xe: number, a: number, b: number
 }
 /** an ashlar band round a drum of radius r (local to the tower), from y0 to y1: the same courses, each block a few flat facets of the circle */
 function ashlarRing(B: MeshBuilder, r: number, y0: number, y1: number, tint: V3, seed: number): void {
-  const J = 0.02, R = r + 0.035, C = Math.PI * 2 * r;
+  const J = 0.018, R = r + 0.03, C = Math.PI * 2 * r;
   for (let y = y0, row = 0; y < y1 - 0.05; row++) {
-    let h = 0.48 + 0.18 * hash1(row * 7.31 + seed);
-    if (y1 - (y + h) < 0.32) h = y1 - y;
+    let h = ASHLAR.h0 + ASHLAR.dh * hash1(row * 7.31 + seed);
+    if (y1 - (y + h) < 0.24) h = y1 - y;
     const ya = y + J, yb = y + h - J, ao = 0.62 + 0.38 * smoothstep(0.5, 4.5, y + h / 2);
     const s0 = 1.1 * hash1(row * 3.7 + seed + 1);
     for (let s = s0, k = 0; s < s0 + C - 0.4; k++) {
-      let w = 0.8 + 0.9 * hash1(row * 31.7 + k * 3.31 + seed);
-      if (s0 + C - (s + w) < 0.6) w = s0 + C - s;
+      let w = ASHLAR.w0 + ASHLAR.dw * hash1(row * 31.7 + k * 3.31 + seed);
+      if (s0 + C - (s + w) < 0.45) w = s0 + C - s;
       const hb = hash1(row * 13.1 + k * 7.7 + seed * 0.37), hw = hash1(row * 5.3 + k * 11.9 + seed) - 0.5, v = 0.86 + 0.26 * hb;
-      const t: V3 = [tint[0] * v * (1 + 0.08 * hw), tint[1] * v, tint[2] * v * (1 - 0.08 * hw)], m = Math.max(1, Math.round(w / 0.45));
+      const t: V3 = [tint[0] * v * (1 + 0.08 * hw), tint[1] * v, tint[2] * v * (1 - 0.08 * hw)], m = Math.max(1, Math.round(w / 0.3));
       for (let f = 0; f < m; f++) {
         const sa = s + J + ((w - 2 * J) * f) / m, sb = s + J + ((w - 2 * J) * (f + 1)) / m, a0 = sa / r, a1 = sb / r, am = (a0 + a1) / 2;
         const P = (aa: number, yy: number): V3 => [Math.cos(aa) * R, yy, Math.sin(aa) * R];
@@ -1608,6 +1614,13 @@ function ashlarRing(B: MeshBuilder, r: number, y0: number, y1: number, tint: V3,
     y += h;
   }
 }
+/** the rampart's dressed stone (its plinth, courses, frames, corbels, parapets, merlons, stair) in the ashlar's own material, its tints for it
+ *  (the fourth critique of journal Passe VP9: « a second, darker striped stone that doesn't match »: the stone texture's courses beside the
+ *  ashlar's blocks); the mortar behind the blocks stays in the stone's */
+const wallTrim = (day: boolean): { stone: V3; light: V3; dark: V3; face: V3; mortar: V3 } => {
+  const w = wallStone(day), k = 0.74, f = (v: V3): V3 => [v[0] * k, v[1] * k, v[2] * k];
+  return { stone: f(w.stone), light: f(w.light), dark: f(w.dark), face: w.face, mortar: w.mortar };
+};
 /** a hash in 0..1 (the stones' tints, the slits' places) */
 const hash1 = (n: number) => Math.abs(Math.sin(n * 12.9898) * 43758.5453) % 1;
 
@@ -1616,7 +1629,7 @@ const hash1 = (n: number) => Math.abs(Math.sin(n * 12.9898) * 43758.5453) % 1;
  *  wall-walk's low inner parapet, the outer parapet's merlons against the sky, iron torch brackets; each stretch of 4-5 m two parts (its face,
  *  its crown), its stone a little off its neighbours' */
 function rampart(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, rng: Rng): void {
-  const L = LISTS, St = S.get('stone'), Dk = S.get('dark'), M = S.get('metal'), { stone, light, dark, face, mortar } = wallStone(day);
+  const L = LISTS, St = S.get(WALL_FACE), Sm = S.get('stone'), Dk = S.get('dark'), M = S.get('metal'), { stone, light, dark, face, mortar } = wallTrim(day);
   // the tournament's long banners hung from the wall-walk's parapet over the yard
   for (const [x, emblem, tint] of [[-2.8, 'helm', BLUE_T], [12.6, 'swords', GOLD_T], [17.6, 'laurel', BLUE_T]] as Array<[number, EmblemKind, V3]>) {
     tracked(() => addBanner(S, { pos: [x, L.walkY + 0.8, L.zIn + 0.36], yaw: 0, w: 1.3, h: 4.3, emblem, shape: 'swallow', loose: 0.3, rod: true, tint }));
@@ -1630,7 +1643,7 @@ function rampart(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, rn
       // the wall-walk's deck; the inner face in ashlar over its mortar, in two bands either side of the string course (darker toward its foot:
       // the grime of the yard, « no darkening at the base », the second critique)
       S.get(WALL_FACE).boxMM(a, 1.4, zo + 0.5, b, W, zi, { tint: face, uvScale: WALL_UV, skip: ['-y', '-z', '+x', '-x', '+z'] });
-      quadFacing(St, [[a, 1.4, zi], [b, 1.4, zi], [b, W, zi], [a, W, zi]], [0, 0, 1], { tint: mortar, uvScale: 1.0 });
+      quadFacing(Sm, [[a, 1.4, zi], [b, 1.4, zi], [b, W, zi], [a, W, zi]], [0, 0, 1], { tint: mortar, uvScale: 1.0 });
       ashlarBand(S.get(WALL_FACE), L.x0, L.x1, a, b, 1.6, 4.2, zi, face, 11);
       ashlarBand(S.get(WALL_FACE), L.x0, L.x1, a, b, 4.4, W - 0.42, zi, face, 23);
       // a loophole in the stretch's middle in its stone frame, its slit set back (the third critique: « black slit windows that look like stickers »)
@@ -1688,12 +1701,13 @@ function rampart(S: SlotSet, tracked: (fn: () => void) => void, day: boolean, rn
  *  toward the yard, a corbelled ring under a bell-cast conical roof of the town's slate, a finial and the tournament's pennant; a door at its
  *  foot toward the yard; its foot, its drum, its ring and its roof each a part */
 function roundTower(S: SlotSet, tracked: (fn: () => void) => void, batch: InstanceBatch, day: boolean, t: { x: number; z: number; r: number; h: number; roof: number }, emblem: EmblemKind, door: boolean): void {
-  const St = S.get('stone'), Dk = S.get('dark'), n = 28, { stone, light, dark, face, mortar } = wallStone(day);
+  // (44 sides since the fourth critique of journal Passe VP9: « the base of the tower shows faceting »)
+  const St = S.get(WALL_FACE), Sm = S.get('stone'), Dk = S.get('dark'), n = 44, { stone, light, dark, face, mortar } = wallTrim(day);
   // (its foot a part of its own: behind the gallery or the yard's things, the drum over them)
   tracked(() => S.at([t.x, 0, t.z], 0, () => St.lathe([[t.r + 0.55, 0], [t.r, 1.7]], n, { tint: dark, uvTile: 1.0, aoY: [0.6, 0.9] })));
   tracked(() => S.at([t.x, 0, t.z], 0, () => {
     // the drum in ashlar over its mortar, either side of its middle course
-    St.lathe([[t.r, 1.7], [t.r, t.h - 0.6]], n, { tint: mortar, uvTile: 1.0 });
+    Sm.lathe([[t.r, 1.7], [t.r, t.h - 0.6]], n, { tint: mortar, uvTile: 1.0 });
     ashlarRing(S.get(WALL_FACE), t.r, 1.92, t.h * 0.52, face, 31 + t.x);
     ashlarRing(S.get(WALL_FACE), t.r, t.h * 0.52 + 0.22, t.h - 0.6, face, 47 + t.x);
     for (const y of [1.7, t.h * 0.52]) St.lathe([[t.r, y], [t.r + 0.13, y], [t.r + 0.13, y + 0.22], [t.r, y + 0.22]], n, { tint: light });
@@ -1715,6 +1729,14 @@ function roundTower(S: SlotSet, tracked: (fn: () => void) => void, batch: Instan
       S.get('planks').boxMM(-0.62, 0, -0.06, 0.62, 2.35, 0.1, { tint: [0.4, 0.3, 0.22], grain: 'y' });
       for (const y of [0.45, 1.75]) S.get('metal').boxMM(-0.56, y, 0.1, 0.56, y + 0.07, 0.13, { tint: [0.22, 0.21, 0.22] });
       S.get('metal').box(0.38, 1.1, 0.13, 0.08, 0.08, 0.05, { tint: [0.5, 0.45, 0.35] });
+      // over the door the cité's arms carved and painted in a stone panel (the fourth critique: « the round tower and curtain wall are a big
+      // uniform block tiling [...] a dead surface in the middle of the frame »)
+      St.boxMM(-0.78, 3.4, -0.04, 0.78, 5.5, 0.16, { tint: light, skip: ['-z'] });
+      St.boxMM(-0.9, 5.5, -0.06, 0.9, 5.7, 0.22, { tint: light, skip: ['-z'] });
+      const Bn = S.get('banner'), [u0, v0, u1, v1] = emblemRect('swords', 0.01), w = 1.1, hh = w * 1.25, yt = 5.32, zz = 0.165;
+      const P5: Array<[number, number]> = [[-w / 2, yt], [w / 2, yt], [w / 2, yt - hh * 0.5], [0, yt - hh], [-w / 2, yt - hh * 0.5]], ctr: [number, number] = [0, yt - hh * 0.4];
+      const uvOf = (px: number, py: number): [number, number] => [u0 + ((px + w / 2) / w) * (u1 - u0), v1 - ((yt - py) / hh) * (v1 - v0)];
+      for (let i = 0; i < 5; i++) { const a = P5[i], b = P5[(i + 1) % 5]; Bn.tri([a[0], a[1], zz], [b[0], b[1], zz], [ctr[0], ctr[1], zz], { uvs: [...uvOf(a[0], a[1]), ...uvOf(b[0], b[1]), ...uvOf(ctr[0], ctr[1])], tint: day ? [1, 1, 1] : [0.7, 0.7, 0.75], ao: 1, aux: [0.1, 0, 0.5, 0], flip: true }); }
     });
   }));
   tracked(() => S.at([t.x, 0, t.z], 0, () => {
@@ -1738,7 +1760,7 @@ function roundTower(S: SlotSet, tracked: (fn: () => void) => void, batch: Instan
 /** the stair to the wall-walk (journal Passe VP9): stone steps rising along the rampart's inner face from its foot (east) to the wall-walk by the
  *  corner tower (west), the parapet on its open side down to the ground, its coping following the flight; each half a part */
 function wallStair(S: SlotSet, tracked: (fn: () => void) => void, day: boolean): void {
-  const L = LISTS, s = L.stair, St = S.get('stone'), { stone, light, dark } = wallStone(day);
+  const L = LISTS, s = L.stair, St = S.get(WALL_FACE), { stone, light, dark } = wallTrim(day);
   const N = 26, run = s.foot - s.top, rise = L.walkY / N, tread = run / N, z0 = L.zIn, zp = L.zIn + s.w - 0.3, z1 = L.zIn + s.w;
   const yAt = (x: number) => Math.max(0, Math.min(L.walkY, ((s.foot - x) / run) * L.walkY));
   for (const [i0, i1] of [[0, N / 2], [N / 2, N]]) tracked(() => {

@@ -171,6 +171,25 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   chaque ombre cachée derrière ce qui la portait) ; les cadrages d'arrivée et de place un peu plus haut (plus de ciel et l'arène au-dessus des
   toits).
 
+### La quatrième critique à l'aveugle (itération 3), trois agents — [OK] la halle devant VP8, [KO] les lices encore derrière
+- Distinction : le quai 9, les lices 7, la halle 7, le parvis 6 (« No pair is the same template re-dressed ») ; ce qui rapproche encore : le
+  rempart à bannières du parvis et des lices, un même plan bas, de face, le héros de dos au milieu (les deux vues du parvis, la seconde des
+  lices et de la halle).
+- Qualité (panneau 1 / panneau 2) : la halle **7 / 7** contre la place festive de VP8 6,5 / 6 (« the strongest composition among the new
+  places. The hall is a clear monument and the compass-rose paving leads the eye ») ; les lices 5 / 5 contre l'entraînement de VP8 6 / 5,5 ; le
+  quai 8 / 8. Les lices : des blocs « oversized cinder-block bricks » et une seconde pierre rayée qui ne s'accorde pas (la texture de pierre
+  des encadrements), aucune ombre portée sur le sable de jour, le sable de nuit « blotchy, oily », une flaque dure devant le ring, la base des
+  tours à facettes, l'enclos coupé au bord droit.
+
+### Itération 4 — [?] les lices seules
+- L'appareil plus fin (assises de 0,36-0,5 m, blocs de 0,6-1,25 m, `ASHLAR`), les encadrements, corniches, parapets, merlons et l'escalier dans
+  la matière des blocs (`wallTrim` ; le mortier seul dans la pierre) ; les tours à 44 côtés ; au-dessus de la porte de la tour proche, les
+  armes de la cité sculptées et peintes dans un panneau de pierre.
+- Le soleil de midi des lices du sud-ouest (-40°, 38°) : rasant le long du rempart, les ombres des tours et des contreforts sur le mur, celles
+  des choses sur le sable ; la galerie à l'ombre de son toit.
+- Le sable de nuit mat et uniformément humide, aucune flaque sur la terre (ni celles de la cour, ni les creux du masque ; la flaque de la
+  critique en était un), les chemins usés moins sombres ; l'enclos du mannequin 0,8 m plus à l'ouest.
+
 ### L'archivage du journal — [OK]
 - `JOURNAL.md` dépassait 60 Ko (120 Ko) : la Passe VP8 (fusionnée, `5a69031`) déplacée mot pour mot dans `journal/34-passes-VP8.md` (un
   en-tête, une ligne `---`, puis les octets inchangés), sa ligne ajoutée à l'index. Preuve : le corps archivé égale les octets retirés

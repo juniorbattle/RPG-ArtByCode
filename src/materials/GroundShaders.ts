@@ -174,17 +174,30 @@ void main(){
 #ifdef SAND
   // the feet tread the rake flat and darken the earth where they go (the mask's wear; the setts' polish undone on the earth)
   float trod = smoothstep(0.08, 0.7, M.b);
-  albedo *= mix(1.0, 0.62, trod * yard) / mix(1.0, 1.12, M.b * 0.5 * yard);
+  // (a little lighter since the fourth critique of journal Passe VP9: the worn paths' « dark rut streaks »)
+  albedo *= mix(1.0, 0.76, trod * yard) / mix(1.0, 1.12, M.b * 0.5 * yard);
   nxy += rakeN * (1.0 - trod);
 #endif
 
   // wetness: water collects in joints first, then drowns the stones
   float fill = M.r * 1.3 + (1.0 - h) * 0.3 - 0.14;
   float puddle = smoothstep(0.5, 0.6, fill) * uWet;
+#ifdef SAND
+  // no standing water on the earth, the mask's own low spots neither (journal Passe VP9, the fourth critique: « a hard-edged mirror puddle in
+  // front of the ring reads as a hole »; the explicit puddles left the yard with journal Passe VP7)
+  puddle *= 1.0 - yard;
+#endif
   float damp = clamp(uWet * (0.5 + 0.5 * vn2(gp * 0.31)) * (0.55 + M.g * 0.5) + puddle, 0.0, 1.0);
+#ifdef SAND
+  // the earth drinks the night's damp: darker evenly, matte (journal Passe VP9, the third and fourth critiques: « blotchy, oily dark smears »)
+  damp = mix(damp, uWet * 0.4, yard * (1.0 - puddle));
+#endif
   albedo *= mix(1.0, 0.6, damp);
   float rough = mix(rough0, 0.05, puddle);
   rough = mix(rough, rough * 0.5, damp * (1.0 - puddle)) * mix(1.0, 0.75, M.b);
+#ifdef SAND
+  rough = mix(rough, max(rough, 0.88), yard * (1.0 - puddle));
+#endif
 
   vec3 Nt = normalize(vec3(nxy.x * 1.0, 1.0, nxy.y * 1.0));
   vec3 N = normalize(mix(Nt, vec3(0.0, 1.0, 0.0), puddle * 0.92));
