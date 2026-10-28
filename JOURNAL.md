@@ -252,7 +252,25 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   égale les octets retirés (SHA-256 `24df829eea736cbc…` des deux côtés, 36 128 octets), le même bloc que celui de `main` ; chaque section VP
   dans un seul fichier (les doublons de noms connus, V0 à V3, C1, C2, V5, sont antérieurs) ; pas de CRLF, ni avant ni après.
 
-### Les preuves de la Passe VP8 — voir plus bas (l'état final)
+### Les preuves finales de la Passe VP8 — [OK], quelques pixels du résidu connu en [?]
+- Sur un instantané figé de l'état final (`d3e5d42`, servi sur un port à part), contre `main` (`e540e53`) servi sur un autre :
+  - la visibilité des places, élaguée contre `vis=0`, sans personnages, six états, douze places du héros : **1 px différent sur 72 vues**
+    (écart 1 sur 255, la place festive la nuit au coin ouest ; VP7 : 2 px). Cuissons neuves : parvis 427 poses, entraînement 501, place
+    festive 565 (54-64 s en rendu logiciel, deux pages à la fois) ;
+  - le quai, élagué contre `vis=0` (A1, A2, le passage A-B, B, D ; de nuit et à midi) : la ville d'aujourd'hui et la ville d'une partie de
+    la version 2 (`skyline=arena`) **identiques de nuit** (A1 40 px, A2 3 px, le résidu du district, sur `main` aussi) ; à midi, avec
+    l'arène, A1 59 px au lieu de 54, A2 9 au lieu de 5, A-B 6 au lieu de 4. `vis-why` (1920 x 1080) : A2 8 px (écart 4, dont 4 décidés par
+    l'ordre de tracé), A-B 7 px (écart 5, dont 3) ; les 32 parties « manquées » remises dans l'ensemble actif n'y changent rien (des maisons
+    de la ville lointaine vues dans le miroir, plus fines qu'un pixel de la cuisson ; l'arène n'en est pas) : la classe de résidu connue
+    (Passe 5b), [?] ;
+  - le district contre `main` : A à D de nuit et à midi, B avec son panneau, **identiques au pixel** (9 sur 9) ;
+  - `play-flow` par défaut et `V2=1` : « all checks passed », aucune erreur de page ; l'écran titre (`title-proof`) : ses trois
+    comparaisons identiques au pixel ;
+  - les sorties des places et du quai parcourues dans les deux sens (`exits-proof`, « every way walked both ways ») sur l'instantané de
+    l'itération 2 (`ca9ec48`) ; les voies, les sorties et leurs points d'arrivée n'ont pas changé depuis.
+- Le TournamentLab (30 graines, oisif et diligent, règles d'aujourd'hui et dynamiques) : identique à `main`.
+- `npm test` 278 sur 278 (dont `tests/v2-skyline.test.mjs`, six fautes injectées, six prises), `npm run typecheck`, `npm run build`,
+  `npm run art:validate` (0 erreur).
 
 ### Conclusion de la Passe VP8 — [?] la demande faite ; à l'aveugle, la place festive et l'entraînement devant VP7, le parvis à égalité
 - La « visibilité commune » de l'arène : vue de chaque lieu d'une partie de la version 2 : le monument du parvis ; au-dessus des rangées
