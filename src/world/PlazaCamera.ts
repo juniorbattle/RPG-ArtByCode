@@ -43,23 +43,26 @@ export const PLAZA_FRAMINGS: Record<PlazaKind, PlazaFraming[]> = {
     // before the gate: the fountain whole in front, the arch, its braziers, the pavilions on each side
     { id: 'gate', label: 'Gate', yaw: 8, pitch: 6, dist: 21, fov: 40, home: [0, 3.6, -12], ref: [0, -13], gain: [0.5, 0.3], min: [-6, -1.5], max: [6, 1.5], zone: { x0: -99, x1: 99, z0: -99, z1: -10 }, priority: 2 },
   ],
+  // (journal Passe VP9, the operator's choices « Lices au pied du rempart » and « Place de la halle »: each square its own structure and its own
+  // angle. The lists seen along their rampart from the east, low, the wall a diagonal from the frame's right edge to the corner tower and the
+  // gallery at the far end (the district's quay, mirrored: the arena north-west of the lists rises over the wall); their zones along the yard.
+  // The hall's square from high on the south-west, three quarters, its flags and its strings seen from above, the hall at the end, the
+  // arcades curving along the right; its zones from the quay's gate to the hall)
   training: [
-    // the arrival from the forecourt's street: over the fence, the yard ahead, the ring before the stand
-    // (nearer since iteration 5: « In frame 1 the ring is small and far away behind a band of fence and empty cobbles »)
-    { id: 'entry', label: 'Arrival', yaw: 18, turn: 1.2, pitch: 3, dist: 17, fov: 35, home: [1.5, 2.6, -3], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
-    // the yard: the dummy's ring, the champions' ring, the butts along the right
-    // (nearer since iteration 4: « the platform is a small object in the upper middle and the lower half is empty sand »)
-    { id: 'yard', label: 'Yard', yaw: 18, turn: 1.2, pitch: 3, dist: 17, fov: 35, home: [1.5, 2.6, -7], ref: [0, -4], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: -5, z1: 0.5 }, priority: 1 },
-    // the ring: the champions' boards, its braziers and the stand behind
-    { id: 'ring', label: 'Ring', yaw: 10, pitch: 6, dist: 18, fov: 38, home: [1.5, 2.8, -10], ref: [0, -10], gain: [0.5, 0.5], min: [-7, -2], max: [7, 2], zone: { x0: -99, x1: 99, z0: -99, z1: -5 }, priority: 2 },
+    // the yard's east end: the near tower, the butts, the wall receding to the corner tower
+    { id: 'east', label: 'Wall', yaw: 46, pitch: 5, dist: 22, fov: 36, home: [7.5, 2.4, -3.4], ref: [10, -1], gain: [0.6, 0.25], min: [-4, -1.4], max: [5, 1.4], zone: { x0: 4, x1: 99, z0: -99, z1: 99 }, priority: 0 },
+    // the lists: the champions' ring before the gallery, the stair rising to the corner tower, the arena over the rampart
+    { id: 'lists', label: 'Lists', yaw: 52, pitch: 5, dist: 22, fov: 36, home: [0, 2.4, -3.4], ref: [0, -1], gain: [0.75, 0.25], min: [-6, -1.4], max: [6, 1.4], zone: { x0: -6, x1: 4, z0: -99, z1: 99 }, priority: 1 },
+    // before the gallery: its stand, its judges' box over the passage, the corner tower
+    { id: 'stand', label: 'Stand', yaw: 64, pitch: 5.5, dist: 20, fov: 36, home: [-8.5, 2.4, -2.0], ref: [-10, 0], gain: [0.5, 0.3], min: [-3, -1.4], max: [3, 1.4], zone: { x0: -99, x1: -6, z0: -99, z1: 99 }, priority: 2 },
   ],
   festival: [
-    // the arrival by the quay's gate: over the balustrade, the stalls along the east row, the stage and the bandstand at the end
-    { id: 'entry', label: 'Arrival', yaw: -18, turn: 0.8, pitch: 3, dist: 21, fov: 35, home: [0, 2.6, -2], ref: [0, 2], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: 0.5, z1: 99 }, priority: 0 },
-    // the court: the strings over the hero, the stalls, the stage beyond
-    { id: 'court', label: 'Court', yaw: -18, turn: 0.8, pitch: 3, dist: 21, fov: 35, home: [0, 2.6, -6.5], ref: [0, -4], gain: [0.7, 1], min: [-7, -4], max: [7, 4], zone: { x0: -99, x1: 99, z0: -9, z1: 0.5 }, priority: 1 },
-    // before the stage: the boards, the bandstand and the tavern, from the east
-    { id: 'stage', label: 'Stage', yaw: 8, pitch: 7, dist: 18, fov: 35, home: [-2, 3, -12.5], ref: [0, -12.5], gain: [0.6, 0.5], min: [-7, -2], max: [7, 2], zone: { x0: -99, x1: 99, z0: -99, z1: -9 }, priority: 2 },
+    // the arrival by the quay's gate: from high, the flags to the hall, the arcades along the right, the bandstand on the left
+    { id: 'entry', label: 'Arrival', yaw: -25, pitch: 11, dist: 26, fov: 38, home: [0, 3.0, -2.5], ref: [0, 2], gain: [0.6, 0.6], min: [-6, -3], max: [6, 3], zone: { x0: -99, x1: 99, z0: 1, z1: 99 }, priority: 0 },
+    // the square: the strings over the hero, the hall ahead
+    { id: 'square', label: 'Square', yaw: -22, pitch: 11, dist: 24, fov: 38, home: [-0.5, 3.0, -4.5], ref: [0, -2], gain: [0.6, 0.5], min: [-6, -2], max: [6, 2], zone: { x0: -99, x1: 99, z0: -5, z1: 1 }, priority: 1 },
+    // before the hall: its posts, its stage and its crowns, the arcades' north end
+    { id: 'hall', label: 'Hall', yaw: -24, pitch: 11, dist: 21, fov: 38, home: [-1.5, 3.0, -9.0], ref: [-1.5, -8.5], gain: [0.5, 0.4], min: [-5, -1.4], max: [5, 1.4], zone: { x0: -99, x1: 99, z0: -99, z1: -5 }, priority: 2 },
   ],
 };
 
@@ -88,13 +91,23 @@ export function framingPose(f: PlazaFraming, x: number, z: number): CamPose {
 }
 
 /** a dialogue's or a cutscene's look at a point from `dist` (the first build's formula, journal Passe VP1: the composition its scripts were
- *  written for) */
-const LOOK = { pitch: 7, fov: 35, ty: 2.6, yawGain: 1.2 };
-const LOOK_YAW: Record<PlazaKind, number> = { forecourt: 18, training: 22, festival: -20 };
+ *  written for); each square's from its framings' side since journal Passe VP9 (its yaw, turned by `gain` degrees per metre east of x 0, the
+ *  point clamped to its walk, the pivot `tx` of the way toward it) */
+const LOOK = { pitch: 7, fov: 35, ty: 2.6 };
+const LOOKS: Record<PlazaKind, { yaw: number; gain: number; tx: number; clamp: Rect }> = {
+  forecourt: { yaw: 18, gain: 1.2, tx: 0.8, clamp: { x0: -9, x1: 9, z0: -15, z1: 2 } },
+  training: { yaw: 54, gain: 0.5, tx: 1, clamp: { x0: -13, x1: 14, z0: -7, z1: 4.5 } },
+  festival: { yaw: -20, gain: 0.8, tx: 1, clamp: { x0: -10, x1: 8.5, z0: -10.5, z1: 5.5 } },
+};
 export function lookPose(kind: PlazaKind, px: number, pz: number, dist: number): CamPose {
-  const x = THREE.MathUtils.clamp(px, -9, 9), z = THREE.MathUtils.clamp(pz, -15, 2);
-  return { yaw: THREE.MathUtils.degToRad(LOOK_YAW[kind] - x * LOOK.yawGain), pitch: THREE.MathUtils.degToRad(LOOK.pitch), dist, fov: LOOK.fov, shift: 0, tx: x * 0.8, ty: LOOK.ty, tz: z };
+  const L = LOOKS[kind], x = THREE.MathUtils.clamp(px, L.clamp.x0, L.clamp.x1), z = THREE.MathUtils.clamp(pz, L.clamp.z0, L.clamp.z1);
+  return { yaw: THREE.MathUtils.degToRad(L.yaw - x * L.gain), pitch: THREE.MathUtils.degToRad(LOOK.pitch), dist, fov: LOOK.fov, shift: 0, tx: x * L.tx, ty: LOOK.ty, tz: z };
 }
+
+/** each square's axis, from its way in from the quay or the forecourt to its monument (the framings' zones follow it; the tests walk it) */
+export const PLAZA_AXIS: Record<PlazaKind, [[number, number], [number, number]]> = {
+  forecourt: [[0, 6], [0, -16]], training: [[15, -1], [-14, -1]], festival: [[0, 6], [-1.5, -10.8]],
+};
 
 /** DEV: `plazaframe=<id>:yaw,pitch,dist,fov,hx,hy,hz[,gx,gz]` changes one framing of the page's square while composing (blank = keep) */
 export function tuneFraming(kind: PlazaKind, spec: string): void {

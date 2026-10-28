@@ -49,15 +49,16 @@ test('who stands where: the teachers and Orla at the training ground, the bard a
 });
 
 test('every person on a square, at every hour of every named state, has a spot inside the walkable surface; the crowd walks inside it', () => {
-  const W = PZ.PLAZA_WALK;
-  const inside = ([x, z]) => x >= W.x0 && x <= W.x1 && z >= W.z0 && z <= W.z1;
+  const inside = ([x, z], kind) => { const W = PZ.PLAZA_WALKS[kind]; return x >= W.x0 && x <= W.x1 && z >= W.z0 && z <= W.z1; };
+  // (none nearer the camera than its framings' foot: z 1 where they stand south, x 10 on the lists seen from the east, journal Passe VP9)
+  const far = ([x, z], kind) => (kind === 'training' ? x <= 10 : z <= 1);
   for (const name of Object.keys(G.NAMED_STATES)) for (const place of ['forecourt', 'training', 'lanterns']) for (const slot of SLOTS) {
     const s = v2(name); s.place = place; s.slot = slot;
     const kind = VP.PLAZA_OF[place], spots = PZ.PLAZA_SPOTS[kind];
-    for (const id of VP.plazaPeople(s)) { assert.ok(spots[id], `${id} has a spot on the ${kind} (${name} ${slot})`); assert.ok(inside(spots[id]), `${id} inside`); }
+    for (const id of VP.plazaPeople(s)) { assert.ok(spots[id], `${id} has a spot on the ${kind} (${name} ${slot})`); assert.ok(inside(spots[id], kind), `${id} inside`); }
     if (!s.over) for (const p of VP.plazaPeople(s)) if (P.PEOPLE[p]) assert.ok(talks(s).includes(p), `${p} on the ${kind} can be talked to`);
   }
-  for (const kind of ['forecourt', 'training', 'festival']) for (const [period, pts] of Object.entries(PZ.PLAZA_GATHER[kind])) { assert.ok(pts.length >= 5, `${kind} ${period}`); for (const w of pts) assert.ok(inside(w) && w[1] <= 1, `${kind} ${period} point ${w}`); }
+  for (const kind of ['forecourt', 'training', 'festival']) for (const [period, pts] of Object.entries(PZ.PLAZA_GATHER[kind])) { assert.ok(pts.length >= 5, `${kind} ${period}`); for (const w of pts) assert.ok(inside(w, kind) && far(w, kind), `${kind} ${period} point ${w}`); }
   // the extras: the guards at the forecourt's gate; no hooded figure on the square at any hour (journal Passe VP1: the stranger of the
   // simulation is on the quay, and an extra one could not talk to read as him)
   const fc = v2(); fc.place = 'forecourt'; assert.ok(VP.plazaPeople(fc).includes('guardA'));

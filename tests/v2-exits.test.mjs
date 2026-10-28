@@ -43,7 +43,9 @@ test('each square: its ways out are its place\'s, a row opens where a side stree
   for (const k of KINDS) for (const day of [false, true]) {
     const b = PZ.buildPlaza(lib, k, 1842, { day }), place = PZ.PLACE_OF_KIND[k];
     assert.deepEqual(b.exits.map((e) => `${e.side}:${e.to}`).sort(), VP.V2_EXITS[place].map((e) => `${e.side}:${e.to}`).sort(), k);
-    assert.deepEqual(Object.keys(PZ.OPEN_AFTER[k]).sort(), VP.V2_EXITS[place].filter((e) => e.side !== 'south').map((e) => e.side).sort(), `${k}: the rows open on the ways' sides`);
+    // (the forecourt's rows open where its side streets leave; the lists leave by their gallery's passage, the hall's square by a gap in its
+    // arcades: journal Passe VP9)
+    if (PZ.OPEN_AFTER[k]) assert.deepEqual(Object.keys(PZ.OPEN_AFTER[k]).sort(), VP.V2_EXITS[place].filter((e) => e.side !== 'south').map((e) => e.side).sort(), `${k}: the rows open on the ways' sides`);
     for (const e of b.exits) {
       // the lane overlaps the square's edge (one walks into it) and reaches past the way out
       const W = b.walk, L = e.lane;

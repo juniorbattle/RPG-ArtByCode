@@ -98,7 +98,8 @@ test('the cutscenes: each once, at its place and moment; its speakers and walker
     for (const st of c.steps) {
       if (st.say) { assert.ok(st.say === 'player' || c.cast.includes(st.say), `${c.id}: ${st.say} is on the square`); assert.ok(st.line().length > 10); }
       if (st.walk) assert.ok(c.cast.includes(st.walk));
-      if (st.cam) assert.ok(Math.abs(st.cam[0]) <= 11 && st.cam[1] <= 3 && st.cam[1] >= -16);
+      // (a look within its square's walk: journal Passe VP9, each square its own)
+      if (st.cam) { const W = PZ.PLAZA_WALKS[VP.PLAZA_OF[c.place]]; assert.ok(st.cam[0] >= W.x0 && st.cam[0] <= W.x1 && st.cam[1] >= W.z0 && st.cam[1] <= W.z1, `${c.id}: the look at ${st.cam}`); }
     }
     assert.ok(P.PEOPLE[c.cast[0]], `${c.id}: a person of the game`);
   }

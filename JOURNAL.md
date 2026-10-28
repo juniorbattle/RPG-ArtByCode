@@ -291,6 +291,56 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   brown ») ; seuls les écarts qui se répètent sur plusieurs tours ont été suivis. Ce que les juges demandent à chaque tour et que la direction
   refuse : un sol meublé. La revue de l'opérateur en jeu décide.
 
+## Passe VP9 — Deux places à leur propre structure : les lices au pied du rempart, la place de la halle (2026-10-28)
+
+### La demande de l'opérateur, mot pour mot
+- « C'est très bien. Par contre il trouve que place festival, entraînement et parvis sont un peu similaire sur la structure et l'angle de plan
+  contrairement à merchant qui se distinguent visuellement. Parvis est compréhensible car nous sommes devant l'arène mais place festival et
+  entraînement devraient proposer une structure architectural diffente pour apporte des scènes uniques et inédites sinon je valide la qualité
+  et la précision du rendu. Il faut rester de même »
+- Ses deux choix, sur la question posée (trois structures proposées par place, la recommandation en tête) : « Quelle structure pour le
+  terrain d'entraînement ? » = « Lices au pied du rempart (Recommandé) » ; « Quelle structure pour la place festive ? » = « Place de la halle
+  (Recommandé) ». Les descriptions proposées : « La cour longe le rempart de la ville : un long mur crénelé, deux tours rondes, un chemin de
+  ronde et son escalier ; en face, les écuries et une galerie de bois à étage pour les spectateurs. Caméra oblique le long du mur (une
+  diagonale, comme le quai du district) ; l'arène se dresse derrière le rempart. » et « Une grande halle médiévale (charpente ouverte sur
+  piliers de bois) au fond : la scène et les lanternes dessous ; des maisons à arcades (couverts) en courbe sur un côté. Caméra en plongée de
+  trois-quarts (≈ 15°) qui montre le dallage et les guirlandes d'en haut ; l'arène au-dessus des toits. »
+- Le cadre gardé : le parvis tel quel (prouvé à l'octet), tout derrière `flags.v2`, la ville et la partie par défaut inchangées, les règles de
+  VP7 (un monument, le sol libre, 12 à 16 lumières toutes allumées, trois cadrages par place) ; chaque nombre « proposé ».
+
+### Lot 1 : les lices (`src/world/Plazas.ts` : `LISTS`, `rampart`, `roundTower`, `wallStair`, `listsGallery`, `quintain`, `ivy`) — en cours
+- Le rempart de la cité au nord (face intérieure z -10, chemin de ronde à 7,8 m, de x -27 à 44) : plinthe en talus, contreforts, cordon,
+  trous de boulin, table de corbeaux sous le parapet intérieur, merlons du parapet extérieur contre le ciel, torches sur consoles ; une
+  tranche de 4,4 m par partie de visibilité. Deux tours rondes (l'angle, x -18,6, au fond ; la proche, x 5, coupée par le haut du cadre en
+  repoussoir), toits coniques à coyau en ardoise de la ville, fanions ; l'escalier monte le long du mur vers la tour d'angle ; la galerie des
+  spectateurs ferme l'ouest au-dessus des écuries (gradins, toile rayée du tournoi, écus peints, loge des juges sous un auvent rayé) et son
+  passage est la sortie vers le parvis. Le ring des champions devant la galerie (marches vers l'est), le ring au mannequin, les buttes, la
+  quintaine, trois longues bannières pendues au chemin de ronde.
+- La caméra (`src/world/PlazaCamera.ts`) : le long du mur depuis l'est, basse (5°), trois cadrages par zone le long de la cour (yaw 46, 52,
+  64) ; l'arène au nord-ouest au-dessus de la galerie, le parvis entre les deux places (la géographie de VP8 gardée : le parvis à l'ouest des
+  lices). Écart à l'aperçu de la question : la caméra est à l'est et regarde l'ouest (le miroir du schéma), pour que l'arène (au nord du
+  parvis, donc au nord-ouest des lices) se lève dans le cadre et que la sortie vers le parvis soit au fond de la perspective.
+
+### Lot 2 : la place de la halle (`HALL`, `ARC`, `marketHall`, `arcades`, `well`) — en cours
+- La halle au nord : poteaux de chêne sur dés de pierre en trois rangs, liens, sablières et entraits, toit en croupe d'ardoise (lucarnes,
+  lanterneau de faîte, fanions), la scène dessous (sans son dais : le toit de la halle la couvre), les couronnes de bougies (la lumière clé de
+  nuit) et les bannières du tournoi pendues aux entraits ; on marche sous sa première travée. Les maisons à couverts en courbe à l'est (un
+  appentis d'ardoise sur poteaux à liens courbes devant les maisons en retrait), la sortie vers le parvis par une brèche de la courbe sous un
+  arc ; la rangée ouest droite (la taverne), le puits, le castelet, un étal ; la porte du quai et la balustrade au premier plan.
+- La caméra : haute de trois-quarts depuis le sud-ouest (11°, yaw -25 / -22 / -24), le dallage et les guirlandes vus d'en haut ; l'arène au
+  nord-est au-dessus des toits (même géographie). Écart à l'aperçu : les couverts sont à l'est (le miroir), pour la même raison.
+- [KO] Le kiosque de VP6-VP8 : aucune place ne tient les règles de cadrage (une recherche sur une grille de 0,5 m, `bandsearch.mjs` de la
+  séance : devant les travées de la halle il la masquait et un cadrage la coupait par le bas, près des couverts il cachait la sortie vers le
+  parvis) ; un puits à ferronnerie le remplace, la scène de la halle est la place de la musique.
+
+### Les tests généralisés — [OK]
+- `tests/v2-plaza-vis.test.mjs` : l'axe de chaque place (`PLAZA_AXIS` : celui du parvis et de la halle du quai au monument, celui des lices le
+  long du mur), son bord proche (`PLAZA_NEAR` : aucun sur les lices), la place de sa caméra (`ROOM`), le cœur du sol libre (la marche moins
+  2 m, 3 m côté caméra : celui du parvis inchangé) ; `v2-exits` (`OPEN_AFTER` du parvis seul), `v2-places` (`PLAZA_WALKS`, la foule loin du
+  pied des cadrages), `v2-story` (les regards dans la marche de leur place). 278 tests sur 278.
+- Le parvis : son bâti haché (géométrie de chaque emplacement, lumières, émetteurs, obstacles, sorties, places, foule, instances, masque du
+  sol, cadrages et poses de l'empreinte) identique à main pour les quatre moments de la journée.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

@@ -52,7 +52,9 @@ export function plazaKeyLight(look: DayLook | null, t: DayTime | null, kind: Pla
   // (midday a little lower and from the side, journal Passe VP6, tenth critique: « flat daylight, no building throws a shadow across the square »)
   // (journal Passe VP7, the plan's « un soleil choisi par place »: at midday the forecourt's sun rakes the arena's front from the east, a row's
   // shadow across its floor; the training ground's comes from the west over its dummy's ring, the ring in the light)
-  const MIDDAY: Record<PlazaKind, [number, number]> = { forecourt: [62, 42], training: [-35, 46], festival: [32, 50] };
+  // (journal Passe VP9: the lists' sun from the south-east, on their rampart and their gallery, the towers' shadows on the wall; the hall's
+  // square's from the west, its arcades in the light)
+  const MIDDAY: Record<PlazaKind, [number, number]> = { forecourt: [62, 42], training: [30, 46], festival: [-40, 50] };
   const [az, el] = !look || !t ? [-25, 32] : t === 'morning' ? [40, 22] : t === 'midday' ? MIDDAY[kind] : [-55, 15];
   const a = THREE.MathUtils.degToRad(az), e = THREE.MathUtils.degToRad(el);
   return new THREE.Vector3(Math.sin(a) * Math.cos(e), Math.sin(e), Math.cos(a) * Math.cos(e)).normalize();
@@ -72,6 +74,8 @@ const PLAZA_DOF = { range: 12, far: 0.5, near: 0.45 };
 // textureless navy at about 21/255 », « canvas near clipping (95th percentile 243) »; before, key 1.18 and fill 0.86; the ground's warm
 // bounce raised with the sky's, 1.5, the shadows went « grey and brown », the fourth critique: the sky's alone, the shadows blue again)
 const PLAZA_SUN = { key: 1.05, sky: 1.5, ground: 0.95, sat: 1.0 };
+/** the moon's or the sun's shadow over each square: its centre and half size (m; journal Passe VP9: the lists' long yard, its towers) */
+const SHADOW: Record<PlazaKind, { c: [number, number, number]; half: number }> = { forecourt: { c: [0, 2, -7], half: 28 }, training: { c: [-3, 2, -3], half: 36 }, festival: { c: [-1, 2, -6], half: 30 } };
 /** the widest frame the squares' visibility bake covers (src/world/PlazaVisibility.ts) */
 export const PLAZA_FRAME = 2.4;
 /** the camera of a square for a hero at (x, z) (the framing of the zone they stand in, src/world/PlazaCamera.ts: journal Passe VP7), or for a
@@ -278,7 +282,8 @@ export class PlazaApp {
     }
     this.resize();
     this.lights.update(this.time, 0, this.camera);
-    this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 2, -7), this.keyDir, 28, 28);
+    const sh = SHADOW[this.opts.kind];
+    this.shadow.update(this.renderer, this.scene, new THREE.Vector3(...sh.c), this.keyDir, sh.half, sh.half);
     const prev = this.renderer.getRenderTarget();
     this.renderer.setRenderTarget(this.post.sceneRT);
     const linked = this.renderer.compileAsync(this.scene, this.camera);

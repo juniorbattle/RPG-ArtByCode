@@ -133,9 +133,9 @@ export const CUTSCENES: Record<string, Cutscene> = {
     when: (s) => s.day >= RECRUIT_DAY && s.facts.includes('orla-recruitable') && !s.facts.includes('orla-recruited') && s.slot !== 'evening',
     steps: [
       // between the sword ring and the tilt's lanes (journal Passe VP6: the yard's new layout put a ring's fence on her old way; the champions'
-      // ring enlarged, iteration 11: in front of its north edge)
-      { cam: [3.6, -7.4], dist: 12, secs: 2 },
-      { walk: 'orla', to: [2.0, -8.0] },
+      // ring enlarged, iteration 11: in front of its north edge); by the champions' ring's steps since journal Passe VP9 (the lists)
+      { cam: [-4.8, 0.4], dist: 12, secs: 2 },
+      { walk: 'orla', to: [-4.0, 1.4] },
       { say: 'orla', line: () => tx('v2.scene.orla.1') },
       { say: 'player', line: () => tx('v2.scene.orla.2') },
       { say: 'orla', line: () => tx('v2.scene.orla.3') },
@@ -145,7 +145,8 @@ export const CUTSCENES: Record<string, Cutscene> = {
     id: 'eve', place: 'lanterns', cast: ['bard'],
     when: (s) => s.day === 9 && s.slot === 'evening',
     steps: [
-      { cam: [0, -14], dist: 16, secs: 2.5 },
+      // (before the hall's stage since journal Passe VP9)
+      { cam: [-1.5, -9.8], dist: 16, secs: 2.5 },
       { say: 'bard', line: () => tx('v2.scene.eve.1') },
       { say: 'player', line: () => tx('v2.scene.eve.2') },
     ],
