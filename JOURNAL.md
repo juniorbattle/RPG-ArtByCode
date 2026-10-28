@@ -245,6 +245,37 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Le parvis : son bâti haché (géométrie de chaque emplacement, lumières, émetteurs, obstacles, sorties, places, foule, instances, masque du
   sol, cadrages et poses de l'empreinte) identique à main pour les quatre moments de la journée.
 
+### Les preuves finales de la Passe VP9 — [OK]
+- Sur un instantané figé de l'état final (`cae5438`, servi sur un port à part ; depuis, seuls le test de la place de la caméra et ce journal
+  ont changé), contre `main` (`5a69031`) servi sur un autre :
+  - la visibilité des places, élaguée contre `vis=0`, sans personnages, huit états (les lices à midi, la nuit et le matin ; la halle en fin de
+    journée, la nuit et le matin ; le parvis à midi et la nuit), douze places du héros chacun : **0 px différent sur 96 vues**. Cuissons
+    neuves : les lices 323 poses (14-16 s en rendu logiciel), la halle 513 (31-49 s), le parvis 565, ses poses identiques à celles de `main`
+    (rectification : la Passe VP8 notait « parvis 427, entraînement 501, place festive 565 » ; sur `main` ce sont parvis 565, entraînement 427,
+    place festive 501) ;
+  - le district contre `main` : A à D de nuit et à midi, B avec son panneau, **identiques au pixel** (9 sur 9) ;
+  - les sorties des places et du quai parcourues dans les deux sens (`exits-proof`) : « every way walked both ways » ;
+  - `play-flow` par défaut et `V2=1` : « all checks passed », aucune erreur de page ; l'écran titre (`title-proof`) : ses trois comparaisons
+    identiques au pixel.
+- Le parvis haché à l'octet (géométrie de chaque emplacement, lumières, émetteurs, obstacles, sorties, places, foule, instances, masque du sol,
+  cadrages et poses) : identique à `main` aux quatre moments de la journée. Le TournamentLab (30 graines, oisif et diligent, règles
+  d'aujourd'hui et dynamiques) : identique à `main`, sur l'état final.
+- `npm test` 278 sur 278, `npm run typecheck`, `npm run build`, `npm run art:validate` (0 erreur).
+- Le bâti statique (hors instances) : les lices 60 177 triangles à midi, 60 744 la nuit (l'entraînement de VP8 : 148 702 et 149 066) ; la halle
+  118 720 et 120 658 (la place festive de VP8 : 145 364 et 146 224) ; 16 lumières la nuit au plus (les lices 15, la halle 16).
+
+### Conclusion de la Passe VP9 — [OK] deux places à leur propre structure, au niveau de VP8 ; [?] la revue en jeu de l'opérateur
+- La demande : « place festival et entraînement devraient proposer une structure architectural diffente pour apporte des scènes uniques et
+  inédites [...] Il faut rester de même ». Les lices au pied du rempart (le mur de la cité en pierre de taille, deux tours rondes, le chemin de
+  ronde et son escalier, la galerie des spectateurs sur les écuries, vus le long du mur depuis l'est) et la place de la halle (la grande halle
+  de bois et sa scène, les maisons à couverts en courbe, le puits, la rose de dalles, vues de haut depuis le sud-ouest) ; le parvis à l'octet.
+- À l'aveugle : la distinction de 5 (l'entraînement) et 3 (la place festive) pour VP8 à 8 et 8 (cinquième tour), « None of the four reads as
+  the same template re-dressed » ; la qualité, en moyenne des deux derniers tours (quatre notes de panneau), la halle 6,5 contre 6,1 pour la
+  place festive de VP8, les lices 5,5 contre 5,25 pour l'entraînement de VP8 : au niveau de VP8 ou au-dessus, à la variance des juges près
+  (un point d'un panneau à l'autre). Six tours de critique et six itérations, chaque nombre « proposé ».
+- Ce qui reste (« À reprendre ») : la revue en jeu de l'opérateur, en rendu matériel ; la galerie des lices sombre à l'ombre de son toit ; les
+  flaques de nuit ; le sol libre ; les flammes figées des captures.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
