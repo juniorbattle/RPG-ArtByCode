@@ -75,23 +75,30 @@ void main(){
   A.rgb = mix(mix(texture2D(tCobble, uvA, 10.0).rgb, texture2D(tCobble, uvB, 10.0).rgb, t), A.rgb, COBBLE_CONTRAST);
 #endif
 #ifdef FLAGS
-  // the hall's square (journal Passe VP9): its setts in panels within a lattice of flag bands laid on the diagonal, FLAGS metres apart (the
-  // market's floor, seen from above: the forecourt's setts and its way of flags made the two squares read as one template, the first critique;
-  // [KO] great flags over the whole floor, « a perfectly regular grid of large, clean square flagstones [...] a CG or bathroom floor », the
-  // second; the third: bands 0.9 m wide read as a grid of tiles from above): each band 0.56 m wide of slabs 0.6 m long, each slab its own
-  // shade, the joints dark and low, a fine grain faded under a few pixels
+  // the hall's square (journal Passe VP9): its setts crossed by bands of flags laid as a compass about the square's middle, FLAGS = (centre x,
+  // centre z, inner ring, outer ring): eight rays, two rings and the medallion's rim (the forecourt's setts and its way of flags made the two
+  // squares read as one template, the first critique; [KO] great flags over the whole floor, « a CG or bathroom floor », the second; [KO] a
+  // lattice of bands on the diagonal, « a regular grid of stone bands that reads like paving tiles or a car park », the third): each band
+  // 0.48 m wide of slabs 0.62 m long, a little lighter than the setts' own mean, each slab its own shade, the joints dark and low, a fine
+  // grain faded under a few pixels
   {
-    vec2 fq = vec2(P.x + P.z, P.x - P.z) * 0.70710678, fd = abs(fract(fq / FLAGS + 0.5) - 0.5) * FLAGS;
-    float onX = step(fd.x, 0.28), onY = step(fd.y, 0.28), band = max(onX, onY);
+    vec2 fq = P.xz - FLAGS.xy;
+    float fr = length(fq), fth = atan(fq.y, fq.x), sec = 0.78539816, fti = floor(fth / sec + 0.5), dth = fth - fti * sec;
+    float dRay = abs(sin(dth)) * fr, onRay = step(dRay, 0.24) * step(1.3, fr) * step(0.0, cos(dth));
+    float rr = abs(fr - FLAGS.z) < abs(fr - FLAGS.w) ? FLAGS.z : FLAGS.w, dRing = abs(fr - rr), onRing = step(dRing, 0.24);
+    float dRim = abs(fr - 1.1), onRim = step(dRim, 0.24), band = max(max(onRay, onRing), onRim);
     if (band > 0.0) {
-      // along a band of constant fq.x the slabs follow fq.y, and the other way round; the crossings one square slab
-      float along = onX > 0.0 && onY < 1.0 ? fq.y : fq.x, across = onX > 0.0 && onY < 1.0 ? fd.x : fd.y;
-      float sl = floor(along / 0.6), sf = fract(along / 0.6), fh = fract(sin(sl * 12.9898 + floor(fq.x / FLAGS) * 7.1 + floor(fq.y / FLAGS) * 3.7) * 43758.5453);
-      float fwq = fwidth(along) / 0.6, je = min(min(sf, 1.0 - sf) * 0.6, 0.28 - across);
-      float joint = (1.0 - smoothstep(0.012, 0.024 + fwq * 0.5, je)) * (1.0 - smoothstep(0.08, 0.2, fwq));
+      // along a ray the slabs follow the radius; along a ring or the rim, its arc
+      bool ray = onRay > 0.0 && onRing < 1.0 && onRim < 1.0;
+      float along = ray ? fr : fth * (onRim > 0.0 ? 1.1 : rr), across = ray ? dRay : (onRim > 0.0 ? dRim : dRing);
+      float key = ray ? fti * 3.7 : (onRim > 0.0 ? 11.3 : rr * 1.9);
+      float sl = floor(along / 0.62), sf = fract(along / 0.62), fh = fract(sin(sl * 12.9898 + key) * 43758.5453);
+      float fw = length(fwidth(P.xz)), fwq = fw / 0.62, je = min(min(sf, 1.0 - sf) * 0.62, 0.24 - across);
+      float joint = (1.0 - smoothstep(0.012, 0.024 + fw * 0.5, je)) * (1.0 - smoothstep(0.08, 0.2, fwq));
       float fgr = mix(0.5, vn2(P.xz * 7.0), 1.0 - smoothstep(0.3, 0.7, fwidth(P.x) * 7.0));
-      vec3 flag = vec3(0.112, 0.106, 0.098) * (0.82 + 0.3 * fh) * (0.88 + 0.24 * fgr);
-      A = vec4(mix(flag, vec3(0.05, 0.048, 0.047), joint * 0.8), mix(0.74 + 0.1 * fh, 0.12, joint));
+      vec3 mean = mix(texture2D(tCobble, uvA, 10.0).rgb, texture2D(tCobble, uvB, 10.0).rgb, 0.5);
+      vec3 flag = mean * vec3(1.16, 1.14, 1.1) * (0.86 + 0.24 * fh) * (0.9 + 0.2 * fgr);
+      A = vec4(mix(flag, mean * 0.45, joint * 0.8), mix(0.7 + 0.1 * fh, 0.12, joint));
       nxy = (vec2(vn2(P.xz * 2.3 + fh * 7.0), vn2(P.xz * 2.3 + 3.1 + fh * 5.0)) - 0.5) * 0.12;
       ao = 1.0 - 0.5 * joint; rough0 = mix(0.6, 0.9, joint);
     }

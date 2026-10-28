@@ -145,6 +145,32 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   lueur ; le toit en cinq rangs de plaques ; le puits devant les couverts ; un cadrage bas sous l'avant-toit de la halle ; l'arrivée et la
   place à 12°.
 
+### La troisième critique à l'aveugle (itération 2), trois agents — [OK] les deux places distinctes, [KO] la qualité encore sous VP8
+- Distinction (un juge, les planches de VP9) : le quai 9, les lices 7, la halle 7, le parvis 6 ; « None of the four reads outright as a
+  re-dressed copy » ; ce qui rapproche encore : le mur de pierre pâle et ses grandes bannières bleues (le parvis et les lices), la galerie et
+  la halle (« a blue-roofed, timber-posted gallery or hall with banners between the posts »), le héros de dos au milieu.
+- Qualité (panneau 1 / panneau 2) : l'entraînement de VP8 6 / 5,5, les lices 5 / 5 ; la place festive de VP8 6,5 / 6,5, la halle 5,5 / 6 ; le
+  quai 7,5 / 8. Les lices : le rempart et les tours « huge pale grey-white surfaces with thin crack lines and almost no masonry, overexposed by
+  day [...] At night [...] bright lavender », des archères « like stickers », le sable vide et flou, la galerie noire la nuit, la rampe de
+  l'escalier « a single thin line that reads as a cable ». La halle : le treillis « reads like paving tiles or a car park », le toit (une
+  tache verte, de jour un seul plan, de nuit « a featureless dark slab »), les lucarnes noires la nuit, une lumière plate (« no strong sun
+  shadows, so it reads overcast »), peu de ciel.
+- Le TournamentLab (30 graines, oisif et diligent, règles d'aujourd'hui et dynamiques) : identique à `main` (`5a69031`) ; le parvis haché à
+  l'octet, les quatre moments : identique à `main`.
+
+### Itération 3 — [?] les retours de la troisième critique
+- Les lices : le parement en appareil de pierre de taille, chaque bloc sa géométrie, sa teinte (quelques-uns plus chauds, d'autres plus
+  froids), sa part de la texture, 3,5 cm en saillie sur son mortier, plus sombre vers le pied (`ashlarBand`, `ashlarRing` : les assises posées
+  depuis le début du mur, sans couture d'une tranche à l'autre ; les tambours des tours de même) ; la face de jour sous le stuc du parvis, la
+  pierre de nuit aussi sombre que la façade du parvis ; les archères en retrait dans leur encadrement ; la margelle de l'escalier dans la
+  pierre du parapet, une assise de haut ; des lanternes aux poteaux des écuries la nuit (sans lumière) ; le flou proche des lices plus léger
+  (0,22 au lieu de 0,45 : leur caméra basse sur une longue cour).
+- La halle : le sol en pavés traversés d'une rose de dalles autour du milieu de la place (huit rayons, deux cercles à 4,6 et 9,2 m, le bord
+  d'un médaillon ; les dalles un peu plus claires que la moyenne des pavés) ; une lueur faible entre les lames des lucarnes la nuit ; le
+  soleil de la place à droite de sa caméra (à midi du sud-est, en fin de journée bas du sud par son côté ouvert : il était derrière la caméra,
+  chaque ombre cachée derrière ce qui la portait) ; les cadrages d'arrivée et de place un peu plus haut (plus de ciel et l'arène au-dessus des
+  toits).
+
 ### L'archivage du journal — [OK]
 - `JOURNAL.md` dépassait 60 Ko (120 Ko) : la Passe VP8 (fusionnée, `5a69031`) déplacée mot pour mot dans `journal/34-passes-VP8.md` (un
   en-tête, une ligne `---`, puis les octets inchangés), sa ligne ajoutée à l'index. Preuve : le corps archivé égale les octets retirés

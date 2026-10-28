@@ -53,9 +53,12 @@ export function plazaKeyLight(look: DayLook | null, t: DayTime | null, kind: Pla
   // (journal Passe VP7, the plan's « un soleil choisi par place »: at midday the forecourt's sun rakes the arena's front from the east, a row's
   // shadow across its floor; the training ground's comes from the west over its dummy's ring, the ring in the light)
   // (journal Passe VP9: the lists' sun from the south-east, on their rampart and their gallery, the towers' shadows on the wall; the hall's
-  // square's from the west, its arcades in the light)
-  const MIDDAY: Record<PlazaKind, [number, number]> = { forecourt: [62, 42], training: [30, 46], festival: [-40, 50] };
-  const [az, el] = !look || !t ? [-25, 32] : t === 'morning' ? [40, 22] : t === 'midday' ? MIDDAY[kind] : [-55, 15];
+  // square's from the south-east, on its hall and its west row, and at the end of day low from the south, through its open side: both from the
+  // camera's right, their shadows across the floor (the third critique of journal Passe VP9: « flat, hazy day light [...] no strong sun
+  // shadows, so it reads overcast »: the sun behind its camera on the south-west, every shadow hidden behind what cast it))
+  const MIDDAY: Record<PlazaKind, [number, number]> = { forecourt: [62, 42], training: [30, 46], festival: [35, 50] };
+  const AFTERNOON: Record<PlazaKind, [number, number]> = { forecourt: [-55, 15], training: [-55, 15], festival: [20, 16] };
+  const [az, el] = !look || !t ? [-25, 32] : t === 'morning' ? [40, 22] : t === 'midday' ? MIDDAY[kind] : AFTERNOON[kind];
   const a = THREE.MathUtils.degToRad(az), e = THREE.MathUtils.degToRad(el);
   return new THREE.Vector3(Math.sin(a) * Math.cos(e), Math.sin(e), Math.cos(a) * Math.cos(e)).normalize();
 }
@@ -181,7 +184,9 @@ export class PlazaApp {
     // page's own values)
     const fog = this.look ? PLAZA_FOG_DAY : PLAZA_FOG;
     U.uFogStart.value = fog.start; U.uFogDensity.value *= fog.density;
-    this.post.params.dofRange = PLAZA_DOF.range; this.post.params.dofFar = PLAZA_DOF.far; this.post.params.dofNear = PLAZA_DOF.near;
+    // (the lists' near blur lighter, journal Passe VP9: their camera low over a long yard, the near third of the frame is sand a few metres off,
+    // « a smeared tan field », the third critique)
+    this.post.params.dofRange = PLAZA_DOF.range; this.post.params.dofFar = PLAZA_DOF.far; this.post.params.dofNear = opts.kind === 'training' ? 0.22 : PLAZA_DOF.near;
     // the lights' in-scatter grows with the fog's density (PostFX): kept at the day state's own (seventh critique: « a milky warm haze covers
     // the left half and flattens the values »)
     this.post.params.airlight /= fog.density;

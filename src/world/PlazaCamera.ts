@@ -58,9 +58,9 @@ export const PLAZA_FRAMINGS: Record<PlazaKind, PlazaFraming[]> = {
   ],
   festival: [
     // the arrival by the quay's gate: from high, the setts to the hall, the arcades along the right, the well before them
-    { id: 'entry', label: 'Arrival', yaw: -36, pitch: 12, dist: 24, fov: 38, home: [0.5, 3.0, -3.0], ref: [0, 2], gain: [0.6, 0.6], min: [-6, -3], max: [6, 3], zone: { x0: -99, x1: 99, z0: 1, z1: 99 }, priority: 0 },
+    { id: 'entry', label: 'Arrival', yaw: -36, pitch: 12, dist: 24, fov: 38, home: [0.5, 3.5, -3.0], ref: [0, 2], gain: [0.6, 0.6], min: [-6, -3], max: [6, 3], zone: { x0: -99, x1: 99, z0: 1, z1: 99 }, priority: 0 },
     // the square: the strings over the hero, the hall ahead
-    { id: 'square', label: 'Square', yaw: -34, pitch: 12, dist: 22, fov: 38, home: [-0.5, 3.0, -5.0], ref: [0, -2], gain: [0.6, 0.5], min: [-6, -2], max: [6, 2], zone: { x0: -99, x1: 99, z0: -5, z1: 1 }, priority: 1 },
+    { id: 'square', label: 'Square', yaw: -34, pitch: 12, dist: 22, fov: 38, home: [-0.5, 3.6, -5.0], ref: [0, -2], gain: [0.6, 0.5], min: [-6, -2], max: [6, 2], zone: { x0: -99, x1: 99, z0: -5, z1: 1 }, priority: 1 },
     // under the hall: low, the camera under its eave, its timbers, its banners, its stage and its crowns (the second critique of journal Passe
     // VP9: the high framing before the hall was « a closer, tighter version of the first », the forecourt's recipe)
     { id: 'hall', label: 'Hall', yaw: -12, pitch: 5, dist: 16, fov: 40, home: [-1.5, 2.4, -10.0], ref: [-1.5, -8.5], gain: [0.5, 0.3], min: [-5, -1.2], max: [5, 1.2], zone: { x0: -99, x1: 99, z0: -99, z1: -5 }, priority: 2 },
