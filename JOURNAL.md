@@ -308,30 +308,85 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Le cadre gardé : le parvis tel quel (prouvé à l'octet), tout derrière `flags.v2`, la ville et la partie par défaut inchangées, les règles de
   VP7 (un monument, le sol libre, 12 à 16 lumières toutes allumées, trois cadrages par place) ; chaque nombre « proposé ».
 
-### Lot 1 : les lices (`src/world/Plazas.ts` : `LISTS`, `rampart`, `roundTower`, `wallStair`, `listsGallery`, `quintain`, `ivy`) — en cours
-- Le rempart de la cité au nord (face intérieure z -10, chemin de ronde à 7,8 m, de x -27 à 44) : plinthe en talus, contreforts, cordon,
-  trous de boulin, table de corbeaux sous le parapet intérieur, merlons du parapet extérieur contre le ciel, torches sur consoles ; une
-  tranche de 4,4 m par partie de visibilité. Deux tours rondes (l'angle, x -18,6, au fond ; la proche, x 5, coupée par le haut du cadre en
-  repoussoir), toits coniques à coyau en ardoise de la ville, fanions ; l'escalier monte le long du mur vers la tour d'angle ; la galerie des
-  spectateurs ferme l'ouest au-dessus des écuries (gradins, toile rayée du tournoi, écus peints, loge des juges sous un auvent rayé) et son
-  passage est la sortie vers le parvis. Le ring des champions devant la galerie (marches vers l'est), le ring au mannequin, les buttes, la
-  quintaine, trois longues bannières pendues au chemin de ronde.
-- La caméra (`src/world/PlazaCamera.ts`) : le long du mur depuis l'est, basse (5°), trois cadrages par zone le long de la cour (yaw 46, 52,
-  64) ; l'arène au nord-ouest au-dessus de la galerie, le parvis entre les deux places (la géographie de VP8 gardée : le parvis à l'ouest des
-  lices). Écart à l'aperçu de la question : la caméra est à l'est et regarde l'ouest (le miroir du schéma), pour que l'arène (au nord du
-  parvis, donc au nord-ouest des lices) se lève dans le cadre et que la sortie vers le parvis soit au fond de la perspective.
+### Lot 1 : les lices (`src/world/Plazas.ts` : `LISTS`, `rampart`, `roundTower`, `wallStair`, `listsGallery`, `lanceRack`) — [OK] construites
+- Le rempart de la cité au nord (face intérieure z -10, chemin de ronde à 7,8 m, de x -27 à 44) : un parement enduit d'un gris froid entre des
+  pilastres de pierre, sur une plinthe en talus, archères dans leur cadre de pierre, contreforts, cordon, trous de boulin, table de corbeaux
+  sous le parapet intérieur, merlons du parapet extérieur contre le ciel, torches sur consoles ; une tranche de 4,4 m en deux parties de
+  visibilité (le parement, le couronnement). Deux tours rondes (l'angle, x -18,6, au fond ; la proche, x 5, coupée par le haut du cadre en
+  repoussoir, sa porte carrée sous un linteau), toits coniques à coyau en ardoise de la ville, fanions ; l'escalier monte le long du mur vers
+  la tour d'angle sur deux arcs ; la galerie des spectateurs ferme l'ouest au-dessus des écuries (gradins, toile rayée du tournoi, écus
+  peints, loge des juges sous un auvent rayé) et son passage est la sortie vers le parvis. Le ring des champions devant la galerie (marches
+  vers l'est), le ring au mannequin, les buttes, le râtelier d'armes et celui des lances au pied du mur, des bottes de foin sur la cour
+  proche, deux braseros, trois longues bannières pendues au chemin de ronde ; deux cordes du chemin de ronde à l'avant-toit de la galerie
+  (fanions de jour, lanternes et une flaque de lumière chacune la nuit).
+- La caméra (`src/world/PlazaCamera.ts`) : le long du mur depuis l'est, basse (4,5-5°), trois cadrages par zone le long de la cour (yaw 46,
+  52, 64) ; l'arène au nord-ouest au-dessus de la galerie, le parvis entre les deux places (la géographie de VP8 gardée : le parvis à l'ouest
+  des lices). Écart à l'aperçu de la question : la caméra est à l'est et regarde l'ouest (le miroir du schéma), pour que l'arène (au nord du
+  parvis, donc au nord-ouest des lices) se lève dans le cadre et que la sortie vers le parvis soit au fond de la perspective. Le soleil de
+  midi du sud-est sur le rempart et la galerie (`MIDDAY` 30 / 46), l'ombre sur 36 m (`SHADOW`), la lune un quart plus forte sur les lices.
 
-### Lot 2 : la place de la halle (`HALL`, `ARC`, `marketHall`, `arcades`, `well`) — en cours
-- La halle au nord : poteaux de chêne sur dés de pierre en trois rangs, liens, sablières et entraits, toit en croupe d'ardoise (lucarnes,
-  lanterneau de faîte, fanions), la scène dessous (sans son dais : le toit de la halle la couvre), les couronnes de bougies (la lumière clé de
-  nuit) et les bannières du tournoi pendues aux entraits ; on marche sous sa première travée. Les maisons à couverts en courbe à l'est (un
-  appentis d'ardoise sur poteaux à liens courbes devant les maisons en retrait), la sortie vers le parvis par une brèche de la courbe sous un
-  arc ; la rangée ouest droite (la taverne), le puits, le castelet, un étal ; la porte du quai et la balustrade au premier plan.
-- La caméra : haute de trois-quarts depuis le sud-ouest (11°, yaw -25 / -22 / -24), le dallage et les guirlandes vus d'en haut ; l'arène au
-  nord-est au-dessus des toits (même géographie). Écart à l'aperçu : les couverts sont à l'est (le miroir), pour la même raison.
+### Lot 2 : la place de la halle (`HALL`, `ARC`, `marketHall`, `arcades`, `well`, `FLAGS`) — [OK] construite
+- La halle au nord : poteaux de chêne sur dés de pierre en trois rangs, liens, sablières et entraits, toit en croupe d'ardoise par plaques
+  (quelques-unes de lichen), trois lucarnes à lames, lanterneau de faîte, fanions ; la scène dessous (sans son dais : le toit de la halle la
+  couvre), les couronnes de bougies (la lumière clé de nuit), les bannières du tournoi pendues aux entraits, l'étal de bougies sous sa travée
+  ouest ; on marche sous sa première travée. Les maisons à couverts en courbe à l'est (un appentis d'ardoise sur poteaux à liens courbes
+  devant les maisons en retrait), la sortie vers le parvis par une brèche de la courbe sous un arc ; la rangée ouest droite (la taverne), le
+  puits devant les couverts, le castelet, les tonneaux ; la porte du quai et, au premier plan, des auges de fleurs entre des dés, une lanterne
+  allumée de chaque côté. Le sol : des pavés en panneaux dans un treillis de bandes de dalles en diagonale, 7 m d'écart (`FLAGS`,
+  `src/materials/GroundShaders.ts`). Trois cordes hautes (7 m) de la rangée ouest aux couverts : fanions de jour, lanternes et deux flaques
+  de lumière par corde fanionnée la nuit. 16 lumières la nuit.
+- La caméra : haute de trois-quarts depuis le sud-ouest (12°, yaw -36 / -34, 24 et 22 m), le dallage et les guirlandes vus d'en haut ; sous
+  l'avant-toit de la halle, un cadrage bas (5°, yaw -12, 16 m) ; l'arène au nord-est au-dessus des toits (même géographie). Écart à
+  l'aperçu : les couverts sont à l'est (le miroir), pour la même raison.
 - [KO] Le kiosque de VP6-VP8 : aucune place ne tient les règles de cadrage (une recherche sur une grille de 0,5 m, `bandsearch.mjs` de la
   séance : devant les travées de la halle il la masquait et un cadrage la coupait par le bas, près des couverts il cachait la sortie vers le
   parvis) ; un puits à ferronnerie le remplace, la scène de la halle est la place de la musique.
+
+### La première critique à l'aveugle (le premier état, `cbe36dd`), quatre agents — [OK] les lices uniques, [?] la halle au gabarit du parvis, [KO] la qualité sous VP8
+- Méthode (`mkrev9.py` de la séance) : deux juges de la distinction, l'un sur les planches de VP8, l'autre sur celles de VP9 (les trois places
+  et le quai, quatre planches sous des lettres tirées au hasard, jour et nuit à deux places chacune), note de 10 = une scène unique ; deux
+  panneaux de qualité sur les mêmes planches (VP8 et VP9 de l'entraînement et de la place festive, le quai caché parmi elles, la référence
+  R = 8 de VP7-VP8).
+- Distinction. VP8 : l'entraînement 5, le parvis 6, la place festive 3, le quai 9, « C, D and G read as variants of one template ». VP9 :
+  les lices 9, le parvis 6, la halle 6, le quai 9 ; « A and F read as variants of one square template re-dressed with a different landmark »
+  (le parvis et la halle : le pavé, le chemin de dalles de la balustrade au point d'eau, les étals à gauche, le héros de dos au milieu).
+- Qualité (panneau 1 / panneau 2) : l'entraînement de VP8 5 / 5, les lices 4 / 4 ; la place festive de VP8 6 / 6, la halle 5 / 5 ; le quai
+  7 / 7. Les lices : « a grid of identical oversized grey blocks with heavy black grout », le lierre « outside the palette », le sable vide,
+  des ombres sans objet (les maisons du sud hors du cadre), une nuit « near black » et « a leopard print » sous les feux, l'appareil
+  d'entraînement lu « as a gallows ». La halle : un PNJ géant coupé par le bas du cadre, « the roof eats the frame », les fanions à hauteur
+  des têtes, des lanternes qui « light nothing », un chemin de dalles « crude ».
+
+### Itération 1 — [?] les retours de la première critique
+- Les lices : [KO] le lierre (l'emplacement des feuilles rend un vert néon quelle que soit sa teinte) et la quintaine (une potence) retirés ;
+  les maisons au sud de la cour retirées (leurs ombres sans objet) ; deux cordes de lanternes avec une flaque chacune ([KO] des mâts le long
+  du bord sud pour les porter : « a vertical pole cutting the frame ») ; des cailloux dans la terre, ses taches humides resserrées sous les
+  feux ; la pierre du mur à son échelle propre.
+- La halle : les fanions depuis les deuxièmes étages (7 m), deux flaques de lumière par corde, l'étal sous la halle (l'ouest de la place
+  libre), le chemin de dalles remplacé par un dallage du sol entier, la toiture par plaques, les personnes éloignées du bas du cadre.
+
+### La deuxième critique à l'aveugle (itération 1), trois agents — [OK] les deux places distinctes, [KO] la qualité encore sous VP8
+- Distinction (un juge, les planches de VP9) : le quai 9, les lices 8, la halle 7, le parvis 6. « E and G read as two dressings of the same
+  layout » (le parvis et la halle : un sol libre et le héros seul au milieu, un point d'eau central, un fond parallèle au cadre, une caméra
+  dans l'axe), et le second cadrage de la halle « just a closer, tighter version of the first ».
+- Qualité (panneau 1 / panneau 2) : l'entraînement de VP8 6 / 6, les lices 5 / 4,5 ; la place festive de VP8 6,5 / 6,5, la halle 6,5 / 5,5 ;
+  le quai 7,5 / 7. Les lices : « one uniformly tiled brick texture over half the frame », « no base grime », la porte de la tour « a jagged
+  black hole », l'escalier « a thin floating pole », une nuit « badly underexposed » (47 / 255 de luminance moyenne en bas contre 69 pour R),
+  « no foreground props such as racks, straw or weapons », le sable en traînées. La halle : « a perfectly regular grid of large, clean square
+  flagstones [...] a CG or bathroom floor », la maison coupée au bord gauche, « no sky is visible, so the scene feels boxed-in », des
+  lucarnes « like stickers » la nuit, le toit uniforme.
+
+### Itération 2 — [?] les retours de la deuxième critique
+- Les lices : le parement enduit d'un gris froid entre des pilastres de pierre, la pierre gardée aux cadres (plinthe, cordons, archères,
+  corbeaux, parapets), le pied du mur assombri ([KO] l'enduit dans la teinte de la pierre : une crème hors de la palette froide ; [KO] la
+  pierre seule à 0,4 x puis à 1 x : un carrelage de briques) ; l'escalier sur deux arcs à claveaux ; la porte de la tour carrée sous un
+  linteau, ses planches fermées ; le râtelier de lances et des bottes de foin ([KO] le râtelier sur la cour proche : la caméra de la galerie
+  posée dessus, les pointes des lances en deux grands cônes au travers du cadre ; au pied du mur après la tour proche) ; la lune un quart
+  plus forte sur les lices ; le ratissage plus discret.
+- La halle : les pavés en panneaux dans un treillis de bandes de dalles en diagonale ([KO] des dalles de 1,35 m, « un damier » ; de 1,1 m, le
+  « bathroom floor » ; des bandes de 0,9 m tous les 6 m, un carrelage vu d'en haut : 0,56 m tous les 7 m) ; la première maison de la rangée
+  ouest retirée ; la rangée nord à deux étages, sans rangée arrière (le ciel au-dessus) ; l'arène plus loin ; les lucarnes à lames, sans
+  lueur ; le toit en cinq rangs de plaques ; le puits devant les couverts ; un cadrage bas sous l'avant-toit de la halle ; l'arrivée et la
+  place à 12°.
 
 ### Les tests généralisés — [OK]
 - `tests/v2-plaza-vis.test.mjs` : l'axe de chaque place (`PLAZA_AXIS` : celui du parvis et de la halle du quai au monument, celui des lices le

@@ -74,6 +74,29 @@ void main(){
   // the setts' contrast toward their mean (the coarsest mip): a quieter floor under the characters
   A.rgb = mix(mix(texture2D(tCobble, uvA, 10.0).rgb, texture2D(tCobble, uvB, 10.0).rgb, t), A.rgb, COBBLE_CONTRAST);
 #endif
+#ifdef FLAGS
+  // the hall's square (journal Passe VP9): its setts in panels within a lattice of flag bands laid on the diagonal, FLAGS metres apart (the
+  // market's floor, seen from above: the forecourt's setts and its way of flags made the two squares read as one template, the first critique;
+  // [KO] great flags over the whole floor, « a perfectly regular grid of large, clean square flagstones [...] a CG or bathroom floor », the
+  // second; the third: bands 0.9 m wide read as a grid of tiles from above): each band 0.56 m wide of slabs 0.6 m long, each slab its own
+  // shade, the joints dark and low, a fine grain faded under a few pixels
+  {
+    vec2 fq = vec2(P.x + P.z, P.x - P.z) * 0.70710678, fd = abs(fract(fq / FLAGS + 0.5) - 0.5) * FLAGS;
+    float onX = step(fd.x, 0.28), onY = step(fd.y, 0.28), band = max(onX, onY);
+    if (band > 0.0) {
+      // along a band of constant fq.x the slabs follow fq.y, and the other way round; the crossings one square slab
+      float along = onX > 0.0 && onY < 1.0 ? fq.y : fq.x, across = onX > 0.0 && onY < 1.0 ? fd.x : fd.y;
+      float sl = floor(along / 0.6), sf = fract(along / 0.6), fh = fract(sin(sl * 12.9898 + floor(fq.x / FLAGS) * 7.1 + floor(fq.y / FLAGS) * 3.7) * 43758.5453);
+      float fwq = fwidth(along) / 0.6, je = min(min(sf, 1.0 - sf) * 0.6, 0.28 - across);
+      float joint = (1.0 - smoothstep(0.012, 0.024 + fwq * 0.5, je)) * (1.0 - smoothstep(0.08, 0.2, fwq));
+      float fgr = mix(0.5, vn2(P.xz * 7.0), 1.0 - smoothstep(0.3, 0.7, fwidth(P.x) * 7.0));
+      vec3 flag = vec3(0.112, 0.106, 0.098) * (0.82 + 0.3 * fh) * (0.88 + 0.24 * fgr);
+      A = vec4(mix(flag, vec3(0.05, 0.048, 0.047), joint * 0.8), mix(0.74 + 0.1 * fh, 0.12, joint));
+      nxy = (vec2(vn2(P.xz * 2.3 + fh * 7.0), vn2(P.xz * 2.3 + 3.1 + fh * 5.0)) - 0.5) * 0.12;
+      ao = 1.0 - 0.5 * joint; rough0 = mix(0.6, 0.9, joint);
+    }
+  }
+#endif
 #ifdef SAND
   // the training ground's beaten earth (journal Passe VP6): broad damp and dry patches, clods, grain and dark grit at their own scales (in
   // metres, the setts' scale left aside), a rake's arcs that the feet erase (below, with the mask's wear); the fifth critique: « a flat beige
@@ -99,10 +122,20 @@ void main(){
     float fw = max(fwidth(sp.x), fwidth(sp.y)), aa21 = 1.0 - smoothstep(0.25, 0.6, fw * 21.0), aa9 = 1.0 - smoothstep(0.25, 0.6, fw * 8.5);
     float l1 = vn2(sp * 0.13), l2 = vn2(sp * 0.47 + 4.3), g1 = vn2(sp * 2.2), g2 = mix(0.5, vn2(sp * 8.5 + 1.7), aa9);
     float grit = smoothstep(0.72, 0.9, vn2(sp * 21.0)) * (0.5 + 0.5 * g1) * aa21;
-    vec3 dry = vec3(0.086, 0.069, 0.049), damp0 = vec3(0.058, 0.045, 0.033);
+    // (the damp patches nearer the dry since journal Passe VP9: under the lists' fires at night « a leopard print », both panels)
+    vec3 dry = vec3(0.086, 0.069, 0.049), damp0 = vec3(0.066, 0.052, 0.038);
     vec3 sand = mix(damp0, dry, smoothstep(0.25, 0.75, l1 * 0.7 + l2 * 0.3));
     sand *= 0.78 + 0.26 * l2 + 0.2 * g1 + 0.12 * g2;
     sand *= 1.0 - 0.38 * grit;
+    // pebbles in the earth (journal Passe VP9: « a blurry, low-frequency smear with no detail (no stones, rake marks or tufts) », both panels of
+    // its first critique): in cells of 0.32 m one stone in three at a random offset, a few centimetres across, lighter or darker than the earth,
+    // faded where the cells come under a few pixels
+    vec2 pc = sp / 0.32, pci = floor(pc), pcf = fract(pc) - 0.5;
+    float ph1 = fract(sin(dot(pci, vec2(127.1, 311.7))) * 43758.5453), ph2 = fract(sin(dot(pci, vec2(269.5, 183.3))) * 43758.5453);
+    vec2 po = (vec2(ph1, ph2) - 0.5) * 0.5;
+    float pd = length(pcf - po) / (0.1 + 0.12 * ph2), aaP = 1.0 - smoothstep(0.35, 0.9, fw * 18.0);
+    float peb = (1.0 - smoothstep(0.6, 1.0, pd)) * step(ph1, 0.36) * aaP;
+    sand = mix(sand, sand * (ph2 > 0.5 ? 1.5 : 0.55), peb);
     // the rake: arcs round a point off the yard, 15 cm apart, wavering
     vec2 rc = sp - vec2(-26.0, 18.0);
     float rr = length(rc), ph = rr * 41.0 + l2 * 4.0 + g1 * 0.8;
@@ -110,9 +143,10 @@ void main(){
     // « corrugated stripes », « moiré »; the rake marks stay at the near edge)
     float rakeA = 1.0 - smoothstep(0.25, 0.7, fwidth(ph));
     float rakeH = sin(ph) * rakeA;
-    rakeN = (rc / rr) * cos(ph) * 0.34 * yard * rakeA;
-    A = mix(A, vec4(sand * (1.0 + 0.07 * rakeH), 0.5 + 0.2 * g1 + 0.08 * rakeH), yard);
-    vec2 sn = (vec2(vn2(sp * 3.3 + 3.1), vn2(sp * 3.3 + 7.7)) - 0.5) * 0.42 + (vec2(vn2(sp * 11.0), vn2(sp * 11.0 + 5.0)) - 0.5) * 0.18 * aa9;
+    // (fainter since journal Passe VP9: « wavy, brushed streaks [that] look like stretched texture or mud », the second critique)
+    rakeN = (rc / rr) * cos(ph) * 0.2 * yard * rakeA;
+    A = mix(A, vec4(sand * (1.0 + 0.04 * rakeH), 0.5 + 0.2 * g1 + 0.08 * rakeH), yard);
+    vec2 sn = (vec2(vn2(sp * 3.3 + 3.1), vn2(sp * 3.3 + 7.7)) - 0.5) * 0.42 + (vec2(vn2(sp * 11.0), vn2(sp * 11.0 + 5.0)) - 0.5) * 0.18 * aa9 + (pcf - po) * peb * 1.6;
     nxy = mix(nxy, sn, yard);
     ao = mix(ao, 1.0 - 0.25 * grit, yard); rough0 = mix(rough0, 0.95, yard);
   }

@@ -166,7 +166,8 @@ export class PlazaApp {
     this.scene.add(buildSky(skyDefines(this.look, overcast(wp) > 0)));
     this.reflection.clipY = 0;
     U.uMoonDir.value.copy(this.keyDir);
-    U.uMoonCol.value.copy(NIGHT_MOON);
+    // (the lists' a quarter brighter, journal Passe VP9: their sand under the moon « badly underexposed », the second critique)
+    U.uMoonCol.value.copy(NIGHT_MOON).multiplyScalar(opts.kind === 'training' ? 1.25 : 1);
     if (this.look) {
       const L = this.look;
       U.uMoonCol.value.copy(L.sunCol);
