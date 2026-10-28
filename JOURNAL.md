@@ -212,6 +212,19 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - La halle : le lichen du toit d'un gris chaud ; une seule petite flaque sous la halle au lieu de deux grandes ; son soleil de fin de journée
   un peu plus haut (28°, 24°).
 
+### La sixième critique à l'aveugle (itération 5), deux panneaux — [OK] la halle devant VP8, les lices devant VP8 en moyenne
+- Qualité (panneau 1 / panneau 2) : la halle 7 / 6,5 contre la place festive de VP8 6,5 / 6 ; les lices 5 / 6,5 contre l'entraînement de VP8
+  5,5 / 4,5 ; le quai 7,5 / 7,5. Panneau 2 : les lices « the best architecture of the new scenes [...] believable scale » ; panneau 1 : « a
+  regular grid of identical pale grey blocks [...] It reads as cinder block », la galerie « a flat dark-navy plane » à midi, les lucarnes de
+  nuit « like electric heater grilles ».
+- Sur les deux dernières critiques (quatre notes de panneau chacune) : la halle 6,5 contre 6,1 pour la place festive de VP8, les lices 5,5
+  contre 5,25 pour l'entraînement de VP8 ; la distinction 8 / 8 (cinquième).
+
+### Itération 6 — [?] deux retouches, la dernière
+- Les lucarnes de la halle la nuit d'un ambre faible ; les demi-portes des écuries d'un chêne plus clair et leur fond moins sombre, le bois de
+  la galerie 1,4 fois plus clair de jour. [?] La galerie reste sombre à l'ombre de son toit sous le soleil du sud-ouest (les textures de
+  planches et de poutres sont sombres) : le prix du soleil rasant sur le rempart.
+
 ### L'archivage du journal — [OK]
 - `JOURNAL.md` dépassait 60 Ko (120 Ko) : la Passe VP8 (fusionnée, `5a69031`) déplacée mot pour mot dans `journal/34-passes-VP8.md` (un
   en-tête, une ligne `---`, puis les octets inchangés), sa ligne ajoutée à l'index. Preuve : le corps archivé égale les octets retirés

@@ -1814,7 +1814,9 @@ function wallStair(S: SlotSet, tracked: (fn: () => void) => void, day: boolean):
  *  the tournament's banners on its posts; each bay a part */
 function listsGallery(S: SlotSet, tracked: (fn: () => void) => void, batch: InstanceBatch, lights: PlazaBuild['lights'], day: boolean): void {
   const G = LISTS.gallery, P = LISTS.pass, x = G.x, xb = x - G.d, T = S.get('timber'), Pk = S.get('planks'), Dk = S.get('dark'), St = S.get('stone');
-  const wood: V3 = [0.56, 0.45, 0.35], pale: V3 = [0.7, 0.59, 0.46], fl = G.floor;
+  // (its oak lighter by day since the sixth critique of journal Passe VP9: the planks' and the beams' textures are dark, and in the shade of
+  // its roof under the south-west sun the stand read as « a flat dark-navy plane with banners pasted on it »)
+  const dw = day ? 1.4 : 1, wood: V3 = [0.56 * dw, 0.45 * dw, 0.35 * dw], pale: V3 = [0.7 * dw, 0.59 * dw, 0.46 * dw], fl = G.floor;
   const zs = [G.z0, -3.8, P.zn, P.zs, 6.4, G.z1];
   const post = (px: number, pz: number, y1: number) => {
     St.boxMM(px - 0.26, 0, pz - 0.26, px + 0.26, 0.42, pz + 0.26, { tint: [0.6, 0.58, 0.55], aoY: [0.6, 1] });
@@ -1848,18 +1850,19 @@ function listsGallery(S: SlotSet, tracked: (fn: () => void) => void, batch: Inst
         // the stalls: two half doors a bay, their dark openings above, the lintel
         const m = (za + zb) / 2;
         for (const [a0, a1] of [[za + 0.18, m - 0.06], [m + 0.06, zb - 0.18]]) {
-          Pk.boxMM(x - 0.42, 0, a0, x - 0.34, 1.3, a1, { tint: [0.44, 0.34, 0.25], grain: 'y' });
+          // (the half doors in a weathered, lighter oak since the sixth critique: in the gallery's shade at midday « a flat dark-navy plane »)
+          Pk.boxMM(x - 0.42, 0, a0, x - 0.34, 1.3, a1, { tint: [0.66, 0.54, 0.4], grain: 'y' });
           T.boxMM(x - 0.44, 0.55, a0, x - 0.32, 0.65, a1, { tint: wood });
           // (the stable's planked back in its gloom, not a void: « a flat, almost black navy area with banners floating on it », the fifth critique)
-          quadFacing(Pk, [[x - 0.9, 1.3, a1], [x - 0.9, 1.3, a0], [x - 0.9, fl - 0.4, a0], [x - 0.9, fl - 0.4, a1]], [1, 0, 0], { tint: day ? [0.2, 0.16, 0.12] : [0.1, 0.08, 0.07], grain: 'y' });
-          for (const zz of [a0, a1]) quadFacing(Pk, [[x - 0.9, 1.3, zz], [x - 0.4, 1.3, zz], [x - 0.4, fl - 0.4, zz], [x - 0.9, fl - 0.4, zz]], [0, 0, zz === a0 ? 1 : -1], { tint: day ? [0.16, 0.13, 0.1] : [0.08, 0.065, 0.055], grain: 'y' });
+          quadFacing(Pk, [[x - 0.9, 1.3, a1], [x - 0.9, 1.3, a0], [x - 0.9, fl - 0.4, a0], [x - 0.9, fl - 0.4, a1]], [1, 0, 0], { tint: day ? [0.32, 0.26, 0.2] : [0.1, 0.08, 0.07], grain: 'y' });
+          for (const zz of [a0, a1]) quadFacing(Pk, [[x - 0.9, 1.3, zz], [x - 0.4, 1.3, zz], [x - 0.4, fl - 0.4, zz], [x - 0.9, fl - 0.4, zz]], [0, 0, zz === a0 ? 1 : -1], { tint: day ? [0.26, 0.21, 0.16] : [0.08, 0.065, 0.055], grain: 'y' });
         }
         T.boxMM(x - 0.46, fl - 0.42, za, x - 0.3, fl - 0.3, zb, { tint: wood, grain: 'z' });
         Pk.boxMM(xb + 0.05, 0, za, xb + 0.12, fl - 0.1, zb, { tint: [0.36, 0.28, 0.22], grain: 'y' });
       }
       // the balustrade: rails, the planked panel, the bay's shield
       for (const y of [fl + 0.05, fl + 0.82]) T.boxMM(x - 0.12, y, za, x + 0.06, y + 0.1, zb, { tint: pale, grain: 'z' });
-      Pk.boxMM(x - 0.08, fl + 0.15, za + 0.15, x - 0.02, fl + 0.82, zb - 0.15, { tint: day ? [0.6, 0.49, 0.37] : [0.42, 0.34, 0.26], grain: 'z' });
+      Pk.boxMM(x - 0.08, fl + 0.15, za + 0.15, x - 0.02, fl + 0.82, zb - 0.15, { tint: day ? [0.95, 0.78, 0.58] : [0.42, 0.34, 0.26], grain: 'z' });
       if (!passage) shield((za + zb) / 2, fl + 0.8, EMB[b % EMB.length], 0.54);
       // the benches in three tiers rising to the back wall (seen over the balustrade), the tournament's striped cloth on the back wall, the
       // eave's beam
@@ -2025,7 +2028,8 @@ function marketHall(S: SlotSet, tracked: (fn: () => void) => void, batch: Instan
     for (let k = 0; k < 4; k++) {
       const y = yr + 0.12 + k * 0.2;
       if (day) S.get('dark').boxMM(dx - w + 0.14, y, zf + 0.002, dx + w - 0.14, y + 0.07, zf + 0.008, { tint: [0.12, 0.1, 0.09] });
-      else S.get('glow').boxMM(dx - w + 0.14, y, zf + 0.002, dx + w - 0.14, y + 0.07, zf + 0.008, { tint: [0.085, 0.05, 0.026], uvs: COAL_UV });
+      // (a dim amber since the sixth critique: « the dormer louvers glow saturated red. They read like electric heater grilles »)
+      else S.get('glow').boxMM(dx - w + 0.14, y, zf + 0.002, dx + w - 0.14, y + 0.07, zf + 0.008, { tint: [0.05, 0.036, 0.02], uvs: COAL_UV });
       Pk.boxMM(dx - w + 0.12, y + 0.07, zf - 0.02, dx + w - 0.12, y + 0.19, zf + 0.06, { tint: [0.46, 0.37, 0.28], grain: 'x' });
     }
     for (const s of [-1, 1]) quadFacing(Rf, [[dx + s * (w + 0.18), yr + hh - 0.05, zf + 0.2], [dx, yr + hh + 0.55, zf + 0.2], [dx, yr + hh + 0.55, zf - 1.7], [dx + s * (w + 0.18), yr + hh - 0.05, zf - 1.7]], [s, 1, 0], { uvs: [0, 0, 0.9, 0, 0.9, 1.9, 0, 1.9], tint: [0.96, 0.96, 1.0] });
