@@ -190,6 +190,19 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Le sable de nuit mat et uniformément humide, aucune flaque sur la terre (ni celles de la cour, ni les creux du masque ; la flaque de la
   critique en était un), les chemins usés moins sombres ; l'enclos du mannequin 0,8 m plus à l'ouest.
 
+### La cinquième critique à l'aveugle (itération 4), trois agents — [OK] distinction 8 / 8, la qualité à égalité de VP8 (panneau 2)
+- Distinction : le quai 9, les lices 8, la halle 8, le parvis 7 (« None of the four reads as the same template re-dressed ») ; restent proches
+  la seconde vue de la halle et celle du parvis (une structure large en haut du cadre, le héros au milieu), le rempart à bannières du parvis
+  et des lices.
+- Qualité, panneau 2 : la halle 6 contre la place festive de VP8 6, les lices 5 contre l'entraînement de VP8 5, le quai 7. Les lices : le mur
+  et la tour la nuit « lit flat and too bright (grey-lavender), brighter than the ground beside the braziers », sous la galerie « a flat,
+  almost black navy area » (les ouvertures des écuries). La halle : le sol vide, les flaques noires aux reflets durs, le fond derrière les
+  poteaux délavé, le toit.
+
+### Itération 5 — en cours
+- Les lices : la pierre de nuit un cran plus sombre (la face 0,35, les encadrements 0,62 de leur teinte de jour) ; derrière les demi-portes des
+  écuries, leur fond de planches dans la pénombre au lieu d'un vide noir.
+
 ### L'archivage du journal — [OK]
 - `JOURNAL.md` dépassait 60 Ko (120 Ko) : la Passe VP8 (fusionnée, `5a69031`) déplacée mot pour mot dans `journal/34-passes-VP8.md` (un
   en-tête, une ligne `---`, puis les octets inchangés), sa ligne ajoutée à l'index. Preuve : le corps archivé égale les octets retirés

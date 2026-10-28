@@ -1565,7 +1565,9 @@ const WALL_FACE: Slot = 'plaster', WALL_UV = 0.6;
 const wallStone = (day: boolean): { stone: V3; light: V3; dark: V3; face: V3; mortar: V3 } => {
   // (at night as dark as the forecourt's facade, the third critique: « bright lavender », the moon a quarter stronger on the lists)
   // (the face by day below the forecourt's stucco: the wall faces the sun, « overexposed by day »; its mortar a step under the stones, not black)
-  const k = day ? 0.8 : 0.72, f = day ? 0.47 : 0.44, m = day ? 0.56 : 0.4;
+  // (a step darker again at night since the fifth critique: « the tower and wall are lit flat and too bright (grey-lavender), brighter than
+  // the ground beside the braziers »)
+  const k = day ? 0.8 : 0.62, f = day ? 0.47 : 0.35, m = day ? 0.56 : 0.34;
   return { stone: [0.64 * k, 0.62 * k, 0.6 * k], light: [0.72 * k, 0.7 * k, 0.66 * k], dark: [0.5 * k, 0.49 * k, 0.48 * k], face: [f, f * 0.99, f * 1.04], mortar: [m, m * 0.98, m * 1.0] };
 };
 /** the ashlar's courses (m): a course 0.36-0.5 high, a block 0.6-1.25 long (the fourth critique of journal Passe VP9: at 0.48-0.66 by
@@ -1839,7 +1841,9 @@ function listsGallery(S: SlotSet, tracked: (fn: () => void) => void, batch: Inst
         for (const [a0, a1] of [[za + 0.18, m - 0.06], [m + 0.06, zb - 0.18]]) {
           Pk.boxMM(x - 0.42, 0, a0, x - 0.34, 1.3, a1, { tint: [0.44, 0.34, 0.25], grain: 'y' });
           T.boxMM(x - 0.44, 0.55, a0, x - 0.32, 0.65, a1, { tint: wood });
-          quadFacing(Dk, [[x - 0.4, 1.3, a1], [x - 0.4, 1.3, a0], [x - 0.4, fl - 0.4, a0], [x - 0.4, fl - 0.4, a1]], [1, 0, 0], { tint: [0.06, 0.06, 0.07] });
+          // (the stable's planked back in its gloom, not a void: « a flat, almost black navy area with banners floating on it », the fifth critique)
+          quadFacing(Pk, [[x - 0.9, 1.3, a1], [x - 0.9, 1.3, a0], [x - 0.9, fl - 0.4, a0], [x - 0.9, fl - 0.4, a1]], [1, 0, 0], { tint: day ? [0.2, 0.16, 0.12] : [0.1, 0.08, 0.07], grain: 'y' });
+          for (const zz of [a0, a1]) quadFacing(Pk, [[x - 0.9, 1.3, zz], [x - 0.4, 1.3, zz], [x - 0.4, fl - 0.4, zz], [x - 0.9, fl - 0.4, zz]], [0, 0, zz === a0 ? 1 : -1], { tint: day ? [0.16, 0.13, 0.1] : [0.08, 0.065, 0.055], grain: 'y' });
         }
         T.boxMM(x - 0.46, fl - 0.42, za, x - 0.3, fl - 0.3, zb, { tint: wood, grain: 'z' });
         Pk.boxMM(xb + 0.05, 0, za, xb + 0.12, fl - 0.1, zb, { tint: [0.36, 0.28, 0.22], grain: 'y' });
