@@ -80,10 +80,11 @@ test('the bake\'s poses: every framing over its zone at every place of the walk 
   for (const f of Object.keys(a)) assert.ok(Math.abs(m[f] - (a[f] + (c[f] - a[f]) * 0.25)) < 1e-12, f);
 });
 
-// the camera's room on each square (journal Passe VP9): between the forecourt's rows; on the lists before their south row's fronts (z 14.6, their
-// jetties 0.6 m out) and east of their gallery; on the hall's square east of its west row's fronts (x -13.2, from z 6 north) or over the
-// quay south of it, and inside the arcades' curve (their houses' fronts 32.1 m from its centre)
-const ROOM = { forecourt: (p) => Math.abs(p.x) <= 11.5, training: (p) => p.z <= 13.6 && p.x >= -15.5, festival: (p) => (p.x >= -12.4 || p.z > 6.6) && (Math.hypot(p.x + 18, p.z + 1) <= 31.4 || p.z > 9.6) };
+// the camera's room on each square (journal Passe VP9): between the forecourt's rows; on the lists south of their rampart's face (z -10, its
+// buttresses 0.6 m out: a camera past it would see the wall from outside), north of the quay's gate (z 13.6) and east of their gallery; on the
+// hall's square east of its west row's fronts (x -13.2, from z 6 north) or over the quay south of it, and inside the arcades' curve (their
+// houses' fronts 32.1 m from its centre)
+const ROOM = { forecourt: (p) => Math.abs(p.x) <= 11.5, training: (p) => p.z <= 13.6 && p.z >= -9.0 && p.x >= -15.5, festival: (p) => (p.x >= -12.4 || p.z > 6.6) && (Math.hypot(p.x + 18, p.z + 1) <= 31.4 || p.z > 9.6) };
 test('the framings: three a square chosen by the hero\'s zone and held 0.9 m past it; the hero always in the frame and over the near edge, no monument between them and the camera nor cut by the frame, the camera between the rows', () => {
   const cam = new THREE.PerspectiveCamera(40, 16 / 9, 0.3, 700), v = new THREE.Vector3();
   const ndc = (x, y, z) => { v.set(x, y, z).applyMatrix4(cam.matrixWorldInverse); if (v.z > -0.3) return null; v.applyMatrix4(cam.projectionMatrix); return [v.x, v.y]; };

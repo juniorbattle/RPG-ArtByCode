@@ -66,8 +66,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   VP7 (un monument, le sol libre, 12 à 16 lumières toutes allumées, trois cadrages par place) ; chaque nombre « proposé ».
 
 ### Lot 1 : les lices (`src/world/Plazas.ts` : `LISTS`, `rampart`, `roundTower`, `wallStair`, `listsGallery`, `lanceRack`) — [OK] construites
-- Le rempart de la cité au nord (face intérieure z -10, chemin de ronde à 7,8 m, de x -27 à 44) : un parement enduit d'un gris froid entre des
-  pilastres de pierre, sur une plinthe en talus, archères dans leur cadre de pierre, contreforts, cordon, trous de boulin, table de corbeaux
+- Le rempart de la cité au nord (face intérieure z -10, chemin de ronde à 7,8 m, de x -27 à 44) : au premier état un parement enduit d'un gris froid entre des
+  pilastres de pierre (en pierre de taille depuis l'itération 3), sur une plinthe en talus, archères dans leur cadre de pierre, contreforts, cordon, trous de boulin, table de corbeaux
   sous le parapet intérieur, merlons du parapet extérieur contre le ciel, torches sur consoles ; une tranche de 4,4 m en deux parties de
   visibilité (le parement, le couronnement). Deux tours rondes (l'angle, x -18,6, au fond ; la proche, x 5, coupée par le haut du cadre en
   repoussoir, sa porte carrée sous un linteau), toits coniques à coyau en ardoise de la ville, fanions ; l'escalier monte le long du mur vers
@@ -80,7 +80,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   52, 64) ; l'arène au nord-ouest au-dessus de la galerie, le parvis entre les deux places (la géographie de VP8 gardée : le parvis à l'ouest
   des lices). Écart à l'aperçu de la question : la caméra est à l'est et regarde l'ouest (le miroir du schéma), pour que l'arène (au nord du
   parvis, donc au nord-ouest des lices) se lève dans le cadre et que la sortie vers le parvis soit au fond de la perspective. Le soleil de
-  midi du sud-est sur le rempart et la galerie (`MIDDAY` 30 / 46), l'ombre sur 36 m (`SHADOW`), la lune un quart plus forte sur les lices.
+  midi du sud-est sur le rempart et la galerie (`MIDDAY` 30 / 46 ; du sud-ouest, -40 / 38, depuis l'itération 4), l'ombre sur 36 m (`SHADOW`), la lune un quart plus forte sur les lices.
 
 ### Lot 2 : la place de la halle (`HALL`, `ARC`, `marketHall`, `arcades`, `well`, `FLAGS`) — [OK] construite
 - La halle au nord : poteaux de chêne sur dés de pierre en trois rangs, liens, sablières et entraits, toit en croupe d'ardoise par plaques
@@ -236,6 +236,12 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   long du mur), son bord proche (`PLAZA_NEAR` : aucun sur les lices), la place de sa caméra (`ROOM`), le cœur du sol libre (la marche moins
   2 m, 3 m côté caméra : celui du parvis inchangé) ; `v2-exits` (`OPEN_AFTER` du parvis seul), `v2-places` (`PLAZA_WALKS`, la foule loin du
   pied des cadrages), `v2-story` (les regards dans la marche de leur place). 278 tests sur 278.
+- Les fautes injectées, une à une, chaque fichier rendu à l'octet ensuite (`cmp`) : prises, le cadrage d'arrivée de la halle trop haut (le héros
+  sous le bord du cadre), le bord proche de la halle au-dessus du héros, une brèche entre deux zones de la halle (aucun cadrage), le ring des
+  lices au milieu de la cour (69,3 % du cœur libre), un regard de `v2-story` hors de sa place, la caméra des lices derrière le rempart ;
+  [KO] cette dernière passait d'abord : la place de la caméra des lices ne bornait pas le côté du rempart, bornée depuis (z ≥ -9). Passées, et
+  laissées : un point de rassemblement dans l'enclos du mannequin, un castelet au milieu de la halle (des tolérances voulues des tests :
+  le sol libre à 70 et 75 %, les points de foule contrôlés contre la marche).
 - Le parvis : son bâti haché (géométrie de chaque emplacement, lumières, émetteurs, obstacles, sorties, places, foule, instances, masque du
   sol, cadrages et poses de l'empreinte) identique à main pour les quatre moments de la journée.
 
@@ -273,6 +279,13 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
     À faire en local : la revue en jeu de l'opérateur (rendu matériel ; les flammes et l'eau de la fontaine sont des particules, que les
     captures figées ne montrent pas) ; les mesures GPU des places. À décider avec l'opérateur : meubler le bas des cadres (tous les juges le
     demandent, la direction de VP7 le refuse) ; la façade de la porte du parvis plus profonde.
+  - **VP9 faite (Passe VP9)** : les lices au pied du rempart et la place de la halle (les choix de l'opérateur), chacune sa structure, son
+    angle et son soleil, le parvis à l'octet ; à l'aveugle (six tours), la distinction de 5 et 3 (VP8) à 8 et 8, la qualité au niveau de VP8
+    ou au-dessus en moyenne des deux derniers tours (la halle 6,5 contre 6,1, les lices 5,5 contre 5,25). À faire en local : la revue en jeu
+    de l'opérateur (rendu matériel), qui décide ; les mesures GPU des deux places et de leur cuisson neuve (leur bâti statique, hors instances :
+    les lices 60 000 à 61 000 triangles contre 149 000 pour l'entraînement de VP8, la halle 119 000 à 121 000 contre 145 000 à 146 000). À décider avec l'opérateur : la galerie des lices à l'ombre de son toit sous le soleil du sud-ouest (un soleil d'est
+    l'éclaire mais aplatit le rempart) ; les flaques de nuit des places (les creux du masque, communs aux trois places : le parvis est gelé à
+    l'octet) ; le sol libre que tous les juges veulent meubler (la direction de VP7) ; les flammes figées des captures (des particules en jeu).
   - **VP3 à VP6 faites (Passes VP3 à VP6)** : les emblèmes du tournoi sur les drapeaux de la version 2 ; les coups adverses 30 % plus forts
     (`V2_FOE_HIT`) ; la ville reliée à pied (les sorties façon Final Fantasy IX) ; le décor des trois places repris en quinze itérations. **Le
     décor à 8/10 n'est pas atteint** (environ 7 rapporté au district, l'entraînement 6,25 à 6,75 : tableau de la conclusion de la Passe VP6) ; ce
@@ -806,3 +819,13 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   multiplie) ; sinon elle brûle noir ou en « red slab » (Passe VP8).
 - D'un tour de critique à l'autre, la même image est louée puis reprochée (la lumière du jour, une bordure) : ne suivre que les écarts qui se
   répètent sur plusieurs tours et sur les deux panneaux, et garder la moyenne des tours comme mesure (Passe VP8).
+- Une demande de « structure différente » se juge à l'aveugle par un juge de la distinction (des paires notées en structure et en caméra, une
+  note par lieu, le district caché parmi elles) à côté des panneaux de qualité, et l'on garde les deux : la distinction se gagne d'un coup
+  (un autre plan, un autre angle), la qualité se rattrape en itérations (Passe VP9 : six tours).
+- Une maçonnerie se lit par ses blocs : chacun sa géométrie, sa teinte et un mortier en retrait ; une texture de pierre étirée devient un
+  carrelage, un enduit uni un « plaster » ; les encadrements dans la même matière que les blocs (Passe VP9).
+- Le soleil d'une place se choisit contre sa caméra : derrière elle, chaque ombre se cache derrière ce qui la porte (« reads overcast ») ; de
+  côté, il dessine le relief et pose les ombres sur le sol (Passe VP9). Une plainte de valeur (« trop clair », « un vide noir ») se mesure
+  (la luminance moyenne d'une bande du cadre contre la référence) avant d'être corrigée, et après (Passe VP9).
+- Une faute injectée qui passe dit ce que le test ne garde pas : la place de la caméra des lices ne bornait pas le côté du rempart ; un test
+  de place se borne sur chaque côté que la caméra ne doit pas franchir (Passe VP9).
