@@ -96,8 +96,11 @@ La fiche du mandat (19 choix de l'opérateur) lance une séance cloud autonome, 
    les lames à deux texels) ; sept planches générées de plus (1,75 $) ; le duel joue ses propres images sur chaque moment, sans emprunt ; le bord
    est une règle du rendu (« Règle du rendu (Recommandé) »). Toujours en labo derrière `?scene=arena&fighterdensity=combat` (DEV).
    La fiche RC2, tout à la recommandation : « Complète : la garder en labo comme base », la coupe « La garder ; reprise dédiée plus tard », la lame
-   « Deux texels d'acier et un bord sombre (comme fait) », le bord « Confirmé », la production « Pas encore : avec la feuille de Marek ». **Suite** :
-   la feuille de Marek à ×3 par la même voie, avec la reprise de la coupe de Ren ; puis les deux feuilles vers la production ensemble ; ensuite Vessa.
+   « Deux texels d'acier et un bord sombre (comme fait) », le bord « Confirmé », la production « Pas encore : avec la feuille de Marek ».
+   **Passe RC3** : un Marek généré hors des planches de référence, arrêté par l'opérateur (« Arrêter Marek, finir la coupe de Ren (Recommandé) ») ;
+   la coupe de Ren reprise puis écartée (« Revenir à l'ancienne ») : la feuille reste celle de RC2. **Suite** : les feuilles des rivaux d'après les
+   planches de référence (V2-18 : Orla, Vessa, Marek, Ilse, Cassius ; Marek avec la nouvelle commande et les poses de charge, AV-10) ; puis les
+   feuilles vers la production, celle de Ren avec celle de Marek (RC2-5).
 3. **Les spectateurs** : une foule bon marché (quelques silhouettes, variantes de couleurs par les masques de la Passe V1, une boucle d'acclamation,
    un seul appel de dessin) plutôt qu'un personnage complet par spectateur.
 

@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP8 de la séance « Version 2 » sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8 et VP9) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 » sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9 et RC3) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -45,236 +45,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/32-passes-VP3-VP6.md`](journal/32-passes-VP3-VP6.md) | VP3, VP4, VP5, VP6 (séance cloud « Version 2 ») | 27/10 |
 | [`journal/33-passes-VP7.md`](journal/33-passes-VP7.md) | VP7 (séance cloud « Version 2 ») | 27/10 |
 | [`journal/34-passes-VP8.md`](journal/34-passes-VP8.md) | VP8 (séance cloud « Version 2 ») | 27/10 → 28/10 |
+| [`journal/35-passes-VP9.md`](journal/35-passes-VP9.md) | VP9 (séance cloud « Version 2 ») | 28/10 |
 
 ---
-
-## Passe VP9 — Deux places à leur propre structure : les lices au pied du rempart, la place de la halle (2026-10-28)
-
-### La demande de l'opérateur, mot pour mot
-- « C'est très bien. Par contre il trouve que place festival, entraînement et parvis sont un peu similaire sur la structure et l'angle de plan
-  contrairement à merchant qui se distinguent visuellement. Parvis est compréhensible car nous sommes devant l'arène mais place festival et
-  entraînement devraient proposer une structure architectural diffente pour apporte des scènes uniques et inédites sinon je valide la qualité
-  et la précision du rendu. Il faut rester de même »
-- Ses deux choix, sur la question posée (trois structures proposées par place, la recommandation en tête) : « Quelle structure pour le
-  terrain d'entraînement ? » = « Lices au pied du rempart (Recommandé) » ; « Quelle structure pour la place festive ? » = « Place de la halle
-  (Recommandé) ». Les descriptions proposées : « La cour longe le rempart de la ville : un long mur crénelé, deux tours rondes, un chemin de
-  ronde et son escalier ; en face, les écuries et une galerie de bois à étage pour les spectateurs. Caméra oblique le long du mur (une
-  diagonale, comme le quai du district) ; l'arène se dresse derrière le rempart. » et « Une grande halle médiévale (charpente ouverte sur
-  piliers de bois) au fond : la scène et les lanternes dessous ; des maisons à arcades (couverts) en courbe sur un côté. Caméra en plongée de
-  trois-quarts (≈ 15°) qui montre le dallage et les guirlandes d'en haut ; l'arène au-dessus des toits. »
-- Le cadre gardé : le parvis tel quel (prouvé à l'octet), tout derrière `flags.v2`, la ville et la partie par défaut inchangées, les règles de
-  VP7 (un monument, le sol libre, 12 à 16 lumières toutes allumées, trois cadrages par place) ; chaque nombre « proposé ».
-
-### Lot 1 : les lices (`src/world/Plazas.ts` : `LISTS`, `rampart`, `roundTower`, `wallStair`, `listsGallery`, `lanceRack`) — [OK] construites
-- Le rempart de la cité au nord (face intérieure z -10, chemin de ronde à 7,8 m, de x -27 à 44) : au premier état un parement enduit d'un gris froid entre des
-  pilastres de pierre (en pierre de taille depuis l'itération 3), sur une plinthe en talus, archères dans leur cadre de pierre, contreforts, cordon, trous de boulin, table de corbeaux
-  sous le parapet intérieur, merlons du parapet extérieur contre le ciel, torches sur consoles ; une tranche de 4,4 m en deux parties de
-  visibilité (le parement, le couronnement). Deux tours rondes (l'angle, x -18,6, au fond ; la proche, x 5, coupée par le haut du cadre en
-  repoussoir, sa porte carrée sous un linteau), toits coniques à coyau en ardoise de la ville, fanions ; l'escalier monte le long du mur vers
-  la tour d'angle sur deux arcs ; la galerie des spectateurs ferme l'ouest au-dessus des écuries (gradins, toile rayée du tournoi, écus
-  peints, loge des juges sous un auvent rayé) et son passage est la sortie vers le parvis. Le ring des champions devant la galerie (marches
-  vers l'est), le ring au mannequin, les buttes, le râtelier d'armes et celui des lances au pied du mur, des bottes de foin sur la cour
-  proche, deux braseros, trois longues bannières pendues au chemin de ronde ; deux cordes du chemin de ronde à l'avant-toit de la galerie
-  (fanions de jour, lanternes et une flaque de lumière chacune la nuit).
-- La caméra (`src/world/PlazaCamera.ts`) : le long du mur depuis l'est, basse (4,5-5°), trois cadrages par zone le long de la cour (yaw 46,
-  52, 64) ; l'arène au nord-ouest au-dessus de la galerie, le parvis entre les deux places (la géographie de VP8 gardée : le parvis à l'ouest
-  des lices). Écart à l'aperçu de la question : la caméra est à l'est et regarde l'ouest (le miroir du schéma), pour que l'arène (au nord du
-  parvis, donc au nord-ouest des lices) se lève dans le cadre et que la sortie vers le parvis soit au fond de la perspective. Le soleil de
-  midi du sud-est sur le rempart et la galerie (`MIDDAY` 30 / 46 ; du sud-ouest, -40 / 38, depuis l'itération 4), l'ombre sur 36 m (`SHADOW`), la lune un quart plus forte sur les lices.
-
-### Lot 2 : la place de la halle (`HALL`, `ARC`, `marketHall`, `arcades`, `well`, `FLAGS`) — [OK] construite
-- La halle au nord : poteaux de chêne sur dés de pierre en trois rangs, liens, sablières et entraits, toit en croupe d'ardoise par plaques
-  (quelques-unes de lichen), trois lucarnes à lames, lanterneau de faîte, fanions ; la scène dessous (sans son dais : le toit de la halle la
-  couvre), les couronnes de bougies (la lumière clé de nuit), les bannières du tournoi pendues aux entraits, l'étal de bougies sous sa travée
-  ouest ; on marche sous sa première travée. Les maisons à couverts en courbe à l'est (un appentis d'ardoise sur poteaux à liens courbes
-  devant les maisons en retrait), la sortie vers le parvis par une brèche de la courbe sous un arc ; la rangée ouest droite (la taverne), le
-  puits devant les couverts, le castelet, les tonneaux ; la porte du quai et, au premier plan, des auges de fleurs entre des dés, une lanterne
-  allumée de chaque côté. Le sol : des pavés en panneaux dans un treillis de bandes de dalles en diagonale, 7 m d'écart (`FLAGS`,
-  `src/materials/GroundShaders.ts`). Trois cordes hautes (7 m) de la rangée ouest aux couverts : fanions de jour, lanternes et deux flaques
-  de lumière par corde fanionnée la nuit. 16 lumières la nuit.
-- La caméra : haute de trois-quarts depuis le sud-ouest (12°, yaw -36 / -34, 24 et 22 m), le dallage et les guirlandes vus d'en haut ; sous
-  l'avant-toit de la halle, un cadrage bas (5°, yaw -12, 16 m) ; l'arène au nord-est au-dessus des toits (même géographie). Écart à
-  l'aperçu : les couverts sont à l'est (le miroir), pour la même raison.
-- [KO] Le kiosque de VP6-VP8 : aucune place ne tient les règles de cadrage (une recherche sur une grille de 0,5 m, `bandsearch.mjs` de la
-  séance : devant les travées de la halle il la masquait et un cadrage la coupait par le bas, près des couverts il cachait la sortie vers le
-  parvis) ; un puits à ferronnerie le remplace, la scène de la halle est la place de la musique.
-
-### La première critique à l'aveugle (le premier état, `cbe36dd`), quatre agents — [OK] les lices uniques, [?] la halle au gabarit du parvis, [KO] la qualité sous VP8
-- Méthode (`mkrev9.py` de la séance) : deux juges de la distinction, l'un sur les planches de VP8, l'autre sur celles de VP9 (les trois places
-  et le quai, quatre planches sous des lettres tirées au hasard, jour et nuit à deux places chacune), note de 10 = une scène unique ; deux
-  panneaux de qualité sur les mêmes planches (VP8 et VP9 de l'entraînement et de la place festive, le quai caché parmi elles, la référence
-  R = 8 de VP7-VP8).
-- Distinction. VP8 : l'entraînement 5, le parvis 6, la place festive 3, le quai 9, « C, D and G read as variants of one template ». VP9 :
-  les lices 9, le parvis 6, la halle 6, le quai 9 ; « A and F read as variants of one square template re-dressed with a different landmark »
-  (le parvis et la halle : le pavé, le chemin de dalles de la balustrade au point d'eau, les étals à gauche, le héros de dos au milieu).
-- Qualité (panneau 1 / panneau 2) : l'entraînement de VP8 5 / 5, les lices 4 / 4 ; la place festive de VP8 6 / 6, la halle 5 / 5 ; le quai
-  7 / 7. Les lices : « a grid of identical oversized grey blocks with heavy black grout », le lierre « outside the palette », le sable vide,
-  des ombres sans objet (les maisons du sud hors du cadre), une nuit « near black » et « a leopard print » sous les feux, l'appareil
-  d'entraînement lu « as a gallows ». La halle : un PNJ géant coupé par le bas du cadre, « the roof eats the frame », les fanions à hauteur
-  des têtes, des lanternes qui « light nothing », un chemin de dalles « crude ».
-
-### Itération 1 — [?] les retours de la première critique
-- Les lices : [KO] le lierre (l'emplacement des feuilles rend un vert néon quelle que soit sa teinte) et la quintaine (une potence) retirés ;
-  les maisons au sud de la cour retirées (leurs ombres sans objet) ; deux cordes de lanternes avec une flaque chacune ([KO] des mâts le long
-  du bord sud pour les porter : « a vertical pole cutting the frame ») ; des cailloux dans la terre, ses taches humides resserrées sous les
-  feux ; la pierre du mur à son échelle propre.
-- La halle : les fanions depuis les deuxièmes étages (7 m), deux flaques de lumière par corde, l'étal sous la halle (l'ouest de la place
-  libre), le chemin de dalles remplacé par un dallage du sol entier, la toiture par plaques, les personnes éloignées du bas du cadre.
-
-### La deuxième critique à l'aveugle (itération 1), trois agents — [OK] les deux places distinctes, [KO] la qualité encore sous VP8
-- Distinction (un juge, les planches de VP9) : le quai 9, les lices 8, la halle 7, le parvis 6. « E and G read as two dressings of the same
-  layout » (le parvis et la halle : un sol libre et le héros seul au milieu, un point d'eau central, un fond parallèle au cadre, une caméra
-  dans l'axe), et le second cadrage de la halle « just a closer, tighter version of the first ».
-- Qualité (panneau 1 / panneau 2) : l'entraînement de VP8 6 / 6, les lices 5 / 4,5 ; la place festive de VP8 6,5 / 6,5, la halle 6,5 / 5,5 ;
-  le quai 7,5 / 7. Les lices : « one uniformly tiled brick texture over half the frame », « no base grime », la porte de la tour « a jagged
-  black hole », l'escalier « a thin floating pole », une nuit « badly underexposed » (47 / 255 de luminance moyenne en bas contre 69 pour R),
-  « no foreground props such as racks, straw or weapons », le sable en traînées. La halle : « a perfectly regular grid of large, clean square
-  flagstones [...] a CG or bathroom floor », la maison coupée au bord gauche, « no sky is visible, so the scene feels boxed-in », des
-  lucarnes « like stickers » la nuit, le toit uniforme.
-
-### Itération 2 — [?] les retours de la deuxième critique
-- Les lices : le parement enduit d'un gris froid entre des pilastres de pierre, la pierre gardée aux cadres (plinthe, cordons, archères,
-  corbeaux, parapets), le pied du mur assombri ([KO] l'enduit dans la teinte de la pierre : une crème hors de la palette froide ; [KO] la
-  pierre seule à 0,4 x puis à 1 x : un carrelage de briques) ; l'escalier sur deux arcs à claveaux ; la porte de la tour carrée sous un
-  linteau, ses planches fermées ; le râtelier de lances et des bottes de foin ([KO] le râtelier sur la cour proche : la caméra de la galerie
-  posée dessus, les pointes des lances en deux grands cônes au travers du cadre ; au pied du mur après la tour proche) ; la lune un quart
-  plus forte sur les lices ; le ratissage plus discret.
-- La halle : les pavés en panneaux dans un treillis de bandes de dalles en diagonale ([KO] des dalles de 1,35 m, « un damier » ; de 1,1 m, le
-  « bathroom floor » ; des bandes de 0,9 m tous les 6 m, un carrelage vu d'en haut : 0,56 m tous les 7 m) ; la première maison de la rangée
-  ouest retirée ; la rangée nord à deux étages, sans rangée arrière (le ciel au-dessus) ; l'arène plus loin ; les lucarnes à lames, sans
-  lueur ; le toit en cinq rangs de plaques ; le puits devant les couverts ; un cadrage bas sous l'avant-toit de la halle ; l'arrivée et la
-  place à 12°.
-
-### La troisième critique à l'aveugle (itération 2), trois agents — [OK] les deux places distinctes, [KO] la qualité encore sous VP8
-- Distinction (un juge, les planches de VP9) : le quai 9, les lices 7, la halle 7, le parvis 6 ; « None of the four reads outright as a
-  re-dressed copy » ; ce qui rapproche encore : le mur de pierre pâle et ses grandes bannières bleues (le parvis et les lices), la galerie et
-  la halle (« a blue-roofed, timber-posted gallery or hall with banners between the posts »), le héros de dos au milieu.
-- Qualité (panneau 1 / panneau 2) : l'entraînement de VP8 6 / 5,5, les lices 5 / 5 ; la place festive de VP8 6,5 / 6,5, la halle 5,5 / 6 ; le
-  quai 7,5 / 8. Les lices : le rempart et les tours « huge pale grey-white surfaces with thin crack lines and almost no masonry, overexposed by
-  day [...] At night [...] bright lavender », des archères « like stickers », le sable vide et flou, la galerie noire la nuit, la rampe de
-  l'escalier « a single thin line that reads as a cable ». La halle : le treillis « reads like paving tiles or a car park », le toit (une
-  tache verte, de jour un seul plan, de nuit « a featureless dark slab »), les lucarnes noires la nuit, une lumière plate (« no strong sun
-  shadows, so it reads overcast »), peu de ciel.
-- Le TournamentLab (30 graines, oisif et diligent, règles d'aujourd'hui et dynamiques) : identique à `main` (`5a69031`) ; le parvis haché à
-  l'octet, les quatre moments : identique à `main`.
-
-### Itération 3 — [?] les retours de la troisième critique
-- Les lices : le parement en appareil de pierre de taille, chaque bloc sa géométrie, sa teinte (quelques-uns plus chauds, d'autres plus
-  froids), sa part de la texture, 3,5 cm en saillie sur son mortier, plus sombre vers le pied (`ashlarBand`, `ashlarRing` : les assises posées
-  depuis le début du mur, sans couture d'une tranche à l'autre ; les tambours des tours de même) ; la face de jour sous le stuc du parvis, la
-  pierre de nuit aussi sombre que la façade du parvis ; les archères en retrait dans leur encadrement ; la margelle de l'escalier dans la
-  pierre du parapet, une assise de haut ; des lanternes aux poteaux des écuries la nuit (sans lumière) ; le flou proche des lices plus léger
-  (0,22 au lieu de 0,45 : leur caméra basse sur une longue cour).
-- La halle : le sol en pavés traversés d'une rose de dalles autour du milieu de la place (huit rayons, deux cercles à 4,6 et 9,2 m, le bord
-  d'un médaillon ; les dalles un peu plus claires que la moyenne des pavés) ; une lueur faible entre les lames des lucarnes la nuit ; le
-  soleil de la place à droite de sa caméra (à midi du sud-est, en fin de journée bas du sud par son côté ouvert : il était derrière la caméra,
-  chaque ombre cachée derrière ce qui la portait) ; les cadrages d'arrivée et de place un peu plus haut (plus de ciel et l'arène au-dessus des
-  toits).
-
-### La quatrième critique à l'aveugle (itération 3), trois agents — [OK] la halle devant VP8, [KO] les lices encore derrière
-- Distinction : le quai 9, les lices 7, la halle 7, le parvis 6 (« No pair is the same template re-dressed ») ; ce qui rapproche encore : le
-  rempart à bannières du parvis et des lices, un même plan bas, de face, le héros de dos au milieu (les deux vues du parvis, la seconde des
-  lices et de la halle).
-- Qualité (panneau 1 / panneau 2) : la halle **7 / 7** contre la place festive de VP8 6,5 / 6 (« the strongest composition among the new
-  places. The hall is a clear monument and the compass-rose paving leads the eye ») ; les lices 5 / 5 contre l'entraînement de VP8 6 / 5,5 ; le
-  quai 8 / 8. Les lices : des blocs « oversized cinder-block bricks » et une seconde pierre rayée qui ne s'accorde pas (la texture de pierre
-  des encadrements), aucune ombre portée sur le sable de jour, le sable de nuit « blotchy, oily », une flaque dure devant le ring, la base des
-  tours à facettes, l'enclos coupé au bord droit.
-
-### Itération 4 — [?] les lices seules
-- L'appareil plus fin (assises de 0,36-0,5 m, blocs de 0,6-1,25 m, `ASHLAR`), les encadrements, corniches, parapets, merlons et l'escalier dans
-  la matière des blocs (`wallTrim` ; le mortier seul dans la pierre) ; les tours à 44 côtés ; au-dessus de la porte de la tour proche, les
-  armes de la cité sculptées et peintes dans un panneau de pierre.
-- Le soleil de midi des lices du sud-ouest (-40°, 38°) : rasant le long du rempart, les ombres des tours et des contreforts sur le mur, celles
-  des choses sur le sable ; la galerie à l'ombre de son toit.
-- Le sable de nuit mat et uniformément humide, aucune flaque sur la terre (ni celles de la cour, ni les creux du masque ; la flaque de la
-  critique en était un), les chemins usés moins sombres ; l'enclos du mannequin 0,8 m plus à l'ouest.
-
-### La cinquième critique à l'aveugle (itération 4), trois agents — [OK] distinction 8 / 8, la qualité à égalité de VP8 (panneau 2)
-- Distinction : le quai 9, les lices 8, la halle 8, le parvis 7 (« None of the four reads as the same template re-dressed ») ; restent proches
-  la seconde vue de la halle et celle du parvis (une structure large en haut du cadre, le héros au milieu), le rempart à bannières du parvis
-  et des lices.
-- Qualité, panneau 2 : la halle 6 contre la place festive de VP8 6, les lices 5 contre l'entraînement de VP8 5, le quai 7. Les lices : le mur
-  et la tour la nuit « lit flat and too bright (grey-lavender), brighter than the ground beside the braziers », sous la galerie « a flat,
-  almost black navy area » (les ouvertures des écuries). La halle : le sol vide, les flaques noires aux reflets durs, le fond derrière les
-  poteaux délavé, le toit.
-
-- Qualité, panneau 1 : la halle 6,5 contre 6, les lices 5,5 contre 6, le quai 7. Les lices : de jour la pierre « overexposed [...] reads as
-  plaster, not R's cool slate » (la moyenne de luminance du haut du cadre à 145 / 255 contre 117 pour VP8), la galerie « a near-black navy
-  block » (à l'ombre du soleil du sud-ouest) ; la nuit, le tiers bas du cadre noir (31 / 255 contre 57 pour VP8) et la pierre « mauve-pink ».
-  La halle : pas d'ombre lisible au sol, les flaques de nuit, le toit taché de vert.
-
-### Itération 5 — [?] les lices au plus près de VP8, la halle peaufinée
-- Les lices : la pierre de nuit un cran plus sombre (la face 0,35, les encadrements 0,62 de leur teinte de jour), de jour aussi et plus froide
-  (la face 0,4, les encadrements 0,7) ; derrière les demi-portes des écuries, leur fond de planches dans la pénombre au lieu d'un vide noir ;
-  la lumière du brasero de la cour proche plus large la nuit (3,4, 9,5 m), la lanterne de l'enclos du mannequin sur son côté proche, le sable
-  de nuit un peu moins assombri : le tiers bas du cadre de nuit de 31 à 45 / 255 (première vue) et de 46 à 50 (seconde).
-- La halle : le lichen du toit d'un gris chaud ; une seule petite flaque sous la halle au lieu de deux grandes ; son soleil de fin de journée
-  un peu plus haut (28°, 24°).
-
-### La sixième critique à l'aveugle (itération 5), deux panneaux — [OK] la halle devant VP8, les lices devant VP8 en moyenne
-- Qualité (panneau 1 / panneau 2) : la halle 7 / 6,5 contre la place festive de VP8 6,5 / 6 ; les lices 5 / 6,5 contre l'entraînement de VP8
-  5,5 / 4,5 ; le quai 7,5 / 7,5. Panneau 2 : les lices « the best architecture of the new scenes [...] believable scale » ; panneau 1 : « a
-  regular grid of identical pale grey blocks [...] It reads as cinder block », la galerie « a flat dark-navy plane » à midi, les lucarnes de
-  nuit « like electric heater grilles ».
-- Sur les deux dernières critiques (quatre notes de panneau chacune) : la halle 6,5 contre 6,1 pour la place festive de VP8, les lices 5,5
-  contre 5,25 pour l'entraînement de VP8 ; la distinction 8 / 8 (cinquième).
-
-### Itération 6 — [?] deux retouches, la dernière
-- Les lucarnes de la halle la nuit d'un ambre faible ; les demi-portes des écuries d'un chêne plus clair et leur fond moins sombre, le bois de
-  la galerie 1,4 fois plus clair de jour. [?] La galerie reste sombre à l'ombre de son toit sous le soleil du sud-ouest (les textures de
-  planches et de poutres sont sombres) : le prix du soleil rasant sur le rempart.
-
-### L'archivage du journal — [OK]
-- `JOURNAL.md` dépassait 60 Ko (120 Ko) : la Passe VP8 (fusionnée, `5a69031`) déplacée mot pour mot dans `journal/34-passes-VP8.md` (un
-  en-tête, une ligne `---`, puis les octets inchangés), sa ligne ajoutée à l'index. Preuve : le corps archivé égale les octets retirés
-  (SHA-256 `c8616692c3424d20…` des deux côtés, 28 211 octets), le même bloc que celui de `main` ; chaque titre de passe dans un seul fichier ;
-  pas de CRLF, ni avant ni après.
-
-### Les tests généralisés — [OK]
-- `tests/v2-plaza-vis.test.mjs` : l'axe de chaque place (`PLAZA_AXIS` : celui du parvis et de la halle du quai au monument, celui des lices le
-  long du mur), son bord proche (`PLAZA_NEAR` : aucun sur les lices), la place de sa caméra (`ROOM`), le cœur du sol libre (la marche moins
-  2 m, 3 m côté caméra : celui du parvis inchangé) ; `v2-exits` (`OPEN_AFTER` du parvis seul), `v2-places` (`PLAZA_WALKS`, la foule loin du
-  pied des cadrages), `v2-story` (les regards dans la marche de leur place). 278 tests sur 278.
-- Les fautes injectées, une à une, chaque fichier rendu à l'octet ensuite (`cmp`) : prises, le cadrage d'arrivée de la halle trop haut (le héros
-  sous le bord du cadre), le bord proche de la halle au-dessus du héros, une brèche entre deux zones de la halle (aucun cadrage), le ring des
-  lices au milieu de la cour (69,3 % du cœur libre), un regard de `v2-story` hors de sa place, la caméra des lices derrière le rempart ;
-  [KO] cette dernière passait d'abord : la place de la caméra des lices ne bornait pas le côté du rempart, bornée depuis (z ≥ -9). Passées, et
-  laissées : un point de rassemblement dans l'enclos du mannequin, un castelet au milieu de la halle (des tolérances voulues des tests :
-  le sol libre à 70 et 75 %, les points de foule contrôlés contre la marche).
-- Le parvis : son bâti haché (géométrie de chaque emplacement, lumières, émetteurs, obstacles, sorties, places, foule, instances, masque du
-  sol, cadrages et poses de l'empreinte) identique à main pour les quatre moments de la journée.
-
-### Les preuves finales de la Passe VP9 — [OK]
-- Sur un instantané figé de l'état final (`cae5438`, servi sur un port à part ; depuis, seuls le test de la place de la caméra et ce journal
-  ont changé), contre `main` (`5a69031`) servi sur un autre :
-  - la visibilité des places, élaguée contre `vis=0`, sans personnages, huit états (les lices à midi, la nuit et le matin ; la halle en fin de
-    journée, la nuit et le matin ; le parvis à midi et la nuit), douze places du héros chacun : **0 px différent sur 96 vues**. Cuissons
-    neuves : les lices 323 poses (14-16 s en rendu logiciel), la halle 513 (31-49 s), le parvis 565, ses poses identiques à celles de `main`
-    (rectification : la Passe VP8 notait « parvis 427, entraînement 501, place festive 565 » ; sur `main` ce sont parvis 565, entraînement 427,
-    place festive 501) ;
-  - le district contre `main` : A à D de nuit et à midi, B avec son panneau, **identiques au pixel** (9 sur 9) ;
-  - les sorties des places et du quai parcourues dans les deux sens (`exits-proof`) : « every way walked both ways » ;
-  - `play-flow` par défaut et `V2=1` : « all checks passed », aucune erreur de page ; l'écran titre (`title-proof`) : ses trois comparaisons
-    identiques au pixel.
-- Le parvis haché à l'octet (géométrie de chaque emplacement, lumières, émetteurs, obstacles, sorties, places, foule, instances, masque du sol,
-  cadrages et poses) : identique à `main` aux quatre moments de la journée. Le TournamentLab (30 graines, oisif et diligent, règles
-  d'aujourd'hui et dynamiques) : identique à `main`, sur l'état final.
-- `npm test` 278 sur 278, `npm run typecheck`, `npm run build`, `npm run art:validate` (0 erreur).
-- Le bâti statique (hors instances) : les lices 60 177 triangles à midi, 60 744 la nuit (l'entraînement de VP8 : 148 702 et 149 066) ; la halle
-  118 720 et 120 658 (la place festive de VP8 : 145 364 et 146 224) ; 16 lumières la nuit au plus (les lices 15, la halle 16).
-
-### Conclusion de la Passe VP9 — [OK] deux places à leur propre structure, au niveau de VP8 ; [?] la revue en jeu de l'opérateur
-- La demande : « place festival et entraînement devraient proposer une structure architectural diffente pour apporte des scènes uniques et
-  inédites [...] Il faut rester de même ». Les lices au pied du rempart (le mur de la cité en pierre de taille, deux tours rondes, le chemin de
-  ronde et son escalier, la galerie des spectateurs sur les écuries, vus le long du mur depuis l'est) et la place de la halle (la grande halle
-  de bois et sa scène, les maisons à couverts en courbe, le puits, la rose de dalles, vues de haut depuis le sud-ouest) ; le parvis à l'octet.
-- À l'aveugle : la distinction de 5 (l'entraînement) et 3 (la place festive) pour VP8 à 8 et 8 (cinquième tour), « None of the four reads as
-  the same template re-dressed » ; la qualité, en moyenne des deux derniers tours (quatre notes de panneau), la halle 6,5 contre 6,1 pour la
-  place festive de VP8, les lices 5,5 contre 5,25 pour l'entraînement de VP8 : au niveau de VP8 ou au-dessus, à la variance des juges près
-  (un point d'un panneau à l'autre). Six tours de critique et six itérations, chaque nombre « proposé ».
-- Ce qui reste (« À reprendre ») : la revue en jeu de l'opérateur, en rendu matériel ; la galerie des lices sombre à l'ombre de son toit ; les
-  flaques de nuit ; le sol libre ; les flammes figées des captures.
 
 ## Passe FV1 — Reprise locale après la séance cloud « Version 2 » : la branche distante supprimée, la fiche d'essai mise à jour et publiée (2026-10-29)
 
@@ -614,6 +387,142 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un script d'empreinte écrit pour une règle n'en exerce pas une autre : il se réécrit pour passer par chaque chemin de la nouvelle, et le test compte
   ces passages (sinon l'empreinte ne garde que ce que l'ancien script touchait).
 
+## Passe RC3 — La coupe de Ren reprise puis écartée par l'opérateur (« Revenir à l'ancienne ») ; la feuille de Marek générée puis arrêtée, hors du cadre des planches de référence (2026-10-26 → 2026-10-29)
+
+### Demande
+- Séance locale lancée par la séance parente (« Cité du Tournoi Local ») le 26/10 : la feuille de combat de Marek à ×3 (labo) par la voie de la
+  feuille de Ren, la reprise de la coupe de Ren (RC2-2 « La garder ; reprise dédiée plus tard »), une fiche d'arbitrages (la feuille de Marek,
+  la coupe, l'entrée en production des deux feuilles, RC2-5).
+- Worktree `.claude/worktrees/sleepy-chandrasekhar-9a04ba` (hors du dossier partagé), branche `marek-combat-x3` puis `ren-cut-x3` (renommée
+  après l'arrêt de Marek, jamais poussée sous l'ancien nom) ; `npm ci` dans le worktree. Serveur `rc3-branch` (:5231, le worktree) par
+  `preview_start` / `preview_stop`. Mise en pause par l'opérateur le 26/10 (« je veux une pause. ») ; reprise le 29/10 sur `main` (`94e15ca`) :
+  la branche, sans commit, avancée en avance rapide.
+- Le garde-fou de la séance refuse toute écriture dans la copie principale : `gen-image.mjs` est lancé par ses propres fonctions exportées
+  (`parseArgs`, `readKey`, `generate`) depuis le worktree, la clé lue par `readKey` à la racine principale (son `.env.local`, ignoré par git,
+  jamais affiché), le registre partagé de la copie principale, prompts, références et images dans le dossier ignoré du worktree
+  (`art-lab/characters/scratch/marek-combat/`, `scratch/generated/marek-combat-x3/`) ; `--archive` par l'outil du worktree.
+
+### Les choix de l'opérateur, mot pour mot
+« = » : la recommandation est suivie ; « ≠ » : le choix diffère. Questions posées dans la séance (AskUserQuestion), sans note de l'opérateur.
+
+| # | Question | Recommandation | Choix de l'opérateur | |
+|---|---|---|---|---|
+| RC3-1 | D'où vient le design de la feuille ×3 de Marek ? | « Planche générée d'abord (Recommandé) » | « Planche générée d'abord (Recommandé) » | = |
+| RC3-2 | Quelles clés tant que C3 n'a pas fixé sa garde, son esquive, ses compétences ? | « Le minimum du § 14 : 24 (Recommandé) » | « Le minimum du § 14 : 24 (Recommandé) » | = |
+| RC3-3 | La planche de personnage montrée avant les planches de combat ? | « Me la montrer d'abord (Recommandé) » | « Me la montrer d'abord (Recommandé) » | = |
+| RC3-4 | La coupe de Ren : par quelle voie ? | « Génération guidée (Recommandé) » | « Génération guidée (Recommandé) » | = |
+| RC3-5 | Les proportions de Marek (4,5 à 5,1 têtes contre 3,1 pour Ren) | « 3e essai, repère du Capitaine (Recommandé) » | « 3e essai, repère du Capitaine (Recommandé) » | = |
+| RC3-6 | Que fait la séance (Marek hors du cadre) ? | « Arrêter Marek, finir la coupe de Ren (Recommandé) » | « Arrêter Marek, finir la coupe de Ren (Recommandé) » | = |
+| RC3-7 | La nouvelle coupe de Ren dans la feuille de labo | « Garder la nouvelle (Recommandé) » | « Revenir à l'ancienne » | ≠ |
+
+- Le message de l'opérateur du 29/10 qui a mené à RC3-6, mot pour mot : « Nous sommes cense travaille sur nos personnages combattants et rivaux
+  en nous basant sur les images references, or Marek est une conception nouvelle qui sort de notre cadre, actuellement la sessions V2-2 travaille
+  sur les rivaux » (avec quatre planches de casting jointes dans la séance : Cédric, le Lion champion du tournoi, le Rival chevalier émérite, la
+  Duelliste, le Maître d'armes…). Pendant la pause, l'opérateur avait aussi décidé AV-10 « Mettre Marek en pause jusqu'à la nouvelle commande »
+  (Passe AV1) et V2-18 « Les rivaux d'abord » (Passe FV3).
+
+### Marek — [KO → arrêté] une conception hors du cadre des références
+- **Planches de personnage** (tâche `marek-combat-x3`, gpt-image-2, n = 2, 1536 × 1024, haute qualité, une requête à la fois) : le Marek
+  généré d'aujourd'hui (`FighterArt`, agrandi ×4) comme référence de design, la v4-b du héros pour le rendu, huit vues et trois vues de profil
+  avec l'épée. A : critique à l'aveugle (agent neuf ; le premier lancé a échoué sur une coupure réseau, relancé) **A-1 6,5 contre A-2 5,5**,
+  mon auto-critique écrite avant concordante. Défaut commun mesuré : **5,1 têtes contre 3,1 pour Ren** (la tête de Marek aux deux tiers de celle
+  de Ren à l'écran ; la consigne « 30 % de la hauteur » ignorée).
+- **[KO] les proportions ne viennent pas** : B (consigne en pixels, « la tête de la taille de celle de Ren ») 4,5 têtes ; C (le Capitaine de la
+  garde de la planche de casting n° 06 joint comme seul repère de proportions) 4,4 à 4,5. Le générateur garde des proportions adultes pour un
+  chevalier âgé. B gardée, comme l'option RC3-5 le prévoyait.
+- **Planches de combat** sur un fond vert uni (la critique avait mesuré 3,4 à 4,5 % de pixels de la couleur du fond gris dans l'acier : des trous
+  au détourage) : a (repos, posture, armé, coupe, suite, coup reçu ×2, étourdi, victoire), b (la puissante ×4, le K.O. ×3), c (la compétence
+  offensive ×4, un coup reçu debout, une seconde victoire) : toutes les poses des 24 images, deux variantes chacune ; non critiquées, non
+  reconstruites.
+- **Arrêt (RC3-6)** : rien de Marek n'entre dans le dépôt. Ses deux planches archivées (`marek-turnaround-2026-10-26-a1` et `-b1`, jamais
+  commitées) sont rendues au dossier ignoré, leurs originaux identiques à l'octet (SHA-256 `b9666c87…`, `f9183311…`) restant dans
+  `scratch/generated/marek-combat-x3/`. Marek se fera depuis les planches de référence dans la tâche des rivaux (V2-18), avec la nouvelle commande
+  et les poses de charge (AV-10).
+
+### Le coût — [?] une requête perdue sur une coupure réseau
+- Huit requêtes : planches de personnage A, B, C (0,3764 + 0,3895 + 0,3985 $), la coupe de Ren (0,3979 $), planches de combat a, b, c (0,3891 +
+  0,3884 + 0,3881 $) : **2,73 $ payés** (dont 0,40 $ pour la coupe de Ren, 2,33 $ pour Marek).
+- **[?]** une neuvième (la planche b, premier envoi, 26/10 04:30:49 UTC) : « fetch failed » avant toute réponse (le DNS ne résolvait plus
+  l'API ; la critique lancée au même moment a échoué en `ENOTFOUND`). L'outil garde sa réservation au pire cas (1,2556 $) : on ne sait pas si
+  elle a été facturée. **Registre de la tâche : 3,98 $ sur 5** ; la réservation suivante dépasserait le plafond : aucune génération de plus sans
+  décision de l'opérateur.
+
+### La coupe de Ren — reprise d'après la spécification du critique de la Passe RC2, puis [KO → écartée] par l'opérateur
+- **La requête guidée** (RC3-4) : références la v4-b, la planche a2 de RC1 et un guide de pose fait des images de Ren (l'armé ; un collage de la
+  taille F-2 dont le bras et la lame sont abaissés de 30° autour de l'épaule ; la suite) ; le prompt reprend la spécification (les deux mains à
+  hauteur d'épaule, la lame de 0 à 15° au-dessus de l'horizontale, les poignets cassés, le visage de profil, la cape qui suit, dans la case) ;
+  deux variantes de quatre versions.
+- **Reconstruites** par la chaîne du rig au pas de la tête (aucune figure debout : 74 et 68 pixels de tête contre ~39 texels à ×3, soit 1,91 et
+  1,75), vérifiées côte à côte avec l'armé et la suite ; lames redessinées par `blade2` (segment proposé par RANSAC, la garde trouvée en marchant de
+  la pointe jusqu'au premier texel coloré) ; toutes tiennent dans la case (172 à 185 texels).
+- **Critique à l'aveugle** (agent neuf, lettres tirées au sort, neuf options : la coupe actuelle et les huit) : **D 7** (i2, version 3 : la taille
+  la plus lisible, poignets cassés, la lame frappe l'épaule, la cape suit ; 19°, hors spécification de 4°), J 6,5, A 6, F 5,5, G 5, H 4,5, C 4,5,
+  E 4, B 2 (l'actuelle). Auto-critique écrite avant : J. **[KO → noté]** mon kit a extrait la coupe actuelle sur un fond opaque (`zoom.mjs`) : un
+  rectangle noir ; sa note n'est pas comparable (sa pose avait été jugée en RC2 : la lame au-dessus de la tête de Marek).
+- **Défaut commun relevé par le critique** : pour que la lame générée tienne dans la case, le rig repoussait la figure de 17 à 25 texels : le pied
+  avant reculait de 10 à 19 texels à l'impact par rapport à l'armé et à la suite, Ren sautait en arrière au lieu de se fendre (la coupe F-2 : 14
+  à 16 ; la poussée de la coupe était déjà de 21 en RC2).
+- **Corrections au rig** (celles que le critique prescrit) : la lame tournée de 19° à **14°** autour de la garde ; la poussée fixée à **15**
+  texels (`FIGURES.cut.push`, au lieu des 24 qu'imposait la lame générée), d'où une lame de **61** texels (63 dans l'armé) ; deux texels gris
+  que la garde retenait sous la lame effacés (`FIGURES.cut.clear`). Pied avant mesuré : 63 contre 55 dans l'armé et la suite (+8).
+- **La feuille** : seule l'image 5 (`strike.1`) change (9 352 texels) ; 34 images, 64 couleurs, toutes de `hero-x2-v4` ; `build-combat.mjs --check`
+  : reconstruite identique. Source archivée non canonique : `ren-combat-x3-2026-10-26-i2` (records et octets) ; le rig ne lit plus `-f2` (gardée
+  archivée). Paquet de provenance et manifeste mis à jour (la chaîne décrit aussi les deux texels clairs et le bord sombre de RC2, que son texte
+  n'avait pas suivis).
+- **Dans la scène**, critique à l'aveugle (agent neuf, X / Y tirés au sort par lumière ; l'image d'impact au moment `strike`, nuit et midi, avant /
+  après) : **après 7 et 7,5, avant 4 et 4,5** (la nuit, à midi) ; la nouvelle touche Marek au menton et au haut du buste, l'ancienne frappe le
+  vide, sa pointe ~150 px au-dessus de l'étincelle d'impact. Restes relevés sur la nouvelle : elle se lit plutôt comme une estocade (pas d'arc de
+  taille) ; la lame faible la nuit (un trait lavande de 2 px que le halo de l'étincelle noie) ; la cape raide ; l'avant-bras et le gant d'un seul
+  bloc ; la garde comme un bâton à part ; le cou absent ; le liseré froid de la nuit laisse des pixels clairs détachés sur les mèches.
+  Auto-critique écrite avant : après 7, avant 5.
+- **Le choix de l'opérateur (RC3-7)** : « Revenir à l'ancienne », contre la recommandation et la critique. **Défait** : le rig, l'export, la source
+  Aseprite, le paquet de provenance, le manifeste et le test reviennent à l'octet à ceux de `main` (vérifié : aucun fichier suivi de `art-lab/` ni
+  de `tests/` ne diffère ; `art:validate` 19 manifestes, 40 sources, 0 erreur ; `tests/combat-sheet.test.mjs` 9 / 9 ; `build-combat.mjs --check`
+  identique) ; la source `ren-combat-x3-2026-10-26-i2`, jamais commitée, rendue au dossier ignoré (identique à l'original de `scratch/generated/`).
+  La reprise ne vit plus que dans ce journal et deux images.
+- Images de la reprise écartée : `screenshots/calibration/rc3-ren-cut/` (le duel la nuit, avant / après ; les trois images de `strike`, avant /
+  après).
+
+### Les preuves (faites sur la reprise, avant le choix de l'opérateur ; parties avec elle)
+- `tests/combat-sheet.test.mjs` : **10 tests** (+1 : l'angle de la lame de la coupe entre 0 et 15°, la poussée au plus 15, le pied avant mesuré
+  dans l'export à 10 texels au plus de celui de l'armé et de la suite ; la liste des sources : i2 au lieu de f2). **6 fautes injectées sur 6
+  attrapées** (lame à 29°, poussée 24 dans `build.json`, l'ancien export, la coupe tirée d'une autre planche, la source i2 déclarée canonique, le
+  `clear` retiré), fichiers rendus à l'octet (SHA-256).
+- Validation sur la reprise : typecheck, `npm test` **279 / 279**, build, `art:validate` (19 manifestes, 41 sources, 0 erreur),
+  `build-combat.mjs --check` identique. Après le retour, la branche ne change que `JOURNAL.md` et deux images.
+- **Aucun fichier de `src/`**, ni `index.html`, `vite.config.ts`, `package*.json` ne change : l'arène par défaut et le bundle de production ne
+  peuvent pas changer (la feuille n'est lue que par le module DEV, derrière `import.meta.env.DEV`). Le temps GPU n'est pas remesuré : même
+  texture, mêmes 34 cases.
+
+### Restes [?]
+- La fiche d'arbitrages prévue (Marek, la coupe, la production) s'est réduite à la coupe (RC3-7, posée dans la séance) ; RC2-5 « Pas encore :
+  avec la feuille de Marek » reste : la feuille de Ren attend celle de Marek, faite depuis les planches de référence.
+- **La coupe reste celle de F-2** (RC2-2 toujours ouverte) ; la raison du choix n'est pas donnée. Pour une reprise future : la spécification du
+  critique de RC2, les restes relevés ci-dessus, et la case qui fixe l'allonge (la lame générée repousse le corps : pied avant +14 à +16 pour F-2).
+- La réservation de la requête perdue (1,26 $) au registre de `marek-combat-x3`.
+
+### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
+- Avec cette passe, les passes gardées faisaient 60,6 Ko. VP9, close (fusionnée), part vers `journal/35-passes-VP9.md` (25 994 octets, bloc de
+  25 685) ; restent 34,9 Ko. Preuve **8 / 8** (script hors dépôt, contre la copie de `JOURNAL.md` d'avant le déplacement : corps de l'archive égal
+  au bloc ; VP9 d'un seul tenant, suivie de FV1 ; plus dans `JOURNAL.md` ; chaque passe dans un seul fichier, par sa ligne de titre entière ; de FV1
+  à la fin inchangé à l'octet, sauf la liste des archivages de « À reprendre » ; dans l'en-tête, seules la phrase des archives et une ligne
+  d'index changent ; en-tête comme `journal/34` ; CRLF seuls). Contrôle négatif : un bit changé dans une copie de l'archive → 7 / 8. La liste des
+  derniers archivages de « À reprendre » est complétée de ceux des passes V0 à VP9, qu'elle n'avait pas suivis.
+
+### Pensée
+- Un personnage se tire des planches de référence du projet : avant de générer un design neuf, relire les décisions en cours sur `main` (ici AV-10,
+  V2-18, prises pendant la pause) et demander s'il sort du cadre.
+- Trois tirages n'ont pas donné des proportions de chibi à un chevalier âgé, même avec un repère de proportions joint : un rival se part d'une
+  planche qui a déjà les proportions du monde.
+- Une requête perdue sur le réseau garde sa réservation au pire cas : un plafond se budgète avec cette marge.
+- La case fixe l'allonge : faire tenir une lame générée trop longue repousse le corps et les pieds sautent à l'impact ; la poussée se règle à la
+  main, la lame se redessine plus courte, et le résultat se mesure aux pieds, contre l'armé et la suite.
+- Un kit de critique présente chaque option sur le même fond : un fond opaque a disqualifié une option sans rapport avec sa pose.
+- Une reprise qui gagne à l'aveugle peut être refusée par l'opérateur : la critique classe, l'opérateur décide. Rien d'une reprise n'entre dans le
+  dépôt avant son choix, et le retour se prouve à l'octet contre `main`.
+- Un texte qui contient des accents graves ne passe jamais dans une commande shell entre guillemets doubles (substitution de commande) : il passe
+  par un fichier ou par l'outil d'édition.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -627,7 +536,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   bouton seul : toute adresse sans `time=` garde la nuit). Restes vus sur les captures : Passe Y1.
 - **Décision de l'opérateur qui reste** : le remède au recul du fondu ancré (diagnostic, Passe K8 : options 1 à 3).
 
-**0c. Séance cloud « Version 2 » (Passe AV1)** : mandat fixé par la fiche de l'opérateur (19 choix), brief `briefs/cloud-session-v2-brief.md`, lots V0 à V10 derrière `flags.v2`, le défaut inchangé ; la commande chargée décidée en A3 (AV-5) ; Marek en pause jusqu'à la nouvelle commande (AV-10) ; la séance part en exception à la règle d'une branche (AV-18). Après elle, en local : mesures GPU, revue visuelle des districts, poses de charge, personnages à cuire.
+**0c. Séance cloud « Version 2 » (Passe AV1)** : mandat fixé par la fiche de l'opérateur (19 choix), brief `briefs/cloud-session-v2-brief.md`, lots V0 à V10 derrière `flags.v2`, le défaut inchangé ; la commande chargée décidée en A3 (AV-5) ; Marek en pause jusqu'à la nouvelle commande (AV-10) ; la séance part en exception à la règle d'une branche (AV-18) : la branche locale `marek-combat-x3` est devenue `ren-cut-x3`, fusionnée et supprimée (Passe RC3). Après elle, en local : mesures GPU, revue visuelle des districts, poses de charge, personnages à cuire.
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : la règle des blessures sous la version 2 (0,98 par partie en diligent), des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; l'équilibre bouge nettement (le joueur préparé de 60,4 à 84 % de victoires, couronné 28 % au lieu de 0) : **à décider par l'opérateur, le réglage proposé `V2_FOE_HIT` × 1,8** (retrouve la marche de VP4 ; autre voie × 1,6), le défaut gardé à × 1,3 d'ici là ; la tentative de sabotage de Cassius devenue rare (1 partie diligente sur 40 au lieu de 21 : la garde de nuit payée plus souvent) ; restent sa revue (la page, puis en jeu), l'écoute du son, V2-4 (les blessures, à mesurer sous V2-2 : 0,90 par partie pour le joueur préparé), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
@@ -801,7 +710,7 @@ l'opérateur ; les deux pages publiées de l'arène (AP1, essai C2) republiées 
 la page publiée dans le visualiseur. Restes : visages des combattants (la grammaire du générateur), anneau de dalles peu visible (l'occlusion
 de contact des surfaces l'assombrit au ras du sol), spectateurs debout, 23 sources de lumière sur 24, ralenti sous 20 images/s.
 **De jour depuis la Passe AD1** (décision L7-2) : le duel et le parvis du mode jouable prennent l'état du créneau (`?time=`, `arenaQuery`) ; à voir
-en jeu par l'opérateur ; le liseré froid peint des combattants reste le même de jour ; l'artefact publié montre la nuit. **Audit des sprites (Passe AA1)** : le joueur est Ren généré à l'arène et `hero-x2-v4` en ville ; un texel de combattant fait 3,9 px en 1080p contre ~1,5 en ville ; jeux d'images courts (Ren 29, Marek 17). Décisions AA1-1 à AA1-6 (toutes à la recommandation) : Ren = `hero-x2-v4` avec une feuille de combat ; feuilles cuites (Ren, puis Marek, puis Vessa) après l'atelier combat ; en attendant, l'essai de densité ×2 contre ×4 et le public des citadins cuits + variantes V1, chacun derrière un paramètre ; les générés ne sont pas retouchés. **Essai de densité fait (Passe AA2)** : le héros cuit dans le duel à ×2, ×3, ×4 (DEV, `?scene=arena&fighterdensity=`), le texel du héros en ville remesuré (2,0-2,3 px en B / C / D, pas 1,5) ; décision AA2-1 « ×3 » : les feuilles de combat se font à ×3 (2,3 px, une texture par duel) ; AA2-2 tranché en RC1-2 (le bord la nuit) ; AA2-3 suivi de RC1-4 (les feuilles d'essai retirées). Reste le public (AA1-4), dans sa séance. **Première feuille de combat de Ren (Passe RC1)** : `hero-x3-combat` (labo), les 22 images des clés hors C2 (« Clés hors C2 (Recommandé) »), tirées de trois planches générées (« Génération (Recommandé) ») et reconstruites à ×3 sur la palette de `hero-x2-v4`, dans le duel derrière `?scene=arena&fighterdensity=combat` (DEV) ; fiche RC1 relue 4 / 4, tout à la recommandation : RC1-1 « Bonne base : compléter après la fiche C2, avec les reprises », RC1-2 « Liseré peint la nuit, contour noir de jour » (défaut du paramètre), RC1-3 « Pas encore : en labo jusqu'à la feuille complète », RC1-4 « Les retirer, garder fighterdensity=combat » (feuilles d'essai et `x2` / `x3` / `x4` retirés). **Feuille complète (Passe RC2)** : les 34 images de la liste CB-2 (sept planches générées de plus, 2,60 $), la lame redessinée (deux texels clairs et un bord sombre), sans emprunt dans le duel (`sheetFrame`), le bord en règle du rendu (« Règle du rendu (Recommandé) ») ; à l'aveugle dans la scène, 6 contre 4,5 pour la première feuille ; fiche RC2 relue 5 / 5, tout à la recommandation : « Complète : la garder en labo comme base », la coupe « La garder ; reprise dédiée plus tard », la lame « Deux texels d'acier et un bord sombre (comme fait) », le bord « Confirmé », la production « Pas encore : avec la feuille de Marek ». **Suite** : la feuille de Marek à ×3 par la même voie, avec la reprise de la coupe de Ren (spécification du critique, Passe RC2) ; puis les deux feuilles vers la production (tâche d'intégration, approbation des manifestes, la règle du bord dans le chargeur de l'arène) ; ensuite Vessa. Réserves de la feuille de Ren : la réception de l'esquive proche de la posture, le torse de trois-quarts de Rempart, la lame sans effilement.
+en jeu par l'opérateur ; le liseré froid peint des combattants reste le même de jour ; l'artefact publié montre la nuit. **Audit des sprites (Passe AA1)** : le joueur est Ren généré à l'arène et `hero-x2-v4` en ville ; un texel de combattant fait 3,9 px en 1080p contre ~1,5 en ville ; jeux d'images courts (Ren 29, Marek 17). Décisions AA1-1 à AA1-6 (toutes à la recommandation) : Ren = `hero-x2-v4` avec une feuille de combat ; feuilles cuites (Ren, puis Marek, puis Vessa) après l'atelier combat ; en attendant, l'essai de densité ×2 contre ×4 et le public des citadins cuits + variantes V1, chacun derrière un paramètre ; les générés ne sont pas retouchés. **Essai de densité fait (Passe AA2)** : le héros cuit dans le duel à ×2, ×3, ×4 (DEV, `?scene=arena&fighterdensity=`), le texel du héros en ville remesuré (2,0-2,3 px en B / C / D, pas 1,5) ; décision AA2-1 « ×3 » : les feuilles de combat se font à ×3 (2,3 px, une texture par duel) ; AA2-2 tranché en RC1-2 (le bord la nuit) ; AA2-3 suivi de RC1-4 (les feuilles d'essai retirées). Reste le public (AA1-4), dans sa séance. **Première feuille de combat de Ren (Passe RC1)** : `hero-x3-combat` (labo), les 22 images des clés hors C2 (« Clés hors C2 (Recommandé) »), tirées de trois planches générées (« Génération (Recommandé) ») et reconstruites à ×3 sur la palette de `hero-x2-v4`, dans le duel derrière `?scene=arena&fighterdensity=combat` (DEV) ; fiche RC1 relue 4 / 4, tout à la recommandation : RC1-1 « Bonne base : compléter après la fiche C2, avec les reprises », RC1-2 « Liseré peint la nuit, contour noir de jour » (défaut du paramètre), RC1-3 « Pas encore : en labo jusqu'à la feuille complète », RC1-4 « Les retirer, garder fighterdensity=combat » (feuilles d'essai et `x2` / `x3` / `x4` retirés). **Feuille complète (Passe RC2)** : les 34 images de la liste CB-2 (sept planches générées de plus, 2,60 $), la lame redessinée (deux texels clairs et un bord sombre), sans emprunt dans le duel (`sheetFrame`), le bord en règle du rendu (« Règle du rendu (Recommandé) ») ; à l'aveugle dans la scène, 6 contre 4,5 pour la première feuille ; fiche RC2 relue 5 / 5, tout à la recommandation : « Complète : la garder en labo comme base », la coupe « La garder ; reprise dédiée plus tard », la lame « Deux texels d'acier et un bord sombre (comme fait) », le bord « Confirmé », la production « Pas encore : avec la feuille de Marek ». **La séance de la feuille de Marek (Passe RC3)** : un Marek généré hors des planches de référence (trois planches de personnage, 4,4 à 5,1 têtes contre 3,1 pour Ren, puis ses planches de combat), arrêté par l'opérateur (« Arrêter Marek, finir la coupe de Ren (Recommandé) ») : rien de lui dans le dépôt ; la coupe de Ren reprise (à l'aveugle dans la scène 7 et 7,5 contre 4 et 4,5) puis écartée par l'opérateur (« Revenir à l'ancienne ») : la feuille reste celle de RC2, RC2-2 reste ouverte ; registre de la tâche `marek-combat-x3` à 3,98 $ sur 5, dont 1,26 $ réservés pour une requête perdue sur une coupure réseau. **Suite** : les feuilles des rivaux d'après les planches de référence (V2-18 : Orla, Vessa, Marek, Ilse, Cassius), Marek avec la nouvelle commande et les poses de charge (AV-10) ; puis les feuilles vers la production (tâche d'intégration, approbation des manifestes, la règle du bord dans le chargeur de l'arène ; RC2-5 : celle de Ren avec celle de Marek). Réserves de la feuille de Ren : la réception de l'esquive proche de la posture, le torse de trois-quarts de Rempart, la lame sans effilement.
 **Le système de combat (Passe CB1)** : spécification `briefs/combat-system.md`, approuvée (« tour par tour dynamique » ; contrats amendés, A3 ;
 liste des animations : 34 images pour Ren). **C1 fait (Passe C1)** : le cœur du duel en simulation pure (`src/combat/dynamic.ts`), son bot et sa
 course hors écran, derrière `flags.combat = 'dynamic'` (`tournament-lab --rules=dynamic`) ; l'arène actuelle reste le défaut ; un soin sans recharge
@@ -849,7 +758,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -1091,6 +1000,10 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Une pose vue de bout en profil (« en travers de la poitrine ») se décrit au générateur dans le plan de l'image ; des planches générées de la même
   série n'ont pas les mêmes proportions (hauteur debout et tête : jusqu'à 15 % d'écart) : on les compare reconstruites côte à côte, et l'écart
   qu'on ne peut pas éviter se partage et se nomme (Passe RC2).
+- Un personnage se tire des planches de référence du projet : un design neuf se demande avant d'être généré, et une séance reprise après une pause
+  relit d'abord les décisions prises entre-temps sur `main` (Passe RC3 : AV-10, V2-18). La case fixe l'allonge d'une lame : faire tenir une lame
+  générée trop longue repousse le corps, les pieds sautent à l'impact ; la poussée se règle à la main et se mesure aux pieds contre les images
+  voisines (Passe RC3).
 ### Provenance et approbations
 - Rien d'externe ne devient « canon » en silence : un manifeste de provenance (`art-lab/characters/manifests`) avec approbation nommée et
   datée est la seule voie vers `runtimeUse: production`. Deux niveaux d'approbation distincts : *approved visual baseline*
@@ -1162,7 +1075,8 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Un mode ajouté derrière un paramètre dans une page existante se prouve par la scène seule à 0 px (`clean=1`), puis par l'interface, dont
   chaque changement voulu se borne (rectangle, halo) ; un moment scripté se vérifie aussi à son instant (Passe C2).
 - Un outil qui nomme ses sorties à la seconde et réécrit un registre lu au départ (`gen-image.mjs`) se lance une requête à la fois : deux en
-  parallèle se sont écrasé leurs images et le registre a perdu une écriture (Passe RC1). Une capture d'interface se fige (transitions et
+  parallèle se sont écrasé leurs images et le registre a perdu une écriture (Passe RC1). Une requête perdue sur le réseau garde sa réservation au pire
+  cas : un plafond se budgète avec cette marge (Passe RC3). Une capture d'interface se fige (transitions et
   animations CSS coupées) et se prouve par son témoin avant toute comparaison (Passe RC1).
 - Des planches générées n'ont pas toutes la même échelle : chaque figure se reconstruit au pas de sa planche, réglé sur une hauteur commune, et
   un nettoyage par couleur (le halo du fond) se relit contre la matière nouvelle qui partage ses gris (une lame d'acier) (Passe RC1).
