@@ -325,6 +325,54 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - La règle du brief cloud (« les tests doivent aussi passer sous Windows ») se vérifie à la reprise locale, avant toute fusion ; et une validation
   enchaînée doit s'arrêter sur le code de sortie des tests, pas sur un filtre de leur sortie.
 
+## Passe FV3 — La fiche de l'essai de la version 2, remplie par l'opérateur (18 sur 18) (2026-10-29)
+
+### Demande, mot pour mot
+- Opérateur : « Fiche rempli oui tu peux gerer les preuves locales oui »
+- Branche `fiche-v2-choix` depuis `main` (`3d696a0`).
+
+### La fiche — [OK] 18 choix sur 18 enregistrés et relus
+- Page privée https://claude.ai/artifact/WTwk3r77Y4QJ4eYt93jXRc (Passe FV1), collection `decisions` relue par `list` : 18 documents, cliqués le
+  29/10 entre 19 h 47 et 19 h 52 UTC, aucune note.
+
+### Les choix de l'opérateur, mot pour mot
+« = » : la recommandation de la fiche est suivie ; « ≠ » : le choix diffère, et c'est lui qui fait foi.
+
+| # | Décision | Recommandation | Choix de l'opérateur | Note | |
+|---|---|---|---|---|---|
+| V2-1 | Les temps de charge | « Garder » | « Garder » | — | = |
+| V2-2 | Ce qui coupe une charge | « Garder » | « Rien ne la coupe » | — | ≠ |
+| V2-3 | L'équilibrage « modéré » | « Garder » | « Garder » | — | = |
+| V2-4 | Les blessures sous la version 2 | « Revoir (tâche à part) » | « Revoir (tâche à part) » | — | = |
+| V2-5 | L'ancien schéma (touches 1-6) | « Le garder pour comparer » | « Le garder pour comparer » | — | = |
+| V2-6 | Le catalogue des compétences et ses sources | « Garder » | « Garder » | — | = |
+| V2-7 | L'équipement et les prix | « Garder » | « Garder » | — | = |
+| V2-8 | Le vol et ses conséquences | « Garder » | « Garder » | — | = |
+| V2-9 | Les défis en ville | « Garder » | « Garder » | — | = |
+| V2-10 | Les trois places | « Garder pour la revue locale » | « Garder pour la revue locale » | — | = |
+| V2-11 | Les dix jours | « Garder » | « Garder » | — | = |
+| V2-12 | Orla alliée | « Garder » | « Garder » | — | = |
+| V2-13 | Les cinq cinématiques | « Garder et en écrire d'autres plus tard » | « Garder » | — | = |
+| V2-14 | Les événements de la version 2 | « Garder » | « Garder » | — | = |
+| V2-15 | Le son par le code | « Garder pour l'essai » | « Garder » | — | = |
+| V2-16 | P4, P5, P6 | « Garder » | « Garder » | — | = |
+| V2-17 | Le passage au défaut | « Pas encore » | « Pas encore » | — | = |
+| V2-18 | Les personnages à cuire d'abord | « Les rivaux d'abord » | « Les rivaux d'abord » | — | = |
+
+- Pour V2-13 et V2-15, la recommandation de la fiche portait sur l'option « Garder » (premier choix), avec un commentaire : le choix la suit.
+- **V2-2 « Rien ne la coupe »** : la règle « proposée » de la Passe V1 (un coup reçu sans garde, l'esquive, le break ou le K.O. coupent la charge ;
+  relâchée pendant la séquence adverse, elle est perdue) est à remplacer : plus rien ne coupe une charge. Tâche à part, derrière `flags.v2`.
+- **V2-4** : la règle des blessures sous la version 2 est à revoir dans une tâche à part.
+- **V2-17 « Pas encore »** : la version 2 reste derrière son drapeau ; le défaut ne change pas.
+- **V2-18 « Les rivaux d'abord »** : l'ordre des personnages à cuire (Orla, Vessa, Marek, Ilse, Cassius, puis les maîtres des places).
+
+### Ce qui suit, chacun dans sa séance, une branche à la fois
+1. Les preuves locales de la version 2 (demandées par l'opérateur dans le même message) : mesures GPU des places et de leur cuisson (E24),
+   contrôle vivant de l'arène, captures en rendu matériel pour sa revue.
+2. V2-2 : la charge que rien ne coupe.
+3. V2-4 : la règle des blessures.
+4. Les feuilles des rivaux (V2-18), Marek repris quand la nouvelle commande est jouée (AV-10), avec les poses de charge.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -341,7 +389,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 **0c. Séance cloud « Version 2 » (Passe AV1)** : mandat fixé par la fiche de l'opérateur (19 choix), brief `briefs/cloud-session-v2-brief.md`, lots V0 à V10 derrière `flags.v2`, le défaut inchangé ; la commande chargée décidée en A3 (AV-5) ; Marek en pause jusqu'à la nouvelle commande (AV-10) ; la séance part en exception à la règle d'une branche (AV-18). Après elle, en local : mesures GPU, revue visuelle des districts, poses de charge, personnages à cuire.
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : la règle des blessures sous la version 2 (0,98 par partie en diligent), des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
-  - **Essai de la version 2** : la fiche `briefs/fiche-v2.html`, mise à jour et publiée (Passe FV1, https://claude.ai/artifact/WTwk3r77Y4QJ4eYt93jXRc), attend l'essai de l'opérateur ; la branche distante du cloud est supprimée.
+  - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; restent les preuves locales, V2-2 « Rien ne la coupe » (la charge), V2-4 (les blessures), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17).
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : la règle des blessures sous la charge, le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
     la version 2 cohérente hors combat (ses dix jours, ses événements dans l'ordre). À faire en local : les mesures GPU des places (budget E24 ;
