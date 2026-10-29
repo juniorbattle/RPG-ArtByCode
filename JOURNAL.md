@@ -523,6 +523,77 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un texte qui contient des accents graves ne passe jamais dans une commande shell entre guillemets doubles (substitution de commande) : il passe
   par un fichier ou par l'outil d'édition.
 
+## Passe V2C2 — L'équilibrage de la version 2 recalé après V2-2 : les rivaux plus rudes, de nouveau six combats sur dix (2026-10-29)
+
+### Les décisions de l'opérateur, mot pour mot (relayées par la séance de la Passe FV3)
+- Question : « Fait-on durcir les rivaux pour revenir vers 60 % ? » ; réponse de l'opérateur : « Oui, recaler ». L'objectif : revenir vers 60 % de
+  victoires du joueur préparé, avec la charge que rien ne coupe (V2-2), comme après la Passe VP4 ; vérifier la durée des duels et les blessures.
+- **Exception à la règle d'une branche**, comme l'AV-18 : question « Le recalage peut-il ouvrir sa branche malgré `ren-cut-x3` ? » ; réponse de
+  l'opérateur : « Oui, exception ». La branche `ren-cut-x3` (la séance de Marek, dans sa propre copie de travail) reste ouverte et n'est pas touchée ;
+  branche `v2c2-recalage` depuis `main` (`3bff52e`), les mesures faites avant sa création. Pendant le recalage, la Passe RC3 (`ea93a6c`) a été
+  fusionnée dans `main` et a archivé la Passe VP9 : le commit du recalage a été refait sur elle (aucun fichier commun hors du journal ; l'archive de
+  VP9 de cette séance, au corps identique à l'octet, laissée pour la sienne), ce qui permet l'avance rapide.
+
+### Le réglage retenu — [OK] (`src/combat/v2duel.ts`, derrière `flags.v2`)
+- **`V2_FOE_HIT` 1,3 → 1,45** (les coups et les compétences des sept rivaux) et **`V2_FOE_HP` = 1,2**, nouveau (leurs PV, 20 % de plus).
+- **Écart à la proposition de la Passe V2C1 (× 1,8 sur les coups seuls)** : elle retrouve bien 60,4 %, mais des duels tombent sous les « 5 à 10
+  minutes » de l'opérateur [G5] (C2-2 « Comme mesurées (5 à 9 min) ») : le joueur faible (adresse 0,2) perd contre Marek en 4,0 min et contre Orla en
+  4,4, contre Marek à 0,4 en 4,9 ; 4 cases sur 35. Des coups plus forts raccourcissent les duels que le joueur perd ; des PV plus hauts les
+  rallongent. Le mélange retenu tient les trois critères : 60 %, chaque duel moyen entre 5 et 10 min, moins de blessures qu'en VP4.
+- **La course hors écran remesurée** (`V2_RACERS`, comme en V2C1 : étalonnage sur les graines 1..40, vérification sur 41..60, écarts sous 6 % ; le
+  test rejoue 41..46) : chaque mise à terre 1,2 fois plus longue, chaque cadence de dégâts environ 1,11 fois celle de la Passe V2C1. Marek reste le
+  plus fort, Tobin le plus faible.
+- Le duel de l'ancien schéma (`input=keys`) joue contre les mêmes rivaux (AV-5, « l'ancien schéma gardé pour comparer ») : il prend leurs nouveaux
+  nombres, voulu.
+
+### Les réglages essayés — TournamentLab `--rules=v2` (50 graines : le préparé, adresse 0,6 ; 30 graines : 0,75 et 0,9) et durées (bot, 20 duels par case, 7 rivaux × 5 adresses)
+La course mise à l'échelle pour les essais (une estimation), remesurée pour le réglage retenu.
+
+| coups / PV | préparé | blessures | champion | 0,75 (champion) | 0,9 (champion) | duel moyen le plus court | cases sous 5 min | le plus long |
+|---|---|---|---|---|---|---|---|---|
+| VP4 (1,3 / 1, avant V2-2) | 60,4 % | 2,10 | 0 % | 82,0 % (20 %) | 93,3 % (67 %) | 5,3 min (Tobin à 0,9) | 0 / 35 | 10,1 |
+| V2C1 (1,3 / 1) | 84,0 % | 0,90 | 28 % | 97,3 % (87 %) | 99,3 % (97 %) | 4,6 (Vessa à 0,9) | 1 / 35 | 10,0 |
+| 1,8 / 1 | 60,4 % | 1,90 | 4 % | 81,3 % (23 %) | 94,0 % (70 %) | 4,0 (Marek à 0,2) | 4 / 35 | 8,2 |
+| 1,5 / 1,2 | 59,6 % | 1,94 | 4 % | 80,7 % (17 %) | 95,3 % (77 %) | 4,9 | 1 / 35 | 9,8 |
+| 1,6 / 1,15 | 58,0 % | 1,72 | 4 % | 80,0 % (13 %) | 95,3 % (77 %) | 4,7 | 2 / 35 | 9,4 |
+| 1,6 / 1,25 | 48,6 % | 2,02 | 2 % | 74,0 % (10 %) | 91,3 % (57 %) | 4,7 | 2 / 35 | 10,2 |
+| 1,4 / 1,3 | 60,0 % | 1,86 | 4 % | 81,3 % (13 %) | 95,3 % (77 %) | 5,25 | 0 / 35 | 10,6 |
+| 1,5 / 1,25 | 57,2 % | 2,02 | 4 % | 79,3 % (13 %) | 94,7 % (73 %) | 4,9 | 1 / 35 | 10,2 |
+| 1,45 / 1,25 | 60,8 % | 2,02 | 4 % | 80,0 % (13 %) | 95,3 % (77 %) | 5,1 | 0 / 35 | 10,2 |
+| **1,45 / 1,2 (retenu, course remesurée)** | **60,4 %** | **1,74** | **4 %** | 84,0 % (27 %) | 95,3 % (77 %) | **5,1 (Marek à 0,2)** | **0 / 35** | **9,8 (Rhosk à 0,6)** |
+
+### L'état livré — [OK]
+- Le joueur préparé : **60,4 %** des combats gagnés (VP4 : 60,4 % ; V2C1 : 84,0 %), 1,74 blessure par partie (2,10 ; 0,90), qualifié 88 %,
+  finaliste 18 %, couronné 4 % ; l'oisif 0 % ; l'adresse 0,4 2,5 % (VP4 14,5 %), 0,75 couronné 27 % (20 %), 0,9 couronné 77 % (67 %).
+- Par rival à 0,6 (victoires, durée moyenne ; VP4 entre parenthèses) : Marek 0 %, 7,7 min (10 %, 7,9) ; Vessa 85 %, 6,4 (75 %, 8,3) ; Orla 50 %, 8,1
+  (55 %, 8,0) ; Cassius 95 %, 8,7 (100 %, 8,1) ; Ilse 80 %, 9,1 (90 %, 9,1) ; Rhosk 75 %, 9,8 (100 %, 8,6) ; Tobin 100 %, 6,3 (100 %, 5,7). Marek
+  reste le plus dur (100 % seulement à 0,9, en 9,6 min). Des duels isolés sortent des bornes (3,97 à 10,85 min), comme en VP4 (4,7 à 12,8).
+- La tentative de sabotage de Cassius (V2-14), devenue rare en V2C1 (1 partie diligente sur 40), revient dans 16 sur 40 (21 en VP4) ; 7,55 nuits
+  de garde payées par partie (VP4 7,58).
+
+### Les preuves
+- `npm run typecheck`, `npm test` **280 / 280** (code de sortie 0, vérifié), `npm run build`, `npm run art:validate` (0 erreur, 0 avertissement).
+- Tests : la marche de la Passe VP4 retrouvée (graines 1..12 : le préparé 65 %, aucune couronne ; l'expert 93 %, couronné 67 %), `V2_FOE_HIT` et
+  `V2_FOE_HP` épinglés ; la durée des duels bornée à **5 à 10 min** (au lieu de 5 à 13 : la cible de l'opérateur) ; la course sur 41..46 ;
+  `tests/v2-coherence.test.mjs` garde la partie de la graine 34 (elle porte la tentative). **6 fautes injectées sur le réglage, 6 attrapées** (les
+  coups revenus à 1,3, les PV non relevés, les coups seuls à 1,8, les PV appliqués deux fois, la course de la Passe V2C1 gardée, les PV donnés au
+  joueur aussi) ; **les 14 fautes de la règle (Passe V2C1), 14 attrapées** de nouveau ; chaque fichier rendu à l'octet.
+- **`V2_SIM_HASH`** mis à jour (les rivaux changent, le script non) : `1857:5:idle:0.525:41.025:-:-;7125:0:idle:1.033:41.125:-:-;73.267|1:1.925:` ;
+  le script passe encore par chaque chemin de V2-2 (35 coups reçus sans garde, 23 gardés, 3 esquives, un break et un K.O. charge tenue, 60
+  relâchés qui attendent, 118 départs, aucune coupe ni refus).
+- **Le jeu par défaut inchangé** : TournamentLab `classic` et `dynamic`, `diligent` et `idle`, 50 graines, et `DYNAMIC_SIM_HASH` : JSON identique à
+  l'octet à celui de `main` avant V2C1 (`94e15ca`, SHA-256 `40fa7aa7…`).
+- Sur GPU (Radeon 780M, `dev-strict` :5186 par `preview_start`, son onglet fermé aussitôt, arrêté à la fin) : `arena-scene-check` **PASS** sous
+  `v2=1` (le contrôle vivant avance de 4,917 s, l'empreinte `sameAsRecorded`, 87 rendus de moments sans erreur, télégraphe 6,77:1 et 6,97:1 en
+  deutéranopie, le sol dégagé du HUD dans 77 cas), sous les règles d'aujourd'hui (`sameAsPrototype`) et `combat=dynamic` (`sameAsRecorded`) ;
+  `play-flow` `V2=1` victoire (1842, jour 2) `5cfe614a12cc08bd` et défaite (7719, jour 2) `671a95a659b6ac06`, rejouées en Node à la même empreinte ;
+  par défaut, victoire `0025acce7a403773` ; « all checks passed », aucune erreur de page.
+- Documents : `briefs/v2-trial.md` (l'équilibrage), `briefs/combat-system.md` § 4b (le renvoi), `AGENTS.md` (`V2_FOE_HIT`, `V2_FOE_HP`).
+
+### Pensée
+- Un recalage de difficulté se vérifie aussi par la durée des duels : un seul levier (les coups) rend les défaites courtes ; deux leviers opposés
+  (les coups et les PV) règlent ensemble le taux de victoires et la durée.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -539,7 +610,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 **0c. Séance cloud « Version 2 » (Passe AV1)** : mandat fixé par la fiche de l'opérateur (19 choix), brief `briefs/cloud-session-v2-brief.md`, lots V0 à V10 derrière `flags.v2`, le défaut inchangé ; la commande chargée décidée en A3 (AV-5) ; Marek en pause jusqu'à la nouvelle commande (AV-10) ; la séance part en exception à la règle d'une branche (AV-18) : la branche locale `marek-combat-x3` est devenue `ren-cut-x3`, fusionnée et supprimée (Passe RC3). Après elle, en local : mesures GPU, revue visuelle des districts, poses de charge, personnages à cuire.
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : la règle des blessures sous la version 2 (0,98 par partie en diligent), des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
-  - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; l'équilibre bouge nettement (le joueur préparé de 60,4 à 84 % de victoires, couronné 28 % au lieu de 0) : **à décider par l'opérateur, le réglage proposé `V2_FOE_HIT` × 1,8** (retrouve la marche de VP4 ; autre voie × 1,6), le défaut gardé à × 1,3 d'ici là ; la tentative de sabotage de Cassius devenue rare (1 partie diligente sur 40 au lieu de 21 : la garde de nuit payée plus souvent) ; restent sa revue (la page, puis en jeu), l'écoute du son, V2-4 (les blessures, à mesurer sous V2-2 : 0,90 par partie pour le joueur préparé), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
+  - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; restent sa revue (la page, puis en jeu), l'écoute du son, V2-4 (les blessures : 1,74 par partie pour le joueur préparé depuis la Passe V2C2), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : la règle des blessures sous la charge, le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
     la version 2 cohérente hors combat (ses dix jours, ses événements dans l'ordre). À faire en local : les mesures GPU des places (budget E24 ;

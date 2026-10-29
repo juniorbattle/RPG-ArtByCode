@@ -61,10 +61,15 @@ export const V2_FOES: Record<string, V2Foe> = {
   rhosk: { defense: { guard: 0.15, dodge: 0 }, skills: { chance: 0.28, list: [{ id: 'm_cleave', weight: 2, cooldown: 26 }, { id: 'm_roar', weight: 1, cooldown: 34 }, { id: 'm_hide', weight: 1, cooldown: 36 }] }, hp: 0.85, damage: 1.1 },
 };
 
-/** the opponents' blows in the version 2, 30 % harder than C3's balance (journal Passe VP4, the operator's request of 2026-10-27: « augmenter
- *  [...] des dégâts des ennemies pour qu'ils soient plus impactant ou rendre le gameplay combat un peu plus rude »; « proposé »: the prepared
- *  player of the TournamentLab wins about six bouts in ten instead of 85 %, the expert nine in ten). Every rival's blows and skills. */
-export const V2_FOE_HIT = 1.3;
+/** the opponents' blows in the version 2, harder than C3's balance: 30 % (journal Passe VP4, the operator's request of 2026-10-27: « augmenter
+ *  [...] des dégâts des ennemies pour qu'ils soient plus impactant ou rendre le gameplay combat un peu plus rude »; the prepared player of the
+ *  TournamentLab won about six bouts in ten instead of 85 %), then 45 % since V2-2 « Rien ne la coupe » gave the player back that ease, with
+ *  V2_FOE_HP (journal Passe V2C2, the operator's « Oui, recaler »: back to six bouts in ten). Every rival's blows and skills. */
+export const V2_FOE_HIT = 1.45;
+/** the rivals' health in the version 2 against C3's balance (journal Passe V2C2): 20 % more, so that the harder blows needed to come back to six
+ *  bouts in ten do not shorten a losing player's duels under the operator's 5 to 10 minutes [G5] (the blows alone at 1.8: 4.0 min against
+ *  Marek at skill 0.2); every duel of the bot at skill 0.2 to 0.9 lasts 5.1 to 9.8 min. */
+export const V2_FOE_HP = 1.2;
 
 /** the player's skills in the version 2: the four brought, each at its level (default: today's loadout at level 1) */
 export interface V2Kit { loadout: DynActionId[]; levels: Record<string, number> }
@@ -99,7 +104,7 @@ export interface V2GearFx { taken: number; gauge: number; charge: number; effect
 export function v2DuelData(foe: string, o: { seed: number; playerName: string; opponentName: string; player?: Mods; enemy?: Mods; names?: Partial<Record<string, string>>; kit?: V2Kit; input?: 'charge' | 'keys'; gear?: V2GearFx }): V2Duel {
   const prof: DynProfile = DYN_PROFILES[foe] ?? DYN_PROFILES.marek, F = V2_FOES[foe] ?? V2_FOES.marek, kit = o.kit ?? V2_START_KIT;
   const gfx = o.gear ?? { taken: 1, gauge: 1, charge: 1, effect: 1 }, em0 = o.enemy ?? {}, em = { ...em0, damage: (em0.damage ?? 1) * gfx.taken };
-  const d = dynDuelData(prof, { seed: o.seed, playerName: o.playerName, opponentName: o.opponentName, player: o.player, enemy: { ...em, hp: (em.hp ?? 1) * F.hp, damage: (em.damage ?? 1) * F.damage * V2_FOE_HIT }, names: o.names });
+  const d = dynDuelData(prof, { seed: o.seed, playerName: o.playerName, opponentName: o.opponentName, player: o.player, enemy: { ...em, hp: (em.hp ?? 1) * F.hp * V2_FOE_HP, damage: (em.damage ?? 1) * F.damage * V2_FOE_HIT }, names: o.names });
   // the catalogue's new skills (lot V2) join the player's actions, with the player's damage as today's skills take it
   for (const id of kit.loadout) if (!d.actions[id]) { const a = skillAction(id); a.damage = Math.round(a.damage * (o.player?.damage ?? 1)); if (o.names?.[id]) a.name = o.names[id]!; d.actions[id] = a; }
   d.loadout = [...kit.loadout];
@@ -127,11 +132,12 @@ export function v2DuelData(foe: string, o: { seed: number; playerName: string; o
  *  without limit) takes to bring it down, `dps` = the damage per second it deals that player (journal Passe V1; the damage measured again under
  *  V2_FOE_HIT, journal Passe VP4). Measured again under V2-2 « Rien ne la coupe » (journal Passe V2C1: the reference's charges no longer cut,
  *  every kill shorter, Vessa's most, 591 -> 326 s) on calibration seeds 1..40 (duel seeds 5001.., bot seeds 901..), checked on the held-out
- *  seeds 41..60 (within 10 %; tests/combat-charge.test.mjs replays 41..46). A rival a beats b in the time b takes the reference to bring down
+ *  seeds 41..60 (within 10 %; tests/combat-charge.test.mjs replays 41..46); measured again under V2_FOE_HIT 1.45 and V2_FOE_HP 1.2 (journal
+ *  Passe V2C2). A rival a beats b in the time b takes the reference to bring down
  *  over a's damage against it: the reference's own damage cancels out of the race. */
 export const V2_RACERS: Record<string, { kill: number; dps: number }> = {
-  tobin: { kill: 321.6, dps: 3.04 }, orla: { kill: 436.3, dps: 4.65 }, cassius: { kill: 432.8, dps: 3.35 }, ilse: { kill: 470.7, dps: 3.62 },
-  rhosk: { kill: 513.5, dps: 3.29 }, vessa: { kill: 326.4, dps: 4.36 }, marek: { kill: 510.9, dps: 4.91 },
+  tobin: { kill: 385.9, dps: 3.43 }, orla: { kill: 523, dps: 5.2 }, cassius: { kill: 519.5, dps: 3.71 }, ilse: { kill: 564.2, dps: 3.92 },
+  rhosk: { kill: 614.9, dps: 3.66 }, vessa: { kill: 394.1, dps: 4.88 }, marek: { kill: 610.9, dps: 5.44 },
 };
 /** how sharply the version 2's race decides a match (« proposé »: lower than today's 14, so a rival a third weaker still wins one in ten) */
 export const V2_RACE_SLOPE = 8;

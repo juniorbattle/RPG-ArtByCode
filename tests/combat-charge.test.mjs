@@ -236,7 +236,7 @@ test('C3: the opponents\' defence in their pauses (guard, dodge of the heavy and
   assert.equal(f.hash(), D.DYNAMIC_SIM_HASH);
 });
 
-test('the balance toward « modéré » (L7-4, CB-11; « proposé »): a staircase by the bot\'s skill, Marek the hardest, duels of 5 to 13 minutes', () => {
+test('the balance toward « modéré » (L7-4, CB-11; « proposé »): a staircase by the bot\'s skill, Marek the hardest, duels of 5 to 10 minutes (the operator\'s [G5], held since journal Passe V2C2)', () => {
   const rate = (foe, skill, n = 6) => {
     let w = 0, t = 0;
     for (let i = 1; i <= n; i++) { const d = V.v2DuelData(foe, { seed: 3000 + i, playerName: 'Ren', opponentName: foe }); const r = B.runV2BotDuel(d.data, d.tiers, { skill, seed: 40 + i }); assert.ok(r.winner, `${foe}: a K.O.`); if (r.winner === 'player') w++; t += r.t; }
@@ -247,21 +247,21 @@ test('the balance toward « modéré » (L7-4, CB-11; « proposé »): a stairca
   assert.ok(weak.w <= 0.35, `orla at 0.2: ${weak.w}`);
   assert.ok(m2.w <= 0.2, `marek at 0.2: ${m2.w}`);
   assert.ok(m6.w < o6.w, `marek at 0.6 (${m6.w}) is harder than orla (${o6.w})`);
-  for (const r of [strong, weak, m6, o6, m2]) assert.ok(r.min >= 5 && r.min <= 13, `duel length ${r.min.toFixed(1)} min`);
+  for (const r of [strong, weak, m6, o6, m2]) assert.ok(r.min >= 5 && r.min <= 10, `duel length ${r.min.toFixed(1)} min`);
 });
 
-test('the harder blows (journal Passe VP4, « proposé ») under V2-2 « Rien ne la coupe » (journal Passe V2C1): whole version 2 games on seeds 1..12, a staircase by the player\'s skill and preparation', () => {
-  assert.equal(V.V2_FOE_HIT, 1.3);
+test('the harder rivals (journal Passes VP4, V2C2) under V2-2 « Rien ne la coupe » (journal Passe V2C1): whole version 2 games on seeds 1..12, a staircase by the player\'s skill and preparation', () => {
+  assert.equal(V.V2_FOE_HIT, 1.45); assert.equal(V.V2_FOE_HP, 1.2);
   const S = Array.from({ length: 12 }, (_, i) => i + 1);
   const at = (skill) => ({ name: `diligent-${skill}`, skill, choose: (st) => { const a = L.POLICIES.diligent.choose(st); return a.type === 'fight' ? { type: 'fight', outcome: L.botOutcome(st, skill) } : a; } });
   const idle = L.labReport(S, L.POLICIES.idle, 'v2'), prepared = L.labReport(S, L.POLICIES.diligent, 'v2'), expert = L.labReport(S, at(0.9), 'v2');
-  // the player who only fights wins nothing. Since V2-2 (nothing cuts a charge; the balance unchanged, the operator's setting to come, journal
-  // Passe V2C1) the prepared player of average skill wins about 85 bouts in 100 again (six in ten with the cut of Passe V1, VP4), makes the cut
-  // and the crown in about a third of the games; the expert nearly every bout and the crown in most games
+  // the player who only fights wins nothing; the prepared player of average skill about six bouts in ten, makes the cut, rarely the crown; the
+  // expert nine in ten and the crown in about two games in three: Passe VP4's staircase, which V2-2 had lifted (85 bouts in 100, journal Passe
+  // V2C1), found again by the rivals' harder blows and health (the operator's « Oui, recaler », journal Passe V2C2)
   assert.ok(idle.rates.playerWins <= 0.05, `idle ${idle.rates.playerWins}`);
-  assert.ok(prepared.rates.playerWins >= 0.75 && prepared.rates.playerWins <= 0.95, `prepared ${prepared.rates.playerWins}`);
-  assert.ok(prepared.v2.madeCut >= 0.9 && prepared.v2.champion >= 0.15 && prepared.v2.champion <= 0.5, `prepared ${JSON.stringify(prepared.v2)}`);
-  assert.ok(expert.rates.playerWins >= 0.9 && expert.v2.champion >= 0.6 && expert.v2.champion > prepared.v2.champion, `expert ${expert.rates.playerWins} ${JSON.stringify(expert.v2)}`);
+  assert.ok(prepared.rates.playerWins >= 0.5 && prepared.rates.playerWins <= 0.75, `prepared ${prepared.rates.playerWins}`);
+  assert.ok(prepared.v2.madeCut >= 0.75 && prepared.v2.champion <= 0.15, `prepared ${JSON.stringify(prepared.v2)}`);
+  assert.ok(expert.rates.playerWins >= 0.85 && expert.v2.champion >= 0.3, `expert ${expert.rates.playerWins} ${JSON.stringify(expert.v2)}`);
 });
 
 test('the off-screen race of the version 2 agrees with full duels on held-out seeds (tolerance 12 %), and decides the version 2\'s off-screen bouts', () => {

@@ -115,7 +115,8 @@ La règle de l'opérateur (AV-5, AV-6, AV-7, AV-8) ; ce que la séance a fixé e
     le palier qui attend ; une nouvelle pression pendant l'attente commence une nouvelle charge, dont le palier attend derrière le premier ;
   - le K.O. finit le duel : une charge tenue ou en attente finit avec lui, sans partir ; rien d'autre ne finit une charge.
   Le « repoussé » (CB-3) vaut pour l'action lancée, comme avant (un palier qui part juste avant une séquence adverse peut être repoussé, ses PA
-  rendus). Effet mesuré sur l'équilibre, sans réglage changé (V2-3 « Garder ») : journal Passe V2C1.
+  rendus). Effet mesuré sur l'équilibre : journal Passe V2C1 ; l'équilibrage recalé vers la marche de la Passe VP4 (« Oui, recaler » de
+  l'opérateur : les coups des rivaux × 1,45, leurs PV × 1,2, des duels de 5 à 10 minutes) : journal Passe V2C2.
 - **L'ancien schéma** (touches 1-6, la préparation automatique) reste derrière `input=keys`, sur le même adversaire et les mêmes niveaux.
 
 ## 5. L'adversaire et sa priorité

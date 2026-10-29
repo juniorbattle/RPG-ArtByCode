@@ -55,10 +55,11 @@ d'arbitrages `briefs/fiche-v2.html` recueille vos choix.
 - **La charge** : les 2 s de la puissante, les temps des compétences (2,7 à 9 s selon le niveau) ; rien ne coupe une charge depuis votre choix
   V2-2 « Rien ne la coupe » (Passe V2C1 : ni un coup reçu, ni l'esquive, ni le break ; relâchée pendant la séquence adverse ou un étourdissement,
   elle attend et part dès que Ren peut agir ; seul le K.O. la finit) ; l'ancien schéma pour comparer (`&input=keys`).
-- **L'équilibrage, plus rude depuis la Passe VP4** : les coups des rivaux 30 % plus forts (« proposé ») ; au TournamentLab un joueur préparé
-  de compétence moyenne gagnait 60 % de ses combats (85 % avant) et n'était plus couronné. **Depuis V2-2 (Passe V2C1)**, la charge que rien ne coupe
-  le rend plus facile : le joueur préparé gagne de nouveau 84 % de ses combats et la couronne une partie sur quatre (28 %) ; un réglage vous est
-  proposé (Passe V2C1). Tobin le plus facile, Marek le plus dur. Est-ce le bon degré de rudesse ?
+- **L'équilibrage, plus rude depuis la Passe VP4** : les coups des rivaux 30 % plus forts ; au TournamentLab un joueur préparé de compétence
+  moyenne gagnait 60 % de ses combats (85 % avant) et n'était plus couronné. V2-2 (Passe V2C1) le rendait plus facile (84 %, couronné une partie
+  sur quatre) ; **recalé depuis la Passe V2C2** (votre « Oui, recaler ») : les coups des rivaux 45 % plus forts et leurs PV 20 % plus hauts ; le
+  joueur préparé gagne de nouveau 60 % de ses combats et n'est couronné qu'une partie sur vingt-cinq, un bon joueur une sur quatre, un excellent
+  trois sur quatre ; chaque duel dure en moyenne de 5 à 10 minutes. Tobin le plus facile, Marek le plus dur. Est-ce le bon degré de rudesse ?
 - **Les emblèmes du tournoi** (Passe VP3) : épées croisées, duel, laurier, coupe, heaume, trompette, lances, couronne, sur les drapeaux des
   places, du quai et de l'arène d'une partie v2.
 - **Les trois places** (reprises en Passe VP6 : les tours de porte et la voie processionnelle du parvis, la terre battue et l'estrade des
