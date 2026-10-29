@@ -116,7 +116,7 @@ label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
 
 <div class="wrap">
   <header class="top">
-    <span class="eyebrow">Cité du Tournoi · après la séance cloud « Version 2 » · 26 octobre 2026</span>
+    <span class="eyebrow">Cité du Tournoi · après la séance cloud « Version 2 » · 26 octobre 2026, mise à jour le 29 octobre (Passes VP1 à VP9)</span>
     <h1>L'essai de la version 2</h1>
     <p class="lede">La séance cloud a construit la version 2 derrière le drapeau <code>flags.v2</code> : la charge par paliers, les compétences, l'équipement, marchander, défier, voler, trois places ouvertes, les dix jours, les cinématiques, les événements, le son et les écrans P4 à P6. Le jeu par défaut n'a pas changé. Elle a tranché seule les détails, chacun « proposé » au journal ; voici les plus importants, à juger après votre essai (le guide : <code>briefs/v2-trial.md</code>). Pour chaque point : ce qui est fait, ma recommandation et vos options. Une note est facultative. Chaque choix est enregistré, puis relu avant d'afficher « Enregistré et relu ».</p>
   </header>
@@ -157,15 +157,15 @@ const GROUPS = [
       opts: ["Garder", "Seul un coup reçu la coupe", "Rien ne la coupe"], recIdx: 0,
       src: "src/combat/charge.ts ; journal Passe V1" },
     { id: "V2-3", tag: "équilibrage", title: "L’équilibrage « modéré »",
-      ctx: "Chaque rival a son seuil d'adresse : Tobin facile, Orla à 0,4-0,5, Marek le plus dur (25 % de victoires à 0,5, 60 % à 0,6). Au TournamentLab sur dix jours, le joueur diligent passe toujours la coupe, atteint la finale deux fois sur trois et la gagne une fois sur dix.",
+      ctx: "Chaque rival a son seuil d'adresse : Tobin facile, Orla à 0,4-0,5, Marek le plus dur. Depuis la Passe VP4, les coups des rivaux sont multipliés par 1,3 : le joueur préparé gagne 60 % de ses combats au lieu de 85 %, et la couronne revient au bon joueur et à l'expert.",
       rec: "Garder pour l'essai, puis ajuster rival par rival.",
       opts: ["Garder", "Plus facile", "Plus dur"], recIdx: 0,
-      src: "src/combat/v2duel.ts (V2_FOES) ; journal Passes V1, V6" },
+      src: "src/combat/v2duel.ts (V2_FOES) ; journal Passes V1, V6, VP4" },
     { id: "V2-4", tag: "blessures", title: "Les blessures sous la version 2",
-      ctx: "La règle d'aujourd'hui (une victoire à moins de 15 % des PV blesse) frappe souvent sous la charge : 1,96 blessure par partie de dix jours au TournamentLab.",
+      ctx: "La règle d'aujourd'hui (une victoire à moins de 15 % des PV blesse) frappe souvent sous la charge : au TournamentLab, 1,08 blessure par partie de dix jours pour un joueur préparé, 1,74 pour un joueur qui ne prépare rien (Passe VP2).",
       rec: "Revoir la règle dans une tâche à part (par exemple : seulement un K.O. par un coup puissant).",
       opts: ["Revoir (tâche à part)", "Garder"], recIdx: 0,
-      src: "src/tournament/pool.ts (applyPlayerDuel) ; journal Passe V6" },
+      src: "src/tournament/pool.ts (applyPlayerDuel) ; journal Passes V6, VP2" },
     { id: "V2-5", tag: "comparaison", title: "L’ancien schéma (touches 1-6)",
       ctx: "`&input=keys` garde la commande de C2 sur le même duel de la version 2, pour comparer.",
       rec: "Le garder jusqu'à votre choix définitif de la commande.",
@@ -196,10 +196,10 @@ const GROUPS = [
   ]},
   { id: "monde", title: "Les districts et l’histoire", sub: "Les places, les dix jours, les cinématiques, les événements.", fam: "var(--voile)", items: [
     { id: "V2-10", tag: "districts", title: "Les trois places",
-      ctx: "Le parvis, le terrain d'entraînement et la place festive (à la place de Lantern Row) : des places ouvertes de 22 x 19 m, bâties avec les générateurs du Merchant District, une caméra qui suit le héros, les feuilles cuites approuvées par rôle et des sprites générés provisoires pour les autres.",
+      ctx: "Refaites dans la langue du Merchant District (Passes VP1 à VP9), chacune avec sa structure, son angle et son soleil : le parvis devant l'arène ; le terrain d'entraînement en lices au pied du rempart ; la place festive en place de la halle, à la place de Lantern Row (vos deux choix de la Passe VP9). On y va à pied depuis le quai par des sorties (Passe VP5) ; leur visibilité est cuite et prouvée en rendu logiciel. Restent les mesures GPU et votre revue en rendu matériel.",
       rec: "Les garder pour la revue locale (GPU, visibilité, regard).",
       opts: ["Garder pour la revue locale", "Revoir leur taille", "Revoir leur composition"], recIdx: 0,
-      src: "src/world/Plazas.ts, PlazaApp.ts ; journal Passe V5" },
+      src: "src/world/Plazas.ts, PlazaApp.ts ; journal Passes V5, VP1 à VP9" },
     { id: "V2-11", tag: "structure", title: "Les dix jours",
       ctx: "Poule en trois tours (jours 2, 4, 5), la coupe des quatre meilleurs (soir du jour 5), demi-finales et combats de la Porte (jour 6), troisième place et finale de la Porte (jour 8), finale (jour 10) ; jours 3, 7, 9 libres. La phase d'équipe reste un écart consigné.",
       rec: "Garder.",

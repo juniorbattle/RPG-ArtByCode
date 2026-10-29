@@ -276,6 +276,34 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Ce qui reste (« À reprendre ») : la revue en jeu de l'opérateur, en rendu matériel ; la galerie des lices sombre à l'ombre de son toit ; les
   flaques de nuit ; le sol libre ; les flammes figées des captures.
 
+## Passe FV1 — Reprise locale après la séance cloud « Version 2 » : la branche distante supprimée, la fiche d'essai mise à jour et publiée (2026-10-29)
+
+### Demande, mot pour mot
+- Opérateur : « prend en compte ce qui a ete accompli sur la session cloud, il semble avoir de vraies ameliorations »
+- Branche `fiche-v2-maj` depuis `main` (`2ea0cea`).
+
+### Constat — [OK]
+- La séance cloud a fusionné dans `main` les lots V0 à V10 (Passes V0 à V10) puis les Passes VP1 à VP9 (les places refaites, la ville reliée à
+  pied, le combat plus rude, les lices et la place de la halle) ; la CI de `main` est verte (`2ea0cea`). La copie locale a été avancée de 76
+  commits en avance rapide.
+
+### Fait — [OK]
+- La branche distante `claude/friendly-davinci-17lk4m`, entièrement fusionnée (0 commit hors de `main`), supprimée depuis la machine locale (le
+  cloud n'avait pas pu, Passe V10).
+- `briefs/fiche-v2.html` (lot V10) datait d'avant les Passes VP : trois cartes mises à jour avant publication, sans changer leurs options ni leurs
+  recommandations : V2-3 (l'équilibrage depuis la Passe VP4 : les coups des rivaux × 1,3, le joueur préparé gagne 60 % de ses combats au lieu de
+  85 %), V2-4 (les blessures remesurées en Passe VP2 : 1,08 par partie pour un joueur préparé, 1,74 sans préparation), V2-10 (les places de VP1 à
+  VP9 : le parvis, les lices au pied du rempart, la place de la halle, les sorties à pied) ; l'en-tête daté du 29/10.
+- Publiée en page privée : https://claude.ai/artifact/WTwk3r77Y4QJ4eYt93jXRc, collection `decisions` vide à la publication (relue par `list`).
+
+### Restes [?]
+- L'essai de l'opérateur (`briefs/v2-trial.md`), puis la fiche, à relire et verser quand il la dit remplie.
+- Le local de la Passe V10 et des Passes VP : mesures GPU des places, revue en rendu matériel, contrôle vivant de l'arène, écoute du son ; la feuille
+  de Marek en pause jusqu'à la nouvelle commande (AV-10), et les poses de charge.
+
+### Pensée
+- Une fiche préparée au milieu d'une séance qui continue vieillit avant d'être publiée : la relire contre les passes qui ont suivi.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -292,7 +320,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 **0c. Séance cloud « Version 2 » (Passe AV1)** : mandat fixé par la fiche de l'opérateur (19 choix), brief `briefs/cloud-session-v2-brief.md`, lots V0 à V10 derrière `flags.v2`, le défaut inchangé ; la commande chargée décidée en A3 (AV-5) ; Marek en pause jusqu'à la nouvelle commande (AV-10) ; la séance part en exception à la règle d'une branche (AV-18). Après elle, en local : mesures GPU, revue visuelle des districts, poses de charge, personnages à cuire.
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : la règle des blessures sous la version 2 (0,98 par partie en diligent), des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
-  - **À faire en local** : supprimer la branche distante `claude/friendly-davinci-17lk4m` (fusionnée ; le cloud n'a pas pu, Passe V10).
+  - **Essai de la version 2** : la fiche `briefs/fiche-v2.html`, mise à jour et publiée (Passe FV1, https://claude.ai/artifact/WTwk3r77Y4QJ4eYt93jXRc), attend l'essai de l'opérateur ; la branche distante du cloud est supprimée.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : la règle des blessures sous la charge, le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
     la version 2 cohérente hors combat (ses dix jours, ses événements dans l'ordre). À faire en local : les mesures GPU des places (budget E24 ;
