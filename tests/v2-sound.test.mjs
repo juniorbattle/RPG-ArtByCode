@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { load } from './load.mjs';
 
 const S = await load('/src/audio/score.ts');
@@ -70,8 +71,9 @@ test('no sound before a gesture; only the version 2\'s pages load the engine', (
   // every importer of the engine: a dynamic import, behind the version 2
   const files = [];
   const walk = (d) => { for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (fs.statSync(p).isDirectory()) walk(p); else if (/\.ts$/.test(f)) files.push(p); } };
-  walk(new URL('../src', import.meta.url).pathname);
-  const users = files.filter((f) => !f.includes(`${path.sep}audio${path.sep}`) && /audio\/Sound/.test(fs.readFileSync(f, 'utf8'))).map((f) => path.relative(new URL('..', import.meta.url).pathname, f).split(path.sep).join('/')).sort();
+  // fileURLToPath, not URL.pathname: on Windows the pathname is '/C:/...' and path.join turns it into 'C:\C:\...' (journal Passe FV2)
+  walk(fileURLToPath(new URL('../src', import.meta.url)));
+  const users = files.filter((f) => !f.includes(`${path.sep}audio${path.sep}`) && /audio\/Sound/.test(fs.readFileSync(f, 'utf8'))).map((f) => path.relative(fileURLToPath(new URL('..', import.meta.url)), f).split(path.sep).join('/')).sort();
   assert.deepEqual(users, ['src/arena/ArenaApp.ts', 'src/ui/playPlaza.ts', 'src/ui/playTown.ts', 'src/ui/townUi.ts']);
   for (const f of users) { const t = src(f); assert.doesNotMatch(t, /^import .*audio\/Sound/m, `${f}: no static import`); }
   assert.match(src('src/ui/playTown.ts'), /if \(isV2\(st\)\) void import\('\.\.\/audio\/Sound'\)/);

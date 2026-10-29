@@ -304,6 +304,27 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Une fiche préparée au milieu d'une séance qui continue vieillit avant d'être publiée : la relire contre les passes qui ont suivi.
 
+## Passe FV2 — Un test de la version 2 rendu indépendant de Windows (`tests/v2-sound.test.mjs`) (2026-10-29)
+
+### Constat — [KO → corrigé]
+- Sur la machine de l'opérateur (Windows), `npm test` donnait 277 / 278 sur `main` (`2ea0cea`, avant la Passe FV1) : le test « no sound before a
+  gesture; only the version 2's pages load the engine » parcourait `src` par `new URL('../src', import.meta.url).pathname`. Sous Windows, ce
+  chemin vaut `/C:/...`, et `path.join` en fait `C:\C:\...` (ENOENT). Le runner Linux de la CI ne le voit pas.
+- **[KO] de cette séance** : la Passe FV1 a été fusionnée malgré cet échec : la chaîne de validation filtrait la sortie de `npm test` par `grep`,
+  qui réussit même quand un test échoue. Le commit FV1 ne touchait que le journal et la fiche ; l'échec était antérieur.
+
+### Fait — [OK]
+- Les deux chemins du test passent par `fileURLToPath` ; rien d'autre ne change. Aucun autre test n'utilise `URL.pathname`.
+
+### Preuves
+- `node --test tests/v2-sound.test.mjs` : 5 / 5 ; `npm test` entier sans échec ; typecheck, build, `art:validate`.
+- **Faute injectée, attrapée** : un import direct du moteur de son en tête de `src/ui/playTown.ts` fait échouer le test (« src/ui/playTown.ts: no
+  static import ») ; le fichier rendu à l'octet.
+
+### Pensée
+- La règle du brief cloud (« les tests doivent aussi passer sous Windows ») se vérifie à la reprise locale, avant toute fusion ; et une validation
+  enchaînée doit s'arrêter sur le code de sortie des tests, pas sur un filtre de leur sortie.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
