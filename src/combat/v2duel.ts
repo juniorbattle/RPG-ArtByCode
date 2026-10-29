@@ -124,13 +124,14 @@ export function v2DuelData(foe: string, o: { seed: number; playerName: string; o
 // ------------------------------------------------------------------------------------------- the off-screen race of the version 2 (E6, C3)
 
 /** Each rival in the off-screen race of the version 2: `kill` = the time (s) the reference player (the version 2's bot at skill 0.5, health
- *  without limit) takes to bring it down, `dps` = the damage per second it deals that player. Measured on calibration seeds 1..20 (duel seeds
- *  5001.., bot seeds 901..), checked on the held-out seeds 21..40 by tests/combat-charge.test.mjs (journal Passe V1; the damage measured again under
- *  V2_FOE_HIT, journal Passe VP4: the kills unchanged, every rate about 1.3 times). A rival a beats b in the
- *  time b takes the reference to bring down over a's damage against it: the reference's own damage cancels out of the race. */
+ *  without limit) takes to bring it down, `dps` = the damage per second it deals that player (journal Passe V1; the damage measured again under
+ *  V2_FOE_HIT, journal Passe VP4). Measured again under V2-2 « Rien ne la coupe » (journal Passe V2C1: the reference's charges no longer cut,
+ *  every kill shorter, Vessa's most, 591 -> 326 s) on calibration seeds 1..40 (duel seeds 5001.., bot seeds 901..), checked on the held-out
+ *  seeds 41..60 (within 10 %; tests/combat-charge.test.mjs replays 41..46). A rival a beats b in the time b takes the reference to bring down
+ *  over a's damage against it: the reference's own damage cancels out of the race. */
 export const V2_RACERS: Record<string, { kill: number; dps: number }> = {
-  tobin: { kill: 359, dps: 3.11 }, orla: { kill: 511.5, dps: 4.71 }, cassius: { kill: 515.8, dps: 3.57 }, ilse: { kill: 556.6, dps: 3.77 },
-  rhosk: { kill: 533, dps: 3.42 }, vessa: { kill: 590.8, dps: 4.24 }, marek: { kill: 620.3, dps: 5.05 },
+  tobin: { kill: 321.6, dps: 3.04 }, orla: { kill: 436.3, dps: 4.65 }, cassius: { kill: 432.8, dps: 3.35 }, ilse: { kill: 470.7, dps: 3.62 },
+  rhosk: { kill: 513.5, dps: 3.29 }, vessa: { kill: 326.4, dps: 4.36 }, marek: { kill: 510.9, dps: 4.91 },
 };
 /** how sharply the version 2's race decides a match (« proposé »: lower than today's 14, so a rival a third weaker still wins one in ten) */
 export const V2_RACE_SLOPE = 8;

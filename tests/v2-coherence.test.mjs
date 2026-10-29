@@ -41,9 +41,10 @@ test('the signs come strictly before the attempt they announce: a slot at least 
   c.day = 5; c.tournament.matches.push({ round: 4, a: 'player', b: 'marek', winner: null, close: false, day: 6, seen: true, stage: 'semi' });
   assert.deepEqual(run(c, ['v2-sign-armourer', 'v2-sign-locker', 'v2-gear-tamper']), ['v2-gear-tamper']);
   // whole games: wherever the attempt came, both signs came in earlier slots (the attempt needs a bout of the bracket: since the harder blows of
-  // journal Passe VP4 an idle player never reaches one, a diligent game of seed 3 does)
+  // journal Passe VP4 an idle player never reaches one; since V2-2, journal Passe V2C1, a diligent player wins more, pays the night watch more
+  // often and the second sign comes too late in most games: the diligent game of seed 34 still has the attempt)
   let attempts = 0;
-  for (const g of [...Object.values(games), diligent, L.autoplay(3, L.POLICIES.diligent, 'Ren', 600, 'v2')]) {
+  for (const g of [...Object.values(games), diligent, L.autoplay(34, L.POLICIES.diligent, 'Ren', 600, 'v2')]) {
     const at = (id) => { const e = g.state.log.find((x) => x.id === id); return e ? slotNumber(e) : null; };
     const t = at('v2-gear-tamper'); if (t === null) continue;
     attempts++; assert.ok(at('v2-sign-armourer') < at('v2-sign-locker') && at('v2-sign-locker') < t, `seed ${g.seed}`);

@@ -24,7 +24,7 @@ const PROTOTYPE_HASH = '152:1:idle:20.233:0.00,0.00,0.00,0.00;800:0:idle:5.283:0
 // src/combat/dynamic.ts DYNAMIC_SIM_HASH (journal Passe C1)
 const DYNAMIC_HASH = '1687:1:idle:0.483:0.000:-:-;4989:0:idle:1.500:61.275:-:-;300.000';
 // src/arena/v2Arena.ts V2_SIM_HASH (`v2=1`: the version 2's charged duel, journal Passe V1)
-const V2_HASH = '979:1:recovering:0.100:90.750:-:-;4127:0:idle:2.317:43.980:-:-;300.000|0:0.000';
+const V2_HASH = '2042:2:idle:4.850:18.180:3.850:-;6002:0:idle:1.467:29.800:-:-;60.733|1:4.858:';
 const extra = process.argv[2] ?? '';
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720);
 const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];
@@ -50,15 +50,17 @@ try {
     // 1. the simulation alone (a fresh instance of the page's class), the fingerprint script
     const sim = A.rules === 'v2' ? new A.sim.constructor(A.sim.D, A.sim.tiers) : new A.sim.constructor(), dt = sim.D.dt; let nextAct = 0.5, n = 0;
     if (A.rules === 'v2') {
-      // runV2Fingerprint (src/arena/v2Arena.ts), on a fresh charged duel of the page's own data (no dyn= in the address)
+      // runV2Fingerprint (src/arena/v2Arena.ts), on a fresh charged duel of the page's own data (no dyn= in the address); the script of V2-2
+      // « Rien ne la coupe » (journal Passe V2C1): dodges, guarded and unguarded blows, a break and the K.O. on a charge held, releases in the
+      // opponent's sequences
       const holds = [0.05, 2.1, 0.05, 3.7, 0.05, 4.2, 5.3, 0.05, 9.4, 2.4]; let next = 0.5, until = -1;
-      for (let i = 0; i < Math.round(300 / dt); i++) {
+      for (let i = 0; i < Math.round(360 / dt); i++) {
         const inc = sim.incoming(), v = sim.view();
-        if (inc && inc.windowOpen && inc.kind !== 'light' && !v.held) sim.react('ren', 'dodge');
-        sim.setGuard('ren', !!(inc && (inc.kind === 'light' || v.held)));
+        if (inc && inc.windowOpen && inc.kind !== 'light' && sim.t < 40 && Math.floor(sim.t) % 3 !== 0) sim.react('ren', 'dodge');
+        sim.setGuard('ren', !!(inc && sim.t < 110 && (inc.kind === 'light' || sim.t >= 40)));
         if (!v.held && sim.t >= next) { sim.attack(true); until = sim.t + holds[n++ % holds.length]; }
-        else if (v.held && sim.t >= until && !sim.sim.inSequence()) { sim.attack(false); next = sim.t + 0.3; }
-        sim.step(dt); sim.drain(); if (sim.over) sim.reset();
+        else if (v.held && sim.t >= until) { sim.attack(false); next = sim.t + 0.3; }
+        sim.step(dt); sim.drain(); if (sim.over) { sim.reset(); next = 0.5; }
       }
     } else if (A.rules === 'dynamic') {
       // runDynamicFingerprint (src/combat/dynamic.ts), on a fresh DynamicSim of the default data

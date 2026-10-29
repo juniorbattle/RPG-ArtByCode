@@ -59,43 +59,114 @@ test('the charge: released at the tier reached; a tier whose AP are missing does
   }
 });
 
-test('what cuts a charge (« proposé »): an unguarded blow, the player\'s dodge, the player\'s break; a guarded blow keeps it; a release in the defence phase is refused', () => {
-  // an unguarded blow
-  let c = fresh({ live: true });
-  c.attack(true);
-  let evs = [];
-  for (let i = 0; i < 12 / c.D.dt && !evs.some((e) => e.type === 'chargeCut'); i++) { c.step(); evs.push(...c.drain()); }
-  assert.equal(evs.find((e) => e.type === 'chargeCut')?.why, 'hit');
-  assert.ok(evs.findIndex((e) => e.type === 'impact' && e.to === 'ren' && e.result === 'hit') < evs.findIndex((e) => e.type === 'chargeCut'));
-  assert.equal(c.view().held, false);
-  // a guarded blow keeps it, and the charge grows under the guard
+/** steps until `pred` (or `secs`), every event kept */
+function until(c, pred, secs = 12) { const evs = []; for (let i = 0; i < secs / c.D.dt && !pred(evs); i++) { c.step(); evs.push(...c.drain()); } return evs; }
+const ended = (evs) => evs.some((e) => e.type === 'chargeEnd' || e.type === 'chargeCut');
+
+test('nothing cuts a charge (V2-2 « Rien ne la coupe », journal Passe V2C1): a blow received guarded or not, the player\'s dodge, the break keep it', () => {
+  // an unguarded blow: the charge is held through it and goes on growing (the player stays free)
+  let c = fresh(); c.attack(true); steps(c, 0.3); c.sim.forceSequence(['m_heavy']);
+  let evs = until(c, (e) => e.some((x) => x.type === 'impact' && x.to === 'ren'));
+  assert.equal(evs.find((e) => e.type === 'impact' && e.to === 'ren').result, 'hit');
+  assert.ok(!ended(evs), 'no end');
+  let t0 = c.view().t; steps(c, 0.5);
+  assert.ok(c.view().held && c.view().t > t0 + 0.45, `held and growing after the hit: ${t0} -> ${c.view().t}`);
+  // a guarded blow: kept, and the charge grows under the guard
   c = fresh(); c.attack(true); c.setGuard('ren', true); steps(c, 0.3);
-  c.sim.forceSequence(['m_slash']); evs = [];
-  for (let i = 0; i < 2 / c.D.dt; i++) { c.step(); evs.push(...c.drain()); }
+  c.sim.forceSequence(['m_slash']);
+  evs = until(c, () => false, 2);
   assert.ok(evs.some((e) => e.type === 'impact' && e.to === 'ren' && e.result === 'guarded'));
-  assert.ok(!evs.some((e) => e.type === 'chargeCut'));
+  assert.ok(!ended(evs));
   assert.ok(c.view().held && c.view().t > 2.2, `held under the guard: ${c.view().t}`);
-  // a release while the opponent attacks: refused (G3), the charge lost, no action
-  c = fresh(); c.attack(true); steps(c, 2.2); c.sim.forceSequence(['m_slash', 'm_heavy']); steps(c, 0.05);
-  assert.ok(c.sim.inSequence());
-  c.attack(false); evs = c.drain();
-  assert.equal(lastRelease(evs).ok, false);
-  assert.ok(evs.some((e) => e.type === 'commandDenied' && e.why === 'defense'));
-  assert.equal(c.view().held, false);
-  // the player's dodge
+  // the player's dodge: kept, and the charge grows through the dodge
   c = fresh({ ap: 3 }); c.attack(true); c.sim.forceSequence(['m_heavy']);
-  for (let i = 0; i < 3 / c.D.dt && !(c.incoming()?.windowOpen); i++) c.step();
-  c.react('ren', 'dodge'); c.step(); evs = c.drain();
-  assert.equal(evs.find((e) => e.type === 'chargeCut')?.why, 'dodge');
-  // the player's break
-  c = fresh(); c.attack(true); c.sim.f.ren.resist = c.D.resist.max - 1; c.sim.forceSequence(['m_slash']); evs = [];
-  for (let i = 0; i < 2 / c.D.dt; i++) { c.step(); evs.push(...c.drain()); }
-  assert.ok(evs.some((e) => e.type === 'chargeCut' && (e.why === 'break' || e.why === 'hit')));
+  until(c, () => c.incoming()?.windowOpen, 3);
+  t0 = c.view().t;
+  assert.ok(c.react('ren', 'dodge'), 'the dodge taken with a charge held');
+  evs = until(c, (e) => e.some((x) => x.type === 'impact' && x.to === 'ren'));
+  assert.equal(evs.find((e) => e.type === 'impact' && e.to === 'ren').result, 'dodged');
+  assert.ok(!ended(evs));
+  assert.ok(c.view().held && c.view().t > t0 + 0.1, `held and growing through the dodge: ${t0} -> ${c.view().t}`);
+  // the break: kept, not grown while stunned (the charge grows while the player is free), and growing again after
+  c = fresh(); c.attack(true); steps(c, 0.5); c.sim.f.ren.resist = c.D.resist.max - 1; c.sim.forceSequence(['m_slash']);
+  evs = until(c, (e) => e.some((x) => x.type === 'stun' && x.who === 'ren'), 3);
+  assert.ok(evs.some((e) => e.type === 'stun' && e.who === 'ren'), 'the player broke');
+  t0 = c.view().t; steps(c, 1);
+  assert.equal(c.sim.f.ren.state, 'stunned');
+  assert.ok(c.view().held && Math.abs(c.view().t - t0) < 1e-9, `kept and still while stunned: ${t0} -> ${c.view().t}`);
+  evs = until(c, (e) => e.some((x) => x.type === 'stunEnd' && x.who === 'ren'), 12);
+  assert.ok(!ended(evs));
+  t0 = c.view().t; steps(c, 0.5);
+  assert.ok(c.view().held && c.view().t > t0 + 0.45, `growing again once free: ${t0} -> ${c.view().t}`);
   // the charge grows only while the player is free: not while its action runs
   c = fresh(); c.command('ren', 'light'); c.attack(true); c.step();
   assert.equal(c.view().t, 0, 'acting: no charge');
   steps(c, 1.5);
   assert.ok(c.view().t > 0.5 && c.view().t < 1.5, `charged once free: ${c.view().t}`);
+});
+
+test('a release the duel cannot take waits (V2-2, journal Passe V2C1): the opponent\'s sequence, a stun; it leaves the first step the player can act', () => {
+  // in the opponent's sequence (its priority, G3 / CB-4): no command tried, no action until the sequence ends, then the tier reached
+  let c = fresh(); c.attack(true); steps(c, 2.2); c.sim.forceSequence(['m_slash', 'm_heavy']); steps(c, 0.05); c.drain();
+  assert.ok(c.sim.inSequence());
+  c.attack(false); let evs = c.drain();
+  assert.deepEqual(evs.filter((e) => e.type.startsWith('charge')).map((e) => [e.type, e.id]), [['chargeWait', 'heavy']]);
+  assert.ok(!evs.some((e) => e.type === 'commandDenied'), 'nothing refused');
+  assert.equal(c.view().held, false); assert.equal(c.view().waiting, 1);
+  // the HUD: the strip stays, the waiting tier shown as the one that leaves
+  const hm = A.chargeHudModel(c.view());
+  assert.ok(hm.waiting && !hm.held); assert.equal(hm.launch, 'heavy'); assert.equal(hm.toNext, 0);
+  assert.deepEqual(hm.tiers.map((t) => t.state).slice(0, 3), ['ahead', 'launch', 'locked']);
+  evs = until(c, (e) => e.some((x) => x.type === 'chargeRelease'), 8);
+  const end = evs.findIndex((e) => e.type === 'sequenceEnd'), rel = evs.findIndex((e) => e.type === 'chargeRelease');
+  assert.ok(end >= 0 && rel > end, 'launched after the sequence ends');
+  assert.ok(!evs.slice(0, end).some((e) => e.type === 'commandStart' && e.who === 'ren'), 'no action of the player in the sequence');
+  assert.ok(evs[rel].ok && evs[rel].id === 'heavy' && Math.abs(evs[rel].held - 2.25) < 0.02, JSON.stringify(evs[rel]));
+  assert.equal(c.sim.f.ren.act?.def.id, 'heavy'); assert.equal(c.view().waiting, -1);
+  assert.ok(Math.abs(evs[rel].t - evs[end].t) < 0.05, 'at the first step the player can act');
+  // stunned: waits for the stun's end
+  c = fresh({ ap: 2 }); c.attack(true); steps(c, 4.1); c.sim.f.ren.resist = c.D.resist.max - 1; c.sim.forceSequence(['m_slash']);
+  until(c, (e) => e.some((x) => x.type === 'stun' && x.who === 'ren'), 3);
+  c.attack(false); evs = c.drain();
+  assert.equal(evs.find((e) => e.type === 'chargeWait')?.id, 't1');
+  evs = until(c, (e) => e.some((x) => x.type === 'chargeRelease'), 12);
+  assert.ok(evs.findIndex((e) => e.type === 'stunEnd') < evs.findIndex((e) => e.type === 'chargeRelease'));
+  assert.equal(c.sim.f.ren.act?.def.id, 't1'); assert.equal(c.sim.f.ren.ap, 0, 'the skill paid its AP when it left');
+  // its AP gone meanwhile (a dodge costs one): the best tier still open, at most the one reached (Flash cut 2 AP -> the heavy)
+  c = fresh({ ap: 2 }); c.attack(true); steps(c, 4.1); c.sim.forceSequence(['m_heavy']); steps(c, 0.05);
+  c.attack(false); assert.equal(c.drain().find((e) => e.type === 'chargeWait')?.id, 't1');
+  until(c, () => c.incoming()?.windowOpen, 3); assert.ok(c.react('ren', 'dodge')); assert.equal(c.sim.f.ren.ap, 1);
+  assert.equal(A.chargeHudModel(c.view()).launch, 'heavy', 'the HUD shows the tier that will leave');
+  evs = until(c, (e) => e.some((x) => x.type === 'chargeRelease'), 8);
+  assert.equal(evs.find((e) => e.type === 'chargeRelease').id, 'heavy');
+  // a new press while a tier waits starts a new charge; its release waits behind it: both leave, in their order
+  c = fresh(); c.attack(true); steps(c, 2.1); c.sim.forceSequence(['m_slash', 'm_slash', 'm_slash']); steps(c, 0.05);
+  c.attack(false); c.attack(true); steps(c, 0.1); c.attack(false);
+  evs = c.drain(); assert.deepEqual(evs.filter((e) => e.type === 'chargeWait').map((e) => e.id), ['heavy', 'light']);
+  evs = until(c, (e) => e.filter((x) => x.type === 'chargeRelease').length >= 2, 12);
+  assert.deepEqual(evs.filter((e) => e.type === 'chargeRelease').map((e) => [e.id, e.ok]), [['heavy', true], ['light', true]]);
+  // a release the duel can take leaves at once, as before (the tap is the light attack)
+  c = fresh(); c.attack(true); c.step(); c.attack(false);
+  assert.deepEqual(c.drain().filter((e) => e.type.startsWith('charge')).map((e) => e.type), ['chargeStart', 'chargeRelease']);
+  assert.equal(c.sim.f.ren.act?.def.id, 'light');
+});
+
+test('the K.O. ends the duel and the charge with it, unlaunched (V2-2, journal Passe V2C1)', () => {
+  // the player down with a charge held
+  let c = fresh(); c.attack(true); steps(c, 0.3); c.sim.f.ren.hp = 1; c.sim.forceSequence(['m_slash']);
+  let evs = until(c, (e) => e.some((x) => x.type === 'ko'), 3);
+  assert.ok(evs.some((e) => e.type === 'ko' && e.who === 'ren'));
+  steps(c, 0.2); evs.push(...c.drain());
+  assert.deepEqual(evs.filter((e) => e.type === 'chargeEnd').map((e) => e.why), ['over']);
+  assert.equal(c.view().held, false); assert.equal(c.view().waiting, -1);
+  assert.ok(!evs.some((e) => e.type === 'chargeRelease'));
+  // the opponent down while a released tier waits behind the player's own action: it never leaves
+  c = fresh(); c.sim.f.marek.hp = 1; c.command('ren', 'light'); c.attack(true); c.step(); c.attack(false);
+  assert.equal(c.drain().find((e) => e.type === 'chargeWait')?.id, 'light');
+  evs = until(c, (e) => e.some((x) => x.type === 'ko'), 3); steps(c, 0.5); evs.push(...c.drain());
+  assert.ok(evs.some((e) => e.type === 'ko' && e.who === 'marek'));
+  assert.deepEqual(evs.filter((e) => e.type === 'chargeEnd').map((e) => e.why), ['over']);
+  assert.ok(!evs.some((e) => e.type === 'chargeRelease'));
 });
 
 test('a level per skill (AV-8): its power and its charge time; no level of the player (PROJECT § 7)', () => {
@@ -179,23 +250,24 @@ test('the balance toward « modéré » (L7-4, CB-11; « proposé »): a stairca
   for (const r of [strong, weak, m6, o6, m2]) assert.ok(r.min >= 5 && r.min <= 13, `duel length ${r.min.toFixed(1)} min`);
 });
 
-test('the harder blows (journal Passe VP4, « proposé »): whole version 2 games on seeds 1..12, a staircase by the player\'s skill and preparation', () => {
+test('the harder blows (journal Passe VP4, « proposé ») under V2-2 « Rien ne la coupe » (journal Passe V2C1): whole version 2 games on seeds 1..12, a staircase by the player\'s skill and preparation', () => {
   assert.equal(V.V2_FOE_HIT, 1.3);
   const S = Array.from({ length: 12 }, (_, i) => i + 1);
   const at = (skill) => ({ name: `diligent-${skill}`, skill, choose: (st) => { const a = L.POLICIES.diligent.choose(st); return a.type === 'fight' ? { type: 'fight', outcome: L.botOutcome(st, skill) } : a; } });
   const idle = L.labReport(S, L.POLICIES.idle, 'v2'), prepared = L.labReport(S, L.POLICIES.diligent, 'v2'), expert = L.labReport(S, at(0.9), 'v2');
-  // the player who only fights wins nothing; the prepared player of average skill about six bouts in ten (85 % before), makes the cut, rarely
-  // the crown; the expert nine in ten and the crown in about half the games
+  // the player who only fights wins nothing. Since V2-2 (nothing cuts a charge; the balance unchanged, the operator's setting to come, journal
+  // Passe V2C1) the prepared player of average skill wins about 85 bouts in 100 again (six in ten with the cut of Passe V1, VP4), makes the cut
+  // and the crown in about a third of the games; the expert nearly every bout and the crown in most games
   assert.ok(idle.rates.playerWins <= 0.05, `idle ${idle.rates.playerWins}`);
-  assert.ok(prepared.rates.playerWins >= 0.5 && prepared.rates.playerWins <= 0.75, `prepared ${prepared.rates.playerWins}`);
-  assert.ok(prepared.v2.madeCut >= 0.75 && prepared.v2.champion <= 0.15, `prepared ${JSON.stringify(prepared.v2)}`);
-  assert.ok(expert.rates.playerWins >= 0.85 && expert.v2.champion >= 0.3, `expert ${expert.rates.playerWins} ${JSON.stringify(expert.v2)}`);
+  assert.ok(prepared.rates.playerWins >= 0.75 && prepared.rates.playerWins <= 0.95, `prepared ${prepared.rates.playerWins}`);
+  assert.ok(prepared.v2.madeCut >= 0.9 && prepared.v2.champion >= 0.15 && prepared.v2.champion <= 0.5, `prepared ${JSON.stringify(prepared.v2)}`);
+  assert.ok(expert.rates.playerWins >= 0.9 && expert.v2.champion >= 0.6 && expert.v2.champion > prepared.v2.champion, `expert ${expert.rates.playerWins} ${JSON.stringify(expert.v2)}`);
 });
 
 test('the off-screen race of the version 2 agrees with full duels on held-out seeds (tolerance 12 %), and decides the version 2\'s off-screen bouts', () => {
   for (const foe of ['tobin', 'orla', 'vessa', 'marek']) {
     let kill = 0, dps = 0, n = 0;
-    for (let i = 21; i <= 26; i++) {
+    for (let i = 41; i <= 46; i++) {
       const d = V.v2DuelData(foe, { seed: 5000 + i, playerName: 'Ren', opponentName: foe });
       d.data.fighters.ren.maxHp = 1e7;
       const r = B.runV2BotDuel(d.data, d.tiers, { skill: 0.5, seed: 900 + i });
@@ -235,12 +307,30 @@ test('the HUD\'s reading of the charge: each tier reached, the one a release lau
   assert.equal(m.toNext, 100);
   // the moments of the charge run to their end
   for (const [name, p] of Object.entries(A.V2_PRESETS)) { const d = fresh({ live: true }); const t = A.runV2Script(d, p.script); assert.ok(t < 59, `${name} ends (${t})`); }
+  // the waiting tier's moment (V2-2, journal Passe V2C1): the heavy released in the sequence, still waiting, the strip showing it
+  const w = fresh({ live: true }); A.runV2Script(w, A.V2_PRESETS.chargeWait.script);
+  assert.ok(w.sim.inSequence()); assert.equal(w.view().waiting, 1); assert.equal(A.chargeHudModel(w.view()).launch, 'heavy');
 });
 
 test('the charged duel\'s fingerprint: its fixed script on the scene\'s duel gives V2_SIM_HASH, which the arena check replays in the page', () => {
-  const s = A.sceneV2Duel('charge'), d = new C.ChargedDuel(s.data, s.tiers);
-  A.runV2Fingerprint(d);
+  const s = A.sceneV2Duel('charge'), d = new C.ChargedDuel(s.data, s.tiers), n = {};
+  const count = (k) => { n[k] = (n[k] ?? 0) + 1; };
+  A.runV2Fingerprint(d, (evs, held) => {
+    for (const e of evs) {
+      if (held && e.type === 'impact' && e.to === 'ren') count(`held-${e.result}`);
+      if (held && e.type === 'reactStart' && e.who === 'ren') count('held-dodge');
+      if (held && e.type === 'stun' && e.who === 'ren') count('held-break');
+      if (e.type === 'chargeWait') count('wait');
+      if (e.type === 'chargeRelease') count(e.ok ? 'release' : 'refused');
+      if (e.type === 'chargeEnd') count('end');
+      if (e.type === 'chargeCut') count('cut');
+    }
+  });
   assert.equal(d.hash(), A.V2_SIM_HASH);
+  // the script reaches every path of V2-2 (journal Passe V2C1): blows guarded and not, dodges and a break on a charge held, releases that wait,
+  // the K.O. with a charge; nothing cut, nothing refused
+  for (const k of ['held-hit', 'held-guarded', 'held-dodge', 'held-break', 'wait', 'release', 'end']) assert.ok(n[k] > 0, `${k}: ${JSON.stringify(n)}`);
+  assert.ok(!n.cut && !n.refused, JSON.stringify(n));
   const tool = fs.readFileSync(path.join(ROOT, 'tools/arena-scene-check.mjs'), 'utf8');
   assert.ok(tool.includes(`const V2_HASH = '${A.V2_SIM_HASH}';`), 'the tool pins the same hash');
 });

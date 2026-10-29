@@ -52,11 +52,13 @@ d'arbitrages `briefs/fiche-v2.html` recueille vos choix.
 
 ## Ce qu'il faut regarder
 
-- **La charge** : les 2 s de la puissante, les temps des compétences (2,7 à 9 s selon le niveau), ce qui coupe une charge ; l'ancien schéma pour
-  comparer (`&input=keys`).
+- **La charge** : les 2 s de la puissante, les temps des compétences (2,7 à 9 s selon le niveau) ; rien ne coupe une charge depuis votre choix
+  V2-2 « Rien ne la coupe » (Passe V2C1 : ni un coup reçu, ni l'esquive, ni le break ; relâchée pendant la séquence adverse ou un étourdissement,
+  elle attend et part dès que Ren peut agir ; seul le K.O. la finit) ; l'ancien schéma pour comparer (`&input=keys`).
 - **L'équilibrage, plus rude depuis la Passe VP4** : les coups des rivaux 30 % plus forts (« proposé ») ; au TournamentLab un joueur préparé
-  de compétence moyenne gagne 60 % de ses combats (85 % avant) et n'est plus couronné, un bon joueur l'est une fois sur cinq, un excellent deux
-  fois sur trois ; Tobin le plus facile, Marek le plus dur. Est-ce le bon degré de rudesse ?
+  de compétence moyenne gagnait 60 % de ses combats (85 % avant) et n'était plus couronné. **Depuis V2-2 (Passe V2C1)**, la charge que rien ne coupe
+  le rend plus facile : le joueur préparé gagne de nouveau 84 % de ses combats et la couronne une partie sur quatre (28 %) ; un réglage vous est
+  proposé (Passe V2C1). Tobin le plus facile, Marek le plus dur. Est-ce le bon degré de rudesse ?
 - **Les emblèmes du tournoi** (Passe VP3) : épées croisées, duel, laurier, coupe, heaume, trompette, lances, couronne, sur les drapeaux des
   places, du quai et de l'arène d'une partie v2.
 - **Les trois places** (reprises en Passe VP6 : les tours de porte et la voie processionnelle du parvis, la terre battue et l'estrade des

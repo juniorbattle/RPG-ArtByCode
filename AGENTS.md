@@ -303,8 +303,9 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 named state, DEV), a game with the flag `flags.v2` (`src/simulation/v2.ts`), kept in the save, every system of that session switched on together
 and the dynamic rules with it; absent = today's game, unchanged; the named state `v2-day1-morning`; on the arena page, `?scene=arena&v2=1`: the
 version 2's duel, journal Passe V1, the three-button command of decision A3 / AV-5 - J (or 1) attack, held to charge it tier by tier (light,
-heavy at 2 s, then the four skills by their charge time at their level, AV-7 / AV-8, each still paid in AP, AV-6), K (or B) guard held, L (or A)
-dodge, the gamepad's X / B / A; `src/combat/charge.ts`, `src/combat/v2duel.ts`, `src/arena/v2Arena.ts`; C3's opponents, their guard, dodge and
+heavy at 2 s, then the four skills by their charge time at their level, AV-7 / AV-8, each still paid in AP, AV-6; nothing cuts a charge, the
+operator's decision V2-2 « Rien ne la coupe », journal Passes FV3 / V2C1: a release the duel cannot take, in the opponent's sequence or a stun,
+waits and leaves once Ren can act, the K.O. alone ends it), K (or B) guard held, L (or A) dodge, the gamepad's X / B / A; `src/combat/charge.ts`, `src/combat/v2duel.ts`, `src/arena/v2Arena.ts`; C3's opponents, their guard, dodge and
 skills; `&input=keys` the former keys 1-6 of C2 on the same duel, for comparison; journal Passes V2-V10: the skills (K), the gear and the shops (G),
 haggle / challenge / steal, three open squares - the forecourt, the training ground and the festival square in Lantern Row's place,
 `src/world/Plazas.ts`, `PlazaApp.ts`, `src/ui/playPlaza.ts`; since journal Passe VP9 (the operator's choices « Lices au pied du rempart » and

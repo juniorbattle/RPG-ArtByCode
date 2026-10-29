@@ -117,7 +117,7 @@ function pickDynamic(sim: DynamicSim, s: number, rng: Rng): DynActionId {
 
 /** The same scripted player under the version 2's command (src/combat/charge.ts, the operator's decision AV-5, journal Passe V1): three
  *  buttons. In the opponent's sequences it defends as runDynamicBotDuel does (the guard held through a sequence or not, decided once; a dodge
- *  per heavy blow or skill, decided once); a charge it holds is kept by guarding (a careful bot guards whenever it holds one). In the pauses it
+ *  per heavy blow or skill, decided once), a charge held or not: nothing cuts a charge (V2-2 « Rien ne la coupe », journal Passe V2C1). In the pauses it
  *  picks a tier as pickDynamic picks an action (the ward when its gauge fills, the boost, the strongest offensive skill its AP allow, a heavy
  *  when its AP are full or the opponent is broken, else a light) among the tiers open now, holds the attack for that tier's charge (plus a
  *  reaction delay that shrinks with `skill`), then releases; a careful bot only starts a charge the opponent's shortest pause leaves the time
@@ -139,11 +139,11 @@ export function runV2BotDuel(data: DynData, tiers: ChargeTier[], o: BotOptions):
       react = 0.32 - 0.22 * s + rng.next() * 0.08;
     }
     if (!inc) decided = null;
-    if (inc && dodge && !v.held && inc.windowOpen && inc.t >= inc.windowOpensAt + react * 0.5) sim.react('ren', 'dodge');
+    if (inc && dodge && inc.windowOpen && inc.t >= inc.windowOpensAt + react * 0.5) sim.react('ren', 'dodge');
     const keep = v.held && s >= 0.5;
-    duel.setGuard('ren', sim.inSequence() && (guardSeq || keep) && !(inc && inc.t < react && m.seqIdx === 1));
+    duel.setGuard('ren', sim.inSequence() && guardSeq && !(inc && inc.t < react && m.seqIdx === 1));
     if (v.held) {
-      // the opponent's sequence started while charging: a careless bot lets go (refused, the charge lost); a careful one holds on
+      // the opponent's sequence started while charging: a careless bot lets go (its tier waits for the sequence's end); a careful one charges on
       if (sim.inSequence() && !keep) { duel.attack(false); target = -1; }
       else if (!sim.inSequence() && v.t >= releaseAt) { duel.attack(false); target = -1; nextAct = sim.t + 0.25 + (1 - s) * 0.45 + rng.next() * 0.25; }
     } else if (!sim.inSequence() && sim.t >= nextAct && r.state === 'idle') {
@@ -164,7 +164,7 @@ function pickTier(duel: ChargedDuel, s: number, rng: Rng): number {
   const sim = duel.sim, D = sim.D, r = sim.f.ren, m = sim.f.marek, rest = sim.restRange(), T = duel.tiers;
   const margin = m.state === 'stunned' ? m.stunLeft + D.ai.afterStun : m.state === 'recovering' ? m.recoverLeft + rest[0] : m.resting ? rest[0] - m.stateT : 0;
   const careful = rng.next() < s, keep = s >= 0.5 ? D.reactions.dodge.apCost : 0;
-  // a skill's long charge may run through a sequence (held under the guard): only the light and the heavy must fit in the pause
+  // a skill's long charge may run through a sequence (nothing cuts it): only the light and the heavy must fit in the pause
   const fits = (i: number) => !careful || i >= 2 || T[i].at + impactTime(D.actions[T[i].id]) < margin;
   const ok = (i: number) => r.ap >= T[i].ap && fits(i);
   const idx = (pred: (a: DynActionDef) => boolean) => T.findIndex((x, i) => i >= 2 && pred(D.actions[x.id]) && ok(i));

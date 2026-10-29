@@ -102,10 +102,20 @@ La règle de l'opérateur (AV-5, AV-6, AV-7, AV-8) ; ce que la séance a fixé e
 - **La charge remplace la préparation automatique** (« proposé ») : sous la commande à trois touches, l'attaque puissante et les compétences
   partent sans délai ; un coup chargé paie sa tenue (l'attaque légère garde ses nombres ; la puissante ×2,2 de dégâts, les compétences ×3,2 à
   ×4,2, leur jauge ×2, Rempart et Ferveur ×1,5 de durée : `V2_POWER`).
-- **Ce qui coupe une charge** (« proposé ») : un coup reçu sans garde, l'esquive du joueur, le break du joueur (et le K.O.). Un coup gardé la
-  garde (on peut tenir la garde et l'attaque ensemble ; la jauge monte comme toujours). La charge ne monte que joueur libre (au repos ou en
-  garde : pas pendant une action, repoussé ou étourdi). Relâcher pendant la séquence adverse est refusé comme toute attaque de la phase de
-  défense (G3) : la charge est perdue. Le « repoussé » (CB-3) vaut pour l'action lancée, comme avant.
+- **Rien ne coupe une charge** : décision V2-2 de l'opérateur, « Rien ne la coupe » (fiche de l'essai, journal Passe FV3 ; appliquée en Passe
+  V2C1). Elle remplace la règle « proposé » de la Passe V1 (un coup reçu sans garde, l'esquive, le break ou le K.O. coupaient la charge ; relâchée
+  pendant la séquence adverse, elle était perdue). Les cas limites, chacun « proposé » (Passe V2C1), lus au plus près de « rien » :
+  - un coup reçu, gardé ou non, et l'esquive du joueur gardent la charge, qui continue de monter : la garde, l'esquive et l'attaque sont trois
+    touches distinctes, tenues ensemble si l'on veut ; l'esquive coûte toujours son PA (un palier peut se fermer) ;
+  - la charge ne monte que joueur libre (au repos, en garde ou pendant l'esquive), comme avant : pendant une action, repoussé ou étourdi par son
+    break, elle est gardée sans monter, et remonte dès qu'il est libre ;
+  - relâchée quand le duel ne peut pas la prendre (la priorité de l'adversaire, G3 / CB-4, toute sa séquence ; le joueur étourdi, repoussé ou
+    encore dans une action), elle n'est pas perdue : le palier atteint attend, et part au premier pas où le joueur peut agir (le meilleur palier
+    que ses PA ouvrent alors, au plus celui atteint) ; la priorité de l'adversaire reste entière. Le HUD garde la bande des paliers et y montre
+    le palier qui attend ; une nouvelle pression pendant l'attente commence une nouvelle charge, dont le palier attend derrière le premier ;
+  - le K.O. finit le duel : une charge tenue ou en attente finit avec lui, sans partir ; rien d'autre ne finit une charge.
+  Le « repoussé » (CB-3) vaut pour l'action lancée, comme avant (un palier qui part juste avant une séquence adverse peut être repoussé, ses PA
+  rendus). Effet mesuré sur l'équilibre, sans réglage changé (V2-3 « Garder ») : journal Passe V2C1.
 - **L'ancien schéma** (touches 1-6, la préparation automatique) reste derrière `input=keys`, sur le même adversaire et les mêmes niveaux.
 
 ## 5. L'adversaire et sa priorité

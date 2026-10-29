@@ -270,10 +270,10 @@ export class DynamicHud {
     this.cls('atk', b, 'on', state === 'on'); this.cls('atk', b, 'noap', false); this.cls('atk', b, 'lock', state === 'locked');
     this.cls('atkc', b, 'charging', cv.held);
     const tierName = (id: string) => (id === 'light' ? ct.tierLight : id === 'heavy' ? ct.tierHeavy : this.t.skillShorts[id as DynActionId] ?? id);
-    const sub = cv.held ? tierName(cv.launch) : ct.holdSub;
+    const sub = cv.held || cv.waiting ? tierName(cv.launch) : ct.holdSub;
     this.set('atksub', sub, () => { b.querySelector('em')!.textContent = sub; });
     const strip = this.q<HTMLElement>('#ah-tiers');
-    this.cls('tiers', strip, 'on', cv.held);
+    this.cls('tiers', strip, 'on', cv.held || cv.waiting);
     strip.querySelectorAll<HTMLElement>('.tr').forEach((el, i) => {
       const st = cv.tiers[i]?.state ?? 'ahead';
       this.set(`tr${i}`, st, () => { el.className = `tr ${st}`; el.title = st === 'locked' ? ct.locked : ''; });

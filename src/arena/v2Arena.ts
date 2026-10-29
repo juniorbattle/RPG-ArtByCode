@@ -41,6 +41,8 @@ export const V2_PAD: Record<number, string> = { 2: 'attack', 1: 'guard', 0: 'dod
 export type TierState = 'reached' | 'launch' | 'next' | 'ahead' | 'locked';
 export interface ChargeHudModel {
   held: boolean;
+  /** a released tier waits for the duel to take it (the opponent's sequence, a stun: V2-2 « Rien ne la coupe », journal Passe V2C1) */
+  waiting: boolean;
   /** 0..100: the charge toward the next tier (100 past the last one) */
   toNext: number;
   tiers: Array<{ id: string; at: number; ap: number; state: TierState }>;
@@ -49,15 +51,15 @@ export interface ChargeHudModel {
 }
 
 /** what the tier strip shows: each tier reached, the one a release would launch, the next one and how far the charge is from it, the tiers
- *  whose action points are missing (locked: they do not open, AV-6) */
+ *  whose action points are missing (locked: they do not open, AV-6); a charge held first, else a released tier waiting (the one it launches) */
 export function chargeHudModel(v: ChargeView): ChargeHudModel {
-  const n = v.tiers.length, next = v.reached + 1 < n ? v.reached + 1 : -1;
+  const n = v.tiers.length, next = v.reached + 1 < n ? v.reached + 1 : -1, waiting = !v.held && v.waiting >= 0;
   const tiers = v.tiers.map((x, i): ChargeHudModel['tiers'][number] => ({
     id: x.id, at: x.at, ap: x.ap,
-    state: !v.open[i] ? 'locked' : v.held && i === v.launch ? 'launch' : v.held && i <= v.reached ? 'reached' : v.held && i === next ? 'next' : 'ahead',
+    state: !v.open[i] ? 'locked' : waiting ? (i === v.waiting ? 'launch' : 'ahead') : v.held && i === v.launch ? 'launch' : v.held && i <= v.reached ? 'reached' : v.held && i === next ? 'next' : 'ahead',
   }));
   const toNext = !v.held ? 0 : next < 0 ? 100 : Math.max(0, Math.min(100, Math.round(((v.t - v.tiers[v.reached].at) / (v.tiers[next].at - v.tiers[v.reached].at)) * 1000) / 10));
-  return { held: v.held, toNext, tiers, launch: v.tiers[v.launch].id };
+  return { held: v.held, waiting, toNext, tiers, launch: v.tiers[waiting ? v.waiting : v.launch].id };
 }
 
 // ------------------------------------------------------------------------------------------------ the scripted moments of the charge
@@ -72,6 +74,8 @@ export const V2_PRESETS: Record<string, { label: string; script: V2PresetStep[] 
   chargeSkill: { label: 'Charge (compétence)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.sim.f.ren.ap = 5; d.attack(true); } }, { until: (d) => d.view().reached >= 3 }] },
   chargeLocked: { label: 'Charge (palier fermé, PA)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.sim.f.ren.ap = 1; d.attack(true); } }, { until: (d) => d.view().reached >= 3 }] },
   chargeGuard: { label: 'Charge tenue sous la garde', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.attack(true); d.setGuard('ren', true); } }, { until: (d) => d.t >= 0.8, act: (d) => { d.sim.forceSequence(['m_slash', 'm_slash']); } }, { until: (d) => d.sim.f.marek.seqIdx === 2 && !!d.sim.f.marek.act && d.sim.f.marek.act.t >= 0.1 }] },
+  // V2-2 « Rien ne la coupe » (journal Passe V2C1): released in the opponent's sequence, the heavy waits for its end
+  chargeWait: { label: 'Palier en attente (séquence adverse)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.attack(true); } }, { until: (d) => d.view().t >= d.tiers[1].at + 0.2, act: (d) => { d.sim.forceSequence(['m_slash', 'm_slash']); } }, { until: (d) => d.sim.inSequence(), act: (d) => d.attack(false) }, { until: (d) => d.sim.f.marek.seqIdx === 2 && !!d.sim.f.marek.act && d.sim.f.marek.act.t >= 0.1 }] },
   released: { label: 'Palier lâché (compétence)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.sim.f.ren.ap = 5; d.attack(true); } }, { until: (d) => d.view().reached >= 2, act: (d) => d.attack(false) }, { until: (d) => { const a = d.sim.f.ren.act; return !!a && a.impacted && a.t >= a.def.impactAt + 0.06; } }] },
   foeSkill: { label: 'Compétence adverse (alerte)', script: [{ until: (d) => d.t >= 0.2, act: (d) => { const k = d.D.ai.skills?.list.find((x) => d.D.actions[x.id].family === 'offensive'); if (k) d.sim.forceSequence([k.id]); } }, { until: (d) => { const i = d.incoming(); return !!i && i.castProgress >= 0.6; } }] },
 };
@@ -92,21 +96,24 @@ export function runV2Script(d: ChargedDuel, script: V2PresetStep[], onStep?: () 
 /** the moments of a version 2 page: the charge's, and the C2 moments that run on the inner simulation */
 export function v2PresetNames(dyn: Record<string, DynPreset>): string[] { return [...Object.keys(V2_PRESETS), ...Object.keys(dyn)]; }
 
-/** a fixed input script for the charged duel (300 s from a reset: holds of every length, the tiers released, the guard held through the
- *  sequences with a charge, dodges in the windows of the heavy blows and the skills, resets at each K.O.); its final hash is V2_SIM_HASH, the
- *  regression pin tools/arena-scene-check.mjs replays in the page (`?v2=1`) as it does DYNAMIC_SIM_HASH (journal Passe V1) */
-export function runV2Fingerprint(d: ChargedDuel): void {
+/** a fixed input script for the charged duel (360 s from a reset: holds of every length, the tiers released at their time, in the opponent's
+ *  sequences too, where they wait; until 40 s of a duel the guard against the light blows and dodges in the windows of the heavy blows and
+ *  skills two seconds in three, a charge held or not; to 110 s the guard against every blow, until the player's gauge breaks; then neither, to
+ *  the K.O. with a charge held; a reset at each K.O.: the paths of V2-2 « Rien ne la coupe », journal Passe V2C1); its final hash is
+ *  V2_SIM_HASH, the regression pin tools/arena-scene-check.mjs replays in the page (`?v2=1`) as it does DYNAMIC_SIM_HASH (journal Passe V1).
+ *  `seen` gets each step's events and whether a charge was held before it (the tests) */
+export function runV2Fingerprint(d: ChargedDuel, seen?: (events: ReturnType<ChargedDuel['drain']>, held: boolean) => void): void {
   const dt = d.D.dt, holds = [0.05, 2.1, 0.05, 3.7, 0.05, 4.2, 5.3, 0.05, 9.4, 2.4];
   let n = 0, next = 0.5, until = -1;
-  for (let i = 0; i < Math.round(300 / dt); i++) {
+  for (let i = 0; i < Math.round(360 / dt); i++) {
     const inc = d.incoming(), v = d.view();
-    if (inc && inc.windowOpen && inc.kind !== 'light' && !v.held) d.react('ren', 'dodge');
-    d.setGuard('ren', !!(inc && (inc.kind === 'light' || v.held)));
+    if (inc && inc.windowOpen && inc.kind !== 'light' && d.t < 40 && Math.floor(d.t) % 3 !== 0) d.react('ren', 'dodge');
+    d.setGuard('ren', !!(inc && d.t < 110 && (inc.kind === 'light' || d.t >= 40)));
     if (!v.held && d.t >= next) { d.attack(true); until = d.t + holds[n++ % holds.length]; }
-    else if (v.held && d.t >= until && !d.sim.inSequence()) { d.attack(false); next = d.t + 0.3; }
-    d.step(dt); d.drain(); if (d.over) d.reset();
+    else if (v.held && d.t >= until) { d.attack(false); next = d.t + 0.3; }
+    d.step(dt); const e = d.drain(); seen?.(e, v.held); if (d.over) { d.reset(); next = 0.5; }
   }
 }
 /** the hash runV2Fingerprint leaves on the scene's duel (sceneV2Duel('charge'), recorded with the rules, journal Passe V1; Ren's health
- *  again under V2_FOE_HIT, journal Passe VP4) */
-export const V2_SIM_HASH = '979:1:recovering:0.100:90.750:-:-;4127:0:idle:2.317:43.980:-:-;300.000|0:0.000';
+ *  again under V2_FOE_HIT, journal Passe VP4; the script and the rule of V2-2, journal Passe V2C1) */
+export const V2_SIM_HASH = '2042:2:idle:4.850:18.180:3.850:-;6002:0:idle:1.467:29.800:-:-;60.733|1:4.858:';
