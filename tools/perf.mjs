@@ -44,7 +44,7 @@ try {
       if (v.js) await page.evaluate(v.js);
       let t0 = 0;
       const r = await page.evaluate(async (secs, warm) => {
-        const app = window.__app ?? window.__arena ?? window.__place, g = app.perf.gpu;   // the town, the arena scene (?scene=arena, journal Passe P1), or a light place of the play mode (Lantern Row, Passe L6)
+        const app = window.__app ?? window.__arena ?? window.__place ?? window.__plaza, g = app.perf.gpu;   // the town, the arena scene (?scene=arena, journal Passe P1), a light place of the play mode (Lantern Row, Passe L6) or a version 2 square (Passe FV4)
         const gl = app.renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
         const adapter = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : '?';
         if (g.available) g.enabled = true;
@@ -62,7 +62,7 @@ try {
         rec = false;
         const d = ts.slice(1).map((t, i) => t - ts[i]);
         const s = window.__stats();
-        return { adapter, tStart, tEnd: Date.now(), d, upd, ren, raw, draws: s.drawCalls, tris: s.triangles, geos: s.geometries, tex: s.textures, texMB: s.textureMB, lights: s.lights, lightsOn: app.lights.active ?? s.lights, gen: s.generatorMs, res: s.resolution, vis: s.visibility ?? null };
+        return { adapter, tStart, tEnd: Date.now(), d, upd, ren, raw, draws: s.drawCalls, tris: s.triangles, geos: s.geometries, tex: s.textures, texMB: s.textureMB, lights: s.lights, lightsOn: app.lights.active ?? s.lights, gen: s.generatorMs, res: s.resolution ?? `${gl.drawingBufferWidth}x${gl.drawingBufferHeight}`, vis: s.visibility ?? null };
       }, opt.secs, opt.warm);
       adapter = r.adapter;
       const passes = Object.fromEntries(Object.entries(r.raw).map(([k, xs]) => [k, mean(xs)]));

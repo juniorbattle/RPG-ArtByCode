@@ -57,6 +57,18 @@ try {
       const t0 = Date.now();
       await page.goto(v.url, { waitUntil: 'load' });
       await page.waitForFunction('window.__ready === true', { timeout: 120000, polling: 50 });
+      // a version 2 square of the play mode (Passe FV4): its build and its visibility bake (`viscache=0` for a fresh one), no town probes
+      if (await page.evaluate(() => !window.__app && !!window.__plaza)) {
+        const p = await page.evaluate(() => {
+          const a = window.__plaza, b = window.__boot, R = a.renderer.getContext(), ext = R.getExtension('WEBGL_debug_renderer_info');
+          return { adapter: ext ? R.getParameter(ext.UNMASKED_RENDERER_WEBGL) : '?', readyAt: Math.round(performance.now()), build: Math.round(a.buildMs), vis: a.vis, longs: b.longs };
+        });
+        const row = { label: v.label, i, plaza: true, wallMs: Date.now() - t0, longest: Math.max(0, ...p.longs.map((x) => x[1])), foreign: wit.on ? foreignUse(wit.samples(), t0, Date.now(), mine, opt.thr) : [], ...p };
+        out.push(row);
+        console.log(`[${i + 1}] ${v.label.padEnd(16)} ready ${p.readyAt} ms  build ${p.build}  bake ${p.vis.ms} ms (${p.vis.poses} poses, ${p.vis.pages} pages, cache ${JSON.stringify(p.vis.cache)})  longest task ${row.longest}${row.foreign.length ? '  foreign ' + row.foreign.join(',') : ''}`);
+        await page.close();
+        continue;
+      }
       const r = await page.evaluate(async () => {
         const app = window.__app, b = window.__boot, s = window.__stats(), R = app.renderer;
         const nav = performance.getEntriesByType('navigation')[0];
@@ -105,6 +117,10 @@ console.log(`\nadapter: ${out[0]?.adapter}`);
 const fmt = (xs) => `${q(xs, 0.5).toFixed(0)} [${Math.min(...xs).toFixed(0)}-${Math.max(...xs).toFixed(0)}]`;
 for (const v of variants) {
   const rs = out.filter((r) => r.label === v.label);
+  if (rs[0]?.plaza) {
+    console.log(`${v.label.padEnd(16)} ready ${fmt(rs.map((r) => r.readyAt))}  build ${fmt(rs.map((r) => r.build))}  bake ${fmt(rs.map((r) => r.vis.ms))} (${rs[0].vis.poses} poses)  longest task ${fmt(rs.map((r) => r.longest))}  (${rs.filter((r) => r.foreign.length).length}/${rs.length} loads with foreign GPU use)`);
+    continue;
+  }
   console.log(`${v.label.padEnd(16)} ready ${fmt(rs.map((r) => r.readyAt))}  paint ${fmt(rs.map((r) => r.paint))}  gen ${fmt(rs.map((r) => r.gen))}  bake ${fmt(rs.map((r) => r.bake))}  regenerate ${fmt(rs.map((r) => r.regenBoot))}  then to start ${fmt(rs.map((r) => r.regenToStart))}  first frame after start ${fmt(rs.map((r) => r.firstAfterStart))}  programs created by the first frames ${fmt(rs.map((r) => r.programs.boot - r.programs.atStart))}  `
     + `first reveal ${fmt(rs.map((r) => r.occ1.first))}  later reveal max ${fmt(rs.map((r) => r.occ2.max))}  new programs at reveal ${fmt(rs.map((r) => r.programs.afterReveal - r.programs.beforeReveal))}  (${rs.filter((r) => r.foreign.length).length}/${rs.length} loads with foreign GPU use)`);
 }

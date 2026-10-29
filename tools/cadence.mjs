@@ -31,12 +31,15 @@ const INSTR = () => {
   window.__cad = { raf: [], render: [], on: false };
   const raf = window.requestAnimationFrame.bind(window);
   window.requestAnimationFrame = (cb) => raf((t) => { if (window.__cad.on) window.__cad.raf.push(performance.now()); cb(t); });
-  let app;
-  Object.defineProperty(window, '__app', { configurable: true, get: () => app, set: (a) => {
-    app = a;
-    const r = a.render.bind(a);
-    a.render = (...x) => { if (window.__cad.on) window.__cad.render.push(performance.now()); return r(...x); };
-  } });
+  // the town (__app), the arena scene (__arena) or a version 2 square (__plaza, Passe FV4)
+  for (const name of ['__app', '__arena', '__plaza']) {
+    let app;
+    Object.defineProperty(window, name, { configurable: true, get: () => app, set: (a) => {
+      app = a;
+      const r = a.render.bind(a);
+      a.render = (...x) => { if (window.__cad.on) window.__cad.render.push(performance.now()); return r(...x); };
+    } });
+  }
 };
 
 const wit = witness(!!opt.witness);
@@ -91,7 +94,8 @@ try {
       const r = await page.evaluate(() => {
         window.__cad.on = false;
         const s = window.__stats();
-        return { raf: window.__cad.raf.slice(), render: window.__cad.render.slice(), vis: document.visibilityState, res: s.resolution, dpr: devicePixelRatio, inner: `${innerWidth}x${innerHeight}`, cap: s.frameCap ?? null };
+        const cv = document.querySelector('canvas');
+        return { raf: window.__cad.raf.slice(), render: window.__cad.render.slice(), vis: document.visibilityState, res: s.resolution ?? (cv ? `${cv.width}x${cv.height}` : '?'), dpr: devicePixelRatio, inner: `${innerWidth}x${innerHeight}`, cap: s.frameCap ?? null };
       });
       const t1 = Date.now();
       await new Promise((res) => setTimeout(res, 2200)); // the witness samples about every 2 s
