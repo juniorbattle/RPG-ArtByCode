@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 » sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9 et RC3) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV3 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3 et V2B1) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -46,105 +46,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/33-passes-VP7.md`](journal/33-passes-VP7.md) | VP7 (séance cloud « Version 2 ») | 27/10 |
 | [`journal/34-passes-VP8.md`](journal/34-passes-VP8.md) | VP8 (séance cloud « Version 2 ») | 27/10 → 28/10 |
 | [`journal/35-passes-VP9.md`](journal/35-passes-VP9.md) | VP9 (séance cloud « Version 2 ») | 28/10 |
+| [`journal/36-passes-FV1-FV3.md`](journal/36-passes-FV1-FV3.md) | FV1, FV2, FV3 | 29/10 |
 
 ---
-
-## Passe FV1 — Reprise locale après la séance cloud « Version 2 » : la branche distante supprimée, la fiche d'essai mise à jour et publiée (2026-10-29)
-
-### Demande, mot pour mot
-- Opérateur : « prend en compte ce qui a ete accompli sur la session cloud, il semble avoir de vraies ameliorations »
-- Branche `fiche-v2-maj` depuis `main` (`2ea0cea`).
-
-### Constat — [OK]
-- La séance cloud a fusionné dans `main` les lots V0 à V10 (Passes V0 à V10) puis les Passes VP1 à VP9 (les places refaites, la ville reliée à
-  pied, le combat plus rude, les lices et la place de la halle) ; la CI de `main` est verte (`2ea0cea`). La copie locale a été avancée de 76
-  commits en avance rapide.
-
-### Fait — [OK]
-- La branche distante `claude/friendly-davinci-17lk4m`, entièrement fusionnée (0 commit hors de `main`), supprimée depuis la machine locale (le
-  cloud n'avait pas pu, Passe V10).
-- `briefs/fiche-v2.html` (lot V10) datait d'avant les Passes VP : trois cartes mises à jour avant publication, sans changer leurs options ni leurs
-  recommandations : V2-3 (l'équilibrage depuis la Passe VP4 : les coups des rivaux × 1,3, le joueur préparé gagne 60 % de ses combats au lieu de
-  85 %), V2-4 (les blessures remesurées en Passe VP2 : 1,08 par partie pour un joueur préparé, 1,74 sans préparation), V2-10 (les places de VP1 à
-  VP9 : le parvis, les lices au pied du rempart, la place de la halle, les sorties à pied) ; l'en-tête daté du 29/10.
-- Publiée en page privée : https://claude.ai/artifact/WTwk3r77Y4QJ4eYt93jXRc, collection `decisions` vide à la publication (relue par `list`).
-
-### Restes [?]
-- L'essai de l'opérateur (`briefs/v2-trial.md`), puis la fiche, à relire et verser quand il la dit remplie.
-- Le local de la Passe V10 et des Passes VP : mesures GPU des places, revue en rendu matériel, contrôle vivant de l'arène, écoute du son ; la feuille
-  de Marek en pause jusqu'à la nouvelle commande (AV-10), et les poses de charge.
-
-### Pensée
-- Une fiche préparée au milieu d'une séance qui continue vieillit avant d'être publiée : la relire contre les passes qui ont suivi.
-
-## Passe FV2 — Un test de la version 2 rendu indépendant de Windows (`tests/v2-sound.test.mjs`) (2026-10-29)
-
-### Constat — [KO → corrigé]
-- Sur la machine de l'opérateur (Windows), `npm test` donnait 277 / 278 sur `main` (`2ea0cea`, avant la Passe FV1) : le test « no sound before a
-  gesture; only the version 2's pages load the engine » parcourait `src` par `new URL('../src', import.meta.url).pathname`. Sous Windows, ce
-  chemin vaut `/C:/...`, et `path.join` en fait `C:\C:\...` (ENOENT). Le runner Linux de la CI ne le voit pas.
-- **[KO] de cette séance** : la Passe FV1 a été fusionnée malgré cet échec : la chaîne de validation filtrait la sortie de `npm test` par `grep`,
-  qui réussit même quand un test échoue. Le commit FV1 ne touchait que le journal et la fiche ; l'échec était antérieur.
-
-### Fait — [OK]
-- Les deux chemins du test passent par `fileURLToPath` ; rien d'autre ne change. Aucun autre test n'utilise `URL.pathname`.
-
-### Preuves
-- `node --test tests/v2-sound.test.mjs` : 5 / 5 ; `npm test` entier sans échec ; typecheck, build, `art:validate`.
-- **Faute injectée, attrapée** : un import direct du moteur de son en tête de `src/ui/playTown.ts` fait échouer le test (« src/ui/playTown.ts: no
-  static import ») ; le fichier rendu à l'octet.
-
-### Pensée
-- La règle du brief cloud (« les tests doivent aussi passer sous Windows ») se vérifie à la reprise locale, avant toute fusion ; et une validation
-  enchaînée doit s'arrêter sur le code de sortie des tests, pas sur un filtre de leur sortie.
-
-## Passe FV3 — La fiche de l'essai de la version 2, remplie par l'opérateur (18 sur 18) (2026-10-29)
-
-### Demande, mot pour mot
-- Opérateur : « Fiche rempli oui tu peux gerer les preuves locales oui »
-- Branche `fiche-v2-choix` depuis `main` (`3d696a0`).
-
-### La fiche — [OK] 18 choix sur 18 enregistrés et relus
-- Page privée https://claude.ai/artifact/WTwk3r77Y4QJ4eYt93jXRc (Passe FV1), collection `decisions` relue par `list` : 18 documents, cliqués le
-  29/10 entre 19 h 47 et 19 h 52 UTC, aucune note.
-
-### Les choix de l'opérateur, mot pour mot
-« = » : la recommandation de la fiche est suivie ; « ≠ » : le choix diffère, et c'est lui qui fait foi.
-
-| # | Décision | Recommandation | Choix de l'opérateur | Note | |
-|---|---|---|---|---|---|
-| V2-1 | Les temps de charge | « Garder » | « Garder » | — | = |
-| V2-2 | Ce qui coupe une charge | « Garder » | « Rien ne la coupe » | — | ≠ |
-| V2-3 | L'équilibrage « modéré » | « Garder » | « Garder » | — | = |
-| V2-4 | Les blessures sous la version 2 | « Revoir (tâche à part) » | « Revoir (tâche à part) » | — | = |
-| V2-5 | L'ancien schéma (touches 1-6) | « Le garder pour comparer » | « Le garder pour comparer » | — | = |
-| V2-6 | Le catalogue des compétences et ses sources | « Garder » | « Garder » | — | = |
-| V2-7 | L'équipement et les prix | « Garder » | « Garder » | — | = |
-| V2-8 | Le vol et ses conséquences | « Garder » | « Garder » | — | = |
-| V2-9 | Les défis en ville | « Garder » | « Garder » | — | = |
-| V2-10 | Les trois places | « Garder pour la revue locale » | « Garder pour la revue locale » | — | = |
-| V2-11 | Les dix jours | « Garder » | « Garder » | — | = |
-| V2-12 | Orla alliée | « Garder » | « Garder » | — | = |
-| V2-13 | Les cinq cinématiques | « Garder et en écrire d'autres plus tard » | « Garder » | — | = |
-| V2-14 | Les événements de la version 2 | « Garder » | « Garder » | — | = |
-| V2-15 | Le son par le code | « Garder pour l'essai » | « Garder » | — | = |
-| V2-16 | P4, P5, P6 | « Garder » | « Garder » | — | = |
-| V2-17 | Le passage au défaut | « Pas encore » | « Pas encore » | — | = |
-| V2-18 | Les personnages à cuire d'abord | « Les rivaux d'abord » | « Les rivaux d'abord » | — | = |
-
-- Pour V2-13 et V2-15, la recommandation de la fiche portait sur l'option « Garder » (premier choix), avec un commentaire : le choix la suit.
-- **V2-2 « Rien ne la coupe »** : la règle « proposée » de la Passe V1 (un coup reçu sans garde, l'esquive, le break ou le K.O. coupent la charge ;
-  relâchée pendant la séquence adverse, elle est perdue) est à remplacer : plus rien ne coupe une charge. Tâche à part, derrière `flags.v2`.
-- **V2-4** : la règle des blessures sous la version 2 est à revoir dans une tâche à part.
-- **V2-17 « Pas encore »** : la version 2 reste derrière son drapeau ; le défaut ne change pas.
-- **V2-18 « Les rivaux d'abord »** : l'ordre des personnages à cuire (Orla, Vessa, Marek, Ilse, Cassius, puis les maîtres des places).
-
-### Ce qui suit, chacun dans sa séance, une branche à la fois
-1. Les preuves locales de la version 2 (demandées par l'opérateur dans le même message) : mesures GPU des places et de leur cuisson (E24),
-   contrôle vivant de l'arène, captures en rendu matériel pour sa revue.
-2. V2-2 : la charge que rien ne coupe.
-3. V2-4 : la règle des blessures.
-4. Les feuilles des rivaux (V2-18), Marek repris quand la nouvelle commande est jouée (AV-10), avec les poses de charge.
 
 ## Passe FV4 — Les preuves locales de la version 2 : budget GPU, cuisson neuve, visibilité, arène vivante, revue en rendu matériel (2026-10-29)
 
@@ -594,6 +498,88 @@ La course mise à l'échelle pour les essais (une estimation), remesurée pour l
 - Un recalage de difficulté se vérifie aussi par la durée des duels : un seul levier (les coups) rend les défaites courtes ; deux leviers opposés
   (les coups et les PV) règlent ensemble le taux de victoires et la durée.
 
+## Passe V2B1 — La décision V2-4 de l'opérateur : la règle des blessures de la version 2, seul un K.O. par un coup puissant blesse (2026-10-29 → 2026-10-30)
+
+### Demande
+- La décision de l'opérateur sur la fiche de l'essai (Passe FV3) : V2-4 « Les blessures sous la version 2 » = « Revoir (tâche à part) ». Séance ouverte par celle de la
+  Passe FV3 ; branche `v2b1-blessures` depuis `main` (`7089fa7`). Tout derrière `flags.v2`.
+
+### Le diagnostic — TournamentLab `--rules=v2`, 50 graines, l'équilibrage de la Passe V2C2 (script hors dépôt qui suit chaque combat du joueur)
+- **D'où elles viennent** : joueur préparé (`diligent`, adresse 0,6), 1,74 blessure par partie, 87 en tout : **47 victoires serrées (54 %)**, 40 K.O. par un coup puissant
+  (46 %). 31 % de ses victoires finissent sous 15 % des PV et 60 % sous 25 % : sous la charge que rien ne coupe (V2-2), le joueur encaisse pour charger ; le seuil de 15 %,
+  venu de l'arène d'aujourd'hui, tombe au milieu de ses victoires ordinaires. Bon joueur (0,75) : 1,26 par partie, 50 des 63 sur des victoires serrées, 39 contre Orla ;
+  expert (0,9) : 0,30, 11 contre Marek ; celui qui ne prépare rien (`idle`, 0,3) : 1,62, ses K.O. seuls (il ne gagne rien). Défaites du préparé : 47 sur un coup léger,
+  40 sur un coup puissant, 12 sur une compétence.
+- **Ce qu'elles coûtent** : -20 % des PV par niveau, deux niveaux au plus. Trois réponses : le repos (un créneau, un niveau), Sœur Anwen (un créneau et 8 pièces, ou gratuite
+  après l'aumône du Temple ; tous les niveaux), l'onguent de Mara (10 pièces de jour, sans créneau, un niveau).
+- **[?] Une limite du laboratoire, à savoir** : la politique `diligent` se soigne toujours le soir même, par le repos, un soir qu'elle laisse sinon vide (la garde payée ne
+  prend pas de créneau). Ses 0 combats livrés blessé rendent **victoires, couronnes, entraînements, nuits de garde et pièces identiques sous toutes les règles** : le
+  laboratoire ne voit pas le prix du soir perdu, que paie un joueur réel (les veilles, les informateurs, le vol, les événements de nuit). Elle n'utilise jamais la guérisseuse
+  ni l'onguent. Pour mesurer le poids d'une blessure, un joueur préparé qui ne se soigne jamais (il décide comme s'il était indemne) : il ne gagne que **24 %** des combats livrés
+  blessé (60 % sinon), 46,6 % sur la partie au lieu de 60,4 %, finaliste 6 % au lieu de 18 %.
+- **Les contrats** : gameplay § 11, mot pour mot, « L'échec doit produire une nouvelle situation. Exemples : blessure → soin, repos ou nouvelle composition » ; § 14, verrous 5
+  « Le temps crée des choix macro, pas de la micro-punition » et 9 « L'échec ouvre des réponses ». Une victoire qui blesse n'est pas un échec.
+
+### Les règles mesurées
+| Blessures par partie (50 graines) | ne prépare rien | préparé | bon | expert | préparé sans soins : victoires | mot de la guérisseuse, parties préparées / 50 |
+|---|---|---|---|---|---|---|
+| Aujourd'hui : K.O. puissant, ou victoire sous 15 % | 1,62 | 1,74 | 1,26 | 0,30 | 46,6 % | 45 |
+| **A. K.O. par un coup puissant (choisie)** | **1,62** | **0,80** | **0,26** | **0,02** | **55,4 %** | **28** |
+| B. A, ou victoire sous 5 % | 1,62 | 0,92 | 0,60 | 0,06 | 53,8 % | 32 |
+| C. K.O. par un coup puissant ou une compétence | 2,32 | 1,04 | 0,38 | 0,08 | 54,0 % | 37 |
+| D. Toute défaite | 4,00 | 1,98 | 0,80 | 0,22 | 46,5 % | 50 |
+
+- Identiques sous les cinq règles, pour le joueur qui se soigne : préparé 60,4 %, qualifié 88 %, finaliste 18 %, couronné 4 % ; bon 84,0 %, 100 %, 80 %, 24 % ; expert 95,6 %, 100 %,
+  100 %, 78 % ; `v2-gear-tamper` 22 parties préparées sur 50, `rival-injured` 37. Aucun événement de la version 2 ne lit `player.injury` hors de `healer-offer`, et les
+  rivaux hors écran ne se blessent déjà qu'à la défaite (`playOffscreenMatches`, inchangé).
+
+### La fiche — [OK] 2 choix sur 2, enregistrés et relus
+- Page privée https://claude.ai/artifact/F1h2YdHuQY4oiy3Q1i4Vfo (source `briefs/fiche-v2b1.html`), collection `decisions` vide à la publication, relue par `list` : 2 documents,
+  cliqués le 30/10 à 12 h 24 UTC, aucune note. Message de l'opérateur, mot pour mot : « Fiche remplie ».
+
+| # | Décision | Recommandation | Choix de l'opérateur | Note | |
+|---|---|---|---|---|---|
+| V2B1-1 | Quand un combat blesse-t-il le joueur ? | « A. K.O. par un coup puissant » | « A. K.O. par un coup puissant » | — | = |
+| V2B1-2 | L'effet d'une blessure et ses trois réponses | « Garder » | « Garder » | — | = |
+
+### Fait — [OK] (`src/tournament/pool.ts`, `applyPlayerDuel`)
+- Sous `flags.v2`, `hurt` = défaite dont le coup final est de genre `heavy` ; une victoire ne blesse jamais, à aucun seuil. Une ligne ; le jeu par défaut et `combat=dynamic`
+  gardent leur règle (K.O. puissant, ou victoire sous 15 %). Le coup final vient du même `kind` dans le duel réel (`ArenaApp`, événement `impact`) et chez le bot. L'effet (-20 % par
+  niveau, deux niveaux) et les trois réponses ne changent pas (V2B1-2). Aucun texte neuf : `duel.injured` dit toujours la blessure et ses réponses.
+- `briefs/v2-trial.md` (la règle), `AGENTS.md` (le paramètre `v2=1`, la liste des tests).
+
+### Les preuves
+- `npm run typecheck`, `npm test` **287 / 287** (code de sortie 0, vérifié, 7 tests de plus), `npm run build`, `npm run art:validate` (19 manifestes, 40 sources, 0 erreur).
+- `tests/v2-injury.test.mjs` (7 tests, oracles écrits depuis le texte des décisions) : une victoire v2 ne blesse à aucun PV (1 PV, 5 %, 14,99 %, 15 %…) ni sur aucun coup final ; une
+  défaite v2 blesse sur `heavy` seul, à tout niveau de l'adversaire ; deux niveaux au plus ; **le jeu par défaut à sa borne** (14,99 % blesse, 15 % non), sous les deux règles ;
+  l'effet et les trois réponses (créneau, pièces, niveaux) ; douze parties entières (préparé et oisif) : chaque blessure suit un K.O. puissant et chacun blesse, les cas séparés par
+  la règle atteints (le test compte les K.O., les victoires serrées et les autres défaites) ; les chiffres de la décision sur 50 graines (0,80 et 1,62 blessure, 60,4 %, couronné 4 %).
+- **16 fautes injectées sur 16 attrapées**, chaque fichier rendu à l'octet (SHA-256) : la règle d'avant en v2, le drapeau inversé, la victoire serrée retirée partout, les règles B, C et
+  D, aucune blessure en v2, le seuil du défaut à 0,14 et en `<=`, un plafond à trois niveaux, la blessure sans message, l'effet à 10 %, le repos qui soigne tout ou sans créneau, Anwen
+  à un seul niveau, l'onguent qui soigne tout.
+- **La règle livrée égale l'essai A** : le JSON du diagnostic sur 50 graines (six joueurs) identique à celui du réglage temporaire, retiré avant le commit.
+- **Le jeu par défaut inchangé** : TournamentLab `classic` et `dynamic`, cinq politiques (`diligent`, `idle`, `careful`, `careless`, `losing`), 50 graines : dix JSON **identiques à
+  l'octet** à ceux de `main` figé (`7089fa7`, `cmp` fichier par fichier ; SHA-256 de l'ensemble `26ba5ad1…` des deux côtés).
+- Sur navigateur (Radeon 780M, `dev-strict` :5186 par `preview_start`, son onglet fermé aussitôt, arrêté à la fin) : `play-flow` `V2=1` victoire (1842, jour 2) `5cfe614a12cc08bd` et défaite (7719, jour 2) `671a95a659b6ac06`, rejouées en Node à la même
+  empreinte ; par défaut, victoire `0025acce7a403773` ; « all checks passed », aucune erreur de page. Mêmes empreintes qu'en Passe V2C2 : ces deux combats scriptés ne dépendent pas de la
+  clause retirée (la victoire n'est pas serrée, la défaite ne passe par aucune victoire) ; c'est `tests/v2-injury.test.mjs` qui la garde.
+
+### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
+- Les passes gardées seraient passées au-delà de 60 Ko avec celle-ci. FV1, FV2 et FV3, closes (fusionnées), partent vers `journal/36-passes-FV1-FV3.md` (bloc de 7396 octets) ; restent
+  48.3 Ko avant cette passe. Preuve par un script hors dépôt contre la copie de `JOURNAL.md` d'avant le déplacement (8 contrôles, contrôle négatif compris) ; la liste
+  des derniers archivages de « À reprendre » suit.
+
+### Restes [?]
+- Le prix réel d'une blessure (le soir perdu, le choix du soin) reste à juger dans l'essai en jeu de l'opérateur : le laboratoire ne le mesure pas. La politique `diligentV2` n'est pas
+  changée (elle ne soigne qu'au repos).
+
+### Pensée
+- Avant de comparer des règles, vérifier que la politique du laboratoire peut les distinguer : un joueur qui répond toujours à la pénalité, à un prix que le laboratoire ne compte
+  pas, donne les mêmes victoires partout ; un joueur témoin qui n'y répond jamais en donne le poids.
+- Un seuil chiffré hérité d'une autre boucle de combat se relit contre la distribution que produit la nouvelle : 15 % des PV était une victoire rare dans l'arène d'aujourd'hui, c'est un
+  tiers des victoires sous la charge.
+- `sed -i` sous Git Bash retire les CR (déjà noté) : la remise en CRLF se fait au prochain passage par `node`, et se vérifie.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -609,13 +595,12 @@ La course mise à l'échelle pour les essais (une estimation), remesurée pour l
 
 **0c. Séance cloud « Version 2 » (Passe AV1)** : mandat fixé par la fiche de l'opérateur (19 choix), brief `briefs/cloud-session-v2-brief.md`, lots V0 à V10 derrière `flags.v2`, le défaut inchangé ; la commande chargée décidée en A3 (AV-5) ; Marek en pause jusqu'à la nouvelle commande (AV-10) ; la séance part en exception à la règle d'une branche (AV-18) : la branche locale `marek-combat-x3` est devenue `ren-cut-x3`, fusionnée et supprimée (Passe RC3). Après elle, en local : mesures GPU, revue visuelle des districts, poses de charge, personnages à cuire.
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
-  - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : la règle des blessures sous la version 2 (0,98 par partie en diligent), des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
-  - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; restent sa revue (la page, puis en jeu), l'écoute du son, V2-4 (les blessures : 1,74 par partie pour le joueur préparé depuis la Passe V2C2), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
-  - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : la règle des blessures sous la charge, le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
+  - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
+  - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
+  - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
     la version 2 cohérente hors combat (ses dix jours, ses événements dans l'ordre). À faire en local : les mesures GPU des places (budget E24 ;
-    le bake neuf d'une place, ~200 poses, à mesurer : en cache ensuite), leur revue visuelle en rendu matériel ; la règle des blessures sous la
-    charge (1,08 par partie de dix jours pour un joueur préparé, 1,74 pour un joueur qui ne prépare rien, Passe VP2) ; l'onglet « Here » coupé au
+    le bake neuf d'une place, ~200 poses, à mesurer : en cache ensuite), leur revue visuelle en rendu matériel ; l'onglet « Here » coupé au
     téléphone couché (812 x 375) sur les pages de la version 2, déjà sur `main` (Passe VP2).
   - **VP7 faite (Passe VP7)** : la direction des places de l'opérateur (un monument et le sol libre, trois cadrages par place, 16 lumières
     toutes allumées, la foule par moment) ; à l'aveugle, le parvis et l'entraînement à égalité avec VP6, la place festive derrière (−1,25).
@@ -829,7 +814,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -930,6 +915,9 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   de l'effet de V2-2 venait de lui) ; ses effets de second ordre se cherchent dans ce qui dépend des victoires (les pièces, la garde payée, une
   chaîne d'événements qui ne trouve plus son soir) ; un script d'empreinte se réécrit pour passer par chaque chemin de la nouvelle règle, et son
   test compte ces passages (Passe V2C1).
+- Avant de comparer des règles au laboratoire, vérifier que sa politique peut les distinguer : un joueur qui répond toujours à une pénalité, à un prix que le
+  laboratoire ne compte pas (un soir vide), donne les mêmes victoires sous toutes les règles ; un joueur témoin qui n'y répond jamais en donne le poids. Un seuil hérité d'une autre boucle
+  de combat se relit contre la distribution que produit la nouvelle (15 % des PV : une victoire sur trois sous la charge) (Passe V2B1).
 - Une preuve doit pouvoir échouer : un contrôle négatif avant d'accepter « 0 écart » (Lab : `filter=linear` ; revue d'agent : un défaut
   planté qu'elle doit trouver à l'aveugle ; « 0 trou » : remplissage depuis le bord ; mesure de stabilité en mouvement : un cas connu
   mauvais qu'elle doit séparer, sinon elle ne vaut que comme indice et le jugement reste visuel). Un résultat « 0 » d'un outil se recoupe

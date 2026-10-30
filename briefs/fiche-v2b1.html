@@ -1,0 +1,308 @@
+<title>Blessures de la version 2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.measures { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.measures h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.measures p { margin: 0; max-width: 68ch; color: var(--muted); font-size: 15px; }
+.tw { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 560px; width: 100%; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-weight: 600; color: var(--muted); vertical-align: bottom; }
+tr.reco td { background: var(--rec-soft); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · version 2 · décision V2-4 « Revoir (tâche à part) » · 29 octobre 2026</span>
+    <h1>La règle des blessures de la version 2</h1>
+    <p class="lede">Sur votre fiche de l'essai, vous avez choisi de revoir la règle des blessures (V2-4). Voici d'où viennent les blessures aujourd'hui, ce qu'elles coûtent, quatre règles mesurées et ma recommandation. Rien ne change au jeu par défaut : la règle choisie ne vaudra que pour une partie de la version 2. Cliquez votre choix ; une note est facultative. Vos choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="measures" aria-labelledby="h-mes">
+    <h2 id="h-mes">Les mesures</h2>
+    <p>TournamentLab <code>--rules=v2</code>, 50 graines (1 à 50), parties entières de dix jours, l'équilibrage de la Passe V2C2. Le joueur préparé a l'adresse 0,6 (la politique <code>diligent</code>), le bon 0,75, l'expert 0,9 ; le joueur qui ne prépare rien (0,3) ne fait que combattre et ne se soigne jamais. Blessures par partie.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Règle</th><th>ne prépare rien</th><th>préparé</th><th>bon</th><th>expert</th><th>préparé qui ne se soigne pas : victoires</th></tr></thead>
+      <tbody>
+        <tr><td>Aujourd'hui : K.O. par un coup puissant, ou victoire à moins de 15 % des PV</td><td>1,62</td><td>1,74</td><td>1,26</td><td>0,30</td><td>46,6 %</td></tr>
+        <tr class="reco"><td>A. K.O. par un coup puissant (recommandée)</td><td>1,62</td><td>0,80</td><td>0,26</td><td>0,02</td><td>55,4 %</td></tr>
+        <tr><td>B. K.O. par un coup puissant, ou victoire à moins de 5 % des PV</td><td>1,62</td><td>0,92</td><td>0,60</td><td>0,06</td><td>53,8 %</td></tr>
+        <tr><td>C. K.O. par un gros coup (puissant ou compétence)</td><td>2,32</td><td>1,04</td><td>0,38</td><td>0,08</td><td>54,0 %</td></tr>
+        <tr><td>D. Toute défaite</td><td>4,00</td><td>1,98</td><td>0,80</td><td>0,22</td><td>46,5 %</td></tr>
+      </tbody>
+    </table></div>
+    <p><b>Identiques sous les cinq règles</b>, pour le joueur qui se soigne : préparé 60,4 % de victoires, qualifié 88 %, finaliste 18 %, couronné 4 % ; bon 84,0 %, 100 %, 80 %, 24 % ; expert 95,6 %, 100 %, 100 %, 78 % ; ses entraînements, ses nuits de garde, ses pièces, et la tentative de sabotage de Cassius (22 parties préparées sur 50). La politique du laboratoire soigne toute blessure le soir même par le repos, un soir qu'elle laisse sinon vide : la blessure n'atteint jamais le combat suivant. Pour un joueur réel, ce soir est celui des veilles, des informateurs, du vol et des événements de nuit.</p>
+    <p><b>Ce que pèse une blessure laissée sans soin</b> : le joueur préparé ne gagne que 24 % des combats livrés blessé (60 % sinon) ; sur toute sa partie, 46,6 % au lieu de 60,4 % sous la règle d'aujourd'hui. Les messages « A note from Sister Anwen » (l'offre de la guérisseuse) suivent les blessures : 45 parties préparées sur 50 aujourd'hui, 28 sous la règle A.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dites-le dans la conversation. Je relis vos choix, je les consigne mot pour mot au journal (Passe V2B1), puis j'applique la règle choisie derrière <code>flags.v2</code> seulement, avec ses preuves.</p>
+    <p class="src">Sources : <code>contracts/GAMEPLAY_MASTER_CONTRACT.md</code> (§ 11, § 14), <code>src/tournament/pool.ts</code>, journal Passes FV3 (V2-4), V2C1, V2C2.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Remplacer entièrement : un groupe par famille de décisions, une entrée par décision.
+// fam : une variable de couleur (--astre, --voile, --ronce, --cendre). shots : captures publiées via `files` (facultatif).
+const GROUPS = [
+  { id: "regle", title: "La règle", sub: "Ce qui blesse le joueur à la fin d'un combat.", fam: "var(--cendre)", items: [
+    { id: "V2B1-1", tag: "blessure", title: "Quand un combat blesse-t-il le joueur ?",
+      ctx: "Aujourd'hui, le joueur est blessé s'il perd sur un coup puissant de l'adversaire, ou s'il gagne avec moins de 15 % de ses PV. Sous la charge que rien ne coupe (V2-2), il encaisse pour charger : chez le joueur préparé, 31 % des victoires finissent sous 15 % des PV et 60 % sous 25 %. D'où 1,74 blessure par partie : 54 % viennent de victoires serrées, 46 % de défaites sur un coup puissant ; chez le bon joueur, 50 des 63 blessures viennent de victoires serrées (39 contre Orla). Les contrats : « L'échec doit produire une nouvelle situation. Exemples : blessure → soin, repos » (gameplay § 11) ; verrous 5 « Le temps crée des choix macro, pas de la micro-punition » et 9 « L'échec ouvre des réponses » (§ 14).",
+      rec: "A. La blessure suit l'échec seul, comme le dit le § 11 : une victoire ne blesse plus, même serrée (plus de micro-punition d'un succès). Le joueur préparé passe de 1,74 à 0,80 blessure par partie, toujours après une défaite qui a un sens (le coup puissant que la garde ou l'esquive pouvaient prévenir) ; le joueur qui ne prépare rien garde ses 1,62. C'est l'exemple de votre fiche de l'essai. B garde l'idée d'une victoire payée cher, mais pèse encore sur le bon joueur (0,60) ; C blesse plus le joueur qui ne prépare rien (2,32) ; D fait de chaque défaite une blessure.",
+      opts: ["A. K.O. par un coup puissant", "B. K.O. puissant ou victoire sous 5 %", "C. K.O. par un gros coup", "D. Toute défaite", "Garder la règle d'aujourd'hui"], recIdx: 0,
+      src: "src/tournament/pool.ts (applyPlayerDuel) ; TournamentLab --rules=v2, 50 graines ; contrat gameplay § 11 et § 14 ; journal Passes V6, VP2, V2C2" },
+  ]},
+  { id: "effet", title: "Ce que coûte une blessure", sub: "Inchangé par la décision V2B1-1.", fam: "var(--voile)", items: [
+    { id: "V2B1-2", tag: "réponses", title: "L'effet d'une blessure et ses trois réponses",
+      ctx: "Une blessure retire 20 % des PV au combat suivant, deux niveaux au plus (40 %). Trois réponses : le repos (un créneau, un niveau), Sœur Anwen au parvis (un créneau et 8 pièces, gratuite après l'aumône du Temple ; tous les niveaux), l'onguent de Mara (10 pièces de jour, sans créneau, un niveau). Laissée sans soin, elle coûte cher : le joueur préparé gagne 24 % des combats livrés blessé.",
+      rec: "Garder : l'effet est assez fort pour que la réponse compte, et chaque réponse a son prix différent (le temps, les pièces, ou les deux). Avec la règle A, il ne frappe plus qu'après une défaite.",
+      opts: ["Garder", "Revoir (tâche à part)"], recIdx: 0,
+      src: "src/simulation/v2gear.ts (v2Mods, shopBuy), src/simulation/actions.ts (rest), src/simulation/roles.ts (heal)" },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value));
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche des blessures (V2B1) — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

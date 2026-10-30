@@ -121,8 +121,10 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
     c.reputation = clamp(c.reputation + 5);
     if (!c.knownFacts.includes('beat:player')) c.knownFacts.push('beat:player');
   }
-  // an injury: knocked down by a heavy blow, or a win paid for with nearly all one's health (GAMEPLAY § 11: the failure opens answers)
-  const hurt = (!won && o.finisher === 'heavy') || (won && o.playerHp / o.playerMaxHp < 0.15);
+  // an injury: knocked down by a heavy blow, or a win paid for with nearly all one's health (GAMEPLAY § 11: the failure opens answers); in a
+  // version 2 game the knock-down alone (the operator's V2B1-1 « A. K.O. par un coup puissant », journal Passe V2B1): the charge is paid in
+  // health, and a win never wounds
+  const hurt = (!won && o.finisher === 'heavy') || (!isV2(s) && won && o.playerHp / o.playerMaxHp < 0.15);
   if (hurt) P.injury = Math.min(2, P.injury + 1);
   P.training = 0;
   P.items = P.items.filter((i) => i !== 'whetstone');
