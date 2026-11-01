@@ -25,12 +25,23 @@ test('T1 « Debout, sauf Marek et Orla »: 12 frames for those who stand, 30 for
 });
 
 test('in production: the eight the operator approved on the lot sheet, and only those', () => {
-  for (const who of WAITING) { const m = json(`art-lab/characters/manifests/${who}-x2-v1.manifest.json`); assert.equal(m.approved, false, who); assert.equal(m.status, 'candidate', who); assert.equal(m.runtimeUse, 'lab', who); }
+  for (const who of WAITING) { const m = json(`art-lab/characters/manifests/${who}-x2-v1.manifest.json`); assert.equal(m.approved, false, who); assert.equal(m.status, 'superseded', who); assert.equal(m.runtimeUse, 'none', who); }
   for (const who of APPROVED) { const m = json(`art-lab/characters/manifests/${who}-x2-v1.manifest.json`); assert.equal(m.approved, true, who); assert.equal(m.runtimeUse, 'production', who); assert.match(m.approval.note, /Toutes après correction/, who); }
   assert.deepEqual([...APPROVED, ...WAITING].sort(), Object.keys(SHEETS).sort());
   const prod = read('src/characters/PlazaCast.ts');
   for (const who of WAITING) assert.ok(!prod.includes(`'${who}'`) && !new RegExp(`[,{]${who}[,}]`).test(prod), who);
   for (const who of APPROVED) assert.ok(prod.includes(`'${who}'`), who);
+});
+
+test('the second recipe (journal Passe CA4): every figure from a clean sheet, a candidate, reached only by the DEV parameter', () => {
+  for (const who of Object.keys(SHEETS)) {
+    assert.match(read(`art-lab/characters/rigs/${who}-x2-v2.rig.mjs`), /casting-clear-2026-11-01-/, who);
+    const m = json(`art-lab/characters/manifests/${who}-x2-v2.manifest.json`);
+    assert.equal(m.approved, false, who); assert.equal(m.status, 'candidate', who); assert.equal(m.runtimeUse, 'lab', who);
+    assert.equal(json(`art-lab/characters/exports/${who}-x2-v2.json`).frames.length, WALKERS.includes(who) ? 30 : 12, who);
+  }
+  assert.ok(!/(anwen|cassius|hilde|ilse|lio|orla|rhosk|vessa|odo|corvin|brann|wren|pip|tobin|marek)-x2-v2/.test(read('src/characters/PlazaCast.ts')) && !read('src/characters/PlazaCast.ts').includes('x2-v2.'), 'none in production before the lot sheet');
+  assert.match(read('src/lab/plazaCast.ts'), /-x2-v2/);
 });
 
 test('heads within the cast: the figures of the combat casting enlarged, emblems out of the five', () => {

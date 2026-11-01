@@ -460,6 +460,44 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
 - Une note posée sur une carte de portée peut concerner tout le lot : elle se relit avant d'appliquer les cartes voisines.
 - Une feuille qui ne donne qu'un portrait se juge sur son visage : le bruit de son corps n'y paraît pas.
 
+## Passe CA4 — La netteté : les quinze personnages redessinés sur des planches propres, de nouvelles feuilles candidates (2026-11-01)
+
+### Les décisions de l'opérateur, mot pour mot
+- Fiche des sept feuilles (https://claude.ai/artifact/WmhCsVqErwBduotCXEivZb, 8 documents relus) : Brann, Corvin, Marek, Odo, Pip, Tobin et Wren « À reprendre (en note) », S2 « À revoir (en note) », aucune note. Son message, mot pour mot : « fiche remplie mais la constat premier est que cela manque clairement de clarte et de nettete sur nos sprites. contrairement a nos premieres generations ».
+- Question du remède : « Planche d'essai générée (Recommandé) ». Sur les huit feuilles en production : « Les laisser (Recommandé) ». Après l'essai, question « Quelles feuilles refait-on ainsi ? » : « Les quinze (Recommandé) ».
+
+### Le diagnostic — [OK] mesuré
+- Sur l'image de face : les premières feuilles ont 40,2 % de leurs texels en aplats de quatre ou plus et 34,7 % de texels isolés ; le casting 31,5 % et 38,6 %. La cause : G1, G2 et les planches de casting montrent des figures trop détaillées pour 64 × 96 ; les réduire transforme le détail en bruit, et la tête agrandie au texel le plus proche brouille encore les visages.
+- [KO] Le recalage de la grille : une recherche du pas natif par énergie des bords ne trouve aucune grille sur aucune planche, témoins compris (elle ressort 2, 3 et 4 partout). Pas la bonne piste.
+- [KO] Le nettoyage dans le rig (32 couleurs, texels isolés regroupés, annulé) : un peu plus propre, très loin des premières feuilles.
+- [?] « Nos premières générations » a été compris comme les premières feuilles de production, tirées de la planche PNJ 01-16.
+
+### Le remède — [OK] générer la source au lieu de réparer la sortie
+- `gen-image.mjs` depuis le dossier principal, tâche `casting-clarity`, gpt-image-2 : six images, **1,22 $** sur 5. Chacune prend la planche PNJ 01-16 et l'essai comme cible de style, tes figures comme personnages, avec la consigne : grandes formes, visages lisibles, aucun emblème. Archivées à l'octet : `casting-clear-2026-11-01-a` à `-e` et `-walk` (`a` l'essai : Marek, Orla, Rhosk, Cassius ; `b` : Odo, Corvin, Ilse, Hilde ; `c` : Anwen, Brann, Lio, Wren ; `d` : Tobin, Pip ; `e` : Vessa, refaite plus claire ; `walk` : la marche de Marek et d'Orla). Non canoniques tant que tu ne les approuves pas.
+- Les figures générées font 280 à 400 px de haut, bien plus que le sprite. `rigs/lib/clear.mjs` en tire parti : le corps au pas de sa hauteur, **la tête reconstruite à un pas plus fin depuis la même source**, donc avec du vrai détail, là où `standing.mjs` étirait les texels.
+- Quinze rigs `-x2-v2`, 48 couleurs, sans fleur de lys ni emblème à retirer. Les huit feuilles `-x2-v1` restent en production, inchangées, jusqu'à ton accord ; les sept autres `-x2-v1` passent `superseded`.
+- Écarts à tes figures, à vérifier sur la fiche : Vessa porte du violet clair et du cuir au lieu du noir et du violet ; Hilde a perdu ses outils ; Odo et Wren n'ont plus de broderies. Cedric a perdu son écharpe nouée sur le visage.
+
+### La critique à l'aveugle
+- Marek, Orla, Cassius et Corvin 8,5 ; Hilde, Brann, Lio, Ilse, Tobin et Rhosk 8 ; Odo, Anwen, Pip et Wren 7 ; Vessa 6,5, trop sombre, refaite ensuite sans nouvelle critique. Aucun emblème, aucun reste de fond, aucune jointure visible à la tête en marche. Réserves : visages plus petits d'Odo, Pip et Wren, moins expressifs que les premiers. La notation précédente allait de 5 à 8.
+- Mesures : `aplats 37,6 %, isolés 37,8 %, 47 couleurs` avant le remplacement de Vessa.
+
+### Les preuves
+- `npm run typecheck`, `npm test`, `npm run build`, `npm run art:validate` : voir le commit. `build-character --check` : les quinze identiques (Vessa reconstruite après la série, vérifiée à part).
+- **Paquet de production** : aucun fichier de l'entrée ne change, ni aucune feuille `-x2-v2` du casting : tout est en DEV, derrière `cast=candidate`.
+
+### La fiche
+- Page privée https://claude.ai/artifact/JBaukUqxwu8twGMU6uU3gs (source `briefs/fiche-casting-lot3.html`), une carte par personnage. Les notes s'y enregistrent désormais pendant la frappe : N7 s'est perdue deux fois sur une page qui n'enregistrait qu'en quittant le champ.
+
+### Restes [?]
+- La fiche ; N7 ; les PNG d'origine de G1 et G2. Ensuite : les cinq citadins, les poses de charge de Ren, les feuilles ×3 dans l'ordre X2, qui reprendront ces figures propres comme références.
+
+### Pensée
+- Une sortie trop bruitée se soigne à la source : réparer les texels a coûté trois passes, redessiner la source quelques dizaines de centimes.
+- Une source plus grande que le sprite permet de corriger les proportions sans perdre de détail : on la relit à un autre pas au lieu d'étirer des texels.
+- « Comparable aux premières feuilles » se pose comme cible avant de bâtir une planche : la mesure des aplats et la ligne à même échelle auraient montré l'écart dès le premier lot.
+- Un champ qui n'enregistre qu'à la sortie perd ce qu'on tape avant de fermer : sur une fiche, on enregistre à la frappe.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -524,7 +562,7 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
   - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
-- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 (Passes CA2, CA3) : huit feuilles en production sur les places de la version 2, sept reprises à approuver. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2.
+- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 (Passes CA2 à CA4) : huit feuilles `-x2-v1` en production sur les places de la version 2 ; les quinze redessinées `-x2-v2`, plus nettes, attendent leur fiche. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2.
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantissait 336 images et en porte 322 (dix feuilles,

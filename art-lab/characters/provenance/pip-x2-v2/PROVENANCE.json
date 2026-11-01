@@ -1,0 +1,50 @@
+{
+  "id": "pip-x2-v2",
+  "status": "CANDIDATE, not approved: waits for the operator's lot sheet (journal Passe CA4)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator",
+    "text": "Pip, redrawn clean: « Les quinze » (journal Passe CA4)"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-d.png",
+      "sha256": "8bccc955150bca0063c6d9e16f66bb6b49efc5843756577b4fab390ef4d7ac64"
+    }
+  },
+  "chain": [
+    "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
+    "reconstruct-grid.mjs per facing, the head again at a finer pitch",
+    "quantize-palette.mjs --k 48: one palette for the three views",
+    "rig pip-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/pip-x2-v2.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/pip-x2-v2.png": "43e7a5490b1d0e02442a368c4ec99f122dc64309677d5aaa6738e5f8b82ea2c3",
+    "art-lab/characters/exports/pip-x2-v2.json": "76aeb387f0f0af4b8b51b49f25fa33e9d6191afa7b937b6e3bfb05c63318f094",
+    "art-lab/characters/source/pip-x2-v2.aseprite": "6bf5ef6e038be279d4d841bce9725d385778c7b0cb2efa898b5330d85ac57ba5",
+    "art-lab/characters/provenance/pip-x2-v2/view-down.png": "8049c7067c08d1baad0d56859bd8631de1e17397c0bb3ed1b99a8aac40092dcf",
+    "art-lab/characters/provenance/pip-x2-v2/view-up.png": "5262b2314508d106b73d25e4a4abee2ca86bddbea36c124b540cb9303c0359ed",
+    "art-lab/characters/provenance/pip-x2-v2/view-side.png": "6e251e8e2f60771c78ceb66f45f51d6c8d03d3b0fd659cf1870887c0385e7197",
+    "art-lab/characters/provenance/pip-x2-v2/build.json": "cc093d93b0e9b627555ede7c83f9657ebcbc18a0f74ecdefd43b2b74e326b828",
+    "art-lab/characters/rigs/pip-x2-v2.rig.mjs": "72837f70b527cca84d009eb8eac7ba92d784fd919a6e35e4a3149570ae3867be",
+    "art-lab/characters/rigs/lib/clear.mjs": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

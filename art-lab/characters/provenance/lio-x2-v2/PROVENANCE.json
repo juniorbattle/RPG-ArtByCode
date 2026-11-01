@@ -1,0 +1,50 @@
+{
+  "id": "lio-x2-v2",
+  "status": "CANDIDATE, not approved: waits for the operator's lot sheet (journal Passe CA4)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator",
+    "text": "Lio, redrawn clean: « Les quinze » (journal Passe CA4)"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-c.png",
+      "sha256": "e0736ff7750135a6fdf329b9266084b97ee04ff170188389806d2063f94d218d"
+    }
+  },
+  "chain": [
+    "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
+    "reconstruct-grid.mjs per facing, the head again at a finer pitch",
+    "quantize-palette.mjs --k 48: one palette for the three views",
+    "rig lio-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/lio-x2-v2.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/lio-x2-v2.png": "2f71f6c03d0fa0cc76da96e12586da209d24363c64f2ba2b1bd92b755bd930b8",
+    "art-lab/characters/exports/lio-x2-v2.json": "23f50a4565c0bdd254a4a226c29b1fcaae8989332dd067b554f9e85dd2e5cc70",
+    "art-lab/characters/source/lio-x2-v2.aseprite": "370aad5182372a7ba4dc0311a734ac981db7928f93ca63ce7cc0cc85d10819d7",
+    "art-lab/characters/provenance/lio-x2-v2/view-down.png": "34552357ea8e1fcbc1cf625d79d8d534db684c1dfd4ee29bcb1963eb54cbeeff",
+    "art-lab/characters/provenance/lio-x2-v2/view-up.png": "b17f481dde74b622dbadff50f42d0d9ddc054f90fba9c47ce5a62cd5cadeb4ae",
+    "art-lab/characters/provenance/lio-x2-v2/view-side.png": "b6c1b533e763267fa1b1f6cf54c6170b84d8cd5e3e6e8a1fb3dcd253835b8e8e",
+    "art-lab/characters/provenance/lio-x2-v2/build.json": "a9bc231c690bc88eb894ba5ac78f198d74efad53c05e871af43b21573d05d247",
+    "art-lab/characters/rigs/lio-x2-v2.rig.mjs": "8d825e57cfdf3900a600fc8170360bb802ca2ba24f5350bd49e7fb79f2e1629f",
+    "art-lab/characters/rigs/lib/clear.mjs": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "vessa-x2-v2",
+  "status": "CANDIDATE, not approved: waits for the operator's lot sheet (journal Passe CA4)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator",
+    "text": "Vessa Lark, redrawn clean: « Les quinze » (journal Passe CA4)"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-e.png",
+      "sha256": "ce022f1854cc8f556beac942e46de384a7e1af93e81000d32982a4cf684d6b73"
+    }
+  },
+  "chain": [
+    "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
+    "reconstruct-grid.mjs per facing, the head again at a finer pitch",
+    "quantize-palette.mjs --k 48: one palette for the three views",
+    "rig vessa-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/vessa-x2-v2.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/vessa-x2-v2.png": "34637c3687087acfb8cce445e1c1712ee7b5abe0ec6ea43661972e1730643826",
+    "art-lab/characters/exports/vessa-x2-v2.json": "a10be42575c1fc242e9ecf48d1e097b19d7d7d387071b5c891ee49ece2b8da96",
+    "art-lab/characters/source/vessa-x2-v2.aseprite": "385d538198f0799a181d177bba8da06963a73857a8e91901ceaf4eefacb3b3ef",
+    "art-lab/characters/provenance/vessa-x2-v2/view-down.png": "ce16118860b2a35a66886bf0a245a16cb6231a0a5e315e145b50905bb9f615fd",
+    "art-lab/characters/provenance/vessa-x2-v2/view-up.png": "45de2d19ea8ae5498882a78ce0e70bae50b349c9874305b7200fb46bacc82d1f",
+    "art-lab/characters/provenance/vessa-x2-v2/view-side.png": "b5b8f45c9b67b1df3036ac522b0c433f86bc91fd8a8a87f5e4b5146df083ab09",
+    "art-lab/characters/provenance/vessa-x2-v2/build.json": "95ee674dc21cff527a69c3bb8581c06ae4348faef961678fea3d776f11342835",
+    "art-lab/characters/rigs/vessa-x2-v2.rig.mjs": "3bd0e2b672f0737b485c9dc696d2aa4918c591301ea6dbf353f875d28bf94d6e",
+    "art-lab/characters/rigs/lib/clear.mjs": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "tobin-x2-v2",
+  "status": "CANDIDATE, not approved: waits for the operator's lot sheet (journal Passe CA4)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator",
+    "text": "Tobin Fenn, redrawn clean: « Les quinze » (journal Passe CA4)"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-d.png",
+      "sha256": "8bccc955150bca0063c6d9e16f66bb6b49efc5843756577b4fab390ef4d7ac64"
+    }
+  },
+  "chain": [
+    "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
+    "reconstruct-grid.mjs per facing, the head again at a finer pitch",
+    "quantize-palette.mjs --k 48: one palette for the three views",
+    "rig tobin-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/tobin-x2-v2.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/tobin-x2-v2.png": "151d7504936dcf9c80c020659c8787db98d91435bb3b804f2fcf46182aa576e8",
+    "art-lab/characters/exports/tobin-x2-v2.json": "c914a1d52a36cc1c022f7172dcee9cd7b60ffb0c0808971d74223a89d5a0b4c2",
+    "art-lab/characters/source/tobin-x2-v2.aseprite": "538c9ed2b7641f42c1e82c413ca41aad523e9f9264f5039dd56c00ced723d310",
+    "art-lab/characters/provenance/tobin-x2-v2/view-down.png": "63bb256d44279db87c5b01bd0eac323850fad287551dd714f8735239423e3c64",
+    "art-lab/characters/provenance/tobin-x2-v2/view-up.png": "109e524a1c8069e6c31590dd61bc721eaf0abfb7a04d9649913784ab937df6d8",
+    "art-lab/characters/provenance/tobin-x2-v2/view-side.png": "ad9f17a0f6378a1180d487acbdfec17ffc9e2ca43c314fbdca07d17aa9887684",
+    "art-lab/characters/provenance/tobin-x2-v2/build.json": "1c1d4b670a728e102d74727db8751ce992179a52c414989665aeb7a8fb28da75",
+    "art-lab/characters/rigs/tobin-x2-v2.rig.mjs": "86d89ec60db02907b045c1934e5f47ebde90c636e8e6814313a2a96226cd54e5",
+    "art-lab/characters/rigs/lib/clear.mjs": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

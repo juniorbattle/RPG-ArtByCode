@@ -1,0 +1,50 @@
+{
+  "id": "wren-x2-v2",
+  "status": "CANDIDATE, not approved: waits for the operator's lot sheet (journal Passe CA4)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator",
+    "text": "Wren, redrawn clean: « Les quinze » (journal Passe CA4)"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-c.png",
+      "sha256": "e0736ff7750135a6fdf329b9266084b97ee04ff170188389806d2063f94d218d"
+    }
+  },
+  "chain": [
+    "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
+    "reconstruct-grid.mjs per facing, the head again at a finer pitch",
+    "quantize-palette.mjs --k 48: one palette for the three views",
+    "rig wren-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/wren-x2-v2.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/wren-x2-v2.png": "3458a4517d72f3d3bfb63b32b94ccf23e2e10b447ff21e65a1223b9a3e62dc7c",
+    "art-lab/characters/exports/wren-x2-v2.json": "c3325e3b5ee662da1e96b2f1027f0f4a314cb7af8fea9f85d52cc6ae6f21d8b6",
+    "art-lab/characters/source/wren-x2-v2.aseprite": "0e19d5916316b9086156364c0644a1c92a9b23787807439207a8ee750a34c778",
+    "art-lab/characters/provenance/wren-x2-v2/view-down.png": "64f7f213546a57ed416d93ba9e7c9f59a82afaf078f6971ed09a8bf03f17ab0f",
+    "art-lab/characters/provenance/wren-x2-v2/view-up.png": "5e08aa93843873c1f94d0c6662e95620a344cb9df3faee3b583db3a503018945",
+    "art-lab/characters/provenance/wren-x2-v2/view-side.png": "60b6d66d226ea23bec912458bdbdebf88ab95cc14a69eefc865bda3afab354ac",
+    "art-lab/characters/provenance/wren-x2-v2/build.json": "814736c18ccd4853dea67d88ef9a1a024cbef2e322e7ccd861b36b846c4c4de4",
+    "art-lab/characters/rigs/wren-x2-v2.rig.mjs": "7bdd68af14c8dec0cbbb5c1069c44df6da86ef015471e4130888d0ca3d492cfe",
+    "art-lab/characters/rigs/lib/clear.mjs": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

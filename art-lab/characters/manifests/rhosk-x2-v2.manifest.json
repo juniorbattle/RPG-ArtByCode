@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "rhosk-x2-v2",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/rhosk-x2-v2.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/rhosk-x2-v2.png",
+    "metadata": "art-lab/characters/exports/rhosk-x2-v2.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-character.mjs (reconstruct-grid + quantize-palette + rig-engine, rig art-lab/characters/rigs/rhosk-x2-v2.rig.mjs); Aseprite 1.3.18.6 (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "Clean generated sheet, Rhosk",
+      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-a.png",
+      "note": "gpt-image-2 through gen-image.mjs, non-canonical until the operator approves it; the operator chose the figure on the casting sheet (journal Passe CA1) and the regeneration (journal Passe CA4)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "Candidate for Rhosk, the second recipe, shown only by the DEV parameter cast=candidate on a square of the version 2 (journal Passe CA4); production waits for the operator's lot sheet."
+}

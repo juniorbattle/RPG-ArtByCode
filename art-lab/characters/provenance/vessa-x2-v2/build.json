@@ -1,0 +1,40 @@
+{
+ "id": "vessa-x2-v2",
+ "frames": 12,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11",
+ "sheet": [
+  384,
+  192
+ ],
+ "palette": {
+  "mode": "joint k-means 48",
+  "colours": 48,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2256,
+    "meanOklabErrPermille": 15.7,
+    "maxOklabErrPermille": 57.6
+   },
+   "recon-up-full-q.png": {
+    "texels": 1940,
+    "meanOklabErrPermille": 13.3,
+    "maxOklabErrPermille": 56.4
+   },
+   "recon-side-full-q.png": {
+    "texels": 1747,
+    "meanOklabErrPermille": 14.3,
+    "maxOklabErrPermille": 52.7
+   }
+  }
+ },
+ "views": {
+  "down": "ce16118860b2a35a66886bf0a245a16cb6231a0a5e315e145b50905bb9f615fd",
+  "up": "45de2d19ea8ae5498882a78ce0e70bae50b349c9874305b7200fb46bacc82d1f",
+  "side": "b5b8f45c9b67b1df3036ac522b0c433f86bc91fd8a8a87f5e4b5146df083ab09"
+ },
+ "exports": {
+  "png": "34637c3687087acfb8cce445e1c1712ee7b5abe0ec6ea43661972e1730643826",
+  "json": "26a3c227b5940eac2312bd6944fdd7b670ed15f455f1edc7cf64839f8308d8c1",
+  "aseprite": "385d538198f0799a181d177bba8da06963a73857a8e91901ceaf4eefacb3b3ef"
+ }
+}

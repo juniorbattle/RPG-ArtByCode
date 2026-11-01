@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "pip-x2-v1",
   "kind": "character",
-  "status": "candidate",
+  "status": "superseded",
   "source": "art-lab/characters/source/pip-x2-v1.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/pip-x2-v1.png",
@@ -22,6 +22,6 @@
     }
   ],
   "approved": false,
-  "runtimeUse": "lab",
-  "notes": "Candidate for Pip, shown only by the DEV parameter cast=candidate on a square of the version 2 (journal Passe CA2); production waits for the operator's lot sheet."
+  "runtimeUse": "none",
+  "notes": "Superseded by pip-x2-v2 (journal Passe CA4): the operator returned this sheet, « cela manque clairement de clarte et de nettete »; never in production."
 }

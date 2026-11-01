@@ -1,0 +1,84 @@
+{
+  "kind": "generated-image",
+  "file": "casting-clear-2026-11-01-e.png",
+  "sha256": "ce022f1854cc8f556beac942e46de384a7e1af93e81000d32982a4cf684d6b73",
+  "bytes": 1715767,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 1,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "A pixel-art character reference sheet for a game, redrawing one existing character in a simple, clean, bright style.\n\nImage 1 is the STYLE and SCALE target, the sheet to match exactly: the size of its figures, its pixel size, its simple big shapes, its flat clean colour clusters, its clean dark outline, its proportions, its flat dark navy background (#1a2230), its layout of four views side by side. Do not copy its characters.\nImage 2 is the CHARACTER to redraw, keeping who she is: a slim young woman duelist with long purple hair in a high ponytail, but brighter and with far less detail.\n\nLayout: one single character at the top left of the image, four views side by side, in this order: front, three-quarter front, back, left profile, exactly as in image 1. The rest of the image is empty background. No text, no labels, no frame, no ground shadow.\n\nColours: she must read clearly on a dark background and on grey stone. Bright lavender and violet tunic with a short violet cape, an ivory shirt, warm skin on the arms and legs, tan leather boots and gloves, a tan belt. No black clothing. Long bright purple hair with lighter highlights. A clear face with two large matching eyes.\n\nImportant: plain cloth. NO emblems, NO symbols, NO embroidery. Nothing held in the hands. Calm standing pose, arms slightly away from the body. Real pixel art on one regular grid, no blur, no gradient, no dithering.\n",
+    "promptSha256": "de14f7f1b50ad76ddec9f4d5ca0ef160c082a5e14f86f49c130e4810b51fc900",
+    "promptFile": "(outside the repository) prompt-v.txt",
+    "references": [
+      {
+        "file": "(outside the repository) clarity-sheet.png",
+        "sha256": "aa85e9b7b890810f60224859f8653a6aa8225361db3b448995057e190060fb17",
+        "bytes": 1844435
+      },
+      {
+        "file": "(outside the repository) a11.png",
+        "sha256": "09c52802d995f80b4ff87f75515139875c0da0277ca33573ad96a5d7f0cb539c",
+        "bytes": 153701
+      }
+    ],
+    "image": "1 of 1",
+    "task": "casting-clarity",
+    "requestedAt": "2026-11-01T22:41:26.636Z",
+    "response": {
+      "requestId": "req_7c55c0bc946e4ff49443234b8fd453fe",
+      "created": "2026-11-01T22:42:44.000Z",
+      "processingMs": 75195
+    },
+    "usage": {
+      "input_tokens": 2306,
+      "input_tokens_details": {
+        "image_tokens": 1984,
+        "text_tokens": 322
+      },
+      "output_tokens": 5488,
+      "output_tokens_details": {
+        "image_tokens": 5488,
+        "text_tokens": 0
+      },
+      "total_tokens": 7794
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 0.690235,
+        "fromUsage": 0.182122
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-01",
+    "from": "casting-clarity-20261101T224126Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

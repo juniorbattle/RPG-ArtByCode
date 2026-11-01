@@ -1,0 +1,50 @@
+{
+  "id": "anwen-x2-v2",
+  "status": "CANDIDATE, not approved: waits for the operator's lot sheet (journal Passe CA4)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator",
+    "text": "Sister Anwen, redrawn clean: « Les quinze » (journal Passe CA4)"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-c.png",
+      "sha256": "e0736ff7750135a6fdf329b9266084b97ee04ff170188389806d2063f94d218d"
+    }
+  },
+  "chain": [
+    "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
+    "reconstruct-grid.mjs per facing, the head again at a finer pitch",
+    "quantize-palette.mjs --k 48: one palette for the three views",
+    "rig anwen-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/anwen-x2-v2.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/anwen-x2-v2.png": "48d439912bbce8439385611ab3e72ba294982c0cd67230f9e97f8fc682d78a73",
+    "art-lab/characters/exports/anwen-x2-v2.json": "79fd57a20c410fd4704f069b0cd415776076150276ff7b052c8f36e00e3e3fbc",
+    "art-lab/characters/source/anwen-x2-v2.aseprite": "04dcf28f4189d9720223c4d15a98d5e4eea2a17d2a2acb0fd1b7e64e741a3a76",
+    "art-lab/characters/provenance/anwen-x2-v2/view-down.png": "42fe64aede7e6fdaae84912c859e8baffc5df43af0e7fd6feb44a0e077308d72",
+    "art-lab/characters/provenance/anwen-x2-v2/view-up.png": "ca0fc0c28e41283218369545bfb0357b99802453324238197ec302ed6ee3f4e1",
+    "art-lab/characters/provenance/anwen-x2-v2/view-side.png": "b87be302fc77bce3d8ead4a9b8aa0d019d444759ebaf25f1b78d541acbfefb14",
+    "art-lab/characters/provenance/anwen-x2-v2/build.json": "0b4111c748f1bfc2622b720202b9b03a93618cea7254ca4620f23e45bad0e44e",
+    "art-lab/characters/rigs/anwen-x2-v2.rig.mjs": "b9a634597c36dc32766a38a1103244b1c6f18aa73503aa18f117148ab0a4eeaa",
+    "art-lab/characters/rigs/lib/clear.mjs": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}
