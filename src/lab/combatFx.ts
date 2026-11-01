@@ -1,186 +1,152 @@
-/** DEV-ONLY: the duel's own pixel-art effects in the arena (journal Passe FX1): `?scene=arena&fx=new`. Reached only through a dynamic import that
- *  `ArenaApp` guards with `import.meta.env.DEV`: production builds compile it out, and the arena without the parameter is untouched. Nothing here
- *  is canonical: the operator decides effect by effect on the sheet of journal Passe FX1.
- *  The effects are painted once at boot (fxPaint.ts: pure functions, the tone of the page's day state) into their own small texture, and drawn
- *  on the x3 grid of the combat sheets in two draws, only while one plays: their core in the opaque pass (depth and protection mask as the
- *  sprites, so the depth of field keeps it sharp), their glow added after it (`maskSafeBlending`). The day's sparks, rings and aura replace the
- *  three old `spark` / `ember` / `guard` frames, which stay in the atlas: without the parameter nothing changes.
- *  `window.__fx`: the atlas' size and paint time; `show(id, frame, who, level)` holds a frame, `all()` holds one of each (the cost's worst case),
- *  `clear()`; `measure()` the on-screen size of a texel. */
+/** DEV-ONLY: the duel's effects in the manner of RPGThreeJS (`?scene=arena&fx=new`, the operator's decision of journal Passe FX2): live geometry at full
+ *  resolution, white-hot cores that bloom, light on the arena, recipes written per action (src/lab/fx/). Reached only through a dynamic import that
+ *  `ArenaApp` guards with `import.meta.env.DEV`: production builds compile it out, and the arena without the parameter is untouched.
+ *  This module binds the engine to the arena: the events of the duel pick the recipes, and the hooks of the engine land on this renderer's own means
+ *  (LightRig, the arena's shake and framing, two overlays for the flash and the speed lines). No slow motion but the K.O.'s.
+ *  `window.__fx`: `play(recipe, who)`, `step(seconds)`, `clear()`, `stress()` (the cost's worst case: the heaviest recipes one after another), `recipes`. */
 import * as THREE from 'three';
-import { U, maskSafeBlending } from '../atmosphere/SceneUniforms';
-import { LAYER_NOREFLECT } from '../atmosphere/ShadowAndReflection';
-import { PIXEL_WORLD, type Actor } from '../characters/SpriteRenderer';
-import { parseTime } from '../atmosphere/DayState';
-import { toneOf } from '../ui/design/tokens';
-import { FX, chargeLevel, fxKey, fxRamp, paintFxAtlas, type FxId } from './fxPaint';
-import type { FighterId } from '../arena/CombatSim';
+import type { LightRig, LightSource } from '../atmosphere/LightRig';
+import type { Actor } from '../characters/SpriteRenderer';
 import type { ChargeView } from '../combat/charge';
+import type { FighterId } from '../arena/CombatSim';
+import { FX_EXPOSURE, FxEngine, type FxHooks } from './fx/FxEngine';
+import { FxDirector, type FxPlayContext, type FxUnitRef } from './fx/FxDirector';
+import { RECIPES, blowRecipe, chargeLevel, effectRecipe, type FxRecipe } from './fx/fxRecipes';
 
-/** the arena's character scale (ArenaApp) and the hero's in the town (fighterDensity.ts); a texel of the combat sheets at x3 in the world */
-const CHAR_SCALE = 1.42, HERO_SCALE = 0.9;
-export const FX_TEXEL = (PIXEL_WORLD * CHAR_SCALE * HERO_SCALE) / 3;
-/** the height the effects stand at, how far before the body a blow lands (on the sword's arc, at the contact), their place before the fighters and
- *  behind them (m) */
-const BODY_Y = 1.62, HIT_OUT = 0.32, FRONT_Z = 0.45, BEHIND_Z = -0.32;
-/** how far before the guard the crescent stands, at the blades' contact (Ren holds his sword close, Marek at arm's length) */
-const GUARD_OUT: Record<FighterId, number> = { ren: 0.45, marek: 0.82 };
-const CAP = 24;
+/** the figure's height (m), and how far before each fighter the blades meet (Ren holds his sword close, Marek at arm's length) */
+const FIGURE_H = 2.75;
+const CONTACT: Record<FighterId, number> = { ren: 0.7, marek: 1 };
+/** the effects' exposure, the night's stronger bloom on a dark ground, the day's on a light one */
+const EXPOSURE = { night: 0.5, day: 0.72 };
+/** the charge held: a breath of motes every so many seconds */
+const HOLD_BREATH = 0.6;
+const STRESS = ['heavy', 'm_ironfall', 't4', 'break', 'guardHeavy', 'charge3', 'ko'];
 
-const VERT = /* glsl */ `
-attribute vec2 corner;
-attribute vec3 iPos;
-attribute vec4 iUV;
-attribute vec3 iSize;
-uniform vec3 uFxRight; uniform vec3 uFxUp; uniform float uClipY; uniform vec2 uResolution; uniform float uFxBack;
-varying vec2 vUv;
-void main(){
-  float cu = iSize.z > 0.0 ? corner.x : 1.0 - corner.x;
-  vUv = vec2(mix(iUV.x, iUV.z, cu), mix(iUV.w, iUV.y, corner.y));
-  vec3 wp = iPos + uFxRight * ((corner.x - 0.5) * iSize.x) + uFxUp * ((corner.y - 0.5) * iSize.y);
-  vec4 clip = projectionMatrix * viewMatrix * vec4(wp, 1.0);
-  // the anchor on a pixel of the render target, as the sprites (main pass only)
-  if (uClipY < -100.0) {
-    vec4 ac = projectionMatrix * viewMatrix * vec4(iPos, 1.0);
-    vec2 px = (ac.xy / ac.w * 0.5 + 0.5) * uResolution;
-    clip.xy += (floor(px + 0.5) - px) / uResolution * 2.0 * clip.w;
-  }
-  // the glow's depth behind the fighters (the same place on screen): their silhouette stays whole, it lights the air around them
-  if (uFxBack > 0.0) {
-    vec4 dc = projectionMatrix * viewMatrix * vec4(iPos + normalize(iPos - cameraPosition) * uFxBack, 1.0);
-    clip.z = dc.z / dc.w * clip.w;
-  }
-  gl_Position = clip;
-}`;
-const CORE_FRAG = /* glsl */ `
-uniform sampler2D tFx; uniform float uFxGain; uniform float uFxMatte;
-varying vec2 vUv;
-void main(){
-  vec4 c = texture2D(tFx, vUv);
-  if (c.a < 0.5) discard;
-  gl_FragColor = vec4(c.rgb * (c.a > 0.998 ? uFxGain : uFxMatte), 0.0);
-}`;
-const GLOW_FRAG = /* glsl */ `
-uniform sampler2D tFx; uniform float uFxGlow;
-varying vec2 vUv;
-void main(){
-  vec4 c = texture2D(tFx, vUv);
-  if (c.a > 0.5 || c.r + c.g + c.b < 0.004) discard;
-  gl_FragColor = vec4(c.rgb * uFxGlow, 1.0);
-}`;
-
-interface Live { id: FxId; level: number; age: number; x: number; z: number; y: number; flip: boolean; held?: number }
+/** what the effects reach of the arena */
+export interface FxArena {
+  lights: LightRig;
+  shake(amount: number): void;
+  /** the simulation's speed (the K.O.'s slow motion: the duel is over) */
+  timeScale(scale: number): void;
+  renderHeight(): number;
+}
 
 export interface FxTrial {
   /** the duel's events: what plays */
-  onEvents(evs: ReadonlyArray<{ type: string } & Record<string, any>>, fighters: Record<FighterId, Actor>): void;
+  onEvents(evs: ReadonlyArray<{ type: string } & Record<string, any>>, fighters: Record<FighterId, Actor>, tiers: number): void;
   /** every presentation step */
-  present(dt: number, camera: THREE.Camera, fighters: Record<FighterId, Actor>, charge: ChargeView | null): void;
+  present(dt: number, fighters: Record<FighterId, Actor>, charge: ChargeView | null): void;
+  /** the framing's push onto a blow */
+  pose(p: { dist: number; tx: number; ty: number }): void;
   info: Record<string, unknown>;
 }
 
-export function installCombatFx(scene: THREE.Scene, params: URLSearchParams): FxTrial {
+interface Slot { src: LightSource; t: number; dur: number }
+
+function overlay(css: string): HTMLDivElement {
+  const el = document.createElement('div');
+  el.style.cssText = `position:fixed;inset:0;pointer-events:none;opacity:0;z-index:4;${css}`;
+  document.body.append(el);
+  return el;
+}
+
+export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params: URLSearchParams, arena: FxArena): FxTrial {
   if (params.get('fx') !== 'new') throw new Error(`fx "${params.get('fx')}": new`);
-  const t0 = performance.now(), time = parseTime(params), byDay = !!time;
-  const seed = (parseInt(params.get('seed') ?? '1842', 10) >>> 0) || 1842;
-  const A = paintFxAtlas(fxRamp(toneOf(time), byDay), seed), paintMs = performance.now() - t0;
-  const tex = new THREE.DataTexture(new Uint8Array(A.rgba.buffer), A.width, A.height, THREE.RGBAFormat, THREE.UnsignedByteType);
-  tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = tex.minFilter = THREE.NearestFilter; tex.generateMipmaps = false;
-  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping; tex.needsUpdate = true;
-
-  const g = new THREE.InstancedBufferGeometry();
-  g.setAttribute('corner', new THREE.BufferAttribute(new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]), 2));
-  g.setIndex([0, 1, 2, 0, 2, 3]);
-  const mk = (name: string, n: number) => { const a = new THREE.InstancedBufferAttribute(new Float32Array(CAP * n), n); a.setUsage(THREE.DynamicDrawUsage); g.setAttribute(name, a); return a; };
-  const pos = mk('iPos', 3), uv = mk('iUV', 4), size = mk('iSize', 3);
-  const shared = { tFx: { value: tex }, uFxRight: { value: new THREE.Vector3(1, 0, 0) }, uFxUp: { value: new THREE.Vector3(0, 1, 0) }, uClipY: U.uClipY, uResolution: U.uResolution };
-  const gain = byDay ? 1.15 : 1.5, matte = byDay ? 0.7 : 0.45, glow = byDay ? 0.18 : 0.5;
-  const coreMat = new THREE.ShaderMaterial({ uniforms: { ...shared, uFxGain: { value: gain }, uFxMatte: { value: matte }, uFxBack: { value: 0 } }, vertexShader: VERT, fragmentShader: CORE_FRAG, side: THREE.DoubleSide });
-  const glowMat = new THREE.ShaderMaterial({ uniforms: { ...shared, uFxGlow: { value: glow }, uFxBack: { value: 1.4 } }, vertexShader: VERT, fragmentShader: GLOW_FRAG, side: THREE.DoubleSide, transparent: true, depthWrite: false, depthTest: true, ...maskSafeBlending('additive') });
-  const core = new THREE.Mesh(g, coreMat), halo = new THREE.Mesh(g, glowMat);
-  core.frustumCulled = halo.frustumCulled = false;
-  core.name = 'fx:core'; halo.name = 'fx:glow';
-  core.layers.set(LAYER_NOREFLECT); halo.layers.set(LAYER_NOREFLECT); halo.renderOrder = 6;
-  scene.add(core, halo);
-  g.instanceCount = 0;
-
-  let live: Live[] = [], aura: Live | null = null, popAge = -1, held: Live[] | null = null, cam: THREE.Camera | null = null;
-  const put = (i: number, key: string, x: number, y: number, z: number, flip: boolean) => {
-    const c = A.cells.get(key)!;
-    pos.setXYZ(i, x, y, z);
-    uv.setXYZW(i, c[0] / A.width, c[1] / A.height, (c[0] + c[2]) / A.width, (c[1] + c[3]) / A.height);
-    size.setXYZ(i, c[2] * FX_TEXEL, c[3] * FX_TEXEL, flip ? -1 : 1);
+  const time = params.get('time');
+  FX_EXPOSURE.value = time === 'morning' || time === 'midday' || time === 'afternoon' ? EXPOSURE.day : EXPOSURE.night;
+  const flashEl = overlay(''), linesEl = overlay('-webkit-mask:radial-gradient(circle,transparent 38%,#000 72%);mask:radial-gradient(circle,transparent 38%,#000 72%)');
+  const slots: Slot[] = [0, 1].map(() => {
+    const src = arena.lights.add({ pos: [0, -5, 0], color: [1, 1, 1], intensity: 2, radius: 8, kind: 'steady', priority: 11 }, 'fx', 0);
+    src.scale = src.targetScale = 0;
+    return { src, t: 0, dur: 0 };
+  });
+  let flash = { t: 0, dur: 0, peak: 0 }, lines = { t: 0, dur: 0 }, punch = { t: 0, dur: 0, x: 0, amount: 0 }, slowLeft = 0, fxScale = 1, holdIn = 0, stress = -1, stressIn = 0;
+  const hooks: FxHooks = {
+    shake: (magnitude) => arena.shake(magnitude),
+    flash: (color, opacity, duration = 0.18) => { flashEl.style.background = color; flash = { t: 0, dur: duration, peak: opacity }; },
+    light: (position, color, intensity, duration, distance) => {
+      const s = slots.reduce((a, b) => (a.dur <= 0 ? a : b.dur <= 0 ? b : a.t / a.dur > b.t / b.dur ? a : b));
+      s.src.pos.copy(position); s.src.color.set(color); s.src.intensity = Math.min(2.8, intensity / 7); s.src.radius = distance * 0.8;
+      s.t = 0; s.dur = duration;
+    },
+    slowmo: (scale, duration) => { fxScale = scale; slowLeft = duration; arena.timeScale(scale); },
+    speedLines: (duration, color) => {
+      linesEl.style.background = `repeating-conic-gradient(${color} 0 0.5deg,transparent 0.5deg 5deg,${color} 5deg 5.3deg,transparent 5.3deg 11deg)`;
+      lines = { t: 0, dur: duration };
+    },
+    punch: (point, duration, hold) => { punch = { t: 0, dur: duration, x: point.x, amount: hold ? 1.5 : 1 }; },
   };
-  /** the frame an effect shows at its age, -1 once over */
-  const frameAt = (id: FxId, age: number): number => { const ms = FX[id].ms; let s = 0; for (let f = 0; f < ms.length; f++) { s += ms[f] / 1000; if (age < s) return f; } return -1; };
-  /** the cell's centre over the ground, for an effect standing on it */
-  const centreY = (id: FxId, y: number): number => { const d = FX[id]; return d.foot === null ? y : (d.h / 2 - (d.h - d.foot)) * FX_TEXEL; };
-  const blow = (id: FxId, tgt: Actor, who: FighterId) => {
-    const dir = who === 'ren' ? 1 : -1;   // toward the attacker
-    live.push({ id, level: 1, age: 0, x: tgt.pos.x + dir * (id === 'guard' ? GUARD_OUT[who] : HIT_OUT), y: BODY_Y, z: FRONT_Z, flip: who === 'ren' });
+  const engine = new FxEngine(scene, camera, hooks), director = new FxDirector(engine);
+  engine.reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // drawn once under the loading screen (the boot's frame), hidden at the first step
+  let warm = true;
+  engine.warm(new THREE.Vector3(0, -3, 0));
+  const unit = (a: Actor): FxUnitRef => ({ position: a.pos, height: FIGURE_H });
+  const blow = (r: FxRecipe, F: Record<FighterId, Actor>, to: FighterId) => director.play(r, { source: unit(F[to === 'ren' ? 'marek' : 'ren']), target: unit(F[to]), contact: CONTACT[to] });
+  const self = (r: FxRecipe, a: Actor) => { const c: FxPlayContext = { source: unit(a), target: unit(a) }; director.play(r, c); };
+  let fighters: Record<FighterId, Actor> | null = null;
+
+  const advance = (dt: number, charge: ChargeView | null, F: Record<FighterId, Actor>) => {
+    if (slowLeft > 0) { slowLeft -= dt; if (slowLeft <= 0) { fxScale = 1; arena.timeScale(1); } }
+    engine.pointScale = arena.renderHeight() * 0.83;
+    engine.update(dt * fxScale);
+    // the charge held breathes, at the level of the tier a release launches (or of the one that waits, V2-2)
+    const idx = charge ? (charge.held ? charge.launch : charge.waiting) : -1, level = charge ? chargeLevel(idx, charge.tiers.length) : 0;
+    if (level > 0) { holdIn -= dt; if (holdIn <= 0) { holdIn = HOLD_BREATH; self(RECIPES[`hold${level}`], F.ren); } } else holdIn = 0;
+    for (const s of slots) {
+      if (s.dur <= 0) continue;
+      s.t += dt * fxScale;
+      const k = s.t / s.dur, v = k >= 1 ? 0 : k < 0.12 ? k / 0.12 : Math.pow(1 - (k - 0.12) / 0.88, 1.6);
+      s.src.scale = s.src.targetScale = v;
+      if (k >= 1) s.dur = 0;
+    }
+    if (flash.dur > 0) { flash.t += dt; const k = flash.t / flash.dur; flashEl.style.opacity = String(k >= 1 ? 0 : flash.peak * (1 - k)); if (k >= 1) flash.dur = 0; }
+    if (lines.dur > 0) { lines.t += dt; const k = lines.t / lines.dur; linesEl.style.opacity = String(k >= 1 ? 0 : 0.5 * (1 - k * k)); linesEl.style.transform = `rotate(${Math.floor(lines.t * 30) * 7}deg) scale(1.6)`; if (k >= 1) lines.dur = 0; }
+    if (punch.dur > 0) { punch.t += dt; if (punch.t >= punch.dur) punch.dur = 0; }
   };
-  const hold = (l: Live[]) => { held = l; };
+
   const trial: FxTrial = {
-    onEvents(evs, F) {
+    onEvents(evs, F, tiers) {
       for (const e of evs) {
         if (e.type === 'impact') {
-          const tgt = F[e.to as FighterId], who = e.to as FighterId, heavy = e.kind === 'heavy' || e.damage >= 20;
-          if (e.result === 'hit') blow(heavy ? 'hitHeavy' : 'hitLight', tgt, who);
-          else if (e.result === 'guarded') blow('guard', tgt, who);
-          else if (e.result === 'guardbreak') blow('break', tgt, who);
-        } else if (e.type === 'break') blow('break', F[e.who as FighterId], e.who);
-        else if (e.type === 'ko') { const a = F[e.who as FighterId]; live.push({ id: 'ko', level: 1, age: 0, x: a.pos.x, y: 0, z: FRONT_Z, flip: e.who === 'ren' }); }
-        else if (e.type === 'chargeTier') { if (e.open) popAge = 0; }
-        // a skill's own effect, on the one who cast it: the crescent toward the opponent, or the charge's level 2 once through (no blow landed: no star)
-        else if (e.type === 'effect') {
-          const a = F[e.who as FighterId];
-          if (e.family === 'defensive') blow('guard', a, e.who); else live.push({ id: 'charge', level: 2, age: 0, x: a.pos.x, y: 0, z: a.pos.z + BEHIND_Z, flip: !!a.flip });
-        }
-        else if (e.type === 'reset') { live = []; aura = null; popAge = -1; }
+          const to = e.to as FighterId, heavy = e.kind === 'heavy' || e.damage >= 20;
+          if (e.result === 'hit') blow(blowRecipe(e.action, e.kind, e.from), F, to);
+          else if (e.result === 'guarded') blow(RECIPES[heavy ? 'guardHeavy' : 'guard'], F, to);
+          else if (e.result === 'guardbreak') blow(RECIPES.break, F, to);
+        } else if (e.type === 'break') blow(RECIPES.break, F, e.who);
+        else if (e.type === 'ko') blow(RECIPES.ko, F, e.who);
+        else if (e.type === 'effect') self(effectRecipe(e.action, e.family), F[e.who as FighterId]);
+        else if (e.type === 'chargeTier') { const level = chargeLevel(e.idx, tiers); if (e.open && level > 0) director.play(RECIPES[`charge${level}`], { source: unit(F.ren), target: unit(F.marek) }); }
+        else if (e.type === 'chargeRelease') { if (e.ok && e.idx >= 1) self(RECIPES.release, F.ren); }
+        else if (e.type === 'reset') { engine.clear(); flash.dur = lines.dur = punch.dur = 0; flashEl.style.opacity = linesEl.style.opacity = '0'; slowLeft = 0; fxScale = 1; arena.timeScale(1); for (const s of slots) { s.dur = 0; s.src.scale = s.src.targetScale = 0; } }
       }
     },
-    present(dt, camera, F, charge) {
-      cam = camera;
-      const m = camera.matrixWorldInverse.elements;
-      shared.uFxRight.value.set(m[0], m[4], m[8]); shared.uFxUp.value.set(m[1], m[5], m[9]);
-      for (const l of live) l.age += dt;
-      live = live.filter((l) => frameAt(l.id, l.age) >= 0);
-      if (popAge >= 0) popAge += dt;
-      let n = 0;
-      if (held) for (const l of held) { put(n++, fxKey(l.id, l.held!, l.level), l.x, centreY(l.id, l.y), l.z, l.flip); }
-      else {
-        for (const l of live) { if (n < CAP) put(n++, fxKey(l.id, frameAt(l.id, l.age), l.level), l.x, centreY(l.id, l.y), l.z, l.flip); }
-        // the aura of the tier a release launches now, or of the one that waits (rules of V2-2): behind the fighter
-        const idx = charge ? (charge.held ? charge.launch : charge.waiting) : -1, level = charge ? chargeLevel(idx, charge.tiers.length) : 0;
-        if (level > 0 && !F.ren.hidden && n < CAP) {
-          if (!aura) aura = { id: 'charge', level, age: 0, x: 0, y: 0, z: 0, flip: !!F.ren.flip };
-          aura.level = level; aura.age += dt;
-          const ms = FX.charge.ms, poping = popAge >= 0 && popAge < (ms[0] + ms[1]) / 1000;
-          const f = poping ? (popAge < ms[0] / 1000 ? 0 : 1) : 2 + (Math.floor(aura.age / (ms[2] / 1000)) % 4);
-          put(n++, fxKey('charge', f, level), F.ren.pos.x, centreY('charge', 0), F.ren.pos.z + BEHIND_Z, !!F.ren.flip);
-        } else aura = null;
+    present(dt, F, charge) {
+      fighters = F;
+      if (warm) { warm = false; engine.settle(); }
+      if (stress >= 0) {
+        dt = 1 / 60; stressIn -= dt;
+        if (stressIn <= 0) { stressIn = 0.3; const r = RECIPES[STRESS[stress++ % STRESS.length]]; if (r.id.startsWith('charge')) director.play(r, { source: unit(F.ren), target: unit(F.marek) }); else blow(r, F, 'marek'); }
       }
-      g.instanceCount = n;
-      core.visible = halo.visible = n > 0;
-      pos.needsUpdate = uv.needsUpdate = size.needsUpdate = true;
+      advance(dt, charge, F);
     },
-    info: { atlas: [A.width, A.height], bytes: A.width * A.height * 4, paintMs: +paintMs.toFixed(1), frames: A.cells.size, texel: FX_TEXEL, gain, matte, glow, effects: Object.keys(FX) },
+    pose(p) {
+      if (punch.dur <= 0) return;
+      const k = punch.t / punch.dur, e = (k < 0.14 ? k / 0.14 : 1 - (k - 0.14) / 0.86) * punch.amount;
+      p.dist -= 1.5 * e; p.tx += punch.x * 0.12 * e; p.ty -= 0.1 * e;
+    },
+    info: { recipes: Object.keys(RECIPES).length, engine: 'RPGThreeJS dev@5cc6119e' },
   };
-  const at = (who: FighterId): number => (who === 'ren' ? -2.15 : 2.15);
   Object.assign(window, { __fx: {
     ...trial.info,
-    show: (id: FxId, frame: number, who: FighterId = 'marek', level = 1) => {
-      const d = FX[id], foot = d.foot !== null;
-      hold([{ id, level, age: 0, held: frame, x: at(who) + (foot ? 0 : (who === 'ren' ? 1 : -1) * (id === 'guard' ? GUARD_OUT[who] : HIT_OUT)), y: foot ? 0 : BODY_Y, z: id === 'charge' ? BEHIND_Z : FRONT_Z, flip: who === 'ren' }]);
-    },
-    all: () => hold((Object.keys(FX) as FxId[]).map((id, i) => { const d = FX[id]; return { id, level: d.levels, age: 0, held: Math.floor(d.ms.length / 2), x: -3 + i * 1.2, y: d.foot !== null ? 0 : BODY_Y, z: FRONT_Z, flip: false }; })),
-    clear: () => { held = null; },
-    /** device pixels of one texel at the fighters' depth */
-    measure: () => {
-      if (!cam) return null;
-      const a = new THREE.Vector3(0, BODY_Y, FRONT_Z).project(cam), b = new THREE.Vector3(FX_TEXEL * 100, BODY_Y, FRONT_Z).project(cam);
-      return (Math.abs(b.x - a.x) / 2 * (U.uResolution.value as THREE.Vector2).x) / 100;
-    },
+    recipes: Object.keys(RECIPES),
+    /** a recipe by hand, on the fighter it lands on (the charge's and a fighter's own on that fighter) */
+    play: (id: string, who: FighterId = 'marek') => { const r = RECIPES[id]; if (!r) throw new Error(`no recipe "${id}"`); if (fighters) { if (/^(charge|hold|d1|s1|k_iron|k_parry|k_cry|k_focus|release)/.test(id)) self(r, fighters[who]); else blow(r, fighters, who); } },
+    /** fixed steps, for captures */
+    step: (seconds: number) => { if (!fighters) return; for (let t = 0; t < seconds - 1e-6; t += 1 / 120) advance(1 / 120, null, fighters); },
+    clear: () => { engine.clear(); stress = -1; },
+    stress: () => { stress = 0; },
+    active: () => engine.activeCount,
   } });
   return trial;
 }

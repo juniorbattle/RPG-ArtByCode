@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1 et FX1) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1 et FX3) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -48,122 +48,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/35-passes-VP9.md`](journal/35-passes-VP9.md) | VP9 (séance cloud « Version 2 ») | 28/10 |
 | [`journal/36-passes-FV1-FV3.md`](journal/36-passes-FV1-FV3.md) | FV1, FV2, FV3 | 29/10 |
 | [`journal/37-passes-FV4-FV5.md`](journal/37-passes-FV4-FV5.md) | FV4, FV5 | 29/10 |
+| [`journal/38-passes-V2C1.md`](journal/38-passes-V2C1.md) | V2C1 | 29/10 |
 
 ---
-
-## Passe V2C1 — La décision V2-2 de l'opérateur appliquée : rien ne coupe la charge (2026-10-29)
-
-### Demande, mot pour mot
-- La décision de l'opérateur sur la fiche de l'essai (Passe FV3) : V2-2 « Ce qui coupe une charge » = « Rien ne la coupe » (contre « Garder »,
-  recommandé, et « Seul un coup reçu la coupe ») ; le seul choix de la fiche qui s'écarte de la recommandation.
-- Séance ouverte par celle de la Passe FV3 ; branche `v2c1-charge-rien` depuis `main` (`94e15ca`). Tout derrière `flags.v2` ; les temps de charge
-  (V2-1 « Garder »), les PA (AV-6) et l'équilibrage (V2-3 « Garder » : `V2_FOE_HIT` 1,3, `V2_FOES`) ne changent pas.
-
-### La règle — [OK] (`src/combat/charge.ts`)
-- Retiré : la règle « proposé » de la Passe V1 (un coup reçu sans garde, l'esquive du joueur, son break ou le K.O. coupaient la charge ; relâchée
-  pendant la séquence adverse, elle était refusée et perdue). L'événement `chargeCut` n'existe plus.
-- **Les cas limites, chacun « proposé »**, lus au plus près de « rien » :
-  1. **La garde et l'esquive** : un coup reçu, gardé ou non, et l'esquive du joueur gardent la charge, qui continue de monter (trois touches
-     distinctes, tenues ensemble si l'on veut ; l'esquive coûte toujours son PA, un palier peut se fermer).
-  2. **La montée** : la charge ne monte que joueur libre (au repos, en garde, pendant l'esquive), comme avant ; pendant une action, repoussé ou
-     étourdi, elle est gardée sans monter et remonte dès qu'il est libre.
-  3. **Relâchée pendant la priorité de l'adversaire** (G3 / CB-4, toute sa séquence), ou le joueur étourdi, repoussé ou encore dans une action :
-     elle **attend** (`chargeWait`) et part au premier pas où le joueur peut agir (`chargeRelease`), au meilleur palier que ses PA ouvrent alors,
-     au plus celui atteint au relâché. La priorité de l'adversaire reste entière : rien ne part pendant sa séquence. Une nouvelle pression pendant
-     l'attente commence une nouvelle charge, dont le palier attend derrière le premier.
-  4. **Le break** : la charge est gardée, figée pendant l'étourdissement, et remonte après ; relâchée pendant l'étourdissement, elle attend sa fin.
-     **Le K.O.** finit le duel : une charge tenue ou en attente finit avec lui, sans partir (`chargeEnd`) ; rien d'autre ne finit une charge.
-  - Le « repoussé » (CB-3) vaut pour l'action lancée, comme avant.
-- **Le HUD** : la bande des paliers reste pendant l'attente et montre le palier qui partira, le bouton d'attaque dit son nom (`chargeHudModel`
-  `waiting`, `src/arena/v2Arena.ts` ; `DynamicHud.chargeUpdate`) ; aucun texte neuf. Un moment scripté de plus, `chargeWait` (relâchée pendant
-  une séquence de Marek), vérifié sur sa capture : « Puissante » en surbrillance dans la bande, le bouton « Puissante » grisé pendant la séquence.
-- **Le bot** (`runV2BotDuel`) joue la règle : il esquive aussi en chargeant (il s'en abstenait parce que l'esquive coupait) et ne tient plus la
-  garde pour protéger une charge (le motif a disparu) ; le bot imprudent qui lâche pendant une séquence voit son palier attendre.
-- **La course hors écran recalée** (`V2_RACERS`, le modèle du duel, comme en Passe VP4) : chaque mise à terre plus courte (Vessa la plus touchée,
-  591 → 326 s ; Marek 620 → 511) ; étalonnée sur les graines 1..40, vérifiée sur les graines 41..60 (écarts sous 10 %), le test rejoue 41..46.
-  [KO] Le protocole d'avant (1..20, vérifié sur 21..26) : la cadence de dégâts de Tobin à 16 % sur 21..26, hors de la tolérance de 12 % ; d'où
-  l'étalonnage élargi. Marek reste le plus fort de la course, Tobin le plus faible ; Vessa passe de la deuxième à l'avant-dernière place.
-
-### L'empreinte du duel chargé (`V2_SIM_HASH`) — [OK] mise à jour, justifiée
-- Le script fixe (`runV2Fingerprint`, rejoué dans la page par `tools/arena-scene-check.mjs`) gardait la charge sous la garde et ne relâchait jamais
-  pendant une séquence : il n'exerçait pas la nouvelle règle. Réécrit (360 s au lieu de 300) : jusqu'à 40 s d'un duel la garde contre les coups
-  légers et des esquives deux secondes sur trois, charge tenue ou non ; jusqu'à 110 s la garde contre tout, jusqu'au break ; puis ni l'une ni
-  l'autre, jusqu'au K.O. ; des relâchés à leur heure, séquence adverse comprise ; à chaque K.O. une remise à zéro (l'ancien script ne relançait
-  plus d'attaque après la première : `next` restait à ~300 s).
-- Le test compte ce que le script atteint, une charge tenue : 38 coups reçus sans garde, 25 gardés, 5 esquives, un break et un K.O. (une fin de
-  charge) ; 121 charges, 61 relâchés qui attendent, 118 départs ; aucune coupe, aucun départ refusé. Nouvelle empreinte : `2042:2:idle:4.850:18.180:3.850:-;6002:0:idle:1.467:29.800:-:-;60.733|1:4.858:`
-  (au milieu du second duel, une charge de 4,86 s tenue) ; elle vaut aussi dans la page (`sameAsRecorded`).
-
-### L'effet sur l'équilibre — [?] il bouge nettement : à l'opérateur
-- TournamentLab `--rules=v2`, 50 graines (le joueur préparé = la politique `diligent`, adresse 0,6) :
-
-| | `main` (V1 / VP4) | la règle seule, bot d'avant | la règle, le bot qui la joue, la course recalée (livré) |
-|---|---|---|---|
-| victoires du joueur préparé | 60,4 % | 74,4 % | **84,0 %** |
-| blessures par partie | 2,10 | 1,88 | 0,90 |
-| qualifié / finaliste / champion | 94 % / 38 % / 0 % | 100 % / 58 % / 8 % | 100 % / 88 % / **28 %** |
-| victoires du joueur oisif (0,3) | 0 % | 3,9 % | 3,0 % |
-
-- Graines 1..30 (la marche de la Passe VP4) : adresse 0,4 : 14,5 % → 37,8 % ; 0,75 : 82,0 % → 97,3 %, couronné 20 % → 87 % ; 0,9 : 93,3 % →
-  99,3 %, couronné 67 % → 97 %.
-- **La durée des duels** (bot à 0,6) : sur les sept rivaux, 10 duels chacun, de 8,0 à 7,05 min en moyenne (le plus long : 9,6 → 8,9 min) ; par
-  rival (20 duels, graines 1001-1020) : Vessa 8,3 → 5,4 min, Orla 8,0 → 7,1, Ilse 9,1 → 7,7, Tobin 5,7 → 5,3 ; Marek 7,9 min des deux côtés. Les victoires du bot à 0,5 / 0,6 :
-  Marek 5 / 10 % → 50 / 40 %, Vessa 35 / 75 % → 100 / 100 %, Orla 25 / 55 % → 80 / 100 %, Ilse 45 / 90 % → 95 / 100 % ; Cassius, Rhosk et Tobin
-  déjà à 90-100 %. À 0,2 rien ne change ; Marek reste le plus dur. La règle pèse surtout contre les rivaux qui frappent vite (Vessa) : chaque coup
-  reçu y coupait une charge.
-- **Une conséquence de second ordre** : la tentative de sabotage de l'équipement par Cassius (`v2-gear-tamper`, V2-14) tombe de 21 parties
-  `diligent` sur 40 à 1 sur 40 (graines 1..40). Le joueur gagne plus, a plus de pièces et paie la garde de nuit plus souvent (7,6 → 8,8 nuits par
-  partie) : la sécurité reste au-dessus de 64, le second signe (les casiers ouverts) vient tard (le soir du jour 9 ou 10), après les soirs où la
-  tentative peut venir (jours 5, 7, 9). Rien n'est changé aux événements ; `tests/v2-coherence.test.mjs` prend la partie de la graine 34 (la seule des
-  40 qui la porte encore) à la place de celle de la graine 3.
-
-### Un réglage proposé à l'opérateur — non appliqué
-- Les coups des rivaux plus forts (`V2_FOE_HIT`), sous la nouvelle règle ; la course hors écran mise à l'échelle (ses cadences × k / 1,3 : une
-  estimation, non remesurée). TournamentLab, 50 graines (préparé, oisif) et 30 (les adresses 0,4, 0,75, 0,9) :
-
-| `V2_FOE_HIT` | préparé (0,6) | blessures | finaliste / champion | 0,4 | 0,75 (champion) | 0,9 (champion) | duel moyen à 0,6 |
-|---|---|---|---|---|---|---|---|
-| 1,3 avant V2-2 (`main`) | 60,4 % | 2,10 | 38 % / 0 % | 14,5 % | 82,0 % (20 %) | 93,3 % (67 %) | 8,0 min |
-| 1,3 livré | 84,0 % | 0,90 | 88 % / 28 % | 37,8 % | 97,3 % (87 %) | 99,3 % (97 %) | 7,05 min |
-| 1,5 | 76,0 % | 1,32 | 48 % / 14 % | 18,5 % | 90,7 % (57 %) | 98,0 % (90 %) | 6,96 min |
-| 1,6 | 71,2 % | 1,50 | 40 % / 8 % | 14,1 % | 87,3 % (40 %) | 98,0 % (90 %) | 6,90 min |
-| 1,7 | 64,8 % | 1,68 | 26 % / 4 % | 6,5 % | 84,7 % (33 %) | 96,7 % (83 %) | 6,82 min |
-| **1,8** | **60,4 %** | 1,90 | 18 % / 4 % | 3,3 % | 81,3 % (23 %) | 94,0 % (70 %) | 6,71 min |
-
-- **Proposé : × 1,8** : il retrouve la marche que l'opérateur a gardée (V2-3 « Garder », la rudesse de la Passe VP4) : le joueur préparé à 60,4 %,
-  le bon couronné une fois sur quatre (23 % contre 20 %), l'expert deux fois sur trois (70 % contre 67 %). Autre voie : × 1,6 (71 %), qui laisse au
-  joueur une part de la facilité que la charge sans coupure lui rend. Le défaut de la version 2 reste celui d'aujourd'hui (× 1,3) jusqu'à sa
-  décision ; tout réglage sera mesuré à nouveau (la course remesurée, pas mise à l'échelle).
-
-### Les preuves
-- `npm run typecheck`, `npm test` **280 / 280** (code de sortie 0, vérifié), `npm run build`, `npm run art:validate` (0 erreur, 0 avertissement).
-- `tests/combat-charge.test.mjs` réécrit pour la règle (14 tests : « nothing cuts a charge », « a release the duel cannot take waits », « the K.O.
-  ends the duel and the charge with it », le HUD de l'attente, la marche sous V2-2, la course sur 41..46, l'empreinte et ce qu'elle atteint) ;
-  oracles écrits depuis le texte de la règle. **14 fautes injectées une à une, 14 attrapées**, chaque fichier rendu à l'octet (SHA-256) : la coupe
-  par un coup reçu, par l'esquive, par le break ; la montée pendant l'étourdissement, pendant une action ; un relâché perdu, essayé tout de suite
-  (refusé), gardé à un palier sans PA, remplacé par le suivant, parti pendant que le joueur ne peut pas agir, jamais parti ; pas de fin au K.O. ; le
-  HUD qui ignore l'attente ; le script d'empreinte revenu à la garde de l'ancienne règle.
-- **Le jeu par défaut inchangé** : TournamentLab `classic` et `dynamic`, `diligent` et `idle`, 50 graines, et `DYNAMIC_SIM_HASH` : JSON **identique
-  à l'octet** à celui de `main` figé (`94e15ca`, SHA-256 `40fa7aa7…` des deux côtés). `play-flow` par défaut, victoire : `0025acce7a403773`, la même
-  empreinte qu'aux Passes UI3, UI4, V0 et FV4.
-- **L'ancien schéma `input=keys` inchangé** : en Node, les données de la page (`makeV2Duel`, `v2=1&input=keys`), celles des sept rivaux et le duel
-  joué par `runDynamicFingerprint` identiques à `main` figé ; `ArenaApp.ts` n'est pas touché. [?] `tools/arena-scene-check.mjs` ne sait pas jouer
-  `v2=1&input=keys` (« sim.view is not a function » : son script v2 suppose le duel chargé ; le même code sur `main`) : limite de l'outil, notée.
-- Sur GPU (Radeon 780M, `dev-strict` :5186 par `preview_start`, son onglet fermé aussitôt, arrêté à la fin) : `arena-scene-check` **PASS** sous
-  `v2=1` (le contrôle vivant avance de 4,908 s, l'empreinte `sameAsRecorded`, 87 rendus de moments sans erreur, télégraphe 6,77:1 et 6,97:1 en
-  deutéranopie, le sol dégagé du HUD dans 77 cas), sous les règles d'aujourd'hui (`sameAsPrototype`) et `combat=dynamic` (`sameAsRecorded`) ;
-  `play-flow` `V2=1` victoire (1842, jour 2) `5cfe614a12cc08bd` et défaite (7719, jour 2) `671a95a659b6ac06`, rejouées en Node à la même empreinte,
-  « all checks passed », aucune erreur de page ; captures `chargeWait`, `chargeGuard`, `chargeHeavy` (`FREEZE_CSS=1`), relues, non gardées.
-- Documents : `briefs/combat-system.md` § 4b (la règle et ses cas limites), `briefs/v2-trial.md` (la charge, l'équilibrage), `AGENTS.md` (le
-  paramètre `v2=1`).
-
-### Pensée
-- Une règle qui retire une pénalité se mesure deux fois : la règle seule, puis avec le bot qui la joue ; le bot encodait l'ancienne règle (il
-  n'esquivait pas en chargeant, il gardait pour protéger sa charge), et la moitié de l'effet (74 → 84 %) venait de là.
-- Un effet de second ordre se cherche dans ce qui dépend du résultat des combats : plus de victoires, plus de pièces, la garde payée, et une chaîne
-  d'événements (le sabotage) qui ne trouve plus son soir.
-- Un script d'empreinte écrit pour une règle n'en exerce pas une autre : il se réécrit pour passer par chaque chemin de la nouvelle, et le test compte
-  ces passages (sinon l'empreinte ne garde que ce que l'ancien script touchait).
 
 ## Passe RC3 — La coupe de Ren reprise puis écartée par l'opérateur (« Revenir à l'ancienne ») ; la feuille de Marek générée puis arrêtée, hors du cadre des planches de référence (2026-10-26 → 2026-10-29)
 
@@ -571,6 +458,69 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
 - FX1 a suivi son brief à la lettre et ses critiques ne le comparaient qu'aux anciens effets : 12 paires sur 12 ne disaient rien de la cible de l'opérateur. Une référence de qualité se demande avant la première image, pas après la fiche.
 - Sept effets à la grille de texels ne sont pas le HD-2D du projet voisin : le sprite y est pixel, l'effet y est de la lumière.
 
+## Passe FX3 — Le moteur d'effets de RPGThreeJS porté dans le duel, derrière `fx=new` (2026-11-01)
+
+### Les décisions de l'opérateur, mot pour mot
+- Question « Comment reprend-on les VFX de RPGThreeJS pour le duel ? » : « Porter son moteur (Recommandé) ».
+- Question du ralenti (« dans le duel, le temps ne s'arrête jamais et les fenêtres d'esquive courent ») : « Seulement au K.O. (Recommandé) ».
+- « soyons sur de reprendre la derneir session travailler de RPGThreeJS » : vérifié avant de copier, en lecture seule : `dev` à `5cc6119e` (2026-11-01 01:01), dossier propre, égal à `origin/dev`, un seul worktree, la branche cloud `fd7f0d36` incluse dans `dev`, `main` de septembre. Le portage part de ce commit, cité dans les en-têtes.
+- Ce dépôt est public : le code porté de RPGThreeJS le devient (dit à l'opérateur).
+
+### Fait — [OK]
+- `src/lab/fx/FxEngine.ts` (copié puis adapté), `fxPalettes.ts`, `FxDirector.ts` (réduit : ni grille, ni zone, ni finale), `fxRecipes.ts` (le format de RPGThreeJS, les recettes écrites ici), `src/lab/combatFx.ts` (les événements du duel choisissent les recettes). `fxPaint.ts` et `tools/art-lab/fx-sheet.mjs` retirés (dans l'historique : `74477fd`). Sans `Math.random`, DEV seulement, derrière `fx=new`.
+- **Adaptations à ce rendu** : `maskSafeBlending` partout (une écriture d'alpha casse le masque du DOF) ; aucune lumière THREE, elles n'atteignent pas ces shaders : deux lumières du `LightRig`, priorité 11 ; éclats non éclairés ; rien dans la passe miroir (`LAYER_NOREFLECT`) ; ni flammes (elles dépendent des shaders d'arène de RPGThreeJS) ni planches ; exposition partagée (`FX_EXPOSURE`, 0,5 la nuit, 0,72 le jour).
+- **Les recettes** : une par action : les deux coups de chaque camp, les compétences de Ren (dont `k_*`) et des rivaux, garde, garde d'un coup puissant, bris, K.O., les trois paliers de charge, leur respiration, le relâché. Ren en or et acier, l'adversaire en feu, la garde en bleu froid. Règles reprises : anneau de choc une fois, sur le coup ; lame sombre sous chaque coupe ; pas de sceau (personne ne lance de sort ici).
+- Coup de caméra, flash, lignes de vitesse, tremblement : par des points d'accroche ; le ralenti ne part que de la recette `ko`, après la fin du duel.
+
+### Ce que les captures ont trouvé — trois tours
+- [KO → corrigé] **Le dôme noircissait toute l'image** : `atan(0, 0)` à son sommet et une base négative sous `pow` donnent un NaN, et un seul pixel NaN noircit le cadre à travers le bloom. RPGThreeJS ne le montre pas, sa chaîne est différente. Testé.
+- [KO → corrigé] **Trop grand, trop lumineux** au premier essai, de nuit surtout : le combattant disparaissait. Les nombres de RPGThreeJS sont réglés pour son rendu : exposition ramenée à 0,5 et 0,72, tailles réduites de 40 % environ, disque de l'étoile réduit, plafonds testés.
+- [KO → corrigé] La tête de Ren dépassait du dôme de Rempart : rayon 3.
+- Non fait : pas de critique à l'aveugle sur ce portage, la référence est l'opérateur, en jeu. Les recettes des rivaux n'ont pas toutes été revues en image.
+
+### L'à-coup du premier coup — [KO → corrigé], mesuré
+- Le premier coup d'un combat coûtait **70 à 150 ms** de rendu, contre 11 ensuite : un moteur vivant compile ses programmes à la première utilisation (journal pass 6). Dans un duel en temps réel, c'est un saut visible.
+- [KO] Un préchauffage suivi d'un `clear()` : encore 89 à 101 ms : disposer le dernier matériau d'un programme le supprime.
+- [OK] Chaque matériau dessiné une fois sous l'écran de chargement, puis caché et gardé (`warm`, `settle`) : **0,3 à 0,9 ms** au premier coup, 0,4 à 1,2 ensuite (écart à une image sans effet, 4 chargements). Démarrage : 1 068 contre 1 044 ms de nuit, 1 000 contre 1 058 à midi : indiscernable.
+
+### Le coût — [OK] au niveau du budget E24, au pire cas
+- `tools/perf.mjs`, Radeon 780M, écart = médiane des écarts tour par tour, duel en pause. « pic » = `__fx.stress()` : `heavy`, `m_ironfall`, `t4`, `break`, `guardHeavy`, `charge3`, `ko` enchaînés toutes les 0,3 s, plus lourd qu'un duel réel.
+
+| ms GPU | 1920 × 1080 | écart au duel | écart à la nuit B | 2560 × 1440 | écart au duel | écart à la nuit B | appels |
+|---|---|---|---|---|---|---|---|
+| nuit B | 9,49 | | | 15,43 | | | 107 |
+| duel nuit | 8,50 | | −1,08 | 14,00 | | −1,54 | 92 |
+| fx au repos | 8,44 | +0,02 | | 13,73 | −0,15 | | 92 |
+| fx au pic | 9,52 | **+1,02** | **+0,02** | 15,41 | +1,43 | −0,03 | 99 à 124 |
+| duel midi | 7,64 | | | 12,39 | | | 94 |
+| fx au repos | 7,63 | −0,01 | | 12,22 | −0,06 | | 94 |
+| fx au pic | 8,42 | **+0,78** | **−1,06** | 13,70 | +1,15 | −1,76 | 110 à 115 |
+
+- Au repos, rien. Au pic, la nuit est **à égalité** avec la nuit B : c'est le seul point sans marge, à l'opérateur de le juger (Passe FV5 : « Accepter l'égalité » sur un cas voisin).
+- [?] Un Chrome étranger (`chrome:22148`) a chargé presque tous les tours : les temps absolus ne valent rien, seuls les écarts entrelacés ; ils sont stables (+0,97 à +1,16 en 1080p la nuit).
+
+### Les preuves
+- `npm run typecheck`, `npm test` **297 / 297**, `npm run build`, `npm run art:validate` (19 manifestes, 40 sources, 0 erreur).
+- **Sans le paramètre** : **0 px sur 47 vues** contre `main` figé (cinq adresses, `HOLD=1`, `FREEZE_CSS=1`, seuil 0) ; témoin 0 px sur 12 vues ; contrôle négatif `fx=new` : 273 194 à 766 330 px sur les vues à effet, 0 sur `window`, `combo` et `heavyRen`, sans effet à l'écran. Paquet de production : SHA-256 identiques sur 33 fichiers, depuis l'archive du commit.
+- `tools/arena-scene-check.mjs` **PASS** sous `v2=1&fx=new`, avec `time=midday`, avec `fighterdensity=combat` (empreinte `sameAsRecorded`, 87 rendus, le sol dégagé du HUD dans 77 cas, 0 erreur ; télégraphe 6,77:1 la nuit, 4,26:1 à midi).
+- `tests/combat-fx.test.mjs` réécrit, 10 tests : **20 fautes injectées sur 20 attrapées**, chaque fichier rendu à l'octet (SHA-256) : ralenti sur un coup, anneau après le coup, deux anneaux, compétence sans recette, couleur inconnue, étape après la fin, coups adverses en bleu, étoile trop grande, pilier au niveau 1, paliers décalés, coupe non retournée, contact du mauvais côté, étincelles de garde vers l'avant, mélange brut, lumière THREE, les deux NaN du dôme, effet hors du calque, crochet hors de DEV, dépendance tierce.
+
+### La fiche — à remplir par l'opérateur
+- La page de la Passe FX1 reprise à la même adresse : https://claude.ai/artifact/NWXvBHkzo9mKUT8WLGZheM (source `briefs/fiche-fx1.html`), six familles (« Valider », « Reprendre (en note) », « À écarter ») et H-7 la suite (« Tâche à part, derrière flags.v2 », recommandé) ; `decisions` vide. Rien n'est décidé par cette passe. Images gardées : `screenshots/calibration/fx3-combat/` (celles de FX1 retirées).
+
+### Journal — [OK] archivage
+- Avec FX2 et FX3, les passes gardées dépassaient 60 Ko. V2C1, close, part vers `journal/38-passes-V2C1.md` (12 514 octets, bloc de 12 240) ; restent 57,1 Ko. Preuve **8 / 8** par un script hors dépôt ; contrôle négatif : un bit changé dans une copie de l'archive est vu.
+
+### Restes [?]
+- L'essai en main : `npm run dev`, `?scene=arena&v2=1&fx=new` ; le mode jouable ne porte pas le paramètre.
+- Le dessin par effet coûte un appel par maillage et des géométries créées à la volée : à revoir si le lab passe en production.
+- Les couleurs des compétences hors ambre la nuit (`lightning`, `wind`, `sky`, `blood`) s'écartent de la direction verrouillée « l'ambre seul accent chaud » : à trancher sur la fiche.
+
+### Pensée
+- Un portage se vérifie contre le rendu d'arrivée : le NaN dormait dans le code d'origine, et ses nombres étaient justes pour une autre chaîne.
+- Une mesure de premier usage dépend du moteur : le contrôle de la Passe FX1 (aucun à-coup, préchauffage retiré) ne valait que pour son unique shader. Et préchauffer ne suffit pas si l'on libère ce qu'on a préchauffé.
+- La dernière version d'un autre projet se vérifie sur toutes ses références avant de copier, et le commit se cite.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -588,7 +538,7 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
-  - **Effets de combat (Passes FX1, FX2)** : les effets pixel de `fx=new` ne sont **pas validés** par l'opérateur ; orientation : des effets comme ceux de RPGThreeJS (géométrie vivante, bloom, lumière, recettes). À décider : porter son moteur ou le réécrire, le ralenti (Passe FX2). La fiche FX1 est close sans choix. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
+  - **Effets de combat (Passes FX1 à FX3)** : les effets pixel non validés sont retirés ; le moteur de RPGThreeJS (`dev@5cc6119e`) est porté derrière `?scene=arena&v2=1&fx=new` (DEV) avec une recette par action, ralenti au K.O. seulement ; au repos rien, au pire +1 ms, à égalité avec la nuit B. **La fiche est à remplir par l'opérateur** (https://claude.ai/artifact/NWXvBHkzo9mKUT8WLGZheM, six familles, puis H-7 la suite), à relire puis consigner ; rien par défaut. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
     la version 2 cohérente hors combat (ses dix jours, ses événements dans l'ordre). À faire en local : les mesures GPU des places (budget E24 ;
@@ -806,7 +756,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -858,6 +808,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Un écart à une référence se lit en paires, tour par tour (variantes entrelacées, les deux propres) : la dérive d'un tour à l'autre dépasse
   souvent l'écart cherché (Passe FV4 : 2 ms de dérive en 1080p pour un écart de 0,1 ms).
 - Une mesure GPU se lance la séance immobile : l'application qui affiche la séance a tenu 30 % de la 780M pendant qu'un agent travaillait (Passe FX1 : 1 tour propre sur 5, puis 4 ou 5 sur 5).
+- Un moteur qui crée ses matériaux à la volée paie sa compilation au premier effet (Passe FX3 : 70 à 150 ms en plein duel) : chaque matériau se dessine une fois sous l'écran de chargement et reste en vie, caché ; disposer le dernier matériau d'un programme le supprime.
 ### Visibilité, rendu, caméras
 - Toute coupe de géométrie se prouve par un diff d'images `static=1`, culling actif contre `vis=0`, avec `occ=0` : la phase du fondu de
   reveal entre deux régénérations fabrique de faux écarts (1 377 px sur B).
@@ -959,6 +910,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   rival. Avec une ressource abondante et sans recharge, un effet qui grandit avec le besoin (un soin) devient sans borne : le mesurer avec le bot
   avant de le proposer (Passe C1).
 - Un test vrai par construction se repère à la faute injectée qui passe (Passe FX1 : « la boucle ferme », garanti par le `% 4` du code testé) : son oracle se lit sur le résultat (ici le décalage entre deux images), pas sur l'indice qui le produit.
+- Dans une chaîne HDR, un seul pixel NaN noircit tout le cadre à travers le bloom : `atan(0, 0)` et `pow` d'une base négative se gardent dans chaque shader, surtout porté d'un autre rendu (Passe FX3).
 ### Personnages : art et critique
 - La densité d'un sprite se choisit par la taille de son texel à l'écran dans le cadrage où il vit (l'arène : ×2 pour ≈ 3 px / texel en 1080p,
   comme les personnages de la ville), pas par celle de l'image source (Passe P1).

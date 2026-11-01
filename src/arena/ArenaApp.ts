@@ -277,7 +277,7 @@ export class ArenaApp {
     this.scene.add(this.sprites.group);
     this.scene.add(this.floor.mesh);
     // DEV only: the duel's own effects (?fx=new, src/lab/combatFx.ts, journal Passe FX1); compiled out of production builds, absent = the arena as before
-    if (import.meta.env.DEV && this.opts.params.has('fx')) this.fxTrial = (await import('../lab/combatFx')).installCombatFx(this.scene, this.opts.params);
+    if (import.meta.env.DEV && this.opts.params.has('fx')) this.fxTrial = (await import('../lab/combatFx')).installCombatFx(this.scene, this.camera, this.opts.params, { lights: this.lights, shake: (k) => { this.shake = Math.max(this.shake, k); }, timeScale: (k) => { this.timeScale = k; }, renderHeight: () => this.post.height });
     // spectators on the tiers: the town's crowd archetypes, front view, idling and cheering in turn
     let k = 0;
     for (const st of this.arena.stands) {
@@ -392,7 +392,7 @@ export class ArenaApp {
   }
 
   private onEvents(evs: Array<CombatEvent | DynEvent>): void {
-    if (import.meta.env.DEV && this.fxTrial) this.fxTrial.onEvents(evs, this.fighters);
+    if (import.meta.env.DEV && this.fxTrial) this.fxTrial.onEvents(evs, this.fighters, this.charge?.tiers.length ?? 0);
     for (const e of evs) {
       if (this.snd) this.soundOf(e as never);
       if (e.type === 'impact') {
@@ -502,7 +502,7 @@ export class ArenaApp {
       f.act.anim = `${f.kind}.${i}` as Anim;
     }
     this.fx = this.fx.filter((f) => !f.act.hidden);
-    if (import.meta.env.DEV && this.fxTrial) this.fxTrial.present(dt, this.camera, this.fighters, this.charge?.view() ?? null);
+    if (import.meta.env.DEV && this.fxTrial) this.fxTrial.present(dt, this.fighters, this.charge?.view() ?? null);
   }
 
   /** the contextual camera: the base framing; a push-in toward Marek while he charges a heavy (scaled by the assistance), held through the
@@ -522,6 +522,7 @@ export class ArenaApp {
       const a = this.shake * this.shake * 0.07, t = s.t * 53;
       P.tx += Math.sin(t * 1.7) * a; P.ty += Math.sin(t * 2.3 + 1.1) * a * 0.7;
     }
+    if (import.meta.env.DEV && this.fxTrial) this.fxTrial.pose(P);
     this.pose = P;
     applyPose(this.camera, P, window.innerWidth / Math.max(1, window.innerHeight));
   }
