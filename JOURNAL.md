@@ -480,10 +480,10 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
 
 ### La critique à l'aveugle
 - Marek, Orla, Cassius et Corvin 8,5 ; Hilde, Brann, Lio, Ilse, Tobin et Rhosk 8 ; Odo, Anwen, Pip et Wren 7 ; Vessa 6,5, trop sombre, refaite ensuite sans nouvelle critique. Aucun emblème, aucun reste de fond, aucune jointure visible à la tête en marche. Réserves : visages plus petits d'Odo, Pip et Wren, moins expressifs que les premiers. La notation précédente allait de 5 à 8.
-- Mesures : `aplats 37,6 %, isolés 37,8 %, 47 couleurs` avant le remplacement de Vessa.
+- Mesures sur l'image de face, Vessa remplacée : 36,8 % d'aplats, 38,3 % de texels isolés, 47 couleurs, et plus de contraste entre texels voisins (0,09 contre 0,07). Ces chiffres ne font pas le rendu : l'image se juge à la ligne à même échelle.
 
 ### Les preuves
-- `npm run typecheck`, `npm test`, `npm run build`, `npm run art:validate` : voir le commit. `build-character --check` : les quinze identiques (Vessa reconstruite après la série, vérifiée à part).
+- `npm run typecheck`, `npm test` **307 / 307**, `npm run build`, `npm run art:validate` (49 manifestes, 48 sources, 0 erreur). `build-character --check` : les quinze identiques (Vessa reconstruite après la série, vérifiée à part).
 - **Paquet de production** : aucun fichier de l'entrée ne change, ni aucune feuille `-x2-v2` du casting : tout est en DEV, derrière `cast=candidate`.
 
 ### La fiche
