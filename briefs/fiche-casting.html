@@ -1,0 +1,1068 @@
+<title>Casting des personnages</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions de l’opérateur · 1er novembre 2026</span>
+    <h1>Fiche de casting</h1>
+    <p class="lede">Une figure de nos planches pour chaque personnage et chaque rival, reprise avec les deux planches que tu viens de joindre. Aucune image n’a été générée pour cette fiche. Clique ton choix, une note est facultative : tes choix sont enregistrés au fur et à mesure et je les relis directement.</p>
+    <p class="lede">Planches : <b>a</b> et <b>b</b> = roster du tournoi, <b>P</b> = personnages principaux, <b>N1</b> = PNJ 01-16, <b>N2</b> = PNJ 17-24, <b>C</b> = planche complémentaire, <b>G1</b> = ta planche à six panneaux sans titre, <b>G2</b> = ta planche à six panneaux numérotés. Clique une image pour l’agrandir.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne au journal, puis je cuis par lots : d’abord les feuilles de ville, les places et les portraits, puis les feuilles de combat dans l’ordre choisi. Rien ne passe en production sans ton approbation, sur une fiche de lot.</p>
+    <p class="src">Sources : art-lab/characters/reference/sources/, les deux planches jointes le 1er novembre, src/narrative/people.ts, src/narrative/roster.ts, src/world/PlazaApp.ts, src/arena/FighterArt.ts, briefs/combat-system.md § 14, journal Passes T1, RC2, RC3.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+ {
+  "id": "cadre",
+  "title": "Le cadre",
+  "sub": "Six décisions dont dépend tout le reste.",
+  "fam": "var(--astre)",
+  "items": [
+   {
+    "id": "A1",
+    "tag": "archives",
+    "title": "Archiver les deux planches que tu viens de joindre",
+    "ctx": "G1 (six panneaux sans titre, 1536 × 1024) et G2 (six panneaux numérotés, 1448 × 1086) montrent chaque personnage au repos, en marche et en action. Les fichiers reçus sont des WebP réencodés, sans C2PA. Rien n’entre dans le dépôt sans ton accord, et une feuille cuite doit citer sa source archivée.",
+    "shots": [
+     [
+      "img/g1-all.png",
+      "G1 entière"
+     ],
+     [
+      "img/g2-all.png",
+      "G2 entière"
+     ]
+    ],
+    "rec": "Les archiver à l’octet avec leur fiche, en citant ta déclaration « provenant de compte GPT que j’ai genere ». Si tu retrouves les PNG d’origine, je les ajouterai à côté : ils gardent leur manifeste et n’ont pas de pertes.",
+    "opts": [
+     "Archiver, je cherche les PNG d’origine",
+     "Archiver ces WebP seulement",
+     "Ne pas archiver"
+    ],
+    "recIdx": 0,
+    "src": "art-lab/characters/reference/README.md ; empreintes 91dffa0c… (G1), aefcba3f… (G2)"
+   },
+   {
+    "id": "A2",
+    "tag": "noms",
+    "title": "Cedric, Lion : des figures ou de nouveaux personnages ?",
+    "ctx": "G2 nomme « Cedric » (nomade, éclaireur) et « Lion » (champion du tournoi). Aucun de ces noms n’existe dans le jeu, et son champion en titre est Marek. Cette fiche les traite comme des figures à attribuer aux personnages existants.",
+    "rec": "Des figures seulement : les noms du jeu restent, aucun texte ne change. Deux personnages de plus demanderaient des places, des textes et un sens dans le tournoi.",
+    "opts": [
+     "Figures seulement, noms du jeu gardés",
+     "Nouveaux personnages (en note : qui et où)"
+    ],
+    "recIdx": 0,
+    "src": "src/narrative/people.ts ; src/narrative/roster.ts"
+   },
+   {
+    "id": "C1",
+    "tag": "droits",
+    "title": "Les planches de casting et G1, G2 peuvent-elles servir de source de production ?",
+    "ctx": "La plupart des figures proposées viennent des planches de casting (a, b, P) et de G1, G2. Leur fiche dit « référence de casting, non canonique », droits de tiers non vérifiés, chaque design à valider avant toute reconstruction ; G1 et G2 n’ont pas encore de fiche. Les planches PNJ (N1, N2, C) ont ton autorisation du 16/10, jeu commercial compris. Sans ce oui, je ne peux cuire que les personnages tirés de N1 et N2.",
+    "rec": "La même autorisation que les planches PNJ, sous la même réserve. Tes choix de cette fiche valent validation du design, figure par figure.",
+    "opts": [
+     "Oui, comme les planches PNJ",
+     "Oui, au labo seulement pour l’instant",
+     "Non, N1 et N2 seulement"
+    ],
+    "recIdx": 0,
+    "src": "art-lab/characters/reference/sources/*.source.json ; art-lab/characters/reference/README.md"
+   },
+   {
+    "id": "C2",
+    "tag": "portée",
+    "title": "Où entrent les nouveaux personnages ?",
+    "ctx": "Tu as demandé de les intégrer aux districts de la ville. Le quartier marchand est gelé (RJ1) et le défaut ne change pas avant ton essai (V2-17). Les places et les duels de la version 2 sont ceux qui montrent aujourd’hui des sprites provisoires ou un rival sous l’art de Marek.",
+    "shots": [
+     [
+      "img/now-forecourt.png",
+      "Le parvis aujourd’hui : les personnes provisoires, en générés ×1, à côté du cast cuit"
+     ],
+     [
+      "img/now-festival.png",
+      "La place de la halle aujourd’hui"
+     ]
+    ],
+    "rec": "Les trois places et les duels de la version 2, derrière flags.v2. Le quartier marchand garde sa distribution, le jeu par défaut garde ses générés : la preuve à 0 px reste possible, et rien ne bouge avant ton essai.",
+    "opts": [
+     "Version 2 seule, quartier inchangé",
+     "Version 2, plus les citadins nouveaux dans le quartier",
+     "Aussi le jeu par défaut"
+    ],
+    "recIdx": 0,
+    "src": "AGENTS.md (Status, flags.v2) ; src/world/PlazaApp.ts:45 ; journal Passe Z4"
+   },
+   {
+    "id": "C3",
+    "tag": "couleurs",
+    "title": "La planche fait-elle foi sur les couleurs ?",
+    "ctx": "Les couleurs de src/narrative/roster.ts ne servent qu’aux portraits générés : aucun texte du jeu ne dit la couleur d’un cheveu ou d’une tenue (cherché dans les textes). Plusieurs figures s’en écartent : Vessa violette au lieu de sarcelle, Cassius cheveux bleu nuit et cape bleue au lieu de blond et lie-de-vin, Rhosk brun au lieu de roux.",
+    "rec": "La planche fait foi : le roster prend les couleurs de la figure choisie. Recolorer, c’est déjà s’éloigner de la figure.",
+    "opts": [
+     "La planche fait foi",
+     "Recolorer vers le roster (précise qui en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/narrative/roster.ts ; src/narrative/text/en.ts"
+   },
+   {
+    "id": "T1",
+    "tag": "texture",
+    "title": "Qui marche, et qui reste debout ?",
+    "ctx": "La texture cuite garantit 672 images (Passe T1) ; la production en porte 382. Une feuille complète de PNJ fait 30 images (repos et marche, trois vues), une feuille debout 12 (repos, trois vues). Les personnes ne marchent jamais, sauf Marek et Orla dans leur cinématique. Avec 13 personnes debout, Marek et Orla complets et 5 citadins : 366 images de plus, soit 748, trop. Les places ne montrent ni Mara ni Bram : sans leurs 82 images on tombe à 666, sous la garantie. Le quartier ne charge aucune feuille neuve, sa texture ne change pas.",
+    "rec": "Feuilles debout, marche seulement pour Marek et Orla, tirée de la rangée de marche de G1. Si tout le monde marchait (600 images de plus), il faudrait une texture par place.",
+    "opts": [
+     "Debout, sauf Marek et Orla",
+     "Tout le monde marche (une texture par place)"
+    ],
+    "recIdx": 0,
+    "src": "journal/10-passes-H5-P2.md, Passe T1 ; src/characters/SpriteAtlas.ts ; src/narrative/v2story.ts (CUTSCENES)"
+   }
+  ]
+ },
+ {
+  "id": "rivaux",
+  "title": "Les sept rivaux",
+  "sub": "Dans un duel, seuls Marek et Vessa ont leur art : Orla, Cassius, Ilse, Rhosk et Tobin se battent sous celui de Marek (FOES dans src/arena/FighterArt.ts).",
+  "fam": "var(--cendre)",
+  "items": [
+   {
+    "id": "R-marek",
+    "tag": "Marek Varn",
+    "title": "Marek, la Porte de Fer : le cas sensible",
+    "ctx": "Homme, champion de l’an dernier, il attend qu’on se fatigue et finit d’un coup. Roster : cheveux gris, barbe, cape, or. La Passe RC3 a arrêté un Marek dessiné hors des planches (4,4 à 5,1 têtes contre 3,1 pour Ren). Ta réponse ici est la confirmation de planche demandée avant toute génération : rien ne sera généré sans elle.",
+    "shots": [
+     [
+      "img/g1-3.png",
+      "G1 panneau 3 : repos, marche, attaques à l’épée"
+     ],
+     [
+      "img/g2-2.png",
+      "G2 n° 02, Lion, Champion du Tournoi"
+     ],
+     [
+      "img/a06.png",
+      "a n° 06, Capitaine de la garde"
+     ],
+     [
+      "img/m04.png",
+      "P n° 04, Maître des Épreuves"
+     ]
+    ],
+    "rec": "G1 panneau 3 : cheveux gris, barbe, armure, cape et épée à deux mains, tout ce que dit le roster, avec sa marche et quatre coups dessinés. Environ 3,4 têtes (à la règle). Écart : le titre de champion n’est écrit que sur G2 n° 02, roux et rouge, que je propose ailleurs.",
+    "opts": [
+     "G1 panneau 3",
+     "G2 n° 02 Lion, Champion du Tournoi",
+     "a n° 06 Capitaine de la garde",
+     "P n° 04 Maître des Épreuves",
+     "Aucune : attendre une autre planche"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage G1 panneau 3 : x 1024-1536, y 0-512. Repos y 25, 165 px, cinq vues, bas 1, côté 3, haut 4 ; marche y 202, 129 px, six images ; attaques y 344, 147 px, quatre poses. Passe RC3 (journal/39)"
+   },
+   {
+    "id": "R-vessa",
+    "tag": "Vessa Lark",
+    "title": "Vessa, la Lame vive",
+    "ctx": "Femme, duelliste des villes du fleuve : trois coupes avant qu’on voie la première. Le roster lui donne des cheveux sombres et une tenue sarcelle.",
+    "shots": [
+     [
+      "img/a11.png",
+      "a n° 11, Duelist (Female)"
+     ],
+     [
+      "img/g1-5.png",
+      "G1 panneau 5, deux lames"
+     ],
+     [
+      "img/b11.png",
+      "b n° 11, même figure que a"
+     ],
+     [
+      "img/m07b.png",
+      "P second n° 07, Duelliste (genre non indiqué)"
+     ]
+    ],
+    "rec": "a n° 11 : le rôle et le genre sont écrits sur la planche. Écarts : violette, pas de cape courte, aucune pose d’action, figure petite (125 px). G1 panneau 5 lui irait très bien par ses deux lames, mais Orla n’aurait alors plus de figure à elle, et P n° 08 est le même dessin.",
+    "opts": [
+     "a n° 11 Duelist",
+     "G1 panneau 5 (Orla prend alors P n° 07 bis)",
+     "b n° 11 Duelist, version b",
+     "P n° 07 bis Duelliste (cheveux sombres, 135 px)"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage a n° 11 : x 1100-1428, y 558-697, cinq vues, 125 px. Le libellé « DUELIST » déborde sur le coin, hors des figures"
+   },
+   {
+    "id": "R-orla",
+    "tag": "Orla Brask",
+    "title": "Orla, des Docks",
+    "ctx": "Femme, cousine de Tam : elle charge des caisses le jour et se bat pour l’honneur du quai, en bagarreuse de docker. Aucune planche ne montre une docker combattante. Marche dans sa cinématique.",
+    "shots": [
+     [
+      "img/g1-5.png",
+      "G1 panneau 5 : repos, marche, attaques à deux lames"
+     ],
+     [
+      "img/m08.png",
+      "P n° 08, Combattante, le même personnage"
+     ],
+     [
+      "img/m07b.png",
+      "P second n° 07, Duelliste"
+     ]
+    ],
+    "rec": "G1 panneau 5 : femme, cheveux roux comme le roster, foulard rouge, marche et attaques dessinées. Écarts : deux lames et une armure au lieu d’une tenue de quai, ce qui fait d’elle moins une bagarreuse. Pas de profil net au repos : le côté viendra de la marche.",
+    "opts": [
+     "G1 panneau 5",
+     "P n° 08 Combattante",
+     "P n° 07 bis Duelliste",
+     "Aucune : attendre une autre planche"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage G1 panneau 5 : x 512-1024, y 512-1024. Repos y 534, 172 px, cinq vues ; marche y 721, 134 px, six images ; attaques y 868, 138 px, quatre poses. src/combat/profiles.ts:27"
+   },
+   {
+    "id": "R-cassius",
+    "tag": "Cassius Dree",
+    "title": "Cassius, de la maison Dree",
+    "ctx": "Homme, noble qui a acheté sa place et le rival hostile du joueur. Roster : blond, lie-de-vin et or. Style de combat : escrime patiente, fentes soudaines. Se montre le soir sur la place de la halle.",
+    "shots": [
+     [
+      "img/g2-6.png",
+      "G2 n° 06, Rival, Chevalier Émérite"
+     ],
+     [
+      "img/g2-2.png",
+      "G2 n° 02, Lion"
+     ],
+     [
+      "img/m02.png",
+      "P n° 02, Seigneur du Tournoi"
+     ]
+    ],
+    "rec": "G2 n° 06 : la planche le nomme Rival, armure claire de chevalier fortuné, fentes à l’épée dessinées. Écarts : cheveux bleu nuit et cape bleue au lieu de blond et lie-de-vin ; la cape ressemble à celle du héros, voulu ou non. G2 n° 02 a l’opulence rouge et or, mais je le propose pour Corvin.",
+    "opts": [
+     "G2 n° 06 Rival",
+     "G2 n° 02 Lion (rouge et or)",
+     "P n° 02 Seigneur du Tournoi"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage G2 n° 06 : x 965-1448, y 543-1086. Repos y 604, 152 px, six vues ; marche y 772, 137 px, six images ; attaques y 922, 149 px, quatre poses"
+   },
+   {
+    "id": "R-ilse",
+    "tag": "Ilse Morrow",
+    "title": "Ilse, du Temple : prêtresse ou chevalière",
+    "ctx": "Femme, chevalière du Temple, elle se bat pour la bourse de l’hôpital et ne frappe jamais un adversaire à terre ; une réplique dit que le Temple enseigne « with a sword ». Aucune chevalière n’existe sur les planches : la seule silhouette de chevalier du Temple (P n° 07) porte le libellé « Homme ». Ce choix est lié à celui de Sœur Anwen.",
+    "shots": [
+     [
+      "img/g2-3.png",
+      "G2 n° 03, Prêtresse : repos, marche, actions au bâton"
+     ],
+     [
+      "img/m11.png",
+      "P n° 11, Combattante, Prêtresse"
+     ],
+     [
+      "img/m07.png",
+      "P n° 07, Chevalier (Homme)"
+     ]
+    ],
+    "rec": "G2 n° 03 : femme, couleurs du Temple, six vues, marche et actions dessinées, et des compétences qui lui vont (Temple Smite, Aegis, Vigil). Écarts : robe au lieu d’une armure, bâton au lieu d’une épée : je lui mettrais une épée dans les feuilles de combat (carte X4), le texte reste vrai.",
+    "opts": [
+     "G2 n° 03 Prêtresse",
+     "P n° 11 Prêtresse (Anwen prend alors G2 n° 03)",
+     "P n° 07 Chevalier (libellé Homme, texte « she » gardé)"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage G2 n° 03 : x 965-1448, y 0-543. Repos y 54, 158 px, six vues ; marche y 226, 138 px, six images ; actions y 368, 161 px, cinq poses. src/narrative/text/en.ts:524"
+   },
+   {
+    "id": "R-rhosk",
+    "tag": "Rhosk",
+    "title": "Rhosk, l’homme du Nord",
+    "ctx": "Homme, mercenaire d’au-delà des cols, lent jusqu’à ce que sa hache tombe. Roster : cheveux longs et barbe roux, tenue sombre.",
+    "shots": [
+     [
+      "img/g1-6.png",
+      "G1 panneau 6 : repos, marche, attaques à la hache"
+     ],
+     [
+      "img/m09.png",
+      "P n° 09, Barbare"
+     ],
+     [
+      "img/a10.png",
+      "a n° 10, Axe Fighter"
+     ]
+    ],
+    "rec": "G1 panneau 6 : fourrure, barbe, grande hache dans le dos, mercenaire du Nord sans discussion, avec sa marche et quatre coups de hache. Écart : cheveux bruns et plutôt courts au lieu de longs et roux.",
+    "opts": [
+     "G1 panneau 6",
+     "P n° 09 Barbare",
+     "a n° 10 Axe Fighter"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage G1 panneau 6 : x 1024-1536, y 512-1024. Repos y 536, 168 px, cinq vues, bas 1, côté 3, haut 4 ; marche y 719, 134 px, six images ; attaques y 859, 149 px, quatre poses. src/combat/profiles.ts:31"
+   },
+   {
+    "id": "R-tobin",
+    "tag": "Tobin Fenn",
+    "title": "Tobin, l’Espoir",
+    "ctx": "Homme, seize ans, une épée de ferme et plus de courage que de bon sens. Roster : cheveux bruns en épis, vert. Aucune figure n’est paysanne : a n° 03 ressemblerait trop au héros.",
+    "shots": [
+     [
+      "img/g2-1.png",
+      "G2 n° 01, Cedric : repos, marche, tir à l’arc"
+     ],
+     [
+      "img/b14.png",
+      "b n° 14, Martial Artist"
+     ],
+     [
+      "img/m13.png",
+      "P n° 13, Archer"
+     ]
+    ],
+    "rec": "G2 n° 01 : jeune, tenue usée et rapiécée, écharpe verte, c’est le plus proche d’un garçon de ferme parti à l’aventure. Écarts : un foulard cache parfois le bas du visage et l’arc devra céder la place à une épée (carte X4).",
+    "opts": [
+     "G2 n° 01 Cedric",
+     "b n° 14 Martial Artist",
+     "P n° 13 Archer"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage G2 n° 01 : x 0-483, y 0-543. Repos y 59, 151 px, six vues ; marche y 228, 132 px, six images ; actions y 381, 147 px, cinq poses. src/narrative/roster.ts:49"
+   },
+   {
+    "id": "R-ville",
+    "tag": "Tobin, Rhosk",
+    "title": "Tobin et Rhosk en ville",
+    "ctx": "Ils se battent mais n’ont aucune place en ville : ni entrée dans PEOPLE, ni emplacement sur une place. Les placer demande des emplacements et, pour leur parler, des textes neufs, que je n’écrirais pas sans toi. Lio dit de Rhosk qu’il boit seul.",
+    "rec": "Une feuille de ville debout pour chacun, pour leur portrait, sans emplacement ni dialogue pour l’instant.",
+    "opts": [
+     "Portrait seulement",
+     "Debout sur une place, sans dialogue (en note : où)",
+     "Rien en ville"
+    ],
+    "recIdx": 0,
+    "src": "src/narrative/people.ts ; src/world/Plazas.ts:100"
+   }
+  ]
+ },
+ {
+  "id": "personnes",
+  "title": "Les personnes des places",
+  "sub": "Les textes ne donnent le genre que d’Anwen et de Hilde : pour Odo, Corvin, Brann, Pip, Lio et Wren, la figure le fixera.",
+  "fam": "var(--voile)",
+  "items": [
+   {
+    "id": "P-odo",
+    "tag": "Clerc Odo",
+    "title": "Odo, le greffier du tournoi",
+    "ctx": "Tient le registre au parvis et ouvre les cinématiques d’arrivée, de sélection et de finale.",
+    "shots": [
+     [
+      "img/g2-4.png",
+      "G2 n° 04, Maître des Épreuves, Organisateur"
+     ],
+     [
+      "img/n24.png",
+      "N2 n° 24, Refined Market Notary"
+     ]
+    ],
+    "rec": "G2 n° 04 : l’organisateur du tournoi, parchemin en main, avec des gestes de parole dessinés pour ses trois cinématiques. N2 n° 24 reste très bon, plus jeune et plus greffier.",
+    "opts": [
+     "G2 n° 04 Organisateur",
+     "N2 n° 24 Notaire"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage G2 n° 04 : x 0-483, y 543-1086. Repos y 604, 155 px, cinq vues ; gestes y 773 et y 926"
+   },
+   {
+    "id": "P-anwen",
+    "tag": "Sœur Anwen",
+    "title": "Sœur Anwen, la guérisseuse de l’arène",
+    "ctx": "Femme, soigne les blessures au parvis. Sa figure dépend du choix d’Ilse. Son portrait généré est déjà une capuche et une robe ivoire.",
+    "shots": [
+     [
+      "img/m11.png",
+      "P n° 11, Prêtresse"
+     ],
+     [
+      "img/g2-3.png",
+      "G2 n° 03, Prêtresse"
+     ],
+     [
+      "img/n14.png",
+      "N1 n° 14, Hooded Passerby (Female)"
+     ]
+    ],
+    "rec": "P n° 11 si Ilse prend G2 n° 03 : la capuche et l’ivoire de son portrait actuel, plus modeste qu’une prêtresse à diadème, comme il sied à une sœur.",
+    "opts": [
+     "P n° 11 Prêtresse",
+     "G2 n° 03 Prêtresse (si Ilse prend une autre figure)",
+     "N1 n° 14 Passante encapuchonnée"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage P n° 11 : x 32-472, y 862-1022, cinq vues, 151 px. src/ui/portraits.ts (OFFICIALS)"
+   },
+   {
+    "id": "P-hilde",
+    "tag": "Hilde",
+    "title": "Hilde, l’armurière : figure approchée",
+    "ctx": "Femme, armurière près de la porte de l’arène. Aucune planche ne montre une forgeronne ou une armurière. G2 n° 05 est une marchande chargée de sacs et d’outils ; elle n’est reprise nulle part ailleurs.",
+    "shots": [
+     [
+      "img/g2-5.png",
+      "G2 n° 05, Marchande itinérante"
+     ],
+     [
+      "img/n03.png",
+      "N1 n° 03, Artisan (Female)"
+     ]
+    ],
+    "rec": "G2 n° 05 : une femme de métier qui vend ce qu’elle porte, sans double dans la foule. Écart : ravitailleuse et non armurière. Pip pourrait la prendre aussi : je la garde pour Hilde, qui n’a pas d’autre figure.",
+    "opts": [
+     "G2 n° 05 Marchande itinérante",
+     "Variante de l’artisane N1 n° 03",
+     "Attendre : je te prépare une demande de planche"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage G2 n° 05 : x 483-966, y 543-1086. Repos y 608, 147 px, cinq vues ; marche y 773, 137 px. src/narrative/text/en.ts:438 (« She stitches it »)"
+   },
+   {
+    "id": "P-corvin",
+    "tag": "Maître Corvin",
+    "title": "Maître Corvin, le maître d’armes",
+    "ctx": "Vend les compétences au terrain d’entraînement. Un maître d’armes doit avoir l’air d’avoir gagné ce qu’il enseigne.",
+    "shots": [
+     [
+      "img/g2-2.png",
+      "G2 n° 02, Lion, Champion du Tournoi"
+     ],
+     [
+      "img/m04.png",
+      "P n° 04, Maître des Épreuves"
+     ],
+     [
+      "img/a08.png",
+      "a n° 08, Swordmaster"
+     ]
+    ],
+    "rec": "G2 n° 02 : un vétéran en armure, grande épée au côté, un ancien champion devenu maître. Écart : le libellé dit Champion du Tournoi, titre de Marek dans le jeu. Non disponible si tu prends cette figure pour Marek ou Cassius.",
+    "opts": [
+     "G2 n° 02 Lion",
+     "P n° 04 Maître des Épreuves",
+     "a n° 08 Swordmaster"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage G2 n° 02 : x 483-966, y 0-543. Repos y 52, 162 px, cinq vues"
+   },
+   {
+    "id": "P-brann",
+    "tag": "Sergent Brann",
+    "title": "Le sergent Brann, maître de manœuvre",
+    "ctx": "Fait travailler les recrues au terrain d’entraînement. Le sergent Hale porte déjà la feuille du garde.",
+    "shots": [
+     [
+      "img/m05.png",
+      "P n° 05, Capitaine des Gardes"
+     ],
+     [
+      "img/b17.png",
+      "b n° 17, Arena Gatekeeper"
+     ]
+    ],
+    "rec": "P n° 05 : plus de plaques que les gardes, il se lit comme un gradé, 147 px.",
+    "opts": [
+     "P n° 05 Capitaine des Gardes",
+     "b n° 17 Gatekeeper"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage P n° 05 : x 32-482, y 472-628, cinq vues, bas 1, haut 3, côté 5 en miroir, 147 px"
+   },
+   {
+    "id": "P-pip",
+    "tag": "Pip",
+    "title": "Pip, marchand de breloques",
+    "ctx": "Vend rubans et porte-bonheur sur la place de la halle, l’après-midi et le soir.",
+    "shots": [
+     [
+      "img/b19.png",
+      "b n° 19, Traveling Merchant"
+     ],
+     [
+      "img/g1-4.png",
+      "G1 panneau 4, figure encapuchonnée à la lanterne"
+     ],
+     [
+      "img/a19.png",
+      "a n° 19, même figure que b"
+     ]
+    ],
+    "rec": "b n° 19 : sac et chapeau de colporteur, six vues, 119 px contre 110 sur a. G1 panneau 4 ferait un charlatan amusant (« some of it even works »), mais il a l’air d’un mage et le jeu n’en a pas.",
+    "opts": [
+     "b n° 19 Traveling Merchant",
+     "G1 panneau 4 (mage à la lanterne)",
+     "a n° 19 Traveling Merchant"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage b n° 19 : x 1080-1430, y 920-1044, six vues, 119 px"
+   },
+   {
+    "id": "P-lio",
+    "tag": "Lio",
+    "title": "Lio, l’aubergiste",
+    "ctx": "Tient l’auberge de Lantern Row, et celle de la place de la halle en version 2.",
+    "shots": [
+     [
+      "img/n23.png",
+      "N2 n° 23, Tavern Owner"
+     ]
+    ],
+    "rec": "N2 n° 23 : le rôle exact, six vues, série déjà autorisée. En version 2, son portrait change : foulard et tablier clair aujourd’hui.",
+    "opts": [
+     "N2 n° 23 Tavern Owner",
+     "Autre (en note)"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage N2 n° 23 : x 30-700, y 828-1020, six vues, 186 px"
+   },
+   {
+    "id": "P-wren",
+    "tag": "Wren",
+    "title": "Wren, le barde du festival : figure approchée",
+    "ctx": "Chante sur la place de la halle et ouvre la cinématique de la veille de la finale. Aucune planche ne montre un barde ni un instrument.",
+    "shots": [
+     [
+      "img/m06.png",
+      "P n° 06, Héraut du Tournoi"
+     ],
+     [
+      "img/b18.png",
+      "b n° 18, Announcer"
+     ]
+    ],
+    "rec": "P n° 06 : chapeau à plume et parchemin, le plus proche d’un chanteur public, 142 px. Écarts : pas d’instrument, et pas de profil (quatre vues).",
+    "opts": [
+     "P n° 06 Héraut",
+     "b n° 18 Announcer",
+     "Attendre : je te prépare une demande de planche"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage P n° 06 : x 485-872, y 472-626, quatre vues, 142 px"
+   }
+  ]
+ },
+ {
+  "id": "foule",
+  "title": "Les citadins des places",
+  "sub": "Pour varier la foule des places. Chacun marche : 30 images.",
+  "fam": "var(--ronce)",
+  "items": [
+   {
+    "id": "N0",
+    "tag": "réutilisés",
+    "title": "Ce qu’on garde tel quel",
+    "ctx": "Sur les places : le héros, les deux gardes, l’encapuchonné, le docker et les cinq citadins avec leurs variantes approuvées. Le chat reste généré. Rien à cuire pour eux.",
+    "rec": "Les garder. Ils portent déjà la direction validée.",
+    "opts": [
+     "D’accord",
+     "À revoir (en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/characters/BakedCast.ts ; art-lab/characters/README.md"
+   },
+   {
+    "id": "N1",
+    "tag": "vendeur",
+    "title": "Un marchand à tablier",
+    "ctx": "Un vendeur pour les étals du parvis et de la place. N1 n° 01 n’a jamais été cuit.",
+    "shots": [
+     [
+      "img/n01.png",
+      "N1 n° 01, Merchant (Male)"
+     ]
+    ],
+    "rec": "Le cuire : aucun citadin actuel ne se lit comme un vendeur, et sa planche a déjà donné neuf feuilles de production.",
+    "opts": [
+     "Cuire",
+     "En réserve",
+     "Non"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage N1 n° 01 : x 20-350, y 120-274, quatre vues, 147 px"
+   },
+   {
+    "id": "N2",
+    "tag": "passante",
+    "title": "Une voyageuse",
+    "ctx": "Arrivée pour le tournoi, sac au dos.",
+    "shots": [
+     [
+      "img/n08.png",
+      "N1 n° 08, Traveler (Female)"
+     ]
+    ],
+    "rec": "La cuire : trois des cinq citadins actuels sont des hommes, elle rééquilibre.",
+    "opts": [
+     "Cuire",
+     "En réserve",
+     "Non"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage N1 n° 08 : x 1096-1428, y 350-506, quatre vues, 152 px"
+   },
+   {
+    "id": "N3",
+    "tag": "noble",
+    "title": "Une dame noble",
+    "ctx": "Une spectatrice pour midi et la fin de journée.",
+    "shots": [
+     [
+      "img/n10.png",
+      "N1 n° 10, Noble Customer (Female)"
+     ]
+    ],
+    "rec": "La cuire : la seule toilette dans une foule de travailleurs, et elle fait croire au tournoi. Cadrée à 176 px, elle demande une présentation plus petite, comme les gardes.",
+    "opts": [
+     "Cuire",
+     "En réserve",
+     "Non"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage N1 n° 10 : x 378-714, y 568-746, quatre vues, 176 px"
+   },
+   {
+    "id": "N4",
+    "tag": "enfant",
+    "title": "Un garçon de courses",
+    "ctx": "Porte une caisse. Enfants de jour seulement : je ne les montrerais pas la nuit.",
+    "shots": [
+     [
+      "img/n11.png",
+      "N1 n° 11, Child Helper (Male)"
+     ]
+    ],
+    "rec": "Le cuire : un enfant change l’échelle d’une place d’un seul coup.",
+    "opts": [
+     "Cuire",
+     "En réserve",
+     "Non"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage N1 n° 11 : x 745-1062, y 600-748, quatre vues, 138 px"
+   },
+   {
+    "id": "N5",
+    "tag": "enfant",
+    "title": "Une fillette",
+    "ctx": "Avec son ours en peluche. De jour seulement.",
+    "shots": [
+     [
+      "img/n12.png",
+      "N1 n° 12, Child (Female)"
+     ]
+    ],
+    "rec": "La cuire, avec le garçon : les deux font une famille de festival.",
+    "opts": [
+     "Cuire",
+     "En réserve",
+     "Non"
+    ],
+    "recIdx": 0,
+    "src": "Recadrage N1 n° 12 : x 1096-1428, y 598-750, quatre vues, 146 px"
+   },
+   {
+    "id": "N6",
+    "tag": "réserve",
+    "title": "Le reste de la série",
+    "ctx": "Quatre figures de plus, si la texture le permet après les autres. Les quatorze figures de la planche C (marchande de fleurs, vendeur de lanternes, vieille vendeuse) n’ont qu’une vue et des proportions plus élancées : elles ne peuvent pas marcher, je ne les propose pas.",
+    "shots": [
+     [
+      "img/n19.png",
+      "N2 n° 19, Harbor Official"
+     ],
+     [
+      "img/n20.png",
+      "N2 n° 20, Elegant Buyer"
+     ],
+     [
+      "img/n17.png",
+      "N2 n° 17, Senior Merchant"
+     ],
+     [
+      "img/n14.png",
+      "N1 n° 14, Hooded Passerby (Female)"
+     ]
+    ],
+    "rec": "Les garder en réserve : avec cinq citadins neufs, la marge est de 6 images. Un sixième passerait au-dessus de la garantie.",
+    "opts": [
+     "En réserve",
+     "En cuire (en note : lesquels, et lesquels retirer)"
+    ],
+    "recIdx": 0,
+    "src": "merchant-district-night-npc-character-reference-sheet.webp ; carte T1"
+   },
+   {
+    "id": "N7",
+    "tag": "sans rôle",
+    "title": "Trois panneaux de G1 sans rôle dans le jeu",
+    "ctx": "Une dame noble au bâton, un mage encapuchonné à la lanterne, et une version du héros avec épée et bâton. Le jeu n’a ni dame noble nommée ni mage. Le héros est déjà cuit (hero-x2-v4), et sa feuille de combat existe au labo.",
+    "shots": [
+     [
+      "img/g1-2.png",
+      "G1 panneau 2, dame noble au bâton"
+     ],
+     [
+      "img/g1-4.png",
+      "G1 panneau 4, mage à la lanterne"
+     ],
+     [
+      "img/g1-1.png",
+      "G1 panneau 1, le héros"
+     ]
+    ],
+    "rec": "Les garder comme références, sans rien en cuire pour cette tâche.",
+    "opts": [
+     "En réserve",
+     "Leur donner un rôle (en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/narrative/people.ts ; art-lab/characters/README.md"
+   }
+  ]
+ },
+ {
+  "id": "combat",
+  "title": "Les feuilles de combat ×3",
+  "sub": "Une feuille de ville se reconstruit depuis la planche sans rien générer. Une feuille ×3 demande des poses générées, comme pour Ren : les rangées de G1 et G2 (138 à 161 px) sont trop petites pour 255 rangées, mais elles donneront des références bien meilleures.",
+  "fam": "var(--cendre)",
+  "items": [
+   {
+    "id": "X1",
+    "tag": "qui",
+    "title": "Quels combattants reçoivent une feuille ×3 complète ?",
+    "ctx": "Ta décision V2-18 nommait Orla, Vessa, Marek, Ilse et Cassius ; Rhosk et Tobin n’y figurent pas, or on peut les rencontrer après la sélection. D’après leurs compétences, § 14 demande 27 à 34 images par rival : Vessa et Cassius 34, Marek, Ilse et Rhosk 32, Orla 29, Tobin 27.",
+    "rec": "Les sept, pour que chaque rival se batte sous sa propre figure. Sinon Rhosk et Tobin resteront sous l’art de Marek.",
+    "opts": [
+     "Les sept rivaux",
+     "Les cinq de V2-18, puis bilan pour Rhosk et Tobin",
+     "Marek et Vessa, puis bilan"
+    ],
+    "recIdx": 0,
+    "src": "briefs/combat-system.md § 14 ; src/combat/v2duel.ts:54 ; src/tournament/v2calendar.ts"
+   },
+   {
+    "id": "X2",
+    "tag": "ordre",
+    "title": "Dans quel ordre ?",
+    "ctx": "RC2-5 lie la production de Ren à celle de Marek. Le joueur rencontre Vessa au jour 2, Orla au jour 4, Cassius au jour 5 ; Marek, Ilse, Rhosk et Tobin ensuite, selon le tableau.",
+    "rec": "Marek, Vessa, Orla, Cassius, Ilse, Rhosk, Tobin : Marek ouvre la voie à Ren, puis l’ordre des rencontres.",
+    "opts": [
+     "Marek, Vessa, Orla, Cassius, Ilse, Rhosk, Tobin",
+     "Vessa, Orla, Cassius, Marek, Ilse, Rhosk, Tobin",
+     "Autre (en note)"
+    ],
+    "recIdx": 0,
+    "src": "Fiche RC2 (RC2-5) ; src/tournament/v2calendar.ts:25"
+   },
+   {
+    "id": "X3",
+    "tag": "charge",
+    "title": "Les cinq poses de charge",
+    "ctx": "La feuille de Ren n’a pas ses poses de charge. § 14 les prévoit « pour Ren (et Vessa) », mais dit aussi qu’un adversaire ne charge pas : Vessa n’en a pas besoin depuis que la charge est réservée au joueur. Une page ×3 tient 70 cases : Ren à 39 plus un rival à 32 ou 34 dépasse de 1 à 3, à régler au lot de Marek (cases partagées ou seconde texture).",
+    "rec": "Ren seul, avant Marek : deux planches générées environ, et la feuille de Ren est finie quand elle part en production.",
+    "opts": [
+     "Ren seul, avant Marek",
+     "Ren et Vessa",
+     "Plus tard"
+    ],
+    "recIdx": 0,
+    "src": "briefs/combat-system.md § 14 ; AV-10, V2-18"
+   },
+   {
+    "id": "X4",
+    "tag": "armes",
+    "title": "Les armes des rivaux",
+    "ctx": "G1 et G2 dessinent déjà les armes de Marek (épée à deux mains), Orla (deux lames), Rhosk (hache) et Cassius (épée). Trois restent : Vessa n’en a aucune sur sa planche, sa spécification dit une lame à une main ; Ilse a un bâton alors qu’une réplique dit « with a sword » ; Tobin a un arc alors que sa fiche dit une épée de ferme.",
+    "rec": "Suivre la planche pour les quatre premiers, et le texte du jeu pour les trois autres : Vessa une lame fine, Ilse une épée, Tobin une épée courte et usée. Aucun texte ne change.",
+    "opts": [
+     "Planche, puis texte pour Vessa, Ilse et Tobin",
+     "Garder le bâton d’Ilse et l’arc de Tobin (textes à revoir)",
+     "Autre (en note)"
+    ],
+    "recIdx": 0,
+    "src": "src/arena/FighterArt.ts (VESSA) ; src/narrative/text/en.ts:524 ; src/narrative/roster.ts:49"
+   },
+   {
+    "id": "X5",
+    "tag": "plafond",
+    "title": "Le plafond de génération",
+    "ctx": "Les feuilles de Ren ont coûté 4,63 $ en neuf requêtes (registre : 2,03 + 2,60). Sept rivaux font donc environ 32 $, plus environ 1 $ pour les poses de Ren ; les références de G1 et G2 peuvent réduire ce montant, je ne sais pas de combien. Le plafond est de 5 $ par tâche, et toi seul peux le changer. La clé n’existe que dans le dossier principal, je ne la copierai pas : la génération se lancera depuis lui, ou tu me diras comment faire. Les feuilles de ville ne coûtent rien.",
+    "rec": "Une tâche par combattant, chacune à 5 $ au plus : le plafond reste entier et une dérive s’arrête à un seul personnage. Marek d’abord : son coût réel corrigera l’estimation avant les autres.",
+    "opts": [
+     "Une tâche de 5 $ par combattant",
+     "Une seule tâche, plafond relevé (montant en note)",
+     "Rien pour l’instant : les feuilles de ville d’abord"
+    ],
+    "recIdx": 0,
+    "src": "AGENTS.md, Image generation ; art-lab/characters/scratch/gen-image-ledger.json"
+   }
+  ]
+ }
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value));
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

@@ -42,5 +42,10 @@
     "art-lab/characters/scratch/hero-premium/attachments/casting1-p1-original-run-x2.png (not versioned, SHA-256 feca9afe0df28f2da82a5e73ac3bb26e1765d5e0774fe8d60b525b1801117914): crop 540,131 486 x 158, same method: image 2 of the hero prompt v2"
   ],
   "usedAsReference": [],
-  "notInvented": "No generator, prompt, account or generation date beyond the file's own C2PA data is recorded; the C2PA signature is not claimed to be valid."
+  "notInvented": "No generator, prompt, account or generation date beyond the file's own C2PA data is recorded; the C2PA signature is not claimed to be valid.",
+  "productionUse": {
+    "date": "2026-11-01",
+    "pass": "CA1",
+    "decision": "operator, casting sheet C1: « Oui, comme les planches PNJ »: use as a source, production included, subject to applicable third-party rights, not exhaustively verified; the figures validated one by one on the same sheet (journal Passe CA1); the fields above are unchanged"
+  }
 }

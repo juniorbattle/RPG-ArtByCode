@@ -39,5 +39,10 @@
   },
   "derived": [],
   "usedAsReference": [],
-  "notInvented": "No generator, prompt, account or generation date beyond the file's own C2PA data is recorded; the C2PA signature is not claimed to be valid."
+  "notInvented": "No generator, prompt, account or generation date beyond the file's own C2PA data is recorded; the C2PA signature is not claimed to be valid.",
+  "productionUse": {
+    "date": "2026-11-01",
+    "pass": "CA1",
+    "decision": "operator, casting sheet C1: « Oui, comme les planches PNJ »: use as a source, production included, subject to applicable third-party rights, not exhaustively verified; the figures validated one by one on the same sheet (journal Passe CA1); the fields above are unchanged"
+  }
 }

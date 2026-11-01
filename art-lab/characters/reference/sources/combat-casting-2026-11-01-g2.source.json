@@ -1,0 +1,26 @@
+{
+  "kind": "archived-source-sheet",
+  "file": "combat-casting-2026-11-01-g2.webp",
+  "sha256": "aefcba3f7f239b6ce53a6937b7fedfd9f699e72801fc4fc76938137b4346b136",
+  "bytes": 375760,
+  "format": "WebP (VP8X: ICCP + VP8, lossy) 1448 x 1086; its only metadata is an ICC profile; no EXIF, XMP or C2PA",
+  "content": "sheet of six numbered panels 483 x 543 on a grey background, each one character in three rows (idle views, side walk or gestures, action poses): 01 CEDRIC, Nomade / Éclaireur; 02 LION, Champion du Tournoi; 03 PRÊTRESSE, Guide Spirituelle; 04 MAÎTRE DES ÉPREUVES, Organisateur; 05 MARCHANDE ITINÉRANTE, Ravitaillage; 06 RIVAL, Chevalier Émérite",
+  "measured": "idle rows 147-162 px, walk rows 132-141 px, action rows 138-161 px",
+  "classification": "CASTING SOURCE: figures assigned to the game's characters on the operator's casting sheet (journal Passe CA1); not canonical by itself, every asset goes through its manifest and the operator's approval",
+  "decision": "operator, 2026-11-01, casting sheet A2: « Figures seulement, noms du jeu gardés »: the names printed on the sheet are not the game's",
+  "nature": "a copy pasted by the operator into the working session (WebP, lossy, re-encoded); NOT the original file. Archived byte for byte, unmodified.",
+  "names": {
+    "session": "2.webp attached by the operator to the session of 2026-11-01"
+  },
+  "provenance": "declared by the operator, word for word: « ces references joints provenant de compte GPT que j'ai genere »; not cryptographically certified (no C2PA in this copy)",
+  "rights": "use as a source, production included, authorised by the operator like the NPC sheets (2026-11-01, casting sheet C1: « Oui, comme les planches PNJ »), subject to applicable third-party rights, not exhaustively verified",
+  "archived": {
+    "date": "2026-11-01",
+    "decision": "operator, casting sheet A1: « Archiver, je cherche les PNG d'origine »",
+    "pass": "CA1",
+    "rule": "never edited, re-encoded or replaced; an original file found later is added as a separate file with its own record, next to this one"
+  },
+  "derived": [],
+  "usedAsReference": [],
+  "notInvented": "No original PNG, generation date, prompt or C2PA data is recorded: none is known."
+}

@@ -457,6 +457,75 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
 - Un outil de mesure se prouve lui aussi : `gl.finish` donnait des chiffres plausibles, à la baisse en Passe FX3 et à la hausse ici. Le contrôle négatif aurait dû être là dès le début.
 - Mesurer deux recettes n'en prouve pas quarante-quatre.
 
+## Passe CA1 — La fiche de casting : une figure de nos planches pour chaque personnage et chaque rival, l'opérateur à la recommandation sur 34 cartes sur 35 (2026-11-01)
+
+### Demande
+- L'opérateur, mot pour mot : « je veuc bien gerer nos autres personnages necessaires pour les integrer aux divers district de la ville car il y a encore des npj generiques, puis integrer aussi les autres combattants en basant sur nos planches generes auparavant pour tout couvrir ». Séance ouverte par une autre séance (`local_94e3af37-…`) ; deux audits tournent à côté, sans branche.
+- Aucune image générée, aucune feuille cuite dans cette passe : le casting seul, et l'archivage de deux planches.
+
+### Le relevé — [OK]
+- **Provisoires** : treize personnes (`PROVISIONAL`, `src/world/PlazaApp.ts`) ; sur les places elles sont des générés ×1 à côté du cast cuit.
+- **Duels** : `buildArenaAtlas` retombe sur `FOES.marek` pour tout rival autre que Marek et Vessa : Orla, Cassius, Ilse, Rhosk et Tobin se battent sous l'art de Marek.
+- **Rhosk et Tobin** n'ont aucune place en ville (ni `PEOPLE`, ni `PLAZA_SPOTS`).
+- **Les textes** ne donnent le genre que d'Anwen (Sœur) et de Hilde (« She stitches it ») parmi les personnes ; ils ne disent aucune couleur de cheveux ou de tenue : celles de `roster.ts` ne servent qu'aux portraits générés.
+- **Texture** : 382 images de production sur 672. Une feuille complète 30, debout 12.
+- **Coût** : les feuilles de Ren, 4,63 $ en neuf requêtes (registre : 2,03 + 2,60).
+- **§ 14** demande 27 à 34 images par rival d'après leurs compétences : Vessa et Cassius 34, Marek, Ilse et Rhosk 32, Orla 29, Tobin 27. Une page ×3 tient 70 cases : Ren à 39 plus un rival à 32 ou 34 dépasse de 1 à 3 : [?] à régler au lot de Marek.
+
+### La fiche — deux versions
+- Page privée https://claude.ai/artifact/NTryUL8JPGubNn2tTW8rkA (source `briefs/fiche-casting.html`). [KO → rebâtie] La version 1 (32 cartes, planches a, b, P, N1, N2, C) n'a pas été remplie. L'opérateur, mot pour mot : « non rebatie la fiche en te basant aussi \sur ces references joints provenant de compte GPT que j'ai genere », avec deux planches : repos, marche et attaques dessinés pour douze figures. Elles ont changé sept figures de rivaux et de personnes sur quinze, et donné une figure à Hilde.
+- Version 2 : 35 cartes, collection `decisions` vide à la publication, relue par `list` : 35 documents, cliqués le 01/11 entre 19 h 42 et 19 h 49 UTC, aucune note. Message de l'opérateur, mot pour mot : « Fiche remplie ».
+
+| # | Décision | Choix de l'opérateur |
+|---|---|---|
+| A1 | Archiver G1, G2 | « Archiver, je cherche les PNG d'origine » |
+| A2 | Cedric, Lion | « Figures seulement, noms du jeu gardés » |
+| C1 | Casting et G1, G2 comme sources de production | « Oui, comme les planches PNJ » |
+| C2 | Portée | « Version 2 seule, quartier inchangé » |
+| C3 | Couleurs | « La planche fait foi » |
+| T1 | Texture | « Debout, sauf Marek et Orla » |
+| R-marek | Marek | « G1 panneau 3 » |
+| R-vessa | Vessa | « a n° 11 Duelist » |
+| R-orla | Orla | « G1 panneau 5 » |
+| R-cassius | Cassius | « G2 n° 06 Rival » |
+| R-ilse | Ilse | « G2 n° 03 Prêtresse » |
+| R-rhosk | Rhosk | « G1 panneau 6 » |
+| R-tobin | Tobin | « G2 n° 01 Cedric » |
+| R-ville | Tobin, Rhosk en ville | « Portrait seulement » |
+| P-odo | Odo | « G2 n° 04 Organisateur » |
+| P-anwen | Anwen | « P n° 11 Prêtresse » |
+| P-hilde | Hilde | « G2 n° 05 Marchande itinérante » |
+| P-corvin | Corvin | « G2 n° 02 Lion » |
+| P-brann | Brann | « P n° 05 Capitaine des Gardes » |
+| P-pip | Pip | « b n° 19 Traveling Merchant » |
+| P-lio | Lio | « N2 n° 23 Tavern Owner » |
+| P-wren | Wren | « P n° 06 Héraut » |
+| N0 | Ce qu'on garde | « D'accord » |
+| N1 à N5 | Marchand N1 n° 01, voyageuse N1 n° 08, dame noble N1 n° 10, garçon N1 n° 11, fillette N1 n° 12 | « Cuire », chacun |
+| N6 | Le reste de la série | « En réserve » |
+| N7 | Trois panneaux de G1 sans rôle | **« Leur donner un rôle (en note) », note vide** |
+| X1 | Feuilles ×3 | « Les sept rivaux » |
+| X2 | Ordre | « Marek, Vessa, Orla, Cassius, Ilse, Rhosk, Tobin » |
+| X3 | Poses de charge | « Ren seul, avant Marek » |
+| X4 | Armes | « Planche, puis texte pour Vessa, Ilse et Tobin » |
+| X5 | Plafond | « Une tâche de 5 $ par combattant » |
+
+- [?] **N7 reste ouverte** : le choix demande une note et la note est vide. La dame noble au bâton, le mage à la lanterne et la version du héros attendent la réponse de l'opérateur ; rien n'est cuit pour eux.
+- R-marek vaut la confirmation de planche exigée après la Passe RC3 : Marek = G1 panneau 3, environ 3,4 têtes à la règle. La génération de ses feuilles ×3 reste à lancer depuis le dossier principal : `.env.local` n'existe pas dans ce worktree, et il n'est pas copié.
+
+### Fait — [OK]
+- `combat-casting-2026-11-01-g1.webp` et `-g2.webp` archivés à l'octet dans `art-lab/characters/reference/sources/` avec leur fiche (SHA-256 `91dffa0c…`, `aefcba3f…`) ; ce sont des WebP réencodés sans C2PA, les PNG d'origine sont à retrouver par l'opérateur (A1).
+- Les six fiches des planches de casting reçoivent un champ `productionUse` daté (C1) ; leurs autres champs ne changent pas.
+- `art-lab/characters/reference/README.md` : les deux planches. `npm run art:validate`.
+
+### Restes [?]
+- Les citadins et personnes ne marchent que debout, sauf Marek et Orla : le plan monte à 748 images, 666 si les places ne chargent ni Mara ni Bram, sous les 672 garanties, marge 6.
+- La tâche se poursuit par lots : feuilles de ville ×2, places et portraits, puis feuilles ×3 dans l'ordre X2. Rien en production sans fiche de lot.
+
+### Pensée
+- Une fiche de casting se bâtit sur toutes les références que l'opérateur a, pas sur celles du dépôt : demander avant la première version s'il en existe d'autres. Deux planches jointes après coup ont changé la moitié des figures.
+- Un choix qui renvoie à une note se relit avec sa note : une note vide est une question ouverte, pas un choix.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -521,6 +590,7 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
   - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
+- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2.
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantissait 336 images et en porte 322 (dix feuilles,

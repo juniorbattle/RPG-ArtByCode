@@ -28,6 +28,9 @@ rights, which have not been exhaustively verified**. Not an authorisation to rep
 | same series, NPC 17-24 | C — the 24-NPC series | `3b30b930…d6d4` | `sources/merchant-district-night-npc-17-24.webp` |
 | "Cité du Tournoi — Merchant District (Night) — NPC CHARACTER REFERENCE SHEET", 14 characters | C — **complementary** reference (a distinct generation): key characters, costumes, elaborate silhouettes; does not replace the x2 v1 baseline for standard NPCs | `05c101db…97af` | `sources/merchant-district-night-npc-character-reference-sheet.webp` |
 
+| Operator's combat casting, 2026-11-01, G1 (six panels) | casting source, journal Passe CA1 | `91dffa0c…594d` | `sources/combat-casting-2026-11-01-g1.webp` |
+| same, G2 (six numbered panels) | casting source, journal Passe CA1 | `aefcba3f…b136` | `sources/combat-casting-2026-11-01-g2.webp` |
+
 All three are re-encoded copies (WebP pasted in a working session), not the original ChatGPT files; each is archived byte for byte with
 its record (`sources/<name>.source.json`: format, content, classification, provenance, rights, derived assets).
 

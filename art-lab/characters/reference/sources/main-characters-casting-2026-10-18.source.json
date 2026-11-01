@@ -30,5 +30,10 @@
     "record": "main-characters-casting-2026-10-18-original.source.json",
     "sha256": "1c68adcddde5f243b65be8e483ba6d9485dfe75f63b06249c621403ae1f6e793",
     "note": "the original PNG of this sheet, supplied by the operator, archived next to this copy with its own record (C2PA manifest read, signature not verified); this file and the fields above are unchanged"
+  },
+  "productionUse": {
+    "date": "2026-11-01",
+    "pass": "CA1",
+    "decision": "operator, casting sheet C1: « Oui, comme les planches PNJ »: use as a source, production included, subject to applicable third-party rights, not exhaustively verified; the figures validated one by one on the same sheet (journal Passe CA1); the fields above are unchanged"
   }
 }
