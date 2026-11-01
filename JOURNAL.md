@@ -556,7 +556,7 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
 - `build-character.mjs --check` : les quinze feuilles reconstruites à l'identique.
 
 ### Restes [?]
-- La fiche de lot de l'opérateur, puis l'entrée en production derrière `flags.v2`. Sur une place, `cast=candidate` n'a pas besoin de retirer Mara ni Bram pour ces quinze feuilles (598 images) ; il le faudra avec les cinq citadins.
+- La fiche de lot de l'opérateur, page privée https://claude.ai/artifact/6X4cYQuL3BZdZbq2YKGcqY (source `briefs/fiche-casting-lot1.html`, 17 cartes, N7 reposée, `decisions` vide à la publication), puis l'entrée en production derrière `flags.v2`. Sur une place, `cast=candidate` n'a pas besoin de retirer Mara ni Bram pour ces quinze feuilles (598 images) ; il le faudra avec les cinq citadins.
 - Vessa et Pip sont petits sur leur planche (125 et 119 px) : leur détail reste en dessous des autres.
 - N7 et les PNG d'origine de G1 et G2 attendent toujours l'opérateur.
 - Les citadins (lot 2), puis Ren et les feuilles ×3 dans l'ordre X2.
