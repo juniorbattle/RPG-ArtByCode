@@ -8,5 +8,6 @@ export const { id, source, prepare, frames } = standing({
   pitch: 1.38,
   views: { down: '1083,926,1141,1040', up: '1322,926,1370,1040', side: '1375,926,1418,1040' },
   floor: true,
+  k: 32,
   mirror: ['side'],
 });

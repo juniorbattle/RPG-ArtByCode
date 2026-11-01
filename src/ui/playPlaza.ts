@@ -62,8 +62,8 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   // the version 2's sound (lot V8): the square's ambience and the day state's music, after the person's first gesture
   void import('../audio/Sound').then((m) => m.sound().setScene(kind, look, !!playerMatch(st) && st.slot === 'afternoon', st.seed));
   // DEV only: the faces of the casting's candidate sheets (`cast=candidate`, journal Passe CA2)
-  const trialFaces = import.meta.env.DEV && b.params.get('cast') === 'candidate' ? (await import('../lab/plazaCast')).plazaPortraits() : undefined;
-  await Promise.all([fontsReady(), preloadPortraits(trialFaces)]);
+  const trialFaces = import.meta.env.DEV && b.params.get('cast') === 'candidate' ? (await import('../lab/plazaCast')).plazaPortraits() : {};
+  await Promise.all([fontsReady(), preloadPortraits({ ...(await import('../characters/PlazaCast')).plazaFaces(), ...trialFaces })]);
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();

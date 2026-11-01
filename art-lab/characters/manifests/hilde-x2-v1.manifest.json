@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "hilde-x2-v1",
   "kind": "character",
-  "status": "candidate",
+  "status": "approved",
   "source": "art-lab/characters/source/hilde-x2-v1.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/hilde-x2-v1.png",
@@ -21,7 +21,12 @@
       "note": "the operator's casting sheet, journal Passe CA1; cleared as a production source there (C1)"
     }
   ],
-  "approved": false,
-  "runtimeUse": "lab",
-  "notes": "Candidate for Hilde, shown only by the DEV parameter cast=candidate on a square of the version 2 (journal Passe CA2); production waits for the operator's lot sheet."
+  "approved": true,
+  "runtimeUse": "production",
+  "notes": "APPROVED FOR PRODUCTION by the operator on the casting's lot sheet (journal Passe CA3): « Production », then on the proportions « Toutes après correction (Recommandé) »; version 2 only, the district unchanged. Not a Gold Master. Loaded by the squares and a version 2 game's portraits (src/characters/PlazaCast.ts).",
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-11-01",
+    "note": "APPROVED FOR PRODUCTION by the operator on the casting's lot sheet (journal Passe CA3): « Production », then on the proportions « Toutes après correction (Recommandé) »; version 2 only, the district unchanged."
+  }
 }

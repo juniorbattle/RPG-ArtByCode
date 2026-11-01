@@ -8,5 +8,7 @@ export const { id, source, prepare, frames } = standing({
   pitch: 1.66,
   views: { down: '585,474,664,622', up: '682,474,757,622', side: '485,474,573,622' },
   floor: true,
+  emblem: { down: [[18, 48, 30, 58], [9, 15, 21, 28]], up: [[32, 49, 47, 68]] },
+  plain: { up: [[31, 47, 48, 68]] },
   mirror: [],
 });

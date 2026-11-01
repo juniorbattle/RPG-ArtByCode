@@ -5,7 +5,7 @@ import { standing } from './lib/standing.mjs';
 export const { id, source, prepare, frames } = standing({
   "id": "orla-x2-v1",
   "sheet": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g1.webp",
-  "pitch": 2,
+  "pitch": 2.04,
   "views": {
     "down": "524,534,617,706",
     "up": "914,534,1010,706",
@@ -16,9 +16,12 @@ export const { id, source, prepare, frames } = standing({
     "bgThreshold": 50
   },
   "floor": true,
+  "head": { "k": 1.2 },
+  
   "pocket": [103, 104, 102],
   "mirror": [],
   "walk": {
+    "head": { "k": 1.2 },
     "pitch": 1.56,
     "mirror": true,
     "order": [

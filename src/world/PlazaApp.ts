@@ -16,7 +16,8 @@ import { PerfMonitor } from '../debug/PerfMonitor';
 import { SpriteAtlas } from '../characters/SpriteAtlas';
 import { SpriteRenderer, type Actor } from '../characters/SpriteRenderer';
 import { crowdVariants, GUARD_A, GUARD_B, HOODED, PLAYER, PORTER, type CharSpec } from '../characters/SpriteGenerator';
-import { castEntries, loadProductionCast, type CastMember } from '../characters/BakedCast';
+import { loadProductionCast, type CastMember } from '../characters/BakedCast';
+import { plazaCastEntries } from '../characters/PlazaCast';
 import { variantOf } from '../characters/Variants';
 import { fiveViewFacing } from '../characters/ActorSystem';
 import type { Anim, Dir } from '../characters/SpriteGenerator';
@@ -41,7 +42,7 @@ export interface PlazaOptions {
 
 /** the roles a square shows, and the archetype standing for each (a baked sheet replaces the archetype when one is approved) */
 const ROLE_ARCHETYPE: Record<string, string> = { guardA: 'guardA', guardB: 'guardB', hooded: 'hooded', porter: 'porter' };
-/** the people of the version 2 without a baked sheet: generated, provisional (the list of characters to bake: journal Passe V5) */
+/** the people of the version 2, a generated sprite under each until their baked sheet is approved (src/characters/PlazaCast.ts stands in for it: journal Passes V5 / CA3) */
 export const PROVISIONAL = ['odo', 'anwen', 'hilde', 'corvin', 'pip', 'lio', 'orla', 'vessa', 'marek', 'ilse', 'cassius', 'drill', 'bard'];
 /** the key light of a square by the look (journal Passe VP1, « proposé »): a square is closed on three sides (the north and the two rows), open
  *  to the south where the camera stands, so a low light can only reach its floor through that open side: the moon and the sun come from the
@@ -257,8 +258,8 @@ export class PlazaApp {
     this.opts.onProgress('people', 0.97);
     const castMode = this.opts.params.get('cast');
     // DEV only: the casting's candidate sheets (`cast=candidate`, src/lab/plazaCast.ts, journal Passe CA2)
-    const trial = import.meta.env.DEV && castMode === 'candidate' ? (await import('../lab/plazaCast')).plazaEntries(castEntries(false)) : undefined;
-    const cast = castMode === 'generated' ? null : await loadProductionCast(!!trial, 'approved', undefined, trial);
+    const trial = import.meta.env.DEV && castMode === 'candidate' ? (await import('../lab/plazaCast')).plazaEntries(plazaCastEntries()) : undefined;
+    const cast = castMode === 'generated' ? null : await loadProductionCast(!!trial, 'approved', undefined, trial ?? plazaCastEntries());
     this.cast = cast?.cast ?? null;
     const prov = crowdVariants(7351, PROVISIONAL.length).map((s, i): CharSpec => ({ ...s, id: `prov-${PROVISIONAL[i]}` }));
     this.atlas = SpriteAtlas.build([PLAYER, GUARD_A, GUARD_B, HOODED, PORTER, ...crowdVariants(1842, 5), ...prov], cast?.sheets ?? [], this.renderer.capabilities.maxTextureSize);

@@ -1,6 +1,6 @@
 {
   "id": "anwen-x2-v1",
-  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA2)",
+  "status": "APPROVED PRODUCTION ASSET (operator, casting lot sheet, journal Passe CA3), not declared a Gold Master",
   "request": {
     "date": "2026-11-01",
     "by": "operator, casting sheet of journal Passe CA1",
@@ -40,7 +40,7 @@
     "art-lab/characters/provenance/anwen-x2-v1/view-side.png": "92b48586e0a62f6658b46f0332dc81778e4e5a8dc5f3766073cedbf21aa6f3a3",
     "art-lab/characters/provenance/anwen-x2-v1/build.json": "615135d1f579b1dd0e302137aca9586cfe1470111ea8e926bb507f381185b4ce",
     "art-lab/characters/rigs/anwen-x2-v1.rig.mjs": "0cd878ca5951087a17f552cdb6453bd2f83fdb6e8147f7762b815c14c36f43fa",
-    "art-lab/characters/rigs/lib/standing.mjs": "c96e143681ad2b51b3a854b129a2f017e286ab00af68442d0a05f2dc15f92099",
+    "art-lab/characters/rigs/lib/standing.mjs": "8ee0cab9d32fa1238c0b77ad27f5572c7d6af81a956c6ea6d18c2510e5976521",
     "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
     "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
     "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",

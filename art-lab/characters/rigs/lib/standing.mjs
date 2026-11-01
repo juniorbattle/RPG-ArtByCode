@@ -66,6 +66,46 @@ function tidy(v) {
   }
   return o;
 }
+/** the head enlarged (the operator's note on the lot sheet: « des differences de proportions »; the operator's answer « Agrandir les têtes », journal Passe CA3): the
+ *  rows above the chin scaled by k from the chin's centre, nearest texel, the rest of the figure kept; the cast's heads are 29 to 36 texels wide, the
+ *  figures of the combat casting 23 to 28 */
+function bigHead(v, chinFrac, k) {
+  const top = R.top(v), H = R.FOOT - top, chin = top + Math.round(H * chinFrac); let a = 64, b = -1;
+  for (let y = top; y < chin; y++) for (let x = 0; x < R.FW; x++) if (R.opaque(v, x, y)) { a = Math.min(a, x); b = Math.max(b, x); }
+  const cx = (a + b) / 2, o = R.erase(v, (x, y) => y < chin - 1), newTop = Math.round(chin - (chin - top) * k);
+  if (newTop < 1) throw new Error(`head enlarged above the frame (row ${newTop}): raise the pitch`);
+  for (let y = newTop; y < chin; y++) for (let x = 1; x < R.FW - 1; x++) {
+    const sx = Math.round(cx + (x - cx) / k), sy = Math.round(chin + (y - chin) / k), c = sy < chin ? R.get(v, sx, sy) : null;
+    if (c) R.put(o, x, y, c);
+  }
+  return o;
+}
+/** gold embroidery and emblems out of a cloth (the operator's note « enleve les signes/emblemes », answer « Fleurs de lys et emblèmes »): inside each box, a gold
+ *  texel takes the nearest texel of its row that is not gold; the gold borders, outside the boxes, stay */
+function deEmblem(v, boxes) {
+  const gold = (c) => { const q = R.oklab(c); return q[2] > 0.05 && q[1] > -0.03 && q[1] < 0.1 && q[0] > 0.32; };
+  const o = R.clone(v);
+  for (const [x0, y0, x1, y1] of boxes) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const c = R.get(v, x, y); if (!c || !gold(c)) continue;
+    let f = null; for (let d = 1; d <= 16 && !f; d++) for (const e of [x - d, x + d]) { const n = R.get(v, e, y); if (n && !gold(n) && R.oklab(n)[0] > 0.2) { f = n; break; } }
+    if (f) R.put(o, x, y, f);
+  }
+  return o;
+}
+/** a large emblem on a plain cloth: its gold gone, its pale ghost stayed, so each row of the box takes the median light of the cloth four columns either side
+ *  of it, its own row and the next (the first version copied the texel at the box's edge, often a fold's shadow: « bloc sombre carré », the third critique) */
+function plainCloth(v, boxes) {
+  const o = R.clone(v);
+  for (const [x0, y0, x1, y1] of boxes) for (let y = y0; y <= y1; y++) {
+    const near = [];
+    for (const yy of [y - 1, y, y + 1]) for (const x of [x0 - 4, x0 - 3, x0 - 2, x0 - 1, x1 + 1, x1 + 2, x1 + 3, x1 + 4]) { const c = R.get(v, x, yy); if (c && R.oklab(c)[0] > 0.3) near.push(c); }
+    if (!near.length) continue;
+    near.sort((p, q) => R.oklab(p)[0] - R.oklab(q)[0]);
+    const c = near[Math.floor(near.length * 0.6)];
+    for (let x = x0; x <= x1; x++) if (R.opaque(v, x, y)) R.put(o, x, y, c);
+  }
+  return o;
+}
 /** soles on the foot row and the feet (the lowest three rows) centred on the anchor column 31.5 */
 function align(v) {
   const b = R.bottom(v); let x0 = 64, x1 = 0;
@@ -102,11 +142,11 @@ function sideWalk(sheet, walk, options, pal) {
     for (let y = top; y < top + 45; y++) for (let x = 0; x < v.W; x++) if (R.opaque(v, x, y)) { l = Math.min(l, x); r = Math.max(r, x); }
     // on the body, what passes the frame's ring cut off: a neighbouring frame's cape touching this one, on a row that overlaps
     const c = R.erase(R.shift(v, Math.round(31.5 - (l + r) / 2), R.FOOT - R.bottom(v)), (x) => x <= 0 || x >= R.FW - 1);
-    return largest(c);
+    return walk.head ? bigHead(largest(c), walk.head.chin ?? 0.3, walk.head.k) : largest(c);
   });
 }
 
-export function standing({ id, sheet, pitch, views, mirror = [], options = { closingFrom: 48 }, k = 64, erase = {}, chest = 0.5, floor = false, walk = null, pocket = null }) {
+export function standing({ id, sheet, pitch, views, mirror = [], options = { closingFrom: 48 }, k = 64, erase = {}, chest = 0.5, floor = false, walk = null, pocket = null, head = null, emblem = {}, plain = {} }) {
   const source = { sheet, pitch, views, palette: { k }, options };
   const prepare = (dir, v) => {
     // `pocket`: the sheet's background colour enclosed between the legs (the second blind critique's « tampon gris »), a colour of the palette; only for a
@@ -114,7 +154,10 @@ export function standing({ id, sheet, pitch, views, mirror = [], options = { clo
     const raw = pocket ? R.erase(v, (x, y) => { const c = y >= 60 && R.get(v, x, y); return !!c && Math.abs(c[0] - pocket[0]) + Math.abs(c[1] - pocket[1]) + Math.abs(c[2] - pocket[2]) <= 6; }) : v;
     let o = align(deshadow(largest(mirror.includes(dir) ? R.mirror(raw) : raw), floor));
     for (const b of erase[dir] ?? []) o = R.erase(o, R.rect(...b));
-    return align(largest(tidy(o)));
+    o = align(largest(tidy(o)));
+    if (emblem[dir]) o = deEmblem(o, emblem[dir]);
+    if (plain[dir]) o = plainCloth(o, plain[dir]);
+    return head ? bigHead(o, head.chin ?? 0.3, head.k) : o;
   };
   const frames = (V) => {
     const out = [];

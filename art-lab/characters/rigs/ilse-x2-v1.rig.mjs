@@ -9,5 +9,6 @@ export const { id, source, prepare, frames } = standing({
   views: { down: '1086,54,1153,212', up: '1222,54,1288,212', side: '1157,54,1220,212' },
   options: { closingFrom: 48, bgThreshold: 50 },   // the grey sheet's soft edge (90 ate grey hair and a blue cape, --holes the steel and the faces)
   floor: true,
+  head: { k: 1.2 },
   mirror: [],
 });

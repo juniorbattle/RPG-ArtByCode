@@ -87,7 +87,8 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   // the version 2's sound (lot V8): the district's ambience and the day state's music; today's game makes none
   if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed));
   frame();
-  await Promise.all([fontsReady(), preloadPortraits()]);
+  // a version 2 game: the casting's approved faces (journal Passe CA3)
+  await Promise.all([fontsReady(), preloadPortraits(isV2(st) ? (await import('../characters/PlazaCast')).plazaFaces() : undefined)]);
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();

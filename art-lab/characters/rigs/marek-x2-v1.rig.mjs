@@ -5,7 +5,7 @@ import { standing } from './lib/standing.mjs';
 export const { id, source, prepare, frames } = standing({
   "id": "marek-x2-v1",
   "sheet": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g1.webp",
-  "pitch": 1.92,
+  "pitch": 2,
   "views": {
     "down": "1045,25,1141,190",
     "up": "1415,25,1516,190",
@@ -16,8 +16,12 @@ export const { id, source, prepare, frames } = standing({
     "bgThreshold": 50
   },
   "floor": true,
+  "plain": { "up": [[25, 46, 40, 69]] },
+  "head": { "k": 1.3 },
+  "emblem": { "down": [[27, 42, 37, 51], [26, 58, 38, 71]], "up": [[24, 49, 38, 69], [12, 71, 50, 80]], "side": [[38, 49, 56, 78]] },
   "mirror": [],
   "walk": {
+    "head": { "k": 1.3 },
     "pitch": 1.58,
     "mirror": true,
     "boxes": [

@@ -12,7 +12,9 @@ const cast = await load('/src/characters/BakedCast.ts');
 
 const manifests = fs.readdirSync(path.join(ROOT, 'art-lab/characters/manifests')).filter((f) => f.endsWith('.manifest.json'))
   .map((f) => JSON.parse(fs.readFileSync(path.join(ROOT, 'art-lab/characters/manifests', f), 'utf8')));
-const production = manifests.filter((m) => m.runtimeUse === 'production').map((m) => m.id).sort();
+// the casting's sheets approved for the version 2's squares (journal Passe CA3) have their own list, src/characters/PlazaCast.ts: the district's cast never loads them
+const SQUARES = ['anwen', 'cassius', 'hilde', 'ilse', 'lio', 'orla', 'rhosk', 'vessa'].map((k) => `${k}-x2-v1`);
+const production = manifests.filter((m) => m.runtimeUse === 'production' && !SQUARES.includes(m.id)).map((m) => m.id).sort();
 
 const entry = (id, status, approved, runtimeUse) => ({ manifest: { id, status, approved, runtimeUse }, png: '', json: null, files: {}, replaces: [], scale: 1 });
 
