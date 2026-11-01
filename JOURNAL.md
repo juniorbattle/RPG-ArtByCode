@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV3 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3 et V2B1) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1 et FX1) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -47,135 +47,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/34-passes-VP8.md`](journal/34-passes-VP8.md) | VP8 (séance cloud « Version 2 ») | 27/10 → 28/10 |
 | [`journal/35-passes-VP9.md`](journal/35-passes-VP9.md) | VP9 (séance cloud « Version 2 ») | 28/10 |
 | [`journal/36-passes-FV1-FV3.md`](journal/36-passes-FV1-FV3.md) | FV1, FV2, FV3 | 29/10 |
+| [`journal/37-passes-FV4-FV5.md`](journal/37-passes-FV4-FV5.md) | FV4, FV5 | 29/10 |
 
 ---
-
-## Passe FV4 — Les preuves locales de la version 2 : budget GPU, cuisson neuve, visibilité, arène vivante, revue en rendu matériel (2026-10-29)
-
-### Demande, mot pour mot
-- Opérateur : « Fiche rempli oui tu peux gerer les preuves locales oui » (le même message que la Passe FV3) ; la séance de la Passe FV3 a ouvert
-  celle-ci pour les preuves que la séance cloud n'avait pas pu faire, faute de GPU.
-- Branche `preuves-v2-fv4` depuis `main` (`6016c7c`). Aucun changement du jeu : `src/` n'est pas touché ; trois outils étendus (ci-dessous).
-- Conditions : serveur DEV `dev-strict` (:5186) par `preview_start`, son onglet fermé aussitôt ; chaque série en arrière-plan, attendue jusqu'au
-  bout dans la séance ; Chrome sur la **Radeon 780M** (ANGLE D3D11) ; témoin de contention au seuil de 15 %. Le témoin était vide avant la série ;
-  pendant la série 1080p, les Chrome sans fenêtre d'une séance RPGCards en cours (« Protagoniste : marche de profil… ») ont pris 17 à 35 % de la
-  780M par moments (PID 8796, 22872, 28372, 23068) : ces tours sont marqués et écartés, rien n'a été touché.
-
-### Les outils étendus — [OK]
-- `tools/perf.mjs` : la page d'une place v2 (`window.__plaza`) ; la définition lue sur le canvas quand la page n'en publie pas (`PlazaApp.snapshot()`
-  n'a pas `resolution` : le résumé aurait planté, comme Lantern Row en Passe Q4).
-- `tools/startup.mjs` : une place v2 rapporte sa construction et sa cuisson de visibilité (`vis.ms`, poses, pages, cache) au lieu des sondes de la
-  ville (révélation, forge, régénération), qu'elle n'a pas.
-- `tools/cadence.mjs` : les rendus comptés aussi sur `window.__arena` et `window.__plaza` (seul `__app` l'était : le duel et les places n'auraient
-  donné aucun intervalle) ; la définition lue sur le canvas.
-
-### 1. Le budget GPU (E24, « Pas plus cher que la nuit B, à définition égale ») — [OK] les places dessous ; [?] le quai v2 en B à égalité, +0,1 ms
-- Variantes entrelacées dans une seule session de navigateur ; « écart » = la médiane des écarts **tour par tour** à la nuit B (les deux variantes
-  du même tour, propres toutes deux) : la dérive d'un tour à l'autre (la nuit B de 8,57 à 10,43 ms en 1080p) fausse une comparaison de médianes
-  prises dans des tours différents. 1080p : 5 tours ; 2560 × 1440 : 4 tours, **tous propres**. Le héros à l'arrivée de chaque place.
-
-| Page (ms de GPU par image, médiane des tours propres) | 1920 × 1080 | écart à B | 2560 × 1440 | écart à B | passe de scène 1080p / 1440p |
-|---|---|---|---|---|---|
-| nuit B (`seed=1842&clean=1&camera=B`) | 9,29 (4/5) | — | 14,13 (4/4) | — | 5,95 / 8,96 |
-| quai v2, plan A, nuit (`skyline=arena&heraldry=tournament`) | 8,03 (4/5) | −0,76 | 12,84 (4/4) | −1,24 | 4,84 / 7,71 |
-| quai v2, plan B, nuit (idem) | 9,83 (4/5) | **+0,13** | 14,23 (4/4) | **+0,14** | 6,34 / 9,00 |
-| quai d'une partie v2, matin (`v2-day1-morning`) | 8,56 (4/5) | −0,64 | 12,46 (4/4) | −1,73 | 5,54 / 8,01 |
-| duel v2, nuit (`scene=arena&v2=1`) | 9,09 (4/5) | −0,10 | 13,21 (4/4) | −0,88 | 5,52 / 8,09 |
-| duel v2, midi (`&time=midday`) | 9,05 (4/5) | −0,25 | 11,65 (4/4) | −2,44 | 5,66 / 7,32 |
-| parvis, matin / midi / nuit | 7,65 / 7,72 / 8,06 | −1,67 / −1,72 / −1,11 | 11,35 / 11,44 / 12,28 | −2,73 / −2,66 / −1,83 | |
-| lices, matin / midi / fin de journée / nuit | 6,91 / 6,83 / 6,98 / 8,55 | −1,67 / −1,78 / −1,81 / −0,85 | 11,24 / 11,27 / 11,23 / 12,83 | −2,87 / −2,82 / −2,90 / −1,27 | |
-| halle, matin / après-midi / nuit | 7,37 / 7,21 / 7,94 | −1,92 / −1,60 / −1,08 | 11,22 / 11,39 / 12,74 | −2,89 / −2,72 / −1,36 | |
-
-- **Les trois places sont sous la nuit B** à chaque moment, de 0,85 à 1,92 ms en 1080p et de 1,27 à 2,90 ms en 1440p (leur nuit est leur moment le
-  plus cher : 15 à 16 lumières allumées). Leurs trois cadrages (série à part, 1080p, 4 tours tous propres, nuit B 8,72 ms) : parvis de nuit −0,76
-  à −1,76, de midi −1,60 à −2,55 ; lices de nuit −0,83 à −1,52, de midi −1,69 à −2,16 ; halle de nuit **−0,13 à −1,32** (l'arrivée et la place,
-  ses cadrages hauts, les plus proches de la nuit B), d'après-midi −1,53 à −2,56. Aucun cadrage ne dépasse.
-- **Le quai d'une partie v2 en plan B, la nuit, dépasse de 0,1 ms** : +0,01 à +0,28 ms selon le tour en 1440p (médiane 14,23 contre 14,13, +0,7 %),
-  −0,02 à +0,64 en 1080p (médiane des écarts +0,13). Le surcoût est partagé entre la passe de scène (+0,04 ms en 1440p) et le bloom (+0,03) ;
-  c'est la scène de la nuit B (mêmes 107 appels, 211,6 k triangles contre 211,1 k) avec les emblèmes du tournoi sur ses drapeaux (Passe VP3).
-  En plan A, où l'arène remplace la cathédrale (`skyline=arena`, Passe VP8), le quai v2 coûte moins que la nuit B. **Rien n'est changé au rendu :
-  décision de l'opérateur**, avec sa réserve (« Mais rien n'est confirme car il y a peut etre des zones plus grande et dense »).
-- Le duel v2 : un tour de 1080p à 477 ms (une valeur aberrante du minuteur, sans contention relevée), sans effet sur la médiane ; les autres
-  tours dessous.
-
-### 2. La cuisson de visibilité neuve des places — [OK] 164 à 260 ms sur GPU
-- `tools/startup.mjs`, `viscache=0`, 4 chargements, 1080p, aucune contention : parvis **565 poses en 260 ms** [255-287] (18 pages), lices **323 en 164
-  ms** [158-178] (11 pages), halle **513 en 260 ms** [257-263] (17 pages), de jour comme de nuit ; construction de la place 250 à 490 ms (les lices
-  les plus longues) ; page prête en 2,0 à 2,25 s, contre 1,53 s pour la nuit B (sa cuisson neuve : 213 ms). La plus longue tâche : 0,5 à 0,65 s.
-  En rendu logiciel, la séance cloud mesurait 14 à 49 s (Passe VP9). Les poses : celles de la Passe VP9 (parvis 565, lices 323, halle 513).
-
-### 3. La visibilité des places sur GPU — [OK] 0 px sur 101 vues ; le contrôle négatif à 27 215 px
-- `tools/plaza-shots.mjs`, 1920 × 1080, `static=1`, élaguée contre `vis=0`, comparées au seuil 0 (un script hors dépôt : tout écart d'un niveau
-  compte) : 9 états (le parvis à midi et la nuit ; les lices au matin, à midi, en fin de journée et la nuit ; la halle au matin, l'après-midi et la
-  nuit), 12 places du héros par place (les quatre coins, le milieu des quatre bords, quatre places intérieures ; les cadrages de chaque zone), 13
-  pour la halle : **0 px différent sur 101 vues**. Témoin : la halle de nuit chargée deux fois, 0 px sur 13 vues.
-- **Le pixel du coin ouest de la place festive** (Passe VP7, −11 / −9,6) : 0 px à −11 / −9,6 et −10,5 / −9,6 sur les trois états de la halle. La
-  place festive de VP7 a été rebâtie en place de la halle (Passe VP9) : son mur de plâtre n'existe plus, rien à expliquer. `tools/vis-why.mjs` ne
-  sait que le district ; aucun résidu ne l'a demandé.
-- **Contrôle négatif** : [KO] une cuisson dix fois plus grossière (`visscale=0.1`, 52 pièces cachées au lieu de 48) ne perd que 2 px d'un niveau sur
-  une vue : trop faible ; [KO] le héros hors de sa marche : les cadrages bornent la caméra, rien de neuf. [OK] la caméra forcée par JS derrière la
-  halle (depuis le nord, des faces que la cuisson a écartées) : **27 215 px** différents (`fv4-v2-review/vis-controle-negatif-diff.png`).
-
-### 4. L'arène vivante et le parcours du combat — [OK]
-- `tools/arena-scene-check.mjs` sur GPU (il échouait en rendu logiciel, « advanced 0 », Passe V0) : **PASS** dans les trois règles. Le contrôle
-  vivant avance de 4,867 s (défaut, `combat=dynamic`) et 4,917 s (`v2=1`) en 272-273 images ; empreintes : le prototype (défaut), `DYNAMIC_SIM_HASH`,
-  `V2_SIM_HASH` (« sameAsRecorded ») ; 42 / 63 / 84 rendus de moments sans erreur ; télégraphe 6,94:1 (deutéranopie 7,15), 6,77:1 sous les
-  nouvelles règles ; le sol dégagé du HUD dans 22, 44 et 77 cas.
-- `tools/play-flow.mjs` : `V2=1` victoire (1842, jour 2), rejeu Node `5cfe614a12cc08bd` = navigateur ; `V2=1` défaite (7719, jour 2) `671a95a659b6ac06` =
-  navigateur ; par défaut, victoire : **`0025acce7a403773`**, la même empreinte que les Passes UI3, UI4 et V0 : le jeu par défaut n'a pas bougé.
-  « all checks passed », aucune erreur de page.
-
-### 5. Les captures de revue, en rendu matériel — [OK] page privée
-- **Page** : https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ (privée) : le tableau du budget ; les trois places à chaque moment dans leurs trois
-  cadrages (30 vues, 1280 × 720, le héros posé, 40 pas de jeu avant la photo, foule en place, l'interface masquée) ; six séquences en mouvement
-  (0,8 s, 12 images : la cour du parvis à midi et la nuit, les lices à midi et la nuit, la place de la halle l'après-midi et la nuit : les flammes,
-  le jet de la fontaine, les poussières, la foule) ; les cinq cinématiques, une image par réplique ; les écrans (le duel chargé de nuit et de jour,
-  le dialogue P4 au téléphone couché aussi, les compétences, l'équipement, « Here » P5, la fiche de match, la victoire et la défaite P6).
-- Les cinématiques : une partie v2 (graine 1842) menée par `window.__game` (deux entraînements avec Orla au jour 1, `orla-recruitable` ; les combats
-  gagnés au résultat fixe des états nommés), chaque page rouverte avec `&cutscene=1` : arrivée (3 répliques), coupe (jour 5, soir, 2), Orla (jour 7,
-  3), veille de la finale (jour 9, 2), finale (jour 10, 2) ; chacune marquée vue (`scene:<id>`).
-- Gardées dans le dépôt : `screenshots/calibration/fv4-v2-review/` (17 images : un cadrage par place et par moment, la première réplique de
-  chaque cinématique, le duel chargé, la différence du contrôle négatif).
-- [KO → corrigé dans la séance] Les premières captures portaient le voile de l'écran de chargement (fondu CSS de 0,8 s, Passe UI4) : la boucle tenue,
-  la photo partait avant la fin du fondu ; le script de revue masque `#loading`, et `tools/arena-scene-shots.mjs` coupe les transitions avec
-  `FREEZE_CSS=1` (sans lui, ses captures portent le voile depuis la Passe UI4).
-
-### 6. La cadence perçue — [OK] 55 images/s
-- `tools/cadence.mjs`, fenêtre discrète, `max` (2560 × 1267, dpr 1,75), plafond `a60`, deux tours : la nuit B, la halle de nuit, les lices de nuit,
-  le duel v2 : **55,0 images/s, 3 vsyncs à 100 %**, aucun changement de pas ; SoC 30 à 36 W (la nuit B 31 à 36). Écran à 163,9 Hz.
-- [?] Les lices de nuit, au second tour : quatre images longues (73, 49, 42, 51 ms) sur 432, sans contention GPU relevée ; **non reproduites** sur trois
-  tours de 10 s refaits aussitôt (0 image au-delà de 25 ms). Un incident isolé.
-- Observé : la page d'une place reçoit deux fois plus de rappels rAF que la ville au même plafond (2 640 contre 1 320 en 8 s) : deux boucles rAF
-  semblent tourner, sans effet sur la cadence mesurée. [?] Non élucidé, rien changé.
-
-### Validation
-- `npm run typecheck`, `npm test` **278 / 278** (code de sortie 0, vérifié), `npm run build`, `npm run art:validate` (0 erreur, 0 avertissement).
-
-### Restes [?]
-- **À décider par l'opérateur** : le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B (les emblèmes du tournoi) ; tout le
-  reste de la version 2 est sous la nuit B.
-- La revue de l'opérateur sur la page de revue, puis en jeu ; l'écoute du son (V2-15, non faite ici : aucun casque dans une séance) ; les pages des
-  places au téléphone non mesurées ; les deux boucles rAF des places.
-
-### Pensée
-- Un écart à une référence se lit en paires, tour par tour : la dérive d'un tour à l'autre (2 ms en 1080p ce soir) dépasse la plupart des écarts
-  cherchés, et des médianes prises dans des tours différents la mélangent.
-- Le contrôle négatif d'une cuisson de visibilité doit montrer à la caméra ce que la cuisson a écarté : une cuisson plus grossière ou un héros hors
-  de sa marche (la caméra bornée par son cadrage) ne perdent presque rien et feraient croire la comparaison aveugle.
-- Un écran de chargement qui s'efface en CSS est sur toute capture faite boucle tenue : la capture coupe les transitions, ou masque l'écran.
-
-## Passe FV5 — Le quai v2 en plan B la nuit : l'égalité avec la nuit B acceptée par l'opérateur (2026-10-29)
-
-### La décision, mot pour mot
-- Question posée à la fin de la Passe FV4 : « Que faire des +0,1 ms du quai v2 en plan B la nuit ? » ; réponse de l'opérateur : « Accepter
-  l'égalité ».
-- Branche `decision-quai-fv4` depuis `main` (`e9c5e8b`).
-
-### Ce qu'elle tranche — [OK]
-- Le quai d'une partie v2 en plan B la nuit (+0,13 ms en 1080p, +0,14 ms en 1440p, +0,7 %, la scène de la nuit B avec les emblèmes du tournoi,
-  Passe FV4) est tenu pour **à égalité** avec la nuit B au regard du budget E24 (« Pas plus cher que la nuit B, à définition égale ») ; aucune tâche
-  d'optimisation. La version 2 entière tient donc le budget sur la 780M, sous la réserve de l'opérateur de la Passe D8 (« Mais rien n'est confirme
-  car il y a peut etre des zones plus grande et dense »). Rien n'est changé au jeu.
 
 ## Passe V2C1 — La décision V2-2 de l'opérateur appliquée : rien ne coupe la charge (2026-10-29)
 
@@ -580,6 +454,96 @@ La course mise à l'échelle pour les essais (une estimation), remesurée pour l
   tiers des victoires sous la charge.
 - `sed -i` sous Git Bash retire les CR (déjà noté) : la remise en CRLF se fait au prochain passage par `node`, et se vérifie.
 
+## Passe FX1 — Nos propres effets de combat pixel art, derrière `fx=new` : six effets peints au démarrage, à l'aveugle devant les anciens, à la fiche de l'opérateur (2026-10-31 → 2026-11-01)
+
+### Demande
+- Séance ouverte par une autre séance (`local_94e3af37-…`), texte de la tâche : « Écris nos propres effets de combat pixel art pour le duel de la version 2, générés par le code au démarrage, derrière un paramètre DEV de laboratoire. » Contrainte donnée comme celle de l'opérateur : aucune dépendance, aucune obligation envers un tiers ; ne pas ouvrir le code de pixelfx ni d'aucune autre bibliothèque d'effets, n'en rien copier, aucun clonage, aucune installation. Interdits : le quartier gelé, les feux des places, rien par défaut, aucun nouveau design de personnage.
+- Worktree `.claude/worktrees/fervent-einstein-e5a571`, branche `claude/fervent-einstein-e5a571` depuis `main` (`c5eebdb`) ; `npm ci` dans le worktree ; serveurs `fx-dev` (:5233) et `fx-frozen-main` (:5234, `git archive` de `c5eebdb`) par `preview_start`, leurs onglets fermés aussitôt, arrêtés à la fin ; `.claude/launch.json` de la séance non commité.
+- Aucune bibliothèque d'effets n'a été ouverte, aucune recherche faite : tout est écrit ici.
+
+### Fait — [OK]
+- `src/lab/fxPaint.ts` : **six fonctions pures** (image, graine, rampe) vers des texels, sans `Math.random` ni DOM : `paintHitLight` (4 images, 184 ms, 48 × 48), `paintHitHeavy` (5, 299 ms, 96 × 96), `paintGuard` (5, 266 ms, 56 × 88), `paintCharge` (3 niveaux de 6 images, deux d'éclat et quatre en boucle, 128 × 168), `paintBreak` (7, 465 ms, 112 × 112), `paintKo` (7, 614 ms, 176 × 112). Texels de la grille ×3 des feuilles de combat : `FX_TEXEL` = `PIXEL_WORLD` × 1,42 × 0,9 / 3.
+- **Technique** : un texel est un cœur brillant (alpha 255), un cœur mat (254, la poussière : elle prend le niveau de la scène, sans atteindre le bloom), une lueur additive (alpha 0, RVB > 0) ou rien ; aucune demi-transparence. Tramage Bayer 4 × 4 pour les lueurs et les anneaux qui meurent, tirage par texel pour la poussière. Rampes : uniquement des jetons du ton de la page (`src/ui/design/tokens.ts`), l'ambre seul accent chaud la nuit ; encre (`ink`) autour des formes pleines seules, jamais d'un texel isolé.
+- `src/lab/combatFx.ts`, sur le modèle de `src/lab/fighterDensity.ts`, atteint par un `import()` derrière `import.meta.env.DEV` : une texture d'effets à part (1024 × 824), **deux appels de dessin quand un effet joue, zéro sinon** : le cœur dans la passe opaque (profondeur et masque de protection comme les sprites : le DOF le garde net), la lueur après elle (`maskSafeBlending('additive')`), sa profondeur **derrière les combattants** à la même place à l'écran (`uFxBack`) : leur silhouette reste entière, elle éclaire l'air autour d'eux. L'aura de charge est dessinée derrière Ren. `window.__fx` : `show`, `all`, `clear`, `measure`.
+- `src/arena/ArenaApp.ts` : quatre lignes, toutes `import.meta.env.DEV && this.fxTrial`, plus un champ `declare` ; `spawnFx` rend la main sous `fx=new`. Les événements : coup, garde, garde brisée, `break`, `ko`, `chargeTier`, `effect`. Un palier fermé par les PA ne s'allume pas (`open`) ; l'aura montre le palier qu'un relâché lancerait, ou celui qui attend (V2-2). Effet d'une compétence : le croissant vers l'adversaire (défensive), le niveau 2 de la charge une fois (autre) : aucun coup n'a porté, donc pas d'étoile.
+- `tools/art-lab/fx-sheet.mjs` : la planche de toutes les images depuis les peintres, sans navigateur. `tests/combat-fx.test.mjs` : 13 tests. Documents : `AGENTS.md` (le paramètre, l'outil, les tests).
+- Découvert en passant, sur `main`, non touché : **l'ancien croissant de garde tombe derrière le gardien**, du côté opposé au coup ; **l'ancienne étincelle ne se voit pas à midi sur Marek** (blanche sur sa barbe : 0 % de sa silhouette changée au seuil de 24, 7,6 % la nuit).
+
+### La boucle de l'art et les critiques à l'aveugle
+Trois agents neufs, lettres et ordre tirés au sort, clé hors de leur dossier, mon auto-critique écrite avant le premier verdict (j'attendais 6 à 7,5, le K.O. le plus faible).
+
+| Tour | Comparaison | Résultat | Ce que j'en ai fait |
+|---|---|---|---|
+| 1 | nouveaux contre anciens, 12 paires (6 moments, nuit et midi) | **12 / 12, 7,0 contre 3,75** ; impact 8 / 5, garde 7 / 3, charge 7 / 3, bris 7 / 4, K.O. 7 / 4 | reprise des fins orphelines, du damier de la poussière, du disque sous l'aura, de l'ancrage de la garde |
+| 2 | reprise contre tour 1, 12 paires | **8 / 12, 7,00 contre 6,71** ; garde +2, poussière +1,5 à +2 ; **bris 5 contre 8**, impact à midi 6,5 contre 7,5 | [KO] le bris raccourci à 6 images laissait trois brindilles : rallongé à 7 |
+| 3 | quatre retouches contre tour 1, 6 paires | **3 / 6, 6,42 contre 6,50** ; bris 6 contre 5,5 et 6,5, aura de midi 7,5 contre 6 ; **impact 6,5 contre 8 et 7,5** | [KO] l'étoile déplacée sur le buste (demandée au tour 2) : **annulée**, l'étoile reste au contact, sur l'arc |
+
+- La configuration livrée (tour 3 avec l'étoile rendue à sa place) n'a pas été rejugée entière : aucune critique ne l'a vue telle quelle.
+- Le coup léger n'a été jugé que sur la planche : aucun moment scripté du duel chargé ne le montre (`strike` y est gardé par Marek).
+- Reste relevé par le dernier critique : le bris sans centre une fois l'étoile éteinte, le plus faible des six.
+
+### Lisibilité — [OK] mesurée
+Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattants au repos ; cible / autre combattant, maximum sur l'effet, nuit puis midi) :
+
+| Effet | cible | autre combattant | durée |
+|---|---|---|---|
+| coup léger | 4,4 % / 3,1 % | 0,4 % / 0,2 % | 184 ms |
+| coup puissant | 15,8 % / 13,4 % | 1,4 % / 1,0 % | 299 ms |
+| garde | 1,7 % / 1,2 % | 0,2 % / 0,1 % | 266 ms |
+| charge, niveau 3 | 0,1 % / 0,3 % | 0 % | tenue |
+| bris | 19,8 % / 17,0 % | 1,9 % / 1,3 % | 465 ms |
+| K.O. | 13,6 % / 16,1 % | 1,3 % / 1,3 % | 614 ms |
+| anciens (étincelle, braise, garde), nuit | 7,6 % / 3,9 % / 2,3 % | non mesuré | 165 à 210 ms |
+
+- Aucun effet ne couvre plus de 2 % de l'adversaire : l'attaque qui vient reste lisible. Le télégraphe au sol est intact : de nuit, `window` et `combo` à 0 px entre avec et sans `fx=new`, contraste 6,77:1 (deutéranopie 6,97), comme sans le paramètre ; à midi 4,26:1 (4,39) sous `fx=new`, non mesuré sans lui.
+- L'étoile du coup puissant couvre la main de Ren pendant quelques images : relevé par les critiques, gardé (la déplacer perd).
+
+### Le coût — [OK] sous le budget E24
+- `tools/perf.mjs`, Radeon 780M, variantes entrelacées, écart = médiane des écarts **tour par tour**, duel en pause (`__arena.paused`). Série 1080p : 4 ou 5 tours propres sur 5. « pic » = `__fx.all()`, un effet de chacun à la fois, plus que le jeu n'en montrera jamais.
+
+| ms GPU | 1920 × 1080 | écart au duel | écart à la nuit B | 2560 × 1440 (tous les tours) | écart au duel | écart à la nuit B | appels |
+|---|---|---|---|---|---|---|---|
+| nuit B | 9,49 | | | 15,44 | | | 107 |
+| duel nuit | 8,45 | | −0,94 | 14,02 | | −1,31 | 92 |
+| duel nuit, fx au repos | 8,54 | 0,00 | | 14,04 | +0,04 | | 92 |
+| duel nuit, fx au pic | 8,63 | **+0,10** | **−0,74** | 14,15 | +0,15 | −1,37 | 94 |
+| duel midi | 7,47 | | | 12,79 | | | 94 |
+| duel midi, fx au repos | 7,52 | −0,18 | | 12,63 | +0,44 | | 94 |
+| duel midi, fx au pic | 7,72 | **−0,06** | **−1,61** | 12,80 | +0,57 | −2,59 | 96 |
+
+- Au repos, zéro appel de dessin et zéro triangle de plus : ce que montre la colonne est le bruit (±1 ms d'un tour à l'autre). [?] En 1440p, 1 à 4 tours propres sur 4 selon la variante : autres processus sur la 780M ; le +0,44 du repos à midi, qui ne dessine rien de plus, donne l'ordre de grandeur du bruit.
+- [KO → refait] La première série : 1 tour propre sur 5, l'application Claude (`claude:19216`) à 30 % de la 780M tant que la séance travaillait (agent, texte en flux). Refaite séance au repos : 4 ou 5 sur 5. Une mesure GPU se lance la séance immobile.
+- **Démarrage** (5 chargements entrelacés, 1080p) : peinture de l'atlas 32 à 34 ms, page prête 1 173 ms contre 1 031 de nuit, 1 080 contre 1 108 à midi : l'écart ne se distingue pas de la dispersion ([1 022-1 651]). Texture de 1024 × 824, 3,4 Mo, 46 images.
+- **Première utilisation** : première image d'effet 1,3 ms, comme les suivantes. [KO → retiré] Le préchauffage que j'avais écrit (un quad vide dans l'image de démarrage, comme les variantes d'occlusion de la passe 6) : contrôle sans lui, même 1,3 ms ; il ne servait à rien, retiré.
+
+### Les preuves
+- `npm run typecheck`, `npm test` **300 / 300** (code de sortie 0, 13 de plus), `npm run build`, `npm run art:validate` (19 manifestes, 40 sources, 0 erreur, 0 avertissement).
+- **Sans le paramètre, le jeu inchangé** : **0 px sur 47 vues** contre `main` figé (`HOLD=1`, `FREEZE_CSS=1`, 1280 × 720, seuil 0) : par défaut, `v2=1`, `combat=dynamic`, `v2=1&time=midday`, `time=midday`, chaque moment scripté. Témoin `main` contre lui-même : 0 px sur 12 vues. Contrôle négatif `fx=new` : 1 164 à 289 744 px sur les vues à effet (un effet change le bloom de toute l'image), 0 sur `window`, `combo` et `heavyRen`, où aucun effet n'est à l'écran : la preuve voit. `ArenaApp.ts` n'a plus changé après cette série ; seuls les fichiers du labo, chargés par le paramètre seul.
+- **Paquet de production** : SHA-256 identiques sur les 33 fichiers, depuis l'archive du commit de la branche (`git -c core.autocrlf=false archive`) contre celle de `main`. [KO → compris] Le premier essai, depuis la copie de travail, différait sur `index.html` par ses CR seuls (`AGENTS.md` le prévient) ; les 32 autres fichiers identiques.
+- `tools/arena-scene-check.mjs` **PASS** partout (0 erreur, le sol dégagé du HUD) : `v2=1&fx=new` (empreinte `sameAsRecorded`, 87 rendus, 77 cas), avec `time=midday`, avec `fighterdensity=combat` ; sans le paramètre : par défaut (`sameAsPrototype`, 42 rendus), `combat=dynamic` (63), `v2=1` (87). Le contrôle vivant avance de 4,85 à 4,92 s.
+- **18 fautes injectées sur 18 attrapées**, chaque fichier rendu à l'octet (SHA-256) : `Math.random` dans un peintre, la graine ignorée, une transparence, une couleur hors des jetons, l'or la nuit, les tons sombres de jour, l'encre autour d'un texel isolé, la poussière en Bayer, la poussière brillante, trois images, une image vide, deux niveaux de charge, la boucle qui saute, le niveau 1 en ambre, les paliers décalés, des cases qui se chevauchent, le crochet hors de DEV, une dépendance tierce. [KO → corrigé] 15 sur 18 au premier passage : la graine testée en bloc (un effet pouvait l'ignorer), une faute sans effet observable (remplacée), et **« la boucle ferme », un test vrai par construction** (le `% 4` du peintre) : remplacé par un oracle sur les texels (le décalage qui ajuste une image sur la suivante est de 8 rangées à chaque pas, couture comprise).
+- [KO → corrigé] Les tests ont trouvé trois dernières images vides (coup léger, coup puissant, bris) : toutes les étincelles déjà mortes, du temps à l'écran pour rien.
+- [KO → corrigé] Mon premier tableau des anciens effets (85 à 88 %) venait de mon script : la référence photographiée avant le rendu de la scène.
+
+### La fiche — à remplir par l'opérateur
+- Page privée https://claude.ai/artifact/NWXvBHkzo9mKUT8WLGZheM (source `briefs/fiche-fx1.html`), collection `decisions` vide à la publication : six choix effet par effet (« Adopter », « Reprendre (en note) », « Garder l'existant »), recommandés « Adopter », et FX-7 la suite (« Tâche à part, derrière flags.v2 », recommandé), avec les films image par image à la vitesse réelle et au ralenti, avant / après, nuit et midi. Images gardées : `screenshots/calibration/fx1-combat/`.
+- **Rien n'est décidé par cette passe** : tout reste au labo, rien par défaut.
+
+### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
+- Avec cette passe, les passes gardées auraient dépassé 60 Ko. FV4 et FV5, closes (fusionnées), partent vers `journal/37-passes-FV4-FV5.md` (13 508 octets, bloc de 13 226) ; restent 57,6 Ko. Preuve **8 / 8** par un script hors dépôt contre la copie de `JOURNAL.md` d'avant le déplacement (corps de l'archive égal au bloc ; FV4 et FV5 d'un seul tenant, suivies de V2C1 ; plus dans `JOURNAL.md` ; chaque passe dans un seul fichier ; de V2C1 à V2B1 inchangé à l'octet ; FX1 juste avant « À reprendre » ; CRLF seuls ; en-tête comme `journal/36`). Contrôle négatif : un bit changé dans une copie de l'archive est vu.
+
+### Restes [?]
+- L'essai en main de l'opérateur (`npm run dev`, `?scene=arena&v2=1&fx=new`) ; le mode jouable ne porte pas le paramètre.
+- L'écart de la garde par combattant (`GUARD_OUT`, Ren et Marek) à reprendre avec les feuilles des rivaux.
+- Le coût à midi en 1440p dans des tours sans contention.
+
+### Pensée
+- Une critique à l'aveugle se relit contre la suivante : le tour 2 demande l'étoile sur le buste, le tour 3 préfère celle de l'ancienne place, de 1 à 1,5 point. La règle (ce qui ne gagne pas s'annule) a tranché.
+- Raccourcir un effet se juge à l'instant où le jeu le montre : le bris à 6 images était meilleur sur la planche et perdait 5 contre 8 en scène, parce qu'il était déjà fini.
+- Un test « vrai par construction » se repère à la faute qui passe : ajouter la faute avant de croire le test.
+- Une lueur additive derrière les combattants, à la même place à l'écran, garde la silhouette entière : c'est la profondeur qui change, pas l'image.
+- Un effet qui marche la nuit par la lumière marche à midi par le contour : du noir autour de ce qui est plein, jamais autour d'un texel isolé, et rien de sombre sur le sable.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -597,6 +561,7 @@ La course mise à l'échelle pour les essais (une estimation), remesurée pour l
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
+  - **Effets de combat (Passe FX1)** : six effets écrits ici, sans tiers, derrière `?scene=arena&v2=1&fx=new` (DEV, compilés hors de la production) ; à l'aveugle 12 paires sur 12 devant les anciens ; au repos aucun appel de dessin, au pire +0,1 ms en 1080p, sous la nuit B. **La fiche est à remplir par l'opérateur** (https://claude.ai/artifact/NWXvBHkzo9mKUT8WLGZheM, effet par effet, puis FX-7 la suite), à relire puis consigner ; rien par défaut. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
     la version 2 cohérente hors combat (ses dix jours, ses événements dans l'ordre). À faire en local : les mesures GPU des places (budget E24 ;
@@ -814,7 +779,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -865,6 +830,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   (appels de dessin, triangles, surface couverte) ; jamais les temps : ceux-là se mesurent sur la machine de l'opérateur (Passe T1).
 - Un écart à une référence se lit en paires, tour par tour (variantes entrelacées, les deux propres) : la dérive d'un tour à l'autre dépasse
   souvent l'écart cherché (Passe FV4 : 2 ms de dérive en 1080p pour un écart de 0,1 ms).
+- Une mesure GPU se lance la séance immobile : l'application qui affiche la séance a tenu 30 % de la 780M pendant qu'un agent travaillait (Passe FX1 : 1 tour propre sur 5, puis 4 ou 5 sur 5).
 ### Visibilité, rendu, caméras
 - Toute coupe de géométrie se prouve par un diff d'images `static=1`, culling actif contre `vis=0`, avec `occ=0` : la phase du fondu de
   reveal entre deux régénérations fabrique de faux écarts (1 377 px sur B).
@@ -965,6 +931,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Un duel long décide par la moyenne : la victoire suit l'adresse en marche d'escalier, et « disputé » se règle par le seuil d'adresse de chaque
   rival. Avec une ressource abondante et sans recharge, un effet qui grandit avec le besoin (un soin) devient sans borne : le mesurer avec le bot
   avant de le proposer (Passe C1).
+- Un test vrai par construction se repère à la faute injectée qui passe (Passe FX1 : « la boucle ferme », garanti par le `% 4` du code testé) : son oracle se lit sur le résultat (ici le décalage entre deux images), pas sur l'indice qui le produit.
 ### Personnages : art et critique
 - La densité d'un sprite se choisit par la taille de son texel à l'écran dans le cadrage où il vit (l'arène : ×2 pour ≈ 3 px / texel en 1080p,
   comme les personnages de la ville), pas par celle de l'image source (Passe P1).
@@ -1063,6 +1030,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   relit d'abord les décisions prises entre-temps sur `main` (Passe RC3 : AV-10, V2-18). La case fixe l'allonge d'une lame : faire tenir une lame
   générée trop longue repousse le corps, les pieds sautent à l'impact ; la poussée se règle à la main et se mesure aux pieds contre les images
   voisines (Passe RC3).
+- Un effet se juge à l'instant où le jeu le montre : raccourci, il gagne sur la planche et perd en scène, déjà fini ; deux critiques à l'aveugle de suite peuvent demander une chose et son contraire (l'étoile sur le buste) : la paire tranche, ce qui perd s'annule (Passe FX1).
 ### Provenance et approbations
 - Rien d'externe ne devient « canon » en silence : un manifeste de provenance (`art-lab/characters/manifests`) avec approbation nommée et
   datée est la seule voie vers `runtimeUse: production`. Deux niveaux d'approbation distincts : *approved visual baseline*

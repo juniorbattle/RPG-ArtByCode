@@ -1,0 +1,366 @@
+<title>Fiche effets de combat</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 7 / 3; object-fit: cover; }
+.films { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.film { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.film img { display: block; width: 100%; height: auto; border-radius: 6px; background: #000; }
+.film figcaption { font-size: 13px; color: var(--muted); }
+.shots { grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 20px; }
+.facts b { font-size: 14px; }
+.facts p { margin: 2px 0 0; font-size: 15px; color: var(--muted); max-width: 42ch; }
+.facts code, .ctx code { font-family: var(--font-mono); font-size: 13px; overflow-wrap: anywhere; }
+.speed { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+.speed .opt { color: var(--fg); --fam: var(--voile); }
+.metrics { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · Passe FX1 · 1er novembre 2026</span>
+    <h1>Les effets de combat, effet par effet</h1>
+    <p class="lede">Six effets écrits ici, sans bibliothèque ni mention d'un tiers, à essayer et à trancher un par un. Ils vivent derrière un paramètre DEV : rien ne change dans le jeu tant que tu n'en décides pas. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+    <div class="facts">
+      <div><b>Essayer en jeu</b><p><code>npm run dev</code>, puis <code>?scene=arena&amp;v2=1&amp;fx=new</code>. Ajoute <code>&amp;time=midday</code> pour midi, <code>&amp;fighterdensity=combat</code> pour Ren à ×3. Le mode jouable ne porte pas encore ce paramètre.</p></div>
+      <div><b>Coût</b><p>Au repos : aucun appel de dessin en plus. Au pire, six effets ensemble : 2 appels, +0,1 ms en 1080p, dans le bruit de mesure, et sous la nuit B (de −0,7 à −1,6 ms). Démarrage : 32 à 34 ms de peinture, texture de 3,4 Mo.</p></div>
+      <div><b>Jeu inchangé sans le paramètre</b><p>0 px contre <code>main</code> sur 47 vues (cinq adresses), témoin à 0, contrôle négatif qui diffère. Paquet de production identique.</p></div>
+      <div><b>Critique à l'aveugle</b><p>12 paires sur 12 pour les nouveaux effets, 7,0 contre 3,75 sur 10, de nuit comme à midi, sur une version antérieure. Les reprises qui ont suivi n'ont pas toutes gagné : chaque carte dit ce qui reste.</p></div>
+    </div>
+    <div class="speed" role="group" aria-label="Vitesse des animations">
+      <span>Animations :</span>
+      <button class="opt" type="button" id="speed-1" aria-pressed="true"><span class="dot" aria-hidden="true"></span>Vitesse réelle</button>
+      <button class="opt" type="button" id="speed-4" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Ralenti ×4</button>
+    </div>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne dans les documents du projet, puis j'enchaîne sur la suite décidée.</p>
+    <p class="src">Sources : JOURNAL.md, Passe FX1 ; src/lab/fxPaint.ts ; src/lab/combatFx.ts ; screenshots/calibration/fx1-combat/.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const MS = { hitLight: [34, 34, 50, 66], hitHeavy: [50, 50, 50, 66, 83], guard: [34, 50, 50, 66, 66], charge: [50, 66, 83, 83, 83, 83], break: [50, 50, 50, 66, 66, 83, 100], ko: [66, 66, 83, 83, 100, 100, 116], old: [55, 55, 55], oldG: [70, 70, 70] };
+const clip = (t, name, n, ms, cap) => ({ frames: Array.from({ length: n }, (_, i) => `film/${t}-${name}-${i}.webp`), ms, cap });
+const OPTS = ['Adopter', 'Reprendre (en note)', 'Garder l\u2019existant'];
+const GROUPS = [
+  { id: 'effets', title: 'Les six effets', sub: 'Avant et après, de nuit et à midi.', fam: 'var(--astre)', items: [
+    { id: 'FX-1', tag: 'coup léger', title: 'Coup léger : une étoile courte le long du coup',
+      ctx: 'L\u2019ancienne étincelle est ivoire sur tout le cadre : à midi, sur la barbe de Marek, elle ne change presque aucun pixel. La nouvelle étoile suit le coup et jette quelques étincelles.',
+      metrics: ['4 images', '184 ms', 'cellule 48 × 48', 'couvre 4,4 % de sa cible au plus'],
+      films: [clip('night', 'oldSpark', 3, MS.old, 'Avant, nuit'), clip('night', 'hitLight', 4, MS.hitLight, 'Après, nuit'), clip('midday', 'oldSpark', 3, MS.old, 'Avant, midi'), clip('midday', 'hitLight', 4, MS.hitLight, 'Après, midi')],
+      rec: 'Adopter. Il tient aux deux états. Limite : il n\u2019a pas été jugé en scène à l\u2019aveugle, faute de moment scripté qui le montre, seulement sur la planche d\u2019images.',
+      opts: OPTS, recIdx: 0, src: 'paintHitLight ; critique 1, planche' },
+    { id: 'FX-2', tag: 'coup puissant', title: 'Coup puissant : la coupe, l\u2019étoile, un anneau déchiré',
+      ctx: 'Une coupe en lentille, l\u2019étoile à son plein, un anneau lancé puis déchiré par la trame, des braises qui tombent. La fin orpheline de la première version est coupée. L\u2019étoile reste au point de contact, sur l\u2019arc de l\u2019épée : la déplacer sur le buste a perdu à l\u2019aveugle (8 contre 6,5 à midi), je l\u2019ai annulé.',
+      metrics: ['5 images', '299 ms', 'cellule 96 × 96', 'couvre 15,8 % de sa cible au plus'],
+      films: [clip('night', 'oldEmber', 3, MS.old, 'Avant, nuit'), clip('night', 'hitHeavy', 5, MS.hitHeavy, 'Après, nuit'), clip('midday', 'oldEmber', 3, MS.old, 'Avant, midi'), clip('midday', 'hitHeavy', 5, MS.hitHeavy, 'Après, midi')],
+      shots: [['img/before-night-impact.webp', 'Avant, nuit'], ['img/after-night-impact.webp', 'Après, nuit'], ['img/before-midday-impact.webp', 'Avant, midi'], ['img/after-midday-impact.webp', 'Après, midi']],
+      rec: 'Adopter. C\u2019est le meilleur des six : 8 contre 5 à l\u2019aveugle, nuit et midi. Limite : l\u2019étoile cache la main de Ren quelques images.',
+      opts: OPTS, recIdx: 0, src: 'paintHitHeavy ; critiques 1 et 3' },
+    { id: 'FX-3', tag: 'garde', title: 'Garde : le croissant passe devant le gardien',
+      ctx: 'L\u2019ancien croissant tombait derrière le gardien, du côté opposé au coup : c\u2019était un défaut d\u2019origine. Le nouveau se pose au contact des lames, bombé vers l\u2019attaquant, en acier froid, et renvoie ses étincelles.',
+      metrics: ['5 images', '266 ms', 'cellule 56 × 88', 'couvre 1,7 % de sa cible au plus'],
+      films: [clip('night', 'oldGuard', 3, MS.oldG, 'Avant, nuit'), clip('night', 'guard', 5, MS.guard, 'Après, nuit'), clip('midday', 'oldGuard', 3, MS.oldG, 'Avant, midi'), clip('midday', 'guard', 5, MS.guard, 'Après, midi')],
+      shots: [['img/before-night-block.webp', 'Avant, nuit'], ['img/after-night-block.webp', 'Après, nuit'], ['img/before-midday-guardHeavy.webp', 'Avant, midi, coup puissant gardé'], ['img/after-midday-guardHeavy.webp', 'Après, midi, coup puissant gardé']],
+      rec: 'Adopter. 7 à 8 contre 3 à l\u2019aveugle ; une fois ancré à la lame, le critique parle d\u2019une garde claire, rien de masqué. Limite : la place dépend du combattant (réglée pour Ren et Marek), à revoir avec les feuilles des rivaux.',
+      opts: OPTS, recIdx: 0, src: 'paintGuard ; critiques 1 et 2' },
+    { id: 'FX-4', tag: 'palier de charge', title: 'Palier de charge : trois niveaux qui se lisent sans le HUD',
+      ctx: 'Aujourd\u2019hui la charge n\u2019a qu\u2019un flash de teinte. Au palier atteint, un anneau se referme sur Ren ; tant qu\u2019il tient, une aura boucle derrière lui : acier au niveau 1 (coup puissant), ambre au niveau 2, deux langues de lumière au niveau 3. Un palier fermé par les PA ne s\u2019allume pas.',
+      metrics: ['3 niveaux, 6 images', '2 d\u2019éclat, 4 en boucle', 'cellule 128 × 168', 'couvre 0,3 % de Ren au plus (dessinée derrière lui)'],
+      films: [clip('night', 'charge1', 6, MS.charge, 'Niveau 1, nuit'), clip('night', 'charge2', 6, MS.charge, 'Niveau 2, nuit'), clip('night', 'charge3', 6, MS.charge, 'Niveau 3, nuit'), clip('midday', 'charge1', 6, MS.charge, 'Niveau 1, midi'), clip('midday', 'charge2', 6, MS.charge, 'Niveau 2, midi'), clip('midday', 'charge3', 6, MS.charge, 'Niveau 3, midi')],
+      shots: [['img/before-night-chargeSkill.webp', 'Avant, nuit'], ['img/after-night-chargeSkill.webp', 'Après, nuit'], ['img/before-midday-chargeSkill.webp', 'Avant, midi'], ['img/after-midday-chargeSkill.webp', 'Après, midi']],
+      rec: 'Adopter. C\u2019est le seul retour visuel de la charge hors du HUD : 7 contre 3 à l\u2019aveugle, puis 7,5 après la reprise. Limite : les étincelles en bâtonnets sont un peu raides.',
+      opts: OPTS, recIdx: 0, src: 'paintCharge ; critiques 1 à 3' },
+    { id: 'FX-5', tag: 'bris de jauge', title: 'Bris de jauge : l\u2019anneau cède, ses plaques volent',
+      ctx: 'Avant, ce moment empruntait l\u2019étincelle ambre et le croissant. Désormais l\u2019anneau de la jauge flashe entier, se fend, et ses douze plaques volent et tombent. La version raccourcie à 6 images avait perdu 5 contre 8 ; je l\u2019ai rallongée à 7.',
+      metrics: ['7 images', '465 ms', 'cellule 112 × 112', 'couvre 19,8 % de sa cible au plus'],
+      films: [clip('night', 'break', 7, MS.break, 'Après, nuit'), clip('midday', 'break', 7, MS.break, 'Après, midi')],
+      shots: [['img/before-night-foeBreak.webp', 'Avant, nuit'], ['img/after-night-foeBreak.webp', 'Après, nuit'], ['img/before-midday-foeBreak.webp', 'Avant, midi'], ['img/after-midday-foeBreak.webp', 'Après, midi']],
+      rec: 'Adopter, c\u2019est mieux que l\u2019existant (7 contre 4), mais c\u2019est le plus faible des six. Limite : une fois l\u2019étoile éteinte, les éclats restent sans centre et le dernier critique ne lui donne que 6.',
+      opts: OPTS, recIdx: 0, src: 'paintBreak ; critiques 1 à 3' },
+    { id: 'FX-6', tag: 'K.O.', title: 'K.O. : un éclair, une ligne au sol, la poussière',
+      ctx: 'Aujourd\u2019hui le K.O. n\u2019a pas d\u2019effet propre. Un éclair sur le combattant tombé, une ligne de lumière au sol, puis la poussière jetée des deux côtés, avec des braises qui montent. La poussière est mate et se défait sans motif : le damier de la première version faisait dentelle.',
+      metrics: ['7 images', '614 ms', 'cellule 176 × 112', 'couvre 16,1 % de sa cible au plus'],
+      films: [clip('night', 'ko', 7, MS.ko, 'Après, nuit'), clip('midday', 'ko', 7, MS.ko, 'Après, midi')],
+      shots: [['img/before-night-ko.webp', 'Avant, nuit'], ['img/after-night-ko.webp', 'Après, nuit'], ['img/before-midday-koRen.webp', 'Avant, midi, Ren à terre'], ['img/after-midday-koRen.webp', 'Après, midi, Ren à terre']],
+      rec: 'Adopter. 7 contre 4 à l\u2019aveugle, puis 7 à 7,5 après la reprise de la poussière. Limite : de nuit, la poussière fine reste discrète en fin d\u2019effet.',
+      opts: OPTS, recIdx: 0, src: 'paintKo ; critiques 1 et 2' },
+  ]},
+  { id: 'suite', title: 'La suite', sub: 'Rien ne bouge sans ta décision.', fam: 'var(--voile)', items: [
+    { id: 'FX-7', tag: 'intégration', title: 'Que fait-on de ce que tu adoptes ?',
+      ctx: 'Aujourd\u2019hui tout est dans src/lab, retiré des builds de production. Pour que les effets adoptés vivent dans une partie, il faut les sortir du labo, derrière le drapeau flags.v2 : le jeu par défaut ne change pas, et la version 2 les prend avec le reste.',
+      rec: 'Une tâche à part, derrière flags.v2, une fois tes choix faits : c\u2019est la voie de tout le reste de la version 2, et le mode jouable les montrera enfin en vrai combat.',
+      opts: ['Tâche à part, derrière flags.v2', 'Rester au labo pour l\u2019instant', 'Attendre l\u2019essai en jeu des rivaux'], recIdx: 0, src: 'AGENTS.md (version 2, V2-17) ; JOURNAL.md, Passe FX1' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.metrics) c.append(el('p', { class: 'metrics' }, ...it.metrics.map((m) => el('span', {}, m))));
+  if (it.films) { const g = el('div', { class: 'films' }); for (const f of it.films) g.append(player(f)); c.append(g); }
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value));
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+// each film loops its frames at their own time on screen, then rests, so a blow of 200 ms can be read; a slowed run for the detail
+let slow = 1;
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function player(f) {
+  const img = el('img', { src: f.frames[Math.floor(f.frames.length / 2)], alt: f.cap, loading: 'lazy' });
+  f.frames.forEach((src) => { new Image().src = src; });
+  if (!still) {
+    let i = 0, seen = false;
+    new IntersectionObserver((e) => { seen = e[e.length - 1].isIntersecting; }).observe(img);
+    const tick = () => {
+      if (seen) { img.src = f.frames[i]; }
+      const last = i === f.frames.length - 1, wait = (last ? f.ms[i] + 650 : f.ms[i]) * slow;
+      i = last ? 0 : i + 1;
+      setTimeout(tick, wait);
+    };
+    tick();
+  }
+  return el('figure', { class: 'film' }, img, el('figcaption', {}, f.cap));
+}
+const setSpeed = (k) => { slow = k; document.getElementById('speed-1').setAttribute('aria-pressed', String(k === 1)); document.getElementById('speed-4').setAttribute('aria-pressed', String(k === 4)); };
+document.getElementById('speed-1').addEventListener('click', () => setSpeed(1));
+document.getElementById('speed-4').addEventListener('click', () => setSpeed(4));
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
