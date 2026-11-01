@@ -22,11 +22,12 @@ import { ArenaHud, type Assist, type ArenaTexts } from './ArenaHud';
 import { DynamicHud, type DynTexts } from './DynamicHud';
 import { PRESETS, runScript } from './Presets';
 import { DYN_PRESETS, runDynScript } from './DynPresets';
-import { arenaRules, dynClip, dynClipFrame, dynKeys, dynPad, tuneDyn, type ArenaRules } from './dynamicView';
+import { arenaRules, dynClip, dynClipFrame, dynKeys, dynPad, fxOn, tuneDyn, type ArenaRules } from './dynamicView';
 import { FloorUI } from './FloorUI';
 import { chargeHudModel, makeV2Duel, runV2Script, V2_HELD, V2_KEYS, V2_PAD, V2_PRESETS } from './v2Arena';
 import { CHARGE_TEXTS_EN, CHARGE_TEXTS_FR } from './DynamicHud';
 import type { ChargedDuel, ChargeTier } from '../combat/charge';
+import type { CombatFx } from './fx/combatFx';
 
 /** The arena scene of the game (journal Passe P1): `?scene=arena`. The prototype's duel (CombatSim, ported rule for rule) staged with
  *  the town's renderer: the same materials, lights (LightRig), sky, moon shadow, planar reflection in the puddles and post chain (in-scatter,
@@ -155,8 +156,8 @@ export class ArenaApp {
   private walkFrames = 0;
   /** DEV only: Ren's combat sheet (?fighterdensity=combat, src/lab/fighterDensity.ts, journal Passes AA2 / RC1); declared, never emitted */
   private declare densityTrial?: import('../lab/fighterDensity').DensityTrial;
-  /** DEV only: the duel's own effects (?fx=new, src/lab/combatFx.ts, journal Passe FX1); declared, never emitted */
-  private declare fxTrial?: import('../lab/combatFx').FxTrial;
+  /** the version 2's effects (src/arena/fx/, journal Passes FX3 / FX5): loaded on demand by a version 2 duel only; today's arena keeps its frames */
+  private combatFx: CombatFx | null = null;
 
   constructor(private opts: ArenaOptions) {
     this.rules = arenaRules(opts.params, opts.match);
@@ -276,8 +277,7 @@ export class ArenaApp {
     if (this.look) this.sprites.setEdgeGain(lum(NIGHT_MOON) / lum(this.look.sunCol));
     this.scene.add(this.sprites.group);
     this.scene.add(this.floor.mesh);
-    // DEV only: the duel's own effects (?fx=new, src/lab/combatFx.ts, journal Passe FX1); compiled out of production builds, absent = the arena as before
-    if (import.meta.env.DEV && this.opts.params.has('fx')) this.fxTrial = (await import('../lab/combatFx')).installCombatFx(this.scene, this.camera, this.opts.params, { lights: this.lights, shake: (k) => { this.shake = Math.max(this.shake, k); }, timeScale: (k) => { this.timeScale = k; }, renderHeight: () => this.post.height });
+    if (fxOn(this.rules, this.opts.params)) this.combatFx = (await import('./fx/combatFx')).installCombatFx(this.scene, this.camera, this.opts.params, { foe: this.opts.match?.foe ?? 'marek', lights: this.lights, shake: (k) => { this.shake = Math.max(this.shake, k); }, timeScale: (k) => { this.timeScale = k; }, renderHeight: () => this.post.height });
     // spectators on the tiers: the town's crowd archetypes, front view, idling and cheering in turn
     let k = 0;
     for (const st of this.arena.stands) {
@@ -392,7 +392,7 @@ export class ArenaApp {
   }
 
   private onEvents(evs: Array<CombatEvent | DynEvent>): void {
-    if (import.meta.env.DEV && this.fxTrial) this.fxTrial.onEvents(evs, this.fighters, this.charge?.tiers.length ?? 0);
+    this.combatFx?.onEvents(evs, this.fighters, this.charge?.tiers.length ?? 0);
     for (const e of evs) {
       if (this.snd) this.soundOf(e as never);
       if (e.type === 'impact') {
@@ -435,7 +435,7 @@ export class ArenaApp {
   }
 
   private spawnFx(kind: string, tgt: Actor, who: FighterId): void {
-    if (import.meta.env.DEV && this.fxTrial) return;
+    if (this.combatFx) return;
     const dir = who === 'ren' ? 1 : -1;   // toward the attacker
     const act: Actor = { id: 900 + this.fx.length, spec: 'fx', role: 'fx', detail: 'hero', pos: new THREE.Vector3(tgt.pos.x + dir * 0.32, 0.32, 0.45), facing: 'side', dir: 'side', flip: kind === 'guard' ? who === 'ren' : false, anim: `${kind}.0` as Anim, t: 0, speed: 0, tint: [1, 1, 1], scale: 1, height: 1, radius: 0.1, noShadow: true };
     this.fx.push({ act, kind, age: 0, frames: 3, step: kind === 'guard' ? 0.07 : 0.055 });
@@ -502,7 +502,7 @@ export class ArenaApp {
       f.act.anim = `${f.kind}.${i}` as Anim;
     }
     this.fx = this.fx.filter((f) => !f.act.hidden);
-    if (import.meta.env.DEV && this.fxTrial) this.fxTrial.present(dt, this.fighters, this.charge?.view() ?? null);
+    this.combatFx?.present(dt, this.fighters, this.charge?.view() ?? null);
   }
 
   /** the contextual camera: the base framing; a push-in toward Marek while he charges a heavy (scaled by the assistance), held through the
@@ -522,7 +522,7 @@ export class ArenaApp {
       const a = this.shake * this.shake * 0.07, t = s.t * 53;
       P.tx += Math.sin(t * 1.7) * a; P.ty += Math.sin(t * 2.3 + 1.1) * a * 0.7;
     }
-    if (import.meta.env.DEV && this.fxTrial) this.fxTrial.pose(P);
+    this.combatFx?.pose(P);
     this.pose = P;
     applyPose(this.camera, P, window.innerWidth / Math.max(1, window.innerHeight));
   }

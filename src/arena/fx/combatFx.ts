@@ -1,21 +1,25 @@
-/** DEV-ONLY: the duel's effects in the manner of RPGThreeJS (`?scene=arena&fx=new`, the operator's decision of journal Passe FX2): live geometry at full
- *  resolution, white-hot cores that bloom, light on the arena, recipes written per action (src/lab/fx/). Reached only through a dynamic import that
- *  `ArenaApp` guards with `import.meta.env.DEV`: production builds compile it out, and the arena without the parameter is untouched.
- *  This module binds the engine to the arena: the events of the duel pick the recipes, and the hooks of the engine land on this renderer's own means
- *  (LightRig, the arena's shake and framing, two overlays for the flash and the speed lines). No slow motion but the K.O.'s.
- *  `window.__fx`: `play(recipe, who)`, `step(seconds)`, `clear()`, `stress()` (the cost's worst case: the heaviest recipes one after another), `recipes`. */
+/** The version 2's duel effects, in the manner of RPGThreeJS (the operator's decisions of journal Passes FX2 / FX4, H-7 « Tâche à part, derrière flags.v2 »): live
+ *  geometry at full resolution, white-hot cores that bloom, light on the arena, recipes written per action. Reached only through the dynamic import
+ *  `ArenaApp` makes for a duel under the version 2's rules (`fxOn`, dynamicView.ts): today's arena never loads this module, `fx=off` keeps the former frames.
+ *  It binds the engine to the arena: the events of the duel pick the recipes, and the hooks of the engine land on this renderer's own means (LightRig,
+ *  the arena's shake and framing, two overlays for the flash and the speed lines). No slow motion but the K.O.'s.
+ *  DEV server only, `window.__fx`: `play(recipe, who)`, `step(seconds)`, `clear()`, `stress()` (the cost's worst case: the heaviest recipes one after
+ *  another), `recipes`. */
 import * as THREE from 'three';
-import type { LightRig, LightSource } from '../atmosphere/LightRig';
-import type { Actor } from '../characters/SpriteRenderer';
-import type { ChargeView } from '../combat/charge';
-import type { FighterId } from '../arena/CombatSim';
-import { FX_EXPOSURE, FxEngine, type FxHooks } from './fx/FxEngine';
-import { FxDirector, type FxPlayContext, type FxUnitRef } from './fx/FxDirector';
-import { RECIPES, blowRecipe, chargeLevel, effectRecipe, type FxRecipe } from './fx/fxRecipes';
+import { parseTime } from '../../atmosphere/DayState';
+import type { LightRig, LightSource } from '../../atmosphere/LightRig';
+import type { Actor } from '../../characters/SpriteRenderer';
+import type { ChargeView } from '../../combat/charge';
+import type { FighterId } from '../CombatSim';
+import { FX_EXPOSURE, FxEngine, type FxHooks } from './FxEngine';
+import { FxDirector, type FxPlayContext, type FxUnitRef } from './FxDirector';
+import { RECIPES, blowRecipe, chargeLevel, effectRecipe, type FxRecipe } from './fxRecipes';
 
-/** the figure's height (m), and how far before each fighter the blades meet (Ren holds his sword close, Marek at arm's length) */
+/** the figure's height (m), and how far before a fighter the blades meet: Ren holds his sword close, Marek's art at arm's length, Vessa on Ren's clips
+ *  (the other rivals wear Marek's, FighterArt's `FOES`) */
 const FIGURE_H = 2.75;
-const CONTACT: Record<FighterId, number> = { ren: 0.7, marek: 1 };
+const RENS_GUARD = 0.7, MAREKS_GUARD = 1;
+export const guardContact = (foe: string): Record<FighterId, number> => ({ ren: RENS_GUARD, marek: foe === 'vessa' ? RENS_GUARD : MAREKS_GUARD });
 /** the effects' exposure, the night's stronger bloom on a dark ground, the day's on a light one */
 const EXPOSURE = { night: 0.5, day: 0.72 };
 /** the charge held: a breath of motes every so many seconds */
@@ -24,6 +28,8 @@ const STRESS = ['heavy', 'm_ironfall', 't4', 'break', 'guardHeavy', 'charge3', '
 
 /** what the effects reach of the arena */
 export interface FxArena {
+  /** who sits in the opponent's seat */
+  foe: string;
   lights: LightRig;
   shake(amount: number): void;
   /** the simulation's speed (the K.O.'s slow motion: the duel is over) */
@@ -31,14 +37,13 @@ export interface FxArena {
   renderHeight(): number;
 }
 
-export interface FxTrial {
+export interface CombatFx {
   /** the duel's events: what plays */
   onEvents(evs: ReadonlyArray<{ type: string } & Record<string, any>>, fighters: Record<FighterId, Actor>, tiers: number): void;
   /** every presentation step */
   present(dt: number, fighters: Record<FighterId, Actor>, charge: ChargeView | null): void;
   /** the framing's push onto a blow */
   pose(p: { dist: number; tx: number; ty: number }): void;
-  info: Record<string, unknown>;
 }
 
 interface Slot { src: LightSource; t: number; dur: number }
@@ -50,10 +55,9 @@ function overlay(css: string): HTMLDivElement {
   return el;
 }
 
-export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params: URLSearchParams, arena: FxArena): FxTrial {
-  if (params.get('fx') !== 'new') throw new Error(`fx "${params.get('fx')}": new`);
-  const time = params.get('time');
-  FX_EXPOSURE.value = time === 'morning' || time === 'midday' || time === 'afternoon' ? EXPOSURE.day : EXPOSURE.night;
+export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params: URLSearchParams, arena: FxArena): CombatFx {
+  FX_EXPOSURE.value = parseTime(params) ? EXPOSURE.day : EXPOSURE.night;
+  const contact = guardContact(arena.foe);
   const flashEl = overlay(''), linesEl = overlay('-webkit-mask:radial-gradient(circle,transparent 38%,#000 72%);mask:radial-gradient(circle,transparent 38%,#000 72%)');
   const slots: Slot[] = [0, 1].map(() => {
     const src = arena.lights.add({ pos: [0, -5, 0], color: [1, 1, 1], intensity: 2, radius: 8, kind: 'steady', priority: 11 }, 'fx', 0);
@@ -82,7 +86,7 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
   let warm = true;
   engine.warm(new THREE.Vector3(0, -3, 0));
   const unit = (a: Actor): FxUnitRef => ({ position: a.pos, height: FIGURE_H });
-  const blow = (r: FxRecipe, F: Record<FighterId, Actor>, to: FighterId) => director.play(r, { source: unit(F[to === 'ren' ? 'marek' : 'ren']), target: unit(F[to]), contact: CONTACT[to] });
+  const blow = (r: FxRecipe, F: Record<FighterId, Actor>, to: FighterId) => director.play(r, { source: unit(F[to === 'ren' ? 'marek' : 'ren']), target: unit(F[to]), contact: contact[to] });
   const self = (r: FxRecipe, a: Actor) => { const c: FxPlayContext = { source: unit(a), target: unit(a) }; director.play(r, c); };
   let fighters: Record<FighterId, Actor> | null = null;
 
@@ -105,7 +109,7 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
     if (punch.dur > 0) { punch.t += dt; if (punch.t >= punch.dur) punch.dur = 0; }
   };
 
-  const trial: FxTrial = {
+  const fx: CombatFx = {
     onEvents(evs, F, tiers) {
       for (const e of evs) {
         if (e.type === 'impact') {
@@ -124,7 +128,7 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
     present(dt, F, charge) {
       fighters = F;
       if (warm) { warm = false; engine.settle(); }
-      if (stress >= 0) {
+      if (import.meta.env.DEV && stress >= 0) {
         dt = 1 / 60; stressIn -= dt;
         if (stressIn <= 0) { stressIn = 0.3; const r = RECIPES[STRESS[stress++ % STRESS.length]]; if (r.id.startsWith('charge')) director.play(r, { source: unit(F.ren), target: unit(F.marek) }); else blow(r, F, 'marek'); }
       }
@@ -135,10 +139,8 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
       const k = punch.t / punch.dur, e = (k < 0.14 ? k / 0.14 : 1 - (k - 0.14) / 0.86) * punch.amount;
       p.dist -= 1.5 * e; p.tx += punch.x * 0.12 * e; p.ty -= 0.1 * e;
     },
-    info: { recipes: Object.keys(RECIPES).length, engine: 'RPGThreeJS dev@5cc6119e' },
   };
-  Object.assign(window, { __fx: {
-    ...trial.info,
+  if (import.meta.env.DEV) Object.assign(window, { __fx: {
     recipes: Object.keys(RECIPES),
     /** a recipe by hand, on the fighter it lands on (the charge's and a fighter's own on that fighter) */
     play: (id: string, who: FighterId = 'marek') => { const r = RECIPES[id]; if (!r) throw new Error(`no recipe "${id}"`); if (fighters) { if (/^(charge|hold|d1|s1|k_iron|k_parry|k_cry|k_focus|release)/.test(id)) self(r, fighters[who]); else blow(r, fighters, who); } },
@@ -148,5 +150,5 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
     stress: () => { stress = 0; },
     active: () => engine.activeCount,
   } });
-  return trial;
+  return fx;
 }

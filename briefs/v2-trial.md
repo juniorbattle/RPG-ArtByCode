@@ -73,6 +73,8 @@ d'arbitrages `briefs/fiche-v2.html` recueille vos choix.
   question de cette revue.
 - **Les dix jours** : le rythme (cinq combats au moins, des jours libres), la coupe, la finale ; le recrutement d'Orla (la phase d'équipe est un
   écart consigné).
+- **Les effets du duel, depuis la Passe FX5** (vos six familles validées, Passe FX4) : coupes, étoiles, lumière sur l'arène, une recette par action,
+  le ralenti au K.O. seulement ; `&fx=off` garde les anciens effets, pour comparer, dans une partie comme dans le duel seul.
 - **Le son** : les effets du duel, les ambiances par lieu et moment, l'air de chaque état du jour.
 - **Les écrans** : le dialogue en bas (P4), « Here » réduit aux actions du lieu, repos et attente sous l'état (P5), la fiche de match et la
   victoire (P6), au téléphone aussi.

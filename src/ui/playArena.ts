@@ -44,7 +44,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   const opp = RIVALS[sheet.sides[1].fighters[0].id];
   // the slot's day state (the afternoon's bout at midday, journal Passe AD1)
   const q = new URLSearchParams(arenaQuery(st));
-  for (const k of ['fps', 'freeze', 'painters', 'hud', 'gpuprof', 'input']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
+  for (const k of ['fps', 'freeze', 'painters', 'hud', 'gpuprof', 'input', 'fx']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   const dyn = dynamicRules(st), v2 = isV2(st), view = dyn ? dynSheetView(sheet, opp.name, opp.id) : { assist: sheet.assist, intel: sheet.intel };
   // the version 2 (journal Passe V1): scouting also names the opponent's skills (C3), announced in the duel by the light alert
   if (v2 && view.intel.length) view.intel.push(tx('ui.arena.foeSkills', { name: opp.name, skills: (V2_FOES[opp.id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') }));

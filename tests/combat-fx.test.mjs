@@ -1,16 +1,19 @@
-// The duel's effects behind the DEV parameter `fx=new`, in the manner of RPGThreeJS (journal Passe FX2): the recipes are data the tests read here, the
-// director plays them on a recording engine; the engine's materials keep the scene's mask, and nothing of it reaches the production path. Oracles are
-// written here from the operator's decisions, not read from the code.
+// The version 2's duel effects, in the manner of RPGThreeJS (journal Passes FX2 / FX5): the recipes are data the tests read here, the director plays them on a
+// recording engine; the engine's materials keep the scene's mask, and only a duel under the version 2's rules reaches them. Oracles are written here from
+// the operator's decisions, not read from the code.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { load, ROOT } from './load.mjs';
 
-const R = await load('/src/lab/fx/fxRecipes.ts');
-const D = await load('/src/lab/fx/FxDirector.ts');
+const R = await load('/src/arena/fx/fxRecipes.ts');
+const D = await load('/src/arena/fx/FxDirector.ts');
 const K = await load('/src/combat/skillbook.ts');
-const P = await load('/src/lab/fx/fxPalettes.ts');
+const V = await load('/src/combat/v2duel.ts');
+const G = await load('/src/arena/dynamicView.ts');
+const C = await load('/src/arena/fx/combatFx.ts');
+const P = await load('/src/arena/fx/fxPalettes.ts');
 const THREE = await load('three');
 
 const STEP_KINDS = new Set(['slash', 'star', 'burst', 'ring', 'pillar', 'streak', 'bolt', 'shards', 'dome', 'orb', 'motes', 'smoke', 'glow', 'decal', 'light', 'converge', 'orbit', 'fissure', 'shake', 'flash', 'slowmo', 'speedLines', 'punch']);
@@ -43,8 +46,9 @@ test('every recipe is well formed: known steps, known colours, a positive length
 
 test('every action of the duel plays its own recipe: each skill of the book and each rival\'s has one, the plain blows each side theirs', () => {
   for (const id of [...Object.keys(K.SKILL_BOOK), 't1', 't2', 't3', 't4', 'd1', 's1']) assert.ok(R.RECIPES[id], `no recipe for ${id}`);
-  const rivals = ['m_ironfall', 'm_bulwark', 'm_resolve', 'm_lunge', 'm_tempo', 'm_shoulder', 'm_brace', 'm_riposte', 'm_gild', 'm_smite', 'm_aegis', 'm_prayer', 'm_wild', 'm_grit', 'm_cleave', 'm_roar', 'm_hide'];
-  for (const id of rivals) assert.ok(R.RECIPES[id], `no recipe for ${id}`);
+  assert.ok(Object.keys(V.FOE_SKILLS).length >= 17);
+  for (const id of Object.keys(V.FOE_SKILLS)) assert.ok(R.RECIPES[id], `no recipe for ${id}`);
+  for (const [foe, f] of Object.entries(V.V2_FOES)) for (const k of f.skills.list) assert.ok(R.RECIPES[k.id], `${foe}: no recipe for ${k.id}`);
   assert.equal(R.blowRecipe('light', 'light', 'ren').id, 'light');
   assert.equal(R.blowRecipe('heavy', 'heavy', 'ren').id, 'heavy');
   assert.equal(R.blowRecipe('m_slash', 'light', 'marek').id, 'm_slash');
@@ -100,7 +104,7 @@ test('the director places a recipe on the fighters: the chest of the target, a c
 });
 
 test('the engine keeps the scene\'s mask and the mirror pass: no raw blending, no THREE light, no flames nor sheets', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'src/lab/fx/FxEngine.ts'), 'utf8');
+  const src = fs.readFileSync(path.join(ROOT, 'src/arena/fx/FxEngine.ts'), 'utf8');
   assert.ok(!/THREE\.(Additive|Normal)Blending/.test(src), 'raw blending writes the alpha the DOF reads');
   assert.ok(!/new THREE\.(Point|Spot|Directional)Light/.test(src), 'a THREE light touches none of this renderer\'s shaders');
   assert.ok(!/MeshStandardMaterial/.test(src), 'a lit material stays black here');
@@ -121,15 +125,39 @@ test('a blow leaves the one who takes it readable: no star, ring or cut wider th
   }
 });
 
-test('the lab is out of production: ArenaApp reaches it only behind import.meta.env.DEV, no effects package', () => {
-  const app = fs.readFileSync(path.join(ROOT, 'src/arena/ArenaApp.ts'), 'utf8');
-  const lines = app.split(/\r?\n/).filter((l) => /fxTrial|combatFx/.test(l) && !/^\s*(\/\*\*|\/\/|private declare)/.test(l));
-  assert.ok(lines.length >= 5);
-  for (const l of lines) assert.match(l, /import\.meta\.env\.DEV/, l);
+test('the blades meet where the opponent in the seat holds its guard: Vessa on Ren\'s clips, every other rival in Marek\'s art', () => {
+  const ren = C.guardContact('marek').ren;
+  assert.equal(C.guardContact('vessa').marek, ren);
+  for (const foe of ['marek', 'orla', 'cassius', 'ilse', 'tobin']) assert.ok(C.guardContact(foe).marek > ren, foe);
+});
+
+test('a duel under the version 2\'s rules alone reaches the effects: the rule, the one import, nothing of it left to production but the duel', () => {
+  const on = (rules, q = '') => G.fxOn(rules, new URLSearchParams(q));
+  assert.equal(on('v2'), true); assert.equal(on('v2', 'fx=new'), true);
+  assert.equal(on('v2', 'fx=off'), false, 'fx=off keeps the former frames');
+  for (const rules of ['classic', 'dynamic']) for (const q of ['', 'fx=new', 'fx=off']) assert.equal(on(rules, q), false, `${rules} ${q}`);
+  const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : /\.ts$/.test(e.name) ? [path.join(d, e.name)] : []));
+  const FX = path.join(ROOT, 'src/arena/fx'), ways = [];
+  for (const f of walk(path.join(ROOT, 'src'))) {
+    if (f.startsWith(FX)) continue;
+    const src = fs.readFileSync(f, 'utf8').replace(/import type [^\n]*\n/g, '');
+    for (const m of src.matchAll(/^.*(?:from|import\()\s*'[^']*\bfx\/[^']*'.*$/gm)) ways.push([path.relative(ROOT, f).replace(/\\/g, '/'), m[0]]);
+  }
+  assert.equal(ways.length, 1, JSON.stringify(ways.map((w) => w[0])));
+  assert.equal(ways[0][0], 'src/arena/ArenaApp.ts');
+  assert.match(ways[0][1], /if \(fxOn\(this\.rules, this\.opts\.params\)\).*import\('\.\/fx\/combatFx'\)/, 'a dynamic import behind the rule');
+  const bound = fs.readFileSync(path.join(FX, 'combatFx.ts'), 'utf8');
+  assert.match(bound, /if \(import\.meta\.env\.DEV\) Object\.assign\(window, \{ __fx/, 'window.__fx stays on the DEV server');
+  assert.match(bound, /import\.meta\.env\.DEV && stress >= 0/, 'so does its stress');
+  assert.ok(!fs.existsSync(path.join(ROOT, 'src/lab/combatFx.ts')) && !fs.existsSync(path.join(ROOT, 'src/lab/fx')), 'out of the lab');
   assert.ok(!fs.existsSync(path.join(ROOT, 'src/lab/fxPaint.ts')), 'the pixel effects are gone');
-  for (const f of ['src/lab/combatFx.ts', 'src/lab/fx/FxEngine.ts', 'src/lab/fx/FxDirector.ts', 'src/lab/fx/fxRecipes.ts', 'src/lab/fx/fxPalettes.ts']) {
-    for (const m of fs.readFileSync(path.join(ROOT, f), 'utf8').matchAll(/from '([^']+)'/g)) assert.ok(m[1] === 'three' || m[1].startsWith('.'), `${f} imports ${m[1]}`);
+  for (const f of fs.readdirSync(FX)) {
+    for (const m of fs.readFileSync(path.join(FX, f), 'utf8').matchAll(/from '([^']+)'/g)) assert.ok(m[1] === 'three' || m[1].startsWith('.'), `${f} imports ${m[1]}`);
   }
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   assert.ok(!Object.keys({ ...pkg.dependencies, ...pkg.devDependencies }).some((d) => /fx/i.test(d)));
+});
+
+test('the play mode carries the comparison into a game\'s duel', () => {
+  for (const f of ['src/ui/play.ts', 'src/ui/playArena.ts']) assert.match(fs.readFileSync(path.join(ROOT, f), 'utf8'), /'fx'\]/, f);
 });

@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1 et FX3) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3 et FX5) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -49,144 +49,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/36-passes-FV1-FV3.md`](journal/36-passes-FV1-FV3.md) | FV1, FV2, FV3 | 29/10 |
 | [`journal/37-passes-FV4-FV5.md`](journal/37-passes-FV4-FV5.md) | FV4, FV5 | 29/10 |
 | [`journal/38-passes-V2C1.md`](journal/38-passes-V2C1.md) | V2C1 | 29/10 |
+| [`journal/39-passes-RC3.md`](journal/39-passes-RC3.md) | RC3 | 26-29/10 |
 
 ---
-
-## Passe RC3 — La coupe de Ren reprise puis écartée par l'opérateur (« Revenir à l'ancienne ») ; la feuille de Marek générée puis arrêtée, hors du cadre des planches de référence (2026-10-26 → 2026-10-29)
-
-### Demande
-- Séance locale lancée par la séance parente (« Cité du Tournoi Local ») le 26/10 : la feuille de combat de Marek à ×3 (labo) par la voie de la
-  feuille de Ren, la reprise de la coupe de Ren (RC2-2 « La garder ; reprise dédiée plus tard »), une fiche d'arbitrages (la feuille de Marek,
-  la coupe, l'entrée en production des deux feuilles, RC2-5).
-- Worktree `.claude/worktrees/sleepy-chandrasekhar-9a04ba` (hors du dossier partagé), branche `marek-combat-x3` puis `ren-cut-x3` (renommée
-  après l'arrêt de Marek, jamais poussée sous l'ancien nom) ; `npm ci` dans le worktree. Serveur `rc3-branch` (:5231, le worktree) par
-  `preview_start` / `preview_stop`. Mise en pause par l'opérateur le 26/10 (« je veux une pause. ») ; reprise le 29/10 sur `main` (`94e15ca`) :
-  la branche, sans commit, avancée en avance rapide.
-- Le garde-fou de la séance refuse toute écriture dans la copie principale : `gen-image.mjs` est lancé par ses propres fonctions exportées
-  (`parseArgs`, `readKey`, `generate`) depuis le worktree, la clé lue par `readKey` à la racine principale (son `.env.local`, ignoré par git,
-  jamais affiché), le registre partagé de la copie principale, prompts, références et images dans le dossier ignoré du worktree
-  (`art-lab/characters/scratch/marek-combat/`, `scratch/generated/marek-combat-x3/`) ; `--archive` par l'outil du worktree.
-
-### Les choix de l'opérateur, mot pour mot
-« = » : la recommandation est suivie ; « ≠ » : le choix diffère. Questions posées dans la séance (AskUserQuestion), sans note de l'opérateur.
-
-| # | Question | Recommandation | Choix de l'opérateur | |
-|---|---|---|---|---|
-| RC3-1 | D'où vient le design de la feuille ×3 de Marek ? | « Planche générée d'abord (Recommandé) » | « Planche générée d'abord (Recommandé) » | = |
-| RC3-2 | Quelles clés tant que C3 n'a pas fixé sa garde, son esquive, ses compétences ? | « Le minimum du § 14 : 24 (Recommandé) » | « Le minimum du § 14 : 24 (Recommandé) » | = |
-| RC3-3 | La planche de personnage montrée avant les planches de combat ? | « Me la montrer d'abord (Recommandé) » | « Me la montrer d'abord (Recommandé) » | = |
-| RC3-4 | La coupe de Ren : par quelle voie ? | « Génération guidée (Recommandé) » | « Génération guidée (Recommandé) » | = |
-| RC3-5 | Les proportions de Marek (4,5 à 5,1 têtes contre 3,1 pour Ren) | « 3e essai, repère du Capitaine (Recommandé) » | « 3e essai, repère du Capitaine (Recommandé) » | = |
-| RC3-6 | Que fait la séance (Marek hors du cadre) ? | « Arrêter Marek, finir la coupe de Ren (Recommandé) » | « Arrêter Marek, finir la coupe de Ren (Recommandé) » | = |
-| RC3-7 | La nouvelle coupe de Ren dans la feuille de labo | « Garder la nouvelle (Recommandé) » | « Revenir à l'ancienne » | ≠ |
-
-- Le message de l'opérateur du 29/10 qui a mené à RC3-6, mot pour mot : « Nous sommes cense travaille sur nos personnages combattants et rivaux
-  en nous basant sur les images references, or Marek est une conception nouvelle qui sort de notre cadre, actuellement la sessions V2-2 travaille
-  sur les rivaux » (avec quatre planches de casting jointes dans la séance : Cédric, le Lion champion du tournoi, le Rival chevalier émérite, la
-  Duelliste, le Maître d'armes…). Pendant la pause, l'opérateur avait aussi décidé AV-10 « Mettre Marek en pause jusqu'à la nouvelle commande »
-  (Passe AV1) et V2-18 « Les rivaux d'abord » (Passe FV3).
-
-### Marek — [KO → arrêté] une conception hors du cadre des références
-- **Planches de personnage** (tâche `marek-combat-x3`, gpt-image-2, n = 2, 1536 × 1024, haute qualité, une requête à la fois) : le Marek
-  généré d'aujourd'hui (`FighterArt`, agrandi ×4) comme référence de design, la v4-b du héros pour le rendu, huit vues et trois vues de profil
-  avec l'épée. A : critique à l'aveugle (agent neuf ; le premier lancé a échoué sur une coupure réseau, relancé) **A-1 6,5 contre A-2 5,5**,
-  mon auto-critique écrite avant concordante. Défaut commun mesuré : **5,1 têtes contre 3,1 pour Ren** (la tête de Marek aux deux tiers de celle
-  de Ren à l'écran ; la consigne « 30 % de la hauteur » ignorée).
-- **[KO] les proportions ne viennent pas** : B (consigne en pixels, « la tête de la taille de celle de Ren ») 4,5 têtes ; C (le Capitaine de la
-  garde de la planche de casting n° 06 joint comme seul repère de proportions) 4,4 à 4,5. Le générateur garde des proportions adultes pour un
-  chevalier âgé. B gardée, comme l'option RC3-5 le prévoyait.
-- **Planches de combat** sur un fond vert uni (la critique avait mesuré 3,4 à 4,5 % de pixels de la couleur du fond gris dans l'acier : des trous
-  au détourage) : a (repos, posture, armé, coupe, suite, coup reçu ×2, étourdi, victoire), b (la puissante ×4, le K.O. ×3), c (la compétence
-  offensive ×4, un coup reçu debout, une seconde victoire) : toutes les poses des 24 images, deux variantes chacune ; non critiquées, non
-  reconstruites.
-- **Arrêt (RC3-6)** : rien de Marek n'entre dans le dépôt. Ses deux planches archivées (`marek-turnaround-2026-10-26-a1` et `-b1`, jamais
-  commitées) sont rendues au dossier ignoré, leurs originaux identiques à l'octet (SHA-256 `b9666c87…`, `f9183311…`) restant dans
-  `scratch/generated/marek-combat-x3/`. Marek se fera depuis les planches de référence dans la tâche des rivaux (V2-18), avec la nouvelle commande
-  et les poses de charge (AV-10).
-
-### Le coût — [?] une requête perdue sur une coupure réseau
-- Huit requêtes : planches de personnage A, B, C (0,3764 + 0,3895 + 0,3985 $), la coupe de Ren (0,3979 $), planches de combat a, b, c (0,3891 +
-  0,3884 + 0,3881 $) : **2,73 $ payés** (dont 0,40 $ pour la coupe de Ren, 2,33 $ pour Marek).
-- **[?]** une neuvième (la planche b, premier envoi, 26/10 04:30:49 UTC) : « fetch failed » avant toute réponse (le DNS ne résolvait plus
-  l'API ; la critique lancée au même moment a échoué en `ENOTFOUND`). L'outil garde sa réservation au pire cas (1,2556 $) : on ne sait pas si
-  elle a été facturée. **Registre de la tâche : 3,98 $ sur 5** ; la réservation suivante dépasserait le plafond : aucune génération de plus sans
-  décision de l'opérateur.
-
-### La coupe de Ren — reprise d'après la spécification du critique de la Passe RC2, puis [KO → écartée] par l'opérateur
-- **La requête guidée** (RC3-4) : références la v4-b, la planche a2 de RC1 et un guide de pose fait des images de Ren (l'armé ; un collage de la
-  taille F-2 dont le bras et la lame sont abaissés de 30° autour de l'épaule ; la suite) ; le prompt reprend la spécification (les deux mains à
-  hauteur d'épaule, la lame de 0 à 15° au-dessus de l'horizontale, les poignets cassés, le visage de profil, la cape qui suit, dans la case) ;
-  deux variantes de quatre versions.
-- **Reconstruites** par la chaîne du rig au pas de la tête (aucune figure debout : 74 et 68 pixels de tête contre ~39 texels à ×3, soit 1,91 et
-  1,75), vérifiées côte à côte avec l'armé et la suite ; lames redessinées par `blade2` (segment proposé par RANSAC, la garde trouvée en marchant de
-  la pointe jusqu'au premier texel coloré) ; toutes tiennent dans la case (172 à 185 texels).
-- **Critique à l'aveugle** (agent neuf, lettres tirées au sort, neuf options : la coupe actuelle et les huit) : **D 7** (i2, version 3 : la taille
-  la plus lisible, poignets cassés, la lame frappe l'épaule, la cape suit ; 19°, hors spécification de 4°), J 6,5, A 6, F 5,5, G 5, H 4,5, C 4,5,
-  E 4, B 2 (l'actuelle). Auto-critique écrite avant : J. **[KO → noté]** mon kit a extrait la coupe actuelle sur un fond opaque (`zoom.mjs`) : un
-  rectangle noir ; sa note n'est pas comparable (sa pose avait été jugée en RC2 : la lame au-dessus de la tête de Marek).
-- **Défaut commun relevé par le critique** : pour que la lame générée tienne dans la case, le rig repoussait la figure de 17 à 25 texels : le pied
-  avant reculait de 10 à 19 texels à l'impact par rapport à l'armé et à la suite, Ren sautait en arrière au lieu de se fendre (la coupe F-2 : 14
-  à 16 ; la poussée de la coupe était déjà de 21 en RC2).
-- **Corrections au rig** (celles que le critique prescrit) : la lame tournée de 19° à **14°** autour de la garde ; la poussée fixée à **15**
-  texels (`FIGURES.cut.push`, au lieu des 24 qu'imposait la lame générée), d'où une lame de **61** texels (63 dans l'armé) ; deux texels gris
-  que la garde retenait sous la lame effacés (`FIGURES.cut.clear`). Pied avant mesuré : 63 contre 55 dans l'armé et la suite (+8).
-- **La feuille** : seule l'image 5 (`strike.1`) change (9 352 texels) ; 34 images, 64 couleurs, toutes de `hero-x2-v4` ; `build-combat.mjs --check`
-  : reconstruite identique. Source archivée non canonique : `ren-combat-x3-2026-10-26-i2` (records et octets) ; le rig ne lit plus `-f2` (gardée
-  archivée). Paquet de provenance et manifeste mis à jour (la chaîne décrit aussi les deux texels clairs et le bord sombre de RC2, que son texte
-  n'avait pas suivis).
-- **Dans la scène**, critique à l'aveugle (agent neuf, X / Y tirés au sort par lumière ; l'image d'impact au moment `strike`, nuit et midi, avant /
-  après) : **après 7 et 7,5, avant 4 et 4,5** (la nuit, à midi) ; la nouvelle touche Marek au menton et au haut du buste, l'ancienne frappe le
-  vide, sa pointe ~150 px au-dessus de l'étincelle d'impact. Restes relevés sur la nouvelle : elle se lit plutôt comme une estocade (pas d'arc de
-  taille) ; la lame faible la nuit (un trait lavande de 2 px que le halo de l'étincelle noie) ; la cape raide ; l'avant-bras et le gant d'un seul
-  bloc ; la garde comme un bâton à part ; le cou absent ; le liseré froid de la nuit laisse des pixels clairs détachés sur les mèches.
-  Auto-critique écrite avant : après 7, avant 5.
-- **Le choix de l'opérateur (RC3-7)** : « Revenir à l'ancienne », contre la recommandation et la critique. **Défait** : le rig, l'export, la source
-  Aseprite, le paquet de provenance, le manifeste et le test reviennent à l'octet à ceux de `main` (vérifié : aucun fichier suivi de `art-lab/` ni
-  de `tests/` ne diffère ; `art:validate` 19 manifestes, 40 sources, 0 erreur ; `tests/combat-sheet.test.mjs` 9 / 9 ; `build-combat.mjs --check`
-  identique) ; la source `ren-combat-x3-2026-10-26-i2`, jamais commitée, rendue au dossier ignoré (identique à l'original de `scratch/generated/`).
-  La reprise ne vit plus que dans ce journal et deux images.
-- Images de la reprise écartée : `screenshots/calibration/rc3-ren-cut/` (le duel la nuit, avant / après ; les trois images de `strike`, avant /
-  après).
-
-### Les preuves (faites sur la reprise, avant le choix de l'opérateur ; parties avec elle)
-- `tests/combat-sheet.test.mjs` : **10 tests** (+1 : l'angle de la lame de la coupe entre 0 et 15°, la poussée au plus 15, le pied avant mesuré
-  dans l'export à 10 texels au plus de celui de l'armé et de la suite ; la liste des sources : i2 au lieu de f2). **6 fautes injectées sur 6
-  attrapées** (lame à 29°, poussée 24 dans `build.json`, l'ancien export, la coupe tirée d'une autre planche, la source i2 déclarée canonique, le
-  `clear` retiré), fichiers rendus à l'octet (SHA-256).
-- Validation sur la reprise : typecheck, `npm test` **279 / 279**, build, `art:validate` (19 manifestes, 41 sources, 0 erreur),
-  `build-combat.mjs --check` identique. Après le retour, la branche ne change que `JOURNAL.md` et deux images.
-- **Aucun fichier de `src/`**, ni `index.html`, `vite.config.ts`, `package*.json` ne change : l'arène par défaut et le bundle de production ne
-  peuvent pas changer (la feuille n'est lue que par le module DEV, derrière `import.meta.env.DEV`). Le temps GPU n'est pas remesuré : même
-  texture, mêmes 34 cases.
-
-### Restes [?]
-- La fiche d'arbitrages prévue (Marek, la coupe, la production) s'est réduite à la coupe (RC3-7, posée dans la séance) ; RC2-5 « Pas encore :
-  avec la feuille de Marek » reste : la feuille de Ren attend celle de Marek, faite depuis les planches de référence.
-- **La coupe reste celle de F-2** (RC2-2 toujours ouverte) ; la raison du choix n'est pas donnée. Pour une reprise future : la spécification du
-  critique de RC2, les restes relevés ci-dessus, et la case qui fixe l'allonge (la lame générée repousse le corps : pied avant +14 à +16 pour F-2).
-- La réservation de la requête perdue (1,26 $) au registre de `marek-combat-x3`.
-
-### Journal — [OK] archivage (passes gardées au-delà d'environ 60 Ko)
-- Avec cette passe, les passes gardées faisaient 60,6 Ko. VP9, close (fusionnée), part vers `journal/35-passes-VP9.md` (25 994 octets, bloc de
-  25 685) ; restent 34,9 Ko. Preuve **8 / 8** (script hors dépôt, contre la copie de `JOURNAL.md` d'avant le déplacement : corps de l'archive égal
-  au bloc ; VP9 d'un seul tenant, suivie de FV1 ; plus dans `JOURNAL.md` ; chaque passe dans un seul fichier, par sa ligne de titre entière ; de FV1
-  à la fin inchangé à l'octet, sauf la liste des archivages de « À reprendre » ; dans l'en-tête, seules la phrase des archives et une ligne
-  d'index changent ; en-tête comme `journal/34` ; CRLF seuls). Contrôle négatif : un bit changé dans une copie de l'archive → 7 / 8. La liste des
-  derniers archivages de « À reprendre » est complétée de ceux des passes V0 à VP9, qu'elle n'avait pas suivis.
-
-### Pensée
-- Un personnage se tire des planches de référence du projet : avant de générer un design neuf, relire les décisions en cours sur `main` (ici AV-10,
-  V2-18, prises pendant la pause) et demander s'il sort du cadre.
-- Trois tirages n'ont pas donné des proportions de chibi à un chevalier âgé, même avec un repère de proportions joint : un rival se part d'une
-  planche qui a déjà les proportions du monde.
-- Une requête perdue sur le réseau garde sa réservation au pire cas : un plafond se budgète avec cette marge.
-- La case fixe l'allonge : faire tenir une lame générée trop longue repousse le corps et les pieds sautent à l'impact ; la poussée se règle à la
-  main, la lame se redessine plus courte, et le résultat se mesure aux pieds, contre l'armé et la suite.
-- Un kit de critique présente chaque option sur le même fond : un fond opaque a disqualifié une option sans rapport avec sa pose.
-- Une reprise qui gagne à l'aveugle peut être refusée par l'opérateur : la critique classe, l'opérateur décide. Rien d'une reprise n'entre dans le
-  dépôt avant son choix, et le retour se prouve à l'octet contre `main`.
-- Un texte qui contient des accents graves ne passe jamais dans une commande shell entre guillemets doubles (substitution de commande) : il passe
-  par un fichier ou par l'outil d'édition.
 
 ## Passe V2C2 — L'équilibrage de la version 2 recalé après V2-2 : les rivaux plus rudes, de nouveau six combats sur dix (2026-10-29)
 
@@ -543,6 +408,55 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
 ### Pensée
 - Ce qu'une passe renvoie à une fiche doit y figurer : se relit contre les « Restes » avant de publier. Une ligne absente n'est pas un choix.
 
+## Passe FX5 — Les effets de combat sortis du labo : dans tout duel aux règles de la version 2, le jeu par défaut inchangé (2026-11-01)
+
+### La décision
+- H-7 « Tâche à part, derrière flags.v2 » (Passe FX4). L'opérateur a demandé de la faire dans cette séance.
+
+### Fait — [OK]
+- `src/lab/combatFx.ts` et `src/lab/fx/` déplacés dans `src/arena/fx/`. `fxOn(rules, params)` (`dynamicView.ts`) : un duel aux règles `v2`, sauf `fx=off`, qui garde les anciens effets pour comparer. `ArenaApp` charge `./fx/combatFx` à la demande dans ce seul cas, dans une partie (`match.rules`) comme sous `?scene=arena&v2=1`. `window.__fx` et le stress restent en DEV ; `fx=new` n'a plus d'objet. Le mode jouable porte `fx` (`play.ts`, `playArena.ts`).
+- `guardContact(foe)` : Vessa est sur les clips de Ren, sa garde tombe à son écart (0,7) ; les autres rivaux portent l'art de Marek (`FOES`), donc le sien (1).
+- L'exposition lit `parseTime` : l'alias `time=day` tombait sur celle de la nuit.
+
+### La revue des rivaux — [OK], rien à changer
+- Les 19 recettes `m_*` en images, nuit et midi, Vessa dans une vraie partie : elles tombent sur la bonne cible, le contact de garde de Vessa est juste. Les boosts sont discrets avant 0,4 s, leur lueur arrive à 0,45-0,6 s et se lit de jour comme de nuit.
+
+### Le coût sur de vrais duels — [OK], sous la nuit B
+- `tools/perf.mjs` sur le paquet de production, Radeon 780M, 14 s par tour, 4 tours entrelacés. Le duel est réel : un petit robot tient l'attaque selon une suite fixe (coups, puissante, paliers), garde sous attaque.
+
+| écart médian tour par tour (ms GPU) | 1080p nuit | 1080p midi | 1440p nuit | 1440p midi |
+|---|---|---|---|---|
+| contre `fx=off`, moyenne | +0,30 | +0,21 | +0,30 | +0,56 |
+| contre la nuit B, moyenne | **−0,39** | **−1,54** | **−0,74** | **−2,09** |
+| contre la nuit B, p95 | −0,68 | −2,04 | −0,57 | −1,92 |
+
+- Décision « Accepter, remesurer » (Passe FX4) : aucun dépassement sur les médianes. Un seul tour passe au-dessus de la nuit B : +0,09 ms, 1080p nuit, sur un tour chargé par un autre processus (2 à 4 tours sur 4 le sont : seuls les écarts entrelacés valent). Appels : 92 à 102, 107 pour la nuit B. Le dessin par effet n'a pas été revu : ces mesures ne le demandent pas.
+
+### L'à-coup — [KO] de méthode → corrigé
+- [KO] Première mesure à `gl.finish` : des images de 50 à 105 ms sur `charge3`, `hold*`, `m_brace`. Artefact : `gl.finish` ne bloque pas ici (base 1,3 ms pour une image de 10 ms), la file GPU se vide d'un coup en fin de série. Le « 0,3 à 0,9 ms » de la Passe FX3 reposait sur cet appel : ce chiffre est retiré, sa conclusion est prouvée ci-dessous.
+- [OK] Avec un `readPixels` avant et après chaque image : les 44 recettes au pire 13,6 ms à leur première utilisation, base 12,3 ms. Contrôle négatif sans préchauffage : `light` 37,4 ms au premier tour, 17,9 ensuite : la mesure voit bien une compilation.
+- [OK] 33 programmes du prêt à la fin : en DEV sur les 44 recettes, en production sur un duel de 30 s. Géométries et textures reviennent à leur base après trois tours de toutes les recettes.
+
+### Le paquet — [?] un effet de bord, sans conséquence mesurée
+- Un morceau dynamique neuf qui importe `three` ou un module partagé fait redécouper l'entrée à rolldown, quel que soit le chemin de l'import (bissection de neuf essais) : `index.js` de 1 011 218 octets passe à quatre fichiers, 1 016 799 octets (+0,55 %, +1,3 % en gzip). Le code est le même ; rien à ce sujet dans la configuration. Le morceau `combatFx` : 40 Ko, 14 Ko en gzip.
+- Démarrage des pages par défaut, 7 chargements entrelacés, médianes main / branche : ville nuit 1 370 / 1 360 ms, ville midi 1 396 / 1 419, arène 931 / 994. Les plages se recouvrent ; +63 ms sur l'arène, à surveiller. Effets contre `fx=off` en v2 : 1 045 / 947 ms la nuit, 1 047 / 1 095 à midi.
+
+### Les preuves
+- `npm run typecheck`, `npm test` **299 / 299**, `npm run build`, `npm run art:validate` (19 manifestes, 40 sources, 0 erreur).
+- **Sans `flags.v2`** : **0 px sur 53 vues** en DEV contre `main` figé (`6eef737`) : arène par défaut, midi, règles dynamiques, le combat d'une partie par défaut, trois vues de la ville, et `v2=1&fx=off` contre `v2=1` de `main`, nuit et midi. **0 px sur 38 vues en production**, paquet de `main` contre paquet de la branche. Témoin à 0 ; contrôle négatif : 273 194 à 766 330 px sur les vues à effet.
+- **Qui charge quoi** : 15 pages, chaque requête relevée : ville, arène, règles dynamiques, `fx=off`, parties, parvis : aucun code d'effets ; `?scene=arena&v2=1`, `&time=midday`, `&input=keys` et le combat de `v2-day2-afternoon` : les effets.
+- `tools/arena-scene-check.mjs` **PASS** sous `v2=1`, `v2=1&time=midday`, `v2=1&fx=off`, sans paramètre et `combat=dynamic`. `tools/play-flow.mjs` : DEV `V2=1` victoire et défaite, production `V2=1` victoire et défaite, production par défaut : aucun échec, K.O. et retour en ville compris.
+- `tests/combat-fx.test.mjs`, 12 tests : **30 fautes injectées sur 30 attrapées**, chaque fichier rendu à l'octet, dont : effets sous les règles dynamiques, `fx=off` ignoré, import sans la règle, import statique, une autre page qui lit les effets, `window.__fx` en production, `fx` oublié par le mode jouable, garde de Vessa fausse.
+
+### Restes [?]
+- L'essai en main de l'opérateur dans une partie : `?play=1&new=1&v2=1&name=<nom>`, `&fx=off` pour comparer (`briefs/v2-trial.md`).
+- L'écart de garde est à revoir quand les rivaux auront leurs feuilles cuites.
+
+### Pensée
+- Une preuve à 0 px sur le serveur DEV ne dit rien du paquet : le découpage n'a été vu qu'en comparant les deux productions.
+- Un outil de mesure se prouve lui aussi : `gl.finish` donnait des chiffres plausibles, à la baisse en Passe FX3 et à la hausse ici. Le contrôle négatif aurait dû être là dès le début.
+- Mesurer deux recettes n'en prouve pas quarante-quatre.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -560,7 +474,7 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
-  - **Effets de combat (Passes FX1 à FX4)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est porté derrière `?scene=arena&v2=1&fx=new` (DEV), une recette par action, ralenti au K.O. seulement ; **les six familles sont validées** (Passe FX4), les couleurs hors ambre gardées en exception au duel, l'égalité avec la nuit B au pire cas acceptée. **Reste H-7 « Tâche à part, derrière flags.v2 »** : sortir du labo, le défaut inchangé, remesurer sur de vrais duels (Passe FX4). Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
+  - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
     la version 2 cohérente hors combat (ses dix jours, ses événements dans l'ordre). À faire en local : les mesures GPU des places (budget E24 ;
@@ -778,7 +692,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -786,6 +700,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 > recopié ici.
 
 ### Mesure et performances
+- `gl.finish` ne bloque pas sous ANGLE ici : un temps par image se mesure avec un `readPixels` avant et après, et toute mesure de premier usage a son contrôle négatif (Passe FX5).
 - Mesurer d'abord, optimiser ensuite : minuteurs GPU, variantes entrelacées dans une seule session, base figée. Relever l'adaptateur
   réellement utilisé (`WEBGL_debug_renderer_info`) dans chaque mesure : un portable hybride rend sur l'iGPU par défaut, quoi que demande
   `powerPreference`. Mesurer à la définition de l'écran de l'opérateur (dpr compris), pas seulement en 1080p.
@@ -871,6 +786,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Un effet qui écrit des uniformes partagés garde leurs valeurs d'avant et les rend : sa preuve est « activé puis retiré = 0 px » (Passe W2) ;
   tant qu'aucun paramètre ne le demande, il ne crée rien (un objet THREE tire `Math.random`).
 ### Preuves
+- Une preuve à 0 px sur le serveur DEV ne dit rien du paquet : un morceau dynamique neuf peut redécouper l'entrée ; quand du code passe en production, comparer aussi les deux paquets (Passe FX5).
 - Un drapeau de partie pour tout un ensemble de systèmes (la version 2) rend la preuve du défaut identique d'un lot à l'autre : captures à 0 px, `play-flow`, et le TournamentLab du jeu par défaut comparé à `main` au JSON près (Passes V0 à V10). Un lot qui change un parcours change l'outil qui le parcourt dans le même commit (`play-flow`, `play-day`, Passe V10).
 - Un défaut relevé sur une capture se vérifie dans la page avant de corriger l'image : il peut venir de la capture (Passe P2 : chiffres de
   dégâts retirés par leur minuterie avant la photo).

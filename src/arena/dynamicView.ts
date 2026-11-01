@@ -20,6 +20,10 @@ export function arenaRules(params: URLSearchParams, match?: { rules?: ArenaRules
   return params.get('combat') === 'dynamic' ? 'dynamic' : 'classic';
 }
 
+/** the duel's effects (src/arena/fx/, the operator's H-7 « Tâche à part, derrière flags.v2 », journal Passes FX4 / FX5): a duel under the version 2's rules;
+ *  `fx=off` keeps the former frames, for comparison; any other page never loads them */
+export const fxOn = (rules: ArenaRules, params: URLSearchParams): boolean => rules === 'v2' && params.get('fx') !== 'off';
+
 /** the keyboard under the new rules: 1 light, 2 heavy, 3-6 the four slots in their order, A dodge, B guard (held), R restart, Space pause */
 export function dynKeys(loadout: readonly DynActionId[]): Record<string, string> {
   const k: Record<string, string> = { '1': 'light', '2': 'heavy', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
