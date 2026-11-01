@@ -544,6 +544,33 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
 - Une lueur additive derrière les combattants, à la même place à l'écran, garde la silhouette entière : c'est la profondeur qui change, pas l'image.
 - Un effet qui marche la nuit par la lumière marche à midi par le contour : du noir autour de ce qui est plein, jamais autour d'un texel isolé, et rien de sombre sur le sable.
 
+## Passe FX2 — Les effets de la Passe FX1 ne sont pas validés : orientation vers des effets comme ceux de RPGThreeJS (2026-11-01)
+
+### La décision, mot pour mot
+- Opérateur, après la Passe FX1 : « Je ne valide pas les nouveau vfx et nous allons plutot nous orienter vers conception de vfx similaire au projet RPGThreeJS ».
+- La fiche FX1 n'a pas été remplie (collection `decisions` vide, relue) : elle est close sans choix, ses recommandations « Adopter » tombent. `fx=new` reste sur `main` (labo, hors production) jusqu'à ce que la suite le remplace.
+
+### Lu dans RPGThreeJS — lecture seule, ouverte par cette décision ; rien de copié
+- `src/combat/fx/` (`FxEngine`, `FxDirector`, `fxRecipes`, `fxSkills`, `fxPalettes`, `fxIntensity`), `docs/combat/COMBAT_HD2D.md`, ses décisions et ses images de revue. Le Composer (`src/combat/vfx/`) n'est pas la voie : il ne joue plus en combat, et il repose sur des planches commerciales.
+- L'opérateur y a déjà tranché la même question, après un essai pixel écrit à la main : « je pense que nous allons garder les effets ultimes actuel car ils sont nieux adapte et visuellement plus abouti » (OD-2026-10-31-B).
+
+| | FX1 (écarté) | RPGThreeJS |
+|---|---|---|
+| Forme | images peintes, grille ×3, 4 à 7 images | géométrie vivante en pleine résolution : plans, anneaux, piliers, dômes, particules carrées, shader à bandes de tons nettes |
+| Lumière | trame additive, le `hitLight` existant | cœurs blanc chaud qui bloom, corps saturés, vraie lumière sur l'arène, flash |
+| Écriture | une peinture par événement | recette : une suite d'étapes datées sur des ancres (source, cible, sol, ciel), `impactAt` |
+| Mise en scène | le tremblement existant | coup de caméra, lignes de vitesse, projecteur, charge avant le coup, ralenti |
+| Identité | six effets pour tout le duel | une signature par compétence, une couleur et une forme par classe |
+| Règles | | sceau réservé à la magie ; anneau de choc une fois, sur le coup, rien de circulaire après ; entaille avec une lame sombre dessous |
+
+### À porter pour l'arène — [?] à décider avec l'opérateur
+- Ce qui ne se transpose pas tel quel : three r160 là-bas, r186 ici ; ici la cible HDR à 4 × MSAA, le masque de protection dans l'alpha (`maskSafeBlending`), le seuil de bloom à 1,15 ; le budget E24 ; `flags.v2`, rien par défaut ; l'ambre seul accent chaud la nuit.
+- **Le ralenti** : là-bas le temps d'effet ralentit un combat au tour par tour ; ici « le temps ne s'arrête jamais » (`briefs/combat-system.md`, G1) et les fenêtres d'esquive courent : un ralenti du duel toucherait un verrou. Il n'est possible qu'au K.O., duel fini.
+
+### Pensée
+- FX1 a suivi son brief à la lettre et ses critiques ne le comparaient qu'aux anciens effets : 12 paires sur 12 ne disaient rien de la cible de l'opérateur. Une référence de qualité se demande avant la première image, pas après la fiche.
+- Sept effets à la grille de texels ne sont pas le HD-2D du projet voisin : le sprite y est pixel, l'effet y est de la lumière.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -561,7 +588,7 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
-  - **Effets de combat (Passe FX1)** : six effets écrits ici, sans tiers, derrière `?scene=arena&v2=1&fx=new` (DEV, compilés hors de la production) ; à l'aveugle 12 paires sur 12 devant les anciens ; au repos aucun appel de dessin, au pire +0,1 ms en 1080p, sous la nuit B. **La fiche est à remplir par l'opérateur** (https://claude.ai/artifact/NWXvBHkzo9mKUT8WLGZheM, effet par effet, puis FX-7 la suite), à relire puis consigner ; rien par défaut. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
+  - **Effets de combat (Passes FX1, FX2)** : les effets pixel de `fx=new` ne sont **pas validés** par l'opérateur ; orientation : des effets comme ceux de RPGThreeJS (géométrie vivante, bloom, lumière, recettes). À décider : porter son moteur ou le réécrire, le ralenti (Passe FX2). La fiche FX1 est close sans choix. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
     la version 2 cohérente hors combat (ses dix jours, ses événements dans l'ordre). À faire en local : les mesures GPU des places (budget E24 ;
@@ -1030,6 +1057,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   relit d'abord les décisions prises entre-temps sur `main` (Passe RC3 : AV-10, V2-18). La case fixe l'allonge d'une lame : faire tenir une lame
   générée trop longue repousse le corps, les pieds sautent à l'impact ; la poussée se règle à la main et se mesure aux pieds contre les images
   voisines (Passe RC3).
+- Une référence de qualité se demande à l'opérateur avant la première image : des critiques à l'aveugle contre l'existant ne disent rien de sa cible (Passe FX2).
 - Un effet se juge à l'instant où le jeu le montre : raccourci, il gagne sur la planche et perd en scène, déjà fini ; deux critiques à l'aveugle de suite peuvent demander une chose et son contraire (l'étoile sur le buste) : la paire tranche, ce qui perd s'annule (Passe FX1).
 ### Provenance et approbations
 - Rien d'externe ne devient « canon » en silence : un manifeste de provenance (`art-lab/characters/manifests`) avec approbation nommée et
