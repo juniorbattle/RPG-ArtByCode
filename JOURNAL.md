@@ -521,6 +521,28 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
 - Une mesure de premier usage dépend du moteur : le contrôle de la Passe FX1 (aucun à-coup, préchauffage retiré) ne valait que pour son unique shader. Et préchauffer ne suffit pas si l'on libère ce qu'on a préchauffé.
 - La dernière version d'un autre projet se vérifie sur toutes ses références avant de copier, et le commit se cite.
 
+## Passe FX4 — La fiche des effets relue : tout validé, la sortie du labo décidée en tâche à part (2026-11-01)
+
+### Les décisions de l'opérateur, mot pour mot
+- La fiche (https://claude.ai/artifact/NWXvBHkzo9mKUT8WLGZheM, collection `decisions`, six lignes, aucune note) : H-1 coups portés, H-2 garde et bris, H-3 compétences, H-4 charge, H-6 K.O. : « Valider » ; H-7 la suite : « Tâche à part, derrière flags.v2 ».
+- Trois questions posées en séance après la relecture, réponses aux libellés des options :
+  - H-5 Rempart et Ferveur, aucune ligne sur la fiche (document absent, vérifié par son identifiant) : « Valider (Recommandé) ».
+  - Les couleurs hors ambre la nuit : « Garder en exception (Recommandé) » : limitée aux effets du duel, une seconde au plus pour ces recettes ; le quartier et les décors ne changent pas. Consigné dans `AGENTS.md`, « Art direction ».
+  - L'égalité avec la nuit B au pire cas (+0,02 ms la nuit, 1080p) : « Accepter, remesurer (Recommandé) » : la tâche à part remesure sur de vrais duels et signale tout dépassement.
+
+### La fiche elle-même — [KO] → rattrapé
+- La Passe FX3 renvoyait les couleurs « à trancher sur la fiche » et l'égalité « à l'opérateur », mais aucune carte ne les posait : le « Valider » de H-3 ne les tranchait pas. Vu à la relecture, posé directement.
+
+### État — [OK]
+- Aucun code touché : `fx=new` reste au labo, en DEV seulement, rien par défaut. Seuls `AGENTS.md` et ce journal changent. `npm run typecheck`, `npm test` **297 / 297**, `npm run build`.
+
+### La tâche à part (H-7)
+- Sortir `src/lab/fx/` et `src/lab/combatFx.ts` du labo pour les duels de la version 2 (`arenaRules` = `v2`, dans une partie comme sous `?scene=arena&v2=1`), chargés à la demande ; le jeu par défaut à 0 px contre `main`.
+- Reprises de la Passe FX3 : le coût remesuré sur de vrais duels, les recettes des rivaux revues en image, l'écart de garde réglé pour Ren et Marek seulement, le dessin par effet.
+
+### Pensée
+- Ce qu'une passe renvoie à une fiche doit y figurer : se relit contre les « Restes » avant de publier. Une ligne absente n'est pas un choix.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -538,7 +560,7 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
-  - **Effets de combat (Passes FX1 à FX3)** : les effets pixel non validés sont retirés ; le moteur de RPGThreeJS (`dev@5cc6119e`) est porté derrière `?scene=arena&v2=1&fx=new` (DEV) avec une recette par action, ralenti au K.O. seulement ; au repos rien, au pire +1 ms, à égalité avec la nuit B. **La fiche est à remplir par l'opérateur** (https://claude.ai/artifact/NWXvBHkzo9mKUT8WLGZheM, six familles, puis H-7 la suite), à relire puis consigner ; rien par défaut. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
+  - **Effets de combat (Passes FX1 à FX4)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est porté derrière `?scene=arena&v2=1&fx=new` (DEV), une recette par action, ralenti au K.O. seulement ; **les six familles sont validées** (Passe FX4), les couleurs hors ambre gardées en exception au duel, l'égalité avec la nuit B au pire cas acceptée. **Reste H-7 « Tâche à part, derrière flags.v2 »** : sortir du labo, le défaut inchangé, remesurer sur de vrais duels (Passe FX4). Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
     la version 2 cohérente hors combat (ses dix jours, ses événements dans l'ordre). À faire en local : les mesures GPU des places (budget E24 ;
@@ -1036,6 +1058,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   l'empreinte se met alors à jour avec une note de maintenance (ancienne valeur gardée).
 
 ### Outillage, documentation, processus
+- Ce qu'une passe renvoie à une fiche doit y figurer, et une ligne absente n'est pas un choix : la fiche se relit contre les « Restes » avant de publier (Passe FX4).
 - Un outil externe de production d'art (Aseprite et son agent) n'étant jamais une dépendance (`AGENTS.md`), une passe d'outillage se prouve
   par un bundle `dist` identique au SHA-256 et 0 px de différence sur les quatre cadrages. Il s'installe épinglé (version exacte, tag,
   auto-update coupé), en portée locale, après lecture de son code d'installation et un dry-run ; jamais avec l'installeur « tout-en-un »
