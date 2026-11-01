@@ -1,0 +1,50 @@
+{
+  "id": "ilse-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA2)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "Ilse Morrow = G2 no. 03, Priestess"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g2.webp",
+      "sha256": "aefcba3f7f239b6ce53a6937b7fedfd9f699e72801fc4fc76938137b4346b136",
+      "figure": "G2 no. 03, Priestess"
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig ilse-x2-v1.rig.mjs (art-lab/characters/rigs/lib/standing.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/ilse-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/ilse-x2-v1.png": "1f090264c7a8e7d6b90d9b44e670eefd832c2e86e3041c055ddb70873b469876",
+    "art-lab/characters/exports/ilse-x2-v1.json": "cbfe7afb33e4ba7cc772787edfef30194eb99e1367024b51eb856c4f6d555b11",
+    "art-lab/characters/source/ilse-x2-v1.aseprite": "6fbaddd218763b028a8b4e48a2412b559e7b1d8e158d5352b940fb175612ba9e",
+    "art-lab/characters/provenance/ilse-x2-v1/view-down.png": "bece00a16f9055fabacaa50d1a669d270af4d4865d5600df695fa48d27b72c4c",
+    "art-lab/characters/provenance/ilse-x2-v1/view-up.png": "57a191e68c1720533ef58c9d92f82185a15c09b8c238e295b77fcf7b4e3ef83c",
+    "art-lab/characters/provenance/ilse-x2-v1/view-side.png": "828b13751f482dc73d81d6c4bcd2c9c51156fb63e159070c9325c1af1a1444ff",
+    "art-lab/characters/provenance/ilse-x2-v1/build.json": "a596f49e830c1a2201ef7ca4438567f99d5377f4e655aa5aac0c7b7fa5b3687b",
+    "art-lab/characters/rigs/ilse-x2-v1.rig.mjs": "7f54bea5db650d554988a2a14387d356728ab2889e713d23c1c810beba30fcf0",
+    "art-lab/characters/rigs/lib/standing.mjs": "c96e143681ad2b51b3a854b129a2f017e286ab00af68442d0a05f2dc15f92099",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

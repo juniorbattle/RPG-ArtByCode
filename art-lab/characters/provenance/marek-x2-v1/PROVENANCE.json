@@ -1,0 +1,50 @@
+{
+  "id": "marek-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA2)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "Marek Varn = G1 panel 3"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g1.webp",
+      "sha256": "91dffa0c10d1e586e0b5afb62872807dbc6e40db56117641564de78b6412594d",
+      "figure": "G1 panel 3"
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig marek-x2-v1.rig.mjs (art-lab/characters/rigs/lib/standing.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 30,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/marek-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/marek-x2-v1.png": "b4149b1d79f091dec293e518bb8aa7d099346e8b4005ffa908b87e472eabc807",
+    "art-lab/characters/exports/marek-x2-v1.json": "23e889876cc26a3cb77f50d4ab9d04adb630949a8f13340ff169a9f4414e48da",
+    "art-lab/characters/source/marek-x2-v1.aseprite": "388d96a92624c44f4b0b0f51d9892ff723624d6340a90f937fb350f881f0278b",
+    "art-lab/characters/provenance/marek-x2-v1/view-down.png": "bca2689558edc5227650b48ef551a9ae8575d160cfc98cccf7c196bf276f8253",
+    "art-lab/characters/provenance/marek-x2-v1/view-up.png": "9ea903c2ed47854dcc5ac8ba5186fa7f23efd8877de019c912e0f6cf3cf09322",
+    "art-lab/characters/provenance/marek-x2-v1/view-side.png": "98f06542b9a3af8ebe001352f9f76fd6b3015a346590b55ae6830f187255b5bc",
+    "art-lab/characters/provenance/marek-x2-v1/build.json": "3cf9ff3bff7455592c501d407380259e83037bbabd335547015999893ded5b0a",
+    "art-lab/characters/rigs/marek-x2-v1.rig.mjs": "eeb25cae03b49942842eabc377f593110fbf6db30138fd6d645f34a06723c08d",
+    "art-lab/characters/rigs/lib/standing.mjs": "c96e143681ad2b51b3a854b129a2f017e286ab00af68442d0a05f2dc15f92099",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

@@ -16,7 +16,7 @@ import { PerfMonitor } from '../debug/PerfMonitor';
 import { SpriteAtlas } from '../characters/SpriteAtlas';
 import { SpriteRenderer, type Actor } from '../characters/SpriteRenderer';
 import { crowdVariants, GUARD_A, GUARD_B, HOODED, PLAYER, PORTER, type CharSpec } from '../characters/SpriteGenerator';
-import { loadProductionCast, type CastMember } from '../characters/BakedCast';
+import { castEntries, loadProductionCast, type CastMember } from '../characters/BakedCast';
 import { variantOf } from '../characters/Variants';
 import { fiveViewFacing } from '../characters/ActorSystem';
 import type { Anim, Dir } from '../characters/SpriteGenerator';
@@ -255,7 +255,10 @@ export class PlazaApp {
     // the cast: the approved baked sheets (the hero, the guards, the townsfolk and their variants, the porter, the hooded); ?cast=generated
     // keeps every role generated
     this.opts.onProgress('people', 0.97);
-    const castMode = this.opts.params.get('cast'), cast = castMode === 'generated' ? null : await loadProductionCast(false, 'approved');
+    const castMode = this.opts.params.get('cast');
+    // DEV only: the casting's candidate sheets (`cast=candidate`, src/lab/plazaCast.ts, journal Passe CA2)
+    const trial = import.meta.env.DEV && castMode === 'candidate' ? (await import('../lab/plazaCast')).plazaEntries(castEntries(false)) : undefined;
+    const cast = castMode === 'generated' ? null : await loadProductionCast(!!trial, 'approved', undefined, trial);
     this.cast = cast?.cast ?? null;
     const prov = crowdVariants(7351, PROVISIONAL.length).map((s, i): CharSpec => ({ ...s, id: `prov-${PROVISIONAL[i]}` }));
     this.atlas = SpriteAtlas.build([PLAYER, GUARD_A, GUARD_B, HOODED, PORTER, ...crowdVariants(1842, 5), ...prov], cast?.sheets ?? [], this.renderer.capabilities.maxTextureSize);

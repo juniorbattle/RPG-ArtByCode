@@ -1,0 +1,665 @@
+<title>Casting, lot 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions de l’opérateur · 1er novembre 2026</span>
+    <h1>Casting, lot 1 : les feuilles de ville</h1>
+    <p class="lede">Quinze feuilles reconstruites depuis les figures que tu as choisies. Treize sont déjà des personnes des places, deux donnent un portrait. Aucune image n’a été générée. Les notes viennent d’une critique à l’aveugle ; rien n’entre en production sans ton choix ici.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je passe les feuilles approuvées en production derrière la version 2, je reprends les autres, puis j’enchaîne sur le lot des citadins.</p>
+    <p class="src">Sources : journal Passes CA1 et CA2, art-lab/characters/manifests, art-lab/characters/rigs.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+ {
+  "id": "scene",
+  "title": "En scène",
+  "sub": "Les places avant et après, derrière le paramètre de laboratoire.",
+  "fam": "var(--astre)",
+  "items": [
+   {
+    "id": "S1",
+    "tag": "portée",
+    "title": "Ce que « Production » veut dire ici",
+    "ctx": "Une feuille approuvée remplace le sprite provisoire sur les places de la version 2, et son visage remplace le portrait généré dans une partie de la version 2. Le quartier marchand et le jeu par défaut ne changent pas : 0 px sur sept vues contre main. Les duels restent inchangés à ce stade : leurs feuilles ×3 sont un autre lot.",
+    "shots": [
+     [
+      "img/before-forecourt.png",
+      "Le parvis aujourd’hui"
+     ],
+     [
+      "img/scene-forecourt.png",
+      "Le parvis avec les feuilles candidates"
+     ],
+     [
+      "img/scene-training.png",
+      "Les lices"
+     ],
+     [
+      "img/scene-festival.png",
+      "La place de la halle"
+     ]
+    ],
+    "rec": "Accepter cette portée, conforme à ton choix C2. Sans feuille approuvée, un personnage garde son sprite provisoire.",
+    "opts": [
+     "D’accord",
+     "À revoir (en note)"
+    ],
+    "recIdx": 0,
+    "src": "Fiche de casting, C2 ; journal Passe CA2"
+   }
+  ]
+ },
+ {
+  "id": "prets",
+  "title": "Sept feuilles prêtes",
+  "sub": "Jugées prêtes par la seconde critique à l’aveugle.",
+  "fam": "var(--ronce)",
+  "items": [
+   {
+    "id": "L-lio",
+    "tag": "Lio",
+    "title": "Lio : 8 sur 10",
+    "ctx": "La meilleure du lot : volume et lecture dans les trois vues.",
+    "shots": [
+     [
+      "img/lot-lio.png",
+      "Lio : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/lio-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   },
+   {
+    "id": "L-odo",
+    "tag": "Odo",
+    "title": "Odo : 8 sur 10",
+    "ctx": "Très lisible, la fleur de lys du dos est réussie. Son profil ressemble à sa face : la planche n’a pas de vrai profil.",
+    "shots": [
+     [
+      "img/lot-odo.png",
+      "Odo : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/odo-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   },
+   {
+    "id": "L-corvin",
+    "tag": "Corvin",
+    "title": "Corvin : 8 sur 10",
+    "ctx": "Fourrure et cape bien rendues, passé de 4 à 8 après le nettoyage. Ses armes sont des traits d’un texel, fragiles.",
+    "shots": [
+     [
+      "img/lot-corvin.png",
+      "Corvin : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/corvin-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   },
+   {
+    "id": "L-rhosk",
+    "tag": "Rhosk",
+    "title": "Rhosk : 8 sur 10",
+    "ctx": "Solide, la hache dans le dos se lit. Il n’a pas de place en ville : cette feuille donne son portrait (ton choix R-ville).",
+    "shots": [
+     [
+      "img/lot-rhosk.png",
+      "Rhosk : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/rhosk-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   },
+   {
+    "id": "L-anwen",
+    "tag": "Anwen",
+    "title": "Anwen : 7 sur 10",
+    "ctx": "Son dos est une grande masse crème sans détail, fidèle à la planche.",
+    "shots": [
+     [
+      "img/lot-anwen.png",
+      "Anwen : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/anwen-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   },
+   {
+    "id": "L-brann",
+    "tag": "Brann",
+    "title": "Brann : 7 sur 10",
+    "ctx": "Face et dos bons. De profil, jambes maigres et cape proche du fond.",
+    "shots": [
+     [
+      "img/lot-brann.png",
+      "Brann : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/brann-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   },
+   {
+    "id": "L-marek",
+    "tag": "Marek",
+    "title": "Marek : 7 sur 10",
+    "ctx": "Il marche dans sa cinématique : profil dessiné sur G1, face et dos animés par le rig. Risque relevé : il ressemble à Odo, gris, bleu et or, et les deux sont au parvis.",
+    "shots": [
+     [
+      "img/lot-marek.png",
+      "Marek : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production. La ressemblance vient de tes deux figures et se lit surtout à l’arrêt côte à côte.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/marek-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   }
+  ]
+ },
+ {
+  "id": "reserves",
+  "title": "Six feuilles avec réserve",
+  "sub": "Lisibles mais plus faibles : elles restent très au-dessus des sprites provisoires.",
+  "fam": "var(--voile)",
+  "items": [
+   {
+    "id": "L-wren",
+    "tag": "Wren",
+    "title": "Wren : 6 sur 10",
+    "ctx": "Le chapeau frôle le bord gauche du cadre et son contour est bruité. Pas de vrai profil sur la planche.",
+    "shots": [
+     [
+      "img/lot-wren.png",
+      "Wren : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production : le chapeau reste dans le cadre, le contrôle de la feuille le vérifie.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/wren-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   },
+   {
+    "id": "L-ilse",
+    "tag": "Ilse",
+    "title": "Ilse : 6 sur 10",
+    "ctx": "Dos en voile sans relief, un reste gris à droite du bras. Dans le duel elle aura une épée (X4), pas ici.",
+    "shots": [
+     [
+      "img/lot-ilse.png",
+      "Ilse : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/ilse-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   },
+   {
+    "id": "L-cassius",
+    "tag": "Cassius",
+    "title": "Cassius : 6 sur 10",
+    "ctx": "Jambes fines pour le torse, épées à peine visibles, image bruitée par l’acier.",
+    "shots": [
+     [
+      "img/lot-cassius.png",
+      "Cassius : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/cassius-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   },
+   {
+    "id": "L-vessa",
+    "tag": "Vessa",
+    "title": "Vessa : 6 sur 10",
+    "ctx": "Figure petite sur sa planche (125 px) : tramage bruyant, dos illisible. C’est la limite de la source.",
+    "shots": [
+     [
+      "img/lot-vessa.png",
+      "Vessa : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production pour l’instant. Une planche plus grande de cette figure la relèverait, sans changer le design.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/vessa-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   },
+   {
+    "id": "L-hilde",
+    "tag": "Hilde",
+    "title": "Hilde : 6 sur 10",
+    "ctx": "Le sac écrase la silhouette, c’est le dessin. Le tampon gris relevé sous ses pieds est retiré ; cette dernière retouche n’a pas repassé de critique.",
+    "shots": [
+     [
+      "img/lot-hilde.png",
+      "Hilde : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/hilde-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   },
+   {
+    "id": "L-orla",
+    "tag": "Orla",
+    "title": "Orla : 6 sur 10",
+    "ctx": "Marche dans sa cinématique sur quatre images de G1 : les deux premières tiennent une épée qui disparaîtrait. Rouge très saturé sur les places bleu et ivoire. Tampon gris retiré, sans nouvelle critique.",
+    "shots": [
+     [
+      "img/lot-orla.png",
+      "Orla : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 0,
+    "src": "Rig art-lab/characters/rigs/orla-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   }
+  ]
+ },
+ {
+  "id": "reprendre",
+  "title": "Deux feuilles à reprendre",
+  "sub": "Les seules que je ne te recommande pas.",
+  "fam": "var(--cendre)",
+  "items": [
+   {
+    "id": "L-tobin",
+    "tag": "Tobin",
+    "title": "Tobin : 5 sur 10",
+    "ctx": "Tenue brune et rapiécée qui se fond en bouillie, les vues se distinguent peu. Il n’a pas de place en ville : sa feuille sert au portrait.",
+    "shots": [
+     [
+      "img/lot-tobin.png",
+      "Tobin : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "À reprendre : j’essaierai une palette plus courte et des masses plus simples, sans changer la figure.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 1,
+    "src": "Rig art-lab/characters/rigs/tobin-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   },
+   {
+    "id": "L-pip",
+    "tag": "Pip",
+    "title": "Pip : 5 sur 10",
+    "ctx": "Sa figure est la plus petite du lot (119 px) : le dos est une tache sombre, le profil filiforme. Plus clair que ses voisins au soleil.",
+    "shots": [
+     [
+      "img/lot-pip.png",
+      "Pip : face, profil, dos"
+     ]
+    ],
+    "one": true,
+    "rec": "À reprendre. Il faudrait une planche plus grande de cette figure, ou choisir une autre figure en note.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)",
+     "Rester au labo"
+    ],
+    "recIdx": 1,
+    "src": "Rig art-lab/characters/rigs/pip-x2-v1.rig.mjs ; critique à l’aveugle, Passe CA2"
+   }
+  ]
+ },
+ {
+  "id": "ouvert",
+  "title": "La question restée ouverte",
+  "sub": "",
+  "fam": "var(--astre)",
+  "items": [
+   {
+    "id": "N7",
+    "tag": "N7",
+    "title": "Quel rôle pour les trois panneaux de G1 ?",
+    "ctx": "Sur la fiche de casting tu as choisi « Leur donner un rôle (en note) », mais la note est vide. Ces panneaux sont la dame noble au bâton, le mage à la lanterne et une version du héros avec épée et bâton. Dis lequel joue quoi : rien n’est cuit pour eux en attendant.",
+    "rec": "Dis-le en note. Si tu ne veux pas trancher maintenant, je les laisse en réserve.",
+    "opts": [
+     "Rôles en note",
+     "En réserve finalement"
+    ],
+    "recIdx": 0,
+    "src": "Fiche de casting, N7 ; journal Passe CA1"
+   }
+  ]
+ }
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value));
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

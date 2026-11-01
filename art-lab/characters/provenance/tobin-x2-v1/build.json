@@ -1,0 +1,40 @@
+{
+ "id": "tobin-x2-v1",
+ "frames": 12,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11",
+ "sheet": [
+  384,
+  192
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2604,
+    "meanOklabErrPermille": 13.2,
+    "maxOklabErrPermille": 38.8
+   },
+   "recon-up-full-q.png": {
+    "texels": 2800,
+    "meanOklabErrPermille": 11.7,
+    "maxOklabErrPermille": 37.1
+   },
+   "recon-side-full-q.png": {
+    "texels": 2016,
+    "meanOklabErrPermille": 12.1,
+    "maxOklabErrPermille": 46.4
+   }
+  }
+ },
+ "views": {
+  "down": "eb62aa6cf65164518cbf2591c5b6ee8594d4ce681e1043568d7adab085806836",
+  "up": "059d327d46709b5df5b5081ff44da9cd0fcc981ca7d10892ce7d0b4c171fa547",
+  "side": "a0fecebff9bf1455277b2a2d0e73ce4186ab78d775c0151fdc90fae2804989f1"
+ },
+ "exports": {
+  "png": "6db0a950f4d8bc205196745e3a48fdade5247e3a927f0b0e5833bf7c95a5686d",
+  "json": "d1b37c8cff690123ea63a86604856acf8fe6ffff7281f53cab870b9e46a736db",
+  "aseprite": "f6dbf7979d2e32f330f54964ddd9c0a20dabee44e71462db576d0265f6d22e8e"
+ }
+}

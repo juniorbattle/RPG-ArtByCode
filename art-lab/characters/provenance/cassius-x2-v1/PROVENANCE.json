@@ -1,0 +1,50 @@
+{
+  "id": "cassius-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA2)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "Cassius Dree = G2 no. 06, Rival"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g2.webp",
+      "sha256": "aefcba3f7f239b6ce53a6937b7fedfd9f699e72801fc4fc76938137b4346b136",
+      "figure": "G2 no. 06, Rival"
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig cassius-x2-v1.rig.mjs (art-lab/characters/rigs/lib/standing.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/cassius-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/cassius-x2-v1.png": "4ff4703992db8e8aa9fcf0d5de18c6d1154596b4e144e6818d91ee3e1929b9d7",
+    "art-lab/characters/exports/cassius-x2-v1.json": "b036602698e6be856c8389ac6310ecf9f63eb2689ce97a94226d9aacdff06d4f",
+    "art-lab/characters/source/cassius-x2-v1.aseprite": "2a5b8669d2ce2399d0d002c91d7ca24794756be2337a2de4f284c3ee70bea6ee",
+    "art-lab/characters/provenance/cassius-x2-v1/view-down.png": "2901e115142cf94dc3ca8d7c000a07129463e2191135009686b0561783aa7fc1",
+    "art-lab/characters/provenance/cassius-x2-v1/view-up.png": "b05953dd825b18e62f102792fcf9dbad3345716a700b87d7fec47fae32e83000",
+    "art-lab/characters/provenance/cassius-x2-v1/view-side.png": "cd21909fe5c96f38c39945c5dc334a0a1eebfbd175ff84355bd1941c945b281c",
+    "art-lab/characters/provenance/cassius-x2-v1/build.json": "e1c96766e41daab013cff93fc0b06688daf7e1de1519411645f66d81735c4974",
+    "art-lab/characters/rigs/cassius-x2-v1.rig.mjs": "1a9ae84daab7e8a72531bf1596fd1f28476da66385cd456c81dacab1ed9bc4a5",
+    "art-lab/characters/rigs/lib/standing.mjs": "c96e143681ad2b51b3a854b129a2f017e286ab00af68442d0a05f2dc15f92099",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

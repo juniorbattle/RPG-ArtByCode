@@ -1,0 +1,40 @@
+{
+ "id": "vessa-x2-v1",
+ "frames": 12,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11",
+ "sheet": [
+  384,
+  192
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2391,
+    "meanOklabErrPermille": 16.8,
+    "maxOklabErrPermille": 55.7
+   },
+   "recon-up-full-q.png": {
+    "texels": 1943,
+    "meanOklabErrPermille": 16.4,
+    "maxOklabErrPermille": 51.8
+   },
+   "recon-side-full-q.png": {
+    "texels": 2031,
+    "meanOklabErrPermille": 16.6,
+    "maxOklabErrPermille": 79
+   }
+  }
+ },
+ "views": {
+  "down": "ce54419f1e29704bb21c68c5fdacb3393a5ee6b156ff86c4a1077ce20399b280",
+  "up": "2c0ad45e79927892b21e2cb201f1001e3f5a147eb2a5ecccd426cce5afd4d824",
+  "side": "4f967fae9f64b5ff18b831546342d5697dbd4a1901e7a9d435803abb024e3a7b"
+ },
+ "exports": {
+  "png": "b36aff110c0810db5fa2870f3abc3df6e15f837d81cfb23146ff0305bd281844",
+  "json": "d636916024bff7ef562c275f7b37e3720276281825e11fe68e1eb482ecba6f26",
+  "aseprite": "3edb721f5f355caab634b09aeb42cc7e45ce577fdb97ffdce224e60335e0b600"
+ }
+}

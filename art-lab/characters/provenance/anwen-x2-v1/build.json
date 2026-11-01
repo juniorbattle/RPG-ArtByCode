@@ -1,0 +1,40 @@
+{
+ "id": "anwen-x2-v1",
+ "frames": 12,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11",
+ "sheet": [
+  384,
+  192
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2972,
+    "meanOklabErrPermille": 15.2,
+    "maxOklabErrPermille": 59.9
+   },
+   "recon-up-full-q.png": {
+    "texels": 2726,
+    "meanOklabErrPermille": 11.8,
+    "maxOklabErrPermille": 52.7
+   },
+   "recon-side-full-q.png": {
+    "texels": 2498,
+    "meanOklabErrPermille": 14.7,
+    "maxOklabErrPermille": 51.7
+   }
+  }
+ },
+ "views": {
+  "down": "87ec72b1450c5cf645430557ef76b472b2744b94f99a7f09b033dec7a58dcf70",
+  "up": "ff11219a961835a990f79e4096c015c89a866c6a08acd2b61e131d8133ff5ba7",
+  "side": "92b48586e0a62f6658b46f0332dc81778e4e5a8dc5f3766073cedbf21aa6f3a3"
+ },
+ "exports": {
+  "png": "a75d52e95c2ccf1654de4bbe8c0871747885636240213456972bed7defa4993d",
+  "json": "aa9c5272a8536597a6c011df84c0e0b1e227267cb545e6f73c9d0d7634ebd8bb",
+  "aseprite": "8c5fce25a264f8e2ed09194c6d8af8efe9d53747d7b44e8f55552b143cdfdbd5"
+ }
+}

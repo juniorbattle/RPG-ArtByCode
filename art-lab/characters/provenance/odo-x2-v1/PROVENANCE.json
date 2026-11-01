@@ -1,0 +1,50 @@
+{
+  "id": "odo-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA2)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "Clerk Odo = G2 no. 04, Organiser"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g2.webp",
+      "sha256": "aefcba3f7f239b6ce53a6937b7fedfd9f699e72801fc4fc76938137b4346b136",
+      "figure": "G2 no. 04, Organiser"
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig odo-x2-v1.rig.mjs (art-lab/characters/rigs/lib/standing.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/odo-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/odo-x2-v1.png": "ff43894a5900cf1192f1c0f706f06ac774eaf753c6bd293b75528cc2ff0a65bd",
+    "art-lab/characters/exports/odo-x2-v1.json": "d872a55ad0c5254d76d7231facafe71017d7a4894a422fccfa7523da4b4ef246",
+    "art-lab/characters/source/odo-x2-v1.aseprite": "f16bbbfa301b7c47399d60ca960717a30e9f53110051f9537bf5b565e6acb406",
+    "art-lab/characters/provenance/odo-x2-v1/view-down.png": "091f9d2f0bb9a1e9270706249e0b9d200cd3c49cfb9339257f1756149141209a",
+    "art-lab/characters/provenance/odo-x2-v1/view-up.png": "fd8c5e7ac3ce748d5a11890b34317e878448b87d026bf12fe46da869302e8a8e",
+    "art-lab/characters/provenance/odo-x2-v1/view-side.png": "bea69b7b5c9af592a035d5a8e9eeda4ea730042cfb514eeda47ddcb11690d809",
+    "art-lab/characters/provenance/odo-x2-v1/build.json": "ff015de358e974764c24bdabb72df309304f424bcd37915c242f47cac2d0356c",
+    "art-lab/characters/rigs/odo-x2-v1.rig.mjs": "3f082c79a94af87d5e3932c259f0c785c663154d4153072da927bb7a6a2c0437",
+    "art-lab/characters/rigs/lib/standing.mjs": "c96e143681ad2b51b3a854b129a2f017e286ab00af68442d0a05f2dc15f92099",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

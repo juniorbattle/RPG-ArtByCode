@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "marek-x2-v1",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/marek-x2-v1.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/marek-x2-v1.png",
+    "metadata": "art-lab/characters/exports/marek-x2-v1.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-character.mjs (reconstruct-grid + quantize-palette + rig-engine, rig art-lab/characters/rigs/marek-x2-v1.rig.mjs); Aseprite 1.3.18.6 (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "G1 panel 3, for Marek Varn",
+      "path": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g1.webp",
+      "note": "the operator's casting sheet, journal Passe CA1; cleared as a production source there (C1)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "Candidate for Marek Varn, shown only by the DEV parameter cast=candidate on a square of the version 2 (journal Passe CA2); production waits for the operator's lot sheet."
+}

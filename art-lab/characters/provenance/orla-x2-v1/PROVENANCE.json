@@ -1,0 +1,50 @@
+{
+  "id": "orla-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA2)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "Orla Brask = G1 panel 5"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g1.webp",
+      "sha256": "91dffa0c10d1e586e0b5afb62872807dbc6e40db56117641564de78b6412594d",
+      "figure": "G1 panel 5"
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig orla-x2-v1.rig.mjs (art-lab/characters/rigs/lib/standing.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 30,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/orla-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/orla-x2-v1.png": "2309538cc4bef34f9fc4d853756b73784f9f92ceb75b655a5c85f7fb303cd6b1",
+    "art-lab/characters/exports/orla-x2-v1.json": "7cd3de2c7e369c0869ffd940283bff9879b9b6d59f046ac2dacb4540f33afc1e",
+    "art-lab/characters/source/orla-x2-v1.aseprite": "029e02b8ef15f01dda39e5f3f4869389f94cfb075b77b90d669462cc662013c9",
+    "art-lab/characters/provenance/orla-x2-v1/view-down.png": "a61553a5aaf83225dfa1880e150b8c8c2cc005884e9530544b27c694a7a99611",
+    "art-lab/characters/provenance/orla-x2-v1/view-up.png": "d483047530348c04f08c44fa71108a7abbe5b427af7ba6baafa6f83ca6f906f6",
+    "art-lab/characters/provenance/orla-x2-v1/view-side.png": "c1ce7891169004eed78ebdc72100c1bfd68cd6c68ed78fa07784c0feee22064b",
+    "art-lab/characters/provenance/orla-x2-v1/build.json": "90a3cdf886b991b45df1cb3f8a2fa652066dbeecec4a5007e84ab6d442a198eb",
+    "art-lab/characters/rigs/orla-x2-v1.rig.mjs": "5f39b7419f07da39bcaf116f5aeb9f432ecb72542afcc861b011b19fb509dafd",
+    "art-lab/characters/rigs/lib/standing.mjs": "c96e143681ad2b51b3a854b129a2f017e286ab00af68442d0a05f2dc15f92099",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

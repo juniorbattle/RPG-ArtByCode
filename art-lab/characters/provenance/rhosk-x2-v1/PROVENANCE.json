@@ -1,0 +1,50 @@
+{
+  "id": "rhosk-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA2)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "Rhosk = G1 panel 6"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g1.webp",
+      "sha256": "91dffa0c10d1e586e0b5afb62872807dbc6e40db56117641564de78b6412594d",
+      "figure": "G1 panel 6"
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig rhosk-x2-v1.rig.mjs (art-lab/characters/rigs/lib/standing.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/rhosk-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/rhosk-x2-v1.png": "21a3c6a928e89db39a1370e60ae7a8d3f34a248f1073a47fa623ab8a16727811",
+    "art-lab/characters/exports/rhosk-x2-v1.json": "c4f1716b4d2b6dca40a83408cf178cc073e991f0b2b9494201b72b65febee1ab",
+    "art-lab/characters/source/rhosk-x2-v1.aseprite": "c36cf0af14879df0dc8f28d90e65a0c0671b449c157ecacc4e2a4daab2f7a84b",
+    "art-lab/characters/provenance/rhosk-x2-v1/view-down.png": "077a47ebf7f12bb07a4632e433ecc949ebf79675538f4ce79373bff6f85f3575",
+    "art-lab/characters/provenance/rhosk-x2-v1/view-up.png": "cbb346bd6d0717c24b6730ca9d23aafe9c92ee81a1e5ebfe4dc710dc3f776d0b",
+    "art-lab/characters/provenance/rhosk-x2-v1/view-side.png": "01ee49e83d1cd59994b32cf119eea15cd7e63ddeefd2aedffd4aeed0d430e6ad",
+    "art-lab/characters/provenance/rhosk-x2-v1/build.json": "2f795345628c701879553e00b276fe544d3bfc3d78076bd42ace140eace072a0",
+    "art-lab/characters/rigs/rhosk-x2-v1.rig.mjs": "f5485daa5bd8ce9e889f856fce83d7540060954f01c82b92ef01b0498eb807ed",
+    "art-lab/characters/rigs/lib/standing.mjs": "c96e143681ad2b51b3a854b129a2f017e286ab00af68442d0a05f2dc15f92099",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

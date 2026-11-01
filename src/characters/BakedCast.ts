@@ -63,7 +63,8 @@ interface Manifest { id: string; status: string; approved: boolean; runtimeUse: 
 /** replaces: the generated archetype(s) the sheet stands in for; needs: frames its archetypes' behaviours ask for beyond idle + walk;
  *  frontLeft: its 'down' facing is drawn turned to the LEFT, a light three-quarter front (the reference sheet draws no true front for it,
  *  journal Passe F2): read only by ?npcfacing= (ActorSystem.npcFacing) */
-interface Entry { manifest: Manifest; png: string; json: unknown; files: Record<string, string>; replaces: string[]; scale: number; needs?: string[]; frontLeft?: boolean }
+export interface CastEntry { manifest: Manifest; png: string; json: unknown; files: Record<string, string>; replaces: string[]; scale: number; needs?: string[]; frontLeft?: boolean; /** a person who only stands: idle frames alone (journal Passe CA2, the operator's T1) */ still?: boolean }
+type Entry = CastEntry;
 
 const ENTRIES: Entry[] = [
   // the dock worker of the reference sheet takes the porter's walks (the quay wanderer and the forge yard's patrol)
@@ -135,7 +136,7 @@ export async function loadProductionCast(candidates = false, variants: 'approved
     const { k, frames } = sheetFrames(id, await decodePng(bytes), e.json);
     const sheet: BakedSheet = { id, runtimeUse: m.runtimeUse === 'production' ? 'production' : 'lab', sha256: want, k, frames };
     const errs = checkBakedSheet(sheet);
-    const missing = [...REQUIRED, ...(e.needs ?? [])].filter((r) => !frames.some((f) => `${f.dir}/${f.anim}` === r));
+    const missing = [...(e.still ? REQUIRED.filter((r) => r.endsWith('/idle')) : REQUIRED), ...(e.needs ?? [])].filter((r) => !frames.some((f) => `${f.dir}/${f.anim}` === r));
     if (missing.length) errs.push(`missing frames ${missing.join(', ')}`);
     if (errs.length) throw new Error(`${id}: ${errs.join('; ')}`);
     const front = frames.find((f) => f.dir === 'down' && f.anim === 'idle' && f.i === 0)!;

@@ -36,6 +36,8 @@ index at the top of `JOURNAL.md`):
   production asset was approved separately, above). The three reference sheets are archived byte for byte in `reference/sources/`
   (records `<name>.source.json`, checked by `npm run art:validate`); classification in `reference/README.md`.
 
+- **Candidates** — the casting of journal Passes CA1 / CA2: fifteen town sheets (`odo`, `anwen`, `hilde`, `corvin`, `brann`, `pip`, `lio`, `wren`, `vessa`, `ilse`, `cassius`, `tobin`, `rhosk`, `marek`, `orla`, each `-x2-v1`), `candidate`, `runtimeUse: "lab"`, shown only by `cast=candidate` on a square; recipe `rigs/lib/standing.mjs` (12 frames standing, 30 for Marek and Orla).
+
 **Approval scopes.** *Approved visual baseline* = `approved: true` + `runtimeUse: "lab"`: an operator-approved quality / direction
 reference, usable in the Art Lab and the DEV in-scene preview only. *Approved production asset* = `approved: true` +
 `runtimeUse: "production"`: only through an explicit, operator-approved integration task (and confirmed source rights).

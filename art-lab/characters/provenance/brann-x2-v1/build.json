@@ -1,0 +1,40 @@
+{
+ "id": "brann-x2-v1",
+ "frames": 12,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11",
+ "sheet": [
+  384,
+  192
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2907,
+    "meanOklabErrPermille": 17,
+    "maxOklabErrPermille": 67.6
+   },
+   "recon-up-full-q.png": {
+    "texels": 2607,
+    "meanOklabErrPermille": 15.7,
+    "maxOklabErrPermille": 59.9
+   },
+   "recon-side-full-q.png": {
+    "texels": 2180,
+    "meanOklabErrPermille": 16.2,
+    "maxOklabErrPermille": 45.5
+   }
+  }
+ },
+ "views": {
+  "down": "496526971e017496c8b87df631730b026b5e07e12283ae42a232f118eaeefca9",
+  "up": "82ddc6db5a7bb893596f9ecb9a0e106520796c0104d7843c4c605505128428cb",
+  "side": "6c06fd54f6740b8df6b6a7a282c4546e1f9cc7389d39c9808394c1bb3a5a6784"
+ },
+ "exports": {
+  "png": "208ae8ba65a44b3f9b56ff3d2768d7c8da8fe07d334a96e6ca2502852319ea59",
+  "json": "4e5c8d73f3a451d330589815acfd4c52f492b3611fe148d0d3ffca765da19263",
+  "aseprite": "1dc6c84861ea57b9fd37e5e29e13290a34839d444c7b77cc0060390ebf589184"
+ }
+}

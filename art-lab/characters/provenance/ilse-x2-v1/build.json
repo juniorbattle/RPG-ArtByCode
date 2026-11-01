@@ -1,0 +1,40 @@
+{
+ "id": "ilse-x2-v1",
+ "frames": 12,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11",
+ "sheet": [
+  384,
+  192
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2487,
+    "meanOklabErrPermille": 16.4,
+    "maxOklabErrPermille": 51.9
+   },
+   "recon-up-full-q.png": {
+    "texels": 2352,
+    "meanOklabErrPermille": 13.4,
+    "maxOklabErrPermille": 56.5
+   },
+   "recon-side-full-q.png": {
+    "texels": 2251,
+    "meanOklabErrPermille": 16.3,
+    "maxOklabErrPermille": 52.8
+   }
+  }
+ },
+ "views": {
+  "down": "bece00a16f9055fabacaa50d1a669d270af4d4865d5600df695fa48d27b72c4c",
+  "up": "57a191e68c1720533ef58c9d92f82185a15c09b8c238e295b77fcf7b4e3ef83c",
+  "side": "828b13751f482dc73d81d6c4bcd2c9c51156fb63e159070c9325c1af1a1444ff"
+ },
+ "exports": {
+  "png": "1f090264c7a8e7d6b90d9b44e670eefd832c2e86e3041c055ddb70873b469876",
+  "json": "786b8ef8110c9bbe0089dc9610dad9896d9d1d0744c760e693fdb67b28e667dc",
+  "aseprite": "6fbaddd218763b028a8b4e48a2412b559e7b1d8e158d5352b940fb175612ba9e"
+ }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "tobin-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA2)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "Tobin Fenn = G2 no. 01, Cedric"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g2.webp",
+      "sha256": "aefcba3f7f239b6ce53a6937b7fedfd9f699e72801fc4fc76938137b4346b136",
+      "figure": "G2 no. 01, Cedric"
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig tobin-x2-v1.rig.mjs (art-lab/characters/rigs/lib/standing.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/tobin-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/tobin-x2-v1.png": "6db0a950f4d8bc205196745e3a48fdade5247e3a927f0b0e5833bf7c95a5686d",
+    "art-lab/characters/exports/tobin-x2-v1.json": "856247f528acd28ab088719c451b423cd6eedd5819082933465c06ffdcc859f4",
+    "art-lab/characters/source/tobin-x2-v1.aseprite": "f6dbf7979d2e32f330f54964ddd9c0a20dabee44e71462db576d0265f6d22e8e",
+    "art-lab/characters/provenance/tobin-x2-v1/view-down.png": "eb62aa6cf65164518cbf2591c5b6ee8594d4ce681e1043568d7adab085806836",
+    "art-lab/characters/provenance/tobin-x2-v1/view-up.png": "059d327d46709b5df5b5081ff44da9cd0fcc981ca7d10892ce7d0b4c171fa547",
+    "art-lab/characters/provenance/tobin-x2-v1/view-side.png": "a0fecebff9bf1455277b2a2d0e73ce4186ab78d775c0151fdc90fae2804989f1",
+    "art-lab/characters/provenance/tobin-x2-v1/build.json": "e605cd085df57dcf310df406fc371003bdeca30af028809ecb96f4990895ca39",
+    "art-lab/characters/rigs/tobin-x2-v1.rig.mjs": "d0609efea7eb26afcf22fe35db16ff8445225ec6a338cae1d4b64c1eb4bc15ba",
+    "art-lab/characters/rigs/lib/standing.mjs": "c96e143681ad2b51b3a854b129a2f017e286ab00af68442d0a05f2dc15f92099",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

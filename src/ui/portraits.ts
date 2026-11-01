@@ -58,11 +58,12 @@ const baked = new Map<string, string>();
 let loading: Promise<void> | null = null;
 /** paints the baked faces once (the pages wait for it, with the fonts, before they say they are ready); a sheet that fails its check keeps
  *  the generated portrait (said in the console) */
-export function preloadPortraits(): Promise<void> {
+export function preloadPortraits(extra: Record<string, { id: string; png: string; json: unknown; sha256: string }> = {}): Promise<void> {
   loading ??= (async () => {
     const sheets = new Map<string, string>();
+    for (const [who, s] of Object.entries(extra)) BAKED[who] = s.id;
     for (const id of new Set(Object.values(BAKED))) {
-      const src = castSource(id);
+      const src = castSource(id) ?? Object.values(extra).find((s) => s.id === id);
       if (!src) continue;
       try {
         const bytes = new Uint8Array(await (await fetch(src.png)).arrayBuffer()), got = await sha256(bytes);

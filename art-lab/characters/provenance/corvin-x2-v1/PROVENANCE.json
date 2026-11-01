@@ -1,0 +1,50 @@
+{
+  "id": "corvin-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA2)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "Master Corvin = G2 no. 02, Lion"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g2.webp",
+      "sha256": "aefcba3f7f239b6ce53a6937b7fedfd9f699e72801fc4fc76938137b4346b136",
+      "figure": "G2 no. 02, Lion"
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig corvin-x2-v1.rig.mjs (art-lab/characters/rigs/lib/standing.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/corvin-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/corvin-x2-v1.png": "9c144f29345331d8ac7cebcb6a2eb82d0ee988b91c194446524d372bca65da85",
+    "art-lab/characters/exports/corvin-x2-v1.json": "1ce255b88497501375744d010e9be7cb36b73aa15caf3469aeda1772e9cf8359",
+    "art-lab/characters/source/corvin-x2-v1.aseprite": "44e27f7e5e019ddc560b1e0e9cd814be0363f62a05c6a820154d802521b3ad8d",
+    "art-lab/characters/provenance/corvin-x2-v1/view-down.png": "46cd0a119944beaad32b36087954fc64b978bc9ab9b64ffb0cb3670fce35f4c5",
+    "art-lab/characters/provenance/corvin-x2-v1/view-up.png": "b8c4249bdd908b02b517ed679482c50ab43e4a7ca1298e3356f231f7fc27ad91",
+    "art-lab/characters/provenance/corvin-x2-v1/view-side.png": "84b3a92078096cd3dd1c91c24ee437296a2319274abca4b3e3ed296ede7085c0",
+    "art-lab/characters/provenance/corvin-x2-v1/build.json": "30565343ea3a3279163cbd7407940bd67e0f2ddf20f6fded1bcba7c0bd2a98a8",
+    "art-lab/characters/rigs/corvin-x2-v1.rig.mjs": "acdf6e4e7fb52bb7b47b4dfa46a83157452ff54d76c2f230a098a0843736bcbc",
+    "art-lab/characters/rigs/lib/standing.mjs": "c96e143681ad2b51b3a854b129a2f017e286ab00af68442d0a05f2dc15f92099",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

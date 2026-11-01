@@ -1,0 +1,50 @@
+{
+  "id": "lio-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA2)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "Lio = N2 no. 23, Tavern Owner"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/merchant-district-night-npc-17-24.webp",
+      "sha256": "3b30b9305b21ed1812b9a75b0f4919f03665f7145eca9e78f4735608f200d6d4",
+      "figure": "N2 no. 23, Tavern Owner"
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig lio-x2-v1.rig.mjs (art-lab/characters/rigs/lib/standing.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/lio-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/lio-x2-v1.png": "076d76d3796bb7033459d613730a4cdaa2689f6bb4767b226a727b1fbfa52d02",
+    "art-lab/characters/exports/lio-x2-v1.json": "4408d6332cce52bce07976bc00caef7514f1df6294b6602baf2b11d9e034c7b3",
+    "art-lab/characters/source/lio-x2-v1.aseprite": "ac21c3370739f2ab9c8300c3a9809c8dab97a048e5a3dd04b01911ca71f934ee",
+    "art-lab/characters/provenance/lio-x2-v1/view-down.png": "99c0927e0c354e20ec7e13ee151172481222aee76d77f40741d9c4feab66745d",
+    "art-lab/characters/provenance/lio-x2-v1/view-up.png": "906c3ba34cc80b10aaafaf22c8c3b12f7d2416687b67631a7357bbeeef95acb1",
+    "art-lab/characters/provenance/lio-x2-v1/view-side.png": "e4601405fc6d6df0c8b8e56e6b38fc832f20bb104cf3ba02e0bb306cf5c65eee",
+    "art-lab/characters/provenance/lio-x2-v1/build.json": "b299e07dc6510497ee8c6be2edfb13f5d0e537410267f6f0539bb1d78d18c344",
+    "art-lab/characters/rigs/lio-x2-v1.rig.mjs": "3df7a368f51bb24b2445c30b66f1b7a7ed738396942738880e999a60c2bfc43c",
+    "art-lab/characters/rigs/lib/standing.mjs": "c96e143681ad2b51b3a854b129a2f017e286ab00af68442d0a05f2dc15f92099",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

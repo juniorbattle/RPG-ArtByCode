@@ -1,0 +1,40 @@
+{
+ "id": "hilde-x2-v1",
+ "frames": 12,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11",
+ "sheet": [
+  384,
+  192
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 3150,
+    "meanOklabErrPermille": 15.1,
+    "maxOklabErrPermille": 41.4
+   },
+   "recon-up-full-q.png": {
+    "texels": 2651,
+    "meanOklabErrPermille": 14.5,
+    "maxOklabErrPermille": 41
+   },
+   "recon-side-full-q.png": {
+    "texels": 3127,
+    "meanOklabErrPermille": 15.2,
+    "maxOklabErrPermille": 47
+   }
+  }
+ },
+ "views": {
+  "down": "7d6919ffdb5a83af68c5895654507c58c690158dfc89bcee0eb2164385a857b1",
+  "up": "89e295a16f2579610a97e2b9047cb992dff7906b05ad10c390aae6c97ab343bc",
+  "side": "2c5926284f9fc47fba281af9fabd5518c4bc4c0557dc308b82bf03fba4c87048"
+ },
+ "exports": {
+  "png": "8440edb0a02cfc1a1eba54dd353987d5a8ec5f722b45c1721f7ca94a13c5ab66",
+  "json": "dfbe52534ef5d036de9aad4fc2b2e9e58388c8b1cdcdb9358d8b92e05f58dbe3",
+  "aseprite": "b361b41d8a06d674faf0028fbd9e70bb6bc64a113351a76a37ca51997e3b547b"
+ }
+}

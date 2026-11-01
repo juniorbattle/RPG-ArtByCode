@@ -1,0 +1,50 @@
+{
+  "id": "vessa-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA2)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "Vessa Lark = a no. 11, Duelist"
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/tournament-roster-casting-2026-10-18-a-original.png",
+      "sha256": "9f54beedaf5e2eb62bddd01bf7e0ff8011c8b8f2bb4943160ca02f6abd951997",
+      "figure": "a no. 11, Duelist"
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig vessa-x2-v1.rig.mjs (art-lab/characters/rigs/lib/standing.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 12,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/vessa-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/vessa-x2-v1.png": "b36aff110c0810db5fa2870f3abc3df6e15f837d81cfb23146ff0305bd281844",
+    "art-lab/characters/exports/vessa-x2-v1.json": "1d108d745f5bad5b5016454c5b144b6ed7f35743cc26a7cc96b800c863447bc2",
+    "art-lab/characters/source/vessa-x2-v1.aseprite": "3edb721f5f355caab634b09aeb42cc7e45ce577fdb97ffdce224e60335e0b600",
+    "art-lab/characters/provenance/vessa-x2-v1/view-down.png": "ce54419f1e29704bb21c68c5fdacb3393a5ee6b156ff86c4a1077ce20399b280",
+    "art-lab/characters/provenance/vessa-x2-v1/view-up.png": "2c0ad45e79927892b21e2cb201f1001e3f5a147eb2a5ecccd426cce5afd4d824",
+    "art-lab/characters/provenance/vessa-x2-v1/view-side.png": "4f967fae9f64b5ff18b831546342d5697dbd4a1901e7a9d435803abb024e3a7b",
+    "art-lab/characters/provenance/vessa-x2-v1/build.json": "62af9acd07c6c489d9bdadf4dd15446c6b1a316fd7bf330bf6ea73f887aa4052",
+    "art-lab/characters/rigs/vessa-x2-v1.rig.mjs": "cc679c322d1e887fe32120115f4c9c56b9325181d10ecf7ba1a1785c18b48b83",
+    "art-lab/characters/rigs/lib/standing.mjs": "c96e143681ad2b51b3a854b129a2f017e286ab00af68442d0a05f2dc15f92099",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}
