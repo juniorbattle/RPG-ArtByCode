@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "rhosk-x2-v1",
   "kind": "character",
-  "status": "approved",
+  "status": "superseded",
   "source": "art-lab/characters/source/rhosk-x2-v1.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/rhosk-x2-v1.png",
@@ -21,12 +21,7 @@
       "note": "the operator's casting sheet, journal Passe CA1; cleared as a production source there (C1)"
     }
   ],
-  "approved": true,
-  "runtimeUse": "production",
-  "notes": "APPROVED FOR PRODUCTION by the operator on the casting's lot sheet (journal Passe CA3): « Production », then on the proportions « Toutes après correction (Recommandé) »; version 2 only, the district unchanged. Not a Gold Master. Loaded by the squares and a version 2 game's portraits (src/characters/PlazaCast.ts).",
-  "approval": {
-    "by": "operator (git user wonmii)",
-    "date": "2026-11-01",
-    "note": "APPROVED FOR PRODUCTION by the operator on the casting's lot sheet (journal Passe CA3): « Production », then on the proportions « Toutes après correction (Recommandé) »; version 2 only, the district unchanged."
-  }
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "SUPERSEDED on 2026-11-01 by rhosk-x2-v2 (journal Passe CA5, the operator's third lot sheet); in production from Passe CA3 to CA5, its approval kept as history. Its approval, for the record: operator (git user wonmii), 2026-11-01. APPROVED FOR PRODUCTION by the operator on the casting's lot sheet (journal Passe CA3): « Production », then on the proportions « Toutes après correction (Recommandé) »; version 2 only, the district unchanged."
 }

@@ -1,6 +1,6 @@
 {
   "id": "wren-x2-v2",
-  "status": "CANDIDATE, not approved: waits for the operator's lot sheet (journal Passe CA4)",
+  "status": "APPROVED PRODUCTION ASSET (operator, third lot sheet, journal Passe CA5), not declared a Gold Master",
   "request": {
     "date": "2026-11-01",
     "by": "operator",

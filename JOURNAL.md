@@ -498,6 +498,34 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
 - « Comparable aux premières feuilles » se pose comme cible avant de bâtir une planche : la mesure des aplats et la ligne à même échelle auraient montré l'écart dès le premier lot.
 - Un champ qui n'enregistre qu'à la sortie perd ce qu'on tape avant de fermer : sur une fiche, on enregistre à la frappe.
 
+## Passe CA5 — Les quinze feuilles en production : plus aucun sprite provisoire sur les places (2026-11-01)
+
+### Les décisions de l'opérateur, mot pour mot
+- Fiche https://claude.ai/artifact/JBaukUqxwu8twGMU6uU3gs, 17 documents relus : **« Production »** pour les quinze personnages, S3 **« Validé »**.
+- [?] N7 : « Rôles en note », note vide pour la troisième fois, alors que la note s'enregistre désormais à la frappe. Les trois panneaux de G1 restent en réserve ; rien n'est cuit pour eux tant qu'un rôle n'est pas écrit.
+
+### Fait — [OK]
+- `src/characters/PlazaCast.ts` : les quinze `-x2-v2`, entre lesquelles Marek et Orla marchent ; Rhosk et Tobin donnent leur portrait sans entrer dans la texture d'une place.
+- Les huit `-x2-v1` qui étaient en production passent `superseded`, leur approbation gardée dans leurs notes. Les six images `casting-clear-2026-11-01-*` sont approuvées comme sources, par les feuilles bâties sur elles.
+- `PlazaApp` : plus aucun `prov-` ; `SQUARE_PEOPLE` ne génère de sprites que sous `cast=generated`, la comparaison. `__stats()` donne `generated` à la place de `provisional`. `src/lab/plazaCast.ts` et les branchements DEV `cast=candidate` des places sont retirés.
+- `ui.plazaTag` : le nom du lieu seul ; « its people without a baked sheet are provisional sprites » était devenu faux. Texte de la version 2 seulement.
+
+### Les preuves
+- `npm run typecheck`, `npm test` **305 / 305** (le fichier `plaza-cast` réécrit, de 9 à 6 tests : les candidates n'existent plus), `npm run build`, `npm run art:validate` (49 manifestes, 48 sources, 0 erreur).
+- **Le jeu par défaut inchangé** : 0 px au seuil 0 sur les deux paquets de production contre `main` figé (`71771b7`) : ville de nuit, ville à midi, arène, arène `v2=1`. Entrée de la même taille, 219 947 octets.
+- `play-flow` en production, par défaut et `V2=1` : « all checks passed ».
+- **Sept états de places**, parvis, lices et halle, matin, midi, fin de journée, nuit : `generated` vide partout, aucune erreur de page. Le portrait de Marek montre son nouveau visage dans une partie de la version 2.
+- Paquet : quinze feuilles `-x2-v2` du casting, toutes dans le morceau `PlazaCast`, aucune `-x2-v1` du casting.
+- [?] Non mesuré : le coût GPU des places avec ces feuilles (même nombre de sprites et d'appels de dessin, une texture cuite plus remplie).
+
+### Restes [?]
+- N7 ; les PNG d'origine de G1 et G2.
+- Chaque rival doit encore se battre sous sa propre figure : en duel, Orla, Cassius, Ilse, Rhosk et Tobin portent toujours l'art de Marek. Les feuilles ×3 viennent après les poses de charge de Ren, dans l'ordre X2, à partir des figures propres de cette passe.
+- Les cinq citadins : 492 images de places aujourd'hui, 642 avec eux, sous les 672 garanties.
+
+### Pensée
+- Quand une feuille prend la place d'une autre, ce qui disait son absence tombe avec elle : un texte du jeu, un compteur d'outil, une liste de test.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -562,7 +590,7 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
   - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
-- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 (Passes CA2 à CA4) : huit feuilles `-x2-v1` en production sur les places de la version 2 ; les quinze redessinées `-x2-v2`, plus nettes, attendent leur fiche. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2.
+- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Restent les citadins, les poses de charge de Ren et les feuilles ×3. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2.
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantissait 336 images et en porte 322 (dix feuilles,

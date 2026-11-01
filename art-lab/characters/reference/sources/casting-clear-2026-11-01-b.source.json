@@ -4,7 +4,7 @@
   "sha256": "2b373d3328d7c9a80f3e571b26fa76924992b5cfa484f0b152bfebdcaf0a4520",
   "bytes": 1571965,
   "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
-  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "status": "APPROVED AS A SOURCE by the operator through the sheets built on it (journal Passe CA5); generated, with no rights beyond those of the tool that made it",
   "generation": {
     "tool": "tools/art-lab/gen-image.mjs",
     "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",

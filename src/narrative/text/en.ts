@@ -458,7 +458,7 @@ export const EN = {
   'v2.sheet.ally': 'Orla watches from the gate: one action point more at the start.',
   'v2.result.won': 'Victory',
   'v2.result.lost': 'Defeat',
-  'ui.plazaTag': 'A first build of {place}: its people without a baked sheet are provisional sprites.',
+  'ui.plazaTag': '{place}',
   'v2.exit.to': 'To {place}',
   'v2.train.notHere': 'The practice sand is at the Training Ground.',
   'line.drill.day': '« Feet first, then the blade. A tired arm loses bouts; tired feet lose teeth. »',

@@ -36,7 +36,7 @@ index at the top of `JOURNAL.md`):
   production asset was approved separately, above). The three reference sheets are archived byte for byte in `reference/sources/`
   (records `<name>.source.json`, checked by `npm run art:validate`); classification in `reference/README.md`.
 
-- **The casting** (journal Passes CA1 to CA3) — town sheets `-x2-v1`, recipe `rigs/lib/standing.mjs` (12 frames standing, 30 for Marek and Orla): `anwen`, `cassius`, `hilde`, `ilse`, `lio`, `orla`, `rhosk`, `vessa` approved for production on the version 2's squares (`src/characters/PlazaCast.ts`); the fifteen `-x2-v2` sheets, redrawn clean (journal Passe CA4, recipe `rigs/lib/clear.mjs`, sources `reference/sources/casting-clear-2026-11-01-*`), `candidate`, shown only by `cast=candidate` on a square; the other seven `-x2-v1` superseded.
+- **The casting** (journal Passes CA1 to CA5) — fifteen town sheets `-x2-v2`, redrawn on the clean sheets `reference/sources/casting-clear-2026-11-01-*`, recipe `rigs/lib/clear.mjs` (12 frames standing, 30 for Marek and Orla), approved on 2026-11-01 for the version 2's squares and portraits (`src/characters/PlazaCast.ts`). Their first recipe, `rigs/lib/standing.mjs` and the `-x2-v1` sheets, is superseded: kept as history.
 
 **Approval scopes.** *Approved visual baseline* = `approved: true` + `runtimeUse: "lab"`: an operator-approved quality / direction
 reference, usable in the Art Lab and the DEV in-scene preview only. *Approved production asset* = `approved: true` +

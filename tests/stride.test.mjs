@@ -37,15 +37,15 @@ test('walkSlide: null without a side walk, without feet, or for an unsteady cycl
 });
 
 // the casting's sheets that only stand have no walk to measure (the operator's T1, journal Passe CA2)
-const STILL = ['anwen', 'cassius', 'hilde', 'ilse', 'lio', 'rhosk', 'vessa'].map((k) => `${k}-x2-v1`);
+const STILL = ['anwen', 'brann', 'cassius', 'corvin', 'hilde', 'ilse', 'lio', 'odo', 'pip', 'rhosk', 'tobin', 'vessa', 'wren'].map((k) => `${k}-x2-v2`);
 test('walkSlide on the production sheets (regression: re-measure on purpose after any rebuild of a walk)', async () => {
   const want = { 'artisan-x2-v1': 4.5, 'blacksmith-x2-v1': 4, 'courier-x2-v1': 4.25, 'dockworker-x2-v2': 4, 'guard-x2-v1': 4, 'hooded-x2-v1': 4,
     'merchant-x2-v2': 4.5, 'older-merchant-x2-v1': 4.25, 'townswoman-x2-v1': 4.5, 'traveler-x2-v1': 4.25,
     // the hero's run: the v3 sheet's drawn stride, 14 texels per frame (journal Passes H6, H7, H8; hero-x2-v4 keeps hero-x2-v3's profile run,
     // Passes K11, H11)
     'hero-x2-v4': 14,
-    // Orla's walk, drawn on the operator's sheet G1 (journal Passes CA2 / CA3)
-    'orla-x2-v1': null };   // (its drawn frames give no measure: no planted foot held across them; its speed falls back to the walkers's own)
+    // Marek's and Orla's walks, drawn on their clean sheet (journal Passes CA4 / CA5)
+    'marek-x2-v2': null, 'orla-x2-v2': null };   // (its drawn frames give no measure: no planted foot held across them; its speed falls back to the walkers's own)
   const production = fs.readdirSync(path.join(ROOT, 'art-lab/characters/manifests')).filter((f) => f.endsWith('.manifest.json'))
     .map((f) => JSON.parse(fs.readFileSync(path.join(ROOT, 'art-lab/characters/manifests', f), 'utf8'))).filter((m) => m.runtimeUse === 'production' && !STILL.includes(m.id)).map((m) => m.id).sort();
   assert.deepEqual(production, Object.keys(want).sort(), 'every production sheet has an expected value');
