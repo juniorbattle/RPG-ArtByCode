@@ -104,9 +104,10 @@ test('the heralds and the Colosseum\'s roar on the days of bouts only; the calen
 });
 
 test('the ten days told as they are: the board, the clerk, the registry, the end, the people\'s words', () => {
-  const s = v2(), html = B.boardHtml(s, POOL.standings(s)).replace(/<[^>]+>/g, ' ');
+  const board = (st) => [B.phaseOf(st), B.deadline(st), B.rulesHtml(st)].join(' ').replace(/<[^>]+>/g, ' ');
+  const s = v2(), html = board(s);
   assert.match(html, /semi-finals/); assert.match(html, /Gate/); assert.doesNotMatch(html, /slice|transition phase/i);
-  assert.match(B.boardHtml(G.namedState('day1-morning'), []).replace(/<[^>]+>/g, ' '), /After the pool, the best four go on to the transition phase/, 'today\'s board unchanged');
+  assert.match(board(G.namedState('day1-morning')), /After the pool, the best four go on to the transition phase/, 'today\'s board unchanged');
   assert.match(D.linesOf(s, 'odo')[0], /three rounds/); s.flags.registered = true; assert.match(D.linesOf(s, 'odo')[0], /two, four and five/);
   s.day = 6; assert.match(D.linesOf(s, 'odo')[0], /Gate/);
   const r = v2(); r.place = 'forecourt'; const reg = G.advance(r, { type: 'register' }); assert.ok(reg.ok, reg.reason); assert.match(reg.events[0].text, /three bouts/);

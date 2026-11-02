@@ -58,6 +58,28 @@ try {
   check(await page.evaluate(() => !document.querySelector('.pm-wares') && !!document.querySelector('.pm-talk .pm-dlg')), 'Esc goes back to Mara');
   done.push({ type: 'talk', who: 'mara' });
   await page.keyboard.press('Escape');
+  // 1c. the pages at the keyboard (journal Passe UM11): T, the next opponent selected and the arrows changing the fighter; J, the days; K (a version 2 game), a skill left out and brought back; Esc leaves each
+  await page.keyboard.press('t');
+  await page.waitForSelector('.pm-who', { timeout: 20000 }).catch(() => {});
+  const fighter = () => page.evaluate(() => document.querySelector('.pm-who .pm-h')?.firstChild?.textContent ?? '');
+  const f0 = await fighter(); await page.keyboard.press('ArrowDown'); const f1 = await fighter();
+  check(!!f0 && !!f1 && f0 !== f1 && await page.evaluate(() => !!document.querySelector('.pm-foot .out kbd')), `T: the arrows change the fighter: ${f0}, ${f1}`);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('j');
+  await page.waitForSelector('.pm-days .pm-btn.on', { timeout: 20000 }).catch(() => {});
+  check(await page.evaluate(() => !!document.querySelector('.pm-days .pm-detail .pm-entry')), 'J: the days, and what happened on the one selected');
+  await page.keyboard.press('Escape');
+  check(await page.evaluate(() => !document.querySelector('.pm-overlay')), 'Esc leaves the pages');
+  if (V2) {
+    await page.keyboard.press('k');
+    await page.waitForSelector('.pm-skills .pm-btn.on', { timeout: 20000 }).catch(() => {});
+    const four = () => page.evaluate(() => ({ n: document.querySelector('.pm-skills .pm-purse b')?.textContent, on: document.querySelectorAll('.pm-skills .pm-glist [aria-pressed=true]').length, what: document.querySelector('.pm-skills .pm-detail .ab')?.textContent, kit: window.__game.state().v2.kit.loadout.join() }));
+    const k0 = await four();
+    await page.keyboard.press('Space'); const k1 = await four();
+    await page.keyboard.press('Space'); const k2 = await four();
+    check(k0.n === '4' && !!k0.what && k1.n === '3' && k1.on === 3 && k2.n === '4' && k2.kit.split(',').length === 4, `K: a skill left out and brought back at the keyboard: ${JSON.stringify([k0, k1, k2])}`);
+    await page.keyboard.press('Escape');
+  }
   // 2. the day, through the game API; each reload goes through the save
   const steps = [{ type: 'talk', who: 'tam' }, { type: 'talk', who: 'hale' }, { type: 'askPapers' }, { type: 'haul' },
     { type: 'move', to: 'forecourt' }, { type: 'talk', who: 'odo' }, { type: 'register' },

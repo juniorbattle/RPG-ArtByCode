@@ -56,7 +56,8 @@ try {
   if (V2) {
     const sheet = await page.evaluate(() => document.querySelector('.pm-overlay .pm-card')?.textContent ?? '');
     check(sheet.includes(FOE[day]) && /Enter the arena with these four/.test(sheet), 'the match sheet names the opponent');
-    await page.evaluate(() => [...document.querySelectorAll('.pm-overlay .pm-btn')].find((x) => /Enter the arena with these four/.test(x.textContent)).click());
+    // Enter enters the arena from any line of the sheet (journal Passe UM11)
+    await page.evaluate(() => document.activeElement?.blur?.() ?? 0); await page.focus('.pm-glist .pm-btn'); await page.keyboard.press('Enter');
   }
   const to = await page.evaluate(() => window.__go);
   check(/scene=arena/.test(to ?? ''), `the town goes to ${to}`);

@@ -534,6 +534,48 @@ Rendu hors ligne, 44,1 kHz, volume 0,7, musique 0,5 (`tools/audio/render.mjs`, `
 - Réparation par un commit normal, sans réécrire l'historique : `git -c core.autocrlf=false add --renormalize JOURNAL.md`, le fichier de nouveau en CRLF sur toutes ses lignes, sans `CR CR LF`, ce qui retire le piège pour la suite. `origin/claude/sound-fusion` a gardé CRLF.
 - Pensée : lire `git diff --stat` avant le commit, pas après. Un journal qui change sur plus de lignes qu'on n'en a écrit se voit d'un coup d'œil.
 
+## Passe UM11 — Les écrans alignés sur la page de l'équipement : compétences, tournoi, journal, une seule sortie, des listes jamais tranchées (2026-11-02)
+
+### Demande
+- L'opérateur, sur la recommandation de la Passe UM10, mot pour mot : « Oui, aligne-les ». Lot sans image neuve. Sa validation d'ensemble reste à donner : elle attendait ce lot, elle n'est pas consignée ici.
+
+### Fait — [OK]
+- **Le socle commun** (`src/ui/style.ts`) : un seul pied de page (`footBtn`, `fillFoot`), l'action de la page avec sa touche à gauche, la sortie avec `Esc` à droite, hors de ce qui défile ; un seul traitement de ce qui défile (`scrollFade`) : le contenu s'efface en fondu au bord, en haut et en bas, une ligne n'est plus tranchée et on voit qu'il y a une suite ; `scroll-padding-block` garde la ligne sélectionnée hors du fondu au clavier. Le CSS de la page de l'équipement passe dans le style commun (`.pm-two`, `.pm-goods`, `.pm-detail`...), `pickRow` aussi.
+- **Compétences (K) et fiche de match** (`src/ui/skills.ts`) : à droite la liste, un carré plein pour les quatre emportées, et pour la ligne sélectionnée ce que fait la compétence, ses chiffres et ceux du niveau suivant, la façon de l'obtenir ; à gauche le héros ou l'adversaire, et la charge telle que ces quatre la composent, palier par palier. Les chiffres sont ceux du duel (`skillFigures`, `chargeLadder`, `nextLevel`, `src/simulation/preview.ts`), jamais une règle de l'interface. L'accent sert à la ligne sélectionnée seule : avant, les quatre lignes choisies étaient toutes en or.
+- **Tournoi (T)** (`boardPage`, `src/ui/board.ts`) : à gauche la phase, la prochaine échéance et le classement ; à droite le combattant sélectionné, le prochain adversaire d'abord : son visage, sa fiche, ses combats à venir et joués, puis les règles.
+- **Journal (J)** (`src/ui/journal.ts`) : les jours à gauche, avec le résultat du combat du jour ; à droite ce qui s'est passé ce jour-là, moment par moment, dans l'ordre. La date n'est plus répétée à chaque ligne, et toutes les entrées sont là (la limite de 30 disparaît).
+- **Les listes courtes restent des listes** : menu, carte, son. Le son a des curseurs dans le système, angles carrés, valeur affichée.
+- **Ici (Q)** : les absents tiennent sur une ligne (« Not around at this hour: ... »). Le dialogue et Ici prennent le pied commun.
+- **Trois défauts trouvés en route**, corrigés : `Esc` ne fermait pas la page du son quand un curseur avait le focus ; `Esc` sur l'écran de fin ne suivait pas le bouton qu'il portait ; sur K, quitter par `Esc` perdait le choix des quatre, qui ne s'appliquait que par le bouton : il s'applique dès qu'il y en a quatre.
+- **Sur la fiche de match**, `Entrée` entre dans l'arène depuis n'importe quelle ligne, et `Espace` ajoute ou retire la ligne : le trajet rapide de Q à l'arène reste deux fois `Entrée`.
+
+### Preuves
+- `npm test` **358 / 358** dont `tests/ui-pages.test.mjs` (chiffres d'une compétence à chaque niveau contre les données d'un combat, avec l'équipement ; paliers ; niveau suivant contre le refus réel de l'entraînement ; journal et tableau sans perte ; un pied, un fondu), `npm run build`, `npm run art:validate`.
+- `tools/ui-text.mjs` tient maintenant pour faute une boîte qui contient plus qu'elle n'en montre sans son fondu. Témoin : le fondu retiré sur la liste de Maître Corvin, la page échoue (`no fade`). Le premier témoin n'échouait pas : retiré trop tôt, le fondu était remis par le code. Le passage complet a trouvé le pied de la fiche de match en débord sur téléphone, corrigé (`flex-wrap`).
+- `tools/ui-contrast.mjs` : 40 pages à 1920 x 1080, 1280 x 720, 812 x 375 et 390 x 844, aux quatre moments, les deux jeux : plus bas **4,75:1** (« coins » de l'état, à midi en 812 x 375, écran non retouché ici), aucune page sous 4,5:1.
+- `play-day`, jeu par défaut et `V2=1` : T, J et K au clavier, relecture Node identique. `play-flow` sur le paquet de production : victoire, défaite, `V2=1`, la fiche de match franchie à `Entrée` ; aucune erreur de page.
+- Coût du fondu sur le 780M, 1080p, `fps=off`, GPU saturé (98-99 %), quatre tours, serveur DEV, sur la plus grande boîte qui défile (le détail du journal, 800 x 700 environ) :
+
+| Page | ms par image, médiane des tours | images/s par tour |
+| --- | --- | --- |
+| Nuit B | 8,0 | 119,0 / 121,8 / 121,9 / 122,2 |
+| Carte, nuit | 8,25 | 112,9 / 123,2 / 123,5 / 114,4 |
+| Journal, fondu actif | 7,75 | 120,7 / 111,4 / 134,2 / 131,9 |
+| Journal, fondu retiré | 7,4 | 116,9 / 130,8 / 135,8 / 132,0 |
+
+- Le fondu : 7,3 contre 7,2 et 7,4 contre 7,4 ms sur les deux tours stabilisés. L'écart de la médiane vient du tour 2, où la page avec fondu a un accroc isolé de 188 ms, non reproduit. E24 : les pages du lot ne coûtent pas plus que la carte ni que la nuit B de la même série ; même réserve qu'en Passe UM9, pas tranché sur le paquet de production, où les états nommés n'existent pas.
+- Non rejoué : `title-proof` et les preuves au pixel, aucun code de scène n'ayant changé.
+
+### Ce qui reste
+- La page jouable est republiée à la même adresse depuis ce code (version 4), sans avoir été ouverte dans la visionneuse de claude.ai.
+- L'opérateur n'a pas essayé ce lot. Toucher reste hors de la tranche (E30). Non regardés : l'écran de fin de partie et les cinématiques, dont le code change peu (le pied seul pour la fin).
+- Le texte d'une compétence est fait de ses chiffres, sans phrase d'auteur ; les icônes restent le choix de l'opérateur.
+
+### Pensée
+- Un témoin qui passe n'est pas un témoin : celui du fondu ne prouvait rien tant qu'il ne faisait pas échouer la mesure.
+- « Aligner » ne voulait pas dire tout mettre sur deux colonnes : une page mérite le détail là où le joueur choisit ou cherche, un menu de neuf lignes reste un menu.
+- Ranger la page révèle ce que l'ancienne cachait : le choix des quatre perdu à `Esc` et la sortie sans effet sur un curseur existaient depuis longtemps, sans jamais avoir de forme visible.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -741,7 +783,7 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
 
 **6f. Son (Passes SN1 à SN3)** — fiche de 18 choix remplie : « Les ménétriers de la Cité », partitions avec synthèse et CC0, cuit avec manifeste, 12 Mo au plus, derrière `flags.v2`. Plan S0 à S5 dans `briefs/fiche-son.html`. **S0 et S1 faits** (Passes SN2, SN3), le jeu par défaut inchangé. **Fiche de lot à remplir** : https://claude.ai/artifact/McPDaVNx9o82nkieURh1Wx (source `briefs/fiche-son-lot1.html`) : personne n'a encore écouté. S2 à S5 après sa réponse ; SA-11 à confirmer et l'outil de cuisson (`ffmpeg`) sont sur cette fiche ; SA-10 après l'essai du lot S4. À faire avant le premier fichier cuit : Opus en WebM et AAC sur un vrai Safari.
 
-**6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs, sa validation d'ensemble attend que les autres écrans suivent (Passe UM10). **Reste au choix de l'opérateur** : le lot d'alignement de la Passe UM10 (compétences, tournoi, journal, sortie, listes coupées, dont celle de l'équipement) ; les icônes d'objets, qui demandent de l'art.
+**6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. **Reste à l'opérateur** : son essai et sa validation d'ensemble, conditionnelle depuis la Passe UM10 ; les icônes d'objets, qui demandent de l'art.
 
 **6e. Interface (étape 2 de la feuille de route ; Passes UI1, UI2)** — ligne directrice décidée sur la fiche de la Passe UI1 (14 choix sur 14,
 tous à la recommandation) : C « Héraldique pixel » (L1), un style dont les tons suivent `DayState` (L2), le téléphone avec le système de design

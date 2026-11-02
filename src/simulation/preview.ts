@@ -1,10 +1,15 @@
 import { ACTIONS, type Action } from './actions';
 import type { GameState } from './state';
-import { isV2 } from './v2';
+import { isV2, v2KitOf } from './v2';
 import { v2Mods } from './v2gear';
+import { TRAIN_CAP, levelOf } from './v2skills';
+import type { ChargeTier } from '../combat/charge';
+import type { DynActionId } from '../combat/dynamic';
 import { playerMods } from '../combat/match';
 import { DYN_PROFILES, PROFILES, duelData, dynDuelData } from '../combat/profiles';
-import { v2DuelData } from '../combat/v2duel';
+import { SKILL_BOOK } from '../combat/skillbook';
+import { MAX_LEVEL } from '../combat/skills';
+import { v2DuelData, type V2Duel, type V2Kit } from '../combat/v2duel';
 import { Rng } from '../core/rng';
 
 /** What a purchase or a change of gear would change (the operator's choice UM7-3 « Lot à part : héros, détail, comparaison », journal Passe UM9): no
@@ -30,6 +35,45 @@ export function duelStats(s: GameState): Stats {
   }
   const m = playerMods(s), d = s.flags.combat === 'dynamic' ? dynDuelData(DYN_PROFILES.marek, { ...NAMES, player: m }) : duelData(PROFILES.marek, { ...NAMES, player: m });
   return { hp: d.fighters.ren.maxHp, blow: d.actions.heavy.damage };
+}
+
+/** a duel as a bout builds it, with these skills at these levels */
+function skillDuel(s: GameState, loadout: string[], levels: Record<string, number>): V2Duel {
+  const m = v2Mods(s);
+  return v2DuelData('marek', { ...NAMES, player: { hp: m.hp, damage: m.damage, ap: m.ap }, gear: m, kit: { loadout: loadout as V2Kit['loadout'], levels } });
+}
+
+export interface SkillFigures {
+  ap: number;
+  /** what the blow does, gear and level in it: its damage and what it adds to the gauge */
+  damage: number; gauge: number;
+  /** the hold that opens it (s) */
+  charge: number;
+  /** a ward's or a boost's length (s) and what it multiplies, 0 and none for a blow */
+  dur: number; ward: { damage: number; resist: number } | null; boost: { damage: number; resist: number } | null;
+  pierce: boolean;
+}
+
+/** what a skill does in a bout at a level (journal Passe UM11): no rule of its own either, the numbers are the duel's, built as a bout builds them with this skill
+ *  brought (in the first slot when it is not among the four), the gear and the charge's power in them */
+export function skillFigures(s: GameState, id: string, level: number): SkillFigures {
+  const k = v2KitOf(s), { data: d, tiers } = skillDuel(s, k.loadout.includes(id as never) ? k.loadout : [id, ...k.loadout.slice(1)], { ...k.levels, [id]: level });
+  const a = d.actions[id as DynActionId], e = a.ward ?? a.boost;
+  return { ap: a.apCost ?? 0, damage: a.damage, gauge: a.resist, charge: tiers.find((t) => t.id === id)!.at, dur: e?.dur ?? 0, ward: a.ward ?? null, boost: a.boost ?? null, pierce: !!a.ignoreGuard };
+}
+
+/** the tiers of the charge with these skills (the light attack, the heavy, then each one by its time), as the duel ranks them; a choice of fewer than four is
+ *  completed for the duel and shown as it stands */
+export function chargeLadder(s: GameState, ids: string[]): ChargeTier[] {
+  const k = v2KitOf(s), full = [...ids, ...Object.keys(k.levels).filter((x) => !ids.includes(x))].slice(0, 4);
+  return skillDuel(s, full, k.levels).tiers.filter((t) => t.id === 'light' || t.id === 'heavy' || ids.includes(t.id));
+}
+
+/** the level a skill can still reach and how: drilling up to its cap, then only the fighter who teaches it */
+export function nextLevel(s: GameState, id: string): { level: number; by: 'drill' | 'challenge'; teacher?: string } | null {
+  const lv = levelOf(s, id), teacher = SKILL_BOOK[id]?.teacher;
+  if (lv < TRAIN_CAP) return { level: lv + 1, by: 'drill' };
+  return teacher && lv < MAX_LEVEL ? { level: lv + 1, by: 'challenge', teacher } : null;
 }
 
 export interface StatChange { id: StatId; now: number; after: number; better: boolean }

@@ -9,98 +9,12 @@ import { skillName, tx, type TextKey } from '../narrative/text';
 import { SKILL_BOOK, skillAction } from '../combat/skillbook';
 import { chargeTime } from '../combat/skills';
 import { heroFigure, portraitUrl } from './portraits';
-import { arrowKeys, el, esc } from './style';
+import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
 
 /** The gear and the shops, one page (the operator's choice UM7-3 « Lot à part : héros, détail, comparaison », journal Passe UM9; direction A « Voile »): on
  *  the left the hero in large from the baked sheet, the places on the body and the numbers of a bout; on the right the list, and for the line selected
  *  what it changes before and after and what stays in the purse (src/simulation/preview.ts: the game's own action on a copy). G opens it on the bag, a
  *  keeper's dialogue on their goods, the bag under them. A line the player cannot take stays selectable: what it would change is what makes one save for it. */
-
-const CSS = `
-.pm-overlay .pm-card.pm-wares{display:grid;grid-template-columns:minmax(0,520px) minmax(0,1fr);column-gap:72px;width:min(1280px,100%);height:min(880px,calc(100vh - 64px));max-height:none;overflow:hidden;padding:6px 0 0;--hs:4}
-.pm-self{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);column-gap:24px;align-content:start;min-height:0}
-.pm-fig{grid-row:1;position:relative}
-.pm-hero{display:block;transform:scaleX(-1);width:calc(var(--fw)*var(--hs)*1px);height:calc(var(--fh)*var(--hs)*1px);background-repeat:no-repeat;background-size:calc(var(--fn)*100%) 100%;image-rendering:pixelated;animation:pm-hero var(--fd) steps(var(--fn),end) infinite}
-@keyframes pm-hero{to{background-position-x:calc(var(--fw)*var(--fn)*var(--hs)*-1px)}}
-.pm-fig .pm-h{margin:6px 0 0;text-align:center;padding-top:6px;border-top:1px solid var(--ds-line)}
-.pm-worn{grid-row:1;min-width:0;align-self:start}
-.pm-worn .row{padding:8px 0 10px;border-top:1px solid var(--ds-line);min-width:0}
-.pm-worn .row:first-child{border-top:0;padding-top:0}
-.pm-worn .row small{display:block;font-size:var(--ds-fs-small);color:var(--ds-muted)}
-.pm-worn .row b{display:block;font:400 var(--ds-fs-label)/1.2 var(--ds-title)}
-.pm-worn .row span{display:block;font-size:var(--ds-fs-small);line-height:1.25;color:var(--ds-muted)}
-.pm-worn .row.empty b{color:var(--ds-muted)}
-.pm-worn .row.hit small,.pm-worn .row.hit b{color:var(--ds-accent)}
-.pm-stats{grid-column:1 / 3;grid-row:2;margin:18px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:32px;align-content:start}
-.pm-stats .ttl{grid-column:1 / 3;margin:0 0 4px;font:400 var(--ds-fs-label)/1.2 var(--ds-title)}
-.pm-stats div{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px solid var(--ds-line);font-size:var(--ds-fs-small)}
-.pm-stats dt{color:var(--ds-muted)}
-.pm-stats dd{margin:0;white-space:nowrap}
-.pm-goods{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;min-height:0;min-width:0}
-.pm-ghead{display:flex;align-items:center;gap:16px;padding-bottom:12px}
-.pm-ghead img{display:block;width:64px;height:64px;image-rendering:pixelated}
-.pm-ghead .pm-h{margin:0}
-.pm-ghead .pm-h small{display:block;margin-top:4px;font:400 var(--ds-fs-small)/1.2 var(--ds-text);color:var(--ds-muted)}
-.pm-purse{margin-left:auto;text-align:right;white-space:nowrap}
-.pm-purse b{display:block;font:400 var(--ds-fs-fig)/1 var(--ds-title)}
-.pm-purse small{font-size:var(--ds-fs-small);color:var(--ds-muted)}
-.pm-glist{overflow:auto;min-height:0;border-bottom:1px solid var(--ds-line)}
-.pm-glist .pm-sub{margin:12px 0 4px}
-.pm-glist .pm-sub:first-child{margin-top:0}
-.pm-glist .pm-btn{padding:7px 0}
-.pm-where{margin:0;max-width:640px;font-size:var(--ds-fs-body);line-height:1.35}
-.pm-btn[aria-disabled=true]{color:var(--ds-muted);cursor:default}
-.pm-btn[aria-disabled=true]:hover,.pm-btn[aria-disabled=true]:focus{color:var(--ds-muted)}
-.pm-btn[aria-disabled=true]:hover .cost,.pm-btn[aria-disabled=true]:focus .cost{color:var(--ds-muted)}
-.pm-btn.on{box-shadow:inset 3px 0 0 var(--ds-accent);padding-left:12px}
-.pm-detail{min-height:236px;padding:14px 0 0}
-.pm-detail .nm{margin:0;font:400 var(--ds-fs-label)/1.2 var(--ds-title)}
-.pm-detail .what{margin:2px 0 0;font-size:var(--ds-fs-small);color:var(--ds-muted)}
-.pm-detail .ab{margin:6px 0 0;font-size:var(--ds-fs-body);line-height:1.3}
-.pm-detail .no{margin:10px 0 0;font-size:var(--ds-fs-body);color:var(--ds-accent)}
-.pm-detail .news{margin:0 0 8px;font-size:var(--ds-fs-body);color:var(--ds-accent)}
-.pm-cmp{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px 64px;margin:10px 0 0;font-size:var(--ds-fs-body)}
-.pm-cmp>*{padding:3px 0;border-top:1px solid var(--ds-line);text-align:right;white-space:nowrap}
-.pm-cmp .l{text-align:left;color:var(--ds-muted)}
-.pm-cmp .h{border-top:0;padding-top:0;font-size:var(--ds-fs-small);color:var(--ds-muted)}
-.pm-cmp .v{color:var(--ds-muted)}
-.pm-cmp .a{color:var(--ds-ivory)}
-.pm-cmp .a.up{color:var(--ds-accent)}
-.pm-cmp .m{font-size:var(--ds-fs-small);line-height:1.5;color:var(--ds-muted)}
-.pm-cmp .m.up{color:var(--ds-accent)}
-.pm-gfoot{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:32px;align-items:baseline;padding-top:8px}
-.pm-gfoot .pm-btn{width:auto;white-space:nowrap}
-.pm-gfoot .pm-btn::before{display:none}
-.pm-wares.still .pm-btn::before{animation:none}
-@media (max-height:900px){.pm-overlay .pm-card.pm-wares{--hs:3;column-gap:56px;grid-template-columns:minmax(0,440px) minmax(0,1fr)}.pm-detail{min-height:216px}}
-@media (max-height:640px){.pm-overlay .pm-card.pm-wares{--hs:2}.pm-stats{margin-top:10px}.pm-worn .row{padding:5px 0 6px}.pm-worn .row span{display:none}.pm-detail{min-height:196px}.pm-ghead img{width:48px;height:48px}}
-@media (max-width:1000px){.pm-overlay .pm-card.pm-wares{column-gap:32px;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}.pm-self{grid-template-columns:minmax(0,1fr)}.pm-fig{display:none}.pm-stats{grid-column:1}.pm-stats div{font-size:var(--ds-fs-small)}.pm-cmp{grid-template-columns:minmax(0,1fr) 72px 72px 56px}}
-@media (max-width:700px){
-  .pm-overlay .pm-card.pm-wares{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);height:calc(100vh - 26px);row-gap:10px}
-  .pm-self{display:block}
-  .pm-fig,.pm-stats{display:none}
-  .pm-worn{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px}
-  .pm-worn .row,.pm-worn .row:first-child{padding:4px 0;border-top:1px solid var(--ds-line)}
-  .pm-worn .row span{display:none}
-  .pm-glist .pm-btn .why{display:block}
-  .pm-ghead{padding-bottom:6px}
-  .pm-ghead img{width:48px;height:48px}
-  .pm-detail{min-height:0;padding-top:8px}
-  .pm-cmp{grid-template-columns:minmax(0,1fr) 64px 64px 48px}
-  .pm-gfoot{grid-template-columns:minmax(0,1fr) auto}
-}
-@media (max-height:480px) and (min-width:701px){
-  .pm-overlay .pm-card.pm-wares{display:block;height:calc(100vh - 26px)}
-  .pm-self{display:none}
-  .pm-goods{height:100%;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);grid-template-rows:auto minmax(0,1fr) auto;column-gap:24px}
-  .pm-ghead{grid-column:1 / 3;padding-bottom:4px}
-  .pm-ghead img{width:48px;height:48px}
-  .pm-glist{grid-column:1;grid-row:2}
-  .pm-detail{grid-column:2;grid-row:2;min-height:0;overflow:auto;padding-top:0}
-  .pm-gfoot{grid-column:1 / 3;grid-row:3;padding-top:4px}
-  .pm-cmp{grid-template-columns:minmax(0,1fr) 64px 64px 48px;margin-top:4px}
-}
-`;
 
 /** what an action takes, one tag per currency (the operator's decision P2, journal Passes UI1 / UI2): its coins (from the simulation, not
  *  the label), its slot; « free » only when it takes neither */
@@ -139,7 +53,7 @@ export const isGoods = (o: ActionOption): boolean => isWare(o) || o.action.type 
 /** « a mail shirt » as a line's name */
 const bare = (name: string): string => { const n = name.replace(/^an? /, ''); return n[0].toUpperCase() + n.slice(1); };
 
-function statValue(id: StatId, v: number): string {
+export function statValue(id: StatId, v: number): string {
   return id === 'charge' ? `${v.toFixed(2)} s` : id === 'taken' || id === 'gauge' || id === 'effect' ? `${Math.round(v)} %` : `${Math.round(v)}`;
 }
 
@@ -185,7 +99,13 @@ function wornHtml(s: GameState): string {
     + (stone ? row('stone', tx('v2.gear.next'), 'whetstone') : '');
 }
 
-function statsHtml(s: GameState): string {
+/** the hero in large, from the baked sheet, and his name */
+export function figHtml(s: GameState): string {
+  const f = heroFigure();
+  return f ? `<div class="pm-fig"><i class="pm-hero" style="--fw:${f.w};--fh:${f.h};--fn:${f.frames};--fd:${f.ms * f.frames}ms;background-image:url(${f.url})"></i><h2 class="pm-h">${esc(s.player.name)}</h2></div>` : '';
+}
+
+export function statsHtml(s: GameState): string {
   const st = duelStats(s);
   return `<p class="ttl">${tx('ui.stat.title')}</p>${STAT_IDS.filter((id) => st[id] !== undefined).map((id) => `<div><dt>${tx(STAT_TEXT[id])}</dt><dd>${statValue(id, st[id]!)}</dd></div>`).join('')}`;
 }
@@ -207,8 +127,7 @@ export interface WaresHost {
 
 /** the page: `who` a keeper, their goods above the bag; null the bag alone */
 export function waresPage(who: string | null, host: WaresHost): { root: HTMLElement; focus(): void } {
-  if (!document.getElementById('pm-wares-css')) { const st = el('style'); st.id = 'pm-wares-css'; st.textContent = CSS; document.head.appendChild(st); }
-  const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card pm-wares');
+  const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card pm-two pm-wares');
   const p = who ? PEOPLE[who] : null, title = p ? p.name : tx('v2.gear.title');
   card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', title);
   root.appendChild(card);
@@ -220,12 +139,11 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
     const s = host.state(), all = who ? actions(s).filter((o) => offeredBy(o.action as never) === who && isGoods(o)) : [];
     const wares = all.filter((o) => o.action.type !== 'buySkill' && o.action.type !== 'haggle').map((o) => goodsLine(s, o)), taught = all.filter((o) => o.action.type === 'buySkill').map((o) => goodsLine(s, o));
     const bargain = all.filter((o) => o.action.type === 'haggle').map((o) => goodsLine(s, o)), bag = bagLines(s), lines = [...wares, ...taught, ...bargain, ...bag];
-    const f = heroFigure(), url = who ? portraitUrl(who) : null;
-    card.innerHTML = `<section class="pm-self">${f ? `<div class="pm-fig"><i class="pm-hero" style="--fw:${f.w};--fh:${f.h};--fn:${f.frames};--fd:${f.ms * f.frames}ms;background-image:url(${f.url})"></i><h2 class="pm-h">${esc(s.player.name)}</h2></div>` : ''}<div class="pm-worn">${wornHtml(s)}</div><dl class="pm-stats">${statsHtml(s)}</dl></section>`
-      + `<section class="pm-goods"><header class="pm-ghead">${url ? `<img src="${url}" alt="">` : ''}<h2 class="pm-h">${esc(title)}${p ? `<small>${esc(titleOf(p, isV2(s)))}</small>` : ''}</h2><div class="pm-purse"><b>${s.player.coins}</b><small>${tx('ui.coins')}</small></div></header><div class="pm-glist"></div><div class="pm-detail" aria-live="polite"></div><div class="pm-gfoot"></div></section>`;
-    const list = card.querySelector('.pm-glist') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement, foot = card.querySelector('.pm-gfoot') as HTMLElement;
-    const close = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx(who ? 'ui.leave' : 'ui.close')}`);
-    close.addEventListener('click', () => host.close());
+    const url = who ? portraitUrl(who) : null;
+    card.innerHTML = `<section class="pm-self">${figHtml(s)}<div class="pm-worn">${wornHtml(s)}</div><dl class="pm-stats">${statsHtml(s)}</dl></section>`
+      + `<section class="pm-goods"><header class="pm-ghead">${url ? `<img src="${url}" alt="">` : ''}<h2 class="pm-h">${esc(title)}${p ? `<small>${esc(titleOf(p, isV2(s)))}</small>` : ''}</h2><div class="pm-purse"><b>${s.player.coins}</b><small>${tx('ui.coins')}</small></div></header><div class="pm-glist"></div><div class="pm-detail" aria-live="polite"></div><div class="pm-foot"></div></section>`;
+    const list = card.querySelector('.pm-glist') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement, foot = card.querySelector('.pm-foot') as HTMLElement;
+    const close = footBtn('Esc', tx(who ? 'ui.leave' : 'ui.close'), () => host.close()), fit = scrollFade(detail);
     const doIt = (l: Line): void => {
       if (!l.ok) return;
       const r = host.act(l.action);
@@ -233,8 +151,7 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
       news = (r.events ?? []).filter((e) => e.visible).map((e) => e.text); keyNow = l.key;
       card.classList.add('still'); draw();
     };
-    const select = (l: Line, b: HTMLElement): void => {
-      list.querySelectorAll('.pm-btn.on').forEach((x) => x.classList.remove('on')); b.classList.add('on');
+    const select = (l: Line): void => {
       if (keyNow && l.key !== keyNow && lines.some((x) => x.key === keyNow)) news = [];
       keyNow = l.key;
       const v = l.done ? null : l.plain ? { ...preview(s, l.action), rows: [] } : preview(s, l.action);
@@ -244,25 +161,19 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
       const same = !!v && !l.plain && !v.rows.length && v.slot === null && !v.toBag && l.ok;
       const notes = [v?.tierLost ? tx('ui.wares.tierLost', { tier: v.tierLost }) : '', !l.done && l.list && l.price !== l.list ? tx('ui.wares.list', { n: l.list }) : '', same ? tx('ui.wares.same') : ''].filter(Boolean).join(' ');
       detail.innerHTML = `${news.map((n) => `<p class="news">${esc(n)}</p>`).join('')}<p class="nm">${esc(l.name)}</p>${what ? `<p class="what">${esc(what)}</p>` : ''}<p class="ab">${esc(l.about)}</p>${notes ? `<p class="what">${esc(notes)}</p>` : ''}${cmpHtml(l, v)}${l.ok ? '' : `<p class="no">${esc(l.reason ?? '')}</p>`}`;
-      foot.replaceChildren(...(l.ok ? [Object.assign(el('button', 'pm-btn primary', `<kbd>Enter</kbd><span>${esc(l.verb)}</span>`), { onclick: () => doIt(l) })] : [el('span')]), close);
+      fillFoot(foot, l.ok ? footBtn('Enter', l.verb, () => doIt(l), true) : null, close);
+      fit();
     };
-    const add = (l: Line): void => {
-      const b = el('button', 'pm-btn', `<span>${esc(l.name)}${l.sub ? `<span class="why">${esc(l.sub)}</span>` : ''}</span>${l.tag}`);
-      b.setAttribute('aria-disabled', String(!l.ok));
-      b.addEventListener('focus', () => select(l, b));
-      b.addEventListener('mouseenter', () => b.focus({ preventScroll: true }));
-      b.addEventListener('click', () => doIt(l));
-      list.appendChild(b);
-    };
+    const add = (l: Line): void => { list.appendChild(pickRow(`<span>${esc(l.name)}${l.sub ? `<span class="why">${esc(l.sub)}</span>` : ''}</span>${l.tag}`, { off: !l.ok, select: () => select(l), press: () => doIt(l) })); };
     const head = (t: string): void => { list.appendChild(el('p', 'pm-sub', esc(t))); };
     wares.forEach(add);
     if (taught.length) { head(tx('ui.wares.teach')); taught.forEach(add); }
     if (bargain.length) { head(tx('ui.wares.talk', { name: p!.name })); bargain.forEach(add); }
     if (bag.length) { head(tx('v2.gear.bag')); bag.forEach(add); }
-    arrowKeys(list);
+    arrowKeys(list); scrollFade(list);
     if (!lines.length) {
       list.append(el('p', 'pm-sub', tx('v2.gear.empty')), el('p', 'pm-where', tx('v2.gear.where')));
-      foot.replaceChildren(el('span'), close);
+      fillFoot(foot, close);
     }
     // what was just taken may leave the list: the selection stays where it was, its news with it
     focus = () => { (list.querySelectorAll<HTMLElement>('.pm-btn')[Math.max(0, keyNow ? lines.findIndex((l) => l.key === keyNow) : lines.findIndex((l) => l.ok))] ?? close).focus(); };

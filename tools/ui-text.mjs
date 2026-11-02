@@ -66,6 +66,11 @@ function measure() {
     if (!FAMILIES.includes(fam)) out.wrongFont.push({ family: cs.fontFamily, text: text.slice(0, 40), where });
     for (const ch of text) { const c = ch.codePointAt(0); if (!RANGES.some(([a, b]) => c >= a && c <= b)) out.outside.push({ char: ch, code: c.toString(16), text: text.slice(0, 40) }); }
   }
+  // a box that holds more than it shows says so (journal Passe UM11): a line tranched by its edge, with no fade, is a cut
+  for (const e of document.querySelectorAll('.pm, .pm *')) {
+    const s = getComputedStyle(e);
+    if ((s.overflowY === 'auto' || s.overflowY === 'scroll') && e.scrollHeight > e.clientHeight + 1 && !e.dataset.more) out.cut.push({ by: 'no fade', text: (e.textContent ?? '').trim().slice(0, 40), where: e.className });
+  }
   hit.remove();
   out.fonts = [...document.fonts].filter((f) => FAMILIES.includes(f.family.replace(/^["']|["']$/g, ''))).map((f) => `${f.family} ${f.weight} ${f.status}`);
   return out;

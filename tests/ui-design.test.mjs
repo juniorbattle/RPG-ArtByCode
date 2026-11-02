@@ -142,7 +142,7 @@ test('UM-S2: no frame left: no border image, no texel grid, no pixel font, no pi
   for (const f of files) {
     const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
     for (const banned of ['border-image', '--ds-f-', '--ds-px', '--ds-pixel', 'Pixelify', 'Alegreya', '--ds-gold', '--ds-blue', '--ds-parch', '--ds-amber', 'drop-shadow']) assert.ok(!src.includes(banned), `${f}: ${banned}`);
-    for (const l of src.split(/\r?\n/)) if (l.includes('image-rendering:pixelated')) assert.match(l, /^(\.pm-port img|\s*\.pm-dlg img|\.ah-port|\.pm-hero|\.pm-ghead img)/,`${f}: pixelated outside a face: ${l.slice(0, 60)}`);
+    for (const l of src.split(/\r?\n/)) if (l.includes('image-rendering:pixelated')) assert.match(l, /^(\.pm-port img|\s*\.pm-dlg img|\.ah-port|\.pm-hero|\.pm-ghead img|\.pm-who img)/,`${f}: pixelated outside a face: ${l.slice(0, 60)}`);
   }
 });
 

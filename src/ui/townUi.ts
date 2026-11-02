@@ -3,15 +3,15 @@ import { offeredBy } from '../simulation/roles';
 import { PEOPLE, titleOf } from '../narrative/people';
 import { linesOf } from '../narrative/dialogue';
 import { RIVALS } from '../narrative/roster';
-import { boardHtml, standingsHtml as standingsHtmlRows } from './board';
+import { boardPage, standingsHtml as standingsHtmlRows } from './board';
+import { journalPage } from './journal';
 import { portraitUrl } from './portraits';
 import { downloadSave, loadSaveFile, writeSave } from './save';
-import { arrowKeys, el, esc, injectStyle, overlay } from './style';
-import { skillName, tx } from '../narrative/text';
-import { isV2, v2KitOf } from '../simulation/v2';
+import { arrowKeys, el, esc, footBtn, footOf, injectStyle, overlay, pageShell, scrollFade } from './style';
+import { skillsPage } from './skills';
+import { tx } from '../narrative/text';
+import { isV2 } from '../simulation/v2';
 import { stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
-import { SKILL_BOOK, skillAction } from '../combat/skillbook';
-import { chargeTime } from '../combat/skills';
 import { itemName, weaponTier } from '../simulation/v2gear';
 import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
@@ -70,25 +70,26 @@ const CSS = `
 .pm-dlg .who{grid-column:2;min-width:0}
 .pm-dlg .pm-h{margin:0}
 .pm-dlg .pm-h small{margin-left:12px;font:400 var(--ds-fs-body)/1 var(--ds-text);color:var(--ds-muted)}
-.pm-dlg .opts{grid-column:3;grid-row:1;min-width:0;max-height:min(46vh,420px);overflow:auto;border-bottom:1px solid var(--ds-line)}
+.pm-dlg .side{grid-column:3;grid-row:1;min-width:0;display:flex;flex-direction:column;max-height:min(46vh,420px)}
+.pm-dlg .opts{flex:0 1 auto;border-bottom:1px solid var(--ds-line)}
 .pm-dlg .opts .pm-sub{margin:12px 0 6px}
 .pm-dlg.here{grid-template-columns:minmax(0,716px) minmax(300px,1fr);column-gap:28px}
 .pm-dlg.here .who{grid-column:1}
-.pm-dlg.here .opts{grid-column:2}
+.pm-dlg.here .side{grid-column:2}
 body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,body.pm-full #pm-status,body.pm-full #pm-figs,body.pm-full #pm-prompt,body.pm-full #pm-hints,body.pm-full #pm-veil-l,body.pm-full #pm-veil-r{visibility:hidden}
 .pm-port{line-height:0}
 .pm-port img{image-rendering:pixelated}
-.pm-card input[type=range]{accent-color:var(--ds-accent);width:min(320px,100%)}
 .pm-result .pm-big{text-align:center}
 .pm-foe{display:flex;gap:14px;align-items:flex-start;margin:6px 0}
-.pm-overlay .pm-card.pm-sheet{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:48px;width:min(1120px,100%)}
-@media (max-width:900px){.pm-overlay .pm-card.pm-sheet{grid-template-columns:minmax(0,1fr);gap:14px}}
-.pm-menu .pm-btn kbd{order:2;margin-left:auto}
+.pm-foe-side{grid-column:1 / 3;grid-row:1;min-width:0}
+.pm-foe-side p{margin:6px 0}
+.pm-ladder>.pm-sub{margin:0 0 6px}
+.pm-menu .pm-body .pm-btn kbd{order:2;margin-left:auto}
 @media (max-width:1100px){
   .pm-dlg,.pm-dlg.here{grid-template-columns:64px minmax(0,1fr);column-gap:14px}
   .pm-dlg.here .who{grid-column:1 / 3}
   .pm-dlg img{width:64px;height:64px}
-  .pm-dlg .opts,.pm-dlg.here .opts{grid-column:1 / 3;grid-row:auto;margin-top:12px;max-height:min(38vh,320px)}
+  .pm-dlg .side,.pm-dlg.here .side{grid-column:1 / 3;grid-row:auto;margin-top:12px;max-height:min(38vh,320px)}
 }
 @media (max-width:700px){
   #pm-veil-l{width:100vw;height:112px;background:var(--ds-grad-t)}
@@ -105,8 +106,7 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
   .pm-dlg,.pm-dlg.here{grid-template-columns:64px minmax(0,1fr);grid-template-rows:auto minmax(96px,1fr);column-gap:12px;max-height:calc(52vh - 80px)}
   .pm-dlg .pm-h small{display:block;margin:2px 0 0}
   .pm-dlg .pm-line{margin-top:4px}
-  .pm-dlg .opts,.pm-dlg.here .opts{margin-top:10px;max-height:none;min-height:0}
-  .pm-dlg .opts>.pm-btn:last-child{position:sticky;bottom:0;background:var(--ds-veil-strong)}
+  .pm-dlg .side,.pm-dlg.here .side{margin-top:10px;max-height:none;min-height:0}
   .pm-btn .why{display:none}
 }
 @media (max-height:480px) and (min-width:701px){
@@ -122,9 +122,9 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
   .pm-dlg,.pm-dlg.here{grid-template-columns:64px minmax(0,1fr) minmax(0,1fr);column-gap:14px}
   .pm-dlg.here{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .pm-dlg.here .who{grid-column:1}
-  .pm-dlg.here .opts{grid-column:2}
+  .pm-dlg.here .side{grid-column:2}
   .pm-dlg img{width:64px;height:64px}
-  .pm-dlg .opts{grid-column:3;grid-row:1;margin-top:0;max-height:calc(100vh - 60px)}
+  .pm-dlg .side{grid-column:3;grid-row:1;margin-top:0;max-height:calc(100vh - 60px)}
   .pm-dlg .pm-line{margin-top:4px}
 }
 `;
@@ -156,7 +156,7 @@ export class TownUi {
     this.hints.append(this.hereKey, menu);
     document.body.append(...this.veils, this.status, this.figs, this.hints, this.prompt, this.toast);
     window.addEventListener('keydown', (e) => {
-      if (e.repeat || (e.target instanceof HTMLInputElement)) return;
+      if (e.repeat || (e.target instanceof HTMLInputElement && e.key !== 'Escape')) return;
       const k = e.key.toLowerCase();
       if (k === 'n' && isV2(this.st)) { void import('../audio/Sound').then((m) => { const s = m.sound(); s.set({ muted: !s.settings.muted }); if (this.current?.querySelector('input[type=range]')) void this.openSound(); }); return; }
       if (this.modal) { if (k === 'escape' || (k === 'q' && this.current?.dataset.here)) this.leave(); return; }
@@ -242,7 +242,7 @@ export class TownUi {
     const people = all.filter((o) => o.action.type === 'talk');
     this.closeModal(); this.modal = true; this.prompt.classList.remove('on');
     document.body.classList.add('pm-talking');
-    const root = el('div', 'pm pm-talk'), card = el('div', 'pm-dlg here'), list = el('div', 'opts');
+    const root = el('div', 'pm pm-talk'), card = el('div', 'pm-dlg here'), side = el('div', 'side'), list = el('div', 'opts');
     root.dataset.here = '1';
     root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', tx('ui.here'));
     card.innerHTML = `<div class="who"><h2 class="pm-h">${esc(placeName(s.place, v2).replace(/^the /, ''))}</h2><div class="pm-sub">${esc(s.player.name)}${s.player.items.length ? ` · ${esc(s.player.items.map((i) => i.replace('-', ' ')).join(', '))}` : ''}</div></div>`;
@@ -257,18 +257,18 @@ export class TownUi {
       b.addEventListener('click', () => { writeSave(s); this.host.reload({ scene: 'arena', challenge: '1' }); }); list.appendChild(b);
     }
     for (const o of opts) list.appendChild(this.optionButton(v2 && (o.action.type === 'rest' || o.action.type === 'wait') ? { ...o, label: o.action.type === 'rest' ? tx('v2.self.rest') : tx('v2.self.wait') } : o));
-    if (people.length) {
+    const away = (o: ActionOption) => !o.ok && o.reason === tx('avail.notNow', { name: PEOPLE[(o.action as { who: string }).who].name }), here = people.filter((o) => !away(o)), gone = people.filter(away);
+    if (here.length) {
       list.appendChild(el('p', 'pm-sub', tx('ui.peopleHere')));
-      for (const o of people) {
+      for (const o of here) {
         const who = (o.action as { who: string }).who, b = el('button', 'pm-btn', `<span>${esc(PEOPLE[who].name)}<span class="why">${o.ok ? esc(PEOPLE[who].title) : esc(o.reason ?? '')}</span></span>`);
         b.disabled = !o.ok; b.addEventListener('click', () => this.openPerson(who)); list.appendChild(b);
       }
     }
-    const close = el('button', 'pm-btn', `<kbd>Q</kbd>${tx('ui.close')}`);
-    close.addEventListener('click', () => this.closeModal());
-    list.appendChild(close); arrowKeys(list);
-    card.appendChild(list); root.appendChild(card);
-    document.body.appendChild(root); this.current = root;
+    if (gone.length) list.appendChild(el('p', 'pm-sub', tx('ui.away', { names: esc(gone.map((o) => PEOPLE[(o.action as { who: string }).who].name).join(', ')) })));
+    const close = footBtn('Esc', tx('ui.close'), () => this.closeModal());
+    side.append(list, footOf(close)); arrowKeys(side); card.appendChild(side); root.appendChild(card);
+    document.body.appendChild(root); this.current = root; scrollFade(list);
     ((list.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? close).focus();
   }
 
@@ -313,7 +313,7 @@ export class TownUi {
   private async card(html: string, ok = tx('ui.close'), band = false): Promise<string> {
     this.modal = true; this.prompt.classList.remove('on');
     if (!band) document.body.classList.add('pm-full');
-    const o = overlay(html, [{ id: 'ok', label: ok, primary: true }], band);
+    const o = overlay(html, [{ id: 'ok', label: ok, primary: ok !== tx('ui.close') }], band);
     this.current = o.root;
     const r = await o.done;
     this.modal = false; this.current = null;
@@ -337,57 +337,31 @@ export class TownUi {
     this.closeModal();
     this.modal = true; this.prompt.classList.remove('on');
     // P4 (journal Passe UM1: every game): the dialogue at the foot of the screen, the scene kept visible (the version 2 turns it to the speaker)
-    const root = el('div', 'pm pm-talk'), card = el('div', 'pm-dlg');
+    const root = el('div', 'pm pm-talk'), card = el('div', 'pm-dlg'), side = el('div', 'side');
     if (isV2(st)) this.host.focus?.(who);
     root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', p.name);
     card.innerHTML = `${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(p.name)}<small>${esc(titleOf(p, isV2(this.st)))}</small></h2><div class="pm-line">${lines.map((l) => `<q>${esc(l)}</q>`).join('')}</div></div>`;
     const list = el('div', 'opts');
     if (goods) { const b = el('button', 'pm-btn', `<span>${tx(who === 'bram' ? 'ui.wares.seeForge' : 'ui.wares.see')}</span>`); b.addEventListener('click', () => this.openShop(who)); list.appendChild(b); }
     for (const o of opts) if (!goods || !isGoods(o)) list.appendChild(this.optionButton(o, () => { if (this.current === root) this.openPerson(who); }));
-    const leave = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.leave')}`);
-    leave.addEventListener('click', () => this.closeModal());
-    list.appendChild(leave);
-    arrowKeys(list);
-    card.appendChild(list);
+    const leave = footBtn('Esc', tx('ui.leave'), () => this.closeModal());
+    side.append(list, footOf(leave)); arrowKeys(side);
+    card.appendChild(side);
     root.appendChild(card);
     document.body.appendChild(root);
     document.body.classList.add('pm-talking');
-    this.current = root;
+    this.current = root; scrollFade(list);
     ((list.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? leave).focus();
   }
 
-  /** the version 2's skills (lot V2): each owned skill with its level, its charge time, its AP and family; four chosen (the match sheet's
-   *  preparation, CB-1 § 8); `enter`: the bout follows (the four applied, then the arena) */
+  /** the version 2's skills (lot V2; the page, journal Passe UM11, src/ui/skills.ts); `enter`: the match sheet, the opponent first (CB-1 § 8), the bout follows */
   openSkills(enter: boolean): void {
-    const s = this.st, kit = v2KitOf(s) as { loadout: string[]; levels: Record<string, number> }, chosen = new Set<string>(kit.loadout);
+    const s = this.st;
     this.page();
-    const root = el('div', 'pm pm-overlay'), card = el('div', `pm-card${enter ? ' pm-sheet' : ''}`), list = enter ? el('div', 'pm-sk') : card;
-    list.innerHTML = `<h2 class="pm-h">${tx('v2.skills.title')}</h2>${enter ? '' : `<p class="pm-sub">${tx('v2.skills.sub')}</p>`}`;
-    card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('v2.skills.title'));
-    const go = el('button', 'pm-btn primary', `<span>${enter ? tx('v2.skills.keep') : tx('ui.close')}</span>`);
-    const sync = () => { go.disabled = enter && chosen.size !== 4; };
-    for (const id of Object.keys(kit.levels).filter((k) => kit.levels[k] > 0)) {
-      const lv = kit.levels[id], fam = SKILL_BOOK[id]?.family ?? 'offensive', ap = skillAction(id).apCost ?? 0;
-      const b = el('button', 'pm-btn', `<span>${esc(skillName(id))}<span class="why">${tx('v2.skills.level', { level: lv })} · ${tx(fam === 'offensive' ? 'v2.family.offensive' : fam === 'defensive' ? 'v2.family.defensive' : 'v2.family.support')} · ${tx('v2.skills.charge', { charge: chargeTime(id, lv) })}</span></span><span class="cost">${tx('v2.skills.ap', { ap })}</span>`);
-      b.setAttribute('aria-pressed', String(chosen.has(id)));
-      b.addEventListener('click', () => {
-        if (chosen.has(id)) chosen.delete(id); else if (chosen.size < 4) chosen.add(id);
-        b.setAttribute('aria-pressed', String(chosen.has(id))); sync();
-      });
-      list.appendChild(b);
-    }
-    if (enter) list.appendChild(el('p', 'pm-sub', tx('v2.skills.pick')));
-    // P6 (lot V9): the match sheet, the opponent first
-    if (enter) { card.appendChild(el('div', 'pm-foe-side', this.matchSheetHtml(s))); card.appendChild(list); }
-    go.addEventListener('click', () => {
-      const four = kit.loadout.filter((x) => chosen.has(x)).concat([...chosen].filter((x) => !kit.loadout.includes(x)));
-      if (chosen.size === 4 && four.join() !== kit.loadout.join()) this.host.act({ type: 'setLoadout', skills: four });
-      if (!enter) { this.closeModal(); return; }
-      writeSave(this.st); this.closeModal(); this.host.reload({ scene: 'arena' });
-    });
-    list.appendChild(go); sync(); arrowKeys(card);
-    root.appendChild(card); document.body.appendChild(root); this.current = root;
-    go.focus();
+    this.show(skillsPage({
+      state: () => this.st, act: (a) => this.host.act(a), close: () => this.closeModal(),
+      enter: enter ? () => { writeSave(this.st); this.closeModal(); this.host.reload({ scene: 'arena' }); } : undefined,
+    }, enter ? this.matchSheetHtml(s) : null));
   }
 
   /** P6 (lot V9): the bout's stage, the opponent (face, name, style), what the player knows of their skills, the gear worn, an ally's advice */
@@ -409,48 +383,46 @@ export class TownUi {
 
   private openWares(who: string | null): void {
     this.page();
-    const w = waresPage(who, { state: () => this.st, act: (a) => this.run(a, true), close: () => this.leave() });
-    document.body.appendChild(w.root); this.current = w.root; w.focus();
+    this.show(waresPage(who, { state: () => this.st, act: (a) => this.run(a, true), close: () => this.leave() }));
   }
 
   /** the version 2's sound (lot V8): the volume, the music's share, the mute; the engine loaded on demand (src/audio/Sound.ts) */
   async openSound(): Promise<void> {
     const snd = (await import('../audio/Sound')).sound();
     this.page();
-    const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">${tx('v2.sound.title')}</h2><p class="pm-sub">${tx('v2.sound.sub')}</p>`);
-    card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('v2.sound.title'));
+    const { root, body, foot } = pageShell(tx('v2.sound.title'));
+    body.innerHTML = `<h2 class="pm-h">${tx('v2.sound.title')}</h2><p class="pm-sub">${tx('v2.sound.sub')}</p>`;
     const slider = (label: string, key: 'volume' | 'music') => {
-      const p = el('p', '', `<label>${label}<br><input type="range" min="0" max="100" step="5" value="${Math.round(snd.settings[key] * 100)}" aria-label="${label}"></label>`);
-      p.querySelector('input')!.addEventListener('input', (e) => snd.set({ [key]: +(e.target as HTMLInputElement).value / 100 }));
-      card.appendChild(p);
+      const v = Math.round(snd.settings[key] * 100), p = el('p', '', `<label>${label}<b>${v}</b><input type="range" min="0" max="100" step="5" value="${v}" aria-label="${label}" style="--v:${v}%"></label>`);
+      p.querySelector('input')!.addEventListener('input', (e) => { const i = e.target as HTMLInputElement; i.style.setProperty('--v', `${i.value}%`); p.querySelector('b')!.textContent = i.value; snd.set({ [key]: +i.value / 100 }); });
+      body.appendChild(p);
     };
     slider(tx('v2.sound.volume'), 'volume'); slider(tx('v2.sound.music'), 'music');
     const mute = el('button', 'pm-btn', `<kbd>N</kbd>${snd.settings.muted ? tx('v2.sound.unmute') : tx('v2.sound.mute')}`);
     mute.addEventListener('click', () => { snd.set({ muted: !snd.settings.muted }); void this.openSound(); });
-    card.appendChild(mute);
-    const close = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.close')}`); close.addEventListener('click', () => this.closeModal()); card.appendChild(close);
-    root.appendChild(card); document.body.appendChild(root); this.current = root; close.focus();
+    body.appendChild(mute);
+    const close = footBtn('Esc', tx('ui.close'), () => this.closeModal()); foot.appendChild(close); close.classList.add('out');
+    document.body.appendChild(root); this.current = root; close.focus();
   }
 
   private openMap(): void {
     const s = this.st, moves = actions(s).filter((o) => o.action.type === 'move');
     this.page();
-    const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">${tx('ui.cite')}</h2><p class="pm-sub">${tx('ui.youAreIn', { place: esc(placeName(s.place, isV2(s))) })}</p>`);
+    const { root, card, body, foot } = pageShell(tx('ui.cite'));
+    body.innerHTML = `<h2 class="pm-h">${tx('ui.cite')}</h2><p class="pm-sub">${tx('ui.youAreIn', { place: esc(placeName(s.place, isV2(s))) })}</p>`;
     // the sheet says walking is free: no tag on each line (the audit of journal Passe UM1)
-    for (const o of moves) { const b = this.optionButton(o); b.querySelector('.cost.free')?.remove(); card.appendChild(b); }
-    const close = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.close')}`); close.addEventListener('click', () => this.closeModal()); card.appendChild(close);
+    for (const o of moves) { const b = this.optionButton(o); b.querySelector('.cost.free')?.remove(); body.appendChild(b); }
+    const close = footBtn('Esc', tx('ui.close'), () => this.closeModal()); foot.appendChild(close); close.classList.add('out');
     arrowKeys(card);
-    root.appendChild(card); document.body.appendChild(root); this.current = root;
+    document.body.appendChild(root); this.current = root;
     ((card.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement) ?? close).focus();
   }
 
-  private openJournal(): void {
-    const s = this.st, facts = s.log.filter((e) => e.visible).slice(-30).reverse();
-    this.closeModal();
-    void this.card(`<h2 class="pm-h">${tx('ui.journal')}</h2>${facts.map((e) => `<p><span class="pm-sub">${tx('ui.day', { day: e.day, slot: e.slot })}</span><br>${esc(e.text)}${e.kind === 'consequence' || e.kind === 'sign' ? `<br><span class="pm-sub why">${tx('ui.why', { cause: esc(e.cause) })}</span>` : ''}</p>`).join('')}`);
-  }
+  private openJournal(): void { this.page(); this.show(journalPage(this.st, () => this.closeModal())); }
 
-  private openBoard(): void { this.closeModal(); void this.card(boardHtml(this.st, standings(this.st))); }
+  private openBoard(): void { this.page(); this.show(boardPage(this.st, standings(this.st), () => this.closeModal())); }
+
+  private show(p: { root: HTMLElement; focus(): void }): void { document.body.appendChild(p.root); this.current = p.root; p.focus(); }
 
   /** a page on the full-screen veil takes the place of what was open */
   private page(): void { this.closeModal(); this.modal = true; this.prompt.classList.remove('on'); document.body.classList.add('pm-full'); }
@@ -458,11 +430,12 @@ export class TownUi {
   /** the one menu (UM-R1): every page with its key, then the saves */
   private openMenu(): void {
     this.page();
-    const s = this.st, root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card pm-menu', `<h2 class="pm-h">${tx('ui.menu')}</h2>`);
-    const add = (label: string, f: () => void, key = '') => { const b = el('button', 'pm-btn', `<span>${esc(label)}</span>${key ? `<kbd>${key}</kbd>` : ''}`); b.addEventListener('click', f); card.appendChild(b); };
+    const s = this.st, { root, card, body, foot } = pageShell(tx('ui.menu'), 'pm-menu');
+    body.innerHTML = `<h2 class="pm-h">${tx('ui.menu')}</h2>`;
+    const add = (label: string, f: () => void, key = '') => { const b = el('button', 'pm-btn', `<span>${esc(label)}</span>${key ? `<kbd>${key}</kbd>` : ''}`); b.addEventListener('click', f); body.appendChild(b); };
     add(tx('ui.map'), () => this.openMap(), 'M'); add(tx('ui.journal'), () => this.openJournal(), 'J'); add(tx('ui.tournament'), () => this.openBoard(), 'T');
     if (isV2(s)) { add(tx('v2.skills.view'), () => this.openSkills(false), 'K'); add(tx('v2.gear.view'), () => this.openGear(), 'G'); add(tx('v2.sound.view'), () => void this.openSound(), 'V'); }
-    card.appendChild(el('p', 'pm-sub pm-gap', tx('ui.menu.saves')));
+    body.appendChild(el('p', 'pm-sub pm-gap', tx('ui.menu.saves')));
     add(tx('ui.menu.saveFile'), () => downloadSave(s));
     add(tx('ui.menu.loadFile'), () => {
       const i = el('input'); i.type = 'file'; i.accept = 'application/json,.json';
@@ -470,9 +443,9 @@ export class TownUi {
       i.click();
     });
     add(tx('ui.menu.quit'), () => location.assign(location.pathname));
-    add(tx('ui.menu.back'), () => this.closeModal(), 'Esc');
+    const back = footBtn('Esc', tx('ui.menu.back'), () => this.closeModal()); foot.appendChild(back); back.classList.add('out');
     arrowKeys(card);
-    root.appendChild(card); document.body.appendChild(root); this.current = root;
+    document.body.appendChild(root); this.current = root;
     (card.querySelector('.pm-btn') as HTMLButtonElement).focus();
   }
 }
