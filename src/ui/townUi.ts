@@ -78,6 +78,8 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
 .pm-card input[type=range]{accent-color:var(--ds-accent);width:min(320px,100%)}
 .pm-result .pm-big{text-align:center}
 .pm-foe{display:flex;gap:14px;align-items:flex-start;margin:6px 0}
+.pm-overlay .pm-card.pm-sheet{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:48px;width:min(1120px,100%)}
+@media (max-width:900px){.pm-overlay .pm-card.pm-sheet{grid-template-columns:minmax(0,1fr);gap:14px}}
 .pm-menu .pm-btn kbd{order:2;margin-left:auto}
 .pm-slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin:14px 0}
 .pm-slot{padding-top:8px;border-top:1px solid var(--ds-line);min-width:0}
@@ -364,7 +366,8 @@ export class TownUi {
   openSkills(enter: boolean): void {
     const s = this.st, kit = v2KitOf(s) as { loadout: string[]; levels: Record<string, number> }, chosen = new Set<string>(kit.loadout);
     this.page();
-    const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">${tx('v2.skills.title')}</h2>${enter ? '' : `<p class="pm-sub">${tx('v2.skills.sub')}</p>`}`);
+    const root = el('div', 'pm pm-overlay'), card = el('div', `pm-card${enter ? ' pm-sheet' : ''}`), list = enter ? el('div', 'pm-sk') : card;
+    list.innerHTML = `<h2 class="pm-h">${tx('v2.skills.title')}</h2>${enter ? '' : `<p class="pm-sub">${tx('v2.skills.sub')}</p>`}`;
     card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('v2.skills.title'));
     const go = el('button', 'pm-btn primary', `<span>${enter ? tx('v2.skills.keep') : tx('ui.close')}</span>`);
     const sync = () => { go.disabled = enter && chosen.size !== 4; };
@@ -376,18 +379,18 @@ export class TownUi {
         if (chosen.has(id)) chosen.delete(id); else if (chosen.size < 4) chosen.add(id);
         b.setAttribute('aria-pressed', String(chosen.has(id))); sync();
       });
-      card.appendChild(b);
+      list.appendChild(b);
     }
-    if (enter) card.appendChild(el('p', 'pm-sub', tx('v2.skills.pick')));
+    if (enter) list.appendChild(el('p', 'pm-sub', tx('v2.skills.pick')));
     // P6 (lot V9): the match sheet, the opponent first
-    if (enter) card.insertBefore(el('div', '', this.matchSheetHtml(s)), card.children[1] ?? null);
+    if (enter) { card.appendChild(el('div', 'pm-foe-side', this.matchSheetHtml(s))); card.appendChild(list); }
     go.addEventListener('click', () => {
       const four = kit.loadout.filter((x) => chosen.has(x)).concat([...chosen].filter((x) => !kit.loadout.includes(x)));
       if (chosen.size === 4 && four.join() !== kit.loadout.join()) this.host.act({ type: 'setLoadout', skills: four });
       if (!enter) { this.closeModal(); return; }
       writeSave(this.st); this.closeModal(); this.host.reload({ scene: 'arena' });
     });
-    card.appendChild(go); sync(); arrowKeys(card);
+    list.appendChild(go); sync(); arrowKeys(card);
     root.appendChild(card); document.body.appendChild(root); this.current = root;
     go.focus();
   }
@@ -399,7 +402,7 @@ export class TownUi {
     const stage = stageName(m);
     const intel = s.facts.includes(`scouted:${id}`) ? tx('ui.arena.foeSkills', { name: r.name, skills: (V2_FOES[id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') }) : tx('v2.sheet.unknown', { name: r.name });
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
-    return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h3 class="pm-h">${esc(r.name)}</h3><p class="pm-sub">${esc(r.epithet)}</p><p>${esc(r.bio)}</p></div></div>`
+    return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
       + `<p class="pm-sub">${esc(intel)}</p><p class="pm-sub">${esc(gear)}</p>${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
   }
 

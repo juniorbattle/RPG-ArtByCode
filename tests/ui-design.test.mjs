@@ -102,6 +102,17 @@ test('UM2-3: the digits of the title font come from the text font; UM-R1, UM-R2:
   assert.match(U, /tx\('ui\.enterArena'\)\) : tx\('ui\.here'\)/, 'the bout keeps its prompt');
 });
 
+test('UM-T2, lot 2: one sign for an alert, the K.O. alone on the screen, the tiers only while charging, one preparation screen', () => {
+  const A = fs.readFileSync(path.join(ROOT, 'src/arena/ArenaHud.ts'), 'utf8'), D = fs.readFileSync(path.join(ROOT, 'src/arena/DynamicHud.ts'), 'utf8'), P = fs.readFileSync(path.join(ROOT, 'src/ui/playArena.ts'), 'utf8');
+  assert.ok(!A.includes('ah-title') && !D.includes('ah-title'), 'no title on the duel');
+  assert.match(D, /#arena-hud\.al #ah-phase\{opacity:0\}/);
+  assert.match(A, /#arena-hud\.ko>\*:not\(#ah-ko\)\{opacity:0\}/);
+  assert.match(D, /#ah-tiers\{[^}]*opacity:0/);
+  assert.match(D, /#ah-tiers\.on\{opacity:1\}/);
+  assert.ok(!/ui\.arena\.keys/.test(P), 'no paragraph of keys');
+  assert.match(P, /v2 && !challenge \? gate/, 'the version 2\'s gate: its stage and the name');
+});
+
 test('UM-S2: no frame left: no border image, no texel grid, no pixel font, no pixelated box; only the faces keep their pixels', () => {
   assert.ok(!fs.existsSync(path.join(ROOT, 'src/ui/design/frames.ts')), 'frames.ts is gone');
   const files = [...fs.readdirSync(path.join(ROOT, 'src/ui')).filter((f) => f.endsWith('.ts')).map((f) => `src/ui/${f}`), 'src/ui/design/system.ts', 'src/ui/design/tokens.ts', 'src/arena/ArenaHud.ts', 'src/arena/DynamicHud.ts'];

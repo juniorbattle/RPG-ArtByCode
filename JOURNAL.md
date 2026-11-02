@@ -557,6 +557,27 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Deux éléments peuvent porter le même libellé : un outil vise un conteneur, pas un texte.
 - Une information redite ne se réduit pas, elle s'enlève : l'étiquette de lieu ne servait plus à rien une fois l'état au propre.
 
+## Passe UM4 — Lot 2 : le duel en voile, un seul écran de préparation, le K.O. (2026-11-02, branche)
+
+### Note de l'opérateur, en cours de lot
+- Mot pour mot : « je trouve la nouvelle direction plutot bonne par contre je trouve que les menu/panels donc equipement/achat peut etre trop simpliste ... apres peut etre que cela pourra ette travailler apres ». Le travail continue ; une carte à ce sujet ira sur la fiche de l'essai, rien n'est changé dans le plan sans sa réponse.
+
+### Fait — [OK]
+- **Les deux HUD** (`ArenaHud`, `DynamicHud`) selon la maquette : nom en Marcellus, points de vie à droite, jauge de 6 px, résistance en filet de 2 px dont le mot ne paraît qu'une fois brisée ; les commandes au pied ; plus de titre « Cité du Tournoi », plus de carte. Le rôle et l'étape du combat restent dans les `aria-label`.
+- **Les visages** restent, sans cadre, à une échelle entière : ×3 ou ×2 pour un visage généré de 24 px, ×2 ou ×1 pour un visage cuit de 32 px (la version du lot 0 les posait à ×2,25).
+- **Les paliers de charge** n'apparaissent qu'à la charge, plus de rangée fantôme à l'arrêt. **L'alerte** : le texte seul sur son voile, sans losange, et le signe de priorité s'efface devant elle à toutes les tailles : une seule plaque.
+- **Le K.O.** : le reste du HUD s'éteint, un mot de 120 px sur une bande fondue aux quatre bords, un filet d'accent. Il reste lisible sur l'effet de K.O. (14,09:1).
+- **La préparation** (P6) : dans la version 2, un seul écran, la fiche de match de la ville, l'adversaire à gauche, les quatre compétences à droite ; à la porte de l'arène, une bande basse avec l'étape, le nom et « Fight », les combattants visibles. Le jeu par défaut garde son rapport d'observation dans cette bande. Les paragraphes de touches sont retirés : la barre est juste en dessous (`ui.arena.keys*`).
+
+### Les preuves
+- `arena-scene-check`, défaut, `combat=dynamic`, `v2=1` : PASS, empreintes retrouvées, sol dégagé 22 / 22, 44 / 44, 77 / 77, télégraphe 6,46 à 6,94:1.
+- `ui-text` : 18 pages et formats sur 18. [KO → corrigé] Ma ligne de la page de la porte passait un mot sans code ; refaite au lot suivant.
+- `ui-contrast`, 10 pages, deux instants : 5,75:1 au plus bas (« Attaque » à midi), K.O. 14,09:1 ; fiche de match 7,7:1 ; fenêtre basse 5,8:1.
+- [KO → corrigé] `play-flow` lisait `#ah-title`, retiré : il lit l'`aria-label` du HUD. Défaut gagné, défaut perdu et `V2=1` : tout passe.
+
+### Pensée
+- Une seule plaque pour une alerte tient à une règle, pas à un réglage de taille : la règle existait pour les fenêtres basses, elle vaut partout.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

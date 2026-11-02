@@ -61,7 +61,7 @@ try {
   const to = await page.evaluate(() => window.__go);
   check(/scene=arena/.test(to ?? ''), `the town goes to ${to}`);
   await open(to);
-  const sheet = await page.evaluate(() => ({ names: [window.__arena.sim.D.fighters.ren.name, window.__arena.sim.D.fighters.marek.name], assist: window.__arena.assist, rules: window.__arena.rules, hud: document.querySelector('#ah-title')?.textContent }));
+  const sheet = await page.evaluate(() => ({ names: [window.__arena.sim.D.fighters.ren.name, window.__arena.sim.D.fighters.marek.name], assist: window.__arena.assist, rules: window.__arena.rules, hud: document.querySelector('#arena-hud')?.getAttribute('aria-label') }));
   check(sheet.rules === (V2 ? 'v2' : DYN ? 'dynamic' : 'classic'), `the arena plays ${sheet.rules}`);
   check(sheet.names[0] === 'Aster' && sheet.names[1] === FOE[day], `the arena seats ${sheet.names.join(' vs ')}`);
   // the version 2's bout names its stage (journal Passe VP2: « The pool · round 1 », « Semi-final »...), today's the slice's pool

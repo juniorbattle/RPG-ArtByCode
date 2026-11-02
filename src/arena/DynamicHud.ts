@@ -50,9 +50,11 @@ export const CHARGE_TEXTS_EN: ChargeTexts = { attack: 'Attack', holdSub: 'hold: 
  *  assistance, takes it); a short window (600 px high or less, journal Passe AF1) keeps only the attack button, its label the tier a release
  *  launches */
 const CHARGE_CSS = `
-#ah-tiers{position:absolute;left:50%;bottom:94px;transform:translateX(-50%);display:flex;gap:18px;pointer-events:none;opacity:.7;transition:opacity .12s}
+#ah-tiers{position:absolute;left:50%;bottom:100px;transform:translateX(-50%);display:flex;gap:18px;pointer-events:none;opacity:0;transition:opacity .12s}
 #ah-tiers.on{opacity:1}
 #arena-hud.wb #ah-tiers{opacity:0}
+#arena-hud.cmd3 #ah-bar{gap:48px}
+#arena-hud.cmd3 .ah-sep{display:none}
 #ah-tiers .tr{position:relative;display:flex;align-items:center;gap:6px;padding:0 0 4px;font:400 var(--ds-fs-small)/1.3 var(--ds-text);color:var(--ds-muted);white-space:nowrap}
 #ah-tiers .tr b{font-weight:400}
 #ah-tiers .tr q{display:flex;gap:2px;quotes:none}
@@ -64,7 +66,7 @@ const CHARGE_CSS = `
 #ah-tiers .tr.locked{color:var(--ds-muted);opacity:.6;text-decoration:line-through}
 .ah-b.charging b,.ah-b.charging em{color:var(--ds-accent)}
 #arena-hud .ah-b.charging kbd{border-color:var(--ds-accent);color:var(--ds-accent)}
-@media (max-width:1240px){#ah-tiers{bottom:72px}}
+@media (max-width:1240px){#ah-tiers{bottom:72px}#arena-hud.cmd3 #ah-bar{gap:18px}}
 @media (max-height:600px){#ah-tiers{display:none}}
 `;
 
@@ -72,7 +74,8 @@ const CHARGE_CSS = `
 const DYN_CSS = `
 #arena-hud .ah-rs{display:flex;align-items:center;gap:8px;margin-top:6px}
 #arena-hud .ah-f.r .ah-rs{flex-direction:row-reverse}
-#arena-hud .ah-rs>span{flex:none;font-size:var(--ds-fs-small);color:var(--ds-muted);white-space:nowrap}
+#arena-hud .ah-rs>span{display:none;flex:none;font-size:var(--ds-fs-small);color:var(--ds-muted);white-space:nowrap}
+#arena-hud .ah-rs.brk>span{display:block}
 #arena-hud .ah-rb{position:relative;flex:1;height:2px;background:var(--ds-trough)}
 #arena-hud .ah-rb i,#arena-hud .ah-rb s{position:absolute;top:0;bottom:0;left:0;text-decoration:none}
 #arena-hud .ah-f.r .ah-rb i,#arena-hud .ah-f.r .ah-rb s{left:auto;right:0}
@@ -85,7 +88,8 @@ const DYN_CSS = `
 #arena-hud .ah-f.r .ah-tags{justify-content:flex-end}
 #arena-hud .ah-tags b{display:none;padding:0 6px;font:600 var(--ds-fs-small)/1.3 var(--ds-text);color:var(--ds-ivory);border:1px solid var(--ds-line);white-space:nowrap}
 #arena-hud .ah-tags b.on{display:block}
-#ah-phase{position:absolute;left:50%;top:84px;transform:translateX(-50%);padding:10px 90px;text-align:center;white-space:nowrap;background:var(--ds-grad-spot);opacity:0;transition:opacity .12s}
+#ah-phase{position:absolute;left:50%;top:40px;transform:translateX(-50%);padding:10px 90px;text-align:center;white-space:nowrap;background:var(--ds-grad-spot);opacity:0;transition:opacity .12s}
+#arena-hud.al #ah-phase{opacity:0}
 #ah-phase.on{opacity:1}
 #arena-hud.dyn #ah-wbar:not(.on){visibility:hidden}
 #ah-phase b{display:block;font:400 var(--ds-fs-label)/1.2 var(--ds-title);color:var(--ds-accent)}
@@ -98,14 +102,14 @@ const DYN_CSS = `
 .ah-b .pg{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--ds-accent)}
 @media (max-width:1500px){.ah-b .fam{display:none}}
 /* a narrow window: the cards widen (30vw), the sign leaves the top for the dodge window's place above the bar (the bar takes it when it shows) */
-@media (max-width:1240px){#ah-phase{top:auto;bottom:94px}#arena-hud.wb #ah-phase{opacity:0}}
-@media (max-height:480px){#arena-hud .ah-rs>span{display:none}#arena-hud .ah-rs{margin-top:3px}#arena-hud .ah-tags{margin-top:3px}#ah-phase{top:auto;bottom:72px;padding:4px 50px}#arena-hud.wb #ah-phase{opacity:0}#ah-phase b{font-size:var(--ds-fs-small)}#ah-phase span{display:none}}
+@media (max-width:1240px){#ah-phase{top:auto;bottom:100px}#arena-hud.wb #ah-phase{opacity:0}}
+@media (max-height:480px){#arena-hud .ah-rs{margin-top:3px}#arena-hud .ah-tags{margin-top:3px}#ah-phase{top:auto;bottom:72px;padding:4px 50px}#arena-hud.wb #ah-phase{opacity:0}#ah-phase b{font-size:var(--ds-fs-small)}#ah-phase span{display:none}}
 /* a short window (600 px high or less) where the sign sat in the bar's place: that place reaches the floor's marks (the rings, the telegraph).
    The sign goes up to the top centre on one line and gives way while the alert shows (the operator's choice « À la place de l'alerte », journal
    Passe AF1): above the cards, beside the title, while the window keeps the computer's layout (between the cards and the fighters' heads
    there is no room left: 900 x 500, measured); right under the cards on a phone (its top set by DynamicHud.update from their bottoms) */
-@media (max-width:1240px) and (max-height:600px){#ah-phase{top:12px;bottom:auto}#ah-phase span{display:none}#arena-hud.al #ah-phase{opacity:0}}
-@media (max-height:480px){#ah-phase{top:30%;bottom:auto}#arena-hud.al #ah-phase{opacity:0}}
+@media (max-width:1240px) and (max-height:600px){#ah-phase{top:12px;bottom:auto}#ah-phase span{display:none}}
+@media (max-height:480px){#ah-phase{top:30%;bottom:auto}}
 @media (prefers-reduced-motion:reduce){#arena-hud .ah-rs.brk .ah-rb i,#ah-phase.nudge{animation:none}}
 `;
 
@@ -148,11 +152,13 @@ export class DynamicHud {
     }).join('');
     const tierName = (id: string) => (id === 'light' ? ct!.tierLight : id === 'heavy' ? ct!.tierHeavy : t.skillShorts[id as DynActionId] ?? A[id as DynActionId]?.short ?? A[id as DynActionId]?.name ?? id);
     const tiers = charge ? `<div id="ah-tiers" aria-hidden="true">${charge.tiers.map((x, i) => `<span class="tr" data-i="${i}"><b>${tierName(x.id)}</b>${x.ap ? diamonds(x.ap) : ''}<i></i></span>`).join('')}</div>` : '';
-    const card = (who: DynFighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<span>${sub}</span><em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(D.fighters[who].name)}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${who === 'ren' ? t.resist : t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${who === 'ren' ? t.resist : t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div>${who === 'ren' ? `<div class="ah-pips" aria-label="${t.apLabel}">` + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-tags"><b class="wd"></b><b class="bs"></b></div><div class="ah-state"></div></div></div>`;
-    this.el.innerHTML = `<div class="top"></div><div class="bot"></div><div id="ah-title">${t.title}<small>${t.subtitle}</small></div>
+    const card = (who: DynFighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}" aria-label="${D.fighters[who].name}, ${sub}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(D.fighters[who].name)}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${who === 'ren' ? t.resist : t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${who === 'ren' ? t.resist : t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div>${who === 'ren' ? `<div class="ah-pips" aria-label="${t.apLabel}">` + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-tags"><b class="wd"></b><b class="bs"></b></div><div class="ah-state"></div></div></div>`;
+    this.el.setAttribute('aria-label', t.subtitle);
+    if (charge) this.el.classList.add('cmd3');
+    this.el.innerHTML = `<div class="top"></div><div class="bot"></div>
       ${card('ren', 'l', t.subRen)}${card('marek', 'r', t.subMarek)}
       <div id="ah-phase" role="status"><b></b><span></span></div>
-      <div id="ah-alert"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2l18 18-18 18L2 20z" stroke-width="2.4"/><rect x="18" y="9" width="4" height="14"/><rect x="18" y="26" width="4" height="4"/></svg><div><b></b><span></span></div></div>
+      <div id="ah-alert"><b></b><span></span></div>
       <div id="ah-dmg"></div><div id="ah-wbar" aria-hidden="true"><i></i><b>${t.window}<kbd>${charge ? 'L' : 'A'}</kbd></b></div>${tiers}<div id="ah-bar">${buttons}</div>
       <div id="ah-ko" role="status"><div><b></b><span>${t.restart}</span></div></div>
       <div id="ah-pause" role="status"><div><b>${t.pause}</b><span>${t.resume}</span></div></div>
@@ -160,7 +166,8 @@ export class DynamicHud {
     document.body.appendChild(this.el);
     for (const who of ['ren', 'marek'] as DynFighterId[]) {
       const src = portraits[who], cv = this.q<HTMLCanvasElement>(`#ah-${who} .ah-port`);
-      if (src) { cv.width = src.width; cv.height = src.height; const x = cv.getContext('2d')!; x.imageSmoothingEnabled = false; if (who === 'marek') { x.translate(src.width, 0); x.scale(-1, 1); } x.drawImage(src, 0, 0); }
+      // a whole number of pixels per texel (a face stays at its whole scale, L4): 3 or 2 times a generated 24 px face, 2 or 1 times a baked 32 px one
+      if (src) { cv.width = src.width; cv.height = src.height; if (src.width > 24) { cv.style.setProperty('--ah-s', `${2 * src.width}px`); cv.style.setProperty('--ah-n', `${src.width}px`); } const x = cv.getContext('2d')!; x.imageSmoothingEnabled = false; if (who === 'marek') { x.translate(src.width, 0); x.scale(-1, 1); } x.drawImage(src, 0, 0); }
     }
     this.el.querySelectorAll<HTMLButtonElement>('.ah-b').forEach((b) => {
       const id = b.dataset.act!;
@@ -293,8 +300,8 @@ export class DynamicHud {
       else if (e.type === 'pushed' && e.who === 'ren') { this.float('ren', e.refund ? `${t.pushed} · ${t.refund(e.refund)}` : t.pushed, 'stun', -34); this.flash(e.action, 'deny'); }
       else if (e.type === 'commandDenied' && e.who === 'ren') { this.flash(e.action, 'deny'); if (e.why === 'defense') { const ph = this.q<HTMLElement>('#ah-phase'); ph.classList.remove('nudge'); void ph.offsetWidth; ph.classList.add('nudge'); } }
       else if (e.type === 'reactDenied' && e.who === 'ren') this.flash('dodge', 'deny');
-      else if (e.type === 'ko') { const ko = this.q('#ah-ko'); ko.querySelector('b')!.textContent = e.who === 'marek' ? t.victory : t.defeat; ko.querySelector('span')!.textContent = t.isDown(sim.D.fighters[e.who].name); ko.classList.add('on'); }
-      else if (e.type === 'reset') { this.q('#ah-ko').classList.remove('on'); this.q('#ah-dmg').textContent = ''; }
+      else if (e.type === 'ko') { const ko = this.q('#ah-ko'); ko.querySelector('b')!.textContent = e.who === 'marek' ? t.victory : t.defeat; ko.querySelector('span')!.textContent = t.isDown(sim.D.fighters[e.who].name); ko.classList.add('on'); this.el.classList.add('ko'); }
+      else if (e.type === 'reset') { this.q('#ah-ko').classList.remove('on'); this.el.classList.remove('ko'); this.q('#ah-dmg').textContent = ''; }
     }
   }
 

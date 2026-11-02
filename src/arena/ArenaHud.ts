@@ -9,30 +9,27 @@ import { fontsReady, installDesign } from '../ui/design/system';
 
 export type Assist = 'subtle' | 'full' | 'off';
 
-/** built from the interface's design system (journal Passes UI3 / UM1, direction A « Voile »): the tone's colours (`--ds-*`), a veil along the top
- *  and the foot of the screen under the words, no frame; the title font for names and numbers, the text font for words; no text under 16 px on a
- *  computer, 14 px on a phone (S4). The gauges stay in the palette (S3): the challenger's ivory, the opponent's accent. With the HUD hidden (`hud=0`,
- *  H), the KO and pause screens stay (journal Passe C2). The layout of this lot is the former one, its frames taken away (lot 0); lot 2 redoes it.
- *  Exported: the HUD of the « tour par tour dynamique » (DynamicHud.ts) is built on the same rules */
+/** built from the interface's design system (journal Passes UI3 / UM4, direction A « Voile »): the tone's colours (`--ds-*`), a veil along the top and
+ *  the foot of the screen under the words, no box; each fighter's name in the title font over a thin gauge, the commands along the foot, the alert
+ *  a pool of veil at the centre, the K.O. the whole screen's moment; no text under 16 px on a computer, 14 px on a phone (S4). The gauges stay in
+ *  the palette (S3): the challenger's ivory, the opponent's accent. With the HUD hidden (`hud=0`, H), the KO and pause screens stay (journal Passe
+ *  C2). Exported: the HUD of the « tour par tour dynamique » (DynamicHud.ts) is built on the same rules */
 export const CSS = `
 #arena-hud{position:fixed;inset:0;pointer-events:none;color:var(--ds-ivory);font:400 var(--ds-fs-body)/1.3 var(--ds-text);font-variant-numeric:tabular-nums;z-index:20;user-select:none;-webkit-user-select:none}
-#arena-hud.off>*:not(#ah-ko):not(#ah-pause){opacity:0}
+#arena-hud.off>*:not(#ah-ko):not(#ah-pause),#arena-hud.ko>*:not(#ah-ko){opacity:0}
 /* the HUD hidden: the « turn your device » layer (transparent) leaves, so it neither covers the KO and pause screens nor takes the touches */
 #arena-hud.off #ah-rotate{display:none}
-#arena-hud .top{position:absolute;left:0;right:0;top:0;height:230px;background:var(--ds-grad-t)}
+#arena-hud .top{position:absolute;left:0;right:0;top:0;height:min(230px,30vh);background:var(--ds-grad-t)}
 /* the foot veil stops under the floor's marks at every window height: the lowest (the telegraph's band) stands 21.6 % of the height above the foot (measured, tools/arena-scene-check.mjs, 4.) */
 #arena-hud .bot{position:absolute;left:0;right:0;bottom:0;height:min(170px,21vh);background:var(--ds-grad-b)}
-#ah-title{position:absolute;left:18px;top:12px;font:400 var(--ds-fs-label)/1.2 var(--ds-title);color:var(--ds-ivory)}
-#ah-title small{display:block;margin-top:2px;font:400 var(--ds-fs-small)/1.2 var(--ds-text);color:var(--ds-ivory)}
-.ah-f{position:absolute;top:76px;display:flex;gap:8px;align-items:flex-start}
-.ah-f.l{left:18px}.ah-f.r{right:18px;flex-direction:row-reverse;text-align:right}
-.ah-port{width:72px;height:72px;flex:none;image-rendering:pixelated}
-.ah-card{position:relative;width:min(27vw,330px);padding:4px 8px 6px}
-.ah-nm{display:flex;align-items:baseline;font:400 var(--ds-fs-label)/1.2 var(--ds-title);color:var(--ds-ivory)}
-.ah-nm span{margin-left:8px;font:400 var(--ds-fs-small)/1.2 var(--ds-text);color:var(--ds-muted)}
-.ah-nm em{margin-left:auto;font:400 var(--ds-fs-small)/1 var(--ds-text);font-style:normal;color:var(--ds-ivory)}
-.ah-f.r .ah-nm{flex-direction:row-reverse}.ah-f.r .ah-nm span{margin:0 8px 0 0}.ah-f.r .ah-nm em{margin:0 auto 0 0}
-.ah-hp{position:relative;height:6px;margin-top:8px;background:var(--ds-trough)}
+.ah-f{position:absolute;top:28px;display:flex;gap:14px;align-items:flex-start}
+.ah-f.l{left:44px}.ah-f.r{right:44px;flex-direction:row-reverse;text-align:right}
+.ah-port{width:var(--ah-s,72px);height:var(--ah-s,72px);flex:none;image-rendering:pixelated}
+.ah-card{position:relative;width:min(29vw,560px)}
+.ah-nm{display:flex;align-items:baseline;justify-content:space-between;font:400 var(--ds-fs-title)/1.1 var(--ds-title);color:var(--ds-ivory)}
+.ah-nm em{font:400 var(--ds-fs-body)/1 var(--ds-text);font-style:normal;color:var(--ds-ivory)}
+.ah-f.r .ah-nm{flex-direction:row-reverse}
+.ah-hp{position:relative;height:6px;margin-top:10px;background:var(--ds-trough)}
 .ah-hp i,.ah-hp u{position:absolute;top:0;bottom:0;left:0}
 .ah-f.r .ah-hp i,.ah-f.r .ah-hp u{left:auto;right:0}
 .ah-hp u{background:var(--ds-muted);opacity:.6;transition:width .45s ease-in .35s}
@@ -43,13 +40,13 @@ export const CSS = `
 .ah-pips b.on{background:var(--ds-accent)}
 .ah-pips b.gain{animation:ahg .4s}
 @keyframes ahg{40%{transform:scaleY(2)}}
-.ah-state{position:absolute;left:0;right:0;top:100%;margin-top:6px;padding:0 8px;font-size:var(--ds-fs-small);color:var(--ds-accent);opacity:0;transition:opacity .15s}
+.ah-state{position:absolute;left:0;right:0;top:100%;margin-top:6px;font-size:var(--ds-fs-small);color:var(--ds-accent);opacity:0;transition:opacity .15s}
 .ah-state.on{opacity:1}
 /* the sub-label (« hold », « 1 AP », « breaks guard ») below the name, whole, in a bar 60 px high (the operator's decision P3, journal Passes
    UI1 / UI2) at the system's sizes (S4): the key beside both lines (journal Passe C2; 76 px with the key above the sub-label, Passe UI3) */
-#ah-bar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto;transition:opacity .15s}
-.ah-sep{width:1px;align-self:stretch;margin:12px 8px;background:var(--ds-line)}
-.ah-b{position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;align-content:center;min-width:104px;height:60px;padding:0 12px 0 8px;text-align:left;font:inherit;line-height:1.1;color:var(--ds-ivory);background:none;border:0;border-radius:0;cursor:pointer;overflow:hidden;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#ah-bar{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);display:flex;gap:10px;pointer-events:auto;transition:opacity .15s}
+.ah-sep{width:1px;align-self:stretch;margin:14px 10px;background:var(--ds-line)}
+.ah-b{position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:12px;align-items:center;align-content:center;min-width:104px;height:60px;padding:0 12px 0 8px;text-align:left;font:inherit;line-height:1.1;color:var(--ds-ivory);background:none;border:0;border-radius:0;cursor:pointer;overflow:hidden;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .ah-b.wide{min-width:132px}
 #arena-hud .ah-b kbd{grid-row:1 / span 2;grid-column:1}
 .ah-b b{grid-row:1;grid-column:2;font-size:var(--ds-fs-label);font-weight:400;white-space:nowrap;color:var(--ds-muted)}
@@ -71,16 +68,13 @@ export const CSS = `
 @keyframes ahk{50%{transform:scale(.92)}}@keyframes ahd{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
 /* the reaction window's bar right above the action bar, its label on its left: the floor in front of the telegraph stays clear (the
    telegraph's contrast is read there, tools/arena-scene-check.mjs) */
-#ah-wbar{position:absolute;left:50%;bottom:94px;width:min(460px,70vw);height:3px;transform:translateX(-50%);background:var(--ds-trough);opacity:0}
+#ah-wbar{position:absolute;left:50%;bottom:100px;width:min(460px,70vw);height:3px;transform:translateX(-50%);background:var(--ds-trough);opacity:0}
 #ah-wbar.on{opacity:1}
 #ah-wbar i{position:absolute;left:0;top:0;bottom:0;width:100%;transform-origin:left center;background:var(--ds-accent)}
 #ah-wbar b{position:absolute;right:calc(100% + 14px);top:50%;transform:translateY(-50%);font-size:var(--ds-fs-small);font-weight:400;color:var(--ds-ivory);white-space:nowrap}
 #ah-wbar b kbd{margin-left:8px;border-color:var(--ds-accent);color:var(--ds-accent)}
-#ah-alert{position:absolute;left:50%;top:27%;transform:translateX(-50%);display:flex;gap:16px;align-items:center;padding:22px 130px;white-space:nowrap;background:var(--ds-grad-spot);opacity:0;transition:opacity .12s}
+#ah-alert{position:absolute;left:50%;top:18%;transform:translateX(-50%);padding:22px 130px;text-align:center;white-space:nowrap;background:var(--ds-grad-spot);opacity:0;transition:opacity .12s}
 #ah-alert.on{opacity:1}
-#ah-alert svg{width:40px;height:40px}
-#ah-alert svg path{fill:none;stroke:var(--ds-accent)}
-#ah-alert svg rect{fill:var(--ds-accent)}
 #ah-alert b{display:block;font:400 var(--ds-fs-title)/1.1 var(--ds-title);color:var(--ds-accent)}
 #ah-alert span{display:block;margin-top:2px;font-size:var(--ds-fs-small);color:var(--ds-ivory)}
 #ah-dmg div{position:absolute;transform:translate(-50%,0);font:400 var(--ds-fs-fig)/1 var(--ds-title);-webkit-text-stroke:4px var(--ds-ink);paint-order:stroke fill;animation:ahf 1.05s ease-out forwards;white-space:nowrap}
@@ -88,24 +82,29 @@ export const CSS = `
 #ah-dmg .ap{color:var(--ds-accent);font-size:var(--ds-fs-label)}#ah-dmg .stun{color:var(--ds-accent);font-size:var(--ds-fs-label)}
 @keyframes ahf{0%{opacity:0;margin-top:6px}12%{opacity:1}100%{opacity:0;margin-top:-48px}}
 #arena-hud.still #ah-dmg div{animation-delay:-.22s;animation-play-state:paused}
-#ah-ko,#ah-pause{position:absolute;inset:0;display:none;place-items:center;background:var(--ds-scrim);text-align:center;pointer-events:none}
+#ah-ko,#ah-pause{position:absolute;inset:0;display:none;place-items:center;text-align:center;pointer-events:none}
 #ah-ko.on,#ah-pause.on{display:grid}
-#ah-ko b,#ah-pause b{display:block;font:400 var(--ds-fs-title-huge)/1.1 var(--ds-title);color:var(--ds-ivory)}
-#ah-ko b::after{content:'';display:block;width:200px;height:1px;margin:12px auto 0;background:var(--ds-line)}
-#ah-ko span,#ah-pause span{display:block;margin-top:12px;font-size:var(--ds-fs-small);color:var(--ds-ivory)}
+#ah-pause{background:var(--ds-veil)}
+#ah-pause b{display:block;font:400 var(--ds-fs-title-huge)/1.1 var(--ds-title);color:var(--ds-ivory)}
+#ah-pause span{display:block;margin-top:12px;font-size:var(--ds-fs-small);color:var(--ds-ivory)}
+/* the K.O.: everything else leaves, one word across the screen on its band */
+#ah-ko>div{width:100%;padding:64px 16px 60px;background:linear-gradient(to right,transparent 0,var(--ds-veil-strong) 24%,var(--ds-veil-strong) 76%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 16%,#000 84%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 16%,#000 84%,transparent 100%)}
+#ah-ko b{display:block;font:400 var(--ds-fs-display)/1 var(--ds-title);color:var(--ds-ivory)}
+#ah-ko b::after{content:'';display:block;width:min(420px,60vw);height:1px;margin:18px auto 0;background:var(--ds-accent)}
+#ah-ko span{display:block;margin-top:14px;font-size:var(--ds-fs-label);color:var(--ds-ivory)}
 #ah-rotate{position:absolute;inset:0;display:none;place-items:center;padding:24px;text-align:center;background:var(--ds-ink);pointer-events:auto}
 #ah-rotate b{display:block;font:400 var(--ds-fs-title)/1.2 var(--ds-title);color:var(--ds-ivory)}
 #ah-rotate span{display:block;margin-top:14px;font-size:var(--ds-fs-small);color:var(--ds-ivory)}
 @media (orientation:portrait) and (max-width:820px){#ah-rotate{display:grid}}
 .ah-b .sn{display:none}
 /* a laptop window: the short technique names, the labels at the smallest size, so the bar fits (1 196 px wide, measured) */
-@media (max-width:1500px){.ah-b,.ah-b.wide{min-width:0}.ah-b b{font-size:var(--ds-fs-small)}.ah-b .fn{display:none}.ah-b .sn{display:inline}}
+@media (max-width:1500px){.ah-b,.ah-b.wide{min-width:0}.ah-b b{font-size:var(--ds-fs-small)}.ah-b .fn{display:none}.ah-b .sn{display:inline}#ah-bar{gap:4px;bottom:12px}.ah-sep{margin:14px 4px}}
 /* a narrow window or a phone (L3): the key over the name, the sub-labels away */
-@media (max-width:1240px){#ah-bar{gap:4px}.ah-sep{margin:8px 2px}.ah-b,.ah-b.wide{min-width:0;height:auto;grid-template-columns:auto;justify-items:center;padding:2px 6px 4px}#arena-hud .ah-b kbd{grid-row:1;grid-column:1;min-width:24px;padding:0 4px;line-height:20px;margin-bottom:2px}.ah-b b{grid-row:2;grid-column:1;font-size:var(--ds-fs-small);line-height:1.3}.ah-b em{display:none}.ah-b .fn{display:none}.ah-b .sn{display:inline}.ah-card{width:30vw}}
+@media (max-width:1240px){#ah-bar{gap:4px}.ah-sep{margin:8px 2px}.ah-b,.ah-b.wide{min-width:0;height:auto;grid-template-columns:auto;justify-items:center;padding:2px 6px 4px}#arena-hud .ah-b kbd{grid-row:1;grid-column:1;min-width:24px;padding:0 4px;line-height:20px;margin-bottom:2px}.ah-b b{grid-row:2;grid-column:1;font-size:var(--ds-fs-small);line-height:1.3}.ah-b em{display:none}.ah-b .fn{display:none}.ah-b .sn{display:inline}.ah-f.l{left:18px}.ah-f.r{right:18px}.ah-port{width:var(--ah-n,48px);height:var(--ah-n,48px)}.ah-nm{font-size:var(--ds-fs-label)}.ah-nm em{font-size:var(--ds-fs-small)}.ah-card{width:30vw}}
 /* phone in landscape: the cards, the alert and the bars shrink so the duel stays in view */
-@media (max-height:480px){#ah-title{display:none}#arena-hud .top{height:90px}.ah-f{top:6px}.ah-card{width:min(30vw,250px);padding:0 4px}.ah-port{width:48px;height:48px}.ah-nm span{display:none}.ah-hp{height:4px;margin-top:4px}.ah-pips{margin-top:5px;gap:4px}.ah-pips b{width:14px;height:4px}
-  #ah-alert{top:30%;padding:10px 60px}#ah-alert svg{width:28px;height:28px}
-  #ah-wbar{bottom:72px;width:min(380px,46vw)}#ah-bar{bottom:4px}.ah-state{margin-top:2px}}
+@media (max-height:480px){#arena-hud .top{height:90px}.ah-f{top:6px}.ah-f.l{left:10px}.ah-f.r{right:10px}.ah-card{width:min(30vw,250px)}.ah-port{width:var(--ah-n,48px);height:var(--ah-n,48px)}.ah-hp{height:4px;margin-top:4px}.ah-pips{margin-top:5px;gap:4px}.ah-pips b{width:14px;height:4px}
+  #ah-alert{top:30%;padding:10px 60px}#ah-alert b{font-size:var(--ds-fs-label)}
+  #ah-wbar{bottom:72px;width:min(380px,46vw)}#ah-bar{bottom:4px}.ah-state{margin-top:2px}#ah-ko>div{padding:18px 16px}}
 /* a short window (600 px high or less): the floor's marks (the rings, the telegraph) reach the reaction window's bar, which covered them through
    the whole window; the bar gives way to the same countdown along the dodge button's foot, the system's preparation line (the operator's
    choice « Sur le bouton Esquive », journal Passe AF1) */
@@ -180,10 +179,11 @@ export class ArenaHud {
       const nm = b.name ?? d?.short ?? d?.name ?? b.id, label = b.short ? `<span class="fn">${nm}</span><span class="sn">${b.short}</span>` : nm, sub = b.sub ?? `<q>${'<i></i>'.repeat(d?.apCost ?? 0)}</q> ${d?.cooldown ?? 0} s`;
       return `<button class="ah-b${b.wide || (d && d.kind === 'tech') ? ' wide' : ''}${d && d.kind === 'tech' ? ' tech' : ''}" data-act="${b.id}" aria-label="${nm} (${b.key})"><kbd>${b.key}</kbd><b>${label}</b><em>${sub}</em><i class="cd"></i>${b.id === 'dodge' ? '<i class="wl"></i>' : ''}<s></s></button>`;
     }).join('');
-    const card = (who: FighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<span>${sub}</span><em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(D.fighters[who].name)}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i></div>${who === 'ren' ? `<div class="ah-pips" aria-label="${t.apLabel}">` + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-state"></div></div></div>`;
-    this.el.innerHTML = `<div class="top"></div><div class="bot"></div><div id="ah-title">${t.title}<small>${t.subtitle}</small></div>
+    const card = (who: FighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}" aria-label="${D.fighters[who].name}, ${sub}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(D.fighters[who].name)}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i></div>${who === 'ren' ? `<div class="ah-pips" aria-label="${t.apLabel}">` + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-state"></div></div></div>`;
+    this.el.setAttribute('aria-label', t.subtitle);
+    this.el.innerHTML = `<div class="top"></div><div class="bot"></div>
       ${card('ren', 'l', t.subRen)}${card('marek', 'r', t.subMarek)}
-      <div id="ah-alert"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2l18 18-18 18L2 20z" stroke-width="1.5"/><rect x="18" y="9" width="4" height="14"/><rect x="18" y="26" width="4" height="4"/></svg><div><b></b><span></span></div></div>
+      <div id="ah-alert"><b></b><span></span></div>
       <div id="ah-dmg"></div><div id="ah-wbar" aria-hidden="true"><i></i><b>${t.window}<kbd>A</kbd></b></div><div id="ah-bar">${buttons}</div>
       <div id="ah-ko" role="status"><div><b></b><span>${t.restart}</span></div></div>
       <div id="ah-pause" role="status"><div><b>${t.pause}</b><span>${t.resume}</span></div></div>
@@ -267,8 +267,8 @@ export class ArenaHud {
       else if (e.type === 'stun') this.float(e.who, e.why === 'guardbreak' ? t.guardBroken : t.stun, 'stun', -34);
       else if (e.type === 'commandDenied' && e.who === 'ren') this.flash(e.action, 'deny');
       else if (e.type === 'reactDenied' && e.who === 'ren') this.flash('dodge', 'deny');
-      else if (e.type === 'ko') { const ko = this.q('#ah-ko'); ko.querySelector('b')!.textContent = e.who === 'marek' ? t.victory : t.defeat; ko.querySelector('span')!.textContent = t.isDown(t === TEXTS_FR ? (e.who === 'marek' ? 'Marek' : 'Ren') : sim.D.fighters[e.who].name); ko.classList.add('on'); }
-      else if (e.type === 'reset') { this.q('#ah-ko').classList.remove('on'); this.q('#ah-dmg').textContent = ''; }
+      else if (e.type === 'ko') { const ko = this.q('#ah-ko'); ko.querySelector('b')!.textContent = e.who === 'marek' ? t.victory : t.defeat; ko.querySelector('span')!.textContent = t.isDown(t === TEXTS_FR ? (e.who === 'marek' ? 'Marek' : 'Ren') : sim.D.fighters[e.who].name); ko.classList.add('on'); this.el.classList.add('ko'); }
+      else if (e.type === 'reset') { this.q('#ah-ko').classList.remove('on'); this.el.classList.remove('ko'); this.q('#ah-dmg').textContent = ''; }
     }
   }
 

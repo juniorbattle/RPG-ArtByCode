@@ -42,8 +42,8 @@ export const PHONE_QUERY = '(max-width:700px),(max-height:480px)';
 
 /** the type scale (CSS px): the text font for sentences and labels, the title font for titles, names and numbers */
 export const TYPE = {
-  desktop: { small: 16, body: 18, label: 20, line: 24, fig: 30, title: 32, titleBig: 40, titleHuge: 56 },
-  phone: { small: 14, body: 16, label: 16, line: 17, fig: 20, title: 24, titleBig: 26, titleHuge: 36 },
+  desktop: { small: 16, body: 18, label: 20, line: 24, fig: 30, title: 32, titleBig: 40, titleHuge: 56, display: 120 },
+  phone: { small: 14, body: 16, label: 16, line: 17, fig: 20, title: 24, titleBig: 26, titleHuge: 36, display: 56 },
 } as const;
 
 /** sRGB hex -> [r, g, b] 0..255 */

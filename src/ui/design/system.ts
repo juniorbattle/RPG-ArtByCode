@@ -38,7 +38,7 @@ const BASE = `
 
 function sizes(d: 'desktop' | 'phone'): string {
   const t = TYPE[d];
-  return `--ds-fs-small:${t.small}px;--ds-fs-body:${t.body}px;--ds-fs-label:${t.label}px;--ds-fs-line:${t.line}px;--ds-fs-fig:${t.fig}px;--ds-fs-title:${t.title}px;--ds-fs-title-big:${t.titleBig}px;--ds-fs-title-huge:${t.titleHuge}px`;
+  return `--ds-fs-small:${t.small}px;--ds-fs-body:${t.body}px;--ds-fs-label:${t.label}px;--ds-fs-line:${t.line}px;--ds-fs-fig:${t.fig}px;--ds-fs-title:${t.title}px;--ds-fs-title-big:${t.titleBig}px;--ds-fs-title-huge:${t.titleHuge}px;--ds-fs-display:${t.display}px`;
 }
 
 function styleTag(id: string): HTMLStyleElement {

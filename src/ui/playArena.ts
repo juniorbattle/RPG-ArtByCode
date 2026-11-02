@@ -23,9 +23,6 @@ import { fontsReady, installDesign } from './design/system';
  *  A game under the rules of the « tour par tour dynamique » (`flags.combat`, journal Passe C2) fights its bout in DynamicSim with its HUD,
  *  the discreet assistance for every bout and the scouting report at the preparation screen (CB-7). */
 
-/** the preparation screen's keys under the new rules (the opponent's priority said in one line) */
-const KEYS_DYNAMIC = tx('ui.arena.keysDynamic');
-
 export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   let st = st0;
   // the version 2: a challenge in town is fought on the same sand (lot V4), from its own sheet
@@ -74,9 +71,10 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   wait();
   const report = view.intel.length ? `<p class="pm-sub">${tx('ui.arena.report')}</p>${view.intel.map((x) => `<p>${esc(x)}</p>`).join('')}` : `<p class="pm-sub">${tx('ui.arena.noReport')}</p>`;
   const mods = sheet.sides[0].fighters[0].mods, prep = [mods.hp !== undefined && mods.hp < 1 ? tx('ui.arena.wounded', { pct: Math.round(mods.hp * 100) }) : '', mods.damage && mods.damage > 1 ? tx('ui.arena.damage', { pct: Math.round((mods.damage - 1) * 100), why: `${st.player.items.length ? tx('ui.arena.blade') : ''}${st.player.items.length && st.player.training ? ', ' : ''}${st.player.training ? tx('ui.arena.training') : ''}` }) : ''].filter(Boolean);
-  await overlay(`<h2 class="pm-h">${challenge ? tx('v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</h2><p class="pm-big">${esc(opp.name)}</p><p class="pm-sub pm-center">${esc(opp.epithet)}</p><p>${esc(opp.bio)}</p>${report}
-    ${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}
-    <p class="pm-sub">${tx('ui.arena.keys')}</p><p>${v2 && b.params.get('input') !== 'keys' ? tx('ui.arena.keysV2') : dyn ? KEYS_DYNAMIC : tx('ui.arena.keysClassic')}</p>`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }]).done;
+  // one preparation screen (journal Passe UM4): the version 2's is its match sheet in the town, here its stage and the name; today's game keeps its report
+  // here, in the band at the foot of the screen, the fighters in view; the command bar says the keys
+  const gate = `<p class="pm-sub">${challenge ? tx('v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</p><h2 class="pm-h">${esc(opp.name)}</h2><p class="pm-sub">${esc(opp.epithet)}</p>`;
+  await overlay(v2 && !challenge ? gate : `${gate}${report}${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }], true).done;
   app.paused = false; app.moment = false;
 
   async function finish(r: { winner: 'ren' | 'marek'; hp: Record<string, number>; maxHp: Record<string, number>; finisher: string | null }): Promise<void> {
