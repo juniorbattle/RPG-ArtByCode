@@ -260,11 +260,11 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - La branche repart de `main` à jour (`c965623`, Passe CX4) : ses six commits rejoués sans push forcé, `main` reste linéaire. Le seul fichier en commun avec la séance de combat qui entrait en conflit était `JOURNAL.md`, deux ajouts au même endroit, les deux gardés.
 
 ### Les preuves, sur le code fusionné
-- `npm run typecheck`, `npm test` **323 / 323**, `npm run build`, `npm run art:validate` (61 manifestes, 85 sources, 0 erreur).
-- **Rien ne change sous l'interface** : paquets de production contre `main` figé (`c965623`), seuil 0 : ville de nuit et à midi, arène, duel `v2=1` sur deux moments, « Explore the district » panneau fermé et ouvert, l'adresse directe : **0 px**.
-- `arena-scene-check`, défaut et `v2=1` : PASS, sol dégagé 22 / 22 et 77 / 77, empreintes retrouvées, télégraphe 6,46 et 6,94:1.
-- `ui-text` avec les feuilles de la Passe CX4, Vessa et Orla, et la fiche de match : 4 pages sur 4.
-- `play-day` ; `play-flow` sur le paquet de production, victoire, défaite, `V2=1` : tout passe.
+- `npm run typecheck`, `npm test` **323 / 323**, `npm run build`, `npm run art:validate` (61 manifestes, 85 sources, 0 erreur).
+- **Rien ne change sous l'interface** : paquets de production contre `main` figé (`c965623`), seuil 0 : ville de nuit et à midi, arène, duel `v2=1` sur deux moments, « Explore the district » panneau fermé et ouvert, l'adresse directe : **0 px**.
+- `arena-scene-check`, défaut et `v2=1` : PASS, sol dégagé 22 / 22 et 77 / 77, empreintes retrouvées, télégraphe 6,46 et 6,94:1.
+- `ui-text` avec les feuilles de la Passe CX4, Vessa et Orla, et la fiche de match : 4 pages sur 4.
+- `play-day` ; `play-flow` sur le paquet de production, victoire, défaite, `V2=1` : tout passe.
 - Mesures GPU et contrastes : ceux de la Passe UM7 ; le rejeu ne touche à aucune règle de style.
 
 ### Journal — [OK] archivage
@@ -491,6 +491,43 @@ Rendu hors ligne, 44,1 kHz, volume 0,7, musique 0,5 (`tools/audio/render.mjs`, `
 - Une preuve à 0 px sans témoin ne dit rien, et une différence sans témoin non plus : le même contrôle a évité un faux 0 et une fausse régression.
 - Un fondu sur toute la sortie est un fondu sur l'interface : ce qui doit répondre tout de suite reste hors de lui.
 
+## Passe UM10 — La revue de l'opérateur sur l'équipement, et l'audit de structure des autres écrans (2026-11-02)
+
+### Demande
+- L'opérateur, sur une capture de la page de Maître Corvin, mot pour mot : « Oui je trouve cela mieux, avec les informations utiles et bien integre, comme le comparative de stats lors de l'achat d'equipement. et globalement on a un UI epure qui sera vite comprhensible au jouru, on est sur la bonne ligne, donc les autres UI respectent aussi cette structure ? si oui on valide ».
+- La validation est conditionnelle : elle n'est pas consignée comme acquise. Cette passe répond à la condition. Aucun code changé.
+
+### Méthode
+- `main` à `2a9786c`, serveur DEV, partie de version 2 (`tools/play-shots.mjs`, `tools/arena-scene-shots.mjs`, `npm run shots`) : 19 écrans ou états à 1920 x 1080 (la nuit, le crépuscule, midi selon l'écran) et 4 à 1280 x 720, regardés un par un. Ce sont des images de revue, pas des preuves au pixel.
+- Non regardés dans cette passe : les tailles de téléphone, le jeu par défaut (même code, sans G ni K), l'écran de fin de partie, les cinématiques, un dialogue à plusieurs choix.
+
+### Résultat — [OK] le style, [KO] la structure de lecture à trois écrans
+- **Le style est uniforme partout** : voile, filets d'un pixel, angles carrés, Marcellus et Source Sans 3, ivoire, encre et un accent, touches en contour, un ton par moment du jour.
+- **La structure de la page d'équipement (la liste, et le détail de la ligne sélectionnée) n'existe que là.** Elle n'a pas à être partout : un menu de neuf lignes n'a pas de détail à montrer. Elle manque là où le joueur compare ou cherche.
+
+| Écran | Structure | Écart |
+| --- | --- | --- |
+| Titre, chargement, exploration, dialogue, duel, pause | Adaptée | Aucun |
+| Menu, carte, son | Liste courte, suffisante | La sortie seule (ci-dessous) ; les curseurs du son gardent le pouce et la piste arrondis du navigateur |
+| Fiche de match | Deux colonnes, l'adversaire et les quatre compétences | Rien sur l'effet des compétences |
+| **Compétences (K)** | Une liste seule | Niveau, famille, charge, PA, **rien sur ce que fait la compétence** ; les quatre choisies sont toutes dans l'accent, on ne distingue plus la ligne active. C'est le défaut de simplisme que la Passe UM9 a corrigé pour l'équipement |
+| **Tournoi (T)** | Une colonne | Colonne du rang trop large ; règles en texte continu sous le tableau ; à 720p, résultats et bouton sous le bas de l'écran |
+| **Journal (J)** | Une colonne | Date répétée sur chaque entrée au lieu de grouper par jour ; à 1080p, 30 entrées et le bouton hors de l'écran, le titre collé en haut |
+| **Ici (Q)** | Une bande | Liste coupée au milieu d'une ligne, bouton de fermeture hors de l'écran, rien ne dit qu'il y a une suite |
+| Équipement et achats (Passe UM9) | La référence | **La même coupure** : sur la capture de l'opérateur, la dernière ligne (« Iron ring ») est tranchée |
+
+- **La sortie a cinq formes** : `Esc` à droite de la ligne (menu), `Esc` à gauche dans la liste (carte, son, dialogue), `Esc` en pied de page (équipement), `Q` en fin de liste (ici), un mot sans touche (compétences, tournoi, journal, résultat ; Esc y marche, rien ne le dit).
+- Une compétence n'a aucune description dans les données, mais ses nombres y sont (`NEW_SKILLS`, `src/combat/skillbook.ts` : dégâts, résistance, protection, renfort, durée). Le détail peut se lire dans les données du duel, comme la comparaison de la Passe UM9, sans règle dans l'interface et sans texte à inventer pour les nombres.
+- Pas un écart : les textes français de l'arène ne viennent que de la page d'essai `?scene=arena`, hors partie ; dans un combat de la partie, tout est en anglais. La superposition « Victory » et « Cité du Tournoi » de la capture du K.O. est un artefact de l'outil, qui saute au moment scripté pendant le chargement.
+
+### Recommandation, en attente de l'opérateur
+- Un lot d'interface, sans image neuve : le détail de la compétence sur K et sur la fiche de match, le tournoi et le journal réorganisés, une seule forme de sortie, un seul traitement des listes qui défilent.
+- Menu, carte, son, titre, exploration et duel gardent leur structure.
+
+### Pensée
+- `tools/ui-text.mjs` compte une ligne tranchée par un défilement comme « covered », pas comme une faute : la Passe UM9 a passé 23 pages sur 23 avec cette coupure sous les yeux. Une mesure dit ce qu'elle mesure ; regarder la page reste une étape.
+- « Cohérent » a deux sens. Le même style se vérifie par des jetons ; la même façon de lire se vérifie en demandant, écran par écran, ce que le joueur y décide.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -698,7 +735,7 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
 
 **6f. Son (Passes SN1 à SN3)** — fiche de 18 choix remplie : « Les ménétriers de la Cité », partitions avec synthèse et CC0, cuit avec manifeste, 12 Mo au plus, derrière `flags.v2`. Plan S0 à S5 dans `briefs/fiche-son.html`. **S0 et S1 faits** (Passes SN2, SN3), le jeu par défaut inchangé. **Fiche de lot à remplir** : https://claude.ai/artifact/McPDaVNx9o82nkieURh1Wx (source `briefs/fiche-son-lot1.html`) : personne n'a encore écouté. S2 à S5 après sa réponse ; SA-11 à confirmer et l'outil de cuisson (`ffmpeg`) sont sur cette fiche ; SA-10 après l'essai du lot S4. À faire avant le premier fichier cuit : Opus en WebM et AAC sur un vrai Safari.
 
-**6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison. **Reste au choix de l'opérateur** : les icônes d'objets, qui demandent de l'art.
+**6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs, sa validation d'ensemble attend que les autres écrans suivent (Passe UM10). **Reste au choix de l'opérateur** : le lot d'alignement de la Passe UM10 (compétences, tournoi, journal, sortie, listes coupées, dont celle de l'équipement) ; les icônes d'objets, qui demandent de l'art.
 
 **6e. Interface (étape 2 de la feuille de route ; Passes UI1, UI2)** — ligne directrice décidée sur la fiche de la Passe UI1 (14 choix sur 14,
 tous à la recommandation) : C « Héraldique pixel » (L1), un style dont les tons suivent `DayState` (L2), le téléphone avec le système de design
