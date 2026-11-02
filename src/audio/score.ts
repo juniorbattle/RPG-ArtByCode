@@ -140,7 +140,7 @@ export const LEVEL: Record<SoundPlace, Record<Look, number>> = {
   forecourt: { morning: 8.1, midday: 8.2, afternoon: 8.2, night: 10.6 },
   training: { morning: 10, midday: 10, afternoon: 10, night: 13.7 },
   festival: { morning: 9.5, midday: 9.6, afternoon: 9.6, night: 6.9 },
-  arena: { morning: 9, midday: 9, afternoon: 9, night: 9 },
+  arena: { morning: 9.6, midday: 9.6, afternoon: 9.6, night: 9.6 },
 };
 /** the limiter: a compressor that holds the crest, then a hard ceiling (linear up to its knee, never over `ceiling`) */
 export const LIMITER = { threshold: -7, knee: 6, ratio: 12, attack: 0.003, release: 0.14, ceiling: 0.86, curve: 8193 };
@@ -179,6 +179,42 @@ export function roomImpulse(place: SoundPlace, sr: number): [Float32Array, Float
 }
 /** what each bus sends to the room */
 export const SEND = { music: 0.16, fx: 0.2, calls: 0.3 };
+
+// ---------------------------------------------------------------------------------------------------------------- the engine's moves (lot S1)
+
+/** the fades in seconds: a page comes up, a page goes down (as long as the screen's own darkening, src/ui/exits.ts), a scene gives way to another */
+export const FADE = { in: 1.2, out: 0.35, scene: 0.8 };
+export interface Duck { db: number; attack: number; hold: number; release: number }
+/** how far the music steps back under a blow (SA-3: « la musique se baisse sous chaque coup »), how fast and for how long; the K.O. nearly takes it away */
+export const DUCK: Partial<Record<Effect, Duck>> = {
+  hit: { db: 3, attack: 0.012, hold: 0.06, release: 0.24 }, heavy: { db: 5, attack: 0.012, hold: 0.1, release: 0.36 }, guard: { db: 2, attack: 0.012, hold: 0.05, release: 0.2 },
+  break: { db: 6, attack: 0.012, hold: 0.14, release: 0.5 }, ko: { db: 14, attack: 0.01, hold: 0.7, release: 1.8 },
+};
+/** the ambience steps back by this share of the music's dB: the crowd stays in the room */
+export const DUCK_AMBIENCE = 0.35;
+/** the next step of a grid (a bar) at least `margin` after now: where a layer moves, so the music changes on its beat. Pure */
+export function nextBoundary(now: number, start: number, grid: number, margin = 0.03): number {
+  return start + Math.max(0, Math.ceil((now + margin - start) / grid - 1e-9)) * grid;
+}
+/** where the music stood when a page left, kept for the tab: the next page takes it up there (SA-15 « Reprise avec fondu »), and a gesture was given */
+export interface NowPlaying { key: string; pos: number; heard: boolean; at: number }
+export const NOW_KEY = 'cdt-v2-sound-now';
+/** after this long a piece starts over */
+export const RESUME_MS = 10 * 60 * 1000;
+/** a stored record read back, every value checked (anything broken: none) */
+export function readNow(text: string | null): NowPlaying | null {
+  try {
+    const o = JSON.parse(text ?? 'null');
+    if (!o || typeof o.key !== 'string' || !Number.isFinite(o.pos) || o.pos < 0 || !Number.isFinite(o.at)) return null;
+    return { key: o.key, pos: o.pos, heard: o.heard === true, at: o.at };
+  } catch { return null; }
+}
+/** where a piece starts on this page: where it stood if it is the same piece and not too long ago, else its beginning */
+export function resumeAt(rec: NowPlaying | null, key: string, period: number, now: number): number {
+  if (!rec || rec.key !== key || !(period > 0) || now - rec.at > RESUME_MS || now < rec.at) return 0;
+  return rec.pos % period;
+}
+export const tuneKey = (seed: number, look: Look): string => `tune:${seed}:${look}`;
 
 // ---------------------------------------------------------------------------------------------------------------- the settings
 

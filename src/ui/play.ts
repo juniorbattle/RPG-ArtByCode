@@ -26,7 +26,10 @@ export function playUrl(params: URLSearchParams, extra: Record<string, string> =
 /** goes to another play-mode page (after the state is saved); `?noreload=1` keeps the page, for harnesses that read the save */
 export function go(params: URLSearchParams, extra: Record<string, string> = {}): void {
   (window as any).__go = playUrl(params, extra);
-  if (!params.has('noreload')) location.assign(playUrl(params, extra));
+  if (params.has('noreload')) return;
+  // the version 2's sound goes down with the page (SA-15, journal Passe SN3): what it still needs, in ms; today's game has no such handle
+  const wait: number = (window as any).__soundLeave?.() ?? 0;
+  if (wait > 0) setTimeout(() => location.assign(playUrl(params, extra)), wait); else location.assign(playUrl(params, extra));
 }
 
 /** `&combat=dynamic` on a new game (or a named state): the game is played under the rules of the « tour par tour dynamique »

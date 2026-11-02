@@ -7,6 +7,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { validateAudio } from '../audio/validate.mjs';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const MANIFEST_DIR = 'art-lab/characters/manifests';
@@ -202,7 +203,11 @@ function main() {
     }
     console.log(`\n${report.manifests} manifest(s), ${report.archived.length} archived source(s), ${report.errors} error(s), ${report.warnings} warning(s)`);
   }
-  process.exit(report.errors || (flags.has('--strict') && report.warnings) ? 1 : 0);
+  // the baked sound's gate (SA-8, journal Passe SN3): zero file is a valid state
+  const audio = validateAudio(ROOT);
+  audio.errors.forEach((e) => console.log(`FAIL ${e}`));
+  console.log(`${audio.manifests} sound manifest(s), ${audio.errors.length} error(s)`);
+  process.exit(report.errors || audio.errors.length || (flags.has('--strict') && report.warnings) ? 1 : 0);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) main();

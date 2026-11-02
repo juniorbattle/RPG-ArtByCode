@@ -668,6 +668,52 @@ Rendu hors ligne, 44,1 kHz, volume 0,7, musique 0,5 (`tools/audio/render.mjs`, `
 - Un portage de mesure se juge d'abord sur les chiffres déjà publiés : si l'outil neuf ne les retrouve pas, ses résultats ne valent rien.
 - Une autocorrélation répond à « quoi se répète ? » : sur un mélange, une note tenue ressemble à une boucle. Elle se lit sur le signal dont on suspecte le défaut.
 
+## Passe SN3 — Lot S1 du son : la baisse sous les coups, les fondus, la reprise entre les pages, les couches, le chargement à la demande (2026-11-02)
+
+### Demande
+- SA-18, contenu de la fiche : bus, fondus, reprise entre les pages, couches synchrones, baisse sous les coups, chargement à la demande. Dépend de SA-8 et SA-15. 0 Mo. La musique de duel elle-même est aux lots S3 et S4 : le moteur est prêt, aucune couche ne joue encore dans le jeu.
+
+### Fait — [OK]
+- **La baisse sous les coups** : `DUCK`, deux gains derrière les bus de musique et d'ambiance. Coup −3 dB, puissant −5, garde −2, bris −6, K.O. −14 et 1,8 s pour revenir ; l'ambiance prend 35 % de ces dB.
+- **Les fondus** : une page monte en 1,2 s et descend en 0,35 s, une scène cède la place en 0,8 s. Le fondu de page porte sur la musique et l'ambiance seules, un effet s'entend tout de suite.
+- **La reprise** (SA-15) : `NOW_KEY` dans `sessionStorage`, le morceau, sa position et « un geste a eu lieu ». `pagehide` l'écrit. La page suivante reprend le même morceau à sa position, recommence un autre morceau au début, et oublie après 10 minutes. La musique se joue sur l'horloge audio, y compris son bourdon commencé.
+- **La sortie de page** : `hooks.ts` voit `.pm-fade` et lance le fondu ; `go` (`src/ui/play.ts`) demande à `window.__soundLeave` ce qu'il reste à attendre. Sans ce handle, jeu d'aujourd'hui compris, `go` part sur-le-champ. C'est le seul changement dans `src/ui`.
+- **Les couches** : `src/audio/layers.ts`, `LayerSet` : des pistes de même longueur, une seule horloge, un seul décalage, un niveau qui bouge à la mesure suivante (`nextBoundary`).
+- **Le chargement à la demande** : `src/audio/baked.ts`, `AudioLoader`, le format que le navigateur lit (Opus puis AAC), un seul téléchargement par fichier, un échec sans erreur sur la page. `src/audio/baked/` n'existe pas encore.
+- **La barrière de SA-8** : `tools/audio/validate.mjs`, lancé par `npm run art:validate` : licence de SA-13, pas de génération (SA-12), approbation mot pour mot, SHA-256, 12 Mo par format (SA-17), aucun fichier audio hors manifeste sous `src/` ni `public/`.
+- `AGENTS.md`, section « Sound » : le moteur, les fichiers cuits, les outils.
+
+### Preuves — [OK]
+- **Moteur mesuré sur sa sortie** (`tools/audio/engine-proof.mjs`) : puissant −4,5 dB, K.O. −13,7 dB, retour à 0,29 et 0,15 dB. Une couche demandée à 1,0 s reste à −116 dB jusqu'à la mesure de 1,3 s, puis −29,6 dB. Trois pistes : leurs clics sur le même échantillon, trois tours de boucle, 66 150 échantillons d'écart. Page : −37,4 dB en montée, −29,3 posée, −85,9 après le départ. Reprise : corrélation **0,998** avec le morceau 5 s plus loin ; à 0,5 s d'écart 0,160 ; autre morceau 0,079. `main` figé plante sur ce test, il n'a pas ces fonctions.
+- **Vraie navigation** (`tools/audio/page-proof.mjs`, Chrome avec fenêtre, hors écran) : aucun contexte avant le geste ; le geste lance le son, entendu à −18,1 dB ; le héros passe la sortie, la page suivante reprend **sans nouveau geste**, le même morceau, quitté vers 3,86 s, à 7,01 s après 2,5 s. Un onglet sans geste reste muet. **Témoin** : un `AudioContext` créé sans geste reste `suspended`, la règle du navigateur est donc active.
+- **Rendu complet sur le code final** (`analyse.mjs --check`, tous les contrôles passent) : mélanges −18,3 à −19,6 LUFS, ambiances −20,4 à −25,0, musique −19,1 à −20,4, musique sur l'ambiance 3,9 à 4,8 dB, duels −19,3 et −19,6, fin de duel au volume 1 −1,1 dBTP, nappes 0,135 au plus. Clic, ouverture, pièce sur la clameur : +3,2, +3,2, +3,1 dB.
+- **Le jeu par défaut inchangé**, paquets de production contre `main` figé `c965623`, seuil 0, 1920 x 1080 : ville de nuit et à midi `clean=1` **0 px** ; arène quatre moments, midi, `combat=dynamic`, `v2=1`, `v2=1&cast=generated`, onze vues : **0 px**, avec `HOLD=1`, témoin `main` contre `main` à 0 px. Contrôle négatif : 7,482 % entre `v2=1` et `cast=generated`. Sur 87 fichiers du paquet, quatre changent de taille : `ArenaApp` −448 octets, `play` +88, `save` −33 (le texte), `Sound` 8,7 → 19,8 Ko. Entrée inchangée.
+- `play-flow` sur le paquet de production : défaut, `V2=1` gagné jour 2, `V2=1` perdu jour 4, « all checks passed » ; `go` retardé par le fondu y passe. `arena-scene-check "v2=1"` : code 0. `hooks-proof` : tout passe.
+- `npm run typecheck`, `npm test` **338 / 338**, `npm run build`, `npm run art:validate` (61 manifestes, 85 sources, 0 manifeste de son, 0 erreur). Dix-huit fautes injectées dans `score`, `layers` et `baked`, toutes attrapées.
+- **Coût de lecture, indicatif** : rendu hors ligne machine au repos, `mix-district-midday` à 22 x le temps réel contre 38 x sur `main`, soit environ 4,5 % d'un fil contre 2,6 %. Ambiance d'arène seule 41 x contre 160 x. Le rendu hors ligne ne vaut pas une mesure en direct.
+
+### Ce qui a raté
+- [KO → corrigé] **La preuve de reprise était fausse une première fois.** Le test passait, et le témoin que j'ai ajouté ensuite a échoué : un contexte sans geste tournait. Headless n'applique pas la règle, et une fenêtre réelle non plus sous ce test : `page.evaluate` de puppeteer s'exécute avec `userGesture: true`, chaque lecture de l'outil comptait comme un geste. La page testée se lit désormais par une sonde posée au chargement, à travers la console, sans aucun `evaluate`.
+- [KO → corrigé] Le fondu de page était sur toute la sortie : le premier clic d'une page aurait été étouffé. Vu sur le rendu, parce que `fx-click` a chuté de 20 dB. Le fondu ne porte plus que sur la musique et l'ambiance.
+- [KO → corrigé] Les captures d'arène différaient de 0,4 à 9 % entre `main` et la branche, et de même entre `main` et `main` : sans `HOLD=1` la boucle tourne entre le démarrage et le moment figé. Le témoin l'a montré avant toute conclusion.
+- [KO → corrigé] `engine-proof` lisait −2,9 dB pour −5 : l'écho du coup restait dans la mesure. Le niveau se lit à la fréquence du signal d'essai. Le fondu se mesure sur un son continu, pas sur des notes.
+- [KO] Le premier `go` n'a pas besoin du délai sur un fondu déjà lancé par `.pm-fade` : c'est voulu, mais un changement de créneau sans écran noir retarde la page de 350 ms en version 2.
+
+### Restes [?]
+- **Personne n'a écouté** : la fiche de lot le demande.
+- Seul Chrome sur Windows est prouvé pour la reprise. Firefox, Safari et un téléphone ne le sont pas : là où le navigateur refuse, le son attend un geste. Le chemin `suspended` n'a pas été parcouru par la preuve, puisque Chrome n'y passe pas.
+- Le retour par le cache de page (`pageshow` `persisted`) est écrit, pas prouvé. Le chargement à la demande est prouvé sur des données locales, pas sur un fichier Opus du jeu : aucun n'existe.
+- Le duel monte à −17,2 LUFS avec ses couches dans l'extrait de démonstration : le bas de bande d'aujourd'hui vient bien de l'absence de musique, à revérifier au lot S3.
+- `ffmpeg` n'est pas installé : décision sur la fiche, avant le lot S2.
+
+### La fiche
+- Voir le lien dans la section suivante du journal, une fois publiée.
+
+### Pensée
+- Un témoin ajouté après un test vert a plus de valeur que le test : il a montré qu'un outil de pilotage peut fabriquer exactement la condition qu'on croit observer. Quand une règle dépend d'un geste, l'outil de lecture ne doit pas en être un.
+- Une preuve à 0 px sans témoin ne dit rien, et une différence sans témoin non plus : le même contrôle a évité un faux 0 et une fausse régression.
+- Un fondu sur toute la sortie est un fondu sur l'interface : ce qui doit répondre tout de suite reste hors de lui.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
