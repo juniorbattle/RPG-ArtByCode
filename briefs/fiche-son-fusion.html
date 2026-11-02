@@ -1,0 +1,401 @@
+<title>Identité du son</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+code { font-family: var(--font-mono); font-size: .86em; background: color-mix(in srgb, var(--line) 45%, transparent); border-radius: 3px; padding: 0 3px; overflow-wrap: anywhere; }
+.block { display: flex; flex-direction: column; gap: 14px; }
+.block h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.block > p { margin: 0; max-width: 68ch; }
+.block h3 { margin: 6px 0 0; font-size: 17px; }
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 22px; margin: 0; padding: 0; list-style: none; }
+.verdict li { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.verdict b { font-size: 16px; }
+.verdict span { color: var(--muted); font-size: 15px; }
+.scale { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.scale h3 { margin: 0; font-size: 16px; }
+.scale .sub { margin: 0 0 6px; font-size: 14px; color: var(--muted); }
+.srow { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; align-items: center; font-size: 14px; }
+.strack { position: relative; height: 18px; }
+.strack .band { position: absolute; top: 0; bottom: 0; background: var(--rec-soft); }
+.strack .bar { position: absolute; top: 5px; height: 8px; left: 0; background: var(--brass); border-radius: 0 4px 4px 0; }
+.strack .target .bar, .srow.target .bar { background: var(--rec); }
+.sval { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: 13px; }
+.axis { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; font-size: 12px; color: var(--muted); }
+.axis div { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: none; }
+th { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.st { font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.st.ok { color: var(--rec); } .st.part { color: var(--astre); } .st.no { color: var(--cendre); }
+.wide { min-width: 720px; }
+.clips { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.clip { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.clip figcaption { font-size: 14px; font-weight: 600; }
+.clip audio { width: 100%; height: 40px; }
+.clip img.spec { width: 100%; height: auto; aspect-ratio: 820 / 240; border-radius: 4px; display: block; }
+.note { font-size: 14px; color: var(--muted); }
+.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px 24px; }
+.limits > div { min-width: 0; }
+.limits h3 { margin: 0 0 4px; }
+.limits ul { margin: 0; padding-left: 18px; font-size: 15px; display: flex; flex-direction: column; gap: 3px; }
+
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · fiche d’écoute · 2 novembre 2026</span>
+    <h1>L’identité du son : le jazz fusion de la Cité</h1>
+    <p class="lede">Tu voulais une identité concrète. Voici le même thème joué quatre fois par le même groupe : le midi, le matin, la nuit et le duel. Écoute d’abord, puis réponds aux quatre décisions : ce sont elles qui fixent la suite.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="block" aria-labelledby="h-id">
+    <h2 id="h-id">L’identité proposée</h2>
+    <p>Ta fiche disait que le travail de S0 et S1 sonne juste, mais il manquait une musique avec une personnalité : celle du jeu n’était qu’une marche au hasard sur une gamme. J’ai donc écrit un vrai thème, joué par un vrai groupe.</p>
+    <ul class="verdict">
+      <li><b>Un seul thème</b><span>Le motif que tu as validé à SA-2, ses treize notes dans chaque morceau.</span></li>
+      <li><b>La tierce dit l’heure</b><span>Le motif n’en a pas : fa dièse le jour, fa la nuit, autour des mêmes notes.</span></li>
+      <li><b>Un groupe</b><span>Piano électrique, basse, batterie et synthé à vent, plus une couleur par moment.</span></li>
+      <li><b>Trois inspirations</b><span>Chacune à sa place : le style seulement, aucune œuvre reprise.</span></li>
+    </ul>
+
+    <div class="tw"><table class="wide">
+      <thead><tr><th>Version</th><th>Inspiration</th><th>Rythme</th><th>Couleur</th><th>Le groupe</th></tr></thead>
+      <tbody>
+        <tr><td><b>Midi</b></td><td>Breath of Fire III</td><td class="n">4/4, 106, funk</td><td>Ré mixolydien, fa dièse retenu jusqu’à la fanfare</td><td>Basse slap, piano électrique, guitare grattée, synthé à vent, cuivres</td></tr>
+        <tr><td><b>Matin</b></td><td>Chrono Cross</td><td class="n">6/8, 66</td><td>Ré majeur, fa dièse à découvert</td><td>Guitare nylon, flûte de bois, fretless, tambour et mains, bouzouki, marimba</td></tr>
+        <tr><td><b>Nuit</b></td><td>Final Fantasy VIII, le calme</td><td class="n">4/4, 64, ballade</td><td>Ré dorien, fa bécarre</td><td>Piano électrique en trémolo, vibraphone, fretless, balais, synthé à vent sombre</td></tr>
+        <tr><td><b>Duel</b></td><td>Final Fantasy VIII, les combats</td><td class="n">7/8, 152</td><td>Ré mineur, fa bécarre</td><td>Guitares rock, slap, orgue, cuivres, cordes, timbales, en trois couches</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="limits">
+      <div><h3>Ce que je peux garantir</h3><ul><li>Le motif complet dans chaque version, et chaque instrument juste à quelques cents près</li><li>Aucune note tenue qui frotte contre l’orchestre : 0 sur les quatre versions, après 38 corrigés</li><li>Un spectre qui descend régulièrement du grave à l’aigu, réglé piste par piste</li><li>Sonie à −18 LUFS, crêtes sous −1 dBTP, et 12 minutes de musique tiendraient en 9,9 Mo environ à 96 kb/s, sous ton plafond de 12 Mo</li></ul></div>
+      <div><h3>Ce que seule ton oreille tranche</h3><ul><li>Si c’est beau, et si le motif reste en tête</li><li>Si le groove donne envie de bouger, ou s’il sonne mécanique</li><li>Si la batterie, les cuivres et la flûte passent pour de vrais instruments</li><li>La fatigue sur la durée d’un duel, et le 7/8 en jouant</li></ul></div>
+    </div>
+    <p class="note">Rien n’entre dans le jeu avec cette fiche : aucun fichier audio dans le dépôt, le jeu par défaut est inchangé. Méthode : partitions écrites à la main, instruments calculés note par note en JavaScript, rendus hors ligne, mesurés piste par piste. RPGCards a servi de repère de méthode, sans en reprendre de code. Une première relecture a été confiée à un second lecteur de partitions, sans écoute non plus.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne au journal, puis je lance ce que tu as décidé. Rien n’entre dans le jeu avant ta réponse.</p>
+    <p class="src">Sources : <code>briefs/fiche-son.html</code> et <code>briefs/fiche-son-lot1.html</code> (les deux fiches précédentes), <code>JOURNAL.md</code> Passes SN1 à SN5, <code>AGENTS.md</code> section Sound, <code>art-lab/audio/</code>, <code>tools/audio/band/</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+  { id: "ecoute", title: "À écouter d’abord", sub: "Je n’entends rien : j’ai écrit des notes et mesuré des signaux. Tout est à la même sonie, −18 LUFS : règle le volume une fois et n’y touche plus. Un casque aide pour la stéréo, mais écoute aussi sur tes haut-parleurs habituels.", fam: "var(--astre)", items: [
+    { id: "F-MIDI", tag: "Breath of Fire III", title: "Midi : le lancement du tournoi",
+      ctx: "Le motif que tu as validé, sur ses treize notes, dans un rythme 3-3-2-3-2-3 de funk en doubles-croches. La basse slap l’annonce seule, le groupe entre, le synthé à vent chante, les cuivres répondent, la guitare grattée n’arrive qu’au second passage. Solo qui monte par tierces mineures, dernier refrain un ton plus haut.",
+      clips: [["audio/midi.mp3", "« Le Tournoi », midi : 1:35, 106 à la noire"]],
+      rec: "Aucune sur le goût. C’est la version la plus proche de ce que tu décris comme orientation globale : si une seule te convainc, ce doit être celle-ci.",
+      opts: ["Bonne direction", "À reprendre (en note)", "À écarter"], recIdx: -1, src: "`art-lab/audio/scores/midi.score.mjs`, journal Passe SN5" },
+    { id: "F-MATIN", tag: "Chrono Cross", title: "Matin : le versant folk",
+      ctx: "Le motif tel qu’il a été écrit, en 6/8, sur une guitare nylon, une flûte de bois, une basse fretless et des mains sur un tambour. Le bouzouki rejoint la fanfare. C’est le pont entre le jazz et une ville médiévale : est-ce que ce matin appartient au même groupe que le midi ?",
+      clips: [["audio/matin.mp3", "« Le Tournoi », matin : 1:22, en 6/8"]],
+      rec: "Aucune sur le goût. Dis surtout si la flûte sonne comme une flûte : c’est l’instrument le plus difficile à synthétiser de cette version.",
+      opts: ["Bonne direction", "À reprendre (en note)", "À écarter"], recIdx: -1, src: "`art-lab/audio/scores/matin.score.mjs`, journal Passe SN5" },
+    { id: "F-NUIT", tag: "Final Fantasy VIII, le calme", title: "Nuit : la ballade des quais",
+      ctx: "Le même motif étiré sur quatre mesures, le piano électrique en trémolo, le vibraphone qui le chante, puis un synthé à vent sombre, des balais. La tierce passe au fa bécarre : dans tout le jeu, c’est elle qui dit l’heure. Le motif reste identique, seule sa couleur change.",
+      clips: [["audio/nuit.mp3", "« Le Tournoi », nuit : 1:29, 64 à la noire"]],
+      rec: "Aucune sur le goût. Écoute si le passage du clair au sombre se sent d’une version à l’autre : c’est l’idée qui tient l’identité ensemble.",
+      opts: ["Bonne direction", "À reprendre (en note)", "À écarter"], recIdx: -1, src: "`art-lab/audio/scores/nuit.score.mjs`, journal Passe SN5" },
+    { id: "F-DUEL", tag: "Final Fantasy VIII, les combats", title: "Duel : le riff en 7/8",
+      ctx: "Le motif devient un riff à trois notes par mesure, sur 2 + 2 + 3. Le premier extrait est le morceau entier. Le second montre les couches de SA-5 telles que le moteur les jouera : le rythme seul, la mélodie qui entre, puis la tension. Un duel dure de 5 à 10 minutes : l’important n’est pas que ce soit impressionnant mais que ça ne fatigue pas.",
+      clips: [["audio/duel.mp3", "Le morceau : 0:54, en 7/8"], ["audio/duel-couches.mp3", "Les trois couches : 0:39 : le rythme seul, la mélodie à 0:11, la tension à 0:28"]],
+      rec: "Aucune sur le goût. Le 7/8 est le choix le plus risqué de la fiche : il donne une identité de combat forte, mais il peut gêner le rythme de jeu. Si c’est le cas, je garde le riff et je le repasse en 4/4.",
+      opts: ["Bonne direction", "Garder, mais en 4/4", "À reprendre (en note)", "À écarter"], recIdx: -1, src: "`art-lab/audio/scores/duel.score.mjs`, SA-5, journal Passe SN5" },
+    { id: "F-PARVIS", tag: "en jeu", title: "Le midi sur le parvis, avec sa foule",
+      ctx: "Une musique ne s’entend jamais seule en jeu. Ici, la version de midi passe sur l’ambiance réelle du parvis de S1, la musique 4,5 dB au-dessus, au milieu de la cible de 3 à 6 dB. C’est ce à quoi ressemblerait le jeu si cette version y entrait telle quelle.",
+      clips: [["audio/midi-parvis.mp3", "Midi sur le parvis : 0:48, musique 4,5 dB au-dessus de la foule"]],
+      rec: "Garder ce réglage tant qu’aucune version n’est dans le jeu : il se règle une fois le catalogue posé.",
+      opts: ["Bien placée", "Musique plus présente", "Musique plus discrète"], recIdx: 0, src: "`AGENTS.md`, section Sound ; ambiance rendue au lot S1" },
+    { id: "F-FANFARE", tag: "annonces", title: "La fanfare d’annonce",
+      ctx: "SA-7 « Fanfare et texte » : l’appel du motif sur les cuivres, les timbales et un roulement de caisse claire, qui atterrit sur le fa dièse. Elle jouerait aux annonces du tournoi.",
+      clips: [["audio/fanfare.mp3", "La fanfare : 0:16"]],
+      rec: "Aucune sur le goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "À écarter"], recIdx: -1, src: "`art-lab/audio/scores/fanfare.score.mjs`, SA-7" },
+    { id: "F-PALETTE", tag: "instruments", title: "Le groupe, instrument par instrument",
+      ctx: "Quatorze instruments, chacun seul sur le motif, 7 secondes par instrument : piano électrique 0:00, basse slap 0:07, fretless 0:14, guitare nylon 0:22, bouzouki 0:29, guitare électrique 0:36, guitare rock 0:43, vibraphone 0:50, marimba 0:58, orgue 1:05, cuivres 1:12, cordes 1:19, synthé à vent 1:26, flûte de bois 1:34. Aucun n’est un échantillon : chacun sort d’un modèle écrit dans le dépôt.",
+      clips: [["audio/palette.mp3", "La palette : 1:43"]],
+      rec: "Note ceux qui sonnent faux, par leur nom : je peux reprendre un instrument sans toucher aux partitions.",
+      opts: ["Tous convenables", "Certains à reprendre (en note)", "Le son d’ensemble ne va pas"], recIdx: -1, src: "`tools/audio/band/instruments.mjs`, `drums.mjs`, journal Passe SN5" },
+  ]},
+  { id: "cap", title: "Ce qui en découle", sub: "Quatre décisions, une fois écouté.", fam: "var(--rec)", items: [
+    { id: "F-CAP", tag: "identité", title: "Le jazz fusion comme orientation globale",
+      ctx: "Tu as écrit que le jazz fusion « peut etre une bonne orientation globale ». Je l’ai pris comme cap de travail, à la place des ménétriers de SA-4. Ce choix le rend définitif : il entre dans `AGENTS.md` et chaque morceau s’y tient. Chaque inspiration aurait sa place : Breath of Fire III en ville le jour, Chrono Cross le matin et à la fête, Final Fantasy VIII dans les duels, les fanfares et la nuit.",
+      rec: "Confirmer si au moins deux versions t’ont convaincu, dont le midi. Une note sur le dosage suffit à le corriger, sans tout refaire.",
+      opts: ["Jazz fusion : confirmé", "Confirmé, autre dosage (en note)", "Autre direction (en note)"], recIdx: 0, src: "Journal Passe SN4 ; SA-4 ; `contracts/PROJECT_MASTER_CONTRACT.md` : « un grand festival urbain »" },
+    { id: "F-MOTIF", tag: "thème", title: "Garder le motif « Le Tournoi »",
+      ctx: "Tu avais validé ce motif à SA-2 sur des chalemies. Je l’ai gardé note pour note parce qu’il n’a pas de tierce : il convient aux accords suspendus du jazz fusion et il change de couleur avec l’heure. Il tient aussi bien en 4/4, en 6/8 et en 7/8. Un thème neuf reste possible, mais il faudrait réécrire les quatre versions.",
+      rec: "Le garder : une identité se reconnaît à un thème qui revient partout, et celui-ci revient sans se forcer.",
+      opts: ["Garder le motif", "Écrire un thème neuf (en note)"], recIdx: 0, src: "SA-2 ; `art-lab/audio/scores/theme.mjs`" },
+    { id: "F-SYNTH", tag: "source", title: "D’où viennent les instruments",
+      ctx: "SA-9 autorise la synthèse et le CC0. Tout ce que tu entends ici est de la synthèse écrite dans le dépôt, sans banque ni dépendance. Sa limite connue : la batterie et les cuivres peuvent trahir leur origine, et je ne peux pas l’entendre. Une banque CC0 ne servirait qu’aux instruments que tu auras notés plus haut, et chaque banque te serait soumise avant d’entrer, avec sa licence.",
+      rec: "Rester sur la synthèse tant que tu ne notes aucun instrument faux : elle coûte moins en poids, et un instrument se corrige sans refaire la musique.",
+      opts: ["Synthèse seule pour l’instant", "Chercher une banque CC0 pour ce qui sonne faux"], recIdx: 0, src: "SA-9, SA-11c, SA-13 ; `tools/audio/validate.mjs`" },
+    { id: "F-SUITE", tag: "suite", title: "Ce qui vient après",
+      ctx: "Ta réponse à S2-G était de reprendre S0-S1 d’abord. Le plan d’origine enchaîne S2 (ambiances, météo, interface), S3 (duel), S4 (musique). Avec une identité musicale, l’ordre gagne à changer : les sons d’interface, les jingles et la couche de duel se tirent du groupe. Le catalogue de SA-6 serait : titre, matin, midi, fin de journée, nuit, parvis, lices, place de la halle en valse, duel, duel de rival, finale et jingles.",
+      rec: "Le catalogue d’abord, puis S2 et S3 qui en reprennent les instruments et les tonalités. Rien n’entre dans le jeu avant ton essai, et tout reste derrière `flags.v2`.",
+      opts: ["Le catalogue d’abord", "Reprendre ces versions d’abord (en note)", "Garder l’ordre S2, S3, S4", "Attendre"], recIdx: 0, src: "`briefs/fiche-son.html`, plan des lots ; SA-6 ; journal Passe SN4" },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function richKids(s) { return s.split('`').map((p, i) => (i % 2 ? el('code', {}, p) : p)); }
+function rich(tag, cls, s) { return el(tag, { class: cls }, ...richKids(s)); }
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(rich('p', 'ctx', it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.clips) {
+    const grid = el('div', { class: 'clips' });
+    for (const [src, cap] of it.clips) {
+      const a = el('audio', { controls: '', preload: 'metadata', src, 'aria-label': cap });
+      const msg = el('p', { class: 'src', hidden: '' }, 'Ce lecteur n’a pas pu charger le son : préviens-moi dans la conversation.');
+      a.addEventListener('error', () => { msg.hidden = false; });
+      grid.append(el('figure', { class: 'clip' }, el('figcaption', {}, cap), a, msg));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), ...richKids(it.rec)));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', ...richKids(it.src)));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

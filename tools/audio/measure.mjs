@@ -53,7 +53,7 @@ export function truePeak(channels) {
 export function samplePeak(channels) { let p = 0, over = 0; for (const c of channels) for (let i = 0; i < c.length; i++) { const v = Math.abs(c[i]); if (v > p) p = v; if (v > 1) over++; } return { peak: p, over }; }
 
 /** an in-place radix-2 FFT */
-function fft(re, im, inverse = false) {
+export function fft(re, im, inverse = false) {
   const n = re.length;
   for (let i = 1, j = 0; i < n; i++) { let b = n >> 1; for (; j & b; b >>= 1) j ^= b; j ^= b; if (i < j) { [re[i], re[j]] = [re[j], re[i]]; [im[i], im[j]] = [im[j], im[i]]; } }
   for (let len = 2; len <= n; len <<= 1) {
