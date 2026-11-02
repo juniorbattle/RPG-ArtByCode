@@ -1,0 +1,46 @@
+import { STEP_EVERY, type Effect } from './score';
+
+/** The effects that no code played (journal Passe SN1: `click`, `open`, `coin`, `step`; lot S0, journal Passe SN2), wired from outside the interface so
+ *  that a screen can change without knowing about the sound: a button's click on the document, a dialog appearing in it, the save's coins, the
+ *  hero's walk read from the page's handle. A version 2 page only: src/audio/Sound.ts installs them with the engine. */
+
+interface Hooked { play(e: Effect): void }
+interface Game { subscribe(f: () => void): void; state(): { player: { coins: number } } }
+interface Pos { x: number; z: number }
+
+/** where the hero of this page stands: the town's actor, a square's, or the forecourt's walker */
+function hero(w: Record<string, any>): Pos | null {   // eslint-disable-line @typescript-eslint/no-explicit-any
+  const p = w.__app?.actors?.player?.pos ?? w.__plaza?.player?.pos;
+  if (p) return p;
+  return typeof w.__arena?.walkerX === 'number' ? { x: w.__arena.walkerX, z: 0 } : null;
+}
+
+export function installSoundHooks(s: Hooked): void {
+  (window as unknown as { __sound: Hooked }).__sound = s;   // the proofs' handle, as window.__game
+  document.addEventListener('click', (e) => { if ((e.target as Element | null)?.closest?.('button, [role="button"]')) s.play('click'); }, true);
+
+  let open = false;
+  new MutationObserver((changes) => {
+    if (!changes.some((c) => c.addedNodes.length || c.removedNodes.length)) return;
+    const now = !!document.querySelector('[role="dialog"]');
+    if (now && !open) s.play('open');
+    open = now;
+  }).observe(document.body, { childList: true, subtree: true });
+
+  // the game's handle may come after the engine (a page's order): looked for until it is there, and the walk read a few times per step
+  const w = window as unknown as Record<string, any>;   // eslint-disable-line @typescript-eslint/no-explicit-any
+  let coins: number | null = null, at: Pos | null = null, walked = 0;
+  window.setInterval(() => {
+    const g = w.__game as Game | undefined;
+    if (g && coins === null) {
+      coins = g.state().player.coins;
+      g.subscribe(() => { const c = g.state().player.coins; if (c !== coins) s.play('coin'); coins = c; });
+    }
+    const p = hero(w); if (!p) return;
+    if (at) {
+      const d = Math.hypot(p.x - at.x, p.z - at.z);
+      if (d < 2) { walked += d; if (walked >= STEP_EVERY) { walked -= STEP_EVERY; s.play('step'); } }  // a longer move is a pose, not a walk
+    }
+    at = { x: p.x, z: p.z };
+  }, 50);
+}

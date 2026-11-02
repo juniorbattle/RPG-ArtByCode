@@ -614,6 +614,60 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Une fiche d'audit fixe aussi le sens d'un plan : un résumé écrit après elle peut déplacer un sujet d'un lot à l'autre, elle se relit avant de construire.
 
+## Passe SN2 — Lot S0 du son : le bruit réparé, la sonie à sa cible, un plafond, la stéréo, les effets muets branchés (2026-11-02)
+
+### Demande
+- SA-14 « Dès qu’une branche est libre », SA-18 « S0-S1 après les personnages ». Contenu de la fiche : bruit réparé, sonie cible, limiteur, stéréo, effets muets branchés, variation des coups, paliers et relâchés justes. 0 Mo, aucun fichier audio. Derrière `flags.v2` (SA-16).
+
+### Fait — [OK]
+- **Le bruit** : `noiseSamples` (`src/audio/score.ts`), le produit en entiers par `Math.imul`, 8 s en stéréo, deux graines. Chaque nappe lit le tampon de son propre endroit, à sa propre vitesse (0,93 à 1,07), son balancement décalé.
+- **Le mixage** : quatre bus, ambiance, musique, effets, interface, puis un compresseur, un plafond (`WaveShaper` suréchantillonné, mi-niveau en entrée) et le volume après eux : un volume plus fort ne serre pas le mixage. `MIX` et `LEVEL` (par lieu et moment) sont réglés sur la mesure, aux réglages par défaut.
+- **La stéréo** : nappes décorrélées, appels placés au hasard dans le champ, coups du côté où ils tombent (Ren à gauche), mélodie et bourdon légèrement écartés, une pièce par lieu (`ROOM`, `roomImpulse` : une réponse calculée, envoi pour les effets, les appels et la musique).
+- **Les coups** : médium propre pour `hit`, `heavy`, `ko`. Part de l'énergie sous 200 Hz : coup 0,42 (0,94 avant), puissant 0,69 (0,98), K.O. 0,89 (1,00). `take` tire chaque prise : hauteur, niveau, durée, et une petite dérive par voix, jamais près de la précédente. Le moteur a son propre tirage (`Rng`), aucun `Math.random`.
+- **La table du duel** quitte `ArenaApp` pour `duelCue`, pure : un palier fermé par les PA se tait, chaque palier ouvert monte de deux demi-tons, un relâché léger ou refusé se tait (la règle de `combatFx`).
+- **Les quatre effets jamais joués** : `src/audio/hooks.ts`, sans toucher `src/ui`. `click` par délégation sur le document, `open` quand un `[role="dialog"]` apparaît, `coin` par `__game.subscribe`, `step` tous les mètres marchés. `click`, `open`, `coin` et `denied` relevés pour passer la clameur, `step` refait (il sortait à −58 LUFS).
+- `v2.sound.sub`, `AGENTS.md`, le test « no audio file » : Passe SN1.
+
+### Avant et après — [OK] mesuré sur le vrai moteur
+Rendu hors ligne, 44,1 kHz, volume 0,7, musique 0,5 (`tools/audio/render.mjs`, `analyse.mjs`), `main` figé `c965623` et cette branche sur les mêmes événements.
+
+| Mesure | `main` | Lot S0 | Cible |
+|---|---|---|---|
+| Mélanges de la ville, 17 rendus | −33,5 à −43,1 LUFS | −18,2 à −19,6 | −18 ± 2 |
+| Ambiances seules | −33,9 à −47,2 LUFS | −21 à −24,9 | |
+| Musique seule | −43,3 à −44,6 LUFS | −19,1 à −20,4 | |
+| Musique sur l'ambiance | −10,1 à +2,6 dB | 3,9 à 4,9 dB | 3 à 6 dB |
+| Duels, volume par défaut | −27,3 et −28,5 LUFS | −19,7 et −20,0 | −18 ± 2 |
+| Fin de duel au volume 1, crête vraie | +0,9 dBTP | −1,1 dBTP, 0 échantillon au-delà de 1 | −1 dBTP |
+| Répétition des nappes, 0,05 à 1 s | 0,46 à 0,83, à 0,237 s | au plus 0,135 (les notes de la halle, à 0,05 s) | < 0,2 |
+| Répétition des nappes, 1 à 6 s | jusqu'à 0,84 à 2 s | au plus 0,021 | < 0,2 |
+| Corrélation gauche-droite | 1 partout | ambiances 0 à 0,18, mélanges 0,74 à 0,81, duels 0,21 et 0,26 | < 0,98 |
+| Clic, ouverture, pièce sur la clameur de l'arène | −1,2 et −1,8 dB à l'audit | +3,7, +3,7, +3,6 dB | ≥ 3 dB |
+
+- **L'outil porté** : `tools/audio/measure.mjs` remplace `analyse.py` (Python n'est pas sur ce poste). Cas 1 à 3 d'EBU Tech 3341, crête entre échantillons, boucle de 0,237 s trouvée et bruit blanc refusé (`tests/audio-measure.test.mjs`). Sur `main` figé il retrouve l'audit à 0,2 LU près : −33,9, −47,2, −34,6, −33,6, −27,3.
+- **Contrôle négatif** : `analyse.mjs --check` sur `main` figé échoue à 151 contrôles ; sur cette branche, tous passent.
+- `tools/audio/hooks-proof.mjs`, dans le vrai jeu en DEV : `open` à l'ouverture d'un dialogue, `click` sur un bouton, `coin` sur un achat de 20 pièces, 8 `step` pour 8,9 m, aucun moteur dans une partie d'aujourd'hui, aucune erreur de page.
+- `tests/v2-sound-s0.test.mjs` : douze fautes injectées une à une, toutes attrapées.
+- `npm run typecheck`, `npm test` **332 / 332**.
+
+### Ce qui a raté
+- [KO → corrigé] Les 13 rendus d'effets sortaient muets : `play` attend la pièce, créée seulement par une scène. La pièce se crée au déverrouillage.
+- [KO → corrigé] Le contrôle de répétition sur les mélanges voyait le bourdon de la musique, de 0,5 à 0,7 à 0,055 s : une note tenue n'est pas une boucle. Il porte sur les nappes seules.
+- [KO → corrigé] +6 dB sur les coups n'ont rapporté que 0,6 LU au duel, puis +1 dB 0,1 LU : ils butaient sur le compresseur. Ce qui a marché : l'énergie vers le médium, que BS.1770 pèse et qu'un portable restitue, puis le seuil de −10 à −7 dB, son gain automatique compensé (−1,6 dB) sur chaque bus.
+- [KO → corrigé] La faute « un coup sans son médium » passait le test : les partiels d'acier le satisfaisaient. Le test demande une voix de bruit, et `--check` borne la part sous 200 Hz.
+
+### Restes [?]
+- **Personne n'a écouté.** Le niveau des nappes de bruit relevées de 10 à 24 dB, le mordant des nouveaux coups, les sons d'interface et les pas se jugent à l'oreille : fiche du lot.
+- Le duel est au bas de la bande : −20,0 sur Vessa. Il n'a pas sa musique, lot S3 ; le compresseur le retient au-delà.
+- La musique reste étroite (corrélation 0,98) : c'est la même mélodie jouée au même endroit. La bande de ville du lot S4 la remplacera.
+- Hors S0, selon la fiche : `effect` reste muet (lot S3), la fin de journée sonne comme midi (S2), l'air reste le même partout (S4). Ces sons d'interface et ces pas sont des branchements, leur forme finale est au lot S2.
+- La place des mesures : `tools/audio/` tourne dans Chrome hors ligne. Un portable, un téléphone ou de vrais haut-parleurs n'ont pas été mesurés.
+
+### Pensée
+- Quand un gain ne rapporte plus rien, ce n'est pas un manque de gain : un limiteur compte la crête, la sonie compte le médium. On déplace l'énergie au lieu de pousser.
+- Un portage de mesure se juge d'abord sur les chiffres déjà publiés : si l'outil neuf ne les retrouve pas, ses résultats ne valent rien.
+- Une autocorrélation répond à « quoi se répète ? » : sur un mélange, une note tenue ressemble à une boucle. Elle se lit sur le signal dont on suspecte le défaut.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
