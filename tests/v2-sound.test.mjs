@@ -1,5 +1,5 @@
-// The version 2's sound (lot V8; the operator's decision AV-17 « Effets, ambiances et musique simple », journal Passe V8): everything made by
-// the code, no audio file; the effects' recipes, the ambiences of each place by day and by night, a tune on the day state's mode, the
+// The version 2's sound (lot V8, journal Passe V8; the operator's decision SA-8 « Elle bouge : cuit, avec manifeste », journal Passe SN1, replaced
+// AV-17's « no audio file »: a baked file reaches the game only through a manifest); the effects' recipes, the ambiences of each place by day and by night, a tune on the day state's mode, the
 // settings kept and checked; nothing before a gesture; only the version 2's pages make a sound.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -62,12 +62,18 @@ test('the settings: kept values read back within bounds; anything broken is the 
   assert.deepEqual(S.readSettings('{"volume":"x"}'), S.DEFAULT_SETTINGS);
 });
 
+test('no audio file in the game or its public folder: none has a manifest yet (SA-8, SA-13)', () => {
+  const audio = [], walk = (d) => { if (!fs.existsSync(d)) return; for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (fs.statSync(p).isDirectory()) walk(p); else if (/\.(mp3|ogg|oga|opus|weba|webm|wav|m4a|aac|flac)$/i.test(f)) audio.push(p); } };
+  for (const d of ['src', 'public']) walk(fileURLToPath(new URL(`../${d}`, import.meta.url)));
+  assert.deepEqual(audio, []);
+});
+
 test('no sound before a gesture; only the version 2\'s pages load the engine', () => {
   const eng = src('src/audio/Sound.ts');
   assert.equal((eng.match(/new Ctx\(/g) ?? []).length, 1);
   assert.ok(eng.indexOf('new Ctx(') > eng.indexOf('async unlock()'), 'the context is made in unlock');
   assert.match(eng, /addEventListener\('pointerdown', start/); assert.match(eng, /addEventListener\('keydown', start/);
-  assert.doesNotMatch(eng, /\.(mp3|ogg|wav|m4a)\b/, 'no audio file');
+  assert.doesNotMatch(eng, /\.(mp3|ogg|opus|webm|wav|m4a|aac|flac)\b/, 'the engine names no audio file');
   // every importer of the engine: a dynamic import, behind the version 2
   const files = [];
   const walk = (d) => { for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (fs.statSync(p).isDirectory()) walk(p); else if (/\.ts$/.test(f)) files.push(p); } };

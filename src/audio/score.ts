@@ -1,7 +1,7 @@
 import { Rng } from '../core/rng';
 
-/** The version 2's sound, its pure half (lot V8, journal Passe V8; the operator's decision AV-17 « Effets, ambiances et musique simple »):
- *  everything is made by the code (Web Audio, src/audio/Sound.ts), no audio file. Here: the effects' recipes (a few oscillators and noise
+/** The version 2's sound, its pure half (lot V8, journal Passe V8; the operator's decisions in journal Passe SN1):
+ *  written here and played by the code (Web Audio, src/audio/Sound.ts); a baked file would come only through a manifest (SA-8). Here: the effects' recipes (a few oscillators and noise
  *  bursts with their envelopes), the ambiences of each place by the day state (layers of filtered noise and sparse calls: the crowd, the
  *  wind, the water, the birds by day, the crickets at night, the Colosseum's roar on the afternoons of the bouts), and the music: a short
  *  plucked tune on a mode of the day state, generated from a seed, the same notes every time. Every number « proposé ». Pure. */

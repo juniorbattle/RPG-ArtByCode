@@ -320,7 +320,7 @@ forecourt) seen along the wall from the east, the festival square the market hal
 a curve, the well, its setts crossed by a compass of flags, `FLAGS` in `src/materials/GroundShaders.ts`) seen from high on the south-west, three
 quarters, each square its own sun (`plazaKeyLight`) - the ten days of the tournament and their live cutscenes (`src/tournament/v2calendar.ts`,
 `src/narrative/v2story.ts`; a browser driven by a tool plays them only with `&cutscene=1`), the version 2's events (`src/events/v2catalog.ts`), the
-sound made by the code (`src/audio/`, after a gesture; V settings, N mute), P4-P6; DEV named states `v2-forecourt-morning`, `v2-training-morning`,
+sound (`src/audio/`, section "Sound"; after a gesture; V settings, N mute), P4-P6; DEV named states `v2-forecourt-morning`, `v2-training-morning`,
 `v2-square-afternoon`, `v2-square-night`, `v2-day2-afternoon`, `v2-training-dusk`, and every square at every moment (`v2-forecourt-midday`,
 `v2-forecourt-night`, `v2-training-midday`, `v2-training-night`, `v2-square-morning`, journal Passe VP1); the squares take `static=1`, `vis=0` (no
 visibility bake), `viscache=0|verify`, DEV `visstep=<m>` / `visfine=A:<k>` / `visscale=<k>` (the bake's grid, a finer main tile, every tile k x) and
@@ -424,7 +424,7 @@ Detail may be procedurally generated, baked, or selectively authored. The decidi
 cost, reproducibility and operator approval — not procedural purity.
 - External art tools (Aseprite and the like) are development-time helpers, never runtime, install or build dependencies:
   `npm install`, `npm run dev`, `npm run build` and the game must work on a machine without them. The game generates everything at
-  boot except its production cast (`src/characters/BakedCast.ts`): baked character sheets (exported PNG + JSON, bundled as assets,
+  boot except its baked sound (section "Sound") and its production cast (`src/characters/BakedCast.ts`): baked character sheets (exported PNG + JSON, bundled as assets,
   SHA-256 checked against their provenance pack, decoded byte-exact) standing in for generated archetypes, and only those whose
   manifest is approved for production. Today: `dockworker-x2-v2` (in place of the porter), `merchant-x2-v2` (the hero stall's
   merchant), `blacksmith-x2-v1` (the forge's blacksmith), `guard-x2-v1` (both guards), `hooded-x2-v1` (the hooded stranger) and the five
@@ -467,6 +467,19 @@ tâche, la provenance enregistrée automatiquement et la règle dans AGENTS.md. 
   `briefs/local-requests/NNN-<topic>.md` pushed on its branch. A local session watches that branch, does the work, writes the answer in the
   same file, pushes only its own commits on top and messages the cloud session. A cloud session cannot message any session; the request never
   blocks its work.
+
+## Sound (the operator's audit sheet, 2026-11-01, journal Passe SN1)
+The sheet's 18 choices, under their exact labels, are in journal Passe SN1; its source and the plan of lots S0 to S5: `briefs/fiche-son.html`.
+- **Identity**: SA-4 « Les ménétriers de la Cité », a city band that belongs to this world (shawms, sackbut, lute, drum), with the operator's note, word
+  for word: « Mais j'aime beaucoup les inspi Breath of fire 3, Chromo trigger et Final Fantasy 8 et 9 »: an inspiration of style, no work reproduced.
+- **Source**: SA-8 « Elle bouge : cuit, avec manifeste », replacing AV-17's « no audio file »: the sound stays written in the repository (scores and
+  recipes) and may be baked at development time into compressed files, like the sprite sheets, under a provenance manifest; SA-9 « Partition +
+  synthèse et CC0 »; SA-11 « Code + CC0 enregistré » (the crowd by the code first and CC0 as a complement, to confirm with the operator at lot S2);
+  SA-12 « Idéation seulement » (no generated audio in the game or the repository; an exception is the operator's decision, through a manifest).
+- **Repository**: SA-13 « CC0, CC BY, MIT et nos sons »: nothing else enters it, each source's licence kept.
+- **Scope and weight**: SA-16 « Derrière flags.v2 seulement »: the default game, the title and Explore stay silent until the version 2 becomes the
+  default; SA-17 « 12 Mo au plus », loaded on demand, never before the first page.
+- A bank or an external dependency needs the operator's agreement. SA-10 « 0 € : décider après l’essai »: no paid composer before the trial of lot S4.
 
 ## Art direction (locked)
 Monochrome-leaning night: indigo / slate dominant, cool stone secondary, amber light as the only warm accent,

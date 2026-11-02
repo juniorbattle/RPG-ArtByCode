@@ -1,6 +1,6 @@
 import { ambienceOf, EFFECTS, hz, readSettings, tune, type Ambience, type Effect, type Look, type SoundPlace, type SoundSettings } from './score';
 
-/** The version 2's sound engine (lot V8, journal Passe V8): Web Audio only, every sound made by the code from src/audio/score.ts. Nothing
+/** The version 2's sound engine (lot V8, journal Passe V8): Web Audio only, every sound written in src/audio/score.ts (a baked file only through a manifest, SA-8). Nothing
  *  starts before a gesture of the person (the browsers' rule: the context is created, or resumed, on the first key or click); the volume,
  *  the music's share and the mute are kept in the browser (a convenience: a blocked storage gives the defaults). Only the version 2's
  *  pages create it. */

@@ -434,7 +434,7 @@ export const EN = {
   'v2.check.clean': 'Hilde goes over every strap and buckle: all sound.',
   'v2.sound.view': 'Sound',
   'v2.sound.title': 'Sound',
-  'v2.sound.sub': 'Every sound is made by the game itself. It starts after your first key or click.',
+  'v2.sound.sub': 'The sound starts after your first key or click.',
   'v2.sound.volume': 'Volume',
   'v2.sound.music': 'Music',
   'v2.sound.mute': 'Mute',

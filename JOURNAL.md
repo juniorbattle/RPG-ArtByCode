@@ -556,6 +556,64 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Une comparaison d'interface ne recopie pas une règle, elle joue la vraie action sur une copie. Le piège du palier perdu était dans le code depuis la Passe V3 : il a fallu afficher le résultat pour le voir.
 
+## Passe SN1 — L'audit du son : la fiche de 18 choix, « Les ménétriers de la Cité », le son cuit avec manifeste (2026-11-02)
+
+### Demande
+- L'audit du son et de la musique a été fait le 2026-11-01 sans toucher un fichier suivi : ses rapports, mesures et outils vivent dans le dossier de notes des séances (`audio-audit/`). La séance mère a ouvert cette branche après la clôture du casting (Passe CX4, SA-18) : consigner la fiche, puis les lots S0 et S1. Exception à la règle d'une seule branche, à laquelle l'opérateur consent en lançant la séance : `claude/ui-voile-9516af` reste ouverte, cette séance évite `src/ui`.
+- Message de l'opérateur, mot pour mot : « Fiche remplie ».
+
+### La fiche
+- Page privée https://claude.ai/artifact/2tE8Uuwh5Xmrw5zJWsgZyR, source `briefs/fiche-son.html`. Relue par `list` : 18 documents sur 18, cliqués le 2026-11-01 entre 19 h 20 et 19 h 23 UTC, conformes à la relecture de la séance d'audit. Les trois écoutes n'avaient pas de recommandation ; les quinze autres choix sont à la recommandation.
+
+| # | Décision | Choix de l'opérateur | Note, mot pour mot |
+|---|---|---|---|
+| SA-1 | Prototype d'ambiance | « Bonne direction » | « prototype est bonne » |
+| SA-2 | Motif et thème | « Motif et son : bonne direction » | — |
+| SA-3 | Prototype de duel | « Bonne direction » | — |
+| SA-4 | Identité musicale | « Les ménétriers de la Cité » | « Mais j'aime beaucoup les inspi Breath of fire 3, Chromo trigger et Final Fantasy 8 et 9 » |
+| SA-5 | Musique des duels | « Oui, par couches » | — |
+| SA-6 | Catalogue | « 12 morceaux, 12 min » | — |
+| SA-7 | Annonces | « Fanfare et texte » | — |
+| SA-8 | La règle « tout par le code » | « Elle bouge : cuit, avec manifeste » | — |
+| SA-9 | D'où vient la musique | « Partition + synthèse et CC0 » | — |
+| SA-10 | Compositeur humain | « 0 € : décider après l’essai » | — |
+| SA-11 | Effets et ambiances | « Code + CC0 enregistré » | — |
+| SA-12 | Outils de génération | « Idéation seulement » | — |
+| SA-13 | Dépôt public | « CC0, CC BY, MIT et nos sons » | — |
+| SA-14 | Correctifs S0 | « Dès qu’une branche est libre » | — |
+| SA-15 | Musique entre deux pages | « Reprise avec fondu » | — |
+| SA-16 | Portée | « Derrière flags.v2 seulement » | — |
+| SA-17 | Poids | « 12 Mo au plus » | — |
+| SA-18 | Calendrier | « S0-S1 après les personnages » | — |
+
+### Ce que ces choix veulent dire
+- **SA-4** : la note ajoute un registre d'inspiration, en style seulement (mélodies qu'on retient, leitmotifs). Aucune œuvre n'est reproduite.
+- **SA-8** : la décision AV-17 donnait le son sans fichier audio. Le son reste écrit dans le dépôt, partitions et recettes, et peut être cuit au développement en fichiers compressés sous manifeste de provenance, comme les feuilles de sprites. Faits dans cette passe, avant tout son cuit : `AGENTS.md` (section « Sound »), le test « no audio file » de `tests/v2-sound.test.mjs`, le texte `v2.sound.sub`, texte de la version 2 seulement. Aucun fichier audio n'entre dans le dépôt ici.
+- **SA-11** : la recommandation réservait le CC0 enregistré au cas où SA-1 ne convaincrait pas, et SA-1 a convaincu. Lecture à confirmer à l'opérateur au lot S2 : la foule par le code d'abord, le CC0 en complément.
+- **SA-12** : aucune génération audio dans le jeu ni dans le dépôt. Une exception passerait par sa décision et le manifeste.
+
+### Ce que couvrent les lots, selon la fiche
+- **S0, correctifs** (1 séance, 0 Mo) : bruit réparé, sonie cible, limiteur, stéréo, les quatre effets jamais joués branchés (`click`, `open`, `coin`, `step`), variation des coups, paliers et relâchés justes. Cibles : −18 LUFS à la sortie, crêtes à −1 dBTP, musique 3 à 6 dB au-dessus de l'ambiance là où elle doit s'entendre.
+- **S1, moteur** (1 à 2 séances, 0 Mo) : bus, fondus, reprise entre les pages, couches synchrones, baisse sous les coups, chargement à la demande.
+- **Écart avec le résumé de la séance mère, où la fiche gagne** : la météo est au lot S2, comme les ambiances par lieu, les pas et l'interface dans leur forme finale. Les compétences, la fenêtre d'esquive et la foule qui réagit sont au lot S3, la musique de duel aux lots S3 et S4. S0 et S1 livrent le moteur de couches, pas sa musique.
+- **S2 à S5** attendent la revue de l'opérateur (SA-18). SA-10 se décide après l'essai du lot S4.
+
+### Les mesures de l'audit
+- Méthode : le vrai `Sound.ts` rendu dans `OfflineAudioContext` sur une horloge virtuelle, 57 rendus à 44,1 kHz, cinq vrais duels du robot, sonie selon BS.1770. Masques estimés.
+- Sonie aux réglages par défaut (volume 0,7, musique 0,5) : ambiances seules de −33,9 à −47,2 LUFS (l'entraînement de nuit), mélanges de −33,6 à −40,3, musique seule de −43,3 à −44,5, duels −27,2 et −28,5 ; cible proposée −18 ± 2.
+- Bruit : `x * 1103515245` dépasse 2⁵³ en double. Le générateur tombe dans un cycle de 10 466 échantillons, soit 0,2373 s, au lieu de 2 s ; autocorrélation 0,46 à 0,83 sur 24 ambiances, bruit blanc témoin 0,03. Toutes les nappes lisent le même tampon en phase.
+- Mono sur 55 rendus sur 55, aucune réverbération. Musique 5 à 8 dB sous l'ambiance. Aucun limiteur : au volume 1, crête 1,108 et 51 échantillons au-delà de 1. Duels : 623 à 949 sons, 93 à 104 par minute, huit recettes fixes ; 68 % des relâchés sont de simples coups légers. Coups : 93 à 99 % de leur énergie sous 200 Hz.
+- Aucun code ne joue `click`, `open`, `coin` ni `step`. Les paliers sonnent aussi quand les PA les ferment (`e.open`). `effect` est muet.
+- Prototypes de l'audit : stéréo, sans la boucle, −21,4 LUFS pour l'ambiance. Rendu 9 à 16 s pour 33 s de musique, 16 à 46 % d'un fil en direct : c'est la raison de SA-8.
+- Formats, rapport de licences : Opus en WebM avec repli AAC / M4A est le choix le plus défendable ; `decodeAudioData` sur Ogg dans Safari n'a pas pu être vérifié. À tester sur appareil réel avant le premier son cuit.
+
+### Limites
+- Aucune mesure ne dit si c'est beau, si la foule sonne comme une foule, si la boucle de 0,237 s s'entend vraiment, ni la fatigue sur 5 à 10 minutes de duel. Les prototypes ont été entendus par l'opérateur seul. La cible −18 reprend le repère portable d'Audiokinetic ; d'autres sources donnent −16.
+- Licences lues le 2026-11-01, sans avis juridique. ZapSplat, Epidemic Sound et les contrats complets de Stability et de Google n'ont pas pu être lus en entier. Le dépôt n'a aucun fichier `LICENSE` : à préciser si du CC BY y entre.
+
+### Pensée
+- Une fiche d'audit fixe aussi le sens d'un plan : un résumé écrit après elle peut déplacer un sujet d'un lot à l'autre, elle se relit avant de construire.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -760,6 +818,8 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 **6d. Jour et nuit (note de l'opérateur, Passe D1)** — mot pour mot : « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Le jeu n'a aujourd'hui que la nuit (direction
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
+
+**6f. Son (Passe SN1)** — fiche de 18 choix remplie : « Les ménétriers de la Cité », partitions avec synthèse et CC0, cuit avec manifeste, 12 Mo au plus, derrière `flags.v2`. Plan S0 à S5 dans `briefs/fiche-son.html`. S2 à S5 après la revue de l'opérateur ; SA-11 à lui confirmer au lot S2 ; SA-10 après l'essai du lot S4.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison. **Reste au choix de l'opérateur** : les icônes d'objets, qui demandent de l'art.
 

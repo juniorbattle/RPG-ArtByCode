@@ -1,0 +1,501 @@
+<title>Audit du son</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+code { font-family: var(--font-mono); font-size: .86em; background: color-mix(in srgb, var(--line) 45%, transparent); border-radius: 3px; padding: 0 3px; overflow-wrap: anywhere; }
+.block { display: flex; flex-direction: column; gap: 14px; }
+.block h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.block > p { margin: 0; max-width: 68ch; }
+.block h3 { margin: 6px 0 0; font-size: 17px; }
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 22px; margin: 0; padding: 0; list-style: none; }
+.verdict li { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.verdict b { font-size: 16px; }
+.verdict span { color: var(--muted); font-size: 15px; }
+.scale { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.scale h3 { margin: 0; font-size: 16px; }
+.scale .sub { margin: 0 0 6px; font-size: 14px; color: var(--muted); }
+.srow { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; align-items: center; font-size: 14px; }
+.strack { position: relative; height: 18px; }
+.strack .band { position: absolute; top: 0; bottom: 0; background: var(--rec-soft); }
+.strack .bar { position: absolute; top: 5px; height: 8px; left: 0; background: var(--brass); border-radius: 0 4px 4px 0; }
+.strack .target .bar, .srow.target .bar { background: var(--rec); }
+.sval { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: 13px; }
+.axis { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; font-size: 12px; color: var(--muted); }
+.axis div { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: none; }
+th { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.st { font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.st.ok { color: var(--rec); } .st.part { color: var(--astre); } .st.no { color: var(--cendre); }
+.wide { min-width: 720px; }
+.clips { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.clip { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.clip figcaption { font-size: 14px; font-weight: 600; }
+.clip audio { width: 100%; height: 40px; }
+.clip img.spec { width: 100%; height: auto; aspect-ratio: 820 / 240; border-radius: 4px; display: block; }
+.note { font-size: 14px; color: var(--muted); }
+.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px 24px; }
+.limits > div { min-width: 0; }
+.limits h3 { margin: 0 0 4px; }
+.limits ul { margin: 0; padding-left: 18px; font-size: 15px; display: flex; flex-direction: column; gap: 3px; }
+
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions du responsable · 1ᵉʳ novembre 2026</span>
+    <h1>Audit du son et de la musique</h1>
+    <p class="lede">Le son du jeu existe, mais il est presque inaudible, il boucle et il se tait aux moments qui comptent. Cette fiche donne ce qui a été mesuré, ce que je recommande, et 18 décisions pour fixer notre orientation. Commence par les trois écoutes : elles décident de la suite. Rien ne sera implémenté avant tes choix.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="block" aria-labelledby="h-verdict">
+    <h2 id="h-verdict">Ce que dit l’audit</h2>
+    <ul class="verdict">
+      <li><b>Trop bas</b><span>La ville sort à −34 à −47 LUFS. Une cible web est autour de −18.</span></li>
+      <li><b>Un bruit qui boucle</b><span>Le « bruit » de 2 s répète en fait 0,237 s, dans toute ambiance.</span></li>
+      <li><b>La musique est couverte</b><span>5 à 8 dB sous l’ambiance, cachée dans 8 à 13 bandes sur 11 à 14.</span></li>
+      <li><b>Un duel monotone</b><span>Environ 100 sons par minute, 8 sons fixes, aucune musique.</span></li>
+    </ul>
+    <p><b>Recommandation :</b> une bande de ville médiévale comme identité, un motif qui change de couleur entre le jour et la nuit, des partitions écrites dans le dépôt, jouées par la synthèse et des instruments CC0, cuites en fichiers compressés (12 Mo au plus), et une musique de duel par couches. Le correctif S0 se fait dans tous les cas.</p>
+
+    <div class="scale" role="img" aria-label="Sonie intégrée de chaque scène aux réglages par défaut, de moins 47 à moins 27 LUFS, pour une cible de moins 18">
+      <h3>Sonie aux réglages par défaut (volume 0,7, musique 0,5)</h3>
+      <p class="sub">LUFS intégrés, plus c’est long plus c’est fort. La bande verte : cible web et portable, −18 ± 2.</p>
+      <div id="scale"></div>
+    </div>
+
+    <h3>Ce que le rendu hors ligne a mesuré</h3>
+    <div class="tw"><table class="wide">
+      <thead><tr><th>Constat</th><th>Mesure</th><th>Cause</th></tr></thead>
+      <tbody>
+        <tr><td>Le bruit boucle</td><td class="n">autocorrélation 0,46 à 0,83 à 0,2373 s, sur 24 ambiances<br>(quai, parvis, arène : 0,76 à 0,83 ; bruit blanc témoin : 0,03)</td><td><code>x * 1103515245</code> dépasse 2⁵³ en double : le générateur tombe dans un cycle de 10 466 échantillons au lieu de 2 s. Toutes les nappes lisent le même tampon en phase. Correction d’une ligne par <code>Math.imul</code>.</td></tr>
+        <tr><td>Tout est mono</td><td class="n">gauche = droite sur 55 rendus sur 55</td><td>Aucun panoramique, aucune réverbération : rien ne place un son dans un lieu.</td></tr>
+        <tr><td>L’air se répète à l’identique</td><td class="n">corrélation 1,00 d’un passage à l’autre<br>tous les 23 à 33 s, 9 à 11 % de silence</td><td>8 mesures, puis 3,4 s, puis les mêmes notes. Le même air partout : le lieu ne le change pas, et il repart à chaque page.</td></tr>
+        <tr><td>Fin de journée = midi</td><td class="n">mesures identiques</td><td><code>ambienceOf</code> ne distingue que la nuit et le niveau des oiseaux du matin.</td></tr>
+        <tr><td>Le duel répète ses sons</td><td class="n">623 à 949 sons par duel<br>93 à 104 par minute</td><td>Huit recettes, sans variation de hauteur ni de niveau ; 68 % des « lancers » sont de simples coups légers.</td></tr>
+        <tr><td>Les coups vivent dans le grave</td><td class="n">coup 93 %, puissant 96 %, K.O. 99 % d’énergie sous 200 Hz</td><td>Les haut-parleurs d’un portable ou d’un téléphone en rendent mal cette bande : hypothèse à vérifier à ton oreille.</td></tr>
+        <tr><td>Aucun limiteur</td><td class="n">au volume 1 : crête 1,108, 51 échantillons au-delà de 1</td><td>Les bus vont droit à la sortie.</td></tr>
+        <tr><td>Interface sous la clameur</td><td class="n">clic −1,2 dB, ouverture −1,8 dB<br>pas −17,6 dB face à l’arène</td><td>Effets écrits mais jamais joués ; ils seraient couverts dans l’arène s’ils l’étaient.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Ce qui sonne et ce qui devrait sonner</h3>
+    <div class="tw"><table class="wide">
+      <thead><tr><th>Moment</th><th>État</th><th>Détail</th></tr></thead>
+      <tbody>
+        <tr><td>Jeu par défaut, titre, Explore</td><td><span class="st no">Muet</span></td><td>Le son n’existe que dans une partie <code>v2=1</code>, après un geste, à chaque page.</td></tr>
+        <tr><td>Coups du duel</td><td><span class="st part">Partiel</span></td><td>Coup, puissant, garde, esquive, bris, K.O. Une recette d’effet visuel par action (44), cinq sons pour tous les coups.</td></tr>
+        <tr><td>Compétences</td><td><span class="st no">Muet</span></td><td>L’événement <code>effect</code> (4 à 19 par duel) ne sonne pas : Rempart, Ferveur et les boosts adverses sont silencieux.</td></tr>
+        <tr><td>Paliers de charge</td><td><span class="st part">Partiel</span></td><td>Le même son à chaque palier. Il sonne aussi quand les PA ferment le palier, là où l’effet visuel se tait (<code>e.open</code>).</td></tr>
+        <tr><td>Lecture du duel</td><td><span class="st no">Muet</span></td><td>Ni la séquence adverse, ni la fenêtre d’esquive (49 à 147 par duel), ni l’étourdissement, ni le repoussé.</td></tr>
+        <tr><td>K.O. et ralenti</td><td><span class="st part">Partiel</span></td><td>Le choc sonne ; le ralenti de 0,65 s, le flash et les lignes de vitesse n’ont pas de pendant sonore.</td></tr>
+        <tr><td>Foule de l’arène</td><td><span class="st part">Partiel</span></td><td>Une clameur fixe. Elle ne réagit à rien, et le public visible ne s’entend pas.</td></tr>
+        <tr><td>Musique de duel, victoire, défaite</td><td><span class="st no">Muet</span></td><td>Aucune.</td></tr>
+        <tr><td>Interface</td><td><span class="st no">Muet</span></td><td><code>click</code>, <code>open</code>, <code>coin</code>, <code>step</code> existent, aucun code ne les joue. Dialogues, boutiques, menus, pas : silence.</td></tr>
+        <tr><td>Lieux</td><td><span class="st part">Partiel</span></td><td>Une nappe et quelques appels. Fontaine, braseros, galerie, halle : pas de son propre.</td></tr>
+        <tr><td>Météo</td><td><span class="st no">Muet</span></td><td>Pluie, neige, orage, éclairs, vent : aucun son, y compris le jour de pluie de la partie.</td></tr>
+        <tr><td>Cinématiques, événements, annonces</td><td><span class="st no">Muet</span></td><td>L’ambiance de la page continue. Aucune entrée, aucun signal de sabotage, aucune annonce.</td></tr>
+        <tr><td>Jour et nuit</td><td><span class="st part">Partiel</span></td><td>Oiseaux ou grillons, un mode et un tempo. La tension des dix jours ne change rien au son.</td></tr>
+        <tr><td>Changement de lieu</td><td><span class="st no">Coupe</span></td><td>La page recharge : coupure nette, silence jusqu’au geste suivant, musique reprise à zéro.</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="limits">
+      <div><h3>Ce qu’une analyse sait dire</h3><ul><li>niveaux, crêtes, répartition des fréquences</li><li>boucles et répétitions exactes</li><li>masquage estimé, bande par bande</li><li>coût de rendu et poids</li></ul></div>
+      <div><h3>Ce que seule ton oreille tranche</h3><ul><li>si c’est beau, et si le motif reste en tête</li><li>si la foule sonne comme une foule, une anche comme une anche</li><li>si la boucle de 0,237 s s’entend vraiment comme un défaut</li><li>la fatigue sur 5 à 10 minutes de duel</li><li>la tension et le rythme ressentis, sur tes haut-parleurs réels</li></ul></div>
+    </div>
+    <p class="note">Méthode : le vrai <code>Sound.ts</code>, sans modification, rendu dans <code>OfflineAudioContext</code> sur une horloge virtuelle ; les duels sont cinq vrais duels du robot, leurs événements passés par la table de sons de l’arène. 57 rendus, 44,1 kHz. Sonie selon BS.1770. Les masques sont estimés, et les prototypes n’ont été entendus par personne.</p>
+  </section>
+
+  <section class="block" aria-labelledby="h-voies">
+    <h2 id="h-voies">Les voies de production</h2>
+    <div class="tw"><table class="wide">
+      <thead><tr><th>Voie</th><th>Coût</th><th>Qualité attendue</th><th>Droits</th><th>Poids</th><th>Temps</th></tr></thead>
+      <tbody>
+        <tr><td><b>Tout par le code</b>, moteur actuel corrigé</td><td class="n">0 €</td><td>Fonctionnelle, identité faible : les extraits « aujourd’hui »</td><td>Entièrement à nous</td><td class="n">~0 Mo</td><td class="n">1 séance</td></tr>
+        <tr><td><b>Synthèse plus riche</b> : les trois prototypes</td><td class="n">0 €</td><td>Identité possible, foule et anches à juger. En direct 16 à 46 % d’un fil : à cuire</td><td>Entièrement à nous</td><td class="n">0,5 à 1 Mo/min cuit</td><td class="n">4 à 8 séances</td></tr>
+        <tr><td><b>Banque de fichiers</b>, libre ou payante</td><td class="n">0 € en CC0 ; payant variable</td><td>Réaliste pour foule et lieux, cohérence à construire</td><td>CC0, CC BY : oui. Payantes : le fichier brut exposé bloque (SA-13)</td><td class="n">3 à 5 Mo</td><td class="n">1 à 2 séances, téléchargements à ta charge</td></tr>
+        <tr><td><b>Échantillons libres pilotés par le code</b> : VCSL, VSCO 2 CE</td><td class="n">0 €</td><td>Vrais instruments, articulations limitées, pas de chalemie CC0 trouvée</td><td>CC0 : les plus propres</td><td class="n">5 à 15 Mo (estimé)</td><td class="n">3 à 6 séances</td></tr>
+        <tr><td><b>Musique composée par un humain</b></td><td class="n">3 300 à 4 000 $ le cœur ; 12 000 à 28 000 $ le tout</td><td>La plus haute, et la seule voie avec un vrai musicien</td><td>Cession écrite, statut Sacem à vérifier</td><td class="n">10 à 40 Mo</td><td class="n">Semaines à mois</td></tr>
+        <tr><td><b>Outils de génération</b></td><td class="n">5 à 60 $ par mois</td><td>Immédiate, contrôle faible, leitmotifs et couches difficiles</td><td>Sortie mal protégée, procès en cours, déclaration Steam</td><td class="n">0,5 à 1 Mo/min</td><td class="n">Heures, plus le tri</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Coûts humains : GameSoundCon 2025, médiane indé 407 $ la minute, à 8-10 minutes et 30-45 minutes ; ce ne sont pas des devis. Les licences ont été lues le 1ᵉʳ novembre 2026 ; ceci n’est pas un avis juridique. ZapSplat, Epidemic Sound et les contrats complets de Stability et de Google n’ont pas pu être lus en entier.</p>
+  </section>
+
+  <div id="groups"></div>
+<section class="block" aria-labelledby="h-plan">
+    <h2 id="h-plan">Le plan, si la recommandation passe</h2>
+    <p>Lots dans l’ordre, chacun derrière <code>flags.v2</code>, sur sa branche quand aucune autre n’est ouverte. Les durées sont des ordres de grandeur.</p>
+    <div class="tw"><table class="wide">
+      <thead><tr><th>Lot</th><th>Contenu</th><th>Durée</th><th>Poids</th><th>Dépend de</th></tr></thead>
+      <tbody>
+        <tr><td><b>S0</b> Correctifs</td><td>Bruit réparé, sonie cible, limiteur, stéréo, effets muets branchés, variation des coups, paliers et relâchés justes</td><td class="n">1 séance</td><td class="n">0 Mo</td><td>Rien</td></tr>
+        <tr><td><b>S1</b> Moteur</td><td>Bus, fondus, reprise entre les pages, couches synchrones, baisse sous les coups, chargement à la demande</td><td class="n">1 à 2 séances</td><td class="n">0 Mo</td><td>SA-8, SA-15</td></tr>
+        <tr><td><b>S2</b> Lieux</td><td>Ambiances par lieu et moment, météo, pas, interface</td><td class="n">1 à 2 séances</td><td class="n">3 Mo</td><td>SA-1, SA-11</td></tr>
+        <tr><td><b>S3</b> Duel</td><td>Un son par recette, fenêtre d’esquive, foule qui réagit, K.O. et ralenti, couches du duel</td><td class="n">2 séances</td><td class="n">2 Mo</td><td>SA-3, SA-5</td></tr>
+        <tr><td><b>S4</b> Musique</td><td>Le catalogue, le thème et ses déclinaisons, les heures sonnées par la bande</td><td class="n">3 à 5 séances</td><td class="n">7 à 9 Mo</td><td>SA-2, SA-4, SA-6, SA-9</td></tr>
+        <tr><td><b>S5</b> Mixage et essai</td><td>Équilibre général, essai en jeu, fiche de réception</td><td class="n">1 séance et ton écoute</td><td class="n">—</td><td>S1 à S4</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Cibles proposées pour S0 : −18 LUFS à la sortie, crêtes à −1 dBTP, musique 3 à 6 dB au-dessus de l’ambiance là où elle doit s’entendre. Elles reprennent le repère portable d’Audiokinetic ; d’autres sources donnent −16. Le jeu par défaut reste prouvé inchangé à chaque lot.</p>
+  </section>
+
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix et je te les rapporte. L’écriture au journal et dans les contrats se fera sur une branche quand aucune autre ne sera ouverte. Rien n’est implémenté avant.</p>
+    <p class="src">Sources : <code>AGENTS.md</code>, <code>JOURNAL.md</code> et Passe V8, <code>contracts/PROJECT_MASTER_CONTRACT.md</code>, <code>src/audio/</code>, <code>src/arena/</code>. Web, lu le 1ᵉʳ novembre 2026 : <a href="https://versilian-studios.com/vcsl/">VCSL</a>, <a href="https://versilian-studios.com/vsco-community/">VSCO 2 CE</a>, <a href="https://sonniss.com/gdc-bundle-license/">Sonniss</a>, <a href="https://freesound.org/help/faq/">Freesound</a>, <a href="https://kenney.nl/support">Kenney</a>, <a href="https://pixabay.com/service/terms/">Pixabay</a>, <a href="https://suno.com/terms">Suno</a>, <a href="https://www.udio.com/terms-of-service">Udio</a>, <a href="https://elevenlabs.io/music-terms">ElevenLabs Music</a>, <a href="https://www.aiva.ai/legal/1">AIVA</a>, <a href="https://stability.ai/license">Stability</a>, <a href="https://www.copyright.gov/newsnet/2025/1060.html">US Copyright Office</a>, <a href="https://partner.steamgames.com/doc/gettingstarted/contentsurvey">Steam</a>, <a href="https://www.gamesoundcon.com/post/gamesoundcon-game-audio-industry-survey-2025">GameSoundCon 2025</a>, <a href="https://www.legifrance.gouv.fr/codes/id/LEGIARTI000006278969/2026-04-19">CPI L131-4</a>, <a href="https://en.wikipedia.org/wiki/Alta_cappella">Alta cappella</a>, <a href="https://en.wikipedia.org/wiki/Shawm">Shawm</a>, <a href="https://www.audiokinetic.com/en/blog/how-to-use-interactive-music-to-score-gameplay/">Audiokinetic, musique interactive</a>, <a href="https://audiokinetic.com/en/mastering-a-game-with-wwise-part1">Audiokinetic, sonie</a>, <a href="https://online.berklee.edu/takenote/?p=14985">Berklee</a>, <a href="https://www.thegamer.com/interview-octopath-traveler-composer-yasunori-nishiki-on-how-hd2d-influenced-his-music/">Y. Nishiki et le HD-2D</a>. Le détail vit dans le dossier partagé de la séance, <code>audio-audit/</code>.</p>
+
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+  { id: "ecoute", title: "À écouter d’abord", sub: "Ton oreille tranche ces trois-là : je n’entends rien, je mesure.", fam: "var(--astre)", items: [
+    { id: "SA-1", tag: "ambiance", title: "La place à midi : la foule, le lieu, le tournoi au loin",
+      ctx: "Prototype écrit pour cet audit : 26 voix de foule en formants, cloches, hirondelles, drapeaux, la bande de la ville au loin, la clameur de l’arène derrière les toits, une réverbération de place. Écoute si tu crois à cette foule : c’est le point le plus faible de la synthèse, et aucune mesure ne le dira.",
+      clips: [["audio/actuel-place-midi.wav", "Aujourd’hui : place de la halle à midi, 20 s, relevé de 15 dB pour l’écoute", "img/actuel-place-midi.png"], ["audio/proto-ambiance.wav", "Prototype : même lieu, 32 s, stéréo", "img/proto-ambiance.png"]],
+      rec: "Aucune sur le fond. Je peux seulement dire que le prototype est stéréo, sans la boucle de 0,237 s, et à −22 LUFS. S’il sonne faux à ton oreille, la foule doit venir d’enregistrements (SA-11).",
+      opts: ["Bonne direction", "À reprendre (en note)", "À écarter"], recIdx: -1, src: "Rendu par Sound.ts réel (OfflineAudioContext), proto.js" },
+    { id: "SA-2", tag: "thème", title: "Le motif « Le Tournoi » et sa fanfare",
+      ctx: "Motif original à 6/8, sur ré, mi, sol, la, do seulement : sans tierce, il passe en clair le jour (fa dièse) et en sombre la nuit (fa). Chalemies, sacqueboute, luth, tambour : la bande de ville d’un tournoi, jouée entièrement par synthèse. Dis si le motif te reste en tête et si les anches sonnent comme des anches.",
+      clips: [["audio/actuel-air-midi.wav", "Aujourd’hui : l’air de midi seul, relevé de 25 dB pour l’écoute", "img/actuel-air-midi.png"], ["audio/proto-theme.wav", "Prototype : le thème, 33 s", "img/proto-theme.png"]],
+      rec: "Aucune sur le goût. Le thème mesure 1,6 LU d’amplitude : sa masse sonore varie peu malgré le crescendo écrit, c’est sa faiblesse mesurable. Il n’a été entendu par personne avant toi.",
+      opts: ["Motif et son : bonne direction", "Motif oui, son à reprendre", "Son oui, motif à reprendre", "À écarter"], recIdx: -1, src: "proto.js, piece2 ; motif écrit pour cet audit" },
+    { id: "SA-3", tag: "duel", title: "Le duel : couches, coups qui varient, K.O. et foule",
+      ctx: "Le même motif, sombre, sur trois couches qui entrent à la mesure : le bourdon et le tambour, puis la sacqueboute, puis les chalemies. Aucun coup n’est identique au précédent, la musique se baisse sous chaque coup, tout s’arrête sur le K.O., la foule répond, la fanfare revient en clair.",
+      clips: [["audio/actuel-duel-nuit.wav", "Aujourd’hui : 22 s d’un vrai duel, relevé de 8 dB, crêtes adoucies", "img/actuel-duel-nuit.png"], ["audio/proto-duel.wav", "Prototype : 34 s, les coups posés à la main", "img/proto-duel.png"]],
+      rec: "Aucune sur le goût. Le test : au bout de 30 s, le duel d’aujourd’hui fatigue-t-il plus que le prototype ? Un duel réel dure 5 à 10 minutes, ce que 34 s ne peuvent pas montrer.",
+      opts: ["Bonne direction", "À reprendre (en note)", "À écarter"], recIdx: -1, src: "proto.js, piece3 ; duels.json pour l’extrait d’aujourd’hui" },
+  ]},
+  { id: "orientation", title: "Orientation", sub: "Ce que le jeu doit être à l’oreille.", fam: "var(--voile)", items: [
+    { id: "SA-4", tag: "identité", title: "L’identité musicale du jeu",
+      ctx: "Le contrat demande « l’énergie d’un grand festival urbain : foule, annonces, rivalités publiques, commerçants opportunistes, paris, musique ». Les bandes de ville historiques, chalemies, sacqueboute, tambour, sonnaient le début des cérémonies et les grandes heures du jour : c’est exactement nos créneaux et notre `DayState`. Ce qu’on garde du HD-2D : des mélodies courtes qu’on retient, sur un son ample.",
+      rec: "« Les ménétriers de la Cité ». Une bande de ville appartient à ce monde, on la voit jouer, elle sonne les heures, et elle se distingue d’un orchestre de JRPG de plus. Sa musique peut être entendue dans la scène, au loin, avant d’être la bande-son.",
+      opts: ["Les ménétriers de la Cité", "Orchestre de JRPG", "Folk intime, luth et voix", "Autre (en note)"], recIdx: 0, src: "Contrat projet § 3.5, § 8 ; Wikipédia, Alta cappella et Shawm ; entretiens de Y. Nishiki" },
+    { id: "SA-5", tag: "duel", title: "La musique pendant les duels",
+      ctx: "L’arène n’a aucune musique aujourd’hui (`Sound.ts:85`) : 5 à 10 minutes de clameur et de coups. La bonne technique est connue : des couches synchrones qui entrent selon la tension, des transitions à la mesure, des stingers sur les moments.",
+      rec: "Par couches : le calme, la tension sur la séquence adverse, la montée sur la charge, le K.O. qui coupe tout. Le temps du duel ne s’arrête pas, la musique suit sans jamais décider d’un rythme de jeu.",
+      opts: ["Oui, par couches", "Une piste fixe par rival", "Pas de musique : foule et coups"], recIdx: 0, src: "Audiokinetic, How to Use Interactive Music ; Berklee Take Note" },
+    { id: "SA-6", tag: "catalogue", title: "Combien de musique pour le V2",
+      ctx: "Aujourd’hui : un seul air de 20 à 29 s par moment du jour. Douze morceaux de 60 à 90 s avec des silences entre les passages suffisent à une partie de dix jours : thème, quatre états de ville, parvis, lices, halle, trois couches de duel et leurs stingers, tension de nuit.",
+      rec: "Douze morceaux, environ 12 minutes. C’est le plus petit ensemble où chaque lieu et chaque moment ont leur couleur.",
+      opts: ["12 morceaux, 12 min", "6 morceaux, 6 min", "20 morceaux et plus, 25 min"], recIdx: 0, src: "Contrat projet § 8 (« musique » par quartier), hypothèse de cette fiche" },
+    { id: "SA-7", tag: "annonces", title: "Les annonces du tournoi",
+      ctx: "Le contrat cite les annonces ; le jeu n’a que du texte. Un acteur coûte par langue et fige les noms. Une voix sans mots (façon grommelot) est gratuite, et se teste vite. Une fanfare courte dit déjà « ça commence ».",
+      rec: "Fanfare et texte d’abord, une déclinaison du motif par étape du tournoi. La voix sans mots ou enregistrée attend le passage du jeu aux voix, si tu le veux.",
+      opts: ["Fanfare et texte", "Voix sans mots, synthèse", "Voix enregistrée"], recIdx: 0, src: "Contrat projet § 3.5" },
+  ]},
+  { id: "voie", title: "Voie de production", sub: "Le tableau au-dessus compare les six voies.", fam: "var(--ronce)", items: [
+    { id: "SA-8", tag: "règle", title: "La règle « tout par le code » pour le son",
+      ctx: "`AGENTS.md` dit que le jeu génère tout au démarrage sauf sa distribution cuite ; ta décision AV-17 « Effets, ambiances et musique simple » a donné le son par le code, sans fichier audio, pour le lot V8. Le prototype montre la limite : joué en direct, il prendrait 16 à 46 % d’un fil sur ce PC (mesure indicative, d’autres séances tournaient), et ses 33 s de musique demandent 9 à 16 s de rendu, impossibles au démarrage. Le principe d’art du projet autorise déjà le cuit (« procedurally generated, baked, or selectively authored »).",
+      rec: "Elle bouge : le son reste écrit dans le dépôt (partitions et recettes), mais il est cuit en fichiers compressés au développement, comme les feuilles de sprites, avec manifeste de provenance. Des sons libres CC0 peuvent s’y ajouter.",
+      opts: ["Elle bouge : cuit, avec manifeste", "Elle reste : tout dans le navigateur", "Elle tombe : toute source licite"], recIdx: 0, src: "AGENTS.md, Art production principle ; Passe V8 ; contrat projet § 12.2 ; mesure du rendu" },
+    { id: "SA-9", tag: "musique", title: "D’où vient la musique",
+      ctx: "Aucune banque libre complète d’instruments médiévaux n’a été trouvée. VCSL et VSCO 2 CE sont en CC0 et jouables en direct ; il n’y a pas de chalemie CC0 trouvée, ni de sacqueboute vérifiée. Une partition jouée par la synthèse pour les anches et par CC0 pour le reste comble ce trou, avec des droits entièrement propres.",
+      rec: "Partition écrite ici, instruments mixtes (synthèse + CC0), cuits. Si tu rejettes SA-2 pour le son mais gardes le motif, la commande à un compositeur devient la voie suivante.",
+      opts: ["Partition + synthèse et CC0", "Synthèse seule", "Compositeur humain", "Packs sous licence (CC BY)"], recIdx: 0, src: "Rapport licences-banques § A ; versilian-studios.com/vcsl ; versilian-studios.com/vsco-community" },
+    { id: "SA-10", tag: "budget", title: "Un compositeur humain pour le cœur du jeu",
+      ctx: "Tarif médian indé 407 $ la minute (enquête GameSoundCon 2025). Un cœur de 8 à 10 minutes, thème et duel, fait donc environ 3 300 à 4 000 $ ; débutant, 50 à 200 $ la minute. Tout le RPG (30 à 45 min) : 12 000 à 28 000 $. En France, cession écrite et détaillée, et le statut Sacem du compositeur à clarifier avant le contrat. Tout achat reste à toi.",
+      rec: "Rien pour l’instant. Décide après l’essai du lot S4 : on saura alors ce que le code ne donne pas, et le brief au compositeur sera précis, motif et couches compris.",
+      opts: ["0 € : décider après l’essai", "Cœur du jeu, environ 4 000 $", "Débutant, moins de 2 000 $", "Bande complète, 12 000 $ et plus"], recIdx: 0, src: "GameSoundCon 2025 ; CPI L131-4 ; rapport generation-et-humain" },
+    { id: "SA-11", tag: "effets", title: "D’où viennent les effets et les ambiances",
+      ctx: "Les coups, l’interface et les stingers se synthétisent bien. Une foule et un lieu vivant sont ce que la synthèse fait le moins bien. Les licences libres utilisables pour un jeu web au dépôt public sont CC0, CC BY et MIT ; Kenney est en CC0, Freesound se vérifie son par son.",
+      rec: "Le code pour les coups et l’interface ; des enregistrements CC0 pour la foule et les lieux, sous manifeste, si SA-1 ne te convainc pas. Sinon tout par le code.",
+      opts: ["Code + CC0 enregistré", "Tout par le code", "Banque payante (voir SA-13)"], recIdx: 0, src: "Rapport licences-banques § B ; freesound.org/help/faq ; kenney.nl/support" },
+    { id: "SA-12", tag: "génération", title: "Les outils de génération",
+      ctx: "Bloqués : Udio (téléchargement interdit), MusicGen (poids non commerciaux). Risque élevé : Suno (procès UMG et Sony, jugement GEMA à Munich), Mubert. Possibles après lecture du contrat : AIVA Pro (33 € par mois, cession et MIDI), ElevenLabs (clause « Music Library » face au dépôt public), Stable Audio 3.0. Une sortie entièrement générée n’est pas protégée aux États-Unis : n’importe qui peut la reprendre. Steam demande de la déclarer.",
+      rec: "Idéation seulement, rien dans le jeu ni dans le dépôt. Une exception future passe par ta décision et le manifeste, comme pour les images.",
+      opts: ["Idéation seulement", "Autorisés sous manifeste", "Interdits, même en idéation"], recIdx: 0, src: "suno.com/terms ; udio.com/terms-of-service ; elevenlabs.io/music-terms ; aiva.ai/legal/1 ; copyright.gov ; Steam content survey" },
+    { id: "SA-13", tag: "dépôt", title: "Le dépôt public et les fichiers audio",
+      ctx: "C’est le critère décisif : un dépôt public et un jeu web exposent le fichier brut. Sonniss, Pixabay, ZapSplat, BOOM, Soundly, Artlist et l’Asset Store n’autorisent pas cette mise à disposition, ou seulement sous conditions à faire lire. Le dépôt n’a aucun fichier `LICENSE` : les droits sur ce qu’on y crée restent à préciser si du copyleft ou des tiers y entrent.",
+      rec: "Seuls nos sons, CC0, CC BY et MIT entrent dans le dépôt. Un dépôt audio privé ne protège pas le jeu publié : il ne vaudrait que pour une licence qui l’admet, à faire lire par un juriste.",
+      opts: ["CC0, CC BY, MIT et nos sons", "Dépôt audio privé + banques payantes"], recIdx: 0, src: "sonniss.com/gdc-bundle-license ; pixabay.com/service/terms ; rapport licences-banques" },
+  ]},
+  { id: "technique", title: "Technique et calendrier", sub: "Le lot S0 ne dépend d’aucune orientation.", fam: "var(--cendre)", items: [
+    { id: "SA-14", tag: "S0", title: "Les correctifs du moteur actuel",
+      ctx: "Le bruit qui boucle à 0,237 s, la sonie 16 à 29 LU sous la cible, la musique masquée, le mono, aucun limiteur, quatre effets jamais joués, les coups sans variation, le palier fermé qui sonne, le relâché léger qui sonne comme une compétence. Tout est derrière `flags.v2` : le jeu par défaut ne change pas.",
+      rec: "À faire dès qu’une branche se libère : le jeu devient écoutable sans rien présumer de l’orientation. Environ une séance, poids nul.",
+      opts: ["Dès qu’une branche est libre", "Avec le lot S1", "Pas maintenant"], recIdx: 0, src: "`Sound.ts:39-40`, `ArenaApp.ts:384-391`, tests/v2-sound.test.mjs" },
+    { id: "SA-15", tag: "pages", title: "La musique entre deux pages",
+      ctx: "Chaque lieu et chaque créneau rechargent la page (`location.assign`). Le son s’y coupe net, puis reste muet jusqu’au prochain geste, et l’air repart à sa première note. Une application sans rechargement réglerait tout mais toucherait au cœur du mode jouable.",
+      rec: "Reprise : la position du morceau gardée d’une page à l’autre, le son baissé sur le fondu de sortie et remonté après le geste. Le comportement exact du navigateur reste à tester sur une vraie navigation.",
+      opts: ["Reprise avec fondu", "Application sans rechargement", "Coupure comme aujourd’hui"], recIdx: 0, src: "`src/ui/play.ts:29`, `src/ui/exits.ts:48-50`" },
+    { id: "SA-16", tag: "portée", title: "Où le son existe",
+      ctx: "Le son n’existe aujourd’hui que dans une partie ouverte avec `v2=1`. L’écran titre, « Explore the district » et le jeu par défaut sont muets, et tu as dit « Pas encore » au passage du V2 en défaut (V2-17).",
+      rec: "Derrière `flags.v2` jusqu’à ce que le V2 passe par défaut. Le titre et Explore suivront avec lui, sans décision de plus.",
+      opts: ["Derrière flags.v2 seulement", "Aussi l’écran titre et Explore"], recIdx: 0, src: "`src/ui/playTown.ts:88`, `ArenaApp.ts:166`, Passe FV3" },
+    { id: "SA-17", tag: "poids", title: "Combien de mégaoctets pour le son",
+      ctx: "Le jeu pèse 2,2 Mo d’assets aujourd’hui. Opus compte 0,5 à 1 Mo par minute. SA-6 à 12 minutes donne environ 9 Mo de musique, 2 d’ambiances, 1 d’effets, chargés à la demande, jamais avant la première page.",
+      rec: "12 Mo au plus. Cinq fois le poids actuel, mais rien ne bloque le démarrage. À revoir si tu choisis le catalogue de 25 minutes.",
+      opts: ["12 Mo au plus", "5 Mo au plus", "40 Mo au plus"], recIdx: 0, src: "`dist/assets` ; rapport licences-banques § C" },
+    { id: "SA-18", tag: "plan", title: "Quand lancer le plan",
+      ctx: "Le plan compte six lots, S0 à S5, environ 8 à 12 séances (tableau plus bas). Le son est le dernier de tes quatre chantiers en cours, et une seule branche de code à la fois est ouverte.",
+      rec: "S0 et S1 à la suite des personnages, puis S2 à S5 après ta revue de SA-1 à SA-3.",
+      opts: ["S0-S1 après les personnages", "Tout d’un bloc", "Plus tard (en note)"], recIdx: 0, src: "`AGENTS.md`, Git workflow ; JOURNAL, À reprendre" },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function richKids(s) { return s.split('`').map((p, i) => (i % 2 ? el('code', {}, p) : p)); }
+function rich(tag, cls, s) { return el(tag, { class: cls }, ...richKids(s)); }
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(rich('p', 'ctx', it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.clips) {
+    const grid = el('div', { class: 'clips' });
+    for (const [src, cap, spec] of it.clips) {
+      const a = el('audio', { controls: '', preload: 'metadata', src, 'aria-label': cap });
+      const msg = el('p', { class: 'src', hidden: '' }, 'Ce lecteur n’a pas pu charger le son : préviens-moi dans la conversation.');
+      a.addEventListener('error', () => { msg.hidden = false; });
+      grid.append(el('figure', { class: 'clip' }, el('figcaption', {}, cap), a, msg, el('img', { src: spec, alt: 'Spectrogramme : ' + cap, loading: 'lazy', class: 'spec' })));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), ...richKids(it.rec)));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value));
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', ...richKids(it.src)));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+const SCALE = [["Cible web et portable", -18, 1], ["Duel de nuit (effets + clameur)", -27.2], ["Duel à midi", -28.5], ["Quai à midi (ambiance + musique)", -33.6], ["Parvis à midi", -34.4], ["Place de la halle à midi", -36.8], ["Lices au matin", -40.3], ["L’air de midi seul", -43.3], ["Lices la nuit (ambiance)", -47.2]];
+const pct = (v) => (v + 50) / 40 * 100;
+document.getElementById('scale').append(...SCALE.map(([l, v, tg]) => el('div', { class: 'srow' + (tg ? ' target' : ''), title: l + ' : ' + String(v).replace('.', ',').replace('-', '−') + ' LUFS' }, el('span', {}, l),
+  el('div', { class: 'strack' }, el('i', { class: 'band', style: 'left:' + pct(-20) + '%;width:' + (pct(-16) - pct(-20)) + '%' }), el('i', { class: 'bar', style: 'width:' + pct(v) + '%' })),
+  el('span', { class: 'sval' }, String(v).replace('.', ',').replace('-', '−')))),
+  el('div', { class: 'axis', 'aria-hidden': 'true' }, el('span', {}), el('div', {}, ...['−50', '−40', '−30', '−20', '−10'].map((x) => el('span', {}, x))), el('span', {})));
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
