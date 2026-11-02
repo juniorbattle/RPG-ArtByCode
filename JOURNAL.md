@@ -446,6 +446,19 @@ Rendus à 48 kHz, tous à −18 LUFS (S0-N « Garder −18 »).
 - Le manque n'était pas là où la fiche le plaçait : S0-S1 sonnait juste, mais la musique n'avait pas de thème. Une demande de « reprendre » se lit contre le code avant de se lire contre le lot.
 - Un contrôle ne trouve que ce qu'on lui a dit de chercher : les quatre versions passaient à 0 frottement avec des notes répétées inaudibles et des basses fausses. Une lecture indépendante a coûté peu et trouvé le pire défaut de la passe.
 
+## Passe UM12 — L'interface validée par l'opérateur (2026-11-02)
+
+### Décision
+- À la question « L'interface est-elle validée après ton essai ? », l'opérateur, mot pour mot : « Oui, validée ». La condition de la Passe UM10 (« si oui on valide ») est levée.
+- Portée : l'interface de `main` à `80e289a` : la direction A « Voile » (Passes UM2 à UM8), l'équipement et les achats (Passe UM9), les écrans alignés sur eux (Passe UM11).
+
+### Ce que cette décision ne change pas
+- Ni le statut Gold Master (RJ3), ni le duel par défaut (C2-1), ni la version 2 derrière `flags.v2`.
+- Restent à part : les icônes d'objets, au choix de l'opérateur ; le tactile, hors de la tranche (E30) ; les bustes (UM-L4).
+
+### Pensée
+- Une validation conditionnelle se consigne comme telle jusqu'à ce que sa condition soit tenue : la Passe UM10 l'a gardée ouverte, et le lot qu'elle a fait apparaître est entré avant l'accord, pas après.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -653,7 +666,7 @@ c'est la suite, le district étant clos (Passe Z4) ; direction artistique décid
 
 **6f. Son (Passes SN1 à SN5)** — S0 et S1 faits et jugés bons à l'oreille, niveau −18 gardé, `ffmpeg` installé, foule par le code d'abord. **Orientation : jazz fusion** (Passe SN4), le motif de SA-2 gardé. Quatre versions écrites, jamais écoutées : **fiche d'écoute à remplir** https://claude.ai/artifact/RkQR5sYPam2S3wTUv2Nycb (source `briefs/fiche-son-fusion.html`). Rien n'entre dans le jeu avant sa réponse ; la suite proposée est le catalogue d'abord, S2 et S3 ensuite. À faire avant le premier fichier cuit : Opus en WebM et AAC sur un vrai Safari, boucle sans couture. Fin de journée à écrire. SA-10 après l'essai du lot S4.
 
-**6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. **Reste à l'opérateur** : son essai et sa validation d'ensemble, conditionnelle depuis la Passe UM10 ; les icônes d'objets, qui demandent de l'art.
+**6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 
 **6e. Interface (étape 2 de la feuille de route ; Passes UI1, UI2)** — ligne directrice décidée sur la fiche de la Passe UI1 (14 choix sur 14,
 tous à la recommandation) : C « Héraldique pixel » (L1), un style dont les tons suivent `DayState` (L2), le téléphone avec le système de design

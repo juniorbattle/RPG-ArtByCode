@@ -106,6 +106,8 @@ La fiche du mandat (19 choix de l'opérateur) lance une séance cloud autonome, 
 
 ## Étape 2. L'interface (UI et HUD)
 
+**Faite et validée par l'opérateur le 2026-11-02** (« Oui, validée », journal Passe UM12) : direction A « Voile », journal Passes UM1 à UM11.
+
 1. **Audit** des écrans (titre, panneau de la ville, dialogues et portraits, carte, HUD de l'arène, fiche de match, sauvegarde), sur ordinateur et
    sur téléphone, défauts relevés avec captures.
 2. **La ligne directrice** : deux ou trois directions en images de référence générées, sur une fiche d'arbitrages ; l'opérateur choisit.
