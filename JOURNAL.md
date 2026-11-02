@@ -459,6 +459,36 @@ Rendus à 48 kHz, tous à −18 LUFS (S0-N « Garder −18 »).
 ### Pensée
 - Une validation conditionnelle se consigne comme telle jusqu'à ce que sa condition soit tenue : la Passe UM10 l'a gardée ouverte, et le lot qu'elle a fait apparaître est entré avant l'accord, pas après.
 
+## Passe SN6 — La fiche d'écoute relue : le jazz fusion confirmé, le catalogue d'abord (2026-11-02)
+
+### Demande
+- Message de l'opérateur, mot pour mot : « Fiche remplie ».
+
+### La fiche
+- Page privée https://claude.ai/artifact/RkQR5sYPam2S3wTUv2Nycb, source `briefs/fiche-son-fusion.html`. Relue par `list` : 11 documents sur 11, aucune note. Toutes les réponses recommandées sont suivies.
+
+| # | Décision | Choix de l'opérateur |
+|---|---|---|
+| F-MIDI | Midi | « Bonne direction » |
+| F-MATIN | Matin | « Bonne direction » |
+| F-NUIT | Nuit | « Bonne direction » |
+| F-DUEL | Le duel en 7/8 | « Bonne direction » |
+| F-PARVIS | Le midi sur le parvis | « Bien placée » |
+| F-FANFARE | La fanfare | « Bonne direction » |
+| F-PALETTE | Le groupe | « Tous convenables » |
+| F-CAP | L'orientation | « Jazz fusion : confirmé » |
+| F-MOTIF | Le thème | « Garder le motif » |
+| F-SYNTH | La source | « Synthèse seule pour l’instant » |
+| F-SUITE | La suite | « Le catalogue d’abord » |
+
+### Ce que ces choix veulent dire
+- **F-CAP** remplace SA-4 pour de bon : l'identité du son est le jazz fusion, `AGENTS.md` le dit. **F-MOTIF** : le motif de SA-2 reste le thème de tout le jeu.
+- **F-DUEL** garde le 7/8, l'option « Garder, mais en 4/4 » n'a pas été prise. Il reste à l'éprouver en jouant : l'écoute ne dit pas comment il se joue.
+- **F-PARVIS** : la musique 4,5 dB au-dessus de la foule est le réglage de départ, dans la cible de 3 à 6 dB.
+- **F-SYNTH** : aucune banque d'instruments. Une banque CC0 ne reviendrait que sur la demande de l'opérateur.
+- **F-PALETTE** : les quatorze instruments sont acceptés, aucun n'est à reprendre.
+- **F-SUITE** change l'ordre du plan d'audit : le catalogue de SA-6 (lot S4) passe avant S2 et S3, qui en reprendront les instruments et les tonalités. Le catalogue annoncé sur la fiche : titre, matin, midi, fin de journée, nuit, parvis, lices, place de la halle en valse, duel, duel de rival, finale et jingles. Rien n'entre dans le jeu avant l'essai de l'opérateur, tout reste derrière `flags.v2`.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -664,7 +694,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN5)** — S0 et S1 faits et jugés bons à l'oreille, niveau −18 gardé, `ffmpeg` installé, foule par le code d'abord. **Orientation : jazz fusion** (Passe SN4), le motif de SA-2 gardé. Quatre versions écrites, jamais écoutées : **fiche d'écoute à remplir** https://claude.ai/artifact/RkQR5sYPam2S3wTUv2Nycb (source `briefs/fiche-son-fusion.html`). Rien n'entre dans le jeu avant sa réponse ; la suite proposée est le catalogue d'abord, S2 et S3 ensuite. À faire avant le premier fichier cuit : Opus en WebM et AAC sur un vrai Safari, boucle sans couture. Fin de journée à écrire. SA-10 après l'essai du lot S4.
+**6f. Son (Passes SN1 à SN6)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Quatre versions, fanfare et palette jugées bonnes à l'oreille (Passe SN6). **En cours : le catalogue** (F-SUITE « Le catalogue d’abord ») ; S2 et S3 ensuite, qui en reprennent les instruments et les tonalités. Rien n'entre dans le jeu avant l'essai de l'opérateur. À faire avant le premier fichier cuit : Opus en WebM et AAC sur un vrai Safari, boucle sans couture. SA-10 après l'essai du lot S4.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 

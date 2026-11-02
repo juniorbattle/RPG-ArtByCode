@@ -472,20 +472,19 @@ tâche, la provenance enregistrée automatiquement et la règle dans AGENTS.md. 
 
 ## Sound (the operator's audit sheet, 2026-11-01, journal Passe SN1)
 The sheet's 18 choices, under their exact labels, are in journal Passe SN1; its source and the plan of lots S0 to S5: `briefs/fiche-son.html`.
-- **Identity**: jazz fusion as the global orientation (the operator's message after the lot's sheet, word for word: « je trouve que le jazz fusion peut
-  etre une bonne orientation globale », journal Passe SN4; a working direction, confirmed by ear), in place of SA-4 « Les ménétriers de la Cité »; the
-  inspirations named: Final Fantasy VIII (orchestral and rock), Chrono Cross (folk and world music), Breath of Fire III (jazz fusion): a style, no work
-  reproduced. SA-2's motif « Le Tournoi » stays the theme's matter. RPGCards is a reference of method only (journal Passe SN4), nothing imported from it.
+- **Identity**: jazz fusion (F-CAP « Jazz fusion : confirmé », journal Passes SN4 / SN6), in place of SA-4 « Les ménétriers de la Cité »; the inspirations
+  named: Final Fantasy VIII (orchestral and rock), Chrono Cross (folk and world music), Breath of Fire III (jazz fusion): a style, no work reproduced. The
+  theme is SA-2's motif « Le Tournoi » (F-MOTIF « Garder le motif »). RPGCards is a reference of method only (journal Passe SN4), nothing imported from it.
 - **Source**: SA-8 « Elle bouge : cuit, avec manifeste », replacing AV-17's « no audio file »: the sound stays written in the repository (scores and
   recipes) and may be baked at development time into compressed files, like the sprite sheets, under a provenance manifest; SA-9 « Partition +
-  synthèse et CC0 »; SA-11 « Code + CC0 enregistré » (the crowd by the code first and CC0 as a complement, to confirm with the operator at lot S2);
+  synthèse et CC0 », F-SYNTH « Synthèse seule pour l’instant » (no instrument bank); SA-11 « Code + CC0 enregistré » (the crowd by the code first and CC0 as a complement, to confirm with the operator at lot S2);
   SA-12 « Idéation seulement » (no generated audio in the game or the repository; an exception is the operator's decision, through a manifest).
 - **Repository**: SA-13 « CC0, CC BY, MIT et nos sons »: nothing else enters it, each source's licence kept.
 - **Scope and weight**: SA-16 « Derrière flags.v2 seulement »: the default game, the title and Explore stay silent until the version 2 becomes the
   default; SA-17 « 12 Mo au plus », loaded on demand, never before the first page.
 - A bank or an external dependency needs the operator's agreement. SA-10 « 0 € : décider après l’essai »: no paid composer before the trial of lot S4.
 - **The engine** (lots S0 and S1 built, journal Passes SN2 / SN3; S2 to S5 wait for the operator's review, SA-18; the weather, the places and the final interface sounds are S2, the skills and the duel's crowd S3, the music S3 and S4): `src/audio/score.ts` the pure half (recipes, mix, tables), `Sound.ts` the engine, `layers.ts` the synchronous layers, `baked.ts` the on-demand loader, `hooks.ts` the effects wired from outside `src/ui`. Targets at the default settings: -18 LUFS +- 2 at the output, -1 dBTP at full volume, the music 3 to 6 dB over the ambience (the fiche's note on S0): `MIX` and `LEVEL` are measured, a change of a recipe or of the limiter is measured again (`tools/audio/analyse.mjs --check`). The page's fade is on the music and the ambience only, an effect is heard at once. A sound never draws from `Math.random`.
-- **The band** (journal Passe SN5, `art-lab/audio/README.md`; for the ear, on the sheet `briefs/fiche-son-fusion.html`, journal Passe SN5): one theme in every piece, SA-2's thirteen notes (`art-lab/audio/scores/theme.mjs`); it has no third, the third is the hour, F sharp by day and F natural at night; electric piano, electric bass, drums and a wind synth, one colour per moment; each note computed from a model at development time. No piece is in the game: `tune()` in `src/audio/score.ts` plays until the operator's answer.
+- **The band** (journal Passe SN5, `art-lab/audio/README.md`; approved by ear on the sheet `briefs/fiche-son-fusion.html`, journal Passe SN6; the catalogue comes before S2 and S3, F-SUITE « Le catalogue d’abord »): one theme in every piece, SA-2's thirteen notes (`art-lab/audio/scores/theme.mjs`); it has no third, the third is the hour, F sharp by day and F natural at night; electric piano, electric bass, drums and a wind synth, one colour per moment; each note computed from a model at development time. No piece is in the game: `tune()` in `src/audio/score.ts` plays until the operator's answer.
 - **A baked file** lives in `src/audio/baked/`, as Opus in WebM and AAC in M4A (journal Passe SN1: `decodeAudioData` on Ogg in Safari could not be checked), under a manifest `art-lab/audio/manifests/<id>.manifest.json` (`tools/audio/validate.mjs`, run by `npm run art:validate`): its licence, its score or its sources, the operator's approval word for word, its SHA-256; any other audio file under `src/` or `public/` fails. None exists yet.
 
 ## Art direction (locked)
