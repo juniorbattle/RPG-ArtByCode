@@ -489,6 +489,64 @@ Rendus à 48 kHz, tous à −18 LUFS (S0-N « Garder −18 »).
 - **F-PALETTE** : les quatorze instruments sont acceptés, aucun n'est à reprendre.
 - **F-SUITE** change l'ordre du plan d'audit : le catalogue de SA-6 (lot S4) passe avant S2 et S3, qui en reprendront les instruments et les tonalités. Le catalogue annoncé sur la fiche : titre, matin, midi, fin de journée, nuit, parvis, lices, place de la halle en valse, duel, duel de rival, finale et jingles. Rien n'entre dans le jeu avant l'essai de l'opérateur, tout reste derrière `flags.v2`.
 
+## Passe SN7 — Le catalogue : douze morceaux, un seul motif, des boucles sans clic, la fiche du catalogue (2026-11-02)
+
+### Demande
+- F-SUITE « Le catalogue d’abord » (Passe SN6) : les douze morceaux de SA-6 avant S2 et S3. Le catalogue annoncé : titre, matin, midi, fin de journée, nuit, parvis, lices, place de la halle en valse, duel, duel de rival, finale et jingles.
+
+### Fait — [OK]
+- **Sept morceaux et deux jingles neufs** (`art-lab/audio/scores/`), le motif transformé à chaque fois (`theme.mjs`) : `titre` (étiré sur un cor, sans tierce jusqu'au dernier accord de la fanfare), `fin` (la tierce hésite : fa sur le motif, fa dièse sur la réponse, les deux côte à côte à la fin), `parvis` (par bribes, puis entier ; une montée ton par ton), `lices` (5/4, cellules de cinq notes), `valse` (3/4, pointé), `rival` (7/8 sur 3 + 2 + 2, le motif renversé autour du ré, mêmes cinq notes, puis le vrai motif rendu, en trois couches), `finale` (ré mineur, un ton plus haut, puis la fanfare en ré majeur : le fa de la nuit cède au fa dièse du jour, en trois couches), `victoire`, `defaite`. La fanfare (Passe SN5) complète les jingles.
+- **Le socle** `rig.mjs` : les réglages de chaque pupitre, mesurés sur les versions approuvées, pour que chaque pièce parte du même mélange.
+- **Les boucles** (`render.mjs --loop`) : chacun des onze morceaux sort aussi en boucle pour le jeu : le fichier est le corps seul, circulaire, mastering compris (`Session.wrap`, `master({ circular })`, `beforeLoop`). Les versions avec leur fin restent pour l'oreille.
+
+### Défauts trouvés
+- [KO → corrigé] **Le clic à chaque tour** : la queue de l'introduction restait dans les premières mesures de la boucle, la fin du fichier ne rejoignait pas son début : saut de 34 % de la crête sur `midi`. Le corps seul, joué en cercle, le ramène à 5 %. Le mastering passe deux fois et garde le second tour : son état à la fin est son état au début.
+- [KO → corrigé] Une relecture indépendante des partitions a trouvé douze points : sur `finale`, le maintien de la mélodie retirait la tierce de la dominante (la correction d'`avoidAt` cachait la faute au contrôle) ; sur `rival`, le groupe partagé entre deux groupements en 7/8 ; la timbale, accordée en ré, sous des accords qui n'en ont pas ; un orgue qui anticipait le mauvais accord ; un do dièse sous un ré tenu au `parvis`, angle mort du contrôle, qui ne regarde que le demi-ton au-dessus ; le fa dièse sorti trop tôt au `parvis` ; le piano du `titre` qui sonnait sur l'accord suivant ; le vibraphone de `fin` sur les notes mobiles ; la jointure de `valse` sans dominante ; le fa dièse sonnant sur le fa à la jointure de `finale` ; la couche `tension` vide sur douze mesures du `rival` ; le marimba de `lices` dans le registre de la mélodie. Tout est corrigé.
+- [KO → corrigé] Les mètres : batterie trop vive dans la valse (4 kHz à −0,4 dB), trop forte dans les combats, cor trop discret au titre et au parvis.
+
+### Mesures — [OK]
+Rendus à 48 kHz, −18 LUFS. « Boucle » : la durée du fichier du jeu. « Jointure » : le saut au tour rapporté au plus grand saut du morceau.
+
+| Morceau | Avec sa fin | Boucle | Crête vraie | Plage (LU) | Jointure |
+|---|---|---|---|---|---|
+| `titre` | 65,8 s | 46,7 s | −1,3 dBTP | 8,2 | 0,01 |
+| `matin` | 82,3 s | 65,5 s | −4,6 dBTP | 5,3 | 0,02 |
+| `midi` | 94,9 s | 81,5 s | −3,8 dBTP | 3,1 | 0,09 |
+| `fin` | 67,5 s | 49,2 s | −3,8 dBTP | 5,2 | 0,03 |
+| `nuit` | 88,7 s | 67,5 s | −4,5 dBTP | 6,0 | 0,01 |
+| `parvis` | 64,3 s | 50,0 s | −2,6 dBTP | 4,7 | 0,03 |
+| `lices` | 58,9 s | 50,0 s | −3,1 dBTP | 3,3 | 0,02 |
+| `valse` | 57,9 s | 47,0 s | −4,8 dBTP | 2,9 | 0,09 |
+| `duel` | 54,2 s | 44,2 s | −5,0 dBTP | 3,0 | 0,32 |
+| `rival` | 42,9 s | 35,9 s | −5,8 dBTP | 2,1 | 0,06 |
+| `finale` | 53,9 s | 42,4 s | −4,0 dBTP | 3,9 | 0,62 |
+
+- La durée écrite du catalogue fait 12,1 minutes (SA-6 « 12 morceaux, 12 min »), jingles compris. `victoire` 9,6 s et `defaite` 12,3 s avec leur résonance.
+- Les jointures de `duel` et de `finale` tombent dans une attaque de batterie sur le premier temps : le saut reste sous le plus grand saut naturel du morceau.
+- **Poids en Opus, mesuré sur les boucles** : huit morceaux simples à 96 kb/s 5,95 Mo ; jingles 0,50 Mo ; les trois combats en trois couches (`base` à 80 kb/s, `melody` et `tension` à 64) 3,50 Mo. **9,95 Mo** en tout, sous les 12 Mo de SA-17 ; 8,62 Mo si seul `duel` garde ses couches.
+- 0 frottement, le motif dans l'ordre et les tessitures tenues sur les onze morceaux. `npm run typecheck`, `npm test` **381 / 381**, `npm run build`, `npm run art:validate` : 61 manifestes, 85 sources, 0 manifeste de son, 0 erreur. Aucun fichier de `src/` ni de `public/` ne change, aucun fichier audio dans le dépôt.
+
+### Limites
+- **Personne n'a écouté les neuf pièces neuves.** Le cor du titre et la tenue de la valse le soir sont les inconnues les plus nettes.
+- Le contrôle `rubs` ne voit qu'un demi-ton au-dessus de l'orchestre : les deux relectures ont trouvé des fautes hors de ce champ. Il n'a pas été élargi : la septième majeure sous la mélodie est une couleur voulue.
+- Le corps d'une boucle ne contient pas l'introduction : les introductions du `duel`, du `rival`, de la `finale` et du `titre` demanderont un fichier à part ou seront retirées au moment de cuire. Au premier tour, la résonance de la fin de boucle s'entend sur le début, faiblement.
+- La jointure s'entend peut-être sur `midi`, qui repart de mi vers ré : voulu, à confirmer.
+- **AAC** : son décalage de codeur peut laisser un trou à la jointure : à éprouver sur un vrai Safari, je n'ai aucun appareil Apple. Rien n'est cuit ni branché ; le moteur joue toujours `tune()`.
+- Le parvis mixé sur sa foule (Passe SN5) n'a pas été refait pour les autres lieux.
+
+### La fiche — à remplir par l'opérateur
+- Page privée https://claude.ai/artifact/YWTp8PsevhBXAQYhXP79vD (source `briefs/fiche-son-catalogue.html`), collection `decisions` vide à la publication, treize cartes, onze extraits. À l'oreille : C-TITRE, C-FIN, C-PARVIS, C-LICES (avec « Garder, mais en 4/4 »), C-VALSE, C-RIVAL, C-FINALE, C-JINGLES, C-BOUCLE. Décisions : C-LIEUX le plan des morceaux par lieu et par étape du tournoi, C-COUCHES le poids, C-SAFARI l'essai sur appareil Apple, C-SUITE cuire et brancher. Rendu vérifié en local, deux largeurs, onze lecteurs chargés, sans débordement.
+
+### Report sur `main`
+- `main` a reçu UM12 pendant ce travail. Branche neuve `claude/sound-twelve` depuis `e118f66`, Passe SN6 rejouée, aucun push forcé.
+
+### Où reprendre
+- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot, n'agir que sur ce qui est décidé. La suite proposée : cuire sous manifeste (Opus et AAC), jouer les boucles et les couches dans le moteur derrière `flags.v2`, essai en jouant ; puis S2 et S3 avec les instruments du groupe.
+
+### Pensée
+- Une boucle n'est pas un morceau qu'on recoud : le fichier du jeu se rend comme un cercle, de la partition au plafond. Chercher le clic a montré que l'introduction n'avait rien à y faire.
+- Une correction automatique peut cacher une faute à son propre contrôle : `avoidAt` retirait une tierce, et le test passait. Quand un outil modifie la musique, ce qu'il retire se relit.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -694,7 +752,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN6)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Quatre versions, fanfare et palette jugées bonnes à l'oreille (Passe SN6). **En cours : le catalogue** (F-SUITE « Le catalogue d’abord ») ; S2 et S3 ensuite, qui en reprennent les instruments et les tonalités. Rien n'entre dans le jeu avant l'essai de l'opérateur. À faire avant le premier fichier cuit : Opus en WebM et AAC sur un vrai Safari, boucle sans couture. SA-10 après l'essai du lot S4.
+**6f. Son (Passes SN1 à SN7)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit et bouclable, 12,1 minutes, 9,95 Mo : quatre versions, fanfare et palette jugées bonnes à l'oreille, **neuf pièces neuves à écouter : fiche du catalogue à remplir** https://claude.ai/artifact/YWTp8PsevhBXAQYhXP79vD (source `briefs/fiche-son-catalogue.html`). Rien n'entre dans le jeu avant sa réponse. La suite proposée : cuire sous manifeste, brancher derrière `flags.v2`, essai en jouant ; S2 et S3 ensuite. À faire avant le premier fichier cuit : Opus en WebM et AAC sur un vrai Safari (voir C-SAFARI), introductions des combats. SA-10 après l'essai du lot S4.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 
@@ -897,6 +955,8 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Un mélange se règle piste par piste sur la mesure, sonie et octaves : le spectre d'ensemble dit qu'il y a une bosse, pas qui la fait (Passe SN5).
 - `JOURNAL.md` est en CRLF dans son blob : jamais de `sed -i` dessus, un script Node, et `git ls-files --eol` avant de pousser : `autocrlf` fige un fichier passé en LF (Passes UM10, SN5).
 - Quand `main` bouge pendant un travail, une branche neuve et un rejeu évitent le push forcé ; `origin/main` se met à jour depuis les autres dossiers de travail : un `git diff origin/main` sur `src` le révèle (Passes SN3, SN5).
+- Une boucle se rend en cercle, de la partition au plafond : le fichier ne contient que son corps, ce qui sonne après la fin revient au début, la dynamique passe deux fois. Un saut à la jointure se juge contre le plus grand saut du morceau (Passe SN7).
+- Une correction automatique peut cacher une faute à son propre contrôle : ce qu'un outil retire de la musique se relit (Passe SN7).
 ### Personnages : art et critique
 - La densité d'un sprite se choisit par la taille de son texel à l'écran dans le cadrage où il vit (l'arène : ×2 pour ≈ 3 px / texel en 1080p,
   comme les personnages de la ville), pas par celle de l'image source (Passe P1).

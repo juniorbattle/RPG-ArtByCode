@@ -6,13 +6,23 @@ import { SR, hz, Rand, seedOf, ring, room, convolve } from '../tools/audio/band/
 import { rhodes, bass, nylon, vibes, ewi, flute, gestures } from '../tools/audio/band/instruments.mjs';
 import { drum, DRUMS } from '../tools/audio/band/drums.mjs';
 import { Session, parseChord, tonesOf, voice, parseLine, midiOf, master } from '../tools/audio/band/session.mjs';
-import { hasMotif, rubs, outOfRange, octaves } from '../tools/audio/band/check.mjs';
+import { hasMotif, rubs, outOfRange, octaves, seam } from '../tools/audio/band/check.mjs';
 import { fft } from '../tools/audio/measure.mjs';
 import { MOTIF } from '../art-lab/audio/scores/theme.mjs';
 import midi, { tunes as midiTunes } from '../art-lab/audio/scores/midi.score.mjs';
 import matin, { tunes as matinTunes } from '../art-lab/audio/scores/matin.score.mjs';
 import nuit, { tunes as nuitTunes } from '../art-lab/audio/scores/nuit.score.mjs';
 import duel, { tunes as duelTunes } from '../art-lab/audio/scores/duel.score.mjs';
+import titre, { tunes as titreTunes } from '../art-lab/audio/scores/titre.score.mjs';
+import fin, { tunes as finTunes } from '../art-lab/audio/scores/fin.score.mjs';
+import parvis, { tunes as parvisTunes } from '../art-lab/audio/scores/parvis.score.mjs';
+import lices, { tunes as licesTunes } from '../art-lab/audio/scores/lices.score.mjs';
+import valse, { tunes as valseTunes } from '../art-lab/audio/scores/valse.score.mjs';
+import rival, { tunes as rivalTunes } from '../art-lab/audio/scores/rival.score.mjs';
+import finale, { tunes as finaleTunes } from '../art-lab/audio/scores/finale.score.mjs';
+import fanfare from '../art-lab/audio/scores/fanfare.score.mjs';
+import victoire from '../art-lab/audio/scores/victoire.score.mjs';
+import defaite from '../art-lab/audio/scores/defaite.score.mjs';
 
 /** the strongest partial near a pitch, in cents from it */
 function cents(x, f, from = 2000) {
@@ -66,7 +76,7 @@ test('the spaces: a room per side, never the same, and a convolution that keeps 
   const x = new Float32Array(2000); ring(x, [{ f: 440, a: 1, tau: 0.1 }]); assert.ok(Math.abs(x[50]) > 0);
 });
 
-const SCORES = [['midi', midi, midiTunes, 'lead'], ['matin', matin, matinTunes, 'flute'], ['nuit', nuit, nuitTunes, 'lead'], ['duel', duel, duelTunes, 'lead']];
+const SCORES = [['midi', midi, midiTunes, 'lead'], ['matin', matin, matinTunes, 'flute'], ['nuit', nuit, nuitTunes, 'lead'], ['duel', duel, duelTunes, 'lead'], ['titre', titre, titreTunes, 'horn'], ['fin', fin, finTunes, 'lead'], ['parvis', parvis, parvisTunes, 'lead'], ['lices', lices, licesTunes, 'lead'], ['valse', valse, valseTunes, 'flute'], ['rival', rival, rivalTunes, 'lead'], ['finale', finale, finaleTunes, 'lead']];
 const RANGE = { lead: [62, 100], flute: [60, 93], bass: [28, 67], fretless: [28, 67], nylon: [40, 86], rhodes: [40, 90], vibes: [53, 89], marimba: [48, 96], bouzouki: [50, 86] };
 for (const [id, make, tunes, carrier] of SCORES) test(`« ${id} »: the motif, room for the tune, the ranges, the same notes for the same seed`, () => {
   const plan = make({ dry: true }), tune = plan.events.filter((e) => tunes.includes(e.track)), s = make({ dry: true, tune });
@@ -74,7 +84,8 @@ for (const [id, make, tunes, carrier] of SCORES) test(`« ${id} »: the motif, r
   const rub = rubs(s.events, tunes, { hold: 0.34, secondsPerBar: s.steps * s.stepSecs }); assert.ok(rub.length <= 1, JSON.stringify(rub));
   assert.deepEqual(outOfRange(s.events, RANGE), []);
   const again = make({ dry: true, tune }); assert.deepEqual(again.events.map((e) => [e.midi, e.t]), s.events.map((e) => [e.midi, e.t]));
-  assert.ok(s.total / SR < 110, 'a demonstration, not the catalogue');
+  assert.ok(s.total / SR < 110, 'a piece of the catalogue');
+  const looped = make({ dry: true, tune, looped: true }); assert.ok(looped.loop && looped.loopEnd > looped.loopStart, 'every piece goes round'); assert.ok(looped.loopEnd <= looped.total);
 });
 test('the third is the hour: F sharp in the morning, F natural at night', () => {
   const pcs = (make) => { const o = {}; for (const e of make({ dry: true }).events) o[e.midi % 12] = (o[e.midi % 12] ?? 0) + 1; return o; };
@@ -84,4 +95,18 @@ test('a mix and its master: the level set, the ceiling held, the same seed the s
   const make = () => { const s = new Session({ id: 't', seed: 3, bpm: 120, bars: 1, tail: 0.5 }), k = s.track('k', { room: 0.1 }); s.drums(k, 0, 1, { kick: 'X...X...X...X...', snare: '....X.......X...', hat: 'xoxoxoxoxoxoxoxo' }); return master(s.mix(), { lufs: -18 }); };
   const a = make(), b = make(); assert.ok(a.tp <= -1.2, `true peak ${a.tp}`); assert.deepEqual(a.L.slice(0, 4000), b.L.slice(0, 4000));
   assert.ok(Object.keys(octaves(a.L, SR, 1 << 12)).length === 10);
+});
+test('the catalogue: twelve pieces, twelve minutes (SA-6), the jingles short', () => {
+  const secs = (make) => { const s = make({ dry: true }); return s.bars * s.steps * s.stepSecs; }, pieces = SCORES.map(([, make]) => secs(make)), jingles = [fanfare, victoire, defaite].map(secs), total = [...pieces, ...jingles].reduce((a, b) => a + b, 0);
+  assert.equal(SCORES.length + 1, 12, 'eleven pieces and the jingles'); assert.ok(total > 600 && total < 800, `${(total / 60).toFixed(1)} minutes`); for (const j of jingles) assert.ok(j < 14, `a jingle of ${j} s`);
+});
+test('a loop: what rings past its end lands on its start, the file stops on its last sample', () => {
+  const s = new Session({ id: 'l', seed: 2, bpm: 120, bars: 3, tail: 1, loop: { from: 1, to: 2 } }), st = new Float32Array(s.total), a = s.loopStart, b = s.loopEnd; st[b + 10] = 1; st[a - 5] = 0.5; st[a + 7] = 0.25;
+  const out = s.wrap(new Map([['main', [st, Float32Array.from(st)]]])).get('main'), len = b - a; assert.equal(out[0].length, len, 'the file is the loop'); assert.equal(out[0][10], 1); assert.equal(out[0][7], 0.25); assert.equal(out[0][len - 5], 0.5, 'a hit a hair early lands on the end');
+  assert.ok(s.beforeLoop(s.t(0, 8)), 'the intro is not played'); assert.ok(!s.beforeLoop(s.t(1, 0) - 0.01), 'a hit a hair early is');
+  const tr = s.track('t', {}); tr.sound(() => new Float32Array(100).fill(1), s.t(0, 2)); assert.equal(tr.L.reduce((n, v) => n + (v ? 1 : 0), 0), 0);
+});
+test('a master in a circle: the level still set, the first sample following the last', () => {
+  const s = new Session({ id: 'c', seed: 4, bpm: 120, bars: 3, tail: 1, loop: { from: 1, to: 3 } }), k = s.track('k', { room: 0.1 }); s.drums(k, 0, 3, { kick: 'X...X...X...X...', snare: '....X.......X...', hat: 'xoxoxoxoxoxoxoxo' });
+  const m = master(s.mix(), { lufs: -18, circular: true }), j = seam([m.L, m.R], SR, 0, m.L.length); assert.equal(m.L.length, s.loopEnd - s.loopStart); assert.ok(m.tp <= -1.2); assert.ok(j.ofLargest < 0.5, JSON.stringify(j));
 });

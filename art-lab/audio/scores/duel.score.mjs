@@ -6,6 +6,7 @@ import { bass, organ, brass, strings, rockGuitar, ewi } from '../../../tools/aud
 import { chorus, tremolo, compress, pingPong } from '../../../tools/audio/band/dsp.mjs';
 import { drum } from '../../../tools/audio/band/drums.mjs';
 import { riff } from './theme.mjs';
+import { loopOf } from './rig.mjs';
 
 const hits = (dur, o = {}) => (m, v, take) => brass(m, dur, v, { take, ...o });
 const DRIVE = { ride: 'x.o.x.o.x.o.o.', kick: 'X.......X.x...', snare: '....X.......X.' };
@@ -17,7 +18,7 @@ const HALF = { hat: 'x.o.x.o.x.o.o.', kick: 'X.............', snare: '........X.
 export const tunes = ['lead'];
 
 export default function score(o = {}) {
-  const s = new Session({ id: 'duel', seed: 152, bpm: 152, steps: 14, beat: 4, bars: 37, tail: 3.5, ...o });
+  const s = new Session({ id: 'duel', seed: 152, bpm: 152, steps: 14, beat: 4, bars: 37, tail: 3.5, ...o, ...loopOf(o, 4, 36) });
   const kit = s.track('kit', { stem: 'base', gain: 0.8, room: 0.12, plate: 0.03, jitter: 0.003, eq: [['hp', 32], ['peak', 3600, 0.9, 2]], fx: (L, R) => compress(L, R, { th: -13, ratio: 3.5, attack: 0.003, release: 0.08, makeup: 2 }) });
   const low = s.track('bass', { stem: 'base', gain: 0.5, room: 0.02, jitter: 0.002, eq: [['hp', 38], ['low', 130, 0.7, 4], ['peak', 300, 1, -3], ['high', 1500, 0.7, -4]], fx: (L, R) => compress(L, R, { th: -12, ratio: 5, attack: 0.002, release: 0.06, makeup: 3 }) });
   const gl = s.track('guitar L', { stem: 'base', pan: -0.78, gain: 0.14, room: 0.06, jitter: 0.004, eq: [['hp', 95], ['peak', 400, 1, -2]] }), gr = s.track('guitar R', { stem: 'base', pan: 0.78, gain: 0.14, room: 0.06, jitter: 0.004, lay: 0.004, eq: [['hp', 95], ['peak', 400, 1, -2]] });
@@ -71,6 +72,7 @@ export default function score(o = {}) {
   T.forEach((c, i) => { const b = 32 + i; [[0, 3.6], [4, 3.6], [8, 5.6]].forEach(([st, len]) => stab(b, st, c, len, 0.92)); power(b, `${['D2', 'E2', 'Bb1', 'A1'][i]}:4 ${['D2', 'E2', 'Bb1', 'A1'][i]}:4 ${['D2', 'E2', 'Bb1', 'A1'][i]}:6`, { vel: 0.9 }); s.bass(low, bass, b, c, '1...1...1...p.', { slap: true, vel: 0.9 }); s.pad(pad, strings, b, 0, c, 13.5, { vel: 0.6, n: 5, lo: 60, hi: 86, attack: 0.2, release: 0.4 }); });
   s.phrase(lead, 32, 0, 'D6:4! D6:4! A5:6 | D6:4! D6:4! E6:6 | D6:4 C6:4 A5:6 | G5:4 E5:4 A5:6~', { vel: 0.92 });
   s.drums(kit, 32, 1, { crash: 'X.............' }); s.drums(kit, 32, 3, { ride: 'X.x.X.x.X.x.x.', kick: 'X...X...X.....', snare: '....X...X..gXX' }); s.drums(kit, 35, 1, { ...FILL, kick: 'X...X...X.....' });
+  if (s.loop) return s;
   // ---- the last hit
   s.drums(kit, 36, 1, { crash: 'X.............', kick: 'X.............', snare: 'X.............', tomL: 'X.............' }); stab(36, 0, 'Dm9', 12, 1); power(36, 'D2:14', { vel: 1 }); s.bass(low, bass, 36, 'Dm9', '1-------------', { slap: true, vel: 0.9 }); timp.sound(() => drum('timp', 1, 0), s.t(36, 0), { g: 1 }); s.phrase(lead, 36, 0, 'D6:12~', { vel: 0.92 });
   return s;

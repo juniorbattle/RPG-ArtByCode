@@ -1,5 +1,5 @@
-// The theme (journal Passe SN5): SA-2's motif « Le Tournoi », the operator's « Motif et son : bonne direction », the same thirteen notes in every version:
-// D A A C A G A D C A G E D. It has no third: the third is the hour, F sharp by day, F natural at night. Original, written for this project.
+// The theme (journal Passes SN5 / SN7): SA-2's motif « Le Tournoi », the operator's « Motif et son : bonne direction » and F-MOTIF « Garder le motif », the same thirteen notes
+// in every piece: D A A C A G A D C A G E D. It has no third: the third is the hour, F sharp by day, F natural at night. Original, written for this project.
 export const MOTIF = ['D', 'A', 'A', 'C', 'A', 'G', 'A', 'D', 'C', 'A', 'G', 'E', 'D'];
 
 /** the motif in the fusion's rhythm, 3-3-2-3-2-3 over two bars of sixteenths, in the octave a version asks for */
@@ -14,3 +14,11 @@ export const lilt = {
 export const longHead = (o = 5) => `D${o}:8 A${o}:5 A${o}:3 | C${o + 1}:5 A${o}:3 G${o}:5 A${o}:3 | D${o + 1}:8 C${o + 1}:5 A${o}:3 | G${o}:5 E${o}:3 D${o}:8`;
 /** the motif in 7/8, three notes to the bar on 2 + 2 + 3 */
 export const riff = (o = 2) => `D${o}:4 A${o}:4 A${o}:6 | C${o + 1}:4 A${o}:4 G${o}:6 | A${o}:4 D${o + 1}:4 C${o + 1}:6 | A${o}:4 G${o}:4 E${o}:6`;
+/** the rival's riff: the motif upside down around D, its notes the same five, on 3 + 2 + 2: the hero's theme in a mirror */
+export const mirror = (o = 2) => `D${o + 1}:6 G${o}:4 G${o}:4 | E${o}:6 G${o}:4 A${o}:4 | G${o}:6 D${o}:4 E${o}:4 | G${o}:6 A${o}:4 C${o + 1}:4`;
+/** the motif in five-note cells, three bars of 5/4 (twenty steps to the bar) */
+export const cells = (o = 5) => `D${o}:4 A${o}:4 A${o}:4 C${o + 1}:4 A${o}:4 | G${o}:4 A${o}:4 D${o + 1}:4 C${o + 1}:4 A${o}:4 | G${o}:4 E${o}:4 D${o}:12`;
+/** the same in two bars of 5/4, the fusion's syncopation back */
+export const cellsTight = (o = 5) => `D${o}:3 A${o}:3 A${o}:2 C${o + 1}:4 A${o}:2 G${o}:2 A${o}:4 | D${o + 1}:3 C${o + 1}:3 A${o}:2 G${o}:4 E${o}:2 D${o}:6`;
+/** the motif as a waltz, a dotted lilt on each bar of 3/4 (twelve steps to the bar) */
+export const waltz = (o = 5) => `D${o}:6 A${o}:2 A${o}:4 | C${o + 1}:6 A${o}:2 G${o}:4 | A${o}:6 D${o + 1}:2 C${o + 1}:4 | A${o}:6 G${o}:2 E${o}:4 | D${o}:12`;

@@ -56,6 +56,12 @@ export function octaves(x, sr, size = 1 << 14) {
 export function shape(channels, sr, secs) {
   const n = Math.round(secs * sr), out = []; for (let at = 0; at + n <= channels[0].length; at += n) out.push(+loudness(channels.map((c) => c.subarray(at, at + n)), sr).lufs.toFixed(1)); return out;
 }
+/** the join of a loop: the step from its last sample to its first against the signal's largest step anywhere: a join heard as a click stands out of it, a circular body does not */
+export function seam(channels, sr, start, end) {
+  let step = 0, most = 1e-9, peak = 1e-9;
+  for (const x of channels) { step = Math.max(step, Math.abs(x[start] - x[end - 1])); for (let i = start + 1; i < end; i++) { most = Math.max(most, Math.abs(x[i] - x[i - 1])); peak = Math.max(peak, Math.abs(x[i])); } }
+  return { step: +(step / peak).toFixed(3), ofLargest: +(step / most).toFixed(2) };
+}
 /** a picture of a render: time across, log frequency up, 20 Hz to 16 kHz; for a reader who cannot listen */
 export function spectrogram(x, sr, out, { w = 1400, h = 420, size = 4096, floor = -80 } = {}) {
   const hop = Math.max(1, Math.floor((x.length - size) / w)), win = Float64Array.from({ length: size }, (_, i) => 0.5 - 0.5 * Math.cos(2 * Math.PI * i / size)), rows = [];

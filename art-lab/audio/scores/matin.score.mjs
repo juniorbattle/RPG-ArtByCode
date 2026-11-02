@@ -5,6 +5,7 @@ import { Session, parseChord, voice } from '../../../tools/audio/band/session.mj
 import { nylon, bouzouki, bass, marimba, strings, flute } from '../../../tools/audio/band/instruments.mjs';
 import { chorus, compress } from '../../../tools/audio/band/dsp.mjs';
 import { lilt } from './theme.mjs';
+import { loopOf } from './rig.mjs';
 
 const A = ['Dadd9', 'Cadd9', 'Am7', 'Em7'], B = ['Gmaj9', 'D7/F#', 'Am7', 'Dadd9'], TAG = ['Dadd9', 'Em7', 'Cadd9', 'Dadd9'], C = ['Bm9', 'F#m7', 'Gmaj9', 'Dadd9/F#', 'Em9', 'Bm7', 'Cadd9', 'A7sus'];
 const HANDS = {
@@ -20,7 +21,7 @@ const HEMI = { frame: 'X...x...x...', shaker: 'x.o.x.o.x.o.', conga: '..o...o...
 export const tunes = ['flute'];
 
 export default function score(o = {}) {
-  const s = new Session({ id: 'matin', seed: 66, bpm: 66, steps: 12, beat: 6, bars: 44, tail: 6, ...o });
+  const s = new Session({ id: 'matin', seed: 66, bpm: 66, steps: 12, beat: 6, bars: 44, tail: 6, ...o, ...loopOf(o, 4, 40) });
   const gtr = s.track('nylon', { pan: -0.2, gain: 0.56, plate: 0.09, room: 0.12, jitter: 0.005, lay: 0.002, vary: 0.12, eq: [['hp', 80]], fx: (L, R) => compress(L, R, { th: -16, ratio: 2, attack: 0.012, release: 0.12, makeup: 1 }) });
   const bouz = s.track('bouzouki', { pan: 0.42, gain: 0.3, room: 0.14, plate: 0.08, jitter: 0.004, eq: [['hp', 170]] });
   const fl = s.track('flute', { pan: 0.04, gain: 0.31, hall: 0.2, plate: 0.09, lay: 0.006, eq: [['hp', 260], ['peak', 3400, 1, 2]] }); fl.voice = (notes, total) => flute(notes, total, { seed: 11, breath: 0.11 });
@@ -60,6 +61,7 @@ export default function score(o = {}) {
   round(32, A, { vel: 0.56 }); under(32, A); padOver(32, A, 0.5); s.drums(hands, 32, 4, HANDS.full); s.phrase(fl, 32, 0, lilt.a, { vel: 0.8 });
   s.line(bouz, bouzouki, 32, 0, 'B4:6 F#5:4 F#5:2 | A5:4 F#5:2 E5:4 F#5:2 | B5:6 A5:4 F#5:2 | E5:4 C5:2 D5:6', { vel: 0.66, art: 1 });
   round(36, TAG, { vel: 0.58 }); under(36, TAG, '1--1--5---7-', 0.76); padOver(36, TAG, 0.56); s.drums(hands, 36, 4, HANDS.tag); s.phrase(fl, 36, 0, lilt.tag, { vel: 0.86 }); TAG.forEach((c, i) => TAGstrum(s, bouz, 36 + i, c));
+  if (s.loop) return s;
   // ---- the guitar alone again
   round(40, ['Gmaj9', 'Dadd9'], { vel: 0.46 }); under(40, ['Gmaj9', 'Dadd9'], '1-----------', 0.6);
   pick(42, 'Dadd9', { vel: 0.4, shape: 2 }); s.phrase(fl, 42, 0, 'A5:6 D6:18~', { vel: 0.5 }); s.bass(low, fretless, 42, 'Dadd9', '1-----------', { vel: 0.56 });

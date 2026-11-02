@@ -5,6 +5,7 @@ import { Session } from '../../../tools/audio/band/session.mjs';
 import { rhodes, bass, eguitar, brass, strings, ewi } from '../../../tools/audio/band/instruments.mjs';
 import { chorus, phaser, pingPong, compress, drive } from '../../../tools/audio/band/dsp.mjs';
 import { fusionHead } from './theme.mjs';
+import { loopOf } from './rig.mjs';
 
 const fall = (dur, o = {}) => (m, v, take) => brass(m, dur, v, { take, ...o });
 const up = (sym, n) => (n ? sym.replace(/^[A-G][#b]?/, (r) => TONE[r]).replace(/\/([A-G][#b]?)$/, (_, b) => `/${TONE[b]}`) : sym);
@@ -26,7 +27,7 @@ const SLAP = ['1..xp.1.5..1p7.x', '1..xp.1x.1.1pb5.', '1.x1p.1x5.1xp.75', '1x1xp
 export const tunes = ['lead'];
 
 export default function score(o = {}) {
-  const s = new Session({ id: 'midi', seed: 106, bpm: 106, swing: 0.535, bars: 42, tail: 4, ...o });
+  const s = new Session({ id: 'midi', seed: 106, bpm: 106, swing: 0.535, bars: 42, tail: 4, ...o, ...loopOf(o, 4, 40) });
   const kit = s.track('kit', { lay: 0.001, jitter: 0.0035, room: 0.1, gain: 0.8, fx: (L, R) => compress(L, R, { th: -14, ratio: 3, attack: 0.004, release: 0.09, makeup: 2 }), eq: [['hp', 30], ['peak', 3800, 0.9, 1.5]] });
   const low = s.track('bass', { lay: 0.003, jitter: 0.003, gain: 0.5, room: 0.02, eq: [['hp', 34], ['low', 130, 0.7, 4], ['peak', 300, 1, -3], ['high', 1500, 0.7, -4]], fx: (L, R) => compress(L, R, { th: -12, ratio: 5, attack: 0.002, release: 0.06, makeup: 3 }) });
   const keys = s.track('rhodes', { pan: -0.12, gain: 0.32, plate: 0.13, room: 0.08, jitter: 0.004, eq: [['hp', 150], ['peak', 2200, 1, 1.5]], fx: (L, R) => { phaser(L, R, { rate: 0.31, mix: 0.45 }); chorus(L, R, { rate: 0.7, mix: 0.42 }); } });
@@ -96,6 +97,7 @@ export default function score(o = {}) {
 
   s.drums(kit, 28, 1, { crash: 'X...............' }); chorusA(28, 2, { second: true }); chorusB(32, 2); chorusTag(36, 2);
   // ---- the end: the whole band on one last chord, the tune landing on the day's third
+  if (s.loop) return s;
   s.drums(kit, 40, 1, { crash: 'X...............', kick: 'X...............', snare: 'X...............', tomL: 'X...............' });
   s.chord(horns, fall(s.span(14), { fall: 0 }), 40, 0, 'Emaj9', 14, { vel: 1, n: 4, lo: 60, hi: 86 }); s.chord(keys, rhodes, 40, 0, 'Emaj9', 16, { vel: 0.8, lo: 54, hi: 76, n: 4 });
   s.bass(low, bass, 40, 'Emaj9', '1---------------', { slap: true }); s.phrase(lead, 40, 0, 'G#6:14^~', { vel: 0.9 });
