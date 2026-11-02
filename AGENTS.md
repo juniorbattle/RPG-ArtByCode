@@ -107,7 +107,7 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   `planDraw`, the production cast's gate (manifest approval, SHA-256 against the provenance pack), sheet metadata, PNG decoding, the baked walk
   cycles' ground speed and the walkers' animation clock (journal Passe S2), the image generation tool offline (a fake API and key, journal Passe I1), the game's headless core and the tournament (journal Passes L1 / L2: determinism, saves, the pure modules, the off-screen resolution against full duels, the events and the sabotage chain), the arena's combat simulation against the prototype's own script
   read out of `arena/arena.html` (same events and state at every step, journal Passe P1), the arena fighters' atlas and the interface's design
-  system (the fonts' bytes, the palette's tones and contrasts, the frames, the sizes, journal Passe UI3), the duel of the « tour par tour
+  system (the fonts' bytes, the palette's tones and contrasts, the sizes, no frame left, the dialogue's band, journal Passes UI3 / UM2), the duel of the « tour par tour
   dynamique » (`tests/combat-dynamic.test.mjs`, journal Passe C1: each rule against an oracle, the duels' length, the bot, the off-screen race
   against full duels on held-out seeds, the arena of today untouched; ~15 s, the suite's longest file), the arena of the new duel
   (`tests/arena-dynamic.test.mjs`, journal Passe C2: the parameter, the keys, the trial's settings, today's clips on the new moments, the HUD's
@@ -148,6 +148,7 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   negative control; compare the two captures with `tools/diff.mjs`). Explore's DEV panel starts closed (journal Passe UI2): the base page gets
   `BASE_KEYS` before its capture (default `h`, its panel closed by H; `BASE_KEYS=` = the panel open, the negative control); Explore after H
   and the branch's own `BASE_QUERY` address (panel open) are captured against the base without keys; every page's panel state is checked
+- `node tools/ui-contrast.mjs [--json=f] [--min=4.5] [--shots=2] "name|<query>|<WxH,..>|<js>" ...` — the interface's contrast in the real game (journal Passe UM2): every visible text's colour against the pixels really under it (the page shot with its text transparent, the veils left), the box's 5th percentile, fails under 4.5:1 (DEV server for named states; `--shots` moments of a moving scene, the worst kept)
 - `node tools/ui-text.mjs [--json=f] "name|<query>|<WxH,..>|<js>" ...` — the interface's text measured in the page (journal Passe UI3, S1 / S4):
   every visible text node's computed size and font, every character against the embedded fonts' subset; fails under 16 px on a computer or
   14 px on a phone (the design system's phone query), on a font other than the two embedded ones, on a character outside their subset, on fonts
@@ -538,19 +539,18 @@ Below, the direction of journal Passe UI1 (the operator's UI sheet, 14 choices o
   high on a computer, its sub-labels whole), done before the design system (journal Passe UI2); then the design system
   (roadmap step 2.3: S1-S4, L2, L3, L4; built in journal Passe UI3, see below), and screen by screen P4 (the dialogue at the bottom, the speaker visible), P5 (« Here » reduced to the
   place's actions) and P6 (the match sheet and the victory), « Avec la direction choisie ».
-- **The design system** (journal Passe UI3, `src/ui/design/`): `tokens.ts` holds every colour of the interface (four tones, `TONES`: night =
-  the evening, morning, midday, end of day; the provisional palette S3 is changed there and only there), the type scale and its phone sizes
-  (`TYPE`, `MIN_TEXT`, `PHONE_QUERY`) and the frames' texel (`TEXEL_PX` = 2 CSS px); `frames.ts` paints the nine-slice frames (panel, parchment,
-  buttons, tags, keycaps, gauge) from a tone, pure; `system.ts` installs the fonts, the page's tone (`installDesign(time)`: the page's `DayState`)
-  and the base components. The fonts (Pixelify Sans for titles, numbers and keys; Alegreya Sans for text; SIL OFL 1.1, chosen by the operator on
-  2026-10-25) and their record (source, licence, SHA-256): `src/ui/fonts/FONTS.md`. The play mode's screens (`src/ui`), the forecourt and Lantern
+- **The design system** (journal Passes UI3 / UM2, `src/ui/design/`): `tokens.ts` holds every colour of the interface (four tones, `TONES`: night =
+  the evening, morning, midday, end of day: ivory, grey and one accent, the ink sliding with the light; a palette change is made there and only there), the veils' strengths (`VEIL`), the type scale and its phone sizes
+  (`TYPE`, `MIN_TEXT`, `PHONE_QUERY`); `system.ts` installs the fonts, the page's tone (`installDesign(time)`: the page's `DayState`), the veils (`--ds-veil-*`, the gradients `--ds-grad-b`, `-t`, `-spot`)
+  and the keycap in outline. The fonts (Marcellus for titles, names and numbers; Source Sans 3 for text; SIL OFL 1.1, UM-T3)
+  and their record (source, licence, SHA-256): `src/ui/fonts/FONTS.md`. The play mode's screens (`src/ui`), the forecourt and Lantern
   Row pages and the arena's HUD use it, and the loading screen shown before every scene (`src/ui/loading.ts`, the operator's decision C2-14
-  « Tâche à part », built in journal Passe UI4: the name in the pixel font, the status in the text font, the progress in the gauge frame, in the
+  « Tâche à part », built in journal Passe UI4: the name in the title font, the status in the text font, the progress on a thin rule, in the
   tone of the page's day state - the address's `time=`, the play mode's page; its content shows once both fonts are loaded, at most a second, and
-  every scene starts after it); the free-roaming town's DEV panel and HUD do not (unchanged). Portraits: the
+  every scene starts after it); the free-roaming town's DEV panel and HUD do not (unchanged, lot 4). Portraits: the
   face of the baked sheet (`preloadPortraits`), the generator's portrait where no baked sheet stands for the person. The arena's HUD with the HUD
-  hidden (`hud=0`, H) keeps its KO and pause screens, in the system's look since journal Passe C2. On a phone (`PHONE_QUERY`): a strip along the top, tabs along the bottom
-  (« Here » first), every card a sheet at the bottom of the screen. Proofs: `tests/ui-design.test.mjs`, `tests/loading-screen.test.mjs`,
+  hidden (`hud=0`, H) keeps its KO and pause screens. The dialogue is a band at the foot of the screen in every game (`.pm-talk`, P4): the face, the name and the words on the left, the choices on the right, the arrows walking them. On a phone (`PHONE_QUERY`): a strip along the top, tabs along the bottom
+  (« Here » first), every sheet at the bottom of the screen. Proofs: `tests/ui-design.test.mjs`, `tests/loading-screen.test.mjs`, `tools/ui-contrast.mjs`,
   `tools/ui-text.mjs`.
 
 ## Camera graph (`src/app/CameraGraph.ts`)

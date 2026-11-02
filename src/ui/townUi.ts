@@ -6,7 +6,7 @@ import { RIVALS } from '../narrative/roster';
 import { boardHtml, standingsHtml as standingsHtmlRows } from './board';
 import { portraitUrl } from './portraits';
 import { downloadSave, loadSaveFile, writeSave } from './save';
-import { el, esc, injectStyle, overlay } from './style';
+import { arrowKeys, el, esc, injectStyle, overlay } from './style';
 import { skillName, tx } from '../narrative/text';
 import { isV2, v2KitOf } from '../simulation/v2';
 import { stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
@@ -33,45 +33,55 @@ export interface UiHost {
   focus?(who: string | null): void;
 }
 
-/** on a computer: the status panel top left, the bar top right, « Here » under it; on a phone (the operator's decision L3, « Avec le système de
+/** on a computer: the status sheet top left, the bar top right, « Here » under it, the dialogue a band at the foot of the screen (journal Passe UM1,
+ *  direction A « Voile », and P4 in every game: the person's face, name and words on the left, the choices on the right, the scene kept whole above
+ *  it); on a phone (the operator's decision L3, « Avec le système de
  *  design »; touch stays out of the slice, E30): a strip along the top, tabs along the bottom (« Here » the first, its list a sheet above them),
  *  the dialogue and the other cards sheets at the bottom of the screen */
 const CSS = `
-#pm-status{left:12px;top:12px;width:min(390px,calc(100vw - 24px));padding:2px 6px}
-#pm-status .clock{font:400 var(--ds-fs-pixel)/1.2 var(--ds-pixel);letter-spacing:.04em;color:var(--ds-goldHi);text-shadow:0 var(--ds-px) 0 var(--ds-ink)}
-#pm-status .stats{margin-top:2px}
-#pm-status .next{margin-top:4px;font-size:var(--ds-fs-small);color:var(--ds-goldHi)}
-#pm-status .hurt{color:var(--ds-amberHi)}
-#pm-bar{right:12px;top:12px;display:flex;gap:6px}
-#pm-bar .pm-btn{width:auto;margin:0;padding:1px 6px 1px 2px}
+#pm-status{left:12px;top:12px;width:min(390px,calc(100vw - 24px));padding:12px 16px}
+#pm-status .clock{font:400 var(--ds-fs-title)/1.1 var(--ds-title);color:var(--ds-ivory)}
+#pm-status .stats{margin-top:4px}
+#pm-status .next{margin-top:4px;font-size:var(--ds-fs-small);color:var(--ds-muted)}
+#pm-status .hurt{color:var(--ds-accent)}
+#pm-bar{right:12px;top:12px;display:flex;gap:16px;padding:8px 14px;background:var(--ds-veil-strong)}
+#pm-bar .pm-btn{width:auto;gap:8px;padding:0;border-top:0;font-size:var(--ds-fs-body);white-space:nowrap}
 #pm-bar .tab-here{display:none}
-#pm-here{right:12px;top:78px;width:min(380px,calc(100vw - 24px));max-height:calc(100vh - 160px);overflow:auto;padding:2px 6px}
+#pm-here{right:12px;top:78px;width:min(380px,calc(100vw - 24px));max-height:calc(100vh - 160px);overflow:auto;padding:12px 16px}
 #pm-here.min .list{display:none}
 .pm-btn .cost+.cost{margin-left:0}
-#pm-prompt{left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:2px 10px 2px 2px;color:var(--ds-ivory);font-size:var(--ds-fs-label);border:calc(4 * var(--ds-px)) solid transparent;border-image:var(--ds-f-btnHi) 4 fill / calc(4 * var(--ds-px)) stretch;image-rendering:pixelated;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+#pm-prompt{left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:14px 60px;color:var(--ds-ivory);font-size:var(--ds-fs-label);background:var(--ds-grad-spot);opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
 #pm-prompt.on{opacity:1}
-#pm-toast{left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100vw - 24px));padding:2px 8px;display:none}
+#pm-toast{left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100vw - 24px));padding:10px 16px;display:none}
 #pm-toast.on{display:block}
 #pm-toast p{margin:4px 0}
-#pm-place-tag{left:50%;bottom:10px;transform:translateX(-50%);opacity:.8;white-space:nowrap;pointer-events:none}
-.pm-dlg{display:flex;gap:14px;align-items:flex-start}
-.pm-dlg .port{flex:none;line-height:0;border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-gauge) 3 fill / calc(3 * var(--ds-px)) stretch;image-rendering:pixelated}
-.pm-dlg img{width:96px;height:96px;image-rendering:pixelated}
-.pm-dlg .who{flex:1;min-width:0}
-.pm-parch q{display:block;margin:4px 0;quotes:none}
-.pm-talk{place-items:end center;background:transparent;padding:0 16px 16px}
-.pm-talk .pm-card{width:min(760px,100%);max-height:52vh}
-.pm-card input[type=range]{accent-color:var(--ds-goldHi);width:min(320px,100%)}
-@media (max-height:500px){.pm-talk{padding:0}.pm-talk .pm-card{max-height:82vh}}
-#pm-status .pm-self{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
-#pm-status .pm-self .pm-btn{flex:1 1 auto;margin:0;padding:2px 8px}
+#pm-place-tag{left:50%;bottom:10px;transform:translateX(-50%);padding:6px 48px;background:var(--ds-grad-spot);white-space:nowrap;pointer-events:none}
+.pm-talk{left:0;right:0;bottom:0;z-index:40;padding:72px clamp(16px,7.8vw,150px) 40px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 72px),transparent 100%)}
+.pm-dlg{display:grid;grid-template-columns:96px minmax(0,620px) minmax(300px,1fr);column-gap:28px;align-items:start;max-width:1620px;margin:0 auto}
+.pm-dlg .port{line-height:0}
+.pm-dlg img{display:block;width:96px;height:96px;image-rendering:pixelated}
+.pm-dlg .who{grid-column:2;min-width:0}
+.pm-dlg .pm-h{margin:0}
+.pm-dlg .pm-h small{margin-left:12px;font:400 var(--ds-fs-body)/1 var(--ds-text);color:var(--ds-muted)}
+.pm-dlg .opts{grid-column:3;grid-row:1;max-height:min(46vh,420px);overflow:auto;border-bottom:1px solid var(--ds-line)}
+body.pm-talking #pm-here,body.pm-talking #pm-bar,body.pm-talking #pm-prompt,body.pm-talking #pm-place-tag,body.pm-talking #pm-status .pm-self{visibility:hidden}
+.pm-port{line-height:0}
+.pm-port img{image-rendering:pixelated}
+.pm-card input[type=range]{accent-color:var(--ds-accent);width:min(320px,100%)}
+#pm-status .pm-self{display:flex;gap:16px;margin-top:8px;flex-wrap:wrap}
+#pm-status .pm-self .pm-btn{flex:1 1 auto;width:auto;padding:6px 0 0}
 .pm-result .pm-big{text-align:center}
 .pm-foe{display:flex;gap:12px;align-items:flex-start;margin:6px 0}
+@media (max-width:1100px){
+  .pm-dlg{grid-template-columns:64px minmax(0,1fr);column-gap:14px}
+  .pm-dlg img{width:64px;height:64px}
+  .pm-dlg .opts{grid-column:1 / 3;grid-row:auto;margin-top:12px;max-height:min(38vh,320px)}
+}
 @media (max-width:700px){
-  #pm-status{left:6px;right:6px;top:6px;width:auto;padding:0 4px}
+  #pm-status{left:6px;right:6px;top:6px;width:auto;padding:6px 10px}
   #pm-status .next{margin-top:0}
-  #pm-bar{top:auto;bottom:6px;left:6px;right:6px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
-  #pm-bar .pm-btn{justify-content:center;padding:4px 0;font-size:var(--ds-fs-small)}
+  #pm-bar{top:auto;bottom:6px;left:6px;right:6px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:6px}
+  #pm-bar .pm-btn{justify-content:center;font-size:var(--ds-fs-small)}
   #pm-bar .pm-btn kbd{display:none}
   #pm-bar .tab-here{display:flex}
   #pm-here{top:auto;bottom:62px;left:6px;right:6px;width:auto;max-height:46vh}
@@ -79,19 +89,25 @@ const CSS = `
   #pm-prompt{bottom:auto;top:44%}
   #pm-toast{top:auto;bottom:62px}
   #pm-place-tag{bottom:62px;width:calc(100vw - 24px);white-space:normal;text-align:center}
-  .pm-dlg img{width:64px;height:64px}
+  .pm-talk{padding:64px 18px 20px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 64px),transparent 100%)}
+  .pm-dlg{grid-template-columns:64px minmax(0,1fr);column-gap:12px}
+  .pm-dlg .pm-h small{display:block;margin:2px 0 0}
 }
 @media (max-height:480px) and (min-width:701px){
-  #pm-status{left:6px;top:6px;width:380px;padding:0 4px}
+  #pm-status{left:6px;top:6px;width:380px;padding:6px 10px}
   #pm-status .next{display:none}
-  #pm-bar{top:auto;bottom:6px;right:6px;left:auto}
-  #pm-bar .pm-btn{padding:0 6px 0 2px;font-size:var(--ds-fs-small)}
+  #pm-bar{top:auto;bottom:6px;right:6px;left:auto;gap:10px;padding:4px 10px}
+  #pm-bar .pm-btn{font-size:var(--ds-fs-small)}
   #pm-bar .tab-here{display:flex}
   #pm-here{top:6px;right:6px;bottom:auto;width:340px;max-height:calc(100vh - 70px)}
   #pm-here.min{display:none}
   #pm-toast{top:auto;bottom:60px;width:min(560px,calc(100vw - 12px))}
   #pm-place-tag{bottom:60px}
-  .pm-dlg img{width:48px;height:48px}
+  .pm-talk{padding:36px 16px 10px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 36px),transparent 100%)}
+  .pm-dlg{grid-template-columns:64px minmax(0,1fr) minmax(0,1fr);column-gap:14px}
+  .pm-dlg img{width:64px;height:64px}
+  .pm-dlg .opts{grid-column:3;grid-row:1;margin-top:0;max-height:calc(100vh - 60px)}
+  .pm-dlg .pm-line{margin-top:4px}
 }
 `;
 
@@ -100,6 +116,12 @@ const CSS = `
 export function costTag(o: Pick<ActionOption, 'cost' | 'coins'>): string {
   const tags = [o.coins ? tx(o.coins === 1 ? 'ui.coin' : 'ui.coinsN', { n: o.coins }) : '', o.cost ? tx('ui.oneSlot') : ''].filter(Boolean);
   return tags.length ? tags.map((t) => `<span class="cost">${t}</span>`).join('') : `<span class="cost free">${tx('ui.free')}</span>`;
+}
+
+/** the option's words without its price: the cost tag says it (the fiche of journal Passe UM1: « 20 coins » written twice); the label stays the
+ *  simulation's, the same in the journal */
+export function shortLabel(o: Pick<ActionOption, 'label' | 'coins'>): string {
+  return o.coins ? o.label.replace(new RegExp(` \\(${o.coins} coins?: ([^)]*)\\)`), ' · $1') : o.label;
 }
 
 export class TownUi {
@@ -236,7 +258,7 @@ export class TownUi {
   }
 
   private optionButton(o: ActionOption, after?: () => void): HTMLButtonElement {
-    const b = el('button', 'pm-btn', `<span>${esc(o.label)}${o.ok ? '' : `<span class="why">${esc(o.reason ?? '')}</span>`}</span>${costTag(o)}`);
+    const b = el('button', 'pm-btn', `<span>${esc(shortLabel(o))}${o.ok ? '' : `<span class="why">${esc(o.reason ?? '')}</span>`}</span>${costTag(o)}`);
     b.disabled = !o.ok;
     b.addEventListener('click', () => { this.run(o.action); after?.(); });
     return b;
@@ -248,7 +270,8 @@ export class TownUi {
     if (!r.ok) { void this.card(`<p>${esc(r.reason ?? tx('ui.cannot'))}</p>`); return; }
     if (r.reload) { this.closeModal(); this.host.reload(); return; }
     this.render();
-    const news = (r.events ?? []).filter((e) => e.visible);
+    // the dialogue that opens says who it is: « You meet Mara » stays in the journal, not on the screen (journal Passe UM1)
+    const news = (r.events ?? []).filter((e) => e.visible && e.id !== 'meet');
     if (news.length) this.flash(news.map((e) => e.text));
   }
 
@@ -278,7 +301,7 @@ export class TownUi {
     return r;
   }
   private current: HTMLElement | null = null;
-  private closeModal(): void { if (this.current) { this.current.remove(); this.current = null; } if (this.modal) this.host.focus?.(null); this.modal = false; }
+  private closeModal(): void { if (this.current) { this.current.remove(); this.current = null; } document.body.classList.remove('pm-talking'); if (this.modal) this.host.focus?.(null); this.modal = false; }
 
   openPerson(who: string): void {
     const s = this.st, p = PEOPLE[who];
@@ -290,19 +313,23 @@ export class TownUi {
     const opts = actions(st).filter((o) => offeredBy(o.action as never) === who && !(o.action.type === 'scout' && (o.action as { who: string }).who !== who));
     this.closeModal();
     this.modal = true; this.prompt.classList.remove('on');
-    // P4 (lot V9, the version 2): the dialogue at the bottom of the screen, the scene kept visible and turned to the speaker
-    const root = el('div', isV2(st) ? 'pm pm-overlay pm-talk' : 'pm pm-overlay'), card = el('div', 'pm-card');
+    // P4 (journal Passe UM1: every game): the dialogue at the foot of the screen, the scene kept visible (the version 2 turns it to the speaker)
+    const root = el('div', 'pm pm-talk'), card = el('div', 'pm-dlg');
     if (isV2(st)) this.host.focus?.(who);
-    card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', p.name);
-    card.innerHTML = `<div class="pm-dlg">${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(p.name)}</h2><p class="pm-sub">${esc(titleOf(p, isV2(this.st)))}</p></div></div><div class="pm-parch">${lines.map((l) => `<q>${esc(l)}</q>`).join('')}</div>`;
-    for (const o of opts) card.appendChild(this.optionButton(o, () => { if (this.current === root) this.openPerson(who); }));
+    root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', p.name);
+    card.innerHTML = `${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(p.name)}<small>${esc(titleOf(p, isV2(this.st)))}</small></h2><div class="pm-line">${lines.map((l) => `<q>${esc(l)}</q>`).join('')}</div></div>`;
+    const list = el('div', 'opts');
+    for (const o of opts) list.appendChild(this.optionButton(o, () => { if (this.current === root) this.openPerson(who); }));
     const leave = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.leave')}`);
     leave.addEventListener('click', () => this.closeModal());
-    card.appendChild(leave);
+    list.appendChild(leave);
+    arrowKeys(list);
+    card.appendChild(list);
     root.appendChild(card);
     document.body.appendChild(root);
+    document.body.classList.add('pm-talking');
     this.current = root;
-    ((card.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? leave).focus();
+    ((list.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? leave).focus();
   }
 
   /** the version 2's skills (lot V2): each owned skill with its level, its charge time, its AP and family; four chosen (the match sheet's
@@ -345,7 +372,7 @@ export class TownUi {
     const stage = stageName(m);
     const intel = s.facts.includes(`scouted:${id}`) ? tx('ui.arena.foeSkills', { name: r.name, skills: (V2_FOES[id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') }) : tx('v2.sheet.unknown', { name: r.name });
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
-    return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h3 class="pm-h">${esc(r.name)}</h3><p class="pm-sub">${esc(r.epithet)}</p><p>${esc(r.bio)}</p></div></div>`
+    return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h3 class="pm-h">${esc(r.name)}</h3><p class="pm-sub">${esc(r.epithet)}</p><p>${esc(r.bio)}</p></div></div>`
       + `<p class="pm-sub">${esc(intel)}</p><p class="pm-sub">${esc(gear)}</p>${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
   }
 

@@ -67,14 +67,14 @@ test('the screen opens over the page in the tone of the address\'s day state, it
   assert.equal(ld.label.textContent, 'PAINTING THE NIGHT…');
 });
 
-test('ready waits for both fonts (the pixel and the text font, regular and bold), and never more than a second', async (t) => {
+test('ready waits for both fonts (the title and the text font, regular and bold), and never more than a second', async (t) => {
   reset();
   const asked = [], pending = [];
   fontLoad = (spec) => { asked.push(spec); return new Promise((r) => pending.push(r)); };
   t.mock.timers.enable({ apis: ['setTimeout'] });
   let done = false;
   LD.showLoading(null).ready.then(() => { done = true; });
-  assert.deepEqual([...asked].sort(), ['16px "CdT Text"', '20px "CdT Pixel"', '700 16px "CdT Text"']);
+  assert.deepEqual([...asked].sort(), ['16px "CdT Text"', '32px "CdT Title"', '700 16px "CdT Text"']);
   // loaded: ready, before any time passes
   pending.forEach((r) => r());
   await new Promise((r) => setImmediate(r));
@@ -131,12 +131,13 @@ test('the screen\'s sources: tokens of the design system only, no screen of its 
   for (const m of css.matchAll(/(?:^|[;{])\s*(color|background|text-shadow|box-shadow)\s*:\s*([^;}]+)/g)) assert.match(m[2], /var\(--ds-/, `${m[1]}: ${m[2]}`);
   // fonts: the two embedded families through their tokens, sizes from the type scale only
   for (const m of css.matchAll(/font(?:-family)?\s*:\s*([^;}]+)/g)) {
-    assert.match(m[1], /var\(--ds-(text|pixel)\)/, `a font of the system: ${m[1]}`);
+    assert.match(m[1], /var\(--ds-(text|title)\)/, `a font of the system: ${m[1]}`);
     assert.match(m[1], /var\(--ds-fs-[a-z-]+\)/, `a size of the scale: ${m[1]}`);
   }
   assert.ok(!/font-size\s*:/.test(css.replace(/font-size:var\(--ds-fs-[a-z-]+\)/g, '')), 'every font-size from the scale');
-  // the gauge is the system's frame
-  assert.match(css, /#ld-gauge\{[^}]*border-image:var\(--ds-f-gauge\)/);
+  // the gauge is the system's thin rule, the accent on its track
+  assert.match(css, /#ld-gauge\{[^}]*background:var\(--ds-trough\)/);
+  assert.match(css, /#ld-bar\{[^}]*background:var\(--ds-accent\)/);
   // main.ts builds no screen of its own any more (its one inline style left is the DEV sprite sheet's, ?sprites)
   const main = fs.readFileSync(path.join(ROOT, 'src/main.ts'), 'utf8');
   assert.ok(!/Segoe|system-ui|sans-serif|innerHTML|z-index:50|ld-label|ld-bar/i.test(main), 'main.ts: no screen of its own');

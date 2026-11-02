@@ -31,10 +31,10 @@ try {
   // a software renderer draws about one frame a second: wait for the prompt to know who stands there
   await page.waitForFunction("window.__ui.near === 'mara'", { timeout: 120000 }).catch(() => {});
   await page.keyboard.press('e');
-  await page.waitForSelector('.pm-overlay .pm-dlg', { timeout: 20000 }).catch(() => {});
-  const dlg = await page.evaluate(() => { const d = document.querySelector('.pm-overlay .pm-dlg'); // the person's words are in the parchment under the portrait's row since the design system (journal Passe UI3; this check counted the row's own,
+  await page.waitForSelector('.pm-talk .pm-dlg', { timeout: 20000 }).catch(() => {});
+  const dlg = await page.evaluate(() => { const d = document.querySelector('.pm-talk .pm-dlg'); // the person's words stand beside the portrait since direction A « Voile » (journal Passe UM1; before it, in the parchment under its row: this check counted the row's own,
   // always 0, until journal Passe V0)
-  return d ? { name: d.querySelector('h2')?.textContent, words: document.querySelectorAll('.pm-overlay .pm-parch q').length, img: !!d.querySelector('img'), options: document.querySelectorAll('.pm-overlay .pm-btn').length } : null; });
+  return d ? { name: d.querySelector('h2')?.firstChild?.textContent, words: document.querySelectorAll('.pm-talk .pm-line q').length, img: !!d.querySelector('img'), options: document.querySelectorAll('.pm-talk .pm-btn').length } : null; });
   check(dlg?.name === 'Mara' && dlg.words > 0 && dlg.img && dlg.options >= 4, `E next to Mara opens her dialogue: ${JSON.stringify(dlg)}`);
   await page.screenshot({ path: path.join(outDir, 'day1-mara-dialogue.png') });
   await page.keyboard.press('Escape');

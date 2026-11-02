@@ -22,7 +22,7 @@ const T = +(process.env.READY_MS || 600000);
 function measure() {
   const RANGES = [[0, 0xff], [0x131, 0x131], [0x152, 0x153], [0x2bb, 0x2bc], [0x2c6, 0x2c6], [0x2da, 0x2da], [0x2dc, 0x2dc], [0x304, 0x304], [0x308, 0x308], [0x329, 0x329],
     [0x2000, 0x206f], [0x20ac, 0x20ac], [0x2122, 0x2122], [0x2191, 0x2191], [0x2193, 0x2193], [0x2212, 0x2212], [0x2215, 0x2215], [0xfeff, 0xfeff], [0xfffd, 0xfffd]];
-  const FAMILIES = ['CdT Pixel', 'CdT Text'];
+  const FAMILIES = ['CdT Title', 'CdT Text'];
   const phone = matchMedia('(max-width:700px),(max-height:480px)').matches, min = phone ? 14 : 16;
   const visible = (el) => {
     for (let e = el; e && e !== document.documentElement; e = e.parentElement) {
@@ -91,7 +91,7 @@ try {
       await page.evaluate(() => document.fonts.ready);
       await new Promise((r) => setTimeout(r, 500));
       const m = await page.evaluate(measure);
-      const loaded = m.fonts.length >= 3 && m.fonts.every((f) => f.endsWith('loaded'));
+      const loaded = m.fonts.length >= 2 && m.fonts.every((f) => f.endsWith('loaded'));
       const ok = !m.tooSmall.length && !m.wrongFont.length && !m.outside.length && !m.cut.length && loaded && !errors.length && m.texts > 0;
       if (!ok) failed++;
       rows.push({ name, size, ...m, loaded, errors, ok });

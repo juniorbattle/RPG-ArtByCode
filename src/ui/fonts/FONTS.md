@@ -1,22 +1,23 @@
 # The interface's embedded fonts
 
-The operator's decision S1 (sheet of journal Passe UI1, « Pixel pour les titres + texte lisible »): an embedded pixel font for titles, numbers and
-keys, and an embedded readable text font, both under a free licence; no system font. The pair was chosen by the operator on 2026-10-25
-(« Pixelify + Alegreya (Recommandé) », journal Passe UI3). Loaded by `src/ui/design/system.ts` (`@font-face`, bundled by Vite as assets).
+The operator's decision UM-S1 (sheet of journal Passe UM1, « Lever la police pixel, garder le principe »): two free fonts embedded, no system font. The
+pair is direction A « Voile »'s (UM-1): Marcellus for titles, names and numbers, Source Sans 3 for text. UM-T3 « Oui »: downloaded from Google Fonts
+(latin subset), and the fonts of the former direction (Pixelify Sans, Alegreya Sans, journal Passe UI3) leave the repository. Loaded by
+`src/ui/design/system.ts` (`@font-face`, bundled by Vite as assets).
 
 | File | Family | Use | Licence | Source | Bytes | SHA-256 |
 |---|---|---|---|---|---|---|
-| `PixelifySans-latin.woff2` | Pixelify Sans (variable, 400-700) | titles, names, numbers, keys (`"CdT Pixel"`) | SIL OFL 1.1, `OFL-PixelifySans.txt` | https://fonts.gstatic.com/s/pixelifysans/v3/CHylV-3HFUT7aC4iv1TxGDR9Jn0Eiw.woff2 (Google Fonts, latin subset) | 12 016 | `4a5633a0c9c1b73abd133a56d3716c2d8df2ed03cb987346f72194aeb224f382` |
-| `AlegreyaSans-400-latin.woff2` | Alegreya Sans Regular | sentences, labels (`"CdT Text"`) | SIL OFL 1.1, `OFL-AlegreyaSans.txt` | https://fonts.gstatic.com/s/alegreyasans/v28/5aUz9_-1phKLFgshYDvh6Vwt7VptvQ.woff2 (Google Fonts, latin subset) | 23 708 | `b2a5a35a2563a2f9bf9fb91939fc6ea6c115e9811cda5c4a37d02f623c7c4dbe` |
-| `AlegreyaSans-700-latin.woff2` | Alegreya Sans Bold | bold labels (`"CdT Text"` 700) | SIL OFL 1.1, `OFL-AlegreyaSans.txt` | https://fonts.gstatic.com/s/alegreyasans/v28/5aUu9_-1phKLFgshYDvh6Vwt5eFIqEp2iw.woff2 (Google Fonts, latin subset) | 23 976 | `5acd19a588614d23e52b741a21dd8555178ab4932c3195c6d8fb4b296f84acae` |
-| `OFL-PixelifySans.txt` | — | licence | — | https://raw.githubusercontent.com/google/fonts/main/ofl/pixelifysans/OFL.txt | 4 488 | `b66ba46f511a851ab09998b5a5a9fdbb102545a3864cb993095e1745996873a7` |
-| `OFL-AlegreyaSans.txt` | — | licence | — | https://raw.githubusercontent.com/google/fonts/main/ofl/alegreyasans/OFL.txt | 4 405 | `0677891e6a143f297350d260ad766ad33bfc18ed5fa4f213acf648d6b597ec1a` |
+| `Marcellus-latin.woff2` | Marcellus Regular | titles, names, numbers (`"CdT Title"`) | SIL OFL 1.1, `OFL-Marcellus.txt` | https://fonts.gstatic.com/s/marcellus/v14/wEO_EBrOk8hQLDvIAF81VvoK.woff2 (Google Fonts, latin subset) | 14 552 | `8a539799d12e3a144273288055490f57e1eee84da7a9145f085bc522e80719c3` |
+| `SourceSans3-latin.woff2` | Source Sans 3 (variable, 200-900) | sentences, labels, keys (`"CdT Text"`) | SIL OFL 1.1, `OFL-SourceSans3.txt` | https://fonts.gstatic.com/s/sourcesans3/v20/nwpStKy2OAdR1K-IwhWudF-R3w8aZQ.woff2 (Google Fonts, latin subset) | 28 872 | `19143dca075972bc84e3fd9eab7416dd40cc565dccb2435a044bdfabe060c7d5` |
+| `OFL-Marcellus.txt` | — | licence | — | https://raw.githubusercontent.com/google/fonts/main/ofl/marcellus/OFL.txt | 4 430 | `715ba72697e14daa9b29a333545f69bde7c497b9f77d0a2a4c4a5a752d961801` |
+| `OFL-SourceSans3.txt` | — | licence | — | https://raw.githubusercontent.com/google/fonts/main/ofl/sourcesans3/OFL.txt | 4 579 | `09746787287a289323b0ec3cff4d1a4a801331b82b7207c1e186f5d26619a392` |
 
-- Downloaded on 2026-10-25 with the operator's permission, kept byte for byte (`tests/ui-design.test.mjs` checks each file's SHA-256 against this
-  table). Copyright: « Copyright 2021 The Pixelify Sans Project Authors (https://github.com/eifetx/Pixelify-Sans) »; « Copyright 2013 The Alegreya
-  Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans) ». The OFL lets the fonts be bundled with the game; they are not sold
-  alone, and the reserved names are not used for a modified version (the files are unmodified).
+- Downloaded on 2026-11-01 under UM-T3, kept byte for byte (`tests/ui-design.test.mjs` checks each file's SHA-256 against this table). Copyright:
+  « Copyright (c) 2012, Brian J. Bonislawsky DBA Astigmatic (AOETI) (astigma@astigmatic.com), with Reserved Font Names "Marcellus" »; « Copyright
+  2010-2020 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'. All Rights Reserved. Source is a trademark of Adobe in the United States
+  and/or other countries. » The OFL lets the fonts be bundled with the game; they are not sold alone, and the reserved names are not used for a
+  modified version (the files are unmodified).
 - The latin subset holds U+0000-00FF, the general punctuation and a few signs (`LATIN_RANGE` in `system.ts`): English and French with their
   accents. A character outside it would fall back to a system font: `tools/ui-text.mjs` checks every visible character of the pages it measures.
-- Pixelify Sans is drawn on a tenth of its em: at 20 / 30 / 40 px its pixel is 2 / 3 / 4 px wide (the type scale keeps those sizes); its outlines
-  sit half a pixel off the grid at 20 px, so its edges are softened by the browser's anti-aliasing (journal Passe UI3).
+- Marcellus has one set of figures, with no lining or tabular alternate in this file (measured in the page: `lnum`, `tnum` and `onum` change nothing):
+  its « 1 » is about as wide as its « I » and its « 0 » exactly as wide as its « O ». At small sizes « 10 » reads close to « IO » (journal Passe UM2).

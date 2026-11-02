@@ -6,7 +6,7 @@ import { dynHudModel, type DynGauge } from './dynamicView';
 import type { ChargeHudModel } from './v2Arena';
 
 /** The HUD of the « tour par tour dynamique » (lot C2, journal Passe C2), behind its parameter (CB-10). Built on the arena HUD's rules
- *  (ArenaHud.ts, the interface's design system: direction C « Héraldique pixel », its tone following the arena's day state, the embedded fonts,
+ *  (ArenaHud.ts, the interface's design system: direction A « Voile », its tone following the arena's day state, the embedded fonts,
  *  no text under 16 px on a computer or 14 px on a phone) with what the specification asks it to read (§ 9, CB-6 « Comme recommandé »):
  *  - both fighters' health and resistance gauge; the opponent's is its « barre de break »; a broken gauge stays full while its stun drains;
  *  - the player's action points and four skills, each with its cost and family (offensive, defensive, support), no cooldown;
@@ -50,56 +50,56 @@ export const CHARGE_TEXTS_EN: ChargeTexts = { attack: 'Attack', holdSub: 'hold: 
  *  assistance, takes it); a short window (600 px high or less, journal Passe AF1) keeps only the attack button, its label the tier a release
  *  launches */
 const CHARGE_CSS = `
-#ah-tiers{position:absolute;left:50%;bottom:94px;transform:translateX(-50%);display:flex;gap:4px;pointer-events:none;opacity:.55;transition:opacity .12s}
+#ah-tiers{position:absolute;left:50%;bottom:94px;transform:translateX(-50%);display:flex;gap:18px;pointer-events:none;opacity:.7;transition:opacity .12s}
 #ah-tiers.on{opacity:1}
 #arena-hud.wb #ah-tiers{opacity:0}
-#ah-tiers .tr{position:relative;display:flex;align-items:center;gap:4px;padding:0 6px;font:400 var(--ds-fs-small)/1.3 var(--ds-text);color:var(--ds-muted);white-space:nowrap;border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-btnOff) 3 fill / calc(3 * var(--ds-px)) stretch;image-rendering:pixelated;overflow:hidden}
+#ah-tiers .tr{position:relative;display:flex;align-items:center;gap:6px;padding:0 0 4px;font:400 var(--ds-fs-small)/1.3 var(--ds-text);color:var(--ds-muted);white-space:nowrap;overflow:hidden}
+#ah-tiers .tr b{font-weight:400}
 #ah-tiers .tr q{display:flex;gap:2px;quotes:none}
-#ah-tiers .tr q i{width:6px;height:6px;transform:rotate(45deg);background:var(--ds-amber)}
-#ah-tiers .tr>i{position:absolute;left:0;bottom:0;height:calc(2 * var(--ds-px));width:0;background:var(--ds-amber);box-shadow:0 0 6px var(--ds-amber)}
-#ah-tiers .tr.reached{color:var(--ds-ivory);border-image-source:var(--ds-f-btnHi)}
-#ah-tiers .tr.launch{color:var(--ds-ink);border-image-source:var(--ds-f-btnAct)}
+#ah-tiers .tr q i{width:8px;height:3px;background:var(--ds-accent)}
+#ah-tiers .tr>i{position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--ds-accent)}
+#ah-tiers .tr.reached{color:var(--ds-ivory)}
+#ah-tiers .tr.launch{color:var(--ds-accent)}
 #ah-tiers .tr.next{color:var(--ds-ivory)}
 #ah-tiers .tr.locked{color:var(--ds-muted);opacity:.6;text-decoration:line-through}
-.ah-b.charging{border-image-source:var(--ds-f-btnAct)}
-.ah-b.charging b,.ah-b.charging em{color:var(--ds-ink)}
+.ah-b.charging b,.ah-b.charging em{color:var(--ds-accent)}
+#arena-hud .ah-b.charging kbd{border-color:var(--ds-accent);color:var(--ds-accent)}
 @media (max-width:1240px){#ah-tiers{bottom:72px}}
 @media (max-height:600px){#ah-tiers{display:none}}
 `;
 
 /** the additions to the arena HUD's rules: the resistance gauges, the effect tags, the phase sign, the locked and preparing buttons */
 const DYN_CSS = `
-#arena-hud .ah-rs{display:flex;align-items:center;gap:8px;margin-top:4px}
+#arena-hud .ah-rs{display:flex;align-items:center;gap:8px;margin-top:6px}
 #arena-hud .ah-f.r .ah-rs{flex-direction:row-reverse}
-#arena-hud .ah-rs>span{flex:none;font-size:var(--ds-fs-small);letter-spacing:.04em;color:var(--ds-muted);white-space:nowrap}
-#arena-hud .ah-rb{position:relative;flex:1;height:calc(4px + 6 * var(--ds-px));border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-gauge) 3 fill / calc(3 * var(--ds-px)) stretch;image-rendering:pixelated}
+#arena-hud .ah-rs>span{flex:none;font-size:var(--ds-fs-small);color:var(--ds-muted);white-space:nowrap}
+#arena-hud .ah-rb{position:relative;flex:1;height:2px;background:var(--ds-trough)}
 #arena-hud .ah-rb i,#arena-hud .ah-rb s{position:absolute;top:0;bottom:0;left:0;text-decoration:none}
 #arena-hud .ah-f.r .ah-rb i,#arena-hud .ah-f.r .ah-rb s{left:auto;right:0}
-#arena-hud .ah-rb i{background:repeating-linear-gradient(90deg,var(--ds-goldHi) 0 4px,var(--ds-gold) 4px 6px)}
-#arena-hud .ah-rb s{background:color-mix(in srgb,var(--ds-ink) 55%,transparent)}
-#arena-hud .ah-rs.brk>span{color:var(--ds-amberHi)}
-#arena-hud .ah-rs.brk .ah-rb i{background:var(--ds-amberHi);box-shadow:0 0 8px var(--ds-amber);animation:ahbrk .5s infinite alternate}
+#arena-hud .ah-rb i{background:var(--ds-muted)}
+#arena-hud .ah-rb s{background:var(--ds-veil-soft)}
+#arena-hud .ah-rs.brk>span{color:var(--ds-accent)}
+#arena-hud .ah-rs.brk .ah-rb i{background:var(--ds-accent);animation:ahbrk .5s infinite alternate}
 @keyframes ahbrk{to{opacity:.55}}
 #arena-hud .ah-tags{display:flex;gap:6px;margin-top:6px;min-height:0}
 #arena-hud .ah-f.r .ah-tags{justify-content:flex-end}
-#arena-hud .ah-tags b{display:none;padding:0 4px;font:400 var(--ds-fs-small)/1.2 var(--ds-text);font-weight:700;letter-spacing:.04em;color:var(--ds-ink);border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-key) 3 fill / calc(3 * var(--ds-px)) stretch;image-rendering:pixelated;white-space:nowrap}
+#arena-hud .ah-tags b{display:none;padding:0 6px;font:600 var(--ds-fs-small)/1.3 var(--ds-text);color:var(--ds-ivory);border:1px solid var(--ds-line);white-space:nowrap}
 #arena-hud .ah-tags b.on{display:block}
-#ah-phase{position:absolute;left:50%;top:84px;transform:translateX(-50%);padding:0 12px;text-align:center;white-space:nowrap;border:calc(4 * var(--ds-px)) solid transparent;border-image:var(--ds-f-btnAct) 4 fill / calc(4 * var(--ds-px)) stretch;image-rendering:pixelated;opacity:0;transition:opacity .12s}
+#ah-phase{position:absolute;left:50%;top:84px;transform:translateX(-50%);padding:10px 90px;text-align:center;white-space:nowrap;background:var(--ds-grad-spot);opacity:0;transition:opacity .12s}
 #ah-phase.on{opacity:1}
 #arena-hud.dyn #ah-wbar:not(.on){visibility:hidden}
-#ah-phase.calm{border-image-source:var(--ds-f-btnHi)}
-#ah-phase b{display:block;font:400 var(--ds-fs-pixel)/1.2 var(--ds-pixel);letter-spacing:.04em;color:var(--ds-goldHi);text-shadow:0 var(--ds-px) 0 var(--ds-ink)}
-#ah-phase span{display:block;font-size:var(--ds-fs-small);line-height:1.2;letter-spacing:.1em;text-transform:uppercase;color:var(--ds-ivory)}
+#ah-phase b{display:block;font:400 var(--ds-fs-label)/1.2 var(--ds-title);color:var(--ds-accent)}
+#ah-phase.calm b{color:var(--ds-ivory)}
+#ah-phase span{display:block;font-size:var(--ds-fs-small);line-height:1.2;color:var(--ds-ivory)}
 #ah-phase.nudge{animation:ahd .25s}
-.ah-b.lock{border-image-source:var(--ds-f-btnOff)}
 .ah-b.lock b,.ah-b.lock em{color:var(--ds-muted);opacity:.7}
-.ah-b.lock kbd{opacity:.6}
-.ah-b.prep{border-image-source:var(--ds-f-btnHi)}
-.ah-b .pg{position:absolute;left:0;bottom:0;height:calc(2 * var(--ds-px));width:0;background:var(--ds-amber);box-shadow:0 0 6px var(--ds-amber)}
+#arena-hud .ah-b.lock kbd{opacity:.6}
+.ah-b.prep b{color:var(--ds-accent)}
+.ah-b .pg{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--ds-accent)}
 @media (max-width:1500px){.ah-b .fam{display:none}}
 /* a narrow window: the cards widen (30vw), the sign leaves the top for the dodge window's place above the bar (the bar takes it when it shows) */
 @media (max-width:1240px){#ah-phase{top:auto;bottom:94px}#arena-hud.wb #ah-phase{opacity:0}}
-@media (max-height:480px){#arena-hud .ah-rs>span{display:none}#arena-hud .ah-rb{height:calc(2px + 6 * var(--ds-px))}#arena-hud .ah-rs{margin-top:3px}#arena-hud .ah-tags{margin-top:3px}#ah-phase{top:auto;bottom:72px;padding:0 8px;border-width:calc(3 * var(--ds-px))}#arena-hud.wb #ah-phase{opacity:0}#ah-phase b{font-size:var(--ds-fs-small)}#ah-phase span{display:none}}
+@media (max-height:480px){#arena-hud .ah-rs>span{display:none}#arena-hud .ah-rs{margin-top:3px}#arena-hud .ah-tags{margin-top:3px}#ah-phase{top:auto;bottom:72px;padding:4px 50px}#arena-hud.wb #ah-phase{opacity:0}#ah-phase b{font-size:var(--ds-fs-small)}#ah-phase span{display:none}}
 /* a short window (600 px high or less) where the sign sat in the bar's place: that place reaches the floor's marks (the rings, the telegraph).
    The sign goes up to the top centre on one line and gives way while the alert shows (the operator's choice « À la place de l'alerte », journal
    Passe AF1): above the cards, beside the title, while the window keeps the computer's layout (between the cards and the fighters' heads
@@ -149,7 +149,7 @@ export class DynamicHud {
     const tierName = (id: string) => (id === 'light' ? ct!.tierLight : id === 'heavy' ? ct!.tierHeavy : t.skillShorts[id as DynActionId] ?? A[id as DynActionId]?.short ?? A[id as DynActionId]?.name ?? id);
     const tiers = charge ? `<div id="ah-tiers" aria-hidden="true">${charge.tiers.map((x, i) => `<span class="tr" data-i="${i}"><b>${tierName(x.id)}</b>${x.ap ? diamonds(x.ap) : ''}<i></i></span>`).join('')}</div>` : '';
     const card = (who: DynFighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<span>${sub}</span><em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(D.fighters[who].name)}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${who === 'ren' ? t.resist : t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${who === 'ren' ? t.resist : t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div>${who === 'ren' ? `<div class="ah-pips" aria-label="${t.apLabel}">` + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-tags"><b class="wd"></b><b class="bs"></b></div><div class="ah-state"></div></div></div>`;
-    this.el.innerHTML = `<div class="top"></div><div id="ah-title">${t.title}<small>${t.subtitle}</small></div>
+    this.el.innerHTML = `<div class="top"></div><div class="bot"></div><div id="ah-title">${t.title}<small>${t.subtitle}</small></div>
       ${card('ren', 'l', t.subRen)}${card('marek', 'r', t.subMarek)}
       <div id="ah-phase" role="status"><b></b><span></span></div>
       <div id="ah-alert"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2l18 18-18 18L2 20z" stroke-width="2.4"/><rect x="18" y="9" width="4" height="14"/><rect x="18" y="26" width="4" height="4"/></svg><div><b></b><span></span></div></div>

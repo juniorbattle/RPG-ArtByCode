@@ -5,14 +5,14 @@ import { el } from './style';
 
 /** The version 2's ways out on screen (journal Passe VP5, the operator's « entrées / sorties comme dans un final fantasy 9 »): over each way
  *  out of the page a tag naming the place it leads to, shown as the hero comes near it; walking through it darkens the screen and goes there
- *  (the page reports the way taken: the square's lane end, the quay's ends). DOM over the canvas, in the design system's tag frame. */
+ *  (the page reports the way taken: the square's lane end, the quay's ends). DOM over the canvas, on the design system's veil. */
 
 export interface WayOut { to: PlaceId; anchor: [number, number, number] }
 
 const CSS = `
-.pm-exit{position:fixed;z-index:25;left:0;top:0;pointer-events:none;padding:0 8px;white-space:nowrap;font-size:var(--ds-fs-small);letter-spacing:.06em;text-transform:uppercase;color:var(--ds-ivory);border:calc(3 * var(--ds-px)) solid transparent;border-image:var(--ds-f-tag) 3 fill / calc(3 * var(--ds-px)) stretch;image-rendering:pixelated;opacity:0;transition:opacity .25s}
-.pm-exit::after{content:'';position:absolute;left:50%;bottom:calc(-9px - 3 * var(--ds-px));margin-left:-6px;border:6px solid transparent;border-top-color:var(--ds-amberHi)}
-.pm-fade{position:fixed;inset:0;z-index:60;background:#05060c;opacity:0;transition:opacity .35s ease-in;pointer-events:none}
+.pm-exit{position:fixed;z-index:25;left:0;top:0;pointer-events:none;padding:6px 34px;white-space:nowrap;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:var(--ds-grad-spot);opacity:0;transition:opacity .25s}
+.pm-exit::after{content:'';position:absolute;left:50%;bottom:-8px;margin-left:-6px;border:6px solid transparent;border-top-color:var(--ds-accent)}
+.pm-fade{position:fixed;inset:0;z-index:60;background:var(--ds-ink);opacity:0;transition:opacity .35s ease-in;pointer-events:none}
 `;
 
 export class ExitMarkers {

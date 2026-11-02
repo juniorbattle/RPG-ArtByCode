@@ -6,20 +6,20 @@ import { tx } from '../narrative/text';
 /** The title screen (choice P2, journal Passe L4): « New game » (it asks the player's name, choice K2), « Explore the district » (today's
  *  town at midday and the DEV panel: the operator's decision L7-6a, journal Passes D8 / D9) and « Continue » when a save exists. DOM, shown before anything is generated, over the
  *  loading screen; English (choice K1). Shown on the bare address only (main.ts), and forced by `?title=1`. Built from the design system (journal
- *  Passe UI3), in the night's tone (no day state is shown yet). */
+ *  Passes UI3 / UM1), in the night's tone (no day state is shown yet). */
 
 export interface TitleChoice { explore: () => void }
 
 const CSS = `
 #title-screen{inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:var(--ds-ink)}
 #title-screen .wrap{width:min(640px,100%);text-align:center}
-#title-screen .name{font:400 var(--ds-fs-pixel-huge)/1.2 var(--ds-pixel);letter-spacing:.08em;color:var(--ds-goldHi);text-shadow:0 var(--ds-px) 0 var(--ds-ink),0 calc(2 * var(--ds-px)) 0 var(--ds-goldLo);margin-bottom:6px}
+#title-screen .name{font:400 var(--ds-fs-title-huge)/1.2 var(--ds-title);letter-spacing:.04em;color:var(--ds-ivory);margin-bottom:6px}
 #title-screen .tag{margin-bottom:24px}
-#title-menu{width:min(460px,100%);margin:0 auto;padding:4px 8px;text-align:left}
-#title-menu .pm-sub.line{display:block;text-transform:none;letter-spacing:.01em}
-#title-menu input{width:100%;margin:6px 0 10px;padding:4px 8px;font:inherit;color:var(--ds-ivory);background:none;border:calc(4 * var(--ds-px)) solid transparent;border-image:var(--ds-f-btnHi) 4 fill / calc(4 * var(--ds-px)) stretch;image-rendering:pixelated}
+#title-menu{width:min(460px,100%);margin:0 auto;padding:0;text-align:left;background:none}
+#title-menu .pm-sub.line{display:block}
+#title-menu input{width:100%;margin:6px 0 10px;padding:8px 10px;font:inherit;color:var(--ds-ivory);background:none;border:1px solid var(--ds-line);border-radius:0}
 #title-menu input::placeholder{color:var(--ds-muted)}
-#title-menu .warn{color:var(--ds-amberHi)}
+#title-menu .warn{color:var(--ds-accent)}
 #title-screen .keys{margin-top:18px}
 `;
 
