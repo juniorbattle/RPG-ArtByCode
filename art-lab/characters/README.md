@@ -37,7 +37,7 @@ index at the top of `JOURNAL.md`):
   (records `<name>.source.json`, checked by `npm run art:validate`); classification in `reference/README.md`.
 
 - **The casting** (journal Passes CA1 to CA5) — fifteen town sheets `-x2-v2`, redrawn on the clean sheets `reference/sources/casting-clear-2026-11-01-*`, recipe `rigs/lib/clear.mjs` (12 frames standing, 30 for Marek and Orla), approved on 2026-11-01 for the version 2's squares and portraits (`src/characters/PlazaCast.ts`). Their first recipe, `rigs/lib/standing.mjs` and the `-x2-v1` sheets, is superseded: kept as history.
-- **The citizens** (journal Passe CA6) — five walkers of the version 2's crowd, `vendor`, `wayfarer`, `noble`, `errand-boy`, `girl`, each `-x2-v1`, cut out of the NPC 01-16 sheet, recipe `rigs/lib/citizen.mjs`, 30 frames; candidates behind `cast=candidate` until the operator's lot sheet.
+- **The citizens** (journal Passe CA6) — five walkers of the version 2's crowd, `vendor`, `wayfarer`, `noble`, `errand-boy`, `girl`, each `-x2-v1`, cut out of the NPC 01-16 sheet, recipe `rigs/lib/citizen.mjs`, 30 frames, approved on 2026-11-01 for the version 2's squares (`src/characters/PlazaCast.ts`).
 
 **Approval scopes.** *Approved visual baseline* = `approved: true` + `runtimeUse: "lab"`: an operator-approved quality / direction
 reference, usable in the Art Lab and the DEV in-scene preview only. *Approved production asset* = `approved: true` +

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "wayfarer-x2-v1",
   "kind": "character",
-  "status": "candidate",
+  "status": "approved",
   "source": "art-lab/characters/source/wayfarer-x2-v1.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/wayfarer-x2-v1.png",
@@ -21,7 +21,12 @@
       "note": "Operator reference sheet \"Merchant District - Night\" NPC 01-16, archived byte for byte; the operator chose this figure on the casting sheet (N2 « Cuire », journal Passe CA1)"
     }
   ],
-  "approved": false,
-  "runtimeUse": "lab",
-  "notes": "Candidate, shown only by the DEV parameter cast=candidate on a square of the version 2 (journal Passe CA6); production waits for the operator's lot sheet."
+  "approved": true,
+  "runtimeUse": "production",
+  "notes": "APPROVED FOR PRODUCTION by the operator on the citizens' lot sheet (journal Passe CA7): « Production », and on the whole lot « Validé »; version 2 only, the district unchanged. Not a Gold Master. A walker of the version 2's crowd, loaded by the squares only (src/characters/PlazaCast.ts).",
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-11-01",
+    "note": "APPROVED FOR PRODUCTION by the operator on the citizens' lot sheet (journal Passe CA7): « Production », and on the whole lot « Validé »; version 2 only, the district unchanged. Not a Gold Master."
+  }
 }

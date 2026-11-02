@@ -97,8 +97,8 @@ export function plazaCamPose(kind: PlazaKind, px: number, pz: number, dist: numb
 const CROWD: Record<PlazaPeriod, { size: number; linger: [number, number] }> = {
   morning: { size: 1, linger: [0.8, 0.5] }, midday: { size: 3, linger: [7, 1.6] }, afternoon: { size: 2, linger: [2, 0.8] }, night: { size: 2, linger: [6, 1.5] },
 };
-/** who walks the crowd by the moment, in turn (journal Passe CA6, the casting sheet's N1 to N5): the five townsfolk, the stallholder and the traveller at every hour, the
- *  noblewoman from midday to the end of the day, the children by day only, side by side where the crowd walks in groups (CROWD); a citizen without a sheet in the cast loses its turn */
+/** who walks the crowd by the moment, in turn (journal Passes CA6 / CA7, the casting sheet's N1 to N5): the five townsfolk, the stallholder and the traveller at every hour, the
+ *  noblewoman from midday to the end of the day, the children by day only, side by side where the crowd walks in groups (CROWD); under cast=generated the citizens lose their turn */
 const CROWD_TURN: Record<PlazaPeriod, string[]> = {
   morning: ['crowd0', 'citizen-vendor', 'citizen-wayfarer', 'crowd1', 'citizen-errand-boy', 'crowd2', 'citizen-girl', 'crowd3', 'crowd4'],
   midday: ['crowd0', 'citizen-vendor', 'crowd1', 'citizen-errand-boy', 'citizen-girl', 'crowd2', 'citizen-noble', 'crowd3', 'citizen-wayfarer', 'crowd4'],
@@ -265,8 +265,7 @@ export class PlazaApp {
     // keeps every role generated
     this.opts.onProgress('people', 0.97);
     const castMode = this.opts.params.get('cast');
-    const candidates = import.meta.env.DEV && castMode === 'candidate';
-    const cast = castMode === 'generated' ? null : await loadProductionCast(candidates, 'approved', undefined, candidates ? [...plazaCastEntries(), ...(await import('../lab/plazaCast')).citizenEntries()] : plazaCastEntries());
+    const cast = castMode === 'generated' ? null : await loadProductionCast(false, 'approved', undefined, plazaCastEntries());
     this.cast = cast?.cast ?? null;
     const generated = cast ? [] : crowdVariants(7351, SQUARE_PEOPLE.length).map((s, i): CharSpec => ({ ...s, id: `person-${SQUARE_PEOPLE[i]}` }));
     this.atlas = SpriteAtlas.build([PLAYER, GUARD_A, GUARD_B, HOODED, PORTER, ...crowdVariants(1842, 5), ...generated], cast?.sheets ?? [], this.renderer.capabilities.maxTextureSize);

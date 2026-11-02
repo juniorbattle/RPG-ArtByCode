@@ -45,7 +45,9 @@ test('walkSlide on the production sheets (regression: re-measure on purpose afte
     // Passes K11, H11)
     'hero-x2-v4': 14,
     // Marek's and Orla's walks, drawn on their clean sheet (journal Passes CA4 / CA5)
-    'marek-x2-v2': null, 'orla-x2-v2': null };   // (its drawn frames give no measure: no planted foot held across them; its speed falls back to the walkers's own)
+    'marek-x2-v2': null, 'orla-x2-v2': null,
+    // the five citizens (journal Passe CA7): a child's shorter step; the noblewoman's 2 measured on her hem, no foot to see
+    'vendor-x2-v1': 4.5, 'wayfarer-x2-v1': 4.5, 'noble-x2-v1': 2, 'errand-boy-x2-v1': 4, 'girl-x2-v1': 4 };   // (its drawn frames give no measure: no planted foot held across them; its speed falls back to the walkers's own)
   const production = fs.readdirSync(path.join(ROOT, 'art-lab/characters/manifests')).filter((f) => f.endsWith('.manifest.json'))
     .map((f) => JSON.parse(fs.readFileSync(path.join(ROOT, 'art-lab/characters/manifests', f), 'utf8'))).filter((m) => m.runtimeUse === 'production' && !STILL.includes(m.id)).map((m) => m.id).sort();
   assert.deepEqual(production, Object.keys(want).sort(), 'every production sheet has an expected value');

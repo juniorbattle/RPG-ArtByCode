@@ -1,4 +1,4 @@
-// The casting's sheets (journal Passes CA1 to CA6): the operator's choices held figure by figure, the squares and a version 2 game's portraits only.
+// The casting's sheets (journal Passes CA1 to CA7): the operator's choices held figure by figure, the squares and a version 2 game's portraits only.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -30,7 +30,7 @@ test('12 frames for those who stand, 30 for the two who walk (T1)', () => {
 
 test('no first-recipe sheet stays in production', () => {
   for (const who of Object.keys(SHEETS)) { const m = json(`art-lab/characters/manifests/${who}-x2-v1.manifest.json`); assert.equal(m.status, 'superseded', who); assert.notEqual(m.runtimeUse, 'production', who); assert.equal(m.approved, false, who); }
-  assert.ok(!/-x2-v1/.test(read('src/characters/PlazaCast.ts').replace("'blacksmith-x2-v1'", '')));
+  assert.ok(!Object.keys(SHEETS).some((who) => read('src/characters/PlazaCast.ts').includes(`${who}-x2-v1`)));
 });
 
 test('the sheets reach the squares and a version 2 game, never the frozen district or today\'s game', () => {
@@ -45,7 +45,7 @@ test('every person of a square has a sheet, no provisional sprite left, Tobin an
   for (const who of FACE_ONLY) assert.ok(list.includes(`'${who}'`), who);
   assert.ok(!app.includes('prov-') && !/PROVISIONAL/.test(app));
   assert.match(app, /const generated = cast \? \[\] : crowdVariants/, 'generated people only under cast=generated');
-  assert.ok(app.includes("candidates = import.meta.env.DEV && castMode === 'candidate'"), 'the lab sheets in DEV only');
+  assert.ok(!fs.existsSync(path.join(ROOT, 'src/lab/plazaCast.ts')));
 });
 
 test('a still sheet is excused the walk frames, and only a still one', () => {
@@ -55,8 +55,11 @@ test('a still sheet is excused the walk frames, and only a still one', () => {
   assert.ok(!entries.includes('still'), 'no entry of the district stands still');
 });
 
-test('the five citizens: the NPC 01-16 sheet, the figure the operator chose, thirty frames', () => {
+test('the five citizens: the NPC 01-16 sheet, the figure the operator chose, thirty frames, the operator\'s approval on each', () => {
   for (const [who, n] of Object.entries(CITIZENS)) {
+    const m = json(`art-lab/characters/manifests/${who}-x2-v1.manifest.json`);
+    assert.equal(m.approved, true, who); assert.equal(m.status, 'approved', who); assert.equal(m.runtimeUse, 'production', who); assert.match(m.approval.note, /« Validé »/, who);
+    assert.ok(read('src/characters/PlazaCast.ts').includes(`'${who}'`), who);
     assert.ok(read(`art-lab/characters/rigs/${who}-x2-v1.rig.mjs`).includes(`NPC ${n} of the reference sheet 01-16`), who);
     assert.equal(json(`art-lab/characters/manifests/${who}-x2-v1.manifest.json`).references[0].path, 'art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp', who);
     const j = json(`art-lab/characters/exports/${who}-x2-v1.json`);
@@ -80,7 +83,7 @@ test('the crowd by the moment: the children by day only, the noblewoman from mid
   for (const p of ['midday', 'afternoon']) assert.equal(new Set(turn(p)).size, 10, p);
   assert.deepEqual(turn('morning').filter((c) => c.startsWith('citizen')).sort(), ['citizen-errand-boy', 'citizen-girl', 'citizen-vendor', 'citizen-wayfarer']);
   assert.deepEqual(turn('night').filter((c) => c.startsWith('citizen')).sort(), ['citizen-vendor', 'citizen-wayfarer']);
-  assert.ok(app.includes("filter((c) => c.startsWith('crowd') || this.cast?.has(c))"), 'a citizen without a sheet loses its turn');
+  assert.ok(app.includes("filter((c) => c.startsWith('crowd') || this.cast?.has(c))"), 'no citizen under cast=generated');
 });
 
 test("the texture holds a square's sheets", () => {
