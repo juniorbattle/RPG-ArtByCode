@@ -5,8 +5,8 @@ import { el, esc } from './style';
 import { portraitUrl } from './portraits';
 
 /** A live cutscene on a square of the version 2 (lot V6, journal Passe V6): the page's scene keeps running, the camera goes where the script
- *  looks, the people walk, and each line waits at the bottom of the screen on the design system's veil (the speaker's face and name)
- *  until E, Space, Enter or a click; Esc skips the rest. The black bands top and bottom say a scene is playing. */
+ *  looks, the people walk, and each line waits in the dialogue's band at the foot of the screen (the speaker's face and name), over the
+ *  lower band, until E, Space, Enter or a click; Esc skips the rest. The bands top and bottom, in the tone's ink, say a scene is playing. */
 
 export interface SceneStage {
   /** the camera's focus (x, z on the square) and distance, eased over `secs`; null gives it back to the hero */
@@ -17,27 +17,29 @@ export interface SceneStage {
   lock(on: boolean): void;
 }
 
-const CSS = `.pm-bands::before,.pm-bands::after{content:'';position:fixed;left:0;right:0;height:9vh;background:#000;z-index:38;pointer-events:none}
+const CSS = `.pm-bands::before,.pm-bands::after{content:'';position:fixed;left:0;right:0;height:9vh;background:var(--ds-ink);z-index:38;pointer-events:none}
 .pm-bands::before{top:0}.pm-bands::after{bottom:0}
 body.pm-bands .pm:not(.pm-scene){visibility:hidden}
-.pm-scene{position:fixed;left:50%;bottom:calc(9vh + 12px);transform:translateX(-50%);width:min(860px,calc(100% - 32px));z-index:41;padding:14px 18px}
-.pm-scene .pm-dlg{grid-template-columns:96px minmax(0,1fr);max-width:none}
-.pm-scene .pm-row{display:flex;justify-content:flex-end;gap:24px;margin-top:10px}
-.pm-scene .pm-row .pm-btn{width:auto;padding:0;border-top:0}`;
+.pm-scene{z-index:41;padding-bottom:calc(9vh + 14px)}
+.pm-scene .pm-dlg{grid-template-columns:96px minmax(0,1fr) auto}
+.pm-scene .pm-row{grid-column:3;grid-row:1;align-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.pm-scene .pm-row .pm-btn{width:auto;padding:0;border-top:0;gap:10px;font-size:var(--ds-fs-small);color:var(--ds-muted)}
+.pm-scene .pm-row .pm-btn:focus,.pm-scene .pm-row .pm-btn:hover{color:var(--ds-ivory)}
+@media (max-width:700px){.pm-scene .pm-dlg{grid-template-columns:64px minmax(0,1fr);grid-template-rows:auto auto}.pm-scene .pm-row{grid-column:1 / 3;grid-row:auto;flex-direction:row;justify-content:flex-end;margin-top:8px}}`;
 
 export async function playCutscene(s: GameState, c: Cutscene, stage: SceneStage): Promise<void> {
   if (!document.getElementById('pm-scene-css')) { const st = el('style'); st.id = 'pm-scene-css'; st.textContent = CSS; document.head.appendChild(st); }
   document.body.classList.add('pm-bands');
   stage.lock(true);
   let skipped = false;
-  const card = el('div', 'pm pm-card pm-scene');
+  const card = el('div', 'pm pm-talk pm-scene');
   card.setAttribute('role', 'dialog');
   document.body.appendChild(card);
   const say = (who: string, line: string) => new Promise<void>((done) => {
     const url = who === 'player' ? null : portraitUrl(who);
-    card.innerHTML = `<div class="pm-dlg">${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(speakerName(s, who))}</h2><div class="pm-line"><q>${esc(line)}</q></div></div></div>`;
-    const row = el('div', 'pm-row'), skip = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('v2.scene.skip')}`), next = el('button', 'pm-btn primary', `<kbd>E</kbd>${tx('v2.scene.next')}`);
-    row.append(skip, next); card.appendChild(row);
+    card.innerHTML = `<div class="pm-dlg"><span class="port">${url ? `<img src="${url}" alt="">` : ''}</span><div class="who"><h2 class="pm-h">${esc(speakerName(s, who))}</h2><div class="pm-line"><q>${esc(line)}</q></div></div></div>`;
+    const row = el('div', 'pm-row'), skip = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('v2.scene.skip')}`), next = el('button', 'pm-btn', `<kbd>E</kbd>${tx('v2.scene.next')}`);
+    row.append(next, skip); card.firstElementChild!.appendChild(row);
     const end = (sk: boolean) => { window.removeEventListener('keydown', key, true); if (sk) skipped = true; done(); };
     const key = (e: KeyboardEvent) => { const k = e.key.toLowerCase(); if (k === 'escape') { e.preventDefault(); e.stopPropagation(); end(true); } else if (k === 'e' || k === ' ' || k === 'enter') { e.preventDefault(); e.stopPropagation(); end(false); } };
     window.addEventListener('keydown', key, true);

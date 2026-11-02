@@ -90,6 +90,18 @@ test('S4: the type scale keeps 16 px on a computer and 14 px on a phone; no smal
   }
 });
 
+test('UM2-3: the digits of the title font come from the text font; UM-R1, UM-R2: one menu, the list on demand, the bout\'s prompt', () => {
+  const S = fs.readFileSync(path.join(ROOT, 'src/ui/design/system.ts'), 'utf8'), U = fs.readFileSync(path.join(ROOT, 'src/ui/townUi.ts'), 'utf8');
+  assert.match(S, /font-family:\$\{TITLE\};src:url\(\$\{textFont\}\)[^}]*unicode-range:\$\{DIGITS\}/);
+  assert.match(S, /DIGITS = 'U\+0030-0039'/);
+  // no bar of keys and no panel on the scene: the state, the prompt, the list's and the menu's keys
+  assert.ok(!/pm-bar|pm-here/.test(U), 'the former bar and panel are gone');
+  for (const key of ["k === 'q'", "k === 'm'", "k === 'j'", "k === 't'", "k === 'k'", "k === 'g'", "k === 'v'", "k === 'escape'"]) assert.ok(U.includes(key), key);
+  // the menu shows the shortcuts
+  for (const k of ['M', 'J', 'T', 'K', 'G', 'V']) assert.match(U, new RegExp(`, '${k}'\\)`), `the menu's ${k}`);
+  assert.match(U, /tx\('ui\.enterArena'\)\) : tx\('ui\.here'\)/, 'the bout keeps its prompt');
+});
+
 test('UM-S2: no frame left: no border image, no texel grid, no pixel font, no pixelated box; only the faces keep their pixels', () => {
   assert.ok(!fs.existsSync(path.join(ROOT, 'src/ui/design/frames.ts')), 'frames.ts is gone');
   const files = [...fs.readdirSync(path.join(ROOT, 'src/ui')).filter((f) => f.endsWith('.ts')).map((f) => `src/ui/${f}`), 'src/ui/design/system.ts', 'src/ui/design/tokens.ts', 'src/arena/ArenaHud.ts', 'src/arena/DynamicHud.ts'];

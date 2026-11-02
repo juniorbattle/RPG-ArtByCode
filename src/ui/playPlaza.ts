@@ -1,5 +1,5 @@
 import { PlazaApp } from '../world/PlazaApp';
-import { lookOf, placeName, rainOf, type GameState } from '../simulation';
+import { lookOf, rainOf, type GameState } from '../simulation';
 import { playerMatch } from '../tournament/pool';
 import { PLAZA_CROWD, PLAZA_OF, plazaPeople } from '../simulation/v2places';
 import { PEOPLE } from '../narrative/people';
@@ -7,8 +7,6 @@ import { pendingScene } from '../narrative/v2story';
 import { playCutscene } from './cutscene';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
-import { el } from './style';
-import { tx } from '../narrative/text';
 import { fontsReady, installDesign } from './design/system';
 import { preloadPortraits } from './portraits';
 import { ExitMarkers } from './exits';
@@ -48,9 +46,6 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   (window as any).__ui = ui;
   (window as any).__game.subscribe(() => ui.render());
   window.addEventListener('keydown', (e) => { const k = e.key.toLowerCase(); if ((k === 'e' || k === ' ') && !e.repeat) { e.preventDefault(); ui.interact(); } });
-  const tag = el('div', 'pm pm-sub', tx('ui.plazaTag', { place: placeName(st.place, true) }));
-  tag.id = 'pm-place-tag';
-  document.body.appendChild(tag);
   // the ways out (journal Passe VP5): their tags as the hero comes near, the way walked through taken (the move saved, the next place's page
   // opened at the way in from this one)
   const from = st.place, ways = new ExitMarkers(app.place.exits.map((e) => ({ to: e.to, anchor: e.anchor })));

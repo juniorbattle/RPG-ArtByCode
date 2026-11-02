@@ -59,8 +59,8 @@ try {
   const st = await page.evaluate(() => window.__game.state());
   check(st.day === 2 && st.slot === 'morning', `the second morning: day ${st.day} ${st.slot}`);
   check(st.quests.cargo === 'delivered' && st.facts.includes('orla-recruitable'), `the cargo delivered (${st.quests.cargo}), Orla a friend (${st.facts.includes('orla-recruitable')})`);
-  const ui = await page.evaluate(() => ({ clock: document.querySelector('#pm-status .clock')?.textContent, next: document.querySelector('#pm-status .next')?.textContent }));
-  check(new RegExp(`Day 2 / ${V2 ? 10 : 3} · morning`, 'i').test(ui.clock ?? '') && /Vessa Lark/.test(ui.next ?? ''), `the clock and the next deadline: ${ui.clock} — ${ui.next}`);
+  const ui = await page.evaluate(() => ({ clock: document.querySelector('#pm-status .clock')?.textContent, where: document.querySelector('#pm-status .where')?.textContent, next: document.querySelector('#pm-status .next')?.textContent }));
+  check(new RegExp(`Day 2 / ${V2 ? 10 : 3}`, 'i').test(ui.clock ?? '') && /morning/i.test(ui.where ?? '') && /Vessa Lark/.test(ui.next ?? ''), `the clock and the next deadline: ${ui.clock} · ${ui.where} — ${ui.next}`);
   await page.screenshot({ path: path.join(outDir, 'day2-morning.png') });
   const server = await createServer({ root: path.resolve(import.meta.dirname, '..'), configFile: false, logLevel: 'error', appType: 'custom', cacheDir: 'node_modules/.vite-test', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, optimizeDeps: { noDiscovery: true } });
   try {

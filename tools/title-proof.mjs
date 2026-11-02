@@ -1,5 +1,5 @@
-// The title screen's proof (journal Passe L4; plan § 7, PD): the bare address in a browser that does not announce automation shows the title
-// screen (« New game », « Explore the district », and « Continue » only with a save); « Explore the district » then gives exactly the town
+// The title screen's proof (journal Passes L4 / UM3; plan § 7, PD): the bare address in a browser that does not announce automation shows the title
+// screen at once, the town coming up behind it (« New game », « Explore the district », and « Continue » only with a save); « Explore the district » then gives exactly the town
 // at midday (the operator's decision L7-6a, journal Passe D9): the same deterministic capture as a frozen main's ?time=midday (BASE_QUERY,
 // default 'time=midday'; BASE_QUERY= gives main's bare address, the night: the negative control), at threshold 0. The harness of
 // tools/detshots.mjs (seeded Math.random, the loop held, N fixed steps, one render).
@@ -48,7 +48,12 @@ async function capture(url, file, viaTitle, save, keys = '') {
       await page.waitForSelector('#title-screen .pm-btn', { timeout: 60000 });
       const ids = await page.evaluate(() => [...document.querySelectorAll('#title-screen .pm-btn')].map((x) => x.dataset.id));
       check(JSON.stringify(ids) === JSON.stringify(save ? ['continue', 'new', 'explore'] : ['new', 'explore']), `the title screen's buttons ${save ? 'with' : 'without'} a save: ${ids.join(', ')}`);
-      check(await page.evaluate(() => window.__app === undefined && window.__ready === undefined), 'nothing generated behind the title screen');
+      // the title first, the town coming up behind it (the operator's decision UM2-4, journal Passe UM3)
+      check(await page.evaluate(() => window.__ready === undefined), 'the title shows before the town is ready');
+      await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY });
+      await page.waitForSelector('#title-screen.live', { timeout: 20000 });
+      check(await page.evaluate(() => !document.getElementById('adp')), 'no DEV panel behind the title screen');
+      await new Promise((r) => setTimeout(r, 1100));
       await page.screenshot({ path: file.replace(/\.png$/, '-title.png') });
       if (save) return;
       await page.click('#title-screen .pm-btn[data-id="explore"]');

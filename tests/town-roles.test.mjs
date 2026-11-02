@@ -136,50 +136,30 @@ test('every person has words in every slot they are there, and the people\'s opt
   }
 });
 
-test('« Explore the district » runs today\'s town path at midday, its DEV panel closed (decisions L7-6a and P1, journal Passes D9 / UI2): main.ts\'s startTown is main d129433\'s but for the closed panel (and its error line, journal Passe UI4), called with time=midday and panelClosed only', () => {
-  // line endings normalised: a Windows checkout (core.autocrlf) has CRLF on disk, `git show` gives the index's LF (journal Passe Q3)
-  const lf = (t) => t.replace(/\r\n/g, '\n');
-  const now = lf(fs.readFileSync(path.join(ROOT, 'src/main.ts'), 'utf8'));
-  let base;
-  try { base = lf(execFileSync('git', ['show', 'd129433:src/main.ts'], { cwd: ROOT, encoding: 'utf8' })); } catch { base = null; }
-  const fn = (src) => src.slice(src.indexOf('function startTown('));
-  assert.match(now, /m\.showTitle\(\{ explore: exploreByDay \}\)/);
-  // the button's day: midday, set only when the address names no state, the loading screen in its tone, then the town path itself with its
-  // panel closed once the screen shows (journal Passe UI4)
-  const day = now.slice(now.indexOf('function exploreByDay(): void {'), now.indexOf('async function startArena'));
-  assert.match(day, /^function exploreByDay\(\): void \{\n  if \(!params\.has\('time'\)\) params\.set\('time', 'midday'\);\n  toneLoading\(label, parseTime\(params\)\);\n  void ld\.ready\.then\(\(\) => \{ ld\.reveal\(\); startTown\(\{ panelClosed: true \}\); \}\);\n\}\n/);
-  // every other address opens the panel as before: the dispatch calls startTown without options, and only the button closes it
-  assert.match(now, /\nelse void ld\.ready\.then\(\(\) => \{ ld\.reveal\(\); if \(params\.get\('scene'\) === 'arena'\) void startArena\(\); else startTown\(\); \}\);\n/);
-  assert.deepEqual(now.match(/startTown\([^)]*\)/g), ['startTown()', 'startTown({ panelClosed: true })', 'startTown({ panelClosed = false } = {})']);
+test('the title shows at once, the town at midday comes up behind it, « Explore the district » opens that town with its DEV panel closed (decisions UM-R4, UM2-4, L7-6a, P1, journal Passes D9 / UI2 / UM3); every other address as before', () => {
+  // line endings normalised: a Windows checkout (core.autocrlf) has CRLF on disk (journal Passe Q3)
+  const now = fs.readFileSync(path.join(ROOT, 'src/main.ts'), 'utf8').replace(/\r\n/g, '\n');
+  // the title screen on the bare address only, or forced
   assert.match(now, /const title = params\.get\('title'\) === '1' \|\| \(location\.search === '' && !navigator\.webdriver\);/);
-  if (base) {
-    // a scene's error goes to the loading screen through loadingError (journal Passe UI4): the one line changed since d129433 in startTown
-    // and in startArena
-    const ERR = "console.error(e); label.textContent = 'ERROR: ' + (e?.message ?? e); (window as any).__error = String(e?.stack ?? e);";
-    // startTown is d129433's with three changes only: its option, the closed panel (hidden, the minimap where H puts it without the panel),
-    // its error line
-    const panel = '      const panel = new DebugPanel(app); const hud = new Hud(app);\n';
-    const want = fn(base).replace('function startTown(): void {', 'function startTown({ panelClosed = false } = {}): void {')
-      .replace(panel, `${panel}      if (panelClosed) { panel.el.style.display = 'none'; hud.setMapRight(14); }\n`)
-      .replace(`}).catch((e) => { ${ERR} });`, '}).catch((e) => loadingError(label, e));');
-    assert.notEqual(want, fn(base));
-    assert.equal(fn(now), want, 'startTown is unchanged but for the closed panel and its error line');
-    // what H does is unchanged: the panel toggles itself, the minimap follows it
-    assert.match(fn(now), /window\.addEventListener\('keydown', \(e\) => \{ if \(e\.key\.toLowerCase\(\) === 'h'\) hud\.setMapRight\(panel\.el\.style\.display === 'none' \? 14 : 300\); \}\);/);
-    // before the dispatch: d129433's lines but the five of the old loading screen (an inline style, a system font), and the screen of the
-    // design system in the address's day state (journal Passe UI4)
-    const head = (src) => src.slice(0, src.indexOf('// ?')).split('\n');
-    const OLD = /^(const loading = |loading\.style\.cssText = |loading\.innerHTML = |document\.body\.appendChild\(loading\);|const label = )/;
-    const kept = head(base).filter((l) => !OLD.test(l));
-    assert.equal(kept.length, head(base).length - 5, 'the old screen\'s five lines');
-    for (const l of kept) assert.ok(head(now).includes(l), `kept before the dispatch: « ${l} »`);
-    assert.ok(head(now).includes('const ld = showLoading(parseTime(params)), { label, bar, root: loading } = ld;'));
-    const arena = (src) => { const i = src.indexOf('async function startArena'); return src.slice(i, src.indexOf('\n}\n', i) + 3); };
-    assert.equal(arena(now), arena(base).replace(`} catch (e: any) { ${ERR} }`, '} catch (e: any) { loadingError(label, e); }'), 'startArena is unchanged but for its error line');
-    assert.notEqual(arena(now), arena(base));
-  }
+  assert.match(now, /else if \(title\) void import\('\.\/ui\/title'\)\.then\(titleOverTown\);/);
+  const over = now.slice(now.indexOf('function titleOverTown('), now.indexOf('async function startArena'));
+  // midday, only when the address names no state, the tone with it, before the screen; the town after the screen
+  assert.ok(over.indexOf("if (!params.has('time')) params.set('time', 'midday');") < over.indexOf('toneLoading(label, parseTime(params));'));
+  assert.ok(over.indexOf('toneLoading(label, parseTime(params));') < over.indexOf('m.showTitle('));
+  assert.ok(over.indexOf('m.showTitle(') < over.indexOf('startTown('));
+  assert.match(over, /startTown\(\{ panelClosed: true, behindTitle: /);
+  // pressed before the town stands, the loading screen shows
+  assert.match(over, /explore: \(\) => \{ chosen = true; ld\.reveal\(\); openHud\?\.\(\); \}/);
+  // every other address opens the panel as before: the dispatch calls startTown without options, the HUD built at once
+  assert.match(now, /\nelse void ld\.ready\.then\(\(\) => \{ ld\.reveal\(\); if \(params\.get\('scene'\) === 'arena'\) void startArena\(\); else startTown\(\); \}\);\n/);
+  assert.match(now, /if \(behindTitle\) behindTitle\(hud\); else hud\(\);\n    app\.start\(\);/);
+  assert.match(now, /if \(params\.has\('clean'\)\) return;/);
+  assert.ok(now.includes("if (panelClosed) { panel.el.style.display = 'none';"), 'the closed panel');
+  // keys pressed on the title screen stay on it: the town behind does not walk
+  const title = fs.readFileSync(path.join(ROOT, 'src/ui/title.ts'), 'utf8');
+  assert.match(title, /root\.addEventListener\('keydown', \(e\) => e\.stopPropagation\(\)\)/);
+  assert.match(title, /root\.tabIndex = -1/);
 });
-
 test('Lantern Row (journal Passe L6): open at night only; the tavern\'s talk takes the evening; Cassius mocked, or named once the culprit is known', () => {
   no(G.newGame(1842, 'Aster'), { type: 'move', to: 'lanterns' }, /sleeps until dusk/);
   let st = ok(G.namedState('day1-evening'), { type: 'move', to: 'lanterns' });

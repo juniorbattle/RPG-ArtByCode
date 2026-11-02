@@ -54,7 +54,7 @@ try {
       const [w, h] = size.split('x').map(Number), page = await b.newPage();
       await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
       await page.goto(`${BASE}?${query}`, { waitUntil: 'load', timeout: READY });
-      await page.waitForFunction('window.__ready === true || window.__error || document.querySelector("#title-screen")', { timeout: READY });
+      await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY });
       await new Promise((r) => setTimeout(r, 1500));
       if (!/news/.test(js ?? '')) await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click());
       if (js) await page.evaluate(js);

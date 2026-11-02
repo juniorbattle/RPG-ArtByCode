@@ -2,12 +2,10 @@ import { PlaceApp } from '../world/PlaceApp';
 import { lookOf, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
-import { el } from './style';
-import { tx } from '../narrative/text';
 import { fontsReady, installDesign } from './design/system';
 import { preloadPortraits } from './portraits';
 
-/** Lantern Row (choice P3, journal Passe L6): the slice's light third place, a mock-up built from the district's generators and seen from one
+/** Lantern Row (choice P3, journal Passe L6): the slice's light third place, built from the district's generators and seen from one
  *  fixed framing, always at night (its day look would be a new aspect, a decision prepared for the operator); the tavern's innkeeper by any
  *  hour, Cassius Dree at night (portraits and dialogues, choice K3). */
 export async function startPlayLanterns(b: Boot, st0: GameState): Promise<void> {
@@ -26,9 +24,6 @@ export async function startPlayLanterns(b: Boot, st0: GameState): Promise<void> 
   const ui = new TownUi({ state: () => st, act: (a) => (window as any).__game.act(a), reload: (extra) => go(b.params, extra) }, st.log.length - 1);
   (window as any).__ui = ui;
   (window as any).__game.subscribe(() => ui.render());
-  const tag = el('div', 'pm pm-sub', tx('ui.lanternsTag'));
-  tag.id = 'pm-place-tag';
-  document.body.appendChild(tag);
   app.start();
   await Promise.all([fontsReady(), preloadPortraits()]);
   let n = 0;

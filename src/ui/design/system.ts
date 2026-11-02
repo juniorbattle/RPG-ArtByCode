@@ -14,9 +14,13 @@ export const TEXT = '"CdT Text"';
  *  text-size proof (tools/ui-text.mjs) checks every visible character against it */
 export const LATIN_RANGE = 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD';
 
+/** UM2-3 « Chiffres en Source Sans 3 » (journal Passe UM3): a digit set in the title font is the text font's (Marcellus' « 10 » reads « IO ») */
+export const DIGITS = 'U+0030-0039';
+
 const FONTS = `
 @font-face{font-family:${TITLE};src:url(${titleFont}) format('woff2');font-weight:400;font-display:block;unicode-range:${LATIN_RANGE}}
-@font-face{font-family:${TEXT};src:url(${textFont}) format('woff2');font-weight:200 900;font-display:block;unicode-range:${LATIN_RANGE}}`;
+@font-face{font-family:${TEXT};src:url(${textFont}) format('woff2');font-weight:200 900;font-display:block;unicode-range:${LATIN_RANGE}}
+@font-face{font-family:${TITLE};src:url(${textFont}) format('woff2');font-weight:400;font-display:block;unicode-range:${DIGITS}}`;
 
 const veil = (pc: number) => `color-mix(in srgb,var(--ds-ink) ${pc}%,transparent)`;
 
@@ -27,7 +31,8 @@ const BASE = `
 --ds-veil-strong:${veil(VEIL.strong)};--ds-veil:${veil(VEIL.mid)};--ds-veil-soft:${veil(VEIL.soft)};
 --ds-grad-b:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) 66%,transparent 100%);
 --ds-grad-t:linear-gradient(to bottom,var(--ds-veil) 55%,transparent 100%);
---ds-grad-spot:radial-gradient(closest-side,var(--ds-veil-strong) 55%,transparent 100%)}
+--ds-grad-spot:radial-gradient(closest-side,var(--ds-veil-strong) 68%,transparent 100%);
+--ds-gutter:clamp(16px,7.8vw,150px)}
 @media ${PHONE_QUERY}{:root{${sizes('phone')}}}
 .pm kbd,#arena-hud kbd{flex:none;display:inline-block;box-sizing:border-box;min-width:30px;padding:0 8px;font:600 var(--ds-fs-small)/26px var(--ds-text);text-align:center;color:inherit;background:none;border:1px solid var(--ds-muted);border-radius:3px}`;
 

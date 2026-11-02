@@ -11,24 +11,27 @@ const params = new URLSearchParams(location.search);
 const ld = showLoading(parseTime(params)), { label, bar, root: loading } = ld;
 
 // ?play=1: the game's play mode (journal Passe L3), loaded on demand; the title screen (choice P2, journal Passe L4) on the bare address only,
-// in a browser no automation drives (navigator.webdriver: every tool and proof keeps today's game), or forced by ?title=1; its « Explore the
-// district » starts the town below at midday (exploreByDay); ?scene=arena: the arena of the Cité du Tournoi (journal Passe P1), loaded on
+// in a browser no automation drives (navigator.webdriver: every tool and proof keeps today's game), or forced by ?title=1, with the town
+// at midday coming up behind it (titleOverTown); ?scene=arena: the arena of the Cité du Tournoi (journal Passe P1), loaded on
 // demand; any other address runs the town exactly as before (no time= = the night). Every scene starts once the loading screen shows
 // (its fonts loaded); the play mode's page sets its tone in the same task as the reveal
 const title = params.get('title') === '1' || (location.search === '' && !navigator.webdriver);
 const fail = (e: unknown) => { ld.reveal(); loadingError(label, e); };
 if (params.has('play')) void Promise.all([import('./ui/play'), ld.ready]).then(([m]) => { ld.reveal(); return m.startPlay({ canvas, params, label, bar, loading }); }).catch(fail);
-else if (title) void import('./ui/title').then((m) => m.showTitle({ explore: exploreByDay }));
+else if (title) void import('./ui/title').then(titleOverTown);
 else void ld.ready.then(() => { ld.reveal(); if (params.get('scene') === 'arena') void startArena(); else startTown(); });
 
-/** « Explore the district » opens the day: midday (the operator's decision L7-6a, « Le jour devient le défaut d’« Explore the district » »,
- *  with midday and the button alone as its scope, journal Passes D8 / D9): the town below with ?time=midday's params, the address unchanged
- *  (a reload shows the title screen again); every address with parameters keeps the night without time= (tools, proofs, the play mode).
- *  Its DEV panel starts closed, H opens it (the operator's decision P1, « Fermé par défaut, H l'ouvre », journal Passes UI1 / UI2) */
-function exploreByDay(): void {
+/** The title at once, the town coming up behind it (UM-R4, UM2-4, journal Passe UM3). « Explore the district » opens the day: midday (the operator's
+ *  decision L7-6a, « Le jour devient le défaut d’« Explore the district » », with midday and the button alone as its scope, journal Passes D8 / D9):
+ *  the town below with ?time=midday's params, the address unchanged (a reload shows the title screen again); every address with parameters keeps the
+ *  night without time= (tools, proofs, the play mode). Pressed before the town stands, the loading screen shows until it does. Its DEV panel starts
+ *  closed, H opens it (the operator's decision P1, « Fermé par défaut, H l'ouvre », journal Passes UI1 / UI2) */
+function titleOverTown(m: typeof import('./ui/title')): void {
   if (!params.has('time')) params.set('time', 'midday');
   toneLoading(label, parseTime(params));
-  void ld.ready.then(() => { ld.reveal(); startTown({ panelClosed: true }); });
+  let openHud: (() => void) | null = null, chosen = false;
+  const screen = m.showTitle({ explore: () => { chosen = true; ld.reveal(); openHud?.(); } });
+  void ld.ready.then(() => startTown({ panelClosed: true, behindTitle: (hud) => { openHud = hud; if (chosen) hud(); else screen.live(); } }));
 }
 
 async function startArena(): Promise<void> {
@@ -48,9 +51,9 @@ async function startArena(): Promise<void> {
   } catch (e: any) { loadingError(label, e); }
 }
 
-/** panelClosed: the DEV panel starts hidden and the minimap takes its place, as after H (« Explore the district » only); every other address
- *  opens it as before */
-function startTown({ panelClosed = false } = {}): void {
+/** panelClosed: the DEV panel starts hidden, as after H (« Explore the district » only); every other address opens it as before. behindTitle: the
+ *  town stands behind the title screen, its HUD waits for « Explore the district » (the function it is handed) */
+function startTown({ panelClosed = false, behindTitle }: { panelClosed?: boolean; behindTitle?: (hud: () => void) => void } = {}): void {
   const opts: AppOptions = {
     canvas, params,
     onProgress: (l, f) => { label.textContent = `GENERATING ${l.toUpperCase()}`; bar.style.width = `${Math.round(f * 100)}%`; },
@@ -84,14 +87,16 @@ function startTown({ panelClosed = false } = {}): void {
     loading.style.opacity = '0';
     setTimeout(() => loading.remove(), 900);
     (window as any).__stats = () => app.snapshot();
-    if (!params.has('clean')) {
+    const hud = () => {
+      if (params.has('clean')) return;
       const panel = new DebugPanel(app); const hud = new Hud(app);
       if (panelClosed) { panel.el.style.display = 'none'; hud.setMapRight(14); }
       let tick = 0;
       const loop = () => { hud.update(); if ((tick++ % 12) === 0) panel.update(); requestAnimationFrame(loop); };
       loop();
       window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'h') hud.setMapRight(panel.el.style.display === 'none' ? 14 : 300); });
-    }
+    };
+    if (behindTitle) behindTitle(hud); else hud();
     app.start();
     let n = 0;
     const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };

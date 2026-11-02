@@ -9,7 +9,6 @@ import { PHONE_QUERY } from './design/tokens';
 const CSS = `
 .pm{position:fixed;z-index:30;color:var(--ds-ivory);font:400 var(--ds-fs-body)/1.35 var(--ds-text);font-variant-numeric:tabular-nums}
 .pm,.pm *{box-sizing:border-box;scrollbar-color:var(--ds-muted) transparent;scrollbar-width:thin}
-.pm-card{background:var(--ds-veil-strong)}
 .pm-h{margin:0 0 8px;font:400 var(--ds-fs-title)/1.1 var(--ds-title);color:var(--ds-ivory)}
 .pm-sub{font-size:var(--ds-fs-small);color:var(--ds-muted)}
 .pm-num{font:400 var(--ds-fs-label)/1 var(--ds-title);color:var(--ds-ivory)}
@@ -24,10 +23,15 @@ const CSS = `
 .pm input:focus-visible{outline:1px solid var(--ds-accent);outline-offset:1px}
 .pm-line{margin:8px 0 0;font-size:var(--ds-fs-line);line-height:1.35}
 .pm-line q{display:block;margin:0 0 6px;quotes:none}
-.pm-overlay{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:var(--ds-scrim);padding:16px}
-.pm-overlay .pm-card{width:min(600px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:24px 28px}
+.pm-overlay{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:var(--ds-veil);padding:16px}
+.pm-overlay .pm-card{width:min(680px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:0 4px}
 .pm-overlay .pm-card p{margin:6px 0}
+.pm-overlay .pm-acts{margin-top:14px}
+.pm-overlay.pm-band{inset:auto 0 0 0;display:block;padding:72px var(--ds-gutter) 40px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 72px),transparent 100%)}
+.pm-band .pm-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,300px);gap:28px;width:auto;max-width:1620px;margin:0 auto;overflow:visible;padding:0}
+.pm-band .pm-acts{margin-top:0;border-bottom:1px solid var(--ds-line)}
 .pm-big{font:400 var(--ds-fs-title-big)/1.2 var(--ds-title);color:var(--ds-ivory);text-align:center;margin:6px 0 4px}
+.pm-btn[aria-pressed=true]{color:var(--ds-accent);box-shadow:inset 3px 0 0 var(--ds-accent);padding-left:12px}
 .pm-table{width:100%;border-collapse:collapse}
 .pm-table td{padding:6px 4px;border-top:1px solid var(--ds-line)}
 .pm-table tr.me{color:var(--ds-accent)}
@@ -36,7 +40,7 @@ const CSS = `
 .pm-gap{margin-top:12px!important}
 .pm-center{text-align:center}
 .pm-toggle{cursor:pointer}
-@media ${PHONE_QUERY}{.pm-overlay{place-items:end center;padding:0}.pm-overlay .pm-card{width:100%;max-height:82vh;padding:16px 18px}}
+@media ${PHONE_QUERY}{.pm-overlay{place-items:end center;padding:12px 18px 14px}.pm-overlay .pm-card{width:100%;max-height:calc(100vh - 26px)}.pm-overlay.pm-band{padding:48px 18px 14px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 48px),transparent 100%)}.pm-band .pm-card{grid-template-columns:minmax(0,1fr);gap:10px}}
 @media (prefers-reduced-motion:reduce){.pm *{transition:none!important;animation:none!important}}
 `;
 
@@ -69,18 +73,20 @@ export function arrowKeys(list: HTMLElement): void {
   });
 }
 
-/** a modal sheet over the scene; resolves with the id of the button pressed */
-export function overlay(html: string, buttons: Array<{ id: string; label: string; primary?: boolean }>): { root: HTMLElement; done: Promise<string> } {
+/** a modal page over the scene, on a full-screen veil, or `band`: a band at the foot of the screen, the scene kept above it (what is read in
+ *  passing, the news); resolves with the id of the button pressed */
+export function overlay(html: string, buttons: Array<{ id: string; label: string; primary?: boolean }>, band = false): { root: HTMLElement; done: Promise<string> } {
   injectStyle();
-  const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', html);
+  const root = el('div', `pm pm-overlay${band ? ' pm-band' : ''}`), card = el('div', 'pm-card', `<div class="pm-body">${html}</div>`), acts = el('div', 'pm-acts');
   card.setAttribute('role', 'dialog');
+  card.appendChild(acts); arrowKeys(acts);
   root.appendChild(card);
   const done = new Promise<string>((res) => {
     for (const b of buttons) {
       const x = el('button', `pm-btn${b.primary ? ' primary' : ''}`, esc(b.label));
       x.dataset.id = b.id;
       x.addEventListener('click', () => { root.remove(); res(b.id); });
-      card.appendChild(x);
+      acts.appendChild(x);
     }
   });
   document.body.appendChild(root);

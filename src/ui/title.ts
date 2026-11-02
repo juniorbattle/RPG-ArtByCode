@@ -1,44 +1,50 @@
 import { readSave } from './save';
 import { cleanName } from '../simulation';
-import { el, esc, injectStyle } from './style';
+import { arrowKeys, el, esc, injectStyle } from './style';
 import { tx } from '../narrative/text';
 
-/** The title screen (choice P2, journal Passe L4): « New game » (it asks the player's name, choice K2), « Explore the district » (today's
- *  town at midday and the DEV panel: the operator's decision L7-6a, journal Passes D8 / D9) and « Continue » when a save exists. DOM, shown before anything is generated, over the
- *  loading screen; English (choice K1). Shown on the bare address only (main.ts), and forced by `?title=1`. Built from the design system (journal
- *  Passes UI3 / UM1), in the night's tone (no day state is shown yet). */
+/** The title screen (choice P2, journal Passe L4; the operator's decisions UM-R4 « La vraie ville derrière » and UM2-4 « Le titre d'abord, la ville apparaît
+ *  derrière », journal Passe UM3): « New game » (it asks the player's name, choice K2), « Explore the district » (today's town at midday and the
+ *  DEV panel: the operator's decision L7-6a, journal Passes D8 / D9) and « Continue » when a save exists. It shows at once on the page's ink, before
+ *  anything is generated; the town at midday comes up behind it (`live`), and its buttons answer from the start. DOM, English (choice K1). Shown
+ *  on the bare address only (main.ts), and forced by `?title=1`. Keys pressed on it stay on it: the town behind does not walk. */
 
 export interface TitleChoice { explore: () => void }
 
 const CSS = `
-#title-screen{inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:var(--ds-ink)}
-#title-screen .wrap{width:min(640px,100%);text-align:center}
-#title-screen .name{font:400 var(--ds-fs-title-huge)/1.2 var(--ds-title);letter-spacing:.04em;color:var(--ds-ivory);margin-bottom:6px}
-#title-screen .tag{margin-bottom:24px}
-#title-menu{width:min(460px,100%);margin:0 auto;padding:0;text-align:left;background:none}
-#title-menu .pm-sub.line{display:block}
+#title-screen{inset:0;z-index:60;background:var(--ds-ink);transition:background-color .9s}
+#title-screen.live{background-color:transparent}
+#title-screen:focus{outline:0}
+#title-screen .wrap{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,520px);column-gap:48px;align-items:end;padding:96px var(--ds-gutter) 48px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 96px),transparent 100%)}
+#title-screen .name{font:400 var(--ds-fs-title-huge)/1.05 var(--ds-title);color:var(--ds-ivory)}
+#title-screen .tag{margin-top:8px;font-size:var(--ds-fs-label);color:var(--ds-ivory)}
+#title-screen .keys{margin:6px 0 0}
+#title-menu{min-width:0;background:none;border-bottom:1px solid var(--ds-line)}
+#title-menu .pm-h{padding-bottom:6px}
+#title-menu .line{display:block;color:var(--ds-muted)}
+#title-menu .pm-btn:hover .line,#title-menu .pm-btn:focus .line,#title-menu .pm-btn.primary .line{color:inherit}
 #title-menu input{width:100%;margin:6px 0 10px;padding:8px 10px;font:inherit;color:var(--ds-ivory);background:none;border:1px solid var(--ds-line);border-radius:0}
 #title-menu input::placeholder{color:var(--ds-muted)}
 #title-menu .warn{color:var(--ds-accent)}
-#title-screen .keys{margin-top:18px}
+@media (max-width:900px){#title-screen .wrap{grid-template-columns:minmax(0,1fr);row-gap:18px;padding:72px 18px 18px}}
 `;
 
-export function showTitle(c: TitleChoice): void {
+/** `live()`: the town stands behind the screen, the ink fades out */
+export function showTitle(c: TitleChoice): { live(): void } {
   injectStyle();
   if (!document.getElementById('pm-title-css')) { const st = document.createElement('style'); st.id = 'pm-title-css'; st.textContent = CSS; document.head.appendChild(st); }
   const save = readSave().state, root = el('div', 'pm');
-  root.id = 'title-screen';
+  root.id = 'title-screen'; root.tabIndex = -1;
   root.innerHTML = `<div class="wrap">
-    <div class="name">CITÉ DU TOURNOI</div>
-    <div class="pm-sub tag">${tx('ui.title.tag')}</div>
-    <div class="pm-card" id="title-menu"></div>
-    <p class="pm-sub keys">${tx('ui.title.keys')}</p></div>`;
+    <div><div class="name">Cité du Tournoi</div><div class="tag">${tx('ui.title.tag')}</div><p class="pm-sub keys">${tx('ui.title.keys')}</p></div>
+    <div id="title-menu"></div></div>`;
   document.body.appendChild(root);
+  root.addEventListener('keydown', (e) => e.stopPropagation());
   const menu = root.querySelector('#title-menu')!;
   const menuButtons = (): void => {
     menu.innerHTML = '';
     const add = (id: string, label: string, sub: string, f: () => void, primary = false) => {
-      const b = el('button', `pm-btn${primary ? ' primary' : ''}`, `<span>${esc(label)}<span class="pm-sub line">${esc(sub)}</span></span>`);
+      const b = el('button', `pm-btn${primary ? ' primary' : ''}`, `<span>${esc(label)}<span class="why line">${esc(sub)}</span></span>`);
       b.dataset.id = id; b.addEventListener('click', f); menu.appendChild(b);
       return b;
     };
@@ -60,4 +66,6 @@ export function showTitle(c: TitleChoice): void {
     input.focus();
   };
   menuButtons();
+  arrowKeys(menu as HTMLElement);
+  return { live: () => root.classList.add('live') };
 }

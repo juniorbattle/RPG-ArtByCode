@@ -20,4 +20,6 @@ pair is direction A « Voile »'s (UM-1): Marcellus for titles, names and number
 - The latin subset holds U+0000-00FF, the general punctuation and a few signs (`LATIN_RANGE` in `system.ts`): English and French with their
   accents. A character outside it would fall back to a system font: `tools/ui-text.mjs` checks every visible character of the pages it measures.
 - Marcellus has one set of figures, with no lining or tabular alternate in this file (measured in the page: `lnum`, `tnum` and `onum` change nothing):
-  its « 1 » is about as wide as its « I » and its « 0 » exactly as wide as its « O ». At small sizes « 10 » reads close to « IO » (journal Passe UM2).
+  its « 1 » is about as wide as its « I » and its « 0 » exactly as wide as its « O ». At small sizes « 10 » reads close to « IO » (journal Passe UM2). The
+  operator's decision UM2-3 « Chiffres en Source Sans 3 » (journal Passe UM3): the digits of `"CdT Title"` come from the text font's file, by a second
+  `@font-face` on `DIGITS` in `system.ts`; titles and names stay in Marcellus.

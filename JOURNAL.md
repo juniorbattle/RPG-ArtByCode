@@ -524,6 +524,39 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un chiffre recopié de mémoire dans une fiche se remesure avant publication : mes « 58 % » du téléphone en valaient 64,6.
 - Une police choisie sur une maquette se relit dans ses plus petits usages : le défaut du « 10 » y était déjà, l'image l'a laissé passer.
 
+## Passe UM3 — La fiche du lot 0 relue, et le lot 1 : l'état, le menu unique, la liste à la demande, le titre sur la vraie ville (2026-11-02, branche)
+
+### Les décisions de l'opérateur, mot pour mot
+- Fiche https://claude.ai/artifact/Q83foWSZ72ZS4Kc6p9kXNe, 5 documents relus, tous à la recommandation, aucune note. Message de l'opérateur, mot pour mot : « Fiche remplie ».
+
+| # | Décision | Choix de l'opérateur |
+|---|---|---|
+| UM2-1 | Le dialogue en jeu | « Validé, enchaîner les lots 1 à 5 » |
+| UM2-2 | La fondation sur les autres écrans | « Bonne base » |
+| UM2-3 | Les chiffres en Marcellus | « Chiffres en Source Sans 3 » |
+| UM2-4 | Le titre sur la vraie ville | « Le titre d'abord, la ville apparaît derrière » |
+| UM2-5 | Le dialogue de nuit et le budget | « Accepter l'égalité » |
+
+- UM2-3 change le texte de la direction A (« Marcellus (titres et chiffres) ») : les chiffres de la police de titre viennent désormais de Source Sans 3, par une seconde `@font-face` sur `U+0030-0039` (`DIGITS`, `system.ts`). Les titres et les noms restent en Marcellus.
+
+### Fait, lot 1 — [OK]
+- **L'exploration** (UM-R1, UM-R2) : plus de barre de touches ni de panneau. En haut à gauche le jour, ses traits, le moment et le lieu, la prochaine échéance (TOURNOI § 11) ; à droite les pièces et la réputation, et la blessure si elle existe ; l'invite E en bas ; `Q` et `Esc` dans le coin. L'état pose ses textes sur deux voiles radiaux.
+- **La liste à la demande** : `Q` ouvre une bande basse, les actions du lieu, le repos, l'attente, les personnes (Lantern Row n'a pas d'autre accès à elles). La touche `Q` a été choisie libre de tout usage : ni le déplacement ni le panneau DEV ne s'en servent. **Le combat du jour** remplace le libellé du coin par « Enter the arena for your bout », en accent, toujours visible.
+- **Le menu unique** : `Esc`, plein écran, avec Carte, Journal, Tournoi, Compétences, Équipement, Son et leurs touches, puis les sauvegardes. M, J, T, K, G, V restent.
+- **Les écrans** : pages sur un voile plein écran, HUD masqué derrière ; les nouvelles en bande basse. Compétences : la sélection marquée d'un trait et de l'accent, au lieu d'une teinte qui se lisait comme un bouton éteint. Équipement : quatre emplacements côte à côte. Carte : plus de « free » à chaque ligne, la phrase du haut le dit. Cinématique : la bande du dialogue, les bandes dans l'encre du ton, « Next » et « Skip » réduits à deux indications.
+- **Le titre** (UM-R4, UM2-4) : il paraît tout de suite sur l'encre, la ville à midi monte derrière, l'encre s'efface ; ses boutons répondent dès le départ (« Explore » avant la fin : l'écran de chargement prend le relais). Le HUD et le panneau DEV attendent « Explore the district », et les touches pressées sur le titre restent sur lui : la ville derrière ne marche pas.
+- Retirés : les étiquettes de lieu des places et de Lantern Row, redites de l'état, dont « a mock-up of the third place » (UM-R3).
+
+### Les preuves
+- `tools/ui-text.mjs` : 21 pages sur 23 au premier passage ; [KO → corrigé] les deux échecs étaient l'étiquette de lieu, retirée.
+- `tools/ui-contrast.mjs`, 14 pages, deux instants : 4,82:1 au plus bas (« Menu » sur l'eau de midi), 5,31 à 6,18:1 pour l'état ; 7,4:1 sur le voile plein écran, 7,97:1 au titre. [?] Marge fine sur l'eau de midi : le foyer des voiles ponctuels passe de 55 à 68 %.
+- `play-day`, défaut et `V2=1`, `exits-proof` : tout passe. [KO → corrigé] `play-flow` cliquait sur la touche du coin, qui porte le même libellé que la ligne de la liste : l'outil vise `.pm-talk`.
+- [KO → réécrit] Le test qui comparait `startTown` à `d129433` au caractère près ne peut plus tenir, le titre le veut derrière lui : il vérifie désormais l'ordre titre, puis ville, et le chemin des autres adresses. La preuve au pixel reste `tools/title-proof.mjs`.
+
+### Pensée
+- Deux éléments peuvent porter le même libellé : un outil vise un conteneur, pas un texte.
+- Une information redite ne se réduit pas, elle s'enlève : l'étiquette de lieu ne servait plus à rien une fois l'état au propre.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -729,7 +762,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6e-bis. Interface moderne (Passes UM1, UM2)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5, le code sur la branche `claude/ui-voile-9516af`, **rien de ce remplacement sur `main` avant l'essai en jeu de l'opérateur** (UM-T1). Lot 0 et dialogue faits (Passe UM2) : voiles sous la nuit B, à égalité pour le dialogue de nuit, contrastes à 5,72:1 au moins. **Attend la fiche https://claude.ai/artifact/Q83foWSZ72ZS4Kc6p9kXNe** : la suite des lots, les chiffres (UM2-3), le titre (UM2-4), l'égalité de nuit (UM2-5).
+**6e-bis. Interface moderne (Passes UM1, UM2)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5, le code sur la branche `claude/ui-voile-9516af`, **rien de ce remplacement sur `main` avant l'essai en jeu de l'opérateur** (UM-T1). Lot 0 et dialogue faits (Passe UM2) : voiles sous la nuit B, à égalité pour le dialogue de nuit, contrastes à 5,72:1 au moins. Fiche relue (Passe UM3), tout à la recommandation. Lots en cours sur la branche ; l'essai en main de l'opérateur vient avant la fusion.
 
 **6e. Interface (étape 2 de la feuille de route ; Passes UI1, UI2)** — ligne directrice décidée sur la fiche de la Passe UI1 (14 choix sur 14,
 tous à la recommandation) : C « Héraldique pixel » (L1), un style dont les tons suivent `DayState` (L2), le téléphone avec le système de design

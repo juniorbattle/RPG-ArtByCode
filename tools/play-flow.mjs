@@ -51,7 +51,7 @@ try {
   check(await page.evaluate(() => window.__game.hash()) === hBefore, 'the town page reloaded from the save holds the same state');
   await page.screenshot({ path: path.join(outDir, `${mode}-1-town.png`) });
   // 2. « Enter the arena »: the town saves and goes to the arena page
-  await page.evaluate(() => [...document.querySelectorAll('.pm-btn')].find((x) => /Enter the arena/.test(x.textContent)).click());
+  await page.evaluate(() => { window.__ui.openHere(); [...document.querySelectorAll('.pm-talk .pm-btn')].find((x) => /Enter the arena/.test(x.textContent)).click(); });
   // the version 2: the match sheet first (lot V9, P6), its four skills kept
   if (V2) {
     const sheet = await page.evaluate(() => document.querySelector('.pm-overlay .pm-card')?.textContent ?? '');
