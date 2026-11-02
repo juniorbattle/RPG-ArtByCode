@@ -1,0 +1,40 @@
+{
+ "id": "noble-x2-v1",
+ "frames": 30,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29",
+ "sheet": [
+  384,
+  480
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2607,
+    "meanOklabErrPermille": 15.4,
+    "maxOklabErrPermille": 57.7
+   },
+   "recon-up-full-q.png": {
+    "texels": 2545,
+    "meanOklabErrPermille": 13.9,
+    "maxOklabErrPermille": 49.8
+   },
+   "recon-side-full-q.png": {
+    "texels": 2302,
+    "meanOklabErrPermille": 15.5,
+    "maxOklabErrPermille": 48.7
+   }
+  }
+ },
+ "views": {
+  "down": "e1572238447a2168d85b1c111ff9bd885592aafdc6757f4d66f19102242b0d95",
+  "up": "58e2dabe1921c437b5d92588a6571b7bad719aed2b283cb63ba3fa53ec226d4d",
+  "side": "96c7a6deeb931ba781aef558dc31daf4abe772b0beb9a41d81c512fc5511d051"
+ },
+ "exports": {
+  "png": "32ce117e83e6439b0d2fbcec50d258a1afb9853aa8e0f634e52ac36cea2cd1fe",
+  "json": "398c15630b66ce1840275ce6a9f8a1380f30a0672611bfee21d36eaf847069e2",
+  "aseprite": "26bda41653fb9d991e9ceae385a8e8db47f7030f5af54a9bf6723b12cfe4cede"
+ }
+}

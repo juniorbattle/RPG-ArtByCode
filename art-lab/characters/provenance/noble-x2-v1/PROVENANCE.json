@@ -1,0 +1,50 @@
+{
+  "id": "noble-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA6)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "N3 « Cuire »: NPC 10 \"Noble Customer (Female)\""
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp",
+      "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce",
+      "figure": "NPC 10 \"Noble Customer (Female)\""
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing (1st, 3rd and 4th views)",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig noble-x2-v1.rig.mjs (art-lab/characters/rigs/lib/citizen.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 30,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/noble-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/noble-x2-v1.png": "32ce117e83e6439b0d2fbcec50d258a1afb9853aa8e0f634e52ac36cea2cd1fe",
+    "art-lab/characters/exports/noble-x2-v1.json": "855221ab54a8014bd4840e3d37fa7ec3c150b3bbf4a3462007fa9e4edf31de62",
+    "art-lab/characters/source/noble-x2-v1.aseprite": "26bda41653fb9d991e9ceae385a8e8db47f7030f5af54a9bf6723b12cfe4cede",
+    "art-lab/characters/provenance/noble-x2-v1/view-down.png": "e1572238447a2168d85b1c111ff9bd885592aafdc6757f4d66f19102242b0d95",
+    "art-lab/characters/provenance/noble-x2-v1/view-up.png": "58e2dabe1921c437b5d92588a6571b7bad719aed2b283cb63ba3fa53ec226d4d",
+    "art-lab/characters/provenance/noble-x2-v1/view-side.png": "96c7a6deeb931ba781aef558dc31daf4abe772b0beb9a41d81c512fc5511d051",
+    "art-lab/characters/provenance/noble-x2-v1/build.json": "9a96d13a096660aca5e7be9f8d82dcc84bacb7b5654561863bceed3a72750d65",
+    "art-lab/characters/rigs/noble-x2-v1.rig.mjs": "b85a5548e6e839d21bfa4a4b5297ab5adc71e28e48543b1b1021423b348130df",
+    "art-lab/characters/rigs/lib/citizen.mjs": "8cfa56e3596e85177e371117693e70bbda58072a053622dd50dab080f3221348",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

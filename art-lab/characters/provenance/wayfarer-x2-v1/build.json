@@ -1,0 +1,40 @@
+{
+ "id": "wayfarer-x2-v1",
+ "frames": 30,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29",
+ "sheet": [
+  384,
+  480
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2954,
+    "meanOklabErrPermille": 14.3,
+    "maxOklabErrPermille": 49.2
+   },
+   "recon-up-full-q.png": {
+    "texels": 2757,
+    "meanOklabErrPermille": 13.8,
+    "maxOklabErrPermille": 38.7
+   },
+   "recon-side-full-q.png": {
+    "texels": 2510,
+    "meanOklabErrPermille": 14,
+    "maxOklabErrPermille": 43.1
+   }
+  }
+ },
+ "views": {
+  "down": "468848cae1ca9cbbf638e3554c4741b40a7cd3b5fc6167197664ceb576290b75",
+  "up": "cb0dab99054308d537f496e360916c16f8b197326a6e181ad85cbf3c35e23298",
+  "side": "1f4265a622824082f0d73eb3180d6fae53ec71b562427fbc469ad21a474c6739"
+ },
+ "exports": {
+  "png": "cdff37a5cacef59fa366a0ef47c423b93bd7aefee576035377fb4e7cfc8c42ea",
+  "json": "64f868e216800923fc1a940099ab207f7870f05d75edbdaf81e1758abc73e4d8",
+  "aseprite": "e5040ed84b3de886dd757147f77fc4f6b57ba90a423aee50e2738597d175b666"
+ }
+}

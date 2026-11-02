@@ -97,6 +97,14 @@ export function plazaCamPose(kind: PlazaKind, px: number, pz: number, dist: numb
 const CROWD: Record<PlazaPeriod, { size: number; linger: [number, number] }> = {
   morning: { size: 1, linger: [0.8, 0.5] }, midday: { size: 3, linger: [7, 1.6] }, afternoon: { size: 2, linger: [2, 0.8] }, night: { size: 2, linger: [6, 1.5] },
 };
+/** who walks the crowd by the moment, in turn (journal Passe CA6, the casting sheet's N1 to N5): the five townsfolk, the stallholder and the traveller at every hour, the
+ *  noblewoman from midday to the end of the day, the children by day only, side by side where the crowd walks in groups (CROWD); a citizen without a sheet in the cast loses its turn */
+const CROWD_TURN: Record<PlazaPeriod, string[]> = {
+  morning: ['crowd0', 'citizen-vendor', 'citizen-wayfarer', 'crowd1', 'citizen-errand-boy', 'crowd2', 'citizen-girl', 'crowd3', 'crowd4'],
+  midday: ['crowd0', 'citizen-vendor', 'crowd1', 'citizen-errand-boy', 'citizen-girl', 'crowd2', 'citizen-noble', 'crowd3', 'citizen-wayfarer', 'crowd4'],
+  afternoon: ['crowd0', 'citizen-vendor', 'citizen-errand-boy', 'citizen-girl', 'citizen-noble', 'crowd3', 'citizen-wayfarer', 'crowd2', 'crowd4', 'crowd1'],
+  night: ['crowd0', 'citizen-wayfarer', 'citizen-vendor', 'crowd1', 'crowd2', 'crowd3', 'crowd4'],
+};
 /** the characters' scale in the squares: B's (journal Passe VP1) */
 const CHAR_SCALE = 1.12;
 /** the squares' moon: below the first build's (journal Passe VP1, third critique: the moonlit plaster outshone the lamps, the night's
@@ -257,7 +265,8 @@ export class PlazaApp {
     // keeps every role generated
     this.opts.onProgress('people', 0.97);
     const castMode = this.opts.params.get('cast');
-    const cast = castMode === 'generated' ? null : await loadProductionCast(false, 'approved', undefined, plazaCastEntries());
+    const candidates = import.meta.env.DEV && castMode === 'candidate';
+    const cast = castMode === 'generated' ? null : await loadProductionCast(candidates, 'approved', undefined, candidates ? [...plazaCastEntries(), ...(await import('../lab/plazaCast')).citizenEntries()] : plazaCastEntries());
     this.cast = cast?.cast ?? null;
     const generated = cast ? [] : crowdVariants(7351, SQUARE_PEOPLE.length).map((s, i): CharSpec => ({ ...s, id: `person-${SQUARE_PEOPLE[i]}` }));
     this.atlas = SpriteAtlas.build([PLAYER, GUARD_A, GUARD_B, HOODED, PORTER, ...crowdVariants(1842, 5), ...generated], cast?.sheets ?? [], this.renderer.capabilities.maxTextureSize);
@@ -280,14 +289,14 @@ export class PlazaApp {
     // points (PLAZA_GATHER): one by one in the morning, by threes at midday, two by two at the end of the day and at night, each group in a
     // ring round its point, every member turned to its middle (journal Passe VP6, tenth critique: « figures stand apart like pieces on a board
     // and all face the camera »; VP7, first critique: three abreast read as « queue-like rows », « a police lineup »)
-    const G = CROWD[this.period], W = this.place.walk;
-    const clear = (x: number, z: number) => x > W.x0 && x < W.x1 && z > W.z0 && z < W.z1 && this.place.blockers.every((o) => Math.hypot(x - o.x, z - o.z) >= o.r + 0.3);
+    const G = CROWD[this.period], W = this.place.walk, turn = CROWD_TURN[this.period].filter((c) => c.startsWith('crowd') || this.cast?.has(c));
+    const clear =(x: number, z: number) => x > W.x0 && x < W.x1 && z > W.z0 && z < W.z1 && this.place.blockers.every((o) => Math.hypot(x - o.x, z - o.z) >= o.r + 0.3);
     for (let i = 0; i < this.opts.crowd; i++) {
       const g = Math.floor(i / G.size), m = i % G.size, p = this.place.wander[g % this.place.wander.length];
       const a0 = 0.6 + g * 1.9 + (m * Math.PI * 2) / G.size, rr = G.size === 1 ? 0 : G.size === 2 ? 0.45 : 0.6;
       let x = p[0] + Math.cos(a0) * rr, z = p[1] + Math.sin(a0) * rr * 0.8;
       if (!clear(x, z)) { x = p[0]; z = p[1]; }
-      const a = this.actor(`crowd${i % 5}`, 'crowd', x, z, 200 + i);
+      const a = this.actor(turn[i % turn.length], 'crowd', x, z, 200 + i);
       const dx = p[0] - x, dz = p[1] - z;
       if (G.size === 1 || Math.abs(dx) >= Math.abs(dz) * 0.8) { a.dir = 'side'; a.flip = G.size === 1 ? i % 2 === 0 : dx > 0; } else a.dir = dz > 0 ? 'down' : 'up';
       a.behaviour = { kind: 'wander', seed: 31 * i + 7, idx: (i * 3) % this.place.wander.length, wait: G.linger[0] * (0.4 + (i % 4) * 0.2) };

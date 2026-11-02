@@ -1,0 +1,40 @@
+{
+ "id": "errand-boy-x2-v1",
+ "frames": 30,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29",
+ "sheet": [
+  384,
+  480
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 1568,
+    "meanOklabErrPermille": 11,
+    "maxOklabErrPermille": 48.9
+   },
+   "recon-up-full-q.png": {
+    "texels": 1629,
+    "meanOklabErrPermille": 10.6,
+    "maxOklabErrPermille": 51.6
+   },
+   "recon-side-full-q.png": {
+    "texels": 1267,
+    "meanOklabErrPermille": 11,
+    "maxOklabErrPermille": 35
+   }
+  }
+ },
+ "views": {
+  "down": "4f3e39646603de9706d996b8098f426a2580de6507a98a2f04463d5d23a09dfd",
+  "up": "27e8b53239f400e7e3a4147af074189da52e4b09203d8f26fe42ce9b847c31aa",
+  "side": "0fd303f14c5cdd6e16ca76f5c8b680d295acd92d0fb8a0cfcd7dfc7f1dcad8b1"
+ },
+ "exports": {
+  "png": "7b9c8cec11b945b8e7c4effbb012dd67548ff8e96ba85124bed162a850edefee",
+  "json": "0d5bf502c57fc3f14561c60355106109cf976b6aff2b7e9f1221e8e189e56887",
+  "aseprite": "e05989fa81947957c07f2626e46e08f27af559cc4115b6da2398cb10c9c60312"
+ }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "errand-boy-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA6)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "N4 « Cuire »: NPC 11 \"Child Helper (Male)\""
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp",
+      "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce",
+      "figure": "NPC 11 \"Child Helper (Male)\""
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing (1st, 3rd and 4th views)",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig errand-boy-x2-v1.rig.mjs (art-lab/characters/rigs/lib/citizen.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 30,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/errand-boy-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/errand-boy-x2-v1.png": "7b9c8cec11b945b8e7c4effbb012dd67548ff8e96ba85124bed162a850edefee",
+    "art-lab/characters/exports/errand-boy-x2-v1.json": "30e3a930aaf7e7b2885de32f286cca50c83c6ebf8c8e372684c1fac9f6cde8a8",
+    "art-lab/characters/source/errand-boy-x2-v1.aseprite": "e05989fa81947957c07f2626e46e08f27af559cc4115b6da2398cb10c9c60312",
+    "art-lab/characters/provenance/errand-boy-x2-v1/view-down.png": "4f3e39646603de9706d996b8098f426a2580de6507a98a2f04463d5d23a09dfd",
+    "art-lab/characters/provenance/errand-boy-x2-v1/view-up.png": "27e8b53239f400e7e3a4147af074189da52e4b09203d8f26fe42ce9b847c31aa",
+    "art-lab/characters/provenance/errand-boy-x2-v1/view-side.png": "0fd303f14c5cdd6e16ca76f5c8b680d295acd92d0fb8a0cfcd7dfc7f1dcad8b1",
+    "art-lab/characters/provenance/errand-boy-x2-v1/build.json": "49dd9d56c63493262b89d7c75d735d8d78b7ea33c98ae56f15175baca9848753",
+    "art-lab/characters/rigs/errand-boy-x2-v1.rig.mjs": "57dbc5bfb87b55b681fe48b3abf5f476bf5d5faa1d2ebf4c55ac52572b2827cd",
+    "art-lab/characters/rigs/lib/citizen.mjs": "8cfa56e3596e85177e371117693e70bbda58072a053622dd50dab080f3221348",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

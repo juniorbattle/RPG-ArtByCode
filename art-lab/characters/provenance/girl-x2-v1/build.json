@@ -1,0 +1,40 @@
+{
+ "id": "girl-x2-v1",
+ "frames": 30,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11 walk-down:12-17 walk-up:18-23 walk-side:24-29",
+ "sheet": [
+  384,
+  480
+ ],
+ "palette": {
+  "mode": "joint k-means 64",
+  "colours": 64,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 1671,
+    "meanOklabErrPermille": 14.7,
+    "maxOklabErrPermille": 54.6
+   },
+   "recon-up-full-q.png": {
+    "texels": 1701,
+    "meanOklabErrPermille": 14.4,
+    "maxOklabErrPermille": 58.8
+   },
+   "recon-side-full-q.png": {
+    "texels": 1487,
+    "meanOklabErrPermille": 14.3,
+    "maxOklabErrPermille": 45.8
+   }
+  }
+ },
+ "views": {
+  "down": "a9589e322d581e5764925f3e760ad37cf050ddd159d1abc96b74e5017be9fb3a",
+  "up": "22ce195d0d38a4adbc05b87c222d6321c3898a29bd481554f877575ac8cca514",
+  "side": "27d0e8ab05dd08287a98b1ae0f3f2d449a7385efffe0eb8d1b82e4401a083e10"
+ },
+ "exports": {
+  "png": "52574a86e9f1bca4990f5c014855402b294744bce517554d660a61c7522fdc3a",
+  "json": "76ca2649282dd53cdf0867b46d06d686c7a1338b2ea515920303a99513eee58e",
+  "aseprite": "5fcdc502855b97cc96061202b208c8cc0c96f1fd87a94692731399c5aea479e9"
+ }
+}

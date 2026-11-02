@@ -1,0 +1,50 @@
+{
+  "id": "wayfarer-x2-v1",
+  "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe CA6)",
+  "request": {
+    "date": "2026-11-01",
+    "by": "operator, casting sheet of journal Passe CA1",
+    "text": "N2 « Cuire »: NPC 08 \"Traveler (Female)\""
+  },
+  "source": {
+    "sheet": {
+      "path": "art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp",
+      "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce",
+      "figure": "NPC 08 \"Traveler (Female)\""
+    }
+  },
+  "chain": [
+    "reconstruct-grid.mjs per facing (2nd, 3rd and 4th views)",
+    "quantize-palette.mjs --k 64: one palette for the three views",
+    "rig wayfarer-x2-v1.rig.mjs (art-lab/characters/rigs/lib/citizen.mjs)",
+    "Aseprite: assembly and export, every exported frame compared"
+  ],
+  "presentation": {
+    "frame": [
+      64,
+      96
+    ],
+    "footRow": 90,
+    "metresPerTexel": 0.0235,
+    "scale": 0.9
+  },
+  "frames": 30,
+  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/wayfarer-x2-v1.rig.mjs --check",
+  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+  "files": {
+    "art-lab/characters/exports/wayfarer-x2-v1.png": "cdff37a5cacef59fa366a0ef47c423b93bd7aefee576035377fb4e7cfc8c42ea",
+    "art-lab/characters/exports/wayfarer-x2-v1.json": "bedf246a76306d621b0f2e8836178d534f6700afc228b61de74af5926a9e706e",
+    "art-lab/characters/source/wayfarer-x2-v1.aseprite": "e5040ed84b3de886dd757147f77fc4f6b57ba90a423aee50e2738597d175b666",
+    "art-lab/characters/provenance/wayfarer-x2-v1/view-down.png": "468848cae1ca9cbbf638e3554c4741b40a7cd3b5fc6167197664ceb576290b75",
+    "art-lab/characters/provenance/wayfarer-x2-v1/view-up.png": "cb0dab99054308d537f496e360916c16f8b197326a6e181ad85cbf3c35e23298",
+    "art-lab/characters/provenance/wayfarer-x2-v1/view-side.png": "1f4265a622824082f0d73eb3180d6fae53ec71b562427fbc469ad21a474c6739",
+    "art-lab/characters/provenance/wayfarer-x2-v1/build.json": "6684e7b3b386f077017759f747a25c4bd3ed8d66285f6284a62b2fe9dc2bd76d",
+    "art-lab/characters/rigs/wayfarer-x2-v1.rig.mjs": "346f390952692cd3a1e05ed54d3621dc849d0a3e6b3c9348b7d12c88e4a661a7",
+    "art-lab/characters/rigs/lib/citizen.mjs": "8cfa56e3596e85177e371117693e70bbda58072a053622dd50dab080f3221348",
+    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+  }
+}

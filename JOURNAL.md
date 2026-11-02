@@ -526,6 +526,38 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
 ### Pensée
 - Quand une feuille prend la place d'une autre, ce qui disait son absence tombe avec elle : un texte du jeu, un compteur d'outil, une liste de test.
 
+## Passe CA6 — Les cinq citadins : cinq marcheurs de la planche PNJ 01-16, candidats sur les places (2026-11-01)
+
+### La demande
+- L'opérateur, mot pour mot : « Citadins mais tu peux faire le combat sur une autre session ». Les feuilles de combat partent dans leur propre séance, branche à part : exception à la règle d'une seule branche, limitée à ces deux branches et demandée par ces mots.
+- Décisions déjà prises (Passe CA1) : N1 à N5 « Cuire » ; les enfants de jour seulement, la dame noble pour midi et la fin de journée, chacun marche (30 images).
+
+### Fait — [OK]
+- Cinq feuilles candidates `-x2-v1` : `vendor` (N1 n° 01), `wayfarer` (n° 08), `noble` (n° 10), `errand-boy` (n° 11), `girl` (n° 12), tirées de la planche PNJ 01-16, celle de la première distribution. Aucune image générée, 0 $ : la remarque de l'opérateur sur la netteté visait ce qu'on réduisait d'autres planches, pas celle-ci.
+- Recette `rigs/lib/citizen.mjs`, tirée des rigs de la première distribution : `legs` (marche du garde), `dress` (de l'artisane), `gown` (nouvelle, une robe au sol sans pied à montrer), et le profil par une jambe qui s'incline depuis sa première rangée.
+- Le pas de reconstruction règle la taille : adultes de 86 à 88 rangées, comme la distribution (86-89) ; enfants de 65 à 69, sur le même texel, pas une échelle réduite.
+- L'ombre de sol de la planche est retirée par le rig (`noGround`) : l'option `noShadow` ne l'enlevait pas et `align` la prenait pour les semelles.
+- Les places : `CROWD_TURN` (`src/world/PlazaApp.ts`) dit qui marche à quelle heure, le nombre de passants ne change pas. Les cinq feuilles restent derrière `cast=candidate` (`src/lab/plazaCast.ts`, DEV seulement, compilé hors production) ; sans feuille dans la distribution, un citadin perd son tour.
+
+### Les preuves
+- `npm run typecheck`, `npm test` **309 / 309** (quatre tests de plus, dont l'heure de chacun), `npm run build`, `npm run art:validate` (54 manifestes, 48 sources, 0 erreur) ; `--check` refait à l'identique les cinq feuilles.
+- Aucune feuille candidate dans le paquet de production. Le seul nom retrouvé est le libellé de la rotation, dans le morceau des places.
+- Dix états de places, parvis, lices et halle, du matin à la nuit : ni sprite généré ni erreur de page ; de nuit ni enfants ni dame noble. Texture cuite : 642 images sur 672 garanties, 2048 x 2016.
+- Netteté sur l'image de face : texels isolés 32-44 %, aplats 31-42 %, dans la fourchette des premières feuilles (26-52 % et 26-52 %). Pas dessiné au sol : 4,5 pour les adultes, 4 pour les enfants, 2 pour la dame, mesuré sur l'ourlet ; elle marche donc environ deux fois moins vite que les autres.
+
+### Les critiques à l'aveugle — [?]
+- Première : 4 à 6,5 sur 10. Corrigé après elle : la face de la voyageuse (la 2e vue de la planche, la 1re montrait une autre écharpe et d'autres cheveux) ; la caisse du garçon reportée sur son profil avec les pixels de sa vue de face ; la robe de la dame, qui balance deux fois plus et dont l'ourlet monte ; l'aplat noir du marchand (`liftLegs`, la leçon de la Passe 4A-tervicies) et le coin sombre entre ses jambes ; un trait parasite de la fillette (la fermeture verticale, depuis la rangée 66 chez les enfants).
+- Seconde : 5 à 6 sur 10, aucune feuille à 7. Corrigé après elle : la caisse qui flottait, l'éperon d'une botte. La dernière version de la caisse n'a pas repassé de critique.
+- Restent, sur la planche d'origine : le dos de la voyageuse (grand sac, cheveux courts), la pèlerine de la dame, les bras pendants des enfants, les cheveux du marchand de profil. C'est le même écart que les citadins approuvés (« Fidèles aux planches »). Reste aussi la marche sans balancement des bras : l'opérateur l'a jugé sans priorité le 18/10.
+
+### La suite
+- La fiche : https://claude.ai/artifact/6KJMxVgWQyMx1sZisTz2nu (source `briefs/fiche-casting-citadins.html`, 7 cartes, marches animées, `decisions` vide à la publication). Rien en production avant sa relecture ; une carte demande s'il faut une planche propre pour des vues cohérentes.
+- La séance Feuilles de combat ×3 tient les poses de charge de Ren et les rivaux. N7 reste ouverte.
+
+### Pensée
+- Une critique à l'aveugle juge aussi ce que la source impose : séparer ce qu'on peut corriger de ce que la planche décide, et mettre le reste sur la fiche sans le maquiller.
+- Avant de prendre la vue attendue d'une planche, regarder les quatre : ici la 2e vue collait mieux à la 3e et à la 4e que la 1re.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -590,7 +622,7 @@ Part de la silhouette changée par chaque image (seuil 24, 1080p, deux combattan
   - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
-- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Restent les citadins, les poses de charge de Ren et les feuilles ×3. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2.
+- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Les cinq citadins candidats attendent leur fiche (Passe CA6). Les poses de charge de Ren et les feuilles ×3 sont dans leur propre séance. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2.
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantissait 336 images et en porte 322 (dix feuilles,
