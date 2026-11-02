@@ -31,6 +31,7 @@ rights, which have not been exhaustively verified**. Not an authorisation to rep
 | Operator's combat casting, 2026-11-01, G1 (six panels) | casting source, journal Passe CA1 | `91dffa0c…594d` | `sources/combat-casting-2026-11-01-g1.webp` |
 | same, G2 (six numbered panels) | casting source, journal Passe CA1 | `aefcba3f…b136` | `sources/combat-casting-2026-11-01-g2.webp` |
 | Pose sheets of the combat sheets, generated, one set per fighter | sources of `<id>-x3-combat`, journal Passes CX1 / CX2 | each its `.source.json` | `sources/ren-combat-x3-*`, `sources/<rival>-combat-x3-2026-11-01-*` |
+| Interface direction A « Voile », two generated images (town with a dialogue, duel with an alert) | **non-canonical** references, journal Passe UM1 (UM-T4): the model redrew part of the scene, the interface alone is the reference | each its `.source.json` | `sources/ui-voile-{town,arena}-2026-11-01.png` |
 
 All three are re-encoded copies (WebP pasted in a working session), not the original ChatGPT files; each is archived byte for byte with
 its record (`sources/<name>.source.json`: format, content, classification, provenance, rights, derived assets).

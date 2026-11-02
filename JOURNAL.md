@@ -429,6 +429,65 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Une branche déjà poussée se reporte sans réécriture : on repart de `main` et on y pose les fichiers, quand les deux branches n'ont que le journal en commun.
 
+## Passe UM1 — L'audit de l'interface moderne : la fiche de 18 choix, A « Voile » remplace « Héraldique pixel » (2026-11-01)
+
+### Demande
+- L'opérateur, mot pour mot : « retravailler le UI/HUD du jeu, je veux qu'il soit plus moderne et non retro comme ce qui est le cas actuellement, mais il faut aussi qu'il soit epure et coherent ».
+- La séance d'audit (`local_94e3af37-…`) n'a touché aucun fichier suivi : `main` à `be8b340`, ni branche ni commit. Cette passe consigne son résultat, sans code, avant tout changement de l'interface.
+
+### L'audit — [OK]
+- Surface couverte par l'interface, recouvrements comptés une fois : ville 19,6 %, terrain d'entraînement 25,0 %, dialogue de Mara 42,2 %, ville au téléphone 38,9 %, dialogue au téléphone 78,5 %, duel 9,5 %, duel au téléphone couché 29,3 %. De 19 à 30 cadres pixel par écran, trois niveaux emboîtés.
+- Le code : 277 règles CSS sur 9 fichiers, dont 142 aux deux HUD de duel ; 38 `border-image`, 98 calculs de grille de texels, 20 `pixelated`, 19 usages directs de la police pixel ; quatre noirs hors des jetons. `src/debug/Hud.ts`, `index.html` et le statut écrit par `main.ts` échappent au système. Les couleurs et les tailles sont centralisées, les formes ne le sont pas.
+- Sur 12 cadres sans interface, un texte ivoire nu sur le décor tombe à 1,06:1 au pire de jour : il faut un voile d'au moins 58 % ou un aplat.
+- Maquettes des trois directions sur captures réelles (`Voile`, `Pavois`, `Lices`), vraies polices : 0 texte sous 4,5:1 sur les quatre états du jour, ville, dialogue, duel, alerte et téléphone, 292 à 344 mesures par direction (5 % les plus défavorables de chaque texte), après réglage des voiles et des alertes.
+- Sources de la fiche et maquettes, hors dépôt : dossier de notes de la séance, `ui-moderne/`.
+
+### La fiche
+- Page privée https://claude.ai/artifact/AhkbhVkHF8f7r6Qyi8bPDS, collection `decisions`, vide à la publication. Message de l'opérateur, mot pour mot : « fiche remplie ».
+- Relue par `list` : 18 documents sur 18, tous à la recommandation, une note. La séance d'audit a lu des clics du 01/11 entre 19 h 12 et 19 h 15 UTC ; la relecture de cette passe lit le même contenu daté du 02/11 à 03 h 25 UTC : la page réécrit ses choix à chaque ouverture (son `write` au chargement), les libellés n'ont pas changé.
+
+| # | Décision | Choix de l'opérateur |
+|---|---|---|
+| UM-1 | La direction | « A · Voile », note : « Mais j'aime aussi beaucoup la direction Lices » |
+| UM-L1 | La direction C « Héraldique pixel » | « Lever » |
+| UM-S1 | La police pixel | « Lever la police pixel, garder le principe » |
+| UM-S2 | Les cadres pixel en neuf tranches | « Lever » |
+| UM-S3 | La palette | « Maintenir, allégée » |
+| UM-S4 | 16 px sur ordinateur, 14 px au téléphone | « Maintenir » |
+| UM-L2 | Un style dont les tons suivent DayState | « Maintenir » |
+| UM-L3 | Le téléphone avec le système de design | « Maintenir » |
+| UM-L4 | Visage cuit d'abord, bustes plus tard | « Maintenir » |
+| UM-R1 | Les sept touches en haut d'écran | « Un menu unique » |
+| UM-R2 | « Here », « Rest » et « Wait » | « Liste à la demande » |
+| UM-R3 | Les textes de développeur à l'écran | « Tous les retirer » |
+| UM-R4 | L'écran titre | « La vraie ville derrière » |
+| UM-R5 | Le HUD d'Explore | « Dans le système, sans mini-carte » |
+| UM-T1 | Comment l'introduire | « Remplacer, essai avant fusion » |
+| UM-T2 | Le plan par lots | « Valider le plan » |
+| UM-T3 | Embarquer les polices | « Oui » |
+| UM-T4 | Archiver les images de référence | « Celles de la direction choisie » |
+
+- La note de UM-1 se lisait de deux façons. Question posée : « Que veut dire ta note sur Lices pour la direction A ? », réponse de l'opérateur, mot pour mot : « A seule ». Voile partout ; Lices reste une appréciation, aucun emprunt.
+- Le texte de UM-T1 fait foi, mot pour mot : « Remplacer partout sur la branche, sans double style, et te donner l'essai en jeu avant de fusionner. » Il prime sur la fusion sans demander pour le code de cette direction. Cette passe, sans code, n'est pas couverte par cet essai.
+
+### Le plan (UM-T2, texte de la fiche)
+- Lot 0, la fondation : jetons, polices, primitives, retrait des cadres. Lot 1, l'exploration : HUD, menu, dialogue, boutique, compétences, équipement, cinématique, titre. Lot 2, le duel : les deux HUD, K.O. et fiche de match. Lot 3, le téléphone et les fenêtres basses. Lot 4, Explore, chargement et textes. Lot 5, le mouvement, l'essai en main de l'opérateur, le journal.
+- Le lot 0 et un seul écran, le dialogue, sont montrés en jeu à l'opérateur avant la suite.
+
+### Fait — [OK]
+- UM-T4 : les deux images de la direction A archivées à l'octet par `gen-image.mjs --archive`, `ui-voile-town-2026-11-01` (`1fa1825c…`) et `ui-voile-arena-2026-11-01` (`b7c117e3…`), non canoniques. Les quatre images de B et C restent dans le dossier ignoré. `npm run art:validate` : 56 manifestes, 60 sources, 0 erreur.
+- `AGENTS.md`, section « Interface » : A « Voile » à la place de « Héraldique pixel », chaque décision levée, maintenue ou allégée sous son libellé exact, et l'état du code tant que l'essai n'a pas eu lieu.
+
+### Échec — [KO]
+- `gen-image.mjs` sans `--model=gpt-image-2` : son modèle par défaut, `gpt-image-1`, n'existe plus sur le compte (HTTP 400, six requêtes à 0 $). Le registre de la tâche `ui-modern` compte donc 12 requêtes pour 6 images, 1,1414 $ sur 5 $. L'outil n'est pas changé par cette passe.
+
+### Non mesuré [?]
+- Le coût GPU des voiles (budget E24), le temps de démarrage d'un titre sur la vraie ville, le rendu dans le jeu en mouvement. Les maquettes sont des images, pas du code du jeu : leurs contrastes ne valent pas ceux du jeu.
+
+### Pensée
+- Une note sur une carte de décision peut changer le sens du choix : elle se tranche par une question avant d'appliquer, même quand le choix est à la recommandation.
+- Une date de relecture sur une page qui réécrit ses données à l'ouverture dit quand la page a été ouverte, pas quand on a décidé : c'est le contenu qu'on relit.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -633,6 +692,8 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 **6d. Jour et nuit (note de l'opérateur, Passe D1)** — mot pour mot : « Mais prend en compte que nous aurons un etat jour et nuit, et jour sera l'etat par defaut qui represente les evenements principaux du jeu : le deroule du tournoi ». Le jeu n'a aujourd'hui que la nuit (direction
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
+
+**6e-bis. Interface moderne (Passe UM1)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5, le code sur sa branche, **rien de ce remplacement sur `main` avant l'essai en jeu de l'opérateur** (UM-T1). Le lot 0 et le dialogue lui sont montrés avant la suite (UM-T2). À mesurer dans le vrai jeu : le coût GPU des voiles (E24), le démarrage d'un titre sur la vraie ville (UM-R4), les contrastes sur les quatre états.
 
 **6e. Interface (étape 2 de la feuille de route ; Passes UI1, UI2)** — ligne directrice décidée sur la fiche de la Passe UI1 (14 choix sur 14,
 tous à la recommandation) : C « Héraldique pixel » (L1), un style dont les tons suivent `DayState` (L2), le téléphone avec le système de design

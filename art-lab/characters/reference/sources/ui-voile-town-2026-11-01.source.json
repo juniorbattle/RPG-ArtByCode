@@ -1,0 +1,84 @@
+{
+  "kind": "generated-image",
+  "file": "ui-voile-town-2026-11-01.png",
+  "sha256": "1fa1825c5197cc78e131712cf059782d50e00b36678eb26488ce0bddf49e86cb",
+  "bytes": 2303838,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 1,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Edit the first image, a real screenshot of an HD-2D pixel-art role-playing game. Keep the scene, the architecture, the light and every character EXACTLY as in the first image: same positions, same sprites, same pixel-art style. Do not redraw, restyle, add or remove any character, and do not change the sky, the buildings or the time of day. Add only the game's interface over the scene, finished as a senior game UI designer would, following the layout of the second image, a rough mock-up. The interface is smooth, modern and refined: crisp vector shapes and clean anti-aliased type, never pixel art, no gold medieval frames, no parchment, no ornament. It is clean and restrained, with plenty of air, and it must leave the characters visible. No illustrated busts and no large portraits: the only faces are the small pixel faces of the mock-up. Keep the mock-up's exact words and numbers. No watermark, no extra text. Direction \"Veil\": there are no panels and no boxes at all. Soft dark gradients rise from the screen's edges; on them, elegant flared-serif titles (like Marcellus) and a clean humanist sans for text, ivory on deep ink, hairline rules of one pixel, a single warm gold accent for the selected line. Cinematic, like the title cards of a film.",
+    "promptSha256": "16580293978dea6a9ca5540a970bf33b47a8ef1374fe99f6e1ffc06d8021b883",
+    "promptFile": "(outside the repository) a-town.txt",
+    "references": [
+      {
+        "file": "(outside the repository) town-midday.png",
+        "sha256": "50ce8a7f5a5ce4d79c73d8de084206151d8d2a79dd252926e35955154238e3ff",
+        "bytes": 3449187
+      },
+      {
+        "file": "(outside the repository) A-dlg-midday.png",
+        "sha256": "86ab497b7e48bd13e1f21ad81be7054616ab9390f13acb5030d9d7cfff31e9ef",
+        "bytes": 3037990
+      }
+    ],
+    "image": "1 of 1",
+    "task": "ui-modern",
+    "requestedAt": "2026-11-01T18:49:23.808Z",
+    "response": {
+      "requestId": "req_b98745cbd491443f9db1a500f597db7c",
+      "created": "2026-11-01T18:50:46.000Z",
+      "processingMs": 81044
+    },
+    "usage": {
+      "input_tokens": 3306,
+      "input_tokens_details": {
+        "image_tokens": 3016,
+        "text_tokens": 290
+      },
+      "output_tokens": 5488,
+      "output_tokens_details": {
+        "image_tokens": 5488,
+        "text_tokens": 0
+      },
+      "total_tokens": 8794
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 0.689865,
+        "fromUsage": 0.190218
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 23664 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-02",
+    "from": "ui-modern-20261101T184923Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}
