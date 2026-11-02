@@ -258,7 +258,7 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   (keys pressed while the loop runs), the simulation's hash against the prototype's (with `combat=dynamic`: DynamicSim's own script against
   `DYNAMIC_SIM_HASH`, journal Passe C2), every moment in every assistance mode without a page error, the floor telegraph's contrast (>= 2:1,
   also deuteranopia), the floor's marks (the band, the rings) clear of the HUD at every window size of `FLOOR_SIZES` down to a 568 x 320 phone
-  (journal Passe AF1); exit 1 on a failure; `node tools/arena-scene-page.mjs <outDir> [query] [title]` (query default `scene=arena`) — a
+  (journal Passe AF1); exit 1 on a failure; `node tools/arena-scene-page.mjs <outDir> [query] [title]` (query default `scene=arena`; `play=1&new=1&name=Ren&noreload=1`: a game on one page, journal Passe UM2) — a
   production build with relative paths and the page to publish as an artifact (`arena-page.html`, no document skeleton, sets `?scene=arena`
   itself: the service hands no query string; its supporting files are `assets/*`; journal Passe P2). GPU time per pass of the arena:
   `node tools/perf.mjs "arena|scene=arena"` (the tool drives `window.__arena` when there is no `__app`; `?gpuprof=1` for the panel-less timer)
@@ -668,4 +668,4 @@ barrier (`WALK.x1`); the street beyond stays visible and fully built.
   pass 6 (780M: 10-12 ms at 1080p, 16-21 ms at 2560 x 1440; the scene pass is bandwidth-bound by the 4x MSAA HDR target).
 - Performance budget (project contract §§ 14 and 16; the operator's decision E24, journal Passe D8): « Pas plus cher que la nuit B, à définition
   égale », a page of the game costs no more GPU than the default night B at the same resolution. The operator's note, word for word: « Mais rien
-  n'est confirme car il y a peut etre des zones plus grande et dense ». The play mode's pages against it, without contention: journal Passe Q4b.
+  n'est confirme car il y a peut etre des zones plus grande et dense ». The play mode's pages against it, without contention: journal Passe Q4b. What the browser composes (the interface's veils) is seen neither by the GPU timers nor by the busy share at a capped cadence: `tools/cadence.mjs` with `fps=off`, the GPU saturated (journal Passe UM2).

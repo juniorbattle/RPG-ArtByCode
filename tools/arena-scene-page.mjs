@@ -5,13 +5,14 @@
 // as supporting files (published path `assets/<name>`).
 //   node tools/arena-scene-page.mjs <outDir> [query] [title]   (query: default `scene=arena`; `scene=arena&combat=dynamic` for the duel of the
 //   « tour par tour dynamique », the operator's trial, journal Passe C2)
+//   `play=1&new=1&name=Ren&noreload=1&v2=1`: a game of the play mode on one page (journal Passe UM2: `noreload`, a published page cannot change its address)
 import fs from 'node:fs';
 import path from 'node:path';
 import { build } from 'vite';
 
 const [out, query = 'scene=arena', title = 'Arène des Champions'] = process.argv.slice(2);
 if (!out) throw new Error('usage: node tools/arena-scene-page.mjs <outDir> [query] [title]');
-if (!/^scene=arena(&[a-z]+=[\w.:,-]*)*$/.test(query)) throw new Error(`query: scene=arena[&key=value...], got "${query}"`);
+if (!/^(scene=arena|play=1)(&[a-z0-9]+=[\w.:,-]*)*$/.test(query)) throw new Error(`query: scene=arena[&key=value...] or play=1[&key=value...], got "${query}"`);
 const root = path.resolve(import.meta.dirname, '..');
 await build({ root, base: './', logLevel: 'warn', build: { outDir: path.resolve(out), emptyOutDir: true, target: 'es2022', chunkSizeWarningLimit: 1200 } });
 const html = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
@@ -21,7 +22,7 @@ if (!src || !style) throw new Error('index.html: module script or style not foun
 const page = `<title>${title}</title>
 <style>:root{color-scheme:dark}${style}</style>
 <canvas id="view"></canvas>
-<script>try { if (!/[?&]scene=/.test(location.search)) history.replaceState(history.state, '', location.pathname + '?${query}' + location.hash); } catch (e) { console.warn('${query} not set', e); }</script>
+<script>try { if (!/[?&](scene|play)=/.test(location.search)) history.replaceState(history.state, '', location.pathname + '?${query}' + location.hash); } catch (e) { console.warn('${query} not set', e); }</script>
 <script type="module" src="${src.replace(/^\.\//, '')}"></script>
 `;
 fs.writeFileSync(path.join(out, 'arena-page.html'), page);

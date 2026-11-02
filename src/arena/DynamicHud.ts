@@ -53,7 +53,7 @@ const CHARGE_CSS = `
 #ah-tiers{position:absolute;left:50%;bottom:94px;transform:translateX(-50%);display:flex;gap:18px;pointer-events:none;opacity:.7;transition:opacity .12s}
 #ah-tiers.on{opacity:1}
 #arena-hud.wb #ah-tiers{opacity:0}
-#ah-tiers .tr{position:relative;display:flex;align-items:center;gap:6px;padding:0 0 4px;font:400 var(--ds-fs-small)/1.3 var(--ds-text);color:var(--ds-muted);white-space:nowrap;overflow:hidden}
+#ah-tiers .tr{position:relative;display:flex;align-items:center;gap:6px;padding:0 0 4px;font:400 var(--ds-fs-small)/1.3 var(--ds-text);color:var(--ds-muted);white-space:nowrap}
 #ah-tiers .tr b{font-weight:400}
 #ah-tiers .tr q{display:flex;gap:2px;quotes:none}
 #ah-tiers .tr q i{width:8px;height:3px;background:var(--ds-accent)}

@@ -20,7 +20,8 @@ export const CSS = `
 /* the HUD hidden: the « turn your device » layer (transparent) leaves, so it neither covers the KO and pause screens nor takes the touches */
 #arena-hud.off #ah-rotate{display:none}
 #arena-hud .top{position:absolute;left:0;right:0;top:0;height:230px;background:var(--ds-grad-t)}
-#arena-hud .bot{position:absolute;left:0;right:0;bottom:0;height:170px;background:var(--ds-grad-b)}
+/* the foot veil stops under the floor's marks at every window height: the lowest (the telegraph's band) stands 21.6 % of the height above the foot (measured, tools/arena-scene-check.mjs, 4.) */
+#arena-hud .bot{position:absolute;left:0;right:0;bottom:0;height:min(170px,21vh);background:var(--ds-grad-b)}
 #ah-title{position:absolute;left:18px;top:12px;font:400 var(--ds-fs-label)/1.2 var(--ds-title);color:var(--ds-ivory)}
 #ah-title small{display:block;margin-top:2px;font:400 var(--ds-fs-small)/1.2 var(--ds-text);color:var(--ds-ivory)}
 .ah-f{position:absolute;top:76px;display:flex;gap:8px;align-items:flex-start}
@@ -100,9 +101,9 @@ export const CSS = `
 /* a laptop window: the short technique names, the labels at the smallest size, so the bar fits (1 196 px wide, measured) */
 @media (max-width:1500px){.ah-b,.ah-b.wide{min-width:0}.ah-b b{font-size:var(--ds-fs-small)}.ah-b .fn{display:none}.ah-b .sn{display:inline}}
 /* a narrow window or a phone (L3): the key over the name, the sub-labels away */
-@media (max-width:1240px){#ah-bar{gap:4px}.ah-sep{margin:8px 2px}.ah-b,.ah-b.wide{min-width:0;height:auto;grid-template-columns:auto;justify-items:center;padding:0 6px}#arena-hud .ah-b kbd{grid-row:1;grid-column:1;min-width:24px;padding:0 4px;line-height:20px;margin-bottom:2px}.ah-b b{grid-row:2;grid-column:1;font-size:var(--ds-fs-small)}.ah-b em{display:none}.ah-b .fn{display:none}.ah-b .sn{display:inline}.ah-card{width:30vw}}
+@media (max-width:1240px){#ah-bar{gap:4px}.ah-sep{margin:8px 2px}.ah-b,.ah-b.wide{min-width:0;height:auto;grid-template-columns:auto;justify-items:center;padding:2px 6px 4px}#arena-hud .ah-b kbd{grid-row:1;grid-column:1;min-width:24px;padding:0 4px;line-height:20px;margin-bottom:2px}.ah-b b{grid-row:2;grid-column:1;font-size:var(--ds-fs-small);line-height:1.3}.ah-b em{display:none}.ah-b .fn{display:none}.ah-b .sn{display:inline}.ah-card{width:30vw}}
 /* phone in landscape: the cards, the alert and the bars shrink so the duel stays in view */
-@media (max-height:480px){#ah-title{display:none}#arena-hud .top{height:90px}#arena-hud .bot{height:90px}.ah-f{top:6px}.ah-card{width:min(30vw,250px);padding:0 4px}.ah-port{width:48px;height:48px}.ah-nm span{display:none}.ah-hp{height:4px;margin-top:4px}.ah-pips{margin-top:5px;gap:4px}.ah-pips b{width:14px;height:4px}
+@media (max-height:480px){#ah-title{display:none}#arena-hud .top{height:90px}.ah-f{top:6px}.ah-card{width:min(30vw,250px);padding:0 4px}.ah-port{width:48px;height:48px}.ah-nm span{display:none}.ah-hp{height:4px;margin-top:4px}.ah-pips{margin-top:5px;gap:4px}.ah-pips b{width:14px;height:4px}
   #ah-alert{top:30%;padding:10px 60px}#ah-alert svg{width:28px;height:28px}
   #ah-wbar{bottom:72px;width:min(380px,46vw)}#ah-bar{bottom:4px}.ah-state{margin-top:2px}}
 /* a short window (600 px high or less): the floor's marks (the rings, the telegraph) reach the reaction window's bar, which covered them through

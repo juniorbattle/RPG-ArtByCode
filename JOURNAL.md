@@ -464,6 +464,65 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Quand un lot précédent est déjà sur `main`, le contrôle négatif d'hier devient un 0 px d'aujourd'hui : il faut le réécrire, pas seulement le relancer.
 - La table d'un outil dit ce qu'il sait vérifier : un échec hors de sa table parle de la commande, à lire avant de conclure sur le code.
+## Passe UM2 — Lot 0 de la direction « Voile » et le dialogue : la fondation remplacée partout sur la branche, montrée à l'opérateur avant la suite (2026-11-01, en cours)
+
+### Demande
+- Suite de la Passe UM1. Lot 0 selon le plan de la fiche (jetons, polices, primitives, retrait des cadres), puis un seul écran, le dialogue, montré en jeu (UM-T2) avant d'attaquer les lots 1 à 5. UM-T1 : remplacement sur la branche `claude/ui-voile-9516af`, sans double style, **rien de ce code sur `main` avant l'essai de l'opérateur**.
+
+### Fait — [OK]
+- **Jetons** (`src/ui/design/tokens.ts`) : ivoire, gris clair et un accent, or le jour, ambre la nuit ; l'encre glisse selon le ton ; `VEIL` donne les forces de voile (92, 84, 66 %) ; nouvelle échelle `TYPE`.
+- **Polices** (UM-T3) : Marcellus (14 552 octets) et Source Sans 3 variable (28 872 octets), 43 Ko contre 60, téléchargées de Google Fonts, inscrites dans `FONTS.md` avec source, licence et SHA-256. Pixelify Sans et Alegreya Sans quittent le dépôt.
+- **Primitives** (`system.ts`) : `--ds-veil-*`, les dégradés `--ds-grad-b`, `-t`, `-spot`, la touche au trait.
+- **Retrait des cadres** (UM-S2) : `frames.ts` et ses tests retirés, plus aucun `border-image`, `--ds-px`, ni `pixelated` hors des visages, dans `style`, `townUi`, `title`, `loading`, `exits`, `cutscene`, `ArenaHud`, `DynamicHud`. Les autres écrans gardent leur mise en page, dépouillée : lots 1 et 2.
+- **Le dialogue** : une bande basse `.pm-talk` dans **toutes** les parties (P4 n'existait que dans la version 2), visage, nom et réplique à gauche, choix à droite ; le HUD s'efface derrière, sauf le statut ; les flèches parcourent les choix (`arrowKeys`). Le prix n'est plus écrit deux fois (`shortLabel`, à l'affichage : la table de textes ne bouge pas) ; « You meet Mara » reste au journal et quitte l'écran.
+- `tools/ui-contrast.mjs`, nouvel outil : chaque texte contre les pixels vraiment sous lui, page photographiée texte transparent, 5 % les moins favorables de chaque boîte, échec sous 4,5:1. `tools/arena-scene-page.mjs` accepte `play=1`.
+
+### Les mesures GPU — [KO] puis [OK]
+- [KO] `tools/perf.mjs` : les minuteries WebGL ne voient pas le compositing du navigateur. Dialogue de midi 8,45 ms, sans voile 8,49 ms, avec un flou lourd 8,43 ms : le contrôle négatif ne bouge pas. Ces chiffres ne disent rien des voiles.
+- [KO] `tools/cadence.mjs` plafonné à 55 images/s : occupation GPU 69 à 71 % sur toutes les variantes, y compris un `backdrop-filter: blur(40px)` plein écran. Aucune sensibilité non plus.
+- [OK] Le même outil **GPU saturé** (`fps=off`) : le contrôle se voit. Sans voile 110,4 et 110,7 images/s ; voile 109,3 et 104,7 ; flou plein écran 98,0 et 89,9.
+
+| Temps d'image à GPU saturé, 1080p, 780M, médiane de 3 tours, 0 processus étranger | `main` | Voile |
+|---|---|---|
+| Nuit B (`seed=1842&clean=1&camera=B`) | — | 10,06 ms |
+| Exploration, midi | 9,40 ms | 9,24 ms |
+| Dialogue, midi | 9,68 ms | 9,47 ms |
+| Dialogue, nuit | 10,48 ms | 10,14 ms |
+| Duel, nuit | 9,48 ms | 9,45 ms |
+
+- Budget E24 : tenu sur chaque page, sauf le dialogue de nuit à égalité, +0,08 ms (+0,8 %), dans la dispersion de la mesure (88 à 100 images/s selon le tour). Voile coûte moins que l'interface de `main` sur les quatre pages : il retire le plein écran assombri du dialogue et les cadres. [?] À l'opérateur (UM2-5).
+- Un tour de duel à 70,4 images/s dans la série : refait en six tours, 104,4 à 107,4, `main` et Voile confondus, non reproduit.
+
+### Le titre sur la vraie ville (UM-R4) — [OK] mesuré, non construit
+- Paquet de production, cinq chargements, médianes : titre actuel sur fond noir 58 ms ; ville à midi prête 1 230 ms (+1,17 s) ; avec une visibilité recalculée 1 393 ms (+1,34 s). Premier chargement d'un navigateur : 2,0 à 2,2 s. La fiche annonçait environ une seconde. [?] L'ordre d'affichage est à l'opérateur (UM2-4).
+
+### Les contrastes dans le vrai jeu — [OK]
+- 16 pages, 2 instants par page, seuil 4,5:1, 0 texte en dessous. Dialogue sur les quatre états 8,66 à 9,37:1 ; au téléphone 8,22 et 9,34:1 ; exploration 9,93 à 11,91:1 ; duel avec alerte 5,72 à 6,45:1 ; titre 9,48:1 ; dialogue d'une place 9,17:1.
+- Contrôle négatif : un texte ivoire nu sur le décor à midi donne 2,75:1, refusé par l'outil.
+
+### Les preuves
+- `npm run typecheck`, `npm test` **318 / 318**, `npm run build`, `npm run art:validate` (56 manifestes, 60 sources, 0 erreur).
+- **Rien ne change sous l'interface** : paquets de production contre `main` figé (`6cafd14`), seuil 0, 1080p : ville de nuit et ville à midi (`clean=1`), arène au moment de la fenêtre, duel `v2=1` à midi sur deux moments (`hud=0`) : **0 px**. Écran de K.O. : il change, voulu (il reste affiché sous `hud=0`). Contrôle négatif : arène avec son HUD, 36,6 % des pixels.
+- [KO → corrigé] Mes premières captures de l'arène diffèrent de 100 % : l'outil photographiait le fondu de l'écran de chargement, défaut déjà noté en Passe FV4. Refait avec `FREEZE_CSS=1`.
+- `tools/ui-text.mjs` : 21 pages et formats, aucun texte sous 16 px, 14 au téléphone, polices embarquées chargées. [KO → corrigé] Le contrôle des textes coupés a trouvé les paliers de charge et les boutons au téléphone rognés par `overflow:hidden`, sans cadre pour les loger : refait 8 / 8 sur les pages de duel.
+- `tools/arena-scene-check.mjs`, défaut, `combat=dynamic`, `v2=1` : PASS, empreintes retrouvées, sol dégagé 22 / 22, 44 / 44, 77 / 77, télégraphe 6,4 à 6,9:1. [KO → corrigé] Le voile du bas de 170 px couvrait les marques au sol sous 720 px de haut, comme la fiche l'avait prévu : la plus basse se tient à 21,6 % de la hauteur, le voile fait `min(170px, 21vh)`.
+- `play-day` et `play-flow`, défaut et `V2=1`, `exits-proof` : tout passe, empreintes rejouées en Node.
+
+### Fiche et essai
+- Fiche de lot, privée : https://claude.ai/artifact/Q83foWSZ72ZS4Kc6p9kXNe (source `briefs/fiche-ui-voile-lot0.html`, cinq cartes, `decisions` vide à la publication).
+- Page jouable, privée : https://claude.ai/artifact/Xz1bEgcEVWxB2fEhWh2BjR (`play=1&new=1&name=Ren&noreload=1&v2=1` : une seule page, elle ne change pas de lieu). [?] Non ouverte dans le visualiseur de claude.ai : le navigateur intégré n'y est pas connecté.
+
+### Restes [?]
+- **Chiffres** : Marcellus n'a qu'une série de chiffres, « 10 » se lit presque « IO ». La direction disait « Marcellus (titres et chiffres) » : à l'opérateur (UM2-3), rien changé.
+- **Téléphone** : la bande prend 64,6 % de l'écran, le statut en plus ; 33 à 38,5 % sur ordinateur. La moitié d'écran visée est au lot 3.
+- Les écrans hors dialogue sont dépouillés, pas refaits : lots 1 et 2. Les textes de développeur sont toujours là : lot 4.
+- Non mesuré : les voiles sur la RTX 4060, en 2560 × 1440 ; le rendu en mouvement n'a pas été jugé par un œil humain.
+- Les lots 1 à 5 attendent la réponse de l'opérateur. Rien de ce lot sur `main`.
+
+### Pensée
+- Le contrôle négatif a sauvé la mesure : deux outils rendaient un « zéro » plausible qui ne prouvait rien. Un coût de composition se mesure GPU saturé, et le contrôle lourd passe avant les chiffres.
+- Un chiffre recopié de mémoire dans une fiche se remesure avant publication : mes « 58 % » du téléphone en valaient 64,6.
+- Une police choisie sur une maquette se relit dans ses plus petits usages : le défaut du « 10 » y était déjà, l'image l'a laissé passer.
 
 ## À reprendre (par priorité)
 
@@ -670,7 +729,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6e-bis. Interface moderne (Passe UM1)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5, le code sur sa branche, **rien de ce remplacement sur `main` avant l'essai en jeu de l'opérateur** (UM-T1). Le lot 0 et le dialogue lui sont montrés avant la suite (UM-T2). À mesurer dans le vrai jeu : le coût GPU des voiles (E24), le démarrage d'un titre sur la vraie ville (UM-R4), les contrastes sur les quatre états.
+**6e-bis. Interface moderne (Passes UM1, UM2)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5, le code sur la branche `claude/ui-voile-9516af`, **rien de ce remplacement sur `main` avant l'essai en jeu de l'opérateur** (UM-T1). Lot 0 et dialogue faits (Passe UM2) : voiles sous la nuit B, à égalité pour le dialogue de nuit, contrastes à 5,72:1 au moins. **Attend la fiche https://claude.ai/artifact/Q83foWSZ72ZS4Kc6p9kXNe** : la suite des lots, les chiffres (UM2-3), le titre (UM2-4), l'égalité de nuit (UM2-5).
 
 **6e. Interface (étape 2 de la feuille de route ; Passes UI1, UI2)** — ligne directrice décidée sur la fiche de la Passe UI1 (14 choix sur 14,
 tous à la recommandation) : C « Héraldique pixel » (L1), un style dont les tons suivent `DayState` (L2), le téléphone avec le système de design
@@ -711,6 +770,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 > recopié ici.
 
 ### Mesure et performances
+- Ce que le navigateur compose (voiles, CSS) ne se voit ni aux minuteries WebGL ni à l'occupation GPU à cadence plafonnée : le mesurer GPU saturé (`tools/cadence.mjs` avec `fps=off`), un contrôle lourd d'abord (Passe UM2).
 - `gl.finish` ne bloque pas sous ANGLE ici : un temps par image se mesure avec un `readPixels` avant et après, et toute mesure de premier usage a son contrôle négatif (Passe FX5).
 - Mesurer d'abord, optimiser ensuite : minuteurs GPU, variantes entrelacées dans une seule session, base figée. Relever l'adaptateur
   réellement utilisé (`WEBGL_debug_renderer_info`) dans chaque mesure : un portable hybride rend sur l'iGPU par défaut, quoi que demande

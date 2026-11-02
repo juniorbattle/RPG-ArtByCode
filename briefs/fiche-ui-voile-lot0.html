@@ -1,0 +1,350 @@
+<title>Fiche Voile lot 0</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.shot img.tall { aspect-ratio: 375 / 812; object-fit: contain; }
+.shot img.band { aspect-ratio: 14 / 5; }
+.try { display: flex; flex-direction: column; gap: 10px; }
+.try h2, .measures h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.try p, .measures p { margin: 0; max-width: 68ch; }
+.try a.go { align-self: flex-start; font-weight: 600; color: var(--voile); }
+.try code { font-family: var(--font-mono); font-size: 13px; overflow-wrap: anywhere; }
+.measures { display: flex; flex-direction: column; gap: 12px; }
+.table { overflow-x: auto; }
+.measures table { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: tabular-nums; }
+.measures th, .measures td { text-align: left; padding: 7px 10px 7px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.measures th { font-weight: 600; color: var(--muted); font-size: 13px; }
+.measures td.n, .measures th.n { text-align: right; white-space: nowrap; }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · lot 0 et dialogue · 1er novembre 2026</span>
+    <h1>Voile, premier écran en jeu</h1>
+    <p class="lede">La fondation de la direction A est posée et le dialogue est refait. C'est le contrôle que tu as validé avant la suite (UM-T2) : regarde-le en jeu, puis dis si j'enchaîne les lots 1 à 5. Rien de tout ça n'est sur <code>main</code> : ton essai vient avant la fusion (UM-T1). Tes clics sont enregistrés au fur et à mesure.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="try">
+    <h2>Essayer</h2>
+    <p>Une partie de la version 2 tourne dans cette page : marche jusqu'à Mara (son étal, à gauche du héros), appuie sur E, choisis avec les flèches. Elle ne change pas de lieu : pour ça, il faut la partie complète ci-dessous.</p>
+    <a class="go" href="https://claude.ai/artifact/Xz1bEgcEVWxB2fEhWh2BjR" target="_blank" rel="noopener">Ouvrir la page d'essai</a>
+    <p>La partie complète, avec le duel et les quatre moments de la journée : sur la branche <code>claude/ui-voile-9516af</code>, lance <code>npm run dev</code>, puis ouvre <code>?play=1&amp;new=1&amp;name=Ren&amp;v2=1</code>. Pour aller droit à un moment : <code>?play=1&amp;state=day1-morning</code> (matin), <code>day2-afternoon</code> (midi), <code>day2-dusk-won</code> (fin de journée), <code>day1-evening</code> (nuit).</p>
+  </section>
+
+  <section class="measures">
+    <h2>Ce qui a été mesuré dans le vrai jeu</h2>
+    <p>Machine : Radeon 780M, 1920 × 1080. Le budget E24 dit « Pas plus cher que la nuit B, à définition égale ». Le temps d'image inclut ici le travail du navigateur pour poser l'interface, mesuré GPU saturé. Médiane de trois tours, aucun autre programme sur le GPU.</p>
+    <div class="table"><table>
+      <thead><tr><th>Page</th><th class="n">main aujourd'hui</th><th class="n">Voile</th><th class="n">Nuit B</th></tr></thead>
+      <tbody>
+        <tr><td>Exploration, midi</td><td class="n">9,40 ms</td><td class="n">9,24 ms</td><td class="n">10,06 ms</td></tr>
+        <tr><td>Dialogue, midi</td><td class="n">9,68 ms</td><td class="n">9,47 ms</td><td class="n">10,06 ms</td></tr>
+        <tr><td>Dialogue, nuit</td><td class="n">10,48 ms</td><td class="n">10,14 ms</td><td class="n">10,06 ms</td></tr>
+        <tr><td>Duel, nuit</td><td class="n">9,48 ms</td><td class="n">9,45 ms</td><td class="n">10,06 ms</td></tr>
+      </tbody>
+    </table></div>
+    <div class="table"><table>
+      <thead><tr><th>Contraste du texte</th><th class="n">Le plus bas, 4,5:1 exigé</th></tr></thead>
+      <tbody>
+        <tr><td>Dialogue, quatre états du jour</td><td class="n">8,66:1</td></tr>
+        <tr><td>Dialogue au téléphone, midi et nuit</td><td class="n">8,22:1</td></tr>
+        <tr><td>Exploration, quatre états du jour</td><td class="n">9,93:1</td></tr>
+        <tr><td>Duel avec alerte, quatre états du jour</td><td class="n">5,72:1</td></tr>
+        <tr><td>Contrôle : un texte ivoire nu sur le décor à midi</td><td class="n">2,75:1, refusé par l'outil</td></tr>
+      </tbody>
+    </table></div>
+    <p>Tailles et polices : aucun texte sous 16 px, 14 px au téléphone, sur 21 pages et formats. La ville sans interface et les vues de combat sont identiques à <code>main</code>, 0 pixel de différence, sur les paquets de production ; seul l'écran de K.O. change, comme prévu. Les parcours de jeu passent, version 2 comprise.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot au journal, puis j'enchaîne les lots 1 à 5 si tu as validé. La fusion dans <code>main</code> attendra ton essai du lot 5.</p>
+    <p class="src">Sources : fiche de l'audit (Passe UM1), <code>AGENTS.md</code> section Interface, <code>JOURNAL.md</code> Passe UM2.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Remplacer entièrement : un groupe par famille de décisions, une entrée par décision.
+// fam : une variable de couleur (--astre, --voile, --ronce, --cendre). shots : captures publiées via `files` (facultatif).
+const GROUPS = [
+  { id: 'reception', title: 'Réception', sub: 'Le contrôle avant la suite.', fam: 'var(--astre)', items: [
+    { id: 'UM2-1', tag: 'dialogue', title: 'Le dialogue en jeu',
+      ctx: 'Une bande basse dans toutes les parties : visage, nom et réplique à gauche, choix à droite, la scène entière au-dessus. Sur une place de la version 2, la caméra se tourne vers la personne. La bande seule prend 33 % de l\'écran, 38,5 % dans le cas le plus haut (cinq choix commentés), et 64,6 % au téléphone ; l\'audit comptait aussi le HUD derrière, 42,2 % et 78,5 %. Le téléphone n\'est donc pas encore réglé : la moitié de l\'écran visée vient au lot 3. Le prix n\'est plus écrit deux fois, « You meet Mara » reste dans le journal et quitte l\'écran, et les flèches parcourent les choix.',
+      shots: [['img/dlg-midday.jpg', 'Midi'], ['img/dlg-morning.jpg', 'Matin'], ['img/dlg-afternoon.jpg', 'Fin de journée'], ['img/dlg-night.jpg', 'Nuit, cinq choix commentés : le cas le plus haut'], ['img/dlg-plaza.jpg', 'Une place, la caméra sur Odo'], ['img/before-dlg.jpg', 'Avant, sur main'], ['img/dlg-small.jpg', '1280 × 720'], ['img/dlg-phone.jpg', 'Téléphone', 'tall']],
+      rec: 'Valider et enchaîner : le rendu suit la maquette que tu as choisie, avec des contrastes bien au-dessus du seuil. C\'est le moment le moins cher pour corriger la direction, donc dis-le ici si quelque chose te gêne en jeu.',
+      opts: ['Validé, enchaîner les lots 1 à 5', 'À reprendre avant la suite (en note)', 'Revoir la direction (en note)'], recIdx: 0,
+      src: 'UM-T2 ; src/ui/townUi.ts ; journal, Passe UM2' },
+    { id: 'UM2-2', tag: 'lot 0', title: 'La fondation sur les autres écrans',
+      ctx: 'Partout, les cadres, la police pixel et le bleu de surface ont disparu. Les autres écrans gardent leur ancienne mise en page, simplement dépouillée : le panneau « Here », la barre de touches et les cartes restent des blocs. Ils seront refaits aux lots 1 et 2. Juge le ton, pas leur disposition.',
+      shots: [['img/hud-midday.jpg', 'Exploration : mise en page d\'avant, lot 1 à venir'], ['img/skills.jpg', 'Compétences'], ['img/duel-midday.jpg', 'Duel à midi : mise en page d\'avant, lot 2 à venir'], ['img/duel-night.jpg', 'Duel de nuit, alerte']],
+      rec: 'Bonne base : une seule palette et deux polices tiennent sur tout le jeu.',
+      opts: ['Bonne base', 'À reprendre (en note)'], recIdx: 0,
+      src: 'src/ui/design/ ; src/ui/style.ts ; src/arena/ArenaHud.ts ; src/arena/DynamicHud.ts' },
+  ]},
+  { id: 'choix', title: 'Trois choix apparus en jeu', sub: 'Les maquettes ne les montraient pas.', fam: 'var(--voile)', items: [
+    { id: 'UM2-3', tag: 'chiffres', title: 'Les chiffres en Marcellus',
+      ctx: 'Marcellus n\'a qu\'une seule série de chiffres, sans variante dans le fichier : son « 1 » ressemble à un I et son « 0 » a exactement la largeur d\'un O. « 10 » se lit presque « IO », et ton statut l\'affiche en permanence. Les maquettes avaient le même défaut, mais sur une capture il se remarquait moins.',
+      shots: [['img/num-a.jpg', 'Marcellus, comme choisi', 'band'], ['img/num-b.jpg', 'Chiffres en Source Sans 3', 'band']],
+      rec: 'Chiffres en Source Sans 3, les titres et les noms restent en Marcellus. Un chiffre doit se lire d\'un coup d\'œil en plein duel. La fiche disait « Marcellus (titres et chiffres) » : c\'est pour cela que je te le demande.',
+      opts: ['Chiffres en Source Sans 3', 'Garder Marcellus'], recIdx: 0,
+      src: 'UM-1, texte de la direction A ; src/ui/fonts/FONTS.md' },
+    { id: 'UM2-4', tag: 'R4', title: 'Le titre sur la vraie ville',
+      ctx: 'Aujourd\'hui le titre paraît en 58 ms sur fond noir. La ville à midi est prête en 1,23 s, 1,39 s si sa visibilité se recalcule, et environ 2 s au tout premier chargement d\'un navigateur. Le titre attendrait donc 1,2 à 1,3 s de plus : un peu plus que l\'ordre de grandeur annoncé sur la fiche d\'audit.',
+      rec: 'Le titre d\'abord, sur l\'encre du jour, et la ville qui apparaît derrière lui quand elle est prête. Le joueur lit le nom du jeu tout de suite et les boutons répondent dès le départ.',
+      opts: ['Le titre d\'abord, la ville apparaît derrière', 'Le titre attend la ville'], recIdx: 0,
+      src: 'UM-R4 ; src/ui/title.ts ; journal, Passe UM2' },
+    { id: 'UM2-5', tag: 'E24', title: 'Le dialogue de nuit et le budget',
+      ctx: 'Le dialogue de nuit coûte 10,14 ms contre 10,06 ms pour la nuit B : +0,08 ms, +0,8 %. D\'un tour à l\'autre, la même page varie de 88 à 100 images/s, donc cet écart n\'est pas lisible. Il coûte moins que le dialogue actuel de main (10,48 ms). Tu avais accepté un cas comparable en Passe FV5 (« Accepter l\'égalité »).',
+      rec: 'Accepter l\'égalité. Alléger le voile de nuit ferait baisser le contraste pour un gain que la mesure ne distingue pas.',
+      opts: ['Accepter l\'égalité', 'Alléger le voile de nuit'], recIdx: 0,
+      src: 'Budget E24, Passe D8 ; journal, Passes FV5 et UM2' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap, cls] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy', class: cls || '' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  let wait = null;
+  ta.addEventListener('input', () => { clearTimeout(wait); wait = setTimeout(() => saveNote(it.id, ta.value), 400); });
+  ta.addEventListener('change', () => { clearTimeout(wait); saveNote(it.id, ta.value); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      const ref = db.doc('decisions/' + id);
+      await ref.set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+      const back = await ref.get(), v = (back && back.data && back.data()) || {};
+      if ((v.choice || '') !== (s.choice || '') || (v.note || '') !== (s.note || '')) throw new Error('readback');
+    } while (writing[id].again);
+    setSave('Enregistré et relu');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'L\'enregistrement a échoué : réessaie, ou copie le récapitulatif dans la conversation.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche Voile lot 0, mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { const v = d.data() || {}; if (!writing[d.id]) state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
