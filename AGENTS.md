@@ -518,7 +518,7 @@ epure et coherent »; it replaces the direction of journal Passe UI1, roadmap st
   font's, `DIGITS` in `system.ts`: Marcellus' « 10 » reads « IO »); UM2-4 « Le titre d'abord, la ville apparaît derrière »; UM2-5 « Accepter l'égalité »
   (the night's dialogue level with night B).
 - **The work**: UM-T2 « Valider le plan », lots 0 to 5 (journal Passes UM2 to UM7); UM-T1 « Remplacer, essai avant fusion », word for word: « Remplacer
-  partout sur la branche, sans double style, et te donner l'essai en jeu avant de fusionner. » UM-T4 « Celles de la direction choisie »: references
+  partout sur la branche, sans double style, et te donner l'essai en jeu avant de fusionner. »; the operator's trial, journal Passe UM8: UM7-1 « Fusionner dans main », UM7-2 « Garder » (the moves), UM7-3 « Lot à part : héros, détail, comparaison » (the gear and the shops, a task of its own). UM-T4 « Celles de la direction choisie »: references
   `art-lab/characters/reference/sources/ui-voile-{town,arena}-2026-11-01.png`, **non-canonical** (generated: the model redrew part of the scene).
 - **Kept from the direction of journal Passe UI1** (the operator's UI sheet, 14 choices of 14; Héraldique pixel itself, lifted): P1 « Fermé par défaut, H l'ouvre » (Explore's
   DEV panel closed, H opens it); P2 « En premier » (one cost tag per currency: coins from the simulation's `ActionOption.coins`, the slot, « free » only
