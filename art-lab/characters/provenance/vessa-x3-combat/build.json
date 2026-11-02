@@ -1,0 +1,188 @@
+{
+ "id": "vessa-x3-combat",
+ "cell": [
+  192,
+  288,
+  270,
+  96
+ ],
+ "k": 3,
+ "frames": 34,
+ "tags": "idle-side:0-1 ready-side:2-3 strike-side:4-6 heavy-side:7-10 skillOff-side:11-14 skillDef-side:15-17 skillSup-side:18-20 block-side:21-22 dodge-side:23-24 hit-side:25-26 recover-side:27-28 ko-side:29-31 victory-side:32-33",
+ "sheet": [
+  1152,
+  1728
+ ],
+ "colours": 48,
+ "palette": "art-lab/characters/exports/vessa-x2-v2.png",
+ "sheets": {
+  "a": {
+   "path": "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-a.png",
+   "pitch": 2.3333
+  },
+  "b": {
+   "path": "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-b.png",
+   "pitch": 2.3333
+  },
+  "c": {
+   "path": "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-c.png",
+   "pitch": 2.3333
+  },
+  "d": {
+   "path": "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-d.png",
+   "pitch": 2.5583
+  }
+ },
+ "placement": {
+  "idle": {
+   "hips": 210,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "ready": {
+   "hips": 221,
+   "pushed": 3,
+   "lifted": 1
+  },
+  "windup": {
+   "hips": 185,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cut": {
+   "hips": 219,
+   "pushed": 17,
+   "lifted": 0
+  },
+  "follow": {
+   "hips": 208,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "guard": {
+   "hips": 186,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "recoil": {
+   "hips": 196,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "recovery": {
+   "hips": 211,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "gather": {
+   "hips": 177,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "raise": {
+   "hips": 177,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cleave": {
+   "hips": 213,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "through": {
+   "hips": 209,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "stunned": {
+   "hips": 198,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "fall": {
+   "hips": 217,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "kneel": {
+   "hips": 193,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "ground": {
+   "hips": 217,
+   "pushed": 3,
+   "lifted": 1
+  },
+  "offPrep": {
+   "hips": 190,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offSurge": {
+   "hips": 233,
+   "pushed": 9,
+   "lifted": 0
+  },
+  "offHit": {
+   "hips": 245,
+   "pushed": 39,
+   "lifted": 0
+  },
+  "offBack": {
+   "hips": 203,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "defPrep": {
+   "hips": 198,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "def": {
+   "hips": 195,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "defBack": {
+   "hips": 214,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "victory": {
+   "hips": 187,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "supPrep": {
+   "hips": 179,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "sup": {
+   "hips": 181,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "supBack": {
+   "hips": 206,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "hop": {
+   "hips": 153,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "land": {
+   "hips": 205,
+   "pushed": 0,
+   "lifted": 0
+  }
+ },
+ "exports": {
+  "png": "9623fd68b4524940c2fa141c01f564979b842831949b5da0ec3a9b0481d1fe4b",
+  "json": "10656672359108a50819a0e273a685ae3092c54e2f5eff2c447fb12e37861520",
+  "aseprite": "a7a8c64c20dcc007013e2a24ca1ebd61fe9391bbfd5ff1731c6a3daa6744b1ca"
+ }
+}

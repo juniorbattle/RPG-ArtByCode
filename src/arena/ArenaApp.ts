@@ -154,15 +154,20 @@ export class ArenaApp {
   private walkerZ = 0.6;
   private walkT = 0;
   private walkFrames = 0;
-  /** DEV only: Ren's combat sheet (?fighterdensity=combat, src/lab/fighterDensity.ts, journal Passes AA2 / RC1); declared, never emitted */
+  /** DEV only: the combat sheets (?fighterdensity=combat, src/lab/fighterDensity.ts, journal Passes AA2 / RC1 / CX1); declared, never emitted */
   private declare densityTrial?: import('../lab/fighterDensity').DensityTrial;
   /** the version 2's effects (src/arena/fx/, journal Passes FX3 / FX5): loaded on demand by a version 2 duel only; today's arena keeps its frames */
   private combatFx: CombatFx | null = null;
+  /** the combat sheets of a duel under the version 2's rules (src/arena/CombatCast.ts, journal Passe CX2): loaded on demand, today's arena never reaches them */
+  private sheets: import('./CombatSheets').InstalledSheets | null = null;
+  /** who sits in the opponent's seat: the bout's rival, else Marek; DEV `foe=<id>` on the arena's page (a rival's sheet in its own duel, journal Passe CX1) */
+  private foe: string;
 
   constructor(private opts: ArenaOptions) {
+    this.foe = opts.match?.foe ?? (import.meta.env.DEV ? opts.params.get('foe') : null) ?? 'marek';
     this.rules = arenaRules(opts.params, opts.match);
     if (this.rules === 'dynamic') this.sim = this.dyn = new DynamicSim(tuneDyn((opts.match?.data as DynData | undefined) ?? DYNAMIC_DATA, opts.params.get('dyn')));
-    else if (this.rules === 'v2') { const v = makeV2Duel(opts.params, opts.match ? { data: opts.match.data as DynData, tiers: opts.match.tiers } : undefined); this.dyn = v.dyn; this.charge = v.charge; this.sim = (v.charge ?? v.dyn) as unknown as DuelSim;
+    else if (this.rules === 'v2') { const v = makeV2Duel(opts.params, opts.match ? { data: opts.match.data as DynData, tiers: opts.match.tiers } : undefined, this.foe); this.dyn = v.dyn; this.charge = v.charge; this.sim = (v.charge ?? v.dyn) as unknown as DuelSim;
       // the version 2's sound (lot V8): the arena's roar and the duel's effects, after the person's first gesture; N mutes
       const t = opts.params.get('time'), look = t === 'morning' || t === 'midday' || t === 'afternoon' ? t : 'night';
       void import('../audio/Sound').then((m) => {
@@ -263,21 +268,24 @@ export class ArenaApp {
     this.hitLight = this.lights.add({ pos: [0, 1.4, 0.5], color: [1.0, 0.86, 0.66], intensity: 1.5, radius: 4.5, kind: 'steady', priority: 10 }, 'fx', 0);
     this.castLight.scale = this.castLight.targetScale = 0; this.hitLight.scale = this.hitLight.targetScale = 0;
     this.opts.onProgress('fighters', 0.98);
-    this.set = buildArenaAtlas(seed, 5, this.opts.match?.foe, !!this.opts.forecourt);
-    // DEV only: Ren's combat sheet (?fighterdensity=combat: Ren drawn by his baked x3 sheet, src/lab/fighterDensity.ts, journal Passes
-    // AA2 / RC1); compiled out of production builds, absent = the arena as before
-    if (import.meta.env.DEV && this.opts.params.has('fighterdensity')) this.densityTrial = await (await import('../lab/fighterDensity')).installFighterDensity(this.set, this.opts.params);
+    this.set = buildArenaAtlas(seed, 5, this.foe, !!this.opts.forecourt);
+    // DEV only: the combat sheets (?fighterdensity=combat: Ren and the opponent's seat drawn by their baked x3 sheets, src/lab/fighterDensity.ts, journal Passes
+    // AA2 / RC1 / CX1); compiled out of production builds, absent = the arena as before
+    if (import.meta.env.DEV && this.opts.params.has('fighterdensity')) this.densityTrial = await (await import('../lab/fighterDensity')).installFighterDensity(this.set, this.opts.params, this.foe);
+    // the version 2's duel on the approved combat sheets (journal Passe CX2, the operator's CX-P1 « Ren et Marek ensemble »); `cast=generated` keeps the generated fighters, for comparison
+    if (this.rules === 'v2' && !this.opts.forecourt && !(import.meta.env.DEV && this.densityTrial) && this.opts.params.get('cast') !== 'generated') this.sheets = await (await import('./CombatCast')).installCombatCast(this.set, this.foe, this.opts.params);
     this.walkFrames = [...this.set.atlas.frames.keys()].filter((x) => x.startsWith('ren/side/walk.')).length;
-    this.sprites = new SpriteRenderer(this.set.atlas, 96, { w: CELL_W, h: CELL_H, foot: CELL_FOOT });
+    this.sprites = new SpriteRenderer(this.set.atlas, 96, (import.meta.env.DEV && this.densityTrial?.frame) || this.sheets?.frame || { w: CELL_W, h: CELL_H, foot: CELL_FOOT });
     this.sprites.charScale = CHAR_SCALE;
     this.sprites.protect.crowd = 0.35;
     if (import.meta.env.DEV && this.densityTrial) this.densityTrial.attach(this.sprites, this.camera, () => this.post.width);
+    this.sheets?.attach(this.sprites);
     // by day the silhouette treatment (lit-side lift, crown rim, shadow side: uMoonCol, the sun) keeps the night's strength: scaled by the
     // moon's luminance over the sun's (journal Passe AD1)
     if (this.look) this.sprites.setEdgeGain(lum(NIGHT_MOON) / lum(this.look.sunCol));
     this.scene.add(this.sprites.group);
     this.scene.add(this.floor.mesh);
-    if (fxOn(this.rules, this.opts.params)) this.combatFx = (await import('./fx/combatFx')).installCombatFx(this.scene, this.camera, this.opts.params, { foe: this.opts.match?.foe ?? 'marek', lights: this.lights, shake: (k) => { this.shake = Math.max(this.shake, k); }, timeScale: (k) => { this.timeScale = k; }, renderHeight: () => this.post.height });
+    if (fxOn(this.rules, this.opts.params)) this.combatFx = (await import('./fx/combatFx')).installCombatFx(this.scene, this.camera, this.opts.params, { foe: this.foe, guardReach: (who) => { const r = ((import.meta.env.DEV && this.densityTrial) || this.sheets) && this.set.reach[`${who}/block.0`]; return r ? r * PIXEL_WORLD * CHAR_SCALE : null; }, lights: this.lights, shake: (k) => { this.shake = Math.max(this.shake, k); }, timeScale: (k) => { this.timeScale = k; }, renderHeight: () => this.post.height });
     // spectators on the tiers: the town's crowd archetypes, front view, idling and cheering in turn
     let k = 0;
     for (const st of this.arena.stands) {
@@ -462,7 +470,9 @@ export class ArenaApp {
       // lunges: an attack closes the gap so its blade lands on the opponent at the impact; a dodge leaps back; hits knock back
       const other = id === 'ren' ? 'marek' : 'ren', gap = Math.abs(HOME[other] - HOME[id]);
       if (ATTACKS.has(clip) && an.impactAt !== undefined) {
-        const reach = (this.set.reach[`${id}/${clip}.${IMPACT_FRAME[clip]}`] ?? 20) * PIXEL_WORLD * CHAR_SCALE;
+        // a rival's offensive skill plays its sheet's own strike under the heavy's name (v2duel.ts, CombatSheets.ts)
+        const strike = (f as { act?: { def: { kind: string } } | null }).act?.def.kind === 'skill' ? this.set.reach[`${id}/skillOff.2`] : undefined;
+        const reach = (strike ?? this.set.reach[`${id}/${clip}.${IMPACT_FRAME[clip]}`] ?? 20) * PIXEL_WORLD * CHAR_SCALE;
         const A = Math.max(0, Math.min(2.4, gap - reach - 0.12)), ia = an.impactAt, t = an.t;
         // the heavy closes the gap only in its last 0.16 s (gap and telegraph stay open through the charge, critique n° 3 of Passe P2)
         // under the new rules a skill's lunge waits for the end of its preparation
@@ -481,7 +491,8 @@ export class ArenaApp {
       a.t = 0;
       p.lastClip = clip;
     }
-    if (import.meta.env.DEV && this.densityTrial) this.densityTrial.present(this.fighters.ren, this.time, s.f.ren.anim, s.over);
+    if (import.meta.env.DEV && this.densityTrial) this.densityTrial.present(this.fighters, this.time, s, this.charge?.view() ?? null);
+    this.sheets?.present(this.fighters, this.time, s, this.charge?.view() ?? null);
   }
 
   private presentFans(): void {

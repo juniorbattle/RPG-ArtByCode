@@ -1,0 +1,182 @@
+{
+ "id": "marek-x3-combat",
+ "cell": [
+  192,
+  288,
+  270,
+  96
+ ],
+ "k": 3,
+ "frames": 32,
+ "tags": "idle-side:0-1 ready-side:2-3 strike-side:4-6 heavy-side:7-10 skillOff-side:11-14 skillDef-side:15-17 skillSup-side:18-20 block-side:21-22 hit-side:23-24 recover-side:25-26 ko-side:27-29 victory-side:30-31",
+ "sheet": [
+  1152,
+  1728
+ ],
+ "colours": 48,
+ "palette": "art-lab/characters/exports/marek-x2-v2.png",
+ "sheets": {
+  "a": {
+   "path": "art-lab/characters/reference/sources/marek-combat-x3-2026-11-01-a.png",
+   "pitch": 2.3417
+  },
+  "b": {
+   "path": "art-lab/characters/reference/sources/marek-combat-x3-2026-11-01-b.png",
+   "pitch": 2.4167
+  },
+  "c": {
+   "path": "art-lab/characters/reference/sources/marek-combat-x3-2026-11-01-c.png",
+   "pitch": 2.4167
+  },
+  "d": {
+   "path": "art-lab/characters/reference/sources/marek-combat-x3-2026-11-01-d.png",
+   "pitch": 2.975
+  },
+  "e": {
+   "path": "art-lab/characters/reference/sources/marek-combat-x3-2026-11-01-e.png",
+   "pitch": 2.35
+  }
+ },
+ "placement": {
+  "idle": {
+   "hips": 214,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "ready": {
+   "hips": 206,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "windup": {
+   "hips": 215,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cut": {
+   "hips": 198,
+   "pushed": 0,
+   "lifted": 2
+  },
+  "follow": {
+   "hips": 206,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "guard": {
+   "hips": 218,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "recoil": {
+   "hips": 224,
+   "pushed": 13,
+   "lifted": 0
+  },
+  "recovery": {
+   "hips": 235,
+   "pushed": 13,
+   "lifted": 0
+  },
+  "gather": {
+   "hips": 209,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "raise": {
+   "hips": 181,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cleave": {
+   "hips": 223,
+   "pushed": 19,
+   "lifted": 0
+  },
+  "through": {
+   "hips": 223,
+   "pushed": 13,
+   "lifted": 0
+  },
+  "stunned": {
+   "hips": 203,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "fall": {
+   "hips": 217,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "kneel": {
+   "hips": 244,
+   "pushed": 32,
+   "lifted": 1
+  },
+  "ground": {
+   "hips": 212,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offPrep": {
+   "hips": 185,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offSurge": {
+   "hips": 210,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offHit": {
+   "hips": 210,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offBack": {
+   "hips": 233,
+   "pushed": 7,
+   "lifted": 0
+  },
+  "defPrep": {
+   "hips": 180,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "def": {
+   "hips": 189,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "defBack": {
+   "hips": 223,
+   "pushed": 3,
+   "lifted": 0
+  },
+  "supPrep": {
+   "hips": 203,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "sup": {
+   "hips": 231,
+   "pushed": 13,
+   "lifted": 0
+  },
+  "supBack": {
+   "hips": 212,
+   "pushed": 6,
+   "lifted": 0
+  },
+  "victory": {
+   "hips": 198,
+   "pushed": 0,
+   "lifted": 0
+  }
+ },
+ "exports": {
+  "png": "8163c5716111549d8c2e759fc24af8f24ea9b5e52cbd16d5006e1827bfa10465",
+  "json": "2c96e3bf4fbb9c4a596da745cfdc11a9906dc79dccd8317c72160f07a0438752",
+  "aseprite": "7b87e1dd764a6ed639263490eb292bc45e72ba8bcfcb27cfae52a2394c3d436e"
+ }
+}

@@ -14,7 +14,8 @@ const manifests = fs.readdirSync(path.join(ROOT, 'art-lab/characters/manifests')
   .map((f) => JSON.parse(fs.readFileSync(path.join(ROOT, 'art-lab/characters/manifests', f), 'utf8')));
 // the casting's sheets approved for the version 2's squares (journal Passe CA3) have their own list, src/characters/PlazaCast.ts: the district's cast never loads them
 const SQUARES = [...['anwen', 'brann', 'cassius', 'corvin', 'hilde', 'ilse', 'lio', 'marek', 'odo', 'orla', 'pip', 'rhosk', 'tobin', 'vessa', 'wren'].map((k) => `${k}-x2-v2`), ...['vendor', 'wayfarer', 'noble', 'errand-boy', 'girl'].map((k) => `${k}-x2-v1`)];
-const production = manifests.filter((m) => m.runtimeUse === 'production' && !SQUARES.includes(m.id)).map((m) => m.id).sort();
+// the combat sheets stand in no town: src/arena/CombatCast.ts, a version 2 duel only (journal Passe CX2)
+const production = manifests.filter((m) => m.runtimeUse === 'production' && !SQUARES.includes(m.id) && !m.id.endsWith('-x3-combat')).map((m) => m.id).sort();
 
 const entry = (id, status, approved, runtimeUse) => ({ manifest: { id, status, approved, runtimeUse }, png: '', json: null, files: {}, replaces: [], scale: 1 });
 

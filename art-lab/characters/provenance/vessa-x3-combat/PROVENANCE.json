@@ -1,0 +1,42 @@
+{
+ "id": "vessa-x3-combat",
+ "status": "LAB ASSET, NOT APPROVED - Vessa Lark's combat sheet at x3, 34 frames of the § 14 list (the casting's decisions X1, X2, X4, X5, journal Passes CA1 and CX1); never in production without the operator's approval, shown only behind the DEV parameter ?scene=arena&fighterdensity=combat",
+ "request": {
+  "date": "2026-11-01",
+  "by": "operator (git user wonmii): casting sheet of journal Passe CA1: R-vessa « a n° 11 Duelist », X1 « Les sept rivaux », X2 « Marek, Vessa, Orla, Cassius, Ilse, Rhosk, Tobin », X4 « Planche, puis texte pour Vessa, Ilse et Tobin », X5 « Une tâche de 5 $ par combattant »"
+ },
+ "approvals": [],
+ "source": {
+  "sheets": {
+   "description": "4 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task vessa-x3-combat); references: the approved clean figure casting-clear-2026-11-01-e.png and the casting panel, and Ren's sheets for the layout only",
+   "files": [
+    "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-a.png",
+    "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-b.png",
+    "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-c.png",
+    "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-d.png"
+   ]
+  },
+  "figure": "casting-clear-2026-11-01-e.png"
+ },
+ "chain": [
+  "per figure: the figure alone on its sheet -> reconstruct-grid.mjs at the sheet's pitch (a standing figure's height over the rows of the town sheet's side idle at x3) -> the green peeled -> nearest OKLab colour of the approved town sheet's palette (pinned) -> loose texels removed -> the hips on column 96, cropped to the cell; a cell that moved the body off the axis is recorded in the JSON's meta.pushed; the loops' second frames by rig-engine's breath, the guard's « encaisse » by a shear (lib/combat.mjs)"
+ ],
+ "rebuild": "node tools/art-lab/build-combat.mjs art-lab/characters/rigs/vessa-x3-combat.rig.mjs --check",
+ "files": {
+  "art-lab/characters/exports/vessa-x3-combat.png": "9623fd68b4524940c2fa141c01f564979b842831949b5da0ec3a9b0481d1fe4b",
+  "art-lab/characters/exports/vessa-x3-combat.json": "10656672359108a50819a0e273a685ae3092c54e2f5eff2c447fb12e37861520",
+  "art-lab/characters/source/vessa-x3-combat.aseprite": "a7a8c64c20dcc007013e2a24ca1ebd61fe9391bbfd5ff1731c6a3daa6744b1ca",
+  "art-lab/characters/provenance/vessa-x3-combat/build.json": "bf86421eaaeb9bd1fe4caca708a82005d886c4c2f76f88ca490887a3e0b2c632",
+  "art-lab/characters/exports/vessa-x2-v2.png": "34637c3687087acfb8cce445e1c1712ee7b5abe0ec6ea43661972e1730643826",
+  "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-a.png": "28d9107850ce7c53e56d7775f7cdb94d0f3aee755980fe7de1c732fdd245011e",
+  "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-b.png": "7199bcc972b98c3d69f66de924b10b4e7e0c21e4aafc4aa1ce3ae898ea221099",
+  "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-c.png": "4842f716f57327bdfa2961c56e531b5d57e2db2a38224fbad99970455687729e",
+  "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-d.png": "28869f39da5149d958db816a5030342a2ada73c06997b591b00a980070c5c897",
+  "art-lab/characters/rigs/vessa-x3-combat.rig.mjs": "abeab1fe7d53db3d6514c5526b36a615af03d9aebaf7a78d5b47b157c3906ed6",
+  "art-lab/characters/rigs/lib/combat.mjs": "523f947190b6dc31863cc20cd38a78a8f22e911ce1260293595ad109d7db1a48",
+  "tools/art-lab/build-combat.mjs": "0dd3d9f77a5b362362c9f937654c7787290d9f39dcc3f5f038f5cc3901281d7f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

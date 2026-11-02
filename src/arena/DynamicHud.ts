@@ -160,7 +160,7 @@ export class DynamicHud {
     document.body.appendChild(this.el);
     for (const who of ['ren', 'marek'] as DynFighterId[]) {
       const src = portraits[who], cv = this.q<HTMLCanvasElement>(`#ah-${who} .ah-port`);
-      if (src) { const x = cv.getContext('2d')!; x.imageSmoothingEnabled = false; if (who === 'marek') { x.translate(24, 0); x.scale(-1, 1); } x.drawImage(src, 0, 0); }
+      if (src) { cv.width = src.width; cv.height = src.height; const x = cv.getContext('2d')!; x.imageSmoothingEnabled = false; if (who === 'marek') { x.translate(src.width, 0); x.scale(-1, 1); } x.drawImage(src, 0, 0); }
     }
     this.el.querySelectorAll<HTMLButtonElement>('.ah-b').forEach((b) => {
       const id = b.dataset.act!;

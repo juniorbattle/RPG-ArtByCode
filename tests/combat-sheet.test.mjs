@@ -1,8 +1,8 @@
-// Ren's combat sheet (journal Passes RC1 and RC2; the operator's decisions AA2-1 « ×3 », « Génération (Recommandé) », RC1-1 « Bonne base :
-// compléter après la fiche C2, avec les reprises », C2-7 « En arrière », C2-10 « Les garder », « Règle du rendu (Recommandé) »): a lab asset
-// that never reaches the cast, drawn in the arena's cells at x3 on the production hero's palette, holding the 34 frames of the CB-2 list
-// (briefs/combat-system.md § 14), every blade at two texels of steel and a dark edge, its generated sources archived; the arena reads it only through the DEV module,
-// whose sheetFrame plays the sheet's own frames on every moment of the duel (no borrowed frame) and the knockout's three frames.
+// Ren's combat sheet (journal Passes RC1, RC2, CX1, CX2; the operator's decisions AA2-1 « ×3 », « Génération (Recommandé) », RC1-1 « Bonne base :
+// compléter après la fiche C2, avec les reprises », C2-7 « En arrière », C2-10 « Les garder », « Règle du rendu (Recommandé) », CX-R1 « Approuvées », CX-P1 « Ren et Marek ensemble »): in
+// production for a version 2 duel only, outside the town's cast, drawn in the arena's cells at x3 on the production hero's palette, holding the 34 frames of the CB-2 list and the five charge poses
+// (briefs/combat-system.md § 14), every blade at two texels of steel and a dark edge, its generated sources archived; sheetFrame plays the sheet's own frames on every moment of the duel (no
+// borrowed frame) and the knockout's three frames.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -15,8 +15,8 @@ const ID = 'hero-x3-combat';
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel));
 const json = (rel) => JSON.parse(read(rel).toString('utf8'));
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
-/** the CB-2 list, written from the table of briefs/combat-system.md § 14 (34 frames) */
-const KEYS = { idle: 2, ready: 2, strike: 3, heavy: 4, skillOff: 4, skillDef: 3, skillSup: 3, block: 2, dodge: 2, hit: 2, recover: 2, ko: 3, victory: 2 };
+/** the CB-2 list, written from the table of briefs/combat-system.md § 14 (34 frames), and the five charge poses of the same section (journal Passe CX1) */
+const KEYS = { idle: 2, ready: 2, strike: 3, heavy: 4, skillOff: 4, skillDef: 3, skillSup: 3, block: 2, dodge: 2, hit: 2, recover: 2, ko: 3, victory: 2, charge: 2, chargeHi: 2, chargeGuard: 1 };
 /** the figure each frame of the sheet is made of, where the rig draws it from a figure (the other frames are its breath or its blow), read
  *  from the rig's recipe: the blade test reads the blade there */
 const FIGURE_OF = {
@@ -26,6 +26,7 @@ const FIGURE_OF = {
   'skillDef-side.0': 'wardPrep', 'skillDef-side.1': 'ward', 'skillDef-side.2': 'wardBack', 'skillSup-side.0': 'fervourPrep', 'skillSup-side.1': 'cry',
   'skillSup-side.2': 'fervourBack', 'block-side.0': 'guard', 'dodge-side.0': 'hop', 'dodge-side.1': 'land', 'hit-side.0': 'recoil', 'hit-side.1': 'recovery',
   'recover-side.0': 'stunned', 'ko-side.0': 'fall', 'ko-side.1': 'kneel', 'ko-side.2': 'ground', 'victory-side.0': 'victory',
+  'charge-side.0': 'chargeLow', 'chargeHi-side.0': 'chargeHigh', 'chargeGuard-side.0': 'chargeGuard',
 };
 /** the arena cell (FighterArt: 64 x 96 town pixels, feet on row 90) at x3 */
 const K = 3, CW = 64 * K, CH = 96 * K, FOOT = 90 * K;
@@ -35,9 +36,10 @@ const lab = await load('/src/lab/fighterDensity.ts');
 const meta = json(`art-lab/characters/exports/${ID}.json`);
 const img = decodePng(read(`art-lab/characters/exports/${ID}.png`));
 
-test('the combat sheet is a lab asset, unapproved, outside the cast, every file of its pack as hashed', () => {
+test('the combat sheet is approved for production, outside the town\'s cast, every file of its pack as hashed', () => {
   const m = json(`art-lab/characters/manifests/${ID}.manifest.json`);
-  assert.equal(m.runtimeUse, 'lab'); assert.equal(m.approved, false); assert.equal(m.status, 'experimental');
+  assert.equal(m.runtimeUse, 'production'); assert.equal(m.approved, true); assert.equal(m.status, 'approved');
+  assert.match(m.approval.note, /CX-R1/);
   const ids = [...cast.castEntries(false), ...cast.castEntries(true)].map((e) => e.manifest.id);
   assert.ok(!ids.includes(ID), 'not a cast entry, candidates included');
   const files = json(`art-lab/characters/provenance/${ID}/PROVENANCE.json`).files;
@@ -48,19 +50,19 @@ test('the combat sheet is a lab asset, unapproved, outside the cast, every file 
   }
 });
 
-test('its generated sources are archived, non-canonical, and are the files the rig reads', async () => {
+test('its generated sources are archived, approved through the sheet, and are the files the rig reads', async () => {
   const rig = await import(new URL(`../art-lab/characters/rigs/${ID}.rig.mjs`, import.meta.url).href);
-  assert.equal(Object.keys(rig.SHEETS).length, 10, 'a1, a2, b2 (Passe RC1), c1, c2, d1, d2, e1, e2, f2 (Passe RC2)');
+  assert.equal(Object.keys(rig.SHEETS).length, 11, 'a1, a2, b2 (Passe RC1), c1, c2, d1, d2, e1, e2, f2 (Passe RC2), g1 (Passe CX1)');
   for (const s of Object.values(rig.SHEETS)) {
     assert.equal(sha(read(s.path)), s.sha256, s.path);
     const rec = json(s.path.replace(/\.png$/, '.source.json'));
     assert.equal(rec.sha256, s.sha256, `${s.path}: its record`);
-    assert.match(rec.status, /NON-CANONICAL/, `${s.path}: non-canonical`);
+    assert.match(rec.status, /APPROVED AS A SOURCE/, `${s.path}: approved through the sheet`);
   }
   assert.equal(sha(read(rig.PALETTE.path)), rig.PALETTE.sha256, 'the pinned palette');
 });
 
-test('its frames: the 34 of the CB-2 list, the arena cell at x3, the frame contract, the hero\'s palette only', () => {
+test('its frames: the 34 of the CB-2 list and the 5 charge poses, the arena cell at x3, the frame contract, the hero\'s palette only', () => {
   const tags = Object.fromEntries(meta.meta.frameTags.map((t) => [t.name, t.to - t.from + 1]));
   assert.deepEqual(tags, Object.fromEntries(Object.entries(KEYS).map(([k, n]) => [`${k}-side`, n])));
   assert.equal(meta.frames.length, Object.values(KEYS).reduce((a, b) => a + b));
@@ -158,14 +160,20 @@ test('the edge by the day state (RC1-2 « Liseré peint la nuit, contour noir de
   for (const id of ['hero-x3-trial', 'hero-x4-trial']) assert.ok(!fs.existsSync(path.join(ROOT, `art-lab/characters/manifests/${id}.manifest.json`)), `${id} removed`);
 });
 
-test('the arena reaches the combat sheet only through the DEV module, behind import.meta.env.DEV', () => {
+test('the arena reaches the sheets through CombatCast under the version 2\'s rules alone, the lab behind import.meta.env.DEV; today\'s arena never loads them', () => {
   const src = read('src/arena/ArenaApp.ts').toString('utf8').split(/\r?\n/);
   const uses = src.filter((l) => /densityTrial|fighterDensity/.test(l) && !/^\s*(\/\/|\/\*\*|\*)/.test(l));
   assert.ok(uses.length >= 4, 'the module is wired');
   for (const l of uses) assert.ok(/import\.meta\.env\.DEV &&/.test(l) || /private declare densityTrial/.test(l), `unguarded: ${l.trim()}`);
+  const loads = src.filter((l) => /import\('\.\/CombatCast'\)/.test(l));
+  assert.equal(loads.length, 1, 'one import');
+  assert.match(loads[0], /if \(this\.rules === 'v2' && /, 'a version 2 duel only');
+  assert.match(loads[0], /!this\.opts\.forecourt/); assert.match(loads[0], /get\('cast'\) !== 'generated'/);
+  const imports = (f) => read(f).toString('utf8').split(/\r?\n/).filter((l) => /^import .*CombatCast|^import .*CombatSheets/.test(l) && !/^import type/.test(l));
+  assert.deepEqual(imports('src/arena/ArenaApp.ts'), [], 'no static import: the chunk loads on demand');
   for (const f of fs.readdirSync(path.join(ROOT, 'src'), { recursive: true }).filter((f) => /\.ts$/.test(f) && !f.startsWith('lab'))) {
-    const s = read(`src/${f}`).toString('utf8');
-    assert.ok(!s.includes(ID), `src/${f} does not name the combat sheet`);
-    if (f.replace(/\\/g, '/') !== 'arena/ArenaApp.ts') assert.ok(!/fighterDensity/.test(s), `src/${f} does not reach the DEV module`);
+    const s = read(`src/${f}`).toString('utf8'), rel = f.replace(/\\/g, '/');
+    if (rel !== 'arena/CombatCast.ts') assert.ok(!s.includes(ID), `src/${f} does not name the combat sheet`);
+    if (rel !== 'arena/ArenaApp.ts') assert.ok(!/fighterDensity/.test(s), `src/${f} does not reach the DEV module`);
   }
 });

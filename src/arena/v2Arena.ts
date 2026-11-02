@@ -12,15 +12,15 @@ import type { DynPreset } from './DynPresets';
 export type V2Input = 'charge' | 'keys';
 export const v2Input = (params: URLSearchParams): V2Input => (params.get('input') === 'keys' ? 'keys' : 'charge');
 
-/** the scene page's duel: Ren against Marek, as `?scene=arena` stages it, under the version 2 (the prototype's French names kept) */
-export function sceneV2Duel(input: V2Input): V2Duel {
-  return v2DuelData('marek', { seed: 1337, playerName: 'Ren', opponentName: 'Marek', input });
+/** the scene page's duel: Ren against Marek, as `?scene=arena` stages it, under the version 2 (the prototype's French names kept); `foe`: another rival, for a sheet's review */
+export function sceneV2Duel(input: V2Input, foe = 'marek'): V2Duel {
+  return v2DuelData(foe, { seed: 1337, playerName: 'Ren', opponentName: foe[0].toUpperCase() + foe.slice(1), input });
 }
 
 export interface V2ArenaDuel { dyn: DynamicSim; charge: ChargedDuel | null; tiers: ChargeTier[] }
 /** the page's simulation: the charged duel (three buttons), or the C2 command on the same data (`input=keys`); `dyn=` the trial's numbers */
-export function makeV2Duel(params: URLSearchParams, match?: { data: DynData; tiers?: ChargeTier[] }): V2ArenaDuel {
-  const input = v2Input(params), base = match ? { data: match.data, tiers: match.tiers ?? [] } : sceneV2Duel(input);
+export function makeV2Duel(params: URLSearchParams, match?: { data: DynData; tiers?: ChargeTier[] }, foe?: string): V2ArenaDuel {
+  const input = v2Input(params), base = match ? { data: match.data, tiers: match.tiers ?? [] } : sceneV2Duel(input, foe);
   const data = tuneDyn(base.data, params.get('dyn'));
   if (input === 'keys') return { dyn: new DynamicSim(data), charge: null, tiers: base.tiers };
   const charge = new ChargedDuel(data, base.tiers);
@@ -78,6 +78,10 @@ export const V2_PRESETS: Record<string, { label: string; script: V2PresetStep[] 
   chargeWait: { label: 'Palier en attente (séquence adverse)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.attack(true); } }, { until: (d) => d.view().t >= d.tiers[1].at + 0.2, act: (d) => { d.sim.forceSequence(['m_slash', 'm_slash']); } }, { until: (d) => d.sim.inSequence(), act: (d) => d.attack(false) }, { until: (d) => d.sim.f.marek.seqIdx === 2 && !!d.sim.f.marek.act && d.sim.f.marek.act.t >= 0.1 }] },
   released: { label: 'Palier lâché (compétence)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.sim.f.ren.ap = 5; d.attack(true); } }, { until: (d) => d.view().reached >= 2, act: (d) => d.attack(false) }, { until: (d) => { const a = d.sim.f.ren.act; return !!a && a.impacted && a.t >= a.def.impactAt + 0.06; } }] },
   foeSkill: { label: 'Compétence adverse (alerte)', script: [{ until: (d) => d.t >= 0.2, act: (d) => { const k = d.D.ai.skills?.list.find((x) => d.D.actions[x.id].family === 'offensive'); if (k) d.sim.forceSequence([k.id]); } }, { until: (d) => { const i = d.incoming(); return !!i && i.castProgress >= 0.6; } }] },
+  // a rival's skills on their own frames (journal Passe CX1): the blow landing, a ward's or a boost's effect
+  foeSkillHit: { label: 'Compétence adverse (impact)', script: [{ until: (d) => d.t >= 0.2, act: (d) => { const k = d.D.ai.skills?.list.find((x) => d.D.actions[x.id].family === 'offensive'); if (k) d.sim.forceSequence([k.id]); } }, { until: (d) => { const a = d.f.marek.act; return !!a && a.impacted && a.t >= a.def.impactAt + 0.04; } }] },
+  foeWard: { label: 'Compétence adverse (protection)', script: [{ until: (d) => d.t >= 0.2, act: (d) => { const k = d.D.ai.skills?.list.find((x) => d.D.actions[x.id].family === 'defensive'); if (k) d.sim.forceSequence([k.id]); } }, { until: (d) => { const a = d.f.marek.act; return !!a && a.t >= a.def.impactAt + 0.1; } }] },
+  foeBoost: { label: 'Compétence adverse (soutien)', script: [{ until: (d) => d.t >= 0.2, act: (d) => { const k = d.D.ai.skills?.list.find((x) => d.D.actions[x.id].family === 'support'); if (k) d.sim.forceSequence([k.id]); } }, { until: (d) => { const a = d.f.marek.act; return !!a && a.t >= a.def.impactAt + 0.1; } }] },
 };
 
 /** runs a charge moment (each step delivered through `onStep`); the time it ends at */

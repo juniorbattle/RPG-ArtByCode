@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "marek-combat-x3-2026-11-01-e.png",
+  "sha256": "f0447931dd03563865006176dbd86295d31c7d4d054df3a4cb7329428fd2a78a",
+  "bytes": 1627469,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "APPROVED AS A SOURCE by the operator through the sheet built on it (journal Passe CX2); generated, with no rights beyond those of the tool that made it",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Marek, the old champion of the tournament in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes his design, his colours, his proportions and his clean, simple shapes. Image 2 is an earlier panel of the SAME character; its bottom row shows him fighting and fixes his weapon and how he holds it. Images 3 and 4 are combat sheets of ANOTHER character: they only fix the layout, the SIDE view facing left, the scale and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of Marek, every figure in the SIDE view, FACING LEFT (his face, chest and sword point toward the left edge of the image), exactly the way the figures of images 3 and 4 face left.\n\nKeep his design exactly as in image 1: thick swept-back grey hair, a short grey beard, stern face with one clear eye in profile; dark steel plate armour with brass trim; brown leather straps crossing the chest; a thick cream fur collar; a royal blue tabard and a long royal blue cape with one thin plain gold border; a brown belt with pouches and a brass buckle; steel knee plates, steel boots. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO symbol, NO embroidery anywhere. Keep his proportions from image 1: a big head, about three heads tall, a broad chunky body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head with its hair about 95 pixels tall.\n\nHis sword, the same in every figure, as in image 2: a long straight two-handed broadsword, a wide bright steel blade with a darker edge line, about 150 pixels long at this scale, a gold crossguard, a brown leather grip, a round gold pommel. He holds it with BOTH gauntlets on the grip. No scabbard, no shield.\n\nTWO rows of FOUR figures, in this order, left to right:\nRow 1, his blows landing on an opponent standing just to his left:\n1. HEAVY, THE CUT LANDING: a big two-handed cut striking an opponent at waist height: a deep stance, the front knee bent, the torso forward, both arms extended forward and a little down, the blade pointing left and only 20 degrees below the horizontal, its tip at the height of his own knee, mouth open in a shout. The cape swings out BEHIND him to the right, low and close to the body, below his shoulders: it does NOT rise above his head.\n2. IRON FALL, THE IMPACT: the end of a leaping blow, striking an opponent in the chest: landed in a very deep stance, the front knee deeply bent, the back leg stretched, both arms extended forward and down, the blade pointing left and 30 degrees below the horizontal, its tip well above the ground, mouth open in a shout. The cape swings out behind him to the right, below his shoulders.\n3. IRON FALL, RECOVERY: rising out of the blow, the back straightening, the sword pulled up in front of him, its tip still low. His boots are his dark STEEL boots, not leather.\n4. IRON GATE, RETURN: lifting the sword from the ground, turning it forward into a low guard, the weight shifting forward. His boots are his dark STEEL boots, not leather.\nRow 2:\n5. STUNNED, his strength gone: standing with his feet close together, the knees buckling inward, the back rounded, the shoulders collapsed forward, the head hanging on his chest, eyes shut, the mouth slack; one arm hanging limp at his side, the sword hanging from the other hand with its tip resting on the ground just in front of his toes. This must not look like any combat stance.\n6. STUNNED, second version: the same exhausted figure, the sword tip on the ground, both arms hanging, swaying a little forward, the head lower still.\n7. VICTORY, in the SAME SIDE VIEW facing left like every other figure (NOT turned toward the viewer): standing tall, the sword raised straight up above his head in one gauntlet at full arm extension, the blade its full length of 150 pixels, the free fist clenched at his side, chin up, a proud grim smile.\n8. VICTORY, second version: the same, the sword raised up and a little forward, the blade its full length of 150 pixels.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, sword included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and his sword.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green background (#00B140) behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "8bb7ad6f8d37e678760393b74de51413cce3b518db770a533c6c5bcefefc57dd",
+    "promptFile": "(outside the repository) marek-e.txt",
+    "references": [
+      {
+        "file": "(outside the repository) marek-clear.png",
+        "sha256": "c36e7be1eb4bab49ef563f7499b0f696d6364b154b626f7e6122cbc979eba5c0",
+        "bytes": 543187
+      },
+      {
+        "file": "(outside the repository) marek-panel.png",
+        "sha256": "a94251074f737e330732c186fd05151f9ea5f8dea0efea4fb5e260f4d25efc62",
+        "bytes": 483485
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "1 of 2",
+    "task": "marek-x3-combat",
+    "requestedAt": "2026-11-02T01:06:30.092Z",
+    "response": {
+      "requestId": "req_1e54331adf5e489ba725d3519c44350f",
+      "created": "2026-11-02T01:07:42.000Z",
+      "processingMs": 70117
+    },
+    "usage": {
+      "input_tokens": 11598,
+      "input_tokens_details": {
+        "image_tokens": 9280,
+        "text_tokens": 2318
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 22574
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.38568,
+        "fromUsage": 0.41511
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-02",
+    "from": "marek-x3-combat-20261102T010630Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

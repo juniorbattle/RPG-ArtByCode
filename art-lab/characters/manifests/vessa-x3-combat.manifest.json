@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "vessa-x3-combat",
+  "kind": "character",
+  "status": "experimental",
+  "source": "art-lab/characters/source/vessa-x3-combat.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/vessa-x3-combat.png",
+    "metadata": "art-lab/characters/exports/vessa-x3-combat.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-combat.mjs (lib/combat.mjs: reconstruct-grid + rig-engine, rig art-lab/characters/rigs/vessa-x3-combat.rig.mjs, the arena cell at x3: 192 x 288, feet on row 270, axis on column 96); Aseprite (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "4 generated pose sheets of Vessa Lark (NON-CANONICAL until the operator's lot sheet): the figures of the sheet",
+      "path": "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-a.png",
+      "note": "task vessa-x3-combat, journal Passe CX1"
+    },
+    {
+      "category": "C",
+      "label": "The clean casting figure (approved as a source, journal Passe CA5): his design",
+      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-e.png",
+      "note": "with the casting panel chosen on the casting sheet (journal Passe CA1)"
+    },
+    {
+      "category": "B",
+      "label": "vessa-x2-v2, the approved town sheet: its palette (pinned)",
+      "path": "art-lab/characters/provenance/vessa-x2-v2",
+      "note": "approved for production by the operator on 2026-11-01 (journal Passe CA5)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "LAB, NOT APPROVED (journal Passe CX1): Vessa Lark's combat sheet at x3, 34 frames of the § 14 list, cells of 192 x 288 texels, feet on row 270, hips on column 96, facing left. Its edge is a rule of the renderer (RC1-2, RC2-4). Shown only in the arena behind the DEV parameter ?scene=arena&fighterdensity=combat (src/lab/fighterDensity.ts, compiled out of production builds). Rebuild: node tools/art-lab/build-combat.mjs art-lab/characters/rigs/vessa-x3-combat.rig.mjs --check"
+}

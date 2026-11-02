@@ -20,6 +20,8 @@ import { RECIPES, blowRecipe, chargeLevel, effectRecipe, type FxRecipe } from '.
 const FIGURE_H = 2.75;
 const RENS_GUARD = 0.7, MAREKS_GUARD = 1;
 export const guardContact = (foe: string): Record<FighterId, number> => ({ ren: RENS_GUARD, marek: foe === 'vessa' ? RENS_GUARD : MAREKS_GUARD });
+/** a fighter on a baked sheet: how far its guard's frame reaches, measured on the sheet (m), else its art's value */
+const measured = (foe: string, guardReach: FxArena['guardReach']): Record<FighterId, number> => { const c = guardContact(foe); return { ren: guardReach('ren') ?? c.ren, marek: guardReach('marek') ?? c.marek }; };
 /** the effects' exposure, the night's stronger bloom on a dark ground, the day's on a light one */
 const EXPOSURE = { night: 0.5, day: 0.72 };
 /** the charge held: a breath of motes every so many seconds */
@@ -30,6 +32,8 @@ const STRESS = ['heavy', 'm_ironfall', 't4', 'break', 'guardHeavy', 'charge3', '
 export interface FxArena {
   /** who sits in the opponent's seat */
   foe: string;
+  /** how far a fighter's guard reaches on its baked sheet (m), null on generated art */
+  guardReach(who: FighterId): number | null;
   lights: LightRig;
   shake(amount: number): void;
   /** the simulation's speed (the K.O.'s slow motion: the duel is over) */
@@ -57,7 +61,7 @@ function overlay(css: string): HTMLDivElement {
 
 export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params: URLSearchParams, arena: FxArena): CombatFx {
   FX_EXPOSURE.value = parseTime(params) ? EXPOSURE.day : EXPOSURE.night;
-  const contact = guardContact(arena.foe);
+  const contact = measured(arena.foe, arena.guardReach);
   const flashEl = overlay(''), linesEl = overlay('-webkit-mask:radial-gradient(circle,transparent 38%,#000 72%);mask:radial-gradient(circle,transparent 38%,#000 72%)');
   const slots: Slot[] = [0, 1].map(() => {
     const src = arena.lights.add({ pos: [0, -5, 0], color: [1, 1, 1], intensity: 2, radius: 8, kind: 'steady', priority: 11 }, 'fx', 0);

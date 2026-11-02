@@ -5,7 +5,7 @@
 //   node tools/art-lab/build-combat.mjs <art-lab/characters/rigs/<id>.rig.mjs> [--check]
 // The rig exports `id`, `frame` ({ W, H, FOOT, AXIS, K }), `clips` ({ clip: frame count }, in the sheet's order), `SHEETS` and `PALETTE`
 // (the files it reads, hashed into the pack), `frames()` ([{ anim: clip, dir: 'side', i, im }], its own reconstruction and rig) and
-// `placement` (filled by frames()). Writes source/<id>.aseprite, exports/<id>.png|json, provenance/<id>/build.json and the file table of
+// `placement` (filled by frames()). A frame image's `push`: how far the cell moved its body off the axis, written in the JSON's meta.pushed. Writes source/<id>.aseprite, exports/<id>.png|json, provenance/<id>/build.json and the file table of
 // provenance/<id>/PROVENANCE.json (written first by hand). --check rebuilds into a temporary folder and compares with the committed files.
 // First use: hero-x3-combat, Ren's first combat sheet (journal Passe RC1).
 import fs from 'node:fs';
@@ -58,7 +58,7 @@ for (const [clip, n] of Object.entries(rig.clips)) {
 if (frames.length !== order.reduce((s, g) => s + g.list.length, 0)) throw new Error('the rig made frames outside its declared clips');
 for (const g of order) for (const f of g.list) checkFrame(`${g.tag}-${f.i}`, f.im);
 // the frame durations Aseprite shows (the engine picks a frame by the simulation's clock, FighterArt's clipFrame): a loop at its rate
-const LOOP = { idle: 1.7, ready: 1.7, recover: 2.5, victory: 1.4 };
+const LOOP = { idle: 1.7, ready: 1.7, recover: 2.5, victory: 1.4, charge: 2.5, chargeHi: 3.33 };
 const fdir = path.join(work, 'frames'); fs.mkdirSync(fdir, { recursive: true });
 const lines = [], tags = []; let n = 0;
 for (const g of order) {
@@ -93,6 +93,9 @@ execFileSync(ase, ['-b', '--script-param', `list=${list.replace(/\\/g, '/')}`, '
 execFileSync(ase, ['-b', outAse, '--sheet', out.png.replace(/\\/g, '/'), '--data', out.json.replace(/\\/g, '/'), '--format', 'json-array', '--list-tags', '--sheet-type', 'rows', '--sheet-columns', '6'], { stdio: 'ignore' });
 // 3. the export must hold exactly the rig's frames
 const sheet = R.load(out.png), meta = JSON.parse(fs.readFileSync(out.json, 'utf8'));
+// the frames whose body the cell moved off its axis, in texels (rig.frames() images' `push`): the arena moves the sprite by as much (journal Passe CX1)
+meta.meta.pushed = Object.fromEntries(order.flatMap((g) => g.list.filter((f) => f.im.push).map((f) => [`${g.clip}.${f.i}`, f.im.push])));
+fs.writeFileSync(out.json, JSON.stringify(meta, null, 1) + '\n');
 if (meta.frames.length !== n) throw new Error(`export holds ${meta.frames.length} frames, the rig made ${n}`);
 let k = 0, mismatch = 0;
 for (const g of order) for (const f of g.list) {
@@ -115,7 +118,7 @@ if (!check) {
     const P = JSON.parse(fs.readFileSync(pf, 'utf8')), rel = (f) => path.relative(ROOT, f).replace(/\\/g, '/');
     const hashRule = (f) => { let b = fs.readFileSync(f); if (/\.(json|mjs|js|ts|md|txt)$/i.test(f)) b = Buffer.from(b.toString('utf8').replace(/\r\n/g, '\n'), 'utf8'); return crypto.createHash('sha256').update(b).digest('hex'); };
     const files = [out.png, out.json, out.ase, path.join(packDir, 'build.json'), repo(rig.PALETTE.path), ...Object.values(rig.SHEETS).map((s) => repo(s.path)),
-      path.resolve(rigFile), ...['build-combat.mjs', 'rig-engine.mjs', 'reconstruct-grid.mjs', 'png.mjs'].map((t) => path.join(ROOT, 'tools', 'art-lab', t))];
+      path.resolve(rigFile), repo('art-lab/characters/rigs/lib/combat.mjs'), ...['build-combat.mjs', 'rig-engine.mjs', 'reconstruct-grid.mjs', 'png.mjs'].map((t) => path.join(ROOT, 'tools', 'art-lab', t))];
     P.files = Object.fromEntries(files.map((f) => [rel(f), hashRule(f)]));
     fs.writeFileSync(pf, JSON.stringify(P, null, 1) + '\n');
   }
@@ -125,7 +128,7 @@ if (!check) {
   let bad = 0;
   const okPng = same(out.png, repo(`art-lab/characters/exports/${id}.png`)); if (!okPng) bad++; console.log(`${okPng ? 'ok      ' : 'DIFFERS '} exports/${id}.png (pixels)`);
   const committed = JSON.parse(fs.readFileSync(repo(`art-lab/characters/exports/${id}.json`), 'utf8'));
-  const table = (m) => JSON.stringify([m.frames.map((f) => [f.frame, f.duration]), m.meta.frameTags.map((t) => [t.name, t.from, t.to]), m.meta.size]);
+  const table = (m) => JSON.stringify([m.frames.map((f) => [f.frame, f.duration]), m.meta.frameTags.map((t) => [t.name, t.from, t.to]), m.meta.size, m.meta.pushed]);
   const okJson = table(committed) === table(meta); if (!okJson) bad++; console.log(`${okJson ? 'ok      ' : 'DIFFERS '} exports/${id}.json (frames, durations, tags)`);
   fs.rmSync(work, { recursive: true, force: true });
   console.log(bad ? `${bad} difference(s)` : `${id}: rebuilt identical`); process.exit(bad ? 1 : 0);

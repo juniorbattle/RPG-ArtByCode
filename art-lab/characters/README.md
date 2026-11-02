@@ -22,6 +22,7 @@ index at the top of `JOURNAL.md`):
   from the generated v4-b turnaround and the v3 sheet's run, journal Passe H8, with runs drawn on generated run sheets, Passe K11) by
   `tools/art-lab/build-character.mjs` from `rigs/<id>.rig.mjs` (`--check` rebuilds and compares). Approvals, revisions and blind
   critiques: each manifest's `approval`, `provenance/<id>/`, `reviews/<id>/`. The cat is still generated.
+- **Combat sheets** — x3, the arena's cells, `src/arena/CombatCast.ts`, a version 2 duel only: `hero-x3-combat` (39 frames) and `marek-x3-combat` (32 frames), approved on 2026-11-01 (journal Passe CX2). A rival's sheet comes from its clean casting figure through `rigs/lib/combat.mjs`; the others follow by lots, in the order X2 of the casting.
 - **Superseded** — `hero-x2-v3` (journal Passe H11): the production hero from 2026-10-19 to 2026-10-20, replaced by `hero-x2-v4`; kept as its
   source (palette, four idle views, profile run), its approval kept as history in its manifest and pack.
 - **Lab only** — `dockworker-x2-v1`: the **approved visual baseline** for standard NPCs (operator, 2026-10-16: art direction + in-scene +
