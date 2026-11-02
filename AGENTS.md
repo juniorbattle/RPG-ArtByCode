@@ -471,8 +471,10 @@ tâche, la provenance enregistrée automatiquement et la règle dans AGENTS.md. 
 
 ## Sound (the operator's audit sheet, 2026-11-01, journal Passe SN1)
 The sheet's 18 choices, under their exact labels, are in journal Passe SN1; its source and the plan of lots S0 to S5: `briefs/fiche-son.html`.
-- **Identity**: SA-4 « Les ménétriers de la Cité », a city band that belongs to this world (shawms, sackbut, lute, drum), with the operator's note, word
-  for word: « Mais j'aime beaucoup les inspi Breath of fire 3, Chromo trigger et Final Fantasy 8 et 9 »: an inspiration of style, no work reproduced.
+- **Identity**: jazz fusion as the global orientation (the operator's message after the lot's sheet, word for word: « je trouve que le jazz fusion peut
+  etre une bonne orientation globale », journal Passe SN4; a working direction, confirmed by ear), in place of SA-4 « Les ménétriers de la Cité »; the
+  inspirations named: Final Fantasy VIII (orchestral and rock), Chrono Cross (folk and world music), Breath of Fire III (jazz fusion): a style, no work
+  reproduced. SA-2's motif « Le Tournoi » stays the theme's matter. RPGCards is a reference of method only (journal Passe SN4), nothing imported from it.
 - **Source**: SA-8 « Elle bouge : cuit, avec manifeste », replacing AV-17's « no audio file »: the sound stays written in the repository (scores and
   recipes) and may be baked at development time into compressed files, like the sprite sheets, under a provenance manifest; SA-9 « Partition +
   synthèse et CC0 »; SA-11 « Code + CC0 enregistré » (the crowd by the code first and CC0 as a complement, to confirm with the operator at lot S2);

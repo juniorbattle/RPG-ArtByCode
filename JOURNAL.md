@@ -576,6 +576,33 @@ Rendu hors ligne, 44,1 kHz, volume 0,7, musique 0,5 (`tools/audio/render.mjs`, `
 - « Aligner » ne voulait pas dire tout mettre sur deux colonnes : une page mérite le détail là où le joueur choisit ou cherche, un menu de neuf lignes reste un menu.
 - Ranger la page révèle ce que l'ancienne cachait : le choix des quatre perdu à `Esc` et la sortie sans effet sur un curseur existaient depuis longtemps, sans jamais avoir de forme visible.
 
+## Passe SN4 — La fiche du lot relue : S0-S1 à reprendre, le jazz fusion comme orientation (2026-11-02)
+
+### Demande
+- Message de l'opérateur, mot pour mot : « j'ai rempli la fiche mais on doit tout de meme bien travailler nos sons afin qu'ils soient captivant et optimal, RPGCards a bien fait son travail avec une direction tres Lo-Fi Jazz, il faut que notre jeu s'oriente vers une identite concrete aussi avec des inspirations : Final Fantasy VIII / Nobuo Uematsu / Orchestral + rock / Variété extrême : classique, rock, waltz, influences cinématographiques ; Chrono Cross / Yasunori Mitsuda / Folk / world music / Guitares acoustiques, percussions ethniques, atmosphères émotionnelles ; Breath of Fire III / Akari Kaida, Yoshino Aoki / Jazz fusion / Ambiance urbaine, synthés, rythmes modernes (connaissance générale) je trouve que le jazz fusion peut etre une bonne orientation globale ». La liste des trois jeux est collée par l'opérateur ; les barres et les points-virgules séparent ses cases.
+
+### La fiche du lot
+- Page privée https://claude.ai/artifact/McPDaVNx9o82nkieURh1Wx, source `briefs/fiche-son-lot1.html`. Relue par `list` : 10 documents sur 10, aucune note.
+
+| # | Décision | Choix de l'opérateur |
+|---|---|---|
+| S0-1 à S0-4 | Écoutes du lot S0 | « Bonne direction » |
+| S1-1, S1-2 | Écoutes du lot S1 | « Bonne direction » |
+| S0-N | Le niveau général | « Garder −18 » |
+| SA-11c | La foule | « Code d’abord, CC0 en complément » |
+| S2-O | L'outil pour cuire | « Installer ffmpeg (développement) » |
+| S2-G | Lancer le lot S2 | « Reprendre S0-S1 d’abord (en note) » |
+
+### Ce que ces choix veulent dire
+- Les six écoutes sont bonnes : le travail technique de S0 et S1 reste. La reprise de S2-G n'a pas de note sur la fiche : son contenu est le message ci-dessus, l'identité du son, qui manque. S2 ne démarre pas.
+- **SA-4 change d'orientation** : « Les ménétriers de la Cité » laisse la place au jazz fusion comme orientation globale. La phrase de l'opérateur dit « peut etre » : le genre est le cap de travail, et il se confirme à l'oreille sur la fiche suivante. SA-2 (le motif « Le Tournoi », « Motif et son : bonne direction ») n'est pas remis en cause : ses notes restent la matière du thème.
+- **Le contrat maître** ne fixe aucun genre : `contracts/PROJECT_MASTER_CONTRACT.md` parle de « l'énergie d'un grand festival urbain », aucun verrou n'est touché.
+- **RPGCards** sert de repère de méthode, nommé par l'opérateur : lu en lecture seule (ADR 047, contrat M13), aucun code ni décision n'en est importé. Ce qu'on en retient : un thème écrit et ses versions, des instruments calculés plutôt que des oscillateurs, un contrôle sans oreille par des rendus mesurés, une écoute par lot. L'identité reste la nôtre : RPGCards sonne swing et lounge, nous visons le 16e droit, l'électrique et les mesures composées.
+- **SA-9, SA-12, SA-13, SA-16, SA-17 tiennent** : partitions écrites ici et synthèse, aucune génération audio, derrière `flags.v2`, 12 Mo au plus.
+
+### `ffmpeg` — [OK] installé (S2-O)
+- Build 9.0.2 essentials de gyan.dev (`ffmpeg-9.0.2-essentials_build.zip`, 114,8 Mo), lien donné par ffmpeg.org pour Windows, SHA-256 `60f46726…47ba` vérifiée contre celle que publie gyan.dev. Hors du dépôt, dans le dossier d'outils du poste, sans toucher au PATH : les outils le trouvent par `FFMPEG` ou le PATH. `libopus` et `aac` présents. Le build 7.1.1 prévu d'abord n'a pas d'empreinte publiée : écarté. `winget` n'existe pas sur ce poste.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -781,7 +808,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN3)** — fiche de 18 choix remplie : « Les ménétriers de la Cité », partitions avec synthèse et CC0, cuit avec manifeste, 12 Mo au plus, derrière `flags.v2`. Plan S0 à S5 dans `briefs/fiche-son.html`. **S0 et S1 faits** (Passes SN2, SN3), le jeu par défaut inchangé. **Fiche de lot à remplir** : https://claude.ai/artifact/McPDaVNx9o82nkieURh1Wx (source `briefs/fiche-son-lot1.html`) : personne n'a encore écouté. S2 à S5 après sa réponse ; SA-11 à confirmer et l'outil de cuisson (`ffmpeg`) sont sur cette fiche ; SA-10 après l'essai du lot S4. À faire avant le premier fichier cuit : Opus en WebM et AAC sur un vrai Safari.
+**6f. Son (Passes SN1 à SN4)** — S0 et S1 faits et jugés bons à l'oreille (fiche du lot, Passe SN4), niveau −18 gardé, `ffmpeg` installé, foule par le code d'abord. **Orientation : jazz fusion** (l'opérateur, Passe SN4), à la place des ménétriers de SA-4, le motif de SA-2 gardé. S2 attend la reprise : l'identité d'abord, puis la fiche d'écoute. SA-10 après l'essai du lot S4. À faire avant le premier fichier cuit : Opus en WebM et AAC sur un vrai Safari.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. **Reste à l'opérateur** : son essai et sa validation d'ensemble, conditionnelle depuis la Passe UM10 ; les icônes d'objets, qui demandent de l'art.
 
