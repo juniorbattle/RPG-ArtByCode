@@ -7,7 +7,8 @@ import { CELL_FOOT, CELL_H, CELL_W, type ArenaSpriteSet } from './FighterArt';
 
 /** The fighters' baked combat sheets in the arena (journal Passes RC1, RC2, CX1): cells of the arena at x3 (192 x 288 texels, feet on row 270, facing left) in place of the
  *  generated frames, by their keys `<seat>/side/<clip>.<i>/0`: the duel plays them on its moments (sheetFrame). Ren and the rival of the bout share one texture: a page of 2048 holds
- *  70 full cells, Ren's 39 and a rival's 34 are 73, so the top rows every frame leaves empty are not stored (TRIM): cells of 255 rows, 80 a page, the same pixels. */
+ *  70 full cells, Ren's 39 and a rival's 34 are 73, so the top rows every frame leaves empty are not stored (TRIM): cells of 255 rows, 80 a page, the same pixels. A rival's frames stand on the
+ *  opponent's seat, `marek/...` (the simulation's id): every one of them is its own sheet's, the clips it does not hold fall back on its own stance. */
 
 /** the seats of a duel (the simulation's ids) */
 export type Seat = 'ren' | 'marek';

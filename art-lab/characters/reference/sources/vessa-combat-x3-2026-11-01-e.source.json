@@ -1,0 +1,89 @@
+{
+  "kind": "generated-image",
+  "file": "vessa-combat-x3-2026-11-01-e.png",
+  "sha256": "40879059c1e1e913674510aa386b9af0eaee2a1e998439d0db60520f5af2ee32",
+  "bytes": 1539193,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "APPROVED AS A SOURCE by the operator through the sheet built on it (journal Passe CX4); generated, with no rights beyond those of the tool that made it",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Vessa Lark, a young duelist from the river towns, the quickest blade of the tournament in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Images 2 and 3 are combat sheets of ANOTHER character: they only fix the layout, the SIDE view facing left, the scale and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of Vessa, every figure in the SIDE view, FACING LEFT (the face, chest and weapon point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1: long bright purple hair in a high ponytail, a clear face with one large eye in profile; a bright lavender and violet tunic with a short violet cape; an ivory shirt; warm skin on the arms and legs; tan leather boots and gloves; a tan belt. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big head, about three heads tall, a slim light body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head with its hair about 97 pixels tall.\n\nThe weapon, the same in every figure: a fine duelling blade: a long, very slim straight rapier blade of bright steel with a darker edge line, about 150 pixels long at this scale, a small brass cup guard, a tan leather grip. She holds it in ONE gloved hand, her near hand; the other hand stays free. No scabbard, no shield.\n\nTWO rows of FOUR figures, in this order, left to right (keep the same figure scale in every row):\nRow 1, her guard skill BRACE, drawn in the plane of the image so the blade is seen whole:\n1. BRACE, PREPARATION: stepping back, the blade swinging up in front of her, the free hand coming up toward it.\n2. BRACE, THE WARD: planted low, knees bent, the blade held diagonally IN FRONT of her body, entirely on the left side of her chest: the hilt low by her front hip, the point high and forward, above the height of her head; the free hand pressed against the flat of the blade near its middle, bracing it. The blade does NOT cross her torso: her whole body stays behind it, to the right.\n3. BRACE, THE WARD, second version: the same stance, the blade upright in front of her face and chest, the free hand braced behind the blade.\n4. BRACE, RETURN: lowering the blade, turning it forward into a low guard, the weight shifting forward.\nRow 2:\n5. HEAVY, RAISE: rising tall, one foot stepping forward, the blade lifted high above her head with a clear gap between her hand and her head, pointing up and back, the chest open, the cape and ponytail lifting.\n6. HEAVY, THE CUT LANDING on an opponent standing just to her left, at waist height: a deep stance, the front knee bent, the torso forward, the arm extended forward and a little down, the blade pointing left and only 20 degrees below the horizontal, mouth open in a shout, the cape low behind her.\n7. QUICKBLADE LUNGE, THE THRUST at chest height: a deep fencing lunge to the left, the back leg straight, the front knee bent, the sword arm extended in line with the blade, the blade level at the height of her own chest, pointing left, the free arm straight back behind her, mouth open.\n8. VICTORY, in the SAME SIDE VIEW facing left like every other figure (NOT turned toward the viewer): standing tall, the blade raised straight up above her head at full arm extension, its full length, the free fist on her hip, chin up, a proud smile.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, weapon included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and the weapon.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "d8acfccb9e0b9a5a2cebfc07fa5b00bd56e83d61c768c2222fa0733ce0bf09dc",
+    "promptFile": "(outside the repository) vessa-e.txt",
+    "references": [
+      {
+        "file": "(outside the repository) vessa-clear.png",
+        "sha256": "be27c2bb9d150bad0897a262349f6e237636dd6d26cba81c56bf0d90cb86aad5",
+        "bytes": 874496
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "1 of 2",
+    "task": "vessa-x3-combat",
+    "requestedAt": "2026-11-02T02:42:08.345Z",
+    "response": {
+      "requestId": "req_43baad8928bd42ffbbb37f792a7f9b3f",
+      "created": "2026-11-02T02:43:20.000Z",
+      "processingMs": 69874
+    },
+    "usage": {
+      "input_tokens": 9222,
+      "input_tokens_details": {
+        "image_tokens": 7096,
+        "text_tokens": 2126
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 20198
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.32051,
+        "fromUsage": 0.396678
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-02",
+    "from": "vessa-x3-combat-20261102T024208Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "vessa-x3-combat",
   "kind": "character",
-  "status": "experimental",
+  "status": "approved",
   "source": "art-lab/characters/source/vessa-x3-combat.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/vessa-x3-combat.png",
@@ -16,7 +16,7 @@
   "references": [
     {
       "category": "C",
-      "label": "4 generated pose sheets of Vessa Lark (NON-CANONICAL until the operator's lot sheet): the figures of the sheet",
+      "label": "6 generated pose sheets of Vessa Lark (NON-CANONICAL until the operator's lot sheet): the figures of the sheet",
       "path": "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-a.png",
       "note": "task vessa-x3-combat, journal Passe CX1"
     },
@@ -33,7 +33,12 @@
       "note": "approved for production by the operator on 2026-11-01 (journal Passe CA5)"
     }
   ],
-  "approved": false,
-  "runtimeUse": "lab",
-  "notes": "LAB, NOT APPROVED (journal Passe CX1): Vessa Lark's combat sheet at x3, 34 frames of the § 14 list, cells of 192 x 288 texels, feet on row 270, hips on column 96, facing left. Its edge is a rule of the renderer (RC1-2, RC2-4). Shown only in the arena behind the DEV parameter ?scene=arena&fighterdensity=combat (src/lab/fighterDensity.ts, compiled out of production builds). Rebuild: node tools/art-lab/build-combat.mjs art-lab/characters/rigs/vessa-x3-combat.rig.mjs --check"
+  "approved": true,
+  "runtimeUse": "production",
+  "notes": "APPROVED FOR PRODUCTION by the operator on the combat lot sheet 2 (journal Passe CX4): « Production » (CX-Vessa); version 2's duels only, today's game unchanged. Vessa Lark's combat sheet at x3, 34 frames of the § 14 list, cells of 192 x 288 texels, feet on row 270, hips on column 96, facing left. Its edge is a rule of the renderer (RC1-2, RC2-4). Shown only in the arena behind the DEV parameter ?scene=arena&fighterdensity=combat (src/lab/fighterDensity.ts, compiled out of production builds). Rebuild: node tools/art-lab/build-combat.mjs art-lab/characters/rigs/vessa-x3-combat.rig.mjs --check",
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-11-01",
+    "note": "APPROVED FOR PRODUCTION by the operator on the combat lot sheet 2 (journal Passe CX4): « Production » (CX-Vessa); version 2's duels only, today's game unchanged."
+  }
 }

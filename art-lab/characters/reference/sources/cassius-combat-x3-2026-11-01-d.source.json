@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "cassius-combat-x3-2026-11-01-d.png",
+  "sha256": "4b2314ba7fcf02b245f94af849fcfa5567955648110c2a454f5504174055d17c",
+  "bytes": 1414008,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "APPROVED AS A SOURCE by the operator through the sheet built on it (journal Passe CX4); generated, with no rights beyond those of the tool that made it",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Cassius Dree, a young noble knight of House Dree in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Image 2 is an earlier panel of the SAME character; its bottom row shows the character fighting and fixes the weapon and how it is held. Images 3 and 4 are combat sheets of ANOTHER character: they only fix the layout, the SIDE view facing left, the scale and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of Cassius, every figure in the SIDE view, FACING LEFT (the face, chest and weapon point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1: dark blue spiky hair, a clear face with one large eye in profile; polished plain steel plate armour; a brown belt with pouches; a blue tabard and a long blue cape with a thin plain gold border; steel knee plates, steel boots. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big head, about three heads tall, a lean upright body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head with its hair about 97 pixels tall.\n\nThe weapon, the same in every figure: a long straight knight's sword, as in image 2: a bright steel blade with a darker edge line, about 140 pixels long at this scale, a gold crossguard, a brown grip, a gold pommel. He holds it in ONE gauntlet, the near hand. No scabbard, no shield.\n\n2 rows, in this order, left to right:\nRow 1, his rally, HOUSE COLOURS, a noble salute:\n1. HOUSE COLOURS, PREPARATION: the sword brought upright in front of his face in a salute, the heels together, the chin lifted.\n2. HOUSE COLOURS, THE SALUTE: standing tall and proud, chest out, the sword swept out to the side at arm's length, the free fist on his chest, the cape spread behind him.\n3. HOUSE COLOURS, RETURN: settling back into a stance, the sword coming down toward the opponent.\nRow 2, the dodge:\n4. DODGE, PUSH-OFF: a quick hop BACKWARD, away from an opponent on the left (moving toward the right edge): pushing off the front foot, the front foot lifting off the ground, the back foot still touching the ground, the body leaning back, the sword held in front to cover.\n5. DODGE, LANDING: landed farther back, knees bent, the weight on the back foot, the sword back in front in a guard.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, weapon included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and the weapon.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "6eec5d10770da95232668e51f371a7862c505b234abcb8be83c57d91dc0f9203",
+    "promptFile": "(outside the repository) cassius-d.txt",
+    "references": [
+      {
+        "file": "(outside the repository) cassius-clear.png",
+        "sha256": "78a02a82e6a436821c6366adb39af71815751f537f06b05802daeb1a263d28cb",
+        "bytes": 493455
+      },
+      {
+        "file": "(outside the repository) cassius-panel.png",
+        "sha256": "56e47efd8da6c7667febc45f6c7d4ebb861ff5ec2e10815d0122d62f8cb23173",
+        "bytes": 501787
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "1 of 2",
+    "task": "cassius-x3-combat",
+    "requestedAt": "2026-11-02T02:58:40.423Z",
+    "response": {
+      "requestId": "req_b30d7641a93d4845880983785b76c97d",
+      "created": "2026-11-02T02:59:48.000Z",
+      "processingMs": 66192
+    },
+    "usage": {
+      "input_tokens": 10730,
+      "input_tokens_details": {
+        "image_tokens": 9088,
+        "text_tokens": 1642
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 21706
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.3819,
+        "fromUsage": 0.410194
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-02",
+    "from": "cassius-x3-combat-20261102T025840Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

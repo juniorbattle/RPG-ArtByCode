@@ -853,12 +853,10 @@
    }
   ],
   "pushed": {
-   "ready.0": 3,
-   "ready.1": 3,
-   "strike.1": 17,
-   "skillOff.1": 9,
-   "skillOff.2": 39,
-   "ko.2": 3
+   "strike.1": 10,
+   "heavy.2": 1,
+   "skillOff.1": 2,
+   "skillOff.2": 9
   }
  }
 }

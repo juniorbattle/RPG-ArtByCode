@@ -13,6 +13,7 @@
  *                                        town's dark outline by day (`time=`); rim = the shader's crown rim alone
  *    &fighterpose=<clip>.<i>             holds one frame of Ren's sheet through the duel
  *    &fightershade=<k>                   the sheets' shade in the arena's light; absent = the operator's (CX-L1 « 0,65 », CX-L2 « 1,3 »)
+ *  Today the sheets are in production (src/arena/CombatCast.ts, a version 2 duel): this module shows them on any rules.
  *  Both fighters keep the hero's town presentation scale (0.9, BakedCast). `window.__density` reports the sheets,
  *  the atlas cost, `measure()` (the on-screen size of a texel) and `setPose()`. */
 import type * as THREE from 'three';

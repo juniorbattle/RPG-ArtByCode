@@ -1,0 +1,50 @@
+{
+ "id": "ilse-x3-combat",
+ "status": "APPROVED PRODUCTION ASSET (operator, combat lot sheet 3, journal Passe CX4), not declared a Gold Master",
+ "request": {
+  "date": "2026-11-01",
+  "by": "operator (git user wonmii): casting sheet of journal Passe CA1: R-ilse « G2 n° 03 Prêtresse », X1 « Les sept rivaux », X2 « Marek, Vessa, Orla, Cassius, Ilse, Rhosk, Tobin », X4 « Planche, puis texte pour Vessa, Ilse et Tobin », X5 « Une tâche de 5 $ par combattant »"
+ },
+ "approvals": [
+  {
+   "by": "operator (git user wonmii)",
+   "date": "2026-11-01",
+   "note": "APPROVED FOR PRODUCTION by the operator on the combat lot sheet 3 (journal Passe CX4): « Production » (CX-Ilse); version 2's duels only, today's game unchanged."
+  }
+ ],
+ "source": {
+  "sheets": {
+   "description": "5 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task ilse-x3-combat); references: the approved clean figure casting-clear-2026-11-01-b.png and the casting panel, and Ren's sheets for the layout only",
+   "files": [
+    "art-lab/characters/reference/sources/ilse-combat-x3-2026-11-01-a.png",
+    "art-lab/characters/reference/sources/ilse-combat-x3-2026-11-01-b.png",
+    "art-lab/characters/reference/sources/ilse-combat-x3-2026-11-01-c.png",
+    "art-lab/characters/reference/sources/ilse-combat-x3-2026-11-01-d.png",
+    "art-lab/characters/reference/sources/ilse-combat-x3-2026-11-01-e.png"
+   ]
+  },
+  "figure": "casting-clear-2026-11-01-b.png"
+ },
+ "chain": [
+  "per figure: the figure alone on its sheet -> reconstruct-grid.mjs at the sheet's pitch (a standing figure's height over the rows of the town sheet's side idle at x3) -> the green peeled -> nearest OKLab colour of the approved town sheet's palette (pinned) -> loose texels removed -> the hips on column 96, cropped to the cell; a cell that moved the body off the axis is recorded in the JSON's meta.pushed; the loops' second frames by rig-engine's breath, the guard's « encaisse » by a shear (lib/combat.mjs)"
+ ],
+ "rebuild": "node tools/art-lab/build-combat.mjs art-lab/characters/rigs/ilse-x3-combat.rig.mjs --check",
+ "files": {
+  "art-lab/characters/exports/ilse-x3-combat.png": "78ad518926a9b28c210e7f089fb48c89e13ec5a867b6752942878da635c1d9b9",
+  "art-lab/characters/exports/ilse-x3-combat.json": "d4e4b17b25fcb4bda0019ad19eabfe3ef4dd1a525500203ad53fe4f7002c2d03",
+  "art-lab/characters/source/ilse-x3-combat.aseprite": "5398cb55c95f24b0355a76fb060abd14c2a8f60702d2de94ca4e00714c414db6",
+  "art-lab/characters/provenance/ilse-x3-combat/build.json": "7552f281b7e4819d1c1d0229843985af94845ce98d31f3cf010ba52c9de9bd22",
+  "art-lab/characters/exports/ilse-x2-v2.png": "7c021b0bf26d49e3b659bec0d3c79d18f1f4c48b3349c5f927fbdbaf8111d0bb",
+  "art-lab/characters/reference/sources/ilse-combat-x3-2026-11-01-a.png": "48d6fa1101bf826fbc8d0d7616f9b24d5486391c4838b4be7dad086dd99d5337",
+  "art-lab/characters/reference/sources/ilse-combat-x3-2026-11-01-b.png": "3a08bca5dfe4ded6b7f61fc05866eb0bb870009b2385576af2ac2adbac30b1ad",
+  "art-lab/characters/reference/sources/ilse-combat-x3-2026-11-01-c.png": "6a18bfd6ac72ec05726931e69bde181af52defbe313c19327fa5a6f55159ed80",
+  "art-lab/characters/reference/sources/ilse-combat-x3-2026-11-01-d.png": "0707e6ebd2ae5d55e444a15d69b311153d0ca45c54a6b593043e1ba04fd353ba",
+  "art-lab/characters/reference/sources/ilse-combat-x3-2026-11-01-e.png": "0b4096beffd7b834456b5c776d4ec84c95e3e9f22050bdbbb8f05863f2b6f7a4",
+  "art-lab/characters/rigs/ilse-x3-combat.rig.mjs": "dfa3640d3a57c2cd83a397e4f43edcde2036854e176c8b03abacf8feb5becd2a",
+  "art-lab/characters/rigs/lib/combat.mjs": "28e3b8ff08cb884b1f86d62fc7d589fc1cfd841b8a3f9382e1dbaeed893c3a5c",
+  "tools/art-lab/build-combat.mjs": "0dd3d9f77a5b362362c9f937654c7787290d9f39dcc3f5f038f5cc3901281d7f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

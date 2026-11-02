@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1, CA2 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -53,116 +53,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/40-passes-V2C2-V2B1.md`](journal/40-passes-V2C2-V2B1.md) | V2C2, V2B1 | 29/10 → 30/10 |
 | [`journal/41-passes-FX1.md`](journal/41-passes-FX1.md) | FX1 | 31/10 → 01/11 |
 | [`journal/42-passes-FX2-FX5.md`](journal/42-passes-FX2-FX5.md) | FX2, FX3, FX4, FX5 | 01/11 |
+| [`journal/43-passes-CA1-CA2.md`](journal/43-passes-CA1-CA2.md) | CA1, CA2 | 01/11 |
 
 ---
-
-## Passe CA1 — La fiche de casting : une figure de nos planches pour chaque personnage et chaque rival, l'opérateur à la recommandation sur 34 cartes sur 35 (2026-11-01)
-
-### Demande
-- L'opérateur, mot pour mot : « je veuc bien gerer nos autres personnages necessaires pour les integrer aux divers district de la ville car il y a encore des npj generiques, puis integrer aussi les autres combattants en basant sur nos planches generes auparavant pour tout couvrir ». Séance ouverte par une autre séance (`local_94e3af37-…`) ; deux audits tournent à côté, sans branche.
-- Aucune image générée, aucune feuille cuite dans cette passe : le casting seul, et l'archivage de deux planches.
-
-### Le relevé — [OK]
-- **Provisoires** : treize personnes (`PROVISIONAL`, `src/world/PlazaApp.ts`) ; sur les places elles sont des générés ×1 à côté du cast cuit.
-- **Duels** : `buildArenaAtlas` retombe sur `FOES.marek` pour tout rival autre que Marek et Vessa : Orla, Cassius, Ilse, Rhosk et Tobin se battent sous l'art de Marek.
-- **Rhosk et Tobin** n'ont aucune place en ville (ni `PEOPLE`, ni `PLAZA_SPOTS`).
-- **Les textes** ne donnent le genre que d'Anwen (Sœur) et de Hilde (« She stitches it ») parmi les personnes ; ils ne disent aucune couleur de cheveux ou de tenue : celles de `roster.ts` ne servent qu'aux portraits générés.
-- **Texture** : 382 images de production sur 672. Une feuille complète 30, debout 12.
-- **Coût** : les feuilles de Ren, 4,63 $ en neuf requêtes (registre : 2,03 + 2,60).
-- **§ 14** demande 27 à 34 images par rival d'après leurs compétences : Vessa et Cassius 34, Marek, Ilse et Rhosk 32, Orla 29, Tobin 27. Une page ×3 tient 70 cases : Ren à 39 plus un rival à 32 ou 34 dépasse de 1 à 3 : [?] à régler au lot de Marek.
-
-### La fiche — deux versions
-- Page privée https://claude.ai/artifact/NTryUL8JPGubNn2tTW8rkA (source `briefs/fiche-casting.html`). [KO → rebâtie] La version 1 (32 cartes, planches a, b, P, N1, N2, C) n'a pas été remplie. L'opérateur, mot pour mot : « non rebatie la fiche en te basant aussi \sur ces references joints provenant de compte GPT que j'ai genere », avec deux planches : repos, marche et attaques dessinés pour douze figures. Elles ont changé sept figures de rivaux et de personnes sur quinze, et donné une figure à Hilde.
-- Version 2 : 35 cartes, collection `decisions` vide à la publication, relue par `list` : 35 documents, cliqués le 01/11 entre 19 h 42 et 19 h 49 UTC, aucune note. Message de l'opérateur, mot pour mot : « Fiche remplie ».
-
-| # | Décision | Choix de l'opérateur |
-|---|---|---|
-| A1 | Archiver G1, G2 | « Archiver, je cherche les PNG d'origine » |
-| A2 | Cedric, Lion | « Figures seulement, noms du jeu gardés » |
-| C1 | Casting et G1, G2 comme sources de production | « Oui, comme les planches PNJ » |
-| C2 | Portée | « Version 2 seule, quartier inchangé » |
-| C3 | Couleurs | « La planche fait foi » |
-| T1 | Texture | « Debout, sauf Marek et Orla » |
-| R-marek | Marek | « G1 panneau 3 » |
-| R-vessa | Vessa | « a n° 11 Duelist » |
-| R-orla | Orla | « G1 panneau 5 » |
-| R-cassius | Cassius | « G2 n° 06 Rival » |
-| R-ilse | Ilse | « G2 n° 03 Prêtresse » |
-| R-rhosk | Rhosk | « G1 panneau 6 » |
-| R-tobin | Tobin | « G2 n° 01 Cedric » |
-| R-ville | Tobin, Rhosk en ville | « Portrait seulement » |
-| P-odo | Odo | « G2 n° 04 Organisateur » |
-| P-anwen | Anwen | « P n° 11 Prêtresse » |
-| P-hilde | Hilde | « G2 n° 05 Marchande itinérante » |
-| P-corvin | Corvin | « G2 n° 02 Lion » |
-| P-brann | Brann | « P n° 05 Capitaine des Gardes » |
-| P-pip | Pip | « b n° 19 Traveling Merchant » |
-| P-lio | Lio | « N2 n° 23 Tavern Owner » |
-| P-wren | Wren | « P n° 06 Héraut » |
-| N0 | Ce qu'on garde | « D'accord » |
-| N1 à N5 | Marchand N1 n° 01, voyageuse N1 n° 08, dame noble N1 n° 10, garçon N1 n° 11, fillette N1 n° 12 | « Cuire », chacun |
-| N6 | Le reste de la série | « En réserve » |
-| N7 | Trois panneaux de G1 sans rôle | **« Leur donner un rôle (en note) », note vide** |
-| X1 | Feuilles ×3 | « Les sept rivaux » |
-| X2 | Ordre | « Marek, Vessa, Orla, Cassius, Ilse, Rhosk, Tobin » |
-| X3 | Poses de charge | « Ren seul, avant Marek » |
-| X4 | Armes | « Planche, puis texte pour Vessa, Ilse et Tobin » |
-| X5 | Plafond | « Une tâche de 5 $ par combattant » |
-
-- [?] **N7 reste ouverte** : le choix demande une note et la note est vide. La dame noble au bâton, le mage à la lanterne et la version du héros attendent la réponse de l'opérateur ; rien n'est cuit pour eux.
-- R-marek vaut la confirmation de planche exigée après la Passe RC3 : Marek = G1 panneau 3, environ 3,4 têtes à la règle. La génération de ses feuilles ×3 reste à lancer depuis le dossier principal : `.env.local` n'existe pas dans ce worktree, et il n'est pas copié.
-
-### Fait — [OK]
-- `combat-casting-2026-11-01-g1.webp` et `-g2.webp` archivés à l'octet dans `art-lab/characters/reference/sources/` avec leur fiche (SHA-256 `91dffa0c…`, `aefcba3f…`) ; ce sont des WebP réencodés sans C2PA, les PNG d'origine sont à retrouver par l'opérateur (A1).
-- Les six fiches des planches de casting reçoivent un champ `productionUse` daté (C1) ; leurs autres champs ne changent pas.
-- `art-lab/characters/reference/README.md` : les deux planches. `npm run art:validate`.
-
-### Restes [?]
-- Les citadins et personnes ne marchent que debout, sauf Marek et Orla : le plan monte à 748 images, 666 si les places ne chargent ni Mara ni Bram, sous les 672 garanties, marge 6.
-- La tâche se poursuit par lots : feuilles de ville ×2, places et portraits, puis feuilles ×3 dans l'ordre X2. Rien en production sans fiche de lot.
-
-### Pensée
-- Une fiche de casting se bâtit sur toutes les références que l'opérateur a, pas sur celles du dépôt : demander avant la première version s'il en existe d'autres. Deux planches jointes après coup ont changé la moitié des figures.
-- Un choix qui renvoie à une note se relit avec sa note : une note vide est une question ouverte, pas un choix.
-
-## Passe CA2 — Premier lot du casting : quinze feuilles de ville candidates, sur les places derrière `cast=candidate` (2026-11-01)
-
-### Demande
-- Suite de la Passe CA1. Lot 1 : les treize personnes provisoires, plus Tobin et Rhosk pour leur portrait. Aucune image générée, rien en production : tout reste `candidate`, `runtimeUse: "lab"`, jusqu'à la fiche de lot de l'opérateur.
-
-### Fait — [OK]
-- `art-lab/characters/rigs/lib/standing.mjs` : la recette commune, une feuille debout de 12 images ; `walk` y ajoute 18 images pour Marek et Orla (T1). Leur profil vient de la rangée de marche dessinée de G1, reconstruite image par image à son propre pas (la rangée de marche est dessinée à 0,78 de la rangée de repos) et ramenée sur la palette des vues ; face et dos par la marche du garde.
-- Quinze rigs, quinze paquets (`provenance/<id>/PROVENANCE.json`), quinze manifestes `candidate`. Total : 216 images (13 × 12 + 2 × 30). Le rig d'Orla ne garde que quatre images de marche sur six, jouées dans l'ordre 3, 4, 5, 6, 3, 4 : ses deux premières tiennent une épée qui disparaît ensuite.
-- `src/lab/plazaCast.ts`, en DEV seulement : `cast=candidate` sur une place remplace chaque `prov-<personne>` par sa feuille et les portraits par leur visage. `BakedCast.ts` : `still`, une feuille sans marche est acceptée pour celles qui le déclarent ; aucune entrée de production ne l'utilise.
-
-### La séparation du fond — trois essais sur les planches grises
-- [KO] `bgThreshold` 90 : a mangé les cheveux gris d'Odo et la cape bleue de Cassius.
-- [KO] `--holes` : a percé l'acier et les visages, gris comme le fond.
-- [OK] `bgThreshold` 50 sans `--holes`, puis trois nettoyages dans le rig : la plus grande partie connexe, l'ombre au sol, les texels isolés.
-- [KO → corrigé] Deux vues entières sortaient en rectangle sombre : le coin de leur cadre tombait sur un libellé (Vessa) ou sur un filet de planche (Pip), et ce coin sert de couleur de fond.
-- [KO → corrigé] Le centrage sur les pieds sortait un personnage du cadre quand une cape ou un sac dépassait d'un côté : la figure reste dans le cadre, ses pieds un peu hors de l'axe.
-
-### La critique à l'aveugle
-- Un agent neuf, feuilles et places en images, sans connaître les attentes : taille et palette tiennent à côté du cast, **pas la propreté**. Lio 8 ; Anwen et Cassius 6,5 ; Odo et Rhosk 6 ; Brann et Ilse 5,5 ; Hilde et Pip 5 ; Corvin et Tobin 4. Il a aussi vu des contours clairs en scène et Pip délavé sur la place au soleil.
-- Corrigé après son verdict : texels isolés et brins d'un texel retirés, ombres au sol, restes des vues voisines.
-- **Seconde critique**, agent neuf, rendu refait : Odo, Corvin, Lio et Rhosk 8 ; Anwen, Brann et Marek 7 ; Hilde, Wren, Vessa, Ilse, Cassius et Orla 6 ; Pip et Tobin 5. « L'ensemble tient à côté des personnages existants », avec une réserve sur les cas faibles et un tampon gris sous Hilde et Orla. Corvin passe de 4 à 8, Tobin de 4 à 5, Pip reste à 5. Marek ressemble à Odo (gris, bleu et or) ; Orla est très saturée sur les places.
-- [KO → corrigé] Le tampon gris était le fond même de la planche, enfermé entre les jambes : retiré par sa couleur pour Hilde et Orla seulement, leurs jambes n'ayant pas d'acier du même gris. Cette dernière retouche n'a pas repassé de critique.
-
-### Les preuves
-- `npm run typecheck`, `npm test` **305 / 305** (6 de plus, `tests/plaza-cast.test.mjs`), `npm run build`, `npm run art:validate` (34 manifestes, 42 sources, 0 erreur).
-- **0 px** au seuil 0 contre `main` figé (`be8b340`) sur sept vues : ville de nuit et à midi, trois places sans le paramètre, arène par défaut et `v2=1`. Contrôle négatif : `cast=candidate` sur le parvis change 45 921 px.
-- Paquet de production : aucune feuille candidate, aucun code de `plazaCast`.
-- `build-character.mjs --check` : les quinze feuilles reconstruites à l'identique.
-
-### Restes [?]
-- La fiche de lot de l'opérateur, page privée https://claude.ai/artifact/6X4cYQuL3BZdZbq2YKGcqY (source `briefs/fiche-casting-lot1.html`, 17 cartes, N7 reposée, `decisions` vide à la publication), puis l'entrée en production derrière `flags.v2`. Sur une place, `cast=candidate` n'a pas besoin de retirer Mara ni Bram pour ces quinze feuilles (598 images) ; il le faudra avec les cinq citadins.
-- Vessa et Pip sont petits sur leur planche (125 et 119 px) : leur détail reste en dessous des autres.
-- N7 et les PNG d'origine de G1 et G2 attendent toujours l'opérateur.
-- Les citadins (lot 2), puis Ren et les feuilles ×3 dans l'ordre X2.
-
-### Pensée
-- Sur un fond gris, une option qui remplit « ce qui ressemble au fond » retire aussi l'acier, le gris des cheveux et les ombres d'une cape : le seuil se règle sur le personnage le plus proche du fond, et le reste se nettoie depuis le bord seulement.
-- Le coin d'un recadrage décide de la couleur de fond : il se regarde comme un pixel de la figure.
 
 ## Passe CA3 — Lot 1 relu : les têtes agrandies, les emblèmes retirés, huit feuilles en production sur la version 2 (2026-11-01)
 
@@ -488,6 +381,90 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une note sur une carte de décision peut changer le sens du choix : elle se tranche par une question avant d'appliquer, même quand le choix est à la recommandation.
 - Une date de relecture sur une page qui réécrit ses données à l'ouverture dit quand la page a été ouverte, pas quand on a décidé : c'est le contenu qu'on relit.
 
+## Passe CX3 — Les six derniers rivaux : feuilles construites, en labo, avant leurs fiches (2026-11-01)
+
+### Demande
+- Suite de la Passe CX2, CX-S1 « Même recette ». Branche `combat-x3-lot2` depuis `main` (`bd05da3`). Lots : Vessa et Orla, Cassius et Ilse, Rhosk et Tobin.
+
+### Fait — [OK]
+- Six feuilles `lab`, générées et construites, en duel derrière `fighterdensity=combat&foe=<id>` : Vessa 34 images (six requêtes, 2,37 $), Orla 29 (quatre, 1,65 $), Cassius 34 (cinq, 2,06 $), Ilse 32 (cinq, 1,98 $), Rhosk 32 (quatre, 1,65 $), Tobin 27 (quatre, 1,58 $). Tâches `<id>-x3-combat`, une requête à la fois, chacune sous son plafond de 5 $.
+- Les leçons de Marek entrées dans les invites : coups à hauteur de corps, cape basse, étourdi affaissé, lame entière à la victoire, la lame jamais derrière la tête.
+- Les armes : Orla ses deux épées et Rhosk sa hache d'après leurs planches ; Cassius l'épée de sa planche ; Vessa la lame fine, Ilse l'épée, Tobin l'épée courte usée d'après le texte (X4). Rampe d'acier ajoutée aux palettes (`STEEL_RAMP`, `rig.EXTRA`) : leurs feuilles de ville n'ont pas d'arme, une lame sortait rose.
+- **Têtes** : la note de l'opérateur sur Marek (1,3 « un petit peu trop grosse ») donne des agrandissements plus légers, réglés sur la mesure contre la feuille de ville à même échelle : Vessa 1,2, Orla 1,1, Cassius 1,15, Ilse 1,2, Rhosk 1 (sa nouvelle figure a déjà la bonne tête), Tobin 1,15. Hauteurs à 2 % des feuilles de ville ; largeur de tête de 0,96 à 1,10 fois, Ren 1,02 et Marek 1,07. Rhosk mesure 1,24, son col de fourrure compté dans la mesure.
+- Les feuilles approuvées de Ren et de Marek ne changent pas : `build-combat --check` identique après les changements de la bibliothèque.
+
+### Ce qui a raté
+- [KO → corrigé] La tête agrandie courbait une lame fine qui passait près d'elle (Vessa, `strike.0`, `skillSup.1`), vu par la critique : `growHead` laisse désormais l'acier à sa place et prend pour le disque la couleur voisine.
+- [KO → corrigé] Un script d'ajustement écrit par heredoc a perdu ses antislashs sans erreur : les pas n'avaient pas changé, Ilse restait à 85 % de sa taille. La mesure à la ligne l'a montré. Ce qui passe par le shell se vérifie sur le résultat.
+- [KO → corrigé] Le tri des figures par rangée, à seuil fixe, a mélangé les rôles de Rhosk : la figure debout a pris la place de la préparation.
+
+- [KO → corrigé] `heavy.0` : une lame basse prise pour le pied arrière plaçait la figure 45 à 50 texels en avant de ses voisines, vu par deux critiques. `solesMid` lit les semelles en remontant depuis la dernière rangée ; [KO] cela n'a pas suffi pour Cassius, Rhosk et Tobin, dont la hanche est épinglée sur cette figure.
+- [KO → corrigé] La protection de l'acier abîmait le voile ivoire d'Ilse, aussi clair et neutre qu'une lame : fentes et bandeau brisé. Elle est retirée pour elle.
+- [KO → corrigé] Le nettoyage des images d'une fiche par regex a supprimé les feuilles des animations (`x3` contient un chiffre).
+
+### Les critiques à l'aveugle — trois agents neufs
+| Rival | Propreté | Fidélité | Proportions | Poses | Nuit | Midi | Verdict |
+|---|---|---|---|---|---|---|---|
+| Orla | 8 | 8,5 | 8 | 7 | 6 | 6,5 | avec corrections |
+| Vessa | 7,5 | 8,5 | 7,5 | 6,5 | 5 | 7,5 | avec corrections |
+| Cassius | 7,5 | 8,5 | 8 | 6,5 | 6 | 7 | avec corrections |
+| Ilse | 6 | 8 | 6,5 | 6,5 | 8,5 | 6,5 | seulement corrigée |
+| Rhosk | 7,5 | 8,5 | 8 | 7 | 5,5 | 8,5 | avec corrections |
+| Tobin | 7,5 | 6,5 | 6,5 | 6,5 | 5 | 7,5 | avec corrections |
+
+- Repris ensuite : la charge d'épaule d'Orla, lue comme un coup de tête ; le Brace, l'armé, la montée et la victoire de Vessa ; la frappe et le salut de Cassius, qui visait l'adversaire ; la victoire sans visage, l'étourdi trop grand et l'épée perdue d'Ilse ; la compétence défensive de Rhosk ; la frappe sans appui et le soutien de Tobin, qui se masquait le visage. Ces versions finales n'ont pas repassé de critique : les fiches le disent par leurs réserves.
+- Restes relevés, gardés : le violet de Vessa et le bleu de Cassius se fondent dans l'indigo de nuit ; le rouge d'Orla vire à l'orange à midi ; sur l'attaque légère de Rhosk la hache paraît courte ; les compétences touchent bas tandis que l'éclat de l'impact reste à la poitrine, comme pour Marek.
+
+### Les fiches — à remplir par l'opérateur
+- Trois fiches courtes, deux cartes chacune, collection `decisions` vide à la publication, rendu vérifié en local :
+  - lot 2, Vessa et Orla : https://claude.ai/artifact/V7akjyFMavYYGFFv3Pb6dk ;
+  - lot 3, Cassius et Ilse : https://claude.ai/artifact/Q9WAdJ2HSqF2tPAzscYAmC ;
+  - lot 4, Rhosk et Tobin : https://claude.ai/artifact/6j3Jht6nnBnk4K4bV9x4E8.
+
+### Où reprendre
+- Relire les trois fiches ; ajouter à `src/arena/CombatCast.ts` (ses quatre motifs `{hero,marek}`) les feuilles approuvées ; manifestes, paquets et sources comme en Passe CX2 ; refaire les preuves 0 px sur les paquets de production, `play-flow` et le GPU ; vérifier dans la page, rival par rival et moment par moment, qu'aucune clé `marek/side/...` ne reste une image générée ; retirer le fallback de la Passe CX2 dans le journal ; `guardContact` et son commentaire sur « l'art de Marek » dans `src/arena/fx/combatFx.ts` ; `AGENTS.md` et les README.
+
+### Restes [?]
+- Tant que leurs feuilles ne sont pas approuvées, ces six rivaux gardent leur art généré dans les duels.
+
+### Pensée
+- Une correction locale sur la source touche tout ce qui passe à côté : à tester sur les figures où un objet croise la zone.
+
+## Passe CX4 — Les trois fiches relues : les sept rivaux en production, chacun sous sa propre figure (2026-11-01)
+
+### Demande
+- L'opérateur, mot pour mot : « Fiches remplies ». Relues dans les trois collections `decisions`, cliquées le 2026-11-02 entre 04:10 et 04:12 UTC (l'horloge du service) : **CX-Vessa, CX-Orla, CX-Cassius, CX-Ilse, CX-Rhosk et CX-Tobin, toutes les six « Production »**, notes vides.
+- La séance mère, pour ces fiches : branche reportée sur `main` sans push forcé, journal dans le même commit, preuves, fusion quand la validation passe.
+
+### Fait — [OK]
+- **Report sur `main`** : `combat-x3-lot2` partait de `bd05da3` et `main` avait reçu la Passe UM1. Branche `combat-x3-rivals` depuis `6cafd14`, les fichiers de `combat-x3-lot2` repris tels quels (seul `JOURNAL.md` se recoupait), la Passe CX3 réinsérée après UM1. Aucun push forcé.
+- **Six feuilles en production** : `approved: true`, `runtimeUse: production`, le mot de l'opérateur dans chaque manifeste, chaque paquet de provenance à jour, leurs sources archivées passées de non canoniques à approuvées à travers leur feuille. `src/arena/CombatCast.ts` charge les huit feuilles (Ren et les sept rivaux), à la demande, par un duel aux règles de la version 2 seulement. `cast=generated` garde les combattants générés pour comparer.
+- **Plus aucun art de Marek emprunté** : dans un duel de la version 2, chaque image des deux combattants vient de leur feuille, `cast=generated` mis à part. Le repli de `CombatCast` (un rival sans feuille garde son art généré) reste pour un rival hors des sept, aucun aujourd'hui. Le quad coupé de la Passe CX2 ne peut plus rogner une lame générée en duel, sauf sous `cast=generated`.
+- **La preuve** : `tools/arena-sheet-proof.mjs`, chaque rival dans sa page, les 32 moments puis 60 s de duel simulé, l'image des deux combattants lue à chaque pas. `tools/play-flow.mjs` vérifie désormais, dans une partie de la version 2, la feuille portée par chaque combattant.
+
+### Preuves
+- `tools/arena-sheet-proof.mjs` sur le serveur DEV, relancé sur l'état final : **sept rivaux sur sept, 0 image hors feuille**, deux feuilles `production` par duel, visages 32 x 32 dans le HUD ; à midi, une passe plus tôt, pour Vessa et Tobin seulement. Contrôle négatif, `--q=cast=generated` sur Orla, 10 s : code de sortie 1, 2464 images hors feuille.
+- **Paquets de production contre `main` figé** (`6cafd14`, seuil 0, 1920 x 1080) : **0 px** sur neuf vues d'arène (la nuit, midi, `combat=dynamic`), sur `v2=1` avec Marek et sur `v2=1&cast=generated`. Ville et midi : 42 et 416 px, tous dans le bandeau de mesure du panneau `[1647, 1069, 1908, 1076]`, déjà vu différer entre deux chargements de `main` lui-même (346 px, Passe CX2). Contrôle négatif : 7,512 % entre la version 2 et `cast=generated` sur la même capture.
+- Le lot 1 étant sur `main`, `v2=1` ne change pas (rival Marek) : les rivaux ne se comparent pas à `main` en pixels, ils se prouvent par la feuille portée.
+- **`play-flow` sur le paquet de production** : défaut `win` passé ; `V2=1` : `win 1842 2` Vessa, `lose 1842 4` Orla, `win 1842 5` Cassius, chacun avec `hero-x3-combat production` et la feuille du rival, empreinte du navigateur égale au rejeu Node. `arena-scene-check "v2=1"` : code de sortie 0.
+- **GPU** (Radeon 780M, 1080p, une seule séance, serveur DEV, trois manches) : nuit B 9,28 ms, duel de Marek 8,32, de Cassius 7,99, de Rhosk 7,93, Cassius à midi 7,06. Un autre programme utilisait le même GPU sur une partie des manches : ces chiffres sont les manches propres, deux sur trois pour la nuit B, une sur trois pour chaque duel. Cassius a 73 cases, le plus haut du casting avec Vessa, et sa texture a la taille de celle de Marek (1920 x 2040). Sous la nuit B, sur une seule manche propre.
+- `npm run typecheck` et `npm run build` passés ; `npm test` : 318 tests, 318 passés ; `npm run art:validate` : 61 manifestes, 85 sources archivées, 0 erreur ; `build-combat --check` sur les huit feuilles : toutes reconstruites à l'identique.
+
+### Ce qui a raté
+- [KO → commande fautive] `V2=1 play-flow win 7 6` a donné 4 contrôles en échec : la table de l'outil ne connaît que les jours 2, 4 et 5, et la demi-finale du jour 6 n'y est pas (adversaire, titre, nombre de combats). Le combat lui-même s'est joué, sous Vessa, avec la même empreinte que Node. Relancé sur les jours de la table.
+- [KO → corrigé] Le contrôle négatif prévu (`v2=1` contre `main`) ne pouvait plus différer : Ren et Marek sont sur `main` depuis la Passe CX2. Remplacé par la capture des feuilles contre `cast=generated`.
+- [KO → corrigé] `arena-sheet-proof --q=cast=generated` ne s'appliquait pas : l'option coupait sur le premier `=`, donc le contrôle négatif passait. Tant qu'il n'échoue pas, une preuve ne prouve rien.
+
+### Restes [?]
+- Le paquet de production n'a joué que Vessa, Orla et Cassius : Marek, Ilse, Rhosk et Tobin viennent en phase finale selon le tableau. Ils sont prouvés sur le serveur DEV, leurs PNG sont dans le paquet, et le test `combat-cast` vérifie leurs huit motifs.
+- La preuve ne montre pas toutes les images d'une feuille : de 23 à 27 par rival (Marek 25 sur 32, Cassius 27 sur 34, Tobin 23 sur 27), 24 ou 25 des 39 de Ren. Celles qui manquent n'ont pas été vues dans le duel par l'outil.
+- Les versions finales des rivaux n'ont pas repassé de critique à l'aveugle (Passe CX3), et l'opérateur les a approuvées sur leurs réserves : le violet de Vessa et le bleu de Cassius dans l'indigo de nuit, le rouge d'Orla qui vire à l'orange à midi, la hache courte de Rhosk sur l'attaque légère, l'éclat d'impact à la poitrine sur des compétences qui touchent bas.
+- `vessa-x3-combat` était `lab` à la Passe CX2 : il est ici en production, par sa fiche. Rien d'autre du casting ×3 n'attend de décision.
+
+### Pensée
+- Quand un lot précédent est déjà sur `main`, le contrôle négatif d'hier devient un 0 px d'aujourd'hui : il faut le réécrire, pas seulement le relancer.
+- La table d'un outil dit ce qu'il sait vérifier : un échec hors de sa table parle de la commande, à lire avant de conclure sur le code.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -503,7 +480,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **0c. Séance cloud « Version 2 » (Passe AV1)** : mandat fixé par la fiche de l'opérateur (19 choix), brief `briefs/cloud-session-v2-brief.md`, lots V0 à V10 derrière `flags.v2`, le défaut inchangé ; la commande chargée décidée en A3 (AV-5) ; Marek en pause jusqu'à la nouvelle commande (AV-10) ; la séance part en exception à la règle d'une branche (AV-18) : la branche locale `marek-combat-x3` est devenue `ren-cut-x3`, fusionnée et supprimée (Passe RC3). Après elle, en local : mesures GPU, revue visuelle des districts, poses de charge, personnages à cuire.
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
-  - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge (§ 14 de la spécification) pour Ren et Vessa, la feuille de Marek à reprendre (AV-10).
+  - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge de Ren et la feuille de Marek sont faites (Passes CX1, CX2 ; X3 « Ren seul, avant Marek » : pas de poses de charge pour Vessa).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
   - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
@@ -552,7 +529,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
-- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Les cinq citadins sont en production (Passe CA7). Ren (39 images) et Marek (32) sont en production dans les duels de la version 2 (Passe CX2) ; restent Vessa, Orla, Cassius, Ilse, Rhosk et Tobin, par lots courts, même recette, tête à 1,2. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2.
+- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Les cinq citadins sont en production (Passe CA7). Ren (39 images) et les sept rivaux (Marek 32, Vessa 34, Orla 29, Cassius 34, Ilse 32, Rhosk 32, Tobin 27) sont en production dans les duels de la version 2 (Passes CX2, CX4), chacun sous sa figure, plus aucun art de Marek emprunté. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2.
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantissait 336 images et en porte 322 (dix feuilles,
@@ -726,7 +703,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -1102,3 +1079,5 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   (la luminance moyenne d'une bande du cadre contre la référence) avant d'être corrigée, et après (Passe VP9).
 - Une faute injectée qui passe dit ce que le test ne garde pas : la place de la caméra des lices ne bornait pas le côté du rempart ; un test
   de place se borne sur chaque côté que la caméra ne doit pas franchir (Passe VP9).
+- Quand un lot précédent est déjà sur `main`, le contrôle négatif d'hier devient un 0 px : il se réécrit, il ne se relance pas ; et tant qu'il n'échoue
+  pas, une preuve ne prouve rien (`--q=cast=generated` ignoré, Passe CX4).

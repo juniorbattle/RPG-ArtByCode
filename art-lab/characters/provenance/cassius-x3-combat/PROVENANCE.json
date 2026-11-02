@@ -1,0 +1,50 @@
+{
+ "id": "cassius-x3-combat",
+ "status": "APPROVED PRODUCTION ASSET (operator, combat lot sheet 3, journal Passe CX4), not declared a Gold Master",
+ "request": {
+  "date": "2026-11-01",
+  "by": "operator (git user wonmii): casting sheet of journal Passe CA1: R-cassius « G2 n° 06 Rival », X1 « Les sept rivaux », X2 « Marek, Vessa, Orla, Cassius, Ilse, Rhosk, Tobin », X4 « Planche, puis texte pour Vessa, Ilse et Tobin », X5 « Une tâche de 5 $ par combattant »"
+ },
+ "approvals": [
+  {
+   "by": "operator (git user wonmii)",
+   "date": "2026-11-01",
+   "note": "APPROVED FOR PRODUCTION by the operator on the combat lot sheet 3 (journal Passe CX4): « Production » (CX-Cassius); version 2's duels only, today's game unchanged."
+  }
+ ],
+ "source": {
+  "sheets": {
+   "description": "5 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task cassius-x3-combat); references: the approved clean figure casting-clear-2026-11-01-a.png and the casting panel, and Ren's sheets for the layout only",
+   "files": [
+    "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-a.png",
+    "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-b.png",
+    "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-c.png",
+    "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-d.png",
+    "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-e.png"
+   ]
+  },
+  "figure": "casting-clear-2026-11-01-a.png"
+ },
+ "chain": [
+  "per figure: the figure alone on its sheet -> reconstruct-grid.mjs at the sheet's pitch (a standing figure's height over the rows of the town sheet's side idle at x3) -> the green peeled -> nearest OKLab colour of the approved town sheet's palette (pinned) -> loose texels removed -> the hips on column 96, cropped to the cell; a cell that moved the body off the axis is recorded in the JSON's meta.pushed; the loops' second frames by rig-engine's breath, the guard's « encaisse » by a shear (lib/combat.mjs)"
+ ],
+ "rebuild": "node tools/art-lab/build-combat.mjs art-lab/characters/rigs/cassius-x3-combat.rig.mjs --check",
+ "files": {
+  "art-lab/characters/exports/cassius-x3-combat.png": "f14e47904fe5ff313b4807dbf3b77a667d7d6697b3e72b568e89f205b4a64804",
+  "art-lab/characters/exports/cassius-x3-combat.json": "c2d10c73695544e1cdaeb0c361d7aff4f850da7c8236180f51af908efd22613a",
+  "art-lab/characters/source/cassius-x3-combat.aseprite": "9ae64d3cb7d5315268b233fa3d54360e6767d6d9035ca0ee401f7607a79f00d0",
+  "art-lab/characters/provenance/cassius-x3-combat/build.json": "2ca595eb2d0db1cb1f78151d6993b3dac6c608b74158f78eb43fb9b8411790f7",
+  "art-lab/characters/exports/cassius-x2-v2.png": "f24845f974ba0c4135aa560339707744690d7a112295af913f1c060e98a8c4b1",
+  "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-a.png": "49d236d2c730fa4827d1f96666ec340a163eca4437e9484a769fcf44ddc07540",
+  "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-b.png": "bdd4c721b8c7cddf937d5d0b5314197fa710db4f3f7bfed0766f46330805bc6a",
+  "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-c.png": "3bdce212283f443d832fedad64189aa5474b3a53eddae13e369642b28a1723ad",
+  "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-d.png": "4b2314ba7fcf02b245f94af849fcfa5567955648110c2a454f5504174055d17c",
+  "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-e.png": "dd6e18eadeed25aa2ae354dccbaf4f28e815196720ddc59350d121dd8b19b786",
+  "art-lab/characters/rigs/cassius-x3-combat.rig.mjs": "cd19b4624c0f77ecec7a3ab81445cbfbd709093229d41425769de2ea9b483fe1",
+  "art-lab/characters/rigs/lib/combat.mjs": "28e3b8ff08cb884b1f86d62fc7d589fc1cfd841b8a3f9382e1dbaeed893c3a5c",
+  "tools/art-lab/build-combat.mjs": "0dd3d9f77a5b362362c9f937654c7787290d9f39dcc3f5f038f5cc3901281d7f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

@@ -13,45 +13,53 @@
   1152,
   1728
  ],
- "colours": 48,
+ "colours": 53,
  "palette": "art-lab/characters/exports/vessa-x2-v2.png",
  "sheets": {
   "a": {
    "path": "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-a.png",
-   "pitch": 2.3333
+   "pitch": 2.4889
   },
   "b": {
    "path": "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-b.png",
-   "pitch": 2.3333
+   "pitch": 2.4889
   },
   "c": {
    "path": "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-c.png",
-   "pitch": 2.3333
+   "pitch": 2.4889
   },
   "d": {
    "path": "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-d.png",
-   "pitch": 2.5583
+   "pitch": 2.7289
+  },
+  "f": {
+   "path": "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-f.png",
+   "pitch": 2.4889
+  },
+  "e": {
+   "path": "art-lab/characters/reference/sources/vessa-combat-x3-2026-11-01-e.png",
+   "pitch": 2.4889
   }
  },
  "placement": {
   "idle": {
-   "hips": 210,
+   "hips": 208,
    "pushed": 0,
    "lifted": 0
   },
   "ready": {
-   "hips": 221,
-   "pushed": 3,
+   "hips": 218,
+   "pushed": 0,
    "lifted": 1
   },
   "windup": {
-   "hips": 185,
+   "hips": 169,
    "pushed": 0,
    "lifted": 0
   },
   "cut": {
-   "hips": 219,
-   "pushed": 17,
+   "hips": 217,
+   "pushed": 10,
    "lifted": 0
   },
   "follow": {
@@ -60,7 +68,7 @@
    "lifted": 0
   },
   "guard": {
-   "hips": 186,
+   "hips": 187,
    "pushed": 0,
    "lifted": 0
   },
@@ -70,77 +78,77 @@
    "lifted": 0
   },
   "recovery": {
-   "hips": 211,
+   "hips": 210,
    "pushed": 0,
    "lifted": 1
   },
   "gather": {
-   "hips": 177,
+   "hips": 199,
    "pushed": 0,
-   "lifted": 1
+   "lifted": 0
   },
   "raise": {
-   "hips": 177,
+   "hips": 202,
    "pushed": 0,
    "lifted": 0
   },
   "cleave": {
-   "hips": 213,
-   "pushed": 0,
+   "hips": 220,
+   "pushed": 1,
    "lifted": 0
   },
   "through": {
-   "hips": 209,
+   "hips": 199,
    "pushed": 0,
    "lifted": 0
   },
   "stunned": {
-   "hips": 198,
+   "hips": 197,
    "pushed": 0,
-   "lifted": 0
+   "lifted": 1
   },
   "fall": {
-   "hips": 217,
+   "hips": 188,
    "pushed": 0,
    "lifted": 0
   },
   "kneel": {
-   "hips": 193,
+   "hips": 180,
    "pushed": 0,
    "lifted": 0
   },
   "ground": {
-   "hips": 217,
-   "pushed": 3,
-   "lifted": 1
-  },
-  "offPrep": {
    "hips": 190,
    "pushed": 0,
    "lifted": 0
   },
+  "offPrep": {
+   "hips": 191,
+   "pushed": 0,
+   "lifted": 0
+  },
   "offSurge": {
-   "hips": 233,
-   "pushed": 9,
+   "hips": 230,
+   "pushed": 2,
    "lifted": 0
   },
   "offHit": {
-   "hips": 245,
-   "pushed": 39,
+   "hips": 222,
+   "pushed": 9,
    "lifted": 0
   },
   "offBack": {
-   "hips": 203,
+   "hips": 202,
    "pushed": 0,
    "lifted": 1
   },
   "defPrep": {
-   "hips": 198,
+   "hips": 202,
    "pushed": 0,
    "lifted": 0
   },
   "def": {
-   "hips": 195,
+   "hips": 200,
    "pushed": 0,
    "lifted": 0
   },
@@ -150,27 +158,27 @@
    "lifted": 0
   },
   "victory": {
-   "hips": 187,
+   "hips": 189,
    "pushed": 0,
    "lifted": 1
   },
   "supPrep": {
-   "hips": 179,
+   "hips": 184,
    "pushed": 0,
    "lifted": 0
   },
   "sup": {
-   "hips": 181,
+   "hips": 187,
    "pushed": 0,
    "lifted": 0
   },
   "supBack": {
-   "hips": 206,
+   "hips": 205,
    "pushed": 0,
    "lifted": 0
   },
   "hop": {
-   "hips": 153,
+   "hips": 155,
    "pushed": 0,
    "lifted": 0
   },
@@ -181,8 +189,8 @@
   }
  },
  "exports": {
-  "png": "9623fd68b4524940c2fa141c01f564979b842831949b5da0ec3a9b0481d1fe4b",
-  "json": "10656672359108a50819a0e273a685ae3092c54e2f5eff2c447fb12e37861520",
-  "aseprite": "a7a8c64c20dcc007013e2a24ca1ebd61fe9391bbfd5ff1731c6a3daa6744b1ca"
+  "png": "34ab265c12ade3b47cbe28a688415b813427a417c2a976041ff26e8d22dbbfd6",
+  "json": "7c325bde3cf3950787aa7373093dd441b1a1d2677a370a8836030a7b26437d67",
+  "aseprite": "3b573f6cca7e8bc3327d21922601e7e2680510c8f1c365c5e4701f177d969cd5"
  }
 }

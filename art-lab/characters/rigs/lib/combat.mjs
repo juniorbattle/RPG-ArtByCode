@@ -84,7 +84,7 @@ export function reconstructFigures({ id, palette, sheets, figures, bgThr = 40, t
   try {
     for (const [name, f] of Object.entries(figures)) {
       const { im, bg } = isolate(loaded[f.sheet], f.box, bgThr), file = path.join(tmp, `${name}.png`), pre = path.join(tmp, name);
-      R.save(file, f.head ? growHead(im, { c: f.head.slice(0, 2), r: f.r ?? head.r, dir: ((f.head[2] ?? 90) * Math.PI) / 180 }, head.s) : im);
+      R.save(file, f.head ? growHead(im, { c: f.head.slice(0, 2), r: f.r ?? head.r, dir: ((f.head[2] ?? 90) * Math.PI) / 180, blade: !!head.blade }, head.s) : im);
       execFileSync(process.execPath, [path.join(ROOT, 'tools/art-lab/reconstruct-grid.mjs'), file, (f.head ? grownBox(f, f.r ?? head.r, head.s) : f.box).join(','), String(f.pitch ?? sheets[f.sheet].pitch), String(WIDE), String(FRAME.H), String(FRAME.FOOT), pre, 'full', '--holes', '--no-shadow', `--closing-from=${CLOSING}`, ...(tint ? [`--bg-threshold=${bgThr}`] : [])], { stdio: 'ignore' });
       const rep = JSON.parse(fs.readFileSync(`${pre}.json`, 'utf8'));
       if (rep.clipped) throw new Error(`${name}: ${rep.clipped} texels clipped by the ${WIDE}-wide frame`);
@@ -93,18 +93,24 @@ export function reconstructFigures({ id, palette, sheets, figures, bgThr = 40, t
   } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
   return out;
 }
+/** a blade's pixel on a sheet: light and without colour */
+const bright = (im, x, y) => { const q = R.get(im, x, y); if (!q) return false; const [L, a, b] = R.oklab(q); return L > 0.62 && Math.hypot(a, b) < 0.04; };
 /** the head enlarged on the sheet itself, before the reconstruction, so it holds the source's own detail (the town sheets' `head`, journal Passes CA3 / CA4: the clean figures draw smaller heads
  *  than the cast's): the head's disc, centre `c` and radius `r` in sheet pixels, grows by `s` around a centre moved along `dir` (radians, toward the neck, 90 degrees = down) so its chin stays on
- *  the neck, then falls back to the sheet over a quarter of the radius */
-export function growHead(im, { c, r, dir = Math.PI / 2 }, s) {
+ *  the neck, then falls back to the sheet over a quarter of the radius. `blade`: a thin blade near the head would bend with it (blind critique, journal Passe CX3): its bright neutral pixels stay
+ *  where the sheet has them, and the disc takes the colour beside them instead */
+export function growHead(im, { c, r, dir = Math.PI / 2, blade = false }, s) {
   const d = (s - 1) * r, ox = c[0] - Math.cos(dir) * d, oy = c[1] - Math.sin(dir) * d, big = r * s, fall = r * 0.25;
   const o = R.clone(im);
   for (let y = Math.max(0, Math.floor(oy - big - fall)); y <= Math.min(im.H - 1, Math.ceil(oy + big + fall)); y++) for (let x = Math.max(0, Math.floor(ox - big - fall)); x <= Math.min(im.W - 1, Math.ceil(ox + big + fall)); x++) {
     const px = x - ox, py = y - oy, rho = Math.hypot(px, py);
     if (rho >= big + fall) continue;
-    const w = rho <= big ? 1 : 1 - (rho - big) / fall, sx = c[0] + px / s, sy = c[1] + py / s, tx = Math.round(w * sx + (1 - w) * x), ty = Math.round(w * sy + (1 - w) * y);
+    const w = rho <= big ? 1 : 1 - (rho - big) / fall, sx = c[0] + px / s, sy = c[1] + py / s;
+    let tx = Math.round(w * sx + (1 - w) * x), ty = Math.round(w * sy + (1 - w) * y);
+    if (blade && bright(im, tx, ty)) { const near = [[9, 0], [-9, 0], [0, 9], [0, -9], [14, 0], [-14, 0], [0, 14], [0, -14]].find(([a, b]) => !bright(im, tx + a, ty + b)); if (near) { tx += near[0]; ty += near[1]; } }
     for (let k = 0; k < 4; k++) o.px[(y * im.W + x) * 4 + k] = im.px[(ty * im.W + tx) * 4 + k];
   }
+  if (blade) for (let y = Math.max(0, Math.floor(oy - big - fall)); y <= Math.min(im.H - 1, Math.ceil(oy + big + fall)); y++) for (let x = Math.max(0, Math.floor(ox - big - fall)); x <= Math.min(im.W - 1, Math.ceil(ox + big + fall)); x++) if (bright(im, x, y)) for (let k = 0; k < 4; k++) o.px[(y * im.W + x) * 4 + k] = im.px[(y * im.W + x) * 4 + k];
   return o;
 }
 /** the figure's box with room for its grown head, up and forward only where it needs it (the box's corner stands for the background, journal Passe CA2) */
@@ -139,12 +145,25 @@ export function feetMid(im) {
   const [a, b] = big.length === 1 ? [big[0], big[0]] : big.slice(-2);
   return Math.round((a[0] + b[1]) / 2);
 }
+/** the soles' midpoint: on the three lowest rows only, runs at least 8 texels wide: a blade held low over the ground, which feetMid can take for the back foot, stays out of it (blind critique,
+ *  journal Passe CX3: the preparation of the heavy attack sat 50 texels forward of its neighbours); a figure without two soles on the ground (lying, kneeling) falls back on feetMid */
+export function solesMid(im) {
+  const bot = R.bottom(im);
+  // from the lowest row up: a blade's tip can stand lower than the soles
+  for (let up = 0; up <= 14; up++) {
+    const runs = [];
+    for (let x = 0; x < im.W; x++) { let hit = false; for (let y = bot - up - 2; y <= bot - up; y++) { const c = R.get(im, x, y); if (c && !steelLike(c)) hit = true; } if (!hit) continue; const r = runs[runs.length - 1]; if (r && x - r[1] <= 3) r[1] = x; else runs.push([x, x]); }
+    const big = runs.filter((r) => r[1] - r[0] >= 11);
+    if (big.length >= 2) return Math.round((big[big.length - 2][0] + big[big.length - 1][1]) / 2);
+  }
+  return feetMid(im);
+}
 /** the figure's hips on the cell's axis (moved by the least that keeps it inside the cell's transparent ring), cropped to the cell. `report`: per figure the hips' column and how
  *  far the cell pushed the body (a lunge whose blade reaches past the cell's front edge moves its body back in the cell: the figure is shifted until it fits; the image carries that
  *  `push`, and the sheet's metadata with it: the arena moves the sprite by as much, so the body does not jump at the frame) */
-export function place(name, im, hipsAt, report) {
+export function place(name, im, hipsAt, report, feet = feetMid) {
   let a = im.W, b = -1; for (let y = 0; y < im.H; y++) for (let x = 0; x < im.W; x++) if (R.opaque(im, x, y)) { a = Math.min(a, x); b = Math.max(b, x); }
-  const hips = hipsAt ?? feetMid(im);
+  const hips = hipsAt ?? feet(im);
   if (b - a + 1 > FRAME.W - 2) throw new Error(`${name}: ${b - a + 1} texels wide, the cell holds ${FRAME.W - 2}`);
   // left edge a lands on a + AXIS - at >= 1, right edge b on b + AXIS - at <= W - 2
   const at = Math.max(Math.min(hips, a + FRAME.AXIS - 1), b - (FRAME.W - 2 - FRAME.AXIS));
@@ -215,7 +234,7 @@ export const STEEL_RAMP = [[236, 238, 244], [190, 196, 208], [132, 138, 152], [7
 /** a rival's sheet from its figures (journal Passe CX1): the figures carry the roles of the § 14 list, the rig only says who it is and where each figure stands; the clips follow
  *  from the figures it has (`guard`: block; `hop`, `land`: dodge; the three skill families). `hair` on a figure: its head's top row, when a raised hilt stands above it. `height`: its
  *  standing height at x3, its town sheet's side idle (each sheet's pitch from a figure's height in pixels, `stand`). */
-export function rivalRig({ id, palette, height, sheets, figures: fig, head = null, extra = [] }) {
+export function rivalRig({ id, palette, height, sheets, figures: fig, head = null, extra = [], soles = false }) {
   // the head a third of the figure: a head grown by s adds (s - 1) / 3 of the height, the body gives it back
   const body = head ? 2 / 3 + head.s / 3 : 1;
   for (const s of Object.values(sheets)) s.pitch ??= +((s.stand * body) / height).toFixed(4);
@@ -224,7 +243,7 @@ export function rivalRig({ id, palette, height, sheets, figures: fig, head = nul
   const figures = () => reconstructFigures({ id, palette, sheets, figures: fig, bgThr: 60, tint: chromaKey, head, extra });
   const placement = {};
   const frames = (F = figures()) => {
-    const P = Object.fromEntries(Object.keys(fig).map((n) => [n, place(n, despeckle(fig[n].trim ? trimTip(F[n], fig[n].trim) : F[n], 40), fig[n].hips, placement)]));
+    const P = Object.fromEntries(Object.keys(fig).map((n) => [n, place(n, despeckle(fig[n].trim ? trimTip(F[n], fig[n].trim) : F[n], 40), fig[n].hips, placement, soles ? solesMid : feetMid)]));
     const out = [], add = (anim, list) => list.forEach((im, i) => out.push({ anim, dir: 'side', i, im }));
     const T = (n) => fig[n].hair ?? headTop(P[n], 0.015);
     add('idle', [P.idle, breath(P.idle, T('idle')).inhale]);

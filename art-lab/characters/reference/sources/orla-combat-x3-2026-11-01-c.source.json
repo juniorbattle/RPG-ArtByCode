@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "orla-combat-x3-2026-11-01-c.png",
+  "sha256": "3e7af23496fe52dca4636eaa6fda1c9afa384401168d7f4d4bfe8992b1b14c37",
+  "bytes": 1651016,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "APPROVED AS A SOURCE by the operator through the sheet built on it (journal Passe CX4); generated, with no rights beyond those of the tool that made it",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Orla Brask, a young dock worker who fights for the pride of the quay in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Image 2 is an earlier panel of the SAME character; its bottom row shows the character fighting and fixes the weapon and how it is held. Images 3 and 4 are combat sheets of ANOTHER character: they only fix the layout, the SIDE view facing left, the scale and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of Orla, every figure in the SIDE view, FACING LEFT (the face, chest and weapon point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1: red hair in a high ponytail, a clear face with one large eye in profile; a red scarf around the neck and a long red cape on one side; light steel shoulder and arm pieces over a red and ivory tunic; brown leather bracers and a brown belt with a brass buckle; dark stockings and tall brown boots with brass trim. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big head, about three heads tall, a strong compact body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head with its hair about 97 pixels tall.\n\nThe weapon, the same in every figure: two short straight swords, as in image 2, one in each hand: bright steel blades with a darker edge line, each about 110 pixels long at this scale, small brass crossguards, brown leather grips. No scabbard, no shield.\n\n2 rows, in this order, left to right:\nRow 1, her great skill, DOCKSIDE SHOULDER, a shoulder charge, and her guard skill:\n1. DOCKSIDE SHOULDER, PREPARATION: head lowered, the near shoulder turned forward, knees bent, weight on the back foot, both swords held low and back, jaw set.\n2. DOCKSIDE SHOULDER, SURGE: driving forward off the back foot, the back foot still on the ground, the near shoulder leading, the torso low.\n3. DOCKSIDE SHOULDER, THE IMPACT: slammed forward shoulder first, the front knee deeply bent, the back leg straight, the head tucked behind the near shoulder, both swords trailing behind, mouth open in a shout.\n4. DOCKSIDE SHOULDER, RECOVERY: rising out of the charge, the swords coming back in front of her.\nRow 2, her guard skill, then her victory:\n5. BRACE, PREPARATION: stepping back, the two swords coming across in front of the body, the weight sinking.\n6. BRACE, THE WARD: planted low, feet wide, knees bent, the two swords held across in front of the chest, the chin down, the shoulders squared, eyes fierce.\n7. BRACE, RETURN: lowering the two swords, turning it forward into a low guard, the weight shifting forward.\n8. VICTORY, in the SAME SIDE VIEW facing left like every other figure (NOT turned toward the viewer): standing tall, one sword raised straight up above her head at full arm extension, the other held low at her side, the weapon its full length, chin up, a proud smile.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, weapon included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and the weapon.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "65de397008b6b9f67df05ca95a61bc38871ccd795cb8bfa9e4e2ca0c2b3c1cb6",
+    "promptFile": "(outside the repository) orla-c.txt",
+    "references": [
+      {
+        "file": "(outside the repository) orla-clear.png",
+        "sha256": "db3a1fe8598bf3414a3123b6c8847ef76726302b94c1748ae5ef4acd7fa05b41",
+        "bytes": 506588
+      },
+      {
+        "file": "(outside the repository) orla-panel.png",
+        "sha256": "25de5124393da48418ef6182e5ca91194080b373ba5f23d6f2c574d055755c01",
+        "bytes": 472167
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "1 of 2",
+    "task": "orla-x3-combat",
+    "requestedAt": "2026-11-02T02:40:54.643Z",
+    "response": {
+      "requestId": "req_5c25c6e9667a462b9c4430e24c9851bb",
+      "created": "2026-11-02T02:42:09.000Z",
+      "processingMs": 72282
+    },
+    "usage": {
+      "input_tokens": 11182,
+      "input_tokens_details": {
+        "image_tokens": 9280,
+        "text_tokens": 1902
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 22158
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.3834,
+        "fromUsage": 0.41303
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-02",
+    "from": "orla-x3-combat-20261102T024054Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

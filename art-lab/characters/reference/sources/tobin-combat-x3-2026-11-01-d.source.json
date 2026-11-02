@@ -1,0 +1,89 @@
+{
+  "kind": "generated-image",
+  "file": "tobin-combat-x3-2026-11-01-d.png",
+  "sha256": "88abb04ca80907a3c0deacd116ed2292a8bc3091858eee5c248afeb99055e14e",
+  "bytes": 1444721,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "APPROVED AS A SOURCE by the operator through the sheet built on it (journal Passe CX4); generated, with no rights beyond those of the tool that made it",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Tobin Fenn, a sixteen year old farm boy with more courage than sense in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Images 2 and 3 are combat sheets of ANOTHER character: they only fix the layout, the SIDE view facing left, the scale and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of Tobin, every figure in the SIDE view, FACING LEFT (the face, chest and weapon point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1: messy dark brown hair, a clear young face with one large eye in profile; a worn green scarf left open so his face shows, its end hanging down his back like a short torn cape; a patched cream tunic and a brown leather jerkin; a brown strap across the chest and a brown belt with a brass buckle; brown leather bracers; dark trousers and worn brown leather boots. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big head, about three heads tall, a thin boyish body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head with its hair about 97 pixels tall.\n\nThe weapon, the same in every figure: a worn short sword: a short straight blade of dull grey steel with a chipped edge, about 95 pixels long at this scale, a plain iron crossguard, a grip wrapped in old leather. He holds it in ONE hand, the near hand, a little clumsily. No scabbard, no shield.\n\nTWO rows of TWO figures, in this order, left to right (keep the same figure scale as the figures of the combat sheets: a standing figure about 280 pixels tall, leaving empty background; his legs stay short, his proportions those of image 1):\nRow 1:\n1. WILD SWING, THE BLOW LANDING: a huge flat swing striking an opponent just to his left at chest height: the feet very far apart in a wide stance, the front knee bent, the whole torso twisted into it, both arms extended forward, the blade level and pointing left, the mouth open, the scarf flying behind him.\n2. GRIT, PREPARATION: planted on both feet, the head lowered, the jaw set, both fists clenched low in front of his belt, the sword held low in one fist, the shoulders squaring. His face stays fully visible: nothing passes in front of it.\nRow 2:\n3. GRIT, THE RISE: chest out, the head thrown up, the mouth open in a shout, the free fist raised high above the shoulder, the sword held out low to the side, the scarf lifting. This must read as a cry of courage.\n4. GRIT, THE RISE, second version: the same, the free fist thumped on his chest, the head up, shouting, the sword low.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, weapon included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and the weapon.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "358c683a53143002ba53489212694d90b66cd97c62bf405d97ca8d3e30de7cf3",
+    "promptFile": "(outside the repository) tobin-d.txt",
+    "references": [
+      {
+        "file": "(outside the repository) tobin-clear.png",
+        "sha256": "39a87752d40ec31053b68b83d81c12f0e35906b6edf6d43b65a7e099e1a5270d",
+        "bytes": 355173
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "1 of 2",
+    "task": "tobin-x3-combat",
+    "requestedAt": "2026-11-02T03:40:05.938Z",
+    "response": {
+      "requestId": "req_6268e5ee995842849322bec6e1523981",
+      "created": "2026-11-02T03:41:16.000Z",
+      "processingMs": 68287
+    },
+    "usage": {
+      "input_tokens": 8916,
+      "input_tokens_details": {
+        "image_tokens": 7168,
+        "text_tokens": 1748
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 19892
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.318585,
+        "fromUsage": 0.395364
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-02",
+    "from": "tobin-x3-combat-20261102T034005Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

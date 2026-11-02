@@ -1,0 +1,192 @@
+{
+ "id": "cassius-x3-combat",
+ "cell": [
+  192,
+  288,
+  270,
+  96
+ ],
+ "k": 3,
+ "frames": 34,
+ "tags": "idle-side:0-1 ready-side:2-3 strike-side:4-6 heavy-side:7-10 skillOff-side:11-14 skillDef-side:15-17 skillSup-side:18-20 block-side:21-22 dodge-side:23-24 hit-side:25-26 recover-side:27-28 ko-side:29-31 victory-side:32-33",
+ "sheet": [
+  1152,
+  1728
+ ],
+ "colours": 53,
+ "palette": "art-lab/characters/exports/cassius-x2-v2.png",
+ "sheets": {
+  "a": {
+   "path": "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-a.png",
+   "pitch": 2.3543
+  },
+  "b": {
+   "path": "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-b.png",
+   "pitch": 2.3543
+  },
+  "c": {
+   "path": "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-c.png",
+   "pitch": 2.3543
+  },
+  "d": {
+   "path": "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-d.png",
+   "pitch": 2.1738
+  },
+  "e": {
+   "path": "art-lab/characters/reference/sources/cassius-combat-x3-2026-11-01-e.png",
+   "pitch": 2.3789
+  }
+ },
+ "placement": {
+  "idle": {
+   "hips": 205,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "ready": {
+   "hips": 205,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "windup": {
+   "hips": 173,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cut": {
+   "hips": 219,
+   "pushed": 12,
+   "lifted": 0
+  },
+  "follow": {
+   "hips": 206,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "guard": {
+   "hips": 188,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "recoil": {
+   "hips": 196,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "recovery": {
+   "hips": 210,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "gather": {
+   "hips": 178,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "raise": {
+   "hips": 211,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cleave": {
+   "hips": 217,
+   "pushed": 14,
+   "lifted": 0
+  },
+  "through": {
+   "hips": 215,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "stunned": {
+   "hips": 184,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "fall": {
+   "hips": 193,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "kneel": {
+   "hips": 197,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "ground": {
+   "hips": 190,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "offPrep": {
+   "hips": 194,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offSurge": {
+   "hips": 215,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offHit": {
+   "hips": 219,
+   "pushed": 14,
+   "lifted": 0
+  },
+  "offBack": {
+   "hips": 215,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "defPrep": {
+   "hips": 186,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "def": {
+   "hips": 191,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "defBack": {
+   "hips": 214,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "victory": {
+   "hips": 187,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "supPrep": {
+   "hips": 188,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "sup": {
+   "hips": 177,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "supBack": {
+   "hips": 214,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "hop": {
+   "hips": 195,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "land": {
+   "hips": 212,
+   "pushed": 0,
+   "lifted": 0
+  }
+ },
+ "exports": {
+  "png": "f14e47904fe5ff313b4807dbf3b77a667d7d6697b3e72b568e89f205b4a64804",
+  "json": "c2d10c73695544e1cdaeb0c361d7aff4f850da7c8236180f51af908efd22613a",
+  "aseprite": "9ae64d3cb7d5315268b233fa3d54360e6767d6d9035ca0ee401f7607a79f00d0"
+ }
+}

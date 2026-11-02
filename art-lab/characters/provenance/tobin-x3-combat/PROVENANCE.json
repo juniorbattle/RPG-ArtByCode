@@ -1,0 +1,48 @@
+{
+ "id": "tobin-x3-combat",
+ "status": "APPROVED PRODUCTION ASSET (operator, combat lot sheet 4, journal Passe CX4), not declared a Gold Master",
+ "request": {
+  "date": "2026-11-01",
+  "by": "operator (git user wonmii): casting sheet of journal Passe CA1: R-tobin « G2 n° 01 Cedric », X1 « Les sept rivaux », X2 « Marek, Vessa, Orla, Cassius, Ilse, Rhosk, Tobin », X4 « Planche, puis texte pour Vessa, Ilse et Tobin », X5 « Une tâche de 5 $ par combattant »"
+ },
+ "approvals": [
+  {
+   "by": "operator (git user wonmii)",
+   "date": "2026-11-01",
+   "note": "APPROVED FOR PRODUCTION by the operator on the combat lot sheet 4 (journal Passe CX4): « Production » (CX-Tobin); version 2's duels only, today's game unchanged."
+  }
+ ],
+ "source": {
+  "sheets": {
+   "description": "4 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task tobin-x3-combat); references: the approved clean figure casting-clear-2026-11-01-d.png and the casting panel, and Ren's sheets for the layout only",
+   "files": [
+    "art-lab/characters/reference/sources/tobin-combat-x3-2026-11-01-a.png",
+    "art-lab/characters/reference/sources/tobin-combat-x3-2026-11-01-b.png",
+    "art-lab/characters/reference/sources/tobin-combat-x3-2026-11-01-c.png",
+    "art-lab/characters/reference/sources/tobin-combat-x3-2026-11-01-d.png"
+   ]
+  },
+  "figure": "casting-clear-2026-11-01-d.png"
+ },
+ "chain": [
+  "per figure: the figure alone on its sheet -> reconstruct-grid.mjs at the sheet's pitch (a standing figure's height over the rows of the town sheet's side idle at x3) -> the green peeled -> nearest OKLab colour of the approved town sheet's palette (pinned) -> loose texels removed -> the hips on column 96, cropped to the cell; a cell that moved the body off the axis is recorded in the JSON's meta.pushed; the loops' second frames by rig-engine's breath, the guard's « encaisse » by a shear (lib/combat.mjs)"
+ ],
+ "rebuild": "node tools/art-lab/build-combat.mjs art-lab/characters/rigs/tobin-x3-combat.rig.mjs --check",
+ "files": {
+  "art-lab/characters/exports/tobin-x3-combat.png": "f1fa114a8631906b6dbbe3d20b99f0b3c5d3aa12116e12e10ff508d9bd143623",
+  "art-lab/characters/exports/tobin-x3-combat.json": "1be20e2b0ef3ad03ca5ec8056d742141bd6018f92d90c14eac2f54977c0d5cd4",
+  "art-lab/characters/source/tobin-x3-combat.aseprite": "b049362ceb35fe0634fabb6fdf2736d2d22d952d682065adf46a3f422f551b54",
+  "art-lab/characters/provenance/tobin-x3-combat/build.json": "635afd94e926047dee0a7a7a055055e8b76167635c4051a49fe9c8d7c8d37627",
+  "art-lab/characters/exports/tobin-x2-v2.png": "151d7504936dcf9c80c020659c8787db98d91435bb3b804f2fcf46182aa576e8",
+  "art-lab/characters/reference/sources/tobin-combat-x3-2026-11-01-a.png": "975ce3ecebd847ed4ee84179db0640626aa96c3500cf35cb3598fbf017e9f4de",
+  "art-lab/characters/reference/sources/tobin-combat-x3-2026-11-01-b.png": "86a8ced0d5750af49b08442abb49dd497fec12657cd6b03ae057c8c86eceb23a",
+  "art-lab/characters/reference/sources/tobin-combat-x3-2026-11-01-c.png": "dffeb7eb85905e4f9d695fef0c532571305de4119d317ff43a6a8d6b6273c677",
+  "art-lab/characters/reference/sources/tobin-combat-x3-2026-11-01-d.png": "88abb04ca80907a3c0deacd116ed2292a8bc3091858eee5c248afeb99055e14e",
+  "art-lab/characters/rigs/tobin-x3-combat.rig.mjs": "ea3715e890021b0c0ae27275ed68ef3aa81cf11e7266106fe5efa3f1802c7788",
+  "art-lab/characters/rigs/lib/combat.mjs": "28e3b8ff08cb884b1f86d62fc7d589fc1cfd841b8a3f9382e1dbaeed893c3a5c",
+  "tools/art-lab/build-combat.mjs": "0dd3d9f77a5b362362c9f937654c7787290d9f39dcc3f5f038f5cc3901281d7f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

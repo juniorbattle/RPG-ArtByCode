@@ -70,20 +70,19 @@ test('every combat sheet: its frames, the arena cell, the frame contract, nothin
   }
 });
 
-test('a rival\'s sheet is its own: its pack as hashed, its sources archived and non-canonical until the operator\'s sheet, drawn from its approved figure', async () => {
+test('a rival\'s sheet is its own: its pack as hashed, its sources archived and approved through it, on its town sheet\'s palette', async () => {
   for (const id of RIVALS) {
     const name = `${id}-x3-combat`, m = json(`art-lab/characters/manifests/${name}.manifest.json`), files = json(`art-lab/characters/provenance/${name}/PROVENANCE.json`).files;
     for (const [rel, want] of Object.entries(files)) {
       let b = read(rel); if (/\.(json|mjs|js|ts|md|txt)$/i.test(rel)) b = Buffer.from(b.toString('utf8').replace(/\r\n/g, '\n'), 'utf8');
       assert.equal(sha(b), want, rel);
     }
-    if (m.approved) { assert.equal(m.runtimeUse, 'production', name); continue; }
-    assert.equal(m.runtimeUse, 'lab', name);
+    assert.equal(m.runtimeUse, 'production', name);
     const rig = await import(new URL(`../art-lab/characters/rigs/${name}.rig.mjs`, import.meta.url).href);
     assert.equal(rig.PALETTE.path, `art-lab/characters/exports/${id}-x2-v2.png`);
     for (const s of Object.values(rig.SHEETS)) {
       assert.equal(sha(read(s.path)), s.sha256, s.path);
-      assert.match(json(s.path.replace(/\.png$/, '.source.json')).status, /NON-CANONICAL/, s.path);
+      assert.match(json(s.path.replace(/\.png$/, '.source.json')).status, /APPROVED AS A SOURCE/, s.path);
     }
   }
 });
@@ -96,6 +95,21 @@ test('the body moved by the cell is written with the sheet, frame by frame, and 
     assert.ok(Object.keys(pushed).length >= moved - 1, `${name}: ${Object.keys(pushed).length} of ${moved}`);
     for (const [frame, n] of Object.entries(pushed)) { assert.match(frame, /^[a-zA-Z]+\.\d$/); assert.ok(Number.isInteger(n) && n !== 0, frame); }
   }
+});
+
+test('the seven rivals and Ren in production: approved one by one, each a sheet CombatCast loads, none of them anywhere else', () => {
+  const src = read('src/arena/CombatCast.ts').toString('utf8');
+  assert.equal(RIVALS.length, 7, 'every rival of the casting has its sheet');
+  for (const glob of src.match(/\{[a-z]+,[a-z,]+\}-x3-combat/g)) assert.deepEqual(glob.slice(1, glob.indexOf('}')).split(',').sort(), ['hero', ...RIVALS].sort(), glob);
+  assert.equal((src.match(/import\.meta\.glob\(/g) ?? []).length, 4);
+  for (const id of ['hero', ...RIVALS]) {
+    const m = json(`art-lab/characters/manifests/${id}-x3-combat.manifest.json`);
+    assert.equal(m.approved, true, id); assert.equal(m.runtimeUse, 'production', id); assert.equal(m.status, 'approved', id);
+    assert.ok(m.approval?.note.includes('Production') || m.approval?.note.includes('Approuvées'), `${id}: the operator's word`);
+    assert.match(json(`art-lab/characters/provenance/${id}-x3-combat/PROVENANCE.json`).status, /APPROVED PRODUCTION ASSET/, id);
+  }
+  // a rival's frames stand on its own seat: the arena's duel asks nothing of Marek's generated clips once a sheet is installed (tools/arena-sheet-proof.mjs proves it in the page)
+  assert.match(read('src/arena/CombatSheets.ts').toString('utf8'), /const FALLBACK = /);
 });
 
 test('the sheets in the arena\'s light: the operator\'s CX-L1 « 0,65 » by day, CX-L2 « 1,3 » at night', () => {

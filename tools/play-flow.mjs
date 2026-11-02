@@ -66,6 +66,8 @@ try {
   check(sheet.names[0] === 'Aster' && sheet.names[1] === FOE[day], `the arena seats ${sheet.names.join(' vs ')}`);
   // the version 2's bout names its stage (journal Passe VP2: « The pool · round 1 », « Semi-final »...), today's the slice's pool
   check((V2 ? /The pool · round \d/ : /Pool of eight/).test(sheet.hud ?? ''), `English HUD: ${sheet.hud}`);
+  // the version 2's duel: Ren and the seated rival each under their own approved sheet (journal Passe CX4)
+  if (V2) { const worn = await page.evaluate(() => window.__arena.sheets?.info.sheets.map((s) => `${s.id} ${s.runtimeUse}`).join(', ') ?? 'none'); check(worn === `hero-x3-combat production, ${sheet.names[1].split(' ')[0].toLowerCase()}-x3-combat production`, `the sheets worn: ${worn}`); }
   await page.screenshot({ path: path.join(outDir, `${mode}-2-report.png`) });
   await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn').click());
   // 3. the bout, by scripted inputs, the loop stepped from here

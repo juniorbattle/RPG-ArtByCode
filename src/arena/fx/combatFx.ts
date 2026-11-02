@@ -15,8 +15,8 @@ import { FX_EXPOSURE, FxEngine, type FxHooks } from './FxEngine';
 import { FxDirector, type FxPlayContext, type FxUnitRef } from './FxDirector';
 import { RECIPES, blowRecipe, chargeLevel, effectRecipe, type FxRecipe } from './fxRecipes';
 
-/** the figure's height (m), and how far before a fighter the blades meet: Ren holds his sword close, Marek's art at arm's length, Vessa on Ren's clips
- *  (the other rivals wear Marek's, FighterArt's `FOES`) */
+/** the figure's height (m), and how far before a fighter the blades meet on generated art (`cast=generated`): Ren holds his sword close, Marek's art at arm's length, Vessa on Ren's clips
+ *  (the other rivals wear Marek's there, FighterArt's `FOES`); on the baked sheets, what the guard's frame reaches (`guardReach`) */
 const FIGURE_H = 2.75;
 const RENS_GUARD = 0.7, MAREKS_GUARD = 1;
 export const guardContact = (foe: string): Record<FighterId, number> => ({ ren: RENS_GUARD, marek: foe === 'vessa' ? RENS_GUARD : MAREKS_GUARD });

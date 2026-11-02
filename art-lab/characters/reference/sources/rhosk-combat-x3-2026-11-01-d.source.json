@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "rhosk-combat-x3-2026-11-01-d.png",
+  "sha256": "5e8eb34c10414f0e6df02e8ed725e1c8f31065d41ab4a4642bb3cf8512d1ce03",
+  "bytes": 1497481,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "APPROVED AS A SOURCE by the operator through the sheet built on it (journal Passe CX4); generated, with no rights beyond those of the tool that made it",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "519696736b22c31b5f6051496c685299130b0b8b9f777e3f3a36f39b7d86cba4",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Rhosk, a big mercenary from beyond the northern passes in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Image 2 is an earlier panel of the SAME character; its bottom row shows the character fighting and fixes the weapon and how it is held. Images 3 and 4 are combat sheets of ANOTHER character: they only fix the layout, the SIDE view facing left, the scale and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of Rhosk, every figure in the SIDE view, FACING LEFT (the face, chest and weapon point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1: wild brown hair, a full brown beard, a stern face with one clear eye in profile; a thick cream fur collar; a long dark green cloak; a dark green tunic with brown leather straps crossing the chest and a cream cloth at the waist; brown leather bracers; a brown belt with pouches; big brown leather boots. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big head, about three heads tall, a very broad heavy body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head with its hair about 97 pixels tall.\n\nThe weapon, the same in every figure: a big two-handed double-bit battle-axe, as in image 2: a long brown wooden haft about 190 pixels long at this scale, a large double steel head with bright edges and a darker centre, a brass collar. He holds it with BOTH hands on the haft. No shield.\n\n1 rows, in this order, left to right:\nRow 1, his rally, WAR ROAR:\n1. WAR ROAR, PREPARATION: the axe held low in one hand, its head on the ground in front of him, the free fist clenched in front of his chest, the head bowed, drawing a deep breath.\n2. WAR ROAR, THE CRY: standing tall, chest thrust out, the head thrown back, mouth wide open in a roar, the axe held out low to the side, the free fist raised beside his head, the cloak lifting.\n3. WAR ROAR, RETURN: settling back, both hands returning to the haft, the axe coming down into a low ready stance.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, weapon included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and the weapon.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "93cb174fd90c12b9c03bfb26f48ca298769a04df762d7a138dea17cbf9120ad0",
+    "promptFile": "(outside the repository) rhosk-d.txt",
+    "references": [
+      {
+        "file": "(outside the repository) rhosk-clear.png",
+        "sha256": "3fae3ba6d21fa501323b21c0d29d36d3f81f0c5ed9f8179d4763c07e3065ee07",
+        "bytes": 573692
+      },
+      {
+        "file": "(outside the repository) rhosk-panel.png",
+        "sha256": "d0fc4a8ebb8a4d1c0ec6d48d1cf2daafb4ce8984a3a73e7d91473172116e045a",
+        "bytes": 523926
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "1 of 2",
+    "task": "rhosk-x3-combat",
+    "requestedAt": "2026-11-02T03:08:09.983Z",
+    "response": {
+      "requestId": "req_31dcb8ada59e43af98cae33408c19302",
+      "created": "2026-11-02T03:09:20.000Z",
+      "processingMs": 68174
+    },
+    "usage": {
+      "input_tokens": 10782,
+      "input_tokens_details": {
+        "image_tokens": 9280,
+        "text_tokens": 1502
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 21758
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.381285,
+        "fromUsage": 0.41103
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-02",
+    "from": "rhosk-x3-combat-20261102T030809Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

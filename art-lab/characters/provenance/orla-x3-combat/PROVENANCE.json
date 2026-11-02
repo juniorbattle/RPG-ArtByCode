@@ -1,0 +1,48 @@
+{
+ "id": "orla-x3-combat",
+ "status": "APPROVED PRODUCTION ASSET (operator, combat lot sheet 2, journal Passe CX4), not declared a Gold Master",
+ "request": {
+  "date": "2026-11-01",
+  "by": "operator (git user wonmii): casting sheet of journal Passe CA1: R-orla « G1 panneau 5 », X1 « Les sept rivaux », X2 « Marek, Vessa, Orla, Cassius, Ilse, Rhosk, Tobin », X4 « Planche, puis texte pour Vessa, Ilse et Tobin », X5 « Une tâche de 5 $ par combattant »"
+ },
+ "approvals": [
+  {
+   "by": "operator (git user wonmii)",
+   "date": "2026-11-01",
+   "note": "APPROVED FOR PRODUCTION by the operator on the combat lot sheet 2 (journal Passe CX4): « Production » (CX-Orla); version 2's duels only, today's game unchanged."
+  }
+ ],
+ "source": {
+  "sheets": {
+   "description": "4 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task orla-x3-combat); references: the approved clean figure casting-clear-2026-11-01-a.png and the casting panel, and Ren's sheets for the layout only",
+   "files": [
+    "art-lab/characters/reference/sources/orla-combat-x3-2026-11-01-a.png",
+    "art-lab/characters/reference/sources/orla-combat-x3-2026-11-01-b.png",
+    "art-lab/characters/reference/sources/orla-combat-x3-2026-11-01-c.png",
+    "art-lab/characters/reference/sources/orla-combat-x3-2026-11-01-d.png"
+   ]
+  },
+  "figure": "casting-clear-2026-11-01-a.png"
+ },
+ "chain": [
+  "per figure: the figure alone on its sheet -> reconstruct-grid.mjs at the sheet's pitch (a standing figure's height over the rows of the town sheet's side idle at x3) -> the green peeled -> nearest OKLab colour of the approved town sheet's palette (pinned) -> loose texels removed -> the hips on column 96, cropped to the cell; a cell that moved the body off the axis is recorded in the JSON's meta.pushed; the loops' second frames by rig-engine's breath, the guard's « encaisse » by a shear (lib/combat.mjs)"
+ ],
+ "rebuild": "node tools/art-lab/build-combat.mjs art-lab/characters/rigs/orla-x3-combat.rig.mjs --check",
+ "files": {
+  "art-lab/characters/exports/orla-x3-combat.png": "13bbafa5b64e3e2ef64d6bed7a4e7394ffc9554f2cae1761ee9805b32f0f58f4",
+  "art-lab/characters/exports/orla-x3-combat.json": "9b99cdbcbe2b2d6bf0cd5711d354492d615e95b579779a53030f9a8e4a6d6c12",
+  "art-lab/characters/source/orla-x3-combat.aseprite": "4460e161a4d207e685b394ef27ff8e8b71390d71f8923d0c0cf28e8bdb16026c",
+  "art-lab/characters/provenance/orla-x3-combat/build.json": "edb733ff88928037b467bfbf8326019893dec624c4dbe34647d5449321e71384",
+  "art-lab/characters/exports/orla-x2-v2.png": "7b1a2a83734aac67c8a13277bfce66556c8b7b0da278ae51d50d468de2f8e1d2",
+  "art-lab/characters/reference/sources/orla-combat-x3-2026-11-01-a.png": "f5ad404de4387670350e0b4f2cc6118d1acf60e604884a0fa7478d90e1efe2c8",
+  "art-lab/characters/reference/sources/orla-combat-x3-2026-11-01-b.png": "a7b1a7211ebf2df1717c6307dd80237cc0647f37f3868c62164ae94640238253",
+  "art-lab/characters/reference/sources/orla-combat-x3-2026-11-01-d.png": "1d61473a59d50b76c949b80b961cfd7093c16559dee4005df03184a155ee1a7c",
+  "art-lab/characters/reference/sources/orla-combat-x3-2026-11-01-c.png": "3e7af23496fe52dca4636eaa6fda1c9afa384401168d7f4d4bfe8992b1b14c37",
+  "art-lab/characters/rigs/orla-x3-combat.rig.mjs": "862ab6add3a992bdafe27b0a202edaf53e78a8ee478381ff9b3710d9062cd644",
+  "art-lab/characters/rigs/lib/combat.mjs": "28e3b8ff08cb884b1f86d62fc7d589fc1cfd841b8a3f9382e1dbaeed893c3a5c",
+  "tools/art-lab/build-combat.mjs": "0dd3d9f77a5b362362c9f937654c7787290d9f39dcc3f5f038f5cc3901281d7f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

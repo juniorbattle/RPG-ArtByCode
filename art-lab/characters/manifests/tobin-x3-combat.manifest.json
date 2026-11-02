@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "tobin-x3-combat",
+  "kind": "character",
+  "status": "approved",
+  "source": "art-lab/characters/source/tobin-x3-combat.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/tobin-x3-combat.png",
+    "metadata": "art-lab/characters/exports/tobin-x3-combat.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-combat.mjs (lib/combat.mjs: reconstruct-grid + rig-engine, rig art-lab/characters/rigs/tobin-x3-combat.rig.mjs, the arena cell at x3: 192 x 288, feet on row 270, axis on column 96); Aseprite (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "4 generated pose sheets of Tobin Fenn (NON-CANONICAL until the operator's lot sheet): the figures of the sheet",
+      "path": "art-lab/characters/reference/sources/tobin-combat-x3-2026-11-01-a.png",
+      "note": "task tobin-x3-combat, journal Passe CX1"
+    },
+    {
+      "category": "C",
+      "label": "The clean casting figure (approved as a source, journal Passe CA5): his design",
+      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-d.png",
+      "note": "with the casting panel chosen on the casting sheet (journal Passe CA1)"
+    },
+    {
+      "category": "B",
+      "label": "tobin-x2-v2, the approved town sheet: its palette (pinned)",
+      "path": "art-lab/characters/provenance/tobin-x2-v2",
+      "note": "approved for production by the operator on 2026-11-01 (journal Passe CA5)"
+    }
+  ],
+  "approved": true,
+  "runtimeUse": "production",
+  "notes": "APPROVED FOR PRODUCTION by the operator on the combat lot sheet 4 (journal Passe CX4): « Production » (CX-Tobin); version 2's duels only, today's game unchanged. Tobin Fenn's combat sheet at x3, 27 frames of the § 14 list, cells of 192 x 288 texels, feet on row 270, hips on column 96, facing left. Its edge is a rule of the renderer (RC1-2, RC2-4). Shown only in the arena behind the DEV parameter ?scene=arena&fighterdensity=combat (src/lab/fighterDensity.ts, compiled out of production builds). Rebuild: node tools/art-lab/build-combat.mjs art-lab/characters/rigs/tobin-x3-combat.rig.mjs --check",
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-11-01",
+    "note": "APPROVED FOR PRODUCTION by the operator on the combat lot sheet 4 (journal Passe CX4): « Production » (CX-Tobin); version 2's duels only, today's game unchanged."
+  }
+}
