@@ -142,9 +142,9 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
   that page opened, the hero at its way in from here and the way back among its tags; a capture per arrival; DEV server (named states)
 - `node tools/play-shots.mjs <outDir> "name|<named state>|<WxH,..>|<js>|<extra query>" ...` — review captures of the play mode at window sizes (DEV
   server: named states; `vis=0` unless the query sets `vis`), a panel opened by its JS (`__ui.openPerson('mara')`); not pixel proofs
-- `node tools/title-proof.mjs <outDir> <base url> <branch url> [steps]` — the title screen's proof (journal Passe L4): in a browser that does not
-  announce automation, the bare address shows the title screen (« Continue » only with a save); « Explore the district » then gives the frozen
-  main's `?time=midday` at threshold 0 (journal Passe D9; `BASE_QUERY` changes that query, `BASE_QUERY=` = main's bare address, the night: the
+- `node tools/title-proof.mjs <outDir> <base url> <branch url> [steps]` — the title screen's proof (journal Passes L4 / UM3): in a browser that does not
+  announce automation, the bare address shows the title screen at once, the town coming up behind it (« Continue » only with a save); « Explore the district » then gives the frozen
+  main's `?time=midday` at threshold 0, the scene alone (`#view`: the HUD changed by design) (journal Passe D9; `BASE_QUERY` changes that query, `BASE_QUERY=` = main's bare address, the night: the
   negative control; compare the two captures with `tools/diff.mjs`). Explore's DEV panel starts closed (journal Passe UI2): the base page gets
   `BASE_KEYS` before its capture (default `h`, its panel closed by H; `BASE_KEYS=` = the panel open, the negative control); Explore after H
   and the branch's own `BASE_QUERY` address (panel open) are captured against the base without keys; every page's panel state is checked
@@ -325,7 +325,7 @@ sound made by the code (`src/audio/`, after a gesture; V settings, N mute), P4-P
 `v2-forecourt-night`, `v2-training-midday`, `v2-training-night`, `v2-square-morning`, journal Passe VP1); the squares take `static=1`, `vis=0` (no
 visibility bake), `viscache=0|verify`, DEV `visstep=<m>` / `visfine=A:<k>` / `visscale=<k>` (the bake's grid, a finer main tile, every tile k x) and
 the weather (`rain`, `snow`, `storm`, `wind`; the rain of the wet day from the game's state), journal Passes VP1 / VP2, and DEV `plazaframe=<id>:yaw,pitch,dist,fov,hx,hy,hz[,gx,gz];...` (a square's framings while composing, journal Passe VP7: three a square, `src/world/PlazaCamera.ts`, chosen by the hero's zone as the district's graph, the near edge the frames' foreground (iteration 3); `__stats().framing`), `plazafog=start,density` (the squares' night haze: from 12 m, 1.6 x the day state's; by day from 16 m at 1.25 x since journal Passe VP8), `plazadof=range,far` (their depth of field: 12 m, far 0.5; the near blur 0.45, the lists' 0.22 since journal Passe VP9), journal Passe VP6, and `plazasun=key,sky,ground,sat` (their daylight against the day state's: the sun 1.05, the sky's fill and the fill light 1.5, the ground's bounce 0.95, the saturation 1, journal Passe VP8); each square one monument and a free floor, a light plan of 16 lights at most all burning (no run-time choice), its crowd gathered by the moment of the day (`PLAZA_GATHER`), journal Passe VP7; the tournament's heraldry on the flags of the squares, the town and the arena of a version 2 game (journal Passe VP3: `heraldry=tournament` on the town page, set by the play mode; absent = today's banners); the arena seen from every place of a version 2 game (journal Passe VP8: the forecourt's monument; over the north rows of the training ground and the festival square, `farArena` in `src/world/Plazas.ts`, since journal Passe VP9 west-north-west of the lists over their gallery, north-east of the hall's square over its roofs; on the far city's slope in the cathedral's place in the town's establishing view, `skyline=arena` on the town page, set by the play mode with `heraldry`; absent = the cathedral, the far city byte for byte, `tests/v2-skyline.test.mjs`); the squares' fires burning day and night (their tint carries the day's glow, the lanterns and windows unlit, J4) with a live flame (`Particles`' `brazier` mode) and the fountain's falling water (its `spray` mode), journal Passe VP8; the ways between places walked as in Final Fantasy IX (journal Passe VP5: `V2_EXITS`, `src/simulation/v2places.ts`, the squares' side streets under their gateways and their quay gates, the quay's two ends; `src/ui/exits.ts`, the tags and the fade; `arrive=<place>` opens a page at its way in from that place); the rivals' blows harder (`V2_FOE_HIT`, 30 % since journal Passe VP4, 45 % with 20 % more health, `V2_FOE_HP`, since journal Passe V2C2, the
-operator's « Oui, recaler »); a bout wounds the player only when a heavy blow knocks him down, a win never (`applyPlayerDuel`, the operator's V2B1-1 « A. K.O. par un coup puissant », journal Passe V2B1; the default game keeps its rule); the trial: `briefs/v2-trial.md`, `briefs/fiche-v2.html`) · `title=1` (the title screen, journal Passe L4, choice P2: « New game », « Explore the district », « Continue » with a save; it shows by itself
+operator's « Oui, recaler »); a bout wounds the player only when a heavy blow knocks him down, a win never (`applyPlayerDuel`, the operator's V2B1-1 « A. K.O. par un coup puissant », journal Passe V2B1; the default game keeps its rule); the trial: `briefs/v2-trial.md`, `briefs/fiche-v2.html`) · `title=1` (the title screen, journal Passes L4 / UM3, choice P2: « New game », « Explore the district », « Continue » with a save, the town at midday coming up behind it; it shows by itself
 on the bare address only, and only in a browser no automation drives (`navigator.webdriver`), kept by the operator (L7-5 « Le garder », journal
 Passe D8): every tool and proof keeps today's game; its
 « Explore the district » runs today's town at midday, as `time=midday` without changing the address, and the DEV panel: decision L7-6a, journal Passe D9; that panel closed, H opens it: decision P1, journal Passe UI2) · `play=1` (the game's play mode, journal Passe L3, loaded on demand: the state from the browser's save, or `&new=1&name=<name>&seed=<n>` for a
@@ -514,43 +514,28 @@ epure et coherent »; it replaces the direction of journal Passe UI1, roadmap st
   (exploring: the state and the prompt only; the place's actions, rest and wait in a list opened by a key; the day's bout keeps a visible prompt);
   UM-R3 « Tous les retirer » (no developer's text on screen); UM-R4 « La vraie ville derrière » (the town at midday behind the title); UM-R5
   « Dans le système, sans mini-carte » (Explore's HUD in the system, no minimap; the DEV panel unchanged).
-- **The work**: UM-T2 « Valider le plan », lots 0 to 5 (journal Passe UM1), lot 0 and the dialogue shown in game before the rest; UM-T1 « Remplacer,
-  essai avant fusion », word for word: « Remplacer partout sur la branche, sans double style, et te donner l'essai en jeu avant de fusionner. »: until
-  that trial, `main` keeps the system described below and none of its replacement. UM-T4 « Celles de la direction choisie »: references
+- **The numbers and the title**, on the lot sheet of journal Passe UM3: UM2-3 « Chiffres en Source Sans 3 » (the digits of the title font are the text
+  font's, `DIGITS` in `system.ts`: Marcellus' « 10 » reads « IO »); UM2-4 « Le titre d'abord, la ville apparaît derrière »; UM2-5 « Accepter l'égalité »
+  (the night's dialogue level with night B).
+- **The work**: UM-T2 « Valider le plan », lots 0 to 5 (journal Passes UM2 to UM7); UM-T1 « Remplacer, essai avant fusion », word for word: « Remplacer
+  partout sur la branche, sans double style, et te donner l'essai en jeu avant de fusionner. » UM-T4 « Celles de la direction choisie »: references
   `art-lab/characters/reference/sources/ui-voile-{town,arena}-2026-11-01.png`, **non-canonical** (generated: the model redrew part of the scene).
-
-Below, the direction of journal Passe UI1 (the operator's UI sheet, 14 choices of 14), what `main` shows until the trial above; its decisions lifted or lightened by Passe UM1 are named there:
-- **Direction C « Héraldique pixel »** (L1, lifted by UM-L1): pixel-art frames generated by code, on the sprites' texel grid, in nine slices (S2
-  « Générés par le code (neuf tranches) », lifted by UM-S2); the tournament's royal blue, ivory and gold, amber for the action, gauges inside the
-  palette (S3 « Bleu, ivoire, or ; ambre pour l'action », with the operator's note, word for word: « Cela peut changer par la suite »: the palette
-  is provisional; lightened by UM-S3).
-- **L2 « Un style, des tons qui suivent DayState »**: one style, day and night, whose tones follow the page's day state (`DayState`).
-- **L3 « Avec le système de design »**: the phone layout (a strip, a dialogue sheet, tabs) comes with the design system; touch stays out of the
-  slice (E30).
-- **L4 « Visage cuit d'abord, bustes plus tard »**: a character's portrait is first the face of its baked sheet; busts of the main characters
-  later, through the art chain (manifest, blind critique, the operator's approval), in a task of their own.
-- **S1 « Pixel pour les titres + texte lisible »** (its pixel font lifted by UM-S1): an embedded pixel font for titles, numbers and keys, and an
-  embedded readable text font (free licence); no system font.
-- **S4 « 16 px ordinateur, 14 px téléphone »**: no text under 16 px on a computer, under 14 px on a phone.
-- References: `art-lab/characters/reference/sources/ui-direction-c-{town,arena,town-night,phone}-2026-10-24.png`, **non-canonical**
-  (generated): their illustrated busts, their green and red gauges and the scene they redrew are not targets.
-- Order: P1 « Fermé par défaut, H l'ouvre » (Explore's DEV panel closed, H opens it), P2 « En premier » (one cost tag per currency: coins from
-  the simulation's `ActionOption.coins`, the slot, « free » only when nothing is spent) and P3 « En premier » (the arena's action bar 60 px
-  high on a computer, its sub-labels whole), done before the design system (journal Passe UI2); then the design system
-  (roadmap step 2.3: S1-S4, L2, L3, L4; built in journal Passe UI3, see below), and screen by screen P4 (the dialogue at the bottom, the speaker visible), P5 (« Here » reduced to the
-  place's actions) and P6 (the match sheet and the victory), « Avec la direction choisie ».
+- **Kept from the direction of journal Passe UI1** (the operator's UI sheet, 14 choices of 14; Héraldique pixel itself, lifted): P1 « Fermé par défaut, H l'ouvre » (Explore's
+  DEV panel closed, H opens it); P2 « En premier » (one cost tag per currency: coins from the simulation's `ActionOption.coins`, the slot, « free » only
+  when nothing is spent); P3 « En premier » (the arena's action bar 60 px high on a computer, its sub-labels whole); P4 (the dialogue at the bottom,
+  the speaker visible), P5 (the place's actions), P6 (the match sheet and the victory). Its references `ui-direction-c-*-2026-10-24` stay archived,
+  non-canonical, no longer a target.
 - **The design system** (journal Passes UI3 / UM2, `src/ui/design/`): `tokens.ts` holds every colour of the interface (four tones, `TONES`: night =
   the evening, morning, midday, end of day: ivory, grey and one accent, the ink sliding with the light; a palette change is made there and only there), the veils' strengths (`VEIL`), the type scale and its phone sizes
   (`TYPE`, `MIN_TEXT`, `PHONE_QUERY`); `system.ts` installs the fonts, the page's tone (`installDesign(time)`: the page's `DayState`), the veils (`--ds-veil-*`, the gradients `--ds-grad-b`, `-t`, `-spot`)
-  and the keycap in outline. The fonts (Marcellus for titles, names and numbers; Source Sans 3 for text; SIL OFL 1.1, UM-T3)
+  the keycap in outline and the moves (`ds-in`, `ds-rise`, `ds-rule`: a fade and a slide of 8 px in 160 ms, a band rising from the edge, a rule traced from the left, none under `prefers-reduced-motion`). The fonts (Marcellus for titles and names; Source Sans 3 for text and digits; SIL OFL 1.1, UM-T3)
   and their record (source, licence, SHA-256): `src/ui/fonts/FONTS.md`. The play mode's screens (`src/ui`), the forecourt and Lantern
   Row pages and the arena's HUD use it, and the loading screen shown before every scene (`src/ui/loading.ts`, the operator's decision C2-14
   « Tâche à part », built in journal Passe UI4: the name in the title font, the status in the text font, the progress on a thin rule, in the
   tone of the page's day state - the address's `time=`, the play mode's page; its content shows once both fonts are loaded, at most a second, and
-  every scene starts after it); the free-roaming town's DEV panel and HUD do not (unchanged, lot 4). Portraits: the
+  every scene starts after it), and the free-roaming town's HUD (`src/debug/Hud.ts`, UM-R5); its DEV panel stays a tool of its own. Portraits: the
   face of the baked sheet (`preloadPortraits`), the generator's portrait where no baked sheet stands for the person. The arena's HUD with the HUD
-  hidden (`hud=0`, H) keeps its KO and pause screens. The dialogue is a band at the foot of the screen in every game (`.pm-talk`, P4): the face, the name and the words on the left, the choices on the right, the arrows walking them. On a phone (`PHONE_QUERY`): a strip along the top, tabs along the bottom
-  (« Here » first), every sheet at the bottom of the screen. Proofs: `tests/ui-design.test.mjs`, `tests/loading-screen.test.mjs`, `tools/ui-contrast.mjs`,
+  hidden (`hud=0`, H) keeps its KO and pause screens. Exploring, the state and one prompt (`src/ui/townUi.ts`): Q opens the list of what can be done here, Esc the one menu, the day's bout keeps its prompt in the corner; pages on a full-screen veil, what is read in passing in a band at the foot of the screen. The dialogue is that band in every game (`.pm-talk`, P4): the face, the name and the words on the left, the choices on the right, the arrows walking them. On a phone (`PHONE_QUERY`): one line of state, two buttons along the foot, the band at half the screen. The title screen shows at once on the page's ink, the town at midday coming up behind it, its HUD waiting for « Explore the district » (`titleOverTown`, `src/main.ts`). Proofs: `tests/ui-design.test.mjs`, `tests/loading-screen.test.mjs`, `tools/ui-contrast.mjs`,
   `tools/ui-text.mjs`.
 
 ## Camera graph (`src/app/CameraGraph.ts`)

@@ -16,6 +16,7 @@ const CSS = `
 #title-screen.live{background-color:transparent}
 #title-screen:focus{outline:0}
 #title-screen .wrap{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,520px);column-gap:48px;align-items:end;padding:96px var(--ds-gutter) 48px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 96px),transparent 100%)}
+#title-screen .wrap{animation:ds-in .24s ease-out}
 #title-screen .name{font:400 var(--ds-fs-title-huge)/1.05 var(--ds-title);color:var(--ds-ivory)}
 #title-screen .tag{margin-top:8px;font-size:var(--ds-fs-label);color:var(--ds-ivory)}
 #title-screen .keys{margin:6px 0 0}

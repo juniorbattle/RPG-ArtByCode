@@ -578,6 +578,76 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Une seule plaque pour une alerte tient à une règle, pas à un réglage de taille : la règle existait pour les fenêtres basses, elle vaut partout.
 
+## Passe UM5 — Lot 3 : le téléphone et les fenêtres basses (2026-11-02, branche)
+
+### Fait — [OK]
+- **Téléphone** (UM-L3) : une ligne d'état, deux boutons au pied, plus de rangées d'onglets. La bande de dialogue tient dans 52 % de la hauteur : les choix défilent sous la réplique, « Leave » reste collé au bas de la liste, les raisons d'un choix refusé s'effacent pour gagner la place.
+- **Fenêtres basses** : la bande garde ses deux colonnes ; le duel garde la mise en page du lot 2, faces à une échelle entière.
+- [OK] Une étiquette de sortie reste entière sur un écran étroit : sa moitié de largeur borne sa position (`exits.ts`), elle sortait de l'écran à l'audit.
+
+### Les preuves
+- `ui-text` en 375 × 812, 812 × 375 et 568 × 320 sur les pages des lots 1 et 2 : aucun texte sous 14 px, aucun coupé. Contrastes : dialogue au téléphone 9,03:1, duel en 812 × 375 5,8:1.
+- [?] Le toucher reste hors de la tranche (E30) : ces écrans sont lus sur un téléphone, pas joués.
+
+## Passe UM6 — Lot 4 : Explore, le chargement, les textes de développeur (2026-11-02, branche)
+
+### Fait — [OK]
+- **UM-R5** : `src/debug/Hud.ts` entre dans le système (lieu et heure sur leur voile, invite au pied) et la mini-carte quitte le jeu. Le panneau DEV ne change pas.
+- **UM-R3** : le chargement ne montre plus `GENERATING WHITE/FLAT` ; il dit « Painting the day… », et la phase reste lisible par les outils dans `data-phase` (`progressOn`, `tools/startup.mjs`). Les mots « slice » quittent l'écran : titre, fin de partie, tableau, refus (« The pool is over. »). `index.html` ne nomme plus de police système.
+- `tools/title-proof.mjs` compare la scène seule : le HUD a changé à dessein, le quartier non.
+
+### Les preuves
+- `tools/title-proof.mjs` sur les paquets de production contre `main` figé : toutes ses vérifications passent. « Explore the district » contre `time=midday`, panneau fermé et ouvert, et l'adresse directe : **0 px** au seuil 0. Contrôle négatif contre la nuit : 99,7 % des pixels.
+- [KO → corrigé] Premier passage à 3 % : le masque épargnait tout `canvas`, donc la mini-carte de `main` restait dans l'image. Il vise désormais `#view`.
+- `tools/startup.mjs` relit ses phases par `data-phase` : le temps de peinture revient (336 ms).
+- `npm test` **321 / 321** : le refus des parties finies et le tableau par défaut changent de texte, comme UM-R3 le demande ; les empreintes des parties scriptées n'ont pas bougé.
+
+### Pensée
+- Un masque « tout sauf la scène » se pose sur l'identifiant de la scène, pas sur son type d'élément.
+
+## Passe UM7 — Lot 5 : le mouvement, le bilan des mesures, l'essai de l'opérateur (2026-11-02, branche)
+
+### Fait — [OK]
+- **Le mouvement**, comme le décrit la direction A : fondu et glissement de 8 px en 160 ms à l'entrée des pages, la bande basse qui monte du bord, les filets des listes tracés de gauche à droite, l'invite et l'alerte qui glissent, le K.O. qui pose son mot puis son trait (`ds-in`, `ds-rise`, `ds-rule`). Rien ne bouge sous `prefers-reduced-motion`. [?] Jugé sur captures et par test : le rendu en mouvement attend l'œil de l'opérateur.
+- Le prix n'est plus écrit deux fois non plus sur « (5 coins) » sans phrase, vu sur la capture de Hilde.
+
+### Les mesures GPU finales — [KO] puis [OK]
+- [KO] Première série à GPU saturé : 64 à 120 images/s, un duel à +1 ms contre `main`. La cause était la mienne : les onglets du panneau du navigateur ouvraient l'adresse nue, qui fait désormais tourner la ville derrière le titre. Ils comptaient comme un processus étranger. Série jetée, onglets fermés.
+- [OK] Le duel isolé, puis les pages, au calme, quatre tours sur quatre sans processus étranger, 1080p, 780M, GPU saturé :
+
+| Page | `main` | Voile |
+|---|---|---|
+| Nuit B (`seed=1842&clean=1&camera=B`) | — | 9,89 ms |
+| Exploration, midi | 8,42 ms | 8,47 ms |
+| Exploration, nuit | 10,36 ms | 9,76 ms |
+| Dialogue, nuit | 9,87 ms | 9,79 ms |
+| Page plein écran, nuit | — | 9,66 ms |
+| Titre sur la ville | — | 7,77 ms |
+| Duel, nuit | 8,54 ms | 8,54 ms |
+
+- Le duel, isolé : `main`, Voile, sans voiles, sans transitions et sans HUD donnent 8,52 à 8,55 ms, 114,6 à 118,3 images/s. Le coût des voiles n'y est pas mesurable.
+- **E24 tenu** sur toutes ces pages. Les pages de nuit varient d'un tour à l'autre (86 à 108 images/s) : à ces niveaux, 0,1 ms ne se lit pas. L'égalité acceptée en UM2-5 n'a plus lieu d'être invoquée : le dialogue de nuit passe sous la nuit B dans cette série, sans que l'écart soit lisible.
+
+### Les preuves finales, sur le code de cette passe
+- `npm run typecheck`, `npm test` **322 / 322**, `npm run build`, `npm run art:validate`.
+- `ui-text` : **54 pages et formats sur 54**. `ui-contrast`, 25 pages, deux instants : 5,31:1 au plus bas, sur la ligne d'échéance ; duel 5,75:1 ; titre sur la ville 8,22:1 ; K.O. 14,08:1 ; téléphone 9,03:1 ; Explore 9,6:1.
+- `arena-scene-check`, trois règles : PASS, sol dégagé 22, 44, 77 cas, empreintes retrouvées.
+- `play-day` défaut et `V2=1`, `exits-proof` ; `play-flow` sur le paquet de production, victoire, défaite, `V2=1` : tout passe.
+- `title-proof` et paquets de production contre `main` figé : **0 px** sous l'interface, ville de nuit, ville à midi, « Explore the district » panneau fermé et ouvert, arène, duel `v2=1` sur deux moments.
+
+### L'essai
+- Fiche privée : https://claude.ai/artifact/BMswCMs729J2uPbU8C23Df (source `briefs/fiche-ui-voile-essai.html`, trois cartes, `decisions` vide à la publication). Page jouable republiée, même adresse que la Passe UM2, toujours non ouverte dans le visualiseur.
+- La note de l'opérateur sur l'équipement et les achats (Passe UM4) y a sa carte : un lot à part, le héros en grand, le détail de la ligne sélectionnée, la comparaison avant et après, sans image neuve.
+
+### Restes [?]
+- Non mesuré : la RTX 4060, le 2560 × 1440. Les cinématiques n'ont pas de capture de preuve : relues dans le code, à voir en jeu.
+- Le chapitre du téléphone reste de la lecture : le toucher est hors de la tranche (E30).
+- La branche attend la réponse de l'opérateur : rien de ce code sur `main` (UM-T1).
+
+### Pensée
+- Une mesure de GPU se lance fenêtres de test fermées : une page qui, depuis ce lot, fait tourner une scène n'est plus une page au repos.
+- Un écart qui surprend se décompose avant de se justifier : retirer un à un voiles, transitions et HUD a montré qu'il n'existait pas.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -783,7 +853,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6e-bis. Interface moderne (Passes UM1, UM2)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5, le code sur la branche `claude/ui-voile-9516af`, **rien de ce remplacement sur `main` avant l'essai en jeu de l'opérateur** (UM-T1). Lot 0 et dialogue faits (Passe UM2) : voiles sous la nuit B, à égalité pour le dialogue de nuit, contrastes à 5,72:1 au moins. Fiche relue (Passe UM3), tout à la recommandation. Lots en cours sur la branche ; l'essai en main de l'opérateur vient avant la fusion.
+**6e-bis. Interface moderne (Passes UM1, UM2)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5, le code sur la branche `claude/ui-voile-9516af`, **rien de ce remplacement sur `main` avant l'essai en jeu de l'opérateur** (UM-T1). Lot 0 et dialogue faits (Passe UM2) : voiles sous la nuit B, à égalité pour le dialogue de nuit, contrastes à 5,72:1 au moins. Fiche relue (Passe UM3), tout à la recommandation. Lots 0 à 5 faits sur la branche (Passes UM2 à UM7). **Attend l'essai de l'opérateur et la fiche https://claude.ai/artifact/BMswCMs729J2uPbU8C23Df** : la fusion (UM7-1), le mouvement (UM7-2), les panneaux d'équipement et d'achat (UM7-3).
 
 **6e. Interface (étape 2 de la feuille de route ; Passes UI1, UI2)** — ligne directrice décidée sur la fiche de la Passe UI1 (14 choix sur 14,
 tous à la recommandation) : C « Héraldique pixel » (L1), un style dont les tons suivent `DayState` (L2), le téléphone avec le système de design
@@ -824,6 +894,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 > recopié ici.
 
 ### Mesure et performances
+- Une mesure GPU se lance sans autre page de jeu ouverte, panneau du navigateur compris (Passe UM7) : le témoin le dit, encore faut-il le lire.
 - Ce que le navigateur compose (voiles, CSS) ne se voit ni aux minuteries WebGL ni à l'occupation GPU à cadence plafonnée : le mesurer GPU saturé (`tools/cadence.mjs` avec `fps=off`), un contrôle lourd d'abord (Passe UM2).
 - `gl.finish` ne bloque pas sous ANGLE ici : un temps par image se mesure avec un `readPixels` avant et après, et toute mesure de premier usage a son contrôle négatif (Passe FX5).
 - Mesurer d'abord, optimiser ensuite : minuteurs GPU, variantes entrelacées dans une seule session, base figée. Relever l'adaptateur

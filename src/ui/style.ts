@@ -41,7 +41,15 @@ const CSS = `
 .pm-center{text-align:center}
 .pm-toggle{cursor:pointer}
 @media ${PHONE_QUERY}{.pm-overlay{place-items:end center;padding:12px 18px 14px}.pm-overlay .pm-card{width:100%;max-height:calc(100vh - 26px)}.pm-overlay.pm-band{padding:48px 18px 14px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 48px),transparent 100%)}.pm-band .pm-card{grid-template-columns:minmax(0,1fr);gap:10px}}
-@media (prefers-reduced-motion:reduce){.pm *{transition:none!important;animation:none!important}}
+.pm-overlay{animation:ds-fade .16s ease-out}
+.pm-overlay .pm-card{animation:ds-in .16s ease-out}
+.pm-overlay.pm-band,.pm-talk{animation:ds-rise .2s ease-out}
+.pm-overlay.pm-band .pm-card{animation:none}
+.pm-btn{position:relative}
+.pm-btn::before{content:'';position:absolute;left:0;right:0;top:-1px;height:1px;background:var(--ds-line);transform-origin:left center;animation:ds-rule .24s ease-out backwards}
+.pm-btn{border-top-color:transparent}
+.pm-btn:nth-of-type(2)::before{animation-delay:.03s}.pm-btn:nth-of-type(3)::before{animation-delay:.06s}.pm-btn:nth-of-type(4)::before{animation-delay:.09s}.pm-btn:nth-of-type(n+5)::before{animation-delay:.12s}
+@media (prefers-reduced-motion:reduce){.pm,.pm *,.pm *::before,.pm *::after{transition:none!important;animation:none!important}}
 `;
 
 export function injectStyle(): void {

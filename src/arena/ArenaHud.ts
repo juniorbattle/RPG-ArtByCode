@@ -16,6 +16,7 @@ export type Assist = 'subtle' | 'full' | 'off';
  *  C2). Exported: the HUD of the « tour par tour dynamique » (DynamicHud.ts) is built on the same rules */
 export const CSS = `
 #arena-hud{position:fixed;inset:0;pointer-events:none;color:var(--ds-ivory);font:400 var(--ds-fs-body)/1.3 var(--ds-text);font-variant-numeric:tabular-nums;z-index:20;user-select:none;-webkit-user-select:none}
+#arena-hud>*{transition:opacity .25s}
 #arena-hud.off>*:not(#ah-ko):not(#ah-pause),#arena-hud.ko>*:not(#ah-ko){opacity:0}
 /* the HUD hidden: the « turn your device » layer (transparent) leaves, so it neither covers the KO and pause screens nor takes the touches */
 #arena-hud.off #ah-rotate{display:none}
@@ -73,8 +74,8 @@ export const CSS = `
 #ah-wbar i{position:absolute;left:0;top:0;bottom:0;width:100%;transform-origin:left center;background:var(--ds-accent)}
 #ah-wbar b{position:absolute;right:calc(100% + 14px);top:50%;transform:translateY(-50%);font-size:var(--ds-fs-small);font-weight:400;color:var(--ds-ivory);white-space:nowrap}
 #ah-wbar b kbd{margin-left:8px;border-color:var(--ds-accent);color:var(--ds-accent)}
-#ah-alert{position:absolute;left:50%;top:18%;transform:translateX(-50%);padding:22px 130px;text-align:center;white-space:nowrap;background:var(--ds-grad-spot);opacity:0;transition:opacity .12s}
-#ah-alert.on{opacity:1}
+#ah-alert{position:absolute;left:50%;top:18%;transform:translate(-50%,8px);padding:22px 130px;text-align:center;white-space:nowrap;background:var(--ds-grad-spot);opacity:0;transition:opacity .12s,transform .12s}
+#ah-alert.on{opacity:1;transform:translate(-50%,0)}
 #ah-alert b{display:block;font:400 var(--ds-fs-title)/1.1 var(--ds-title);color:var(--ds-accent)}
 #ah-alert span{display:block;margin-top:2px;font-size:var(--ds-fs-small);color:var(--ds-ivory)}
 #ah-dmg div{position:absolute;transform:translate(-50%,0);font:400 var(--ds-fs-fig)/1 var(--ds-title);-webkit-text-stroke:4px var(--ds-ink);paint-order:stroke fill;animation:ahf 1.05s ease-out forwards;white-space:nowrap}
@@ -83,14 +84,16 @@ export const CSS = `
 @keyframes ahf{0%{opacity:0;margin-top:6px}12%{opacity:1}100%{opacity:0;margin-top:-48px}}
 #arena-hud.still #ah-dmg div{animation-delay:-.22s;animation-play-state:paused}
 #ah-ko,#ah-pause{position:absolute;inset:0;display:none;place-items:center;text-align:center;pointer-events:none}
-#ah-ko.on,#ah-pause.on{display:grid}
+#ah-ko.on,#ah-pause.on{display:grid;animation:ds-fade .16s ease-out}
 #ah-pause{background:var(--ds-veil)}
 #ah-pause b{display:block;font:400 var(--ds-fs-title-huge)/1.1 var(--ds-title);color:var(--ds-ivory)}
 #ah-pause span{display:block;margin-top:12px;font-size:var(--ds-fs-small);color:var(--ds-ivory)}
 /* the K.O.: everything else leaves, one word across the screen on its band */
 #ah-ko>div{width:100%;padding:64px 16px 60px;background:linear-gradient(to right,transparent 0,var(--ds-veil-strong) 24%,var(--ds-veil-strong) 76%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 16%,#000 84%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 16%,#000 84%,transparent 100%)}
 #ah-ko b{display:block;font:400 var(--ds-fs-display)/1 var(--ds-title);color:var(--ds-ivory)}
-#ah-ko b::after{content:'';display:block;width:min(420px,60vw);height:1px;margin:18px auto 0;background:var(--ds-accent)}
+#ah-ko.on b{animation:ds-in .32s ease-out}
+#ah-ko b::after{content:'';display:block;width:min(420px,60vw);height:1px;margin:18px auto 0;background:var(--ds-accent);animation:ds-rule .4s ease-out .12s backwards}
+#ah-ko.on span{animation:ds-fade .24s ease-out .3s backwards}
 #ah-ko span{display:block;margin-top:14px;font-size:var(--ds-fs-label);color:var(--ds-ivory)}
 #ah-rotate{position:absolute;inset:0;display:none;place-items:center;padding:24px;text-align:center;background:var(--ds-ink);pointer-events:auto}
 #ah-rotate b{display:block;font:400 var(--ds-fs-title)/1.2 var(--ds-title);color:var(--ds-ivory)}
@@ -110,7 +113,7 @@ export const CSS = `
    choice « Sur le bouton Esquive », journal Passe AF1) */
 @media (max-height:600px){#ah-wbar{display:none}.ah-b.win .wl{display:block}}
 #arena-hud button:focus-visible{outline:1px solid var(--ds-accent);outline-offset:1px}
-@media (prefers-reduced-motion:reduce){.ah-b.open,.ah-b.hit,.ah-b.deny,.ah-pips b.gain{animation:none}#ah-dmg div{animation-duration:.01s}}
+@media (prefers-reduced-motion:reduce){.ah-b.open,.ah-b.hit,.ah-b.deny,.ah-pips b.gain,#ah-ko.on,#ah-pause.on,#ah-ko.on b,#ah-ko b::after,#ah-ko.on span{animation:none}#arena-hud>*,#ah-alert{transition:none}#ah-dmg div{animation-duration:.01s}}
 `;
 
 /** The HUD's words (journal Passe L3): `?scene=arena` keeps the prototype's French, word for word (TEXTS_FR, the default); the game's play

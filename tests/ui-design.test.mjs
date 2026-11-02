@@ -123,6 +123,19 @@ test('UM-R3, UM-R5: no developer\'s word on screen, Explore in the system, no mi
   assert.match(hud, /var\(--ds-title\)/);
 });
 
+test('UM-T2, lot 5: the moves are the direction\'s and they yield to reduced motion', () => {
+  const S = fs.readFileSync(path.join(ROOT, 'src/ui/design/system.ts'), 'utf8'), St = fs.readFileSync(path.join(ROOT, 'src/ui/style.ts'), 'utf8'), A = fs.readFileSync(path.join(ROOT, 'src/arena/ArenaHud.ts'), 'utf8');
+  // a fade and a slide of 8 px in 160 ms, a rule traced from the left, a band rising from the edge
+  assert.match(S, /@keyframes ds-in\{from\{opacity:0;transform:translateY\(8px\)\}\}/);
+  assert.match(S, /@keyframes ds-rule\{from\{transform:scaleX\(0\)\}\}/);
+  assert.match(St, /\.pm-overlay \.pm-card\{animation:ds-in \.16s ease-out\}/);
+  assert.match(St, /\.pm-talk\{animation:ds-rise/);
+  assert.match(St, /transform-origin:left center;animation:ds-rule/);
+  // no motion for a reader who asked for none
+  assert.match(St, /prefers-reduced-motion:reduce\)\{\.pm,\.pm \*,\.pm \*::before,\.pm \*::after\{transition:none!important;animation:none!important\}\}/);
+  assert.match(A, /prefers-reduced-motion:reduce\)\{[^\n]*#ah-ko\.on b[^\n]*\{animation:none\}/);
+});
+
 test('UM-S2: no frame left: no border image, no texel grid, no pixel font, no pixelated box; only the faces keep their pixels', () => {
   assert.ok(!fs.existsSync(path.join(ROOT, 'src/ui/design/frames.ts')), 'frames.ts is gone');
   const files = [...fs.readdirSync(path.join(ROOT, 'src/ui')).filter((f) => f.endsWith('.ts')).map((f) => `src/ui/${f}`), 'src/ui/design/system.ts', 'src/ui/design/tokens.ts', 'src/arena/ArenaHud.ts', 'src/arena/DynamicHud.ts'];
@@ -139,6 +152,7 @@ test('the dialogue: a band at the foot of the screen in every game, the price sa
   const U = await load('/src/ui/townUi.ts');
   assert.equal(U.shortLabel({ label: 'Buy a whetstone (8 coins: +5 % damage at your next bout)', coins: 8 }), 'Buy a whetstone · +5 % damage at your next bout');
   assert.equal(U.shortLabel({ label: 'Have Bram temper your blade in the Wyrmsteel (10 coins: +15 % damage)', coins: 10 }), 'Have Bram temper your blade in the Wyrmsteel · +15 % damage');
+  assert.equal(U.shortLabel({ label: 'Have Hilde check every strap of your gear (5 coins)', coins: 5 }), 'Have Hilde check every strap of your gear');
   // another amount, no coins: the words stay
   assert.equal(U.shortLabel({ label: 'Buy a whetstone (8 coins: +5 %)', coins: 9 }), 'Buy a whetstone (8 coins: +5 %)');
   assert.equal(U.shortLabel({ label: 'Help Mara unload her morning crates (+6 coins, her goodwill)', coins: 0 }), 'Help Mara unload her morning crates (+6 coins, her goodwill)');

@@ -34,6 +34,10 @@ const BASE = `
 --ds-grad-spot:radial-gradient(closest-side,var(--ds-veil-strong) 68%,transparent 100%);
 --ds-gutter:clamp(16px,7.8vw,150px)}
 @media ${PHONE_QUERY}{:root{${sizes('phone')}}}
+@keyframes ds-in{from{opacity:0;transform:translateY(8px)}}
+@keyframes ds-fade{from{opacity:0}}
+@keyframes ds-rise{from{opacity:0;transform:translateY(32px)}}
+@keyframes ds-rule{from{transform:scaleX(0)}}
 .pm kbd,#arena-hud kbd,#ex-prompt kbd{flex:none;display:inline-block;box-sizing:border-box;min-width:30px;padding:0 8px;font:600 var(--ds-fs-small)/26px var(--ds-text);text-align:center;color:inherit;background:none;border:1px solid var(--ds-muted);border-radius:3px}`;
 
 function sizes(d: 'desktop' | 'phone'): string {

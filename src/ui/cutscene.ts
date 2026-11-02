@@ -23,6 +23,7 @@ body.pm-bands .pm:not(.pm-scene){visibility:hidden}
 .pm-scene{z-index:41;padding-bottom:calc(9vh + 14px)}
 .pm-scene .pm-dlg{grid-template-columns:96px minmax(0,1fr) auto}
 .pm-scene .pm-row{grid-column:3;grid-row:1;align-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.pm-scene .pm-row .pm-btn::before{display:none}
 .pm-scene .pm-row .pm-btn{width:auto;padding:0;border-top:0;gap:10px;font-size:var(--ds-fs-small);color:var(--ds-muted)}
 .pm-scene .pm-row .pm-btn:focus,.pm-scene .pm-row .pm-btn:hover{color:var(--ds-ivory)}
 @media (max-width:700px){.pm-scene .pm-dlg{grid-template-columns:64px minmax(0,1fr);grid-template-rows:auto auto}.pm-scene .pm-row{grid-column:1 / 3;grid-row:auto;flex-direction:row;justify-content:flex-end;margin-top:8px}}`;

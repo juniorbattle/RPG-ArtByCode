@@ -9,11 +9,11 @@ import { fontsReady, installDesign } from './design/system';
 
 const CSS = `
 #loading{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;box-sizing:border-box;background:var(--ds-ink);color:var(--ds-muted);font:400 var(--ds-fs-small)/1.35 var(--ds-text);transition:opacity .8s}
-#loading .wrap{width:min(420px,100%);text-align:center}
+#loading .wrap{width:min(420px,100%);text-align:center;animation:ds-fade .2s ease-out}
 #loading.hold .wrap{visibility:hidden}
 #loading .name{margin-bottom:18px;font:400 var(--ds-fs-title-big)/1.2 var(--ds-title);color:var(--ds-ivory)}
 #ld-gauge{position:relative;height:2px;background:var(--ds-trough)}
-#ld-bar{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ds-accent)}
+#ld-bar{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ds-accent);transition:width .16s ease-out}
 #ld-label{margin-top:10px;min-height:1.35em;overflow-wrap:anywhere}
 #ld-label.err{color:var(--ds-accent)}
 `;

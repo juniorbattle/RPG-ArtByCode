@@ -53,12 +53,14 @@ const CSS = `
 #pm-figs b{display:block;font:400 var(--ds-fs-fig)/1 var(--ds-title)}
 #pm-figs small{display:block;margin-top:4px;font-size:var(--ds-fs-small)}
 #pm-figs .hurt b,#pm-figs .hurt small{color:var(--ds-accent)}
-#pm-prompt{left:50%;bottom:44px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:14px 60px;color:var(--ds-ivory);font-size:var(--ds-fs-label);background:var(--ds-grad-spot);opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
-#pm-prompt.on{opacity:1}
+#pm-prompt{left:50%;bottom:44px;transform:translate(-50%,8px);display:flex;align-items:center;gap:12px;padding:14px 60px;color:var(--ds-ivory);font-size:var(--ds-fs-label);background:var(--ds-grad-spot);opacity:0;transition:opacity .16s,transform .16s;pointer-events:none;white-space:nowrap}
+#pm-prompt.on{opacity:1;transform:translate(-50%,0)}
 #pm-hints{right:30px;bottom:30px;display:flex;gap:28px;align-items:center;padding:12px 44px;background:var(--ds-grad-spot)}
 #pm-hints .pm-btn{width:auto;gap:10px;padding:0;border-top:0;font-size:var(--ds-fs-body);white-space:nowrap}
+#pm-hints .pm-btn::before{display:none}
+#pm-status .ticks i{transform-origin:left center;animation:ds-rule .24s ease-out backwards}
 #pm-toast{left:0;right:0;top:0;padding:16px clamp(16px,24vw,460px) 30px;text-align:center;background:linear-gradient(to bottom,var(--ds-veil-strong) 62%,transparent 100%);display:none;pointer-events:none}
-#pm-toast.on{display:block}
+#pm-toast.on{display:block;animation:ds-fade .16s ease-out}
 #pm-toast p{margin:2px 0}
 .pm-talk{left:0;right:0;bottom:0;z-index:40;padding:72px var(--ds-gutter) 40px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 72px),transparent 100%)}
 .pm-dlg{display:grid;grid-template-columns:96px minmax(0,620px) minmax(300px,1fr);column-gap:28px;align-items:start;max-width:1620px;margin:0 auto}
@@ -141,7 +143,7 @@ export function costTag(o: Pick<ActionOption, 'cost' | 'coins'>): string {
 /** the option's words without its price: the cost tag says it (the fiche of journal Passe UM1: « 20 coins » written twice); the label stays the
  *  simulation's, the same in the journal */
 export function shortLabel(o: Pick<ActionOption, 'label' | 'coins'>): string {
-  return o.coins ? o.label.replace(new RegExp(` \\(${o.coins} coins?: ([^)]*)\\)`), ' · $1') : o.label;
+  return o.coins ? o.label.replace(new RegExp(` \\(${o.coins} coins?(?:: ([^)]*))?\\)`), (_, about?: string) => (about ? ` · ${about}` : '')) : o.label;
 }
 
 export class TownUi {
