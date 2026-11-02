@@ -8,6 +8,7 @@ import { playCutscene } from './cutscene';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
 import { fontsReady, installDesign } from './design/system';
+import { progressOn } from './loading';
 import { preloadPortraits } from './portraits';
 import { ExitMarkers } from './exits';
 
@@ -28,7 +29,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   for (const id of scene?.cast ?? []) if (!people.includes(id)) people.push(id);
   const app = new PlazaApp({
     canvas: b.canvas, params: q, kind, time: look === 'night' ? null : look, people, crowd: PLAZA_CROWD[look], arriveFrom: b.params.get('arrive'),
-    onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; },
+    onProgress: progressOn(b.label, b.bar),
   });
   (window as any).__plaza = app;
   installDesign(look);

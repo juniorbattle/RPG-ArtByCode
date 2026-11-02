@@ -41,8 +41,8 @@ const toneCss = () => document.getElementById('ds-tone').textContent;
 const quiet = (f) => { const e = console.error; console.error = () => {}; try { return f(); } finally { console.error = e; } };
 
 test('the screen opens over the page in the tone of the address\'s day state, its opening line, its content held until reveal', () => {
-  for (const [time, tone, line] of [[null, 'night', 'PAINTING THE NIGHT…'], ['night', 'night', 'PAINTING THE NIGHT…'], ['morning', 'morning', 'PAINTING THE DAY…'],
-    ['midday', 'midday', 'PAINTING THE DAY…'], ['afternoon', 'afternoon', 'PAINTING THE DAY…']]) {
+  for (const [time, tone, line] of [[null, 'night', 'Painting the night…'], ['night', 'night', 'Painting the night…'], ['morning', 'morning', 'Painting the day…'],
+    ['midday', 'midday', 'Painting the day…'], ['afternoon', 'afternoon', 'Painting the day…']]) {
     reset();
     const ld = LD.showLoading(time);
     assert.equal(ld.root.id, 'loading');
@@ -62,9 +62,9 @@ test('the screen opens over the page in the tone of the address\'s day state, it
   const ld = LD.showLoading(null);
   LD.toneLoading(ld.label, 'midday');
   assert.ok(toneCss().includes(`--ds-ink:${T.TONES.midday.ink}`));
-  assert.equal(ld.label.textContent, 'PAINTING THE DAY…');
+  assert.equal(ld.label.textContent, 'Painting the day…');
   LD.toneLoading(ld.label, 'night');
-  assert.equal(ld.label.textContent, 'PAINTING THE NIGHT…');
+  assert.equal(ld.label.textContent, 'Painting the night…');
 });
 
 test('ready waits for both fonts (the title and the text font, regular and bold), and never more than a second', async (t) => {

@@ -50,7 +50,7 @@ async function open(browser, base, query) {
   const err = await page.evaluate(() => window.__error ?? window.__baked?.error ?? null);
   if (err) throw new Error(`${base}?${query}: ${err}`);
   // the loading screen fades out over the canvas for 0.8 s after boot: wait until main.ts removed it
-  await page.waitForFunction(() => ![...document.body.children].some((e) => e.textContent?.includes('PAINTING') || e.textContent?.includes('GENERATING')), { timeout: 10000 });
+  await page.waitForFunction(() => ![...document.body.children].some((e) => e.textContent?.includes('Painting') || e.textContent?.includes('GENERATING')), { timeout: 10000 });
   await page.evaluate((HIDE, NOSHADOW) => {
     const a = window.__app;
     if (!a.__u) { a.__u = a.update.bind(a); a.__r = a.render.bind(a); a.update = () => {}; a.render = () => {}; }

@@ -3,6 +3,7 @@ import { lookOf, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
 import { fontsReady, installDesign } from './design/system';
+import { progressOn } from './loading';
 import { preloadPortraits } from './portraits';
 
 /** Lantern Row (choice P3, journal Passe L6): the slice's light third place, built from the district's generators and seen from one
@@ -13,7 +14,7 @@ export async function startPlayLanterns(b: Boot, st0: GameState): Promise<void> 
   installGameApi(() => st, (s) => { st = s; }, (prev, next) => lookOf(prev) !== lookOf(next) || prev.place !== next.place || next.over !== prev.over);
   const q = new URLSearchParams();
   for (const k of ['fps', 'freeze', 'painters', 'gpuprof']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
-  const app = new PlaceApp({ canvas: b.canvas, params: q, onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; } });
+  const app = new PlaceApp({ canvas: b.canvas, params: q, onProgress: progressOn(b.label, b.bar) });
   (window as any).__place = app;
   // Lantern Row is always at night (L7-3): the night's tone
   installDesign('night');

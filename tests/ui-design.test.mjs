@@ -33,7 +33,7 @@ test('S1: the embedded fonts are the files FONTS.md records, byte for byte, unde
 });
 
 test('S1: no system font in the play mode\'s screens and the arena\'s HUD', () => {
-  const files = [...fs.readdirSync(path.join(ROOT, 'src/ui')).filter((f) => f.endsWith('.ts')).map((f) => `src/ui/${f}`), 'src/ui/design/system.ts', 'src/arena/ArenaHud.ts'];
+  const files = [...fs.readdirSync(path.join(ROOT, 'src/ui')).filter((f) => f.endsWith('.ts')).map((f) => `src/ui/${f}`), 'src/ui/design/system.ts', 'src/arena/ArenaHud.ts', 'src/debug/Hud.ts', 'index.html'];
   for (const f of files) {
     const lines = fs.readFileSync(path.join(ROOT, f), 'utf8').split(/\r?\n/);
     lines.forEach((l, i) => {
@@ -111,6 +111,16 @@ test('UM-T2, lot 2: one sign for an alert, the K.O. alone on the screen, the tie
   assert.match(D, /#ah-tiers\.on\{opacity:1\}/);
   assert.ok(!/ui\.arena\.keys/.test(P), 'no paragraph of keys');
   assert.match(P, /v2 && !challenge \? gate/, 'the version 2\'s gate: its stage and the name');
+});
+
+test('UM-R3, UM-R5: no developer\'s word on screen, Explore in the system, no minimap', () => {
+  const en = fs.readFileSync(path.join(ROOT, 'src/narrative/text/en.ts'), 'utf8').split(/\r?\n/).filter((l) => !/^\s*\/\//.test(l)).join('\n');
+  for (const w of [/\bslice\b/i, /mock-up/i, /first build/i, /provisional/i]) assert.ok(!w.test(en.replace(/'clock\.sliceOver'/, '')), `en.ts: ${w}`);
+  const src = ['src/main.ts', 'src/ui/loading.ts', 'src/ui/playTown.ts', 'src/ui/playPlaza.ts', 'src/ui/playArena.ts', 'src/ui/playForecourt.ts', 'src/ui/playLanterns.ts'].map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
+  assert.ok(!src.includes('GENERATING'), 'no generator phase on the loading screen');
+  const hud = fs.readFileSync(path.join(ROOT, 'src/debug/Hud.ts'), 'utf8');
+  assert.ok(!/canvas|drawMap|minimap\b.*=|Palatino|Georgia/.test(hud.replace(/\/\*\*[\s\S]*?\*\//g, '')), 'the HUD: no minimap, no font of its own');
+  assert.match(hud, /var\(--ds-title\)/);
 });
 
 test('UM-S2: no frame left: no border image, no texel grid, no pixel font, no pixelated box; only the faces keep their pixels', () => {

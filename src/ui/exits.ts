@@ -40,7 +40,8 @@ export class ExitMarkers {
       const t = this.tags[i], d = Math.hypot(w.anchor[0] - hero.x, w.anchor[2] - hero.z);
       this.v.set(w.anchor[0], w.anchor[1], w.anchor[2]).project(camera);
       const on = this.v.z < 1 && Math.abs(this.v.x) < 1.05 && Math.abs(this.v.y) < 1.05;
-      const x = THREE.MathUtils.clamp((this.v.x + 1) / 2 * W, 70, W - 70), y = THREE.MathUtils.clamp((1 - this.v.y) / 2 * H, 40, H - 60);
+      // a tag stays whole on screen, however narrow (the audit of journal Passe UM1: it left a phone's screen)
+      const half = Math.min(W / 2, (t.offsetWidth || 140) / 2), x = THREE.MathUtils.clamp((this.v.x + 1) / 2 * W, half, W - half), y = THREE.MathUtils.clamp((1 - this.v.y) / 2 * H, 40, H - 60);
       t.style.transform = `translate(${x.toFixed(0)}px, ${y.toFixed(0)}px) translate(-50%, -100%)`;
       t.style.opacity = on && !this.leaving ? String(THREE.MathUtils.clamp((this.near - d) / 2.5, 0, 1)) : '0';
     });

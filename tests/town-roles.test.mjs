@@ -154,7 +154,7 @@ test('the title shows at once, the town at midday comes up behind it, « Explore
   assert.match(now, /\nelse void ld\.ready\.then\(\(\) => \{ ld\.reveal\(\); if \(params\.get\('scene'\) === 'arena'\) void startArena\(\); else startTown\(\); \}\);\n/);
   assert.match(now, /if \(behindTitle\) behindTitle\(hud\); else hud\(\);\n    app\.start\(\);/);
   assert.match(now, /if \(params\.has\('clean'\)\) return;/);
-  assert.ok(now.includes("if (panelClosed) { panel.el.style.display = 'none';"), 'the closed panel');
+  assert.ok(now.includes("if (panelClosed) panel.el.style.display = 'none';"), 'the closed panel');
   // keys pressed on the title screen stay on it: the town behind does not walk
   const title = fs.readFileSync(path.join(ROOT, 'src/ui/title.ts'), 'utf8');
   assert.match(title, /root\.addEventListener\('keydown', \(e\) => e\.stopPropagation\(\)\)/);

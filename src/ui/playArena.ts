@@ -16,6 +16,7 @@ import { writeSave } from './save';
 import { esc, overlay } from './style';
 import { standingsHtml } from './board';
 import { fontsReady, installDesign } from './design/system';
+import { progressOn } from './loading';
 
 /** The official bout (journal Passe L3; choice G1: the arena as it is, played from a match sheet): the day's opponent in Marek's seat, the
  *  player's name and preparation in Ren's, the English HUD (choice K1). A scouting report before the first blow; once the KO has had its
@@ -50,7 +51,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   const texts = { ...(dyn ? DYN_TEXTS_EN : TEXTS_EN), subtitle: challenge ? tx('v2.challenge.title') : v2 && m ? stageName(m) : tx('ui.arena.subtitle', { round: sheet.round }), subMarek: opp.epithet };
   const app = new ArenaApp({
     canvas: b.canvas, params: q,
-    onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; },
+    onProgress: progressOn(b.label, b.bar),
     match: v2d
       ? { data: v2d.data, tiers: v2d.tiers, rules: 'v2', foe: opp.id, assist: view.assist, texts, onOver: (r) => void finish(r) }
       : dyn

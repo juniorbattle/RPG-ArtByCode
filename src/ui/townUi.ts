@@ -108,6 +108,7 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
   .pm-dlg .pm-h small{display:block;margin:2px 0 0}
   .pm-dlg .pm-line{margin-top:4px}
   .pm-dlg .opts,.pm-dlg.here .opts{margin-top:10px;max-height:none;min-height:0}
+  .pm-dlg .opts>.pm-btn:last-child{position:sticky;bottom:0;background:var(--ds-veil-strong)}
   .pm-btn .why{display:none}
 }
 @media (max-height:480px) and (min-width:701px){

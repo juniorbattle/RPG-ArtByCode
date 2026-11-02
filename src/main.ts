@@ -2,7 +2,7 @@ import { App, type AppOptions } from './app/App';
 import { parseTime } from './atmosphere/DayState';
 import { DebugPanel } from './debug/DebugPanel';
 import { Hud } from './debug/Hud';
-import { loadingError, showLoading, toneLoading } from './ui/loading';
+import { loadingError, progressOn, showLoading, toneLoading } from './ui/loading';
 
 const canvas = document.getElementById('view') as HTMLCanvasElement;
 const params = new URLSearchParams(location.search);
@@ -35,10 +35,9 @@ function titleOverTown(m: typeof import('./ui/title')): void {
 }
 
 async function startArena(): Promise<void> {
-  const onProgress = (l: string, f: number) => { label.textContent = `GENERATING ${l.toUpperCase()}`; bar.style.width = `${Math.round(f * 100)}%`; };
-  try {
+    try {
     const { ArenaApp } = await import('./arena/ArenaApp');
-    const app = new ArenaApp({ canvas, params, onProgress });
+    const app = new ArenaApp({ canvas, params, onProgress: progressOn(label, bar) });
     (window as any).__arena = app;
     await app.init();
     loading.style.opacity = '0';
@@ -56,7 +55,7 @@ async function startArena(): Promise<void> {
 function startTown({ panelClosed = false, behindTitle }: { panelClosed?: boolean; behindTitle?: (hud: () => void) => void } = {}): void {
   const opts: AppOptions = {
     canvas, params,
-    onProgress: (l, f) => { label.textContent = `GENERATING ${l.toUpperCase()}`; bar.style.width = `${Math.round(f * 100)}%`; },
+    onProgress: progressOn(label, bar),
   };
   // DEV only: EXPERIMENTAL baked sheets in the shared atlas (?baked=<id>, see src/lab/bakedLoader.ts); compiled out of production builds
   if (import.meta.env.DEV && params.has('baked')) opts.baked = import('./lab/bakedLoader').then((m) => m.loadBaked(params));
@@ -90,11 +89,10 @@ function startTown({ panelClosed = false, behindTitle }: { panelClosed?: boolean
     const hud = () => {
       if (params.has('clean')) return;
       const panel = new DebugPanel(app); const hud = new Hud(app);
-      if (panelClosed) { panel.el.style.display = 'none'; hud.setMapRight(14); }
+      if (panelClosed) panel.el.style.display = 'none';
       let tick = 0;
       const loop = () => { hud.update(); if ((tick++ % 12) === 0) panel.update(); requestAnimationFrame(loop); };
       loop();
-      window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'h') hud.setMapRight(panel.el.style.display === 'none' ? 14 : 300); });
     };
     if (behindTitle) behindTitle(hud); else hud();
     app.start();

@@ -30,8 +30,8 @@ const INSTR = () => {
   try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__boot.longs.push([Math.round(e.startTime), Math.round(e.duration)]); }).observe({ type: 'longtask', buffered: true }); } catch {}
   // observed from the start (not from DOMContentLoaded): the first label is set while the module script runs, before DOMContentLoaded
   // (journal pass 6, P3: the probe used to miss it and start the painting phase at the second label)
-  const mo = new MutationObserver(() => { const el = document.getElementById('ld-label'); if (el && window.__boot.labels.at(-1)?.[1] !== el.textContent) window.__boot.labels.push([Math.round(performance.now()), el.textContent]); });
-  mo.observe(document, { subtree: true, childList: true, characterData: true });
+  const mo = new MutationObserver(() => { const el = document.getElementById('ld-label'); const v = (el?.dataset.phase ?? '').toUpperCase(); if (el && window.__boot.labels.at(-1)?.[1] !== v) window.__boot.labels.push([Math.round(performance.now()), v]); });
+  mo.observe(document, { subtree: true, childList: true, characterData: true , attributes: true, attributeFilter: ['data-phase'] });
   const raf = window.requestAnimationFrame.bind(window), ts = window.__boot.frames;
   window.requestAnimationFrame = (cb) => raf((t) => { if (ts.length < 4000) ts.push(t); cb(t); });
   let app;

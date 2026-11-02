@@ -6,7 +6,7 @@ import { PHONE_QUERY, TYPE, VEIL, toneOf } from './tokens';
 /** The interface's design system in the page (journal Passes UI3 / UM1, direction A « Voile »): the two embedded fonts (UM-S1, `src/ui/fonts/FONTS.md`),
  *  the tone of the page's day state as CSS custom properties (UM-L2, UM-S3), the veils (gradients rising from the edge of the screen: UM-S2 took
  *  the frames away), the type scale with its phone sizes (UM-S4) and the keycaps. The loading screen installs it on every page (journal Passe
- *  UI4); the free-roaming town's DEV panel and HUD do not use it. */
+ *  UI4); the free-roaming town's HUD uses it too (UM-R5, journal Passe UM6), its DEV panel stays a tool of its own. */
 
 export const TITLE = '"CdT Title"';
 export const TEXT = '"CdT Text"';
@@ -34,7 +34,7 @@ const BASE = `
 --ds-grad-spot:radial-gradient(closest-side,var(--ds-veil-strong) 68%,transparent 100%);
 --ds-gutter:clamp(16px,7.8vw,150px)}
 @media ${PHONE_QUERY}{:root{${sizes('phone')}}}
-.pm kbd,#arena-hud kbd{flex:none;display:inline-block;box-sizing:border-box;min-width:30px;padding:0 8px;font:600 var(--ds-fs-small)/26px var(--ds-text);text-align:center;color:inherit;background:none;border:1px solid var(--ds-muted);border-radius:3px}`;
+.pm kbd,#arena-hud kbd,#ex-prompt kbd{flex:none;display:inline-block;box-sizing:border-box;min-width:30px;padding:0 8px;font:600 var(--ds-fs-small)/26px var(--ds-text);text-align:center;color:inherit;background:none;border:1px solid var(--ds-muted);border-radius:3px}`;
 
 function sizes(d: 'desktop' | 'phone'): string {
   const t = TYPE[d];

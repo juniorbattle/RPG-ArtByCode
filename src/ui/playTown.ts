@@ -5,6 +5,7 @@ import { TownUi } from './townUi';
 import { esc, overlay } from './style';
 import { tx } from '../narrative/text';
 import { fontsReady, installDesign } from './design/system';
+import { progressOn } from './loading';
 import { preloadPortraits } from './portraits';
 import { ExitMarkers } from './exits';
 import { WALK } from '../architecture/StreetComposer';
@@ -31,7 +32,7 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   const arrive = isV2(st) ? b.params.get('arrive') : null;
   if (arrive === 'forecourt' && !b.params.has('player')) q.set('player', `${WALK.x1 - 1.4},0`);
   if (arrive === 'lanterns' && !b.params.has('player')) q.set('player', `${WALK.x0 + 1.2},0.6`);
-  const app = new App({ canvas: b.canvas, params: q, onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; } });
+  const app = new App({ canvas: b.canvas, params: q, onProgress: progressOn(b.label, b.bar) });
   (window as any).__app = app;
   // the interface's tone follows the page's day state (the operator's decision L2, journal Passe UI3)
   installDesign(lookOf(st));

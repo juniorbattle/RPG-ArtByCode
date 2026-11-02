@@ -3,6 +3,7 @@ import { arenaQuery, lookOf, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
 import { fontsReady, installDesign } from './design/system';
+import { progressOn } from './loading';
 import { preloadPortraits } from './portraits';
 
 /** The Arena Forecourt (journal Passes L4 / L6): the arena's sand outside the bouts, walkable (the hero walks it, arrows or A / D, W / S),
@@ -15,7 +16,7 @@ export async function startPlayForecourt(b: Boot, st0: GameState): Promise<void>
   // the slot's day state (journal Passe AD1): the morning, midday, the end of day after a bout, the night
   const q = new URLSearchParams({ ...arenaQuery(st), hud: '0' });
   for (const k of ['fps', 'freeze', 'painters', 'gpuprof']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
-  const app = new ArenaApp({ canvas: b.canvas, params: q, onProgress: (l, f) => { b.label.textContent = `GENERATING ${l.toUpperCase()}`; b.bar.style.width = `${Math.round(f * 100)}%`; }, forecourt: { marek: st.slot !== 'evening' } });
+  const app = new ArenaApp({ canvas: b.canvas, params: q, onProgress: progressOn(b.label, b.bar), forecourt: { marek: st.slot !== 'evening' } });
   (window as any).__arena = app;
   installDesign(lookOf(st));
   await app.init();

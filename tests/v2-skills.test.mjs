@@ -49,7 +49,7 @@ test('a version 2 game starts with today\'s four skills at level 1; the default 
       for (const t of ['buySkill', 'drillSkill', 'setLoadout']) assert.ok(!types.includes(t), `${name} ${place}: ${t}`);
       assert.ok(!G.actions(s).some((o) => o.action.type === 'talk' && PEOPLE[o.action.who].v2), `${name} ${place}: a version 2 person`);
     }
-    refused(d, { type: 'buySkill', skill: 't3' }, d.over ? /slice is over/ : /version 2/);
+    refused(d, { type: 'buySkill', skill: 't3' }, d.over ? /pool is over/ : /version 2/);
     if (!d.over) refused(d, { type: 'talk', who: 'corvin' }, /Nobody/);
   }
 });

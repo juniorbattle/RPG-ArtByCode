@@ -20,7 +20,7 @@ const CSS = `
 
 export interface Loading {
   root: HTMLElement;
-  /** the status line (`GENERATING <phase>`), the gauge's fill (its width in %) */
+  /** the status line, the gauge's fill (its width in %): `progressOn` */
   label: HTMLElement; bar: HTMLElement;
   /** resolves once both fonts are loaded, or after a second without them (the scene never waits longer for its loading screen) */
   ready: Promise<void>;
@@ -44,7 +44,13 @@ export function showLoading(time: TimeOfDay | null): Loading {
 /** the page's tone (`installDesign`) and the screen's opening line: the night, or the day */
 export function toneLoading(label: HTMLElement, time: TimeOfDay | null): void {
   installDesign(time);
-  if (!label.classList.contains('err')) label.textContent = time && time !== 'night' ? 'PAINTING THE DAY…' : 'PAINTING THE NIGHT…';
+  if (!label.classList.contains('err')) label.textContent = time && time !== 'night' ? 'Painting the day…' : 'Painting the night…';
+}
+
+/** a scene's progress: the gauge's fill; the status line stays the screen's own, no developer's word on it (UM-R3 « Tous les retirer »), the generator's
+ *  phase kept in `data-phase` for tools/startup.mjs */
+export function progressOn(label: HTMLElement, bar: HTMLElement): (phase: string, f: number) => void {
+  return (phase, f) => { label.dataset.phase = phase; bar.style.width = `${Math.round(f * 100)}%`; };
 }
 
 /** a scene that failed to load says why on the screen (and to the tools, `window.__error`) */

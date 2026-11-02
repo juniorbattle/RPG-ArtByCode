@@ -28,8 +28,10 @@ const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(B
 let failed = 0;
 const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (!ok) failed++; };
 
-/** the DEV panel (#adp) and the minimap (the canvas the HUD places by `right`) */
-const panel = (page) => page.evaluate(() => { const p = document.getElementById('adp'), m = [...document.querySelectorAll('canvas')].find((c) => c.style.right); return p ? `${p.style.display === 'none' ? 'closed' : 'open'} ${m?.style.right}` : 'none'; });
+/** the DEV panel (#adp) */
+const panel = (page) => page.evaluate(() => { const p = document.getElementById('adp'); return p ? (p.style.display === 'none' ? 'closed' : 'open') : 'none'; });
+/** the scene alone: the HUD changed by design (UM-R5, journal Passe UM6), the district must not */
+const canvasOnly = (page) => page.addStyleTag({ content: 'body>*:not(#view){visibility:hidden!important}' });
 
 async function capture(url, file, viaTitle, save, keys = '') {
   const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars', '--disable-background-timer-throttling', '--disable-renderer-backgrounding'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 }, protocolTimeout: READY });
@@ -67,15 +69,16 @@ async function capture(url, file, viaTitle, save, keys = '') {
       frozen(() => { a.sprites.update(a.actors.actors, a.lights, a.rig.camera, a.moonDir, a.actors.interactTarget, a.actors.player); r(); });
     }, +stepsS);
     for (const k of keys) await page.keyboard.press(k);
-    const want = viaTitle || keys.length % 2 ? 'closed 14px' : 'open 300px';
+    const want = viaTitle || keys.length % 2 ? 'closed' : 'open';
     check(await panel(page) === want, `${path.basename(file)}: the DEV panel ${await panel(page)} (want ${want})`);
+    await canvasOnly(page);
     await page.screenshot({ path: file });
     if (viaTitle) {
       await page.keyboard.press('h');
-      check(await panel(page) === 'open 300px', `H opens Explore's DEV panel: ${await panel(page)}`);
+      check(await panel(page) === 'open', `H opens Explore's DEV panel: ${await panel(page)}`);
       await page.screenshot({ path: file.replace(/.png$/, '-h.png') });
       await page.keyboard.press('h');
-      check(await panel(page) === 'closed 14px', `H closes it again: ${await panel(page)}`);
+      check(await panel(page) === 'closed', `H closes it again: ${await panel(page)}`);
     }
   } finally { await b.close(); }
 }

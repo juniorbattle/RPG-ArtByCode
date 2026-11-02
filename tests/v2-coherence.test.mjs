@@ -106,12 +106,12 @@ test('the heralds and the Colosseum\'s roar on the days of bouts only; the calen
 test('the ten days told as they are: the board, the clerk, the registry, the end, the people\'s words', () => {
   const s = v2(), html = B.boardHtml(s, POOL.standings(s)).replace(/<[^>]+>/g, ' ');
   assert.match(html, /semi-finals/); assert.match(html, /Gate/); assert.doesNotMatch(html, /slice|transition phase/i);
-  assert.match(B.boardHtml(G.namedState('day1-morning'), []).replace(/<[^>]+>/g, ' '), /The slice ends with the pool's second round/, 'today\'s board unchanged');
+  assert.match(B.boardHtml(G.namedState('day1-morning'), []).replace(/<[^>]+>/g, ' '), /After the pool, the best four go on to the transition phase/, 'today\'s board unchanged');
   assert.match(D.linesOf(s, 'odo')[0], /three rounds/); s.flags.registered = true; assert.match(D.linesOf(s, 'odo')[0], /two, four and five/);
   s.day = 6; assert.match(D.linesOf(s, 'odo')[0], /Gate/);
   const r = v2(); r.place = 'forecourt'; const reg = G.advance(r, { type: 'register' }); assert.ok(reg.ok, reg.reason); assert.match(reg.events[0].text, /three bouts/);
   const over = v2(); over.over = true; assert.equal(G.advance(over, { type: 'wait' }).reason, 'The tournament is over.');
-  assert.equal(G.advance({ ...G.namedState('day1-morning'), over: true }, { type: 'wait' }).reason, 'The slice is over.');
+  assert.equal(G.advance({ ...G.namedState('day1-morning'), over: true }, { type: 'wait' }).reason, 'The pool is over.');
   // the festival square's innkeeper, Lantern Row's in today's game
   assert.equal(P.titleOf(P.PEOPLE.lio, true), 'the festival square\'s innkeeper'); assert.equal(P.titleOf(P.PEOPLE.lio, false), P.PEOPLE.lio.title);
   // beaten on the second day, Vessa still has eight days to answer; the townsfolk speak of the bracket after the pool
