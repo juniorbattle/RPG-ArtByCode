@@ -528,6 +528,12 @@ Rendu hors ligne, 44,1 kHz, volume 0,7, musique 0,5 (`tools/audio/render.mjs`, `
 - `tools/ui-text.mjs` compte une ligne tranchée par un défilement comme « covered », pas comme une faute : la Passe UM9 a passé 23 pages sur 23 avec cette coupure sous les yeux. Une mesure dit ce qu'elle mesure ; regarder la page reste une étape.
 - « Cohérent » a deux sens. Le même style se vérifie par des jetons ; la même façon de lire se vérifie en demandant, écran par écran, ce que le joueur y décide.
 
+### Incident — [OK] réparé : le journal réécrit en LF par le premier commit de cette passe
+- `c51396f` a remplacé toutes les fins de ligne de `JOURNAL.md`, de CRLF à LF : 1155 ajouts et 1118 retraits pour 37 lignes écrites. Vu dans la statistique du commit, après la fusion dans `main`.
+- Cause, mesurée octet par octet : cinq lignes de la Passe UM8 (263 à 267) finissaient par `CR CR LF`, écrites par moi. Un CR isolé fait passer le fichier de l'index pour binaire, git ne reconnaît plus un fichier CRLF à garder, et `core.autocrlf=true` convertit tout au `git add`. L'outil d'édition, lui, avait déjà ramené ces lignes à CRLF.
+- Réparation par un commit normal, sans réécrire l'historique : `git -c core.autocrlf=false add --renormalize JOURNAL.md`, le fichier de nouveau en CRLF sur toutes ses lignes, sans `CR CR LF`, ce qui retire le piège pour la suite. `origin/claude/sound-fusion` a gardé CRLF.
+- Pensée : lire `git diff --stat` avant le commit, pas après. Un journal qui change sur plus de lignes qu'on n'en a écrit se voit d'un coup d'œil.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
