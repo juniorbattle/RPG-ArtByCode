@@ -514,6 +514,47 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Un fichier de journal écrit par deux séances à la fois se rejoue en union : les deux ajouts restent, aucun n'est à arbitrer.
 
+## Passe UM9 — L'équipement et les achats : une seule page, le héros, le détail, la comparaison (2026-11-02)
+
+### La décision appliquée
+- UM7-3 « Lot à part : héros, détail, comparaison » (Passe UM8), d'après la note de l'opérateur de la Passe UM4, mot pour mot : « je trouve que les menu/panels donc equipement/achat peut etre trop simpliste ». La fiche disait le défaut : ces écrans disent ce qu'on possède, ils n'aident pas à choisir. Aucune image neuve. Les icônes d'objets restent une option de l'opérateur, elles demandent de l'art.
+
+### Fait — [OK]
+- **Une page pour les deux** (`src/ui/wares.ts`) : G l'ouvre sur le sac, le dialogue d'un marchand sur ses articles, le sac dessous. À gauche le héros en grand, trois-quarts de la feuille cuite `hero-x2-v4`, ses quatre images de repos en boucle, à échelle entière selon la hauteur de fenêtre, les emplacements du corps et les chiffres d'un combat. À droite la liste, et pour la ligne choisie ce qu'elle change, avant et après, avec les pièces restantes.
+- **La comparaison n'a aucune règle à elle** (`src/simulation/preview.ts`) : les chiffres sont lus dans les données du duel construites comme pour un vrai combat (santé, coup puissant, PA de départ, charge), et l'« après » est la vraie action appliquée à une copie de l'état, horloge à part. Elle ne peut donc pas dériver du jeu.
+- **Ce que la comparaison révèle** : acheter une arme perd les paliers de la forge (`g.tier = 0`), déjà vrai depuis la Passe V3 et jamais dit à l'écran. La page l'écrit, et le coup puissant baisse dans le tableau quand c'est le cas. Avec deux accessoires portés, une pièce du sac a une ligne par place : on choisit laquelle elle remplace (`equip` le permettait, l'écran non). Un troisième accessoire acheté part au sac, la page le dit.
+- **Une ligne hors de portée reste sélectionnable** : ce qu'elle apporterait est ce qui fait économiser. Elle affiche ce qui manque (`12 short`) et le refus de la simulation. Une pièce possédée n'a pas d'« après » (`DONE`).
+- **Le dialogue allégé** : une ligne « See the goods », ou « See what the forge can do » pour Bram. Le marchandage, le travail de la forge, les compétences de Corvin et les achats vont dans la page ; Esc ramène au marchand. La même page sert le jeu par défaut (étal de Mara, sans emplacements) : pas de double style (UM-T1).
+- **Au clavier** : les flèches parcourent, le détail suit, Entrée agit et la page reste, avec le message de l'achat. Un Entrée tenu depuis le dialogue n'achète pas la première ligne.
+- Corrigé au passage : « raise your an imported blade » dans `v2.upgrade.label` et `.log` (l'article de `itemName` après « your ») ; deux étiquettes de coût s'écartaient d'un bout à l'autre de la ligne (`.cost+.cost`, vu aussi dans la liste Q).
+
+### Essais écartés — [KO]
+- Comparer sur la ligne d'une pièce possédée : la copie la rachetait, « 95 → 75 coins » et « goes to your bag » sur une pièce déjà portée. D'où `DONE`, et la première ligne sélectionnée à l'ouverture est la première disponible.
+- `overflow:hidden` sur le cadre sans marge : `ui-text` signale « cut » sur 17 pages sur 23, la boîte de texte dépassant de 1 à 2 px au-dessus. Aucun glyphe coupé à l'œil, mais la règle est bonne : 6 px de marge haute.
+- Mon test de la perte de paliers visait le palier 2 : +16 % contre +15 %, l'arrondi du duel donne le même coup puissant et la ligne n'apparaît pas. Palier 3 dans le test. La comparaison lit l'arrondi réel, c'est ce qu'on veut.
+
+### Les preuves
+- `npm run typecheck`, `npm test` **332 / 332** (9 nouveaux, `tests/wares.test.mjs` : les chiffres contre le duel, chaque ligne vendue contre ce que son achat donne vraiment, l'état intact), `npm run build`, `npm run art:validate` (61 manifestes, 85 sources).
+- `ui-text` : **23 pages et formats sur 23**, quatre moments du jour, jeu par défaut compris, 1920 × 1080, 1280 × 720, 812 × 375, 390 × 844.
+- `ui-contrast`, mêmes 23, deux instants : **6,65:1 au plus bas**. Mesuré avant la marge de 6 px, qui ne déplace aucun texte de plus de 6 px.
+- `play-day`, défaut et `V2=1` : la page jouée au clavier, l'empreinte rejouée dans Node identique. `play-flow` sur le paquet de production, victoire, défaite, `V2=1` : tout passe.
+- GPU, 780M, 1080p, `fps=off`, quatre tours sans processus étranger, serveur DEV (états nommés) :
+
+| Page | ms par image, médiane | images/s par tour |
+|---|---|---|
+| Nuit B | 9,86 | 121 · 100 · 102 · 98 |
+| Ville de nuit, mode jouable | 10,55 | 103 · 89 · 98 · 91 |
+| Carte, page plein écran | 10,61 | 97 · 88 · 92 · 97 |
+| Articles de Mara, héros animé | 10,11 | 102 · 101 · 92 · 97 |
+
+### Restes [?]
+- E24 : la page des articles ne coûte pas plus que la carte ni que la ville derrière elle dans la même série. Contre la nuit B, +0,25 ms, dans la dispersion des tours, sur serveur DEV : pas tranché sur le paquet de production, où les états nommés n'existent pas.
+- La page n'a pas été ouverte par l'opérateur. Le tactile reste hors tranche (E30) : un doigt achèterait au premier appui, sans voir le détail.
+- Non capturés : le magasin barré après un vol et la pénurie d'acier. Ils passent par les mêmes lignes et les mêmes refus.
+
+### Pensée
+- Une comparaison d'interface ne recopie pas une règle, elle joue la vraie action sur une copie. Le piège du palier perdu était dans le code depuis la Passe V3 : il a fallu afficher le résultat pour le voir.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -719,7 +760,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). **Reste une tâche à part, UM7-3** : l'équipement et les achats, le héros en grand, le détail de la ligne sélectionnée, la comparaison, sans image neuve.
+**6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison. **Reste au choix de l'opérateur** : les icônes d'objets, qui demandent de l'art.
 
 **6e. Interface (étape 2 de la feuille de route ; Passes UI1, UI2)** — ligne directrice décidée sur la fiche de la Passe UI1 (14 choix sur 14,
 tous à la recommandation) : C « Héraldique pixel » (L1), un style dont les tons suivent `DayState` (L2), le téléphone avec le système de design

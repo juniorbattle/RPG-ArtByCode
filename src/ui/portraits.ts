@@ -2,6 +2,7 @@ import { portrait, MAREK, VESSA } from '../arena/FighterArt';
 import { BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, PLAYER, crowdVariants, type CharSpec } from '../characters/SpriteGenerator';
 import { castSource } from '../characters/BakedCast';
 import { decodePng, sha256, sheetFrames } from '../characters/BakedDecode';
+import type { BakedFrame } from '../characters/BakedSprites';
 import { RIVALS } from '../narrative/roster';
 
 /** The dialogues' portraits (choice K3, journal Passe L4; the operator's decision L4, « Visage cuit d'abord, bustes plus tard », journal Passes
@@ -54,6 +55,22 @@ export function faceCrop(rgba: Uint8Array, fw: number, fh: number, S = 32): { x:
   return { x: Math.max(0, Math.min(fw - S, Math.round(cx - S / 2))), y: Math.max(0, Math.min(fh - S, top - 2)), size: S };
 }
 
+/** the hero's whole figure on the gear page (UM7-3, journal Passe UM9): the sheet's idle frames side by side, nothing new drawn */
+export interface Figure { url: string; frames: number; ms: number; w: number; h: number }
+let figure: Figure | null = null;
+export const heroFigure = (): Figure | null => figure;
+const FIGURE_DIR = 'downSide', FIGURE_MS = 588;
+
+function paintFigure(all: BakedFrame[], fw: number, fh: number): void {
+  const idle = all.filter((f) => f.dir === FIGURE_DIR && f.anim === 'idle');
+  if (!idle.length) return;
+  const c = document.createElement('canvas');
+  c.width = fw * idle.length; c.height = fh;
+  const g = c.getContext('2d')!;
+  idle.forEach((f, i) => g.putImageData(new ImageData(new Uint8ClampedArray(f.rgba), fw, fh), i * fw, 0));
+  figure = { url: c.toDataURL(), frames: idle.length, ms: FIGURE_MS, w: fw, h: fh };
+}
+
 const baked = new Map<string, string>();
 let loading: Promise<void> | null = null;
 /** paints the baked faces once (the pages wait for it, with the fonts, before they say they are ready); a sheet that fails its check keeps
@@ -80,6 +97,7 @@ export function preloadPortraits(extra: Record<string, { id: string; png: string
         }
         c.getContext('2d')!.putImageData(img, 0, 0);
         sheets.set(id, c.toDataURL());
+        if (id === BAKED.player) paintFigure(frames, fw, fh);
       } catch (e) { console.warn(`portrait ${id}: ${(e as Error).message}; the generated portrait stays`); }
     }
     for (const [who, id] of Object.entries(BAKED)) { const u = sheets.get(id); if (u) baked.set(who, u); }

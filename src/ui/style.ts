@@ -17,6 +17,7 @@ const CSS = `
 .pm-btn:disabled{cursor:default;color:var(--ds-muted)}
 .pm-btn .why{display:block;font-size:var(--ds-fs-small);color:var(--ds-muted)}
 .pm-btn .cost{margin-left:auto;flex:none;font-size:var(--ds-fs-body);white-space:nowrap;color:var(--ds-muted)}
+.pm-btn .cost+.cost{margin-left:0}
 .pm-btn:hover:not(:disabled) .cost,.pm-btn:focus .cost,.pm-btn.primary .cost{color:var(--ds-accent)}
 .pm-btn.primary{color:var(--ds-accent)}
 .pm-btn:hover:not(:disabled) kbd,.pm-btn:focus kbd,.pm-btn.primary kbd{border-color:var(--ds-accent)}

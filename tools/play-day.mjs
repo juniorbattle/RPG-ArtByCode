@@ -35,10 +35,29 @@ try {
   const dlg = await page.evaluate(() => { const d = document.querySelector('.pm-talk .pm-dlg'); // the person's words stand beside the portrait since direction A « Voile » (journal Passe UM1; before it, in the parchment under its row: this check counted the row's own,
   // always 0, until journal Passe V0)
   return d ? { name: d.querySelector('h2')?.firstChild?.textContent, words: document.querySelectorAll('.pm-talk .pm-line q').length, img: !!d.querySelector('img'), options: document.querySelectorAll('.pm-talk .pm-btn').length } : null; });
-  check(dlg?.name === 'Mara' && dlg.words > 0 && dlg.img && dlg.options >= 4, `E next to Mara opens her dialogue: ${JSON.stringify(dlg)}`);
+  check(dlg?.name === 'Mara' && dlg.words > 0 && dlg.img && dlg.options >= 3, `E next to Mara opens her dialogue: ${JSON.stringify(dlg)}`);
   await page.screenshot({ path: path.join(outDir, 'day1-mara-dialogue.png') });
-  await page.keyboard.press('Escape');
   if (dlg) done.push({ type: 'talk', who: 'mara' });
+  // 1b. her goods at the keyboard (journal Passe UM9): the first line opens the page, the arrows walk it and the detail follows, Enter buys and the page stays, Esc goes back to her
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('.pm-wares .pm-btn.on', { timeout: 20000 }).catch(() => {});
+  const seen = () => page.evaluate(() => ({ on: document.querySelector('.pm-glist .pm-btn.on span')?.firstChild?.textContent, name: document.querySelector('.pm-detail .nm')?.textContent, cmp: document.querySelector('.pm-cmp')?.textContent ?? '', purse: document.querySelector('.pm-purse b')?.textContent, news: document.querySelector('.pm-detail .news')?.textContent ?? '', hero: !!document.querySelector('.pm-hero') }));
+  const first = await seen();
+  check(!!first.on && first.on === first.name && first.hero, `the goods: ${JSON.stringify(first)}`);
+  let line = first;
+  for (let i = 0; i < 6 && line.on !== 'Whetstone'; i++) { await page.keyboard.press('ArrowDown'); line = await seen(); }
+  check(line.name === 'Whetstone' && /Heavy blow/.test(line.cmp) && /Coins/.test(line.cmp), `the arrows reach the whetstone, the detail with them: ${JSON.stringify(line)}`);
+  await page.screenshot({ path: path.join(outDir, 'day1-mara-goods.png') });
+  const coins = await page.evaluate(() => window.__game.state().player.coins);
+  await page.keyboard.press('Enter');
+  const after = await seen(), st0 = await page.evaluate(() => window.__game.state());
+  check(st0.player.coins === coins - 8 && st0.player.items.includes('whetstone') && after.purse === String(coins - 8) && /whetstone/i.test(after.news), `Enter buys it, the page stays and says so: ${JSON.stringify(after)}`);
+  done.push(V2 ? { type: 'shopBuy', shop: 'mara', item: 'whetstone' } : { type: 'buy', item: 'whetstone' });
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('.pm-talk .pm-dlg', { timeout: 20000 }).catch(() => {});
+  check(await page.evaluate(() => !document.querySelector('.pm-wares') && !!document.querySelector('.pm-talk .pm-dlg')), 'Esc goes back to Mara');
+  done.push({ type: 'talk', who: 'mara' });
+  await page.keyboard.press('Escape');
   // 2. the day, through the game API; each reload goes through the save
   const steps = [{ type: 'talk', who: 'tam' }, { type: 'talk', who: 'hale' }, { type: 'askPapers' }, { type: 'haul' },
     { type: 'move', to: 'forecourt' }, { type: 'talk', who: 'odo' }, { type: 'register' },

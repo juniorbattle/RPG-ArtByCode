@@ -136,13 +136,13 @@ test('UM-T2, lot 5: the moves are the direction\'s and they yield to reduced mot
   assert.match(A, /prefers-reduced-motion:reduce\)\{[^\n]*#ah-ko\.on b[^\n]*\{animation:none\}/);
 });
 
-test('UM-S2: no frame left: no border image, no texel grid, no pixel font, no pixelated box; only the faces keep their pixels', () => {
+test('UM-S2: no frame left: no border image, no texel grid, no pixel font, no pixelated box; only the faces and the hero\'s figure keep their pixels', () => {
   assert.ok(!fs.existsSync(path.join(ROOT, 'src/ui/design/frames.ts')), 'frames.ts is gone');
   const files = [...fs.readdirSync(path.join(ROOT, 'src/ui')).filter((f) => f.endsWith('.ts')).map((f) => `src/ui/${f}`), 'src/ui/design/system.ts', 'src/ui/design/tokens.ts', 'src/arena/ArenaHud.ts', 'src/arena/DynamicHud.ts'];
   for (const f of files) {
     const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
     for (const banned of ['border-image', '--ds-f-', '--ds-px', '--ds-pixel', 'Pixelify', 'Alegreya', '--ds-gold', '--ds-blue', '--ds-parch', '--ds-amber', 'drop-shadow']) assert.ok(!src.includes(banned), `${f}: ${banned}`);
-    for (const l of src.split(/\r?\n/)) if (l.includes('image-rendering:pixelated')) assert.match(l, /^(\.pm-port img|\s*\.pm-dlg img|\.ah-port)/, `${f}: pixelated outside a face: ${l.slice(0, 60)}`);
+    for (const l of src.split(/\r?\n/)) if (l.includes('image-rendering:pixelated')) assert.match(l, /^(\.pm-port img|\s*\.pm-dlg img|\.ah-port|\.pm-hero|\.pm-ghead img)/,`${f}: pixelated outside a face: ${l.slice(0, 60)}`);
   }
 });
 

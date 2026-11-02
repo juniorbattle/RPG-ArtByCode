@@ -12,9 +12,10 @@ import { isV2, v2KitOf } from '../simulation/v2';
 import { stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
 import { SKILL_BOOK, skillAction } from '../combat/skillbook';
 import { chargeTime } from '../combat/skills';
-import { itemAbout, itemName, weaponTier } from '../simulation/v2gear';
+import { itemName, weaponTier } from '../simulation/v2gear';
 import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
+import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
 
 /** The play mode's interface in a place (journal Passes L4 / UM3; choice K1: English; direction A « Voile »): exploring, the state and one prompt,
  *  nothing else (UM-R2): the day and the slot top left (the clock and the next deadline, TOURNAMENT § 11), the figures top right, E next to someone at
@@ -83,17 +84,12 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
 .pm-overlay .pm-card.pm-sheet{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:48px;width:min(1120px,100%)}
 @media (max-width:900px){.pm-overlay .pm-card.pm-sheet{grid-template-columns:minmax(0,1fr);gap:14px}}
 .pm-menu .pm-btn kbd{order:2;margin-left:auto}
-.pm-slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin:14px 0}
-.pm-slot{padding-top:8px;border-top:1px solid var(--ds-line);min-width:0}
-.pm-slot b{display:block;margin-top:2px;font-weight:400;font-size:var(--ds-fs-label)}
-.pm-slot.empty b{color:var(--ds-muted)}
 @media (max-width:1100px){
   .pm-dlg,.pm-dlg.here{grid-template-columns:64px minmax(0,1fr);column-gap:14px}
   .pm-dlg.here .who{grid-column:1 / 3}
   .pm-dlg img{width:64px;height:64px}
   .pm-dlg .opts,.pm-dlg.here .opts{grid-column:1 / 3;grid-row:auto;margin-top:12px;max-height:min(38vh,320px)}
 }
-@media (max-width:900px){.pm-slots{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:700px){
   #pm-veil-l{width:100vw;height:112px;background:var(--ds-grad-t)}
   #pm-veil-r{display:none}
@@ -133,18 +129,7 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
 }
 `;
 
-/** what an action takes, one tag per currency (the operator's decision P2, journal Passes UI1 / UI2): its coins (from the simulation, not
- *  the label), its slot; « free » only when it takes neither */
-export function costTag(o: Pick<ActionOption, 'cost' | 'coins'>): string {
-  const tags = [o.coins ? tx(o.coins === 1 ? 'ui.coin' : 'ui.coinsN', { n: o.coins }) : '', o.cost ? tx('ui.oneSlot') : ''].filter(Boolean);
-  return tags.length ? tags.map((t) => `<span class="cost">${t}</span>`).join('') : `<span class="cost free">${tx('ui.free')}</span>`;
-}
-
-/** the option's words without its price: the cost tag says it (the fiche of journal Passe UM1: « 20 coins » written twice); the label stays the
- *  simulation's, the same in the journal */
-export function shortLabel(o: Pick<ActionOption, 'label' | 'coins'>): string {
-  return o.coins ? o.label.replace(new RegExp(` \\(${o.coins} coins?(?:: ([^)]*))?\\)`), (_, about?: string) => (about ? ` · ${about}` : '')) : o.label;
-}
+export { costTag, shortLabel };
 
 export class TownUi {
   private veils = [el('div', 'pm-veil'), el('div', 'pm-veil')];
@@ -174,7 +159,7 @@ export class TownUi {
       if (e.repeat || (e.target instanceof HTMLInputElement)) return;
       const k = e.key.toLowerCase();
       if (k === 'n' && isV2(this.st)) { void import('../audio/Sound').then((m) => { const s = m.sound(); s.set({ muted: !s.settings.muted }); if (this.current?.querySelector('input[type=range]')) void this.openSound(); }); return; }
-      if (this.modal) { if (k === 'escape' || (k === 'q' && this.current?.dataset.here)) this.closeModal(); return; }
+      if (this.modal) { if (k === 'escape' || (k === 'q' && this.current?.dataset.here)) this.leave(); return; }
       if (k === 'q') this.openHere(); else if (k === 'm') this.openMap(); else if (k === 'j') this.openJournal(); else if (k === 't') this.openBoard(); else if (k === 'escape') this.openMenu();
       else if (k === 'k' && isV2(this.st)) this.openSkills(false); else if (k === 'g' && isV2(this.st)) this.openGear(); else if (k === 'v' && isV2(this.st)) void this.openSound();
     });
@@ -295,14 +280,16 @@ export class TownUi {
   }
 
   /** applies an action: a reload for a new slot or place, otherwise the panels and the news */
-  run(a: Action): void {
+  run(a: Action, quiet = false): ActResult {
     const r = this.host.act(a);
-    if (!r.ok) { void this.card(`<p>${esc(r.reason ?? tx('ui.cannot'))}</p>`, tx('ui.close'), true); return; }
-    if (r.reload) { this.closeModal(); this.host.reload(); return; }
+    if (!r.ok) { void this.card(`<p>${esc(r.reason ?? tx('ui.cannot'))}</p>`, tx('ui.close'), true); return r; }
+    if (r.reload) { this.closeModal(); this.host.reload(); return r; }
     this.render();
+    if (quiet) return r;
     // the dialogue that opens says who it is: « You meet Mara » stays in the journal, not on the screen (journal Passe UM1)
     const news = (r.events ?? []).filter((e) => e.visible && e.id !== 'meet');
     if (news.length) this.flash(news.map((e) => e.text));
+    return r;
   }
 
   private flash(lines: string[]): void {
@@ -333,7 +320,10 @@ export class TownUi {
     return r;
   }
   private current: HTMLElement | null = null;
-  private closeModal(): void { if (this.current) { this.current.remove(); this.current = null; } document.body.classList.remove('pm-talking'); if (this.modal) this.host.focus?.(null); this.modal = false; }
+  private closeModal(): void { if (this.current) { this.current.remove(); this.current = null; } document.body.classList.remove('pm-talking'); if (this.modal) this.host.focus?.(null); this.modal = false; this.back = null; }
+  /** where Esc leads from a page opened from a dialogue */
+  private back: (() => void) | null = null;
+  private leave(): void { const b = this.back; this.closeModal(); b?.(); }
 
   openPerson(who: string): void {
     const s = this.st, p = PEOPLE[who];
@@ -343,6 +333,7 @@ export class TownUi {
     this.run({ type: 'talk', who });
     const st = this.st, lines = linesOf(st, who), url = portraitUrl(who);
     const opts = actions(st).filter((o) => offeredBy(o.action as never) === who && !(o.action.type === 'scout' && (o.action as { who: string }).who !== who));
+    const goods = opts.some(isWare);
     this.closeModal();
     this.modal = true; this.prompt.classList.remove('on');
     // P4 (journal Passe UM1: every game): the dialogue at the foot of the screen, the scene kept visible (the version 2 turns it to the speaker)
@@ -351,7 +342,8 @@ export class TownUi {
     root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', p.name);
     card.innerHTML = `${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(p.name)}<small>${esc(titleOf(p, isV2(this.st)))}</small></h2><div class="pm-line">${lines.map((l) => `<q>${esc(l)}</q>`).join('')}</div></div>`;
     const list = el('div', 'opts');
-    for (const o of opts) list.appendChild(this.optionButton(o, () => { if (this.current === root) this.openPerson(who); }));
+    if (goods) { const b = el('button', 'pm-btn', `<span>${tx(who === 'bram' ? 'ui.wares.seeForge' : 'ui.wares.see')}</span>`); b.addEventListener('click', () => this.openShop(who)); list.appendChild(b); }
+    for (const o of opts) if (!goods || !isGoods(o)) list.appendChild(this.optionButton(o, () => { if (this.current === root) this.openPerson(who); }));
     const leave = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.leave')}`);
     leave.addEventListener('click', () => this.closeModal());
     list.appendChild(leave);
@@ -409,24 +401,16 @@ export class TownUi {
       + `<p class="pm-sub">${esc(intel)}</p><p class="pm-sub">${esc(gear)}</p>${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
   }
 
-  /** the version 2's gear (lot V3): the four slots side by side (the weapon and its tier, the armour, both accessories), and the bag (each owned piece
-   *  worn by a click) */
-  openGear(): void {
-    const s = this.st, g = s.v2?.gear;
-    if (!g) return;
+  /** the version 2's gear (lot V3) and the bag: the page of the shops without a keeper (src/ui/wares.ts, UM7-3) */
+  openGear(): void { if (this.st.v2?.gear) this.openWares(null); }
+
+  /** a keeper's goods, from their dialogue (UM7-3); Esc goes back to them */
+  openShop(who: string): void { this.openWares(who); this.back = () => this.openPerson(who); }
+
+  private openWares(who: string | null): void {
     this.page();
-    const slot = (label: string, id: string | null, extra = '') => `<div class="pm-slot${id ? '' : ' empty'}"><span class="pm-sub">${label}</span><b>${id ? `${esc(itemName(id))}${extra}` : '—'}</b>${id ? `<span class="pm-sub">${esc(itemAbout(id))}</span>` : ''}</div>`;
-    const root = el('div', 'pm pm-overlay'), card = el('div', 'pm-card', `<h2 class="pm-h">${tx('v2.gear.title')}</h2><div class="pm-slots">${slot(tx('v2.gear.weapon'), g.weapon, ` · ${tx('v2.gear.tier', { tier: weaponTier(s) })}`)}${slot(tx('v2.gear.armour'), g.armour)}${slot(tx('v2.gear.acc'), g.acc[0])}${slot(tx('v2.gear.acc'), g.acc[1])}</div>`);
-    card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', tx('v2.gear.title'));
-    if (g.bag.length) card.appendChild(el('p', 'pm-sub', tx('v2.gear.bag')));
-    for (const id of g.bag) {
-      const b = el('button', 'pm-btn', `<span>${esc(tx('v2.equip.label', { item: itemName(id) }))}<span class="why">${esc(itemAbout(id))}</span></span>${costTag({ cost: 0, coins: 0 })}`);
-      b.addEventListener('click', () => { this.run({ type: 'equip', item: id }); this.openGear(); });
-      card.appendChild(b);
-    }
-    const close = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.close')}`); close.addEventListener('click', () => this.closeModal()); card.appendChild(close);
-    arrowKeys(card);
-    root.appendChild(card); document.body.appendChild(root); this.current = root; close.focus();
+    const w = waresPage(who, { state: () => this.st, act: (a) => this.run(a, true), close: () => this.leave() });
+    document.body.appendChild(w.root); this.current = w.root; w.focus();
   }
 
   /** the version 2's sound (lot V8): the volume, the music's share, the mute; the engine loaded on demand (src/audio/Sound.ts) */

@@ -74,6 +74,8 @@ export function shopOpen(s: GameState, shop: ShopId): string | null {
 
 export const itemName = (id: string): string => itemText(id, 'name');
 export const itemAbout = (id: string): string => itemText(id, 'about');
+/** after « your »: without its article */
+const heldName = (id: string): string => itemName(id).replace(/^an? /, '');
 
 export type V2GearAction =
   | { type: 'shopBuy'; shop: ShopId; item: string }
@@ -130,7 +132,7 @@ export const V2_GEAR_ACTIONS: { [K in V2GearAction['type']]: ActionDef<Extract<V
   upgradeWeapon: {
     by: 'bram',
     list: (s) => (isV2(s) && s.place === 'district' ? [{ type: 'upgradeWeapon' }] : []),
-    label: (s) => tx('v2.upgrade.label', { item: itemName(gearView(s).weapon), tier: weaponTier(s) + 1, price: TIER_PRICE[Math.min(MAX_WEAPON_TIER - 1, weaponTier(s))] }),
+    label: (s) => tx('v2.upgrade.label', { item: heldName(gearView(s).weapon), tier: weaponTier(s) + 1, price: TIER_PRICE[Math.min(MAX_WEAPON_TIER - 1, weaponTier(s))] }),
     cost: () => 1,
     coins: (s) => (weaponTier(s) >= MAX_WEAPON_TIER ? 0 : TIER_PRICE[weaponTier(s)]),
     check: (s) => {
@@ -144,7 +146,7 @@ export const V2_GEAR_ACTIONS: { [K in V2GearAction['type']]: ActionDef<Extract<V
     apply: (s, _a, _r, emit) => {
       const p = TIER_PRICE[weaponTier(s)];
       s.player.coins -= p; gearOf(s).tier++; s.town.bram = clamp((s.town.bram ?? 0) + 5, -100, 100);
-      emit({ kind: 'action', id: 'upgrade', cause: 'action:upgradeWeapon', visible: true, text: tx('v2.upgrade.log', { item: itemName(gearView(s).weapon), tier: weaponTier(s) }) });
+      emit({ kind: 'action', id: 'upgrade', cause: 'action:upgradeWeapon', visible: true, text: tx('v2.upgrade.log', { item: heldName(gearView(s).weapon), tier: weaponTier(s) }) });
     },
   },
 };
