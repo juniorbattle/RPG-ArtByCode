@@ -548,6 +548,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | Articles de Mara, héros animé | 10,11 | 102 · 101 · 92 · 97 |
 
 ### Restes [?]
+- Page jouable republiée, même adresse que la Passe UM2 (https://claude.ai/artifact/Xz1bEgcEVWxB2fEhWh2BjR, version 3) : le code de `ca77bb2`, feuilles de la Passe CX4 comprises ; le reste de la Passe UM8 sur ce point est levé. Toujours non ouverte dans le visualiseur de claude.ai : le navigateur intégré n'y est pas connecté.
 - E24 : la page des articles ne coûte pas plus que la carte ni que la ville derrière elle dans la même série. Contre la nuit B, +0,25 ms, dans la dispersion des tours, sur serveur DEV : pas tranché sur le paquet de production, où les états nommés n'existent pas.
 - La page n'a pas été ouverte par l'opérateur. Le tactile reste hors tranche (E30) : un doigt achèterait au premier appui, sans voir le détail.
 - Non capturés : le magasin barré après un vol et la pénurie d'acier. Ils passent par les mêmes lignes et les mêmes refus.
