@@ -10,6 +10,9 @@ export const THEME_STEPS = { motif: [...STEPS, 0, ...STEPS], mirror: [-7, 0, -3,
 /** where the whole motif may be heard: its telling (the title), the tournament's song (midday), the riffs of the fights, the finale's return; elsewhere its head,
  *  hidden in an accompaniment (journal Passe SN8, the operator's « il faut de la subtilite ») */
 export const WHOLE_MOTIF = ['titre', 'midi', 'duel', 'rival', 'finale'];
+/** the tournament's music, kept as SN7 wrote it by the operator's ear (journal Passe SN9: « Revenir à l’ancienne version » for the finale, the rival, midday and
+ *  the duel): the four may share turns, two bars and the fanfare's call among themselves; with every other piece, and those among themselves, the rule holds */
+export const TOURNAMENT = ['midi', 'duel', 'rival', 'finale'];
 
 /** the motif in the fusion's rhythm, 3-3-2-3-2-3 over two bars of sixteenths, in the octave a version asks for: midday's song */
 export const fusionHead = (o = 5) => `D${o}:3 A${o}:3 A${o}:2 C${o + 1}:3 A${o}:2 G${o}:3 | A${o}:3 D${o + 1}:3 C${o + 1}:2 A${o}:3 G${o}:2 E${o}:3`;

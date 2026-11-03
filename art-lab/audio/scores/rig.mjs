@@ -40,6 +40,6 @@ export function hornLine(s, tr, bar, step, text, { vel = 0.8, soft = true, art =
   for (const n of parseLine(text).notes) { const at = bar * s.steps + step + n.at, b = Math.floor(at / s.steps), st = at - b * s.steps, dur = s.span(n.len) * art, [t, v] = tr.human(s.t(b, st), vel + (n.accent ? 0.14 : 0)); tr.sound(() => brass(n.midi + transpose, dur, v, { soft, take: tr.take() }), t, { g: v }, n.midi + transpose, dur); }
 }
 /** power chords on a written line, each guitar its own take */
-export function power(s, [gl, gr], bar, text, { vel = 0.9, muted = false, fifth = true, transpose = 0 } = {}) {
-  for (const n of parseLine(text).notes) { const m = n.midi + transpose, at = bar * s.steps + n.at, b = Math.floor(at / s.steps), st = at - b * s.steps, dur = s.span(n.len) * 0.94; for (const [tr, take] of [[gl, 0], [gr, 1]]) { const [t, v] = tr.human(s.t(b, st), vel); tr.sound(() => rockGuitar(fifth ? [m, m + 7, m + 12] : [m, m + 12], dur, v, muted, take), t, { g: v }, m); } }
+export function power(s, [gl, gr], bar, text, { vel = 0.9, muted = false, fifth = true } = {}) {
+  for (const n of parseLine(text).notes) { const at = bar * s.steps + n.at, b = Math.floor(at / s.steps), st = at - b * s.steps, dur = s.span(n.len) * 0.94; for (const [tr, take] of [[gl, 0], [gr, 1]]) { const [t, v] = tr.human(s.t(b, st), vel); tr.sound(() => rockGuitar(fifth ? [n.midi, n.midi + 7, n.midi + 12] : [n.midi, n.midi + 12], dur, v, muted, take), t, { g: v }, n.midi); } }
 }

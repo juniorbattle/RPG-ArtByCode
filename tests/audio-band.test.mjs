@@ -9,7 +9,7 @@ import { Session, parseChord, tonesOf, voice, parseLine, midiOf, master } from '
 import { rubs, outOfRange, octaves, seam } from '../tools/audio/band/check.mjs';
 import { record, likeness, motifAt, runsOf, keyOf } from '../tools/audio/band/likeness.mjs';
 import { fft } from '../tools/audio/measure.mjs';
-import { MOTIF, THEME_STEPS, WHOLE_MOTIF } from '../art-lab/audio/scores/theme.mjs';
+import { MOTIF, THEME_STEPS, WHOLE_MOTIF, TOURNAMENT } from '../art-lab/audio/scores/theme.mjs';
 import midi, { tunes as midiTunes } from '../art-lab/audio/scores/midi.score.mjs';
 import matin, { tunes as matinTunes } from '../art-lab/audio/scores/matin.score.mjs';
 import nuit, { tunes as nuitTunes } from '../art-lab/audio/scores/nuit.score.mjs';
@@ -101,9 +101,11 @@ test('one piece, one tune: the catalogue does not copy itself (journal Passe SN8
   const recs = SCORES.map(([, make, tunes]) => record(Session, make, tunes)), theme = new Set(Object.values(THEME_STEPS).flatMap((st) => [...runsOf(st)])), fanfare = runsOf(THEME_STEPS.fanfare);
   const L = likeness(recs, { n: 6, ignore: [(k) => theme.has(k)] }), shared = L.per.reduce((n, p) => n + p.sharedGrams, 0), all = L.per.reduce((n, p) => n + p.grams, 0);
   assert.ok(shared / all < 0.08, `outside the theme, ${shared} of ${all} turns of six notes heard in another piece`);
-  for (const p of L.pairs) assert.ok(p.grams <= 4, `${p.a} and ${p.b} share ${p.grams} turns`);
-  for (const p of L.pairs) if (p.blocks.length) assert.deepEqual([p.a, p.b].sort(), ['finale', 'midi'], `two bars copied between ${p.a} and ${p.b}: only the fanfare goes from midday to the finale`);
-  for (const r of recs) if (!['midi', 'finale'].includes(r.id)) { const iv = r.line.slice(1).map((n, i) => n.midi - r.line[i].midi), mine = runsOf(iv); assert.ok(![...fanfare].some((k) => mine.has(k)), `the fanfare's call in ${r.id}: it is the tournament's`); }
+  // the tournament's four pieces were kept as SN7 wrote them, by ear (journal Passe SN9): what they share among themselves is theirs
+  const family = (p) => TOURNAMENT.includes(p.a) && TOURNAMENT.includes(p.b);
+  for (const p of L.pairs) if (!family(p)) assert.ok(p.grams <= 4, `${p.a} and ${p.b} share ${p.grams} turns`);
+  for (const p of L.pairs) if (!family(p)) assert.equal(p.blocks.length, 0, `two bars copied between ${p.a} and ${p.b}`);
+  for (const r of recs) if (!TOURNAMENT.includes(r.id)) { const iv = r.line.slice(1).map((n, i) => n.midi - r.line[i].midi), mine = runsOf(iv); assert.ok(![...fanfare].some((k) => mine.has(k)), `the fanfare's call in ${r.id}: it is the tournament's`); }
   const keys = new Set(recs.map((r) => { const k = keyOf(r); return `${k.tonic}${k.mode}`; })); assert.ok(keys.size >= 6, `${keys.size} keys for eleven pieces`);
 });
 test('a mix and its master: the level set, the ceiling held, the same seed the same bytes', () => {

@@ -36,14 +36,14 @@ const KIT = {
   frame(x, r, v) { sweep(x, { f0: 176, f1: 128, tf: 0.03, tau: 0.22, a: 0.9 }); burst(x, r, { f: 760, q: 0.7, a: 0.22 + 0.2 * v, tau: 0.01 }); },
   conga(x, r, v) { sweep(x, { f0: 352, f1: 322, tf: 0.02, tau: 0.16, a: 0.8 }); ring(x, [{ f: 540, a: 0.2, tau: 0.05 }]); burst(x, r, { f: 1700, q: 0.8, a: 0.2 + 0.2 * v, tau: 0.004 }); },
   bongo(x, r, v) { sweep(x, { f0: 492, f1: 448, tf: 0.015, tau: 0.1, a: 0.7 }); ring(x, [{ f: 760, a: 0.2, tau: 0.03 }]); burst(x, r, { f: 2500, q: 0.8, a: 0.2 + 0.2 * v, tau: 0.003 }); },
-  timp(x, r, v, k = 1) { sweep(x, { f0: 76 * k, f1: 73.4 * k, tf: 0.05, tau: 0.75, a: 1 }); ring(x, [{ f: 110 * k, a: 0.42, tau: 0.5 }, { f: 145 * k, a: 0.3, tau: 0.38 }, { f: 179 * k, a: 0.14, tau: 0.3 }]); burst(x, r, { f: 900, q: 0.6, a: 0.2 + 0.2 * v, tau: 0.009 }); },
+  timp(x, r, v) { sweep(x, { f0: 76, f1: 73.4, tf: 0.05, tau: 0.75, a: 1 }); ring(x, [{ f: 110, a: 0.42, tau: 0.5 }, { f: 145, a: 0.3, tau: 0.38 }, { f: 179, a: 0.14, tau: 0.3 }]); burst(x, r, { f: 900, q: 0.6, a: 0.2 + 0.2 * v, tau: 0.009 }); },
 };
 const LENGTH = { kick: 0.5, snare: 0.45, rim: 0.2, hat: 0.2, open: 1, ride: 3, bell: 2.4, crash: 4, tomH: 0.9, tomM: 1, tomL: 1.2, brush: 0.45, sweep: 0.5, shaker: 0.2, tamb: 0.4, cajon: 0.6, slap: 0.4, frame: 0.9, conga: 0.7, bongo: 0.5, timp: 3 };
 export const DRUMS = Object.keys(KIT);
 
-/** a hit: the kit's piece, a velocity from 0 to 1 and a take; each take its own draw. `tune` moves the timpani, in D, by semitones (journal Passe SN8) */
-export function drum(kind, vel, take = 0, tune = 0) {
-  const v = clamp(Math.round(vel * 4) / 4, 0.25, 1), key = tune ? `${kind}:${v}:${take % 4}:${tune}` : `${kind}:${v}:${take % 4}`; let x = memo.get(key);
-  if (!x) { x = blank(LENGTH[kind]); KIT[kind](x, new Rand(seedOf(key)), v, 2 ** (tune / 12));fadeIn(x, 0.0003); const n = x.length, tail = Math.round(0.02 * SR); for (let i = 0; i < tail; i++) x[n - 1 - i] *= i / tail; memo.set(key, x); }
+/** a hit: the kit's piece, a velocity from 0 to 1 and a take; each take its own draw */
+export function drum(kind, vel, take = 0) {
+  const v = clamp(Math.round(vel * 4) / 4, 0.25, 1), key = `${kind}:${v}:${take % 4}`; let x = memo.get(key);
+  if (!x) { x = blank(LENGTH[kind]); KIT[kind](x, new Rand(seedOf(key)), v); fadeIn(x, 0.0003); const n = x.length, tail = Math.round(0.02 * SR); for (let i = 0; i < tail; i++) x[n - 1 - i] *= i / tail; memo.set(key, x); }
   return x;
 }

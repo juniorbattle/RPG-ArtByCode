@@ -5,7 +5,8 @@ development time. No sample bank, no generated audio, no dependency. Journal: Pa
 
 - `scores/theme.mjs`: the motif, SA-2's thirteen notes, in the meters the versions use; `WHOLE_MOTIF`, the pieces where it is heard whole, and `THEME_STEPS`, the
   turns two pieces may share by design (journal Passe SN8: one piece, one tune; the whole motif in the title, midday, the fights' riffs and the finale, elsewhere its head
-  hidden in an accompaniment; the fanfare's call in midday and the finale only).
+  hidden in an accompaniment; the fanfare's call in midday and the finale only); `TOURNAMENT`, the four pieces the operator kept as SN7 wrote them (journal Passe SN9:
+  midday, the duel, the rival, the finale), which may share among themselves, the duel ending on the fanfare in 7/8.
 - `scores/<id>.score.mjs`: one piece, an original score. `tunes` names the tracks that carry the tune: the band's voicings make room for them.
 - `scores/rig.mjs`: the band's desks, measured on the approved versions, and the helpers a score shares.
 - `manifests/<id>.manifest.json`: a baked file's provenance, once a piece is approved for the game (`tools/audio/validate.mjs`). None yet: these scores are for the ear.
@@ -24,4 +25,4 @@ file: the piece's body alone, a circle: what rings past the end lands on the sta
 
 The notes are read without sound by a dry session (`tests/audio-band.test.mjs`): the motif whole where it belongs and its head elsewhere, no held note of the tune a
 semitone above the band, each instrument in its range, the third of the hour, and the catalogue not copying itself (outside the theme, under 8 % of the tunes' turns heard
-in another piece, at most four shared by two pieces, no two bars copied but the fanfare from midday to the finale, six keys at least). They find faults; only an ear says a piece is good, and nobody here has one: each lot goes to the operator on a listening sheet.
+in another piece, at most four shared by two pieces, no two bars copied, the fanfare's call nowhere else, six keys at least; the tournament's four pieces are free among themselves, journal Passe SN9). They find faults; only an ear says a piece is good, and nobody here has one: each lot goes to the operator on a listening sheet.

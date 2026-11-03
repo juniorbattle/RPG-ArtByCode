@@ -418,6 +418,58 @@ Onze morceaux, le même outil (corrigé, chaque voix lue à part) sur l'arbre ge
 - Un outil de mesure doit échouer sur ce qu'il prétend voir : le garde-fou passait à cause de son propre défaut. Le contrôle négatif (l'ancien catalogue doit échouer) et une relecture indépendante l'ont montré.
 - Une page qui enregistre pendant la frappe doit protéger ce qui est tapé contre l'écho du serveur.
 
+## Passe SN9 — La fiche de la reprise relue : sept morceaux repris gardés, la musique du tournoi revient à SN7 (2026-11-03)
+
+### Demande
+- Message de l'opérateur, mot pour mot : « fiche remplie ».
+
+### La fiche
+- Page privée https://claude.ai/artifact/LxqRepAVoinCRGZQDZvMte, source `briefs/fiche-son-reprise.html`. Relue par `list` : 13 documents sur 13, aucune note.
+
+| # | Décision | Choix de l'opérateur |
+|---|---|---|
+| R-JOURNEE | Matin, midi, fin de journée, nuit : avant et après | « La sensation de copier-coller est partie » |
+| R-MATIN | Le matin : une chanson à lui | « Bonne direction » |
+| R-FIN | La fin de journée : une bossa, un cor | « Bonne direction » |
+| R-NUIT | La nuit : sa propre chanson, et le jour en souvenir | « Bonne direction » |
+| R-TITRE | Le titre : le seul à tout dire | « Bonne direction » |
+| R-PARVIS | Le parvis : une foule qui s’empile | « Bonne direction » |
+| R-LICES | Les lices : le motif devient l’exercice | « Bonne direction » |
+| R-VALSE | La valse : son propre air | « Bonne direction » |
+| R-RIVAL | Le rival : une autre tonalité, une ligne à lui | « Revenir à l’ancienne version » |
+| R-FINALE | La finale : le retour à la maison | « Revenir à l’ancienne version » |
+| R-RETOUCHES | Midi et le duel : des retouches | « Revenir à l’ancienne version » |
+| R-MOTIF | Le motif entier en cinq endroits, caché ailleurs | « Garder cette règle » |
+| R-SUITE | Ce qui vient après | « Cuire et brancher dans la version 2 » |
+
+### Ce que ces choix veulent dire
+- **La reprise est gardée pour sept morceaux** : `titre`, `matin`, `fin`, `nuit`, `parvis`, `lices`, `valse`. La journée enchaînée ne sonne plus comme un copier-coller (R-JOURNEE).
+- **La musique du tournoi revient à SN7** : `midi` et `duel` (déjà approuvés à l'oreille en SN6, puis gardés en SN7), `rival` et `finale`. Midi garde ses deux fanfares, le duel est de nouveau en ré mineur et finit sur la fanfare à 7/8, le rival est en ré sur le motif en miroir, la finale va de ré mineur à ré majeur sur le refrain de midi.
+- **R-MOTIF garde la règle**. Avec les retours, elle se lit ainsi : le motif entier dans `WHOLE_MOTIF` (inchangé : les quatre anciennes versions le portent), sa tête cachée ailleurs, l'appel de la fanfare dans la musique du tournoi et les jingles, rien de recopié d'un morceau à l'autre, sauf entre les quatre morceaux du tournoi. L'opérateur les a gardés à l'oreille en sachant ce qu'ils partagent : les cartes le disaient (la finale « reprenait le refrain de midi », la réponse du duel « recopiait le contour du pont de midi »). Lecture retenue : le choix précis des trois cartes l'emporte sur la règle générale pour ces quatre-là. Si l'opérateur veut autre chose, c'est une liste dans `theme.mjs`.
+- **R-SUITE** : l'étape suivante cuit les morceaux sous manifeste, avec l'approbation de l'opérateur mot pour mot, les branche derrière `flags.v2` selon C-LIEUX et C-COUCHES, et donne l'essai en jouant ; la page de test Safari vient avec les premiers fichiers cuits (C-SAFARI). Une tâche à part.
+
+### Fait — [OK]
+- `midi`, `duel`, `rival` et `finale` remis octet pour octet depuis `c2df9f3`, ainsi que `rig.mjs` et `drums.mjs` : la transposition de `power` et la timbale accordée ne servaient qu'aux versions de SN8. Les quatre morceaux rendus à nouveau, entiers et en boucle avec leurs couches : 26 fichiers sur 26 identiques, échantillon pour échantillon, aux rendus de SN7.
+- `lices` reste en la dorien (R-LICES) ; son commentaire ne cite plus le mi du duel.
+- **Le garde-fou** suit les décisions : `TOURNAMENT` (`theme.mjs`) nomme les quatre morceaux du tournoi ; le test les laisse partager entre eux, la règle tient pour toute autre paire. Contrôle négatif : sur le catalogue de SN7, la même règle échoue encore (31 fautes : 18,7 % de tournures partagées, 23 paires, la fanfare dans six morceaux, cinq tonalités) ; sur l'arbre de travail elle passe.
+- `AGENTS.md` et `art-lab/audio/README.md` mis à jour.
+
+### Mesures — [OK]
+- Ressemblance, même outil : hors thème, 7,7 % des tournures de six notes entendues ailleurs (55 sur 714 ; SN8 7 %, SN7 19 %). Hors du tournoi : quatre tournures au plus par paire, aucun bloc de deux mesures recopié, pas de fanfare. Entre les quatre morceaux du tournoi : midi et duel 5 tournures ; midi et finale 5 blocs (la fanfare et le refrain) et une suite d'accords ; duel et rival 3 blocs et 4 suites (le rival cite le riff du héros). Sept tonalités estimées ; toniques écrites : ré (le tournoi, le titre, la nuit), sol, fa, do, la, si bémol.
+- Rendus : 721 s entiers (12,0 minutes), 584 s de boucles ; les jointures de `duel` (19 % de la crête) et de `finale` (28 %) tombent comme en SN7 dans une attaque de batterie, sous le plus grand saut naturel du morceau (32 % et 62 % de lui).
+- Poids en Opus, mesuré comme en SN7 et SN8 : les huit boucles simples 6,34 Mo, les trois combats en trois couches 3,67 Mo, les jingles 0,5 Mo : **10,51 Mo**, sous les 12 de SA-17.
+- Validation : 382 tests, `npm run typecheck`, `npm run build`, `npm run art:validate` passent ; aucun fichier de `src/` ni de `public/` ne change, aucun fichier audio dans le dépôt.
+
+### Limites
+- La journée enchaînée de la fiche contenait le midi de SN8 : la journée réelle, avec le midi de SN7, n'a pas été réécoutée telle quelle. Les morceaux du matin, de la fin de journée et de la nuit ne reprennent plus le motif de midi, ce qui était l'essentiel du copier-coller.
+- Rien n'est cuit ni branché ; le moteur joue toujours `tune()`.
+
+### Où reprendre
+- Le lot de cuisson (R-SUITE) : un manifeste par fichier avec l'approbation de l'opérateur mot pour mot, Opus en WebM et AAC en M4A dans `src/audio/baked/`, branchés derrière `flags.v2` selon le plan des lieux (C-LIEUX), trois couches sur les trois combats (C-COUCHES), la page de test Safari (C-SAFARI), les introductions des combats.
+
+### Pensée
+- L'oreille tranche contre la mesure : pour quatre morceaux, la version qui ressemble le plus aux autres a gagné. Le garde-fou garde la règle là où l'opérateur l'a voulue et nomme l'exception dans une liste, au lieu de la cacher dans un seuil relevé.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -623,7 +675,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN8)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit et bouclable (SN7), jugé « bien » par l'opérateur mais trop semblable d'un morceau à l'autre ; **repris en Passe SN8** : chaque morceau son air, sa tonalité et sa forme, le motif entier en cinq endroits, la fanfare au tournoi seul, un garde-fou dans les tests (`tools/audio/band/likeness.mjs`). **Fiche de la reprise à remplir** (lien dans la Passe SN8, source `briefs/fiche-son-reprise.html`) ; personne n'a écouté la reprise. Décidés sur la fiche du catalogue : C-LIEUX le plan des lieux, C-COUCHES trois couches sur les trois combats, C-SAFARI l'opérateur fera l'essai. La suite proposée : cuire sous manifeste, brancher derrière `flags.v2`, essai en jouant ; S2 et S3 ensuite. À faire avant le premier fichier cuit : la page de test Safari (Opus en WebM et AAC), les introductions des combats. SA-10 après l'essai du lot S4.
+**6f. Son (Passes SN1 à SN9)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit et bouclable (SN7), repris contre le copier-coller (SN8) ; **fiche de la reprise relue (SN9)** : la reprise gardée pour sept morceaux, la musique du tournoi (`midi`, `duel`, `rival`, `finale`) revenue à SN7 à l'oreille de l'opérateur, la règle du motif gardée (`WHOLE_MOTIF`, `TOURNAMENT`, `tools/audio/band/likeness.mjs` et le test). **Décidé : « Cuire et brancher dans la version 2 »** (R-SUITE) : un manifeste par fichier avec l'approbation de l'opérateur mot pour mot, Opus en WebM et AAC en M4A, derrière `flags.v2` selon C-LIEUX, trois couches sur les trois combats (C-COUCHES), la page de test Safari (C-SAFARI, l'opérateur fera l'essai), les introductions des combats ; puis l'essai en jouant. S2 et S3 ensuite. SA-10 après l'essai du lot S4.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 
@@ -1052,3 +1104,4 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Un thème partout n'est plus un thème : il s'entend entier en peu d'endroits, se cache ailleurs, et rien d'autre ne passe d'un morceau à
   l'autre ; la règle tient dans un test qui échoue sur l'ancien catalogue (Passe SN8). Un outil de mesure se prouve par son contrôle négatif et
   une relecture indépendante : le premier garde-fou passait grâce à son propre défaut (Passe SN8).
+- Quand l'oreille de l'opérateur garde ce que la mesure refusait, le garde-fou nomme l'exception (une liste, la décision citée) au lieu de relever un seuil pour tout le monde (Passe SN9).

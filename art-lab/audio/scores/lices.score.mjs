@@ -1,5 +1,5 @@
 // The training ground (journal Passes SN7 / SN8): work at the lists: a groove in 5/4, a marimba and a slap bass going round like a drill, and over them a wind-synth tune
-// of its own in phrases of three bars. One eighth from the duel's 7/8 and the same family: fusion's odd meters. A dorian, written in E and played a fifth down (journal Passe SN8: the duel is in E now). The motif is the drill: the marimba goes round
+// of its own in phrases of three bars. One eighth from the duel's 7/8 and the same family: fusion's odd meters. A dorian, written in E and played a fifth down (journal Passe SN8). The motif is the drill: the marimba goes round
 // its head, six notes, and four of its own, under the tune, never on top (journal Passe SN8: one piece, one tune). An original score, no work reproduced.
 import { Session } from '../../../tools/audio/band/session.mjs';
 import { rig, rhodes, marimba, slapped, hit, loopOf } from './rig.mjs';
