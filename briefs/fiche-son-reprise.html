@@ -1,0 +1,462 @@
+<title>Reprise du catalogue</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+code { font-family: var(--font-mono); font-size: .86em; background: color-mix(in srgb, var(--line) 45%, transparent); border-radius: 3px; padding: 0 3px; overflow-wrap: anywhere; }
+.block { display: flex; flex-direction: column; gap: 14px; }
+.block h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.block > p { margin: 0; max-width: 68ch; }
+.block h3 { margin: 6px 0 0; font-size: 17px; }
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 22px; margin: 0; padding: 0; list-style: none; }
+.verdict li { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.verdict b { font-size: 16px; }
+.verdict span { color: var(--muted); font-size: 15px; }
+.scale { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.scale h3 { margin: 0; font-size: 16px; }
+.scale .sub { margin: 0 0 6px; font-size: 14px; color: var(--muted); }
+.srow { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; align-items: center; font-size: 14px; }
+.strack { position: relative; height: 18px; }
+.strack .band { position: absolute; top: 0; bottom: 0; background: var(--rec-soft); }
+.strack .bar { position: absolute; top: 5px; height: 8px; left: 0; background: var(--brass); border-radius: 0 4px 4px 0; }
+.strack .target .bar, .srow.target .bar { background: var(--rec); }
+.sval { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: 13px; }
+.axis { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; font-size: 12px; color: var(--muted); }
+.axis div { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: none; }
+th { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.st { font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.st.ok { color: var(--rec); } .st.part { color: var(--astre); } .st.no { color: var(--cendre); }
+.wide { min-width: 720px; }
+.clips { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.clip { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.clip figcaption { font-size: 14px; font-weight: 600; }
+.clip audio { width: 100%; height: 40px; }
+.clip img.spec { width: 100%; height: auto; aspect-ratio: 820 / 240; border-radius: 4px; display: block; }
+.note { font-size: 14px; color: var(--muted); }
+.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px 24px; }
+.limits > div { min-width: 0; }
+.limits h3 { margin: 0 0 4px; }
+.limits ul { margin: 0; padding-left: 18px; font-size: 15px; display: flex; flex-direction: column; gap: 3px; }
+
+
+.heat-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.heat { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.heat figcaption { font-size: 14px; font-weight: 600; }
+.heat table { width: auto; font-size: 11.5px; font-family: var(--font-mono); }
+.heat th, .heat td { padding: 0; border: none; text-align: center; }
+.heat th { font-weight: 500; color: var(--muted); padding: 2px 4px; }
+.heat th.row { text-align: right; }
+.heat td { width: 24px; height: 22px; min-width: 24px; border: 1px solid var(--surface); font-variant-numeric: tabular-nums; }
+.heat td.self { background: var(--line); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · fiche de la reprise · 2 novembre 2026</span>
+    <h1>Chaque morceau son air</h1>
+    <p class="lede">Tu as entendu un copier-coller, surtout dans la structure. C’était juste, et mesurable. Voici la reprise : écoute d’abord la journée enchaînée, avant et après, puis chaque morceau, et réponds aux deux décisions.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="block" aria-labelledby="h-diag">
+    <h2 id="h-diag">Ce qui faisait le copier-coller</h2>
+    <p>Ta remarque se mesurait. Huit morceaux suivaient le même plan : introduction, motif, motif plus fourni, réponse, fanfare, retour, en blocs de quatre mesures. Le motif entier tenait la mélodie de neuf morceaux, la même fanfare et ses accords revenaient dans dix fichiers, tout était en ré, et plusieurs phrases passaient d’un morceau à l’autre note pour note. Six morceaux entraient de la même façon, un accompagnement seul, la basse, puis l’air, et dix finissaient sur deux gestes.</p>
+    <ul class="verdict">
+      <li><b>Tonalités : 1 → 8</b><span>Le matin en sol, la fin de journée en fa, la valse en si bémol, le parvis en do, les lices en la, le duel en mi mineur, le rival en fa dièse mineur, la finale de do mineur à ré majeur.</span></li>
+      <li><b>Le motif entier : 9 → 5</b><span>Le titre, midi, les riffs du duel et du rival, la finale. Ailleurs, sa tête seule, cachée.</span></li>
+      <li><b>La fanfare : 10 → 4</b><span>Midi, la finale, l’annonce et la victoire : le tournoi seul.</span></li>
+      <li><b>Entrées et fins : une par morceau</b><span>Les tambours seuls, l’élan d’une flûte ou d’un synthé, l’exercice et la batterie ; un arrêt net, une fin ouverte, les cuivres qui tombent.</span></li>
+      <li><b>Phrases copiées : 54 → 4</b><span>Blocs de deux mesures identiques d’un morceau à l’autre. Les derniers sont la fanfare, de midi à la finale.</span></li>
+    </ul>
+
+    <div class="tw"><table class="wide">
+      <thead><tr><th>Morceau</th><th>Avant</th><th>Après</th><th>Où passe le motif</th></tr></thead>
+      <tbody>
+        <tr><td><b>Matin</b></td><td>Ré, le motif à 6/8, fanfare</td><td>Sol, couplets de 6, refrain de 8, milieu en hémiole</td><td>Le marimba, sous la flûte, au milieu</td></tr>
+        <tr><td><b>Midi</b></td><td>Deux fanfares</td><td>Une fanfare, après le solo</td><td>La mélodie : c’est le chant du tournoi</td></tr>
+        <tr><td><b>Fin de journée</b></td><td>Ré, le motif au lead, le groupe de la nuit</td><td>Fa, une bossa et un cor, 8 + 6 + 4 mesures</td><td>Sa tête au vibraphone, grave, une fois</td></tr>
+        <tr><td><b>Nuit</b></td><td>Le motif étiré au vibraphone, puis au lead, fanfare</td><td>Sa propre chanson, 5 + 4 mesures, puis un souvenir</td><td>Sa tête grave au vibraphone, sous le synthé</td></tr>
+        <tr><td><b>Titre</b></td><td>Motif, réponse de la nuit, fanfare</td><td>Motif sur des accords neufs, réponse neuve, le motif deux fois plus lent</td><td>Le cor : c’est sa place</td></tr>
+        <tr><td><b>Parvis</b></td><td>Ré, le motif par bribes puis entier, fanfare</td><td>Do, un riff et un air qui s’empilent</td><td>Une voix intérieure du piano électrique</td></tr>
+        <tr><td><b>Lices</b></td><td>Ré, le motif en cellules au lead</td><td>La, un air en phrases de trois mesures</td><td>Le marimba de l’exercice, sous l’air</td></tr>
+        <tr><td><b>Valse</b></td><td>Ré, le motif pointé, fanfare en valse</td><td>Si bémol, son air, un pont en mineur</td><td>La basse du pont, une note par mesure</td></tr>
+        <tr><td><b>Duel</b></td><td>Ré mineur, fanfare à 7/8, réponse copiée de midi</td><td>Mi mineur, sa propre montée, réponse neuve</td><td>Le riff, comme avant</td></tr>
+        <tr><td><b>Rival</b></td><td>Ré mineur, le lead double le riff</td><td>Fa dièse mineur, le lead a sa ligne</td><td>Le riff en miroir ; quatre mesures du riff du héros</td></tr>
+        <tr><td><b>Finale</b></td><td>Ré mineur, le refrain de midi, le plan du duel</td><td>Do mineur, son riff, une réponse, puis ré</td><td>Au cor en valeurs longues, puis la fanfare en ré majeur</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Les tournures communes, paire par paire</h3>
+    <p class="note">Une case compte les tournures de six notes que deux morceaux partagent, quelles que soient la tonalité et le rythme. Plus la case est foncée, plus les deux se ressemblent. Les cases qui restent, au titre, à midi, au duel et à la finale, sont surtout le motif lui-même, là où il doit s’entendre.</p>
+    <div class="heat-pair">
+      <figure class="heat"><figcaption>Avant</figcaption><div class="tw" id="heat-before"></div></figure>
+      <figure class="heat"><figcaption>Après</figcaption><div class="tw" id="heat-after"></div></figure>
+    </div>
+    <ul class="verdict">
+      <li><b>19 % → 7 %</b><span>Les tournures entendues dans un autre morceau, hors motif et hors fanfare.</span></li>
+      <li><b>55 → 32 paires</b><span>Les paires de morceaux qui partagent au moins une tournure, motif compris, sur 55.</span></li>
+      <li><b>7 → 1</b><span>Les paires qui partagent une suite de quatre accords.</span></li>
+    </ul>
+
+    <div class="limits">
+      <div><h3>Ce que je peux garantir</h3><ul><li>Aucun bloc de deux mesures copié d’un morceau à l’autre, hors fanfare ; au plus quatre tournures en commun par paire, hors motif</li><li>Le motif entier aux cinq endroits prévus, et sa tête partout ailleurs</li><li>Aucune note tenue qui frotte, chaque instrument dans sa tessiture, −18 LUFS</li><li>Deux relectures indépendantes des partitions, et leurs corrections</li></ul></div>
+      <div><h3>Ce que seule ton oreille tranche</h3><ul><li>Si la sensation de copier-coller est partie</li><li>Si le catalogue sonne encore comme un seul jeu</li><li>Si les airs neufs valent les anciens</li><li>Le 5/4 et le 7/8 en jouant</li></ul></div>
+    </div>
+    <p class="note">Rien n’entre dans le jeu avec cette fiche : aucun fichier audio dans le dépôt, le jeu par défaut est inchangé. Les extraits sont les versions avec leur fin ; en jeu, chaque morceau tourne sur son corps.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne au journal, puis je lance ce que tu as décidé. Rien n’entre dans le jeu avant ta réponse.</p>
+    <p class="src">Sources : <code>briefs/fiche-son-catalogue.html</code> (la fiche précédente), <code>JOURNAL.md</code> Passes SN7 et SN8, <code>art-lab/audio/scores/</code>, <code>tools/audio/band/likeness.mjs</code>, <code>tests/audio-band.test.mjs</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+  { id: "journee", title: "La journée enchaînée", sub: "Le test de ta remarque : les quatre moments d’une journée, dans l’ordre où un joueur les entend.", fam: "var(--cendre)", items: [
+    { id: "R-JOURNEE", tag: "copier-coller", title: "Matin, midi, fin de journée, nuit : avant et après",
+      ctx: "Vingt secondes de chaque morceau, enchaînées, tels qu’ils tournent en jeu. Avant, les quatre jouaient le même motif comme mélodie, en ré, sur le même plan. Après, chacun a son air, sa tonalité et sa forme ; seul midi garde le motif en entier.",
+      clips: [["audio/journee-avant.mp3", "Avant : la journée de la fiche précédente, 1:13"], ["audio/journee-apres.mp3", "Après : la même journée reprise, 1:13"]],
+      rec: "Aucune sur le goût : c’est la question que posait ta remarque. Dis aussi si le jeu sonne encore comme un seul jeu.",
+      opts: ["La sensation de copier-coller est partie", "Encore trop semblable (en note)", "Trop différent, on perd l’unité (en note)"], recIdx: -1, src: "`art-lab/audio/scores/`, journal Passe SN8" },
+  ]},
+  { id: "ecoute", title: "Chaque morceau, avant et après", sub: "Tout est à −18 LUFS : règle le volume une fois. Je n’entends toujours rien : ces notes ont été relues et mesurées, pas écoutées.", fam: "var(--astre)", items: [
+    { id: "R-MATIN", tag: "sol majeur · 6/8", title: "Le matin : une chanson à lui",
+      ctx: "Toujours la guitare, la flûte, la fretless et les mains, mais un air neuf, en sol : des couplets de six mesures, un refrain de huit, un milieu en hémiole. Le motif n’est plus la mélodie : pendant le milieu, le marimba tourne autour de sa tête, sous la flûte. Plus de fanfare, et la fretless n’entre qu’avec le couplet.",
+      clips: [["audio/matin-avant.mp3", "Avant : le motif à 6/8, 1:22"], ["audio/matin.mp3", "Après : 1:15"]],
+      rec: "Aucune sur le goût. Le refrain monte jusqu’au sol aigu de la flûte : dis s’il chante.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Revenir à l’ancienne version"], recIdx: -1, src: "`art-lab/audio/scores/matin.score.mjs`" },
+    { id: "R-FIN", tag: "fa majeur · bossa", title: "La fin de journée : une bossa, un cor",
+      ctx: "Une bossa lente en croches droites, qui entre sur le rim et le shaker seuls : la guitare nylon en accords sur la clave, un rim et un shaker, une basse au doigt, et l’air à un cor doux. Elle ne partage plus rien avec la nuit, dont elle avait gardé les balais, la fretless, le synthé et le piano. En fa : huit mesures, six qui passent au mineur, quatre où la tierce hésite. Le motif ne passe qu’une fois, sa tête au vibraphone sous le la bémol, et elle finit sur les deux tierces à la suite, la bémol puis la.",
+      clips: [["audio/fin-avant.mp3", "Avant : 1:08"], ["audio/fin.mp3", "Après : 1:09"]],
+      rec: "Aucune sur le goût. L’idée de la tierce qui hésite, que tu avais validée, est gardée sous une autre forme.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Revenir à l’ancienne version"], recIdx: -1, src: "`art-lab/audio/scores/fin.score.mjs`" },
+    { id: "R-NUIT", tag: "ré dorien", title: "La nuit : sa propre chanson, et le jour en souvenir",
+      ctx: "La même ballade, le même son, mais une chanson à elle, qui s’ouvre sur sa tierce, le fa : la tierce est l’heure. Une phrase de cinq mesures, une de quatre, puis le jour revient comme un souvenir : la tête du motif, grave, au vibraphone, dans un rythme à elle, sous une ligne douce du synthé à vent. Elle entre sur le piano et l’élan du synthé, et finit ouverte, sur la dominante, le vibraphone seul : la nuit continue. L’ancienne fin était aussi celle du titre.",
+      clips: [["audio/nuit-avant.mp3", "Avant : 1:29"], ["audio/nuit.mp3", "Après : 1:25"]],
+      rec: "Aucune sur le goût. Tu avais validé la nuit deux fois : si l’ancienne te manque, l’option est là.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Revenir à l’ancienne version"], recIdx: -1, src: "`art-lab/audio/scores/nuit.score.mjs`" },
+    { id: "R-TITRE", tag: "ré · le motif raconté", title: "Le titre : le seul à tout dire",
+      ctx: "Il garde le motif entier, étiré sur le cor : c’est sa place, mais sur des accords neufs (ceux de midi et de la finale étaient les mêmes). Sa réponse est neuve, elle ressemblait au couplet du matin : un do dièse lydien, puis un saut vers la septième majeure. La fanfare n’y est plus : le groupe reprend la tête du motif deux fois plus lente, sur quatre accords qui montent, et le fa dièse arrive en dernier.",
+      clips: [["audio/titre-avant.mp3", "Avant : 1:06"], ["audio/titre.mp3", "Après : 1:06"]],
+      rec: "Aucune sur le goût. Sans la fanfare, dis si l’arrivée du groupe suffit comme sommet.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Revenir à l’ancienne version"], recIdx: -1, src: "`art-lab/audio/scores/titre.score.mjs`" },
+    { id: "R-PARVIS", tag: "do mixolydien", title: "Le parvis : une foule qui s’empile",
+      ctx: "En do, un riff de cuivres et un air au synthé à vent qui s’empilent couche par couche, comme une foule qui grossit. Le motif n’est plus qu’une voix intérieure du piano électrique, sous l’air ; les cuivres ont leur propre cri dans la montée, et les tambours gardent le rythme du motif. Plus de fanfare : la foule finit comme elle a commencé, sur ses tambours.",
+      clips: [["audio/parvis-avant.mp3", "Avant : 1:04"], ["audio/parvis.mp3", "Après : 1:07"]],
+      rec: "Aucune sur le goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Revenir à l’ancienne version"], recIdx: -1, src: "`art-lab/audio/scores/parvis.score.mjs`" },
+    { id: "R-LICES", tag: "la dorien · 5/4", title: "Les lices : le motif devient l’exercice",
+      ctx: "Toujours à 5/4, toujours le marimba et la slap, mais en la. L’air du synthé à vent est neuf, en phrases de trois mesures. Le motif est l’exercice lui-même : le marimba tourne autour de ses dix premières notes, une octave sous la mélodie. Elle entre sur l’exercice et la batterie ensemble, la basse au troisième temps, et finit sur l’exercice seul, puis un coup du groupe.",
+      clips: [["audio/lices-avant.mp3", "Avant : 0:59"], ["audio/lices.mp3", "Après : 1:06"]],
+      rec: "Aucune sur le goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Revenir à l’ancienne version"], recIdx: -1, src: "`art-lab/audio/scores/lices.score.mjs`" },
+    { id: "R-VALSE", tag: "si bémol · 3/4", title: "La valse : son propre air",
+      ctx: "Une valse en si bémol avec son propre air à la flûte, et un pont en mineur. Le motif s’y cache dans la basse du pont, une note par mesure : seule une oreille qui le cherche le trouvera. Elle entre sur la guitare et l’élan de la flûte, ne garde plus de fanfare, et s’arrête net sur le premier temps, comme une valse de bal.",
+      clips: [["audio/valse-avant.mp3", "Avant : 0:58"], ["audio/valse.mp3", "Après : 0:49"]],
+      rec: "Aucune sur le goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Revenir à l’ancienne version"], recIdx: -1, src: "`art-lab/audio/scores/valse.score.mjs`" },
+    { id: "R-RIVAL", tag: "fa dièse mineur · 7/8", title: "Le rival : une autre tonalité, une ligne à lui",
+      ctx: "En fa dièse mineur, plus en ré. Il s’ouvre sur les toms à 3 + 2 + 2 et l’orgue, et s’arrête net sur le deuxième groupe du riff. Le riff en miroir reste aux guitares et à la basse ; le lead a sa propre ligne au lieu de doubler le riff. Pendant quatre mesures seulement, le groupe plie sur le riff du héros, et le lead se tait.",
+      clips: [["audio/rival-avant.mp3", "Avant : 0:43"], ["audio/rival.mp3", "Après : 0:38"]],
+      rec: "Aucune sur le goût. Il reste en trois couches, comme tu l’as choisi.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Revenir à l’ancienne version"], recIdx: -1, src: "`art-lab/audio/scores/rival.score.mjs`" },
+    { id: "R-FINALE", tag: "do mineur → ré majeur", title: "La finale : le retour à la maison",
+      ctx: "Réécrite en entier après les relectures : elle reprenait le refrain de midi et le plan du duel, puis, dans ma première reprise, les accords et le contre-chant de la nuit. En do mineur, un riff à elle en croches droites, et par-dessus le motif entier au cor en valeurs longues, comme un choral sur du rock. Quatre mesures au lead, deux qui tournent vers ré sous le roulement des timbales, la tête du motif en ré mineur sur une basse qui descend, un contre-chant en sens contraire, puis la fanfare en ré majeur : son appel est celui du tournoi, ses accords et ses frappes ne sont plus ceux de midi.",
+      clips: [["audio/finale-avant.mp3", "Avant : 0:54"], ["audio/finale.mp3", "Après : 0:48"]],
+      rec: "Aucune sur le goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Revenir à l’ancienne version"], recIdx: -1, src: "`art-lab/audio/scores/finale.score.mjs`" },
+    { id: "R-RETOUCHES", tag: "midi et duel", title: "Midi et le duel : des retouches",
+      ctx: "Tu les as validés deux fois : ils gardent leur son et leur plan. Midi n’a plus qu’une fanfare, après le solo ; le solo ne dit plus la tierce avant elle, la boucle repasse par la dominante, et les cuivres tombent de son dernier accord. Le duel monte d’un ton, en mi mineur, le riff sur la corde de mi à vide, loin du ré mineur de la nuit et de la finale ; il finit sur sa propre montée au lieu de la fanfare à 7/8, puis court, la timbale roulant sur la quinte ; sa réponse, qui recopiait le contour du pont de midi, est neuve.",
+      clips: [["audio/midi.mp3", "Midi après : 1:26"], ["audio/duel.mp3", "Le duel après : 0:55"]],
+      rec: "Aucune sur le goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Revenir à l’ancienne version"], recIdx: -1, src: "`art-lab/audio/scores/midi.score.mjs`, `duel.score.mjs`" },
+  ]},
+  { id: "decisions", title: "Deux décisions", sub: "La règle du motif, et ce qui vient après.", fam: "var(--voile)", items: [
+    { id: "R-MOTIF", tag: "la règle", title: "Le motif entier en cinq endroits, caché ailleurs",
+      ctx: "La règle qui a guidé la reprise, maintenant tenue par un test. Le motif entier ne s’entend qu’au titre, à midi, dans les riffs du duel et du rival, et à la finale. Partout ailleurs, seule sa tête passe, cachée dans un accompagnement. La fanfare n’appartient qu’au tournoi : midi, la finale, l’annonce et la victoire. Un test refuse aussi qu’un morceau recopie deux mesures d’un autre, ou partage plus de quatre tournures avec lui.",
+      rec: "Garder cette règle : c’est comme cela que les jeux que tu cites traitent leur thème, rare et attendu.",
+      opts: ["Garder cette règle", "Le motif encore plus discret (en note)", "Le motif plus présent (en note)"], recIdx: 0, src: "`art-lab/audio/scores/theme.mjs` (`WHOLE_MOTIF`, `THEME_STEPS`), `tests/audio-band.test.mjs`, `tools/audio/band/likeness.mjs`" },
+    { id: "R-SUITE", tag: "suite", title: "Ce qui vient après",
+      ctx: "Tes réponses de la dernière fiche tiennent : le plan des morceaux par lieu, trois couches sur les trois combats, et l’essai sur un appareil Apple, que tu peux faire. Une page de test pour Safari viendra avec les premiers fichiers cuits. L’étape suivante cuit les morceaux sous manifeste, avec ton approbation mot pour mot, les branche derrière `flags.v2`, et te donne l’essai en jouant.",
+      rec: "Cuire et brancher dans la version 2, si la journée enchaînée ne sonne plus comme un copier-coller.",
+      opts: ["Cuire et brancher dans la version 2", "Reprendre encore (en note)", "Attendre"], recIdx: 0, src: "SA-8, SA-16, C-LIEUX, C-COUCHES, C-SAFARI ; `tools/audio/validate.mjs`" },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function richKids(s) { return s.split('`').map((p, i) => (i % 2 ? el('code', {}, p) : p)); }
+function rich(tag, cls, s) { return el(tag, { class: cls }, ...richKids(s)); }
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(rich('p', 'ctx', it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.clips) {
+    const grid = el('div', { class: 'clips' });
+    for (const [src, cap] of it.clips) {
+      const a = el('audio', { controls: '', preload: 'metadata', src, 'aria-label': cap });
+      const msg = el('p', { class: 'src', hidden: '' }, 'Ce lecteur n’a pas pu charger le son : préviens-moi dans la conversation.');
+      a.addEventListener('error', () => { msg.hidden = false; });
+      grid.append(el('figure', { class: 'clip' }, el('figcaption', {}, cap), a, msg));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), ...richKids(it.rec)));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', ...richKids(it.src)));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+const LIKE = {"names":["Titre","Matin","Midi","Fin","Nuit","Parvis","Lices","Valse","Duel","Rival","Finale"],"before":[[0,30,18,11,31,15,15,16,16,9,14],[30,0,21,10,36,16,15,18,18,9,13],[18,21,0,9,18,16,18,17,16,8,20],[11,10,9,0,12,11,10,8,10,8,10],[31,36,18,12,0,15,15,16,16,9,14],[15,16,16,11,15,0,10,15,11,8,16],[15,15,18,10,15,10,0,10,19,9,14],[16,18,17,8,16,15,10,0,12,8,13],[16,18,16,10,16,11,19,12,0,9,13],[9,9,8,8,9,8,9,8,9,0,8],[14,13,20,10,14,16,14,13,13,8,0]],"after":[[0,0,13,1,2,0,0,1,7,0,8],[0,0,3,1,0,3,1,0,0,2,0],[13,3,0,1,3,1,2,1,8,1,14],[1,1,1,0,1,0,0,0,1,4,1],[2,0,3,1,0,0,4,0,2,0,2],[0,3,1,0,0,0,1,0,0,0,0],[0,1,2,0,4,1,0,0,2,0,0],[1,0,1,0,0,0,0,0,1,0,1],[7,0,8,1,2,0,2,1,0,0,7],[0,2,1,4,0,0,0,0,0,0,2],[8,0,14,1,2,0,0,1,7,2,0]]};
+function heatGrid(id, m) {
+  const tb = el('table', { role: 'table', 'aria-label': 'Tournures communes entre deux morceaux' }), head = el('tr', {}, el('th', {}));
+  LIKE.names.forEach((n) => head.append(el('th', { scope: 'col', title: n }, n.slice(0, 2))));
+  tb.append(el('thead', {}, head));
+  const body = el('tbody');
+  m.forEach((row, i) => {
+    const tr = el('tr', {}, el('th', { scope: 'row', class: 'row' }, LIKE.names[i]));
+    row.forEach((v, j) => { if (i === j) { tr.append(el('td', { class: 'self', 'aria-label': '—' })); return; } const pct = Math.min(100, v * 6); tr.append(el('td', { title: LIKE.names[i] + ' et ' + LIKE.names[j] + ' : ' + v, style: 'background:color-mix(in srgb, var(--cendre) ' + pct + '%, var(--surface));color:' + (pct > 55 ? 'var(--surface)' : 'var(--muted)') }, v ? String(v) : '')); });
+    body.append(tr);
+  });
+  tb.append(body); document.getElementById(id).replaceChildren(tb);
+}
+heatGrid('heat-before', LIKE.before); heatGrid('heat-after', LIKE.after);
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

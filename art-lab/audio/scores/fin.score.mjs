@@ -1,39 +1,39 @@
-// « Le Tournoi », the end of the day (journal Passe SN7): the low sun: a warm laid-back fusion on the nylon guitar, the electric piano and a soft wind synth. The third hesitates:
-// the motif leans on F natural, the answer on F sharp, the day ending and the night on its way. An original score, no work reproduced.
-import { Session, parseChord, voice } from '../../../tools/audio/band/session.mjs';
-import { rig, rhodes, strings, vibes, nylon, fretless, loopOf } from './rig.mjs';
-import { fusionHead } from './theme.mjs';
+// The end of the day (journal Passes SN7 / SN8): the low sun, a slow bossa in straight eighths: the nylon guitar comping on the clave, a rim and a shaker, a finger bass,
+// and a tune of its own on a soft horn: eight bars in F, six that turn to its minor, four where the third hesitates, A flat then A. Nothing of the night's band (journal
+// Passe SN8: its brushes, its fretless, its wind and its piano were the night's). The motif is only the vibraphone's, its head once in F, low under the held A flat.
+// An original score, no work reproduced.
+import { Session } from '../../../tools/audio/band/session.mjs';
+import { rig, strings, vibes, nylon, finger, hornLine, loopOf } from './rig.mjs';
 
 /** the tracks that carry the tune: the band's voicings make room for them */
-export const tunes = ['lead'];
-const A = ['Fmaj9', 'Cmaj9', 'Bbmaj9', 'A7sus'], B = ['Gmaj9', 'D/F#', 'Em9', 'A13sus'];
-const BRUSH = { sweep: 'o...o...o...o...', brush: '....x..g....x.g.', hat: '....g.......g...', kick: 'o.........o.....' }, LIFT = { ...BRUSH, shaker: 'x.o.x.o.x.o.x.o.', kick: 'x.....o...o.....' };
+export const tunes = ['horn', 'vibes'];
+const A = ['Fmaj9', 'Fmaj7#11', 'Bbmaj9', 'Am9', 'Gm9', 'C13sus', 'Fmaj9', 'Dm9'], B = ['Dbmaj9', 'Cm9', 'Fm9', 'Dbmaj9', 'Gm9', 'C13sus'], END = ['Fm9', 'Dbmaj9', 'F6/9', 'C13sus'];
+const BOSSA = { rim: 'x..x..x...x..x..', shaker: 'ogogogogogogogog', kick: 'o..g....o..g....' }, OPEN = { ...BOSSA, ride: 'x...x...x...x...', kick: 'x..g....x..g....' };
+/** the clave's strokes: where the guitar's fingers fall, and how long they ring */
+const STROKES = [[0, 2.6, 1], [3, 2.6, 0.84], [6, 3.6, 0.92], [10, 2.6, 0.84], [13, 2.6, 0.8]];
+const BASS = '1--5----1--5----';
 
 export default function score(o = {}) {
-  const s = new Session({ id: 'fin', seed: 78, bpm: 78, swing: 0.57, bars: 20, tail: 6, ...o, ...loopOf(o, 2, 18) }), r = rig(s);
-  const gtr = r.nylon({ gain: 0.52 }), keys = r.keysSoft({ gain: 0.26, pan: 0.16 }), low = r.fret(), kit = r.kit({ id: 0, gain: 0.82, room: 0.24, jitter: 0.007, lay: 0.005, vary: 0.13, fx: null }), lead = r.softLead({}, { dark: 0.55, attack: 0.022, release: 0.12 }), pad = r.pad({ gain: 0.2, hall: 0.3 }), vib = r.vib({ gain: 0.32 });
+  const s = new Session({ id: 'fin', seed: 78, bpm: 78, swing: 0.5, bars: 22, tail: 6, ...o, ...loopOf(o, 2, 20) }), r = rig(s);
+  const gtr = r.nylon({ gain: 0.5 }), low = r.slap({ gain: 0.42, room: 0.05 }), kit = r.kit({ gain: 0.78, room: 0.22, jitter: 0.006, lay: 0.004, vary: 0.12, fx: null }), horn = r.horns({ gain: 0.4, hall: 0.24, plate: 0.16, pan: 0.04 }, 'horn'), pad = r.pad({ gain: 0.18, hall: 0.3 }), vib = r.vib({ gain: 0.32 });
 
-  /** the nylon's picking on the fusion's rhythm, every note left ringing */
-  const pick = (bar, sym, vel = 0.46) => {
-    const c = parseChord(sym), v = voice(c, s.voicings.get('nylon'), { lo: 55, hi: 74, n: 3, avoid: s.avoidAt(s.t(bar), s.span(16)) }), root = 40 + ((c.bass - 4 + 12) % 12); s.voicings.set('nylon', v);
-    [[0, root], [3, v[0]], [6, v[1]], [8, v[2]], [11, v[1]], [14, v[0]]].forEach(([st, m], i) => { const [t, g] = gtr.human(s.t(bar, st), vel * (i ? 0.9 : 1.2)); gtr.sound(() => nylon(m, g, gtr.take()), t, { g, dur: s.span(16 - st) + 0.2, rel: 0.25 }, m); });
-  };
-  const hold = (bar, sym, vel = 0.42) => s.chord(keys, rhodes, bar, 8, sym, 7.5, { vel, lo: 55, hi: 74, n: 4, strum: 0.016, rel: 0.3 });
-  const under = (bar, sym, row = '1-----5-1-----7-', vel = 0.66) => s.bass(low, fretless, bar, sym, row, { vel, art: 1 });
-  const wash = (bar, sym, vel = 0.42) => s.pad(pad, strings, bar, 0, sym, 15, { vel, n: 4, lo: 57, hi: 79, attack: 1, release: 1.1 });
-  const phrase = (bar) => { s.phrase(lead, bar, 0, `${fusionHead(5)} | D5:10^~ E5:2 G5:2 A5:2 | D6:6 C6:2 A5:8~`, { vel: 0.72 }); };
+  const comp = (bar, sym, vel = 0.46) => { for (const [st, len, k] of STROKES) s.chord(gtr, nylon, bar, st, sym, len, { vel: vel * k, n: 4, lo: 52, hi: 72, strum: 0.012, rel: 0.12 }); };
+  const under = (bar, sym, vel = 0.7) => s.bass(low, finger, bar, sym, BASS, { vel, art: 0.92 });
+  const wash = (bar, sym, vel = 0.4) => s.pad(pad, strings, bar, 0, sym, 15, { vel, n: 4, lo: 57, hi: 79, attack: 1, release: 1.1 });
+  const sing = (bar, text, vel) => hornLine(s, horn, bar, 0, text, { vel, soft: true, art: 0.98 });
 
-  pick(0, 'Fmaj9', 0.44); pick(1, 'A7sus', 0.44); under(1, 'A7sus', '1---------------', 0.54); s.drums(kit, 1, 1, { sweep: 'o...o...o...o...' }, { vel: 0.7 });
-  // ---- the motif, leaning on F natural
-  phrase(2); A.forEach((c, i) => { pick(2 + i, c); hold(2 + i, c); under(2 + i, c); s.drums(kit, 2 + i, 1, BRUSH); });
-  // ---- the answer: the day's own third, F sharp, one last time; the strings come in
-  s.phrase(lead, 6, 0, 'B5:6 A5:2 F#5:4 D5:4 | E5:4 F#5:4 A5:8^~ | G5:4 B5:4 D6:4 E6:4 | F#6:8^~ E6:4 D6:4', { vel: 0.76 });
-  B.forEach((c, i) => { pick(6 + i, c, 0.5); hold(6 + i, c, 0.46); under(6 + i, c, '1-----5-1-----5-', 0.7); wash(6 + i, c); s.drums(kit, 6 + i, 1, LIFT); });
-  // ---- the motif again, the vibraphone answering in its long notes
-  phrase(10); A.forEach((c, i) => { pick(10 + i, c, 0.5); hold(10 + i, c, 0.46); under(10 + i, c); wash(10 + i, c, 0.46); s.drums(kit, 10 + i, 1, LIFT); }); s.line(vib, vibes, 12, 2, 'F5:2 A5:2 C6:4', { vel: 0.5, art: 1.5, rel: 0.4 }); s.line(vib, vibes, 13, 10, 'E6:2 D6:2 C6:2', { vel: 0.48, art: 1.5, rel: 0.4 });
-  // ---- the sun goes: the two thirds side by side
-  s.phrase(lead, 14, 0, 'D6:6 C6:2 A5:8~ | F5:6 A5:2 D6:8~ | F#5:6 A5:2 D6:8~ | E6:8 D6:8~', { vel: 0.74 });
-  ['Bbmaj9', 'Dm9', 'Dmaj9', 'A13sus'].forEach((c, i) => { pick(14 + i, c, 0.48); hold(14 + i, c, 0.44); under(14 + i, c, '1-------5-------', 0.66); wash(14 + i, c, 0.46); s.drums(kit, 14 + i, 1, BRUSH, { vel: 0.9 }); });
-  if (!s.loop) { pick(18, 'D6/9', 0.42); s.chord(keys, rhodes, 18, 8, 'D6/9', 20, { vel: 0.4, lo: 55, hi: 76, n: 4, strum: 0.03, rel: 0.6 }); s.bass(low, fretless, 18, 'D6/9', '1-----------------------', { vel: 0.54, art: 1 }); s.pad(pad, strings, 18, 0, 'D6/9', 24, { vel: 0.34, n: 4, lo: 57, hi: 79, attack: 1, release: 2 }); s.phrase(lead, 18, 8, 'A5:8 D6:20~', { vel: 0.56 }); }
+  // ---- the rim and the shaker alone, then the guitar; the bass comes in with the tune
+  s.drums(kit, 0, 2, { rim: 'x..x..x...x..x..', shaker: 'ogogogogogogogog' }, { vel: 0.8 }); comp(1, 'C13sus', 0.44);
+  // ---- the tune on the soft horn, eight bars in F
+  sing(2, '.:2 C5:2 F5:2 G5:2 A5:8 | G5:3 A5:3 E5:2 C5:8 | .:2 D5:2 F5:2 A5:2 C6:8 | A5:12 G5:4 | F5:4 G5:4 Bb5:8 | A5:3 G5:3 F5:2 D5:8 | .:4 C6:4 A5:4 F5:4 | G5:16', 0.72);
+  A.forEach((c, i) => { comp(2 + i, c); under(2 + i, c); s.drums(kit, 2 + i, 1, i < 4 ? BOSSA : OPEN); if (i >= 4) wash(2 + i, c, 0.34); });
+  // ---- six bars that turn to the minor: D flat, the A flat of the dusk, the strings under it
+  sing(10, 'F5:4 Ab5:4 C6:8 | Bb5:4 G5:4 Eb5:8 | F5:4 G5:4 Ab5:4 C6:4 | Ab5:4 C6:4 Eb6:8 | D6:4 Bb5:4 G5:8 | A5:6 G5:2 Bb5:8', 0.76);
+  B.forEach((c, i) => { comp(10 + i, c, 0.5); under(10 + i, c, 0.72); wash(10 + i, c, 0.44); s.drums(kit, 10 + i, 1, OPEN); });
+  // ---- the third hesitates: A flat held over the motif's head, low on the vibraphone, then A
+  sing(16, 'Ab5:16 | F5:4 Ab5:4 C6:8 | A5:16', 0.72); s.line(vib, vibes, 16, 0, 'F4:3 C5:3 C5:2 Eb5:3 C5:2 Bb4:3', { vel: 0.5, art: 1.3, rel: 0.4 }); s.line(vib, vibes, 19, 0, 'G5:4 A5:4 C6:8', { vel: 0.46, art: 1.4, rel: 0.4 });
+  END.forEach((c, i) => { comp(16 + i, c, 0.44); under(16 + i, c, 0.64); wash(16 + i, c, 0.42); s.drums(kit, 16 + i, 1, BOSSA, { vel: 0.9 }); });
+  // ---- the end: the guitar's last stroke, and the two thirds in a row on the horn
+  if (!s.loop) { s.chord(gtr, nylon, 20, 0, 'Fmaj9', 20, { vel: 0.46, n: 4, lo: 52, hi: 72, strum: 0.04, rel: 0.6 }); s.bass(low, finger, 20, 'Fmaj9', '1---------------', { vel: 0.6, art: 1 }); sing(20, 'Ab5:4 A5:20', 0.62); s.drums(kit, 20, 1, { shaker: 'o...............', rim: 'x...............' }); }
   return s;
 }

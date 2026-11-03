@@ -6,9 +6,10 @@ import { SR, hz, Rand, seedOf, ring, room, convolve } from '../tools/audio/band/
 import { rhodes, bass, nylon, vibes, ewi, flute, gestures } from '../tools/audio/band/instruments.mjs';
 import { drum, DRUMS } from '../tools/audio/band/drums.mjs';
 import { Session, parseChord, tonesOf, voice, parseLine, midiOf, master } from '../tools/audio/band/session.mjs';
-import { hasMotif, rubs, outOfRange, octaves, seam } from '../tools/audio/band/check.mjs';
+import { rubs, outOfRange, octaves, seam } from '../tools/audio/band/check.mjs';
+import { record, likeness, motifAt, runsOf, keyOf } from '../tools/audio/band/likeness.mjs';
 import { fft } from '../tools/audio/measure.mjs';
-import { MOTIF } from '../art-lab/audio/scores/theme.mjs';
+import { MOTIF, THEME_STEPS, WHOLE_MOTIF } from '../art-lab/audio/scores/theme.mjs';
 import midi, { tunes as midiTunes } from '../art-lab/audio/scores/midi.score.mjs';
 import matin, { tunes as matinTunes } from '../art-lab/audio/scores/matin.score.mjs';
 import nuit, { tunes as nuitTunes } from '../art-lab/audio/scores/nuit.score.mjs';
@@ -76,20 +77,34 @@ test('the spaces: a room per side, never the same, and a convolution that keeps 
   const x = new Float32Array(2000); ring(x, [{ f: 440, a: 1, tau: 0.1 }]); assert.ok(Math.abs(x[50]) > 0);
 });
 
-const SCORES = [['midi', midi, midiTunes, 'lead'], ['matin', matin, matinTunes, 'flute'], ['nuit', nuit, nuitTunes, 'lead'], ['duel', duel, duelTunes, 'lead'], ['titre', titre, titreTunes, 'horn'], ['fin', fin, finTunes, 'lead'], ['parvis', parvis, parvisTunes, 'lead'], ['lices', lices, licesTunes, 'lead'], ['valse', valse, valseTunes, 'flute'], ['rival', rival, rivalTunes, 'lead'], ['finale', finale, finaleTunes, 'lead']];
+/** each piece, its tune tracks and the track that tells the whole motif where it may (journal Passe SN8: the riffs of the fights are in the bass) */
+const SCORES = [['midi', midi, midiTunes, 'lead'], ['matin', matin, matinTunes], ['nuit', nuit, nuitTunes], ['duel', duel, duelTunes, 'bass'], ['titre', titre, titreTunes, 'horn'], ['fin', fin, finTunes], ['parvis', parvis, parvisTunes], ['lices', lices, licesTunes], ['valse', valse, valseTunes], ['rival', rival, rivalTunes, 'bass'], ['finale', finale, finaleTunes, 'horn']];
+/** a track's notes as one line, the highest where several sound together */
+const lineOf = (events, track) => { const line = []; for (const e of events.filter((x) => x.track === track).sort((a, b) => a.t - b.t)) { const l = line[line.length - 1]; if (l && Math.abs(l.bar - e.t) < 0.03) { l.midi = Math.max(l.midi, e.midi); continue; } line.push({ midi: e.midi, bar: e.t }); } return line; };
 const RANGE = { lead: [62, 100], flute: [60, 93], bass: [28, 67], fretless: [28, 67], nylon: [40, 86], rhodes: [40, 90], vibes: [53, 89], marimba: [48, 96], bouzouki: [50, 86] };
-for (const [id, make, tunes, carrier] of SCORES) test(`« ${id} »: the motif, room for the tune, the ranges, the same notes for the same seed`, () => {
-  const plan = make({ dry: true }), tune = plan.events.filter((e) => tunes.includes(e.track)), s = make({ dry: true, tune });
-  assert.ok(hasMotif(s.events, carrier, MOTIF), 'SA-2: the thirteen notes, in order');
+for (const [id, make, tunes, carrier] of SCORES) test(`« ${id} »: the motif where it belongs, room for the tune, the ranges, the same notes for the same seed`, () => {
+  const plan = make({ dry: true }), tune = plan.events.filter((e) => tunes.includes(e.track)), s = make({ dry: true, tune }), tracks = [...new Set(s.events.map((e) => e.track))];
+  const whole = tracks.filter((tr) => motifAt(lineOf(s.events, tr), MOTIF).length), head = tracks.filter((tr) => motifAt(lineOf(s.events, tr), MOTIF.slice(0, 6)).length);
+  if (WHOLE_MOTIF.includes(id)) assert.ok(whole.includes(carrier), `SA-2: the thirteen notes, in order, on the ${carrier}`);
+  else { assert.deepEqual(whole, [], 'journal Passe SN8: the whole motif is kept for the title, midday, the fights and the finale'); assert.ok(head.length, 'F-MOTIF: its head is still there, hidden'); }
   const rub = rubs(s.events, tunes, { hold: 0.34, secondsPerBar: s.steps * s.stepSecs }); assert.ok(rub.length <= 1, JSON.stringify(rub));
   assert.deepEqual(outOfRange(s.events, RANGE), []);
   const again = make({ dry: true, tune }); assert.deepEqual(again.events.map((e) => [e.midi, e.t]), s.events.map((e) => [e.midi, e.t]));
   assert.ok(s.total / SR < 110, 'a piece of the catalogue');
   const looped = make({ dry: true, tune, looped: true }); assert.ok(looped.loop && looped.loopEnd > looped.loopStart, 'every piece goes round'); assert.ok(looped.loopEnd <= looped.total);
 });
-test('the third is the hour: F sharp in the morning, F natural at night', () => {
+test('the third is the hour: major in the morning (B in G), minor at night (F in D)', () => {
   const pcs = (make) => { const o = {}; for (const e of make({ dry: true }).events) o[e.midi % 12] = (o[e.midi % 12] ?? 0) + 1; return o; };
-  const day = pcs(matin), night = pcs(nuit); assert.ok(day[6] > (day[5] ?? 0) * 8, `morning F# ${day[6]} F ${day[5]}`); assert.ok(night[5] > (night[6] ?? 0) * 8, `night F ${night[5]} F# ${night[6]}`);
+  const day = pcs(matin), night = pcs(nuit); assert.ok(day[11] > (day[10] ?? 0) * 8, `morning B ${day[11]} B flat ${day[10]}`); assert.ok(night[5] > (night[6] ?? 0) * 8, `night F ${night[5]} F# ${night[6]}`);
+});
+test('one piece, one tune: the catalogue does not copy itself (journal Passe SN8: « cette sensation de copier-coller »)', () => {
+  const recs = SCORES.map(([, make, tunes]) => record(Session, make, tunes)), theme = new Set(Object.values(THEME_STEPS).flatMap((st) => [...runsOf(st)])), fanfare = runsOf(THEME_STEPS.fanfare);
+  const L = likeness(recs, { n: 6, ignore: [(k) => theme.has(k)] }), shared = L.per.reduce((n, p) => n + p.sharedGrams, 0), all = L.per.reduce((n, p) => n + p.grams, 0);
+  assert.ok(shared / all < 0.08, `outside the theme, ${shared} of ${all} turns of six notes heard in another piece`);
+  for (const p of L.pairs) assert.ok(p.grams <= 4, `${p.a} and ${p.b} share ${p.grams} turns`);
+  for (const p of L.pairs) if (p.blocks.length) assert.deepEqual([p.a, p.b].sort(), ['finale', 'midi'], `two bars copied between ${p.a} and ${p.b}: only the fanfare goes from midday to the finale`);
+  for (const r of recs) if (!['midi', 'finale'].includes(r.id)) { const iv = r.line.slice(1).map((n, i) => n.midi - r.line[i].midi), mine = runsOf(iv); assert.ok(![...fanfare].some((k) => mine.has(k)), `the fanfare's call in ${r.id}: it is the tournament's`); }
+  const keys = new Set(recs.map((r) => { const k = keyOf(r); return `${k.tonic}${k.mode}`; })); assert.ok(keys.size >= 6, `${keys.size} keys for eleven pieces`);
 });
 test('a mix and its master: the level set, the ceiling held, the same seed the same bytes', () => {
   const make = () => { const s = new Session({ id: 't', seed: 3, bpm: 120, bars: 1, tail: 0.5 }), k = s.track('k', { room: 0.1 }); s.drums(k, 0, 1, { kick: 'X...X...X...X...', snare: '....X.......X...', hat: 'xoxoxoxoxoxoxoxo' }); return master(s.mix(), { lufs: -18 }); };

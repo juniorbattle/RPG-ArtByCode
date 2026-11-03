@@ -1,6 +1,6 @@
 // « Le Tournoi », midday (journal Passe SN5): the tournament's launch, in the manner of the Japanese fusion bands behind Breath of Fire III: straight sixteenths
 // with a breath of swing, slap bass, electric piano, a scratching guitar, a wind synth on the tune, brass answering it. D mixolydian, the third F sharp held
-// back until the fanfare lands; the last chorus a tone up. An original score, no work reproduced.
+// back until the fanfare lands, once, after the solo and a tone up (journal Passe SN8: the fanfare is the tournament's, heard here, in the finale and the jingles only). An original score, no work reproduced.
 import { Session } from '../../../tools/audio/band/session.mjs';
 import { rhodes, bass, eguitar, brass, strings, ewi } from '../../../tools/audio/band/instruments.mjs';
 import { chorus, phaser, pingPong, compress, drive } from '../../../tools/audio/band/dsp.mjs';
@@ -27,7 +27,7 @@ const SLAP = ['1..xp.1.5..1p7.x', '1..xp.1x.1.1pb5.', '1.x1p.1x5.1xp.75', '1x1xp
 export const tunes = ['lead'];
 
 export default function score(o = {}) {
-  const s = new Session({ id: 'midi', seed: 106, bpm: 106, swing: 0.535, bars: 42, tail: 4, ...o, ...loopOf(o, 4, 40) });
+  const s = new Session({ id: 'midi', seed: 106, bpm: 106, swing: 0.535, bars: 38, tail: 4, ...o, ...loopOf(o, 4, 36) });
   const kit = s.track('kit', { lay: 0.001, jitter: 0.0035, room: 0.1, gain: 0.8, fx: (L, R) => compress(L, R, { th: -14, ratio: 3, attack: 0.004, release: 0.09, makeup: 2 }), eq: [['hp', 30], ['peak', 3800, 0.9, 1.5]] });
   const low = s.track('bass', { lay: 0.003, jitter: 0.003, gain: 0.5, room: 0.02, eq: [['hp', 34], ['low', 130, 0.7, 4], ['peak', 300, 1, -3], ['high', 1500, 0.7, -4]], fx: (L, R) => compress(L, R, { th: -12, ratio: 5, attack: 0.002, release: 0.06, makeup: 3 }) });
   const keys = s.track('rhodes', { pan: -0.12, gain: 0.32, plate: 0.13, room: 0.08, jitter: 0.004, eq: [['hp', 150], ['peak', 2200, 1, 1.5]], fx: (L, R) => { phaser(L, R, { rate: 0.31, mix: 0.45 }); chorus(L, R, { rate: 0.7, mix: 0.42 }); } });
@@ -74,7 +74,10 @@ export default function score(o = {}) {
     for (const [b, c] of [[bar, u('D13sus')], [bar + 1, u('E/D')]]) { hit(b, 0, c, 2.6); hit(b, 3, c, 2.6); hit(b, 6, c, 1.7); hit(b, 8, c, 7, 0.78, 0); s.chord(keys, rhodes, b, 0, c, 14, { vel: 0.66, lo: 54, hi: 74 }); s.bass(low, bass, b, c, '1..1..1.1.xp.7x5', { slap: true }); }
     hit(bar + 2, 0, u('Bbmaj9'), 7, 0.82); hit(bar + 2, 8, u('C9'), 7, 0.84); s.chord(keys, rhodes, bar + 2, 0, u('Bbmaj9'), 8, { vel: 0.66, lo: 54, hi: 74 }); s.chord(keys, rhodes, bar + 2, 8, u('C9'), 8, { vel: 0.66, lo: 54, hi: 74 });
     s.bass(low, bass, bar + 2, u('Bbmaj9'), '1..xp.1.', { slap: true }); s.bass(low, bass, bar + 2, u('C9'), '1..xp.1x', { slap: true, from: 8 });
-    hit(bar + 3, 0, u('D6/9'), 14, 0.96); s.chord(keys, rhodes, bar + 3, 0, u('D6/9'), 15, { vel: 0.72, lo: 54, hi: 76 }); s.bass(low, bass, bar + 3, u('D6/9'), '1-----------..p7', { slap: true }); s.pad(pad, strings, bar + 3, 0, u('D6/9'), 15, { vel: 0.6, top: 86 });
+    // going round, the last tag (a tone up, in E) turns to A13sus on its last beat: the dominant of D, where the loop starts again (journal Passe SN8)
+    const turn = !!s.loop && !!n, len = turn ? 11.5 : 15;
+    hit(bar + 3, 0, u('D6/9'), turn ? 11 : 14, 0.96); s.chord(keys, rhodes, bar + 3, 0, u('D6/9'), len, { vel: 0.72, lo: 54, hi: 76 }); s.bass(low, bass, bar + 3, u('D6/9'), turn ? '1-----------' : '1-----------..p7', { slap: true }); s.pad(pad, strings, bar + 3, 0, u('D6/9'), len, { vel: 0.6, top: 86, release: turn ? 0.3 : 0.9 });
+    if (turn) { hit(bar + 3, 12, 'A13sus', 3.6, 0.8); s.chord(keys, rhodes, bar + 3, 12, 'A13sus', 4, { vel: 0.66, lo: 54, hi: 74 }); s.bass(low, bass, bar + 3, 'A13sus', '1.p.', { slap: true, from: 12 }); s.pad(pad, strings, bar + 3, 12, 'A13sus', 3.8, { vel: 0.5, top: 84, release: 0.3 }); }
   };
 
   // ---- intro: the motif in the slap bass alone, then the band falls in
@@ -84,22 +87,22 @@ export default function score(o = {}) {
   s.drums(kit, 2, 1, GROOVE.a); s.drums(kit, 3, 1, GROOVE.fill);
   s.chord(keys, rhodes, 2, 0, 'D13sus', 6, { vel: 0.6, lo: 54, hi: 74 }); s.chord(keys, rhodes, 2, 8, 'D13sus', 4, { vel: 0.5, lo: 54, hi: 74 }); s.chord(keys, rhodes, 3, 0, 'Am11', 6, { vel: 0.6, lo: 54, hi: 74 }); s.chord(keys, rhodes, 3, 14, 'D13sus', 2, { vel: 0.66, lo: 54, hi: 74 });
 
-  s.drums(kit, 4, 1, { crash: 'X...............' }); chorusA(4, 0); chorusA(8, 0, { second: true }); chorusB(12, 0); chorusTag(16, 0);
+  s.drums(kit, 4, 1, { crash: 'X...............' }); chorusA(4, 0); chorusA(8, 0, { second: true }); chorusB(12, 0);
 
-  // ---- the solo: the motif's head climbing by minor thirds over major sevenths, a run, then the whole band in unison on the motif's rhythm, a tone higher
-  const solo = ['Fmaj9', 'Abmaj9', 'Bmaj9', 'Dmaj9', 'Gmaj9', 'C13', 'Bbmaj9', 'B13sus'];
-  s.phrase(lead, 20, 0, 'F5:3 C6:3 C6:2 E6:3 C6:2 A5:3 | Ab5:3 Eb6:3 Eb6:2 G6:3 Eb6:2 C6:3 | B5:3 F#6:3 F#6:2 A#6:3 F#6:2 D#6:3 | D6:3 A6:3 F#6:2 E6:3 D6:2 A5:3', { vel: 0.84 });
-  s.phrase(lead, 24, 0, 'B6:3 A6:1 F#6:2 E6:1 D6:1 B5:3 A5:1 G5:1 F#5:1 E5:2 | G5:2 Bb5:2 C6:2 D6:2 E6:2 G6:2 A6:4^~ | A6:3 G6:1 F6:2 D6:1 C6:1 A5:3 Bb5:1 C6:1 D6:1 F6:2 | E6:3! F#6:3! A6:2! B6:3! A6:2! F#6:3!', { vel: 0.86 });
-  solo.slice(0, 7).forEach((c, i) => { const b = 20 + i; s.chord(keys, rhodes, b, 0, c, 3, { vel: 0.6, lo: 54, hi: 74 }); s.chord(keys, rhodes, b, 6, c, 2, { vel: 0.5, lo: 54, hi: 74 }); s.chord(keys, rhodes, b, 11, c, 4, { vel: 0.56, lo: 54, hi: 74 }); s.bass(low, bass, b, c, '1--.5-.x1-.p.7-.', { vel: i < 4 ? 0.66 : 0.78, slap: i >= 4 }); s.pad(pad, strings, b, 0, c, 15, { vel: 0.42, top: 82 }); });
-  s.drums(kit, 20, 4, GROOVE.solo, { vel: 0.8 }); s.drums(kit, 24, 3, GROOVE.solo, { vel: 0.94 });
-  s.line(low, (m, v, take) => bass(m, v, 'thumb', take), 27, 0, 'E2:3 F#2:3 A2:2 B2:3 A2:2 F#2:3', { vel: 0.9, art: 0.7 }); s.drums(kit, 27, 1, { kick: 'X..X..X.X..X.X..', snare: 'X..X..X.X..X.X..', crash: 'X...............' });
-  for (const [st, len] of [[0, 2.6], [3, 2.6], [6, 1.7], [8, 2.6], [11, 1.7], [13, 2.6]]) { s.chord(horns, fall(s.span(len)), 27, st, solo[7], len, { vel: 0.88, n: 4, lo: 60, hi: 84 }); s.chord(keys, rhodes, 27, st, solo[7], len, { vel: 0.66, lo: 54, hi: 74 }); }
+  // ---- the solo: the motif's head climbing by minor thirds over major sevenths, home on D13sus without its third (journal Passe SN8), a run, then the whole band in unison on the motif's rhythm, a tone higher
+  const solo = ['Fmaj9', 'Abmaj9', 'Bmaj9', 'D13sus', 'Gmaj9', 'C13', 'Bbmaj9', 'B13sus'];
+  s.phrase(lead, 16, 0, 'F5:3 C6:3 C6:2 E6:3 C6:2 A5:3 | Ab5:3 Eb6:3 Eb6:2 G6:3 Eb6:2 C6:3 | B5:3 F#6:3 F#6:2 A#6:3 F#6:2 D#6:3 | D6:3 A6:3 A6:2 C7:3 A6:2 G6:3', { vel: 0.84 });
+  s.phrase(lead, 20, 0, 'B6:3 A6:1 F#6:2 E6:1 D6:1 B5:3 A5:1 G5:1 F#5:1 E5:2 | G5:2 Bb5:2 C6:2 D6:2 E6:2 G6:2 A6:4^~ | A6:3 G6:1 F6:2 D6:1 C6:1 A5:3 Bb5:1 C6:1 D6:1 F6:2 | E6:3! F#6:3! A6:2! B6:3! A6:2! F#6:3!', { vel: 0.86 });
+  solo.slice(0, 7).forEach((c, i) => { const b = 16 + i; s.chord(keys, rhodes, b, 0, c, 3, { vel: 0.6, lo: 54, hi: 74 }); s.chord(keys, rhodes, b, 6, c, 2, { vel: 0.5, lo: 54, hi: 74 }); s.chord(keys, rhodes, b, 11, c, 4, { vel: 0.56, lo: 54, hi: 74 }); s.bass(low, bass, b, c, '1--.5-.x1-.p.7-.', { vel: i < 4 ? 0.66 : 0.78, slap: i >= 4 }); s.pad(pad, strings, b, 0, c, 15, { vel: 0.42, top: 82 }); });
+  s.drums(kit, 16, 4, GROOVE.solo, { vel: 0.8 }); s.drums(kit, 20, 3, GROOVE.solo, { vel: 0.94 });
+  s.line(low, (m, v, take) => bass(m, v, 'thumb', take), 23, 0, 'E2:3 F#2:3 A2:2 B2:3 A2:2 F#2:3', { vel: 0.9, art: 0.7 }); s.drums(kit, 23, 1, { kick: 'X..X..X.X..X.X..', snare: 'X..X..X.X..X.X..', crash: 'X...............' });
+  for (const [st, len] of [[0, 2.6], [3, 2.6], [6, 1.7], [8, 2.6], [11, 1.7], [13, 2.6]]) { s.chord(horns, fall(s.span(len)), 23, st, solo[7], len, { vel: 0.88, n: 4, lo: 60, hi: 84 }); s.chord(keys, rhodes, 23, st, 'B9sus', len, { vel: 0.66, lo: 54, hi: 74 }); }
 
-  s.drums(kit, 28, 1, { crash: 'X...............' }); chorusA(28, 2, { second: true }); chorusB(32, 2); chorusTag(36, 2);
-  // ---- the end: the whole band on one last chord, the tune landing on the day's third
+  s.drums(kit, 24, 1, { crash: 'X...............' }); chorusA(24, 2, { second: true }); chorusB(28, 2); chorusTag(32, 2);
+  // ---- the end: one last chord, the brass falling off it, the tune landing on the day's third
   if (s.loop) return s;
-  s.drums(kit, 40, 1, { crash: 'X...............', kick: 'X...............', snare: 'X...............', tomL: 'X...............' });
-  s.chord(horns, fall(s.span(14), { fall: 0 }), 40, 0, 'Emaj9', 14, { vel: 1, n: 4, lo: 60, hi: 86 }); s.chord(keys, rhodes, 40, 0, 'Emaj9', 16, { vel: 0.8, lo: 54, hi: 76, n: 4 });
-  s.bass(low, bass, 40, 'Emaj9', '1---------------', { slap: true }); s.phrase(lead, 40, 0, 'G#6:14^~', { vel: 0.9 });
+  s.drums(kit, 36, 1, { crash: 'X...............', kick: 'X...............' });
+  s.chord(horns, fall(s.span(10), { fall: 1 }), 36, 0, 'Emaj9', 10, { vel: 1, n: 4, lo: 60, hi: 86 }); s.chord(keys, rhodes, 36, 0, 'Emaj9', 16, { vel: 0.8, lo: 54, hi: 76, n: 4 });
+  s.bass(low, bass, 36, 'Emaj9', '1---------------', { slap: true }); s.phrase(lead, 36, 0, 'G#6:14^~', { vel: 0.9 });
   return s;
 }

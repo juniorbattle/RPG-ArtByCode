@@ -1,5 +1,5 @@
-// The checks a score can pass without an ear (journal Passe SN5): what the notes say (the motif's presence, the tune rubbing on a sustained note of the band,
-// an instrument out of its range), and what a render says (the balance by octave, the loudness along the piece). They find faults; they do not say a piece is good.
+// The checks a score can pass without an ear (journal Passe SN5): what the notes say (the tune rubbing on a sustained note of the band, an instrument out of its
+// range; the motif's place and the pieces' likeness are `likeness.mjs`'s, journal Passe SN8), and what a render says (the balance by octave, the loudness along the piece). They find faults; they do not say a piece is good.
 import fs from 'node:fs';
 import zlib from 'node:zlib';
 import { fft, loudness } from '../measure.mjs';
@@ -7,13 +7,6 @@ import { fft, loudness } from '../measure.mjs';
 const pc = (m) => ((m % 12) + 12) % 12;
 const NAMES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 export const noteName = (m) => `${NAMES[pc(m)]}${Math.floor(m / 12) - 1}`;
-
-/** the motif as a subsequence of a track's notes, in order, its pitch classes only; a version keeps its own third elsewhere */
-export function hasMotif(events, track, motif) {
-  const notes = events.filter((e) => e.track === track).sort((a, b) => a.t - b.t).map((e) => pc(e.midi)), want = motif.map((n) => ({ C: 0, D: 2, E: 4, G: 7, A: 9 })[n]);
-  for (let start = 0; start + want.length <= notes.length; start++) { let k = 0; for (let i = start; i < notes.length && k < want.length && i < start + want.length; i++) if (notes[i] === want[k]) k++; else break; if (k === want.length) return true; }
-  return false;
-}
 
 /** the tune's held notes a semitone above something the band sustains under them (a flat ninth): the rub an arranger takes out first, listed with where it falls.
  *  A major seventh is a colour: a semitone below stays. Passing notes shorter than `hold` seconds are the tune's business. */
