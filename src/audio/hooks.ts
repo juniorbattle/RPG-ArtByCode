@@ -1,11 +1,11 @@
-import { STEP_EVERY, type Effect } from './score';
+import { dbGain, REFUSAL_LIFT, STEP_EVERY, type Effect } from './score';
 
 /** The effects that no code played (journal Passe SN1: `click`, `open`, `coin`, `step`; lot S0, journal Passe SN2), wired from outside the interface so
  *  that a screen can change without knowing about the sound: a button's click on the document, a dialog appearing in it, the save's coins, the
  *  hero's walk read from the page's handle, an action the game refuses (lot S2). The screen's darkening at a way out takes the sound down with it (lot S1, journal Passe SN3); `go` asks what
  *  the fade still needs. A version 2 page only: src/audio/Sound.ts installs them with the engine. */
 
-interface Hooked { play(e: Effect): void; leave(): number }
+interface Hooked { play(e: Effect, gain?: number): void; leave(): number }
 interface Game { subscribe(f: () => void): void; state(): { player: { coins: number } }; act(a: unknown): { ok: boolean } }
 interface Pos { x: number; z: number }
 
@@ -38,9 +38,10 @@ export function installSoundHooks(s: Hooked): void {
     if (g && coins === null) {
       coins = g.state().player.coins;
       g.subscribe(() => { const c = g.state().player.coins; if (c !== coins) s.play('coin'); coins = c; });
-      // an action the game refuses (too few coins, a closed shop...): the refused command's sound (lot S2, journal Passe SN18)
+      // an action the game refuses (too few coins, a closed shop...): the refused command's sound (lot S2, journal Passe SN18), 6 dB over the duel's so that the
+      // town's music no longer covers it (S5-REFUS « Le refus 6 dB plus fort hors du duel », journal Passe SN22)
       const act = g.act.bind(g);
-      g.act = (a) => { const r = act(a); if (r && r.ok === false) s.play('denied'); return r; };
+      g.act = (a) => { const r = act(a); if (r && r.ok === false) s.play('denied', dbGain(REFUSAL_LIFT)); return r; };
     }
     const p = hero(w); if (!p) return;
     if (at) {

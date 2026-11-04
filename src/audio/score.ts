@@ -119,6 +119,9 @@ export const STEP_LEVEL: Record<'stone' | 'earth', number> = { stone: 0.155, ear
 /** the interface's sounds by the band, at lot S0's loudness (tools/audio/render.mjs: the click -24.6 LUFS at full volume, the dialog -21.8, the purse -17.9
  *  heard 2 dB softer, the refused command as loud as the duel plays it): S2-INTERFACE « Bonne direction » */
 export const UI_LEVEL: Partial<Record<Effect, number>> = { click: 0.48, open: 0.43, coin: 0.58, denied: 0.29 };
+/** an action of the game refused (src/audio/hooks.ts): its sound this much louder (dB) than the duel's refused command, which the town's music covered
+ *  (S5-REFUS « Le refus 6 dB plus fort hors du duel », journal Passes SN21 / SN22); the duel's stays as it is */
+export const REFUSAL_LIFT = 6;
 /** the thunder after a flash (lot S2): its take by the flash's strength (near, middle, far), its delay (the distance: a second for every 340 m) and its level */
 export function thunderOf(level: number, draw: () => number): { take: number; delay: number; gain: number } {
   const take = level >= 0.75 ? 0 : level >= 0.4 ? 1 : 2, [lo, hi] = ([[0.25, 0.9], [1, 2.5], [2.5, 4.5]] as const)[take];
@@ -223,6 +226,13 @@ export function readNow(text: string | null): NowPlaying | null {
 export function resumeAt(rec: NowPlaying | null, key: string, period: number, now: number): number {
   if (!rec || rec.key !== key || !(period > 0) || now - rec.at > RESUME_MS || now < rec.at) return 0;
   return rec.pos % period;
+}
+/** the record a page leaves: what plays and where, at this moment; a page whose music has stopped or never started (the duel after its K.O.) passes on
+ *  the record it found with its own time, so that the ten minutes count from when that music was last heard (S5-PAGES « Bien ainsi, avec la correction »,
+ *  journal Passe SN22: the duel rewrote the forecourt's record with the time it left). Pure */
+export function recordOf(playing: { key: string; pos: number } | null, found: NowPlaying | null, heard: boolean, now: number): NowPlaying {
+  if (playing) return { key: playing.key, pos: playing.pos, heard, at: now };
+  return { key: found?.key ?? '', pos: found?.pos ?? 0, heard, at: found?.at ?? now };
 }
 
 // ---------------------------------------------------------------------------------------------------------------- the settings

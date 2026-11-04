@@ -4,10 +4,10 @@ import { alignLoop, startOf } from './align';
 import { LayerSet } from './layers';
 import CATALOGUE from './catalogue.json';
 import { CALM, jingleFor, layerLevels, moodStep, pieceFor, type Mood, type PieceId, type StingId } from './plan';
-import { ambienceOf, BAND_RATE, CALL_PAN, ceilingCurve, dbGain, DEFAULT_SETTINGS, DUCK, DUCK_AMBIENCE, duelCue, FADE, hz, JINGLE_AFTER, LIMITER, MIX, NOISE_SECONDS, noiseSamples, NOW_KEY, PATTER_LEVEL, RAIN_LEVEL, readNow, readSettings, RESUME_MS, resumeAt, roomImpulse, SEND, STEP_LEVEL, STING_DUCK, STING_WAIT, take, THUNDER_LEVEL, thunderOf, UI_EFFECTS, UI_LEVEL, WEATHER_TRIM, type Ambience, type Effect, type Look, type NowPlaying, type SoundPlace, type SoundSettings, type Voice, type WeatherNow, type WeatherSound } from './score';
+import { ambienceOf, BAND_RATE, CALL_PAN, ceilingCurve, dbGain, DEFAULT_SETTINGS, DUCK, DUCK_AMBIENCE, duelCue, FADE, hz, JINGLE_AFTER, LIMITER, MIX, NOISE_SECONDS, noiseSamples, NOW_KEY, PATTER_LEVEL, RAIN_LEVEL, readNow, readSettings, recordOf, RESUME_MS, resumeAt, roomImpulse, SEND, STEP_LEVEL, STING_DUCK, STING_WAIT, take, THUNDER_LEVEL, thunderOf, UI_EFFECTS, UI_LEVEL, WEATHER_TRIM, type Ambience, type Effect, type Look, type NowPlaying, type SoundPlace, type SoundSettings, type Voice, type WeatherNow, type WeatherSound } from './score';
 import { compute, computeSteps, type ComputedId } from './places';
 import { installSoundHooks } from './hooks';
-import { CROWD_TRIM, HOLD_EVERY, REACT_QUIET, SFX_TRIM, THREAT_QUIET, crowdOf, holdOf, sfxOf, type CrowdId, type SfxCue } from './sfx';
+import { CROWD_CARVE, CROWD_TRIM, HOLD_EVERY, REACT_QUIET, SFX_TRIM, THREAT_QUIET, crowdOf, holdOf, sfxOf, type CrowdId, type SfxCue } from './sfx';
 
 /** The version 2's sound engine (lot V8, journal Passe V8; lots S0 and S1, journal Passes SN2 / SN3): Web Audio only, every sound written in
  *  src/audio/score.ts or baked under a manifest (src/audio/baked.ts). Four buses go through a limiter to the volume: the ambience and the music, which
@@ -90,8 +90,8 @@ export class Sound {
   private bank: Map<string, Array<{ buf: AudioBuffer; start: number }>> | null = null;
   private bankLoading: Promise<void> | null = null;
   private lastTake: Record<string, number> = {};
-  /** the arena's crowd: its group on the ambience's way, the next reaction it allows, the threat's last stroke, the charge's breath */
-  private crowd: GainNode | null = null;
+  /** the arena's crowd: its way in (the carve, then its group on the ambience's way), the next reaction it allows, the threat's last stroke, the charge's breath */
+  private crowd: AudioNode | null = null;
   private quietUntil = 0;
   private threatAt = -Infinity;
   private hold: { level: number; timer: number } | null = null;
@@ -171,7 +171,7 @@ export class Sound {
     return Math.max(0, FADE.out * 1000 - (performance.now() - this.leftAt));
   }
   private save(): void {
-    const n = this.nowPlaying() ?? this.resume, rec: NowPlaying = { key: n?.key ?? '', pos: n?.pos ?? 0, heard: this.begun || this.resume?.heard === true, at: Date.now() };
+    const rec: NowPlaying = recordOf(this.nowPlaying(), this.resume, this.begun || this.resume?.heard === true, Date.now());
     try { sessionStorage.setItem(NOW_KEY, JSON.stringify(rec)); } catch { /* not kept: the next page starts over */ }
   }
   /** what the music is and where it stands */
@@ -317,16 +317,18 @@ export class Sound {
     return this.bankLoading;
   }
   /** the arena's crowd in place of its rumble (S3-FOULE « Bonne direction (par le code) »): its murmur in a loop on the ambience's way, 5 dB under the duel's
-   *  music; the rumble of lot V8 when the murmur cannot be loaded */
+   *  music, its murmur and its reactions carved around 500 Hz (S5-FOULE « Creuser la foule à 500 Hz »); the rumble of lot V8 when the murmur cannot be loaded */
   private crowdScene(fallback: Ambience, cross: boolean): void {
-    const scene = this.scene, group = this.group(this.buses!.ambience, dbGain(CROWD_TRIM), cross);
-    this.crowd = group;
+    const scene = this.scene, group = this.group(this.buses!.ambience, dbGain(CROWD_TRIM), cross), carve = this.ctx!.createBiquadFilter();
+    carve.type = 'peaking'; carve.frequency.value = CROWD_CARVE.hz; carve.Q.value = CROWD_CARVE.q; carve.gain.value = CROWD_CARVE.db;
+    carve.connect(group);
+    this.crowd = carve;
     const p = this.loadBank().then(() => {
       if (this.scene !== scene || !this.ctx) return;
       const bed = this.bank?.get('crowd-bed')?.[0], entry = SFX['crowd-bed'];
       if (!bed || !entry) { this.ambience(fallback, false); return; }
       const c = this.ctx, s = c.createBufferSource(); s.buffer = bed.buf; s.loop = true; s.loopStart = bed.start / bed.buf.sampleRate; s.loopEnd = s.loopStart + entry.frames[0] / BAND_RATE;
-      s.connect(group); s.start(c.currentTime + 0.05, s.loopStart);
+      s.connect(carve); s.start(c.currentTime + 0.05, s.loopStart);
       scene.stops.push(() => { try { s.stop(); } catch { /* already over */ } });
     });
     this.pending = Promise.all([this.pending, p]).then(() => {});

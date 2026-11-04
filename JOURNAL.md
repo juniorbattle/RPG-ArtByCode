@@ -63,170 +63,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/50-passes-SN9-SN10.md`](journal/50-passes-SN9-SN10.md) | SN9, SN10 | 03/11 |
 | [`journal/51-passes-SN11-SN12.md`](journal/51-passes-SN11-SN12.md) | SN11, SN12 | 04/11 |
 | [`journal/52-passes-SN13-SN14.md`](journal/52-passes-SN13-SN14.md) | SN13, SN14 | 04/11 |
+| [`journal/53-passes-SN15-SN17.md`](journal/53-passes-SN15-SN17.md) | SN15, SN16, SN17 | 04/11 |
 
 ---
-
-## Passe SN15 — Lot S3, fiche d'écoute 2 : les sons du duel, joués par le groupe (2026-11-04)
-
-### Demande
-- L'opérateur, mot pour mot : « Oui, continue ». Le reste du lot S3, d'après le plan d'audit (`briefs/fiche-son.html`) : « Un son par recette, fenêtre d’esquive, foule qui réagit, K.O. et ralenti », avec les instruments du groupe, sur une fiche d'écoute. S'y ajoutent les baisses sous les coups, renvoyées aux nouveaux sons (CQ-BAISSE, Passe SN14).
-
-### Ce qu'il y avait
-- Relevé de l'audit (Passe SN1) :
-  - cinq sons pour tous les coups, alors que le duel a 44 recettes d'effet visuel, une par action ;
-  - les compétences muettes, de même que la séquence adverse, la fenêtre d'esquive, l'étourdissement et le repoussé ;
-  - le ralenti du K.O. sans pendant sonore ;
-  - une clameur fixe ;
-  - 93 à 99 % de l'énergie des coups sous 200 Hz.
-- Mesuré dans cette passe : le grondement de l'arène sort à −20,8 LUFS, à égalité avec la musique du duel (−20,7). C'est le « bruit de vague » de la note de l'opérateur (Passe SN11).
-
-### Fait — [OK]
-- **`art-lab/audio/sfx/duel.sfx.mjs`** : un son pour chacune des 44 recettes de `src/arena/fx/fxRecipes.ts`, nom pour nom, plus les cinq de la lecture du duel (`threat`, `window`, `dodge`, `stun`, `pushed`), le coup esquivé et la commande refusée. Tout est joué par les instruments du groupe : la batterie, la timbale, les cuivres, l'orgue, le vibraphone, le rhodes, le marimba, la guitare, la basse, l'EWI et la flûte.
-  - Ren sonne l'acier (cercle, caisse claire, tintement de lame), les rivaux les peaux (toms, cajón, slap).
-  - Les sons qui ont une hauteur sont sur les notes du motif, ré, mi, sol, la, do, sans tierce.
-  - Les coups fréquents ont trois prises (deux pour la garde, l'esquive et le coup esquivé).
-  - Le K.O. rejoue son propre coup ralenti (0,45 fois la vitesse, un peu plus d'une octave plus bas) sous le ralenti de l'image.
-  - Le grave est tenu par famille : les coups de Ren 72 % sous 200 Hz, son coup puissant 7 %, le bris 4 %, le K.O. 12 %. Les sons sourds le restent par dessein (l'épaule, le coup sauvage, le Sunder : 95 à 100 %).
-  - Le niveau de chaque son est réglé sur ses 400 ms les plus fortes.
-- **`art-lab/audio/sfx/crowd.sfx.mjs`** : la foule écrite en code (SA-11, le code d'abord). Chaque voix est une source glottique passée dans les trois formants de sa voyelle, avec sa hauteur, son souffle et sa place. Les mains sont des rafales de bruit. La foule comprend :
-  - un murmure en boucle de 16 s (60 voix syllabe par syllabe, quelques applaudissements) ;
-  - « oh » (70 voix), le souffle coupé (40 inspirations puis 50 « ah »), l'acclamation (70 voix et 30 paires de mains), la clameur du K.O. (110 voix et 60 paires de mains).
-- **`tools/audio/band/sfx.mjs`** : le rendu, 64 fichiers en 13 s, chaque son à partir de sa seule écriture.
-- **`tools/audio/sfx-listen.mjs`** et **`sfx-jobs.page.js`** : la banque jouée par le vrai moteur, sur les bus du moteur, avec l'envoi vers la salle et les baisses sous les coups. Le script de page remplace seulement les sons du duel et le grondement : la musique, la règle F, la coupure du K.O. et le jingle restent ceux du moteur. Les niveaux sont posés sur la sortie du moteur avant les extraits :
-  - le murmure 5 dB sous la musique, d'où le gain de la foule (+0,7 dB) ;
-  - les sons à la part qu'ont aujourd'hui les effets dans le mélange (−10,7 dB) ;
-  - en résultat, le duel entier sort à **−17,2 LUFS aujourd'hui comme avec la proposition**, et la fin contre Orla à −16,9 contre −17,0.
-  
-  Viennent ensuite les extraits : le duel de la fiche des couches (Marek, de 1:00 à 2:30), ses 45 premières secondes avec les baisses à moitié et sans baisse, la foule seule, la fin du duel gagné contre Orla, aujourd'hui puis proposée. Puis les palettes, chaque famille à la suite à −20 LUFS, et celle des sons d'aujourd'hui avec le grondement, à comparer.
-- **`tests/audio-sfx.test.mjs`** : une recette, un son, nom pour nom, et les cinq sons de la lecture du duel. Un son se rend identique à l'octet d'un rendu à l'autre, et aucun échantillon ne dépasse la pleine échelle. Contrôle négatif : un son retiré, le test échoue.
-- **La fiche** : page privée https://claude.ai/artifact/Wc2u1Uftu1r4P4mroyqYbN, source `briefs/fiche-son-duel.html`. Ses dix-sept extraits MP3 sont publiés avec la page, pas dans le dépôt. Onze cartes :
-  - le duel entier, aujourd'hui puis proposé (S3-DUEL) ;
-  - la foule (S3-FOULE) ;
-  - les baisses (S3-BAISSE) ;
-  - sept familles : les coups, Ren, les rivaux, les soutiens, la charge, la lecture, le K.O. ;
-  - la suite (S3-SUITE, recommandé : « Cuire et brancher dans la version 2 ce qui est validé ») ;
-  - la charge recommande « sans son pour le maintien », les autres cartes de goût sont sans recommandation.
-  
-  `decisions` relu vide à la publication. La page a été vérifiée en local à 1 200 et 390 px avec le squelette du service reproduit : dix-huit lecteurs chargés, aucun débordement.
-
-### Mesures
-- Spectrogrammes des 30 premières secondes. Aujourd'hui, le haut du spectre est rempli de bruit d'un bout à l'autre (le grondement et les souffles des coups). Avec la proposition, il se dégage : les coups deviennent des événements séparés, et les notes de la musique se lisent.
-- Poids, encodé comme une cuisson le ferait :
-  - en Opus, 1 353 ko à 80 kb/s (le murmure à 96), 1,16 Mo à 64 kb/s ;
-  - en AAC, 1,28 Mo.
-  
-  Le total Opus passerait de 11,07 à environ 12,2 Mo. C'est sous les 12 Mio que contrôle `validate.mjs` (SA-17), mais au-dessus de 12 Mo au sens strict ; la fiche le dit.
-- `npm test` 388 sur 388, `npm run typecheck`, `npm run build`, `npm run art:validate` (14 manifestes de son, 0 erreur). Aucun fichier de `src/` ni de `public/` ne change, aucun fichier audio n'entre dans le dépôt.
-
-### Limites
-- **Personne n'a écouté.** Je n'ai pas d'oreille : les spectrogrammes, la part du grave, les crêtes et les niveaux attrapent les défauts grossiers, pas la beauté ni le réalisme d'une foule.
-- Une foule écrite en code peut sonner synthétique. La fiche propose les enregistrements CC0 de SA-11 en complément.
-- Les sons ne sont pas dans le jeu. Leur branchement (le chargement à la demande, une table par événement, la variation de hauteur tirée du hasard propre au son et non de `Math.random`) attend la décision S3-SUITE et l'approbation des manifestes.
-- Le maintien de la charge n'est joué dans aucun extrait de duel : le banc n'a que les événements de la simulation, pas le temps de présentation.
-- Les rendus du moteur se reproduisent à −127 dB près, pas à l'échantillon (Passe SN13).
-
-### Où reprendre
-- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot, n'agir que sur ce qui est décidé. Si S3-SUITE est validé :
-  - cuire les sons validés sous manifeste, Opus et AAC (`bake.mjs` ou son pendant pour les sons), avec l'approbation mot pour mot ;
-  - les brancher dans `Sound.ts` derrière `flags.v2`, à la place de `take()` et du grondement ;
-  - faire les preuves : `engine-proof`, `analyse --check`, `decode-proof` ;
-  - donner l'essai en jeu.
-  
-  Puis S2, dans sa propre séance.
-
-### Pensée
-- Un bruit de fond qui couvre tout se mesure avant de se juger : le grondement était aussi fort que la musique, et la note « bruit de vague » le désignait sans le savoir.
-- Une proposition se fait entendre au niveau de ce qu'elle remplace : le duel entier calé à la même sonie, aujourd'hui et proposé, sinon le plus fort gagne à l'oreille.
-- Sans oreille, on contrôle ce que les chiffres voient (la part du grave, les crêtes, les niveaux, un spectrogramme) et l'on donne le reste à l'opérateur, nommé.
-
-## Passe SN16 — La fiche des sons du duel relue, onze sur onze : cuits et branchés dans la version 2 (2026-11-04)
-
-### Demande
-- L'opérateur, mot pour mot : « Fiche remplie ».
-
-### La fiche
-- Page privée https://claude.ai/artifact/Wc2u1Uftu1r4P4mroyqYbN, source `briefs/fiche-son-duel.html`. Relue par `list` : 11 documents sur 11, aucune note.
-
-| # | Décision | Choix de l'opérateur |
-|---|---|---|
-| S3-DUEL | Le duel, aujourd'hui et proposé | « Mieux : continuer dans cette voie » |
-| S3-FOULE | La foule, à la place du grondement | « Bonne direction (par le code) » |
-| S3-BAISSE | La musique sous les coups | « Garder les baisses » |
-| S3-COUPS | Les coups, la garde, l'esquive, le bris | « Bonne direction » |
-| S3-REN | Les compétences de Ren | « Bonne direction » |
-| S3-RIVAUX | Les compétences des rivaux | « Bonne direction » |
-| S3-SOUTIENS | Les protections et les renforts | « Bonne direction » |
-| S3-CHARGE | La charge | « Bonne direction » |
-| S3-LECTURE | La lecture du duel | « Bonne direction, les cinq » |
-| S3-KO | Le K.O. et son ralenti | « Bonne direction » |
-| S3-SUITE | Ce qui vient après | « Cuire et brancher dans la version 2 ce qui est validé » |
-
-### Ce que ces choix veulent dire
-- **Tout est validé**, la foule par le code (SA-11, sans enregistrement). Les baisses sous les coups restent celles d'aujourd'hui.
-- **S3-CHARGE garde le souffle du maintien.** La recommandation de la fiche, « sans son pour le maintien », n'a pas été prise.
-- **S3-SUITE** : cuire sous manifeste, avec l'approbation mot pour mot, et brancher derrière `flags.v2`. Chaque manifeste cite ce choix et les choix d'écoute de sa famille, puis dit « To be confirmed after the trial in play », comme la musique avant E-PROD.
-
-### Fait — [OK]
-- **La cuisson** (`tools/audio/band/bake-sfx.mjs`) : 64 sons, 128 fichiers `src/audio/baked/sfx-*`, en Opus à 64 kb/s et en AAC à 80 (le murmure à 96). Chaque son est rendu depuis sa seule écriture. Il y a huit manifestes, un par famille : `duel-coups`, `duel-ren`, `duel-rivaux`, `duel-soutiens`, `duel-charge`, `duel-lecture`, `duel-ko` (`kind: effect`) et `foule` (`kind: ambience`). La table `sfx` de `src/audio/catalogue.json` donne les prises et leurs longueurs ; `bake.mjs` la garde quand il réécrit le catalogue. `encode.mjs` accepte un débit et des arguments par format, sans rien changer à la musique.
-- **Le moteur** :
-  - `src/audio/sfx.ts`, pur : la table de la fiche (`sfxOf`, `crowdOf`, `holdOf`, `chargeLevel`, `varyOf`), les niveaux posés pour la fiche (`SFX_TRIM` −10,7 dB, `CROWD_TRIM` 0,7 dB moins `MIX.ambience`), une réaction de la foule toutes les 2,6 s au plus, une menace par seconde au plus, un souffle de la charge toutes les 0,6 s comme l'effet visuel.
-  - `Sound.ts` : la banque est décodée à l'ouverture d'une scène d'arène. Chaque événement du duel joue ses sons sur le bus des effets, avec l'envoi vers la salle, une autre prise que la précédente, et les baisses de `DUCK` telles quelles. La foule remplace le grondement de l'arène : le murmure boucle sur son échantillon, sur le chemin de l'ambiance. Les recettes du lot S0 ne jouent plus que si la banque ne peut pas se décoder, pour qu'un duel ne soit jamais muet.
-  - `ArenaApp` donne au moteur le nombre de paliers de la charge.
-- **Un écart avec la fiche, nommé** : la variation de hauteur (±3 %) est réservée aux coups simples, à la garde et à l'esquive (`varyOf`). Les sons accordés sur le motif ne varient plus qu'en niveau, la lecture du duel et les notes de la charge jamais. Dans les extraits de la fiche, tous variaient ; à ±3 %, une note accordée pouvait s'écarter d'un demi-ton de la musique.
-- **Tests** :
-  - `tests/audio-sfx.test.mjs` passe de 2 à 5 tests : la banque cuite sous ses manifestes et dans le catalogue ; la table, événement par événement ; les paliers contre le `chargeLevel` de l'effet visuel, sur 2 à 9 paliers ; les baisses, la variation, la foule, le souffle de la charge, les niveaux.
-  - `tests/audio-baked.test.mjs` et `tests/v2-sound-s1.test.mjs` comptent les huit familles et les 128 fichiers.
-- **Preuves** :
-  - `engine-proof.mjs`, sur la sortie réelle : le murmure de l'arène depuis 0,060 s, autour de son tour à 16,06 s (0,00 % inexpliqué, décalage 0) ; la cloche de la fenêtre d'esquive jouée telle que cuite, à 4,005 s plus le retard de sortie (0,05 % inexpliqué) ; 29 vérifications sur 29. Contrôle négatif sur `main` figé (`e40ade1`) : ces deux vérifications échouent, 100 % inexpliqué.
-  - `analyse.mjs --check` passe. La foule de l'arène sort à −25,7 LUFS, 5,0 dB sous la musique du duel (−20,7). Les duels sont à −17,4 et −17,6 LUFS, contre −17,2 et −17,3 en SN14 ; à plein volume −1,5 dBTP ; un clic de l'interface passe 6,9 dB au-dessus de la foule (3,5 au-dessus du grondement).
-  - `decode-proof.mjs` étendu aux sons : Chrome 130 sur 130 et Firefox 130 sur 130 (longueurs, débuts, le murmure retrouvé à son vrai début quand le décodeur garde le délai).
-  - `bake-sfx.mjs --check` : tout comme les manifestes. `bake.mjs --check` : les 48 fichiers de la musique identiques à l'octet après le changement d'`encode.mjs`.
-  - `hooks-proof.mjs`, dans le vrai jeu (serveur DEV, Chrome piloté) : sur `?scene=arena&v2=1`, après un clic, 56 sons sur 56 décodés, la foule en place du grondement, onze événements joués par les sons du groupe (8 coups, une garde, une menace, un renfort de Marek), les recettes du lot S0 jamais, aucune erreur de page.
-  - `npm test` 391 sur 391, `npm run typecheck`, `npm run build`, `npm run art:validate` (22 manifestes de son, 0 erreur).
-- **Poids** (SA-17) : 12 280 918 octets en Opus (11,71 Mio) et 11 082 417 en AAC (10,57 Mio). C'est sous les 12 Mio par format que contrôle `validate.mjs`.
-
-### Défaut trouvé — [KO → corrigé]
-- **Firefox décodait autrement cinq AAC bruités** (le bris, le coup éclair, l'Estocade, deux souffles). La longueur et le début étaient justes, mais la ressemblance avec le décodage de ffmpeg n'était que de 0,85 à 0,89. En cause, la substitution de bruit perceptuelle du codeur AAC : une bande codée comme du bruit est tirée à nouveau par chaque décodeur. Les sons sont recuits avec `-aac_pns 0` (AAC seulement, la musique inchangée) : 130 sur 130 dans les deux navigateurs, et 8 ko de moins.
-
-### La fiche d'essai
-- Page privée https://claude.ai/artifact/Pid9tqciTfEQ4zviWkJnhc, source `briefs/fiche-son-essai-duel.html`. Elle dit comment jouer (serveur DEV, `?scene=arena&v2=1`, un clic ; `&music=rival|finale`). Trois cartes : S3E-JEU, le ressenti en jouant ; S3E-PROD, la confirmation de production ; S3E-SUITE, lancer S2. `decisions` relu vide à la publication.
-
-### Limites
-- **Personne n'a entendu les sons dans le jeu en jouant.** Les extraits de la fiche étaient des rendus du moteur sur le duel du bot.
-- Le souffle du maintien n'était dans aucun extrait : on l'entendra pour la première fois en jouant.
-- Safari n'est toujours pas essayé (SC-SAFARI).
-
-### Où reprendre
-- Relire la fiche d'essai quand l'opérateur la dit remplie. Si S3E-PROD est confirmé, écrire la confirmation dans les huit manifestes (`bake-sfx.mjs`, comme `CONFIRMED` dans `bake.mjs`). Puis S2, dans sa propre séance.
-
-### Pensée
-- Un codeur peut laisser au décodeur une part de hasard : avec la substitution de bruit, deux navigateurs jouent deux cymbales. Une preuve de décodage contre un témoin extérieur le voit, une preuve qui compare le moteur à lui-même non.
-- Varier un son pour qu'il ne se répète pas, c'est aussi le désaccorder : la variation de hauteur va aux sons sans note.
-
-## Passe SN17 — La fiche d'essai des sons du duel relue : en production dans la version 2, S2 ensuite (2026-11-04)
-
-### Demande
-- L'opérateur, mot pour mot : « Fiche remplie ».
-
-### La fiche
-- Page privée https://claude.ai/artifact/Pid9tqciTfEQ4zviWkJnhc, source `briefs/fiche-son-essai-duel.html`. Relue par `list` : 3 documents sur 3, aucune note.
-
-| # | Décision | Choix de l'opérateur |
-|---|---|---|
-| S3E-JEU | Les sons du duel en jouant | « Bien dans le jeu » |
-| S3E-PROD | Les sons en production dans la version 2 | « Confirmé : en production dans la version 2 » |
-| S3E-SUITE | Ce qui vient après | « Lancer S2 » |
-
-### Ce que ces choix veulent dire
-- **Le lot S3 est clos** : la musique des combats et sa règle F (Passes SN13, SN14), les sons du duel et la foule (Passes SN15, SN16), entendus en jouant et confirmés en production dans la version 2.
-- **S2 vient maintenant**, dans sa propre séance, déjà ouverte pour lui (« Lot S2 du son, après S3 : météo, lieux, interface ») : la décision lui est transmise mot pour mot.
-
-### Fait — [OK]
-- `bake-sfx.mjs` écrit la confirmation (`CONFIRMED`, comme `bake.mjs` pour la musique). Les huit manifestes des sons ne changent que par elle, dans `approval` et `decisions` ; les 128 fichiers audio et la table du catalogue restent identiques à l'octet.
-- `npm test`, `npm run typecheck`, `npm run art:validate` (22 manifestes de son, 0 erreur).
-
-### Où reprendre
-- S2, dans sa séance. Toujours à l'opérateur : l'essai Safari sur un appareil Apple (SC-SAFARI).
 
 ## Passe SA1 — Le fond gris d'un sprite en combat : l'image `strike.1` de Marek, sa cause dans la chaîne, l'audit de toutes les feuilles (2026-11-04)
 
@@ -603,6 +442,91 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une sonie de 400 ms ne dit pas si un son se détache. Le son seul contre sa page seule, octave par octave, le dit : le clic est net, le refus couvert.
 - Un niveau global cache une bande : 5 dB sous la musique en sonie, la foule la dépasse dans l'octave de la mélodie.
 
+## Passe SN22 — La fiche du mixage et de la réception relue, neuf sur neuf : la foule creusée, le refus plus fort, le relevé corrigé ; le son reçu (2026-11-04)
+
+### Demande
+- L'opérateur a dit la fiche remplie (« Fiche remplie »). Il fallait relire `decisions` (https://claude.ai/artifact/6PfD1UVUqn4ftsd7Dg5y35), consigner les choix mot pour mot et n'appliquer que ce qu'ils décident, avec leurs preuves. Puis fusionner (Passe SN21).
+
+### Les choix de l'opérateur, mot pour mot (neuf sur neuf, sans note)
+| Carte | Ce qu'elle demandait | Choix |
+|---|---|---|
+| S5-PAGES | D'une page à l'autre | « Bien ainsi, avec la correction » |
+| S5-COMBAT | Le combat dans la partie | « Bien ainsi » |
+| S5-FOULE | La foule de l'arène et la musique du combat | « Creuser la foule à 500 Hz » |
+| S5-REFUS | Le refus de l'interface sur la musique | « Le refus 6 dB plus fort hors du duel » |
+| S5-MOMENTS | La fanfare et la fin d'un combat | « Bien ainsi » |
+| S5-DUREE | Les longs combats | « Rien à changer » |
+| S5-JEU | Tout le son, en jouant | « Bien dans le jeu » |
+| S5-RECEPTION | La réception du son de la version 2 | « Reçu, avec les réglages choisis sur cette fiche » |
+| SA-10 | Un compositeur humain pour le cœur du jeu | « Pas de compositeur : la musique du groupe reste » |
+
+Six choix suivent la recommandation de leur carte. S5-DUREE, S5-JEU et SA-10 n'en avaient pas.
+
+### Appliqué — [OK]
+- **S5-PAGES, la correction du relevé** :
+  - `recordOf` (pur, `src/audio/score.ts`), appelé par `save()` (`Sound.ts`). Une page qui joue sa musique écrit le morceau, sa position et l'heure.
+  - Une page dont la musique s'est arrêtée ou n'a pas commencé (le duel après le K.O.) transmet le relevé qu'elle a trouvé, avec son heure. Les 10 minutes de `RESUME_MS` comptent donc depuis la dernière fois que ce morceau a été entendu.
+  - La position transmise ne change pas : `resumeAt` reprend le morceau où il s'était arrêté, sans avancer.
+- **S5-FOULE** : `CROWD_CARVE` (`src/audio/sfx.ts` : 500 Hz, Q 1, −5 dB), un filtre en cloche à l'entrée du groupe de la foule (`crowdScene`).
+  - Le murmure et les réactions passent dans le filtre.
+  - Le grondement de V8 n'y passe pas : il ne joue que si le murmure ne se charge pas.
+- **S5-REFUS** : `REFUSAL_LIFT` (6 dB, `score.ts`), appliqué par le crochet d'une action refusée (`hooks.ts`).
+  - `UI_LEVEL.denied` reste 0,29. C'est le niveau du refus du duel tant que ses sons ne sont pas décodés.
+  - Le refus du duel (`cue('denied')` à `SFX_TRIM`) ne bouge sur aucun chemin.
+  - Hors du duel, le refus sort à 0,29 × 2,00 = 0,578, soit le 0,58 entendu sur la fiche à 0,02 dB près.
+- **Rien d'autre ne change** : ni une partition, ni un fichier cuit, ni `MIX`, ni le niveau de la page du duel (S5-COMBAT « Bien ainsi »).
+- **Les tests** :
+  - `tests/audio-s5.test.mjs`, trois tests :
+    - le relevé : le parvis repris après un combat de 7 min 30, repris du début après 11 min ;
+    - le refus 6 dB plus fort par le crochet, celui du duel inchangé ;
+    - le filtre et son chemin, avec la réponse du filtre telle que la Web Audio API la définit ;
+  - `tests/v2-sound-s1` lit maintenant `heard` dans l'appel de `recordOf`.
+
+### Preuves — [OK]
+- `npm run typecheck`, `npm test` (404 sur 404), `npm run build`, `npm run art:validate` (61 manifestes, 85 sources, 23 manifestes du son, 0 erreur).
+- **`engine-proof.mjs`** : tout passe.
+  - La foule de l'arène est son murmure passé dans le filtre, calculé dans l'outil d'après la fiche et non d'après le code : 0,00 % inexpliqué, décalage 0.
+  - Le témoin, le murmure tel que cuit, laisse 7,38 % inexpliqué.
+- **`render.mjs`, puis `analyse.mjs --check`** : tout passe.
+  - Contre le rendu de la Passe SN21, seuls changent 7 rendus sur 75, tous de l'arène.
+  - Le murmure seul passe de −25,7 à −28,7 LUFS (crête −12,5 à −15,9 dBTP).
+  - Les duels passent de −17,4 / −17,6 à −17,9 / −18,1 LUFS. À plein volume : −14,4 à −14,9 LUFS, crête −1,5 à −1,6 dBTP.
+  - Les 68 autres rendus n'ont pas bougé.
+- **Sur un serveur DEV** :
+  - `hooks-proof.mjs` : tout passe. Une action refusée demande le refus 6,00 dB au-dessus de celui du duel. La foule de l'arène passe par un filtre en cloche (500 Hz, Q 1, −5 dB).
+  - `page-proof.mjs` : tout passe (la reprise d'une page à l'autre, le même morceau, le parvis de jour, les lices depuis leur début).
+- **Le parcours J2 rendu à nouveau** (`mix-jobs.mjs`) : après le duel contre Vessa, la page laisse le relevé du parvis avec l'heure du parvis (`at` 1793809030028, la même) ; en Passe SN21, elle y écrivait une heure 16 068 ms plus tard. La ville en fin de journée écrit ensuite son propre relevé (`band:fin`).
+- **La foule creusée par le moteur** : le même extrait de 45 s du duel contre Vessa (`P-crowd-today` de `mix-jobs.mjs`, désormais creusé par le moteur lui-même) contre le rendu de la proposition de la fiche (`P-crowd-carved`, Passe SN21) : résidu −124,5 dB, foule seule −116,2 dB, c'est-à-dire l'arrondi des flottants ; contre le rendu non creusé, −14,8 et −8,5 dB. La foule seule passe de −24,3 à −27,2 LUFS, l'extrait de −17,7 à −18,1.
+- `decode-proof.mjs` n'a pas été relancé : aucun fichier cuit ne change.
+
+### La réception
+- **Le plan d'audit du son est clos** (`briefs/fiche-son.html`, lots S0 à S5), sur S5-RECEPTION « Reçu, avec les réglages choisis sur cette fiche ».
+  - Le son reste derrière la version 2 (SA-16) jusqu'à ce qu'elle devienne le jeu par défaut.
+  - Toute suite sera une demande à part.
+- **SA-10 est tranchée** : « Pas de compositeur : la musique du groupe reste ». Aucun brief de devis.
+- **Une cible change, par décision de l'opérateur** : la séance mère tenait « la foule de l'arène 5 dB sous la musique du duel » (lot S3). Avec S5-FOULE, la foule perd 2,9 dB en sonie, ce que sa carte annonçait. Dans l'octave de 500 Hz, elle repasse 2,5 à 3,5 dB sous la musique (Passe SN21).
+- **Reste à l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI), et avec lui la jointure des boucles en AAC, jamais jugée.
+
+### Le journal
+- Avec cette passe, les passes gardées auraient dépassé 60 Ko. SN15 à SN17 sont archivées mot pour mot dans `journal/53-passes-SN15-SN17.md`, avec leur ligne d'index.
+- Le déplacement est prouvé :
+  - le corps de l'archive est identique aux 17 189 octets retirés ;
+  - SN15, SN16 et SN17 n'existent chacune que dans ce fichier ;
+  - aucune fin de ligne seule (CRLF gardé).
+- Les noms en double qu'une recherche montre (V0 à V3, V5, C1, C2) sont d'anciennes homonymies entre archives, pas ce déplacement.
+
+### Limites
+- **Personne n'a encore écouté les trois réglages dans le jeu.** S5-RECEPTION les reçoit d'après les extraits de la fiche, et S5-JEU « Bien dans le jeu » portait sur le son d'avant.
+- **L'heure des rendus hors ligne est celle de l'horloge du navigateur**, pas le temps virtuel du rendu. Le parcours J2 prouve donc que l'heure du relevé est gardée, pas la règle des 10 minutes elle-même. Le test la prouve sur `recordOf` et `resumeAt`.
+
+### Où reprendre
+- Le son est reçu ; rien n'est ouvert de ce côté, hors SC-SAFARI. Une partie B pour les longs combats ou de vrais instruments seraient des demandes neuves de l'opérateur (S5-DUREE « Rien à changer », SA-10).
+
+### Pensée
+- Un réglage décidé « hors du duel » se place là où le code sait qu'il est hors du duel, ici le crochet des actions refusées. Le placer dans une table que le duel partage l'aurait changé par un chemin de repli.
+- Une preuve qui compare la sortie du moteur à un fichier cuit doit appliquer à sa référence le même traitement que le moteur, calculé d'après la décision et non d'après le code. Sans traitement, la même référence sert de témoin.
+- Comparer le rendu complet à celui d'avant, entrée par entrée, montre ce qu'un réglage touche et ce qu'il laisse : ici 7 rendus sur 75, tous de l'arène.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -808,7 +732,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN20)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12). **S3 en cours** : la fiche des couches est relue (Passe SN14). Les morceaux tiennent, la règle F est appliquée aux trois combats (la mélodie à 0,45 pendant la séquence adverse, la tension à 0,35 au repos, chaque changement sur une mesure), et la double demande est corrigée. **S3 est clos** (Passes SN13 à SN17) : la règle F des couches ; les sons du groupe pour chaque recette du duel et sa lecture ; la foule en code à la place du grondement ; les baisses gardées ; tout est en production dans la version 2 (S3E-PROD « Confirmé : en production dans la version 2 »). **S2 dans la version 2** (Passes SN18 / SN19, fiche relue 14 / 14) : les quatre lieux gardent leur ambiance de S0, 3 dB plus en retrait avec leur écho (la musique 7 à 8 dB au-dessus, cible 6 à 9) ; la pluie et le tonnerre après chaque éclair, sans rafales ; la neige et le vent muets ; l’interface jouée par le groupe (famille `interface`, 45 Ko), le refus sur une action refusée ; les pas calculés ; la pluie, le tonnerre et les pas calculés dans la page ; le murmure non cuit. **S2 est clos** (Passe SN20) : « Bien dans le jeu », « Confirmé : en production dans la version 2 » (écrit dans le manifeste de l’interface). **S5 en cours** (Passe SN21) : tout le son mesuré page après page, combats entiers compris ; la fiche du mixage et de la réception est publiée (https://claude.ai/artifact/6PfD1UVUqn4ftsd7Dg5y35), à relire quand l’opérateur la dit remplie ; n’appliquer que ce qu’elle décide. L’ancienne branche `claude/gifted-lewin-77d4c2` est supprimée, sur l’accord de l’opérateur (« Oui, la supprimer », Passe SN21). **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 après l'essai du lot S4.
+**6f. Son (Passes SN1 à SN22)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12). **S3 en cours** : la fiche des couches est relue (Passe SN14). Les morceaux tiennent, la règle F est appliquée aux trois combats (la mélodie à 0,45 pendant la séquence adverse, la tension à 0,35 au repos, chaque changement sur une mesure), et la double demande est corrigée. **S3 est clos** (Passes SN13 à SN17) : la règle F des couches ; les sons du groupe pour chaque recette du duel et sa lecture ; la foule en code à la place du grondement ; les baisses gardées ; tout est en production dans la version 2 (S3E-PROD « Confirmé : en production dans la version 2 »). **S2 dans la version 2** (Passes SN18 / SN19, fiche relue 14 / 14) : les quatre lieux gardent leur ambiance de S0, 3 dB plus en retrait avec leur écho (la musique 7 à 8 dB au-dessus, cible 6 à 9) ; la pluie et le tonnerre après chaque éclair, sans rafales ; la neige et le vent muets ; l’interface jouée par le groupe (famille `interface`, 45 Ko), le refus sur une action refusée ; les pas calculés ; la pluie, le tonnerre et les pas calculés dans la page ; le murmure non cuit. **S2 est clos** (Passe SN20) : « Bien dans le jeu », « Confirmé : en production dans la version 2 » (écrit dans le manifeste de l’interface). **S5 est clos et le son reçu** (Passes SN21 / SN22, fiche relue 9 / 9) : tout le son mesuré page après page ; la foule de l’arène creusée à 500 Hz (S5-FOULE), le refus d’une action 6 dB plus fort hors du duel (S5-REFUS), le relevé de la reprise corrigé (S5-PAGES) ; le reste gardé ; S5-RECEPTION « Reçu, avec les réglages choisis sur cette fiche » : le plan d’audit est clos, le son reste derrière la version 2 (SA-16), toute suite est une demande à part. L’ancienne branche `claude/gifted-lewin-77d4c2` est supprimée, sur l’accord de l’opérateur (« Oui, la supprimer », Passe SN21). **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 tranchée : « Pas de compositeur : la musique du groupe reste » (Passe SN22).
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 
@@ -1244,3 +1168,5 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Une page d'essai d'appareil dit elle-même si elle tourne sur l'appareil visé, et un relevé se lit avec son navigateur : « Fait » sur une carte ne vaut pas un essai sur Safari (Passe SN11).
 - Un extrait d'écoute montre ce que la carte demande de juger, et le reste à part : un duel complet sous une carte « couches » a fait juger des bruitages que la carte ne présentait pas (Passe SN11) ; sur trois extraits séparés, la même oreille a désigné la musique (Passe SN12).
 - Ce qu'une étape d'une chaîne nettoie couvre ce que la suivante lit : `isolate` nettoyait la boîte de la figure, `reconstruct-grid` lisait la boîte agrandie de sa tête et a pris la lame d'une voisine pour le fond. Une hypothèse (« le coin est le fond ») se vérifie là où elle sert, et un export se contrôle aussi par sa forme (remplissage, arête droite) et sur fond contrasté : l'alpha binaire et l'anneau transparent ne voient pas un fond opaque collé à la figure (Passe SA1).
+- Un réglage décidé pour une partie du jeu se place là où le code sait qu'il y est : le refus « hors du duel » au crochet des actions refusées, pas dans la table que le duel partage par un chemin de repli (Passe SN22).
+- Une preuve qui compare la sortie du moteur à un fichier cuit applique à sa référence le traitement que le moteur doit faire, calculé d'après la décision et non d'après le code ; la référence sans traitement sert de témoin (Passe SN22).

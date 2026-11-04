@@ -104,11 +104,22 @@ const D = CAT.duel, loopAt = T0 + D.intro.loopAt / SR, stems = ['duel-base', 'du
   check(w.every((f) => Math.abs(r(f)[1] - 1) < 0.05 && Math.abs(r(f)[2] - TENSION_REST) < 0.05 && f.rest < 0.01), `a sequence over before its bar line (${at.toFixed(2)} s): the lead and the tension hold, ${w.map((f) => r(f).slice(1).map((v) => v.toFixed(2)).join('/')).join(', ')}`);
 }
 {
-  // the arena's crowd (journal Passe SN16): its murmur in a loop from its start, on the sample across the turn; the dodge window's bell played as baked, at its event
+  // the arena's crowd (journal Passe SN16): its murmur in a loop from its start, on the sample across the turn; the dodge window's bell played as baked, at its event.
+  // Since lot S5 (journal Passe SN22) the murmur through a peaking filter, S5-FOULE « Creuser la foule à 500 Hz », read from the sheet (500 Hz, Q 1, -5 dB) and
+  // computed here as the Web Audio API defines it; the murmur as baked is the control: it must leave more unexplained
+  const CARVE = { hz: 500, q: 1, db: -5 };
+  const peak = (x, { hz, q, db }) => {
+    const A = 10 ** (db / 40), w0 = 2 * Math.PI * hz / SR, al = Math.sin(w0) / (2 * q), c = Math.cos(w0), a0 = 1 + al / A;
+    const b0 = (1 + al * A) / a0, b1 = -2 * c / a0, b2 = (1 - al * A) / a0, a1 = -2 * c / a0, a2 = (1 - al / A) / a0, y = new Float32Array(x.length);
+    let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+    for (let i = 0; i < x.length; i++) { const v = b0 * x[i] + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2; x2 = x1; x1 = x[i]; y2 = y1; y1 = v; y[i] = v; }
+    return y;
+  };
   const B = JSON.parse(fs.readFileSync(path.join(REPO, 'src/audio/catalogue.json'), 'utf8')).sfx, bed = baked('sfx-crowd-bed'), bell = baked('sfx-window'), at = 0.05 + LAT / SR;
-  const y = load('sn-crowd'), x = lay(bed, y.length, at, B['crowd-bed'].frames[0]), turn = at + B['crowd-bed'].frames[0] / SR, f = fit(y, [x], 3, 19.5), lg = lagOf(y, x, turn - 0.5, turn + 0.5);
-  check(f.rest < 0.01 && lg.lag === 0 && f.g[0] > 0.1, `the arena's crowd: its murmur from ${at.toFixed(3)} s, round its turn at ${turn.toFixed(2)} s, unexplained ${(f.rest * 100).toFixed(2)} %, lag ${lg.lag}`);
-  const w = load('sn-window'), wb = lay(bed, w.length, at, B['crowd-bed'].frames[0]), ring = lay(bell, w.length, 4.005 + LAT / SR), before = fit(w, [wb, ring], 2.5, 3.95), during = fit(w, [wb, ring], 4.0, 4.6);
+  const y = load('sn-crowd'), raw = lay(bed, y.length, at, B['crowd-bed'].frames[0]), x = peak(raw, CARVE), turn = at + B['crowd-bed'].frames[0] / SR, f = fit(y, [x], 3, 19.5), lg = lagOf(y, x, turn - 0.5, turn + 0.5), plain = fit(y, [raw], 3, 19.5);
+  check(f.rest < 0.01 && lg.lag === 0 && f.g[0] > 0.1, `the arena's crowd: its murmur carved at 500 Hz from ${at.toFixed(3)} s, round its turn at ${turn.toFixed(2)} s, unexplained ${(f.rest * 100).toFixed(2)} %, lag ${lg.lag}`);
+  check(plain.rest > 5 * Math.max(f.rest, 1e-4) && plain.rest > 0.01, `the control, the murmur as baked: unexplained ${(plain.rest * 100).toFixed(2)} %`);
+  const w = load('sn-window'), wb = peak(lay(bed, w.length, at, B['crowd-bed'].frames[0]), CARVE), ring = lay(bell, w.length, 4.005 + LAT / SR), before = fit(w, [wb, ring], 2.5, 3.95), during = fit(w, [wb, ring], 4.0, 4.6);
   check(during.rest < 0.01 && during.g[1] > 0.1 && Math.abs(during.g[0] / before.g[0] - 1) < 0.02, `the dodge window's bell as baked, at 4.005 s and its output's delay: ${during.g.map((v) => v.toFixed(3)).join(' / ')}, unexplained ${(during.rest * 100).toFixed(2)} %`);
 }
 for (const [job, want] of [['sn-win', 'victoire'], ['sn-lose', 'defaite']]) {

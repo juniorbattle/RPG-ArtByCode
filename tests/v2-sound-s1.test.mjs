@@ -135,7 +135,8 @@ test('the baked sounds: the band catalogue; the format a browser plays, Opus fir
 test('the engine\'s rules: nothing without a gesture on this tab, the page\'s handle, today\'s game untouched', () => {
   const e = src('src/audio/Sound.ts'), p = src('src/ui/play.ts'), h = src('src/audio/hooks.ts');
   assert.match(e, /if \(this\.resume\?\.heard\) void this\.unlock\(\);/, 'only after a gesture on an earlier page');
-  assert.match(e, /heard: this\.begun \|\| this\.resume\?\.heard === true/, 'heard means the sound ran');
+  // the record's `heard` given to recordOf since lot S5 (journal Passe SN22, tests/audio-s5.test.mjs)
+  assert.match(e, /recordOf\(this\.nowPlaying\(\), this\.resume, this\.begun \|\| this\.resume\?\.heard === true, /, 'heard means the sound ran');
   assert.match(e, /if \(this\.begun \|\| this\.ctx\?\.state !== 'running'\) return;/, 'a scene starts only on a running context');
   assert.match(e, /addEventListener\('pagehide'/); assert.match(e, /\.setValueAtTime|setTargetAtTime/);
   assert.match(h, /__soundLeave = \(\) => s\.leave\(\)/); assert.match(h, /querySelector\('\.pm-fade'\)/);

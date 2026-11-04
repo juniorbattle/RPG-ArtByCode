@@ -1,6 +1,7 @@
 // The four effects that no code played (lot S0, journal Passes SN1 / SN2), played by the real game on a DEV server: a button's click, a dialog opening,
 // the coins changing, the hero's steps; and the duel's table on the real arena page. Since lot S2 (journal Passe SN19): the interface played by the band's baked
-// sounds, a refused action's sound, the steps computed in the page, the rain and the thunder after a flash on a square in a storm. Every effect the page asks for is counted at `Sound.play`. Exit 1 on
+// sounds, a refused action's sound, the steps computed in the page, the rain and the thunder after a flash on a square in a storm. Since lot S5 (journal Passe SN22): the
+// refused action 6 dB over the duel's refusal (S5-REFUS), the arena's crowd through its carve at 500 Hz (S5-FOULE). Every effect the page asks for is counted at `Sound.play`. Exit 1 on
 // a failure; a page of today's game must have no engine at all.
 //   node tools/audio/hooks-proof.mjs     (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs)
 import { createRequire } from 'node:module';
@@ -19,7 +20,7 @@ const open = async (page, q) => {
   await page.goto(`${BASE}?${q}`, { waitUntil: 'load', timeout: READY });
   await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY });
 };
-const count = (page) => page.evaluate(() => { const s = window.__sound; window.__played = {}; const p = s.play.bind(s); s.play = (e, g, a) => { window.__played[e] = (window.__played[e] ?? 0) + 1; p(e, g, a); }; });
+const count = (page) => page.evaluate(() => { const s = window.__sound; window.__played = {}; window.__gain = {}; const p = s.play.bind(s); s.play = (e, g, a) => { window.__played[e] = (window.__played[e] ?? 0) + 1; window.__gain[e] = g ?? 1; p(e, g, a); }; });
 const played = (page, e) => page.evaluate((x) => window.__played[x] ?? 0, e);
 try {
   const page = await b.newPage();
@@ -52,6 +53,9 @@ try {
   const d0 = await played(page, 'denied'), refused = await page.evaluate(() => window.__game.act({ type: 'nonsense' }).ok);
   await wait(100);
   check(refused === false && await played(page, 'denied') === d0 + 1, `a refused action: denied played ${await played(page, 'denied') - d0} time(s)`);
+  // S5-REFUS « Le refus 6 dB plus fort hors du duel »: asked 6 dB louder, heard through the interface's take at the level of the sheet (0.58)
+  const lift = await page.evaluate(() => window.__gain.denied);
+  check(Math.abs(20 * Math.log10(lift) - 6) < 0.01, `a refused action: asked ${(20 * Math.log10(lift)).toFixed(2)} dB over the duel's refusal (target 6)`);
 
   // the coins move in the save: any action that spends or earns
   await page.evaluate(() => { const g = window.__game; const a = g.actions().find((x) => x.ok && x.coins > 0) ?? null; window.__spent = a ? JSON.stringify({ label: a.label, coins: a.coins, ok: g.act(a.action).ok }) : null; });
@@ -94,11 +98,13 @@ try {
   await page.waitForFunction('window.__sound.bank?.size > 0', { timeout: 60000 });
   await page.evaluate(() => { const s = window.__sound; window.__cues = {}; window.__old = 0; const c = s.cue.bind(s); s.cue = (q) => { window.__cues[q.id] = (window.__cues[q.id] ?? 0) + 1; return c(q); }; const p = s.play.bind(s); s.play = (e, g, a) => { window.__old++; p(e, g, a); }; });
   for (let i = 0; i < 10; i++) { await page.keyboard.down('j'); await wait(250); await page.keyboard.up('j'); await wait(700); }
-  const arena = await page.evaluate(() => ({ bank: window.__sound.bank.size, crowd: !!window.__sound.crowd, cues: window.__cues, old: window.__old }));
+  const arena = await page.evaluate(() => { const c = window.__sound.crowd; return { bank: window.__sound.bank.size, crowd: !!c, carve: c instanceof BiquadFilterNode ? { type: c.type, hz: c.frequency.value, q: c.Q.value, db: c.gain.value } : null, cues: window.__cues, old: window.__old }; });
   console.log(`   the arena's sounds played: ${JSON.stringify(arena.cues)}`);
   const duel = Object.values(table).filter((e) => e.family !== 'interface').length;
   check(arena.bank === duel, `the arena: ${arena.bank} of the catalogue's ${duel} duel sounds decoded (the interface apart)`);
   check(arena.crowd, 'the arena: its crowd in place of the rumble');
+  // S5-FOULE « Creuser la foule à 500 Hz »: the crowd's way in, a peaking filter at 500 Hz, Q 1, -5 dB
+  check(arena.carve?.type === 'peaking' && arena.carve.hz === 500 && arena.carve.q === 1 && arena.carve.db === -5, `the arena: its crowd carved, ${JSON.stringify(arena.carve)}`);
   check(Object.values(arena.cues).reduce((a, n) => a + n, 0) > 0 && arena.old === 0, `the duel's events in the band's sounds (${Object.values(arena.cues).reduce((a, n) => a + n, 0)}), lot S0's recipes ${arena.old} time(s)`);
 
   // today's game: no engine at all

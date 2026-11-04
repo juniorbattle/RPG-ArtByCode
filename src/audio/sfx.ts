@@ -10,6 +10,9 @@ import { MIX, type Effect } from './score';
  *  the duel's music (the arena's rumble played as loud as the music, journal Passe SN15) */
 export const SFX_TRIM = -10.7;
 export const CROWD_TRIM = 0.7 - MIX.ambience;
+/** the crowd (its murmur and its reactions) carved around 500 Hz, where it stood over the fights' melody (journal Passe SN21: 37.5 dB in that octave against
+ *  the duel's 35.8): a peaking filter, S5-FOULE « Creuser la foule à 500 Hz » (journal Passe SN22) */
+export const CROWD_CARVE = { hz: 500, q: 1, db: -5 } as const;
 /** a crowd's reaction at most this often (s), the K.O.'s always */
 export const REACT_QUIET = 2.6;
 /** the charge held: a breath every so many seconds, as the effect's motes (src/arena/fx/combatFx.ts, HOLD_BREATH) */
