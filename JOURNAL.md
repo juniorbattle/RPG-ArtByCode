@@ -461,7 +461,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Fait — [OK]
 - **La chaîne corrigée** (`art-lab/characters/rigs/lib/combat.mjs`) : `isolate` couvre aussi la découpe que lira `reconstruct-grid` (la boîte agrandie), le critère de la figure gardée restant sa boîte ; `cornerIsBackground` arrête la construction si les deux pas en carré au coin de la découpe ne sont pas le fond de la planche, au test d'`isolate` lui-même. `isolate` et `grownBox` sont exportés pour le test.
 - **Reconstruit** : `build-combat.mjs --check` sur les huit rigs avec la chaîne corrigée : Ren, Vessa, Orla, Cassius, Ilse, Rhosk et Tobin reconstruits identiques ; Marek différent. Marek reconstruit : une seule image change, `strike.1` (22 236 texels sur la case) ; les 31 autres identiques au texel. Sa lame entière dépasse maintenant l'avant de la case : la case recule le corps de 37 texels (`meta.pushed` `strike.1` : 37, comme `kneel` 32), l'arène avance le sprite d'autant.
-- Les packs des sept feuilles inchangées : seule l'empreinte de `lib/combat.mjs` mise à jour (elles se reconstruisent à l'octet avec la nouvelle chaîne), leurs exports et leurs approbations intacts. Le pack de Marek : ses fichiers reconstruits et une entrée `revisions` qui dit l'approbation en attente. **Son manifeste n'est pas touché : l'approbation de l'export corrigé est à l'opérateur, avant la fusion.**
+- Les packs des sept feuilles inchangées : seule l'empreinte de `lib/combat.mjs` mise à jour (elles se reconstruisent à l'octet avec la nouvelle chaîne), leurs exports et leurs approbations intacts. Le pack de Marek : ses fichiers reconstruits et une entrée `revisions` qui dit l'approbation en attente. Son manifeste n'a pas été touché avant l'approbation de l'opérateur (ci-dessous).
 - **`tests/sheet-clean.test.mjs`** : chaque feuille de personnage approuvée en production (39), chaque image : alpha binaire, anneau transparent, figure non vide, remplissage de sa boîte au plus 0,9, aucune arête droite de la moitié de la case ; puis le garde de la chaîne sur `cut` de Marek (l'ancienne isolation : le coin refusé ; la nouvelle : accepté). Contrôle négatif : sur l'export de `main`, le test échoue sur `strike.1` seul (remplissage 95 %, arête de 165 texels).
 
 ### Preuves
@@ -470,12 +470,15 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - `arena-sheet-proof.mjs` : les sept rivaux OK de nuit, Marek OK à midi (25 de ses 32 images montrées, aucune image hors de la feuille) ; contre-épreuve `--q=cast=generated` : FAIL, comme il se doit.
 - `npm run typecheck`, `npm test` 394 sur 394, `npm run build`, `npm run art:validate` (61 manifestes, 85 sources archivées, 0 erreur ; 22 manifestes de son).
 
+### L'approbation — [OK]
+- Montré à l'opérateur : l'image seule avant / après sur fond vert (×3), et le duel avant / après de nuit et à midi (`screenshots/calibration/sprite-alpha-SA1/`). Sa réponse, mot pour mot : « Approuver en production ».
+- Consignée dans le manifeste de `marek-x3-combat` (`approval`, daté du 2026-11-04, l'approbation de la Passe CX2 citée à sa suite, et `notes`) et dans son pack (une seconde entrée d'`approvals` ; `revisions` dit l'approbation à la place de l'attente). La branche est fusionnée dans `main`.
+
 ### Limites
-- L'approbation de la feuille corrigée de Marek est à l'opérateur : la branche n'est pas fusionnée avant sa réponse, consignée mot pour mot.
 - La règle du test (remplissage, arête droite) attrape un fond resté en bloc ; un fond resté en mince bande contre la silhouette ne la franchirait pas : c'est le garde de la chaîne qui le refuse à la source.
 
 ### Où reprendre
-- Consigner l'approbation de l'opérateur dans le manifeste et le pack de `marek-x3-combat`, puis fusionner. Ensuite : rien de neuf ; les bouts de lame de Ren si l'opérateur les veut repris.
+- Rien de neuf. Les bouts de lame détachés de Ren, si l'opérateur les veut repris.
 
 ### Pensée
 - Deux étapes d'une chaîne qui lisent deux boîtes différentes se trompent dans la marge entre les deux : ce qu'une étape nettoie doit couvrir ce que la suivante lit, et l'hypothèse « le coin est le fond » se vérifie là où elle est faite.
@@ -545,7 +548,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
-- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Les cinq citadins sont en production (Passe CA7). Ren (39 images) et les sept rivaux (Marek 32, Vessa 34, Orla 29, Cassius 34, Ilse 32, Rhosk 32, Tobin 27) sont en production dans les duels de la version 2 (Passes CX2, CX4), chacun sous sa figure, plus aucun art de Marek emprunté. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2. **Passe SA1** : le fond gris vu en combat était l'image `strike.1` de Marek (le fond vert de sa planche gardé opaque par la chaîne) ; chaîne corrigée, feuille reconstruite, toutes les feuilles de production mesurées propres (`tests/sheet-clean.test.mjs`) ; l'approbation de la feuille corrigée de Marek est à l'opérateur avant la fusion.
+- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Les cinq citadins sont en production (Passe CA7). Ren (39 images) et les sept rivaux (Marek 32, Vessa 34, Orla 29, Cassius 34, Ilse 32, Rhosk 32, Tobin 27) sont en production dans les duels de la version 2 (Passes CX2, CX4), chacun sous sa figure, plus aucun art de Marek emprunté. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2. **Passe SA1** : le fond gris vu en combat était l'image `strike.1` de Marek (le fond vert de sa planche gardé opaque par la chaîne) ; chaîne corrigée, feuille reconstruite, toutes les feuilles de production mesurées propres (`tests/sheet-clean.test.mjs`) ; la feuille corrigée de Marek approuvée par l'opérateur (« Approuver en production »).
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantissait 336 images et en porte 322 (dix feuilles,

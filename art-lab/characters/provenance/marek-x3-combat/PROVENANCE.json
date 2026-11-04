@@ -10,6 +10,11 @@
    "by": "operator (git user wonmii)",
    "date": "2026-11-01",
    "note": "APPROVED FOR PRODUCTION by the operator on the combat lot sheet (journal Passe CX2): « Production » (CX-M1), with the note, word for word: « Sa tete est un petit peu trop grosse mais ce n'est pas marquant »; CX-P1 « Ren et Marek ensemble »; version 2's duels only, today's game unchanged."
+  },
+  {
+   "by": "operator (git user wonmii)",
+   "date": "2026-11-04",
+   "note": "APPROVED FOR PRODUCTION again by the operator on 2026-11-04 (journal Passe SA1), the corrected export (strike.1 rebuilt by the corrected chain, the 31 other frames identical), word for word: « Approuver en production », after the before / after of the frame alone and of the duel at night and at midday; version 2's duels only, today's game unchanged."
   }
  ],
  "revisions": [
@@ -17,7 +22,7 @@
    "date": "2026-11-04",
    "pass": "journal Passe SA1",
    "change": "strike.1 (figure cut) rebuilt by the corrected chain (lib/combat.mjs: isolate over the grown head's crop, cornerIsBackground): the export approved in Passe CX2 carried the green ground of pose sheet a there, kept opaque and turned beige grey by the palette, the greys of the figure cleared; the 31 other frames identical to the texel",
-   "approval": "PENDING: the operator's approval of the corrected export, word for word, before the merge"
+   "approval": "APPROVED by the operator on 2026-11-04, word for word: « Approuver en production » (journal Passe SA1)"
   }
  ],
  "source": {
