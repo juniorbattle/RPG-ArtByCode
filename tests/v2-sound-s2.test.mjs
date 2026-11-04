@@ -100,6 +100,10 @@ test('the interface by the band (S2-INTERFACE): the click three takes, the dialo
   assert.equal(CAT.sfx.denied.family, 'duel-charge', 'the refused command: lot S3\'s');
   assert.ok(!Object.keys(CAT.sfx).some((k) => k.includes('murmur')), 'no place took the murmur');
   assert.deepEqual(Object.keys(S.UI_LEVEL).sort(), ['click', 'coin', 'denied', 'open']);
+  // confirmed after the trial in play (journal Passe SN20, briefs/fiche-son-essai-lieux.html)
+  const m = JSON.parse(src('art-lab/audio/manifests/interface.manifest.json'));
+  assert.ok(m.approval.includes('Confirmed after the trial in play: S2E-JEU « Bien dans le jeu »') && !m.approval.includes('To be confirmed'), 'the confirmation in the approval');
+  assert.ok(m.decisions.some((d) => d.startsWith('S2E-PROD « Confirmé : en production dans la version 2 »')), 'and among the decisions');
   assert.match(src('src/audio/Sound.ts'), /click: 'ui-click', open: 'ui-open', coin: 'ui-coin', denied: 'denied'/);
 });
 

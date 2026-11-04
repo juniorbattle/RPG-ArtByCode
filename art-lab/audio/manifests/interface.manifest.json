@@ -6,11 +6,13 @@
  "generatedByAi": false,
  "score": "art-lab/audio/sfx/places.sfx.mjs",
  "approved": true,
- "approval": "The operator, on the sheet of lot S2 (briefs/fiche-son-lieux.html, journal Passe SN19, 2026-11-04): S2-INTERFACE « Bonne direction »; S2-POIDS « Calculer dans la page, cuire l’interface et le murmure (121 Ko) »; S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé ». The murmur is not baked: no place took it (« Garder l’ambiance d’aujourd’hui »). To be confirmed after the trial in play. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
+ "approval": "The operator, on the sheet of lot S2 (briefs/fiche-son-lieux.html, journal Passe SN19, 2026-11-04): S2-INTERFACE « Bonne direction »; S2-POIDS « Calculer dans la page, cuire l’interface et le murmure (121 Ko) »; S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé ». The murmur is not baked: no place took it (« Garder l’ambiance d’aujourd’hui »). Confirmed after the trial in play: S2E-JEU « Bien dans le jeu » (journal Passe SN20, 2026-11-04); S2E-PROD « Confirmé : en production dans la version 2 » (journal Passe SN20, 2026-11-04). Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
  "decisions": [
   "S2-INTERFACE « Bonne direction » (journal Passe SN19, 2026-11-04)",
   "S2-POIDS « Calculer dans la page, cuire l’interface et le murmure (121 Ko) » (journal Passe SN19, 2026-11-04)",
-  "S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé » (journal Passe SN19, 2026-11-04)"
+  "S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé » (journal Passe SN19, 2026-11-04)",
+  "S2E-JEU « Bien dans le jeu » (journal Passe SN20, 2026-11-04)",
+  "S2E-PROD « Confirmé : en production dans la version 2 » (journal Passe SN20, 2026-11-04)"
  ],
  "files": [
   {

@@ -21,6 +21,8 @@ const ROOT = path.resolve(import.meta.dirname, '..', '..', '..'), BAKED = 'src/a
 const CONFIRMED = ['S3E-JEU « Bien dans le jeu »', 'S3E-PROD « Confirmé : en production dans la version 2 »'].map((d) => `${d} (journal Passe SN17, ${DATE})`);
 const SHEET = ['S3-DUEL « Mieux : continuer dans cette voie »', 'S3-BAISSE « Garder les baisses »', 'S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé »'].map((d) => `${d} (journal Passe SN16, ${DATE})`);
 /** the sheet of lot S2 (briefs/fiche-son-lieux.html, journal Passe SN19): the interface's card, where its sounds live, the bake */
+/** the operator's confirmation of the interface after the trial in play (journal Passe SN20, the sheet briefs/fiche-son-essai-lieux.html) */
+const CONFIRMED_S2 = ['S2E-JEU « Bien dans le jeu »', 'S2E-PROD « Confirmé : en production dans la version 2 »'].map((d) => `${d} (journal Passe SN20, ${DATE})`);
 const S2 = ['S2-INTERFACE « Bonne direction »', 'S2-POIDS « Calculer dans la page, cuire l’interface et le murmure (121 Ko) »', 'S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé »'].map((d) => `${d} (journal Passe SN19, ${DATE})`);
 /** the families: their sounds, their card on the sheet, their bitrates (the cues at 64 kb/s in Opus and 80 in AAC, the murmur at 96: SA-17, journal Passe SN15) */
 const FAMILIES = [
@@ -75,8 +77,8 @@ for (const fam of FAMILIES) {
   const manifest = {
     id: fam.id, kind: fam.kind, runtimeUse: 'production', licence: 'own', generatedByAi: false, score: fam.places ? 'art-lab/audio/sfx/places.sfx.mjs' : fam.crowd ? 'art-lab/audio/sfx/crowd.sfx.mjs' : 'art-lab/audio/sfx/duel.sfx.mjs', approved: true,
     ...(fam.places ? {
-      approval: `The operator, on the sheet of lot S2 (briefs/fiche-son-lieux.html, journal Passe SN19, ${DATE}): S2-INTERFACE « Bonne direction »; S2-POIDS « Calculer dans la page, cuire l’interface et le murmure (121 Ko) »; S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé ». The murmur is not baked: no place took it (« Garder l’ambiance d’aujourd’hui »). To be confirmed after the trial in play. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.`,
-      decisions: S2,
+      approval: `The operator, on the sheet of lot S2 (briefs/fiche-son-lieux.html, journal Passe SN19, ${DATE}): S2-INTERFACE « Bonne direction »; S2-POIDS « Calculer dans la page, cuire l’interface et le murmure (121 Ko) »; S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé ». The murmur is not baked: no place took it (« Garder l’ambiance d’aujourd’hui »). Confirmed after the trial in play: ${CONFIRMED_S2.join('; ')}. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.`,
+      decisions: [...S2, ...CONFIRMED_S2],
     } : {
       approval: `The operator, on the duel's sounds sheet (briefs/fiche-son-duel.html, journal Passe SN16, ${DATE}): S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé », on the sounds kept by ear: ${fam.ear}; S3-DUEL « Mieux : continuer dans cette voie »; S3-BAISSE « Garder les baisses ». Confirmed after the trial in play: ${CONFIRMED.join('; ')}. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.`,
       decisions: [`${fam.ear} (journal Passe SN16, ${DATE})`, ...SHEET, ...CONFIRMED],
