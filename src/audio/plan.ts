@@ -6,7 +6,8 @@ import type { Look, SoundPlace } from './score';
  *  halle a sa valse à toute heure. Les combats suivent le tournoi : le duel pour les trois tours de poule et la Porte, le rival pour les demi-finales et les
  *  matchs du jour 8, la finale pour le jour 10. Le titre ouvre une partie neuve, puisque l’écran-titre reste muet (SA-16). La fanfare joue aux annonces, les
  *  jingles à la fin d’un combat. » And how the fights' three layers follow the duel (SA-5 « Oui, par couches », C-COUCHES « Trois couches sur les trois
- *  combats »): « proposé », to be judged in play. Pure. */
+ *  combats »): « proposé ». In play (journal Passe SN11) the plan was kept, E-LIEUX « Bien placé », E-TITRE « Bien placé », E-FANFARE « Bien placée »; the
+ *  fights' sound is to be taken up again, E-COUCHES « À reprendre (en note) », where the rework goes waits for the operator. Pure. */
 
 export type PieceId = 'titre' | 'matin' | 'midi' | 'fin' | 'nuit' | 'parvis' | 'lices' | 'valse' | 'duel' | 'rival' | 'finale';
 export type StingId = 'fanfare' | 'victoire' | 'defaite';

@@ -99,7 +99,8 @@ export function ambienceOf(place: SoundPlace, look: Look, boutDay = false): Ambi
  *  the version 2's pages */
 export const BAND_RATE = 48000;
 /** a jingle's way in after the K.O. (the knock-out's slow moment first), how far the music steps back under a jingle or the fanfare, and how long a fanfare
- *  asked before the person's first gesture may wait for it (seconds, dB): « proposé » */
+ *  asked before the person's first gesture may wait for it (seconds, dB); kept by the operator in play (journal Passe SN11): E-KO « Bon moment », E-FANFARE
+ *  « Bien placée » */
 export const JINGLE_AFTER = 1.2, STING_DUCK = 9, STING_WAIT = 6;
 export const hz = (midi: number): number => 440 * Math.pow(2, (midi - 69) / 12);
 
@@ -107,7 +108,8 @@ export const hz = (midi: number): number => 440 * Math.pow(2, (midi - 69) / 12);
 
 /** The mix, measured (lot S0, journal Passe SN2; tools/audio/analyse.mjs): the fiche's targets at the default settings are -18 LUFS at the output and
  *  the music 3 to 6 dB over the ambience. Each bus in dB at the default settings, then each place's ambience (the beds were written at very
- *  different levels). The volume comes after the limiter, so a louder setting never squeezes the mix harder. */
+ *  different levels). The volume comes after the limiter, so a louder setting never squeezes the mix harder. The band's level kept in play: E-NIVEAU « Bien dosée »
+ *  (journal Passe SN11). */
 export const MIX = { ambience: 1.6, music: -1.6, fx: 9.6, ui: 9.6, reverb: 1.6 };
 export const LEVEL: Record<SoundPlace, Record<Look, number>> = {
   district: { morning: 8, midday: 8.1, afternoon: 8.1, night: 8.1 },

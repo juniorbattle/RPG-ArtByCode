@@ -23,6 +23,7 @@ th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule
 th { color: var(--muted); font-weight: 600; }
 .pill { display: inline-block; padding: 0 8px; border: 1px solid currentColor; font-size: .82rem; }
 .ok { color: var(--ok); } .ko { color: var(--ko); } .warn { color: var(--warn); }
+p.warn { border: 1px solid currentColor; padding: 10px 12px; }
 .tests { display: grid; gap: 10px; }
 .test { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; border-top: 1px solid var(--rule); padding-top: 10px; }
 .test h3 { margin: 0; font-size: 1rem; font-weight: 600; }
@@ -46,6 +47,7 @@ pre { white-space: pre-wrap; word-break: break-word; font-size: .8rem; backgroun
   <header style="display:grid;gap:8px">
     <p class="step">Cité du Tournoi · décision C-SAFARI</p>
     <h1>Essai Safari du son</h1>
+    <p class="warn" id="notapple" hidden role="alert"><b>Cette page n’est pas ouverte dans Safari sur un appareil Apple.</b> Le relevé vaudra pour ce navigateur-ci, pas pour Safari : ouvre le même lien dans Safari, sur un iPhone, un iPad ou un Mac, connecté à claude.ai.</p>
     <p class="lede">Deux minutes sur un iPhone, un iPad ou un Mac, dans Safari, le son allumé (un casque aide). La page embarque les vrais fichiers du jeu, Opus en WebM et AAC en M4A. Elle mesure d’abord ce que Safari en décode, puis te fait écouter la jointure des boucles. Tes réponses s’enregistrent pour que je les relise.</p>
   </header>
 
@@ -91,7 +93,11 @@ function decodeWith(ctx, ab) { return new Promise((ok, ko) => { const p = ctx.de
 const can = (() => { const a = document.createElement('audio'); return (f) => a.canPlayType(MIME[f]); })();
 
 async function measure() {
-  const env = state.env = { ua: navigator.userAgent, webm: can('webm') || 'non', m4a: can('m4a') || 'non', gamePicks: can('webm') ? 'webm' : can('m4a') ? 'm4a' : 'aucun' };
+  // Apple's WebKit (Safari, or any browser of an iPhone or an iPad), not Chrome, Edge, Firefox or the Claude app on another system (journal Passe SN11: a first
+  // reading came from the Claude app on Windows)
+  const ua = navigator.userAgent, apple = /iPhone|iPad|Macintosh/.test(ua) && /AppleWebKit/.test(ua) && !/Chrome\/|Chromium|Electron|Edg\/|Firefox\//.test(ua);
+  const env = state.env = { ua, apple, webm: can('webm') || 'non', m4a: can('m4a') || 'non', gamePicks: can('webm') ? 'webm' : can('m4a') ? 'm4a' : 'aucun' };
+  if (!apple) { $('notapple').hidden = false; }
   $('env').textContent = `Opus en WebM : ${env.webm} · AAC en M4A : ${env.m4a} · le jeu choisirait : ${env.gamePicks === 'webm' ? 'Opus' : env.gamePicks === 'm4a' ? 'AAC' : 'aucun format'}`;
   const Off = window.OfflineAudioContext || window.webkitOfflineAudioContext, rows = [], known = {};
   for (const f of ['webm', 'm4a']) for (const id of ['ton', 'valse', 'duel-base', 'duel-intro']) {

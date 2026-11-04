@@ -6,12 +6,13 @@
  "generatedByAi": false,
  "score": "art-lab/audio/scores/lices.score.mjs",
  "approved": true,
- "approval": "The operator, on the reprise sheet (journal Passe SN9, 2026-11-03): R-SUITE « Cuire et brancher dans la version 2 », on the version kept by ear: C-LICES « Bonne direction » (journal Passe SN8); R-LICES « Bonne direction » (journal Passe SN9); and C-LIEUX « Valider ce plan » (journal Passe SN8). Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
+ "approval": "The operator, on the reprise sheet (journal Passe SN9, 2026-11-03): R-SUITE « Cuire et brancher dans la version 2 », on the version kept by ear: C-LICES « Bonne direction » (journal Passe SN8); R-LICES « Bonne direction » (journal Passe SN9); and C-LIEUX « Valider ce plan » (journal Passe SN8). Confirmed after the trial in play: E-PROD « Confirmé : en production dans la version 2 » (journal Passe SN11, 2026-11-04). Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
  "decisions": [
   "C-LICES « Bonne direction » (journal Passe SN8)",
   "R-LICES « Bonne direction » (journal Passe SN9)",
   "C-LIEUX « Valider ce plan » (journal Passe SN8)",
-  "R-SUITE « Cuire et brancher dans la version 2 » (journal Passe SN9)"
+  "R-SUITE « Cuire et brancher dans la version 2 » (journal Passe SN9)",
+  "E-PROD « Confirmé : en production dans la version 2 » (journal Passe SN11, 2026-11-04)"
  ],
  "files": [
   {

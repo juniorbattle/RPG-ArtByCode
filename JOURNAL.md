@@ -329,6 +329,57 @@ Cuisson finale (chaque morceau depuis sa seule partition), −18 LUFS par morcea
 - Une preuve qui compare le moteur à lui-même ne voit ni un retard ni un décalage : il faut un témoin extérieur, ici les fichiers décodés par ffmpeg et un clic à une place connue.
 - Une clé de cache qui arrondit rend un calcul dépendant de l'ordre. Un contrôle de reproductibilité sur un sous-ensemble l'a montré, le contrôle complet passait.
 
+## Passe SN11 — La fiche d'essai du son relue : le plan gardé, la production confirmée, le son des combats à reprendre (2026-11-04)
+
+### Demande
+- L'opérateur, dans la séance mère, transmis mot pour mot : « tout est rempli ». La séance mère demande de relire la fiche d'essai et la page Safari, de consigner chaque choix et chaque note mot pour mot, de n'agir que sur ce qui est décidé (E-PROD ; la jointure AAC sur Safari, avec la liste d'édition si elle s'entend) et de préparer ce qui demande un arbitrage.
+
+### La fiche d'essai
+- Page privée https://claude.ai/artifact/3fVUHipEEnncBcjcM3waeF, source `briefs/fiche-son-essai.html`. Relue par `list` : 10 documents sur 10, une note.
+
+| # | Décision | Choix de l'opérateur | Note |
+|---|---|---|---|
+| E-LIEUX | Chaque lieu son morceau | « Bien placé » | — |
+| E-NIVEAU | Le niveau de la musique | « Bien dosée » | — |
+| E-COUCHES | Les couches du duel | « À reprendre (en note) » | « quelle est ce bruit de vague ? et les bruit de Bip, et claquement représentent quoi ? bref pas convaincu » |
+| E-INTRO | L'introduction des combats | « Bien comme ça » | — |
+| E-KO | La fin d'un combat | « Bon moment » | — |
+| E-FANFARE | La fanfare des annonces | « Bien placée » | — |
+| E-TITRE | Le titre à l'ouverture | « Bien placé » | — |
+| E-SAFARI | L'essai sur un appareil Apple | « Fait, résultats enregistrés sur la page » | — |
+| E-PROD | Les fichiers en production dans la version 2 | « Confirmé : en production dans la version 2 » | — |
+| E-SUITE | Ce qui vient après | « Lancer S2 puis S3 » | — |
+
+### La page Safari
+- Page privée https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS, collection `results` : 1 document, enregistré le 2026-11-04 à 01:38:24 (UTC). Son navigateur, tel que relevé : « Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Claude/4.16336.0 Chrome/152.0.7977.167 Electron/44.9.3 Safari/537.36 MSIX ». C'est l'application Claude sous Windows, un Chrome 152, pas Safari sur un appareil Apple.
+- Ce qu'il dit : contexte audio à 48 kHz accepté, le jeu choisirait l'Opus ; les huit décodages exacts (Opus et AAC, le ton, la valse, la base et l'introduction du duel) ; indices de jointure 9,34 / 0,8 / 1,44 en Opus, 9,48 / 0,27 / 10,56 en AAC, les mêmes que dans Chrome 156 (Passe SN10). Aucun verdict d'écoute, note vide.
+
+### Ce que ces choix veulent dire
+- **Gardés tels quels** : le plan des morceaux (E-LIEUX), le niveau de la musique, `MIX.music` −1,6 dB (E-NIVEAU), l'introduction qui joue pendant la fiche de match (E-INTRO), la musique coupée au K.O. puis le jingle 1,2 s après (E-KO), la fanfare aux trois annonces avec la musique 9 dB plus bas (E-FANFARE), le titre sur la première page d'une partie neuve (E-TITRE). Ces valeurs « proposé » de la Passe SN10 sont désormais gardées par l'opérateur ; le code le dit.
+- **E-PROD est confirmé** : chaque manifeste porte la confirmation, dans `approval` et `decisions`, et `bake.mjs` l'écrit.
+- **E-COUCHES est à reprendre, sans savoir encore quoi.** La note pose trois questions. Réponses, lues dans le code : le « bruit de vague » est le grondement de l'arène, un bruit filtré qui ondule lentement (`ambienceOf('arena')`, lot V8) ; les « Bip » sont le signal des paliers de la charge, un son carré qui monte d'un ton à chaque palier, et le refus d'une commande, plus grave (lot S0) ; les « claquement » sont les coups, des souffles de bruit filtré et des résonances métalliques, un tintement pour la garde (lot S0). Aucun des trois ne vient du groupe ; l'extrait de la carte était un vrai duel du bot, avec tous ses sons. « bref pas convaincu » décide la reprise. Ce qu'il faut reprendre (la musique et ses couches, ou les bruitages et le grondement, que le lot S3 doit remplacer) n'est pas dit : arbitrage préparé, pas tranché.
+- **E-SAFARI : l'essai Safari n'a pas eu lieu.** Le relevé vient d'un Chrome sous Windows, et aucun verdict d'écoute n'est noté. La jointure AAC reste non jugée : rien n'est décidé sur elle, la liste d'édition n'est pas écrite. Question préparée.
+- **E-SUITE : S2 puis S3**, chacun une tâche à part. La fiche suivante propose d'avancer S3, le lot du duel, puisque la note porte sur le duel ; tant qu'elle n'est pas remplie, l'ordre décidé reste S2 puis S3.
+
+### Fait — [OK]
+- `bake.mjs` écrit la confirmation (`CONFIRMED`) ; la cuisson complète refaite : les 48 fichiers audio identiques à l'octet (aucun ne change dans git), les 14 manifestes ne changent que par la confirmation.
+- `src/audio/score.ts` et `src/audio/plan.ts` citent les choix de l'opérateur à la place de « proposé » ; aucune valeur ne change.
+- La page Safari dit elle-même quand elle n'est pas ouverte dans le WebKit d'un appareil Apple (un avertissement, et `apple` dans le relevé) ; republiée à la même adresse.
+- **La fiche suivante** : page privée https://claude.ai/artifact/J3qDxeYWg7zXsqrSBfEyw6, source `briefs/fiche-son-combats.html` : ce que sont les trois bruits ; SC-QUOI à l'oreille, avec le même duel du bot en trois extraits rendus par le moteur (en entier, la musique seule, les bruitages et le grondement seuls) ; SC-OU, où reprendre (recommandé : avancer S3 avant S2) ; SC-SAFARI, refaire l'essai sur un appareil Apple (recommandé, si l'opérateur en a un). `decisions` relu vide à la publication.
+- `AGENTS.md` dit le résultat de l'essai.
+
+### Preuves
+- `npm test` 385 sur 385, `npm run typecheck`, `npm run build`, `npm run art:validate` (14 manifestes de son, 0 erreur) ; `bake.mjs` refait toute la cuisson : `git status` ne montre aucun fichier audio ni `catalogue.json` changé, les manifestes seulement.
+- La page Safari : l'avertissement caché pour Safari sur iPhone et sur Mac, affiché pour Chrome sur Mac et pour l'application Claude sous Windows (même page, agent utilisateur changé dans Chrome) ; vérifiée dans Chrome et Firefox, aucune erreur, rien ne déborde à 390 px.
+- Les trois extraits de la fiche, rendus par le moteur sur le même duel du bot : en entier −17,3 LUFS, la musique seule −21,0, les bruitages et le grondement seuls −19,6. La fiche vérifiée dans Chrome et Firefox : trois cartes, trois lecteurs, aucune erreur.
+
+### Où reprendre
+- Relire la fiche du son des combats quand l'opérateur la dit remplie ; consigner ; n'agir que sur ce qui est décidé. Puis S3 ou S2, chacun dans sa séance. Si l'essai Safari est refait et que la jointure AAC s'entend : la liste d'édition écrite par la cuisson.
+
+### Pensée
+- Un relevé d'essai se lit avec son navigateur : la page Safari a enregistré un essai fait ailleurs, et la carte disait « Fait ». Une page d'essai d'appareil dit elle-même si elle tourne sur l'appareil visé.
+- Un extrait d'écoute qui mêle tout fait juger le tout : la carte des couches portait un duel complet, et la note vise des bruits que la carte ne présentait pas. Un extrait montre ce que la carte demande de juger, et le reste à part.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -534,7 +585,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN10)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit et bouclable (SN7), repris contre le copier-coller (SN8), la reprise gardée pour sept morceaux et la musique du tournoi revenue à SN7 (SN9). **Cuit et branché dans la version 2 (Passe SN10, R-SUITE)** : quatorze manifestes, quarante-huit fichiers (Opus et AAC), le plan C-LIEUX (`src/audio/plan.ts`), trois couches sur les combats (règles « proposé »), les introductions, la fanfare aux annonces, les jingles au K.O. ; `tune()` retiré. **À l'opérateur** : la fiche d'essai `briefs/fiche-son-essai.html` (https://claude.ai/artifact/3fVUHipEEnncBcjcM3waeF) et la page Safari (https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS, C-SAFARI) ; la confirmation de la production (E-PROD). Ouvert : la jointure AAC (erreur de bord du codeur, à juger sur Safari ; remède possible, la liste d'édition écrite par la cuisson). Ensuite S2 et S3 avec les instruments du groupe ; SA-10 après l'essai du lot S4.
+**6f. Son (Passes SN1 à SN11)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9). **Cuit et branché dans la version 2 (SN10)**, **l'essai en jeu relu (SN11)** : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés ; la production confirmée (E-PROD) ; le son des combats à reprendre (E-COUCHES, « bref pas convaincu ») ; E-SUITE « Lancer S2 puis S3 ». **À l'opérateur** : la fiche du son des combats `briefs/fiche-son-combats.html` (https://claude.ai/artifact/J3qDxeYWg7zXsqrSBfEyw6) : ce qui ne convainc pas (la musique ou les bruitages et le grondement), où reprendre (avancer S3 ou non), l'essai Safari à refaire sur un appareil Apple (le premier relevé venait de l'application Claude sous Windows). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. Ensuite S2 et S3, chacun dans sa séance ; SA-10 après l'essai du lot S4.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 
@@ -967,3 +1018,5 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Une boucle cuite se prouve dans chaque navigateur qui la décode et à la sortie du moteur, contre un témoin extérieur (le décodage de ffmpeg, un clic à une place connue) : Chrome perdait 24 échantillons que Firefox gardait, et la sortie retarde de 10 ms (Passe SN10).
 - Un cache dont la clé arrondit rend un calcul dépendant de l'ordre : un contrôle de reproductibilité se fait aussi sur un sous-ensemble (Passe SN10).
 - Une approbation lue dans une décision de fiche se cite telle quelle, avec ce qu'elle couvre, et se fait confirmer à la fiche suivante (Passe SN10).
+- Une page d'essai d'appareil dit elle-même si elle tourne sur l'appareil visé, et un relevé se lit avec son navigateur : « Fait » sur une carte ne vaut pas un essai sur Safari (Passe SN11).
+- Un extrait d'écoute montre ce que la carte demande de juger, et le reste à part : un duel complet sous une carte « couches » a fait juger des bruitages que la carte ne présentait pas (Passe SN11).

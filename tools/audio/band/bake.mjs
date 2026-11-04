@@ -26,6 +26,8 @@ const LUFS = -18, DATE = '2026-11-03';
 
 /** what the operator decided on each piece, word for word (journal Passes SN6, SN8, SN9): the version kept by ear, then the plan, the layers and the bake */
 const PLAN = ['C-LIEUX « Valider ce plan » (journal Passe SN8)', 'R-SUITE « Cuire et brancher dans la version 2 » (journal Passe SN9)'];
+/** the operator's confirmation after the trial in play (journal Passe SN11) */
+const CONFIRMED = 'E-PROD « Confirmé : en production dans la version 2 » (journal Passe SN11, 2026-11-04)';
 const EAR = {
   titre: ['C-TITRE « Bonne direction » (journal Passe SN8)', 'R-TITRE « Bonne direction » (journal Passe SN9)'],
   matin: ['F-MATIN « Bonne direction » (journal Passe SN6)', 'R-MATIN « Bonne direction » (journal Passe SN9)'],
@@ -106,8 +108,8 @@ for (const p of PIECES.filter((x) => !only.length || only.includes(x.id))) {
   }
   const manifest = {
     id: p.id, kind: 'music', runtimeUse: 'production', licence: 'own', generatedByAi: false, score, approved: true,
-    approval: `The operator, on the reprise sheet (journal Passe SN9, ${DATE}): R-SUITE « Cuire et brancher dans la version 2 », on the version kept by ear: ${EAR[p.id].join('; ')}; and ${PLAN[0]}. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.`,
-    decisions: [...EAR[p.id], ...PLAN],
+    approval: `The operator, on the reprise sheet (journal Passe SN9, ${DATE}): R-SUITE « Cuire et brancher dans la version 2 », on the version kept by ear: ${EAR[p.id].join('; ')}; and ${PLAN[0]}. Confirmed after the trial in play: ${CONFIRMED}. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.`,
+    decisions: [...EAR[p.id], ...PLAN, CONFIRMED],
     files,
     bake: { tool: 'tools/audio/band/bake.mjs', ffmpeg: version, encoders: { webm: ENC.webm('<kbps>').join(' '), m4a: ENC.m4a('<kbps>').join(' '), input: 'f32le 48000 Hz stereo, -map_metadata -1 -fflags +bitexact -flags:a +bitexact', opusDelay: `${OPUS_LEAD} samples ahead (a loop's last ones, else silence), CodecDelay and OpusHead pre-skip set to ${OPUS_DELAY} samples (7 ms)` }, sampleRate: SR, lufs: LUFS, date: DATE, measures: report },
   };
