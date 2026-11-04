@@ -2,11 +2,11 @@ import { STEP_EVERY, type Effect } from './score';
 
 /** The effects that no code played (journal Passe SN1: `click`, `open`, `coin`, `step`; lot S0, journal Passe SN2), wired from outside the interface so
  *  that a screen can change without knowing about the sound: a button's click on the document, a dialog appearing in it, the save's coins, the
- *  hero's walk read from the page's handle. The screen's darkening at a way out takes the sound down with it (lot S1, journal Passe SN3); `go` asks what
+ *  hero's walk read from the page's handle, an action the game refuses (lot S2). The screen's darkening at a way out takes the sound down with it (lot S1, journal Passe SN3); `go` asks what
  *  the fade still needs. A version 2 page only: src/audio/Sound.ts installs them with the engine. */
 
 interface Hooked { play(e: Effect): void; leave(): number }
-interface Game { subscribe(f: () => void): void; state(): { player: { coins: number } } }
+interface Game { subscribe(f: () => void): void; state(): { player: { coins: number } }; act(a: unknown): { ok: boolean } }
 interface Pos { x: number; z: number }
 
 /** where the hero of this page stands: the town's actor, a square's, or the forecourt's walker */
@@ -38,6 +38,9 @@ export function installSoundHooks(s: Hooked): void {
     if (g && coins === null) {
       coins = g.state().player.coins;
       g.subscribe(() => { const c = g.state().player.coins; if (c !== coins) s.play('coin'); coins = c; });
+      // an action the game refuses (too few coins, a closed shop...): the refused command's sound (lot S2, journal Passe SN18)
+      const act = g.act.bind(g);
+      g.act = (a) => { const r = act(a); if (r && r.ok === false) s.play('denied'); return r; };
     }
     const p = hero(w); if (!p) return;
     if (at) {

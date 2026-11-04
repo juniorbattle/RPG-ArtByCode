@@ -262,6 +262,8 @@ export class Weather {
     for (let i = 0; i < n; i++) { pulses.push([t, i === 0 ? this.rng.range(0.55, 0.9) : this.rng.range(0.8, 1.6), this.rng.range(0.05, 0.12)]); t += this.rng.range(0.06, 0.16); }
     // its bolt: somewhere in the sky the camera faces, its own shape
     this.boltAz = this.camAz + this.rng.range(-0.3, 0.3); this.boltSeed = this.rng.range(0, 100);
+    // the version 2's sound hears it (lot S2, journal Passe SN18: its thunder comes after it); no draw, nothing shown changes
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('cdt-flash', { detail: { level: Math.max(...pulses.map((p) => p[1])) * this.p.storm } }));
     return { t0, pulses };
   }
 

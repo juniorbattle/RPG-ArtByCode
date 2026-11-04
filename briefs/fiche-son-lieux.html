@@ -1,0 +1,423 @@
+<title>Les lieux et la météo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+code { font-family: var(--font-mono); font-size: .86em; background: color-mix(in srgb, var(--line) 45%, transparent); border-radius: 3px; padding: 0 3px; overflow-wrap: anywhere; }
+.block { display: flex; flex-direction: column; gap: 14px; }
+.block h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.block > p { margin: 0; max-width: 68ch; }
+.block h3 { margin: 6px 0 0; font-size: 17px; }
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 22px; margin: 0; padding: 0; list-style: none; }
+.verdict li { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.verdict b { font-size: 16px; }
+.verdict span { color: var(--muted); font-size: 15px; }
+.scale { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.scale h3 { margin: 0; font-size: 16px; }
+.scale .sub { margin: 0 0 6px; font-size: 14px; color: var(--muted); }
+.srow { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; align-items: center; font-size: 14px; }
+.strack { position: relative; height: 18px; }
+.strack .band { position: absolute; top: 0; bottom: 0; background: var(--rec-soft); }
+.strack .bar { position: absolute; top: 5px; height: 8px; left: 0; background: var(--brass); border-radius: 0 4px 4px 0; }
+.strack .target .bar, .srow.target .bar { background: var(--rec); }
+.sval { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: 13px; }
+.axis { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; font-size: 12px; color: var(--muted); }
+.axis div { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: none; }
+th { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.st { font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.st.ok { color: var(--rec); } .st.part { color: var(--astre); } .st.no { color: var(--cendre); }
+.wide { min-width: 720px; }
+.clips { display: grid; grid-template-columns: 1fr; gap: 18px; }
+.clip { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.clip figcaption { font-size: 14px; font-weight: 600; }
+.clip audio { width: 100%; height: 40px; }
+.clip img.spec { width: 100%; height: auto; aspect-ratio: 820 / 272; border-radius: 4px; display: block; }
+.note { font-size: 14px; color: var(--muted); }
+.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px 24px; }
+.limits > div { min-width: 0; }
+.limits h3 { margin: 0 0 4px; }
+.limits ul { margin: 0; padding-left: 18px; font-size: 15px; display: flex; flex-direction: column; gap: 3px; }
+
+
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · lot S2 · fiche d’écoute · 4 novembre 2026</span>
+    <h1>Les lieux et la météo</h1>
+    <p class="lede">S3 est clos. Voici le lot S2 : ce que les quatre lieux font entendre à chaque heure, le temps qu’il fait (la pluie du jour pluvieux, l’orage, la neige, le vent), les sons de l’interface et les pas. La météo est muette aujourd’hui. Les ambiances et l’interface sont encore des oscillateurs et du bruit filtré. Tout reste derrière la version 2 (SA-16).</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="block" aria-labelledby="h-diag">
+    <h2 id="h-diag">Ce qui change</h2>
+    <ul class="verdict">
+      <li><b>Aujourd’hui</b><span>Dans chaque lieu, une nappe de vent, d’eau et de « foule » faite de bruit filtré, et quelques appels joués par des oscillateurs : un marteau, des oiseaux, des grillons, un luth. La pluie, l’orage, la neige et le vent se voient mais ne s’entendent pas.</span></li>
+      <li><b>Les lieux</b><span>Chaque lieu a ce qui s’y trouve. La ville a l’eau du canal contre le quai, le murmure des passants, l’enclume de la forge et les bois du bateau. Le parvis a sa fontaine, ses braseros et la foule qui se masse à la porte de l’arène. Les lices ont l’entraînement, l’écurie et le vent du rempart. La place de la halle a la foule de la fête et ses fanions. Le matin, un merle chante sur les notes du motif (ré, mi, sol, la, sans tierce) ; en fin de journée, des hirondelles. La nuit, des grillons et une chouette.</span></li>
+      <li><b>La météo</b><span>La pluie siffle et crépite, et les gens et les oiseaux se mettent à l’abri. L’orage gronde après chaque éclair, plus tard quand l’éclair est loin. La neige étouffe tout. Le vent souffle par rafales et siffle dans les pierres quand il forcit.</span></li>
+      <li><b>L’interface et les pas</b><span>Le clic, l’ouverture d’un dialogue et la bourse sont joués par le marimba, le vibraphone et le piano électrique du groupe. Le refus est celui du duel, que tu as validé en S3. Les pas sonnent sur les pavés, et sur la terre des lices.</span></li>
+    </ul>
+    <h3>Comment les extraits sont faits</h3>
+    <p class="note">Tous les extraits sont rendus par le vrai moteur du jeu, aujourd’hui et proposé, aux réglages par défaut. Chaque ambiance est calée comme aujourd’hui : 4 à 5 dB sous la musique de son lieu (−24,4 LUFS de jour, −25,2 la nuit, contre −24,2 et −25,3 aujourd’hui). Les ambiances seules sont montées de 4 dB dans les extraits, aujourd’hui comme proposé, pour s’entendre sans la musique. La carte « Le tout, avec la musique » fait entendre la page entière. Les sons proposés vivent dans une copie du jeu : rien n’est dans le jeu avant ta réponse.</p>
+    <h3>Mesures</h3>
+    <div class="tw"><table>
+      <thead><tr><th>Contrôle (<code>tools/audio/analyse.mjs --check</code>, rendu complet du moteur)</th><th>Aujourd’hui</th><th>Proposé</th></tr></thead>
+      <tbody>
+        <tr><td>Une page avec sa musique, chaque lieu à chaque heure (cible −18 ± 2)</td><td class="n">−18,5 à −18,9 LUFS</td><td class="n">−18,2 à −18,9 LUFS</td></tr>
+        <tr><td>La musique au-dessus de l’ambiance (cible 3 à 6 dB)</td><td class="n">4,0 à 5,2 dB</td><td class="n">4,2 à 5,1 dB</td></tr>
+        <tr><td>Le clic, l’ouverture, la bourse au-dessus de la foule de l’arène (au moins 3 dB)</td><td class="n">6,9 / 7,0 / 6,9 dB</td><td class="n">4,6 / 4,3 / 4,8 dB</td></tr>
+        <tr><td>Une marche de 18 pas, seule</td><td class="n">−25,6 LUFS</td><td class="n">−30,2 LUFS (5 dB sous le lieu)</td></tr>
+        <tr><td>Toutes les autres vérifications (répétition des nappes, stéréo, crêtes)</td><td class="n">passent</td><td class="n">passent</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix et je les consigne au journal. Je reprends ce que tu notes, puis, si tu le dis, je cuis et je branche ce qui est validé pour l’essai en jeu.</p>
+    <p class="src">Limites. Personne n’a écouté : je n’ai pas d’oreille, les niveaux, les crêtes et les spectrogrammes attrapent les défauts grossiers, pas la justesse d’une pluie ou d’une foule. Les sons calculés dans la page coûtent au premier usage, mesuré dans Chrome : moins de 7 ms pour la plupart, 16 ms pour la chouette, 17 à 23 ms pour le feu, 17 à 41 ms pour chaque tonnerre (faits en arrière-plan pendant l’orage), 45 ms pour le crépitement de la pluie (au début d’une page sous la pluie). Si tu valides, je les étale pour qu’aucun ne coûte une image.</p>
+    <p class="src">Sources : <code>briefs/fiche-son.html</code> (le lot S2 du plan d’audit), <code>JOURNAL.md</code> Passes SN11 à SN18, <code>src/audio/places.ts</code>, <code>src/audio/score.ts</code> (<code>ambienceOf</code>), <code>art-lab/audio/sfx/places.sfx.mjs</code>, <code>tools/audio/places-listen.mjs</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+  { id: "lieux", title: "Les lieux", sub: "L’ambiance seule, de jour puis la nuit.", fam: "var(--astre)", items: [
+    { id: "S2-VILLE", tag: "à l’oreille", title: "La ville, sur son canal",
+      ctx: "Proposé : l’eau du canal qui clapote contre le quai, le murmure des passants (seize voix écrites en code, comme la foule de l’arène, plus proches et dans l’air d’une rue), l’enclume de la forge (allumée le jour comme la nuit), les bois et les cordages du bateau amarré, les fanions qui claquent le jour. Le matin, des moineaux, et un merle sur les notes du motif. La nuit, moins de monde, des grillons, parfois une chouette.",
+      clips: [["audio/district-today.mp3", "Aujourd’hui : le matin, puis la nuit (0:16), 0:31"], ["audio/district-day.mp3", "Proposé : le matin, 0:30"], ["audio/district-night.mp3", "Proposé : la nuit, 0:30"]],
+      rec: "Pas de recommandation, c’est une question de goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Garder l’ambiance d’aujourd’hui"], recIdx: -1, src: "`src/audio/score.ts` (`ambienceOf`), `src/audio/places.ts` (`anvil`, `creak`, `bird`), `art-lab/audio/sfx/places.sfx.mjs` (`murmur`)" },
+    { id: "S2-PARVIS", tag: "à l’oreille", title: "Le parvis de l’arène",
+      ctx: "Proposé : la foule qui se masse devant la porte (le murmure de l’arène de S3, plus loin), la fontaine, le feu des deux braseros. Un après-midi de combat, la foule est plus nombreuse et la clameur de l’arène passe les murs : un « oh », des acclamations. La nuit, peu de monde, la fontaine, le feu, des grillons.",
+      clips: [["audio/forecourt-today.mp3", "Aujourd’hui : un après-midi de combat, puis la nuit (0:16), 0:31"], ["audio/forecourt-day.mp3", "Proposé : un après-midi de combat, 0:30"], ["audio/forecourt-night.mp3", "Proposé : la nuit, 0:30"]],
+      rec: "Pas de recommandation, c’est une question de goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Garder l’ambiance d’aujourd’hui"], recIdx: -1, src: "`src/audio/score.ts` (`ambienceOf`), `src/audio/places.ts` (`fire`), le murmure et les réactions de la foule de S3" },
+    { id: "S2-LICES", tag: "à l’oreille", title: "Les lices au pied du rempart",
+      ctx: "Proposé : le vent qui longe le rempart, l’entraînement (des épées de bois, l’acier, une lame dans un mannequin de paille), l’écurie sous la galerie (des sabots, un ébrouement), quelques spectateurs, un brasero. La nuit, l’entraînement s’arrête : l’écurie, le vent, des grillons, une chouette.",
+      clips: [["audio/training-today.mp3", "Aujourd’hui : midi, puis la nuit (0:16), 0:31"], ["audio/training-day.mp3", "Proposé : midi, 0:30"], ["audio/training-night.mp3", "Proposé : la nuit, 0:30"]],
+      rec: "Pas de recommandation, c’est une question de goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Garder l’ambiance d’aujourd’hui"], recIdx: -1, src: "`src/audio/places.ts` (`clash`, `stable`, `fire`), `src/audio/score.ts` (`ambienceOf`)" },
+    { id: "S2-HALLE", tag: "à l’oreille", title: "La place de la halle",
+      ctx: "Proposé : la foule de la fête (le murmure de l’arène de S3, plus loin), les fanions qui claquent le jour. En fin de journée, des hirondelles. La nuit, la foule reste, un peu plus nombreuse, et les grillons. La valse joue à toute heure par-dessus, comme aujourd’hui.",
+      clips: [["audio/festival-today.mp3", "Aujourd’hui : la fin de journée, puis la nuit (0:16), 0:31"], ["audio/festival-day.mp3", "Proposé : la fin de journée, 0:30"], ["audio/festival-night.mp3", "Proposé : la nuit, 0:30"]],
+      rec: "Pas de recommandation, c’est une question de goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Garder l’ambiance d’aujourd’hui"], recIdx: -1, src: "`src/audio/score.ts` (`ambienceOf`), le murmure de la foule de S3" },
+  ]},
+  { id: "meteo", title: "La météo", sub: "Muette aujourd’hui : elle se voit sans s’entendre.", fam: "var(--voile)", items: [
+    { id: "S2-PLUIE", tag: "à l’oreille", title: "La pluie du jour pluvieux",
+      ctx: "Le troisième jour d’une partie peut être pluvieux (le front de pluie du deuxième soir, pluie à 0,6). La ville à midi : la pluie siffle et pèse sur les toits, elle crépite sur les pavés, les gouttes tintent dans les flaques et le canal. Les passants se mettent à l’abri (le murmure baisse de moitié), les oiseaux se taisent.",
+      clips: [["audio/rain-today.mp3", "Aujourd’hui : la même place à la même heure, sans son de pluie, 0:16"], ["audio/rain.mp3", "Proposé : la pluie du jour pluvieux, 0:30"]],
+      rec: "Pas de recommandation, c’est une question de goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Pas de son de pluie"], recIdx: -1, src: "`src/audio/places.ts` (`patter`), `src/audio/score.ts` (lit `rain`), `src/simulation/look.ts` (`rainOf`)" },
+    { id: "S2-ORAGE", tag: "à l’oreille", title: "L’orage",
+      ctx: "La ville la nuit sous un orage : forte pluie, rafales, et le tonnerre après chaque éclair. Un éclair proche fait un craquement, puis le roulement ; un éclair lointain, un grondement sourd. Le délai suit la distance (de 0,3 à 4,5 s). Dans l’extrait, quatre éclairs : à 0:01 (proche), 0:10 (loin), 0:19 (moyen), 0:28 (très loin). Dans le jeu, le son suit les éclairs que l’image montre.",
+      clips: [["audio/storm.mp3", "Proposé : un orage la nuit, 0:36"]],
+      rec: "Pas de recommandation, c’est une question de goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Pas de son d’orage"], recIdx: -1, src: "`src/audio/places.ts` (`thunder`), `src/audio/score.ts` (`thunderOf`), `src/atmosphere/Weather.ts` (l’éclair prévient le son)" },
+    { id: "S2-NEIGE", tag: "à l’oreille", title: "La neige",
+      ctx: "La place de la halle un matin de neige : la neige étouffe le haut du spectre, il y a moins de monde dehors, presque plus d’oiseaux, et les pas crissent comme sur la terre.",
+      clips: [["audio/snow.mp3", "Proposé : la neige sur la place de la halle, le matin, 0:30"]],
+      rec: "Pas de recommandation, c’est une question de goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Pas de changement sous la neige"], recIdx: -1, src: "`src/audio/score.ts` (`muffle`, `surface`)" },
+    { id: "S2-VENT", tag: "à l’oreille", title: "Le vent",
+      ctx: "Les lices en fin de journée sous un coup de vent (2,5 fois le vent normal) : le vent vient par rafales et siffle dans les pierres du rempart quand il forcit. Par vent normal, il reste en fond dans tous les lieux. Les fanions de la ville et de la halle claquent plus fort avec lui.",
+      clips: [["audio/wind.mp3", "Proposé : un coup de vent sur les lices, 0:30"]],
+      rec: "Pas de recommandation, c’est une question de goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Pas de son de vent"], recIdx: -1, src: "`src/audio/score.ts` (`windGain`)" },
+  ]},
+  { id: "ui", title: "L’interface, les pas, le tout", sub: "Ce qu’on entend à chaque instant.", fam: "var(--ronce)", items: [
+    { id: "S2-INTERFACE", tag: "à l’oreille", title: "Les sons de l’interface",
+      ctx: "Au même niveau qu’aujourd’hui. Le clic est une lame du marimba (la), toujours la même note avec trois touchers. L’ouverture d’un dialogue est faite de deux lames du vibraphone à la quinte (ré, la) sur le piano électrique. La bourse fait tinter deux ou trois pièces, avec un éclat de vibraphone (mi). Le refus est celui du duel (S3). Le refus est désormais aussi joué quand le jeu refuse une action.",
+      clips: [["audio/ui-today.mp3", "Aujourd’hui : 0:00 trois clics · 0:02 un dialogue · 0:03 la bourse · 0:04 un refus · 0:05 un clic"], ["audio/ui-new.mp3", "Proposé : le même ordre"]],
+      rec: "Pas de recommandation, c’est une question de goût.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Garder les sons d’aujourd’hui"], recIdx: -1, src: "`art-lab/audio/sfx/places.sfx.mjs` (`ui-click`, `ui-open`, `ui-coin`), `src/audio/hooks.ts`" },
+    { id: "S2-PAS", tag: "à l’oreille", title: "Les pas",
+      ctx: "Une marche seule, sans l’ambiance. Aujourd’hui, le pas est presque aussi fort que le lieu (−25,6 contre −24,4 LUFS). Proposé : le talon puis la pointe, quatre prises, jamais deux fois la même de suite, 5 dB sous le lieu. Sur les pavés de la ville, du parvis et de la halle, le cuir claque ; sur la terre des lices (et sur la neige), le gravier crisse.",
+      clips: [["audio/steps-today.mp3", "Aujourd’hui : une marche, 0:06"], ["audio/steps-stone.mp3", "Proposé : sur les pavés, 0:06"], ["audio/steps-earth.mp3", "Proposé : sur la terre des lices, 0:06"]],
+      rec: "Pas de recommandation, c’est une question de goût. Une note peut demander les pas plus forts ou plus doux.",
+      opts: ["Bonne direction", "À reprendre (en note)", "Garder les pas d’aujourd’hui"], recIdx: -1, src: "`src/audio/places.ts` (`step`), `src/audio/score.ts` (`STEP_LEVEL`)" },
+    { id: "S2-MELANGE", tag: "à l’oreille", title: "Le tout, avec la musique",
+      ctx: "La page entière, comme le joueur l’entend : la ville le matin (le morceau « matin »), puis la place de la halle la nuit (la valse). La musique reste 4 à 5 dB au-dessus de l’ambiance, comme aujourd’hui (E-NIVEAU « Bien dosée »).",
+      clips: [["audio/mix-today.mp3", "Aujourd’hui : la ville le matin, puis la halle la nuit (0:14), 0:29"], ["audio/mix-new.mp3", "Proposé : le même ordre, 0:29"]],
+      rec: "Garder l’équilibre d’aujourd’hui : seule la matière de l’ambiance change, pas sa place sous la musique.",
+      opts: ["Bien dosé", "L’ambiance plus en avant", "L’ambiance plus en retrait"], recIdx: 0, src: "`src/audio/score.ts` (`LEVEL`, `MIX`), `tools/audio/analyse.mjs`" },
+  ]},
+  { id: "suite", title: "Le poids, la foule, la suite", sub: "Trois cartes.", fam: "var(--rec)", items: [
+    { id: "S2-POIDS", tag: "technique", title: "Où vivent ces sons",
+      ctx: "Après S3, il reste 0,29 Mio sous les 12 Mio par format de SA-17 (11,71 Mio en Opus), alors que le plan d’audit prévoyait 3 Mo pour S2. La proposition calcule dans la page, au premier besoin, tout ce qui se calcule en quelques millisecondes : la pluie, le feu, le tonnerre, les oiseaux, les grillons, la chouette, l’enclume, l’entraînement, l’écurie, le bateau, les pas, et le vent, l’eau, la fontaine et les fanions joués en direct. Cela coûte 0 octet. Ne sont cuits que les sons qui demandent les instruments du groupe ou les voix : l’interface (35 Ko) et le murmure de la ville (75 Ko). Le total serait de 121 Ko en Opus et 132 Ko en AAC, soit 11,83 Mio en Opus, sous les 12.",
+      rec: "Calculer dans la page et cuire seulement l’interface et le murmure : ça tient dans SA-17 et laisse 0,15 Mio de marge.",
+      opts: ["Calculer dans la page, cuire l’interface et le murmure (121 Ko)", "Tout cuire et relever le plafond de SA-17 (en note : à combien)"], recIdx: 0, src: "SA-17 « 12 Mo au plus », `tools/audio/validate.mjs`, note de passation du lot S3" },
+    { id: "S2-FOULE", tag: "SA-11c", title: "Des enregistrements CC0 en complément ?",
+      ctx: "Tu as décidé « Code d’abord, CC0 en complément » (SA-11c), puis « Bonne direction (par le code) » pour la foule de l’arène (S3-FOULE). Les foules des lieux sont du code : le murmure de l’arène, repris plus loin pour le parvis et la halle, et un murmure de seize voix pour la ville et les lices. Des enregistrements CC0 pourraient compléter ce que le code rend mal (une foule proche, un cheval). Il faudrait alors les chercher et les télécharger avec ton accord, et ils pèseraient sur SA-17.",
+      rec: "Le code suffit tant que les extraits te conviennent. Si une foule ou un bruit sonne faux, note lequel : je chercherai des enregistrements CC0 pour celui-là seulement.",
+      opts: ["Le code suffit", "Chercher des enregistrements CC0 (en note : pour quoi)"], recIdx: 0, src: "SA-11 « Code + CC0 enregistré », SA-11c (Passe SN4), S3-FOULE (Passe SN16), SA-13" },
+    { id: "S2-SUITE", tag: "la suite", title: "Ce qui vient après",
+      ctx: "L’étape suivante appliquerait ce que tu valides dans la version 2 : les recettes et la table des lieux dans le moteur, l’interface et le murmure cuits sous manifeste avec ton approbation mot pour mot, les preuves (`analyse --check`, `engine-proof`, `hooks-proof`, `page-proof`, `decode-proof`), puis l’essai en jeu sur une fiche d’essai.",
+      rec: "Cuire et brancher ce que tu valides, puis l’essai en jeu, et reprendre à part ce que tu notes.",
+      opts: ["Cuire et brancher dans la version 2 ce qui est validé", "Reprendre d’abord ce que je note"], recIdx: 0, src: "SA-8 « Elle bouge : cuit, avec manifeste », SA-16, lot S2 du plan d’audit" },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function richKids(s) { return s.split('`').map((p, i) => (i % 2 ? el('code', {}, p) : p)); }
+function rich(tag, cls, s) { return el(tag, { class: cls }, ...richKids(s)); }
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(rich('p', 'ctx', it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.clips) {
+    const grid = el('div', { class: 'clips' });
+    for (const [src, cap, svg] of it.clips) {
+      const a = el('audio', { controls: '', preload: 'metadata', src, 'aria-label': cap });
+      const msg = el('p', { class: 'src', hidden: '' }, 'Ce lecteur n’a pas pu charger le son : préviens-moi dans la conversation.');
+      a.addEventListener('error', () => { msg.hidden = false; });
+      const tl = svg ? el('img', { class: 'spec', src: svg, alt: 'Les trois couches au fil de l’extrait, et dessous les séquences de l’adversaire, les charges lourdes et l’étourdissement', loading: 'lazy' }) : null;
+      grid.append(el('figure', { class: 'clip' }, el('figcaption', {}, cap), a, tl, msg));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), ...richKids(it.rec)));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', ...richKids(it.src)));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

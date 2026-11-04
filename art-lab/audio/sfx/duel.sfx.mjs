@@ -10,7 +10,7 @@ import { loudness } from '../../../tools/audio/measure.mjs';
 const D2 = 38, A2 = 45, D3 = 50, E3 = 52, A3 = 57, D4 = 62, E4 = 64, G4 = 67, A4 = 69, D5 = 74, E5 = 76, G5 = 79, A5 = 81, D6 = 86, A6 = 93, D7 = 98;
 
 /** a cue being written: a stereo buffer, a send to a small room, its own draws */
-class Cue {
+export class Cue {
   constructor(secs, seed) { const n = Math.round(secs * SR); this.n = n; this.L = new Float32Array(n); this.R = new Float32Array(n); this.sL = new Float32Array(n); this.sR = new Float32Array(n); this.r = new Rand(seed); }
   /** a mono sound at `t`: panned, cut after `dur` with a release, read at another rate (its pitch with it) */
   put(x, t, { g = 1, pan = 0, send = 0.12, rate = 1, dur, rel = 0.05 } = {}) {
@@ -83,7 +83,7 @@ const TONE = {
   boost: [['hp', 70], ['low', 150, 0.7, -4], ['peak', 2200, 0.8, 2]],
   ko: [['hp', 40], ['low', 120, 0.7, -2]],
 };
-const kit = (c, kind, t, v, o = {}) => c.put(drum(kind, v, o.take ?? 0), t, o);
+export const kit = (c, kind, t, v, o = {}) => c.put(drum(kind, v, o.take ?? 0), t, o);
 
 /** each recipe's sound: [family, length (s), takes, writer]; a take is the same gesture with the kit's other draws and the hand's small differences */
 export const CUES = {

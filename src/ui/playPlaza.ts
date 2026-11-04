@@ -12,6 +12,7 @@ import { progressOn } from './loading';
 import { preloadPortraits } from './portraits';
 import { ExitMarkers } from './exits';
 import { ANNOUNCED } from '../audio/plan';
+import { parseWeather } from '../atmosphere/Weather';
 
 /** The version 2's open places (lot V5, journal Passe V5): the Arena Forecourt, the Training Ground and the Festival Square (in place of
  *  Lantern Row's mock-up), each a square of src/world/Plazas.ts walked across in the slot's day state; the people there at this hour stand
@@ -57,7 +58,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   frame();
   app.start();
   // the version 2's sound (lot V8): the square's ambience and the day state's music, after the person's first gesture
-  void import('../audio/Sound').then((m) => m.sound().setScene(kind, look, !!playerMatch(st) && st.slot === 'afternoon', st.seed));
+  void import('../audio/Sound').then((m) => m.sound().setScene(kind, look, !!playerMatch(st) && st.slot === 'afternoon', st.seed, {}, parseWeather(q)));
   // the casting's approved faces (journal Passe CA5)
   await Promise.all([fontsReady(), preloadPortraits((await import('../characters/PlazaCast')).plazaFaces())]);
   let n = 0;

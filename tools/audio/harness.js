@@ -30,7 +30,8 @@
     try { if (job.keep) sessionStorage.setItem(job.keep[0], job.keep[1]); else sessionStorage.clear(); localStorage.clear(); } catch { /* the page has an origin: it does not throw */ }
     const s = new AUD.Sound();
     Object.assign(s.settings, job.settings || {});
-    if (job.scene) s.setScene(job.scene.place, job.scene.look, !!job.scene.bout, job.scene.seed ?? 1842, job.scene.music ?? {});
+    // the scene's weather since lot S2 (an engine before it takes no sixth argument and ignores it)
+    if (job.scene) s.setScene(job.scene.place, job.scene.look, !!job.scene.bout, job.scene.seed ?? 1842, job.scene.music ?? {}, job.scene.weather ?? null);
     await s.unlock();
     await s.ready?.();
     const buses = s.buses ?? { music: s.musicBus, ambience: s.fxBus, fx: s.fxBus };

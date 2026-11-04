@@ -10,6 +10,7 @@ import { preloadPortraits } from './portraits';
 import { ExitMarkers } from './exits';
 import { WALK } from '../architecture/StreetComposer';
 import { V2_EXITS } from '../simulation/v2places';
+import { parseWeather } from '../atmosphere/Weather';
 
 /** The city in the play mode (journal Passes L3 / L4): the frozen Merchant District as it is, its day state, forge, crowd and weather taken
  *  from the game state (choice P4: game layers only, no geometry, framing, cast or look change), and the play mode's interface over it.
@@ -28,6 +29,8 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   // a version 2 game's town flies the tournament's heraldry (journal Passe VP3) and sees the arena over the far city (journal Passe VP8); today's
   // game keeps its banners and its cathedral
   if (isV2(st)) { q.set('heraldry', 'tournament'); q.set('skyline', 'arena'); }
+  // and takes the address's weather as the squares do (lot S2: heard as well as seen); today's game keeps only the day's rain
+  if (isV2(st)) for (const k of ['rain', 'snow', 'storm', 'wind']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   // arriving by a way in (journal Passe VP5): from the forecourt at the quay's east end past the guards, from the festival at its west end
   const arrive = isV2(st) ? b.params.get('arrive') : null;
   if (arrive === 'forecourt' && !b.params.has('player')) q.set('player', `${WALK.x1 - 1.4},0`);
@@ -86,7 +89,7 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   const frame = () => { if (ui.modal) app.actors.keys.clear(); ui.update(); markers?.update(app.rig.camera, app.actors.player.pos, taken(), leave); requestAnimationFrame(frame); };
   app.start();
   // the version 2's sound (lot V8): the district's ambience and its piece of the band (journal Passe SN10: a new game's first page opens on the title); today's game makes none
-  if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed, { opening: b.params.has('new') }));
+  if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed, { opening: b.params.has('new') }, parseWeather(q)));
   frame();
   // a version 2 game: the casting's approved faces (journal Passe CA3)
   await Promise.all([fontsReady(), preloadPortraits(isV2(st) ? (await import('../characters/PlazaCast')).plazaFaces() : undefined)]);

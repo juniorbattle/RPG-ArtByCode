@@ -484,6 +484,102 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Deux étapes d'une chaîne qui lisent deux boîtes différentes se trompent dans la marge entre les deux : ce qu'une étape nettoie doit couvrir ce que la suivante lit, et l'hypothèse « le coin est le fond » se vérifie là où elle est faite.
 - Un contrôle d'export (alpha binaire, anneau transparent) ne voit pas un fond devenu opaque et connexe à la figure : il faut une mesure de forme (remplissage, arête droite) et un regard sur fond contrasté.
 
+## Passe SN18 — Lot S2, fiche d'écoute : les lieux, la météo, l'interface et les pas (2026-11-04)
+
+### Demande
+- Le lot S2, confié par la séance mère « à lancer une fois le lot S3 fusionné » : la météo (pluie, neige, orage, vent, et la pluie du jour pluvieux), les ambiances des lieux (`ambienceOf` : ville, parvis, lices, place de la halle) et les sons définitifs de l'interface (`click`, `open`, `coin`, `denied`), plus les pas que le plan d'audit range dans S2. La foule par le code d'abord (SA-11c « Code d’abord, CC0 en complément »), les instruments, les tonalités et la couleur du groupe (F-SUITE), une fiche d'écoute avec des rendus du vrai moteur, puis n'appliquer que ce qui est décidé.
+- Vérifié avant de commencer : le premier appel de cette séance a trouvé S3 non fusionné (`claude/sound-combats` au commit de `main`, la séance S3 au travail) et s'est arrêté. La séance S3 a ensuite écrit que S3 était clos sur `main` (`0e2c0ab`, Passe SN17, S3E-SUITE « Lancer S2 ») ; la branche a été mise à jour sur `0e2c0ab` avant tout travail.
+
+### Ce qu'il y avait
+- Les ambiances de l'audit : dans chaque lieu, une nappe de vent, d'eau et de « foule » en bruit filtré, des appels d'oscillateurs (marteau, oiseaux, grillons, cri, luth). La météo se voit et ne s'entend pas. L'interface et les pas sont les recettes du lot S0.
+- Mesuré sur `main` (`render.mjs`, `analyse.mjs --check`) : les ambiances à −24,2 LUFS de jour et −25,3 la nuit, la musique à −20,0 / −20,2, soit 4,0 à 5,2 dB d'écart ; toutes les vérifications passent.
+- **Le poids** : 12 280 918 octets en Opus après S3, soit 301 994 octets (0,29 Mio) sous les 12 Mio par format de SA-17, alors que le plan d'audit prévoyait 3 Mo pour S2 (note de passation de S3).
+
+### Fait — [OK], une proposition, rien dans `main`
+- **Ce qui se calcule dans la page** : `src/audio/places.ts`, pur. Chaque recette prend sa graine (mulberry32, jamais `Math.random`) et rend ses échantillons au premier besoin, à la fréquence du contexte. On y trouve :
+  - le crépitement de la pluie (gouttes sur la pierre, bulles dans les flaques), en boucle circulaire de 7 s ;
+  - le feu des braseros (claquements, crépitement fin, souffle des flammes), en boucle de 9 s ;
+  - le tonnerre en trois prises (proche, avec craquement ; moyen ; lointain), dont le roulement est écrit au quart de la fréquence ;
+  - trois chants d'oiseaux (moineaux ; un merle sur ré, mi, sol, la, deux octaves au-dessus ; hirondelles), le grillon, la chouette ;
+  - l'enclume, l'entraînement (bois, acier, mannequin), l'écurie, les bois du bateau ;
+  - les pas sur les pavés et sur la terre.
+
+  Rien de cela n'est cuit : 0 octet.
+- **Ce qui est cuit, seulement dans la proposition** : `art-lab/audio/sfx/places.sfx.mjs`, avec les instruments du groupe et les voix de la foule de S3.
+  - Le clic : une lame de marimba (la), trois touchers.
+  - L'ouverture : le vibraphone à la quinte (ré, la) sur le piano électrique.
+  - La bourse : des pièces et un éclat de vibraphone (mi).
+  - Le murmure de la ville et des lices : seize voix plus proches, l'air d'une rue, boucle de 12 s.
+  - Le refus reprend le son du duel de S3, sans fichier neuf.
+
+  Encodés comme une cuisson : 120 608 octets en Opus, 132 472 en AAC. Le total en Opus serait de 12 401 526 octets (11,83 Mio).
+- **La table des lieux** (`ambienceOf`, `src/audio/score.ts`) lit la météo de la page (`WeatherNow`).
+  - Des nappes jouées en direct, avec des rafales tirées des nombres du moteur : le vent (et son sifflement quand il forcit), l'eau du canal en vagues, la fontaine, le sifflement de la pluie, les fanions.
+  - Des boucles : le murmure, la foule de l'arène reprise plus loin pour le parvis et la halle, la pluie, le feu.
+  - Des appels.
+  - La pluie fait taire les oiseaux et baisser la foule. La neige étouffe (un passe-bas) et fait crisser les pas. L'orage tonne après chaque éclair. Le vent change le niveau du vent et des fanions.
+  - Les niveaux (`BED_LEVEL`, `LOOP_LEVEL`, `CALL_LEVEL`, `STEP_LEVEL`, `UI_LEVEL`, `LEVEL`) sont posés sur la sortie du moteur : chaque ambiance à −24,4 LUFS de jour et −25,2 la nuit.
+- **Le moteur** (`src/audio/Sound.ts`) :
+  - les nappes, les boucles et les appels ;
+  - les sons calculés gardés pour la page (`made`) ;
+  - les prises cuites décodées une fois (`takesOf`) ; la banque du duel ne charge plus que ses familles ;
+  - l'interface jouée par les sons cuits, chargés au premier geste, avec repli sur les recettes de S0 ;
+  - les pas selon le sol du lieu ;
+  - le tonnerre sur l'événement `cdt-flash`, avec un délai selon la force de l'éclair (`thunderOf`).
+- **Les branchements** :
+  - `src/atmosphere/Weather.ts` envoie `cdt-flash` à chaque éclair, sans tirage ni changement d'image ;
+  - `playPlaza` et `playTown` passent la météo de la page au son ; la ville d'une partie v2 prend aussi la météo de l'adresse, comme les places ;
+  - `hooks.ts` joue le refus quand le jeu refuse une action ;
+  - `tools/audio/harness.js` passe la météo d'une scène.
+- **Les outils** : `tools/audio/places-listen.mjs` et `places-jobs.page.js`.
+  - Ils copient `src/` dans un dossier à part, y encodent les sons proposés et les entrées du catalogue, et rendent les extraits depuis cette copie puis depuis `main` figé.
+  - Ils écrivent les MP3 de la fiche.
+  - Rien n'entre dans `src/audio/baked`.
+- `crowd.sfx.mjs` et `duel.sfx.mjs` exportent les fonctions que le murmure et l'interface reprennent. Leurs rendus ne changent pas : `bake-sfx.mjs --check`, voir Preuves.
+
+### Mesures
+- `analyse.mjs --check` sur le rendu complet de la proposition : tout passe.
+  - Les pages avec leur musique sont entre −18,2 et −18,9 LUFS.
+  - La musique est 4,2 à 5,1 dB au-dessus de l'ambiance.
+  - Les répétitions des nappes sont sous 0,1.
+  - Le clic, l'ouverture et la bourse sont à 4,6 / 4,3 / 4,8 dB au-dessus de la foule de l'arène, contre 6,9 / 7,0 / 6,9 aujourd'hui. Au premier rendu, l'ouverture et la bourse échouaient (2,0 et 2,7 dB) : la résonance du vibraphone allongeait le son et baissait sa moyenne. Les queues ont été raccourcies, ce qui a aussi allégé les fichiers de 25 Ko.
+- Les sons d'interface sont au niveau d'aujourd'hui : clic −23,6 LUFS contre −24,6, ouverture −21,4 contre −21,8, bourse −19,9 contre −17,9, refus −28,2 contre −27,3.
+- Une marche de 18 pas fait −30,2 LUFS sur les pavés et −30,3 sur la terre, contre −25,6 aujourd'hui, presque au niveau du lieu.
+- Les extraits de météo : la pluie du jour pluvieux −25,6 LUFS, l'orage avec ses quatre éclairs −20,8, la neige −26,6, le coup de vent −21,7.
+- Le coût de chaque son calculé au premier usage, dans Chrome headless sur cette machine :
+  - moins de 7 ms pour les pas, les oiseaux, les grillons, l'enclume, l'entraînement, l'écurie et le bateau ;
+  - 16 ms pour la chouette, 17 à 23 ms pour le feu ;
+  - 17 à 41 ms pour chaque tonnerre (faits en arrière-plan, un à la fois, pendant l'orage) ;
+  - 43 à 47 ms pour la pluie (au début d'une page sous la pluie).
+
+### La fiche
+- Page privée https://claude.ai/artifact/FwMeKdEirAksUFBe3pd5eq, source `briefs/fiche-son-lieux.html`. Les 24 extraits MP3 sont publiés avec la page, pas dans le dépôt.
+- Quatorze cartes :
+  - à l'oreille, sans recommandation : S2-VILLE, S2-PARVIS, S2-LICES, S2-HALLE, S2-PLUIE, S2-ORAGE, S2-NEIGE, S2-VENT, S2-INTERFACE, S2-PAS ;
+  - S2-MELANGE, recommandé « Bien dosé » ;
+  - S2-POIDS, recommandé « Calculer dans la page, cuire l’interface et le murmure (121 Ko) » ;
+  - S2-FOULE, recommandé « Le code suffit » ;
+  - S2-SUITE, recommandé « Cuire et brancher dans la version 2 ce qui est validé ».
+- `decisions` relu vide à la publication. Vérifiée en local à 1 200 et 390 px avec le squelette du service reproduit : 24 lecteurs chargés, aucun débordement.
+
+### Limites
+- **Personne n'a écouté.** Je n'ai pas d'oreille : les niveaux, les crêtes et les spectrogrammes (vus sur la ville, l'orage, l'interface et les pas) attrapent les défauts grossiers, pas la justesse d'une pluie ou d'une foule.
+- La proposition est sur la branche, pas dans `main`. La fusion attend la fiche : n'appliquer que ce qui est décidé.
+- Pas encore faits, et à faire avec l'application : `hooks-proof` et `page-proof` sur un serveur DEV, `decode-proof` sur les fichiers cuits, un test des recettes (déterminisme, boucles circulaires, aucune valeur non finie) et de la table.
+- Les coûts de la pluie, du tonnerre, du feu et de la chouette peuvent coûter une image : à étaler si la proposition est validée.
+
+### Où reprendre
+- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot, n'agir que sur ce qui est décidé. Si S2-SUITE est validé :
+  - cuire l'interface et le murmure sous manifeste (`bake-sfx.mjs`, familles `interface` et `lieux`) ;
+  - étaler les calculs coûteux ;
+  - écrire les tests ;
+  - faire les preuves : `analyse --check`, `engine-proof`, `decode-proof`, `hooks-proof`, `page-proof` ;
+  - fusionner, puis donner l'essai en jeu.
+
+### Pensée
+- Quand la marge ne permet plus de cuire, le partage se fait par ce qui demande vraiment le calcul hors ligne. Les instruments du groupe et les voix se cuisent. La pluie, le feu, un oiseau ou une enclume se calculent dans la page en quelques millisecondes, comme les textures.
+- Une mesure de niveau moyennée sur la durée d'un son pénalise sa queue : un son d'interface qui résonne longtemps se lit plus faible qu'il ne s'entend. On raccourcit la queue plutôt que de monter le son.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -689,7 +785,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN12)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12). **S3 en cours** : la fiche des couches est relue (Passe SN14). Les morceaux tiennent, la règle F est appliquée aux trois combats (la mélodie à 0,45 pendant la séquence adverse, la tension à 0,35 au repos, chaque changement sur une mesure), et la double demande est corrigée. **S3 est clos** (Passes SN13 à SN17) : la règle F des couches ; les sons du groupe pour chaque recette du duel et sa lecture ; la foule en code à la place du grondement ; les baisses gardées ; tout est en production dans la version 2 (S3E-PROD « Confirmé : en production dans la version 2 »). **S2 maintenant** (S3E-SUITE « Lancer S2 »), dans sa propre séance. **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 après l'essai du lot S4.
+**6f. Son (Passes SN1 à SN18)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12). **S3 en cours** : la fiche des couches est relue (Passe SN14). Les morceaux tiennent, la règle F est appliquée aux trois combats (la mélodie à 0,45 pendant la séquence adverse, la tension à 0,35 au repos, chaque changement sur une mesure), et la double demande est corrigée. **S3 est clos** (Passes SN13 à SN17) : la règle F des couches ; les sons du groupe pour chaque recette du duel et sa lecture ; la foule en code à la place du grondement ; les baisses gardées ; tout est en production dans la version 2 (S3E-PROD « Confirmé : en production dans la version 2 »). **S2 en cours** (S3E-SUITE « Lancer S2 ») : la proposition est sur sa branche (Passe SN18 : les lieux, la météo, l’interface et les pas ; calculés dans la page, sauf l’interface et le murmure, cuits, 121 Ko), la fiche d’écoute https://claude.ai/artifact/FwMeKdEirAksUFBe3pd5eq attend l’opérateur ; rien n’est fusionné avant ses choix. **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 après l'essai du lot S4.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 
