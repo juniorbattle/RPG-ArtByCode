@@ -50,6 +50,11 @@ for (const p of PLACES.slice(0, 4)) for (const l of LOOKS) jobs.push({ name: `mu
 for (const piece of ['duel', 'rival', 'finale']) jobs.push({ name: `mus-arena-${piece}`, secs: 60, scene: { place: 'arena', look: 'night', music: { bout: piece } }, stem: 'music' });
 for (const p of PLACES.slice(0, 4)) for (const l of LOOKS) jobs.push({ name: `mix-${p}-${l}`, secs: 45, scene: { place: p, look: l } });
 jobs.push({ name: 'mix-forecourt-midday-bout', secs: 45, scene: { place: 'forecourt', look: 'midday', bout: true } });
+// the weather over a page (lot S2, journal Passe SN19): the rainy day at midday, a storm at night with four flashes, the storm at full volume for the ceiling
+const STORM = { place: 'district', look: 'night', weather: { rain: 0.85, snow: 0, storm: 1, wind: 2 } }, FLASHES = [{ t: 3, level: 1.3 }, { t: 12, level: 0.55 }, { t: 21, level: 0.95 }, { t: 30, level: 0.3 }];
+jobs.push({ name: 'wx-rain-district-midday', secs: 45, scene: { place: 'district', look: 'midday', weather: { rain: 0.6, snow: 0, storm: 0, wind: 1 } }, settle: true });
+jobs.push({ name: 'wx-storm-district-night', secs: 40, scene: STORM, flashes: FLASHES, settle: true });
+jobs.push({ name: 'wx-storm-vol1', secs: 40, scene: STORM, flashes: FLASHES, settings: { volume: 1 }, settle: true });
 jobs.push({ name: 'duel-marek-night', secs: 150, scene: { place: 'arena', look: 'night' }, events: duels.marek.evs, settle: true });
 jobs.push({ name: 'duel-vessa-midday', secs: 120, scene: { place: 'arena', look: 'midday', music: { bout: 'rival' } }, events: duels.vessa.evs, settle: true });
 // the end of a duel at full volume: its densest blows and the K.O., for the ceiling

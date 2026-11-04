@@ -69,90 +69,56 @@ export const STEP_EVERY = 1;
 
 // ---------------------------------------------------------------------------------------------------------------- ambiences
 
+/** a bed of filtered noise (crowd, wind, water) and sparse calls (birds, crickets, cheers): the places' sound of lots V8 and S0, which the operator kept on the
+ *  sheet of lot S2 (briefs/fiche-son-lieux.html, journal Passe SN19): S2-VILLE, S2-PARVIS, S2-LICES and S2-HALLE « Garder l’ambiance d’aujourd’hui » */
+export interface Bed { kind: 'crowd' | 'wind' | 'water' | 'roar'; freq: number; q: number; gain: number; sway: number }
+export interface Calls { kind: 'bird' | 'cricket' | 'cheer' | 'hammer' | 'lute'; every: [number, number]; gain: number }
+/** a call's place in the stereo field: how far it may wander to each side */
+export const CALL_PAN: Record<Calls['kind'], number> = { bird: 0.8, cricket: 0.7, cheer: 0.25, hammer: 0.45, lute: 0.35 };
 /** the page's weather as the sound reads it (src/atmosphere/Weather.ts's parameters: rain, snow and storm 0..1, wind 0..3 with 1 as authored) */
 export interface WeatherNow { rain: number; snow: number; storm: number; wind: number }
-/** a bed the engine plays live from its noise (lot S2, journal Passe SN18): the wind and its gusts, the canal lapping at the quay, the forecourt's fountain, the
- *  rain's hiss, the pennants flapping; `roar` is the arena's rumble of lot V8, kept for a page whose crowd cannot load. `gust` how far the wind's level moves */
-export type BedKind = 'wind' | 'water' | 'fountain' | 'rain' | 'flags' | 'roar';
-export interface Bed { kind: BedKind; gain: number; gust?: number }
-/** a looping buffer: the town's and the lists' murmur and the arena's crowd (baked), the rain's patter and the braziers' fire (computed: src/audio/places.ts);
- *  `tone` a low-pass (Hz) that puts it farther */
-export type LoopId = 'murmur' | 'crowd-bed' | 'patter' | 'fire';
-export interface Loop { id: LoopId; gain: number; tone?: number }
-/** a sparse call of a place: computed (src/audio/places.ts) or one of the arena's crowd reactions heard from outside */
-export type CallId = 'bird' | 'cricket' | 'owl' | 'anvil' | 'clash' | 'stable' | 'creak' | 'crowd-cheer' | 'crowd-oh';
-export interface Calls { kind: CallId; every: [number, number]; gain: number; takes?: number[]; tone?: number }
-/** a call's place in the stereo field: how far it may wander to each side (the forge stands right of the quay's frame, the boat left) */
-export const CALL_PAN: Record<CallId, number> = { bird: 0.8, cricket: 0.7, owl: 0.6, anvil: 0.35, clash: 0.45, stable: 0.5, creak: 0.5, 'crowd-cheer': 0.25, 'crowd-oh': 0.25 };
-/** the calls tuned on the motif's notes (the blackbird): never pitched */
-export const TUNED_CALLS: ReadonlySet<CallId> = new Set<CallId>(['bird']);
-/** a place's sound: its beds, its loops, its calls, its level (dB), the snow's muffle (0..1), thunder after the flashes, the ground under the steps */
-export interface Ambience { beds: Bed[]; loops: Loop[]; calls: Calls[]; trim: number; muffle: number; thunder: boolean; surface: 'stone' | 'earth' }
+/** the weather heard over a place (lot S2): the rain's hiss and patter (S2-PLUIE « Bonne direction »), the thunder after each flash (S2-ORAGE « Bonne direction »,
+ *  without gusts: « Sans rafales »); the snow and the wind change nothing (S2-NEIGE « Pas de changement sous la neige », S2-VENT « Pas de son de vent ») */
+export interface WeatherSound { rain: number; thunder: boolean }
+/** a place's sound: its beds and calls, its level (dB), how far back it stands (the share of its calls' send to the room, so that its air goes back with it),
+ *  the weather over it, the ground under the steps */
+export interface Ambience { beds: Bed[]; calls: Calls[]; trim: number; back: number; weather: WeatherSound | null; surface: 'stone' | 'earth' }
+/** the places 3 dB further back under their music, their air with them: S2-MELANGE « L’ambiance plus en retrait », then « −3 dB, nettement » (journal Passe SN19);
+ *  the arena's crowd stays where lot S3 put it */
+export const PLACES_BACK = -3;
 
-/** the wind's level for the weather's wind (1 as authored): half at rest, more than twice at a gale */
-export const windGain = (wind: number): number => Math.max(0.3, Math.min(2.6, 0.45 + 0.55 * wind ** 1.15));
-/** each place's wind: the lists along the rampart catch it, the squares between houses less */
-const WIND_AT: Record<SoundPlace, number> = { district: 0.8, forecourt: 0.7, training: 1.2, festival: 0.6, arena: 0.5 };
+const CROWD = (g: number): Bed => ({ kind: 'crowd', freq: 520, q: 0.7, gain: g, sway: 0.3 });
+const WIND = (g: number): Bed => ({ kind: 'wind', freq: 300, q: 0.4, gain: g, sway: 0.6 });
+/** from this much rain the birds and the crickets fall silent */
+export const RAIN_SILENCES = 0.25;
+/** the crowd's share still out under the rain: people take cover (« le murmure baisse de moitié » at the rainy day's 0.6) */
+export const outInRain = (rain: number): number => 1 - Math.min(0.7, rain * 0.9);
 
-/** The places' sound, by the hour and the weather (lot S2, journal Passe SN18): proposals for the operator's ear. The town on its canal: the water at the quay,
- *  the townsfolk's murmur, the forge's anvil (lit day and night, J4), the moored boat's timbers, the bunting by day. The forecourt: its fountain, the crowd
- *  gathering at the arena's gate, its braziers, the arena's clamour on the afternoons of the bouts. The lists: the wind along the rampart, the practice, the
- *  stables, a few onlookers, a brazier. The hall's square: the festival's crowd, its pennants by day. Birds by day (the morning's blackbird on the motif's
- *  notes, the end of the day's swallows), crickets and an owl at night. The rain hisses and patters and sends people and birds under cover, the snow
- *  muffles, the storm thunders after its flashes, the wind gusts. */
 export function ambienceOf(place: SoundPlace, look: Look, boutDay = false, w: WeatherNow | null = null): Ambience {
-  const night = look === 'night', rain = w?.rain ?? 0, snow = w?.snow ?? 0, wind = w?.wind ?? 1, storm = w?.storm ?? 0;
-  const beds: Bed[] = [], loops: Loop[] = [], calls: Calls[] = [];
-  // under the rain people take cover; in the snow fewer are out
-  const out = (1 - Math.min(0.7, rain * 0.9)) * (1 - 0.3 * snow);
-  if (place === 'arena') return { beds: [{ kind: 'roar', gain: 1 }], loops: [], calls: [], trim: LEVEL.arena[look], muffle: 0, thunder: false, surface: 'stone' };
-  beds.push({ kind: 'wind', gain: WIND_AT[place] * windGain(wind), gust: Math.min(1, 0.35 + 0.22 * wind) });
-  if (place === 'district') {
-    beds.push({ kind: 'water', gain: 1 });
-    loops.push({ id: 'murmur', gain: (night ? 0.3 : 1) * out });
-    calls.push({ kind: 'anvil', every: night ? [8, 18] : [4, 10], gain: 1 }, { kind: 'creak', every: [6, 15], gain: 0.8 });
-    if (!night) beds.push({ kind: 'flags', gain: 0.3 * wind });
-  }
-  if (place === 'forecourt') {
-    beds.push({ kind: 'fountain', gain: 1 });
-    loops.push({ id: 'crowd-bed', gain: (night ? 0.35 : boutDay ? 1.3 : 1) * out, tone: 2600 }, { id: 'fire', gain: 0.6 });
-    if (boutDay && !night) calls.push({ kind: 'crowd-cheer', every: [14, 28], gain: 0.55, tone: 1800 }, { kind: 'crowd-oh', every: [10, 22], gain: 0.5, tone: 1600 });
-  }
-  if (place === 'training') {
-    if (!night) loops.push({ id: 'murmur', gain: 0.4 * out, tone: 3200 });
-    loops.push({ id: 'fire', gain: 0.45 });
-    if (!night) calls.push({ kind: 'clash', every: [2.5, 6], gain: 1 });
-    calls.push({ kind: 'stable', every: [8, 18], gain: 0.8 });
-  }
-  if (place === 'festival') {
-    loops.push({ id: 'crowd-bed', gain: (night ? 1.1 : 0.9) * out, tone: 3000 });
-    if (!night) beds.push({ kind: 'flags', gain: 0.8 * wind });
-  }
-  // the birds by day, the crickets and an owl at night; the rain silences them, the snow thins them
-  if (!night && rain < 0.25) {
-    const b = (1 - 0.7 * snow);
-    if (look === 'morning') calls.push({ kind: 'bird', takes: [0, 1], every: [2.5, 7], gain: b });
-    else if (look === 'midday') calls.push({ kind: 'bird', takes: [0], every: [5, 12], gain: 0.8 * b });
-    else calls.push({ kind: 'bird', takes: [0, 2], every: [3.5, 9], gain: 0.9 * b });
-  }
-  if (night && rain < 0.25 && snow < 0.2) calls.push({ kind: 'cricket', every: [1.2, 3.5], gain: 1 });
-  if (night && rain < 0.4 && (place === 'district' || place === 'training')) calls.push({ kind: 'owl', every: [25, 55], gain: 1 });
-  // the arena's clamour from afar on a bout's afternoon (the forecourt has its own, nearer)
-  if (boutDay && !night && place !== 'forecourt') calls.push({ kind: 'crowd-cheer', every: [16, 32], gain: 0.35, tone: 1200 });
-  if (rain > 0) { beds.push({ kind: 'rain', gain: rain }); loops.push({ id: 'patter', gain: rain }); }
-  return { beds, loops, calls: calls.filter((c) => c.gain > 0), trim: LEVEL[place][look], muffle: Math.min(1, snow), thunder: storm > 0, surface: place === 'training' || snow >= 0.5 ? 'earth' : 'stone' };
+  const night = look === 'night', beds: Bed[] = [], calls: Calls[] = [], rain = w?.rain ?? 0, storm = w?.storm ?? 0, out = outInRain(rain);
+  beds.push(WIND(night ? 0.05 : 0.03));
+  if (place === 'district') { beds.push({ kind: 'water', freq: 900, q: 0.5, gain: 0.05, sway: 0.4 }, CROWD((night ? 0.03 : 0.06) * out)); calls.push({ kind: 'hammer', every: [5, 11], gain: night ? 0 : 0.12 }); }
+  if (place === 'forecourt') beds.push(CROWD((night ? 0.04 : 0.09) * out), { kind: 'water', freq: 1400, q: 0.8, gain: 0.03, sway: 0.2 });
+  if (place === 'training') { beds.push(CROWD((night ? 0.04 : 0.08) * out)); if (!night) calls.push({ kind: 'hammer', every: [2.5, 6], gain: 0.07 }); }
+  if (place === 'festival') { beds.push(CROWD((night ? 0.1 : 0.08) * out)); calls.push({ kind: 'lute', every: [6, 14], gain: 0.06 }); }
+  if (place === 'arena') beds.push({ kind: 'roar', freq: 400, q: 0.5, gain: 0.12, sway: 0.5 });
+  if (rain < RAIN_SILENCES) calls.push(night ? { kind: 'cricket', every: [1.5, 4], gain: 0.03 } : { kind: 'bird', every: [3, 9], gain: look === 'morning' ? 0.05 : 0.03 });
+  if (boutDay && place !== 'arena' && !night) calls.push({ kind: 'cheer', every: [12, 25], gain: 0.06 });
+  const weather = place !== 'arena' && (rain > 0 || storm > 0) ? { rain, thunder: storm > 0 } : null;
+  const back = place === 'arena' ? 0 : PLACES_BACK;
+  return { beds, calls: calls.filter((c) => c.gain > 0), trim: LEVEL[place][look] + back, back: dbGain(back), weather, surface: place === 'training' ? 'earth' : 'stone' };
 }
-/** each part's weight inside a place's sound (linear, before the place's level): the live beds over the noise, the loops, the calls, the steps (by their
- *  ground), the thunder; set on the engine's output (tools/audio/render.mjs, lot S2) */
-export const BED_LEVEL: Record<BedKind, number> = { wind: 0.2, water: 0.3, fountain: 0.04, rain: 0.06, flags: 0.32, roar: 0.12 };
-export const LOOP_LEVEL: Record<LoopId, number> = { murmur: 1, 'crowd-bed': 0.8, patter: 0.26, fire: 0.5 };
-export const CALL_LEVEL: Record<CallId, number> = { bird: 0.08, cricket: 0.11, owl: 0.14, anvil: 0.12, clash: 0.14, stable: 0.2, creak: 0.12, 'crowd-cheer': 0.055, 'crowd-oh': 0.055 };
-/** the interface's sounds by the band, at today's loudness (lot S0's recipes, tools/audio/render.mjs: the click -24.6 LUFS at full volume, the dialog -21.8, the
- *  purse -17.9 heard 2 dB softer, the refused command as loud as the duel plays it) */
-export const UI_LEVEL: Partial<Record<Effect, number>> = { click: 0.48, open: 0.43, coin: 0.58, denied: 0.29 };
-/** the steps 5 dB under the place's sound (a walk on the setts -30 LUFS against -24.4; lot S0's steps were -25.6, nearly as loud as the place) */
+
+/** the weather's own level (dB, on the ambience's bus, the same in every place) and its parts': set on the engine's output for the sheet's rain (the town at midday)
+ *  and storm (the town at night), then 3 dB back with the places (S2-MELANGE) */
+export const WEATHER_TRIM = -4.6;
+export const RAIN_LEVEL = 0.06, PATTER_LEVEL = 0.26, THUNDER_LEVEL = 0.65;
+/** the steps 5 dB under a place's sound as the sheet had them (a walk on the setts -30.2 LUFS; lot S0's steps were -25.6, nearly as loud as the place):
+ *  S2-PAS « Bonne direction » */
 export const STEP_LEVEL: Record<'stone' | 'earth', number> = { stone: 0.155, earth: 0.09 };
-export const THUNDER_LEVEL = 0.5;
+/** the interface's sounds by the band, at lot S0's loudness (tools/audio/render.mjs: the click -24.6 LUFS at full volume, the dialog -21.8, the purse -17.9
+ *  heard 2 dB softer, the refused command as loud as the duel plays it): S2-INTERFACE « Bonne direction » */
+export const UI_LEVEL: Partial<Record<Effect, number>> = { click: 0.48, open: 0.43, coin: 0.58, denied: 0.29 };
 /** the thunder after a flash (lot S2): its take by the flash's strength (near, middle, far), its delay (the distance: a second for every 340 m) and its level */
 export function thunderOf(level: number, draw: () => number): { take: number; delay: number; gain: number } {
   const take = level >= 0.75 ? 0 : level >= 0.4 ? 1 : 2, [lo, hi] = ([[0.25, 0.9], [1, 2.5], [2.5, 4.5]] as const)[take];
@@ -174,15 +140,16 @@ export const hz = (midi: number): number => 440 * Math.pow(2, (midi - 69) / 12);
 // ---------------------------------------------------------------------------------------------------------------- the mix
 
 /** The mix, measured (lot S0, journal Passe SN2; tools/audio/analyse.mjs): the fiche's targets at the default settings are -18 LUFS at the output and
- *  the music 3 to 6 dB over the ambience. Each bus in dB at the default settings, then each place's ambience (the beds were written at very
+ *  the music over the ambience, 3 to 6 dB until lot S2, 6 to 9 dB since (the places 3 dB further back: S2-MELANGE « L’ambiance plus en retrait », then
+ *  « −3 dB, nettement », journal Passe SN19). Each bus in dB at the default settings, then each place's ambience (the beds were written at very
  *  different levels). The volume comes after the limiter, so a louder setting never squeezes the mix harder. The band's level kept in play: E-NIVEAU « Bien dosée »
  *  (journal Passe SN11). */
 export const MIX = { ambience: 1.6, music: -1.6, fx: 9.6, ui: 9.6, reverb: 1.6 };
 export const LEVEL: Record<SoundPlace, Record<Look, number>> = {
-  district: { morning: -1.5, midday: -1.6, afternoon: -1.7, night: 0.7 },
-  forecourt: { morning: -0.3, midday: -0.2, afternoon: -0.3, night: 1.8 },
-  training: { morning: 2.6, midday: 2.6, afternoon: 3, night: 2.9 },
-  festival: { morning: 1.5, midday: 1.8, afternoon: 1.5, night: -0.3 },
+  district: { morning: 8, midday: 8.1, afternoon: 8.1, night: 8.1 },
+  forecourt: { morning: 8.1, midday: 8.2, afternoon: 8.2, night: 10.6 },
+  training: { morning: 10, midday: 10, afternoon: 10, night: 13.7 },
+  festival: { morning: 9.5, midday: 9.6, afternoon: 9.6, night: 6.9 },
   arena: { morning: 9.6, midday: 9.6, afternoon: 9.6, night: 9.6 },
 };
 /** the limiter: a compressor that holds the crest, then a hard ceiling (linear up to its knee, never over `ceiling`) */

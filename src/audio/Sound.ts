@@ -4,8 +4,8 @@ import { alignLoop, startOf } from './align';
 import { LayerSet } from './layers';
 import CATALOGUE from './catalogue.json';
 import { CALM, jingleFor, layerLevels, moodStep, pieceFor, type Mood, type PieceId, type StingId } from './plan';
-import { ambienceOf, BAND_RATE, BED_LEVEL, CALL_LEVEL, CALL_PAN, ceilingCurve, dbGain, DEFAULT_SETTINGS, DUCK, DUCK_AMBIENCE, duelCue, FADE, JINGLE_AFTER, LIMITER, LOOP_LEVEL, MIX, NOISE_SECONDS, noiseSamples, NOW_KEY, readNow, readSettings, RESUME_MS, resumeAt, roomImpulse, SEND, STEP_LEVEL, STING_DUCK, STING_WAIT, take, THUNDER_LEVEL, thunderOf, TUNED_CALLS, UI_EFFECTS, UI_LEVEL, type Ambience, type Bed, type Calls, type Effect, type Loop, type Look, type NowPlaying, type SoundPlace, type SoundSettings, type Voice, type WeatherNow } from './score';
-import { compute, COMPUTED, type ComputedId } from './places';
+import { ambienceOf, BAND_RATE, CALL_PAN, ceilingCurve, dbGain, DEFAULT_SETTINGS, DUCK, DUCK_AMBIENCE, duelCue, FADE, hz, JINGLE_AFTER, LIMITER, MIX, NOISE_SECONDS, noiseSamples, NOW_KEY, PATTER_LEVEL, RAIN_LEVEL, readNow, readSettings, RESUME_MS, resumeAt, roomImpulse, SEND, STEP_LEVEL, STING_DUCK, STING_WAIT, take, THUNDER_LEVEL, thunderOf, UI_EFFECTS, UI_LEVEL, WEATHER_TRIM, type Ambience, type Effect, type Look, type NowPlaying, type SoundPlace, type SoundSettings, type Voice, type WeatherNow, type WeatherSound } from './score';
+import { compute, computeSteps, type ComputedId } from './places';
 import { installSoundHooks } from './hooks';
 import { CROWD_TRIM, HOLD_EVERY, REACT_QUIET, SFX_TRIM, THREAT_QUIET, crowdOf, holdOf, sfxOf, type CrowdId, type SfxCue } from './sfx';
 
@@ -28,8 +28,10 @@ const BAND = CATALOGUE.pieces as Record<string, BandEntry>;
 interface SfxEntry { family: string; files: string[]; frames: number[]; loop?: boolean }
 /** a take of a baked sound: its buffer and where its sound starts in what this browser decoded */
 interface Take { buf: AudioBuffer; start: number }
-/** the families of the places and the interface (lot S2): not the duel's bank */
-const NOT_DUEL = new Set(['interface', 'lieux']);
+/** the interface's family (lot S2): not the duel's bank */
+const NOT_DUEL = new Set(['interface']);
+/** how long a computed sound may hold the page at a time (ms): the rest waits for the next task */
+const SLICE_MS = 4;
 /** the interface's effects played by the band (lot S2, journal Passe SN18): the click, the dialog, the purse; the refused command is the duel's own (lot S3) */
 const UI_SOUND: Partial<Record<Effect, string>> = { click: 'ui-click', open: 'ui-open', coin: 'ui-coin', denied: 'denied' };
 const SFX = ((CATALOGUE as { sfx?: Record<string, SfxEntry> }).sfx ?? {}) as Record<string, SfxEntry>;
@@ -52,10 +54,12 @@ export class Sound {
   /** what a scene owns: its groups, faded together, and what stops it */
   private scene: { groups: GainNode[]; stops: Array<() => void> } = { groups: [], stops: [] };
   private want: { place: SoundPlace; look: Look; boutDay: boolean; seed: number; music: SceneMusic; weather: WeatherNow | null } | null = null;
-  /** the place's sound now playing, its group (the thunder goes there), the computed sounds' buffers, the baked takes, the interface's (lot S2) */
+  /** the place's sound now playing, its weather's group (the thunder goes there), the computed sounds' buffers (and those being made), the baked takes, the
+   *  interface's (lot S2) */
   private amb: Ambience | null = null;
   private ambGroup: GainNode | null = null;
   private madeBufs = new Map<string, AudioBuffer>();
+  private slowBufs = new Map<string, Promise<AudioBuffer | null>>();
   private takeSets = new Map<string, Promise<Take[]>>();
   private ui = new Map<Effect, Take[]>();
   private lastOf: Record<string, number> = {};
@@ -213,7 +217,7 @@ export class Sound {
     // a step on the place's ground, the interface by the band (lot S2); lot S0's recipes when they are not there
     if (e === 'step' && this.amb) { this.stepOn(this.amb.surface, gain); return; }
     const ui = this.ui.get(e);
-    if (ui?.length) { this.playTake(ui, e, this.buses.ui, gain * (UI_LEVEL[e] ?? 1), at.pan ?? 0, 'none', 0); return; }
+    if (ui?.length) { this.playTake(ui, e, this.buses.ui, gain * (UI_LEVEL[e] ?? 1), at.pan ?? 0); return; }
     const t0 = c.currentTime + 0.005, { voices, k } = take(e, () => this.rng.next(), this.last[e]), onUi = UI_EFFECTS.has(e);
     this.last[e] = k;
     const pan = c.createStereoPanner(); pan.pan.value = at.pan ?? 0; pan.connect(onUi ? this.buses.ui : this.buses.fx);
@@ -389,122 +393,116 @@ export class Sound {
     return g;
   }
 
-  /** the place's sound (lot S2, journal Passe SN18): its live beds, its loops, its calls, under the snow's muffle; the thunder's takes made ahead in a storm */
+  /** the place's sound of lots V8 and S0, kept by the operator (lot S2, journal Passe SN19: « Garder l’ambiance d’aujourd’hui » for the four places), and the
+   *  weather over it */
   private ambience(a: Ambience, cross: boolean): void {
-    const c = this.ctx!;
-    let out: AudioNode = this.buses!.ambience;
-    if (a.muffle > 0) { const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 7000 - 4500 * a.muffle; f.Q.value = 0.5; f.connect(out); out = f; this.scene.stops.push(() => f.disconnect()); }
-    const scene = this.group(out, dbGain(a.trim), cross);
-    this.amb = a; this.ambGroup = scene;
-    for (const bed of a.beds) this.liveBed(bed, scene);
-    for (const l of a.loops) this.loopBed(l, scene);
+    const c = this.ctx!, scene = this.group(this.buses!.ambience, dbGain(a.trim), cross);
+    for (const b of a.beds) {
+      // each bed reads the noise from its own place at its own speed: none in phase with another, the two channels unrelated
+      const src = c.createBufferSource(); src.buffer = this.noise; src.loop = true; src.playbackRate.value = 0.93 + this.rng.next() * 0.14;
+      const f = c.createBiquadFilter(); f.type = b.kind === 'wind' ? 'lowpass' : 'bandpass'; f.frequency.value = b.freq; f.Q.value = b.q;
+      const g = c.createGain(); g.gain.value = b.gain;
+      const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = (0.07 + b.sway * 0.1) * (0.8 + this.rng.next() * 0.4); lg.gain.value = b.gain * b.sway; lfo.connect(lg); lg.connect(g.gain);
+      src.connect(f); f.connect(g); g.connect(scene); src.start(0, this.rng.next() * NOISE_SECONDS); lfo.start();
+      this.scene.stops.push(() => { src.stop(); lfo.stop(); g.disconnect(); });
+    }
     for (const call of a.calls) {
       let alive = true, timer = 0;
       const next = () => {
         if (!alive) return;
-        this.call(call, scene);
+        this.call(call.kind, call.gain, scene, a.back);
         const [lo, hi] = call.every; timer = window.setTimeout(next, (lo + this.rng.next() * (hi - lo)) * 1000);
       };
-      timer = window.setTimeout(next, (0.3 + this.rng.next() * 0.7) * call.every[0] * 1000);
+      timer = window.setTimeout(next, call.every[0] * 500);
       this.scene.stops.push(() => { alive = false; clearTimeout(timer); });
     }
-    // the thunder's three takes made a little after the scene starts, one at a time: the first flash never waits for them
-    if (a.thunder) for (let k = 0; k < 3; k++) { const t = window.setTimeout(() => this.made('thunder', k), 600 + 400 * k); this.scene.stops.push(() => clearTimeout(t)); }
+    this.amb = a;
+    if (a.weather) this.weatherOver(a.weather, cross);
   }
 
-  /** a bed played live from the noise: each reads the buffer from its own place at its own speed; its moves (a gust, a wave against the quay, a flag's snap)
-   *  drawn from the engine's own numbers */
-  private liveBed(b: Bed, out: AudioNode): void {
-    const c = this.ctx!, t0 = c.currentTime, rnd = () => this.rng.next(), nodes: AudioScheduledSourceNode[] = [];
-    let alive = true, timer = 0;
-    const src = (): AudioBufferSourceNode => { const s = c.createBufferSource(); s.buffer = this.noise; s.loop = true; s.playbackRate.value = 0.93 + rnd() * 0.14; s.start(t0, rnd() * NOISE_SECONDS); nodes.push(s); return s; };
-    const filt = (type: BiquadFilterType, f: number, q: number, from: AudioNode): BiquadFilterNode => { const n = c.createBiquadFilter(); n.type = type; n.frequency.value = f; n.Q.value = q; from.connect(n); return n; };
-    const amp = (v: number, from: AudioNode): GainNode => { const g = c.createGain(); g.gain.value = v; from.connect(g); return g; };
-    const every = (lo: number, hi: number, fn: () => void) => { const tick = () => { if (!alive) return; fn(); timer = window.setTimeout(tick, (lo + rnd() * (hi - lo)) * 1000); }; timer = window.setTimeout(tick, rnd() * lo * 1000); };
-    const k = BED_LEVEL[b.kind] * b.gain;
-    if (b.kind === 'wind') {
-      // the wind: a low band whose level and brightness follow the gusts; a whistle in the stones when it blows hard
-      const lp = filt('lowpass', 380, 0.5, src()), g = amp(k * 0.7, lp), gust = b.gust ?? 0.5; g.connect(out);
-      let whistle: { f: BiquadFilterNode; g: GainNode } | null = null;
-      if (gust > 0.6) { const f = filt('bandpass', 800, 9, src()), g2 = amp(0, f); g2.connect(out); whistle = { f, g: g2 }; }
-      every(1.2, 3.5, () => {
-        const t = c.currentTime, lvl = 1 - gust + gust * rnd(), tau = 0.5 + rnd() * 0.8;
-        g.gain.setTargetAtTime(k * lvl, t, tau); lp.frequency.setTargetAtTime(260 + 520 * lvl, t, tau);
-        if (whistle) { whistle.g.gain.setTargetAtTime(k * 0.3 * Math.max(0, lvl - 0.5), t, tau); whistle.f.frequency.setTargetAtTime(650 + 500 * lvl, t, tau); }
+  /** one sparse call of an ambience, somewhere in the stereo field, with the place's air around it */
+  private call(kind: keyof typeof CALL_PAN, gain: number, out: AudioNode, back = 1): void {
+    const c = this.ctx!, t = c.currentTime, g = c.createStereoPanner(); g.pan.value = CALL_PAN[kind] * (this.rng.next() * 2 - 1); g.connect(out); this.send(g, SEND.calls * back);
+    const tone = (f0: number, f1: number, at: number, dur: number, wave: OscillatorType = 'sine', v = gain) => {
+      const o = c.createOscillator(), e = c.createGain(); o.type = wave; o.frequency.setValueAtTime(f0, t + at); o.frequency.exponentialRampToValueAtTime(f1, t + at + dur);
+      e.gain.setValueAtTime(0, t + at); e.gain.linearRampToValueAtTime(v, t + at + 0.01); e.gain.exponentialRampToValueAtTime(0.0001, t + at + dur);
+      o.connect(e); e.connect(g); o.start(t + at); o.stop(t + at + dur + 0.02);
+    };
+    if (kind === 'bird') for (let i = 0; i < 3; i++) tone(2800 + i * 300, 3600 + i * 200, i * 0.11, 0.08);
+    else if (kind === 'cricket') for (let i = 0; i < 4; i++) tone(4300, 4200, i * 0.06, 0.03, 'square', gain * 0.5);
+    else if (kind === 'hammer') { tone(1500, 1400, 0, 0.18, 'triangle'); tone(2300, 2200, 0, 0.1, 'triangle', gain * 0.5); }
+    else if (kind === 'cheer') tone(400, 600, 0, 1.2, 'sawtooth', gain * 0.3);
+    else if (kind === 'lute') for (let i = 0; i < 3; i++) this.pluck(hz(57 + [0, 7, 12][i]), t + i * 0.18, gain, g);
+  }
+
+  private pluck(f: number, t: number, v: number, bus: AudioNode): void {
+    const c = this.ctx!, o = c.createOscillator(), o2 = c.createOscillator(), e = c.createGain(), lp = c.createBiquadFilter();
+    o.type = 'triangle'; o2.type = 'sawtooth'; o.frequency.value = f; o2.frequency.value = f * 1.002; lp.type = 'lowpass'; lp.frequency.setValueAtTime(f * 6, t); lp.frequency.exponentialRampToValueAtTime(f * 1.5, t + 0.6);
+    e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(v, t + 0.005); e.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+    const m = c.createGain(); m.gain.value = 0.25; o2.connect(m); m.connect(lp); o.connect(lp); lp.connect(e); e.connect(bus);
+    o.start(t); o2.start(t); o.stop(t + 1.3); o2.stop(t + 1.3);
+  }
+
+  /** the weather over a place (lot S2, journal Passe SN19): on its own group at its own level, the same in every place; the rain's hiss played live from the
+   *  noise and its patter computed a few drops at a time, then looped from a place drawn in it; the thunder's takes made ahead in a storm, one after the other */
+  private weatherOver(w: WeatherSound, cross: boolean): void {
+    const c = this.ctx!, scene = this.scene, out = this.group(this.buses!.ambience, dbGain(WEATHER_TRIM), cross);
+    this.ambGroup = out;
+    if (w.rain > 0) {
+      // the hiss, and its weight on the roofs; a slow sway
+      const s = c.createBufferSource(); s.buffer = this.noise; s.loop = true; s.playbackRate.value = 0.93 + this.rng.next() * 0.14;
+      const hp = c.createBiquadFilter(), bp = c.createBiquadFilter(), lp = c.createBiquadFilter(), g = c.createGain(), low = c.createGain(), k = RAIN_LEVEL * w.rain;
+      hp.type = 'highpass'; hp.frequency.value = 700; hp.Q.value = 0.5; bp.type = 'bandpass'; bp.frequency.value = 4200; bp.Q.value = 0.35; lp.type = 'lowpass'; lp.frequency.value = 250; lp.Q.value = 0.6;
+      g.gain.value = k; low.gain.value = k * 0.35;
+      s.connect(hp); hp.connect(bp); bp.connect(g); g.connect(out); s.connect(lp); lp.connect(low); low.connect(out);
+      s.start(c.currentTime, this.rng.next() * NOISE_SECONDS);
+      let alive = true, timer = 0;
+      const sway = () => { if (!alive) return; g.gain.setTargetAtTime(k * (0.8 + 0.35 * this.rng.next()), c.currentTime, 1.2); timer = window.setTimeout(sway, (2 + this.rng.next() * 3) * 1000); };
+      timer = window.setTimeout(sway, this.rng.next() * 2000);
+      scene.stops.push(() => { alive = false; clearTimeout(timer); try { s.stop(); } catch { /* already over */ } });
+      // the patter: it comes in under half a second once made
+      const pg = c.createGain(); pg.gain.value = 0; pg.connect(out);
+      void this.madeSlowly('patter', 0).then((b) => {
+        if (!b || this.scene !== scene || !this.ctx) return;
+        const p = c.createBufferSource(); p.buffer = b; p.loop = true; p.connect(pg); p.start(c.currentTime + 0.02, this.rng.next() * b.duration);
+        pg.gain.setTargetAtTime(PATTER_LEVEL * w.rain, c.currentTime, 0.15);
+        scene.stops.push(() => { try { p.stop(); } catch { /* already over */ } });
       });
-    } else if (b.kind === 'water') {
-      // the canal against the quay: a low band that swells and falls back with each wave, a faint trickle over it
-      const s = src(), bp = filt('bandpass', 520, 0.7, s), g = amp(k * 0.25, bp), hi = amp(k * 0.08, filt('bandpass', 2600, 1.8, s)); g.connect(out); hi.connect(out);
-      every(0.5, 1.8, () => {
-        const t = c.currentTime, up = 0.12 + rnd() * 0.13;
-        g.gain.cancelScheduledValues(t); g.gain.setTargetAtTime(k * (0.6 + rnd() * 0.6), t, up / 3); g.gain.setTargetAtTime(k * 0.25, t + up, 0.18 + rnd() * 0.15);
-        bp.frequency.setTargetAtTime(420 + rnd() * 260, t, 0.2);
-      });
-    } else if (b.kind === 'fountain') {
-      // falling water: a broad band, shimmering
-      const g = amp(k, filt('bandpass', 2200, 0.35, filt('highpass', 350, 0.5, src()))); g.connect(out);
-      const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = 8 + rnd() * 5; lg.gain.value = k * 0.12; lfo.connect(lg); lg.connect(g.gain); lfo.start(t0); nodes.push(lfo);
-    } else if (b.kind === 'rain') {
-      // the rain's hiss, and its weight on the roofs
-      const s = src(), g = amp(k, filt('bandpass', 4200, 0.35, filt('highpass', 700, 0.5, s))), low = amp(k * 0.35, filt('lowpass', 250, 0.6, s)); g.connect(out); low.connect(out);
-      every(2, 5, () => g.gain.setTargetAtTime(k * (0.8 + 0.35 * rnd()), c.currentTime, 1.2));
-    } else if (b.kind === 'flags') {
-      // cloth in the wind: a band of noise chopped by a flutter (smoothed, so it snaps without clicking), the gusts opening and closing it
-      const g = amp(0, filt('bandpass', 900, 1.2, src())); g.connect(out);
-      const lfo = c.createOscillator(); lfo.type = 'square'; lfo.frequency.value = 5 + rnd() * 3; const depth = amp(0, filt('lowpass', 30, 0.7, lfo)); depth.connect(g.gain); lfo.start(t0); nodes.push(lfo);
-      every(0.8, 2.6, () => { const t = c.currentTime, lvl = rnd(); g.gain.setTargetAtTime(k * 0.5 * lvl, t, 0.3); depth.gain.setTargetAtTime(k * 0.5 * lvl, t, 0.3); lfo.frequency.setTargetAtTime(4 + 5 * lvl, t, 0.3); });
-    } else {
-      // the arena's rumble of lot V8, for a page whose crowd cannot load
-      const g = amp(k, filt('bandpass', 400, 0.5, src())); g.connect(out);
-      const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = 0.12 * (0.8 + rnd() * 0.4); lg.gain.value = k * 0.5; lfo.connect(lg); lg.connect(g.gain); lfo.start(t0); nodes.push(lfo);
     }
-    this.scene.stops.push(() => { alive = false; clearTimeout(timer); for (const n of nodes) { try { n.stop(); } catch { /* already over */ } } });
+    if (w.thunder) for (let k = 0; k < 3; k++) { const t = window.setTimeout(() => void this.madeSlowly('thunder', k), 600 + 400 * k); scene.stops.push(() => clearTimeout(t)); }
   }
 
-  /** a loop of the place: a baked one (the murmur, the arena's crowd) on the span its decoder gave it, or a computed one (the rain's patter, the fire), from a
-   *  place drawn in it, farther behind a low-pass */
-  private loopBed(l: Loop, out: AudioNode): void {
-    const c = this.ctx!, scene = this.scene, g = c.createGain(); g.gain.value = LOOP_LEVEL[l.id] * l.gain;
-    if (l.tone) { const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = l.tone; f.Q.value = 0.5; g.connect(f); f.connect(out); } else g.connect(out);
-    const start = (buf: AudioBuffer, from: number, len: number) => {
-      if (this.scene !== scene || !this.ctx) return;
-      const s = c.createBufferSource(); s.buffer = buf; s.loop = true; s.loopStart = from; s.loopEnd = from + len; s.connect(g);
-      s.start(c.currentTime + 0.05, from + this.rng.next() * len);
-      scene.stops.push(() => { try { s.stop(); } catch { /* already over */ } });
-    };
-    if (l.id === 'patter' || l.id === 'fire') { const b = this.made(l.id, 0); start(b, 0, b.duration); return; }
-    const entry = SFX[l.id];
-    const p = this.takesOf(l.id).then((t) => { if (t[0] && entry) start(t[0].buf, t[0].start / t[0].buf.sampleRate, entry.frames[0] / BAND_RATE); });
-    this.pending = Promise.all([this.pending, p]).then(() => {});
-  }
-
-  /** one call of a place, somewhere in the stereo field, with the place's air around it: another take than the last, a little higher or lower unless it is tuned */
-  private call(call: Calls, out: AudioNode): void {
-    const c = this.ctx!, kind = call.kind;
-    const play = (buf: AudioBuffer, at: number) => {
-      const s = c.createBufferSource(), g = c.createGain(), p = c.createStereoPanner();
-      s.buffer = buf; if (!TUNED_CALLS.has(kind)) s.playbackRate.value = 1 + (this.rng.next() * 2 - 1) * 0.03;
-      g.gain.value = CALL_LEVEL[kind] * call.gain * dbGain((this.rng.next() * 2 - 1) * 1.5); p.pan.value = CALL_PAN[kind] * (this.rng.next() * 2 - 1);
-      if (call.tone) { const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = call.tone; f.Q.value = 0.5; s.connect(f); f.connect(g); } else s.connect(g);
-      g.connect(p); p.connect(out); this.send(p, SEND.calls);
-      s.start(c.currentTime + 0.01, at);
-    };
-    if (kind === 'crowd-cheer' || kind === 'crowd-oh') { void this.takesOf(kind).then((t) => { if (t[0] && this.ctx === c) play(t[0].buf, t[0].start / t[0].buf.sampleRate); }); return; }
-    const takes = call.takes ?? [...Array(COMPUTED[kind]).keys()];
-    let k = takes[Math.floor(this.rng.next() * takes.length)];
-    if (takes.length > 1 && k === this.lastOf[kind]) k = takes[(takes.indexOf(k) + 1) % takes.length];
-    this.lastOf[kind] = k;
-    play(this.made(kind, k), 0);
-  }
-
-  /** a computed sound's take (src/audio/places.ts), made the first time it is asked for and kept for the page */
+  /** a computed sound's take at once (src/audio/places.ts: a step, under a millisecond), kept for the page */
   private made(id: ComputedId, take: number): AudioBuffer {
     const key = `${id}:${take}`; let b = this.madeBufs.get(key);
-    if (!b) {
-      const c = this.ctx!, chs = compute(id, take, c.sampleRate), buf = c.createBuffer(chs.length, chs[0].length, c.sampleRate);
-      chs.forEach((x, i) => buf.getChannelData(i).set(x)); this.madeBufs.set(key, buf); b = buf;
-    }
+    if (!b) { b = this.bufferOf(compute(id, take, this.ctx!.sampleRate)); this.madeBufs.set(key, b); }
     return b;
+  }
+  /** a computed sound's take made a few milliseconds at a time (the rain's patter, a thunder: 20 to 45 ms in one go, journal Passe SN18), kept for the page */
+  private madeSlowly(id: ComputedId, take: number): Promise<AudioBuffer | null> {
+    const key = `${id}:${take}`, done = this.madeBufs.get(key);
+    if (done) return Promise.resolve(done);
+    let p = this.slowBufs.get(key);
+    if (!p) {
+      const c = this.ctx!, steps = computeSteps(id, take, c.sampleRate);
+      p = new Promise((resolve) => {
+        const run = () => {
+          if (this.ctx !== c) { resolve(null); return; }
+          const t0 = performance.now(); let r = steps.next();
+          while (!r.done && performance.now() - t0 < SLICE_MS) r = steps.next();
+          if (!r.done) { window.setTimeout(run, 0); return; }
+          const b = this.bufferOf(r.value); this.madeBufs.set(key, b); resolve(b);
+        };
+        window.setTimeout(run, 0);
+      });
+      this.slowBufs.set(key, p);
+    }
+    return p;
+  }
+  private bufferOf(chs: Float32Array[]): AudioBuffer {
+    const c = this.ctx!, buf = c.createBuffer(chs.length, chs[0].length, c.sampleRate);
+    chs.forEach((x, i) => buf.getChannelData(i).set(x));
+    return buf;
   }
   /** a baked sound's takes (the table `sfx` of ./catalogue.json), decoded once for the page, each where its sound starts in this browser's decode */
   private takesOf(id: string): Promise<Take[]> {
@@ -522,17 +520,16 @@ export class Sound {
   private loadUi(): Promise<void> {
     return Promise.all(Object.entries(UI_SOUND).map(async ([e, id]) => { const t = await this.takesOf(id!); if (t.length) this.ui.set(e as Effect, t); })).then(() => {});
   }
-  /** a baked take on a bus: another take than the last, at its place, a little higher or lower when `rate` says so, varied in level (`varyDb`) */
-  private playTake(takes: Take[], key: string, out: AudioNode, gain: number, pan: number, rate: 'none' | 'pitch', varyDb: number): void {
+  /** a baked take on a bus: another take than the last, at its place */
+  private playTake(takes: Take[], key: string, out: AudioNode, gain: number, pan: number): void {
     const c = this.ctx!;
     let k = Math.floor(this.rng.next() * takes.length); if (takes.length > 1 && k === this.lastOf[key]) k = (k + 1) % takes.length; this.lastOf[key] = k;
     const t = takes[k], s = c.createBufferSource(), g = c.createGain(), p = c.createStereoPanner();
-    s.buffer = t.buf; if (rate === 'pitch') s.playbackRate.value = 1 + (this.rng.next() * 2 - 1) * 0.04;
-    g.gain.value = gain * dbGain((this.rng.next() * 2 - 1) * varyDb); p.pan.value = pan;
+    s.buffer = t.buf; g.gain.value = gain; p.pan.value = pan;
     s.connect(g); g.connect(p); p.connect(out);
     s.start(c.currentTime + 0.005, t.start / t.buf.sampleRate);
   }
-  /** a step on the place's ground: the setts or the lists' earth (the snow crunches as the earth), four takes, never the same twice */
+  /** a step on the place's ground: the setts, or the lists' earth; four takes, never the same twice, a little higher or lower, louder or softer */
   private stepOn(surface: 'stone' | 'earth', gain: number): void {
     const c = this.ctx!, id = surface === 'earth' ? 'step-earth' : 'step-stone';
     let k = Math.floor(this.rng.next() * 4); if (k === this.lastOf[id]) k = (k + 1) % 4; this.lastOf[id] = k;
@@ -541,13 +538,18 @@ export class Sound {
     s.connect(g); g.connect(this.buses!.fx); this.send(g, SEND.fx * 0.5);
     s.start(c.currentTime + 0.005);
   }
-  /** the thunder of a flash (its strength from 0 to about 1.6 times the storm): near, middle or far, after the time its sound takes to come */
+  /** the thunder of a flash (its strength from 0 to about 1.6 times the storm): near, middle or far, after the time its sound takes to come; a take not made yet
+   *  plays when it is, unless it comes more than a second late */
   private thunder(level: number): void {
-    const c = this.ctx, a = this.amb, out = this.ambGroup;
-    if (!c || !this.begun || !a?.thunder || !out || this.settings.muted) return;
-    const th = thunderOf(level, () => this.rng.next()), s = c.createBufferSource(), g = c.createGain();
-    s.buffer = this.made('thunder', th.take); g.gain.value = THUNDER_LEVEL * th.gain; s.connect(g); g.connect(out);
-    s.start(c.currentTime + th.delay);
+    const c = this.ctx, a = this.amb, out = this.ambGroup, scene = this.scene;
+    if (!c || !this.begun || !a?.weather?.thunder || !out || this.settings.muted) return;
+    const th = thunderOf(level, () => this.rng.next()), at = c.currentTime + th.delay;
+    void this.madeSlowly('thunder', th.take).then((b) => {
+      if (!b || this.scene !== scene || this.ctx !== c || c.currentTime > at + 1) return;
+      const s = c.createBufferSource(), g = c.createGain();
+      s.buffer = b; g.gain.value = THUNDER_LEVEL * th.gain; s.connect(g); g.connect(out);
+      s.start(Math.max(at, c.currentTime + 0.01));
+    });
   }
 
   /** the band's piece of the scene (journal Passe SN10): its intro once and then its loop, or its loop taken up where the last page left it (SA-15); each stem

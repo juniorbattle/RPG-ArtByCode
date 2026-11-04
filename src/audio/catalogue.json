@@ -673,6 +673,39 @@
    "frames": [
     312000
    ]
+  },
+  "ui-click": {
+   "family": "interface",
+   "files": [
+    "sfx-ui-click-0",
+    "sfx-ui-click-1",
+    "sfx-ui-click-2"
+   ],
+   "frames": [
+    17028,
+    17029,
+    17028
+   ]
+  },
+  "ui-open": {
+   "family": "interface",
+   "files": [
+    "sfx-ui-open"
+   ],
+   "frames": [
+    34826
+   ]
+  },
+  "ui-coin": {
+   "family": "interface",
+   "files": [
+    "sfx-ui-coin-0",
+    "sfx-ui-coin-1"
+   ],
+   "frames": [
+    25878,
+    25951
+   ]
   }
  }
 }

@@ -27,7 +27,7 @@ const has = (r, re) => assert.ok(r.errors.some((e) => re.test(e)), `${re} in ${J
 
 test('the repository: the band\'s catalogue baked (journal Passe SN10), every file under its manifest, our own, R-SUITE quoted word for word, each format under 12 MB', () => {
   const r = validateAudio(ROOT), cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/audio/catalogue.json'), 'utf8')), C = cat.pieces, dir = path.join(ROOT, 'art-lab/audio/manifests');
-  assert.deepEqual(r.errors, []); assert.equal(r.manifests, 14 + 8, 'fourteen pieces, and the duel\'s sounds in eight families (journal Passe SN16)');
+  assert.deepEqual(r.errors, []); assert.equal(r.manifests, 14 + 8 + 1, 'fourteen pieces, the duel\'s sounds in eight families (journal Passe SN16), the interface (journal Passe SN19)');
   for (const x of ['.webm', '.m4a']) assert.ok(r.weight[x] > 8e6 && r.weight[x] <= MAX_BYTES, `${x}: ${r.weight[x]} bytes`);
   for (const f of fs.readdirSync(dir)) {
     const m = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
@@ -35,8 +35,9 @@ test('the repository: the band\'s catalogue baked (journal Passe SN10), every fi
     if (m.kind !== 'music') {
       const own = Object.values(cat.sfx).filter((e) => e.family === m.id);
       assert.ok(own.length, `${m.id}: a family of the catalogue`); assert.equal(m.licence, 'own'); assert.equal(m.generatedByAi, false);
-      assert.equal(m.score, m.id === 'foule' ? 'art-lab/audio/sfx/crowd.sfx.mjs' : 'art-lab/audio/sfx/duel.sfx.mjs'); assert.equal(m.kind, m.id === 'foule' ? 'ambience' : 'effect');
-      assert.ok(m.approval.includes('S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé »') && m.decisions.some((d) => d.startsWith('S3-BAISSE « Garder les baisses »')), `${m.id}: the operator's words`);
+      assert.equal(m.score, m.id === 'foule' ? 'art-lab/audio/sfx/crowd.sfx.mjs' : m.id === 'interface' ? 'art-lab/audio/sfx/places.sfx.mjs' : 'art-lab/audio/sfx/duel.sfx.mjs'); assert.equal(m.kind, m.id === 'foule' ? 'ambience' : 'effect');
+      if (m.id === 'interface') assert.ok(m.approval.includes('S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé »') && m.decisions.some((d) => d.startsWith('S2-INTERFACE « Bonne direction »')), 'the interface: the operator\'s words (journal Passe SN19)');
+      else assert.ok(m.approval.includes('S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé »') && m.decisions.some((d) => d.startsWith('S3-BAISSE « Garder les baisses »')), `${m.id}: the operator's words`);
       assert.deepEqual(m.files.map((x) => x.path).sort(), own.flatMap((e) => e.files).flatMap((n) => [`src/audio/baked/${n}.m4a`, `src/audio/baked/${n}.webm`]).sort(), `${m.id}: the catalogue's files, both formats`);
       continue;
     }

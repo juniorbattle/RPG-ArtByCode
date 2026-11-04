@@ -38,10 +38,11 @@ function decode(file, raw = false) {
   const n = x.length / 2, ch = [new Float32Array(n), new Float32Array(n)]; for (let i = 0; i < n; i++) { ch[0][i] = x[2 * i]; ch[1][i] = x[2 * i + 1]; }
   return { length: n, sampleRate: 48000, numberOfChannels: 2, getChannelData: (c) => ch[c] };
 }
-/** where ffmpeg's decode starts in another: the lag of the best match over the first half second */
+/** where ffmpeg's decode starts in another: the lag of the best match over the first half second (a sound shorter than that, the interface's click of lot S2,
+ *  matched over what it has: past its end both read silence) */
 function lagOf(head, ref) {
   let best = 0, lag = 0;
-  for (let k = -256; k <= 4096; k++) { let s = 0, e1 = 0, e2 = 0; for (let i = 2048; i < W - 4096; i += 2) { const x = head[i + k] ?? 0, y = ref[i]; s += x * y; e1 += x * x; e2 += y * y; } const c = s / Math.sqrt(e1 * e2 + 1e-20); if (c > best) { best = c; lag = k; } }
+  for (let k = -256; k <= 4096; k++) { let s = 0, e1 = 0, e2 = 0; for (let i = 2048; i < W - 4096; i += 2) { const x = head[i + k] ?? 0, y = ref[i] ?? 0; s += x * y; e1 += x * x; e2 += y * y; } const c = s / Math.sqrt(e1 * e2 + 1e-20); if (c > best) { best = c; lag = k; } }
   return { lag, best };
 }
 

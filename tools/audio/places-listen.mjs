@@ -1,7 +1,8 @@
 // The listening sheet of lot S2's sounds (journal Passe SN18): the places, their hours and their weather, the interface and the steps, played by the real engine
-// (tools/audio/render.mjs), today against the proposal. The proposal's baked sounds (art-lab/audio/sfx/places.sfx.mjs: the interface, the murmur) are encoded as a
-// bake would and put, with the catalogue's entries, into a copy of this repository's src/ (`<outDir>/root`): the engine renders from it, nothing enters src/audio/baked
-// before the operator's decision. The computed ones (src/audio/places.ts) are the engine's own.
+// (tools/audio/render.mjs), today against a proposal. A proposal's baked sounds (the cues of art-lab/audio/sfx/places.sfx.mjs; on the sheet of SN18 the interface and a
+// murmur of the town, which the operator did not take, journal Passe SN19) are encoded as a bake would and put, with the catalogue's entries, into a copy of this
+// repository's src/ (`<outDir>/root`): the engine renders from it, nothing enters src/audio/baked before the operator's decision. The computed ones
+// (src/audio/places.ts) are the engine's own. The sheet's excerpts came from the engine of Passe SN18's commit (bd8eb8f on main).
 //   node --max-old-space-size=8192 tools/audio/places-listen.mjs <outDir> prep                  the copy, the candidates encoded, their weight
 //   node --max-old-space-size=8192 tools/audio/places-listen.mjs <outDir> render <today root>   the excerpts' jobs, the proposal and today (a frozen main)
 //   node tools/audio/places-listen.mjs <outDir> site <siteDir>                                  the excerpts in MP3 for the sheet, and their measures
@@ -18,9 +19,9 @@ import { loudness, truePeak, wavBytes } from './measure.mjs';
 const args = process.argv.slice(2), out = path.resolve(args[0] ?? 'out-places'), stage = args[1] ?? 'prep', here = import.meta.dirname, ROOT = path.resolve(here, '..', '..');
 const FF = process.env.FFMPEG ?? 'ffmpeg', SR = 48000;
 fs.mkdirSync(out, { recursive: true });
-/** the bitrates a bake would use: the interface at the duel's sounds' (64 kb/s in Opus, 80 in AAC without its noise substitution), the murmur lower (its voices are
- *  far and its band stops at 4.5 kHz) */
-const KBPS = { webm: 64, m4a: 80 }, MURMUR = { webm: 48, m4a: 64 }, EXTRA = { m4a: ['-aac_pns', '0'] };
+/** the bitrates a bake would use: the interface at the duel's sounds' (64 kb/s in Opus, 80 in AAC without its noise substitution), a loop lower (the murmur of SN18:
+ *  far voices, its band stopping at 4.5 kHz) */
+const KBPS = { webm: 64, m4a: 80 }, LOOP = { webm: 48, m4a: 64 }, EXTRA = { m4a: ['-aac_pns', '0'] };
 
 if (stage === 'prep') {
   const root = path.join(out, 'root');
@@ -33,7 +34,7 @@ if (stage === 'prep') {
     const c = renderPlace(id), names = c.takes.map((_, k) => (c.takes.length > 1 ? `sfx-${id}-${k}` : `sfx-${id}`)), loop = c.kind === 'loop';
     c.takes.forEach((t, k) => {
       fs.writeFileSync(path.join(wav, `${names[k]}.wav`), wavBytes([t.L, t.R], SR));
-      const got = encodePair(FF, [t.L, t.R], path.join(baked, names[k]), loop ? MURMUR : KBPS, loop, EXTRA);
+      const got = encodePair(FF, [t.L, t.R], path.join(baked, names[k]), loop ? LOOP : KBPS, loop, EXTRA);
       weight.webm += got.webm.length; weight.m4a += got.m4a.length;
       const m = loudness([t.L, t.R], SR);
       report[names[k]] = { secs: +(t.L.length / SR).toFixed(2), lufs: +m.lufs.toFixed(1), momentary: +m.momentary.toFixed(1), tp: +truePeak([t.L, t.R]).toFixed(1), webm: got.webm.length, m4a: got.m4a.length };

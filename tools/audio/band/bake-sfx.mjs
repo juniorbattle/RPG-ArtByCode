@@ -1,5 +1,5 @@
 // The bake of the duel's sounds and the arena's crowd (lot S3, journal Passe SN16; the operator's S3-SUITE « Cuire et brancher dans la version 2 ce qui est
-// validé », journal Passe SN16): each sound of art-lab/audio/sfx/ rendered from its own writing, encoded as Opus in WebM and AAC in M4A into src/audio/baked/
+// validé », journal Passe SN16), and of the interface (lot S2, journal Passe SN19; S2-SUITE, the same words): each sound of art-lab/audio/sfx/ rendered from its own writing, encoded as Opus in WebM and AAC in M4A into src/audio/baked/
 // (tools/audio/band/encode.mjs, bit-exact), one manifest a family (art-lab/audio/manifests/, checked by tools/audio/validate.mjs), and the engine's table
 // `sfx` in src/audio/catalogue.json (each sound's files and lengths, the crowd's murmur a loop). `--check` rebuilds in a scratch folder and compares.
 //   node --max-old-space-size=8192 tools/audio/band/bake-sfx.mjs [--check]
@@ -13,12 +13,15 @@ import { forgetNotes } from './instruments.mjs';
 import { forgetHits } from './drums.mjs';
 import { CUES, renderCue } from '../../../art-lab/audio/sfx/duel.sfx.mjs';
 import { CROWD, renderCrowd } from '../../../art-lab/audio/sfx/crowd.sfx.mjs';
+import { PLACE_CUES, renderPlace } from '../../../art-lab/audio/sfx/places.sfx.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..', '..'), BAKED = 'src/audio/baked', MANIFESTS = 'art-lab/audio/manifests', CATALOGUE = 'src/audio/catalogue.json', DATE = '2026-11-04';
 /** the operator's sheet, word for word (journal Passe SN16): the whole, the dips, the bake */
 /** the operator's confirmation after the trial in play (journal Passe SN17, the sheet briefs/fiche-son-essai-duel.html) */
 const CONFIRMED = ['S3E-JEU « Bien dans le jeu »', 'S3E-PROD « Confirmé : en production dans la version 2 »'].map((d) => `${d} (journal Passe SN17, ${DATE})`);
 const SHEET = ['S3-DUEL « Mieux : continuer dans cette voie »', 'S3-BAISSE « Garder les baisses »', 'S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé »'].map((d) => `${d} (journal Passe SN16, ${DATE})`);
+/** the sheet of lot S2 (briefs/fiche-son-lieux.html, journal Passe SN19): the interface's card, where its sounds live, the bake */
+const S2 = ['S2-INTERFACE « Bonne direction »', 'S2-POIDS « Calculer dans la page, cuire l’interface et le murmure (121 Ko) »', 'S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé »'].map((d) => `${d} (journal Passe SN19, ${DATE})`);
 /** the families: their sounds, their card on the sheet, their bitrates (the cues at 64 kb/s in Opus and 80 in AAC, the murmur at 96: SA-17, journal Passe SN15) */
 const FAMILIES = [
   { id: 'duel-coups', kind: 'effect', ear: 'S3-COUPS « Bonne direction »', cues: ['light', 'heavy', 'm_slash', 'm_heavy', 'guard', 'guardHeavy', 'whiff', 'break'] },
@@ -29,6 +32,7 @@ const FAMILIES = [
   { id: 'duel-lecture', kind: 'effect', ear: 'S3-LECTURE « Bonne direction, les cinq »', cues: ['threat', 'window', 'dodge', 'stun', 'pushed'] },
   { id: 'duel-ko', kind: 'effect', ear: 'S3-KO « Bonne direction »', cues: ['ko'] },
   { id: 'foule', kind: 'ambience', ear: 'S3-FOULE « Bonne direction (par le code) »', crowd: ['bed', 'oh', 'gasp', 'cheer', 'roar'] },
+  { id: 'interface', kind: 'effect', ear: 'S2-INTERFACE « Bonne direction »', places: ['ui-click', 'ui-open', 'ui-coin'] },
 ];
 const KBPS = { webm: 64, m4a: 80 }, BED = { webm: 96, m4a: 96 };
 /** AAC without its perceptual noise substitution: a band coded as noise is drawn again by each decoder, and Firefox's drew another cymbal than ffmpeg's
@@ -41,8 +45,8 @@ const outRoot = check ? fs.mkdtempSync(path.join(os.tmpdir(), 'bake-sfx-check-')
 fs.mkdirSync(path.join(outRoot, BAKED), { recursive: true }); fs.mkdirSync(path.join(outRoot, MANIFESTS), { recursive: true });
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
 // every sound of the bank is in one family, every family's sound in the bank
-const all = FAMILIES.flatMap((f) => f.cues ?? []), crowds = FAMILIES.flatMap((f) => f.crowd ?? []);
-if (all.length !== Object.keys(CUES).length || all.some((c) => !CUES[c]) || crowds.length !== Object.keys(CROWD).length) throw new Error('bake-sfx: the families do not hold the bank');
+const all = FAMILIES.flatMap((f) => f.cues ?? []), crowds = FAMILIES.flatMap((f) => f.crowd ?? []), places = FAMILIES.flatMap((f) => f.places ?? []);
+if (all.length !== Object.keys(CUES).length || all.some((c) => !CUES[c]) || crowds.length !== Object.keys(CROWD).length || places.length !== Object.keys(PLACE_CUES).length || places.some((c) => !PLACE_CUES[c])) throw new Error('bake-sfx: the families do not hold the bank');
 
 const table = {}; let mismatches = 0, webm = 0, m4a = 0;
 for (const fam of FAMILIES) {
@@ -62,10 +66,21 @@ for (const fam of FAMILIES) {
     put(name, c.L, c.R, loop ? BED : KBPS, loop);
     table[`crowd-${id}`] = { family: fam.id, files: [name], frames: [c.L.length], ...(loop ? { loop: true } : {}) };
   }
+  for (const id of fam.places ?? []) {
+    forgetNotes(); forgetHits();
+    const c = renderPlace(id), names = c.takes.map((_, k) => (c.takes.length > 1 ? `sfx-${id}-${k}` : `sfx-${id}`));
+    c.takes.forEach((t, k) => put(names[k], t.L, t.R, KBPS, false));
+    table[id] = { family: fam.id, files: names, frames: c.takes.map((t) => t.L.length) };
+  }
   const manifest = {
-    id: fam.id, kind: fam.kind, runtimeUse: 'production', licence: 'own', generatedByAi: false, score: fam.crowd ? 'art-lab/audio/sfx/crowd.sfx.mjs' : 'art-lab/audio/sfx/duel.sfx.mjs', approved: true,
-    approval: `The operator, on the duel's sounds sheet (briefs/fiche-son-duel.html, journal Passe SN16, ${DATE}): S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé », on the sounds kept by ear: ${fam.ear}; S3-DUEL « Mieux : continuer dans cette voie »; S3-BAISSE « Garder les baisses ». Confirmed after the trial in play: ${CONFIRMED.join('; ')}. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.`,
-    decisions: [`${fam.ear} (journal Passe SN16, ${DATE})`, ...SHEET, ...CONFIRMED],
+    id: fam.id, kind: fam.kind, runtimeUse: 'production', licence: 'own', generatedByAi: false, score: fam.places ? 'art-lab/audio/sfx/places.sfx.mjs' : fam.crowd ? 'art-lab/audio/sfx/crowd.sfx.mjs' : 'art-lab/audio/sfx/duel.sfx.mjs', approved: true,
+    ...(fam.places ? {
+      approval: `The operator, on the sheet of lot S2 (briefs/fiche-son-lieux.html, journal Passe SN19, ${DATE}): S2-INTERFACE « Bonne direction »; S2-POIDS « Calculer dans la page, cuire l’interface et le murmure (121 Ko) »; S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé ». The murmur is not baked: no place took it (« Garder l’ambiance d’aujourd’hui »). To be confirmed after the trial in play. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.`,
+      decisions: S2,
+    } : {
+      approval: `The operator, on the duel's sounds sheet (briefs/fiche-son-duel.html, journal Passe SN16, ${DATE}): S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé », on the sounds kept by ear: ${fam.ear}; S3-DUEL « Mieux : continuer dans cette voie »; S3-BAISSE « Garder les baisses ». Confirmed after the trial in play: ${CONFIRMED.join('; ')}. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.`,
+      decisions: [`${fam.ear} (journal Passe SN16, ${DATE})`, ...SHEET, ...CONFIRMED],
+    }),
     files,
     bake: { tool: 'tools/audio/band/bake-sfx.mjs', ffmpeg: version, encoders: { webm: ENC.webm('<kbps>').join(' '), m4a: [...ENC.m4a('<kbps>'), ...EXTRA.m4a].join(' '), input: 'f32le 48000 Hz stereo, -map_metadata -1 -fflags +bitexact -flags:a +bitexact', opusDelay: `${OPUS_LEAD} samples ahead (silence before a sound, the murmur's last ones before it), 336 written as the delay` } },
   };

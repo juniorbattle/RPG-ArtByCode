@@ -1,5 +1,6 @@
 // Reads the renders of tools/audio/render.mjs and checks them against the operator's targets (journal Passes SN1 / SN2; the fiche's note on S0: -18
-// LUFS at the output, peaks at -1 dBTP, the music 3 to 6 dB over the ambience where it must be heard), at the default settings.
+// LUFS at the output, peaks at -1 dBTP, the music 3 to 6 dB over the ambience where it must be heard; 6 to 9 dB since lot S2, the places 3 dB further back:
+// S2-MELANGE « L’ambiance plus en retrait », « −3 dB, nettement », journal Passe SN19), at the default settings.
 //   node tools/audio/analyse.mjs <outDir> [--only=<a,b>] [--check] [--base=<outDir of a frozen main>]
 // --check: exit 1 on a miss (run on the frozen main it must fail: the negative control). --base: the same table side by side.
 import fs from 'node:fs';
@@ -33,7 +34,7 @@ if (check) {
   const miss = [], need = (ok, what) => { if (!ok) miss.push(what); };
   for (const n of names) {
     const r = R[n];
-    if (n.startsWith('mix-') || n.startsWith('duel-marek-night') || n.startsWith('duel-vessa')) need(Math.abs(r.lufs + 18) <= 2, `${n}: ${r.lufs} LUFS, target -18 +- 2`);
+    if (n.startsWith('mix-') || n.startsWith('duel-marek-night') || n.startsWith('duel-vessa') || /^wx-.*-(midday|night)$/.test(n)) need(Math.abs(r.lufs + 18) <= 2, `${n}: ${r.lufs} LUFS, target -18 +- 2`);
     if (n.endsWith('-vol1')) { need(r.tp <= -1, `${n}: ${r.tp} dBTP over -1`); need(r.over === 0, `${n}: ${r.over} samples over 1`); }
     // the beds alone: a mix holds the tune's drone, whose own period is no loop of the noise
     if (/^amb-/.test(n)) { need(r.rep < 0.2, `${n}: repetition ${r.rep} at ${r.repLag} s`); need(r.repLong < 0.2, `${n}: long repetition ${r.repLong} at ${r.repLongLag} s`); }
@@ -41,7 +42,7 @@ if (check) {
   }
   for (const n of names.filter((x) => /^mix-/.test(x) && !x.endsWith('-bout'))) {
     const [, p, l] = n.split('-'), a = R[`amb-${p}-${l}`], m = R[`mus-${p}-${l}`];
-    if (a && m) { const d = r1(m.lufs - a.lufs); need(d >= 3 && d <= 6, `${n}: the music ${d} dB over the ambience, target 3 to 6`); }
+    if (a && m) { const d = r1(m.lufs - a.lufs); need(d >= 6 && d <= 9, `${n}: the music ${d} dB over the ambience, target 6 to 9 (S2-MELANGE)`); }
   }
   // the interface over the arena's roar (journal Passe SN1: the click 1.2 dB under it); the effects are rendered at volume 1, the bed at 0.7
   for (const [e, most] of [['hit', 0.6], ['heavy', 0.8], ['ko', 0.95]]) if (R[`fx-${e}`]) need(R[`fx-${e}`].low <= most, `${e}: ${R[`fx-${e}`].low} of its energy under 200 Hz, at most ${most}`);

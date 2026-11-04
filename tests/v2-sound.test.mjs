@@ -21,17 +21,18 @@ test('the effects: every duel and interface moment has a short sound made of osc
   assert.ok(S.effectLength('ko') > S.effectLength('hit') && S.effectLength('heavy') > S.effectLength('hit'), 'the heavy blows last longer');
 });
 
-test('the ambiences: a bed in every place at every hour; birds by day, crickets at night; the arena roars; the bouts heard from the town (the table of lot S2: tests/v2-sound-s2.test.mjs)', () => {
-  for (const p of PLACES.filter((x) => x !== 'arena')) for (const l of LOOKS) {
+test('the ambiences: a bed in every place at every hour; birds by day, crickets at night; the arena roars; the bouts heard from the town', () => {
+  for (const p of PLACES) for (const l of LOOKS) {
     const a = S.ambienceOf(p, l);
-    assert.ok(a.beds.some((b) => b.kind === 'wind'), `${p} ${l}`);
+    assert.ok(a.beds.length >= 1, `${p} ${l}`);
     const kinds = a.calls.map((c) => c.kind);
     assert.equal(kinds.includes('cricket'), l === 'night', `${p} ${l} crickets`); assert.equal(kinds.includes('bird'), l !== 'night', `${p} ${l} birds`);
-    for (const b of a.beds) assert.ok(b.gain > 0 && b.gain <= 3);
+    for (const b of a.beds) assert.ok(b.gain > 0 && b.gain <= 0.2);
   }
   assert.ok(S.ambienceOf('arena', 'midday').beds.some((b) => b.kind === 'roar'));
-  assert.ok(S.ambienceOf('forecourt', 'midday', true).calls.some((c) => c.kind === 'crowd-cheer')); assert.ok(!S.ambienceOf('forecourt', 'midday').calls.some((c) => c.kind === 'crowd-cheer'));
-  assert.ok(S.ambienceOf('district', 'midday', true).calls.some((c) => c.kind === 'crowd-cheer'), 'the bout heard from the town');
+  assert.ok(S.ambienceOf('forecourt', 'midday', true).calls.some((c) => c.kind === 'cheer')); assert.ok(!S.ambienceOf('forecourt', 'midday').calls.some((c) => c.kind === 'cheer'));
+  assert.ok(S.ambienceOf('festival', 'night').calls.some((c) => c.kind === 'lute'), 'a lute on the festival square');
+  assert.ok(!S.ambienceOf('district', 'night').calls.some((c) => c.kind === 'hammer'), 'the forge\'s hammer sleeps at night');
 });
 
 test('the band\'s plan (journal Passe SN10; C-LIEUX « Valider ce plan »): the town by the hour, the forecourt and the lists by day and the night\'s in the evening, the waltz at every hour, the fights by the tournament, the title on a new game', () => {

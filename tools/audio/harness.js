@@ -38,6 +38,8 @@
     if (job.stem === 'music') for (const k of Object.keys(buses)) if (k !== 'music') buses[k].disconnect();
     if (job.stem === 'fx') buses.music.disconnect();
     if (job.effect) window.setTimeout(() => s.play(job.effect), 10);
+    // a storm's flashes, as the page's weather sends them (lot S2: src/atmosphere/Weather.ts)
+    if (job.flashes) for (const f of job.flashes) window.setTimeout(() => window.dispatchEvent(new CustomEvent('cdt-flash', { detail: { level: f.level } })), f.t * 1000);
     if (job.events) for (const e of job.events) { const t = e.t - (job.from ?? 0); if (t >= 0 && t < job.secs) window.setTimeout(() => (s.duelEvent ? s.duelEvent(e) : oldSoundOf(s, e)), t * 1000); }
     if (job.script) await AUD_SCRIPTS[job.script](s, job, (t, fn) => window.setTimeout(fn, t * 1000), vt);
     const t0 = performance.now();

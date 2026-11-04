@@ -1,0 +1,135 @@
+{
+ "id": "interface",
+ "kind": "effect",
+ "runtimeUse": "production",
+ "licence": "own",
+ "generatedByAi": false,
+ "score": "art-lab/audio/sfx/places.sfx.mjs",
+ "approved": true,
+ "approval": "The operator, on the sheet of lot S2 (briefs/fiche-son-lieux.html, journal Passe SN19, 2026-11-04): S2-INTERFACE « Bonne direction »; S2-POIDS « Calculer dans la page, cuire l’interface et le murmure (121 Ko) »; S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé ». The murmur is not baked: no place took it (« Garder l’ambiance d’aujourd’hui »). To be confirmed after the trial in play. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
+ "decisions": [
+  "S2-INTERFACE « Bonne direction » (journal Passe SN19, 2026-11-04)",
+  "S2-POIDS « Calculer dans la page, cuire l’interface et le murmure (121 Ko) » (journal Passe SN19, 2026-11-04)",
+  "S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé » (journal Passe SN19, 2026-11-04)"
+ ],
+ "files": [
+  {
+   "path": "src/audio/baked/sfx-ui-click-0.webm",
+   "bytes": 5480,
+   "sha256": "be3e11321f38075bea90d17931013161c676423c47b82e319812cdbdba6c1b89",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 17028
+  },
+  {
+   "path": "src/audio/baked/sfx-ui-click-0.m4a",
+   "bytes": 4278,
+   "sha256": "f0a5c9b789f199df5ed7cb53690e7d03d22d158e5c7b30d47fbfdec1ec45e013",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 17028
+  },
+  {
+   "path": "src/audio/baked/sfx-ui-click-1.webm",
+   "bytes": 5467,
+   "sha256": "f8f8954df6528296d13fcfc969cf4029ee4b5fd658eeaaedf1411555589a1cc8",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 17029
+  },
+  {
+   "path": "src/audio/baked/sfx-ui-click-1.m4a",
+   "bytes": 4289,
+   "sha256": "6eab06022a0e765b0f09764a77aef9657405d296c4e89df864fbd630f7b2d377",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 17029
+  },
+  {
+   "path": "src/audio/baked/sfx-ui-click-2.webm",
+   "bytes": 5468,
+   "sha256": "dd9902cb76874b4e63ee39ff70c31275e050287c5fae406d360c7e58829b56dd",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 17028
+  },
+  {
+   "path": "src/audio/baked/sfx-ui-click-2.m4a",
+   "bytes": 4275,
+   "sha256": "7b98a4d80c3f6438e596ba7ae0917339dd885c02ced4e605d44342ca4346e5c2",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 17028
+  },
+  {
+   "path": "src/audio/baked/sfx-ui-open.webm",
+   "bytes": 11683,
+   "sha256": "cfc78c218feb83e45fdc2902ba8cd395e632a8f50f8ad6b9d3ca724f5eb6a624",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 34826
+  },
+  {
+   "path": "src/audio/baked/sfx-ui-open.m4a",
+   "bytes": 7834,
+   "sha256": "2abeb9273c9338f928bfe4d982a666c921c06746f6d77cd087ab2e1553b84260",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 34826
+  },
+  {
+   "path": "src/audio/baked/sfx-ui-coin-0.webm",
+   "bytes": 8620,
+   "sha256": "a8158e4041ff4a7d4fa000fca81833b561575a972aaa3d48d7788210a9cb6850",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 25878
+  },
+  {
+   "path": "src/audio/baked/sfx-ui-coin-0.m4a",
+   "bytes": 6416,
+   "sha256": "d040da0450b0098112a077c2894ac8da18a306705e87bad01de7700f01c107ac",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 25878
+  },
+  {
+   "path": "src/audio/baked/sfx-ui-coin-1.webm",
+   "bytes": 8549,
+   "sha256": "063d4098c308c607ca393fd0ef7b4381ca637221a5d908c9756a0fee369f68c6",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 25951
+  },
+  {
+   "path": "src/audio/baked/sfx-ui-coin-1.m4a",
+   "bytes": 6452,
+   "sha256": "ab45375d4aab6d1e92cfa03f6d91a9d47ce6f24cdf3e464bd230e3cd51e1f6a8",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 25951
+  }
+ ],
+ "bake": {
+  "tool": "tools/audio/band/bake-sfx.mjs",
+  "ffmpeg": "9.0.2-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "encoders": {
+   "webm": "-c:a libopus -b:a <kbps>k -vbr on -application audio -frame_duration 20 -f webm",
+   "m4a": "-c:a aac -b:a <kbps>k -f mp4 -aac_pns 0",
+   "input": "f32le 48000 Hz stereo, -map_metadata -1 -fflags +bitexact -flags:a +bitexact",
+   "opusDelay": "24 samples ahead (silence before a sound, the murmur's last ones before it), 336 written as the delay"
+  }
+ }
+}

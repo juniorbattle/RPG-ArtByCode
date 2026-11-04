@@ -9,6 +9,7 @@ import { load } from './load.mjs';
 const R = await load('/src/arena/fx/fxRecipes.ts'), S = await load('/src/audio/sfx.ts'), SC = await load('/src/audio/score.ts');
 const { CUES, renderCue } = await import('../art-lab/audio/sfx/duel.sfx.mjs');
 const { CROWD } = await import('../art-lab/audio/sfx/crowd.sfx.mjs');
+const { PLACE_CUES } = await import('../art-lab/audio/sfx/places.sfx.mjs');
 const CAT = JSON.parse(fs.readFileSync(new URL('../src/audio/catalogue.json', import.meta.url), 'utf8'));
 const MDIR = new URL('../art-lab/audio/manifests/', import.meta.url), MANIFESTS = fs.readdirSync(MDIR).map((f) => JSON.parse(fs.readFileSync(new URL(f, MDIR), 'utf8')));
 // the duel's reading, silent until now (the audit, « Lecture du duel : Muet »), a blow missed and an order refused: sounds without an effect recipe
@@ -32,13 +33,14 @@ test('a sound is its writing alone: the same bytes twice, its takes different, i
 
 test('the baked bank: every sound and every take in the catalogue, in a manifest of the operator\'s sheet, in both formats', () => {
   const table = CAT.sfx;
-  assert.deepEqual(Object.keys(table).sort(), [...Object.keys(CUES), ...Object.keys(CROWD).map((c) => `crowd-${c}`)].sort());
+  // the duel's bank and the crowd (lot S3), the interface (lot S2, journal Passe SN19)
+  assert.deepEqual(Object.keys(table).sort(), [...Object.keys(CUES), ...Object.keys(CROWD).map((c) => `crowd-${c}`), ...Object.keys(PLACE_CUES)].sort());
   const claimed = new Map(); for (const m of MANIFESTS) for (const f of m.files) claimed.set(f.path, m);
   for (const [id, e] of Object.entries(table)) {
-    assert.equal(e.files.length, e.frames.length, id); assert.equal(e.files.length, id.startsWith('crowd-') ? 1 : CUES[id][2], `${id}: its takes`);
+    assert.equal(e.files.length, e.frames.length, id); assert.equal(e.files.length, id.startsWith('crowd-') ? 1 : (CUES[id] ?? PLACE_CUES[id])[2], `${id}: its takes`);
     for (const [k, f] of e.files.entries()) for (const x of ['webm', 'm4a']) {
       const m = claimed.get(`src/audio/baked/${f}.${x}`); assert.ok(m, `${f}.${x} under a manifest`);
-      assert.equal(m.files.find((g) => g.path.endsWith(`/${f}.${x}`)).frames, e.frames[k]); assert.match(m.approval, /S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé »/);
+      assert.equal(m.files.find((g) => g.path.endsWith(`/${f}.${x}`)).frames, e.frames[k]); assert.match(m.approval, e.family === 'interface' ? /S2-SUITE « Cuire et brancher dans la version 2 ce qui est validé »/ : /S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé »/);
     }
   }
   assert.equal(table['crowd-bed'].loop, true); assert.ok(Object.entries(table).every(([id, e]) => id === 'crowd-bed' || !e.loop));

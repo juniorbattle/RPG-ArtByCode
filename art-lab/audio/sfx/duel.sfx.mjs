@@ -83,7 +83,7 @@ const TONE = {
   boost: [['hp', 70], ['low', 150, 0.7, -4], ['peak', 2200, 0.8, 2]],
   ko: [['hp', 40], ['low', 120, 0.7, -2]],
 };
-export const kit = (c, kind, t, v, o = {}) => c.put(drum(kind, v, o.take ?? 0), t, o);
+const kit = (c, kind, t, v, o = {}) => c.put(drum(kind, v, o.take ?? 0), t, o);
 
 /** each recipe's sound: [family, length (s), takes, writer]; a take is the same gesture with the kit's other draws and the hand's small differences */
 export const CUES = {

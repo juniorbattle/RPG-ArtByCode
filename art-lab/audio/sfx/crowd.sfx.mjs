@@ -9,7 +9,7 @@ import { loudness } from '../../../tools/audio/measure.mjs';
 const VOWEL = { a: [730, 1090, 2440], o: [570, 840, 2410], u: [300, 870, 2240], e: [530, 1840, 2480], i: [390, 1990, 2550], ae: [660, 1720, 2410] };
 
 /** one voice into L/R: `f0(t)` its pitch, `vowel(t)` its formants, `env(t)` its breath; placed in the field, farther ones darker */
-export function voice(L, R, at, secs, r, { f0, vowel, env, pan = 0, g = 1, breath = 0.18, far = 0 }) {
+function voice(L, R, at, secs, r, { f0, vowel, env, pan = 0, g = 1, breath = 0.18, far = 0 }) {
   const n = Math.min(Math.round(secs * SR), L.length - at), f1 = new Svf(), f2 = new Svf(), f3 = new Svf(), dark = new Svf(), th = (clamp(pan, -1, 1) + 1) * Math.PI / 4, gl = g * Math.cos(th), gr = g * Math.sin(th);
   dark.set(5200 - 3600 * far, 0.6);
   let ph = r.next(), jit = 0, F = [500, 1500, 2500];
@@ -37,8 +37,8 @@ function clap(L, R, at, r, { g = 1, pan = 0, far = 0 } = {}) {
 const smooth = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 const lerp3 = (a, b, k) => [0, 1, 2].map((i) => a[i] + (b[i] - a[i]) * k);
 /** a member of the crowd: a man or a woman, a pitch, a distance */
-export const person = (r) => { const woman = r.next() < 0.45; return { woman, f: (woman ? 205 : 118) * 2 ** (r.bi() * 0.25), far: r.next(), pan: r.bi() * 0.9, sc: woman ? 1.17 : 1 }; };
-export const formants = (v, p) => VOWEL[v].map((x) => x * p.sc);
+const person = (r) => { const woman = r.next() < 0.45; return { woman, f: (woman ? 205 : 118) * 2 ** (r.bi() * 0.25), far: r.next(), pan: r.bi() * 0.9, sc: woman ? 1.17 : 1 }; };
+const formants = (v, p) => VOWEL[v].map((x) => x * p.sc);
 
 /** a reaction of `count` voices: each a shout on its vowels, its pitch's contour, a little early or late */
 function shout(L, R, at, r, count, { vowels, rise = 2, fall = -5, attack = 0.12, hold = 0.25, decay = 1, spread = 0.18, g = 1, breath = 0.2, high = 1 }) {
@@ -54,7 +54,7 @@ function shout(L, R, at, r, count, { vowels, rise = 2, fall = -5, attack = 0.12,
   }
 }
 /** applause: `hands` people clapping 3 to 6 times a second, for `secs`, swelling and fading */
-export function applause(L, R, at, r, hands, secs, { g = 1, swell = 0.3 } = {}) {
+function applause(L, R, at, r, hands, secs, { g = 1, swell = 0.3 } = {}) {
   for (let k = 0; k < hands; k++) {
     const rate = 3.2 + 2.8 * r.next(), p = { pan: r.bi() * 0.95, far: r.next() }, stop = secs * (0.6 + 0.4 * r.next());
     for (let t = r.next() * 0.25; t < stop; t += (1 / rate) * (0.9 + 0.2 * r.next())) { const e = smooth(t / swell) * (t > stop - 0.6 ? Math.max(0, (stop - t) / 0.6) : 1); clap(L, R, at + Math.round(t * SR), r, { g: g * e * (0.5 + 0.5 * r.next()) * (1 - 0.6 * p.far) / Math.sqrt(hands), pan: p.pan, far: p.far }); }
@@ -66,7 +66,7 @@ function arena(L, R, { rt = 1.8, wet = 0.45 } = {}) {
   const [a, b] = room({ seed: 23, rt, pre: 0.03, damp: 2600, bright: 0.45, early: 10, size: 0.09 }), wl = convolve(L, a), wr = convolve(R, b);
   for (let i = 0; i < L.length; i++) { L[i] = L[i] * (1 - wet) + wl[i] * wet; R[i] = R[i] * (1 - wet) + wr[i] * wet; }
 }
-export function level(L, R, target, by = 'momentary') {
+function level(L, R, target, by = 'momentary') {
   const m = loudness([L, R], SR)[by === 'lufs' ? 'lufs' : 'momentary'], g = 10 ** ((target - m) / 20); for (let i = 0; i < L.length; i++) { L[i] *= g; R[i] *= g; }
   return { L, R };
 }
