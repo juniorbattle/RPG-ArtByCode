@@ -37,7 +37,9 @@
     const ramp = P.ramp === 'bar' ? set0.bar : 0.25;
     const move = (i, v, t) => {
       const g = set0.gains[i].gain, x = st[i];
-      if (x.at === t) { g.cancelScheduledValues(t); g.setValueAtTime(x.from, t); if (v !== x.from) g.linearRampToValueAtTime(v, t + ramp); }
+      // cancelled just after the line, as src/audio/layers.ts: the ramp of the move before may end on it (journal Passe SN14: the sheet's excerpt F was rendered
+      // before this, cancelled on the line, and held its tension at 0:52 to jump at 0:53.5)
+      if (x.at === t) { g.cancelScheduledValues(t + 0.001); g.setValueAtTime(x.from, t); if (v !== x.from) g.linearRampToValueAtTime(v, t + ramp); }
       else { x.from = x.held; x.at = t; g.setValueAtTime(x.held, t); g.linearRampToValueAtTime(v, t + ramp); x.last = t; }
       x.held = v; set0.held[i] = v; window.__moves.push([+t.toFixed(3), i, v, ramp]);
     };

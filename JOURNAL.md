@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -59,149 +59,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/46-passes-UM2-UM8.md`](journal/46-passes-UM2-UM8.md) | UM2, UM3, UM4, UM5, UM6, UM7, UM8 | 02/11 |
 | [`journal/47-passes-UM9-SN3.md`](journal/47-passes-UM9-SN3.md) | UM9, SN1, SN2, SN3 | 02/11 |
 | [`journal/48-passes-UM10-SN6.md`](journal/48-passes-UM10-SN6.md) | UM10, UM11, SN4, SN5, UM12, SN6 | 02/11 |
+| [`journal/49-passes-SN7-SN8.md`](journal/49-passes-SN7-SN8.md) | SN7, SN8 | 02/11 |
 
 ---
-
-## Passe SN7 — Le catalogue : douze morceaux, un seul motif, des boucles sans clic, la fiche du catalogue (2026-11-02)
-
-### Demande
-- F-SUITE « Le catalogue d’abord » (Passe SN6) : les douze morceaux de SA-6 avant S2 et S3. Le catalogue annoncé : titre, matin, midi, fin de journée, nuit, parvis, lices, place de la halle en valse, duel, duel de rival, finale et jingles.
-
-### Fait — [OK]
-- **Sept morceaux et deux jingles neufs** (`art-lab/audio/scores/`), le motif transformé à chaque fois (`theme.mjs`) : `titre` (étiré sur un cor, sans tierce jusqu'au dernier accord de la fanfare), `fin` (la tierce hésite : fa sur le motif, fa dièse sur la réponse, les deux côte à côte à la fin), `parvis` (par bribes, puis entier ; une montée ton par ton), `lices` (5/4, cellules de cinq notes), `valse` (3/4, pointé), `rival` (7/8 sur 3 + 2 + 2, le motif renversé autour du ré, mêmes cinq notes, puis le vrai motif rendu, en trois couches), `finale` (ré mineur, un ton plus haut, puis la fanfare en ré majeur : le fa de la nuit cède au fa dièse du jour, en trois couches), `victoire`, `defaite`. La fanfare (Passe SN5) complète les jingles.
-- **Le socle** `rig.mjs` : les réglages de chaque pupitre, mesurés sur les versions approuvées, pour que chaque pièce parte du même mélange.
-- **Les boucles** (`render.mjs --loop`) : chacun des onze morceaux sort aussi en boucle pour le jeu : le fichier est le corps seul, circulaire, mastering compris (`Session.wrap`, `master({ circular })`, `beforeLoop`). Les versions avec leur fin restent pour l'oreille.
-
-### Défauts trouvés
-- [KO → corrigé] **Le clic à chaque tour** : la queue de l'introduction restait dans les premières mesures de la boucle, la fin du fichier ne rejoignait pas son début : saut de 34 % de la crête sur `midi`. Le corps seul, joué en cercle, le ramène à 5 %. Le mastering passe deux fois et garde le second tour : son état à la fin est son état au début.
-- [KO → corrigé] Une relecture indépendante des partitions a trouvé douze points : sur `finale`, le maintien de la mélodie retirait la tierce de la dominante (la correction d'`avoidAt` cachait la faute au contrôle) ; sur `rival`, le groupe partagé entre deux groupements en 7/8 ; la timbale, accordée en ré, sous des accords qui n'en ont pas ; un orgue qui anticipait le mauvais accord ; un do dièse sous un ré tenu au `parvis`, angle mort du contrôle, qui ne regarde que le demi-ton au-dessus ; le fa dièse sorti trop tôt au `parvis` ; le piano du `titre` qui sonnait sur l'accord suivant ; le vibraphone de `fin` sur les notes mobiles ; la jointure de `valse` sans dominante ; le fa dièse sonnant sur le fa à la jointure de `finale` ; la couche `tension` vide sur douze mesures du `rival` ; le marimba de `lices` dans le registre de la mélodie. Tout est corrigé.
-- [KO → corrigé] Les mètres : batterie trop vive dans la valse (4 kHz à −0,4 dB), trop forte dans les combats, cor trop discret au titre et au parvis.
-
-### Mesures — [OK]
-Rendus à 48 kHz, −18 LUFS. « Boucle » : la durée du fichier du jeu. « Jointure » : le saut au tour rapporté au plus grand saut du morceau.
-
-| Morceau | Avec sa fin | Boucle | Crête vraie | Plage (LU) | Jointure |
-|---|---|---|---|---|---|
-| `titre` | 65,8 s | 46,7 s | −1,3 dBTP | 8,2 | 0,01 |
-| `matin` | 82,3 s | 65,5 s | −4,6 dBTP | 5,3 | 0,02 |
-| `midi` | 94,9 s | 81,5 s | −3,8 dBTP | 3,1 | 0,09 |
-| `fin` | 67,5 s | 49,2 s | −3,8 dBTP | 5,2 | 0,03 |
-| `nuit` | 88,7 s | 67,5 s | −4,5 dBTP | 6,0 | 0,01 |
-| `parvis` | 64,3 s | 50,0 s | −2,6 dBTP | 4,7 | 0,03 |
-| `lices` | 58,9 s | 50,0 s | −3,1 dBTP | 3,3 | 0,02 |
-| `valse` | 57,9 s | 47,0 s | −4,8 dBTP | 2,9 | 0,09 |
-| `duel` | 54,2 s | 44,2 s | −5,0 dBTP | 3,0 | 0,32 |
-| `rival` | 42,9 s | 35,9 s | −5,8 dBTP | 2,1 | 0,06 |
-| `finale` | 53,9 s | 42,4 s | −4,0 dBTP | 3,9 | 0,62 |
-
-- La durée écrite du catalogue fait 12,1 minutes (SA-6 « 12 morceaux, 12 min »), jingles compris. `victoire` 9,6 s et `defaite` 12,3 s avec leur résonance.
-- Les jointures de `duel` et de `finale` tombent dans une attaque de batterie sur le premier temps : le saut reste sous le plus grand saut naturel du morceau.
-- **Poids en Opus, mesuré sur les boucles** : huit morceaux simples à 96 kb/s 5,95 Mo ; jingles 0,50 Mo ; les trois combats en trois couches (`base` à 80 kb/s, `melody` et `tension` à 64) 3,50 Mo. **9,95 Mo** en tout, sous les 12 Mo de SA-17 ; 8,62 Mo si seul `duel` garde ses couches.
-- 0 frottement, le motif dans l'ordre et les tessitures tenues sur les onze morceaux. `npm run typecheck`, `npm test` **381 / 381**, `npm run build`, `npm run art:validate` : 61 manifestes, 85 sources, 0 manifeste de son, 0 erreur. Aucun fichier de `src/` ni de `public/` ne change, aucun fichier audio dans le dépôt.
-
-### Limites
-- **Personne n'a écouté les neuf pièces neuves.** Le cor du titre et la tenue de la valse le soir sont les inconnues les plus nettes.
-- Le contrôle `rubs` ne voit qu'un demi-ton au-dessus de l'orchestre : les deux relectures ont trouvé des fautes hors de ce champ. Il n'a pas été élargi : la septième majeure sous la mélodie est une couleur voulue.
-- Le corps d'une boucle ne contient pas l'introduction : les introductions du `duel`, du `rival`, de la `finale` et du `titre` demanderont un fichier à part ou seront retirées au moment de cuire. Au premier tour, la résonance de la fin de boucle s'entend sur le début, faiblement.
-- La jointure s'entend peut-être sur `midi`, qui repart de mi vers ré : voulu, à confirmer.
-- **AAC** : son décalage de codeur peut laisser un trou à la jointure : à éprouver sur un vrai Safari, je n'ai aucun appareil Apple. Rien n'est cuit ni branché ; le moteur joue toujours `tune()`.
-- Le parvis mixé sur sa foule (Passe SN5) n'a pas été refait pour les autres lieux.
-
-### La fiche — à remplir par l'opérateur
-- Page privée https://claude.ai/artifact/YWTp8PsevhBXAQYhXP79vD (source `briefs/fiche-son-catalogue.html`), collection `decisions` vide à la publication, treize cartes, onze extraits. À l'oreille : C-TITRE, C-FIN, C-PARVIS, C-LICES (avec « Garder, mais en 4/4 »), C-VALSE, C-RIVAL, C-FINALE, C-JINGLES, C-BOUCLE. Décisions : C-LIEUX le plan des morceaux par lieu et par étape du tournoi, C-COUCHES le poids, C-SAFARI l'essai sur appareil Apple, C-SUITE cuire et brancher. Rendu vérifié en local, deux largeurs, onze lecteurs chargés, sans débordement.
-
-### Report sur `main`
-- `main` a reçu UM12 pendant ce travail. Branche neuve `claude/sound-twelve` depuis `e118f66`, Passe SN6 rejouée, aucun push forcé.
-
-### Où reprendre
-- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot, n'agir que sur ce qui est décidé. La suite proposée : cuire sous manifeste (Opus et AAC), jouer les boucles et les couches dans le moteur derrière `flags.v2`, essai en jouant ; puis S2 et S3 avec les instruments du groupe.
-
-### Journal — [OK] archivage
-- Les passes gardées dépassaient 60 Ko. UM9, SN1, SN2, SN3, closes, partent d'un seul bloc vers `journal/47-passes-UM9-SN3.md` (29504 octets). Preuve : corps de l'archive égal au bloc, chaque passe dans un seul fichier, fins de ligne CRLF gardées.
-
-### Pensée
-- Une boucle n'est pas un morceau qu'on recoud : le fichier du jeu se rend comme un cercle, de la partition au plafond. Chercher le clic a montré que l'introduction n'avait rien à y faire.
-- Une correction automatique peut cacher une faute à son propre contrôle : `avoidAt` retirait une tierce, et le test passait. Quand un outil modifie la musique, ce qu'il retire se relit.
-
-## Passe SN8 — La fiche du catalogue relue, et la reprise : chaque morceau son air (2026-11-02)
-
-### Demande
-- Message de l'opérateur, mot pour mot : « Fiche remplie, le vrai retour est : Gloablement je trouve cela bien mais on a peut etre pousser le concept de similarite entre track un peu, il faut de la subtilite afin que les joueurs ne ressentent pas cette sensation de copier-coller, surtout niveau structure qui semble etre trop facilement reconnu ».
-
-### La fiche
-- Page privée https://claude.ai/artifact/YWTp8PsevhBXAQYhXP79vD, source `briefs/fiche-son-catalogue.html`. Relue par `list` : 13 documents sur 13, aucune note enregistrée.
-
-| # | Décision | Choix de l'opérateur |
-|---|---|---|
-| C-TITRE | Le titre | « Bonne direction » |
-| C-FIN | La fin de journée | « Bonne direction » |
-| C-PARVIS | Le parvis | « Bonne direction » |
-| C-LICES | Les lices en 5/4 | « Bonne direction » |
-| C-VALSE | La valse | « Bonne direction » |
-| C-RIVAL | Le rival | « Bonne direction » |
-| C-FINALE | La finale | « Bonne direction » |
-| C-JINGLES | Victoire et défaite | « Bonne direction » |
-| C-BOUCLE | Les jointures | « Rien entendu de gênant » |
-| C-LIEUX | Quel morceau joue où | « Valider ce plan » |
-| C-COUCHES | Les couches | « Trois couches sur les trois combats » |
-| C-SAFARI | L'essai sur appareil Apple | « Je peux faire l’essai » |
-| C-SUITE | La suite | « Reprendre ces morceaux d’abord (en note) » |
-
-### Ce que ces choix veulent dire
-- **C-SUITE** passe la reprise avant la cuisson ; sa note est le message ci-dessus. **C-LIEUX** fixe le plan des morceaux par lieu et par étape du tournoi pour le lot de cuisson ; **C-COUCHES** : trois couches sur `duel`, `rival` et `finale` ; **C-SAFARI** : l'opérateur fera l'essai, une page de test viendra avec les premiers fichiers cuits ; **C-BOUCLE** : la jointure circulaire est acceptée à l'oreille.
-- [KO → corrigé] **La note de C-SUITE s'est perdue** : le document a été écrit 48 fois (`version: 48`, l'opérateur tapait) et il est revenu vide. Cause, lue dans le code de la page : un instantané du serveur arrivé pendant une écriture remplaçait l'état local, et l'écriture suivante renvoyait l'ancienne valeur. La nouvelle fiche ignore les instantanés d'un document en cours d'écriture ou modifié depuis moins de 5 s. Le modèle de la compétence `fiche-arbitrages` (hors du dépôt) portait le même défaut ; corrigé ensuite à la demande de l'opérateur (« Do this task here: “Corriger la note perdue du modèle fiche-arbitrages” »), avec la même protection et l'enregistrement pendant la frappe (une note tapée en dernier, le champ jamais quitté, se perdait). Son exemple ne s'exécutait pas du tout : trois apostrophes droites dans des chaînes entre apostrophes, corrigées. [OK] Rejoué dans Chrome sans tête avec une base factice : l'original renvoie un choix et une note vides, le modèle corrigé les garde ; un changement venu d'un autre onglet s'affiche toujours une fois la page au repos.
-
-### Ce qui faisait le copier-coller — mesuré
-- Lecture des quatorze partitions : huit morceaux suivaient le même plan (introduction, motif, motif plus fourni, réponse, fanfare, retour, en blocs de quatre mesures) ; le motif entier tenait la mélodie de neuf morceaux ; le bloc de la fanfare et ses accords (D13sus, E/D, Bbmaj9 et C9, D6/9) fermaient dix fichiers ; tout était centré sur ré ; des phrases passaient d'un morceau à l'autre note pour note (la réponse de la nuit et du titre, leur fin au vibraphone, la réponse du duel sur le contour du pont de midi).
-- **Outil** `tools/audio/band/likeness.mjs` : les airs lus en tournures de six notes par leurs seuls intervalles (même tournure dans une autre tonalité, une autre mesure, un autre rythme), les blocs de deux mesures copiés (intervalles et rythme), les suites de quatre accords en degrés, la tonalité estimée (profils de Krumhansl et Kessler, un repère, pas une preuve pour une pièce modale). `runsOf` et `THEME_STEPS` (`theme.mjs`) séparent les tournures du thème, partagées par dessein.
-- [KO → corrigé] Première version de l'outil : la fusion des notes simultanées testait un champ absent, les doublures à l'octave s'entrelaçaient et cachaient des ressemblances ; le garde-fou passait grâce à ce défaut. Trouvé par la relecture indépendante, corrigé, toutes les mesures refaites.
-
-### Fait — [OK]
-- **La règle** (`theme.mjs`, `WHOLE_MOTIF`) : le motif entier au titre, à midi, dans les riffs du duel et du rival, et à la finale ; ailleurs sa tête seule, dans un accompagnement : le marimba du milieu du matin, le vibraphone grave de la nuit et de la fin de journée, une voix intérieure du piano au parvis, le marimba de l'exercice aux lices, la basse du pont de la valse. L'appel de la fanfare à midi et à la finale seulement (et dans les jingles), harmonisé et frappé autrement dans les deux.
-- **Chaque morceau son air, sa tonalité, sa forme** : `matin` en sol (couplets de six mesures, refrain de huit, milieu en hémiole, une coda à lui) ; `midi` une seule fanfare, après le solo, le solo sans la tierce avant elle, la boucle repassant par la dominante ; `fin` en fa, une bossa lente (nylon sur la clave, rim, shaker, basse au doigt) et un cor doux, 8 + 6 + 4 mesures, plus rien du groupe de la nuit ; `nuit` sa propre chanson en ré dorien, ouverte sur sa tierce, 5 + 4 mesures puis le souvenir du jour ; `titre` le motif sur des accords neufs, une réponse neuve, la tête du motif deux fois plus lente au sommet, sans fanfare ; `parvis` en do, un riff et un air qui s'empilent, une fin sur les tambours ; `lices` en la dorien, un air en phrases de trois mesures, l'exercice seul pour finir ; `valse` en si bémol, son air, un pont en mineur, un arrêt net ; `duel` un ton plus haut, mi mineur, sa propre montée, une réponse neuve ; `rival` en fa dièse mineur, sa ligne au lead, quatre mesures du riff du héros, une ouverture aux toms et un arrêt net ; `finale` réécrite : un riff en croches droites en do mineur, le motif entier au cor en valeurs longues, une réponse, deux mesures sur la dominante, la tête en ré mineur, la fanfare en ré majeur sur une pédale de ré.
-- **Une entrée et une fin par morceau** (six entraient de la même façon, dix finissaient sur deux gestes) : les tambours seuls (fin de journée, parvis, rival), l'élan d'un synthé ou d'une flûte (nuit, valse), l'exercice et la batterie (lices), la quinte et le vibraphone sans la basse (titre), la guitare et les mains (matin) ; un arrêt net (valse, rival), une fin ouverte sur la dominante (nuit), les cuivres qui tombent (midi), la timbale qui s'éloigne (duel), les tambours seuls (parvis), l'exercice seul (lices), les deux tierces à la suite (fin de journée).
-- La timbale s'accorde (`drum('timp', vel, take, tune)`, les octets d'avant gardés à 0) ; `power` transpose.
-- **Le garde-fou** (`tests/audio-band.test.mjs`) : le motif entier seulement là où il doit, sa tête ailleurs ; hors thème, moins de 8 % des tournures entendues dans un autre morceau, quatre au plus par paire ; aucun bloc copié sinon l'appel de la fanfare de midi à la finale ; pas de fanfare ailleurs ; six tonalités estimées au moins. Sur le catalogue de SN7 il échoue sur chacun de ces points.
-
-### Relectures indépendantes
-- [KO → corrigé] **Première relecture** (un agent, sans ma conclusion), 24 points. Fautes : le marimba des lices (ré contre do dièse sur A13), trois coups de timbale de la finale hors de l'accord, le cor grave du titre contre le si bémol de l'orchestre, le défaut de l'outil (plus haut). Ressemblances : la finale reprenait le refrain de midi (le motif en 3-3-2-3-2-3, les trois frappes, la montée, le ton plus haut, le bloc de la fanfare) et le plan du duel (quinte ouverte, break en demi-temps) ; le cri du parvis était note pour note celui de la finale ; la fin de journée gardait la section rythmique de la nuit ; deux gabarits de fin pour dix morceaux ; la tête du motif trop exposée à la nuit et aux lices ; des suites d'accords communes ; le duel et la nuit en ré mineur. Jointures : midi (mi vers ré) et finale (ré majeur vers do mineur). Tout est corrigé : la finale réécrite, la fin de journée en bossa, le duel en mi mineur, les lices en la pour ne pas lui prendre son mi.
-- [KO → corrigé] **Seconde relecture**, 19 points : ma nouvelle finale reprenait, mesures 16 à 21, les accords et le contre-chant de la nuit une octave plus haut ; six morceaux gardaient la même entrée (un accompagnement seul, la basse à la deuxième mesure, l'air à la troisième) ; l'air des lices était enfoui par sa transposition ; des timbales et une basse contre l'accord (finale, rival), des guitares sous ré2 ; la même mesure dans la fin de journée et la valse ; des fins encore semblables ; l'appel de la fanfare encore harmonisé comme à midi ; le même tour bII–V au titre et à midi, au duel et au pont de midi ; le même motif de batterie au titre et au solo de midi. Tout est corrigé. L'outil lit désormais chaque voix mélodique à part : une phrase cachée entre deux voix échappait à la ligne fusionnée. Une tournure du motif enchaîné à lui-même compte comme le motif.
-- [?] Gardé : au duel, le doublé du lead à l'octave 6 monte au mi7, la limite de la tessiture, dans la seconde reprise du riff (la version approuvée montait au ré7). La cellule noire pointée, croche, blanche reste celle de la nuit ; ailleurs elle a été variée.
-
-### Mesures — [OK]
-Onze morceaux, le même outil (corrigé, chaque voix lue à part) sur l'arbre gelé de SN7 et sur l'arbre de travail.
-
-| | SN7 | SN8 |
-|---|---|---|
-| Tournures de six notes entendues ailleurs, hors thème | 19 % (142 sur 758) | 7 % (48 sur 712) |
-| Le plus de tournures partagées par une paire, hors thème | 22 | 4 |
-| Paires qui partagent une tournure, thème compris | 55 sur 55 | 32 |
-| Blocs de deux mesures copiés | 54 | 4 (l'appel de la fanfare, midi et finale) |
-| Paires qui partagent une suite de quatre accords | 7 | 1 (le riff du héros cité par le rival) |
-| Tonalités écrites | ré partout | 8 toniques : ré, sol, fa, do, la, si bémol, mi, fa dièse |
-
-- Contrôles sans oreille sur les passes sèches : aucun frottement de l'air contre une note tenue, aucune note hors tessiture.
-- Rendus (`render.mjs --meters` puis `--loop --stems`) : 702 s écrites, 11,7 minutes (SN7 : 12,1) ; les onze boucles du jeu 566 s ; chaque morceau à -18 LUFS, crête vraie -1,7 dBTP au plus (lices, rendu entier), -2,2 dans les boucles. Jointures : le saut de la fin au début vaut 3,5 % de la crête au plus, sauf `duel` (15 %) et `finale` (22 %), qui tombent comme en SN7 dans une attaque de batterie sur le premier temps, sous le plus grand saut naturel du morceau (31 % et 44 % de lui).
-- Poids en Opus, mesuré comme en SN7 : les huit boucles simples à 96 kb/s 6,22 Mo, les trois combats en trois couches 3,46 Mo, les jingles 0,5 Mo : **10,18 Mo** (SN7 : 9,95), sous les 12 de SA-17.
-- Validation : 382 tests, `npm run typecheck`, `npm run build`, `npm run art:validate` passent ; aucun fichier de `src/` ni de `public/` ne change, aucun fichier audio dans le dépôt.
-
-### Limites
-- **Personne n'a écouté** la reprise. Les mesures disent que les airs ne se recopient plus ; elles ne disent pas qu'ils sont beaux ni que le catalogue sonne encore comme un seul jeu.
-- La tonalité estimée lit mal les modes (le parvis en do mixolydien lu si bémol, les lices en la dorien lues mi mineur) : le garde-fou compte les tonalités estimées, la fiche les tonalités écrites.
-- [?] Aux lices, la tête du motif reste l'exercice du marimba : elle tourne sous l'air dans seize mesures sur vingt-neuf (elle ne tient plus l'air, comme en SN7). Si l'oreille l'entend encore trop, c'est le premier endroit à alléger.
-- `titre`, `midi` et `nuit` restent en ré, par dessein : l'ouverture, le chant du tournoi, et la nuit dont la tierce dit l'heure.
-- Rien n'est cuit ni branché ; le moteur joue toujours `tune()`.
-
-### La fiche — à remplir par l'opérateur
-- Page privée https://claude.ai/artifact/LxqRepAVoinCRGZQDZvMte, source `briefs/fiche-son-reprise.html` (les extraits MP3 avant et après de chaque morceau repris et la journée enchaînée, avant et après, publiés avec la page, pas dans le dépôt) : les mesures de la reprise, puis une décision par morceau et la suite. `decisions` relu vide à la publication.
-
-### Où reprendre
-- Relire la fiche quand l'opérateur la dit remplie, consigner mot pour mot. Si la reprise est validée : le lot de cuisson (C-SUITE de cette fiche), avec la page de test Safari (C-SAFARI) et le plan C-LIEUX.
-
-### Pensée
-- Un thème partout n'est plus un thème. La règle d'un leitmotiv tient dans un test : où il s'entend entier, où il se cache, et que rien d'autre ne passe d'un morceau à l'autre.
-- Un outil de mesure doit échouer sur ce qu'il prétend voir : le garde-fou passait à cause de son propre défaut. Le contrôle négatif (l'ancien catalogue doit échouer) et une relecture indépendante l'ont montré.
-- Une page qui enregistre pendant la frappe doit protéger ce qui est tapé contre l'écho du serveur.
 
 ## Passe SN9 — La fiche de la reprise relue : sept morceaux repris gardés, la musique du tournoi revient à SN7 (2026-11-03)
 
@@ -469,6 +329,70 @@ Cuisson finale (chaque morceau depuis sa seule partition), −18 LUFS par morcea
 - Une règle de couches se mesure à la fréquence de ses changements, rapportée à la mesure du morceau. Une cause plus courte qu'une mesure fait bouger la musique après coup, quand la cause est déjà finie.
 - Deux automations Web Audio au même instant ne se remplacent pas, elles s'ajoutent. Un changement qui en remplace un autre en attente annule d'abord ce qui est programmé depuis cet instant (`cancelScheduledValues`).
 
+## Passe SN14 — Lot S3 : la fiche des couches relue, la règle F appliquée (2026-11-04)
+
+### Demande
+- L'opérateur, mot pour mot : « Fiche remplie ».
+
+### La fiche
+- Page privée https://claude.ai/artifact/FEHPDrJ6SQ3zC6XmvPyAtr, source `briefs/fiche-son-couches.html`. Relue par `list` : 4 documents sur 4, aucune note.
+
+| # | Décision | Choix de l'opérateur |
+|---|---|---|
+| CQ-MORCEAU | Le morceau lui-même | « Le morceau tient : c’est la façon de suivre le combat » |
+| CQ-REGLE | Comment la musique suit le combat | « F · Des niveaux plus doux » |
+| CQ-BAISSE | La musique sous les coups | « Juger avec les nouveaux bruitages (S3) » |
+| CQ-TROIS | Le rival et la finale suivent le duel | « La même règle que le duel ; les deux morceaux tiennent » |
+
+### Ce que ces choix veulent dire
+- **Les partitions restent** : `duel`, `rival` et `finale` tiennent. Ce qui ne convainquait pas, c'est la façon dont leurs couches suivaient le combat (CQ-MORCEAU, CQ-TROIS). Rien n'est recuit.
+- **La règle F** garde les moments de la règle d'avant (la séquence adverse, la charge dès le palier lourd, l'étourdissement, la fin de combat sous 30 %), avec des niveaux plus doux :
+  - la mélodie descend à 0,45 au lieu de partir ;
+  - la tension reste à 0,35 au repos au lieu de se taire, et monte à 1 ;
+  - chaque changement part de la barre suivante et dure une mesure entière.
+  
+  L'opérateur n'a pas pris l'option recommandée, E (l'arc du combat).
+- **Les baisses sous les coups ne changent pas** : elles se jugeront avec les nouveaux bruitages, sur la seconde fiche de S3 (CQ-BAISSE).
+- **Une seule règle pour les trois combats** (CQ-TROIS) : c'est déjà le cas, `layerLevels` sert les trois.
+
+### Fait — [OK]
+- `src/audio/plan.ts` : `MELODY_ASIDE` (0,45) et `TENSION_REST` (0,35), `layerLevels` selon F, les choix de l'opérateur cités à la place de « proposé ».
+- `src/audio/Sound.ts` : `duelEvent` fait durer chaque changement de couche une mesure (`l.set.bar`).
+- `src/audio/layers.ts` : `LayerSet.level` remplace un changement déjà demandé pour la même barre au lieu de s'y ajouter. Il annule depuis la barre plus 1 ms, puis repose le niveau de départ sur la barre, et rampe seulement si le niveau change. L'annulation part juste après la barre et non sur elle : avec des rampes d'une mesure, la rampe du changement précédent finit exactement sur cette barre et doit rester.
+- **Tests** :
+  - `tests/v2-sound.test.mjs` : les niveaux de F sur chaque moment, et la rampe d'une mesure dans `duelEvent`.
+  - `tests/v2-sound-s1.test.mjs` : un évaluateur des automations selon les règles de Web Audio, écrit indépendamment de `LayerSet`. Il vérifie trois cas : deux demandes pour une même barre laissent la couche tenue ; un remplacement juste après une rampe d'une mesure ne fait aucun pas plus raide que la rampe, et la rampe reste ; un changement simple rampe sur la mesure.
+  - Contrôles négatifs : le `level()` de `main` donne un saut de 0,55 ; une annulation posée sur la barre donne un pas de 0,55 contre 0,00046 permis.
+- **`engine-proof.mjs`** sur la sortie réelle, contre les fichiers décodés par ffmpeg :
+  - les niveaux de F : au calme 1 / 1,00 / 0,35 ; à mi-mesure 0,73 / 0,67 (attendu 0,725 / 0,675) ; une mesure plus tard 0,45 / 1,00 ; de retour au calme 1,00 / 0,35 ;
+  - un témoin neuf, `sn-double`, une séquence de 0,2 s finie avant sa barre : mélodie et tension à 1,00 / 0,35 avant la barre, juste après, et une seconde après ;
+  - 27 vérifications sur 27.
+  
+  Contrôle négatif sur `main` figé (`359deb9`, `--root`) : 6 vérifications échouent, dont le témoin. Juste après la barre, la mélodie y est à 0,00 et la tension à 1,00 : le trou que la fiche décrivait.
+
+### Défaut trouvé — [KO → corrigé]
+- **La preuve de la Passe SN10 lisait la tension sur une couche muette.** La tension du duel se tait de la troisième à la huitième mesure de sa boucle, soit de 8,4 à 16,7 s dans le rendu de la preuve. C'est là que `sn-mood` plaçait la séquence adverse (8 à 14 s). Son « 0,99 » venait de la traîne de la troisième mesure (−68 à −97 dB), juste seulement parce que le rendu est exact. Avec la rampe d'une mesure, la fenêtre a glissé dans le silence et la lecture est tombée dans le bruit (0,18 ; −3,19 à mi-rampe), alors que les automations envoyées étaient justes : relevées sur le gain, 0,35 → 1 de 8,39 à 9,77 s. Les scénarios passent à 19-25 s, à partir de la neuvième mesure de la boucle, où la tension joue. La vérification de l'introduction n'est pas touchée : la première mesure joue.
+- **L'extrait F de la fiche portait un saut que le jeu n'a pas.** Mon script de page (`layer-jobs.page.js`) annulait un changement remplacé sur la barre même, et perdait donc la fin de la rampe précédente quand elle finissait sur cette barre (le cas du second contrôle négatif). Une seule fois dans les 90 s : la tension y restait à son niveau de 0:52 à 0:53,5, puis sautait. Le moteur rampe à cet endroit. Le script annule désormais juste après la barre, comme `layers.ts`. L'opérateur a choisi F en entendant ce saut.
+
+### Mesures
+- `analyse.mjs --check` sur le rendu complet du moteur : tout passe. Chaque lieu à chaque heure est entre −18,5 et −18,9 LUFS. Les duels avec la musique sont à −17,2 LUFS (Marek, la nuit) et −17,3 (Vessa, à midi), contre −17,2 et −17,4 en Passe SN10. À plein volume : −14,2 LUFS et −1,0 dBTP.
+- **Le moteur F contre l'extrait F de la fiche** (même duel, mêmes 90 s) : les mêmes 59 changements, aux mêmes instants et aux mêmes niveaux. Le son est identique à −60 dB près, sauf à deux endroits :
+  - les deux premières secondes : l'extrait partait des niveaux d'avant, le moteur part de ceux de F ;
+  - de 0:52 à 0:53,5 : voir le second défaut ci-dessus.
+- `npm test` 386 sur 386, `npm run typecheck`, `npm run build`, `npm run art:validate` (14 manifestes de son, 0 erreur). Aucun fichier audio ni manifeste ne change, aucune partition.
+
+### Limites
+- **Personne n'a entendu F en jeu.** L'extrait F de la fiche imitait la règle côté page ; le moteur la porte désormais, et ses changements sont ceux de l'extrait. L'extrait avait en plus le saut de 0:53 ; le jeu ne l'a pas.
+- Les baisses sous les coups, les bruitages et le grondement de l'arène sont ceux d'avant : la seconde fiche de S3 les reprend.
+- L'essai Safari reste à l'opérateur (SC-SAFARI).
+
+### Où reprendre
+- La seconde fiche d'écoute de S3, avec les instruments du groupe : un son par recette, la fenêtre d'esquive, la foule qui réagit, le K.O. et le ralenti, les baisses sous les coups (CQ-BAISSE). Puis S2, dans sa propre séance.
+
+### Pensée
+- Un gain se mesure là où sa couche joue : un ajustement par moindres carrés sur une couche muette rend un chiffre, juste par hasard ou faux, jamais une mesure. On regarde le niveau de la couche, mesure par mesure, avant de placer la fenêtre.
+- Quand deux changements se suivent sur des barres consécutives, la fin de l'un est le début de l'autre : une annulation se pose juste après l'instant qu'elle remplace, pour garder la rampe qui y finit.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -674,7 +598,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN12)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12). **S3 en cours (Passe SN13)** : la fiche d'écoute des couches est publiée (https://claude.ai/artifact/FEHPDrJ6SQ3zC6XmvPyAtr, `briefs/fiche-son-couches.html`) : le morceau seul, six règles, les baisses sous les coups, le rival et la finale. Une double demande sur une même barre coupe une couche net pendant 0,25 s ; la correction partira avec la règle choisie. Ensuite, la seconde fiche d'écoute de S3 : les sons du duel. **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 après l'essai du lot S4.
+**6f. Son (Passes SN1 à SN12)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12). **S3 en cours** : la fiche des couches est relue (Passe SN14). Les morceaux tiennent, la règle F est appliquée aux trois combats (la mélodie à 0,45 pendant la séquence adverse, la tension à 0,35 au repos, chaque changement sur une mesure), et la double demande est corrigée. Reste la seconde fiche d'écoute de S3 : les sons du duel, avec les baisses sous les coups (CQ-BAISSE). **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 après l'essai du lot S4.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 
@@ -709,7 +633,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10), SN7-SN8 (Passe SN14) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 

@@ -55,19 +55,21 @@ test('the band\'s plan (journal Passe SN10; C-LIEUX « Valider ce plan »): the 
   for (const id of P.STINGS) assert.equal(C[id].kind, 'once');
 });
 
-test('the fights\' layers follow the duel (« proposé »): the riff always, the lead out while the opponent presses, the tension on his sequence, the heavy charge, a stun and the endgame; the K.O. takes all', () => {
+test('the fights\' layers follow the duel by the operator\'s rule F (« F · Des niveaux plus doux », journal Passe SN13): the riff always, the lead down to 45 % while the opponent presses, the tension from its rest at 35 % up on his sequence, the heavy charge, a stun and the endgame; the K.O. takes all', () => {
   let m = { ...P.CALM }; const go = (e) => { m = P.moodStep(m, e, { ren: 100, marek: 200 }); return P.layerLevels(m); };
-  assert.deepEqual(P.layerLevels(m), [1, 1, 0]);
-  assert.deepEqual(go({ type: 'sequenceStart', who: 'ren' }), [1, 1, 0], 'the hero\'s own sequence');
-  assert.deepEqual(go({ type: 'sequenceStart', who: 'marek', len: 3 }), [1, 0, 1]); assert.deepEqual(go({ type: 'sequenceEnd', who: 'marek' }), [1, 1, 0]);
-  assert.deepEqual(go({ type: 'chargeTier', idx: 0, open: true }), [1, 1, 0], 'the light blow');
-  assert.deepEqual(go({ type: 'chargeTier', idx: 2, open: false }), [1, 1, 0], 'a tier the AP close');
-  assert.deepEqual(go({ type: 'chargeTier', idx: 1, open: true }), [1, 1, 1], 'the heavy at 2 s'); assert.deepEqual(go({ type: 'chargeRelease', idx: 1, ok: true }), [1, 1, 0]);
+  assert.deepEqual(P.layerLevels(m), [1, 1, 0.35]);
+  assert.deepEqual(go({ type: 'sequenceStart', who: 'ren' }), [1, 1, 0.35], 'the hero\'s own sequence');
+  assert.deepEqual(go({ type: 'sequenceStart', who: 'marek', len: 3 }), [1, 0.45, 1]); assert.deepEqual(go({ type: 'sequenceEnd', who: 'marek' }), [1, 1, 0.35]);
+  assert.deepEqual(go({ type: 'chargeTier', idx: 0, open: true }), [1, 1, 0.35], 'the light blow');
+  assert.deepEqual(go({ type: 'chargeTier', idx: 2, open: false }), [1, 1, 0.35], 'a tier the AP close');
+  assert.deepEqual(go({ type: 'chargeTier', idx: 1, open: true }), [1, 1, 1], 'the heavy at 2 s'); assert.deepEqual(go({ type: 'chargeRelease', idx: 1, ok: true }), [1, 1, 0.35]);
   go({ type: 'stun', who: 'marek', dur: 6 }); go({ type: 'stun', who: 'ren', dur: 6 }); assert.deepEqual(go({ type: 'stunEnd', who: 'marek' }), [1, 1, 1], 'one still stunned');
-  assert.deepEqual(go({ type: 'stunEnd', who: 'ren' }), [1, 1, 0]);
-  assert.deepEqual(go({ type: 'impact', to: 'marek', hp: 61 }), [1, 1, 0], '30.5 % of 200'); assert.deepEqual(go({ type: 'impact', to: 'marek', hp: 59 }), [1, 1, 1], 'under 30 %');
-  assert.deepEqual(go({ type: 'sequenceEnd', who: 'marek' }), [1, 1, 1], 'the endgame stays');
-  assert.deepEqual(go({ type: 'ko', who: 'marek' }), [0, 0, 0]); assert.deepEqual(go({ type: 'reset' }), [1, 1, 0]);
+  assert.deepEqual(go({ type: 'stunEnd', who: 'ren' }), [1, 1, 0.35]);
+  assert.deepEqual(go({ type: 'impact', to: 'marek', hp: 61 }), [1, 1, 0.35], '30.5 % of 200'); assert.deepEqual(go({ type: 'impact', to: 'marek', hp: 59 }), [1, 1, 1], 'under 30 %');
+  assert.deepEqual(go({ type: 'sequenceStart', who: 'marek' }), [1, 0.45, 1]); assert.deepEqual(go({ type: 'sequenceEnd', who: 'marek' }), [1, 1, 1], 'the endgame stays');
+  assert.deepEqual(go({ type: 'ko', who: 'marek' }), [0, 0, 0]); assert.deepEqual(go({ type: 'reset' }), [1, 1, 0.35]);
+  // every move of the duel's layers takes a whole bar (Sound.duelEvent)
+  assert.match(src('src/audio/Sound.ts'), /l\.set\.level\(i, v, l\.set\.bar\)/);
   assert.deepEqual(P.moodStep(P.CALM, { type: 'impact', to: 'ren', hp: 1 }), P.CALM, 'without the fighters\' health, no endgame');
 });
 

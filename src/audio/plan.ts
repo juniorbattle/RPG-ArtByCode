@@ -6,8 +6,10 @@ import type { Look, SoundPlace } from './score';
  *  halle a sa valse à toute heure. Les combats suivent le tournoi : le duel pour les trois tours de poule et la Porte, le rival pour les demi-finales et les
  *  matchs du jour 8, la finale pour le jour 10. Le titre ouvre une partie neuve, puisque l’écran-titre reste muet (SA-16). La fanfare joue aux annonces, les
  *  jingles à la fin d’un combat. » And how the fights' three layers follow the duel (SA-5 « Oui, par couches », C-COUCHES « Trois couches sur les trois
- *  combats »): « proposé ». In play (journal Passe SN11) the plan was kept, E-LIEUX « Bien placé », E-TITRE « Bien placé », E-FANFARE « Bien placée »; the
- *  fights' sound is to be taken up again, E-COUCHES « À reprendre (en note) », where the rework goes waits for the operator. Pure. */
+ *  combats »): the operator's rule F (journal Passe SN13, the sheet briefs/fiche-son-couches.html), below. In play (journal Passe SN11) the plan was kept,
+ *  E-LIEUX « Bien placé », E-TITRE « Bien placé », E-FANFARE « Bien placée »; the fights' sound was taken up again (E-COUCHES « À reprendre (en note) »,
+ *  SC-QUOI « Surtout la musique et ses couches »): the pieces hold, CQ-MORCEAU « Le morceau tient : c’est la façon de suivre le combat », and the rival and
+ *  the finale follow the duel, CQ-TROIS « La même règle que le duel ; les deux morceaux tiennent ». Pure. */
 
 export type PieceId = 'titre' | 'matin' | 'midi' | 'fin' | 'nuit' | 'parvis' | 'lices' | 'valse' | 'duel' | 'rival' | 'finale';
 export type StingId = 'fanfare' | 'victoire' | 'defaite';
@@ -62,9 +64,13 @@ export function moodStep(m: Mood, e: { type: string } & Record<string, unknown>,
   return n;
 }
 
-/** the layers' levels, base, melody, tension: the riff always; the lead steps aside while the opponent presses; the brass, the strings and the timpani come in
- *  on the opponent's sequence, on the charge from its heavy tier, on a stun, and stay for the endgame; the K.O. takes everything */
+/** the lead's level while the opponent presses, and the tension's at rest: the operator's rule F, CQ-REGLE « F · Des niveaux plus doux » (journal Passe SN13):
+ *  the moments of the rule before, softer, the lead stepping down instead of leaving, the tension never gone; each move takes a bar (Sound.duelEvent) */
+export const MELODY_ASIDE = 0.45, TENSION_REST = 0.35;
+
+/** the layers' levels, base, melody, tension: the riff always; the lead steps down while the opponent presses; the brass, the strings and the timpani rise
+ *  from their rest on the opponent's sequence, on the charge from its heavy tier, on a stun, and stay up for the endgame; the K.O. takes everything */
 export function layerLevels(m: Mood): [number, number, number] {
   if (m.over) return [0, 0, 0];
-  return [1, m.foeSeq ? 0 : 1, m.foeSeq || m.charge >= RISING_TIER || m.stunned > 0 || m.low ? 1 : 0];
+  return [1, m.foeSeq ? MELODY_ASIDE : 1, m.foeSeq || m.charge >= RISING_TIER || m.stunned > 0 || m.low ? 1 : TENSION_REST];
 }

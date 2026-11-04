@@ -208,7 +208,8 @@ export class Sound {
     }
   }
 
-  /** a duel's event (its table is duelCue, src/audio/score.ts); the fights' layers follow it (src/audio/plan.ts), the K.O. takes the music and gives a jingle */
+  /** a duel's event (its table is duelCue, src/audio/score.ts); the fights' layers follow it (src/audio/plan.ts), each move over a whole bar (the operator's
+   *  rule F, CQ-REGLE « F · Des niveaux plus doux », journal Passe SN13); the K.O. takes the music and gives a jingle */
   duelEvent(e: { type: string } & Record<string, unknown>): void {
     const q = duelCue(e); if (q) this.play(q.effect, q.gain ?? 1, q);
     const was = this.mood; this.mood = moodStep(this.mood, e, this.maxHp);
@@ -216,7 +217,7 @@ export class Sound {
     if (e.type === 'ko' && !was.over) {
       if (l) { l.set.stop(0.4); this.layered = null; }
       window.setTimeout(() => this.sting(jingleFor(String(e.who))), JINGLE_AFTER * 1000);
-    } else if (l?.layers) layerLevels(this.mood).forEach((v, i) => { if (v !== l.set.levelOf(i)) l.set.level(i, v); });
+    } else if (l?.layers) layerLevels(this.mood).forEach((v, i) => { if (v !== l.set.levelOf(i)) l.set.level(i, v, l.set.bar); });
   }
 
   /** synchronous layers on the music bus, taken up where it stood if it is the piece the last page played (the engine's proofs, journal Passe SN3) */

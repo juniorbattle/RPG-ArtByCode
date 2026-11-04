@@ -1,7 +1,7 @@
 // The engine's moves of lot S1 measured on its real output (journal Passe SN3): the music steps back under a blow and returns, a layer moves on the next
 // bar, stems stay together to the sample, a page's fade, a piece taken up where it stood; and the band's pieces in it (journal Passe SN10): the duel's intro and
-// its loop where they belong to the sample, a loop's turn without a step, the layers following the duel, the K.O.'s jingle, the music stepping back under the
-// fanfare, each read against the baked files decoded by ffmpeg (FFMPEG or the PATH). Renders the jobs of tools/audio/engine-jobs.mjs, then reads them. Exit 1
+// its loop where they belong to the sample, a loop's turn without a step, the layers following the duel (the operator's rule F and a move replaced on its bar
+// line, journal Passe SN13), the K.O.'s jingle, the music stepping back under the fanfare, each read against the baked files decoded by ffmpeg (FFMPEG or the PATH). Renders the jobs of tools/audio/engine-jobs.mjs, then reads them. Exit 1
 // on a failure.
 //   node tools/audio/engine-proof.mjs <outDir> [--root=<folder>]     (--root on a frozen copy: it has no such moves, it must fail)
 import fs from 'node:fs';
@@ -16,8 +16,10 @@ const META = JSON.parse(fs.readFileSync(path.join(out, 'meta.json'), 'utf8')), S
 const win = (x, a, b) => x.subarray(Math.round(a * SR), Math.round(b * SR)), level = (x, a, b) => rmsDb(win(x, a, b));
 /** the level of one frequency in a window (Goertzel), in dB */
 const at = (x, hz, a, b) => { const s = win(x, a, b), w = 2 * Math.PI * hz / SR, k = 2 * Math.cos(w); let p = 0, q = 0; for (const v of s) { const n = v + k * p - q; q = p; p = n; } return 10 * Math.log10(Math.max(1e-14, (p * p + q * q - k * p * q) * 4 / (s.length * s.length) / 2)); };
+/** the operator's rule F for the fights' layers, from the sheet and not from the code (CQ-REGLE « F · Des niveaux plus doux », journal Passe SN13) */
+const MELODY_ASIDE = 0.45, TENSION_REST = 0.35;
 let failed = 0;
-const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (!ok) failed++; };
+const check =(ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (!ok) failed++; };
 
 // the tone alone, by its frequency: a blow's reverberation stays in the mix
 const d = load('s1-duck'), base = at(d, 440, 1, 1.9), heavy = at(d, 440, 2.05, 2.1) - base, back = at(d, 440, 3.6, 4.6) - base, ko = at(d, 440, 5.3, 5.6) - base, koBack = at(d, 440, 7.8, 8.4) - base;
@@ -76,7 +78,7 @@ const D = CAT.duel, loopAt = T0 + D.intro.loopAt / SR, stems = ['duel-base', 'du
   const y = load('sn-intro'), n = y.length, parts = [lay(intro, n, T0), ...stems.map((x) => lay(x, n, loopAt, D.frames))], sum = parts[0].map((v, i) => v + parts[1][i] + parts[2][i]);
   const a = fit(y, parts, 2, loopAt - 0.15), b = fit(y, parts, loopAt + 0.3, 9.8), la = lagOf(y, sum, 2.5, 3.5), lb = lagOf(y, sum, loopAt + 0.5, loopAt + 1.5);
   check(a.rest < 0.01 && a.g[0] > 0.1, `the duel's intro plays from the start: unexplained ${(a.rest * 100).toFixed(2)} %, at lag ${la.lag}`);
-  check(b.rest < 0.01 && Math.abs(dB(b.g[2] / b.g[1])) < 0.5 && Math.abs(b.g[3] / b.g[1]) < 0.05, `its loop comes in at ${loopAt.toFixed(3)} s, the base and the lead, no tension: ${b.g.slice(1).map((v) => v.toFixed(3)).join(' / ')}, unexplained ${(b.rest * 100).toFixed(2)} %`);
+  check(b.rest < 0.01 && Math.abs(dB(b.g[2] / b.g[1])) < 0.5 && Math.abs(b.g[3] / b.g[1] - TENSION_REST) < 0.05, `its loop comes in at ${loopAt.toFixed(3)} s, the base and the lead, the tension at rest (${TENSION_REST}): ${b.g.slice(1).map((v) => v.toFixed(3)).join(' / ')}, unexplained ${(b.rest * 100).toFixed(2)} %`);
   check(la.lag === 0 && lb.lag === 0, `intro and loop on their sample: lags ${la.lag} and ${lb.lag}`);
 }
 {
@@ -86,10 +88,20 @@ const D = CAT.duel, loopAt = T0 + D.intro.loopAt / SR, stems = ['duel-base', 'du
 }
 {
   const y = load('sn-mood'), n = y.length, parts = stems.map((x) => lay(x, n, loopAt, D.frames)), on = (t) => loopAt + Math.ceil((t + 0.03 - loopAt) / D.bar - 1e-9) * D.bar;
-  const b = fit(y, parts, loopAt + 0.3, on(8) - 0.05), d = fit(y, parts, on(8) + 0.3, on(14) - 0.05), a = fit(y, parts, on(14) + 0.3, 19.8), r = (f) => f.g.map((v) => v / f.g[0]);
-  check(Math.abs(r(b)[1] - 1) < 0.05 && Math.abs(r(b)[2]) < 0.05, `calm: the base and the lead ${r(b).map((v) => v.toFixed(2)).join(' / ')}`);
-  check(Math.abs(r(d)[1]) < 0.05 && Math.abs(r(d)[2] - 1) < 0.05, `the opponent's sequence (asked at 8 s): from the bar at ${on(8).toFixed(2)} s the lead out, the tension in: ${r(d).map((v) => v.toFixed(2)).join(' / ')}`);
-  check(Math.abs(r(a)[1] - 1) < 0.05 && Math.abs(r(a)[2]) < 0.05, `its end (14 s): from the bar at ${on(14).toFixed(2)} s back to calm: ${r(a).map((v) => v.toFixed(2)).join(' / ')}`);
+  // the operator's rule F (journal Passe SN13): the lead down to MELODY_ASIDE, the tension up from TENSION_REST, each move over a whole bar; read from the loop's ninth
+  // bar on, the tension resting from its third to its eighth (a gain read on a silent stem is no reading)
+  const B = D.bar, b = fit(y, parts, loopAt + 8 * B + 0.1, on(19) - 0.05), m = fit(y, parts, on(19) + B / 2 - 0.08, on(19) + B / 2 + 0.08), d = fit(y, parts, on(19) + B + 0.05, on(25) - 0.05), a = fit(y, parts, on(25) + B + 0.05, 31.8), r = (f) => f.g.map((v) => v / f.g[0]);
+  const near = (f, lead, ten) => Math.abs(r(f)[1] - lead) < 0.05 && Math.abs(r(f)[2] - ten) < 0.05;
+  check(near(b, 1, TENSION_REST), `calm: the base, the lead, the tension at rest ${r(b).map((v) => v.toFixed(2)).join(' / ')}`);
+  check(near(m, (1 + MELODY_ASIDE) / 2, (TENSION_REST + 1) / 2), `the opponent's sequence (asked at 19 s): half way through the bar from ${on(19).toFixed(2)} s, half way there ${r(m).map((v) => v.toFixed(2)).join(' / ')}`);
+  check(near(d, MELODY_ASIDE, 1), `a bar later the lead down, the tension up: ${r(d).map((v) => v.toFixed(2)).join(' / ')}`);
+  check(near(a, 1, TENSION_REST), `its end (25 s): a bar after ${on(25).toFixed(2)} s back to calm: ${r(a).map((v) => v.toFixed(2)).join(' / ')}`);
+}
+{
+  // the sequence over before its bar line: asked down and back up for the same line, the layers hold (the engine before dropped the lead for 0.25 s, then jumped)
+  const y = load('sn-double'), n = y.length, parts = stems.map((x) => lay(x, n, loopAt, D.frames)), at = loopAt + Math.ceil((19 + 0.03 - loopAt) / D.bar - 1e-9) * D.bar, r = (f) => f.g.map((v) => v / f.g[0]);
+  const w = [[at - 0.3, at - 0.02], [at + 0.02, at + 0.24], [at + 0.3, at + 1.3]].map(([p, q]) => fit(y, parts, p, q));
+  check(w.every((f) => Math.abs(r(f)[1] - 1) < 0.05 && Math.abs(r(f)[2] - TENSION_REST) < 0.05 && f.rest < 0.01), `a sequence over before its bar line (${at.toFixed(2)} s): the lead and the tension hold, ${w.map((f) => r(f).slice(1).map((v) => v.toFixed(2)).join('/')).join(', ')}`);
 }
 for (const [job, want] of [['sn-win', 'victoire'], ['sn-lose', 'defaite']]) {
   const y = load(job), n = y.length, at = 6 + 1.2 + 0.05 + LAT / SR, parts = [lay(baked('victoire'), n, at), lay(baked('defaite'), n, at), ...stems.slice(0, 2).map((x) => lay(x, n, loopAt, D.frames))], f = fit(y, parts, at + 0.1, 10.8), k = want === 'victoire' ? 0 : 1;

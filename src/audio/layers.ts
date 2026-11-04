@@ -14,6 +14,8 @@ export class LayerSet {
   private sources: AudioBufferSourceNode[] = [];
   private gains: GainNode[] = [];
   private held: number[];
+  /** each layer's last move: the bar line it starts on and the level it starts from */
+  private moves: Array<{ at: number; from: number } | null>;
 
   constructor(private c: BaseAudioContext, stems: readonly AudioBuffer[], readonly bar: number, out: AudioNode, levels: readonly number[], from = 0, o: { at?: number; spans?: readonly LoopSpan[] } = {}) {
     const spans = o.spans;
@@ -22,6 +24,7 @@ export class LayerSet {
     const at = o.at ?? c.currentTime + 0.1;
     this.start = at - from;
     this.held = stems.map((_, i) => levels[i] ?? 0);
+    this.moves = stems.map(() => null);
     stems.forEach((b, i) => {
       const s = c.createBufferSource(), g = c.createGain(), a = spans ? spans[i].offset / b.sampleRate : 0;
       s.buffer = b; s.loop = true; if (spans) { s.loopStart = a; s.loopEnd = a + this.length; } g.gain.value = this.held[i];
@@ -33,10 +36,18 @@ export class LayerSet {
   /** a layer's level now */
   levelOf(i: number): number { return this.held[i]; }
 
-  /** a layer to a level from the next bar, over `ramp` seconds; returns when it moves */
+  /** a layer to a level from the next bar, over `ramp` seconds (a bar at most); returns when it moves. A move asked for a bar line that already has one
+   *  replaces it: two automations at one instant add up, the layer fell to the new level at once and jumped back after the ramp (journal Passe SN13). The
+   *  replaced move is cancelled just after its line, so the ramp of the move before, which may end on that line, is kept */
   level(i: number, v: number, ramp = 0.25): number {
-    const t = nextBoundary(this.c.currentTime, this.start, this.bar), g = this.gains[i].gain;
-    g.setValueAtTime(this.held[i], t); g.linearRampToValueAtTime(v, t + ramp);
+    const t = nextBoundary(this.c.currentTime, this.start, this.bar), g = this.gains[i].gain, m = this.moves[i];
+    if (m && Math.abs(m.at - t) < 1e-6) {
+      g.cancelScheduledValues(t + 0.001); g.setValueAtTime(m.from, t);
+      if (v !== m.from) g.linearRampToValueAtTime(v, t + ramp);
+    } else {
+      this.moves[i] = { at: t, from: this.held[i] };
+      g.setValueAtTime(this.held[i], t); g.linearRampToValueAtTime(v, t + ramp);
+    }
     this.held[i] = v;
     return t;
   }

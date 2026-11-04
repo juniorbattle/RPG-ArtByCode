@@ -13,8 +13,9 @@
   AUD_SCRIPTS.sync = (s) => { s.layers('proof', [0, 1, 2].map(() => click(s.ctx, 1.5, 1000, 0.004)), 1.5, [1, 1, 1]); };
   AUD_SCRIPTS.fade = (s, job, at) => { s.layers('proof', [tone(s.ctx, 2, 440, TONE)], 1, [1]); at(3, () => s.leave()); };
   // the band (journal Passe SN10): the opponent's sequence takes the lead out and brings the tension in, on the bar; the K.O. takes the music and gives its jingle
-  AUD_SCRIPTS.mood = (s, job, at) => { at(8, () => s.duelEvent({ type: 'sequenceStart', who: 'marek', len: 3 })); at(14, () => s.duelEvent({ type: 'sequenceEnd', who: 'marek' })); };
+  AUD_SCRIPTS.mood = (s, job, at) => { at(19, () => s.duelEvent({ type: 'sequenceStart', who: 'marek', len: 3 })); at(25, () => s.duelEvent({ type: 'sequenceEnd', who: 'marek' })); };
   AUD_SCRIPTS.win = (s, job, at) => { at(6, () => s.duelEvent({ type: 'ko', who: 'marek' })); };
   AUD_SCRIPTS.lose = (s, job, at) => { at(6, () => s.duelEvent({ type: 'ko', who: 'ren' })); };
+  AUD_SCRIPTS.double = (s, job, at) => { at(19, () => s.duelEvent({ type: 'sequenceStart', who: 'marek', len: 1 })); at(19.2, () => s.duelEvent({ type: 'sequenceEnd', who: 'marek' })); };
   AUD_SCRIPTS.fanfare = (s, job, at) => { at(4, () => s.sting('fanfare')); };
 })();
