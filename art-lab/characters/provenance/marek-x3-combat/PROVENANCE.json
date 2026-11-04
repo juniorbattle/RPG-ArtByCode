@@ -12,6 +12,14 @@
    "note": "APPROVED FOR PRODUCTION by the operator on the combat lot sheet (journal Passe CX2): « Production » (CX-M1), with the note, word for word: « Sa tete est un petit peu trop grosse mais ce n'est pas marquant »; CX-P1 « Ren et Marek ensemble »; version 2's duels only, today's game unchanged."
   }
  ],
+ "revisions": [
+  {
+   "date": "2026-11-04",
+   "pass": "journal Passe SA1",
+   "change": "strike.1 (figure cut) rebuilt by the corrected chain (lib/combat.mjs: isolate over the grown head's crop, cornerIsBackground): the export approved in Passe CX2 carried the green ground of pose sheet a there, kept opaque and turned beige grey by the palette, the greys of the figure cleared; the 31 other frames identical to the texel",
+   "approval": "PENDING: the operator's approval of the corrected export, word for word, before the merge"
+  }
+ ],
  "source": {
   "sheets": {
    "description": "5 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task marek-x3-combat); references: the approved clean figure casting-clear-2026-11-01-a.png and the casting panel, and Ren's sheets for the layout only",
@@ -30,10 +38,10 @@
  ],
  "rebuild": "node tools/art-lab/build-combat.mjs art-lab/characters/rigs/marek-x3-combat.rig.mjs --check",
  "files": {
-  "art-lab/characters/exports/marek-x3-combat.png": "8163c5716111549d8c2e759fc24af8f24ea9b5e52cbd16d5006e1827bfa10465",
-  "art-lab/characters/exports/marek-x3-combat.json": "2c96e3bf4fbb9c4a596da745cfdc11a9906dc79dccd8317c72160f07a0438752",
-  "art-lab/characters/source/marek-x3-combat.aseprite": "7b87e1dd764a6ed639263490eb292bc45e72ba8bcfcb27cfae52a2394c3d436e",
-  "art-lab/characters/provenance/marek-x3-combat/build.json": "ab99f128092263f0267151e0f3f09a5d038fb75bd624ffbeda1e4e3a1ff780c4",
+  "art-lab/characters/exports/marek-x3-combat.png": "18f51adc0a465502a9214e340fdab402ad695a01b5707c7ea8077e0a2c424f20",
+  "art-lab/characters/exports/marek-x3-combat.json": "774c451909938ee798e7423b74b016054dfa79fcc51780f1e1050cce7517dd92",
+  "art-lab/characters/source/marek-x3-combat.aseprite": "60a9591338e0ac168fcd9b5ab80f737256b354ffafbefe41d77af9fe3f4a5563",
+  "art-lab/characters/provenance/marek-x3-combat/build.json": "dc3cb24ee3facd890e1a11ec6edf280c8b8e506bc736a9b8f76d212a245cf5e7",
   "art-lab/characters/exports/marek-x2-v2.png": "d2e975afd2a22bff82a3b66265ea35ebe1fa4f0d38703cdb45f8b143dc8a6765",
   "art-lab/characters/reference/sources/marek-combat-x3-2026-11-01-a.png": "69f6a8934b8669766bf418e2547bf6f66aceb24aee30d196f285ecbf329e800d",
   "art-lab/characters/reference/sources/marek-combat-x3-2026-11-01-b.png": "faabb660f47adeab0fecf9830190e3502afecc4027c27ec02e717297ed9b8177",
@@ -41,7 +49,7 @@
   "art-lab/characters/reference/sources/marek-combat-x3-2026-11-01-d.png": "2d9fbbb96e592dba50e0873913e2fefbf0e0d5b28f673085ae962be6e799e8ac",
   "art-lab/characters/reference/sources/marek-combat-x3-2026-11-01-e.png": "f0447931dd03563865006176dbd86295d31c7d4d054df3a4cb7329428fd2a78a",
   "art-lab/characters/rigs/marek-x3-combat.rig.mjs": "a0ed630e936c29e7eb257174e513318460543602fadad174ad50ea3818c49b27",
-  "art-lab/characters/rigs/lib/combat.mjs": "28e3b8ff08cb884b1f86d62fc7d589fc1cfd841b8a3f9382e1dbaeed893c3a5c",
+  "art-lab/characters/rigs/lib/combat.mjs": "cb14a8761dfdfa003229070828177479a3ba06077aaed5f276599558e78dcbbc",
   "tools/art-lab/build-combat.mjs": "0dd3d9f77a5b362362c9f937654c7787290d9f39dcc3f5f038f5cc3901281d7f",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
   "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",

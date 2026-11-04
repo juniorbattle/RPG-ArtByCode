@@ -54,9 +54,9 @@
    "lifted": 0
   },
   "cut": {
-   "hips": 198,
-   "pushed": 0,
-   "lifted": 2
+   "hips": 244,
+   "pushed": 37,
+   "lifted": 0
   },
   "follow": {
    "hips": 206,
@@ -175,8 +175,8 @@
   }
  },
  "exports": {
-  "png": "8163c5716111549d8c2e759fc24af8f24ea9b5e52cbd16d5006e1827bfa10465",
-  "json": "2c96e3bf4fbb9c4a596da745cfdc11a9906dc79dccd8317c72160f07a0438752",
-  "aseprite": "7b87e1dd764a6ed639263490eb292bc45e72ba8bcfcb27cfae52a2394c3d436e"
+  "png": "18f51adc0a465502a9214e340fdab402ad695a01b5707c7ea8077e0a2c424f20",
+  "json": "774c451909938ee798e7423b74b016054dfa79fcc51780f1e1050cce7517dd92",
+  "aseprite": "60a9591338e0ac168fcd9b5ab80f737256b354ffafbefe41d77af9fe3f4a5563"
  }
 }

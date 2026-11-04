@@ -430,6 +430,57 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Où reprendre
 - S2, dans sa séance. Toujours à l'opérateur : l'essai Safari sur un appareil Apple (SC-SAFARI).
 
+## Passe SA1 — Le fond gris d'un sprite en combat : l'image `strike.1` de Marek, sa cause dans la chaîne, l'audit de toutes les feuilles (2026-11-04)
+
+### Demande
+- L'opérateur, mot pour mot, transmis par la séance mère : « en combat j'ai remarque le fond d'un sprite n'est pas totalement transparent ( gris il me semble ) il faut audit et corriger cela et s'assurer que les autres sprites sont clean aussi ». La demande autorise la correction, pas l'approbation en production d'une feuille changée.
+
+### Le sprite vu — [OK] trouvé
+- **`marek-x3-combat`, image `strike.1`** (la figure `cut`, l'image du milieu de son coup simple, jouée à chacun de ses coups simples ; dans le duel du script de capture, la première fois à 10,1 s). L'image portait un rectangle opaque beige-gris autour de Marek (sa boîte, lame comprise, 170 × 138 texels, pleine à 95 %), et ses parties claires (cheveux, acier, reflets de l'armure) étaient transparentes : le fond et les gris de la figure inversés. Capturé dans le vrai duel (`?scene=arena&v2=1&foe=marek`, le duel mené jusqu'à ce que Marek joue lui-même `strike.1`), de nuit et à midi.
+
+### La cause — [OK] prouvée, dans la chaîne, pas dans le rendu
+- `rivalRig` grandit la tête des figures sur la planche (`growHead`) et donne à `reconstruct-grid.mjs` une boîte agrandie vers le haut (`grownBox`). `isolate`, qui peint les figures voisines avec le fond, ne travaillait que sur la boîte de la figure (± 40 px). Pour `cut` (planche a), la boîte agrandie monte de 144 à 98 ; son coin haut-gauche, (1049, 92) une fois la marge de 6 px ôtée, tombe sur la lame de la figure voisine `windup` (pixels 125,122,116 ; le fond vert de la planche : 3,166,73), restée hors de la zone d'`isolate`.
+- `reconstruct-grid` prend la première case de sa découpe pour le fond. Il a pris l'acier gris : le vert, à plus de 60 du gris, est resté figure ; `--holes` a vidé les texels proches du gris dans la figure (cheveux, lame, reflets) ; la palette de Marek a changé le vert en beige-gris (bruit compris : la moucheture) ; `dehalo` n'a pelé que deux anneaux de bord.
+- Mesuré sur toutes les figures des huit rigs de combat (le coin de chaque découpe après `isolate`, contre le fond de sa planche) : `cut` de Marek à 226 ; toutes les autres à 36 au plus (le bruit du fond vert contre le pixel de coin de la planche). Une seule figure touchée.
+- **Le rendu est hors de cause** : le chargeur (`CombatSheets.cellsOf`) refuse déjà tout alpha partiel et tout texel sur l'anneau de la case ; la texture est en `NearestFilter`, sans mipmaps, en `ClampToEdge` ; le rectangle était fait de texels opaques, connexes à la silhouette, au milieu de la case : aucun de ces contrôles ne pouvait le voir.
+
+### L'audit de toutes les feuilles de production — [OK]
+- Mesuré texel par texel, image par image (scripts dans le dossier temporaire de la séance), sur les 8 feuilles de combat (Ren et les sept rivaux, 259 images) et les 31 feuilles de la ville (la distribution du quartier, `hero-x2-v4`, les quinze du casting et les cinq citadins) : alpha partiel, texels transparents colorés, texels sur l'anneau de la case, îlots détachés, poches transparentes enclavées, texels de bord gris moyens ou verdâtres, remplissage de la boîte englobante, plus longue arête droite de la silhouette ; puis chaque feuille de combat regardée sur fond magenta, les points suspects zoomés sur fond vert.
+
+| Mesure | Combat (8 feuilles) | Ville (31 feuilles) |
+|---|---|---|
+| Alpha partiel, texels transparents colorés | 0 | 0 |
+| Texels sur l'anneau de la case | 0 | 0 |
+| Bords verdâtres | 0 | 0 |
+| Remplissage de la boîte, le plus haut | 0,95 (`strike.1` de Marek), puis 0,69 | 0,81 (la marchande) |
+| Arête droite la plus longue | 165 texels (`strike.1` de Marek), puis 61 (une lame) sur 192 | 25 sur 64 |
+| Îlots détachés | les lames tombées des K.O. (Marek 242 texels, Vessa, Ilse, Ren 199) et 17 bouts de Ren de 1 à 7 texels (31 texels) | 0 |
+
+- Relevés sans défaut : les taches roses vues sur fond magenta chez Vessa (`block.0`) sont l'ombre violette de son visage, opaque ; celle de Rhosk (`skillOff.1`) est le vrai jour entre son bras levé et sa tête. Les poches enclavées (224 à 1 202 texels par feuille) sont les jours entre les jambes, les bras et les lames. Les 17 bouts détachés de Ren sont des gris neutres et des bords sombres d'acier : des morceaux de lame que `blade2` laisse autour d'une main, pas du fond ; non touchés, à revoir avec la lame si l'opérateur le demande.
+
+### Fait — [OK]
+- **La chaîne corrigée** (`art-lab/characters/rigs/lib/combat.mjs`) : `isolate` couvre aussi la découpe que lira `reconstruct-grid` (la boîte agrandie), le critère de la figure gardée restant sa boîte ; `cornerIsBackground` arrête la construction si les deux pas en carré au coin de la découpe ne sont pas le fond de la planche, au test d'`isolate` lui-même. `isolate` et `grownBox` sont exportés pour le test.
+- **Reconstruit** : `build-combat.mjs --check` sur les huit rigs avec la chaîne corrigée : Ren, Vessa, Orla, Cassius, Ilse, Rhosk et Tobin reconstruits identiques ; Marek différent. Marek reconstruit : une seule image change, `strike.1` (22 236 texels sur la case) ; les 31 autres identiques au texel. Sa lame entière dépasse maintenant l'avant de la case : la case recule le corps de 37 texels (`meta.pushed` `strike.1` : 37, comme `kneel` 32), l'arène avance le sprite d'autant.
+- Les packs des sept feuilles inchangées : seule l'empreinte de `lib/combat.mjs` mise à jour (elles se reconstruisent à l'octet avec la nouvelle chaîne), leurs exports et leurs approbations intacts. Le pack de Marek : ses fichiers reconstruits et une entrée `revisions` qui dit l'approbation en attente. **Son manifeste n'est pas touché : l'approbation de l'export corrigé est à l'opérateur, avant la fusion.**
+- **`tests/sheet-clean.test.mjs`** : chaque feuille de personnage approuvée en production (39), chaque image : alpha binaire, anneau transparent, figure non vide, remplissage de sa boîte au plus 0,9, aucune arête droite de la moitié de la case ; puis le garde de la chaîne sur `cut` de Marek (l'ancienne isolation : le coin refusé ; la nouvelle : accepté). Contrôle négatif : sur l'export de `main`, le test échoue sur `strike.1` seul (remplissage 95 %, arête de 165 texels).
+
+### Preuves
+- Avant / après dans le duel, de nuit et à midi, l'image jouée par le duel lui-même (captures déterministes, `HOLD=1`, `FREEZE_CSS=1`) : le rectangle gris, puis Marek seul sur les pavés.
+- 0 px (`tools/diff.mjs`, écart maximal 0) entre avant et après : la ville de nuit (`seed=1842&intro=0`) et à midi, déterministes (`detshots`) ; l'arène par défaut (`?scene=arena`) ; le duel de la version 2 contre Vessa ; le duel contre Marek sur une autre image (`impact`).
+- `arena-sheet-proof.mjs` : les sept rivaux OK de nuit, Marek OK à midi (25 de ses 32 images montrées, aucune image hors de la feuille) ; contre-épreuve `--q=cast=generated` : FAIL, comme il se doit.
+- `npm run typecheck`, `npm test` 394 sur 394, `npm run build`, `npm run art:validate` (61 manifestes, 85 sources archivées, 0 erreur ; 22 manifestes de son).
+
+### Limites
+- L'approbation de la feuille corrigée de Marek est à l'opérateur : la branche n'est pas fusionnée avant sa réponse, consignée mot pour mot.
+- La règle du test (remplissage, arête droite) attrape un fond resté en bloc ; un fond resté en mince bande contre la silhouette ne la franchirait pas : c'est le garde de la chaîne qui le refuse à la source.
+
+### Où reprendre
+- Consigner l'approbation de l'opérateur dans le manifeste et le pack de `marek-x3-combat`, puis fusionner. Ensuite : rien de neuf ; les bouts de lame de Ren si l'opérateur les veut repris.
+
+### Pensée
+- Deux étapes d'une chaîne qui lisent deux boîtes différentes se trompent dans la marge entre les deux : ce qu'une étape nettoie doit couvrir ce que la suivante lit, et l'hypothèse « le coin est le fond » se vérifie là où elle est faite.
+- Un contrôle d'export (alpha binaire, anneau transparent) ne voit pas un fond devenu opaque et connexe à la figure : il faut une mesure de forme (remplissage, arête droite) et un regard sur fond contrasté.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -494,7 +545,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   - hors tranche : phase d'équipe et recrutement effectif, festival, son, commandes tactiles, art de combat du héros cuit.
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
-- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Les cinq citadins sont en production (Passe CA7). Ren (39 images) et les sept rivaux (Marek 32, Vessa 34, Orla 29, Cassius 34, Ilse 32, Rhosk 32, Tobin 27) sont en production dans les duels de la version 2 (Passes CX2, CX4), chacun sous sa figure, plus aucun art de Marek emprunté. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2.
+- **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Les cinq citadins sont en production (Passe CA7). Ren (39 images) et les sept rivaux (Marek 32, Vessa 34, Orla 29, Cassius 34, Ilse 32, Rhosk 32, Tobin 27) sont en production dans les duels de la version 2 (Passes CX2, CX4), chacun sous sa figure, plus aucun art de Marek emprunté. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2. **Passe SA1** : le fond gris vu en combat était l'image `strike.1` de Marek (le fond vert de sa planche gardé opaque par la chaîne) ; chaîne corrigée, feuille reconstruite, toutes les feuilles de production mesurées propres (`tests/sheet-clean.test.mjs`) ; l'approbation de la feuille corrigée de Marek est à l'opérateur avant la fusion.
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantissait 336 images et en porte 322 (dix feuilles,
@@ -1070,3 +1121,4 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Une approbation lue dans une décision de fiche se cite telle quelle, avec ce qu'elle couvre, et se fait confirmer à la fiche suivante (Passe SN10).
 - Une page d'essai d'appareil dit elle-même si elle tourne sur l'appareil visé, et un relevé se lit avec son navigateur : « Fait » sur une carte ne vaut pas un essai sur Safari (Passe SN11).
 - Un extrait d'écoute montre ce que la carte demande de juger, et le reste à part : un duel complet sous une carte « couches » a fait juger des bruitages que la carte ne présentait pas (Passe SN11) ; sur trois extraits séparés, la même oreille a désigné la musique (Passe SN12).
+- Ce qu'une étape d'une chaîne nettoie couvre ce que la suivante lit : `isolate` nettoyait la boîte de la figure, `reconstruct-grid` lisait la boîte agrandie de sa tête et a pris la lame d'une voisine pour le fond. Une hypothèse (« le coin est le fond ») se vérifie là où elle sert, et un export se contrôle aussi par sa forme (remplissage, arête droite) et sur fond contrasté : l'alpha binaire et l'anneau transparent ne voient pas un fond opaque collé à la figure (Passe SA1).

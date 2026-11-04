@@ -20,11 +20,12 @@ const EDGE = 8;
 export const sha = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 const chroma = (c) => { const [, a, b] = R.oklab(c); return Math.hypot(a, b); };
 
-/** the figure alone: foreground components (8-connected, 2-pixel reach) whose box centre lies inside `box`; everything else the background */
-function isolate(sh, box, thr) {
+/** the figure alone: foreground components (8-connected, 2-pixel reach) whose box centre lies inside `box`; everything else the background, over `box` and the `crop` reconstruct-grid
+ *  will read (a grown head's box reaches higher than the figure's: a neighbour's blade in that corner was read as the background, journal Passe SA1) */
+export function isolate(sh, box, thr, crop = box) {
   const { W, H, px } = sh, bg = [px[0], px[1], px[2]];
   const fg = (x, y) => { const i = (y * W + x) * 4; return Math.max(Math.abs(px[i] - bg[0]), Math.abs(px[i + 1] - bg[1]), Math.abs(px[i + 2] - bg[2])) > thr; };
-  const [x0, y0, x1, y1] = box, X0 = Math.max(0, x0 - 40), Y0 = Math.max(0, y0 - 40), X1 = Math.min(W - 1, x1 + 40), Y1 = Math.min(H - 1, y1 + 40);
+  const [x0, y0, x1, y1] = box, X0 = Math.max(0, Math.min(x0, crop[0]) - 40), Y0 = Math.max(0, Math.min(y0, crop[1]) - 40), X1 = Math.min(W - 1, Math.max(x1, crop[2]) + 40), Y1 = Math.min(H - 1, Math.max(y1, crop[3]) + 40);
   const lab = new Int32Array(W * H).fill(-1), keep = [];
   let n = 0;
   for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) {
@@ -41,6 +42,16 @@ function isolate(sh, box, thr) {
   const o = R.clone(sh);
   for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) { const l = lab[y * W + x]; if (l >= 0 && !keep.includes(l)) { const i = (y * W + x) * 4; o.px[i] = bg[0]; o.px[i + 1] = bg[1]; o.px[i + 2] = bg[2]; } }
   return { im: o, bg };
+}
+/** reconstruct-grid takes the first cell of its crop (the box less 6 pixels, its grid's phase under one pitch) for the background, floods it from the edges and clears the texels near
+ *  it inside the figure (`--holes`): two pitches square from that corner must be the sheet's background, by isolate's own test. Marek's `cut` read a neighbour's steel there, kept the
+ *  green as figure, the palette turned it beige grey and the greys of the figure were cleared (journal Passe SA1) */
+export function cornerIsBackground(name, im, crop, pitch, bg, thr) {
+  const x0 = crop[0] - 6, y0 = crop[1] - 6, n = Math.ceil(2 * pitch);
+  for (let y = y0; y < y0 + n; y++) for (let x = x0; x < x0 + n; x++) {
+    const i = (y * im.W + x) * 4, d = Math.max(Math.abs(im.px[i] - bg[0]), Math.abs(im.px[i + 1] - bg[1]), Math.abs(im.px[i + 2] - bg[2]));
+    if (x < 0 || y < 0 || x >= im.W || y >= im.H || d > thr) throw new Error(`${name}: the crop's corner (${x}, ${y}) is not the sheet's background (${d} from it): reconstruct-grid would take it for the background`);
+  }
 }
 /** the sheet's background blended into the figure's border texels (full colours, before the palette): peeled twice */
 function dehalo(v, bg, near = (c) => Math.max(Math.abs(c[0] - bg[0]), Math.abs(c[1] - bg[1]), Math.abs(c[2] - bg[2])) <= 18) {
@@ -83,9 +94,12 @@ export function reconstructFigures({ id, palette, sheets, figures, bgThr = 40, t
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), `artlab-${id}-`)), out = {};
   try {
     for (const [name, f] of Object.entries(figures)) {
-      const { im, bg } = isolate(loaded[f.sheet], f.box, bgThr), file = path.join(tmp, `${name}.png`), pre = path.join(tmp, name);
-      R.save(file, f.head ? growHead(im, { c: f.head.slice(0, 2), r: f.r ?? head.r, dir: ((f.head[2] ?? 90) * Math.PI) / 180, blade: !!head.blade }, head.s) : im);
-      execFileSync(process.execPath, [path.join(ROOT, 'tools/art-lab/reconstruct-grid.mjs'), file, (f.head ? grownBox(f, f.r ?? head.r, head.s) : f.box).join(','), String(f.pitch ?? sheets[f.sheet].pitch), String(WIDE), String(FRAME.H), String(FRAME.FOOT), pre, 'full', '--holes', '--no-shadow', `--closing-from=${CLOSING}`, ...(tint ? [`--bg-threshold=${bgThr}`] : [])], { stdio: 'ignore' });
+      const crop = f.head ? grownBox(f, f.r ?? head.r, head.s) : f.box, pitch = f.pitch ?? sheets[f.sheet].pitch;
+      const { im, bg } = isolate(loaded[f.sheet], f.box, bgThr, crop), file = path.join(tmp, `${name}.png`), pre = path.join(tmp, name);
+      const ready = f.head ? growHead(im, { c: f.head.slice(0, 2), r: f.r ?? head.r, dir: ((f.head[2] ?? 90) * Math.PI) / 180, blade: !!head.blade }, head.s) : im;
+      cornerIsBackground(name, ready, crop, pitch, bg, bgThr);
+      R.save(file, ready);
+      execFileSync(process.execPath, [path.join(ROOT, 'tools/art-lab/reconstruct-grid.mjs'), file, crop.join(','), String(pitch), String(WIDE), String(FRAME.H), String(FRAME.FOOT), pre, 'full', '--holes', '--no-shadow', `--closing-from=${CLOSING}`, ...(tint ? [`--bg-threshold=${bgThr}`] : [])], { stdio: 'ignore' });
       const rep = JSON.parse(fs.readFileSync(`${pre}.json`, 'utf8'));
       if (rep.clipped) throw new Error(`${name}: ${rep.clipped} texels clipped by the ${WIDE}-wide frame`);
       out[name] = despeckle(toPalette(dehalo(R.load(`${pre}-full.png`), bg, tint ? (c) => tint(c, bg) : undefined), pal), min);
@@ -114,7 +128,7 @@ export function growHead(im, { c, r, dir = Math.PI / 2, blade = false }, s) {
   return o;
 }
 /** the figure's box with room for its grown head, up and forward only where it needs it (the box's corner stands for the background, journal Passe CA2) */
-function grownBox(f, r, s) {
+export function grownBox(f, r, s) {
   const dir = ((f.head[2] ?? 90) * Math.PI) / 180, d = (s - 1) * r, big = r * s * 1.25 + 4, x = f.head[0] - Math.cos(dir) * d - big, y = f.head[1] - Math.sin(dir) * d - big;
   return [Math.max(EDGE, Math.min(f.box[0], Math.round(x))), Math.max(EDGE, Math.min(f.box[1], Math.round(y))), f.box[2], f.box[3]];
 }

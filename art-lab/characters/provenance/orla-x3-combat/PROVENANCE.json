@@ -39,7 +39,7 @@
   "art-lab/characters/reference/sources/orla-combat-x3-2026-11-01-d.png": "1d61473a59d50b76c949b80b961cfd7093c16559dee4005df03184a155ee1a7c",
   "art-lab/characters/reference/sources/orla-combat-x3-2026-11-01-c.png": "3e7af23496fe52dca4636eaa6fda1c9afa384401168d7f4d4bfe8992b1b14c37",
   "art-lab/characters/rigs/orla-x3-combat.rig.mjs": "862ab6add3a992bdafe27b0a202edaf53e78a8ee478381ff9b3710d9062cd644",
-  "art-lab/characters/rigs/lib/combat.mjs": "28e3b8ff08cb884b1f86d62fc7d589fc1cfd841b8a3f9382e1dbaeed893c3a5c",
+  "art-lab/characters/rigs/lib/combat.mjs": "cb14a8761dfdfa003229070828177479a3ba06077aaed5f276599558e78dcbbc",
   "tools/art-lab/build-combat.mjs": "0dd3d9f77a5b362362c9f937654c7787290d9f39dcc3f5f038f5cc3901281d7f",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
   "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
