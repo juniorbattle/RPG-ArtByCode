@@ -6,6 +6,7 @@ import CATALOGUE from './catalogue.json';
 import { CALM, jingleFor, layerLevels, moodStep, pieceFor, type Mood, type PieceId, type StingId } from './plan';
 import { ambienceOf, BAND_RATE, CALL_PAN, ceilingCurve, dbGain, DEFAULT_SETTINGS, DUCK, DUCK_AMBIENCE, duelCue, FADE, hz, JINGLE_AFTER, LIMITER, MIX, NOISE_SECONDS, noiseSamples, NOW_KEY, readNow, readSettings, RESUME_MS, resumeAt, roomImpulse, SEND, STING_DUCK, STING_WAIT, take, UI_EFFECTS, type Ambience, type Effect, type Look, type NowPlaying, type SoundPlace, type SoundSettings, type Voice } from './score';
 import { installSoundHooks } from './hooks';
+import { CROWD_TRIM, HOLD_EVERY, REACT_QUIET, SFX_TRIM, THREAT_QUIET, crowdOf, holdOf, sfxOf, type CrowdId, type SfxCue } from './sfx';
 
 /** The version 2's sound engine (lot V8, journal Passe V8; lots S0 and S1, journal Passes SN2 / SN3): Web Audio only, every sound written in
  *  src/audio/score.ts or baked under a manifest (src/audio/baked.ts). Four buses go through a limiter to the volume: the ambience and the music, which
@@ -22,8 +23,11 @@ type Bus = 'ambience' | 'music' | 'fx' | 'ui';
 /** a piece of the catalogue (written by tools/audio/band/bake.mjs) */
 interface BandEntry { kind: 'loop' | 'layers' | 'once'; frames: number; bar?: number; files: string[]; layers?: string[]; intro?: { file: string; frames: number; loopAt: number } }
 const BAND = CATALOGUE.pieces as Record<string, BandEntry>;
-/** what a scene asks of the music beyond its place and hour: a new game's first page, a bout's piece and its fighters' health */
-export interface SceneMusic { opening?: boolean; bout?: PieceId; maxHp?: Record<string, number> }
+/** the duel's sounds and the crowd (written by tools/audio/band/bake-sfx.mjs, journal Passe SN16): each sound's takes and their lengths, the murmur a loop */
+interface SfxEntry { family: string; files: string[]; frames: number[]; loop?: boolean }
+const SFX = ((CATALOGUE as { sfx?: Record<string, SfxEntry> }).sfx ?? {}) as Record<string, SfxEntry>;
+/** what a scene asks of the music beyond its place and hour: a new game's first page, a bout's piece, its fighters' health and the hero's charge tiers */
+export interface SceneMusic { opening?: boolean; bout?: PieceId; maxHp?: Record<string, number>; tiers?: number }
 
 export class Sound {
   ctx: AudioContext | null = null;
@@ -64,6 +68,16 @@ export class Sound {
   private layered: { key: string; set: LayerSet; layers: boolean } | null = null;
   private files: AudioLoader | null = null;
   private tap: AnalyserNode | null = null;
+  /** the duel's sounds, decoded when an arena scene first asks (lot S3, journal Passe SN16): each sound's takes and where each starts in its decode */
+  private bank: Map<string, Array<{ buf: AudioBuffer; start: number }>> | null = null;
+  private bankLoading: Promise<void> | null = null;
+  private lastTake: Record<string, number> = {};
+  /** the arena's crowd: its group on the ambience's way, the next reaction it allows, the threat's last stroke, the charge's breath */
+  private crowd: GainNode | null = null;
+  private quietUntil = 0;
+  private threatAt = -Infinity;
+  private hold: { level: number; timer: number } | null = null;
+  private tiers = 6;
 
   constructor() {
     let stored: string | null = null, now: string | null = null;
@@ -211,13 +225,87 @@ export class Sound {
   /** a duel's event (its table is duelCue, src/audio/score.ts); the fights' layers follow it (src/audio/plan.ts), each move over a whole bar (the operator's
    *  rule F, CQ-REGLE « F · Des niveaux plus doux », journal Passe SN13); the K.O. takes the music and gives a jingle */
   duelEvent(e: { type: string } & Record<string, unknown>): void {
-    const q = duelCue(e); if (q) this.play(q.effect, q.gain ?? 1, q);
+    if (this.bank) this.duelSounds(e);
+    // the bank not (yet) decoded, or not decodable here: lot S0's recipes, so that a duel never goes silent
+    else { const q = duelCue(e); if (q) this.play(q.effect, q.gain ?? 1, q); }
     const was = this.mood; this.mood = moodStep(this.mood, e, this.maxHp);
     const l = this.layered;
     if (e.type === 'ko' && !was.over) {
       if (l) { l.set.stop(0.4); this.layered = null; }
       window.setTimeout(() => this.sting(jingleFor(String(e.who))), JINGLE_AFTER * 1000);
     } else if (l?.layers) layerLevels(this.mood).forEach((v, i) => { if (v !== l.set.levelOf(i)) l.set.level(i, v, l.set.bar); });
+  }
+
+  /** a duel's event in the band's sounds (src/audio/sfx.ts): its sounds, the music's step back under a blow (S3-BAISSE « Garder les baisses »), the crowd's
+   *  reaction, the charge's breath while a tier stays reached */
+  private duelSounds(e: { type: string } & Record<string, unknown>): void {
+    const now = this.ctx?.currentTime ?? 0;
+    for (const c of sfxOf(e, this.tiers)) {
+      if (c.id === 'threat') { if (now - this.threatAt < THREAT_QUIET) continue; this.threatAt = now; }
+      this.cue(c);
+      if (c.duck) this.duck(c.duck);
+    }
+    const r = crowdOf(e); if (r) this.react(r, r === 'roar');
+    const h = holdOf(e, this.tiers, this.hold?.level ?? 0);
+    if (h !== (this.hold?.level ?? 0)) {
+      if (this.hold) clearTimeout(this.hold.timer);
+      this.hold = null;
+      if (h > 0) { const breathe = () => { this.cue({ id: `hold${h}`, pan: -0.28, vary: 'none' }); if (this.hold) this.hold.timer = window.setTimeout(breathe, HOLD_EVERY * 1000); }; this.hold = { level: h, timer: window.setTimeout(breathe, HOLD_EVERY * 1000) }; }
+    }
+  }
+  /** one of the band's sounds on the effects' bus: another take than the last, varied as its kind allows (src/audio/sfx.ts, `varyOf`), at its place, with the
+   *  room; false when it cannot play */
+  private cue(c: SfxCue): boolean {
+    const ctx = this.ctx, takes = this.bank?.get(c.id);
+    if (!ctx || !this.begun || !this.buses || !this.reverb || this.settings.muted || !takes?.length) return false;
+    let k = Math.floor(this.rng.next() * takes.length); if (takes.length > 1 && k === this.lastTake[c.id]) k = (k + 1) % takes.length; this.lastTake[c.id] = k;
+    const t = takes[k], s = ctx.createBufferSource(), g = ctx.createGain(), p = ctx.createStereoPanner();
+    s.buffer = t.buf; if (c.vary === 'pitch') s.playbackRate.value = 1 + (this.rng.next() * 2 - 1) * 0.03;
+    g.gain.value = dbGain(SFX_TRIM + (c.vary === 'none' ? 0 : this.rng.next() * 2 - 1)); p.pan.value = c.pan;
+    s.connect(g); g.connect(p); p.connect(this.buses.fx); this.send(p, SEND.fx);
+    s.start(ctx.currentTime + 0.005, t.start / t.buf.sampleRate);
+    return true;
+  }
+  /** the crowd's reaction over its murmur, at most every REACT_QUIET seconds (the K.O.'s always), a little late and never twice the same */
+  private react(id: CrowdId, force: boolean): void {
+    const ctx = this.ctx, t = this.bank?.get(`crowd-${id}`)?.[0];
+    if (!ctx || !this.crowd || !t || this.settings.muted) return;
+    if (!force && ctx.currentTime < this.quietUntil) return;
+    this.quietUntil = ctx.currentTime + REACT_QUIET;
+    const s = ctx.createBufferSource(), g = ctx.createGain();
+    s.buffer = t.buf; s.playbackRate.value = 1 + (this.rng.next() * 2 - 1) * 0.02; g.gain.value = dbGain(this.rng.next() * 2 - 1);
+    s.connect(g); g.connect(this.crowd); s.start(ctx.currentTime + 0.12 + this.rng.next() * 0.08, t.start / t.buf.sampleRate);
+  }
+  /** the duel's sounds decoded, once for the page: every take of every sound, where each starts in what this browser decoded (src/audio/align.ts) */
+  private loadBank(): Promise<void> {
+    if (this.bankLoading) return this.bankLoading;
+    const c = this.ctx!;
+    this.bankLoading = (async () => {
+      const bank = new Map<string, Array<{ buf: AudioBuffer; start: number }>>();
+      await Promise.all(Object.entries(SFX).map(async ([id, s]) => {
+        const got = await Promise.all(s.files.map((f) => this.loader.decoded(f))), takes: Array<{ buf: AudioBuffer; start: number }> = [];
+        got.forEach((d, k) => { if (d) takes.push({ buf: d.buf, start: s.loop ? alignLoop(d.buf, s.frames[k], BAND_RATE, d.format).offset : startOf(d.buf, s.frames[k], BAND_RATE, d.format, this.known[d.format]) }); });
+        if (takes.length) bank.set(id, takes);
+      }));
+      // a bank that could not be decoded at all leaves lot S0's recipes playing
+      if (this.ctx === c && bank.size) this.bank = bank; else if (!bank.size) console.warn('sound: the duel\'s sounds could not be loaded');
+    })();
+    return this.bankLoading;
+  }
+  /** the arena's crowd in place of its rumble (S3-FOULE « Bonne direction (par le code) »): its murmur in a loop on the ambience's way, 5 dB under the duel's
+   *  music; the rumble of lot V8 when the murmur cannot be loaded */
+  private crowdScene(fallback: Ambience, cross: boolean): void {
+    const scene = this.scene, group = this.group(this.buses!.ambience, dbGain(CROWD_TRIM), cross);
+    this.crowd = group;
+    const p = this.loadBank().then(() => {
+      if (this.scene !== scene || !this.ctx) return;
+      const bed = this.bank?.get('crowd-bed')?.[0], entry = SFX['crowd-bed'];
+      if (!bed || !entry) { this.ambience(fallback, false); return; }
+      const c = this.ctx, s = c.createBufferSource(); s.buffer = bed.buf; s.loop = true; s.loopStart = bed.start / bed.buf.sampleRate; s.loopEnd = s.loopStart + entry.frames[0] / BAND_RATE;
+      s.connect(group); s.start(c.currentTime + 0.05, s.loopStart);
+      scene.stops.push(() => { try { s.stop(); } catch { /* already over */ } });
+    });
+    this.pending = Promise.all([this.pending, p]).then(() => {});
   }
 
   /** synchronous layers on the music bus, taken up where it stood if it is the piece the last page played (the engine's proofs, journal Passe SN3) */
@@ -262,9 +350,13 @@ export class Sound {
     for (const g of old.groups) g.gain.setTargetAtTime(0, c.currentTime, FADE.scene / 3);
     if (cross) window.setTimeout(() => { for (const s of old.stops) s(); }, (FADE.scene + 0.3) * 1000);
     this.setRoom(place);
-    this.ambience(ambienceOf(place, look, boutDay), cross);
+    const amb = ambienceOf(place, look, boutDay);
+    this.crowd = null; if (this.hold) clearTimeout(this.hold.timer); this.hold = null; this.quietUntil = 0; this.threatAt = -Infinity; this.tiers = music.tiers ?? 6;
+    if (place !== 'arena') this.ambience(amb, cross);
     this.mood = CALM; this.maxHp = { ...(music.maxHp ?? {}) };
     this.band(pieceFor(place, look, music), cross);
+    // the arena: its crowd and the duel's sounds, loaded with the bout's music (lot S3, journal Passe SN16)
+    if (place === 'arena') this.crowdScene(amb, cross);
     // the bout's two jingles fetched with its music: the K.O. never waits for a file
     if (place === 'arena') { const p = this.pending, pre = Promise.all((['victoire', 'defaite'] as const).map((id) => this.loader.decoded(id))); this.pending = Promise.all([p, pre]).then(() => {}); }
   }

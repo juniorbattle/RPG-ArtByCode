@@ -18,6 +18,8 @@ const browser = args.find((a) => a.startsWith('--browser='))?.slice(10) ?? 'chro
 const ffmpeg = process.env.FFMPEG ?? 'ffmpeg', cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/audio/catalogue.json'), 'utf8'));
 const frames = {}, loops = new Set();
 for (const p of Object.values(cat.pieces)) { for (const f of p.files) { frames[f] = p.frames; if (p.kind !== 'once') loops.add(f); } if (p.intro) frames[p.intro.file] = p.intro.frames; }
+// the duel's sounds and the crowd (journal Passe SN16): each take its length, the murmur a loop
+for (const e of Object.values(cat.sfx ?? {})) e.files.forEach((f, k) => { frames[f] = e.frames[k]; if (e.loop) loops.add(f); });
 const idOf = (f) => f.replace(/\.[^.]+$/, ''), fmtOf = (f) => (f.endsWith('.webm') ? 'webm' : 'm4a');
 // the loops first: what they show of a format's delays starts the intros and the jingles
 const files = fs.readdirSync(BAKED).filter((f) => /\.(webm|m4a)$/.test(f) && (!names.length || names.some((n) => f.startsWith(n)))).sort((a, b) => (loops.has(idOf(b)) - loops.has(idOf(a))) || a.localeCompare(b));

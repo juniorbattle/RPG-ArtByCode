@@ -151,5 +151,528 @@
     "defaite"
    ]
   }
+ },
+ "sfx": {
+  "light": {
+   "family": "duel-coups",
+   "files": [
+    "sfx-light-0",
+    "sfx-light-1",
+    "sfx-light-2"
+   ],
+   "frames": [
+    25634,
+    25415,
+    26281
+   ]
+  },
+  "heavy": {
+   "family": "duel-coups",
+   "files": [
+    "sfx-heavy"
+   ],
+   "frames": [
+    38909
+   ]
+  },
+  "m_slash": {
+   "family": "duel-coups",
+   "files": [
+    "sfx-m_slash-0",
+    "sfx-m_slash-1",
+    "sfx-m_slash-2"
+   ],
+   "frames": [
+    49696,
+    49573,
+    49572
+   ]
+  },
+  "m_heavy": {
+   "family": "duel-coups",
+   "files": [
+    "sfx-m_heavy"
+   ],
+   "frames": [
+    65082
+   ]
+  },
+  "guard": {
+   "family": "duel-coups",
+   "files": [
+    "sfx-guard-0",
+    "sfx-guard-1",
+    "sfx-guard-2"
+   ],
+   "frames": [
+    46560,
+    46560,
+    46560
+   ]
+  },
+  "guardHeavy": {
+   "family": "duel-coups",
+   "files": [
+    "sfx-guardHeavy"
+   ],
+   "frames": [
+    63816
+   ]
+  },
+  "whiff": {
+   "family": "duel-coups",
+   "files": [
+    "sfx-whiff-0",
+    "sfx-whiff-1"
+   ],
+   "frames": [
+    28861,
+    28528
+   ]
+  },
+  "break": {
+   "family": "duel-coups",
+   "files": [
+    "sfx-break"
+   ],
+   "frames": [
+    144000
+   ]
+  },
+  "t1": {
+   "family": "duel-ren",
+   "files": [
+    "sfx-t1"
+   ],
+   "frames": [
+    58230
+   ]
+  },
+  "t2": {
+   "family": "duel-ren",
+   "files": [
+    "sfx-t2"
+   ],
+   "frames": [
+    52951
+   ]
+  },
+  "t3": {
+   "family": "duel-ren",
+   "files": [
+    "sfx-t3"
+   ],
+   "frames": [
+    66664
+   ]
+  },
+  "t4": {
+   "family": "duel-ren",
+   "files": [
+    "sfx-t4"
+   ],
+   "frames": [
+    144000
+   ]
+  },
+  "k_sunder": {
+   "family": "duel-ren",
+   "files": [
+    "sfx-k_sunder"
+   ],
+   "frames": [
+    124800
+   ]
+  },
+  "k_feint": {
+   "family": "duel-ren",
+   "files": [
+    "sfx-k_feint"
+   ],
+   "frames": [
+    27265
+   ]
+  },
+  "m_ironfall": {
+   "family": "duel-rivaux",
+   "files": [
+    "sfx-m_ironfall"
+   ],
+   "frames": [
+    134400
+   ]
+  },
+  "m_lunge": {
+   "family": "duel-rivaux",
+   "files": [
+    "sfx-m_lunge"
+   ],
+   "frames": [
+    105600
+   ]
+  },
+  "m_shoulder": {
+   "family": "duel-rivaux",
+   "files": [
+    "sfx-m_shoulder"
+   ],
+   "frames": [
+    65171
+   ]
+  },
+  "m_riposte": {
+   "family": "duel-rivaux",
+   "files": [
+    "sfx-m_riposte"
+   ],
+   "frames": [
+    43541
+   ]
+  },
+  "m_smite": {
+   "family": "duel-rivaux",
+   "files": [
+    "sfx-m_smite"
+   ],
+   "frames": [
+    129600
+   ]
+  },
+  "m_wild": {
+   "family": "duel-rivaux",
+   "files": [
+    "sfx-m_wild"
+   ],
+   "frames": [
+    69502
+   ]
+  },
+  "m_cleave": {
+   "family": "duel-rivaux",
+   "files": [
+    "sfx-m_cleave"
+   ],
+   "frames": [
+    124800
+   ]
+  },
+  "d1": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-d1"
+   ],
+   "frames": [
+    100647
+   ]
+  },
+  "m_bulwark": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-m_bulwark"
+   ],
+   "frames": [
+    115200
+   ]
+  },
+  "m_brace": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-m_brace"
+   ],
+   "frames": [
+    69119
+   ]
+  },
+  "m_aegis": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-m_aegis"
+   ],
+   "frames": [
+    99599
+   ]
+  },
+  "m_hide": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-m_hide"
+   ],
+   "frames": [
+    81647
+   ]
+  },
+  "k_iron": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-k_iron"
+   ],
+   "frames": [
+    110400
+   ]
+  },
+  "k_parry": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-k_parry"
+   ],
+   "frames": [
+    43820
+   ]
+  },
+  "s1": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-s1"
+   ],
+   "frames": [
+    40699
+   ]
+  },
+  "k_cry": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-k_cry"
+   ],
+   "frames": [
+    48714
+   ]
+  },
+  "k_focus": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-k_focus"
+   ],
+   "frames": [
+    84497
+   ]
+  },
+  "m_resolve": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-m_resolve"
+   ],
+   "frames": [
+    105600
+   ]
+  },
+  "m_tempo": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-m_tempo"
+   ],
+   "frames": [
+    63092
+   ]
+  },
+  "m_gild": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-m_gild"
+   ],
+   "frames": [
+    110400
+   ]
+  },
+  "m_prayer": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-m_prayer"
+   ],
+   "frames": [
+    100936
+   ]
+  },
+  "m_grit": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-m_grit"
+   ],
+   "frames": [
+    68318
+   ]
+  },
+  "m_roar": {
+   "family": "duel-soutiens",
+   "files": [
+    "sfx-m_roar"
+   ],
+   "frames": [
+    70741
+   ]
+  },
+  "charge1": {
+   "family": "duel-charge",
+   "files": [
+    "sfx-charge1"
+   ],
+   "frames": [
+    53290
+   ]
+  },
+  "charge2": {
+   "family": "duel-charge",
+   "files": [
+    "sfx-charge2"
+   ],
+   "frames": [
+    53538
+   ]
+  },
+  "charge3": {
+   "family": "duel-charge",
+   "files": [
+    "sfx-charge3"
+   ],
+   "frames": [
+    65731
+   ]
+  },
+  "hold1": {
+   "family": "duel-charge",
+   "files": [
+    "sfx-hold1"
+   ],
+   "frames": [
+    36934
+   ]
+  },
+  "hold2": {
+   "family": "duel-charge",
+   "files": [
+    "sfx-hold2"
+   ],
+   "frames": [
+    37231
+   ]
+  },
+  "hold3": {
+   "family": "duel-charge",
+   "files": [
+    "sfx-hold3"
+   ],
+   "frames": [
+    38186
+   ]
+  },
+  "release": {
+   "family": "duel-charge",
+   "files": [
+    "sfx-release"
+   ],
+   "frames": [
+    24300
+   ]
+  },
+  "denied": {
+   "family": "duel-charge",
+   "files": [
+    "sfx-denied"
+   ],
+   "frames": [
+    29100
+   ]
+  },
+  "threat": {
+   "family": "duel-lecture",
+   "files": [
+    "sfx-threat"
+   ],
+   "frames": [
+    71717
+   ]
+  },
+  "window": {
+   "family": "duel-lecture",
+   "files": [
+    "sfx-window"
+   ],
+   "frames": [
+    30709
+   ]
+  },
+  "dodge": {
+   "family": "duel-lecture",
+   "files": [
+    "sfx-dodge-0",
+    "sfx-dodge-1"
+   ],
+   "frames": [
+    28242,
+    27645
+   ]
+  },
+  "stun": {
+   "family": "duel-lecture",
+   "files": [
+    "sfx-stun"
+   ],
+   "frames": [
+    129600
+   ]
+  },
+  "pushed": {
+   "family": "duel-lecture",
+   "files": [
+    "sfx-pushed"
+   ],
+   "frames": [
+    30908
+   ]
+  },
+  "ko": {
+   "family": "duel-ko",
+   "files": [
+    "sfx-ko"
+   ],
+   "frames": [
+    192000
+   ]
+  },
+  "crowd-bed": {
+   "family": "foule",
+   "files": [
+    "sfx-crowd-bed"
+   ],
+   "frames": [
+    768000
+   ],
+   "loop": true
+  },
+  "crowd-oh": {
+   "family": "foule",
+   "files": [
+    "sfx-crowd-oh"
+   ],
+   "frames": [
+    153600
+   ]
+  },
+  "crowd-gasp": {
+   "family": "foule",
+   "files": [
+    "sfx-crowd-gasp"
+   ],
+   "frames": [
+    124800
+   ]
+  },
+  "crowd-cheer": {
+   "family": "foule",
+   "files": [
+    "sfx-crowd-cheer"
+   ],
+   "frames": [
+    163200
+   ]
+  },
+  "crowd-roar": {
+   "family": "foule",
+   "files": [
+    "sfx-crowd-roar"
+   ],
+   "frames": [
+    312000
+   ]
+  }
  }
 }

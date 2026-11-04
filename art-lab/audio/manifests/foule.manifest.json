@@ -1,0 +1,118 @@
+{
+ "id": "foule",
+ "kind": "ambience",
+ "runtimeUse": "production",
+ "licence": "own",
+ "generatedByAi": false,
+ "score": "art-lab/audio/sfx/crowd.sfx.mjs",
+ "approved": true,
+ "approval": "The operator, on the duel's sounds sheet (briefs/fiche-son-duel.html, journal Passe SN16, 2026-11-04): S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé », on the sounds kept by ear: S3-FOULE « Bonne direction (par le code) »; S3-DUEL « Mieux : continuer dans cette voie »; S3-BAISSE « Garder les baisses ». To be confirmed after the trial in play. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
+ "decisions": [
+  "S3-FOULE « Bonne direction (par le code) » (journal Passe SN16, 2026-11-04)",
+  "S3-DUEL « Mieux : continuer dans cette voie » (journal Passe SN16, 2026-11-04)",
+  "S3-BAISSE « Garder les baisses » (journal Passe SN16, 2026-11-04)",
+  "S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé » (journal Passe SN16, 2026-11-04)"
+ ],
+ "files": [
+  {
+   "path": "src/audio/baked/sfx-crowd-bed.webm",
+   "bytes": 182408,
+   "sha256": "8eaf98b2b6cf0321801305f411f6d70b62cc8f74803c82d273830acc0873641b",
+   "codec": "opus",
+   "kbps": 96,
+   "role": "loop",
+   "frames": 768000
+  },
+  {
+   "path": "src/audio/baked/sfx-crowd-bed.m4a",
+   "bytes": 196375,
+   "sha256": "05d4cf67c4cf45f947f2cc69f4c319ebcf23a269a6f76ba33d78785454cc6314",
+   "codec": "aac-lc",
+   "kbps": 96,
+   "role": "loop",
+   "frames": 768000
+  },
+  {
+   "path": "src/audio/baked/sfx-crowd-oh.webm",
+   "bytes": 23556,
+   "sha256": "0a49af432c99257d6b1eb2d36aac18dace1a2103d8a26efd888dd5107011230e",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 153600
+  },
+  {
+   "path": "src/audio/baked/sfx-crowd-oh.m4a",
+   "bytes": 33411,
+   "sha256": "b87f589637dc77f776159b115364551b7135206577a59055d192481b52ab3ca2",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 153600
+  },
+  {
+   "path": "src/audio/baked/sfx-crowd-gasp.webm",
+   "bytes": 19303,
+   "sha256": "4e746c6c66de0e642a7c88683d258b91f5389309dfa0f53ca5ed83200a21f5b4",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 124800
+  },
+  {
+   "path": "src/audio/baked/sfx-crowd-gasp.m4a",
+   "bytes": 27432,
+   "sha256": "b028180d390940683f1b19bc145426f82aca91571af79c22292eb0c5c93b33f7",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 124800
+  },
+  {
+   "path": "src/audio/baked/sfx-crowd-cheer.webm",
+   "bytes": 25565,
+   "sha256": "0005f87a5c233fc8ce9ce2fba70f05e8516bc4fdcb992030c9125471f0d14c63",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 163200
+  },
+  {
+   "path": "src/audio/baked/sfx-crowd-cheer.m4a",
+   "bytes": 35527,
+   "sha256": "a1269b043099f6ab41931283d76e8554297a9a4f4581420d4398a1dc23618d2a",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 163200
+  },
+  {
+   "path": "src/audio/baked/sfx-crowd-roar.webm",
+   "bytes": 49190,
+   "sha256": "6b9d3219d8ba62d876c52c45b97e19fb8d9ca1c869df02a8de28071a5d82be3f",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 312000
+  },
+  {
+   "path": "src/audio/baked/sfx-crowd-roar.m4a",
+   "bytes": 67143,
+   "sha256": "57fc7b832f73ec72c2ba67411942b82576a11fdf7b2d3358a3fff1002ac22d0a",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 312000
+  }
+ ],
+ "bake": {
+  "tool": "tools/audio/band/bake-sfx.mjs",
+  "ffmpeg": "9.0.2-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "encoders": {
+   "webm": "-c:a libopus -b:a <kbps>k -vbr on -application audio -frame_duration 20 -f webm",
+   "m4a": "-c:a aac -b:a <kbps>k -f mp4 -aac_pns 0",
+   "input": "f32le 48000 Hz stereo, -map_metadata -1 -fflags +bitexact -flags:a +bitexact",
+   "opusDelay": "24 samples ahead (silence before a sound, the murmur's last ones before it), 336 written as the delay"
+  }
+ }
+}

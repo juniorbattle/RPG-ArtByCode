@@ -123,6 +123,7 @@ for (const p of PIECES.filter((x) => !only.length || only.includes(x.id))) {
 }
 if (check) { console.log(mismatches ? `\n${mismatches} file(s) differ` : '\nevery file as its manifest says'); fs.rmSync(outRoot, { recursive: true, force: true }); process.exitCode = mismatches ? 1 : 0; }
 else {
-  const ordered = { sampleRate: SR, pieces: Object.fromEntries(PIECES.filter((x) => catalogue.pieces[x.id]).map((x) => [x.id, catalogue.pieces[x.id]])) };
+  // the duel's sounds' table (tools/audio/band/bake-sfx.mjs, journal Passe SN16) kept as it is
+  const ordered = { sampleRate: SR, pieces: Object.fromEntries(PIECES.filter((x) => catalogue.pieces[x.id]).map((x) => [x.id, catalogue.pieces[x.id]])), ...(catalogue.sfx ? { sfx: catalogue.sfx } : {}) };
   fs.writeFileSync(catalogueFile, `${JSON.stringify(ordered, null, 1)}\n`);
 }

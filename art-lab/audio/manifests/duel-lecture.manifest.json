@@ -1,0 +1,136 @@
+{
+ "id": "duel-lecture",
+ "kind": "effect",
+ "runtimeUse": "production",
+ "licence": "own",
+ "generatedByAi": false,
+ "score": "art-lab/audio/sfx/duel.sfx.mjs",
+ "approved": true,
+ "approval": "The operator, on the duel's sounds sheet (briefs/fiche-son-duel.html, journal Passe SN16, 2026-11-04): S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé », on the sounds kept by ear: S3-LECTURE « Bonne direction, les cinq »; S3-DUEL « Mieux : continuer dans cette voie »; S3-BAISSE « Garder les baisses ». To be confirmed after the trial in play. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
+ "decisions": [
+  "S3-LECTURE « Bonne direction, les cinq » (journal Passe SN16, 2026-11-04)",
+  "S3-DUEL « Mieux : continuer dans cette voie » (journal Passe SN16, 2026-11-04)",
+  "S3-BAISSE « Garder les baisses » (journal Passe SN16, 2026-11-04)",
+  "S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé » (journal Passe SN16, 2026-11-04)"
+ ],
+ "files": [
+  {
+   "path": "src/audio/baked/sfx-threat.webm",
+   "bytes": 13433,
+   "sha256": "68d6c1d91a899150dc68a193feda5b2bcb3998654a878583958cd36f68fead82",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 71717
+  },
+  {
+   "path": "src/audio/baked/sfx-threat.m4a",
+   "bytes": 14161,
+   "sha256": "7f0426f03dac377df232fe0eb3fd8e35fbf0fe4c78b0aeb11fb0967e86d4c86d",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 71717
+  },
+  {
+   "path": "src/audio/baked/sfx-window.webm",
+   "bytes": 10679,
+   "sha256": "65008cfeec246f5ed8b290237fe29fc1263c13c9825509afaf39b305d726afdf",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 30709
+  },
+  {
+   "path": "src/audio/baked/sfx-window.m4a",
+   "bytes": 7453,
+   "sha256": "2866debaefed0aebc0e72a8a314a303da12513bf9089d56e448724b8819d1824",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 30709
+  },
+  {
+   "path": "src/audio/baked/sfx-dodge-0.webm",
+   "bytes": 4765,
+   "sha256": "c115e34dab3a81cf908b2c20b5a1e27bbdd769143cd2343c8cb445d615c846f3",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 28242
+  },
+  {
+   "path": "src/audio/baked/sfx-dodge-0.m4a",
+   "bytes": 7249,
+   "sha256": "e3d1aa8415528a3709538c92c38dec500c8b2074abd1685af1a6d53fc30bbef1",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 28242
+  },
+  {
+   "path": "src/audio/baked/sfx-dodge-1.webm",
+   "bytes": 4889,
+   "sha256": "af530cbbc689e3ea924e4aaa4b5ead2d1e2e11f3aad2a5aa9fdbeed2014f19ca",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 27645
+  },
+  {
+   "path": "src/audio/baked/sfx-dodge-1.m4a",
+   "bytes": 7009,
+   "sha256": "ae5bcc8d3399167e382d8f780365e95f6ac0252b38e3a5b442a6feb5de8adc05",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 27645
+  },
+  {
+   "path": "src/audio/baked/sfx-stun.webm",
+   "bytes": 33366,
+   "sha256": "f7062efbc19013df99e790b4ddab44a9f10d08446fc55e814eb2ed85ec7611fa",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 129600
+  },
+  {
+   "path": "src/audio/baked/sfx-stun.m4a",
+   "bytes": 25370,
+   "sha256": "b81fec0b99f7b2201fb916dc369c5054d5f24a6efd6513dd5cdc82ba72283360",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 129600
+  },
+  {
+   "path": "src/audio/baked/sfx-pushed.webm",
+   "bytes": 5020,
+   "sha256": "20854db8b0072dffc45bba8fe0787585558ef535133471411e04b59738818049",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 30908
+  },
+  {
+   "path": "src/audio/baked/sfx-pushed.m4a",
+   "bytes": 7370,
+   "sha256": "d8eee9f73ca95601a10f762fdd6a30d707dccf3b99687090548067a085876028",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 30908
+  }
+ ],
+ "bake": {
+  "tool": "tools/audio/band/bake-sfx.mjs",
+  "ffmpeg": "9.0.2-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "encoders": {
+   "webm": "-c:a libopus -b:a <kbps>k -vbr on -application audio -frame_duration 20 -f webm",
+   "m4a": "-c:a aac -b:a <kbps>k -f mp4 -aac_pns 0",
+   "input": "f32le 48000 Hz stereo, -map_metadata -1 -fflags +bitexact -flags:a +bitexact",
+   "opusDelay": "24 samples ahead (silence before a sound, the murmur's last ones before it), 336 written as the delay"
+  }
+ }
+}

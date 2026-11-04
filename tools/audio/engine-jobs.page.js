@@ -16,6 +16,7 @@
   AUD_SCRIPTS.mood = (s, job, at) => { at(19, () => s.duelEvent({ type: 'sequenceStart', who: 'marek', len: 3 })); at(25, () => s.duelEvent({ type: 'sequenceEnd', who: 'marek' })); };
   AUD_SCRIPTS.win = (s, job, at) => { at(6, () => s.duelEvent({ type: 'ko', who: 'marek' })); };
   AUD_SCRIPTS.lose = (s, job, at) => { at(6, () => s.duelEvent({ type: 'ko', who: 'ren' })); };
-  AUD_SCRIPTS.double = (s, job, at) => { at(19, () => s.duelEvent({ type: 'sequenceStart', who: 'marek', len: 1 })); at(19.2, () => s.duelEvent({ type: 'sequenceEnd', who: 'marek' })); };
+  AUD_SCRIPTS.window = (s, job, at) => { at(4, () => s.duelEvent({ type: 'windowOpen', who: 'marek', action: 'm_slash', dur: 0.22 })); };
+  AUD_SCRIPTS.double =(s, job, at) => { at(19, () => s.duelEvent({ type: 'sequenceStart', who: 'marek', len: 1 })); at(19.2, () => s.duelEvent({ type: 'sequenceEnd', who: 'marek' })); };
   AUD_SCRIPTS.fanfare = (s, job, at) => { at(4, () => s.sting('fanfare')); };
 })();

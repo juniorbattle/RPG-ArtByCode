@@ -113,7 +113,8 @@ test('the step back: the K.O. deepest and longest, each blow by its weight, the 
 });
 
 test('the baked sounds: the band catalogue; the format a browser plays, Opus first; one fetch for a url; a file that fails is no error', async () => {
-  const C = JSON.parse(src('src/audio/catalogue.json')).pieces, want = Object.values(C).flatMap((p) => [...p.files, ...(p.intro ? [p.intro.file] : [])]).sort();
+  // the band's pieces and the duel's sounds (journal Passe SN16)
+  const cat = JSON.parse(src('src/audio/catalogue.json')), C = cat.pieces, want = [...Object.values(C).flatMap((p) => [...p.files, ...(p.intro ? [p.intro.file] : [])]), ...Object.values(cat.sfx).flatMap((e) => e.files)].sort();
   assert.deepEqual(B.bakedIds(), want, 'every file of the catalogue, nothing else');
   const files = ['./baked/theme.webm', './baked/theme.m4a', './baked/crowd.m4a'];
   assert.deepEqual(B.bakedIds(Object.fromEntries(files.map((f) => [f, 0]))), ['crowd', 'theme']);

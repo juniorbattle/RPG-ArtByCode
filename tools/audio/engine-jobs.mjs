@@ -19,7 +19,10 @@ export const jobs = [
   { name: 'sn-win', secs: 11, scene: { place: 'arena', look: 'night', music: { bout: 'duel' } }, stem: 'music', script: 'win', settle: true },
   { name: 'sn-lose', secs: 11, scene: { place: 'arena', look: 'night', music: { bout: 'duel' } }, stem: 'music', script: 'lose', settle: true },
   // the opponent's sequence from 19 s to 19.2 s, over before the bar line its moves were asked for (journal Passe SN13): the layers hold, no drop
-  { name: 'sn-double', secs: 22,scene: { place: 'arena', look: 'night', music: { bout: 'duel' } }, stem: 'music', script: 'double', settle: true },
+  // the arena's crowd in place of its rumble (journal Passe SN16): its murmur alone, across its loop's turn; the dodge window's bell at 4 s, played as baked
+  { name: 'sn-crowd', secs: 20, scene: { place: 'arena', look: 'night', music: { bout: 'duel' } }, stem: 'fx', settle: true },
+  { name: 'sn-window', secs: 7, scene: { place: 'arena', look: 'night', music: { bout: 'duel' } }, stem: 'fx', script: 'window', settle: true },
+  { name: 'sn-double', secs: 22, scene:{ place: 'arena', look: 'night', music: { bout: 'duel' } }, stem: 'music', script: 'double', settle: true },
   // the fanfare at 4 s over the morning's piece, which steps back under it
   { name: 'sn-fanfare', secs: 12, scene, stem: 'music', script: 'fanfare', settle: true },
 ];

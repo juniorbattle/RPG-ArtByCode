@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -60,134 +60,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/47-passes-UM9-SN3.md`](journal/47-passes-UM9-SN3.md) | UM9, SN1, SN2, SN3 | 02/11 |
 | [`journal/48-passes-UM10-SN6.md`](journal/48-passes-UM10-SN6.md) | UM10, UM11, SN4, SN5, UM12, SN6 | 02/11 |
 | [`journal/49-passes-SN7-SN8.md`](journal/49-passes-SN7-SN8.md) | SN7, SN8 | 02/11 |
+| [`journal/50-passes-SN9-SN10.md`](journal/50-passes-SN9-SN10.md) | SN9, SN10 | 03/11 |
 
 ---
-
-## Passe SN9 — La fiche de la reprise relue : sept morceaux repris gardés, la musique du tournoi revient à SN7 (2026-11-03)
-
-### Demande
-- Message de l'opérateur, mot pour mot : « fiche remplie ».
-
-### La fiche
-- Page privée https://claude.ai/artifact/LxqRepAVoinCRGZQDZvMte, source `briefs/fiche-son-reprise.html`. Relue par `list` : 13 documents sur 13, aucune note.
-
-| # | Décision | Choix de l'opérateur |
-|---|---|---|
-| R-JOURNEE | Matin, midi, fin de journée, nuit : avant et après | « La sensation de copier-coller est partie » |
-| R-MATIN | Le matin : une chanson à lui | « Bonne direction » |
-| R-FIN | La fin de journée : une bossa, un cor | « Bonne direction » |
-| R-NUIT | La nuit : sa propre chanson, et le jour en souvenir | « Bonne direction » |
-| R-TITRE | Le titre : le seul à tout dire | « Bonne direction » |
-| R-PARVIS | Le parvis : une foule qui s’empile | « Bonne direction » |
-| R-LICES | Les lices : le motif devient l’exercice | « Bonne direction » |
-| R-VALSE | La valse : son propre air | « Bonne direction » |
-| R-RIVAL | Le rival : une autre tonalité, une ligne à lui | « Revenir à l’ancienne version » |
-| R-FINALE | La finale : le retour à la maison | « Revenir à l’ancienne version » |
-| R-RETOUCHES | Midi et le duel : des retouches | « Revenir à l’ancienne version » |
-| R-MOTIF | Le motif entier en cinq endroits, caché ailleurs | « Garder cette règle » |
-| R-SUITE | Ce qui vient après | « Cuire et brancher dans la version 2 » |
-
-### Ce que ces choix veulent dire
-- **La reprise est gardée pour sept morceaux** : `titre`, `matin`, `fin`, `nuit`, `parvis`, `lices`, `valse`. La journée enchaînée ne sonne plus comme un copier-coller (R-JOURNEE).
-- **La musique du tournoi revient à SN7** : `midi` et `duel` (déjà approuvés à l'oreille en SN6, puis gardés en SN7), `rival` et `finale`. Midi garde ses deux fanfares, le duel est de nouveau en ré mineur et finit sur la fanfare à 7/8, le rival est en ré sur le motif en miroir, la finale va de ré mineur à ré majeur sur le refrain de midi.
-- **R-MOTIF garde la règle**. Avec les retours, elle se lit ainsi : le motif entier dans `WHOLE_MOTIF` (inchangé : les quatre anciennes versions le portent), sa tête cachée ailleurs, l'appel de la fanfare dans la musique du tournoi et les jingles, rien de recopié d'un morceau à l'autre, sauf entre les quatre morceaux du tournoi. L'opérateur les a gardés à l'oreille en sachant ce qu'ils partagent : les cartes le disaient (la finale « reprenait le refrain de midi », la réponse du duel « recopiait le contour du pont de midi »). Lecture retenue : le choix précis des trois cartes l'emporte sur la règle générale pour ces quatre-là. Si l'opérateur veut autre chose, c'est une liste dans `theme.mjs`.
-- **R-SUITE** : l'étape suivante cuit les morceaux sous manifeste, avec l'approbation de l'opérateur mot pour mot, les branche derrière `flags.v2` selon C-LIEUX et C-COUCHES, et donne l'essai en jouant ; la page de test Safari vient avec les premiers fichiers cuits (C-SAFARI). Une tâche à part.
-
-### Fait — [OK]
-- `midi`, `duel`, `rival` et `finale` remis octet pour octet depuis `c2df9f3`, ainsi que `rig.mjs` et `drums.mjs` : la transposition de `power` et la timbale accordée ne servaient qu'aux versions de SN8. Les quatre morceaux rendus à nouveau, entiers et en boucle avec leurs couches : 26 fichiers sur 26 identiques, échantillon pour échantillon, aux rendus de SN7.
-- `lices` reste en la dorien (R-LICES) ; son commentaire ne cite plus le mi du duel.
-- **Le garde-fou** suit les décisions : `TOURNAMENT` (`theme.mjs`) nomme les quatre morceaux du tournoi ; le test les laisse partager entre eux, la règle tient pour toute autre paire. Contrôle négatif : sur le catalogue de SN7, la même règle échoue encore (31 fautes : 18,7 % de tournures partagées, 23 paires, la fanfare dans six morceaux, cinq tonalités) ; sur l'arbre de travail elle passe.
-- `AGENTS.md` et `art-lab/audio/README.md` mis à jour.
-
-### Mesures — [OK]
-- Ressemblance, même outil : hors thème, 7,7 % des tournures de six notes entendues ailleurs (55 sur 714 ; SN8 7 %, SN7 19 %). Hors du tournoi : quatre tournures au plus par paire, aucun bloc de deux mesures recopié, pas de fanfare. Entre les quatre morceaux du tournoi : midi et duel 5 tournures ; midi et finale 5 blocs (la fanfare et le refrain) et une suite d'accords ; duel et rival 3 blocs et 4 suites (le rival cite le riff du héros). Sept tonalités estimées ; toniques écrites : ré (le tournoi, le titre, la nuit), sol, fa, do, la, si bémol.
-- Rendus : 721 s entiers (12,0 minutes), 584 s de boucles ; les jointures de `duel` (19 % de la crête) et de `finale` (28 %) tombent comme en SN7 dans une attaque de batterie, sous le plus grand saut naturel du morceau (32 % et 62 % de lui).
-- Poids en Opus, mesuré comme en SN7 et SN8 : les huit boucles simples 6,34 Mo, les trois combats en trois couches 3,67 Mo, les jingles 0,5 Mo : **10,51 Mo**, sous les 12 de SA-17.
-- Validation : 382 tests, `npm run typecheck`, `npm run build`, `npm run art:validate` passent ; aucun fichier de `src/` ni de `public/` ne change, aucun fichier audio dans le dépôt.
-
-### Limites
-- La journée enchaînée de la fiche contenait le midi de SN8 : la journée réelle, avec le midi de SN7, n'a pas été réécoutée telle quelle. Les morceaux du matin, de la fin de journée et de la nuit ne reprennent plus le motif de midi, ce qui était l'essentiel du copier-coller.
-- Rien n'est cuit ni branché ; le moteur joue toujours `tune()`.
-
-### Où reprendre
-- Le lot de cuisson (R-SUITE) : un manifeste par fichier avec l'approbation de l'opérateur mot pour mot, Opus en WebM et AAC en M4A dans `src/audio/baked/`, branchés derrière `flags.v2` selon le plan des lieux (C-LIEUX), trois couches sur les trois combats (C-COUCHES), la page de test Safari (C-SAFARI), les introductions des combats.
-
-### Pensée
-- L'oreille tranche contre la mesure : pour quatre morceaux, la version qui ressemble le plus aux autres a gagné. Le garde-fou garde la règle là où l'opérateur l'a voulue et nomme l'exception dans une liste, au lieu de la cacher dans un seuil relevé.
-
-## Passe SN10 — Le lot de cuisson : le groupe dans la version 2 (2026-11-03)
-
-### Demande
-- R-SUITE « Cuire et brancher dans la version 2 » (Passe SN9), lot confié par la séance mère : cuire chaque morceau du catalogue en Opus (WebM) et AAC (M4A) sous manifeste, le brancher derrière `flags.v2` selon C-LIEUX avec trois couches sur les combats (C-COUCHES), les introductions des combats, la page de test Safari (C-SAFARI), les preuves du dépôt, puis une fiche d'essai. Les quatre morceaux du tournoi ne changent pas.
-
-### L'approbation des manifestes
-- `tools/audio/validate.mjs` exige `approved: true` et l'approbation de l'opérateur mot pour mot. La carte R-SUITE disait : « L’étape suivante cuit les morceaux sous manifeste, avec ton approbation mot pour mot, les branche derrière `flags.v2`, et te donne l’essai en jouant ». L'opérateur a choisi « Cuire et brancher dans la version 2 ».
-- Lecture retenue : ce choix est l'approbation. Chaque manifeste le cite, avec les choix d'écoute de l'opérateur sur le morceau (par exemple, pour le duel : F-DUEL « Bonne direction », C-BOUCLE « Rien entendu de gênant », R-RETOUCHES « Revenir à l’ancienne version », C-COUCHES « Trois couches sur les trois combats »), et C-LIEUX « Valider ce plan ». Aucun autre mot n'est écrit à sa place. La fiche d'essai lui demande de le confirmer après l'écoute en jeu (E-PROD).
-
-### Fait — [OK]
-- **La cuisson** (`tools/audio/band/bake.mjs`, `encode.mjs`) : quatorze morceaux, quarante-huit fichiers dans `src/audio/baked/`, un manifeste par morceau dans `art-lab/audio/manifests/`, et `src/audio/catalogue.json` (longueurs, mesures, couches, introductions) pour le moteur. Huit boucles simples, trois combats en trois couches avec leur introduction, le titre avec la sienne, trois jingles.
-  - Les couches portent le gain que la dynamique du master a donné au mélange entier (`master({ layers })`, `compress` et `limit` notent leur gain) : les trois ensemble sont le master approuvé, alors que les pistes de `--stems` n'avaient ni compression ni plafond.
-  - L'introduction (`intro: true` sur la session, `skipped`) est l'autre moitié de la boucle : ce qui précède la boucle et sa résonance, rien du corps, mastérisée avec les niveaux de la boucle (`masterWith`). Elle finit là où la boucle commence (`loopAt`).
-  - Encodage bit à bit identique (`-fflags +bitexact`, sans métadonnées) : `bake.mjs --check` rebâtit dans un dossier temporaire et compare chaque fichier à son manifeste.
-  - Les rendus existants ne changent pas : `duel` entier, en boucle et ses trois pistes, identiques échantillon pour échantillon à `main` après les ajouts à `session.mjs` et `dsp.mjs`.
-- **Le moteur** (`src/audio/`) : `plan.ts` (C-LIEUX : `pieceFor`, `boutPiece`, `ANNOUNCED`, `jingleFor` ; les couches : `moodStep`, `layerLevels`), `align.ts` (où une boucle commence dans ce qu'un navigateur a décodé), `LayerSet` qui boucle chaque piste sur son intervalle et démarre après une introduction, `Sound.band` (l'introduction une fois puis la boucle, ou la boucle reprise où elle était, SA-15), `Sound.sting` (fanfare et jingles hors des baisses sous les coups, la musique 9 dB plus bas sous eux), le K.O. qui arrête la musique en 0,4 s puis le jingle 1,2 s après, le contexte audio à 48 kHz quand le navigateur l'accepte, un format qui ne décode pas qui cède au suivant. `tune()` et ses tables sont retirés : ils ne jouaient que dans la version 2.
-- **Les branchements**, version 2 seulement : la ville (`opening` sur la première page d'une partie neuve : le titre), les places (la fanfare aux trois annonces du greffier), l'arène (le morceau par l'étape du tournoi, `ArenaMatch.piece`, la vie des combattants pour la fin de combat ; `?scene=arena&v2=1&music=rival|finale` hors partie). Le jeu par défaut, l'écran-titre et Explore restent muets (SA-16).
-- **Le niveau** : `MIX.music` passe de 14,1 dB (réglé pour l'air pincé) à −1,6 dB.
-- `.gitattributes` : `*.webm` et `*.m4a` en binaire. Le dossier de travail de la séance n'avait pas de `node_modules` : `three` y est copié (ignoré par git) pour que les tests qui chargent l'arène trouvent le module.
-- **Les outils** : le banc hors ligne suit le taux du moteur et attend le chargement des morceaux (`ready()`) ; `render.mjs` rend la musique de chaque lieu à chaque heure et les trois combats ; `analyse.mjs` compare chaque lieu à sa propre musique ; `engine-proof.mjs` lit le moteur contre les fichiers décodés par ffmpeg ; `page-proof.mjs` passe de nuit (le même morceau d'une page à l'autre) et de jour (un morceau neuf repris à son début) ; `decode-proof.mjs` et `safari-page.mjs` sont neufs.
-
-### Défauts trouvés
-- [KO → corrigé] **Chrome perdait 24 échantillons au début de chaque Opus** : libopus annonce 312 échantillons de délai (6,5 ms), Chrome lit le CodecDelay du WebM à la milliseconde du conteneur, 7 ms. Mesuré : 2 122 081 échantillons au lieu de 2 122 105, le son en avance de 24 ; Firefox exact. La cuisson écrit 336 échantillons (7 ms) dans le CodecDelay et l'OpusHead et fait précéder le fichier de 24 échantillons de la fin de la boucle. Ogg Opus dans Chrome : 451 704 au lieu de 451 699, écarté.
-- [KO → corrigé] **La sortie du moteur retarde tout de 10 ms** (480 échantillons : le compresseur à anticipation et le plafond suréchantillonné). Les preuves de S1 ne comparaient le moteur qu'à lui-même. `engine-proof` le mesure sur un clic avant de lire la musique.
-- [KO → corrigé] Le ton d'essai de S1 restait calé sur l'ancien bus musique : 15,7 dB plus bas, la réverbération d'un coup le couvrait (« a heavy blow takes the music down 5 dB: −1.9 »). Il est remonté de la différence.
-- [KO → corrigé] **L'alignement par la seule jointure** se trompait sur trois boucles AAC (fin, midi, parvis) quand le décodeur garde le délai du codeur : le codeur abîme légèrement les deux bords de la boucle, et la jointure vraie n'est pas toujours la plus lisse. Règle ajoutée : un décodeur qui a retiré le délai laisse moins d'une trame de rembourrage (Opus 960, AAC 1024) ; une trame ou plus en trop veut dire qu'il l'a gardé. Contrôle négatif : sans la règle, le test d'un amorçage qui prolonge la fin échoue.
-- [KO → corrigé] **Le rendu d'un morceau dépendait des morceaux rendus avant lui** dans le même processus : les notes des cuivres et des guitares sont gardées sous une durée arrondie au millième, une note d'un morceau précédent pouvait en remplacer une autre de quelques échantillons. Vu sur `victoire` cuite seule : deux fichiers différents de la cuisson complète. Antérieur au lot. La cuisson oublie les notes entre deux morceaux (`forgetNotes`, `forgetHits`) ; recuisson complète.
-- [?] **AAC : la jointure garde l'erreur de bord du codeur.** Sur un ton pur, la marche à la jointure vaut environ −30 dB sous le ton (indice de jointure 9,4 contre 2,3 sur le signal d'origine) ; sur la base du duel, 10,6 en AAC contre 1,4 en Opus. Donner au codeur le contexte circulaire puis couper par copie de flux (`-ss`) ne garde pas une liste d'édition à l'échantillon (96 256 au lieu de 96 000). L'oreille tranche sur Safari (E-SAFARI) ; sinon, écrire nous-mêmes la liste d'édition du M4A.
-
-### Mesures
-Cuisson finale (chaque morceau depuis sa seule partition), −18 LUFS par morceau. « Jointure » : le saut au tour de boucle rapporté au plus grand saut du morceau.
-
-| Morceau | Boucle | Crête vraie | Jointure | Introduction | Opus | AAC |
-|---|---|---|---|---|---|---|
-| `titre` | 46,7 s | −2,6 dBTP | 0,02 | 12,0 s, la boucle à 6,667 s | 816 ko | 719 ko |
-| `matin` | 65,5 s | −4,0 dBTP | 0,01 | — | 906 ko | 802 ko |
-| `midi` | 81,5 s | −4,0 dBTP | 0,09 | — | 1 107 ko | 1 009 ko |
-| `fin` | 55,4 s | −3,1 dBTP | 0,02 | — | 769 ko | 680 ko |
-| `nuit` | 63,8 s | −4,4 dBTP | 0,02 | — | 862 ko | 785 ko |
-| `parvis` | 50,0 s | −3,5 dBTP | 0,06 | — | 708 ko | 621 ko |
-| `lices` | 56,8 s | −2,2 dBTP | 0,02 | — | 832 ko | 710 ko |
-| `valse` | 41,7 s | −3,8 dBTP | 0,06 | — | 515 ko | 513 ko |
-| `duel` (3 couches) | 44,2 s | −5,4 dBTP | 0,32 | 9,4 s, la boucle à 5,526 s | 1 454 ko | 1 250 ko |
-| `rival` (3 couches) | 35,9 s | −5,1 dBTP | 0,06 | 3,8 s, la boucle à 2,561 s | 1 157 ko | 1 009 ko |
-| `finale` (3 couches) | 42,4 s | −5,2 dBTP | 0,62 | 10,7 s, la boucle à 7,059 s | 1 417 ko | 1 268 ko |
-| `fanfare`, `victoire`, `defaite` | 16,1 / 9,6 / 12,3 s | −5,4 / −3,8 / −5,4 dBTP | — | — | 524 ko | 467 ko |
-
-- **Poids** : 11 067 459 octets en Opus (11,07 Mo, 10,55 Mio), 9 832 004 en AAC (9,83 Mo) ; un joueur ne charge qu'un format (SA-17 : 12 Mio au plus par format, `validate.mjs`). Les débits nominaux de SN7 (96 kb/s, 80 et 64 pour les couches) ; Opus en débit variable dépasse un peu le nominal, d'où 11,07 Mo contre les 10,51 Mo estimés en SN9 (dont 0,57 Mo d'introductions). Le paquet de production sort les 48 fichiers en ressources à part, la page d'entrée n'en nomme aucun ; la page charge seulement les fichiers du morceau joué.
-- **Reproductibilité** : `bake.mjs --check` 48 fichiers sur 48 identiques ; un sous-ensemble cuit dans un autre ordre (défaite, victoire, rival) 12 sur 12.
-- **Décodage** (`decode-proof.mjs`) : Chrome 156, les 48 fichiers à l'échantillon exact ; Firefox 159, 42 exacts et six Opus d'un échantillon plus courts (`fin`, `lices` et quatre non bouclés : la boucle tourne un échantillon plus tôt, 21 µs) ; les 34 boucles retrouvées à leur vrai début sur des décodages qui gardent les délais (AAC 1024, Opus 336), 82 vérifications sur 82 dans chaque navigateur.
-- **Mélange** (`analyse.mjs --check`, rendus du moteur) : chaque lieu à chaque heure entre −18,5 et −18,9 LUFS, la musique 3,8 à 5,2 dB au-dessus de l'ambiance (cible 3 à 6) ; duels −17,2 et −17,4 LUFS avec la musique ; à plein volume −1,0 dBTP, aucun échantillon au-delà de 1. Tout passe. `MIX.music` −1,6 dB.
-- **Moteur** (`engine-proof.mjs`, 25 vérifications sur 25) : le retard de sortie 480 échantillons ; l'introduction et la boucle du duel à 0 échantillon de décalage, part inexpliquée 0,00 % ; la valse tourne à 41,849 s sans marche ; les couches suivent la séquence adverse sur la mesure (1,00 / 0,00 / 0,99 puis 1,00 / 1,00 / 0,00) ; le K.O. donne la victoire ou la défaite, la musique coupée ; la fanfare fait baisser le matin de −9,0 dB.
-- **Pages réelles** (serveur DEV, Chrome) : `hooks-proof` passe ; `page-proof` : le morceau de la nuit repris d'une page à l'autre (3,86 s puis 6,82 s), le parvis puis les lices de jour, les lices à leur début (2,10 s), un onglet sans geste muet.
-- **Dépôt** : `npm test` 385 sur 385 (dont le plan, les couches, l'alignement sur des décodages synthétiques, les manifestes ; trois fautes injectées, chacune attrapée), `npm run typecheck`, `npm run build`, `npm run art:validate` (14 manifestes de son, 0 erreur).
-
-### Limites
-- **Personne n'a écouté le résultat en jeu.** Les règles des couches, le délai du jingle et la baisse sous la fanfare sont des propositions.
-- **Safari n'est pas essayé** : Chrome 156 et Firefox 159 seulement, Edge n'a pas démarré sans tête.
-- Le rival et la finale ne s'entendent en partie qu'au sixième, huitième et dixième jour ; pour l'essai, `?scene=arena&v2=1&music=rival|finale`.
-- Le rembourrage de la fin d'un Opus et le délai d'un AAC sont retrouvés par la longueur et la jointure ; un décodeur qui couperait le délai d'Apple (2112) sans liste d'édition perdrait des échantillons au début : la page Safari le signale (« coupé »).
-- Les extraits de la fiche sont des rendus du moteur hors jeu.
-
-### La fiche d'essai et la page Safari
-- **Fiche d'essai** : page privée https://claude.ai/artifact/3fVUHipEEnncBcjcM3waeF, source `briefs/fiche-son-essai.html` (la logique de la fiche SN9 gardée : choix enregistrés, relus), trois extraits MP3 des rendus du moteur publiés avec la page, pas dans le dépôt. Dix cartes : E-LIEUX, E-NIVEAU, E-COUCHES, E-INTRO, E-KO, E-FANFARE, E-TITRE à l'oreille ; E-SAFARI, E-PROD (la confirmation de la production), E-SUITE (S2 puis S3). `decisions` relu vide à la publication. La fiche dit comment jouer (serveur DEV, adresses des états nommés et de l'arène).
-- **Page Safari** (C-SAFARI) : page privée https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS, construite par `tools/audio/safari-page.mjs` (les vrais fichiers en `data:`, l'alignement du jeu, un ton pur de 2 s codé comme la cuisson), version 2 republiée avec les fichiers recuits. Elle mesure ce que Safari décode, fait écouter six jointures et enregistre le relevé dans `results` (relu vide). Vérifiée dans Chrome et Firefox sans tête, à 390 px : rien ne déborde, aucune erreur ; Safari lui-même non essayé.
-
-### Où reprendre
-- Relire la fiche (`decisions`) et la page Safari (`results`) quand l'opérateur les dit remplies ; consigner mot pour mot ; n'agir que sur ce qui est décidé. Si Safari entend la jointure AAC : la liste d'édition écrite par la cuisson.
-
-### Pensée
-- Une boucle cuite n'est juste que dans le navigateur qui la décode : le même fichier, exact dans Firefox, perdait 24 échantillons dans Chrome. Elle se prouve contre le décodage de chaque navigateur et contre la sortie du moteur, pas contre le fichier qu'on a écrit.
-- Une preuve qui compare le moteur à lui-même ne voit ni un retard ni un décalage : il faut un témoin extérieur, ici les fichiers décodés par ffmpeg et un clic à une place connue.
-- Une clé de cache qui arrondit rend un calcul dépendant de l'ordre. Un contrôle de reproductibilité sur un sous-ensemble l'a montré, le contrôle complet passait.
 
 ## Passe SN11 — La fiche d'essai du son relue : le plan gardé, la production confirmée, le son des combats à reprendre (2026-11-04)
 
@@ -466,6 +341,70 @@ Cuisson finale (chaque morceau depuis sa seule partition), −18 LUFS par morcea
 - Une proposition se fait entendre au niveau de ce qu'elle remplace : le duel entier calé à la même sonie, aujourd'hui et proposé, sinon le plus fort gagne à l'oreille.
 - Sans oreille, on contrôle ce que les chiffres voient (la part du grave, les crêtes, les niveaux, un spectrogramme) et l'on donne le reste à l'opérateur, nommé.
 
+## Passe SN16 — La fiche des sons du duel relue, onze sur onze : cuits et branchés dans la version 2 (2026-11-04)
+
+### Demande
+- L'opérateur, mot pour mot : « Fiche remplie ».
+
+### La fiche
+- Page privée https://claude.ai/artifact/Wc2u1Uftu1r4P4mroyqYbN, source `briefs/fiche-son-duel.html`. Relue par `list` : 11 documents sur 11, aucune note.
+
+| # | Décision | Choix de l'opérateur |
+|---|---|---|
+| S3-DUEL | Le duel, aujourd'hui et proposé | « Mieux : continuer dans cette voie » |
+| S3-FOULE | La foule, à la place du grondement | « Bonne direction (par le code) » |
+| S3-BAISSE | La musique sous les coups | « Garder les baisses » |
+| S3-COUPS | Les coups, la garde, l'esquive, le bris | « Bonne direction » |
+| S3-REN | Les compétences de Ren | « Bonne direction » |
+| S3-RIVAUX | Les compétences des rivaux | « Bonne direction » |
+| S3-SOUTIENS | Les protections et les renforts | « Bonne direction » |
+| S3-CHARGE | La charge | « Bonne direction » |
+| S3-LECTURE | La lecture du duel | « Bonne direction, les cinq » |
+| S3-KO | Le K.O. et son ralenti | « Bonne direction » |
+| S3-SUITE | Ce qui vient après | « Cuire et brancher dans la version 2 ce qui est validé » |
+
+### Ce que ces choix veulent dire
+- **Tout est validé**, la foule par le code (SA-11, sans enregistrement). Les baisses sous les coups restent celles d'aujourd'hui.
+- **S3-CHARGE garde le souffle du maintien.** La recommandation de la fiche, « sans son pour le maintien », n'a pas été prise.
+- **S3-SUITE** : cuire sous manifeste, avec l'approbation mot pour mot, et brancher derrière `flags.v2`. Chaque manifeste cite ce choix et les choix d'écoute de sa famille, puis dit « To be confirmed after the trial in play », comme la musique avant E-PROD.
+
+### Fait — [OK]
+- **La cuisson** (`tools/audio/band/bake-sfx.mjs`) : 64 sons, 128 fichiers `src/audio/baked/sfx-*`, en Opus à 64 kb/s et en AAC à 80 (le murmure à 96). Chaque son est rendu depuis sa seule écriture. Il y a huit manifestes, un par famille : `duel-coups`, `duel-ren`, `duel-rivaux`, `duel-soutiens`, `duel-charge`, `duel-lecture`, `duel-ko` (`kind: effect`) et `foule` (`kind: ambience`). La table `sfx` de `src/audio/catalogue.json` donne les prises et leurs longueurs ; `bake.mjs` la garde quand il réécrit le catalogue. `encode.mjs` accepte un débit et des arguments par format, sans rien changer à la musique.
+- **Le moteur** :
+  - `src/audio/sfx.ts`, pur : la table de la fiche (`sfxOf`, `crowdOf`, `holdOf`, `chargeLevel`, `varyOf`), les niveaux posés pour la fiche (`SFX_TRIM` −10,7 dB, `CROWD_TRIM` 0,7 dB moins `MIX.ambience`), une réaction de la foule toutes les 2,6 s au plus, une menace par seconde au plus, un souffle de la charge toutes les 0,6 s comme l'effet visuel.
+  - `Sound.ts` : la banque est décodée à l'ouverture d'une scène d'arène. Chaque événement du duel joue ses sons sur le bus des effets, avec l'envoi vers la salle, une autre prise que la précédente, et les baisses de `DUCK` telles quelles. La foule remplace le grondement de l'arène : le murmure boucle sur son échantillon, sur le chemin de l'ambiance. Les recettes du lot S0 ne jouent plus que si la banque ne peut pas se décoder, pour qu'un duel ne soit jamais muet.
+  - `ArenaApp` donne au moteur le nombre de paliers de la charge.
+- **Un écart avec la fiche, nommé** : la variation de hauteur (±3 %) est réservée aux coups simples, à la garde et à l'esquive (`varyOf`). Les sons accordés sur le motif ne varient plus qu'en niveau, la lecture du duel et les notes de la charge jamais. Dans les extraits de la fiche, tous variaient ; à ±3 %, une note accordée pouvait s'écarter d'un demi-ton de la musique.
+- **Tests** :
+  - `tests/audio-sfx.test.mjs` passe de 2 à 5 tests : la banque cuite sous ses manifestes et dans le catalogue ; la table, événement par événement ; les paliers contre le `chargeLevel` de l'effet visuel, sur 2 à 9 paliers ; les baisses, la variation, la foule, le souffle de la charge, les niveaux.
+  - `tests/audio-baked.test.mjs` et `tests/v2-sound-s1.test.mjs` comptent les huit familles et les 128 fichiers.
+- **Preuves** :
+  - `engine-proof.mjs`, sur la sortie réelle : le murmure de l'arène depuis 0,060 s, autour de son tour à 16,06 s (0,00 % inexpliqué, décalage 0) ; la cloche de la fenêtre d'esquive jouée telle que cuite, à 4,005 s plus le retard de sortie (0,05 % inexpliqué) ; 29 vérifications sur 29. Contrôle négatif sur `main` figé (`e40ade1`) : ces deux vérifications échouent, 100 % inexpliqué.
+  - `analyse.mjs --check` passe. La foule de l'arène sort à −25,7 LUFS, 5,0 dB sous la musique du duel (−20,7). Les duels sont à −17,4 et −17,6 LUFS, contre −17,2 et −17,3 en SN14 ; à plein volume −1,5 dBTP ; un clic de l'interface passe 6,9 dB au-dessus de la foule (3,5 au-dessus du grondement).
+  - `decode-proof.mjs` étendu aux sons : Chrome 130 sur 130 et Firefox 130 sur 130 (longueurs, débuts, le murmure retrouvé à son vrai début quand le décodeur garde le délai).
+  - `bake-sfx.mjs --check` : tout comme les manifestes. `bake.mjs --check` : les 48 fichiers de la musique identiques à l'octet après le changement d'`encode.mjs`.
+  - `hooks-proof.mjs`, dans le vrai jeu (serveur DEV, Chrome piloté) : sur `?scene=arena&v2=1`, après un clic, 56 sons sur 56 décodés, la foule en place du grondement, onze événements joués par les sons du groupe (8 coups, une garde, une menace, un renfort de Marek), les recettes du lot S0 jamais, aucune erreur de page.
+  - `npm test` 391 sur 391, `npm run typecheck`, `npm run build`, `npm run art:validate` (22 manifestes de son, 0 erreur).
+- **Poids** (SA-17) : 12 280 918 octets en Opus (11,71 Mio) et 11 082 417 en AAC (10,57 Mio). C'est sous les 12 Mio par format que contrôle `validate.mjs`.
+
+### Défaut trouvé — [KO → corrigé]
+- **Firefox décodait autrement cinq AAC bruités** (le bris, le coup éclair, l'Estocade, deux souffles). La longueur et le début étaient justes, mais la ressemblance avec le décodage de ffmpeg n'était que de 0,85 à 0,89. En cause, la substitution de bruit perceptuelle du codeur AAC : une bande codée comme du bruit est tirée à nouveau par chaque décodeur. Les sons sont recuits avec `-aac_pns 0` (AAC seulement, la musique inchangée) : 130 sur 130 dans les deux navigateurs, et 8 ko de moins.
+
+### La fiche d'essai
+- Page privée https://claude.ai/artifact/Pid9tqciTfEQ4zviWkJnhc, source `briefs/fiche-son-essai-duel.html`. Elle dit comment jouer (serveur DEV, `?scene=arena&v2=1`, un clic ; `&music=rival|finale`). Trois cartes : S3E-JEU, le ressenti en jouant ; S3E-PROD, la confirmation de production ; S3E-SUITE, lancer S2. `decisions` relu vide à la publication.
+
+### Limites
+- **Personne n'a entendu les sons dans le jeu en jouant.** Les extraits de la fiche étaient des rendus du moteur sur le duel du bot.
+- Le souffle du maintien n'était dans aucun extrait : on l'entendra pour la première fois en jouant.
+- Safari n'est toujours pas essayé (SC-SAFARI).
+
+### Où reprendre
+- Relire la fiche d'essai quand l'opérateur la dit remplie. Si S3E-PROD est confirmé, écrire la confirmation dans les huit manifestes (`bake-sfx.mjs`, comme `CONFIRMED` dans `bake.mjs`). Puis S2, dans sa propre séance.
+
+### Pensée
+- Un codeur peut laisser au décodeur une part de hasard : avec la substitution de bruit, deux navigateurs jouent deux cymbales. Une preuve de décodage contre un témoin extérieur le voit, une preuve qui compare le moteur à lui-même non.
+- Varier un son pour qu'il ne se répète pas, c'est aussi le désaccorder : la variation de hauteur va aux sons sans note.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -671,7 +610,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN12)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12). **S3 en cours** : la fiche des couches est relue (Passe SN14). Les morceaux tiennent, la règle F est appliquée aux trois combats (la mélodie à 0,45 pendant la séquence adverse, la tension à 0,35 au repos, chaque changement sur une mesure), et la double demande est corrigée. La seconde fiche d'écoute de S3 est publiée (Passe SN15, https://claude.ai/artifact/Wc2u1Uftu1r4P4mroyqYbN, `briefs/fiche-son-duel.html`) : un son par recette joué par le groupe, la lecture du duel, le K.O. et son ralenti, la foule en code à la place du grondement (qui sortait aussi fort que la musique), les baisses sous les coups. Rien n'est dans le jeu avant la réponse de l'opérateur. **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 après l'essai du lot S4.
+**6f. Son (Passes SN1 à SN12)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12). **S3 en cours** : la fiche des couches est relue (Passe SN14). Les morceaux tiennent, la règle F est appliquée aux trois combats (la mélodie à 0,45 pendant la séquence adverse, la tension à 0,35 au repos, chaque changement sur une mesure), et la double demande est corrigée. La fiche des sons du duel est relue, onze sur onze (Passe SN16). Les sons du groupe et la foule en code sont cuits et branchés dans la version 2, et les baisses sont gardées. **À l'opérateur** : la fiche d'essai en jeu (https://claude.ai/artifact/Pid9tqciTfEQ4zviWkJnhc, `briefs/fiche-son-essai-duel.html`), avec la confirmation de production (S3E-PROD) et S2 ensuite (S3E-SUITE). **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 après l'essai du lot S4.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 
@@ -706,7 +645,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10), SN7-SN8 (Passe SN14) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10), SN7-SN8 (Passe SN14), SN9-SN10 (Passe SN16) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 

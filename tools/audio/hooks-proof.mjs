@@ -54,6 +54,22 @@ try {
   const after = await page.evaluate(() => ({ x: window.__plaza.player.pos.x, z: window.__plaza.player.pos.z })), dist = Math.hypot(after.x - before.x, after.z - before.z), steps = await played(page, 'step');
   check(steps >= Math.floor(dist) - 1 && steps > 0, `${dist.toFixed(1)} m walked: step played ${steps} time(s)`);
 
+  // the arena of a version 2 duel (journal Passe SN16): the band's sounds and the crowd decoded after the gesture, the duel's events played through them, lot S0's
+  // recipes no more; the count of sounds from the catalogue's own table
+  const table = JSON.parse(fs.readFileSync(new URL('../../src/audio/catalogue.json', import.meta.url), 'utf8')).sfx;
+  await page.goto(`${BASE}?scene=arena&v2=1&vis=0&fps=off`, { waitUntil: 'load', timeout: READY });
+  await page.waitForFunction('!!window.__arena && !!window.__sound', { timeout: READY });
+  await page.mouse.click(W / 2, H / 2);
+  await page.waitForFunction('window.__sound.ctx?.state === "running"', { timeout: 10000 });
+  await page.waitForFunction('window.__sound.bank?.size > 0', { timeout: 60000 });
+  await page.evaluate(() => { const s = window.__sound; window.__cues = {}; window.__old = 0; const c = s.cue.bind(s); s.cue = (q) => { window.__cues[q.id] = (window.__cues[q.id] ?? 0) + 1; return c(q); }; const p = s.play.bind(s); s.play = (e, g, a) => { window.__old++; p(e, g, a); }; });
+  for (let i = 0; i < 10; i++) { await page.keyboard.down('j'); await wait(250); await page.keyboard.up('j'); await wait(700); }
+  const arena = await page.evaluate(() => ({ bank: window.__sound.bank.size, crowd: !!window.__sound.crowd, cues: window.__cues, old: window.__old }));
+  console.log(`   the arena's sounds played: ${JSON.stringify(arena.cues)}`);
+  check(arena.bank === Object.keys(table).length, `the arena: ${arena.bank} of the catalogue's ${Object.keys(table).length} sounds decoded`);
+  check(arena.crowd, 'the arena: its crowd in place of the rumble');
+  check(Object.values(arena.cues).reduce((a, n) => a + n, 0) > 0 && arena.old === 0, `the duel's events in the band's sounds (${Object.values(arena.cues).reduce((a, n) => a + n, 0)}), lot S0's recipes ${arena.old} time(s)`);
+
   // today's game: no engine at all
   await open(page, 'play=1&new=1&name=Aster&vis=0&fps=off');
   await wait(1000);

@@ -103,6 +103,14 @@ const D = CAT.duel, loopAt = T0 + D.intro.loopAt / SR, stems = ['duel-base', 'du
   const w = [[at - 0.3, at - 0.02], [at + 0.02, at + 0.24], [at + 0.3, at + 1.3]].map(([p, q]) => fit(y, parts, p, q));
   check(w.every((f) => Math.abs(r(f)[1] - 1) < 0.05 && Math.abs(r(f)[2] - TENSION_REST) < 0.05 && f.rest < 0.01), `a sequence over before its bar line (${at.toFixed(2)} s): the lead and the tension hold, ${w.map((f) => r(f).slice(1).map((v) => v.toFixed(2)).join('/')).join(', ')}`);
 }
+{
+  // the arena's crowd (journal Passe SN16): its murmur in a loop from its start, on the sample across the turn; the dodge window's bell played as baked, at its event
+  const B = JSON.parse(fs.readFileSync(path.join(REPO, 'src/audio/catalogue.json'), 'utf8')).sfx, bed = baked('sfx-crowd-bed'), bell = baked('sfx-window'), at = 0.05 + LAT / SR;
+  const y = load('sn-crowd'), x = lay(bed, y.length, at, B['crowd-bed'].frames[0]), turn = at + B['crowd-bed'].frames[0] / SR, f = fit(y, [x], 3, 19.5), lg = lagOf(y, x, turn - 0.5, turn + 0.5);
+  check(f.rest < 0.01 && lg.lag === 0 && f.g[0] > 0.1, `the arena's crowd: its murmur from ${at.toFixed(3)} s, round its turn at ${turn.toFixed(2)} s, unexplained ${(f.rest * 100).toFixed(2)} %, lag ${lg.lag}`);
+  const w = load('sn-window'), wb = lay(bed, w.length, at, B['crowd-bed'].frames[0]), ring = lay(bell, w.length, 4.005 + LAT / SR), before = fit(w, [wb, ring], 2.5, 3.95), during = fit(w, [wb, ring], 4.0, 4.6);
+  check(during.rest < 0.01 && during.g[1] > 0.1 && Math.abs(during.g[0] / before.g[0] - 1) < 0.02, `the dodge window's bell as baked, at 4.005 s and its output's delay: ${during.g.map((v) => v.toFixed(3)).join(' / ')}, unexplained ${(during.rest * 100).toFixed(2)} %`);
+}
 for (const [job, want] of [['sn-win', 'victoire'], ['sn-lose', 'defaite']]) {
   const y = load(job), n = y.length, at = 6 + 1.2 + 0.05 + LAT / SR, parts = [lay(baked('victoire'), n, at), lay(baked('defaite'), n, at), ...stems.slice(0, 2).map((x) => lay(x, n, loopAt, D.frames))], f = fit(y, parts, at + 0.1, 10.8), k = want === 'victoire' ? 0 : 1;
   check(f.rest < 0.02 && Math.abs(f.g[1 - k]) < 0.05 * Math.abs(f.g[k]) && Math.abs(f.g[2]) < 0.02 * Math.abs(f.g[k]), `the K.O. (${job === 'sn-win' ? 'the opponent' : 'the hero'}) takes the music and gives « ${want} »: ${f.g.map((v) => v.toFixed(3)).join(' / ')}, unexplained ${(f.rest * 100).toFixed(2)} %`);

@@ -26,11 +26,21 @@ function world(over = {}, data = Buffer.from('opus bytes')) {
 const has = (r, re) => assert.ok(r.errors.some((e) => re.test(e)), `${re} in ${JSON.stringify(r.errors)}`);
 
 test('the repository: the band\'s catalogue baked (journal Passe SN10), every file under its manifest, our own, R-SUITE quoted word for word, each format under 12 MB', () => {
-  const r = validateAudio(ROOT), C = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/audio/catalogue.json'), 'utf8')).pieces, dir = path.join(ROOT, 'art-lab/audio/manifests');
-  assert.deepEqual(r.errors, []); assert.equal(r.manifests, 14);
+  const r = validateAudio(ROOT), cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/audio/catalogue.json'), 'utf8')), C = cat.pieces, dir = path.join(ROOT, 'art-lab/audio/manifests');
+  assert.deepEqual(r.errors, []); assert.equal(r.manifests, 14 + 8, 'fourteen pieces, and the duel\'s sounds in eight families (journal Passe SN16)');
   for (const x of ['.webm', '.m4a']) assert.ok(r.weight[x] > 8e6 && r.weight[x] <= MAX_BYTES, `${x}: ${r.weight[x]} bytes`);
   for (const f of fs.readdirSync(dir)) {
-    const m = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')), p = C[m.id], names = [...p.files, ...(p.intro ? [p.intro.file] : [])];
+    const m = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+    // a family of the duel's sounds: its score, S3-SUITE, the catalogue's files of the family, both formats
+    if (m.kind !== 'music') {
+      const own = Object.values(cat.sfx).filter((e) => e.family === m.id);
+      assert.ok(own.length, `${m.id}: a family of the catalogue`); assert.equal(m.licence, 'own'); assert.equal(m.generatedByAi, false);
+      assert.equal(m.score, m.id === 'foule' ? 'art-lab/audio/sfx/crowd.sfx.mjs' : 'art-lab/audio/sfx/duel.sfx.mjs'); assert.equal(m.kind, m.id === 'foule' ? 'ambience' : 'effect');
+      assert.ok(m.approval.includes('S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé »') && m.decisions.some((d) => d.startsWith('S3-BAISSE « Garder les baisses »')), `${m.id}: the operator's words`);
+      assert.deepEqual(m.files.map((x) => x.path).sort(), own.flatMap((e) => e.files).flatMap((n) => [`src/audio/baked/${n}.m4a`, `src/audio/baked/${n}.webm`]).sort(), `${m.id}: the catalogue's files, both formats`);
+      continue;
+    }
+    const p = C[m.id], names = [...p.files, ...(p.intro ? [p.intro.file] : [])];
     assert.equal(m.licence, 'own'); assert.equal(m.generatedByAi, false); assert.equal(m.score, `art-lab/audio/scores/${m.id}.score.mjs`);
     assert.ok(m.approval.includes('R-SUITE « Cuire et brancher dans la version 2 »') && m.decisions.includes('C-LIEUX « Valider ce plan » (journal Passe SN8)'), `${m.id}: the operator's words`);
     if (['midi', 'duel', 'rival', 'finale'].includes(m.id)) assert.ok(m.approval.includes('« Revenir à l’ancienne version »'), `${m.id}: the version SN7 wrote, kept by ear`);

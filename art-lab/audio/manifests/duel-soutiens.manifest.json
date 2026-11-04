@@ -1,0 +1,316 @@
+{
+ "id": "duel-soutiens",
+ "kind": "effect",
+ "runtimeUse": "production",
+ "licence": "own",
+ "generatedByAi": false,
+ "score": "art-lab/audio/sfx/duel.sfx.mjs",
+ "approved": true,
+ "approval": "The operator, on the duel's sounds sheet (briefs/fiche-son-duel.html, journal Passe SN16, 2026-11-04): S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé », on the sounds kept by ear: S3-SOUTIENS « Bonne direction »; S3-DUEL « Mieux : continuer dans cette voie »; S3-BAISSE « Garder les baisses ». To be confirmed after the trial in play. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
+ "decisions": [
+  "S3-SOUTIENS « Bonne direction » (journal Passe SN16, 2026-11-04)",
+  "S3-DUEL « Mieux : continuer dans cette voie » (journal Passe SN16, 2026-11-04)",
+  "S3-BAISSE « Garder les baisses » (journal Passe SN16, 2026-11-04)",
+  "S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé » (journal Passe SN16, 2026-11-04)"
+ ],
+ "files": [
+  {
+   "path": "src/audio/baked/sfx-d1.webm",
+   "bytes": 22733,
+   "sha256": "6546105464279e465b77fa45caa3e5c83d3a049e93277258bf4d72c2cbf92163",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 100647
+  },
+  {
+   "path": "src/audio/baked/sfx-d1.m4a",
+   "bytes": 22300,
+   "sha256": "f7e038cb1623b07614223f9c76a330ef2c99dc72bae15e664361c8ec50168162",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 100647
+  },
+  {
+   "path": "src/audio/baked/sfx-m_bulwark.webm",
+   "bytes": 20027,
+   "sha256": "d0620366598544dc46dcdd7970fec9c9bceba2b02ed5e4cdeb32651c2364ec92",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 115200
+  },
+  {
+   "path": "src/audio/baked/sfx-m_bulwark.m4a",
+   "bytes": 22483,
+   "sha256": "6b92540ea0e12e3287aad35759ab197efc06fa14a2f8e4b3a9f520a0ab0b2670",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 115200
+  },
+  {
+   "path": "src/audio/baked/sfx-m_brace.webm",
+   "bytes": 13389,
+   "sha256": "532508da1635176827e4d3d417845b288e5902bfcbfadf4d6824d61cf526aaff",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 69119
+  },
+  {
+   "path": "src/audio/baked/sfx-m_brace.m4a",
+   "bytes": 15351,
+   "sha256": "3e8db49b5ed9bb836cbc60c432cdf11d26a9de72c03a5cc1cbe71337a49b3a3a",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 69119
+  },
+  {
+   "path": "src/audio/baked/sfx-m_aegis.webm",
+   "bytes": 29946,
+   "sha256": "b403c95bd146d50d42b84b02f7ab62d36ec081cb60911ab96382d83924b7aa34",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 99599
+  },
+  {
+   "path": "src/audio/baked/sfx-m_aegis.m4a",
+   "bytes": 22393,
+   "sha256": "ef5cba53ba522a558a86b383fc3de5dbcdc97dfafbd6497b458907ff65620aa3",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 99599
+  },
+  {
+   "path": "src/audio/baked/sfx-m_hide.webm",
+   "bytes": 16837,
+   "sha256": "b44bb844d5f93cf7154ad7461ddd4331e61a8c35cfdfb24a001380f592ee5b06",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 81647
+  },
+  {
+   "path": "src/audio/baked/sfx-m_hide.m4a",
+   "bytes": 17802,
+   "sha256": "6de3f97fc9abca1644b371bd5202455bb39b16908aa03e25a12b95c5798bd6d0",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 81647
+  },
+  {
+   "path": "src/audio/baked/sfx-k_iron.webm",
+   "bytes": 29952,
+   "sha256": "86b275083a1afcf5a3f7bab0def470eeb866f3686de052b1a033aed12d0a60c4",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 110400
+  },
+  {
+   "path": "src/audio/baked/sfx-k_iron.m4a",
+   "bytes": 24294,
+   "sha256": "ef59890e1beac2d6b4c32fd6bd1336ee48c6a25f380095a3eea2b8ffa6fb02be",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 110400
+  },
+  {
+   "path": "src/audio/baked/sfx-k_parry.webm",
+   "bytes": 11183,
+   "sha256": "0aad8607af44fa80da8bbcf8309a22253ff91eaf37d2f6f18ddb92f1c40f0b6c",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 43820
+  },
+  {
+   "path": "src/audio/baked/sfx-k_parry.m4a",
+   "bytes": 10364,
+   "sha256": "65e138861740cf5aa20b106006964358865cc9265c1f993851b4c8d09456354a",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 43820
+  },
+  {
+   "path": "src/audio/baked/sfx-s1.webm",
+   "bytes": 10309,
+   "sha256": "f3a88d463968549d9000997c078a3bbb323439ae20ac6a941819959241a4ca55",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 40699
+  },
+  {
+   "path": "src/audio/baked/sfx-s1.m4a",
+   "bytes": 9643,
+   "sha256": "9e513815d892501f9787c4dee469e452d38cc72eabb21dea66bbc7d0276dd439",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 40699
+  },
+  {
+   "path": "src/audio/baked/sfx-k_cry.webm",
+   "bytes": 9668,
+   "sha256": "336af790482c4b1bd127c6c9ae27a51236e3e6d0559e84224158db869307c737",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 48714
+  },
+  {
+   "path": "src/audio/baked/sfx-k_cry.m4a",
+   "bytes": 11195,
+   "sha256": "c125cfd9f6ad58fca51b845cf71cf708f3958b349ee92571adb0a42269ffe25f",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 48714
+  },
+  {
+   "path": "src/audio/baked/sfx-k_focus.webm",
+   "bytes": 24668,
+   "sha256": "e424fd1ba67fbdaf7dbc042f16e832371bb411ed5f12c5d519b7a932d4d48bf7",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 84497
+  },
+  {
+   "path": "src/audio/baked/sfx-k_focus.m4a",
+   "bytes": 17396,
+   "sha256": "d90b61998440be80c20da83834aca3feaf505d5a712d08b243e393eb16119767",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 84497
+  },
+  {
+   "path": "src/audio/baked/sfx-m_resolve.webm",
+   "bytes": 19809,
+   "sha256": "af3a9366ae1d96447312e81835773c3cfdee88fe4bab8e8ccc3069e0ff8af9fc",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 105600
+  },
+  {
+   "path": "src/audio/baked/sfx-m_resolve.m4a",
+   "bytes": 20523,
+   "sha256": "98045a904f892ce36f0ec512f786023f369560aa494e7d091c4716da07a8b405",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 105600
+  },
+  {
+   "path": "src/audio/baked/sfx-m_tempo.webm",
+   "bytes": 17982,
+   "sha256": "614206a815e3aedff1557dfb6bb9aafc69488284fc8cd154441d6544854fc628",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 63092
+  },
+  {
+   "path": "src/audio/baked/sfx-m_tempo.m4a",
+   "bytes": 14440,
+   "sha256": "5f31fad2ab6b89f5fb41ad64fe8543214071de2869965cd665f3a5de1e35ab54",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 63092
+  },
+  {
+   "path": "src/audio/baked/sfx-m_gild.webm",
+   "bytes": 30291,
+   "sha256": "a038695384d6649ef6fbba93618af11b576533b13888d8e95e2e0f18e6ff675b",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 110400
+  },
+  {
+   "path": "src/audio/baked/sfx-m_gild.m4a",
+   "bytes": 23772,
+   "sha256": "21bb5ec9a0e94fc65def39a1172230dc42e1febe8225bbb1eacab4e4c26c1f4d",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 110400
+  },
+  {
+   "path": "src/audio/baked/sfx-m_prayer.webm",
+   "bytes": 22615,
+   "sha256": "464900d2ce0c6dac5960f9e2f7756b1997259c3200f1bdac997885100d583ffb",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 100936
+  },
+  {
+   "path": "src/audio/baked/sfx-m_prayer.m4a",
+   "bytes": 22286,
+   "sha256": "524d804589dff9f0ea90f6c372e04efb00becc525dbb49e9ea93a0b3452b61c5",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 100936
+  },
+  {
+   "path": "src/audio/baked/sfx-m_grit.webm",
+   "bytes": 14146,
+   "sha256": "72466bcb24b57bb82231f724be9b56a2e15ed38f1e9d85a7da226a7818065518",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 68318
+  },
+  {
+   "path": "src/audio/baked/sfx-m_grit.m4a",
+   "bytes": 14206,
+   "sha256": "18ec6582c2aea816ef4dfccdffcb9e16c4dd4d3fa5312d88f4980c0455735011",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 68318
+  },
+  {
+   "path": "src/audio/baked/sfx-m_roar.webm",
+   "bytes": 12299,
+   "sha256": "5c973c1f2acbfdffa257e4f03537542f4a733a3bf1c2c71a28ac4c73ccd25534",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "once",
+   "frames": 70741
+  },
+  {
+   "path": "src/audio/baked/sfx-m_roar.m4a",
+   "bytes": 14860,
+   "sha256": "e0c7df0ec7b3aca0596ea87315ae0e6bba2ba28e8615c6df4f76242490538b35",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "once",
+   "frames": 70741
+  }
+ ],
+ "bake": {
+  "tool": "tools/audio/band/bake-sfx.mjs",
+  "ffmpeg": "9.0.2-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "encoders": {
+   "webm": "-c:a libopus -b:a <kbps>k -vbr on -application audio -frame_duration 20 -f webm",
+   "m4a": "-c:a aac -b:a <kbps>k -f mp4 -aac_pns 0",
+   "input": "f32le 48000 Hz stereo, -map_metadata -1 -fflags +bitexact -flags:a +bitexact",
+   "opusDelay": "24 samples ahead (silence before a sound, the murmur's last ones before it), 336 written as the delay"
+  }
+ }
+}

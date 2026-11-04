@@ -23,12 +23,13 @@ export function patchOpusDelay(b) {
 }
 const pcmOf = (L, R, lead) => { const n = L.length + lead.length, pcm = Buffer.alloc(n * 8); for (let i = 0; i < n; i++) { const [l, r] = i < lead.length ? lead[i] : [L[i - lead.length], R[i - lead.length]]; pcm.writeFloatLE(l, 8 * i); pcm.writeFloatLE(r, 8 * i + 4); } return pcm; };
 
-/** a stereo pair to `<base>.webm` and `<base>.m4a`; `circle`: a loop (its last samples lead its Opus file). Returns the two files' bytes */
-export function encodePair(ffmpeg, [L, R], base, kbps, circle) {
+/** a stereo pair to `<base>.webm` and `<base>.m4a` (`kbps` one bitrate, or one per format; `extra` more encoder arguments per format); `circle`: a loop (its last
+ *  samples lead its Opus file). Returns the two files' bytes */
+export function encodePair(ffmpeg, [L, R], base, kbps, circle, extra = {}) {
   const lead = Array.from({ length: OPUS_LEAD }, (_, i) => (circle ? [L[L.length - OPUS_LEAD + i], R[R.length - OPUS_LEAD + i]] : [0, 0])), out = {};
   for (const x of ['webm', 'm4a']) {
     const file = `${base}.${x}`;
-    execFileSync(ffmpeg, [...COMMON, ...ENC[x](kbps), file], { input: pcmOf(L, R, x === 'webm' ? lead : []), maxBuffer: 1 << 30 });
+    execFileSync(ffmpeg, [...COMMON, ...ENC[x](typeof kbps === 'object' ? kbps[x] : kbps), ...(extra[x] ?? []), file], { input: pcmOf(L, R, x === 'webm' ? lead : []), maxBuffer: 1 << 30 });
     if (x === 'webm') fs.writeFileSync(file, patchOpusDelay(fs.readFileSync(file)));
     out[x] = fs.readFileSync(file);
   }
