@@ -45,13 +45,15 @@ const EFFECTS = ['hit', 'heavy', 'guard', 'dodge', 'tier', 'release', 'ko', 'bre
 const jobs = [];
 for (const e of EFFECTS) jobs.push({ name: `fx-${e}`, secs: 2, effect: e, settings: { volume: 1, music: 0.5 } });
 for (const p of PLACES) for (const l of LOOKS) jobs.push({ name: `amb-${p}-${l}`, secs: 45, scene: { place: p, look: l }, stem: 'fx' });
-for (const l of LOOKS) jobs.push({ name: `mus-${l}`, secs: 80, scene: { place: 'district', look: l }, stem: 'music' });
+// each place's piece of the band at each hour (journal Passe SN10: the plan of src/audio/plan.ts), the music bus alone
+for (const p of PLACES.slice(0, 4)) for (const l of LOOKS) jobs.push({ name: `mus-${p}-${l}`, secs: 60, scene: { place: p, look: l }, stem: 'music' });
+for (const piece of ['duel', 'rival', 'finale']) jobs.push({ name: `mus-arena-${piece}`, secs: 60, scene: { place: 'arena', look: 'night', music: { bout: piece } }, stem: 'music' });
 for (const p of PLACES.slice(0, 4)) for (const l of LOOKS) jobs.push({ name: `mix-${p}-${l}`, secs: 45, scene: { place: p, look: l } });
 jobs.push({ name: 'mix-forecourt-midday-bout', secs: 45, scene: { place: 'forecourt', look: 'midday', bout: true } });
-jobs.push({ name: 'duel-marek-night', secs: 150, scene: { place: 'arena', look: 'night' }, events: duels.marek.evs });
-jobs.push({ name: 'duel-vessa-midday', secs: 120, scene: { place: 'arena', look: 'midday' }, events: duels.vessa.evs });
+jobs.push({ name: 'duel-marek-night', secs: 150, scene: { place: 'arena', look: 'night' }, events: duels.marek.evs, settle: true });
+jobs.push({ name: 'duel-vessa-midday', secs: 120, scene: { place: 'arena', look: 'midday', music: { bout: 'rival' } }, events: duels.vessa.evs, settle: true });
 // the end of a duel at full volume: its densest blows and the K.O., for the ceiling
-jobs.push({ name: 'duel-marek-vol1', secs: 150, from: Math.max(0, duels.marek.res.t - 145), scene: { place: 'arena', look: 'night' }, events: duels.marek.evs, settings: { volume: 1 } });
+jobs.push({ name: 'duel-marek-vol1', secs: 150, from: Math.max(0, duels.marek.res.t - 145), scene: { place: 'arena', look: 'night', music: { bout: 'finale' } }, events: duels.marek.evs, settings: { volume: 1 }, settle: true });
 const scripts = opt('scripts'), extra = scripts ? (await import(`file://${path.resolve(scripts).replaceAll('\\', '/')}`)).jobs : [];
 const list = [...jobs, ...extra].filter((j) => !only || only.some((w) => j.name.includes(w)));
 

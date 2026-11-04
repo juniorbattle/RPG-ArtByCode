@@ -3,6 +3,8 @@
 import { SR, TAU, clamp, Rand, seedOf, coef, filter, ring, burst, fadeIn, drive } from './dsp.mjs';
 
 const memo = new Map();
+/** the computed hits forgotten (the bake, journal Passe SN10) */
+export const forgetHits = () => memo.clear();
 const blank = (secs) => new Float32Array(Math.round(secs * SR));
 const sweep = (x, { f0, f1, tf, tau, a = 1, pre = 0 }) => { let ph = 0; for (let i = 0; i < x.length; i++) { const t = i / SR; ph += TAU * (f1 + (f0 - f1) * Math.exp(-t / tf)) / SR; x[i] += a * Math.exp(-t / tau) * Math.sin(ph + pre); } return x; };
 /** a cymbal's partials: an inharmonic cloud, each with its own short life, darker when played softly */

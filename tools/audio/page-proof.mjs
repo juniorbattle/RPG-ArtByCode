@@ -1,7 +1,8 @@
 // The sound across a real page change (lot S1, journal Passe SN3; the fiche's SA-15: « le comportement exact du navigateur reste à tester sur une vraie
 // navigation »): a version 2 game on a DEV server, Chrome under its real autoplay rule. Nothing before a gesture; a gesture starts the sound; the
 // hero walks through a way out, the sound goes down with the screen, the next page takes the music up where it was, by itself if the browser allows
-// it, else on the next gesture. A tab that never gave a gesture stays silent. Exit 1 on a failure.
+// it, else on the next gesture. A tab that never gave a gesture stays silent. The band's plan (journal Passe SN10): the night's piece on the forecourt and at the training ground, so the walk
+// keeps it; by day the two places have their own pieces, and the next one starts from its beginning. Exit 1 on a failure.
 //   node tools/audio/page-proof.mjs     (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs)
 // puppeteer's evaluate runs with userGesture: true, so it counts as a gesture (journal Passe SN3): the page under test is read by a probe written in at
 // its loading, through the console, and no evaluate touches it. A real window, off-screen as tools/cadence.mjs.
@@ -30,7 +31,7 @@ async function watched(witness = false) {
 
 try {
   const { page, st, until } = await watched();
-  await page.goto(`${BASE}?${Q}&state=v2-forecourt-morning`, { waitUntil: 'load', timeout: READY });
+  await page.goto(`${BASE}?${Q}&state=v2-forecourt-night`, { waitUntil: 'load', timeout: READY });
   await until((s) => s.ready && s.sound);
   check(!st.last.error, `the page is ready (${st.last.error ?? 'no error'})`);
   await wait(800);
@@ -39,7 +40,7 @@ try {
   await until((s) => s.ctx === 'running', 10000);
   await wait(4000);
   const s1 = st.last;
-  check(s1.now?.key === 'tune:1842:morning' && s1.now.pos > 3 && s1.now.pos < 6, `the gesture started the sound: ${s1.ctx}, ${s1.now?.key} at ${s1.now?.pos?.toFixed(2)} s`);
+  check(s1.now?.key === 'band:nuit' && s1.now.pos > 3 && s1.now.pos < 6, `the gesture started the sound: ${s1.ctx}, ${s1.now?.key} at ${s1.now?.pos?.toFixed(2)} s`);
   check(s1.db > -60, `it is heard: ${s1.db?.toFixed(1)} dB at the output`);
 
   // the way out to the training ground, the hero set in its lane (an evaluate on the first page: a gesture was already given), the key held; the real location.assign
@@ -62,6 +63,25 @@ try {
   check(left && s3.now?.pos > left.now.pos && s3.now.pos < left.now.pos + 5, `taken up where it was: left near ${left?.now?.pos?.toFixed(2)} s, at ${s3.now?.pos?.toFixed(2)} s after some 2.5 s here`);
   check(s3.db > -60, `heard again after the fade: ${s3.db?.toFixed(1)} dB`);
   await page.close();
+
+  // by day: the forecourt's piece, then the training ground's from its beginning
+  const d = await watched();
+  await d.page.goto(`${BASE}?${Q}&state=v2-forecourt-morning`, { waitUntil: 'load', timeout: READY });
+  await d.until((s) => s.ready && s.sound);
+  await d.page.mouse.click(W / 2, H / 2);
+  await d.until((s) => s.ctx === 'running' && !!s.now, 10000);
+  await wait(2500);
+  check(d.st.last.now?.key === 'band:parvis', `by day the forecourt plays its own: ${d.st.last.now?.key}`);
+  await d.page.evaluate(() => { const P = window.__plaza, x = P.place.exits.find((w) => w.to === 'training'); P.player.pos.set(x.out.x0 > 0 ? x.out.x0 + 0.4 : x.out.x1 - 0.4, 0, (x.lane.z0 + x.lane.z1) / 2); });
+  const nav2 = d.page.waitForNavigation({ waitUntil: 'load', timeout: READY });
+  await d.page.keyboard.down('d'); await nav2; await d.page.keyboard.up('d');
+  d.st.last = null;
+  await d.until((s) => s.ready && s.sound);
+  if (d.st.last.ctx !== 'running') { await d.page.mouse.click(W / 2, H / 2); await d.until((s) => s.ctx === 'running', 10000); }
+  await d.until((s) => !!s.now, 10000); await wait(2000);
+  const t = d.st.last;
+  check(t.now?.key === 'band:lices' && t.now.pos < 4, `the training ground's own piece, from its beginning: ${t.now?.key} at ${t.now?.pos?.toFixed(2)} s`);
+  await d.page.close();
 
   // the negative control and the witness: a new tab where nothing touches the page: no record, no engine context; a context made there does not run
   const f = await watched(true);

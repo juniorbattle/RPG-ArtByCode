@@ -1,0 +1,185 @@
+<title>Essai Safari du son</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: one column of steps, a bench: what Safari decodes, then what the ear hears at the loop's turn, then the verdict saved */
+:root {
+  --bg: #eef0f4; --panel: #ffffff; --ink: #1d2433; --muted: #5a6478; --rule: #d3d8e2; --accent: #a8641c; --ok: #2f6b3d; --ko: #9b2f2a; --warn: #8a6510;
+  --display: 'Marcellus', 'Iowan Old Style', Georgia, serif; --text: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #141926; --panel: #1c2232; --ink: #e9e6dc; --muted: #a3abbd; --rule: #313a50; --accent: #e3a35a; --ok: #7fc28e; --ko: #f08a80; --warn: #e2c06a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #141926; --panel: #1c2232; --ink: #e9e6dc; --muted: #a3abbd; --rule: #313a50; --accent: #e3a35a; --ok: #7fc28e; --ko: #f08a80; --warn: #e2c06a; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 16px/1.5 var(--text); }
+.wrap { max-width: 860px; margin: 0 auto; padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 22px; }
+h1, h2 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; }
+h1 { font-size: 2rem; } h2 { font-size: 1.35rem; }
+p { margin: 0; max-width: 65ch; }
+.lede { color: var(--muted); }
+section { background: var(--panel); border: 1px solid var(--rule); padding: 18px 20px; display: grid; gap: 12px; }
+.step { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.table { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: .92rem; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; }
+.pill { display: inline-block; padding: 0 8px; border: 1px solid currentColor; font-size: .82rem; }
+.ok { color: var(--ok); } .ko { color: var(--ko); } .warn { color: var(--warn); }
+.tests { display: grid; gap: 10px; }
+.test { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; border-top: 1px solid var(--rule); padding-top: 10px; }
+.test h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+.test p { color: var(--muted); font-size: .92rem; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+button { font: inherit; font-size: .95rem; padding: 7px 14px; border: 1px solid var(--rule); background: transparent; color: var(--ink); cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+button:disabled { opacity: .5; cursor: default; }
+.meter { font-variant-numeric: tabular-nums; color: var(--accent); min-height: 1.5em; }
+textarea { width: 100%; min-height: 84px; font: inherit; padding: 8px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); box-sizing: border-box; }
+.small { font-size: .85rem; color: var(--muted); }
+pre { white-space: pre-wrap; word-break: break-word; font-size: .8rem; background: var(--bg); border: 1px solid var(--rule); padding: 8px; margin: 0; max-height: 220px; overflow: auto; }
+@media (max-width: 560px) { .test { grid-template-columns: minmax(0, 1fr); } h1 { font-size: 1.6rem; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:8px">
+    <p class="step">Cité du Tournoi · décision C-SAFARI</p>
+    <h1>Essai Safari du son</h1>
+    <p class="lede">Deux minutes sur un iPhone, un iPad ou un Mac, dans Safari, le son allumé (un casque aide). La page embarque les vrais fichiers du jeu, Opus en WebM et AAC en M4A. Elle mesure d’abord ce que Safari en décode, puis te fait écouter la jointure des boucles. Tes réponses s’enregistrent pour que je les relise.</p>
+  </header>
+
+  <section aria-labelledby="s1">
+    <p class="step">Étape 1 · automatique</p>
+    <h2 id="s1">Ce que Safari décode</h2>
+    <p class="small" id="env">Lecture du navigateur…</p>
+    <div class="table"><table id="measures"><thead><tr><th>Fichier</th><th>Format</th><th>Lisible</th><th>Échantillons</th><th>Début du son</th><th>Jointure</th><th>Verdict</th></tr></thead><tbody><tr><td colspan="7" class="small">Décodage en cours…</td></tr></tbody></table></div>
+    <p class="small">« Exact » : Safari rend le fichier à l’échantillon près. « Aligné » : il garde un délai du codeur, que le jeu retrouve. « Coupé » : il manque des échantillons au début, la boucle aurait un saut.</p>
+  </section>
+
+  <section aria-labelledby="s2">
+    <p class="step">Étape 2 · à l’oreille</p>
+    <h2 id="s2">La jointure des boucles</h2>
+    <p>Chaque essai démarre peu avant la jointure : écoute le moment où le compteur passe à zéro. Un clic, un trou ou un saut de rythme, c’est un défaut.</p>
+    <p class="small" id="ctx"></p>
+    <div class="tests" id="tests"></div>
+    <div class="row"><button type="button" id="stop">Arrêter le son</button></div>
+    <p class="meter" id="meter" aria-live="polite"></p>
+  </section>
+
+  <section aria-labelledby="s3">
+    <p class="step">Étape 3</p>
+    <h2 id="s3">Enregistrer</h2>
+    <label for="note" class="small">Une remarque, l’appareil utilisé (par exemple « iPhone 15, iOS 26 »)</label>
+    <textarea id="note"></textarea>
+    <div class="row"><button type="button" class="primary" id="save">Enregistrer mes résultats</button></div>
+    <p class="small" id="saved" aria-live="polite"></p>
+    <details><summary class="small">Le relevé complet (à copier si l’enregistrement échoue)</summary><pre id="dump"></pre><div class="row" style="margin-top:8px"><button type="button" id="copy">Copier le relevé</button></div></details>
+  </section>
+</div>
+
+<script>/*@ALIGN@*/</script>
+<script>
+const DATA = /*@DATA@*/{};
+const RATE = 48000;
+const MIME = { webm: 'audio/webm; codecs="opus"', m4a: 'audio/mp4; codecs="mp4a.40.2"' };
+const $ = (id) => document.getElementById(id);
+const state = { env: {}, measures: [], verdicts: {}, ctx48: null };
+
+function b64(uri) { const s = atob(uri.slice(uri.indexOf(',') + 1)), b = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b.buffer; }
+function decodeWith(ctx, ab) { return new Promise((ok, ko) => { const p = ctx.decodeAudioData(ab, ok, ko); if (p && p.then) p.then(ok, ko); }); }
+const can = (() => { const a = document.createElement('audio'); return (f) => a.canPlayType(MIME[f]); })();
+
+async function measure() {
+  const env = state.env = { ua: navigator.userAgent, webm: can('webm') || 'non', m4a: can('m4a') || 'non', gamePicks: can('webm') ? 'webm' : can('m4a') ? 'm4a' : 'aucun' };
+  $('env').textContent = `Opus en WebM : ${env.webm} · AAC en M4A : ${env.m4a} · le jeu choisirait : ${env.gamePicks === 'webm' ? 'Opus' : env.gamePicks === 'm4a' ? 'AAC' : 'aucun format'}`;
+  const Off = window.OfflineAudioContext || window.webkitOfflineAudioContext, rows = [], known = {};
+  for (const f of ['webm', 'm4a']) for (const id of ['ton', 'valse', 'duel-base', 'duel-intro']) {
+    const d = DATA[id], m = { id, format: f, playable: can(f) || 'non', expected: d.frames };
+    try {
+      const buf = await decodeWith(new Off(2, RATE, RATE), b64(d[f]));
+      m.length = buf.length; m.rate = buf.sampleRate; const n = d.frames * (buf.sampleRate / RATE);
+      if (d.loop) { const a = ALIGN.alignLoop(buf, d.frames, RATE, f); m.offset = a.offset; m.how = a.how; m.seam = +ALIGN.seamScore(buf, a.offset, n).toFixed(2); known[f] ??= a.offset; }
+      else { m.offset = ALIGN.startOf(buf, d.frames, RATE, f, known[f]); m.how = 'start'; }
+      m.verdict = buf.length < n - 2 ? 'coupé' : Math.abs(buf.length - n) <= 2 ? 'exact' : (m.seam === undefined || m.seam < 12) ? 'aligné' : 'douteux';
+    } catch (e) { m.error = String(e && e.message || e); m.verdict = 'illisible'; }
+    rows.push(m);
+  }
+  state.measures = rows;
+  const cls = { exact: 'ok', 'aligné': 'ok', 'coupé': 'ko', illisible: 'ko', douteux: 'warn' };
+  $('measures').tBodies[0].innerHTML = rows.map((m) => `<tr><td>${m.id}</td><td>${m.format === 'webm' ? 'Opus' : 'AAC'}</td><td>${m.playable}</td><td>${m.length === undefined ? '—' : `${m.length} / ${m.expected} (${m.length - m.expected >= 0 ? '+' : ''}${m.length - m.expected})`}</td><td>${m.offset === undefined ? '—' : m.offset}</td><td>${m.seam === undefined ? '—' : m.seam}</td><td><span class="pill ${cls[m.verdict]}">${m.verdict}</span>${m.error ? ` <span class="small">${m.error}</span>` : ''}</td></tr>`).join('');
+  dump();
+}
+
+// ---- listening
+let ctx = null, playing = [], timer = 0;
+function audio() {
+  if (ctx) return ctx;
+  const C = window.AudioContext || window.webkitAudioContext;
+  try { ctx = new C({ sampleRate: RATE }); state.ctx48 = true; } catch { ctx = new C(); state.ctx48 = false; }
+  $('ctx').textContent = `Contexte audio à ${ctx.sampleRate} Hz${state.ctx48 ? ' (48 kHz accepté, comme dans le jeu)' : ' (48 kHz refusé : le navigateur rééchantillonne)'}.`;
+  dump();
+  return ctx;
+}
+const cache = {};
+async function buffer(id, f) { const k = `${id}.${f}`; return (cache[k] ??= decodeWith(audio(), b64(DATA[id][f]))); }
+function stop() { for (const s of playing) { try { s.stop(); } catch {} } playing = []; clearInterval(timer); $('meter').textContent = ''; }
+function countdown(at, label, every = 0) {
+  clearInterval(timer);
+  timer = setInterval(() => { const c = ctx.currentTime; let left = at - c; if (every && left < 0) left = every - ((-left) % every); $('meter').textContent = left > 0.05 ? `${label} dans ${left.toFixed(1)} s` : `${label} : maintenant`; }, 100);
+}
+async function loopTest(id, f, lead, secs) {
+  stop(); const c = audio(); if (c.state === 'suspended') await c.resume();
+  const d = DATA[id], buf = await buffer(id, f), a = ALIGN.alignLoop(buf, d.frames, RATE, f), len = d.frames / RATE, s = c.createBufferSource(), off = a.offset / buf.sampleRate;
+  s.buffer = buf; s.loop = true; s.loopStart = off; s.loopEnd = off + len; s.connect(c.destination);
+  const t = c.currentTime + 0.1, from = Math.max(0, len - lead); s.start(t, off + from); s.stop(t + secs); playing.push(s);
+  countdown(t + (len - from), 'Jointure', id === 'ton' ? len : 0);
+  setTimeout(() => { if (playing.includes(s)) stop(); }, (secs + 0.3) * 1000);
+}
+async function introTest(f) {
+  stop(); const c = audio(); if (c.state === 'suspended') await c.resume();
+  const D = DATA['duel-base'], I = DATA['duel-intro'], base = await buffer('duel-base', f), intro = await buffer('duel-intro', f);
+  const a = ALIGN.alignLoop(base, D.frames, RATE, f), io = ALIGN.startOf(intro, I.frames, RATE, f, a.offset), t = c.currentTime + 0.1, at = t + I.loopAt / RATE;
+  const si = c.createBufferSource(); si.buffer = intro; si.connect(c.destination); si.start(t, io / intro.sampleRate); playing.push(si);
+  const sb = c.createBufferSource(), off = a.offset / base.sampleRate; sb.buffer = base; sb.loop = true; sb.loopStart = off; sb.loopEnd = off + D.frames / RATE; sb.connect(c.destination); sb.start(at, off); sb.stop(at + 8); playing.push(sb);
+  countdown(at, 'Entrée de la boucle');
+  setTimeout(() => { if (playing.includes(sb)) stop(); }, (I.loopAt / RATE + 8.5) * 1000);
+}
+const TESTS = [
+  { key: 'ton-webm', title: 'Ton pur · Opus', what: 'Un la tenu, une boucle de 2 s : le moindre trou s’entend toutes les deux secondes.', run: () => loopTest('ton', 'webm', 1.5, 9) },
+  { key: 'ton-m4a', title: 'Ton pur · AAC', what: 'Le même la, en AAC : c’est là que le délai du codeur laisse un trou quand il est mal géré.', run: () => loopTest('ton', 'm4a', 1.5, 9) },
+  { key: 'valse-webm', title: 'La valse · Opus', what: 'La place de la halle, 4 s avant que la boucle reparte au début.', run: () => loopTest('valse', 'webm', 4, 10) },
+  { key: 'valse-m4a', title: 'La valse · AAC', what: 'La même jointure, en AAC.', run: () => loopTest('valse', 'm4a', 4, 10) },
+  { key: 'duel-webm', title: 'Le duel : introduction puis boucle · Opus', what: 'Les timbales et les cordes, puis le riff qui entre à 5,5 s : il doit tomber pile, sans trou ni chevauchement.', run: () => introTest('webm') },
+  { key: 'duel-m4a', title: 'Le duel : introduction puis boucle · AAC', what: 'La même entrée, en AAC.', run: () => introTest('m4a') },
+];
+$('tests').innerHTML = TESTS.map((t) => `<div class="test" data-key="${t.key}"><div style="min-width:0;display:grid;gap:4px"><h3>${t.title}</h3><p>${t.what}</p></div><div class="row"><button type="button" data-play="${t.key}">Écouter</button><button type="button" data-v="ok" aria-pressed="false">Rien entendu</button><button type="button" data-v="ko" aria-pressed="false">Un défaut</button></div></div>`).join('');
+$('tests').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return; const row = b.closest('.test'), key = row.dataset.key;
+  if (b.dataset.play) { TESTS.find((t) => t.key === key).run().catch((err) => { $('meter').textContent = `Lecture impossible : ${err && err.message || err}`; }); return; }
+  state.verdicts[key] = b.dataset.v; for (const x of row.querySelectorAll('[data-v]')) x.setAttribute('aria-pressed', String(x === b)); dump();
+});
+$('stop').onclick = stop;
+
+// ---- saving: the artifact's store, read back before saying so
+function record() { return { savedAt: new Date().toISOString(), env: state.env, ctx48: state.ctx48, ctxRate: ctx ? ctx.sampleRate : null, measures: state.measures, verdicts: state.verdicts, note: $('note').value.trim() }; }
+function dump() { $('dump').textContent = JSON.stringify(record(), null, 1); }
+$('note').addEventListener('input', dump);
+let db = null, runRef = null;
+(async () => { try { db = await window.claude?.use?.('db'); } catch { db = null; } if (!db) $('saved').textContent = 'L’enregistrement n’est pas disponible ici : copie le relevé complet ci-dessous et colle-le dans la conversation.'; })();
+$('save').onclick = async () => {
+  const b = $('save'); b.disabled = true; $('saved').textContent = 'Enregistrement…';
+  try {
+    if (!db) throw new Error('enregistrement indisponible');
+    runRef ??= db.collection('results').doc();
+    const r = record(); await runRef.set(r);
+    const back = await runRef.get();
+    if (!back.exists || back.data().savedAt !== r.savedAt) throw new Error('relu différent');
+    $('saved').textContent = `Enregistré (${new Date(r.savedAt).toLocaleTimeString()}). Dis-le dans la conversation.`;
+  } catch (e) { $('saved').textContent = `Échec : ${e && e.message || e}. Copie le relevé complet ci-dessous et colle-le dans la conversation.`; }
+  finally { b.disabled = false; }
+};
+$('copy').onclick = async () => { try { await navigator.clipboard.writeText($('dump').textContent); $('copy').textContent = 'Copié'; } catch { const r = document.createRange(); r.selectNodeContents($('dump')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } };
+dump();
+measure();
+</script>

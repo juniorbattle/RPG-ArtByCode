@@ -4,6 +4,9 @@
 import { SR, TAU, hz, clamp, Rand, seedOf, coef, filter, eq, Svf, ring, burst, fadeIn, sawAt, squareAt, drive } from './dsp.mjs';
 
 const memo = new Map();
+/** the computed notes forgotten (the bake, journal Passe SN10): a key rounds a length to the millisecond, so a note kept from an earlier piece could stand for a
+ *  slightly different one; a piece rendered after this depends on its own score only */
+export const forgetNotes = () => memo.clear();
 const once = (key, make) => { let v = memo.get(key); if (!v) { v = make(new Rand(seedOf(key))); memo.set(key, v); } return v; };
 /** velocities fall on five layers: the timbre moves with them, the level stays continuous at the mix */
 const layer = (v) => clamp(Math.round(v * 4) / 4, 0.25, 1);

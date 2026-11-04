@@ -1,6 +1,6 @@
 // The version 2's sound (lot V8, journal Passe V8; the operator's decision SA-8 « Elle bouge : cuit, avec manifeste », journal Passe SN1, replaced
-// AV-17's « no audio file »: a baked file reaches the game only through a manifest); the effects' recipes, the ambiences of each place by day and by night, a tune on the day state's mode, the
-// settings kept and checked; nothing before a gesture; only the version 2's pages make a sound.
+// AV-17's « no audio file »: a baked file reaches the game only through a manifest); the effects' recipes, the ambiences of each place by day and by night, the band's plan
+// (journal Passe SN10: which piece where, the fights' layers), the settings kept and checked; nothing before a gesture; only the version 2's pages make a sound.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { load } from './load.mjs';
 
-const S = await load('/src/audio/score.ts');
+const S = await load('/src/audio/score.ts'), P = await load('/src/audio/plan.ts');
 const LOOKS = ['morning', 'midday', 'afternoon', 'night'], PLACES = ['district', 'forecourt', 'training', 'festival', 'arena'];
 const src = (f) => fs.readFileSync(new URL(`../${f}`, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 
@@ -35,24 +35,49 @@ test('the ambiences: a bed in every place at every hour; birds by day, crickets 
   assert.ok(!S.ambienceOf('district', 'night').calls.some((c) => c.kind === 'hammer'), 'the forge\'s hammer sleeps at night');
 });
 
-test('the music: the same seed gives the same tune; every note on the day state\'s mode; it comes home to the tonic; night is slower', () => {
-  for (const l of LOOKS) {
-    const a = S.tune(7, l), b = S.tune(7, l);
-    assert.deepEqual(a, b);
-    const pcs = new Set(S.MODES[l].map((x) => (S.TONIC[l] + x) % 12));
-    for (const n of a.notes) assert.ok(pcs.has(((n.midi % 12) + 12) % 12), `${l}: ${n.midi} on the mode`);
-    assert.equal(a.notes.at(-1).midi % 12, S.TONIC[l] % 12, `${l} ends on the tonic`);
-    assert.ok(a.notes.every((n) => n.midi >= 40 && n.midi <= 96 && n.t >= 0 && n.t < a.length));
-    assert.ok(a.notes.length >= 20);
-  }
-  // the modes themselves: the morning a major pentatonic (five notes, no semitone), the others diatonic (seven, two semitones), the night minor
-  const semis = (m) => m.map((x, i) => ((m[(i + 1) % m.length] - x) + 12) % 12).filter((d) => d === 1).length;
-  assert.equal(S.MODES.morning.length, 5); assert.equal(semis(S.MODES.morning), 0);
-  for (const l of ['midday', 'afternoon', 'night']) { assert.equal(S.MODES[l].length, 7); assert.equal(semis(S.MODES[l]), 2, l); }
-  assert.ok(S.MODES.night.includes(3) && !S.MODES.midday.includes(3), 'the night\'s minor third');
-  assert.notDeepEqual(S.tune(7, 'midday').notes, S.tune(8, 'midday').notes);
-  assert.ok(S.TEMPO.night < S.TEMPO.midday);
-  assert.equal(Math.round(S.hz(69)), 440); assert.equal(Math.round(S.hz(57)), 220);
+test('the band\'s plan (journal Passe SN10; C-LIEUX « Valider ce plan »): the town by the hour, the forecourt and the lists by day and the night\'s in the evening, the waltz at every hour, the fights by the tournament, the title on a new game', () => {
+  // the card's plan, read by hand (briefs/fiche-son-catalogue.html, C-LIEUX)
+  const WANT = { district: { morning: 'matin', midday: 'midi', afternoon: 'fin', night: 'nuit' }, forecourt: { morning: 'parvis', midday: 'parvis', afternoon: 'parvis', night: 'nuit' },
+    training: { morning: 'lices', midday: 'lices', afternoon: 'lices', night: 'nuit' }, festival: { morning: 'valse', midday: 'valse', afternoon: 'valse', night: 'valse' } };
+  for (const [p, row] of Object.entries(WANT)) for (const l of LOOKS) { assert.equal(P.pieceFor(p, l), row[l], `${p} ${l}`); assert.equal(P.pieceFor(p, l, { opening: true }), 'titre', `a new game opens on the title (${p} ${l})`); }
+  for (const l of LOOKS) { assert.equal(P.pieceFor('arena', l), 'duel'); assert.equal(P.pieceFor('arena', l, { bout: 'finale', opening: true }), 'finale'); }
+  const STAGE = { undefined: 'duel', gate: 'duel', semi: 'rival', third: 'rival', gateFinal: 'rival', final: 'finale' };
+  for (const [st, want] of Object.entries(STAGE)) assert.equal(P.boutPiece(st === 'undefined' ? undefined : st), want, `stage ${st}`);
+  assert.equal(P.boutPiece(null), 'duel', 'a challenge in town');
+  assert.deepEqual([...P.ANNOUNCED].sort(), ['arrival', 'cut', 'final']);
+  for (const id of P.ANNOUNCED) assert.ok(src('src/narrative/v2story.ts').includes(`id: '${id}', place: 'forecourt', cast: ['odo'`), `${id}: a scene of the registrar's`);
+  assert.equal(P.jingleFor('ren'), 'defaite'); assert.equal(P.jingleFor('marek'), 'victoire');
+  // every piece and jingle in the catalogue, the fights in their three layers with an intro, the title with its own
+  const C = JSON.parse(src('src/audio/catalogue.json')).pieces;
+  assert.deepEqual(Object.keys(C).sort(), [...P.PIECES, ...P.STINGS].sort());
+  for (const id of ['duel', 'rival', 'finale']) { assert.deepEqual(C[id].layers, ['base', 'melody', 'tension']); assert.ok(C[id].intro.loopAt > 0 && C[id].intro.frames > C[id].intro.loopAt); }
+  assert.ok(C.titre.intro); for (const id of ['matin', 'midi', 'fin', 'nuit', 'parvis', 'lices', 'valse']) { assert.equal(C[id].kind, 'loop'); assert.equal(C[id].intro, undefined); }
+  for (const id of P.STINGS) assert.equal(C[id].kind, 'once');
+});
+
+test('the fights\' layers follow the duel (« proposé »): the riff always, the lead out while the opponent presses, the tension on his sequence, the heavy charge, a stun and the endgame; the K.O. takes all', () => {
+  let m = { ...P.CALM }; const go = (e) => { m = P.moodStep(m, e, { ren: 100, marek: 200 }); return P.layerLevels(m); };
+  assert.deepEqual(P.layerLevels(m), [1, 1, 0]);
+  assert.deepEqual(go({ type: 'sequenceStart', who: 'ren' }), [1, 1, 0], 'the hero\'s own sequence');
+  assert.deepEqual(go({ type: 'sequenceStart', who: 'marek', len: 3 }), [1, 0, 1]); assert.deepEqual(go({ type: 'sequenceEnd', who: 'marek' }), [1, 1, 0]);
+  assert.deepEqual(go({ type: 'chargeTier', idx: 0, open: true }), [1, 1, 0], 'the light blow');
+  assert.deepEqual(go({ type: 'chargeTier', idx: 2, open: false }), [1, 1, 0], 'a tier the AP close');
+  assert.deepEqual(go({ type: 'chargeTier', idx: 1, open: true }), [1, 1, 1], 'the heavy at 2 s'); assert.deepEqual(go({ type: 'chargeRelease', idx: 1, ok: true }), [1, 1, 0]);
+  go({ type: 'stun', who: 'marek', dur: 6 }); go({ type: 'stun', who: 'ren', dur: 6 }); assert.deepEqual(go({ type: 'stunEnd', who: 'marek' }), [1, 1, 1], 'one still stunned');
+  assert.deepEqual(go({ type: 'stunEnd', who: 'ren' }), [1, 1, 0]);
+  assert.deepEqual(go({ type: 'impact', to: 'marek', hp: 61 }), [1, 1, 0], '30.5 % of 200'); assert.deepEqual(go({ type: 'impact', to: 'marek', hp: 59 }), [1, 1, 1], 'under 30 %');
+  assert.deepEqual(go({ type: 'sequenceEnd', who: 'marek' }), [1, 1, 1], 'the endgame stays');
+  assert.deepEqual(go({ type: 'ko', who: 'marek' }), [0, 0, 0]); assert.deepEqual(go({ type: 'reset' }), [1, 1, 0]);
+  assert.deepEqual(P.moodStep(P.CALM, { type: 'impact', to: 'ren', hp: 1 }), P.CALM, 'without the fighters\' health, no endgame');
+});
+
+test('a note\'s pitch', () => { assert.equal(Math.round(S.hz(69)), 440); assert.equal(Math.round(S.hz(57)), 220); });
+
+test('every audio file of the game is the band\'s, under its manifest (SA-8, SA-13; journal Passe SN10): src/audio/baked only, nothing in public', () => {
+  const audio = [], root = fileURLToPath(new URL('..', import.meta.url)), walk = (d) => { if (!fs.existsSync(d)) return; for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (fs.statSync(p).isDirectory()) walk(p); else if (/\.(mp3|ogg|oga|opus|weba|webm|wav|m4a|aac|flac)$/i.test(f)) audio.push(path.relative(root, p).split(path.sep).join('/')); } };
+  for (const d of ['src', 'public']) walk(path.join(root, d));
+  const claimed = fs.readdirSync(path.join(root, 'art-lab/audio/manifests')).flatMap((f) => JSON.parse(fs.readFileSync(path.join(root, 'art-lab/audio/manifests', f), 'utf8')).files.map((x) => x.path));
+  assert.deepEqual(audio.sort(), claimed.sort()); assert.ok(audio.every((p) => p.startsWith('src/audio/baked/')));
 });
 
 test('the settings: kept values read back within bounds; anything broken is the default', () => {
@@ -62,11 +87,6 @@ test('the settings: kept values read back within bounds; anything broken is the 
   assert.deepEqual(S.readSettings('{"volume":"x"}'), S.DEFAULT_SETTINGS);
 });
 
-test('no audio file in the game or its public folder: none has a manifest yet (SA-8, SA-13)', () => {
-  const audio = [], walk = (d) => { if (!fs.existsSync(d)) return; for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (fs.statSync(p).isDirectory()) walk(p); else if (/\.(mp3|ogg|oga|opus|weba|webm|wav|m4a|aac|flac)$/i.test(f)) audio.push(p); } };
-  for (const d of ['src', 'public']) walk(fileURLToPath(new URL(`../${d}`, import.meta.url)));
-  assert.deepEqual(audio, []);
-});
 
 test('no sound before a gesture; only the version 2\'s pages load the engine', () => {
   const eng = src('src/audio/Sound.ts');

@@ -39,6 +39,12 @@ test('the layers: one clock, one offset, a sample-true loop; a level moves on th
   for (const x of d.sources) assert.deepEqual(x.started, [5.1, 3.5]);
   d.currentTime = 5.1; assert.ok(Math.abs(r.position() - 3.5) < 1e-9);
   r.stop(0.6); assert.ok(d.sources.every((x) => x.stopped[0] > 5.1 + 0.6));
+  // the band's stems (journal Passe SN10): each looped on the span its decoder gave it, the loop started after an intro
+  const e = fakeCtx(1), buf = (n, extra) => ({ length: n + extra, duration: (n + extra) / 48000, sampleRate: 48000 }), N = 48000 * 4;
+  const q = new L.LayerSet(e, [buf(N, 0), buf(N, 1500)], 1, {}, [1, 0], 0, { at: 6, spans: [{ offset: 0, frames: N, rate: 48000 }, { offset: 1024, frames: N, rate: 48000 }] });
+  assert.deepEqual(e.sources.map((x) => [x.loopStart, x.loopEnd, ...x.started]), [[0, 4, 6, 0], [1024 / 48000, 1024 / 48000 + 4, 6, 1024 / 48000]]);
+  assert.equal(q.length, 4); e.currentTime = 5; assert.equal(q.position(), 0, 'nothing of the loop yet, the intro plays'); e.currentTime = 7.5; assert.ok(Math.abs(q.position() - 1.5) < 1e-9);
+  assert.throws(() => new L.LayerSet(fakeCtx(), [buf(N, 0)], 1, {}, [1], 0, { spans: [{ offset: 1024, frames: N, rate: 48000 }] }), RangeError, 'a span past the buffer');
 });
 
 test('the grid: the next step after now, its margin, a start still to come', () => {
@@ -50,14 +56,14 @@ test('the grid: the next step after now, its margin, a start still to come', () 
 
 test('the record between two pages: read back, checked, the same piece only, not after too long', () => {
   assert.equal(S.readNow(null), null); assert.equal(S.readNow('{oops'), null); assert.equal(S.readNow('{"key":3}'), null); assert.equal(S.readNow('{"key":"a","pos":-1,"at":1}'), null);
-  const r = S.readNow('{"key":"tune:7:night","pos":12.5,"heard":true,"at":1000}');
-  assert.deepEqual(r, { key: 'tune:7:night', pos: 12.5, heard: true, at: 1000 });
+  const r = S.readNow('{"key":"band:nuit","pos":12.5,"heard":true,"at":1000}');
+  assert.deepEqual(r, { key: 'band:nuit', pos: 12.5, heard: true, at: 1000 });
   assert.equal(S.readNow('{"key":"a","pos":1,"heard":"yes","at":1}').heard, false, 'only a true gesture');
-  assert.equal(S.resumeAt(r, 'tune:7:night', 30, 2000), 12.5);
-  assert.equal(S.resumeAt(r, 'tune:7:midday', 30, 2000), 0, 'another piece');
-  assert.equal(S.resumeAt(r, 'tune:7:night', 10, 2000), 2.5, 'inside its length');
-  assert.equal(S.resumeAt(r, 'tune:7:night', 30, 1000 + S.RESUME_MS + 1), 0, 'too long ago');
-  assert.equal(S.resumeAt(null, 'x', 30, 0), 0); assert.equal(S.tuneKey(1842, 'night'), 'tune:1842:night');
+  assert.equal(S.resumeAt(r, 'band:nuit', 30, 2000), 12.5);
+  assert.equal(S.resumeAt(r, 'band:midi', 30, 2000), 0, 'another piece');
+  assert.equal(S.resumeAt(r, 'band:nuit', 10, 2000), 2.5, 'inside its length');
+  assert.equal(S.resumeAt(r, 'band:nuit', 30, 1000 + S.RESUME_MS + 1), 0, 'too long ago');
+  assert.equal(S.resumeAt(null, 'x', 30, 0), 0);
 });
 
 test('the step back: the K.O. deepest and longest, each blow by its weight, the ambience by a share', () => {
@@ -69,8 +75,9 @@ test('the step back: the K.O. deepest and longest, each blow by its weight, the 
   for (const e of ['click', 'open', 'coin', 'step', 'tier']) assert.equal(d[e], undefined, `${e} leaves the music alone`);
 });
 
-test('the baked sounds: none yet; the format a browser plays, Opus first; one fetch for a url; a file that fails is no error', async () => {
-  assert.deepEqual(B.bakedIds(), []);
+test('the baked sounds: the band catalogue; the format a browser plays, Opus first; one fetch for a url; a file that fails is no error', async () => {
+  const C = JSON.parse(src('src/audio/catalogue.json')).pieces, want = Object.values(C).flatMap((p) => [...p.files, ...(p.intro ? [p.intro.file] : [])]).sort();
+  assert.deepEqual(B.bakedIds(), want, 'every file of the catalogue, nothing else');
   const files = ['./baked/theme.webm', './baked/theme.m4a', './baked/crowd.m4a'];
   assert.deepEqual(B.bakedIds(Object.fromEntries(files.map((f) => [f, 0]))), ['crowd', 'theme']);
   assert.equal(B.pickFile('theme', files, () => true), './baked/theme.webm');

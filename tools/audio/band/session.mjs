@@ -73,7 +73,7 @@ export class Track {
     let e = 1; for (let i = 0; i < n; i++) { const p = a + i; if (p >= L.length) break; if (i > hold) e *= k; if (p >= 0) { const v = buf[i] * e; L[p] += v * gl; R[p] += v * gr; } }
   }
   /** a note's sound, unless the session only reads the score; every note is written in `events` for the score's checks */
-  sound(make, t, o = {}, midi = null, dur = 0) { if (midi !== null) this.s.events.push({ track: this.name, t, dur: o.dur ?? dur, midi }); if (!this.s.dry && !this.s.beforeLoop(t)) this.put(make(), t, o); }
+  sound(make, t, o = {}, midi = null, dur = 0) { if (midi !== null) this.s.events.push({ track: this.name, t, dur: o.dur ?? dur, midi }); if (!this.s.dry && !this.s.skipped(t)) this.put(make(), t, o); }
   /** a played time and level: the player's habit (`lay`), the hand's small errors */
   human(t, v) { return [t + this.lay + this.r.bi() * this.jitter, clamp(v * (1 + this.r.bi() * this.vary), 0, 1)]; }
   take() { return this.n++ % this.takes; }
@@ -81,8 +81,8 @@ export class Track {
 
 export class Session {
   /** bpm in quarter notes; `steps` to the bar, `beat` steps to a quarter; swing the share of a pair's first step, 0.5 = straight */
-  constructor({ id, seed = 1, bpm, steps = 16, beat = 4, swing = 0.5, bars, tail = 4, rooms = {}, dry = false, tune = [], loop = null }) {
-    Object.assign(this, { id, seed, bpm, steps, beat, swing, bars, dry, tune, loop, events: [], meters: {} }); this.stepSecs = 60 / bpm / beat; this.total = Math.ceil((bars * steps * this.stepSecs + tail) * SR); this.tracks = new Map(); this.rooms = rooms; this.voicings = new Map(); this.r = new Rand(seedOf(`${seed}:${id}`));
+  constructor({ id, seed = 1, bpm, steps = 16, beat = 4, swing = 0.5, bars, tail = 4, rooms = {}, dry = false, tune = [], loop = null, intro = false }) {
+    Object.assign(this, { id, seed, bpm, steps, beat, swing, bars, dry, tune, loop, intro: !!loop && intro, events: [], meters: {} }); this.stepSecs = 60 / bpm / beat; this.total = Math.ceil((bars * steps * this.stepSecs + tail) * SR); this.tracks = new Map(); this.rooms = rooms; this.voicings = new Map(); this.r = new Rand(seedOf(`${seed}:${id}`));
   }
   /** a bar and a step, in seconds; a pair's second step leans late by the swing */
   t(bar, step = 0) { const whole = Math.floor(step), late = whole % 2 ? (this.swing - 0.5) * 2 : 0; return (bar * this.steps + whole + (step - whole) + late) * this.stepSecs; }
@@ -137,7 +137,7 @@ export class Session {
   }
   padNotes(tr, inst, t, dur, notes, { vel = 0.5, attack = 0.5, release = 0.9 } = {}) {
     for (const m of notes) this.events.push({ track: tr.name, t, dur, midi: m });
-    if (this.dry || this.beforeLoop(t)) return;
+    if (this.dry || this.skipped(t)) return;
     const a = Math.round(t * SR), n = Math.round((dur + release * 3) * SR), hold = Math.round(dur * SR), k = Math.exp(-1 / (release * SR));
     for (const m of notes) { const [bl, br] = inst(m); let e = 1; for (let i = 0; i < Math.min(n, bl.length); i++) { const p = a + i; if (p >= tr.L.length || p < 0) continue; if (i > hold) e *= k; const g = vel * e * (1 - Math.exp(-(i / SR) / (attack / 3))); tr.L[p] += bl[i] * g; tr.R[p] += br[i] * g; } }
   }
@@ -147,7 +147,7 @@ export class Session {
     const stems = new Map(), rooms = { room: { rt: 0.7, pre: 0.008, damp: 4200, seed: 3 }, plate: { rt: 1.7, pre: 0.022, damp: 5200, bright: 0.7, seed: 5 }, hall: { rt: 2.8, pre: 0.03, damp: 3200, bright: 0.45, seed: 7, size: 0.08 }, ...this.rooms };
     const sends = new Map();
     for (const tr of this.tracks.values()) {
-      if (tr.voice) { const x = tr.voice(tr.notes.filter((n) => !this.beforeLoop(n.t)), this.total), th = (tr.pan + 1) * Math.PI / 4, gl = Math.cos(th), gr = Math.sin(th); for (let i = 0; i < this.total; i++) { tr.L[i] += x[i] * gl; tr.R[i] += x[i] * gr; } }
+      if (tr.voice) { const x = tr.voice(tr.notes.filter((n) => !this.skipped(n.t)), this.total), th = (tr.pan + 1) * Math.PI / 4, gl = Math.cos(th), gr = Math.sin(th); for (let i = 0; i < this.total; i++) { tr.L[i] += x[i] * gl; tr.R[i] += x[i] * gr; } }
       eq(tr.L, tr.eq); eq(tr.R, tr.eq); tr.fx?.(tr.L, tr.R);
       if (this.meter) this.meters[tr.name] = this.meter(tr);
       const st = stems.get(tr.stem) ?? [new Float32Array(this.total), new Float32Array(this.total)]; stems.set(tr.stem, st);
@@ -159,10 +159,11 @@ export class Session {
       const [stem, name] = key.split(':'), [irL, irR] = room(rooms[name]), st = stems.get(stem), wl = convolve(b[0], irL), wr = convolve(b[1], irR);
       for (let i = 0; i < this.total; i++) { st[0][i] += wl[i]; st[1][i] += wr[i]; }
     }
-    return this.loop ? this.wrap(stems) : stems;
+    return this.loop && !this.intro ? this.wrap(stems) : stems;
   }
-  /** a looped piece keeps only its body: what comes before the loop is not played (journal Passe SN7: the intro's tail in the loop's first bars was a click at every turn) */
-  beforeLoop(t) { return !!this.loop && t < this.t(this.loop.from) - 0.02; }
+  /** a looped piece keeps only its body: what comes before the loop is not played (journal Passe SN7: the intro's tail in the loop's first bars was a click at every turn);
+   *  its intro (`intro`, the bake of journal Passe SN10) is the other half: what comes before the loop and its ringing past the loop's start, nothing of the body */
+  skipped(t) { if (!this.loop) return false; const a = this.t(this.loop.from) - 0.02; return this.intro ? t >= a : t < a; }
   /** the body as a circle: what rings past its end lands on its start, what a played note drew just before its start lands on its end; the file is the loop, no more */
   wrap(stems) {
     const a = this.loopStart, b = this.loopEnd, len = b - a, out = new Map(), early = Math.round(0.03 * SR);
@@ -174,15 +175,37 @@ export class Session {
 }
 
 /** the master: a slow bus compressor, a hard ceiling, the level set on BS.1770 with the same gain for every stem */
-export function master(stems, { lufs = -18, ceiling = -1.3, th = -17, ratio = 2, attack = 0.03, release = 0.25, circular = false } = {}) {
+export function master(stems, { lufs = -18, ceiling = -1.3, th = -17, ratio = 2, attack = 0.03, release = 0.25, circular = false, layers = false } = {}) {
   const names = [...stems.keys()], n = stems.get(names[0])[0].length, L = new Float32Array(n), R = new Float32Array(n);
   for (const [a, b] of stems.values()) for (let i = 0; i < n; i++) { L[i] += a[i]; R[i] += b[i]; }
   let peak = 0; for (let i = 0; i < n; i++) peak = Math.max(peak, Math.abs(L[i]), Math.abs(R[i]));
   // a loop goes through the dynamics twice and keeps the second turn: their state at its end is their state at its start
-  const pre = 0.5 / Math.max(peak, 1e-6), a2 = [L, R].map((x) => { const y = new Float32Array(circular ? 2 * n : n); for (let i = 0; i < y.length; i++) y[i] = x[i % n] * pre; return y; }); compress(a2[0], a2[1], { th, ratio, attack, release, knee: 8 });
+  const pre = 0.5 / Math.max(peak, 1e-6), a2 = [L, R].map((x) => { const y = new Float32Array(circular ? 2 * n : n); for (let i = 0; i < y.length; i++) y[i] = x[i % n] * pre; return y; });
+  // `layers`: the gain the dynamics give the mix, sample by sample, to be given to each layer (journal Passe SN10): the layers together are the master
+  const cg = layers ? new Float32Array(a2[0].length) : null, lg = layers ? new Float32Array(a2[0].length) : null;
+  compress(a2[0], a2[1], { th, ratio, attack, release, knee: 8, trace: cg });
   const turn = () => (circular ? a2.map((x) => x.subarray(n)) : a2);
   const m = loudness(turn(), SR).lufs, g = db(lufs - m); for (const x of a2) for (let i = 0; i < x.length; i++) x[i] *= g;
-  limit(a2[0], a2[1], db(ceiling));
+  limit(a2[0], a2[1], db(ceiling), undefined, undefined, lg);
   const out = loudness(turn(), SR), g2 = db(lufs - out.lufs); for (const x of a2) for (let i = 0; i < x.length; i++) x[i] *= g2;
-  const [oL, oR] = turn(); return { L: oL, R: oR, lufs: lufs, tp: truePeak([oL, oR]), lra: out.lra, stemsGain: pre * g * g2 };
+  const [oL, oR] = turn(), res = { L: oL, R: oR, lufs: lufs, tp: truePeak([oL, oR]), lra: out.lra, stemsGain: pre * g * g2, gains: { pre, g, g2, th, ratio, attack, release, ceiling } };
+  if (layers) {
+    res.layers = new Map();
+    for (const [name, [a, b]] of stems) {
+      const x = new Float32Array(n), y = new Float32Array(n);
+      for (let i = 0; i < n; i++) { const k = circular ? n + i : i, gk = pre * cg[k] * g * lg[k] * g2; x[i] = a[i] * gk; y[i] = b[i] * gk; }
+      res.layers.set(name, [x, y]);
+    }
+  }
+  return res;
+}
+/** a part mastered with another part's gains (the bake's intros, journal Passe SN10): the same chain, the loop's own levels, so that the intro meets its loop */
+export function masterWith(stems, { pre, g, g2, th, ratio, attack, release, ceiling }) {
+  const names = [...stems.keys()], n = stems.get(names[0])[0].length, L = new Float32Array(n), R = new Float32Array(n);
+  for (const [a, b] of stems.values()) for (let i = 0; i < n; i++) { L[i] += a[i] * pre; R[i] += b[i] * pre; }
+  compress(L, R, { th, ratio, attack, release, knee: 8 });
+  for (const x of [L, R]) for (let i = 0; i < n; i++) x[i] *= g;
+  limit(L, R, db(ceiling));
+  for (const x of [L, R]) for (let i = 0; i < n; i++) x[i] *= g2;
+  return { L, R };
 }

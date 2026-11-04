@@ -9,7 +9,8 @@ development time. No sample bank, no generated audio, no dependency. Journal: Pa
   midday, the duel, the rival, the finale), which may share among themselves, the duel ending on the fanfare in 7/8.
 - `scores/<id>.score.mjs`: one piece, an original score. `tunes` names the tracks that carry the tune: the band's voicings make room for them.
 - `scores/rig.mjs`: the band's desks, measured on the approved versions, and the helpers a score shares.
-- `manifests/<id>.manifest.json`: a baked file's provenance, once a piece is approved for the game (`tools/audio/validate.mjs`). None yet: these scores are for the ear.
+- `manifests/<id>.manifest.json`: a baked piece's provenance (`tools/audio/validate.mjs`): its score, its files and their SHA-256, the operator's words. Fourteen since journal Passe SN10
+  (R-SUITE « Cuire et brancher dans la version 2 »): the catalogue plays in the version 2.
 
 `tools/audio/band/` holds the instruments (`instruments.mjs`, `drums.mjs`), the signal tools (`dsp.mjs`), how a score is read and mixed (`session.mjs`), the checks without
 an ear (`check.mjs`), how much the pieces resemble each other (`likeness.mjs`: the tunes' turns of six notes read in any key and rhythm, the two-bar blocks copied, the
@@ -22,6 +23,18 @@ node --max-old-space-size=8192 tools/audio/band/render.mjs <outDir> [id ...] [--
 WAV always, AAC and Opus through `ffmpeg` when it is found (`FFMPEG` or the PATH; a development tool, never in the game or the repository). A piece takes 20 to 50 s to
 render. `--meters` prints each track's loudness and its balance by octave: the mix is set on these, a change of an instrument is measured again. `--loop` renders the game's
 file: the piece's body alone, a circle: what rings past the end lands on the start, the dynamics go round twice. Without it a piece has its intro and its ending, for the ear.
+
+The bake (journal Passe SN10) writes what the game plays: `src/audio/baked/` (Opus in WebM, AAC in M4A), the manifests and `src/audio/catalogue.json`:
+
+```bash
+node --max-old-space-size=8192 tools/audio/band/bake.mjs [id ...] [--check]
+```
+
+A loop is its body; the fights' three layers each carry the gain the master's dynamics gave the whole mix, so that the three together are the approved master; the
+intros (the fights', the title's) are rendered apart (`intro: true` on the session: what comes before the loop and its ringing, nothing of the body) with the loop's
+levels, and end where the loop begins. The encoders run bit-exact (`encode.mjs`); Opus's delay is written as 336 samples, 7 ms, the file led by 24 of the loop's
+last samples: Chrome reads the WebM's delay through the container's millisecond. Each piece is rendered from its score alone (`forgetNotes`, `forgetHits`): a note
+kept from an earlier piece under a length rounded to the millisecond could stand for a slightly different one. `--check` rebuilds and compares.
 
 The notes are read without sound by a dry session (`tests/audio-band.test.mjs`): the motif whole where it belongs and its head elsewhere, no held note of the tune a
 semitone above the band, each instrument in its range, the third of the hour, and the catalogue not copying itself (outside the theme, under 8 % of the tunes' turns heard

@@ -85,8 +85,8 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   const leave = (to: typeof st.place) => { const from = st.place, r = (window as any).__game.act({ type: 'move', to }); if (r.ok) go(b.params, { arrive: from }); else location.reload(); };
   const frame = () => { if (ui.modal) app.actors.keys.clear(); ui.update(); markers?.update(app.rig.camera, app.actors.player.pos, taken(), leave); requestAnimationFrame(frame); };
   app.start();
-  // the version 2's sound (lot V8): the district's ambience and the day state's music; today's game makes none
-  if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed));
+  // the version 2's sound (lot V8): the district's ambience and its piece of the band (journal Passe SN10: a new game's first page opens on the title); today's game makes none
+  if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed, { opening: b.params.has('new') }));
   frame();
   // a version 2 game: the casting's approved faces (journal Passe CA3)
   await Promise.all([fontsReady(), preloadPortraits(isV2(st) ? (await import('../characters/PlazaCast')).plazaFaces() : undefined)]);

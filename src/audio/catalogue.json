@@ -1,0 +1,155 @@
+{
+ "sampleRate": 48000,
+ "pieces": {
+  "titre": {
+   "kind": "loop",
+   "frames": 2240000,
+   "bar": 3.333333,
+   "files": [
+    "titre"
+   ],
+   "intro": {
+    "file": "titre-intro",
+    "frames": 575320,
+    "loopAt": 320000
+   }
+  },
+  "matin": {
+   "kind": "loop",
+   "frames": 3141819,
+   "bar": 1.818182,
+   "files": [
+    "matin"
+   ]
+  },
+  "midi": {
+   "kind": "loop",
+   "frames": 3912453,
+   "bar": 2.264151,
+   "files": [
+    "midi"
+   ]
+  },
+  "fin": {
+   "kind": "loop",
+   "frames": 2658461,
+   "bar": 3.076923,
+   "files": [
+    "fin"
+   ]
+  },
+  "nuit": {
+   "kind": "loop",
+   "frames": 3060000,
+   "bar": 3.75,
+   "files": [
+    "nuit"
+   ]
+  },
+  "parvis": {
+   "kind": "loop",
+   "frames": 2400000,
+   "bar": 2.5,
+   "files": [
+    "parvis"
+   ]
+  },
+  "lices": {
+   "kind": "loop",
+   "frames": 2727273,
+   "bar": 2.272727,
+   "files": [
+    "lices"
+   ]
+  },
+  "valse": {
+   "kind": "loop",
+   "frames": 2003479,
+   "bar": 1.304348,
+   "files": [
+    "valse"
+   ]
+  },
+  "duel": {
+   "kind": "layers",
+   "frames": 2122105,
+   "bar": 1.381579,
+   "files": [
+    "duel-base",
+    "duel-melody",
+    "duel-tension"
+   ],
+   "layers": [
+    "base",
+    "melody",
+    "tension"
+   ],
+   "intro": {
+    "file": "duel-intro",
+    "frames": 451699,
+    "loopAt": 265263
+   }
+  },
+  "rival": {
+   "kind": "layers",
+   "frames": 1720975,
+   "bar": 1.280488,
+   "files": [
+    "rival-base",
+    "rival-melody",
+    "rival-tension"
+   ],
+   "layers": [
+    "base",
+    "melody",
+    "tension"
+   ],
+   "intro": {
+    "file": "rival-intro",
+    "frames": 181423,
+    "loopAt": 122927
+   }
+  },
+  "finale": {
+   "kind": "layers",
+   "frames": 2032941,
+   "bar": 1.764706,
+   "files": [
+    "finale-base",
+    "finale-melody",
+    "finale-tension"
+   ],
+   "layers": [
+    "base",
+    "melody",
+    "tension"
+   ],
+   "intro": {
+    "file": "finale-intro",
+    "frames": 511122,
+    "loopAt": 338824
+   }
+  },
+  "fanfare": {
+   "kind": "once",
+   "frames": 771562,
+   "files": [
+    "fanfare"
+   ]
+  },
+  "victoire": {
+   "kind": "once",
+   "frames": 460882,
+   "files": [
+    "victoire"
+   ]
+  },
+  "defaite": {
+   "kind": "once",
+   "frames": 589091,
+   "files": [
+    "defaite"
+   ]
+  }
+ }
+}

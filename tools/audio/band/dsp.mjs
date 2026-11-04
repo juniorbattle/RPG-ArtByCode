@@ -89,24 +89,26 @@ export function resample(x, rate, length) {
 const softClip = (x) => Math.tanh(x);
 export function drive(x, g, mix = 1) { const k = 1 / softClip(g); for (let i = 0; i < x.length; i++) x[i] = x[i] * (1 - mix) + mix * k * softClip(g * x[i]); return x; }
 
-/** a compressor on a stereo pair, in place: threshold and ratio in dB terms, a soft knee */
-export function compress(L, R, { th = -18, ratio = 3, attack = 0.01, release = 0.12, makeup = 0, knee = 6 }) {
+/** a compressor on a stereo pair, in place: threshold and ratio in dB terms, a soft knee; `trace`, when given, receives each sample's gain (the bake applies
+ *  the mix's gain to each of its layers, journal Passe SN10) */
+export function compress(L, R, { th = -18, ratio = 3, attack = 0.01, release = 0.12, makeup = 0, knee = 6, trace = null }) {
   const a = Math.exp(-1 / (attack * SR)), b = Math.exp(-1 / (release * SR)), m = db(makeup); let e = 0;
   for (let i = 0; i < L.length; i++) {
     const v = Math.max(Math.abs(L[i]), Math.abs(R[i])), lvl = 20 * Math.log10(v + 1e-9);
     const over = lvl - th, want = over <= -knee / 2 ? 0 : over >= knee / 2 ? over * (1 - 1 / ratio) : (1 - 1 / ratio) * (over + knee / 2) ** 2 / (2 * knee);
     e = want > e ? a * e + (1 - a) * want : b * e + (1 - b) * want;
     const g = db(-e) * m; L[i] *= g; R[i] *= g;
+    if (trace) trace[i] = g;
   }
 }
-/** a look-ahead limiter: nothing passes `ceiling` */
-export function limit(L, R, ceiling = 0.84, look = 0.003, release = 0.08) {
+/** a look-ahead limiter: nothing passes `ceiling`; `trace` as the compressor's */
+export function limit(L, R, ceiling = 0.84, look = 0.003, release = 0.08, trace = null) {
   const n = Math.round(look * SR), b = Math.exp(-1 / (release * SR)), need = new Float32Array(L.length);
   for (let i = 0; i < L.length; i++) { const v = Math.max(Math.abs(L[i]), Math.abs(R[i])); need[i] = v > ceiling ? ceiling / v : 1; }
   // the sliding minimum of what the next `n` samples need
   let env = 1, head = 0; const gain = new Float32Array(L.length), q = new Int32Array(L.length);
   for (let i = L.length - 1, tail = 0; i >= 0; i--) { while (tail > head && need[q[tail - 1]] >= need[i]) tail--; q[tail++] = i; if (q[head] > i + n) head++; gain[i] = need[q[head]]; }
-  for (let i = 0; i < L.length; i++) { env = gain[i] < env ? gain[i] : b * env + (1 - b) * gain[i]; L[i] *= env; R[i] *= env; }
+  for (let i = 0; i < L.length; i++) { env = gain[i] < env ? gain[i] : b * env + (1 - b) * gain[i]; L[i] *= env; R[i] *= env; if (trace) trace[i] = env; }
 }
 
 /** one long FFT: a whole track through an impulse */

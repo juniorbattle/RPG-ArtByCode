@@ -14,9 +14,9 @@ const mid = ([l, r]) => { const m = new Float32Array(l.length); for (let i = 0; 
 const r1 = (v) => Math.round(v * 10) / 10, r3 = (v) => Math.round(v * 1000) / 1000;
 
 function measure(d, n) {
-  const c = load(d, n), L = loudness(c, 44100), s = samplePeak(c), o = { lufs: r1(L.lufs), short: r1(L.short), tp: r1(truePeak(c)), peak: r3(s.peak), over: s.over, corr: r3(correlation(c[0], c[1])) };
-  if (/^(amb|mix)-/.test(n)) { const m = mid(c), a = repetition(m, 44100), b = repetition(m, 44100, 1, 6, 16); o.rep = r3(a.value); o.repLag = r3(a.lag); o.repLong = r3(b.value); o.repLongLag = r3(b.lag); o.rms = r1(rmsDb(m)); }
-  if (/^fx-/.test(n)) { const m = mid(c), e = m.reduce((p, v, i) => (Math.abs(v) > 1e-3 ? i : p), 0); o.low = r3(shareUnder(m.subarray(0, Math.max(64, e)), 44100, 200)); o.rms = r1(rmsDb(m.subarray(0, Math.max(64, e)))); }
+  const sr = JSON.parse(fs.readFileSync(path.join(d, 'meta.json'), 'utf8'))[n]?.sr ?? 44100, c = load(d, n), L = loudness(c, sr), s = samplePeak(c), o = { lufs: r1(L.lufs), short: r1(L.short), tp: r1(truePeak(c)), peak: r3(s.peak), over: s.over, corr: r3(correlation(c[0], c[1])) };
+  if (/^(amb|mix)-/.test(n)) { const m = mid(c), a = repetition(m, sr), b = repetition(m, sr, 1, 6, 16); o.rep = r3(a.value); o.repLag = r3(a.lag); o.repLong = r3(b.value); o.repLongLag = r3(b.lag); o.rms = r1(rmsDb(m)); }
+  if (/^fx-/.test(n)) { const m = mid(c), e = m.reduce((p, v, i) => (Math.abs(v) > 1e-3 ? i : p), 0); o.low = r3(shareUnder(m.subarray(0, Math.max(64, e)), sr, 200)); o.rms = r1(rmsDb(m.subarray(0, Math.max(64, e)))); }
   return o;
 }
 
@@ -40,7 +40,7 @@ if (check) {
     if (/^(mix|amb|duel)-/.test(n)) need(r.corr < 0.98, `${n}: mono (correlation ${r.corr})`);
   }
   for (const n of names.filter((x) => /^mix-/.test(x) && !x.endsWith('-bout'))) {
-    const [, p, l] = n.split('-'), a = R[`amb-${p}-${l}`], m = R[`mus-${l}`];
+    const [, p, l] = n.split('-'), a = R[`amb-${p}-${l}`], m = R[`mus-${p}-${l}`];
     if (a && m) { const d = r1(m.lufs - a.lufs); need(d >= 3 && d <= 6, `${n}: the music ${d} dB over the ambience, target 3 to 6`); }
   }
   // the interface over the arena's roar (journal Passe SN1: the click 1.2 dB under it); the effects are rendered at volume 1, the bed at 0.7

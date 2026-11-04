@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -58,224 +58,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/45-passes-CX1-CX4.md`](journal/45-passes-CX1-CX4.md) | CX1, CX2, UM1, CX3, CX4 | 01/11 |
 | [`journal/46-passes-UM2-UM8.md`](journal/46-passes-UM2-UM8.md) | UM2, UM3, UM4, UM5, UM6, UM7, UM8 | 02/11 |
 | [`journal/47-passes-UM9-SN3.md`](journal/47-passes-UM9-SN3.md) | UM9, SN1, SN2, SN3 | 02/11 |
+| [`journal/48-passes-UM10-SN6.md`](journal/48-passes-UM10-SN6.md) | UM10, UM11, SN4, SN5, UM12, SN6 | 02/11 |
 
 ---
-
-## Passe UM10 — La revue de l'opérateur sur l'équipement, et l'audit de structure des autres écrans (2026-11-02)
-
-### Demande
-- L'opérateur, sur une capture de la page de Maître Corvin, mot pour mot : « Oui je trouve cela mieux, avec les informations utiles et bien integre, comme le comparative de stats lors de l'achat d'equipement. et globalement on a un UI epure qui sera vite comprhensible au jouru, on est sur la bonne ligne, donc les autres UI respectent aussi cette structure ? si oui on valide ».
-- La validation est conditionnelle : elle n'est pas consignée comme acquise. Cette passe répond à la condition. Aucun code changé.
-
-### Méthode
-- `main` à `2a9786c`, serveur DEV, partie de version 2 (`tools/play-shots.mjs`, `tools/arena-scene-shots.mjs`, `npm run shots`) : 19 écrans ou états à 1920 x 1080 (la nuit, le crépuscule, midi selon l'écran) et 4 à 1280 x 720, regardés un par un. Ce sont des images de revue, pas des preuves au pixel.
-- Non regardés dans cette passe : les tailles de téléphone, le jeu par défaut (même code, sans G ni K), l'écran de fin de partie, les cinématiques, un dialogue à plusieurs choix.
-
-### Résultat — [OK] le style, [KO] la structure de lecture à trois écrans
-- **Le style est uniforme partout** : voile, filets d'un pixel, angles carrés, Marcellus et Source Sans 3, ivoire, encre et un accent, touches en contour, un ton par moment du jour.
-- **La structure de la page d'équipement (la liste, et le détail de la ligne sélectionnée) n'existe que là.** Elle n'a pas à être partout : un menu de neuf lignes n'a pas de détail à montrer. Elle manque là où le joueur compare ou cherche.
-
-| Écran | Structure | Écart |
-| --- | --- | --- |
-| Titre, chargement, exploration, dialogue, duel, pause | Adaptée | Aucun |
-| Menu, carte, son | Liste courte, suffisante | La sortie seule (ci-dessous) ; les curseurs du son gardent le pouce et la piste arrondis du navigateur |
-| Fiche de match | Deux colonnes, l'adversaire et les quatre compétences | Rien sur l'effet des compétences |
-| **Compétences (K)** | Une liste seule | Niveau, famille, charge, PA, **rien sur ce que fait la compétence** ; les quatre choisies sont toutes dans l'accent, on ne distingue plus la ligne active. C'est le défaut de simplisme que la Passe UM9 a corrigé pour l'équipement |
-| **Tournoi (T)** | Une colonne | Colonne du rang trop large ; règles en texte continu sous le tableau ; à 720p, résultats et bouton sous le bas de l'écran |
-| **Journal (J)** | Une colonne | Date répétée sur chaque entrée au lieu de grouper par jour ; à 1080p, 30 entrées et le bouton hors de l'écran, le titre collé en haut |
-| **Ici (Q)** | Une bande | Liste coupée au milieu d'une ligne, bouton de fermeture hors de l'écran, rien ne dit qu'il y a une suite |
-| Équipement et achats (Passe UM9) | La référence | **La même coupure** : sur la capture de l'opérateur, la dernière ligne (« Iron ring ») est tranchée |
-
-- **La sortie a cinq formes** : `Esc` à droite de la ligne (menu), `Esc` à gauche dans la liste (carte, son, dialogue), `Esc` en pied de page (équipement), `Q` en fin de liste (ici), un mot sans touche (compétences, tournoi, journal, résultat ; Esc y marche, rien ne le dit).
-- Une compétence n'a aucune description dans les données, mais ses nombres y sont (`NEW_SKILLS`, `src/combat/skillbook.ts` : dégâts, résistance, protection, renfort, durée). Le détail peut se lire dans les données du duel, comme la comparaison de la Passe UM9, sans règle dans l'interface et sans texte à inventer pour les nombres.
-- Pas un écart : les textes français de l'arène ne viennent que de la page d'essai `?scene=arena`, hors partie ; dans un combat de la partie, tout est en anglais. La superposition « Victory » et « Cité du Tournoi » de la capture du K.O. est un artefact de l'outil, qui saute au moment scripté pendant le chargement.
-
-### Recommandation, en attente de l'opérateur
-- Un lot d'interface, sans image neuve : le détail de la compétence sur K et sur la fiche de match, le tournoi et le journal réorganisés, une seule forme de sortie, un seul traitement des listes qui défilent.
-- Menu, carte, son, titre, exploration et duel gardent leur structure.
-
-### Pensée
-- `tools/ui-text.mjs` compte une ligne tranchée par un défilement comme « covered », pas comme une faute : la Passe UM9 a passé 23 pages sur 23 avec cette coupure sous les yeux. Une mesure dit ce qu'elle mesure ; regarder la page reste une étape.
-- « Cohérent » a deux sens. Le même style se vérifie par des jetons ; la même façon de lire se vérifie en demandant, écran par écran, ce que le joueur y décide.
-
-### Incident — [OK] réparé : le journal réécrit en LF par le premier commit de cette passe
-- `c51396f` a remplacé toutes les fins de ligne de `JOURNAL.md`, de CRLF à LF : 1155 ajouts et 1118 retraits pour 37 lignes écrites. Vu dans la statistique du commit, après la fusion dans `main`.
-- Cause, mesurée octet par octet : cinq lignes de la Passe UM8 (263 à 267) finissaient par `CR CR LF`, écrites par moi. Un CR isolé fait passer le fichier de l'index pour binaire, git ne reconnaît plus un fichier CRLF à garder, et `core.autocrlf=true` convertit tout au `git add`. L'outil d'édition, lui, avait déjà ramené ces lignes à CRLF.
-- Réparation par un commit normal, sans réécrire l'historique : `git -c core.autocrlf=false add --renormalize JOURNAL.md`, le fichier de nouveau en CRLF sur toutes ses lignes, sans `CR CR LF`, ce qui retire le piège pour la suite. `origin/claude/sound-fusion` a gardé CRLF.
-- Pensée : lire `git diff --stat` avant le commit, pas après. Un journal qui change sur plus de lignes qu'on n'en a écrit se voit d'un coup d'œil.
-
-## Passe UM11 — Les écrans alignés sur la page de l'équipement : compétences, tournoi, journal, une seule sortie, des listes jamais tranchées (2026-11-02)
-
-### Demande
-- L'opérateur, sur la recommandation de la Passe UM10, mot pour mot : « Oui, aligne-les ». Lot sans image neuve. Sa validation d'ensemble reste à donner : elle attendait ce lot, elle n'est pas consignée ici.
-
-### Fait — [OK]
-- **Le socle commun** (`src/ui/style.ts`) : un seul pied de page (`footBtn`, `fillFoot`), l'action de la page avec sa touche à gauche, la sortie avec `Esc` à droite, hors de ce qui défile ; un seul traitement de ce qui défile (`scrollFade`) : le contenu s'efface en fondu au bord, en haut et en bas, une ligne n'est plus tranchée et on voit qu'il y a une suite ; `scroll-padding-block` garde la ligne sélectionnée hors du fondu au clavier. Le CSS de la page de l'équipement passe dans le style commun (`.pm-two`, `.pm-goods`, `.pm-detail`...), `pickRow` aussi.
-- **Compétences (K) et fiche de match** (`src/ui/skills.ts`) : à droite la liste, un carré plein pour les quatre emportées, et pour la ligne sélectionnée ce que fait la compétence, ses chiffres et ceux du niveau suivant, la façon de l'obtenir ; à gauche le héros ou l'adversaire, et la charge telle que ces quatre la composent, palier par palier. Les chiffres sont ceux du duel (`skillFigures`, `chargeLadder`, `nextLevel`, `src/simulation/preview.ts`), jamais une règle de l'interface. L'accent sert à la ligne sélectionnée seule : avant, les quatre lignes choisies étaient toutes en or.
-- **Tournoi (T)** (`boardPage`, `src/ui/board.ts`) : à gauche la phase, la prochaine échéance et le classement ; à droite le combattant sélectionné, le prochain adversaire d'abord : son visage, sa fiche, ses combats à venir et joués, puis les règles.
-- **Journal (J)** (`src/ui/journal.ts`) : les jours à gauche, avec le résultat du combat du jour ; à droite ce qui s'est passé ce jour-là, moment par moment, dans l'ordre. La date n'est plus répétée à chaque ligne, et toutes les entrées sont là (la limite de 30 disparaît).
-- **Les listes courtes restent des listes** : menu, carte, son. Le son a des curseurs dans le système, angles carrés, valeur affichée.
-- **Ici (Q)** : les absents tiennent sur une ligne (« Not around at this hour: ... »). Le dialogue et Ici prennent le pied commun.
-- **Trois défauts trouvés en route**, corrigés : `Esc` ne fermait pas la page du son quand un curseur avait le focus ; `Esc` sur l'écran de fin ne suivait pas le bouton qu'il portait ; sur K, quitter par `Esc` perdait le choix des quatre, qui ne s'appliquait que par le bouton : il s'applique dès qu'il y en a quatre.
-- **Sur la fiche de match**, `Entrée` entre dans l'arène depuis n'importe quelle ligne, et `Espace` ajoute ou retire la ligne : le trajet rapide de Q à l'arène reste deux fois `Entrée`.
-
-### Preuves
-- `npm test` **358 / 358** dont `tests/ui-pages.test.mjs` (chiffres d'une compétence à chaque niveau contre les données d'un combat, avec l'équipement ; paliers ; niveau suivant contre le refus réel de l'entraînement ; journal et tableau sans perte ; un pied, un fondu), `npm run build`, `npm run art:validate`.
-- `tools/ui-text.mjs` tient maintenant pour faute une boîte qui contient plus qu'elle n'en montre sans son fondu. Témoin : le fondu retiré sur la liste de Maître Corvin, la page échoue (`no fade`). Le premier témoin n'échouait pas : retiré trop tôt, le fondu était remis par le code. Le passage complet a trouvé le pied de la fiche de match en débord sur téléphone, corrigé (`flex-wrap`).
-- `tools/ui-contrast.mjs` : 40 pages à 1920 x 1080, 1280 x 720, 812 x 375 et 390 x 844, aux quatre moments, les deux jeux : plus bas **4,75:1** (« coins » de l'état, à midi en 812 x 375, écran non retouché ici), aucune page sous 4,5:1.
-- `play-day`, jeu par défaut et `V2=1` : T, J et K au clavier, relecture Node identique. `play-flow` sur le paquet de production : victoire, défaite, `V2=1`, la fiche de match franchie à `Entrée` ; aucune erreur de page.
-- Coût du fondu sur le 780M, 1080p, `fps=off`, GPU saturé (98-99 %), quatre tours, serveur DEV, sur la plus grande boîte qui défile (le détail du journal, 800 x 700 environ) :
-
-| Page | ms par image, médiane des tours | images/s par tour |
-| --- | --- | --- |
-| Nuit B | 8,0 | 119,0 / 121,8 / 121,9 / 122,2 |
-| Carte, nuit | 8,25 | 112,9 / 123,2 / 123,5 / 114,4 |
-| Journal, fondu actif | 7,75 | 120,7 / 111,4 / 134,2 / 131,9 |
-| Journal, fondu retiré | 7,4 | 116,9 / 130,8 / 135,8 / 132,0 |
-
-- Le fondu : 7,3 contre 7,2 et 7,4 contre 7,4 ms sur les deux tours stabilisés. L'écart de la médiane vient du tour 2, où la page avec fondu a un accroc isolé de 188 ms, non reproduit. E24 : les pages du lot ne coûtent pas plus que la carte ni que la nuit B de la même série ; même réserve qu'en Passe UM9, pas tranché sur le paquet de production, où les états nommés n'existent pas.
-- Non rejoué : `title-proof` et les preuves au pixel, aucun code de scène n'ayant changé.
-
-### Ce qui reste
-- La page jouable est republiée à la même adresse depuis ce code (version 4), sans avoir été ouverte dans la visionneuse de claude.ai.
-- L'opérateur n'a pas essayé ce lot. Toucher reste hors de la tranche (E30). Non regardés : l'écran de fin de partie et les cinématiques, dont le code change peu (le pied seul pour la fin).
-- Le texte d'une compétence est fait de ses chiffres, sans phrase d'auteur ; les icônes restent le choix de l'opérateur.
-
-### Pensée
-- Un témoin qui passe n'est pas un témoin : celui du fondu ne prouvait rien tant qu'il ne faisait pas échouer la mesure.
-- « Aligner » ne voulait pas dire tout mettre sur deux colonnes : une page mérite le détail là où le joueur choisit ou cherche, un menu de neuf lignes reste un menu.
-- Ranger la page révèle ce que l'ancienne cachait : le choix des quatre perdu à `Esc` et la sortie sans effet sur un curseur existaient depuis longtemps, sans jamais avoir de forme visible.
-
-## Passe SN4 — La fiche du lot relue : S0-S1 à reprendre, le jazz fusion comme orientation (2026-11-02)
-
-### Demande
-- Message de l'opérateur, mot pour mot : « j'ai rempli la fiche mais on doit tout de meme bien travailler nos sons afin qu'ils soient captivant et optimal, RPGCards a bien fait son travail avec une direction tres Lo-Fi Jazz, il faut que notre jeu s'oriente vers une identite concrete aussi avec des inspirations : Final Fantasy VIII / Nobuo Uematsu / Orchestral + rock / Variété extrême : classique, rock, waltz, influences cinématographiques ; Chrono Cross / Yasunori Mitsuda / Folk / world music / Guitares acoustiques, percussions ethniques, atmosphères émotionnelles ; Breath of Fire III / Akari Kaida, Yoshino Aoki / Jazz fusion / Ambiance urbaine, synthés, rythmes modernes (connaissance générale) je trouve que le jazz fusion peut etre une bonne orientation globale ». La liste des trois jeux est collée par l'opérateur ; les barres et les points-virgules séparent ses cases.
-
-### La fiche du lot
-- Page privée https://claude.ai/artifact/McPDaVNx9o82nkieURh1Wx, source `briefs/fiche-son-lot1.html`. Relue par `list` : 10 documents sur 10, aucune note.
-
-| # | Décision | Choix de l'opérateur |
-|---|---|---|
-| S0-1 à S0-4 | Écoutes du lot S0 | « Bonne direction » |
-| S1-1, S1-2 | Écoutes du lot S1 | « Bonne direction » |
-| S0-N | Le niveau général | « Garder −18 » |
-| SA-11c | La foule | « Code d’abord, CC0 en complément » |
-| S2-O | L'outil pour cuire | « Installer ffmpeg (développement) » |
-| S2-G | Lancer le lot S2 | « Reprendre S0-S1 d’abord (en note) » |
-
-### Ce que ces choix veulent dire
-- Les six écoutes sont bonnes : le travail technique de S0 et S1 reste. La reprise de S2-G n'a pas de note sur la fiche : son contenu est le message ci-dessus, l'identité du son, qui manque. S2 ne démarre pas.
-- **SA-4 change d'orientation** : « Les ménétriers de la Cité » laisse la place au jazz fusion comme orientation globale. La phrase de l'opérateur dit « peut etre » : le genre est le cap de travail, et il se confirme à l'oreille sur la fiche suivante. SA-2 (le motif « Le Tournoi », « Motif et son : bonne direction ») n'est pas remis en cause : ses notes restent la matière du thème.
-- **Le contrat maître** ne fixe aucun genre : `contracts/PROJECT_MASTER_CONTRACT.md` parle de « l'énergie d'un grand festival urbain », aucun verrou n'est touché.
-- **RPGCards** sert de repère de méthode, nommé par l'opérateur : lu en lecture seule (ADR 047, contrat M13), aucun code ni décision n'en est importé. Ce qu'on en retient : un thème écrit et ses versions, des instruments calculés plutôt que des oscillateurs, un contrôle sans oreille par des rendus mesurés, une écoute par lot. L'identité reste la nôtre : RPGCards sonne swing et lounge, nous visons le 16e droit, l'électrique et les mesures composées.
-- **SA-9, SA-12, SA-13, SA-16, SA-17 tiennent** : partitions écrites ici et synthèse, aucune génération audio, derrière `flags.v2`, 12 Mo au plus.
-
-### `ffmpeg` — [OK] installé (S2-O)
-- Build 9.0.2 essentials de gyan.dev (`ffmpeg-9.0.2-essentials_build.zip`, 114,8 Mo), lien donné par ffmpeg.org pour Windows, SHA-256 `60f46726…47ba` vérifiée contre celle que publie gyan.dev. Hors du dépôt, dans le dossier d'outils du poste, sans toucher au PATH : les outils le trouvent par `FFMPEG` ou le PATH. `libopus` et `aac` présents. Le build 7.1.1 prévu d'abord n'a pas d'empreinte publiée : écarté. `winget` n'existe pas sur ce poste.
-
-## Passe SN5 — L'identité du son : le motif joué par un groupe de jazz fusion, quatre versions, la fiche d'écoute (2026-11-02)
-
-### Demande
-- La reprise de S0-S1 décidée en Passe SN4 : une identité concrète, le jazz fusion comme orientation. Constat sur le code : `tune()` (`src/audio/score.ts`) est une marche au hasard sur un mode, avec un bourdon. Il n'y a ni thème, ni groupe : c'est là que l'identité manquait, pas dans le moteur de S0-S1, que les six écoutes ont jugé bon.
-
-### Fait — [OK]
-- **L'identité proposée** : un seul thème, les treize notes du motif de SA-2 (`art-lab/audio/scores/theme.mjs`) ; il n'a pas de tierce, la tierce dit l'heure, fa dièse le jour, fa la nuit ; un groupe, piano électrique, basse, batterie, synthé à vent, plus une couleur par moment ; chaque inspiration à sa place, Breath of Fire III à midi, Chrono Cross le matin, Final Fantasy VIII la nuit et en duel. Le style seulement : partitions originales, aucune œuvre reprise.
-- **Le groupe** (`tools/audio/band/`, Node seul, aucune dépendance) : chaque note calculée hors ligne à partir d'un modèle : FM pour le piano électrique, partiels à déclin pour les cordes pincées et frappées (basse en cinq jeux, nylon, bouzouki, guitare, vibraphone, marimba), orgue additif, section et cordes en dents de scie à bande limitée, guitare rock dont tout l'accord entre dans une seule distorsion, voix de vent jouées phrase par phrase (`gestures` : glissé, attaque par en dessous, langue, vibrato tardif), vingt et une pièces de batterie et de percussion, plusieurs prises par coup. Salles par convolution d'une réponse calculée, compression, plafond, sonie selon BS.1770. Rendu : 15 à 30 s par morceau.
-- **Les partitions** (`art-lab/audio/scores/`) : `midi` (4/4, 106, funk en doubles-croches, le motif en 3-3-2-3-2-3, ré mixolydien, solo qui monte par tierces mineures, unisson de tout le groupe, dernier refrain un ton plus haut), `matin` (6/8, le motif tel qu'il a été écrit, ré majeur, hémiole au milieu), `nuit` (ballade à 64, ré dorien), `duel` (7/8, 2 + 2 + 3, ré mineur, trois couches `base`, `melody`, `tension`, SA-5), `fanfare` (SA-7), `palette` (quatorze instruments seuls).
-- **Le contrôle sans oreille** (`tools/audio/band/check.mjs`, `tests/audio-band.test.mjs`, une séance à blanc qui lit les notes sans calculer le son) : le motif dans l'ordre, aucune note tenue un demi-ton au-dessus de l'orchestre, tessitures, tierce de l'heure, justesse des instruments, déterminisme ; `render.mjs --meters` donne la sonie et le spectre par octave de chaque piste.
-- **Le voicing suit la mélodie** : une passe à blanc lit le thème, `avoidAt` retire des accords toute note un demi-ton sous une note tenue, comme un arrangeur.
-- **`ffmpeg`** (Passe SN4) encode les extraits ; `render.mjs` le trouve par `FFMPEG` ou le PATH, et s'en passe sinon.
-
-### Défauts trouvés
-- [KO → corrigé] Les deux voix de vent sortaient des `NaN` : le filtre n'était réglé qu'aux échantillons multiples de 8, une note commençant ailleurs le lisait non réglé. `Svf` se règle dès sa construction, un test le garde.
-- [KO → corrigé] 38 frottements au premier rendu (16 midi, 12 matin, 5 nuit, 5 duel) : 0 après `avoidAt`, le changement de `m11` et la refonte du matin (`Bm7` sous un do bécarre). Une note qui débordait de quelques millisecondes sur l'accord suivant faisait écarter une note de trop : `avoidAt` exige 0,1 s de recouvrement.
-- [KO → corrigé] Le mélange, lu piste par piste : basse slap aussi forte à 2 kHz qu'à 125 Hz, piano électrique à −27 dB à 2 kHz (son tine mourait en 55 ms), flûte 5 dB au-dessus du reste, charleys trop forts, balais à −30 LUFS. Après réglage, midi par octave depuis 62 Hz : 0, −2,4, −1,6, −4,6, −4,2, −6,5, −8,8, −11, −17,5 dB.
-- [KO → corrigé] Une relecture indépendante des partitions, confiée à un agent qui n'entend pas non plus, a trouvé ce que mes contrôles ne cherchaient pas : les notes répétées fondues en une note tenue et 87 joints sur 162 à souffle nul dans la mélodie de midi (des micro-coupures), les degrés de la basse comptés depuis la note de basse sur les accords renversés, un si bémol inventé sur `Cadd9`, des changements d'accord en milieu de mesure que tout le groupe ne suivait pas, une fin de nuit qui sonnait fa majeur, le ré de la fretless coupé net à 3,2 s, la timbale en ré sous un do, le marimba au-dessus de la flûte. Tout est corrigé ; ses propositions de style sont prises : inflexions de la mélodie, unisson de la mesure 27, hémiole du matin, placements du piano de nuit, basse qui marche dans le duel, fin de midi sur le sol dièse, tierce du jour.
-- [KO → corrigé] Le service d'artefacts refuse le `.m4a` : les extraits de la fiche sont en MP3. `winget` n'existe pas sur ce poste.
-- [KO, sans suite] Un `cd` vers RPGCards dans une commande a déplacé le dossier de la séance : retour immédiat, rien n'a été écrit là-bas.
-
-### Mesures — [OK]
-Rendus à 48 kHz, tous à −18 LUFS (S0-N « Garder −18 »).
-
-| Version | Durée | Crête vraie | Plage (LU) | Corrélation | Opus 96 kb/s |
-|---|---|---|---|---|---|
-| `midi` | 94,9 s | −3,8 dBTP | 3,1 | 0,79 | 1,29 Mo |
-| `matin` | 82,3 s | −4,6 dBTP | 5,3 | 0,83 | 1,16 Mo |
-| `nuit` | 88,7 s | −4,5 dBTP | 6,0 | 0,69 | 1,25 Mo |
-| `duel` | 54,2 s | −5,0 dBTP | 3,0 | 0,75 | 0,68 Mo |
-
-- Quatre versions, 5 min 20, 4,39 Mo : 12 minutes feraient environ 9,9 Mo à 96 kb/s. Cela tient sous les 12 Mo de SA-17, mais au-dessus des 7 à 9 Mo prévus pour la musique par le plan d'audit.
-- 0 frottement, le motif dans l'ordre dans les quatre versions, chaque instrument à moins de 5 cents.
-- `npm run typecheck`, `npm test` **371 / 371**, `npm run build`, `npm run art:validate` : 61 manifestes, 85 sources, 0 manifeste de son, 0 erreur. **Aucun fichier de `src/` ni de `public/` ne change**, aucune dépendance, aucun fichier audio dans le dépôt : le jeu par défaut et la version 2 sont inchangés. Seul `tools/audio/measure.mjs` exporte son FFT.
-
-### Limites
-- **Personne n'a écouté**, ni moi ni la relecture. Ces contrôles trouvent des fautes, ils ne disent pas que c'est beau, que le groove vit, ni que la batterie, les cuivres et la flûte passent pour de vrais instruments.
-- Aucune version n'est encore bouclable : `midi` et `duel` se terminent, alors qu'un duel n'a pas de durée fixe. La boucle sans couture d'un Opus reste à prouver au moment de cuire.
-- La fin de journée n'est pas écrite : quatre états de jour, trois versions. Rien n'entre dans le jeu : `tune()` joue toujours.
-- Sonie au parvis : extrait monté à part, la musique 4,5 dB au-dessus de l'ambiance de S1, pas un rendu du moteur.
-- Le Safari réel n'est toujours pas essayé.
-- RPGCards a servi de repère de méthode (Passe SN4) : pas de code repris, ce qui laisse ouverte la question de partager ses instruments, si l'opérateur le veut.
-
-### La fiche — à remplir par l'opérateur
-- Page privée https://claude.ai/artifact/RkQR5sYPam2S3wTUv2Nycb (source `briefs/fiche-son-fusion.html`), collection `decisions` vide à la publication, onze cartes, huit extraits. À l'oreille : F-MIDI, F-MATIN, F-NUIT, F-DUEL (avec « Garder, mais en 4/4 »), F-PARVIS, F-FANFARE, F-PALETTE. Décisions : F-CAP l'orientation, F-MOTIF le thème, F-SYNTH la source des instruments, F-SUITE l'ordre. Rendu vérifié en local, deux largeurs, huit lecteurs chargés, sans débordement.
-
-### Report sur `main`
-- `main` a reçu UM10 et UM11 pendant ce travail, dans `src/ui` et ses tests, sans rapport avec le son. Branche neuve depuis `80e289a`, Passe SN4 rejouée, aucun push forcé, `claude/sound-fusion` supprimée.
-- [KO → corrigé] Un `sed -i` sur `JOURNAL.md` a retiré ses CRLF, et `autocrlf` a figé le blob en LF : 1 075 lignes réécrites dans un commit, le même accident que la Passe UM10. Vu au contrôle des fins de ligne, avant toute fusion. Le commit est rejoué sur `claude/sound-identity`, sans push forcé, le journal ajouté par `git -c core.autocrlf=false add`.
-
-### Où reprendre
-- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot, n'agir que sur ce qui est décidé. La suite proposée : le catalogue d'abord (SA-6), puis S2 et S3 qui reprennent ses instruments et ses tonalités.
-- Avant le premier fichier cuit : Opus en WebM et AAC sur un vrai Safari, boucle sans couture, manifeste.
-
-### Journal — [OK] archivage
-- Les passes gardées dépassaient 60 Ko. UM2, UM3, UM4, UM5, UM6, UM7, UM8, closes, partent d'un seul bloc vers `journal/46-passes-UM2-UM8.md` (23760 octets). Preuve : corps de l'archive égal au bloc, chaque passe dans un seul fichier, fins de ligne CRLF gardées.
-
-### Pensée
-- Le manque n'était pas là où la fiche le plaçait : S0-S1 sonnait juste, mais la musique n'avait pas de thème. Une demande de « reprendre » se lit contre le code avant de se lire contre le lot.
-- Un contrôle ne trouve que ce qu'on lui a dit de chercher : les quatre versions passaient à 0 frottement avec des notes répétées inaudibles et des basses fausses. Une lecture indépendante a coûté peu et trouvé le pire défaut de la passe.
-
-## Passe UM12 — L'interface validée par l'opérateur (2026-11-02)
-
-### Décision
-- À la question « L'interface est-elle validée après ton essai ? », l'opérateur, mot pour mot : « Oui, validée ». La condition de la Passe UM10 (« si oui on valide ») est levée.
-- Portée : l'interface de `main` à `80e289a` : la direction A « Voile » (Passes UM2 à UM8), l'équipement et les achats (Passe UM9), les écrans alignés sur eux (Passe UM11).
-
-### Ce que cette décision ne change pas
-- Ni le statut Gold Master (RJ3), ni le duel par défaut (C2-1), ni la version 2 derrière `flags.v2`.
-- Restent à part : les icônes d'objets, au choix de l'opérateur ; le tactile, hors de la tranche (E30) ; les bustes (UM-L4).
-
-### Pensée
-- Une validation conditionnelle se consigne comme telle jusqu'à ce que sa condition soit tenue : la Passe UM10 l'a gardée ouverte, et le lot qu'elle a fait apparaître est entré avant l'accord, pas après.
-
-## Passe SN6 — La fiche d'écoute relue : le jazz fusion confirmé, le catalogue d'abord (2026-11-02)
-
-### Demande
-- Message de l'opérateur, mot pour mot : « Fiche remplie ».
-
-### La fiche
-- Page privée https://claude.ai/artifact/RkQR5sYPam2S3wTUv2Nycb, source `briefs/fiche-son-fusion.html`. Relue par `list` : 11 documents sur 11, aucune note. Toutes les réponses recommandées sont suivies.
-
-| # | Décision | Choix de l'opérateur |
-|---|---|---|
-| F-MIDI | Midi | « Bonne direction » |
-| F-MATIN | Matin | « Bonne direction » |
-| F-NUIT | Nuit | « Bonne direction » |
-| F-DUEL | Le duel en 7/8 | « Bonne direction » |
-| F-PARVIS | Le midi sur le parvis | « Bien placée » |
-| F-FANFARE | La fanfare | « Bonne direction » |
-| F-PALETTE | Le groupe | « Tous convenables » |
-| F-CAP | L'orientation | « Jazz fusion : confirmé » |
-| F-MOTIF | Le thème | « Garder le motif » |
-| F-SYNTH | La source | « Synthèse seule pour l’instant » |
-| F-SUITE | La suite | « Le catalogue d’abord » |
-
-### Ce que ces choix veulent dire
-- **F-CAP** remplace SA-4 pour de bon : l'identité du son est le jazz fusion, `AGENTS.md` le dit. **F-MOTIF** : le motif de SA-2 reste le thème de tout le jeu.
-- **F-DUEL** garde le 7/8, l'option « Garder, mais en 4/4 » n'a pas été prise. Il reste à l'éprouver en jouant : l'écoute ne dit pas comment il se joue.
-- **F-PARVIS** : la musique 4,5 dB au-dessus de la foule est le réglage de départ, dans la cible de 3 à 6 dB.
-- **F-SYNTH** : aucune banque d'instruments. Une banque CC0 ne reviendrait que sur la demande de l'opérateur.
-- **F-PALETTE** : les quatorze instruments sont acceptés, aucun n'est à reprendre.
-- **F-SUITE** change l'ordre du plan d'audit : le catalogue de SA-6 (lot S4) passe avant S2 et S3, qui en reprendront les instruments et les tonalités. Le catalogue annoncé sur la fiche : titre, matin, midi, fin de journée, nuit, parvis, lices, place de la halle en valse, duel, duel de rival, finale et jingles. Rien n'entre dans le jeu avant l'essai de l'opérateur, tout reste derrière `flags.v2`.
 
 ## Passe SN7 — Le catalogue : douze morceaux, un seul motif, des boucles sans clic, la fiche du catalogue (2026-11-02)
 
@@ -469,6 +254,80 @@ Onze morceaux, le même outil (corrigé, chaque voix lue à part) sur l'arbre ge
 
 ### Pensée
 - L'oreille tranche contre la mesure : pour quatre morceaux, la version qui ressemble le plus aux autres a gagné. Le garde-fou garde la règle là où l'opérateur l'a voulue et nomme l'exception dans une liste, au lieu de la cacher dans un seuil relevé.
+
+## Passe SN10 — Le lot de cuisson : le groupe dans la version 2 (2026-11-03)
+
+### Demande
+- R-SUITE « Cuire et brancher dans la version 2 » (Passe SN9), lot confié par la séance mère : cuire chaque morceau du catalogue en Opus (WebM) et AAC (M4A) sous manifeste, le brancher derrière `flags.v2` selon C-LIEUX avec trois couches sur les combats (C-COUCHES), les introductions des combats, la page de test Safari (C-SAFARI), les preuves du dépôt, puis une fiche d'essai. Les quatre morceaux du tournoi ne changent pas.
+
+### L'approbation des manifestes
+- `tools/audio/validate.mjs` exige `approved: true` et l'approbation de l'opérateur mot pour mot. La carte R-SUITE disait : « L’étape suivante cuit les morceaux sous manifeste, avec ton approbation mot pour mot, les branche derrière `flags.v2`, et te donne l’essai en jouant ». L'opérateur a choisi « Cuire et brancher dans la version 2 ».
+- Lecture retenue : ce choix est l'approbation. Chaque manifeste le cite, avec les choix d'écoute de l'opérateur sur le morceau (par exemple, pour le duel : F-DUEL « Bonne direction », C-BOUCLE « Rien entendu de gênant », R-RETOUCHES « Revenir à l’ancienne version », C-COUCHES « Trois couches sur les trois combats »), et C-LIEUX « Valider ce plan ». Aucun autre mot n'est écrit à sa place. La fiche d'essai lui demande de le confirmer après l'écoute en jeu (E-PROD).
+
+### Fait — [OK]
+- **La cuisson** (`tools/audio/band/bake.mjs`, `encode.mjs`) : quatorze morceaux, quarante-huit fichiers dans `src/audio/baked/`, un manifeste par morceau dans `art-lab/audio/manifests/`, et `src/audio/catalogue.json` (longueurs, mesures, couches, introductions) pour le moteur. Huit boucles simples, trois combats en trois couches avec leur introduction, le titre avec la sienne, trois jingles.
+  - Les couches portent le gain que la dynamique du master a donné au mélange entier (`master({ layers })`, `compress` et `limit` notent leur gain) : les trois ensemble sont le master approuvé, alors que les pistes de `--stems` n'avaient ni compression ni plafond.
+  - L'introduction (`intro: true` sur la session, `skipped`) est l'autre moitié de la boucle : ce qui précède la boucle et sa résonance, rien du corps, mastérisée avec les niveaux de la boucle (`masterWith`). Elle finit là où la boucle commence (`loopAt`).
+  - Encodage bit à bit identique (`-fflags +bitexact`, sans métadonnées) : `bake.mjs --check` rebâtit dans un dossier temporaire et compare chaque fichier à son manifeste.
+  - Les rendus existants ne changent pas : `duel` entier, en boucle et ses trois pistes, identiques échantillon pour échantillon à `main` après les ajouts à `session.mjs` et `dsp.mjs`.
+- **Le moteur** (`src/audio/`) : `plan.ts` (C-LIEUX : `pieceFor`, `boutPiece`, `ANNOUNCED`, `jingleFor` ; les couches : `moodStep`, `layerLevels`), `align.ts` (où une boucle commence dans ce qu'un navigateur a décodé), `LayerSet` qui boucle chaque piste sur son intervalle et démarre après une introduction, `Sound.band` (l'introduction une fois puis la boucle, ou la boucle reprise où elle était, SA-15), `Sound.sting` (fanfare et jingles hors des baisses sous les coups, la musique 9 dB plus bas sous eux), le K.O. qui arrête la musique en 0,4 s puis le jingle 1,2 s après, le contexte audio à 48 kHz quand le navigateur l'accepte, un format qui ne décode pas qui cède au suivant. `tune()` et ses tables sont retirés : ils ne jouaient que dans la version 2.
+- **Les branchements**, version 2 seulement : la ville (`opening` sur la première page d'une partie neuve : le titre), les places (la fanfare aux trois annonces du greffier), l'arène (le morceau par l'étape du tournoi, `ArenaMatch.piece`, la vie des combattants pour la fin de combat ; `?scene=arena&v2=1&music=rival|finale` hors partie). Le jeu par défaut, l'écran-titre et Explore restent muets (SA-16).
+- **Le niveau** : `MIX.music` passe de 14,1 dB (réglé pour l'air pincé) à −1,6 dB.
+- `.gitattributes` : `*.webm` et `*.m4a` en binaire. Le dossier de travail de la séance n'avait pas de `node_modules` : `three` y est copié (ignoré par git) pour que les tests qui chargent l'arène trouvent le module.
+- **Les outils** : le banc hors ligne suit le taux du moteur et attend le chargement des morceaux (`ready()`) ; `render.mjs` rend la musique de chaque lieu à chaque heure et les trois combats ; `analyse.mjs` compare chaque lieu à sa propre musique ; `engine-proof.mjs` lit le moteur contre les fichiers décodés par ffmpeg ; `page-proof.mjs` passe de nuit (le même morceau d'une page à l'autre) et de jour (un morceau neuf repris à son début) ; `decode-proof.mjs` et `safari-page.mjs` sont neufs.
+
+### Défauts trouvés
+- [KO → corrigé] **Chrome perdait 24 échantillons au début de chaque Opus** : libopus annonce 312 échantillons de délai (6,5 ms), Chrome lit le CodecDelay du WebM à la milliseconde du conteneur, 7 ms. Mesuré : 2 122 081 échantillons au lieu de 2 122 105, le son en avance de 24 ; Firefox exact. La cuisson écrit 336 échantillons (7 ms) dans le CodecDelay et l'OpusHead et fait précéder le fichier de 24 échantillons de la fin de la boucle. Ogg Opus dans Chrome : 451 704 au lieu de 451 699, écarté.
+- [KO → corrigé] **La sortie du moteur retarde tout de 10 ms** (480 échantillons : le compresseur à anticipation et le plafond suréchantillonné). Les preuves de S1 ne comparaient le moteur qu'à lui-même. `engine-proof` le mesure sur un clic avant de lire la musique.
+- [KO → corrigé] Le ton d'essai de S1 restait calé sur l'ancien bus musique : 15,7 dB plus bas, la réverbération d'un coup le couvrait (« a heavy blow takes the music down 5 dB: −1.9 »). Il est remonté de la différence.
+- [KO → corrigé] **L'alignement par la seule jointure** se trompait sur trois boucles AAC (fin, midi, parvis) quand le décodeur garde le délai du codeur : le codeur abîme légèrement les deux bords de la boucle, et la jointure vraie n'est pas toujours la plus lisse. Règle ajoutée : un décodeur qui a retiré le délai laisse moins d'une trame de rembourrage (Opus 960, AAC 1024) ; une trame ou plus en trop veut dire qu'il l'a gardé. Contrôle négatif : sans la règle, le test d'un amorçage qui prolonge la fin échoue.
+- [KO → corrigé] **Le rendu d'un morceau dépendait des morceaux rendus avant lui** dans le même processus : les notes des cuivres et des guitares sont gardées sous une durée arrondie au millième, une note d'un morceau précédent pouvait en remplacer une autre de quelques échantillons. Vu sur `victoire` cuite seule : deux fichiers différents de la cuisson complète. Antérieur au lot. La cuisson oublie les notes entre deux morceaux (`forgetNotes`, `forgetHits`) ; recuisson complète.
+- [?] **AAC : la jointure garde l'erreur de bord du codeur.** Sur un ton pur, la marche à la jointure vaut environ −30 dB sous le ton (indice de jointure 9,4 contre 2,3 sur le signal d'origine) ; sur la base du duel, 10,6 en AAC contre 1,4 en Opus. Donner au codeur le contexte circulaire puis couper par copie de flux (`-ss`) ne garde pas une liste d'édition à l'échantillon (96 256 au lieu de 96 000). L'oreille tranche sur Safari (E-SAFARI) ; sinon, écrire nous-mêmes la liste d'édition du M4A.
+
+### Mesures
+Cuisson finale (chaque morceau depuis sa seule partition), −18 LUFS par morceau. « Jointure » : le saut au tour de boucle rapporté au plus grand saut du morceau.
+
+| Morceau | Boucle | Crête vraie | Jointure | Introduction | Opus | AAC |
+|---|---|---|---|---|---|---|
+| `titre` | 46,7 s | −2,6 dBTP | 0,02 | 12,0 s, la boucle à 6,667 s | 816 ko | 719 ko |
+| `matin` | 65,5 s | −4,0 dBTP | 0,01 | — | 906 ko | 802 ko |
+| `midi` | 81,5 s | −4,0 dBTP | 0,09 | — | 1 107 ko | 1 009 ko |
+| `fin` | 55,4 s | −3,1 dBTP | 0,02 | — | 769 ko | 680 ko |
+| `nuit` | 63,8 s | −4,4 dBTP | 0,02 | — | 862 ko | 785 ko |
+| `parvis` | 50,0 s | −3,5 dBTP | 0,06 | — | 708 ko | 621 ko |
+| `lices` | 56,8 s | −2,2 dBTP | 0,02 | — | 832 ko | 710 ko |
+| `valse` | 41,7 s | −3,8 dBTP | 0,06 | — | 515 ko | 513 ko |
+| `duel` (3 couches) | 44,2 s | −5,4 dBTP | 0,32 | 9,4 s, la boucle à 5,526 s | 1 454 ko | 1 250 ko |
+| `rival` (3 couches) | 35,9 s | −5,1 dBTP | 0,06 | 3,8 s, la boucle à 2,561 s | 1 157 ko | 1 009 ko |
+| `finale` (3 couches) | 42,4 s | −5,2 dBTP | 0,62 | 10,7 s, la boucle à 7,059 s | 1 417 ko | 1 268 ko |
+| `fanfare`, `victoire`, `defaite` | 16,1 / 9,6 / 12,3 s | −5,4 / −3,8 / −5,4 dBTP | — | — | 524 ko | 467 ko |
+
+- **Poids** : 11 067 459 octets en Opus (11,07 Mo, 10,55 Mio), 9 832 004 en AAC (9,83 Mo) ; un joueur ne charge qu'un format (SA-17 : 12 Mio au plus par format, `validate.mjs`). Les débits nominaux de SN7 (96 kb/s, 80 et 64 pour les couches) ; Opus en débit variable dépasse un peu le nominal, d'où 11,07 Mo contre les 10,51 Mo estimés en SN9 (dont 0,57 Mo d'introductions). Le paquet de production sort les 48 fichiers en ressources à part, la page d'entrée n'en nomme aucun ; la page charge seulement les fichiers du morceau joué.
+- **Reproductibilité** : `bake.mjs --check` 48 fichiers sur 48 identiques ; un sous-ensemble cuit dans un autre ordre (défaite, victoire, rival) 12 sur 12.
+- **Décodage** (`decode-proof.mjs`) : Chrome 156, les 48 fichiers à l'échantillon exact ; Firefox 159, 42 exacts et six Opus d'un échantillon plus courts (`fin`, `lices` et quatre non bouclés : la boucle tourne un échantillon plus tôt, 21 µs) ; les 34 boucles retrouvées à leur vrai début sur des décodages qui gardent les délais (AAC 1024, Opus 336), 82 vérifications sur 82 dans chaque navigateur.
+- **Mélange** (`analyse.mjs --check`, rendus du moteur) : chaque lieu à chaque heure entre −18,5 et −18,9 LUFS, la musique 3,8 à 5,2 dB au-dessus de l'ambiance (cible 3 à 6) ; duels −17,2 et −17,4 LUFS avec la musique ; à plein volume −1,0 dBTP, aucun échantillon au-delà de 1. Tout passe. `MIX.music` −1,6 dB.
+- **Moteur** (`engine-proof.mjs`, 25 vérifications sur 25) : le retard de sortie 480 échantillons ; l'introduction et la boucle du duel à 0 échantillon de décalage, part inexpliquée 0,00 % ; la valse tourne à 41,849 s sans marche ; les couches suivent la séquence adverse sur la mesure (1,00 / 0,00 / 0,99 puis 1,00 / 1,00 / 0,00) ; le K.O. donne la victoire ou la défaite, la musique coupée ; la fanfare fait baisser le matin de −9,0 dB.
+- **Pages réelles** (serveur DEV, Chrome) : `hooks-proof` passe ; `page-proof` : le morceau de la nuit repris d'une page à l'autre (3,86 s puis 6,82 s), le parvis puis les lices de jour, les lices à leur début (2,10 s), un onglet sans geste muet.
+- **Dépôt** : `npm test` 385 sur 385 (dont le plan, les couches, l'alignement sur des décodages synthétiques, les manifestes ; trois fautes injectées, chacune attrapée), `npm run typecheck`, `npm run build`, `npm run art:validate` (14 manifestes de son, 0 erreur).
+
+### Limites
+- **Personne n'a écouté le résultat en jeu.** Les règles des couches, le délai du jingle et la baisse sous la fanfare sont des propositions.
+- **Safari n'est pas essayé** : Chrome 156 et Firefox 159 seulement, Edge n'a pas démarré sans tête.
+- Le rival et la finale ne s'entendent en partie qu'au sixième, huitième et dixième jour ; pour l'essai, `?scene=arena&v2=1&music=rival|finale`.
+- Le rembourrage de la fin d'un Opus et le délai d'un AAC sont retrouvés par la longueur et la jointure ; un décodeur qui couperait le délai d'Apple (2112) sans liste d'édition perdrait des échantillons au début : la page Safari le signale (« coupé »).
+- Les extraits de la fiche sont des rendus du moteur hors jeu.
+
+### La fiche d'essai et la page Safari
+- **Fiche d'essai** : page privée https://claude.ai/artifact/3fVUHipEEnncBcjcM3waeF, source `briefs/fiche-son-essai.html` (la logique de la fiche SN9 gardée : choix enregistrés, relus), trois extraits MP3 des rendus du moteur publiés avec la page, pas dans le dépôt. Dix cartes : E-LIEUX, E-NIVEAU, E-COUCHES, E-INTRO, E-KO, E-FANFARE, E-TITRE à l'oreille ; E-SAFARI, E-PROD (la confirmation de la production), E-SUITE (S2 puis S3). `decisions` relu vide à la publication. La fiche dit comment jouer (serveur DEV, adresses des états nommés et de l'arène).
+- **Page Safari** (C-SAFARI) : page privée https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS, construite par `tools/audio/safari-page.mjs` (les vrais fichiers en `data:`, l'alignement du jeu, un ton pur de 2 s codé comme la cuisson), version 2 republiée avec les fichiers recuits. Elle mesure ce que Safari décode, fait écouter six jointures et enregistre le relevé dans `results` (relu vide). Vérifiée dans Chrome et Firefox sans tête, à 390 px : rien ne déborde, aucune erreur ; Safari lui-même non essayé.
+
+### Où reprendre
+- Relire la fiche (`decisions`) et la page Safari (`results`) quand l'opérateur les dit remplies ; consigner mot pour mot ; n'agir que sur ce qui est décidé. Si Safari entend la jointure AAC : la liste d'édition écrite par la cuisson.
+
+### Pensée
+- Une boucle cuite n'est juste que dans le navigateur qui la décode : le même fichier, exact dans Firefox, perdait 24 échantillons dans Chrome. Elle se prouve contre le décodage de chaque navigateur et contre la sortie du moteur, pas contre le fichier qu'on a écrit.
+- Une preuve qui compare le moteur à lui-même ne voit ni un retard ni un décalage : il faut un témoin extérieur, ici les fichiers décodés par ffmpeg et un clic à une place connue.
+- Une clé de cache qui arrondit rend un calcul dépendant de l'ordre. Un contrôle de reproductibilité sur un sous-ensemble l'a montré, le contrôle complet passait.
 
 ## À reprendre (par priorité)
 
@@ -675,7 +534,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN9)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit et bouclable (SN7), repris contre le copier-coller (SN8) ; **fiche de la reprise relue (SN9)** : la reprise gardée pour sept morceaux, la musique du tournoi (`midi`, `duel`, `rival`, `finale`) revenue à SN7 à l'oreille de l'opérateur, la règle du motif gardée (`WHOLE_MOTIF`, `TOURNAMENT`, `tools/audio/band/likeness.mjs` et le test). **Décidé : « Cuire et brancher dans la version 2 »** (R-SUITE) : un manifeste par fichier avec l'approbation de l'opérateur mot pour mot, Opus en WebM et AAC en M4A, derrière `flags.v2` selon C-LIEUX, trois couches sur les trois combats (C-COUCHES), la page de test Safari (C-SAFARI, l'opérateur fera l'essai), les introductions des combats ; puis l'essai en jouant. S2 et S3 ensuite. SA-10 après l'essai du lot S4.
+**6f. Son (Passes SN1 à SN10)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit et bouclable (SN7), repris contre le copier-coller (SN8), la reprise gardée pour sept morceaux et la musique du tournoi revenue à SN7 (SN9). **Cuit et branché dans la version 2 (Passe SN10, R-SUITE)** : quatorze manifestes, quarante-huit fichiers (Opus et AAC), le plan C-LIEUX (`src/audio/plan.ts`), trois couches sur les combats (règles « proposé »), les introductions, la fanfare aux annonces, les jingles au K.O. ; `tune()` retiré. **À l'opérateur** : la fiche d'essai `briefs/fiche-son-essai.html` (https://claude.ai/artifact/3fVUHipEEnncBcjcM3waeF) et la page Safari (https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS, C-SAFARI) ; la confirmation de la production (E-PROD). Ouvert : la jointure AAC (erreur de bord du codeur, à juger sur Safari ; remède possible, la liste d'édition écrite par la cuisson). Ensuite S2 et S3 avec les instruments du groupe ; SA-10 après l'essai du lot S4.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 
@@ -710,7 +569,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -1105,3 +964,6 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   l'autre ; la règle tient dans un test qui échoue sur l'ancien catalogue (Passe SN8). Un outil de mesure se prouve par son contrôle négatif et
   une relecture indépendante : le premier garde-fou passait grâce à son propre défaut (Passe SN8).
 - Quand l'oreille de l'opérateur garde ce que la mesure refusait, le garde-fou nomme l'exception (une liste, la décision citée) au lieu de relever un seuil pour tout le monde (Passe SN9).
+- Une boucle cuite se prouve dans chaque navigateur qui la décode et à la sortie du moteur, contre un témoin extérieur (le décodage de ffmpeg, un clic à une place connue) : Chrome perdait 24 échantillons que Firefox gardait, et la sortie retarde de 10 ms (Passe SN10).
+- Un cache dont la clé arrondit rend un calcul dépendant de l'ordre : un contrôle de reproductibilité se fait aussi sur un sous-ensemble (Passe SN10).
+- Une approbation lue dans une décision de fiche se cite telle quelle, avec ce qu'elle couvre, et se fait confirmer à la fiche suivante (Passe SN10).

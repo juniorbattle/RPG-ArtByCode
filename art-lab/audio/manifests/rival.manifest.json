@@ -1,0 +1,122 @@
+{
+ "id": "rival",
+ "kind": "music",
+ "runtimeUse": "production",
+ "licence": "own",
+ "generatedByAi": false,
+ "score": "art-lab/audio/scores/rival.score.mjs",
+ "approved": true,
+ "approval": "The operator, on the reprise sheet (journal Passe SN9, 2026-11-03): R-SUITE « Cuire et brancher dans la version 2 », on the version kept by ear: C-RIVAL « Bonne direction » (journal Passe SN8); R-RIVAL « Revenir à l’ancienne version » (journal Passe SN9); C-COUCHES « Trois couches sur les trois combats » (journal Passe SN8); and C-LIEUX « Valider ce plan » (journal Passe SN8). Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
+ "decisions": [
+  "C-RIVAL « Bonne direction » (journal Passe SN8)",
+  "R-RIVAL « Revenir à l’ancienne version » (journal Passe SN9)",
+  "C-COUCHES « Trois couches sur les trois combats » (journal Passe SN8)",
+  "C-LIEUX « Valider ce plan » (journal Passe SN8)",
+  "R-SUITE « Cuire et brancher dans la version 2 » (journal Passe SN9)"
+ ],
+ "files": [
+  {
+   "path": "src/audio/baked/rival-base.webm",
+   "bytes": 361651,
+   "sha256": "89d1f63091320133f49c0a2b79c62c0b6139ec74010ea83cab5326cab927f49d",
+   "codec": "opus",
+   "kbps": 80,
+   "role": "loop:base",
+   "frames": 1720975
+  },
+  {
+   "path": "src/audio/baked/rival-base.m4a",
+   "bytes": 368110,
+   "sha256": "81932ca5b3583bf3019fc6c33574d6892f394179559086cdc59c6f4ea0f99b65",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "loop:base",
+   "frames": 1720975
+  },
+  {
+   "path": "src/audio/baked/rival-melody.webm",
+   "bytes": 386620,
+   "sha256": "ed01604fb5769771fde6b05cb728884c9c7621d620d2dbead39688e692ea9508",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "loop:melody",
+   "frames": 1720975
+  },
+  {
+   "path": "src/audio/baked/rival-melody.m4a",
+   "bytes": 298793,
+   "sha256": "eda5e407ccae3c67216fae29e2fb32d4bbe58f160090ae7f466d7085cf885329",
+   "codec": "aac-lc",
+   "kbps": 64,
+   "role": "loop:melody",
+   "frames": 1720975
+  },
+  {
+   "path": "src/audio/baked/rival-tension.webm",
+   "bytes": 351372,
+   "sha256": "e798a7856009e429e0065b6ed93bfef5b73d3cd47c3bd96fc0edcdd37b12d71b",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "loop:tension",
+   "frames": 1720975
+  },
+  {
+   "path": "src/audio/baked/rival-tension.m4a",
+   "bytes": 295397,
+   "sha256": "1d3a902039e19a792bee8322c2d864acc1a067cff57b2d35ba84fd79cb864aca",
+   "codec": "aac-lc",
+   "kbps": 64,
+   "role": "loop:tension",
+   "frames": 1720975
+  },
+  {
+   "path": "src/audio/baked/rival-intro.webm",
+   "bytes": 57162,
+   "sha256": "da3f83be977bfcf136e2c686d05c64931b9d7fec9edb9d76bf60c281aafcd656",
+   "codec": "opus",
+   "kbps": 96,
+   "role": "intro",
+   "frames": 181423
+  },
+  {
+   "path": "src/audio/baked/rival-intro.m4a",
+   "bytes": 47103,
+   "sha256": "f723681555ddddfb26f003bfec0981378de3a63c7ed27a3960aff1fc755980aa",
+   "codec": "aac-lc",
+   "kbps": 96,
+   "role": "intro",
+   "frames": 181423
+  }
+ ],
+ "bake": {
+  "tool": "tools/audio/band/bake.mjs",
+  "ffmpeg": "9.0.2-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "encoders": {
+   "webm": "-c:a libopus -b:a <kbps>k -vbr on -application audio -frame_duration 20 -f webm",
+   "m4a": "-c:a aac -b:a <kbps>k -f mp4",
+   "input": "f32le 48000 Hz stereo, -map_metadata -1 -fflags +bitexact -flags:a +bitexact",
+   "opusDelay": "24 samples ahead (a loop's last ones, else silence), CodecDelay and OpusHead pre-skip set to 336 samples (7 ms)"
+  },
+  "sampleRate": 48000,
+  "lufs": -18,
+  "date": "2026-11-03",
+  "measures": {
+   "lufs": -18,
+   "lra": 1.5,
+   "truePeak": -5.1,
+   "secs": 35.85,
+   "seam": {
+    "step": 0.03,
+    "ofLargest": 0.06
+   },
+   "layerPeak": 0.433,
+   "intro": {
+    "lufs": -24.4,
+    "lra": 1.5,
+    "truePeak": -13.4,
+    "secs": 3.78,
+    "loopAt": 2.561
+   }
+  }
+ }
+}

@@ -1,0 +1,123 @@
+{
+ "id": "duel",
+ "kind": "music",
+ "runtimeUse": "production",
+ "licence": "own",
+ "generatedByAi": false,
+ "score": "art-lab/audio/scores/duel.score.mjs",
+ "approved": true,
+ "approval": "The operator, on the reprise sheet (journal Passe SN9, 2026-11-03): R-SUITE « Cuire et brancher dans la version 2 », on the version kept by ear: F-DUEL « Bonne direction » (journal Passe SN6); C-BOUCLE « Rien entendu de gênant » (journal Passe SN8); R-RETOUCHES « Revenir à l’ancienne version » (journal Passe SN9); C-COUCHES « Trois couches sur les trois combats » (journal Passe SN8); and C-LIEUX « Valider ce plan » (journal Passe SN8). Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
+ "decisions": [
+  "F-DUEL « Bonne direction » (journal Passe SN6)",
+  "C-BOUCLE « Rien entendu de gênant » (journal Passe SN8)",
+  "R-RETOUCHES « Revenir à l’ancienne version » (journal Passe SN9)",
+  "C-COUCHES « Trois couches sur les trois combats » (journal Passe SN8)",
+  "C-LIEUX « Valider ce plan » (journal Passe SN8)",
+  "R-SUITE « Cuire et brancher dans la version 2 » (journal Passe SN9)"
+ ],
+ "files": [
+  {
+   "path": "src/audio/baked/duel-base.webm",
+   "bytes": 439670,
+   "sha256": "7b8b71d43eb03445d234b41a9ffc6d5d90b7251ea0185e71995f76c32f1a1513",
+   "codec": "opus",
+   "kbps": 80,
+   "role": "loop:base",
+   "frames": 2122105
+  },
+  {
+   "path": "src/audio/baked/duel-base.m4a",
+   "bytes": 455212,
+   "sha256": "8224919ec8ae0d6055d899ff8db355f6ac0fa14cc86e43dfedc0e0a410e5bba8",
+   "codec": "aac-lc",
+   "kbps": 80,
+   "role": "loop:base",
+   "frames": 2122105
+  },
+  {
+   "path": "src/audio/baked/duel-melody.webm",
+   "bytes": 473740,
+   "sha256": "5129f3bde18921379d6aaa65075a1f9458a84ec21100c305ce815e1a59e2f472",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "loop:melody",
+   "frames": 2122105
+  },
+  {
+   "path": "src/audio/baked/duel-melody.m4a",
+   "bytes": 365286,
+   "sha256": "8ef5135781d9ee561995b1039ffa966871801e8223a66928123d8bd0b2d17780",
+   "codec": "aac-lc",
+   "kbps": 64,
+   "role": "loop:melody",
+   "frames": 2122105
+  },
+  {
+   "path": "src/audio/baked/duel-tension.webm",
+   "bytes": 410742,
+   "sha256": "f3c215260f515b2d0730fdb092d264aae3c91b29a3731c9dcee61aa48fa80f36",
+   "codec": "opus",
+   "kbps": 64,
+   "role": "loop:tension",
+   "frames": 2122105
+  },
+  {
+   "path": "src/audio/baked/duel-tension.m4a",
+   "bytes": 313961,
+   "sha256": "3bddf77413aa339f0d66a74b2731aa4b39b8747c8436130e7e7761c947fc0d3a",
+   "codec": "aac-lc",
+   "kbps": 64,
+   "role": "loop:tension",
+   "frames": 2122105
+  },
+  {
+   "path": "src/audio/baked/duel-intro.webm",
+   "bytes": 130142,
+   "sha256": "178a2a02fb8f8877a54a3eafd7da7e6051a7a54de2f913861bb4cfe5e77cc5be",
+   "codec": "opus",
+   "kbps": 96,
+   "role": "intro",
+   "frames": 451699
+  },
+  {
+   "path": "src/audio/baked/duel-intro.m4a",
+   "bytes": 115682,
+   "sha256": "ec52c89064aebef5139f56cd3f87047ace2d6b08282aff70b0d29fc77f18f03e",
+   "codec": "aac-lc",
+   "kbps": 96,
+   "role": "intro",
+   "frames": 451699
+  }
+ ],
+ "bake": {
+  "tool": "tools/audio/band/bake.mjs",
+  "ffmpeg": "9.0.2-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "encoders": {
+   "webm": "-c:a libopus -b:a <kbps>k -vbr on -application audio -frame_duration 20 -f webm",
+   "m4a": "-c:a aac -b:a <kbps>k -f mp4",
+   "input": "f32le 48000 Hz stereo, -map_metadata -1 -fflags +bitexact -flags:a +bitexact",
+   "opusDelay": "24 samples ahead (a loop's last ones, else silence), CodecDelay and OpusHead pre-skip set to 336 samples (7 ms)"
+  },
+  "sampleRate": 48000,
+  "lufs": -18,
+  "date": "2026-11-03",
+  "measures": {
+   "lufs": -18,
+   "lra": 2,
+   "truePeak": -5.4,
+   "secs": 44.21,
+   "seam": {
+    "step": 0.186,
+    "ofLargest": 0.32
+   },
+   "layerPeak": 0.465,
+   "intro": {
+    "lufs": -21.8,
+    "lra": 9.5,
+    "truePeak": -7.8,
+    "secs": 9.41,
+    "loopAt": 5.526
+   }
+  }
+ }
+}

@@ -1,0 +1,59 @@
+{
+ "id": "lices",
+ "kind": "music",
+ "runtimeUse": "production",
+ "licence": "own",
+ "generatedByAi": false,
+ "score": "art-lab/audio/scores/lices.score.mjs",
+ "approved": true,
+ "approval": "The operator, on the reprise sheet (journal Passe SN9, 2026-11-03): R-SUITE « Cuire et brancher dans la version 2 », on the version kept by ear: C-LICES « Bonne direction » (journal Passe SN8); R-LICES « Bonne direction » (journal Passe SN9); and C-LIEUX « Valider ce plan » (journal Passe SN8). Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
+ "decisions": [
+  "C-LICES « Bonne direction » (journal Passe SN8)",
+  "R-LICES « Bonne direction » (journal Passe SN9)",
+  "C-LIEUX « Valider ce plan » (journal Passe SN8)",
+  "R-SUITE « Cuire et brancher dans la version 2 » (journal Passe SN9)"
+ ],
+ "files": [
+  {
+   "path": "src/audio/baked/lices.webm",
+   "bytes": 831953,
+   "sha256": "18cc4999f7f4b9a15c280ddbfc8d80d2c1f5ba15b73a85a1818d670b573d9c6d",
+   "codec": "opus",
+   "kbps": 96,
+   "role": "loop",
+   "frames": 2727273
+  },
+  {
+   "path": "src/audio/baked/lices.m4a",
+   "bytes": 710419,
+   "sha256": "3c35d8b973f7ed13e17d3957c8b3aeb7e9e7a5d72a22b4389f200d4b59d92905",
+   "codec": "aac-lc",
+   "kbps": 96,
+   "role": "loop",
+   "frames": 2727273
+  }
+ ],
+ "bake": {
+  "tool": "tools/audio/band/bake.mjs",
+  "ffmpeg": "9.0.2-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "encoders": {
+   "webm": "-c:a libopus -b:a <kbps>k -vbr on -application audio -frame_duration 20 -f webm",
+   "m4a": "-c:a aac -b:a <kbps>k -f mp4",
+   "input": "f32le 48000 Hz stereo, -map_metadata -1 -fflags +bitexact -flags:a +bitexact",
+   "opusDelay": "24 samples ahead (a loop's last ones, else silence), CodecDelay and OpusHead pre-skip set to 336 samples (7 ms)"
+  },
+  "sampleRate": 48000,
+  "lufs": -18,
+  "date": "2026-11-03",
+  "measures": {
+   "lufs": -18,
+   "lra": 2,
+   "truePeak": -2.2,
+   "secs": 56.82,
+   "seam": {
+    "step": 0.009,
+    "ofLargest": 0.02
+   }
+  }
+ }
+}

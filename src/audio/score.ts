@@ -1,10 +1,8 @@
-import { Rng } from '../core/rng';
-
 /** The version 2's sound, its pure half (lot V8, journal Passe V8; the operator's decisions in journal Passe SN1):
  *  written here and played by the code (Web Audio, src/audio/Sound.ts); a baked file would come only through a manifest (SA-8). Here: the effects' recipes (a few oscillators and noise
  *  bursts with their envelopes), the ambiences of each place by the day state (layers of filtered noise and sparse calls: the crowd, the
- *  wind, the water, the birds by day, the crickets at night, the Colosseum's roar on the afternoons of the bouts), and the music: a short
- *  plucked tune on a mode of the day state, generated from a seed, the same notes every time. Every number « proposé ». Pure. */
+ *  wind, the water, the birds by day, the crickets at night, the Colosseum's roar on the afternoons of the bouts), and the music's levels (the
+ *  band's pieces are baked: src/audio/plan.ts, ./catalogue.json, journal Passe SN10). Every number « proposé ». Pure. */
 
 export type Look = 'morning' | 'midday' | 'afternoon' | 'night';
 export type SoundPlace = 'district' | 'forecourt' | 'training' | 'festival' | 'arena';
@@ -96,45 +94,21 @@ export function ambienceOf(place: SoundPlace, look: Look, boutDay = false): Ambi
 
 // ---------------------------------------------------------------------------------------------------------------- music
 
-/** the modes of the day states: bright by day, dorian at night (semitones from the tonic) */
-export const MODES: Record<Look, number[]> = {
-  morning: [0, 2, 4, 7, 9], midday: [0, 2, 4, 5, 7, 9, 10], afternoon: [0, 2, 4, 5, 7, 9, 11], night: [0, 2, 3, 5, 7, 9, 10],
-};
-export const TONIC: Record<Look, number> = { morning: 62, midday: 60, afternoon: 57, night: 57 };
-export const TEMPO: Record<Look, number> = { morning: 84, midday: 96, afternoon: 76, night: 66 };
-export interface Note { t: number; midi: number; dur: number; vel: number }
-
-/** a tune of `bars` bars of 4 beats: a step-wise walk on the mode, a drone on the tonic and the fifth each bar; the same seed, the same notes */
-export function tune(seed: number, look: Look, bars = 8): { notes: Note[]; drone: Note[]; length: number } {
-  const r = new Rng(seed).fork(`tune:${look}`), mode = MODES[look], tonic = TONIC[look], beat = 60 / TEMPO[look];
-  const notes: Note[] = [], drone: Note[] = [];
-  let deg = 0;
-  for (let b = 0; b < bars; b++) {
-    drone.push({ t: b * 4 * beat, midi: tonic - 12, dur: 4 * beat, vel: 0.5 }, { t: b * 4 * beat, midi: tonic - 5, dur: 4 * beat, vel: 0.35 });
-    for (let k = 0; k < 4; k++) {
-      // a rest now and then, two eighths sometimes; the last bar comes home to the tonic
-      if (r.next() < 0.15 && !(b === bars - 1 && k === 3)) continue;
-      deg = b === bars - 1 && k === 3 ? 0 : Math.max(-2, Math.min(mode.length + 2, deg + r.pick([-2, -1, -1, 1, 1, 2, 0])));
-      const midi = tonic + 12 * Math.floor(deg / mode.length) + mode[((deg % mode.length) + mode.length) % mode.length];
-      if (r.next() < 0.25 && k < 3) {
-        notes.push({ t: (b * 4 + k) * beat, midi, dur: beat * 0.5, vel: 0.7 });
-        const d2 = deg + r.pick([-1, 1]), m2 = tonic + 12 * Math.floor(d2 / mode.length) + mode[((d2 % mode.length) + mode.length) % mode.length];
-        notes.push({ t: (b * 4 + k + 0.5) * beat, midi: m2, dur: beat * 0.5, vel: 0.6 });
-      } else notes.push({ t: (b * 4 + k) * beat, midi, dur: beat * (k === 3 ? 1.5 : 0.9), vel: k === 0 ? 0.85 : 0.65 });
-    }
-  }
-  return { notes, drone, length: bars * 4 * beat };
-}
+/** the band's music (journal Passe SN10; R-SUITE « Cuire et brancher dans la version 2 »): the catalogue baked by tools/audio/band/bake.mjs, at the band's rate;
+ *  which piece plays where is src/audio/plan.ts. It replaced the plucked tune of lot V8 (`tune`, a walk on the day state's mode), which only ever played on
+ *  the version 2's pages */
+export const BAND_RATE = 48000;
+/** a jingle's way in after the K.O. (the knock-out's slow moment first), how far the music steps back under a jingle or the fanfare, and how long a fanfare
+ *  asked before the person's first gesture may wait for it (seconds, dB): « proposé » */
+export const JINGLE_AFTER = 1.2, STING_DUCK = 9, STING_WAIT = 6;
 export const hz = (midi: number): number => 440 * Math.pow(2, (midi - 69) / 12);
-/** the bar of silence between two turns of the tune */
-export const TURN_REST = (60 / 70) * 4;
 
 // ---------------------------------------------------------------------------------------------------------------- the mix
 
 /** The mix, measured (lot S0, journal Passe SN2; tools/audio/analyse.mjs): the fiche's targets at the default settings are -18 LUFS at the output and
  *  the music 3 to 6 dB over the ambience. Each bus in dB at the default settings, then each place's ambience (the beds were written at very
  *  different levels). The volume comes after the limiter, so a louder setting never squeezes the mix harder. */
-export const MIX = { ambience: 1.6, music: 14.1, fx: 9.6, ui: 9.6, reverb: 1.6 };
+export const MIX = { ambience: 1.6, music: -1.6, fx: 9.6, ui: 9.6, reverb: 1.6 };
 export const LEVEL: Record<SoundPlace, Record<Look, number>> = {
   district: { morning: 8, midday: 8.1, afternoon: 8.1, night: 8.1 },
   forecourt: { morning: 8.1, midday: 8.2, afternoon: 8.2, night: 10.6 },
@@ -178,7 +152,7 @@ export function roomImpulse(place: SoundPlace, sr: number): [Float32Array, Float
   return out;
 }
 /** what each bus sends to the room */
-export const SEND = { music: 0.16, fx: 0.2, calls: 0.3 };
+export const SEND = { fx: 0.2, calls: 0.3 };
 
 // ---------------------------------------------------------------------------------------------------------------- the engine's moves (lot S1)
 
@@ -214,7 +188,6 @@ export function resumeAt(rec: NowPlaying | null, key: string, period: number, no
   if (!rec || rec.key !== key || !(period > 0) || now - rec.at > RESUME_MS || now < rec.at) return 0;
   return rec.pos % period;
 }
-export const tuneKey = (seed: number, look: Look): string => `tune:${seed}:${look}`;
 
 // ---------------------------------------------------------------------------------------------------------------- the settings
 

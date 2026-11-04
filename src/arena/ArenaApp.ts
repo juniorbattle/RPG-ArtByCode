@@ -28,6 +28,7 @@ import { chargeHudModel, makeV2Duel, runV2Script, V2_HELD, V2_KEYS, V2_PAD, V2_P
 import { CHARGE_TEXTS_EN, CHARGE_TEXTS_FR } from './DynamicHud';
 import type { ChargedDuel, ChargeTier } from '../combat/charge';
 import type { CombatFx } from './fx/combatFx';
+import type { PieceId } from '../audio/plan';
 
 /** The arena scene of the game (journal Passe P1): `?scene=arena`. The prototype's duel (CombatSim, ported rule for rule) staged with
  *  the town's renderer: the same materials, lights (LightRig), sky, moon shadow, planar reflection in the puddles and post chain (in-scatter,
@@ -64,6 +65,8 @@ export interface ArenaMatch {
   data: CombatData | DynData; rules?: ArenaRules; foe: string; assist: Assist; texts: ArenaTexts | DynTexts;
   /** the version 2's charge tiers (with `rules: 'v2'`, src/combat/v2duel.ts, journal Passe V1) */
   tiers?: ChargeTier[];
+  /** the band's piece of the bout (src/audio/plan.ts `boutPiece`, journal Passe SN10): the duel, the rival or the finale by the tournament's stage */
+  piece?: PieceId;
   onOver?: (r: { winner: FighterId; hp: Record<FighterId, number>; maxHp: Record<FighterId, number>; finisher: string | null; t: number }) => void;
 }
 /** the forecourt's walking mode (journal Passe L6): no bout; the hero walks the sand (arrows or A / D, W / S), Marek drills by the ring; the
@@ -168,10 +171,12 @@ export class ArenaApp {
     this.rules = arenaRules(opts.params, opts.match);
     if (this.rules === 'dynamic') this.sim = this.dyn = new DynamicSim(tuneDyn((opts.match?.data as DynData | undefined) ?? DYNAMIC_DATA, opts.params.get('dyn')));
     else if (this.rules === 'v2') { const v = makeV2Duel(opts.params, opts.match ? { data: opts.match.data as DynData, tiers: opts.match.tiers } : undefined, this.foe); this.dyn = v.dyn; this.charge = v.charge; this.sim = (v.charge ?? v.dyn) as unknown as DuelSim;
-      // the version 2's sound (lot V8): the arena's roar and the duel's effects, after the person's first gesture; N mutes
-      const t = opts.params.get('time'), look = t === 'morning' || t === 'midday' || t === 'afternoon' ? t : 'night';
+      // the version 2's sound (lot V8): the arena's roar, the duel's effects and the bout's piece of the band in its three layers (journal Passe SN10; the arena's
+      // own page outside a game: `music=rival|finale`, the duel else), after the person's first gesture; N mutes
+      const t = opts.params.get('time'), look = t === 'morning' || t === 'midday' || t === 'afternoon' ? t : 'night', m0 = opts.params.get('music');
+      const piece: PieceId = opts.match?.piece ?? (m0 === 'rival' || m0 === 'finale' ? m0 : 'duel'), maxHp = { ren: v.dyn.f.ren.maxHp, marek: v.dyn.f.marek.maxHp };
       void import('../audio/Sound').then((m) => {
-        const snd = m.sound(); this.snd = snd as unknown as { duelEvent(e: unknown): void }; snd.setScene('arena', look);
+        const snd = m.sound(); this.snd = snd as unknown as { duelEvent(e: unknown): void }; snd.setScene('arena', look, false, 1842, { bout: piece, maxHp });
         window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'n' && !e.repeat) snd.set({ muted: !snd.settings.muted }); });
       });
     }

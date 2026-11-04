@@ -9,3 +9,7 @@ arena/source/*.html -text
 # Embedded fonts (journal Passe UI3): binary; their licences kept byte for byte (their SHA-256 is checked by tests/ui-design.test.mjs).
 *.woff2 binary
 src/ui/fonts/*.txt -text
+
+# Baked sound (journal Passe SN10): binary, byte for byte (their SHA-256 is checked by tools/audio/validate.mjs).
+*.webm binary
+*.m4a binary

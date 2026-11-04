@@ -1,7 +1,10 @@
 import { Rng } from '../core/rng';
-import { AudioLoader } from './baked';
+import { AudioLoader, type Format } from './baked';
+import { alignLoop, startOf } from './align';
 import { LayerSet } from './layers';
-import { ambienceOf, CALL_PAN, ceilingCurve, dbGain, DEFAULT_SETTINGS, DUCK, DUCK_AMBIENCE, duelCue, FADE, hz, LIMITER, MIX, NOISE_SECONDS, noiseSamples, NOW_KEY, readNow, readSettings, resumeAt, roomImpulse, SEND, take, tune, tuneKey, TURN_REST, UI_EFFECTS, type Ambience, type Effect, type Look, type NowPlaying, type SoundPlace, type SoundSettings, type Voice } from './score';
+import CATALOGUE from './catalogue.json';
+import { CALM, jingleFor, layerLevels, moodStep, pieceFor, type Mood, type PieceId, type StingId } from './plan';
+import { ambienceOf, BAND_RATE, CALL_PAN, ceilingCurve, dbGain, DEFAULT_SETTINGS, DUCK, DUCK_AMBIENCE, duelCue, FADE, hz, JINGLE_AFTER, LIMITER, MIX, NOISE_SECONDS, noiseSamples, NOW_KEY, readNow, readSettings, RESUME_MS, resumeAt, roomImpulse, SEND, STING_DUCK, STING_WAIT, take, UI_EFFECTS, type Ambience, type Effect, type Look, type NowPlaying, type SoundPlace, type SoundSettings, type Voice } from './score';
 import { installSoundHooks } from './hooks';
 
 /** The version 2's sound engine (lot V8, journal Passe V8; lots S0 and S1, journal Passes SN2 / SN3): Web Audio only, every sound written in
@@ -10,10 +13,17 @@ import { installSoundHooks } from './hooks';
  *  music takes up where it was on the next page (SA-15): the record is kept for the tab. Nothing starts before a gesture of the person (the browsers'
  *  rule: the context is created, or resumed, on the first key or click; after a gesture on an earlier page of the tab the browser may let it go on by
  *  itself); the volume, the music's share and the mute are kept in the browser (a convenience: a blocked storage gives the defaults). Only the version
- *  2's pages create it. */
+ *  2's pages create it. The music is the band's (journal Passe SN10, R-SUITE « Cuire et brancher dans la version 2 »): the page's piece by the plan of
+ *  src/audio/plan.ts, baked (./catalogue.json), its intro once and its loop on the sample, the fights' three layers following the duel, the fanfare at the
+ *  registrar's announcements and a jingle at the end of a bout. */
 
 const KEY = 'cdt-v2-sound';
 type Bus = 'ambience' | 'music' | 'fx' | 'ui';
+/** a piece of the catalogue (written by tools/audio/band/bake.mjs) */
+interface BandEntry { kind: 'loop' | 'layers' | 'once'; frames: number; bar?: number; files: string[]; layers?: string[]; intro?: { file: string; frames: number; loopAt: number } }
+const BAND = CATALOGUE.pieces as Record<string, BandEntry>;
+/** what a scene asks of the music beyond its place and hour: a new game's first page, a bout's piece and its fighters' health */
+export interface SceneMusic { opening?: boolean; bout?: PieceId; maxHp?: Record<string, number> }
 
 export class Sound {
   ctx: AudioContext | null = null;
@@ -30,7 +40,19 @@ export class Sound {
   private noise: AudioBuffer | null = null;
   /** what a scene owns: its groups, faded together, and what stops it */
   private scene: { groups: GainNode[]; stops: Array<() => void> } = { groups: [], stops: [] };
-  private want: { place: SoundPlace; look: Look; boutDay: boolean; seed: number } | null = null;
+  private want: { place: SoundPlace; look: Look; boutDay: boolean; seed: number; music: SceneMusic } | null = null;
+  /** the music's way in, which steps back under a jingle (the stings go round it, on their own gain) */
+  private musicIn: GainNode | null = null;
+  private stings: GainNode | null = null;
+  /** the duel's state the fights' layers follow, and the fighters' health it reads */
+  private mood: Mood = CALM;
+  private maxHp: Record<string, number> = {};
+  /** the delay a format's loops showed in this browser: an intro or a jingle of the same format starts there (src/audio/align.ts) */
+  private known: Partial<Record<Format, number>> = {};
+  /** the scene's music loading (the proofs wait on it) */
+  private pending: Promise<void> = Promise.resolve();
+  /** a fanfare asked before the sound could run: played if the sound comes soon enough */
+  private waiting: { id: StingId; until: number } | null = null;
   /** its own draws: a sound never takes from the game's random numbers */
   private rng = new Rng(0x50f7).fork('sound');
   private last: Partial<Record<Effect, number>> = {};
@@ -39,8 +61,7 @@ export class Sound {
   private leftAt: number | null = null;
   /** where the previous page left the music */
   private resume: NowPlaying | null;
-  private playing: { key: string; t0: number; period: number } | null = null;
-  private layered: { key: string; set: LayerSet } | null = null;
+  private layered: { key: string; set: LayerSet; layers: boolean } | null = null;
   private files: AudioLoader | null = null;
   private tap: AnalyserNode | null = null;
 
@@ -63,7 +84,10 @@ export class Sound {
     if (this.ctx) { if (this.ctx.state === 'suspended') await this.ctx.resume().catch(() => {}); return; }
     const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctx) return;
-    const c = this.ctx = new Ctx();
+    // the band's rate (journal Passe SN10): its loops close on their sample without a resampling at the decode; a browser that refuses gives its own rate
+    const make = (o?: AudioContextOptions) => new Ctx(o);
+    let made: AudioContext; try { made = make({ sampleRate: BAND_RATE }); } catch { made = make(); }
+    const c = this.ctx = made;
     // the buses go to the mix, the mix through the limiter to the volume: the ceiling holds at any volume, and the volume never drives the limiter
     const mix = c.createGain(), comp = c.createDynamicsCompressor(), half = c.createGain(), ceiling = c.createWaveShaper();
     comp.threshold.value = LIMITER.threshold; comp.knee.value = LIMITER.knee; comp.ratio.value = LIMITER.ratio; comp.attack.value = LIMITER.attack; comp.release.value = LIMITER.release;
@@ -76,6 +100,9 @@ export class Sound {
     this.ducks = { music: stepsBack(), ambience: stepsBack() };
     this.buses = { ambience: c.createGain(), music: c.createGain(), fx: bus(), ui: bus() };
     this.buses.music.connect(this.ducks.music); this.buses.ambience.connect(this.ducks.ambience);
+    this.musicIn = c.createGain(); this.musicIn.connect(this.buses.music);
+    // a jingle is a moment of its own: the music's level and share, but neither the blows' step back nor the music's own under it
+    this.stings = c.createGain(); this.stings.connect(this.fade);
     this.room = c.createGain(); this.room.gain.value = dbGain(MIX.reverb); this.room.connect(mix);
     const n = c.createBuffer(2, c.sampleRate * NOISE_SECONDS, c.sampleRate);
     n.getChannelData(0).set(noiseSamples(n.length, 0x12345)); n.getChannelData(1).set(noiseSamples(n.length, 0x6789a));
@@ -92,7 +119,9 @@ export class Sound {
     if (this.begun || this.ctx?.state !== 'running') return;
     this.begun = true;
     this.fadeTo(1, FADE.in);
-    if (this.want) this.setScene(this.want.place, this.want.look, this.want.boutDay, this.want.seed);
+    if (this.want) this.setScene(this.want.place, this.want.look, this.want.boutDay, this.want.seed, this.want.music);
+    const w = this.waiting; this.waiting = null;
+    if (w && performance.now() <= w.until) this.sting(w.id);
   }
   private fadeTo(v: number, secs: number): void {
     if (!this.ctx || !this.fade) return;
@@ -112,12 +141,11 @@ export class Sound {
   }
   /** what the music is and where it stands */
   nowPlaying(): { key: string; pos: number } | null {
-    const c = this.ctx; if (!c) return null;
-    if (this.layered) return { key: this.layered.key, pos: this.layered.set.position() };
-    if (!this.playing) return null;
-    const { key, t0, period } = this.playing;
-    return { key, pos: (((c.currentTime - t0) % period) + period) % period };
+    if (!this.ctx || !this.layered) return null;
+    return { key: this.layered.key, pos: this.layered.set.position() };
   }
+  /** the scene's music is loaded and started, or could not be (the proofs wait on it) */
+  ready(): Promise<void> { return this.pending; }
 
   set(p: Partial<SoundSettings>): void {
     Object.assign(this.settings, p);
@@ -130,6 +158,7 @@ export class Sound {
     const to = (g: GainNode, v: number) => { if (now) g.gain.value = v; else g.gain.setTargetAtTime(v, t, 0.05); };
     to(this.master, s.muted ? 0 : s.volume);
     to(b.music, dbGain(MIX.music) * s.music / DEFAULT_SETTINGS.music);
+    if (this.stings) to(this.stings, dbGain(MIX.music) * s.music / DEFAULT_SETTINGS.music);
     to(b.ambience, dbGain(MIX.ambience)); to(b.fx, dbGain(MIX.fx)); to(b.ui, dbGain(MIX.ui));
   }
 
@@ -179,17 +208,38 @@ export class Sound {
     }
   }
 
-  /** a duel's event (its table is duelCue, src/audio/score.ts) */
+  /** a duel's event (its table is duelCue, src/audio/score.ts); the fights' layers follow it (src/audio/plan.ts), the K.O. takes the music and gives a jingle */
   duelEvent(e: { type: string } & Record<string, unknown>): void {
     const q = duelCue(e); if (q) this.play(q.effect, q.gain ?? 1, q);
+    const was = this.mood; this.mood = moodStep(this.mood, e, this.maxHp);
+    const l = this.layered;
+    if (e.type === 'ko' && !was.over) {
+      if (l) { l.set.stop(0.4); this.layered = null; }
+      window.setTimeout(() => this.sting(jingleFor(String(e.who))), JINGLE_AFTER * 1000);
+    } else if (l?.layers) layerLevels(this.mood).forEach((v, i) => { if (v !== l.set.levelOf(i)) l.set.level(i, v); });
   }
 
-  /** synchronous layers on the music bus (a piece of the lots S3 and S4), taken up where it stood if it is the piece the last page played */
+  /** synchronous layers on the music bus, taken up where it stood if it is the piece the last page played (the engine's proofs, journal Passe SN3) */
   layers(key: string, stems: readonly AudioBuffer[], bar: number, levels: readonly number[]): LayerSet | null {
-    const c = this.ctx; if (!c || !this.begun || !this.buses) return null;
-    const set = new LayerSet(c, stems, bar, this.buses.music, levels, resumeAt(this.resume, key, stems[0].duration, Date.now()));
-    this.layered = { key, set };
+    const c = this.ctx; if (!c || !this.begun || !this.musicIn) return null;
+    const set = new LayerSet(c, stems, bar, this.musicIn, levels, resumeAt(this.resume, key, stems[0].duration, Date.now()));
+    this.layered = { key, set, layers: stems.length > 1 };
     return set;
+  }
+
+  /** a jingle or the fanfare, once, over the music, which steps back under it; asked before the sound runs, it waits a little (the gesture that starts it) */
+  sting(id: StingId): void {
+    const c = this.ctx, entry = BAND[id];
+    if (!entry) return;
+    if (!c || !this.begun || !this.stings || !this.musicIn) { this.waiting = { id, until: performance.now() + STING_WAIT * 1000 }; return; }
+    if (this.settings.muted) return;
+    const p = this.loader.decoded(id).then((d) => {
+      if (!d || this.ctx !== c) return;
+      const s = c.createBufferSource(), t = c.currentTime + 0.05, len = entry.frames / BAND_RATE, g = this.musicIn!.gain;
+      s.buffer = d.buf; s.connect(this.stings!); s.start(t, startOf(d.buf, entry.frames, BAND_RATE, d.format, this.known[d.format]) / d.buf.sampleRate);
+      g.cancelScheduledValues(t); g.setTargetAtTime(dbGain(-STING_DUCK), t, 0.12); g.setTargetAtTime(1, t + len * 0.75, 0.8);
+    });
+    this.pending = Promise.all([this.pending, p]).then(() => {});
   }
   /** the baked sounds, fetched when they are asked for */
   get loader(): AudioLoader { return (this.files ??= new AudioLoader(this.ctx!)); }
@@ -202,9 +252,9 @@ export class Sound {
     return 10 * Math.log10(Math.max(1e-12, d.reduce((s, v) => s + v * v, 0) / d.length));
   }
 
-  /** the place's ambience and the day state's music, the scene before fading out under them */
-  setScene(place: SoundPlace, look: Look, boutDay = false, seed = 1842): void {
-    this.want = { place, look, boutDay, seed };
+  /** the place's ambience and its piece of the band (src/audio/plan.ts), the scene before fading out under them */
+  setScene(place: SoundPlace, look: Look, boutDay = false, seed = 1842, music: SceneMusic = {}): void {
+    this.want = { place, look, boutDay, seed, music };
     if (!this.begun) return;
     const c = this.ctx!, old = this.scene, cross = old.groups.length > 0;
     this.scene = { groups: [], stops: [] };
@@ -212,7 +262,10 @@ export class Sound {
     if (cross) window.setTimeout(() => { for (const s of old.stops) s(); }, (FADE.scene + 0.3) * 1000);
     this.setRoom(place);
     this.ambience(ambienceOf(place, look, boutDay), cross);
-    if (place !== 'arena') this.music(seed, look, cross); else this.playing = null;
+    this.mood = CALM; this.maxHp = { ...(music.maxHp ?? {}) };
+    this.band(pieceFor(place, look, music), cross);
+    // the bout's two jingles fetched with its music: the K.O. never waits for a file
+    if (place === 'arena') { const p = this.pending, pre = Promise.all((['victoire', 'defaite'] as const).map((id) => this.loader.decoded(id))); this.pending = Promise.all([p, pre]).then(() => {}); }
   }
   /** a group of the scene on a bus, coming up when it replaces another */
   private group(out: AudioNode, level: number, cross: boolean): GainNode {
@@ -268,28 +321,34 @@ export class Sound {
     o.start(t); o2.start(t); o.stop(t + 1.3); o2.stop(t + 1.3);
   }
 
-  /** the tune of the day state, looped with a bar of silence between the turns, on the audio clock; taken up where the last page left it */
-  private music(seed: number, look: Look, cross: boolean): void {
-    const c = this.ctx!, { notes, drone, length } = tune(seed, look), key = tuneKey(seed, look), period = length + TURN_REST, group = this.group(this.buses!.music, 1, cross);
-    const melody = c.createStereoPanner(), under = c.createStereoPanner();
-    melody.pan.value = 0.14; under.pan.value = -0.12; melody.connect(group); under.connect(group); this.send(melody, SEND.music);
-    const start = c.currentTime + 0.1, playing = this.playing = { key, t0: start - resumeAt(this.resume, key, period, Date.now()), period };
-    let alive = true, timer = 0;
-    const turn = (t0: number) => {
-      if (!alive) return;
-      playing.t0 = t0;
-      for (const n of notes) if (t0 + n.t >= start) this.pluck(hz(n.midi), t0 + n.t, 0.12 * n.vel, melody);
-      for (const n of drone) {
-        const a = Math.max(start, t0 + n.t), b = t0 + n.t + n.dur; if (b < a + 0.5) continue;
-        const o = c.createOscillator(), e = c.createGain(); o.type = 'sine'; o.frequency.value = hz(n.midi);
-        e.gain.setValueAtTime(0, a); e.gain.linearRampToValueAtTime(0.05 * n.vel, a + 0.4); e.gain.linearRampToValueAtTime(0, b);
-        o.connect(e); e.connect(under); o.start(a); o.stop(b + 0.05);
+  /** the band's piece of the scene (journal Passe SN10): its intro once and then its loop, or its loop taken up where the last page left it (SA-15); each stem
+   *  looped on the span its decoder gave it (src/audio/align.ts); a piece that cannot be loaded leaves the scene without music, never an error */
+  private band(piece: PieceId, cross: boolean): void {
+    const c = this.ctx!, entry = BAND[piece], scene = this.scene;
+    this.layered = null;
+    if (!entry || entry.kind === 'once') { this.pending = Promise.resolve(); return; }
+    const key = `band:${piece}`, group = this.group(this.musicIn!, 1, cross), now = Date.now(), loopSecs = entry.frames / BAND_RATE;
+    // the same piece as the last page's, not long ago: its loop where it stood, no intro again
+    const again = this.resume?.key === key && now >= this.resume.at && now - this.resume.at <= RESUME_MS, from = resumeAt(this.resume, key, loopSecs, now), intro = again ? undefined : entry.intro;
+    this.pending = (async () => {
+      const got = await Promise.all([...entry.files.map((f) => this.loader.decoded(f)), intro ? this.loader.decoded(intro.file) : Promise.resolve(null)]);
+      // the scene changed while loading, or the bout is already over (a K.O. before the files came)
+      if (this.scene !== scene || !this.ctx || this.mood.over) return;
+      const stems = got.slice(0, entry.files.length);
+      if (stems.some((s) => !s)) { console.warn(`sound: the piece « ${piece} » could not be loaded`); return; }
+      const spans = stems.map((s) => ({ offset: alignLoop(s!.buf, entry.frames, BAND_RATE, s!.format).offset, frames: entry.frames, rate: BAND_RATE }));
+      this.known[stems[0]!.format] ??= spans[0].offset;
+      const t0 = c.currentTime + 0.1, ib = intro ? got[entry.files.length] : null;
+      let at = t0;
+      if (intro && ib) {
+        const s = c.createBufferSource(); s.buffer = ib.buf; s.connect(group); s.start(t0, startOf(ib.buf, intro.frames, BAND_RATE, ib.format, this.known[ib.format]) / ib.buf.sampleRate);
+        this.scene.stops.push(() => { try { s.stop(); } catch { /* already over */ } });
+        at = t0 + intro.loopAt / BAND_RATE;
       }
-      const next = t0 + period;
-      timer = window.setTimeout(() => turn(Math.max(next, c.currentTime + 0.1)), Math.max(0, next - 0.5 - c.currentTime) * 1000);
-    };
-    turn(playing.t0);
-    this.scene.stops.push(() => { alive = false; clearTimeout(timer); melody.disconnect(); under.disconnect(); });
+      const layers = (entry.layers?.length ?? 0) > 1, set = new LayerSet(c, stems.map((s) => s!.buf), entry.bar ?? loopSecs, group, layers ? layerLevels(this.mood) : [1], ib ? 0 : from, { at, spans });
+      this.layered = { key, set, layers };
+      this.scene.stops.push(() => set.stop(0.05));
+    })();
   }
 }
 

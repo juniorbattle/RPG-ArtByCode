@@ -7,6 +7,7 @@ import { isV2, v2KitOf } from '../simulation/v2';
 import { v2Mods } from '../simulation/v2gear';
 import { dynamicRules } from '../tournament/pool';
 import { stageName } from '../tournament/v2calendar';
+import { boutPiece } from '../audio/plan';
 import { RIVALS } from '../narrative/roster';
 import { ACTION_NAMES_EN } from '../narrative/texts';
 import { tx } from '../narrative/text';
@@ -53,7 +54,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     canvas: b.canvas, params: q,
     onProgress: progressOn(b.label, b.bar),
     match: v2d
-      ? { data: v2d.data, tiers: v2d.tiers, rules: 'v2', foe: opp.id, assist: view.assist, texts, onOver: (r) => void finish(r) }
+      ? { data: v2d.data, tiers: v2d.tiers, rules: 'v2', foe: opp.id, assist: view.assist, texts, piece: boutPiece(challenge ? null : m?.stage), onOver: (r) => void finish(r) }
       : dyn
       ? { data: dynSheetData(sheet, ACTION_NAMES_EN), rules: 'dynamic', foe: opp.id, assist: view.assist, texts, onOver: (r) => void finish(r) }
       : { data: sheetData(sheet, ACTION_NAMES_EN), foe: opp.id, assist: sheet.assist, texts, onOver: (r) => void finish(r) },

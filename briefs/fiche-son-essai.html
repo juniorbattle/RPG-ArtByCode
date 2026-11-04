@@ -1,0 +1,400 @@
+<title>Essai du son en jeu</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+code { font-family: var(--font-mono); font-size: .86em; background: color-mix(in srgb, var(--line) 45%, transparent); border-radius: 3px; padding: 0 3px; overflow-wrap: anywhere; }
+.block { display: flex; flex-direction: column; gap: 14px; }
+.block h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.block > p { margin: 0; max-width: 68ch; }
+.block h3 { margin: 6px 0 0; font-size: 17px; }
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 22px; margin: 0; padding: 0; list-style: none; }
+.verdict li { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.verdict b { font-size: 16px; }
+.verdict span { color: var(--muted); font-size: 15px; }
+.scale { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.scale h3 { margin: 0; font-size: 16px; }
+.scale .sub { margin: 0 0 6px; font-size: 14px; color: var(--muted); }
+.srow { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; align-items: center; font-size: 14px; }
+.strack { position: relative; height: 18px; }
+.strack .band { position: absolute; top: 0; bottom: 0; background: var(--rec-soft); }
+.strack .bar { position: absolute; top: 5px; height: 8px; left: 0; background: var(--brass); border-radius: 0 4px 4px 0; }
+.strack .target .bar, .srow.target .bar { background: var(--rec); }
+.sval { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: 13px; }
+.axis { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; font-size: 12px; color: var(--muted); }
+.axis div { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: none; }
+th { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.st { font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.st.ok { color: var(--rec); } .st.part { color: var(--astre); } .st.no { color: var(--cendre); }
+.wide { min-width: 720px; }
+.clips { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.clip { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.clip figcaption { font-size: 14px; font-weight: 600; }
+.clip audio { width: 100%; height: 40px; }
+.clip img.spec { width: 100%; height: auto; aspect-ratio: 820 / 240; border-radius: 4px; display: block; }
+.note { font-size: 14px; color: var(--muted); }
+.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px 24px; }
+.limits > div { min-width: 0; }
+.limits h3 { margin: 0 0 4px; }
+.limits ul { margin: 0; padding-left: 18px; font-size: 15px; display: flex; flex-direction: column; gap: 3px; }
+
+
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · fiche d’essai du son · 3 novembre 2026</span>
+    <h1>Le groupe dans le jeu</h1>
+    <p class="lede">Tu as décidé « Cuire et brancher dans la version 2 ». C’est fait : les quatorze morceaux et jingles jouent dans une partie de la version 2, là où le plan les place, les combats sur leurs trois couches. Joue une partie, écoute, et réponds aux cartes. Rien ne change dans le jeu par défaut.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="block" aria-labelledby="h-diag">
+    <h2 id="h-diag">Comment jouer</h2>
+    <p>Sur ton poste : <code>npm run dev</code>, puis ouvre <code>http://127.0.0.1:5173/?play=1&amp;new=1&amp;v2=1</code>, une partie neuve de la version 2. Le son démarre à ton premier clic ou ta première touche (la règle des navigateurs). <b>N</b> coupe le son, <b>V</b> ouvre ses réglages (le volume, la part de la musique).</p>
+    <div class="tw"><table class="wide">
+      <thead><tr><th>Pour entendre</th><th>Adresse (serveur DEV, après <code>http://127.0.0.1:5173/?</code>)</th></tr></thead>
+      <tbody>
+        <tr><td><b>Le titre, puis la ville le matin</b></td><td><code>play=1&amp;new=1&amp;v2=1</code></td></tr>
+        <tr><td><b>Le parvis, la nuit, et le passage aux lices</b></td><td><code>play=1&amp;state=v2-forecourt-night</code> puis la sortie vers l’entraînement</td></tr>
+        <tr><td><b>Les lices le jour</b></td><td><code>play=1&amp;state=v2-training-morning</code></td></tr>
+        <tr><td><b>La valse de la halle</b></td><td><code>play=1&amp;state=v2-square-afternoon</code></td></tr>
+        <tr><td><b>Midi en ville, puis le premier combat</b></td><td><code>play=1&amp;state=v2-day2-afternoon</code>, puis l’arène</td></tr>
+        <tr><td><b>Le duel, le rival, la finale seuls</b></td><td><code>scene=arena&amp;v2=1</code>, <code>scene=arena&amp;v2=1&amp;music=rival</code>, <code>scene=arena&amp;v2=1&amp;music=finale</code></td></tr>
+        <tr><td><b>La fanfare</b></td><td>le premier passage au parvis d’une partie neuve (l’annonce du greffier), avec <code>&amp;cutscene=1</code> si besoin</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Ce qui est dans le jeu</h3>
+    <ul class="verdict">
+      <li><b>14 morceaux, 48 fichiers</b><span>Chaque morceau en Opus (WebM) et en AAC (M4A), sous un manifeste qui cite ta décision. 11,07 Mo en Opus, 9,83 Mo en AAC : un joueur ne charge qu’un format, sous les 12 Mo de SA-17, et seulement les morceaux de la page où il est.</span></li>
+      <li><b>Boucles à l’échantillon</b><span>Chrome et Firefox décodent chaque fichier à l’échantillon exact. Chrome perdait 24 échantillons au début de chaque fichier Opus ; corrigé à la cuisson.</span></li>
+      <li><b>Les introductions</b><span>Le duel, le rival, la finale et le titre jouent leur introduction une fois, puis leur boucle entre à l’échantillon près, mesuré sur la sortie du moteur.</span></li>
+      <li><b>Les trois couches</b><span>Le riff toujours ; la mélodie s’efface pendant la séquence adverse ; la tension entre sur cette séquence, sur la charge dès le coup puissant, sur un étourdissement, et reste pour la fin du combat. Les changements tombent sur la mesure suivante.</span></li>
+      <li><b>Le niveau</b><span>La musique 4 à 5 dB au-dessus de l’ambiance, chaque lieu à −18,5 à −18,9 LUFS, les combats à −17,2 et −17,4 avec les coups.</span></li>
+    </ul>
+    <div class="limits">
+      <div><h3>Ce que j’ai mesuré</h3><ul><li>Les fichiers reproductibles à l’octet, chaque manifeste contrôlé</li><li>L’introduction et la boucle placées à l’échantillon, une jointure sans marche</li><li>Les couches qui suivent un duel réel, le jingle au K.O., la musique 9 dB plus bas sous la fanfare</li><li>La reprise d’un morceau d’une page à l’autre, la nuit, et un morceau neuf repris à son début, le jour</li></ul></div>
+      <div><h3>Ce que seule ton oreille tranche</h3><ul><li>Si tout cela sonne bien en jouant, sur 5 à 10 minutes de combat</li><li>Si les couches bougent trop souvent ou pas assez</li><li>Le moment du jingle et la place de la fanfare</li><li>Safari, que je ne peux pas essayer</li></ul></div>
+    </div>
+    <p class="note">Les règles des couches, le délai du jingle et la baisse sous la fanfare sont des propositions, réglables sans toucher à la musique. Les extraits ci-dessous sont des rendus du vrai moteur, hors jeu.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix et les résultats de la page Safari, je les consigne au journal, puis je fais ce que tu as décidé.</p>
+    <p class="src">Sources : <code>JOURNAL.md</code> Passes SN7 à SN10, <code>src/audio/</code> (<code>plan.ts</code>, <code>Sound.ts</code>, <code>align.ts</code>, <code>catalogue.json</code>), <code>art-lab/audio/manifests/</code>, <code>tools/audio/band/bake.mjs</code>, <code>tools/audio/engine-proof.mjs</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+  { id: "jeu", title: "En jouant", sub: "Ce que tu entends dans la partie. Je n’entends toujours rien : tout est mesuré, rien n’a été écouté.", fam: "var(--astre)", items: [
+    { id: "E-LIEUX", tag: "le plan", title: "Chaque lieu son morceau",
+      ctx: "La ville suit l’heure : le matin, midi, la fin de journée, la nuit. Le parvis et les lices ont leur morceau le jour et celui de la nuit le soir. La halle a sa valse à toute heure. Un même morceau reprend où il en était d’une page à l’autre ; un autre repart à son début, en fondu.",
+      rec: "Aucune sur le goût : c’est ton plan C-LIEUX, joué tel quel.",
+      opts: ["Bien placé", "À reprendre (en note)"], recIdx: -1, src: "`src/audio/plan.ts` (`pieceFor`), journal Passe SN10" },
+    { id: "E-NIVEAU", tag: "le mélange", title: "Le niveau de la musique",
+      ctx: "La musique est réglée 4 à 5 dB au-dessus de l’ambiance, dans ta cible de 3 à 6 dB, et chaque page à −18 LUFS environ. Le réglage V garde la part de la musique pour chaque joueur.",
+      rec: "Aucune sur le goût. Juge-le au volume où tu joues d’habitude.",
+      opts: ["Bien dosée", "Trop forte", "Trop discrète"], recIdx: -1, src: "`src/audio/score.ts` (`MIX.music` −1,6 dB), `tools/audio/analyse.mjs --check`" },
+    { id: "E-COUCHES", tag: "combat", title: "Les couches du duel",
+      ctx: "Le riff ne s’arrête jamais. La mélodie s’efface quand l’adversaire enchaîne sa séquence, et la tension entre : cuivres, cordes, timbales. La tension revient quand ta charge atteint le coup puissant, quand quelqu’un est étourdi, et ne repart plus sous 30 % de vie. Chaque changement attend la mesure suivante.",
+      clips: [["audio/duel-couches.mp3", "Un vrai duel du bot, la nuit : l’introduction, puis les couches qui suivent le combat, 0:50"]],
+      rec: "Aucune sur le goût. Dis surtout si ça bouge trop, ou pas assez, sur un combat entier.",
+      opts: ["Garder ces règles", "À reprendre (en note)"], recIdx: -1, src: "`src/audio/plan.ts` (`moodStep`, `layerLevels`), C-COUCHES, SA-5" },
+    { id: "E-INTRO", tag: "combat", title: "L’introduction des combats",
+      ctx: "L’introduction joue dès l’arrivée dans l’arène, pendant la fiche de match ; la boucle entre ensuite sur sa mesure, même si tu n’as pas encore lancé le combat.",
+      rec: "Garder : la musique installe la scène pendant que tu lis la fiche.",
+      opts: ["Bien comme ça", "La lancer au signal « Fight » (en note)"], recIdx: 0, src: "`src/audio/Sound.ts` (`band`), `src/arena/ArenaApp.ts`" },
+    { id: "E-KO", tag: "combat", title: "La fin d’un combat",
+      ctx: "Au K.O., la musique s’arrête en 0,4 s, puis la victoire ou la défaite arrive 1,2 s plus tard, après le ralenti.",
+      clips: [["audio/fin-combat.mp3", "Le K.O. de l’adversaire : la musique coupée, puis la victoire, 0:08"]],
+      rec: "Aucune sur le goût.",
+      opts: ["Bon moment", "Plus tôt", "Plus tard"], recIdx: -1, src: "`src/audio/score.ts` (`JINGLE_AFTER`), `src/audio/plan.ts` (`jingleFor`)" },
+    { id: "E-FANFARE", tag: "annonces", title: "La fanfare des annonces",
+      ctx: "Elle ouvre les trois annonces du greffier au parvis : l’arrivée, la fin de la poule, le matin de la finale. La musique du lieu baisse de 9 dB pendant qu’elle sonne.",
+      clips: [["audio/fanfare.mp3", "Le matin en ville, puis la fanfare par-dessus, 0:11"]],
+      rec: "Aucune sur le goût.",
+      opts: ["Bien placée", "Trop forte", "Trop discrète", "Ailleurs aussi (en note)"], recIdx: -1, src: "`src/audio/plan.ts` (`ANNOUNCED`), `src/ui/playPlaza.ts`, SA-7" },
+    { id: "E-TITRE", tag: "ouverture", title: "Le titre à l’ouverture",
+      ctx: "La première page d’une partie neuve joue le titre, son introduction puis sa boucle. La page suivante prend le morceau de son lieu. L’écran-titre reste muet (SA-16).",
+      rec: "Aucune sur le goût.",
+      opts: ["Bien placé", "À reprendre (en note)"], recIdx: -1, src: "`src/ui/playTown.ts` (`opening`), C-LIEUX" },
+  ]},
+  { id: "suite", title: "Ce qui en découle", sub: "Trois décisions.", fam: "var(--rec)", items: [
+    { id: "E-SAFARI", tag: "appareil", title: "L’essai sur un appareil Apple",
+      ctx: "Une page à ouvrir dans Safari, sur un iPhone, un iPad ou un Mac : `https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS`. Elle mesure ce que Safari décode et te fait écouter les jointures ; ses résultats s’enregistrent. Un point à surveiller : en AAC, le codeur abîme légèrement les deux bords d’une boucle, la jointure a une petite marche, autour de −30 dB sous un son pur. Le ton pur de la page la fera entendre s’il y a quelque chose à entendre.",
+      rec: "Faire l’essai : c’est le seul moyen de savoir si Safari tient les boucles.",
+      opts: ["Fait, résultats enregistrés sur la page", "Pas d’appareil sous la main pour l’instant"], recIdx: 0, src: "C-SAFARI, `tools/audio/safari-page.mjs`, journal Passe SN10" },
+    { id: "E-PROD", tag: "provenance", title: "Les fichiers en production dans la version 2",
+      ctx: "Chaque manifeste cite ta décision R-SUITE « Cuire et brancher dans la version 2 », avec tes choix d’écoute sur le morceau. C’est ce qui laisse les fichiers entrer dans le jeu, et seulement dans la version 2. Je te le fais confirmer après l’écoute en jeu.",
+      rec: "Confirmer : c’est le sens de R-SUITE, et la version 2 reste derrière son drapeau.",
+      opts: ["Confirmé : en production dans la version 2", "Les repasser en labo (en note)"], recIdx: 0, src: "`art-lab/audio/manifests/`, `tools/audio/validate.mjs`, SA-8" },
+    { id: "E-SUITE", tag: "suite", title: "Ce qui vient après",
+      ctx: "Le plan d’audit continue : S2, la météo, les ambiances des lieux et les sons définitifs de l’interface ; S3, les compétences et la foule du duel. Les deux reprennent les instruments et les tonalités du groupe.",
+      rec: "Lancer S2 puis S3, si l’essai en jeu te convient.",
+      opts: ["Lancer S2 puis S3", "Reprendre ce lot d’abord (en note)", "Attendre"], recIdx: 0, src: "`briefs/fiche-son.html` (lots S2 et S3), SA-18" },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function richKids(s) { return s.split('`').map((p, i) => (i % 2 ? el('code', {}, p) : p)); }
+function rich(tag, cls, s) { return el(tag, { class: cls }, ...richKids(s)); }
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(rich('p', 'ctx', it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.clips) {
+    const grid = el('div', { class: 'clips' });
+    for (const [src, cap] of it.clips) {
+      const a = el('audio', { controls: '', preload: 'metadata', src, 'aria-label': cap });
+      const msg = el('p', { class: 'src', hidden: '' }, 'Ce lecteur n’a pas pu charger le son : préviens-moi dans la conversation.');
+      a.addEventListener('error', () => { msg.hidden = false; });
+      grid.append(el('figure', { class: 'clip' }, el('figcaption', {}, cap), a, msg));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), ...richKids(it.rec)));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', ...richKids(it.src)));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

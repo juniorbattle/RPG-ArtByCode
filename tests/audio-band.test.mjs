@@ -120,7 +120,10 @@ test('the catalogue: twelve pieces, twelve minutes (SA-6), the jingles short', (
 test('a loop: what rings past its end lands on its start, the file stops on its last sample', () => {
   const s = new Session({ id: 'l', seed: 2, bpm: 120, bars: 3, tail: 1, loop: { from: 1, to: 2 } }), st = new Float32Array(s.total), a = s.loopStart, b = s.loopEnd; st[b + 10] = 1; st[a - 5] = 0.5; st[a + 7] = 0.25;
   const out = s.wrap(new Map([['main', [st, Float32Array.from(st)]]])).get('main'), len = b - a; assert.equal(out[0].length, len, 'the file is the loop'); assert.equal(out[0][10], 1); assert.equal(out[0][7], 0.25); assert.equal(out[0][len - 5], 0.5, 'a hit a hair early lands on the end');
-  assert.ok(s.beforeLoop(s.t(0, 8)), 'the intro is not played'); assert.ok(!s.beforeLoop(s.t(1, 0) - 0.01), 'a hit a hair early is');
+  assert.ok(s.skipped(s.t(0, 8)), 'the intro is not played'); assert.ok(!s.skipped(s.t(1, 0) - 0.01), 'a hit a hair early is');
+  // the intro alone (the bake, journal Passe SN10): the other half, the hit a hair early left to the loop
+  const i = new Session({ id: 'l', seed: 2, bpm: 120, bars: 3, tail: 1, loop: { from: 1, to: 2 }, intro: true }); assert.ok(!i.skipped(s.t(0, 8))); assert.ok(i.skipped(s.t(1, 0) - 0.01)); assert.ok(i.skipped(s.t(1, 4)));
+  assert.equal(new Session({ id: 'l', bpm: 120, bars: 3, intro: true }).intro, false, 'no intro without a loop');
   const tr = s.track('t', {}); tr.sound(() => new Float32Array(100).fill(1), s.t(0, 2)); assert.equal(tr.L.reduce((n, v) => n + (v ? 1 : 0), 0), 0);
 });
 test('a master in a circle: the level still set, the first sample following the last', () => {
