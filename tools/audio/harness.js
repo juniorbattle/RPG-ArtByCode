@@ -27,7 +27,8 @@
   }
   window.renderJob = async (job) => {
     vt.now = 0; vt.q = []; SECS = job.secs; seed = (job.rseed ?? 1842) >>> 0;
-    try { if (job.keep) sessionStorage.setItem(job.keep[0], job.keep[1]); else sessionStorage.clear(); localStorage.clear(); } catch { /* the page has an origin: it does not throw */ }
+    // `carry`: the tab's record as the previous job left it (a page change, lot S5: tools/audio/mix-jobs.mjs)
+    try { if (job.keep) sessionStorage.setItem(job.keep[0], job.keep[1]); else if (!job.carry) sessionStorage.clear(); localStorage.clear(); } catch { /* the page has an origin: it does not throw */ }
     const s = new AUD.Sound();
     Object.assign(s.settings, job.settings || {});
     // the scene's weather since lot S2 (an engine before it takes no sixth argument and ignores it)
