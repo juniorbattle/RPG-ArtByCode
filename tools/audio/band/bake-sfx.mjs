@@ -16,6 +16,8 @@ import { CROWD, renderCrowd } from '../../../art-lab/audio/sfx/crowd.sfx.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..', '..'), BAKED = 'src/audio/baked', MANIFESTS = 'art-lab/audio/manifests', CATALOGUE = 'src/audio/catalogue.json', DATE = '2026-11-04';
 /** the operator's sheet, word for word (journal Passe SN16): the whole, the dips, the bake */
+/** the operator's confirmation after the trial in play (journal Passe SN17, the sheet briefs/fiche-son-essai-duel.html) */
+const CONFIRMED = ['S3E-JEU « Bien dans le jeu »', 'S3E-PROD « Confirmé : en production dans la version 2 »'].map((d) => `${d} (journal Passe SN17, ${DATE})`);
 const SHEET = ['S3-DUEL « Mieux : continuer dans cette voie »', 'S3-BAISSE « Garder les baisses »', 'S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé »'].map((d) => `${d} (journal Passe SN16, ${DATE})`);
 /** the families: their sounds, their card on the sheet, their bitrates (the cues at 64 kb/s in Opus and 80 in AAC, the murmur at 96: SA-17, journal Passe SN15) */
 const FAMILIES = [
@@ -62,8 +64,8 @@ for (const fam of FAMILIES) {
   }
   const manifest = {
     id: fam.id, kind: fam.kind, runtimeUse: 'production', licence: 'own', generatedByAi: false, score: fam.crowd ? 'art-lab/audio/sfx/crowd.sfx.mjs' : 'art-lab/audio/sfx/duel.sfx.mjs', approved: true,
-    approval: `The operator, on the duel's sounds sheet (briefs/fiche-son-duel.html, journal Passe SN16, ${DATE}): S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé », on the sounds kept by ear: ${fam.ear}; S3-DUEL « Mieux : continuer dans cette voie »; S3-BAISSE « Garder les baisses ». To be confirmed after the trial in play. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.`,
-    decisions: [`${fam.ear} (journal Passe SN16, ${DATE})`, ...SHEET],
+    approval: `The operator, on the duel's sounds sheet (briefs/fiche-son-duel.html, journal Passe SN16, ${DATE}): S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé », on the sounds kept by ear: ${fam.ear}; S3-DUEL « Mieux : continuer dans cette voie »; S3-BAISSE « Garder les baisses ». Confirmed after the trial in play: ${CONFIRMED.join('; ')}. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.`,
+    decisions: [`${fam.ear} (journal Passe SN16, ${DATE})`, ...SHEET, ...CONFIRMED],
     files,
     bake: { tool: 'tools/audio/band/bake-sfx.mjs', ffmpeg: version, encoders: { webm: ENC.webm('<kbps>').join(' '), m4a: [...ENC.m4a('<kbps>'), ...EXTRA.m4a].join(' '), input: 'f32le 48000 Hz stereo, -map_metadata -1 -fflags +bitexact -flags:a +bitexact', opusDelay: `${OPUS_LEAD} samples ahead (silence before a sound, the murmur's last ones before it), 336 written as the delay` } },
   };

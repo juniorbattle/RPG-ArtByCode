@@ -6,12 +6,14 @@
  "generatedByAi": false,
  "score": "art-lab/audio/sfx/duel.sfx.mjs",
  "approved": true,
- "approval": "The operator, on the duel's sounds sheet (briefs/fiche-son-duel.html, journal Passe SN16, 2026-11-04): S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé », on the sounds kept by ear: S3-REN « Bonne direction »; S3-DUEL « Mieux : continuer dans cette voie »; S3-BAISSE « Garder les baisses ». To be confirmed after the trial in play. Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
+ "approval": "The operator, on the duel's sounds sheet (briefs/fiche-son-duel.html, journal Passe SN16, 2026-11-04): S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé », on the sounds kept by ear: S3-REN « Bonne direction »; S3-DUEL « Mieux : continuer dans cette voie »; S3-BAISSE « Garder les baisses ». Confirmed after the trial in play: S3E-JEU « Bien dans le jeu » (journal Passe SN17, 2026-11-04); S3E-PROD « Confirmé : en production dans la version 2 » (journal Passe SN17, 2026-11-04). Version 2 only (SA-16 « Derrière flags.v2 seulement »): the default game, the title screen and Explore stay silent.",
  "decisions": [
   "S3-REN « Bonne direction » (journal Passe SN16, 2026-11-04)",
   "S3-DUEL « Mieux : continuer dans cette voie » (journal Passe SN16, 2026-11-04)",
   "S3-BAISSE « Garder les baisses » (journal Passe SN16, 2026-11-04)",
-  "S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé » (journal Passe SN16, 2026-11-04)"
+  "S3-SUITE « Cuire et brancher dans la version 2 ce qui est validé » (journal Passe SN16, 2026-11-04)",
+  "S3E-JEU « Bien dans le jeu » (journal Passe SN17, 2026-11-04)",
+  "S3E-PROD « Confirmé : en production dans la version 2 » (journal Passe SN17, 2026-11-04)"
  ],
  "files": [
   {

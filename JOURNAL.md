@@ -405,6 +405,31 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un codeur peut laisser au décodeur une part de hasard : avec la substitution de bruit, deux navigateurs jouent deux cymbales. Une preuve de décodage contre un témoin extérieur le voit, une preuve qui compare le moteur à lui-même non.
 - Varier un son pour qu'il ne se répète pas, c'est aussi le désaccorder : la variation de hauteur va aux sons sans note.
 
+## Passe SN17 — La fiche d'essai des sons du duel relue : en production dans la version 2, S2 ensuite (2026-11-04)
+
+### Demande
+- L'opérateur, mot pour mot : « Fiche remplie ».
+
+### La fiche
+- Page privée https://claude.ai/artifact/Pid9tqciTfEQ4zviWkJnhc, source `briefs/fiche-son-essai-duel.html`. Relue par `list` : 3 documents sur 3, aucune note.
+
+| # | Décision | Choix de l'opérateur |
+|---|---|---|
+| S3E-JEU | Les sons du duel en jouant | « Bien dans le jeu » |
+| S3E-PROD | Les sons en production dans la version 2 | « Confirmé : en production dans la version 2 » |
+| S3E-SUITE | Ce qui vient après | « Lancer S2 » |
+
+### Ce que ces choix veulent dire
+- **Le lot S3 est clos** : la musique des combats et sa règle F (Passes SN13, SN14), les sons du duel et la foule (Passes SN15, SN16), entendus en jouant et confirmés en production dans la version 2.
+- **S2 vient maintenant**, dans sa propre séance, déjà ouverte pour lui (« Lot S2 du son, après S3 : météo, lieux, interface ») : la décision lui est transmise mot pour mot.
+
+### Fait — [OK]
+- `bake-sfx.mjs` écrit la confirmation (`CONFIRMED`, comme `bake.mjs` pour la musique). Les huit manifestes des sons ne changent que par elle, dans `approval` et `decisions` ; les 128 fichiers audio et la table du catalogue restent identiques à l'octet.
+- `npm test`, `npm run typecheck`, `npm run art:validate` (22 manifestes de son, 0 erreur).
+
+### Où reprendre
+- S2, dans sa séance. Toujours à l'opérateur : l'essai Safari sur un appareil Apple (SC-SAFARI).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -610,7 +635,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN12)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12). **S3 en cours** : la fiche des couches est relue (Passe SN14). Les morceaux tiennent, la règle F est appliquée aux trois combats (la mélodie à 0,45 pendant la séquence adverse, la tension à 0,35 au repos, chaque changement sur une mesure), et la double demande est corrigée. La fiche des sons du duel est relue, onze sur onze (Passe SN16). Les sons du groupe et la foule en code sont cuits et branchés dans la version 2, et les baisses sont gardées. **À l'opérateur** : la fiche d'essai en jeu (https://claude.ai/artifact/Pid9tqciTfEQ4zviWkJnhc, `briefs/fiche-son-essai-duel.html`), avec la confirmation de production (S3E-PROD) et S2 ensuite (S3E-SUITE). **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 après l'essai du lot S4.
+**6f. Son (Passes SN1 à SN12)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12). **S3 en cours** : la fiche des couches est relue (Passe SN14). Les morceaux tiennent, la règle F est appliquée aux trois combats (la mélodie à 0,45 pendant la séquence adverse, la tension à 0,35 au repos, chaque changement sur une mesure), et la double demande est corrigée. **S3 est clos** (Passes SN13 à SN17) : la règle F des couches ; les sons du groupe pour chaque recette du duel et sa lecture ; la foule en code à la place du grondement ; les baisses gardées ; tout est en production dans la version 2 (S3E-PROD « Confirmé : en production dans la version 2 »). **S2 maintenant** (S3E-SUITE « Lancer S2 »), dans sa propre séance. **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 après l'essai du lot S4.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 
