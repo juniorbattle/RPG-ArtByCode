@@ -380,6 +380,38 @@ Cuisson finale (chaque morceau depuis sa seule partition), −18 LUFS par morcea
 - Un relevé d'essai se lit avec son navigateur : la page Safari a enregistré un essai fait ailleurs, et la carte disait « Fait ». Une page d'essai d'appareil dit elle-même si elle tourne sur l'appareil visé.
 - Un extrait d'écoute qui mêle tout fait juger le tout : la carte des couches portait un duel complet, et la note vise des bruits que la carte ne présentait pas. Un extrait montre ce que la carte demande de juger, et le reste à part.
 
+## Passe SN12 — La fiche du son des combats relue : la musique et ses couches à reprendre, S3 avant S2 (2026-11-04)
+
+### Demande
+- L'opérateur, dans la séance mère, transmis mot pour mot : « remplie ». La séance mère demande de relire la fiche, de consigner, de n'agir que sur ce qui est décidé, de relire la page Safari si un vrai relevé sur un appareil Apple y est arrivé, et de ne pas commencer S3 ni S2 dans cette séance : les proposer.
+
+### La fiche
+- Page privée https://claude.ai/artifact/J3qDxeYWg7zXsqrSBfEyw6, source `briefs/fiche-son-combats.html`. Relue par `list` : 3 documents sur 3, aucune note.
+
+| # | Décision | Choix de l'opérateur |
+|---|---|---|
+| SC-QUOI | Ce qui ne convainc pas | « Surtout la musique et ses couches » |
+| SC-OU | Où reprendre le son des combats | « Avancer S3 avant S2 » |
+| SC-SAFARI | Refaire l'essai sur un appareil Apple | « Je le refais sur un appareil Apple » |
+
+### La page Safari
+- https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS, collection `results` relue : toujours un seul document, celui du 2026-11-04 à 01:38:24 (UTC), fait dans l'application Claude sous Windows (Passe SN11). Aucun relevé d'un appareil Apple : rien de neuf à consigner.
+
+### Ce que ces choix veulent dire
+- **SC-QUOI** : après avoir entendu le même duel en entier, la musique seule et les bruitages seuls, l'opérateur désigne la musique et ses couches. La note de E-COUCHES (Passe SN11) portait sur les bruitages ; la reprise porte d'abord sur la musique des combats telle qu'elle joue en duel : l'introduction, puis les trois couches qui suivent le combat (`src/audio/plan.ts`, `layerLevels` ; `duel`, `rival`, `finale`). Ce qui n'y convainc pas n'est pas dit : la règle des couches (la mélodie qui s'efface pendant la séquence adverse, la tension qui entre et sort sur la mesure), leurs niveaux, ou les morceaux eux-mêmes. Les partitions de `duel`, `rival` et `finale` restent celles que l'opérateur a gardées à l'oreille (« Revenir à l’ancienne version », Passe SN9) tant qu'il ne demande pas de les changer.
+- **SC-OU** : l'ordre décidé en Passe SN11 (E-SUITE « Lancer S2 puis S3 ») devient S3 puis S2. S3 reprend le son du duel : la musique et ses couches d'abord (SC-QUOI), puis ce que le plan d'audit y range, un son par recette, la fenêtre d'esquive, la foule qui réagit, le K.O. et le ralenti. S2, la météo, les ambiances des lieux et les sons définitifs de l'interface, vient ensuite. Chacun est une tâche à part, proposée par cette séance, pas commencée.
+- **SC-SAFARI** : l'opérateur refera l'essai sur un appareil Apple. La jointure AAC reste non jugée et aucune liste d'édition n'est écrite ; la page avertit désormais hors d'un appareil Apple (Passe SN11).
+
+### Fait — [OK]
+- Aucun code ne change : rien de décidé ne demande de toucher au jeu dans cette séance. `AGENTS.md` dit l'ordre S3 puis S2 et ce que S3 reprend d'abord.
+- Les deux tâches proposées à l'opérateur depuis cette séance (S3, puis S2), avec leur brief.
+
+### Où reprendre
+- S3 dans sa séance : commencer par une écoute qui sépare ce qui ne convainc pas dans la musique des combats (des variantes rendues par le moteur sur un même duel : la règle des couches, leurs niveaux, toutes les couches tenues), avant de changer quoi que ce soit ; puis les sons du duel du plan d'audit. Ensuite S2. Relire `results` de la page Safari quand l'opérateur dit avoir fait l'essai sur un appareil Apple ; si la jointure AAC s'entend : la liste d'édition écrite par la cuisson.
+
+### Pensée
+- Séparer ce qu'on fait écouter change la réponse : sur le duel complet, la note visait les bruitages ; sur trois extraits séparés, l'opérateur désigne la musique. Une décision d'écoute se prend sur des extraits qui isolent chaque part.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -585,7 +617,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN11)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9). **Cuit et branché dans la version 2 (SN10)**, **l'essai en jeu relu (SN11)** : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés ; la production confirmée (E-PROD) ; le son des combats à reprendre (E-COUCHES, « bref pas convaincu ») ; E-SUITE « Lancer S2 puis S3 ». **À l'opérateur** : la fiche du son des combats `briefs/fiche-son-combats.html` (https://claude.ai/artifact/J3qDxeYWg7zXsqrSBfEyw6) : ce qui ne convainc pas (la musique ou les bruitages et le grondement), où reprendre (avancer S3 ou non), l'essai Safari à refaire sur un appareil Apple (le premier relevé venait de l'application Claude sous Windows). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. Ensuite S2 et S3, chacun dans sa séance ; SA-10 après l'essai du lot S4.
+**6f. Son (Passes SN1 à SN12)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12) ; S3 commence par une écoute qui sépare ce qui ne convainc pas dans la musique des combats, avant de toucher aux partitions gardées à l'oreille (SN9). **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 après l'essai du lot S4.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 
@@ -1019,4 +1051,4 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Un cache dont la clé arrondit rend un calcul dépendant de l'ordre : un contrôle de reproductibilité se fait aussi sur un sous-ensemble (Passe SN10).
 - Une approbation lue dans une décision de fiche se cite telle quelle, avec ce qu'elle couvre, et se fait confirmer à la fiche suivante (Passe SN10).
 - Une page d'essai d'appareil dit elle-même si elle tourne sur l'appareil visé, et un relevé se lit avec son navigateur : « Fait » sur une carte ne vaut pas un essai sur Safari (Passe SN11).
-- Un extrait d'écoute montre ce que la carte demande de juger, et le reste à part : un duel complet sous une carte « couches » a fait juger des bruitages que la carte ne présentait pas (Passe SN11).
+- Un extrait d'écoute montre ce que la carte demande de juger, et le reste à part : un duel complet sous une carte « couches » a fait juger des bruitages que la carte ne présentait pas (Passe SN11) ; sur trois extraits séparés, la même oreille a désigné la musique (Passe SN12).
