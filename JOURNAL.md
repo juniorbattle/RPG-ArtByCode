@@ -412,6 +412,63 @@ Cuisson finale (chaque morceau depuis sa seule partition), −18 LUFS par morcea
 ### Pensée
 - Séparer ce qu'on fait écouter change la réponse : sur le duel complet, la note visait les bruitages ; sur trois extraits séparés, l'opérateur désigne la musique. Une décision d'écoute se prend sur des extraits qui isolent chaque part.
 
+## Passe SN13 — Lot S3, fiche d'écoute 1 : la musique des combats et ses couches (2026-11-04)
+
+### Demande
+- Lot S3 confié par la séance mère, après SC-OU « Avancer S3 avant S2 » et SC-QUOI « Surtout la musique et ses couches » (Passe SN12). D'abord une écoute qui sépare ce qui ne va pas dans la musique des combats : des variantes rendues par le vrai moteur sur un même duel du bot, puis une fiche. Rien ne change avant ses réponses, et les partitions de `duel`, `rival` et `finale` ne se réécrivent pas sans la demande de l'opérateur (Passe SN9).
+
+### Mesuré — [OK]
+- **La règle d'aujourd'hui** (`layerLevels`) : le riff toujours ; la mélodie sort pendant la séquence adverse ; la tension entre sur elle, sur la charge dès le palier lourd, sur un étourdissement, et reste sous 30 % de vie. Un changement attend la barre suivante et dure 0,25 s.
+- Sur les trois duels du bot de `render.mjs` (Marek, Vessa, Orla ; 7 à 8,5 min) : l'adversaire lance environ 7 séquences par minute. Leur durée médiane est de 1,1 s contre Marek et Orla, 2,7 s contre Vessa, alors qu'une mesure du duel dure 1,38 s. Le bot charge jusqu'au palier lourd 8 à 9 fois par minute. Résultat : la mélodie change 13 à 15 fois par minute et la tension 15 à 19 fois. La mélodie est absente 17 à 30 % du temps, la tension présente 60 à 67 %. Dans les 90 s des extraits (Marek, de 1:00 à 2:30), il y a 20 changements de la mélodie et 39 de la tension.
+- [KO] **Défaut** : quand la cause d'un changement finit avant la barre où il devait se faire (une séquence plus courte qu'une mesure), `Sound.duelEvent` demande deux fois `LayerSet.level` pour la même barre. Le second `setValueAtTime` au même instant s'ajoute au premier, et les deux rampes finissent au même instant. La couche tombe alors à 0 sur la barre, reste muette 0,25 s et revient d'un coup. Prouvé sur le vrai `LayerSet` avec un ton d'essai (`probe-double`) : 0,0381 jusqu'à 1,300 s, 0 de 1,325 à 1,550 s, puis 0,0389 tout de suite. Compté dans le moteur réel, avec un espion sur `level` qui ne change rien au comportement : 10 fois dans les 90 s, et sur les duels entiers 49 (Marek), 27 (Vessa) et 38 (Orla). Pas corrigé : chaque option de la fiche le corrige, la correction partira avec la décision.
+
+### Fait — [OK]
+- **`tools/audio/layer-jobs.mjs`** et **`layer-jobs.page.js`** : les tâches de `render.mjs --scripts`. Les variantes vivent côté page, `Sound.ts` n'est pas touché. Une variante remplace seulement la façon dont les couches suivent le duel.
+  - A : aujourd'hui, le moteur tel quel.
+  - B : toutes les couches tenues.
+  - C : la mélodie ne part jamais.
+  - D : moins de changements (une cause doit durer une mesure entière, une couche qui a bougé reste quatre mesures).
+  - E : l'arc du combat. La tension entre à moitié au premier étourdissement ou quand un combattant passe sous les deux tiers de sa vie, et entière sous 30 %. Elle bouge au début d'une phrase de quatre mesures et ne revient jamais en arrière.
+  - F : en plus doux. La mélodie descend à 0,45, la tension reste à 0,35 au repos, et chaque changement dure une mesure.
+  - Dans les variantes, une seconde demande pour la même barre remplace la première au lieu de s'y ajouter : plus aucun saut.
+  - La fenêtre commence à 1:00 du duel, la boucle reprise là où le jeu en serait (l'enregistrement de reprise). On entend la musique seule, sans les baisses sous les coups, sauf pour la carte qui les concerne. Le rival est pris dans le duel d'Orla, la finale dans celui de Vessa.
+- **`tools/audio/layer-clips.mjs`** : les extraits en MP3 à −20,5 LUFS avec un fondu de sortie de 2 s (l'ebur128 de ffmpeg lit −21,0 sur chacun, fondu compris), et un graphique par extrait. Il montre les trois couches au fil du temps, avec dessous les séquences adverses, les charges lourdes et les étourdissements.
+- **La fiche** : page privée https://claude.ai/artifact/FEHPDrJ6SQ3zC6XmvPyAtr, source `briefs/fiche-son-couches.html`. Elle publie onze extraits (douze lecteurs) avec leurs graphiques, qui ne sont pas dans le dépôt. Quatre cartes :
+  - CQ-MORCEAU, le morceau tenu entier : sans recommandation, c'est le goût de l'opérateur ;
+  - CQ-REGLE, A à F : recommandé E ;
+  - CQ-BAISSE : recommandé « Juger avec les nouveaux bruitages (S3) » ;
+  - CQ-TROIS, le rival et la finale : recommandé « La même règle que le duel ».
+  
+  `decisions` relu vide à la publication. Vérifiée en local à 1 200 et 390 px avec le squelette du service reproduit : douze lecteurs chargés de 90 s, aucun débordement.
+
+| Extrait (90 s) | Changements mélodie / tension | Coupures nettes | Sonie avant mise à niveau |
+|---|---|---|---|
+| A · aujourd'hui | 20 / 39 | 10 | −20,5 LUFS (−20,8 avec les baisses) |
+| B · tout tenu | 0 / 1 (l'entrée) | 0 | −20,0 |
+| C · mélodie toujours | 0 / 39 | 0 | −20,4 |
+| D · moins souvent | 6 / 8 | 0 | −20,5 |
+| E · l'arc | 0 / 1 (l'étourdissement à 0:45) | 0 | −20,6 |
+| F · plus doux | 20 / 39, chacun sur une mesure | 0 | −20,5 |
+| Rival aujourd'hui / tenu | 20 / 36 ; 0 / 1 | 3 ; 0 | −20,4 ; −19,9 |
+| Finale aujourd'hui / tenue | 22 / 34 ; 0 / 1 | 10 ; 0 | −21,0 ; −20,0 |
+
+### Limites
+- **Personne n'a écouté.** Les variantes imitent une règle côté page ; celle qui sera choisie s'écrira dans `src/audio/plan.ts` et `Sound.ts`, puis se prouvera de nouveau.
+- Les rendus se reproduisent à −127 dB sous la crête, pas à l'échantillon près : deux rendus de la même tâche diffèrent dès 0,94 s, de 1,9e-7 au plus. Les changements de couches et les graphiques, eux, sont identiques. C'est un arrondi du rendu hors ligne de Chrome, non élucidé.
+- La musique est seule : en jeu, les coups couvrent les baisses et une part des changements. La fenêtre se place après l'introduction (gardée, E-INTRO). L'arc n'y change qu'une fois ; son pas sous 30 % de vie n'est dans aucun extrait. Le seuil des deux tiers est une proposition.
+
+### Où reprendre
+- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot, n'agir que sur ce qui est décidé. Ensuite :
+  - écrire la règle choisie dans `plan.ts` et `Sound.ts`, avec la correction de la double demande, et un test sur `LayerSet` : deux demandes pour une même barre, aucun saut, contrôle négatif sur le code d'aujourd'hui ;
+  - passer `engine-proof.mjs` et `analyse.mjs --check` ;
+  - préparer la seconde fiche d'écoute du lot S3, avec les instruments du groupe : un son par recette, la fenêtre d'esquive, la foule qui réagit, le K.O. et le ralenti.
+  
+  Si une partition change, recuire sous manifeste avec l'approbation de l'opérateur mot pour mot. S2 vient après, dans sa propre séance.
+
+### Pensée
+- Une règle de couches se mesure à la fréquence de ses changements, rapportée à la mesure du morceau. Une cause plus courte qu'une mesure fait bouger la musique après coup, quand la cause est déjà finie.
+- Deux automations Web Audio au même instant ne se remplacent pas, elles s'ajoutent. Un changement qui en remplace un autre en attente annule d'abord ce qui est programmé depuis cet instant (`cancelScheduledValues`).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -617,7 +674,7 @@ compétences), C4 le choix des compétences, C5 l'arme et les accessoires ; puis
 artistique verrouillée d'`AGENTS.md`) ; un état jour demandera sa propre direction artistique, décidée avec l'opérateur, avant tout code. RJ2 « L'état jour » (Passe D3) :
 c'est la suite, le district étant clos (Passe Z4) ; direction artistique décidée (Passe D4), deux pistes archivées comme références non canoniques.
 
-**6f. Son (Passes SN1 à SN12)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12) ; S3 commence par une écoute qui sépare ce qui ne convainc pas dans la musique des combats, avant de toucher aux partitions gardées à l'oreille (SN9). **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 après l'essai du lot S4.
+**6f. Son (Passes SN1 à SN12)** — S0 et S1 faits. **Identité confirmée : jazz fusion** (F-CAP), le motif de SA-2 gardé, synthèse seule. Le catalogue de SA-6 écrit, repris et relu (SN7 à SN9), **cuit et branché dans la version 2 (SN10)**, l'essai en jeu relu (SN11) : le plan, le niveau, les introductions, la fin d'un combat, la fanfare et le titre gardés, la production confirmée (E-PROD). **Le son des combats à reprendre (SN11, SN12)** : SC-QUOI « Surtout la musique et ses couches », SC-OU « Avancer S3 avant S2 ». **La suite : S3, puis S2**, chacun dans sa séance (proposés en Passe SN12). **S3 en cours (Passe SN13)** : la fiche d'écoute des couches est publiée (https://claude.ai/artifact/FEHPDrJ6SQ3zC6XmvPyAtr, `briefs/fiche-son-couches.html`) : le morceau seul, six règles, les baisses sous les coups, le rival et la finale. Une double demande sur une même barre coupe une couche net pendant 0,25 s ; la correction partira avec la règle choisie. Ensuite, la seconde fiche d'écoute de S3 : les sons du duel. **À l'opérateur** : l'essai Safari sur un appareil Apple (SC-SAFARI « Je le refais sur un appareil Apple », https://claude.ai/artifact/Vz8D8hGPA8VfiVELmjBtrS). Ouvert : la jointure AAC, non jugée ; remède possible, la liste d'édition écrite par la cuisson. SA-10 après l'essai du lot S4.
 
 **6e-bis. Interface moderne (Passes UM1 à UM8)** — A « Voile » remplace « Héraldique pixel » sur la fiche de 18 choix : lots 0 à 5 faits et fusionnés dans `main` après l'essai de l'opérateur (UM7-1, Passe UM8). L'équipement et les achats (UM7-3) : faits (Passe UM9), une seule page, héros, détail, comparaison ; l'opérateur les trouve meilleurs. Les autres écrans sont alignés sur eux (« Oui, aligne-les », Passe UM11) : compétences, fiche de match, tournoi, journal, une seule sortie, des listes jamais tranchées. L'opérateur a validé l'interface (« Oui, validée », Passe UM12). **Reste à son choix** : les icônes d'objets, qui demandent de l'art.
 

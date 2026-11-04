@@ -1,0 +1,369 @@
+<title>Les couches du duel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+code { font-family: var(--font-mono); font-size: .86em; background: color-mix(in srgb, var(--line) 45%, transparent); border-radius: 3px; padding: 0 3px; overflow-wrap: anywhere; }
+.block { display: flex; flex-direction: column; gap: 14px; }
+.block h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.block > p { margin: 0; max-width: 68ch; }
+.block h3 { margin: 6px 0 0; font-size: 17px; }
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 22px; margin: 0; padding: 0; list-style: none; }
+.verdict li { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.verdict b { font-size: 16px; }
+.verdict span { color: var(--muted); font-size: 15px; }
+.scale { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.scale h3 { margin: 0; font-size: 16px; }
+.scale .sub { margin: 0 0 6px; font-size: 14px; color: var(--muted); }
+.srow { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; align-items: center; font-size: 14px; }
+.strack { position: relative; height: 18px; }
+.strack .band { position: absolute; top: 0; bottom: 0; background: var(--rec-soft); }
+.strack .bar { position: absolute; top: 5px; height: 8px; left: 0; background: var(--brass); border-radius: 0 4px 4px 0; }
+.strack .target .bar, .srow.target .bar { background: var(--rec); }
+.sval { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: 13px; }
+.axis { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 58px; gap: 10px; font-size: 12px; color: var(--muted); }
+.axis div { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: none; }
+th { font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.st { font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.st.ok { color: var(--rec); } .st.part { color: var(--astre); } .st.no { color: var(--cendre); }
+.wide { min-width: 720px; }
+.clips { display: grid; grid-template-columns: 1fr; gap: 18px; }
+.clip { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.clip figcaption { font-size: 14px; font-weight: 600; }
+.clip audio { width: 100%; height: 40px; }
+.clip img.spec { width: 100%; height: auto; aspect-ratio: 820 / 272; border-radius: 4px; display: block; }
+.note { font-size: 14px; color: var(--muted); }
+.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px 24px; }
+.limits > div { min-width: 0; }
+.limits h3 { margin: 0 0 4px; }
+.limits ul { margin: 0; padding-left: 18px; font-size: 15px; display: flex; flex-direction: column; gap: 3px; }
+
+
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · lot S3 · fiche d’écoute 1 · 4 novembre 2026</span>
+    <h1>La musique des combats et ses couches</h1>
+    <p class="lede">Ta fiche précédente dit « Surtout la musique et ses couches ». Avant de toucher à quoi que ce soit, cette fiche sépare ce qui peut ne pas aller : le morceau lui-même, la façon dont ses couches suivent le duel, et les baisses de la musique sous les coups. Les partitions du duel, du rival et de la finale ne changent pas sans ta demande.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="block" aria-labelledby="h-diag">
+    <h2 id="h-diag">Ce que fait la musique d’un duel aujourd’hui</h2>
+    <p>Le morceau du combat est cuit en trois couches qui tournent ensemble : le <b>riff</b> (batterie, basse, guitares), la <b>mélodie</b> (orgue et lead) et la <b>tension</b> (cuivres, cordes, timbales). Après l’introduction, la règle les allume et les éteint selon le duel. Une couche ne bouge que sur la barre de mesure suivante, en un quart de seconde.</p>
+    <ul class="verdict">
+      <li><b>Le riff</b><span>Toujours là.</span></li>
+      <li><b>La mélodie</b><span>Elle part pendant chaque séquence de l’adversaire et revient après.</span></li>
+      <li><b>La tension</b><span>Elle entre sur la séquence de l’adversaire, sur ta charge dès le coup lourd, sur un étourdissement. Elle reste sous 30 % de vie.</span></li>
+    </ul>
+    <h3>Mesuré sur un duel du bot</h3>
+    <p>Duel contre Marek, 8 min 30 : une séquence de l’adversaire dure 1,1 s à la médiane, moins qu’une mesure (1,4 s). L’adversaire lance environ 7 séquences par minute, et le bot charge jusqu’au coup lourd 9 fois par minute. Dans les 90 s des extraits, la mélodie bouge 20 fois et la tension 39 fois : une couche change toutes les 1,5 s, presque à chaque mesure. Sur les trois duels mesurés, c’est 13 à 15 changements de la mélodie et 15 à 19 de la tension par minute.</p>
+    <h3>Un défaut trouvé</h3>
+    <p>Quand la séquence adverse finit avant la barre où la mélodie devait partir, le moteur demande deux changements pour la même barre. La couche est alors coupée net, reste muette un quart de seconde et revient d’un coup, sans fondu. Vérifié sur le vrai moteur avec un son d’essai : silence de 0,25 s entre deux sauts. Ça arrive 10 fois dans ces 90 s, et 49 fois sur tout le duel de Marek (mélodie et tension). Chaque variante ci-dessous le corrige, y compris A, la règle d’aujourd’hui.</p>
+    <h3>Comment les extraits sont faits</h3>
+    <p class="note">Les mêmes 90 secondes du même duel (Marek, de 1:00 à 2:30, avec un étourdissement à 0:45 de l’extrait), rendues par le vrai moteur du jeu. On entend la musique seule. La boucle reprend là où le jeu en serait à 1:00, sans les baisses sous les coups (une carte leur est consacrée), et tous les extraits sont au même niveau. Sous chaque lecteur, un graphique montre les trois couches au fil de l’extrait, puis les séquences de l’adversaire, tes charges lourdes et l’étourdissement.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix et je les consigne au journal. J’applique la règle choisie dans le moteur, avec la correction du défaut, puis je la prouve sur le moteur et dans le jeu. Vient ensuite la seconde fiche d’écoute du lot S3, les sons du duel avec les instruments du groupe : un son par recette, la fenêtre d’esquive, la foule qui réagit, le K.O. et le ralenti. S2 suit dans sa propre séance.</p>
+    <p class="src">Sources : <code>briefs/fiche-son-combats.html</code> (ta fiche précédente), <code>JOURNAL.md</code> Passes SN10 à SN12, <code>src/audio/plan.ts</code>, <code>src/audio/layers.ts</code>, <code>src/audio/Sound.ts</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+  { id: "duel", title: "Le duel", sub: "Le morceau des trois tours de poule et de la Porte.", fam: "var(--astre)", items: [
+    { id: "CQ-MORCEAU", tag: "à l’oreille", title: "Le morceau lui-même",
+      ctx: "Toutes les couches sont tenues, rien ne bouge : c’est le morceau tel que tu l’as gardé à l’oreille (« Revenir à l’ancienne version », Passe SN9), sans la règle des couches. S’il te convainc ainsi, ce qui gêne est la façon dont la musique suit le combat. Sinon, c’est la partition.",
+      clips: [["audio/duel-all.mp3", "B · Toutes les couches tenues : le morceau entier, 1:30", "audio/duel-all.svg"]],
+      rec: "Pas de recommandation, c’est une question de goût. Ta réponse dit où porter le travail : sur la règle des couches, ou sur la partition, que je ne réécris pas sans ta demande.",
+      opts: ["Le morceau tient : c’est la façon de suivre le combat", "Le morceau lui-même ne convainc pas (en note)", "Les deux (en note)"], recIdx: -1, src: "`art-lab/audio/scores/duel.score.mjs`, carte R-RETOUCHES (Passe SN9)" },
+    { id: "CQ-REGLE", tag: "à l’oreille", title: "Comment la musique suit le combat",
+      ctx: "Cinq façons de faire bouger les couches sur le même passage. B, toutes les couches tenues, est l’extrait de la carte au-dessus. Les chiffres comptent les changements de couche dans les 90 s.",
+      clips: [
+        ["audio/duel-today-noduck.mp3", "A · Aujourd’hui : la mélodie part pendant la séquence adverse ; la tension entre sur elle, sur la charge lourde et l’étourdissement (59 changements, dont 10 coupures nettes)", "audio/duel-today-noduck.svg"],
+        ["audio/duel-melody.mp3", "C · La mélodie ne part jamais ; la tension suit la règle d’aujourd’hui (39 changements)", "audio/duel-melody.svg"],
+        ["audio/duel-calm.mp3", "D · La règle d’aujourd’hui, avec moins de changements : une cause doit durer une mesure entière, une couche qui a bougé reste quatre mesures (14)", "audio/duel-calm.svg"],
+        ["audio/duel-arc.mp3", "E · L’arc du combat : riff et mélodie tout du long ; la tension entre à moitié au premier étourdissement ou sous les deux tiers de vie, entière sous 30 %, sans revenir en arrière (1 changement ici)", "audio/duel-arc.svg"],
+        ["audio/duel-soft.mp3", "F · La règle d’aujourd’hui, en plus doux : la mélodie descend à 45 % au lieu de partir, la tension reste à 35 % au repos, chaque changement prend une mesure (59 changements, aucun brusque)", "audio/duel-soft.svg"]],
+      rec: "E, l’arc du combat. L’air n’est jamais coupé. La musique monte avec les tournants du duel : le premier étourdissement, un combattant sous les deux tiers de sa vie, puis sous 30 %. Elle bouge au début d’une phrase de quatre mesures et ne redescend jamais, soit deux changements par duel au lieu d’un toutes les 1,5 s. Elle garde ton choix de couches (SA-5) et finit sur le morceau entier, celui que tu as gardé à l’oreille. En contrepartie, le début du duel joue sans ses cuivres, ses cordes ni ses timbales.",
+      opts: ["A · La règle d’aujourd’hui, le défaut corrigé", "B · Toutes les couches tenues", "C · La mélodie ne part jamais", "D · Moins de changements", "E · L’arc du combat", "F · Des niveaux plus doux", "Aucune : à reprendre (en note)"], recIdx: 4, src: "`src/audio/plan.ts` (`moodStep`, `layerLevels`), `src/audio/layers.ts` (`LayerSet.level`), `src/audio/Sound.ts` (`duelEvent`), SA-5 « Oui, par couches »" },
+    { id: "CQ-BAISSE", tag: "à l’oreille", title: "La musique sous les coups",
+      ctx: "Chaque coup baisse la musique un instant pour lui faire de la place : 3 dB pour un coup, 5 pour un coup lourd, 2 pour une garde, 6 pour un bris de garde, puis elle revient en 0,2 à 0,5 s. Il y a environ deux coups par seconde. Dans ces extraits la musique est seule, alors on entend les baisses sans les coups qui les causent. La baisse du K.O. fait partie de la fin de combat que tu as gardée (E-KO) et n’est pas concernée.",
+      clips: [["audio/duel-today.mp3", "Aujourd’hui en jeu : la règle d’aujourd’hui, avec les baisses", "audio/duel-today.svg"], ["audio/duel-today-noduck.mp3", "La même chose, sans les baisses", "audio/duel-today-noduck.svg"]],
+      rec: "Juger avec les nouveaux bruitages. Les baisses servent à faire place aux coups, et S3 remplace ces coups : elles se jugent avec eux, sur la fiche des sons du duel. D’ici là, elles restent comme aujourd’hui.",
+      opts: ["Garder les baisses", "Des baisses plus légères", "Aucune baisse", "Juger avec les nouveaux bruitages (S3)"], recIdx: 3, src: "`src/audio/score.ts` (`DUCK`, `DUCK_AMBIENCE`), `src/audio/Sound.ts` (`duck`)" },
+  ]},
+  { id: "trois", title: "Le rival et la finale", sub: "Les mêmes trois couches, la même règle.", fam: "var(--voile)", items: [
+    { id: "CQ-TROIS", tag: "à l’oreille", title: "Le rival et la finale suivent le duel",
+      ctx: "Le rival (demi-finales, matchs du jour 8) et la finale (jour 10) ont les mêmes trois couches et la même règle que le duel. Les mêmes 90 s sont prises dans leurs propres duels du bot : celui d’Orla pour le rival, celui de Vessa pour la finale. Chaque morceau est donné entier, puis tel qu’il joue aujourd’hui (sans les baisses).",
+      clips: [["audio/rival-all.mp3", "Le rival, toutes les couches tenues", "audio/rival-all.svg"], ["audio/rival-today.mp3", "Le rival aujourd’hui (56 changements, dont 3 coupures nettes)", "audio/rival-today.svg"], ["audio/finale-all.mp3", "La finale, toutes les couches tenues", "audio/finale-all.svg"], ["audio/finale-today.mp3", "La finale aujourd’hui (56 changements, dont 10 coupures nettes)", "audio/finale-today.svg"]],
+      rec: "La même règle que le duel pour les trois combats, celle que tu choisis plus haut. Les deux morceaux restent ceux que tu as gardés en Passe SN9.",
+      opts: ["La même règle que le duel ; les deux morceaux tiennent", "Le rival est à reprendre (en note)", "La finale est à reprendre (en note)", "Les deux sont à reprendre (en note)"], recIdx: 0, src: "`art-lab/audio/scores/rival.score.mjs`, `finale.score.mjs`, `src/audio/plan.ts` (`boutPiece`), cartes R-RIVAL et R-FINALE (Passe SN9)" },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function richKids(s) { return s.split('`').map((p, i) => (i % 2 ? el('code', {}, p) : p)); }
+function rich(tag, cls, s) { return el(tag, { class: cls }, ...richKids(s)); }
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(rich('p', 'ctx', it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.clips) {
+    const grid = el('div', { class: 'clips' });
+    for (const [src, cap, svg] of it.clips) {
+      const a = el('audio', { controls: '', preload: 'metadata', src, 'aria-label': cap });
+      const msg = el('p', { class: 'src', hidden: '' }, 'Ce lecteur n’a pas pu charger le son : préviens-moi dans la conversation.');
+      a.addEventListener('error', () => { msg.hidden = false; });
+      const tl = svg ? el('img', { class: 'spec', src: svg, alt: 'Les trois couches au fil de l’extrait, et dessous les séquences de l’adversaire, les charges lourdes et l’étourdissement', loading: 'lazy' }) : null;
+      grid.append(el('figure', { class: 'clip' }, el('figcaption', {}, cap), a, tl, msg));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), ...richKids(it.rec)));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', ...richKids(it.src)));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
