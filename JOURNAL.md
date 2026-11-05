@@ -316,6 +316,80 @@ Sept choix suivent la recommandation de leur carte ; PU-6 non (recommandé : la 
 - Un prototype de revue se relit avant de devenir production : un tirage indépendant par place, invisible sur une capture, laissait un habitant sur cinq presque absent ; le test d'équilibre l'a vu, pas l'œil.
 - Un paramètre « de comparaison » peut changer plus qu'on ne croit (`cast=generated` rend aussi les combattants générés) : l'avant / après d'un coût se mesure contre la base figée, à paramètres égaux.
 
+## Passe EV1 — Étape 5 : l'audit des événements, des actions en ville et du récit de la version 2 ; la fiche d'arbitrages publiée (2026-11-05)
+
+### Demande
+- L'opérateur, relayé par la séance mère, nomme la suite, mot pour mot : « le travail sur les evenements dynamique et aussi les actions d'interactions : vol, defi, etc... ». C'est l'étape 5 de `briefs/roadmap-2026-10.md`, la seule pas encore commencée.
+- La tâche confiée : auditer la couche de jeu de la version 2 (événements, actions en ville, récit et cinématiques) contre les contrats de gameplay et du tournoi, la mesurer au TournamentLab, jouer une partie dans le navigateur, puis publier une fiche d'arbitrages. Audit et proposition seulement : aucune règle ni aucun contenu du jeu ne change avant les choix de l'opérateur. Le recrutement et la phase d'équipe restent un écart consigné (chantier plus tard).
+
+### Fait — [OK], documents seulement
+- **Le rapport** : `briefs/audit-gameplay-ev1.md` (la carte des exigences contre le code, les mesures, la partie jouée, ce qui reste hors de la fiche).
+- **La fiche** : page privée https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr, source `briefs/fiche-ev1.html` (la page de la fiche CH1, son attente du pont portée à 10 s), onze captures du vrai jeu publiées avec la page (pas dans le dépôt). Collection `decisions` relue vide à la publication ; une écriture d'essai dans `probe`, lue puis effacée : la base répond.
+- Aucun fichier de `src/`, `tests/`, `tools/` ni aucun contrat ne change.
+
+### La carte des contrats — ce que la version 2 fait aujourd'hui
+- **Couvert** : la préparation par la puissance et par la résilience (gameplay § 5) ; le collectif d'abord, le ciblé quand le joueur devient dangereux (§ 9 : le joueur qui ne gagne pas n'est jamais visé) ; le fair-play des deux sabotages de Cassius (la forge : deux signes, six réponses ; l'armure : deux signes, quatre réponses) ; l'économie sans cul-de-sac (§ 10) ; l'échec qui ouvre une situation (§ 11) ; la cause écrite de chaque événement (verrou 8).
+- **Mince** : l'information (on n'observe que Vessa et Marek ; l'activité hors écran des rivaux est écrite `visible: false`) ; la relation (rien avec les gens de la version 2 ni avec une faction) ; l'opportunité (trois défis, la leçon de Corvin, les bookmakers) ; la réaction visible de la ville (§ 8 et tournoi § 9 : le quai suit l'excitation, les places ne lisent que l'heure ; `playerFame`, `publicPressure` et `activeCompetitors` ne sont lus par rien, `commerce` par une seule réplique) ; l'escalade du contrat projet § 9.2 (deux formes sur sept, un seul saboteur) ; la nuit « clandestine » du projet § 8.1 ; l'éliminé qui reste en ville (tournoi § 8).
+- **Absent** : l'investissement (§ 5 : débloquer un service, améliorer un atelier) ; le grand événement public hors combat (tournoi § 10 : la parade du jour 9 est une ligne de texte).
+- **Écart consigné, inchangé** : le recrutement et la phase d'équipe (gameplay § 7, projet § 5.1).
+
+### Mesures — [OK] TournamentLab `--rules=v2`, graines 1 à 50
+| Politique | Combats gagnés | Qualifié | Couronné | Blessures | Lignes d'événement par partie |
+|---|---|---|---|---|---|
+| `diligent` | 59,6 % | 88 % | 2 % | 0,76 | 39,2 |
+| `idle` | 0 % | 0 % | 0 % | 1,74 | 30,7 |
+
+- 26 définitions sur 32 se déclenchent avec `diligent` ; six jamais (`steel-shortage`, `merchant-favour`, `v2-steel-caravan`, `v2-quay-alert`, `v2-thief-talk`, `v2-challenge-fame` : elles attendent une action que le bot ne fait pas). Trois ambiances font 52 % des lignes : `night-market` 10 fois par partie (un seul texte), `colosseum-roar` 5,8, `v2-puppet-show` 4,8.
+- Sabotage : la forge tentée et déjouée dans les 50 parties (le bot paie la garde du quai chaque soir, 7,5 fois, 112 pièces) ; l'armure trafiquée dans 19, déjouée par la même garde dans 15, trouvée par Hilde dans 4. Aucun participant oublié.
+- **Trois joueurs « explorateurs »** écrits pour l'audit (un script hors du dépôt qui charge les modules purs comme le laboratoire ; mêmes graines ; le diligent pour le reste) :
+  - le défieur : 15 défis par partie, **15 gagnés** (à mi-vie de l'adversaire), 2 compétences apprises, 5 défis sans gain au plafond ; 46,8 % de combats officiels gagnés (le défi prend le créneau d'entraînement et le bot n'emporte jamais ce qu'il apprend) ;
+  - le voleur : 33 vols par partie, 7 réussis, 26 pris, 3,6 fermetures, réputation finale **0,2**, et pourtant qualifié dans 90 % des parties (63,6 % de combats gagnés : ce qu'il vole s'équipe) ;
+  - le marchandeur : 40 marchandages par partie, 37,5 % réussis, la bienveillance qui s'effrite.
+- Disponibilité, à chaque créneau, quelque part : marchander 100 %, voler 100 % (la nuit chez Pip seulement), défier 50 % ; chance moyenne d'un vol 39 % (23 à 70 %), d'un marchandage 46 % (26 % pour `idle`).
+- **Ce que le bot ne voit pas** : il ne marchande, ne vole, ne défie, n'observe, n'écoute et n'achète jamais d'information ; il ne fait ni la cargaison ni l'entraînement avec Orla ; il ne change jamais ses quatre compétences ; il paie la garde sans lire les signes ; le laboratoire ne compte ni la marche, ni l'écran, ni le prix d'un soir.
+
+### La partie jouée — [OK] serveur DEV du worktree (port 5197, `preview_start`, arrêté), `?play=1&new=1&v2=1`, graine 1842
+- Lisible : le dialogue en bas, la chance du marchandage et son résultat dans la page des marchandises, la chance du vol dans la liste Q, le vol pris en haut de l'écran, la cinématique d'arrivée.
+- **Défauts relevés, non corrigés (audit seulement ; carte EV-1)** :
+  - **[KO] sur les trois places, les événements de fin de créneau ne s'affichent pas** : la page se recharge et l'interface part de `st.log.length - 1` (`playPlaza.ts`), alors que le quai garde ce qu'il a montré (`playTown.ts`, `SEEN`). Vérifié : « Wait » au parvis, les hérauts au journal seulement ;
+  - un vol réussi depuis la liste Q ne s'affiche pas (`#pm-toast` caché sous `body.pm-talking`) ;
+  - le défi étiqueté « free » alors qu'il prend un créneau (règle P2) ;
+  - « Why: action:steal » au journal (UM-R3) ;
+  - « scouting would tell you more » pour tout adversaire, alors qu'on n'observe que Vessa et Marek ;
+  - « Mara will count the stall tonight » : rien ne se passe le soir.
+- Le défi « sur le sable » du terrain d'entraînement se joue dans le Colisée plein (88 spectateurs, la foule sonore). Pris à voler, la scène ne bouge pas (Mara à son étal, aucun garde).
+
+### La fiche — publiée, rien de décidé
+Seize cartes, chacune avec sa recommandation :
+- EV-1, les six défauts de lecture : « Les corriger en premier (lot L1) » ;
+- EV-2, le vol : « Un soupçon qui dure, une sortie par la restitution » ;
+- EV-3, l'enjeu du défi : « Pleine vie, une mise, une fois par phase » ;
+- EV-4, qui défier : « Les trois, puis les éliminés à partir du jour 6 » ;
+- EV-5, où se joue le défi : « L’arène aux gradins vides » ;
+- EV-6, le marchandage : « Au moment d’acheter, un argument à choisir » ;
+- EV-7, les nouveaux événements : « Les suites des actions, puis un par lieu, puis le ciblé » ;
+- EV-8, les ambiances répétées : « Hors des nouvelles, dans les répliques et le son » ;
+- EV-9, les rivaux : « Chaque rival se souvient ; deux autres agissent » ;
+- EV-10, les réponses au sabotage : « Une réponse par lieu, un effet lisible » ;
+- EV-11, l'information : « Observer tout adversaire, rumeurs, activité lisible » ;
+- EV-12, la ville : « Les places lisent le pouls, la célébrité compte » ;
+- EV-13, le récit : « Compléter les arcs, quatre scènes selon l’état » ;
+- EV-14, le festival : « Un festival le jour 9, conçu sur une fiche à part » ;
+- EV-15, les lots : « L1 à L6 dans cet ordre » (L1 lecture, L2 actions en ville, L3 information et réponses au sabotage, L4 événements et rivalités, L5 la ville qui réagit, L6 récit, scènes et festival) ;
+- EV-16, le laboratoire : « Ajouter le joueur curieux au laboratoire ».
+
+### Limites
+- Les explorateurs sont des politiques simples (une tentative de chaque action à chaque occasion) : ils montrent l'absence d'enjeu, pas la façon dont joue une personne. Personne n'a joué un défi jusqu'au bout dans cette passe (la porte de l'arène vue, le duel non joué).
+- Les captures sont celles du jour 1 et de la fiche du jour 2 ; la nuit sur la place de la halle (Cassius, Pip) n'a pas été jouée.
+
+### Où reprendre
+- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner ses choix mot pour mot ici et dans `briefs/audit-gameplay-ev1.md`, puis préparer les séances des lots selon EV-15, chacune derrière `flags.v2` avec ses preuves et sa fiche.
+
+### Pensée
+- Un bot de laboratoire qui ne fait pas une action ne peut pas en mesurer le poids : un joueur témoin qui la fait à chaque occasion le donne (le défi gagné 15 fois sur 15, le voleur qualifié à réputation 0).
+- Un événement n'a de conséquence que si quelqu'un lit ce qu'il écrit : cinq événements écrivent `playerFame`, que rien ne lit. On cherche les lecteurs d'un effet avant de le compter.
+- Une page qui se recharge reprend ses nouvelles là où le joueur les a laissées : partir de la dernière entrée efface ce qui s'est passé pendant le changement.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -334,6 +408,7 @@ Sept choix suivent la recommandation de leur carte ; PU-6 non (recommandé : la 
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge de Ren et la feuille de Marek sont faites (Passes CX1, CX2 ; X3 « Ren seul, avant Marek » : pas de poses de charge pour Vessa).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
   - **La charge sans palier puissant (Passe CH1, décision A3 du 2026-11-04)** : l'attaque puissante est une compétence (1 PA, ses niveaux, possédée dès le départ, emportée ou non), les temps de charge et la puissance des coups chargés à 0,85, l'équilibre de V2C2 retrouvé (59,6 %) ; contrat et spécification amendés. **Fiche relue, six sur six à la recommandation (Passe CH2)** : CH-1 « 0,85 (−15 %) », CH-2 « La puissance suit la tenue (×0,85) », CH-3 « 1 PA », CH-4 « Les quatre d’aujourd’hui, la puissante à côté », CH-5 « Bien ainsi (à confirmer en jeu) », CH-6 « Fusionner après la fiche, essayer ensuite » ; fusionné dans `main`. **Reste l'essai en jeu de l'opérateur.**
+  - **Étape 5, le gameplay (Passe EV1)** : audit des événements, du vol, du défi, du marchandage et du récit de la version 2 contre les contrats (`briefs/audit-gameplay-ev1.md`) : le défi sans enjeu (gagné 15 fois sur 15), le vol sans suite (un voleur à réputation 0 qualifié 9 fois sur 10), le marchandage un dé, trois ambiances à 52 % des nouvelles, une seule réponse (la garde du quai) contre les deux sabotages, trois champs du pouls lus par rien, l’information et la réaction visible de la ville minces, le festival et l’investissement absents ; six défauts de lecture relevés (dont les nouvelles de fin de créneau perdues sur les places). **Fiche publiée, seize choix** : https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`) ; à relire quand l’opérateur la dit remplie, puis les lots L1 à L6 (ou ce qu’il décide en EV-15), chacun dans sa séance, derrière `flags.v2`. Le recrutement et la phase d’équipe restent un chantier plus tard.
   - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
@@ -727,6 +802,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Quand `main` bouge pendant un travail, une branche neuve et un rejeu évitent le push forcé ; `origin/main` se met à jour depuis les autres dossiers de travail : un `git diff origin/main` sur `src` le révèle (Passes SN3, SN5).
 - Une boucle se rend en cercle, de la partition au plafond : le fichier ne contient que son corps, ce qui sonne après la fin revient au début, la dynamique passe deux fois. Un saut à la jointure se juge contre le plus grand saut du morceau (Passe SN7).
 - Une correction automatique peut cacher une faute à son propre contrôle : ce qu'un outil retire de la musique se relit (Passe SN7).
+- Un bot de laboratoire qui ne fait pas une action ne peut pas en mesurer le poids : un joueur témoin qui la fait à chaque occasion le donne, et l’on dit ce que le bot ne voit pas (Passe EV1).
 ### Personnages : art et critique
 - La densité d'un sprite se choisit par la taille de son texel à l'écran dans le cadrage où il vit (l'arène : ×2 pour ≈ 3 px / texel en 1080p,
   comme les personnages de la ville), pas par celle de l'image source (Passe P1).
@@ -961,3 +1037,4 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Un réglage décidé pour une partie du jeu se place là où le code sait qu'il y est : le refus « hors du duel » au crochet des actions refusées, pas dans la table que le duel partage par un chemin de repli (Passe SN22).
 - Une preuve qui compare la sortie du moteur à un fichier cuit applique à sa référence le traitement que le moteur doit faire, calculé d'après la décision et non d'après le code ; la référence sans traitement sert de témoin (Passe SN22).
 - Une tenue raccourcie se paie par la puissance : quand le coup suit la tenue, le facteur ne change plus l'équilibre, seulement le ressenti ; un outil qui recopie un script du code pour le jouer dans la page se garde par un test qui compare les deux copies (Passe CH1).
+- Un événement n’a de conséquence que si quelque chose lit ce qu’il écrit : on cherche les lecteurs d’un effet (`playerFame` n’en a aucun) avant de le compter ; une page qui se recharge reprend ses nouvelles là où le joueur les a laissées (Passe EV1).

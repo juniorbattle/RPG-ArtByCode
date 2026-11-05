@@ -1,0 +1,465 @@
+<title>Événements et interactions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+.state { display: flex; flex-direction: column; gap: 12px; }
+.state h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.state p { margin: 0; max-width: 68ch; }
+.chip { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border-radius: 4px; padding: 1px 7px; white-space: nowrap; }
+.chip.ok { color: var(--rec); background: var(--rec-soft); }
+.chip.thin { color: var(--brass); background: var(--brass-soft); }
+.chip.no { color: var(--cendre); background: color-mix(in srgb, var(--cendre) 14%, var(--surface)); }
+.chip.gap { color: var(--muted); background: color-mix(in srgb, var(--muted) 14%, var(--surface)); }
+.tbl.cov td:nth-child(2), .tbl.cov th { text-align: left; }
+.tbl.cov td:last-child { text-align: left; white-space: normal; color: var(--muted); font-size: 13px; min-width: 16ch; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.fig { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fig b { font-family: var(--font-body); font-weight: 700; font-size: 26px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.fig span { font-size: 13px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · version 2 · étape 5 · Passe EV1 · 5 novembre 2026</span>
+    <h1>Les événements et les actions en ville</h1>
+    <p class="lede">Tu as nommé la suite : les événements dynamiques et les interactions, le vol, le défi, et le reste. Voici l’audit de ce que la version 2 en fait aujourd’hui, contre les contrats, mesuré sur 50 parties au laboratoire et joué dans le navigateur, puis seize choix pour la construire. Rien n’est construit ni changé avant tes réponses. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="state" aria-labelledby="h-state">
+    <h2 id="h-state">L’état des lieux</h2>
+    <p>32 événements (18 de la tranche, 14 de la version 2), deux chaînes de sabotage de Cassius, trois actions en ville (marchander, défier, voler), dix jours et cinq cinématiques. Les règles du contrat sont là dans les données ; ce qui manque, c’est l’enjeu des actions, la variété des événements et ce que la ville montre.</p>
+    <div class="figs">
+      <div class="fig"><b>15 / 15</b><span>défis gagnés par partie par le bot, à mi-vie de l’adversaire</span></div>
+      <div class="fig"><b>9 sur 10</b><span>parties où un voleur pris 26 fois, réputation 0, se qualifie quand même</span></div>
+      <div class="fig"><b>52 %</b><span>des lignes d’événement : trois ambiances qui se répètent</span></div>
+      <div class="fig"><b>50 / 50</b><span>tentatives sur la forge déjouées par une seule réponse, la garde payée chaque soir</span></div>
+    </div>
+    <div class="tbl cov">
+      <table>
+        <thead><tr><th scope="col">Ce que demande le contrat</th><th scope="col">Aujourd’hui</th><th scope="col">Pourquoi</th></tr></thead>
+        <tbody>
+          <tr><td>Préparer : puissance (équipement, entraînement)</td><td><span class="chip ok">couvert</span></td><td>quatre boutiques, paliers d’arme, Corvin, entraînement</td></tr>
+          <tr><td>Préparer : résilience (soin, repos, protection)</td><td><span class="chip ok">couvert</span></td><td>Sœur Anwen, onguent, garde, vérification de Hilde</td></tr>
+          <tr><td>Préparer : information (observer, enquêter, rumeur)</td><td><span class="chip thin">mince</span></td><td>Vessa et Marek seulement ; l’activité des rivaux reste invisible</td></tr>
+          <tr><td>Préparer : relation (recrue, marchand, faction)</td><td><span class="chip thin">mince</span></td><td>la cargaison, Mara, Orla ; rien avec les gens de la version 2</td></tr>
+          <tr><td>Préparer : investissement (service, atelier, raccourci)</td><td><span class="chip no">absent</span></td><td>rien ne se débloque ni ne s’améliore</td></tr>
+          <tr><td>Préparer : opportunité (challenge, événement rare)</td><td><span class="chip thin">mince</span></td><td>trois défis, la leçon de Corvin, les bookmakers</td></tr>
+          <tr><td>La ville réagit, sans écran de debug (§ 8)</td><td><span class="chip thin">mince</span></td><td>le quai suit l’excitation ; les places ne lisent que l’heure ; trois champs du pouls ne servent à rien</td></tr>
+          <tr><td>Sabotage : au moins deux réponses (§ 9)</td><td><span class="chip ok">couvert</span></td><td>forge 6 réponses, armure 4 ; mais une seule les déjoue toutes</td></tr>
+          <tr><td>Escalade ciblée (espionnage, vol, désinformation…)</td><td><span class="chip thin">mince</span></td><td>deux formes sur sept, un seul saboteur</td></tr>
+          <tr><td>Économie sans cul-de-sac (§ 10)</td><td><span class="chip ok">couvert</span></td><td>une boutique fermée en laisse trois</td></tr>
+          <tr><td>L’échec ouvre une situation (§ 11)</td><td><span class="chip ok">couvert</span></td><td>mais sans mordant : la réputation ne pèse pas sur le tournoi</td></tr>
+          <tr><td>Un grand événement public hors combat (tournoi § 10)</td><td><span class="chip no">absent</span></td><td>la parade du jour 9 est une ligne de texte</td></tr>
+          <tr><td>Recrutement et phase d’équipe</td><td><span class="chip gap">écart consigné</span></td><td>un chantier plus tard, hors de cette fiche</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot">Le rapport complet : <code>briefs/audit-gameplay-ev1.md</code>. Laboratoire : <code>node tools/tournament-lab.mjs --rules=v2 --seeds=1..50</code>, politiques <code>diligent</code> et <code>idle</code>, plus trois joueurs « explorateurs » écrits pour l’audit (hors du dépôt) qui marchandent, volent ou défient chaque fois qu’ils le peuvent. Le bot du laboratoire, lui, ne fait jamais ces actions (EV-16). Captures : une partie neuve de la version 2, graine 1842, serveur DEV.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot au journal et dans <code>briefs/audit-gameplay-ev1.md</code>, puis je prépare les séances des lots selon ta réponse à EV-15 : chacune derrière <code>flags.v2</code>, avec ses preuves (le jeu par défaut identique, au pixel et au JSON près) et sa propre fiche pour ce qu’elle aura construit.</p>
+    <p>Hors de cette fiche : le recrutement et la phase d’équipe (contrat de gameplay § 7, contrat projet § 5.1). Ils restent un écart consigné et un chantier pour plus tard, à concevoir avec toi après l’étape 5.</p>
+    <p class="src">Sources : <code>contracts/GAMEPLAY_MASTER_CONTRACT.md</code> §§ 4, 5, 8, 9, 10, 11, 14 ; <code>contracts/TOURNAMENT_MASTER_CONTRACT.md</code> §§ 7, 8, 9, 10 ; <code>contracts/PROJECT_MASTER_CONTRACT.md</code> §§ 3.3, 8.1, 9, 13 ; <code>briefs/cloud-session-v2-brief.md</code> (lots V4, V6, V7) ; journal Passes V4, V6, V7, VP1 et EV1.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Une entrée par décision. fam : une variable de couleur. shots : captures publiées via `files`.
+// Apostrophes : l’apostrophe typographique ’ seulement dans les chaînes entre ' '.
+const GROUPS = [
+  { id: 'lecture', title: 'Ce que le joueur lit mal aujourd’hui', sub: 'Relevé en jouant : des oublis de l’interface et des textes, aucune règle en cause.', fam: 'var(--cendre)', items: [
+    { id: 'EV-1', tag: 'lecture', title: 'Six défauts de lecture, à corriger avant le reste ?',
+      ctx: '1) Sur les trois places, ce qui arrive à la fin d’un créneau (les hérauts, les signes de sabotage, la leçon de Corvin) ne s’affiche pas : la page se recharge et repart de la dernière entrée du journal, alors que le quai montre ces nouvelles. 2) Un vol réussi depuis la liste Q ne dit rien à l’écran : le bandeau reste caché sous la liste. 3) Le défi porte l’étiquette « free » alors qu’il prend un créneau. 4) Le journal écrit « Why: action:steal », un identifiant de code. 5) La fiche de match dit « scouting would tell you more » pour tout adversaire, alors qu’on n’observe que Vessa et Marek. 6) Un vol réussi promet « Mara will count the stall tonight », et rien ne se passe le soir.',
+      shots: [['img/08-place-apres-creneau.jpg', '1. Le parvis après « Wait » : l’annonce des hérauts n’apparaît pas, elle n’est qu’au journal'], ['img/05-vol-reussi-sans-retour.jpg', '2. Un vol réussi depuis la liste : seul le sous-titre « Ren · whetstone » a changé'], ['img/10-defi-ilse.jpg', '3. Le défi d’Ilse : « a slot » dans le texte, « free » dans l’étiquette'], ['img/09-journal.jpg', '4. Le journal : « Why: action:steal » sous le vol pris'], ['img/13-fiche-match.jpg', '5. La fiche de match du jour 2 : « scouting would tell you more »']],
+      rec: 'Les corriger en premier, dans un petit lot à part : ils faussent la lecture de tout ce qui suivra, et chacun se prouve vite (une capture, un test). Le 6 se règle avec EV-2 (le vol découvert le lendemain) ou par le texte.',
+      opts: ['Les corriger en premier (lot L1)', 'Avec le lot des actions en ville', 'Les laisser pour l’instant'], recIdx: 0,
+      src: 'src/ui/playPlaza.ts (st.log.length − 1) contre src/ui/playTown.ts (SEEN) ; src/ui/townUi.ts (#pm-toast, costTag) ; src/ui/journal.ts (ui.why) ; src/simulation/roles.ts (scout) ; texte v2.steal.ok' },
+  ]},
+  { id: 'actions', title: 'Voler, défier, marchander', sub: 'Les trois actions du lot V4 (AV-11) existent et changent un état réel ; ce qui leur manque, c’est un enjeu.', fam: 'var(--voile)', items: [
+    { id: 'EV-2', tag: 'vol', title: 'Le vol : un risque qui dure ?',
+      ctx: 'Aujourd’hui, une chance affichée (23 à 70 %, plus haute la nuit et quand la garde est mince) ; on prend la pièce la moins chère. Pris : une amende d’au plus 15 pièces, −8 à −12 de réputation, la boutique fermée pour la journée et ses prix en hausse le lendemain. Rien ne dure au-delà d’une journée, et la réputation ne pèse pas sur le tournoi. La nuit, seul l’étal de Pip est ouvert, donc lui seul se vole. Pris, la scène ne réagit pas : Mara reste à son étal, aucun garde ne vient.',
+      shots: [['img/04-liste-ici-vol.jpg', 'La liste Q du quai : « Steal a whetstone… (about 30 % not to be seen) »'], ['img/06-vol-pris.jpg', 'Pris : un bandeau en haut, la scène inchangée']],
+      table: { head: ['50 parties, adresse 0,6', 'Diligent', 'Voleur à chaque occasion'], rows: [
+        ['Vols tentés · réussis · pris, par partie', '—', '33 · 7 · 26'],
+        ['Réputation à la fin', '66', '0,2', 1],
+        ['Qualifié pour les demi-finales', '88 %', '90 %', 1],
+        ['Combats officiels gagnés', '59,6 %', '63,6 %'],
+        ['Boutiques fermées au joueur, par partie', '0', '3,6']],
+        foot: 'Le voleur se sert du diligent pour le reste de ses choix. Il gagne un peu plus parce que ce qu’il vole s’équipe.' },
+      rec: 'Un soupçon qui dure, une sortie par la restitution. Chaque vol laisse une trace, et un vol non vu peut être découvert le lendemain matin. Au-delà d’un seuil, la garde fouille (l’objet repris, l’amende) et les marchands du quartier refusent de vendre tant qu’on n’a pas rendu ou payé chez Hale. La sortie reste toujours ouverte. Le greffier avertit une fois ; une seconde prise coûte un point de poule. La nuit, les étals fermés se forcent : plus facile, puni plus fort. AV-11 demandait « un vrai risque » et le contrat projet « une échappatoire » : les deux y sont.',
+      opts: ['Un soupçon qui dure, une sortie par la restitution', 'Garder la règle, rendre les conséquences visibles (le garde, le marchand)', 'Tourner le vol vers l’information (les notes d’un rival, une lettre de Cassius)'], recIdx: 0,
+      src: 'src/simulation/v2town.ts (stealChance, steal) ; décision AV-11 « Les trois, le vol avec ses conséquences » (Passe AV1)' },
+    { id: 'EV-3', tag: 'défi', title: 'Le défi : quel enjeu ?',
+      ctx: 'Aujourd’hui : Orla et Ilse au terrain d’entraînement, Vessa au parvis, de jour, chacun une fois par jour. L’adversaire n’a que la moitié de sa vie. Gagné : sa compétence apprise ou montée et +3 de réputation ; perdu : −1, sans blessure. Le défi prend le créneau de l’entraînement ; le bot n’emporte jamais ce qu’il apprend, d’où moins de victoires officielles, une limite du laboratoire.',
+      table: { head: ['50 parties, adresse 0,6', 'Diligent', 'Défieur à chaque occasion'], rows: [
+        ['Défis par partie · gagnés', '—', '15 · 15', 1],
+        ['Compétences apprises · défis sans gain (plafond)', '—', '2 · 5'],
+        ['Réputation à la fin', '66', '89'],
+        ['Combats officiels gagnés', '59,6 %', '46,8 %']] },
+      rec: 'Pleine vie, une mise, une fois par phase. L’adversaire a toute sa vie : c’est un vrai combat. Une mise se choisit avant (des pièces ou de la réputation, rendues doubles si l’on gagne). Chaque combattant se défie une fois avant la coupe et une fois après. Perdu, toujours sans blessure : V2B1-1 reste la seule règle des blessures.',
+      opts: ['Pleine vie, une mise, une fois par phase', 'Trois quarts de vie, sans mise', 'Garder : un entraînement sans risque'], recIdx: 0,
+      src: 'src/simulation/v2town.ts (CHALLENGERS, applyChallenge) ; src/combat/match.ts (challengeSheetFor : la vie × 0,5)' },
+    { id: 'EV-4', tag: 'défi', title: 'Qui peut-on défier ?',
+      ctx: 'Trois combattants, toujours les mêmes, jusqu’au jour 10. Le contrat du tournoi (§ 8) veut qu’un éliminé ne disparaisse pas : il peut rester en ville, aider le joueur, se retourner contre lui, devenir recrutable. Après la coupe du jour 5, les quatre de la Porte combattent encore, puis plus rien ne les montre en ville.',
+      rec: 'Les trois d’aujourd’hui, puis les éliminés. À partir du jour 6, ceux qui sont sortis de la coupe ou de la Porte restent en ville et acceptent un défi. Chacun enseigne une compétence déjà au catalogue : aucune compétence neuve sans fiche.',
+      opts: ['Les trois, puis les éliminés à partir du jour 6', 'Tous les rivaux dès le jour 1', 'Les trois d’aujourd’hui'], recIdx: 0,
+      src: 'src/simulation/v2town.ts (CHALLENGERS) ; src/combat/skillbook.ts (teacher) ; contrat du tournoi § 8' },
+    { id: 'EV-5', tag: 'défi', title: 'Où se joue le défi ?',
+      ctx: 'Le défi s’accepte au terrain d’entraînement, « sur le sable, les guérisseurs regardant », puis se joue dans le Colisée plein : les 88 spectateurs qui acclament, la foule sonore, la musique du tournoi.',
+      shots: [['img/11-defi-accepte.jpg', 'Accepté au terrain d’entraînement'], ['img/12-defi-arene.jpg', 'Joué dans le Colisée plein']],
+      rec: 'Dans l’arène aux gradins vides : le même sable, sans public ni foule sonore, sur la musique des lices (un matin d’entraînement que le Colisée prête). Un duel sur le ring du terrain d’entraînement demanderait une scène de duel neuve dans la place, un lot à lui seul.',
+      opts: ['L’arène aux gradins vides', 'Sur le ring du terrain d’entraînement (scène à construire)', 'Garder le Colisée plein'], recIdx: 0,
+      src: 'src/ui/playArena.ts (challenge=1) ; src/arena/StandsCast.ts ; src/audio/plan.ts' },
+    { id: 'EV-6', tag: 'marchander', title: 'Le marchandage : une décision ou un dé ?',
+      ctx: 'Aujourd’hui, un bouton dans la page des marchandises, une chance affichée (28 % chez Mara au départ), un tirage, rien d’autre à décider : −15 % sur tout pour la journée, ou +10 % et la bienveillance du marchand −4. On peut marchander sans rien acheter. Un joueur qui marchande partout le fait 40 fois par partie, réussit 37,5 % du temps et voit la bienveillance s’effriter.',
+      shots: [['img/03-marchander-rate.jpg', 'Chez Mara : « About 28 % to win a bargain », puis le refus en ambre']], one: true,
+      rec: 'Lier le marchandage à l’achat et laisser choisir l’argument. Au moment d’acheter, deux ou trois approches (sa réputation, l’amitié du marchand, acheter deux pièces), chacune avec sa chance. Le rabais porte sur cet achat ; l’échec coûte de la bienveillance, sans surcoût. Une décision courte, pas un mini-jeu (contrat de gameplay § 1).',
+      opts: ['Au moment d’acheter, un argument à choisir', 'Au moment d’acheter, un seul tirage', 'Garder tel quel'], recIdx: 0,
+      src: 'src/simulation/v2town.ts (haggleChance, haggle) ; src/simulation/v2gear.ts (shopPrice) ; src/ui/wares.ts' },
+  ]},
+  { id: 'evenements', title: 'Les événements', sub: 'Mesurés sur 50 parties : ce qui part, ce qui se répète, qui sabote, ce qui y répond.', fam: 'var(--ronce)', items: [
+    { id: 'EV-7', tag: 'nouveaux', title: 'Quels nouveaux événements, dans quel ordre ?',
+      ctx: 'Avec le joueur diligent, 26 événements sur 32 se déclenchent. Six ne partent jamais, parce qu’ils attendent une action que le bot ne fait pas : la pénurie d’acier et la caravane, la faveur de Mara, l’alerte du quai, la rumeur du voleur, la renommée d’un défi. Manquent, au regard du contrat projet (§ 9.2) : l’espionnage, l’intimidation, le vol contre le joueur, la désinformation, le sabotage d’entraînement. Il manque aussi, dans chaque lieu, un événement qui change un service (une ouverture, un prix, une personne présente).',
+      rec: 'D’abord les suites des actions : le vol découvert, le défi qui fait parler, le marchand qui se souvient, l’information qui ouvre une porte. Ensuite un événement par lieu, de jour et de nuit, qui change un service. Puis les attaques ciblées du § 9.2 (EV-9).',
+      opts: ['Les suites des actions, puis un par lieu, puis le ciblé', 'D’abord les attaques ciblées et les rivalités', 'D’abord un par lieu et par moment'], recIdx: 0,
+      src: 'src/events/catalog.ts, src/events/v2catalog.ts ; contrat projet §§ 3.4, 9.1, 9.2' },
+    { id: 'EV-8', tag: 'répétition', title: 'Les ambiances qui se répètent',
+      ctx: 'Trois ambiances font 52 % des lignes d’événement d’une partie : le marché de nuit chaque jour (10 fois, le même texte), la clameur du Colisée (5,8 fois), les marionnettes (4,8 fois). Elles arrivent dans les nouvelles au même rang que ce qui compte (un signe de sabotage, une boutique fermée).',
+      table: { head: ['Par partie, joueur diligent', 'Fois', 'Textes différents'], rows: [
+        ['Le marché de nuit s’ouvre', '10', '1'],
+        ['La clameur du Colisée', '5,8', '3'],
+        ['Les marionnettes rejouent ton combat', '4,8', '1'],
+        ['Tous les autres événements', '18,6', '—']] },
+      rec: 'Les sortir des nouvelles : elles passent dans les répliques des passants et dans le son (le Colisée qui gronde déjà), un texte par jour et par état. Les nouvelles gardent ce qui change quelque chose.',
+      opts: ['Hors des nouvelles, dans les répliques et le son', 'Dans les nouvelles, une fois tous les deux jours, textes variés', 'Garder'], recIdx: 0,
+      src: 'src/events/catalog.ts (night-market, colosseum-roar) ; src/events/v2catalog.ts (v2-puppet-show) ; src/narrative/dialogue.ts' },
+    { id: 'EV-9', tag: 'rivaux', title: 'Qui agit contre le joueur, ou pour lui ?',
+      ctx: 'Seul Cassius sabote, par deux chaînes : la forge du quai, puis l’armure avant la coupe. Les autres rivaux nouent et défont des relations hors écran, sans que rien ne se voie, et aucun n’agit contre ou pour le joueur. Le contrat du tournoi (§ 7) veut des rivalités fondées sur des faits (une défaite, une humiliation, une dette, un respect) qui changent les dialogues, la préparation adverse et les événements.',
+      rec: 'Chaque rival se souvient des faits : battu, humilié ou aidé, il ne parle plus pareil. Deux autres rivaux peuvent agir, chacun à sa manière (par exemple Vessa l’espionnage et la désinformation, Rhosk l’intimidation : à relire). Cassius garde ses deux chaînes, et un rival aidé peut avertir d’un sabotage.',
+      opts: ['Chaque rival se souvient ; deux autres agissent', 'Cassius seul, sa chaîne approfondie', 'Garder'], recIdx: 0,
+      src: 'src/tournament/offscreen.ts (activityWeights, plot) ; src/events/v2catalog.ts (HOSTILE) ; contrat du tournoi § 7' },
+    { id: 'EV-10', tag: 'sabotage', title: 'Les réponses au sabotage',
+      ctx: 'La règle de fair-play est tenue : la forge a 2 signes et 6 réponses, l’armure 2 signes et 4 réponses. Mais une seule réponse suffit à tout : la garde du quai, 15 pièces le soir, déjoue la forge et aussi l’armure, aux vestiaires de l’arène. Le joueur qui ne gagne pas n’est jamais visé, comme le veut l’Âge I. L’armure trafiquée (+15 % de dégâts reçus ce jour-là) ne se voit nulle part à l’écran.',
+      table: { head: ['50 parties, joueur diligent', 'Forge', 'Armure'], rows: [
+        ['Parties avec une tentative', '50', '19'],
+        ['Déjouées par la garde payée', '50', '15', 1],
+        ['Trouvées par Hilde', '—', '4'],
+        ['Subies', '0', '0']],
+        foot: 'Le bot paie la garde chaque soir (7,5 fois par partie, 112 pièces), qu’il ait vu un signe ou non.' },
+      rec: 'Une réponse par lieu, un effet lisible. La garde du quai garde la forge ; les vestiaires ont leur propre parade (Odo, ou une nuit à la caserne). L’armure trafiquée se remarque à la fiche de match quand on a vu un signe (« une sangle semble coupée »), et l’enquête mène à l’auteur et à une compensation.',
+      opts: ['Une réponse par lieu, un effet lisible', 'Seulement rendre l’effet lisible', 'Garder'], recIdx: 0,
+      src: 'src/events/catalog.ts (forge-sabotage) ; src/events/v2catalog.ts (v2-gear-tamper : watch) ; src/simulation/v2gear.ts (taken × 1,15)' },
+  ]},
+  { id: 'ville', title: 'L’information et la ville', sub: 'Préparer en sachant, et voir la ville changer.', fam: 'var(--astre)', items: [
+    { id: 'EV-11', tag: 'information', title: 'Observer un rival, acheter une rumeur',
+      ctx: 'On ne peut observer que Vessa et Marek, au parvis, de jour, pour un créneau : leurs compétences s’affichent à la fiche de match et l’aide au sol devient complète. Orla (jour 4), Cassius (jour 5) et tous les adversaires de la coupe ne s’observent pas. L’informateur ne parle que du sabotage ; Lio donne un peu de réputation et une phrase. Ce que font les rivaux hors écran (entraînement, achats, complots) est écrit, mais invisible.',
+      shots: [['img/13-fiche-match.jpg', 'La fiche de match : « You know little of Vessa Lark’s skills »']], one: true,
+      rec: 'Observer tout adversaire annoncé, là où il s’entraîne et à son heure. Acheter une rumeur sur un rival (une blessure, un équipement, un complot) à Lio ou à l’informateur, vraie ou fausse selon la source. Rendre une part de l’activité hors écran lisible au tableau du tournoi (T).',
+      opts: ['Observer tout adversaire, rumeurs, activité lisible', 'Seulement observer tout adversaire annoncé', 'Garder'], recIdx: 0,
+      src: 'src/simulation/roles.ts (scout, buyInfo, listen) ; src/tournament/offscreen.ts (visible: false) ; src/ui/board.ts' },
+    { id: 'EV-12', tag: 'ville', title: 'Ce que la ville montre',
+      ctx: 'Le quai réagit : sa foule suit l’excitation (3 à 12 passants), la forge brûlée se voit, il pleut au jour 3, le pavois flotte de jour. Les trois places ne lisent que l’heure. Trois champs du pouls ne sont lus par rien : la célébrité du joueur, la pression du public, le nombre de concurrents. Les cinq événements qui « font un nom » au joueur ne changent donc rien. Après un vol pris, rien ne bouge dans la scène.',
+      shots: [['img/06-vol-pris.jpg', 'Après un vol pris : Mara à son étal, la foule inchangée'], ['img/08-place-apres-creneau.jpg', 'Le parvis : sa foule suit l’heure, rien d’autre']],
+      rec: 'Les places lisent le pouls comme le quai (la foule, les fanions, une boutique aux volets fermés). La célébrité change ce que disent les passants et qui salue le héros, et un garde se poste à l’étal le jour d’un vol. Tout cela avec les sprites et les décors déjà approuvés : rien de neuf sans fiche.',
+      opts: ['Les places lisent le pouls, la célébrité compte', 'Seulement des répliques et des nouvelles', 'Plus tard, avec le peuplement'], recIdx: 0,
+      src: 'src/tournament/pulse.ts ; src/simulation/look.ts (townQuery : crowd) ; src/simulation/v2places.ts (PLAZA_CROWD) ; contrat du tournoi § 9' },
+  ]},
+  { id: 'recit', title: 'Le récit, les scènes et le festival', sub: 'Dix jours en trois actes ; ce qui dépend de l’état ne se joue qu’en texte.', fam: 'var(--voile)', items: [
+    { id: 'EV-13', tag: 'récit', title: 'Combien de récit et de scènes jouées ensuite ?',
+      ctx: 'Cinq cinématiques de deux ou trois répliques (l’arrivée, la coupe, Orla, la veille, la finale) et une réplique par acte pour cinq rivaux ; rien pour Rhosk et Tobin. Aucune scène ne dépend d’un résultat : sortir de la coupe, perdre une demi-finale ou démasquer Cassius ne se montrent qu’en texte.',
+      shots: [['img/07-cinematique-arrivee.jpg', 'La cinématique d’arrivée sur le parvis : Odo, puis Marek, puis Ren']], one: true,
+      rec: 'Compléter les arcs : une réplique par acte pour Rhosk et Tobin ; quatre scènes qui dépendent de l’état (hors de la coupe, à la Porte ; après la demi-finale, gagnée ou perdue ; Cassius démasqué ; l’épilogue sur le parvis). Chaque texte reste « proposé » et se relit sur fiche.',
+      opts: ['Compléter les arcs, quatre scènes selon l’état', 'Seulement les scènes du fil principal (élimination, demi-finale)', 'Rien de plus avant l’essai de la version 2'], recIdx: 0,
+      src: 'src/narrative/v2story.ts (v2Lines, CUTSCENES) ; contrat projet § 13' },
+    { id: 'EV-14', tag: 'festival', title: 'Le grand événement public hors combat',
+      ctx: 'Le contrat du tournoi (§ 10) veut au moins un grand événement public hors combat : un quartier transformé, la circulation changée, les habitants qui participent, les rivaux vus autrement, une récompense et de la réputation, original dans ses règles. Aujourd’hui, la parade des lanternes du jour 9 est une ligne de texte.',
+      rec: 'Un festival le jour 9 sur la place de la halle, autour de la parade : une épreuve originale à règles propres, les rivaux présents, une récompense et de la réputation. Ses règles se conçoivent sur une fiche à part, sans reprendre un mini-jeu existant.',
+      opts: ['Un festival le jour 9, conçu sur une fiche à part', 'Seulement la parade du jour 9 en scène', 'Plus tard'], recIdx: 0,
+      src: 'src/events/v2catalog.ts (v2-lantern-parade) ; contrat du tournoi § 10 ; contrat projet § 3.5' },
+  ]},
+  { id: 'suite', title: 'La suite', sub: 'Chaque lot sera une séance à part, derrière flags.v2, avec ses preuves et sa fiche.', fam: 'var(--cendre)', items: [
+    { id: 'EV-15', tag: 'lots', title: 'Le découpage en lots',
+      ctx: 'Ce que tu choisis plus haut se range en six lots, chacun assez court pour une séance, chacun fusionné après ses preuves. Le jeu par défaut ne change dans aucun.',
+      table: { head: ['Lot', 'Contenu', 'Cartes'], rows: [
+        ['L1', 'Les corrections de lecture', 'EV-1'],
+        ['L2', 'Voler, défier, marchander', 'EV-2 à EV-6'],
+        ['L3', 'L’information et les réponses au sabotage', 'EV-10, EV-11'],
+        ['L4', 'Les événements et les rivalités', 'EV-7 à EV-9'],
+        ['L5', 'La ville qui réagit', 'EV-12'],
+        ['L6', 'Le récit, les scènes, le festival', 'EV-13, EV-14']] },
+      rec: 'Dans cet ordre : d’abord les corrections, puis ce que le joueur fait, puis ce que le monde fait en retour. Le joueur curieux du laboratoire (EV-16) vient avec L2.',
+      opts: ['L1 à L6 dans cet ordre', 'Les événements avant les actions (L1, L4, L2…)', 'Tout dans une seule séance'], recIdx: 0,
+      src: 'AGENTS.md (une branche à la fois) ; briefs/roadmap-2026-10.md, étape 5' },
+    { id: 'EV-16', tag: 'laboratoire', title: 'Un joueur du laboratoire qui fait ces actions',
+      ctx: 'Le bot du laboratoire ne marchande, ne vole, ne défie et n’observe jamais ; il ne change jamais ses quatre compétences et paie la garde chaque soir sans lire les signes. Il ne peut donc pas mesurer ce que ces lots proposent. Les trois joueurs « explorateurs » de cet audit sont des scripts hors du dépôt.',
+      rec: 'Ajouter au laboratoire un second joueur, « curieux ». Il marchande quand il achète, vole quand le soupçon est bas, défie, observe son prochain adversaire, emporte ce qu’il apprend et ne paie la garde qu’après un signe. Chaque lot se mesure avec lui et avec le diligent.',
+      opts: ['Ajouter le joueur curieux au laboratoire', 'Garder le bot d’aujourd’hui'], recIdx: 0,
+      src: 'src/tournament/lab.ts (POLICIES, diligentV2) ; contrat du tournoi § 13' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

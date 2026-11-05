@@ -138,6 +138,11 @@ d'entraînement.
 - Les événements dynamiques (`src/events/`) et les phases du tournoi selon les contrats (`contracts/`).
 - La structure narrative et des cinématiques jouées en direct (plans de caméra scriptés, dialogues, animations des sprites).
 - L'intégration du système de combat de l'étape 0.
+- **Audit fait (Passe EV1, 05/11)**, à la demande de l'opérateur (« le travail sur les evenements dynamique et aussi les actions d'interactions :
+  vol, defi, etc... ») : `briefs/audit-gameplay-ev1.md`, la version 2 contre les contrats, mesurée sur 50 parties et jouée dans le navigateur ; la
+  fiche de seize choix https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`) attend l'opérateur. Proposé : six lots, chacun
+  dans sa séance derrière `flags.v2` (L1 la lecture, L2 voler / défier / marchander, L3 l'information et les réponses au sabotage, L4 les
+  événements et les rivalités, L5 la ville qui réagit, L6 le récit, les scènes et le festival). Le recrutement et la phase d'équipe : plus tard.
 
 ## Questions ouvertes pour l'opérateur
 
