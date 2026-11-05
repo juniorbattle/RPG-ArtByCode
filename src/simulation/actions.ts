@@ -35,6 +35,9 @@ export interface ActionDef<A extends Action = Action> {
   cost(st: GameState, a: A): number;
   /** the coins it takes from the player's purse (absent = none): the interface shows it beside the slot (journal Passe UI2) */
   coins?(st: GameState, a: A): number;
+  /** a slot the action books now and spends later (a challenge's, at its result; absent = none): never spent here, `cost` stays the rule; the
+   *  interface counts it in its tag, so « free » is said only when nothing is spent (rule P2, journal Passe EVL1) */
+  later?(st: GameState, a: A): number;
   /** null = allowed, otherwise why not */
   check(st: GameState, a: A): string | null;
   apply(s: GameState, a: A, rng: Rng, emit: Emit): void;

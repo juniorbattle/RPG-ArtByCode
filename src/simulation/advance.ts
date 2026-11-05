@@ -22,7 +22,8 @@ import { daysOf, v2AfterSlot } from '../tournament/v2calendar';
 
 export interface Advance { state: GameState; events: GameEvent[]; ok: boolean; reason?: string }
 /** cost: the slots it takes (0 or 1); coins: what it takes from the purse (0 = nothing) */
-export interface ActionOption { action: Action; label: string; cost: number; coins: number; ok: boolean; reason?: string }
+/** `later`: a slot booked now and spent later (`ActionDef.later`), present only on the actions that book one */
+export interface ActionOption { action: Action; label: string; cost: number; coins: number; later?: number; ok: boolean; reason?: string }
 
 export function newGame(seed: number, name = 'Ren'): GameState {
   return initialState(seed >>> 0, cleanName(name));
@@ -55,7 +56,7 @@ function slotRule(st: GameState, def: ActionDef, a: Action): string | null {
 
 function option(st: GameState, def: ActionDef, a: Action): ActionOption {
   const reason = def.check(st, a) ?? slotRule(st, def, a);
-  return { action: a, label: def.label(st, a), cost: def.cost(st, a), coins: def.coins?.(st, a) ?? 0, ok: reason === null, ...(reason !== null ? { reason } : {}) };
+  return { action: a, label: def.label(st, a), cost: def.cost(st, a), coins: def.coins?.(st, a) ?? 0, ...(def.later ? { later: def.later(st, a) } : {}), ok: reason === null, ...(reason !== null ? { reason } : {}) };
 }
 
 export function advance(st: GameState, action: Action, rng?: Rng): Advance {

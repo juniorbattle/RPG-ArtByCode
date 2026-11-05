@@ -1,5 +1,6 @@
 import { PlazaApp } from '../world/PlazaApp';
-import { lookOf, rainOf, type GameState } from '../simulation';
+import { lookOf, rainOf, type Action, type GameState } from '../simulation';
+import { keepSeen, markSeen, seenBefore } from './news';
 import { playerMatch } from '../tournament/pool';
 import { PLAZA_CROWD, PLAZA_OF, plazaPeople } from '../simulation/v2places';
 import { PEOPLE } from '../narrative/people';
@@ -39,13 +40,16 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   b.loading.style.opacity = '0';
   setTimeout(() => b.loading.remove(), 900);
   (window as any).__stats = () => app.snapshot();
+  // the news since the player last looked, as on the quay (journal Passe EVL1: the square started from the log's last entry, and the news of a
+  // slot ended here were lost); what an action keeping the page shows at once counts as shown
   const ui = new TownUi({
-    state: () => st, act: (a) => (window as any).__game.act(a), reload: (extra) => go(b.params, extra),
+    state: () => st, act: keepSeen((a: Action) => (window as any).__game.act(a), () => st), reload: (extra) => go(b.params, extra),
     // only the people of the simulation talk (the guards at the forecourt's gate are its extras)
     nearby: () => { const w = app.nearby(); return w && PEOPLE[w] ? w : null; },
     // P4 (lot V9): the camera turns to the person spoken to
     focus: (who) => { const at = who ? app.spotOf(who) : null; void app.lookAt(at, 9, 0); },
-  }, st.log.length - 1);
+  }, seenBefore(st));
+  markSeen(st);
   (window as any).__ui = ui;
   (window as any).__game.subscribe(() => ui.render());
   window.addEventListener('keydown', (e) => { const k = e.key.toLowerCase(); if ((k === 'e' || k === ' ') && !e.repeat) { e.preventDefault(); ui.interact(); } });
@@ -70,6 +74,8 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   // a browser driven by a tool keeps today's flow (as the title screen: navigator.webdriver) unless the address asks for the scene (cutscene=1)
   const scenes = b.params.get('cutscene') === '1' || (!navigator.webdriver && b.params.get('cutscene') !== '0');
   if (scene && scenes) {
+    // the news of the slot that ended come first: the scene waits until they are read (journal Passe EVL1; it would hide their band)
+    await ui.newsRead;
     // the registrar's announcements open on the fanfare (SA-7 « Fanfare et texte », C-LIEUX, journal Passe SN10)
     if (ANNOUNCED.has(scene.id)) void import('../audio/Sound').then((m) => m.sound().sting('fanfare'));
     await playCutscene(st, scene, { look: (at, dist, secs) => app.lookAt(at, dist, secs), walk: (who, to) => app.walkTo(who, to), lock: (on) => { app.locked = on; } });

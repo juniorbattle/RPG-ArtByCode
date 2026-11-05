@@ -143,6 +143,9 @@ d'entraînement.
   fiche de seize choix https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`) est relue (Passe EV2 : seize sur seize à la recommandation ; les combattants génériques « En ville, structure gardée (Recommandé) »). Décidé : six lots, chacun
   dans sa séance derrière `flags.v2` (L1 la lecture, L2 voler / défier / marchander, L3 l'information et les réponses au sabotage, L4 les
   événements et les rivalités, L5 la ville qui réagit, L6 le récit, les scènes et le festival). Le recrutement et la phase d'équipe : plus tard.
+- **L1 fait (Passe EVL1, 05/11)** : les six défauts de lecture corrigés dans la version 2 (les nouvelles des places, celles d'une action dans sa
+  bande, « free » seulement quand rien n'est dépensé, les causes du journal en mots, la fiche de match juste sur l'observation, le vol réussi qui ne
+  promet plus rien) ; le jeu par défaut inchangé, ses propres écarts consignés. La suite : L2.
 
 ## Questions ouvertes pour l'opérateur
 

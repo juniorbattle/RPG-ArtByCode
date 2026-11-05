@@ -18,8 +18,9 @@ import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './st
 
 /** what an action takes, one tag per currency (the operator's decision P2, journal Passes UI1 / UI2): its coins (from the simulation, not
  *  the label), its slot; « free » only when it takes neither */
-export function costTag(o: Pick<ActionOption, 'cost' | 'coins'>): string {
-  const tags = [o.coins ? tx(o.coins === 1 ? 'ui.coin' : 'ui.coinsN', { n: o.coins }) : '', o.cost ? tx('ui.oneSlot') : ''].filter(Boolean);
+export function costTag(o: Pick<ActionOption, 'cost' | 'coins' | 'later'>): string {
+  // a slot booked now and spent later (a challenge's) is a slot spent: « free » never (journal Passe EVL1)
+  const tags = [o.coins ? tx(o.coins === 1 ? 'ui.coin' : 'ui.coinsN', { n: o.coins }) : '', o.cost || o.later ? tx('ui.oneSlot') : ''].filter(Boolean);
   return tags.length ? tags.map((t) => `<span class="cost">${t}</span>`).join('') : `<span class="cost free">${tx('ui.free')}</span>`;
 }
 

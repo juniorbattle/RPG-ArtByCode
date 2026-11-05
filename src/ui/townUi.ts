@@ -1,5 +1,5 @@
 import { actions, placeName, standings, dusk, type Action, type ActionOption, type GameEvent, type GameState } from '../simulation';
-import { offeredBy } from '../simulation/roles';
+import { offeredBy, SCOUTED } from '../simulation/roles';
 import { PEOPLE, titleOf } from '../narrative/people';
 import { linesOf } from '../narrative/dialogue';
 import { RIVALS } from '../narrative/roster';
@@ -80,6 +80,7 @@ const CSS = `
 .pm-dlg.here{grid-template-columns:minmax(0,716px) minmax(300px,1fr);column-gap:28px}
 .pm-dlg.here .who{grid-column:1}
 .pm-dlg.here .side{grid-column:2}
+.pm-dlg .who .news{margin:10px 0 0;font-size:var(--ds-fs-body);color:var(--ds-accent)}
 body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,body.pm-full #pm-status,body.pm-full #pm-figs,body.pm-full #pm-prompt,body.pm-full #pm-hints,body.pm-full #pm-veil-l,body.pm-full #pm-veil-r{visibility:hidden}
 .pm-port{line-height:0}
 .pm-port img{image-rendering:pixelated}
@@ -134,6 +135,14 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
 `;
 
 export { costTag, shortLabel };
+
+/** the match sheet's word on the opponent's skills (lot V9): named once the player watched them train; « scouting would tell you more » only of the
+ *  rivals one can watch (`SCOUTED`, journal Passe EVL1), the others' skills shown by the bout itself */
+export function foeIntel(s: GameState, id: string): string {
+  const name = RIVALS[id].name;
+  if (s.facts.includes(`scouted:${id}`)) return tx('ui.arena.foeSkills', { name, skills: (V2_FOES[id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') });
+  return SCOUTED.includes(id) ? tx('v2.sheet.unknown', { name }) : tx('v2.sheet.unseen', { name });
+}
 
 export class TownUi {
   private veils = [el('div', 'pm-veil'), el('div', 'pm-veil')];
@@ -249,7 +258,7 @@ export class TownUi {
     const root = el('div', 'pm pm-talk'), card = el('div', 'pm-dlg here'), side = el('div', 'side'), list = el('div', 'opts');
     root.dataset.here = '1';
     root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', tx('ui.here'));
-    card.innerHTML = `<div class="who"><h2 class="pm-h">${esc(placeName(s.place, v2).replace(/^the /, ''))}</h2><div class="pm-sub">${esc(s.player.name)}${s.player.items.length ? ` · ${esc(s.player.items.map((i) => i.replace('-', ' ')).join(', '))}` : ''}</div></div>`;
+    card.innerHTML = `<div class="who"><h2 class="pm-h">${esc(placeName(s.place, v2).replace(/^the /, ''))}</h2><div class="pm-sub">${esc(s.player.name)}${s.player.items.length ? ` · ${esc(s.player.items.map((i) => i.replace('-', ' ')).join(', '))}` : ''}</div>${this.saidHtml()}</div>`;
     if (fight) {
       const b = el('button', 'pm-btn primary', `<span>${tx('ui.enterArena')}</span><span class="cost">${tx('ui.oneSlot')}</span>`);
       // the version 2: the match sheet chooses the four skills first (lot V2, journal Passe V2)
@@ -288,13 +297,21 @@ export class TownUi {
     const r = this.host.act(a);
     if (!r.ok) { void this.card(`<p>${esc(r.reason ?? tx('ui.cannot'))}</p>`, tx('ui.close'), true); return r; }
     if (r.reload) { this.closeModal(); this.host.reload(); return r; }
-    this.render();
-    if (quiet) return r;
     // the dialogue that opens says who it is: « You meet Mara » stays in the journal, not on the screen (journal Passe UM1)
-    const news = (r.events ?? []).filter((e) => e.visible && e.id !== 'meet');
-    if (news.length) this.flash(news.map((e) => e.text));
+    const news = quiet ? [] : (r.events ?? []).filter((e) => e.visible && e.id !== 'meet').map((e) => e.text);
+    // a version 2 game (journal Passe EVL1): with a band open (the list, a dialogue) the news stand in it, under the place or the person's words,
+    // where the player is reading (the bandeau at the top is hidden while a band is open); today's game keeps its bandeau
+    const inBand = isV2(this.st) && news.length > 0 && (this.opening || document.body.classList.contains('pm-talking'));
+    if (inBand) this.said.push(...news);
+    this.render();
+    if (!inBand && news.length) this.flash(news);
     return r;
   }
+  /** a version 2 game: the news of an action taken in a band, shown by the band that opens next (the list again, the person's dialogue) */
+  private said: string[] = [];
+  /** a dialogue is opening: its first word's news go into it */
+  private opening = false;
+  private saidHtml(): string { const h = this.said.map((t) => `<p class="news" role="status">${esc(t)}</p>`).join(''); this.said = []; return h; }
 
   private flash(lines: string[]): void {
     this.toast.innerHTML = lines.map((x) => `<p>${esc(x)}</p>`).join('');
@@ -303,14 +320,17 @@ export class TownUi {
     (this.toast as any).t = setTimeout(() => this.toast.classList.remove('on'), 6500);
   }
 
+  /** the news shown as the page opened, read (closed); at once when there were none: a version 2 square's cutscene waits for it (journal Passe EVL1) */
+  newsRead: Promise<unknown> = Promise.resolve();
+
   /** what happened since the player last looked (the slot that ended, the bouts, the night) */
   private showNews(): void {
     const news = this.st.log.filter((e) => e.visible && e.seq > this.seenSeq);
     if (!news.length) return;
     // P6 (lot V9): back from a bout of the version 2, the result first, large
     const duel = isV2(this.st) ? news.find((e) => e.kind === 'match' && (e.id === 'player-won' || e.id === 'player-lost')) : undefined;
-    if (duel) { void this.card(`<div class="pm-result"><p class="pm-big">${duel.id === 'player-won' ? tx('v2.result.won') : tx('v2.result.lost')}</p>${news.slice(-8).map((e) => `<p>${esc(e.text)}</p>`).join('')}</div>`, tx('ui.goOn')); return; }
-    void this.card(`<h2 class="pm-h">${news.length > 1 ? tx('ui.meanwhile') : tx('ui.news')}</h2>${news.slice(-8).map((e) => `<p>${esc(e.text)}</p>`).join('')}`, tx('ui.goOn'), true);
+    if (duel) { this.newsRead = this.card(`<div class="pm-result"><p class="pm-big">${duel.id === 'player-won' ? tx('v2.result.won') : tx('v2.result.lost')}</p>${news.slice(-8).map((e) => `<p>${esc(e.text)}</p>`).join('')}</div>`, tx('ui.goOn')); return; }
+    this.newsRead = this.card(`<h2 class="pm-h">${news.length > 1 ? tx('ui.meanwhile') : tx('ui.news')}</h2>${news.slice(-8).map((e) => `<p>${esc(e.text)}</p>`).join('')}`, tx('ui.goOn'), true);
   }
 
   /** `band`: what is read in passing, at the foot of the screen; else a page on the full-screen veil */
@@ -342,8 +362,9 @@ export class TownUi {
     const s = this.st, p = PEOPLE[who];
     if (!p) return;
     const talk = actions(s).find((o) => o.action.type === 'talk' && (o.action as { who: string }).who === who);
-    if (!talk?.ok) { void this.card(`<p>${esc(talk?.reason ?? `${p.name} is not here.`)}</p>`, tx('ui.close'), true); return; }
-    this.run({ type: 'talk', who });
+    if (!talk?.ok) { this.said = []; void this.card(`<p>${esc(talk?.reason ?? `${p.name} is not here.`)}</p>`, tx('ui.close'), true); return; }
+    this.opening = true;
+    try { this.run({ type: 'talk', who }); } finally { this.opening = false; }
     const st = this.st, lines = linesOf(st, who), url = portraitUrl(who);
     const opts = actions(st).filter((o) => offeredBy(o.action as never) === who && !(o.action.type === 'scout' && (o.action as { who: string }).who !== who));
     const goods = opts.some(isWare);
@@ -353,7 +374,7 @@ export class TownUi {
     const root = el('div', 'pm pm-talk'), card = el('div', 'pm-dlg'), side = el('div', 'side');
     if (isV2(st)) this.host.focus?.(who);
     root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', p.name);
-    card.innerHTML = `${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(p.name)}<small>${esc(titleOf(p, isV2(this.st)))}</small></h2><div class="pm-line">${lines.map((l) => `<q>${esc(l)}</q>`).join('')}</div></div>`;
+    card.innerHTML = `${url ? `<span class="port"><img src="${url}" alt=""></span>` : ''}<div class="who"><h2 class="pm-h">${esc(p.name)}<small>${esc(titleOf(p, isV2(this.st)))}</small></h2><div class="pm-line">${lines.map((l) => `<q>${esc(l)}</q>`).join('')}</div>${this.saidHtml()}</div>`;
     const list = el('div', 'opts');
     if (goods) { const b = el('button', 'pm-btn', `<span>${tx(who === 'bram' ? 'ui.wares.seeForge' : 'ui.wares.see')}</span>`); b.addEventListener('click', () => this.openShop(who)); list.appendChild(b); }
     for (const o of opts) if (!goods || !isGoods(o)) list.appendChild(this.optionButton(o, () => { if (this.current === root) this.openPerson(who); }));
@@ -383,7 +404,7 @@ export class TownUi {
     const m = playerMatch(s); if (!m) return '';
     const id = opponentOf(m), r = RIVALS[id], url = portraitUrl(id), g = s.v2?.gear;
     const stage = stageName(m);
-    const intel = s.facts.includes(`scouted:${id}`) ? tx('ui.arena.foeSkills', { name: r.name, skills: (V2_FOES[id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') }) : tx('v2.sheet.unknown', { name: r.name });
+    const intel = foeIntel(s, id);
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
     return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
       + `<p class="pm-sub">${esc(intel)}</p><p class="pm-sub">${esc(gear)}</p>${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;

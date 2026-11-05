@@ -93,6 +93,8 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
     list: (s) => (isV2(s) ? Object.keys(CHALLENGERS).filter((w) => PEOPLE[w] && placeOf(PEOPLE[w], true) === s.place).map((who) => ({ type: 'challenge' as const, who })) : []),
     label: (_s, a) => tx('v2.challenge.label', { name: PEOPLE[a.who].name }),
     cost: () => 0,
+    // the slot is spent at the result (challengeResult); the tag says it now (rule P2, journal Passe EVL1)
+    later: () => 1,
     check: (s, a) => {
       if (!isV2(s)) return tx('v2.only');
       const p = PEOPLE[a.who];

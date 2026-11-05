@@ -154,3 +154,12 @@ La suite (EV-15 « L1 à L6 dans cet ordre ») : L1 la lecture ; L2 voler, défi
 avec les passants, la réputation et le soupçon expliqués, le joueur « curieux » du laboratoire) ; L3 l'information et les réponses au sabotage ;
 L4 les événements et les rivalités (chacun touche la préparation) ; L5 la ville qui réagit ; L6 le récit, les scènes et le festival. Chaque lot
 dans sa séance, derrière `flags.v2`, la structure du tournoi gardée.
+
+## 8. L1, la lecture (Passe EVL1, 05/11/2026)
+
+Les défauts 1, 2, 3, 4, 6 et 7 du § 4 sont corrigés dans une partie de la version 2 ; le 5 (le défi au Colisée plein) est l'arène aux gradins vides
+d'EV-5, lot L2. Le jeu par défaut reste tel quel : son journal montre encore les codes des actions (`action:repair`, `action:report`,
+`action:confront`, `match:…`), les nouvelles d'une action prise dans une bande y restent cachées, et son quai redit au créneau suivant ce que le
+bandeau a montré (écarts consignés au journal, Passe EVL1). Ce qui revient à L2 : le vol découvert le lendemain (EV-2 ; le texte du vol réussi ne
+promet plus rien d'ici là), la réputation et le soupçon expliqués dans le jeu, le défi à pleine vie avec une mise, une fois par phase, dans l'arène
+aux gradins vides (EV-3, EV-5).

@@ -63,6 +63,9 @@ const add = (s: GameState, who: string, n: number) => { s.town[who] = clamp((s.t
 const fact = (s: GameState, f: string) => { if (!s.facts.includes(f)) s.facts.push(f); };
 type T = { [K in RoleAction['type']]: ActionDef<Extract<RoleAction, { type: K }>> & { by: string | ((a: Extract<RoleAction, { type: K }>) => string) } };
 
+/** the rivals the player can watch train (at the forecourt, by day): the match sheet says so of them only (journal Passe EVL1) */
+export const SCOUTED: readonly string[] = ['vessa', 'marek'];
+
 export const ROLE_ACTIONS: T = {
   // ---------------------------------------------------------------- Mara, the merchant: the shop (open by day), rumours, a good turn
   buy: {
@@ -207,7 +210,7 @@ export const ROLE_ACTIONS: T = {
   },
   scout: {
     by: (a) => a.who,
-    list: (st) => (st.place === 'forecourt' ? ['vessa', 'marek'].map((who) => ({ type: 'scout', who })) : []),
+    list: (st) => (st.place === 'forecourt' ? SCOUTED.map((who) => ({ type: 'scout', who })) : []),
     label: (_, a) => tx('scout.label', { name: RIVALS[a.who].name }),
     cost: () => 1,
     check: (st, a) => available(st, a.who) ?? (st.facts.includes(`scouted:${a.who}`) ? tx('scout.known', { name: RIVALS[a.who].name }) : null),

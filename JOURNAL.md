@@ -370,6 +370,101 @@ Les seize choix suivent la recommandation de leur carte. Les quatre notes compl�
 - Une note de fiche qui ajoute un système (des combattants génériques) se fait situer avant de devenir un lot : la même phrase pouvait ajouter un jour au calendrier ou des gens à la ville, et seule la réponse de l'opérateur le dit.
 - Une question de l'opérateur écrite sur une fiche (« comment cela fonctionne ? ») reçoit sa réponse lue dans le code, au journal comme dans la conversation ; elle dit souvent ce que le joueur ne sait pas non plus.
 
+## Passe EVL1 — Étape 5, lot L1 : la lecture de la version 2, les six défauts corrigés (2026-11-05)
+
+### Demande
+- Transmise par la séance mère : construire le lot L1 de l'étape 5, le choix EV-1 de l'opérateur « Les corriger en premier (lot L1) » (Passe EV2). Il s'agit des six défauts de lecture relevés en jouant la version 2 (Passe EV1, `briefs/audit-gameplay-ev1.md` § 4). Aucune règle ne change, tout reste derrière `flags.v2` et le jeu par défaut reste identique (V2-17 « Pas encore »). Là où un défaut touche aussi le jeu par défaut (le journal, la liste Q), il n'est corrigé que dans une partie v2, et l'écart est consigné.
+- La consigne de l'opérateur pour chaque lot : l'importance narrative et la cohérence du gameplay, sans « se perdre dans la structure du jeu ».
+
+### Fait — [OK], derrière la version 2
+1. **Les nouvelles des places.**
+   - `src/ui/news.ts` (nouveau) garde dans le navigateur ce que le joueur a vu du journal du jeu (`seenBefore`, `markSeen`, avec la clé du quai depuis la Passe L4). Les trois places (`playPlaza.ts`) en partent au lieu de la dernière entrée, puis l'écrivent à leur tour. `playTown.ts` appelle les mêmes fonctions, avec le même comportement.
+   - Une page v2 (les places et le quai) compte aussi comme vu ce qu'une action montre sans recharger la page (`keepSeen`). Sans cela, chaque marche vers une place aurait redit dans « Meanwhile » l'achat qui venait d'être lu.
+   - Une cinématique de place attend que les nouvelles soient lues (`TownUi.newsRead`), sinon elle cachait leur bande.
+2. **Les nouvelles d'une action, dans la bande où elle est prise** (`townUi.ts`, `run`).
+   - Dans une partie v2, quand la liste Q ou un dialogue est ouvert, les nouvelles se rangent sous le nom du lieu ou sous les paroles de la personne, en ambre (`.pm-dlg .who .news`), là où le joueur lit. Elles partent à la bande suivante.
+   - Le bandeau du haut reste caché sous une bande (règle commune aux deux jeux). Le jeu par défaut garde ce bandeau.
+   - Effet voulu : la nouvelle d'une première parole (la présentation d'Orla) se lit désormais dans son dialogue.
+3. **« free » seulement quand rien n'est dépensé.**
+   - `ActionDef.later` désigne un créneau réservé maintenant et pris plus tard. Il apparaît dans `ActionOption.later`, seulement sur les actions qui en réservent un.
+   - Le défi porte `later: () => 1`. Son `cost` reste 0 : la règle ne bouge pas et le créneau est toujours pris au `challengeResult`. `costTag` compte ce créneau, et le défi dit désormais « 1 slot ».
+   - Son libellé ne répète plus le créneau : « Challenge {name} to a bout on the sand (won, a skill) » (règle P2, le prix dit une fois).
+4. **Les causes du journal en mots** (`journal.ts`, `whyOf`, partie v2).
+   - Une cause écrite en phrase reste telle quelle.
+   - Un code se dit en mots : `action:steal` devient « your hand in a stall », `action:checkGear` « Hilde's look at your gear », `match:<id>` « your bout against <nom> », `challenge:<qui>` « your challenge to <nom> », les autres actions « what you did ». Les autres codes (`quest:`, `tournament:`…) ne s'affichent pas.
+5. **La fiche de match juste sur l'observation** (`foeIntel` ; `SCOUTED` dans `roles.ts`, liste désormais partagée par l'action `scout` et par la fiche).
+   - « scouting would tell you more » ne s'affiche plus que pour Vessa et Marek.
+   - Pour les autres : « You have never watched {name} train: the bout will show you the skills. ». Ce texte reste juste tant que L3 (EV-11) n'étend pas l'observation, et la fiche suivra d'elle-même la liste.
+6. **Le vol réussi** dit désormais « Nobody sees your hand: {item} is yours, and {name} has noticed nothing. » : il ne promet plus de soir. Le vol découvert le lendemain revient à L2 (EV-2).
+- **Outils** : `tools/play-day.mjs` `V2=1` joue ses pas par l'interface de la page (`__ui.run`, comme un joueur) et vérifie :
+  - un vol pris dans la liste Q, dit dans sa bande, puis la liste rouverte sans l'ancienne nouvelle ;
+  - les nouvelles d'une place après un créneau fini sur elle, et aucune après une marche ;
+  - le défi d'Orla étiqueté « 1 slot » ;
+  - les causes du journal en mots.
+- **`AGENTS.md`** : le test, `play-day` (sa suite de description, glissée sous `pad-proof`, remise en place).
+
+### Écarts consignés — le jeu par défaut, inchangé exprès
+- Son journal écrit encore « Why: action:repair », « action:report », « action:confront », et « match:r… » sous une blessure (contraire à UM-R3).
+- Les nouvelles d'une action prise dans une bande (dénoncer, confronter, une action de la liste Q) y restent cachées sous `body.pm-talking`.
+- Son quai redit au créneau suivant ce que le bandeau a déjà montré : « vu » y vaut ce qui était au journal à l'ouverture de la page.
+- Ces trois points se corrigent quand la version 2 deviendra le défaut, ou sur une décision de l'opérateur. La place du parvis et Lantern Row de la tranche (`playForecourt`, `playLanterns`) ne sont pas touchées.
+
+### Tests — [OK]
+- **`tests/v2-reading.test.mjs`** (neuf tests ; les oracles ne passent pas par le code testé) :
+  - le créneau est lu sur les états : jour et créneau avant et après, avec le résultat du défi appliqué, gagné et perdu ;
+  - les rivaux observables sont lus sur les actions offertes au fil d'une partie ;
+  - les causes sont lues sur les entrées de douze parties v2 du laboratoire et d'un voleur pris ;
+  - « Wait » sur quatre places, avec le défaut reproduit par l'oracle (depuis la dernière entrée, rien ne s'affiche) ;
+  - le parcours marchandage, puis créneau, puis marche, avec un stockage en mémoire ;
+  - le câblage des places, du quai, de la bande et de la scène ;
+  - le texte du vol, et rien ne suit le vol le soir et la nuit.
+- **Onze fautes injectées une à une, toutes attrapées** :
+  - la place repart de la dernière entrée ;
+  - `keepSeen` marque aussi au rechargement ;
+  - `costTag` ignore le créneau réservé ;
+  - `whyOf` rend le code ;
+  - la fiche dit « scouting » pour tous ;
+  - le vol promet encore le soir ;
+  - les nouvelles en bande aussi dans le jeu par défaut ;
+  - le quai v2 sans `keepSeen` ;
+  - `whyOf` traduit aussi dans le jeu par défaut ;
+  - la scène n'attend plus les nouvelles ;
+  - la carte du duel hors de `newsRead`.
+
+### Preuves — [OK]
+- Serveurs par `preview_start` : la branche en DEV `:5241` ; `main` figé (`git archive` de `fda36f6`) en DEV `:5242` ; les deux paquets de production par `vite preview` `:5243` et `:5244`.
+- **Le jeu par défaut, inchangé** :
+  - `detshots` à 0 px contre `main` figé sur sept vues : la ville de nuit et à midi ; le mode jouable par défaut à l'ouverture, avec la liste Q, le dialogue de Mara, le journal et le tableau. Le témoin de répétition est à 0 px.
+  - La ville d'une partie v2 est elle aussi à 0 px (l'ouverture, la liste Q, Mara, le journal). **Contrôle négatif** : la même liste après un vol diffère, 3 752 px dans la seule ligne de nouvelles.
+  - `title-proof` : trois paires à 0 px. Contrôle négatif (`BASE_QUERY=`, la nuit de `main`) : 99,7 % de différence.
+  - `play-flow` : par défaut `0025acce7a403773`, et `V2=1` `cf669f2d59e33a8d`, les empreintes des Passes CH1 et MN2.
+  - `play-day` par défaut : tous les contrôles passent, avec la même empreinte `6a942086a2616ab2` sur la branche et sur `main` figé.
+  - TournamentLab : règles classiques, dynamiques et v2, 50 graines, `idle` et `diligent`, plus les trois scripts : le rapport (`labReport`, ce que `--json` écrit) et l'empreinte de chaque partie sont identiques au JSON près.
+  - Les paquets de production découpent les mêmes morceaux que `main`.
+  - Sur ces paquets (`vite build` de la branche et de `main` figé), les mêmes douze vues donnent le même résultat qu'en DEV : 0 px partout sauf la ligne de nouvelles du vol (3 752 px), témoin à 0 px.
+- **La version 2** :
+  - `play-day` `V2=1` (graines 1842, 7719, 30417 et 5) : tous les contrôles passent. Le vol est réussi avec 1842 et pris avec les trois autres, et le journal dit alors « Why: your hand in a stall ». Les nouvelles de l'entraînement après l'entraînement avec Orla s'affichent (« Meanwhile in the Cité »), et Node rejoue avec la même empreinte.
+  - Une place avec nouvelles et cinématique (`v2-forecourt-midday`, `cutscene=1`, la clé « vu » remise en arrière) : la bande des hérauts paraît, la scène attend 2,5 s sans partir, puis part à Entrée. Sur `main` figé, la même page n'a pas de bande et la scène part tout de suite : le défaut 1 reproduit.
+  - `ui-text` : 12 pages sur 12. Ce sont la liste après un vol réussi et après un vol pris, le dialogue d'Orla, le journal avec sa cause, et la fiche de match contre Vessa et contre Orla (jour 4), chacune à 1 600 × 900 et 390 × 844. Le plus petit texte fait 16 px sur ordinateur et 14 px au téléphone.
+  - `ui-contrast` (deux moments) : 10 pages sur 10 au-dessus de 4,5:1. Les lignes de nouvelles en ambre sont à 7,9-8,3:1.
+  - `pad-proof` : tous les contrôles passent (59).
+- `npm run typecheck`, `npm test` 430 sur 430, `npm run build`, `npm run art:validate`.
+
+### Ce qui revient à L2 (voler, défier, marchander)
+- **Le vol découvert** (EV-2 « Un soupçon qui dure, une sortie par la restitution », avec la note de l'opérateur sur une représaille réelle). Le texte du vol réussi ne promet plus rien : c'est L2 qui écrit la découverte du lendemain et son texte, à rattacher à un personnage, un lieu et un moment du calendrier.
+- **La réputation et le soupçon expliqués dans le jeu** (Passe EV2) : deux nombres distincts, ce que chacun ouvre et ferme.
+- **Le défi** : pleine vie, une mise, une fois par phase (EV-3), dans l'arène aux gradins vides (EV-5). Le Colisée plein du défi, défaut 5 du § 4 de l'audit, revient à L2, pas à L1. Si L2 ajoute une mise, `coins` s'ajoute à `later` dans la même étiquette.
+- **Pour L3** : l'observation étendue (EV-11) passe par `SCOUTED` (ou ce qui la remplacera), que la fiche de match lit déjà.
+
+### Limites
+- La bande des nouvelles d'une place n'a été mesurée par `ui-text` qu'à travers les autres bandes du même composant (`overlay`, inchangé) ; la bande d'arrivée elle-même a été vue sur les captures de `play-day`.
+- Personne n'a joué une cinématique de place avec nouvelles au clavier jusqu'au bout. Le contrôle s'arrête à la première ligne de la scène.
+
+### Pensée
+- Une page qui reprend ses nouvelles là où le joueur les a laissées compte aussi ce qu'elle a montré en route ; sinon chaque déplacement redit ce que le joueur vient de lire.
+- Un prix payé plus tard reste un prix. L'interface le lit dans le cœur, par un champ d'affichage, sans changer la règle qui le prend.
+- Ce qui s'ouvre par-dessus une bande la cache : une scène attend la lecture de ce qui l'a précédée.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -388,7 +483,7 @@ Les seize choix suivent la recommandation de leur carte. Les quatre notes compl�
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge de Ren et la feuille de Marek sont faites (Passes CX1, CX2 ; X3 « Ren seul, avant Marek » : pas de poses de charge pour Vessa).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
   - **La charge sans palier puissant (Passe CH1, décision A3 du 2026-11-04)** : l'attaque puissante est une compétence (1 PA, ses niveaux, possédée dès le départ, emportée ou non), les temps de charge et la puissance des coups chargés à 0,85, l'équilibre de V2C2 retrouvé (59,6 %) ; contrat et spécification amendés. **Fiche relue, six sur six à la recommandation (Passe CH2)** : CH-1 « 0,85 (−15 %) », CH-2 « La puissance suit la tenue (×0,85) », CH-3 « 1 PA », CH-4 « Les quatre d’aujourd’hui, la puissante à côté », CH-5 « Bien ainsi (à confirmer en jeu) », CH-6 « Fusionner après la fiche, essayer ensuite » ; fusionné dans `main`. **Reste l'essai en jeu de l'opérateur.**
-  - **Étape 5, le gameplay (Passe EV1)** : audit des événements, du vol, du défi, du marchandage et du récit de la version 2 contre les contrats (`briefs/audit-gameplay-ev1.md`) : le défi sans enjeu (gagné 15 fois sur 15), le vol sans suite (un voleur à réputation 0 qualifié 9 fois sur 10), le marchandage un dé, trois ambiances à 52 % des nouvelles, une seule réponse (la garde du quai) contre les deux sabotages, trois champs du pouls lus par rien, l’information et la réaction visible de la ville minces, le festival et l’investissement absents ; six défauts de lecture relevés (dont les nouvelles de fin de créneau perdues sur les places). **Fiche relue, seize sur seize à la recommandation (Passe EV2)** : https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`), quatre notes consignées mot pour mot (une représaille possible après un vol, des combattants génériques, le marchandage avec les passants, des événements qui touchent la préparation) ; les génériques « En ville, structure gardée (Recommandé) » ; la consigne : l’importance narrative et la cohérence du gameplay, sans se perdre dans la structure. **La suite : L1 (la lecture), puis L2 à L6 dans cet ordre (EV-15)**, chacun dans sa séance derrière `flags.v2`. Le recrutement et la phase d’équipe restent un chantier plus tard.
+  - **Étape 5, le gameplay (Passe EV1)** : audit des événements, du vol, du défi, du marchandage et du récit de la version 2 contre les contrats (`briefs/audit-gameplay-ev1.md`) : le défi sans enjeu (gagné 15 fois sur 15), le vol sans suite (un voleur à réputation 0 qualifié 9 fois sur 10), le marchandage un dé, trois ambiances à 52 % des nouvelles, une seule réponse (la garde du quai) contre les deux sabotages, trois champs du pouls lus par rien, l’information et la réaction visible de la ville minces, le festival et l’investissement absents ; six défauts de lecture relevés (dont les nouvelles de fin de créneau perdues sur les places). **Fiche relue, seize sur seize à la recommandation (Passe EV2)** : https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`), quatre notes consignées mot pour mot (une représaille possible après un vol, des combattants génériques, le marchandage avec les passants, des événements qui touchent la préparation) ; les génériques « En ville, structure gardée (Recommandé) » ; la consigne : l’importance narrative et la cohérence du gameplay, sans se perdre dans la structure. **L1 fait (Passe EVL1)** : les six défauts de lecture corrigés dans la version 2 (les nouvelles des places, celles d’une action dans sa bande, « free », les causes du journal, la fiche de match, le vol réussi) ; le jeu par défaut inchangé, trois écarts à lui consignés (les codes de son journal, ses nouvelles cachées sous une bande, son quai qui redit le bandeau). **La suite : L2 (voler, défier, marchander), puis L3 à L6 dans cet ordre (EV-15)**, chacun dans sa séance derrière `flags.v2` ; ce que L2 reprend de L1 : Passe EVL1, « Ce qui revient à L2 ». Le recrutement et la phase d’équipe restent un chantier plus tard.
   - **La manette (Passe MN1)** : état des lieux de chaque chemin d'entrée (seul le duel lit une manette, la première seulement), prototype de revue des glyphes (DEV, `?padglyph=`), fiche https://claude.ai/artifact/F2fYfXXjwL5y6o7p5q4fj1 relue onze sur onze à la recommandation ; **construite et prouvée (Passe MN2)** : la ville, les places, toutes les pages, l'écran titre et le duel de la version 2 à la manette, le jeu au clavier à 0 px contre `main` (DEV et paquets), une manette simulée jouant le premier jour et un combat. **Reste l'essai de l'opérateur avec sa manette** (MN-11) : le son à la première pression (MN-10), la vibration, la zone morte et la marche la plus lente.
   - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
@@ -1019,3 +1114,4 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Une preuve qui compare la sortie du moteur à un fichier cuit applique à sa référence le traitement que le moteur doit faire, calculé d'après la décision et non d'après le code ; la référence sans traitement sert de témoin (Passe SN22).
 - Une tenue raccourcie se paie par la puissance : quand le coup suit la tenue, le facteur ne change plus l'équilibre, seulement le ressenti ; un outil qui recopie un script du code pour le jouer dans la page se garde par un test qui compare les deux copies (Passe CH1).
 - Un événement n’a de conséquence que si quelque chose lit ce qu’il écrit : on cherche les lecteurs d’un effet (`playerFame` n’en a aucun) avant de le compter ; une page qui se recharge reprend ses nouvelles là où le joueur les a laissées (Passe EV1).
+- « Vu » se compte à l’affichage, pas à l’ouverture de la page : ce qu’une action a montré sans recharger ne se redit pas à la page suivante ; un prix pris plus tard (le créneau d’un défi) se lit dans le cœur par un champ d’affichage, la règle intacte ; une scène attend la lecture de ce qu’elle recouvrirait (Passe EVL1).

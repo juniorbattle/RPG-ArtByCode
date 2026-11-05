@@ -1,7 +1,9 @@
 // The first day played in the town page (journal Passe L4): a new game; at the keyboard, the hero placed by Mara's stall and E pressed must
 // open her dialogue (portrait, words, her shop); then the day through window.__game (the steel cargo: Tam, Hale, the haul; the forecourt:
 // the roll, sparring with Orla; the evening), each slot change saved and the page reloaded from the save, the state's fingerprint kept; the
-// second morning reached. Node replays the same actions: same fingerprint.
+// second morning reached. Node replays the same actions: same fingerprint. A version 2 game (V2=1) plays its steps through the page's
+// interface and checks the reading of journal Passe EVL1: a theft from the list (Q) said in its band, a square's news after a slot ended there
+// (none after a walk), Orla's challenge tagged « 1 slot », the journal's causes in words.
 //   node tools/play-day.mjs <outDir> [seed]   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -23,7 +25,9 @@ const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (
 try {
   const page = await b.newPage();
   page.on('pageerror', (e) => { errors++; console.log('[pageerror]', e.message); });
-  const open = async (q) => { await page.goto(`${BASE}${q}`, { waitUntil: 'load', timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); check(!(await page.evaluate(() => window.__error ?? null)), `page ${q} ready`); await new Promise((r) => setTimeout(r, 1200)); await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click()); };
+  // the page's news band, read before it is closed (journal Passe EVL1: a square shows the news of a slot that ended there)
+  let band = null;
+  const open = async (q, shot) => { await page.goto(`${BASE}${q}`, { waitUntil: 'load', timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); check(!(await page.evaluate(() => window.__error ?? null)), `page ${q} ready`); await new Promise((r) => setTimeout(r, 1200)); band = await page.evaluate(() => { const o = document.querySelector('.pm-overlay.pm-band'); return o ? [...o.querySelectorAll('.pm-body p')].map((p) => p.textContent) : null; }); if (shot && band) await page.screenshot({ path: shot }); await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click()); };
   await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1${V2 ? '&v2=1' : ''}`);
   check((await page.evaluate(() => window.__game.state().flags.v2 ?? null)) === (V2 ? true : null), `the version 2's flag: ${V2 ? 'on' : 'absent'}`);
   // 1. the keyboard: next to Mara, E opens her dialogue
@@ -79,6 +83,18 @@ try {
     await page.keyboard.press('Space'); const k2 = await four();
     check(k0.n === '4' && !!k0.what && k1.n === '3' && k1.on === 3 && k2.n === '4' && k2.kit.split(',').length === 4, `K: a skill left out and brought back at the keyboard: ${JSON.stringify([k0, k1, k2])}`);
     await page.keyboard.press('Escape');
+    // 1d. the list (Q) at the keyboard, a theft taken from it (journal Passe EVL1): seen or caught, its news stand in the band, under the place
+    await page.keyboard.press('q');
+    await page.waitForSelector('.pm-talk [data-here], .pm-talk .pm-dlg.here', { timeout: 20000 }).catch(() => {});
+    const steal = await page.evaluate(() => { const b = [...document.querySelectorAll('.pm-talk .pm-btn')].find((x) => /^Steal /.test(x.textContent)); if (!b) return null; b.click(); return b.textContent; });
+    const told = await page.evaluate(() => ({ band: [...document.querySelectorAll('.pm-talk .pm-dlg .who .news')].map((p) => p.textContent), last: window.__game.state().log.at(-1), toast: getComputedStyle(document.getElementById('pm-toast')).visibility }));
+    check(!!steal && told.last.id.startsWith('steal:') && told.band.length === 1 && told.band[0] === told.last.text, `Q: a theft's news in the band (${told.last?.id}): ${JSON.stringify(told.band)}`);
+    await page.screenshot({ path: path.join(outDir, 'day1-steal-band.png') });
+    if (steal) done.push({ type: 'steal', shop: 'mara' });
+    // the next press in the list shows the band again without the old news
+    await page.keyboard.press('Escape'); await page.keyboard.press('q');
+    check(await page.evaluate(() => document.querySelectorAll('.pm-talk .pm-dlg .who .news').length === 0), 'the list opened again: no old news');
+    await page.keyboard.press('Escape');
   }
   // 2. the day, through the game API; each reload goes through the save
   const steps = [{ type: 'talk', who: 'tam' }, { type: 'talk', who: 'hale' }, { type: 'askPapers' }, { type: 'haul' },
@@ -86,15 +102,32 @@ try {
     // the version 2: Orla drills at the training ground (lot V5)
     ...(V2 ? [{ type: 'move', to: 'training' }] : []), { type: 'talk', who: 'orla' }, { type: 'spar' },
     { type: 'move', to: 'district' }, { type: 'wait' }];
+  // a version 2 game plays them as a player does, through the page's interface (window.__ui.run: what it shows counts as shown, journal Passe
+  // EVL1); today's game through the game API, as before
+  const actIn = (x) => (window.__ui && window.__game.state().flags.v2 === true ? window.__ui.run(x) : window.__game.act(x));
   for (const a of steps) {
-    const r = await page.evaluate((x) => window.__game.act(x), a);
+    const r = await page.evaluate(actIn, a);
     check(r.ok, `act ${JSON.stringify(a)}${r.ok ? '' : `: ${r.reason}`}`);
     if (!r.ok) continue;
     done.push(a);
     if (r.reload) {
       const h = await page.evaluate(() => window.__game.hash()), to = await page.evaluate(() => { const g = window.__game.state(); return g; });
-      await open('?play=1&vis=0&noreload=1');
+      await open('?play=1&vis=0&noreload=1', V2 && to.place !== 'district' ? path.join(outDir, `news-${to.place}-${a.type}.png`) : undefined);
       check(await page.evaluate(() => window.__game.hash()) === h, `reloaded from the save (day ${to.day} ${to.slot}, ${to.place}): same state`);
+      // a version 2 square (journal Passe EVL1): the news of the slot that ended there on the page that opens, the last eight; a walk tells nothing
+      if (V2 && to.place !== 'district') {
+        const want = (r.events ?? []).filter((e) => e.visible && e.id !== 'meet').map((e) => e.text).slice(-8);
+        check(want.length ? !!band && want.every((t) => band.includes(t)) : band === null, `the ${to.place}'s news after ${a.type}: ${JSON.stringify(band)}`);
+      }
+    }
+    // a version 2 game, at the training ground: Orla's challenge takes a slot, its tag says so (journal Passe EVL1, rule P2)
+    if (V2 && a.type === 'move' && a.to === 'training') {
+      await page.evaluate(() => window.__ui.openPerson('orla'));
+      done.push({ type: 'talk', who: 'orla' });
+      const tag = await page.evaluate(() => { const b = [...document.querySelectorAll('.pm-talk .pm-btn')].find((x) => /^Challenge /.test(x.textContent)); return b ? [...b.querySelectorAll('.cost')].map((c) => c.textContent) : null; });
+      check(JSON.stringify(tag) === '["1 slot"]', `Orla's challenge: ${JSON.stringify(tag)}`);
+      await page.screenshot({ path: path.join(outDir, 'day1-orla-challenge.png') });
+      await page.keyboard.press('Escape');
     }
   }
   const st = await page.evaluate(() => window.__game.state());
@@ -103,6 +136,15 @@ try {
   const ui = await page.evaluate(() => ({ clock: document.querySelector('#pm-status .clock')?.textContent, where: document.querySelector('#pm-status .where')?.textContent, next: document.querySelector('#pm-status .next')?.textContent }));
   check(new RegExp(`Day 2 / ${V2 ? 10 : 3}`, 'i').test(ui.clock ?? '') && /morning/i.test(ui.where ?? '') && /Vessa Lark/.test(ui.next ?? ''), `the clock and the next deadline: ${ui.clock} · ${ui.where} — ${ui.next}`);
   await page.screenshot({ path: path.join(outDir, 'day2-morning.png') });
+  // a version 2 journal (journal Passe EVL1, UM-R3): every day's causes in words, never a code (`action:steal`, `match:r1:player-vessa`)
+  if (V2) {
+    await page.keyboard.press('j');
+    await page.waitForSelector('.pm-days .pm-btn.on', { timeout: 20000 }).catch(() => {});
+    const whys = [];
+    for (let i = 0; i < 3; i++) { whys.push(...await page.evaluate(() => [...document.querySelectorAll('.pm-days .pm-detail .why')].map((w) => w.textContent))); await page.keyboard.press('ArrowDown'); }
+    check(!whys.some((w) => /[\w-]+:\S/.test(w.replace(/^Why: /, ''))), `the journal's causes in words: ${JSON.stringify([...new Set(whys)])}`);
+    await page.keyboard.press('Escape');
+  }
   const server = await createServer({ root: path.resolve(import.meta.dirname, '..'), configFile: false, logLevel: 'error', appType: 'custom', cacheDir: 'node_modules/.vite-test', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, optimizeDeps: { noDiscovery: true } });
   try {
     const G = await server.ssrLoadModule('/src/simulation/index.ts');

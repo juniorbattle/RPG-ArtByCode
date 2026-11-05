@@ -1,5 +1,6 @@
 import { App } from '../app/App';
-import { isV2, lookOf, townQuery, type GameState } from '../simulation';
+import { isV2, lookOf, townQuery, type Action, type GameState } from '../simulation';
+import { keepSeen, markSeen, seenBefore } from './news';
 import { go, installGameApi, type Boot } from './play';
 import { TownUi } from './townUi';
 import { esc, overlay } from './style';
@@ -20,7 +21,6 @@ import { parseWeather } from '../atmosphere/Weather';
 const CARRY_TOWN = ['fps', 'vis', 'viscache', 'painters', 'res', 'msaa', 'refl', 'camera', 'player', 'static', 'occ', 'freeze', 'gpuprof', 'spriteedge', 'npcfacing'];
 /** the district's archetypes standing for the game's people (choice P4: their existing sprites) */
 const PERSON_OF: Record<string, string> = { merchant: 'mara', blacksmith: 'bram', guardA: 'hale', guardB: 'wynn', hooded: 'stranger', porter: 'tam' };
-const SEEN = 'cite-du-tournoi.seen';
 
 export async function startPlayTown(b: Boot, st0: GameState, note?: string): Promise<void> {
   let st = st0;
@@ -47,12 +47,11 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   b.loading.style.opacity = '0';
   setTimeout(() => b.loading.remove(), 900);
   (window as any).__stats = () => app.snapshot();
-  let seen = -1;
-  try { seen = Number(localStorage.getItem(SEEN) ?? -1); } catch { /* a page without storage shows the latest news */ }
-  if (!(seen >= 0) || seen >= st.log.length) seen = Math.max(-1, st.log.length - 2);
+  const seen = seenBefore(st), act = (a: Action) => (window as any).__game.act(a);
   const ui = new TownUi({
     state: () => st,
-    act: (a) => (window as any).__game.act(a),
+    // a version 2 game counts as shown what an action keeping the page showed at once (journal Passe EVL1); today's game keeps its rule
+    act: isV2(st) ? keepSeen(act, () => st) : act,
     reload: (extra) => go(b.params, extra),
     nearby: () => {
       const p = app.actors.player;
@@ -67,7 +66,7 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
       return best;
     },
   }, seen);
-  try { localStorage.setItem(SEEN, String(st.log.length - 1)); } catch { /* a convenience only */ }
+  markSeen(st);
   (window as any).__ui = ui;
   (window as any).__game.subscribe(() => ui.render());
   // E / Space next to someone opens their dialogue (the district's bubble stays: its « ... » is the town's own)
