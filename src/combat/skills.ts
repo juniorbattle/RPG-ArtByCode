@@ -10,12 +10,13 @@ import type { DynActionDef, DynActionId } from './dynamic';
  *  The heavy attack is a skill since the operator's decision A3 of 2026-11-04 (journal Passe CH1, word for word: « On peut la retirer mais donc on
  *  devra aussi revoir le temps de chargement des autres actions qui seront legerement plus courts attaque puissante deviendra une des competences
  *  par exemple.. »): no tier of its own at 2 s any more (HEAVY_AT and the floor « 0.25 s after it » are gone), it is brought or not among the four
- *  like the others, with its levels; and every charge time is a little shorter: CHARGE_TRIM of the times of journal Passe V1 (« proposé »). */
+ *  like the others, with its levels; and every charge time is a little shorter: CHARGE_TRIM of the times of journal Passe V1 (the operator's CH-1 « 0,85 (−15 %) », journal Passe CH2). */
 
 export const MAX_LEVEL = 5;
 /** each level's power: damage, a ward's or a boost's duration */
 export const LEVEL_POWER = [1.0, 1.1, 1.2, 1.3, 1.4] as const;
-/** the charge times' share of journal Passe V1's (« proposé », journal Passe CH1: « legerement plus courts »), rounded to 0.05 s */
+/** the charge times' share of journal Passe V1's (« legerement plus courts », journal Passe CH1; the operator's CH-1 « 0,85 (−15 %) », journal Passe CH2),
+ *  rounded to 0.05 s */
 export const CHARGE_TRIM = 0.85;
 
 export type Times = readonly [number, number, number, number, number];

@@ -72,7 +72,8 @@ export const V2_FOE_HIT = 1.45;
 export const V2_FOE_HP = 1.2;
 
 /** the player's skills in the version 2: the four brought, each at its level (default: today's loadout at level 1); the heavy attack is owned
- *  from the start since it became a skill (journal Passe CH1), at level 1, after the four (the skills page lists them in this order) */
+ *  from the start since it became a skill (journal Passe CH1), at level 1, after the four (the skills page lists them in this order; the operator's CH-4 « Les quatre d’aujourd’hui, la
+ *  puissante à côté », journal Passe CH2) */
 export interface V2Kit { loadout: DynActionId[]; levels: Record<string, number> }
 export const V2_START_KIT: V2Kit = { loadout: ['t1', 't4', 'd1', 's1'], levels: { t1: 1, t4: 1, d1: 1, s1: 1, heavy: 1 } };
 
@@ -80,7 +81,7 @@ export interface V2Duel { data: DynData; tiers: ChargeTier[] }
 
 /** a charged blow pays for its hold (the light attack keeps today's numbers): its damage and what it adds to the opponent's gauge, by action,
  *  and a ward's or a boost's duration (a held charge is time the light attacks did not take); `ap` an action's points under the three buttons
- *  when they are not its own: the heavy attack, a skill since journal Passe CH1, free while it had its own tier (« proposé »; the old scheme,
+ *  when they are not its own: the heavy attack, a skill since journal Passe CH1, free while it had its own tier (the operator's CH-3 « 1 PA », journal Passe CH2; the old scheme,
  *  input=keys, keeps it free) */
 export const V2_POWER: Record<string, { damage: number; resist: number; dur?: number; ap?: number }> = {
   heavy: { damage: 2.2, resist: 2, ap: 1 }, t1: { damage: 4, resist: 2 }, t2: { damage: 4.2, resist: 2 }, t3: { damage: 3.2, resist: 2 }, t4: { damage: 3.4, resist: 2.5 },
@@ -89,7 +90,7 @@ export const V2_POWER: Record<string, { damage: number; resist: number; dur?: nu
   k_sunder: { damage: 5, resist: 2 }, k_feint: { damage: 3.2, resist: 2 }, k_iron: { damage: 1, resist: 1, dur: 1.4 }, k_parry: { damage: 1, resist: 1, dur: 1.6 },
   k_cry: { damage: 1, resist: 1, dur: 1.5 }, k_focus: { damage: 1, resist: 1, dur: 1.3 },
 };
-/** a charged blow's damage against the table above since the charge times were trimmed (journal Passe CH1, « proposé »): the power follows the
+/** a charged blow's damage against the table above since the charge times were trimmed (journal Passe CH1; the operator's CH-2 « La puissance suit la tenue (×0,85) », journal Passe CH2): the power follows the
  *  hold, so the duel keeps the balance of journal Passe V2C2 (the prepared player six bouts in ten); a ward's or a boost's length unchanged */
 export const V2_POWER_TRIM = CHARGE_TRIM;
 function charged(a: DynActionDef): DynActionDef {

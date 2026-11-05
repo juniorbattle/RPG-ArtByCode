@@ -468,6 +468,36 @@ Six choix suivent la recommandation de leur carte. S5-DUREE, S5-JEU et SA-10 n'e
 - Un outil qui recopie un script du code pour le jouer dans la page se garde par un test qui compare les deux copies.
 - Ce que le joueur possède sans l'emporter se range après ce qu'il emporte : la première ligne d'une page est celle que le clavier touche.
 
+## Passe CH2 — La fiche de la charge relue, six sur six : les nombres de la Passe CH1 décidés, la branche fusionnée (2026-11-04 → 2026-11-05)
+
+### Demande
+- L'opérateur, mot pour mot : « Fiche remplie ». Relire `decisions` (https://claude.ai/artifact/E3wBJw2yyKhhCcnzb2167G, source `briefs/fiche-ch1.html`), consigner les choix mot pour mot, n'appliquer que ce qu'ils décident, puis fusionner selon CH-6 (Passe CH1).
+
+### Les choix de l'opérateur, mot pour mot (six sur six, sans note)
+Relus par `list` : 6 documents, cliqués le 2026-11-05 entre 02 h 57 et 02 h 58 UTC.
+
+| Carte | Ce qu'elle demandait | Choix |
+|---|---|---|
+| CH-1 | Les temps de charge : plus courts de combien ? | « 0,85 (−15 %) » |
+| CH-2 | La puissance des coups chargés | « La puissance suit la tenue (×0,85) » |
+| CH-3 | Ce que coûte l'attaque puissante | « 1 PA » |
+| CH-4 | Les quatre compétences d'une partie neuve | « Les quatre d’aujourd’hui, la puissante à côté » |
+| CH-5 | Ce que montre le premier palier | « Bien ainsi (à confirmer en jeu) » |
+| CH-6 | Fusionner, puis l'essai en jeu | « Fusionner après la fiche, essayer ensuite » |
+
+Les six choix suivent la recommandation de leur carte.
+
+### Ce que ces choix veulent dire — [OK]
+- Le code de la Passe CH1 était déjà réglé sur ces six recommandations : **aucune règle ni aucun nombre ne change**, aucune mesure n'est à refaire.
+- Les nombres « proposé » de la Passe CH1 sont décidés : la spécification (`briefs/combat-system.md`, en tête et § 4b), `AGENTS.md` (le paramètre `v2=1`) et les commentaires de `src/combat/skills.ts` et `src/combat/v2duel.ts` citent désormais CH-1 à CH-4 à la place de « proposé ».
+- CH-5 : la lecture du premier palier se confirme en jeu ; CH-6 : fusion maintenant, l'essai en jeu de l'opérateur dans `main` ensuite (`npm run dev`, puis `/?scene=arena&v2=1` et `/?play=1&new=1&v2=1`, K pour les compétences).
+
+### Preuves
+- `npm run typecheck`, `npm test`, `npm run build`, `npm run art:validate` sur le commit de cette passe (seuls des commentaires et des documents changent depuis la Passe CH1).
+
+### Où reprendre
+- L'essai en jeu de l'opérateur : le ressenti des temps raccourcis, la puissante emportée ou non, le premier palier (CH-5).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -485,7 +515,7 @@ Six choix suivent la recommandation de leur carte. S5-DUREE, S5-JEU et SA-10 n'e
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge de Ren et la feuille de Marek sont faites (Passes CX1, CX2 ; X3 « Ren seul, avant Marek » : pas de poses de charge pour Vessa).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
-  - **La charge sans palier puissant (Passe CH1, décision A3 du 2026-11-04)** : l'attaque puissante est une compétence (1 PA, ses niveaux, possédée dès le départ, emportée ou non), les temps de charge et la puissance des coups chargés à 0,85, l'équilibre de V2C2 retrouvé (59,6 %) ; contrat et spécification amendés. **Fiche en attente** : https://claude.ai/artifact/E3wBJw2yyKhhCcnzb2167G (CH-1 à CH-6), puis la fusion selon CH-6 et l'essai en jeu de l'opérateur.
+  - **La charge sans palier puissant (Passe CH1, décision A3 du 2026-11-04)** : l'attaque puissante est une compétence (1 PA, ses niveaux, possédée dès le départ, emportée ou non), les temps de charge et la puissance des coups chargés à 0,85, l'équilibre de V2C2 retrouvé (59,6 %) ; contrat et spécification amendés. **Fiche relue, six sur six à la recommandation (Passe CH2)** : CH-1 « 0,85 (−15 %) », CH-2 « La puissance suit la tenue (×0,85) », CH-3 « 1 PA », CH-4 « Les quatre d’aujourd’hui, la puissante à côté », CH-5 « Bien ainsi (à confirmer en jeu) », CH-6 « Fusionner après la fiche, essayer ensuite » ; fusionné dans `main`. **Reste l'essai en jeu de l'opérateur.**
   - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
