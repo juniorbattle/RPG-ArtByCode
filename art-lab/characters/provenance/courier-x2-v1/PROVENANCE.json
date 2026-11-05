@@ -13,6 +13,12 @@
    "by": "operator (git user wonmii)",
    "decision": "« J'approuve les cinq citadins pour la production : fusionne cast-crowd dans main, pousse main et supprime la branche. »",
    "scope": "the sheet of Pass 4A-tervicies (export SHA-256 9952785ed00166206cc1f016e83dbebbab9cbe3bd536d716d96109ffd762c046), production use in place of the generated crowd variant crowd4, after the sheets were shown one by one with the blind critiques; not declared a Gold Master"
+  },
+  {
+   "date": "2026-11-04",
+   "by": "operator (git user wonmii)",
+   "decision": "« Approuver : en production dans les gradins de la version 2, avec les choix de cette fiche »",
+   "scope": "journal Passe PU1, the decision sheet of the arena's stands (briefs/fiche-public-gradins.html, https://claude.ai/artifact/SrsNyUPheNRHpLaSqNtPPY), the operator's choices word for word: PU-1 « Les cinq habitants du quartier, avec leurs variantes », PU-2 « Dense : 88 places », PU-3 « Debout », PU-4 « Variantes, horloges décalées, ailes tournées vers l’arène », PU-5 « Calquée sur la foule sonore », PU-6 « Non : les sauts suffisent », PU-7 « Derrière la version 2 seulement », PU-8 the decision above. The same export (SHA-256 unchanged) and its approved variants (art-lab/characters/variants/variants.json, fingerprints unchanged): its idle frames as spectators on the arena's stands in a version 2 duel only (src/arena/StandsCast.ts, src/arena/stands.ts); today's arena, the district and today's game unchanged; no new image"
   }
  ],
  "source": {

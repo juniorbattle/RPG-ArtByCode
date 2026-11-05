@@ -159,8 +159,8 @@ export class ArenaApp {
   private walkFrames = 0;
   /** DEV only: the combat sheets (?fighterdensity=combat, src/lab/fighterDensity.ts, journal Passes AA2 / RC1 / CX1); declared, never emitted */
   private declare densityTrial?: import('../lab/fighterDensity').DensityTrial;
-  /** DEV only: the stands drawn by approved baked sheets (?crowdlab=, src/lab/arenaCrowd.ts, journal Passe PU1); absent = today's spectators */
-  private declare crowdLab?: import('../lab/arenaCrowd').CrowdLab;
+  /** the version 2's spectators (journal Passe PU1, StandsCast.ts): a version 2 duel only; today's arena keeps its generated spectators */
+  private stands: import('./StandsCast').Stands | null = null;
   /** the version 2's effects (src/arena/fx/, journal Passes FX3 / FX5): loaded on demand by a version 2 duel only; today's arena keeps its frames */
   private combatFx: CombatFx | null = null;
   /** the combat sheets of a duel under the version 2's rules (src/arena/CombatCast.ts, journal Passe CX2): loaded on demand, today's arena never reaches them */
@@ -293,18 +293,18 @@ export class ArenaApp {
     this.scene.add(this.sprites.group);
     this.scene.add(this.floor.mesh);
     if (fxOn(this.rules, this.opts.params)) this.combatFx = (await import('./fx/combatFx')).installCombatFx(this.scene, this.camera, this.opts.params, { foe: this.foe, guardReach: (who) => { const r = ((import.meta.env.DEV && this.densityTrial) || this.sheets) && this.set.reach[`${who}/block.0`]; return r ? r * PIXEL_WORLD * CHAR_SCALE : null; }, lights: this.lights, shake: (k) => { this.shake = Math.max(this.shake, k); }, timeScale: (k) => { this.timeScale = k; }, renderHeight: () => this.post.height });
+    // a version 2 duel: the district's townsfolk on the stands (journal Passe PU1, the operator's sheet PU-1 to PU-8); `cast=generated` keeps today's spectators
+    if (this.rules === 'v2' && !this.opts.forecourt && this.opts.params.get('cast') !== 'generated') {
+      this.stands = await (await import('./StandsCast')).installStands({ charScale: CHAR_SCALE, edgeGain: this.look ? lum(NIGHT_MOON) / lum(this.look.sunCol) : 1, shade: (await import('./CombatSheets')).shadeFor(this.opts.params.get('time')) });
+      this.scene.add(this.stands.group);
+    }
     // spectators on the tiers: the town's crowd archetypes, front view, idling and cheering in turn
     let k = 0;
-    for (const st of this.arena.stands) {
+    for (const st of this.stands ? [] : this.arena.stands) {
       const h = Math.abs(Math.sin(st.pos[0] * 91.7 + st.pos[2] * 13.3 + k));
       this.fans.push({ id: 100 + k, spec: `fan${Math.floor(h * 997) % this.set.crowd.length}`, role: 'fan', detail: 'crowd', pos: new THREE.Vector3(...st.pos), facing: 'down', dir: 'down', flip: h > 0.5, anim: 'idle', t: h * 10, speed: 0, tint: [0.5, 0.56, 0.74], scale: 0.62, height: 1.4, radius: 0.3 });
       this.fanCheer.push(-10);
       k++;
-    }
-    if (import.meta.env.DEV && this.opts.params.has('crowdlab')) {
-      this.crowdLab = await (await import('../lab/arenaCrowd')).installCrowdLab(this.opts.params, this.arena.stands, { charScale: CHAR_SCALE, edgeGain: this.look ? lum(NIGHT_MOON) / lum(this.look.sunCol) : 1, shade: (await import('./CombatSheets')).shadeFor(this.opts.params.get('time')) });
-      this.scene.add(this.crowdLab.group);
-      for (const f of this.fans) f.hidden = true;
     }
     this.particles = new ParticleSystem(this.lib);
     this.particles.setEmitters(this.arena.emitters);
@@ -403,7 +403,7 @@ export class ArenaApp {
 
   private onEvents(evs: Array<CombatEvent | DynEvent>): void {
     this.combatFx?.onEvents(evs, this.fighters, this.charge?.tiers.length ?? 0);
-    if (import.meta.env.DEV) this.crowdLab?.onEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
+    this.stands?.onEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
     for (const e of evs) {
       this.snd?.duelEvent(e);
       if (e.type === 'impact') {
@@ -607,7 +607,7 @@ export class ArenaApp {
     this.post.params.dofFocus = THREE.MathUtils.clamp(-v.z, 6, 40);
     this.lights.update(this.time, pdt, this.camera);
     this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...this.fans], this.lights, this.camera, this.keyDir, null, this.fighters.ren);
-    if (import.meta.env.DEV) this.crowdLab?.update(this.sim.t, this.lights, this.camera, this.keyDir);
+    this.stands?.update(this.sim.t, this.lights, this.camera, this.keyDir);
     this.particles.update(pdt, this.time, this.camera, this.post.height, this.lights, null);
     if (this.hud instanceof DynamicHud) this.hud.update(this.dyn!, this.assist, this.hudVisible, this.paused && !this.moment, this.charge ? chargeHudModel(this.charge.view()) : undefined);
     else this.hud?.update(this.classic!, this.assist, this.hudVisible, this.paused && !this.moment);
@@ -679,7 +679,7 @@ export class ArenaApp {
       fps: p.fps, frameMs: p.frameMs, cpuMs: p.cpuMs, triangles: p.triangles, geometries: r.memory.geometries, textures: r.memory.textures, textureMB: bytes / 1048576, generatorMs: this.buildMs,
       gpu, gpuMs: gpu ? p.gpu.total() : undefined,
       t: +this.sim.t.toFixed(3), hash: this.sim.hash(), ren: { hp: this.sim.f.ren.hp, ap: this.sim.f.ren.ap, state: this.sim.f.ren.state, anim: this.fighters.ren.anim }, marek: { hp: this.sim.f.marek.hp, state: this.sim.f.marek.state, anim: this.fighters.marek.anim },
-      lights: this.lights.sources.length, lightsOnScreen: this.lights.active, fans: this.fans.length, instances: this.arena?.stats.instances,
+      lights: this.lights.sources.length, lightsOnScreen: this.lights.active, fans: this.fans.length, ...(this.stands ? { stands: this.stands.info } : {}), instances: this.arena?.stats.instances,
       atlas: this.set ? `${this.set.atlas.width}x${this.set.atlas.height} (${this.set.atlas.frameCount} cells)` : null, drawCalls: p.drawCalls, frameTriangles: p.triangles, arenaTriangles: this.arena?.stats.triangles, resolution: `${this.post.width}x${this.post.height}`,
       pose: this.pose, assist: this.assist,
       ...(this.charge ? { charge: this.charge.view() } : {}),

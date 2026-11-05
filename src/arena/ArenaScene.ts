@@ -39,7 +39,10 @@ export interface ArenaBuild {
 /** the curtain wall's arc: centre (x, z) and inner radius; the gate's half-width at the wall */
 export const ARC = { cx: 0, cz: 1.5, r: 12.5, thick: 0.9, h: 3.4 };
 export const GATE_HALF = 4.0;
-const TIER = { n: 4, depth: 0.95, rise: 0.6, base: 2.6 };
+/** the stands' tiers: count, depth and rise of each riser, the height of the first (the version 2's spectators stand on them, stands.ts) */
+export const TIER = { n: 4, depth: 0.95, rise: 0.6, base: 2.6 };
+/** the gate towers' width at the wall (the curtain wall and the stands start past them) */
+export const TOWER_W = 2.8;
 const LAMP_WARM: [number, number, number] = [1.0, 0.6, 0.27];
 const FIRE: [number, number, number] = [1.0, 0.52, 0.2];
 
@@ -58,7 +61,7 @@ export function buildArena(lib: MaterialLibrary, seed: number, opts: { fireApart
   const stands: ArenaBuild['stands'] = [];
   const disposables: Array<{ dispose(): void }> = [];
   const gateTheta = Math.asin(GATE_HALF / ARC.r);
-  const TOWER = { w: 2.8, d: 3.2, h: 9.5 };
+  const TOWER = { w: TOWER_W, d: 3.2, h: 9.5 };
   const towerTheta = gateTheta + Math.asin(TOWER.w / 2 / ARC.r);
   const wallFrom = gateTheta + Math.asin(TOWER.w / ARC.r), wallTo = (78 * Math.PI) / 180;
   const doorTheta = (44 * Math.PI) / 180, DOOR_LEN = 3.4, doorHalf = Math.asin(DOOR_LEN / 2 / ARC.r);
