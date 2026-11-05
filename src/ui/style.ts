@@ -236,7 +236,8 @@ export function footBtn(key: string, label: string, act: () => void, primary = f
 export function fillFoot(f: HTMLElement, ...actions: Array<HTMLElement | null>): void {
   const all = actions.filter((a): a is HTMLElement => !!a);
   f.replaceChildren(...all);
-  for (const a of all) a.classList.toggle('out', a.querySelector('kbd')?.textContent === 'Esc');
+  // a cap showing a pad's button keeps its key in data-key (src/input/prompts.ts)
+  for (const a of all) { const k = a.querySelector('kbd'); a.classList.toggle('out', (k?.dataset.key ?? k?.textContent) === 'Esc'); }
 }
 
 /** the foot of a page or a band: what the page does on the left, the way out on the right, outside what scrolls */

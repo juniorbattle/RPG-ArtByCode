@@ -16,6 +16,8 @@ const ld = showLoading(parseTime(params)), { label, bar, root: loading } = ld;
 // demand; any other address runs the town exactly as before (no time= = the night). Every scene starts once the loading screen shows
 // (its fonts loaded); the play mode's page sets its tone in the same task as the reveal
 const title = params.get('title') === '1' || (location.search === '' && !navigator.webdriver);
+// DEV only, the review of journal Passe MN1: every key cap as a pad's button (?padglyph=xbox|ps|nintendo[:style]); compiled out of production builds
+if (import.meta.env.DEV && params.has('padglyph')) void import('./input/prompts').then((m) => m.reviewPrompts(params));
 const fail = (e: unknown) => { ld.reveal(); loadingError(label, e); };
 if (params.has('play')) void Promise.all([import('./ui/play'), ld.ready]).then(([m]) => { ld.reveal(); return m.startPlay({ canvas, params, label, bar, loading }); }).catch(fail);
 else if (title) void import('./ui/title').then(titleOverTown);

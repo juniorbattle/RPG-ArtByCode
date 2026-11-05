@@ -356,7 +356,7 @@ pennants along the frontage, across the street to the quay lamps and along the q
 morning, 12 at midday, 9 at the end of day at density 1 (the operator's decision J7a, journal Passe D7; the night keeps 5); `evening` is not a parameter:
 the evening is the night; absent or `night` = the night, unchanged, for every address (tools, proofs, the play mode's
 evening); only the title screen's « Explore the district » takes midday by itself (the operator's decision L7-6a, journal Passes D8 / D9, scope
-« Le bouton seul »)) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
+« Le bouton seul »)) · DEV server only: `padglyph=xbox|ps|nintendo[:outline|colour|word]` (every key cap of the interface shown as a pad's button, no pad needed: the review of journal Passe MN1, `src/input/prompts.ts`, `src/input/glyphs.ts`; compiled out of production builds; no pad is read yet outside the arena's duel, the sheet https://claude.ai/artifact/F2fYfXXjwL5y6o7p5q4fj1 decides) · `gpuprof=1` (per-pass GPU timer in `__stats()`) · `painters=main|<n>` (texture painters on the main
 thread / in n Web Workers; default min(4, cores - 1) workers, the main thread below 2, journal pass 6 P3: same bytes either way) ·
 `fps=off|<n>|v<k>|e<n>|a<n>` (frame cap, `src/app/FrameCap.ts`: none / an average of n fps / one frame every k vsyncs / evenly paced near n, every
 round(refresh / n) vsyncs / the same with an adaptive step; **default `a60`**, chosen by the operator on 2026-10-18 (`e60` from 2026-10-17):

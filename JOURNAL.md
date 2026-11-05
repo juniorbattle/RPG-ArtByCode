@@ -390,6 +390,66 @@ Seize cartes, chacune avec sa recommandation :
 - Un événement n'a de conséquence que si quelqu'un lit ce qu'il écrit : cinq événements écrivent `playerFame`, que rien ne lit. On cherche les lecteurs d'un effet avant de le compter.
 - Une page qui se recharge reprend ses nouvelles là où le joueur les a laissées : partir de la dernière entrée efface ce qui s'est passé pendant le changement.
 
+## Passe MN1 — La manette : état des lieux des entrées, proposition de correspondance, prototype de revue des glyphes, fiche d'arbitrages (2026-11-05)
+
+### Demande
+- Transmise par la séance mère : l'opérateur joue sur PC avec une manette de console et demande si le jeu la prend en charge. Aujourd'hui, seul le duel de l'arène en lit une. La tâche : rendre toute la partie version 2 jouable à la manette (Xbox, PlayStation, générique ; l'API Gamepad du navigateur, disposition standard). Elle comprend l'état des lieux de chaque chemin d'entrée avec une proposition, une couche commune (une correspondance pure et un petit lecteur) et les glyphes à l'écran. Une fiche d'arbitrages passe **avant** de construire (correspondance, style des glyphes, portée, vibration). Viennent ensuite la construction derrière le drapeau choisi, les tests, une preuve dans le navigateur par une manette simulée, `ui-text` et `ui-contrast` sur les glyphes, la fusion et l'essai de l'opérateur avec sa manette.
+
+### État des lieux — [OK] relevé dans le code
+| Où | Clavier aujourd'hui | Manette aujourd'hui |
+|---|---|---|
+| Marcher (ville `ActorSystem`, places `PlazaApp`) | WASD ou flèches dans le sens de la caméra, tenu tant qu'une touche reste enfoncée (`controlYaw`, `moveYaw`) ; Maj ×1,2 | rien |
+| Parler | E ou Espace près de quelqu'un (`playTown`, `playPlaza`) | rien |
+| La liste du lieu, le combat du jour | Q (`townUi.ts`) | rien |
+| Le menu et les pages | Échap ; M, J, T, K, G, V ; N coupe le son | rien |
+| Listes, dialogues, boutiques, fiche de match | ↑ ↓ (`arrowKeys`), Entrée l'action, Échap la sortie (`footBtn`, `overlay`), Espace sur la page K ; les curseurs du son à la souris ou ← → (natif) | rien |
+| Cinématiques (`cutscene.ts`) | E, Espace, Entrée ; Échap passe | rien |
+| Sorties (`exits.ts`) | marcher dedans, une touche tenue (`actors.keys.size`, `PlazaApp.moving`) | rien |
+| Écran titre (`title.ts`) | ↑ ↓, Entrée, Échap ; le nom au clavier | rien |
+| Avant et après le combat (`playArena.ts`) | Entrée sur « Fight », puis sur « Back to the city » | rien |
+| Duel de la version 2 (`ArenaApp`, `v2Arena.ts`) | J / 1 attaque tenue, K / B garde tenue, L / A esquive, Espace pause, R recommencer | `pollPad` : la **première** manette, `V2_PAD` X attaque tenue, B garde tenue, A esquive, Start pause, Back recommencer ; le HUD affiche toujours J, K, L |
+
+- **Constat** : toutes les pages de la version 2 se pilotent déjà sans souris (flèches, Entrée, Échap, Espace). La manette peut appuyer ces mêmes touches (des événements clavier synthétiques sur l'élément actif) : la correspondance devient une table, aucune page n'est réécrite. Il manque deux gestes au clavier sans souris : faire défiler le texte de détail d'une page (molette seulement) et passer d'une page du menu à la voisine ; le stick droit et les gâchettes hautes peuvent les donner.
+- **L'arène par défaut** garde sa manette du prototype (A esquive, B garde, X / Y les attaques, gâchettes et bumpers les techniques) : non touchée.
+- **Les polices embarquées** n'ont ni les symboles PlayStation (U+25A1, U+25B3, U+25CB) ni le ☰ (U+2630) : hors de `LATIN_RANGE`. Ils se dessinent en SVG, de la couleur du texte. Les lettres A / B / X / Y, LB, L1 et + / − sont dans le sous-ensemble.
+- **Le son** démarre au premier geste (`Sound.unlock` sur `pointerdown` / `keydown`). D'après des forums de moteurs (Construct, pixi-sound), un bouton de manette ne compte pas comme geste dans Chrome ; non vérifiable sans manette réelle : carte MN-10.
+
+### Prototype de revue — [OK], DEV seulement, branché à aucune manette
+- **`src/input/pad.ts`** (pur) : les boutons de la disposition standard (`BTN`), la famille d'une manette par son identifiant (`padFamily` : Sony 054c, Nintendo 057e ou le nom ; les autres en lettres Xbox), la zone morte radiale rééchelonnée (`deadZone`, 0,22), la marche demandée (`walkOf` : la croix à pleine vitesse, le stick de 30 % à 100 %, B tenu pour courir), les touches par contexte (`KEYS` : exploration, page, cinématique), le duel (`DUEL`, `duelCommands` : une commande tenue descend au premier de ses boutons et remonte au dernier lâché), la direction des pages avec hystérésis (`navDir`) et sa répétition (`Repeater` : 0,4 s puis toutes les 0,12 s), le bouton qu'affiche une touche selon sa place (`capButton`), la vibration par événement du duel (`rumbleOf`).
+- **`src/input/glyphs.ts`** : chaque bouton dans la touche du système de design (`capOf` : rond pour les boutons de face et les sticks, pilule pour les gâchettes et les petits boutons ; les styles `outline`, `colour`, `word` pour la fiche) et leur CSS (`PAD_CSS`).
+- **`src/input/prompts.ts`** : la classe `Prompts` remplace le contenu des `<kbd>` par le bouton (un `MutationObserver` les trouve à mesure qu'ils paraissent ; la clé gardée dans `data-key` ; rendue par `set(null)`). `reviewPrompts` sert le paramètre DEV `?padglyph=xbox|ps|nintendo[:outline|colour|word]`, importé par `main.ts` sous `import.meta.env.DEV`, compilé hors du paquet.
+- **`src/ui/style.ts`, `fillFoot`** : la sortie (`.out`, à droite) se reconnaissait au texte de sa touche (« Esc ») ; une touche qui montre un bouton n'a plus ce texte. `fillFoot` lit `data-key`, puis le texte comme avant : rien ne change au clavier.
+- `npm run typecheck` sans erreur.
+
+### Captures
+- `tools/play-shots.mjs` sur le serveur DEV du worktree (`:5231`, par `preview_start`), 1600 × 900 : `v2-day1-morning` avec Mara près du héros (le hint `E`, `Q`, `Esc`), son dialogue, sa boutique et le menu ; `v2-day2-afternoon` et la fiche de match (`Space`, `Enter`, `Esc`) ; au clavier, Xbox, PlayStation et Nintendo ; les trois styles ; au téléphone (390 × 844). `tools/arena-scene-shots.mjs` (`HOLD=1`, `FREEZE_CSS=1`) : le duel `?scene=arena&v2=1&time=midday` au premier palier, la barre K / L / J devenue B / A / X puis Rond / Croix / Carré.
+- Les 21 images sont publiées avec la page, pas dans le dépôt ; quatre images clés dans `screenshots/calibration/manette-MN1/`.
+
+### La fiche — publiée, rien de décidé
+- Page privée https://claude.ai/artifact/F2fYfXXjwL5y6o7p5q4fj1, source `briefs/fiche-manette.html` (gabarit `fiche-arbitrages`, collection `decisions`, relue vide à la publication). Vérifiée en local avant : 11 cartes, aucune image cassée, aucun débordement à 1 200 et 390 px, aucune erreur de page. Elle s'ouvre sur l'état des lieux, puis onze cartes :
+  - MN-1 la portée, recommandé « La version 2 et la navigation de l’écran titre » (pour prendre « Continue » à la manette ; le jeu par défaut, son arène et Explore au clavier) ;
+  - MN-2 la marche, recommandé « Le stick règle la vitesse, B tenu pour courir » ;
+  - MN-3 l'exploration, recommandé « Valider ce plan » (A parler, Y la liste, Menu le menu, Affichage la carte ; J, T, K, G, V par le menu) ;
+  - MN-4 les pages, recommandé « Valider ce plan » (croix ou stick les lignes, A l'action, B la sortie, X emporter / laisser, croix ← → les curseurs, stick droit le détail, LB / RB la page voisine du menu) ;
+  - MN-5 le duel, recommandé « Les deux : X, B, A et les gâchettes en double » (RT attaque, LT garde : tenir la charge et la garde avec le pouce sur l'esquive, comme J, K, L) ;
+  - MN-6 les cinématiques, recommandé « A la ligne suivante, Menu pour passer » ;
+  - MN-7 le style, recommandé « Contour, sans couleur » (les pastilles de marque sortent de la palette UM-S3) ;
+  - MN-8 la famille, recommandé « Selon la manette (Xbox, PlayStation, Nintendo) » ;
+  - MN-9 la vibration, recommandé « Oui, discrète, avec un interrupteur sur la page du son » ;
+  - MN-10 le son à la manette seule, recommandé « Une ligne discrète tant que le son attend » ;
+  - MN-11 la suite, recommandé « Fusionner après les preuves, essayer ensuite ».
+
+### Limites
+- Aucune manette n'est encore lue hors du duel : le prototype ne fait que montrer les glyphes. `ui-text` et `ui-contrast` passeront sur les glyphes avec la construction.
+- Personne n'a branché de vraie manette sur cette branche ; le geste du son à la manette reste à voir à l'essai.
+
+### Où reprendre
+- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot, construire derrière la portée choisie (le lecteur `src/input/PadInput.ts`, la marche analogique dans `ActorSystem` et `PlazaApp` sans toucher au chemin clavier, les touches synthétiques des pages, les glyphes, la vibration), les tests de la correspondance et de la navigation, la preuve navigateur d'une manette simulée (`navigator.getGamepads` remplacé dans la page) sur le premier jour et un combat, `ui-text` / `ui-contrast`, le jeu au clavier à 0 px contre `main`, puis fusionner selon MN-11.
+
+### Pensée
+- Une interface déjà pilotable entièrement au clavier se donne à la manette en appuyant ses propres touches : la correspondance devient une table qu'on teste en Node, et chaque page garde son seul code.
+- Un code qui reconnaît un bouton au texte de sa touche (`fillFoot`) casse dès que la touche montre autre chose : la clé se garde à part (`data-key`), le texte n'est qu'un affichage.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -409,6 +469,7 @@ Seize cartes, chacune avec sa recommandation :
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
   - **La charge sans palier puissant (Passe CH1, décision A3 du 2026-11-04)** : l'attaque puissante est une compétence (1 PA, ses niveaux, possédée dès le départ, emportée ou non), les temps de charge et la puissance des coups chargés à 0,85, l'équilibre de V2C2 retrouvé (59,6 %) ; contrat et spécification amendés. **Fiche relue, six sur six à la recommandation (Passe CH2)** : CH-1 « 0,85 (−15 %) », CH-2 « La puissance suit la tenue (×0,85) », CH-3 « 1 PA », CH-4 « Les quatre d’aujourd’hui, la puissante à côté », CH-5 « Bien ainsi (à confirmer en jeu) », CH-6 « Fusionner après la fiche, essayer ensuite » ; fusionné dans `main`. **Reste l'essai en jeu de l'opérateur.**
   - **Étape 5, le gameplay (Passe EV1)** : audit des événements, du vol, du défi, du marchandage et du récit de la version 2 contre les contrats (`briefs/audit-gameplay-ev1.md`) : le défi sans enjeu (gagné 15 fois sur 15), le vol sans suite (un voleur à réputation 0 qualifié 9 fois sur 10), le marchandage un dé, trois ambiances à 52 % des nouvelles, une seule réponse (la garde du quai) contre les deux sabotages, trois champs du pouls lus par rien, l’information et la réaction visible de la ville minces, le festival et l’investissement absents ; six défauts de lecture relevés (dont les nouvelles de fin de créneau perdues sur les places). **Fiche publiée, seize choix** : https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`) ; à relire quand l’opérateur la dit remplie, puis les lots L1 à L6 (ou ce qu’il décide en EV-15), chacun dans sa séance, derrière `flags.v2`. Le recrutement et la phase d’équipe restent un chantier plus tard.
+  - **La manette (Passe MN1)** : état des lieux de chaque chemin d'entrée (seul le duel lit une manette, la première seulement), prototype de revue des glyphes (DEV, `?padglyph=`), fiche https://claude.ai/artifact/F2fYfXXjwL5y6o7p5q4fj1 publiée (onze cartes, MN-1 à MN-11), rien de décidé. **Attendre les choix**, puis construire derrière la portée choisie, prouver (clavier à 0 px, manette simulée sur le premier jour et un combat) et fusionner selon MN-11 ; l'essai avec la manette de l'opérateur ensuite.
   - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),

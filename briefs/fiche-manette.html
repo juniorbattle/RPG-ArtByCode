@@ -1,0 +1,411 @@
+<title>Jouer à la manette</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+<style>
+.shots.fit img { aspect-ratio: auto; object-fit: contain; }
+.shots.strip { grid-template-columns: 1fr; }
+.shots.strip img { aspect-ratio: auto; }
+.audit { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.audit h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.audit p { margin: 0; max-width: 68ch; }
+.audit .tbl td, .audit .tbl th { text-align: left; white-space: normal; vertical-align: top; }
+.audit .tbl td:first-child { font-weight: 600; }
+.audit .tbl td.no { color: var(--cendre); }
+.audit .tbl td.yes { color: var(--rec); }
+</style>
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · version 2 · Passe MN1 · 5 novembre 2026</span>
+    <h1>Jouer à la manette</h1>
+    <p class="lede">Tu joues sur PC avec une manette de console. Aujourd’hui, seul le duel de l’arène la lit, et seulement la première manette branchée : X attaque (tenu), B garde (tenu), A esquive, Start pause. Tout le reste se joue au clavier. Je propose une seule couche manette pour la ville, les places, toutes les pages et l’arène. Elle appuie les touches que l’interface affiche, et les touches affichées deviennent les boutons de ta manette quand elle a servi en dernier. Rien n’est construit à part un prototype de revue des glyphes (DEV seulement), qui a servi aux captures. Le jeu au clavier ne change pas. Pour chaque point : le contexte, ma recommandation et tes options. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="audit" aria-labelledby="h-audit">
+    <h2 id="h-audit">L’état des lieux : chaque chemin d’entrée de la version 2</h2>
+    <p>Relevé dans le code (<code>src/ui</code>, <code>src/world/PlazaApp.ts</code>, <code>src/characters/ActorSystem.ts</code>, <code>src/arena</code>). Toutes les pages se pilotent déjà sans souris : flèches, Entrée, Échap, Espace. La manette peut donc passer par ces mêmes touches, sans réécrire une page.</p>
+    <div class="tbl"><table>
+      <thead><tr><th scope="col">Où</th><th scope="col">Au clavier aujourd’hui</th><th scope="col">Manette aujourd’hui</th></tr></thead>
+      <tbody>
+        <tr><td>Marcher (ville, places)</td><td>WASD ou flèches, dans le sens de la caméra (le sens est tenu tant qu’une touche reste enfoncée) ; Maj court (×1,2)</td><td class="no">rien</td></tr>
+        <tr><td>Parler</td><td>E ou Espace près de quelqu’un</td><td class="no">rien</td></tr>
+        <tr><td>Ce qu’on peut faire ici, le combat du jour</td><td>Q (la liste), puis « Enter the arena »</td><td class="no">rien</td></tr>
+        <tr><td>Le menu et les pages</td><td>Échap (menu) ; M carte, J journal, T tournoi, K compétences, G équipement, V son ; N coupe le son</td><td class="no">rien</td></tr>
+        <tr><td>Listes, dialogues, boutiques, fiche de match</td><td>↑ ↓ les lignes, Entrée l’action de la page, Échap la sortie, Espace emporter / laisser (page K) ; les curseurs du son à la souris ou ← →</td><td class="no">rien</td></tr>
+        <tr><td>Cinématiques des places</td><td>E, Espace ou Entrée la ligne suivante, Échap pour passer</td><td class="no">rien</td></tr>
+        <tr><td>Sorties (comme Final Fantasy IX)</td><td>Marcher dedans, une touche tenue</td><td class="no">rien</td></tr>
+        <tr><td>Écran titre</td><td>↑ ↓, Entrée, Échap ; le nom tapé au clavier</td><td class="no">rien</td></tr>
+        <tr><td>Avant et après le combat</td><td>Entrée sur « Fight », puis sur « Back to the city »</td><td class="no">rien</td></tr>
+        <tr><td>Le duel de la version 2</td><td>J (ou 1) attaque tenue, K (ou B) garde tenue, L (ou A) esquive, Espace pause, R recommencer (page de l’arène)</td><td class="yes">X attaque tenue, B garde tenue, A esquive, Start pause, Back recommencer ; la première manette seulement, la barre du HUD affiche toujours J, K, L</td></tr>
+      </tbody>
+    </table></div>
+    <p class="src">La partie par défaut garde son arène (son ancienne manette du prototype : A esquive, B garde, X et Y les attaques, gâchettes et bumpers les techniques). Elle n’est pas touchée.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix et je les consigne au journal. Je construis ensuite derrière la portée choisie : une couche commune (la correspondance pure, testée en Node, et un petit lecteur de manette dans la page), les glyphes, la vibration si tu la veux. Puis les preuves : le jeu au clavier identique au pixel près sans manette, des tests de la correspondance et de la navigation des pages, et une partie version 2 jouée de bout en bout par une manette simulée dans le navigateur (premier jour et un combat). Les textes passent par ui-text et ui-contrast. Puis la fusion selon MN-11, et ton essai avec ta propre manette.</p>
+    <p class="src">Sources : <code>src/arena/ArenaApp.ts</code> (pollPad), <code>src/arena/v2Arena.ts</code> (V2_PAD), <code>src/ui/townUi.ts</code>, <code>src/ui/style.ts</code> (arrowKeys, footBtn, fillFoot), <code>src/ui/wares.ts</code>, <code>src/ui/skills.ts</code>, <code>src/ui/board.ts</code>, <code>src/ui/journal.ts</code>, <code>src/ui/cutscene.ts</code>, <code>src/ui/exits.ts</code>, <code>src/ui/title.ts</code>, <code>src/world/PlazaApp.ts</code>, <code>src/characters/ActorSystem.ts</code>. Prototype de revue : <code>src/input/pad.ts</code>, <code>src/input/glyphs.ts</code>, <code>src/input/prompts.ts</code>, <code>?padglyph=xbox|ps|nintendo[:style]</code> sur le serveur DEV. Captures : serveur DEV, 1600 × 900, état nommé <code>v2-day1-morning</code> (Mara près du héros), <code>v2-day2-afternoon</code> (fiche de match), duel <code>?scene=arena&amp;v2=1&amp;time=midday</code> au premier palier.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Apostrophes : l’apostrophe typographique ’ (ou \') ; une ' droite dans une chaîne entre ' ' arrête tout le script.
+const GROUPS = [
+  { id: 'portee', title: 'La portée et la marche', sub: 'Ce que la manette touche, et comment elle fait marcher le héros.', fam: 'var(--voile)', items: [
+    { id: 'MN-1', tag: 'portée', title: 'Où la manette joue',
+      ctx: 'La règle du projet : un système neuf vit derrière la version 2, et le jeu par défaut ne change pas avant ton essai. Une partie version 2 s’ouvre par l’adresse ?play=1&new=1&v2=1, puis « Continue » sur l’écran titre la reprend. L’écran titre est commun aux deux jeux, et son « New game » lance le jeu par défaut. Sans manette branchée, rien ne change nulle part : aucune boucle ne tourne avant qu’une manette se signale.',
+      rec: 'La partie version 2, et la navigation de l’écran titre (↑ ↓, A, B), pour que « Continue » se prenne à la manette. Le jeu par défaut, son arène et « Explore the district » restent au clavier, comme le veut la règle de la version 2.',
+      opts: ['La version 2 et la navigation de l’écran titre', 'La version 2 seule (l’écran titre au clavier)', 'Tout le jeu, jeu par défaut et Explore compris'], recIdx: 0,
+      src: 'src/simulation/v2.ts (flags.v2) ; src/ui/title.ts ; AGENTS.md (v2=1, title=1)' },
+    { id: 'MN-2', tag: 'marche', title: 'Marcher et courir au stick',
+      ctx: 'Au clavier, le héros marche à une seule vitesse, et Maj le fait courir (×1,2). Le sens des touches est pris dans celui de la caméra, et tenu tant qu’une touche reste enfoncée : un changement de cadrage ne plie pas la marche. Le stick et la croix suivront la même règle. Au stick, la vitesse peut suivre l’inclinaison, avec une zone morte au centre (0,22). Le cycle de marche du héros suit alors sa vitesse, sans glissement des pieds.',
+      rec: 'Le stick règle la vitesse, de 30 % à la marche du clavier, et B tenu fait courir, comme Maj. Le pouce reste libre pour A (parler) en marchant. La croix marche toujours à pleine vitesse.',
+      opts: ['Le stick règle la vitesse, B tenu pour courir', 'Le stick règle la vitesse, à fond on court (sans bouton)', 'Une seule vitesse comme au clavier, B tenu pour courir'], recIdx: 0,
+      src: 'src/characters/ActorSystem.ts (axes, controlYaw, walkClock) ; src/world/PlazaApp.ts (walk, moveYaw) ; src/input/pad.ts (walkOf, deadZone)' },
+  ]},
+  { id: 'boutons', title: 'Les boutons', sub: 'Xbox · PlayStation : les boutons par leur place (en bas, à droite, à gauche, en haut).', fam: 'var(--astre)', items: [
+    { id: 'MN-3', tag: 'exploration', title: 'En marchant dans la ville et sur les places',
+      ctx: 'La manette appuie les touches que l’écran affiche. Les pages qui ont une touche à elles au clavier (J, T, K, G, V) se prennent à la manette par le menu : les touches de raccourci du menu disparaissent quand la manette sert.',
+      table: { head: ['Action', 'Clavier', 'Manette (Xbox · PlayStation)'], rows: [
+        ['Marcher', 'WASD, flèches', 'Stick gauche ou croix'],
+        ['Courir', 'Maj', 'B · Rond, tenu (MN-2)'],
+        ['Parler', 'E, Espace', 'A · Croix'],
+        ['Ce qu’on peut faire ici, le combat du jour', 'Q', 'Y · Triangle'],
+        ['Le menu', 'Échap', 'Menu · Options'],
+        ['La carte', 'M', 'Affichage · Créer'],
+        ['Journal, tournoi, compétences, équipement, son', 'J, T, K, G, V', 'par le menu'],
+        ['Les sorties', 'marcher dedans', 'marcher dedans (le stick compte comme une touche tenue)']] },
+      shots: [['img/town-keys.jpg', 'Au clavier, aujourd’hui : E, Q, Esc'], ['img/town-xbox.jpg', 'Manette Xbox : A, Y, Menu'], ['img/town-ps.jpg', 'Manette PlayStation : Croix, Triangle, Options'], ['img/menu-xbox.jpg', 'Le menu à la manette : la carte garde son bouton (Affichage), les autres raccourcis s’effacent']],
+      rec: 'Valider ce plan : A parle, comme E ; Y ouvre la liste. C’est le bouton du haut, à portée sans lâcher le stick. Menu ouvre le menu, comme Échap. Affichage ouvre la carte, la seule page qu’on ouvre souvent en marchant.',
+      opts: ['Valider ce plan', 'X · Carré pour la liste, Y · Triangle pour la carte', 'À revoir (en note)'], recIdx: 0,
+      src: 'src/ui/townUi.ts (touches Q, M, J, T, K, G, V, Échap) ; src/ui/playTown.ts, src/ui/playPlaza.ts (E, Espace)' },
+    { id: 'MN-4', tag: 'pages', title: 'Dans les pages, les listes et les dialogues',
+      ctx: 'Chaque page a un pied : son action avec Entrée à gauche, la sortie avec Échap à droite (UM11). La manette passe par les mêmes touches, donc chaque page répond sans changement. Il manque deux gestes au clavier sans souris, qu’on peut donner à la manette. Le texte de détail (règles du tournoi, jour du journal) ne défile qu’à la molette : le stick droit le ferait défiler. On passe d’une page du menu à l’autre en revenant au menu : les gâchettes hautes pourraient sauter à la page voisine.',
+      table: { head: ['Action', 'Clavier', 'Manette (Xbox · PlayStation)'], rows: [
+        ['Ligne précédente, suivante', '↑ ↓', 'Croix ou stick gauche, répété si tenu'],
+        ['L’action de la page (acheter, choisir, entrer)', 'Entrée', 'A · Croix'],
+        ['Retour, fermer', 'Échap', 'B · Rond (et Menu · Options)'],
+        ['Emporter, laisser une compétence', 'Espace', 'X · Carré'],
+        ['Régler un curseur (page du son)', '← → (souris)', 'Croix gauche, droite'],
+        ['Faire défiler le détail', 'molette', 'Stick droit'],
+        ['Page voisine du menu (carte, journal, tournoi, compétences, équipement, son)', '—', 'LB, RB · L1, R1']] },
+      shots: [['img/talk-xbox.jpg', 'Le dialogue : B pour partir'], ['img/sheet-ps.jpg', 'La fiche de match (PlayStation) : Carré emporte ou laisse, Croix entre dans l’arène, Rond ferme'], ['img/sheet-keys.jpg', 'La même au clavier : Space, Enter, Esc'], ['img/shop-xbox.jpg', 'La boutique de Mara : A achète, B revient à elle']],
+      rec: 'Valider ce plan. A et B suivent la convention de toutes les consoles occidentales : A valide, B revient. X reprend la touche Espace, qui ne sert que sur la page K et la fiche de match. Le stick droit et les gâchettes hautes donnent ce que la souris donnait.',
+      opts: ['Valider ce plan', 'LB et RB sautent de cinq lignes au lieu de changer de page', 'À revoir (en note)'], recIdx: 0,
+      src: 'src/ui/style.ts (arrowKeys, footBtn, fillFoot, overlay) ; src/ui/wares.ts, skills.ts, board.ts, journal.ts' },
+    { id: 'MN-5', tag: 'duel', title: 'Le duel de la version 2',
+      ctx: 'Aujourd’hui X attaque (tenu : la charge), B garde (tenu), A esquive. Au clavier, J, K et L sont sous trois doigts : on peut tenir la charge et la garde ensemble et esquiver quand même (le moment « charge tenue sous la garde »). À la manette, X et B sont sous le même pouce : tenir les deux est malcommode, et esquiver oblige à lâcher la charge. Les gâchettes basses règlent ça : RT tient la charge, LT la garde, le pouce reste sur A. Les bandes avant et après le combat (« Fight », « Back to the city ») se prennent avec A. La manette lue devient la dernière utilisée, plus seulement la première branchée.',
+      table: { head: ['Action', 'Clavier', 'Manette aujourd’hui', 'Proposé (Xbox · PlayStation)'], rows: [
+        ['Attaque (tenue : la charge)', 'J, 1', 'X', 'X · Carré, ou RT · R2', 1],
+        ['Garde (tenue)', 'K, B', 'B', 'B · Rond, ou LT · L2', 1],
+        ['Esquive', 'L, A', 'A', 'A · Croix'],
+        ['Pause', 'Espace', 'Start', 'Menu · Options'],
+        ['Recommencer (page de l’arène seule)', 'R', 'Back', 'Affichage · Créer']] },
+      shots: [['img/arena-bar-keys.jpg', 'La barre du duel au clavier : K, L, J'], ['img/arena-bar-xbox.jpg', 'À la manette Xbox : B, A, X'], ['img/arena-bar-ps.jpg', 'PlayStation : Rond, Croix, Carré'], ['img/arena-ps.jpg', 'Le duel au premier palier, glyphes PlayStation (page de l’arène, en français)']],
+      rec: 'Les deux : on garde X, B et A tels qu’aujourd’hui, et RT et LT font la même chose en double. Si tu as déjà pris l’habitude, rien ne change. Les gâchettes permettent de tenir la charge et la garde ensemble, comme J et K au clavier. Le HUD montre X, B et A.',
+      opts: ['Les deux : X, B, A et les gâchettes en double', 'Garder X, B, A seuls', 'Les gâchettes seules : RT attaque, LT garde, A esquive'], recIdx: 0,
+      src: 'src/arena/v2Arena.ts (V2_KEYS, V2_PAD) ; src/arena/ArenaApp.ts (pollPad, action) ; src/input/pad.ts (DUEL, duelCommands)' },
+    { id: 'MN-6', tag: 'cinématiques', title: 'Les cinématiques des places',
+      ctx: 'Une ligne attend E, Espace ou Entrée, et Échap passe la scène (le bas de la bande affiche « E Next » et « Esc Skip »). Sur les consoles, Start passe souvent une scène, et B sert ailleurs à revenir : un B appuyé par réflexe sauterait une scène qu’on n’a pas vue.',
+      rec: 'A pour la ligne suivante, Menu · Options pour passer. Un appui de trop sur B ne coûte rien.',
+      opts: ['A la ligne suivante, Menu pour passer', 'A la ligne suivante, B pour passer'], recIdx: 0,
+      src: 'src/ui/cutscene.ts' },
+  ]},
+  { id: 'ecran', title: 'Ce que l’écran montre', sub: 'Les captures viennent du vrai jeu (serveur DEV, prototype de revue ?padglyph=). Clique pour agrandir.', fam: 'var(--ronce)', items: [
+    { id: 'MN-7', tag: 'glyphes', title: 'Le style des boutons à l’écran',
+      ctx: 'La touche du système de design est un contour d’un pixel, sans fond (direction A « Voile »). Les lettres Xbox et Nintendo, les noms des gâchettes et les signes + et − existent dans la police de texte embarquée. Les symboles PlayStation, les traits du bouton Menu et les boutons Affichage et Créer n’y sont pas : ils sont dessinés en vecteur, de la couleur du texte. La palette de l’interface n’a qu’un accent : pas de vert, pas de rouge (UM-S3).',
+      shots: [['img/strip-keys.jpg', 'Au clavier (aujourd’hui)'], ['img/strip-outline-xbox.jpg', 'Contour, Xbox (recommandé)'], ['img/strip-outline-ps.jpg', 'Contour, PlayStation (recommandé)'], ['img/strip-colour-xbox.jpg', 'Pastilles aux couleurs de la marque, Xbox'], ['img/strip-colour-ps.jpg', 'Pastilles aux couleurs de la marque, PlayStation'], ['img/strip-word-xbox.jpg', 'Le nom écrit dans la touche, Xbox'], ['img/strip-word-ps.jpg', 'Le nom écrit dans la touche, PlayStation']], strip: true,
+      rec: 'Le contour, sans couleur : le bouton prend la forme ronde de la manette, garde le trait de la touche clavier et prend l’accent comme elle quand la ligne est choisie. Les pastilles de couleur sortent de la palette décidée en UM-S3 ; les noms écrits allongent chaque pied de page.',
+      opts: ['Contour, sans couleur', 'Pastilles aux couleurs de la marque', 'Le nom écrit dans la touche'], recIdx: 0,
+      src: 'src/input/glyphs.ts ; src/ui/design/system.ts (kbd, LATIN_RANGE) ; src/ui/design/tokens.ts' },
+    { id: 'MN-8', tag: 'famille', title: 'Quels boutons montrer',
+      ctx: 'Le navigateur donne le nom de la manette (Chrome : « DualSense Wireless Controller (… Vendor: 054c …) »). Sony, Microsoft et Nintendo se reconnaissent à leur code de fabricant. Les autres manettes suivent la disposition standard, celle de la Xbox. Sur une manette Nintendo, le bouton du bas s’appelle B : les lettres sont montrées à leur place. Les touches reviennent dès qu’on appuie sur le clavier, et les boutons dès qu’on touche la manette.',
+      shots: [['img/town-xbox.jpg', 'Xbox (et toute manette générique)'], ['img/town-ps.jpg', 'PlayStation'], ['img/town-nin.jpg', 'Nintendo : B en bas, X en haut, + pour le menu'], ['img/phone-talk-ps.jpg', 'Sur un téléphone, le dialogue : la même touche']],
+      rec: 'Selon la manette, sans réglage : tu vois les boutons de celle que tu tiens, et la dernière qui a servi l’emporte si tu en branches deux.',
+      opts: ['Selon la manette (Xbox, PlayStation, Nintendo)', 'Toujours les lettres Xbox', 'Un choix dans les réglages (tâche à part)'], recIdx: 0,
+      src: 'src/input/pad.ts (padFamily) ; src/input/prompts.ts', fit: true },
+  ]},
+  { id: 'reste', title: 'Vibration, son et suite', sub: '', fam: 'var(--cendre)', items: [
+    { id: 'MN-9', tag: 'vibration', title: 'Vibrer sous les coups',
+      ctx: 'Chrome et Edge font vibrer les manettes Xbox, DualShock 4 et DualSense (en USB ou Bluetooth). Firefox ne le fait pas : la vibration serait simplement absente. Je propose une vibration courte : légère pour un coup reçu, plus forte pour un coup puissant ou la garde brisée, longue au K.O. ; rien pour un coup paré, rien pour les coups que Ren donne.',
+      rec: 'Oui, discrète, avec un interrupteur « Vibration » sur la page du son (V), allumé par défaut. Elle fait sentir le coup qu’on vient de prendre sans couvrir le reste.',
+      opts: ['Oui, discrète, avec un interrupteur sur la page du son', 'Oui, sans interrupteur', 'Non'], recIdx: 0,
+      src: 'src/input/pad.ts (rumbleOf) ; src/arena/ArenaApp.ts (onEvents)' },
+    { id: 'MN-10', tag: 'son', title: 'Si la manette n’ouvre pas le son',
+      ctx: 'Le navigateur ne démarre le son qu’après un geste de la personne : un clic ou une touche. D’après les forums de moteurs de jeu, un bouton de manette ne compte pas dans Chrome ; je ne peux pas le vérifier sans manette réelle. Si c’est le cas, une partie jouée à la manette seule reste muette jusqu’au premier clic.',
+      rec: 'Une ligne discrète tant que le son attend, quand la manette sert : « Click or press a key to hear the game », dans le voile du haut. Si ta manette ouvre le son à l’essai, la ligne ne paraît jamais.',
+      opts: ['Une ligne discrète tant que le son attend', 'Rien : le premier clic suffit', 'Décider après l’essai'], recIdx: 0,
+      src: 'src/audio/Sound.ts (unlock au premier geste) ; journal Passe SN3' },
+    { id: 'MN-11', tag: 'suite', title: 'Fusionner, puis ton essai avec ta manette',
+      ctx: 'Tout restera derrière la portée choisie en MN-1. Sans manette, le jeu doit rester identique : captures à 0 px contre main, jeu par défaut inchangé au TournamentLab, empreintes de play-flow. Une manette simulée dans le navigateur jouera le premier jour d’une partie version 2 et un combat. Pour essayer : npm run dev, puis /?play=1&new=1&v2=1, la manette branchée (un bouton pressé pour que le navigateur la voie).',
+      rec: 'Fusionner après les preuves, puis ton essai dans main : sans manette rien ne bouge, et un réglage après l’essai serait une tâche courte.',
+      opts: ['Fusionner après les preuves, essayer ensuite', 'Essayer sur la branche avant de fusionner'], recIdx: 0,
+      src: 'AGENTS.md (règle des branches) ; journal Passe MN1' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') + (it.strip ? ' strip' : '') + (it.fit ? ' fit' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
