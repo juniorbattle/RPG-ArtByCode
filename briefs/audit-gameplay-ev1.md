@@ -133,3 +133,24 @@ Lu : `AGENTS.md`, `JOURNAL.md` en entier, les trois contrats maîtres (gameplay 
 Seize choix, en six familles : les corrections de lecture (EV-1) ; voler, défier, marchander (EV-2 à EV-6) ; les événements (EV-7 à EV-10) ;
 l'information et la ville (EV-11, EV-12) ; le récit, les cinématiques et le festival (EV-13, EV-14) ; le découpage en lots et le joueur du laboratoire
 (EV-15, EV-16). Chaque lot sera une séance à part, derrière `flags.v2`, avec ses preuves (le jeu par défaut à 0 px et au JSON près) et sa fiche.
+
+## 7. Les décisions de l'opérateur (Passe EV2, 05/11/2026)
+
+La fiche est relue : **seize choix sur seize à la recommandation**, consignés mot pour mot au journal (Passe EV2), avec quatre notes :
+- EV-2 : « Mais il peut aussi avoir une possibilite de combat et de represaille reelle, d'ailleurs on parle de reputation mais comment cela
+  fonctionne ? » (la réponse, lue dans le code, est dans la Passe EV2) ;
+- EV-4 : « Je voulais integrer aussi des pnjs generiques qui peuvent etre des combattants present lors de qualifs/eliminatoires par exemple » ;
+- EV-6 : « mais on peut aussi marchander avec les passants pour obtenir un objet qui possede au lieu de le voler par exemple, ce qui peut donner
+  l"obtention de items unique ou rentable comme dans octopath travaler » ;
+- EV-7 : « il faut que cela puisse impacter la preparation du joueur en jouant sur cet aspect imprevisible ».
+
+Le message de l'opérateur, mot pour mot : « c'est rempli, la fiche. n'oublie pas l'importance narrative et la coherence du gameplay, il se peut que
+nous devions creer des combattants generiques ( des elimines pour les qualifications pour la phase de groupe/finales ), mais il faut pas se perdre
+dans la structure du jeu. sinon c"est pas bon ». À la question de leur place, sa réponse : **« En ville, structure gardée (Recommandé) »** : les dix
+jours et la poule de huit restent ; les combattants génériques sont les éliminés des qualifications tenues avant l'arrivée de Ren, ils restent en
+ville, acceptent un défi et servent de gros bras dans une représaille ; leurs sprites viendront des planches approuvées, sur fiche.
+
+La suite (EV-15 « L1 à L6 dans cet ordre ») : L1 la lecture ; L2 voler, défier, marchander (avec la représaille, les génériques, le marchandage
+avec les passants, la réputation et le soupçon expliqués, le joueur « curieux » du laboratoire) ; L3 l'information et les réponses au sabotage ;
+L4 les événements et les rivalités (chacun touche la préparation) ; L5 la ville qui réagit ; L6 le récit, les scènes et le festival. Chaque lot
+dans sa séance, derrière `flags.v2`, la structure du tournoi gardée.

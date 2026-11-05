@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -67,135 +67,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/54-passes-SA1-SN18.md`](journal/54-passes-SA1-SN18.md) | SA1, SN18 | 04/11 |
 | [`journal/55-passes-SN19-SN22.md`](journal/55-passes-SN19-SN22.md) | SN19, SN20, SN21, SN22 | 04/11 |
 | [`journal/56-passes-CH1-CH2.md`](journal/56-passes-CH1-CH2.md) | CH1, CH2 | 04/11 → 05/11 |
+| [`journal/57-passes-PU1-PU2.md`](journal/57-passes-PU1-PU2.md) | PU1, PU2 | 04/11 |
 
 ---
-
-## Passe PU1 — Le public des gradins de l'arène : état des lieux, prototype en citadins cuits approuvés, coût mesuré, fiche d'arbitrages (2026-11-04)
-
-### Demande
-- L'opérateur, mot pour mot, transmis par la séance mère : « il faudra travailler nos pnjs publics dans les gradins pendant le combat car ils sont encore concu en code generique ». Le brief : un état des lieux (fabrication, densité, animation, nombre, coût, ce qu'on en voit dans les trois cadrages, de jour et de nuit), une proposition faite de personnages tirés des feuilles déjà approuvées (jamais un design neuf), la façon d'obtenir une pose de spectateur sans inventer, la variété, la réaction aux moments du duel en accord avec la foule sonore de S3 / S5 (sans la modifier), le budget E24 ; une fiche d'arbitrages, puis attendre les choix avant de cuire ou d'approuver quoi que ce soit. Ne pas toucher à `src/combat` (une autre séance peut y travailler).
-- Rappel : l'opérateur avait déjà choisi, en Passe AA1, AA1-4 « Les citadins cuits de la ville + variantes V1 » ; le travail attendait sa séance.
-
-### État des lieux — [OK] mesuré
-- **Fabrication** (`src/arena/ArenaScene.ts`, `src/arena/ArenaApp.ts`, `src/arena/FighterArt.ts`) : 25 spectateurs (graine 1842), sur les rangs 0 et 1 des gradins seulement, de 32° à 60° de chaque côté de la porte, 4 places tentées par segment de porte et 2 ailleurs, une sur deux gardée (tirage de l'arène). Ce sont les cinq archétypes de foule du générateur de la ville, peints à ×1 puis doublés dans des cases de 64 × 96, de face, repos et bouche ouverte (4 images chacun), échelle 0,62, teinte froide fixe [0,5 ; 0,56 ; 0,74] de jour comme de nuit. Acclamation : bouche ouverte et saut de 7 cm pendant 1,4 s, pour une part du public à chaque coup reçu (même paré), au K.O. et au break (`cheer`). Un pixel de figure ≈ 3 px en 1080p.
-- **Coût** : aucun appel de dessin propre (l'appel instancié des combattants). Duel de la version 2 de nuit 9,80 ms GPU en 1080p, à midi 8,55 (tableau ci-dessous).
-- **Ce qu'on en voit** (`tools/arena-scene-shots.mjs`, `HOLD=1`, `FREEZE_CSS=1`, 1920 × 1080, `?scene=arena&v2=1&clean=1`, nuit et `time=midday`, moments `calm`, `foeSkill` (la légère avancée de caméra quand l'adversaire prépare) et `ko`) : 21 des 25 dans le cadre de base, en haut à gauche et à droite, sur la crête des gradins ; à côté des feuilles de combat ×3, des poupées à grosse tête, mêmes vêtements, bleu pâle à midi. Le preset `charging` de la version 2 ne fait pas charger l'adversaire : `foeSkill` montre l'avancée.
-
-### Le prototype — [OK], DEV seulement, rien de cuit ni d'approuvé
-- **`src/lab/arenaCrowd.ts`** (`?crowdlab=town|plaza|mix`), atteint par un import dynamique gardé par `import.meta.env.DEV` dans `ArenaApp` (trois crochets : l'installation après les spectateurs, les événements, la mise à jour) : compilé hors de la version publiée, l'arène sans le paramètre inchangée.
-  - Les feuilles passent la porte de production (`loadProductionCast` : manifeste approuvé, SHA-256 contre le dossier de provenance, fichier de variantes approuvé et empreintes de ses masques) ; seules leurs images de repos (12 par feuille) entrent dans un atlas à part (1024 × 384, 1,5 Mo), dessiné par un second `SpriteRenderer` au cadre de la ville (32 × 48), contour noir à 25 % de jour comme de nuit (règle S3b), gain de silhouette de l'arène, ombre des feuilles de combat (CX-L1 0,65 / CX-L2 1,3), protection de flou 0,35 comme aujourd'hui, échelle 0,62 × 0,9.
-  - Places : `crowdseat=today` (les 25 de l'arène), `medium` (47 : les quatre rangs de 32° à 60°, une place tous les ~0,85 m, une sur trois vide), `dense` (88 : tous les ~0,55 m, une sur cinq vide), calculées par formule et hachage, sans tirage : la construction de l'arène n'est pas touchée.
-  - Variété : la variante de chaque place par `variantOf` (sans tirage), une horloge de respiration par spectateur (décalée, ×0,85 à ×1,15), chaque aile tournée vers l'arène (la face des habitants est un trois-quarts tourné à gauche, `frontLeft` : l'aile gauche est retournée). `crowdvar=0` les originaux seuls.
-  - `crowdsit=1` : chaque spectateur 42 cm plus bas, derrière la marche de son rang (une seule profondeur par sprite : la marche cache les jambes), assis sans image neuve.
-  - `crowdreact=sound` : la réaction calquée sur `crowdOf` (`src/audio/sfx.ts`, lu, non modifié) : la clameur au K.O. (tous, 3 s de sauts), le sursaut au break (75 %, puis souffle retenu), l'acclamation sur les techniques de Ren (80 %), le « oh » sur les autres coups puissants touchés (45 %, un petit saut) ; absent = la règle d'aujourd'hui.
-- **À l'écran** : 67 des 88 places dans le cadre de base ; ~72 px par mètre aux gradins en 1080p, un pixel de feuille ≈ 1,3 px (les passants du quartier en plan B : 0,65 à 1,68), une figure ~100 px.
-- **Défaut trouvé et corrigé dans le prototype** : le hachage rendait des nombres négatifs (le `^=` de JavaScript est signé) ; une place tirait un habitant d'indice négatif et la page s'arrêtait ; `>>> 0` à la fin.
-
-### Mesures GPU — [OK] sous la nuit B
-`tools/perf.mjs`, Radeon 780M (adaptateur relevé), serveur DEV `:5194`, variantes entrelacées, quatre tours, 5 s chacune, témoin de contention ; le panneau navigateur de la séance fermé.
-
-| Page | 1920 × 1080 (médiane propre) | 2560 × 1440 (min des tours) | Appels |
-|---|---|---|---|
-| Nuit B (`seed=1842&clean=1&camera=B`) | 10,33 (3/4) | 16,10 | 107 |
-| Duel de nuit, aujourd'hui | 9,80 (4/4) | 14,94 | 92 |
-| Duel de nuit, 25 places cuites | 9,42 (4/4) | — | 95 |
-| Duel de nuit, 88 cuites debout | 9,62 (4/4) | 14,92 | 95 |
-| Duel de nuit, 88 cuites assises | 9,65 (4/4) | 14,89 | 95 |
-| Duel à midi, aujourd'hui | 8,55 (4/4) | 13,38 | 94 |
-| Duel à midi, 88 cuites | 8,62 (4/4) | 12,80 | 97 |
-
-- Le même duel varie de 1 à 2 ms d'un tour à l'autre (nuit : 8,88 à 10,50) ; tour par tour, la foule dense de nuit fait −0,93 / +0,95 / −0,18 / −0,31 ms, à midi +0,02 / +0,10 / +0,01 / +0,16 : l'écart ne se distingue pas du bruit, et tout reste sous la nuit B. Trois appels de plus (le second rendu de sprites). Processeur : `App.update` +0,2 à +0,3 ms par image pour 88 spectateurs (0,42 → 0,69 ms de nuit).
-- **[?] 2560 × 1440** : un autre processus Chrome (pid 28384, pas une page de cette séance) a occupé 18 à 39 % de la 780M aux tours 3 et 4, et le tour 2 a un pic non signalé (22,90 pour la foule dense, 19,21 pour aujourd'hui) ; seul le tour 1 est sûr (nuit B 18,81 ; duel de nuit 14,94, dense 14,92, assis 14,89 ; midi 13,38, dense 12,80), d'où le minimum des tours dans le tableau. À refaire au calme avec la construction choisie.
-
-### La fiche — publiée, rien de décidé
-- Page privée https://claude.ai/artifact/SrsNyUPheNRHpLaSqNtPPY, source `briefs/fiche-public-gradins.html` (gabarit `fiche-arbitrages`, collection `decisions`, relue vide à la publication). Les 51 images (captures réduites à 1280 px et agrandis en JPEG, deux animations du K.O. de 16 images) sont publiées avec la page, pas dans le dépôt ; six images clés dans `screenshots/calibration/public-PU1/`. Vérifiée en local avec le squelette du service : 8 cartes, aucune image cassée, aucun débordement à 1 200 et 390 px.
-- Un état des lieux (fabrication, coût, les trois cadrages de nuit et de midi, agrandis), le prototype et le tableau des coûts, puis huit cartes :
-  - PU-1 la source, recommandé « Les cinq habitants du quartier, avec leurs variantes » (AA1-4, déjà approuvés ; les citadins des places sans variantes se répètent : deux marchands ambulants identiques côte à côte sur l'agrandi) ;
-  - PU-2 la densité, recommandé « Dense : 88 places » ;
-  - PU-3 la posture, recommandé « Debout » (assis derrière le parapet en alternative, sans image neuve) ;
-  - PU-4 la variété, recommandé « Variantes, horloges décalées, ailes tournées vers l'arène » ;
-  - PU-5 la réaction, recommandé « Calquée sur la foule sonore » ;
-  - PU-6 une image bras levés, recommandé « Oui, par génération d'après les planches (tâche suivante, au plus 5 $) » (alternatives : le rig sans génération — les bras des habitants sont peints dans le torse, à redessiner pour chacun comme le marteau du forgeron — ou « Non : les sauts suffisent ») ;
-  - PU-7 la portée, recommandé « Derrière la version 2 seulement » ;
-  - PU-8 l'approbation, recommandé « Approuver : en production dans les gradins de la version 2, avec les choix de cette fiche ».
-
-### Limites
-- Rien n'est construit pour la production : le prototype est un outil de revue, en DEV. Les preuves de la construction (0 px de l'arène par défaut contre `main`, tests, `arena-scene-check`, `arena-sheet-proof`, perf au calme) viendront avec elle.
-- Les animations de la fiche sont des captures pas à pas (0,1 s) du K.O. : pas le ressenti en jeu.
-- Aucune image générée, aucun registre de génération ouvert.
-
-### Où reprendre
-- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner ses choix mot pour mot ici et dans les dossiers de provenance des feuilles choisies, puis construire derrière la version 2 (ou ce qu'il décide) : le module de production à la place du labo, les tests, les preuves, la perf au calme, puis fusionner. Si PU-6 l'ouvre, la planche d'acclamation dans sa propre tâche.
-
-### Pensée
-- Une décision déjà prise (AA1-4) se retrouve avant d'en préparer une neuve : la fiche la rappelle et la complète au lieu de la reposer.
-- Un prototype de revue qui charge des feuilles approuvées passe par la même porte que la production (manifeste, empreinte, masques) : l'image montrée est celle qui serait approuvée.
-- Un hachage en JavaScript se termine par `>>> 0` : `^=` rend un entier signé, et un indice négatif ne se voit qu'à l'exécution.
-
-## Passe PU2 — La fiche du public relue, huit sur huit : les cinq habitants dans les gradins de la version 2, en production (2026-11-04)
-
-### Demande
-- L'opérateur, mot pour mot : « Fiche remplie ». Relire `decisions` (https://claude.ai/artifact/SrsNyUPheNRHpLaSqNtPPY), consigner mot pour mot, construire ce qui est choisi, avec ses tests et ses preuves, puis fusionner (Passe PU1).
-
-### Les choix de l'opérateur, mot pour mot (huit sur huit, sans note ; cliqués le 2026-11-05 entre 02 h 51 et 02 h 55 UTC)
-| Carte | Ce qu'elle demandait | Choix |
-|---|---|---|
-| PU-1 | Qui s'assoit dans les gradins | « Les cinq habitants du quartier, avec leurs variantes » |
-| PU-2 | Combien de spectateurs | « Dense : 88 places » |
-| PU-3 | Debout, ou assis derrière le parapet | « Debout » |
-| PU-4 | Pour que la foule ne se répète pas | « Variantes, horloges décalées, ailes tournées vers l’arène » |
-| PU-5 | Quand la foule réagit | « Calquée sur la foule sonore » |
-| PU-6 | Une image bras levés | « Non : les sauts suffisent » |
-| PU-7 | Où ce public apparaît | « Derrière la version 2 seulement » |
-| PU-8 | Les feuilles des habitants dans les gradins | « Approuver : en production dans les gradins de la version 2, avec les choix de cette fiche » |
-
-Sept choix suivent la recommandation de leur carte ; PU-6 non (recommandé : la planche générée) : aucune image n'est générée, aucune tâche de planche d'acclamation n'est ouverte.
-
-### Fait — [OK]
-- **`src/arena/stands.ts`** (pur) : les 88 places (`standsSeats` : les quatre rangs, des tours de la porte à 60°, une place tous les ~0,55 m, une sur cinq vide, par hachage, sans tirage) ; qui s'assoit où (`seatOf`) ; les horloges de respiration (`breathRate`, `breathPhase`) ; les réactions (`reactionOf` = `crowdOf` de `src/audio/sfx.ts`, lu, non modifié ; `REACTION` : la clameur au K.O. à 100 % pendant 3 s, le sursaut au break à 75 % puis le souffle retenu, l'acclamation sur les techniques de Ren à 80 %, le « oh » sur les autres coups puissants touchés à 45 %) ; `takes`, `reactionPose`.
-- **`src/arena/StandsCast.ts`**, chargé à la demande par un duel aux règles de la version 2 seulement (`?scene=arena&v2=1`, les combats d'une partie version 2) : les cinq feuilles par la porte de production de la ville (`loadProductionCast` : manifestes approuvés, SHA-256 contre leurs dossiers de provenance, fichier de variantes approuvé et empreintes de ses masques), leurs images de repos dans une texture à part (1024 × 384), un second rendu de sprites au cadre de la ville, le contour noir de S3b de jour et de nuit, l'ombre des feuilles de combat (CX-L1 / CX-L2), chaque aile tournée vers l'arène, une erreur si une feuille ou ses variantes manquent.
-- **`src/arena/ArenaApp.ts`** : un duel de la version 2 installe le public (sauf `cast=generated`) et ne crée plus les spectateurs générés ; les événements du duel lui sont passés ; `__stats().stands`. **`src/arena/ArenaScene.ts`** : `TIER` et `TOWER_W` exportés, la même valeur (2,8 m) ; aucune géométrie ni aucun tirage ne change.
-- **Le prototype de la fiche est retiré** (`src/lab/arenaCrowd.ts`, ses trois crochets DEV).
-- **Défaut du prototype corrigé** : chaque place tirait son habitant seule, et le voyageur ne s'asseyait que 6 fois sur 88 (23 / 6 / 21 / 20 / 18), ce qui allait contre PU-4. Les places vont maintenant par blocs de cinq, chacun une permutation des cinq habitants par son hachage : 17 ou 18 places chacun, jamais deux fois le même dans un bloc. C'est la seule différence d'image avec les captures de la fiche (les mêmes places, les mêmes variantes par place).
-- **L'approbation, mot pour mot** : une entrée `approvals` dans les dossiers de provenance des cinq habitants (la décision PU-8 et la portée : les sept autres choix, la même image, les mêmes variantes, les gradins d'un duel de la version 2), et une phrase dans la note de leurs manifestes. Les exports, leurs SHA-256 et le fichier de variantes ne changent pas.
-- **`AGENTS.md`** : le public dans le principe de production de l'art, `cast=generated`, la liste des tests.
-
-### Tests — [OK]
-- `tests/arena-stands.test.mjs`, six tests : les 88 places contre la géométrie du mur, relue depuis leurs positions (angle, rayon, hauteur de leur rang, au moins 0,3 m entre voisins, chaque rang des deux ailes peuplé, aucun `Math.random`) ; les cinq habitants 17 ou 18 fois, les quinze apparences, les blocs de cinq tous différents, les horloges ; les réactions contre la liste de la décision écrite dans le test, puis sur tout un duel chargé (le script de `V2_SIM_HASH`) : à chaque événement la réaction est celle du son, et les quatre moments sont atteints ; les parts, les départs, les poses ; l'approbation dans les cinq dossiers et manifestes ; le câblage (un seul import dynamique, sous la garde v2 et `cast`, aucun import statique, le prototype absent).
-- **Six fautes injectées une à une, toutes attrapées** : la part du sursaut, le « oh » oublié, les places tirées une à une, les places au-delà de 60°, `cast=generated` ignoré, des sauts trop hauts.
-
-### Preuves
-- **0 px contre `main` figé (`0d280c8`)**, captures déterministes (`HOLD=1`, `FREEZE_CSS=1`, 1920 × 1080) : l'arène par défaut de nuit, à midi et avec son HUD, et le duel de la version 2 avec `cast=generated`, chacun au calme, au K.O. et en charge ; quinze paires à 0 px (écart maximal 0) sur les serveurs DEV, témoin de répétition à 0 px. **Sur les paquets de production** (`vite build` de la branche et de `main`, servis par `vite preview`) : les mêmes pages à 0 px, et la ville de nuit et à midi (`detshots`) à 0 px sans panneau ; avec le panneau DEV, 151 px de texte de performance diffèrent, autant entre deux chargements de `main`. Le paquet se redécoupe (Banners et CombatSheets en morceaux à part) : ces captures en sont la preuve.
-- **Contrôle négatif** : le duel de la version 2 de la branche contre celui de `main` diffère (8,3 % des pixels au calme, 11,4 % au K.O.).
-- `tools/arena-scene-check.mjs "v2=1"` : PASS (l'empreinte du duel égale `V2_SIM_HASH`, aucune erreur, 96 rendus) ; sans paramètre : PASS (identique au prototype). `tools/arena-sheet-proof.mjs --secs=25` : les sept rivaux OK de nuit, Marek et Vessa OK à midi, aucune image hors des feuilles.
-- `npm run typecheck`, `npm test` (410 sur 410), `npm run build`, `npm run art:validate` (61 manifestes, 85 sources, 23 manifestes du son, 0 erreur) ; le paquet ne contient plus le prototype.
-
-### Le rejeu sur `main` — [OK]
-- `main` a bougé pendant ce travail : les Passes CH1 et CH2 de la séance de la charge (`96a5741` : l'attaque puissante devient une compétence, `V2_SIM_HASH` change ; elles ont aussi archivé SA1 et SN18 dans `journal/54-passes-SA1-SN18.md`). Aucun fichier du public n'y est touché (`ArenaApp.ts`, `ArenaScene.ts`, `crowdOf`, les feuilles et leurs dossiers inchangés).
-- PU1 et PU2 sont rejouées sur une branche neuve, `claude/public-gradins-r`, sans push forcé : PU1 par `cherry-pick` (le journal recomposé sur celui de `main`), PU2 avec ses fichiers et les trois modifications d'`AGENTS.md` réappliquées sur la version de `main`. L'ancienne branche `claude/public-gradins` (PU1 seule) est supprimée après la fusion.
-- Refait contre `96a5741` : `npm test` 410 sur 410 (le duel chargé aux nouvelles règles atteint toujours les quatre réactions) ; 0 px de l'arène par défaut (nuit, midi, HUD) et du duel v2 `cast=generated` en DEV et sur les paquets de production, la ville de nuit et à midi à 0 px sur les paquets ; contrôle négatif : le duel v2 avec le public diffère (5,2 % des pixels au calme) ; `arena-scene-check "v2=1"` PASS sur le nouveau `V2_SIM_HASH`, sans paramètre PASS ; `arena-sheet-proof` les sept rivaux OK.
-- Les mesures GPU ci-dessous sont prises sur la base `0d280c8` : les changements de la charge ne touchent pas au rendu.
-
-### Mesures GPU — [OK] E24 tenu
-`tools/perf.mjs`, Radeon 780M, quatre tours propres sur quatre à chaque série, le panneau navigateur fermé.
-- **Sous la nuit B, tour par tour** (même série) : en 1920 × 1080, nuit B 9,85 ms, le duel de nuit de la version 2 avec le public 8,98, à midi 7,43 ; en 2560 × 1440, 17,46 / 14,86 / 13,56. Le duel de nuit reste sous la nuit B à chaque tour, de 0,6 à 2,1 ms en 1080p et de 1,7 à 2,6 ms en 1440p.
-- **Avant / après exact** (le duel de la version 2 de `main` figé contre celui de la branche, entrelacés, 1080p) : de nuit 8,98 → 9,69 ms en médiane, écarts tour par tour +0,35 / +1,49 / −0,23 / +0,59, médiane des écarts +0,47 ms ; à midi 7,96 → 8,00, écarts +0,55 / +0,13 / +0,01 / +0,04. Trois appels de plus (95 contre 92 de nuit, 97 contre 94 à midi). Le coût du public se voit la nuit (les 21 lumières dans le shader des sprites, et les ombres de 88 spectateurs), pas le jour.
-- La série `cast=generated` de cette passe change aussi les combattants (générés) : elle sert la comparaison à la nuit B, pas l'avant / après.
-
-### Limites
-- **Personne n'a encore vu ce public en jouant** : l'essai en jeu reste à l'opérateur (un duel d'une partie version 2, de nuit et de jour).
-- Pistes si la nuit devait s'alléger un jour : les ombres des spectateurs (contact, lumières et lune, jusqu'à quatre quads chacun), que la distance rend presque invisibles ; non faites, l'image approuvée les a.
-- Le calcul processeur du second rendu : +0,2 à +0,3 ms par image (Passe PU1).
-
-### Le journal
-- Avec cette passe, les passes gardées auraient dépassé 60 Ko. SN19 à SN22 sont archivées mot pour mot dans `journal/55-passes-SN19-SN22.md`, avec leur ligne d'index. Le déplacement est prouvé : le corps de l'archive est identique aux 31 213 octets retirés ; SN19, SN20, SN21 et SN22 n'existent chacune que dans ce fichier ; aucune fin de ligne seule (CRLF gardé).
-
-### Où reprendre
-- L'essai en jeu de l'opérateur. Rien d'autre d'ouvert de ce côté : PU-6 ferme la planche d'acclamation.
-
-### Pensée
-- Un prototype de revue se relit avant de devenir production : un tirage indépendant par place, invisible sur une capture, laissait un habitant sur cinq presque absent ; le test d'équilibre l'a vu, pas l'œil.
-- Un paramètre « de comparaison » peut changer plus qu'on ne croit (`cast=generated` rend aussi les combattants générés) : l'avant / après d'un coût se mesure contre la base figée, à paramètres égaux.
 
 ## Passe EV1 — Étape 5 : l'audit des événements, des actions en ville et du récit de la version 2 ; la fiche d'arbitrages publiée (2026-11-05)
 
@@ -433,6 +307,69 @@ Les onze choix suivent la recommandation de leur carte.
 - Un « au premier contact » et un « en passant d'un contexte à l'autre » ne sont pas le même événement : une direction tenue entre deux pages s'ignore, une première pression ne s'ignore jamais.
 - Une preuve de navigateur mesure dans un endroit libre : un mur à deux mètres fausse une vitesse sans faire échouer le code.
 
+## Passe EV2 — La fiche de l'étape 5 relue, seize sur seize : les choix et les notes de l'opérateur consignés mot pour mot ; les combattants génériques en ville, la structure gardée (2026-11-05)
+
+### Demande
+- L'opérateur, mot pour mot : « c'est rempli, la fiche. n'oublie pas l'importance narrative et la coherence du gameplay, il se peut que nous devions creer des combattants generiques ( des elimines pour les qualifications pour la phase de groupe/finales ), mais il faut pas se perdre dans la structure du jeu. sinon c"est pas bon ».
+- Relire `decisions` (https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr, source `briefs/fiche-ev1.html`), consigner les choix mot pour mot. Rien ne se construit dans cette passe : EV-15 range le travail en lots, chacun dans sa séance.
+
+### Les choix de l'opérateur, mot pour mot (seize sur seize ; cliqués le 2026-11-05 entre 21 h 39 et 22 h 27 UTC)
+| Carte | Ce qu'elle demandait | Choix | Note de l'opérateur |
+|---|---|---|---|
+| EV-1 | Six défauts de lecture, à corriger avant le reste ? | « Les corriger en premier (lot L1) » | — |
+| EV-2 | Le vol : un risque qui dure ? | « Un soupçon qui dure, une sortie par la restitution » | « Mais il peut aussi avoir une possibilite de combat et de represaille reelle, d'ailleurs on parle de reputation mais comment cela fonctionne ? » |
+| EV-3 | Le défi : quel enjeu ? | « Pleine vie, une mise, une fois par phase » | — |
+| EV-4 | Qui peut-on défier ? | « Les trois, puis les éliminés à partir du jour 6 » | « Je voulais integrer aussi des pnjs generiques qui peuvent etre des combattants present lors de qualifs/eliminatoires par exemple » |
+| EV-5 | Où se joue le défi ? | « L’arène aux gradins vides » | — |
+| EV-6 | Le marchandage : une décision ou un dé ? | « Au moment d’acheter, un argument à choisir » | « mais on peut aussi marchander avec les passants pour obtenir un objet qui possede au lieu de le voler par exemple, ce qui peut donner l"obtention de items unique ou rentable comme dans octopath travaler » |
+| EV-7 | Quels nouveaux événements, dans quel ordre ? | « Les suites des actions, puis un par lieu, puis le ciblé » | « il faut que cela puisse impacter la preparation du joueur en jouant sur cet aspect imprevisible » |
+| EV-8 | Les ambiances qui se répètent | « Hors des nouvelles, dans les répliques et le son » | — |
+| EV-9 | Qui agit contre le joueur, ou pour lui ? | « Chaque rival se souvient ; deux autres agissent » | — |
+| EV-10 | Les réponses au sabotage | « Une réponse par lieu, un effet lisible » | — |
+| EV-11 | Observer un rival, acheter une rumeur | « Observer tout adversaire, rumeurs, activité lisible » | — |
+| EV-12 | Ce que la ville montre | « Les places lisent le pouls, la célébrité compte » | — |
+| EV-13 | Combien de récit et de scènes jouées ensuite ? | « Compléter les arcs, quatre scènes selon l’état » | — |
+| EV-14 | Le grand événement public hors combat | « Un festival le jour 9, conçu sur une fiche à part » | — |
+| EV-15 | Le découpage en lots | « L1 à L6 dans cet ordre » | — |
+| EV-16 | Un joueur du laboratoire qui fait ces actions | « Ajouter le joueur curieux au laboratoire » | — |
+
+Les seize choix suivent la recommandation de leur carte. Les quatre notes complètent leur choix sans le contredire.
+
+### La question posée sur les combattants génériques — tranchée
+- La note sur EV-4 et le message pouvaient ajouter un jour de qualifications au calendrier ou seulement des gens en ville. Une question courte, posée dans la conversation, mot pour mot : « Les combattants génériques (ta note sur EV-4 et ton message) : quelle place leur donner ? Aujourd'hui le tournoi a dix jours et une poule de huit (Ren et sept rivaux) dès le jour 2, sans qualifications. »
+- **Réponse de l'opérateur : « En ville, structure gardée (Recommandé) »**, dont le texte disait : « Les dix jours et la poule de huit restent. Les génériques sont les éliminés des qualifications tenues avant l'arrivée de Ren : ils restent en ville, acceptent un défi, servent de gros bras dans une représaille (ta note sur EV-2). Leurs sprites viendront des planches approuvées, sur fiche. » Les autres options écartées : « Une qualification au jour 1 », « Des barrages avant les finales ».
+- Donc : le calendrier, la poule de huit et la coupe ne changent pas ; aucun verrou ni aucun contrat n'est touché. Les combattants génériques sont des personnages du monde, pas un tour du tournoi. Leur art passe par une fiche (personnages tirés des planches de référence, jamais un design neuf sans demander).
+
+### La réponse à la question de l'EV-2 : comment marche la réputation (lu dans le code)
+- Un nombre de 0 à 100 (10 au départ), affiché en haut à droite. Il monte avec une victoire (+15, +20 contre Marek), une défaite serrée (+2), l'inscription (+2), un défi gagné (+3), les paroles de Lio (+3), la provocation de Cassius (+4), la confrontation (+5), la dénonciation (+5) et la couronne (+20). Il descend avec une défaite (−5), un défi perdu (−1) et un vol pris (−8 à −12).
+- Ce qu'il change : les prix des boutiques (jusqu'à −15 % à 60), les compétences de Corvin (−10 % dès 40), la chance de marchander, le départage de la poule à points égaux (`standings`, `src/tournament/pool.ts`), la cible du sabotage (dès 35, ou une victoire) et son risque, une réplique du barde dès 40.
+- Ce qu'il ne change pas : le duel, l'accès aux lieux et aux gens ; la « célébrité » et la « pression du public », calculées à partir de lui, ne sont lues par rien (Passe EV1). Le jeu ne l'explique nulle part. D'où le voleur à réputation 0 qualifié 9 fois sur 10.
+- À trancher dans la séance de L2, sur sa fiche (« proposé ») : deux nombres distincts, la **réputation** (le nom public, que le tournoi et la ville lisent) et le **soupçon** (ce que la garde sait de toi, EV-2), chacun expliqué dans le jeu ; ce que la réputation ouvre et ferme, avec EV-12 (« la célébrité compte »).
+
+### Ce que ces choix veulent dire pour les lots (EV-15 « L1 à L6 dans cet ordre »)
+- **Pour chaque lot**, la consigne de l'opérateur : l'importance narrative et la cohérence du gameplay, « il faut pas se perdre dans la structure du jeu » : les dix jours, la poule de huit, la coupe et les finales restent ; chaque ajout se rattache à un personnage, un lieu et un moment de ce calendrier.
+- **L1, la lecture** (EV-1) : les six défauts de la Passe EV1.
+- **L2, voler, défier, marchander** (EV-2 à EV-6, EV-16) : le soupçon qui dure et la restitution, avec « une possibilite de combat et de represaille reelle » (pris, un combat possible contre la garde ou les gros bras d'un marchand) ; la réputation et le soupçon expliqués ; le défi à pleine vie, avec une mise, une fois par phase, dans l'arène aux gradins vides ; Orla, Ilse et Vessa, puis les éliminés dès le jour 6, et les **combattants génériques** en ville (les éliminés des qualifications d'avant l'arrivée de Ren) ; le marchandage au moment d'acheter, un argument à choisir, et **le marchandage avec les passants** pour un objet qu'ils possèdent (des objets uniques ou rentables, à la manière d'Octopath Traveler, sans rien en reprendre que la mécanique) ; le joueur « curieux » du laboratoire. Lot large : sa séance peut le découper en deux, sans changer l'ordre (par exemple le vol, le marchandage et les passants ; puis le défi et les génériques, dont l'art demande sa fiche).
+- **L3, l'information et les réponses au sabotage** (EV-10, EV-11).
+- **L4, les événements et les rivalités** (EV-7 à EV-9) : « il faut que cela puisse impacter la preparation du joueur en jouant sur cet aspect imprevisible » : chaque événement neuf change ce que le joueur peut préparer (un service, un prix, une personne, un adversaire), annoncé par ses causes.
+- **L5, la ville qui réagit** (EV-12). **L6, le récit, les scènes et le festival** (EV-13, EV-14 ; les règles du festival sur une fiche à part).
+- Hors des lots : le recrutement et la phase d'équipe, toujours un chantier plus tard.
+
+### Fait — [OK], documents seulement
+- Ce journal, `briefs/audit-gameplay-ev1.md` (§ 7, les décisions) et l'étape 5 de `briefs/roadmap-2026-10.md`. Aucun fichier de `src/`, `tests/`, `tools/` ni aucun contrat ne change.
+- **Le journal** : avec cette passe, les passes gardées auraient dépassé 60 Ko. PU1 et PU2 (leur branche fusionnée) sont archivées mot pour mot dans `journal/57-passes-PU1-PU2.md`, avec leur ligne d'index (preuve ci-dessous).
+
+### Preuves
+- `npm run typecheck`, `npm test`, `npm run build`, `npm run art:validate` sur le commit de cette passe (seuls des documents changent).
+- Le déplacement : le corps de `journal/57-passes-PU1-PU2.md` est identique aux 20 493 octets retirés ; PU1 et PU2 n'existent chacune que dans ce fichier ; aucune fin de ligne seule (CRLF gardé). Passes gardées : 42,9 Ko.
+
+### Où reprendre
+- **L1, la lecture**, dans sa propre séance (EV-15), derrière `flags.v2`, avec ses preuves ; puis L2.
+
+### Pensée
+- Une note de fiche qui ajoute un système (des combattants génériques) se fait situer avant de devenir un lot : la même phrase pouvait ajouter un jour au calendrier ou des gens à la ville, et seule la réponse de l'opérateur le dit.
+- Une question de l'opérateur écrite sur une fiche (« comment cela fonctionne ? ») reçoit sa réponse lue dans le code, au journal comme dans la conversation ; elle dit souvent ce que le joueur ne sait pas non plus.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -451,7 +388,7 @@ Les onze choix suivent la recommandation de leur carte.
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge de Ren et la feuille de Marek sont faites (Passes CX1, CX2 ; X3 « Ren seul, avant Marek » : pas de poses de charge pour Vessa).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
   - **La charge sans palier puissant (Passe CH1, décision A3 du 2026-11-04)** : l'attaque puissante est une compétence (1 PA, ses niveaux, possédée dès le départ, emportée ou non), les temps de charge et la puissance des coups chargés à 0,85, l'équilibre de V2C2 retrouvé (59,6 %) ; contrat et spécification amendés. **Fiche relue, six sur six à la recommandation (Passe CH2)** : CH-1 « 0,85 (−15 %) », CH-2 « La puissance suit la tenue (×0,85) », CH-3 « 1 PA », CH-4 « Les quatre d’aujourd’hui, la puissante à côté », CH-5 « Bien ainsi (à confirmer en jeu) », CH-6 « Fusionner après la fiche, essayer ensuite » ; fusionné dans `main`. **Reste l'essai en jeu de l'opérateur.**
-  - **Étape 5, le gameplay (Passe EV1)** : audit des événements, du vol, du défi, du marchandage et du récit de la version 2 contre les contrats (`briefs/audit-gameplay-ev1.md`) : le défi sans enjeu (gagné 15 fois sur 15), le vol sans suite (un voleur à réputation 0 qualifié 9 fois sur 10), le marchandage un dé, trois ambiances à 52 % des nouvelles, une seule réponse (la garde du quai) contre les deux sabotages, trois champs du pouls lus par rien, l’information et la réaction visible de la ville minces, le festival et l’investissement absents ; six défauts de lecture relevés (dont les nouvelles de fin de créneau perdues sur les places). **Fiche publiée, seize choix** : https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`) ; à relire quand l’opérateur la dit remplie, puis les lots L1 à L6 (ou ce qu’il décide en EV-15), chacun dans sa séance, derrière `flags.v2`. Le recrutement et la phase d’équipe restent un chantier plus tard.
+  - **Étape 5, le gameplay (Passe EV1)** : audit des événements, du vol, du défi, du marchandage et du récit de la version 2 contre les contrats (`briefs/audit-gameplay-ev1.md`) : le défi sans enjeu (gagné 15 fois sur 15), le vol sans suite (un voleur à réputation 0 qualifié 9 fois sur 10), le marchandage un dé, trois ambiances à 52 % des nouvelles, une seule réponse (la garde du quai) contre les deux sabotages, trois champs du pouls lus par rien, l’information et la réaction visible de la ville minces, le festival et l’investissement absents ; six défauts de lecture relevés (dont les nouvelles de fin de créneau perdues sur les places). **Fiche relue, seize sur seize à la recommandation (Passe EV2)** : https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`), quatre notes consignées mot pour mot (une représaille possible après un vol, des combattants génériques, le marchandage avec les passants, des événements qui touchent la préparation) ; les génériques « En ville, structure gardée (Recommandé) » ; la consigne : l’importance narrative et la cohérence du gameplay, sans se perdre dans la structure. **La suite : L1 (la lecture), puis L2 à L6 dans cet ordre (EV-15)**, chacun dans sa séance derrière `flags.v2`. Le recrutement et la phase d’équipe restent un chantier plus tard.
   - **La manette (Passe MN1)** : état des lieux de chaque chemin d'entrée (seul le duel lit une manette, la première seulement), prototype de revue des glyphes (DEV, `?padglyph=`), fiche https://claude.ai/artifact/F2fYfXXjwL5y6o7p5q4fj1 relue onze sur onze à la recommandation ; **construite et prouvée (Passe MN2)** : la ville, les places, toutes les pages, l'écran titre et le duel de la version 2 à la manette, le jeu au clavier à 0 px contre `main` (DEV et paquets), une manette simulée jouant le premier jour et un combat. **Reste l'essai de l'opérateur avec sa manette** (MN-11) : le son à la première pression (MN-10), la vibration, la zone morte et la marche la plus lente.
   - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
