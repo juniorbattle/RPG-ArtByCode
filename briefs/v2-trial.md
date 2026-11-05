@@ -25,7 +25,7 @@ d'arbitrages `briefs/fiche-v2.html` recueille vos choix.
 | | K | les compétences (niveaux, les quatre emportées) |
 | | G | l'équipement (arme et palier, armure, deux accessoires, le sac) |
 | | V / N | le son (volume, musique) / le couper |
-| Duel | J (ou 1) tenue | l'attaque : une pression = légère ; tenue = la puissante à 2 s, puis les compétences palier après palier ; relâcher lance le palier atteint |
+| Duel | J (ou 1) tenue | l'attaque : une pression = légère ; tenue = les quatre compétences emportées, palier après palier (la puissante est l'une d'elles depuis la Passe CH1, si on l'emporte) ; relâcher lance le palier atteint |
 | | K (ou B) tenue | la garde |
 | | L (ou A) | l'esquive |
 | | R, Espace, H, N | recommencer, pause, HUD, son |
@@ -52,7 +52,7 @@ d'arbitrages `briefs/fiche-v2.html` recueille vos choix.
 
 ## Ce qu'il faut regarder
 
-- **La charge** : les 2 s de la puissante, les temps des compétences (2,7 à 9 s selon le niveau) ; rien ne coupe une charge depuis votre choix
+- **La charge** : les temps des compétences (2,05 à 7,65 s selon le niveau depuis la Passe CH1 ; la puissante, une compétence, de 1,7 à 1,3 s) ; rien ne coupe une charge depuis votre choix
   V2-2 « Rien ne la coupe » (Passe V2C1 : ni un coup reçu, ni l'esquive, ni le break ; relâchée pendant la séquence adverse ou un étourdissement,
   elle attend et part dès que Ren peut agir ; seul le K.O. la finit) ; l'ancien schéma pour comparer (`&input=keys`).
 - **L'équilibrage, plus rude depuis la Passe VP4** : les coups des rivaux 30 % plus forts ; au TournamentLab un joueur préparé de compétence

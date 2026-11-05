@@ -39,9 +39,11 @@ test('the charge the page shows is the duel\'s: its tiers in their order; a leve
     const { tiers } = M.v2SheetData(M.matchSheetFor(s), undefined, s.v2.kit, VG.v2Mods(s));
     assert.deepEqual(P.chargeLadder(s, s.v2.kit.loadout), tiers);
   }
-  // three chosen of four: the three, in their order, with the light and the heavy attack
+  // three chosen of four: the three, in their order, with the light attack (the heavy attack only when chosen: a skill since journal Passe CH1)
   const three = P.chargeLadder(st, st.v2.kit.loadout.slice(0, 3)), ats = three.map((t) => t.at);
-  assert.equal(three.length, 5); assert.deepEqual(ats, [...ats].sort((a, b) => a - b)); assert.ok(!three.some((t) => t.id === st.v2.kit.loadout[3]));
+  assert.equal(three.length, 4); assert.deepEqual(ats, [...ats].sort((a, b) => a - b)); assert.ok(!three.some((t) => t.id === st.v2.kit.loadout[3] || t.id === 'heavy'));
+  const withHeavy = P.chargeLadder(st, ['heavy', 't1', 'd1']);
+  assert.deepEqual(withHeavy.map((t) => t.id), ['light', 'heavy', 'd1', 't1']);
   for (const id of Object.keys(SB.SKILL_BOOK)) for (let level = 1; level < SK.MAX_LEVEL; level++) {
     const a = P.skillFigures(st, id, level), b = P.skillFigures(st, id, level + 1);
     assert.ok(b.damage >= a.damage && b.gauge >= a.gauge && b.dur >= a.dur && b.charge <= a.charge, `${id} ${level}`);

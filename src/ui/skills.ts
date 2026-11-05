@@ -38,7 +38,7 @@ function cmpHtml(now: SkillFigures, next: SkillFigures | null, level: number): s
 /** the charge, tier after tier */
 function ladderHtml(s: GameState, ids: string[]): string {
   return chargeLadder(s, ids).map((t) => {
-    const name = t.id === 'light' ? tx('ui.skill.light') : t.id === 'heavy' ? tx('ui.skill.heavy') : skillName(t.id);
+    const name = t.id === 'light' ? tx('ui.skill.light') : skillName(t.id);
     const when = t.id === 'light' ? tx('ui.skill.tap') : `${t.at} s${t.ap ? ` · ${tx('v2.skills.ap', { ap: t.ap })}` : ''}`;
     return `<div class="row"><small>${when}</small><b>${esc(name)}</b></div>`;
   }).join('');
@@ -71,7 +71,7 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     (card.querySelector('.pm-purse b') as HTMLElement).textContent = String(chosen.size);
     const ladder = card.querySelector('.pm-ladder'), wide = card.querySelector('.pm-ladder2');
     if (ladder) ladder.innerHTML = `<p class="pm-sub">${tx('ui.skill.ladder')}</p>${ladderHtml(host.state(), four())}`;
-    if (wide) wide.innerHTML = `<p class="ttl">${tx('ui.skill.ladder')}</p>${chargeLadder(host.state(), four()).map((t) => `<div><dt>${esc(t.id === 'light' ? tx('ui.skill.light') : t.id === 'heavy' ? tx('ui.skill.heavy') : skillName(t.id))}</dt><dd>${t.id === 'light' ? tx('ui.skill.tap') : `${t.at} s`}</dd></div>`).join('')}`;
+    if (wide) wide.innerHTML = `<p class="ttl">${tx('ui.skill.ladder')}</p>${chargeLadder(host.state(), four()).map((t) => `<div><dt>${esc(t.id === 'light' ? tx('ui.skill.light') : skillName(t.id))}</dt><dd>${t.id === 'light' ? tx('ui.skill.tap') : `${t.at} s`}</dd></div>`).join('')}`;
     if (go) go.disabled = chosen.size !== 4;
     const lv = kit.levels[now], st = host.state(), f = skillFigures(st, now, lv), up = nextLevel(st, now), k = SKILL_BOOK[now];
     const said = !up ? tx('ui.skill.top') : up.by === 'drill' ? tx('ui.skill.drill', { level: up.level }) : tx('ui.skill.challenge', { name: RIVALS[up.teacher!].name });

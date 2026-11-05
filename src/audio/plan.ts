@@ -47,7 +47,8 @@ export interface Mood { foeSeq: boolean; charge: number; stunned: number; low: b
 export const CALM: Mood = { foeSeq: false, charge: -1, stunned: 0, low: false, over: false };
 /** under this share of his health a fighter is low: the endgame keeps the tension */
 export const LOW_HP = 0.3;
-/** from this tier the charge raises the music (0 the light blow, 1 the heavy at 2 s, then the skills: src/combat/charge.ts) */
+/** from this tier the charge raises the music (0 the light blow, then the skills, the first of them at 1: src/combat/charge.ts; the heavy attack's own
+ *  tier at 2 s before journal Passe CH1) */
 export const RISING_TIER = 1;
 
 export function moodStep(m: Mood, e: { type: string } & Record<string, unknown>, maxHp: Readonly<Record<string, number>> = {}): Mood {
@@ -69,7 +70,7 @@ export function moodStep(m: Mood, e: { type: string } & Record<string, unknown>,
 export const MELODY_ASIDE = 0.45, TENSION_REST = 0.35;
 
 /** the layers' levels, base, melody, tension: the riff always; the lead steps down while the opponent presses; the brass, the strings and the timpani rise
- *  from their rest on the opponent's sequence, on the charge from its heavy tier, on a stun, and stay up for the endgame; the K.O. takes everything */
+ *  from their rest on the opponent's sequence, on the charge from its first skill's tier, on a stun, and stay up for the endgame; the K.O. takes everything */
 export function layerLevels(m: Mood): [number, number, number] {
   if (m.over) return [0, 0, 0];
   return [1, m.foeSeq ? MELODY_ASIDE : 1, m.foeSeq || m.charge >= RISING_TIER || m.stunned > 0 || m.low ? 1 : TENSION_REST];

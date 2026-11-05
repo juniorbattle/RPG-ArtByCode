@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -64,158 +64,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/51-passes-SN11-SN12.md`](journal/51-passes-SN11-SN12.md) | SN11, SN12 | 04/11 |
 | [`journal/52-passes-SN13-SN14.md`](journal/52-passes-SN13-SN14.md) | SN13, SN14 | 04/11 |
 | [`journal/53-passes-SN15-SN17.md`](journal/53-passes-SN15-SN17.md) | SN15, SN16, SN17 | 04/11 |
+| [`journal/54-passes-SA1-SN18.md`](journal/54-passes-SA1-SN18.md) | SA1, SN18 | 04/11 |
 
 ---
-
-## Passe SA1 — Le fond gris d'un sprite en combat : l'image `strike.1` de Marek, sa cause dans la chaîne, l'audit de toutes les feuilles (2026-11-04)
-
-### Demande
-- L'opérateur, mot pour mot, transmis par la séance mère : « en combat j'ai remarque le fond d'un sprite n'est pas totalement transparent ( gris il me semble ) il faut audit et corriger cela et s'assurer que les autres sprites sont clean aussi ». La demande autorise la correction, pas l'approbation en production d'une feuille changée.
-
-### Le sprite vu — [OK] trouvé
-- **`marek-x3-combat`, image `strike.1`** (la figure `cut`, l'image du milieu de son coup simple, jouée à chacun de ses coups simples ; dans le duel du script de capture, la première fois à 10,1 s). L'image portait un rectangle opaque beige-gris autour de Marek (sa boîte, lame comprise, 170 × 138 texels, pleine à 95 %), et ses parties claires (cheveux, acier, reflets de l'armure) étaient transparentes : le fond et les gris de la figure inversés. Capturé dans le vrai duel (`?scene=arena&v2=1&foe=marek`, le duel mené jusqu'à ce que Marek joue lui-même `strike.1`), de nuit et à midi.
-
-### La cause — [OK] prouvée, dans la chaîne, pas dans le rendu
-- `rivalRig` grandit la tête des figures sur la planche (`growHead`) et donne à `reconstruct-grid.mjs` une boîte agrandie vers le haut (`grownBox`). `isolate`, qui peint les figures voisines avec le fond, ne travaillait que sur la boîte de la figure (± 40 px). Pour `cut` (planche a), la boîte agrandie monte de 144 à 98 ; son coin haut-gauche, (1049, 92) une fois la marge de 6 px ôtée, tombe sur la lame de la figure voisine `windup` (pixels 125,122,116 ; le fond vert de la planche : 3,166,73), restée hors de la zone d'`isolate`.
-- `reconstruct-grid` prend la première case de sa découpe pour le fond. Il a pris l'acier gris : le vert, à plus de 60 du gris, est resté figure ; `--holes` a vidé les texels proches du gris dans la figure (cheveux, lame, reflets) ; la palette de Marek a changé le vert en beige-gris (bruit compris : la moucheture) ; `dehalo` n'a pelé que deux anneaux de bord.
-- Mesuré sur toutes les figures des huit rigs de combat (le coin de chaque découpe après `isolate`, contre le fond de sa planche) : `cut` de Marek à 226 ; toutes les autres à 36 au plus (le bruit du fond vert contre le pixel de coin de la planche). Une seule figure touchée.
-- **Le rendu est hors de cause** : le chargeur (`CombatSheets.cellsOf`) refuse déjà tout alpha partiel et tout texel sur l'anneau de la case ; la texture est en `NearestFilter`, sans mipmaps, en `ClampToEdge` ; le rectangle était fait de texels opaques, connexes à la silhouette, au milieu de la case : aucun de ces contrôles ne pouvait le voir.
-
-### L'audit de toutes les feuilles de production — [OK]
-- Mesuré texel par texel, image par image (scripts dans le dossier temporaire de la séance), sur les 8 feuilles de combat (Ren et les sept rivaux, 259 images) et les 31 feuilles de la ville (la distribution du quartier, `hero-x2-v4`, les quinze du casting et les cinq citadins) : alpha partiel, texels transparents colorés, texels sur l'anneau de la case, îlots détachés, poches transparentes enclavées, texels de bord gris moyens ou verdâtres, remplissage de la boîte englobante, plus longue arête droite de la silhouette ; puis chaque feuille de combat regardée sur fond magenta, les points suspects zoomés sur fond vert.
-
-| Mesure | Combat (8 feuilles) | Ville (31 feuilles) |
-|---|---|---|
-| Alpha partiel, texels transparents colorés | 0 | 0 |
-| Texels sur l'anneau de la case | 0 | 0 |
-| Bords verdâtres | 0 | 0 |
-| Remplissage de la boîte, le plus haut | 0,95 (`strike.1` de Marek), puis 0,69 | 0,81 (la marchande) |
-| Arête droite la plus longue | 165 texels (`strike.1` de Marek), puis 61 (une lame) sur 192 | 25 sur 64 |
-| Îlots détachés | les lames tombées des K.O. (Marek 242 texels, Vessa, Ilse, Ren 199) et 17 bouts de Ren de 1 à 7 texels (31 texels) | 0 |
-
-- Relevés sans défaut : les taches roses vues sur fond magenta chez Vessa (`block.0`) sont l'ombre violette de son visage, opaque ; celle de Rhosk (`skillOff.1`) est le vrai jour entre son bras levé et sa tête. Les poches enclavées (224 à 1 202 texels par feuille) sont les jours entre les jambes, les bras et les lames. Les 17 bouts détachés de Ren sont des gris neutres et des bords sombres d'acier : des morceaux de lame que `blade2` laisse autour d'une main, pas du fond ; non touchés, à revoir avec la lame si l'opérateur le demande.
-
-### Fait — [OK]
-- **La chaîne corrigée** (`art-lab/characters/rigs/lib/combat.mjs`) : `isolate` couvre aussi la découpe que lira `reconstruct-grid` (la boîte agrandie), le critère de la figure gardée restant sa boîte ; `cornerIsBackground` arrête la construction si les deux pas en carré au coin de la découpe ne sont pas le fond de la planche, au test d'`isolate` lui-même. `isolate` et `grownBox` sont exportés pour le test.
-- **Reconstruit** : `build-combat.mjs --check` sur les huit rigs avec la chaîne corrigée : Ren, Vessa, Orla, Cassius, Ilse, Rhosk et Tobin reconstruits identiques ; Marek différent. Marek reconstruit : une seule image change, `strike.1` (22 236 texels sur la case) ; les 31 autres identiques au texel. Sa lame entière dépasse maintenant l'avant de la case : la case recule le corps de 37 texels (`meta.pushed` `strike.1` : 37, comme `kneel` 32), l'arène avance le sprite d'autant.
-- Les packs des sept feuilles inchangées : seule l'empreinte de `lib/combat.mjs` mise à jour (elles se reconstruisent à l'octet avec la nouvelle chaîne), leurs exports et leurs approbations intacts. Le pack de Marek : ses fichiers reconstruits et une entrée `revisions` qui dit l'approbation en attente. Son manifeste n'a pas été touché avant l'approbation de l'opérateur (ci-dessous).
-- **`tests/sheet-clean.test.mjs`** : chaque feuille de personnage approuvée en production (39), chaque image : alpha binaire, anneau transparent, figure non vide, remplissage de sa boîte au plus 0,9, aucune arête droite de la moitié de la case ; puis le garde de la chaîne sur `cut` de Marek (l'ancienne isolation : le coin refusé ; la nouvelle : accepté). Contrôle négatif : sur l'export de `main`, le test échoue sur `strike.1` seul (remplissage 95 %, arête de 165 texels).
-
-### Preuves
-- Avant / après dans le duel, de nuit et à midi, l'image jouée par le duel lui-même (captures déterministes, `HOLD=1`, `FREEZE_CSS=1`) : le rectangle gris, puis Marek seul sur les pavés.
-- 0 px (`tools/diff.mjs`, écart maximal 0) entre avant et après : la ville de nuit (`seed=1842&intro=0`) et à midi, déterministes (`detshots`) ; l'arène par défaut (`?scene=arena`) ; le duel de la version 2 contre Vessa ; le duel contre Marek sur une autre image (`impact`).
-- `arena-sheet-proof.mjs` : les sept rivaux OK de nuit, Marek OK à midi (25 de ses 32 images montrées, aucune image hors de la feuille) ; contre-épreuve `--q=cast=generated` : FAIL, comme il se doit.
-- `npm run typecheck`, `npm test` 394 sur 394, `npm run build`, `npm run art:validate` (61 manifestes, 85 sources archivées, 0 erreur ; 22 manifestes de son).
-
-### L'approbation — [OK]
-- Montré à l'opérateur : l'image seule avant / après sur fond vert (×3), et le duel avant / après de nuit et à midi (`screenshots/calibration/sprite-alpha-SA1/`). Sa réponse, mot pour mot : « Approuver en production ».
-- Consignée dans le manifeste de `marek-x3-combat` (`approval`, daté du 2026-11-04, l'approbation de la Passe CX2 citée à sa suite, et `notes`) et dans son pack (une seconde entrée d'`approvals` ; `revisions` dit l'approbation à la place de l'attente). La branche est fusionnée dans `main`.
-
-### Limites
-- La règle du test (remplissage, arête droite) attrape un fond resté en bloc ; un fond resté en mince bande contre la silhouette ne la franchirait pas : c'est le garde de la chaîne qui le refuse à la source.
-
-### Où reprendre
-- Rien de neuf. Les bouts de lame détachés de Ren, si l'opérateur les veut repris.
-
-### Pensée
-- Deux étapes d'une chaîne qui lisent deux boîtes différentes se trompent dans la marge entre les deux : ce qu'une étape nettoie doit couvrir ce que la suivante lit, et l'hypothèse « le coin est le fond » se vérifie là où elle est faite.
-- Un contrôle d'export (alpha binaire, anneau transparent) ne voit pas un fond devenu opaque et connexe à la figure : il faut une mesure de forme (remplissage, arête droite) et un regard sur fond contrasté.
-
-## Passe SN18 — Lot S2, fiche d'écoute : les lieux, la météo, l'interface et les pas (2026-11-04)
-
-### Demande
-- Le lot S2, confié par la séance mère « à lancer une fois le lot S3 fusionné » : la météo (pluie, neige, orage, vent, et la pluie du jour pluvieux), les ambiances des lieux (`ambienceOf` : ville, parvis, lices, place de la halle) et les sons définitifs de l'interface (`click`, `open`, `coin`, `denied`), plus les pas que le plan d'audit range dans S2. La foule par le code d'abord (SA-11c « Code d’abord, CC0 en complément »), les instruments, les tonalités et la couleur du groupe (F-SUITE), une fiche d'écoute avec des rendus du vrai moteur, puis n'appliquer que ce qui est décidé.
-- Vérifié avant de commencer : le premier appel de cette séance a trouvé S3 non fusionné (`claude/sound-combats` au commit de `main`, la séance S3 au travail) et s'est arrêté. La séance S3 a ensuite écrit que S3 était clos sur `main` (`0e2c0ab`, Passe SN17, S3E-SUITE « Lancer S2 ») ; la branche a été mise à jour sur `0e2c0ab` avant tout travail.
-
-### Ce qu'il y avait
-- Les ambiances de l'audit : dans chaque lieu, une nappe de vent, d'eau et de « foule » en bruit filtré, des appels d'oscillateurs (marteau, oiseaux, grillons, cri, luth). La météo se voit et ne s'entend pas. L'interface et les pas sont les recettes du lot S0.
-- Mesuré sur `main` (`render.mjs`, `analyse.mjs --check`) : les ambiances à −24,2 LUFS de jour et −25,3 la nuit, la musique à −20,0 / −20,2, soit 4,0 à 5,2 dB d'écart ; toutes les vérifications passent.
-- **Le poids** : 12 280 918 octets en Opus après S3, soit 301 994 octets (0,29 Mio) sous les 12 Mio par format de SA-17, alors que le plan d'audit prévoyait 3 Mo pour S2 (note de passation de S3).
-
-### Fait — [OK], une proposition, rien dans `main`
-- **Ce qui se calcule dans la page** : `src/audio/places.ts`, pur. Chaque recette prend sa graine (mulberry32, jamais `Math.random`) et rend ses échantillons au premier besoin, à la fréquence du contexte. On y trouve :
-  - le crépitement de la pluie (gouttes sur la pierre, bulles dans les flaques), en boucle circulaire de 7 s ;
-  - le feu des braseros (claquements, crépitement fin, souffle des flammes), en boucle de 9 s ;
-  - le tonnerre en trois prises (proche, avec craquement ; moyen ; lointain), dont le roulement est écrit au quart de la fréquence ;
-  - trois chants d'oiseaux (moineaux ; un merle sur ré, mi, sol, la, deux octaves au-dessus ; hirondelles), le grillon, la chouette ;
-  - l'enclume, l'entraînement (bois, acier, mannequin), l'écurie, les bois du bateau ;
-  - les pas sur les pavés et sur la terre.
-
-  Rien de cela n'est cuit : 0 octet.
-- **Ce qui est cuit, seulement dans la proposition** : `art-lab/audio/sfx/places.sfx.mjs`, avec les instruments du groupe et les voix de la foule de S3.
-  - Le clic : une lame de marimba (la), trois touchers.
-  - L'ouverture : le vibraphone à la quinte (ré, la) sur le piano électrique.
-  - La bourse : des pièces et un éclat de vibraphone (mi).
-  - Le murmure de la ville et des lices : seize voix plus proches, l'air d'une rue, boucle de 12 s.
-  - Le refus reprend le son du duel de S3, sans fichier neuf.
-
-  Encodés comme une cuisson : 120 608 octets en Opus, 132 472 en AAC. Le total en Opus serait de 12 401 526 octets (11,83 Mio).
-- **La table des lieux** (`ambienceOf`, `src/audio/score.ts`) lit la météo de la page (`WeatherNow`).
-  - Des nappes jouées en direct, avec des rafales tirées des nombres du moteur : le vent (et son sifflement quand il forcit), l'eau du canal en vagues, la fontaine, le sifflement de la pluie, les fanions.
-  - Des boucles : le murmure, la foule de l'arène reprise plus loin pour le parvis et la halle, la pluie, le feu.
-  - Des appels.
-  - La pluie fait taire les oiseaux et baisser la foule. La neige étouffe (un passe-bas) et fait crisser les pas. L'orage tonne après chaque éclair. Le vent change le niveau du vent et des fanions.
-  - Les niveaux (`BED_LEVEL`, `LOOP_LEVEL`, `CALL_LEVEL`, `STEP_LEVEL`, `UI_LEVEL`, `LEVEL`) sont posés sur la sortie du moteur : chaque ambiance à −24,4 LUFS de jour et −25,2 la nuit.
-- **Le moteur** (`src/audio/Sound.ts`) :
-  - les nappes, les boucles et les appels ;
-  - les sons calculés gardés pour la page (`made`) ;
-  - les prises cuites décodées une fois (`takesOf`) ; la banque du duel ne charge plus que ses familles ;
-  - l'interface jouée par les sons cuits, chargés au premier geste, avec repli sur les recettes de S0 ;
-  - les pas selon le sol du lieu ;
-  - le tonnerre sur l'événement `cdt-flash`, avec un délai selon la force de l'éclair (`thunderOf`).
-- **Les branchements** :
-  - `src/atmosphere/Weather.ts` envoie `cdt-flash` à chaque éclair, sans tirage ni changement d'image ;
-  - `playPlaza` et `playTown` passent la météo de la page au son ; la ville d'une partie v2 prend aussi la météo de l'adresse, comme les places ;
-  - `hooks.ts` joue le refus quand le jeu refuse une action ;
-  - `tools/audio/harness.js` passe la météo d'une scène.
-- **Les outils** : `tools/audio/places-listen.mjs` et `places-jobs.page.js`.
-  - Ils copient `src/` dans un dossier à part, y encodent les sons proposés et les entrées du catalogue, et rendent les extraits depuis cette copie puis depuis `main` figé.
-  - Ils écrivent les MP3 de la fiche.
-  - Rien n'entre dans `src/audio/baked`.
-- `crowd.sfx.mjs` et `duel.sfx.mjs` exportent les fonctions que le murmure et l'interface reprennent. Leurs rendus ne changent pas : `bake-sfx.mjs --check`, voir Preuves.
-
-### Mesures
-- `analyse.mjs --check` sur le rendu complet de la proposition : tout passe.
-  - Les pages avec leur musique sont entre −18,2 et −18,9 LUFS.
-  - La musique est 4,2 à 5,1 dB au-dessus de l'ambiance.
-  - Les répétitions des nappes sont sous 0,1.
-  - Le clic, l'ouverture et la bourse sont à 4,6 / 4,3 / 4,8 dB au-dessus de la foule de l'arène, contre 6,9 / 7,0 / 6,9 aujourd'hui. Au premier rendu, l'ouverture et la bourse échouaient (2,0 et 2,7 dB) : la résonance du vibraphone allongeait le son et baissait sa moyenne. Les queues ont été raccourcies, ce qui a aussi allégé les fichiers de 25 Ko.
-- Les sons d'interface sont au niveau d'aujourd'hui : clic −23,6 LUFS contre −24,6, ouverture −21,4 contre −21,8, bourse −19,9 contre −17,9, refus −28,2 contre −27,3.
-- Une marche de 18 pas fait −30,2 LUFS sur les pavés et −30,3 sur la terre, contre −25,6 aujourd'hui, presque au niveau du lieu.
-- Les extraits de météo : la pluie du jour pluvieux −25,6 LUFS, l'orage avec ses quatre éclairs −20,8, la neige −26,6, le coup de vent −21,7.
-- Le coût de chaque son calculé au premier usage, dans Chrome headless sur cette machine :
-  - moins de 7 ms pour les pas, les oiseaux, les grillons, l'enclume, l'entraînement, l'écurie et le bateau ;
-  - 16 ms pour la chouette, 17 à 23 ms pour le feu ;
-  - 17 à 41 ms pour chaque tonnerre (faits en arrière-plan, un à la fois, pendant l'orage) ;
-  - 43 à 47 ms pour la pluie (au début d'une page sous la pluie).
-
-### La fiche
-- Page privée https://claude.ai/artifact/FwMeKdEirAksUFBe3pd5eq, source `briefs/fiche-son-lieux.html`. Les 24 extraits MP3 sont publiés avec la page, pas dans le dépôt.
-- Quatorze cartes :
-  - à l'oreille, sans recommandation : S2-VILLE, S2-PARVIS, S2-LICES, S2-HALLE, S2-PLUIE, S2-ORAGE, S2-NEIGE, S2-VENT, S2-INTERFACE, S2-PAS ;
-  - S2-MELANGE, recommandé « Bien dosé » ;
-  - S2-POIDS, recommandé « Calculer dans la page, cuire l’interface et le murmure (121 Ko) » ;
-  - S2-FOULE, recommandé « Le code suffit » ;
-  - S2-SUITE, recommandé « Cuire et brancher dans la version 2 ce qui est validé ».
-- `decisions` relu vide à la publication. Vérifiée en local à 1 200 et 390 px avec le squelette du service reproduit : 24 lecteurs chargés, aucun débordement.
-
-### Limites
-- **Personne n'a écouté.** Je n'ai pas d'oreille : les niveaux, les crêtes et les spectrogrammes (vus sur la ville, l'orage, l'interface et les pas) attrapent les défauts grossiers, pas la justesse d'une pluie ou d'une foule.
-- La proposition est sur la branche, pas dans `main`. La fusion attend la fiche : n'appliquer que ce qui est décidé.
-- Pas encore faits, et à faire avec l'application : `hooks-proof` et `page-proof` sur un serveur DEV, `decode-proof` sur les fichiers cuits, un test des recettes (déterminisme, boucles circulaires, aucune valeur non finie) et de la table.
-- Les coûts de la pluie, du tonnerre, du feu et de la chouette peuvent coûter une image : à étaler si la proposition est validée.
-
-### Où reprendre
-- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot, n'agir que sur ce qui est décidé. Si S2-SUITE est validé :
-  - cuire l'interface et le murmure sous manifeste (`bake-sfx.mjs`, familles `interface` et `lieux`) ;
-  - étaler les calculs coûteux ;
-  - écrire les tests ;
-  - faire les preuves : `analyse --check`, `engine-proof`, `decode-proof`, `hooks-proof`, `page-proof` ;
-  - fusionner, puis donner l'essai en jeu.
-
-### Pensée
-- Quand la marge ne permet plus de cuire, le partage se fait par ce qui demande vraiment le calcul hors ligne. Les instruments du groupe et les voix se cuisent. La pluie, le feu, un oiseau ou une enclume se calculent dans la page en quelques millisecondes, comme les textures.
-- Une mesure de niveau moyennée sur la durée d'un son pénalise sa queue : un son d'interface qui résonne longtemps se lit plus faible qu'il ne s'entend. On raccourcit la queue plutôt que de monter le son.
 
 ## Passe SN19 — La fiche des lieux relue, quatorze sur quatorze : les lieux gardés, 3 dB plus loin ; la pluie, l'orage, l'interface et les pas dans la version 2 (2026-11-04)
 
@@ -527,6 +378,96 @@ Six choix suivent la recommandation de leur carte. S5-DUREE, S5-JEU et SA-10 n'e
 - Une preuve qui compare la sortie du moteur à un fichier cuit doit appliquer à sa référence le même traitement que le moteur, calculé d'après la décision et non d'après le code. Sans traitement, la même référence sert de témoin.
 - Comparer le rendu complet à celui d'avant, entrée par entrée, montre ce qu'un réglage touche et ce qu'il laisse : ici 7 rendus sur 75, tous de l'arène.
 
+## Passe CH1 — La charge sans palier puissant : l'attaque puissante devient une compétence, les temps de charge raccourcis (décision A3 du 2026-11-04)
+
+### Demande
+- **La décision de l'opérateur, le 2026-11-04, en deux messages, mot pour mot** (relayés par la séance mère) : « petite correction : peut etre que nous devrions enlever attaque puissante et nous contenter d'avoir uniquement attaque simple + 4 skills, qu'en penses tu ? », puis, après l'avis de la séance mère : « On peut la retirer mais donc on devra aussi revoir le temps de chargement des autres actions qui seront legerement plus courts attaque puissante deviendra une des competences par exemple.. faisons ca aussi dans une sous-session ».
+- C'est une **décision A3** (E11, « A3 = ma décision citée mot pour mot au journal ») : elle modifie la commande chargée décidée en A3 / AV-5 / AV-7 (Passes AV1, V1).
+- La tâche confiée : consigner la décision ; amender seulement les phrases qui décrivent l'échelle de la charge ; changer la commande de la version 2 seule ; faire de la puissante une compétence avec ses niveaux et sa place dans l'apprentissage ; raccourcir les temps de charge, retirer le plancher ; proposer et mesurer les nombres. Les rivaux gardent leur attaque puissante, et la règle des blessures V2B1-1 (« A. K.O. par un coup puissant ») reste intacte. Le jeu par défaut et `combat=dynamic` ne changent pas. Une fiche si des choix restent ouverts.
+
+### Les textes amendés — [OK] (ancien → nouveau)
+- **Contrat projet, § 6.1** : « l'attaque chargée en la tenant, par paliers, de l'attaque légère à l'attaque puissante puis aux compétences, les compétences payées en points d'action » → « l'attaque chargée en la tenant, par paliers, de l'attaque légère aux compétences, l'attaque puissante comptée parmi elles, les compétences payées en points d'action ». L'en-tête du contrat porte une note datée du 2026-11-04 avec les deux messages. La note de l'amendement du 2026-10-26 (l'en-tête, vers la ligne 13), qui cite l'ancien texte, est laissée telle quelle : c'est le relevé de ce jour-là.
+- **`briefs/combat-system.md`** :
+  - en tête, l'amendement du 04/11/2026 (les deux messages, ce qui est amendé, les nombres « proposé ») ;
+  - § 1 : « de l'attaque légère (une pression) à l'attaque puissante puis aux compétences, palier après palier (§ 4b). Les deux attaques et les quatre compétences restent les actions du joueur ; seule la commande change. » → « de l'attaque légère (une pression) aux quatre compétences emportées, palier après palier, l'attaque puissante devenue l'une d'elles (§ 4b). L'attaque légère et les compétences, l'attaque puissante comprise, restent les actions du joueur. » ;
+  - § 4b, « La charge » : « tenue 2 s (« proposé », le bas des « 2-3 s » de l'opérateur), l'attaque puissante ; puis les quatre compétences emportées, rangées par leur temps de charge à leur niveau (de 2,7 à 9 s au niveau 1-5, « proposé » ; un palier de compétence vient au moins 0,25 s après la puissante) » → une pression, puis les quatre compétences emportées ; la puissante une compétence offensive possédée dès le départ, emportée ou non, montée par l'entraînement jusqu'au niveau 3 ; les temps à 0,85 de ceux de la Passe V1 (2,05 à 7,65 s, la puissante 1,7 à 1,3 s), plus de plancher ; la puissante à 1 PA sous les trois touches, une partie sans PA n'ayant que l'attaque légère jusqu'à ce qu'une attaque légère touche ;
+  - § 4b, la puissance : la phrase de `V2_POWER` complétée (les dégâts d'un coup chargé pris à 0,85 de ce tableau, `V2_POWER_TRIM`) ;
+  - § 14 : les poses `charge` (« avant le palier de la puissante » → « avant le premier palier ») et `chargeHi` (« au-delà de la puissante » → « dès le premier palier, celui d'une compétence »).
+- **`AGENTS.md`**, le paramètre `v2=1` : « (light, heavy at 2 s, then the four skills by their charge time at their level, AV-7 / AV-8, each still paid in AP, AV-6; » → « (light, then the four skills brought by their charge time at their level, AV-7 / AV-8, each still paid in AP, AV-6; the heavy attack one of those skills since the operator's decision A3 of 2026-11-04, journal Passe CH1, [les deux messages mot pour mot]: owned from the start, brought or not, 1 AP, the charge times and the charged blows' damage at 0.85 of before, CHARGE_TRIM / V2_POWER_TRIM, « proposé »; ».
+- **`briefs/v2-trial.md`** : la ligne de la touche J et celle des temps de charge.
+
+### Fait — [OK], derrière `flags.v2`
+- **L'échelle** (`src/combat/charge.ts`) : `chargeTiers` = l'attaque légère (une pression), puis les quatre compétences par leur temps de charge (égalités par leur place). `HEAVY_AT` et le plancher « 0,25 s après la puissante » sont retirés.
+- **Les temps** (`src/combat/skills.ts`) : `BASE_CHARGE` garde les temps de la Passe V1, la puissante y entre ([2 ; 1,85 ; 1,7 ; 1,6 ; 1,5] avant la réduction) ; `SKILLS` = `CHARGE_TRIM` (0,85) de ces temps, arrondis à 0,05 s au demi supérieur. Les quatre de départ au niveau 1 : Rempart 3,5 → 3 s, Éclair 4 → 3,4, Ferveur 5 → 4,25, Estocade 9 → 7,65 ; la puissante 1,7 / 1,55 / 1,45 / 1,35 / 1,3 s.
+- **La puissante, une compétence** :
+  - `SKILL_BOOK.heavy` (offensive, `start`) ; `skillAction('heavy')` lui donne sa famille et garde son genre `heavy` (son coup, son son, son effet, la défense des rivaux qui l'esquivent) ;
+  - `v2DuelData` lui donne sa famille, l'admet parmi les quatre (le contrôle `checkDynData` de `dynamic.ts` l'accepte : une ligne de contrôle, aucune règle du duel ne change, `DYNAMIC_SIM_HASH` tenu), lui applique son niveau quand elle est emportée, et 1 PA sous les trois touches (`V2_POWER.heavy.ap`) ; l'ancien schéma (`input=keys`) la garde gratuite ;
+  - `V2_START_KIT` : les quatre d'aujourd'hui emportées, la puissante possédée au niveau 1 après elles ; une sauvegarde v2 d'avant la reçoit au niveau 1 à sa lecture (`deserialize`, la partie par défaut lue telle quelle) ; l'entraînement la monte jusqu'au niveau 3, comme les autres compétences de départ ; son nom sur les pages est « Heavy attack » (`ui.skill.heavy`, aucune clé de texte nouvelle).
+- **La puissance suit la tenue** (`V2_POWER_TRIM` = `CHARGE_TRIM`) : les dégâts d'un coup chargé offensif à 0,85 du tableau `V2_POWER` (la puissante ×1,87 au lieu de ×2,2, l'Estocade ×2,89 au lieu de ×3,4) ; la jauge et la durée de Rempart et de Ferveur inchangées. Sans cela, le joueur préparé gagnait 75 % des combats (voir Mesures).
+- **Le bot** (`pickTier`) joue la puissante comme avant, quand ses PA sont pleins ou l'adversaire brisé, si elle est emportée ; les autres compétences comme avant.
+- **La course hors écran** (`V2_RACERS`) remesurée : étalonnage sur les graines 1 à 40, vérification sur 41 à 60 (écarts de 4,1 % au plus ; le test rejoue 41 à 46).
+- **L'arène et la lecture**, sans image, effet ni son neuf, rien recuit :
+  - `chargeFrame` : la pose haute dès le premier palier (avant : au-delà de la puissante) ;
+  - l'effet de palier, le bip et la couche de tension (`chargeLevel`, `RISING_TIER`) : la même formule, le niveau 1 est maintenant le premier palier de compétence ;
+  - les moments : `chargeHeavy` devient `chargeFirst` (« Charge (premier palier) »), `chargeWait` attend sur le premier palier ;
+  - le script d'empreinte du duel (`runV2Fingerprint`) a ses tenues sur les nouveaux paliers ([0,05 ; 3,1 ; 0,05 ; 3,5 ; 0,05 ; 4,3 ; 7,7 ; 0,05 ; 9,4 ; 12]) : il passe de nouveau par chaque chemin de V2-2 (charge tenue : 27 coups reçus sans garde, 25 gardés, 6 esquives, un break et le K.O. ; 41 relâchés qui attendent, 81 départs, aucun refus). **`V2_SIM_HASH`** = `1913:2:idle:8.133:55.900:-:-;7407:0:idle:1.358:0.000:-:-;83.867|1:8.458:`.
+- **Les pages** (`src/simulation/preview.ts`, `src/ui/skills.ts`) : « Heavy blow » et « Heavy charge » sont ceux de la puissante à son niveau, emportée ou non ; l'échelle de la page K ne montre la puissante que si elle est choisie.
+- **Les outils** : `tools/arena-scene-check.mjs` (son empreinte et ses tenues), `tools/arena-sheet-proof.mjs` (le moment renommé).
+- **Les tests** : `combat-charge` (l'échelle, la puissante emportée, une partie sans PA, l'attente, le HUD, les tenues de l'outil égales à celles du code), `v2-skills` (treize compétences, la puissante possédée, entraînée, emportée, l'ancienne sauvegarde), `v2-gear`, `wares`, `ui-pages`, `combat-cast` (les images de charge), `v2-injury` (ses chiffres remesurés, voir Preuves).
+
+### Mesures — TournamentLab `--rules=v2` (50 parties ; 30 pour les joueurs bon et expert), bot de la version 2, 20 duels par rival et par adresse
+| Variante | préparé | blessures | qualifié · finaliste · couronné | bon · expert | duel moyen | sabotage tenté |
+|---|---|---|---|---|---|---|
+| `main` (V2C2, V2B1) | 60,4 % | 0,80 | 88 · 18 · 4 % | 84,0 · 95,3 % | 5,1 à 9,9 min | 22 / 50 |
+| La puissante retirée, temps et puissance d'aujourd'hui | 61,0 % | 0,70 | 94 · 18 · 4 % | 82,0 · 96,7 % | 5,1 à 10,0 | 22 |
+| Temps ×0,85, puissance gardée | 74,8 % | 0,42 | 98 · 62 · 4 % | 87,3 · 98,0 % | 5,2 à 9,2 | 7 |
+| **Proposé : temps et puissance ×0,85, course remesurée** | **59,6 %** | **0,76** | **88 · 20 · 2 %** | **82,7 · 96,7 %** | **5,2 à 10,0** | **19** |
+| Temps et puissance ×0,9 | 62,8 % | 0,60 | 94 · 28 · 2 % | 82,0 · 98,7 % | 5,1 à 10,1 | 23 |
+| Temps et puissance ×0,8 | 62,4 % | 0,48 | 94 · 32 · 2 % | 81,3 · 96,7 % | 5,2 à 10,3 | 19 |
+| Proposé, la puissante à la place de l'Estocade, 1 PA | 61,6 % | 0,72 | 90 · 18 · 4 % | 82,0 · 94,7 % | 5,0 à 10,0 | 24 |
+| Idem, la puissante gratuite | 63,6 % | 0,54 | 98 · 22 · 0 % | 84,7 · 94,0 % | 5,0 à 10,1 | 22 |
+
+- Les lignes ×0,9 et ×0,8 gardent la course remesurée pour 0,85. La plus longue case du proposé : Rhosk à l'adresse 0,6, 10,0 min en moyenne (9,9 sur `main`) ; Marek reste le plus dur (90 % à 0,9). Avec les quatre de départ, le coût de la puissante ne change rien (59,6 % à 0 et à 1 PA).
+- `main` est mesuré par le même script sur un `git archive` figé de `0d280c8` : il retrouve exactement les chiffres de V2C2 et V2B1, et la course épinglée.
+
+### Preuves — [OK]
+- `npm test` **404 sur 404**, `npm run typecheck`, `npm run build`, `npm run art:validate` (61 manifestes, 85 sources, 23 manifestes du son, 0 erreur).
+- **Le jeu par défaut inchangé** : TournamentLab `classic` et `dynamic`, cinq politiques (`diligent`, `idle`, `careful`, `careless`, `losing`), 50 graines : dix JSON **identiques à l'octet** à ceux de `main` figé ; `DYNAMIC_SIM_HASH` le même ; `play-flow` par défaut `0025acce7a403773`, l'empreinte d'avant.
+- **La règle des blessures V2B1-1 intacte** : les six tests de la règle de `tests/v2-injury.test.mjs` passent sans changement ; le septième épinglait les chiffres de la décision sur 50 graines, remesurés et épinglés de nouveau en le nommant (0,76 et 1,74 blessure, 59,6 %, couronné 2 %, qualifié 88 %).
+- Sur un serveur DEV (worktree, port 5194, par `preview_start`, son onglet fermé, arrêté à la fin) :
+  - `arena-scene-check` sous `v2=1` **PASS** (le contrôle vivant avance de 4,9 s, l'empreinte `sameAsRecorded`, 96 rendus de moments sans erreur, télégraphe 6,45:1 et 6,65:1 en deutéranopie, le sol dégagé du HUD dans 77 cas) ; par défaut **PASS** (`sameAsPrototype`) ; `combat=dynamic` **PASS** (`sameAsRecorded`) ;
+  - `arena-sheet-proof` : les sept rivaux OK de nuit et à midi, aucune image hors des feuilles ; contre-épreuve `--q=cast=generated` : FAIL, comme il se doit ;
+  - `play-flow` `V2=1` victoire (1842, jour 2) `cf669f2d59e33a8d` et défaite (7719, jour 2) `66590f734fa53d82`, rejouées en Node à la même empreinte ; `play-day` `V2=1` et par défaut : tous les contrôles passent ;
+  - `ui-text` : la page K la puissante emportée (1600 × 900 et 390 × 844) et le premier palier dans l'arène (1600 × 900 et 812 × 375), 4 pages sur 4.
+
+### Défauts trouvés — [KO → corrigé]
+- **`arena-scene-check` rejoue sa propre copie du script d'empreinte** : avec les tenues d'avant, la page donnait l'ancienne empreinte et le contrôle échouait. Ses tenues sont celles du code, et `tests/combat-charge.test.mjs` compare désormais les deux listes.
+- **La page K ouvrait sur la puissante non emportée** : `play-day` l'a vu (Espace refusait, « quatre déjà »). La puissante était la première compétence possédée ; elle est rangée après les quatre de départ.
+- **Un arrondi flottant** : 1,5 × 0,85 = 1,2749… arrondissait à 1,25. L'arrondi se fait au demi supérieur ; six temps hors des quatre de départ changent d'un cran, aucune mesure n'en dépend.
+- **Environnement** : ce worktree n'avait pas de `node_modules` ; `tests/arena-day.test.mjs` ne trouvait pas `three`. Une copie de `node_modules/three` (pas de jonction, comme pour les bases figées), ignorée par git, comme dans les autres worktrees.
+
+### La fiche
+- Page privée https://claude.ai/artifact/E3wBJw2yyKhhCcnzb2167G, source `briefs/fiche-ch1.html`, quatre captures du vrai jeu publiées avec la page (pas dans le dépôt). Six cartes, chacune avec sa recommandation :
+  - CH-1, les temps de charge : « 0,85 (−15 %) » ;
+  - CH-2, la puissance des coups chargés : « La puissance suit la tenue (×0,85) » ;
+  - CH-3, le coût de la puissante : « 1 PA » ;
+  - CH-4, les quatre d'une partie neuve : « Les quatre d’aujourd’hui, la puissante à côté » ;
+  - CH-5, la lecture du premier palier : « Bien ainsi (à confirmer en jeu) » ;
+  - CH-6, la suite : « Fusionner après la fiche, essayer ensuite ».
+- `decisions` relu vide à la publication. Le code est déjà réglé sur les recommandations ; un autre choix se refait et se remesure.
+
+### Limites
+- **Personne n'a joué la nouvelle charge.** Le bot garde sa façon de jouer la puissante (PA pleins ou adversaire brisé) ; un joueur réel la jouera autrement.
+- La branche n'est pas fusionnée : elle attend la fiche (CH-6).
+
+### Où reprendre
+- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot, appliquer ce qui change, refaire les mesures et les preuves touchées, puis fusionner selon CH-6.
+
+### Pensée
+- Quand la puissance suit la tenue, raccourcir la charge ne change plus l'équilibre (61,9 à 62,8 % de 1 à 0,8) : seul le ressenti change. Raccourcir sans toucher à la puissance faisait passer le joueur préparé de 60 à 75 %.
+- Un outil qui recopie un script du code pour le jouer dans la page se garde par un test qui compare les deux copies.
+- Ce que le joueur possède sans l'emporter se range après ce qu'il emporte : la première ligne d'une page est celle que le clavier touche.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -544,6 +485,7 @@ Six choix suivent la recommandation de leur carte. S5-DUREE, S5-JEU et SA-10 n'e
   - **V0 fait (Passe V0)** : le drapeau `flags.v2` (`?play=1&new=1&v2=1`, l'état nommé `v2-day1-morning`, `--rules=v2`), les textes en tables (`src/narrative/text/`), le défaut prouvé inchangé. À refaire en local : `arena-scene-check` en direct (le contrôle vivant échoue en rendu logiciel, sur `main` aussi).
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge de Ren et la feuille de Marek sont faites (Passes CX1, CX2 ; X3 « Ren seul, avant Marek » : pas de poses de charge pour Vessa).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
+  - **La charge sans palier puissant (Passe CH1, décision A3 du 2026-11-04)** : l'attaque puissante est une compétence (1 PA, ses niveaux, possédée dès le départ, emportée ou non), les temps de charge et la puissance des coups chargés à 0,85, l'équilibre de V2C2 retrouvé (59,6 %) ; contrat et spécification amendés. **Fiche en attente** : https://claude.ai/artifact/E3wBJw2yyKhhCcnzb2167G (CH-1 à CH-6), puis la fusion selon CH-6 et l'essai en jeu de l'opérateur.
   - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
@@ -767,7 +709,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10), SN7-SN8 (Passe SN14), SN9-SN10 (Passe SN16), SN11-SN12 et SN13-SN14 (Passe SN19) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10), SN7-SN8 (Passe SN14), SN9-SN10 (Passe SN16), SN11-SN12 et SN13-SN14 (Passe SN19), SN15-SN17 (Passe SN22), SA1-SN18 (Passe CH1) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -1170,3 +1112,4 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Ce qu'une étape d'une chaîne nettoie couvre ce que la suivante lit : `isolate` nettoyait la boîte de la figure, `reconstruct-grid` lisait la boîte agrandie de sa tête et a pris la lame d'une voisine pour le fond. Une hypothèse (« le coin est le fond ») se vérifie là où elle sert, et un export se contrôle aussi par sa forme (remplissage, arête droite) et sur fond contrasté : l'alpha binaire et l'anneau transparent ne voient pas un fond opaque collé à la figure (Passe SA1).
 - Un réglage décidé pour une partie du jeu se place là où le code sait qu'il y est : le refus « hors du duel » au crochet des actions refusées, pas dans la table que le duel partage par un chemin de repli (Passe SN22).
 - Une preuve qui compare la sortie du moteur à un fichier cuit applique à sa référence le traitement que le moteur doit faire, calculé d'après la décision et non d'après le code ; la référence sans traitement sert de témoin (Passe SN22).
+- Une tenue raccourcie se paie par la puissance : quand le coup suit la tenue, le facteur ne change plus l'équilibre, seulement le ressenti ; un outil qui recopie un script du code pour le jouer dans la page se garde par un test qui compare les deux copies (Passe CH1).

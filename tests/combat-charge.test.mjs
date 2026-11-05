@@ -18,6 +18,8 @@ const DV = await load('/src/arena/dynamicView.ts');
 const G = await load('/src/simulation/index.ts');
 const L = await load('/src/tournament/lab.ts');
 
+/** the four brought with the heavy attack among them (a skill since journal Passe CH1) */
+const HK = { loadout: ['heavy', 't1', 'd1', 's1'], levels: { heavy: 1, t1: 1, d1: 1, s1: 1 } };
 const duel = (foe = 'marek', kit) => V.v2DuelData(foe, { seed: 1337, playerName: 'Ren', opponentName: 'Marek', kit });
 /** a fresh charged duel, the opponent held off (its first sequence never starts) unless asked */
 function fresh(o = {}) {
@@ -29,25 +31,35 @@ function fresh(o = {}) {
 const steps = (c, secs) => { for (let i = 0; i < Math.round(secs / c.D.dt); i++) { c.step(c.D.dt); } };
 const lastRelease = (evs) => evs.filter((e) => e.type === 'chargeRelease').at(-1);
 
-test('the tiers: a tap the light attack, 2 s the heavy, then the four skills by their charge time at their level (ties by their slot)', () => {
+test('the tiers (journal Passe CH1): a tap the light attack, then the four skills by their charge time at their level (ties by their slot); the heavy attack only when brought', () => {
+  // the times: 0.85 of journal Passe V1's, rounded to 0.05 s (Rampart 3.5 -> 3.0, Flash cut 4 -> 3.4, Fervour 5 -> 4.25, Thrust 9 -> 7.65)
   const d = duel();
-  assert.deepEqual(d.tiers.map((t) => t.id), ['light', 'heavy', 'd1', 't1', 's1', 't4']);
-  assert.deepEqual(d.tiers.map((t) => t.at), [0, 2, 3.5, 4, 5, 9]);
-  assert.deepEqual(d.tiers.map((t) => t.ap), [0, 0, 2, 2, 3, 4]);
-  // the levels change the order: Rampart at level 1 (3.5 s) behind Flash cut at level 5 (3.0 s)
+  assert.deepEqual(d.tiers.map((t) => t.id), ['light', 'd1', 't1', 's1', 't4']);
+  assert.deepEqual(d.tiers.map((t) => t.at), [0, 3, 3.4, 4.25, 7.65]);
+  assert.deepEqual(d.tiers.map((t) => t.ap), [0, 2, 2, 3, 4]);
+  assert.ok(!d.tiers.some((t) => t.id === 'heavy'), 'no tier of its own for the heavy attack');
+  // the levels change the order: Rampart at level 1 (3.0 s) behind Flash cut at level 5 (3.0 x 0.85 = 2.55 s); the Thrust at level 3 (7.4 x 0.85)
   const k = V.v2DuelData('marek', { seed: 1, playerName: 'R', opponentName: 'M', kit: { loadout: ['t1', 't4', 'd1', 's1'], levels: { t1: 5, t4: 3, d1: 1, s1: 1 } } });
-  assert.deepEqual(k.tiers.map((t) => [t.id, t.at]), [['light', 0], ['heavy', 2], ['t1', 3], ['d1', 3.5], ['s1', 5], ['t4', 7.4]]);
-  // a tie keeps the slots' order; a skill never comes before the heavy (at least 0.25 s after it)
+  assert.deepEqual(k.tiers.map((t) => [t.id, t.at]), [['light', 0], ['t1', 2.55], ['d1', 3], ['s1', 4.25], ['t4', 6.3]]);
+  // the heavy attack brought: a skill of 1 AP at 2 s x 0.85, shorter by level (level 3: 1.7 x 0.85)
+  const h = duel('marek', HK);
+  assert.deepEqual(h.tiers.map((t) => [t.id, t.at, t.ap]), [['light', 0, 0], ['heavy', 1.7, 1], ['d1', 3, 2], ['t1', 3.4, 2], ['s1', 4.25, 3]]);
+  assert.equal(duel('marek', { ...HK, levels: { ...HK.levels, heavy: 3 } }).tiers[1].at, 1.45);
+  // a tie keeps the slots' order; no floor any more (the old one: 0.25 s after the heavy's tier)
   const tie = C.chargeTiers(['t2', 't1'], { t1: 4, t2: 4 }, d.data);
-  assert.deepEqual(tie.map((t) => t.id), ['light', 'heavy', 't2', 't1']);
-  assert.equal(C.chargeTiers(['t1'], { t1: 1 }, d.data)[2].at, 2.25);
+  assert.deepEqual(tie.map((t) => t.id), ['light', 't2', 't1']);
+  assert.equal(C.chargeTiers(['t1'], { t1: 1 }, d.data)[1].at, 1);
+  assert.equal(K.HEAVY_AT, undefined, 'the heavy tier\'s hold is gone');
 });
 
 test('the charge: released at the tier reached; a tier whose AP are missing does not open, the best open tier below is launched (AV-6)', () => {
   // [hold (s), AP at the start, the action launched]: the oracle from the rule (the last tier reached whose AP are there)
-  const cases = [[0.05, 1, 'light'], [1.9, 5, 'light'], [2.05, 0, 'heavy'], [3.6, 5, 'd1'], [3.6, 1, 'heavy'], [4.1, 2, 't1'], [5.2, 2, 't1'], [5.2, 3, 's1'], [9.2, 5, 't4'], [9.2, 3, 's1'], [12, 4, 't4']];
-  for (const [hold, ap, want] of cases) {
-    const c = fresh({ ap });
+  // the default four (Rampart 3 s, Flash cut 3.4, Fervour 4.25, Thrust 7.65), then the heavy attack brought (1.7 s, 1 AP): a game without AP has the
+  // light attack alone until a light blow lands (journal Passe CH1)
+  const cases = [[0.05, 1, 'light'], [2.05, 5, 'light'], [2.9, 5, 'light'], [3.05, 2, 'd1'], [3.05, 1, 'light'], [3.5, 2, 't1'], [3.5, 1, 'light'], [4.3, 2, 't1'], [4.3, 3, 's1'], [7.7, 5, 't4'], [7.7, 3, 's1'], [12, 4, 't4'],
+    [1.6, 5, 'light', HK], [1.75, 1, 'heavy', HK], [1.75, 0, 'light', HK], [3.05, 1, 'heavy', HK], [3.05, 2, 'd1', HK], [5, 0, 'light', HK]];
+  for (const [hold, ap, want, kit] of cases) {
+    const c = fresh({ ap, kit });
     c.attack(true); steps(c, hold);
     const v = c.view();
     assert.equal(v.tiers[v.launch].id, want, `held ${hold} s with ${ap} AP: the view launches ${want}`);
@@ -107,7 +119,7 @@ test('nothing cuts a charge (V2-2 « Rien ne la coupe », journal Passe V2C1): a
 
 test('a release the duel cannot take waits (V2-2, journal Passe V2C1): the opponent\'s sequence, a stun; it leaves the first step the player can act', () => {
   // in the opponent's sequence (its priority, G3 / CB-4): no command tried, no action until the sequence ends, then the tier reached
-  let c = fresh(); c.attack(true); steps(c, 2.2); c.sim.forceSequence(['m_slash', 'm_heavy']); steps(c, 0.05); c.drain();
+  let c = fresh({ kit: HK }); c.attack(true); steps(c, 1.9); c.sim.forceSequence(['m_slash', 'm_heavy']); steps(c, 0.05); c.drain();
   assert.ok(c.sim.inSequence());
   c.attack(false); let evs = c.drain();
   assert.deepEqual(evs.filter((e) => e.type.startsWith('charge')).map((e) => [e.type, e.id]), [['chargeWait', 'heavy']]);
@@ -121,8 +133,8 @@ test('a release the duel cannot take waits (V2-2, journal Passe V2C1): the oppon
   const end = evs.findIndex((e) => e.type === 'sequenceEnd'), rel = evs.findIndex((e) => e.type === 'chargeRelease');
   assert.ok(end >= 0 && rel > end, 'launched after the sequence ends');
   assert.ok(!evs.slice(0, end).some((e) => e.type === 'commandStart' && e.who === 'ren'), 'no action of the player in the sequence');
-  assert.ok(evs[rel].ok && evs[rel].id === 'heavy' && Math.abs(evs[rel].held - 2.25) < 0.02, JSON.stringify(evs[rel]));
-  assert.equal(c.sim.f.ren.act?.def.id, 'heavy'); assert.equal(c.view().waiting, -1);
+  assert.ok(evs[rel].ok && evs[rel].id === 'heavy' && Math.abs(evs[rel].held - 1.95) < 0.02, JSON.stringify(evs[rel]));
+  assert.equal(c.sim.f.ren.act?.def.id, 'heavy'); assert.equal(c.view().waiting, -1); assert.equal(c.sim.f.ren.ap, 0, 'the heavy attack paid its AP');
   assert.ok(Math.abs(evs[rel].t - evs[end].t) < 0.05, 'at the first step the player can act');
   // stunned: waits for the stun's end
   c = fresh({ ap: 2 }); c.attack(true); steps(c, 4.1); c.sim.f.ren.resist = c.D.resist.max - 1; c.sim.forceSequence(['m_slash']);
@@ -133,14 +145,14 @@ test('a release the duel cannot take waits (V2-2, journal Passe V2C1): the oppon
   assert.ok(evs.findIndex((e) => e.type === 'stunEnd') < evs.findIndex((e) => e.type === 'chargeRelease'));
   assert.equal(c.sim.f.ren.act?.def.id, 't1'); assert.equal(c.sim.f.ren.ap, 0, 'the skill paid its AP when it left');
   // its AP gone meanwhile (a dodge costs one): the best tier still open, at most the one reached (Flash cut 2 AP -> the heavy)
-  c = fresh({ ap: 2 }); c.attack(true); steps(c, 4.1); c.sim.forceSequence(['m_heavy']); steps(c, 0.05);
+  c = fresh({ ap: 2, kit: HK }); c.attack(true); steps(c, 4.1); c.sim.forceSequence(['m_heavy']); steps(c, 0.05);
   c.attack(false); assert.equal(c.drain().find((e) => e.type === 'chargeWait')?.id, 't1');
   until(c, () => c.incoming()?.windowOpen, 3); assert.ok(c.react('ren', 'dodge')); assert.equal(c.sim.f.ren.ap, 1);
   assert.equal(A.chargeHudModel(c.view()).launch, 'heavy', 'the HUD shows the tier that will leave');
   evs = until(c, (e) => e.some((x) => x.type === 'chargeRelease'), 8);
   assert.equal(evs.find((e) => e.type === 'chargeRelease').id, 'heavy');
   // a new press while a tier waits starts a new charge; its release waits behind it: both leave, in their order
-  c = fresh(); c.attack(true); steps(c, 2.1); c.sim.forceSequence(['m_slash', 'm_slash', 'm_slash']); steps(c, 0.05);
+  c = fresh({ kit: HK }); c.attack(true); steps(c, 1.8); c.sim.forceSequence(['m_slash', 'm_slash', 'm_slash']); steps(c, 0.05);
   c.attack(false); c.attack(true); steps(c, 0.1); c.attack(false);
   evs = c.drain(); assert.deepEqual(evs.filter((e) => e.type === 'chargeWait').map((e) => e.id), ['heavy', 'light']);
   evs = until(c, (e) => e.filter((x) => x.type === 'chargeRelease').length >= 2, 12);
@@ -174,7 +186,7 @@ test('a level per skill (AV-8): its power and its charge time; no level of the p
   for (let lv = 1; lv <= 5; lv++) {
     const a = K.atLevel(base, lv);
     assert.equal(a.damage, Math.round(base.damage * (1 + 0.1 * (lv - 1))));
-    assert.ok(K.chargeTime('t4', lv) <= 10 && K.chargeTime('t4', lv) >= 6);
+    assert.ok(K.chargeTime('t4', lv) <= 10 && K.chargeTime('t4', lv) >= 5);
     if (lv > 1) assert.ok(K.chargeTime('t4', lv) < K.chargeTime('t4', lv - 1));
   }
   assert.equal(K.clampLevel(9), 5); assert.equal(K.clampLevel(0), 1);
@@ -189,9 +201,15 @@ test('the three buttons: the heavy and the skills lose their automatic preparati
   for (const id of ['heavy', 't1', 't4', 'd1', 's1']) { assert.equal(c.data.actions[id].prep, 0, id); assert.equal(k.data.actions[id].prep, D.DYNAMIC_DATA.actions[id].prep, id); }
   assert.deepEqual(k.data.ai.defense, c.data.ai.defense);
   assert.deepEqual(k.data.ai.skills, c.data.ai.skills);
-  // a charged blow pays for its hold; the light attack keeps today's numbers
+  // a charged blow pays for its hold; the light attack keeps today's numbers; the heavy x 2.2 of damage, x 0.85 since the charge times were trimmed
+  // (journal Passe CH1), and its gauge x 2; a skill of 1 AP under the three buttons, free under the old scheme
   assert.equal(c.data.actions.light.damage, D.DYNAMIC_DATA.actions.light.damage);
-  assert.ok(c.data.actions.heavy.damage > 2 * D.DYNAMIC_DATA.actions.heavy.damage);
+  assert.equal(c.data.actions.heavy.damage, Math.round(26 * 2.2 * 0.85)); assert.equal(c.data.actions.heavy.resist, 16);
+  assert.equal(c.data.actions.t4.damage, Math.round(58 * 3.4 * 0.85)); assert.equal(c.data.actions.d1.ward.dur, 9);
+  assert.equal(c.data.actions.heavy.apCost, 1); assert.ok(!k.data.actions.heavy.apCost); assert.equal(c.data.actions.heavy.family, 'offensive');
+  // the old scheme with the heavy attack among the four: the C2 command, the heavy at level 1 as today
+  const kh = V.v2DuelData('marek', { seed: 1337, playerName: 'Ren', opponentName: 'Marek', input: 'keys', kit: HK });
+  assert.deepEqual(kh.data.actions.heavy, { ...D.DYNAMIC_DATA.actions.heavy, family: 'offensive' });
   const q = (s) => new URLSearchParams(s);
   assert.equal(A.v2Input(q('v2=1')), 'charge'); assert.equal(A.v2Input(q('v2=1&input=keys')), 'keys');
   assert.equal(DV.arenaRules(q('scene=arena&v2=1')), 'v2'); assert.equal(DV.arenaRules(q('scene=arena&v2')), 'v2');
@@ -292,14 +310,14 @@ test('the HUD\'s reading of the charge: each tier reached, the one a release lau
   const c = fresh({ ap: 2 });
   let m = A.chargeHudModel(c.view());
   assert.equal(m.held, false); assert.equal(m.toNext, 0);
-  assert.deepEqual(m.tiers.map((t) => t.state), ['ahead', 'ahead', 'ahead', 'ahead', 'locked', 'locked']);
-  c.attack(true); steps(c, 1.0);
+  assert.deepEqual(m.tiers.map((t) => t.state), ['ahead', 'ahead', 'ahead', 'locked', 'locked']);
+  c.attack(true); steps(c, 1.5);
   m = A.chargeHudModel(c.view());
-  assert.deepEqual(m.tiers.map((t) => t.state), ['launch', 'next', 'ahead', 'ahead', 'locked', 'locked']);
-  assert.ok(Math.abs(m.toNext - 50) <= 1, `half way to the heavy: ${m.toNext}`);
-  steps(c, 4.2);
+  assert.deepEqual(m.tiers.map((t) => t.state), ['launch', 'next', 'ahead', 'locked', 'locked']);
+  assert.ok(Math.abs(m.toNext - 50) <= 1, `half way to Rampart: ${m.toNext}`);
+  steps(c, 2.1);
   m = A.chargeHudModel(c.view());
-  assert.deepEqual(m.tiers.map((t) => t.state), ['reached', 'reached', 'reached', 'launch', 'locked', 'locked']);
+  assert.deepEqual(m.tiers.map((t) => t.state), ['reached', 'reached', 'launch', 'locked', 'locked']);
   assert.equal(m.launch, 't1');
   steps(c, 5);
   m = A.chargeHudModel(c.view());
@@ -307,9 +325,12 @@ test('the HUD\'s reading of the charge: each tier reached, the one a release lau
   assert.equal(m.toNext, 100);
   // the moments of the charge run to their end
   for (const [name, p] of Object.entries(A.V2_PRESETS)) { const d = fresh({ live: true }); const t = A.runV2Script(d, p.script); assert.ok(t < 59, `${name} ends (${t})`); }
-  // the waiting tier's moment (V2-2, journal Passe V2C1): the heavy released in the sequence, still waiting, the strip showing it
+  // the waiting tier's moment (V2-2, journal Passe V2C1): the first tier released in the sequence, still waiting, the strip showing it
   const w = fresh({ live: true }); A.runV2Script(w, A.V2_PRESETS.chargeWait.script);
-  assert.ok(w.sim.inSequence()); assert.equal(w.view().waiting, 1); assert.equal(A.chargeHudModel(w.view()).launch, 'heavy');
+  assert.ok(w.sim.inSequence()); assert.equal(w.view().waiting, 1); assert.equal(A.chargeHudModel(w.view()).launch, 'd1');
+  // the first tier's moment (the heavy attack's before journal Passe CH1): the first skill reached and open
+  const f1 = fresh({ live: true }); A.runV2Script(f1, A.V2_PRESETS.chargeFirst.script);
+  assert.equal(f1.view().reached, 1); assert.equal(f1.view().launch, 1);
 });
 
 test('the charged duel\'s fingerprint: its fixed script on the scene\'s duel gives V2_SIM_HASH, which the arena check replays in the page', () => {
@@ -333,6 +354,9 @@ test('the charged duel\'s fingerprint: its fixed script on the scene\'s duel giv
   assert.ok(!n.cut && !n.refused, JSON.stringify(n));
   const tool = fs.readFileSync(path.join(ROOT, 'tools/arena-scene-check.mjs'), 'utf8');
   assert.ok(tool.includes(`const V2_HASH = '${A.V2_SIM_HASH}';`), 'the tool pins the same hash');
+  // and replays the same script in the page: its holds are runV2Fingerprint's (journal Passe CH1: the tool kept the old ones, its page hash failed)
+  const holdsOf = (src) => src.match(/holds = (\[[^\]]+\])/)[1];
+  assert.equal(holdsOf(tool), holdsOf(fs.readFileSync(path.join(ROOT, 'src/arena/v2Arena.ts'), 'utf8')));
 });
 
 test('the version 2 reaches the arena and the play mode only through its flag; today\'s duels are untouched', () => {

@@ -20,9 +20,12 @@ const rows = (p) => Object.fromEntries(p.rows.map((r) => [r.id, r]));
 
 test('the numbers of a bout are the duel\'s own: health, the heavy blow, the AP and the charge as the arena builds them, gear and wounds included', () => {
   const st = G.makeV2(G.namedState('day2-afternoon'));
-  for (const gear of [{}, { weapon: 'imported-blade', tier: 2 }, { armour: 'mail-shirt', acc: ['lucky-ribbon', 'docker-wrap'] }, { weapon: 'duelist-sabre', acc: ['swift-boots', 'iron-ring'] }]) for (const injury of [0, 1]) {
-    const s = structuredClone(st); Object.assign(s.v2.gear, gear); s.player.injury = injury;
-    const m = VG.v2Mods(s), { data: d, tiers } = M.v2SheetData(M.matchSheetFor(s), undefined, undefined, m), n = P.duelStats(s);
+  // the heavy attack is a skill since journal Passe CH1: its blow and its charge are a bout's that brings it, at its level, whether it is brought or not
+  for (const gear of [{}, { weapon: 'imported-blade', tier: 2 }, { armour: 'mail-shirt', acc: ['lucky-ribbon', 'docker-wrap'] }, { weapon: 'duelist-sabre', acc: ['swift-boots', 'iron-ring'] }]) for (const injury of [0, 1]) for (const heavy of [1, 3]) for (const brought of [false, true]) {
+    const s = structuredClone(st); Object.assign(s.v2.gear, gear); s.player.injury = injury; s.v2.kit.levels.heavy = heavy;
+    if (brought) s.v2.kit.loadout = ['t1', 'heavy', 'd1', 's1'];
+    const kit = { loadout: brought ? s.v2.kit.loadout : ['heavy', 't4', 'd1', 's1'], levels: s.v2.kit.levels };
+    const m = VG.v2Mods(s), { data: d, tiers } = M.v2SheetData(M.matchSheetFor(s), undefined, kit, m), n = P.duelStats(s);
     assert.equal(n.hp, d.fighters.ren.maxHp); assert.equal(n.blow, d.actions.heavy.damage); assert.equal(n.ap, d.ap.start);
     assert.equal(n.charge, tiers.find((t) => t.id === 'heavy').at);
   }
@@ -51,7 +54,8 @@ test('better and worse follow the number\'s sense: less damage taken is better, 
   const st = v2('forecourt-morning'); st.player.coins = 300;
   const r = rows(P.preview(st, { type: 'shopBuy', shop: 'armourer', item: 'mail-shirt' }));
   assert.equal(r.taken.better, true); assert.equal(Math.round(r.taken.after), 88);
-  assert.equal(r.charge.better, false); assert.equal(r.charge.after, 2.1);
+  // the heavy attack's charge at level 1 (2 s x 0.85, journal Passe CH1) slowed 5 % by the mail
+  assert.equal(r.charge.better, false); assert.equal(r.charge.after, +(1.7 * 1.05).toFixed(3));
   const w = v2(); w.player.coins = 300;
   const b = rows(P.preview(w, { type: 'shopBuy', shop: 'mara', item: 'docker-wrap' }));
   assert.equal(b.hp.better, true); assert.equal(b.hp.after, 2332);

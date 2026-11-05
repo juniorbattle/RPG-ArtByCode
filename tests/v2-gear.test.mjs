@@ -97,7 +97,8 @@ test('what the gear changes in a duel: damage by the weapon and its tier, the da
   assert.equal(geared.data.actions.light.damage, Math.round(10 * m.damage), 'the light attack: 10 at today\'s numbers');
   assert.ok(Math.abs(geared.data.actions.m_slash.damage - plain.data.actions.m_slash.damage * 0.88) <= 1, 'the opponent\'s blows, 12 % less');
   assert.equal(geared.data.ap.start, plain.data.ap.start + 1);
-  assert.equal(geared.tiers[1].at, +(2 * m.charge).toFixed(3));
+  // the charge times by the gear: Rampart's 3 s (3.5 x 0.85, journal Passe CH1) x the gear's charge
+  assert.equal(geared.tiers.find((t) => t.id === 'd1').at, +(3 * m.charge).toFixed(3));
   assert.equal(geared.data.actions.d1.ward.dur, +(plain.data.actions.d1.ward.dur * 1.3).toFixed(2));
   const ring = structuredClone(st); ring.v2.gear.acc = ['iron-ring', null];
   assert.equal(M.v2SheetData(sh, undefined, G.v2KitOf(ring), VG.v2Mods(ring)).data.actions.m_heavy.resist, +(plain.data.actions.m_heavy.resist * 0.85).toFixed(2));

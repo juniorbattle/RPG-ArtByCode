@@ -30,7 +30,8 @@ export function useTable(t: TextTable): void { TABLE = t; }
 
 /** a skill's name (the catalogue's twelve, src/combat/skillbook.ts) */
 const SKILL_KEYS: Record<string, TextKey> = {
-  t1: 'skill.t1', t2: 'skill.t2', t3: 'skill.t3', t4: 'skill.t4', d1: 'skill.d1', s1: 'skill.s1',
+  // the heavy attack, a skill since journal Passe CH1, keeps the name the charge's ladder gave it
+  heavy: 'ui.skill.heavy', t1: 'skill.t1', t2: 'skill.t2', t3: 'skill.t3', t4: 'skill.t4', d1: 'skill.d1', s1: 'skill.s1',
   k_sunder: 'skill.k_sunder', k_feint: 'skill.k_feint', k_iron: 'skill.k_iron', k_parry: 'skill.k_parry', k_cry: 'skill.k_cry', k_focus: 'skill.k_focus',
 };
 export function skillName(id: string): string { const k = SKILL_KEYS[id]; return k ? tx(k) : id; }

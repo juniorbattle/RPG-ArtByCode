@@ -1,11 +1,11 @@
 import { DynamicSim, type DynActionId, type DynData, type DynEvent, type DynFighterId } from './dynamic';
-import { HEAVY_AT } from './skills';
 
 /** The three-button command and the charged attack (the operator's decision A3 of 26/10/2026, AV-5 « Oui, amender (A3), l'ancien schéma
  *  gardé pour comparer », with AV-6 « Garder les PA en plus de la charge », AV-7 « Comme Cyan, paliers successifs », AV-8 « Un niveau par
  *  compétence »; journal Passes AV1 / V1; briefs/combat-system.md § 4b): three buttons, guard (held), dodge, attack. The attack charges while it
- *  is held: a tap is the light attack; held ~2 s (HEAVY_AT), the heavy attack; then, tier after tier, the four skills the player brought, ranked
- *  by their charge time at their level; releasing launches the tier reached (as Cyan's Bushido). A skill still costs its action points: a tier
+ *  is held: a tap is the light attack; then, tier after tier, the four skills the player brought, ranked by their charge time at their level;
+ *  releasing launches the tier reached (as Cyan's Bushido). The heavy attack has no tier of its own since the operator's decision A3 of
+ *  2026-11-04 (journal Passe CH1, « attaque puissante deviendra une des competences »): it is one of the skills, brought or not. A skill still costs its action points: a tier
  *  whose AP are missing does not open (the release launches the best open tier reached), and the HUD shows it.
  *  The rules of the duel are DynamicSim's, unchanged (src/combat/dynamic.ts); this wraps it and turns the three buttons into its commands.
  *  Nothing cuts a charge: the operator's decision V2-2 « Rien ne la coupe » (journal Passes FV3 / V2C1; the rule « proposé » of Passe V1, where
@@ -32,10 +32,11 @@ export type ChargeEvent = { t?: number } & (
   | { type: 'chargeEnd'; why: 'over' }
 );
 
-/** the tiers of a loadout: the light attack (a tap), the heavy (HEAVY_AT), then the skills by their charge time (ties by their slot) */
-export function chargeTiers(loadout: readonly DynActionId[], charge: Record<string, number>, D: DynData, heavyAt = HEAVY_AT): ChargeTier[] {
-  const skills = loadout.map((id, i) => ({ id, i, at: Math.max(heavyAt + 0.25, charge[id] ?? Infinity) })).sort((a, b) => a.at - b.at || a.i - b.i);
-  return [{ id: 'light', at: 0, ap: 0 }, { id: 'heavy', at: heavyAt, ap: 0 }, ...skills.map((s) => ({ id: s.id, at: s.at, ap: D.actions[s.id].apCost ?? 0 }))];
+/** the tiers of a loadout: the light attack (a tap), then the four skills by their charge time (ties by their slot); the heavy attack only as one
+ *  of them (journal Passe CH1: no tier of its own, no floor after it) */
+export function chargeTiers(loadout: readonly DynActionId[], charge: Record<string, number>, D: DynData): ChargeTier[] {
+  const skills = loadout.map((id, i) => ({ id, i, at: charge[id] ?? Infinity })).sort((a, b) => a.at - b.at || a.i - b.i);
+  return [{ id: 'light', at: 0, ap: 0 }, ...skills.map((s) => ({ id: s.id, at: s.at, ap: D.actions[s.id].apCost ?? 0 }))];
 }
 
 /** the duel's data under the three buttons: the four skills' charge times at their levels */

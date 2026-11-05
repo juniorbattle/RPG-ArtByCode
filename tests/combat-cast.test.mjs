@@ -116,13 +116,13 @@ test('the sheets in the arena\'s light: the operator\'s CX-L1 « 0,65 » by day,
   assert.deepEqual([null, 'night', 'morning', 'midday', 'afternoon'].map(sheets.shadeFor), [1.3, 1.3, 0.65, 0.65, 0.65]);
 });
 
-test('Ren\'s charge: low until the heavy attack\'s tier is passed, high from a skill\'s tier on, the guard over both, each at § 14\'s rate', () => {
+test('Ren\'s charge: low while a release would be the light attack, high from the first skill\'s tier on, the guard over both, each at § 14\'s rate', () => {
   const cf = sheets.chargeFrame;
   assert.equal(cf(true, 0, 0.1), 'chargeGuard.0'); assert.equal(cf(true, 4, 3), 'chargeGuard.0');
-  // tier 0 the light attack, 1 the heavy: both low; two frames over 0.8 s
+  // tier 0 the light attack: low; two frames over 0.8 s
   assert.deepEqual([0, 0.39, 0.4, 0.79, 0.8].map((t) => cf(false, 0, t)), ['charge.0', 'charge.0', 'charge.1', 'charge.1', 'charge.0']);
-  assert.equal(cf(false, 1, 0), 'charge.0');
-  // a skill's tier: high; two frames over 0.6 s
+  // the first tier is a skill's since the heavy attack became one (journal Passe CH1): high; two frames over 0.6 s
+  assert.equal(cf(false, 1, 0), 'chargeHi.0');
   assert.deepEqual([0, 0.29, 0.31, 0.59, 0.61].map((t) => cf(false, 2, t)), ['chargeHi.0', 'chargeHi.0', 'chargeHi.1', 'chargeHi.1', 'chargeHi.0']);
 });
 

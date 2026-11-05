@@ -310,7 +310,9 @@ a framing while tuning; blank = keep) · `blend=C,D,0.5` (freeze mid-transition,
 named state, DEV), a game with the flag `flags.v2` (`src/simulation/v2.ts`), kept in the save, every system of that session switched on together
 and the dynamic rules with it; absent = today's game, unchanged; the named state `v2-day1-morning`; on the arena page, `?scene=arena&v2=1`: the
 version 2's duel, journal Passe V1, the three-button command of decision A3 / AV-5 - J (or 1) attack, held to charge it tier by tier (light,
-heavy at 2 s, then the four skills by their charge time at their level, AV-7 / AV-8, each still paid in AP, AV-6; nothing cuts a charge, the
+then the four skills brought by their charge time at their level, AV-7 / AV-8, each still paid in AP, AV-6; the heavy attack one of those skills
+since the operator's decision A3 of 2026-11-04, journal Passe CH1, word for word « petite correction : peut etre que nous devrions enlever attaque puissante et nous contenter d'avoir uniquement attaque simple + 4 skills, qu'en penses tu ? », then « On peut la retirer mais donc on devra aussi revoir le temps de chargement des autres actions qui seront legerement plus courts attaque puissante deviendra une des competences par exemple.. faisons ca aussi dans une sous-session »: owned from the start, brought or not,
+1 AP, the charge times and the charged blows' damage at 0.85 of before, CHARGE_TRIM / V2_POWER_TRIM, « proposé »; nothing cuts a charge, the
 operator's decision V2-2 « Rien ne la coupe », journal Passes FV3 / V2C1: a release the duel cannot take, in the opponent's sequence or a stun,
 waits and leaves once Ren can act, the K.O. alone ends it), K (or B) guard held, L (or A) dodge, the gamepad's X / B / A; `src/combat/charge.ts`, `src/combat/v2duel.ts`, `src/arena/v2Arena.ts`; C3's opponents, their guard, dodge and
 skills; `&input=keys` the former keys 1-6 of C2 on the same duel, for comparison; journal Passes V2-V10: the skills (K), the gear and the shops (G),

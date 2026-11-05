@@ -10,6 +10,11 @@ devient la charge par paliers, § 4b) et le § 14 (les poses de charge à ajoute
 drapeau de la version 2 (`flags.v2`, AV-2) ; l'ancien schéma de C2 (touches 1-6) reste derrière `input=keys` pour comparer à l'essai ; le reste
 du texte est inchangé. Les nombres du § 4b sont « proposé » par la séance cloud.
 
+**Amendement du 04/11/2026 (décision A3 de l'opérateur, journal Passe CH1).** Ses deux messages, mot pour mot : « petite correction : peut etre que nous devrions enlever attaque puissante et nous contenter d'avoir uniquement attaque simple + 4 skills, qu'en penses tu ? », puis « On peut la retirer mais donc on devra aussi revoir le temps de chargement des autres actions qui seront legerement plus courts attaque puissante deviendra une des competences par exemple.. faisons ca aussi dans une sous-session ». L'attaque
+puissante n'a plus de palier à elle : elle devient une compétence, emportée ou non parmi les quatre, avec ses niveaux ; les temps de charge
+raccourcissent. Amendés : le § 1 (la phrase de la charge), le § 4b (l'échelle, les nombres) et le § 14 (les deux poses de charge, nommées par le
+palier de la puissante). Les nombres sont « proposé » par la séance de la Passe CH1, à l'essai de l'opérateur ; le reste du texte est inchangé.
+
 **Autorité.** L'atelier est mené par l'opérateur. Son mot d'ordre (note E1 / E16, Passe D8) : « Nous devons faire une tache entiere concernant le
 systeme de combat et la logique car c'est quelque chose de nouveau que seul moi a l'entiere comprehension ». Ses réponses sont la source de ce
 texte. Elles sont recopiées mot pour mot en annexe A (groupes G1 à G5). Chaque règle renvoie à la réponse qui la fonde, par exemple [G3].
@@ -33,9 +38,9 @@ Transe, la file d'exécution et les effets d'état [G2].
   - 2 actions de défense : la garde et l'esquive ;
   - 2 attaques simples : la légère et la puissante ;
   - 4 compétences.
-- **Amendé le 26/10/2026 (AV-5)** : côté joueur, trois touches, la garde (tenue), l'esquive et l'attaque ; l'attaque se charge en la tenant, de
-  l'attaque légère (une pression) à l'attaque puissante puis aux compétences, palier après palier (§ 4b). Les deux attaques et les quatre
-  compétences restent les actions du joueur ; seule la commande change.
+- **Amendé le 26/10/2026 (AV-5), puis le 04/11/2026 (Passe CH1)** : côté joueur, trois touches, la garde (tenue), l'esquive et l'attaque ;
+  l'attaque se charge en la tenant, de l'attaque légère (une pression) aux quatre compétences emportées, palier après palier, l'attaque puissante
+  devenue l'une d'elles (§ 4b). L'attaque légère et les compétences, l'attaque puissante comprise, restent les actions du joueur.
 - But d'un duel [G1] : « donner le plus de cooup possible pour briser la resistance de l'adversaire et lancer des actions devastratrice mais
   aussi esquiper les attaques et combos des adversaires et donc bien gerer ces AP ».
 - Les « actions dévastatrices » ne sont pas une action à part : « nous utilisons nos actions definies » [G5].
@@ -92,16 +97,21 @@ La règle de l'opérateur (AV-5, AV-6, AV-7, AV-8) ; ce que la séance a fixé e
 
 - **Trois touches** : la garde (tenue), l'esquive, l'attaque. Clavier : J (ou 1) l'attaque, K (ou B) la garde, L (ou A) l'esquive ; aucune n'est
   une touche de marche du parvis (WASD, flèches). Manette : X l'attaque, B la garde, A l'esquive. Tactile : le bouton Attaque se tient.
-- **La charge** : tenir l'attaque la charge ; une pression lance l'attaque légère ; tenue **2 s** (« proposé », le bas des « 2-3 s » de
-  l'opérateur), l'attaque puissante ; puis les quatre compétences emportées, rangées par leur temps de charge à leur niveau (de 2,7 à 9 s au
-  niveau 1-5, « proposé » ; un palier de compétence vient au moins 0,25 s après la puissante). **Relâcher lance le palier atteint** (comme Cyan).
+- **La charge** (amendée le 04/11/2026, Passe CH1) : tenir l'attaque la charge ; une pression lance l'attaque légère ; puis les quatre
+  compétences emportées, rangées par leur temps de charge à leur niveau. **Relâcher lance le palier atteint** (comme Cyan). L'attaque puissante
+  n'a plus de palier à 2 s : c'est une compétence offensive, possédée dès le départ, emportée ou non (page K), montée par l'entraînement comme
+  les autres compétences de départ (jusqu'au niveau 3). Les temps de charge sont **0,85 de ceux de la Passe V1**, arrondis à 0,05 s
+  (« proposé », « legerement plus courts ») : de 2,05 à 7,65 s selon la compétence et son niveau, la puissante de 1,7 à 1,3 s ; le plancher
+  d'un palier « au moins 0,25 s après la puissante » disparaît. La puissante coûte **1 PA** sous les trois touches (« proposé » ; gratuite sous
+  l'ancien schéma) : une partie sans PA n'a que l'attaque légère, jusqu'à ce qu'une attaque légère touche (+1 PA).
 - **Les PA restent** (AV-6) : une compétence coûte toujours ses PA ; un palier dont les PA manquent ne s'ouvre pas : relâcher lance le meilleur
   palier ouvert atteint, et le HUD barre le palier fermé.
 - **Un niveau par compétence** (AV-8), de 1 à 5 : il fixe sa puissance (+10 % par niveau : dégâts, jauge, durée d'un effet) et son temps de
   charge (plus court). Pas de niveau du joueur (contrat projet § 7).
 - **La charge remplace la préparation automatique** (« proposé ») : sous la commande à trois touches, l'attaque puissante et les compétences
   partent sans délai ; un coup chargé paie sa tenue (l'attaque légère garde ses nombres ; la puissante ×2,2 de dégâts, les compétences ×3,2 à
-  ×4,2, leur jauge ×2, Rempart et Ferveur ×1,5 de durée : `V2_POWER`).
+  ×4,2, leur jauge ×2, Rempart et Ferveur ×1,5 de durée : `V2_POWER`). Depuis le 04/11/2026 (Passe CH1, « proposé »), les dégâts d'un coup
+  chargé sont pris à 0,85 de ce tableau (`V2_POWER_TRIM`), comme sa tenue : la puissance suit la tenue, et l'équilibre recalé en V2C2 tient.
 - **Rien ne coupe une charge** : décision V2-2 de l'opérateur, « Rien ne la coupe » (fiche de l'essai, journal Passe FV3 ; appliquée en Passe
   V2C1). Elle remplace la règle « proposé » de la Passe V1 (un coup reçu sans garde, l'esquive, le break ou le K.O. coupaient la charge ; relâchée
   pendant la séquence adverse, elle était perdue). Les cas limites, chacun « proposé » (Passe V2C1), lus au plus près de « rien » :
@@ -319,8 +329,8 @@ remplace quand elle est tenue). Liste « proposé » pour Ren (et Vessa), à rep
 
 | Clé | Moment | Images | Boucle / durée | Découpage |
 |---|---|---|---|---|
-| `charge` | l'attaque tenue, avant le palier de la puissante | 2 | boucle, ≈ 0,8 s | alternance (lame basse, souffle) |
-| `chargeHi` | l'attaque tenue au-delà de la puissante (un palier de compétence) | 2 | boucle, ≈ 0,6 s | alternance (lame haute, lueur) |
+| `charge` | l'attaque tenue, avant le premier palier (amendé le 04/11/2026, Passe CH1 : avant, le palier de la puissante) | 2 | boucle, ≈ 0,8 s | alternance (lame basse, souffle) |
+| `chargeHi` | l'attaque tenue dès le premier palier, celui d'une compétence (avant le 04/11/2026 : au-delà de la puissante) | 2 | boucle, ≈ 0,6 s | alternance (lame haute, lueur) |
 | `chargeGuard` | la garde tenue pendant une charge | 1 | tenue | — |
 | **Total** | | **5** | | (avec les 34 du tableau : 39 ; une case ×3 de 70 en reste une pour Marek complet) |
 

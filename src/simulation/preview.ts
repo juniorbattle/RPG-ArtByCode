@@ -26,12 +26,12 @@ const LESS_IS_BETTER: ReadonlySet<StatId> = new Set(['taken', 'charge', 'gauge']
 const NAMES = { seed: 1, playerName: '', opponentName: '' };
 
 /** the player's numbers in a bout now: health, the heavy blow's damage, then a version 2 game's damage taken, starting AP, heavy charge (s), gauge
- *  fill and the wards' and boosts' length (% of the bare figure); the opponent's own numbers stay out of it */
+ *  fill and the wards' and boosts' length (% of the bare figure); the opponent's own numbers stay out of it. In a version 2 game the heavy attack is
+ *  a skill (journal Passe CH1): its blow and its charge at its level, as a bout that brings it builds them, whether it is brought or not */
 export function duelStats(s: GameState): Stats {
   if (isV2(s)) {
-    const m = v2Mods(s), { data: d, tiers } = v2DuelData('marek', { ...NAMES, player: { hp: m.hp, damage: m.damage, ap: m.ap }, gear: m });
-    const heavy = tiers.find((t) => t.id === 'heavy');
-    return { hp: d.fighters.ren.maxHp, blow: d.actions.heavy.damage, taken: m.taken * 100, ap: d.ap.start, charge: heavy?.at ?? 0, gauge: m.gauge * 100, effect: m.effect * 100 };
+    const m = v2Mods(s), d = skillDuel(s, withSkill(s, 'heavy'), v2KitOf(s).levels).data, heavy = skillFigures(s, 'heavy', levelOf(s, 'heavy') || 1);
+    return { hp: d.fighters.ren.maxHp, blow: heavy.damage, taken: m.taken * 100, ap: d.ap.start, charge: heavy.charge, gauge: m.gauge * 100, effect: m.effect * 100 };
   }
   const m = playerMods(s), d = s.flags.combat === 'dynamic' ? dynDuelData(DYN_PROFILES.marek, { ...NAMES, player: m }) : duelData(PROFILES.marek, { ...NAMES, player: m });
   return { hp: d.fighters.ren.maxHp, blow: d.actions.heavy.damage };
@@ -54,19 +54,22 @@ export interface SkillFigures {
   pierce: boolean;
 }
 
+/** the four brought, with this skill among them (in the first slot when it is not) */
+const withSkill = (s: GameState, id: string): string[] => { const k = v2KitOf(s); return k.loadout.includes(id as never) ? k.loadout : [id, ...k.loadout.slice(1)]; };
+
 /** what a skill does in a bout at a level (journal Passe UM11): no rule of its own either, the numbers are the duel's, built as a bout builds them with this skill
  *  brought (in the first slot when it is not among the four), the gear and the charge's power in them */
 export function skillFigures(s: GameState, id: string, level: number): SkillFigures {
-  const k = v2KitOf(s), { data: d, tiers } = skillDuel(s, k.loadout.includes(id as never) ? k.loadout : [id, ...k.loadout.slice(1)], { ...k.levels, [id]: level });
+  const k = v2KitOf(s), { data: d, tiers } = skillDuel(s, withSkill(s, id), { ...k.levels, [id]: level });
   const a = d.actions[id as DynActionId], e = a.ward ?? a.boost;
   return { ap: a.apCost ?? 0, damage: a.damage, gauge: a.resist, charge: tiers.find((t) => t.id === id)!.at, dur: e?.dur ?? 0, ward: a.ward ?? null, boost: a.boost ?? null, pierce: !!a.ignoreGuard };
 }
 
-/** the tiers of the charge with these skills (the light attack, the heavy, then each one by its time), as the duel ranks them; a choice of fewer than four is
- *  completed for the duel and shown as it stands */
+/** the tiers of the charge with these skills (the light attack, then each one by its time; the heavy attack only when it is among them, journal Passe CH1), as
+ *  the duel ranks them; a choice of fewer than four is completed for the duel and shown as it stands */
 export function chargeLadder(s: GameState, ids: string[]): ChargeTier[] {
   const k = v2KitOf(s), full = [...ids, ...Object.keys(k.levels).filter((x) => !ids.includes(x))].slice(0, 4);
-  return skillDuel(s, full, k.levels).tiers.filter((t) => t.id === 'light' || t.id === 'heavy' || ids.includes(t.id));
+  return skillDuel(s, full, k.levels).tiers.filter((t) => t.id === 'light' || ids.includes(t.id));
 }
 
 /** the level a skill can still reach and how: drilling up to its cap, then only the fighter who teaches it */

@@ -121,6 +121,9 @@ export function deserialize(text: string): GameState {
   if (st.schemaVersion !== v || st.content !== CONTENT_ID || !SLOTS.includes(st.slot) || !(st.day >= 1 && st.day <= (st.flags ? daysOf(st) : DAYS)) || !st.player) {
     throw new Error('This save is damaged or was made with other content.');
   }
+  // a version 2 game saved before the heavy attack became a skill (journal Passe CH1): it owns it at level 1, as a new game does; the default
+  // game has no such kit and is read as it was
+  if (st.v2?.kit && !(st.v2.kit.levels.heavy > 0)) st.v2.kit.levels.heavy = 1;
   return st;
 }
 

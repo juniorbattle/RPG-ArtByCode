@@ -165,7 +165,8 @@ export const impactTime = (d: DynActionDef): number => d.prep + d.impactAt;
 export function checkDynData(D: DynData): void {
   const L = D.loadout;
   if (L.length !== SKILL_SLOTS || new Set(L).size !== L.length) throw new Error(`loadout: ${SKILL_SLOTS} distinct skills, got ${L.join(', ')}`);
-  for (const id of L) { const a = D.actions[id]; if (!a || a.owner !== 'ren' || a.kind !== 'skill' || !a.family) throw new Error(`loadout: "${id}" is not one of the player's skills`); }
+  // the heavy attack may be brought as a skill under the version 2 (journal Passe CH1: v2duel.ts gives it its family)
+  for (const id of L) { const a = D.actions[id]; if (!a || a.owner !== 'ren' || (a.kind !== 'skill' && a.kind !== 'heavy') || !a.family) throw new Error(`loadout: "${id}" is not one of the player's skills`); }
   const r = D.restByLevel[D.ai.level];
   if (!r || !(r[0] > 0 && r[1] >= r[0])) throw new Error(`no pause range for the opponent's level ${D.ai.level}`);
 }

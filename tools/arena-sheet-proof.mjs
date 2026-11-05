@@ -9,7 +9,7 @@ const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Applicatio
 const args = process.argv.slice(2), opt = (k, d) => args.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3) ?? d;
 const RIVALS = args.filter((a) => !a.startsWith('--')).length ? args.filter((a) => !a.startsWith('--')) : ['marek', 'vessa', 'orla', 'cassius', 'ilse', 'rhosk', 'tobin'];
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', SECS = +opt('secs', 60), TIME = opt('time', ''), Q = opt('q', '');
-const MOMENTS = ['calm', 'charging', 'strike', 'prep', 'heavyRen', 'skillPrep', 'technique', 'ward', 'boost', 'combo', 'denied', 'window', 'block', 'guardHeavy', 'dodge', 'impact', 'pushed', 'foeBreak', 'broken', 'ko', 'koRen', 'chargeLight', 'chargeHeavy', 'chargeSkill', 'chargeLocked', 'chargeGuard', 'chargeWait', 'released', 'foeSkill', 'foeSkillHit', 'foeWard', 'foeBoost'];
+const MOMENTS = ['calm', 'charging', 'strike', 'prep', 'heavyRen', 'skillPrep', 'technique', 'ward', 'boost', 'combo', 'denied', 'window', 'block', 'guardHeavy', 'dodge', 'impact', 'pushed', 'foeBreak', 'broken', 'ko', 'koRen', 'chargeLight', 'chargeFirst', 'chargeSkill', 'chargeLocked', 'chargeGuard', 'chargeWait', 'released', 'foeSkill', 'foeSkillHit', 'foeWard', 'foeBoost'];
 const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: ['--use-gl=angle', '--use-angle=d3d11', '--ignore-gpu-blocklist', '--no-sandbox', '--window-size=1280,720', '--hide-scrollbars'] });
 let bad = 0;
 try {

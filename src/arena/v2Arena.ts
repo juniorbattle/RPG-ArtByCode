@@ -65,17 +65,18 @@ export function chargeHudModel(v: ChargeView): ChargeHudModel {
 // ------------------------------------------------------------------------------------------------ the scripted moments of the charge
 
 const hold = (s: DynamicSim) => { s.f.marek.aiWait = 1e9; };
-/** moments for captures and the text measurement (as DynPresets.ts): the charge at its heavy tier, at a skill's tier, a tier locked by the AP,
- *  the charge held under the guard through a sequence; run on the charged duel (`runV2Script`) */
+/** moments for captures and the text measurement (as DynPresets.ts): the charge at its first skill's tier (the heavy attack's own tier before
+ *  journal Passe CH1), at a later skill's tier, a tier locked by the AP, the charge held under the guard through a sequence; run on the charged
+ *  duel (`runV2Script`) */
 export interface V2PresetStep { until: (d: ChargedDuel) => boolean; act?: (d: ChargedDuel) => void }
 export const V2_PRESETS: Record<string, { label: string; script: V2PresetStep[] }> = {
   chargeLight: { label: 'Charge (attaque légère)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.attack(true); } }, { until: (d) => d.view().t >= 0.6 }] },
-  chargeHeavy: { label: 'Charge (attaque puissante)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.attack(true); } }, { until: (d) => d.view().reached >= 1 && d.view().t >= d.tiers[1].at + 0.4 }] },
+  chargeFirst: { label: 'Charge (premier palier)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.sim.f.ren.ap = 5; d.attack(true); } }, { until: (d) => d.view().reached >= 1 && d.view().t >= d.tiers[1].at + 0.2 }] },
   chargeSkill: { label: 'Charge (compétence)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.sim.f.ren.ap = 5; d.attack(true); } }, { until: (d) => d.view().reached >= 3 }] },
   chargeLocked: { label: 'Charge (palier fermé, PA)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.sim.f.ren.ap = 1; d.attack(true); } }, { until: (d) => d.view().reached >= 3 }] },
   chargeGuard: { label: 'Charge tenue sous la garde', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.attack(true); d.setGuard('ren', true); } }, { until: (d) => d.t >= 0.8, act: (d) => { d.sim.forceSequence(['m_slash', 'm_slash']); } }, { until: (d) => d.sim.f.marek.seqIdx === 2 && !!d.sim.f.marek.act && d.sim.f.marek.act.t >= 0.1 }] },
-  // V2-2 « Rien ne la coupe » (journal Passe V2C1): released in the opponent's sequence, the heavy waits for its end
-  chargeWait: { label: 'Palier en attente (séquence adverse)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.attack(true); } }, { until: (d) => d.view().t >= d.tiers[1].at + 0.2, act: (d) => { d.sim.forceSequence(['m_slash', 'm_slash']); } }, { until: (d) => d.sim.inSequence(), act: (d) => d.attack(false) }, { until: (d) => d.sim.f.marek.seqIdx === 2 && !!d.sim.f.marek.act && d.sim.f.marek.act.t >= 0.1 }] },
+  // V2-2 « Rien ne la coupe » (journal Passe V2C1): released in the opponent's sequence, the first tier waits for its end
+  chargeWait: { label: 'Palier en attente (séquence adverse)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.sim.f.ren.ap = 5; d.attack(true); } }, { until: (d) => d.view().t >= d.tiers[1].at + 0.2, act: (d) => { d.sim.forceSequence(['m_slash', 'm_slash']); } }, { until: (d) => d.sim.inSequence(), act: (d) => d.attack(false) }, { until: (d) => d.sim.f.marek.seqIdx === 2 && !!d.sim.f.marek.act && d.sim.f.marek.act.t >= 0.1 }] },
   released: { label: 'Palier lâché (compétence)', script: [{ until: (d) => d.t >= 0.3, act: (d) => { hold(d.sim); d.sim.f.ren.ap = 5; d.attack(true); } }, { until: (d) => d.view().reached >= 2, act: (d) => d.attack(false) }, { until: (d) => { const a = d.sim.f.ren.act; return !!a && a.impacted && a.t >= a.def.impactAt + 0.06; } }] },
   foeSkill: { label: 'Compétence adverse (alerte)', script: [{ until: (d) => d.t >= 0.2, act: (d) => { const k = d.D.ai.skills?.list.find((x) => d.D.actions[x.id].family === 'offensive'); if (k) d.sim.forceSequence([k.id]); } }, { until: (d) => { const i = d.incoming(); return !!i && i.castProgress >= 0.6; } }] },
   // a rival's skills on their own frames (journal Passe CX1): the blow landing, a ward's or a boost's effect
@@ -107,7 +108,9 @@ export function v2PresetNames(dyn: Record<string, DynPreset>): string[] { return
  *  V2_SIM_HASH, the regression pin tools/arena-scene-check.mjs replays in the page (`?v2=1`) as it does DYNAMIC_SIM_HASH (journal Passe V1).
  *  `seen` gets each step's events and whether a charge was held before it (the tests) */
 export function runV2Fingerprint(d: ChargedDuel, seen?: (events: ReturnType<ChargedDuel['drain']>, held: boolean) => void): void {
-  const dt = d.D.dt, holds = [0.05, 2.1, 0.05, 3.7, 0.05, 4.2, 5.3, 0.05, 9.4, 2.4];
+  // the holds on the tiers of the scene's duel (journal Passe CH1: Rampart 3 s, Flash cut 3.4, Fervour 4.25, Thrust 7.65; a 12 s hold reaches a
+  // break with a charge held)
+  const dt = d.D.dt, holds = [0.05, 3.1, 0.05, 3.5, 0.05, 4.3, 7.7, 0.05, 9.4, 12];
   let n = 0, next = 0.5, until = -1;
   for (let i = 0; i < Math.round(360 / dt); i++) {
     const inc = d.incoming(), v = d.view();
@@ -119,5 +122,6 @@ export function runV2Fingerprint(d: ChargedDuel, seen?: (events: ReturnType<Char
   }
 }
 /** the hash runV2Fingerprint leaves on the scene's duel (sceneV2Duel('charge'), recorded with the rules, journal Passe V1; Ren's health
- *  again under V2_FOE_HIT, journal Passe VP4; the script and the rule of V2-2, journal Passe V2C1; the rivals' blows and health of journal Passe V2C2) */
-export const V2_SIM_HASH = '1857:5:idle:0.525:41.025:-:-;7125:0:idle:1.033:41.125:-:-;73.267|1:1.925:';
+ *  again under V2_FOE_HIT, journal Passe VP4; the script and the rule of V2-2, journal Passe V2C1; the rivals' blows and health of journal Passe V2C2;
+ *  the heavy attack a skill, the charge times and the charged blows' power trimmed, the script's holds on the new tiers, journal Passe CH1) */
+export const V2_SIM_HASH = '1913:2:idle:8.133:55.900:-:-;7407:0:idle:1.358:0.000:-:-;83.867|1:8.458:';

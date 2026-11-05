@@ -32,7 +32,8 @@ const PITCHED_BLOWS = new Set(['light', 'heavy', 'm_slash', 'm_heavy', 'guard', 
 const SILENT_VARY = new Set(['threat', 'window', 'dodge', 'stun', 'pushed', 'charge1', 'charge2', 'charge3', 'hold1', 'hold2', 'hold3', 'release', 'denied']);
 export const varyOf = (id: string): Vary => (PITCHED_BLOWS.has(id) ? 'pitch' : SILENT_VARY.has(id) ? 'none' : 'level');
 
-/** a charge tier's level, as the effect counts it (src/arena/fx/fxRecipes.ts, chargeLevel): 1 the heavy blow, 3 the last tiers */
+/** a charge tier's level, as the effect counts it (src/arena/fx/fxRecipes.ts, chargeLevel): 1 the first skill's tier (the heavy blow's before journal
+ *  Passe CH1), 3 the last tiers */
 export function chargeLevel(idx: number, tiers: number): 0 | 1 | 2 | 3 {
   if (idx <= 0) return 0;
   if (idx === 1) return 1;

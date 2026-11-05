@@ -5,39 +5,47 @@ import type { DynActionDef, DynActionId } from './dynamic';
  *  Cyan », AV-7: the attack held passes its tiers one after the other, the skills ranked by their charge time). There is no level of the
  *  player (PROJECT_MASTER_CONTRACT § 7: no single level statistic). The action points stay (AV-6): a skill still costs its AP. Behind the
  *  version 2's flag (src/simulation/v2.ts). Pure data and pure functions.
- *  Numbers « proposé » (journal Passe V1): the heavy attack at 2 s of hold (the operator's « 2-3 s », its low end), the skills from 3 to 10 s
- *  (« les compétences les plus puissantes nous obligeraient a charger pendant peut etre 10s »), each level 10 % more power. */
+ *  Numbers « proposé » (journal Passe V1): the skills from 3 to 10 s (« les compétences les plus puissantes nous obligeraient a charger pendant
+ *  peut etre 10s »), each level 10 % more power.
+ *  The heavy attack is a skill since the operator's decision A3 of 2026-11-04 (journal Passe CH1, word for word: « On peut la retirer mais donc on
+ *  devra aussi revoir le temps de chargement des autres actions qui seront legerement plus courts attaque puissante deviendra une des competences
+ *  par exemple.. »): no tier of its own at 2 s any more (HEAVY_AT and the floor « 0.25 s after it » are gone), it is brought or not among the four
+ *  like the others, with its levels; and every charge time is a little shorter: CHARGE_TRIM of the times of journal Passe V1 (« proposé »). */
 
 export const MAX_LEVEL = 5;
-/** the hold that turns a tap into the heavy attack (s) */
-export const HEAVY_AT = 2.0;
 /** each level's power: damage, a ward's or a boost's duration */
 export const LEVEL_POWER = [1.0, 1.1, 1.2, 1.3, 1.4] as const;
+/** the charge times' share of journal Passe V1's (« proposé », journal Passe CH1: « legerement plus courts »), rounded to 0.05 s */
+export const CHARGE_TRIM = 0.85;
 
+export type Times = readonly [number, number, number, number, number];
 export interface SkillDef {
   id: DynActionId;
   /** the charge time at each level (s), level 1 first: shorter as the level rises */
-  charge: readonly [number, number, number, number, number];
+  charge: Times;
   /** how the skill is learnt (lot V2): bought from the weapon master, trained on the practice sand, or won by a challenge in town */
   source: 'start' | 'buy' | 'train' | 'challenge';
 }
 
-/** today's six skills of the « tour par tour dynamique » (src/combat/dynamic.ts), with their charge times; the catalogue of lot V2 extends it */
-export const SKILLS: Record<string, SkillDef> = {
-  t1: { id: 't1', charge: [4.0, 3.75, 3.5, 3.25, 3.0], source: 'start' },
-  t2: { id: 't2', charge: [4.5, 4.2, 3.9, 3.6, 3.4], source: 'train' },
-  t3: { id: 't3', charge: [6.0, 5.6, 5.2, 4.8, 4.5], source: 'buy' },
-  t4: { id: 't4', charge: [9.0, 8.2, 7.4, 6.7, 6.0], source: 'start' },
-  d1: { id: 'd1', charge: [3.5, 3.3, 3.1, 2.9, 2.7], source: 'start' },
-  s1: { id: 's1', charge: [5.0, 4.7, 4.4, 4.1, 3.8], source: 'start' },
-  // the six the version 2 adds (lot V2, src/combat/skillbook.ts: their actions and how they are obtained)
-  k_sunder: { id: 'k_sunder', charge: [5.5, 5.1, 4.7, 4.4, 4.0], source: 'buy' },
-  k_feint: { id: 'k_feint', charge: [3.0, 2.9, 2.8, 2.7, 2.6], source: 'train' },
-  k_iron: { id: 'k_iron', charge: [4.5, 4.2, 3.9, 3.6, 3.3], source: 'buy' },
-  k_parry: { id: 'k_parry', charge: [2.8, 2.7, 2.6, 2.5, 2.4], source: 'challenge' },
-  k_cry: { id: 'k_cry', charge: [4.2, 3.9, 3.6, 3.4, 3.2], source: 'challenge' },
-  k_focus: { id: 'k_focus', charge: [6.5, 6.0, 5.5, 5.0, 4.6], source: 'challenge' },
+/** the charge times before the trim (journal Passe V1; the heavy's from the 2 s of its old tier, shorter by level as Flash cut's) */
+export const BASE_CHARGE: Record<string, Times> = {
+  heavy: [2.0, 1.85, 1.7, 1.6, 1.5],
+  t1: [4.0, 3.75, 3.5, 3.25, 3.0], t2: [4.5, 4.2, 3.9, 3.6, 3.4], t3: [6.0, 5.6, 5.2, 4.8, 4.5], t4: [9.0, 8.2, 7.4, 6.7, 6.0],
+  d1: [3.5, 3.3, 3.1, 2.9, 2.7], s1: [5.0, 4.7, 4.4, 4.1, 3.8],
+  k_sunder: [5.5, 5.1, 4.7, 4.4, 4.0], k_feint: [3.0, 2.9, 2.8, 2.7, 2.6], k_iron: [4.5, 4.2, 3.9, 3.6, 3.3], k_parry: [2.8, 2.7, 2.6, 2.5, 2.4],
+  k_cry: [4.2, 3.9, 3.6, 3.4, 3.2], k_focus: [6.5, 6.0, 5.5, 5.0, 4.6],
 };
+/** a base's times at a trim, rounded to 0.05 s, a half up (1.5 x 0.85 = 1.275 -> 1.3: the float 1.27499... would round down) */
+export const trimmed = (t: Times, k = CHARGE_TRIM): Times => t.map((x) => +(Math.round((x * k) / 0.05 + 1e-9) * 0.05).toFixed(2)) as unknown as Times;
+
+/** the heavy attack, today's six skills of the « tour par tour dynamique » (src/combat/dynamic.ts), with their charge times; the catalogue of lot
+ *  V2 extends it */
+const SOURCE: Record<string, SkillDef['source']> = {
+  heavy: 'start', t1: 'start', t2: 'train', t3: 'buy', t4: 'start', d1: 'start', s1: 'start',
+  // the six the version 2 adds (lot V2, src/combat/skillbook.ts: their actions and how they are obtained)
+  k_sunder: 'buy', k_feint: 'train', k_iron: 'buy', k_parry: 'challenge', k_cry: 'challenge', k_focus: 'challenge',
+};
+export const SKILLS: Record<string, SkillDef> = Object.fromEntries(Object.entries(BASE_CHARGE).map(([id, t]) => [id, { id: id as DynActionId, charge: trimmed(t), source: SOURCE[id] }]));
 
 export const clampLevel = (n: number): number => Math.max(1, Math.min(MAX_LEVEL, Math.round(n)));
 

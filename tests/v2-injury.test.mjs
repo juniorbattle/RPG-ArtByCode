@@ -112,7 +112,10 @@ test('whole version 2 games: every wound follows a heavy knock-down and each one
 test('the numbers of the decision: seeds 1..50 give Passe V2B1\'s wounds a game, and a player who treats his wounds wins what he won', () => {
   const S = Array.from({ length: 50 }, (_, i) => i + 1);
   const idle = L.labReport(S, L.POLICIES.idle, 'v2'), prepared = L.labReport(S, L.POLICIES.diligent, 'v2');
-  assert.equal(+prepared.rates.playerInjured.toFixed(2), 0.8); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.62);
-  assert.equal(+prepared.rates.playerWins.toFixed(3), 0.604); assert.equal(prepared.v2.champion, 0.04); assert.equal(prepared.v2.madeCut, 0.88);
+  // the rule unchanged; its numbers measured again once the heavy attack became a skill and the charge times and the charged blows' power were trimmed
+  // (journal Passe CH1; Passe V2B1: 0.80 and 1.62 wounds a game, 60.4 % of the bouts, crowned 4 %, the cut 88 %)
+  assert.equal(+prepared.rates.playerInjured.toFixed(2), 0.76); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.74);
+  assert.equal(+prepared.rates.playerWins.toFixed(3), 0.596); assert.equal(prepared.v2.champion, 0.02); assert.equal(prepared.v2.madeCut, 0.88);
+  assert.ok(prepared.rates.playerInjured < idle.rates.playerInjured / 2, 'the prepared player is wounded less than half as often as the idle one');
   assert.ok(prepared.eventCounts['healer-offer'] > 0 && idle.eventCounts['healer-offer'] > 0, 'the healer still writes to the wounded');
 });

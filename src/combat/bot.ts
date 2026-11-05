@@ -164,16 +164,19 @@ function pickTier(duel: ChargedDuel, s: number, rng: Rng): number {
   const sim = duel.sim, D = sim.D, r = sim.f.ren, m = sim.f.marek, rest = sim.restRange(), T = duel.tiers;
   const margin = m.state === 'stunned' ? m.stunLeft + D.ai.afterStun : m.state === 'recovering' ? m.recoverLeft + rest[0] : m.resting ? rest[0] - m.stateT : 0;
   const careful = rng.next() < s, keep = s >= 0.5 ? D.reactions.dodge.apCost : 0;
+  // the heavy attack is a skill since journal Passe CH1, brought or not: the bot still plays it as before, when its AP are full or the opponent
+  // broken; the other skills as before
+  const heavy = T.findIndex((x) => x.id === 'heavy'), skill = (i: number) => i > 0 && i !== heavy;
   // a skill's long charge may run through a sequence (nothing cuts it): only the light and the heavy must fit in the pause
-  const fits = (i: number) => !careful || i >= 2 || T[i].at + impactTime(D.actions[T[i].id]) < margin;
+  const fits = (i: number) => !careful || skill(i) || T[i].at + impactTime(D.actions[T[i].id]) < margin;
   const ok = (i: number) => r.ap >= T[i].ap && fits(i);
-  const idx = (pred: (a: DynActionDef) => boolean) => T.findIndex((x, i) => i >= 2 && pred(D.actions[x.id]) && ok(i));
+  const idx = (pred: (a: DynActionDef) => boolean) => T.findIndex((x, i) => skill(i) && pred(D.actions[x.id]) && ok(i));
   let i = idx((a) => !!a.ward && !r.ward && r.resist >= 0.5 * D.resist.max);
   if (i >= 0) return i;
   i = idx((a) => !!a.boost && !r.boost && r.ap - (a.apCost || 0) >= keep);
   if (i >= 0) return i;
-  const offs = T.map((x, j) => ({ j, a: D.actions[x.id] })).filter((x) => x.j >= 2 && x.a.family === 'offensive' && r.ap - (x.a.apCost || 0) >= keep && ok(x.j)).sort((a, b) => b.a.damage - a.a.damage);
+  const offs = T.map((x, j) => ({ j, a: D.actions[x.id] })).filter((x) => skill(x.j) && x.a.family === 'offensive' && r.ap - (x.a.apCost || 0) >= keep && ok(x.j)).sort((a, b) => b.a.damage - a.a.damage);
   if (offs.length) return offs[0].j;
-  if ((r.ap >= D.ap.max || m.broken) && ok(1)) return 1;
+  if ((r.ap >= D.ap.max || m.broken) && heavy > 0 && ok(heavy)) return heavy;
   return 0;
 }

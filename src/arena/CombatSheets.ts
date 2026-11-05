@@ -64,10 +64,11 @@ export function sheetFrame(chosen: string, an: SimAnim | null, over: boolean, fa
   if (!over && (fam === 'skillDef' || fam === 'skillSup')) return `${fam}.${t < ia ? 0 : t < (an.dur ?? ia + 0.12) ? 1 : 2}`;
   return chosen;
 }
-/** the charge's frame: the guard held over it; the attack held, low until the heavy attack's tier is passed, high from a skill's tier on (§ 14, tier 0 the light attack, 1 the heavy) */
+/** the charge's frame: the guard held over it; the attack held, low while a release would still be the light attack, high from the first skill's tier
+ *  on (§ 14; tier 0 the light attack; the heavy attack's own tier, the low frame's end before journal Passe CH1, is gone: it is one of the skills) */
 export function chargeFrame(guarding: boolean, reached: number, time: number): string {
   if (guarding) return 'chargeGuard.0';
-  return reached >= 2 ? `chargeHi.${Math.floor(time * COMBAT.chargeHiRate) % 2}` : `charge.${Math.floor(time * COMBAT.chargeRate) % 2}`;
+  return reached >= 1 ? `chargeHi.${Math.floor(time * COMBAT.chargeHiRate) % 2}` : `charge.${Math.floor(time * COMBAT.chargeRate) % 2}`;
 }
 
 /** FighterArt's rimLight on a cell (one texel; the moon behind: the top and back edges, a little of the front), painted into the texels */

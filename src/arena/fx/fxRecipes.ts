@@ -64,7 +64,8 @@ const heavyBlow = (id: string, element: FxElement, angle: number): FxRecipe => r
   s(0.1, 'smoke', 'targetGround', { count: 8, spread: 0.6, size: 0.8 }),
 ]);
 
-/** a charge reached (1 the heavy, 2 and 3 the skills): energy drawn in on the fighter, more of it and warmer at each level */
+/** a charge reached (1 the first skill's tier, 2 and 3 the later ones; before journal Passe CH1, 1 was the heavy attack's own tier): energy drawn in
+ *  on the fighter, more of it and warmer at each level */
 const chargeTier = (level: 1 | 2 | 3): FxRecipe => {
   const element: FxElement = level === 1 ? 'sky' : level === 2 ? 'steel' : 'gold';
   return recipe(`charge${level}`, element, 0.8, [
@@ -248,7 +249,8 @@ export function effectRecipe(action: string, family: string): FxRecipe {
   return RECIPES[action] ?? RECIPES[family === 'defensive' ? 'd1' : 's1'];
 }
 
-/** the charge's level for a tier (0 the light attack: nothing; the heavy 1; the skills' tiers, the first half 2, the last 3) */
+/** the charge's level for a tier (0 the light attack: nothing; the first skill's tier 1; the tiers after it, the first half 2, the last 3; journal
+ *  Passe CH1: the heavy attack, a skill, has no tier of its own, so the level 1 is the first of the four) */
 export function chargeLevel(idx: number, tiers: number): 0 | 1 | 2 | 3 {
   if (idx <= 0) return 0;
   if (idx === 1) return 1;

@@ -27,8 +27,11 @@ export const NEW_SKILLS: Record<string, DynActionDef> = {
   k_focus: ren({ id: 'k_focus', name: 'Focus', family: 'support', prep: 0.4, impactAt: 0.1, follow: 0.2, recover: 0.1, apCost: 2, boost: { dur: 10, damage: 1.1, resist: 2.0 } }),
 };
 
-/** every skill of the catalogue: today's six and the six new ones (twelve, the brief's « une douzaine au plus ») */
+/** every skill of the catalogue: the heavy attack (journal Passe CH1), today's six and the six new ones (thirteen: the brief's « une douzaine au
+ *  plus » and the heavy attack, which was the command's own tier before) */
 export const SKILL_BOOK: Record<string, SkillInfo> = {
+  // the heavy attack, a skill since the operator's decision A3 of 2026-11-04 (journal Passe CH1): owned from the start, drilled as the others
+  heavy: { id: 'heavy', family: 'offensive', source: 'start' },
   t1: { id: 't1', family: 'offensive', source: 'start' },
   t4: { id: 't4', family: 'offensive', source: 'start' },
   d1: { id: 'd1', family: 'defensive', source: 'start' },
@@ -43,11 +46,12 @@ export const SKILL_BOOK: Record<string, SkillInfo> = {
   k_focus: { id: 'k_focus', family: 'support', source: 'challenge', teacher: 'vessa' },
 };
 
-/** a skill's action at level 1 (today's from DYNAMIC_DATA, the new ones from NEW_SKILLS) */
+/** a skill's action at level 1 (today's and the heavy attack from DYNAMIC_DATA, the new ones from NEW_SKILLS) */
 export function skillAction(id: string): DynActionDef {
   const a = (DYNAMIC_DATA.actions as Record<string, DynActionDef>)[id] ?? NEW_SKILLS[id];
-  if (!a || a.owner !== 'ren' || a.kind !== 'skill') throw new Error(`no skill "${id}" in the catalogue`);
-  return JSON.parse(JSON.stringify(a)) as DynActionDef;
+  if (!a || a.owner !== 'ren' || (a.kind !== 'skill' && id !== 'heavy')) throw new Error(`no skill "${id}" in the catalogue`);
+  // the heavy attack keeps its kind (its blow, its sound, its effect); as a skill it is an offensive one (journal Passe CH1)
+  return { ...(JSON.parse(JSON.stringify(a)) as DynActionDef), ...(id === 'heavy' ? { family: 'offensive' as const } : {}) };
 }
 
 /** the skill a fighter teaches by a challenge won (null: none) */

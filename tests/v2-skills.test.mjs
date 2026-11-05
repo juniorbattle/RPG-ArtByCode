@@ -19,15 +19,21 @@ const v2 = (name = 'day1-morning') => G.makeV2(G.namedState(name));
 const act = (st, a) => { const r = G.advance(st, a); assert.ok(r.ok, `${a.type}: ${r.reason}`); return r.state; };
 const refused = (st, a, re) => { const r = G.advance(st, a); assert.equal(r.ok, false, a.type); if (re) assert.match(r.reason, re); };
 
-test('the catalogue: at most twelve skills, the three families, each with its charge times (five levels, shorter as they rise) and its AP', () => {
+test('the catalogue: at most twelve skills and the heavy attack (journal Passe CH1), the three families, each with its charge times (five levels, shorter as they rise) and its AP', () => {
   const ids = Object.keys(SB.SKILL_BOOK);
-  assert.ok(ids.length <= 12 && ids.length >= 10, `${ids.length} skills`);
+  assert.ok(ids.length <= 13 && ids.length >= 11, `${ids.length} skills`);
+  assert.deepEqual({ ...SB.SKILL_BOOK.heavy }, { id: 'heavy', family: 'offensive', source: 'start' });
   for (const f of ['offensive', 'defensive', 'support']) assert.ok(ids.filter((id) => SB.SKILL_BOOK[id].family === f).length >= 2, f);
+  // the heavy attack costs its AP under the three buttons (1, « proposé »), free under the old scheme
+  const charged = V.v2DuelData('marek', { seed: 1, playerName: 'R', opponentName: 'M' }).data.actions;
   for (const id of ids) {
     const a = SB.skillAction(id), info = SB.SKILL_BOOK[id];
-    assert.equal(a.family, info.family, id); assert.ok((a.apCost ?? 0) >= 1, `${id} costs AP (AV-6)`);
-    for (let lv = 1; lv <= 5; lv++) { assert.ok(K.chargeTime(id, lv) >= 2.25 && K.chargeTime(id, lv) <= 10, id); if (lv > 1) assert.ok(K.chargeTime(id, lv) < K.chargeTime(id, lv - 1), id); }
+    assert.equal(a.family, info.family, id); assert.ok((id === 'heavy' ? charged.heavy.apCost : a.apCost ?? 0) >= 1, `${id} costs AP (AV-6)`);
+    // the charge times trimmed to 0.85 of journal Passe V1's (journal Passe CH1): the heavy attack from 1.7 s, the others from 2 s, none over 8.5 s
+    for (let lv = 1; lv <= 5; lv++) { assert.ok(K.chargeTime(id, lv) >= (id === 'heavy' ? 1.25 : 2) && K.chargeTime(id, lv) <= 8.5, id); if (lv > 1) assert.ok(K.chargeTime(id, lv) < K.chargeTime(id, lv - 1), id); }
   }
+  assert.deepEqual([1, 2, 3, 4, 5].map((lv) => K.chargeTime('heavy', lv)), [1.7, 1.55, 1.45, 1.35, 1.3]);
+  assert.deepEqual([1, 2, 3, 4, 5].map((lv) => K.chargeTime('t4', lv)), [7.65, 6.95, 6.3, 5.7, 5.1]);
   // the three ways, and every challenge skill has its teacher
   for (const src of ['start', 'buy', 'train', 'challenge']) assert.ok(ids.some((id) => SB.SKILL_BOOK[id].source === src), src);
   for (const id of ids.filter((x) => SB.SKILL_BOOK[x].source === 'buy')) assert.ok(SB.SKILL_BOOK[id].price >= 30, `${id} is dear`);
@@ -36,10 +42,19 @@ test('the catalogue: at most twelve skills, the three families, each with its ch
   assert.throws(() => SB.skillAction('light'), /no skill/);
 });
 
-test('a version 2 game starts with today\'s four skills at level 1; the default game has no version 2 state and never lists these actions', () => {
+test('a version 2 game starts with today\'s four skills at level 1, the heavy attack owned beside them (journal Passe CH1); the default game has no version 2 state and never lists these actions', () => {
   const st = v2();
   assert.deepEqual(st.v2.kit.loadout, ['t1', 't4', 'd1', 's1']);
-  assert.deepEqual(st.v2.kit.levels, { t1: 1, t4: 1, d1: 1, s1: 1 });
+  assert.deepEqual(st.v2.kit.levels, { heavy: 1, t1: 1, t4: 1, d1: 1, s1: 1 });
+  // a version 2 game saved before: it owns the heavy attack once read; a default game's save reads as it was
+  const old = structuredClone(st); delete old.v2.kit.levels.heavy;
+  assert.equal(G.deserialize(G.serialize(old)).v2.kit.levels.heavy, 1);
+  const d0 = G.namedState('day1-morning'); assert.equal(G.serialize(G.deserialize(G.serialize(d0))), G.serialize(d0));
+  // the heavy attack is drilled as the other skills owned from the start, up to level 3; it may be brought among the four
+  const at = { ...structuredClone(st), place: 'training' };
+  assert.ok(G.actions(at).some((o) => o.action.type === 'drillSkill' && o.action.skill === 'heavy' && o.ok));
+  assert.deepEqual(act(at, { type: 'drillSkill', skill: 'heavy' }).v2.kit.levels.heavy, 2);
+  assert.deepEqual(act(st, { type: 'setLoadout', skills: ['heavy', 't1', 'd1', 's1'] }).v2.kit.loadout, ['heavy', 't1', 'd1', 's1']);
   for (const name of Object.keys(G.NAMED_STATES).filter((n) => !G.NAMED_STATES[n].v2)) {
     const d = G.namedState(name);
     assert.equal(d.v2, undefined, name);
@@ -107,9 +122,10 @@ test('the bout takes the player\'s kit: its four skills at their levels, the new
   st.v2.kit = { loadout: ['k_sunder', 't4', 'k_iron', 'k_cry'], levels: { k_sunder: 2, t4: 1, k_iron: 1, k_cry: 3, t1: 1, d1: 1, s1: 1 } };
   const sh = M.matchSheetFor(st), d = M.v2SheetData(sh, undefined, G.v2KitOf(st));
   assert.deepEqual(d.data.loadout, ['k_sunder', 't4', 'k_iron', 'k_cry']);
-  assert.deepEqual(d.tiers.map((t) => t.id), ['light', 'heavy', 'k_cry', 'k_iron', 'k_sunder', 't4']);
-  assert.equal(d.tiers[2].at, K.chargeTime('k_cry', 3));
-  assert.equal(d.data.actions.k_sunder.damage, Math.round(SB.skillAction('k_sunder').damage * V.V2_POWER.k_sunder.damage * 1.1));
+  assert.deepEqual(d.tiers.map((t) => t.id), ['light', 'k_cry', 'k_iron', 'k_sunder', 't4']);
+  assert.equal(d.tiers[1].at, K.chargeTime('k_cry', 3));
+  // its power x 0.85 since the charge times were trimmed (journal Passe CH1), then its level's
+  assert.equal(d.data.actions.k_sunder.damage, Math.round(Math.round(SB.skillAction('k_sunder').damage * V.V2_POWER.k_sunder.damage * 0.85) * 1.1));
   const r = B.runV2BotDuel(d.data, d.tiers, { skill: 0.7, seed: 9 });
   assert.ok(r.winner, 'a K.O.');
   // levels make a kit stronger: today's four at level 3 beat Marek where level 1 often loses (the bot at 0.5, eight duels)
