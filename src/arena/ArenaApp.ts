@@ -159,6 +159,8 @@ export class ArenaApp {
   private walkFrames = 0;
   /** DEV only: the combat sheets (?fighterdensity=combat, src/lab/fighterDensity.ts, journal Passes AA2 / RC1 / CX1); declared, never emitted */
   private declare densityTrial?: import('../lab/fighterDensity').DensityTrial;
+  /** DEV only: the stands drawn by approved baked sheets (?crowdlab=, src/lab/arenaCrowd.ts, journal Passe PU1); absent = today's spectators */
+  private declare crowdLab?: import('../lab/arenaCrowd').CrowdLab;
   /** the version 2's effects (src/arena/fx/, journal Passes FX3 / FX5): loaded on demand by a version 2 duel only; today's arena keeps its frames */
   private combatFx: CombatFx | null = null;
   /** the combat sheets of a duel under the version 2's rules (src/arena/CombatCast.ts, journal Passe CX2): loaded on demand, today's arena never reaches them */
@@ -299,6 +301,11 @@ export class ArenaApp {
       this.fanCheer.push(-10);
       k++;
     }
+    if (import.meta.env.DEV && this.opts.params.has('crowdlab')) {
+      this.crowdLab = await (await import('../lab/arenaCrowd')).installCrowdLab(this.opts.params, this.arena.stands, { charScale: CHAR_SCALE, edgeGain: this.look ? lum(NIGHT_MOON) / lum(this.look.sunCol) : 1, shade: (await import('./CombatSheets')).shadeFor(this.opts.params.get('time')) });
+      this.scene.add(this.crowdLab.group);
+      for (const f of this.fans) f.hidden = true;
+    }
     this.particles = new ParticleSystem(this.lib);
     this.particles.setEmitters(this.arena.emitters);
     this.scene.add(this.particles.group);
@@ -396,6 +403,7 @@ export class ArenaApp {
 
   private onEvents(evs: Array<CombatEvent | DynEvent>): void {
     this.combatFx?.onEvents(evs, this.fighters, this.charge?.tiers.length ?? 0);
+    if (import.meta.env.DEV) this.crowdLab?.onEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
     for (const e of evs) {
       this.snd?.duelEvent(e);
       if (e.type === 'impact') {
@@ -599,6 +607,7 @@ export class ArenaApp {
     this.post.params.dofFocus = THREE.MathUtils.clamp(-v.z, 6, 40);
     this.lights.update(this.time, pdt, this.camera);
     this.sprites.update([this.fighters.ren, this.fighters.marek, ...this.fx.map((f) => f.act), ...this.fans], this.lights, this.camera, this.keyDir, null, this.fighters.ren);
+    if (import.meta.env.DEV) this.crowdLab?.update(this.sim.t, this.lights, this.camera, this.keyDir);
     this.particles.update(pdt, this.time, this.camera, this.post.height, this.lights, null);
     if (this.hud instanceof DynamicHud) this.hud.update(this.dyn!, this.assist, this.hudVisible, this.paused && !this.moment, this.charge ? chargeHudModel(this.charge.view()) : undefined);
     else this.hud?.update(this.classic!, this.assist, this.hudVisible, this.paused && !this.moment);
