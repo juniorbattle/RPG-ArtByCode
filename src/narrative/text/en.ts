@@ -448,6 +448,9 @@ export const EN = {
   'v2.sound.music': 'Music',
   'v2.sound.mute': 'Mute',
   'v2.sound.unmute': 'Sound on',
+  // the gamepad (journal Passe MN2): its vibration's switch on the sound page (MN-9), the line while the sound waits for a click or a key (MN-10)
+  'v2.sound.vibration': 'Gamepad vibration',
+  'v2.pad.sound': 'Click or press a key to hear the game',
   'v2.self.rest': 'Rest',
   'v2.self.wait': 'Wait',
   'v2.stage.pool': 'The pool · round {round}',

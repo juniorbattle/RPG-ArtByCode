@@ -51,7 +51,8 @@ export function showTitle(c: TitleChoice): { live(): void } {
     };
     const first = save ? add('continue', tx('ui.title.continue'), tx('ui.title.save', { name: save.player.name, day: save.day, slot: save.slot, over: save.over ? (save.flags.v2 === true ? tx('v2.title.over') : tx('ui.title.over')) : '' }), () => location.assign('?play=1'), true) : null;
     add('new', tx('ui.title.new'), tx('ui.title.newSub'), askName, !save);
-    add('explore', tx('ui.title.explore'), tx('ui.title.exploreSub'), () => { root.remove(); c.explore(); });
+    // « Explore the district » leaves the title screen to today's town, which no gamepad drives (MN-1): the pad's layer goes with the screen
+    add('explore', tx('ui.title.explore'), tx('ui.title.exploreSub'), () => { root.remove(); void padIn?.then((p) => p.dispose()); c.explore(); });
     ((first ?? menu.querySelector('.pm-btn')) as HTMLButtonElement).focus();
   };
   const askName = (): void => {
@@ -60,12 +61,17 @@ export function showTitle(c: TitleChoice): { live(): void } {
       ${save ? `<p class="pm-sub warn">${tx('ui.title.replaces')}</p>` : ''}`;
     const input = menu.querySelector('input') as HTMLInputElement;
     const go = el('button', 'pm-btn primary', tx('ui.title.enter')), back = el('button', 'pm-btn', tx('ui.title.back'));
+    // the gamepad's B goes back as this button does (journal Passe MN2: the keyboard's Esc answers in the field only)
+    back.dataset.padBack = '';
     const start = () => location.assign(`?play=1&new=1&name=${encodeURIComponent(cleanName(input.value))}`);
     go.addEventListener('click', start); back.addEventListener('click', menuButtons);
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') start(); if (e.key === 'Escape') menuButtons(); });
     menu.append(go, back);
     input.focus();
   };
+  // the gamepad navigates the title screen (the operator's MN-1 « La version 2 et la navigation de l’écran titre », journal Passe MN2): « Continue »
+  // takes up a version 2 game; its layer is loaded on demand and does nothing until a pad is used
+  const padIn = import('../input/PadInput').then((m) => m.installPad());
   menuButtons();
   arrowKeys(menu as HTMLElement);
   return { live: () => root.classList.add('live') };

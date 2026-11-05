@@ -113,6 +113,9 @@ export class Sound {
     if (this.resume?.heard) void this.unlock();
   }
 
+  /** the sound waits for a gesture (no context yet, or one the browser holds suspended), unless the player muted it: the gamepad's line (journal Passe MN2, MN-10) */
+  get asleep(): boolean { return !this.settings.muted && this.ctx?.state !== 'running'; }
+
   /** the first gesture: the context, its buses, the noise buffer, then the ambience and the music asked for so far */
   async unlock(): Promise<void> {
     if (this.ctx) { if (this.ctx.state === 'suspended') await this.ctx.resume().catch(() => {}); return; }

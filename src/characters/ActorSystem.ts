@@ -59,6 +59,9 @@ export class ActorSystem {
   player!: Actor;
   colliders: Collider[] = [];
   keys = new Set<string>();
+  /** a version 2 game's gamepad (journal Passe MN2, src/input/PadInput.ts): x to the screen's right, y up the screen, its speed as a share of the
+   *  walk and its run (B held, MN-2); read only while no movement key is held, so the keyboard's walk is the same as without it */
+  pad: { x: number; y: number; speed: number; run: boolean } | null = null;
   private nextId = 1;
   private district: DistrictBuild | null = null;
   /** camera yaw: picks which sprite direction faces the viewer */
@@ -314,10 +317,13 @@ export class ActorSystem {
     else if (this.interactTarget) { this.talkTimer = 2.5; }
   }
 
-  private axes(): [number, number] {
+  private keyAxes(): [number, number] {
     const k = this.keys;
     return [(k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0), (k.has('w') || k.has('arrowup') ? 1 : 0) - (k.has('s') || k.has('arrowdown') ? 1 : 0)];
   }
+  /** the gamepad's walk when it is the one walking: the movement keys ask for none (journal Passe MN2) */
+  private padWalk(): { x: number; y: number; speed: number; run: boolean } | null { const [kx, ky] = this.keyAxes(); return !kx && !ky ? this.pad : null; }
+  private axes(): [number, number] { const p = this.padWalk(); return p ? [p.x, p.y] : this.keyAxes(); }
 
   /** true while a movement key is held */
   get moveInput(): boolean { const [ix, iy] = this.axes(); return ix !== 0 || iy !== 0; }
@@ -327,13 +333,15 @@ export class ActorSystem {
     const c = Math.cos(this.controlYaw), s = Math.sin(this.controlYaw);
     // --- player
     const k = this.keys;
-    const [ix, iy] = this.axes();
+    const [ix, iy] = this.axes(), pw = this.padWalk();
     const hero = this.heroWalkSpeed();
-    const run = k.has('shift') ? (hero ? HERO_RUN : PLAYER_RUN) : 1;
+    // the gamepad runs with B held (MN-2), as Shift does
+    const run = k.has('shift') || pw?.run ? (hero ? HERO_RUN : PLAYER_RUN) : 1;
     // screen right = (c, -s), toward-camera = (s, c); "up" on screen = away from camera
     const mv = new THREE.Vector3(c * ix - s * iy, 0, -s * ix - c * iy);
     if (mv.lengthSq() > 0) {
-      mv.normalize().multiplyScalar(this.playerSpeed() * run * dt);
+      // the stick's tilt sets the speed (MN-2: from 30 % to the keyboard's walk); a key walks at 1
+      mv.normalize().multiplyScalar(this.playerSpeed() * run * dt * (pw ? pw.speed : 1));
       const ox = p.pos.x, oz = p.pos.z;
       this.resolve(p, p.pos.x + mv.x, p.pos.z + mv.z);
       const step = this.shownStep(mv, p.pos.x - ox, p.pos.z - oz);

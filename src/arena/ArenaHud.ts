@@ -123,6 +123,8 @@ export interface ArenaTexts {
   shorts: [string, string, string, string];
   title: string; subtitle: string; subRen: string; subMarek: string; health: (name: string) => string; apLabel: string;
   window: string; restart: string; pause: string; resume: string; rotate: string;
+  /** the version 2's pause with a gamepad (journal Passe MN2): the words after the pause's button (its cap shows Menu or Options) */
+  resumePad?: string;
   stunned: string; stunnedHit: string; down: string; guarding: string;
   alertHeavy: string; alertLight: string; reactNow: string;
   dodged: string; guarded: (n: number) => string; ap: (n: number) => string; guardBroken: string; stun: string;
@@ -132,7 +134,7 @@ export const TEXTS_FR: ArenaTexts = {
   guard: 'Garde', hold: 'maintenir', dodge: 'Esquive', ap1: '1 PA', light: 'Rapide', apGain: '+1 PA', heavy: 'Puissante', breaksGuard: 'brise la garde',
   shorts: ['Éclair', 'Fente', 'Tourbillon', 'Estocade'],
   title: 'Cité du Tournoi', subtitle: 'Arène des champions', subRen: 'le héros', subMarek: 'le champion', health: (n) => `Santé de ${n}`, apLabel: 'Points d\'action',
-  window: 'Fenêtre d\'esquive', restart: 'R pour recommencer', pause: 'Pause', resume: 'Espace pour reprendre', rotate: 'Tournez l\'appareil : l\'arène se joue en paysage',
+  window: 'Fenêtre d\'esquive', restart: 'R pour recommencer', pause: 'Pause', resume: 'Espace pour reprendre', resumePad: 'pour reprendre', rotate: 'Tournez l\'appareil : l\'arène se joue en paysage',
   stunned: 'Étourdi', stunnedHit: 'Étourdi — frappez !', down: 'À terre', guarding: 'En garde',
   alertHeavy: 'Attaque puissante !', alertLight: 'Attaque !', reactNow: 'Réagissez maintenant',
   dodged: 'Esquive', guarded: (n) => `${n} garde`, ap: (n) => `+${n} PA`, guardBroken: 'Garde brisée', stun: 'Étourdi',
@@ -143,7 +145,7 @@ export const TEXTS_EN: ArenaTexts = {
   guard: 'Guard', hold: 'hold', dodge: 'Dodge', ap1: '1 AP', light: 'Quick', apGain: '+1 AP', heavy: 'Heavy', breaksGuard: 'breaks guard',
   shorts: ['Flash', 'Lunge', 'Whirl', 'Thrust'],
   title: 'Cité du Tournoi', subtitle: 'Pool of eight · official bout', subRen: 'challenger', subMarek: 'opponent', health: (n) => `${n}'s health`, apLabel: 'Action points',
-  window: 'Dodge window', restart: 'An official bout cannot be restarted', pause: 'Pause', resume: 'Space to resume', rotate: 'Turn your device: the arena plays in landscape',
+  window: 'Dodge window', restart: 'An official bout cannot be restarted', pause: 'Pause', resume: 'Space to resume', resumePad: 'to resume', rotate: 'Turn your device: the arena plays in landscape',
   stunned: 'Stunned', stunnedHit: 'Stunned — strike!', down: 'Down', guarding: 'Guarding',
   alertHeavy: 'Heavy attack!', alertLight: 'Attack!', reactNow: 'React now',
   dodged: 'Dodged', guarded: (n) => `${n} guarded`, ap: (n) => `+${n} AP`, guardBroken: 'Guard broken', stun: 'Stunned',

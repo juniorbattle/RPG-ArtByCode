@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -66,128 +66,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/53-passes-SN15-SN17.md`](journal/53-passes-SN15-SN17.md) | SN15, SN16, SN17 | 04/11 |
 | [`journal/54-passes-SA1-SN18.md`](journal/54-passes-SA1-SN18.md) | SA1, SN18 | 04/11 |
 | [`journal/55-passes-SN19-SN22.md`](journal/55-passes-SN19-SN22.md) | SN19, SN20, SN21, SN22 | 04/11 |
+| [`journal/56-passes-CH1-CH2.md`](journal/56-passes-CH1-CH2.md) | CH1, CH2 | 04/11 → 05/11 |
 
 ---
-
-## Passe CH1 — La charge sans palier puissant : l'attaque puissante devient une compétence, les temps de charge raccourcis (décision A3 du 2026-11-04)
-
-### Demande
-- **La décision de l'opérateur, le 2026-11-04, en deux messages, mot pour mot** (relayés par la séance mère) : « petite correction : peut etre que nous devrions enlever attaque puissante et nous contenter d'avoir uniquement attaque simple + 4 skills, qu'en penses tu ? », puis, après l'avis de la séance mère : « On peut la retirer mais donc on devra aussi revoir le temps de chargement des autres actions qui seront legerement plus courts attaque puissante deviendra une des competences par exemple.. faisons ca aussi dans une sous-session ».
-- C'est une **décision A3** (E11, « A3 = ma décision citée mot pour mot au journal ») : elle modifie la commande chargée décidée en A3 / AV-5 / AV-7 (Passes AV1, V1).
-- La tâche confiée : consigner la décision ; amender seulement les phrases qui décrivent l'échelle de la charge ; changer la commande de la version 2 seule ; faire de la puissante une compétence avec ses niveaux et sa place dans l'apprentissage ; raccourcir les temps de charge, retirer le plancher ; proposer et mesurer les nombres. Les rivaux gardent leur attaque puissante, et la règle des blessures V2B1-1 (« A. K.O. par un coup puissant ») reste intacte. Le jeu par défaut et `combat=dynamic` ne changent pas. Une fiche si des choix restent ouverts.
-
-### Les textes amendés — [OK] (ancien → nouveau)
-- **Contrat projet, § 6.1** : « l'attaque chargée en la tenant, par paliers, de l'attaque légère à l'attaque puissante puis aux compétences, les compétences payées en points d'action » → « l'attaque chargée en la tenant, par paliers, de l'attaque légère aux compétences, l'attaque puissante comptée parmi elles, les compétences payées en points d'action ». L'en-tête du contrat porte une note datée du 2026-11-04 avec les deux messages. La note de l'amendement du 2026-10-26 (l'en-tête, vers la ligne 13), qui cite l'ancien texte, est laissée telle quelle : c'est le relevé de ce jour-là.
-- **`briefs/combat-system.md`** :
-  - en tête, l'amendement du 04/11/2026 (les deux messages, ce qui est amendé, les nombres « proposé ») ;
-  - § 1 : « de l'attaque légère (une pression) à l'attaque puissante puis aux compétences, palier après palier (§ 4b). Les deux attaques et les quatre compétences restent les actions du joueur ; seule la commande change. » → « de l'attaque légère (une pression) aux quatre compétences emportées, palier après palier, l'attaque puissante devenue l'une d'elles (§ 4b). L'attaque légère et les compétences, l'attaque puissante comprise, restent les actions du joueur. » ;
-  - § 4b, « La charge » : « tenue 2 s (« proposé », le bas des « 2-3 s » de l'opérateur), l'attaque puissante ; puis les quatre compétences emportées, rangées par leur temps de charge à leur niveau (de 2,7 à 9 s au niveau 1-5, « proposé » ; un palier de compétence vient au moins 0,25 s après la puissante) » → une pression, puis les quatre compétences emportées ; la puissante une compétence offensive possédée dès le départ, emportée ou non, montée par l'entraînement jusqu'au niveau 3 ; les temps à 0,85 de ceux de la Passe V1 (2,05 à 7,65 s, la puissante 1,7 à 1,3 s), plus de plancher ; la puissante à 1 PA sous les trois touches, une partie sans PA n'ayant que l'attaque légère jusqu'à ce qu'une attaque légère touche ;
-  - § 4b, la puissance : la phrase de `V2_POWER` complétée (les dégâts d'un coup chargé pris à 0,85 de ce tableau, `V2_POWER_TRIM`) ;
-  - § 14 : les poses `charge` (« avant le palier de la puissante » → « avant le premier palier ») et `chargeHi` (« au-delà de la puissante » → « dès le premier palier, celui d'une compétence »).
-- **`AGENTS.md`**, le paramètre `v2=1` : « (light, heavy at 2 s, then the four skills by their charge time at their level, AV-7 / AV-8, each still paid in AP, AV-6; » → « (light, then the four skills brought by their charge time at their level, AV-7 / AV-8, each still paid in AP, AV-6; the heavy attack one of those skills since the operator's decision A3 of 2026-11-04, journal Passe CH1, [les deux messages mot pour mot]: owned from the start, brought or not, 1 AP, the charge times and the charged blows' damage at 0.85 of before, CHARGE_TRIM / V2_POWER_TRIM, « proposé »; ».
-- **`briefs/v2-trial.md`** : la ligne de la touche J et celle des temps de charge.
-
-### Fait — [OK], derrière `flags.v2`
-- **L'échelle** (`src/combat/charge.ts`) : `chargeTiers` = l'attaque légère (une pression), puis les quatre compétences par leur temps de charge (égalités par leur place). `HEAVY_AT` et le plancher « 0,25 s après la puissante » sont retirés.
-- **Les temps** (`src/combat/skills.ts`) : `BASE_CHARGE` garde les temps de la Passe V1, la puissante y entre ([2 ; 1,85 ; 1,7 ; 1,6 ; 1,5] avant la réduction) ; `SKILLS` = `CHARGE_TRIM` (0,85) de ces temps, arrondis à 0,05 s au demi supérieur. Les quatre de départ au niveau 1 : Rempart 3,5 → 3 s, Éclair 4 → 3,4, Ferveur 5 → 4,25, Estocade 9 → 7,65 ; la puissante 1,7 / 1,55 / 1,45 / 1,35 / 1,3 s.
-- **La puissante, une compétence** :
-  - `SKILL_BOOK.heavy` (offensive, `start`) ; `skillAction('heavy')` lui donne sa famille et garde son genre `heavy` (son coup, son son, son effet, la défense des rivaux qui l'esquivent) ;
-  - `v2DuelData` lui donne sa famille, l'admet parmi les quatre (le contrôle `checkDynData` de `dynamic.ts` l'accepte : une ligne de contrôle, aucune règle du duel ne change, `DYNAMIC_SIM_HASH` tenu), lui applique son niveau quand elle est emportée, et 1 PA sous les trois touches (`V2_POWER.heavy.ap`) ; l'ancien schéma (`input=keys`) la garde gratuite ;
-  - `V2_START_KIT` : les quatre d'aujourd'hui emportées, la puissante possédée au niveau 1 après elles ; une sauvegarde v2 d'avant la reçoit au niveau 1 à sa lecture (`deserialize`, la partie par défaut lue telle quelle) ; l'entraînement la monte jusqu'au niveau 3, comme les autres compétences de départ ; son nom sur les pages est « Heavy attack » (`ui.skill.heavy`, aucune clé de texte nouvelle).
-- **La puissance suit la tenue** (`V2_POWER_TRIM` = `CHARGE_TRIM`) : les dégâts d'un coup chargé offensif à 0,85 du tableau `V2_POWER` (la puissante ×1,87 au lieu de ×2,2, l'Estocade ×2,89 au lieu de ×3,4) ; la jauge et la durée de Rempart et de Ferveur inchangées. Sans cela, le joueur préparé gagnait 75 % des combats (voir Mesures).
-- **Le bot** (`pickTier`) joue la puissante comme avant, quand ses PA sont pleins ou l'adversaire brisé, si elle est emportée ; les autres compétences comme avant.
-- **La course hors écran** (`V2_RACERS`) remesurée : étalonnage sur les graines 1 à 40, vérification sur 41 à 60 (écarts de 4,1 % au plus ; le test rejoue 41 à 46).
-- **L'arène et la lecture**, sans image, effet ni son neuf, rien recuit :
-  - `chargeFrame` : la pose haute dès le premier palier (avant : au-delà de la puissante) ;
-  - l'effet de palier, le bip et la couche de tension (`chargeLevel`, `RISING_TIER`) : la même formule, le niveau 1 est maintenant le premier palier de compétence ;
-  - les moments : `chargeHeavy` devient `chargeFirst` (« Charge (premier palier) »), `chargeWait` attend sur le premier palier ;
-  - le script d'empreinte du duel (`runV2Fingerprint`) a ses tenues sur les nouveaux paliers ([0,05 ; 3,1 ; 0,05 ; 3,5 ; 0,05 ; 4,3 ; 7,7 ; 0,05 ; 9,4 ; 12]) : il passe de nouveau par chaque chemin de V2-2 (charge tenue : 27 coups reçus sans garde, 25 gardés, 6 esquives, un break et le K.O. ; 41 relâchés qui attendent, 81 départs, aucun refus). **`V2_SIM_HASH`** = `1913:2:idle:8.133:55.900:-:-;7407:0:idle:1.358:0.000:-:-;83.867|1:8.458:`.
-- **Les pages** (`src/simulation/preview.ts`, `src/ui/skills.ts`) : « Heavy blow » et « Heavy charge » sont ceux de la puissante à son niveau, emportée ou non ; l'échelle de la page K ne montre la puissante que si elle est choisie.
-- **Les outils** : `tools/arena-scene-check.mjs` (son empreinte et ses tenues), `tools/arena-sheet-proof.mjs` (le moment renommé).
-- **Les tests** : `combat-charge` (l'échelle, la puissante emportée, une partie sans PA, l'attente, le HUD, les tenues de l'outil égales à celles du code), `v2-skills` (treize compétences, la puissante possédée, entraînée, emportée, l'ancienne sauvegarde), `v2-gear`, `wares`, `ui-pages`, `combat-cast` (les images de charge), `v2-injury` (ses chiffres remesurés, voir Preuves).
-
-### Mesures — TournamentLab `--rules=v2` (50 parties ; 30 pour les joueurs bon et expert), bot de la version 2, 20 duels par rival et par adresse
-| Variante | préparé | blessures | qualifié · finaliste · couronné | bon · expert | duel moyen | sabotage tenté |
-|---|---|---|---|---|---|---|
-| `main` (V2C2, V2B1) | 60,4 % | 0,80 | 88 · 18 · 4 % | 84,0 · 95,3 % | 5,1 à 9,9 min | 22 / 50 |
-| La puissante retirée, temps et puissance d'aujourd'hui | 61,0 % | 0,70 | 94 · 18 · 4 % | 82,0 · 96,7 % | 5,1 à 10,0 | 22 |
-| Temps ×0,85, puissance gardée | 74,8 % | 0,42 | 98 · 62 · 4 % | 87,3 · 98,0 % | 5,2 à 9,2 | 7 |
-| **Proposé : temps et puissance ×0,85, course remesurée** | **59,6 %** | **0,76** | **88 · 20 · 2 %** | **82,7 · 96,7 %** | **5,2 à 10,0** | **19** |
-| Temps et puissance ×0,9 | 62,8 % | 0,60 | 94 · 28 · 2 % | 82,0 · 98,7 % | 5,1 à 10,1 | 23 |
-| Temps et puissance ×0,8 | 62,4 % | 0,48 | 94 · 32 · 2 % | 81,3 · 96,7 % | 5,2 à 10,3 | 19 |
-| Proposé, la puissante à la place de l'Estocade, 1 PA | 61,6 % | 0,72 | 90 · 18 · 4 % | 82,0 · 94,7 % | 5,0 à 10,0 | 24 |
-| Idem, la puissante gratuite | 63,6 % | 0,54 | 98 · 22 · 0 % | 84,7 · 94,0 % | 5,0 à 10,1 | 22 |
-
-- Les lignes ×0,9 et ×0,8 gardent la course remesurée pour 0,85. La plus longue case du proposé : Rhosk à l'adresse 0,6, 10,0 min en moyenne (9,9 sur `main`) ; Marek reste le plus dur (90 % à 0,9). Avec les quatre de départ, le coût de la puissante ne change rien (59,6 % à 0 et à 1 PA).
-- `main` est mesuré par le même script sur un `git archive` figé de `0d280c8` : il retrouve exactement les chiffres de V2C2 et V2B1, et la course épinglée.
-
-### Preuves — [OK]
-- `npm test` **404 sur 404**, `npm run typecheck`, `npm run build`, `npm run art:validate` (61 manifestes, 85 sources, 23 manifestes du son, 0 erreur).
-- **Le jeu par défaut inchangé** : TournamentLab `classic` et `dynamic`, cinq politiques (`diligent`, `idle`, `careful`, `careless`, `losing`), 50 graines : dix JSON **identiques à l'octet** à ceux de `main` figé ; `DYNAMIC_SIM_HASH` le même ; `play-flow` par défaut `0025acce7a403773`, l'empreinte d'avant.
-- **La règle des blessures V2B1-1 intacte** : les six tests de la règle de `tests/v2-injury.test.mjs` passent sans changement ; le septième épinglait les chiffres de la décision sur 50 graines, remesurés et épinglés de nouveau en le nommant (0,76 et 1,74 blessure, 59,6 %, couronné 2 %, qualifié 88 %).
-- Sur un serveur DEV (worktree, port 5194, par `preview_start`, son onglet fermé, arrêté à la fin) :
-  - `arena-scene-check` sous `v2=1` **PASS** (le contrôle vivant avance de 4,9 s, l'empreinte `sameAsRecorded`, 96 rendus de moments sans erreur, télégraphe 6,45:1 et 6,65:1 en deutéranopie, le sol dégagé du HUD dans 77 cas) ; par défaut **PASS** (`sameAsPrototype`) ; `combat=dynamic` **PASS** (`sameAsRecorded`) ;
-  - `arena-sheet-proof` : les sept rivaux OK de nuit et à midi, aucune image hors des feuilles ; contre-épreuve `--q=cast=generated` : FAIL, comme il se doit ;
-  - `play-flow` `V2=1` victoire (1842, jour 2) `cf669f2d59e33a8d` et défaite (7719, jour 2) `66590f734fa53d82`, rejouées en Node à la même empreinte ; `play-day` `V2=1` et par défaut : tous les contrôles passent ;
-  - `ui-text` : la page K la puissante emportée (1600 × 900 et 390 × 844) et le premier palier dans l'arène (1600 × 900 et 812 × 375), 4 pages sur 4.
-
-### Défauts trouvés — [KO → corrigé]
-- **`arena-scene-check` rejoue sa propre copie du script d'empreinte** : avec les tenues d'avant, la page donnait l'ancienne empreinte et le contrôle échouait. Ses tenues sont celles du code, et `tests/combat-charge.test.mjs` compare désormais les deux listes.
-- **La page K ouvrait sur la puissante non emportée** : `play-day` l'a vu (Espace refusait, « quatre déjà »). La puissante était la première compétence possédée ; elle est rangée après les quatre de départ.
-- **Un arrondi flottant** : 1,5 × 0,85 = 1,2749… arrondissait à 1,25. L'arrondi se fait au demi supérieur ; six temps hors des quatre de départ changent d'un cran, aucune mesure n'en dépend.
-- **Environnement** : ce worktree n'avait pas de `node_modules` ; `tests/arena-day.test.mjs` ne trouvait pas `three`. Une copie de `node_modules/three` (pas de jonction, comme pour les bases figées), ignorée par git, comme dans les autres worktrees.
-
-### La fiche
-- Page privée https://claude.ai/artifact/E3wBJw2yyKhhCcnzb2167G, source `briefs/fiche-ch1.html`, quatre captures du vrai jeu publiées avec la page (pas dans le dépôt). Six cartes, chacune avec sa recommandation :
-  - CH-1, les temps de charge : « 0,85 (−15 %) » ;
-  - CH-2, la puissance des coups chargés : « La puissance suit la tenue (×0,85) » ;
-  - CH-3, le coût de la puissante : « 1 PA » ;
-  - CH-4, les quatre d'une partie neuve : « Les quatre d’aujourd’hui, la puissante à côté » ;
-  - CH-5, la lecture du premier palier : « Bien ainsi (à confirmer en jeu) » ;
-  - CH-6, la suite : « Fusionner après la fiche, essayer ensuite ».
-- `decisions` relu vide à la publication. Le code est déjà réglé sur les recommandations ; un autre choix se refait et se remesure.
-
-### Limites
-- **Personne n'a joué la nouvelle charge.** Le bot garde sa façon de jouer la puissante (PA pleins ou adversaire brisé) ; un joueur réel la jouera autrement.
-- La branche n'est pas fusionnée : elle attend la fiche (CH-6).
-
-### Où reprendre
-- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot, appliquer ce qui change, refaire les mesures et les preuves touchées, puis fusionner selon CH-6.
-
-### Pensée
-- Quand la puissance suit la tenue, raccourcir la charge ne change plus l'équilibre (61,9 à 62,8 % de 1 à 0,8) : seul le ressenti change. Raccourcir sans toucher à la puissance faisait passer le joueur préparé de 60 à 75 %.
-- Un outil qui recopie un script du code pour le jouer dans la page se garde par un test qui compare les deux copies.
-- Ce que le joueur possède sans l'emporter se range après ce qu'il emporte : la première ligne d'une page est celle que le clavier touche.
-
-## Passe CH2 — La fiche de la charge relue, six sur six : les nombres de la Passe CH1 décidés, la branche fusionnée (2026-11-04 → 2026-11-05)
-
-### Demande
-- L'opérateur, mot pour mot : « Fiche remplie ». Relire `decisions` (https://claude.ai/artifact/E3wBJw2yyKhhCcnzb2167G, source `briefs/fiche-ch1.html`), consigner les choix mot pour mot, n'appliquer que ce qu'ils décident, puis fusionner selon CH-6 (Passe CH1).
-
-### Les choix de l'opérateur, mot pour mot (six sur six, sans note)
-Relus par `list` : 6 documents, cliqués le 2026-11-05 entre 02 h 57 et 02 h 58 UTC.
-
-| Carte | Ce qu'elle demandait | Choix |
-|---|---|---|
-| CH-1 | Les temps de charge : plus courts de combien ? | « 0,85 (−15 %) » |
-| CH-2 | La puissance des coups chargés | « La puissance suit la tenue (×0,85) » |
-| CH-3 | Ce que coûte l'attaque puissante | « 1 PA » |
-| CH-4 | Les quatre compétences d'une partie neuve | « Les quatre d’aujourd’hui, la puissante à côté » |
-| CH-5 | Ce que montre le premier palier | « Bien ainsi (à confirmer en jeu) » |
-| CH-6 | Fusionner, puis l'essai en jeu | « Fusionner après la fiche, essayer ensuite » |
-
-Les six choix suivent la recommandation de leur carte.
-
-### Ce que ces choix veulent dire — [OK]
-- Le code de la Passe CH1 était déjà réglé sur ces six recommandations : **aucune règle ni aucun nombre ne change**, aucune mesure n'est à refaire.
-- Les nombres « proposé » de la Passe CH1 sont décidés : la spécification (`briefs/combat-system.md`, en tête et § 4b), `AGENTS.md` (le paramètre `v2=1`) et les commentaires de `src/combat/skills.ts` et `src/combat/v2duel.ts` citent désormais CH-1 à CH-4 à la place de « proposé ».
-- CH-5 : la lecture du premier palier se confirme en jeu ; CH-6 : fusion maintenant, l'essai en jeu de l'opérateur dans `main` ensuite (`npm run dev`, puis `/?scene=arena&v2=1` et `/?play=1&new=1&v2=1`, K pour les compétences).
-
-### Preuves
-- `npm run typecheck`, `npm test`, `npm run build`, `npm run art:validate` sur le commit de cette passe (seuls des commentaires et des documents changent depuis la Passe CH1).
-
-### Où reprendre
-- L'essai en jeu de l'opérateur : le ressenti des temps raccourcis, la puissante emportée ou non, le premier palier (CH-5).
 
 ## Passe PU1 — Le public des gradins de l'arène : état des lieux, prototype en citadins cuits approuvés, coût mesuré, fiche d'arbitrages (2026-11-04)
 
@@ -472,6 +353,86 @@ Seize cartes, chacune avec sa recommandation :
 
 Les onze choix suivent la recommandation de leur carte.
 
+### Fait — [OK], derrière la version 2 et l'écran titre (MN-1)
+- **`src/input/PadInput.ts`** : le lecteur dans la page. Il démarre quand le navigateur annonce une manette (`gamepadconnected`) ou en tient déjà une, et lit celle qui a servi en dernier (branchement à chaud). Sans manette, aucune boucle ne tourne et rien de la page ne change. Il déduit le contexte de ce que la page montre (`contextOf` : une ligne de cinématique, une page modale `#title-screen` / `.pm-overlay` / `.pm-talk`, sinon le duel ou la marche que la page déclare).
+  - Dans une page, il appuie les touches que l'interface affiche : des événements clavier synthétiques sur l'élément qui a le focus. Chaque page répond donc par son propre code clavier, sans réécriture. Entrée presse le bouton si la page ne l'a pas pris (le défaut du clavier), comme pour la fiche de match qui prend Entrée elle-même.
+  - La croix et le stick font les flèches, et à défaut l'élément voisin (la page du son), ← → un curseur ; le stick droit fait défiler le détail.
+  - X ne presse Espace que là où une touche Espace est affichée (la page K et la fiche de match). LB / RB vont à la page voisine du menu.
+  - Sur l'écran titre, B revient comme le bouton « Back » de « New game » (`data-pad-back` ; au clavier, Échap n'y répond que dans le champ).
+  - Une direction tenue d'un contexte à l'autre ne parcourt pas la liste qui s'ouvre tant qu'elle n'est pas relâchée.
+- **La marche** (MN-2) : `ActorSystem.pad` et `PlazaApp.pad` reçoivent `walkOf` (la croix à pleine vitesse, le stick de 30 % à 100 % par sa zone morte, B tenu court ×1,2 comme Maj). Ils ne la lisent que si aucune touche de marche n'en demande une : le chemin du clavier reste le même calcul (un facteur `× 1` exact). Le sens est pris par le lacet de la caméra et tenu pendant la marche (`controlYaw`, `moveYaw`), comme au clavier. Sur les places, l'horloge du cycle suit la vitesse du stick (pas de patinage). Les sorties de la ville comptent la marche de la manette comme une touche tenue.
+- **Les pages** (`townUi.ts`) : `tabPage` (LB / RB, l'ordre du menu : carte, journal, tournoi, compétences, équipement, son). Le bouton « Gamepad vibration » s'ajoute à la page du son (V) seulement quand une manette a été vue sur la page (MN-9) ; il est réglé dans le navigateur (`cite-du-tournoi.pad`).
+- **Le duel** (MN-5) : `ArenaApp` installe la manette commune pour le duel chargé de la version 2 (`DUEL` : X ou RT l'attaque tenue, B ou LT la garde tenue, A l'esquive, Menu la pause, Affichage le recommencement de la page de l'arène ; `duelCommands` : une commande tenue descend au premier de ses boutons et remonte au dernier lâché). `pollPad` s'efface devant elle et reste tel quel pour toutes les autres arènes. Les coups reçus par Ren font vibrer la manette (`rumbleOf`, MN-9). La pause dit « [Menu] to resume » quand la manette sert (une ligne de plus, masquée au clavier).
+- **Les touches à l'écran** (MN-7, MN-8) : `prompts.ts` a désormais une instance partagée. La revue `?padglyph=` la force ; sinon c'est `PadInput` qui la règle selon le dernier appareil utilisé.
+- **Le son** (MN-10) : `Sound.asleep` (le son attend un geste, sauf s'il est coupé). Un bouton de manette tente `unlock()`. La ligne « Click or press a key to hear the game » paraît en haut au centre, sur le voile, tant que la manette sert et que le son dort.
+- **Textes** : `v2.sound.vibration`, `v2.pad.sound`. **`AGENTS.md`** : la section « Gamepad », l'outil `pad-proof`, le test.
+
+### Tests — [OK]
+- **`tests/pad.test.mjs`** (onze tests ; oracles écrits dans le test, d'après la disposition standard et les tables de la fiche) :
+  - les boutons et la famille par les identifiants de Chrome et de Firefox ; la zone morte et la marche ;
+  - les touches par contexte, avec les écouteurs des pages qui les entendent ;
+  - le duel, avec `V2_PAD` gardé entier (charge et garde tenues ensemble, esquive au pouce) ;
+  - la navigation et sa répétition, `stepIndex`, `tabTo`, `contextOf` ;
+  - toutes les touches que l'interface de la version 2 écrit, relevées dans les sources (E, Entrée, Échap, Espace, Q, N, M, J, T, K, G, V ; la barre du duel K, L, J, la fenêtre L, la pause Espace) : chacune a un bouton ou se cache ;
+  - les glyphes de chaque famille dans le sous-ensemble des polices, les symboles dessinés, aucune couleur dans le contour ;
+  - la vibration ; le câblage (import dynamique seulement, la ville sous `isV2`, l'arène sous `charge`, `pollPad` gardé).
+- **Huit fautes injectées une à une, toutes attrapées** : RT retiré de l'attaque, les commandes tenues prises bouton par bouton, l'Échap du coin donné à B, le vendeur Sony oublié, le triangle écrit en texte (hors du sous-ensemble), la manette lue malgré une touche tenue, la marche la plus lente à 0, les raccourcis du menu montrés.
+- `npm test` **421 sur 421**, `npm run typecheck`, `npm run build` (le prototype de revue absent du paquet ; `PadInput` et `pad` en morceaux à part).
+
+### Preuves — [OK]
+- **Une manette simulée dans le navigateur** (`tools/pad-proof.mjs`, serveur DEV du worktree, `navigator.getGamepads` remplacé avant les scripts de la page) : **tous les contrôles passent**. Dans une partie version 2 neuve (graine 1842) :
+  - A ferme les nouvelles et les touches deviennent Y et Menu ;
+  - le stick marche à 3,60 m/s, à demi-inclinaison 0,58 de la pleine vitesse (attendu 0,57), B tenu court ×1,19 ; la croix marche ;
+  - près de Mara, A ouvre son dialogue, la croix parcourt ses lignes, A ouvre ses marchandises, la croix atteint la pierre à aiguiser, A l'achète (60 → 52 pièces), B revient à elle, B la quitte ;
+  - Y ouvre la liste, B la ferme ;
+  - Menu ouvre le menu (raccourcis cachés sauf la carte), A le journal, puis RB / RB / LB : « Journal > The tournament > Your skills > The tournament » ;
+  - la page du son montre l'interrupteur allumé ; la croix atteint le curseur de la musique (50 → 45) ; A coupe puis rallume la vibration ;
+  - Affichage ouvre la carte ; une touche du clavier rend les touches, une pression de la manette les reprend.
+- **Le combat** :
+  - Y ouvre la liste sur « Enter the arena », A la fiche de match, où X laisse puis reprend une compétence (4, 3, 4 ; pied X, A, B) ; A entre dans l'arène ;
+  - A « Fight » ; la barre montre B, A, X ; X tenu charge jusqu'au premier palier, RT garde la charge quand X est lâché, et la lâcher la lance ;
+  - LT tient la garde, A esquive, Menu met en pause (« to resume » sous le bouton) puis reprend ;
+  - un coup puissant reçu fait vibrer (`dual-rumble`, 200 ms, 0,55 / 0,4) ; le combat se décide comme dans `play-flow`, puis A « Back to the city » ;
+  - **Node rejoue les 8 actions appliquées par les pages : même empreinte `5e91b2655a73ef84`**.
+- **Une place, l'écran titre, les autres manettes** :
+  - sur le parvis (`v2-forecourt-morning`, `cutscene=1`), la ligne de la cinématique montre A et Menu, A donne la ligne suivante, Menu passe le reste ; le stick entre dans la sortie vers l'entraînement (`arrive=forecourt`) ;
+  - sur l'écran titre, la croix passe de « Continue » à « New game », A ouvre le nom, B revient, A « Continue » reprend la partie ;
+  - une DualSense montre Triangle et Options en symboles ;
+  - **le jeu par défaut** : aucune couche, le héros ne bouge pas, les touches restent Q et Échap ; **l'arène par défaut** : aucune couche commune.
+- **Le clavier inchangé, 0 px contre `main` figé** (`git archive` de `0cc8727`, un autre serveur DEV ; seuil 0) :
+  - la ville par défaut de nuit et à midi (`detshots`), la ville du mode jouable par défaut, la ville d'une partie version 2 avec son interface ;
+  - le duel de la version 2 (calme, premier palier, K.O.), l'arène par défaut (calme, K.O.), le parvis d'une partie version 2 (`plaza-shots`) ;
+  - dix paires à 0 px, le témoin de répétition à 0 px. **Contrôle négatif** : la ville version 2 avec les glyphes forcés diffère de `main` (7 664 px, dans le coin des touches).
+  - **Sur les paquets de production** (`vite build` de la branche et de `main` figé, servis par `vite preview`) : la ville de nuit et à midi, la ville du mode jouable par défaut et en version 2, le duel version 2 (calme, K.O.) et l'arène par défaut (calme, K.O.) : huit paires à 0 px, témoin à 0 px.
+- **`ui-text`** sur les pages à glyphes forcés : 17 pages sur 17 (ville Xbox et PlayStation, dialogue, fiche de match à 1600 × 900 et 390 × 844 ; menu Nintendo, son avec l'interrupteur, la ligne du son, le duel et sa pause à 1600 × 900 et 812 × 375). Le plus petit texte fait 16 px sur ordinateur et 14 px au téléphone ; seulement les deux polices embarquées, aucun caractère hors du sous-ensemble (le « − » de Nintendo compris).
+- **`ui-contrast`** sur les mêmes pages, deux moments chacune : 17 sur 17 au-dessus de 4,5:1 (le plus bas 5,31:1, la ligne de l'échéance déjà mesurée en UM2 ; la ligne du son 12,89:1). Les symboles dessinés ont la couleur du texte de leur touche, sur le même voile ; l'outil ne mesure que le texte.
+- **Les parcours d'avant, inchangés** : `play-flow` `V2=1` victoire (1842, jour 2) `cf669f2d59e33a8d` et par défaut `0025acce7a403773`, les empreintes de la Passe CH1, rejouées en Node ; `play-day` `V2=1` et par défaut : tous les contrôles passent ; `arena-scene-check` sous `v2=1` **PASS** (`sameAsRecorded`) et par défaut **PASS**. `npm run art:validate` sans erreur.
+
+### Défauts trouvés — [KO → corrigé]
+- **La première direction sur une page était avalée** : en changeant de contexte, le répéteur était amorcé avec la direction tenue, même au premier contact de la manette avec la page. Sur l'écran titre, le premier « bas » ne bougeait rien. L'amorçage ne vaut désormais que d'un contexte à un autre ; repasser au clavier remet le contexte à zéro.
+- **Les preuves elles-mêmes** :
+  - la marche mesurée près de l'étal de Mara butait sur ses collisions (0 m/s) : les marches partent de la place de départ, toutes du même point ;
+  - une cinématique n'écoute qu'une ligne à la fois (entre deux lignes, la caméra bouge et les gens marchent, au clavier aussi) : la preuve attend la ligne suivante, et presse Menu jusqu'à la fin ;
+  - « Continue » navigue pendant la pression : la pression part avec la page.
+- **Un serveur DEV modifié pendant une preuve** : les fautes injectées dans `src/` pendant la première série ont rechargé les pages en cours (HMR) et fabriqué trois faux échecs. Toute la série a été refaite sans toucher au code (principe déjà écrit, rappelé ici).
+
+### Le journal
+- Avec cette passe, les passes gardées auraient dépassé 60 Ko (70 Ko). CH1 et CH2 (leur branche fusionnée) sont archivées mot pour mot dans `journal/56-passes-CH1-CH2.md`, avec leur ligne d'index. Le déplacement est prouvé : le corps de l'archive est identique aux 17 227 octets retirés ; CH1 et CH2 n'existent chacune que dans ce fichier ; aucune fin de ligne seule (CRLF gardé). Passes gardées : 51,7 Ko.
+- `main` a bougé pendant ce travail (Passe EV1 de la séance d'audit du gameplay, des documents seulement) : les commits MN1 et MN2 sont rejoués sur une branche neuve, `claude/manette`, depuis `main`, sans push forcé ; le journal recomposé (MN1 et MN2 après EV1). Le code est identique à celui des preuves (`git diff` vide sur `src`, `tests`, `tools`).
+
+### Limites
+- **Personne n'a branché de vraie manette.** Restent à voir à l'essai de l'opérateur : si une pression de manette démarre le son dans Chrome (sinon la ligne paraît), la vibration réelle, le ressenti de la zone morte et des 30 %.
+- La vibration n'existe que dans Chrome et Edge (pas dans Firefox) ; une manette sans disposition standard (`mapping` vide) est lue par ses indices tels quels.
+- « New game » sur l'écran titre lance le jeu par défaut, qui ne lit pas de manette (MN-1) : une partie version 2 s'ouvre toujours par `?play=1&new=1&v2=1`.
+
+### Où reprendre
+- L'essai de l'opérateur avec sa manette : `npm run dev`, puis `/?play=1&new=1&v2=1`, la manette branchée (une pression pour que le navigateur la voie).
+
+### Pensée
+- Une page qui se pilote déjà entièrement au clavier se donne à la manette par ses propres touches. La correspondance est une table testée en Node, et le jeu au clavier se prouve à 0 px parce qu'aucune page n'a changé de chemin.
+- Un « au premier contact » et un « en passant d'un contexte à l'autre » ne sont pas le même événement : une direction tenue entre deux pages s'ignore, une première pression ne s'ignore jamais.
+- Une preuve de navigateur mesure dans un endroit libre : un mur à deux mètres fausse une vitesse sans faire échouer le code.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -491,7 +452,7 @@ Les onze choix suivent la recommandation de leur carte.
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
   - **La charge sans palier puissant (Passe CH1, décision A3 du 2026-11-04)** : l'attaque puissante est une compétence (1 PA, ses niveaux, possédée dès le départ, emportée ou non), les temps de charge et la puissance des coups chargés à 0,85, l'équilibre de V2C2 retrouvé (59,6 %) ; contrat et spécification amendés. **Fiche relue, six sur six à la recommandation (Passe CH2)** : CH-1 « 0,85 (−15 %) », CH-2 « La puissance suit la tenue (×0,85) », CH-3 « 1 PA », CH-4 « Les quatre d’aujourd’hui, la puissante à côté », CH-5 « Bien ainsi (à confirmer en jeu) », CH-6 « Fusionner après la fiche, essayer ensuite » ; fusionné dans `main`. **Reste l'essai en jeu de l'opérateur.**
   - **Étape 5, le gameplay (Passe EV1)** : audit des événements, du vol, du défi, du marchandage et du récit de la version 2 contre les contrats (`briefs/audit-gameplay-ev1.md`) : le défi sans enjeu (gagné 15 fois sur 15), le vol sans suite (un voleur à réputation 0 qualifié 9 fois sur 10), le marchandage un dé, trois ambiances à 52 % des nouvelles, une seule réponse (la garde du quai) contre les deux sabotages, trois champs du pouls lus par rien, l’information et la réaction visible de la ville minces, le festival et l’investissement absents ; six défauts de lecture relevés (dont les nouvelles de fin de créneau perdues sur les places). **Fiche publiée, seize choix** : https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`) ; à relire quand l’opérateur la dit remplie, puis les lots L1 à L6 (ou ce qu’il décide en EV-15), chacun dans sa séance, derrière `flags.v2`. Le recrutement et la phase d’équipe restent un chantier plus tard.
-  - **La manette (Passe MN1)** : état des lieux de chaque chemin d'entrée (seul le duel lit une manette, la première seulement), prototype de revue des glyphes (DEV, `?padglyph=`), fiche https://claude.ai/artifact/F2fYfXXjwL5y6o7p5q4fj1 relue onze sur onze à la recommandation (Passe MN2) ; construire derrière la portée choisie, prouver (clavier à 0 px, manette simulée sur le premier jour et un combat) et fusionner selon MN-11 ; l'essai avec la manette de l'opérateur ensuite.
+  - **La manette (Passe MN1)** : état des lieux de chaque chemin d'entrée (seul le duel lit une manette, la première seulement), prototype de revue des glyphes (DEV, `?padglyph=`), fiche https://claude.ai/artifact/F2fYfXXjwL5y6o7p5q4fj1 relue onze sur onze à la recommandation ; **construite et prouvée (Passe MN2)** : la ville, les places, toutes les pages, l'écran titre et le duel de la version 2 à la manette, le jeu au clavier à 0 px contre `main` (DEV et paquets), une manette simulée jouant le premier jour et un combat. **Reste l'essai de l'opérateur avec sa manette** (MN-11) : le son à la première pression (MN-10), la vibration, la zone morte et la marche la plus lente.
   - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
@@ -715,7 +676,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10), SN7-SN8 (Passe SN14), SN9-SN10 (Passe SN16), SN11-SN12 et SN13-SN14 (Passe SN19), SN15-SN17 (Passe SN22), SA1-SN18 (Passe CH1), SN19-SN22 (Passe PU2) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10), SN7-SN8 (Passe SN14), SN9-SN10 (Passe SN16), SN11-SN12 et SN13-SN14 (Passe SN19), SN15-SN17 (Passe SN22), SA1-SN18 (Passe CH1), SN19-SN22 (Passe PU2), CH1-CH2 (Passe MN2) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 

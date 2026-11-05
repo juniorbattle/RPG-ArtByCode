@@ -79,14 +79,18 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   const ways = isV2(st) ? V2_EXITS.district.map((e) => ({ ...e, anchor: END[e.side] })) : [];
   const markers = ways.length ? new ExitMarkers(ways.map((w) => ({ to: w.to, anchor: w.anchor }))) : null;
   if (markers) (window as any).__exits = markers;
+  // a version 2 game plays with a gamepad too (the operator's sheet of journal Passe MN2): its walk, its pages' shoulders, the sound it may wake;
+  // loaded on demand, it does nothing until a pad is used; today's game reads none
+  if (isV2(st)) void import('../input/PadInput').then((m) => m.installPad({ walk: (w) => { app.actors.pad = w; }, tab: (d) => ui.tabPage(d), sound: () => import('../audio/Sound').then((s) => s.sound()) }));
   const taken = () => {
     const p = app.actors.player.pos;
-    if (ui.modal || app.actors.keys.size === 0) return null;
+    // walked into with a key held, or the gamepad's walk
+    if (ui.modal || (app.actors.keys.size === 0 && !app.actors.pad)) return null;
     const w = ways.find((e) => (e.side === 'east' ? p.x >= WALK.x1 - 0.15 && Math.abs(p.z) < 2.2 : p.x <= WALK.x0 + 0.15));
     return w?.to ?? null;
   };
   const leave = (to: typeof st.place) => { const from = st.place, r = (window as any).__game.act({ type: 'move', to }); if (r.ok) go(b.params, { arrive: from }); else location.reload(); };
-  const frame = () => { if (ui.modal) app.actors.keys.clear(); ui.update(); markers?.update(app.rig.camera, app.actors.player.pos, taken(), leave); requestAnimationFrame(frame); };
+  const frame = () => { if (ui.modal) { app.actors.keys.clear(); app.actors.pad = null; } ui.update(); markers?.update(app.rig.camera, app.actors.player.pos, taken(), leave); requestAnimationFrame(frame); };
   app.start();
   // the version 2's sound (lot V8): the district's ambience and its piece of the band (journal Passe SN10: a new game's first page opens on the title); today's game makes none
   if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed, { opening: b.params.has('new') }, parseWeather(q)));

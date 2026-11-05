@@ -375,11 +375,21 @@ export class ArenaApp {
     });
     window.addEventListener('keyup', (e) => { const k = e.key.toLowerCase(); if (this.charge) { if (V2_HELD[k]) this.action(V2_HELD[k], false); } else if (k === 'b') this.action('guard', false); });
     window.addEventListener('blur', () => { this.action('guard', false); if (this.charge) this.action('attack', false); });
+    // the version 2's charged duel reads the shared gamepad (the operator's MN-5 « Les deux : X, B, A et les gâchettes en double », journal Passe MN2):
+    // whichever pad was used last, X or RT the attack held, B or LT the guard held, A the dodge, Start the pause, View the page's restart; the
+    // bands before and after the bout answer it as pages; the player's hits make it rumble (MN-9). Every other arena keeps pollPad, as before
+    if (this.charge) void import('../input/PadInput').then((m) => {
+      this.pad = m.installPad({ duel: (id, down) => { this.action(id, down); if (down) this.hud?.flash(id); }, sound: () => import('../audio/Sound').then((s) => s.sound()) });
+    });
   }
+  /** the shared gamepad of a version 2 duel (src/input/PadInput.ts) */
+  private pad: { duelEvents(evs: ReadonlyArray<{ type: string } & Record<string, unknown>>): void } | null = null;
 
   private padPrev: boolean[] = [];
   /** gamepad (the prototype's mapping): A dodge, B guard, X / Y light / heavy, shoulders and triggers the techniques, Start pause, Back reset */
   private pollPad(): void {
+    // the version 2's charged duel: the shared gamepad reads it (bindInput)
+    if (this.charge) return;
     const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
     const p = pads && pads[0]; if (!p) return;
     const PAD: Record<number, string> = this.charge ? V2_PAD : this.dyn ? dynPad(this.dyn.D.loadout) : { 0: 'dodge', 1: 'guard', 2: 'light', 3: 'heavy', 4: 't1', 5: 't2', 6: 't3', 7: 't4', 9: 'pause', 8: 'reset' };
@@ -404,6 +414,7 @@ export class ArenaApp {
   private onEvents(evs: Array<CombatEvent | DynEvent>): void {
     this.combatFx?.onEvents(evs, this.fighters, this.charge?.tiers.length ?? 0);
     this.stands?.onEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
+    this.pad?.duelEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>);
     for (const e of evs) {
       this.snd?.duelEvent(e);
       if (e.type === 'impact') {

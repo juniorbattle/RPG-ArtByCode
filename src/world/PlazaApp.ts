@@ -142,6 +142,9 @@ export class PlazaApp {
   vis: Record<string, unknown> = { off: true };
   buildMs = 0;
   keys = new Set<string>();
+  /** a version 2 game's gamepad (journal Passe MN2, src/input/PadInput.ts): x to the screen's right, y up the screen, its speed as a share of the
+   *  walk and its run; read only while no movement key is held */
+  pad: { x: number; y: number; speed: number; run: boolean } | null = null;
   private readonly ndc = new THREE.Vector3();
   /** the hero walked this frame (a key held, not locked) */
   moving = false;
@@ -345,8 +348,10 @@ export class PlazaApp {
 
   /** the hero walks (arrows or WASD, relative to the camera), the crowd walks its points, the people idle at their spots */
   private walk(dt: number): void {
-    const k = this.keys, ix = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0), iz = (k.has('s') || k.has('arrowdown') ? 1 : 0) - (k.has('w') || k.has('arrowup') ? 1 : 0);
-    const P = this.player, speed = (this.cast?.get('player')?.walkSpeed ?? 3.2) * (k.has('shift') ? 1.2 : 1);
+    const k = this.keys, kx = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0), kz = (k.has('s') || k.has('arrowdown') ? 1 : 0) - (k.has('w') || k.has('arrowup') ? 1 : 0);
+    // the gamepad's walk while no movement key asks for one (journal Passe MN2: the stick's tilt sets the speed, B held runs, MN-2)
+    const pw = !kx && !kz ? this.pad : null, ix = pw ? pw.x : kx, iz = pw ? -pw.y : kz;
+    const P = this.player, speed = (this.cast?.get('player')?.walkSpeed ?? 3.2) * (k.has('shift') || pw?.run ? 1.2 : 1) * (pw ? pw.speed : 1);
     this.moving = !!(ix || iz) && !this.locked;
     if (!ix && !iz) this.moveYaw = null;
     if ((ix || iz) && !this.locked) {
@@ -354,7 +359,7 @@ export class PlazaApp {
       const dx = (ix * c + iz * s) / n, dz = (-ix * s + iz * c) / n;
       const [nx, nz] = walkTo(this.place, P.pos.x, P.pos.z, P.pos.x + dx * speed * dt, P.pos.z + dz * speed * dt);
       P.pos.x = nx; P.pos.z = nz;
-      P.dir = fiveViewFacing(P.dir, ix, -iz) as Dir; P.flip = ix > 0; P.anim = 'walk' as Anim; P.t += dt;
+      P.dir = fiveViewFacing(P.dir, ix, -iz) as Dir; P.flip = ix > 0; P.anim = 'walk' as Anim; P.t += pw ? dt * pw.speed : dt;
     } else { P.anim = 'idle' as Anim; P.t += dt; if (P.dir === 'downSide' || P.dir === 'upSide') P.dir = 'side'; }
     for (const a of this.people) {
       a.t += dt;

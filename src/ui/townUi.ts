@@ -16,6 +16,10 @@ import { itemName, weaponTier } from '../simulation/v2gear';
 import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
+import { tabTo } from '../input/pad';
+
+/** the menu's pages a gamepad's shoulders walk through (journal Passe MN2, MN-4) */
+type MenuPage = 'map' | 'journal' | 'board' | 'skills' | 'gear' | 'sound';
 
 /** The play mode's interface in a place (journal Passes L4 / UM3; choice K1: English; direction A « Voile »): exploring, the state and one prompt,
  *  nothing else (UM-R2): the day and the slot top left (the clock and the next deadline, TOURNAMENT § 11), the figures top right, E next to someone at
@@ -320,7 +324,16 @@ export class TownUi {
     return r;
   }
   private current: HTMLElement | null = null;
-  private closeModal(): void { if (this.current) { this.current.remove(); this.current = null; } document.body.classList.remove('pm-talking'); if (this.modal) this.host.focus?.(null); this.modal = false; this.back = null; }
+  private closeModal(): void { if (this.current) { this.current.remove(); this.current = null; } document.body.classList.remove('pm-talking'); if (this.modal) this.host.focus?.(null); this.modal = false; this.back = null; this.shownPage = null; }
+  /** the menu's page shown now (a gamepad's shoulders go to its neighbour: journal Passe MN2, MN-4) */
+  private shownPage: MenuPage | null = null;
+  /** a version 2 game's gamepad, LB / RB on one of the menu's pages: the page before or after it, in the menu's order (MN-4) */
+  tabPage(dir: -1 | 1): void {
+    const pages: MenuPage[] = isV2(this.st) ? ['map', 'journal', 'board', 'skills', 'gear', 'sound'] : ['map', 'journal', 'board'];
+    const to = tabTo(pages, this.shownPage, dir);
+    if (to === 'map') this.openMap(); else if (to === 'journal') this.openJournal(); else if (to === 'board') this.openBoard();
+    else if (to === 'skills') this.openSkills(false); else if (to === 'gear') this.openGear(); else if (to === 'sound') void this.openSound();
+  }
   /** where Esc leads from a page opened from a dialogue */
   private back: (() => void) | null = null;
   private leave(): void { const b = this.back; this.closeModal(); b?.(); }
@@ -362,6 +375,7 @@ export class TownUi {
       state: () => this.st, act: (a) => this.host.act(a), close: () => this.closeModal(),
       enter: enter ? () => { writeSave(this.st); this.closeModal(); this.host.reload({ scene: 'arena' }); } : undefined,
     }, enter ? this.matchSheetHtml(s) : null));
+    if (!enter) this.shownPage = 'skills';
   }
 
   /** P6 (lot V9): the bout's stage, the opponent (face, name, style), what the player knows of their skills, the gear worn, an ally's advice */
@@ -376,7 +390,7 @@ export class TownUi {
   }
 
   /** the version 2's gear (lot V3) and the bag: the page of the shops without a keeper (src/ui/wares.ts, UM7-3) */
-  openGear(): void { if (this.st.v2?.gear) this.openWares(null); }
+  openGear(): void { if (this.st.v2?.gear) { this.openWares(null); this.shownPage = 'gear'; } }
 
   /** a keeper's goods, from their dialogue (UM7-3); Esc goes back to them */
   openShop(who: string): void { this.openWares(who); this.back = () => this.openPerson(who); }
@@ -401,8 +415,17 @@ export class TownUi {
     const mute = el('button', 'pm-btn', `<kbd>N</kbd>${snd.settings.muted ? tx('v2.sound.unmute') : tx('v2.sound.mute')}`);
     mute.addEventListener('click', () => { snd.set({ muted: !snd.settings.muted }); void this.openSound(); });
     body.appendChild(mute);
+    // a version 2 game's gamepad (journal Passe MN2, MN-9 « Oui, discrète, avec un interrupteur sur la page du son »): its vibration's switch,
+    // once a pad was seen on this page (a page without one shows the sound page as before)
+    const padIn = await import('../input/PadInput');
+    if (padIn.pad()?.seen) {
+      const vib = el('button', 'pm-btn', `<i class="pm-check"></i><span>${tx('v2.sound.vibration')}</span>`);
+      vib.setAttribute('aria-pressed', String(padIn.padSettings().vibration));
+      vib.addEventListener('click', () => { padIn.setPadSettings({ vibration: !padIn.padSettings().vibration }); vib.setAttribute('aria-pressed', String(padIn.padSettings().vibration)); });
+      body.appendChild(vib);
+    }
     const close = footBtn('Esc', tx('ui.close'), () => this.closeModal()); foot.appendChild(close); close.classList.add('out');
-    document.body.appendChild(root); this.current = root; close.focus();
+    document.body.appendChild(root); this.current = root; this.shownPage = 'sound'; close.focus();
   }
 
   private openMap(): void {
@@ -414,13 +437,13 @@ export class TownUi {
     for (const o of moves) { const b = this.optionButton(o); b.querySelector('.cost.free')?.remove(); body.appendChild(b); }
     const close = footBtn('Esc', tx('ui.close'), () => this.closeModal()); foot.appendChild(close); close.classList.add('out');
     arrowKeys(card);
-    document.body.appendChild(root); this.current = root;
+    document.body.appendChild(root); this.current = root; this.shownPage = 'map';
     ((card.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement) ?? close).focus();
   }
 
-  private openJournal(): void { this.page(); this.show(journalPage(this.st, () => this.closeModal())); }
+  private openJournal(): void { this.page(); this.show(journalPage(this.st, () => this.closeModal())); this.shownPage = 'journal'; }
 
-  private openBoard(): void { this.page(); this.show(boardPage(this.st, standings(this.st), () => this.closeModal())); }
+  private openBoard(): void { this.page(); this.show(boardPage(this.st, standings(this.st), () => this.closeModal())); this.shownPage = 'board'; }
 
   private show(p: { root: HTMLElement; focus(): void }): void { document.body.appendChild(p.root); this.current = p.root; p.focus(); }
 

@@ -50,6 +50,9 @@ export const CHARGE_TEXTS_EN: ChargeTexts = { attack: 'Attack', holdSub: 'hold: 
  *  assistance, takes it); a short window (600 px high or less, journal Passe AF1) keeps only the attack button, its label the tier a release
  *  launches */
 const CHARGE_CSS = `
+#ah-pause .pad-only{display:none}
+body.pm-pad #ah-pause .pad-only{display:flex;justify-content:center;align-items:center;gap:10px}
+body.pm-pad #ah-pause .kb{display:none}
 #ah-tiers{position:absolute;left:50%;bottom:100px;transform:translateX(-50%);display:flex;gap:18px;pointer-events:none;opacity:0;transition:opacity .12s}
 #ah-tiers.on{opacity:1}
 #arena-hud.wb #ah-tiers{opacity:0}
@@ -161,7 +164,7 @@ export class DynamicHud {
       <div id="ah-alert"><b></b><span></span></div>
       <div id="ah-dmg"></div><div id="ah-wbar" aria-hidden="true"><i></i><b>${t.window}<kbd>${charge ? 'L' : 'A'}</kbd></b></div>${tiers}<div id="ah-bar">${buttons}</div>
       <div id="ah-ko" role="status"><div><b></b><span>${t.restart}</span></div></div>
-      <div id="ah-pause" role="status"><div><b>${t.pause}</b><span>${t.resume}</span></div></div>
+      <div id="ah-pause" role="status"><div><b>${t.pause}</b>${charge ? `<span class="kb">${t.resume}</span><span class="pad-only"><kbd>Space</kbd>${t.resumePad ?? ''}</span>` : `<span>${t.resume}</span>`}</div></div>
       <div id="ah-rotate" role="alert"><div><b>${t.title}</b><span>${t.rotate}</span></div></div>`;
     document.body.appendChild(this.el);
     for (const who of ['ren', 'marek'] as DynFighterId[]) {

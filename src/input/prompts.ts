@@ -21,9 +21,13 @@ export class Prompts {
 
   get current(): PromptMode | null { return this.mode; }
 
+  /** a mode held by the review (?padglyph=): the pad's own changes leave it */
+  private forced = false;
+  force(mode: PromptMode): void { this.forced = false; this.set(mode); this.forced = true; }
+
   /** the pad's family and style, or null: the keys */
   set(mode: PromptMode | null): void {
-    if (mode?.family === this.mode?.family && mode?.style === this.mode?.style) return;
+    if (this.forced || (mode?.family === this.mode?.family && mode?.style === this.mode?.style)) return;
     this.mode = mode ? { ...mode } : null;
     this.changes.push(mode ? `${mode.family}:${mode.style}` : 'keys');
     if (mode) {
@@ -67,11 +71,15 @@ export class Prompts {
   }
 }
 
+let shared: Prompts | null = null;
+/** the page's one set of caps (the pad's layer and the review share it) */
+export function prompts(): Prompts { return (shared ??= new Prompts()); }
+
 /** DEV only, for the review of journal Passe MN1: `padglyph=xbox|ps|nintendo[:outline|colour|word]` shows every cap as the pad's, no pad needed */
 export function reviewPrompts(params: URLSearchParams): Prompts {
   const [family, style = 'outline'] = (params.get('padglyph') ?? 'xbox').split(':');
-  const p = new Prompts();
-  const on = () => p.set({ family: (['xbox', 'ps', 'nintendo'].includes(family) ? family : 'xbox') as PadFamily, style: (['outline', 'colour', 'word'].includes(style) ? style : 'outline') as GlyphStyle });
+  const p = prompts();
+  const on = () => p.force({ family: (['xbox', 'ps', 'nintendo'].includes(family) ? family : 'xbox') as PadFamily, style: (['outline', 'colour', 'word'].includes(style) ? style : 'outline') as GlyphStyle });
   if (document.body) on(); else addEventListener('DOMContentLoaded', on);
   (window as unknown as { __prompts: Prompts }).__prompts = p;
   return p;

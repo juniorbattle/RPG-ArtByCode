@@ -54,7 +54,10 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   const from = st.place, ways = new ExitMarkers(app.place.exits.map((e) => ({ to: e.to, anchor: e.anchor })));
   (window as any).__exits = ways;
   const leave = (to: typeof from) => { const r = (window as any).__game.act({ type: 'move', to }); if (r.ok) go(b.params, { arrive: from }); else location.reload(); };
-  const frame = () => { if (ui.modal) app.keys.clear(); ui.update(); ways.update(app.camera, app.player.pos, ui.modal ? null : app.exitTaken()?.to ?? null, leave); requestAnimationFrame(frame); };
+  // the gamepad (the operator's sheet of journal Passe MN2): its walk, its pages' shoulders, the sound it may wake; loaded on demand, it does
+  // nothing until a pad is used
+  void import('../input/PadInput').then((m) => m.installPad({ walk: (w) => { app.pad = w; }, tab: (d) => ui.tabPage(d), sound: () => import('../audio/Sound').then((s) => s.sound()) }));
+  const frame = () => { if (ui.modal) { app.keys.clear(); app.pad = null; } ui.update(); ways.update(app.camera, app.player.pos, ui.modal ? null : app.exitTaken()?.to ?? null, leave); requestAnimationFrame(frame); };
   frame();
   app.start();
   // the version 2's sound (lot V8): the square's ambience and the day state's music, after the person's first gesture

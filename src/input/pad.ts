@@ -48,6 +48,11 @@ export function walkOf(p: PadSnapshot, tiltRuns = false): { x: number; y: number
 
 /** where the game listens: walking about (`explore`), a page, a list or a dialogue (`page`), a cutscene's line (`scene`), the duel (`duel`) */
 export type PadContext = 'explore' | 'page' | 'scene' | 'duel';
+/** the context a page is in, from what it shows: a cutscene's line, a modal page (a list, a dialogue, a sheet, the title screen), else the duel or
+ *  walking about when the page plays them (null: the pad does nothing here) */
+export function contextOf(s: { scene: boolean; modal: boolean; duel: boolean; explore: boolean }): PadContext | null {
+  return s.scene ? 'scene' : s.modal ? 'page' : s.duel ? 'duel' : s.explore ? 'explore' : null;
+}
 
 /** the keys a button presses for the page, by context: the pad presses the keys the interface shows, so every page answers it through its own
  *  keyboard code (MN-3, MN-4, MN-6). Exploring: A talks (E), Y the list (Q), Start the menu (Esc), View the map (M). A page: A its action
@@ -57,6 +62,21 @@ export const KEYS: Record<Exclude<PadContext, 'duel'>, Partial<Record<Btn, strin
   page: { [BTN.A]: 'Enter', [BTN.B]: 'Escape', [BTN.X]: ' ', [BTN.START]: 'Escape' },
   scene: { [BTN.A]: 'Enter', [BTN.START]: 'Escape' },
 };
+/** a page's shoulders (MN-4): the menu's neighbouring page, before and after */
+export const TAB: Partial<Record<Btn, -1 | 1>> = { [BTN.LB]: -1, [BTN.RB]: 1 };
+
+/** the next item of a list of `n` from item `i` (-1: none yet) by `delta`, around its ends: none yet goes to the first (forward) or the last */
+export function stepIndex(n: number, i: number, delta: number): number {
+  if (n <= 0) return -1;
+  if (i < 0 || i >= n) return delta >= 0 ? 0 : n - 1;
+  return (((i + delta) % n) + n) % n;
+}
+
+/** the page a shoulder opens among the menu's pages (MN-4), from the one shown (null: none of them, nothing opens) */
+export function tabTo<T>(pages: readonly T[], shown: T | null, dir: -1 | 1): T | null {
+  const i = shown === null ? -1 : pages.indexOf(shown);
+  return i < 0 ? null : pages[stepIndex(pages.length, i, dir)];
+}
 
 /** the version 2's duel (MN-5): X or RT attack (held: the charge), B or LT guard (held), A dodge, Start pause, View the scene page's restart;
  *  the triggers let a charge and the guard be held together while the thumb stays on the dodge. Today's V2_PAD (X, B, A) is kept whole in it */
@@ -126,7 +146,7 @@ export type CapPlace = 'hints' | 'scene' | 'arena' | 'menu' | 'other';
  *  'hide' for a keyboard shortcut the pad reaches through the menu (the menu's J, T, K, G, V; N the mute); null for a cap left as it is */
 export function capButton(key: string, where: CapPlace): Btn | 'hide' | null {
   const k = key.trim();
-  if (where === 'arena') return ({ J: BTN.X, '1': BTN.X, K: BTN.B, L: BTN.A, A: BTN.A, B: BTN.B, R: BTN.VIEW } as Record<string, Btn>)[k] ?? null;
+  if (where === 'arena') return ({ J: BTN.X, K: BTN.B, L: BTN.A, R: BTN.VIEW, Space: BTN.START } as Record<string, Btn>)[k] ?? null;
   if (k === 'Esc') return where === 'hints' || where === 'scene' ? BTN.START : BTN.B;
   if (k === 'E' || k === 'Enter') return BTN.A;
   if (k === 'Space') return BTN.X;
