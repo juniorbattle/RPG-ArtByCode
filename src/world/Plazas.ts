@@ -98,9 +98,9 @@ export const PLAZA_WALKS: Record<PlazaKind, Readonly<Rect>> = { forecourt: W, tr
  *  on the way, the guards at the gate; the master by the gallery's passage, the champions' ring, the butts, the stair's foot, the dummy (journal
  *  Passe VP9); the puppets, the stalls, the arcades, the stage's foot under the hall (« proposé ») */
 export const PLAZA_SPOTS: Record<PlazaKind, Record<string, [number, number]>> = {
-  forecourt: { odo: [-7.9, -10.6], hilde: [7.5, -0.8], anwen: [-7.6, -0.6], guardA: [-2.3, -15.9], guardB: [2.3, -15.9], marek: [5.6, -6.8], orla: [-5.2, -2.6], vessa: [-1.6, -12.6], ilse: [6.2, -11.6] },
+  forecourt: { odo: [-7.9, -10.6], hilde: [7.5, -0.8], anwen: [-7.6, -0.6], guardA: [-2.3, -15.9], guardB: [2.3, -15.9], marek: [5.6, -6.8], orla: [-5.2, -2.6], vessa: [-1.6, -12.6], ilse: [6.2, -11.6], edda: [-4.2, -7.4] },
   training: { corvin: [-12.6, 3.8], orla: [-3.4, -0.2], ilse: [1.0, -6.2], vessa: [-2.6, -6.8], drill: [11.2, -7.2] },
-  festival: { pip: [-8.4, -5.2], lio: [-7.0, -9.0], cassius: [6.6, -4.6], bard: [-1.2, -10.4] },
+  festival: { pip: [-8.4, -5.2], lio: [-7.0, -9.0], cassius: [6.6, -4.6], bard: [-1.2, -10.4], sela: [3.0, -5.2] },
 };
 /** the moments of a square's day: the day states' three and the night (the evening) */
 export type PlazaPeriod = 'morning' | 'midday' | 'afternoon' | 'night';

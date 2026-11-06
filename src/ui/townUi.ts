@@ -13,6 +13,7 @@ import { tx } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
 import { stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
 import { itemName, weaponTier } from '../simulation/v2gear';
+import { suspicionOf } from '../simulation/v2law';
 import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
@@ -239,12 +240,17 @@ export class TownUi {
     this.status.innerHTML = `<div class="clock">${tx('ui.clockDay', { day: s.day })} <span>${tx('ui.clockOf', { days })}</span></div>
       <div class="ticks">${Array.from({ length: days }, (_, i) => `<i class="${i + 1 < s.day ? 'on' : i + 1 === s.day ? 'cur' : ''}"></i>`).join('')}</div>
       <div class="where">${esc(slotName[0].toUpperCase() + slotName.slice(1))} · ${esc(place)}</div><div class="next">${esc(next)}</div>`;
-    this.figs.innerHTML = `<div><b>${P.coins}</b><small>${tx('ui.coins')}</small></div><div><b>${P.reputation}</b><small>${tx('ui.reputation')}</small></div>${P.injury ? `<div class="hurt"><b>${P.injury}</b><small>${P.injury > 1 ? tx('ui.badlyHurt') : tx('ui.hurt')}</small></div>` : ''}`;
+    // a version 2 game (lot L2a, EV-2): the watch's suspicion beside the reputation, only once there is some (two numbers apart)
+    const sus = v2 ? suspicionOf(s) : 0;
+    this.figs.innerHTML = `<div><b>${P.coins}</b><small>${tx('ui.coins')}</small></div><div><b>${P.reputation}</b><small>${tx('ui.reputation')}</small></div>${sus > 0 ? `<div class="hurt"><b>${sus}</b><small>${tx('ui.suspicion')}</small></div>` : ''}${P.injury ? `<div class="hurt"><b>${P.injury}</b><small>${P.injury > 1 ? tx('ui.badlyHurt') : tx('ui.hurt')}</small></div>` : ''}`;
     const bout = this.boutNow();
     this.hereKey.className = `pm-btn${bout ? ' primary' : ''}`;
-    this.hereKey.innerHTML = `<kbd>Q</kbd>${bout ? (s.v2?.challenge ? tx('v2.challenge.enter') : tx('ui.enterArena')) : tx('ui.here')}`;
+    this.hereKey.innerHTML = `<kbd>Q</kbd>${bout ? (s.v2?.challenge ? this.sandLabel(s) : tx('ui.enterArena')) : tx('ui.here')}`;
     if (this.current?.dataset.here) this.openHere();
   }
+
+  /** the sand's door: a challenge, or a reprisal's muscle waiting there (lot L2b) */
+  private sandLabel(s: GameState): string { const c = s.v2?.challenge; return c?.reprisal ? tx('v2.reprisal.enter', { name: esc(PEOPLE[c.who]?.name ?? c.who) }) : tx('v2.challenge.enter'); }
 
   /** the list on demand (UM-R2, Q): what can be done here and now, the rest and the wait, the people; a band at the foot of the screen, as a dialogue */
   openHere(): void {
@@ -266,7 +272,7 @@ export class TownUi {
     }
     // the version 2: a challenge waits on the sand (lot V4)
     if (s.v2?.challenge) {
-      const b = el('button', 'pm-btn primary', `<span>${tx('v2.challenge.enter')}</span><span class="cost">${tx('ui.oneSlot')}</span>`);
+      const b = el('button', 'pm-btn primary', `<span>${this.sandLabel(s)}</span><span class="cost">${tx('ui.oneSlot')}</span>`);
       b.addEventListener('click', () => { writeSave(s); this.host.reload({ scene: 'arena', challenge: '1' }); }); list.appendChild(b);
     }
     for (const o of opts) list.appendChild(this.optionButton(v2 && (o.action.type === 'rest' || o.action.type === 'wait') ? { ...o, label: o.action.type === 'rest' ? tx('v2.self.rest') : tx('v2.self.wait') } : o));

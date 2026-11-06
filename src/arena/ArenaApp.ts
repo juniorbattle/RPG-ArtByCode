@@ -67,6 +67,8 @@ export interface ArenaMatch {
   tiers?: ChargeTier[];
   /** the band's piece of the bout (src/audio/plan.ts `boutPiece`, journal Passe SN10): the duel, the rival or the finale by the tournament's stage */
   piece?: PieceId;
+  /** a bout on the empty stands (lot L2b, EV-5 « L’arène aux gradins vides », journal Passe EVL3): a challenge or a reprisal in town, no spectator, no crowd */
+  empty?: boolean;
   onOver?: (r: { winner: FighterId; hp: Record<FighterId, number>; maxHp: Record<FighterId, number>; finisher: string | null; t: number }) => void;
 }
 /** the forecourt's walking mode (journal Passe L6): no bout; the hero walks the sand (arrows or A / D, W / S), Marek drills by the ring; the
@@ -178,7 +180,7 @@ export class ArenaApp {
       const t = opts.params.get('time'), look = t === 'morning' || t === 'midday' || t === 'afternoon' ? t : 'night', m0 = opts.params.get('music');
       const piece: PieceId = opts.match?.piece ?? (m0 === 'rival' || m0 === 'finale' ? m0 : 'duel'), maxHp = { ren: v.dyn.f.ren.maxHp, marek: v.dyn.f.marek.maxHp };
       void import('../audio/Sound').then((m) => {
-        const snd = m.sound(); this.snd = snd as unknown as { duelEvent(e: unknown): void }; snd.setScene('arena', look, false, 1842, { bout: piece, maxHp, tiers: this.charge?.tiers.length });
+        const snd = m.sound(); this.snd = snd as unknown as { duelEvent(e: unknown): void }; snd.setScene('arena', look, false, 1842, { bout: piece, maxHp, tiers: this.charge?.tiers.length, ...(opts.match?.empty ? { empty: true } : {}) });
         window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'n' && !e.repeat) snd.set({ muted: !snd.settings.muted }); });
       });
     }
@@ -294,13 +296,13 @@ export class ArenaApp {
     this.scene.add(this.floor.mesh);
     if (fxOn(this.rules, this.opts.params)) this.combatFx = (await import('./fx/combatFx')).installCombatFx(this.scene, this.camera, this.opts.params, { foe: this.foe, guardReach: (who) => { const r = ((import.meta.env.DEV && this.densityTrial) || this.sheets) && this.set.reach[`${who}/block.0`]; return r ? r * PIXEL_WORLD * CHAR_SCALE : null; }, lights: this.lights, shake: (k) => { this.shake = Math.max(this.shake, k); }, timeScale: (k) => { this.timeScale = k; }, renderHeight: () => this.post.height });
     // a version 2 duel: the district's townsfolk on the stands (journal Passe PU1, the operator's sheet PU-1 to PU-8); `cast=generated` keeps today's spectators
-    if (this.rules === 'v2' && !this.opts.forecourt && this.opts.params.get('cast') !== 'generated') {
+    if (this.rules === 'v2' && !this.opts.forecourt && !this.opts.match?.empty && this.opts.params.get('cast') !== 'generated') {
       this.stands = await (await import('./StandsCast')).installStands({ charScale: CHAR_SCALE, edgeGain: this.look ? lum(NIGHT_MOON) / lum(this.look.sunCol) : 1, shade: (await import('./CombatSheets')).shadeFor(this.opts.params.get('time')) });
       this.scene.add(this.stands.group);
     }
     // spectators on the tiers: the town's crowd archetypes, front view, idling and cheering in turn
     let k = 0;
-    for (const st of this.stands ? [] : this.arena.stands) {
+    for (const st of this.stands || this.opts.match?.empty ? [] : this.arena.stands) {
       const h = Math.abs(Math.sin(st.pos[0] * 91.7 + st.pos[2] * 13.3 + k));
       this.fans.push({ id: 100 + k, spec: `fan${Math.floor(h * 997) % this.set.crowd.length}`, role: 'fan', detail: 'crowd', pos: new THREE.Vector3(...st.pos), facing: 'down', dir: 'down', flip: h > 0.5, anim: 'idle', t: h * 10, speed: 0, tint: [0.5, 0.56, 0.74], scale: 0.62, height: 1.4, radius: 0.3 });
       this.fanCheer.push(-10);

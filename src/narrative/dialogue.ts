@@ -5,6 +5,7 @@ import { tx } from './text';
 import { v2Lines } from './v2story';
 import { isV2 } from '../simulation/v2';
 import { skillPrice } from '../simulation/v2skills';
+import { PEOPLE } from './people';
 
 /** What the town's people say (journal Passe L4; GAMEPLAY § 8: the city reacts to the tournament, the player's fame, the sabotage, the
  *  hour, readable without a debug screen). Lines are chosen from the state: the slot, the pulse, the facts learnt, the quests, the results.
@@ -51,6 +52,8 @@ export function linesOf(s: GameState, who: string): string[] {
       if (s.quests.cargo === 'asked') out.push(tx('line.hale.cargo'));
       if (s.facts.includes('forge-burned') && !s.flags.reported) out.push(tx('line.hale.forge'));
       if (night) out.push(tx('line.hale.night'));
+      // a version 2 game (lot L2a, EV-2): the sergeant says what his ledger holds and how a name leaves it
+      if (isV2(s) && (s.v2?.suspicion ?? 0) > 0) out.push(tx('v2.line.hale.ledger', { n: s.v2!.suspicion! }));
       return out;
     }
     case 'wynn':
@@ -112,6 +115,16 @@ export function linesOf(s: GameState, who: string): string[] {
       return [s.slot === 'morning' ? tx('line.drill.bout') : tx('line.drill.day')];
     case 'bard':
       return [s.player.reputation >= 40 ? tx('line.bard.famous', { name }) : night ? tx('line.bard.night') : tx('line.bard.day')];
+    // the version 2's generic fighters (lot L2b); Tobin and Rhosk on the training ground after the cut, in the title's race or out of it
+    case 'aldric': return [tx(s.v2?.gear?.armour === 'knight-hauberk' || s.v2?.gear?.bag.includes('knight-hauberk') ? 'v2.line.aldric.hauberk' : 'v2.line.aldric')];
+    case 'corra': return [s.v2?.reprisal ? tx('v2.line.corra.reprisal', { name: PEOPLE[s.v2.reprisal.by]?.name ?? s.v2.reprisal.by }) : tx('v2.line.corra')];
+    case 'ambrose': return [tx('v2.line.ambrose')];
+    case 'tobin': case 'rhosk': return [tx(s.competitors[who]?.phaseStatus === 'gate' ? (who === 'tobin' ? 'v2.line.tobin.out' : 'v2.line.rhosk.out') : who === 'tobin' ? 'v2.line.tobin.in' : 'v2.line.rhosk.in')];
+    // the version 2's passers-by (lot L2a): their piece, or what is left once it has gone
+    case 'fenwick': case 'edda': case 'sela': {
+      const gone = s.v2?.passed?.[who] !== undefined;
+      return [tx(who === 'fenwick' ? (gone ? 'v2.line.fenwick.gone' : 'v2.line.fenwick') : who === 'edda' ? (gone ? 'v2.line.edda.gone' : 'v2.line.edda') : gone ? 'v2.line.sela.gone' : 'v2.line.sela')];
+    }
     case 'lio':
       return [tx('line.lio.talk', { rhosk: RIVALS.rhosk.name, ilse: RIVALS.ilse.name, cassius: RIVALS.cassius.name })];
     default:

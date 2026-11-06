@@ -83,7 +83,9 @@ test('the crowd by the moment: the children by day only, the noblewoman from mid
   for (const p of ['midday', 'afternoon']) assert.equal(new Set(turn(p)).size, 10, p);
   assert.deepEqual(turn('morning').filter((c) => c.startsWith('citizen')).sort(), ['citizen-errand-boy', 'citizen-girl', 'citizen-vendor', 'citizen-wayfarer']);
   assert.deepEqual(turn('night').filter((c) => c.startsWith('citizen')).sort(), ['citizen-vendor', 'citizen-wayfarer']);
-  assert.ok(app.includes("filter((c) => c.startsWith('crowd') || this.cast?.has(c))"), 'no citizen under cast=generated');
+  // (a citizen standing as a passer-by of lot L2a leaves the turn while it stands: Lady Edda the noblewoman, Sela the wayfarer)
+  assert.ok(app.includes("filter((c) => (c.startsWith('crowd') || this.cast?.has(c)) && !standing.has(c))"), 'no citizen under cast=generated, none twice');
+  assert.ok(/edda: 'citizen-noble', sela: 'citizen-wayfarer'/.test(app), 'the passers-by stand as the citizens\' sheets');
 });
 
 test("the texture holds a square's sheets", () => {

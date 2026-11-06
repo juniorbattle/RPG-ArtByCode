@@ -4,7 +4,12 @@ import type { Emit } from './advance';
 import { isV2 } from './v2';
 import { learnFromChallenge } from './v2skills';
 import { GEAR, SHOPS, type ShopId } from './gear';
-import { gearOf, itemName, shopOpen } from './v2gear';
+import { gearOf, itemName } from './v2gear';
+import { LAW, holds, recordTheft, registrarOnCatch, suspicionOf } from './v2law';
+import { PASSERS, passerOpen, passersHere } from './v2barter';
+import { applyReprisal } from './v2law';
+import { GENERICS, MUSCLE } from '../narrative/generics';
+import { LATE_TEACHER, taughtBy } from '../combat/skillbook';
 import { playerMatch } from '../tournament/pool';
 import { PEOPLE, placeOf, presentAt } from '../narrative/people';
 import { RIVALS } from '../narrative/roster';
@@ -24,15 +29,44 @@ import type { DuelOutcome } from '../tournament/pool';
  *    day (the other districts' shops stay open: GAMEPLAY § 10's designed alternative); never a dead end (no jail: the escape the project
  *    contract's anti-frustration rule asks for). Every number is « proposé ». Pure. */
 
-/** the fighters a challenge can be put to, where and when (a version 2 person or a rival met in town) */
-export const CHALLENGERS: Record<string, { hp: number }> = { orla: { hp: 0.5 }, vessa: { hp: 0.5 }, ilse: { hp: 0.5 } };
+/** the three a challenge can be put to from the first day (where and when they stand: src/narrative/people.ts) */
+export const CHALLENGERS: Record<string, true> = { orla: true, vessa: true, ilse: true };
 
-export function haggleChance(s: GameState, shop: ShopId): number {
-  return clamp(0.25 + s.player.reputation / 200 + (s.town[SHOPS[shop].keeper] ?? 0) / 200, 0.1, 0.85);
+/** a challenge's stake (lot L2b, the operator's EV-3 « Pleine vie, une mise, une fois par phase », journal Passe EVL3): coins put on the table at once
+ *  and won back twice, or a share of one's name won or lost at the result (« proposé ») */
+export const STAKE = { coins: 10, name: 5 } as const;
+export type Stake = keyof typeof STAKE;
+/** a fighter is challenged once per phase: before the cut (days 1 to 5), then after it (days 6 to 10) */
+export const phaseOf = (day: number): 1 | 2 => (day <= 5 ? 1 : 2);
+/** a rival's bout today (the pool or the bracket) */
+const fightsToday = (s: GameState, who: string): boolean => s.tournament.matches.some((m) => m.day === s.day && (m.a === who || m.b === who));
+/** can this fighter be challenged now (lot L2b, EV-4 « Les trois, puis les éliminés à partir du jour 6 »): the three from the first day, the generic fighters
+ *  (the qualifiers' losers), and from day 6 a rival out of the title (one of the cut's four others) on a day without a bout of theirs; null, or why not */
+export function challengeable(s: GameState, who: string): string | null {
+  const p = PEOPLE[who];
+  if (!p) return tx('v2.challenge.who');
+  if (CHALLENGERS[who] || GENERICS[who]) return null;
+  const c = s.competitors[who];
+  if (!RIVALS[who] || !c || s.day < 6) return tx('v2.challenge.who');
+  if (c.phaseStatus !== 'gate') return tx('v2.challenge.crown', { name: p.name });
+  return fightsToday(s, who) ? tx('v2.challenge.fights', { name: p.name }) : null;
 }
+/** the fighters a challenge can be offered to at this place: the three, the generic fighters, and from day 6 the rivals in town */
+const candidates = (s: GameState): string[] => Object.values(PEOPLE).filter((p) => placeOf(p, true) === s.place && (CHALLENGERS[p.id] || GENERICS[p.id] || (s.day >= 6 && RIVALS[p.id]))).map((p) => p.id);
+const fighterName = (who: string): string => PEOPLE[who]?.name ?? GENERICS[who]?.name ?? RIVALS[who]?.name ?? who;
+
+/** a stall forced at night (lot L2a, EV-2: « La nuit, les étals fermés se forcent : plus facile, puni plus fort »): a day shop shut at dusk */
+export const forced = (s: GameState, shop: ShopId): boolean => s.slot === 'evening' && !SHOPS[shop].open.includes('evening');
+
 export function stealChance(s: GameState, shop: ShopId): number {
-  // the watch on alert the day after a theft was caught (lot V7, the event v2-quay-alert): a sixth less
-  return clamp((s.slot === 'evening' ? 0.6 : 0.3) + (60 - s.pulse.security) / 200 - (s.town[SHOPS[shop].keeper] ?? 0) / 400 - (s.flags[`alert:${s.day}`] ? 0.15 : 0), 0.05, 0.85);
+  // the watch on alert the day after a theft was caught (lot V7, the event v2-quay-alert): a sixth less; the watch's eye on a suspect (lot L2a);
+  // a shuttered stall at night is easier, unless the watch the player paid walks that quay
+  const night = forced(s, shop) ? 0.7 - (s.place === 'district' && s.services.forgeWatch ? 0.25 : 0) : s.slot === 'evening' ? 0.6 : 0.3;
+  return clamp(night + (60 - s.pulse.security) / 200 - (s.town[SHOPS[shop].keeper] ?? 0) / 400 - (s.flags[`alert:${s.day}`] ? 0.15 : 0) - suspicionOf(s) / LAW.eye, 0.05, 0.85);
+}
+/** a passer-by's pocket (lot L2a): harder by day, the watch's eye on a suspect */
+export function pocketChance(s: GameState): number {
+  return clamp((s.slot === 'evening' ? 0.5 : 0.35) + (60 - s.pulse.security) / 200 - (s.flags[`alert:${s.day}`] ? 0.15 : 0) - suspicionOf(s) / LAW.eye, 0.05, 0.85);
 }
 /** what a theft takes: the shop's cheapest piece the player does not own (a whetstone only if none held) */
 export function stealTarget(s: GameState, shop: ShopId): string | null {
@@ -40,71 +74,108 @@ export function stealTarget(s: GameState, shop: ShopId): string | null {
   const c = Object.values(GEAR).filter((x) => x.shop === shop && x.id !== 'salve' && !(x.id === 'whetstone' ? s.player.items.includes('whetstone') : owned(x.id))).sort((a, b) => a.price - b.price || (a.id < b.id ? -1 : 1));
   return c[0]?.id ?? null;
 }
+/** can this stall be robbed now: open (by its keeper's hours), or a day stall shuttered at night; never the day it is barred after a catch */
+function stallOpen(s: GameState, shop: ShopId): string | null {
+  const sh = SHOPS[shop];
+  if (s.place !== sh.place) return tx('v2.shop.notHere');
+  if (!sh.open.includes(s.slot) && !forced(s, shop)) return tx('v2.shop.shut');
+  return s.v2?.shops?.[shop]?.closed === s.day ? tx('v2.shop.barred') : null;
+}
 const shopDay = (s: GameState, shop: ShopId) => { const v = s.v2!; v.shops ??= {}; return (v.shops[shop] ??= {}); };
 const shopsHere = (s: GameState) => (Object.keys(SHOPS) as ShopId[]).filter((k) => SHOPS[k].place === s.place);
 const boutToday = (s: GameState) => { const m = playerMatch(s); return !!m && s.slot === 'afternoon' && !m.winner; };
 
 export type V2TownAction =
-  | { type: 'haggle'; shop: ShopId }
   | { type: 'steal'; shop: ShopId }
-  | { type: 'challenge'; who: string }
+  | { type: 'pickpocket'; who: string }
+  | { type: 'challenge'; who: string; stake: Stake }
   | { type: 'challengeResult'; outcome: DuelOutcome }
   | { type: 'cancelChallenge' }
   | { type: 'checkGear' };
 
 export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V2TownAction, { type: K }>> & { by: string | ((a: Extract<V2TownAction, { type: K }>) => string) | null } } = {
-  haggle: {
-    by: (a) => SHOPS[a.shop].keeper,
-    list: (s) => (isV2(s) ? shopsHere(s).map((shop) => ({ type: 'haggle' as const, shop })) : []),
-    label: (s, a) => tx('v2.haggle.label', { name: PEOPLE[SHOPS[a.shop].keeper]?.name ?? SHOPS[a.shop].keeper, pct: Math.round(haggleChance(s, a.shop) * 100) }),
-    cost: () => 0,
-    check: (s, a) => (!isV2(s) ? tx('v2.only') : shopOpen(s, a.shop) ?? (s.v2?.shops?.[a.shop]?.haggled === s.day ? tx('v2.haggle.done') : null)),
-    apply: (s, a, r, emit) => {
-      const d = shopDay(s, a.shop), keeper = SHOPS[a.shop].keeper, name = PEOPLE[keeper]?.name ?? keeper;
-      d.haggled = s.day;
-      if (r.next() < haggleChance(s, a.shop)) { d.deal = s.day; emit({ kind: 'action', id: 'haggle:deal', cause: 'action:haggle', visible: true, text: tx('v2.haggle.deal', { name }) }); }
-      else { d.sour = s.day; s.town[keeper] = clamp((s.town[keeper] ?? 0) - 4, -100, 100); emit({ kind: 'action', id: 'haggle:sour', cause: 'action:haggle', visible: true, text: tx('v2.haggle.sour', { name }) }); }
-    },
-  },
   steal: {
     by: null,
-    list: (s) => (isV2(s) ? shopsHere(s).map((shop) => ({ type: 'steal' as const, shop })) : []),
-    label: (s, a) => { const t = stealTarget(s, a.shop); return t ? tx('v2.steal.label', { item: itemName(t), pct: Math.round(stealChance(s, a.shop) * 100) }) : tx('v2.steal.labelNone'); },
+    // the open stalls here, and at night the day stalls shuttered (lot L2a)
+    list: (s) => (isV2(s) ? shopsHere(s).filter((shop) => SHOPS[shop].open.includes(s.slot) || forced(s, shop)).map((shop) => ({ type: 'steal' as const, shop })) : []),
+    label: (s, a) => {
+      const t = stealTarget(s, a.shop), name = PEOPLE[SHOPS[a.shop].keeper]?.name ?? SHOPS[a.shop].keeper;
+      return t ? tx(forced(s, a.shop) ? 'v2.steal.labelNight' : 'v2.steal.label', { item: itemName(t), name, pct: Math.round(stealChance(s, a.shop) * 100) }) : tx('v2.steal.labelNone');
+    },
     cost: () => 0,
-    check: (s, a) => (!isV2(s) ? tx('v2.only') : shopOpen(s, a.shop) ?? (!stealTarget(s, a.shop) ? tx('v2.steal.nothing') : null)),
+    check: (s, a) => (!isV2(s) ? tx('v2.only') : stallOpen(s, a.shop) ?? (!stealTarget(s, a.shop) ? tx('v2.steal.nothing') : null)),
     apply: (s, a, r, emit) => {
-      const item = stealTarget(s, a.shop)!, keeper = SHOPS[a.shop].keeper, name = PEOPLE[keeper]?.name ?? keeper;
+      const item = stealTarget(s, a.shop)!, keeper = SHOPS[a.shop].keeper, name = PEOPLE[keeper]?.name ?? keeper, night = forced(s, a.shop);
       if (r.next() < stealChance(s, a.shop)) {
         take(s, item);
         s.flags['pulse:sabotageRisk'] = ((s.flags['pulse:sabotageRisk'] as number) ?? 0) + 2;
-        emit({ kind: 'action', id: 'steal:ok', cause: 'action:steal', visible: true, text: tx('v2.steal.ok', { item: itemName(item), name }) });
+        // the trace: one more line in the watch's knowledge, the theft kept for the owner to find at dawn (lot L2a)
+        recordTheft(s, { day: s.day, from: keeper, item, seen: null, ...(night ? { night: true } : {}) });
+        emit({ kind: 'action', id: 'steal:ok', cause: 'action:steal', visible: true, text: tx(night ? 'v2.steal.okNight' : 'v2.steal.ok', { item: itemName(item), name }) });
         return;
       }
-      const fine = Math.min(15, s.player.coins), d = shopDay(s, a.shop);
-      s.player.coins -= fine; s.player.reputation = clamp(s.player.reputation - (fine < 15 ? 12 : 8));
-      s.town[keeper] = clamp((s.town[keeper] ?? 0) - 20, -100, 100); s.town.hale = clamp((s.town.hale ?? 0) - 10, -100, 100);
-      d.closed = s.day; d.markup = s.day + 1;
+      // caught: forcing a shutter is punished harder (lot L2a)
+      const cap = night ? 25 : 15, fine = Math.min(cap, s.player.coins), d = shopDay(s, a.shop);
+      s.player.coins -= fine; s.player.reputation = clamp(s.player.reputation - (night ? (fine < cap ? 15 : 12) : fine < cap ? 12 : 8));
+      s.town[keeper] = clamp((s.town[keeper] ?? 0) - (night ? 25 : 20), -100, 100); s.town.hale = clamp((s.town.hale ?? 0) - (night ? 15 : 10), -100, 100);
+      if (night) { d.closed = s.day + 1; d.markup = s.day + 2; } else { d.closed = s.day; d.markup = s.day + 1; }
       s.flags[`caught:${s.day}`] = true;
-      emit({ kind: 'consequence', id: 'steal:caught', cause: 'action:steal', visible: true, text: tx(fine < 15 ? 'v2.steal.caughtPoor' : 'v2.steal.caught', { item: itemName(item), name, fine }) });
+      recordTheft(s, { day: s.day, from: keeper, item, seen: 'caught', ...(night ? { night: true } : {}) });
+      emit({ kind: 'consequence', id: 'steal:caught', cause: 'action:steal', visible: true, text: tx(night ? (fine < cap ? 'v2.steal.caughtNightPoor' : 'v2.steal.caughtNight') : fine < cap ? 'v2.steal.caughtPoor' : 'v2.steal.caught', { item: itemName(item), name, fine }) });
+      registrarOnCatch(s, emit);
+    },
+  },
+  // a passer-by's piece, lifted instead of bargained for (lot L2a, the operator's note on EV-6)
+  pickpocket: {
+    by: null,
+    list: (s) => passersHere(s).map((who) => ({ type: 'pickpocket' as const, who })),
+    label: (s, a) => tx('v2.pocket.label', { name: PEOPLE[a.who].name, item: itemName(PASSERS[a.who].item), pct: Math.round(pocketChance(s) * 100) }),
+    cost: () => 0,
+    check: (s, a) => passerOpen(s, a.who) ?? (holds(s, PASSERS[a.who].item) ? tx('v2.shop.owned') : null),
+    apply: (s, a, r, emit) => {
+      const p = PASSERS[a.who], name = PEOPLE[a.who].name;
+      if (r.next() < pocketChance(s)) {
+        take(s, p.item); (s.v2!.passed ??= {})[a.who] = s.day;
+        recordTheft(s, { day: s.day, from: a.who, item: p.item, seen: null });
+        emit({ kind: 'action', id: 'pocket:ok', cause: 'action:steal', visible: true, text: tx('v2.pocket.ok', { name, item: itemName(p.item) }) });
+        return;
+      }
+      const fine = Math.min(10, s.player.coins);
+      s.player.coins -= fine; s.player.reputation = clamp(s.player.reputation - 8);
+      s.town[a.who] = clamp((s.town[a.who] ?? 0) - 30, -100, 100); s.town.hale = clamp((s.town.hale ?? 0) - 10, -100, 100);
+      s.flags[`snub:${a.who}`] = true; s.flags[`caught:${s.day}`] = true;
+      recordTheft(s, { day: s.day, from: a.who, item: p.item, seen: 'caught' });
+      emit({ kind: 'consequence', id: 'pocket:caught', cause: 'action:steal', visible: true, text: tx('v2.pocket.caught', { name, item: itemName(p.item), fine }) });
+      registrarOnCatch(s, emit);
     },
   },
   challenge: {
     by: (a) => a.who,
-    list: (s) => (isV2(s) ? Object.keys(CHALLENGERS).filter((w) => PEOPLE[w] && placeOf(PEOPLE[w], true) === s.place).map((who) => ({ type: 'challenge' as const, who })) : []),
-    label: (_s, a) => tx('v2.challenge.label', { name: PEOPLE[a.who].name }),
+    list: (s) => (isV2(s) ? candidates(s).flatMap((who) => (['coins', 'name'] as Stake[]).map((stake) => ({ type: 'challenge' as const, who, stake }))) : []),
+    label: (_s, a) => tx(a.stake === 'coins' ? (teacherOf(a.who) ? 'v2.challenge.labelCoins' : 'v2.challenge.labelCoinsPlain') : teacherOf(a.who) ? 'v2.challenge.labelName' : 'v2.challenge.labelNamePlain', { name: fighterName(a.who), n: STAKE[a.stake] }),
     cost: () => 0,
-    // the slot is spent at the result (challengeResult); the tag says it now (rule P2, journal Passe EVL1)
+    // the slot is spent at the result (challengeResult); the tag says it now (rule P2, journal Passe EVL1); the coins staked are put on the table at once
     later: () => 1,
+    coins: (_s, a) => (a.stake === 'coins' ? STAKE.coins : 0),
     check: (s, a) => {
       if (!isV2(s)) return tx('v2.only');
       const p = PEOPLE[a.who];
-      if (!p || !CHALLENGERS[a.who]) return tx('v2.challenge.who');
-      if (placeOf(p, true) !== s.place || !presentAt(p, s.place, s.slot, true)) return tx('avail.notNow', { name: p.name });
+      if (!p || !STAKE[a.stake]) return tx('v2.challenge.who');
+      const why = challengeable(s, a.who); if (why) return why;
+      if (placeOf(p, true) !== s.place || !presentAt(p, s.place, s.slot, true) || (p.days && (s.day < p.days[0] || s.day > p.days[1]))) return tx('avail.notNow', { name: p.name });
       if (boutToday(s)) return tx('refuse.boutFirst');
       if (s.v2?.challenge) return tx('v2.challenge.pending');
-      return s.v2?.challenged?.[a.who] === s.day ? tx('v2.challenge.today', { name: p.name }) : null;
+      if (a.who === MUSCLE && s.v2?.reprisal) return tx('v2.reprisal.notSport', { name: p.name });
+      const last = s.v2?.challenged?.[a.who];
+      if (last !== undefined && phaseOf(last) === phaseOf(s.day)) return tx(phaseOf(s.day) === 1 ? 'v2.challenge.oncePool' : 'v2.challenge.onceCup', { name: p.name });
+      if (a.stake === 'coins' && s.player.coins < STAKE.coins) return tx('v2.challenge.poor', { n: STAKE.coins });
+      return a.stake === 'name' && s.player.reputation < STAKE.name ? tx('v2.challenge.nameless', { n: STAKE.name }) : null;
     },
-    apply: (s, a, _r, emit) => { s.v2!.challenge = { who: a.who, day: s.day }; emit({ kind: 'action', id: 'challenge', cause: 'action:challenge', visible: true, text: tx('v2.challenge.log', { name: PEOPLE[a.who].name }) }); },
+    apply: (s, a, _r, emit) => {
+      if (a.stake === 'coins') s.player.coins -= STAKE.coins;
+      s.v2!.challenge = { who: a.who, day: s.day, stake: a.stake };
+      emit({ kind: 'action', id: 'challenge', cause: 'action:challenge', visible: true, text: tx(a.stake === 'coins' ? 'v2.challenge.logCoins' : 'v2.challenge.logName', { name: fighterName(a.who), n: STAKE[a.stake] }) });
+    },
   },
   challengeResult: {
     by: null,
@@ -138,7 +209,12 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
     label: () => tx('v2.challenge.cancel'),
     cost: () => 0,
     check: (s) => (!isV2(s) ? tx('v2.only') : !s.v2?.challenge ? tx('v2.challenge.none') : null),
-    apply: (s, _a, _r, emit) => { const w = s.v2!.challenge!.who; delete s.v2!.challenge; emit({ kind: 'action', id: 'challenge:off', cause: 'action:cancelChallenge', visible: true, text: tx('v2.challenge.off', { name: PEOPLE[w].name }) }); },
+    apply: (s, _a, _r, emit) => {
+      // the coins staked come back; a reprisal called off waits for its night again (lot L2b)
+      const c = s.v2!.challenge!; delete s.v2!.challenge;
+      if (c.stake === 'coins') s.player.coins += STAKE.coins;
+      emit({ kind: 'action', id: 'challenge:off', cause: 'action:cancelChallenge', visible: true, text: tx(c.reprisal ? 'v2.reprisal.off' : 'v2.challenge.off', { name: fighterName(c.who) }) });
+    },
   },
 };
 
@@ -150,21 +226,27 @@ function take(s: GameState, item: string): void {
   g.bag.push(item);
 }
 
-/** a challenge's result: won, the fighter's skill learnt or raised (and a little fame); lost, a little fame lost, no wound (sparring) */
+/** does a challenge won against this fighter teach a skill (the three's own, a rival's of the catalogue from day 6; a generic fighter none) */
+const teacherOf = (who: string): boolean => !!(taughtBy(who) ?? LATE_TEACHER[who]);
+
+/** a challenge's result (lot L2b, EV-3): won, the stake back twice and the fighter's skill learnt or raised; lost, the stake gone and never a wound (V2B1-1
+ *  stays the only rule of wounds); a reprisal's bout has its own ends (v2law.ts) */
 export function applyChallenge(s: GameState, o: DuelOutcome, emit: Emit): void {
-  const v = s.v2!, who = v.challenge!.who, won = o.winner === 'player', temper = RIVALS[who]?.temper;
+  const v = s.v2!, ch = v.challenge!, who = ch.who, won = o.winner === 'player', temper = RIVALS[who]?.temper, name = fighterName(who);
   delete v.challenge;
+  if (ch.reprisal) { applyReprisal(s, o, emit); return; }
   (v.challenged ??= {})[who] = s.day;
+  const stake = ch.stake ?? 'name';
   if (won) {
     s.flags['challenge-won'] = true;
-    s.player.reputation = clamp(s.player.reputation + 3);
+    if (stake === 'coins') s.player.coins += 2 * STAKE.coins; else s.player.reputation = clamp(s.player.reputation + STAKE.name);
     const c = s.competitors[who]; if (c) c.relationships.player = clamp((c.relationships.player ?? 0) + (temper === 'proud' ? -6 : 10), -100, 100);
-    emit({ kind: 'action', id: 'challenge:won', cause: `challenge:${who}`, visible: true, text: tx('v2.challenge.won', { name: PEOPLE[who].name }) });
+    emit({ kind: 'action', id: 'challenge:won', cause: `challenge:${who}`, visible: true, text: tx(stake === 'coins' ? 'v2.challenge.wonCoins' : 'v2.challenge.wonName', { name, n: stake === 'coins' ? 2 * STAKE.coins : STAKE.name }) });
     learnFromChallenge(s, who, emit);
   } else {
-    s.player.reputation = clamp(s.player.reputation - 1);
+    if (stake === 'name') s.player.reputation = clamp(s.player.reputation - STAKE.name);
     const c = s.competitors[who]; if (c) c.relationships.player = clamp((c.relationships.player ?? 0) + 3, -100, 100);
-    emit({ kind: 'action', id: 'challenge:lost', cause: `challenge:${who}`, visible: true, text: tx('v2.challenge.lost', { name: PEOPLE[who].name }) });
+    emit({ kind: 'action', id: 'challenge:lost', cause: `challenge:${who}`, visible: true, text: tx(stake === 'coins' ? 'v2.challenge.lostCoins' : 'v2.challenge.lostName', { name, n: STAKE[stake] }) });
   }
 }
 

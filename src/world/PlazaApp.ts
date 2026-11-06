@@ -41,7 +41,9 @@ export interface PlazaOptions {
 }
 
 /** the roles a square shows, and the archetype standing for each (a baked sheet replaces the archetype when one is approved) */
-const ROLE_ARCHETYPE: Record<string, string> = { guardA: 'guardA', guardB: 'guardB', hooded: 'hooded', porter: 'porter' };
+// the passers-by (lot L2a, journal Passe EVL2): a citizen of the crowd stopped at a spot, the sheet the square already shows (Lady Edda the noblewoman,
+// Sela the wayfarer); while one stands there, that citizen leaves the crowd's turn
+const ROLE_ARCHETYPE: Record<string, string> = { guardA: 'guardA', guardB: 'guardB', hooded: 'hooded', porter: 'porter', edda: 'citizen-noble', sela: 'citizen-wayfarer' };
 /** the people a square shows, generated only under `cast=generated`, the comparison (their sheets: src/characters/PlazaCast.ts, journal Passes V5 / CA5) */
 export const SQUARE_PEOPLE = ['odo', 'anwen', 'hilde', 'corvin', 'pip', 'lio', 'orla', 'vessa', 'marek', 'ilse', 'cassius', 'drill', 'bard'];
 /** the key light of a square by the look (journal Passe VP1, « proposé »): a square is closed on three sides (the north and the two rows), open
@@ -282,8 +284,11 @@ export class PlazaApp {
     // arriving by a way in (journal Passe VP5): at its end inside the square, facing in
     const way = this.place.exits.find((e) => e.to === this.opts.arriveFrom);
     if (way) { this.player.pos.set(way.spawn[0], 0, way.spawn[1]); this.player.dir = way.face === 'up' ? 'up' : 'side'; this.player.flip = way.face === 'east'; }
+    const standing = new Set<string>();
     for (const id of this.opts.people) {
       const at = this.place.spots[id]; if (!at) continue;
+      // a passer-by stands as a citizen's sheet: none under the generated comparison
+      if (ROLE_ARCHETYPE[id]?.startsWith('citizen-')) { if (!this.cast?.has(ROLE_ARCHETYPE[id])) continue; standing.add(ROLE_ARCHETYPE[id]); }
       const a = this.actor(ROLE_ARCHETYPE[id] ?? `person-${id}`, 'person', at[0], at[1], 100 + this.people.length);
       this.people.push(a); this.who.set(a, id);
     }
@@ -291,7 +296,7 @@ export class PlazaApp {
     // points (PLAZA_GATHER): one by one in the morning, by threes at midday, two by two at the end of the day and at night, each group in a
     // ring round its point, every member turned to its middle (journal Passe VP6, tenth critique: « figures stand apart like pieces on a board
     // and all face the camera »; VP7, first critique: three abreast read as « queue-like rows », « a police lineup »)
-    const G = CROWD[this.period], W = this.place.walk, turn = CROWD_TURN[this.period].filter((c) => c.startsWith('crowd') || this.cast?.has(c));
+    const G = CROWD[this.period], W = this.place.walk, turn = CROWD_TURN[this.period].filter((c) => (c.startsWith('crowd') || this.cast?.has(c)) && !standing.has(c));
     const clear =(x: number, z: number) => x > W.x0 && x < W.x1 && z > W.z0 && z < W.z1 && this.place.blockers.every((o) => Math.hypot(x - o.x, z - o.z) >= o.r + 0.3);
     for (let i = 0; i < this.opts.crowd; i++) {
       const g = Math.floor(i / G.size), m = i % G.size, p = this.place.wander[g % this.place.wander.length];

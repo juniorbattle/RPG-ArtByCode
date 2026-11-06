@@ -66,9 +66,9 @@ test('(1) what an action keeping the page showed counts as shown; an action that
   const store = memory(), api = squareApi(v2('v2-forecourt-morning'));
   const act = N.keepSeen(api.act, api.state, store);
   N.seenBefore(api.state(), store); N.markSeen(api.state(), store);
-  // a bargain asked of Hilde: the page stays, its news shown in the band
-  const haggle = G.actions(api.state()).find((o) => o.ok && o.action.type === 'haggle');
-  assert.ok(haggle, 'a keeper to haggle with on the forecourt');
+  // a bargain put to Hilde at the moment of buying (lot L2a, EV-6): the page stays, its news shown in the band
+  const haggle = G.actions(api.state()).find((o) => o.ok && o.action.type === 'bargain');
+  assert.ok(haggle, 'a keeper to bargain with on the forecourt');
   const h = act(haggle.action);
   assert.ok(h.ok && !h.reload && h.events.some((e) => e.visible));
   // the slot ends: the page reloads
@@ -151,7 +151,7 @@ test('(3) « free » only when nothing is spent: every option of a version 2 gam
   assert.ok(booked >= 3, `challenges booked: ${booked}`);
   assert.ok(n > 300, `${n} options applied`);
   // the label no longer says the slot twice (rule P2: the price once, in its tag)
-  assert.doesNotMatch(EN['v2.challenge.label'], /slot/);
+  for (const k of ['v2.challenge.labelCoins', 'v2.challenge.labelCoinsPlain', 'v2.challenge.labelName', 'v2.challenge.labelNamePlain']) assert.doesNotMatch(EN[k], /slot/);
   // the default game offers no booked slot: none of its options carries one
   for (const name of Object.keys(G.NAMED_STATES).filter((k) => !G.NAMED_STATES[k].v2)) for (const o of G.actions(G.namedState(name))) assert.ok(!('later' in o), `${name}: ${o.label}`);
 });

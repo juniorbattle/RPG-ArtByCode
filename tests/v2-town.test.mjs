@@ -1,5 +1,5 @@
 // The town's actions of the version 2 (lot V4; the operator's decision AV-11 « Les trois, le vol avec ses conséquences », journal Passe V4):
-// haggling by reputation and goodwill, a challenge in town that teaches a skill and takes a slot, a theft that is a real risk (easier at
+// (haggling: tests/v2-law.test.mjs since lot L2a), a challenge in town that teaches a skill and takes a slot, a theft that is a real risk (easier at
 // night) with consequences and always a way out. Each changes a real state. The default game offers none of them.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -18,30 +18,14 @@ const refused = (st, a, re) => { const r = G.advance(st, a); assert.equal(r.ok, 
 const WIN = { winner: 'player', playerHp: 900, playerMaxHp: 2200, opponentHp: 0, opponentMaxHp: 3000, finisher: 'heavy' };
 const LOSS = { winner: 'opponent', playerHp: 0, playerMaxHp: 2200, opponentHp: 900, opponentMaxHp: 3000, finisher: 'heavy' };
 
-test('haggling: once a day per shop, its chance by reputation and goodwill; a bargain of 15 % for the day, or a tenth more and the goodwill down', () => {
-  const st = v2();
-  assert.equal(T.haggleChance(st, 'mara'), Math.min(0.85, Math.max(0.1, 0.25 + 10 / 200)));
-  const rich = structuredClone(st); rich.player.reputation = 100; rich.town.mara = 100; assert.equal(T.haggleChance(rich, 'mara'), 0.85);
-  const poor = structuredClone(st); poor.player.reputation = 0; poor.town.mara = -100; assert.equal(T.haggleChance(poor, 'mara'), 0.1);
-  let deals = 0, sours = 0;
-  for (let seed = 1; seed <= 60; seed++) {
-    const s = G.makeV2(G.newGame(seed, 'Ren')), before = VG.shopPrice(s, 'mara', 'imported-blade');
-    const r = act(s, { type: 'haggle', shop: 'mara' }), after = VG.shopPrice(r.state, 'mara', 'imported-blade');
-    if (r.events[0].id === 'haggle:deal') { deals++; assert.equal(after, Math.round(30 * 0.85 * (1 - 10 / 400))); }
-    else { sours++; assert.equal(after, Math.round(30 * 1.1 * (1 - 10 / 400))); assert.equal(r.state.town.mara, -4); }
-    assert.ok(before === Math.round(30 * (1 - 10 / 400)));
-    refused(r.state, { type: 'haggle', shop: 'mara' }, /haggled here today/);
-    // the next day the price is the list's again
-    const next = structuredClone(r.state); next.day = 2; assert.equal(VG.shopPrice(next, 'mara', 'imported-blade'), Math.round(30 * (1 - 10 / 400) * (r.events[0].id === 'haggle:sour' ? 1 : 1)));
-  }
-  assert.ok(deals > 10 && sours > 20, `${deals} bargains, ${sours} grudges at a chance of 0.3`);
-});
+// (haggling for the day, lot V4, became a bargain put at the moment of buying in lot L2a: tests/v2-law.test.mjs)
 
 test('stealing: easier at night and with a thin watch; taken, the cheapest piece not owned; caught, the fame, the fine, the door barred, the prices up — never a dead end', () => {
   const day = v2(), night = v2('day1-evening');
   assert.ok(T.stealChance(night, 'mara') > T.stealChance(day, 'mara'));
-  // the rule written out: 0.3 by day, 0.6 at night, the watch's slack, the keeper's goodwill
-  const rule = (s) => Math.min(0.85, Math.max(0.05, (s.slot === 'evening' ? 0.6 : 0.3) + (60 - s.pulse.security) / 200 - (s.town.mara ?? 0) / 400));
+  // the rule written out: 0.3 by day, 0.7 at night (a shuttered stall forced), the watch's slack, the keeper's goodwill
+  // (Mara's stall is shut at night: since lot L2a it is forced there, 0.7: tests/v2-law.test.mjs)
+  const rule = (s) => Math.min(0.85, Math.max(0.05, (s.slot === 'evening' ? 0.7 : 0.3) + (60 - s.pulse.security) / 200 - (s.town.mara ?? 0) / 400));
   for (const s of [day, night]) assert.equal(T.stealChance(s, 'mara'), rule(s));
   const thin = structuredClone(day); thin.pulse.security = 20; assert.ok(T.stealChance(thin, 'mara') > T.stealChance(day, 'mara'));
   assert.equal(T.stealTarget(day, 'mara'), 'whetstone');
@@ -70,40 +54,72 @@ test('stealing: easier at night and with a thin watch; taken, the cheapest piece
   for (let seed = 1; seed < 40; seed++) { const s = G.makeV2(G.newGame(seed, 'Ren')); s.player.coins = 4; const r = act(s, { type: 'steal', shop: 'mara' }); if (r.events[0].id === 'steal:caught') { assert.equal(r.state.player.coins, 0); assert.equal(r.state.player.reputation, Math.max(0, 10 - 12)); break; } }
 });
 
-test('a challenge: put to a fighter who is there, no bout that afternoon, one at a time and once a day; its bout takes a slot; won, the skill learnt then raised', () => {
-  // the fighters who teach train at the training ground (lot V5); Marek teaches nothing
-  refused(act(v2(), { type: 'move', to: 'forecourt' }).state, { type: 'challenge', who: 'orla' }, /not here|not.*now|isn't|is not/i);
+test('a challenge (lot L2b, EV-3 / EV-4): put to a fighter who is there, a stake chosen, full health, once per phase, no wound; its bout takes a slot; won, the stake back twice and the skill learnt then raised', () => {
+  // the fighters who teach train at the training ground (lot V5); Marek takes no challenge before the cut
+  refused(act(v2(), { type: 'move', to: 'forecourt' }).state, { type: 'challenge', who: 'orla', stake: 'coins' }, /not here|not.*now|isn't|is not/i);
   let st = act(v2(), { type: 'move', to: 'training' }).state;
-  refused(st, { type: 'challenge', who: 'marek' }, /Nobody to challenge/);
-  st = act(st, { type: 'challenge', who: 'orla' }).state;
-  assert.deepEqual(st.v2.challenge, { who: 'orla', day: 1 });
-  refused(st, { type: 'challenge', who: 'ilse' }, /waiting for you/);
+  refused(st, { type: 'challenge', who: 'marek', stake: 'coins' }, /Nobody to challenge/);
+  const coins = st.player.coins, rep = st.player.reputation;
+  st = act(st, { type: 'challenge', who: 'orla', stake: 'coins' }).state;
+  assert.deepEqual(st.v2.challenge, { who: 'orla', day: 1, stake: 'coins' });
+  assert.equal(st.player.coins, coins - 10, 'the coins on the table at once');
+  refused(st, { type: 'challenge', who: 'ilse', stake: 'name' }, /waiting for you/);
   const sh = M.challengeSheetFor(st);
-  assert.equal(sh.sides[1].fighters[0].id, 'orla'); assert.equal(sh.sides[1].fighters[0].mods.hp, 0.5);
+  assert.equal(sh.sides[1].fighters[0].id, 'orla'); assert.equal(sh.sides[1].fighters[0].mods.hp, 1, 'full health');
   const slot = st.slot, r = act(st, { type: 'challengeResult', outcome: WIN });
   assert.notEqual(r.state.slot, slot, 'a slot');
-  assert.equal(r.state.v2.kit.levels.k_cry, 1); assert.equal(r.state.v2.challenge, undefined); assert.equal(r.state.player.reputation, st.player.reputation + 3);
-  // the same day: refused; the next day: won again, raised
-  let s2 = r.state; s2.slot = 'morning'; refused(s2, { type: 'challenge', who: 'orla' }, /fought you today/);
-  s2.day = 2; s2 = act(s2, { type: 'challenge', who: 'orla' }).state; s2 = act(s2, { type: 'challengeResult', outcome: WIN }).state;
-  assert.equal(s2.v2.kit.levels.k_cry, 2);
-  // lost: a lesson, no wound, no skill
-  let s3 = act(act(v2(), { type: 'move', to: 'training' }).state, { type: 'challenge', who: 'ilse' }).state;
+  assert.equal(r.state.v2.kit.levels.k_cry, 1); assert.equal(r.state.v2.challenge, undefined);
+  assert.equal(r.state.player.coins, coins - 10 + 20, 'twice back'); assert.equal(r.state.player.reputation, rep);
+  // once per phase: the same fighter again before the cut, refused; after it, once more, raised
+  let s2 = structuredClone(r.state); s2.slot = 'morning'; s2.day = 3; refused(s2, { type: 'challenge', who: 'orla', stake: 'coins' }, /once before the cut/);
+  s2.day = 7; s2 = act(s2, { type: 'challenge', who: 'orla', stake: 'name' }).state; s2 = act(s2, { type: 'challengeResult', outcome: WIN }).state;
+  assert.equal(s2.v2.kit.levels.k_cry, 2); assert.equal(s2.player.reputation, rep + 5, 'the name staked, as much again');
+  // lost: the stake gone, no wound, no skill
+  let s3 = act(act(v2(), { type: 'move', to: 'training' }).state, { type: 'challenge', who: 'ilse', stake: 'name' }).state;
   s3 = act(s3, { type: 'challengeResult', outcome: LOSS }).state;
-  assert.equal(s3.player.injury, 0); assert.equal(s3.v2.kit.levels.k_parry, undefined);
-  // called off, and never on the bout's afternoon
-  let s4 = act(act(v2(), { type: 'move', to: 'forecourt' }).state, { type: 'challenge', who: 'vessa' }).state;
-  s4 = act(s4, { type: 'cancelChallenge' }).state; assert.equal(s4.v2.challenge, undefined);
-  const bout = G.makeV2(G.namedState('day2-afternoon')); bout.place = 'training'; refused(bout, { type: 'challenge', who: 'orla' }, /arena is waiting/);
-  // the challenge's duel is a version 2 duel the bot can fight to its end
-  const d = M.v2SheetData(sh, undefined, G.v2KitOf(st), VG.v2Mods(st));
-  assert.ok(B.runV2BotDuel(d.data, d.tiers, { skill: 0.6, seed: 3 }).winner);
+  assert.equal(s3.player.injury, 0); assert.equal(s3.v2.kit.levels.k_parry, undefined); assert.equal(s3.player.reputation, Math.max(0, rep - 5));
+  // called off, the coins come back; never on the bout's afternoon
+  const c4 = act(v2(), { type: 'move', to: 'forecourt' }).state, c0 = c4.player.coins;
+  let s4 = act(c4, { type: 'challenge', who: 'vessa', stake: 'coins' }).state;
+  s4 = act(s4, { type: 'cancelChallenge' }).state; assert.equal(s4.v2.challenge, undefined); assert.equal(s4.player.coins, c0);
+  const bout = G.makeV2(G.namedState('day2-afternoon')); bout.place = 'training'; refused(bout, { type: 'challenge', who: 'orla', stake: 'name' }, /arena is waiting/);
+  // a stake one cannot pay
+  const poor = act(v2(), { type: 'move', to: 'training' }).state; poor.player.coins = 9; refused(poor, { type: 'challenge', who: 'orla', stake: 'coins' }, /10 coins/);
+  // a generic fighter: on its rival's profile, a little weaker; teaches nothing
+  const gs = act(act(v2(), { type: 'move', to: 'training' }).state, { type: 'challenge', who: 'aldric', stake: 'coins' }).state, gsh = M.challengeSheetFor(gs);
+  assert.equal(gsh.sides[1].fighters[0].name, 'Ser Aldric Venn'); assert.equal(gsh.sides[1].fighters[0].profile, 'ilse'); assert.deepEqual(gsh.sides[1].fighters[0].mods, { hp: 0.9, damage: 0.95 });
+  const gw = act(gs, { type: 'challengeResult', outcome: WIN }).state; assert.deepEqual(gw.v2.kit.levels, gs.v2.kit.levels, 'no skill');
+  // the challenge's duel is a version 2 duel the bot can fight to its end, the rival's and the generic's
+  for (const s of [st, gs]) { const x = M.challengeSheetFor(s), d = M.v2SheetData(x, undefined, G.v2KitOf(s), VG.v2Mods(s)); assert.ok(B.runV2BotDuel(d.data, d.tiers, { skill: 0.6, seed: 3 }).winner); }
+});
+
+test('from day 6, a rival out of the title (one of the cut\'s four others) takes a challenge on a day without a bout of theirs and teaches a skill of the catalogue', () => {
+  const s = v2('day1-morning'); s.day = 7; s.place = 'training';
+  for (const id of Object.keys(s.competitors)) s.competitors[id].phaseStatus = ['rhosk', 'tobin', 'marek', 'cassius'].includes(id) ? 'gate' : 'semi';
+  s.competitors.vessa.phaseStatus = 'semi';
+  const offered = G.actions(s).filter((o) => o.action.type === 'challenge' && o.ok).map((o) => o.action.who);
+  assert.ok(offered.includes('rhosk') && offered.includes('tobin'), offered.join());
+  const f = structuredClone(s); f.place = 'forecourt';
+  // the three of the first day stay open to a challenge, in the title's race or out of it
+  assert.ok(G.actions(f).some((o) => o.action.type === 'challenge' && o.action.who === 'vessa' && o.ok));
+  const semi = structuredClone(f); semi.competitors.marek.phaseStatus = 'semi';
+  assert.match(G.actions(semi).find((o) => o.action.type === 'challenge' && o.action.who === 'marek').reason, /the crown or a place to fight for/);
+  assert.ok(G.actions(f).some((o) => o.action.type === 'challenge' && o.action.who === 'marek' && o.ok));
+  // a bout of theirs that day: refused
+  const fight = structuredClone(s); fight.tournament.matches.push({ round: 5, a: 'rhosk', b: 'tobin', winner: null, close: false, day: 7, seen: false, stage: 'gateFinal' });
+  assert.match(G.actions(fight).find((o) => o.action.type === 'challenge' && o.action.who === 'rhosk').reason, /fights in the tournament today/);
+  // won: Rhosk's sunder
+  let w = act(s, { type: 'challenge', who: 'rhosk', stake: 'name' }).state; w = act(w, { type: 'challengeResult', outcome: WIN }).state;
+  assert.equal(w.v2.kit.levels.k_sunder, 1);
+  // before day 6 no rival but the three is offered
+  const early = v2(); early.place = 'forecourt';
+  assert.ok(!G.actions(early).some((o) => o.action.type === 'challenge' && o.action.who === 'marek'));
 });
 
 test('the default game offers none of it', () => {
   for (const name of Object.keys(G.NAMED_STATES).filter((n) => !G.NAMED_STATES[n].v2)) for (const place of ['district', 'forecourt', 'lanterns', 'training']) {
     const s = G.namedState(name); s.place = place;
-    assert.ok(!G.actions(s).some((o) => ['haggle', 'steal', 'challenge', 'challengeResult', 'cancelChallenge'].includes(o.action.type)), `${name} ${place}`);
+    assert.ok(!G.actions(s).some((o) => ['bargain', 'steal', 'challenge', 'challengeResult', 'cancelChallenge'].includes(o.action.type)), `${name} ${place}`);
   }
   refused(G.namedState('day1-morning'), { type: 'steal', shop: 'mara' }, /version 2/);
 });

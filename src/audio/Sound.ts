@@ -36,7 +36,8 @@ const SLICE_MS = 4;
 const UI_SOUND: Partial<Record<Effect, string>> = { click: 'ui-click', open: 'ui-open', coin: 'ui-coin', denied: 'denied' };
 const SFX = ((CATALOGUE as { sfx?: Record<string, SfxEntry> }).sfx ?? {}) as Record<string, SfxEntry>;
 /** what a scene asks of the music beyond its place and hour: a new game's first page, a bout's piece, its fighters' health and the hero's charge tiers */
-export interface SceneMusic { opening?: boolean; bout?: PieceId; maxHp?: Record<string, number>; tiers?: number }
+/** `empty`: a bout on the empty stands (lot L2b, the operator's EV-5 « L’arène aux gradins vides », journal Passe EVL3): no crowd, the duel's own sounds kept */
+export interface SceneMusic { opening?: boolean; bout?: PieceId; maxHp?: Record<string, number>; tiers?: number; empty?: boolean }
 
 export class Sound {
   ctx: AudioContext | null = null;
@@ -386,7 +387,8 @@ export class Sound {
     this.mood = CALM; this.maxHp = { ...(music.maxHp ?? {}) };
     this.band(pieceFor(place, look, music), cross);
     // the arena: its crowd and the duel's sounds, loaded with the bout's music (lot S3, journal Passe SN16)
-    if (place === 'arena') this.crowdScene(amb, cross);
+    if (place === 'arena' && music.empty) { const bank = this.loadBank(); this.pending = Promise.all([this.pending, bank]).then(() => {}); }
+    else if (place === 'arena') this.crowdScene(amb, cross);
     // the bout's two jingles fetched with its music: the K.O. never waits for a file
     if (place === 'arena') { const p = this.pending, pre = Promise.all((['victoire', 'defaite'] as const).map((id) => this.loader.decoded(id))); this.pending = Promise.all([p, pre]).then(() => {}); }
   }

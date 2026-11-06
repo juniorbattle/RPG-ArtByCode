@@ -50,6 +50,10 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   'v2-training-night': { about: 'a version 2 game, the first evening, at the Training Ground (shut)', script: [W, W, { type: 'move', to: 'training' }], v2: true },
   'v2-square-morning': { about: 'a version 2 game, the first morning, on the Festival Square', script: [{ type: 'move', to: 'lanterns' }], v2: true },
   'v2-training-dusk': { about: 'a version 2 game, back from a won first bout, at the Training Ground at sunset', script: [W, W, W, W, WON, { type: 'move', to: 'training' }], v2: true },
+  // lots L2a / L2b (journal Passes EVL2 / EVL3): a thief the watch wants, on the quay at night (seed 1842: caught at Mara's, a ribbon lifted at Pip's, caught there
+  // again: the suspicion at 55, the registrar's point); the training ground on day 7, the cut made (Tobin out of the title, Rhosk in the third place's bout)
+  'v2-wanted-night': { about: 'a version 2 thief the watch wants (suspicion 55), on the quay at night', script: [{ type: 'steal', shop: 'mara' }, { type: 'move', to: 'lanterns' }, W, { type: 'steal', shop: 'trinkets' }, { type: 'steal', shop: 'trinkets' }, W, { type: 'move', to: 'district' }], v2: true },
+  'v2-day7-training': { about: 'a version 2 game on day 7, every bout won, at the Training Ground', script: [W, W, W, W, WON, W, W, W, W, W, WON, W, W, WON, W, W, WON, W, { type: 'move', to: 'training' }], v2: true },
 };
 
 export function namedState(name: string, seed = NAMED_SEED, player = 'Ren'): GameState {

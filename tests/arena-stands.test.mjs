@@ -128,8 +128,9 @@ test('PU-7 « Derrière la version 2 seulement »: StandsCast is reached by a ve
   const calls = app.split('\n').filter((l) => l.includes("await import('./StandsCast')"));
   assert.equal(calls.length, 1, 'one dynamic import');
   const at = app.indexOf("await import('./StandsCast')"), guard = app.lastIndexOf('if (', at);
-  assert.match(app.slice(guard, at), /this\.rules === 'v2' && !this\.opts\.forecourt && this\.opts\.params\.get\('cast'\) !== 'generated'/);
-  assert.match(app, /for \(const st of this\.stands \? \[\] : this\.arena\.stands\)/, 'the generated spectators only without the stands');
+  // (a bout on the empty stands, a challenge or a reprisal in town, lot L2b, EV-5: no stands, and no generated spectators either)
+  assert.match(app.slice(guard, at), /this\.rules === 'v2' && !this\.opts\.forecourt && !this\.opts\.match\?\.empty && this\.opts\.params\.get\('cast'\) !== 'generated'/);
+  assert.match(app, /for \(const st of this\.stands \|\| this\.opts\.match\?\.empty \? \[\] : this\.arena\.stands\)/, 'the generated spectators only without the stands, never on the empty stands');
   // no static import of the stands anywhere in src
   const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]));
   for (const f of walk(path.join(ROOT, 'src')).filter((f) => /\.ts$/.test(f))) {

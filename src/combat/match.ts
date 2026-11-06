@@ -6,6 +6,7 @@ import { matchId, opponentOf, playerMatch, rivalMods } from '../tournament/pool'
 import { duelData, dynDuelData, DYN_PROFILES, PROFILES, type Mods } from './profiles';
 import { mix32, hashString } from '../core/rng';
 import { v2DuelData, type V2Duel, type V2Kit } from './v2duel';
+import { GENERICS } from '../narrative/generics';
 
 /** A match sheet (journal Passe L2, used by the arena's play mode in Passe L3): who fights whom, with what the preparation changed. The
  *  game's side of the interface takes lists of fighters per side (PROJECT_MASTER_CONTRACT § 6.1, gap E17: a combat « extensible vers
@@ -84,15 +85,19 @@ export function v2SheetData(sh: MatchSheet, names?: Partial<Record<string, strin
   return v2DuelData(o.profile ?? o.id, { seed: sh.seed, playerName: p.name, opponentName: o.name, player: { hp: pm.hp, damage: pm.damage, ap: pm.ap }, enemy: o.mods, names, kit, gear });
 }
 
-/** the sheet of a challenge in town (the version 2, lot V4, src/simulation/v2town.ts): the player against the fighter challenged, on the
- *  arena's sand at half health (sparring: « proposé »), the discreet assistance; null when no challenge waits */
+/** the sheet of a challenge in town (the version 2, lot V4, src/simulation/v2town.ts): the player against the fighter challenged, at full health since
+ *  lot L2b (the operator's EV-3 « Pleine vie, une mise, une fois par phase », journal Passe EVL3; half health before: sparring), the discreet assistance; a
+ *  generic fighter on its rival's profile (src/narrative/generics.ts), a reprisal's muscle the same way; null when no challenge waits */
 export function challengeSheetFor(s: GameState): MatchSheet | null {
   const ch = s.v2?.challenge;
-  if (!ch || !RIVALS[ch.who]) return null;
-  const c = s.competitors[ch.who], rm = rivalMods(c), id = `ch:${ch.who}:${ch.day}`;
+  if (!ch) return null;
+  const g = GENERICS[ch.who], r = RIVALS[ch.who];
+  if (!g && !r) return null;
+  const id = `${ch.reprisal ? 'rp' : 'ch'}:${ch.who}:${ch.day}`;
+  const foe = g ? { id: ch.who, name: g.name, profile: g.profile, mods: { hp: g.hp, damage: g.damage } } : { id: ch.who, name: r.name, profile: s.competitors[ch.who].combatProfile, mods: rivalMods(s.competitors[ch.who]) };
   return {
     id, round: 0, day: s.day,
-    sides: [{ fighters: [{ id: PLAYER_ID, name: s.player.name, mods: playerMods(s) }] }, { fighters: [{ id: ch.who, name: RIVALS[ch.who].name, profile: c.combatProfile, mods: { ...rm, hp: (rm.hp ?? 1) * 0.5 } }] }],
+    sides: [{ fighters: [{ id: PLAYER_ID, name: s.player.name, mods: playerMods(s) }] }, { fighters: [foe] }],
     assist: 'subtle', intel: [], seed: mix32(s.seed, hashString(id)),
   };
 }

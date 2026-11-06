@@ -54,6 +54,11 @@ export function skillAction(id: string): DynActionDef {
   return { ...(JSON.parse(JSON.stringify(a)) as DynActionDef), ...(id === 'heavy' ? { family: 'offensive' as const } : {}) };
 }
 
+/** from day 6, the rivals out of the title teach a skill of the catalogue by a challenge won (lot L2b, EV-4: « Chacun enseigne une compétence déjà au
+ *  catalogue : aucune compétence neuve sans fiche »; « proposé »): Marek his iron skin, Cassius his feint, Rhosk his sunder, Tobin the double cut he
+ *  drills; the three of the first day keep their own (`teacher`) */
+export const LATE_TEACHER: Record<string, string> = { marek: 'k_iron', cassius: 'k_feint', rhosk: 'k_sunder', tobin: 't2' };
+
 /** the skill a fighter teaches by a challenge won (null: none) */
 export function taughtBy(fighter: string): string | null {
   return Object.values(SKILL_BOOK).find((s) => s.teacher === fighter)?.id ?? null;

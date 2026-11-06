@@ -9,8 +9,10 @@ import { V2_SKILL_ACTIONS } from './v2skills';
 import { V2_GEAR_ACTIONS } from './v2gear';
 import { V2_TOWN_ACTIONS } from './v2town';
 import { V2_STORY_ACTIONS } from '../narrative/v2story';
+import { V2_LAW_ACTIONS } from './v2law';
+import { V2_BARTER_ACTIONS } from './v2barter';
 
-const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS };
+const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS };
 
 /** The town's people in game roles (choice P4, journal Passe L4): the district's existing characters offer services, quests and clues;
  *  the forecourt's officials and the rivals offer care, sparring and scouting (choice K3: portraits and dialogues). Each action names who
@@ -54,6 +56,8 @@ export function available(st: GameState, who: string): string | null {
   if (!p || (p.v2 && !isV2(st))) return tx('avail.nobody');
   if (placeOf(p, isV2(st)) !== st.place) return tx('avail.notHere', { name: p.name });
   if (who === 'bram' && st.services.forge === 'sabotaged') return tx('avail.bramGone');
+  // a person in the Cité some days only (a version 2 passer-by, lot L2a); today's people have no such days
+  if (p.days && (st.day < p.days[0] || st.day > p.days[1])) return tx('avail.notNow', { name: p.name });
   return presentAt(p, st.place, st.slot, isV2(st)) ? null : tx('avail.notNow', { name: p.name });
 }
 

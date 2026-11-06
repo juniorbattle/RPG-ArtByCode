@@ -45,5 +45,7 @@ const ITEM_KEYS: Record<string, [TextKey, TextKey]> = {
   'swift-boots': ['gear.swift-boots.name', 'gear.swift-boots.about'], 'fervour-charm': ['gear.fervour-charm.name', 'gear.fervour-charm.about'],
   'docker-wrap': ['gear.docker-wrap.name', 'gear.docker-wrap.about'], 'champion-token': ['gear.champion-token.name', 'gear.champion-token.about'],
   whetstone: ['gear.whetstone.name', 'gear.whetstone.about'], salve: ['gear.salve.name', 'gear.salve.about'],
+  'river-pearl': ['gear.river-pearl.name', 'gear.river-pearl.about'], 'knight-hauberk': ['gear.knight-hauberk.name', 'gear.knight-hauberk.about'],
+  'pilgrim-medal': ['gear.pilgrim-medal.name', 'gear.pilgrim-medal.about'],
 };
 export function itemText(id: string, part: 'name' | 'about'): string { const k = ITEM_KEYS[id]; return k ? tx(k[part === 'name' ? 0 : 1]) : id; }

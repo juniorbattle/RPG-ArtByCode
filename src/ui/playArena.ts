@@ -7,6 +7,7 @@ import { isV2, v2KitOf } from '../simulation/v2';
 import { v2Mods } from '../simulation/v2gear';
 import { dynamicRules } from '../tournament/pool';
 import { stageName } from '../tournament/v2calendar';
+import { GENERICS } from '../narrative/generics';
 import { boutPiece } from '../audio/plan';
 import { RIVALS } from '../narrative/roster';
 import { ACTION_NAMES_EN } from '../narrative/texts';
@@ -40,7 +41,9 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     go(b.params);
     return;
   }
-  const opp = RIVALS[sheet.sides[1].fighters[0].id];
+  // a generic fighter of the version 2 (lot L2b): its name and epithet from its own table, the arena's generated fighter in its seat until its sheets
+  const fid = sheet.sides[1].fighters[0].id, opp = RIVALS[fid] ?? { id: fid, name: GENERICS[fid].name, epithet: GENERICS[fid].epithet };
+  const reprisal = !!challenge && !!st.v2?.challenge?.reprisal;
   // the slot's day state (the afternoon's bout at midday, journal Passe AD1)
   const q = new URLSearchParams(arenaQuery(st));
   for (const k of ['fps', 'freeze', 'painters', 'hud', 'gpuprof', 'input', 'fx']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
@@ -49,12 +52,13 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   if (v2 && view.intel.length) view.intel.push(tx('ui.arena.foeSkills', { name: opp.name, skills: (V2_FOES[opp.id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') }));
   const v2d = v2 ? v2SheetData(sheet, ACTION_NAMES_EN, v2KitOf(st), v2Mods(st)) : null;
   if (dyn && b.params.has('dyn')) q.set('dyn', b.params.get('dyn')!);
-  const texts = { ...(dyn ? DYN_TEXTS_EN : TEXTS_EN), subtitle: challenge ? tx('v2.challenge.title') : v2 && m ? stageName(m) : tx('ui.arena.subtitle', { round: sheet.round }), subMarek: opp.epithet };
+  const texts = { ...(dyn ? DYN_TEXTS_EN : TEXTS_EN), subtitle: challenge ? tx(reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title') : v2 && m ? stageName(m) : tx('ui.arena.subtitle', { round: sheet.round }), subMarek: opp.epithet };
   const app = new ArenaApp({
     canvas: b.canvas, params: q,
     onProgress: progressOn(b.label, b.bar),
     match: v2d
-      ? { data: v2d.data, tiers: v2d.tiers, rules: 'v2', foe: opp.id, assist: view.assist, texts, piece: boutPiece(challenge ? null : m?.stage), onOver: (r) => void finish(r) }
+      // a challenge or a reprisal in town (lot L2b, EV-5 « L’arène aux gradins vides »): the stands empty, no crowd, the lists' piece of the band
+      ? { data: v2d.data, tiers: v2d.tiers, rules: 'v2', foe: opp.id, assist: view.assist, texts, piece: challenge ? 'lices' : boutPiece(m?.stage), ...(challenge ? { empty: true } : {}), onOver: (r) => void finish(r) }
       : dyn
       ? { data: dynSheetData(sheet, ACTION_NAMES_EN), rules: 'dynamic', foe: opp.id, assist: view.assist, texts, onOver: (r) => void finish(r) }
       : { data: sheetData(sheet, ACTION_NAMES_EN), foe: opp.id, assist: sheet.assist, texts, onOver: (r) => void finish(r) },
@@ -75,7 +79,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   const mods = sheet.sides[0].fighters[0].mods, prep = [mods.hp !== undefined && mods.hp < 1 ? tx('ui.arena.wounded', { pct: Math.round(mods.hp * 100) }) : '', mods.damage && mods.damage > 1 ? tx('ui.arena.damage', { pct: Math.round((mods.damage - 1) * 100), why: `${st.player.items.length ? tx('ui.arena.blade') : ''}${st.player.items.length && st.player.training ? ', ' : ''}${st.player.training ? tx('ui.arena.training') : ''}` }) : ''].filter(Boolean);
   // one preparation screen (journal Passe UM4): the version 2's is its match sheet in the town, here its stage and the name; today's game keeps its report
   // here, in the band at the foot of the screen, the fighters in view; the command bar says the keys
-  const gate = `<p class="pm-sub">${challenge ? tx('v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</p><h2 class="pm-h">${esc(opp.name)}</h2><p class="pm-sub">${esc(opp.epithet)}</p>`;
+  const gate = `<p class="pm-sub">${challenge ? tx(reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title') : v2 && m ? tx('v2.arena.round', { stage: stageName(m), day: sheet.day }) : tx('ui.arena.round', { round: sheet.round, day: sheet.day })}</p><h2 class="pm-h">${esc(opp.name)}</h2><p class="pm-sub">${esc(opp.epithet)}</p>`;
   await overlay(v2 && !challenge ? gate : `${gate}${report}${prep.length ? `<p class="pm-sub">${tx('ui.arena.prep')}</p><p>${esc(prep.join(' · '))}</p>` : ''}`, [{ id: 'fight', label: tx('ui.arena.fight'), primary: true }], true).done;
   app.paused = false; app.moment = false;
 

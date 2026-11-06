@@ -3,6 +3,7 @@ import { offeredBy } from '../simulation/roles';
 import { GEAR, type GearSlot } from '../simulation/gear';
 import { duelStats, preview, STAT_IDS, type Preview, type StatId } from '../simulation/preview';
 import { itemAbout, itemName, weaponTier } from '../simulation/v2gear';
+import { PASSERS } from '../simulation/v2barter';
 import { isV2 } from '../simulation/v2';
 import { PEOPLE, titleOf } from '../narrative/people';
 import { skillName, tx, type TextKey } from '../narrative/text';
@@ -39,17 +40,20 @@ interface Line {
   done?: boolean;
   /** the list price, and today's */
   list?: number; price?: number;
+  /** a version 2 piece's bargains (lot L2a, EV-6): the arguments one can put to its seller, each its chance */
+  args?: Line[];
 }
 
 const STAT_TEXT: Record<StatId, TextKey> = { hp: 'ui.stat.hp', blow: 'ui.stat.blow', taken: 'ui.stat.taken', ap: 'ui.stat.ap', charge: 'ui.stat.charge', gauge: 'ui.stat.gauge', effect: 'ui.stat.effect' };
 const SLOT_TEXT: Record<GearSlot, TextKey> = { weapon: 'v2.gear.weapon', armour: 'v2.gear.armour', accessory: 'v2.gear.acc', consumable: 'ui.wares.consumable' };
 
-/** the actions the goods hold, the keeper's bargain with them */
-const WARE_TYPES = ['buy', 'shopBuy', 'upgradeWeapon', 'temper', 'buySkill'];
+/** the actions the goods hold; a version 2 bargain (lot L2a) is put to a piece of them */
+const WARE_TYPES = ['buy', 'shopBuy', 'upgradeWeapon', 'temper', 'buySkill', 'barter'];
+const isArg = (o: ActionOption): boolean => o.action.type === 'bargain' || (o.action.type === 'barter' && !!o.action.arg);
 /** the refusals that say there is nothing more to get */
 const DONE: TextKey[] = ['v2.shop.owned', 'buy.haveBlade', 'buy.haveStone', 'v2.buySkill.owned', 'v2.upgrade.max', 'temper.haveBlade'];
-export const isWare = (o: ActionOption): boolean => WARE_TYPES.includes(o.action.type);
-export const isGoods = (o: ActionOption): boolean => isWare(o) || o.action.type === 'haggle';
+export const isWare = (o: ActionOption): boolean => WARE_TYPES.includes(o.action.type) && !isArg(o);
+export const isGoods = (o: ActionOption): boolean => isWare(o) || isArg(o);
 
 /** « a mail shirt » as a line's name */
 const bare = (name: string): string => { const n = name.replace(/^an? /, ''); return n[0].toUpperCase() + n.slice(1); };
@@ -59,7 +63,8 @@ export function statValue(id: StatId, v: number): string {
 }
 
 function goodsLine(s: GameState, o: ActionOption): Line {
-  const a = o.action, done = !o.ok && DONE.some((k) => tx(k) === o.reason), base = { key: JSON.stringify(a), action: a, ok: o.ok, reason: o.reason, done, tag: done ? `<span class="cost">${tx('ui.wares.owned')}</span>` : costTag(o) };
+  // a passer-by's piece once it has gone (lot L2a): nothing more to get from them
+  const a = o.action, done = (!o.ok && DONE.some((k) => tx(k) === o.reason)) || (a.type === 'barter' && s.v2?.passed?.[a.who] !== undefined), base = { key: JSON.stringify(a), action: a, ok: o.ok, reason: o.reason, done, tag: done ? `<span class="cost">${tx('ui.wares.owned')}</span>` : costTag(o) };
   if (a.type === 'shopBuy' || a.type === 'buy') {
     const d = GEAR[a.item];
     return { ...base, name: bare(itemName(a.item)), sub: tx(SLOT_TEXT[d.slot]), about: itemAbout(a.item), verb: tx('ui.wares.buy', { n: o.coins ?? 0 }), list: d.price, price: o.coins };
@@ -69,7 +74,13 @@ function goodsLine(s: GameState, o: ActionOption): Line {
     return { ...base, plain: true, name: skillName(a.skill), sub: bare(tx(k.family === 'offensive' ? 'v2.family.offensive' : k.family === 'defensive' ? 'v2.family.defensive' : 'v2.family.support')), verb: tx('ui.wares.learn', { n: o.coins ?? 0 }),
       about: tx('ui.wares.skill', { ap: tx('v2.skills.ap', { ap: act.apCost ?? 0 }), charge: chargeTime(a.skill, 1) }) };
   }
-  if (a.type === 'haggle') return { ...base, plain: true, name: tx('ui.wares.haggle'), sub: '', about: bare(o.label.match(/\((.*)\)/)?.[1] ?? o.label), verb: tx('ui.wares.haggle') };
+  // a passer-by's piece (lot L2a): bought at their price
+  if (a.type === 'barter' && !a.arg) {
+    const item = PASSERS[a.who].item, d = GEAR[item];
+    return { ...base, name: bare(itemName(item)), sub: tx(SLOT_TEXT[d.slot]), about: itemAbout(item), verb: tx('ui.wares.buy', { n: o.coins ?? 0 }), list: d.price, price: o.coins };
+  }
+  // an argument (lot L2a): its words and chance, what it costs if it works
+  if (a.type === 'bargain' || a.type === 'barter') return { ...base, plain: true, name: o.label.replace(/ \(\d+ %\)$/, ''), sub: o.label.match(/\((\d+ %)\)$/)?.[1] ?? '', about: '', verb: tx('ui.wares.argue'), price: o.coins };
   // the forge's work: the sentence is the simulation's, its price in the tag
   const [said, about = ''] = shortLabel(o).split(' · ');
   return { ...base, name: a.type === 'upgradeWeapon' && s.v2?.gear ? tx('ui.wares.raise', { item: bare(itemName(s.v2.gear.weapon)), tier: weaponTier(s) + 1 }) : said, sub: tx('ui.wares.forge'), about, verb: tx('ui.wares.order', { n: o.coins ?? 0 }) };
@@ -138,8 +149,12 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
 
   const draw = (): void => {
     const s = host.state(), all = who ? actions(s).filter((o) => offeredBy(o.action as never) === who && isGoods(o)) : [];
-    const wares = all.filter((o) => o.action.type !== 'buySkill' && o.action.type !== 'haggle').map((o) => goodsLine(s, o)), taught = all.filter((o) => o.action.type === 'buySkill').map((o) => goodsLine(s, o));
-    const bargain = all.filter((o) => o.action.type === 'haggle').map((o) => goodsLine(s, o)), bag = bagLines(s), lines = [...wares, ...taught, ...bargain, ...bag];
+    // a piece's arguments go with it (lot L2a): the shop's piece by its item, the passer-by's own
+    const argsOf = (a: Action): Line[] => all.filter((o) => isArg(o) && (a.type === 'shopBuy' ? o.action.type === 'bargain' && o.action.item === a.item : a.type === 'barter' && o.action.type === 'barter' && o.action.who === a.who)).map((o) => goodsLine(s, o));
+    const wares = all.filter((o) => isWare(o) && o.action.type !== 'buySkill').map((o) => { const l = goodsLine(s, o), args = argsOf(o.action); return args.length ? { ...l, args } : l; }), taught = all.filter((o) => o.action.type === 'buySkill').map((o) => goodsLine(s, o));
+    // the piece's arguments are drawn again from the state: a bargain refused since shows its reason
+    if (mode) mode = wares.find((l) => l.key === mode!.key) ?? null;
+    const bag = bagLines(s), lines = mode ? mode.args! : [...wares, ...taught, ...bag];
     const url = who ? portraitUrl(who) : null;
     card.innerHTML = `<section class="pm-self">${figHtml(s)}<div class="pm-worn">${wornHtml(s)}</div><dl class="pm-stats">${statsHtml(s)}</dl></section>`
       + `<section class="pm-goods"><header class="pm-ghead">${url ? `<img src="${url}" alt="">` : ''}<h2 class="pm-h">${esc(title)}${p ? `<small>${esc(titleOf(p, isV2(s)))}</small>` : ''}</h2><div class="pm-purse"><b>${s.player.coins}</b><small>${tx('ui.coins')}</small></div></header><div class="pm-glist"></div><div class="pm-detail" aria-live="polite"></div><div class="pm-foot"></div></section>`;
@@ -149,9 +164,13 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
       if (!l.ok) return;
       const r = host.act(l.action);
       if (!r.ok || r.reload) return;
-      news = (r.events ?? []).filter((e) => e.visible).map((e) => e.text); keyNow = l.key;
+      // an argument put: back to the goods, on the piece it was for
+      news = (r.events ?? []).filter((e) => e.visible).map((e) => e.text); keyNow = mode ? mode.key : l.key; mode = null;
       card.classList.add('still'); draw();
     };
+    // the bargain (lot L2a): the piece's arguments in the list, Esc back to the goods
+    const haggle = (l: Line): void => { mode = l; keyNow = ''; news = []; draw(); };
+    const back = footBtn('Esc', tx('ui.wares.back'), () => { const k = mode!.key; mode = null; keyNow = k; draw(); });
     const select = (l: Line): void => {
       if (keyNow && l.key !== keyNow && lines.some((x) => x.key === keyNow)) news = [];
       keyNow = l.key;
@@ -161,16 +180,26 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
       const what = [...new Set([l.sub, v?.replaces ? tx('ui.wares.instead', { item: itemName(v.replaces) }) : '', v?.toBag ? tx('ui.wares.toBag') : ''])].filter(Boolean).join(' · ');
       const same = !!v && !l.plain && !v.rows.length && v.slot === null && !v.toBag && l.ok;
       const notes = [v?.tierLost ? tx('ui.wares.tierLost', { tier: v.tierLost }) : '', !l.done && l.list && l.price !== l.list ? tx('ui.wares.list', { n: l.list }) : '', same ? tx('ui.wares.same') : ''].filter(Boolean).join(' ');
-      detail.innerHTML = `${news.map((n) => `<p class="news">${esc(n)}</p>`).join('')}<p class="nm">${esc(l.name)}</p>${what ? `<p class="what">${esc(what)}</p>` : ''}<p class="ab">${esc(l.about)}</p>${notes ? `<p class="what">${esc(notes)}</p>` : ''}${cmpHtml(l, v)}${l.ok ? '' : `<p class="no">${esc(l.reason ?? '')}</p>`}`;
-      fillFoot(foot, l.ok ? footBtn('Enter', l.verb, () => doIt(l), true) : null, close);
+      if (mode) {
+        // an argument: its chance, what it costs if it works against the piece's price, and what failing costs
+        detail.innerHTML = `<p class="nm">${esc(l.name)}</p><p class="what">${esc(tx('ui.wares.chance', { pct: l.sub }))}</p><p class="ab">${esc(tx('ui.wares.ifWon', { n: l.price ?? 0, list: mode.price ?? 0 }))}</p><p class="what">${esc(tx('ui.wares.ifLost'))}</p>${l.ok ? '' : `<p class="no">${esc(l.reason ?? '')}</p>`}`;
+        fillFoot(foot, l.ok ? footBtn('Enter', l.verb, () => doIt(l), true) : null, back);
+        fit();
+        return;
+      }
+      const argNo = l.args && !l.args.some((x) => x.ok) ? l.args.find((x) => x.reason)?.reason : undefined;
+      detail.innerHTML = `${news.map((n) => `<p class="news">${esc(n)}</p>`).join('')}<p class="nm">${esc(l.name)}</p>${what ? `<p class="what">${esc(what)}</p>` : ''}<p class="ab">${esc(l.about)}</p>${notes ? `<p class="what">${esc(notes)}</p>` : ''}${cmpHtml(l, v)}${l.ok ? '' : `<p class="no">${esc(l.reason ?? '')}</p>`}${l.ok && argNo && argNo !== l.reason ? `<p class="what">${esc(argNo)}</p>` : ''}`;
+      fillFoot(foot, l.ok ? footBtn('Enter', l.verb, () => doIt(l), true) : null, l.ok && l.args?.some((x) => x.ok) ? footBtn('Space', tx('ui.wares.haggle'), () => haggle(l)) : null, close);
       fit();
     };
     const add = (l: Line): void => { list.appendChild(pickRow(`<span>${esc(l.name)}${l.sub ? `<span class="why">${esc(l.sub)}</span>` : ''}</span>${l.tag}`, { off: !l.ok, select: () => select(l), press: () => doIt(l) })); };
     const head = (t: string): void => { list.appendChild(el('p', 'pm-sub', esc(t))); };
-    wares.forEach(add);
-    if (taught.length) { head(tx('ui.wares.teach')); taught.forEach(add); }
-    if (bargain.length) { head(tx('ui.wares.talk', { name: p!.name })); bargain.forEach(add); }
-    if (bag.length) { head(tx('v2.gear.bag')); bag.forEach(add); }
+    if (mode) { head(tx('ui.wares.bargainFor', { item: mode.name })); mode.args!.forEach(add); }
+    else {
+      wares.forEach(add);
+      if (taught.length) { head(tx('ui.wares.teach')); taught.forEach(add); }
+      if (bag.length) { head(tx('v2.gear.bag')); bag.forEach(add); }
+    }
     arrowKeys(list); scrollFade(list);
     if (!lines.length) {
       list.append(el('p', 'pm-sub', tx('v2.gear.empty')), el('p', 'pm-where', tx('v2.gear.where')));
@@ -181,6 +210,10 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
     if (card.isConnected) focus();
   };
   let focus = (): void => {};
+  let mode: Line | null = null;
+  // Space puts an argument (the foot's cap; a pad's X): never the row's own press, which buys
+  card.addEventListener('keydown', (e) => { if (e.key !== ' ') return; e.preventDefault(); if (e.repeat) return; [...card.querySelectorAll<HTMLButtonElement>('.pm-foot .pm-btn')].find((b) => (b.querySelector('kbd')?.dataset.key ?? b.querySelector('kbd')?.textContent) === 'Space')?.click(); });
+  card.addEventListener('keyup', (e) => { if (e.key === ' ') e.preventDefault(); });
   draw();
   return { root, focus: () => focus() };
 }

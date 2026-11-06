@@ -122,9 +122,23 @@ export interface V2State {
   /** the shops' day-long states (lot V4): a bargain or a grudge of the day, closed to the player for the day, a markup until a day */
   shops?: Record<string, { deal?: number; sour?: number; closed?: number; markup?: number; haggled?: number }>;
   /** a challenge put to a fighter in town, waiting for its bout on the sand (lot V4), and the day each fighter was last challenged */
-  challenge?: { who: string; day: number };
+  challenge?: { who: string; day: number; stake?: 'coins' | 'name'; reprisal?: boolean };
+  /** a robbed owner's muscle waiting for the player (lot L2b, the operator's note on EV-2: « une possibilite de combat et de represaille reelle »): whom it is
+   *  for, and the last day it waits */
+  reprisal?: { by: string; until: number };
   challenged?: Record<string, number>;
+  /** what the watch knows of the player (lot L2a, the operator's EV-2 « Un soupçon qui dure, une sortie par la restitution », journal Passe EVL2):
+   *  0..100, a number apart from the reputation (the name the Cité gives, journal Passe EV2) */
+  suspicion?: number;
+  /** every theft (lot L2a): its day, whom it robbed (a keeper or a passer-by), what; `seen` 'caught' in the act, 'found' at the next dawn, null
+   *  unseen; `night` a shuttered stall forced; `settled` returned or paid at Sergeant Hale's, or taken back by his men */
+  thefts?: V2Theft[];
+  /** the registrar's one warning given (a theft caught; the next costs a point of the pool) */
+  warned?: boolean;
+  /** the passers-by who no longer hold their piece (bought or stolen: lot L2a, the operator's note on EV-6) */
+  passed?: Record<string, number>;
 }
+export interface V2Theft { day: number; from: string; item: string; seen: 'caught' | 'found' | null; night?: boolean; settled?: boolean }
 export interface V2Gear { weapon: string; tier: number; armour: string | null; acc: [string | null, string | null]; bag: string[] }
 
 export function slotName(s: SlotId): string { return s; }

@@ -5,6 +5,8 @@ import { GEAR, MAX_WEAPON_TIER, SHOPS, TIER_PRICE, WEAPON_TIER_DAMAGE, type Gear
 import { itemText, tx } from '../narrative/text';
 import { allyAp } from '../narrative/v2story';
 import type { Mods } from '../combat/profiles';
+import { wanted } from './v2law';
+import { PEOPLE } from '../narrative/people';
 
 /** The equipment and the shops of a version 2 game (lot V3, C5; the operator's decision AV-12, with its note « arme + armure + 2 accessoires »,
  *  journal Passe V3): the gear carried (one weapon and its tier, one armour, two accessories, the bag of what is owned and not worn), what it
@@ -53,23 +55,37 @@ export function v2Mods(s: GameState): Mods & { taken: number; gauge: number; cha
 
 /** a shop's price for an item now (« proposé »): its list price × the district's factor × the player's name (up to 15 % off at reputation 60)
  *  × the keeper's goodwill (a tenth off at 15) × the steel shortage on blades and armour (today's `shopFactor`) × the hour (a fifth more at
- *  night) × a bargain or a grudge of the day (lot V4) */
+ *  night) × the keeper's markup the days after a theft caught (lot V4); a bargain is struck at the moment of buying (lot L2a, v2barter.ts) */
 export function shopPrice(s: GameState, shop: ShopId, item: string): number {
   const d = GEAR[item], sh = SHOPS[shop];
   if (!d) return 0;
   const steel = d.slot === 'weapon' || d.slot === 'armour' ? s.services.shopFactor : 1;
   const rep = 1 - Math.min(0.15, s.player.reputation / 400), rel = (s.town[sh.keeper] ?? 0) >= 15 ? 0.9 : 1, night = s.slot === 'evening' ? 1.2 : 1;
-  const day = s.v2?.shops?.[shop], deal = day?.deal === s.day ? 0.85 : day?.sour === s.day ? 1.1 : 1, markup = day?.markup && day.markup >= s.day ? 1.25 : 1;
-  return Math.max(1, Math.round(d.price * sh.factor * rep * rel * steel * night * deal * markup));
+  const day = s.v2?.shops?.[shop], markup = day?.markup && day.markup >= s.day ? 1.25 : 1;
+  return Math.max(1, Math.round(d.price * sh.factor * rep * rel * steel * night * markup));
 }
 
-/** is this shop open to the player now: its place, its hours, its keeper there, not closed to the player for the day (a theft caught, V4) */
+/** is this shop open to the player now: its place, its hours, its keeper there, not closed to the player for the day (a theft caught, V4), not
+ *  shut to a player the watch wants (lot L2a: the stallholders talk, until a restitution at Sergeant Hale's) */
 export function shopOpen(s: GameState, shop: ShopId): string | null {
   const sh = SHOPS[shop];
   if (s.place !== sh.place) return tx('v2.shop.notHere');
   if (!sh.open.includes(s.slot)) return tx('v2.shop.shut');
   if (s.v2?.shops?.[shop]?.closed === s.day) return tx('v2.shop.barred');
+  if (wanted(s)) return tx('v2.shop.wanted', { name: PEOPLE[sh.keeper]?.name ?? sh.keeper });
   return null;
+}
+
+/** a piece bought (from a shop, by a bargain, from a passer-by) goes where it is worn, or into the bag: the salve heals at once, the whetstone waits for
+ *  the next bout, a weapon is taken in hand (the old one to the bag), an armour worn (the old one to the bag), an accessory on a free place or the bag */
+export function receive(s: GameState, item: string): void {
+  const d = GEAR[item];
+  if (item === 'salve') { s.player.injury = Math.max(0, s.player.injury - 1); return; }
+  if (item === 'whetstone') { s.player.items.push('whetstone'); return; }
+  const g = gearOf(s);
+  if (d.slot === 'weapon') { g.bag.push(g.weapon); g.weapon = item; g.tier = 0; }
+  else if (d.slot === 'armour') { if (g.armour) g.bag.push(g.armour); g.armour = item; }
+  else { const i = g.acc.indexOf(null); if (i >= 0) g.acc[i] = item; else g.bag.push(item); }
 }
 
 export const itemName = (id: string): string => itemText(id, 'name');
@@ -102,14 +118,10 @@ export const V2_GEAR_ACTIONS: { [K in V2GearAction['type']]: ActionDef<Extract<V
       return s.player.coins < shopPrice(s, a.shop, a.item) ? tx('buy.poor') : null;
     },
     apply: (s, a, _r, emit) => {
-      const p = shopPrice(s, a.shop, a.item), d = GEAR[a.item], g = gearOf(s), keeper = SHOPS[a.shop].keeper;
+      const p = shopPrice(s, a.shop, a.item), d = GEAR[a.item], keeper = SHOPS[a.shop].keeper;
       s.player.coins -= p; s.town[keeper] = clamp((s.town[keeper] ?? 0) + 3, -100, 100);
-      if (a.item === 'salve') s.player.injury = Math.max(0, s.player.injury - 1);
-      else if (a.item === 'whetstone') s.player.items.push('whetstone');
       // what is bought is worn at once when its place is free (or better than nothing), else kept in the bag
-      else if (d.slot === 'weapon') { g.bag.push(g.weapon); g.weapon = a.item; g.tier = 0; }
-      else if (d.slot === 'armour') { if (g.armour) g.bag.push(g.armour); g.armour = a.item; }
-      else { const i = g.acc.indexOf(null); if (i >= 0) g.acc[i] = a.item; else g.bag.push(a.item); }
+      receive(s, a.item);
       emit({ kind: 'action', id: `shop:${a.item}`, cause: s.services.shopFactor > 1 && (d.slot === 'weapon' || d.slot === 'armour') ? tx('buy.causePrices', { cause: s.services.shopCause }) : 'action:shopBuy', visible: true, text: tx('v2.shop.log', { item: itemName(a.item), price: p }) });
     },
   },

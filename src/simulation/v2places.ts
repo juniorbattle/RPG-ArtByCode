@@ -14,7 +14,8 @@ export const PLAZA_OF: Partial<Record<PlaceId, PlazaKind>> = { forecourt: 'forec
 export const PLAZA_CROWD: Record<Look, number> = { night: 4, morning: 5, midday: 12, afternoon: 8 };
 
 export function plazaPeople(s: GameState): string[] {
-  const out = Object.values(PEOPLE).filter((p) => presentAt(p, s.place, s.slot, true)).map((p) => p.id);
+  // (a person in the Cité some days only, a passer-by of lot L2a, stands there those days; a person met by portrait only, lot L2b, stands nowhere)
+  const out = Object.values(PEOPLE).filter((p) => presentAt(p, s.place, s.slot, true) && !p.generic && (!p.days || (s.day >= p.days[0] && s.day <= p.days[1]))).map((p) => p.id);
   if (s.place === 'forecourt') out.push('guardA', 'guardB');
   return out;
 }

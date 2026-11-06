@@ -2,7 +2,7 @@ import { clamp, type GameState, type V2State } from './state';
 import type { Emit } from './advance';
 import type { ActionDef } from './actions';
 import { isV2, v2KitOf } from './v2';
-import { SKILL_BOOK, taughtBy } from '../combat/skillbook';
+import { LATE_TEACHER, SKILL_BOOK, taughtBy } from '../combat/skillbook';
 import { MAX_LEVEL, chargeTime } from '../combat/skills';
 import { skillName, tx } from '../narrative/text';
 
@@ -33,7 +33,8 @@ export function learnOrRaise(s: GameState, id: string, cap = MAX_LEVEL): 'learnt
 
 /** a challenge won against this fighter (lot V4): its skill learnt, or raised; null when the fighter teaches none */
 export function learnFromChallenge(s: GameState, fighter: string, emit: Emit): string | null {
-  const id = taughtBy(fighter);
+  // (a rival out of the title teaches a skill of the catalogue from day 6, lot L2b)
+  const id = taughtBy(fighter) ?? LATE_TEACHER[fighter] ?? null;
   if (!id) return null;
   const r = learnOrRaise(s, id);
   emit({ kind: 'action', id: `skill:${r}`, cause: `challenge:${fighter}`, visible: true, text: r === 'learnt' ? tx('v2.skill.learnt', { skill: skillName(id) }) : r === 'raised' ? tx('v2.skill.raised', { skill: skillName(id), level: levelOf(s, id) }) : tx('v2.skill.max', { skill: skillName(id) }) });

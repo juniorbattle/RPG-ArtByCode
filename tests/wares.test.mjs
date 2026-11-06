@@ -108,7 +108,11 @@ test('the dialogue gives one line to the goods: every keeper\'s wares and bargai
   const st = v2(); st.player.coins = 300;
   const all = G.actions(st);
   assert.ok(all.filter(W.isWare).some((o) => o.action.type === 'shopBuy') && all.filter(W.isWare).some((o) => o.action.type === 'upgradeWeapon'));
-  assert.ok(all.some((o) => o.action.type === 'haggle' && W.isGoods(o) && !W.isWare(o)));
+  // the bargains (lot L2a, EV-6): put to a piece of the goods, never a line of their own; a passer-by's piece is goods, its arguments with it
+  assert.ok(all.some((o) => o.action.type === 'bargain' && W.isGoods(o) && !W.isWare(o)));
+  const fc = structuredClone(st); fc.place = 'forecourt'; const fa = G.actions(fc);
+  assert.ok(fa.some((o) => o.action.type === 'barter' && !o.action.arg && W.isWare(o)) && fa.some((o) => o.action.type === 'barter' && o.action.arg && W.isGoods(o) && !W.isWare(o)));
+  assert.ok(!fa.some((o) => o.action.type === 'pickpocket' && W.isGoods(o)), 'a pocket stays with the place\'s actions');
   assert.ok(!all.some((o) => o.action.type === 'steal' && W.isGoods(o)), 'stealing stays with the place\'s actions');
   const d = G.namedState('day1-morning');
   assert.ok(G.actions(d).filter(W.isWare).every((o) => o.action.type === 'buy' || o.action.type === 'temper'), 'the default game\'s stall');

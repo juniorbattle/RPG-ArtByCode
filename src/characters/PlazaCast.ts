@@ -27,5 +27,9 @@ export function plazaCastEntries(): CastEntry[] {
 }
 /** the approved faces, by person (the interface's portraits in a version 2 game) */
 export function plazaFaces(): Record<string, { id: string; png: string; json: unknown; sha256: string }> {
-  return Object.fromEntries(PLAZA_PEOPLE.map((who) => { const e = castEntries(false, [entry(who)])[0], id = e.manifest.id; return [who, { id, png: e.png, json: e.json, sha256: e.files[`art-lab/characters/exports/${id}.png`] }]; }));
+  const face = (e: CastEntry) => { const id = e.manifest.id; return { id, png: e.png, json: e.json, sha256: e.files[`art-lab/characters/exports/${id}.png`] }; };
+  // the passers-by (lot L2a, journal Passe EVL2): the faces of the sheets they stand as, a citizen of a square or a townsperson of the quay
+  const older = castEntries(false).find((e) => e.manifest.id === 'older-merchant-x2-v1');
+  const passers: Array<[string, CastEntry | undefined]> = [['edda', castEntries(false, [citizen('noble')])[0]], ['sela', castEntries(false, [citizen('wayfarer')])[0]], ['fenwick', older]];
+  return Object.fromEntries([...PLAZA_PEOPLE.map((who) => [who, face(castEntries(false, [entry(who)])[0])]), ...passers.filter(([, e]) => !!e).map(([who, e]) => [who, face(e!)])]);
 }

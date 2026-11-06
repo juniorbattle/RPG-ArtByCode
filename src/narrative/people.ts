@@ -17,6 +17,12 @@ export interface Person {
   v2?: boolean;
   /** where and when a person of today's game stands in a version 2 game (lot V5: the training ground, the festival square) */
   v2at?: { place?: PlaceId; hours?: readonly SlotId[]; title?: string };
+  /** a passer-by of the version 2 who holds a piece one can buy, bargain for or steal (lot L2a, the operator's note on EV-6) */
+  passer?: boolean;
+  /** the days a person is in the Cité (absent: every day) */
+  days?: readonly [number, number];
+  /** a person met by portrait and words only on a square (no sheet stands there: a generic fighter until its art, Tobin and Rhosk, lot L2b) */
+  generic?: boolean;
 }
 
 const DAY: readonly SlotId[] = ['morning', 'afternoon'];
@@ -48,6 +54,21 @@ export const PEOPLE: Record<string, Person> = {
   // the version 2's districts (lot V5): the training ground's drill master, the festival square's bard
   drill: { id: 'drill', name: 'Sergeant Brann', title: 'the drill master', place: 'training', hours: DAY, v2: true },
   bard: { id: 'bard', name: 'Wren', title: 'the festival\'s bard', place: 'lanterns', hours: ['afternoon', 'evening'], v2: true },
+  // the version 2's passers-by (lot L2a, the operator's note on EV-6: « marchander avec les passants pour obtenir un objet qui possede au lieu de le
+  // voler »), each a walker of the place's crowd with a piece of their own (src/simulation/v2barter.ts PASSERS), « proposé »: the river trader whose
+  // barge ties up at dusk until it leaves after the major match, the mother of a knight who lost the qualifiers, a pilgrim who walks on after the parade
+  fenwick: { id: 'fenwick', name: 'Fenwick', title: 'a river trader', place: 'district', hours: NIGHT, v2: true, passer: true, days: [1, 7] },
+  edda: { id: 'edda', name: 'Lady Edda', title: 'a knight\'s mother', place: 'forecourt', hours: DAY, v2: true, passer: true },
+  sela: { id: 'sela', name: 'Sela', title: 'a pilgrim on the road south', place: 'lanterns', hours: ['afternoon', 'evening'], v2: true, passer: true, days: [1, 9] },
+  // the version 2's generic fighters (lot L2b, the operator's note on EV-4 and « En ville, structure gardée (Recommandé) », journal Passes EV2 / EVL3): the
+  // qualifiers' losers, held before Ren came, who stayed in the Cité (src/narrative/generics.ts); portrait and words only until their sheets (art sheet)
+  aldric: { id: 'aldric', name: 'Ser Aldric Venn', title: 'a knight out in the qualifiers', place: 'training', hours: DAY, v2: true, generic: true },
+  corra: { id: 'corra', name: 'Corra Dunmere', title: 'a staff for hire on the quay', place: 'district', hours: NIGHT, v2: true, generic: true },
+  ambrose: { id: 'ambrose', name: 'Brother Ambrose', title: 'a lantern-bearer of the hill shrines', place: 'lanterns', hours: ['afternoon', 'evening'], v2: true, generic: true },
+  // the pool's two who had no place in town (« Portrait seulement », casting R-ville, journal Passe CA1): on the training ground after the cut, a challenge
+  // for whoever is out of the title (lot L2b, EV-4 « Les trois, puis les éliminés à partir du jour 6 »)
+  tobin: { id: 'tobin', name: 'Tobin Fenn', title: 'the Hopeful, of the pool', place: 'training', hours: DAY, rival: 'tobin', v2: true, days: [6, 10], generic: true },
+  rhosk: { id: 'rhosk', name: 'Rhosk', title: 'the Northman, of the pool', place: 'training', hours: DAY, rival: 'rhosk', v2: true, days: [6, 10], generic: true },
 };
 
 /** where a person stands in this game (a version 2 game moves some of today's people: lot V5) */

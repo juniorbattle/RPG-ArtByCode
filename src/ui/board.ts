@@ -4,6 +4,7 @@ import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './st
 import { portraitUrl } from './portraits';
 import { tx } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
+import { suspicionOf } from '../simulation/v2law';
 import { actOf, stageName } from '../tournament/v2calendar';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 
@@ -73,8 +74,15 @@ function fighterHtml(st: GameState, id: string): { head: string; body: string } 
   const fought = bouts.filter((b) => b.won !== null), ahead = bouts.filter((b) => b.won === null);
   return {
     head: `<div class="pm-who">${url ? `<img src="${url}" alt="">` : ''}<h2 class="pm-h">${esc(nameOf(st, id))}<small>${esc(sub)}</small></h2><div class="pm-rec"><b>${st.tournament.points[id] ?? 0}</b><small>${tx('ui.board.pts')}</small></div></div>`,
-    body: `${r ? `<p>${esc(r.bio)}</p>` : ''}${known ? `<p class="pm-entry">${esc(known)}</p>` : ''}${ahead.length ? `<p class="pm-sub">${tx('ui.board.ahead')}</p>${ahead.map((b) => boutHtml(st, b)).join('')}` : ''}${fought.length ? `<p class="pm-sub">${tx('ui.board.results')}</p>${fought.map((b) => boutHtml(st, b)).join('')}` : ''}${rulesHtml(st)}`,
+    body: `${r ? `<p>${esc(r.bio)}</p>` : ''}${me ? nameHtml(st) : ''}${known ? `<p class="pm-entry">${esc(known)}</p>` : ''}${ahead.length ? `<p class="pm-sub">${tx('ui.board.ahead')}</p>${ahead.map((b) => boutHtml(st, b)).join('')}` : ''}${fought.length ? `<p class="pm-sub">${tx('ui.board.results')}</p>${fought.map((b) => boutHtml(st, b)).join('')}` : ''}${rulesHtml(st)}`,
   };
+}
+
+/** a version 2 game (lot L2a; the operator's question on EV-2, « on parle de reputation mais comment cela fonctionne ? », journal Passe EV2): the player's own
+ *  line says what the two numbers are, apart, and what each opens and shuts; today's game shows nothing more */
+function nameHtml(st: GameState): string {
+  if (!isV2(st)) return '';
+  return `<p class="pm-sub">${tx('ui.name.title')}</p><p>${esc(tx('ui.name.rep', { n: st.player.reputation }))}</p><p>${esc(tx('ui.name.sus', { n: suspicionOf(st) }))}</p>`;
 }
 
 export function boardPage(st: GameState, rows: Row[], close: () => void): { root: HTMLElement; focus(): void } {
