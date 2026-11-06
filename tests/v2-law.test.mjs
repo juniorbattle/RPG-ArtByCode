@@ -228,7 +228,8 @@ test('a reprisal (lot L2b, the operator\'s note on EV-2): a robbed owner\'s grud
   const night = structuredClone(dawn); night.day = 2; night.slot = 'evening'; night.place = 'district'; night.player.coins = 50;
   const opts = G.actions(night), face = opts.find((o) => o.action.type === 'faceMuscle'), pay = opts.find((o) => o.action.type === 'payMuscle');
   assert.ok(face.ok && pay.ok); assert.equal(pay.coins, 20); assert.equal(face.later, 1);
-  assert.match(opts.find((o) => o.action.type === 'challenge' && o.action.who === 'corra').reason, /a debt, not for sport/);
+  assert.ok(!opts.some((o) => o.action.type === 'challenge' && o.action.who === 'corra'), 'her sport is not offered');
+  assert.match(G.advance(night, { type: 'challenge', who: 'corra', stake: 'coins' }).reason, /a debt, not for sport/);
   const paid = act(night, { type: 'payMuscle' }).state;
   assert.equal(paid.player.coins, 30); assert.equal(paid.v2.reprisal, undefined); assert.equal(paid.town.mara, night.town.mara + 15);
   // faced: her sheet on her rival's profile; won, the muscle gone and a little name; lost, the purse, the pieces back, a heavy blow's wound

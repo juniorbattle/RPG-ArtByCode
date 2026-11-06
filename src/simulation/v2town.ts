@@ -52,7 +52,8 @@ export function challengeable(s: GameState, who: string): string | null {
   return fightsToday(s, who) ? tx('v2.challenge.fights', { name: p.name }) : null;
 }
 /** the fighters a challenge can be offered to at this place: the three, the generic fighters, and from day 6 the rivals in town */
-const candidates = (s: GameState): string[] => Object.values(PEOPLE).filter((p) => placeOf(p, true) === s.place && (CHALLENGERS[p.id] || GENERICS[p.id] || (s.day >= 6 && RIVALS[p.id]))).map((p) => p.id);
+// (the muscle waiting for a debt offers no sport: lot L2b)
+const candidates = (s: GameState): string[] => Object.values(PEOPLE).filter((p) => placeOf(p, true) === s.place && (CHALLENGERS[p.id] || GENERICS[p.id] || (s.day >= 6 && RIVALS[p.id])) && !(p.id === MUSCLE && s.v2?.reprisal)).map((p) => p.id);
 const fighterName = (who: string): string => PEOPLE[who]?.name ?? GENERICS[who]?.name ?? RIVALS[who]?.name ?? who;
 
 /** a stall forced at night (lot L2a, EV-2: « La nuit, les étals fermés se forcent : plus facile, puni plus fort »): a day shop shut at dusk */

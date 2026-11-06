@@ -1,0 +1,426 @@
+<title>Voler, défier, marchander</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+.state { display: flex; flex-direction: column; gap: 12px; }
+.state h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.state p { margin: 0; max-width: 68ch; }
+.chip { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border-radius: 4px; padding: 1px 7px; white-space: nowrap; }
+.chip.ok { color: var(--rec); background: var(--rec-soft); }
+.chip.thin { color: var(--brass); background: var(--brass-soft); }
+.chip.no { color: var(--cendre); background: color-mix(in srgb, var(--cendre) 14%, var(--surface)); }
+.chip.gap { color: var(--muted); background: color-mix(in srgb, var(--muted) 14%, var(--surface)); }
+.tbl.cov td:nth-child(2), .tbl.cov th { text-align: left; }
+.tbl.cov td:last-child { text-align: left; white-space: normal; color: var(--muted); font-size: 13px; min-width: 16ch; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.fig { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fig b { font-family: var(--font-body); font-weight: 700; font-size: 26px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.fig span { font-size: 13px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · version 2 · étape 5 · lot L2 · Passes EVL2 et EVL3 · 6 novembre 2026</span>
+    <h1>Voler, défier, marchander : le lot L2 construit</h1>
+    <p class="lede">Tes choix EV-2 à EV-6 et EV-16 sont construits, derrière la version 2, sur la branche <code>claude/l2-ville</code> : le soupçon à côté de la réputation, le vol qui dure et sa restitution, le marchandage au moment d’acheter, trois passants avec leur pièce, le défi à pleine vie avec une mise dans l’arène aux gradins vides, les éliminés du jour 6, trois combattants génériques et la représaille. Chaque nombre et chaque texte est « proposé ». Il reste quatorze choix avant de fusionner. Clique ton choix, une note est facultative ; tes choix s’enregistrent au fur et à mesure et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="state" aria-labelledby="h-state">
+    <h2 id="h-state">Ce qui est construit, et ce que ça change</h2>
+    <p>Mesuré sur 50 parties au laboratoire avec le joueur « curieux » (EV-16 : il marchande en achetant, vole quand le soupçon est bas, défie et emporte ce qu’il apprend, ne paie la garde qu’après un signe, va chez Hale quand la garde le veut). Le jeu par défaut ne change pas : 0 px contre <code>main</code>, mêmes empreintes, laboratoire identique au JSON près.</p>
+    <div class="figs">
+      <div class="fig"><b>3,7 / 6,8</b><span>défis gagnés par partie, à pleine vie avec une mise (avant : 15 sur 15 à mi-vie)</span></div>
+      <div class="fig"><b>2,7</b><span>vols découverts à l’aube par partie, pour 5,6 vols (1,8 pris sur le fait)</span></div>
+      <div class="fig"><b>62 %</b><span>des parties où le curieux se qualifie (le diligent : 88 %) : les actions de la ville coûtent un créneau et du risque</span></div>
+      <div class="fig"><b>0 px</b><span>d’écart dans le jeu par défaut : treize vues et l’arène, contre <code>main</code> figé</span></div>
+    </div>
+    <div class="tbl cov">
+      <table>
+        <thead><tr><th scope="col">Ton choix</th><th scope="col">Construit</th><th scope="col">Où</th></tr></thead>
+        <tbody>
+          <tr><td>EV-2 · le vol, un soupçon qui dure, la restitution</td><td><span class="chip ok">fait</span></td><td>soupçon 0 à 100, vol découvert à l’aube, fouille et étals fermés dès 50, restitution chez Hale toujours ouverte, greffier, étals forcés la nuit</td></tr>
+          <tr><td>Ta note EV-2 · la réputation, comment ça marche ?</td><td><span class="chip ok">fait</span></td><td>deux nombres distincts, expliqués sur ta ligne de la page du tournoi (T), par le sergent Hale, et par le chiffre en haut à droite</td></tr>
+          <tr><td>Ta note EV-2 · une représaille avec un vrai combat</td><td><span class="chip ok">fait</span></td><td>Corra Dunmere, payée par la victime, t’attend sur le quai la nuit : l’affronter ou la payer</td></tr>
+          <tr><td>EV-3 · pleine vie, une mise, une fois par phase</td><td><span class="chip ok">fait</span></td><td>10 pièces rendues doubles ou 5 de ton nom ; une fois avant la coupe, une fois après ; perdu, jamais blessé</td></tr>
+          <tr><td>EV-4 · les trois, puis les éliminés ; les génériques en ville</td><td><span class="chip ok">fait</span></td><td>dès le jour 6, un rival hors du titre ; Ser Aldric, Corra, Frère Ambrose ; leur art attend ta réponse (L2-11)</td></tr>
+          <tr><td>EV-5 · l’arène aux gradins vides</td><td><span class="chip ok">fait</span></td><td>ni citadins, ni spectateurs, ni foule sonore ; le morceau des lices</td></tr>
+          <tr><td>EV-6 · au moment d’acheter, un argument ; les passants</td><td><span class="chip ok">fait</span></td><td>trois arguments dans la page des marchandises (Espace) ; Fenwick, Lady Edda, Sela et leur pièce</td></tr>
+          <tr><td>EV-16 · le joueur curieux au laboratoire</td><td><span class="chip ok">fait</span></td><td><code>--policy=curious</code>, mesuré avec le diligent</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot">Journal : Passes EVL2 et EVL3. Tests : 442 sur 442, vingt fautes injectées attrapées. Preuves : <code>play-day</code> et <code>tools/challenge-flow.mjs</code> (défi et représaille, gagnés et perdus) dans le navigateur, rejoués en Node à la même empreinte ; <code>ui-text</code> sur dix pages. Captures : serveur DEV, graine 1842, états nommés <code>v2-wanted-night</code> et <code>v2-day7-training</code>.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot au journal et dans <code>briefs/audit-gameplay-ev1.md</code>, j’applique ce qu’ils changent, je refais les mesures et les preuves touchées, puis je fusionne selon L2-14. Le lot suivant, L3 (l’observation étendue et les réponses au sabotage), part dans sa propre séance.</p>
+    <p class="src">Sources : journal Passes EV1, EV2, EVL1, EVL2, EVL3 ; <code>src/simulation/v2law.ts</code>, <code>v2barter.ts</code>, <code>v2town.ts</code> ; <code>src/narrative/generics.ts</code> ; <code>src/combat/match.ts</code> ; <code>src/ui/wares.ts</code>, <code>board.ts</code>, <code>playArena.ts</code> ; <code>src/tournament/lab.ts</code> ; <code>tests/v2-law.test.mjs</code>, <code>tests/v2-town.test.mjs</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Une entrée par décision. fam : une variable de couleur. shots : captures publiées via `files`.
+// Apostrophes : l’apostrophe typographique ’ seulement dans les chaînes entre ' '.
+const GROUPS = [
+  { id: 'vol', title: 'Le vol et la garde', sub: 'Lot L2a : deux nombres distincts, un risque qui dure, une sortie toujours ouverte.', fam: 'var(--ronce)', items: [
+    { id: 'L2-1', tag: 'réputation', title: 'Où le jeu explique la réputation et le soupçon',
+      ctx: 'Tu demandais comment marche la réputation. Elle reste ce que la Cité dit de toi ; le soupçon, à part, dit ce que sait la garde. Ils sont expliqués à trois endroits : ta propre ligne dans la page du tournoi (T) dit ce que chacun ouvre et ferme ; le sergent Hale dit son registre et comment en sortir ; le chiffre « suspicion » paraît en haut à droite seulement quand il dépasse 0.',
+      shots: [['img/06-tournoi-deux-nombres.png', 'La page du tournoi, ta ligne : la réputation et le soupçon, chacun avec ce qu’il change'], ['img/05-hale-registre.png', 'Le sergent Hale : « Your name is in my ledger: 55 of a hundred… »']],
+      rec: 'Garder ainsi : chaque nombre se lit là où on le cherche, sans page de plus ; le chiffre du soupçon ne s’affiche que s’il compte.',
+      opts: ['Garder ainsi', 'Une page à part dans le menu', 'Le chiffre du soupçon toujours affiché'], recIdx: 0,
+      src: 'src/ui/board.ts (nameHtml) ; src/narrative/dialogue.ts (hale) ; src/ui/townUi.ts (render)' },
+    { id: 'L2-2', tag: 'soupçon', title: 'Les nombres du soupçon',
+      ctx: 'Un vol non vu laisse une trace (+5) ; découvert à l’aube (une seule chance), +15 ; pris sur le fait, +25 ; pris à forcer un volet, +35. La victime trouve un vol à l’aube 6 fois sur 10 (un volet forcé 85 %, une poche 50 %). Le soupçon rend le vol plus difficile (la chance perd soupçon ÷ 200). Dès 50 : fouille à l’aube (les pièces volées détenues repartent, amende de 10) et étals fermés, jusqu’à la restitution chez Hale : les pièces rendues, les autres payées au prix catalogue, 5 de frais ; sans le sou, une corvée d’un créneau.',
+      table: { head: ['50 parties, joueur curieux', 'Par partie'], rows: [['Vols · pris · découverts à l’aube', '5,6 · 1,8 · 2,7'], ['Fouilles de la garde', '1,1'], ['Restitutions chez Hale', '1,3'], ['Soupçon à la fin des dix jours', '35,8', 1], ['Points de poule perdus au greffier', '0,8']],
+        foot: 'Le curieux ne vole que sous 20 de soupçon : il reste souvent juste sous le seuil.' },
+      rec: 'Garder ces nombres : un voleur prudent peut s’en tirer, un voleur répété finit fouillé et doit passer chez Hale, sans jamais être bloqué.',
+      opts: ['Garder ces nombres', 'Plus sévère (seuil 40, découverte 0,75)', 'Plus doux (seuil 60, découverte 0,45)'], recIdx: 0,
+      src: 'src/simulation/v2law.ts (LAW, v2Dawn, restitution) ; src/simulation/v2town.ts (stealChance)' },
+    { id: 'L2-3', tag: 'étals', title: 'Au-delà du seuil, qui refuse de te vendre ?',
+      ctx: 'Ta recommandation EV-2 disait « les marchands du quartier ». Une seule boutique par lieu : le quartier marchand n’a que Mara. Aujourd’hui, les quatre étals refusent (Mara, Hilde, Corvin, Pip), marchandage compris ; les trois passants vendent encore, c’est la porte ouverte. Les leçons de Corvin, la forge et les soins ne sont pas touchés.',
+      shots: [['img/04-voleur-liste.png', 'Un voleur recherché sur le quai la nuit : soupçon 55 en haut à droite, la poche de Fenwick dans la liste']],
+      rec: 'Les quatre étals : les marchands se parlent, la sanction se sent, et la sortie (Hale, les passants) reste là.',
+      opts: ['Les quatre étals', 'Seulement ceux qu’on a volés', 'Seulement Mara (le quartier marchand)'], recIdx: 0,
+      src: 'src/simulation/v2gear.ts (shopOpen, wanted)' },
+    { id: 'L2-4', tag: 'greffier', title: 'Le greffier après la poule',
+      ctx: 'Clerk Odo avertit au premier vol pris ; au second, un point de poule pendant la poule (jours 1 à 5). Après la coupe, un point de poule ne change plus rien : il prend alors 15 pièces.',
+      rec: 'Une amende de 15 après la poule : la règle garde un prix jusqu’au bout.',
+      opts: ['Une amende de 15 après la poule', 'Rien après la poule', 'Une amende de 30'], recIdx: 0,
+      src: 'src/simulation/v2law.ts (registrarOnCatch)' },
+    { id: 'L2-5', tag: 'nuit', title: 'La nuit, les étals fermés se forcent',
+      ctx: 'Le soir, l’étal de Mara, celui de Hilde et celui de Corvin sont fermés : on peut forcer le volet. La chance de base est 0,7 (75 % sur le parvis le premier soir), moins 0,25 sur le quai si tu as payé la garde. Pris : amende jusqu’à 25, réputation −12 à −15, l’étal fermé le lendemain, +35 de soupçon. Un volet forcé se remarque à l’aube 85 fois sur 100.',
+      shots: [['img/11-volet-force.png', 'Le parvis le soir : « Force Hilde’s shuttered stall for a padded jack (about 75 %…) »']], one: true,
+      rec: 'Garder : plus facile sur le moment, presque toujours découvert ensuite, puni plus fort, comme ta recommandation le disait.',
+      opts: ['Garder', 'Moins facile (base 0,55)', 'Seulement sur le quai'], recIdx: 0,
+      src: 'src/simulation/v2town.ts (forced, stealChance, steal)' },
+  ]},
+  { id: 'marche', title: 'Le marchandage et les passants', sub: 'Lot L2a : une décision au moment d’acheter, et des pièces qu’aucune boutique ne vend.', fam: 'var(--astre)', items: [
+    { id: 'L2-6', tag: 'marchander', title: 'Les trois arguments',
+      ctx: 'Dans la page des marchandises, une pièce montre « Espace Marchander » (X à la manette). On choisit un argument, chacun avec sa chance et son prix s’il réussit : ton nom dans la poule (0,15 + réputation ÷ 120, −20 %), l’amitié de l’étal (0,2 + bienveillance ÷ 60, −15 %), deux pièces à la fois (avec la moins chère que tu n’as pas, environ 0,5, −25 % sur les deux). Perdu : aucun surcoût, la bienveillance −4 (−8 si tu as joué l’amitié), et plus d’argument chez ce marchand ce jour-là ; le prix plein reste là. L’ancien rabais du jour est retiré.',
+      shots: [['img/01-hilde-marchandage.png', 'Chez Hilde, l’anneau de fer : les trois arguments, leur chance, leur prix']], one: true,
+      table: { head: ['50 parties, joueur curieux', 'Par partie'], rows: [['Marchandages · réussis', '2,4 · 1,2']] },
+      rec: 'Garder : une décision courte, liée à un achat précis, avec un vrai prix à l’échec.',
+      opts: ['Garder', 'Deux arguments, sans « deux à la fois »', 'Un argument par pièce et par jour, pas par marchand'], recIdx: 0,
+      src: 'src/simulation/v2barter.ts (argChance, DISCOUNT, bargain) ; src/ui/wares.ts' },
+    { id: 'L2-7', tag: 'passants', title: 'Les trois passants et leurs pièces',
+      ctx: 'Ta note : marchander avec les passants pour obtenir un objet qu’ils possèdent au lieu de le voler. Trois personnes de la foule, chacune avec une pièce unique, achetable à son prix, à marchander (ton nom −20 %, ou ce qui la touche −30 %) ou à voler : Fenwick, marchand de rivière, sur le quai la nuit, jours 1 à 7 (un anneau de perle de rivière, 26) ; Lady Edda, mère d’un chevalier sorti des qualifications, sur le parvis le jour (le haubert de son fils, 34 : la pièce « rentable », meilleure et moins chère que la cotte de Hilde) ; Sela, pèlerine, sur la place de la halle l’après-midi et le soir, jours 1 à 9 (une médaille, 18). Edda et Sela sont la dame noble et la voyageuse des citadins, arrêtées à une place.',
+      shots: [['img/02-edda-parvis.png', 'Lady Edda debout près de la tente du greffier'], ['img/03-edda-marchandises.png', 'Le haubert de son fils, comparé à ce que tu portes'], ['img/10-fenwick.png', 'Fenwick sur le quai la nuit']],
+      rec: 'Garder : chaque passant tient à un lieu, une heure et un moment du calendrier, et sa pièce donne une raison de lui parler plutôt que de le voler.',
+      opts: ['Garder', 'Un quatrième au terrain d’entraînement', 'Des pièces plus modestes'], recIdx: 0,
+      src: 'src/simulation/v2barter.ts (PASSERS) ; src/simulation/gear.ts ; src/narrative/people.ts' },
+  ]},
+  { id: 'defi', title: 'Le défi', sub: 'Lot L2b : un vrai combat avec un enjeu, aux gradins vides.', fam: 'var(--voile)', items: [
+    { id: 'L2-8', tag: 'mise', title: 'La mise d’un défi',
+      ctx: 'L’adversaire a toute sa vie. La mise se choisit : 10 pièces posées à l’acceptation et rendues doubles si tu gagnes (rendues si tu annules), ou 5 de ton nom, gagnés ou perdus. Un combattant se défie une fois avant la coupe, une fois après. Perdu, jamais de blessure. Le défi se joue dans l’arène aux gradins vides, sur le morceau des lices.',
+      shots: [['img/07-orla-mises.png', 'Orla : les deux mises, leur prix et le créneau dans l’étiquette'], ['img/12-arene-vide.png', 'Le défi dans l’arène : gradins vides, Orla à pleine vie (7 560)']],
+      table: { head: ['50 parties, joueur curieux', 'Par partie'], rows: [['Défis · gagnés', '6,8 · 3,7', 1]] },
+      rec: 'Garder : la mise en pièces se sent tout de suite, celle du nom vaut pour qui n’a pas de pièces.',
+      opts: ['Garder', 'La mise au choix (5, 10 ou 20 pièces)', 'Des pièces seulement'], recIdx: 0,
+      src: 'src/simulation/v2town.ts (STAKE, phaseOf, applyChallenge) ; src/combat/match.ts (challengeSheetFor) ; src/ui/playArena.ts' },
+    { id: 'L2-9', tag: 'éliminés', title: 'Ce qu’enseignent les éliminés du jour 6',
+      ctx: 'Dès le jour 6, un rival hors du titre (l’un des quatre de la Porte) accepte un défi là où il se tient, les jours sans combat : Marek et Vessa au parvis, Cassius sur la place la nuit, Tobin et Rhosk au terrain d’entraînement (en portrait, comme ta carte R-ville). Ta recommandation EV-4 voulait une compétence déjà au catalogue : Marek la peau de fer, Cassius la feinte, Rhosk la fente, Tobin la double taille.',
+      shots: [['img/09-tobin-jour7.png', 'Tobin au jour 7, sorti de la course au titre : les deux mises']], one: true,
+      rec: 'Garder : chaque éliminé a encore quelque chose à t’apprendre, sans compétence neuve.',
+      opts: ['Garder', 'Rien : la mise seule', 'D’autres compétences (en note)'], recIdx: 0,
+      src: 'src/combat/skillbook.ts (LATE_TEACHER) ; src/simulation/v2town.ts (challengeable)' },
+  ]},
+  { id: 'generiques', title: 'Les combattants génériques et la représaille', sub: 'Lot L2b : les perdants des qualifications restés en ville, la structure du tournoi gardée.', fam: 'var(--cendre)', items: [
+    { id: 'L2-10', tag: 'génériques', title: 'Les trois combattants génériques',
+      ctx: 'Ta réponse « En ville, structure gardée » : ce sont les perdants des qualifications tenues avant l’arrivée de Ren. Ser Aldric Venn, le chevalier malchanceux, fils de Lady Edda, au terrain d’entraînement de jour (il reconnaît son haubert si tu le portes) ; Corra Dunmere, fille noble endettée, qui loue son bâton sur le quai la nuit : c’est elle qui vient pour une représaille ; Frère Ambrose, porteur de lanterne des sanctuaires, sur la place l’après-midi et le soir. Chacun se bat sur le profil d’un rival (Ilse, Orla, Cassius), un peu plus faible, n’enseigne rien et accepte une mise.',
+      shots: [['img/08-aldric.png', 'Ser Aldric au terrain d’entraînement, en portrait et en paroles']], one: true,
+      rec: 'Garder : trois personnes, trois lieux, trois heures, liées au récit (Edda, la représaille, les sanctuaires).',
+      opts: ['Garder', 'Deux seulement (sans Ambrose)', 'D’autres noms ou d’autres lieux (en note)'], recIdx: 0,
+      src: 'src/narrative/generics.ts ; src/narrative/people.ts ; src/simulation/v2town.ts' },
+    { id: 'L2-11', tag: 'art', title: 'Leur art : quelles figures, et quand',
+      ctx: 'Pas de dessin neuf sans toi. Tant que leurs feuilles n’existent pas, ils n’ont pas de visage en ville et le duel les montre sous une figure générée de l’arène (Corra la duelliste, Aldric et Ambrose le chevalier). Ta carte N7 demandait un rôle pour les panneaux 1, 2 et 4 de G1 : le panneau 1 est le double du héros (cheveux bruns, cape bleue), il prêterait à confusion. Je propose : Aldric ← le chevalier n° 07 de la planche des personnages principaux (Combattant du Tournoi) ; Corra ← le panneau 2 de G1 (la dame au bâton : la fille noble) ; Ambrose ← le panneau 4 de G1 (le porteur de lanterne). Pour chacun, une feuille de ville ×2 (recette debout) et une feuille de combat ×3 par build-combat, depuis des planches de poses générées, 5 $ au plus par combattant (ton X5), puis tes approbations sur manifeste.',
+      shots: [['img/16-g1.webp', 'Planche G1 : panneau 1 (haut gauche, le double du héros), 2 (haut milieu, la dame au bâton), 4 (bas gauche, le porteur de lanterne)'], ['img/17-p.webp', 'Planche des personnages principaux : n° 07 Combattant du Tournoi — Chevalier (Homme)'], ['img/15-corra-duel.png', 'En attendant : Corra sous la figure générée de la duelliste']],
+      rec: 'Ces trois figures, dans une tâche à part après la fusion : L2 joue déjà avec des figures provisoires dites, et l’art passe par sa propre fiche de lot.',
+      opts: ['Ces trois figures, une tâche à part après la fusion', 'Ces trois figures, avant de fusionner L2', 'D’autres figures (en note)'], recIdx: 0,
+      src: 'art-lab/characters/reference/sources/combat-casting-2026-11-01-g1.webp, main-characters-casting-2026-10-18.webp ; journal Passe CA1 (N7, X5) ; src/arena/FighterArt.ts (FOES)' },
+    { id: 'L2-12', tag: 'représaille', title: 'La représaille de Corra',
+      ctx: 'Ta note : une possibilité de combat et de représaille réelle. À l’aube qui suit un vol découvert ou pris, si la bienveillance de la victime est tombée à −30, elle paie Corra, qui t’attend deux nuits sur le quai. Tu l’affrontes sur le sable (un vrai combat, gradins vides) ou tu la paies 20 pièces ; la restitution chez Hale y met fin aussi. Gagné : elle part pour de bon, réputation +2. Perdu : 20 pièces, les pièces volées à la victime lui reviennent, et un K.O. par un coup puissant blesse comme en combat officiel (V2B1-1). Ignorée : à la fin de sa seconde nuit, elle prend 20 pièces et les pièces.',
+      shots: [['img/14-corra-quai.png', 'Corra sur le quai : « Mara sent me. Pay me, or meet me on the sand. »'], ['img/13-porte-represaille.png', 'La porte du sable : « A reprisal »']],
+      table: { head: ['50 parties, joueur curieux', 'Par partie'], rows: [['Représailles · gagnées · perdues', '1,3 · 0,2 · 0,16']], foot: 'Les autres se règlent en payant, chez Hale, ou Corra prend son dû.' },
+      rec: 'Garder : un vrai combat, avec un vrai prix si on le perd, toujours évitable en payant ou en rendant.',
+      opts: ['Garder', 'Sans blessure', 'Plus rare (bienveillance −45)'], recIdx: 0,
+      src: 'src/simulation/v2law.ts (LAW.grudge, v2Dawn, applyReprisal, faceMuscle, payMuscle)' },
+  ]},
+  { id: 'suite', title: 'La mesure et la suite', sub: 'Ce que le laboratoire dit, et la fusion.', fam: 'var(--cendre)', items: [
+    { id: 'L2-13', tag: 'équilibre', title: 'Les actions de la ville coûtent de la préparation',
+      ctx: 'Le curieux gagne 50 % de ses combats et se qualifie dans 62 % des parties, contre 59,6 % et 88 % pour le diligent, qui ne fait que s’entraîner, se soigner et payer la garde. Ses créneaux partent dans les défis et les vols, et il perd presque un point de poule par partie au greffier. Avant L2, un voleur à réputation 0 se qualifiait 9 fois sur 10. Le laboratoire ne compte pas ce qu’une personne gagne à bien choisir (le bot vole et défie à chaque occasion permise).',
+      rec: 'Accepter : c’est l’enjeu voulu par tes choix ; un joueur qui choisit ses vols et ses défis s’en sort mieux que le bot.',
+      opts: ['Accepter : l’enjeu est voulu', 'Alléger les coûts (en note)'], recIdx: 0,
+      src: 'node tools/tournament-lab.mjs --rules=v2 --policy=curious|diligent --seeds=1..50' },
+    { id: 'L2-14', tag: 'suite', title: 'Fusionner, puis ton essai',
+      ctx: 'La branche est poussée, non fusionnée. Après tes choix, je les applique, je refais les preuves touchées, puis je fusionne dans main. Ton essai : npm run dev, puis /?play=1&new=1&v2=1.',
+      rec: 'Fusionner après la fiche, essayer ensuite, comme pour la charge (CH-6).',
+      opts: ['Fusionner après la fiche, essayer ensuite', 'Essayer avant de fusionner'], recIdx: 0,
+      src: 'AGENTS.md (règle des branches) ; journal Passe CH2' },
+  ]},
+];
+
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

@@ -352,12 +352,31 @@ Les seize choix suivent la recommandation de leur carte. Les quatre notes compl�
 - La pièce d'un passant restait proposée après l'achat, avec l'aperçu d'un second achat : elle compte désormais comme acquise (`done`).
 - Corra apparaissait dans le duel sous le Marek généré, un vieil homme barbu : les génériques reçoivent une figure générée selon leur personne (`FOES.corra = FOES.vessa`).
 - Mes propres outils : le script de l'état nommé `v2-day7-training` comptait une attente de trop (refusée le jour 4) ; le rejeu de `challenge-flow` oubliait la parole que l'ouverture d'un dialogue joue (`talk`).
+- Vu sur la capture de la fiche : pendant une représaille, le dialogue de Corra montrait ses deux défis refusés (« here for a debt, not for sport ») au-dessus de « Face » et « Pay ». Ils ne sont plus proposés tant qu'elle attend pour une dette ; le refus reste dans la règle (le test le vérifie).
 
 ### Relevé hors du lot
 - Au jour 7, un joueur vainqueur de sa demi-finale lit « Your bouts are fought » : la finale du jour 10 n'existe qu'après les combats du jour 8. C'est un défaut de lecture d'avant L2, à reprendre en L5 ou sur décision.
 
+### La fiche — publiée, rien de décidé
+- Page privée https://claude.ai/artifact/JtHMUAQxrAoHdNq8wRytGP, source `briefs/fiche-l2.html` (la page de la fiche EV1), dix-sept images publiées avec la page (pas dans le dépôt : quinze captures du vrai jeu, la planche G1 et celle des personnages principaux). Collection `decisions` relue vide à la publication ; une écriture d'essai dans `probe`, lue puis effacée : la base répond. Vérifiée en local avant : 14 cartes, 40 options, toutes les images chargées, aucun débordement à 1 200 et 390 px, aucune erreur de page.
+- Quatorze cartes, chacune avec sa recommandation :
+  - L2-1, où le jeu explique les deux nombres : « Garder ainsi » ;
+  - L2-2, les nombres du soupçon : « Garder ces nombres » ;
+  - L2-3, qui refuse de vendre au-delà du seuil : « Les quatre étals » ;
+  - L2-4, le greffier après la poule : « Une amende de 15 après la poule » ;
+  - L2-5, les étals forcés la nuit : « Garder » ;
+  - L2-6, les trois arguments : « Garder » ;
+  - L2-7, les trois passants : « Garder » ;
+  - L2-8, la mise : « Garder » ;
+  - L2-9, ce qu'enseignent les éliminés : « Garder » ;
+  - L2-10, les trois génériques : « Garder » ;
+  - L2-11, leur art : « Ces trois figures, une tâche à part après la fusion ». Les figures proposées : Aldric ← le chevalier n° 07 de la planche des personnages principaux, parce que le panneau 1 de G1 est le double du héros ; Corra ← le panneau 2 de G1 (la dame au bâton) ; Ambrose ← le panneau 4 de G1 (le porteur de lanterne). Cela répond à N7 pour deux panneaux sur trois ;
+  - L2-12, la représaille : « Garder » ;
+  - L2-13, l'équilibre (le curieux qualifié à 62 % contre 88 %) : « Accepter : l’enjeu est voulu » ;
+  - L2-14, la suite : « Fusionner après la fiche, essayer ensuite ».
+
 ### Où reprendre
-- La fiche d'arbitrages de L2 (ce qui reste à trancher avant de fusionner : les nombres « proposés », l'étendue de la fermeture des étals, les mises, les génériques et leur art), puis la relecture, l'application des choix, les preuves touchées et la fusion. Ce qui revient à L3 est dit dans la passe qui fusionnera.
+- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot, appliquer ce qui change, refaire les mesures et les preuves touchées, puis fusionner selon L2-14. Ce qui revient à L3 est dit dans la passe qui fusionnera.
 
 ### Pensée
 - Un combat qui coûte quelque chose se mesure : à pleine vie avec une mise, le défi n'est plus gagné quinze fois sur quinze (3,7 sur 6,8 pour le curieux).

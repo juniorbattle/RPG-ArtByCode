@@ -163,3 +163,14 @@ d'EV-5, lot L2. Le jeu par défaut reste tel quel : son journal montre encore le
 bandeau a montré (écarts consignés au journal, Passe EVL1). Ce qui revient à L2 : le vol découvert le lendemain (EV-2 ; le texte du vol réussi ne
 promet plus rien d'ici là), la réputation et le soupçon expliqués dans le jeu, le défi à pleine vie avec une mise, une fois par phase, dans l'arène
 aux gradins vides (EV-3, EV-5).
+
+## 9. L2, voler, défier, marchander (Passes EVL2 et EVL3, 05-06/11/2026)
+
+Construit derrière `flags.v2` sur la branche `claude/l2-ville`, non fusionné. EV-2 : le soupçon à côté de la réputation, expliqués dans le jeu ; le vol
+noté, découvert à l'aube ; au-delà de 50, la fouille et les quatre étals fermés jusqu'à la restitution chez Hale, toujours ouverte ; le greffier ; les étals
+forcés la nuit ; la représaille de Corra Dunmere, affrontée ou payée. EV-3 / EV-5 : le défi à pleine vie, une mise (10 pièces ou 5 du nom), une fois par
+phase, jamais de blessure, dans l'arène aux gradins vides. EV-4 : dès le jour 6, un rival hors du titre ; trois combattants génériques (Ser Aldric, Corra,
+Frère Ambrose), en portrait seul jusqu'à leur art. EV-6 : trois arguments au moment d'acheter ; trois passants avec une pièce unique (Fenwick, Lady Edda,
+Sela). EV-16 : le joueur curieux (50 parties : 50 % de combats gagnés, qualifié à 62 %, 3,7 défis gagnés sur 6,8, 2,7 vols découverts). Le jeu par défaut
+est identique (0 px, empreintes, laboratoire au JSON près). La fiche du lot : https://claude.ai/artifact/JtHMUAQxrAoHdNq8wRytGP (`briefs/fiche-l2.html`),
+quatorze cartes, à relire avant la fusion.
