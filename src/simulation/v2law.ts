@@ -13,21 +13,18 @@ import type { DuelOutcome } from '../tournament/pool';
 
 /** The watch and the thefts of a version 2 game (lot L2a; the operator's choice EV-2 « Un soupçon qui dure, une sortie par la restitution »,
  *  with his note « Mais il peut aussi avoir une possibilite de combat et de represaille reelle, d'ailleurs on parle de reputation mais comment
- *  cela fonctionne ? », journal Passes EV2 / EVL2). Two numbers apart: the reputation is the name the Cité gives (the tournament and the town read
- *  it); the suspicion is what Sergeant Hale's watch knows. Each theft leaves a trace; one nobody saw can be found by its owner at the next dawn;
- *  past a threshold the watch searches the player at dawn and the stallholders will not sell, until the player returns or pays what was taken at
- *  Sergeant Hale's, a way out that is always open (a purse too thin hauls for the watch the rest of the slot). The registrar warns once; a second
- *  theft caught costs a point of the pool. Every number is « proposé ». Pure. */
+ *  cela fonctionne ? », journal Passes EV2 / EVL2; simplified by his L2-2 « Des marques (Recommandé) », after his note « la version de octopath
+ *  traveler est parait plus simple », journal Passe EVL4). Two numbers apart: the reputation is the name the Cité gives (the tournament and the town
+ *  read it); the marks are Sergeant Hale's ledger, one per theft caught or found by its owner at the next dawn. At three marks the watch searches the
+ *  player at dawn and the stallholders will not sell, until the player returns or pays what was taken at Sergeant Hale's, a way out that is always
+ *  open (a purse too thin hauls for the watch the rest of the slot). The registrar warns once; a second theft caught costs a point of the pool.
+ *  Every number is « proposé ». Pure. */
 
 export const LAW = {
-  /** from here the watch searches the player at dawn and the stallholders refuse to sell */
-  wanted: 50,
-  /** what a theft adds to the suspicion: unseen (a trace), found at the next dawn, caught in the act, caught forcing a shuttered stall */
-  trace: 5, found: 15, caught: 25, caughtNight: 35,
+  /** the marks from which the watch searches the player at dawn and the stallholders refuse to sell (L2-2 « Des marques »: three) */
+  wanted: 3,
   /** the chance an owner finds an unseen theft at the next dawn: a stall counted, a forced shutter, a passer-by's pocket */
   foundChance: 0.6, foundNight: 0.85, foundPocket: 0.5,
-  /** a theft's chance loses the suspicion over this (the watch's eye on the player) */
-  eye: 200,
   /** the watch's fine at a dawn search, Hale's fee on a restitution, the registrar's fine for a second theft caught after the pool */
   searchFine: 10, fee: 5, registrarFine: 15,
   /** the reprisal (lot L2b): a robbed owner whose goodwill falls this low pays the muscle; the nights it waits; what paying it off costs, what it takes when
@@ -35,10 +32,12 @@ export const LAW = {
   grudge: -30, waits: 2, payOff: 20, takes: 20,
 } as const;
 
-export const suspicionOf = (s: Pick<GameState, 'v2'>): number => s.v2?.suspicion ?? 0;
+/** the marks in Sergeant Hale's ledger */
+export const marksOf = (s: Pick<GameState, 'v2'>): number => s.v2?.marks ?? 0;
 /** the watch wants a word: searches at dawn, the stalls shut to the player (lot L2a) */
-export const wanted = (s: GameState): boolean => isV2(s) && suspicionOf(s) >= LAW.wanted;
-export function raiseSuspicion(s: GameState, n: number): void { s.v2!.suspicion = clamp(suspicionOf(s) + n); }
+export const wanted = (s: GameState): boolean => isV2(s) && marksOf(s) >= LAW.wanted;
+/** one more mark (the ledger holds three: more changes nothing) */
+export function mark(s: GameState): void { s.v2!.marks = Math.min(LAW.wanted, marksOf(s) + 1); }
 
 export const unsettled = (s: Pick<GameState, 'v2'>): V2Theft[] => (s.v2?.thefts ?? []).filter((t) => !t.settled);
 /** who a theft robbed, by name (a keeper, a passer-by) */
@@ -61,10 +60,10 @@ export function giveBack(s: GameState, id: string): void {
   else if (g.weapon === id) { const t = g.bag.indexOf('training-sword'); if (t >= 0) g.bag.splice(t, 1); g.weapon = 'training-sword'; g.tier = 0; }
 }
 
-/** a theft recorded, and its trace on the suspicion */
+/** a theft recorded; caught, a mark in the ledger (an unseen one leaves none until its owner finds it) */
 export function recordTheft(s: GameState, t: V2Theft): void {
   (s.v2!.thefts ??= []).push(t);
-  raiseSuspicion(s, t.seen === 'caught' ? (t.night ? LAW.caughtNight : LAW.caught) : LAW.trace);
+  if (t.seen === 'caught') mark(s);
 }
 
 /** the registrar's word on a theft caught: a warning the first time, then a point of the pool while the pool is fought (days 1 to 5), a fine
@@ -95,7 +94,7 @@ export function v2Dawn(s: GameState, emit: Emit, rng: Rng): void {
     if (t.day !== s.day || t.seen !== null || t.settled) continue;
     const pocket = !!PEOPLE[t.from]?.passer, p = pocket ? LAW.foundPocket : t.night ? LAW.foundNight : LAW.foundChance;
     if (rng.next() >= p) continue;
-    t.seen = 'found'; raiseSuspicion(s, LAW.found); add(s, t.from, -10);
+    t.seen = 'found'; mark(s); add(s, t.from, -10);
     emit({ ...at, kind: 'consequence', id: 'theft:found', cause: tx('v2.law.causeFound', { name: victimName(t.from) }), visible: true,
       text: tx(pocket ? 'v2.law.foundPocket' : t.night ? 'v2.law.foundNight' : 'v2.law.found', { name: victimName(t.from), item: itemName(t.item) }) });
   }
@@ -129,7 +128,7 @@ export function v2Dawn(s: GameState, emit: Emit, rng: Rng): void {
 export function restitution(s: GameState): { back: string[]; coins: number } {
   const open = unsettled(s), back = open.filter((t) => holds(s, t.item)).map((t) => t.item);
   const paid = open.filter((t) => !holds(s, t.item)).reduce((n, t) => n + (GEAR[t.item]?.price ?? 0), 0);
-  return { back, coins: open.length || suspicionOf(s) > 0 ? paid + LAW.fee : 0 };
+  return { back, coins: open.length || marksOf(s) > 0 ? paid + LAW.fee : 0 };
 }
 
 /** the reprisal's bout (lot L2b, the operator's note on EV-2): won, the muscle leaves for good and the name gains a little; lost, the owner's pieces still held
@@ -186,7 +185,7 @@ export const V2_LAW_ACTIONS: { [K in V2LawAction['type']]: ActionDef<Extract<V2L
   },
   restitute: {
     by: 'hale',
-    list: (s) => (isV2(s) && s.place === 'district' && (suspicionOf(s) > 0 || unsettled(s).length > 0) ? [{ type: 'restitute' }] : []),
+    list: (s) => (isV2(s) && s.place === 'district' && (marksOf(s) > 0 || unsettled(s).length > 0) ? [{ type: 'restitute' }] : []),
     label: (s) => {
       const r = restitution(s), short = r.coins > s.player.coins;
       return tx(short ? 'v2.law.restituteShort' : r.back.length ? 'v2.law.restituteBack' : 'v2.law.restitute', { items: names(r.back), n: short ? s.player.coins : r.coins });
@@ -195,7 +194,7 @@ export const V2_LAW_ACTIONS: { [K in V2LawAction['type']]: ActionDef<Extract<V2L
     cost: (s) => (restitution(s).coins > s.player.coins ? 1 : 0),
     coins: (s) => Math.min(restitution(s).coins, s.player.coins),
     check: (s) => (!isV2(s) ? tx('v2.only') : s.place !== 'district' || !presentAt(PEOPLE.hale, s.place, s.slot, true) ? tx('avail.notNow', { name: PEOPLE.hale.name })
-      : suspicionOf(s) <= 0 && !unsettled(s).length ? tx('v2.law.clean') : null),
+      : marksOf(s) <= 0 && !unsettled(s).length ? tx('v2.law.clean') : null),
     apply: (s, _a, _r, emit) => {
       const r = restitution(s), short = r.coins > s.player.coins, paid = Math.min(r.coins, s.player.coins);
       for (const t of unsettled(s)) {
@@ -205,7 +204,7 @@ export const V2_LAW_ACTIONS: { [K in V2LawAction['type']]: ActionDef<Extract<V2L
         if (s.v2!.passed?.[t.from] !== undefined) delete s.v2!.passed[t.from];
       }
       // the owners paid, no muscle waits any more (lot L2b)
-      s.player.coins -= paid; s.v2!.suspicion = 0; add(s, 'hale', 5); delete s.v2!.reprisal;
+      s.player.coins -= paid; s.v2!.marks = 0; add(s, 'hale', 5); delete s.v2!.reprisal;
       emit({ kind: 'consequence', id: 'theft:settled', cause: 'action:restitute', visible: true, text: tx(short ? 'v2.law.settledShort' : 'v2.law.settled', { n: paid }) });
     },
   },

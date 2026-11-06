@@ -5,7 +5,7 @@ import { isV2 } from './v2';
 import { learnFromChallenge } from './v2skills';
 import { GEAR, SHOPS, type ShopId } from './gear';
 import { gearOf, itemName } from './v2gear';
-import { LAW, holds, recordTheft, registrarOnCatch, suspicionOf } from './v2law';
+import { holds, recordTheft, registrarOnCatch } from './v2law';
 import { PASSERS, passerOpen, passersHere } from './v2barter';
 import { applyReprisal } from './v2law';
 import { GENERICS, MUSCLE } from '../narrative/generics';
@@ -60,14 +60,14 @@ const fighterName = (who: string): string => PEOPLE[who]?.name ?? GENERICS[who]?
 export const forced = (s: GameState, shop: ShopId): boolean => s.slot === 'evening' && !SHOPS[shop].open.includes('evening');
 
 export function stealChance(s: GameState, shop: ShopId): number {
-  // the watch on alert the day after a theft was caught (lot V7, the event v2-quay-alert): a sixth less; the watch's eye on a suspect (lot L2a);
-  // a shuttered stall at night is easier, unless the watch the player paid walks that quay
+  // the watch on alert the day after a theft was caught (lot V7, the event v2-quay-alert): a sixth less; a shuttered stall at night is easier, unless
+  // the watch the player paid walks that quay (lot L2a; no hidden eye of the watch since L2-2 « Des marques », journal Passe EVL4)
   const night = forced(s, shop) ? 0.7 - (s.place === 'district' && s.services.forgeWatch ? 0.25 : 0) : s.slot === 'evening' ? 0.6 : 0.3;
-  return clamp(night + (60 - s.pulse.security) / 200 - (s.town[SHOPS[shop].keeper] ?? 0) / 400 - (s.flags[`alert:${s.day}`] ? 0.15 : 0) - suspicionOf(s) / LAW.eye, 0.05, 0.85);
+  return clamp(night + (60 - s.pulse.security) / 200 - (s.town[SHOPS[shop].keeper] ?? 0) / 400 - (s.flags[`alert:${s.day}`] ? 0.15 : 0), 0.05, 0.85);
 }
-/** a passer-by's pocket (lot L2a): harder by day, the watch's eye on a suspect */
+/** a passer-by's pocket (lot L2a): harder by day */
 export function pocketChance(s: GameState): number {
-  return clamp((s.slot === 'evening' ? 0.5 : 0.35) + (60 - s.pulse.security) / 200 - (s.flags[`alert:${s.day}`] ? 0.15 : 0) - suspicionOf(s) / LAW.eye, 0.05, 0.85);
+  return clamp((s.slot === 'evening' ? 0.5 : 0.35) + (60 - s.pulse.security) / 200 - (s.flags[`alert:${s.day}`] ? 0.15 : 0), 0.05, 0.85);
 }
 /** what a theft takes: the shop's cheapest piece the player does not own (a whetstone only if none held) */
 export function stealTarget(s: GameState, shop: ShopId): string | null {
@@ -110,7 +110,7 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
       if (r.next() < stealChance(s, a.shop)) {
         take(s, item);
         s.flags['pulse:sabotageRisk'] = ((s.flags['pulse:sabotageRisk'] as number) ?? 0) + 2;
-        // the trace: one more line in the watch's knowledge, the theft kept for the owner to find at dawn (lot L2a)
+        // the theft kept for its owner to find at dawn (lot L2a): a mark then
         recordTheft(s, { day: s.day, from: keeper, item, seen: null, ...(night ? { night: true } : {}) });
         emit({ kind: 'action', id: 'steal:ok', cause: 'action:steal', visible: true, text: tx(night ? 'v2.steal.okNight' : 'v2.steal.ok', { item: itemName(item), name }) });
         return;

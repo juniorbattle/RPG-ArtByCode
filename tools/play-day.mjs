@@ -3,7 +3,7 @@
 // the roll, sparring with Orla; the evening), each slot change saved and the page reloaded from the save, the state's fingerprint kept; the
 // second morning reached. Node replays the same actions: same fingerprint. A version 2 game (V2=1) plays its steps through the page's
 // interface and checks the reading of journal Passe EVL1: a theft from the list (Q) said in its band, a square's news after a slot ended there
-// (none after a walk), Orla's challenge tagged « 1 slot », the journal's causes in words.
+// (none after a walk), Orla's challenge tagged « 1 slot » (and « 10 coins » for its stake in coins, Passe EVL3), the journal's causes in words.
 //   node tools/play-day.mjs <outDir> [seed]   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -124,8 +124,9 @@ try {
     if (V2 && a.type === 'move' && a.to === 'training') {
       await page.evaluate(() => window.__ui.openPerson('orla'));
       done.push({ type: 'talk', who: 'orla' });
-      const tag = await page.evaluate(() => { const b = [...document.querySelectorAll('.pm-talk .pm-btn')].find((x) => /^Challenge /.test(x.textContent)); return b ? [...b.querySelectorAll('.cost')].map((c) => c.textContent) : null; });
-      check(JSON.stringify(tag) === '["1 slot"]', `Orla's challenge: ${JSON.stringify(tag)}`);
+      // (since lot L2b, journal Passe EVL3: two stakes, the coins put on the table at once, then the slot)
+      const tag = await page.evaluate(() => [...document.querySelectorAll('.pm-talk .pm-btn')].filter((x) => /^Challenge /.test(x.textContent)).map((b) => [...b.querySelectorAll('.cost')].map((c) => c.textContent)));
+      check(JSON.stringify(tag) === '[["10 coins","1 slot"],["1 slot"]]', `Orla's challenge, its two stakes: ${JSON.stringify(tag)}`);
       await page.screenshot({ path: path.join(outDir, 'day1-orla-challenge.png') });
       await page.keyboard.press('Escape');
     }

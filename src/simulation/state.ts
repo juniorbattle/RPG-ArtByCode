@@ -127,9 +127,9 @@ export interface V2State {
    *  for, and the last day it waits */
   reprisal?: { by: string; until: number };
   challenged?: Record<string, number>;
-  /** what the watch knows of the player (lot L2a, the operator's EV-2 « Un soupçon qui dure, une sortie par la restitution », journal Passe EVL2):
-   *  0..100, a number apart from the reputation (the name the Cité gives, journal Passe EV2) */
-  suspicion?: number;
+  /** the marks in Sergeant Hale's ledger (lot L2a, the operator's EV-2 « Un soupçon qui dure, une sortie par la restitution » and L2-2 « Des marques
+   *  (Recommandé) », journal Passes EVL2 / EVL4): one per theft caught or found at dawn, a number apart from the reputation (the name the Cité gives) */
+  marks?: number;
   /** every theft (lot L2a): its day, whom it robbed (a keeper or a passer-by), what; `seen` 'caught' in the act, 'found' at the next dawn, null
    *  unseen; `night` a shuttered stall forced; `settled` returned or paid at Sergeant Hale's, or taken back by his men */
   thefts?: V2Theft[];

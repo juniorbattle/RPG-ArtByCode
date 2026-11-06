@@ -4,7 +4,7 @@ import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './st
 import { portraitUrl } from './portraits';
 import { tx } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
-import { suspicionOf } from '../simulation/v2law';
+import { marksOf } from '../simulation/v2law';
 import { actOf, stageName } from '../tournament/v2calendar';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 
@@ -82,7 +82,7 @@ function fighterHtml(st: GameState, id: string): { head: string; body: string } 
  *  line says what the two numbers are, apart, and what each opens and shuts; today's game shows nothing more */
 function nameHtml(st: GameState): string {
   if (!isV2(st)) return '';
-  return `<p class="pm-sub">${tx('ui.name.title')}</p><p>${esc(tx('ui.name.rep', { n: st.player.reputation }))}</p><p>${esc(tx('ui.name.sus', { n: suspicionOf(st) }))}</p>`;
+  return `<p class="pm-sub">${tx('ui.name.title')}</p><p>${esc(tx('ui.name.rep', { n: st.player.reputation }))}</p><p>${esc(tx('ui.name.sus', { n: marksOf(st) }))}</p>`;
 }
 
 export function boardPage(st: GameState, rows: Row[], close: () => void): { root: HTMLElement; focus(): void } {

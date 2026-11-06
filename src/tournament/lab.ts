@@ -10,7 +10,7 @@ import { isV2, makeV2, v2KitOf } from '../simulation/v2';
 import { v2Mods } from '../simulation/v2gear';
 import { v2Ranking } from './v2calendar';
 import { SKILL_BOOK } from '../combat/skillbook';
-import { suspicionOf, wanted } from '../simulation/v2law';
+import { marksOf, wanted } from '../simulation/v2law';
 import { argChance, PASSERS } from '../simulation/v2barter';
 import { pocketChance, stealChance } from '../simulation/v2town';
 import { SHOPS, type ShopId } from '../simulation/gear';
@@ -71,7 +71,7 @@ export const POLICIES: Record<string, Policy> = {
     },
   },
   /** the curious player (lot L2a, the operator's EV-16 « Ajouter le joueur curieux au laboratoire », journal Passe EVL2): the diligent's care, and the
-   *  town's actions a person tries: bargains when buying, steals when the suspicion is low, challenges and brings what it learns, pays the watch only
+   *  town's actions a person tries: bargains when buying, steals while Hale's ledger is clean, challenges and brings what it learns, pays the watch only
    *  after a sign, settles with Sergeant Hale when the watch wants it; a version 2 game only (today's game plays the diligent) */
   curious: { name: 'curious', skill: 0.6, choose: (st) => (isV2(st) ? curiousV2(st) : POLICIES.diligent.choose(st)) },
 };
@@ -95,7 +95,7 @@ function diligentV2(st: GameState): Action {
 
 /** the curious player's version 2 day (« proposé », a policy, not a person): see POLICIES.curious */
 function curiousV2(st: GameState): Action {
-  const bout = st.slot === 'afternoon' && !!matchSheetFor(st), hurt = st.player.injury > 0, sus = suspicionOf(st);
+  const bout = st.slot === 'afternoon' && !!matchSheetFor(st), hurt = st.player.injury > 0, marks = marksOf(st);
   const there = (place: string): GameState => (st.place === place ? st : { ...st, place: place as PlaceId });
   const at = (place: string, a: Action): Action | null => (has(there(place), a) ? (st.place === place ? a : { type: 'move', to: place } as Action) : null);
   const first = (...xs: Array<() => Action | null>): Action | null => { for (const f of xs) { const a = f(); if (a) return a; } return null; };
@@ -118,9 +118,9 @@ function curiousV2(st: GameState): Action {
     }
     return null;
   };
-  // a theft when the watch knows little and the chance is good: a stall, or a passer-by's pocket
+  // a theft while Hale's ledger is clean and the chance is good: a stall, or a passer-by's pocket
   const steal = (): Action | null => {
-    if (sus >= 20) return null;
+    if (marks > 0) return null;
     for (const shop of Object.keys(SHOPS) as ShopId[]) { const pl = SHOPS[shop].place; if (stealChance(there(pl), shop) >= 0.45) { const a = at(pl, { type: 'steal', shop }); if (a) return a; } }
     for (const who of Object.keys(PASSERS)) { const pl = PEOPLE[who].place; if (pocketChance(there(pl)) >= 0.45) { const a = at(pl, { type: 'pickpocket', who }); if (a) return a; } }
     return null;
@@ -231,7 +231,7 @@ export interface LabReport {
   teamTransition: string;
   /** a version 2 game's ten days (lot V6): the player's bouts, the cut, the final and the crown, the final order's histogram; the town's actions
    *  per game (lot L2a): thefts, caught, found at dawn, searched, settled at Hale's, bargains put and won, passers-by's pieces, challenges and wins, the
-   *  final suspicion, the pool's points lost to the registrar */
+   *  marks left in Hale's ledger at the end, the pool's points lost to the registrar */
   v2?: { bouts: number; madeCut: number; finalist: number; champion: number; ranks: number[]; town: Record<string, number> };
 }
 
@@ -239,7 +239,7 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
   const games: LabReport['games'] = [], eventCounts: Record<string, number> = {};
   let bouts = 0, cutIn = 0, finals = 0, crowns = 0;
   const ranks = [0, 0, 0, 0, 0, 0, 0, 0];
-  const town: Record<string, number> = { thefts: 0, caught: 0, found: 0, searched: 0, settled: 0, bargains: 0, bargainsWon: 0, barters: 0, challenges: 0, challengesWon: 0, suspicion: 0, pointsLost: 0 };
+  const town: Record<string, number> = { thefts: 0, caught: 0, found: 0, searched: 0, settled: 0, bargains: 0, bargainsWon: 0, barters: 0, challenges: 0, challengesWon: 0, marks: 0, pointsLost: 0 };
   const count = (st: GameState, ...ids: string[]) => st.log.filter((e) => ids.includes(e.id)).length;
   let wins = 0, inj = 0, rivalInj = 0, elim = 0, upsets = 0, sab = 0, foil = 0, forg = 0;
   for (const seed of seeds) {
@@ -256,7 +256,7 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
       town.thefts += (st.v2?.thefts ?? []).length; town.caught += count(st, 'steal:caught', 'pocket:caught'); town.found += count(st, 'theft:found');
       town.searched += count(st, 'theft:search'); town.settled += count(st, 'theft:settled'); town.bargains += count(st, 'bargain:won', 'bargain:lost', 'barter:won', 'barter:lost');
       town.bargainsWon += count(st, 'bargain:won', 'barter:won'); town.barters += Object.keys(st.v2?.passed ?? {}).length; town.challenges += count(st, 'challenge:won', 'challenge:lost');
-      town.challengesWon += count(st, 'challenge:won'); town.suspicion += suspicionOf(st); town.pointsLost += count(st, 'registrar:point');
+      town.challengesWon += count(st, 'challenge:won'); town.marks += marksOf(st); town.pointsLost += count(st, 'registrar:point');
     }
     wins += w; inj += st.log.filter((e) => e.id === 'player-injured').length;
     rivalInj += Object.values(st.competitors).filter((c) => c.healthState !== 'fit').length;

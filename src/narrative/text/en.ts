@@ -674,13 +674,14 @@ export const EN = {
   'v2.law.clean': 'Your name is not in the sergeant\'s ledger.',
   'v2.law.settled': 'Sergeant Hale takes back what you held and {n} coins for the rest. He wipes your name from his ledger: the stalls will serve you again.',
   'v2.law.settledShort': 'Sergeant Hale takes back what you held and your last {n} coins, then sets you to haul crates for the watch until the next bell. Your name is wiped from his ledger.',
-  'v2.line.hale.ledger': '« Your name is in my ledger: {n} of a hundred. At fifty my men search you at dawn and no stall will sell to you. Bring back what you took, or pay for it, and I wipe it clean. »',
+  'v2.line.hale.ledger1': '« Your name has one mark in my ledger. At three my men search you at dawn and no stall will sell to you. Bring back what you took, or pay for it, and I wipe it clean. »',
+  'v2.line.hale.ledger': '« Your name has {n} marks in my ledger. At three my men search you at dawn and no stall will sell to you. Bring back what you took, or pay for it, and I wipe it clean. »',
   'v2.shop.wanted': '{name} will not sell to someone in Sergeant Hale\'s ledger: settle with him first.',
   // the board's page explains both numbers (lot L2a: the operator's question on EV-2, « on parle de reputation mais comment cela fonctionne ? »)
   'ui.name.title': 'Your name and the watch',
   'ui.name.rep': 'Reputation {n}: what the Cité says of you. It lowers the shops\' prices (up to 15 % at 60) and Master Corvin\'s (a tenth from 40), helps a bargain on your name, breaks a tie in the pool, and from 35 makes you worth sabotaging. Bouts and deeds raise it; defeats and thefts caught lower it.',
-  'ui.name.sus': 'Suspicion {n}: what Sergeant Hale\'s watch knows of you, apart from your name. Every theft leaves a trace; one found at dawn or caught in the act weighs more. It makes stealing harder; from 50 the watch searches you at dawn and no stall sells to you. Return or pay what you took at Sergeant Hale\'s and it falls to 0.',
-  'ui.suspicion': 'suspicion',
+  'ui.name.sus': 'Marks {n} of 3: Sergeant Hale\'s ledger, apart from your name. A theft caught in the act, or found by its owner at dawn, puts a mark in it. At 3 the watch searches you at dawn and no stall sells to you. Return or pay what you took at Sergeant Hale\'s and the ledger is wiped clean.',
+  'ui.marks': 'marks',
   // its slot is in its tag since journal Passe EVL1 (rule P2: the price said once)
   // the challenge of lot L2b (the operator's EV-3 « Pleine vie, une mise, une fois par phase », EV-4, EV-5 « L’arène aux gradins vides », journal Passe EVL3), « proposé »
   'v2.challenge.labelCoins': 'Challenge {name} on the sand, {n} coins staked (won: twice back, and a skill)',

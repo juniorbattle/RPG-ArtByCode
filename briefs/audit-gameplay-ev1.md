@@ -173,4 +173,12 @@ phase, jamais de blessure, dans l'arène aux gradins vides. EV-4 : dès le jour 
 Frère Ambrose), en portrait seul jusqu'à leur art. EV-6 : trois arguments au moment d'acheter ; trois passants avec une pièce unique (Fenwick, Lady Edda,
 Sela). EV-16 : le joueur curieux (50 parties : 50 % de combats gagnés, qualifié à 62 %, 3,7 défis gagnés sur 6,8, 2,7 vols découverts). Le jeu par défaut
 est identique (0 px, empreintes, laboratoire au JSON près). La fiche du lot : https://claude.ai/artifact/JtHMUAQxrAoHdNq8wRytGP (`briefs/fiche-l2.html`),
-quatorze cartes, à relire avant la fusion.
+quatorze cartes.
+
+**Relue en Passe EVL4 (06/11/2026)** : treize choix sur quatorze à la recommandation. L2-2 sans choix cliqué, avec la note de l'opérateur, mot pour mot :
+« Hum cela m'a l'air un peu sophistique, la version de octopath traveler est parait plus simple car on etabli un pourcentage de vol sur une personne et si
+le vol echoue alors la reputation baisse au bout de 2-3 essaies ... donc que preferons nous ? ». À la question posée dans la conversation, sa réponse :
+**« Des marques (Recommandé) »** : le registre du sergent Hale compte une marque par vol pris ou découvert à l'aube ; à trois marques, les étals refusent et la
+garde fouille, jusqu'à la restitution chez Hale ; plus de points cachés. L2-11 « Ces trois figures, une tâche à part après la fusion » (Aldric : le chevalier
+n° 07 de la planche des personnages principaux ; Corra : le panneau 2 de G1 ; Ambrose : le panneau 4 de G1). L2-14 « Fusionner après la fiche, essayer
+ensuite ». La suite : L3, l'information et les réponses au sabotage (EV-10, EV-11).

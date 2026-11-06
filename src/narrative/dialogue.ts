@@ -53,7 +53,7 @@ export function linesOf(s: GameState, who: string): string[] {
       if (s.facts.includes('forge-burned') && !s.flags.reported) out.push(tx('line.hale.forge'));
       if (night) out.push(tx('line.hale.night'));
       // a version 2 game (lot L2a, EV-2): the sergeant says what his ledger holds and how a name leaves it
-      if (isV2(s) && (s.v2?.suspicion ?? 0) > 0) out.push(tx('v2.line.hale.ledger', { n: s.v2!.suspicion! }));
+      if (isV2(s) && (s.v2?.marks ?? 0) > 0) out.push(tx(s.v2!.marks === 1 ? 'v2.line.hale.ledger1' : 'v2.line.hale.ledger', { n: s.v2!.marks! }));
       return out;
     }
     case 'wynn':

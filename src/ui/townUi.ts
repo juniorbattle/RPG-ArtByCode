@@ -13,7 +13,7 @@ import { tx } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
 import { stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
 import { itemName, weaponTier } from '../simulation/v2gear';
-import { suspicionOf } from '../simulation/v2law';
+import { marksOf } from '../simulation/v2law';
 import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
@@ -240,9 +240,9 @@ export class TownUi {
     this.status.innerHTML = `<div class="clock">${tx('ui.clockDay', { day: s.day })} <span>${tx('ui.clockOf', { days })}</span></div>
       <div class="ticks">${Array.from({ length: days }, (_, i) => `<i class="${i + 1 < s.day ? 'on' : i + 1 === s.day ? 'cur' : ''}"></i>`).join('')}</div>
       <div class="where">${esc(slotName[0].toUpperCase() + slotName.slice(1))} · ${esc(place)}</div><div class="next">${esc(next)}</div>`;
-    // a version 2 game (lot L2a, EV-2): the watch's suspicion beside the reputation, only once there is some (two numbers apart)
-    const sus = v2 ? suspicionOf(s) : 0;
-    this.figs.innerHTML = `<div><b>${P.coins}</b><small>${tx('ui.coins')}</small></div><div><b>${P.reputation}</b><small>${tx('ui.reputation')}</small></div>${sus > 0 ? `<div class="hurt"><b>${sus}</b><small>${tx('ui.suspicion')}</small></div>` : ''}${P.injury ? `<div class="hurt"><b>${P.injury}</b><small>${P.injury > 1 ? tx('ui.badlyHurt') : tx('ui.hurt')}</small></div>` : ''}`;
+    // a version 2 game (lot L2a, EV-2; L2-2 « Des marques »): the marks of Hale's ledger beside the reputation, only once there is one (two numbers apart)
+    const sus = v2 ? marksOf(s) : 0;
+    this.figs.innerHTML = `<div><b>${P.coins}</b><small>${tx('ui.coins')}</small></div><div><b>${P.reputation}</b><small>${tx('ui.reputation')}</small></div>${sus > 0 ? `<div class="hurt"><b>${sus}/3</b><small>${tx('ui.marks')}</small></div>` : ''}${P.injury ? `<div class="hurt"><b>${P.injury}</b><small>${P.injury > 1 ? tx('ui.badlyHurt') : tx('ui.hurt')}</small></div>` : ''}`;
     const bout = this.boutNow();
     this.hereKey.className = `pm-btn${bout ? ' primary' : ''}`;
     this.hereKey.innerHTML = `<kbd>Q</kbd>${bout ? (s.v2?.challenge ? this.sandLabel(s) : tx('ui.enterArena')) : tx('ui.here')}`;
