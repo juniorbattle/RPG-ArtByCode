@@ -1,50 +1,59 @@
 {
-  "id": "cassius-x2-v2",
-  "status": "APPROVED PRODUCTION ASSET (operator, third lot sheet, journal Passe CA5), not declared a Gold Master",
-  "request": {
-    "date": "2026-11-01",
-    "by": "operator",
-    "text": "Cassius Dree, redrawn clean: « Les quinze » (journal Passe CA4)"
-  },
-  "source": {
-    "sheet": {
-      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-a.png",
-      "sha256": "aa85e9b7b890810f60224859f8653a6aa8225361db3b448995057e190060fb17"
-    }
-  },
-  "chain": [
-    "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
-    "reconstruct-grid.mjs per facing, the head again at a finer pitch",
-    "quantize-palette.mjs --k 48: one palette for the three views",
-    "rig cassius-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
-    "Aseprite: assembly and export, every exported frame compared"
-  ],
-  "presentation": {
-    "frame": [
-      64,
-      96
-    ],
-    "footRow": 90,
-    "metresPerTexel": 0.0235,
-    "scale": 0.9
-  },
-  "frames": 12,
-  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/cassius-x2-v2.rig.mjs --check",
-  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
-  "files": {
-    "art-lab/characters/exports/cassius-x2-v2.png": "f24845f974ba0c4135aa560339707744690d7a112295af913f1c060e98a8c4b1",
-    "art-lab/characters/exports/cassius-x2-v2.json": "eedf4dc2b4f89db343f8cd7f33bfe11d468084b396f3cbf3bac92c6b00eb5752",
-    "art-lab/characters/source/cassius-x2-v2.aseprite": "6995fceae5baaf0fa4cf58ec66acd13d9e9d64eb9277e8fe1aeb690317945a90",
-    "art-lab/characters/provenance/cassius-x2-v2/view-down.png": "70f74c644b797344833605c824a7ba3e7c8a9d86cc01f732c3888d1ac5e3d801",
-    "art-lab/characters/provenance/cassius-x2-v2/view-up.png": "2a8d951289922a326c895ac28b593788389c3426202e897a262f4eed43d064c9",
-    "art-lab/characters/provenance/cassius-x2-v2/view-side.png": "4ad44de36ee76cc465c2adae699a2c49ce39cf7f72b606bbea55b1e6d7573cf1",
-    "art-lab/characters/provenance/cassius-x2-v2/build.json": "63d0bca5de77c2d0e00379dd26873450c1ce64bdae5f5618bd2540a68b75730b",
-    "art-lab/characters/rigs/cassius-x2-v2.rig.mjs": "c9b81dcd59915eb0ead1b89efee30a51a5656c002ff079df57ccc8a508567102",
-    "art-lab/characters/rigs/lib/clear.mjs": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0",
-    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
-    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
-    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
-    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
-    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ "id": "cassius-x2-v2",
+ "status": "APPROVED PRODUCTION ASSET (operator, third lot sheet, journal Passe CA5), not declared a Gold Master",
+ "request": {
+  "date": "2026-11-01",
+  "by": "operator",
+  "text": "Cassius Dree, redrawn clean: « Les quinze » (journal Passe CA4)"
+ },
+ "source": {
+  "sheet": {
+   "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-a.png",
+   "sha256": "aa85e9b7b890810f60224859f8653a6aa8225361db3b448995057e190060fb17"
   }
+ },
+ "chain": [
+  "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
+  "reconstruct-grid.mjs per facing, the head again at a finer pitch",
+  "quantize-palette.mjs --k 48: one palette for the three views",
+  "rig cassius-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+  "Aseprite: assembly and export, every exported frame compared"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9
+ },
+ "frames": 12,
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/cassius-x2-v2.rig.mjs --check",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/cassius-x2-v2.png": "f24845f974ba0c4135aa560339707744690d7a112295af913f1c060e98a8c4b1",
+  "art-lab/characters/exports/cassius-x2-v2.json": "eedf4dc2b4f89db343f8cd7f33bfe11d468084b396f3cbf3bac92c6b00eb5752",
+  "art-lab/characters/source/cassius-x2-v2.aseprite": "6995fceae5baaf0fa4cf58ec66acd13d9e9d64eb9277e8fe1aeb690317945a90",
+  "art-lab/characters/provenance/cassius-x2-v2/view-down.png": "70f74c644b797344833605c824a7ba3e7c8a9d86cc01f732c3888d1ac5e3d801",
+  "art-lab/characters/provenance/cassius-x2-v2/view-up.png": "2a8d951289922a326c895ac28b593788389c3426202e897a262f4eed43d064c9",
+  "art-lab/characters/provenance/cassius-x2-v2/view-side.png": "4ad44de36ee76cc465c2adae699a2c49ce39cf7f72b606bbea55b1e6d7573cf1",
+  "art-lab/characters/provenance/cassius-x2-v2/build.json": "63d0bca5de77c2d0e00379dd26873450c1ce64bdae5f5618bd2540a68b75730b",
+  "art-lab/characters/rigs/cassius-x2-v2.rig.mjs": "c9b81dcd59915eb0ead1b89efee30a51a5656c002ff079df57ccc8a508567102",
+  "art-lab/characters/rigs/lib/clear.mjs": "e5d1c8152f7a66b137bba319a3f57c082aa18d87e7b3b9fe18f0296addad502c",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ },
+ "maintenance": [
+  {
+   "date": "2026-11-07",
+   "pass": "GA1",
+   "file": "art-lab/characters/rigs/lib/clear.mjs",
+   "change": "an optional `bgThreshold` passed to reconstruct-grid (a dark cloak close to the sheet's ground was flooded with it, journal Passe GA1); absent, nothing changes: this sheet's build-character --check is identical after the change (journal Passe GA1)",
+   "previousSha256": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0"
+  }
+ ]
 }

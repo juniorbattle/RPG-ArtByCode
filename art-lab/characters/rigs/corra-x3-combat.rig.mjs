@@ -3,6 +3,7 @@
 // 5 $ par combattant »; CX-S1 « Même recette »). The chain is lib/combat.mjs, on 3 generated pose sheets (NON-CANONICAL until the operator's lot sheet) drawn from the clean figure
 // corra-clear-2026-11-07 on a flat green ground, on the palette of her town sheet with a steel ramp. A generic fighter fights on Orla's profile (src/narrative/generics.ts): 29 frames of
 // the § 14 list, her clips (no dodge, no support skill: V2_FOES.orla). Each sheet's pitch from a standing figure's height from the soles to the ribbon (the sheets are not drawn at one scale).
+// Sheet d retakes, after the blind critique: the stunned and knocked-out figures with her staff at its full length (sheet b drew a short cane).
 //   node tools/art-lab/build-combat.mjs art-lab/characters/rigs/corra-x3-combat.rig.mjs [--check]
 import { rivalRig, STEEL_RAMP } from './lib/combat.mjs';
 
@@ -14,6 +15,7 @@ export const { id, frame, clips, PALETTE, EXTRA, SHEETS, FIGURES, figures, place
     a: { path: src('a'), sha256: '70a3fb4070deca2f19fe7b23575a90fa685a8f5eec004c63af3dcd343502fe5a', stand: 310 },
     b: { path: src('b'), sha256: '4b904bbbc0c39f144734ba315bcfb0b821d45ea376595b63fef74283baaad8b2', stand: 330 },
     c: { path: src('c'), sha256: 'ee2bfdcfc5f5fdd8c423a10f417d5d2b9281a4564bc9904f60450d6c69fba641', stand: 300 },
+    d: { path: src('d'), sha256: 'd92028f59512e24792dabc0f1a1e146eeaaecc86acadbab8bf73b99b154dda57', stand: 345 },
   },
   figures: {
     idle: { sheet: 'a', box: [33, 110, 326, 435] },
@@ -28,10 +30,10 @@ export const { id, frame, clips, PALETTE, EXTRA, SHEETS, FIGURES, figures, place
     raise: { sheet: 'b', box: [398, 61, 647, 466] },
     cleave: { sheet: 'b', box: [650, 224, 1086, 469] },
     through: { sheet: 'b', box: [1077, 250, 1456, 475] },
-    stunned: { sheet: 'b', box: [54, 537, 272, 883] },
-    fall: { sheet: 'b', box: [365, 608, 639, 886] },
-    kneel: { sheet: 'b', box: [671, 701, 1047, 897] },
-    ground: { sheet: 'b', box: [1105, 785, 1485, 907] },
+    stunned: { sheet: 'd', box: [50, 282, 252, 690] },
+    fall: { sheet: 'd', box: [290, 343, 597, 687] },
+    kneel: { sheet: 'd', box: [622, 489, 1036, 696] },
+    ground: { sheet: 'd', box: [1069, 574, 1504, 712] },
     offPrep: { sheet: 'c', box: [84, 121, 336, 408] },
     offSurge: { sheet: 'c', box: [405, 142, 729, 403] },
     offHit: { sheet: 'c', box: [789, 158, 1112, 407] },

@@ -1,50 +1,59 @@
 {
-  "id": "marek-x2-v2",
-  "status": "APPROVED PRODUCTION ASSET (operator, third lot sheet, journal Passe CA5), not declared a Gold Master",
-  "request": {
-    "date": "2026-11-01",
-    "by": "operator",
-    "text": "Marek Varn, redrawn clean: « Les quinze » (journal Passe CA4)"
-  },
-  "source": {
-    "sheet": {
-      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-a.png",
-      "sha256": "aa85e9b7b890810f60224859f8653a6aa8225361db3b448995057e190060fb17"
-    }
-  },
-  "chain": [
-    "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
-    "reconstruct-grid.mjs per facing, the head again at a finer pitch",
-    "quantize-palette.mjs --k 48: one palette for the three views",
-    "rig marek-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
-    "Aseprite: assembly and export, every exported frame compared"
-  ],
-  "presentation": {
-    "frame": [
-      64,
-      96
-    ],
-    "footRow": 90,
-    "metresPerTexel": 0.0235,
-    "scale": 0.9
-  },
-  "frames": 30,
-  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/marek-x2-v2.rig.mjs --check",
-  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
-  "files": {
-    "art-lab/characters/exports/marek-x2-v2.png": "d2e975afd2a22bff82a3b66265ea35ebe1fa4f0d38703cdb45f8b143dc8a6765",
-    "art-lab/characters/exports/marek-x2-v2.json": "d91e68075c72a9795f15043add74dc08bd62cd272c8a5e44dc7e37f754abff8f",
-    "art-lab/characters/source/marek-x2-v2.aseprite": "8b2003c1bfe94f79710b16ff521103bdf3554dd6e4cdde75aa5e98106ea227f9",
-    "art-lab/characters/provenance/marek-x2-v2/view-down.png": "eec7e11f5e05fec86c2d8c19e0e22122d0325f05bdbb9df5806f10b6c110f3e7",
-    "art-lab/characters/provenance/marek-x2-v2/view-up.png": "5bc5c7bd007ea732230ef096d9ebb4228078d56927a129ab5743ef86e4657047",
-    "art-lab/characters/provenance/marek-x2-v2/view-side.png": "b77ede31b06645007ecf57589c7b38bf57aa20e2d36203e5ffad76a2f7b78d25",
-    "art-lab/characters/provenance/marek-x2-v2/build.json": "eb8f2a1e16fb7a639ed33580c0c530bfd6dea058c2cf6f3d4745134e94653a10",
-    "art-lab/characters/rigs/marek-x2-v2.rig.mjs": "b0cc95121519288250ac68c8664f3bb264c36c6870b0ed1f027ed9c49d426e97",
-    "art-lab/characters/rigs/lib/clear.mjs": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0",
-    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
-    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
-    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
-    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
-    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ "id": "marek-x2-v2",
+ "status": "APPROVED PRODUCTION ASSET (operator, third lot sheet, journal Passe CA5), not declared a Gold Master",
+ "request": {
+  "date": "2026-11-01",
+  "by": "operator",
+  "text": "Marek Varn, redrawn clean: « Les quinze » (journal Passe CA4)"
+ },
+ "source": {
+  "sheet": {
+   "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-a.png",
+   "sha256": "aa85e9b7b890810f60224859f8653a6aa8225361db3b448995057e190060fb17"
   }
+ },
+ "chain": [
+  "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
+  "reconstruct-grid.mjs per facing, the head again at a finer pitch",
+  "quantize-palette.mjs --k 48: one palette for the three views",
+  "rig marek-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+  "Aseprite: assembly and export, every exported frame compared"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9
+ },
+ "frames": 30,
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/marek-x2-v2.rig.mjs --check",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/marek-x2-v2.png": "d2e975afd2a22bff82a3b66265ea35ebe1fa4f0d38703cdb45f8b143dc8a6765",
+  "art-lab/characters/exports/marek-x2-v2.json": "d91e68075c72a9795f15043add74dc08bd62cd272c8a5e44dc7e37f754abff8f",
+  "art-lab/characters/source/marek-x2-v2.aseprite": "8b2003c1bfe94f79710b16ff521103bdf3554dd6e4cdde75aa5e98106ea227f9",
+  "art-lab/characters/provenance/marek-x2-v2/view-down.png": "eec7e11f5e05fec86c2d8c19e0e22122d0325f05bdbb9df5806f10b6c110f3e7",
+  "art-lab/characters/provenance/marek-x2-v2/view-up.png": "5bc5c7bd007ea732230ef096d9ebb4228078d56927a129ab5743ef86e4657047",
+  "art-lab/characters/provenance/marek-x2-v2/view-side.png": "b77ede31b06645007ecf57589c7b38bf57aa20e2d36203e5ffad76a2f7b78d25",
+  "art-lab/characters/provenance/marek-x2-v2/build.json": "eb8f2a1e16fb7a639ed33580c0c530bfd6dea058c2cf6f3d4745134e94653a10",
+  "art-lab/characters/rigs/marek-x2-v2.rig.mjs": "b0cc95121519288250ac68c8664f3bb264c36c6870b0ed1f027ed9c49d426e97",
+  "art-lab/characters/rigs/lib/clear.mjs": "e5d1c8152f7a66b137bba319a3f57c082aa18d87e7b3b9fe18f0296addad502c",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ },
+ "maintenance": [
+  {
+   "date": "2026-11-07",
+   "pass": "GA1",
+   "file": "art-lab/characters/rigs/lib/clear.mjs",
+   "change": "an optional `bgThreshold` passed to reconstruct-grid (a dark cloak close to the sheet's ground was flooded with it, journal Passe GA1); absent, nothing changes: this sheet's build-character --check is identical after the change (journal Passe GA1)",
+   "previousSha256": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0"
+  }
+ ]
 }

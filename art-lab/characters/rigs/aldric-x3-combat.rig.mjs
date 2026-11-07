@@ -3,6 +3,7 @@
 // 5 $ par combattant »; CX-S1 « Même recette »). The chain is lib/combat.mjs, on 4 generated pose sheets (NON-CANONICAL until the operator's lot sheet) drawn from the clean figure
 // aldric-clear-2026-11-07 on a flat green ground, on the palette of his town sheet with a steel ramp. A generic fighter fights on Ilse's profile (src/narrative/generics.ts): 32 frames of
 // the § 14 list, her clips (no dodge: V2_FOES.ilse).
+// Sheet e retakes, after the blind critique: the cut and the recoil with the visor closed (a « mouth » showed through it), the prayer in profile (it faced the viewer).
 //   node tools/art-lab/build-combat.mjs art-lab/characters/rigs/aldric-x3-combat.rig.mjs [--check]
 import { rivalRig, STEEL_RAMP } from './lib/combat.mjs';
 
@@ -15,15 +16,16 @@ export const { id, frame, clips, PALETTE, EXTRA, SHEETS, FIGURES, figures, place
     b: { path: src('b'), sha256: '4e6c6dd2c6181742bcf80fc749e693e7a4fc929314330afeee030c4b3703ed2c', stand: 328 },
     c: { path: src('c'), sha256: 'f316ef24f8a72402e6e08a15582d63b03353bc7e9b4dd162142dc380f65a083d', stand: 316 },
     d: { path: src('d'), sha256: '8a71064b215c24e0f38249402ea546f308c0c761f7c6b43e3ad486e154f172b1', stand: 500 },
+    e: { path: src('e'), sha256: 'b5b2ebbcc30d5ff9afb9e1a36bd8299f3170a2f6b6176defdacd73296d6e53d6', stand: 475 },
   },
   figures: {
     idle: { sheet: 'a', box: [54, 65, 326, 410] },
     ready: { sheet: 'a', box: [414, 88, 697, 410] },
     windup: { sheet: 'a', box: [815, 73, 1090, 410] },
-    cut: { sheet: 'a', box: [1067, 95, 1468, 410] },
+    cut: { sheet: 'e', box: [30, 239, 560, 688] },
     follow: { sheet: 'a', box: [36, 520, 345, 846] },
     guard: { sheet: 'a', box: [464, 504, 695, 855] },
-    recoil: { sheet: 'a', box: [742, 543, 1073, 855] },
+    recoil: { sheet: 'e', box: [543, 269, 1080, 688] },
     recovery: { sheet: 'a', box: [1131, 546, 1455, 855] },
     gather: { sheet: 'b', box: [85, 157, 368, 420] },
     raise: { sheet: 'b', box: [447, 39, 721, 424] },
@@ -42,7 +44,7 @@ export const { id, frame, clips, PALETTE, EXTRA, SHEETS, FIGURES, figures, place
     defBack: { sheet: 'c', box: [767, 598, 1136, 915] },
     victory: { sheet: 'c', box: [1242, 457, 1392, 915] },
     supPrep: { sheet: 'd', box: [178, 224, 417, 743] },
-    sup: { sheet: 'd', box: [594, 224, 927, 744] },
+    sup: { sheet: 'e', box: [1135, 208, 1446, 712] },
     supBack: { sheet: 'd', box: [1079, 236, 1424, 744] },
   },
 });

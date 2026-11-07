@@ -31,6 +31,10 @@
   "d": {
    "path": "art-lab/characters/reference/sources/aldric-combat-x3-2026-11-07-d.png",
    "pitch": 3.7879
+  },
+  "e": {
+   "path": "art-lab/characters/reference/sources/aldric-combat-x3-2026-11-07-e.png",
+   "pitch": 3.5985
   }
  },
  "placement": {
@@ -50,9 +54,9 @@
    "lifted": 0
   },
   "cut": {
-   "hips": 224,
-   "pushed": 13,
-   "lifted": 0
+   "hips": 250,
+   "pushed": 33,
+   "lifted": 1
   },
   "follow": {
    "hips": 209,
@@ -65,9 +69,9 @@
    "lifted": 0
   },
   "recoil": {
-   "hips": 205,
+   "hips": 204,
    "pushed": 0,
-   "lifted": 0
+   "lifted": 1
   },
   "recovery": {
    "hips": 210,
@@ -160,9 +164,9 @@
    "lifted": 0
   },
   "sup": {
-   "hips": 202,
+   "hips": 195,
    "pushed": 0,
-   "lifted": 0
+   "lifted": 1
   },
   "supBack": {
    "hips": 199,
@@ -171,8 +175,8 @@
   }
  },
  "exports": {
-  "png": "6e0c15b6709c0bc8a05564526c5da911fb5a1ad928fe21f29e88120e8d7ad694",
-  "json": "a7b8e08a5ce5d33b9f7defda1274b71f4ff8dd399f06b0d2a1ff30b066c465d6",
-  "aseprite": "4246e1fd362710b7c6369e0da244617c3f11914881a2c09918a105561d4581b1"
+  "png": "d9df352a36ea84880a95cd7b5cd554b76b1bb5baaac25fff4d88db8ce6176b79",
+  "json": "4d0fd2ef20b3cedfe4789f237e56dfcec9945e63996b6c59faafe63d5a382653",
+  "aseprite": "5acb2ed42cffb03912ffcb7f81064d83d72fb51349dec8cb4efdb1afde369cce"
  }
 }

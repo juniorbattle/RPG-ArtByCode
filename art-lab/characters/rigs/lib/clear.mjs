@@ -11,9 +11,9 @@ import * as R from '../../../../tools/art-lab/rig-engine.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
 
-function reconstruct(sheet, box, pitch) {
+function reconstruct(sheet, box, pitch, bg = null) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'artlab-clear-')), pre = path.join(dir, 'r');
-  execFileSync(process.execPath, [path.join(ROOT, 'tools/art-lab/reconstruct-grid.mjs'), path.join(ROOT, sheet), box, String(pitch), String(R.FW), String(R.FH), String(R.FOOT), pre, 'full', '--closing-from=48', '--no-shadow'], { stdio: 'ignore' });
+  execFileSync(process.execPath, [path.join(ROOT, 'tools/art-lab/reconstruct-grid.mjs'), path.join(ROOT, sheet), box, String(pitch), String(R.FW), String(R.FH), String(R.FOOT), pre, 'full', '--closing-from=48', '--no-shadow', ...(bg ? [`--bg-threshold=${bg}`] : [])], { stdio: 'ignore' });
   const im = R.load(`${pre}-full.png`);
   fs.rmSync(dir, { recursive: true, force: true });
   return im;
@@ -39,9 +39,9 @@ function onPalette(im, pal) {
   return R.recolour(im, (c) => { const k = c.join(); if (!memo.has(k)) { const q = R.oklab(c); let best = pal[0], d = 1e9; for (const e of pal) { const t = R.oklab(e), n = (t[0] - q[0]) ** 2 + (t[1] - q[1]) ** 2 + (t[2] - q[2]) ** 2; if (n < d) { d = n; best = e; } } memo.set(k, best); } return memo.get(k); });
 }
 /** the rows above the chin rebuilt from the source at pitch / k, chin on chin, head centred on head */
-function fineHead(body, sheet, box, pitch, k, chinShare) {
+function fineHead(body, sheet, box, pitch, k, chinShare, bg = null) {
   const [x0, y0, x1, y1] = box.split(',').map(Number), top = `${x0},${y0},${x1},${Math.round(y0 + (y1 - y0) * 0.5)}`;
-  const fine = onPalette(largest(reconstruct(sheet, top, pitch / k)), R.paletteOf(body));
+  const fine = onPalette(largest(reconstruct(sheet, top, pitch / k, bg)), R.paletteOf(body));
   const t0 = R.top(body), chin = t0 + Math.round((R.FOOT - t0) * chinShare), f0 = R.top(fine), chinF = f0 + (chin - t0) * k;
   const [a, b] = span(body, t0, chin), [c, d] = span(fine, f0, Math.round(chinF)), dx = (a + b) / 2 - (c + d) / 2, o = R.erase(body, (x, y) => y < chin);
   for (let y = f0; y < chinF && y < R.FH; y++) for (let x = 0; x < R.FW; x++) {
@@ -69,12 +69,14 @@ function frontBack(v, o, i) {
   return R.over(...legs, body);
 }
 
-export function clearRig({ id, sheet, views, rows = 84, head = 1, chin = 0.28, k = 48, walk = null }) {
+/** `bgThreshold`: reconstruct-grid's background flood threshold (26 when absent): a dark cloak close to the sheet's ground was flooded with it, its edges cut off
+ *  from the body (journal Passe GA1); absent, nothing changes */
+export function clearRig({ id, sheet, views, rows = 84, head = 1, chin = 0.28, k = 48, walk = null, bgThreshold = null }) {
   const h = (box) => { const b = box.split(',').map(Number); return b[3] - b[1]; }, pitch = +(h(views.down) / rows).toFixed(3);
-  const source = { sheet, pitch, views, palette: { k }, options: { closingFrom: 48, noShadow: true } };
+  const source = { sheet, pitch, views, palette: { k }, options: { closingFrom: 48, noShadow: true, ...(bgThreshold ? { bgThreshold } : {}) } };
   const prepare = (dir, v) => {
     const o = largest(v);
-    return align(head > 1 ? fineHead(o, sheet, views[dir], pitch, head, chin) : o);
+    return align(head > 1 ? fineHead(o, sheet, views[dir], pitch, head, chin, bgThreshold) : o);
   };
   const frames = (V) => {
     const out = [], pal = R.paletteOf(V.down, V.up, V.side);
@@ -85,7 +87,7 @@ export function clearRig({ id, sheet, views, rows = 84, head = 1, chin = 0.28, k
       if (walk && dir !== 'side') for (let i = 0; i < 6; i++) out.push({ anim: 'walk', dir, i, im: frontBack(v, walk[dir], i) });
     }
     if (walk) walk.boxes.forEach((box, i) => {
-      const p = +(h(box) / rows).toFixed(3), v = onPalette(largest(reconstruct(walk.sheet, box, p)), pal), f = head > 1 ? fineHead(v, walk.sheet, box, p, head, chin) : v, top = R.top(f), [l, r] = span(f, top, top + 40);
+      const p = +(h(box) / rows).toFixed(3), v = onPalette(largest(reconstruct(walk.sheet, box, p, bgThreshold)), pal), f = head > 1 ? fineHead(v, walk.sheet, box, p, head, chin, bgThreshold) : v, top = R.top(f), [l, r] = span(f, top, top + 40);
       const c = R.erase(R.shift(f, Math.round(31.5 - (l + r) / 2), R.FOOT - R.bottom(f)), (x) => x <= 0 || x >= R.FW - 1);
       out.push({ anim: 'walk', dir: 'side', i, im: largest(c) });
     });

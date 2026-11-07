@@ -30,11 +30,15 @@
   },
   "d": {
    "path": "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-d.png",
-   "pitch": 2.6984
+   "pitch": 2.8968
   },
   "e": {
    "path": "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-e.png",
    "pitch": 4.3254
+  },
+  "f": {
+   "path": "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-f.png",
+   "pitch": 2.7381
   }
  },
  "placement": {
@@ -99,24 +103,24 @@
    "lifted": 0
   },
   "stunned": {
-   "hips": 183,
+   "hips": 186,
    "pushed": 0,
    "lifted": 1
   },
   "fall": {
-   "hips": 217,
+   "hips": 195,
    "pushed": 0,
    "lifted": 0
   },
   "kneel": {
-   "hips": 216,
+   "hips": 174,
    "pushed": 0,
-   "lifted": 0
+   "lifted": 1
   },
   "ground": {
-   "hips": 160,
-   "pushed": -13,
-   "lifted": 1
+   "hips": 207,
+   "pushed": 0,
+   "lifted": 0
   },
   "offPrep": {
    "hips": 192,
@@ -139,7 +143,7 @@
    "lifted": 1
   },
   "defPrep": {
-   "hips": 195,
+   "hips": 196,
    "pushed": 0,
    "lifted": 0
   },
@@ -159,7 +163,7 @@
    "lifted": 0
   },
   "supPrep": {
-   "hips": 192,
+   "hips": 191,
    "pushed": 0,
    "lifted": 0
   },
@@ -174,19 +178,19 @@
    "lifted": 1
   },
   "hop": {
-   "hips": 187,
+   "hips": 198,
    "pushed": 0,
    "lifted": 0
   },
   "land": {
-   "hips": 201,
+   "hips": 205,
    "pushed": 0,
    "lifted": 0
   }
  },
  "exports": {
-  "png": "5194d94de4af0b8f0ce90234a69c86421256797cb9ae8568c46e134183efed09",
-  "json": "5ef9d290a36511cbfdaba0f86f03364c3fcbdb56815bb9b799a019902fa1f823",
-  "aseprite": "f46bc26c95bb6aa89f830884120ce2b1250fc03321560de098780fc53d3d1baa"
+  "png": "0cf011cd60b11fe7e4c894120fe4bc26870704c861686a6f9fc9d5055857e9a1",
+  "json": "c87a0638a5437c7745c373a85bbb1878aa313698ea38338451324c84cad77f87",
+  "aseprite": "c5fb3bdfb3fe601bb0b660f5d4c56b650e207ada7da0eac9e0d6a2e746497872"
  }
 }

@@ -1,50 +1,59 @@
 {
-  "id": "corvin-x2-v2",
-  "status": "APPROVED PRODUCTION ASSET (operator, third lot sheet, journal Passe CA5), not declared a Gold Master",
-  "request": {
-    "date": "2026-11-01",
-    "by": "operator",
-    "text": "Master Corvin, redrawn clean: « Les quinze » (journal Passe CA4)"
-  },
-  "source": {
-    "sheet": {
-      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-b.png",
-      "sha256": "2b373d3328d7c9a80f3e571b26fa76924992b5cfa484f0b152bfebdcaf0a4520"
-    }
-  },
-  "chain": [
-    "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
-    "reconstruct-grid.mjs per facing, the head again at a finer pitch",
-    "quantize-palette.mjs --k 48: one palette for the three views",
-    "rig corvin-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
-    "Aseprite: assembly and export, every exported frame compared"
-  ],
-  "presentation": {
-    "frame": [
-      64,
-      96
-    ],
-    "footRow": 90,
-    "metresPerTexel": 0.0235,
-    "scale": 0.9
-  },
-  "frames": 12,
-  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/corvin-x2-v2.rig.mjs --check",
-  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
-  "files": {
-    "art-lab/characters/exports/corvin-x2-v2.png": "5dbe654a51f7239a6ed7cae33d7e9c55f529b60eca78a49c84a8c23a115bc9c4",
-    "art-lab/characters/exports/corvin-x2-v2.json": "c31a841760a6af815569fb75a2334389a164bfe529b2063b88f9c865b58b2cd5",
-    "art-lab/characters/source/corvin-x2-v2.aseprite": "31cee806d458701dfb8e9b854318c768a25db24a2215f8883f57801df3738e3b",
-    "art-lab/characters/provenance/corvin-x2-v2/view-down.png": "5826656832c2a9ab66bf0113fe7a68d8f79f9c72cd0c5dc86f572a7036cf90de",
-    "art-lab/characters/provenance/corvin-x2-v2/view-up.png": "e7fef5d3b5f0e74c4537594f93a8d4cb1709302707c8f01c2efd91a9cc4892b0",
-    "art-lab/characters/provenance/corvin-x2-v2/view-side.png": "5d9d5b3b391b7aa06149a165f5ac9bec1f9539a9aa57f7529904df15956c61e1",
-    "art-lab/characters/provenance/corvin-x2-v2/build.json": "4981d8b457f5f7e5d9cbf1c5c95bc38c30fb20b8225dd384ca7610ae3a6decb4",
-    "art-lab/characters/rigs/corvin-x2-v2.rig.mjs": "927b6c8f3dc809dc11d91454f382531a740af3784305d3a0aa06a434b33ce610",
-    "art-lab/characters/rigs/lib/clear.mjs": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0",
-    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
-    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
-    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
-    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
-    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ "id": "corvin-x2-v2",
+ "status": "APPROVED PRODUCTION ASSET (operator, third lot sheet, journal Passe CA5), not declared a Gold Master",
+ "request": {
+  "date": "2026-11-01",
+  "by": "operator",
+  "text": "Master Corvin, redrawn clean: « Les quinze » (journal Passe CA4)"
+ },
+ "source": {
+  "sheet": {
+   "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-b.png",
+   "sha256": "2b373d3328d7c9a80f3e571b26fa76924992b5cfa484f0b152bfebdcaf0a4520"
   }
+ },
+ "chain": [
+  "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
+  "reconstruct-grid.mjs per facing, the head again at a finer pitch",
+  "quantize-palette.mjs --k 48: one palette for the three views",
+  "rig corvin-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+  "Aseprite: assembly and export, every exported frame compared"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9
+ },
+ "frames": 12,
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/corvin-x2-v2.rig.mjs --check",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/corvin-x2-v2.png": "5dbe654a51f7239a6ed7cae33d7e9c55f529b60eca78a49c84a8c23a115bc9c4",
+  "art-lab/characters/exports/corvin-x2-v2.json": "c31a841760a6af815569fb75a2334389a164bfe529b2063b88f9c865b58b2cd5",
+  "art-lab/characters/source/corvin-x2-v2.aseprite": "31cee806d458701dfb8e9b854318c768a25db24a2215f8883f57801df3738e3b",
+  "art-lab/characters/provenance/corvin-x2-v2/view-down.png": "5826656832c2a9ab66bf0113fe7a68d8f79f9c72cd0c5dc86f572a7036cf90de",
+  "art-lab/characters/provenance/corvin-x2-v2/view-up.png": "e7fef5d3b5f0e74c4537594f93a8d4cb1709302707c8f01c2efd91a9cc4892b0",
+  "art-lab/characters/provenance/corvin-x2-v2/view-side.png": "5d9d5b3b391b7aa06149a165f5ac9bec1f9539a9aa57f7529904df15956c61e1",
+  "art-lab/characters/provenance/corvin-x2-v2/build.json": "4981d8b457f5f7e5d9cbf1c5c95bc38c30fb20b8225dd384ca7610ae3a6decb4",
+  "art-lab/characters/rigs/corvin-x2-v2.rig.mjs": "927b6c8f3dc809dc11d91454f382531a740af3784305d3a0aa06a434b33ce610",
+  "art-lab/characters/rigs/lib/clear.mjs": "e5d1c8152f7a66b137bba319a3f57c082aa18d87e7b3b9fe18f0296addad502c",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ },
+ "maintenance": [
+  {
+   "date": "2026-11-07",
+   "pass": "GA1",
+   "file": "art-lab/characters/rigs/lib/clear.mjs",
+   "change": "an optional `bgThreshold` passed to reconstruct-grid (a dark cloak close to the sheet's ground was flooded with it, journal Passe GA1); absent, nothing changes: this sheet's build-character --check is identical after the change (journal Passe GA1)",
+   "previousSha256": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0"
+  }
+ ]
 }

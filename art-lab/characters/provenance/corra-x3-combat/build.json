@@ -27,6 +27,10 @@
   "c": {
    "path": "art-lab/characters/reference/sources/corra-combat-x3-2026-11-07-c.png",
    "pitch": 2.4
+  },
+  "d": {
+   "path": "art-lab/characters/reference/sources/corra-combat-x3-2026-11-07-d.png",
+   "pitch": 2.76
   }
  },
  "placement": {
@@ -91,23 +95,23 @@
    "lifted": 1
   },
   "stunned": {
-   "hips": 188,
+   "hips": 191,
    "pushed": 0,
    "lifted": 0
   },
   "fall": {
-   "hips": 208,
+   "hips": 214,
    "pushed": 0,
    "lifted": 0
   },
   "kneel": {
-   "hips": 184,
-   "pushed": 0,
-   "lifted": 0
+   "hips": 236,
+   "pushed": 20,
+   "lifted": 1
   },
   "ground": {
-   "hips": 208,
-   "pushed": 0,
+   "hips": 219,
+   "pushed": 6,
    "lifted": 0
   },
   "offPrep": {
@@ -152,8 +156,8 @@
   }
  },
  "exports": {
-  "png": "80555c5450f56eaf2bd9320d503a3a400da8458fa6061274a59dfd3950befb3d",
-  "json": "76f900bd692462f979e622c5e178b86c3ec8ccfb0c8fd9eb82fc3e9c0ff8be73",
-  "aseprite": "266fc2766c982b14f1aeea88f2f5e507842c955a0e8b1ca94b6779a97f04371d"
+  "png": "20317f8f0d4ffcf6409d697225d471c0f6b8122d4e64d2a8ba52b297cb65de85",
+  "json": "04ec2cfeeca1218c40658d6147856acb8ec0f21115061f1b9b67b67189e899cd",
+  "aseprite": "44ad86be67804a51d3c947446a7920fb9d5aa767a8548c98d9aa14a333c3356d"
  }
 }

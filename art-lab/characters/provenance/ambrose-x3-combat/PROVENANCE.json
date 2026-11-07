@@ -7,13 +7,14 @@
  },
  "source": {
   "sheets": {
-   "description": "5 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task ambrose-art); references: the clean figure ambrose-clear-2026-11-07.png and panel 4 of the G1 casting sheet, and Ren's sheets for the layout only",
+   "description": "6 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task ambrose-art); references: the clean figure ambrose-clear-2026-11-07.png and panel 4 of the G1 casting sheet, and Ren's sheets for the layout only",
    "files": [
     "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-a.png",
     "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-b.png",
     "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-c.png",
     "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-d.png",
-    "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-e.png"
+    "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-e.png",
+    "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-f.png"
    ]
   },
   "figure": "ambrose-clear-2026-11-07.png"
@@ -23,17 +24,18 @@
  ],
  "rebuild": "node tools/art-lab/build-combat.mjs art-lab/characters/rigs/ambrose-x3-combat.rig.mjs --check",
  "files": {
-  "art-lab/characters/exports/ambrose-x3-combat.png": "5194d94de4af0b8f0ce90234a69c86421256797cb9ae8568c46e134183efed09",
-  "art-lab/characters/exports/ambrose-x3-combat.json": "5ef9d290a36511cbfdaba0f86f03364c3fcbdb56815bb9b799a019902fa1f823",
-  "art-lab/characters/source/ambrose-x3-combat.aseprite": "f46bc26c95bb6aa89f830884120ce2b1250fc03321560de098780fc53d3d1baa",
-  "art-lab/characters/provenance/ambrose-x3-combat/build.json": "fa8c93b6d9075263c33b779c6fc2d45a7fd1209d68a7d45f09d3c1f485a1c07b",
-  "art-lab/characters/exports/ambrose-x2-v1.png": "574514763f2be484569fc56323d85eb104ab2e301b81fd139e816e16a04b7285",
+  "art-lab/characters/exports/ambrose-x3-combat.png": "0cf011cd60b11fe7e4c894120fe4bc26870704c861686a6f9fc9d5055857e9a1",
+  "art-lab/characters/exports/ambrose-x3-combat.json": "c87a0638a5437c7745c373a85bbb1878aa313698ea38338451324c84cad77f87",
+  "art-lab/characters/source/ambrose-x3-combat.aseprite": "c5fb3bdfb3fe601bb0b660f5d4c56b650e207ada7da0eac9e0d6a2e746497872",
+  "art-lab/characters/provenance/ambrose-x3-combat/build.json": "366bf6217c2a58ba3ef4fbfe43a713b22c834eefe4531fbddbb265899b546931",
+  "art-lab/characters/exports/ambrose-x2-v1.png": "48505e8b4d384168788cc7207c2fd7d0931908b3572ea349a01c47474c3e2566",
   "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-a.png": "cd47710e6aabb928afba3aa98cd14a41fd473628d814fde5802a022e39af4baf",
   "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-b.png": "18f34c3c568ddac212f60e81e7d2050f58247f03f93179e8ad2c4e017f2461bc",
   "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-c.png": "ec272be349c2ef298107aec31661c0a981690f6b5a293088acca3d0d92ff2028",
   "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-d.png": "731d4a255f2fa9efc290f419b7a8f4507e597680dedd95770f4e567e9967c043",
   "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-e.png": "d519366544675982c4e79423489b7d828996c201f06299c48bac5c889e8be8c8",
-  "art-lab/characters/rigs/ambrose-x3-combat.rig.mjs": "ec334fc98b7d483ee09db546a5d2bdd5c2a5b46f6f0a74bedcd5985276419f02",
+  "art-lab/characters/reference/sources/ambrose-combat-x3-2026-11-07-f.png": "9596aeb7a8dd17ecf8a8b6927b678c89d6237c761678c08a4469675b9308922c",
+  "art-lab/characters/rigs/ambrose-x3-combat.rig.mjs": "baccd09322e509346b520d4e0bbf459c2f3ca0d873f384e4cbce71a009bfea57",
   "art-lab/characters/rigs/lib/combat.mjs": "cfa8d68634b65c2781b70d72966e3ad24eac867e5e7ffbba9920c3696461255e",
   "tools/art-lab/build-combat.mjs": "0dd3d9f77a5b362362c9f937654c7787290d9f39dcc3f5f038f5cc3901281d7f",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",

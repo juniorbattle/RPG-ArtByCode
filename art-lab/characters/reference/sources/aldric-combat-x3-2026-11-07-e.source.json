@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "aldric-combat-x3-2026-11-07-e.png",
+  "sha256": "b5b2ebbcc30d5ff9afb9e1a36bd8299f3170a2f6b6176defdacd73296d6e53d6",
+  "bytes": 1427072,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "0b1fca63ef2c8c22632bd87040801c5e0a9ed8d52fa085e64aca333f70edac31",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Ser Aldric Venn, a young knight who lost his qualifying bout when a strap gave way, in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Image 2 is the casting sheet the character comes from (six views); it only confirms the design. He carries no weapon there. Image 3 is an earlier combat sheet of the SAME character: match EXACTLY its proportions, its scale, its build and its weapon (a standing figure the same height as its standing figures). Image 4 is a combat sheet of ANOTHER character: it only fixes the layout and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of Ser Aldric Venn, every figure in the SIDE view, FACING LEFT (the face, chest and weapon point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1: full steel plate armour with thin brass trim; a closed great helm with a narrow dark eye slit and a tall red plume (the visor stays closed: no face shows); rounded steel pauldrons, steel gauntlets and steel boots; a white tabard to the knees with red borders and ONE broad plain red vertical band down the middle; a short dark red cape behind; a brown belt with a brass buckle. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big helmed head, about three heads tall, a solid compact body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head about 97 pixels tall.\n\nThe weapon, the same in every figure: a plain straight longsword: a bright steel blade with a darker edge line, about 130 pixels long at this scale, a simple brass crossguard, a brown leather grip, a round brass pommel. He holds it with BOTH hands on the grip. No shield, no scabbard.\n\n1 row, in this order, left to right (the visor of the helm is CLOSED in every figure: a narrow dark eye slit only, NO mouth, NO opening, NO face):\nRow 1:\n1. LIGHT CUT, THE BLOW LANDING (a horizontal cut, NOT a thrust): the torso twisted forward into the swing, the arms swept forward at shoulder height with the elbows a little bent, the sword level and pointing left; the helm closed.\n2. HIT, RECOIL: struck by a blow, the torso thrown backward, the helmed head snapped back, the arms flung out, the sword swung out to the left, both feet still near the ground (NOT a kick, NO knee raised high).\n3. VIGIL, THE PRAYER, in the SAME SIDE VIEW facing left like every other figure (NOT turned toward the viewer): standing tall, the helm lifted, the free hand raised in front of him at shoulder height, palm forward toward the left, the sword held down at his side, its point near the ground.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, weapon included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and the weapon.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "e165c4a4f980d146e2cb73111833593ceffe0fb52e3bfd5f05ec6e6a9496161e",
+    "promptFile": "(outside the repository) aldric-r.txt",
+    "references": [
+      {
+        "file": "(outside the repository) aldric-clear.png",
+        "sha256": "a0169d332546fdcbdeaed3a64068efa4698ac10b7ebd124ad99c0f5e44d4e657",
+        "bytes": 944095
+      },
+      {
+        "file": "(outside the repository) aldric-figure-x2.png",
+        "sha256": "fc3bd4a691ae3224ad0b8654e6b1058b1bbaf48bcc251ef45a82eabbc01c1383",
+        "bytes": 226222
+      },
+      {
+        "file": "(outside the repository) aldric-combat-a.png",
+        "sha256": "1929d64e19a55a367ab5b5f48c78b5c0cf5f45db37dee1e9081d78ef25f06b8d",
+        "bytes": 1645463
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      }
+    ],
+    "image": "1 of 2",
+    "task": "aldric-art",
+    "requestedAt": "2026-11-07T21:03:33.575Z",
+    "response": {
+      "requestId": "req_f63140cc4eb14f29b6abdc2dffde976e",
+      "created": "2026-11-07T21:04:32.000Z",
+      "processingMs": 57588
+    },
+    "usage": {
+      "input_tokens": 10584,
+      "input_tokens_details": {
+        "image_tokens": 8850,
+        "text_tokens": 1734
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 21560
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.38269,
+        "fromUsage": 0.40875
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 23664 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-07",
+    "from": "aldric-art-20261107T210333Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

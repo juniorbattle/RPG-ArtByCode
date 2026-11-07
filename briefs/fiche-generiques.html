@@ -1,0 +1,975 @@
+<title>Les trois génériques</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+.flip { display: flex; flex-wrap: wrap; gap: 4px; background: #39414f; padding: 10px; border-radius: 8px; margin: 10px 0; justify-content: center; }
+.flip figure { margin: 0; text-align: center; }
+.flip canvas { display: block; image-rendering: pixelated; width: 144px; height: auto; }
+.flip figcaption { color: #e6e9ef; font-size: 14px; }
+.info { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions de l’opérateur · 7 novembre 2026</span>
+    <h1>L’art des trois combattants génériques</h1>
+    <p class="lede">Ser Aldric Venn, Corra Dunmere et Frère Ambrose, tirés des trois figures que tu as choisies (L2-11). Pour chacun, une feuille de ville qui donne aussi le visage de son portrait, et une feuille de combat ×3 qui joue dans le duel sur le profil du rival qu’il emprunte. En bas, trois combattants de plus, comme tu l’as demandé, pris dans nos planches de tournoi. Rien n’entre en production sans ton choix ici. Les animations jouent au rythme du duel.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot, je branche ce que tu approuves derrière la version 2 (les portraits en ville, les feuilles au duel), je refais les preuves, puis je fusionne. Les nouveaux combattants que tu retiens partent ensuite selon ta réponse à GA-P4.</p>
+    <p class="src">Sources : journal Passes EVL3, EVL4 (L2-11), CA1 à CA5, CX1 à CX4 et GA1 ; src/narrative/generics.ts ; art-lab/characters/rigs ; planches tournament-roster-casting-2026-10-18-a et -b.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+ {
+  "id": "aldric",
+  "title": "Ser Aldric Venn",
+  "sub": "Le chevalier n° 07 de la planche des personnages principaux. Il se bat sur le profil d’Ilse : garde, trois compétences, pas d’esquive.",
+  "fam": "var(--astre)",
+  "items": [
+   {
+    "id": "GA-AL1",
+    "tag": "ville",
+    "title": "Ser Aldric Venn, la feuille de ville (12 images, son visage en portrait)",
+    "ctx": "La recette du casting (Passe CA4) : une planche propre générée d’après ta figure, puis la reconstruction en trois vues. Deux écarts voulus : l’emblème rouge de son tabard devient une bande rouge unie (ta règle des emblèmes, Passe CA3), et sa visière reste fermée comme sur la figure, donc son portrait montre le casque. Critique à froid : propreté 8, fidélité 7, place dans la distribution 8. Réserve : de face, son plumet est plus petit que de profil et de dos (la planche générée le dessine ainsi).",
+    "shots": [
+     [
+      "img/ref-aldric.png",
+      "La figure que tu as choisie (L2-11)"
+     ],
+     [
+      "img/aldric-clear.png",
+      "La planche propre générée (gpt-image-2), quatre vues"
+     ],
+     [
+      "img/town-front.png",
+      "De face, à même échelle : Ren, Orla, Aldric, Ilse, Corra, Cassius, Ambrose"
+     ],
+     [
+      "img/faces.png",
+      "Les visages des portraits : Aldric, Corra, Ambrose, puis Orla, Cassius et Lady Edda"
+     ]
+    ],
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)"
+    ],
+    "recIdx": 0,
+    "src": "L2-11, Passe EVL4 ; rigs/aldric-x2-v1.rig.mjs"
+   },
+   {
+    "id": "GA-AL2",
+    "tag": "combat",
+    "title": "Ser Aldric Venn, la feuille de combat ×3 (32 images)",
+    "ctx": "Cinq planches de poses générées, 2,05 $ (sa tâche : 2,45 $ sur 5, essai MiniMax compris). Son épée longue vient du texte : sa figure n’en porte pas (règle X4). Sa tête n’est pas agrandie : son casque a déjà la taille des têtes de Ren et des rivaux. Critique à froid : propreté 8, fidélité 7, proportions 7, poses 7, nuit 8, midi 7. Corrigé après elle, par une planche de reprise : la « bouche » qui s’ouvrait dans sa visière sur la frappe et le coup reçu, le coup reçu lu comme un coup de pied, la prière dessinée de face. Restent : de profil, son tabard se lit en rayures plutôt qu’en une bande ; à la victoire, son bras levé cache sa visière. Les reprises n’ont pas repassé de critique.",
+    "shots": [
+     [
+      "img/aldric-night-skill.png",
+      "Sa compétence offensive au contact, la nuit"
+     ],
+     [
+      "img/aldric-midday-skill.png",
+      "La même, à midi"
+     ],
+     [
+      "img/aldric-night-break.png",
+      "Étourdi, la nuit"
+     ],
+     [
+      "img/aldric-midday-calm.png",
+      "Au calme, à midi"
+     ],
+     [
+      "img/combat-scale.png",
+      "À même échelle : Ren, Aldric, Corra, Ambrose, Orla, Cassius"
+     ]
+    ],
+    "flip": {
+     "src": "img/aldric-x3-combat.png",
+     "clips": [
+      [
+       "repos",
+       0,
+       [
+        588,
+        588
+       ]
+      ],
+      [
+       "posture",
+       2,
+       [
+        588,
+        588
+       ]
+      ],
+      [
+       "attaque légère",
+       4,
+       [
+        180,
+        180,
+        180
+       ]
+      ],
+      [
+       "attaque puissante",
+       7,
+       [
+        220,
+        220,
+        220,
+        220
+       ]
+      ],
+      [
+       "compétence offensive",
+       11,
+       [
+        220,
+        220,
+        220,
+        220
+       ]
+      ],
+      [
+       "compétence de garde",
+       15,
+       [
+        260,
+        260,
+        260
+       ]
+      ],
+      [
+       "ralliement",
+       18,
+       [
+        260,
+        260,
+        260
+       ]
+      ],
+      [
+       "garde",
+       21,
+       [
+        300,
+        300
+       ]
+      ],
+      [
+       "coup reçu",
+       23,
+       [
+        260,
+        260
+       ]
+      ],
+      [
+       "étourdi",
+       25,
+       [
+        400,
+        400
+       ]
+      ],
+      [
+       "K.O.",
+       27,
+       [
+        320,
+        320,
+        320
+       ]
+      ],
+      [
+       "victoire",
+       30,
+       [
+        714,
+        714
+       ]
+      ]
+     ],
+     "scale": 1
+    },
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)"
+    ],
+    "recIdx": 0,
+    "src": "rigs/aldric-x3-combat.rig.mjs, briefs/combat-system.md § 14"
+   }
+  ]
+ },
+ {
+  "id": "corra",
+  "title": "Corra Dunmere",
+  "sub": "Le panneau 2 de G1, la dame au bâton. Elle se bat sur le profil d’Orla : garde, deux compétences, ni esquive ni ralliement.",
+  "fam": "var(--voile)",
+  "items": [
+   {
+    "id": "GA-CO1",
+    "tag": "ville",
+    "title": "Corra Dunmere, la feuille de ville (12 images, son visage en portrait)",
+    "ctx": "La même recette. Sa tête est agrandie de 1,2, relue à la source, comme pour le casting : sans cela elle restait plus petite que celles d’Orla et d’Ilse. Les broderies dorées de sa robe deviennent un liseré simple (ta règle des emblèmes). Critique à froid : propreté 6, fidélité 7, place dans la distribution 6. Relevé : de face, le liseré du manteau se lit en pointillés, le col est brouillé, la queue de cheval ne se voit presque pas ; et sa palette est très proche de celle d’Ilse (blonde, robe bleue sur ivoire), ce que ta figure décide.",
+    "shots": [
+     [
+      "img/ref-corra.png",
+      "La figure que tu as choisie (L2-11)"
+     ],
+     [
+      "img/corra-clear.png",
+      "La planche propre générée (gpt-image-2), quatre vues"
+     ],
+     [
+      "img/town-front.png",
+      "De face, à même échelle : Ren, Orla, Aldric, Ilse, Corra, Cassius, Ambrose"
+     ],
+     [
+      "img/faces.png",
+      "Les visages des portraits : Aldric, Corra, Ambrose, puis Orla, Cassius et Lady Edda"
+     ]
+    ],
+    "rec": "Production, avec ces réserves.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)"
+    ],
+    "recIdx": 0,
+    "src": "L2-11, Passe EVL4 ; rigs/corra-x2-v1.rig.mjs"
+   },
+   {
+    "id": "GA-CO2",
+    "tag": "combat",
+    "title": "Corra Dunmere, la feuille de combat ×3 (29 images)",
+    "ctx": "Quatre planches générées, 1,69 $ (sa tâche : 2,11 $ sur 5). Elle garde le bâton doré du panneau, à tête ajourée, et sa robe longue. Critique à froid : propreté 7, fidélité 8, proportions 9, poses 6, nuit 9, midi 9 : la mieux lisible des trois. Corrigé : un morceau du bâton voisin dans la case de l’armé ; puis, après la critique, son bâton devenu une canne courte quand elle est étourdie et à terre (planche de reprise, le bâton entier) et une bande noire sous elle à terre (disparue avec la reprise). Reste : sa charge d’épaule se lit comme un élan plus que comme un coup, et les bouts du bâton s’inversent d’une image à l’autre. Les reprises n’ont pas repassé de critique.",
+    "shots": [
+     [
+      "img/corra-night-skill.png",
+      "Sa compétence offensive au contact, la nuit"
+     ],
+     [
+      "img/corra-midday-skill.png",
+      "La même, à midi"
+     ],
+     [
+      "img/corra-night-break.png",
+      "Étourdi, la nuit"
+     ],
+     [
+      "img/corra-midday-calm.png",
+      "Au calme, à midi"
+     ],
+     [
+      "img/combat-scale.png",
+      "À même échelle : Ren, Aldric, Corra, Ambrose, Orla, Cassius"
+     ]
+    ],
+    "flip": {
+     "src": "img/corra-x3-combat.png",
+     "clips": [
+      [
+       "repos",
+       0,
+       [
+        588,
+        588
+       ]
+      ],
+      [
+       "posture",
+       2,
+       [
+        588,
+        588
+       ]
+      ],
+      [
+       "attaque légère",
+       4,
+       [
+        180,
+        180,
+        180
+       ]
+      ],
+      [
+       "attaque puissante",
+       7,
+       [
+        220,
+        220,
+        220,
+        220
+       ]
+      ],
+      [
+       "compétence offensive",
+       11,
+       [
+        220,
+        220,
+        220,
+        220
+       ]
+      ],
+      [
+       "compétence de garde",
+       15,
+       [
+        260,
+        260,
+        260
+       ]
+      ],
+      [
+       "garde",
+       18,
+       [
+        300,
+        300
+       ]
+      ],
+      [
+       "coup reçu",
+       20,
+       [
+        260,
+        260
+       ]
+      ],
+      [
+       "étourdi",
+       22,
+       [
+        400,
+        400
+       ]
+      ],
+      [
+       "K.O.",
+       24,
+       [
+        320,
+        320,
+        320
+       ]
+      ],
+      [
+       "victoire",
+       27,
+       [
+        714,
+        714
+       ]
+      ]
+     ],
+     "scale": 1
+    },
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)"
+    ],
+    "recIdx": 0,
+    "src": "rigs/corra-x3-combat.rig.mjs, briefs/combat-system.md § 14"
+   }
+  ]
+ },
+ {
+  "id": "ambrose",
+  "title": "Frère Ambrose",
+  "sub": "Le panneau 4 de G1, le porteur de lanterne. Il se bat sur le profil de Cassius : garde, esquive, trois compétences.",
+  "fam": "var(--astre)",
+  "items": [
+   {
+    "id": "GA-AM1",
+    "tag": "ville",
+    "title": "Frère Ambrose, la feuille de ville (12 images, son visage en portrait)",
+    "ctx": "La même recette, la tête agrandie de 1,1 (plus, la capuche touchait le bord du cadre). Il tient sa lanterne en ville. Critique à froid : propreté 6, fidélité 7, place dans la distribution 8. Corrigé après elle : les bords de sa cape, coupés du corps, parce que la reconstruction prenait le violet sombre pour le fond (un réglage du seuil du fond, sans effet sur les autres feuilles). Reste : sa capuche et sa cape violet sombre se fondent dans l’indigo de la nuit, comme le violet de Vessa et le bleu de Cassius.",
+    "shots": [
+     [
+      "img/ref-ambrose.png",
+      "La figure que tu as choisie (L2-11)"
+     ],
+     [
+      "img/ambrose-clear.png",
+      "La planche propre générée (gpt-image-2), quatre vues"
+     ],
+     [
+      "img/town-front.png",
+      "De face, à même échelle : Ren, Orla, Aldric, Ilse, Corra, Cassius, Ambrose"
+     ],
+     [
+      "img/faces.png",
+      "Les visages des portraits : Aldric, Corra, Ambrose, puis Orla, Cassius et Lady Edda"
+     ]
+    ],
+    "rec": "Production.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)"
+    ],
+    "recIdx": 0,
+    "src": "L2-11, Passe EVL4 ; rigs/ambrose-x2-v1.rig.mjs"
+   },
+   {
+    "id": "GA-AM2",
+    "tag": "combat",
+    "title": "Frère Ambrose, la feuille de combat ×3 (34 images)",
+    "ctx": "Six planches retenues sur huit requêtes, 3,37 $ (sa tâche : 3,79 $ sur 5). Au combat, sa lanterne pend à sa ceinture ; son ralliement la lève, et sa victoire aussi (ma consigne : à confirmer). Le ralliement a été repris trois fois : la planche le dessinait de face, puis plus mince, puis avec une seconde lanterne. Critique à froid : propreté 8, fidélité 6, proportions 5, poses 7, nuit 5, midi 9, « à reprendre, de façon ciblée ». Corrigé après elle : son bâton devenu une canne courte (étourdi, à terre), sa lanterne absente de l’esquive (planche de reprise), l’échelle des planches réglée pour que sa tête ne change plus de taille dans le ralliement. Reste : la nuit, son manteau noir se perd dans le pavé ; seuls le visage, la lanterne et le liseré le détachent. Les reprises n’ont pas repassé de critique.",
+    "shots": [
+     [
+      "img/ambrose-night-skill.png",
+      "Sa compétence offensive au contact, la nuit"
+     ],
+     [
+      "img/ambrose-midday-skill.png",
+      "La même, à midi"
+     ],
+     [
+      "img/ambrose-night-break.png",
+      "Étourdi, la nuit"
+     ],
+     [
+      "img/ambrose-midday-calm.png",
+      "Au calme, à midi"
+     ],
+     [
+      "img/combat-scale.png",
+      "À même échelle : Ren, Aldric, Corra, Ambrose, Orla, Cassius"
+     ]
+    ],
+    "flip": {
+     "src": "img/ambrose-x3-combat.png",
+     "clips": [
+      [
+       "repos",
+       0,
+       [
+        588,
+        588
+       ]
+      ],
+      [
+       "posture",
+       2,
+       [
+        588,
+        588
+       ]
+      ],
+      [
+       "attaque légère",
+       4,
+       [
+        180,
+        180,
+        180
+       ]
+      ],
+      [
+       "attaque puissante",
+       7,
+       [
+        220,
+        220,
+        220,
+        220
+       ]
+      ],
+      [
+       "compétence offensive",
+       11,
+       [
+        220,
+        220,
+        220,
+        220
+       ]
+      ],
+      [
+       "compétence de garde",
+       15,
+       [
+        260,
+        260,
+        260
+       ]
+      ],
+      [
+       "ralliement",
+       18,
+       [
+        260,
+        260,
+        260
+       ]
+      ],
+      [
+       "garde",
+       21,
+       [
+        300,
+        300
+       ]
+      ],
+      [
+       "esquive",
+       23,
+       [
+        220,
+        220
+       ]
+      ],
+      [
+       "coup reçu",
+       25,
+       [
+        260,
+        260
+       ]
+      ],
+      [
+       "étourdi",
+       27,
+       [
+        400,
+        400
+       ]
+      ],
+      [
+       "K.O.",
+       29,
+       [
+        320,
+        320,
+        320
+       ]
+      ],
+      [
+       "victoire",
+       32,
+       [
+        714,
+        714
+       ]
+      ]
+     ],
+     "scale": 1
+    },
+    "rec": "Production, avec la réserve de nuit. Dis en note si sa victoire ne doit pas lever la lanterne.",
+    "opts": [
+     "Production",
+     "À reprendre (en note)"
+    ],
+    "recIdx": 0,
+    "src": "rigs/ambrose-x3-combat.rig.mjs, briefs/combat-system.md § 14"
+   }
+  ]
+ },
+ {
+  "id": "props",
+  "title": "Trois combattants de plus",
+  "sub": "Ta demande : « peut etre peux tu en proposer 2-3 autres pour alimenter davantage nos combats hors competitions ». Sur nos planches de tournoi a et b, huit combattants : Vessa est le n° 11 ; la combattante rousse, le barbare, la hache et le gladiateur ressemblent trop à Orla ou à Rhosk, le mage à Ambrose, et l’archère se bat à l’arc. Trois restent distincts. Comme les trois premiers : des perdants des qualifications restés en ville, chacun à un lieu et à une heure encore libres, sur le profil d’un rival qu’aucun générique n’emprunte encore. Les noms, les lieux et les profils sont proposés : change-les en note.",
+  "fam": "var(--astre)",
+  "items": [
+   {
+    "id": "GA-P1",
+    "tag": "n° 08",
+    "title": "Le maître d’épée roux : « Lucan Rook, the Red Blade »",
+    "ctx": "Armure claire et cape rouge, une épée. Proposé : battu par Marek en qualification, il s’entraîne devant la porte de l’arène le soir en espérant sa revanche ; au parvis le soir (personne n’y est à cette heure). Profil de Marek : l’épée lourde, la garde, trois compétences. Réserve : du rouge comme Orla et Aldric, mais un homme aux cheveux roux, sans casque.",
+    "rec": "Oui, ainsi.",
+    "opts": [
+     "Oui, ainsi",
+     "Oui, autrement (en note)",
+     "Non"
+    ],
+    "recIdx": 0,
+    "src": "tournament-roster-casting-2026-10-18-a, n° 08",
+    "shots": [
+     [
+      "img/prop-swordmaster.png",
+      "Planche de tournoi a, n° 08 « Swordmaster (Male) »"
+     ]
+    ],
+    "one": true
+   },
+   {
+    "id": "GA-P2",
+    "tag": "n° 09",
+    "title": "Le champion à la lance : « Piers Calloway, of the Long Spear »",
+    "ctx": "Manteau bleu et ivoire. Une arme que personne n’a encore : la lance, mais elle vient du texte, car sa planche ne la montre pas (règle X4). Proposé : il garde les barges sur le quai le jour pour payer sa route ; au quai le jour (Corra y est la nuit). Profil de Vessa : la fente (un coup de lance), l’esquive. Réserve : ses cheveux bleus rappellent Cassius.",
+    "rec": "Oui, ainsi.",
+    "opts": [
+     "Oui, ainsi",
+     "Oui, autrement (en note)",
+     "Non"
+    ],
+    "recIdx": 0,
+    "src": "tournament-roster-casting-2026-10-18-a, n° 09",
+    "shots": [
+     [
+      "img/prop-spear.png",
+      "Planche de tournoi a, n° 09 « Spear Champion (Male) »"
+     ]
+    ],
+    "one": true
+   },
+   {
+    "id": "GA-P3",
+    "tag": "n° 14",
+    "title": "Le combattant à mains nues : « Kell Barrow, the Bare Fist »",
+    "ctx": "Bandeau rouge, torse nu, les poings. Un style que le duel n’a pas encore : à mains nues. Proposé : il se bat pour quelques pièces sur les marches de la halle le matin ; à la place de la halle le matin (Sela et Ambrose y sont l’après-midi et le soir). Profil de Tobin : des coups sauvages, pas de défense.",
+    "rec": "Oui, ainsi.",
+    "opts": [
+     "Oui, ainsi",
+     "Oui, autrement (en note)",
+     "Non"
+    ],
+    "recIdx": 0,
+    "src": "tournament-roster-casting-2026-10-18-a, n° 14",
+    "shots": [
+     [
+      "img/prop-martial.png",
+      "Planche de tournoi a, n° 14 « Martial Artist (Male) »"
+     ]
+    ],
+    "one": true
+   },
+   {
+    "id": "GA-P4",
+    "tag": "quand",
+    "title": "Quand faire ceux que tu retiens ?",
+    "ctx": "Chacun demande ses deux feuilles (environ 2 à 2,5 $, au plus 5 $ par combattant, X5), sa place dans le jeu (src/narrative/generics.ts, les personnes, son lieu et son heure, derrière la version 2) et sa propre fiche de lot. Les faire dans cette tâche retarderait la fusion des trois premiers.",
+    "rec": "Une tâche à part, après la fusion de celle-ci : les trois premiers entrent en jeu sans attendre.",
+    "opts": [
+     "Une tâche à part, après celle-ci",
+     "Dans cette tâche"
+    ],
+    "recIdx": 0,
+    "src": "L2-11 (le même découpage), carte X5"
+   }
+  ]
+ },
+ {
+  "id": "suite",
+  "title": "La suite",
+  "sub": "Ce qui suit tes approbations.",
+  "fam": "var(--voile)",
+  "items": [
+   {
+    "id": "GA-S1",
+    "tag": "branchement",
+    "title": "Les brancher ensemble, derrière la version 2",
+    "ctx": "Ce qui est approuvé entre en production : le visage de chacun dans les portraits d’une partie de la version 2 (src/characters/PlazaCast.ts), sa feuille dans un duel de la version 2 à la place de la figure générée de l’arène (src/arena/CombatCast.ts). Le jeu par défaut ne les charge jamais. Preuves : les feuilles mesurées propres, le jeu par défaut à 0 px, un défi joué dans le navigateur sous chaque feuille (tools/challenge-flow.mjs).",
+    "rec": "Les six ensemble, dès tes approbations, puis la fusion dans main.",
+    "opts": [
+     "Les six ensemble",
+     "Pas encore (en note)"
+    ],
+    "recIdx": 0,
+    "src": "L2-11 ; AGENTS.md « Art production principle »"
+   },
+   {
+    "id": "GA-S2",
+    "tag": "MiniMax",
+    "title": "MiniMax dans l’outil de génération",
+    "ctx": "Ton « Utilise MiniMax » a fait étendre gen-image.mjs (même plafond, même registre, provenance automatique). Son API ne prend qu’une image de référence, un visage : l’essai (0,063 $) n’a tenu ni le style du casting ni les poses. Tu as ensuite rechargé OpenAI, et ces feuilles viennent de gpt-image-2. MiniMax reste dans l’outil, utilisé seulement si tu le demandes.",
+    "shot": "minimax",
+    "shotCap": "En haut à gauche, la série du casting ; puis les meilleurs essais de MiniMax",
+    "rec": "Le garder dans l’outil, à ta demande seulement.",
+    "opts": [
+     "Le garder, à ma demande",
+     "Le retirer de l’outil"
+    ],
+    "recIdx": 0,
+    "src": "AGENTS.md « Image generation », journal Passe GA1",
+    "shots": [
+     [
+      "img/minimax.png",
+      "En haut à gauche, la série du casting ; puis les meilleurs essais de MiniMax"
+     ]
+    ],
+    "one": true
+   }
+  ]
+ }
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.flip) c.append(flipbook(it.flip));
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+/** the clips of a sheet playing in small canvases, each frame held as long as in the duel (cells of 192 x 288, six to a row in the export; the empty top rows left out) */
+function flipbook(f) {
+  const box = el('div', { class: 'flip' }), img = new Image(), T = 60, H = 288 - T, scale = f.scale ?? 1;
+  const list = f.clips.map(([label, first, durations]) => {
+    const c = el('canvas', { width: String(192 * scale), height: String(H * scale), role: 'img', 'aria-label': label });
+    box.append(el('figure', {}, c, el('figcaption', {}, label)));
+    return { c, first, durations, n: 0, next: 0 };
+  });
+  img.onload = () => {
+    const tick = (t) => {
+      for (const a of list) {
+        if (t < a.next) continue;
+        const x = a.c.getContext('2d'), k = a.first + a.n, sx = (k % 6) * 192, sy = Math.floor(k / 6) * 288;
+        x.imageSmoothingEnabled = false; x.clearRect(0, 0, a.c.width, a.c.height); x.drawImage(img, sx, sy + T, 192, H, 0, 0, a.c.width, a.c.height);
+        a.next = t + a.durations[a.n] + (a.n === a.durations.length - 1 && a.durations.length > 2 ? 500 : 0);
+        a.n = (a.n + 1) % a.durations.length;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  img.src = f.src;
+  return box;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

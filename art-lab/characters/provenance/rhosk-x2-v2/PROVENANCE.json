@@ -1,50 +1,59 @@
 {
-  "id": "rhosk-x2-v2",
-  "status": "APPROVED PRODUCTION ASSET (operator, third lot sheet, journal Passe CA5), not declared a Gold Master",
-  "request": {
-    "date": "2026-11-01",
-    "by": "operator",
-    "text": "Rhosk, redrawn clean: « Les quinze » (journal Passe CA4)"
-  },
-  "source": {
-    "sheet": {
-      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-a.png",
-      "sha256": "aa85e9b7b890810f60224859f8653a6aa8225361db3b448995057e190060fb17"
-    }
-  },
-  "chain": [
-    "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
-    "reconstruct-grid.mjs per facing, the head again at a finer pitch",
-    "quantize-palette.mjs --k 48: one palette for the three views",
-    "rig rhosk-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
-    "Aseprite: assembly and export, every exported frame compared"
-  ],
-  "presentation": {
-    "frame": [
-      64,
-      96
-    ],
-    "footRow": 90,
-    "metresPerTexel": 0.0235,
-    "scale": 0.9
-  },
-  "frames": 12,
-  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/rhosk-x2-v2.rig.mjs --check",
-  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
-  "files": {
-    "art-lab/characters/exports/rhosk-x2-v2.png": "75a309479502007ece17886fdb1d242811e8214e8ffaf05a0d3bf5374d15eb09",
-    "art-lab/characters/exports/rhosk-x2-v2.json": "8bd37c1786f88b14a4f542a176ad4c5e1c04dfa99f25c36e88b7f95e0bff2691",
-    "art-lab/characters/source/rhosk-x2-v2.aseprite": "b6d952ca4d7068cfcb63971bedb06a1e06db3c6330bbf9d6d452ad943d807f3b",
-    "art-lab/characters/provenance/rhosk-x2-v2/view-down.png": "c9c3bd4c0a45c2d25782213da0c8ce19089fd3265317ae79b6512cb95c09a3d6",
-    "art-lab/characters/provenance/rhosk-x2-v2/view-up.png": "c9761f391693b1cc075d9552a1bf584cd520527e2197066b1e4d9dbd385e23a2",
-    "art-lab/characters/provenance/rhosk-x2-v2/view-side.png": "afae809a9b741010d64f0d1c1da1912af603c172128dd34e36b36bb93c767204",
-    "art-lab/characters/provenance/rhosk-x2-v2/build.json": "b1bf782bd77cb8a700ee1792d944f71420d20174209796cb5d0974c00625fed8",
-    "art-lab/characters/rigs/rhosk-x2-v2.rig.mjs": "e3462366a737d18219d8b681bbf86b264ba38f0f041843463cc13938a9271e4b",
-    "art-lab/characters/rigs/lib/clear.mjs": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0",
-    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
-    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
-    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
-    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
-    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ "id": "rhosk-x2-v2",
+ "status": "APPROVED PRODUCTION ASSET (operator, third lot sheet, journal Passe CA5), not declared a Gold Master",
+ "request": {
+  "date": "2026-11-01",
+  "by": "operator",
+  "text": "Rhosk, redrawn clean: « Les quinze » (journal Passe CA4)"
+ },
+ "source": {
+  "sheet": {
+   "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-a.png",
+   "sha256": "aa85e9b7b890810f60224859f8653a6aa8225361db3b448995057e190060fb17"
   }
+ },
+ "chain": [
+  "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
+  "reconstruct-grid.mjs per facing, the head again at a finer pitch",
+  "quantize-palette.mjs --k 48: one palette for the three views",
+  "rig rhosk-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+  "Aseprite: assembly and export, every exported frame compared"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9
+ },
+ "frames": 12,
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/rhosk-x2-v2.rig.mjs --check",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/rhosk-x2-v2.png": "75a309479502007ece17886fdb1d242811e8214e8ffaf05a0d3bf5374d15eb09",
+  "art-lab/characters/exports/rhosk-x2-v2.json": "8bd37c1786f88b14a4f542a176ad4c5e1c04dfa99f25c36e88b7f95e0bff2691",
+  "art-lab/characters/source/rhosk-x2-v2.aseprite": "b6d952ca4d7068cfcb63971bedb06a1e06db3c6330bbf9d6d452ad943d807f3b",
+  "art-lab/characters/provenance/rhosk-x2-v2/view-down.png": "c9c3bd4c0a45c2d25782213da0c8ce19089fd3265317ae79b6512cb95c09a3d6",
+  "art-lab/characters/provenance/rhosk-x2-v2/view-up.png": "c9761f391693b1cc075d9552a1bf584cd520527e2197066b1e4d9dbd385e23a2",
+  "art-lab/characters/provenance/rhosk-x2-v2/view-side.png": "afae809a9b741010d64f0d1c1da1912af603c172128dd34e36b36bb93c767204",
+  "art-lab/characters/provenance/rhosk-x2-v2/build.json": "b1bf782bd77cb8a700ee1792d944f71420d20174209796cb5d0974c00625fed8",
+  "art-lab/characters/rigs/rhosk-x2-v2.rig.mjs": "e3462366a737d18219d8b681bbf86b264ba38f0f041843463cc13938a9271e4b",
+  "art-lab/characters/rigs/lib/clear.mjs": "e5d1c8152f7a66b137bba319a3f57c082aa18d87e7b3b9fe18f0296addad502c",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ },
+ "maintenance": [
+  {
+   "date": "2026-11-07",
+   "pass": "GA1",
+   "file": "art-lab/characters/rigs/lib/clear.mjs",
+   "change": "an optional `bgThreshold` passed to reconstruct-grid (a dark cloak close to the sheet's ground was flooded with it, journal Passe GA1); absent, nothing changes: this sheet's build-character --check is identical after the change (journal Passe GA1)",
+   "previousSha256": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0"
+  }
+ ]
 }

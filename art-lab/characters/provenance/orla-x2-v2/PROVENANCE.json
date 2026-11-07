@@ -1,50 +1,59 @@
 {
-  "id": "orla-x2-v2",
-  "status": "APPROVED PRODUCTION ASSET (operator, third lot sheet, journal Passe CA5), not declared a Gold Master",
-  "request": {
-    "date": "2026-11-01",
-    "by": "operator",
-    "text": "Orla Brask, redrawn clean: « Les quinze » (journal Passe CA4)"
-  },
-  "source": {
-    "sheet": {
-      "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-a.png",
-      "sha256": "aa85e9b7b890810f60224859f8653a6aa8225361db3b448995057e190060fb17"
-    }
-  },
-  "chain": [
-    "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
-    "reconstruct-grid.mjs per facing, the head again at a finer pitch",
-    "quantize-palette.mjs --k 48: one palette for the three views",
-    "rig orla-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
-    "Aseprite: assembly and export, every exported frame compared"
-  ],
-  "presentation": {
-    "frame": [
-      64,
-      96
-    ],
-    "footRow": 90,
-    "metresPerTexel": 0.0235,
-    "scale": 0.9
-  },
-  "frames": 30,
-  "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/orla-x2-v2.rig.mjs --check",
-  "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
-  "files": {
-    "art-lab/characters/exports/orla-x2-v2.png": "7b1a2a83734aac67c8a13277bfce66556c8b7b0da278ae51d50d468de2f8e1d2",
-    "art-lab/characters/exports/orla-x2-v2.json": "a5037a25dc6a386d917c40caf30ba0ccf050524d71055ad5d9a9f00891890060",
-    "art-lab/characters/source/orla-x2-v2.aseprite": "2585c703835681d2fcfbab2104df6fb48c7a59d741e736344318482a0eb32325",
-    "art-lab/characters/provenance/orla-x2-v2/view-down.png": "b47217bc117a6800dc8a0ad25c28c4500b80331854fbdff7ea5ffdbce7e4fb8d",
-    "art-lab/characters/provenance/orla-x2-v2/view-up.png": "74bd6eadecac55eadbcc972d4acd3d28f5dae601cf116d741465035a2b1fce9c",
-    "art-lab/characters/provenance/orla-x2-v2/view-side.png": "b37a975568a596d4540d7aae1d41abe6f64152c55435b80918b114b90acd3452",
-    "art-lab/characters/provenance/orla-x2-v2/build.json": "8ab0801e7f6473dbc69198448bc096936c7eb2b74b975e3aa6fd04d02254b46e",
-    "art-lab/characters/rigs/orla-x2-v2.rig.mjs": "119461fd65d2f65a89e7ed5cc61a185f81b9171e680627cec4efb9bdfba16b92",
-    "art-lab/characters/rigs/lib/clear.mjs": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0",
-    "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
-    "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
-    "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
-    "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
-    "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ "id": "orla-x2-v2",
+ "status": "APPROVED PRODUCTION ASSET (operator, third lot sheet, journal Passe CA5), not declared a Gold Master",
+ "request": {
+  "date": "2026-11-01",
+  "by": "operator",
+  "text": "Orla Brask, redrawn clean: « Les quinze » (journal Passe CA4)"
+ },
+ "source": {
+  "sheet": {
+   "path": "art-lab/characters/reference/sources/casting-clear-2026-11-01-a.png",
+   "sha256": "aa85e9b7b890810f60224859f8653a6aa8225361db3b448995057e190060fb17"
   }
+ },
+ "chain": [
+  "gen-image.mjs: a clean sheet, the figure chosen on the casting sheet and the NPC 01-16 sheet as references",
+  "reconstruct-grid.mjs per facing, the head again at a finer pitch",
+  "quantize-palette.mjs --k 48: one palette for the three views",
+  "rig orla-x2-v2.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+  "Aseprite: assembly and export, every exported frame compared"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9
+ },
+ "frames": 30,
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/orla-x2-v2.rig.mjs --check",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/orla-x2-v2.png": "7b1a2a83734aac67c8a13277bfce66556c8b7b0da278ae51d50d468de2f8e1d2",
+  "art-lab/characters/exports/orla-x2-v2.json": "a5037a25dc6a386d917c40caf30ba0ccf050524d71055ad5d9a9f00891890060",
+  "art-lab/characters/source/orla-x2-v2.aseprite": "2585c703835681d2fcfbab2104df6fb48c7a59d741e736344318482a0eb32325",
+  "art-lab/characters/provenance/orla-x2-v2/view-down.png": "b47217bc117a6800dc8a0ad25c28c4500b80331854fbdff7ea5ffdbce7e4fb8d",
+  "art-lab/characters/provenance/orla-x2-v2/view-up.png": "74bd6eadecac55eadbcc972d4acd3d28f5dae601cf116d741465035a2b1fce9c",
+  "art-lab/characters/provenance/orla-x2-v2/view-side.png": "b37a975568a596d4540d7aae1d41abe6f64152c55435b80918b114b90acd3452",
+  "art-lab/characters/provenance/orla-x2-v2/build.json": "8ab0801e7f6473dbc69198448bc096936c7eb2b74b975e3aa6fd04d02254b46e",
+  "art-lab/characters/rigs/orla-x2-v2.rig.mjs": "119461fd65d2f65a89e7ed5cc61a185f81b9171e680627cec4efb9bdfba16b92",
+  "art-lab/characters/rigs/lib/clear.mjs": "e5d1c8152f7a66b137bba319a3f57c082aa18d87e7b3b9fe18f0296addad502c",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ },
+ "maintenance": [
+  {
+   "date": "2026-11-07",
+   "pass": "GA1",
+   "file": "art-lab/characters/rigs/lib/clear.mjs",
+   "change": "an optional `bgThreshold` passed to reconstruct-grid (a dark cloak close to the sheet's ground was flooded with it, journal Passe GA1); absent, nothing changes: this sheet's build-character --check is identical after the change (journal Passe GA1)",
+   "previousSha256": "b722c8f518e03dc2d82a07ad5fd8297e73690d82a85c53887354fd46c42266c0"
+  }
+ ]
 }

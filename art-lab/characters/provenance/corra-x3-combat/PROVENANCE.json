@@ -7,11 +7,12 @@
  },
  "source": {
   "sheets": {
-   "description": "3 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task corra-art); references: the clean figure corra-clear-2026-11-07.png and panel 2 of the G1 casting sheet, and Ren's sheets for the layout only",
+   "description": "4 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task corra-art); references: the clean figure corra-clear-2026-11-07.png and panel 2 of the G1 casting sheet, and Ren's sheets for the layout only",
    "files": [
     "art-lab/characters/reference/sources/corra-combat-x3-2026-11-07-a.png",
     "art-lab/characters/reference/sources/corra-combat-x3-2026-11-07-b.png",
-    "art-lab/characters/reference/sources/corra-combat-x3-2026-11-07-c.png"
+    "art-lab/characters/reference/sources/corra-combat-x3-2026-11-07-c.png",
+    "art-lab/characters/reference/sources/corra-combat-x3-2026-11-07-d.png"
    ]
   },
   "figure": "corra-clear-2026-11-07.png"
@@ -21,15 +22,16 @@
  ],
  "rebuild": "node tools/art-lab/build-combat.mjs art-lab/characters/rigs/corra-x3-combat.rig.mjs --check",
  "files": {
-  "art-lab/characters/exports/corra-x3-combat.png": "80555c5450f56eaf2bd9320d503a3a400da8458fa6061274a59dfd3950befb3d",
-  "art-lab/characters/exports/corra-x3-combat.json": "76f900bd692462f979e622c5e178b86c3ec8ccfb0c8fd9eb82fc3e9c0ff8be73",
-  "art-lab/characters/source/corra-x3-combat.aseprite": "266fc2766c982b14f1aeea88f2f5e507842c955a0e8b1ca94b6779a97f04371d",
-  "art-lab/characters/provenance/corra-x3-combat/build.json": "39042978d224990b3101d9982e2b12a4b81d67d1823b798af0cbb7a6c4deef98",
+  "art-lab/characters/exports/corra-x3-combat.png": "20317f8f0d4ffcf6409d697225d471c0f6b8122d4e64d2a8ba52b297cb65de85",
+  "art-lab/characters/exports/corra-x3-combat.json": "04ec2cfeeca1218c40658d6147856acb8ec0f21115061f1b9b67b67189e899cd",
+  "art-lab/characters/source/corra-x3-combat.aseprite": "44ad86be67804a51d3c947446a7920fb9d5aa767a8548c98d9aa14a333c3356d",
+  "art-lab/characters/provenance/corra-x3-combat/build.json": "2e4304ac41fa94849065c36b92045a4e6df06d63fd27c966145bfdddfb8cf1f5",
   "art-lab/characters/exports/corra-x2-v1.png": "faa6fa92ef41f4fb33c0f0373daa691a379bb533d453a4dd031366c30db13e46",
   "art-lab/characters/reference/sources/corra-combat-x3-2026-11-07-a.png": "70a3fb4070deca2f19fe7b23575a90fa685a8f5eec004c63af3dcd343502fe5a",
   "art-lab/characters/reference/sources/corra-combat-x3-2026-11-07-b.png": "4b904bbbc0c39f144734ba315bcfb0b821d45ea376595b63fef74283baaad8b2",
   "art-lab/characters/reference/sources/corra-combat-x3-2026-11-07-c.png": "ee2bfdcfc5f5fdd8c423a10f417d5d2b9281a4564bc9904f60450d6c69fba641",
-  "art-lab/characters/rigs/corra-x3-combat.rig.mjs": "529617274c430102066be87733d3abc670d346d7f3b8e93a9659d59e1490154c",
+  "art-lab/characters/reference/sources/corra-combat-x3-2026-11-07-d.png": "d92028f59512e24792dabc0f1a1e146eeaaecc86acadbab8bf73b99b154dda57",
+  "art-lab/characters/rigs/corra-x3-combat.rig.mjs": "c3242a31cbbbdd3d24b041ee121365ebcb09ffbcb092f5203692f4564d2050f9",
   "art-lab/characters/rigs/lib/combat.mjs": "cfa8d68634b65c2781b70d72966e3ad24eac867e5e7ffbba9920c3696461255e",
   "tools/art-lab/build-combat.mjs": "0dd3d9f77a5b362362c9f937654c7787290d9f39dcc3f5f038f5cc3901281d7f",
   "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
