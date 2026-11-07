@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "ambrose-combat-x3-2026-11-07-d.png",
+  "sha256": "731d4a255f2fa9efc290f419b7a8f4507e597680dedd95770f4e567e9967c043",
+  "bytes": 1458847,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "0b1fca63ef2c8c22632bd87040801c5e0a9ed8d52fa085e64aca333f70edac31",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Brother Ambrose, a lantern-bearer of the hill shrines who came for a purse for his shrine, in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Image 2 is an earlier panel of the SAME character; its bottom row shows him with his staff and fixes the weapon and how it is held. Images 3 and 4 are combat sheets of ANOTHER character: they only fix the layout, the SIDE view facing left, the scale and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of Brother Ambrose, every figure in the SIDE view, FACING LEFT (the face, chest and weapon point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1: a deep dark purple hood over the head and a long dark purple cloak with a thin plain gold border; a long dark brown-black coat to the knees, a brown belt with a brass buckle and small leather pouches; brown boots; a calm young face in the shadow of the hood with a short silver-grey fringe and one clear eye in profile. His small brass lantern with warm amber glass hangs from his belt at his hip in every figure. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big hooded head, about three heads tall, a compact body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head about 97 pixels tall.\n\nThe weapon, the same in every figure: his staff as in image 2: a long dark wooden staff about as tall as he is, about 280 pixels long at this scale, with brass fittings and a small ornate brass head at the top end. He fights with it as a quarterstaff, both hands on the shaft. No sword, no shield, no magic.\n\n2 rows, in this order, left to right:\nRow 1, His rally, HOUSE COLOURS, a rally: he lifts his lantern:\n1. HOUSE COLOURS, PREPARATION: the staff planted upright beside him in one hand, the free hand taking the lantern from his belt.\n2. HOUSE COLOURS, THE RALLY: standing tall, the lantern held up high in front of him at arm's length, the staff upright in the other hand, the hood lifted, the cloak spread behind him. No glow beyond the lantern's own amber glass.\n3. HOUSE COLOURS, RETURN: the lantern back at his belt, both hands on the staff, settling into a stance.\nRow 2, The dodge:\n4. DODGE, PUSH-OFF: a quick hop BACKWARD, away from an opponent on the left (moving toward the right edge): pushing off the front foot, the front foot lifting off the ground, the back foot still touching the ground, the body leaning back, the staff held in front to cover.\n5. DODGE, LANDING: landed farther back, knees bent, the weight on the back foot, the staff back in front in a guard.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, weapon included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and the weapon.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "5830ba268967ad868e9912c537e04092098f069b68f273a2360c168668dd5fae",
+    "promptFile": "(outside the repository) ambrose-d.txt",
+    "references": [
+      {
+        "file": "(outside the repository) ambrose-clear.png",
+        "sha256": "b668d7032ce29d600cdd7e6561af5a5824825d5938ef0d8e53e6a0696b256a74",
+        "bytes": 870149
+      },
+      {
+        "file": "(outside the repository) ambrose-panel.png",
+        "sha256": "f5800f7a995f246d811231bc36b0cf75bc860034c9bfa7de769abbc482c87384",
+        "bytes": 394557
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "1 of 2",
+    "task": "ambrose-art",
+    "requestedAt": "2026-11-07T20:26:18.422Z",
+    "response": {
+      "requestId": "req_27d0bed377584c16a76699ac5e81143c",
+      "created": "2026-11-07T20:27:18.000Z",
+      "processingMs": 59414
+    },
+    "usage": {
+      "input_tokens": 12082,
+      "input_tokens_details": {
+        "image_tokens": 10308,
+        "text_tokens": 1774
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 23058
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.382725,
+        "fromUsage": 0.420614
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-07",
+    "from": "ambrose-art-20261107T202618Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

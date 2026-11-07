@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "aldric-x2-v1",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/aldric-x2-v1.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/aldric-x2-v1.png",
+    "metadata": "art-lab/characters/exports/aldric-x2-v1.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-character.mjs (reconstruct-grid + quantize-palette + rig-engine, rig art-lab/characters/rigs/aldric-x2-v1.rig.mjs, art-lab/characters/rigs/lib/clear.mjs); Aseprite (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "Clean generated sheet, Ser Aldric Venn (four views)",
+      "path": "art-lab/characters/reference/sources/aldric-clear-2026-11-07.png",
+      "note": "gpt-image-2 through gen-image.mjs (task aldric-art), NON-CANONICAL until the operator approves it (journal Passe GA1)"
+    },
+    {
+      "category": "C",
+      "label": "The figure the operator chose: the knight n° 07 « Combattant du Tournoi — Chevalier (Homme) » of the main characters' casting sheet",
+      "path": "art-lab/characters/reference/sources/main-characters-casting-2026-10-18-original.png",
+      "note": "the operator's L2-11 « Ces trois figures, une tâche à part après la fusion » (journal Passe EVL4)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "Candidate (journal Passe GA1): Ser Aldric Venn, a generic fighter of the version 2 (lot L2b), standing only (12 frames): his or her face in a version 2 game's portraits. Production waits for the operator's lot sheet; nothing in the game loads it."
+}

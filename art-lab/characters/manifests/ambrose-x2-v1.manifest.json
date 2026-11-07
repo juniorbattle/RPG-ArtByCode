@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "ambrose-x2-v1",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/ambrose-x2-v1.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/ambrose-x2-v1.png",
+    "metadata": "art-lab/characters/exports/ambrose-x2-v1.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-character.mjs (reconstruct-grid + quantize-palette + rig-engine, rig art-lab/characters/rigs/ambrose-x2-v1.rig.mjs, art-lab/characters/rigs/lib/clear.mjs); Aseprite (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "Clean generated sheet, Brother Ambrose (four views)",
+      "path": "art-lab/characters/reference/sources/ambrose-clear-2026-11-07.png",
+      "note": "gpt-image-2 through gen-image.mjs (task ambrose-art), NON-CANONICAL until the operator approves it (journal Passe GA1)"
+    },
+    {
+      "category": "C",
+      "label": "The figure the operator chose: panel 4 of the G1 casting sheet, the lantern-bearer",
+      "path": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g1.webp",
+      "note": "the operator's L2-11 « Ces trois figures, une tâche à part après la fusion » (journal Passe EVL4)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "Candidate (journal Passe GA1): Brother Ambrose, a generic fighter of the version 2 (lot L2b), standing only (12 frames): his or her face in a version 2 game's portraits. Production waits for the operator's lot sheet; nothing in the game loads it."
+}

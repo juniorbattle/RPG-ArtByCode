@@ -1,0 +1,40 @@
+{
+ "id": "aldric-x2-v1",
+ "frames": 12,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11",
+ "sheet": [
+  384,
+  192
+ ],
+ "palette": {
+  "mode": "joint k-means 48",
+  "colours": 48,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2429,
+    "meanOklabErrPermille": 10.4,
+    "maxOklabErrPermille": 44.6
+   },
+   "recon-up-full-q.png": {
+    "texels": 2353,
+    "meanOklabErrPermille": 10.3,
+    "maxOklabErrPermille": 45.4
+   },
+   "recon-side-full-q.png": {
+    "texels": 1824,
+    "meanOklabErrPermille": 11.8,
+    "maxOklabErrPermille": 47.5
+   }
+  }
+ },
+ "views": {
+  "down": "164ccc3a59467d8b8d33c85733113eb26923cfa277ad01c30234fa45cde44252",
+  "up": "67536f268f148e267de2f55b453944d67a477e86394da658fdf092335c855ddd",
+  "side": "41bc4ecd168c9a4845a01bf4b6fcc6aeccf5e25ea94a88f3b02fc3e632d39644"
+ },
+ "exports": {
+  "png": "e8d3f128d4054044b9941a865cca1e2799a2700b3fbb4291339f1998fdfb8bd9",
+  "json": "6e146ad3261899c138958b8146598f9726ee9917b2143cce70e5530673f889f4",
+  "aseprite": "a94d785a08b0f87c4a7ef20fff6cbabeefeeba40fe213b1dd93163df0c2ac6b3"
+ }
+}

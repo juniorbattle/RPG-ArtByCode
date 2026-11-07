@@ -190,3 +190,86 @@ test('--archive copies a generated image byte for byte into the archived sources
   fs.appendFileSync(file, 'x');
   assert.throws(() => G.archive({ archive: rel, name: 'hero-trial-b' }, { root }), /does not match its record/);
 });
+
+// MiniMax (journal Passe GA1, the operator's « Utilise MiniMax »): its API reference and price read on 2026-11-06, written out here as the oracle
+const MKEY = 'mm-test-' + 'Wx7'.repeat(16);
+function tinyJpeg() {                                                // markers only: SOI, an APP11 segment, SOF0 (height 2, width 3), EOI
+  return Buffer.from('ffd8' + 'ffeb0006' + '6a756d62' + 'ffc0001108' + '0002' + '0003' + '03' + '011100021100031100' + 'ffd9', 'hex');
+}
+function fakeMinimax({ status = 200, code = 0, msg = 'success', images = [tinyJpeg(), tinyPng()], ok = String(images.length), failed = '0' } = {}) {
+  const calls = [];
+  const fetchFn = async (url, init) => {
+    calls.push({ url, init });
+    const body = { id: 'trace_mm_1', data: { image_base64: code === 0 ? images.map((b) => b.toString('base64')) : [] }, metadata: { success_count: ok, failed_count: failed }, base_resp: { status_code: code, status_msg: msg } };
+    return { ok: status === 200, status, headers: new Map(), text: async () => JSON.stringify(body) };
+  };
+  return { fetchFn, calls };
+}
+
+test('MiniMax: its key by its own name; the request checked against its API reference; the estimate at 0.0035 USD an image', () => {
+  const root = sandbox();
+  fs.writeFileSync(path.join(root, '.env.local'), `OPENAI_API_KEY=${KEY}\nMINIMAX_API_KEY="${MKEY}"\n`);
+  assert.equal(G.keyNameOf('image-01'), 'MINIMAX_API_KEY'); assert.equal(G.keyNameOf('gpt-image-2'), 'OPENAI_API_KEY');
+  assert.equal(G.readKey({ root, env: {}, isIgnored: () => true, name: 'MINIMAX_API_KEY' }), MKEY);
+  assert.equal(G.readKey({ root, env: {}, isIgnored: () => true }), KEY);
+  assert.equal(G.readKey({ root, env: { MINIMAX_API_KEY: 'mm-env' }, isIgnored: () => true, name: 'MINIMAX_API_KEY' }), 'mm-env');
+  fs.writeFileSync(path.join(root, 'face.jpg'), tinyJpeg()); fs.writeFileSync(path.join(root, 'sheet.webp'), 'RIFF');
+  const p = G.planRequest({ task: 'mm', prompt: 'A knight.', ref: ['ref.png'], model: 'image-01', n: 4, size: '1536x1024', seed: '7' }, { root });
+  assert.equal(p.endpoint, 'https://api.minimax.io/v1/image_generation');
+  assert.deepEqual(p.parameters, { n: 4, width: 1536, height: 1024, response_format: 'base64', prompt_optimizer: false, seed: 7, subject_reference: 'character' });
+  assert.equal(p.estimateUsd, 4 * 0.0035);
+  assert.equal(G.planRequest({ task: 'mm', prompt: 'p', ref: [], model: 'image-01', region: 'china' }, { root }).endpoint, 'https://api.minimaxi.com/v1/image_generation');
+  assert.deepEqual(G.planRequest({ task: 'mm', prompt: 'p', ref: [], model: 'image-01' }, { root }).parameters, { n: 1, width: 1024, height: 1024, response_format: 'base64', prompt_optimizer: false });
+  const bad = (o, re) => assert.throws(() => G.planRequest({ task: 'mm', prompt: 'p', ref: [], model: 'image-01', ...o }, { root }), re);
+  bad({ ref: ['ref.png', 'face.jpg'] }, /at most one reference/);
+  bad({ ref: ['sheet.webp'] }, /PNG or JPEG only/);
+  bad({ prompt: 'x'.repeat(1501) }, /at most 1500 characters/);
+  bad({ size: '504x1024' }, /--size/); bad({ size: '2056x1024' }, /--size/); bad({ size: '1530x1024' }, /--size/); bad({ size: '1532x1024' }, /--size/);
+  bad({ n: 10 }, /--n must be 1 to 9/); bad({ quality: 'high' }, /--quality: MiniMax takes none/); bad({ region: 'eu' }, /--region/); bad({ seed: '1.5' }, /--seed/);
+  assert.ok(G.planRequest({ task: 'mm', prompt: 'x'.repeat(1500), ref: [], model: 'image-01', size: '2048x512', n: 9 }, { root }));
+  assert.throws(() => G.planRequest({ task: 'mm', prompt: 'p', ref: [], model: 'image-01-live' }, { root }), /no price/);
+});
+
+test('MiniMax: the JSON request with its one reference as a data URL, the bytes of the answer kept (JPEG or PNG), the cost by the images counted, no key anywhere', async () => {
+  const root = sandbox(), ledgerFile = path.join(root, 'ledger.json'), lines = [];
+  const { fetchFn, calls } = fakeMinimax();
+  const files = await G.generate({ task: 'mm-trial', prompt: 'A knight, four views.', ref: ['ref.png'], model: 'image-01', n: 2, size: '1536x1024' },
+    { root, key: MKEY, fetchFn, now: () => new Date('2026-11-06T12:00:00Z'), log: (s) => lines.push(s), ledgerFile, toolFile: path.join(root, 'tool.mjs') });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, 'https://api.minimax.io/v1/image_generation');
+  assert.equal(calls[0].init.headers.Authorization, `Bearer ${MKEY}`); assert.equal(calls[0].init.headers['Content-Type'], 'application/json');
+  assert.deepEqual(JSON.parse(calls[0].init.body), { model: 'image-01', prompt: 'A knight, four views.', n: 2, width: 1536, height: 1024, response_format: 'base64', prompt_optimizer: false,
+    subject_reference: [{ type: 'character', image_file: `data:image/png;base64,${fs.readFileSync(path.join(root, 'ref.png')).toString('base64')}` }] });
+  assert.deepEqual(files.map((f) => path.basename(f)), ['mm-trial-20261106T120000Z-1.jpg', 'mm-trial-20261106T120000Z-2.png']);
+  assert.ok(fs.readFileSync(files[0]).equals(tinyJpeg())); assert.ok(fs.readFileSync(files[1]).equals(tinyPng()));
+  const rec = JSON.parse(fs.readFileSync(files[0].replace(/\.jpg$/, '.source.json'), 'utf8'));
+  assert.equal(rec.format, 'JPEG 3 x 2'); assert.equal(rec.sha256, sha(tinyJpeg())); assert.equal(rec.generation.provider, 'MiniMax');
+  assert.equal(rec.generation.response.requestId, 'trace_mm_1'); assert.deepEqual(rec.generation.response.metadata, { success_count: 2, failed_count: 0 });
+  assert.equal(rec.generation.costUsd.request.fromCount, 2 * 0.0035); assert.match(rec.c2pa.presence, /^APP11 segment at offset 2, 8 B$/);
+  assert.equal(rec.generation.references[0].file, 'ref.png'); assert.match(rec.rights, /MiniMax API/);
+  assert.equal(G.spent(G.loadLedger(ledgerFile), 'mm-trial'), 2 * 0.0035);
+  // a blocked image is not paid: one image answered of two asked
+  await G.generate({ task: 'mm-trial', prompt: 'p', ref: [], model: 'image-01', n: 2 }, { root, key: MKEY, fetchFn: fakeMinimax({ images: [tinyJpeg()], ok: '1', failed: '1' }).fetchFn, log: (s) => lines.push(s), ledgerFile, toolFile: path.join(root, 'tool.mjs') });
+  assert.equal(G.spent(G.loadLedger(ledgerFile), 'mm-trial'), 3 * 0.0035);
+  assert.ok(lines.some((l) => /1 blocked by its content safety/.test(l)));
+  assert.ok(!allText(root).includes(MKEY), 'the key is in no written file'); assert.ok(!lines.join('\n').includes(MKEY), 'the key is in no printed line');
+});
+
+test('MiniMax: a status other than 0 (no balance, a refused prompt) or an HTTP error costs 0 and writes nothing; the cap holds; a .jpg archives byte for byte', async () => {
+  const root = sandbox(), ledgerFile = path.join(root, 'ledger.json');
+  const deps = { root, key: MKEY, log: () => {}, ledgerFile, toolFile: path.join(root, 'tool.mjs') };
+  await assert.rejects(G.generate({ task: 'mf', prompt: 'p', ref: [], model: 'image-01' }, { ...deps, fetchFn: fakeMinimax({ code: 1008, msg: 'insufficient balance' }).fetchFn }), (e) => /MiniMax status 1008: insufficient balance/.test(e.message) && !e.message.includes(MKEY));
+  await assert.rejects(G.generate({ task: 'mf', prompt: 'p', ref: [], model: 'image-01' }, { ...deps, fetchFn: fakeMinimax({ status: 500 }).fetchFn }), /HTTP 500/);
+  const l = G.loadLedger(ledgerFile);
+  assert.deepEqual(l.tasks.mf.entries.map((e) => [e.status, e.costUsd]), [['MiniMax 1008', 0], ['HTTP 500', 0]]);
+  assert.ok(!fs.existsSync(path.join(root, G.OUT_DIR, 'mf')));
+  await assert.rejects(G.generate({ task: 'mf', prompt: 'p', ref: [], model: 'image-01' }, { ...deps, key: null, fetchFn: fakeMinimax().fetchFn }), /no MINIMAX_API_KEY/);
+  G.saveLedger(ledgerFile, { version: 1, tasks: { full: { entries: [{ costUsd: 4.99, status: 'answered' }] } } });
+  const { fetchFn, calls } = fakeMinimax();
+  await assert.rejects(G.generate({ task: 'full', prompt: 'p', ref: [], model: 'image-01', n: 3 }, { ...deps, fetchFn }), /refused/);   // 3 x 0.0035 > 0.01 left
+  assert.equal(calls.length, 0);
+  const [jpg] = await G.generate({ task: 'arch', prompt: 'p', ref: [], model: 'image-01', n: 1 }, { ...deps, fetchFn: fakeMinimax({ images: [tinyJpeg()] }).fetchFn });
+  const dst = G.archive({ archive: path.relative(root, jpg), name: 'knight-clear-a' }, { root });
+  assert.equal(path.basename(dst), 'knight-clear-a.jpg'); assert.ok(fs.readFileSync(dst).equals(tinyJpeg()));
+  assert.equal(JSON.parse(fs.readFileSync(dst.replace(/\.jpg$/, '.source.json'), 'utf8')).file, 'knight-clear-a.jpg');
+});

@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "corra-combat-x3-2026-11-07-c.png",
+  "sha256": "ee2bfdcfc5f5fdd8c423a10f417d5d2b9281a4564bc9904f60450d6c69fba641",
+  "bytes": 1600792,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "0b1fca63ef2c8c22632bd87040801c5e0a9ed8d52fa085e64aca333f70edac31",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Corra Dunmere, a noble's daughter with debts who hires her staff out on the quay at night, in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Image 2 is an earlier panel of the SAME character; its bottom row shows her with her staff and fixes the weapon and how it is held. Images 3 and 4 are combat sheets of ANOTHER character: they only fix the layout, the SIDE view facing left, the scale and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of Corra Dunmere, every figure in the SIDE view, FACING LEFT (the face, chest and weapon point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1: long blond hair in a high ponytail tied with a dark blue ribbon, a clear face with one large eye in profile; a cream fur collar over the shoulders; a long ivory gown under a royal blue open over-robe with a thin plain gold border and long sleeves; a narrow brown belt with a small brass clasp; small brown shoes barely showing under the hem. The hem moves with her legs in a wide stance. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big head, about three heads tall, a slim upright body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head about 97 pixels tall.\n\nThe weapon, the same in every figure: her long staff as in image 2: a slim brass-gold staff about as tall as she is, about 280 pixels long at this scale, with a small ornate openwork head at the top end and a plain brass cap at the bottom end. She fights with it as a quarterstaff, both hands on the shaft. No sword, no shield.\n\n2 rows, in this order, left to right:\nRow 1, Her great skill, DOCKSIDE SHOULDER, a shoulder charge:\n1. DOCKSIDE SHOULDER, PREPARATION: head lowered, the near shoulder turned forward, knees bent, weight on the back foot, the staff held low and back along her side, jaw set.\n2. DOCKSIDE SHOULDER, SURGE: driving forward off the back foot, the back foot still on the ground, the near shoulder leading, the torso low.\n3. DOCKSIDE SHOULDER, THE IMPACT: slammed forward shoulder first, the front knee deeply bent, the back leg straight, the head tucked behind the near shoulder, the staff trailing behind, mouth open in a shout.\n4. DOCKSIDE SHOULDER, RECOVERY: rising out of the charge, the staff coming back across in front of her.\nRow 2, Her guard skill BRACE, then her victory:\n5. BRACE, PREPARATION: stepping back, the staff coming across in front of the body, the weight sinking.\n6. BRACE, THE WARD: planted low, feet wide, knees bent, the staff held horizontal across in front of the chest in both hands, the chin down, the shoulders squared, eyes fierce.\n7. BRACE, RETURN: lowering the staff, turning it forward into a low guard, the weight shifting forward.\n8. VICTORY, in the SAME SIDE VIEW facing left like every other figure (NOT turned toward the viewer): standing tall, the staff raised straight up above her head in one hand at full arm extension, the other hand on her hip, chin up, a proud smile.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, weapon included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and the weapon.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "24b3946e37b1caee06a85abaad433c96614a5b2d884334bf609b1d87ac77352e",
+    "promptFile": "(outside the repository) corra-c.txt",
+    "references": [
+      {
+        "file": "(outside the repository) corra-clear.png",
+        "sha256": "6424c783440a7b235887bf0b5ac4193510922494f2183e24a4ae04fe4c3e1fe0",
+        "bytes": 912962
+      },
+      {
+        "file": "(outside the repository) corra-panel.png",
+        "sha256": "832bf4a5c3ec3f75252bb00f671930db3fe99b5ddc2928c42a21659d5e6b8d4d",
+        "bytes": 428816
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "2 of 2",
+    "task": "corra-art",
+    "requestedAt": "2026-11-07T20:21:54.803Z",
+    "response": {
+      "requestId": "req_7f4d0fbb42994585a8ea88e47507340e",
+      "created": "2026-11-07T20:23:04.000Z",
+      "processingMs": 69383
+    },
+    "usage": {
+      "input_tokens": 12238,
+      "input_tokens_details": {
+        "image_tokens": 10260,
+        "text_tokens": 1978
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 23214
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.38378,
+        "fromUsage": 0.42125
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 23664 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-07",
+    "from": "corra-art-20261107T202154Z-2.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

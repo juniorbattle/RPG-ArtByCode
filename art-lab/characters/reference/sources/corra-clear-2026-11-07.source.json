@@ -1,0 +1,89 @@
+{
+  "kind": "generated-image",
+  "file": "corra-clear-2026-11-07.png",
+  "sha256": "deb706c6f1b5342b8303b7083fbb690c4a4bb573e846eeae0a9b5ec4cdb7a8e6",
+  "bytes": 1351969,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "0b1fca63ef2c8c22632bd87040801c5e0a9ed8d52fa085e64aca333f70edac31",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "A pixel-art character reference sheet for a game, redrawing ONE existing character in a simpler, cleaner style.\n\nImage 1 is the STYLE and SCALE target: match its pixel size, its simple big shapes, its flat clean colour clusters, its readable faces with clear eyes, its clean dark outline, its proportions (big head, about three heads tall, chunky body). Do not copy its characters.\nImage 2 shows four characters of the same game already redrawn in exactly this way: match its rendering, its pixel size and its proportions exactly, as one more character of the same series. Do not copy its characters.\nImage 3 is the CHARACTER to redraw, keeping who it is: its top row shows her standing in four views; keep her hair, face, clothing colours and silhouette, but with far less detail.\n\nThe character: a young noblewoman: long blond hair in a high ponytail tied with a dark blue ribbon, a clear face with large eyes; a cream fur collar over the shoulders; a long ivory gown, and over it a royal blue open over-robe with a thin plain gold border and long sleeves; a narrow brown belt with a small brass clasp; small brown shoes barely showing under the hem. No weapon in hand.\n\n\nLayout: this ONE character only, four views side by side in a single row across the image, in this order: front, three-quarter front, back, left profile (the profile facing the left edge of the image). A flat solid dark navy background (#1a2230). Plenty of empty background between the figures, no figure touching another, nothing cut by the image edge. No text, no labels, no numbers, no frame. No ground shadow.\n\nPixel grid: real pixel art on one regular grid, every art pixel the same size, no anti-aliasing, no blur, no gradient, no dithering, about 24 colours for the character. Each figure about 340 image pixels tall, all four at the same scale with their feet on one common line. The head big, about as wide as the shoulders, with large clear eyes, as in image 2.\n\nImportant: plain cloth. NO emblems, NO fleur-de-lis, NO crests, NO symbols, NO embroidery and NO gold patterns on any clothing, only a thin plain border on robes and capes. Calm standing pose, arms slightly away from the body so they read clearly.\n",
+    "promptSha256": "bb1c20548fbe748cf4d9d9b94ec87ff706d6b153aeab96baa2409bb87b70227e",
+    "promptFile": "(outside the repository) corra-clear.txt",
+    "references": [
+      {
+        "file": "art-lab/characters/reference/sources/merchant-district-night-npc-01-16.webp",
+        "sha256": "1c3bc60357f1768f98675f6725cf04d6be1e8e4a79b4b1fe549792b0bd5f36ce",
+        "bytes": 302814
+      },
+      {
+        "file": "art-lab/characters/reference/sources/casting-clear-2026-11-01-a.png",
+        "sha256": "aa85e9b7b890810f60224859f8653a6aa8225361db3b448995057e190060fb17",
+        "bytes": 1844435
+      },
+      {
+        "file": "(outside the repository) corra-panel.png",
+        "sha256": "832bf4a5c3ec3f75252bb00f671930db3fe99b5ddc2928c42a21659d5e6b8d4d",
+        "bytes": 428816
+      }
+    ],
+    "image": "2 of 2",
+    "task": "corra-art",
+    "requestedAt": "2026-11-07T20:10:24.261Z",
+    "response": {
+      "requestId": "req_7ae2f8e78b5e4a96beeaae5827a23f9e",
+      "created": "2026-11-07T20:11:30.000Z",
+      "processingMs": 65089
+    },
+    "usage": {
+      "input_tokens": 9020,
+      "input_tokens_details": {
+        "image_tokens": 8024,
+        "text_tokens": 996
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 19996
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.31493,
+        "fromUsage": 0.398452
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-07",
+    "from": "corra-art-20261107T201024Z-2.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

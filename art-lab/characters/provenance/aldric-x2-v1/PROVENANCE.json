@@ -1,0 +1,53 @@
+{
+ "id": "aldric-x2-v1",
+ "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe GA1)",
+ "request": {
+  "date": "2026-11-06",
+  "by": "operator, the L2 sheet of journal Passe EVL4",
+  "text": "L2-11 « Ces trois figures, une tâche à part après la fusion » (journal Passe EVL4): Ser Aldric Venn <- the knight n° 07 « Combattant du Tournoi — Chevalier (Homme) » of the main characters' casting sheet"
+ },
+ "source": {
+  "sheet": {
+   "path": "art-lab/characters/reference/sources/aldric-clear-2026-11-07.png",
+   "sha256": "7c23e77754be5f8f5cb0c40ddd9e8ad6753f3976a2e3dcadfb6e2d4ca1b92a54"
+  },
+  "figure": {
+   "path": "art-lab/characters/reference/sources/main-characters-casting-2026-10-18-original.png",
+   "sha256": "1c68adcddde5f243b65be8e483ba6d9485dfe75f63b06249c621403ae1f6e793"
+  }
+ },
+ "chain": [
+  "gen-image.mjs (gpt-image-2): a clean sheet, the chosen figure, the NPC 01-16 sheet and the casting's clean sheet casting-clear-2026-11-01-a as references",
+  "reconstruct-grid.mjs per facing",
+  "quantize-palette.mjs --k 48: one palette for the three views",
+  "rig aldric-x2-v1.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+  "Aseprite: assembly and export, every exported frame compared"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9
+ },
+ "frames": 12,
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/aldric-x2-v1.rig.mjs --check",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/aldric-x2-v1.png": "e8d3f128d4054044b9941a865cca1e2799a2700b3fbb4291339f1998fdfb8bd9",
+  "art-lab/characters/exports/aldric-x2-v1.json": "ed9174a5223200aa0f3a0eb2b5b0c2d2a8034bdf2f1d648aca45a3a5d33f7ac8",
+  "art-lab/characters/source/aldric-x2-v1.aseprite": "a94d785a08b0f87c4a7ef20fff6cbabeefeeba40fe213b1dd93163df0c2ac6b3",
+  "art-lab/characters/provenance/aldric-x2-v1/view-down.png": "164ccc3a59467d8b8d33c85733113eb26923cfa277ad01c30234fa45cde44252",
+  "art-lab/characters/provenance/aldric-x2-v1/view-up.png": "67536f268f148e267de2f55b453944d67a477e86394da658fdf092335c855ddd",
+  "art-lab/characters/provenance/aldric-x2-v1/view-side.png": "41bc4ecd168c9a4845a01bf4b6fcc6aeccf5e25ea94a88f3b02fc3e632d39644",
+  "art-lab/characters/provenance/aldric-x2-v1/build.json": "2327dfb4262986530b847ef3f45e8fa0eaa586bad05ad0fdfad292025bf01ba1",
+  "art-lab/characters/rigs/aldric-x2-v1.rig.mjs": "264b450946e00eb3908dbb094013ac44ee3584e1c03372cc0fb3b143e3a85c60",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

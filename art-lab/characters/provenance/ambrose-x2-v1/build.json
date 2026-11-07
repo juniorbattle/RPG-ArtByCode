@@ -1,0 +1,40 @@
+{
+ "id": "ambrose-x2-v1",
+ "frames": 12,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11",
+ "sheet": [
+  384,
+  192
+ ],
+ "palette": {
+  "mode": "joint k-means 48",
+  "colours": 48,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2402,
+    "meanOklabErrPermille": 11.1,
+    "maxOklabErrPermille": 52
+   },
+   "recon-up-full-q.png": {
+    "texels": 2565,
+    "meanOklabErrPermille": 5.6,
+    "maxOklabErrPermille": 31.5
+   },
+   "recon-side-full-q.png": {
+    "texels": 1771,
+    "meanOklabErrPermille": 9.3,
+    "maxOklabErrPermille": 39.3
+   }
+  }
+ },
+ "views": {
+  "down": "8f06332f1c0b600699893c9f6c8127b9a265ff5514e5d3e00ab0090ae17c2ad9",
+  "up": "fcdf363211d6ba4f4045d308638983b7b0a3e1497036d9dc551e83d8fe6faaa6",
+  "side": "f3806bffb8521e12f1aebd1325b427b14a76c7885e0fe9184a3e3e055e304b72"
+ },
+ "exports": {
+  "png": "574514763f2be484569fc56323d85eb104ab2e301b81fd139e816e16a04b7285",
+  "json": "ac4ec10c1728ab5d41f741b5b9722707f63f8f69e88a3f46218b640e4c5949c0",
+  "aseprite": "70299a979067185cb41c16e798e79515e18a907907afffe262c0f358600d4a6d"
+ }
+}

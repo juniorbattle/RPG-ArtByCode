@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "corra-x3-combat",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/corra-x3-combat.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/corra-x3-combat.png",
+    "metadata": "art-lab/characters/exports/corra-x3-combat.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-combat.mjs (lib/combat.mjs: reconstruct-grid + rig-engine, rig art-lab/characters/rigs/corra-x3-combat.rig.mjs, the arena cell at x3: 192 x 288, feet on row 270, axis on column 96); Aseprite (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "3 generated pose sheets of Corra Dunmere (NON-CANONICAL until the operator's lot sheet): the figures of the sheet",
+      "path": "art-lab/characters/reference/sources/corra-combat-x3-2026-11-07-a.png",
+      "note": "task corra-art, journal Passe GA1"
+    },
+    {
+      "category": "C",
+      "label": "The clean figure (generated, NON-CANONICAL until the operator approves it): the design",
+      "path": "art-lab/characters/reference/sources/corra-clear-2026-11-07.png",
+      "note": "with panel 2 of the G1 casting sheet, the operator's L2-11 « Ces trois figures, une tâche à part après la fusion » (journal Passe EVL4)"
+    },
+    {
+      "category": "B",
+      "label": "corra-x2-v1, the candidate town sheet: its palette (pinned)",
+      "path": "art-lab/characters/provenance/corra-x2-v1",
+      "note": "candidate, on the same lot sheet (journal Passe GA1)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "Candidate (journal Passe GA1): Corra Dunmere's combat sheet at x3, 29 frames of the § 14 list for Orla's profile, whose kit a generic fighter fights with (src/narrative/generics.ts); her staff, from the panel; cells of 192 x 288 texels, feet on row 270, hips on column 96, facing left. Production waits for the operator's lot sheet; nothing in the game loads it. Rebuild: node tools/art-lab/build-combat.mjs art-lab/characters/rigs/corra-x3-combat.rig.mjs --check"
+}

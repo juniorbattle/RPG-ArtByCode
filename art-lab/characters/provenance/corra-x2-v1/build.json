@@ -1,0 +1,40 @@
+{
+ "id": "corra-x2-v1",
+ "frames": 12,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11",
+ "sheet": [
+  384,
+  192
+ ],
+ "palette": {
+  "mode": "joint k-means 48",
+  "colours": 48,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2275,
+    "meanOklabErrPermille": 8.7,
+    "maxOklabErrPermille": 40.6
+   },
+   "recon-up-full-q.png": {
+    "texels": 2241,
+    "meanOklabErrPermille": 6.8,
+    "maxOklabErrPermille": 37.5
+   },
+   "recon-side-full-q.png": {
+    "texels": 1945,
+    "meanOklabErrPermille": 8.1,
+    "maxOklabErrPermille": 41.5
+   }
+  }
+ },
+ "views": {
+  "down": "35a709c46370b787d067c67243662b6eabbad698023a9d33a2d82fea96fdb21a",
+  "up": "fdda57187ee32951c6eea0917d7f3e1c006f21dc839a65be25be794e1791fc8d",
+  "side": "e126cad1c749127d8cc7d7fb3413a3e9195116cb7c203655a2b24e2521fb13d3"
+ },
+ "exports": {
+  "png": "faa6fa92ef41f4fb33c0f0373daa691a379bb533d453a4dd031366c30db13e46",
+  "json": "e75b87a1d6d4f1b9ce3149b542ba09d0c6890d21bb5aa60c1e2183bc1dac78db",
+  "aseprite": "0e4301a9892cda800cf1d9e521537fc8fc19916879a3632533a7ce4fb8694478"
+ }
+}

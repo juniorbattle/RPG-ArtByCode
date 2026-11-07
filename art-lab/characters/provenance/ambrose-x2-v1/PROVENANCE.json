@@ -1,0 +1,53 @@
+{
+ "id": "ambrose-x2-v1",
+ "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe GA1)",
+ "request": {
+  "date": "2026-11-06",
+  "by": "operator, the L2 sheet of journal Passe EVL4",
+  "text": "L2-11 « Ces trois figures, une tâche à part après la fusion » (journal Passe EVL4): Brother Ambrose <- panel 4 of the G1 casting sheet, the lantern-bearer"
+ },
+ "source": {
+  "sheet": {
+   "path": "art-lab/characters/reference/sources/ambrose-clear-2026-11-07.png",
+   "sha256": "1b784aa9e45e292965e66a7826a02e6458d9ff5b4afdd684233e775cf7899104"
+  },
+  "figure": {
+   "path": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g1.webp",
+   "sha256": "91dffa0c10d1e586e0b5afb62872807dbc6e40db56117641564de78b6412594d"
+  }
+ },
+ "chain": [
+  "gen-image.mjs (gpt-image-2): a clean sheet, the chosen figure, the NPC 01-16 sheet and the casting's clean sheet casting-clear-2026-11-01-a as references",
+  "reconstruct-grid.mjs per facing, the head again at a finer pitch (x1.1)",
+  "quantize-palette.mjs --k 48: one palette for the three views",
+  "rig ambrose-x2-v1.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+  "Aseprite: assembly and export, every exported frame compared"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9
+ },
+ "frames": 12,
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/ambrose-x2-v1.rig.mjs --check",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/ambrose-x2-v1.png": "574514763f2be484569fc56323d85eb104ab2e301b81fd139e816e16a04b7285",
+  "art-lab/characters/exports/ambrose-x2-v1.json": "3237c36138f82c9a357e23ec08d9d2dd8411dcf5bf750f304eb42cf08652cc16",
+  "art-lab/characters/source/ambrose-x2-v1.aseprite": "70299a979067185cb41c16e798e79515e18a907907afffe262c0f358600d4a6d",
+  "art-lab/characters/provenance/ambrose-x2-v1/view-down.png": "8f06332f1c0b600699893c9f6c8127b9a265ff5514e5d3e00ab0090ae17c2ad9",
+  "art-lab/characters/provenance/ambrose-x2-v1/view-up.png": "fcdf363211d6ba4f4045d308638983b7b0a3e1497036d9dc551e83d8fe6faaa6",
+  "art-lab/characters/provenance/ambrose-x2-v1/view-side.png": "f3806bffb8521e12f1aebd1325b427b14a76c7885e0fe9184a3e3e055e304b72",
+  "art-lab/characters/provenance/ambrose-x2-v1/build.json": "89cc9765f63b099cbf9a95d560b7b6d712275f00de98c0e764968fe41bb38e6f",
+  "art-lab/characters/rigs/ambrose-x2-v1.rig.mjs": "1265233fefd8e269eea689f8680ae761493e75a217ccd18182db3083811116b9",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

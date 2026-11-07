@@ -283,7 +283,8 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `node tools/arena-sheet-proof.mjs [--secs=60] [--time=midday] [--q=<extra query>] [rival ...]` — each rival in its duel on a running DEV server (`foe=<id>`, journal Passe CX4): every scripted moment and a simulated duel, every frame of both fighters a baked frame, the HUD's face the baked one; `--q=cast=generated` the negative control; exit 1 on a failure
 - `node tools/art-lab/gen-image.mjs --task=<name> --prompt-file=<f.txt> [--ref=<image> ...] [--n=1] [--size=1536x1024] [--quality=high]
   [--dry-run]` — images through the OpenAI Images API, under the rule "Image generation" below (`--list-models`, `--spent`,
-  `--archive=<generated.png> --name=<base>`; journal Passe I1)
+  `--archive=<generated.png|.jpg> --name=<base>`; journal Passe I1); `--model=image-01` through MiniMax (one reference at most, journal Passe GA1);
+  `--root=<checkout>` the checkout whose key, ledger and scratch folder it uses (a worktree has no `.env.local`)
 
 ## Dev servers and background processes (operator rule, 2026-10-17)
 - Start dev servers with the session's `preview_start` tool and a `.claude/launch.json` entry (`dev`; `dev-strict` = the repo on :5186 with
@@ -461,6 +462,12 @@ tâche, la provenance enregistrée automatiquement et la règle dans AGENTS.md. 
 - The key (`OPENAI_API_KEY`) lives in the environment or in `.env.local` at the repo root, which must stay git-ignored (the tool checks it).
   It is never read by hand, printed, logged, committed or copied into a record, a message or another session. The MiniMax key of the same
   file is not used unless the operator asks.
+- **MiniMax** (journal Passe GA1): the operator asked for it, word for word « Utilise MiniMax » (2026-11-06, in the session of the generic fighters'
+  art, after the OpenAI account answered « no credits remaining »), and on his session's question « Essayer la clé MiniMax ». The tool takes it
+  with `--model=image-01` (`MINIMAX_API_KEY`, read like the other key, the same rules): the same cap per task and ledger, the same automatic record,
+  the answer's bytes (JPEG) kept as they are. Its API takes at most ONE reference (a « character » portrait) and a prompt of 1500 characters: its
+  trial (0.063 USD, 18 images) drew neither the casting's style nor the poses asked; the operator then recharged OpenAI (« Je recharge OpenAI »,
+  « c"est recharge ») and the generic fighters' sheets came from gpt-image-2. MiniMax is kept in the tool, used only when the operator asks.
 - Provenance is automatic: every image keeps the API's original bytes next to its `.source.json` (model, endpoint, parameters, exact prompt and
   its SHA-256, references' SHA-256, request id, dates, usage, cost from the tool's price table). The C2PA chunk is located, never claimed valid.
   Generated images land in `art-lab/characters/scratch/generated/<task>/` (ignored); one that matters is copied byte for byte with

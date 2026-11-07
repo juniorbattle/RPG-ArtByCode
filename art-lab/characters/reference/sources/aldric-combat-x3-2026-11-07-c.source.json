@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "aldric-combat-x3-2026-11-07-c.png",
+  "sha256": "f316ef24f8a72402e6e08a15582d63b03353bc7e9b4dd162142dc380f65a083d",
+  "bytes": 1575817,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "0b1fca63ef2c8c22632bd87040801c5e0a9ed8d52fa085e64aca333f70edac31",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Ser Aldric Venn, a young knight who lost his qualifying bout when a strap gave way, in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Image 2 is the casting sheet the character comes from (six views); it only confirms the design. He carries no weapon there. Images 3 and 4 are combat sheets of ANOTHER character: they only fix the layout, the SIDE view facing left, the scale and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of Ser Aldric Venn, every figure in the SIDE view, FACING LEFT (the face, chest and weapon point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1: full steel plate armour with thin brass trim; a closed great helm with a narrow dark eye slit and a tall red plume (the visor stays closed: no face shows); rounded steel pauldrons, steel gauntlets and steel boots; a white tabard to the knees with red borders and ONE broad plain red vertical band down the middle; a short dark red cape behind; a brown belt with a brass buckle. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big helmed head, about three heads tall, a solid compact body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head about 97 pixels tall.\n\nThe weapon, the same in every figure: a plain straight longsword: a bright steel blade with a darker edge line, about 130 pixels long at this scale, a simple brass crossguard, a brown leather grip, a round brass pommel. He holds it with BOTH hands on the grip. No shield, no scabbard.\n\n2 rows, in this order, left to right:\nRow 1, His great skill, TEMPLE SMITE, a judging overhead blow:\n1. TEMPLE SMITE, PREPARATION: the sword held upright in front of the helm in both hands, a short prayer, the feet planted.\n2. TEMPLE SMITE, SURGE: stepping forward, the back foot still on the ground, the sword raised high above the head, the plume tossed back.\n3. TEMPLE SMITE, THE BLOW LANDING: a straight overhead blow finishing in front of him, a deep stance, both arms straight down and forward, the blade pointing down and to the left, the cape thrown out behind him, below the shoulders.\n4. TEMPLE SMITE, RECOVERY: rising out of the blow, the sword coming back up in front of him, the head bowed for an instant.\nRow 2, His guard skill AEGIS, then his victory:\n5. AEGIS, PREPARATION: the sword brought down point-first in front of him, both hands on the pommel, the head lowered.\n6. AEGIS, THE WARD: standing firm, feet apart, chest out, the sword planted upright in front of him with its tip on the ground, both hands resting on the pommel, the cape spread behind him.\n7. AEGIS, RETURN: lifting the sword from the ground, turning it forward into a low guard.\n8. VICTORY, in the SAME SIDE VIEW facing left like every other figure (NOT turned toward the viewer): standing tall, the sword raised straight up above his head in both hands at full arm extension, the weapon its full length, the helm lifted proudly.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, weapon included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and the weapon.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "b419c03b878bf2802f04184c99933925442c20d66c50d3916de51f608b01e842",
+    "promptFile": "(outside the repository) aldric-c.txt",
+    "references": [
+      {
+        "file": "(outside the repository) aldric-clear.png",
+        "sha256": "a0169d332546fdcbdeaed3a64068efa4698ac10b7ebd124ad99c0f5e44d4e657",
+        "bytes": 944095
+      },
+      {
+        "file": "(outside the repository) aldric-figure-x2.png",
+        "sha256": "fc3bd4a691ae3224ad0b8654e6b1058b1bbaf48bcc251ef45a82eabbc01c1383",
+        "bytes": 226222
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": "art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "2 of 2",
+    "task": "aldric-art",
+    "requestedAt": "2026-11-07T20:17:38.055Z",
+    "response": {
+      "requestId": "req_55a90aa9765449ee8664a6920bce3222",
+      "created": "2026-11-07T20:18:44.000Z",
+      "processingMs": 65462
+    },
+    "usage": {
+      "input_tokens": 10804,
+      "input_tokens_details": {
+        "image_tokens": 8850,
+        "text_tokens": 1954
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 21780
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.38366,
+        "fromUsage": 0.40985
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 23664 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-07",
+    "from": "aldric-art-20261107T201738Z-2.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

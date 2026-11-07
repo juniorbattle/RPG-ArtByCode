@@ -85,7 +85,9 @@ export function despeckle(im, min) {
 }
 /** every figure reconstructed in a wide frame (feet on the foot row, the bbox centred), on the pinned palette: { name: image }. `bgThr`: how far from the sheet's background a
  *  pixel starts being figure; `tint(c)`: a sheet background far from every colour of the figure may peel what leans toward it; `min`: the loose islands' size; `head`: { s, r } grows the head
- *  of the figures that give theirs (`head: [x, y, dir]`, sheet pixels, degrees toward the neck); `extra`: colours added to the pinned palette (a town sheet without a weapon has no steel) */
+ *  of the figures that give theirs (`head: [x, y, dir]`, sheet pixels, degrees toward the neck); `extra`: colours added to the pinned palette (a town sheet without a weapon has no steel).
+ *  A figure's `mask`: rectangles [x0, y0, x1, y1] of its sheet painted with the background after the isolation (a neighbour's staff, cut at the edge of the labelled region, left a piece
+ *  whose box centre fell inside the figure's box, journal Passe GA1); absent, nothing changes */
 export function reconstructFigures({ id, palette, sheets, figures, bgThr = 40, tint, min = 12, head = null, extra = [] }) {
   const pal = [...R.paletteOf(R.load(path.join(ROOT, palette.path))), ...extra];
   if (sha(path.join(ROOT, palette.path)) !== palette.sha256) throw new Error(`${palette.path}: not the pinned palette`);
@@ -95,7 +97,8 @@ export function reconstructFigures({ id, palette, sheets, figures, bgThr = 40, t
   try {
     for (const [name, f] of Object.entries(figures)) {
       const crop = f.head ? grownBox(f, f.r ?? head.r, head.s) : f.box, pitch = f.pitch ?? sheets[f.sheet].pitch;
-      const { im, bg } = isolate(loaded[f.sheet], f.box, bgThr, crop), file = path.join(tmp, `${name}.png`), pre = path.join(tmp, name);
+      const { im: kept, bg } = isolate(loaded[f.sheet], f.box, bgThr, crop), file = path.join(tmp, `${name}.png`), pre = path.join(tmp, name);
+      const im = f.mask ? masked(kept, f.mask, bg) : kept;
       const ready = f.head ? growHead(im, { c: f.head.slice(0, 2), r: f.r ?? head.r, dir: ((f.head[2] ?? 90) * Math.PI) / 180, blade: !!head.blade }, head.s) : im;
       cornerIsBackground(name, ready, crop, pitch, bg, bgThr);
       R.save(file, ready);
@@ -106,6 +109,12 @@ export function reconstructFigures({ id, palette, sheets, figures, bgThr = 40, t
     }
   } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
   return out;
+}
+/** rectangles of a sheet painted with its background (a figure's `mask`) */
+function masked(im, rects, bg) {
+  const o = R.clone(im);
+  for (const [x0, y0, x1, y1] of rects) for (let y = Math.max(0, y0); y <= Math.min(im.H - 1, y1); y++) for (let x = Math.max(0, x0); x <= Math.min(im.W - 1, x1); x++) { const i = (y * im.W + x) * 4; o.px[i] = bg[0]; o.px[i + 1] = bg[1]; o.px[i + 2] = bg[2]; }
+  return o;
 }
 /** a blade's pixel on a sheet: light and without colour */
 const bright = (im, x, y) => { const q = R.get(im, x, y); if (!q) return false; const [L, a, b] = R.oklab(q); return L > 0.62 && Math.hypot(a, b) < 0.04; };

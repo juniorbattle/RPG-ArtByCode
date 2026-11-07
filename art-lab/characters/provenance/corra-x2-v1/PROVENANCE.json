@@ -1,0 +1,53 @@
+{
+ "id": "corra-x2-v1",
+ "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe GA1)",
+ "request": {
+  "date": "2026-11-06",
+  "by": "operator, the L2 sheet of journal Passe EVL4",
+  "text": "L2-11 « Ces trois figures, une tâche à part après la fusion » (journal Passe EVL4): Corra Dunmere <- panel 2 of the G1 casting sheet, the lady with the staff"
+ },
+ "source": {
+  "sheet": {
+   "path": "art-lab/characters/reference/sources/corra-clear-2026-11-07.png",
+   "sha256": "deb706c6f1b5342b8303b7083fbb690c4a4bb573e846eeae0a9b5ec4cdb7a8e6"
+  },
+  "figure": {
+   "path": "art-lab/characters/reference/sources/combat-casting-2026-11-01-g1.webp",
+   "sha256": "91dffa0c10d1e586e0b5afb62872807dbc6e40db56117641564de78b6412594d"
+  }
+ },
+ "chain": [
+  "gen-image.mjs (gpt-image-2): a clean sheet, the chosen figure, the NPC 01-16 sheet and the casting's clean sheet casting-clear-2026-11-01-a as references",
+  "reconstruct-grid.mjs per facing, the head again at a finer pitch (x1.2)",
+  "quantize-palette.mjs --k 48: one palette for the three views",
+  "rig corra-x2-v1.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+  "Aseprite: assembly and export, every exported frame compared"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9
+ },
+ "frames": 12,
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/corra-x2-v1.rig.mjs --check",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/corra-x2-v1.png": "faa6fa92ef41f4fb33c0f0373daa691a379bb533d453a4dd031366c30db13e46",
+  "art-lab/characters/exports/corra-x2-v1.json": "537b61817f46e6e1decc1aff1b07984a9d72401f5d4082f7017cfecbd30baf45",
+  "art-lab/characters/source/corra-x2-v1.aseprite": "0e4301a9892cda800cf1d9e521537fc8fc19916879a3632533a7ce4fb8694478",
+  "art-lab/characters/provenance/corra-x2-v1/view-down.png": "35a709c46370b787d067c67243662b6eabbad698023a9d33a2d82fea96fdb21a",
+  "art-lab/characters/provenance/corra-x2-v1/view-up.png": "fdda57187ee32951c6eea0917d7f3e1c006f21dc839a65be25be794e1791fc8d",
+  "art-lab/characters/provenance/corra-x2-v1/view-side.png": "e126cad1c749127d8cc7d7fb3413a3e9195116cb7c203655a2b24e2521fb13d3",
+  "art-lab/characters/provenance/corra-x2-v1/build.json": "7ad07bf020fd8750cc151f73ff8bf3acefc483d634b23528a1210455bee17f1d",
+  "art-lab/characters/rigs/corra-x2-v1.rig.mjs": "0cc2c6d0caeeb8044fd003f7f8be7e445e63e2047f386c38d31bf9f0d5734595",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

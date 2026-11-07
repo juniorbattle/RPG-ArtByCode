@@ -1,0 +1,178 @@
+{
+ "id": "aldric-x3-combat",
+ "cell": [
+  192,
+  288,
+  270,
+  96
+ ],
+ "k": 3,
+ "frames": 32,
+ "tags": "idle-side:0-1 ready-side:2-3 strike-side:4-6 heavy-side:7-10 skillOff-side:11-14 skillDef-side:15-17 skillSup-side:18-20 block-side:21-22 hit-side:23-24 recover-side:25-26 ko-side:27-29 victory-side:30-31",
+ "sheet": [
+  1152,
+  1728
+ ],
+ "colours": 53,
+ "palette": "art-lab/characters/exports/aldric-x2-v1.png",
+ "sheets": {
+  "a": {
+   "path": "art-lab/characters/reference/sources/aldric-combat-x3-2026-11-07-a.png",
+   "pitch": 2.4848
+  },
+  "b": {
+   "path": "art-lab/characters/reference/sources/aldric-combat-x3-2026-11-07-b.png",
+   "pitch": 2.4848
+  },
+  "c": {
+   "path": "art-lab/characters/reference/sources/aldric-combat-x3-2026-11-07-c.png",
+   "pitch": 2.3939
+  },
+  "d": {
+   "path": "art-lab/characters/reference/sources/aldric-combat-x3-2026-11-07-d.png",
+   "pitch": 3.7879
+  }
+ },
+ "placement": {
+  "idle": {
+   "hips": 222,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "ready": {
+   "hips": 198,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "windup": {
+   "hips": 212,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cut": {
+   "hips": 224,
+   "pushed": 13,
+   "lifted": 0
+  },
+  "follow": {
+   "hips": 209,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "guard": {
+   "hips": 195,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "recoil": {
+   "hips": 205,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "recovery": {
+   "hips": 210,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "gather": {
+   "hips": 219,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "raise": {
+   "hips": 204,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cleave": {
+   "hips": 226,
+   "pushed": 19,
+   "lifted": 0
+  },
+  "through": {
+   "hips": 224,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "stunned": {
+   "hips": 203,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "fall": {
+   "hips": 220,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "kneel": {
+   "hips": 226,
+   "pushed": 7,
+   "lifted": 0
+  },
+  "ground": {
+   "hips": 192,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "offPrep": {
+   "hips": 192,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offSurge": {
+   "hips": 184,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "offHit": {
+   "hips": 208,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "offBack": {
+   "hips": 197,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "defPrep": {
+   "hips": 185,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "def": {
+   "hips": 183,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "defBack": {
+   "hips": 198,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "victory": {
+   "hips": 184,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "supPrep": {
+   "hips": 189,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "sup": {
+   "hips": 202,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "supBack": {
+   "hips": 199,
+   "pushed": 0,
+   "lifted": 0
+  }
+ },
+ "exports": {
+  "png": "6e0c15b6709c0bc8a05564526c5da911fb5a1ad928fe21f29e88120e8d7ad694",
+  "json": "a7b8e08a5ce5d33b9f7defda1274b71f4ff8dd399f06b0d2a1ff30b066c465d6",
+  "aseprite": "4246e1fd362710b7c6369e0da244617c3f11914881a2c09918a105561d4581b1"
+ }
+}
