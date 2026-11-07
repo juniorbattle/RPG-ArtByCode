@@ -4,7 +4,7 @@
   "sha256": "18f34c3c568ddac212f60e81e7d2050f58247f03f93179e8ad2c4e017f2461bc",
   "bytes": 1493229,
   "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
-  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "status": "APPROVED AS A SOURCE by the operator through the sheets built on it, ambrose-x3-combat (journal Passe GA2: « Production »); generated, with no rights beyond those of the tool that made it",
   "generation": {
     "tool": "tools/art-lab/gen-image.mjs",
     "toolSha256": "0b1fca63ef2c8c22632bd87040801c5e0a9ed8d52fa085e64aca333f70edac31",

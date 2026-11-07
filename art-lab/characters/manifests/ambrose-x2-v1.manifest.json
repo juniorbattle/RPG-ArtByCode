@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "ambrose-x2-v1",
   "kind": "character",
-  "status": "candidate",
+  "status": "approved",
   "source": "art-lab/characters/source/ambrose-x2-v1.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/ambrose-x2-v1.png",
@@ -27,7 +27,12 @@
       "note": "the operator's L2-11 « Ces trois figures, une tâche à part après la fusion » (journal Passe EVL4)"
     }
   ],
-  "approved": false,
-  "runtimeUse": "lab",
-  "notes": "Candidate (journal Passe GA1): Brother Ambrose, a generic fighter of the version 2 (lot L2b), standing only (12 frames): his or her face in a version 2 game's portraits. Production waits for the operator's lot sheet; nothing in the game loads it."
+  "approved": true,
+  "runtimeUse": "production",
+  "notes": "APPROVED FOR PRODUCTION by the operator on the generic fighters' lot sheet (journal Passe GA2, https://claude.ai/artifact/3pJeAdQR47NMaYcpecztgu): « Production » (GA-AM1), and GA-S1 « Les six ensemble »; version 2 only, today's game unchanged. Loaded by a version 2 game's portraits (src/characters/PlazaCast.ts). Brother Ambrose, a generic fighter of the version 2 (lot L2b), standing only (12 frames): his or her face in a version 2 game's portraits.",
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-11-07",
+    "note": "APPROVED FOR PRODUCTION by the operator on the generic fighters' lot sheet (journal Passe GA2, https://claude.ai/artifact/3pJeAdQR47NMaYcpecztgu): « Production » (GA-AM1), and GA-S1 « Les six ensemble »; version 2 only, today's game unchanged."
+  }
 }

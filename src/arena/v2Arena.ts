@@ -1,6 +1,7 @@
 import { DynamicSim, type DynData } from '../combat/dynamic';
 import { ChargedDuel, type ChargeTier, type ChargeView } from '../combat/charge';
 import { v2DuelData, type V2Duel } from '../combat/v2duel';
+import { GENERICS } from '../narrative/generics';
 import { tuneDyn } from './dynamicView';
 import type { DynPreset } from './DynPresets';
 
@@ -12,9 +13,11 @@ import type { DynPreset } from './DynPresets';
 export type V2Input = 'charge' | 'keys';
 export const v2Input = (params: URLSearchParams): V2Input => (params.get('input') === 'keys' ? 'keys' : 'charge');
 
-/** the scene page's duel: Ren against Marek, as `?scene=arena` stages it, under the version 2 (the prototype's French names kept); `foe`: another rival, for a sheet's review */
+/** the scene page's duel: Ren against Marek, as `?scene=arena` stages it, under the version 2 (the prototype's French names kept); `foe`: another rival, for a sheet's review;
+ *  DEV, a generic fighter on its borrowed rival's profile, as a game's challenge fights it (`challengeSheetFor`; journal Passe GA2: its sheet holds that rival's clips only) */
 export function sceneV2Duel(input: V2Input, foe = 'marek'): V2Duel {
-  return v2DuelData(foe, { seed: 1337, playerName: 'Ren', opponentName: foe[0].toUpperCase() + foe.slice(1), input });
+  const g = import.meta.env.DEV ? GENERICS[foe] : undefined;
+  return v2DuelData(g?.profile ?? foe, { seed: 1337, playerName: 'Ren', opponentName: g?.name ?? foe[0].toUpperCase() + foe.slice(1), input, ...(g ? { enemy: { hp: g.hp, damage: g.damage } } : {}) });
 }
 
 export interface V2ArenaDuel { dyn: DynamicSim; charge: ChargedDuel | null; tiers: ChargeTier[] }

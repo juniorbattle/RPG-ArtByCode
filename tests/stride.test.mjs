@@ -37,7 +37,7 @@ test('walkSlide: null without a side walk, without feet, or for an unsteady cycl
 });
 
 // the casting's sheets that only stand have no walk to measure (the operator's T1, journal Passe CA2)
-const STILL = ['anwen', 'brann', 'cassius', 'corvin', 'hilde', 'ilse', 'lio', 'odo', 'pip', 'rhosk', 'tobin', 'vessa', 'wren'].map((k) => `${k}-x2-v2`);
+const STILL = [...['anwen', 'brann', 'cassius', 'corvin', 'hilde', 'ilse', 'lio', 'odo', 'pip', 'rhosk', 'tobin', 'vessa', 'wren'].map((k) => `${k}-x2-v2`), ...['aldric', 'corra', 'ambrose'].map((k) => `${k}-x2-v1`)];
 test('walkSlide on the production sheets (regression: re-measure on purpose after any rebuild of a walk)', async () => {
   const want = { 'artisan-x2-v1': 4.5, 'blacksmith-x2-v1': 4, 'courier-x2-v1': 4.25, 'dockworker-x2-v2': 4, 'guard-x2-v1': 4, 'hooded-x2-v1': 4,
     'merchant-x2-v2': 4.5, 'older-merchant-x2-v1': 4.25, 'townswoman-x2-v1': 4.5, 'traveler-x2-v1': 4.25,

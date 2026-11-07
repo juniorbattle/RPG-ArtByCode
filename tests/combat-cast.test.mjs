@@ -27,6 +27,9 @@ const expected = (foe) => {
 };
 /** the sheets made so far, in the order X2 */
 const RIVALS = ['marek', 'vessa', 'orla', 'cassius', 'ilse', 'rhosk', 'tobin'].filter((r) => fs.existsSync(path.join(ROOT, `art-lab/characters/exports/${r}-x3-combat.png`)));
+/** the version 2's generic fighters (journal Passes EVL3, GA2): each fights on a rival's profile, so its sheet holds that rival's clips; its town sheet is its own -x2-v1 */
+const GENERIC = { aldric: 'ilse', corra: 'orla', ambrose: 'cassius' }, GEN = Object.keys(GENERIC);
+const kitOf = (id) => GENERIC[id] ?? id, townOf = (id) => (id === 'hero' ? 'hero-x2-v4' : GENERIC[id] ? `${id}-x2-v1` : `${id}-x2-v2`);
 
 test('the page of a duel holds Ren and any rival: 80 cells of 255 rows, the same pixels, the feet where they were', () => {
   assert.deepEqual(sheets.SHEET_FRAME, { w: 64, h: 85, foot: 79 });
@@ -35,7 +38,7 @@ test('the page of a duel holds Ren and any rival: 80 cells of 255 rows, the same
   assert.equal(perPage, 80);
   const ren = json('art-lab/characters/exports/hero-x3-combat.json').frames.length;
   assert.equal(ren, 39, 'Ren, the charge poses included');
-  for (const r of ['marek', 'vessa', 'orla', 'cassius', 'ilse', 'rhosk', 'tobin']) assert.ok(ren + Object.values(expected(r)).reduce((a, b) => a + b) <= perPage, r);
+  for (const r of ['marek', 'vessa', 'orla', 'cassius', 'ilse', 'rhosk', 'tobin', ...GEN]) assert.ok(ren + Object.values(expected(kitOf(r))).reduce((a, b) => a + b) <= perPage, r);
 });
 
 test('§ 14\'s counts per rival: Vessa and Cassius 34, Marek, Ilse and Rhosk 32, Orla 29, Tobin 27', () => {
@@ -44,13 +47,13 @@ test('§ 14\'s counts per rival: Vessa and Cassius 34, Marek, Ilse and Rhosk 32,
 });
 
 test('every combat sheet: its frames, the arena cell, the frame contract, nothing in the rows the page cuts, its town sheet\'s palette only (and the steel its rig declares)', async () => {
-  for (const id of ['hero', ...RIVALS]) {
+  for (const id of ['hero', ...RIVALS, ...GEN]) {
     const name = `${id}-x3-combat`, meta = json(`art-lab/characters/exports/${name}.json`), img = decodePng(read(`art-lab/characters/exports/${name}.png`));
     if (id !== 'hero') {
       const tags = Object.fromEntries(meta.meta.frameTags.map((t) => [t.name, t.to - t.from + 1]));
-      assert.deepEqual(tags, Object.fromEntries(Object.entries(expected(id)).map(([k, n]) => [`${k}-side`, n])), `${id}: the clips of its own kit`);
+      assert.deepEqual(tags, Object.fromEntries(Object.entries(expected(kitOf(id))).map(([k, n]) => [`${k}-side`, n])), `${id}: the clips of its own kit`);
     }
-    const pal = new Set(), ref = decodePng(read(`art-lab/characters/exports/${id === 'hero' ? 'hero-x2-v4' : `${id}-x2-v2`}.png`));
+    const pal = new Set(), ref = decodePng(read(`art-lab/characters/exports/${townOf(id)}.png`));
     for (let i = 0; i < ref.rgba.length; i += 4) if (ref.rgba[i + 3]) pal.add(`${ref.rgba[i]},${ref.rgba[i + 1]},${ref.rgba[i + 2]}`);
     const rig = await import(new URL(`../art-lab/characters/rigs/${name}.rig.mjs`, import.meta.url).href);
     for (const c of rig.EXTRA ?? []) pal.add(c.join(','));
@@ -71,7 +74,7 @@ test('every combat sheet: its frames, the arena cell, the frame contract, nothin
 });
 
 test('a rival\'s sheet is its own: its pack as hashed, its sources archived and approved through it, on its town sheet\'s palette', async () => {
-  for (const id of RIVALS) {
+  for (const id of [...RIVALS, ...GEN]) {
     const name = `${id}-x3-combat`, m = json(`art-lab/characters/manifests/${name}.manifest.json`), files = json(`art-lab/characters/provenance/${name}/PROVENANCE.json`).files;
     for (const [rel, want] of Object.entries(files)) {
       let b = read(rel); if (/\.(json|mjs|js|ts|md|txt)$/i.test(rel)) b = Buffer.from(b.toString('utf8').replace(/\r\n/g, '\n'), 'utf8');
@@ -79,7 +82,7 @@ test('a rival\'s sheet is its own: its pack as hashed, its sources archived and 
     }
     assert.equal(m.runtimeUse, 'production', name);
     const rig = await import(new URL(`../art-lab/characters/rigs/${name}.rig.mjs`, import.meta.url).href);
-    assert.equal(rig.PALETTE.path, `art-lab/characters/exports/${id}-x2-v2.png`);
+    assert.equal(rig.PALETTE.path, `art-lab/characters/exports/${townOf(id)}.png`);
     for (const s of Object.values(rig.SHEETS)) {
       assert.equal(sha(read(s.path)), s.sha256, s.path);
       assert.match(json(s.path.replace(/\.png$/, '.source.json')).status, /APPROVED AS A SOURCE/, s.path);
@@ -88,7 +91,7 @@ test('a rival\'s sheet is its own: its pack as hashed, its sources archived and 
 });
 
 test('the body moved by the cell is written with the sheet, frame by frame, and matches what its build measured', () => {
-  for (const id of ['hero', ...RIVALS]) {
+  for (const id of ['hero', ...RIVALS, ...GEN]) {
     const name = `${id}-x3-combat`, pushed = json(`art-lab/characters/exports/${name}.json`).meta.pushed, build = json(`art-lab/characters/provenance/${name}/build.json`);
     assert.ok(pushed && typeof pushed === 'object', name);
     const moved = Object.values(build.placement).filter((p) => p.pushed).length;
@@ -97,12 +100,18 @@ test('the body moved by the cell is written with the sheet, frame by frame, and 
   }
 });
 
-test('the seven rivals and Ren in production: approved one by one, each a sheet CombatCast loads, none of them anywhere else', () => {
+test('the seven rivals, the three generic fighters and Ren in production: approved one by one, each a sheet CombatCast loads, none of them anywhere else', async () => {
   const src = read('src/arena/CombatCast.ts').toString('utf8');
   assert.equal(RIVALS.length, 7, 'every rival of the casting has its sheet');
-  for (const glob of src.match(/\{[a-z]+,[a-z,]+\}-x3-combat/g)) assert.deepEqual(glob.slice(1, glob.indexOf('}')).split(',').sort(), ['hero', ...RIVALS].sort(), glob);
+  for (const glob of src.match(/\{[a-z]+,[a-z,]+\}-x3-combat/g)) assert.deepEqual(glob.slice(1, glob.indexOf('}')).split(',').sort(), ['hero', ...RIVALS, ...GEN].sort(), glob);
+  // the oracle's profiles are the game's (src/narrative/generics.ts), and their faces are the portraits' (src/characters/PlazaCast.ts)
+  const { GENERICS } = await load('/src/narrative/generics.ts');
+  assert.deepEqual(Object.fromEntries(Object.entries(GENERICS).map(([k, g]) => [k, g.profile])), GENERIC);
+  const plaza = read('src/characters/PlazaCast.ts').toString('utf8');
+  assert.match(plaza, /\{aldric,corra,ambrose\}-x2-v1\.png/); assert.match(plaza, /export const GENERIC_FACES = \['aldric', 'corra', 'ambrose'\]/);
+  for (const id of GEN) { const m = json(`art-lab/characters/manifests/${id}-x2-v1.manifest.json`); assert.equal(m.runtimeUse, 'production', id); assert.ok(m.approval?.note.includes('Production'), id); }
   assert.equal((src.match(/import\.meta\.glob\(/g) ?? []).length, 4);
-  for (const id of ['hero', ...RIVALS]) {
+  for (const id of ['hero', ...RIVALS, ...GEN]) {
     const m = json(`art-lab/characters/manifests/${id}-x3-combat.manifest.json`);
     assert.equal(m.approved, true, id); assert.equal(m.runtimeUse, 'production', id); assert.equal(m.status, 'approved', id);
     assert.ok(m.approval?.note.includes('Production') || m.approval?.note.includes('Approuvées'), `${id}: the operator's word`);

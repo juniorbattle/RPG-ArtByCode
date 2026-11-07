@@ -19,13 +19,10 @@
 //        [--fidelity=high|low] [--out=<dir>] [--cap=<usd>] [--dry-run]
 //   node tools/art-lab/gen-image.mjs --list-models                      (the account's image models; costs nothing)
 //   node tools/art-lab/gen-image.mjs --spent                            (the ledger, per task)
-//   node tools/art-lab/gen-image.mjs --archive=<generated.png|.jpg> --name=<new-base-name>
-// - MiniMax (the operator's « Utilise MiniMax », 2026-11-06, journal Passe GA1, after the OpenAI account answered « no credits remaining »): --model=image-01
-//   sends to MiniMax's image_generation endpoint (its key MINIMAX_API_KEY, read like the other: environment, else the git-ignored .env.local), same cap,
-//   ledger and record. Text to image plus at most ONE reference (its `subject_reference`, type "character", PNG or JPEG under 10 MB); prompt at most
-//   1500 characters; --size=WxH from 512 to 2048, multiples of 8; --n 1 to 9; --seed; --region=global|china. The answer's bytes (JPEG or PNG) are kept as they are.
+//   node tools/art-lab/gen-image.mjs --archive=<generated.png> --name=<new-base-name>
 // - --root=<checkout>: the checkout of this repository whose git-ignored .env.local, ledger and scratch folder a generation (or --spent) uses, and against
 //   which its relative paths resolve: a git worktree has no .env.local (journal Passe GA1). --archive always copies into the checkout this tool runs from.
+//   MiniMax was added for one trial and removed on the operator's decision (GA-S2 « Le retirer de l’outil », journal Passe GA2).
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -34,8 +31,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const API = 'https://api.openai.com/v1';
-/** MiniMax's image endpoint, by platform (its API reference read on 2026-11-06: POST, Bearer key, JSON body) */
-export const MINIMAX_API = { global: 'https://api.minimax.io/v1/image_generation', china: 'https://api.minimaxi.com/v1/image_generation' };
 export const CAP_USD = 5;                                          // the operator's cap per task: raise it only on the operator's decision
 export const LEDGER = 'art-lab/characters/scratch/gen-image-ledger.json';
 export const OUT_DIR = 'art-lab/characters/scratch/generated';
@@ -50,13 +45,7 @@ export const MODELS = {
   'gpt-image-1-mini': { textIn: 2, imageIn: 2.5, imageOut: 8, outTokens: 'table', fidelity: false },
   'gpt-image-1.5': { textIn: 5, textOut: 10, imageIn: 8, imageOut: 32, outTokens: 'table', fidelity: false },
   'gpt-image-2': { textIn: 5, imageIn: 8, imageOut: 30, outTokens: 'ceiling', fidelity: false },
-  // MiniMax: USD per image (its pay-as-you-go page, read on 2026-11-06: image-01 « $0.0035 per image »; image-01-live has no price there: refused)
-  'image-01': { provider: 'minimax', perImage: 0.0035, fidelity: false },
 };
-export const PRICE_TABLE_MINIMAX = 'gen-image.mjs model table of 2026-11-06 (MiniMax pay-as-you-go page: image-01, USD 0.0035 per image)';
-/** who serves a model, and the name of its key */
-export const providerOf = (model) => MODELS[model]?.provider ?? 'openai';
-export const keyNameOf = (model) => (providerOf(model) === 'minimax' ? 'MINIMAX_API_KEY' : 'OPENAI_API_KEY');
 export const PRICE_TABLE = 'gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)';
 // Output tokens of one image per quality and size (OpenAI's published table for the models before gpt-image-2).
 export const OUT_TOKENS = {
@@ -88,13 +77,13 @@ export function parseEnvFile(text) {
   return out;
 }
 
-/** the key from the environment, else from `.env.local` (refused unless git ignores it); null when absent. `name`: OPENAI_API_KEY, or MINIMAX_API_KEY for MiniMax */
-export function readKey({ root = ROOT, env = process.env, isIgnored = gitIgnores, name = 'OPENAI_API_KEY' } = {}) {
-  if (env[name] && env[name].trim()) return env[name].trim();
+/** the key from the environment, else from `.env.local` (refused unless git ignores it); null when absent */
+export function readKey({ root = ROOT, env = process.env, isIgnored = gitIgnores } = {}) {
+  if (env.OPENAI_API_KEY && env.OPENAI_API_KEY.trim()) return env.OPENAI_API_KEY.trim();
   const f = path.join(root, '.env.local');
   if (!fs.existsSync(f)) return null;
   if (!isIgnored(root, '.env.local')) throw new Error('.env.local is not git-ignored: refusing to read a key from a file that could be committed');
-  const v = parseEnvFile(fs.readFileSync(f, 'utf8'))[name];
+  const v = parseEnvFile(fs.readFileSync(f, 'utf8')).OPENAI_API_KEY;
   return v && v.trim() ? v.trim() : null;
 }
 function gitIgnores(root, rel) { return spawnSync('git', ['check-ignore', '-q', rel], { cwd: root }).status === 0; }
@@ -124,7 +113,6 @@ export function planRequest(o, { root = ROOT } = {}) {
   if (!prompt || !prompt.trim()) throw new Error('--prompt="..." or --prompt-file=<file> is required');
   const model = o.model ?? 'gpt-image-1', price = MODELS[model];
   if (!price) throw new Error(`model "${model}" has no price in the tool's table: refused (known: ${Object.keys(MODELS).join(', ')})`);
-  if (providerOf(model) === 'minimax') return planMinimax(o, prompt, model, price, root);
   const n = Number(o.n ?? 1), size = o.size ?? '1024x1024', quality = o.quality ?? 'high', background = o.background ?? 'opaque';
   if (!Number.isInteger(n) || n < 1 || n > 4) throw new Error('--n must be 1 to 4');
   if (!OUT_TOKENS[quality]) throw new Error(`--quality must be one of ${Object.keys(OUT_TOKENS).join(', ')}`);
@@ -143,46 +131,6 @@ export function planRequest(o, { root = ROOT } = {}) {
   const endpoint = refs.length ? `${API}/images/edits` : `${API}/images/generations`;
   return { task: o.task, model, prompt, promptSha256: sha(Buffer.from(prompt, 'utf8')), promptFile: typeof o['prompt-file'] === 'string' ? recordPath(o['prompt-file'], root) : null, refs, parameters, endpoint,
     price, estimateUsd: estimateCost({ model, prompt, n, size, quality, refs: refs.length }) };
-}
-
-/** a MiniMax request (text to image, at most one reference as its `subject_reference`), checked against its API reference of 2026-11-06 */
-function planMinimax(o, prompt, model, price, root) {
-  for (const k of ['quality', 'background', 'fidelity']) if (o[k] !== undefined) throw new Error(`--${k}: MiniMax takes none`);
-  if ([...prompt].length > 1500) throw new Error(`MiniMax takes a prompt of at most 1500 characters (this one: ${[...prompt].length})`);
-  const n = Number(o.n ?? 1);
-  if (!Number.isInteger(n) || n < 1 || n > 9) throw new Error('--n must be 1 to 9 for MiniMax');
-  const m = /^(\d+)x(\d+)$/.exec(o.size ?? '1024x1024'), [w, h] = m ? [Number(m[1]), Number(m[2])] : [0, 0];
-  if (!m || [w, h].some((v) => v < 512 || v > 2048 || v % 8)) throw new Error('--size must be WxH, each from 512 to 2048 and a multiple of 8, for MiniMax');
-  const region = o.region ?? 'global';
-  if (!MINIMAX_API[region]) throw new Error(`--region must be one of ${Object.keys(MINIMAX_API).join(', ')}`);
-  if (o.ref.length > 1) throw new Error('MiniMax takes at most one reference (its subject_reference)');
-  const refs = o.ref.map((r) => {
-    const abs = path.resolve(root, r), bytes = fs.readFileSync(abs), ext = path.extname(abs).toLowerCase();
-    const mime = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg' }[ext];
-    if (!mime) throw new Error(`reference ${r}: PNG or JPEG only for MiniMax`);
-    if (bytes.length >= 10 * 1024 * 1024) throw new Error(`reference ${r}: MiniMax takes less than 10 MB`);
-    return { file: recordPath(abs, root), abs, sha256: sha(bytes), bytes: bytes.length, mime, data: bytes };
-  });
-  const seed = o.seed === undefined ? undefined : Number(o.seed);
-  if (seed !== undefined && !Number.isSafeInteger(seed)) throw new Error('--seed must be an integer');
-  const parameters = { n, width: w, height: h, response_format: 'base64', prompt_optimizer: false, ...(seed !== undefined ? { seed } : {}), ...(refs.length ? { subject_reference: 'character' } : {}) };
-  return { task: o.task, model, provider: 'minimax', prompt, promptSha256: sha(Buffer.from(prompt, 'utf8')), promptFile: typeof o['prompt-file'] === 'string' ? recordPath(o['prompt-file'], root) : null, refs, parameters,
-    endpoint: MINIMAX_API[region], price, estimateUsd: round6(n * price.perImage) };
-}
-
-/** JPEG facts for the record: size, and the APP11 segments (where a JPEG carries C2PA), located only */
-export function jpegInfo(buf) {
-  if (buf.length < 4 || buf[0] !== 0xff || buf[1] !== 0xd8) return null;
-  let p = 2, width = null, height = null; const app11 = [];
-  while (p + 4 <= buf.length && buf[p] === 0xff) {
-    const marker = buf[p + 1];
-    if (marker === 0xd9 || marker === 0xda) break;
-    const len = buf.readUInt16BE(p + 2);
-    if (marker === 0xeb) app11.push({ offset: p, bytes: len + 2 });
-    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) { height = buf.readUInt16BE(p + 5); width = buf.readUInt16BE(p + 7); }
-    p += 2 + len;
-  }
-  return width ? { width, height, app11 } : null;
 }
 
 /** worst-case cost of a request, USD: every output image at the table's tokens (x CEILING without a published table), the prompt at one
@@ -243,8 +191,7 @@ export async function generate(o, { root = ROOT, key, fetchFn = globalThis.fetch
   say(`task "${plan.task}": spent ${before.toFixed(4)} USD of ${cap} ; this request at most ${plan.estimateUsd.toFixed(4)} USD`);
   if (before + plan.estimateUsd > cap + 1e-9) throw new Error(`refused: task "${plan.task}" would reach ${(before + plan.estimateUsd).toFixed(4)} USD, beyond its cap of ${cap} USD`);
   if (o['dry-run']) { say('dry run: nothing sent, nothing written'); return []; }
-  if (!key) throw new Error(`no ${keyNameOf(plan.model)} (environment or git-ignored .env.local)`);
-  if (plan.provider === 'minimax') return sendMinimax(o, plan, { root, key, fetchFn, now, say, ledger, ledgerFile, toolFile });
+  if (!key) throw new Error('no OPENAI_API_KEY (environment or git-ignored .env.local)');
 
   const requestedAt = now(), entry = { date: requestedAt.toISOString(), model: plan.model, endpoint: plan.endpoint, parameters: plan.parameters,
     promptSha256: plan.promptSha256, refs: plan.refs.map((r) => r.sha256), estimateUsd: plan.estimateUsd, costUsd: plan.estimateUsd, status: 'pending', files: [] };
@@ -321,74 +268,13 @@ export async function generate(o, { root = ROOT, key, fetchFn = globalThis.fetch
   return written;
 }
 
-/** a MiniMax request: reserved like the others, JSON body, the reference as a data URL; an answer whose base_resp is not 0 costs nothing and writes nothing */
-async function sendMinimax(o, plan, { root, key, fetchFn, now, say, ledger, ledgerFile, toolFile }) {
-  const requestedAt = now(), entry = { date: requestedAt.toISOString(), model: plan.model, endpoint: plan.endpoint, parameters: plan.parameters,
-    promptSha256: plan.promptSha256, refs: plan.refs.map((r) => r.sha256), estimateUsd: plan.estimateUsd, costUsd: plan.estimateUsd, status: 'pending', files: [] };
-  (ledger.tasks[plan.task] ??= { entries: [] }).entries.push(entry);
-  saveLedger(ledgerFile, ledger);
-  const { subject_reference: _s, ...params } = plan.parameters;
-  const body = { model: plan.model, prompt: plan.prompt, ...params, ...(plan.refs.length ? { subject_reference: plan.refs.map((r) => ({ type: 'character', image_file: `data:${r.mime};base64,${r.data.toString('base64')}` })) } : {}) };
-  let res;
-  try { res = await fetchFn(plan.endpoint, { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); }
-  catch (e) { entry.status = 'no answer (reservation kept)'; saveLedger(ledgerFile, ledger); throw new Error(redact(`request failed before an answer: ${e?.message ?? e}`, key)); }
-  const text = await res.text();
-  let json = null; try { json = JSON.parse(text); } catch { /* reported below */ }
-  const code = json?.base_resp?.status_code, requestId = typeof json?.id === 'string' ? json.id : null;
-  if (!res.ok || code !== 0) {
-    entry.status = res.ok ? `MiniMax ${code}` : `HTTP ${res.status}`; entry.costUsd = 0; entry.requestId = requestId; saveLedger(ledgerFile, ledger);
-    throw new Error(redact(`${res.ok ? `MiniMax status ${code}` : `HTTP ${res.status}`}: ${json?.base_resp?.status_msg ?? text.slice(0, 300)}`, key));
-  }
-  const images = Array.isArray(json?.data?.image_base64) ? json.data.image_base64 : [], ok = Number(json?.metadata?.success_count ?? images.length), failed = Number(json?.metadata?.failed_count ?? 0);
-  const actual = round6((Number.isFinite(ok) ? ok : images.length) * plan.price.perImage);
-  entry.status = 'answered'; entry.requestId = requestId; entry.metadata = { success_count: ok, failed_count: failed }; entry.costUsd = actual;
-  const outDir = path.resolve(root, o.out ?? path.join(OUT_DIR, plan.task)); fs.mkdirSync(outDir, { recursive: true });
-  const toolSha256 = sha(fs.readFileSync(toolFile)), written = [];
-  images.forEach((b64, i) => {
-    const bytes = Buffer.from(String(b64).replace(/^data:[^,]*,/, ''), 'base64'), png = pngInfo(bytes), jpg = png ? null : jpegInfo(bytes);
-    if (!png && !jpg) throw new Error('MiniMax answered with something that is neither a PNG nor a JPEG');
-    const ext = png ? 'png' : 'jpg', base = `${plan.task}-${stamp(requestedAt)}-${i + 1}`, file = path.join(outDir, `${base}.${ext}`);
-    fs.writeFileSync(file, bytes);
-    const record = {
-      kind: 'generated-image',
-      file: `${base}.${ext}`, sha256: sha(bytes), bytes: bytes.length,
-      format: png ? `PNG ${png.width} x ${png.height}, bit depth ${png.bitDepth}, colour type ${png.colourType}; chunks ${png.chunks.join(', ')}` : `JPEG ${jpg.width} x ${jpg.height}`,
-      status: 'NON-CANONICAL: generated, awaiting the operator\'s review (AGENTS.md, "Image generation")',
-      generation: {
-        tool: 'tools/art-lab/gen-image.mjs', toolSha256, provider: 'MiniMax',
-        endpoint: `POST ${plan.endpoint}`, model: plan.model, parameters: plan.parameters,
-        prompt: plan.prompt, promptSha256: plan.promptSha256, ...(plan.promptFile ? { promptFile: plan.promptFile } : {}),
-        references: plan.refs.map((r) => ({ file: r.file, sha256: r.sha256, bytes: r.bytes, as: 'subject_reference (type "character")' })),
-        image: `${i + 1} of ${images.length}`, task: plan.task,
-        requestedAt: requestedAt.toISOString(),
-        response: { requestId, metadata: { success_count: ok, failed_count: failed } },
-        costUsd: { request: { estimate: plan.estimateUsd, fromCount: actual }, prices: plan.price, priceTable: PRICE_TABLE_MINIMAX,
-          estimateBasis: 'USD per image x n (MiniMax publishes a price per image)', note: 'computed by this tool from the images the answer counts and its price table; the account\'s invoice is authoritative' },
-      },
-      c2pa: png ? { presence: png.c2pa.length ? png.c2pa.map((c) => `caBX chunk at offset ${c.offset}, ${c.bytes} B`).join('; ') : 'no caBX chunk', verification: 'NOT VERIFIED: located only, no C2PA validator is installed' }
-        : { presence: jpg.app11.length ? jpg.app11.map((c) => `APP11 segment at offset ${c.offset}, ${c.bytes} B`).join('; ') : 'no APP11 segment', verification: 'NOT VERIFIED: located only, no C2PA validator is installed' },
-      rights: 'generated through the MiniMax API with the operator\'s account (its terms apply); third-party rights not verified; any canonical or production use needs the operator\'s decision',
-      notInvented: 'Every field comes from the request this tool sent and the API\'s answer; nothing is inferred.',
-    };
-    fs.writeFileSync(path.join(outDir, `${base}.source.json`), redact(JSON.stringify(record, null, 2), key) + '\n');
-    entry.files.push(path.relative(root, file).split(path.sep).join('/'));
-    written.push(file);
-  });
-  saveLedger(ledgerFile, ledger);
-  say(`answered: ${written.length} image(s)${failed ? `, ${failed} blocked by its content safety` : ''}, request ${requestId ?? '?'}, cost ${entry.costUsd.toFixed(4)} USD; task now ${spent(ledger, plan.task).toFixed(4)} USD`);
-  for (const f of written) say(`  ${path.relative(root, f)}`);
-  return written;
-}
-
 /** copy a generated image byte for byte into the archived sources, with its record (renamed, the copy noted) */
 export function archive(o, { root = ROOT, now = () => new Date() } = {}) {
   const src = path.resolve(root, o.archive), name = o.name;
   if (typeof name !== 'string' || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(name)) throw new Error('--name=<kebab-case base name> is required');
-  const ext = path.extname(src).toLowerCase();
-  if (!['.png', '.jpg'].includes(ext)) throw new Error('--archive takes a generated .png or .jpg');
-  const rec = JSON.parse(fs.readFileSync(src.slice(0, -ext.length) + '.source.json', 'utf8')), bytes = fs.readFileSync(src);
+  const rec = JSON.parse(fs.readFileSync(src.replace(/\.png$/, '.source.json'), 'utf8')), bytes = fs.readFileSync(src);
   if (rec.kind !== 'generated-image' || rec.sha256 !== sha(bytes) || rec.bytes !== bytes.length) throw new Error('the image does not match its record: not archived');
-  const dir = path.join(root, ARCHIVE_DIR), dst = path.join(dir, `${name}${ext}`);
+  const dir = path.join(root, ARCHIVE_DIR), dst = path.join(dir, `${name}.png`);
   if (fs.existsSync(dst)) throw new Error(`${path.relative(root, dst)} exists: an archived source is never replaced`);
   fs.mkdirSync(dir, { recursive: true });
   fs.copyFileSync(src, dst);
@@ -399,7 +285,7 @@ export function archive(o, { root = ROOT, now = () => new Date() } = {}) {
   const gen = rec.generation ? { ...rec.generation } : null, kept = [];
   if (gen && outside(gen.promptFile)) { gen.promptFile = byName(gen.promptFile); kept.push('generation.promptFile'); }
   if (gen && Array.isArray(gen.references)) gen.references = gen.references.map((r, i) => (outside(r.file) ? (kept.push(`generation.references[${i}].file`), { ...r, file: byName(r.file) }) : r));
-  const out = { ...rec, ...(gen ? { generation: gen } : {}), file: `${name}${ext}`, archived: { date: now().toISOString().slice(0, 10), from: rec.file, rule: 'copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced', ...(kept.length ? { pathsKeptByName: kept } : {}) } };
+  const out = { ...rec, ...(gen ? { generation: gen } : {}), file: `${name}.png`, archived: { date: now().toISOString().slice(0, 10), from: rec.file, rule: 'copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced', ...(kept.length ? { pathsKeptByName: kept } : {}) } };
   fs.writeFileSync(path.join(dir, `${name}.source.json`), JSON.stringify(out, null, 2) + '\n');
   return dst;
 }
@@ -420,7 +306,7 @@ async function main() {
     return;
   }
   if (o.archive) { console.log(`archived: ${path.relative(ROOT, archive(o))}`); return; }
-  const key = o['dry-run'] ? null : readKey({ root, name: o['list-models'] ? 'OPENAI_API_KEY' : keyNameOf(o.model ?? 'gpt-image-1') });
+  const key = o['dry-run'] ? null : readKey({ root });
   if (o['list-models']) {
     if (!key) throw new Error('no OPENAI_API_KEY');
     const res = await fetch(`${API}/models`, { headers: { Authorization: `Bearer ${key}` } });

@@ -2,9 +2,9 @@
  *  combattants present lors de qualifs/eliminatoires par exemple », and his answer « En ville, structure gardée (Recommandé) », journal Passes EV2 / EVL3):
  *  the qualifiers' losers, held before Ren came to the Cité; the ten days and the pool of eight stay as they are. They stayed in town: each takes a
  *  challenge at its place and hour, and the staff for hire on the quay is the muscle a robbed keeper pays (the operator's note on EV-2, « une possibilite de
- *  combat et de represaille reelle »). Each fights on a rival's combat profile, a little weaker (« proposé »); its figure is one of the three panels of the
- *  operator's G1 sheet left without a role (casting card N7 « Leur donner un rôle », journal Passe CA1): its town and combat sheets are made through the art's
- *  own sheet and the operator's approval, never a new design; until then a duel shows the arena's generated fighter in its seat. English (K1). Pure data. */
+ *  combat et de represaille reelle »). Each fights on a rival's combat profile, a little weaker (« proposé »); its figure is the one the operator chose
+ *  (L2-11, journal Passe EVL4): its town sheet gives its portrait's face and its combat sheet plays in a version 2 duel on that rival's clips, both approved on the
+ *  operator's lot sheet (journal Passe GA2; src/characters/PlazaCast.ts, src/arena/CombatCast.ts). English (K1). Pure data. */
 
 export interface GenericDef {
   id: string; name: string; epithet: string;
@@ -12,13 +12,13 @@ export interface GenericDef {
   bio: string;
   /** the rival's combat profile they fight on (src/combat/profiles.ts, src/combat/v2duel.ts), and their health and blows against it */
   profile: string; hp: number; damage: number;
-  /** the figure their sheets will be drawn from: a panel of the G1 sheet (art-lab/characters/reference/sources/combat-casting-2026-11-01-g1.webp) */
+  /** the figure their sheets were drawn from (art-lab/characters/reference/sources): the operator's L2-11 */
   figure: string;
 }
 
 export const GENERICS: Record<string, GenericDef> = {
   aldric: {
-    id: 'aldric', name: 'Ser Aldric Venn', epithet: 'the Unlucky Knight', profile: 'ilse', hp: 0.9, damage: 0.95, figure: 'G1 panel 1',
+    id: 'aldric', name: 'Ser Aldric Venn', epithet: 'the Unlucky Knight', profile: 'ilse', hp: 0.9, damage: 0.95, figure: 'main characters\' casting sheet, n° 07, the knight',
     bio: 'Lady Edda\'s son. A strap gave way in his qualifying bout; he stayed to drill alone on the training ground.',
   },
   corra: {

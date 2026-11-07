@@ -1,13 +1,14 @@
 import type { ArenaSpriteSet } from './FighterArt';
 import { bakedFaces, edgeFor, installSheets, shadeFor, type InstalledSheets, type Seat, type SheetSource } from './CombatSheets';
 
-/** The combat sheets in production (journal Passes CX1 to CX4: each approved on the operator's lot sheets, Ren and Marek together as RC2-5 asked): Ren's and the seven rivals', loaded by
+/** The combat sheets in production (journal Passes CX1 to CX4: each approved on the operator's lot sheets, Ren and Marek together as RC2-5 asked): Ren's and the seven rivals', and since
+ *  journal Passe GA2 the three generic fighters' (Ser Aldric Venn, Corra Dunmere, Brother Ambrose: « Production », GA-S1 « Les six ensemble »), each on its borrowed rival's clips, loaded by
  *  a duel under the version 2's rules only (`flags.v2`, `?scene=arena&v2=1`), on demand: today's game never reaches this module. A rival without an approved sheet keeps its generated
- *  fighter (a rival outside the seven: none today). `cast=generated` keeps the generated fighters, for comparison. */
-const png = import.meta.glob('../../art-lab/characters/exports/{hero,marek,vessa,orla,cassius,ilse,rhosk,tobin}-x3-combat.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
-const json = import.meta.glob('../../art-lab/characters/exports/{hero,marek,vessa,orla,cassius,ilse,rhosk,tobin}-x3-combat.json', { import: 'default' }) as Record<string, () => Promise<unknown>>;
-const man = import.meta.glob('../../art-lab/characters/manifests/{hero,marek,vessa,orla,cassius,ilse,rhosk,tobin}-x3-combat.manifest.json', { import: 'default' }) as Record<string, () => Promise<{ id: string; approved: boolean; runtimeUse: string }>>;
-const pack = import.meta.glob('../../art-lab/characters/provenance/{hero,marek,vessa,orla,cassius,ilse,rhosk,tobin}-x3-combat/PROVENANCE.json', { import: 'default' }) as Record<string, () => Promise<{ files: Record<string, string> }>>;
+ *  fighter (none today). `cast=generated` keeps the generated fighters, for comparison. */
+const png = import.meta.glob('../../art-lab/characters/exports/{hero,marek,vessa,orla,cassius,ilse,rhosk,tobin,aldric,corra,ambrose}-x3-combat.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+const json = import.meta.glob('../../art-lab/characters/exports/{hero,marek,vessa,orla,cassius,ilse,rhosk,tobin,aldric,corra,ambrose}-x3-combat.json', { import: 'default' }) as Record<string, () => Promise<unknown>>;
+const man = import.meta.glob('../../art-lab/characters/manifests/{hero,marek,vessa,orla,cassius,ilse,rhosk,tobin,aldric,corra,ambrose}-x3-combat.manifest.json', { import: 'default' }) as Record<string, () => Promise<{ id: string; approved: boolean; runtimeUse: string }>>;
+const pack = import.meta.glob('../../art-lab/characters/provenance/{hero,marek,vessa,orla,cassius,ilse,rhosk,tobin,aldric,corra,ambrose}-x3-combat/PROVENANCE.json', { import: 'default' }) as Record<string, () => Promise<{ files: Record<string, string> }>>;
 
 const pick = <T>(t: Record<string, T>, id: string): T | null => { const k = Object.keys(t).find((p) => p.includes(`/${id}.`) || p.includes(`/${id}/`)); return k ? t[k] : null; };
 

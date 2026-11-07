@@ -1,10 +1,17 @@
 {
  "id": "ambrose-x3-combat",
- "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe GA1)",
+ "status": "APPROVED PRODUCTION ASSET (operator, the generic fighters' lot sheet, journal Passe GA2), not declared a Gold Master",
  "request": {
   "date": "2026-11-06",
   "by": "operator (git user wonmii): the L2 sheet of journal Passe EVL4, L2-11 « Ces trois figures, une tâche à part après la fusion »; the casting's X5 « Une tâche de 5 $ par combattant » (journal Passe CA1)"
  },
+ "approvals": [
+  {
+   "by": "operator (git user wonmii)",
+   "date": "2026-11-07",
+   "note": "APPROVED FOR PRODUCTION by the operator on the generic fighters' lot sheet (journal Passe GA2, https://claude.ai/artifact/3pJeAdQR47NMaYcpecztgu): « Production » (GA-AM2), and GA-S1 « Les six ensemble »; version 2 only, today's game unchanged."
+  }
+ ],
  "source": {
   "sheets": {
    "description": "6 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task ambrose-art); references: the clean figure ambrose-clear-2026-11-07.png and panel 4 of the G1 casting sheet, and Ren's sheets for the layout only",
