@@ -1,0 +1,53 @@
+{
+ "id": "kell-x2-v1",
+ "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe GA3)",
+ "request": {
+  "date": "2026-11-07",
+  "by": "operator, the generic fighters' lot sheet of journal Passe GA2",
+  "text": "GA-P3 « Oui, ainsi » and GA-P4 « Une tâche à part, après celle-ci » (the generic fighters' lot sheet, journal Passe GA2): Kell Barrow <- n° 14 « Martial Artist (Male) » of the tournament casting sheet a"
+ },
+ "source": {
+  "sheet": {
+   "path": "art-lab/characters/reference/sources/kell-clear-2026-11-07.png",
+   "sha256": "ceb81abf12b97f5e95211049e5b87d95fb6285b9ef3c628ff5c05424e777ea68"
+  },
+  "figure": {
+   "path": "art-lab/characters/reference/sources/tournament-roster-casting-2026-10-18-a-original.png",
+   "sha256": "9f54beedaf5e2eb62bddd01bf7e0ff8011c8b8f2bb4943160ca02f6abd951997"
+  }
+ },
+ "chain": [
+  "gen-image.mjs (gpt-image-2): a clean sheet; references the NPC 01-16 sheet, the casting's clean sheet casting-clear-2026-11-01-a and the figure cropped from the tournament casting sheet a (nearest x2)",
+  "reconstruct-grid.mjs per facing on 83 rows, the head again at a finer pitch (x1.2)",
+  "quantize-palette.mjs --k 48: one palette for the three views",
+  "rig kell-x2-v1.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+  "Aseprite: assembly and export, every exported frame compared"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9
+ },
+ "frames": 12,
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/kell-x2-v1.rig.mjs --check",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/kell-x2-v1.png": "6bcd4d727ad6c7a6165993eccf66841c731ee70d7cb8a43222144e8df20399ce",
+  "art-lab/characters/exports/kell-x2-v1.json": "1821fea29a0ccce59879e6095ba572452203b2e8d42223a25e972c47e9089a48",
+  "art-lab/characters/source/kell-x2-v1.aseprite": "d2887984918c4c6741097f93efc0e9cb14ab8d755a67e76aabb503a171e85d46",
+  "art-lab/characters/provenance/kell-x2-v1/view-down.png": "da5e2d454198bf18f2bef072617331a959f1074abc81006f5821138f3b70451d",
+  "art-lab/characters/provenance/kell-x2-v1/view-up.png": "7b64cdb6f077ac21aee170d54dcb9c7404209ee1ba8e2a16eb7c137c905ba945",
+  "art-lab/characters/provenance/kell-x2-v1/view-side.png": "c80609b2163b678b523d9e1ee99cb390029e6771fa15d7fd839eeb15c8aaf8f6",
+  "art-lab/characters/provenance/kell-x2-v1/build.json": "6ca8bc08bb627290b543a75a8195eaa026d967287bdd7f9a7f06ce58ae3813dc",
+  "art-lab/characters/rigs/kell-x2-v1.rig.mjs": "0391fc98ff177281bd07300995b9d7c56f40fa09d33fca37dfccfeda99abc21e",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

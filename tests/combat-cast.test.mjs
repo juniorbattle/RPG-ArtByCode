@@ -27,8 +27,10 @@ const expected = (foe) => {
 };
 /** the sheets made so far, in the order X2 */
 const RIVALS = ['marek', 'vessa', 'orla', 'cassius', 'ilse', 'rhosk', 'tobin'].filter((r) => fs.existsSync(path.join(ROOT, `art-lab/characters/exports/${r}-x3-combat.png`)));
-/** the version 2's generic fighters (journal Passes EVL3, GA2): each fights on a rival's profile, so its sheet holds that rival's clips; its town sheet is its own -x2-v1 */
-const GENERIC = { aldric: 'ilse', corra: 'orla', ambrose: 'cassius' }, GEN = Object.keys(GENERIC);
+/** the version 2's generic fighters (journal Passes EVL3, GA2, GA3): each fights on a rival's profile, so its sheet holds that rival's clips; its town sheet is its own -x2-v1.
+ *  The three of journal Passe GA3 (GA-P1 to GA-P3) are candidates until the operator's lot sheet: their sheets are held to the same contract and loaded by nothing */
+const GENERIC = { aldric: 'ilse', corra: 'orla', ambrose: 'cassius', lucan: 'marek', piers: 'vessa', kell: 'tobin' }, GEN = Object.keys(GENERIC);
+const CANDIDATES = ['lucan', 'piers', 'kell'], PROD_GEN = GEN.filter((g) => !CANDIDATES.includes(g));
 const kitOf = (id) => GENERIC[id] ?? id, townOf = (id) => (id === 'hero' ? 'hero-x2-v4' : GENERIC[id] ? `${id}-x2-v1` : `${id}-x2-v2`);
 
 test('the page of a duel holds Ren and any rival: 80 cells of 255 rows, the same pixels, the feet where they were', () => {
@@ -80,12 +82,14 @@ test('a rival\'s sheet is its own: its pack as hashed, its sources archived and 
       let b = read(rel); if (/\.(json|mjs|js|ts|md|txt)$/i.test(rel)) b = Buffer.from(b.toString('utf8').replace(/\r\n/g, '\n'), 'utf8');
       assert.equal(sha(b), want, rel);
     }
-    assert.equal(m.runtimeUse, 'production', name);
+    const cand = CANDIDATES.includes(id);
+    assert.equal(m.runtimeUse, cand ? 'lab' : 'production', name);
     const rig = await import(new URL(`../art-lab/characters/rigs/${name}.rig.mjs`, import.meta.url).href);
     assert.equal(rig.PALETTE.path, `art-lab/characters/exports/${townOf(id)}.png`);
     for (const s of Object.values(rig.SHEETS)) {
       assert.equal(sha(read(s.path)), s.sha256, s.path);
-      assert.match(json(s.path.replace(/\.png$/, '.source.json')).status, /APPROVED AS A SOURCE/, s.path);
+      // (a candidate's sources are approved only through its sheets, on the operator's lot sheet)
+      if (!cand) assert.match(json(s.path.replace(/\.png$/, '.source.json')).status, /APPROVED AS A SOURCE/, s.path);
     }
   }
 });
@@ -100,18 +104,25 @@ test('the body moved by the cell is written with the sheet, frame by frame, and 
   }
 });
 
-test('the seven rivals, the three generic fighters and Ren in production: approved one by one, each a sheet CombatCast loads, none of them anywhere else', async () => {
+test('the seven rivals, the generic fighters and Ren in production: approved one by one, each a sheet CombatCast loads, none of them anywhere else', async () => {
   const src = read('src/arena/CombatCast.ts').toString('utf8');
   assert.equal(RIVALS.length, 7, 'every rival of the casting has its sheet');
-  for (const glob of src.match(/\{[a-z]+,[a-z,]+\}-x3-combat/g)) assert.deepEqual(glob.slice(1, glob.indexOf('}')).split(',').sort(), ['hero', ...RIVALS, ...GEN].sort(), glob);
+  for (const glob of src.match(/\{[a-z]+,[a-z,]+\}-x3-combat/g)) assert.deepEqual(glob.slice(1, glob.indexOf('}')).split(',').sort(), ['hero', ...RIVALS, ...PROD_GEN].sort(), glob);
   // the oracle's profiles are the game's (src/narrative/generics.ts), and their faces are the portraits' (src/characters/PlazaCast.ts)
   const { GENERICS } = await load('/src/narrative/generics.ts');
   assert.deepEqual(Object.fromEntries(Object.entries(GENERICS).map(([k, g]) => [k, g.profile])), GENERIC);
   const plaza = read('src/characters/PlazaCast.ts').toString('utf8');
   assert.match(plaza, /\{aldric,corra,ambrose\}-x2-v1\.png/); assert.match(plaza, /export const GENERIC_FACES = \['aldric', 'corra', 'ambrose'\]/);
-  for (const id of GEN) { const m = json(`art-lab/characters/manifests/${id}-x2-v1.manifest.json`); assert.equal(m.runtimeUse, 'production', id); assert.ok(m.approval?.note.includes('Production'), id); }
+  for (const id of PROD_GEN) { const m = json(`art-lab/characters/manifests/${id}-x2-v1.manifest.json`); assert.equal(m.runtimeUse, 'production', id); assert.ok(m.approval?.note.includes('Production'), id); }
+  // the candidates (journal Passe GA3): neither approved nor loaded; their manifests and packs say so
+  for (const id of CANDIDATES) for (const sheet of [`${id}-x2-v1`, `${id}-x3-combat`]) {
+    const m = json(`art-lab/characters/manifests/${sheet}.manifest.json`);
+    assert.equal(m.approved, false, sheet); assert.equal(m.runtimeUse, 'lab', sheet); assert.equal(m.status, 'candidate', sheet);
+    assert.match(json(`art-lab/characters/provenance/${sheet}/PROVENANCE.json`).status, /^CANDIDATE/, sheet);
+    assert.ok(!src.includes(id) && !plaza.includes(id), `${sheet}: loaded by nothing`);
+  }
   assert.equal((src.match(/import\.meta\.glob\(/g) ?? []).length, 4);
-  for (const id of ['hero', ...RIVALS, ...GEN]) {
+  for (const id of ['hero', ...RIVALS, ...PROD_GEN]) {
     const m = json(`art-lab/characters/manifests/${id}-x3-combat.manifest.json`);
     assert.equal(m.approved, true, id); assert.equal(m.runtimeUse, 'production', id); assert.equal(m.status, 'approved', id);
     assert.ok(m.approval?.note.includes('Production') || m.approval?.note.includes('Approuvées'), `${id}: the operator's word`);

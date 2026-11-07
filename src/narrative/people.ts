@@ -65,6 +65,11 @@ export const PEOPLE: Record<string, Person> = {
   aldric: { id: 'aldric', name: 'Ser Aldric Venn', title: 'a knight out in the qualifiers', place: 'training', hours: DAY, v2: true, generic: true },
   corra: { id: 'corra', name: 'Corra Dunmere', title: 'a staff for hire on the quay', place: 'district', hours: NIGHT, v2: true, generic: true },
   ambrose: { id: 'ambrose', name: 'Brother Ambrose', title: 'a lantern-bearer of the hill shrines', place: 'lanterns', hours: ['afternoon', 'evening'], v2: true, generic: true },
+  // three more (GA-P1 to GA-P3 « Oui, ainsi », journal Passes GA2 / GA3): the swordmaster Marek beat, who drills before the arena's gate at dusk; the spear champion who
+  // guards the barges on the quay by day; the bare-handed fighter on the market hall's steps in the morning
+  lucan: { id: 'lucan', name: 'Lucan Rook', title: 'a swordmaster out in the qualifiers', place: 'forecourt', hours: NIGHT, v2: true, generic: true },
+  piers: { id: 'piers', name: 'Piers Calloway', title: 'a spear champion guarding the barges', place: 'district', hours: DAY, v2: true, generic: true },
+  kell: { id: 'kell', name: 'Kell Barrow', title: 'a bare-handed fighter for a few coins', place: 'lanterns', hours: ['morning'], v2: true, generic: true },
   // the pool's two who had no place in town (« Portrait seulement », casting R-ville, journal Passe CA1): on the training ground after the cut, a challenge
   // for whoever is out of the title (lot L2b, EV-4 « Les trois, puis les éliminés à partir du jour 6 »)
   tobin: { id: 'tobin', name: 'Tobin Fenn', title: 'the Hopeful, of the pool', place: 'training', hours: DAY, rival: 'tobin', v2: true, days: [6, 10], generic: true },

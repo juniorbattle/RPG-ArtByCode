@@ -1,0 +1,53 @@
+{
+ "id": "piers-x2-v1",
+ "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe GA3)",
+ "request": {
+  "date": "2026-11-07",
+  "by": "operator, the generic fighters' lot sheet of journal Passe GA2",
+  "text": "GA-P2 « Oui, ainsi » and GA-P4 « Une tâche à part, après celle-ci » (the generic fighters' lot sheet, journal Passe GA2): Piers Calloway <- n° 09 « Spear Champion (Male) » of the tournament casting sheet a"
+ },
+ "source": {
+  "sheet": {
+   "path": "art-lab/characters/reference/sources/piers-clear-2026-11-07.png",
+   "sha256": "eed54de2925ed74121eb7f3bc48f470f0af1c473a728858b43be3c31e44dd527"
+  },
+  "figure": {
+   "path": "art-lab/characters/reference/sources/tournament-roster-casting-2026-10-18-a-original.png",
+   "sha256": "9f54beedaf5e2eb62bddd01bf7e0ff8011c8b8f2bb4943160ca02f6abd951997"
+  }
+ },
+ "chain": [
+  "gen-image.mjs (gpt-image-2): a clean sheet; references the NPC 01-16 sheet, the casting's clean sheet casting-clear-2026-11-01-a and the figure cropped from the tournament casting sheet a (nearest x2)",
+  "reconstruct-grid.mjs per facing on 84 rows, the head again at a finer pitch (x1.1)",
+  "quantize-palette.mjs --k 48: one palette for the three views",
+  "rig piers-x2-v1.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+  "Aseprite: assembly and export, every exported frame compared"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9
+ },
+ "frames": 12,
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/piers-x2-v1.rig.mjs --check",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/piers-x2-v1.png": "22ecc4b6f601512f32e69f9cdfcaf4488d5c81b9983731900a19af96d97dca74",
+  "art-lab/characters/exports/piers-x2-v1.json": "6d1a19db2418ad5d7049b7f2776dcdce26c9e260955db597ebe010609c8e1513",
+  "art-lab/characters/source/piers-x2-v1.aseprite": "6d9eb5d82ff16578771224b28f0152b2a64097d424a17b8ba89992d1d7d86592",
+  "art-lab/characters/provenance/piers-x2-v1/view-down.png": "8c504ccc405cc4fbc3de1f61c56d19077f79ec02ceb8bccc74ddd7c224124f76",
+  "art-lab/characters/provenance/piers-x2-v1/view-up.png": "5dccb29b6a5d3e197c2b4baab9f5228ec9ef288792e261071fa290265dab361c",
+  "art-lab/characters/provenance/piers-x2-v1/view-side.png": "a53c5ee60ea3466729209b143097b0c5c134761693be82ef25e22bf67c93cb46",
+  "art-lab/characters/provenance/piers-x2-v1/build.json": "c29edfd480021b12684257e66b77d68c0d0eae39baf12893cdfa83f03bd70511",
+  "art-lab/characters/rigs/piers-x2-v1.rig.mjs": "282f7b9fd551c3910a0aa6a12b3854d4b2dbafa4d2e064e342aba22bb379a587",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

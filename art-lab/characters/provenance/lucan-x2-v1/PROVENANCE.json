@@ -1,0 +1,53 @@
+{
+ "id": "lucan-x2-v1",
+ "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe GA3)",
+ "request": {
+  "date": "2026-11-07",
+  "by": "operator, the generic fighters' lot sheet of journal Passe GA2",
+  "text": "GA-P1 « Oui, ainsi » and GA-P4 « Une tâche à part, après celle-ci » (the generic fighters' lot sheet, journal Passe GA2): Lucan Rook <- n° 08 « Swordmaster (Male) » of the tournament casting sheet a"
+ },
+ "source": {
+  "sheet": {
+   "path": "art-lab/characters/reference/sources/lucan-clear-2026-11-07.png",
+   "sha256": "31cf405d01ad99aeb7fe94e1777682d9201186d5b60a7955311e75c8960c9be7"
+  },
+  "figure": {
+   "path": "art-lab/characters/reference/sources/tournament-roster-casting-2026-10-18-a-original.png",
+   "sha256": "9f54beedaf5e2eb62bddd01bf7e0ff8011c8b8f2bb4943160ca02f6abd951997"
+  }
+ },
+ "chain": [
+  "gen-image.mjs (gpt-image-2): a clean sheet; references the NPC 01-16 sheet, the casting's clean sheet casting-clear-2026-11-01-a and the figure cropped from the tournament casting sheet a (nearest x2)",
+  "reconstruct-grid.mjs per facing on 84 rows, the head again at a finer pitch (x1.1)",
+  "quantize-palette.mjs --k 48: one palette for the three views",
+  "rig lucan-x2-v1.rig.mjs (art-lab/characters/rigs/lib/clear.mjs)",
+  "Aseprite: assembly and export, every exported frame compared"
+ ],
+ "presentation": {
+  "frame": [
+   64,
+   96
+  ],
+  "footRow": 90,
+  "metresPerTexel": 0.0235,
+  "scale": 0.9
+ },
+ "frames": 12,
+ "verify": "node tools/art-lab/build-character.mjs art-lab/characters/rigs/lucan-x2-v1.rig.mjs --check",
+ "hashRule": "SHA-256; text files (.json .mjs .js .ts .md .txt) hashed with LF line endings, binaries as stored",
+ "files": {
+  "art-lab/characters/exports/lucan-x2-v1.png": "9d5f40f181980b237a0560d8de267d171ca77a14d03abdf6dc1ec7758b3e06f3",
+  "art-lab/characters/exports/lucan-x2-v1.json": "9590d110f995c9153aff5d0f4400367a5ace36dd0a792916d23a52bb17b42d09",
+  "art-lab/characters/source/lucan-x2-v1.aseprite": "08d15c3898ceb7a7b0ea70c30c1c191d608d8dc5ea4633b131e3e17dd1d5d38b",
+  "art-lab/characters/provenance/lucan-x2-v1/view-down.png": "691b86950bfe218589fb607f4d86453ee77c495553427ef90db8670e9563419d",
+  "art-lab/characters/provenance/lucan-x2-v1/view-up.png": "e4230bc9a4590f1fc3de424f441638ba7bb90e79208854a474ec83f2a9a278b0",
+  "art-lab/characters/provenance/lucan-x2-v1/view-side.png": "3578c94deb1c5e68eeb5d5203411bb0ee08ad82739d5f441e980dee76bfa9e9f",
+  "art-lab/characters/provenance/lucan-x2-v1/build.json": "0bf008f1c7666b353e3cb0d1f746dd298a5814be5d3fa578d49fdc607b4506d7",
+  "art-lab/characters/rigs/lucan-x2-v1.rig.mjs": "746e7c02e4d249640f67d2c9532ef4b8952c4ee57495939deddbf6a6e4acce1d",
+  "tools/art-lab/build-character.mjs": "4befabbd89383219920d2a912d25dd95237fe706a94ac3d469a8f491b7355d9f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/quantize-palette.mjs": "73ccc5ccb03ab9dc909ccb990f29df901e5683d4319ce1d1c744310fd462e868",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

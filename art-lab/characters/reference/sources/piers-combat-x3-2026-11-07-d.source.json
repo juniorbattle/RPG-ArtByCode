@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "piers-combat-x3-2026-11-07-d.png",
+  "sha256": "717af3b810244e1933dffe99e196803db8172e6d48ad4512c2505713153dbb6b",
+  "bytes": 1447643,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "1e7c916d3ae09883a5d23c576ef827228bfbf80a1a12b72a98125e3560f997f2",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Piers Calloway, a young spear champion out in the qualifiers, who guards the barges on the quay by day, in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Image 2 is the casting sheet the character comes from (five views); it only confirms the design. He carries no weapon there. Images 3 and 4 are combat sheets of ANOTHER character: they only fix the layout, the SIDE view facing left, the scale and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of Piers Calloway, every figure in the SIDE view, FACING LEFT (the face, chest and weapon point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1: spiky dark navy-blue hair, a clear young face with one large eye in profile; a long cream coat to the shins with a royal-blue panel down the front opening and a thin plain gold border, a royal-blue hood folded down at the back of the neck; a small steel shoulder guard with a thin gold rim; dark blue vambraces with gold rims; a brown belt with a brass buckle; steel greaves over brown boots. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO cross, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big head, about three heads tall, a slim upright body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head about 97 pixels tall.\n\nThe weapon, the same in every figure: a long spear: a straight dark wooden shaft, the whole spear about as tall as he is, about 280 pixels long at this scale, a leaf-shaped bright steel spearhead at the front end and a small steel cap at the back end. He fights with it in BOTH hands, the spearhead toward the opponent. No sword, no shield.\n\n2 rows, in this order, left to right:\nRow 1, His rally, TEMPO:\n1. TEMPO, PREPARATION: light on the toes, the spear turning in front of him in both hands, the head up.\n2. TEMPO, THE RALLY: standing light on the balls of the feet, the spear held upright beside him in one hand, its butt on the ground, the free hand raised at shoulder height, palm open, a confident half-smile.\n3. TEMPO, RETURN: both hands back on the shaft, the spear lowered into a ready stance.\nRow 2, The dodge:\n4. DODGE, PUSH-OFF: a quick hop BACKWARD, away from an opponent on the left (moving toward the right edge): pushing off the front foot, the front foot lifting off the ground, the back foot still touching the ground, the body leaning back, the spear held across in front to cover.\n5. DODGE, LANDING: landed farther back, knees bent, the weight on the back foot, the spear back in front in a guard.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, weapon included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and the weapon.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "b7ae7bd0233f65a3fdfa84c2c70661864ea1a1bfc2d4c1b4ed8e5a39fb3308c1",
+    "promptFile": "(outside the repository) piers-d.txt",
+    "references": [
+      {
+        "file": ".claude/worktrees/eager-jepsen-3b00bf/art-lab/characters/reference/sources/piers-clear-2026-11-07.png",
+        "sha256": "eed54de2925ed74121eb7f3bc48f470f0af1c473a728858b43be3c31e44dd527",
+        "bytes": 1360940
+      },
+      {
+        "file": "(outside the repository) piers-figure-x2.png",
+        "sha256": "660f10f567ca96830a414cfbb0488ed9a3c16c0745488be32a9edfa83f1d8fb8",
+        "bytes": 119886
+      },
+      {
+        "file": ".claude/worktrees/eager-jepsen-3b00bf/art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": ".claude/worktrees/eager-jepsen-3b00bf/art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "1 of 2",
+    "task": "piers-art",
+    "requestedAt": "2026-11-07T22:41:49.200Z",
+    "response": {
+      "requestId": "req_b6bd9044ecfe437da115d2bf30019a9b",
+      "created": "2026-11-07T22:42:49.000Z",
+      "processingMs": 59762
+    },
+    "usage": {
+      "input_tokens": 11734,
+      "input_tokens_details": {
+        "image_tokens": 9984,
+        "text_tokens": 1750
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 22710
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.382545,
+        "fromUsage": 0.417902
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 23664 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-07",
+    "from": "piers-art-20261107T224149Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

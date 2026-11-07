@@ -145,7 +145,7 @@ function curiousV2(st: GameState): Action {
   const challenge = (): Action | null => {
     const stake = st.player.coins >= 30 ? 'coins' as const : st.player.reputation >= 15 ? 'name' as const : null;
     if (!stake) return null;
-    for (const who of ['orla', 'ilse', 'vessa', 'marek', 'cassius', 'rhosk', 'tobin', 'aldric', 'ambrose']) { const a = at(PEOPLE[who].v2at?.place ?? PEOPLE[who].place, { type: 'challenge', who, stake }); if (a) return a; }
+    for (const who of ['orla', 'ilse', 'vessa', 'marek', 'cassius', 'rhosk', 'tobin', 'aldric', 'ambrose', 'lucan', 'piers', 'kell']) { const a = at(PEOPLE[who].v2at?.place ?? PEOPLE[who].place, { type: 'challenge', who, stake }); if (a) return a; }
     return null;
   };
   // watches its next opponent train when it can

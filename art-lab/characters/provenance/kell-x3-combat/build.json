@@ -1,0 +1,158 @@
+{
+ "id": "kell-x3-combat",
+ "cell": [
+  192,
+  288,
+  270,
+  96
+ ],
+ "k": 3,
+ "frames": 27,
+ "tags": "idle-side:0-1 ready-side:2-3 strike-side:4-6 heavy-side:7-10 skillOff-side:11-14 skillSup-side:15-17 hit-side:18-19 recover-side:20-21 ko-side:22-24 victory-side:25-26",
+ "sheet": [
+  1152,
+  1440
+ ],
+ "colours": 48,
+ "palette": "art-lab/characters/exports/kell-x2-v1.png",
+ "sheets": {
+  "a": {
+   "path": "art-lab/characters/reference/sources/kell-combat-x3-2026-11-07-a.png",
+   "pitch": 2.4141
+  },
+  "b": {
+   "path": "art-lab/characters/reference/sources/kell-combat-x3-2026-11-07-b.png",
+   "pitch": 2.5781
+  },
+  "c": {
+   "path": "art-lab/characters/reference/sources/kell-combat-x3-2026-11-07-c.png",
+   "pitch": 2.5
+  },
+  "d": {
+   "path": "art-lab/characters/reference/sources/kell-combat-x3-2026-11-07-d.png",
+   "pitch": 2.6953
+  }
+ },
+ "placement": {
+  "idle": {
+   "hips": 188,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "ready": {
+   "hips": 192,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "windup": {
+   "hips": 192,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cut": {
+   "hips": 203,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "follow": {
+   "hips": 192,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "recoil": {
+   "hips": 180,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "recovery": {
+   "hips": 191,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "gather": {
+   "hips": 190,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "raise": {
+   "hips": 191,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cleave": {
+   "hips": 206,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "through": {
+   "hips": 194,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "stunned": {
+   "hips": 196,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "fall": {
+   "hips": 209,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "kneel": {
+   "hips": 195,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "ground": {
+   "hips": 212,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "offPrep": {
+   "hips": 193,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offSurge": {
+   "hips": 188,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offHit": {
+   "hips": 202,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offBack": {
+   "hips": 192,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "supPrep": {
+   "hips": 190,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "sup": {
+   "hips": 190,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "supBack": {
+   "hips": 192,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "victory": {
+   "hips": 188,
+   "pushed": 0,
+   "lifted": 0
+  }
+ },
+ "exports": {
+  "png": "b70dd0dccfb0a8521ac2cc0c5e9fa19d3997539cfa990e521c6605ffe67d9577",
+  "json": "6606298380ace63b59e7f817cdd342557923ec9a9910819239ef91e01e142f14",
+  "aseprite": "6aafdd01b6e7df18960c0b1836c8bf509222af77043582d69e3c5a4080ac47d2"
+ }
+}

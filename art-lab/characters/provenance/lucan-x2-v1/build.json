@@ -1,0 +1,40 @@
+{
+ "id": "lucan-x2-v1",
+ "frames": 12,
+ "tags": "idle-down:0-3 idle-up:4-7 idle-side:8-11",
+ "sheet": [
+  384,
+  192
+ ],
+ "palette": {
+  "mode": "joint k-means 48",
+  "colours": 48,
+  "views": {
+   "recon-down-full-q.png": {
+    "texels": 2468,
+    "meanOklabErrPermille": 12.1,
+    "maxOklabErrPermille": 37.5
+   },
+   "recon-up-full-q.png": {
+    "texels": 2460,
+    "meanOklabErrPermille": 8.1,
+    "maxOklabErrPermille": 35.8
+   },
+   "recon-side-full-q.png": {
+    "texels": 1712,
+    "meanOklabErrPermille": 11,
+    "maxOklabErrPermille": 41.2
+   }
+  }
+ },
+ "views": {
+  "down": "691b86950bfe218589fb607f4d86453ee77c495553427ef90db8670e9563419d",
+  "up": "e4230bc9a4590f1fc3de424f441638ba7bb90e79208854a474ec83f2a9a278b0",
+  "side": "3578c94deb1c5e68eeb5d5203411bb0ee08ad82739d5f441e980dee76bfa9e9f"
+ },
+ "exports": {
+  "png": "9d5f40f181980b237a0560d8de267d171ca77a14d03abdf6dc1ec7758b3e06f3",
+  "json": "5e7041b8ae2bcf3d97a2cbc1562c50d57d73a53c88e9112bdea4e8a76477906a",
+  "aseprite": "08d15c3898ceb7a7b0ea70c30c1c191d608d8dc5ea4633b131e3e17dd1d5d38b"
+ }
+}

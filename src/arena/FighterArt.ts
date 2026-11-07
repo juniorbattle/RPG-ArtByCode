@@ -438,6 +438,8 @@ export const FOES: Record<string, { look: FighterLook; clips: Record<string, Cli
 // the version 2's generic fighters (lot L2b, src/narrative/generics.ts) take a generated figure in the opponent's seat until their own sheets, made through
 // the art's sheet (never a new design): the staff for hire the duelist's, the knight and the lantern-bearer the knight's
 FOES.corra = FOES.vessa; FOES.aldric = FOES.marek; FOES.ambrose = FOES.marek;
+// (journal Passe GA3) the swordmaster in armour the knight's, the spear champion and the bare-handed fighter the duelist's
+FOES.lucan = FOES.marek; FOES.piers = FOES.vessa; FOES.kell = FOES.vessa;
 
 /** the frame of a clip at its clock (`t`, s) given its impact time: wind-ups until the impact, the strike frame around it, the
  *  follow-through after; loops at their own rate */

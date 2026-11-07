@@ -5,8 +5,8 @@
 // arena page loaded from the save: its stands empty (no spectator, no crowd), the lists' piece, both fighters at full health; the bout decided by scripted
 // inputs on `window.__arena`, the town page again; Node replays the browser's actions and must find the same fingerprint. The arena's two sheets are
 // checked (Ren's and the opponent's, approved), and the opponent's face in the dialogue (journal Passe GA2).
-//   node tools/challenge-flow.mjs <outDir> <challenge|reprisal> <win|lose> [seed] [who]   (who: the fighter challenged, orla by default; aldric or ambrose, the
-//   generic fighters, at their place and hour; BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/play-flow.mjs)
+//   node tools/challenge-flow.mjs <outDir> <challenge|reprisal> <win|lose> [seed] [who]   (who: the fighter challenged, orla by default; aldric, ambrose, lucan,
+//   piers or kell, the generic fighters, at their place and hour (journal Passes GA2 / GA3); BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/play-flow.mjs)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -24,7 +24,7 @@ const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (
 const server = await createServer({ root: path.resolve(import.meta.dirname, '..'), configFile: false, logLevel: 'error', appType: 'custom', cacheDir: 'node_modules/.vite-test', server: { middlewareMode: true, hmr: false, ws: false, watch: null }, optimizeDeps: { noDiscovery: true } });
 const G = await server.ssrLoadModule('/src/simulation/index.ts'), { GENERICS } = await server.ssrLoadModule('/src/narrative/generics.ts');
 /** where and when each fighter takes a challenge (src/narrative/people.ts) */
-const AT = { orla: ['training', 'morning'], aldric: ['training', 'morning'], ambrose: ['lanterns', 'afternoon'] };
+const AT = { orla: ['training', 'morning'], aldric: ['training', 'morning'], ambrose: ['lanterns', 'afternoon'], lucan: ['forecourt', 'evening'], piers: ['district', 'morning'], kell: ['lanterns', 'morning'] };
 if (kind === 'challenge' && !AT[who]) throw new Error(`who: one of ${Object.keys(AT).join(', ')}`);
 const foeId = kind === 'challenge' ? who : 'corra';
 const LOSE = { next: () => 0.999, fork() { return this; } };
@@ -32,7 +32,9 @@ const LOSE = { next: () => 0.999, fork() { return this; } };
 const pre = [];
 let s0 = G.makeV2(G.newGame(+seedS >>> 0, 'Aster'));
 const step = (a, rng) => { const r = G.advance(s0, a, rng); if (!r.ok) throw new Error(`${a.type}: ${r.reason}`); s0 = r.state; pre.push({ a, forced: !!rng }); };
-if (kind === 'challenge') while (s0.slot !== AT[who][1]) step({ type: 'wait' });
+// (the day's bout, when the slot to reach comes after it, is won as the reprisal's wait wins it)
+const boutDue = () => s0.slot === 'afternoon' && s0.tournament.matches.some((m) => m.day === s0.day && !m.winner && (m.a === 'player' || m.b === 'player'));
+if (kind === 'challenge') while (s0.slot !== AT[who][1]) step(boutDue() ? { type: 'fight', outcome: { winner: 'player', playerHp: 120, playerMaxHp: 200, opponentHp: 0, opponentMaxHp: 600, finisher: 'tech' } } : { type: 'wait' });
 if (kind === 'reprisal') {
   // Mara's goodwill soured by a first catch, then a second at her stall: under the grudge; the night falls, the dawn hires the muscle; the next evening
   step({ type: 'steal', shop: 'mara' }, LOSE);
@@ -57,8 +59,8 @@ try {
   const run = async (a) => { const r = await page.evaluate((x) => window.__ui.run(x), a); check(r.ok, `run ${JSON.stringify(a).slice(0, 70)}${r.ok ? '' : `: ${r.reason}`}`); if (r.ok) done.push(a); return r; };
   await openTown('?play=1&vis=0&noreload=1');
   if (kind === 'challenge') {
-    await run({ type: 'move', to: AT[who][0] });
-    await openTown('?play=1&vis=0&noreload=1');
+    // (a fighter of the quay is met where the game starts: no move)
+    if (s0.place !== AT[who][0]) { await run({ type: 'move', to: AT[who][0] }); await openTown('?play=1&vis=0&noreload=1'); }
     const tag = await page.evaluate((w) => { window.__ui.openPerson(w); return [...document.querySelectorAll('.pm-talk .pm-btn')].find((x) => /10 coins staked/.test(x.textContent))?.querySelector('.cost')?.parentElement?.textContent ?? ''; }, who);
     check(/10 coins/.test(tag) && /1 slot/.test(tag), `the stake and the slot in its tags: ${tag}`);
     const face = await page.evaluate(() => document.querySelector('.pm-talk img')?.getAttribute('src')?.slice(0, 22) ?? 'none');

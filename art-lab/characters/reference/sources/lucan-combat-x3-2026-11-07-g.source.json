@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "lucan-combat-x3-2026-11-07-g.png",
+  "sha256": "9d2339ce9aef7351a98f9e2644b5d78838de65d4139f5994301f352a0c280883",
+  "bytes": 1443860,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "1e7c916d3ae09883a5d23c576ef827228bfbf80a1a12b72a98125e3560f997f2",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Lucan Rook, a young swordmaster beaten by the champion in the qualifiers, who drills before the arena's gate at dusk, in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Image 2 is the casting sheet the character comes from (five views); it only confirms the design. He carries no weapon there. Image 3 is an earlier combat sheet of the SAME character: match EXACTLY its proportions, its scale, its build and his sword (a standing figure the same height as its standing figures, the sword the same length). Image 4 is a combat sheet of ANOTHER character: it only fixes the layout and the crisp rendering. Do NOT copy that other character.\n\nMake a NEW sheet of Lucan Rook, every figure in the SIDE view, FACING LEFT (the face, chest and weapon point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1: spiky bright red hair, a clear young face with one large eye in profile; polished steel armour: a rounded steel pauldron, a steel breastplate, steel vambraces with red cuffs and steel greaves; under the armour an ivory tunic to the knees with ONE broad plain red vertical band down the front; a brown belt with a round brass buckle; a long red cape from the shoulders to the calves; brown leather boots. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO cross, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big head, about three heads tall, a compact athletic body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head about 97 pixels tall.\n\nThe weapon, the same in every figure: a plain straight longsword: a bright steel blade with a darker edge line, about 130 pixels long at this scale, a simple steel crossguard, a red leather grip, a round steel pommel. He holds it with BOTH hands on the grip. No shield, no scabbard.\n\n1 row, in this order, left to right: three versions of ONE moment, the second frame of being hit (every figure in the SIDE view facing left, STANDING UPRIGHT, NOT crouching, NOT bent low; the sword exactly as long as in image 3):\nRow 1, HIT, RECOVERY:\n1. Staggering one step BACKWARD on the back foot, the torso still leaning back but straightening, the head shaking, the sword held up in front of him in one hand, its point UP and forward, the free hand reaching back for balance.\n2. Rocking back on his heels, upright, wincing, both hands on the grip, the sword raised in front of his chest pointing UP, the knees only a little bent.\n3. Upright and dazed, one hand pressed to his chest, the sword hanging in the other hand at his side, its point down near his front foot, the head tilted back.\n\nComposition: the feet of every figure of a row on one common ground line; every figure, weapon included, fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character and the weapon.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "f87b89dd71164bcb61fa10064bae0f1711edf82ab56fd322bb4894fb69668340",
+    "promptFile": "(outside the repository) lucan-g.txt",
+    "references": [
+      {
+        "file": ".claude/worktrees/eager-jepsen-3b00bf/art-lab/characters/reference/sources/lucan-clear-2026-11-07.png",
+        "sha256": "31cf405d01ad99aeb7fe94e1777682d9201186d5b60a7955311e75c8960c9be7",
+        "bytes": 1352339
+      },
+      {
+        "file": "(outside the repository) lucan-figure-x2.png",
+        "sha256": "fa1167e9fbec3157e20e8c225e18a0d6535ba849093a86c154cdc4a4bda2cc6e",
+        "bytes": 122165
+      },
+      {
+        "file": ".claude/worktrees/eager-jepsen-3b00bf/art-lab/characters/reference/sources/lucan-combat-x3-2026-11-07-a.png",
+        "sha256": "51ddeb7345e4266700ca37e048f61ae69fabfbe44581b611f440bd2beb8263d7",
+        "bytes": 1592134
+      },
+      {
+        "file": ".claude/worktrees/eager-jepsen-3b00bf/art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      }
+    ],
+    "image": "1 of 2",
+    "task": "lucan-art",
+    "requestedAt": "2026-11-07T23:35:30.086Z",
+    "response": {
+      "requestId": "req_5496edd5fcc34137b28d1d4e36f50e0b",
+      "created": "2026-11-07T23:36:29.000Z",
+      "processingMs": 57862
+    },
+    "usage": {
+      "input_tokens": 11720,
+      "input_tokens_details": {
+        "image_tokens": 9984,
+        "text_tokens": 1736
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 22696
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.382675,
+        "fromUsage": 0.417832
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 23664 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-07",
+    "from": "lucan-art-20261107T233530Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

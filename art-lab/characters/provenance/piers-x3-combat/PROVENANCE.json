@@ -1,0 +1,45 @@
+{
+ "id": "piers-x3-combat",
+ "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe GA3)",
+ "request": {
+  "date": "2026-11-07",
+  "by": "operator (git user wonmii): the generic fighters' lot sheet of journal Passe GA2, GA-P2 « Oui, ainsi » and GA-P4 « Une tâche à part, après celle-ci » (the generic fighters' lot sheet, journal Passe GA2); the casting's X5 « Une tâche de 5 $ par combattant » (journal Passe CA1)"
+ },
+ "source": {
+  "sheets": {
+   "description": "6 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task piers-art); references: the clean figure piers-clear-2026-11-07.png and n° 09 « Spear Champion (Male) » of the tournament casting sheet a (cropped, nearest x2), and Ren's sheets for the layout only (a retake: the fighter's own earlier sheet for its proportions)",
+   "files": [
+    "art-lab/characters/reference/sources/piers-combat-x3-2026-11-07-a.png",
+    "art-lab/characters/reference/sources/piers-combat-x3-2026-11-07-b.png",
+    "art-lab/characters/reference/sources/piers-combat-x3-2026-11-07-c.png",
+    "art-lab/characters/reference/sources/piers-combat-x3-2026-11-07-d.png",
+    "art-lab/characters/reference/sources/piers-combat-x3-2026-11-07-e.png",
+    "art-lab/characters/reference/sources/piers-combat-x3-2026-11-07-f.png"
+   ]
+  },
+  "figure": "piers-clear-2026-11-07.png"
+ },
+ "chain": [
+  "per figure: the figure alone on its sheet -> reconstruct-grid.mjs at the sheet's pitch (a standing figure's height over the rows of the town sheet's side idle at x3) -> the green peeled -> nearest OKLab colour of the town sheet's palette (pinned) with a steel ramp -> loose texels removed -> the hips on column 96, cropped to the cell; a cell that moved the body off the axis is recorded in the JSON's meta.pushed; the loops' second frames by rig-engine's breath, the guard's « encaisse » by a shear (lib/combat.mjs)"
+ ],
+ "rebuild": "node tools/art-lab/build-combat.mjs art-lab/characters/rigs/piers-x3-combat.rig.mjs --check",
+ "files": {
+  "art-lab/characters/exports/piers-x3-combat.png": "dcbccdd4fdf501df17cb3e120c84def8406317647efbd9a59abd10b537fb60e5",
+  "art-lab/characters/exports/piers-x3-combat.json": "d9983bf0969b74d7d255b81703d6ce950cd1b5b57f06d591fc72fc9f060b356b",
+  "art-lab/characters/source/piers-x3-combat.aseprite": "fe81f67c24c92b7d059dc7934737a16a1ea1b4d49420020f3d05c34c1a238b3e",
+  "art-lab/characters/provenance/piers-x3-combat/build.json": "cfe432bd60220da19effc9ad474e79de2c18333ead349ae524137d30125d6848",
+  "art-lab/characters/exports/piers-x2-v1.png": "22ecc4b6f601512f32e69f9cdfcaf4488d5c81b9983731900a19af96d97dca74",
+  "art-lab/characters/reference/sources/piers-combat-x3-2026-11-07-a.png": "eedbac4544a50ca7900c2a3a5e6211aa7797ed27441a0c61f14b88a58105c99c",
+  "art-lab/characters/reference/sources/piers-combat-x3-2026-11-07-b.png": "211a744c869f827be5540dac146d2c1b268a2ef3b8d7b87ea1de130eb234ef5d",
+  "art-lab/characters/reference/sources/piers-combat-x3-2026-11-07-c.png": "a6d502edbc7bd68767426c4dc1984d9c5663a28bd3ad7695fb30776cce9fb05e",
+  "art-lab/characters/reference/sources/piers-combat-x3-2026-11-07-d.png": "717af3b810244e1933dffe99e196803db8172e6d48ad4512c2505713153dbb6b",
+  "art-lab/characters/reference/sources/piers-combat-x3-2026-11-07-e.png": "c42aa6c24f079af6d435d0574f17b17f086547441f8eee6e69d369c219f70d11",
+  "art-lab/characters/reference/sources/piers-combat-x3-2026-11-07-f.png": "97a53373d9bdde5f1e3e0208f885d76b0d39912018be466f484f2504e2ebb038",
+  "art-lab/characters/rigs/piers-x3-combat.rig.mjs": "5f9b81ef5bbf93134c37dcd841116844cde1ab7836f37235955efdbaf090a2f3",
+  "art-lab/characters/rigs/lib/combat.mjs": "cfa8d68634b65c2781b70d72966e3ad24eac867e5e7ffbba9920c3696461255e",
+  "tools/art-lab/build-combat.mjs": "0dd3d9f77a5b362362c9f937654c7787290d9f39dcc3f5f038f5cc3901281d7f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

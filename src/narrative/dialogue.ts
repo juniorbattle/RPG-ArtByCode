@@ -119,6 +119,9 @@ export function linesOf(s: GameState, who: string): string[] {
     case 'aldric': return [tx(s.v2?.gear?.armour === 'knight-hauberk' || s.v2?.gear?.bag.includes('knight-hauberk') ? 'v2.line.aldric.hauberk' : 'v2.line.aldric')];
     case 'corra': return [s.v2?.reprisal ? tx('v2.line.corra.reprisal', { name: PEOPLE[s.v2.reprisal.by]?.name ?? s.v2.reprisal.by }) : tx('v2.line.corra')];
     case 'ambrose': return [tx('v2.line.ambrose')];
+    case 'lucan': return [tx('v2.line.lucan')];
+    case 'piers': return [tx('v2.line.piers')];
+    case 'kell': return [tx('v2.line.kell')];
     case 'tobin': case 'rhosk': return [tx(s.competitors[who]?.phaseStatus === 'gate' ? (who === 'tobin' ? 'v2.line.tobin.out' : 'v2.line.rhosk.out') : who === 'tobin' ? 'v2.line.tobin.in' : 'v2.line.rhosk.in')];
     // the version 2's passers-by (lot L2a): their piece, or what is left once it has gone
     case 'fenwick': case 'edda': case 'sela': {

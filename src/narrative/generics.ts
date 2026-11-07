@@ -4,7 +4,9 @@
  *  challenge at its place and hour, and the staff for hire on the quay is the muscle a robbed keeper pays (the operator's note on EV-2, « une possibilite de
  *  combat et de represaille reelle »). Each fights on a rival's combat profile, a little weaker (« proposé »); its figure is the one the operator chose
  *  (L2-11, journal Passe EVL4): its town sheet gives its portrait's face and its combat sheet plays in a version 2 duel on that rival's clips, both approved on the
- *  operator's lot sheet (journal Passe GA2; src/characters/PlazaCast.ts, src/arena/CombatCast.ts). English (K1). Pure data. */
+ *  operator's lot sheet (journal Passe GA2; src/characters/PlazaCast.ts, src/arena/CombatCast.ts). Three more, the operator's GA-P1 to GA-P3 « Oui, ainsi » and GA-P4
+ *  « Une tâche à part, après celle-ci » (journal Passes GA2 / GA3): the swordmaster, the spear champion and the bare-handed fighter of the tournament casting sheet a,
+ *  with the names, places, hours and profiles the sheet proposed. English (K1). Pure data. */
 
 export interface GenericDef {
   id: string; name: string; epithet: string;
@@ -28,6 +30,19 @@ export const GENERICS: Record<string, GenericDef> = {
   ambrose: {
     id: 'ambrose', name: 'Brother Ambrose', epithet: 'the Lantern-bearer', profile: 'cassius', hp: 0.85, damage: 0.95, figure: 'G1 panel 4',
     bio: 'A lantern-bearer of the hill shrines. He came for a purse for his shrine and lost it in the qualifiers.',
+  },
+  // the three more of journal Passe GA3 (GA-P1 to GA-P3 « Oui, ainsi »): health and blows « proposés », a little under their rival's
+  lucan: {
+    id: 'lucan', name: 'Lucan Rook', epithet: 'the Red Blade', profile: 'marek', hp: 0.85, damage: 0.9, figure: 'tournament casting sheet a, n° 08, the swordmaster',
+    bio: 'A swordmaster of the river towns. Marek beat him in the qualifiers; every evening he drills before the arena\'s gate.',
+  },
+  piers: {
+    id: 'piers', name: 'Piers Calloway', epithet: 'of the Long Spear', profile: 'vessa', hp: 0.9, damage: 0.95, figure: 'tournament casting sheet a, n° 09, the spear champion',
+    bio: 'A spear champion out in the qualifiers. He stayed on to guard the river traders\' barges on the quay by day.',
+  },
+  kell: {
+    id: 'kell', name: 'Kell Barrow', epithet: 'the Bare Fist', profile: 'tobin', hp: 0.9, damage: 0.95, figure: 'tournament casting sheet a, n° 14, the martial artist',
+    bio: 'A bare-handed fighter out in the qualifiers. He fights for a few coins on the market hall\'s steps in the morning.',
   },
 };
 

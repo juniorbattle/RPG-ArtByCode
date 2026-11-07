@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "lucan-x3-combat",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/lucan-x3-combat.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/lucan-x3-combat.png",
+    "metadata": "art-lab/characters/exports/lucan-x3-combat.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-combat.mjs (lib/combat.mjs: reconstruct-grid + rig-engine, rig art-lab/characters/rigs/lucan-x3-combat.rig.mjs, the arena cell at x3: 192 x 288, feet on row 270, axis on column 96); Aseprite (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "7 generated pose sheets of Lucan Rook (NON-CANONICAL until the operator's lot sheet): the figures of the sheet",
+      "path": "art-lab/characters/reference/sources/lucan-combat-x3-2026-11-07-a.png",
+      "note": "task lucan-art, journal Passe GA3"
+    },
+    {
+      "category": "C",
+      "label": "The clean figure (generated, NON-CANONICAL until the operator approves it): the design",
+      "path": "art-lab/characters/reference/sources/lucan-clear-2026-11-07.png",
+      "note": "with n° 08 « Swordmaster (Male) » of the tournament casting sheet a, the operator's GA-P1 « Oui, ainsi » and GA-P4 « Une tâche à part, après celle-ci » (the generic fighters' lot sheet, journal Passe GA2)"
+    },
+    {
+      "category": "B",
+      "label": "lucan-x2-v1, the candidate town sheet: its palette (pinned)",
+      "path": "art-lab/characters/provenance/lucan-x2-v1",
+      "note": "candidate, on the same lot sheet (journal Passe GA3)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "Candidate (journal Passe GA3): Lucan Rook's combat sheet at x3, 32 frames of the § 14 list for Marek's profile, whose kit a generic fighter fights with (src/narrative/generics.ts); his longsword, from the text (no weapon on his casting figure, X4); cells of 192 x 288 texels, feet on row 270, hips on column 96, facing left. Production waits for the operator's lot sheet; nothing in the game loads it. Rebuild: node tools/art-lab/build-combat.mjs art-lab/characters/rigs/lucan-x3-combat.rig.mjs --check"
+}

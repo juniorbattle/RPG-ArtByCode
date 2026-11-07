@@ -1,0 +1,41 @@
+{
+ "id": "kell-x3-combat",
+ "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe GA3)",
+ "request": {
+  "date": "2026-11-07",
+  "by": "operator (git user wonmii): the generic fighters' lot sheet of journal Passe GA2, GA-P3 « Oui, ainsi » and GA-P4 « Une tâche à part, après celle-ci » (the generic fighters' lot sheet, journal Passe GA2); the casting's X5 « Une tâche de 5 $ par combattant » (journal Passe CA1)"
+ },
+ "source": {
+  "sheets": {
+   "description": "4 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task kell-art); references: the clean figure kell-clear-2026-11-07.png and n° 14 « Martial Artist (Male) » of the tournament casting sheet a (cropped, nearest x2), and Ren's sheets for the layout only (a retake: the fighter's own earlier sheet for its proportions)",
+   "files": [
+    "art-lab/characters/reference/sources/kell-combat-x3-2026-11-07-a.png",
+    "art-lab/characters/reference/sources/kell-combat-x3-2026-11-07-b.png",
+    "art-lab/characters/reference/sources/kell-combat-x3-2026-11-07-c.png",
+    "art-lab/characters/reference/sources/kell-combat-x3-2026-11-07-d.png"
+   ]
+  },
+  "figure": "kell-clear-2026-11-07.png"
+ },
+ "chain": [
+  "per figure: the figure alone on its sheet -> reconstruct-grid.mjs at the sheet's pitch (a standing figure's height over the rows of the town sheet's side idle at x3) -> the green peeled -> nearest OKLab colour of the town sheet's palette (pinned) -> loose texels removed -> the hips on column 96, cropped to the cell; a cell that moved the body off the axis is recorded in the JSON's meta.pushed; the loops' second frames by rig-engine's breath (lib/combat.mjs)"
+ ],
+ "rebuild": "node tools/art-lab/build-combat.mjs art-lab/characters/rigs/kell-x3-combat.rig.mjs --check",
+ "files": {
+  "art-lab/characters/exports/kell-x3-combat.png": "b70dd0dccfb0a8521ac2cc0c5e9fa19d3997539cfa990e521c6605ffe67d9577",
+  "art-lab/characters/exports/kell-x3-combat.json": "6606298380ace63b59e7f817cdd342557923ec9a9910819239ef91e01e142f14",
+  "art-lab/characters/source/kell-x3-combat.aseprite": "6aafdd01b6e7df18960c0b1836c8bf509222af77043582d69e3c5a4080ac47d2",
+  "art-lab/characters/provenance/kell-x3-combat/build.json": "5cfe4edebe95213b74cd9a9c45c6f641d5068159db2afe2b8215ee46f4bbf5ed",
+  "art-lab/characters/exports/kell-x2-v1.png": "6bcd4d727ad6c7a6165993eccf66841c731ee70d7cb8a43222144e8df20399ce",
+  "art-lab/characters/reference/sources/kell-combat-x3-2026-11-07-a.png": "48a73b9e15feb566486077f1394feb081dcb25a82b2dfdabdc91cfe76a660225",
+  "art-lab/characters/reference/sources/kell-combat-x3-2026-11-07-b.png": "03f0efd51af12d5208470f203219d550e4840d1114a904cb9b21853964cf8de3",
+  "art-lab/characters/reference/sources/kell-combat-x3-2026-11-07-c.png": "d84c7f9114238489ed835a6368f744bbaaf384e23ee8cbd2d8e1b21819e55470",
+  "art-lab/characters/reference/sources/kell-combat-x3-2026-11-07-d.png": "076500a64c3797da0dbe72a5b6d48c44b01caebf57a0a32b43a551d74269e143",
+  "art-lab/characters/rigs/kell-x3-combat.rig.mjs": "e93f9d06dc392c077ffd9a6ef299e30de794b9e4ca57afa448cc441a9fd24ee2",
+  "art-lab/characters/rigs/lib/combat.mjs": "cfa8d68634b65c2781b70d72966e3ad24eac867e5e7ffbba9920c3696461255e",
+  "tools/art-lab/build-combat.mjs": "0dd3d9f77a5b362362c9f937654c7787290d9f39dcc3f5f038f5cc3901281d7f",
+  "tools/art-lab/rig-engine.mjs": "49dd7ecf985504d2b128dc0b29887a043401a74bdf072350044b51d05a21dc42",
+  "tools/art-lab/reconstruct-grid.mjs": "05586201612bfd7ec97e5b43478f712ebf2b2a58723040c48969e13f33dc1c40",
+  "tools/art-lab/png.mjs": "9f8f100df99241084935cf7cfb67f3ab090dd8b42aca5b4155f9d7d92a82b0d1"
+ }
+}

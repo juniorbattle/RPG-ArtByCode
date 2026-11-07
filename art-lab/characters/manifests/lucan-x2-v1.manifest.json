@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "lucan-x2-v1",
+  "kind": "character",
+  "status": "candidate",
+  "source": "art-lab/characters/source/lucan-x2-v1.aseprite",
+  "exports": {
+    "sheet": "art-lab/characters/exports/lucan-x2-v1.png",
+    "metadata": "art-lab/characters/exports/lucan-x2-v1.json"
+  },
+  "generator": {
+    "pipeline": "procedural",
+    "version": "tools/art-lab/build-character.mjs (reconstruct-grid + quantize-palette + rig-engine, rig art-lab/characters/rigs/lucan-x2-v1.rig.mjs, art-lab/characters/rigs/lib/clear.mjs); Aseprite (assembly and export)",
+    "model": "claude-opus-5-5"
+  },
+  "references": [
+    {
+      "category": "C",
+      "label": "Clean generated sheet, Lucan Rook (four views)",
+      "path": "art-lab/characters/reference/sources/lucan-clear-2026-11-07.png",
+      "note": "gpt-image-2 through gen-image.mjs (task lucan-art), NON-CANONICAL until the operator approves it (journal Passe GA3)"
+    },
+    {
+      "category": "C",
+      "label": "The figure the operator kept: n° 08 « Swordmaster (Male) » of the tournament casting sheet a",
+      "path": "art-lab/characters/reference/sources/tournament-roster-casting-2026-10-18-a-original.png",
+      "note": "the operator's GA-P1 « Oui, ainsi » and GA-P4 « Une tâche à part, après celle-ci » (the generic fighters' lot sheet, journal Passe GA2)"
+    }
+  ],
+  "approved": false,
+  "runtimeUse": "lab",
+  "notes": "Candidate (journal Passe GA3): Lucan Rook, a generic fighter of the version 2, standing only (12 frames): his face in a version 2 game's portraits. Production waits for the operator's lot sheet; nothing in the game loads it."
+}

@@ -93,6 +93,36 @@ test('a challenge (lot L2b, EV-3 / EV-4): put to a fighter who is there, a stake
   for (const s of [st, gs]) { const x = M.challengeSheetFor(s), d = M.v2SheetData(x, undefined, G.v2KitOf(s), VG.v2Mods(s)); assert.ok(B.runV2BotDuel(d.data, d.tiers, { skill: 0.6, seed: 3 }).winner); }
 });
 
+test('the three more generic fighters (GA-P1 to GA-P3 « Oui, ainsi », journal Passe GA3): each at its place and hour, on its rival\'s profile, teaching nothing', () => {
+  // the oracle, as the operator's lot sheet kept them: the swordmaster on the forecourt in the evening (Marek's profile), the spear champion on the quay by day
+  // (Vessa's), the bare-handed fighter on the market hall's square in the morning (Tobin's); health and blows « proposés »
+  const ORACLE = {
+    lucan: { name: 'Lucan Rook', place: 'forecourt', slots: ['evening'], profile: 'marek', mods: { hp: 0.85, damage: 0.9 } },
+    piers: { name: 'Piers Calloway', place: 'district', slots: ['morning', 'afternoon'], profile: 'vessa', mods: { hp: 0.9, damage: 0.95 } },
+    kell: { name: 'Kell Barrow', place: 'lanterns', slots: ['morning'], profile: 'tobin', mods: { hp: 0.9, damage: 0.95 } },
+  };
+  for (const [who, o] of Object.entries(ORACLE)) {
+    for (const slot of ['morning', 'afternoon', 'evening']) {
+      const s = v2(); s.place = o.place; s.slot = slot; s.day = 3;
+      const offer = G.actions(s).find((x) => x.action.type === 'challenge' && x.action.who === who && x.action.stake === 'coins');
+      if (!o.slots.includes(slot)) { assert.ok(!offer?.ok, `${who} not there at ${slot}`); continue; }
+      assert.ok(offer?.ok, `${who} at ${o.place} at ${slot}: ${offer?.reason}`);
+      const st = act(s, offer.action).state, sh = M.challengeSheetFor(st), f = sh.sides[1].fighters[0];
+      assert.equal(f.name, o.name); assert.equal(f.profile, o.profile); assert.deepEqual(f.mods, o.mods);
+      const won = act(st, { type: 'challengeResult', outcome: WIN }).state;
+      assert.deepEqual(won.v2.kit.levels, st.v2.kit.levels, `${who}: no skill`); assert.equal(won.player.coins, s.player.coins + 10, `${who}: the stake back twice`);
+      // the duel is a version 2 duel the bot can fight to its end
+      const d = M.v2SheetData(sh, undefined, G.v2KitOf(st), VG.v2Mods(st)); assert.ok(B.runV2BotDuel(d.data, d.tiers, { skill: 0.6, seed: 3 }).winner, who);
+    }
+    // nowhere else
+    const away = v2(); away.place = o.place === 'training' ? 'forecourt' : 'training'; away.slot = o.slots[0]; away.day = 3;
+    assert.ok(!G.actions(away).some((x) => x.action.type === 'challenge' && x.action.who === who), `${who} only at ${o.place}`);
+  }
+  // today's game: none of them
+  const def = G.namedState('day1-morning'); def.place = 'district';
+  assert.ok(!G.actions(def).some((x) => x.action.type === 'talk' && ['lucan', 'piers', 'kell'].includes(x.action.who)));
+});
+
 test('from day 6, a rival out of the title (one of the cut\'s four others) takes a challenge on a day without a bout of theirs and teaches a skill of the catalogue', () => {
   const s = v2('day1-morning'); s.day = 7; s.place = 'training';
   for (const id of Object.keys(s.competitors)) s.competitors[id].phaseStatus = ['rhosk', 'tobin', 'marek', 'cassius'].includes(id) ? 'gate' : 'semi';

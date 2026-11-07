@@ -1,0 +1,94 @@
+{
+  "kind": "generated-image",
+  "file": "kell-combat-x3-2026-11-07-c.png",
+  "sha256": "d84c7f9114238489ed835a6368f744bbaaf384e23ee8cbd2d8e1b21819e55470",
+  "bytes": 1531379,
+  "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
+  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "generation": {
+    "tool": "tools/art-lab/gen-image.mjs",
+    "toolSha256": "1e7c916d3ae09883a5d23c576ef827228bfbf80a1a12b72a98125e3560f997f2",
+    "endpoint": "POST https://api.openai.com/v1/images/edits",
+    "model": "gpt-image-2",
+    "parameters": {
+      "n": 2,
+      "size": "1536x1024",
+      "quality": "high",
+      "background": "opaque",
+      "output_format": "png"
+    },
+    "prompt": "Image 1 shows the four views of ONE character, Kell Barrow, a young bare-handed fighter out in the qualifiers, who fights for a few coins on the steps of the market hall in the morning, in \"Cité du Tournoi\" (HD-2D pixel art, a sword tournament): front, three-quarter, back and left profile. It fixes the design, the colours, the proportions and the clean, simple shapes. Image 2 is the casting sheet the character comes from (five views); it only confirms the design. Images 3 and 4 are combat sheets of ANOTHER character: they only fix the layout, the SIDE view facing left, the scale and the crisp rendering. Do NOT copy that other character, nor his sword.\n\nMake a NEW sheet of Kell Barrow, every figure in the SIDE view, FACING LEFT (the face, chest and fists point toward the left edge of the image), exactly the way the figures of the combat sheets face left.\n\nKeep the design exactly as in image 1: messy brown hair and a red headband whose two long tails hang behind the head, a clear young face with one large eye in profile; a bare chest and bare arms, lean and fit, not bulky; a red sash round the waist under a brown belt with a round brass buckle, a red cloth flap hanging from the belt in front to the knees; brown leather wraps on the forearms; loose cream trousers gathered at the calves; brown wrapped boots. Plain cloth: NO emblem, NO fleur-de-lis, NO crest, NO cross, NO symbol, NO embroidery anywhere. Keep the proportions of image 1: a big head, about three heads tall, a lean compact body. Every figure at the SAME scale: a standing figure about 290 pixels tall in this 1536 x 1024 image, the head about 97 pixels tall.\n\nThe weapon, the same in every figure: NONE: he fights with his bare fists (the forearms wrapped in brown leather). No weapon of any kind in any figure: no sword, no staff, no stick, no knife.\n\n2 rows, in this order, left to right:\nRow 1, His great skill, WILD SWING, a huge haymaker:\n1. WILD SWING, PREPARATION: winding up a huge haymaker, the rear arm drawn far back behind him, the body twisted away, the weight on the back foot, teeth clenched.\n2. WILD SWING, SURGE: lunging in, the back foot still on the ground, the torso turning, the rear fist starting its wide arc.\n3. WILD SWING, THE BLOW LANDING on an opponent just to the left, at head height: a wide hooking punch, the punching arm swept round in front of him at shoulder height, the fist pointing left, the whole body turned into it, mouth open in a shout, the headband's tails flying behind.\n4. WILD SWING, RECOVERY: carried round by the swing, off balance, catching himself on the front foot, the fists coming back up.\nRow 2, His rally FARMBOY GRIT, then his victory:\n5. GRIT, PREPARATION: both hands at the back of his head, tightening the knot of his red headband, the head bowed.\n6. GRIT, THE RALLY: standing tall, the feet planted, both fists clenched in front of his chest, the arms bent and tensed, mouth open in a shout.\n7. GRIT, RETURN: the fists dropping back into a ready stance in front of the chin.\n8. VICTORY, in the SAME SIDE VIEW facing left like every other figure (NOT turned toward the viewer): standing tall, one fist raised straight up above his head at full arm extension, the other fist on his hip, chin up, a wide grin.\n\nComposition: the feet of every figure of a row on one common ground line; every figure fits in a box 400 pixels wide; plenty of empty space between the figures so they never touch or overlap; nothing cut by the image edge. No motion trails, no speed lines, no sparks, no glow, no effects of any kind: only the character.\n\nTechnique: clean premium pixel art with big simple shapes and flat clean colour clusters, as in image 1, crisp square pixels of one uniform size across the whole sheet, selective dark outlines, no blur, no anti-aliasing to the background, no mixed pixel sizes, no dithering, no scattered noise. A plain, flat, perfectly uniform bright green (#00B140) background behind everything, WITHOUT any cast shadow or floor. No text, labels, numbers, frames, UI or watermark.\n",
+    "promptSha256": "0dbe899ff12611c110c8c59f7ebc4edbf890bdb191f7b6db6e4b270bf4d4e55a",
+    "promptFile": "(outside the repository) kell-c.txt",
+    "references": [
+      {
+        "file": ".claude/worktrees/eager-jepsen-3b00bf/art-lab/characters/reference/sources/kell-clear-2026-11-07.png",
+        "sha256": "ceb81abf12b97f5e95211049e5b87d95fb6285b9ef3c628ff5c05424e777ea68",
+        "bytes": 1389610
+      },
+      {
+        "file": "(outside the repository) kell-figure-x2.png",
+        "sha256": "ae38f65b42fe25019b0ddfe98f00034c8da0c80129dd158d8c9f4fc1126d0712",
+        "bytes": 117671
+      },
+      {
+        "file": ".claude/worktrees/eager-jepsen-3b00bf/art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-a2.png",
+        "sha256": "de039a7ecb6e3d7a48c807c925e7707a2430c9166aa4def86e32cd81e51fffbb",
+        "bytes": 1843826
+      },
+      {
+        "file": ".claude/worktrees/eager-jepsen-3b00bf/art-lab/characters/reference/sources/ren-combat-x3-2026-10-25-b2.png",
+        "sha256": "d04766360cbb835c945be9a3e8f38004c2e14cfa2b44a133eb3f65fb5cae9d76",
+        "bytes": 1985126
+      }
+    ],
+    "image": "1 of 2",
+    "task": "kell-art",
+    "requestedAt": "2026-11-07T22:36:50.005Z",
+    "response": {
+      "requestId": "req_b24a82335dc146aba7bb199e859b878e",
+      "created": "2026-11-07T22:37:53.000Z",
+      "processingMs": 62187
+    },
+    "usage": {
+      "input_tokens": 12002,
+      "input_tokens_details": {
+        "image_tokens": 10048,
+        "text_tokens": 1954
+      },
+      "output_tokens": 10976,
+      "output_tokens_details": {
+        "image_tokens": 10976,
+        "text_tokens": 0
+      },
+      "total_tokens": 22978
+    },
+    "costUsd": {
+      "request": {
+        "estimate": 1.38354,
+        "fromUsage": 0.419434
+      },
+      "prices": {
+        "textIn": 5,
+        "imageIn": 8,
+        "imageOut": 30,
+        "outTokens": "ceiling",
+        "fidelity": false
+      },
+      "priceTable": "gen-image.mjs model table of 2026-10-19 (OpenAI pricing page, standard tier, USD per 1M tokens)",
+      "estimateBasis": "no published output-token table: 3 x the earlier models' table as the worst case",
+      "note": "computed by this tool from the response usage and its price table; the account's invoice is authoritative"
+    }
+  },
+  "c2pa": {
+    "presence": "caBX chunk at offset 33, 21891 B",
+    "verification": "NOT VERIFIED: located only, no C2PA validator is installed"
+  },
+  "rights": "generated through the OpenAI API with the operator's account (its terms apply); third-party rights not verified; any canonical or production use needs the operator's decision",
+  "notInvented": "Every field comes from the request this tool sent and the API's answer; nothing is inferred.",
+  "archived": {
+    "date": "2026-11-07",
+    "from": "kell-art-20261107T223650Z-1.png",
+    "rule": "copied byte for byte by gen-image.mjs --archive; never edited, re-encoded or replaced"
+  }
+}

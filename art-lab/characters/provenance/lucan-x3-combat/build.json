@@ -1,0 +1,190 @@
+{
+ "id": "lucan-x3-combat",
+ "cell": [
+  192,
+  288,
+  270,
+  96
+ ],
+ "k": 3,
+ "frames": 32,
+ "tags": "idle-side:0-1 ready-side:2-3 strike-side:4-6 heavy-side:7-10 skillOff-side:11-14 skillDef-side:15-17 skillSup-side:18-20 block-side:21-22 hit-side:23-24 recover-side:25-26 ko-side:27-29 victory-side:30-31",
+ "sheet": [
+  1152,
+  1728
+ ],
+ "colours": 53,
+ "palette": "art-lab/characters/exports/lucan-x2-v1.png",
+ "sheets": {
+  "a": {
+   "path": "art-lab/characters/reference/sources/lucan-combat-x3-2026-11-07-a.png",
+   "pitch": 2.336
+  },
+  "b": {
+   "path": "art-lab/characters/reference/sources/lucan-combat-x3-2026-11-07-b.png",
+   "pitch": 2.44
+  },
+  "c": {
+   "path": "art-lab/characters/reference/sources/lucan-combat-x3-2026-11-07-c.png",
+   "pitch": 2.32
+  },
+  "d": {
+   "path": "art-lab/characters/reference/sources/lucan-combat-x3-2026-11-07-d.png",
+   "pitch": 3.36
+  },
+  "e": {
+   "path": "art-lab/characters/reference/sources/lucan-combat-x3-2026-11-07-e.png",
+   "pitch": 2.8
+  },
+  "f": {
+   "path": "art-lab/characters/reference/sources/lucan-combat-x3-2026-11-07-f.png",
+   "pitch": 2.328
+  },
+  "g": {
+   "path": "art-lab/characters/reference/sources/lucan-combat-x3-2026-11-07-g.png",
+   "pitch": 3.64
+  }
+ },
+ "placement": {
+  "idle": {
+   "hips": 202,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "ready": {
+   "hips": 206,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "windup": {
+   "hips": 188,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cut": {
+   "hips": 228,
+   "pushed": 20,
+   "lifted": 0
+  },
+  "follow": {
+   "hips": 211,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "guard": {
+   "hips": 189,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "recoil": {
+   "hips": 158,
+   "pushed": -7,
+   "lifted": 0
+  },
+  "recovery": {
+   "hips": 211,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "gather": {
+   "hips": 178,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "raise": {
+   "hips": 183,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "cleave": {
+   "hips": 222,
+   "pushed": 19,
+   "lifted": 0
+  },
+  "through": {
+   "hips": 222,
+   "pushed": 4,
+   "lifted": 0
+  },
+  "stunned": {
+   "hips": 187,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "fall": {
+   "hips": 178,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "kneel": {
+   "hips": 247,
+   "pushed": 39,
+   "lifted": 0
+  },
+  "ground": {
+   "hips": 190,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offPrep": {
+   "hips": 188,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "offSurge": {
+   "hips": 183,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "offHit": {
+   "hips": 201,
+   "pushed": 0,
+   "lifted": 1
+  },
+  "offBack": {
+   "hips": 198,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "defPrep": {
+   "hips": 184,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "def": {
+   "hips": 189,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "defBack": {
+   "hips": 206,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "victory": {
+   "hips": 186,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "supPrep": {
+   "hips": 195,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "sup": {
+   "hips": 175,
+   "pushed": 0,
+   "lifted": 0
+  },
+  "supBack": {
+   "hips": 216,
+   "pushed": 0,
+   "lifted": 0
+  }
+ },
+ "exports": {
+  "png": "cbde103a626e60154f6228df9ee65c0dd7e33407aa74d7df045c1384c5097e5d",
+  "json": "e6f74126c3467820ddc2b0930c648e06913dee4fea4dddfe6786ba164afa3c09",
+  "aseprite": "88d8b5a599f3af2f90a09ad4fe71f1d44a6838323102f011fc01ec56d54e94ce"
+ }
+}
