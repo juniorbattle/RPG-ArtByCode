@@ -25,6 +25,13 @@ export function onTalk(s: GameState, who: string, emit: Emit): void {
     s.facts.push('orla-introduced');
     emit({ kind: 'action', id: 'recruit:orla', cause: 'action:talk', visible: true, text: tx('recruit.orla.intro') });
   }
+  // a version 2 game (lot L3, the operator's EV-10, « l'enquête mène à l'auteur »): a strap cut and fought on, its culprit unknown, Lady Edda knows the cut, the
+  // same as her son's in his qualifier (src/narrative/generics.ts: Ser Aldric), and the colours of the servant who asked about both
+  if (who === 'edda' && isV2(s) && s.facts.includes('tamper-suffered') && !s.flags['culprit-known']) {
+    s.flags['culprit-known'] = 'cassius';
+    if (!s.facts.includes('edda-witness')) s.facts.push('edda-witness');
+    emit({ kind: 'consequence', id: 'edda:witness', cause: tx('v2.edda.why'), visible: true, text: tx('v2.edda.witness') });
+  }
 }
 
 export function linesOf(s: GameState, who: string): string[] {
@@ -126,7 +133,13 @@ export function linesOf(s: GameState, who: string): string[] {
     // the version 2's passers-by (lot L2a): their piece, or what is left once it has gone
     case 'fenwick': case 'edda': case 'sela': {
       const gone = s.v2?.passed?.[who] !== undefined;
-      return [tx(who === 'fenwick' ? (gone ? 'v2.line.fenwick.gone' : 'v2.line.fenwick') : who === 'edda' ? (gone ? 'v2.line.edda.gone' : 'v2.line.edda') : gone ? 'v2.line.sela.gone' : 'v2.line.sela')];
+      const out = [tx(who === 'fenwick' ? (gone ? 'v2.line.fenwick.gone' : 'v2.line.fenwick') : who === 'edda' ? (gone ? 'v2.line.edda.gone' : 'v2.line.edda') : gone ? 'v2.line.sela.gone' : 'v2.line.sela')];
+      // Lady Edda and the straps (lot L3, EV-10): a sign once a servant asked Hilde about yours, while nothing came of it yet; the sanction, once Cassius is reported
+      if (who === 'edda' && isV2(s)) {
+        if (s.flags.reported && s.flags['culprit-known'] === 'cassius' && ['tamper-found', 'tamper-foiled', 'tamper-suffered'].some((f) => s.facts.includes(f))) out.push(tx('v2.line.edda.justice'));
+        else if (s.facts.includes('armour-asked') && !['tamper-found', 'tamper-foiled', 'tamper-suffered'].some((f) => s.facts.includes(f))) out.push(tx('v2.line.edda.strap'));
+      }
+      return out;
     }
     case 'lio':
       return [tx('line.lio.talk', { rhosk: RIVALS.rhosk.name, ilse: RIVALS.ilse.name, cassius: RIVALS.cassius.name })];

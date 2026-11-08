@@ -90,14 +90,18 @@ export const V2_EVENTS: readonly EventDef[] = [
   },
   {
     id: 'v2-gear-tamper', type: 'targeted', about: 'The attempt: a strap of the player\'s armour cut the night before a bracket bout (the elimination phase\'s targeted sabotage).',
-    // both signs strictly before the attempt (journal Passe VP1: a sign the same night as what it announces gives no time to answer it)
-    slots: ['evening'], when: { all: [HOSTILE, { semi: true }, { firedBefore: 'v2-sign-locker' }, { not: { flagSet: 'tamper-done' } }, { any: [{ day: true, gte: 5, lte: 5 }, { day: true, gte: 7, lte: 7 }, { day: true, gte: 9, lte: 9 }] }] }, cause: 'Cassius\'s grudge, and a bout of the bracket tomorrow',
+    // both signs strictly before the attempt (journal Passe VP1: a sign the same night as what it announces gives no time to answer it); the eve of a bout of the
+    // player's only (lot L3, journal Passe EVL5: on main it fired 13 times in 19 the night before a day the diligent player did not fight, a cut that changed nothing,
+    // and the strongroom is taken the eve of a bout)
+    slots: ['evening'], when: { all: [HOSTILE, { semi: true }, { firedBefore: 'v2-sign-locker' }, { not: { flagSet: 'tamper-done' } }, { any: [{ day: true, gte: 5, lte: 5 }, { day: true, gte: 7, lte: 7 }, { day: true, gte: 9, lte: 9 }] }, { boutTomorrow: true }] }, cause: 'Cassius\'s grudge, and a bout of the bracket tomorrow',
     major: {
       signs: ['v2-sign-armourer', 'v2-sign-locker'],
-      answers: ['have Hilde check your gear on the morning of the bout', 'pay the night watch (Sergeant Hale)', 'report the culprit to the watch', 'confront Cassius on the festival square'],
+      // lot L3 (the operator's EV-10 « Une réponse par lieu, un effet lisible », journal Passe EV2): the lockers' own answer, Clerk Odo's strongroom, in the place of
+      // the quay's paid watch, which guards the forge alone; Lady Edda names the servant's colours once a strap was cut and worn (src/narrative/dialogue.ts)
+      answers: ['leave your gear in Clerk Odo\'s strongroom on the eve', 'have Hilde check your gear on the day of the bout', 'ask Lady Edda whose servant cut it', 'report the culprit to the watch', 'confront Cassius on the festival square'],
     },
     outcomes: [
-      { when: { watch: true }, effects: [{ flag: 'tamper-done', set: true }, { fact: 'tamper-foiled' }, { flag: 'culprit-known', set: 'cassius' }, { pulse: 'security', add: 4 }], text: 'The watch you paid catches a servant of House Dree in the lockers with a knife and a strap half cut. Cassius Dree\'s name is in the report.' },
+      { when: { today: 'strongroom' }, effects: [{ flag: 'tamper-done', set: true }, { fact: 'tamper-foiled' }, { flag: 'culprit-known', set: 'cassius' }, { pulse: 'security', add: 4 }], text: 'In the night someone tries the fighters\' lockers and finds yours empty: your gear sleeps in Clerk Odo\'s strongroom. At dawn Odo picks up a button in House Dree\'s colours by its door.' },
       { effects: [{ flag: 'tamper-done', set: true }, { tomorrow: 'tampered' }, { fact: 'gear-tampered' }], text: 'In the night, someone slips into the fighters\' lockers. Nobody sees what they touched.' },
     ],
   },

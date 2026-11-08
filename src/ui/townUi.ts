@@ -1,5 +1,6 @@
 import { actions, placeName, standings, dusk, type Action, type ActionOption, type GameEvent, type GameState } from '../simulation';
-import { offeredBy, SCOUTED } from '../simulation/roles';
+import { offeredBy, scoutable } from '../simulation/roles';
+import { heardLine, strapCut } from '../simulation/v2intel';
 import { PEOPLE, titleOf } from '../narrative/people';
 import { linesOf } from '../narrative/dialogue';
 import { RIVALS } from '../narrative/roster';
@@ -89,6 +90,7 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
 .pm-foe{display:flex;gap:14px;align-items:flex-start;margin:6px 0}
 .pm-foe-side{grid-column:1 / 3;grid-row:1;min-width:0}
 .pm-foe-side p{margin:6px 0}
+.pm-foe-side .pm-warn{color:var(--ds-accent)}
 .pm-ladder>.pm-sub{margin:0 0 6px}
 .pm-menu .pm-body .pm-btn kbd{order:2;margin-left:auto}
 @media (max-width:1100px){
@@ -138,11 +140,12 @@ body.pm-talking #pm-prompt,body.pm-talking #pm-hints,body.pm-talking #pm-toast,b
 export { costTag, shortLabel };
 
 /** the match sheet's word on the opponent's skills (lot V9): named once the player watched them train; « scouting would tell you more » only of the
- *  rivals one can watch (`SCOUTED`, journal Passe EVL1), the others' skills shown by the bout itself */
+ *  rivals one can watch (`scoutable`: today's game Vessa and Marek, journal Passe EVL1; a version 2 game every rival of the pool since lot L3), the others' skills
+ *  shown by the bout itself */
 export function foeIntel(s: GameState, id: string): string {
   const name = RIVALS[id].name;
   if (s.facts.includes(`scouted:${id}`)) return tx('ui.arena.foeSkills', { name, skills: (V2_FOES[id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') });
-  return SCOUTED.includes(id) ? tx('v2.sheet.unknown', { name }) : tx('v2.sheet.unseen', { name });
+  return scoutable(s).includes(id) ? tx('v2.sheet.unknown', { name }) : tx('v2.sheet.unseen', { name });
 }
 
 export class TownUi {
@@ -410,10 +413,10 @@ export class TownUi {
     const m = playerMatch(s); if (!m) return '';
     const id = opponentOf(m), r = RIVALS[id], url = portraitUrl(id), g = s.v2?.gear;
     const stage = stageName(m);
-    const intel = foeIntel(s, id);
+    const intel = foeIntel(s, id), heard = heardLine(s, id), strap = strapCut(s);
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
     return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
-      + `<p class="pm-sub">${esc(intel)}</p><p class="pm-sub">${esc(gear)}</p>${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
+      + `<p class="pm-sub">${esc(intel)}</p>${heard ? `<p class="pm-sub">${esc(heard)}</p>` : ''}<p class="pm-sub">${esc(gear)}</p>${strap ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.strap'))}</p>` : ''}${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
   }
 
   /** the version 2's gear (lot V3) and the bag: the page of the shops without a keeper (src/ui/wares.ts, UM7-3) */

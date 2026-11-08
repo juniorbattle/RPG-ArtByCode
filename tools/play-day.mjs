@@ -3,7 +3,9 @@
 // the roll, sparring with Orla; the evening), each slot change saved and the page reloaded from the save, the state's fingerprint kept; the
 // second morning reached. Node replays the same actions: same fingerprint. A version 2 game (V2=1) plays its steps through the page's
 // interface and checks the reading of journal Passe EVL1: a theft from the list (Q) said in its band, a square's news after a slot ended there
-// (none after a walk), Orla's challenge tagged « 1 slot » (and « 10 coins » for its stake in coins, Passe EVL3), the journal's causes in words.
+// (none after a walk), Orla's challenge tagged « 1 slot » (and « 10 coins » for its stake in coins, Passe EVL3), the journal's causes in words;
+// and lot L3 (Passe EVL5): Clerk Odo's strongroom on the eve of the first bout and the hooded stranger's word at night, each said in the band,
+// then the board (T) opened on the next opponent with what the town saw of her and the stranger's word, with its day.
 //   node tools/play-day.mjs <outDir> [seed]   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -99,9 +101,12 @@ try {
   // 2. the day, through the game API; each reload goes through the save
   const steps = [{ type: 'talk', who: 'tam' }, { type: 'talk', who: 'hale' }, { type: 'askPapers' }, { type: 'haul' },
     { type: 'move', to: 'forecourt' }, { type: 'talk', who: 'odo' }, { type: 'register' },
+    // lot L3 (journal Passe EVL5): the eve of the first bout, the gear in Clerk Odo's strongroom tonight
+    ...(V2 ? [{ type: 'lockGear' }] : []),
     // the version 2: Orla drills at the training ground (lot V5)
     ...(V2 ? [{ type: 'move', to: 'training' }] : []), { type: 'talk', who: 'orla' }, { type: 'spar' },
-    { type: 'move', to: 'district' }, { type: 'wait' }];
+    // lot L3: the hooded stranger's word of tomorrow's opponent, on the quay at night
+    { type: 'move', to: 'district' }, ...(V2 ? [{ type: 'talk', who: 'stranger' }, { type: 'rumour', src: 'stranger' }] : []), { type: 'wait' }];
   // a version 2 game plays them as a player does, through the page's interface (window.__ui.run: what it shows counts as shown, journal Passe
   // EVL1); today's game through the game API, as before
   const actIn = (x) => (window.__ui && window.__game.state().flags.v2 === true ? window.__ui.run(x) : window.__game.act(x));
@@ -110,6 +115,12 @@ try {
     check(r.ok, `act ${JSON.stringify(a)}${r.ok ? '' : `: ${r.reason}`}`);
     if (!r.ok) continue;
     done.push(a);
+    // lot L3: what Odo and the stranger said stands in the band, as the game wrote it
+    if (V2 && (a.type === 'lockGear' || a.type === 'rumour')) {
+      const said = (r.events ?? []).filter((e) => e.visible).map((e) => e.text), shown = await page.evaluate(() => document.querySelector('#pm-toast')?.textContent ?? document.querySelector('.pm-talk .news')?.textContent ?? '');
+      check(said.length === 1 && shown.includes(said[0].slice(0, 40)), `${a.type}: its words shown (${JSON.stringify(said[0]?.slice(0, 80))} / ${JSON.stringify(shown.slice(0, 80))})`);
+      await page.screenshot({ path: path.join(outDir, `day1-${a.type}.png`) });
+    }
     if (r.reload) {
       const h = await page.evaluate(() => window.__game.hash()), to = await page.evaluate(() => { const g = window.__game.state(); return g; });
       await open('?play=1&vis=0&noreload=1', V2 && to.place !== 'district' ? path.join(outDir, `news-${to.place}-${a.type}.png`) : undefined);
@@ -137,6 +148,16 @@ try {
   const ui = await page.evaluate(() => ({ clock: document.querySelector('#pm-status .clock')?.textContent, where: document.querySelector('#pm-status .where')?.textContent, next: document.querySelector('#pm-status .next')?.textContent }));
   check(new RegExp(`Day 2 / ${V2 ? 10 : 3}`, 'i').test(ui.clock ?? '') && /morning/i.test(ui.where ?? '') && /Vessa Lark/.test(ui.next ?? ''), `the clock and the next deadline: ${ui.clock} · ${ui.where} — ${ui.next}`);
   await page.screenshot({ path: path.join(outDir, 'day2-morning.png') });
+  // lot L3 (journal Passe EVL5): the board (T) opens on the next opponent, Vessa: what the town saw her do since yesterday, and the stranger's word with its day
+  if (V2) {
+    await page.keyboard.press('t');
+    await page.waitForSelector('.pm-two .pm-detail', { timeout: 20000 }).catch(() => {});
+    const body = await page.evaluate(() => document.querySelector('.pm-two .pm-detail')?.textContent ?? '');
+    check(/(Seen|Not seen) in town since yesterday/.test(body), `the board: what the town saw of Vessa (${JSON.stringify(body.match(/(Seen|Not seen) in town[^.]*\./)?.[0] ?? '')})`);
+    check(/Heard from the hooded stranger on day 1: Vessa Lark /.test(body), `the board: the stranger's word of Vessa (${JSON.stringify(body.match(/Heard from[^.]*\./)?.[0] ?? '')})`);
+    await page.screenshot({ path: path.join(outDir, 'day2-board.png') });
+    await page.keyboard.press('Escape');
+  }
   // a version 2 journal (journal Passe EVL1, UM-R3): every day's causes in words, never a code (`action:steal`, `match:r1:player-vessa`)
   if (V2) {
     await page.keyboard.press('j');

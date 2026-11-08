@@ -182,3 +182,15 @@ le vol echoue alors la reputation baisse au bout de 2-3 essaies ... donc que pre
 garde fouille, jusqu'à la restitution chez Hale ; plus de points cachés. L2-11 « Ces trois figures, une tâche à part après la fusion » (Aldric : le chevalier
 n° 07 de la planche des personnages principaux ; Corra : le panneau 2 de G1 ; Ambrose : le panneau 4 de G1). L2-14 « Fusionner après la fiche, essayer
 ensuite ». La suite : L3, l'information et les réponses au sabotage (EV-10, EV-11).
+
+## 10. L3, l'information et les réponses au sabotage (Passe EVL5, 07/11/2026)
+
+Construit derrière `flags.v2` sur la branche `claude/l3-information`, non fusionné. EV-11 : chaque rival de la poule observé là où il s'entraîne et à son heure
+(un créneau, ses compétences sur la fiche de match) ; une rumeur du prochain adversaire, sa santé et sa forme, à la salle de Lio (3 pièces, juste deux fois sur
+trois) ou à l'inconnu sur le quai le soir (8 pièces, jamais faux, les secrets en plus) ; la page du tournoi dit ce que la ville a vu chaque rival faire depuis
+hier, sans ses actes secrets. EV-10 : la garde du quai garde la forge seule, la chambre forte du greffier Odo garde l'équipement la veille d'un combat ; le trafic
+ne part plus que la veille d'un combat du joueur (sur `main`, 14 fois sur 19 sans effet avec le diligent) ; la sangle coupée se lit sur la fiche de match et se
+découvre après le combat ; Lady Edda nomme les couleurs de la maison Dree, le rapport à Hale paie l'équipement. Le jeu par défaut est identique (0 px,
+empreintes, laboratoire au JSON près pour les règles classiques et dynamiques, l'idle v2 et les parties scriptées) ; le diligent v2 garde ses combats et ses
+taux mais plus son JSON (la garde, les trafics sans effet : carte L3-9). La fiche du lot : https://claude.ai/artifact/SJ7N5DK32AqxGMaYKPCxGs
+(`briefs/fiche-l3.html`), douze cartes.

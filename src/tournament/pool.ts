@@ -136,4 +136,10 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
       : tx('duel.lost', { name, close: close ? tx('duel.lostClose') : '' }),
   });
   if (hurt) emit({ kind: 'consequence', id: 'player-injured', cause: `match:${matchId(m)}`, visible: true, text: tx('duel.injured') });
+  // a version 2 game (lot L3, the operator's EV-10 « Une réponse par lieu, un effet lisible », journal Passe EV2): a strap cut in the night and fought on is found
+  // when the gear comes off; Lady Edda can then name the servant's colours (src/narrative/dialogue.ts)
+  if (isV2(s) && s.flags[`tampered:${s.day}`] && !s.flags[`checked:${s.day}`]) {
+    if (!s.facts.includes('tamper-suffered')) s.facts.push('tamper-suffered');
+    emit({ kind: 'consequence', id: 'tamper:suffered', cause: `match:${matchId(m)}`, visible: true, text: tx('v2.tamper.suffered') });
+  }
 }

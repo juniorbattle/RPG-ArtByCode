@@ -14,12 +14,13 @@ import { V2_TOWN_ACTIONS, type V2TownAction } from './v2town';
 import { V2_STORY_ACTIONS, type V2StoryAction } from '../narrative/v2story';
 import { V2_LAW_ACTIONS, type V2LawAction } from './v2law';
 import { V2_BARTER_ACTIONS, type V2BarterAction } from './v2barter';
+import { V2_INTEL_ACTIONS, type V2IntelAction } from './v2intel';
 
 /** The player's actions (journal Passe L1). Each says what it costs (0 = a minor action that takes no slot: moving between places,
  *  talking, consulting, GAMEPLAY § 4.2; 1 = a significant action that takes the slot, § 4.1), when it is refused and why (a readable
  *  reason, the state untouched), and what it changes (`apply` works on the copy `advance` made). */
 
-export type Action = BaseAction | RoleAction | V2SkillAction | V2GearAction | V2TownAction | V2StoryAction | V2LawAction | V2BarterAction;
+export type Action = BaseAction | RoleAction | V2SkillAction | V2GearAction | V2TownAction | V2StoryAction | V2LawAction | V2BarterAction | V2IntelAction;
 type BaseAction =
   | { type: 'move'; to: PlaceId }
   | { type: 'talk'; who: string }
@@ -113,14 +114,15 @@ const BASE: Table = {
   },
   payWatch: {
     list: (st) => (st.place === 'district' && st.slot === 'evening' ? [{ type: 'payWatch' }] : []),
-    // a version 2 game (journal Passe VP1): Hale's men also watch the arena's lockers, the gear's sabotage's answer (src/events/v2catalog.ts)
-    label: (st) => tx(isV2(st) ? 'v2.payWatch.label' : 'payWatch.label'),
+    // the forge alone in every game since lot L3 (the operator's EV-10 « Une réponse par lieu, un effet lisible », journal Passe EV2): a version 2 game's arena
+    // lockers have their own answer, Clerk Odo's strongroom (src/simulation/v2intel.ts); from journal Passe VP1 to lot L3 Hale's men watched both
+    label: () => tx('payWatch.label'),
     cost: () => 0,
     coins: () => 15,
     check: (st) => (st.place !== 'district' ? tx('payWatch.notHere') : st.slot !== 'evening' ? tx('payWatch.dusk') : st.services.forgeWatch ? tx('payWatch.posted') : st.player.coins < 15 ? tx('payWatch.poor') : null),
     apply: (s, _a, _r, emit) => {
       s.player.coins -= 15; s.services.forgeWatch = true; s.town.hale = clamp((s.town.hale ?? 0) + 5, -100, 100);
-      emit({ kind: 'action', id: 'pay-watch', cause: 'action:payWatch', text: tx(isV2(s) ? 'v2.payWatch.log' : 'payWatch.log'), visible: true });
+      emit({ kind: 'action', id: 'pay-watch', cause: 'action:payWatch', text: tx('payWatch.log'), visible: true });
     },
   },
   wait: {
@@ -135,4 +137,4 @@ const BASE: Table = {
 /** every action: the player's own, and those the town's people offer (roles.ts) */
 /** every action: the player's own, those the town's people offer (roles.ts), and the version 2's (listed only in a version 2 game, after
  *  today's: the default game's options keep their order) */
-export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS, ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS };
+export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS, ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS };

@@ -43,7 +43,7 @@ test('each district has its events by day and by night', () => {
   }
 });
 
-test('the gear\'s sabotage: two signs, at least two answers; the strap cut makes the next bout hurt more; Hilde\'s check or the paid watch answer it', () => {
+test('the gear\'s sabotage: two signs, at least two answers; the strap cut makes the next bout hurt more; Hilde\'s check or Clerk Odo\'s strongroom answer it, the quay\'s watch no longer (lot L3)', () => {
   const ev = byId['v2-gear-tamper'];
   assert.ok(ev.major.signs.length >= 2 && ev.major.answers.length >= 2);
   for (const sign of ev.major.signs) assert.ok(byId[sign], sign);
@@ -57,9 +57,19 @@ test('the gear\'s sabotage: two signs, at least two answers; the strap cut makes
   s.facts.push('armour-asked'); s.player.coins = 20;
   const r = G.advance(s, { type: 'checkGear' }); assert.ok(r.ok, r.reason);
   assert.equal(r.events[0].id, 'check:found'); assert.equal(VG.v2Mods(r.state).taken, clean); assert.equal(r.state.flags['culprit-known'], 'cassius'); assert.equal(r.state.player.coins, 15);
-  // the paid watch catches the servant: no strap cut
+  // lot L3 (EV-10 « Une réponse par lieu »): the quay's paid watch guards the forge alone, the strap is cut all the same
   const w = base(); w.services.forgeWatch = true; run(w, ['v2-gear-tamper']);
-  assert.ok(w.facts.includes('tamper-foiled') && !w.flags['tampered:6']);
+  assert.ok(!w.facts.includes('tamper-foiled') && w.flags['tampered:6'] && !w.flags['culprit-known']);
+  // the gear in Clerk Odo's strongroom that night: no strap cut, a House Dree button by its door names the culprit
+  const o = base(); o.flags['strongroom:5'] = true; run(o, ['v2-gear-tamper']);
+  assert.ok(o.facts.includes('tamper-foiled') && !o.flags['tampered:6'] && o.flags['culprit-known'] === 'cassius' && o.flags['tamper-done']);
+  // the strongroom of another night does not keep it
+  const late = base(); late.flags['strongroom:4'] = true; run(late, ['v2-gear-tamper']); assert.ok(late.flags['tampered:6']);
+  // only the eve of a bout of the player's (lot L3: on main it fired the night before a day without one)
+  // (day 7: the player won the semi-final, a finalist fights next on day 10; every other cause holds)
+  const none = base(); none.day = 7; none.tournament.matches.find((m) => m.stage === 'semi').winner = 'player'; assert.equal(run(none, ['v2-gear-tamper']).length, 0);
+  const eve = base(); eve.day = 9; eve.tournament.matches.find((m) => m.stage === 'semi').winner = 'player'; eve.tournament.matches.push({ round: 6, a: 'player', b: 'vessa', winner: null, close: false, day: 10, seen: true, stage: 'final' });
+  assert.equal(run(eve, ['v2-gear-tamper'])[0]?.id, 'v2-gear-tamper', 'the eve of the final');
   // once only
   const again = base(); run(again, ['v2-gear-tamper']); again.day = 7; assert.equal(run(again, ['v2-gear-tamper']).length, 0);
 });

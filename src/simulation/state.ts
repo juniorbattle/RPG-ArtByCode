@@ -137,7 +137,13 @@ export interface V2State {
   warned?: boolean;
   /** the passers-by who no longer hold their piece (bought or stolen: lot L2a, the operator's note on EV-6) */
   passed?: Record<string, number>;
+  /** the last rumour heard of each rival (lot L3, the operator's EV-11 « Observer tout adversaire, rumeurs, activité lisible », journal Passe EV2): what the
+   *  source said, true or not (src/simulation/v2intel.ts), never the truth itself */
+  heard?: Record<string, V2Rumour>;
 }
+/** a rumour as it was told: the day, the source (Lio's room, often right; the hooded stranger, never wrong), the rival's health and form as said, and a
+ *  secret only the stranger tells (they watched you train, they meet a hood at night) */
+export interface V2Rumour { day: number; src: 'lio' | 'stranger'; hp: 'fit' | 'hurt' | 'injured'; form: 'rusty' | 'steady' | 'sharp'; secret?: 'spy' | 'plot' }
 export interface V2Theft { day: number; from: string; item: string; seen: 'caught' | 'found' | null; night?: boolean; settled?: boolean }
 export interface V2Gear { weapon: string; tier: number; armour: string | null; acc: [string | null, string | null]; bag: string[] }
 

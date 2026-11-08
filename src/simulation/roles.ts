@@ -3,7 +3,7 @@ import type { Emit } from './advance';
 import type { ActionDef } from './actions';
 import { PEOPLE, placeOf, presentAt } from '../narrative/people';
 import { RIVALS } from '../narrative/roster';
-import { tx } from '../narrative/text';
+import { tx, type TextKey } from '../narrative/text';
 import { isV2 } from './v2';
 import { V2_SKILL_ACTIONS } from './v2skills';
 import { V2_GEAR_ACTIONS } from './v2gear';
@@ -11,8 +11,9 @@ import { V2_TOWN_ACTIONS } from './v2town';
 import { V2_STORY_ACTIONS } from '../narrative/v2story';
 import { V2_LAW_ACTIONS } from './v2law';
 import { V2_BARTER_ACTIONS } from './v2barter';
+import { V2_INTEL_ACTIONS } from './v2intel';
 
-const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS };
+const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS };
 
 /** The town's people in game roles (choice P4, journal Passe L4): the district's existing characters offer services, quests and clues;
  *  the forecourt's officials and the rivals offer care, sparring and scouting (choice K3: portraits and dialogues). Each action names who
@@ -69,6 +70,18 @@ type T = { [K in RoleAction['type']]: ActionDef<Extract<RoleAction, { type: K }>
 
 /** the rivals the player can watch train (at the forecourt, by day): the match sheet says so of them only (journal Passe EVL1) */
 export const SCOUTED: readonly string[] = ['vessa', 'marek'];
+/** a version 2 game (lot L3, the operator's EV-11 « Observer tout adversaire, rumeurs, activité lisible », journal Passe EV2): every rival of the pool, where
+ *  and when they train (src/narrative/people.ts): Vessa and Marek on the forecourt and Orla and Ilse on the training ground by day, Cassius on the festival
+ *  square at night, Rhosk and Tobin on the training ground by day from day 6; today's game keeps its two */
+export const SCOUTED_V2: readonly string[] = ['vessa', 'marek', 'orla', 'ilse', 'cassius', 'rhosk', 'tobin'];
+export const scoutable = (st: Pick<GameState, 'flags'>): readonly string[] => (isV2(st) ? SCOUTED_V2 : SCOUTED);
+/** what an hour of a rival's practice shows in a version 2 game (« proposé »): the style their skills make; the skills' names go to the match sheet */
+const SCOUT_HABIT: Record<string, TextKey> = {
+  vessa: 'v2.scout.habit.vessa', marek: 'v2.scout.habit.marek', orla: 'v2.scout.habit.orla', ilse: 'v2.scout.habit.ilse',
+  cassius: 'v2.scout.habit.cassius', rhosk: 'v2.scout.habit.rhosk', tobin: 'v2.scout.habit.tobin',
+};
+/** which chain of Cassius the player knows of (lot L3: the report and the confrontation say what was done, the forge or the gear) */
+const forgeKnown = (st: GameState): boolean => ['forge-burned', 'saboteur-caught', 'culprit-named', 'saboteur-fled'].some((f) => st.facts.includes(f));
 
 export const ROLE_ACTIONS: T = {
   // ---------------------------------------------------------------- Mara, the merchant: the shop (open by day), rumours, a good turn
@@ -164,7 +177,8 @@ export const ROLE_ACTIONS: T = {
         emit({ kind: 'action', id: 'informant-names', cause: 'action:buyInfo', text: tx('buyInfo.names'), visible: true });
       } else {
         fact(s, 'informant-warning');
-        emit({ kind: 'action', id: 'informant-warns', cause: 'action:buyInfo', text: (s.competitors.cassius?.relationships.player ?? 0) <= -25 ? tx('buyInfo.warn') : tx('buyInfo.quiet'), visible: true });
+        // a version 2 game (lot L3, EV-10 « Une réponse par lieu »): the two places Cassius can reach, each with its own answer
+        emit({ kind: 'action', id: 'informant-warns', cause: 'action:buyInfo', text: (s.competitors.cassius?.relationships.player ?? 0) <= -25 ? tx(isV2(s) ? 'v2.buyInfo.warn' : 'buyInfo.warn') : tx('buyInfo.quiet'), visible: true });
       }
     },
   },
@@ -177,7 +191,9 @@ export const ROLE_ACTIONS: T = {
     apply: (s, _a, _r, emit) => {
       s.flags.reported = true; s.tournament.points.cassius -= 3; const c = s.competitors.cassius; if (c) c.reputation = clamp(c.reputation - 20);
       s.player.coins += 15; s.player.reputation = clamp(s.player.reputation + 5); add(s, 'hale', 10);
-      emit({ kind: 'consequence', id: 'cassius-sanctioned', cause: 'action:report', text: tx('report.log'), visible: true });
+      // a version 2 game (lot L3, EV-10: « l'enquête mène à l'auteur et à une compensation »): the strap cut is paid for by the tournament's purse when the forge
+      // was never touched
+      emit({ kind: 'consequence', id: 'cassius-sanctioned', cause: 'action:report', text: tx(isV2(s) && !forgeKnown(s) ? 'v2.report.gearLog' : 'report.log'), visible: true });
     },
   },
   // ---------------------------------------------------------------- the forecourt: the registrar, the healer, Orla, the rivals
@@ -214,14 +230,19 @@ export const ROLE_ACTIONS: T = {
   },
   scout: {
     by: (a) => a.who,
-    list: (st) => (st.place === 'forecourt' ? SCOUTED.map((who) => ({ type: 'scout', who })) : []),
-    label: (_, a) => tx('scout.label', { name: RIVALS[a.who].name }),
+    // a version 2 game (lot L3): every rival where they train, in the days they are in the Cité (Rhosk and Tobin from day 6)
+    list: (st) => (isV2(st)
+      ? SCOUTED_V2.filter((who) => placeOf(PEOPLE[who], true) === st.place && (!PEOPLE[who].days || st.day >= PEOPLE[who].days![0])).map((who) => ({ type: 'scout', who }))
+      : st.place === 'forecourt' ? SCOUTED.map((who) => ({ type: 'scout', who })) : []),
+    label: (st, a) => tx(isV2(st) ? 'v2.scout.label' : 'scout.label', { name: RIVALS[a.who].name }),
     cost: () => 1,
-    check: (st, a) => available(st, a.who) ?? (st.facts.includes(`scouted:${a.who}`) ? tx('scout.known', { name: RIVALS[a.who].name }) : null),
+    check: (st, a) => (isV2(st) && !SCOUTED_V2.includes(a.who) ? tx('avail.nobody') : null) ?? available(st, a.who) ?? (st.facts.includes(`scouted:${a.who}`) ? tx('scout.known', { name: RIVALS[a.who].name }) : null),
     apply: (s, a, _r, emit) => {
       fact(s, `scouted:${a.who}`);
       const c = s.competitors[a.who]; if (c) c.relationships.player = clamp((c.relationships.player ?? 0) + (RIVALS[a.who].temper === 'proud' ? -5 : 2), -100, 100);
-      emit({ kind: 'action', id: `scout:${a.who}`, cause: 'action:scout', text: tx('scout.log', { name: RIVALS[a.who].name, habit: RIVALS[a.who].name === 'Marek Varn' ? tx('scout.habitMarek') : tx('scout.habitOther') }), visible: true });
+      // a version 2 game: what each rival's practice shows of the style their skills make (src/combat/v2duel.ts V2_FOES), the skills named on the match sheet
+      const habit = isV2(s) ? tx(SCOUT_HABIT[a.who]) : RIVALS[a.who].name === 'Marek Varn' ? tx('scout.habitMarek') : tx('scout.habitOther');
+      emit({ kind: 'action', id: `scout:${a.who}`, cause: 'action:scout', text: tx(isV2(s) ? 'v2.scout.log' : 'scout.log', { name: RIVALS[a.who].name, habit }), visible: true });
     },
   },
   // ---------------------------------------------------------------- Lantern Row at night (journal Passe L6): the tavern's talk, House Dree
@@ -254,13 +275,14 @@ export const ROLE_ACTIONS: T = {
   confront: {
     by: 'cassius',
     list: (st) => (st.place === 'lanterns' && st.flags['culprit-known'] && !st.flags.confronted ? [{ type: 'confront' }] : []),
-    label: () => tx('confront.label'),
+    // a version 2 game (lot L3): the saboteur of the gear as of the forge, before the festival square's crowd
+    label: (st) => tx(isV2(st) && !forgeKnown(st) ? 'v2.confront.gearLabel' : 'confront.label'),
     cost: () => 0,
     check: (st) => available(st, 'cassius') ?? (!st.flags['culprit-known'] ? tx('confront.noProof') : st.flags.confronted ? tx('confront.heard') : null),
     apply: (s, _a, _r, emit) => {
       s.flags.confronted = true; s.player.reputation = clamp(s.player.reputation + 5);
       const c = s.competitors.cassius; if (c) c.reputation = clamp(c.reputation - 10);
-      emit({ kind: 'consequence', id: 'cassius-shamed', cause: 'action:confront', visible: true, text: tx('confront.log') });
+      emit({ kind: 'consequence', id: 'cassius-shamed', cause: 'action:confront', visible: true, text: tx(isV2(s) && !forgeKnown(s) ? 'v2.confront.gearLog' : 'confront.log') });
     },
   },
 };

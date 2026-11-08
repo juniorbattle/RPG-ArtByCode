@@ -23,6 +23,11 @@ const W: Action = { type: 'wait' };
 const WON: Action = { type: 'fight', outcome: { winner: 'player', playerHp: 120, playerMaxHp: 200, opponentHp: 0, opponentMaxHp: 600, finisher: 'tech' } };
 const LOST: Action = { type: 'fight', outcome: { winner: 'opponent', playerHp: 0, playerMaxHp: 200, opponentHp: 300, opponentMaxHp: 600, finisher: 'heavy' } };
 
+// lot L3 (journal Passe EVL5): the strap cut in the night before the semi-final (seed 1842: Cassius taunted on the festival square the first night, every pool bout won,
+// both signs on day 4, the cut through in second place, the strap cut that night), Lio's room asked of Orla, the semi's opponent, on day 6's morning; then the
+// semi-final fought on it, the next morning on the forecourt (Lady Edda can name the colours)
+const STRAP6: readonly Action[] = [W, W, { type: 'move', to: 'lanterns' }, { type: 'taunt' }, W, W, WON, W, W, W, W, W, WON, W, W, WON, W, { type: 'rumour', src: 'lio' }, W, { type: 'move', to: 'forecourt' }];
+
 export const NAMED_STATES: Record<string, { about: string; script: readonly Action[]; v2?: boolean }> = {
   'day1-morning': { about: 'a new game, the first morning', script: [] },
   'day1-evening': { about: 'the first evening, nothing done', script: [W, W] },
@@ -55,6 +60,9 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   // title, Rhosk in the third place's bout)
   'v2-wanted-night': { about: 'a version 2 thief the watch wants (three marks), on the quay at night', script: [{ type: 'steal', shop: 'mara' }, { type: 'move', to: 'lanterns' }, W, { type: 'steal', shop: 'trinkets' }, { type: 'steal', shop: 'trinkets' }, W, { type: 'move', to: 'district' }, { type: 'pickpocket', who: 'fenwick' }], v2: true },
   'v2-day7-training': { about: 'a version 2 game on day 7, every bout won, at the Training Ground', script: [W, W, W, W, WON, W, W, W, W, W, WON, W, W, WON, W, W, WON, W, { type: 'move', to: 'training' }], v2: true },
+  // lot L3 (journal Passe EVL5): the strap cut, before and after the semi-final
+  'v2-strap-day6': { about: 'a version 2 game on day 6\'s afternoon, on the forecourt: the strap cut in the night before the semi-final, Lio\'s room asked of Orla', script: STRAP6, v2: true },
+  'v2-strap-day7': { about: 'a version 2 game on day 7\'s morning, on the forecourt: the semi-final won on the cut strap, its culprit unknown', script: [...STRAP6, WON, W], v2: true },
 };
 
 export function namedState(name: string, seed = NAMED_SEED, player = 'Ren'): GameState {

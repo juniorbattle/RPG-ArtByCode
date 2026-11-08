@@ -35,7 +35,9 @@ export type Cond =
   | { v2: true } | { today: string } | { semi: true }
   /** the version 2 (journal Passe VP1): a bout today the player does not fight; an event fired in an earlier slot (a sign strictly before what
    *  it announces) */
-  | { others: true } | { firedBefore: string };
+  | { others: true } | { firedBefore: string }
+  /** lot L3 (journal Passe EVL5): the player fights tomorrow (a bout of theirs on the next day, not fought yet) */
+  | { boutTomorrow: true };
 
 export type Effect =
   /** a lasting shift of a pulse field (read by computePulse) */

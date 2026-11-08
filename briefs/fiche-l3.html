@@ -1,0 +1,406 @@
+<title>Savoir et parer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+.state { display: flex; flex-direction: column; gap: 12px; }
+.state h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.state p { margin: 0; max-width: 68ch; }
+.chip { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border-radius: 4px; padding: 1px 7px; white-space: nowrap; }
+.chip.ok { color: var(--rec); background: var(--rec-soft); }
+.chip.thin { color: var(--brass); background: var(--brass-soft); }
+.chip.no { color: var(--cendre); background: color-mix(in srgb, var(--cendre) 14%, var(--surface)); }
+.chip.gap { color: var(--muted); background: color-mix(in srgb, var(--muted) 14%, var(--surface)); }
+.tbl.cov td:nth-child(2), .tbl.cov th { text-align: left; }
+.tbl.cov td:last-child { text-align: left; white-space: normal; color: var(--muted); font-size: 13px; min-width: 16ch; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.fig { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fig b { font-family: var(--font-body); font-weight: 700; font-size: 26px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.fig span { font-size: 13px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · version 2 · étape 5 · lot L3 · Passe EVL5 · 7 novembre 2026</span>
+    <h1>L’information et les réponses au sabotage : le lot L3 construit</h1>
+    <p class="lede">Tes choix EV-11 « Observer tout adversaire, rumeurs, activité lisible » et EV-10 « Une réponse par lieu, un effet lisible » sont construits, derrière la version 2, sur la branche <code>claude/l3-information</code> : chaque rival se regarde là où il s’entraîne, deux sources de rumeurs disent la vérité ou non selon qui parle, la page du tournoi dit ce que la ville a vu, la garde du quai garde la forge et le greffier Odo les vestiaires, la sangle coupée se lit et Lady Edda mène à l’auteur. Douze cartes : choisis, ou écris une note. Rien n’est fusionné avant tes choix.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="state" aria-labelledby="h-state">
+    <h2 id="h-state">Ce qui est construit, et ce que ça change</h2>
+    <p>Trois niveaux d’information sur un rival, chacun tenu à une personne, un lieu, une heure et un prix : gratuit sur la page du tournoi (ce que la ville a vu), quelques pièces chez Lio ou chez l’inconnu (une rumeur), un créneau à l’entraînement (ses compétences). Le jeu par défaut ne change pas : 0 px contre <code>main</code>, mêmes empreintes, laboratoire identique au JSON près sauf le diligent v2 (carte L3-9).</p>
+    <div class="figs">
+      <div class="fig"><b>7 / 7</b><span>rivaux de la poule qu’on peut regarder s’entraîner (avant : Vessa et Marek)</span></div>
+      <div class="fig"><b>2</b><span>sources de rumeurs : Lio, 3 pièces, juste deux fois sur trois ; l’inconnu, 8 pièces, jamais faux</span></div>
+      <div class="fig"><b>27 / 32</b><span>sangles déjouées par la chambre forte d’Odo chez le joueur curieux (50 parties) ; les 5 autres trouvées par Hilde</span></div>
+      <div class="fig"><b>0 px</b><span>d’écart dans le jeu par défaut : dix-huit vues et l’arène, contre <code>main</code> figé, en DEV et sur les paquets</span></div>
+    </div>
+    <div class="tbl cov">
+      <table>
+        <thead><tr><th scope="col">Ton choix</th><th scope="col">Construit</th><th scope="col">Où</th></tr></thead>
+        <tbody>
+          <tr><td>EV-11 · observer tout adversaire annoncé, là où il s’entraîne</td><td><span class="chip ok">fait</span></td><td>les sept rivaux, chacun à son lieu et à son heure, un créneau ; leurs compétences sur la fiche de match</td></tr>
+          <tr><td>EV-11 · acheter une rumeur, vraie ou fausse selon la source</td><td><span class="chip ok">fait</span></td><td>la salle de Lio (place de la halle) et l’inconnu (quai, le soir), sur ton prochain adversaire</td></tr>
+          <tr><td>EV-11 · une part de l’activité hors écran lisible au tableau (T)</td><td><span class="chip ok">fait</span></td><td>« Seen in town since yesterday » pour chaque rival, ses actes publics seulement</td></tr>
+          <tr><td>EV-10 · la garde du quai garde la forge ; les vestiaires ont leur parade</td><td><span class="chip ok">fait</span></td><td>la chambre forte du greffier Odo la veille d’un combat ; « une nuit à la caserne » non construite (L3-5)</td></tr>
+          <tr><td>EV-10 · l’armure trafiquée se remarque à la fiche de match</td><td><span class="chip ok">fait</span></td><td>la sangle coupée dite sur la fiche, Hilde avant la cloche, découverte après le combat</td></tr>
+          <tr><td>EV-10 · l’enquête mène à l’auteur et à une compensation</td><td><span class="chip ok">fait</span></td><td>Lady Edda nomme les couleurs de la maison Dree ; le rapport à Hale paie ton équipement</td></tr>
+          <tr><td>EV-16 · le joueur curieux fait ces actions</td><td><span class="chip ok">fait</span></td><td>il observe, demande à Lio, met son équipement chez Odo, demande à Edda, fait son rapport</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot">Journal : Passe EVL5. Tests : 460 sur 460, vingt et une fautes injectées attrapées. Preuves : <code>play-day</code> en version 2 (la chambre forte, la rumeur de l’inconnu, la page du tournoi) dans le navigateur, rejoué en Node à la même empreinte ; <code>ui-text</code> sur neuf pages à deux tailles. Captures : serveur DEV, graine 1842, états nommés <code>v2-strap-day6</code> et <code>v2-strap-day7</code> (la sangle coupée avant et après la demi-finale).</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot au journal et dans <code>briefs/audit-gameplay-ev1.md</code>, j’applique ce qu’ils changent, je refais les mesures et les preuves touchées, puis je fusionne selon L3-12. Le lot suivant, L4 (les événements et les rivalités, EV-7 à EV-9), part dans sa propre séance.</p>
+    <p class="src">Sources : journal Passes EV1, EV2, EVL4, EVL5 ; <code>briefs/audit-gameplay-ev1.md</code> §§ 2, 3, 6, 7 ; <code>src/simulation/v2intel.ts</code>, <code>roles.ts</code>, <code>actions.ts</code> ; <code>src/events/v2catalog.ts</code>, <code>engine.ts</code> ; <code>src/narrative/dialogue.ts</code> ; <code>src/tournament/pool.ts</code>, <code>lab.ts</code> ; <code>src/ui/board.ts</code>, <code>townUi.ts</code> ; <code>tests/v2-intel.test.mjs</code>, <code>v2-events.test.mjs</code>, <code>cost-tags.test.mjs</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Une entrée par décision. fam : une variable de couleur. shots : captures publiées via `files`.
+// Apostrophes : l’apostrophe typographique ’ seulement dans les chaînes entre ' '.
+const GROUPS = [
+  { id: 'info', title: 'L’information', sub: 'Ton choix EV-11 : observer tout adversaire, des rumeurs, une activité lisible. Trois niveaux, chacun à un lieu, une heure et un prix.', fam: 'var(--astre)', items: [
+    { id: 'L3-1', tag: 'observer', title: 'Observer tout adversaire, là où il s’entraîne',
+      ctx: 'Dans une partie de la version 2, chaque rival de la poule se regarde à l’entraînement pour un créneau, là où il s’entraîne et à son heure : Vessa et Marek sur le parvis de jour, Orla et Ilse au terrain d’entraînement de jour, Cassius sur la place de la halle le soir (il croise le fer avec le maître d’armes de sa maison derrière la scène), Rhosk et Tobin au terrain d’entraînement de jour dès le jour 6. Chacun a sa phrase sur son style ; ses compétences s’écrivent ensuite sur la fiche de match et sur la page du tournoi. Le jeu par défaut garde Vessa et Marek sur le parvis.',
+      shots: [['img/01-cassius-observer.png', 'Cassius sur la place de la halle le soir : « Watch Cassius Dree at practice », un créneau']], one: true,
+      rec: 'Garder : tout adversaire, chacun à sa place et à son heure, pour un créneau ; Cassius le soir seulement donne une raison d’aller sur la place la nuit.',
+      opts: ['Garder', 'Seulement le prochain adversaire annoncé', 'Revenir à Vessa et Marek'], recIdx: 0,
+      src: 'src/simulation/roles.ts (SCOUTED_V2, scout) ; src/narrative/text/en.ts (v2.scout.*) ; src/ui/townUi.ts (foeIntel)' },
+    { id: 'L3-2', tag: 'rumeurs', title: 'Deux sources de rumeurs, vraies ou fausses selon la source',
+      ctx: 'Une rumeur porte sur ton prochain adversaire. Deux sources, une fois par jour chacune, sans créneau : la salle de Lio, sur la place de la halle à toute heure, une tournée à 3 pièces, juste deux fois sur trois (quand elle se trompe, elle se trompe sur la santé et sur la forme) ; l’inconnu encapuchonné, sur le quai le soir, 8 pièces, jamais faux, et lui seul dit aussi les secrets du rival (il t’a regardé t’entraîner, il rencontre un homme encapuchonné la nuit). La dernière rumeur entendue se lit sur la page du tournoi et sur la fiche de match, avec sa source et son jour.',
+      shots: [['img/02-lio-rumeur.png', 'Lio : « Buy the room a round and ask about Vessa Lark · the room is right two times in three », 3 pièces'], ['img/03-inconnu-rumeur.png', 'L’inconnu sur le quai le soir : « Vessa Lark is whole, and is still rusty… And they have been watching you train. »']],
+      table: { head: ['50 parties, joueur curieux', 'Par partie'], rows: [['Rumeurs demandées à la salle de Lio', '3,4'], ['Leur coût', '10 pièces']], foot: 'Le curieux demande à Lio la veille de chaque combat. Un test tire 900 rumeurs de Lio : 66 à 67 % justes.' },
+      rec: 'Garder : une source bon marché qui peut mentir, une source chère qui ne ment pas, chacune à sa place et à son heure.',
+      opts: ['Garder', 'Lio plus souvent faux (une fois sur deux)', 'Une seule source, toujours juste'], recIdx: 0,
+      src: 'src/simulation/v2intel.ts (RUMOUR, rumourOf, rumour) ; src/ui/board.ts ; src/ui/townUi.ts (matchSheetHtml)' },
+    { id: 'L3-3', tag: 'forme', title: 'Ce que dit une rumeur : la santé et la forme',
+      ctx: 'La santé : entier, blessé, gravement blessé (la page du tournoi montrait déjà « hurt », la rumeur dit combien). La forme vient de la préparation que le rival a gagnée hors écran (entraînements, achats), qui rend ses coups jusqu’à un quart plus forts : « still rusty » (moins d’un dixième), « in good form », « as sharp as a new blade » (de 18 % à un quart). Pas de chiffre : c’est une rumeur, et la salle de Lio peut se tromper.',
+      rec: 'Garder les mots, sans chiffre : la rumeur oriente la préparation (une armure, Rempart, un soin) sans faire de la fiche un tableau.',
+      opts: ['Garder les mots, sans chiffre', 'Ajouter le chiffre (« jusqu’à un quart plus fort »)', 'La forme seule, sans la santé'], recIdx: 0,
+      src: 'src/simulation/v2intel.ts (formOf) ; src/tournament/pool.ts (rivalMods : 1 + préparation ÷ 400)' },
+    { id: 'L3-4', tag: 'activité', title: 'Ce que la ville a vu, sur la page du tournoi',
+      ctx: 'La page du tournoi (T) dit, pour chaque rival, ce que la ville l’a vu faire depuis hier : s’entraîner (et combien de fois), acheter de l’équipement, se reposer, boire avec un autre, échanger des mots avec un autre. Ce qu’il fait en secret (te regarder t’entraîner, rencontrer un homme encapuchonné) n’y paraît jamais : seul l’inconnu le dit. C’est une lecture du journal caché des rivaux : rien d’autre ne change dans le jeu.',
+      shots: [['img/04-tableau.png', 'La page du tournoi au jour 6 : Orla vue « drilled 3 times, drank with Vessa Lark », et la rumeur de Lio']], one: true,
+      rec: 'Garder : la ville voit ce qui se fait en public, les secrets restent à acheter.',
+      opts: ['Garder', 'Seulement les entraînements', 'Retirer'], recIdx: 0,
+      src: 'src/simulation/v2intel.ts (seenInTown) ; src/tournament/offscreen.ts ; src/ui/board.ts' },
+  ]},
+  { id: 'sabotage', title: 'Les réponses au sabotage', sub: 'Ton choix EV-10 : une réponse par lieu, un effet lisible, une enquête qui mène à l’auteur et à une compensation.', fam: 'var(--ronce)', items: [
+    { id: 'L3-5', tag: 'un lieu, une réponse', title: 'La garde du quai garde la forge ; Odo garde les vestiaires',
+      ctx: 'Avant, la garde payée sur le quai (15 pièces le soir) gardait la forge et aussi les vestiaires de l’arène. Elle ne garde plus que la forge, dans tous les jeux. Les vestiaires ont leur parade : le greffier Odo, qui avait trouvé les casiers ouverts (le second signe), garde ton équipement dans sa chambre forte la veille d’un combat, 5 pièces, sur le parvis de jour, sans créneau ; le jour 5 aussi, puisque la coupe donne un combat à tous le jour 6. Déjouée, la tentative laisse un bouton aux couleurs de la maison Dree : l’auteur est connu. Ta recommandation proposait aussi « une nuit à la caserne » : non construite.',
+      shots: [['img/05-odo-chambre.png', 'Odo : « Leave your gear in Clerk Odo’s strongroom tonight », 5 pièces'], ['img/06-odo-bandeau.png', '« One key, and it hangs on my belt. You have it back at the bell. »']],
+      table: { head: ['50 parties, joueur curieux', 'Avant', 'Après'], rows: [['Tentatives sur l’équipement', '0,38', '0,64'], ['Déjouées (la garde avant, Odo après)', '0,04', '0,54', 1], ['Trouvées par Hilde le jour même', '0,18', '0,10'], ['Subies', '0', '0']],
+        foot: 'Le curieux ne paie plus la garde après un signe aux vestiaires : il va chez Odo. Les tentatives montent surtout pour cela : la garde relevait la sécurité de la nuit, ce qui retardait le second signe (0,46 tentative par partie s’il la payait encore).' },
+      rec: 'Garder Odo, 5 pièces : la parade est au lieu du danger, chez celui qui l’a vu.',
+      opts: ['Garder Odo (5 pièces)', 'Une nuit à la caserne à la place (gratuite, elle prend le soir)', 'Les deux'], recIdx: 0,
+      src: 'src/simulation/v2intel.ts (lockGear, boutTomorrow) ; src/events/v2catalog.ts (v2-gear-tamper) ; src/simulation/actions.ts (payWatch)' },
+    { id: 'L3-6', tag: 'cohérence', title: 'Le trafic d’armure seulement la veille d’un de tes combats',
+      ctx: 'Relevé sur main : avec le joueur diligent, la sangle était coupée dans 19 parties sur 50, dont 14 la veille d’un jour sans combat pour lui (le jour 9, quand il n’est pas en finale) : une sangle coupée qui ne changeait rien. Elle ne l’est plus que la veille d’un combat du joueur, aux mêmes soirs qu’avant (jours 5, 7 ou 9) : 5 parties sur 50 avec le diligent, chaque fois une vraie menace. Pour un finaliste, Cassius vise la finale plutôt qu’un jour 8 sans combat.',
+      rec: 'Garder la correction : un sabotage a toujours une cible, et la chambre forte se prend la veille d’un combat.',
+      opts: ['Garder la correction', 'Revenir comme avant'], recIdx: 0,
+      src: 'src/events/v2catalog.ts (v2-gear-tamper : boutTomorrow) ; src/events/engine.ts ; src/events/types.ts' },
+    { id: 'L3-7', tag: 'effet lisible', title: 'La sangle coupée se lit sur la fiche de match',
+      ctx: 'Une sangle coupée dans la nuit et pas recousue fait 15 % de dégâts reçus en plus ce jour-là. Elle se dit maintenant sur la fiche de match, en couleur d’accent, avec sa réponse : Hilde peut la recoudre l’après-midi même avant la cloche (5 pièces, une action mineure). Combattue telle quelle, elle se découvre après le combat, en ôtant l’équipement.',
+      shots: [['img/07-fiche-sangle.png', 'La fiche de la demi-finale : la rumeur de Lio sur Orla, puis « A strap of your gear has been cut almost through… »']], one: true,
+      rec: 'Garder : l’effet se lit au moment où l’on peut encore y répondre.',
+      opts: ['Garder', 'Aussi au réveil, dans le bandeau du matin', 'Seulement après le combat'], recIdx: 0,
+      src: 'src/simulation/v2intel.ts (strapCut) ; src/ui/townUi.ts (matchSheetHtml) ; src/tournament/pool.ts (applyPlayerDuel)' },
+    { id: 'L3-8', tag: 'enquête', title: 'Lady Edda, l’auteur et la compensation',
+      ctx: 'Lady Edda, sur le parvis de jour, a perdu son fils en qualification sur une sangle qui a lâché. Dès le premier signe (un serviteur a questionné Hilde sur tes sangles), elle le dit : un signe de plus, en paroles. Si tu combats sur la sangle coupée sans savoir qui l’a fait, lui parler suffit : elle reconnaît la coupe, celle de son fils, et les couleurs de la maison Dree ; l’auteur est connu. Le rapport au sergent Hale donne la compensation : Cassius perd trois points de poule, la bourse du tournoi te paie 15 pièces pour ton équipement ; Edda le sait ensuite. La confrontation sur la place de la halle a ses mots pour la sangle. Son fils est Ser Aldric Venn : le récit dit désormais que la main de Cassius l’a sorti des qualifications (« proposé »).',
+      shots: [['img/08-edda-signe.png', 'Edda le jour 6 : « A servant asked Hilde about your straps? One asked about my son’s… »'], ['img/09-edda-temoin.png', 'Edda le jour 7, après la demi-finale : « The servant who asked about his straps wore House Dree’s colours. Tell the watch. »']],
+      rec: 'Garder : l’enquête passe par une personne du parvis et par le fil d’Aldric, déjà là.',
+      opts: ['Garder', 'Sans Edda : Hilde seule nomme l’auteur', 'Edda, sans le lien avec Cassius pour Aldric'], recIdx: 0,
+      src: 'src/narrative/dialogue.ts (onTalk, linesOf : edda) ; src/simulation/roles.ts (report, confront) ; src/narrative/generics.ts (aldric)' },
+  ]},
+  { id: 'suite', title: 'La mesure et la suite', sub: 'Ce que le laboratoire dit, ce que je laisse à L4, la fusion.', fam: 'var(--voile)', items: [
+    { id: 'L3-9', tag: 'laboratoire', title: 'Le diligent v2 n’est plus identique au JSON près',
+      ctx: 'La consigne voulait le laboratoire identique au JSON près pour le diligent v2. C’est vrai des règles classiques et dynamiques, du joueur idle v2 et des trois parties scriptées. Pour le diligent v2, ce n’est plus possible : il payait la garde chaque soir, et elle gardait les vestiaires. Ses résultats restent identiques dans les 50 parties (points, rang, victoires, blessures, forge, taux) ; changent la phrase de la garde (dans chaque partie, donc l’empreinte), 14 sangles coupées sans effet qui disparaissent (L3-6), et une sangle trouvée par Hilde au lieu de la garde.',
+      rec: 'Accepter l’écart : il vient de ton choix EV-10, et les combats du diligent sont les mêmes.',
+      opts: ['Accepter l’écart', 'La garde sur les deux lieux pour un joueur qui la paie chaque soir (revient en partie sur EV-10)'], recIdx: 0,
+      src: 'node tools/tournament-lab.mjs --rules=v2 --policy=diligent --seeds=1..50, contre main figé (bc37056)' },
+    { id: 'L3-10', tag: 'curieux', title: 'Le joueur curieux, avant et après',
+      ctx: 'Le curieux fait maintenant ce lot : il regarde son prochain adversaire là où il s’entraîne (2,1 fois par partie, 1,0 avant), demande à Lio la veille de chaque combat, va chez Odo après un signe aux vestiaires, demande à Edda et fait son rapport. Sur les graines 1 à 50 ses blessures doublent (0,50 à 1,04 par partie) ; sur deux autres jeux de 50 graines, non (0,72 puis 0,68 ; 0,82 puis 0,70) : c’est le bruit d’une politique dont chaque pièce dépensée change la suite (la nuit où Corra l’attend, la forge brûlée). Les règles du lot jouées avec l’ancienne politique redonnent les chiffres de main.',
+      table: { head: ['Curieux, graines', 'main : victoires · qualifié', 'branche'], rows: [['1 à 50', '54,9 % · 68 %', '51,0 % · 74 %'], ['51 à 100', '53,6 % · 62 %', '53,3 % · 68 %'], ['101 à 150', '56,5 % · 84 %', '56,6 % · 76 %']], foot: 'Le diligent, sur ces trois jeux de graines : victoires, qualifications, finales et blessures identiques à main.' },
+      rec: 'Garder le curieux ainsi : il exerce chaque action du lot, et ses écarts restent dans son bruit.',
+      opts: ['Garder', 'Sans les rumeurs (elles coûtent 10 pièces par partie)'], recIdx: 0,
+      src: 'src/tournament/lab.ts (curiousV2) ; node tools/tournament-lab.mjs --rules=v2 --policy=curious' },
+    { id: 'L3-11', tag: 'L4', title: 'Hale, Corra et Ambrose, laissés pour L4',
+      ctx: 'Le lot L2 laissait à L3 de quoi faire parler le sergent Hale (son registre, une rumeur), Corra Dunmere et Frère Ambrose (des yeux en ville la nuit). Je ne les ai pas ajoutés : les deux sources de ta recommandation (Lio, l’inconnu) suffisent à « vraie ou fausse selon la source », et trois voix de plus brouillaient la règle. Ils vont bien à L4 (EV-9 « Chaque rival se souvient ; deux autres agissent », un rival aidé qui avertit).',
+      rec: 'Les garder pour L4.',
+      opts: ['Les garder pour L4', 'Les ajouter à L3 avant de fusionner'], recIdx: 0,
+      src: 'journal Passe EVL4 (« Ce qui revient à L3 ») ; briefs/audit-gameplay-ev1.md § 7' },
+    { id: 'L3-12', tag: 'suite', title: 'Fusionner, puis ton essai',
+      ctx: 'La branche claude/l3-information est poussée, non fusionnée. Après tes choix, je les applique, je refais les preuves touchées, puis je fusionne dans main. Ton essai : npm run dev, puis /?play=1&new=1&v2=1. Le lot suivant, L4 (les événements et les rivalités, EV-7 à EV-9), part dans sa propre séance.',
+      rec: 'Fusionner après la fiche, essayer ensuite, comme pour L2 (L2-14).',
+      opts: ['Fusionner après la fiche, essayer ensuite', 'Essayer avant de fusionner'], recIdx: 0,
+      src: 'AGENTS.md (règle des branches) ; journal Passe EVL4' },
+  ]},
+];
+
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

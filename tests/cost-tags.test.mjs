@@ -53,6 +53,9 @@ function rule(st, a) {
     case 'upgradeWeapon': { const tier = Math.min(3, st.v2.gear.tier + (st.player.items.includes('tempered-blade') ? 1 : 0)); return tier >= 3 ? 0 : [10, 25, 40][tier]; }
     case 'buySkill': return Math.round({ t3: 45, k_sunder: 40, k_iron: 35 }[a.skill] * (st.player.reputation >= 40 ? 0.9 : 1) * (st.flags[`lesson:${st.day}`] ? 0.8 : 1));
     case 'checkGear': return 5;
+    // lot L3 (journal Passe EVL5): a rumour of the next opponent, a round at Lio's 3, the stranger's word 8; Clerk Odo's strongroom on the eve of a bout 5
+    case 'rumour': return { lio: 3, stranger: 8 }[a.src];
+    case 'lockGear': return 5;
     default: return 0;
   }
 }
@@ -93,7 +96,7 @@ test('every option\'s coins are the game\'s price, and what its action really ta
     else if (o.ok) { assert.equal(o.coins, spent(st, a), `${o.label}: its apply`); seen.add(`${a.type}:${a.type === 'buy' ? a.item + ':' : ''}${o.coins}`); n++; }
   }
   // the sweep reaches every paid action, both prices of the healer and of the bellows, and Mara's changed prices
-  for (const k of ['buy:whetstone:8', 'buy:salve:10', 'buy:imported-blade:30', 'buy:whetstone:10', 'buy:imported-blade:38', 'temper:10', 'buyInfo:10', 'payWatch:15', 'heal:8', 'heal:0', 'repair:12', 'repair:6', 'restock:0']) {
+  for (const k of ['buy:whetstone:8', 'buy:salve:10', 'buy:imported-blade:30', 'buy:whetstone:10', 'buy:imported-blade:38', 'temper:10', 'buyInfo:10', 'payWatch:15', 'heal:8', 'heal:0', 'repair:12', 'repair:6', 'restock:0', 'rumour:3', 'rumour:8', 'lockGear:5']) {
     assert.ok(seen.has(k), `the sweep never offers ${k}: ${[...seen].sort().join(' ')}`);
   }
   assert.ok(n > 500, `${n} options applied`);

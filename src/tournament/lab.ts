@@ -14,9 +14,10 @@ import { marksOf, wanted } from '../simulation/v2law';
 import { argChance, PASSERS } from '../simulation/v2barter';
 import { pocketChance, stealChance } from '../simulation/v2town';
 import { SHOPS, type ShopId } from '../simulation/gear';
-import { SCOUTED } from '../simulation/roles';
+import { scoutable } from '../simulation/roles';
+import { boutTomorrow, nextOpponent, RUMOUR } from '../simulation/v2intel';
 import { opponentOf } from './pool';
-import { PEOPLE } from '../narrative/people';
+import { PEOPLE, placeOf } from '../narrative/people';
 import type { PlaceId } from '../simulation/state';
 
 /** The TournamentLab's library (TOURNAMENT_MASTER_CONTRACT § 13, journal Passe L2; the CLI is tools/tournament-lab.mjs): play whole games
@@ -72,7 +73,9 @@ export const POLICIES: Record<string, Policy> = {
   },
   /** the curious player (lot L2a, the operator's EV-16 « Ajouter le joueur curieux au laboratoire », journal Passe EVL2): the diligent's care, and the
    *  town's actions a person tries: bargains when buying, steals while Hale's ledger is clean, challenges and brings what it learns, pays the watch only
-   *  after a sign, settles with Sergeant Hale when the watch wants it; a version 2 game only (today's game plays the diligent) */
+   *  after a sign, settles with Sergeant Hale when the watch wants it; a version 2 game only (today's game plays the diligent). Lot L3 (EV-10, EV-11, journal
+   *  Passe EVL5): the watch after a sign at the forge only, Clerk Odo's strongroom on the eve of a bout after a sign at the lockers, a rumour of tomorrow's opponent
+   *  from Lio's room, its next opponent watched wherever they train, Lady Edda asked whose servant cut a strap it fought on, the culprit reported to Hale */
   curious: { name: 'curious', skill: 0.6, choose: (st) => (isV2(st) ? curiousV2(st) : POLICIES.diligent.choose(st)) },
 };
 
@@ -106,7 +109,15 @@ function curiousV2(st: GameState): Action {
   for (const k of learnt) { const i = (kit.loadout as string[]).findIndex((id) => SKILL_BOOK[id]?.source === 'start' && SKILL_BOOK[id]?.family === k.family); if (i >= 0) { const four = [...kit.loadout] as string[]; four[i] = k.id; return { type: 'setLoadout', skills: four }; } }
   // the watch wants a word: settle with Sergeant Hale
   if (wanted(st)) { const r = at('district', { type: 'restitute' }); if (r) return r; }
-  const signs = (['lamp-oil', 'loiterer'].some((f) => st.facts.includes(f)) && st.services.forge === 'open' && !st.facts.includes('saboteur-caught')) || (['armour-asked', 'locker-open'].some((f) => st.facts.includes(f)) && !st.flags['tamper-done']);
+  // lot L3 (EV-10 « Une réponse par lieu »): the forge's signs send it to Hale's watch on the quay, the gear's to Clerk Odo's strongroom on the eve of a bout
+  const forgeSigns = ['lamp-oil', 'loiterer'].some((f) => st.facts.includes(f)) && st.services.forge === 'open' && !st.facts.includes('saboteur-caught');
+  const gearSigns = ['armour-asked', 'locker-open'].some((f) => st.facts.includes(f)) && !st.flags['tamper-done'];
+  const strongroom = (): Action | null => (gearSigns && boutTomorrow(st) ? at('forecourt', { type: 'lockGear' }) : null);
+  // the investigation and its compensation (EV-10): a strap cut and fought on, Lady Edda names the colours; a culprit known, reported to Sergeant Hale
+  const investigate = (): Action | null => (st.facts.includes('tamper-suffered') && !st.flags['culprit-known'] ? at('forecourt', { type: 'talk', who: 'edda' }) : null)
+    ?? (st.flags['culprit-known'] && !st.flags.reported && !st.facts.includes('saboteur-caught') ? at('district', { type: 'report' }) : null);
+  // a rumour of tomorrow's opponent from Lio's room (EV-11), a purse kept for the healer
+  const rumour = (): Action | null => (boutTomorrow(st) && nextOpponent(st) && st.player.coins >= RUMOUR.lio.coins + 8 ? at('lanterns', { type: 'rumour', src: 'lio' }) : null);
   // a passer-by's piece, the best argument first, then its price (a purse kept for the healer)
   const barter = (): Action | null => {
     for (const who of Object.keys(PASSERS)) {
@@ -127,7 +138,7 @@ function curiousV2(st: GameState): Action {
   };
   // the muscle a robbed owner paid waits on the quay at night (lot L2b): faced when the player is whole, else paid off when the purse allows
   const reprisal = (): Action | null => (!st.v2?.reprisal ? null : (hurt && st.player.coins >= 30 ? at('district', { type: 'payMuscle' }) : null) ?? at('district', { type: 'faceMuscle' }) ?? at('district', { type: 'payMuscle' }));
-  if (st.slot === 'evening') return first(reprisal, () => (signs ? at('district', { type: 'payWatch' }) : null), barter, steal, () => (hurt && has(st, { type: 'rest' }) ? { type: 'rest' } : null)) ?? fallback(st, 0.6);
+  if (st.slot === 'evening') return first(reprisal, () => (forgeSigns ? at('district', { type: 'payWatch' }) : null), investigate, barter, steal, () => (hurt && has(st, { type: 'rest' }) ? { type: 'rest' } : null)) ?? fallback(st, 0.6);
   if (bout) return fallback(st, 0.6);
   if (hurt) { const h = at('forecourt', { type: 'heal' }); if (h) return h; if (has(st, { type: 'rest' })) return { type: 'rest' }; }
   const boutToday = st.tournament.matches.some((m) => m.day === st.day && (m.a === PLAYER_ID || m.b === PLAYER_ID));
@@ -148,9 +159,9 @@ function curiousV2(st: GameState): Action {
     for (const who of ['orla', 'ilse', 'vessa', 'marek', 'cassius', 'rhosk', 'tobin', 'aldric', 'ambrose', 'lucan', 'piers', 'kell']) { const a = at(PEOPLE[who].v2at?.place ?? PEOPLE[who].place, { type: 'challenge', who, stake }); if (a) return a; }
     return null;
   };
-  // watches its next opponent train when it can
-  const scout = (): Action | null => { const m = st.tournament.matches.find((x) => x.day > st.day && !x.winner && (x.a === PLAYER_ID || x.b === PLAYER_ID)), o = m ? opponentOf(m) : null; return o && SCOUTED.includes(o) ? at('forecourt', { type: 'scout', who: o }) : null; };
-  return first(buy, barter, steal, challenge, scout, () => at('training', { type: 'train' })) ?? fallback(st, 0.6);
+  // watches its next opponent at practice when it can: wherever they train since lot L3 (EV-11 « Observer tout adversaire »)
+  const scout = (): Action | null => { const m = st.tournament.matches.find((x) => x.day > st.day && !x.winner && (x.a === PLAYER_ID || x.b === PLAYER_ID)), o = m ? opponentOf(m) : null; return o && scoutable(st).includes(o) ? at(placeOf(PEOPLE[o], true), { type: 'scout', who: o }) : null; };
+  return first(strongroom, investigate, buy, barter, steal, rumour, challenge, scout, () => at('training', { type: 'train' })) ?? fallback(st, 0.6);
 }
 
 /** a scripted game (journal Passe L5): per slot, the actions to try in order (each once, when the state allows it), then the slot's end
