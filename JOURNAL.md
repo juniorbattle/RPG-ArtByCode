@@ -411,6 +411,42 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une matière qui n'a aucune couleur propre (les cheveux de Ren) se prend par une zone et des groupes ; chaque règle ajoutée se vérifie sur les images qu'elle fait tomber, et un contour pris avec elle ne doit pas étirer sa plage.
 - Les yeux d'un sprite peuvent être peints avec les couleurs des cheveux : la bande qui les protège ne protège que leurs couleurs.
 
+## Passe PR4 — La fiche du look relue : six sur six à la recommandation ; Ren hâlé, aux cheveux acier et à la cape ivoire en production derrière la version 2 ; la branche fusionnée (2026-11-08)
+
+### Les choix de l'opérateur, mot pour mot (six sur six, cliqués le 2026-11-08 entre 14 h 21 et 14 h 22 UTC, aucune note ; l'opérateur : « Sheet filled »)
+| Carte | Ce qu'elle demandait | Choix |
+|---|---|---|
+| PR3-CHEVEUX | La teinte des cheveux gris | « Acier (gris moyen) » |
+| PR3-PEAU | La peau hâlée | « Hâlée, comme montrée » |
+| PR3-CAPE | La cape ivoire | « Ivoire, comme montrée » |
+| PR3-MAREK | Ren et Marek, deux têtes grises au premier duel | « Bien ainsi » |
+| PR3-RESTES | Les imperfections restantes | « En production maintenant, les corriger ensuite » |
+| PR3-PROD | Ren en production derrière la version 2 | « En production » |
+
+- Les six choix suivent la recommandation de leur carte.
+
+### Fait — [OK]
+- `art-lab/characters/variants/hero.json` approuvé : `approved`, l'approbation et les six choix cités, le look `tan` / `steel` / `ivory`, les empreintes des cartes (`hero-x2-v4` `195fecaa`, la feuille de combat `f6213ce0`). Les rampes `grey` et `silver` restent dans le fichier, pour mémoire.
+- `tests/hero-look.test.mjs` épingle les choix : le look, les rampes acier et ivoire telles que la fiche les montrait, l'approbation, les empreintes égales à celles des cartes, la production qui applique le look aux deux feuilles. 11 tests.
+- `AGENTS.md` : « Art production principle » (le look de Ren, ses fichiers, son approbation), « Commands » (l'outil, le test), le paramètre `herolook`.
+
+### Preuves après l'approbation — [OK]
+- Serveurs par `preview_start` : la branche et `main` figé (`6316327`) en DEV (`:5301`, `:5302`), leurs paquets de production par `vite preview` (`:5306`, `:5307`).
+- **Le jeu par défaut, inchangé** : en DEV, la ville de nuit et à midi, la partie par défaut, l'arène par défaut, à 0 px contre `main` figé ; sur les deux paquets, la ville de nuit et à midi et l'arène par défaut, à 0 px.
+- **La version 2 sans paramètre** : la ville v2 (graine 1842, premier matin) change, Ren seul (11 691 px) ; elle égale à 0 px la revue de la fiche (`herolook=tan.steel.ivory`) : la production applique le look approuvé, exactement. Le duel v2 change, Ren, son reflet et son visage du HUD (8 563 px), en DEV comme sur les paquets.
+- **Une partie v2 jouée et rejouée en Node** : `play-flow` `V2=1` (gagné) sur les deux paquets : `f3974c5eedc75e97` des deux côtés, aucune erreur de page ; `play-day` `V2=1` (DEV) sur la branche : tous les contrôles passent, Node rejoue à `456b834c7af247e4`, l'empreinte de la Passe EVL7 (le look ne touche pas l'état du jeu). La même série sur `main` figé a été arrêtée avec ses serveurs (limite d'usage) : comparaison faite contre l'empreinte consignée.
+- `npm run typecheck`, `npm run art:validate` (0 erreur), `tests/hero-look.test.mjs` 11 sur 11.
+
+### La fusion
+- La branche `claude/ren-unique` (Passes PR3, PR4) est fusionnée en avance rapide dans `main` ; `main` est poussé ; la branche supprimée, locale et distante. La séance des peaux des rivaux (`claude/rivaux-peaux`, non fusionnée) rejouera sur `main` : son crochet `tone` dans `BakedCast.ts` est le même que celui de ce lot (convenu par message, Passe PR3).
+
+### Ce qui suit
+- PR3-RESTES « En production maintenant, les corriger ensuite » : une retouche à la main, plus tard, si l'opérateur voit en jeu une pointe de frange foncée sur l'œil, un reflet hâlé sur le cuir ou le contour bleu nuit de la cape.
+- L'essai en jeu de l'opérateur : `npm run dev`, puis `/?play=1&new=1&v2=1`.
+
+### Pensée
+- Une approbation se prouve par le chemin du joueur : la ville d'une partie v2 sans paramètre doit égaler, au pixel près, la revue que la fiche montrait ; le jeu par défaut doit rester à 0 px, en DEV et sur les paquets.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -479,7 +515,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Les cinq citadins sont en production (Passe CA7). Ren (39 images) et les sept rivaux (Marek 32, Vessa 34, Orla 29, Cassius 34, Ilse 32, Rhosk 32, Tobin 27) sont en production dans les duels de la version 2 (Passes CX2, CX4), chacun sous sa figure, plus aucun art de Marek emprunté. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2. **Passe SA1** : le fond gris vu en combat était l'image `strike.1` de Marek (le fond vert de sa planche gardé opaque par la chaîne) ; chaîne corrigée, feuille reconstruite, toutes les feuilles de production mesurées propres (`tests/sheet-clean.test.mjs`) ; la feuille corrigée de Marek approuvée par l'opérateur (« Approuver en production »).
-- **Ren unique (Passes PR1, PR2)** : la personnalisation demandée par l’opérateur, classée par coût sur la fiche https://claude.ai/artifact/JjQFRHBVUx6qg993hh9E8E, est remplacée par un seul Ren, mot pour mot « par defaut je veux que le personnage est une couleur mate de peau des cheveux  hâlée et gris  et une cape soit aesoiaw ou ivoire », puis « Yes, ivory cloak » : peau hâlée, cheveux gris, cape ivoire, variante fixée derrière la version 2, le jeu par défaut inchangé. **Le lot est fait derrière la version 2, la fiche courte publiée (Passe PR3, branche `claude/ren-unique`)** : https://claude.ai/artifact/5AaWY6E5fut3Ye3UTvnGXv, **à relire** (la teinte des cheveux, les restes, la production) ; rien en production avant. La personnalisation (page de création, coupes, traits, arme) n’est pas construite ; ses choix sont consignés en Passe PR2.
+- **Ren unique (Passes PR1, PR2)** : la personnalisation demandée par l’opérateur, classée par coût sur la fiche https://claude.ai/artifact/JjQFRHBVUx6qg993hh9E8E, est remplacée par un seul Ren, mot pour mot « par defaut je veux que le personnage est une couleur mate de peau des cheveux  hâlée et gris  et une cape soit aesoiaw ou ivoire », puis « Yes, ivory cloak » : peau hâlée, cheveux gris, cape ivoire, variante fixée derrière la version 2, le jeu par défaut inchangé. **En production derrière la version 2 (Passes PR3, PR4)** : peau hâlée, cheveux acier, cape ivoire (six choix sur six à la recommandation) ; reste, plus tard, la retouche des petits restes (PR3-RESTES) et l'essai en jeu de l'opérateur. La personnalisation (page de création, coupes, traits, arme) n’est pas construite ; ses choix sont consignés en Passe PR2.
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantissait 336 images et en porte 322 (dix feuilles,

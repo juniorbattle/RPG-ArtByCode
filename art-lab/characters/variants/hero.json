@@ -1,7 +1,11 @@
 {
-  "$comment": "Ren's look in a version 2 game (journal Passes PR1 / PR2 / PR3; src/characters/HeroLook.ts). The operator, word for word: « par defaut je veux que le personnage est une couleur mate de peau des cheveux  hâlée et gris  et une cape soit aesoiaw ou ivoire », then « Yes, ivory cloak ». One fixed look recoloured at load on hero-x2-v4 and hero-x3-combat; the sheets and their exports unchanged. Not applied until approved by the operator (approved, approval, each sheet's fingerprint). The skin's tan ramp is the NPCs' approved one (variants.json); the hair's and the cloak's ramps wait for the operator's sheet. head / clear: written by tools/art-lab/hero-look.mjs --suggest from the figure, then corrected by hand on the review sheets.",
-  "approved": false,
-  "approval": null,
+  "$comment": "Ren's look in a version 2 game (journal Passes PR1 / PR2 / PR3; src/characters/HeroLook.ts). The operator, word for word: « par defaut je veux que le personnage est une couleur mate de peau des cheveux  hâlée et gris  et une cape soit aesoiaw ou ivoire », then « Yes, ivory cloak ». One fixed look recoloured at load on hero-x2-v4 and hero-x3-combat; the sheets and their exports unchanged. Approved by the operator on 2026-11-08 (approval below): applied only with each sheet's maps at their fingerprint. The skin's tan ramp is the NPCs' approved one (variants.json); the hair's steel and the cloak's ivory ramps drawn for Ren (journal Passe PR3). head / clear: written by tools/art-lab/hero-look.mjs --suggest from the figure, then corrected by hand on the review sheets.",
+  "approved": true,
+  "approval": {
+    "by": "operator",
+    "date": "2026-11-08",
+    "note": "Decision sheet of journal Passe PR3 (https://claude.ai/artifact/5AaWY6E5fut3Ye3UTvnGXv), read back in journal Passe PR4, word for word: PR3-CHEVEUX « Acier (gris moyen) », PR3-PEAU « Hâlée, comme montrée », PR3-CAPE « Ivoire, comme montrée », PR3-MAREK « Bien ainsi », PR3-RESTES « En production maintenant, les corriger ensuite », PR3-PROD « En production ». In production in a version 2 game only (PR-PORTEE « Derrière flags.v2 », journal Passe PR1); the grey and silver hair ramps kept for the record."
+  },
   "ramps": {
     "skin": {
       "tan": ["#64392a", "#80503a", "#9c674c", "#b47e60", "#c89474"]
@@ -17,7 +21,7 @@
   },
   "look": {
     "skin": "tan",
-    "hair": "silver",
+    "hair": "steel",
     "cloak": "ivory"
   },
   "ranges": {
@@ -336,7 +340,8 @@
           [14, 32, 27, 37],
           [25, 27, 29, 35]
         ]
-      }
+      },
+      "fingerprint": "195fecaa"
     },
     "hero-x3-combat": {
       "skin": {
@@ -642,7 +647,8 @@
         "chargeGuard.0": [
           [82, 201, 90, 206]
         ]
-      }
+      },
+      "fingerprint": "f6213ce0"
     }
   }
 }

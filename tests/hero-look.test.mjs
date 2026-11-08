@@ -133,9 +133,17 @@ const real = await Promise.all(['hero-x2-v4', 'hero-x3-combat'].map(async (id) =
 test('the file: the NPCs\' tan, the look\'s ramps, a head on every frame, the ranges pinned to the maps', () => {
   const npc = JSON.parse(fs.readFileSync(path.join(ROOT, 'art-lab/characters/variants/variants.json'), 'utf8'));
   assert.deepEqual(FILE.ramps.skin.tan, npc.ramps.skin.tan, 'the skin is the NPCs\' approved tan');
-  assert.deepEqual(FILE.look, { skin: 'tan', hair: FILE.look.hair, cloak: 'ivory' }, 'tan skin, ivory cloak (the operator\'s « Yes, ivory cloak »)');
+  // the operator's choices (journal Passe PR4): PR3-CHEVEUX « Acier (gris moyen) », PR3-PEAU « Hâlée, comme montrée », PR3-CAPE « Ivoire, comme montrée », PR3-PROD « En production »
+  assert.deepEqual(FILE.look, { skin: 'tan', hair: 'steel', cloak: 'ivory' }, 'tan skin, steel hair, ivory cloak');
   for (const m of ['skin', 'hair', 'cloak']) { assert.ok(FILE.ramps[m][FILE.look[m]], `${m}: the look's ramp exists`); assert.equal(FILE.ramps[m][FILE.look[m]].length, 5); }
-  assert.ok(['grey', 'silver'].includes(FILE.look.hair), 'grey hair');
+  assert.deepEqual(FILE.ramps.hair.steel, ['#34363e', '#7c7e88', '#a6a7ae', '#c8c8cc', '#e6e5e0'], 'the steel ramp shown on the sheet');
+  assert.deepEqual(FILE.ramps.cloak.ivory, ['#5e5a52', '#827c70', '#a49e90', '#c2bcae', '#dad4c6'], 'the ivory ramp shown on the sheet');
+  assert.equal(FILE.approved, true);
+  assert.equal(FILE.approval?.by, 'operator');
+  assert.match(FILE.approval?.note ?? '', /PR3-CHEVEUX « Acier \(gris moyen\) »/);
+  assert.match(FILE.approval?.note ?? '', /PR3-PROD « En production »/);
+  for (const s of real) assert.equal(FILE.sheets[s.id].fingerprint, L.lookFingerprint(s.maps), `${s.id}: the approved fingerprint is its maps'`);
+  for (const s of real) assert.ok(L.sheetLook(FILE, s.id, s.frames, s.fw, s.fh), `${s.id}: production applies the look`);
   for (const s of real) for (const f of s.frames) assert.ok(FILE.sheets[s.id].hair.head[f.name], `${s.id} ${f.name}: a head rectangle`);
   const r = L.materialRanges(real);
   for (const m of ['skin', 'hair', 'cloak']) for (const k of [0, 1]) assert.ok(Math.abs(r[m][k] - FILE.ranges[m][k]) < 1e-6, `${m}: the pinned range is the maps' (${r[m]} vs ${FILE.ranges[m]})`);
