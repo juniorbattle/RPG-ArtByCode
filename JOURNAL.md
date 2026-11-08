@@ -371,6 +371,57 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Une fiche relue sans note, toute à la recommandation, n'appelle pas de nouvelle preuve quand ni le code ni `main` n'ont bougé : on le vérifie (le commit, `origin/main`) avant de fusionner.
 
+## Passe PR1 — La personnalisation de Ren : atelier de conception, chaque axe classé par son coût, la fiche publiée (2026-11-08)
+
+### Demande
+- Transmise par la séance mère (`local_4c821720-…`). L'opérateur, mot pour mot (2026-11-08) : « pour le protagonist on va plutot adopter une personnalisation de personnage avec cheveux : coupe/couleur, couleur de peau et trait et peut etre meme type d'arme ». Ren a été retiré de la tâche des peaux des rivaux (séance `local_4fd30fe2-…`, branche `claude/rivaux-peaux`) au profit de cette personnalisation.
+- La consigne : un atelier de conception, pas de code ; inventorier, classer chaque axe par son coût réel (recoloration, nouveaux dessins, arme), proposer un plan par lots, l'écran et la portée, puis une fiche d'arbitrages. Rien ne change dans le jeu avant la relecture.
+- Lu d'abord : `JOURNAL.md` en entier, `AGENTS.md`, les trois contrats, `briefs/combat-system.md`, `briefs/cloud-session-v2-brief.md`, `briefs/roadmap-2026-10.md`, la Passe H4 (`journal/09-passes-H1-H4.md`). Branche `claude/ren-perso`, dans un worktree à part (`.claude/worktrees/ren-perso`) : les branches `claude/l5-ville` et `claude/rivaux-peaux` sont ouvertes par deux autres séances.
+
+### Ce que disent les contrats et les décisions déjà prises — [OK]
+- **Contrats** : aucun ne parle d'une création de personnage ni de l'apparence du héros. Le verrou 1 du contrat de gameplay (« Le joueur commence comme combattant individuel ») ne la gêne pas. Le contrat projet compte « armes » parmi les couches de progression (§ 7), sans verrou sur un choix de départ. Aucun verrou touché, aucun écart à consigner.
+- **Passe H4 (19/10)** : l'opérateur avait déjà voulu « des declinaisons du protagonist afin de laisser le choix au joueur de choisir le personnage qu'il veut », et choisi « Une base + couleurs (Recommandé) » contre « Plusieurs coiffures dès le départ » et « Personnages distincts ». Une coupe au choix change cette décision : la carte PR-COUPE le dit.
+- **L'arme** : la spécification du combat (§ 8, G4) porte la décision de l'opérateur « arme predefini avec amelioration (stats-effets) ». Un type d'arme au choix la change : la carte PR-ARME le dit. Les trois armes de la version 2 (`training-sword`, `imported-blade`, `duelist-sabre`, `src/simulation/gear.ts`) changent les chiffres de Ren, jamais son dessin.
+
+### Inventaire — [OK]
+- **Les feuilles de Ren** : `hero-x2-v4` (ville, 60 images : repos 4 et course 8 dans cinq orientations ; sert aussi au jeu par défaut et à « Explore the district ») et `hero-x3-combat` (duel, 39 images : les 34 de la liste CB-2 et les 5 poses de charge). Une seule palette de 64 couleurs pour les deux (la feuille de combat épingle celle de la ville). En ville, Ren ne montre pas son arme ; en combat, toutes les images la tiennent.
+- **Les couleurs** (mesurées sur les deux exports) : trois couleurs sont de la peau seule (`fcc89f`, `f8ba8f`, `f6ad7a`) ; six autres teintes de peau servent aussi aux reflets des cheveux. Aucune couleur n'appartient aux cheveux seuls : leurs bruns sont ceux des gants, des sangles et des bottes (au plus 65 % d'une couleur dans la tête). La cape bleue (teinte 205-250°) ne partage ses couleurs avec rien.
+- **Le jeu** : `newGame(seed, name)` ; « New game » de l'écran titre demande le nom (K2) et ouvre le jeu par défaut (`?play=1&new=1&name=…`) ; une partie v2 s'ouvre par `&v2=1` ; `PlayerState` n'a aucun champ d'apparence. Le visage des portraits et du HUD vient de l'image de face de la feuille de ville (`preloadPortraits`).
+- **La méthode réutilisable** : les rampes approuvées des PNJ (`variants.json` : peau `light`, `medium`, `tan`, `dark` ; cheveux `dark`, `chestnut`, `auburn`, `ash`, `grey`), le masque par couleurs de palette et ses règles de groupe (`src/characters/FighterSkins.ts`, Passe GS1), le masque des cheveux des PNJ (`src/characters/Variants.ts`), les documents Aseprite de revue (`tools/art-lab/skin-aseprite.mjs`). La branche `claude/rivaux-peaux` n'a encore aucun commit : rien à reprendre d'elle aujourd'hui.
+
+### Le coût de chaque axe
+| Axe | Nature | Images à dessiner | D'où |
+|---|---|---|---|
+| Couleur de peau | recoloration au chargement | 0 | les rampes approuvées des PNJ |
+| Couleur des cheveux | recoloration, masque par groupe (les bruns du cuir) | 0 ; corrections à la main des images aux bras levés et du K.O. | idem ; documents Aseprite de revue |
+| Cape (hors demande) | recoloration, masque simple | 0 ; rampes neuves à approuver | — |
+| Coupe | nouvelle forme | 99 par coupe (60 ville + 39 combat) | une planche de design validée par l'opérateur (outil de génération, moins de 1 $), puis des planches générées depuis les feuilles de Ren et reconstruites par ses rigs ; deux tâches de génération par coupe, chacune sous 5 $ |
+| Traits du visage | yeux : recoloration (2-3 texels) ; marques : peintes à la main (environ 5 têtes en ville, jusqu'à 39 en combat) ; barbe : une forme, au coût d'une coupe | selon le sens | Aseprite à la main ; la barbe comme une coupe |
+| Trait de caractère (autre lecture) | une règle du jeu | 0 | la spécification et le laboratoire |
+| Type d'arme | 39 images de combat par arme, rien en ville ; ses règles si elle en a | 39 par arme | des planches générées comme celles de RC1 / RC2 (2,60 $ pour sept planches) ; les images des rivaux armés ne servent pas : elles montrent leur corps |
+
+### Les aperçus — [OK], prototype hors dépôt
+- Un script de cette séance (dossier temporaire de la séance, pas dans le dépôt) recolore les deux feuilles avec la formule du shader (`recolor` de `FighterSkins.ts`, rampes en lumière linéaire) et des masques prototypes : la peau par ses trois couleurs, plus les teintes partagées entourées de peau (4 voisins sur 8, deux passes) ; les cheveux par les teintes chaudes au-dessus du menton en ville, et en combat par le groupe qui touche le visage (le plus grand, ou un groupe d'au moins un quart de lui qui touche la peau, dans un cercle de 27 texels, l'or de la garde et les yeux exclus) ; la cape par sa teinte.
+- **[KO → corrigé] trois fois sur les images de combat** : un gant levé pris pour des cheveux (règle du groupe), puis le haut des cheveux coupé par un cercle centré trop bas (le visage masqué n'est que le bas du visage), puis les yeux et les sourcils recolorés avec les cheveux (une bande au-dessus du visage exclue).
+- **[?] limites montrées sur la fiche** : en combat, un reste de cheveux d'origine au front ; un gant levé encore pris dans une image aux bras au-dessus de la tête (`skillDef.1`, retirée des aperçus) ; le revers sombre de la cape en course garde son bleu ; des ombres bleues du pantalon prises pour la cape. La production passera par la méthode de GS1 : règles de groupe, corrections à la main, critiques à froid, documents Aseprite.
+- Sept planches publiées avec la fiche (pas dans le dépôt) : les masques en ville et en combat, les cinq peaux, les six cheveux, cinq capes, six combinaisons en ville et en combat. Aucune image générée.
+
+### La fiche — publiée, rien de décidé
+- Page privée https://claude.ai/artifact/JjQFRHBVUx6qg993hh9E8E, source `briefs/fiche-ren-perso.html` (la page de la fiche GS1). Collection `decisions` relue vide à la publication ; une image publiée relue, identique à l'octet (SHA-256).
+- Dix cartes : PR-PEAU (« Original + les quatre peaux des PNJ ») ; PR-CHEVCOUL (« Original + les cinq teintes des PNJ ») ; PR-ENSEMBLE (« Ça me va, premier lot ») ; PR-CAPE, hors demande (« Garder l’indigo ») ; PR-COUPE (« Plus tard : design d’abord, puis une coupe à la fois ») ; PR-TRAIT, le sens de « trait », sans recommandation (les traits du visage, barbe ou non ; un trait de caractère ; les deux) ; PR-ARME (« Atelier à part (règles d’abord), après les couleurs ») ; PR-ECRAN (« Une page après le nom, fixée pour la partie » : la structure de la page de l'équipement, Ren en grand qui tourne, une ligne par choix, la manette) ; PR-PORTEE (« Derrière flags.v2 ») ; PR-LOTS (« Valider ce plan » : lot 1 les couleurs et l'écran, lot 2 les coupes, lot 3 l'arme, chacun dans sa séance).
+
+### Relevés hors de la tâche
+- Les passes gardées font environ 72 500 octets, au-delà des 60 Ko. Je ne les archive pas ici : la séance du lot L5 (branche `claude/l5-ville`) archive les Passes I2 à EVL6 sur sa branche ; archiver les mêmes passes ici ferait deux archives concurrentes. La branche qui fusionnera la seconde rejouera son journal sur `main`.
+
+### Où reprendre
+- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner ses choix mot pour mot (Passe PR2), lister les lots décidés comme tâches, chacun pour sa séance, puis fusionner la branche (le journal et la page de la fiche seulement).
+
+### Pensée
+- Une personnalisation se classe par ce qu'elle change dans les feuilles : une couleur ne touche aucune image, une forme les touche toutes. Le nombre d'images se compte sur les exports (60 + 39), pas sur la liste des animations.
+- Une décision ancienne de l'opérateur (H4 « Une base + couleurs », G4 « arme predefini ») se retrouve avant de proposer : la nouvelle demande la change peut-être, et la fiche le dit au lieu de l'ignorer.
+- Un mot qui se lit de deux façons (« trait ») va sur la fiche comme une question, sans recommandation.
+- Un masque de cheveux sur une feuille de combat ne tient ni par la couleur ni par une seule règle : chaque règle ajoutée (le groupe, le cercle, la bande des yeux) se vérifie sur les images qu'elle fait tomber.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -439,6 +490,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Les cinq citadins sont en production (Passe CA7). Ren (39 images) et les sept rivaux (Marek 32, Vessa 34, Orla 29, Cassius 34, Ilse 32, Rhosk 32, Tobin 27) sont en production dans les duels de la version 2 (Passes CX2, CX4), chacun sous sa figure, plus aucun art de Marek emprunté. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2. **Passe SA1** : le fond gris vu en combat était l'image `strike.1` de Marek (le fond vert de sa planche gardé opaque par la chaîne) ; chaîne corrigée, feuille reconstruite, toutes les feuilles de production mesurées propres (`tests/sheet-clean.test.mjs`) ; la feuille corrigée de Marek approuvée par l'opérateur (« Approuver en production »).
+- **Personnalisation de Ren (Passe PR1)** : la demande de l’opérateur, mot pour mot, « pour le protagonist on va plutot adopter une personnalisation de personnage avec cheveux : coupe/couleur, couleur de peau et trait et peut etre meme type d'arme » ; atelier de conception fait, chaque axe classé par son coût (les couleurs sans dessin, une coupe 99 images, une arme 39 images et peut-être des règles), fiche https://claude.ai/artifact/JjQFRHBVUx6qg993hh9E8E (`briefs/fiche-ren-perso.html`) **à relire** quand l’opérateur la dit remplie ; ensuite les lots décidés, chacun dans sa séance.
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantissait 336 images et en porte 322 (dix feuilles,

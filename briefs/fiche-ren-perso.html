@@ -1,0 +1,436 @@
+<title>Personnalisation de Ren</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+.flip { display: flex; flex-wrap: wrap; gap: 4px; background: #39414f; padding: 10px; border-radius: 8px; margin: 10px 0; justify-content: center; }
+.flip figure { margin: 0; text-align: center; }
+.flip canvas { display: block; image-rendering: pixelated; width: 144px; height: auto; }
+.flip figcaption { color: #e6e9ef; font-size: 14px; }
+.info { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions de l’opérateur · 8 novembre 2026</span>
+    <h1>La personnalisation de Ren, le protagoniste</h1>
+    <p class="lede">Ta demande : « pour le protagonist on va plutot adopter une personnalisation de personnage avec cheveux : coupe/couleur, couleur de peau et trait et peut etre meme type d’arme ». Cette fiche est un atelier de conception : rien n’est codé, et rien ne change dans le jeu avant ta relecture. Chaque choix est classé par son coût réel. Les couleurs (peau, cheveux) se recolorent au chargement, sans dessin neuf, comme les PNJ et les génériques ; les aperçus en sont faits à partir des feuilles approuvées de Ren, sans image générée. Les formes (coupe, barbe) et l’arme demandent toutes les images de Ren, et un design que tu valides d’abord. Une carte te demande ce que tu entends par « trait ».</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot au journal, puis je liste les lots décidés comme tâches, chacun pour sa propre séance. Aucun code ni aucune image avant cela.</p>
+    <p class="src">Sources : journal Passes H4 (« Une base + couleurs »), V1 à V3 (les variantes des PNJ), GS1 / GS2 (les peaux des génériques), RC1 / RC2 (la feuille de combat de Ren) ; briefs/combat-system.md §§ 8, 14, 15 ; contracts/ ; art-lab/characters/variants/ ; src/characters/FighterSkins.ts.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+ {
+  "id": "couleurs",
+  "title": "Les couleurs : sans dessin neuf",
+  "fam": "var(--ronce)",
+  "sub": "Recolorées au chargement, comme les PNJ et les génériques : les feuilles approuvées de Ren ne changent pas.",
+  "items": [
+   {
+    "id": "PR-PEAU",
+    "tag": "peau",
+    "title": "La couleur de peau de Ren",
+    "ctx": "Ren a deux feuilles approuvées : hero-x2-v4 en ville (60 images, cinq orientations) et hero-x3-combat en duel (39 images). Elles partagent une seule palette de 64 couleurs, et trois de ces couleurs ne servent qu’à la peau : un masque de peau s’écrit donc comme pour les génériques (Passe GS1). Le visage des portraits et du HUD vient de la feuille de ville et suit la même peau. Aucune image à dessiner. Les aperçus sont un prototype fait pour cette fiche, sans relecture à froid : la version de production passe par les relectures et les documents Aseprite de GS1.",
+    "shots": [
+     ["img/skin-town.png", "Feuille de ville, sans lumière : face, trois-quarts, profil, dos et une image de course. De haut en bas : l’original de Ren, puis les quatre peaux approuvées pour les PNJ : claire, moyenne, hâlée, foncée."],
+     ["img/masks.png", "Le masque prototype sur la feuille de ville : peau en cyan, cheveux en magenta, cape en jaune. Les contours, les yeux, les vêtements et le cuir ne changent jamais."]
+    ],
+    "rec": "Les quatre peaux des PNJ, en plus de l’original. Elles sont déjà approuvées, et la peau d’origine de Ren est proche de la claire. Tu demandes de la diversité (GA3-LU1) : la foncée et la hâlée la donnent dès le premier lot.",
+    "opts": ["Original + les quatre peaux des PNJ", "Une gamme plus large (rampes neuves, sur une fiche)", "Pas de choix de peau"],
+    "recIdx": 0,
+    "src": "art-lab/characters/variants/variants.json (rampes skin) ; src/characters/FighterSkins.ts ; journal Passes V1-V3, GS1 / GS2"
+   },
+   {
+    "id": "PR-CHEVCOUL",
+    "tag": "cheveux · couleur",
+    "title": "La couleur des cheveux",
+    "ctx": "Le principe est le même que pour la peau, avec une difficulté de plus : les bruns des cheveux de Ren sont aussi ceux de ses gants, de ses sangles et de ses bottes. Aucune couleur n’appartient aux cheveux seuls. Le masque se fait donc par groupe de texels, comme en GS1 (la tête au-dessus du menton en ville ; en combat, le groupe qui touche le visage). Les images aux bras levés et le K.O. demanderont des corrections à la main dans Aseprite. Le prototype en laisse voir les limites : en combat, un reste de cheveux d’origine au front, et un gant levé pris pour des cheveux dans une image. Aucune image à dessiner.",
+    "shots": [
+     ["img/hair-town.png", "Feuille de ville : l’original, puis les cinq teintes de cheveux approuvées pour les PNJ (noir, châtain, auburn, cendré, gris)."],
+     ["img/masks-combat.png", "Le masque prototype sur cinq images de combat (repos, garde de combat, frappe, garde, récupération). Peau en cyan, cheveux en magenta, cape en jaune."]
+    ],
+    "rec": "Les cinq teintes des PNJ, en plus de l’original. Elles sont approuvées et vont avec la direction de nuit. Des teintes vives (bleu, rouge franc) demanderaient de nouvelles rampes, sur une autre fiche.",
+    "opts": ["Original + les cinq teintes des PNJ", "Plus de teintes, vives comprises (rampes neuves, sur une fiche)", "Pas de choix de couleur"],
+    "recIdx": 0,
+    "src": "art-lab/characters/variants/variants.json (rampes hair) ; src/characters/Variants.ts (le masque des cheveux des PNJ) ; journal Passe GS1 (les règles de groupe)"
+   },
+   {
+    "id": "PR-ENSEMBLE",
+    "tag": "aperçu",
+    "title": "Peau et cheveux ensemble, en ville et en duel",
+    "ctx": "Quelques combinaisons pour juger le rendu. Toutes les combinaisons des deux listes seraient possibles : 5 peaux × 6 cheveux = 30 Ren, avec un seul dessin. Dans le jeu, le shader ajoute ensuite sa lumière (nuit, matin, midi, fin de journée), comme pour les génériques.",
+    "shots": [
+     ["img/combos-town.png", "En ville, de haut en bas : l’original ; foncée et noirs ; hâlée et gris ; moyenne et châtains ; claire et cendrés ; foncée et auburn."],
+     ["img/combos-combat.png", "Les mêmes combinaisons sur la feuille de combat ×3 (prototype : un reste de cheveux d’origine au front, à corriger à la main)."]
+    ],
+    "rec": "Ces combinaisons tiennent sans dessin neuf. Je propose de les faire en premier lot, avec l’écran de création.",
+    "opts": ["Ça me va, premier lot", "À revoir (en note)"],
+    "recIdx": 0,
+    "src": "aperçus faits pour cette fiche, hors dépôt (la formule de recoloration du shader, BODY_FRAG)"
+   },
+   {
+    "id": "PR-CAPE",
+    "tag": "cape · hors demande",
+    "title": "La couleur de la cape (tu ne l’as pas demandée)",
+    "ctx": "La cape bleue est la seule matière de Ren qui ne partage ses couleurs avec rien d’autre : la recolorer coûte presque rien. Mais tu ne l’as pas demandée. Et la direction de nuit veut l’indigo et l’ardoise dominants, avec l’ambre comme seul accent chaud. Les teintes montrées sont des essais de cette séance, pas des rampes approuvées.",
+    "shots": [
+     ["img/cloak-town.png", "De haut en bas : l’indigo de Ren, puis quatre essais : cramoisi, forêt, ardoise, ivoire (le revers sombre de la cape en course garde son bleu dans le prototype)."]
+    ],
+    "rec": "Garder l’indigo : c’est la silhouette de Ren dans la direction de nuit, et la demande porte sur les cheveux, la peau, les traits et l’arme.",
+    "opts": ["Garder l’indigo", "Quelques teintes de la direction (indigo, ardoise, ivoire)", "Toutes les teintes montrées"],
+    "recIdx": 0,
+    "src": "AGENTS.md (« Art direction (locked) ») ; journal Passe H4 (« peut-être de cape »)"
+   }
+  ]
+ },
+ {
+  "id": "dessins",
+  "title": "Ce qui demande des dessins",
+  "fam": "var(--cendre)",
+  "sub": "Une nouvelle forme veut dire toutes les images de Ren, et un design que tu valides d’abord.",
+  "items": [
+   {
+    "id": "PR-COUPE",
+    "tag": "cheveux · coupe",
+    "title": "La coupe de cheveux",
+    "ctx": "Une coupe change la silhouette de la tête sur chaque image : 60 images de ville (repos et course dans cinq orientations) et 39 de combat, soit 99 images par coupe. Aucune ne se recolore. D’où viendraient-elles : d’abord une planche de design (3 ou 4 coupes sur le visage de Ren), faite avec l’outil de génération (moins de 1 $) et validée par toi, puisqu’une coupe est un design neuf ; puis, pour chaque coupe retenue, des planches générées à partir des feuilles de Ren, reconstruites par la chaîne de ses rigs (build-character, build-combat), relues à l’aveugle et approuvées par manifeste. Ordre de grandeur : le travail des deux feuilles d’un rival, avec deux tâches de génération par coupe, chacune sous le plafond de 5 $ (la feuille de combat de Ren a coûté 2,60 $ en Passe RC2). Une coupe se recolore ensuite avec les mêmes teintes. Le 19/10 (Passe H4), tu avais choisi « Une base + couleurs » ; une coupe au choix change cette décision.",
+    "rec": "Plus tard : la planche de design d’abord, dans sa séance, après le lot des couleurs. Ensuite une coupe à la fois, chacune sur sa fiche.",
+    "opts": ["Plus tard : design d’abord, puis une coupe à la fois", "Pas de coupe au choix (les couleurs suffisent)", "Tout de suite, avec les couleurs"],
+    "recIdx": 0,
+    "src": "art-lab/characters/rigs/hero-x2-v4.rig.mjs, hero-x3-combat.rig.mjs ; tools/art-lab/build-character.mjs, build-combat.mjs, gen-image.mjs ; journal Passes H4, K11, RC1 / RC2"
+   },
+   {
+    "id": "PR-TRAIT",
+    "tag": "trait",
+    "title": "Ce que veut dire « trait » dans ta demande",
+    "ctx": "Ta phrase : « cheveux : coupe/couleur, couleur de peau et trait ». Je la lis de deux façons. (1) Les traits du visage. La couleur des yeux se recolore, mais les yeux ne font que 2 ou 3 texels. Une marque (cicatrice, taches de rousseur) se peint à la main dans Aseprite : environ 5 têtes en ville, une par orientation, et jusqu’à 39 en combat. Une barbe est une forme, au coût d’une coupe. (2) Un trait de caractère ou d’origine, un petit avantage de jeu choisi au départ (par exemple plus de pièces, ou une compétence de départ). C’est une règle du jeu, sans dessin : le laboratoire le mesure, et la spécification du combat l’écrit.",
+    "rec": "Pas de recommandation : c’est ta demande, dis ce que tu voulais dire. Si ce sont les traits du visage, je propose les marques peintes après les couleurs, et la barbe avec les coupes.",
+    "opts": ["Les traits du visage (yeux, marques)", "Les traits du visage, barbe comprise", "Un trait de caractère qui change le jeu", "Les deux sens"],
+    "recIdx": -1,
+    "src": "la demande du 2026-11-08, mot pour mot ; src/simulation/state.ts (PlayerState) ; briefs/combat-system.md § 8"
+   },
+   {
+    "id": "PR-ARME",
+    "tag": "arme",
+    "title": "Le type d’arme",
+    "ctx": "Ren se bat à l’épée. Ses trois armes en jeu (l’épée d’entraînement, la lame importée, le sabre du duelliste) changent ses chiffres, pas son dessin. Pendant l’atelier combat, tu avais décidé « arme predefini avec amelioration (stats-effets) » (G4, spécification § 8). Un autre type d’arme (lance, hache, bâton…) touche deux choses. Le dessin : ses 39 images de combat, qui toutes tiennent l’arme, et rien en ville, où Ren ne la montre pas. Le jeu, si l’arme a ses propres règles (portée, vitesse, compétences) : la spécification du combat à amender avec toi, le laboratoire, l’équilibrage. Les rivaux et les génériques armés d’une lance ou d’un bâton ne prêtent pas leurs images : elles montrent leur corps, pas celui de Ren. Le contrat projet compte « armes » parmi les couches de progression (§ 7), sans verrou sur le choix de départ.",
+    "rec": "Un atelier à part, après les couleurs : d’abord ce que change une arme dans le duel, avec toi, puis ses 39 images. Une arme qui ne serait qu’un dessin, sans règle, coûterait autant d’images sans rien changer au jeu.",
+    "opts": ["Atelier à part (règles d’abord), après les couleurs", "Une arme au dessin seul, mêmes règles", "Pas de choix d’arme : l’épée de Ren"],
+    "recIdx": 0,
+    "src": "briefs/combat-system.md § 8, § 14, § 15 (C5) ; src/simulation/gear.ts ; contracts/PROJECT_MASTER_CONTRACT.md § 7"
+   }
+  ]
+ },
+ {
+  "id": "ecran",
+  "title": "L’écran de création et la portée",
+  "fam": "var(--voile)",
+  "sub": "Où le joueur choisit, à quoi ça ressemble, et ce qui reste inchangé.",
+  "items": [
+   {
+    "id": "PR-ECRAN",
+    "tag": "écran",
+    "title": "Où et quand le joueur choisit",
+    "ctx": "Aujourd’hui, « New game » demande seulement le nom (choix K2). Proposé : une page « Ren » juste après le nom, avant le premier matin. Elle suit la direction « Voile » et reprend la structure de la page de l’équipement (G), que tu as validée : à gauche Ren en grand, tiré de sa feuille cuite, qui tourne (face, trois-quarts, profil, dos) ; à droite une ligne par choix (Peau, Cheveux), la teinte changée par ← →, son visage de portrait au-dessus ; au pied, Entrée « Commencer » et Échap « Retour ». À la manette, la croix et A / B (MN). Le choix est gardé dans la sauvegarde. Il ne change aucune règle : l’empreinte d’une partie v2 change, celle du jeu par défaut non.",
+    "rec": "Une page après le nom, à la nouvelle partie, et fixée pour la partie. Un barbier en ville, plus tard, pourra la rouvrir (sur une fiche).",
+    "opts": ["Une page après le nom, fixée pour la partie", "La même page, et un barbier plus tard", "Sous le nom, dans l’écran titre"],
+    "recIdx": 0,
+    "src": "src/ui/title.ts, src/ui/wares.ts (heroFigure) ; src/simulation/state.ts ; AGENTS.md (« Interface », « Gamepad »)"
+   },
+   {
+    "id": "PR-PORTEE",
+    "tag": "portée",
+    "title": "Derrière la version 2, le jeu par défaut inchangé",
+    "ctx": "hero-x2-v4 sert aussi au jeu par défaut et à « Explore the district ». Proposé : la page et la recoloration seulement dans une partie de la version 2 (flags.v2). Le jeu par défaut garde Ren tel qu’il est, prouvé à 0 px contre main. Le jour où la version 2 devient le défaut, la page vient avec elle.",
+    "rec": "Derrière flags.v2, comme tout le reste de la version 2.",
+    "opts": ["Derrière flags.v2", "Partout, jeu par défaut compris"],
+    "recIdx": 0,
+    "src": "src/simulation/v2.ts ; journal Passes V0, GS2"
+   },
+   {
+    "id": "PR-LOTS",
+    "tag": "plan",
+    "title": "Le plan par lots",
+    "ctx": "Lot 1, les couleurs : les masques de peau et de cheveux de Ren sur ses deux feuilles, relus à froid et dans Aseprite. Le fichier des variantes approuvé avec ses empreintes. La page de création, le choix dans la sauvegarde, la recoloration en ville, sur les places, dans les portraits et dans le duel. Puis les preuves (une partie v2 jouée et rejouée en Node, le jeu par défaut à 0 px) et une fiche de lot. Lot 2, les coupes : la planche de design, puis une coupe par séance. Lot 3, l’arme : l’atelier des règles, puis ses images. Les traits suivent ta réponse à la carte « trait ». Chaque lot part dans sa propre séance.",
+    "rec": "Valider ce plan, en commençant par le lot 1.",
+    "opts": ["Valider ce plan", "Le lot 1 seulement pour l’instant", "Un autre ordre (en note)"],
+    "recIdx": 0,
+    "src": "journal Passes H4, GS1 / GS2 ; briefs/combat-system.md § 15"
+   }
+  ]
+ }
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.flip) c.append(flipbook(it.flip));
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+/** the clips of a sheet playing in small canvases, each frame held as long as in the duel (cells of 192 x 288, six to a row in the export; the empty top rows left out) */
+function flipbook(f) {
+  const box = el('div', { class: 'flip' }), img = new Image(), T = 60, H = 288 - T, scale = f.scale ?? 1;
+  const list = f.clips.map(([label, first, durations]) => {
+    const c = el('canvas', { width: String(192 * scale), height: String(H * scale), role: 'img', 'aria-label': label });
+    box.append(el('figure', {}, c, el('figcaption', {}, label)));
+    return { c, first, durations, n: 0, next: 0 };
+  });
+  img.onload = () => {
+    const tick = (t) => {
+      for (const a of list) {
+        if (t < a.next) continue;
+        const x = a.c.getContext('2d'), k = a.first + a.n, sx = (k % 6) * 192, sy = Math.floor(k / 6) * 288;
+        x.imageSmoothingEnabled = false; x.clearRect(0, 0, a.c.width, a.c.height); x.drawImage(img, sx, sy + T, 192, H, 0, 0, a.c.width, a.c.height);
+        a.next = t + a.durations[a.n] + (a.n === a.durations.length - 1 && a.durations.length > 2 ? 500 : 0);
+        a.n = (a.n + 1) % a.durations.length;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  img.src = f.src;
+  return box;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
