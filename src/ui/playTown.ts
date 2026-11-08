@@ -12,6 +12,10 @@ import { ExitMarkers } from './exits';
 import { WALK } from '../architecture/StreetComposer';
 import { V2_EXITS } from '../simulation/v2places';
 import { parseWeather } from '../atmosphere/Weather';
+import * as THREE from 'three';
+import { watchPost } from '../simulation/v2watch';
+import { hailOf } from '../simulation/v2react';
+import { Hails, type HailWalker } from './hails';
 
 /** The city in the play mode (journal Passes L3 / L4): the frozen Merchant District as it is, its day state, forge, crowd and weather taken
  *  from the game state (choice P4: game layers only, no geometry, framing, cast or look change), and the play mode's interface over it.
@@ -21,6 +25,8 @@ import { parseWeather } from '../atmosphere/Weather';
 const CARRY_TOWN = ['fps', 'vis', 'viscache', 'painters', 'res', 'msaa', 'refl', 'camera', 'player', 'static', 'occ', 'freeze', 'gpuprof', 'spriteedge', 'npcfacing'];
 /** the district's archetypes standing for the game's people (choice P4: their existing sprites) */
 const PERSON_OF: Record<string, string> = { merchant: 'mara', blacksmith: 'bram', guardA: 'hale', guardB: 'wynn', hooded: 'stranger', porter: 'tam' };
+/** where Wynn stands from Mara at her stall when he watches it (m, lot L5): beside her, on the quay side */
+const WYNN_AT: [number, number] = [1.15, 0.55];
 
 export async function startPlayTown(b: Boot, st0: GameState, note?: string): Promise<void> {
   let st = st0;
@@ -41,6 +47,14 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   installDesign(lookOf(st));
   installGameApi(() => st, (s) => { st = s; }, (prev, next) => lookOf(prev) !== lookOf(next) || prev.services.forge !== next.services.forge || prev.place !== next.place || next.over !== prev.over);
   await app.init();
+  // lot L5 (EV-12, « un garde se poste à l’étal le jour d’un vol »): a version 2 game's Wynn leaves the barrier for Mara's stall the days a theft there keeps him,
+  // and is not on the quay while he watches a stall on a square (src/simulation/v2watch.ts); the district's cast and draws as they are, his sprite moved or hidden
+  const post = watchPost(st);
+  if (post) {
+    const wynn = app.actors.actors.find((a) => (a.base ?? a.spec) === 'guardB'), mara = app.actors.actors.find((a) => (a.base ?? a.spec) === 'merchant');
+    if (wynn && post.place !== 'district') wynn.hidden = true;
+    else if (wynn && mara) { wynn.pos.set(mara.pos.x + WYNN_AT[0], 0, mara.pos.z + WYNN_AT[1]); app.actors.face(wynn, new THREE.Vector3(0, 0, 1)); }
+  }
   // the forge is the game's: the DEV switch of the free-roaming district is off in the play mode
   app.setForgeState = () => {};
   app.actors.onInteractForge = null;
@@ -89,7 +103,20 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
     return w?.to ?? null;
   };
   const leave = (to: typeof st.place) => { const from = st.place, r = (window as any).__game.act({ type: 'move', to }); if (r.ok) go(b.params, { arrive: from }); else location.reload(); };
-  const frame = () => { if (ui.modal) { app.actors.keys.clear(); app.actors.pad = null; } ui.update(); markers?.update(app.rig.camera, app.actors.player.pos, taken(), leave); requestAnimationFrame(frame); };
+  // lot L5 (EV-12, « la célébrité change [...] qui salue le héros »): a version 2 game's passers-by greet or whisper as the hero passes (src/ui/hails.ts), on the
+  // scene's own clock (a proof's frozen page never steps); today's game has none
+  const hails = isV2(st) ? new Hails((k, n) => hailOf(st, k, n), () => null) : null;
+  if (hails) (window as any).__hails = hails;
+  const walkers = (): HailWalker[] => app.actors.actors.filter((a) => a.role === 'crowd' && !a.hidden).map((a, k) => ({
+    key: k, pos: a.pos, height: a.height, stop: (secs) => { const b = a.behaviour; if (b) b.wait = Math.max(b.wait ?? 0, secs); }, face: (dx, dz) => app.actors.face(a, new THREE.Vector3(dx, 0, dz)),
+  }));
+  let last = app.simTime;
+  const frame = () => {
+    if (ui.modal) { app.actors.keys.clear(); app.actors.pad = null; }
+    ui.update(); markers?.update(app.rig.camera, app.actors.player.pos, taken(), leave);
+    if (hails) { const dt = app.simTime - last; last = app.simTime; hails.update(dt, app.rig.camera, app.actors.player.pos, walkers(), ui.modal); }
+    requestAnimationFrame(frame);
+  };
   app.start();
   // the version 2's sound (lot V8): the district's ambience and its piece of the band (journal Passe SN10: a new game's first page opens on the title); today's game makes none
   if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed, { opening: b.params.has('new') }, parseWeather(q)));

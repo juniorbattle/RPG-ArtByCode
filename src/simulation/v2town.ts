@@ -15,6 +15,7 @@ import { PEOPLE, placeOf, presentAt } from '../narrative/people';
 import { RIVALS } from '../narrative/roster';
 import { tx } from '../narrative/text';
 import { available } from './roles';
+import { watchPost } from './v2watch';
 import type { DuelOutcome } from '../tournament/pool';
 
 /** The town's actions of the version 2 (lot V4; the operator's decision AV-11 « Les trois, le vol avec ses conséquences », journal Passe V4):
@@ -80,7 +81,9 @@ function stallOpen(s: GameState, shop: ShopId): string | null {
   const sh = SHOPS[shop];
   if (s.place !== sh.place) return tx('v2.shop.notHere');
   if (!sh.open.includes(s.slot) && !forced(s, shop)) return tx('v2.shop.shut');
-  return s.v2?.shops?.[shop]?.closed === s.day ? tx('v2.shop.barred') : null;
+  if (s.v2?.shops?.[shop]?.closed === s.day) return tx('v2.shop.barred');
+  // lot L5 (EV-12, « un garde se poste à l’étal le jour d’un vol »): Wynn stands by the stall a theft was known at (src/simulation/v2watch.ts)
+  return watchPost(s)?.shop === shop ? tx('v2.steal.watched', { name: PEOPLE[SHOPS[shop].keeper]?.name ?? SHOPS[shop].keeper }) : null;
 }
 const shopDay = (s: GameState, shop: ShopId) => { const v = s.v2!; v.shops ??= {}; return (v.shops[shop] ??= {}); };
 const shopsHere = (s: GameState) => (Object.keys(SHOPS) as ShopId[]).filter((k) => SHOPS[k].place === s.place);

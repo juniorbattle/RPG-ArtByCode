@@ -1,6 +1,7 @@
 import type { GameState, PlaceId } from './state';
 import type { Look } from './look';
 import { PEOPLE, presentAt } from '../narrative/people';
+import { watchPost } from './v2watch';
 
 /** The version 2's places as pages (lot V5, journal Passe V5): which square of src/world/Plazas.ts a place opens, who stands on it at this
  *  hour (the people the simulation says are there, and the extras of the place: the forecourt's guards at the gate) and the crowd walking it.
@@ -16,7 +17,11 @@ export const PLAZA_CROWD: Record<Look, number> = { night: 4, morning: 5, midday:
 export function plazaPeople(s: GameState): string[] {
   // (a person in the Cité some days only, a passer-by of lot L2a, stands there those days; a person met by portrait only, lot L2b, stands nowhere)
   const out = Object.values(PEOPLE).filter((p) => presentAt(p, s.place, s.slot, true) && !p.generic && (!p.days || (s.day >= p.days[0] && s.day <= p.days[1]))).map((p) => p.id);
-  if (s.place === 'forecourt') out.push('guardA', 'guardB');
+  // lot L5 (EV-12, « un garde se poste à l’étal le jour d’un vol »): Wynn of the quay watch at the stall he watches (src/simulation/v2watch.ts); on the forecourt
+  // the gate keeps one guard beside him (two of the same sheet in one frame read as twins)
+  const watch = watchPost(s)?.place === s.place;
+  if (s.place === 'forecourt') out.push(...(watch ? ['guardA'] : ['guardA', 'guardB']));
+  if (watch) out.push('wynn');
   return out;
 }
 

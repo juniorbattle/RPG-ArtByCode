@@ -2,6 +2,7 @@ import { actions, placeName, standings, dusk, type Action, type ActionOption, ty
 import { offeredBy, scoutable } from '../simulation/roles';
 import { heardLine, strapCut } from '../simulation/v2intel';
 import { sandRefusal } from '../simulation/v2rivals';
+import { watchPost } from '../simulation/v2watch';
 import { PEOPLE, titleOf } from '../narrative/people';
 import { linesOf } from '../narrative/dialogue';
 import { RIVALS } from '../narrative/roster';
@@ -13,7 +14,7 @@ import { arrowKeys, el, esc, footBtn, footOf, injectStyle, overlay, pageShell, s
 import { skillsPage } from './skills';
 import { tx } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
-import { stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
+import { pendingFinal, stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
 import { itemName, weaponTier } from '../simulation/v2gear';
 import { marksOf } from '../simulation/v2law';
 import { opponentOf, playerMatch } from '../tournament/pool';
@@ -236,7 +237,9 @@ export class TownUi {
     const opp = m ? RIVALS[m.a === 'player' ? m.b : m.a] : null;
     const when = m && m.day === s.day ? (s.slot === 'afternoon' ? tx('ui.next.now') : tx('ui.next.today')) : '';
     // the version 2 (journal Passe VP1): the bout's stage, the ten days' end
-    const next = v2 ? (s.over ? tx('v2.over') : opp ? tx('v2.next.bout', { stage: stageName(m!), name: opp.name, day: m!.day, when }) : tx('v2.next.done'))
+    // (a finalist before the final is drawn, lot L5: the other semi-final's winner, src/tournament/v2calendar.ts pendingFinal)
+    const fin = v2 && !opp ? pendingFinal(s) : null, fo = fin?.foe ? RIVALS[fin.foe] : null;
+    const next = v2 ? (s.over ? tx('v2.over') : opp ? tx('v2.next.bout', { stage: stageName(m!), name: opp.name, day: m!.day, when }) : fo ? tx('v2.next.bout', { stage: tx('v2.stage.final'), name: fo.name, day: fin!.day, when: '' }) : tx('v2.next.done'))
       : s.over ? tx('ui.next.over') : opp ? tx('ui.next.bout', { name: opp.name, day: m!.day, when }) : tx('ui.next.done');
     const slotName = s.slot === 'evening' ? (dusk(s) ? tx('ui.slot.sunset') : 'evening') : s.slot, days = v2 ? 10 : 3;
     const place = placeName(s.place, v2).replace(/^the /, '');
@@ -260,8 +263,9 @@ export class TownUi {
   openHere(): void {
     const s = this.st, v2 = isV2(s), all = actions(s);
     // the place's actions open now (the version 2, P5), every one with its reason in today's game; the people's are in their dialogues; a version 2 game also
-    // shows the drill the sand refuses, with its reason (lot L4: the morning after a brawl, Rhosk on it), so the player reads why
-    const opts = all.filter((o) => { const by = offeredBy(o.action as never); return o.action.type !== 'talk' && o.action.type !== 'move' && (by === null || by === 'forge') && (!v2 || o.ok || o.action.type === 'rest' || o.action.type === 'wait' || (o.action.type === 'train' && !!sandRefusal(s))); });
+    // shows the drill the sand refuses, with its reason (lot L4: the morning after a brawl, Rhosk on it), and the stall Wynn watches (lot L5), so the player reads why
+    const watched = (o: ActionOption) => o.action.type === 'steal' && watchPost(s)?.shop === (o.action as { shop: string }).shop;
+    const opts = all.filter((o) => { const by = offeredBy(o.action as never); return o.action.type !== 'talk' && o.action.type !== 'move' && (by === null || by === 'forge') && (!v2 || o.ok || o.action.type === 'rest' || o.action.type === 'wait' || (o.action.type === 'train' && !!sandRefusal(s)) || watched(o)); });
     const fight = s.slot === 'afternoon' && s.tournament.matches.some((m) => m.day === s.day && !m.winner && (m.a === 'player' || m.b === 'player'));
     const people = all.filter((o) => o.action.type === 'talk');
     this.closeModal(); this.modal = true; this.prompt.classList.remove('on');

@@ -5,7 +5,7 @@ import { portraitUrl } from './portraits';
 import { tx } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
 import { marksOf } from '../simulation/v2law';
-import { actOf, stageName } from '../tournament/v2calendar';
+import { actOf, pendingFinal, stageName } from '../tournament/v2calendar';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 import { heardLine, seenInTown } from '../simulation/v2intel';
 import { stanceLine } from '../simulation/v2rivals';
@@ -40,7 +40,10 @@ export function nextBout(st: GameState): MatchRecord | null {
 export function deadline(st: GameState): string {
   if (isV2(st)) {
     const m = nextBout(st), opp = m ? RIVALS[m.a === PLAYER_ID ? m.b : m.a] : null;
-    return m && opp ? `${esc(stageName(m))}: ${esc(opp.name)}, ${esc(opp.epithet)} — day ${m.day}, afternoon${m.day === st.day ? tx('ui.board.today') : ''}` : tx('v2.board.fought');
+    if (m && opp) return `${esc(stageName(m))}: ${esc(opp.name)}, ${esc(opp.epithet)} — day ${m.day}, afternoon${m.day === st.day ? tx('ui.board.today') : ''}`;
+    // a finalist before the final is drawn (lot L5: « Your bouts are fought » was said on days 7 and 8)
+    const f = pendingFinal(st), fo = f?.foe ? RIVALS[f.foe] : null;
+    return f && fo ? `${esc(tx('v2.stage.final'))}: ${esc(fo.name)}, ${esc(fo.epithet)} — day ${f.day}, afternoon` : tx('v2.board.fought');
   }
   const next = ROUNDS.find((r) => r.day >= st.day && !st.tournament.matches.some((m) => m.round === r.round && m.winner && (m.a === PLAYER_ID || m.b === PLAYER_ID)));
   const opp = next?.pairs.find((p) => p.includes(PLAYER_ID))?.find((x) => x !== PLAYER_ID);
@@ -100,7 +103,7 @@ export function boardPage(st: GameState, rows: Row[], close: () => void): { root
   const list = card.querySelector('.pm-glist') as HTMLElement, who = card.querySelector('.pm-who-at') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement;
   const out = footBtn('Esc', tx('ui.close'), close), fit = scrollFade(detail);
   fillFoot(card.querySelector('.pm-foot') as HTMLElement, out);
-  const n = nextBout(st), first = n ? (n.a === PLAYER_ID ? n.b : n.a) : PLAYER_ID;
+  const n = nextBout(st), first = n ? (n.a === PLAYER_ID ? n.b : n.a) : (pendingFinal(st)?.foe ?? PLAYER_ID);
   let start: HTMLElement | null = null;
   rows.forEach((r, i) => {
     const c = st.competitors[r.id], hurt = c && c.healthState !== 'fit' ? `<span class="why">${tx('ui.board.hurt')}</span>` : '';

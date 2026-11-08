@@ -6,6 +6,7 @@ import { available } from './roles';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
 import { tx, type TextKey } from '../narrative/text';
 import { taleOf, TALE } from './v2rivals';
+import { pendingFinal } from '../tournament/v2calendar';
 
 /** The version 2's information and the sabotage's answers (lot L3; the operator's EV-11 « Observer tout adversaire, rumeurs, activité lisible » and EV-10
  *  « Une réponse par lieu, un effet lisible », journal Passe EV2; the audit's §§ 2-3, `briefs/audit-gameplay-ev1.md`). Three tiers of what the player can
@@ -30,10 +31,11 @@ const FORMS: readonly V2Rumour['form'][] = ['rusty', 'steady', 'sharp'];
  *  then sharp (up to a quarter harder) */
 export function formOf(preparation: number): V2Rumour['form'] { return preparation < 40 ? 'rusty' : preparation < 70 ? 'steady' : 'sharp'; }
 
-/** the player's next bout's opponent (the board's « next »), or null once every bout is fought */
+/** the player's next bout's opponent (the board's « next »), or null once every bout is fought; a finalist's before the final is drawn (lot L5:
+ *  the other semi-final's winner, src/tournament/v2calendar.ts pendingFinal) */
 export function nextOpponent(s: GameState): string | null {
   const m = s.tournament.matches.find((x) => x.day >= s.day && !x.winner && (x.a === PLAYER_ID || x.b === PLAYER_ID));
-  return m ? (m.a === PLAYER_ID ? m.b : m.a) : null;
+  return m ? (m.a === PLAYER_ID ? m.b : m.a) : pendingFinal(s)?.foe ?? null;
 }
 
 /** a rival's off-screen acts since the start of yesterday (src/tournament/offscreen.ts writes each one, hidden from the journal) */

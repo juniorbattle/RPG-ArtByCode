@@ -7,6 +7,16 @@ import { isV2 } from '../simulation/v2';
 import { skillPrice } from '../simulation/v2skills';
 import { PEOPLE } from './people';
 import { anwenBusy, sandShut, sandTaken, stanceWords, taleOf } from '../simulation/v2rivals';
+import { watchPost } from '../simulation/v2watch';
+import { marksOf, LAW } from '../simulation/v2law';
+import { fameTier, type FameTier } from '../simulation/v2react';
+
+/** what the passers-by make of the player in a version 2 game (lot L5): a name in Sergeant Hale's ledger first, then the fame (src/simulation/v2react.ts) */
+const FOLK: Record<FameTier, TextKey> = { unknown: 'v2.line.folk.unknown', noticed: 'v2.line.folk.noticed', known: 'v2.line.folk.known', celebrated: 'v2.line.folk.celebrated' };
+function folkLine(s: GameState): string {
+  const m = marksOf(s);
+  return m >= LAW.wanted ? tx('v2.line.folk.wanted') : m > 0 ? tx('v2.line.folk.wary') : tx(FOLK[fameTier(s)], { name: s.player.name });
+}
 
 /** What the town's people say (journal Passe L4; GAMEPLAY § 8: the city reacts to the tournament, the player's fame, the sabotage, the
  *  hour, readable without a debug screen). Lines are chosen from the state: the slot, the pulse, the facts learnt, the quests, the results.
@@ -91,7 +101,11 @@ function baseLines(s: GameState, who: string): string[] {
       if (s.quests.cargo === 'done') return [tx('line.bram.done')];
       return [tx('line.bram.waiting')];
     case 'hale': {
-      const out = [P.security >= 60 ? tx('line.hale.quiet') : tx('line.hale.thin')];
+      // (a version 2 game, lot L5: by day the sergeant says « after dark », the night's word « tonight » was said in the morning, journal Passe EVL7)
+      const out = [P.security >= 60 ? tx('line.hale.quiet') : isV2(s) && !night ? tx('v2.line.hale.thinDay') : tx('line.hale.thin')];
+      // lot L5 (EV-12): where his man stands today
+      const post = watchPost(s);
+      if (post) out.push(tx('v2.line.hale.posted', { name: PEOPLE[post.keeper]?.name ?? post.keeper }));
       if (s.quests.cargo === 'asked') out.push(tx('line.hale.cargo'));
       if (s.facts.includes('forge-burned') && !s.flags.reported) out.push(tx('line.hale.forge'));
       if (night) out.push(tx('line.hale.night'));
@@ -102,10 +116,14 @@ function baseLines(s: GameState, who: string): string[] {
       else if (isV2(s) && s.flags['reported:rhosk']) out.push(tx('v2.line.hale.rhoskLedger'));
       return out;
     }
-    case 'wynn':
+    case 'wynn': {
+      // lot L5 (EV-12 « un garde se poste à l’étal le jour d’un vol »): at the stall he watches
+      const post = watchPost(s);
+      if (post) return [tx('v2.line.wynn.posted', { name: PEOPLE[post.keeper]?.name ?? post.keeper })];
       if (s.facts.includes('loiterer') && s.services.forge === 'open') return [tx('line.wynn.loiterer')];
       if (s.facts.includes('saboteur-caught')) return [tx('line.wynn.caught', { name })];
       return [night ? tx('line.wynn.night') : tx('line.wynn.day')];
+    }
     case 'stranger':
       if (!night) return [tx('line.stranger.day')];
       return [s.services.forge === 'sabotaged' ? tx('line.stranger.fire') : tx('line.stranger.whisper')];
@@ -116,6 +134,8 @@ function baseLines(s: GameState, who: string): string[] {
       return [tx('line.tam.offer')];
     case 'folk': {
       const out: string[] = [], v2 = isV2(s);
+      // lot L5 (EV-12 « la célébrité change ce que disent les passants »): what the town makes of you first, Sergeant Hale's ledger before the fame
+      if (v2) out.push(folkLine(s));
       if (fought(s, s.day) || fought(s, s.day - 1)) out.push(won(s, s.day) || won(s, s.day - 1) ? tx('line.folk.won', { name }) : v2 && s.day >= 6 ? tx('v2.line.folk.lost', { name }) : tx('line.folk.lost', { name }));
       // the version 2's ten days (journal Passe VP1): the roar on a day of bouts only, the bracket and the final talked of after the pool
       if (v2) out.push(P.excitement >= 70 && s.tournament.matches.some((m) => m.day === s.day) ? tx('line.folk.roar') : s.day >= 9 ? tx('v2.line.folk.final') : s.day >= 6 ? tx('v2.line.folk.bracket') : tx('line.folk.heralds'));

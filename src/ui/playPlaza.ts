@@ -2,7 +2,10 @@ import { PlazaApp } from '../world/PlazaApp';
 import { lookOf, rainOf, type Action, type GameState } from '../simulation';
 import { keepSeen, markSeen, seenBefore } from './news';
 import { playerMatch } from '../tournament/pool';
-import { PLAZA_CROWD, PLAZA_OF, plazaPeople } from '../simulation/v2places';
+import { PLAZA_OF, plazaPeople } from '../simulation/v2places';
+import { gestureOf, hailOf, plazaCrowd } from '../simulation/v2react';
+import { RIVALS } from '../narrative/roster';
+import { Hails } from './hails';
 import { PEOPLE } from '../narrative/people';
 import { pendingScene } from '../narrative/v2story';
 import { playCutscene } from './cutscene';
@@ -31,7 +34,10 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   const scene = pendingScene(st), people = plazaPeople(st);
   for (const id of scene?.cast ?? []) if (!people.includes(id)) people.push(id);
   const app = new PlazaApp({
-    canvas: b.canvas, params: q, kind, time: look === 'night' ? null : look, people, crowd: PLAZA_CROWD[look], arriveFrom: b.params.get('arrive'),
+    canvas: b.canvas, params: q, kind, time: look === 'night' ? null : look, people, arriveFrom: b.params.get('arrive'),
+    // lot L5 (EV-12 « Les places lisent le pouls »): the crowd follows the tournament's excitement as the quay's, and gathers where the town's ambiences are
+    // (src/simulation/v2react.ts); its walkers are the town's passers-by
+    crowd: plazaCrowd(st), folk: true,
     onProgress: progressOn(b.label, b.bar),
   });
   (window as any).__plaza = app;
@@ -61,7 +67,18 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   // the gamepad (the operator's sheet of journal Passe MN2): its walk, its pages' shoulders, the sound it may wake; loaded on demand, it does
   // nothing until a pad is used
   void import('../input/PadInput').then((m) => m.installPad({ walk: (w) => { app.pad = w; }, tab: (d) => ui.tabPage(d), sound: () => import('../audio/Sound').then((s) => s.sound()) }));
-  const frame = () => { if (ui.modal) { app.keys.clear(); app.pad = null; } ui.update(); ways.update(app.camera, app.player.pos, ui.modal ? null : app.exitTaken()?.to ?? null, leave); requestAnimationFrame(frame); };
+  // lot L5 (EV-12, « la célébrité change [...] qui salue le héros »): the passers-by who greet or whisper as the hero passes, the rivals standing who show their
+  // stance (src/ui/hails.ts); read from the state of the page's load (a reload after a slot reads the next)
+  const hails = new Hails((k, n) => hailOf(st, k, n), (who) => (RIVALS[who] ? gestureOf(st, who) : null));
+  (window as any).__hails = hails;
+  let last = app.stepped;
+  const frame = () => {
+    const dt = app.stepped - last; last = app.stepped;
+    if (ui.modal) { app.keys.clear(); app.pad = null; }
+    ui.update(); ways.update(app.camera, app.player.pos, ui.modal ? null : app.exitTaken()?.to ?? null, leave);
+    hails.update(app.locked ? 0 : dt, app.camera, app.player.pos, app.hailWalkers((who) => !!RIVALS[who]), ui.modal);
+    requestAnimationFrame(frame);
+  };
   frame();
   app.start();
   // the version 2's sound (lot V8): the square's ambience and the day state's music, after the person's first gesture

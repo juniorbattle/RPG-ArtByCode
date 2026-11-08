@@ -10,6 +10,7 @@ import { V2_GEAR_ACTIONS } from './v2gear';
 import { V2_TOWN_ACTIONS } from './v2town';
 import { V2_STORY_ACTIONS } from '../narrative/v2story';
 import { V2_LAW_ACTIONS } from './v2law';
+import { placeIn } from './v2watch';
 import { V2_BARTER_ACTIONS } from './v2barter';
 import { V2_INTEL_ACTIONS } from './v2intel';
 import { V2_RIVAL_ACTIONS, anwenBusy } from './v2rivals';
@@ -56,10 +57,12 @@ export function priceOf(st: GameState, item: ShopItem): number {
 export function available(st: GameState, who: string): string | null {
   const p = PEOPLE[who];
   if (!p || (p.v2 && !isV2(st))) return tx('avail.nobody');
-  if (placeOf(p, isV2(st)) !== st.place) return tx('avail.notHere', { name: p.name });
+  // (a version 2 game, lot L5: Wynn stands at the stall he watches, the passers-by on every place: src/simulation/v2watch.ts)
+  if (placeIn(p, st) !== st.place) return tx('avail.notHere', { name: p.name });
   if (who === 'bram' && st.services.forge === 'sabotaged') return tx('avail.bramGone');
   // a person in the Cité some days only (a version 2 passer-by, lot L2a); today's people have no such days
   if (p.days && (st.day < p.days[0] || st.day > p.days[1])) return tx('avail.notNow', { name: p.name });
+  if (isV2(st) && (who === 'wynn' || who === 'folk')) return p.hours.includes(st.slot) ? null : tx('avail.notNow', { name: p.name });
   return presentAt(p, st.place, st.slot, isV2(st)) ? null : tx('avail.notNow', { name: p.name });
 }
 

@@ -108,6 +108,15 @@ function crown(s: GameState, emit: Emit): void {
 
 const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
+/** a semi-final won while the final is not drawn yet (it is drawn after day 8's bouts): the final's day and its other finalist, the other semi-final's
+ *  winner (lot L5: the pages said « Your bouts are fought » to a finalist on days 7 and 8, journal Passes EVL3 / EVL5), or null */
+export function pendingFinal(s: GameState): { day: number; foe: string | null } | null {
+  if (!isV2(s) || stageMatches(s, 'final').length) return null;
+  const semis = stageMatches(s, 'semi'), mine = semis.find((m) => m.a === PLAYER_ID || m.b === PLAYER_ID);
+  if (!mine || mine.winner !== PLAYER_ID) return null;
+  return { day: V2_DAYS, foe: semis.find((m) => m !== mine)?.winner ?? null };
+}
+
 /** the final order once the tournament is over (or as far as it went): the final, the third place, the Gate final, the Gate bouts' losers, then
  *  the pool's order */
 export function v2Ranking(s: GameState): string[] {

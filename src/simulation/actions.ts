@@ -1,7 +1,8 @@
 import type { Rng } from '../core/rng';
 import { PLACES, V2_PLACES, clamp, placeName, type GameState, type PlaceId } from './state';
 import type { Emit } from './advance';
-import { PEOPLE, placeOf, titleOf } from '../narrative/people';
+import { PEOPLE, titleOf } from '../narrative/people';
+import { talkableHere } from './v2watch';
 import { ROLE_ACTIONS, available, type RoleAction } from './roles';
 import { onTalk } from '../narrative/dialogue';
 import { applyPlayerDuel, playerMatch, opponentOf, type DuelOutcome } from '../tournament/pool';
@@ -62,7 +63,8 @@ const BASE: Table = {
     apply: (s, a, _r, emit) => { s.place = a.to; emit({ kind: 'action', id: 'move', cause: 'action:move', text: tx('move.log', { place: placeName(a.to, isV2(s)) }), visible: false }); },
   },
   talk: {
-    list: (st) => Object.values(PEOPLE).filter((p) => placeOf(p, isV2(st)) === st.place && (!p.v2 || isV2(st))).map((p) => ({ type: 'talk', who: p.id })),
+    // (a version 2 game, lot L5: Wynn at the stall he watches, the passers-by on every place: src/simulation/v2watch.ts)
+    list: (st) => talkableHere(st).map((p) => ({ type: 'talk', who: p.id })),
     label: (_, a) => tx('talk.label', { name: PEOPLE[a.who]?.name ?? a.who }),
     cost: () => 0,
     check: (st, a) => available(st, a.who),

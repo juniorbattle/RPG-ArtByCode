@@ -32,13 +32,14 @@ test('the places: the version 2 walks to the training ground and to the festival
 test('who stands where: the teachers and Orla at the training ground, the bard and Pip on the square; today\'s game keeps Orla on the forecourt', () => {
   const at = (place, slot = 'morning', name = 'day1-morning', flag = true) => { const s = flag ? v2(name) : G.namedState(name); s.place = place; s.slot = slot; return talks(s); };
   // (the generic fighters of lot L2b: Ser Aldric on the training ground by day, Brother Ambrose on the square from the afternoon; Tobin and Rhosk from day 6)
-  assert.deepEqual(at('training'), ['aldric', 'corvin', 'drill', 'ilse', 'orla']);
-  assert.deepEqual(at('training', 'morning', 'v2-day2-afternoon').length, 5);
-  assert.deepEqual(at('training', 'evening'), []);
+  // (the passers-by, « Townsfolk », on every place of a version 2 game since lot L5, journal Passe EVL9)
+  assert.deepEqual(at('training'), ['aldric', 'corvin', 'drill', 'folk', 'ilse', 'orla']);
+  assert.deepEqual(at('training', 'morning', 'v2-day2-afternoon').length, 6);
+  assert.deepEqual(at('training', 'evening'), ['folk']);
   // (the passers-by of lot L2a: Lady Edda on the forecourt by day, Sela on the square from the afternoon)
-  assert.deepEqual(at('forecourt'), ['anwen', 'edda', 'hilde', 'marek', 'odo', 'vessa']);
-  assert.deepEqual(at('lanterns', 'afternoon'), ['ambrose', 'bard', 'lio', 'pip', 'sela']);
-  assert.deepEqual(at('lanterns', 'evening'), ['ambrose', 'bard', 'cassius', 'lio', 'pip', 'sela']);
+  assert.deepEqual(at('forecourt'), ['anwen', 'edda', 'folk', 'hilde', 'marek', 'odo', 'vessa']);
+  assert.deepEqual(at('lanterns', 'afternoon'), ['ambrose', 'bard', 'folk', 'lio', 'pip', 'sela']);
+  assert.deepEqual(at('lanterns', 'evening'), ['ambrose', 'bard', 'cassius', 'folk', 'lio', 'pip', 'sela']);
   assert.deepEqual(at('forecourt', 'morning', 'day1-morning', false), ['anwen', 'marek', 'odo', 'orla', 'vessa']);
   assert.deepEqual(at('lanterns', 'evening', 'day1-morning', false), ['cassius', 'lio']);
   // sparring with Orla and the practice sand follow her to the training ground

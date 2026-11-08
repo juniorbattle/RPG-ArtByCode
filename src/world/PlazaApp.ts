@@ -16,6 +16,7 @@ import { PerfMonitor } from '../debug/PerfMonitor';
 import { SpriteAtlas } from '../characters/SpriteAtlas';
 import { SpriteRenderer, type Actor } from '../characters/SpriteRenderer';
 import { crowdVariants, GUARD_A, GUARD_B, HOODED, PLAYER, PORTER, type CharSpec } from '../characters/SpriteGenerator';
+import type { HailWalker } from '../ui/hails';
 import { loadProductionCast, type CastMember } from '../characters/BakedCast';
 import { plazaCastEntries } from '../characters/PlazaCast';
 import { variantOf } from '../characters/Variants';
@@ -38,12 +39,15 @@ export interface PlazaOptions {
   canvas: HTMLCanvasElement; params: URLSearchParams; onProgress: (label: string, f: number) => void; kind: PlazaKind; time: DayTime | null; people: string[]; crowd: number;
   /** the place the hero arrives from (journal Passe VP5): they stand at the way in from it, facing the square; null = the square's mouth */
   arriveFrom?: string | null;
+  /** the crowd's walkers can be spoken to as the town's passers-by, « Townsfolk » (lot L5, journal Passe EVL9) */
+  folk?: boolean;
 }
 
 /** the roles a square shows, and the archetype standing for each (a baked sheet replaces the archetype when one is approved) */
 // the passers-by (lot L2a, journal Passe EVL2): a citizen of the crowd stopped at a spot, the sheet the square already shows (Lady Edda the noblewoman,
 // Sela the wayfarer); while one stands there, that citizen leaves the crowd's turn
-const ROLE_ARCHETYPE: Record<string, string> = { guardA: 'guardA', guardB: 'guardB', hooded: 'hooded', porter: 'porter', edda: 'citizen-noble', sela: 'citizen-wayfarer' };
+// (lot L5, journal Passe EVL9: Wynn of the quay watch at a robbed stall, his sheet the guards')
+const ROLE_ARCHETYPE: Record<string, string> = { guardA: 'guardA', guardB: 'guardB', hooded: 'hooded', porter: 'porter', edda: 'citizen-noble', sela: 'citizen-wayfarer', wynn: 'guardB' };
 /** the people a square shows, generated only under `cast=generated`, the comparison (their sheets: src/characters/PlazaCast.ts, journal Passes V5 / CA5) */
 export const SQUARE_PEOPLE = ['odo', 'anwen', 'hilde', 'corvin', 'pip', 'lio', 'orla', 'vessa', 'marek', 'ilse', 'cassius', 'drill', 'bard'];
 /** the key light of a square by the look (journal Passe VP1, « proposé »): a square is closed on three sides (the north and the two rows), open
@@ -413,11 +417,32 @@ export class PlazaApp {
   /** the person the hero stands next to, if any (the play mode's E) */
   nearby(): string | null {
     let best: string | null = null, bd = 2.2 * 2.2;
-    for (const a of this.people) { const w = this.who.get(a); if (!w) continue; const d = (a.pos.x - this.player.pos.x) ** 2 + (a.pos.z - this.player.pos.z) ** 2; if (d < bd) { bd = d; best = w; } }
+    for (const a of this.people) {
+      // (a walker of the crowd is the town's passers-by when the page says so: lot L5)
+      const w = this.who.get(a) ?? (this.opts.folk && a.role === 'crowd' && !a.hidden ? 'folk' : null); if (!w) continue;
+      const d = (a.pos.x - this.player.pos.x) ** 2 + (a.pos.z - this.player.pos.z) ** 2; if (d < bd) { bd = d; best = w; }
+    }
     return best;
   }
 
+  /** the walkers who may greet the hero and the people standing whom `standing` keeps (lot L5, src/ui/hails.ts): a crowd walker by its order on the page, a
+   *  person by its id; stopping a walker holds it at its place a while, turning it sets its view */
+  hailWalkers(standing: (who: string) => boolean): HailWalker[] {
+    const out: HailWalker[] = [];
+    const face = (a: Actor) => (dx: number, dz: number) => { if (Math.abs(dx) > Math.abs(dz) * 1.2) { a.dir = 'side'; a.flip = dx > 0; } else { a.dir = dz > 0 ? 'down' : 'up'; a.flip = false; } };
+    for (const a of this.people) {
+      const who = this.who.get(a);
+      if (a.role === 'crowd' && !a.hidden) out.push({ key: a.id - 200, pos: a.pos, height: a.height * a.scale, stop: (secs) => { const b = a.behaviour; if (b) b.wait = Math.max(b.wait ?? 0, secs); }, face: face(a) });
+      else if (who && standing(who) && !this.walking.has(a)) out.push({ key: who, pos: a.pos, height: a.height * a.scale, stop: () => {}, face: face(a) });
+    }
+    return out;
+  }
+
+  /** the seconds the square has really stepped (a frozen proof's page never steps: src/ui/hails.ts plays nothing there) */
+  stepped = 0;
+
   update(dt: number): void {
+    this.stepped += dt;
     this.time = this.frozen ?? this.time + dt;
     U.uTime.value = this.time;
     U.uMoonDir.value.copy(this.keyDir);
