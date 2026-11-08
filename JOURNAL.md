@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -71,79 +71,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/58-passes-EV1-MN2.md`](journal/58-passes-EV1-MN2.md) | EV1, MN1, MN2 | 05/11 |
 | [`journal/59-passes-EV2-EVL1.md`](journal/59-passes-EV2-EVL1.md) | EV2, EVL1 | 05/11 |
 | [`journal/60-passes-EVL2-EVL3.md`](journal/60-passes-EVL2-EVL3.md) | EVL2, EVL3 | 05/11 → 06/11 |
+| [`journal/61-passes-EVL4.md`](journal/61-passes-EVL4.md) | EVL4 | 06/11 |
 
 ---
-
-## Passe EVL4 — La fiche de L2 relue : treize sur quatorze à la recommandation, le soupçon devenu des marques (L2-2) ; la branche fusionnée (2026-11-06)
-
-### Demande
-- L'opérateur, mot pour mot : « Fiche remplie ». Relire `decisions` (https://claude.ai/artifact/JtHMUAQxrAoHdNq8wRytGP, source `briefs/fiche-l2.html`), consigner mot pour mot, appliquer ce qui change, refaire les mesures et les preuves touchées, puis fusionner selon L2-14.
-
-### Les choix de l'opérateur, mot pour mot (cliqués le 2026-11-06 entre 06 h 10 et 06 h 16 UTC)
-| Carte | Ce qu'elle demandait | Choix | Note de l'opérateur |
-|---|---|---|---|
-| L2-1 | Où le jeu explique la réputation et le soupçon | « Garder ainsi » | — |
-| L2-2 | Les nombres du soupçon | aucun choix cliqué | « Hum cela m'a l'air un peu sophistique, la version de octopath traveler est parait plus simple car on etabli un pourcentage de vol sur une personne et si le vol echoue alors la reputation baisse au bout de 2-3 essaies ... donc que preferons nous ? » |
-| L2-3 | Au-delà du seuil, qui refuse de te vendre ? | « Les quatre étals » | — |
-| L2-4 | Le greffier après la poule | « Une amende de 15 après la poule » | — |
-| L2-5 | La nuit, les étals fermés se forcent | « Garder » | — |
-| L2-6 | Les trois arguments | « Garder » | — |
-| L2-7 | Les trois passants et leurs pièces | « Garder » | — |
-| L2-8 | La mise d’un défi | « Garder » | — |
-| L2-9 | Ce qu’enseignent les éliminés du jour 6 | « Garder » | — |
-| L2-10 | Les trois combattants génériques | « Garder » | — |
-| L2-11 | Leur art : quelles figures, et quand | « Ces trois figures, une tâche à part après la fusion » | — |
-| L2-12 | La représaille de Corra | « Garder » | — |
-| L2-13 | Les actions de la ville coûtent de la préparation | « Accepter : l’enjeu est voulu » | — |
-| L2-14 | Fusionner, puis ton essai | « Fusionner après la fiche, essayer ensuite » | — |
-
-- **L2-2, la question posée dans la conversation**, mot pour mot : « L2-2, le soupçon : ta note trouve le soupçon chiffré (0 à 100, trace +5, découvert +15, pris +25, seuil 50) sophistiqué face à Octopath Traveler, où un vol raté fait baisser la réputation au bout de 2 ou 3 essais. Que préfères-tu ? »
-  - Les trois options : « Des marques (Recommandé) », « Octopath strict », « Garder le soupçon chiffré ».
-  - **Réponse de l'opérateur : « Des marques (Recommandé) »**, dont le texte disait : « Comme Octopath, avec ton EV-2 gardé : le registre de Hale compte des marques, une par vol pris ou découvert à l'aube. À 3 marques, les étals refusent et la garde fouille, jusqu'à la restitution chez Hale. Plus de points cachés (trace, œil de la garde) ; la chance de chaque vol reste affichée, la réputation baisse à chaque vol pris. »
-  - Les options écartées disaient : « Seuls les vols ratés comptent : au 3e, les étals refusent jusqu'à la restitution chez Hale. Un vol réussi n'a aucune suite, ce qui retire « un vol non vu peut être découvert le lendemain » de ton choix EV-2 » ; et « Le système construit et mesuré : 0 à 100, trace +5, découvert +15, pris +25 (35 la nuit), seuil 50, la chance d'un vol qui baisse avec le soupçon ».
-- Les treize autres choix suivent la recommandation de leur carte. L2-11 laisse l'art des génériques à une tâche à part, après la fusion : le chevalier n° 07 de la planche des personnages principaux pour Aldric, le panneau 2 de G1 pour Corra, le panneau 4 de G1 pour Ambrose. Cela répond à N7 pour deux panneaux sur trois : le panneau 1 de G1, double du héros, reste sans rôle.
-
-### Fait — [OK], ce que les choix changent
-- **Les marques** (L2-2), `src/simulation/v2law.ts` :
-  - `V2State.marks` (0 à 3) remplace le soupçon chiffré ; une marque par vol pris sur le fait (étal, volet forcé ou poche) et une par vol découvert à l'aube par sa victime (les mêmes chances : 0,6, 0,85, 0,5). Un vol que personne ne voit ne marque rien tant qu'il n'est pas découvert ;
-  - **à trois marques**, la fouille à l'aube et les quatre étals fermés (L2-3), jusqu'à la restitution chez Hale, qui efface le registre ; le registre tient trois marques, une quatrième ne change rien ;
-  - la trace (+5) et l'œil de la garde (la chance d'un vol qui baissait avec le soupçon) disparaissent : la chance d'un vol redevient celle d'avant L2, plus le volet forcé la nuit (L2-5) ; la réputation baisse à chaque vol pris, comme avant.
-- **Ce qui l'explique** (L2-1, gardé) : le chiffre « 2/3 marks » en haut à droite, dès la première marque ; ta ligne dans la page du tournoi dit « Marks {n} of 3: Sergeant Hale's ledger, apart from your name… » ; le sergent Hale dit « Your name has {n} marks in my ledger. At three… » (« one mark » au singulier).
-- **Le joueur curieux** vole seulement quand le registre est vide (« vole quand le soupçon est bas », EV-16). Mesuré d'abord avec une marque permise : 21 vols par partie, 4,6 points de poule perdus au greffier, qualifié à 32 % ; une politique, pas une règle, réglée ainsi pour rester un joueur qui fait attention.
-- **L'état nommé** `v2-wanted-night` atteint trois marques : la même graine, plus une poche ratée chez Fenwick.
-- **`tools/play-day.mjs`** `V2=1` : le défi d'Orla a deux mises, l'outil lit leurs deux étiquettes (« 10 coins · 1 slot », « 1 slot »).
-
-### Mesures — TournamentLab `--rules=v2`, graines 1 à 50, après les marques
-| Politique | Combats gagnés | Qualifié | Finaliste | Ce que la ville voit par partie |
-|---|---|---|---|---|
-| `diligent` | 59,6 % | 88 % | — | rien (identique à `main`) |
-| `curious` | 54,9 % | 66 % | 8 % | 5,5 vols, 1,7 pris, 3,1 découverts, 0,7 fouille, 0,7 restitution ; 2,7 marchandages (1,4 réussis) ; 1,1 pièce de passant ; 7,1 défis (3,8 gagnés) ; 1,4 marque à la fin ; 0,7 point de poule perdu |
-
-### Tests — [OK]
-- `tests/v2-law.test.mjs` aux marques : un vol non vu ne marque rien, pris une marque, découvert une marque, trois ferment, le registre tient trois, aucun œil sur la chance, Hale au singulier et au pluriel.
-- `cost-tags` : l'oracle de la restitution lit les marques.
-- **Vingt-deux fautes injectées une à une, toutes attrapées**, dont les trois neuves : un vol non vu qui marque, un vol découvert sans marque, un œil caché sur la chance (et le seuil, la restitution, le curieux repris aux marques).
-- `npm test` **442 sur 442**, `npm run typecheck`, `npm run build`, `npm run art:validate`.
-
-### Preuves — [OK]
-- **Le jeu par défaut, inchangé** : `detshots` à 0 px contre `main` figé (`4bc0e6e`) sur les treize vues de la Passe EVL3 (la ville de nuit et à midi, le mode jouable par défaut et ses pages, la ville d'une partie v2), témoin de répétition à 0 px ; l'arène, que les marques ne touchent pas, à 0 px en Passe EVL3 ; `play-flow` par défaut `0025acce7a403773` et `V2=1` `cf669f2d59e33a8d`, `play-day` par défaut `6a942086a2616ab2`, rejoués après les marques ; TournamentLab au JSON près contre `main` figé (règles classiques et dynamiques, les trois parties scriptées, en v2 le diligent et l'idle, seul s'ajoute `v2.town`, à zéro).
-- **La version 2** : `play-day` `V2=1` (1842) : tous les contrôles passent, les deux mises d'Orla lues, rejoué en Node (`98f385cda8abd0e9`) ; `challenge-flow` : le défi gagné et perdu (`7e5600a80a3dda83`, `bb1069b5eb44a634`, les empreintes de la Passe EVL3) et la représaille gagnée et perdue (`c4ab63c95721a5ca`, `d274e9a3eca3c933`), tous les contrôles passent, Node rejoue à la même empreinte.
-- `ui-text` : quatre pages des marques, chacune à 1 600 × 900 et 390 × 844, toutes au-dessus du seuil : la liste Q d'un voleur à trois marques (le chiffre « 3/3 marks »), le sergent Hale, ta ligne dans la page du tournoi, Fenwick qui ne traite plus.
-
-### La fusion
-- La branche `claude/l2-ville` (Passes EVL2 à EVL4) est fusionnée en avance rapide dans `main` (L2-14 « Fusionner après la fiche, essayer ensuite ») ; `main` est poussé, et la branche supprimée, locale et distante. Ton essai : `npm run dev`, puis `/?play=1&new=1&v2=1`.
-
-### Ce qui revient à L3 (l'information et les réponses au sabotage, EV-10 et EV-11)
-- **L'observation étendue** (EV-11 « Observer tout adversaire, rumeurs, activité lisible ») passe par `SCOUTED` (`src/simulation/roles.ts`), que la fiche de match lit déjà (Passe EVL1). Le joueur curieux l'utilise aussi (il observe son prochain adversaire quand il le peut) : il suivra d'elle-même la liste étendue.
-- **Les réponses au sabotage** (EV-10 « Une réponse par lieu, un effet lisible ») : aujourd'hui une seule réponse déjoue les deux chaînes de Cassius (la garde payée chaque soir). Le curieux ne paie la garde qu'après un signe, et le laboratoire le mesure déjà.
-- Les gens de L2 que L3 peut faire parler : le sergent Hale et son registre (une rumeur), Corra Dunmere et Frère Ambrose (des yeux en ville la nuit), Lady Edda, dont le fils a perdu sur une sangle qui a lâché (un signe, comme l'armure trafiquée).
-- **Hors de L3** :
-  - l'art des trois génériques (L2-11), une tâche à part ;
-  - « Your bouts are fought » au jour 7 pour un finaliste (Passe EVL3), à L5 ou sur décision.
-
-### Pensée
-- Une question écrite sur une fiche à la place d'un choix se tranche dans la conversation, avec les options concrètes et ce que chacune retire de choix déjà faits : ici, le vol découvert le lendemain (EV-2) gardé, les points cachés retirés.
-- Une règle plus simple change le comportement des politiques du laboratoire autant que celui du joueur : sans l'œil de la garde, un voleur qui rend chez Hale peut recommencer. La politique se règle sur ce qu'elle doit représenter, et la mesure le dit.
 
 ## Passe GA1 — L'art des trois combattants génériques : six feuilles candidates, gen-image.mjs étendu à MiniMax (2026-11-06 → 2026-11-07)
 
@@ -474,6 +404,75 @@ Après la critique, une planche de reprise par combattant (0,41 à 0,42 $) ; les
 - Une note écrite à côté d'une approbation se lit pour ce qu'elle demande : ici une direction pour la suite (« sinon oui je suis satisfait »), pas une reprise des feuilles approuvées.
 - Une différence de pixels sur un paquet se lit avant d'accuser la branche : `main` contre lui-même la montrait aussi, c'était un compteur vivant.
 
+## Passe I2 — Le verrou du registre de `gen-image.mjs` : chaque requête comptée une fois, le plafond vérifié sous le verrou ; la branche fusionnée (2026-11-08)
+
+### Demande
+- Transmise par la séance mère (`local_faa4cca6-…`), d'après le choix de l'opérateur GA3-S3 « Une tâche à part » (Passes GA3, GA4) : un verrou autour de chaque lecture-écriture du registre de `tools/art-lab/gen-image.mjs`, le plafond par tâche vérifié sous ce verrou, un test hors ligne avec plusieurs `generate()` simultanés (une tâche, deux tâches), et la faute « verrou retiré » injectée. Aucune génération réelle, la clé jamais lue. Branche `claude/gen-image-lock`.
+
+### Le défaut (Passe GA3)
+- `generate()` chargeait le registre, réservait, sauvait, envoyait, puis sauvait au règlement **la copie prise avant l'envoi**. Avec deux requêtes à la fois, la seconde écrasait la réservation de la première, puis le règlement de la première remettait l'entrée de la seconde à « pending ».
+- En GA3, cela a donné des requêtes payées restées à leur pire estimation (Lucan à 4,08 $ au lieu de 1,23 $, deux refus pour un faux dépassement) et une entrée disparue (la planche propre de Kell, 0,39 $).
+- Le défaut se reproduit dans un seul processus : deux `generate()` lancés ensemble suffisent, parce que l'envoi est une attente entre la lecture et l'écriture.
+
+### Fait — [OK]
+1. **Le verrou** (`withLedger`) :
+   - `<registre>.lock`, créé en exclusif (`fs.openSync(…, 'wx')`), qui contient un jeton, le pid et l'heure. Sous lui : lire le registre tel qu'il est sur le disque, le modifier, l'écrire, libérer ;
+   - une attente bornée avec reprise (2 à 40 ms, un peu de hasard), puis l'abandon après 30 s, avant tout envoi (« nothing sent ») ;
+   - un verrou de plus de 15 s est périmé : son processus est mort, puisque l'outil ne le tient que le temps d'une lecture et d'une écriture, jamais pendant une requête. Il est renommé à part (de deux processus qui le cassent, un seul renommage réussit), supprimé s'il est bien celui jugé périmé, rendu sinon ;
+   - un processus ne libère que son propre verrou (le jeton) ;
+   - Windows répond EPERM tant qu'un verrou libéré est encore en cours de suppression : traité comme « occupé ».
+2. **`generate()`** :
+   - la réservation se fait sous le verrou : le plafond est vérifié contre le registre de ce moment, réservations des autres processus comprises ; un refus n'écrit rien ;
+   - le règlement se fait sous le verrou : l'entrée est retrouvée par son `id` (un UUID, champ neuf) dans le registre relu, jamais dans la copie d'avant l'envoi ; si elle a disparu (un registre reconstruit à la main entre-temps), elle est rajoutée avec une note ;
+   - les trois issues (pas de réponse, erreur HTTP, réponse) passent par ce règlement ;
+   - une réponse dont l'image ne peut être gardée (pas un PNG) est réglée à son coût (« answered; images not kept: … »). Avant, elle restait « pending » à son pire coût ;
+   - `--dry-run` et `--spent` lisent sous le verrou, sans écrire.
+3. **Les noms d'images**, un défaut trouvé en écrivant le test — [KO → corrigé] : le nom `<tâche>-<seconde>-<n>.png` ne dépend que de la seconde. Deux requêtes d'une même tâche dans la même seconde écrivaient donc la même image et la même fiche, et la première était perdue. Chaque image est désormais créée en exclusif ; un nom déjà pris reçoit les huit premiers caractères de l'`id` de la requête (`<tâche>-<seconde>-<id8>-<n>.png`). La première image garde le nom d'aujourd'hui.
+4. `AGENTS.md` (« Image generation ») : la règle du verrou. L'en-tête de l'outil la répète.
+
+### Tests — [OK]
+- `tests/gen-image.test.mjs`, quatre tests neufs, hors ligne (le faux fetch, la fausse clé). La requête k envoie l'invite `p<k>` ; sa réponse dit `req_<k>` (aussi dans les octets de l'image) et coûte son propre usage, un oracle écrit dans le test :
+  - six `generate()` à la fois, quatre sur une tâche et deux sur une autre, les réponses revenues dans un autre ordre (60, 10, 45, 0, 30 et 15 ms), à un instant figé (les quatre images d'une tâche dans la même seconde). Chaque requête figure une fois dans sa tâche, « answered » à son coût, aucune « pending » ; l'entrée d'avant est gardée ; chaque image a un nom à elle et sa fiche ; aucun verrou n'est laissé ;
+  - le plafond : 4,75 $ déjà dépensés, deux requêtes de 0,1664 $ au plus lancées ensemble (une seule tient) et une sur une autre tâche ; aucune réponse ne revient avant que les trois soient réservées ou refusées. Une est refusée sans rien envoyer, l'autre tâche est servie, la tâche reste sous 5 $ ;
+  - quatre processus Node lancés au même instant (un fichier « go » qu'ils attendent tous), sur deux tâches : chaque requête comptée une fois, à son coût ;
+  - un verrou vieux d'une heure est cassé. Un verrou vivant fait attendre la requête, puis renoncer sans envoyer ni écrire, et il reste à son porteur ; libéré pendant l'attente, la requête part après la libération ;
+  - le test des échecs s'allonge d'une réponse qui n'est pas un PNG, réglée à son coût.
+- **La pause.** Les tests concurrents attendent 5 à 15 ms entre la lecture et l'écriture du registre (`lock.pause`, une option des seuls tests). Sans elle, une lecture-écriture synchrone ne laisse jamais deux écrivains se croiser dans un processus. Mesuré : le verrou et les pauses retirés, les deux tests dans un processus passent, et le test entre processus n'échoue que 3 fois sur 5 ; avec les pauses, il échoue 10 fois sur 10.
+- **Sept fautes injectées une à une** (un script Node ; l'outil restauré et vérifié à l'empreinte après chacune), chacune attrapée 3 fois sur 3 :
+
+| Faute | Tests qui échouent |
+|---|---|
+| le verrou retiré | les quatre neufs (entre processus : 10 fois sur 10) |
+| le règlement écrit la copie prise avant l'envoi (l'ancien code) | une tâche et deux, le plafond, entre processus |
+| le plafond vérifié hors du verrou | le plafond |
+| un verrou périmé jamais cassé | le verrou périmé |
+| les noms d'images écrasés | une tâche et deux, entre processus |
+| un verrou tenu qui n'est pas attendu | les quatre neufs |
+| une réponse sans image gardée, pas réglée | les échecs |
+
+- **Stabilité** : le fichier de test lancé 25 fois de suite, 25 passes (1,4 s chacune). [KO → corrigé] Une première version du test du plafond échouait une fois sur deux : la première requête, réglée à son coût réel (0,04 $, sous son estimation), laissait de la place à la seconde avant que celle-ci réserve. C'était le plafond qui marchait, pas deux réservations à la fois. Les réponses attendent désormais que les trois requêtes soient réservées ou refusées.
+- `npm test` **448 sur 448**, `npm run typecheck`, `npm run art:validate` (73 manifestes, 123 sources archivées, 0 erreur ; 23 manifestes de son).
+- **La ligne de commande, sans rien envoyer** :
+  - `--dry-run` dans le worktree : rien écrit, aucun verrou laissé ;
+  - `--spent --root=<dossier principal>` sur le vrai registre, lu sous le verrou : identique à l'octet avant et après (SHA-256), aucun verrou laissé.
+- Environnement : une jonction `node_modules/three` vers le dossier principal, comme en GA1 et GA3, défaite en fin de tâche.
+
+### Limites — [?]
+- Le verrou est un fichier dans le dossier du registre : il protège les processus qui partagent ce dossier (le même checkout, ou `--root` vers lui). Deux worktrees sans `--root` ont chacun leur registre, comme avant.
+- Un cas reste possible en théorie : trois processus en quelques microsecondes autour d'un verrou périmé (un renommage qui prend un verrou neuf, rendu par un lien qui échoue si un autre a déjà pris la place). Il faut d'abord un processus mort en tenant le verrou.
+- La tâche n'a rien coûté : aucune requête envoyée.
+
+### Archive du journal
+- La passe EVL4 (branche `claude/l2-ville`, fusionnée) est déplacée à l'octet dans `journal/61-passes-EVL4.md` : le corps de l'archive est égal aux octets retirés, chaque passe est dans un seul fichier, les fins de ligne CRLF sont gardées.
+
+### La fusion
+- La branche `claude/gen-image-lock` est fusionnée en avance rapide dans `main` ; `main` est poussé, et la branche supprimée, locale et distante.
+
+### Pensée
+- Un outil qui lit puis réécrit un fichier partagé autour d'une attente (une requête réseau) écrase ce que d'autres ont écrit entre-temps : la seconde écriture relit le fichier sous un verrou, elle ne réécrit jamais sa copie.
+- Un test de concurrence doit pouvoir échouer : sans fenêtre entre la lecture et l'écriture, un test dans un seul processus ne voit pas la faute qu'il cherche. On le mesure en retirant la faute, puis la fenêtre.
+- Un plafond réglé au coût réel libère de la place pendant que d'autres requêtes attendent : un test qui veut deux réservations simultanées retient les réponses jusqu'à ce qu'elles soient faites.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -492,7 +491,7 @@ Après la critique, une planche de reprise par combattant (0,41 à 0,42 $) ; les
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge de Ren et la feuille de Marek sont faites (Passes CX1, CX2 ; X3 « Ren seul, avant Marek » : pas de poses de charge pour Vessa).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
   - **La charge sans palier puissant (Passe CH1, décision A3 du 2026-11-04)** : l'attaque puissante est une compétence (1 PA, ses niveaux, possédée dès le départ, emportée ou non), les temps de charge et la puissance des coups chargés à 0,85, l'équilibre de V2C2 retrouvé (59,6 %) ; contrat et spécification amendés. **Fiche relue, six sur six à la recommandation (Passe CH2)** : CH-1 « 0,85 (−15 %) », CH-2 « La puissance suit la tenue (×0,85) », CH-3 « 1 PA », CH-4 « Les quatre d’aujourd’hui, la puissante à côté », CH-5 « Bien ainsi (à confirmer en jeu) », CH-6 « Fusionner après la fiche, essayer ensuite » ; fusionné dans `main`. **Reste l'essai en jeu de l'opérateur.**
-  - **Étape 5, le gameplay (Passe EV1)** : audit des événements, du vol, du défi, du marchandage et du récit de la version 2 contre les contrats (`briefs/audit-gameplay-ev1.md`) : le défi sans enjeu (gagné 15 fois sur 15), le vol sans suite (un voleur à réputation 0 qualifié 9 fois sur 10), le marchandage un dé, trois ambiances à 52 % des nouvelles, une seule réponse (la garde du quai) contre les deux sabotages, trois champs du pouls lus par rien, l’information et la réaction visible de la ville minces, le festival et l’investissement absents ; six défauts de lecture relevés (dont les nouvelles de fin de créneau perdues sur les places). **Fiche relue, seize sur seize à la recommandation (Passe EV2)** : https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`), quatre notes consignées mot pour mot (une représaille possible après un vol, des combattants génériques, le marchandage avec les passants, des événements qui touchent la préparation) ; les génériques « En ville, structure gardée (Recommandé) » ; la consigne : l’importance narrative et la cohérence du gameplay, sans se perdre dans la structure. **L1 fait (Passe EVL1)** : les six défauts de lecture corrigés dans la version 2 (les nouvelles des places, celles d’une action dans sa bande, « free », les causes du journal, la fiche de match, le vol réussi) ; le jeu par défaut inchangé, trois écarts à lui consignés (les codes de son journal, ses nouvelles cachées sous une bande, son quai qui redit le bandeau). **L2 fait et fusionné (Passes EVL2 à EVL4)**, la fiche relue (treize sur quatorze à la recommandation ; L2-2 « Des marques (Recommandé) » : le registre de Hale compte une marque par vol pris ou découvert à l’aube, trois marques ferment les étals) : les marques à côté de la réputation, expliquées dans le jeu ; le vol découvert à l’aube, la fouille et les étals fermés à trois marques, la restitution chez Hale toujours ouverte, le greffier, les étals forcés la nuit ; le marchandage au moment d’acheter (trois arguments) et trois passants avec leur pièce ; le défi à pleine vie avec une mise, une fois par phase, dans l’arène aux gradins vides ; les éliminés dès le jour 6 et trois combattants génériques (portrait seul, figure générée en attendant leur art) ; la représaille de Corra ; le joueur curieux au laboratoire. **La suite : L3 (l’information et les réponses au sabotage, ce qui lui revient : Passe EVL4)**, puis L4 à L6 dans cet ordre (EV-15), chacun dans sa séance derrière `flags.v2`. **À part** : l’art des trois combattants génériques fait et en production (Passes GA1, GA2 : leurs visages en portrait, leurs feuilles au duel, derrière la version 2) ; **trois combattants de plus**, Lucan Rook, Piers Calloway et Kell Barrow, faits et en production derrière la version 2 (Passes GA3, GA4 : leurs visages en portrait, leurs feuilles au duel) ; **la note de l’opérateur sur GA3-LU1**, mot pour mot « par contre je veux de la diversivite et non uniquement des personnages a la meme couleur de peau sinon oui je suis satisfait. » : les prochains personnages avec des couleurs de peau variées, chacun sur son choix (Passe GA4) ; **GA3-S3 « Une tâche à part »** : un verrou pour le registre de `gen-image.mjs` (Passe GA3) ; l’essai de L2 en jeu par l’opérateur (L2-14). Relevé hors du lot : « Your bouts are fought » au jour 7 pour un finaliste (Passe EVL3). Le recrutement et la phase d’équipe restent un chantier plus tard.
+  - **Étape 5, le gameplay (Passe EV1)** : audit des événements, du vol, du défi, du marchandage et du récit de la version 2 contre les contrats (`briefs/audit-gameplay-ev1.md`) : le défi sans enjeu (gagné 15 fois sur 15), le vol sans suite (un voleur à réputation 0 qualifié 9 fois sur 10), le marchandage un dé, trois ambiances à 52 % des nouvelles, une seule réponse (la garde du quai) contre les deux sabotages, trois champs du pouls lus par rien, l’information et la réaction visible de la ville minces, le festival et l’investissement absents ; six défauts de lecture relevés (dont les nouvelles de fin de créneau perdues sur les places). **Fiche relue, seize sur seize à la recommandation (Passe EV2)** : https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`), quatre notes consignées mot pour mot (une représaille possible après un vol, des combattants génériques, le marchandage avec les passants, des événements qui touchent la préparation) ; les génériques « En ville, structure gardée (Recommandé) » ; la consigne : l’importance narrative et la cohérence du gameplay, sans se perdre dans la structure. **L1 fait (Passe EVL1)** : les six défauts de lecture corrigés dans la version 2 (les nouvelles des places, celles d’une action dans sa bande, « free », les causes du journal, la fiche de match, le vol réussi) ; le jeu par défaut inchangé, trois écarts à lui consignés (les codes de son journal, ses nouvelles cachées sous une bande, son quai qui redit le bandeau). **L2 fait et fusionné (Passes EVL2 à EVL4)**, la fiche relue (treize sur quatorze à la recommandation ; L2-2 « Des marques (Recommandé) » : le registre de Hale compte une marque par vol pris ou découvert à l’aube, trois marques ferment les étals) : les marques à côté de la réputation, expliquées dans le jeu ; le vol découvert à l’aube, la fouille et les étals fermés à trois marques, la restitution chez Hale toujours ouverte, le greffier, les étals forcés la nuit ; le marchandage au moment d’acheter (trois arguments) et trois passants avec leur pièce ; le défi à pleine vie avec une mise, une fois par phase, dans l’arène aux gradins vides ; les éliminés dès le jour 6 et trois combattants génériques (portrait seul, figure générée en attendant leur art) ; la représaille de Corra ; le joueur curieux au laboratoire. **La suite : L3 (l’information et les réponses au sabotage, ce qui lui revient : Passe EVL4)**, puis L4 à L6 dans cet ordre (EV-15), chacun dans sa séance derrière `flags.v2`. **À part** : l’art des trois combattants génériques fait et en production (Passes GA1, GA2 : leurs visages en portrait, leurs feuilles au duel, derrière la version 2) ; **trois combattants de plus**, Lucan Rook, Piers Calloway et Kell Barrow, faits et en production derrière la version 2 (Passes GA3, GA4 : leurs visages en portrait, leurs feuilles au duel) ; **la note de l’opérateur sur GA3-LU1**, mot pour mot « par contre je veux de la diversivite et non uniquement des personnages a la meme couleur de peau sinon oui je suis satisfait. » : les prochains personnages avec des couleurs de peau variées, chacun sur son choix (Passe GA4) ; l’essai de L2 en jeu par l’opérateur (L2-14). Relevé hors du lot : « Your bouts are fought » au jour 7 pour un finaliste (Passe EVL3). Le recrutement et la phase d’équipe restent un chantier plus tard.
   - **La manette (Passe MN1)** : état des lieux de chaque chemin d'entrée (seul le duel lit une manette, la première seulement), prototype de revue des glyphes (DEV, `?padglyph=`), fiche https://claude.ai/artifact/F2fYfXXjwL5y6o7p5q4fj1 relue onze sur onze à la recommandation ; **construite et prouvée (Passe MN2)** : la ville, les places, toutes les pages, l'écran titre et le duel de la version 2 à la manette, le jeu au clavier à 0 px contre `main` (DEV et paquets), une manette simulée jouant le premier jour et un combat. **Reste l'essai de l'opérateur avec sa manette** (MN-11) : le son à la première pression (MN-10), la vibration, la zone morte et la marche la plus lente.
   - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
@@ -717,7 +716,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10), SN7-SN8 (Passe SN14), SN9-SN10 (Passe SN16), SN11-SN12 et SN13-SN14 (Passe SN19), SN15-SN17 (Passe SN22), SA1-SN18 (Passe CH1), SN19-SN22 (Passe PU2), CH1-CH2 (Passe MN2), PU1-PU2 (Passe EV2), EV1-MN2 (Passe EVL2), EV2-EVL1 (Passe GA1) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10), SN7-SN8 (Passe SN14), SN9-SN10 (Passe SN16), SN11-SN12 et SN13-SN14 (Passe SN19), SN15-SN17 (Passe SN22), SA1-SN18 (Passe CH1), SN19-SN22 (Passe PU2), CH1-CH2 (Passe MN2), PU1-PU2 (Passe EV2), EV1-MN2 (Passe EVL2), EV2-EVL1 (Passe GA1), EVL2-EVL3 (Passe GA3), EVL4 (Passe I2) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -891,6 +890,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Une boucle se rend en cercle, de la partition au plafond : le fichier ne contient que son corps, ce qui sonne après la fin revient au début, la dynamique passe deux fois. Un saut à la jointure se juge contre le plus grand saut du morceau (Passe SN7).
 - Une correction automatique peut cacher une faute à son propre contrôle : ce qu'un outil retire de la musique se relit (Passe SN7).
 - Un bot de laboratoire qui ne fait pas une action ne peut pas en mesurer le poids : un joueur témoin qui la fait à chaque occasion le donne, et l’on dit ce que le bot ne voit pas (Passe EV1).
+- Un test de concurrence se donne une fenêtre entre la lecture et l'écriture (une pause des seuls tests) et se prouve par la faute retirée : sans fenêtre, deux écrivains synchrones ne se croisent jamais dans un processus, et entre processus la faute ne sort que 3 fois sur 5. Un test qui veut deux actions simultanées retient ce qui pourrait les séparer (une réponse réglée sous son estimation libère le plafond) (Passe I2).
 ### Personnages : art et critique
 - La densité d'un sprite se choisit par la taille de son texel à l'écran dans le cadrage où il vit (l'arène : ×2 pour ≈ 3 px / texel en 1080p,
   comme les personnages de la ville), pas par celle de l'image source (Passe P1).
@@ -1130,3 +1130,4 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - Un événement n’a de conséquence que si quelque chose lit ce qu’il écrit : on cherche les lecteurs d’un effet (`playerFame` n’en a aucun) avant de le compter ; une page qui se recharge reprend ses nouvelles là où le joueur les a laissées (Passe EV1).
 - « Vu » se compte à l’affichage, pas à l’ouverture de la page : ce qu’une action a montré sans recharger ne se redit pas à la page suivante ; un prix pris plus tard (le créneau d’un défi) se lit dans le cœur par un champ d’affichage, la règle intacte ; une scène attend la lecture de ce qu’elle recouvrirait (Passe EVL1).
 - `tools/art-lab/gen-image.mjs` : une requête à la fois, jamais deux processus en parallèle ; son registre n'a pas de verrou, et des instances parallèles se sont écrasées (Passe GA3).
+- Un fichier partagé lu puis réécrit autour d'une attente (le registre de `gen-image.mjs` autour d'une requête) passe par un verrou de fichier créé en exclusif, et chaque écriture relit le fichier sous ce verrou ; le verrou ne se tient jamais pendant l'attente, et un verrou périmé se casse par un renommage, dont un seul réussit (Passe I2).

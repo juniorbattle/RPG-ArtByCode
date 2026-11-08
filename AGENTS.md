@@ -105,7 +105,7 @@ recent passes, "À reprendre" and "Principes à garder"; older passes are archiv
 - `npm run build` — typecheck + production bundle
 - `npm test` — unit tests of the pure logic (`tests/*.test.mjs`, built-in `node --test`, ~2 s, no browser or GPU): camera zone hysteresis,
   `planDraw`, the production cast's gate (manifest approval, SHA-256 against the provenance pack), sheet metadata, PNG decoding, the baked walk
-  cycles' ground speed and the walkers' animation clock (journal Passe S2), the image generation tool offline (a fake API and key, journal Passe I1), the game's headless core and the tournament (journal Passes L1 / L2: determinism, saves, the pure modules, the off-screen resolution against full duels, the events and the sabotage chain), the arena's combat simulation against the prototype's own script
+  cycles' ground speed and the walkers' animation clock (journal Passe S2), the image generation tool offline (a fake API and key, journal Passe I1; its ledger's lock, requests at once in one process and in four, journal Passe I2), the game's headless core and the tournament (journal Passes L1 / L2: determinism, saves, the pure modules, the off-screen resolution against full duels, the events and the sabotage chain), the arena's combat simulation against the prototype's own script
   read out of `arena/arena.html` (same events and state at every step, journal Passe P1), the arena fighters' atlas and the interface's design
   system (the fonts' bytes, the palette's tones and contrasts, the sizes, no frame left, the dialogue's band, journal Passes UI3 / UM2), the gear and the shops' comparison (`tests/wares.test.mjs`, journal Passe UM9: the numbers of a bout against the duel's own data, every line sold against what buying it really gives, what a swap replaces and loses), the pages aligned on it (`tests/ui-pages.test.mjs`, journal Passe UM11: a skill's figures at every level against the data a bout is built from, the charge's tiers, the next level against the drill's own refusal, the journal and the board losing nothing, one foot and one fade on every page), the duel of the « tour par tour
   dynamique » (`tests/combat-dynamic.test.mjs`, journal Passe C1: each rule against an oracle, the duels' length, the bot, the off-screen race
@@ -459,6 +459,13 @@ tâche, la provenance enregistrée automatiquement et la règle dans AGENTS.md. 
   request. **Cap: 5 USD per task**, kept in a git-ignored ledger (`art-lab/characters/scratch/gen-image-ledger.json`): each request is reserved at
   its worst-case estimate before it is sent and refused beyond the cap; `--cap` may only lower it. Raising the cap is the operator's decision.
   `--dry-run` shows the request and its estimate without sending anything.
+- **The ledger's lock** (the operator's GA3-S3 « Une tâche à part », journal Passes GA3 / I2): every read and write of the ledger goes through
+  `<ledger>.lock`, a file created exclusively (`fs.openSync(…, 'wx')`). The reservation, where the cap is checked against every reservation already
+  in the ledger, and the settlement each read the ledger as it is on disk under that lock and write it back before releasing it, never a copy taken
+  before the request was sent. Requests may run at once, in one process or in several: each counts once, at its cost. A request waits at most 30 s
+  for the lock and then gives up before sending; a lock older than 15 s was left by a process that died holding it and is broken (the tool holds
+  it for milliseconds, never across a request). Two requests of one task in the same second keep both their images (the later name carries its
+  ledger id).
 - The key (`OPENAI_API_KEY`) lives in the environment or in `.env.local` at the repo root, which must stay git-ignored (the tool checks it).
   It is never read by hand, printed, logged, committed or copied into a record, a message or another session. The MiniMax key of the same
   file is not used unless the operator asks.

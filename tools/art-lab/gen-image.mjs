@@ -12,6 +12,13 @@
 //   worst-case estimate BEFORE it is sent and refused if that would take its task beyond the cap (5 USD; --cap may only lower it); the
 //   answer replaces the reservation by the cost of its usage. An HTTP error is not billed (0); a request that got no answer keeps its
 //   reservation.
+// - The ledger is read and written only under its lock, `<ledger>.lock`, a file created exclusively (journal Passe I2, the operator's GA3-S3
+//   « Une tâche à part »; in journal Passe GA3, requests run in parallel overwrote each other's entries). Each step reads the ledger as it is
+//   on disk under that lock and writes it back before releasing it: the reservation, where the cap is checked against every reservation
+//   already there, then the settlement. Never a copy taken before the request was sent. The lock is held for that read and that write only
+//   (milliseconds), never across a request: a waiter gives up after LOCK_WAIT_MS (nothing sent), and a lock older than LOCK_STALE_MS was left
+//   by a process that died holding it and is broken.
+// - Two requests of one task in the same second keep both their images: a name already taken gets the request's ledger id.
 // - Generated images are NON-CANONICAL until the operator approves them. `--archive` copies one, byte for byte, into the archived sources
 //   (art-lab/characters/reference/sources/, checked by `npm run art:validate`) with its record.
 //   node tools/art-lab/gen-image.mjs --task=<kebab-name> (--prompt="..." | --prompt-file=<f.txt>) [--ref=<image> ...] [--n=1]
@@ -160,6 +167,56 @@ export function loadLedger(file) {
   return l;
 }
 export function saveLedger(file, l) { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, JSON.stringify(l, null, 2) + '\n'); }
+
+// The ledger's lock (journal Passe I2). `fs.openSync(lock, 'wx')` creates the file only if it does not exist, atomically, across processes.
+export const LOCK_WAIT_MS = 30000;                                 // a request waits this long for the ledger, then gives up before sending
+export const LOCK_STALE_MS = 15000;                                // a lock this old outlived its process: the tool holds it for milliseconds
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const BUSY = new Set(['EEXIST', 'EPERM', 'EACCES', 'EBUSY']);       // Windows answers EPERM while a released lock is still being deleted
+function readLock(lock) {                                          // { text, mtimeMs } of the lock file, or null when it is gone or unreadable
+  try { return { mtimeMs: fs.statSync(lock).mtimeMs, text: fs.readFileSync(lock, 'utf8') }; } catch { return null; }
+}
+/** a lock whose holder died: renamed aside (of two processes breaking it, one rename wins), deleted if it is still the lock judged stale,
+ *  given back otherwise (a fresh lock taken between our reading and our renaming) */
+function breakStale(lock, seen) {
+  const aside = `${lock}.stale-${process.pid}-${crypto.randomUUID()}`;
+  try { fs.renameSync(lock, aside); } catch { return; }
+  let text = null; try { text = fs.readFileSync(aside, 'utf8'); } catch { /* judged below */ }
+  if (text !== seen) { try { fs.linkSync(aside, lock); } catch { /* another process holds a new lock already */ } }
+  fs.rmSync(aside, { force: true });
+}
+async function lockLedger(file, { waitMs = LOCK_WAIT_MS, staleMs = LOCK_STALE_MS } = {}) {
+  const lock = `${file}.lock`, token = crypto.randomUUID(), t0 = Date.now();
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  for (let attempt = 0, code; ; attempt++) {
+    try {
+      const fd = fs.openSync(lock, 'wx');
+      try { fs.writeSync(fd, JSON.stringify({ token, pid: process.pid, since: new Date().toISOString() }) + '\n'); } finally { fs.closeSync(fd); }
+      return { lock, token };
+    } catch (e) { if (!BUSY.has(e?.code)) throw e; code = e.code; }
+    const held = readLock(lock);
+    if (held && Date.now() - held.mtimeMs > staleMs) { breakStale(lock, held.text); continue; }
+    if (Date.now() - t0 > waitMs) throw new Error(`the ledger is locked by another request (${path.basename(lock)}, ${code}, waited ${Math.round((Date.now() - t0) / 1000)} s): nothing sent`);
+    await sleep(Math.min(40, 2 + 2 * attempt) * (0.5 + Math.random()));
+  }
+}
+function unlockLedger({ lock, token }) {                           // only our own lock: one broken as stale belongs to its new holder
+  const held = readLock(lock);
+  let mine = false; try { mine = JSON.parse(held?.text ?? 'null')?.token === token; } catch { /* not ours */ }
+  if (mine) fs.rmSync(lock, { force: true, maxRetries: 20, retryDelay: 5 });
+}
+/** `fn` (synchronous) on the ledger as it is on disk, under its lock; the ledger is written back before the lock is released, unless `fn`
+ *  throws or `write` is false. `pause` (tests only) is awaited between the read and the write: it widens the window in which a writer that
+ *  skipped the lock would overwrite another. Returns { ledger, value } */
+export async function withLedger(file, fn, { write = true, pause, ...lockOpts } = {}) {
+  const held = await lockLedger(file, lockOpts);
+  try {
+    const ledger = loadLedger(file), value = fn(ledger);
+    if (pause) await pause();
+    if (write) saveLedger(file, ledger);
+    return { ledger, value };
+  } finally { unlockLedger(held); }
+}
 export const spent = (l, task) => round6((l.tasks[task]?.entries ?? []).reduce((s, e) => s + e.costUsd, 0));
 export const capOf = (o) => Math.min(CAP_USD, o.cap !== undefined ? Number(o.cap) : CAP_USD);
 
@@ -181,22 +238,33 @@ export function pngInfo(buf) {
 
 const stamp = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
 
-/** one request: reserve in the ledger, send, keep each image and its record, settle the ledger. Returns the written files. */
-export async function generate(o, { root = ROOT, key, fetchFn = globalThis.fetch, now = () => new Date(), log = console.log, ledgerFile = path.join(root, LEDGER), toolFile = fileURLToPath(import.meta.url) } = {}) {
+/** one request: reserve in the ledger, send, keep each image and its record, settle the ledger. Returns the written files. `lock`: the
+ *  ledger lock's options (waitMs, staleMs; pause, for the tests) */
+export async function generate(o, { root = ROOT, key, fetchFn = globalThis.fetch, now = () => new Date(), log = console.log, ledgerFile = path.join(root, LEDGER), toolFile = fileURLToPath(import.meta.url), lock = {} } = {}) {
   const say = (s) => log(redact(s, key));
   const plan = planRequest(o, { root }), cap = capOf(o);
   if (!(cap > 0)) throw new Error('--cap must be a positive number (at most the operator\'s cap)');
-  const ledger = loadLedger(ledgerFile), before = spent(ledger, plan.task);
   say(`${plan.endpoint.replace(API, '')}  ${plan.model}  ${JSON.stringify(plan.parameters)}  prompt ${plan.prompt.length} chars sha256 ${plan.promptSha256.slice(0, 16)}…  refs ${plan.refs.length}`);
-  say(`task "${plan.task}": spent ${before.toFixed(4)} USD of ${cap} ; this request at most ${plan.estimateUsd.toFixed(4)} USD`);
-  if (before + plan.estimateUsd > cap + 1e-9) throw new Error(`refused: task "${plan.task}" would reach ${(before + plan.estimateUsd).toFixed(4)} USD, beyond its cap of ${cap} USD`);
-  if (o['dry-run']) { say('dry run: nothing sent, nothing written'); return []; }
-  if (!key) throw new Error('no OPENAI_API_KEY (environment or git-ignored .env.local)');
-
-  const requestedAt = now(), entry = { date: requestedAt.toISOString(), model: plan.model, endpoint: plan.endpoint, parameters: plan.parameters,
+  const dryRun = Boolean(o['dry-run']);
+  if (!dryRun && !key) throw new Error('no OPENAI_API_KEY (environment or git-ignored .env.local)');
+  const requestedAt = now(), entry = { id: crypto.randomUUID(), date: requestedAt.toISOString(), model: plan.model, endpoint: plan.endpoint, parameters: plan.parameters,
     promptSha256: plan.promptSha256, refs: plan.refs.map((r) => r.sha256), estimateUsd: plan.estimateUsd, costUsd: plan.estimateUsd, status: 'pending', files: [] };
-  (ledger.tasks[plan.task] ??= { entries: [] }).entries.push(entry);
-  saveLedger(ledgerFile, ledger);                                     // reserved before sending: a crash keeps the worst case
+  // the reservation, under the ledger's lock: the cap against what the ledger holds now, other processes' reservations included
+  await withLedger(ledgerFile, (l) => {
+    const before = spent(l, plan.task);
+    say(`task "${plan.task}": spent ${before.toFixed(4)} USD of ${cap} ; this request at most ${plan.estimateUsd.toFixed(4)} USD`);
+    if (before + plan.estimateUsd > cap + 1e-9) throw new Error(`refused: task "${plan.task}" would reach ${(before + plan.estimateUsd).toFixed(4)} USD, beyond its cap of ${cap} USD`);
+    if (!dryRun) (l.tasks[plan.task] ??= { entries: [] }).entries.push({ ...entry });   // reserved before sending: a crash keeps the worst case
+  }, { ...lock, write: !dryRun });
+  if (dryRun) { say('dry run: nothing sent, nothing written'); return []; }
+  // the settlement, under the lock again: this entry, found by its id in the ledger as it is now, takes what the answer says
+  const settle = (fields) => withLedger(ledgerFile, (l) => {
+    Object.assign(entry, fields);
+    const entries = (l.tasks[plan.task] ??= { entries: [] }).entries, mine = entries.find((e) => e.id === entry.id);
+    if (mine) Object.assign(mine, fields);
+    else entries.push({ ...entry, note: 'its reservation was no longer in the ledger at the settlement: added back' });
+    return spent(l, plan.task);
+  }, lock);
 
   let res;
   try {
@@ -213,59 +281,75 @@ export async function generate(o, { root = ROOT, key, fetchFn = globalThis.fetch
     }
     res = await fetchFn(plan.endpoint, { method: 'POST', headers, body });
   } catch (e) {
-    entry.status = 'no answer (reservation kept)'; saveLedger(ledgerFile, ledger);
+    await settle({ status: 'no answer (reservation kept)' });
     throw new Error(redact(`request failed before an answer: ${e?.message ?? e}`, key));
   }
   const requestId = res.headers?.get?.('x-request-id') ?? null, processingMs = Number(res.headers?.get?.('openai-processing-ms')) || null;
   const text = await res.text();
   let json = null; try { json = JSON.parse(text); } catch { /* reported below */ }
   if (!res.ok) {
-    entry.status = `HTTP ${res.status}`; entry.costUsd = 0; entry.requestId = requestId; saveLedger(ledgerFile, ledger);
+    await settle({ status: `HTTP ${res.status}`, costUsd: 0, requestId });
     throw new Error(redact(`HTTP ${res.status}: ${json?.error?.message ?? text.slice(0, 300)}`, key));
   }
   const data = Array.isArray(json?.data) ? json.data : [];
-  const actual = usageCost(plan.model, json?.usage);
-  entry.status = 'answered'; entry.requestId = requestId; entry.usage = json?.usage ?? null; entry.costUsd = actual ?? plan.estimateUsd;
-  const outDir = path.resolve(root, o.out ?? path.join(OUT_DIR, plan.task)); fs.mkdirSync(outDir, { recursive: true });
-  const toolSha256 = sha(fs.readFileSync(toolFile)), written = [];
-  data.forEach((d, i) => {
-    if (typeof d?.b64_json !== 'string') return;
-    const bytes = Buffer.from(d.b64_json, 'base64'), info = pngInfo(bytes);
-    if (!info) throw new Error('the API answered with something that is not a PNG');
-    const base = `${plan.task}-${stamp(requestedAt)}-${i + 1}`, file = path.join(outDir, `${base}.png`);
-    fs.writeFileSync(file, bytes);
-    const record = {
-      kind: 'generated-image',
-      file: `${base}.png`, sha256: sha(bytes), bytes: bytes.length,
-      format: `PNG ${info.width} x ${info.height}, bit depth ${info.bitDepth}, colour type ${info.colourType}${info.interlaced ? ', interlaced' : ''}; chunks ${info.chunks.join(', ')}`,
-      status: 'NON-CANONICAL: generated, awaiting the operator\'s review (AGENTS.md, "Image generation")',
-      generation: {
-        tool: 'tools/art-lab/gen-image.mjs', toolSha256,
-        endpoint: `POST ${plan.endpoint}`, model: plan.model, parameters: plan.parameters,
-        prompt: plan.prompt, promptSha256: plan.promptSha256, ...(plan.promptFile ? { promptFile: plan.promptFile } : {}),
-        references: plan.refs.map((r) => ({ file: r.file, sha256: r.sha256, bytes: r.bytes })),
-        image: `${i + 1} of ${data.length}`, task: plan.task,
-        requestedAt: requestedAt.toISOString(),
-        response: { requestId, created: typeof json.created === 'number' ? new Date(json.created * 1000).toISOString() : null, processingMs,
-          ...(typeof d.revised_prompt === 'string' ? { revisedPrompt: d.revised_prompt } : {}) },
-        usage: json.usage ?? null,
-        costUsd: { request: { estimate: plan.estimateUsd, fromUsage: actual }, prices: plan.price, priceTable: PRICE_TABLE,
-          estimateBasis: plan.price.outTokens === 'table' ? 'the published output-token table of OpenAI' : `no published output-token table: ${CEILING} x the earlier models' table as the worst case`,
-          note: 'computed by this tool from the response usage and its price table; the account\'s invoice is authoritative' },
-      },
-      c2pa: { presence: info.c2pa.length ? info.c2pa.map((c) => `caBX chunk at offset ${c.offset}, ${c.bytes} B`).join('; ') : 'no caBX chunk',
-        verification: 'NOT VERIFIED: located only, no C2PA validator is installed' },
-      rights: 'generated through the OpenAI API with the operator\'s account (its terms apply); third-party rights not verified; any canonical or production use needs the operator\'s decision',
-      notInvented: 'Every field comes from the request this tool sent and the API\'s answer; nothing is inferred.',
-    };
-    fs.writeFileSync(path.join(outDir, `${base}.source.json`), redact(JSON.stringify(record, null, 2), key) + '\n');
-    entry.files.push(path.relative(root, file).split(path.sep).join('/'));
-    written.push(file);
-  });
-  saveLedger(ledgerFile, ledger);
-  say(`answered: ${written.length} image(s), request ${requestId ?? '?'}, cost ${entry.costUsd.toFixed(4)} USD${actual === null ? ' (estimate: no usage in the answer)' : ''}; task now ${spent(ledger, plan.task).toFixed(4)} USD`);
+  const actual = usageCost(plan.model, json?.usage), files = [];
+  const answered = { status: 'answered', requestId, usage: json?.usage ?? null, costUsd: actual ?? plan.estimateUsd, files };
+  const outDir = path.resolve(root, o.out ?? path.join(OUT_DIR, plan.task)), written = [];
+  try {
+    fs.mkdirSync(outDir, { recursive: true });
+    const toolSha256 = sha(fs.readFileSync(toolFile));
+    data.forEach((d, i) => {
+      if (typeof d?.b64_json !== 'string') return;
+      const bytes = Buffer.from(d.b64_json, 'base64'), info = pngInfo(bytes);
+      if (!info) throw new Error('the API answered with something that is not a PNG');
+      // a name another request of this task took in the same second is never overwritten: this request's ledger id goes into the name
+      const stem = `${plan.task}-${stamp(requestedAt)}`, file = claimFile(outDir, [`${stem}-${i + 1}`, `${stem}-${entry.id.slice(0, 8)}-${i + 1}`], bytes);
+      const base = path.basename(file, '.png');
+      const record = {
+        kind: 'generated-image',
+        file: `${base}.png`, sha256: sha(bytes), bytes: bytes.length,
+        format: `PNG ${info.width} x ${info.height}, bit depth ${info.bitDepth}, colour type ${info.colourType}${info.interlaced ? ', interlaced' : ''}; chunks ${info.chunks.join(', ')}`,
+        status: 'NON-CANONICAL: generated, awaiting the operator\'s review (AGENTS.md, "Image generation")',
+        generation: {
+          tool: 'tools/art-lab/gen-image.mjs', toolSha256,
+          endpoint: `POST ${plan.endpoint}`, model: plan.model, parameters: plan.parameters,
+          prompt: plan.prompt, promptSha256: plan.promptSha256, ...(plan.promptFile ? { promptFile: plan.promptFile } : {}),
+          references: plan.refs.map((r) => ({ file: r.file, sha256: r.sha256, bytes: r.bytes })),
+          image: `${i + 1} of ${data.length}`, task: plan.task,
+          requestedAt: requestedAt.toISOString(),
+          response: { requestId, created: typeof json.created === 'number' ? new Date(json.created * 1000).toISOString() : null, processingMs,
+            ...(typeof d.revised_prompt === 'string' ? { revisedPrompt: d.revised_prompt } : {}) },
+          usage: json.usage ?? null,
+          costUsd: { request: { estimate: plan.estimateUsd, fromUsage: actual }, prices: plan.price, priceTable: PRICE_TABLE,
+            estimateBasis: plan.price.outTokens === 'table' ? 'the published output-token table of OpenAI' : `no published output-token table: ${CEILING} x the earlier models' table as the worst case`,
+            note: 'computed by this tool from the response usage and its price table; the account\'s invoice is authoritative' },
+        },
+        c2pa: { presence: info.c2pa.length ? info.c2pa.map((c) => `caBX chunk at offset ${c.offset}, ${c.bytes} B`).join('; ') : 'no caBX chunk',
+          verification: 'NOT VERIFIED: located only, no C2PA validator is installed' },
+        rights: 'generated through the OpenAI API with the operator\'s account (its terms apply); third-party rights not verified; any canonical or production use needs the operator\'s decision',
+        notInvented: 'Every field comes from the request this tool sent and the API\'s answer; nothing is inferred.',
+      };
+      fs.writeFileSync(path.join(outDir, `${base}.source.json`), redact(JSON.stringify(record, null, 2), key) + '\n');
+      files.push(path.relative(root, file).split(path.sep).join('/'));
+      written.push(file);
+    });
+  } catch (e) {                                                       // the request is paid even when its images cannot be kept
+    await settle({ ...answered, status: `answered; images not kept: ${redact(e?.message ?? e, key)}` });
+    throw e;
+  }
+  const { value: total } = await settle(answered);
+  say(`answered: ${written.length} image(s), request ${requestId ?? '?'}, cost ${entry.costUsd.toFixed(4)} USD${actual === null ? ' (estimate: no usage in the answer)' : ''}; task now ${total.toFixed(4)} USD`);
   for (const f of written) say(`  ${path.relative(root, f)}`);
   return written;
+}
+
+/** writes `bytes` under the first of `stems` (+ .png) that does not exist yet, created exclusively; refuses when all are taken */
+function claimFile(dir, stems, bytes) {
+  for (const s of stems) {
+    const f = path.join(dir, `${s}.png`);
+    try { fs.writeFileSync(f, bytes, { flag: 'wx' }); return f; } catch (e) { if (e?.code !== 'EEXIST') throw e; }
+  }
+  throw new Error(`${stems.join('.png, ')}.png exist already: the image is not written over another`);
 }
 
 /** copy a generated image byte for byte into the archived sources, with its record (renamed, the copy noted) */
@@ -301,7 +385,7 @@ export function rootOf(o) {
 async function main() {
   const o = parseArgs(process.argv.slice(2)), root = rootOf(o);
   if (o.spent) {
-    const l = loadLedger(path.join(root, LEDGER));
+    const { ledger: l } = await withLedger(path.join(root, LEDGER), () => {}, { write: false });
     for (const [t, v] of Object.entries(l.tasks)) console.log(`${t.padEnd(32)} ${spent(l, t).toFixed(4)} USD of ${CAP_USD}  (${v.entries.length} request(s))`);
     return;
   }
