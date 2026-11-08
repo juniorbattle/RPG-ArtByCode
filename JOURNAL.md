@@ -379,6 +379,21 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Page privée https://claude.ai/artifact/MTC9VJ4Qjr8Lagg8WQLw7o, source `briefs/fiche-festival.html` (la page des fiches de lot). Collection `decisions` relue vide à la publication. Vérifiée en local : neuf cartes, vingt-deux options, aucun débordement à 375 px. [KO → corrigé] Un premier contrôle lisait la page plus large que la fenêtre : le panneau du navigateur était caché (largeur nulle), la page n'y était pour rien ; le tableau comparatif de FE-1 défilait à 819 px au téléphone : il passe désormais à la ligne.
 - Neuf cartes, chacune avec sa recommandation : FE-1 l'épreuve (« La Lanterne de Tête » : le soir de la parade, chaque habitant porte une lanterne derrière le combattant qu'il honore, le plus long cortège ouvre la parade ; en alternative « Le Théâtre d'Ombres », lire en ombres les coups des huit, ou la parade seule en scène) ; FE-2 qui marche derrière toi (la foule selon le renom, aux paliers des saluts de L5, et les gens de la ville un par un, chacun avec sa raison déjà lisible dans le jeu) ; FE-3 trois coups de main le jour 9 (deux d'un créneau, un de 10 pièces) ; FE-4 les fidèles des rivaux sur la page du tournoi ; FE-5 la récompense (bourse de 30, +5 de réputation, +10 de célébrité, la chanson de Wren) ; FE-6 marcher derrière un autre rival (L4-6) ; FE-7 la parade ferme le passage vers le parvis ce soir-là ; FE-8 la parade jouée en direct ; FE-9 la suite.
 
+### Les choix de l'opérateur sur la fiche du festival, mot pour mot (neuf sur neuf, cliqués le 2026-11-08 entre 14 h 19 et 14 h 20 UTC, aucune note ; l'opérateur : « Fiche remplie »)
+| Carte | Ce qu'elle demandait | Choix |
+|---|---|---|
+| FE-1 | Quelle épreuve pour le jour 9 | « La Lanterne de Tête » |
+| FE-2 | Qui marche derrière toi | « La foule et les gens » |
+| FE-3 | Ce que tu fais le jour 9 | « Trois coups de main » |
+| FE-4 | Les rivaux et leurs fidèles | « Des fidèles nommés » |
+| FE-5 | Ce que gagne celui qui ouvre la parade | « Bourse, réputation, célébrité, chanson » |
+| FE-6 | Marcher derrière un autre : aider un autre rival qu'Orla (L4-6) | « Oui, au festival » |
+| FE-7 | La parade change la circulation | « Oui, le passage fermé ce soir-là » |
+| FE-8 | La parade jouée en direct | « Une scène en direct » |
+| FE-9 | La suite | « Construire après la fiche, puis la fiche de lot » |
+
+- Les neuf choix suivent la recommandation de leur carte : le festival se construit tel que la fiche le décrit (ses nombres « proposés »), puis une fiche de lot. L4-6 trouve sa réponse au festival (FE-6).
+
 ### Fait — EV-13, derrière la version 2 [OK, à prouver dans le navigateur]
 1. **Rhosk et Tobin, une réplique par acte** (`v2Lines`, `src/narrative/v2story.ts`) : l'acte 1 sa réplique ; l'acte 2 garde leurs mots de L2b (dans la course au titre ou à la Porte) ; l'acte 3 selon l'état (le joueur finaliste ou non, le rival finaliste, le joueur couronné). Les mots de L4 (le sable de Rhosk, l'attitude) passent avant ou après, comme avant. **Pour qu'on entende l'acte 1, ils sont au terrain d'entraînement dès le jour 1** (en portrait, comme depuis L2b ; `days` retiré de `src/narrative/people.ts`) ; le défi contre eux reste à partir du jour 6, hors du titre (EV-4) ; les observer devient possible dès le jour 1 (L3 : « Rhosk et Tobin à partir du jour 6 » ; écart à mettre sur la fiche de lot).
 2. **Quatre scènes selon l'état** (`CUTSCENES`) : `gate` (le parvis, le jour 6 de jour, pour un joueur hors de la coupe : Odo, puis Marek, qui s'est battu à la Porte sa première année, ou qui s'y tient lui-même, puis le héros) ; `semiWon` et `semiLost` (le parvis, le soir de la demi-finale ou le lendemain de jour : gagnée, Odo nomme les deux finalistes et le battu parle selon son tempérament ; perdue, Sœur Anwen soigne et le vainqueur parle selon le sien ; la troisième place le jour 8) ; `unmasked` (la place de la halle, le premier soir après que la ville sait : son homme pris à la forge, Hale prévenu ou Cassius confronté, le dernier d'abord ; Lio le dit, Cassius répond selon la chaîne, la forge ou la sangle ; le coupable connu du joueur seul n'est pas un scandale) ; `epilogue` (le parvis, le soir du jour 10 après le couronnement : Odo couronne, Marek parle selon le champion et la place du héros, le héros dit le mot de sa place).
