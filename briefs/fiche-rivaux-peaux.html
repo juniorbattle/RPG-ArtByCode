@@ -1,0 +1,563 @@
+<title>Peaux des rivaux</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+.flip { display: flex; flex-wrap: wrap; gap: 4px; background: #39414f; padding: 10px; border-radius: 8px; margin: 10px 0; justify-content: center; }
+.flip figure { margin: 0; text-align: center; }
+.flip canvas { display: block; image-rendering: pixelated; width: 144px; height: auto; }
+.flip figcaption { color: #e6e9ef; font-size: 14px; }
+.info { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions de l’opérateur · 8 novembre 2026</span>
+    <h1>La couleur de peau des sept rivaux</h1>
+    <p class="lede">Ta demande : « Il faudra aussi effectuer des variants de peau des combattants principaux ». Fait comme pour les génériques et les PNJ : les feuilles approuvées des sept rivaux ne changent pas ; un masque de peau choisit les texels de peau sur chaque image, et chacun prend l’une des quatre peaux que tu as approuvées pour les PNJ (claire, moyenne, hâlée, foncée), au même rang de clarté. Nouveau par rapport aux génériques : les rivaux marchent aussi sur les places de la version 2, et la peau les y suit (leur feuille de ville), comme dans le duel, les dialogues et le HUD. Aujourd’hui, les sept ont une peau claire : la recommandation propose une distribution variée (deux foncées, deux hâlées, deux moyennes, une claire), en tenant compte des génériques (Kell et Ambrose foncés, Piers hâlé, Corra et Lucan clairs) et de Ren (hâlé). La peau moyenne est proche de la claire d’aujourd’hui : elle se voit sur les planches, à peine sur une place. Ren n’est pas sur cette fiche : il aura sa propre personnalisation. Rien ne change dans le jeu avant ta relecture.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot, j’inscris l’approbation et les empreintes dans le fichier des variantes des rivaux, je refais les preuves (le duel et les places sous la peau choisie, un défi joué, le jeu par défaut et la version 2 hors des rivaux à 0 px contre main), puis je fusionne dans main.</p>
+    <p class="info">Dans Aseprite : les documents de revue sont dans art-lab/characters/scratch/rival-skins/ du dossier du projet (un par feuille, <code>&lt;id&gt;-x2-v2-peaux.aseprite</code> et <code>&lt;id&gt;-x3-combat-peaux.aseprite</code>). Affiche un calque « peau : … » ou le « masque peau » (cyan), et parcours les images avec les étiquettes du duel. Une correction se note ici ; elle va dans le fichier des masques, jamais dans la feuille.</p>
+    <p class="src">Sources : journal Passes V0 à V3 (les variantes des PNJ), GS1 / GS2 (les génériques), RS1 (les rivaux) ; art-lab/characters/variants/rivals.json ; src/characters/FighterSkins.ts, FighterSkinCast.ts, PlazaCast.ts.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+ {
+  "id": "marek",
+  "title": "Marek Varn, the Iron Gate",
+  "fam": "var(--voile)",
+  "sub": "Le champion de l’an dernier, sur le parvis : son visage (ses mains sont dans des gantelets).",
+  "items": [
+   {
+    "id": "RS-marek",
+    "tag": "peau",
+    "title": "Marek Varn : sa couleur de peau",
+    "ctx": "Masqués : son visage, ses oreilles et sa lèvre dans la barbe (ses mains sont dans des gantelets). Ses cheveux et sa barbe gris, sa fourrure, sa cape bleue, son armure et l’or de ses galons gardent leurs couleurs. Relu trois fois à froid, image par image : aucune prise à tort. Reste : un liseré de 3 à 5 texels entre la joue et la moustache dans une dizaine d’images de combat (peu visible).",
+    "shots": [
+     [
+      "img/marek-lineup.png",
+      "Marek Varn : l’original, puis les quatre peaux candidates. À gauche le visage du portrait (et du HUD), la feuille de ville de face et de profil (celle des places) ; à droite six images de la feuille de combat (repos, frappe, compétence, coup reçu, K.O., victoire), sur fond de nuit et de sable. Sans lumière : la recoloration seule."
+     ],
+     [
+      "img/marek-duel.png",
+      "Marek Varn dans le duel de la version 2, le soir (à gauche) et à midi (à droite), avec son visage dans le HUD : l’original puis claire, moyenne, hâlée, foncée (de haut en bas)."
+     ]
+    ],
+    "rec": "Foncée : ses cheveux et sa barbe gris se détachent nettement sur une peau foncée, le soir comme à midi ; c’est le champion, un adversaire d’honneur.",
+    "opts": [
+     "Garder l’original",
+     "Claire (light)",
+     "Moyenne (medium)",
+     "Hâlée (tan)",
+     "Foncée (dark)"
+    ],
+    "recIdx": 4,
+    "src": "art-lab/characters/variants/rivals.json (fighters.marek) ; masques : tools/art-lab/skin-masks.mjs ; planche : tools/art-lab/skin-lineup.mjs ; documents Aseprite : marek-x2-v2-peaux.aseprite, marek-x3-combat-peaux.aseprite"
+   }
+  ]
+ },
+ {
+  "id": "vessa",
+  "title": "Vessa Lark, the Quickblade",
+  "fam": "var(--cendre)",
+  "sub": "La duelliste des villes du fleuve, sur le parvis : son visage, ses bras et ses mains.",
+  "items": [
+   {
+    "id": "RS-vessa",
+    "tag": "peau",
+    "title": "Vessa Lark : sa couleur de peau",
+    "ctx": "Masqués : son visage, ses oreilles, son cou, ses bras, ses mains et ses cuisses entre les pans de sa jupe. Ses cheveux, sa tunique violette, ses mancherons crème, les galons dorés de ses pans, son cuir et ses lames gardent leurs couleurs. Avec Orla, c’est la plus difficile : sa peau partage sa palette avec les mancherons et les galons. Relu trois fois à froid ; chaque prise à tort relevée (des mancherons mouchetés de brun, des galons de pan) est rendue. Restent des texels de transition isolés (un texel) au front, à l’oreille et à la mâchoire dans plusieurs poses, et une zone sous le menton mêlée de cuir à une compétence (laissée).",
+    "shots": [
+     [
+      "img/vessa-lineup.png",
+      "Vessa Lark : l’original, puis les quatre peaux candidates. À gauche le visage du portrait (et du HUD), la feuille de ville de face et de profil (celle des places) ; à droite six images de la feuille de combat (repos, frappe, compétence, coup reçu, K.O., victoire), sur fond de nuit et de sable. Sans lumière : la recoloration seule."
+     ],
+     [
+      "img/vessa-duel.png",
+      "Vessa Lark dans le duel de la version 2, le soir (à gauche) et à midi (à droite), avec son visage dans le HUD : l’original puis claire, moyenne, hâlée, foncée (de haut en bas)."
+     ]
+    ],
+    "rec": "Garder l’original : avec Marek et Orla en foncé, Ilse et Rhosk hâlés, Cassius et Tobin en moyenne, une peau claire reste parmi les rivaux, comme Corra et Lucan chez les génériques.",
+    "opts": [
+     "Garder l’original",
+     "Claire (light)",
+     "Moyenne (medium)",
+     "Hâlée (tan)",
+     "Foncée (dark)"
+    ],
+    "recIdx": 0,
+    "src": "art-lab/characters/variants/rivals.json (fighters.vessa) ; masques : tools/art-lab/skin-masks.mjs ; planche : tools/art-lab/skin-lineup.mjs ; documents Aseprite : vessa-x2-v2-peaux.aseprite, vessa-x3-combat-peaux.aseprite"
+   }
+  ]
+ },
+ {
+  "id": "orla",
+  "title": "Orla Brask, of the Docks",
+  "fam": "var(--ronce)",
+  "sub": "La docker du quai, sur la lice d’entraînement : son visage, ses bras, ses mains et ses cuisses.",
+  "items": [
+   {
+    "id": "RS-orla",
+    "tag": "peau",
+    "title": "Orla Brask : sa couleur de peau",
+    "ctx": "Masqués : son visage, ses oreilles, ses bras, ses mains et ses cuisses. Ses cheveux roux, son tablier et sa cape rouges, les galons crème, le pan beige de sa jupe, ses spalières, son cuir et ses lames gardent leurs couleurs. Sa peau porte exactement les couleurs des galons du tablier. Relu trois fois à froid ; les galons, une spalière qui clignotait en marchant et un reflet du pan, pris à tort en cours de route, sont rendus. Deux lectures tranchées à la dernière correction : une ligne du coup puissant lue comme le bord du pan beige (laissée) ; les bandes pêche dans la fente entre le tablier et le pan, lues comme la cuisse (prises). Restent des texels de transition isolés.",
+    "shots": [
+     [
+      "img/orla-lineup.png",
+      "Orla Brask : l’original, puis les quatre peaux candidates. À gauche le visage du portrait (et du HUD), la feuille de ville de face et de profil (celle des places) ; à droite six images de la feuille de combat (repos, frappe, compétence, coup reçu, K.O., victoire), sur fond de nuit et de sable. Sans lumière : la recoloration seule."
+     ],
+     [
+      "img/orla-duel.png",
+      "Orla Brask dans le duel de la version 2, le soir (à gauche) et à midi (à droite), avec son visage dans le HUD : l’original puis claire, moyenne, hâlée, foncée (de haut en bas)."
+     ]
+    ],
+    "rec": "Foncée : avec ses cheveux roux, une peau foncée se lit nettement, le soir comme à midi ; sur la lice d’entraînement, où elle paraît de jour, une peau moyenne ne se distinguerait presque pas de l’originale.",
+    "opts": [
+     "Garder l’original",
+     "Claire (light)",
+     "Moyenne (medium)",
+     "Hâlée (tan)",
+     "Foncée (dark)"
+    ],
+    "recIdx": 4,
+    "src": "art-lab/characters/variants/rivals.json (fighters.orla) ; masques : tools/art-lab/skin-masks.mjs ; planche : tools/art-lab/skin-lineup.mjs ; documents Aseprite : orla-x2-v2-peaux.aseprite, orla-x3-combat-peaux.aseprite"
+   }
+  ]
+ },
+ {
+  "id": "cassius",
+  "title": "Cassius Dree, of House Dree",
+  "fam": "var(--astre)",
+  "sub": "Le noble de la poule, sur la place de la halle le soir : son visage (armure et gantelets).",
+  "items": [
+   {
+    "id": "RS-cassius",
+    "tag": "peau",
+    "title": "Cassius Dree : sa couleur de peau",
+    "ctx": "Masqués : son visage et ses oreilles (armure et gantelets). Ses cheveux bleu nuit, sa cape, son armure et ses galons gardent leurs couleurs. Relu trois fois à froid : propre à la dernière lecture. Il paraît le soir sur la place de la halle : de nuit, une peau moyenne se distingue à peine de l’originale (voir la carte de la mise en production).",
+    "shots": [
+     [
+      "img/cassius-lineup.png",
+      "Cassius Dree : l’original, puis les quatre peaux candidates. À gauche le visage du portrait (et du HUD), la feuille de ville de face et de profil (celle des places) ; à droite six images de la feuille de combat (repos, frappe, compétence, coup reçu, K.O., victoire), sur fond de nuit et de sable. Sans lumière : la recoloration seule."
+     ],
+     [
+      "img/cassius-duel.png",
+      "Cassius Dree dans le duel de la version 2, le soir (à gauche) et à midi (à droite), avec son visage dans le HUD : l’original puis claire, moyenne, hâlée, foncée (de haut en bas)."
+     ]
+    ],
+    "rec": "Moyenne : avec Marek et Orla en foncé, Ilse et Rhosk hâlés, elle complète une distribution variée sans mettre une peau foncée sur un rival hostile seulement. Hâlée se voit davantage, foncée tient aussi (planche).",
+    "opts": [
+     "Garder l’original",
+     "Claire (light)",
+     "Moyenne (medium)",
+     "Hâlée (tan)",
+     "Foncée (dark)"
+    ],
+    "recIdx": 2,
+    "src": "art-lab/characters/variants/rivals.json (fighters.cassius) ; masques : tools/art-lab/skin-masks.mjs ; planche : tools/art-lab/skin-lineup.mjs ; documents Aseprite : cassius-x2-v2-peaux.aseprite, cassius-x3-combat-peaux.aseprite"
+   }
+  ]
+ },
+ {
+  "id": "ilse",
+  "title": "Ilse Morrow, of the Temple",
+  "fam": "var(--voile)",
+  "sub": "La chevalière du Temple, sur la lice d’entraînement : son visage et ses mains.",
+  "items": [
+   {
+    "id": "RS-ilse",
+    "tag": "peau",
+    "title": "Ilse Morrow : sa couleur de peau",
+    "ctx": "Masqués : son visage, ses oreilles et ses mains. Ses cheveux blonds, sa coiffe crème et bleue, sa robe, ses galons dorés et son épée gardent leurs couleurs. Sa peau partage ses ombres avec ses cheveux et son galon : la plus longue à reprendre. Relu trois fois à froid ; deux prises à tort trouvées en cours de route (une bande au-dessus du bandeau, la bande dorée de la robe) sont rendues ; la dernière lecture a trouvé le haut du visage resté clair dans plusieurs poses, repris. Restent : sa main levée derrière la tête (strike.2) et le bout de ses doigts (heavy.3) en partie ; une colonne à gauche de l’œil lue comme une mèche (laissée). Face contre terre au K.O., elle ne montre aucune peau.",
+    "shots": [
+     [
+      "img/ilse-lineup.png",
+      "Ilse Morrow : l’original, puis les quatre peaux candidates. À gauche le visage du portrait (et du HUD), la feuille de ville de face et de profil (celle des places) ; à droite six images de la feuille de combat (repos, frappe, compétence, coup reçu, K.O., victoire), sur fond de nuit et de sable. Sans lumière : la recoloration seule."
+     ],
+     [
+      "img/ilse-duel.png",
+      "Ilse Morrow dans le duel de la version 2, le soir (à gauche) et à midi (à droite), avec son visage dans le HUD : l’original puis claire, moyenne, hâlée, foncée (de haut en bas)."
+     ]
+    ],
+    "rec": "Hâlée : avec ses cheveux blonds et sa coiffe crème, une peau hâlée se lit bien, le soir comme à midi ; foncée tient aussi (planche).",
+    "opts": [
+     "Garder l’original",
+     "Claire (light)",
+     "Moyenne (medium)",
+     "Hâlée (tan)",
+     "Foncée (dark)"
+    ],
+    "recIdx": 3,
+    "src": "art-lab/characters/variants/rivals.json (fighters.ilse) ; masques : tools/art-lab/skin-masks.mjs ; planche : tools/art-lab/skin-lineup.mjs ; documents Aseprite : ilse-x2-v2-peaux.aseprite, ilse-x3-combat-peaux.aseprite"
+   }
+  ]
+ },
+ {
+  "id": "rhosk",
+  "title": "Rhosk, the Northman",
+  "fam": "var(--cendre)",
+  "sub": "Le mercenaire d’au-delà des cols, en portrait et en duel (il ne marche sur aucune place) : son visage, ses bras nus et ses mains.",
+  "items": [
+   {
+    "id": "RS-rhosk",
+    "tag": "peau",
+    "title": "Rhosk : sa couleur de peau",
+    "ctx": "Masqués : son visage, ses oreilles, ses lèvres dans la barbe, ses bras nus et ses mains. Sa barbe et ses cheveux bruns, sa fourrure, ses brassards de cuir et sa hache gardent leurs couleurs. Relu trois fois à froid ; la dernière lecture a trouvé une prise à tort (l’anneau de sa sangle, au coup puissant), rendue. Reste : le bord d’ombre de ses bras, peint dans des tons qu’il partage avec le cuir et la barbe, en partie clair dans plusieurs images de combat (un liseré d’un texel, peu visible).",
+    "shots": [
+     [
+      "img/rhosk-lineup.png",
+      "Rhosk : l’original, puis les quatre peaux candidates. À gauche le visage du portrait (et du HUD), la feuille de ville de face et de profil (celle des places et des portraits) ; à droite six images de la feuille de combat (repos, frappe, compétence, coup reçu, K.O., victoire), sur fond de nuit et de sable. Sans lumière : la recoloration seule."
+     ],
+     [
+      "img/rhosk-duel.png",
+      "Rhosk dans le duel de la version 2, le soir (à gauche) et à midi (à droite), avec son visage dans le HUD : l’original puis claire, moyenne, hâlée, foncée (de haut en bas)."
+     ]
+    ],
+    "rec": "Hâlée : en foncée, sa peau se fond dans sa barbe brune (planche) ; hâlée garde la barbe et le visage lisibles, le soir comme à midi.",
+    "opts": [
+     "Garder l’original",
+     "Claire (light)",
+     "Moyenne (medium)",
+     "Hâlée (tan)",
+     "Foncée (dark)"
+    ],
+    "recIdx": 3,
+    "src": "art-lab/characters/variants/rivals.json (fighters.rhosk) ; masques : tools/art-lab/skin-masks.mjs ; planche : tools/art-lab/skin-lineup.mjs ; documents Aseprite : rhosk-x2-v2-peaux.aseprite, rhosk-x3-combat-peaux.aseprite"
+   }
+  ]
+ },
+ {
+  "id": "tobin",
+  "title": "Tobin Fenn, the Hopeful",
+  "fam": "var(--ronce)",
+  "sub": "Le garçon de ferme à l’épée, en portrait et en duel (il ne marche sur aucune place) : son visage et ses mains.",
+  "items": [
+   {
+    "id": "RS-tobin",
+    "tag": "peau",
+    "title": "Tobin Fenn : sa couleur de peau",
+    "ctx": "Masqués : son visage, ses oreilles et ses mains. Ses cheveux bruns, son écharpe verte, sa tunique crème, son cuir et son épée gardent leurs couleurs. Relu trois fois à froid : la garde de son épée, prise à tort au début, est rendue ; aucune prise à tort à la dernière lecture.",
+    "shots": [
+     [
+      "img/tobin-lineup.png",
+      "Tobin Fenn : l’original, puis les quatre peaux candidates. À gauche le visage du portrait (et du HUD), la feuille de ville de face et de profil (celle des places et des portraits) ; à droite six images de la feuille de combat (repos, frappe, compétence, coup reçu, K.O., victoire), sur fond de nuit et de sable. Sans lumière : la recoloration seule."
+     ],
+     [
+      "img/tobin-duel.png",
+      "Tobin Fenn dans le duel de la version 2, le soir (à gauche) et à midi (à droite), avec son visage dans le HUD : l’original puis claire, moyenne, hâlée, foncée (de haut en bas)."
+     ]
+    ],
+    "rec": "Moyenne : une peau un peu plus chaude que l’originale, qui varie la distribution sans changer sa figure de garçon de ferme. Elle se voit sur la planche, à peine en jeu : hâlée ou foncée (qui lui vont aussi) se voient davantage.",
+    "opts": [
+     "Garder l’original",
+     "Claire (light)",
+     "Moyenne (medium)",
+     "Hâlée (tan)",
+     "Foncée (dark)"
+    ],
+    "recIdx": 2,
+    "src": "art-lab/characters/variants/rivals.json (fighters.tobin) ; masques : tools/art-lab/skin-masks.mjs ; planche : tools/art-lab/skin-lineup.mjs ; documents Aseprite : tobin-x2-v2-peaux.aseprite, tobin-x3-combat-peaux.aseprite"
+   }
+  ]
+ },
+ {
+  "id": "reste",
+  "title": "Ce qui va avec",
+  "fam": "var(--ronce)",
+  "sub": "La mise en production, les places.",
+  "items": [
+   {
+    "id": "RS-PROD",
+    "tag": "production",
+    "title": "Les peaux choisies en production derrière la version 2",
+    "ctx": "Comme pour les génériques : art-lab/characters/variants/rivals.json passe « approuvé », avec tes choix cités, la peau retenue pour chacun et l’empreinte des masques de ses deux feuilles, vérifiée au chargement. Les feuilles et leurs exports ne changent pas. La peau suit le rival partout où il paraît dans une partie de la version 2 : sur les places (sa feuille de ville), son visage dans les dialogues et dans le HUD, sa feuille dans le duel. Le jeu par défaut et le district ne les chargent jamais. Preuves : le duel et les places sous la peau choisie, un défi joué de bout en bout, le jeu par défaut et la version 2 hors des rivaux à 0 px contre main, puis la fusion.",
+    "shots": [
+     [
+      "img/places.png",
+      "Les places de la version 2 sans (à gauche) et avec (à droite) les peaux recommandées, agrandies ×3 : le parvis à midi (Marek, foncée), la lice d’entraînement à midi (Orla, foncée), la place de la halle le soir (Cassius, moyenne : à peine visible de nuit). Le reste de l’image ne change pas."
+     ]
+    ],
+    "rec": "En production avec les peaux choisies sur cette fiche, puis la fusion dans main.",
+    "opts": [
+     "En production",
+     "Pas encore (en note)"
+    ],
+    "recIdx": 0,
+    "src": "Passes GS1 / GS2 (la porte des peaux des génériques), RS1 ; src/characters/FighterSkinCast.ts, BakedCast.ts (CastEntry.tone), PlazaCast.ts"
+   }
+  ]
+ }
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.flip) c.append(flipbook(it.flip));
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+/** the clips of a sheet playing in small canvases, each frame held as long as in the duel (cells of 192 x 288, six to a row in the export; the empty top rows left out) */
+function flipbook(f) {
+  const box = el('div', { class: 'flip' }), img = new Image(), T = 60, H = 288 - T, scale = f.scale ?? 1;
+  const list = f.clips.map(([label, first, durations]) => {
+    const c = el('canvas', { width: String(192 * scale), height: String(H * scale), role: 'img', 'aria-label': label });
+    box.append(el('figure', {}, c, el('figcaption', {}, label)));
+    return { c, first, durations, n: 0, next: 0 };
+  });
+  img.onload = () => {
+    const tick = (t) => {
+      for (const a of list) {
+        if (t < a.next) continue;
+        const x = a.c.getContext('2d'), k = a.first + a.n, sx = (k % 6) * 192, sy = Math.floor(k / 6) * 288;
+        x.imageSmoothingEnabled = false; x.clearRect(0, 0, a.c.width, a.c.height); x.drawImage(img, sx, sy + T, 192, H, 0, 0, a.c.width, a.c.height);
+        a.next = t + a.durations[a.n] + (a.n === a.durations.length - 1 && a.durations.length > 2 ? 500 : 0);
+        a.n = (a.n + 1) % a.durations.length;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  img.src = f.src;
+  return box;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
