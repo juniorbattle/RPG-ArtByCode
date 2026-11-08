@@ -235,7 +235,7 @@ export const ROLE_ACTIONS: T = {
   },
   scout: {
     by: (a) => a.who,
-    // a version 2 game (lot L3): every rival where they train, in the days they are in the Cité (Rhosk and Tobin from day 6)
+    // a version 2 game (lot L3): every rival where they train, in the days they are in the Cité (a passer-by's days; Rhosk and Tobin from day 6 until lot L6, from the first day since)
     list: (st) => (isV2(st)
       ? SCOUTED_V2.filter((who) => placeOf(PEOPLE[who], true) === st.place && (!PEOPLE[who].days || st.day >= PEOPLE[who].days![0])).map((who) => ({ type: 'scout', who }))
       : st.place === 'forecourt' ? SCOUTED.map((who) => ({ type: 'scout', who })) : []),

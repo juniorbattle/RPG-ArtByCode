@@ -1,5 +1,5 @@
 import type { GameState } from '../simulation';
-import { speakerName, type Cutscene } from '../narrative/v2story';
+import { speakerName, speakerOf, type Cutscene } from '../narrative/v2story';
 import { tx } from '../narrative/text';
 import { el, esc } from './style';
 import { portraitUrl } from './portraits';
@@ -52,7 +52,7 @@ export async function playCutscene(s: GameState, c: Cutscene, stage: SceneStage)
       if (skipped) break;
       if ('cam' in step) await stage.look(step.cam, step.dist, step.secs);
       else if ('walk' in step) await stage.walk(step.walk, step.to);
-      else await say(step.say, step.line());
+      else await say(speakerOf(s, step), step.line(s));
     }
   } finally {
     card.remove();

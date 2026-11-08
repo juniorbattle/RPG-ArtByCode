@@ -1,10 +1,10 @@
 import { clamp, type GameState } from '../simulation/state';
 import type { ActionDef } from '../simulation/actions';
 import { isV2 } from '../simulation/v2';
-import { PLAYER_ID } from './roster';
+import { PLAYER_ID, RIVALS } from './roster';
 import { PEOPLE } from './people';
-import { tx } from './text';
-import { stageMatches, actOf } from '../tournament/v2calendar';
+import { tx, type TextKey } from './text';
+import { stageMatches, actOf, v2Ranking, type Stage } from '../tournament/v2calendar';
 
 /** The version 2's story (lot V6, journal Passe V6; the operator's decision AV-15 « Structure, dialogues et cinématiques »): the ten days' three
  *  acts (src/tournament/v2calendar.ts: the pool and the cut, the semi-finals and the major match, the eve and the final), the rivals' arcs
@@ -46,6 +46,16 @@ export function v2Lines(s: GameState, who: string): string[] | null {
       return null;
     case 'ilse':
       if (act >= 2) return [tx('v2.line.ilse.act2')];
+      return null;
+    // lot L6 (the operator's EV-13 « Compléter les arcs, quatre scènes selon l’état »): one line an act for the pool's two who had none; the second act keeps
+    // their words of lot L2b, in the title's race or out of it (src/narrative/dialogue.ts)
+    case 'tobin':
+      if (act === 1) return [tx('v2.line.tobin.act1')];
+      if (act === 3) return [tx(s.flags.champion === PLAYER_ID ? 'v2.line.tobin.crowned' : inFinal(s, 'tobin') ? 'v2.line.tobin.final' : inFinal(s, PLAYER_ID) ? 'v2.line.tobin.act3final' : 'v2.line.tobin.act3')];
+      return null;
+    case 'rhosk':
+      if (act === 1) return [tx('v2.line.rhosk.act1')];
+      if (act === 3) return [tx(s.flags.champion === PLAYER_ID ? 'v2.line.rhosk.crowned' : inFinal(s, 'rhosk') ? 'v2.line.rhosk.final' : inFinal(s, PLAYER_ID) ? 'v2.line.rhosk.act3' : 'v2.line.rhosk.act3out')];
       return null;
     default:
       return null;
@@ -90,11 +100,15 @@ export function allyAp(s: GameState): number { return isV2(s) && s.facts.include
 
 // ---------------------------------------------------------------------------------------------------------------- the cutscenes
 
-/** one step of a live cutscene: the camera looks at a point of the square, a person walks to a point, a person speaks */
+/** one step of a live cutscene: the camera looks at a point of the square, a person walks to a point, a person speaks (lot L6: the speaker and the
+ *  words may follow the state, a scene that depends on what happened) */
 export type SceneStep =
   | { cam: [number, number]; dist?: number; secs?: number }
   | { walk: string; to: [number, number] }
-  | { say: string; line: () => string };
+  | { say: string | ((s: GameState) => string); line: (s: GameState) => string };
+
+/** who speaks a step (a step whose speaker follows the state names them from it) */
+export const speakerOf = (s: GameState, step: { say: string | ((s: GameState) => string) }): string => (typeof step.say === 'function' ? step.say(s) : step.say);
 
 export interface Cutscene {
   id: string;
@@ -160,7 +174,104 @@ export const CUTSCENES: Record<string, Cutscene> = {
       { say: 'player', line: () => tx('v2.scene.final.2') },
     ],
   },
+  // ---- lot L6 (the operator's EV-13 « Compléter les arcs, quatre scènes selon l’état »): four scenes that depend on what happened, « proposé »
+  // out of the cut: the Gate bouts' morning on the forecourt; Marek, who fought there his first year (or stands there himself)
+  gate: {
+    id: 'gate', place: 'forecourt', cast: ['odo', 'marek'],
+    when: (s) => s.day === 6 && s.slot !== 'evening' && !!mine(s, 'gate'),
+    steps: [
+      { cam: [0, -14], dist: 20, secs: 2.5 },
+      { say: 'odo', line: () => tx('v2.scene.gate.1') },
+      { walk: 'marek', to: [1.2, -3.0] },
+      { cam: [1.5, -3], dist: 12, secs: 1.5 },
+      { say: 'marek', line: (s) => tx(stageMatches(s, 'gate').some((m) => m.a === 'marek' || m.b === 'marek') ? 'v2.scene.gate.2b' : 'v2.scene.gate.2', { name: s.player.name }) },
+      { say: 'player', line: () => tx('v2.scene.gate.3') },
+    ],
+  },
+  // after the semi-final: the evening of the bout or the next day, on the forecourt; won, the registrar names both finalists and the beaten rival speaks
+  semiWon: {
+    id: 'semiWon', place: 'forecourt', cast: ['odo'],
+    when: (s) => afterSemi(s) && mine(s, 'semi')!.winner === PLAYER_ID,
+    steps: [
+      { cam: [0, -14], dist: 20, secs: 2.5 },
+      { say: 'odo', line: (s) => tx('v2.scene.semiWon.1', { name: s.player.name, foe: RIVALS[otherFinalist(s) ?? '']?.name ?? '' }) },
+      { say: (s) => semiFoe(s), line: (s) => tx(SEMI_WON[RIVALS[semiFoe(s)]?.temper ?? 'honourable'], { name: s.player.name }) },
+      { say: 'player', line: () => tx('v2.scene.semiWon.3') },
+    ],
+  },
+  // lost, Sister Anwen tends the hero and the winner speaks; the third place is fought on day 8
+  semiLost: {
+    id: 'semiLost', place: 'forecourt', cast: ['anwen'],
+    when: (s) => afterSemi(s) && mine(s, 'semi')!.winner !== PLAYER_ID,
+    steps: [
+      { cam: [-7.6, -0.6], dist: 12, secs: 2 },
+      { say: 'anwen', line: () => tx('v2.scene.semiLost.1') },
+      { say: (s) => semiFoe(s), line: (s) => tx(SEMI_LOST[RIVALS[semiFoe(s)]?.temper ?? 'honourable']) },
+      { say: 'player', line: () => tx('v2.scene.semiLost.3') },
+    ],
+  },
+  // Cassius unmasked before the town (his man caught at the forge, Hale told, or shamed on the square): the first evening after, on the festival square
+  unmasked: {
+    id: 'unmasked', place: 'lanterns', cast: ['cassius', 'lio'],
+    when: (s) => s.slot === 'evening' && !!unmaskedHow(s),
+    steps: [
+      { cam: [6.6, -4.6], dist: 12, secs: 2 },
+      { say: 'lio', line: (s) => tx(UNMASKED[unmaskedHow(s) ?? 'caught']) },
+      { say: 'cassius', line: (s) => tx(dreeChain(s) === 'forge' ? 'v2.scene.unmasked.forge' : 'v2.scene.unmasked.gear') },
+      { say: 'player', line: () => tx('v2.scene.unmasked.3') },
+    ],
+  },
+  // the epilogue: the crowning on the forecourt the evening of day 10, by the champion and the hero's place
+  epilogue: {
+    id: 'epilogue', place: 'forecourt', cast: ['odo', 'marek'],
+    when: (s) => s.day === 10 && s.slot === 'evening' && !!s.flags.champion,
+    steps: [
+      { cam: [0, -15], dist: 22, secs: 3 },
+      { say: 'odo', line: (s) => (s.flags.champion === PLAYER_ID ? tx('v2.scene.epilogue.crowned', { name: s.player.name }) : tx('v2.scene.epilogue.champion', { champ: RIVALS[String(s.flags.champion)]?.name ?? '' })) },
+      { walk: 'marek', to: [1.2, -3.0] },
+      { cam: [1.5, -3], dist: 12, secs: 1.5 },
+      { say: 'marek', line: (s) => tx(MAREK_END[marekEnd(s)], { name: s.player.name, champ: RIVALS[String(s.flags.champion)]?.name ?? '' }) },
+      { say: 'player', line: (s) => tx(HERO_END[placeEnd(s)]) },
+    ],
+  },
 };
+
+/** the scenes' words by the state (each key written out: tests/texts.test.mjs finds every key asked for in the code) */
+const SEMI_WON: Record<Temper, TextKey> = { honourable: 'v2.scene.semiWon.honourable', proud: 'v2.scene.semiWon.proud', cold: 'v2.scene.semiWon.cold' };
+const SEMI_LOST: Record<Temper, TextKey> = { honourable: 'v2.scene.semiLost.honourable', proud: 'v2.scene.semiLost.proud', cold: 'v2.scene.semiLost.cold' };
+const UNMASKED: Record<'confronted' | 'reported' | 'caught', TextKey> = { confronted: 'v2.scene.unmasked.confronted', reported: 'v2.scene.unmasked.reported', caught: 'v2.scene.unmasked.caught' };
+const MAREK_END: Record<ReturnType<typeof marekEnd>, TextKey> = { crowned: 'v2.scene.epilogue.marek.crowned', kept: 'v2.scene.epilogue.marek.kept', second: 'v2.scene.epilogue.marek.second', other: 'v2.scene.epilogue.marek.other' };
+const HERO_END: Record<ReturnType<typeof placeEnd>, TextKey> = { champion: 'v2.scene.epilogue.hero.champion', final: 'v2.scene.epilogue.hero.final', semis: 'v2.scene.epilogue.hero.semis', gate: 'v2.scene.epilogue.hero.gate', out: 'v2.scene.epilogue.hero.out' };
+type Temper = 'proud' | 'honourable' | 'cold';
+
+/** the player's bout of a stage of the bracket, if any */
+const mine = (s: GameState, stage: Stage) => stageMatches(s, stage).find((m) => m.a === PLAYER_ID || m.b === PLAYER_ID);
+/** the player's semi-final fought, its evening or the next day */
+const afterSemi = (s: GameState): boolean => !!mine(s, 'semi')?.winner && (s.day === 6 && s.slot === 'evening' || s.day === 7 && s.slot !== 'evening');
+/** the rival the player met in their semi-final */
+const semiFoe = (s: GameState): string => { const m = mine(s, 'semi'); return m ? (m.a === PLAYER_ID ? m.b : m.a) : ''; };
+/** the other semi-final's winner */
+const otherFinalist = (s: GameState): string | null => stageMatches(s, 'semi').find((m) => m.a !== PLAYER_ID && m.b !== PLAYER_ID)?.winner ?? null;
+
+/** how Cassius was unmasked before the town, the last way first: shamed on the festival square, reported to Hale, his man caught at the forge (null:
+ *  not before the town; the culprit known to the player alone, by the stranger, Lady Edda or Odo's button, is no scandal yet) */
+export function unmaskedHow(s: GameState): 'confronted' | 'reported' | 'caught' | null {
+  return s.flags.confronted ? 'confronted' : s.flags.reported && s.flags['culprit-known'] === 'cassius' ? 'reported' : s.facts.includes('saboteur-caught') ? 'caught' : null;
+}
+/** which of House Dree's two chains the town knows: the quay's forge, or the gear's strap (as the report and the confrontation say, src/simulation/roles.ts) */
+const dreeChain = (s: GameState): 'forge' | 'gear' => (['forge-burned', 'saboteur-caught', 'culprit-named', 'saboteur-fled'].some((f) => s.facts.includes(f)) ? 'forge' : 'gear');
+
+/** Marek's words at the crowning: the hero crowned, Marek crowned, the hero second, or another's crown */
+function marekEnd(s: GameState): 'crowned' | 'kept' | 'second' | 'other' {
+  if (s.flags.champion === PLAYER_ID) return 'crowned';
+  if (s.flags.champion === 'marek') return 'kept';
+  return v2Ranking(s).indexOf(PLAYER_ID) === 1 ? 'second' : 'other';
+}
+/** the hero's last words by their place (v2EndLine's ranks) */
+function placeEnd(s: GameState): 'champion' | 'final' | 'semis' | 'gate' | 'out' {
+  const r = v2Ranking(s).indexOf(PLAYER_ID) + 1;
+  return r === 1 ? 'champion' : r === 2 ? 'final' : r <= 4 ? 'semis' : r <= 6 ? 'gate' : 'out';
+}
 
 /** the cutscene a page of this state plays first, if any (never twice in a game) */
 export function pendingScene(s: GameState): Cutscene | null {

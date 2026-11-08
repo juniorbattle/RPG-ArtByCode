@@ -28,7 +28,8 @@ const WON = { winner: 'player', playerHp: 120, playerMaxHp: 200, opponentHp: 0, 
 const PRACTICE = {
   vessa: { place: 'forecourt', slots: ['morning', 'afternoon'] }, marek: { place: 'forecourt', slots: ['morning', 'afternoon'] },
   orla: { place: 'training', slots: ['morning', 'afternoon'] }, ilse: { place: 'training', slots: ['morning', 'afternoon'] },
-  cassius: { place: 'lanterns', slots: ['evening'] }, rhosk: { place: 'training', slots: ['morning', 'afternoon'], from: 6 }, tobin: { place: 'training', slots: ['morning', 'afternoon'], from: 6 },
+  // (Rhosk and Tobin on the sand from the first day since lot L6, EV-13: their first act's line is said there; from day 6 in lots L3 to L5)
+  cassius: { place: 'lanterns', slots: ['evening'] }, rhosk: { place: 'training', slots: ['morning', 'afternoon'] }, tobin: { place: 'training', slots: ['morning', 'afternoon'] },
 };
 /** a rival's form by its preparation (its blows 1 + preparation / 400): under 40 rusty, under 70 steady, then sharp */
 const FORM = (p) => (p < 40 ? 'rusty' : p < 70 ? 'steady' : 'sharp');

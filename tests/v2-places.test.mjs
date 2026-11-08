@@ -31,10 +31,11 @@ test('the places: the version 2 walks to the training ground and to the festival
 
 test('who stands where: the teachers and Orla at the training ground, the bard and Pip on the square; today\'s game keeps Orla on the forecourt', () => {
   const at = (place, slot = 'morning', name = 'day1-morning', flag = true) => { const s = flag ? v2(name) : G.namedState(name); s.place = place; s.slot = slot; return talks(s); };
-  // (the generic fighters of lot L2b: Ser Aldric on the training ground by day, Brother Ambrose on the square from the afternoon; Tobin and Rhosk from day 6)
+  // (the generic fighters of lot L2b: Ser Aldric on the training ground by day, Brother Ambrose on the square from the afternoon; Tobin and Rhosk there from the
+  // first day since lot L6, EV-13 « une réplique par acte » - from day 6 in lots L2b to L5)
   // (the passers-by, « Townsfolk », on every place of a version 2 game since lot L5, journal Passe EVL9)
-  assert.deepEqual(at('training'), ['aldric', 'corvin', 'drill', 'folk', 'ilse', 'orla']);
-  assert.deepEqual(at('training', 'morning', 'v2-day2-afternoon').length, 6);
+  assert.deepEqual(at('training'), ['aldric', 'corvin', 'drill', 'folk', 'ilse', 'orla', 'rhosk', 'tobin']);
+  assert.deepEqual(at('training', 'morning', 'v2-day2-afternoon').length, 8);
   assert.deepEqual(at('training', 'evening'), ['folk']);
   // (the passers-by of lot L2a: Lady Edda on the forecourt by day, Sela on the square from the afternoon)
   assert.deepEqual(at('forecourt'), ['anwen', 'edda', 'folk', 'hilde', 'marek', 'odo', 'vessa']);

@@ -33,6 +33,9 @@ const STRAP6: readonly Action[] = [W, W, { type: 'move', to: 'lanterns' }, { typ
 // evening, the next morning on the quay (Sergeant Hale can act on it) and at the training ground (the sand taken)
 const POOL_WON: readonly Action[] = [W, W, W, W, WON, W, W, W, W, W, WON, W, W, WON, W];
 const SAND9: readonly Action[] = [...POOL_WON, W, WON, W, W, W, W, W, W, W];
+// lot L6 (journal Passe EVL11): every pool bout lost; the strap's game with Lady Edda's word (the forecourt, day 7) and Sergeant Hale told (the quay)
+const POOL_LOST: readonly Action[] = [W, W, W, W, LOST, W, W, W, W, W, LOST, W, W, LOST, W];
+const UNMASK7: readonly Action[] = [...STRAP6, WON, W, { type: 'talk', who: 'edda' }, { type: 'move', to: 'district' }, { type: 'report' }, W, W, { type: 'move', to: 'lanterns' }];
 
 /** a state may carry its own seed (lot L4: Rhosk out of the title needs another draw of the pool than 1842's), taken unless a seed is asked for */
 export const NAMED_STATES: Record<string, { about: string; script: readonly Action[]; v2?: boolean; seed?: number }> = {
@@ -78,6 +81,14 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   'v2-watch-forecourt': { about: 'a version 2 game on the first afternoon, on the forecourt: caught stealing at Hilde\'s stall that morning, Wynn of the watch beside her (seed 1)', script: [{ type: 'move', to: 'forecourt' }, { type: 'steal', shop: 'armourer' }, W], v2: true, seed: 1 },
   'v2-watch-quay': { about: 'a version 2 game on the first afternoon, on the quay: caught stealing at Mara\'s stall that morning, Wynn of the watch beside her', script: [{ type: 'steal', shop: 'mara' }, W], v2: true },
   'v2-famous-training': { about: 'a version 2 game on day 7\'s morning, at the training ground: every bout won, the passers-by celebrate the player, Orla Brask a friend', script: [...STRAP6, WON, W, { type: 'move', to: 'training' }], v2: true },
+  // lot L6 (journal Passe EVL11): the scenes that depend on the state (seed 1842) - every pool bout lost, the Gate's morning on the forecourt; the semi-final won or
+  // lost, its evening on the forecourt; the strap's game of lot L3 with Lady Edda's word and Sergeant Hale told, the festival square that evening (Cassius unmasked);
+  // every bout won, the crowning's evening on the forecourt
+  'v2-gate-day6': { about: 'a version 2 game on day 6\'s morning, on the forecourt: every pool bout lost, the Gate bouts today', script: [...POOL_LOST, { type: 'move', to: 'forecourt' }], v2: true },
+  'v2-semi-won': { about: 'a version 2 game on day 6\'s evening, on the forecourt: every bout won, the semi-final too', script: [...POOL_WON, W, WON, { type: 'move', to: 'forecourt' }], v2: true },
+  'v2-semi-lost': { about: 'a version 2 game on day 6\'s evening, on the forecourt: the pool won, the semi-final lost', script: [...POOL_WON, W, LOST, { type: 'move', to: 'forecourt' }], v2: true },
+  'v2-unmasked-night': { about: 'a version 2 game on day 7\'s evening, on the festival square: the strap cut before the semi-final, Lady Edda names House Dree, Sergeant Hale told', script: UNMASK7, v2: true },
+  'v2-epilogue': { about: 'a version 2 game on day 10\'s evening, on the forecourt: every bout won, the hero crowned', script: [...POOL_WON, W, WON, W, W, W, W, W, W, W, W, W, W, W, WON, { type: 'move', to: 'forecourt' }], v2: true },
 };
 
 export function namedState(name: string, seed?: number, player = 'Ren'): GameState {

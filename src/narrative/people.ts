@@ -70,10 +70,11 @@ export const PEOPLE: Record<string, Person> = {
   lucan: { id: 'lucan', name: 'Lucan Rook', title: 'a swordmaster out in the qualifiers', place: 'forecourt', hours: NIGHT, v2: true, generic: true },
   piers: { id: 'piers', name: 'Piers Calloway', title: 'a spear champion guarding the barges', place: 'district', hours: DAY, v2: true, generic: true },
   kell: { id: 'kell', name: 'Kell Barrow', title: 'a bare-handed fighter for a few coins', place: 'lanterns', hours: ['morning'], v2: true, generic: true },
-  // the pool's two who had no place in town (« Portrait seulement », casting R-ville, journal Passe CA1): on the training ground after the cut, a challenge
-  // for whoever is out of the title (lot L2b, EV-4 « Les trois, puis les éliminés à partir du jour 6 »)
-  tobin: { id: 'tobin', name: 'Tobin Fenn', title: 'the Hopeful, of the pool', place: 'training', hours: DAY, rival: 'tobin', v2: true, days: [6, 10], generic: true },
-  rhosk: { id: 'rhosk', name: 'Rhosk', title: 'the Northman, of the pool', place: 'training', hours: DAY, rival: 'rhosk', v2: true, days: [6, 10], generic: true },
+  // the pool's two who had no place in town (« Portrait seulement », casting R-ville, journal Passe CA1): on the training ground, a challenge after the cut
+  // for whoever is out of the title (lot L2b, EV-4 « Les trois, puis les éliminés à partir du jour 6 »); there from the first day since lot L6 (EV-13 « une réplique par
+  // acte pour Rhosk et Tobin »: their first act's line is said on the sand; L2b had them in town from day 6)
+  tobin: { id: 'tobin', name: 'Tobin Fenn', title: 'the Hopeful, of the pool', place: 'training', hours: DAY, rival: 'tobin', v2: true, generic: true },
+  rhosk: { id: 'rhosk', name: 'Rhosk', title: 'the Northman, of the pool', place: 'training', hours: DAY, rival: 'rhosk', v2: true, generic: true },
 };
 
 /** where a person stands in this game (a version 2 game moves some of today's people: lot V5) */
