@@ -45,7 +45,7 @@ import { files as heroFiles } from '../../art-lab/characters/provenance/hero-x2-
 import { FRAME_W, FOOT_Y } from './SpriteGenerator';
 import { PIXEL_WORLD, WALK_CADENCE } from './SpriteRenderer';
 import { walkSlide } from './Stride';
-import { checkBakedSheet, DIRS, type BakedSheet } from './BakedSprites';
+import { checkBakedSheet, DIRS, type BakedFrame, type BakedSheet } from './BakedSprites';
 import { decodePng, sheetFrames, sha256, figureRows } from './BakedDecode';
 import variantsFile from '../../art-lab/characters/variants/variants.json';
 import { sheetMasks, maskFingerprint, materialRange, rampTable, type VariantsFile } from './Variants';
@@ -63,7 +63,7 @@ interface Manifest { id: string; status: string; approved: boolean; runtimeUse: 
 /** replaces: the generated archetype(s) the sheet stands in for; needs: frames its archetypes' behaviours ask for beyond idle + walk;
  *  frontLeft: its 'down' facing is drawn turned to the LEFT, a light three-quarter front (the reference sheet draws no true front for it,
  *  journal Passe F2): read only by ?npcfacing= (ActorSystem.npcFacing) */
-export interface CastEntry { manifest: Manifest; png: string; json: unknown; files: Record<string, string>; replaces: string[]; scale: number; needs?: string[]; frontLeft?: boolean; /** a person who only stands: idle frames alone (journal Passe CA2, the operator's T1) */ still?: boolean }
+export interface CastEntry { manifest: Manifest; png: string; json: unknown; files: Record<string, string>; replaces: string[]; scale: number; needs?: string[]; frontLeft?: boolean; /** a person who only stands: idle frames alone (journal Passe CA2, the operator's T1) */ still?: boolean; /** recolours the sheet's frames in place once decoded and checked (Ren's look in a version 2 game, journal Passe PR3, HeroLookCast) */ tone?: (frames: BakedFrame[], fw: number, fh: number) => void }
 type Entry = CastEntry;
 
 const ENTRIES: Entry[] = [
@@ -139,6 +139,7 @@ export async function loadProductionCast(candidates = false, variants: 'approved
     const missing = [...(e.still ? REQUIRED.filter((r) => r.endsWith('/idle')) : REQUIRED), ...(e.needs ?? [])].filter((r) => !frames.some((f) => `${f.dir}/${f.anim}` === r));
     if (missing.length) errs.push(`missing frames ${missing.join(', ')}`);
     if (errs.length) throw new Error(`${id}: ${errs.join('; ')}`);
+    e.tone?.(frames, FRAME_W * k, 48 * k);
     const front = frames.find((f) => f.dir === 'down' && f.anim === 'idle' && f.i === 0)!;
     sheets.push(sheet);
     const height = figureRows(front, FRAME_W * k, FOOT_Y * k) * (PIXEL_WORLD / k) * e.scale;

@@ -19,6 +19,7 @@ import { crowdVariants, GUARD_A, GUARD_B, HOODED, PLAYER, PORTER, type CharSpec 
 import type { HailWalker } from '../ui/hails';
 import { loadProductionCast, type CastMember } from '../characters/BakedCast';
 import { plazaCastEntries } from '../characters/PlazaCast';
+import { heroEntries } from '../characters/HeroLookCast';
 import { variantOf } from '../characters/Variants';
 import { fiveViewFacing } from '../characters/ActorSystem';
 import type { Anim, Dir } from '../characters/SpriteGenerator';
@@ -279,7 +280,8 @@ export class PlazaApp {
     // keeps every role generated
     this.opts.onProgress('people', 0.97);
     const castMode = this.opts.params.get('cast');
-    const cast = castMode === 'generated' ? null : await loadProductionCast(false, 'approved', undefined, plazaCastEntries());
+    // Ren under his look (journal Passe PR3, HeroLookCast: the approved look, or DEV's `herolook` review)
+    const cast = castMode === 'generated' ? null : await loadProductionCast(false, 'approved', undefined, heroEntries(plazaCastEntries()));
     this.cast = cast?.cast ?? null;
     const generated = cast ? [] : crowdVariants(7351, SQUARE_PEOPLE.length).map((s, i): CharSpec => ({ ...s, id: `person-${SQUARE_PEOPLE[i]}` }));
     this.atlas = SpriteAtlas.build([PLAYER, GUARD_A, GUARD_B, HOODED, PORTER, ...crowdVariants(1842, 5), ...generated], cast?.sheets ?? [], this.renderer.capabilities.maxTextureSize);

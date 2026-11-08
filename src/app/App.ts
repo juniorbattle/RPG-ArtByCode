@@ -18,7 +18,7 @@ import { SpriteAtlas } from '../characters/SpriteAtlas';
 import { SpriteRenderer } from '../characters/SpriteRenderer';
 import { ActorSystem } from '../characters/ActorSystem';
 import type { BakedSheet, AuthoredSpawn } from '../characters/BakedSprites';
-import { loadProductionCast } from '../characters/BakedCast';
+import { castEntries, loadProductionCast } from '../characters/BakedCast';
 import { ParticleSystem } from '../atmosphere/Particles';
 import { Weather, overcast, parseWeather, type WeatherParams } from '../atmosphere/Weather';
 import { LOOKS, litByDay, parseTime, skyDefines, type DayLook, type TimeOfDay } from '../atmosphere/DayState';
@@ -213,7 +213,10 @@ export class App {
     const castMode = this.opts.params.get('cast');
     // NPC variants (journal Passe V1): applied only from an approved variants file; DEV only, ?variants=candidate shows an unapproved one
     const variants = import.meta.env.DEV && this.opts.params.get('variants') === 'candidate' ? 'candidate' : 'approved';
-    const cast = castMode === 'generated' ? null : await loadProductionCast(import.meta.env.DEV && castMode === 'candidate', variants);
+    // `herolook` (a version 2 game's town, set by playTown.ts; journal Passe PR3): Ren under his look, its module loaded on demand; absent = today's Ren
+    const candidates = import.meta.env.DEV && castMode === 'candidate';
+    const heroLook = castMode !== 'generated' && this.opts.params.has('herolook') ? await import('../characters/HeroLookCast') : null;
+    const cast = castMode === 'generated' ? null : await loadProductionCast(candidates, variants, undefined, heroLook ? heroLook.heroEntries(castEntries(candidates)) : undefined);
     const baked = this.opts.baked ? await this.opts.baked : null;
     const devSheets = (baked?.sheets ?? []).filter((s) => !cast?.sheets.some((p) => p.id === s.id));
     this.atlas = SpriteAtlas.build([PLAYER, BLACKSMITH, MERCHANT_WOMAN, GUARD_A, GUARD_B, HOODED, PORTER, CAT, ...crowdVariants(this.config.seed, 5)], [...(cast?.sheets ?? []), ...devSheets], this.renderer.capabilities.maxTextureSize);

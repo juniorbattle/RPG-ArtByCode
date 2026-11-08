@@ -203,8 +203,9 @@ export async function installSheets(set: ArenaSpriteSet, sheets: SheetSource[], 
 
 /** the faces the HUD shows beside a sheet (L4 « Visage cuit d'abord, bustes plus tard »): each fighter's town sheet, front idle, head and shoulders, 32 x 32 texels */
 export async function bakedFaces(set: ArenaSpriteSet, foe: string): Promise<void> {
-  const [{ plazaFaces }, { castSource }, { sheetFrames }, { faceCrop }] = await Promise.all([import('../characters/PlazaCast'), import('../characters/BakedCast'), import('../characters/BakedDecode'), import('../ui/portraits')]);
-  const faces: Array<[Seat, { id: string; png: string; json: unknown; sha256: string; face?: (frames: readonly BakedFrame[], fw: number, fh: number) => Uint8Array | null } | null]> = [['ren', { id: 'hero-x2-v4', ...castSource('hero-x2-v4')! }], ['marek', plazaFaces()[foe] ?? null]];
+  const [{ plazaFaces }, { castSource }, { sheetFrames }, { faceCrop }, { heroFace }] = await Promise.all([import('../characters/PlazaCast'), import('../characters/BakedCast'), import('../characters/BakedDecode'), import('../ui/portraits'), import('../characters/HeroLookCast')]);
+  // Ren's face under his look (journal Passe PR3); a fighter's under its skin
+  const faces: Array<[Seat, { id: string; png: string; json: unknown; sha256: string; face?: (frames: readonly BakedFrame[], fw: number, fh: number) => Uint8Array | null } | null]> = [['ren', { id: 'hero-x2-v4', ...castSource('hero-x2-v4')!, face: heroFace }], ['marek', plazaFaces()[foe] ?? null]];
   for (const [seat, src] of faces) {
     if (!src) continue;
     const bytes = new Uint8Array(await (await fetch(src.png)).arrayBuffer()), got = await sha256(bytes);

@@ -75,7 +75,7 @@ const baked = new Map<string, string>();
 let loading: Promise<void> | null = null;
 /** paints the baked faces once (the pages wait for it, with the fonts, before they say they are ready); a sheet that fails its check keeps
  *  the generated portrait (said in the console) */
-export function preloadPortraits(extra: Record<string, { id: string; png: string; json: unknown; sha256: string; face?: (frames: readonly BakedFrame[], fw: number, fh: number) => Uint8Array | null }> = {}): Promise<void> {
+export function preloadPortraits(extra: Record<string, { id: string; png: string; json: unknown; sha256: string; face?: (frames: readonly BakedFrame[], fw: number, fh: number) => Uint8Array | null; /** recolours the sheet's frames in place before its face and figure are painted (Ren's look, journal Passe PR3) */ tone?: (frames: BakedFrame[], fw: number, fh: number) => void }> = {}): Promise<void> {
   loading ??= (async () => {
     const sheets = new Map<string, string>();
     for (const [who, s] of Object.entries(extra)) BAKED[who] = s.id;
@@ -86,6 +86,8 @@ export function preloadPortraits(extra: Record<string, { id: string; png: string
         const bytes = new Uint8Array(await (await fetch(src.png)).arrayBuffer()), got = await sha256(bytes);
         if (got !== null && got !== src.sha256) throw new Error('SHA-256 does not match its provenance pack');
         const { k, frames } = sheetFrames(id, await decodePng(bytes), src.json);
+        // Ren's look in a version 2 game (journal Passe PR3): his face and his figure on the gear page under it
+        Object.values(extra).find((s) => s.id === id)?.tone?.(frames, 32 * k, 48 * k);
         const front = frames.find((f) => f.dir === 'down' && f.anim === 'idle' && f.i === 0);
         if (!front) throw new Error('no front idle frame');
         const fw = 32 * k, fh = 48 * k, crop = faceCrop(front.rgba, fw, fh), c = document.createElement('canvas');

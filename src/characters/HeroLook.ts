@@ -25,12 +25,27 @@ export interface HairMask {
   outline?: boolean;
   /** per frame name, rectangles never hair (the eyes and the brows, a hilt or a glove by the head) */
   clear?: Record<string, Rect[]>;
+  /** the colours the first `clear` rectangle of a frame protects (the eyes' and lashes' browns): the fringe crossing it, in other browns, is hair; absent = every
+   *  colour (the other rectangles always protect every colour) */
+  eyes?: string[];
   /** per frame name, rectangles whose every non-outline, non-skin texel is hair, whatever its colour */
   paint?: Record<string, Rect[]>;
   /** the smallest group of touching hair texels kept (8-connected; default 1) */
   minPart?: number;
+  /** keeps the largest group and the groups with a texel within `join` texels (Chebyshev) of it, no chaining: a raised glove, a hilt or a strap in the head
+   *  rectangle is a group apart from the hair (the combat sheet); absent = every group */
+  join?: number;
+  /** the hair's contour colours (warm browns under the outline value): one of them in the head rectangle becomes hair when a hair texel touches it (4-connected)
+   *  and no skin texel does (8-connected), two passes; a reddish contour round silver hair would read as a brown halo. The face's contour, next to the skin, stays */
+  rim?: string[];
 }
-export interface HeroSheetLook { skin: PaletteMask; hair: HairMask; cloak: HairMask; fingerprint?: string }
+export interface HeroSheetLook {
+  skin: PaletteMask;
+  /** the skin grows from the face through its shared tones (`skin.shade`, 8-connected, outlines excluded): an ear or a jaw in shadow, drawn in tones the
+   *  neighbour rule leaves alone, stays skin and is not taken for a lock of hair (the combat sheet); absent = no growth */
+  skinFlood?: boolean;
+  hair: HairMask; cloak: HairMask; fingerprint?: string;
+}
 export interface HeroLookFile {
   approved: boolean;
   approval?: { by: string; date: string; note?: string } | null;
@@ -51,7 +66,9 @@ export function frameHair(f: NamedFrame, fw: number, fh: number, h: HairMask, sk
   const colours = new Set(h.colours.map((c) => parseInt(c, 16))), out = new Uint8Array(fw * fh), clear = h.clear?.[f.name], paint = h.paint?.[f.name];
   const head: Rect | undefined = h.head ? h.head[f.name] : [0, 0, fw - 1, fh - 1];
   const lit = (i: number) => hsv(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2])[2] >= OUTLINE;
-  const usable = (x: number, y: number, i: number) => f.rgba[i + 3] >= 128 && !skin[y * fw + x] && !inAny(clear, x, y);
+  const eyes = h.eyes ? new Set(h.eyes.map((c) => parseInt(c, 16))) : null;
+  const cleared = (x: number, y: number, i: number) => !!clear?.some(([x0, y0, x1, y1], n) => x >= x0 && x <= x1 && y >= y0 && y <= y1 && (n > 0 || !eyes || eyes.has(key(f.rgba, i))));
+  const usable = (x: number, y: number, i: number) => f.rgba[i + 3] >= 128 && !skin[y * fw + x] && !cleared(x, y, i);
   if (head) for (let y = Math.max(0, head[1]); y <= Math.min(fh - 1, head[3]); y++) for (let x = Math.max(0, head[0]); x <= Math.min(fw - 1, head[2]); x++) {
     const i = (y * fw + x) * 4;
     if (usable(x, y, i) && colours.has(key(f.rgba, i)) && (h.outline || lit(i))) out[y * fw + x] = 1;
@@ -70,13 +87,63 @@ export function frameHair(f: NamedFrame, fw: number, fh: number, h: HairMask, sk
       if (part.length < min && !part.some((j) => inAny(paint, j % fw, (j - (j % fw)) / fw))) for (const j of part) out[j] = 0;
     }
   }
+  if (h.join !== undefined) joinLargest(out, fw, fh, h.join);
+  if (h.rim?.length && head) {
+    const rim = new Set(h.rim.map((c) => parseInt(c, 16)));
+    for (let pass = 0; pass < 2; pass++) {
+      const prev = out.slice();
+      for (let y = Math.max(1, head[1]); y <= Math.min(fh - 2, head[3]); y++) for (let x = Math.max(1, head[0]); x <= Math.min(fw - 2, head[2]); x++) {
+        const j = y * fw + x, i = j * 4;
+        if (prev[j] || !rim.has(key(f.rgba, i)) || !usable(x, y, i)) continue;
+        if (!(prev[j - 1] || prev[j + 1] || prev[j - fw] || prev[j + fw])) continue;
+        let skinNear = false;
+        for (let dy = -1; dy <= 1 && !skinNear; dy++) for (let dx = -1; dx <= 1; dx++) if (skin[j + dy * fw + dx]) { skinNear = true; break; }
+        if (!skinNear) out[j] = 1;
+      }
+    }
+  }
   if (paint) for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) { const i = (y * fw + x) * 4; if (inAny(paint, x, y) && usable(x, y, i) && lit(i)) out[y * fw + x] = 1; }
   return out;
 }
 
+/** keeps the largest 8-connected group of `m` and the groups with a texel within `join` texels of it (one step, no chaining) */
+function joinLargest(m: Uint8Array, fw: number, fh: number, join: number): void {
+  const label = new Int32Array(m.length).fill(-1), sizes: number[] = [];
+  for (let j0 = 0; j0 < m.length; j0++) {
+    if (!m[j0] || label[j0] >= 0) continue;
+    const id = sizes.length, stack = [j0]; label[j0] = id; sizes.push(0);
+    while (stack.length) {
+      const j = stack.pop()!, x = j % fw, y = (j - x) / fw;
+      sizes[id]++;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const X = x + dx, Y = y + dy, q = Y * fw + X; if (X >= 0 && Y >= 0 && X < fw && Y < fh && m[q] && label[q] < 0) { label[q] = id; stack.push(q); } }
+    }
+  }
+  if (sizes.length < 2) return;
+  const big = sizes.indexOf(Math.max(...sizes)), keep = new Set([big]);
+  for (let j = 0; j < m.length; j++) {
+    if (label[j] !== big) continue;
+    const x = j % fw, y = (j - x) / fw;
+    for (let Y = Math.max(0, y - join); Y <= Math.min(fh - 1, y + join); Y++) for (let X = Math.max(0, x - join); X <= Math.min(fw - 1, x + join); X++) { const l = label[Y * fw + X]; if (l >= 0) keep.add(l); }
+  }
+  for (let j = 0; j < m.length; j++) if (m[j] && !keep.has(label[j])) m[j] = 0;
+}
+
 /** a frame's materials: 0 none, 1 skin, 2 hair, 3 cloak (the skin first; a cloak colour is never hair or skin) */
 export function frameMaterials(f: NamedFrame, fw: number, fh: number, s: HeroSheetLook): Uint8Array {
-  const skin = frameSkin(f, fw, fh, s.skin), cloak = frameHair(f, fw, fh, s.cloak, skin), hair = frameHair(f, fw, fh, s.hair, skin), out = new Uint8Array(fw * fh);
+  const skin = frameSkin(f, fw, fh, s.skin);
+  if (s.skinFlood) {
+    const shade = new Set((s.skin.shade ?? []).map((c) => parseInt(c, 16))), clear = s.skin.clear?.[f.name], stack: number[] = [];
+    for (let j = 0; j < skin.length; j++) if (skin[j]) stack.push(j);
+    while (stack.length) {
+      const j = stack.pop()!, x = j % fw, y = (j - x) / fw;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const X = x + dx, Y = y + dy, q = Y * fw + X, i = q * 4;
+        if (X < 0 || Y < 0 || X >= fw || Y >= fh || skin[q] || f.rgba[i + 3] < 128 || !shade.has(key(f.rgba, i)) || hsv(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2])[2] < OUTLINE || inAny(clear, X, Y)) continue;
+        skin[q] = 1; stack.push(q);
+      }
+    }
+  }
+  const cloak = frameHair(f, fw, fh, s.cloak, skin), hair = frameHair(f, fw, fh, s.hair, skin), out = new Uint8Array(fw * fh);
   for (let j = 0; j < out.length; j++) out[j] = skin[j] ? 1 : cloak[j] ? 3 : hair[j] ? 2 : 0;
   return out;
 }

@@ -35,6 +35,8 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   // a version 2 game's town flies the tournament's heraldry (journal Passe VP3) and sees the arena over the far city (journal Passe VP8); today's
   // game keeps its banners and its cathedral
   if (isV2(st)) { q.set('heraldry', 'tournament'); q.set('skyline', 'arena'); }
+  // and Ren under his look (journal Passe PR3, HeroLookCast: the approved look; DEV, the address's `herolook` review); today's game keeps today's Ren
+  if (isV2(st)) q.set('herolook', '1');
   // and takes the address's weather as the squares do (lot S2: heard as well as seen); today's game keeps only the day's rain
   if (isV2(st)) for (const k of ['rain', 'snow', 'storm', 'wind']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   // arriving by a way in (journal Passe VP5): from the forecourt at the quay's east end past the guards, from the festival at its west end
@@ -122,7 +124,7 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed, { opening: b.params.has('new') }, parseWeather(q)));
   frame();
   // a version 2 game: the casting's approved faces (journal Passe CA3)
-  await Promise.all([fontsReady(), preloadPortraits(isV2(st) ? (await import('../characters/PlazaCast')).plazaFaces() : undefined)]);
+  await Promise.all([fontsReady(), preloadPortraits(isV2(st) ? { ...(await import('../characters/PlazaCast')).plazaFaces(), player: (await import('../characters/HeroLookCast')).heroPortrait() } : undefined)]);
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();
