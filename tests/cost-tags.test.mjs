@@ -56,6 +56,8 @@ function rule(st, a) {
     // lot L3 (journal Passe EVL5): a rumour of the next opponent, a round at Lio's 3, the stranger's word 8; Clerk Odo's strongroom on the eve of a bout 5
     case 'rumour': return { lio: 3, stranger: 8 }[a.src];
     case 'lockGear': return 5;
+    // lot L6 (the festival of day 9, FE-3): a round at Lio's for the festival 10; the hall's lanterns hung and Brother Ambrose's flame carried take a slot, no coin
+    case 'festDeed': return a.deed === 'round' ? 10 : 0;
     default: return 0;
   }
 }
@@ -96,7 +98,7 @@ test('every option\'s coins are the game\'s price, and what its action really ta
     else if (o.ok) { assert.equal(o.coins, spent(st, a), `${o.label}: its apply`); seen.add(`${a.type}:${a.type === 'buy' ? a.item + ':' : ''}${o.coins}`); n++; }
   }
   // the sweep reaches every paid action, both prices of the healer and of the bellows, and Mara's changed prices
-  for (const k of ['buy:whetstone:8', 'buy:salve:10', 'buy:imported-blade:30', 'buy:whetstone:10', 'buy:imported-blade:38', 'temper:10', 'buyInfo:10', 'payWatch:15', 'heal:8', 'heal:0', 'repair:12', 'repair:6', 'restock:0', 'rumour:3', 'rumour:8', 'lockGear:5']) {
+  for (const k of ['buy:whetstone:8', 'buy:salve:10', 'buy:imported-blade:30', 'buy:whetstone:10', 'buy:imported-blade:38', 'temper:10', 'buyInfo:10', 'payWatch:15', 'heal:8', 'heal:0', 'repair:12', 'repair:6', 'restock:0', 'rumour:3', 'rumour:8', 'lockGear:5', 'festDeed:10']) {
     assert.ok(seen.has(k), `the sweep never offers ${k}: ${[...seen].sort().join(' ')}`);
   }
   assert.ok(n > 500, `${n} options applied`);

@@ -30,7 +30,8 @@ function playTo(day, slot, pick = () => WON, s = v2()) {
 }
 const at = (s, place) => (s.place === place ? s : act(s, { type: 'move', to: place }));
 const mineOf = (s, stage) => C.stageMatches(s, stage).find((m) => m.a === 'player' || m.b === 'player');
-const say = (s, id) => S.CUTSCENES[id].steps.filter((st) => 'say' in st).map((st) => [S.speakerOf(s, st), st.line(s)]);
+// (the lines a state plays: a step may be left out by the state, lot L6's parade and Wren's verse, as src/ui/cutscene.ts plays them)
+const say = (s, id) => S.CUTSCENES[id].steps.filter((st) => 'say' in st && (!st.if || st.if(s))).map((st) => [S.speakerOf(s, st), st.line(s)]);
 
 test('Tobin and Rhosk: on the training sand by day from the first day; a line an act, the second act their words of lot L2b; the default game has neither', () => {
   for (const who of ['tobin', 'rhosk']) {

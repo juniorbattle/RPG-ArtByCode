@@ -89,6 +89,8 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   'v2-semi-lost': { about: 'a version 2 game on day 6\'s evening, on the forecourt: the pool won, the semi-final lost', script: [...POOL_WON, W, LOST, { type: 'move', to: 'forecourt' }], v2: true },
   'v2-unmasked-night': { about: 'a version 2 game on day 7\'s evening, on the festival square: the strap cut before the semi-final, Lady Edda names House Dree, Sergeant Hale told', script: UNMASK7, v2: true },
   'v2-epilogue': { about: 'a version 2 game on day 10\'s evening, on the forecourt: every bout won, the hero crowned', script: [...POOL_WON, W, WON, W, W, W, W, W, W, W, W, W, W, W, WON, { type: 'move', to: 'forecourt' }], v2: true },
+  // lot L6 (the festival of day 9, journal Passe EVL11): its morning on the festival square, the good turns there (tools/festival-flow.mjs)
+  'v2-festival-day9': { about: 'a version 2 game on day 9\'s morning, on the festival square: every bout won, the Lanterns\' parade at dusk', script: [...SAND9, { type: 'move', to: 'lanterns' }], v2: true },
 };
 
 export function namedState(name: string, seed?: number, player = 'Ren'): GameState {

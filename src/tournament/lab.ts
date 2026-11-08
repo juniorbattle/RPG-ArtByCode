@@ -19,6 +19,7 @@ import { boutTomorrow, nextOpponent, RUMOUR } from '../simulation/v2intel';
 import { opponentOf } from './pool';
 import { PEOPLE, placeOf } from '../narrative/people';
 import type { PlaceId } from '../simulation/state';
+import { FEST } from '../simulation/v2festival';
 
 /** The TournamentLab's library (TOURNAMENT_MASTER_CONTRACT § 13, journal Passe L2; the CLI is tools/tournament-lab.mjs): play whole games
  *  headless with a player policy, the player's duels fought by the bot in the arena's full simulation; find the forgotten participants;
@@ -76,7 +77,8 @@ export const POLICIES: Record<string, Policy> = {
    *  after a sign, settles with Sergeant Hale when the watch wants it; a version 2 game only (today's game plays the diligent). Lot L3 (EV-10, EV-11, journal
    *  Passe EVL5): the watch after a sign at the forge only, Clerk Odo's strongroom on the eve of a bout after a sign at the lockers, a rumour of tomorrow's opponent
    *  from Lio's room, its next opponent watched wherever they train, Lady Edda asked whose servant cut a strap it fought on, the culprit reported to Hale. Lot L4 (EV-9,
- *  journal Passe EVL7): a friend's warning taken as a sign of its chain, Rhosk's plan told to Hale as soon as it is known */
+ *  journal Passe EVL7): a friend's warning taken as a sign of its chain, Rhosk's plan told to Hale as soon as it is known. Lot L6 (FE-9, journal Passe EVL11): the
+ *  festival's good turns on day 9 */
   curious: { name: 'curious', skill: 0.6, choose: (st) => (isV2(st) ? curiousV2(st) : POLICIES.diligent.choose(st)) },
 };
 
@@ -165,7 +167,10 @@ function curiousV2(st: GameState): Action {
   };
   // watches its next opponent at practice when it can: wherever they train since lot L3 (EV-11 « Observer tout adversaire »)
   const scout = (): Action | null => { const m = st.tournament.matches.find((x) => x.day > st.day && !x.winner && (x.a === PLAYER_ID || x.b === PLAYER_ID)), o = m ? opponentOf(m) : null; return o && scoutable(st).includes(o) ? at(placeOf(PEOPLE[o], true), { type: 'scout', who: o }) : null; };
-  return first(sand, strongroom, investigate, buy, barter, steal, rumour, challenge, scout, () => at('training', { type: 'train' })) ?? fallback(st, 0.6);
+  // the festival of day 9 (lot L6, FE-9): the good turns on the festival square, the hall's lanterns in the morning, Brother Ambrose's flame in the afternoon, a round at
+  // Lio's when the purse keeps the healer's price (the diligent does none of it)
+  const festival = (): Action | null => first(() => at('lanterns', { type: 'festDeed', deed: st.slot === 'morning' ? 'hang' : 'flame' }), () => (st.player.coins >= FEST.round + 8 ? at('lanterns', { type: 'festDeed', deed: 'round' }) : null));
+  return first(sand, strongroom, investigate, festival, buy, barter, steal, rumour, challenge, scout, () => at('training', { type: 'train' })) ?? fallback(st, 0.6);
 }
 
 /** a scripted game (journal Passe L5): per slot, the actions to try in order (each once, when the state allows it), then the slot's end
@@ -246,8 +251,9 @@ export interface LabReport {
   teamTransition: string;
   /** a version 2 game's ten days (lot V6): the player's bouts, the cut, the final and the crown, the final order's histogram; the town's actions
    *  per game (lot L2a): thefts, caught, found at dawn, searched, settled at Hale's, bargains put and won, passers-by's pieces, challenges and wins, the
-   *  marks left in Hale's ledger at the end, the pool's points lost to the registrar */
-  v2?: { bouts: number; madeCut: number; finalist: number; champion: number; ranks: number[]; town: Record<string, number> };
+   *  marks left in Hale's ledger at the end, the pool's points lost to the registrar; the Lanterns' parade of day 9 (lot L6): who opened it (games), the player's good
+   *  turns and lanterns per game, the games where the player walked behind a rival */
+  v2?: { bouts: number; madeCut: number; finalist: number; champion: number; ranks: number[]; town: Record<string, number>; fest: { leaders: Record<string, number>; deeds: number; lanterns: number; behind: number } };
 }
 
 export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 'classic'): LabReport {
@@ -256,6 +262,7 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
   const ranks = [0, 0, 0, 0, 0, 0, 0, 0];
   const town: Record<string, number> = { thefts: 0, caught: 0, found: 0, searched: 0, settled: 0, bargains: 0, bargainsWon: 0, barters: 0, challenges: 0, challengesWon: 0, marks: 0, pointsLost: 0 };
   const count = (st: GameState, ...ids: string[]) => st.log.filter((e) => ids.includes(e.id)).length;
+  const fest = { leaders: {} as Record<string, number>, deeds: 0, lanterns: 0, behind: 0 };
   let wins = 0, inj = 0, rivalInj = 0, elim = 0, upsets = 0, sab = 0, foil = 0, forg = 0;
   for (const seed of seeds) {
     const g = autoplay(seed, policy, undefined, undefined, rules), st = g.state;
@@ -272,6 +279,9 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
       town.searched += count(st, 'theft:search'); town.settled += count(st, 'theft:settled'); town.bargains += count(st, 'bargain:won', 'bargain:lost', 'barter:won', 'barter:lost');
       town.bargainsWon += count(st, 'bargain:won', 'barter:won'); town.barters += Object.keys(st.v2?.passed ?? {}).length; town.challenges += count(st, 'challenge:won', 'challenge:lost');
       town.challengesWon += count(st, 'challenge:won'); town.marks += marksOf(st); town.pointsLost += count(st, 'registrar:point');
+      const f = st.v2?.festival;
+      if (f?.leader) fest.leaders[f.leader] = (fest.leaders[f.leader] ?? 0) + 1;
+      fest.deeds += f?.deeds?.length ?? 0; fest.lanterns += f?.lanterns?.[PLAYER_ID] ?? 0; fest.behind += f?.behind ? 1 : 0;
     }
     wins += w; inj += st.log.filter((e) => e.id === 'player-injured').length;
     rivalInj += Object.values(st.competitors).filter((c) => c.healthState !== 'fit').length;
@@ -288,6 +298,6 @@ export function labReport(seeds: number[], policy: Policy, rules: CombatRules = 
     policy: policy.name, rules, seeds: n, games, eventCounts, forgotten: forg,
     rates: { playerWins: wins / bouts, playerInjured: inj / n, rivalInjured: rivalInj / n, eliminations: elim / n, upsets: upsets / n, sabotaged: sab / n, foiled: foil / n },
     teamTransition: 'outside the slice: phase I (a points pool, 1v1) only; teams are typed (TeamState), never formed',
-    ...(rules === 'v2' ? { v2: { bouts: bouts / n, madeCut: cutIn / n, finalist: finals / n, champion: crowns / n, ranks, town: Object.fromEntries(Object.entries(town).map(([k, v]) => [k, v / n])) } } : {}),
+    ...(rules === 'v2' ? { v2: { bouts: bouts / n, madeCut: cutIn / n, finalist: finals / n, champion: crowns / n, ranks, town: Object.fromEntries(Object.entries(town).map(([k, v]) => [k, v / n])), fest: { leaders: fest.leaders, deeds: fest.deeds / n, lanterns: fest.lanterns / n, behind: fest.behind } } } : {}),
   };
 }

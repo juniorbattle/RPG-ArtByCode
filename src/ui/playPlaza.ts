@@ -1,5 +1,5 @@
 import { PlazaApp } from '../world/PlazaApp';
-import { lookOf, rainOf, type Action, type GameState } from '../simulation';
+import { lookOf, placeName, rainOf, type Action, type GameState } from '../simulation';
 import { keepSeen, markSeen, seenBefore } from './news';
 import { playerMatch } from '../tournament/pool';
 import { PLAZA_OF, plazaPeople } from '../simulation/v2places';
@@ -15,6 +15,8 @@ import { fontsReady, installDesign } from './design/system';
 import { progressOn } from './loading';
 import { preloadPortraits } from './portraits';
 import { ExitMarkers } from './exits';
+import { paradeBlocks } from '../simulation/v2festival';
+import { tx } from '../narrative/text';
 import { ANNOUNCED } from '../audio/plan';
 import { parseWeather } from '../atmosphere/Weather';
 
@@ -63,7 +65,10 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   window.addEventListener('keydown', (e) => { const k = e.key.toLowerCase(); if ((k === 'e' || k === ' ') && !e.repeat) { e.preventDefault(); ui.interact(); } });
   // the ways out (journal Passe VP5): their tags as the hero comes near, the way walked through taken (the move saved, the next place's page
   // opened at the way in from this one)
-  const from = st.place, ways = new ExitMarkers(app.place.exits.map((e) => ({ to: e.to, anchor: e.anchor })));
+  // (lot L6, FE-7: the evening of the Lanterns' parade the street between the festival square and the forecourt is full: its tag says so, and walking into it
+  // goes nowhere; the quay stays open)
+  const shut = (to: typeof st.place) => paradeBlocks(st, to);
+  const from = st.place, ways = new ExitMarkers(app.place.exits.map((e) => ({ to: e.to, anchor: e.anchor, shut: shut(e.to) ? tx('v2.fest.shutTag', { place: placeName(e.to, true) }) : null })));
   (window as any).__exits = ways;
   const leave = (to: typeof from) => { const r = (window as any).__game.act({ type: 'move', to }); if (r.ok) go(b.params, { arrive: from }); else location.reload(); };
   // the gamepad (the operator's sheet of journal Passe MN2): its walk, its pages' shoulders, the sound it may wake; loaded on demand, it does
@@ -73,11 +78,12 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   // stance (src/ui/hails.ts); read from the state of the page's load (a reload after a slot reads the next)
   const hails = new Hails((k, n) => hailOf(st, k, n), (who) => (RIVALS[who] ? gestureOf(st, who) : null));
   (window as any).__hails = hails;
+  const open = (to: typeof from | null) => (to && !shut(to) ? to : null);
   let last = app.stepped;
   const frame = () => {
     const dt = app.stepped - last; last = app.stepped;
     if (ui.modal) { app.keys.clear(); app.pad = null; }
-    ui.update(); ways.update(app.camera, app.player.pos, ui.modal ? null : app.exitTaken()?.to ?? null, leave);
+    ui.update(); ways.update(app.camera, app.player.pos, ui.modal ? null : open(app.exitTaken()?.to ?? null), leave);
     hails.update(app.locked ? 0 : dt, app.camera, app.player.pos, app.hailWalkers((who) => !!RIVALS[who]), ui.modal);
     requestAnimationFrame(frame);
   };

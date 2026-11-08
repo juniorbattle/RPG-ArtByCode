@@ -10,6 +10,7 @@ import { anwenBusy, sandShut, sandTaken, stanceWords, taleOf } from '../simulati
 import { watchPost } from '../simulation/v2watch';
 import { marksOf, LAW } from '../simulation/v2law';
 import { fameTier, type FameTier } from '../simulation/v2react';
+import { festivalWords } from '../simulation/v2festival';
 
 /** what the passers-by make of the player in a version 2 game (lot L5): a name in Sergeant Hale's ledger first, then the fame (src/simulation/v2react.ts) */
 const FOLK: Record<FameTier, TextKey> = { unknown: 'v2.line.folk.unknown', noticed: 'v2.line.folk.noticed', known: 'v2.line.folk.known', celebrated: 'v2.line.folk.celebrated' };
@@ -54,6 +55,10 @@ export function onTalk(s: GameState, who: string, emit: Emit): void {
 export function linesOf(s: GameState, who: string): string[] {
   const out = baseLines(s, who);
   if (!isV2(s)) return out;
+  // the festival's day (lot L6, FE-2 / FE-4): whom the person's lantern walks behind tonight and why, what would change it; Wren tells the custom, a rival counts
+  // their cortege (src/simulation/v2festival.ts)
+  const fw = festivalWords(s, who);
+  if (fw) out.push(fw);
   // a version 2 game (lot L4, EV-9 « Chaque rival se souvient »): what a rival whose arc says nothing of it remembers of you (src/simulation/v2rivals.ts)
   const st = stanceWords(s, who);
   return st ? [...out, st] : out;

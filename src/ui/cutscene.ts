@@ -50,6 +50,8 @@ export async function playCutscene(s: GameState, c: Cutscene, stage: SceneStage)
   try {
     for (const step of c.steps) {
       if (skipped) break;
+      // a step the state leaves out (lot L6: the parade's leader, Wren's verse)
+      if (step.if && !step.if(s)) continue;
       if ('cam' in step) await stage.look(step.cam, step.dist, step.secs);
       else if ('walk' in step) await stage.walk(step.walk, step.to);
       else await say(speakerOf(s, step), step.line(s));

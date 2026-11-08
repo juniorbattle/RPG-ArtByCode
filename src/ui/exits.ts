@@ -7,7 +7,8 @@ import { el } from './style';
  *  out of the page a tag naming the place it leads to, shown as the hero comes near it; walking through it darkens the screen and goes there
  *  (the page reports the way taken: the square's lane end, the quay's ends). DOM over the canvas, on the design system's veil. */
 
-export interface WayOut { to: PlaceId; anchor: [number, number, number] }
+/** `shut`: why the way is closed now (lot L6, FE-7: the Lanterns' parade fills the street to the forecourt that evening), said on its tag instead of the place */
+export interface WayOut { to: PlaceId; anchor: [number, number, number]; shut?: string | null }
 
 const CSS = `
 .pm-exit{position:fixed;z-index:25;left:0;top:0;pointer-events:none;padding:6px 34px;white-space:nowrap;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:var(--ds-grad-spot);opacity:0;transition:opacity .25s}
@@ -25,7 +26,7 @@ export class ExitMarkers {
     this.near = near;
     if (!document.getElementById('pm-exit-css')) { const st = document.createElement('style'); st.id = 'pm-exit-css'; st.textContent = CSS; document.head.appendChild(st); }
     this.tags = ways.map((w) => {
-      const t = el('div', 'pm pm-exit', tx('v2.exit.to', { place: placeName(w.to, true) }));
+      const t = el('div', 'pm pm-exit', w.shut ?? tx('v2.exit.to', { place: placeName(w.to, true) }));
       t.dataset.to = w.to; document.body.appendChild(t);
       return t;
     });

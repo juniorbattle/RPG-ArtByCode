@@ -99,7 +99,8 @@ test('the cutscenes: each once, at its place and moment; its speakers and walker
       // (a speaker or words that follow the state, lot L6: checked on their own states by tests/v2-scenes.test.mjs)
       if (st.say && typeof st.say === 'string') assert.ok(st.say === 'player' || c.cast.includes(st.say), `${c.id}: ${st.say} is on the square`);
       if (st.say && st.line.length === 0) assert.ok(st.line().length > 10);
-      if (st.walk) assert.ok(c.cast.includes(st.walk));
+      // (the hero walks at the head of the Lanterns' parade, lot L6, FE-8)
+      if (st.walk) assert.ok(st.walk === 'player' || c.cast.includes(st.walk));
       // (a look within its square's walk: journal Passe VP9, each square its own)
       if (st.cam) { const W = PZ.PLAZA_WALKS[VP.PLAZA_OF[c.place]]; assert.ok(st.cam[0] >= W.x0 && st.cam[0] <= W.x1 && st.cam[1] >= W.z0 && st.cam[1] <= W.z1, `${c.id}: the look at ${st.cam}`); }
     }

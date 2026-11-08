@@ -17,12 +17,13 @@ import { V2_LAW_ACTIONS, type V2LawAction } from './v2law';
 import { V2_BARTER_ACTIONS, type V2BarterAction } from './v2barter';
 import { V2_INTEL_ACTIONS, type V2IntelAction } from './v2intel';
 import { V2_RIVAL_ACTIONS, sandRefusal, type V2RivalAction } from './v2rivals';
+import { V2_FESTIVAL_ACTIONS, paradeBlocks, type V2FestivalAction } from './v2festival';
 
 /** The player's actions (journal Passe L1). Each says what it costs (0 = a minor action that takes no slot: moving between places,
  *  talking, consulting, GAMEPLAY § 4.2; 1 = a significant action that takes the slot, § 4.1), when it is refused and why (a readable
  *  reason, the state untouched), and what it changes (`apply` works on the copy `advance` made). */
 
-export type Action = BaseAction | RoleAction | V2SkillAction | V2GearAction | V2TownAction | V2StoryAction | V2LawAction | V2BarterAction | V2IntelAction | V2RivalAction;
+export type Action = BaseAction | RoleAction | V2SkillAction | V2GearAction | V2TownAction | V2StoryAction | V2LawAction | V2BarterAction | V2IntelAction | V2RivalAction | V2FestivalAction;
 type BaseAction =
   | { type: 'move'; to: PlaceId }
   | { type: 'talk'; who: string }
@@ -59,7 +60,7 @@ const BASE: Table = {
     list: (st) => (isV2(st) ? V2_PLACES : PLACES).filter((p) => p !== st.place).map((to) => ({ type: 'move', to })),
     label: (st, a) => tx('move.label', { place: placeName(a.to, isV2(st)) }),
     cost: () => 0,
-    check: (st, a) => (!(isV2(st) ? V2_PLACES : PLACES).includes(a.to) ? tx('move.noPlace') : a.to === st.place ? tx('move.there') : a.to === 'lanterns' && st.slot !== 'evening' && !isV2(st) ? tx('move.lanternsShut') : null),
+    check: (st, a) => (!(isV2(st) ? V2_PLACES : PLACES).includes(a.to) ? tx('move.noPlace') : a.to === st.place ? tx('move.there') : a.to === 'lanterns' && st.slot !== 'evening' && !isV2(st) ? tx('move.lanternsShut') : paradeBlocks(st, a.to) ? tx('v2.fest.wayShut') : null),
     apply: (s, a, _r, emit) => { s.place = a.to; emit({ kind: 'action', id: 'move', cause: 'action:move', text: tx('move.log', { place: placeName(a.to, isV2(s)) }), visible: false }); },
   },
   talk: {
@@ -141,4 +142,4 @@ const BASE: Table = {
 /** every action: the player's own, and those the town's people offer (roles.ts) */
 /** every action: the player's own, those the town's people offer (roles.ts), and the version 2's (listed only in a version 2 game, after
  *  today's: the default game's options keep their order) */
-export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS, ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS };
+export const ACTIONS: { [K in Action['type']]: ActionDef<Extract<Action, { type: K }>> } = { ...BASE, ...ROLE_ACTIONS, ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS };

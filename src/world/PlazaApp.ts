@@ -161,7 +161,7 @@ export class PlazaApp {
   /** a cutscene's camera focus (x, z, distance) and its walkers (lot V6); the hero's keys held off while one plays */
   focus: { x: number; z: number; dist: number } | null = null;
   locked = false;
-  private walking = new Map<Actor, { to: [number, number]; done: () => void }>();
+  private walking = new Map<Actor, { to: [number, number]; done: () => void; speed: number }>();
   private pose: CamPose = lookPose('festival', 0, 0, 20);
   /** the moment of the day: the page's day state, or the night */
   get period(): PlazaPeriod { return this.opts.time ?? 'night'; }
@@ -376,19 +376,11 @@ export class PlazaApp {
       const [nx, nz] = walkTo(this.place, P.pos.x, P.pos.z, P.pos.x + dx * speed * dt, P.pos.z + dz * speed * dt);
       P.pos.x = nx; P.pos.z = nz;
       P.dir = fiveViewFacing(P.dir, ix, -iz) as Dir; P.flip = ix > 0; P.anim = 'walk' as Anim; P.t += pw ? dt * pw.speed : dt;
-    } else { P.anim = 'idle' as Anim; P.t += dt; if (P.dir === 'downSide' || P.dir === 'upSide') P.dir = 'side'; }
+    } else if (!this.scripted(P, dt)) { P.anim = 'idle' as Anim; P.t += dt; if (P.dir === 'downSide' || P.dir === 'upSide') P.dir = 'side'; }
     for (const a of this.people) {
       a.t += dt;
       // a cutscene's walker: straight to its point, then idle
-      const w = this.walking.get(a);
-      if (w) {
-        const dx = w.to[0] - a.pos.x, dz = w.to[1] - a.pos.z, d = Math.hypot(dx, dz);
-        if (d < 0.08) { a.anim = 'idle' as Anim; a.dir = 'down'; this.walking.delete(a); w.done(); continue; }
-        const v = Math.min(d, 1.5 * dt);
-        a.pos.x += (dx / d) * v; a.pos.z += (dz / d) * v; a.anim = 'walk' as Anim;
-        a.dir = Math.abs(dx) > Math.abs(dz) * 1.2 ? 'side' : dz > 0 ? 'down' : 'up'; a.flip = dx > 0;
-        continue;
-      }
+      if (this.scripted(a, dt)) continue;
       const b = a.behaviour; if (!b || b.kind !== 'wander') continue;
       if ((b.wait ?? 0) > 0) { b.wait! -= dt; a.anim = 'idle' as Anim; continue; }
       const tgt = this.place.wander[b.idx ?? 0], dx = tgt[0] - a.pos.x, dz = tgt[1] - a.pos.z, d = Math.hypot(dx, dz), v = (this.cast?.get(a.base ?? '')?.walkSpeed ?? 1.4) * 0.8;
@@ -406,9 +398,21 @@ export class PlazaApp {
     return new Promise((r) => setTimeout(r, secs * 1000));
   }
   walkTo(who: string, to: [number, number]): Promise<void> {
-    const a = [...this.who].find(([, id]) => id === who)?.[0];
+    // the hero too (lot L6, FE-8: the one who opens the Lanterns' parade walks to the hall's stage), a little quicker than the people
+    const a = who === 'player' ? this.player : [...this.who].find(([, id]) => id === who)?.[0];
     if (!a) return Promise.resolve();
-    return new Promise((done) => this.walking.set(a, { to, done }));
+    return new Promise((done) => this.walking.set(a, { to, done, speed: who === 'player' ? 2.2 : 1.5 }));
+  }
+  /** a cutscene's walker this frame, straight to its point then idle facing the camera (false: none walking) */
+  private scripted(a: Actor, dt: number): boolean {
+    const w = this.walking.get(a);
+    if (!w) return false;
+    const dx = w.to[0] - a.pos.x, dz = w.to[1] - a.pos.z, d = Math.hypot(dx, dz);
+    if (d < 0.08) { a.anim = 'idle' as Anim; a.dir = 'down'; this.walking.delete(a); w.done(); return true; }
+    const v = Math.min(d, w.speed * dt);
+    a.pos.x += (dx / d) * v; a.pos.z += (dz / d) * v; a.anim = 'walk' as Anim; a.t += a === this.player ? dt : 0;
+    a.dir = Math.abs(dx) > Math.abs(dz) * 1.2 ? 'side' : dz > 0 ? 'down' : 'up'; a.flip = dx > 0;
+    return true;
   }
 
   /** the way out the hero is walking through: past the end of its lane with a key held (journal Passe VP5) */

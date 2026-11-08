@@ -1,3 +1,4 @@
+import type { V2Festival } from './v2festival';
 /** The game's state (the playable slice, journal Passe L1): plain data only, JSON-serialisable, versioned. Pure module: no three, no DOM,
  *  no Math.random, no clock (tests/game-core.test.mjs scans src/simulation, src/tournament, src/combat, src/events, src/narrative).
  *  The simulation owns the state (PROJECT_MASTER_CONTRACT § 10.2: `advance(state, action, rng)`); the town and the arena only display it. */
@@ -143,6 +144,9 @@ export interface V2State {
   /** the tale Vessa Lark paid Lio's room to tell (lot L4, the operator's EV-9 « Chaque rival se souvient ; deux autres agissent », journal Passe EV2): of which rival,
    *  from which day the room repeats it, until the day of the player's bout against them (src/simulation/v2rivals.ts) */
   lie?: { who: string; from: number; until: number };
+  /** the festival of day 9 (lot L6, the operator's EV-14 and the festival's sheet, journal Passe EVL11): the good turns done, the rival walked behind, the parade's
+   *  order once set (src/simulation/v2festival.ts) */
+  festival?: V2Festival;
 }
 /** a rumour as it was told: the day, the source (Lio's room, often right; the hooded stranger, never wrong), the rival's health and form as said, and a
  *  secret only the stranger tells (they watched you train, they meet a hood at night) */

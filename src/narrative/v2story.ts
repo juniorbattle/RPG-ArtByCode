@@ -5,6 +5,7 @@ import { PLAYER_ID, RIVALS } from './roster';
 import { PEOPLE } from './people';
 import { tx, type TextKey } from './text';
 import { stageMatches, actOf, v2Ranking, type Stage } from '../tournament/v2calendar';
+import { unmaskedHow, paradeOrder, FEST } from '../simulation/v2festival';
 
 /** The version 2's story (lot V6, journal Passe V6; the operator's decision AV-15 « Structure, dialogues et cinématiques »): the ten days' three
  *  acts (src/tournament/v2calendar.ts: the pool and the cut, the semi-finals and the major match, the eve and the final), the rivals' arcs
@@ -102,10 +103,13 @@ export function allyAp(s: GameState): number { return isV2(s) && s.facts.include
 
 /** one step of a live cutscene: the camera looks at a point of the square, a person walks to a point, a person speaks (lot L6: the speaker and the
  *  words may follow the state, a scene that depends on what happened) */
-export type SceneStep =
+export type SceneStep = (
   | { cam: [number, number]; dist?: number; secs?: number }
   | { walk: string; to: [number, number] }
-  | { say: string | ((s: GameState) => string); line: (s: GameState) => string };
+  | { say: string | ((s: GameState) => string); line: (s: GameState) => string }
+  // a step played only when the state says so (lot L6: the parade's leader walks, Wren's verse; a look is never skipped: the squares' visibility bake samples
+  // each look and the way from one to the next, src/world/PlazaVisibility.ts)
+) & { if?: (s: GameState) => boolean };
 
 /** who speaks a step (a step whose speaker follows the state names them from it) */
 export const speakerOf = (s: GameState, step: { say: string | ((s: GameState) => string) }): string => (typeof step.say === 'function' ? step.say(s) : step.say);
@@ -119,6 +123,15 @@ export interface Cutscene {
   cast: string[];
   steps: SceneStep[];
 }
+
+/** the Lanterns' parade (lot L6): its order as set at dusk (the board's own, src/simulation/v2festival.ts), who may walk at its head on the square (the hero and
+ *  the rivals who have a sheet there), and where: the foot of the hall's stage, beside Wren */
+const paradeOf = (s: GameState): Array<{ id: string; n: number }> => {
+  const f = s.v2?.festival;
+  return f?.leader && f.lanterns ? Object.entries(f.lanterns).map(([id, n]) => ({ id, n })).sort((a, b) => (a.id === f.leader ? -1 : b.id === f.leader ? 1 : 0)) : paradeOrder(s);
+};
+export const PARADE_WALKERS = ['player', 'marek', 'ilse', 'vessa', 'orla', 'cassius'] as const;
+export const STAGE_FOOT: [number, number] = [-2.8, -9.6];
 
 export const CUTSCENES: Record<string, Cutscene> = {
   arrival: {
@@ -155,14 +168,22 @@ export const CUTSCENES: Record<string, Cutscene> = {
       { say: 'orla', line: () => tx('v2.scene.orla.3') },
     ],
   },
+  // the eve of the final, the Lanterns' parade played live (lot L6, FE-8 « Une scène en direct »): its two lines kept (the hero's second by whether they fight the
+  // final), Wren calls the corteges in their order, the one at their head walks to the hall's stage (the hero, or a rival who has a sheet on the squares; Tobin and
+  // Rhosk, in portrait only, are named by Wren), Wren's verse for the hero who led; the rivals who have a sheet stand on the square for it
   eve: {
-    id: 'eve', place: 'lanterns', cast: ['bard'],
+    id: 'eve', place: 'lanterns', cast: ['bard', 'marek', 'ilse', 'vessa', 'orla', 'cassius'],
     when: (s) => s.day === 9 && s.slot === 'evening',
     steps: [
       // (before the hall's stage since journal Passe VP9)
       { cam: [-1.5, -9.8], dist: 16, secs: 2.5 },
       { say: 'bard', line: () => tx('v2.scene.eve.1') },
-      { say: 'player', line: () => tx('v2.scene.eve.2') },
+      { say: 'player', line: (s) => tx(inFinal(s, PLAYER_ID) ? 'v2.scene.eve.2' : 'v2.scene.eve.2out') },
+      { cam: [-1.5, -7.0], dist: 18, secs: 2 },
+      { say: 'bard', line: (s) => { const o = paradeOf(s), nm = (id: string) => speakerName(s, id); return tx('v2.scene.eve.call', { first: nm(o[0].id), n: o[0].n, second: nm(o[1].id), third: nm(o[2].id) }); } },
+      ...PARADE_WALKERS.map((who) => ({ walk: who, to: STAGE_FOOT, if: (s: GameState) => paradeOf(s)[0].id === who })),
+      { say: 'bard', line: (s) => tx('v2.scene.eve.verse', { name: s.player.name, purse: FEST.purse }), if: (s) => paradeOf(s)[0].id === PLAYER_ID },
+      { say: 'bard', line: (s) => tx('v2.scene.eve.gift', { name: s.player.name, rival: speakerName(s, s.v2!.festival!.behind!) }), if: (s) => !!s.v2?.festival?.behind && paradeOf(s)[0].id === s.v2.festival.behind },
     ],
   },
   final: {
@@ -223,7 +244,7 @@ export const CUTSCENES: Record<string, Cutscene> = {
   },
   // the epilogue: the crowning on the forecourt the evening of day 10, by the champion and the hero's place
   epilogue: {
-    id: 'epilogue', place: 'forecourt', cast: ['odo', 'marek'],
+    id: 'epilogue', place: 'forecourt', cast: ['odo', 'marek', 'bard'],
     when: (s) => s.day === 10 && s.slot === 'evening' && !!s.flags.champion,
     steps: [
       { cam: [0, -15], dist: 22, secs: 3 },
@@ -232,9 +253,12 @@ export const CUTSCENES: Record<string, Cutscene> = {
       { cam: [1.5, -3], dist: 12, secs: 1.5 },
       { say: 'marek', line: (s) => tx(MAREK_END[marekEnd(s)], { name: s.player.name, champ: RIVALS[String(s.flags.champion)]?.name ?? '' }) },
       { say: 'player', line: (s) => tx(HERO_END[placeEnd(s)]) },
+      // the hero who led the Lanterns' parade keeps a verse in Wren's song (lot L6, FE-5)
+      { say: 'bard', line: (s) => tx(s.flags.champion === PLAYER_ID ? 'v2.scene.epilogue.wren.crowned' : 'v2.scene.epilogue.wren', { name: s.player.name }), if: (s) => s.v2?.festival?.leader === PLAYER_ID },
     ],
   },
 };
+
 
 /** the scenes' words by the state (each key written out: tests/texts.test.mjs finds every key asked for in the code) */
 const SEMI_WON: Record<Temper, TextKey> = { honourable: 'v2.scene.semiWon.honourable', proud: 'v2.scene.semiWon.proud', cold: 'v2.scene.semiWon.cold' };
@@ -253,11 +277,8 @@ const semiFoe = (s: GameState): string => { const m = mine(s, 'semi'); return m 
 /** the other semi-final's winner */
 const otherFinalist = (s: GameState): string | null => stageMatches(s, 'semi').find((m) => m.a !== PLAYER_ID && m.b !== PLAYER_ID)?.winner ?? null;
 
-/** how Cassius was unmasked before the town, the last way first: shamed on the festival square, reported to Hale, his man caught at the forge (null:
- *  not before the town; the culprit known to the player alone, by the stranger, Lady Edda or Odo's button, is no scandal yet) */
-export function unmaskedHow(s: GameState): 'confronted' | 'reported' | 'caught' | null {
-  return s.flags.confronted ? 'confronted' : s.flags.reported && s.flags['culprit-known'] === 'cassius' ? 'reported' : s.facts.includes('saboteur-caught') ? 'caught' : null;
-}
+/** how Cassius was unmasked before the town (src/simulation/v2festival.ts: the bought lanterns go out with it), re-exported for the scenes' tests */
+export { unmaskedHow };
 /** which of House Dree's two chains the town knows: the quay's forge, or the gear's strap (as the report and the confrontation say, src/simulation/roles.ts) */
 const dreeChain = (s: GameState): 'forge' | 'gear' => (['forge-burned', 'saboteur-caught', 'culprit-named', 'saboteur-fled'].some((f) => s.facts.includes(f)) ? 'forge' : 'gear');
 
