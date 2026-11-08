@@ -312,7 +312,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Les douze choix suivent la recommandation de leur carte : rien à appliquer, le lot reste tel que la Passe EVL11 l'a construit et prouvé. Les textes d'EV-13 et du festival sont gardés tels quels (toujours « proposés » au sens du contrat : le texte du jeu, que l'opérateur peut reprendre plus tard). L'écart avec L3 (Rhosk et Tobin observables dès le jour 1) est tranché par L6-6. La célébrité de la Bourse reste un décalage de +10, comme les autres sources (L6-7). Marek reste le favori de la parade (L6-8). La suite : l'essai en jeu de l'opérateur (L5, les fanions, L6), puis la phase d'équipe sur fiche (L6-12).
 
 ### Le rejeu sur `main` et la fusion
-- (à compléter par le rejeu)
+- `main` n'avait pas bougé depuis la fusion de la Passe EVL11 dans la branche (`630c1b1`, vérifié sur `origin/main`). Les sept commits de la branche rejoués à plat sur lui (la fusion de `main` disparaît) : seul le journal entrait en conflit, deux fois (les passes de `main` puis EVL11, la ligne d'étape 5) ; l'arbre rejoué est identique, octet pour octet, à l'arbre prouvé de la branche (`git diff` vide) : les preuves de la Passe EVL11 tiennent telles quelles (0 px du jeu par défaut, empreintes, laboratoire, parties du navigateur rejouées en Node).
+- Revalidé sur le commit rejoué : `npm run build` (la vérification des types avec), `npm run art:validate`, `npm test` 534 sur 534. `main` avancé en avance rapide et poussé ; la branche `claude/l6-recit` supprimée (locale et distante). La jonction `node_modules/three` du worktree défaite ; les serveurs `l6-*` arrêtés depuis la Passe EVL11.
+- Les passes PR1 à FT2 (branches fusionnées) déplacées à l'octet dans `journal/68-passes-PR1-FT2.md` (les passes gardées faisaient 80,6 Ko) : le corps de l'archive est égal aux 32 577 octets retirés, chaque passe est dans un seul fichier, les fins de ligne CRLF sont gardées ; 48 Ko de passes restent.
 
 ### Pensée
 - Une fiche de lot qui montre chaque texte tel que le jeu l'a (lu dans sa table, pas recopié) se relit vite et ne peut pas mentir sur ce qui est construit.
