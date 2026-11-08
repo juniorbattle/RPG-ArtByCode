@@ -320,7 +320,8 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - **Un défi joué** : `tools/challenge-flow.mjs` contre Orla (gagné, graine 1842) sur la branche en DEV et sur son paquet : toutes les vérifications passent, la mise payée (60 → 70), Node rejoue à `6fbb57beb74e7332` comme le navigateur, aucune erreur de page ; Orla sur le sable sous sa peau moyenne.
 
 ### Validation — [OK]
-- `npm run typecheck` ; `npm test` 536 sur 537 dans le worktree (`arena-day`, son environnement), relancé dans le dossier principal après la fusion ; `npm run build` ; `npm run art:validate` (73 manifestes, 0 erreur).
+- `npm run typecheck` ; `npm test` 536 sur 537 dans le worktree (`arena-day`, son environnement) ; `npm run build` ; `npm run art:validate` (73 manifestes, 0 erreur).
+- **Fusionné** : `main` avancé en avance rapide à `9d03210`, la branche supprimée (locale et distante). Dans le dossier principal, mis à jour en avance rapide (son `.gitignore` modifié localement, qu'aucun commit entrant ne touchait, laissé tel quel) : `npm run typecheck` propre, `npm test` **540 sur 540**, `tests/arena-day.test.mjs` compris.
 - `AGENTS.md` : « Art production principle » (les peaux des rivaux, leur fichier, les choix, les places) et « Commands » (les outils de peau sur `rivals.json`, `tests/rival-skins.test.mjs`).
 - Les passes gardées dépassaient 60 Ko (75,1 Ko) : PR3 et PR4 (branche fusionnée) déplacées à l'octet dans `journal/69-passes-PR3-PR4.md`, la ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les 18 796 octets retirés, le journal reconstruit égale l'original, CRLF partout, chaque passe PR3 / PR4 dans un seul fichier (les doublons de titres V0-V3, C1, C2, V5 entre archives sont anciens, deux séances ayant nommé leurs passes pareil). 56,3 Ko de passes restent.
 
