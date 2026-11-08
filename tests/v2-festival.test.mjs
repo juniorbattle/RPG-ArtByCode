@@ -262,13 +262,16 @@ test('the parade played live (FE-8): the eve\'s two lines, Wren calls the order,
   // the player at the head (a finalist: every bout won)
   const p = dusk({ fame: 90 });
   assert.equal(S.pendingScene(p).id, 'eve');
-  const o = Object.keys(p.v2.festival.lanterns), nm = (id) => S.speakerName(p, id);
-  assert.equal(o[0], 'player');
-  assert.deepEqual(lines(p, 'eve'), [
+  // the order: the player's crowd of 12, House Dree's six, then the twos in the roster's order (no renown between them), Pip's one, the empty ones
+  assert.deepEqual(p.v2.festival.order, ['player', 'cassius', 'marek', 'orla', 'ilse', 'tobin', 'vessa', 'rhosk']);
+  const eve = [
     ['bard', T.tx('v2.scene.eve.1')], ['player', T.tx('v2.scene.eve.2')],
-    ['bard', T.tx('v2.scene.eve.call', { first: p.player.name, n: 12, second: nm(o[1]), third: nm(o[2]) })],
+    ['bard', T.tx('v2.scene.eve.call', { first: p.player.name, n: 12, second: 'Cassius Dree', third: 'Marek Varn' })],
     ['bard', T.tx('v2.scene.eve.verse', { name: p.player.name, purse: 30 })],
-  ]);
+  ];
+  assert.deepEqual(lines(p, 'eve'), eve);
+  // the same after the browser's save (its keys written sorted: the order was lost in the first browser proof, journal Passe EVL11)
+  assert.deepEqual(lines({ ...G.deserialize(G.serialize(p)), place: 'lanterns' }, 'eve'), eve);
   assert.deepEqual(walks(p, 'eve'), [['player', [-2.8, -9.6]]]);
   // Marek at the head: he walks, no verse; a player out of the final says so
   const m = dusk({ rep: { marek: 90 } }, (s) => { s.tournament.matches = s.tournament.matches.filter((x) => x.stage !== 'final' || (x.a !== 'player' && x.b !== 'player')); });
@@ -280,7 +283,7 @@ test('the parade played live (FE-8): the eve\'s two lines, Wren calls the order,
   assert.equal(t.v2.festival.leader, 'tobin');
   assert.deepEqual(walks(t, 'eve'), []);
   assert.deepEqual(lines(t, 'eve').at(-1), ['bard', T.tx('v2.scene.eve.gift', { name: t.player.name, rival: 'Tobin Fenn' })]);
-  assert.equal(lines(t, 'eve')[2][1], T.tx('v2.scene.eve.call', { first: 'Tobin Fenn', n: 13, second: S.speakerName(t, Object.keys(t.v2.festival.lanterns)[1]), third: S.speakerName(t, Object.keys(t.v2.festival.lanterns)[2]) }));
+  assert.equal(lines(t, 'eve')[2][1], T.tx('v2.scene.eve.call', { first: 'Tobin Fenn', n: 13, second: S.speakerName(t, t.v2.festival.order[1]), third: S.speakerName(t, t.v2.festival.order[2]) }));
   // the rivals who have a sheet stand on the square for it; every walker may walk there
   for (const id of ['bard', 'marek', 'ilse', 'vessa', 'orla', 'cassius']) assert.ok(S.CUTSCENES.eve.cast.includes(id), id);
   assert.deepEqual([...S.PARADE_WALKERS].sort(), ['cassius', 'ilse', 'marek', 'orla', 'player', 'vessa']);

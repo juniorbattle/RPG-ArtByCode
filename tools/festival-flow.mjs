@@ -48,18 +48,21 @@ try {
   const talk = async (who) => { const t = await page.evaluate((w) => { window.__ui.openPerson(w); return document.querySelector('.pm-talk')?.textContent ?? ''; }, who); done.push({ type: 'talk', who }); return t; };
   const closeBand = () => page.keyboard.press('Escape');
   const state = () => page.evaluate(() => window.__game.state());
-  /** the list (Q): the good turns' buttons and their words */
-  const listed = (rx) => page.evaluate((src) => { window.__ui.openHere(); return [...document.querySelectorAll('.pm-talk .pm-btn')].filter((e) => new RegExp(src).test(e.textContent)).map((e) => ({ text: e.textContent, off: !!e.disabled })); }, rx);
+  /** a person's dialogue: their choices (a good turn is offered by the one it is done with, as every action a person gives) */
+  const choices = () => page.evaluate(() => [...document.querySelectorAll('.pm-talk .pm-btn')].map((e) => ({ text: e.textContent, off: !!e.disabled })));
 
   await openTown();
   let st = await state();
   check(st.day === 9 && st.slot === 'morning' && st.place === 'lanterns', `day 9's morning on the festival square: day ${st.day} ${st.slot} ${st.place}`);
   const kell = await talk('kell');
   check(kell.includes(tx('v2.fest.walksNone', { unless: tx('v2.fest.unless', { why: tx('v2.fest.why.sand') }) })), `Kell Barrow's lantern: ${JSON.stringify(kell.slice(0, 220))}`);
+  const kc = await choices();
+  check(kc.some((d) => d.text.includes(tx('v2.fest.deed.hang', { n: 3 })) && !d.off), `Kell offers the hall's lanterns: ${JSON.stringify(kc.map((d) => d.text.slice(0, 90)))}`);
+  await page.screenshot({ path: path.join(outDir, `${kind}-0-kell.png`) });
   await closeBand();
-  const deeds = await listed('Kell Barrow|round at Lio');
-  check(deeds.some((d) => d.text.includes(tx('v2.fest.deed.hang', { n: 3 })) && !d.off) && deeds.some((d) => d.text.includes(tx('v2.fest.deed.round', { n: F.deedGain(st, 'round') })) && !d.off), `the good turns in the list: ${JSON.stringify(deeds.map((d) => d.text.slice(0, 90)))}`);
-  await page.screenshot({ path: path.join(outDir, `${kind}-0-list.png`) });
+  await talk('lio');
+  const lc = await choices();
+  check(lc.some((d) => d.text.includes(tx('v2.fest.deed.round', { n: F.deedGain(st, 'round') })) && !d.off), `Lio offers the round: ${JSON.stringify(lc.map((d) => d.text.slice(0, 90)))}`);
   await closeBand();
   await run({ type: 'festDeed', deed: 'round' });
   await run({ type: 'festDeed', deed: 'hang' }); await openTown();
@@ -85,6 +88,10 @@ try {
   }
   st = await state();
   const order = F.paradeOrder({ ...st, v2: { ...st.v2, festival: { ...st.v2.festival, deeds: [...st.v2.festival.deeds, 'flame'] } } });
+  await talk('ambrose');
+  const ac = await choices();
+  check(ac.some((d) => d.text.includes(tx('v2.fest.deed.flame', { n: F.deedGain(st, 'flame') })) && !d.off), `Brother Ambrose offers his flame: ${JSON.stringify(ac.map((d) => d.text.slice(0, 90)))}`);
+  await closeBand();
   await run({ type: 'festDeed', deed: 'flame' });
   // the evening: the parade's order set at dusk, its scene played on the square
   await openTown('&cutscene=1');
@@ -100,6 +107,8 @@ try {
       if (heard.length === 3) { await sleep(200); await page.screenshot({ path: path.join(outDir, `${kind}-3-call.png`) }); }
       // the walk at the head of the parade is played between the call and the next line
       if (heard.length === 3) { await page.keyboard.press('e'); await page.waitForFunction((n) => (document.querySelector('.pm-scene q')?.textContent ?? '') !== n, { timeout: 20000 }, q).catch(() => {}); continue; }
+      // the verse, the one at the head standing at the hall's stage
+      if (heard.length === 4) { await sleep(200); await page.screenshot({ path: path.join(outDir, `${kind}-4-verse.png`) }); }
       await page.keyboard.press('e');
     }
     await sleep(250);

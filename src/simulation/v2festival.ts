@@ -47,9 +47,9 @@ export const DEEDS: Record<Deed, { slots: readonly SlotId[]; by: string; slot: n
   round: { slots: ['morning', 'afternoon'], by: 'lio', slot: 0, coins: FEST.round },
 };
 
-/** the festival's state in a version 2 game: the good turns done, the rival the player walks behind, and once the parade's order is set at dusk, its leader and every
- *  cortege's lanterns */
-export interface V2Festival { deeds?: Deed[]; behind?: string; leader?: string; lanterns?: Record<string, number> }
+/** the festival's state in a version 2 game: the good turns done, the rival the player walks behind, and once the parade's order is set at dusk, its leader, its order
+ *  (a list: a save writes an object's keys sorted, journal Passe EVL11) and every cortege's lanterns */
+export interface V2Festival { deeds?: Deed[]; behind?: string; leader?: string; order?: string[]; lanterns?: Record<string, number> }
 
 // ------------------------------------------------------------------------------------------------ the lanterns
 
@@ -153,7 +153,7 @@ export const festivalOn = (s: GameState): boolean => isV2(s) && s.day === FESTIV
 export function festivalDusk(s: GameState, emit: Emit): void {
   if (!isV2(s) || !s.v2 || s.day !== FESTIVAL_DAY || s.v2.festival?.leader) return;
   const order = paradeOrder(s), leader = order[0].id, f = (s.v2.festival ??= {});
-  f.leader = leader; f.lanterns = Object.fromEntries(order.map((o) => [o.id, o.n]));
+  f.leader = leader; f.order = order.map((o) => o.id); f.lanterns = Object.fromEntries(order.map((o) => [o.id, o.n]));
   const behind = f.behind;
   if (behind) {
     const c = s.competitors[behind]; if (c) c.relationships[PLAYER_ID] = clamp(Math.max((c.relationships[PLAYER_ID] ?? 0) + FRIENDSHIP, FRIENDSHIP), -100, 100);

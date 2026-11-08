@@ -128,7 +128,7 @@ export interface Cutscene {
  *  the rivals who have a sheet there), and where: the foot of the hall's stage, beside Wren */
 const paradeOf = (s: GameState): Array<{ id: string; n: number }> => {
   const f = s.v2?.festival;
-  return f?.leader && f.lanterns ? Object.entries(f.lanterns).map(([id, n]) => ({ id, n })).sort((a, b) => (a.id === f.leader ? -1 : b.id === f.leader ? 1 : 0)) : paradeOrder(s);
+  return f?.order && f.lanterns ? f.order.map((id) => ({ id, n: f.lanterns![id] ?? 0 })) : paradeOrder(s);
 };
 export const PARADE_WALKERS = ['player', 'marek', 'ilse', 'vessa', 'orla', 'cassius'] as const;
 export const STAGE_FOOT: [number, number] = [-2.8, -9.6];
