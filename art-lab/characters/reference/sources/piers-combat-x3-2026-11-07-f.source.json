@@ -4,7 +4,7 @@
   "sha256": "97a53373d9bdde5f1e3e0208f885d76b0d39912018be466f484f2504e2ebb038",
   "bytes": 1410832,
   "format": "PNG 1536 x 1024, bit depth 8, colour type 2; chunks IHDR, caBX, IDAT, IEND",
-  "status": "NON-CANONICAL: generated, awaiting the operator's review (AGENTS.md, \"Image generation\")",
+  "status": "APPROVED AS A SOURCE by the operator through the sheets built on it, piers-x3-combat (journal Passe GA3: « Production »); generated, with no rights beyond those of the tool that made it",
   "generation": {
     "tool": "tools/art-lab/gen-image.mjs",
     "toolSha256": "1e7c916d3ae09883a5d23c576ef827228bfbf80a1a12b72a98125e3560f997f2",

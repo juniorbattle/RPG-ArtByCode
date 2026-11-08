@@ -1,11 +1,18 @@
 {
  "id": "kell-x2-v1",
- "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe GA3)",
+ "status": "APPROVED PRODUCTION ASSET (operator, the lot sheet of the three more generic fighters, journal Passe GA3), not declared a Gold Master",
  "request": {
   "date": "2026-11-07",
   "by": "operator, the generic fighters' lot sheet of journal Passe GA2",
   "text": "GA-P3 « Oui, ainsi » and GA-P4 « Une tâche à part, après celle-ci » (the generic fighters' lot sheet, journal Passe GA2): Kell Barrow <- n° 14 « Martial Artist (Male) » of the tournament casting sheet a"
  },
+ "approvals": [
+  {
+   "by": "operator (git user wonmii)",
+   "date": "2026-11-07",
+   "note": "APPROVED FOR PRODUCTION by the operator on the lot sheet of the three more generic fighters (journal Passe GA3, https://claude.ai/artifact/AnVwmX5TVwWNzM9ddzyoAT): « Production » (GA3-KE1), and GA3-S1 « Les six ensemble »; version 2 only, today's game unchanged."
+  }
+ ],
  "source": {
   "sheet": {
    "path": "art-lab/characters/reference/sources/kell-clear-2026-11-07.png",

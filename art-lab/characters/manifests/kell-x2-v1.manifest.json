@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "kell-x2-v1",
   "kind": "character",
-  "status": "candidate",
+  "status": "approved",
   "source": "art-lab/characters/source/kell-x2-v1.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/kell-x2-v1.png",
@@ -27,7 +27,12 @@
       "note": "the operator's GA-P3 « Oui, ainsi » and GA-P4 « Une tâche à part, après celle-ci » (the generic fighters' lot sheet, journal Passe GA2)"
     }
   ],
-  "approved": false,
-  "runtimeUse": "lab",
-  "notes": "Candidate (journal Passe GA3): Kell Barrow, a generic fighter of the version 2, standing only (12 frames): his face in a version 2 game's portraits. Production waits for the operator's lot sheet; nothing in the game loads it."
+  "approved": true,
+  "runtimeUse": "production",
+  "notes": "APPROVED FOR PRODUCTION by the operator on the lot sheet of the three more generic fighters (journal Passe GA3, https://claude.ai/artifact/AnVwmX5TVwWNzM9ddzyoAT): « Production » (GA3-KE1), and GA3-S1 « Les six ensemble »; version 2 only, today's game unchanged. Loaded by a version 2 game's portraits (src/characters/PlazaCast.ts). Kell Barrow, a generic fighter of the version 2, standing only (12 frames): his face in a version 2 game's portraits.",
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-11-07",
+    "note": "APPROVED FOR PRODUCTION by the operator on the lot sheet of the three more generic fighters (journal Passe GA3, https://claude.ai/artifact/AnVwmX5TVwWNzM9ddzyoAT): « Production » (GA3-KE1), and GA3-S1 « Les six ensemble »; version 2 only, today's game unchanged."
+  }
 }

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "kell-x3-combat",
   "kind": "character",
-  "status": "candidate",
+  "status": "approved",
   "source": "art-lab/characters/source/kell-x3-combat.aseprite",
   "exports": {
     "sheet": "art-lab/characters/exports/kell-x3-combat.png",
@@ -33,7 +33,12 @@
       "note": "candidate, on the same lot sheet (journal Passe GA3)"
     }
   ],
-  "approved": false,
-  "runtimeUse": "lab",
-  "notes": "Candidate (journal Passe GA3): Kell Barrow's combat sheet at x3, 27 frames of the § 14 list for Tobin's profile, whose kit a generic fighter fights with (src/narrative/generics.ts); no weapon: his bare fists; cells of 192 x 288 texels, feet on row 270, hips on column 96, facing left. Production waits for the operator's lot sheet; nothing in the game loads it. Rebuild: node tools/art-lab/build-combat.mjs art-lab/characters/rigs/kell-x3-combat.rig.mjs --check"
+  "approved": true,
+  "runtimeUse": "production",
+  "notes": "APPROVED FOR PRODUCTION by the operator on the lot sheet of the three more generic fighters (journal Passe GA3, https://claude.ai/artifact/AnVwmX5TVwWNzM9ddzyoAT): « Production » (GA3-KE2), and GA3-S1 « Les six ensemble »; version 2 only, today's game unchanged. Loaded by a version 2 duel (src/arena/CombatCast.ts). Kell Barrow's combat sheet at x3, 27 frames of the § 14 list for Tobin's profile, whose kit a generic fighter fights with (src/narrative/generics.ts); no weapon: his bare fists; cells of 192 x 288 texels, feet on row 270, hips on column 96, facing left. Rebuild: node tools/art-lab/build-combat.mjs art-lab/characters/rigs/kell-x3-combat.rig.mjs --check",
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-11-07",
+    "note": "APPROVED FOR PRODUCTION by the operator on the lot sheet of the three more generic fighters (journal Passe GA3, https://claude.ai/artifact/AnVwmX5TVwWNzM9ddzyoAT): « Production » (GA3-KE2), and GA3-S1 « Les six ensemble »; version 2 only, today's game unchanged."
+  }
 }

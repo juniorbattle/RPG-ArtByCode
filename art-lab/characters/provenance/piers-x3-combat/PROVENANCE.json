@@ -1,10 +1,17 @@
 {
  "id": "piers-x3-combat",
- "status": "CANDIDATE, not approved: built for the operator's lot sheet (journal Passe GA3)",
+ "status": "APPROVED PRODUCTION ASSET (operator, the lot sheet of the three more generic fighters, journal Passe GA3), not declared a Gold Master",
  "request": {
   "date": "2026-11-07",
   "by": "operator (git user wonmii): the generic fighters' lot sheet of journal Passe GA2, GA-P2 « Oui, ainsi » and GA-P4 « Une tâche à part, après celle-ci » (the generic fighters' lot sheet, journal Passe GA2); the casting's X5 « Une tâche de 5 $ par combattant » (journal Passe CA1)"
  },
+ "approvals": [
+  {
+   "by": "operator (git user wonmii)",
+   "date": "2026-11-07",
+   "note": "APPROVED FOR PRODUCTION by the operator on the lot sheet of the three more generic fighters (journal Passe GA3, https://claude.ai/artifact/AnVwmX5TVwWNzM9ddzyoAT): « Production » (GA3-PI2), and GA3-S1 « Les six ensemble »; version 2 only, today's game unchanged."
+  }
+ ],
  "source": {
   "sheets": {
    "description": "6 generated pose sheets, left-facing profile on a flat green ground (gpt-image-2 through tools/art-lab/gen-image.mjs, task piers-art); references: the clean figure piers-clear-2026-11-07.png and n° 09 « Spear Champion (Male) » of the tournament casting sheet a (cropped, nearest x2), and Ren's sheets for the layout only (a retake: the fighter's own earlier sheet for its proportions)",

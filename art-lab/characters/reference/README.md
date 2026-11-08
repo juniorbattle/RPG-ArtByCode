@@ -30,8 +30,8 @@ rights, which have not been exhaustively verified**. Not an authorisation to rep
 
 | Operator's combat casting, 2026-11-01, G1 (six panels) | casting source, journal Passe CA1 | `91dffa0c…594d` | `sources/combat-casting-2026-11-01-g1.webp` |
 | same, G2 (six numbered panels) | casting source, journal Passe CA1 | `aefcba3f…b136` | `sources/combat-casting-2026-11-01-g2.webp` |
-| Pose sheets of the combat sheets, generated, one set per fighter | sources of `<id>-x3-combat`, journal Passes CX1 / CX2 (the generic fighters': GA1 / GA2) | each its `.source.json` | `sources/ren-combat-x3-*`, `sources/<rival>-combat-x3-2026-11-01-*`, `sources/{aldric,corra,ambrose}-combat-x3-2026-11-07-*` |
-| Clean sheets of the generic fighters, generated from the figures the operator chose (L2-11) | sources of `<id>-x2-v1` and of the pose sheets, journal Passes GA1 / GA2 | each its `.source.json` | `sources/{aldric,corra,ambrose}-clear-2026-11-07.png` |
+| Pose sheets of the combat sheets, generated, one set per fighter | sources of `<id>-x3-combat`, journal Passes CX1 / CX2 (the generic fighters': GA1 / GA2, GA3 / GA4) | each its `.source.json` | `sources/ren-combat-x3-*`, `sources/<rival>-combat-x3-2026-11-01-*`, `sources/{aldric,corra,ambrose,lucan,piers,kell}-combat-x3-2026-11-07-*` |
+| Clean sheets of the generic fighters, generated from the figures the operator chose (L2-11; GA-P1 to GA-P3, the tournament casting sheet a) | sources of `<id>-x2-v1` and of the pose sheets, journal Passes GA1 / GA2, GA3 / GA4 | each its `.source.json` | `sources/{aldric,corra,ambrose,lucan,piers,kell}-clear-2026-11-07.png` |
 | Interface direction A « Voile », two generated images (town with a dialogue, duel with an alert) | **non-canonical** references, journal Passe UM1 (UM-T4): the model redrew part of the scene, the interface alone is the reference | each its `.source.json` | `sources/ui-voile-{town,arena}-2026-11-01.png` |
 
 All three are re-encoded copies (WebP pasted in a working session), not the original ChatGPT files; each is archived byte for byte with
