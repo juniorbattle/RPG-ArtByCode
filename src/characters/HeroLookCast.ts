@@ -10,7 +10,8 @@ import { castSource, type CastEntry } from './BakedCast';
  *  waits for the operator nothing changes. DEV only: `herolook=candidate` shows the file's look whatever its approval, `herolook=<skin>.<hair>.<cloak>` another
  *  look of its ramps (`-` keeps a material), for the review. */
 const FILE = heroFile as unknown as HeroLookFile;
-export const HERO_TOWN = 'hero-x2-v4', HERO_COMBAT = 'hero-x3-combat';
+/** Ren's town sheet; his combat sheet is named by CombatCast alone (tests/combat-sheet.test.mjs), which hands its frames to `heroSheetLook` */
+export const HERO_TOWN = 'hero-x2-v4';
 
 /** the DEV review's look, or null (production: always null) */
 function review(): Partial<Record<HeroMaterial, string>> | null {

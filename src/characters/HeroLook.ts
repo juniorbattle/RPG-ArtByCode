@@ -3,7 +3,7 @@ import { frameSkin, recolor, type NamedFrame, type PaletteMask } from './Fighter
 
 /** Ren's look in a version 2 game (journal Passes PR1 / PR2; the operator, word for word: « par defaut je veux que le personnage est une couleur mate de peau
  *  des cheveux  hâlée et gris  et une cape soit aesoiaw ou ivoire », then « Yes, ivory cloak »): one Ren, tan skin, grey hair, an ivory cloak, a fixed variant
- *  recoloured once on the texels of his two approved sheets (hero-x2-v4 in town, on the squares, in the portraits; hero-x3-combat in the duel). The generic
+ *  recoloured once on the texels of his two approved sheets (hero-x2-v4 in town, on the squares, in the portraits; his combat sheet in the duel). The generic
  *  fighters' way (journal Passes GS1 / GS2, FighterSkins.ts): the sheets and their exports stay as they are; a material map, a pure function of the sheet and of
  *  settings recorded in art-lab/characters/variants/hero.json, picks the skin, the hair and the cloak; a masked texel takes the target ramp's colour at its
  *  luminance rank (the sprite shader's formula); the file reaches production only approved by the operator, each sheet's material fingerprint checked at load.
@@ -152,10 +152,11 @@ export const sheetMaterials = (frames: readonly NamedFrame[], fw: number, fh: nu
 /** the fingerprint the file records (the NPCs' FNV-1a over the maps in sheet order) */
 export const lookFingerprint = maskFingerprint;
 
-/** each material's luminance range over the frames of one or more sheets (linear light), null for a material that never shows */
+/** each material's luminance range over the frames of one or more sheets (linear light), over its lit texels only: a contour texel taken with the hair
+ *  (`rim`) or the cloak's fold (`outline`) takes the ramp's darkest stop and does not stretch the range; null for a material that never shows */
 export function materialRanges(sheets: ReadonlyArray<{ frames: readonly NamedFrame[]; maps: Uint8Array[] }>): Record<HeroMaterial, [number, number] | null> {
   const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
-  for (const { frames, maps } of sheets) frames.forEach((f, n) => { const m = maps[n]; for (let j = 0; j < m.length; j++) if (m[j]) { const i = j * 4, L = linLum(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2]), k = m[j] - 1; if (L < lo[k]) lo[k] = L; if (L > hi[k]) hi[k] = L; } });
+  for (const { frames, maps } of sheets) frames.forEach((f, n) => { const m = maps[n]; for (let j = 0; j < m.length; j++) if (m[j]) { const i = j * 4; if (hsv(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2])[2] < OUTLINE) continue; const L = linLum(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2]), k = m[j] - 1; if (L < lo[k]) lo[k] = L; if (L > hi[k]) hi[k] = L; } });
   const r = (k: number): [number, number] | null => (lo[k] <= hi[k] ? [lo[k], hi[k]] : null);
   return { skin: r(0), hair: r(1), cloak: r(2) };
 }

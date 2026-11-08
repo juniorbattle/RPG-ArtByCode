@@ -3,7 +3,7 @@ import { bakedFaces, edgeFor, installSheets, shadeFor, type InstalledSheets, typ
 import { decodePng } from '../characters/BakedDecode';
 import { namedFrames } from '../characters/FighterSkins';
 import { sheetSkin } from '../characters/FighterSkinCast';
-import { heroSheetLook, HERO_COMBAT } from '../characters/HeroLookCast';
+import { heroSheetLook } from '../characters/HeroLookCast';
 
 /** The combat sheets in production (journal Passes CX1 to CX4: each approved on the operator's lot sheets, Ren and Marek together as RC2-5 asked): Ren's and the seven rivals', and since
  *  journal Passe GA2 the three generic fighters' (Ser Aldric Venn, Corra Dunmere, Brother Ambrose: « Production », GA-S1 « Les six ensemble »), since journal Passe GA4 three more (Lucan Rook,
@@ -32,7 +32,7 @@ async function source(seat: Seat, id: string): Promise<SheetSource | null> {
 async function skinOf(id: string, bytes: Uint8Array, meta: unknown): Promise<Pick<SheetSource, 'recolor'>> {
   if (!/-x3-combat$/.test(id)) return {};
   // Ren's look (journal Passe PR3, HeroLookCast: the approved look, or DEV's `herolook` review); a generic fighter's skin otherwise
-  const { fw, fh, frames } = namedFrames(await decodePng(bytes), meta, true), skin = id === HERO_COMBAT ? heroSheetLook(id, frames, fw, fh) : sheetSkin(id, frames, fw, fh);
+  const { fw, fh, frames } = namedFrames(await decodePng(bytes), meta, true), skin = id.startsWith('hero-') ? heroSheetLook(id, frames, fw, fh) : sheetSkin(id, frames, fw, fh);
   if (!skin) return {};
   const at = new Map(frames.map((f, n) => [f.name, n]));
   return { recolor: (frame, rgba) => { const n = at.get(frame); return n === undefined ? rgba : skin(n, rgba); } };

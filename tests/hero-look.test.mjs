@@ -60,7 +60,8 @@ test('hair: a contour brown touching the hair and no skin is hair; next to the s
   const f = frame('idle.0', [[15, 8, 35, 18, HAIR], [14, 7, 36, 7, RIM], [18, 19, 30, 26, SKIN], [17, 19, 17, 26, RIM]]);
   const m = L.frameMaterials(f, W, H, sheet({ rim: [RIM.slice(1)] }));
   assert.equal(at(m, 20, 7), 2, 'the contour over the hair');
-  assert.equal(at(m, 17, 22), 0, 'the face\'s contour, beside the skin');
+  assert.equal(at(m, 17, 19), 0, 'the face\'s contour where it touches the hair: beside the skin, it stays');
+  assert.equal(at(m, 17, 22), 0, 'the face\'s contour lower down');
   assert.equal(at(L.frameMaterials(f, W, H, sheet()), 20, 7), 0, 'without `rim`, a contour (value under 0.25) never changes');
 });
 
@@ -150,7 +151,7 @@ test('the wiring: today\'s game never reaches the look; a version 2 game asks fo
   assert.ok(!/^import[^\n]*HeroLookCast/m.test(app), 'App imports the look on demand only');
   assert.match(app, /params\.has\('herolook'\) \? await import\('\.\.\/characters\/HeroLookCast'\)/, 'App: only under `herolook`');
   assert.match(src('src/ui/playTown.ts'), /if \(isV2\(st\)\) q\.set\('herolook', '1'\)/, 'the town page of a version 2 game asks for it');
-  assert.match(src('src/ui/playTown.ts'), /isV2\(st\) \? \{ \.\.\.\(await import\('\.\.\/characters\/PlazaCast'\)\)\.plazaFaces\(\), player: \(await import\('\.\.\/characters\/HeroLookCast'\)\)\.heroPortrait\(\) \}/, 'the portraits of a version 2 game');
+  assert.match(src('src/ui/playTown.ts'), /isV2\(st\) \? \(await import\('\.\.\/characters\/PlazaCast'\)\)\.plazaFaces\(\) : undefined;\r?\n[^\n]*\r?\n  if \(faces\) faces\.player = \(await import\('\.\.\/characters\/HeroLookCast'\)\)\.heroPortrait\(\);/, 'the portraits of a version 2 game alone');
   for (const p of ['src/world/PlazaApp.ts', 'src/arena/CombatCast.ts']) assert.match(src(p), /HeroLookCast/, `${p} (version 2 only)`);
   // the modules that import it: the version 2's alone
   const users = [];

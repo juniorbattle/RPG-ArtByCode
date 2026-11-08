@@ -124,7 +124,10 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   if (isV2(st)) void import('../audio/Sound').then((m) => m.sound().setScene('district', lookOf(st), st.slot === 'afternoon', st.seed, { opening: b.params.has('new') }, parseWeather(q)));
   frame();
   // a version 2 game: the casting's approved faces (journal Passe CA3)
-  await Promise.all([fontsReady(), preloadPortraits(isV2(st) ? { ...(await import('../characters/PlazaCast')).plazaFaces(), player: (await import('../characters/HeroLookCast')).heroPortrait() } : undefined)]);
+  const faces: Parameters<typeof preloadPortraits>[0] = isV2(st) ? (await import('../characters/PlazaCast')).plazaFaces() : undefined;
+  // a version 2 game's Ren under his look (journal Passe PR3): his face in the dialogues, his figure on the gear page
+  if (faces) faces.player = (await import('../characters/HeroLookCast')).heroPortrait();
+  await Promise.all([fontsReady(), preloadPortraits(faces)]);
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();

@@ -57,6 +57,25 @@ try {
   const ranges = materialRanges(sheets);
   console.log('ranges over both sheets', JSON.stringify(ranges));
   if (flag('ranges')) for (const m of ['skin', 'hair', 'cloak']) if (ranges[m]) file.ranges[m] = ranges[m].map((v) => Number(v.toFixed(6)));
+  // --lineup=<look>;<look>...: one PNG per sheet, a row per look (`skin,hair,cloak` of the file's ramps, `original` = the sheet), the frames of --only across
+  // (the decision sheet's comparison; a combat frame cropped to its figure)
+  const lineup = opt('lineup');
+  if (lineup) {
+    const looks = lineup.split(';').map((l) => (l === 'original' ? null : (([skin, hair, cloak]) => ({ skin: skin || undefined, hair: hair || undefined, cloak: cloak || undefined }))(l.split(','))));
+    const ranges = materialRanges(sheets), pinned = { ...file, ranges: Object.fromEntries(Object.entries(file.ranges).map(([m, r]) => [m, ranges[m] ?? r])) };
+    const scale = Number(opt('scale') ?? 3), gap = 8;
+    for (const s of sheets) {
+      const list = s.frames.map((f, n) => ({ f, n })).filter(({ f }) => !only || only.includes(f.name));
+      if (!list.length) continue;
+      const boxes = list.map(({ f }) => (s.combat ? figureBox(f.rgba, s.fw, s.fh) : [0, 0, s.fw - 1, s.fh - 1]));
+      const cw = boxes.map((b) => (b[2] - b[0] + 1) * scale), ch = Math.max(...boxes.map((b) => (b[3] - b[1] + 1) * scale));
+      const W = gap + cw.reduce((a, w) => a + w + gap, 0), H = gap + looks.length * (ch + gap);
+      const px = Buffer.alloc(W * H * 4); for (let i = 0; i < W * H; i++) px.set([60, 64, 78, 255], i * 4);
+      looks.forEach((lk, r) => { let ox = gap; list.forEach(({ f, n }, c) => { blit(px, W, lk ? recolorLook(f.rgba, s.maps[n], pinned, lk) : f.rgba, s.fw, boxes[c], ox, gap + r * (ch + gap), scale); ox += cw[c] + gap; }); });
+      fs.writeFileSync(path.join(outDir, `${s.sheetId}-lineup.png`), encodePng(W, H, px));
+      console.log(`  ${s.sheetId}-lineup.png`);
+    }
+  }
   for (const s of sheets) {
     const fp = lookFingerprint(s.maps), count = [0, 0, 0];
     for (const m of s.maps) for (const v of m) if (v) count[v - 1]++;
@@ -68,6 +87,7 @@ try {
 
   /** the review pages: per frame, the original, the maps, the look; a town texel at 3 px, a combat frame cropped to its figure at 2 px */
   function pages(s, ranges) {
+    if (!PER) return;   // --per=0: no review pages (a lineup alone)
     const pinned = { ...file, ranges: Object.fromEntries(Object.entries(file.ranges).map(([m, r]) => [m, ranges[m] ?? r])) };
     const list = s.frames.map((f, n) => ({ f, n })).filter(({ f }) => !only || only.includes(f.name));
     const scale = Number(opt("scale") ?? 2), gap = 8, cols = Number(opt("cols") ?? 4);
