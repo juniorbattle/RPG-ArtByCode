@@ -1,0 +1,362 @@
+<title>Fanions des places</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+.state { display: flex; flex-direction: column; gap: 12px; }
+.state h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.state p { margin: 0; max-width: 68ch; }
+.chip { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border-radius: 4px; padding: 1px 7px; white-space: nowrap; }
+.chip.ok { color: var(--rec); background: var(--rec-soft); }
+.chip.thin { color: var(--brass); background: var(--brass-soft); }
+.chip.no { color: var(--cendre); background: color-mix(in srgb, var(--cendre) 14%, var(--surface)); }
+.chip.gap { color: var(--muted); background: color-mix(in srgb, var(--muted) 14%, var(--surface)); }
+.tbl.cov td:nth-child(2), .tbl.cov th { text-align: left; }
+.tbl.cov td:last-child { text-align: left; white-space: normal; color: var(--muted); font-size: 13px; min-width: 16ch; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.fig { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fig b { font-family: var(--font-body); font-weight: 700; font-size: 26px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.fig span { font-size: 13px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · version 2 · les places · Passe FT1 · 8 novembre 2026</span>
+    <h1>Les fanions suivent la fête</h1>
+    <p class="lede">Ton choix L5-3 « Fanions dans une tâche à part, pas de volets » est construit, derrière la version 2, sur la branche <code>claude/fanions-fete</code>. De jour, les guirlandes que les trois places portent déjà se tendent à mesure que la fête monte, en trois paliers ; le plus fourni est la place que tu connais. Aucun décor neuf, pas de volets, la nuit et le quai inchangés. Chaque palier a sa cuisson de visibilité, prouvée à 0 px. Le jeu par défaut ne change pas. Rien n’est fusionné : chaque carte attend ton choix.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="state" aria-labelledby="h-state">
+    <h2 id="h-state">Ce qui est construit, et ce que ça change</h2>
+    <p>La règle lit le pouls de la fête (<code>festivity</code>) quand une place se charge, comme la foule lit l’excitation depuis L5. Elle ne change rien à la partie : le laboratoire joue exactement comme avant. Seules les guirlandes changent ; les maisons, les étals, les mâts et les bannières restent.</p>
+    <div class="figs">
+      <div class="fig"><b>3</b><span>paliers de jour : une façade sur deux (sous 60), toutes les façades (60 à 89), et les cordes du cœur et les portes (dès 90)</span></div>
+      <div class="fig"><b>111</b><span>vues de visibilité à 0 px contre <code>vis=0</code> : chaque palier, chaque place, 12 ou 13 places du héros</span></div>
+      <div class="fig"><b>0 px</b><span>d’écart contre <code>main</code> : le jeu par défaut, les places de nuit et au palier 3 (22 vues en DEV, 10 sur les paquets)</span></div>
+      <div class="fig"><b>7 / 7</b><span>séries du laboratoire identiques à l’octet contre <code>main</code> (classique, dynamique, version 2)</span></div>
+    </div>
+    <div class="tbl cov">
+      <table>
+        <thead><tr><th scope="col">Place</th><th scope="col">Palier 1</th><th scope="col">Palier 2</th><th scope="col">Palier 3</th><th scope="col">Ce qui s’ajoute</th></tr></thead>
+        <tbody>
+          <tr><td>Parvis</td><td>3</td><td>6</td><td>8</td><td>les maisons des deux rangs, puis les deux portes</td></tr>
+          <tr><td>Lices</td><td>3</td><td>5</td><td>7</td><td>les travées de la galerie, puis les deux cordes au-dessus du sable</td></tr>
+          <tr><td>Place de la halle</td><td>6</td><td>11</td><td>14</td><td>les maisons des arcades et du rang ouest, puis les deux cordes et la porte</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot">Journal : Passe FT1. Tests : <code>tests/v2-bunting.test.mjs</code>, 7 tests ; 21 fautes injectées une à une, toutes attrapées. Preuves : <code>tools/plaza-shots.mjs</code> et <code>tools/diff.mjs</code> (visibilité, 0 px contre <code>main</code>), <code>tools/startup.mjs</code> (cuisson neuve), le laboratoire.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot au journal, j’applique ce qu’ils changent (un seuil, un ordre : une ligne chacun), je refais les preuves touchées, puis je fusionne selon FT-6.</p>
+    <p class="src">Sources : journal Passes EVL9, EVL10, FV4, FT1 ; <code>briefs/fiche-l5.html</code> (L5-3) ; <code>src/world/Plazas.ts</code>, <code>PlazaApp.ts</code>, <code>PlazaVisibility.ts</code> ; <code>src/simulation/v2react.ts</code> ; <code>src/ui/playPlaza.ts</code> ; <code>tests/v2-bunting.test.mjs</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Une entrée par décision. fam : une variable de couleur. shots : captures publiées via `files`.
+// Apostrophes : l’apostrophe typographique ’ seulement dans les chaînes entre ' '.
+const GROUPS = [
+  { id: 'regle', title: 'La règle des fanions', sub: 'Ta carte L5-3 : « Fanions dans une tâche à part, pas de volets ». La recommandation d’EV-12 : « Les places lisent le pouls comme le quai (la foule, les fanions […]). Tout cela avec les sprites et les décors déjà approuvés : rien de neuf sans fiche. »', fam: 'var(--voile)', items: [
+    { id: 'FT-1', tag: 'paliers', title: 'Trois paliers : la place se pare à mesure que la fête monte',
+      ctx: 'De jour, les guirlandes que chaque place porte déjà (le pavois du tournoi, J6) suivent le pouls de la fête en trois paliers. Palier 1 : une guirlande de façade sur deux (le premier étage de chaque maison, chaque travée de la galerie des lices), la première de chaque rang. Palier 2 : toutes les guirlandes des façades. Palier 3 : en plus, les cordes qui traversent le cœur de la place (les deux des lices au-dessus du sable, les deux de la place de la halle au-dessus des dalles) et la guirlande sous chaque porte, c’est-à-dire la place telle qu’elle est aujourd’hui. Le parvis passe de 3 à 6 puis 8 guirlandes, les lices de 3 à 5 puis 7, la place de la halle de 6 à 11 puis 14. Rien n’est ajouté, rien n’est dessiné : le palier 3 est la place d’aujourd’hui à l’octet, les deux autres en retirent des guirlandes. La nuit ne change pas. Les captures montrent le décor seul, à la place du héros où les paliers diffèrent le plus, et une vue de joueur de la halle : là, les paliers 1 et 2 ne diffèrent que par les façades des arcades, en bord de cadre ; le palier 3 se voit d’un coup. Le parvis reste discret à tout palier : ses guirlandes sont petites dans son cadre.',
+      shots: [['img/01-halle.png', 'La place de la halle, l’après-midi : palier 1, palier 2, palier 3'], ['img/02-lices.png', 'Les lices, le matin : palier 1, palier 2, palier 3'], ['img/03-parvis.png', 'Le parvis, à midi : palier 1, palier 2, palier 3'], ['img/04-halle-joueur.png', 'La place de la halle, vue du joueur avec la foule : palier 1, palier 2, palier 3']],
+      rec: 'Garder : trois états qui se distinguent à l’œil, sans rien de neuf ; le plus fourni est celui que tu as déjà vu.',
+      opts: ['Garder', 'Deux paliers : la moitié, puis tout', 'Un palier de plus, sans aucun fanion, sous le premier'], recIdx: 0,
+      src: 'src/world/Plazas.ts (buntingHangs, hang) ; src/simulation/v2react.ts (plazaBunting) ; src/ui/playPlaza.ts' },
+    { id: 'FT-2', tag: 'seuils', title: 'Les seuils : le palier 2 dès 60, le palier 3 dès 90',
+      ctx: 'Le pouls de la fête vaut, de jour, l’excitation du tournoi × 0,8 (80 au plus) plus ce que les événements ajoutent (rubans dans les rues +8, marionnettes +3, veillée +4, pluie et fanions arrachés −4). Mesuré sur 50 parties de la version 2 : 36 le premier matin, 44 à 60 le jour 2, 67 à 87 le jour 3, 80 à 94 le jour 5, puis 87 à 100. Ce que le joueur préparé voit sur les places, de jour, selon les seuils (part des visites aux paliers 1 / 2 / 3) : à 60 et 90, 20 / 12 / 69 %, tout est tendu dès le jour 5 (96 % des visites), les jours 3 et 4 au palier 2 ; à 50 et 80, 20 / 7 / 74 %, tout est tendu dès le jour 4, le palier 2 presque jamais vu ; à 40 et 70, 20 / 0 / 80 %, tout dès le jour 3. Le joueur curieux (il vole, défie, marchande) : 21 / 22 / 57 % à 60 et 90.',
+      rec: '60 et 90 : chaque palier se voit, la ville se pare pendant la poule (jours 1 et 2, puis 3 et 4) et reste entièrement pavoisée pour la coupe et les finales ; au-delà de 80, ce sont les événements de la fête qui finissent de tendre les guirlandes.',
+      opts: ['60 et 90', '50 et 80', '40 et 70'], recIdx: 0,
+      src: 'src/tournament/pulse.ts (festivity) ; src/events/catalog.ts, v2catalog.ts ; laboratoire, 50 parties par politique (journal Passe FT1)' },
+    { id: 'FT-3', tag: 'ordre', title: 'Ce qui se tend d’abord : les façades, puis le cœur de la place',
+      ctx: 'Les façades se parent d’abord, une guirlande sur deux puis toutes ; les grandes cordes qui traversent la place (lices, halle) et les guirlandes des portes arrivent au palier 3. J’ai d’abord construit l’ordre inverse (le cœur et les portes au palier 1) : sur les captures, les trois paliers se distinguaient à peine, parce que les cordes du cœur sont ce que le cadre montre le plus et qu’elles y étaient dès le début (0,1 à 0,3 % de l’image changeaient d’un palier à l’autre). Dans cet ordre-ci, le palier 3 est le moment où la place se couvre. Le parvis n’a pas de corde qui le traverse : son palier 3 ajoute ses deux portes ; le Colisée garde toujours ses mâts et ses bannières (ce ne sont pas des guirlandes).',
+      rec: 'Les façades d’abord : la progression se voit dans le cadre, et les cordes du cœur marquent la fête à son sommet.',
+      opts: ['Les façades d’abord, le cœur au palier 3', 'Le cœur et les portes d’abord, les façades ensuite', 'Une guirlande sur deux partout au palier 2, cœur compris'], recIdx: 0,
+      src: 'src/world/Plazas.ts (les cordes des lices et de la halle, gateway, les façades, listsGallery)' },
+    { id: 'FT-4', tag: 'nuit, quai', title: 'La nuit et le quai ne changent pas',
+      ctx: 'La nuit, les places n’ont pas de fanions (J6) : leurs cordes portent des lanternes, qui font partie de leur plan de lumières (16 au plus, toutes allumées, Passe VP7) ; les faire suivre la fête changerait l’éclairage de nuit, une autre décision. Le quai du district garde son pavois entier de jour : le district est gelé (Passe Z4), et le quai d’une partie de la version 2 est le même district. Ni volets ni boutique fermée : aucun décor approuvé ne les montre.',
+      rec: 'Garder ainsi : la règle touche les places de jour seulement.',
+      opts: ['Garder ainsi', 'Les lanternes des cordes suivent aussi la fête (tâche à part)', 'Le quai suit aussi (tâche à part, le district gelé)'], recIdx: 0,
+      src: 'AGENTS.md (Art direction, J4, J6) ; journal Passes VP7, Z4' },
+  ]},
+  { id: 'preuve', title: 'La preuve et la suite', sub: 'Chaque palier est une géométrie à lui : sa cuisson de visibilité, sa preuve, son coût.', fam: 'var(--brass)', items: [
+    { id: 'FT-5', tag: 'visibilité', title: 'Chaque palier a sa cuisson, prouvée à 0 px',
+      ctx: 'Chaque palier est une géométrie à lui : il a sa cuisson de visibilité (ce que les caméras de la place ne voient jamais quitte l’image), gardée en cache dans le navigateur ; le cache des places passe de 6 à 12 entrées (trois places, la nuit et trois paliers). La preuve, comme pour l’essai de la version 2 : chaque place à chaque palier, le décor seul, l’image élaguée contre l’image sans élagage (vis=0) à 12 places du héros (13 pour la halle), tout écart d’un niveau compté : 0 px sur 111 vues ; une page chargée deux fois, 0 px ; la caméra forcée derrière la halle (ce que la cuisson a écarté), 13 310 px : la comparaison voit bien ce qui manque. Les parties cachées sont les mêmes à chaque palier. Une cuisson neuve coûte au premier chargement d’un palier, sur la Radeon 780M en 1080p, 289 ms au parvis, 169 à 179 ms aux lices, 276 à 284 ms à la halle (médianes de quatre chargements), comme avant : le palier n’y change rien. Le palier 3 et la nuit des places, comme le jeu par défaut, sont à 0 px contre main.',
+      rec: 'Accepter.',
+      opts: ['Accepter', 'Mesurer aussi en 1440p et sur la carte dédiée'], recIdx: 0,
+      src: 'src/world/PlazaVisibility.ts (PLAZA_STORE) ; tools/plaza-shots.mjs, tools/diff.mjs, tools/startup.mjs ; journal Passes FV4, FT1' },
+    { id: 'FT-6', tag: 'suite', title: 'Fusionner, puis ton essai',
+      ctx: 'La branche claude/fanions-fete est poussée, non fusionnée. Après tes choix, je les applique (un seuil, un ordre : une ligne chacun), je refais les preuves touchées, puis je fusionne dans main. Ton essai : npm run dev, puis /?play=1&new=1&v2=1 et suivre les jours ; en DEV, /?play=1&state=v2-square-afternoon&plazabunting=1 (puis 2, puis 3) montre chaque palier sur la place de la halle.',
+      rec: 'Fusionner après la fiche, essayer ensuite, comme pour les lots L2 à L5.',
+      opts: ['Fusionner après la fiche, essayer ensuite', 'Essayer avant de fusionner'], recIdx: 0,
+      src: 'AGENTS.md (règle des branches) ; journal Passe EVL10' },
+  ]},
+];
+
+
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

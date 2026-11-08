@@ -3,7 +3,7 @@ import { lookOf, rainOf, type Action, type GameState } from '../simulation';
 import { keepSeen, markSeen, seenBefore } from './news';
 import { playerMatch } from '../tournament/pool';
 import { PLAZA_OF, plazaPeople } from '../simulation/v2places';
-import { gestureOf, hailOf, plazaCrowd } from '../simulation/v2react';
+import { gestureOf, hailOf, plazaBunting, plazaCrowd } from '../simulation/v2react';
 import { RIVALS } from '../narrative/roster';
 import { Hails } from './hails';
 import { PEOPLE } from '../narrative/people';
@@ -26,7 +26,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   let st = st0;
   installGameApi(() => st, (s) => { st = s; }, (prev, next) => lookOf(prev) !== lookOf(next) || prev.place !== next.place || next.over !== prev.over);
   const q = new URLSearchParams();
-  for (const k of ['fps', 'freeze', 'painters', 'gpuprof', 'cast', 'static', 'vis', 'viscache', 'visstep', 'visfine', 'visscale', 'rain', 'snow', 'storm', 'wind', 'plazaframe', 'plazasun', 'plazafog', 'plazadof']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
+  for (const k of ['fps', 'freeze', 'painters', 'gpuprof', 'cast', 'static', 'vis', 'viscache', 'visstep', 'visfine', 'visscale', 'rain', 'snow', 'storm', 'wind', 'plazaframe', 'plazasun', 'plazafog', 'plazadof', 'plazabunting']) if (b.params.has(k)) q.set(k, b.params.get(k)!);
   // the day's weather, as the town's (src/simulation/look.ts): the rain front's wet day falls on the squares too
   const rain = rainOf(st); if (rain && !q.has('rain')) q.set('rain', rain);
   const look = lookOf(st), kind = PLAZA_OF[st.place]!;
@@ -38,6 +38,8 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
     // lot L5 (EV-12 « Les places lisent le pouls »): the crowd follows the tournament's excitement as the quay's, and gathers where the town's ambiences are
     // (src/simulation/v2react.ts); its walkers are the town's passers-by
     crowd: plazaCrowd(st), folk: true,
+    // the bunting by the festival (journal Passe FT1, L5-3): by day the squares' garlands hang by the tier of the pulse's festivity
+    bunting: plazaBunting(st),
     onProgress: progressOn(b.label, b.bar),
   });
   (window as any).__plaza = app;

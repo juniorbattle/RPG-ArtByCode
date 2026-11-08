@@ -16,6 +16,7 @@ import { farHouse, farMaterial, tower } from '../district/DistantCity';
 import type { Emitter } from '../district/MerchantDistrictGenerator';
 import { V2_EXITS, type ExitSide, type PlazaKind } from '../simulation/v2places';
 import type { PlaceId } from '../simulation/state';
+import type { BuntingTier } from '../simulation/v2react';
 import { atlasRect, emblemRect, quadFacing } from '../architecture/FacadeGrammar';
 import { DECAL_CELLS, type DecalKind, type EmblemKind } from '../materials/CanvasArt';
 export type { PlazaKind };
@@ -41,6 +42,30 @@ export type { PlazaKind };
  *  lists' and the hall's square's own plans with their blocks below (`LISTS`, `HALL`, `ARC`). Every
  *  number « proposé ». */
 
+/** The squares' bunting by the festival (journal Passe FT1; the operator's choice L5-3 « Fanions dans une tâche à part, pas de volets », journal Passe
+ *  EVL10, after the recommendation of EV-12 « Les places lisent le pouls comme le quai (la foule, les fanions, une boutique aux volets fermés) [...] Tout cela
+ *  avec les sprites et les décors déjà approuvés : rien de neuf sans fiche. »): by day the garlands each square already hangs (J6, the approved decor) follow
+ *  the pulse's festivity in three tiers, the third the whole set the squares were built with until this pass; nothing new is hung, nothing at night:
+ *  - 1, the town getting ready: every other swag along the façades (each house's first upper floor, each bay of the lists' gallery), the first of each row;
+ *  - 2, the festival rising: every swag along the façades;
+ *  - 3, the festival: and the strings across the square's heart (the lists' two over the yard, the hall's square's two over its flags) and the gateways'
+ *    swags. (The strings are what a frame shows most: hung first, the three tiers hardly differed in the player's frames, journal Passe FT1.)
+ *  The tier comes from the game's state (src/simulation/v2react.ts `plazaBunting`); a build given none hangs the third. Each tier is a geometry of its own, so
+ *  a visibility bake of its own (src/world/PlazaVisibility.ts: the bake's key covers the geometry). A garland draws no random number: the tiers leave every
+ *  other draw, part and instance where it was. Every number « proposé ». */
+export const BUNTING_FULL: BuntingTier = 3;
+/** where a garland hangs: across the square's heart, under a gateway, or a swag along a façade (`k` its rank along its row) */
+export type BuntingSite = 'string' | 'gateway' | 'swag';
+/** whether a garland of this site hangs at this tier */
+export function buntingHangs(tier: BuntingTier, site: BuntingSite, k = 0): boolean {
+  return tier >= (site === 'swag' ? (k % 2 ? 2 : 1) : 3);
+}
+/** the build in progress' bunting, set by buildPlaza (synchronous) and read where its builders hang a garland (the gateways', the gallery's) */
+let flies: (site: BuntingSite, k: number) => boolean = () => true;
+let hung = 0;
+/** hang a garland if the build's tier flies it */
+const hang = (site: BuntingSite, k: number, fn: () => void): void => { if (!flies(site, k)) return; fn(); hung++; };
+
 export interface PlazaBuild {
   /** the lights (`day`: a fire that burns by day too; `key`: the square's key light, the only ones with a halo: journal Passe VP7) */
   group: THREE.Group; lights: Array<LightDef & { day?: boolean; key?: boolean }>; emitters: Emitter[];
@@ -50,7 +75,8 @@ export interface PlazaBuild {
   exits: PlazaExit[];
   /** where the people stand (person id -> x, z), where the crowd walks */
   spots: Record<string, [number, number]>; wander: Array<[number, number]>;
-  stats: { triangles: number; instances: number; buildings: number; parts: number };
+  /** `bunting`: the tier the square was built at (0 at night, nothing hung) and the garlands hung (journal Passe FT1) */
+  stats: { triangles: number; instances: number; buildings: number; parts: number; bunting: BuntingTier | 0; garlands: number };
   /** the static geometry and its visibility parts (1..nParts; 0 = untracked, always drawn), for the visibility bake */
   world: SlotSet; far: MeshBuilder; nParts: number;
   /** rebuild the static meshes keeping the parts `keep` says are seen (the others leave every per-frame pass; a hidden caster stays in the
@@ -168,8 +194,11 @@ const WALL_LAMPS: Record<PlazaKind, number> = { forecourt: 0, training: 0, festi
 /** the focal point of each square: the wall lanterns nearest it are lit, the paths lead to it (journal Passe VP9: the lists' gallery, the hall) */
 const FOCUS: Record<PlazaKind, [number, number]> = { forecourt: [0, -16], training: [-16, 1], festival: [-1.5, -12.8] };
 
-export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, opts: { day: boolean; period?: PlazaPeriod }): PlazaBuild {
+export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, opts: { day: boolean; period?: PlazaPeriod; bunting?: BuntingTier }): PlazaBuild {
   const rng = new Rng(seed).fork(`plaza:${kind}`), day = opts.day;
+  // the bunting by the festival (journal Passe FT1): by day only, at the tier given (the whole set without one)
+  const tier = opts.bunting ?? BUNTING_FULL;
+  flies = (site, k) => day && buntingHangs(tier, site, k); hung = 0;
   const group = new THREE.Group(); group.name = `plaza:${kind}`;
   const S = new SlotSet(), batch = new InstanceBatch(seed ^ 0x9a2a, 3);
   const lights: PlazaBuild['lights'] = [], emitters: Emitter[] = [], blockers: PlazaBuild['blockers'] = [], disposables: Array<{ dispose(): void }> = [];
@@ -512,7 +541,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     // to hang them from: between the cameras and the yard, « a vertical pole cutting the frame »
     for (const [xw, zg] of [[1.0, 2.0], [-6.0, 7.4]] as Array<[number, number]>) {
       const a: V3 = [xw, LISTS.walkY + 0.9, LISTS.zIn + 0.1], b: V3 = [LISTS.gallery.x + 0.3, LISTS.gallery.eave - 0.2, zg], sg = 1.3;
-      if (day) { garland(S, a, b, sg, { size: 0.36, width: 0.3, spacing: 0.5, phase: Math.round(xw) }); continue; }
+      if (day) { hang('string', 0, () => garland(S, a, b, sg, { size: 0.36, width: 0.3, spacing: 0.5, phase: Math.round(xw) })); continue; }
       cord(S, a, b, sg);
       const m = Math.round(Math.hypot(b[0] - a[0], b[2] - a[2]) / 2.3);
       for (let t = 1; t < m; t++) { const p = sag(a, b, sg, t / m); batch.add('lantern', { pos: [p[0], p[1] - 0.32, p[2]], yaw: t, scale: 1.1 }, 0); }
@@ -608,7 +637,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
       const ends: Array<[V3, V3, boolean]> = [[[-12.9, 7.0, -1.6], arcEnd(0.02), true], [[-12.9, 7.0, -6.6], arcEnd(-0.2), true], [[-12.9, 6.8, 2.6], arcEnd(0.24), false]];
       for (const [a, b, flag] of ends) {
         const len = Math.hypot(b[0] - a[0], b[2] - a[2]), sg = 0.04 * len;
-        if (day) { if (flag) garland(S, a, b, sg, { size: 0.42, width: 0.34, spacing: 0.56, phase: Math.round(len) }); continue; }
+        if (day) { if (flag) hang('string', 0, () => garland(S, a, b, sg, { size: 0.42, width: 0.34, spacing: 0.56, phase: Math.round(len) })); continue; }
         cord(S, a, b, sg);
         const m = Math.max(2, Math.round(len / 2.3));
         for (let t = 1; t < m; t++) { const p = sag(a, b, sg, t / m); batch.add('lantern', { pos: [p[0], p[1] - 0.32, p[2]], yaw: t, scale: 1.1 }, 0); }
@@ -647,7 +676,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
     const byHouse = new Map<string, V3[]>();
     for (const s of front) byHouse.set(s.building, [...(byHouse.get(s.building) ?? []), s.pos]);
     let phase = 0;
-    for (const pts of byHouse.values()) if (pts.length === 2) garland(S, pts[0], pts[1], 0.5, { size: 0.42, width: 0.34, spacing: 0.42, phase: phase++ });
+    for (const pts of byHouse.values()) if (pts.length === 2) { const k = phase++; hang('swag', k, () => garland(S, pts[0], pts[1], 0.5, { size: 0.42, width: 0.34, spacing: 0.42, phase: k })); }
   }
 
   // ---------------------------------------------------------------- the city beyond: a ring of far houses (each a part), the Colosseum's drum as the landmark
@@ -731,7 +760,7 @@ export function buildPlaza(lib: MaterialLibrary, kind: PlazaKind, seed: number, 
   group.add(props);
   const out: PlazaBuild = {
     group, lights, emitters, walk: { ...walk }, lanes, exits, blockers, spots, wander,
-    stats: { triangles: first.kept, instances: batch.instanceCount, buildings, parts: nParts },
+    stats: { triangles: first.kept, instances: batch.instanceCount, buildings, parts: nParts, bunting: day ? tier : 0, garlands: hung },
     world: S, far, nParts,
     cull(keep) {
       let hiddenParts = 0;
@@ -1261,7 +1290,7 @@ function gateway(S: SlotSet, batch: InstanceBatch, lights: PlazaBuild['lights'],
   quadFacing(S.get('stone'), [[Math.min(xa, xb), 0.011, zs], [Math.max(xa, xb), 0.011, zs], [Math.max(xa, xb), 0.011, zn], [Math.min(xa, xb), 0.011, zn]], [0, 1, 0], { tint: [0.46, 0.46, 0.48], uvScale: 1.4 });
   // (its glow without a light since journal Passe VP7: a far light down the street, outside the frame's budget)
   if (!day) batch.add('lantern', { pos: [x + side * 7.75, 2.7, zc], yaw: inward > 0 ? Math.PI / 2 : -Math.PI / 2 }, 0);
-  if (day) garland(S, [x + inward * (th + 0.05), imp - 0.1, zs - pw], [x + inward * (th + 0.05), imp - 0.1, zn + pw], 0.4, { size: 0.36, width: 0.3, spacing: 0.4 });
+  if (day) hang('gateway', 0, () => garland(S, [x + inward * (th + 0.05), imp - 0.1, zs - pw], [x + inward * (th + 0.05), imp - 0.1, zn + pw], 0.4, { size: 0.36, width: 0.3, spacing: 0.4 }));
 }
 
 /** the gate to the quay (journal Passe VP5): two stone pillars ending the hedge wall at the frame's near edge, a lantern on each (lit at night).
@@ -1876,7 +1905,7 @@ function listsGallery(S: SlotSet, tracked: (fn: () => void) => void, batch: Inst
       { const C = S.get('cloth'), k = Math.max(2, Math.round((zb - za) / 0.55)); for (let i = 0; i < k; i++) { const a0 = za + ((zb - za) * i) / k, a1 = za + ((zb - za) * (i + 1)) / k; quadFacing(C, [[xb + 0.06, fl + 1.4, a0], [xb + 0.06, fl + 1.4, a1], [xb + 0.06, G.eave - 0.35, a1], [xb + 0.06, G.eave - 0.35, a0]], [1, 0, 0], { tint: i % 2 ? [0.32, 0.38, 0.7] : [0.86, 0.82, 0.7], swayArr: [0.05, 0.05, 0, 0] }); } }
       T.boxMM(x - 0.18, G.eave - 0.3, za, x + 0.14, G.eave, zb, { tint: pale, grain: 'z' });
       // the tournament's bunting by day along the eave, a swag a bay (J4, J6)
-      if (day) garland(S, [x + 0.2, G.eave - 0.35, za + 0.1], [x + 0.2, G.eave - 0.35, zb - 0.1], 0.35, { size: 0.36, width: 0.3, spacing: 0.42, phase: b });
+      if (day) hang('swag', b, () => garland(S, [x + 0.2, G.eave - 0.35, za + 0.1], [x + 0.2, G.eave - 0.35, zb - 0.1], 0.35, { size: 0.36, width: 0.3, spacing: 0.42, phase: b }));
     });
     // the bay's roof, a part of its own (seen over the yard's things from farther than its front)
     tracked(() => {

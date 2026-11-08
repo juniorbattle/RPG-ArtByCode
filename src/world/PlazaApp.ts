@@ -22,6 +22,7 @@ import { plazaCastEntries } from '../characters/PlazaCast';
 import { variantOf } from '../characters/Variants';
 import { fiveViewFacing } from '../characters/ActorSystem';
 import type { Anim, Dir } from '../characters/SpriteGenerator';
+import type { BuntingTier } from '../simulation/v2react';
 import { buildPlaza, plazaGroundDefines, type PlazaPeriod, steer, walkTo, type PlazaBuild, type PlazaExit, type PlazaKind } from './Plazas';
 import { bakePlaza, plazaBakePoses } from './PlazaVisibility';
 import { framingAt, framingPose, lookPose, tuneFraming, type PlazaFraming } from './PlazaCamera';
@@ -41,6 +42,8 @@ export interface PlazaOptions {
   arriveFrom?: string | null;
   /** the crowd's walkers can be spoken to as the town's passers-by, « Townsfolk » (lot L5, journal Passe EVL9) */
   folk?: boolean;
+  /** the tier of the bunting by the festival (journal Passe FT1, src/simulation/v2react.ts plazaBunting): by day the garlands hung; absent = every one */
+  bunting?: BuntingTier;
 }
 
 /** the roles a square shows, and the archetype standing for each (a baked sheet replaces the archetype when one is approved) */
@@ -238,7 +241,9 @@ export class PlazaApp {
     this.opts.onProgress(this.opts.kind, 0.95);
     await new Promise((r) => setTimeout(r, 0));
     const t0 = performance.now();
-    this.place = buildPlaza(this.lib, this.opts.kind, 1842, { day: !!this.look, period: this.period });
+    // the bunting's tier (journal Passe FT1): the game's, or DEV `plazabunting=1|2|3` (each tier's proofs)
+    const pb = import.meta.env.DEV ? Number(this.opts.params.get('plazabunting')) : 0;
+    this.place = buildPlaza(this.lib, this.opts.kind, 1842, { day: !!this.look, period: this.period, bunting: pb === 1 || pb === 2 || pb === 3 ? pb : this.opts.bunting });
     this.buildMs = performance.now() - t0;
     this.scene.add(this.place.group);
     // the visibility bake (journal Passe VP1): what no pose of the square shows leaves the frame; ?vis=0 keeps everything; a failure keeps
@@ -491,7 +496,7 @@ export class PlazaApp {
   snapshot(): Record<string, unknown> {
     const p = this.perf;
     return {
-      kind: this.opts.kind, visibility: this.vis, ...(this.weather ? { weather: { ...this.weather.p, drops: this.weather.drops() } } : {}), fps: p.fps, frameMs: p.frameMs, drawCalls: p.drawCalls, triangles: p.triangles, placeTriangles: this.place?.stats.triangles, instances: this.place?.stats.instances,
+      kind: this.opts.kind, visibility: this.vis, ...(this.weather ? { weather: { ...this.weather.p, drops: this.weather.drops() } } : {}), fps: p.fps, frameMs: p.frameMs, drawCalls: p.drawCalls, triangles: p.triangles, placeTriangles: this.place?.stats.triangles, instances: this.place?.stats.instances, bunting: this.place ? { tier: this.place.stats.bunting, garlands: this.place.stats.garlands } : null,
       buildings: this.place?.stats.buildings, generatorMs: this.buildMs, lights: this.lights.sources.length, lightsActive: this.lights.active, people: this.people.length,
       baked: this.people.filter((a) => this.atlas.baked.has(a.spec)).map((a) => a.spec), generated: this.people.filter((a) => !this.atlas.baked.has(a.spec)).map((a) => a.spec),
       player: { x: +this.player.pos.x.toFixed(2), z: +this.player.pos.z.toFixed(2), spec: this.player.spec }, framing: this.framing?.id ?? null, atlas: `${this.atlas.width}x${this.atlas.height} + baked ${this.atlas.bakedWidth}x${this.atlas.bakedHeight}`,

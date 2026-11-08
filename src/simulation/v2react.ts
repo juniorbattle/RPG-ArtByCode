@@ -49,6 +49,19 @@ export function plazaCrowd(s: GameState): number {
   return Math.max(PLAZA_CROWD_MIN, Math.min(PLAZA_CROWD_MAX, n));
 }
 
+/** the squares' bunting by the festival (journal Passe FT1; L5-3 « Fanions dans une tâche à part, pas de volets »): by day the garlands the squares already
+ *  hang follow the pulse's festivity in three tiers (src/world/Plazas.ts `buntingHangs`: 1 every other swag along the façades, 2 every swag along them, 3 and
+ *  the strings across the square's heart and the gateways' swags, the squares as they were built); the night hangs none, as before */
+export type BuntingTier = 1 | 2 | 3;
+/** the festivity from which the second tier hangs, and the third (the pulse's festivity by day: the excitement × 0.8, at most 80, and what the events add; a
+ *  game's first morning 36, the third day 67 to 87, the fifth 80 to 94: journal Passe FT1). At 60 and 90 each tier is seen (the prepared player's visits to
+ *  the squares by day: 20 / 12 / 69 %, the town dressed whole from the fifth day); at 50 and 80 the second hung on 7 % of them */
+export const BUNTING_AT = { rising: 60, full: 90 } as const;
+export function plazaBunting(s: Pick<GameState, 'pulse'>): BuntingTier {
+  const f = s.pulse.festivity;
+  return f >= BUNTING_AT.full ? 3 : f >= BUNTING_AT.rising ? 2 : 1;
+}
+
 // ------------------------------------------------------------------------------------------------ the fame: who greets the hero, and what they say
 
 export type FameTier = 'unknown' | 'noticed' | 'known' | 'celebrated';

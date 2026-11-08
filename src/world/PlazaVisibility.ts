@@ -17,8 +17,9 @@ import { framingAt, framingPose, framingsAround, lookPose } from './PlazaCamera'
  *  its key covers every input, the result is read back only for the same ones), in entries of its own: every move between places reloads a
  *  page, and a square read back costs a few milliseconds instead of a bake. */
 
-/** the squares' entries in the bake cache: three squares by day and by night */
-export const PLAZA_STORE: BakeStore = { prefix: 'hd2d.plazabake.', index: 'hd2d.plazabake.index', max: 6 };
+/** the squares' entries in the bake cache: three squares by night and by day at each tier of their bunting (journal Passe FT1: three tiers, each its own
+ *  geometry, so its own bake; six entries until then) */
+export const PLAZA_STORE: BakeStore = { prefix: 'hd2d.plazabake.', index: 'hd2d.plazabake.index', max: 12 };
 
 export const POSE_STEP = 1.5;
 
