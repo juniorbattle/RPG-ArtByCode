@@ -348,6 +348,24 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 ### Pensée
 - Deux séances qui archivent le journal en parallèle peuvent prendre les mêmes passes : au moment de fusionner, l'archive se refait sur le journal de `main` (son index, sa taille), jamais en recollant celle de la branche.
+## Passe PR3 (en cours) — Ren unique : le module des couleurs, le fichier des variantes et l'outil de revue ; rien dans le jeu (2026-11-08)
+
+### Demande
+- L'opérateur, mot pour mot : « Do this task here: “Ren unique : peau hâlée, cheveux gris, cape ivoire” » (le lot décidé en Passe PR2). Branche `claude/ren-unique`, worktree `.claude/worktrees/ren-perso` (il trouve les `node_modules` du dossier principal en remontant l'arborescence : `npm run typecheck` et les tests tournent sans jonction).
+
+### Fait — [OK], hors du jeu
+- `src/characters/HeroLook.ts` (neuf, pur) : la carte des matières de Ren par image (1 peau, 2 cheveux, 3 cape). La peau par le masque par couleurs de palette de GS1 (`frameSkin`, ses trois couleurs propres et les teintes partagées entourées de peau) ; la cape par ses cinq bleus et son pli le plus sombre (`23263f`, valeur 0,247, compté malgré la règle du contour : `outline: true`) ; les cheveux, qui n'ont aucune couleur propre, par leurs bruns **dans le rectangle de tête de chaque image** (`head`), moins les rectangles `clear` (les yeux), plus `paint`. Les plages de clarté sont épinglées dans le fichier, une par matière sur les deux feuilles : le sprite de ville et le combattant prennent la même couleur pour le même texel. La porte comme en GS2 : rien tant que le fichier n'est pas approuvé, l'empreinte des cartes vérifiée au chargement ; un mode candidat pour la revue DEV.
+- `art-lab/characters/variants/hero.json` (non approuvé) : la peau `tan` des PNJ (approuvée), deux rampes de cheveux (`grey` des PNJ, `silver` plus claire, à juger : la `grey` se lit anthracite, Passe PR2), la cape `ivory` (l'essai de PR1), le look `tan` / `silver` / `ivory`, les rectangles de tête des 99 images proposés par l'outil, les yeux des images de combat.
+- `tools/art-lab/hero-look.mjs` (neuf) : `--suggest` (les rectangles des images qui n'en ont pas), `--ranges`, `--fingerprints` ; des planches de revue (l'original, les cartes, le look). Empreintes provisoires : ville `8b583c8d`, combat `d908565e`.
+- Vu sur la première planche (repos de face et de dos) : peau, cheveux et cape propres en ville, la cape ivoire entière, plis compris.
+
+### Reste à faire
+- Relire toutes les planches (60 images de ville, 39 de combat) et corriger à la main les rectangles (gants levés, garde de l'épée, K.O.) ; une critique à froid par un agent neuf.
+- Brancher la variante derrière la version 2 : la ville d'une partie v2 (un paramètre posé par `playTown.ts`, comme `heraldry`), les places (`plazaCastEntries`), les portraits et la figure de l'équipement (`preloadPortraits`), le duel (`CombatCast.ts`) et le visage du HUD (`bakedFaces`). La séance des peaux des rivaux (`claude/rivaux-peaux`, non commitée) ajoute un crochet `tone` à `BakedCast.ts` : reprendre le même pour limiter le conflit.
+- Régler les rampes en jeu aux quatre moments, les tests (`tests/hero-look.test.mjs`, fautes injectées), la fiche courte, puis la production et les preuves.
+
+### Pensée
+- Un worktree placé dans le dépôt trouve les `node_modules` du dossier principal par la résolution de Node : inutile d'en créer une jonction.
 
 ## À reprendre (par priorité)
 
@@ -417,7 +435,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 
 **1. Distribution de personnages — décisions de l'opérateur, non traitées** (état de la distribution : `art-lab/characters/README.md`)
 - **Casting (Passe CA1)** : fiche remplie, une figure par personnage et par rival (tableau de la passe) ; feuilles de ville ×2 puis feuilles ×3 dans l'ordre X2, version 2 seule, quartier inchangé, production par fiche de lot. Lot 1 fait (Passes CA2 à CA5) : les quinze feuilles `-x2-v2` en production sur les places et dans les portraits de la version 2, plus aucun sprite provisoire. Les cinq citadins sont en production (Passe CA7). Ren (39 images) et les sept rivaux (Marek 32, Vessa 34, Orla 29, Cassius 34, Ilse 32, Rhosk 32, Tobin 27) sont en production dans les duels de la version 2 (Passes CX2, CX4), chacun sous sa figure, plus aucun art de Marek emprunté. Ouvert : N7, le rôle de trois panneaux de G1 (note vide) ; les PNG d'origine de G1 et G2. **Passe SA1** : le fond gris vu en combat était l'image `strike.1` de Marek (le fond vert de sa planche gardé opaque par la chaîne) ; chaîne corrigée, feuille reconstruite, toutes les feuilles de production mesurées propres (`tests/sheet-clean.test.mjs`) ; la feuille corrigée de Marek approuvée par l'opérateur (« Approuver en production »).
-- **Ren unique (Passes PR1, PR2)** : la personnalisation demandée par l’opérateur, classée par coût sur la fiche https://claude.ai/artifact/JjQFRHBVUx6qg993hh9E8E, est remplacée par un seul Ren, mot pour mot « par defaut je veux que le personnage est une couleur mate de peau des cheveux  hâlée et gris  et une cape soit aesoiaw ou ivoire », puis « Yes, ivory cloak » : peau hâlée, cheveux gris, cape ivoire, variante fixée derrière la version 2, le jeu par défaut inchangé. **Le lot reste à faire, dans sa séance** (masques, rampes réglées en jeu, fiche courte, production). La personnalisation (page de création, coupes, traits, arme) n’est pas construite ; ses choix sont consignés en Passe PR2.
+- **Ren unique (Passes PR1, PR2)** : la personnalisation demandée par l’opérateur, classée par coût sur la fiche https://claude.ai/artifact/JjQFRHBVUx6qg993hh9E8E, est remplacée par un seul Ren, mot pour mot « par defaut je veux que le personnage est une couleur mate de peau des cheveux  hâlée et gris  et une cape soit aesoiaw ou ivoire », puis « Yes, ivory cloak » : peau hâlée, cheveux gris, cape ivoire, variante fixée derrière la version 2, le jeu par défaut inchangé. **Le lot est en cours ici (Passe PR3, branche `claude/ren-unique`)** : module, fichier et outil faits ; restent la relecture des masques, le branchement, les rampes en jeu, la fiche courte, la production. La personnalisation (page de création, coupes, traits, arme) n’est pas construite ; ses choix sont consignés en Passe PR2.
 - **Variantes de PNJ** (demande de l'opérateur du 17/10, mot pour mot : « Par ailleurs a la suite de nos travaux de sprites NPC qui sont
   presque peuple partout sur le district Merchant, on creera par la suite des variantes de NPC avec couleur de cheveux et peau different pour
   amener plus de diversite au jeu »). Contraintes connues : la texture cuite garantissait 336 images et en porte 322 (dix feuilles,

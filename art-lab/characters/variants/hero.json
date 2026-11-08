@@ -1,0 +1,282 @@
+{
+  "$comment": "Ren's look in a version 2 game (journal Passes PR1 / PR2 / PR3; src/characters/HeroLook.ts). The operator, word for word: « par defaut je veux que le personnage est une couleur mate de peau des cheveux  hâlée et gris  et une cape soit aesoiaw ou ivoire », then « Yes, ivory cloak ». One fixed look recoloured at load on hero-x2-v4 and hero-x3-combat; the sheets and their exports unchanged. Not applied until approved by the operator (approved, approval, each sheet's fingerprint). The skin's tan ramp is the NPCs' approved one (variants.json); the hair's and the cloak's ramps wait for the operator's sheet. head / clear: written by tools/art-lab/hero-look.mjs --suggest from the figure, then corrected by hand on the review sheets.",
+  "approved": false,
+  "approval": null,
+  "ramps": {
+    "skin": {
+      "tan": ["#64392a", "#80503a", "#9c674c", "#b47e60", "#c89474"]
+    },
+    "hair": {
+      "grey": ["#3e3e44", "#5e5e64", "#828280", "#a6a4a0", "#c8c6be"],
+      "silver": ["#4c4c56", "#727480", "#a0a2aa", "#c8c9cc", "#e6e5e0"]
+    },
+    "cloak": {
+      "ivory": ["#5e5a52", "#827c70", "#a49e90", "#c2bcae", "#dad4c6"]
+    }
+  },
+  "look": {
+    "skin": "tan",
+    "hair": "silver",
+    "cloak": "ivory"
+  },
+  "ranges": {
+    "skin": [0.277057, 0.645072],
+    "hair": [0.029164, 0.548989],
+    "cloak": [0.021024, 0.098308]
+  },
+  "sheets": {
+    "hero-x2-v4": {
+      "skin": {
+        "skin": ["fcc89f", "f8ba8f", "f6ad7a"],
+        "shade": ["ed9964", "e28a5a", "d19a71", "da7447", "c2814d", "e9ad5d"]
+      },
+      "hair": {
+        "colours": ["573229", "67382a", "8c4b31", "4e2d28", "5f352b", "7b432e", "a55933", "6b3c2e", "934f32", "733e2c", "84482f", "b76d37", "9b5333", "452825", "b46135", "c66a39", "ce7637", "d98c3d", "da7447", "e28a5a", "ed9964", "c2814d", "e9ad5d", "d19a71", "976947", "a37e71", "7d5e57", "eebc5b"],
+        "head": {
+          "down/idle.0": [16, 4, 48, 31],
+          "down/idle.1": [16, 4, 48, 31],
+          "down/idle.2": [16, 3, 48, 30],
+          "down/idle.3": [16, 3, 48, 30],
+          "up/idle.0": [17, 4, 47, 31],
+          "up/idle.1": [17, 4, 47, 31],
+          "up/idle.2": [17, 3, 47, 30],
+          "up/idle.3": [17, 3, 47, 30],
+          "side/idle.0": [20, 5, 47, 32],
+          "side/idle.1": [20, 5, 47, 32],
+          "side/idle.2": [20, 4, 47, 31],
+          "side/idle.3": [20, 4, 47, 31],
+          "downSide/idle.0": [17, 4, 49, 31],
+          "downSide/idle.1": [17, 4, 49, 31],
+          "downSide/idle.2": [17, 3, 49, 30],
+          "downSide/idle.3": [17, 3, 49, 30],
+          "upSide/idle.0": [18, 5, 46, 32],
+          "upSide/idle.1": [18, 5, 46, 32],
+          "upSide/idle.2": [18, 4, 46, 31],
+          "upSide/idle.3": [18, 4, 46, 31],
+          "down/walk.0": [16, 7, 45, 34],
+          "down/walk.1": [18, 9, 45, 36],
+          "down/walk.2": [16, 9, 46, 36],
+          "down/walk.3": [17, 9, 45, 36],
+          "down/walk.4": [17, 8, 45, 35],
+          "down/walk.5": [18, 9, 45, 36],
+          "down/walk.6": [18, 8, 45, 35],
+          "down/walk.7": [18, 10, 45, 37],
+          "up/walk.0": [16, 2, 43, 29],
+          "up/walk.1": [16, 2, 43, 29],
+          "up/walk.2": [16, 2, 42, 29],
+          "up/walk.3": [16, 1, 42, 28],
+          "up/walk.4": [16, 2, 42, 29],
+          "up/walk.5": [16, 2, 42, 29],
+          "up/walk.6": [16, 1, 42, 28],
+          "up/walk.7": [16, 4, 42, 31],
+          "side/walk.0": [5, 13, 53, 40],
+          "side/walk.1": [5, 14, 54, 41],
+          "side/walk.2": [5, 12, 41, 39],
+          "side/walk.3": [6, 10, 62, 37],
+          "side/walk.4": [6, 12, 57, 39],
+          "side/walk.5": [6, 13, 54, 40],
+          "side/walk.6": [6, 10, 46, 37],
+          "side/walk.7": [5, 9, 41, 36],
+          "downSide/walk.0": [6, 5, 40, 32],
+          "downSide/walk.1": [7, 5, 39, 32],
+          "downSide/walk.2": [7, 5, 40, 32],
+          "downSide/walk.3": [7, 5, 40, 32],
+          "downSide/walk.4": [8, 4, 40, 31],
+          "downSide/walk.5": [7, 3, 39, 30],
+          "downSide/walk.6": [7, 4, 41, 31],
+          "downSide/walk.7": [7, 6, 40, 33],
+          "upSide/walk.0": [11, 4, 38, 31],
+          "upSide/walk.1": [12, 4, 39, 31],
+          "upSide/walk.2": [12, 5, 40, 32],
+          "upSide/walk.3": [11, 6, 40, 33],
+          "upSide/walk.4": [11, 5, 39, 32],
+          "upSide/walk.5": [12, 3, 40, 30],
+          "upSide/walk.6": [12, 4, 39, 31],
+          "upSide/walk.7": [11, 6, 40, 33]
+        },
+        "clear": {},
+        "minPart": 2
+      },
+      "cloak": {
+        "colours": ["2b304f", "32395d", "434d78", "3b436b", "4c5683", "23263f"],
+        "outline": true,
+        "minPart": 6
+      }
+    },
+    "hero-x3-combat": {
+      "skin": {
+        "skin": ["fcc89f", "f8ba8f", "f6ad7a"],
+        "shade": ["ed9964", "e28a5a", "d19a71", "da7447", "c2814d", "e9ad5d"]
+      },
+      "hair": {
+        "colours": ["573229", "67382a", "8c4b31", "4e2d28", "5f352b", "7b432e", "a55933", "6b3c2e", "934f32", "733e2c", "84482f", "b76d37", "9b5333", "452825", "b46135", "c66a39", "ce7637", "d98c3d", "da7447", "e28a5a", "ed9964", "c2814d", "e9ad5d", "d19a71", "976947", "a37e71", "7d5e57", "eebc5b"],
+        "head": {
+          "idle.0": [68, 141, 120, 185],
+          "idle.1": [68, 139, 120, 183],
+          "ready.0": [65, 151, 117, 194],
+          "ready.1": [65, 149, 117, 192],
+          "strike.0": [65, 145, 117, 190],
+          "strike.1": [57, 142, 109, 183],
+          "strike.2": [42, 167, 94, 211],
+          "heavy.0": [39, 165, 91, 210],
+          "heavy.1": [61, 139, 113, 182],
+          "heavy.2": [48, 154, 100, 199],
+          "heavy.3": [38, 160, 90, 204],
+          "skillOff.0": [39, 163, 91, 207],
+          "skillOff.1": [62, 160, 114, 205],
+          "skillOff.2": [89, 155, 141, 201],
+          "skillOff.3": [62, 150, 114, 194],
+          "skillDef.0": [61, 158, 113, 200],
+          "skillDef.1": [59, 157, 111, 199],
+          "skillDef.2": [63, 142, 115, 186],
+          "skillSup.0": [79, 133, 131, 175],
+          "skillSup.1": [83, 135, 135, 180],
+          "skillSup.2": [53, 144, 105, 187],
+          "block.0": [73, 150, 125, 194],
+          "block.1": [74, 150, 126, 194],
+          "dodge.0": [94, 136, 146, 181],
+          "dodge.1": [73, 154, 125, 197],
+          "hit.0": [108, 148, 160, 194],
+          "hit.1": [79, 149, 131, 193],
+          "recover.0": [51, 152, 103, 194],
+          "recover.1": [51, 150, 103, 192],
+          "ko.0": [44, 143, 96, 189],
+          "ko.1": [55, 192, 107, 230],
+          "ko.2": [117, 217, 169, 263],
+          "victory.0": [69, 132, 121, 177],
+          "victory.1": [69, 132, 121, 177],
+          "charge.0": [52, 170, 104, 213],
+          "charge.1": [52, 168, 104, 211],
+          "chargeHi.0": [73, 149, 125, 191],
+          "chargeHi.1": [73, 147, 125, 189],
+          "chargeGuard.0": [57, 165, 109, 208]
+        },
+        "clear": {
+          "idle.0": [
+            [83, 168, 103, 185]
+          ],
+          "idle.1": [
+            [83, 166, 103, 183]
+          ],
+          "ready.0": [
+            [83, 178, 98, 194]
+          ],
+          "ready.1": [
+            [83, 176, 98, 192]
+          ],
+          "strike.0": [
+            [83, 172, 98, 190]
+          ],
+          "strike.1": [
+            [76, 169, 88, 183]
+          ],
+          "strike.2": [
+            [58, 194, 76, 211]
+          ],
+          "heavy.0": [
+            [54, 192, 74, 210]
+          ],
+          "heavy.1": [
+            [79, 166, 93, 182]
+          ],
+          "heavy.2": [
+            [65, 181, 81, 199]
+          ],
+          "heavy.3": [
+            [55, 187, 71, 204]
+          ],
+          "skillOff.0": [
+            [56, 190, 72, 207]
+          ],
+          "skillOff.1": [
+            [79, 187, 95, 205]
+          ],
+          "skillOff.2": [
+            [104, 182, 124, 201]
+          ],
+          "skillOff.3": [
+            [78, 177, 97, 194]
+          ],
+          "skillDef.0": [
+            [80, 185, 92, 200]
+          ],
+          "skillDef.1": [
+            [78, 184, 91, 199]
+          ],
+          "skillDef.2": [
+            [81, 169, 95, 186]
+          ],
+          "skillSup.0": [
+            [97, 160, 111, 175]
+          ],
+          "skillSup.1": [
+            [101, 162, 115, 180]
+          ],
+          "skillSup.2": [
+            [70, 171, 87, 187]
+          ],
+          "block.0": [
+            [88, 177, 109, 194]
+          ],
+          "block.1": [
+            [89, 177, 110, 194]
+          ],
+          "dodge.0": [
+            [110, 163, 128, 181]
+          ],
+          "dodge.1": [
+            [89, 181, 107, 197]
+          ],
+          "hit.0": [
+            [125, 175, 141, 194]
+          ],
+          "hit.1": [
+            [98, 176, 111, 193]
+          ],
+          "recover.0": [
+            [69, 179, 83, 194]
+          ],
+          "recover.1": [
+            [69, 177, 83, 192]
+          ],
+          "ko.0": [
+            [61, 170, 78, 189]
+          ],
+          "ko.1": [
+            [76, 219, 85, 230]
+          ],
+          "ko.2": [
+            [136, 244, 149, 263]
+          ],
+          "victory.0": [
+            [86, 159, 103, 177]
+          ],
+          "victory.1": [
+            [86, 159, 103, 177]
+          ],
+          "charge.0": [
+            [70, 197, 85, 213]
+          ],
+          "charge.1": [
+            [70, 195, 85, 211]
+          ],
+          "chargeHi.0": [
+            [91, 176, 105, 191]
+          ],
+          "chargeHi.1": [
+            [91, 174, 105, 189]
+          ],
+          "chargeGuard.0": [
+            [75, 192, 89, 208]
+          ]
+        },
+        "minPart": 3
+      },
+      "cloak": {
+        "colours": ["2b304f", "32395d", "434d78", "3b436b", "4c5683", "23263f"],
+        "outline": true,
+        "minPart": 8
+      }
+    }
+  }
+}
