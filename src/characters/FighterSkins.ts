@@ -20,6 +20,18 @@ export interface NamedFrame { name: string; rgba: Uint8Array }
 export interface PaletteMask {
   /** colours (6 hex digits) that are skin wherever they stand */
   skin: string[];
+  /** colours found on skin alone (`skin` lists them too): a group of touching `skin` texels counts only if it holds at least `minCore` of them (default 1);
+   *  a light tone the face shares with a cloak's highlights (Lucan, Piers) stays skin on the face and leaves the cloak. Absent: every group counts */
+  core?: string[];
+  minCore?: number;
+  /** colours of what skin may border (a cloak, the hair, a lantern): a group whose bordering texels are at least `foreignShare` (default 0.5) of these
+   *  colours is a highlight of that material, not skin */
+  foreign?: string[];
+  foreignShare?: number;
+  /** a group counts only if one of its texels lies within `radius` texels of a colour of `colours` (a face lies under its hair; Lucan's gauntlets show no hand) */
+  near?: { colours: string[]; radius: number };
+  /** a group smaller than this share of the frame's largest group is dropped (a fighter whose only skin is the face: Lucan, in gauntlets) */
+  relative?: number;
   /** colours skin shares with another material: skin only where at least 4 of the 8 neighbours are skin (two passes) */
   shade?: string[];
   /** the smallest group of touching skin texels kept (8-connected, before the fill): a few skin-coloured texels in the hair or on a boot's highlight
@@ -82,10 +94,13 @@ export function frameSkin(f: NamedFrame, fw: number, fh: number, s: PaletteMask)
     if (usable(x, y, i) && (skin.has(key(f.rgba, i)) || (inAny(force, x, y) && shade.has(key(f.rgba, i))))) out[j] = 1;
   }
   const own = s.frames?.[f.name], feet = own?.feet ?? s.feet ?? 0, minPart = own?.minPart ?? s.minPart ?? 1;
-  if (minPart > 1 || feet) {
+  const core = s.core?.length ? new Set(s.core.map((h) => parseInt(h, 16))) : null;
+  const groups: GroupRules = { core, minCore: s.minCore ?? 1, foreign: s.foreign?.length ? new Set(s.foreign.map((h) => parseInt(h, 16))) : null, share: s.foreignShare ?? 0.5, near: s.near ? nearMap(f, fw, fh, s.near) : null };
+  if (minPart > 1 || feet || core || groups.foreign || groups.near || s.relative) {
     let low = -1;
     for (let j = 0; j < fw * fh; j++) if (f.rgba[j * 4 + 3] >= 128) low = (j - (j % fw)) / fw;
-    dropSmall(out, fw, fh, minPart, force, feet ? low - feet + 1 : Infinity);
+    dropSmall(out, f.rgba, fw, fh, minPart, force, feet ? low - feet + 1 : Infinity, groups);
+    if (s.relative) keepLargest(out, fw, fh, s.relative, force);
   }
   for (let pass = 0; pass < 2; pass++) {
     const prev = out.slice();
@@ -102,25 +117,57 @@ export function frameSkin(f: NamedFrame, fw: number, fh: number, s: PaletteMask)
 
 /** clears the 8-connected groups of skin smaller than `min` texels, and those whose every texel is at or below row `floor` (a group touching a forced
  *  rectangle stays) */
-function dropSmall(m: Uint8Array, fw: number, fh: number, min: number, force: Rect[] | undefined, floor: number): void {
+interface GroupRules { core: Set<number> | null; minCore: number; foreign: Set<number> | null; share: number; near: Uint8Array | null }
+/** the texels within `radius` (Chebyshev) of an anchor colour */
+function nearMap(f: NamedFrame, fw: number, fh: number, n: { colours: string[]; radius: number }): Uint8Array {
+  const anchor = new Set(n.colours.map((h) => parseInt(h, 16))), out = new Uint8Array(fw * fh);
+  for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) {
+    const i = (y * fw + x) * 4;
+    if (f.rgba[i + 3] < 128 || !anchor.has(key(f.rgba, i))) continue;
+    for (let Y = Math.max(0, y - n.radius); Y <= Math.min(fh - 1, y + n.radius); Y++) for (let X = Math.max(0, x - n.radius); X <= Math.min(fw - 1, x + n.radius); X++) out[Y * fw + X] = 1;
+  }
+  return out;
+}
+function dropSmall(m: Uint8Array, rgba: Uint8Array, fw: number, fh: number, min: number, force: Rect[] | undefined, floor: number, g: GroupRules): void {
   const seen = new Uint8Array(m.length), stack: number[] = [], part: number[] = [];
   for (let j0 = 0; j0 < m.length; j0++) {
     if (!m[j0] || seen[j0]) continue;
     stack.push(j0); seen[j0] = 1; part.length = 0;
-    let kept = false, top = fh;
+    let kept = false, top = fh, cores = 0, border = 0, alien = 0, close = false;
     while (stack.length) {
       const j = stack.pop()!, x = j % fw, y = (j - x) / fw;
       part.push(j);
       if (y < top) top = y;
+      if (g.core?.has(key(rgba, j * 4))) cores++;
+      if (g.near?.[j]) close = true;
       if (inAny(force, x, y)) kept = true;
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
         const X = x + dx, Y = y + dy, q = Y * fw + X;
-        if (X < 0 || Y < 0 || X >= fw || Y >= fh || seen[q] || !m[q]) continue;
+        if (X < 0 || Y < 0 || X >= fw || Y >= fh || seen[q]) continue;
+        if (!m[q]) { if (g.foreign && rgba[q * 4 + 3] >= 128) { border++; if (g.foreign.has(key(rgba, q * 4))) alien++; } continue; }
         seen[q] = 1; stack.push(q);
       }
     }
-    if (!kept && (part.length < min || top >= floor)) for (const j of part) m[j] = 0;
+    const drop = part.length < min || top >= floor || (g.core !== null && cores < g.minCore) || (g.foreign !== null && border > 0 && alien / border >= g.share) || (g.near !== null && !close);
+    if (!kept && drop) for (const j of part) m[j] = 0;
   }
+}
+
+/** clears the groups smaller than `share` x the largest group's size (a group touching a forced rectangle stays) */
+function keepLargest(m: Uint8Array, fw: number, fh: number, share: number, force: Rect[] | undefined): void {
+  const label = new Int32Array(m.length).fill(-1), sizes: number[] = [], forced: boolean[] = [];
+  for (let j0 = 0; j0 < m.length; j0++) {
+    if (!m[j0] || label[j0] >= 0) continue;
+    const id = sizes.length, stack = [j0]; label[j0] = id; sizes.push(0); forced.push(false);
+    while (stack.length) {
+      const j = stack.pop()!, x = j % fw, y = (j - x) / fw;
+      sizes[id]++;
+      if (inAny(force, x, y)) forced[id] = true;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const X = x + dx, Y = y + dy, q = Y * fw + X; if (X >= 0 && Y >= 0 && X < fw && Y < fh && m[q] && label[q] < 0) { label[q] = id; stack.push(q); } }
+    }
+  }
+  const big = Math.max(0, ...sizes);
+  for (let j = 0; j < m.length; j++) if (m[j] && sizes[label[j]] < share * big && !forced[label[j]]) m[j] = 0;
 }
 
 /** the masks of a sheet's frames, in sheet order */

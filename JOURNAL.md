@@ -375,6 +375,21 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une variante par combattant, fixée (`fixed`), comme les PNJ uniques ; la recoloration (la formule du shader, `recolor`) se fait une fois sur les texels au chargement de la feuille : la feuille de combat avant son liseré peint de nuit, le visage du portrait et du HUD sur l'image de face de la feuille de ville. Les rampes sont celles de peau approuvées pour les PNJ (`light`, `medium`, `tan`, `dark`, Passe V2), recopiées telles quelles dans `art-lab/characters/variants/fighters.json`, non approuvé.
 - Aldric n'a aucune peau visible (casque fermé, gantelets) : pas de masque, aucune variante possible sans dessin neuf.
 
+### La relecture des masques — une première critique à froid, puis les règles de groupe
+- Un agent neuf, à froid, sur des planches d'audit (chaque image de ville et de combat, l'original à côté de la variante foncée, agrandie) : Kell propre ; défauts surtout chez Lucan (le bord clair du tabard et les pans crème pris pour de la peau sur presque toutes les images de combat), Piers (le manteau crème rayé, ses oreilles, ses mains et ses ombres de visage oubliées), Corra (des grains dans ses cheveux et sur son bâton au K.O., des bouches et des poings rayés), Ambrose (la flamme de sa lanterne une fois, le liseré orangé de son visage), Kell (l'anneau de sa boucle sur deux images). Vérifié sur les pixels avant de corriger : une teinte claire de peau sert aussi aux reflets des tissus crème, en combat seulement (la feuille de ville ne la partage pas).
+- **[KO] le noyau seul** (`core` : un groupe ne compte que s'il contient une couleur propre à la peau) : Piers n'a aucune couleur propre à sa peau en combat. Gardé dans le code, testé, inutilisé.
+- **[OK] quatre règles de groupe** (`FighterSkins.ts`), chacune absente = rien ne change :
+  - `foreign` / `foreignShare` : un groupe bordé surtout d'une autre matière en est un reflet (Piers : son manteau crème ; Corra : ses cheveux, à 85 % — son visage est encadré de cheveux, à 60 % ses visages tombaient ; Ambrose : sa lanterne) ;
+  - `near` : un groupe doit avoir un texel à quelques texels d'une couleur d'ancrage (Lucan : ses rouges vifs de cheveux) ;
+  - `relative` : un groupe plus petit qu'une part du plus grand de l'image tombe (Lucan, dont la seule peau est le visage : 0,7) ; [KO] `near` seul ne suffisait pas, les rouges vifs de ses cheveux reviennent sur sa cape et son tabard ;
+  - `force` ne prend plus que les couleurs `shade` (un premier essai, qui forçait tout texel non-contour, aurait pris les cheveux bleus de Piers).
+- Corrections à la main, lues sur la grille de l'image (les « corrections dans Aseprite » des PNJ, Passe V3) : Lucan `skillOff.1` effacé (son visage caché par sa lame levée, comme `heavy.1`), Kell la boucle (`skillOff.0`, `skillSup.0`), Corra deux grains au K.O., Piers son visage et sa main au sol (`force`).
+- Une seconde critique, par un autre agent neuf, sur les planches refaites : voir plus bas.
+
+### Tests — fautes injectées
+- `tests/fighter-skins.test.mjs`, 8 tests : les règles de couleur et de groupe sur des images construites, la recoloration contre un oracle écrit dans le test (la formule du shader : rampe sRGB filtrée en lumière linéaire), la porte (non approuvé : rien ; candidat : la variante demandée ; approuvé : l'empreinte exigée, puis la variante fixée, jamais celle d'une revue), le fichier (les rampes de peau des PNJ à l'identique, les six combattants et leurs deux feuilles), les vraies feuilles (de la peau sur chaque image qui en montre, les images où elle se cache nommées : Lucan `heavy.1` et `skillOff.1`, Corra `ko.2` ; jamais un contour), l'exécution (rien de recoloré tant que le fichier attend l'opérateur ; le crochet des portraits sur les six).
+- Quinze fautes injectées une à une (un script Node, chaque fichier rendu à l'empreinte après chacune) : quinze attrapées. Une première série en manquait une (une variante de revue passée en production) : le test de la porte la couvre désormais.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

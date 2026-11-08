@@ -109,6 +109,7 @@ test('the gate: an unapproved file shows nothing; a candidate shows; an approved
   const fp = cand.fingerprint, approval = { by: 'test', date: '2026-11-08' };
   const ok = { ...file, approved: true, approval, fighters: { kell: { ...base, fixed: 4, sheets: { ...base.sheets, 'kell-x3-combat': { ...base.sheets['kell-x3-combat'], fingerprint: fp } } } } };
   assert.equal(F.sheetTone(ok, 'kell', 'kell-x3-combat', s.frames, s.fw, s.fh).ramp, base.variants[3], 'approved: the fixed variant');
+  assert.equal(F.sheetTone(ok, 'kell', 'kell-x3-combat', s.frames, s.fw, s.fh, 'approved', 1).ramp, base.variants[3], 'approved: a review variant never overrides the fixed one');
   const bad = structuredClone(ok); bad.fighters.kell.sheets['kell-x3-combat'].fingerprint = '00000000';
   assert.throws(() => F.sheetTone(bad, 'kell', 'kell-x3-combat', s.frames, s.fw, s.fh), /not the approved masks/, 'approved, another fingerprint: refused');
   const none = structuredClone(ok); delete none.fighters.kell.fixed;
@@ -140,8 +141,13 @@ test('the real sheets: the five faces masked on every frame that shows one, Aldr
     for (const c of [...sv.mask.skin, ...(sv.mask.shade ?? [])]) assert.ok(palette.has(c), `${id}: ${c} is a colour of the sheet`);
     const counts = masks.map((m) => m.reduce((a, x) => a + x, 0));
     if (who === 'aldric') { assert.equal(counts.reduce((a, b) => a + b, 0), 0, 'Aldric: no skin'); continue; }
-    // every frame but the back views and the knockouts face down shows skin (the face, the hands)
-    s.frames.forEach((fr, n) => { if (!fr.name.startsWith('up/')) assert.ok(counts[n] >= (id.endsWith('-combat') ? 8 : 4), `${id} ${fr.name}: ${counts[n]} skin texels`); });
+    // every frame but the back views shows skin (the face, the hands); the frames read on the sheet where it hides: Lucan's raised blade covers his face
+    // (heavy.1, skillOff.1: none), Corra lies face down (ko.2: a few texels of a cheek)
+    const hidden = { 'lucan-x3-combat': { 'heavy.1': 0, 'skillOff.1': 0 }, 'corra-x3-combat': { 'ko.2': 5 } }[id] ?? {};
+    s.frames.forEach((fr, n) => {
+      if (fr.name in hidden) assert.equal(counts[n], hidden[fr.name], `${id} ${fr.name}: the skin it shows`);
+      else if (!fr.name.startsWith('up/')) assert.ok(counts[n] >= (id.endsWith('-combat') ? 12 : 4), `${id} ${fr.name}: ${counts[n]} skin texels`);
+    });
     masks.forEach((m, n) => { for (let j = 0; j < m.length; j++) if (m[j]) { const i = j * 4, fr = s.frames[n].rgba; assert.ok(fr[i + 3] >= 128 && hsv(fr[i], fr[i + 1], fr[i + 2]) >= 0.25, `${id} ${s.frames[n].name}: an outline or a hole masked`); } });
   }
 });
@@ -164,4 +170,29 @@ test('the runtime: nothing recoloured while the file waits for the operator; nev
   const faces = plaza.plazaFaces();
   for (const who of ['aldric', 'corra', 'ambrose', 'lucan', 'piers', 'kell']) assert.equal(typeof faces[who].face, 'function', `${who}: the portrait's hook`);
   assert.equal(faces.orla.face, undefined, 'a rival of the casting: no hook');
+});
+
+test('masks: the group rules - a core colour, a border of another material, an anchor nearby, the largest group', () => {
+  const LIGHT = '#fac89e', CORE = '#f0af83', CREAM = '#dfc6ad', RED = '#e36258', OUT2 = '#151314';
+  // a "face": LIGHT with a CORE texel, under RED hair; a "cloak highlight": LIGHT inside CREAM, far from the hair
+  const f = frame('idle.0', [[20, 8, 32, 11, RED], [20, 12, 32, 22, LIGHT], [26, 17, 26, 17, CORE], [10, 50, 30, 70, CREAM], [15, 55, 22, 60, LIGHT], [40, 40, 52, 47, LIGHT], [39, 39, 53, 39, OUT2]]);
+  const s = { skin: [LIGHT.slice(1), CORE.slice(1)] };
+  const at2 = (m, x, y) => m[y * W + x];
+  let m = F.frameSkin(f, W, H, s);
+  assert.deepEqual([at2(m, 25, 15), at2(m, 18, 57), at2(m, 45, 43)], [1, 1, 1], 'colour alone: all three');
+  m = F.frameSkin(f, W, H, { ...s, core: [CORE.slice(1)] });
+  assert.deepEqual([at2(m, 25, 15), at2(m, 18, 57), at2(m, 45, 43)], [1, 0, 0], 'core: only the group holding the core colour');
+  assert.equal(at2(F.frameSkin(f, W, H, { ...s, core: [CORE.slice(1)], minCore: 2 }), 25, 15), 0, 'minCore 2: one core texel is not enough');
+  m = F.frameSkin(f, W, H, { ...s, foreign: [CREAM.slice(1)] });
+  assert.deepEqual([at2(m, 25, 15), at2(m, 18, 57), at2(m, 45, 43)], [1, 0, 1], 'foreign: the group bordered by cream goes, the others stay');
+  m = F.frameSkin(f, W, H, { ...s, near: { colours: [RED.slice(1)], radius: 2 } });
+  assert.deepEqual([at2(m, 25, 15), at2(m, 18, 57), at2(m, 45, 43)], [1, 0, 0], 'near: only the group within 2 texels of the hair');
+  assert.equal(at2(F.frameSkin(f, W, H, { ...s, near: { colours: [RED.slice(1)], radius: 0 } }), 25, 15), 0, 'near radius 0: the face does not touch the hair\'s own texels');
+  // the face 143 texels, the cloak highlight 48, the third 104: relative 0.5 keeps the face and the third
+  m = F.frameSkin(f, W, H, { ...s, relative: 0.5 });
+  assert.deepEqual([at2(m, 25, 15), at2(m, 18, 57), at2(m, 45, 43)], [1, 0, 1], 'relative 0.5: the groups under half the largest go');
+  m = F.frameSkin(f, W, H, { ...s, relative: 0.5, force: { 'idle.0': [[15, 55, 16, 56]] }, shade: [] });
+  assert.equal(at2(m, 18, 57), 1, 'a group touching a forced rectangle stays');
+  m = F.frameSkin(f, W, H, { ...s, foreign: [CREAM.slice(1)], foreignShare: 1.01 });
+  assert.equal(at2(m, 18, 57), 1, 'a share above 1 never drops');
 });

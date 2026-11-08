@@ -77,9 +77,29 @@
        "f9cc9b",
        "d58c5b"
       ],
-      "shade": [],
+      "shade": [
+       "edb879",
+       "f8dcbd",
+       "dcbd9f"
+      ],
       "minPart": 6,
-      "feet": 8
+      "feet": 8,
+      "foreign": [
+       "edb879",
+       "e9b273",
+       "dda468",
+       "d29b61",
+       "c8915c",
+       "bf8857",
+       "b47e51",
+       "aa774d",
+       "6d4934",
+       "986944",
+       "a27149",
+       "8d5f3f",
+       "7c563d"
+      ],
+      "foreignShare": 0.85
      }
     },
     "corra-x3-combat": {
@@ -88,18 +108,56 @@
        "f9cc9b",
        "d58c5b"
       ],
-      "shade": [],
+      "shade": [
+       "edb879",
+       "f8dcbd",
+       "dcbd9f"
+      ],
       "minPart": 14,
       "feet": 12,
       "frames": {
        "ko.1": {
         "feet": 0,
-        "minPart": 1
+        "minPart": 4
        },
        "ko.2": {
         "feet": 0,
-        "minPart": 1
+        "minPart": 4
        }
+      },
+      "foreign": [
+       "edb879",
+       "e9b273",
+       "dda468",
+       "d29b61",
+       "c8915c",
+       "bf8857",
+       "b47e51",
+       "aa774d",
+       "6d4934",
+       "986944",
+       "a27149",
+       "8d5f3f",
+       "7c563d"
+      ],
+      "foreignShare": 0.85,
+      "clear": {
+       "ko.1": [
+        [
+         64,
+         226,
+         68,
+         229
+        ]
+       ],
+       "ko.2": [
+        [
+         100,
+         258,
+         135,
+         266
+        ]
+       ]
       }
      }
     }
@@ -128,10 +186,19 @@
        "af7d48",
        "9e6544",
        "905b3f",
-       "d5925e"
+       "d5925e",
+       "8b623c",
+       "976d44"
       ],
       "minPart": 6,
-      "feet": 8
+      "feet": 8,
+      "foreign": [
+       "f4b35a",
+       "976d44",
+       "a07445",
+       "8b623c"
+      ],
+      "foreignShare": 0.6
      }
     },
     "ambrose-x3-combat": {
@@ -149,7 +216,9 @@
        "af7d48",
        "9e6544",
        "905b3f",
-       "d5925e"
+       "d5925e",
+       "8b623c",
+       "976d44"
       ],
       "minPart": 14,
       "feet": 12,
@@ -160,7 +229,14 @@
        "ko.2": {
         "feet": 0
        }
-      }
+      },
+      "foreign": [
+       "f4b35a",
+       "976d44",
+       "a07445",
+       "8b623c"
+      ],
+      "foreignShare": 0.6
      }
     }
    },
@@ -189,11 +265,27 @@
        "ac8467",
        "935944",
        "7b483a",
-       "795442",
-       "dfb287"
+       "795442"
       ],
       "minPart": 6,
-      "feet": 8
+      "feet": 8,
+      "near": {
+       "colours": [
+        "c54a45",
+        "d4534c",
+        "e36258"
+       ],
+       "radius": 5
+      },
+      "relative": 0.7,
+      "foreign": [
+       "dfc6ad",
+       "ead9cb",
+       "dfb287",
+       "be9b7f",
+       "cbb9ae"
+      ],
+      "foreignShare": 0.3
      }
     },
     "lucan-x3-combat": {
@@ -212,8 +304,7 @@
        "ac8467",
        "935944",
        "7b483a",
-       "795442",
-       "dfb287"
+       "795442"
       ],
       "minPart": 14,
       "feet": 12,
@@ -224,6 +315,33 @@
        "ko.2": {
         "feet": 0
        }
+      },
+      "near": {
+       "colours": [
+        "c54a45",
+        "d4534c",
+        "e36258"
+       ],
+       "radius": 8
+      },
+      "relative": 0.7,
+      "foreign": [
+       "dfc6ad",
+       "ead9cb",
+       "dfb287",
+       "be9b7f",
+       "cbb9ae"
+      ],
+      "foreignShare": 0.3,
+      "clear": {
+       "skillOff.1": [
+        [
+         0,
+         0,
+         191,
+         287
+        ]
+       ]
       }
      }
     }
@@ -240,30 +358,36 @@
     "piers-x2-v1": {
      "mask": {
       "skin": [
-       "f4c89b"
-      ],
-      "shade": [
+       "f4c89b",
        "c98b5e",
        "b88557",
-       "9f6241",
+       "9f6241"
+      ],
+      "shade": [
        "e5b26e",
        "d8a466",
        "c9965a",
        "a9774c"
       ],
       "minPart": 6,
-      "feet": 8
+      "feet": 8,
+      "foreign": [
+       "edd3b1",
+       "d2b598",
+       "bfa286",
+       "b1957c"
+      ]
      }
     },
     "piers-x3-combat": {
      "mask": {
       "skin": [
-       "f4c89b"
-      ],
-      "shade": [
+       "f4c89b",
        "c98b5e",
        "b88557",
-       "9f6241",
+       "9f6241"
+      ],
+      "shade": [
        "e5b26e",
        "d8a466",
        "c9965a",
@@ -294,7 +418,13 @@
          268
         ]
        ]
-      }
+      },
+      "foreign": [
+       "edd3b1",
+       "d2b598",
+       "bfa286",
+       "b1957c"
+      ]
      }
     }
    },
@@ -354,6 +484,24 @@
        "ko.2": {
         "feet": 0
        }
+      },
+      "clear": {
+       "skillOff.0": [
+        [
+         84,
+         210,
+         92,
+         218
+        ]
+       ],
+       "skillSup.0": [
+        [
+         84,
+         200,
+         92,
+         209
+        ]
+       ]
       }
      }
     }
