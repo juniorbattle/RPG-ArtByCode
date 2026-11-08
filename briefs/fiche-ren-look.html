@@ -1,0 +1,403 @@
+<title>Le look de Ren</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+.flip { display: flex; flex-wrap: wrap; gap: 4px; background: #39414f; padding: 10px; border-radius: 8px; margin: 10px 0; justify-content: center; }
+.flip figure { margin: 0; text-align: center; }
+.flip canvas { display: block; image-rendering: pixelated; width: 144px; height: auto; }
+.flip figcaption { color: #e6e9ef; font-size: 14px; }
+.info { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · décisions de l’opérateur · 8 novembre 2026</span>
+    <h1>Le look de Ren : peau hâlée, cheveux gris, cape ivoire</h1>
+    <p class="lede">Ta décision : un seul Ren, « une couleur mate de peau des cheveux  hâlée et gris  et une cape soit aesoiaw ou ivoire », puis « Yes, ivory cloak ». C'est fait comme pour les génériques : les feuilles approuvées de Ren ne changent pas, une carte des matières choisit sa peau, ses cheveux et sa cape sur chacune de ses 99 images, et elles sont recolorées au chargement, partout où Ren paraît dans une partie de la version 2. Les captures sont celles du jeu, en DEV, avec le look en revue. Rien n'est en production avant ta relecture : aujourd'hui, chaque vue est identique à main.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix et je les consigne mot pour mot. Puis j'inscris l'approbation, la teinte choisie et les empreintes dans le fichier, je refais les preuves (une partie v2 jouée, le jeu par défaut au pixel près) et je fusionne.</p>
+    <p class="info">En DEV, pour voir le look dans le jeu : <code>/?play=1&amp;state=v2-day1-morning&amp;herolook=candidate</code>, ou une autre teinte : <code>herolook=tan.silver.ivory</code>, <code>herolook=tan.grey.ivory</code>.</p>
+    <p class="src">Sources : journal Passes PR1 à PR3, GS1 / GS2 ; art-lab/characters/variants/hero.json ; src/characters/HeroLook.ts, HeroLookCast.ts ; tools/art-lab/hero-look.mjs.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+const GROUPS = [
+ {
+  "id": "look",
+  "title": "Le look de Ren",
+  "fam": "var(--ronce)",
+  "sub": "Ta décision de la fiche précédente : « Yes, ivory cloak ». Peau hâlée, cheveux gris, cape ivoire, recolorés au chargement : les feuilles approuvées de Ren ne changent pas.",
+  "items": [
+   {
+    "id": "PR3-CHEVEUX",
+    "tag": "cheveux",
+    "title": "La teinte des cheveux gris",
+    "ctx": "Avec le gris des PNJ, les cheveux se lisaient anthracite : 86 % de leurs texels tombent dans le premier cinquième de leur plage de clarté, que quelques reflets très clairs étirent vers le haut. J'ai donc dessiné deux rampes pour cette répartition : « acier », un gris moyen, et « argent », plus clair. Dans les captures en jeu, de gauche à droite : Ren d'aujourd'hui, acier, argent.",
+    "shots": [
+     ["img/lineup-town.png", "Feuille de ville, sans lumière (face, dos, profil, trois-quarts, course). De haut en bas : l'original, puis l'anthracite des PNJ, l'acier et l'argent, avec la peau hâlée et la cape ivoire."],
+     ["img/game-town-midday.png", "En ville à midi (partie v2). De gauche à droite : l'original, acier, argent. L'argent tire au blanc sous le soleil."],
+     ["img/game-duel-midday.png", "Le duel à midi, avec le visage du HUD en haut à gauche : l'original, acier, argent."],
+     ["img/game-town-night.png", "En ville le soir, sous les lanternes : l'original, acier, argent."]
+    ],
+    "rec": "Acier : c'est le gris que tu as demandé, il se lit sous les lanternes comme au soleil. L'argent tire au blanc à midi ; l'anthracite se perd la nuit.",
+    "opts": ["Acier (gris moyen)", "Argent (plus clair)", "Anthracite (le gris des PNJ)"],
+    "recIdx": 0,
+    "src": "art-lab/characters/variants/hero.json (ramps.hair) ; tools/art-lab/hero-look.mjs --lineup"
+   },
+   {
+    "id": "PR3-PEAU",
+    "tag": "peau",
+    "title": "La peau hâlée",
+    "ctx": "La peau hâlée des PNJ (approuvée), sur le visage, le cou et les oreilles des deux feuilles, et sur le visage des portraits et du HUD. La peau gagne aussi les teintes d'ombre qui la touchent : le bord du front, les joues, les tempes (ta remarque : « la peau proche des cheveux semble argente »). Sous la lumière froide du matin, elle se lit plus claire.",
+    "shots": [
+     ["img/game-town-morning.png", "En ville le matin : l'original, acier, argent."],
+     ["img/game-forecourt-midday.png", "Sur le parvis à midi : l'original, acier, argent."]
+    ],
+    "rec": "Hâlée, comme montrée : c'est ton choix, et elle reste lisible le soir comme à midi.",
+    "opts": ["Hâlée, comme montrée", "Plus foncée (la foncée des PNJ)", "Moyenne (la moyenne des PNJ)"],
+    "recIdx": 0,
+    "src": "art-lab/characters/variants/variants.json (ramps.skin.tan) ; src/characters/HeroLook.ts (skinFlood)"
+   },
+   {
+    "id": "PR3-CAPE",
+    "tag": "cape",
+    "title": "La cape ivoire",
+    "ctx": "La cape entière, plis sombres compris, passe à l'ivoire. Les plis gardent un ton sombre et chaud, pas de bleu. La nuit, sous les lanternes, Ren devient la silhouette la plus claire de l'image. Au coucher du soleil, sur le terrain d'entraînement, la cape tire vers la crème.",
+    "shots": [
+     ["img/game-training-dusk.png", "Le terrain d'entraînement au coucher du soleil (de dos) : l'original, acier, argent."],
+     ["img/game-square-night.png", "La place de la halle la nuit : l'original, acier, argent."],
+     ["img/game-duel-night.png", "Le duel la nuit, le liseré froid peint sur les combattants : l'original, acier, argent."]
+    ],
+    "rec": "Ivoire, comme montrée : la silhouette se lit de jour comme de nuit et reste dans la palette verrouillée (« desaturated ivory »).",
+    "opts": ["Ivoire, comme montrée", "Un ivoire plus sourd (moins éclatant)", "À reprendre (en note)"],
+    "recIdx": 0,
+    "src": "art-lab/characters/variants/hero.json (ramps.cloak.ivory)"
+   },
+   {
+    "id": "PR3-MAREK",
+    "tag": "duel",
+    "title": "Ren et Marek, deux têtes grises au premier duel",
+    "ctx": "Marek, l'adversaire du premier duel, a lui aussi les cheveux et la barbe gris. Leurs capes les distinguent : ivoire pour Ren, bleue pour Marek. Leurs silhouettes aussi : Ren est plus petit, Marek porte une armure. Les autres rivaux ne sont pas gris.",
+    "shots": [
+     ["img/game-duel-strike.png", "Le duel la nuit, Ren frappe : l'original, acier, argent."]
+    ],
+    "rec": "Bien ainsi : la cape et la silhouette suffisent à les distinguer.",
+    "opts": ["Bien ainsi", "À revoir (en note)"],
+    "recIdx": 0,
+    "src": "art-lab/characters/exports/marek-x3-combat.png"
+   }
+  ]
+ },
+ {
+  "id": "restes",
+  "title": "Ce qui reste imparfait",
+  "fam": "var(--cendre)",
+  "sub": "Les cartes des matières, relues image par image et par une critique à froid.",
+  "items": [
+   {
+    "id": "PR3-RESTES",
+    "tag": "retouches",
+    "title": "Les imperfections restantes",
+    "ctx": "Une critique à froid (un agent neuf, sur toutes les images) a trouvé des défauts. Corrigés depuis, vérifiés sur les pixels : des mèches restées brunes hors de la zone de tête dans les chutes et les K.O. (les cheveux croissent maintenant par leurs couleurs hors de la zone) ; l’ombre du cou et de la gorge passée en gris, comme une barbiche (une zone « cou » par image, peinte en peau à l’ombre) ; la joue éloignée de trois-quarts ; l’oreille (deux teintes de la feuille de combat qui ne servent qu’au visage, comptées comme peau) ; les yeux, la bouche et le fard. Restent, petits à l’échelle du jeu : quelques pointes de frange qui croisent l’œil, peintes dans les bruns des cils, restent foncées ; les sourcils et les cils restent bruns (voulu) ; quelques texels de peau du cuir (des reflets peints avec les couleurs de la peau sur une botte ou une main) passent au hâlé ; le contour bleu nuit le plus sombre de la cape, un vrai contour, reste bleu nuit. De profil, la mèche devant l’oreille devient grise avec un reflet clair : elle est dessinée ainsi.",
+    "shots": [
+     ["img/lineup-combat.png", "Feuille de combat, sans lumière : l'original, puis l'anthracite, l'acier et l'argent (repos, frappe, garde, K.O., victoire)."]
+    ],
+    "rec": "En production maintenant : ce qui reste ne se voit qu’agrandi ; une retouche à la main suivra si tu le vois en jeu.",
+    "opts": ["En production maintenant, les corriger ensuite", "Les corriger avant la production"],
+    "recIdx": 0,
+    "src": "tools/art-lab/hero-look.mjs (planches de revue, --heads, --text) ; art-lab/characters/variants/hero.json (clear par image)"
+   }
+  ]
+ },
+ {
+  "id": "prod",
+  "title": "La production",
+  "fam": "var(--voile)",
+  "sub": "Rien n'a changé dans le jeu : avant ton approbation, chaque vue est identique à main, au pixel près.",
+  "items": [
+   {
+    "id": "PR3-PROD",
+    "tag": "production",
+    "title": "Ren hâlé, aux cheveux gris et à la cape ivoire, en production derrière la version 2",
+    "ctx": "Comme pour les peaux des génériques : le fichier art-lab/characters/variants/hero.json passe « approuvé », avec tes choix cités, la teinte retenue pour chaque matière et l'empreinte des cartes de ses deux feuilles, vérifiée au chargement. Le look suit Ren partout dans une partie de la version 2 : la ville, les trois places, les portraits des dialogues et sa figure sur la page de l'équipement, le duel et son visage du HUD. Le jeu par défaut et « Explore the district » gardent Ren tel qu'il est (ta décision PR-PORTEE). Preuves déjà faites, avant l'approbation : 0 px contre main sur la ville de nuit et à midi, la partie par défaut, la ville v2 le matin et le soir, deux places, le duel v2 le soir, à midi et au K.O., l'arène par défaut ; avec le look en revue, seul Ren change (et son reflet, et son visage du HUD). Après l'approbation : une partie v2 jouée et rejouée en Node, le jeu par défaut à 0 px en DEV et sur les deux paquets, puis la fusion.",
+    "rec": "En production, avec les teintes choisies sur cette fiche.",
+    "opts": ["En production", "Pas encore (en note)"],
+    "recIdx": 0,
+    "src": "src/characters/HeroLook.ts, HeroLookCast.ts ; tests/hero-look.test.mjs ; journal Passes GS1 / GS2 (la porte des variantes)"
+   }
+  ]
+ }
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.flip) c.append(flipbook(it.flip));
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+/** the clips of a sheet playing in small canvases, each frame held as long as in the duel (cells of 192 x 288, six to a row in the export; the empty top rows left out) */
+function flipbook(f) {
+  const box = el('div', { class: 'flip' }), img = new Image(), T = 60, H = 288 - T, scale = f.scale ?? 1;
+  const list = f.clips.map(([label, first, durations]) => {
+    const c = el('canvas', { width: String(192 * scale), height: String(H * scale), role: 'img', 'aria-label': label });
+    box.append(el('figure', {}, c, el('figcaption', {}, label)));
+    return { c, first, durations, n: 0, next: 0 };
+  });
+  img.onload = () => {
+    const tick = (t) => {
+      for (const a of list) {
+        if (t < a.next) continue;
+        const x = a.c.getContext('2d'), k = a.first + a.n, sx = (k % 6) * 192, sy = Math.floor(k / 6) * 288;
+        x.imageSmoothingEnabled = false; x.clearRect(0, 0, a.c.width, a.c.height); x.drawImage(img, sx, sy + T, 192, H, 0, 0, a.c.width, a.c.height);
+        a.next = t + a.durations[a.n] + (a.n === a.durations.length - 1 && a.durations.length > 2 ? 500 : 0);
+        a.n = (a.n + 1) % a.durations.length;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  img.src = f.src;
+  return box;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+const writing = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    for (const d of snap.docs) { const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

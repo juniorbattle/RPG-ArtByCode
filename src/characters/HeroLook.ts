@@ -35,6 +35,9 @@ export interface HairMask {
   /** keeps the largest group and the groups with a texel within `join` texels (Chebyshev) of it, no chaining: a raised glove, a hilt or a strap in the head
    *  rectangle is a group apart from the hair (the combat sheet); absent = every group */
   join?: number;
+  /** the hair grows out of its head rectangle through its own colours, 8-connected, at most `grow` steps (a spike or a nape past the rectangle in a fall, a
+   *  knockout); never through the skin or a cleared rectangle; absent = the rectangle bounds the hair */
+  grow?: number;
   /** the hair's contour colours (warm browns under the outline value): one of them in the head rectangle becomes hair when a hair texel touches it (4-connected)
    *  and no skin texel does (8-connected), two passes; a reddish contour round silver hair would read as a brown halo. The face's contour, next to the skin, stays */
   rim?: string[];
@@ -44,6 +47,9 @@ export interface HeroSheetLook {
   /** the skin grows from the face through its shared tones (`skin.shade`, 8-connected, outlines excluded): an ear or a jaw in shadow, drawn in tones the
    *  neighbour rule leaves alone, stays skin and is not taken for a lock of hair (the combat sheet); absent = no growth */
   skinFlood?: boolean;
+  /** per frame name, rectangles where a hair colour (lit) is skin: the neck's shadow under the jaw, painted in the hair's browns between the neck and the hood
+   *  (the combat sheet; written by tools/art-lab/hero-look.mjs from the face, read again on the grid) */
+  neck?: Record<string, Rect[]>;
   hair: HairMask; cloak: HairMask; fingerprint?: string;
 }
 export interface HeroLookFile {
@@ -88,6 +94,16 @@ export function frameHair(f: NamedFrame, fw: number, fh: number, h: HairMask, sk
     }
   }
   if (h.join !== undefined) joinLargest(out, fw, fh, h.join);
+  for (let step = 0; step < (h.grow ?? 0); step++) {
+    const prev = out.slice();
+    let added = 0;
+    for (let y = 1; y < fh - 1; y++) for (let x = 1; x < fw - 1; x++) {
+      const j = y * fw + x, i = j * 4;
+      if (prev[j] || !colours.has(key(f.rgba, i)) || !usable(x, y, i) || !lit(i)) continue;
+      if (prev[j - 1] || prev[j + 1] || prev[j - fw] || prev[j + fw] || prev[j - fw - 1] || prev[j - fw + 1] || prev[j + fw - 1] || prev[j + fw + 1]) { out[j] = 1; added++; }
+    }
+    if (!added) break;
+  }
   if (h.rim?.length && head) {
     const rim = new Set(h.rim.map((c) => parseInt(c, 16)));
     for (let pass = 0; pass < 2; pass++) {
@@ -128,9 +144,18 @@ function joinLargest(m: Uint8Array, fw: number, fh: number, join: number): void 
   for (let j = 0; j < m.length; j++) if (m[j] && !keep.has(label[j])) m[j] = 0;
 }
 
-/** a frame's materials: 0 none, 1 skin, 2 hair, 3 cloak (the skin first; a cloak colour is never hair or skin) */
+/** a frame's materials: 0 none, 1 skin, 2 hair, 3 cloak, 4 the neck's shadow (skin, outside the skin's range: a hair brown in shadow would stretch it and lighten
+ *  the face; it takes the ramp's darkest stops) (the skin first; a cloak colour is never hair or skin) */
 export function frameMaterials(f: NamedFrame, fw: number, fh: number, s: HeroSheetLook): Uint8Array {
   const skin = frameSkin(f, fw, fh, s.skin);
+  const neck = s.neck?.[f.name], shadow = new Uint8Array(fw * fh);
+  if (neck) {
+    const hairC = new Set(s.hair.colours.map((c) => parseInt(c, 16)));
+    for (const [x0, y0, x1, y1] of neck) for (let y = Math.max(0, y0); y <= Math.min(fh - 1, y1); y++) for (let x = Math.max(0, x0); x <= Math.min(fw - 1, x1); x++) {
+      const i = (y * fw + x) * 4;
+      if (f.rgba[i + 3] >= 128 && hairC.has(key(f.rgba, i)) && hsv(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2])[2] >= OUTLINE) { skin[y * fw + x] = 1; shadow[y * fw + x] = 1; }
+    }
+  }
   if (s.skinFlood) {
     const shade = new Set((s.skin.shade ?? []).map((c) => parseInt(c, 16))), clear = s.skin.clear?.[f.name], stack: number[] = [];
     for (let j = 0; j < skin.length; j++) if (skin[j]) stack.push(j);
@@ -144,7 +169,7 @@ export function frameMaterials(f: NamedFrame, fw: number, fh: number, s: HeroShe
     }
   }
   const cloak = frameHair(f, fw, fh, s.cloak, skin), hair = frameHair(f, fw, fh, s.hair, skin), out = new Uint8Array(fw * fh);
-  for (let j = 0; j < out.length; j++) out[j] = skin[j] ? 1 : cloak[j] ? 3 : hair[j] ? 2 : 0;
+  for (let j = 0; j < out.length; j++) out[j] = shadow[j] ? 4 : skin[j] ? 1 : cloak[j] ? 3 : hair[j] ? 2 : 0;
   return out;
 }
 /** the material maps of a sheet's frames, in sheet order */
@@ -156,7 +181,7 @@ export const lookFingerprint = maskFingerprint;
  *  (`rim`) or the cloak's fold (`outline`) takes the ramp's darkest stop and does not stretch the range; null for a material that never shows */
 export function materialRanges(sheets: ReadonlyArray<{ frames: readonly NamedFrame[]; maps: Uint8Array[] }>): Record<HeroMaterial, [number, number] | null> {
   const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
-  for (const { frames, maps } of sheets) frames.forEach((f, n) => { const m = maps[n]; for (let j = 0; j < m.length; j++) if (m[j]) { const i = j * 4; if (hsv(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2])[2] < OUTLINE) continue; const L = linLum(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2]), k = m[j] - 1; if (L < lo[k]) lo[k] = L; if (L > hi[k]) hi[k] = L; } });
+  for (const { frames, maps } of sheets) frames.forEach((f, n) => { const m = maps[n]; for (let j = 0; j < m.length; j++) if (m[j] && m[j] < 4) { const i = j * 4; if (hsv(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2])[2] < OUTLINE) continue; const L = linLum(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2]), k = m[j] - 1; if (L < lo[k]) lo[k] = L; if (L > hi[k]) hi[k] = L; } });
   const r = (k: number): [number, number] | null => (lo[k] <= hi[k] ? [lo[k], hi[k]] : null);
   return { skin: r(0), hair: r(1), cloak: r(2) };
 }
@@ -170,7 +195,7 @@ export function recolorLook(rgba: Uint8Array, map: Uint8Array, file: Pick<HeroLo
     const ramp = file.ramps[m][name];
     if (!ramp) throw new Error(`hero look: no ${m} ramp "${name}"`);
     const mask = new Uint8Array(map.length);
-    for (let j = 0; j < map.length; j++) mask[j] = map[j] === k + 1 ? 1 : 0;
+    for (let j = 0; j < map.length; j++) mask[j] = map[j] === k + 1 || (k === 0 && map[j] === 4) ? 1 : 0;
     out = recolor(out, mask, file.ranges[m], ramp);
   });
   return out;

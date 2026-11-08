@@ -73,6 +73,21 @@ test('cloak: its listed fold counts under the outline value only with `outline`;
   assert.equal(at(L.frameMaterials(f, W, H, sheet({}, { skinFlood: true })), 33, 22), 1, 'grown from the face through the shade');
 });
 
+test('hair grows out of its rectangle through its colours (`grow` steps, never through skin); the neck\'s shadow is skin outside the skin\'s range', () => {
+  const f = frame('idle.0', [[15, 8, 35, 18, HAIR], [36, 10, 44, 11, HAIR], [18, 19, 30, 28, SKIN], [31, 22, 33, 26, HAIR], [50, 10, 52, 11, HAIR]]);
+  const grown = L.frameMaterials(f, W, H, sheet({ head: { 'idle.0': [10, 5, 35, 18] }, grow: 4 }));
+  assert.equal(at(grown, 39, 10), 2, 'a spike 4 texels past the rectangle');
+  assert.equal(at(grown, 41, 10), 0, 'not past `grow` steps');
+  assert.equal(at(grown, 51, 10), 0, 'an unconnected brown far away');
+  assert.equal(at(L.frameMaterials(f, W, H, sheet({ head: { 'idle.0': [10, 5, 35, 18] } })), 37, 10), 0, 'without `grow`, the rectangle bounds the hair');
+  const neck = L.frameMaterials(f, W, H, sheet({}, { neck: { 'idle.0': [[31, 22, 33, 26]] } }));
+  assert.equal(at(neck, 32, 24), 4, 'a hair brown in the neck rectangle: the neck\'s shadow');
+  const r = L.materialRanges([{ frames: [f], maps: [neck] }]), plain = L.materialRanges([{ frames: [f], maps: [L.frameMaterials(f, W, H, sheet())] }]);
+  assert.deepEqual(r.skin, plain.skin, 'the neck\'s shadow does not stretch the skin\'s range');
+  const out = L.recolorLook(f.rgba, neck, { ramps: { skin: { s: ['#100000', '#300000', '#600000', '#900000', '#c00000'] }, hair: {}, cloak: {} }, ranges: { skin: [0.2, 0.7], hair: [0, 1], cloak: [0, 1] } }, { skin: 's' });
+  assert.notDeepEqual([...out.slice((24 * W + 32) * 4, (24 * W + 32) * 4 + 3)], hex(HAIR), 'the neck\'s shadow takes the skin\'s ramp');
+});
+
 test('recolouring: each material at its pinned range on its ramp, against the shader\'s formula written here', () => {
   const toLin = (u) => { const c = u / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
   const toSrgb = (l) => Math.round(255 * Math.min(1, Math.max(0, l <= 0.0031308 ? 12.92 * l : 1.055 * l ** (1 / 2.4) - 0.055)));
@@ -130,7 +145,7 @@ test('the real sheets: skin, hair and cloak on every frame; outlines changed onl
   for (const s of real) {
     const own = FILE.sheets[s.id], allowed = new Set([...(own.hair.rim ?? []), ...(own.cloak.outline ? own.cloak.colours : [])].map((c) => parseInt(c, 16)));
     s.frames.forEach((f, n) => {
-      const m = s.maps[n], count = [0, 0, 0, 0];
+      const m = s.maps[n], count = [0, 0, 0, 0, 0];
       for (let j = 0; j < m.length; j++) {
         count[m[j]]++;
         if (!m[j]) continue;
@@ -140,7 +155,7 @@ test('the real sheets: skin, hair and cloak on every frame; outlines changed onl
       assert.ok(count[2] > 40, `${s.id} ${f.name}: hair (${count[2]})`);
       assert.ok(count[3] > 100, `${s.id} ${f.name}: cloak (${count[3]})`);
       // the back views show no face
-      if (!/^(up|upSide)\//.test(f.name)) assert.ok(count[1] > 4, `${s.id} ${f.name}: skin (${count[1]})`);
+      if (!/^(up|upSide)\//.test(f.name)) assert.ok(count[1] + count[4] > 4, `${s.id} ${f.name}: skin (${count[1]} + neck ${count[4]})`);
     });
   }
 });

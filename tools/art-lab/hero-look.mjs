@@ -33,6 +33,21 @@ try {
     const { fw, fh, frames } = namedFrames(img, JSON.parse(fs.readFileSync(path.join(ROOT, `art-lab/characters/exports/${sheetId}.json`), 'utf8')), combat);
     const re = opt('resuggest');
     if (re === sheetId) { file.sheets[sheetId].hair.head = {}; file.sheets[sheetId].hair.clear = {}; }
+    // --neck: the neck rectangles of the combat frames that have none (below the mouth, at the back edge of the jaw), from the face's largest skin group
+    // the town sheet: the throat under the chin (front and three-quarter front, side), and the far cheek of a three-quarter front; never the back views
+    if (flag('neck')) {
+      const sv = file.sheets[sheetId], skinC = new Set(sv.skin.skin.map((c) => parseInt(c, 16))), key = (rgba, i) => (rgba[i] << 16) | (rgba[i + 1] << 8) | rgba[i + 2];
+      sv.neck ??= {};
+      for (const f of frames) {
+        if (sv.neck[f.name] || !sv.hair.head?.[f.name] || /^up/.test(f.name)) continue;
+        const face = largestSkin(f, fw, fh, skinC, key, combat ? sv.hair.head[f.name] : [0, 0, fw - 1, fh - 1].map((v, i) => (i === 3 ? Math.min(fh - 1, sv.hair.head[f.name][3] + 8) : v)));
+        if (!face || face.n < (combat ? 20 : 8)) continue;
+        if (combat) { sv.neck[f.name] = [[face.x1 - 5, face.y0 + Math.round(0.55 * (face.y1 - face.y0)), Math.min(fw - 1, face.x1 + 3), Math.min(fh - 1, face.y1 + 1)]]; continue; }
+        const rects = [[face.x0 - 1, face.y1 - 1, face.x1 + 1, Math.min(fh - 1, face.y1 + 4)]];
+        if (/^downSide\//.test(f.name)) rects.push([face.x1 - 1, face.y0, Math.min(fw - 1, face.x1 + 3), Math.min(fh - 1, face.y1 + 2)]);
+        sv.neck[f.name] = rects;
+      }
+    }
     if (flag('suggest') || re === sheetId) suggest(file.sheets[sheetId], frames, fw, fh, combat);
     sheets.push({ sheetId, combat, fw, fh, frames });
   }
@@ -47,7 +62,7 @@ try {
       let out = `== ${name} head ${JSON.stringify(r)} clear ${JSON.stringify(h.clear?.[name])}\n    ` + [...Array(box[2] - box[0] + 1).keys()].map((i) => (box[0] + i) % 10).join('') + '\n';
       for (let y = box[1]; y <= box[3]; y++) {
         let line = String(y).padStart(3) + ' ';
-        for (let x = box[0]; x <= box[2]; x++) { const i = (y * s.fw + x) * 4; if (f.rgba[i + 3] < 128) { line += '.'; continue; } const v = m[y * s.fw + x]; line += v === 1 ? 'S' : v === 2 ? 'H' : v === 3 ? 'c' : hsv(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2])[2] < 0.25 ? '#' : ':'; }
+        for (let x = box[0]; x <= box[2]; x++) { const i = (y * s.fw + x) * 4; if (f.rgba[i + 3] < 128) { line += '.'; continue; } const v = m[y * s.fw + x]; line += v === 1 || v === 4 ? 'S' : v === 2 ? 'H' : v === 3 ? 'c' : hsv(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2])[2] < 0.25 ? '#' : ':'; }
         out += line + '\n';
       }
       console.log(out);
@@ -77,13 +92,14 @@ try {
     }
   }
   for (const s of sheets) {
-    const fp = lookFingerprint(s.maps), count = [0, 0, 0];
+    const fp = lookFingerprint(s.maps), count = [0, 0, 0, 0];
     for (const m of s.maps) for (const v of m) if (v) count[v - 1]++;
+    count[0] += count[3];
     console.log(`${s.sheetId.padEnd(16)} maps ${fp}${file.sheets[s.sheetId].fingerprint ? ` (file ${file.sheets[s.sheetId].fingerprint})` : ''}  skin ${count[0]} hair ${count[1]} cloak ${count[2]} over ${s.frames.length} frames`);
     if (flag('fingerprints')) file.sheets[s.sheetId].fingerprint = fp;
     pages(s, ranges);
   }
-  if (flag('suggest') || opt('resuggest') || flag('ranges') || flag('fingerprints')) fs.writeFileSync(FILE, compact(file) + '\n');
+  if (flag('suggest') || flag('neck') || opt('resuggest') || flag('ranges') || flag('fingerprints')) fs.writeFileSync(FILE, compact(file) + '\n');
 
   /** the review pages: per frame, the original, the maps, the look; a town texel at 3 px, a combat frame cropped to its figure at 2 px */
   function pages(s, ranges) {
@@ -103,13 +119,14 @@ try {
         const bx = gap + (q % cols) * blockW, oy = gap + Math.floor(q / cols) * (bh + gap);
         const m = s.maps[n], lookRgba = recolorLook(f.rgba, m, pinned, look);
         const overlay = new Uint8Array(f.rgba.length);
-        for (let j = 0; j < m.length; j++) { const i = j * 4, c = [null, [0, 230, 230], [235, 0, 205], [245, 205, 0]][m[j]]; overlay[i + 3] = f.rgba[i + 3]; for (let k = 0; k < 3; k++) overlay[i + k] = c ? c[k] : Math.round(f.rgba[i + k] * 0.45); }
+        for (let j = 0; j < m.length; j++) { const i = j * 4, c = [null, [0, 230, 230], [235, 0, 205], [245, 205, 0], [0, 140, 170]][m[j]]; overlay[i + 3] = f.rgba[i + 3]; for (let k = 0; k < 3; k++) overlay[i + k] = c ? c[k] : Math.round(f.rgba[i + k] * 0.45); }
         [f.rgba, overlay, lookRgba].forEach((src, c) => blit(px, W, src, s.fw, box, bx + c * (bw + 2), oy, scale));
         const h = file.sheets[s.sheetId].hair, ox = bx + bw + 2;
         const rect = (r, col) => { if (!r) return; for (let x = r[0]; x <= r[2]; x++) for (const y of [r[1], r[3]]) dot(px, W, ox, oy, box, scale, x, y, col); for (let y = r[1]; y <= r[3]; y++) for (const x of [r[0], r[2]]) dot(px, W, ox, oy, box, scale, x, y, col); };
         rect(h.head?.[f.name], [255, 255, 255]);
         for (const r of h.clear?.[f.name] ?? []) rect(r, [255, 80, 60]);
         for (const r of h.paint?.[f.name] ?? []) rect(r, [80, 255, 80]);
+        for (const r of file.sheets[s.sheetId].neck?.[f.name] ?? []) rect(r, [80, 200, 255]);
       });
       const name = `${s.sheetId}-${String(p + 1).padStart(2, '0')}.png`;
       fs.writeFileSync(path.join(outDir, name), encodePng(W, H, px));
