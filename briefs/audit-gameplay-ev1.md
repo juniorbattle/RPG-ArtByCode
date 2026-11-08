@@ -194,3 +194,7 @@ découvre après le combat ; Lady Edda nomme les couleurs de la maison Dree, le 
 empreintes, laboratoire au JSON près pour les règles classiques et dynamiques, l'idle v2 et les parties scriptées) ; le diligent v2 garde ses combats et ses
 taux mais plus son JSON (la garde, les trafics sans effet : carte L3-9). La fiche du lot : https://claude.ai/artifact/SJ7N5DK32AqxGMaYKPCxGs
 (`briefs/fiche-l3.html`), douze cartes.
+
+**Relue en Passe EVL6 (07/11/2026)** : douze choix sur douze à la recommandation, sans note ; L3-9 « Accepter l’écart » (le diligent v2 garde ses combats et ses
+taux, plus son JSON) ; L3-11 « Les garder pour L4 » (Hale, Corra, Ambrose) ; L3-12 « Fusionner après la fiche, essayer ensuite » : fusionné. La suite : L4, les événements
+et les rivalités (EV-7 à EV-9).
