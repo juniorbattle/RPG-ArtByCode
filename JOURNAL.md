@@ -362,7 +362,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Réserves dites par les fourches : des visages penchés ou couchés en partie (Ilse, Vessa : peints dans les teintes des cheveux ou du cuir), des doigts gantés mêlés de peau sur les armes (Rhosk), la main levée d'Ilse à `strike.2`, les ombres profondes de l'oreille de Cassius, quelques points d'Orla au bord du blanc de l'œil. Une seconde critique à froid suit.
 
 ### En cours
-- La seconde critique à froid (planches ), puis les planches du duel (soir et midi, visage du HUD), la fiche.
+- La seconde critique à froid (planches `crit2/`), puis les planches du duel (soir et midi, visage du HUD), la fiche.
 
 ## À reprendre (par priorité)
 
