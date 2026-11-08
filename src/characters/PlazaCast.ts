@@ -4,7 +4,7 @@
  *  R-ville): their sheets give their faces and enter no square's atlas. */
 import { castEntries, type CastEntry } from './BakedCast';
 import type { BakedFrame } from './BakedSprites';
-import { sheetSkin } from './FighterSkinCast';
+import { namedTown, sheetSkin, toneTownSheet } from './FighterSkinCast';
 
 const png = import.meta.glob(['../../art-lab/characters/exports/{anwen,brann,cassius,corvin,hilde,ilse,lio,marek,odo,orla,pip,rhosk,tobin,vessa,wren}-x2-v2.png', '../../art-lab/characters/exports/{vendor,wayfarer,noble,errand-boy,girl}-x2-v1.png', '../../art-lab/characters/exports/{aldric,corra,ambrose,lucan,piers,kell}-x2-v1.png'], { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
 const json = import.meta.glob(['../../art-lab/characters/exports/{anwen,brann,cassius,corvin,hilde,ilse,lio,marek,odo,orla,pip,rhosk,tobin,vessa,wren}-x2-v2.json', '../../art-lab/characters/exports/{vendor,wayfarer,noble,errand-boy,girl}-x2-v1.json', '../../art-lab/characters/exports/{aldric,corra,ambrose,lucan,piers,kell}-x2-v1.json'], { eager: true, import: 'default' }) as Record<string, unknown>;
@@ -21,7 +21,8 @@ const pick = <T>(t: Record<string, T>, id: string): T => { const k = Object.keys
 /** the crowd's five citizens, each a walker in its turn (`citizen-<id>`, PlazaApp's CROWD_TURN) */
 const CITIZENS = ['vendor', 'wayfarer', 'noble', 'errand-boy', 'girl'];
 const citizen = (who: string): CastEntry => { const id = `${who}-x2-v1`; return { manifest: pick(man, id), png: pick(png, id), json: pick(json, id), files: pick(pack, id).files, replaces: [`citizen-${who}`], scale: 0.9 }; };
-const entry = (who: string): CastEntry => { const id = sheetOf(who); return { manifest: pick(man, id), png: pick(png, id), json: pick(json, id), files: pick(pack, id).files, replaces: [`person-${who}`], scale: 0.9, ...(WALKS.has(who) ? {} : { still: true }) }; };
+/** a person's sheet on a square; `tone`: a rival's skin variant (journal Passe RS1, FighterSkinCast: an approved variant, or the DEV review's; nothing for anyone else) */
+const entry = (who: string): CastEntry => { const id = sheetOf(who); return { manifest: pick(man, id), png: pick(png, id), json: pick(json, id), files: pick(pack, id).files, replaces: [`person-${who}`], scale: 0.9, tone: (frames, fw, fh) => { toneTownSheet(id, frames, fw, fh); }, ...(WALKS.has(who) ? {} : { still: true }) }; };
 
 /** the version 2's generic fighters (src/narrative/generics.ts), met in portrait only: their approved town sheets give their faces and enter no square's atlas (journal Passes GA2, GA4) */
 export const GENERIC_FACES = ['aldric', 'corra', 'ambrose', 'lucan', 'piers', 'kell'] as const;
@@ -31,11 +32,11 @@ const generic = (who: string): CastEntry => { const id = `${who}-x2-v1`; return 
 export function plazaCastEntries(): CastEntry[] {
   return [...castEntries(false).filter((e) => !['merchant-x2-v2', 'blacksmith-x2-v1'].includes(e.manifest.id)), ...PLAZA_PEOPLE.filter((w) => !FACE_ONLY.has(w)).map(entry), ...CITIZENS.map(citizen)];
 }
-/** a portrait's source; `face`: the front idle frame as the person shows it (a generic fighter's skin variant, journal Passe GS1), null = the sheet's own */
+/** a portrait's source; `face`: the front idle frame as the person shows it (a fighter's skin variant, journal Passes GS1 / RS1), null = the sheet's own */
 export interface FaceSource { id: string; png: string; json: unknown; sha256: string; face?: (frames: readonly BakedFrame[], fw: number, fh: number) => Uint8Array | null }
-/** a generic fighter's front idle frame under its skin variant (FighterSkinCast: an approved variant, or the DEV review's), or null */
+/** a fighter's front idle frame under its skin variant (a generic fighter's or a rival's; FighterSkinCast: an approved variant, or the DEV review's), or null */
 export function fighterFace(sheetId: string, frames: readonly BakedFrame[], fw: number, fh: number): Uint8Array | null {
-  const named = frames.map((f) => ({ name: `${f.dir}/${f.anim}.${f.i}`, rgba: f.rgba })), n = named.findIndex((f) => f.name === 'down/idle.0');
+  const named = namedTown(frames), n = named.findIndex((f) => f.name === 'down/idle.0');
   const skin = n < 0 ? null : sheetSkin(sheetId, named, fw, fh);
   return skin ? skin(n, named[n].rgba) : null;
 }
@@ -45,5 +46,6 @@ export function plazaFaces(): Record<string, FaceSource> {
   // the passers-by (lot L2a, journal Passe EVL2): the faces of the sheets they stand as, a citizen of a square or a townsperson of the quay
   const older = castEntries(false).find((e) => e.manifest.id === 'older-merchant-x2-v1');
   const passers: Array<[string, CastEntry | undefined]> = [['edda', castEntries(false, [citizen('noble')])[0]], ['sela', castEntries(false, [citizen('wayfarer')])[0]], ['fenwick', older]];
-  return Object.fromEntries([...PLAZA_PEOPLE.map((who) => [who, face(castEntries(false, [entry(who)])[0])]), ...GENERIC_FACES.map((who) => { const f = face(castEntries(false, [generic(who)])[0]); return [who, { ...f, face: (frames: readonly BakedFrame[], fw: number, fh: number) => fighterFace(f.id, frames, fw, fh) }]; }), ...passers.filter(([, e]) => !!e).map(([who, e]) => [who, face(e!)])]);
+  const toned = (f: FaceSource): FaceSource => ({ ...f, face: (frames: readonly BakedFrame[], fw: number, fh: number) => fighterFace(f.id, frames, fw, fh) });
+  return Object.fromEntries([...PLAZA_PEOPLE.map((who) => [who, toned(face(castEntries(false, [entry(who)])[0]))]), ...GENERIC_FACES.map((who) => [who, toned(face(castEntries(false, [generic(who)])[0]))]), ...passers.filter(([, e]) => !!e).map(([who, e]) => [who, face(e!)])]);
 }

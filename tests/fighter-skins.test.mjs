@@ -152,12 +152,11 @@ test('the real sheets: the five faces masked on every frame that shows one, Aldr
   }
 });
 
-test('the runtime: nothing recoloured while the file waits for the operator; never a sheet that is not a generic fighter\'s', async () => {
+test('the runtime: nothing recoloured while the file waits for the operator; never a sheet that is not a fighter\'s (the rivals\' and Ren\'s: their own file, tests/rival-skins.test.mjs)', async () => {
   assert.equal(cast.fighterOfSheet('kell-x3-combat'), 'kell');
   assert.equal(cast.fighterOfSheet('lucan-x2-v1'), 'lucan');
-  assert.equal(cast.fighterOfSheet('hero-x3-combat'), null);
-  assert.equal(cast.fighterOfSheet('marek-x3-combat'), null);
-  assert.equal(cast.fighterOfSheet('orla-x2-v2'), null);
+  assert.equal(cast.fighterOfSheet('anwen-x2-v2'), null);
+  assert.equal(cast.fighterOfSheet('kell-x2-v2'), null);
   for (const who of Object.keys(file.fighters)) for (const id of Object.keys(file.fighters[who].sheets)) {
     const s = await sheet(id), skin = cast.sheetSkin(id, s.frames, s.fw, s.fh), f = file.fighters[who];
     if (!file.approved || !f.fixed) assert.equal(skin, null, `${id}: no variant without an approved fixed one`);
@@ -169,7 +168,7 @@ test('the runtime: nothing recoloured while the file waits for the operator; nev
   if (!file.approved || !file.fighters.kell.fixed) assert.equal(face, null, 'the portrait keeps its texels');
   const faces = plaza.plazaFaces();
   for (const who of ['aldric', 'corra', 'ambrose', 'lucan', 'piers', 'kell']) assert.equal(typeof faces[who].face, 'function', `${who}: the portrait's hook`);
-  assert.equal(faces.orla.face, undefined, 'a rival of the casting: no hook');
+  assert.equal(typeof faces.anwen.face, 'function', 'a person of the casting: the hook, which keeps the texels of a sheet no file names');
 });
 
 test('masks: the group rules - a core colour, a border of another material, an anchor nearby, the largest group', () => {

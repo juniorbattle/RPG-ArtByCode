@@ -319,6 +319,45 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Une fiche de lot qui montre chaque texte tel que le jeu l'a (lu dans sa table, pas recopié) se relit vite et ne peut pas mentir sur ce qui est construit.
 
+## Passe RS1 — Les couleurs de peau des sept rivaux : masques par couleur de palette, recolorés au chargement, sur les places aussi (2026-11-08)
+
+### Demande
+- Transmise par la séance des génériques (`local_4c821720-…`). L'opérateur, mot pour mot (2026-11-07) : « Il faudra aussi effectuer des variants de peau des combattants principaux ».
+- Les sept rivaux (Marek, Vessa, Orla, Cassius, Ilse, Rhosk, Tobin), chacun une feuille de ville `<id>-x2-v2` et une feuille de combat `<id>-x3-combat`, comme les génériques (Passes GS1 / GS2) et les PNJ (Passes V0 à V3) : les feuilles approuvées ne changent pas, un masque de peau par couleur de palette, une des quatre rampes de peau des PNJ appliquée une fois au chargement.
+- **Ren sort de la tâche** (message de la séance mère, 2026-11-08). L'opérateur, mot pour mot : « pour le protagonist on va plutot adopter une personnalisation de personnage avec cheveux : coupe/couleur, couleur de peau et trait et peut etre meme type d'arme ». Une autre séance s'en charge (Passes PR1 / PR2 sur `main`, PR3 en cours sur `claude/ren-unique`). Rien n'est construit pour lui ici ; le code des masques reste générique.
+- Branche `claude/rivaux-peaux` (worktree à part : les lots L5 et la personnalisation de Ren travaillaient en parallèle), repartie d'`origin/main` `6316327` avant son premier commit.
+
+### Mesuré d'abord — [OK] les sept ont aujourd'hui une peau claire
+- Les visages de face (`down/idle.0`, le cadre du portrait) : le ton principal de chacun est clair, autour de L 0,58 à 0,66 en lumière linéaire (Marek `efb88a` / `eaaf80`, Vessa `faca9b`, Orla `f3be93`, Cassius `f2bf94`, Ilse `f3c399`, Rhosk `eccdac` / `ebb387`, Tobin `f2be8f`) ; Marek et Rhosk un peu plus chauds, mais clairs. La fiche devra donc proposer une vraie distribution.
+
+### Le jeu — [OK] un second fichier, sa propre approbation ; la peau suit aussi les places
+- `art-lab/characters/variants/rivals.json` : le format de `fighters.json` (Passe GS1), les rampes de peau des PNJ recopiées telles quelles, `approved: false`. Le fichier des génériques n'est pas touché : Kell et Ambrose gardent leur approbation et leurs empreintes.
+- `src/characters/FighterSkinCast.ts` lit les deux fichiers : une feuille appartient au combattant dont le fichier la nomme (le code ne connaît aucun nom) ; `fighterskin=<rampe>` ou `<qui>:<rampe>` en revue DEV vaut pour les deux.
+- **Nouveau par rapport aux génériques — les places** : les rivaux y marchent sur leur feuille de ville. `CastEntry.tone` (`src/characters/BakedCast.ts`) recolore les images d'une feuille en place, une fois décodées et vérifiées ; `PlazaCast.entry` le donne à chaque personne des places (`toneTownSheet`, sans effet pour une feuille qu'aucun fichier ne nomme). Le jeu par défaut n'a aucun crochet (`castEntries` du district sans `tone`, testé). Les portraits et le visage du HUD : le crochet `face` des génériques s'étend aux personnes des places (`plazaFaces`). Le duel : `CombatCast.skinOf` recolore déjà toute feuille de combat qu'un fichier nomme.
+- Preuve DEV : la place de la halle la nuit (`v2-square-night`, `tools/plaza-shots.mjs`) avec et sans `fighterskin=dark` : 596 px changent, sur les personnes seulement (Cassius en peau foncée, agrandi) ; le duel sous `fighterskin=orla:dark` : Orla et son visage du HUD changent.
+
+### Les masques — par quatre fourches, puis relus
+- Construits image par image (une carte des couleurs chaudes par image, les planches de masque cyan / bleu), un fragment par rival fusionné dans `rivals.json` :
+  - **Marek** (gantelets : la tête seule) : `foreign` la fourrure et le bleu de la cape (les galons dorés partagent ses teintes) ; en ville `feet` 55, détourné de son sens (tout groupe sous la rangée 36 tombe : il n'a aucune peau sous le cou) ; en combat un `feet` par image, deux rangées sous le visage.
+  - **Rhosk** (visage, bras nus, doigts) : `foreign` la fourrure ; en combat seulement, `core` sur ses trois tons clairs (les reflets de cuir des brassards n'ont que ses tons sombres) ; `clear` sur les boucles, broches et bagues de la hache.
+  - **Tobin** : `clear` sur la boucle de ceinture ; des `force` d'un texel posés sur une couleur `skin` pour garder doigts et bouts de front sous `minPart`.
+  - **Cassius** (armure, gantelets) : `near` sur son ton le plus clair, `relative` en combat, la boîte du visage en `force` ; `paint` sur l'oreille de dos et le visage couché de `ko.2`.
+  - **Ilse** : une seule couleur propre à la peau (`f3c399`), ses ombres partagées avec ses cheveux blonds et son galon (`shade`), les crèmes de la coiffe et de la robe en `foreign`, les mains en `force` ; `ko.2` sans peau visible (face contre terre).
+  - **Vessa et Orla** : leur peau partage la palette des galons crème et or (et des reflets de la cuirasse d'Orla) ; `core` / `minCore` les départage, puis des corrections par image.
+- Réserves des fourches (à confirmer par la critique à froid) : des visages dans l'ombre en partie (K.O., relevés), quelques doigts sur les armes, le bas du visage contre la barbe de Marek, la mâchoire de profil d'Ilse.
+- **[KO]** `near` sur les gris des cheveux de Marek : l'armure porte les mêmes gris et l'oreille tombait. **[KO]** `foreign` sur la crème de la tunique d'Orla : ses cuisses tombaient.
+
+### Outils et documents — [OK]
+- `tools/art-lab/skin-lineup.mjs` lit les feuilles de chaque combattant dans le fichier (`-x2-v1`, `-x2-v2`) ; `skin-masks.mjs` et `skin-aseprite.mjs` servent tels quels (`--file=art-lab/characters/variants/rivals.json`).
+- Quatorze documents de revue Aseprite `<id>-peaux.aseprite` dans `art-lab/characters/scratch/rival-skins/` du dossier principal (ignoré) : chacun relu par Aseprite, le calque original identique à l'export.
+
+### Tests — [OK]
+- `tests/rival-skins.test.mjs` (4 tests) : le fichier (les rampes des PNJ, les sept rivaux et leurs deux feuilles, une feuille dans un seul fichier), les vraies feuilles (de la peau sur chaque image qui en montre, Ilse `ko.2` épinglée à 0, jamais un contour, les couleurs de la feuille), l'ordre de décodage d'une place égal à celui des outils (même empreinte), l'exécution (rien recoloré tant que le fichier attend, ni sur une place, ni en portrait, ni en duel ; le héros et le district sans crochet). `tests/fighter-skins.test.mjs` mis à jour (les rivaux ont désormais un fichier).
+- `npm run typecheck` ; `npm test` 485 sur 487 dans le worktree avant les vrais masques (`arena-day`, l'environnement du worktree ; le test des vraies feuilles sur les masques provisoires).
+
+### En cours
+- Trois critiques à froid par des agents neufs, sur des planches d'audit (chaque image, l'original à côté de la peau foncée) ; puis les corrections, les planches du duel (soir et midi, visage du HUD), la fiche.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

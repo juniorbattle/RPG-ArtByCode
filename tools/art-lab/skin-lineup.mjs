@@ -1,4 +1,4 @@
-// The generic fighters' skin line-up (journal Passe GS1): for each fighter of art-lab/characters/variants/fighters.json (or --file=<json>), its original
+// The fighters' skin line-up (journal Passes GS1 / RS1): for each fighter of art-lab/characters/variants/fighters.json (or --file=<json>, rivals.json), its original
 // and each candidate skin, recoloured by the runtime's own code (src/characters/FighterSkins.ts: the masks, the sheet's range, the shader's formula): the
 // portrait's face (the town sheet's front idle, `faceCrop`, x4), the town sheet's front and side idle (x3), and six frames of the combat sheet (x1.5: the
 // same texel as the town at x2... a combat texel is a third of a town pixel). No lighting: the duel's look is checked in the scene (DEV `fighterskin=`).
@@ -25,11 +25,12 @@ try {
   for (const [who, f] of Object.entries(file.fighters)) {
     if (only.length && !only.includes(who)) continue;
     const load = async (id, combat) => { const img = await decodePng(new Uint8Array(fs.readFileSync(path.join(ROOT, `art-lab/characters/exports/${id}.png`)))); return namedFrames(img, JSON.parse(fs.readFileSync(path.join(ROOT, `art-lab/characters/exports/${id}.json`), 'utf8')), combat); };
-    const town = await load(`${who}-x2-v1`, false), fight = await load(`${who}-x3-combat`, true);
+    const townId = Object.keys(f.sheets).find((k) => !k.endsWith('-combat')), fightId = Object.keys(f.sheets).find((k) => k.endsWith('-combat'));   // `<id>-x2-v1` (generic), `<id>-x2-v2` (rival), `hero-x2-v4` (Ren)
+    const town = await load(townId, false), fight = await load(fightId, true);
     const rows = [];
     for (let v = 0; v <= f.variants.length; v++) {
-      const tt = v ? sheetTone(file, who, `${who}-x2-v1`, town.frames, town.fw, town.fh, 'candidate', v) : null;
-      const tc = v ? sheetTone(file, who, `${who}-x3-combat`, fight.frames, fight.fw, fight.fh, 'candidate', v) : null;
+      const tt = v ? sheetTone(file, who, townId, town.frames, town.fw, town.fh, 'candidate', v) : null;
+      const tc = v ? sheetTone(file, who, fightId, fight.frames, fight.fw, fight.fh, 'candidate', v) : null;
       const tf = (sheet, tone, name) => { const n = sheet.frames.findIndex((q) => q.name === name); if (n < 0) return null; const fr = sheet.frames[n]; return tone ? toneFrame(file, tone, n, fr.rgba) : fr.rgba; };
       const front = tf(town, tt, 'down/idle.0'), side = tf(town, tt, 'side/idle.0'), crop = faceCrop(front, town.fw, town.fh);
       rows.push({ label: v ? f.variants[v - 1] : 'original', front, side, crop, combat: COMBAT.map((n) => tf(fight, tc, n)) });

@@ -63,7 +63,7 @@ interface Manifest { id: string; status: string; approved: boolean; runtimeUse: 
 /** replaces: the generated archetype(s) the sheet stands in for; needs: frames its archetypes' behaviours ask for beyond idle + walk;
  *  frontLeft: its 'down' facing is drawn turned to the LEFT, a light three-quarter front (the reference sheet draws no true front for it,
  *  journal Passe F2): read only by ?npcfacing= (ActorSystem.npcFacing) */
-export interface CastEntry { manifest: Manifest; png: string; json: unknown; files: Record<string, string>; replaces: string[]; scale: number; needs?: string[]; frontLeft?: boolean; /** a person who only stands: idle frames alone (journal Passe CA2, the operator's T1) */ still?: boolean; /** recolours the sheet's frames in place once decoded and checked (Ren's look in a version 2 game, journal Passe PR3, HeroLookCast) */ tone?: (frames: BakedFrame[], fw: number, fh: number) => void }
+export interface CastEntry { manifest: Manifest; png: string; json: unknown; files: Record<string, string>; replaces: string[]; scale: number; needs?: string[]; frontLeft?: boolean; /** a person who only stands: idle frames alone (journal Passe CA2, the operator's T1) */ still?: boolean; /** recolours the sheet's frames in place once decoded and checked (Ren's look in a version 2 game, journal Passe PR3, HeroLookCast; a rival's skin variant on a square, journal Passe RS1, FighterSkinCast) */ tone?: (frames: BakedFrame[], fw: number, fh: number) => void }
 type Entry = CastEntry;
 
 const ENTRIES: Entry[] = [
