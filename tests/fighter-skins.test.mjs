@@ -142,8 +142,8 @@ test('the real sheets: the five faces masked on every frame that shows one, Aldr
     const counts = masks.map((m) => m.reduce((a, x) => a + x, 0));
     if (who === 'aldric') { assert.equal(counts.reduce((a, b) => a + b, 0), 0, 'Aldric: no skin'); continue; }
     // every frame but the back views shows skin (the face, the hands); the frames read on the sheet where it hides: Lucan's raised blade covers his face
-    // (heavy.1, skillOff.1: none), Corra lies face down (ko.2: a few texels of a cheek)
-    const hidden = { 'lucan-x3-combat': { 'heavy.1': 0, 'skillOff.1': 0 }, 'corra-x3-combat': { 'ko.2': 5 } }[id] ?? {};
+    // (skillOff.1: none), Corra lies face down (ko.2: a few texels of a cheek)
+    const hidden = { 'lucan-x3-combat': { 'skillOff.1': 0 }, 'corra-x3-combat': { 'ko.2': 5 } }[id] ?? {};
     s.frames.forEach((fr, n) => {
       if (fr.name in hidden) assert.equal(counts[n], hidden[fr.name], `${id} ${fr.name}: the skin it shows`);
       else if (!fr.name.startsWith('up/')) assert.ok(counts[n] >= (id.endsWith('-combat') ? 12 : 4), `${id} ${fr.name}: ${counts[n]} skin texels`);
@@ -195,4 +195,14 @@ test('masks: the group rules - a core colour, a border of another material, an a
   assert.equal(at2(m, 18, 57), 1, 'a group touching a forced rectangle stays');
   m = F.frameSkin(f, W, H, { ...s, foreign: [CREAM.slice(1)], foreignShare: 1.01 });
   assert.equal(at2(m, 18, 57), 1, 'a share above 1 never drops');
+});
+
+test('masks: a painted rectangle takes every colour but an outline, on its own frame only', () => {
+  const f = frame('hit.0', [[10, 10, 20, 20, HAIR], [12, 12, 12, 12, OUT], [30, 30, 34, 34, HAIR]]);
+  const s = { skin: [], paint: { 'hit.0': [[10, 10, 20, 20]] } };
+  const m = F.frameSkin(f, W, H, s);
+  assert.equal(at(m, 15, 15), 1, 'hair-coloured texel painted');
+  assert.equal(at(m, 12, 12), 0, 'outline never');
+  assert.equal(at(m, 32, 32), 0, 'outside the rectangle');
+  assert.equal(at(F.frameSkin({ ...f, name: 'hit.1' }, W, H, s), 15, 15), 0, 'another frame');
 });

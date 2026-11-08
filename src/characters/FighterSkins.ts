@@ -45,6 +45,9 @@ export interface PaletteMask {
   /** per frame name, rectangles (x0, y0, x1, y1 inclusive, texels of the frame, y down) where a `shade` colour is skin without its neighbours (a face in
    *  shadow, read on the sheet: nothing else in the rectangle, neither hair nor cloth nor an outline, changes) */
   force?: Record<string, Rect[]>;
+  /** per frame name, rectangles whose every non-outline texel is skin, whatever its colour (the NPCs' `force`, Passe V3): a hand painted in the hair's
+   *  browns where the light leaves it (Kell's open hand, hit.0), read on the sheet */
+  paint?: Record<string, Rect[]>;
   /** per frame name, rectangles never skin (a colour rule that catches a staff, a strap, a lip of the hair) */
   clear?: Record<string, Rect[]>;
 }
@@ -87,7 +90,7 @@ export function namedFrames(img: { w: number; h: number; rgba: Uint8Array }, jso
 /** the skin of one frame (1 = skin, 0 = other), row-major from the top */
 export function frameSkin(f: NamedFrame, fw: number, fh: number, s: PaletteMask): Uint8Array {
   const skin = new Set(s.skin.map((h) => parseInt(h, 16))), shade = new Set((s.shade ?? []).map((h) => parseInt(h, 16)));
-  const out = new Uint8Array(fw * fh), force = s.force?.[f.name], clear = s.clear?.[f.name];
+  const out = new Uint8Array(fw * fh), force = s.force?.[f.name], clear = s.clear?.[f.name], paint = s.paint?.[f.name];
   const usable = (x: number, y: number, i: number) => f.rgba[i + 3] >= 128 && hsv(f.rgba[i], f.rgba[i + 1], f.rgba[i + 2])[2] >= OUTLINE && !inAny(clear, x, y);
   for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) {
     const j = y * fw + x, i = j * 4;
@@ -112,11 +115,10 @@ export function frameSkin(f: NamedFrame, fw: number, fh: number, s: PaletteMask)
       if (n >= 4) out[j] = 1;
     }
   }
+  if (paint) for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) if (inAny(paint, x, y) && usable(x, y, (y * fw + x) * 4)) out[y * fw + x] = 1;
   return out;
 }
 
-/** clears the 8-connected groups of skin smaller than `min` texels, and those whose every texel is at or below row `floor` (a group touching a forced
- *  rectangle stays) */
 interface GroupRules { core: Set<number> | null; minCore: number; foreign: Set<number> | null; share: number; near: Uint8Array | null }
 /** the texels within `radius` (Chebyshev) of an anchor colour */
 function nearMap(f: NamedFrame, fw: number, fh: number, n: { colours: string[]; radius: number }): Uint8Array {
@@ -128,6 +130,8 @@ function nearMap(f: NamedFrame, fw: number, fh: number, n: { colours: string[]; 
   }
   return out;
 }
+/** clears the 8-connected groups of skin smaller than `min` texels, those whose every texel is at or below row `floor`, those holding fewer core texels
+ *  than asked, those bordered mostly by a foreign material, those far from every anchor (a group touching a forced rectangle stays) */
 function dropSmall(m: Uint8Array, rgba: Uint8Array, fw: number, fh: number, min: number, force: Rect[] | undefined, floor: number, g: GroupRules): void {
   const seen = new Uint8Array(m.length), stack: number[] = [], part: number[] = [];
   for (let j0 = 0; j0 < m.length; j0++) {

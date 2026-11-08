@@ -113,7 +113,7 @@
        "f8dcbd",
        "dcbd9f"
       ],
-      "minPart": 14,
+      "minPart": 5,
       "feet": 12,
       "frames": {
        "ko.1": {
@@ -193,12 +193,9 @@
       "minPart": 6,
       "feet": 8,
       "foreign": [
-       "f4b35a",
-       "976d44",
-       "a07445",
-       "8b623c"
+       "f4b35a"
       ],
-      "foreignShare": 0.6
+      "foreignShare": 0.2
      }
     },
     "ambrose-x3-combat": {
@@ -220,7 +217,7 @@
        "8b623c",
        "976d44"
       ],
-      "minPart": 14,
+      "minPart": 5,
       "feet": 12,
       "frames": {
        "ko.1": {
@@ -231,12 +228,9 @@
        }
       },
       "foreign": [
-       "f4b35a",
-       "976d44",
-       "a07445",
-       "8b623c"
+       "f4b35a"
       ],
-      "foreignShare": 0.6
+      "foreignShare": 0.2
      }
     }
    },
@@ -269,14 +263,6 @@
       ],
       "minPart": 6,
       "feet": 8,
-      "near": {
-       "colours": [
-        "c54a45",
-        "d4534c",
-        "e36258"
-       ],
-       "radius": 5
-      },
       "relative": 0.7,
       "foreign": [
        "dfc6ad",
@@ -316,14 +302,6 @@
         "feet": 0
        }
       },
-      "near": {
-       "colours": [
-        "c54a45",
-        "d4534c",
-        "e36258"
-       ],
-       "radius": 8
-      },
       "relative": 0.7,
       "foreign": [
        "dfc6ad",
@@ -340,6 +318,22 @@
          0,
          191,
          287
+        ]
+       ],
+       "victory.0": [
+        [
+         83,
+         208,
+         97,
+         233
+        ]
+       ],
+       "victory.1": [
+        [
+         83,
+         208,
+         97,
+         233
         ]
        ]
       }
@@ -376,7 +370,8 @@
        "d2b598",
        "bfa286",
        "b1957c"
-      ]
+      ],
+      "foreignShare": 0.75
      }
     },
     "piers-x3-combat": {
@@ -424,7 +419,8 @@
        "d2b598",
        "bfa286",
        "b1957c"
-      ]
+      ],
+      "foreignShare": 0.75
      }
     }
    },
