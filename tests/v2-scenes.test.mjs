@@ -120,6 +120,9 @@ test('after the semi-final: its evening and the next day on the forecourt; won, 
   assert.equal(S.pendingScene({ ...d7, slot: 'evening' })?.id ?? null, null);
   assert.equal(S.pendingScene({ ...d7, day: 8 })?.id ?? null, null);
   assert.notEqual(S.pendingScene(at(playTo(6, 'afternoon'), 'forecourt'))?.id, 'semiWon');
+  // a forged evening with the semi-final unfought: neither scene (the bout decides which)
+  const unf = structuredClone(w); mineOf(unf, 'semi').winner = null;
+  assert.ok(!['semiWon', 'semiLost'].includes(S.pendingScene(unf)?.id ?? ''));
   // lost: the semi-final lost
   let l = playTo(6, 'afternoon');
   l = at(act(l, LOST), 'forecourt');
@@ -185,6 +188,19 @@ test('the epilogue: the forecourt on day 10\'s evening, once the champion is cro
   assert.equal(lines[0][1], T.tx('v2.scene.epilogue.champion', { champ: S.speakerName(f, champ) }));
   assert.equal(lines[1][1], T.tx(champ === 'marek' ? 'v2.scene.epilogue.marek.kept' : 'v2.scene.epilogue.marek.second', { name: f.player.name, champ: S.speakerName(f, champ) }));
   assert.equal(lines[2][1], T.tx('v2.scene.epilogue.hero.final'));
+  // another champion than Marek: his words for the hero second
+  const other = structuredClone(f); other.flags.champion = champ === 'marek' ? 'vessa' : champ;
+  if (other.flags.champion !== 'marek') assert.equal(say(other, 'epilogue')[1][1], T.tx('v2.scene.epilogue.marek.second', { name: f.player.name, champ: S.speakerName(other, other.flags.champion) }));
+  const kept = structuredClone(f); kept.flags.champion = 'marek';
+  assert.equal(say(kept, 'epilogue')[1][1], T.tx('v2.scene.epilogue.marek.kept', { name: f.player.name, champ: S.speakerName(kept, 'marek') }));
+  // the Gate's road: the pool lost, the Gate bout won, the Gate final won (5th) or lost (6th): both « gate »; Marek's words for another champion
+  for (const [d8, rank] of [[WON, 5], [LOST, 6]]) {
+    let g = playTo(10, 'afternoon', (day) => (day === 6 ? WON : day === 8 ? d8 : LOST)); g = act(g, { type: 'wait' }); g = at(g, 'forecourt'); g.flags['scene:final'] = true;
+    assert.equal(C.v2Ranking(g).indexOf('player') + 1, rank, 'the Gate final ' + (rank === 5 ? 'won' : 'lost'));
+    assert.equal(say(g, 'epilogue')[2][1], T.tx('v2.scene.epilogue.hero.gate'));
+    const ch = g.flags.champion === 'marek' ? 'vessa' : g.flags.champion; g.flags.champion = ch;
+    assert.equal(say(g, 'epilogue')[1][1], T.tx('v2.scene.epilogue.marek.other', { name: g.player.name, champ: S.speakerName(g, ch) }));
+  }
   // every bout lost: the hero's place out of the semi-finals (5 to 8)
   let o = playTo(10, 'afternoon', () => LOST); o = act(o, { type: 'wait' }); o = at(o, 'forecourt'); o.flags['scene:final'] = true;
   const r = C.v2Ranking(o).indexOf('player') + 1;
