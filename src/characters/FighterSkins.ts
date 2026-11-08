@@ -59,6 +59,8 @@ export interface FighterSkin {
   variants: string[];
   /** the variant the fighter shows (1-based into `variants`; 0 or absent = the original) */
   fixed?: number;
+  /** a variant chosen by the operator but not applied yet, and why (Piers: after the retouch of his hands, GS-RET) */
+  pending?: string;
 }
 export interface FighterSkinsFile {
   approved: boolean;

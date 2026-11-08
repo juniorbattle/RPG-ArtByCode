@@ -1,7 +1,11 @@
 {
- "$comment": "The generic fighters' skin variants (journal Passe GS1; src/characters/FighterSkins.ts): per fighter, the skin masks of its town sheet (the face) and of its combat sheet, written by palette colours (skin: always; shade: only where skin surrounds them; minPart: the smallest group kept; feet: a group in the bottom rows is a boot), the candidate skins (the NPCs' approved skin ramps of variants.json, copied as they are) and the one it shows (fixed, 1-based; absent = the original). Reaches production only with approved: true from the operator, each sheet's mask fingerprint checked at load. Aldric has no visible skin (closed helm, gauntlets): no mask.",
- "approved": false,
- "approval": null,
+ "$comment": "The generic fighters' skin variants (journal Passe GS1; src/characters/FighterSkins.ts): per fighter, the skin masks of its town sheet (the face) and of its combat sheet, written by palette colours (skin: always; shade: only where skin surrounds them; minPart: the smallest group kept; feet: a group in the bottom rows is a boot), the candidate skins (the NPCs' approved skin ramps of variants.json, copied as they are) and the one it shows (fixed, 1-based; absent = the original). Reaches production only with approved: true from the operator, each sheet's mask fingerprint checked at load; a fighter without `fixed` keeps its original. Aldric has no visible skin (closed helm, gauntlets): no mask.",
+ "approved": true,
+ "approval": {
+  "by": "operator (git user wonmii)",
+  "date": "2026-11-08",
+  "note": "APPROVED FOR PRODUCTION by the operator on the decision sheet https://claude.ai/artifact/Y9MB3fza2f6mcSBQidZnxB (journal Passe GS1, choices clicked on 2026-11-08 between 02:12 and 02:13 UTC, no note): Kell « Foncée (dark) » (GS-kell), Ambrose « Foncée (dark) » (GS-ambrose), Piers « Hâlée (tan) » (GS-piers) with GS-RET « Retouche à part, Piers ensuite » (his variant waits for a retouch of his hands, its own short sheet: not applied, no fixed), Corra « Garder l’original » (GS-corra), Lucan « Garder l’original » (GS-lucan), Aldric « Rien à changer » (GS-AL), GS-PROD « En production ». The operator's request, word for word: « J'aimerai avoir de la diversite de couleur des personnages generiques generes en utilisant aseprite pour faire ces corrections ( exactement comme nous avons fait avec les pnjs ) car les personnages combattants ont tous la meme couleur de peau ». The sheets and their exports unchanged; the masks are those of the recorded fingerprints. Version 2 only. Not a Gold Master."
+ },
  "ramps": {
   "skin": {
    "light": [
@@ -62,12 +66,7 @@
      }
     }
    },
-   "variants": [
-    "light",
-    "medium",
-    "tan",
-    "dark"
-   ]
+   "variants": []
   },
   "corra": {
    "sheets": {
@@ -162,12 +161,7 @@
      }
     }
    },
-   "variants": [
-    "light",
-    "medium",
-    "tan",
-    "dark"
-   ]
+   "variants": []
   },
   "ambrose": {
    "sheets": {
@@ -196,7 +190,8 @@
        "f4b35a"
       ],
       "foreignShare": 0.2
-     }
+     },
+     "fingerprint": "51e39815"
     },
     "ambrose-x3-combat": {
      "mask": {
@@ -231,15 +226,14 @@
        "f4b35a"
       ],
       "foreignShare": 0.2
-     }
+     },
+     "fingerprint": "0b356b6e"
     }
    },
    "variants": [
-    "light",
-    "medium",
-    "tan",
     "dark"
-   ]
+   ],
+   "fixed": 1
   },
   "lucan": {
    "sheets": {
@@ -340,12 +334,7 @@
      }
     }
    },
-   "variants": [
-    "light",
-    "medium",
-    "tan",
-    "dark"
-   ]
+   "variants": []
   },
   "piers": {
    "sheets": {
@@ -425,11 +414,9 @@
     }
    },
    "variants": [
-    "light",
-    "medium",
-    "tan",
-    "dark"
-   ]
+    "tan"
+   ],
+   "pending": "GS-piers « Hâlée (tan) », applied after the retouch of his hands (GS-RET « Retouche à part, Piers ensuite »)"
   },
   "kell": {
    "sheets": {
@@ -452,7 +439,8 @@
       ],
       "minPart": 12,
       "feet": 8
-     }
+     },
+     "fingerprint": "b9f287d0"
     },
     "kell-x3-combat": {
      "mask": {
@@ -499,15 +487,14 @@
         ]
        ]
       }
-     }
+     },
+     "fingerprint": "299b3625"
     }
    },
    "variants": [
-    "light",
-    "medium",
-    "tan",
     "dark"
-   ]
+   ],
+   "fixed": 1
   }
  }
 }

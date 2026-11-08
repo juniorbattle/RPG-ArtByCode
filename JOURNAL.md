@@ -414,6 +414,31 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Une palette partagée entre la peau et les tissus clairs se départage par le groupe (ce qui le borde, sa taille rapportée au plus grand, une couleur d'ancrage), pas par la couleur ; chaque règle se vérifie sur les images qu'elle fait tomber : `near` rejetait un visage aux cheveux dans l'ombre, `foreign` un visage contre un col.
 - Trois critiques à froid successives ne disent pas la même chose : la première voit les erreurs de matière, la deuxième les oublis entiers, la troisième ce qui reste à l'échelle du jeu. Chaque constat se vérifie sur les pixels avant d'être corrigé (le visage de Lucan à `heavy.1`, dit caché en GA3, a été redessiné visible).
 
+## Passe GS2 — La fiche des peaux relue : Kell et Ambrose en peau foncée en production derrière la version 2, Piers après sa retouche (2026-11-08, en cours)
+
+### Les choix de l'opérateur, mot pour mot (huit sur huit, cliqués le 2026-11-08 entre 02 h 12 et 02 h 13 UTC, aucune note ; l'opérateur : « Fiche remplie »)
+| Carte | Choix |
+|---|---|
+| GS-kell | « Foncée (dark) » |
+| GS-ambrose | « Foncée (dark) » |
+| GS-piers | « Hâlée (tan) » |
+| GS-corra | « Garder l’original » |
+| GS-lucan | « Garder l’original » |
+| GS-AL | « Rien à changer » |
+| GS-RET | « Retouche à part, Piers ensuite » |
+| GS-PROD | « En production » |
+
+- Sept choix suivent la recommandation ; GS-corra non (recommandé : « Moyenne (medium) »).
+
+### Fait — [OK]
+- `art-lab/characters/variants/fighters.json` approuvé (les choix cités, la demande de l'opérateur mot pour mot) : Kell et Ambrose `variants: ["dark"]`, `fixed: 1`, empreintes des masques (Kell `b9f287d0` ville, `299b3625` combat ; Ambrose `51e39815`, `0b356b6e`) ; Piers `variants: ["tan"]` sans `fixed`, `pending` (GS-RET) ; Corra, Lucan, Aldric sans variante. Notes ajoutées aux six manifestes de Kell, Ambrose et Piers (aucun paquet de provenance ne hache un manifeste).
+- `tests/fighter-skins.test.mjs` : 10 tests (les choix de l'opérateur épinglés) ; quinze fautes injectées sur le fichier approuvé, quinze attrapées. `npm run typecheck`, `npm run art:validate` (0 erreur).
+- Preuves (DEV, sans paramètre, contre `main` figé `bc37056`) : le duel v2 contre Kell et Ambrose change (eux et leur visage du HUD seulement, le soir et à midi) ; contre Aldric, Corra, Lucan et Piers, 0 px (calme, K.O., midi). Le portrait du dialogue de Kell suit la peau foncée.
+
+### Reste avant la fusion
+- Les preuves de la Passe GA4 sous la peau approuvée : `challenge-flow` gagné et perdu contre Kell et Ambrose (mêmes empreintes de jeu attendues), le jeu par défaut à 0 px en DEV et sur les deux paquets de production, `npm test` et `npm run build` complets ; `AGENTS.md` (« Art production principle » : les variantes de peau des génériques) ; puis la fusion dans `main` et `arena-day` relancé dans le dossier principal.
+- La retouche des mains de Piers (GS-RET), une tâche à part avec sa fiche courte.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

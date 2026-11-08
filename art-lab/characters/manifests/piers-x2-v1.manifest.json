@@ -29,7 +29,7 @@
   ],
   "approved": true,
   "runtimeUse": "production",
-  "notes": "APPROVED FOR PRODUCTION by the operator on the lot sheet of the three more generic fighters (journal Passe GA3, https://claude.ai/artifact/AnVwmX5TVwWNzM9ddzyoAT): « Production » (GA3-PI1), and GA3-S1 « Les six ensemble »; version 2 only, today's game unchanged. Loaded by a version 2 game's portraits (src/characters/PlazaCast.ts). Piers Calloway, a generic fighter of the version 2, standing only (12 frames): his face in a version 2 game's portraits.",
+  "notes": "APPROVED FOR PRODUCTION by the operator on the lot sheet of the three more generic fighters (journal Passe GA3, https://claude.ai/artifact/AnVwmX5TVwWNzM9ddzyoAT): « Production » (GA3-PI1), and GA3-S1 « Les six ensemble »; version 2 only, today's game unchanged. Loaded by a version 2 game's portraits (src/characters/PlazaCast.ts). Piers Calloway, a generic fighter of the version 2, standing only (12 frames): his face in a version 2 game's portraits. Skin variant (journal Passe GS1): « Hâlée (tan) » (GS-piers) chosen on the operator's decision sheet https://claude.ai/artifact/Y9MB3fza2f6mcSBQidZnxB (2026-11-08), with GS-RET « Retouche à part, Piers ensuite »: not applied until the retouch of his hands and its short sheet; this export unchanged.",
   "approval": {
     "by": "operator (git user wonmii)",
     "date": "2026-11-07",

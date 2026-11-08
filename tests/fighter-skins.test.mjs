@@ -101,7 +101,7 @@ async function sheet(id) {
 }
 
 test('the gate: an unapproved file shows nothing; a candidate shows; an approved file needs its fingerprints, then its fixed variant', async () => {
-  const s = await sheet('kell-x3-combat'), base = file.fighters.kell;
+  const s = await sheet('kell-x3-combat'), base = { ...file.fighters.kell, variants: ['light', 'medium', 'tan', 'dark'] };
   const unapproved = { ...file, approved: false, approval: null, fighters: { kell: { ...base, fixed: 4 } } };
   assert.equal(F.sheetTone(unapproved, 'kell', 'kell-x3-combat', s.frames, s.fw, s.fh), null, 'unapproved: nothing');
   const cand = F.sheetTone(unapproved, 'kell', 'kell-x3-combat', s.frames, s.fw, s.fh, 'candidate', 2);
@@ -205,4 +205,13 @@ test('masks: a painted rectangle takes every colour but an outline, on its own f
   assert.equal(at(m, 12, 12), 0, 'outline never');
   assert.equal(at(m, 32, 32), 0, 'outside the rectangle');
   assert.equal(at(F.frameSkin({ ...f, name: 'hit.1' }, W, H, s), 15, 15), 0, 'another frame');
+});
+
+test('the operator choices (journal Passe GS1): Kell and Ambrose dark in production; Piers tan waits for his retouch; Corra, Lucan and Aldric their original', () => {
+  assert.equal(file.approved, true);
+  assert.match(file.approval.note, /GS-PROD « En production »/);
+  const shown = Object.fromEntries(Object.entries(file.fighters).map(([w, f]) => [w, f.fixed ? f.variants[f.fixed - 1] : null]));
+  assert.deepEqual(shown, { aldric: null, corra: null, ambrose: 'dark', lucan: null, piers: null, kell: 'dark' });
+  assert.deepEqual(file.fighters.piers.variants, ['tan']);
+  assert.match(file.fighters.piers.pending, /GS-RET/);
 });

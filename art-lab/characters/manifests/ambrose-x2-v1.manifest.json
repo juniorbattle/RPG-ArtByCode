@@ -29,7 +29,7 @@
   ],
   "approved": true,
   "runtimeUse": "production",
-  "notes": "APPROVED FOR PRODUCTION by the operator on the generic fighters' lot sheet (journal Passe GA2, https://claude.ai/artifact/3pJeAdQR47NMaYcpecztgu): « Production » (GA-AM1), and GA-S1 « Les six ensemble »; version 2 only, today's game unchanged. Loaded by a version 2 game's portraits (src/characters/PlazaCast.ts). Brother Ambrose, a generic fighter of the version 2 (lot L2b), standing only (12 frames): his or her face in a version 2 game's portraits.",
+  "notes": "APPROVED FOR PRODUCTION by the operator on the generic fighters' lot sheet (journal Passe GA2, https://claude.ai/artifact/3pJeAdQR47NMaYcpecztgu): « Production » (GA-AM1), and GA-S1 « Les six ensemble »; version 2 only, today's game unchanged. Loaded by a version 2 game's portraits (src/characters/PlazaCast.ts). Brother Ambrose, a generic fighter of the version 2 (lot L2b), standing only (12 frames): his or her face in a version 2 game's portraits. Skin variant (journal Passe GS1): « Foncée (dark) » (GS-ambrose) and GS-PROD « En production » on the operator's decision sheet https://claude.ai/artifact/Y9MB3fza2f6mcSBQidZnxB (2026-11-08): applied at load through art-lab/characters/variants/fighters.json (approved, this sheet's skin mask fingerprint checked), the NPCs' skin ramp « dark »; this export unchanged.",
   "approval": {
     "by": "operator (git user wonmii)",
     "date": "2026-11-07",
