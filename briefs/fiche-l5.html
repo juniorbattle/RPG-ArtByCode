@@ -1,0 +1,415 @@
+<title>La ville qui réagit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+.state { display: flex; flex-direction: column; gap: 12px; }
+.state h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.state p { margin: 0; max-width: 68ch; }
+.chip { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border-radius: 4px; padding: 1px 7px; white-space: nowrap; }
+.chip.ok { color: var(--rec); background: var(--rec-soft); }
+.chip.thin { color: var(--brass); background: var(--brass-soft); }
+.chip.no { color: var(--cendre); background: color-mix(in srgb, var(--cendre) 14%, var(--surface)); }
+.chip.gap { color: var(--muted); background: color-mix(in srgb, var(--muted) 14%, var(--surface)); }
+.tbl.cov td:nth-child(2), .tbl.cov th { text-align: left; }
+.tbl.cov td:last-child { text-align: left; white-space: normal; color: var(--muted); font-size: 13px; min-width: 16ch; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.fig { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fig b { font-family: var(--font-body); font-weight: 700; font-size: 26px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.fig span { font-size: 13px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · version 2 · étape 5 · lot L5 · Passe EVL9 · 8 novembre 2026</span>
+    <h1>La ville qui réagit : le lot L5 construit</h1>
+    <p class="lede">Ton choix EV-12 « Les places lisent le pouls, la célébrité compte » est construit, derrière la version 2, sur la branche <code>claude/l5-ville</code>, avec les sprites et les décors déjà approuvés : rien de neuf. Le garde se poste à l’étal le jour d’un vol, les passants saluent selon ta célébrité, les rivaux montrent ce qu’ils pensent de toi, la foule des places suit le pouls. Les fanions et les volets fermés ne sont pas construits : la carte L5-3 dit pourquoi. Le jeu par défaut ne change pas. Rien n’est fusionné : chaque carte attend ton choix.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="state" aria-labelledby="h-state">
+    <h2 id="h-state">Ce qui est construit, et ce que ça change</h2>
+    <p>Tout ce lot se lit dans l’état du jeu, il ne le change presque pas : la ville montre ce qui s’est passé. Une seule règle neuve touche une action : on ne vole pas à l’étal que garde Wynn. Les joueurs du laboratoire jouent donc exactement comme avant, au JSON près. La structure du tournoi ne bouge pas.</p>
+    <div class="figs">
+      <div class="fig"><b>1</b><span>garde posté à l’étal d’un vol connu : Wynn, l’homme du sergent Hale, sur le quai ou sur une place</span></div>
+      <div class="fig"><b>4</b><span>paliers de célébrité : inconnu, remarqué, connu, célébré ; les marques de Hale passent avant</span></div>
+      <div class="fig"><b>21 / 21</b><span>séries du laboratoire identiques au JSON près contre <code>main</code> (règles classiques, dynamiques et v2 ; idle, diligent, curieux ; graines 1 à 150)</span></div>
+      <div class="fig"><b>0 px</b><span>d’écart dans le jeu par défaut contre <code>main</code> figé : dix-huit vues en DEV et sur les paquets</span></div>
+    </div>
+    <div class="tbl cov">
+      <table>
+        <thead><tr><th scope="col">Ta carte EV-12</th><th scope="col">Construit</th><th scope="col">Où</th></tr></thead>
+        <tbody>
+          <tr><td>« un garde se poste à l’étal le jour d’un vol »</td><td><span class="chip ok">fait</span></td><td>Wynn à l’étal de Mara, Hilde, Corvin ou Pip ; le vol y est refusé, la raison dite</td></tr>
+          <tr><td>« La célébrité change […] qui salue le héros »</td><td><span class="chip ok">fait</span></td><td>les passants s’arrêtent, se tournent vers toi, une phrase au-dessus d’eux ; les rivaux font un geste selon leur attitude</td></tr>
+          <tr><td>« La célébrité change ce que disent les passants »</td><td><span class="chip ok">fait</span></td><td>les passants à qui parler sur chaque place, leur première phrase selon ta célébrité ou le registre de Hale</td></tr>
+          <tr><td>« Les places lisent le pouls comme le quai (la foule… »</td><td><span class="chip ok">fait</span></td><td>la foule des places selon l’excitation, et rassemblée par la clameur, le marché de nuit, la parade</td></tr>
+          <tr><td>« … les fanions, une boutique aux volets fermés) »</td><td><span class="chip">pas construit</span></td><td>décor cuit des places, pas de volets parmi les décors approuvés : carte L5-3</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot">Journal : Passe EVL9. Tests : 498 sur 498, dont douze neufs (<code>tests/v2-react.test.mjs</code>) ; fautes injectées une à une : voir le journal. Preuves : trois parties jouées dans le navigateur (<code>tools/town-flow.mjs</code> : Wynn chez Hilde, Wynn chez Mara, les saluts), chacune rejouée en Node à la même empreinte ; <code>play-day</code> et <code>play-flow</code> ; <code>ui-text</code> sur les pages touchées.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot au journal et dans <code>briefs/audit-gameplay-ev1.md</code>, j’applique ce qu’ils changent, je refais les preuves touchées, puis je fusionne selon L5-14. Tout texte reste « proposé » : une phrase qui ne te va pas se note sur sa carte.</p>
+    <p class="src">Sources : journal Passes EV1, EV2, EVL7, EVL8, EVL9 ; <code>briefs/audit-gameplay-ev1.md</code> §§ 2, 4 ; <code>briefs/fiche-ev1.html</code> (EV-12) ; <code>src/simulation/v2watch.ts</code>, <code>v2react.ts</code>, <code>src/ui/hails.ts</code>, <code>playPlaza.ts</code>, <code>playTown.ts</code>, <code>src/narrative/dialogue.ts</code>, <code>src/tournament/v2calendar.ts</code> ; <code>tests/v2-react.test.mjs</code> ; <code>tools/town-flow.mjs</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Une entrée par décision. fam : une variable de couleur. shots : captures publiées via `files`.
+// Apostrophes : l’apostrophe typographique ’ seulement dans les chaînes entre ' '.
+const GROUPS = [
+  { id: 'ville', title: 'Le garde, la foule, le décor', sub: 'Ta carte EV-12 : « un garde se poste à l’étal le jour d’un vol » ; « Les places lisent le pouls comme le quai (la foule, les fanions, une boutique aux volets fermés) ».', fam: 'var(--cendre)', items: [
+    { id: 'L5-1', tag: 'garde', title: 'Wynn se poste à l’étal volé, et on n’y vole plus',
+      ctx: 'Quand un vol à un étal est connu, Wynn, l’homme du sergent Hale (le second garde du quai), quitte la barrière et se tient près du marchand : pris sur le fait, le jour même et le lendemain ; un étal forcé la nuit, les deux jours suivants ; découvert à l’aube, ce jour-là. Une restitution chez Hale le renvoie. Il se tient chez Mara sur le quai, ou sur une place (Hilde au parvis, Corvin au terrain d’entraînement, Pip sur la place de la halle) ; il n’est plus au quai pendant ce temps. Tant qu’il est là, le vol à cet étal est refusé, la raison dite dans la liste (Q) : « Wynn of the watch stands by Hilde’s stall today, after the theft: not a chance. » On peut lui parler ; Hale dit où est son homme. La poche d’un passant n’a pas d’étal : pas de garde.',
+      shots: [['img/01-wynn-hilde.png', 'Le parvis, l’après-midi d’un vol pris chez Hilde : Wynn près de son étal'], ['img/02-wynn-mara.png', 'Le quai : Wynn au comptoir de Mara, et un passant qui chuchote'], ['img/03-vol-refuse.png', 'Le lendemain, la liste (Q) : le vol refusé, la raison dite']],
+      rec: 'Garder : le garde se voit, et il a un effet simple qui se lit là où l’on vole.',
+      opts: ['Garder', 'Le garde seul, sans refuser le vol', 'Le sergent Hale lui-même plutôt que Wynn'], recIdx: 0,
+      src: 'src/simulation/v2watch.ts ; v2town.ts (stallOpen) ; src/ui/playTown.ts, playPlaza.ts ; src/world/Plazas.ts (PLAZA_SPOTS : wynn)' },
+    { id: 'L5-2', tag: 'foule', title: 'La foule des places suit le pouls, et se rassemble où la ville vit',
+      ctx: 'Avant, la foule des trois places ne suivait que l’heure (le matin 5, midi 12, la fin de journée 8, la nuit 4). Elle suit désormais l’excitation du tournoi comme celle du quai : un passant de plus tous les 12 points au-dessus de 60, un de moins en dessous (le jour 1 un de moins, les derniers jours trois de plus). Et elle se rassemble où sont les ambiances que L4 a sorties des nouvelles : le parvis un après-midi de combats (la clameur du Colisée, +3), la place de la halle le soir du marché de nuit (+3) et le soir de la parade, au jour 9 (+4). Entre 2 et 15 passants.',
+      shots: [['img/04-foule-main.png', 'Avant (main) : la place de la halle, l’après-midi du jour 3, douze passants'], ['img/05-foule-branche.png', 'Maintenant : la même, quatorze passants (l’excitation à 84)']],
+      rec: 'Garder : la ville se remplit à mesure que le tournoi monte, sans décor neuf.',
+      opts: ['Garder', 'L’excitation seule, sans les rassemblements', 'La foule selon l’heure seule, comme avant'], recIdx: 0,
+      src: 'src/simulation/v2react.ts (plazaCrowd, gatheringOf) ; src/simulation/look.ts (townQuery : la foule du quai)' },
+    { id: 'L5-3', tag: 'décor', title: 'Les fanions et les volets fermés : pas construits',
+      ctx: 'Les fanions des places (les guirlandes du pavois, J6) et leurs étals font partie de leur décor cuit : leur géométrie entre dans la cuisson de visibilité de chaque place. Les faire suivre la fête demanderait un décor par palier, une cuisson neuve à chaque palier et sa preuve de visibilité à 0 px contre vis=0 (le travail des Passes VP), sans rien de neuf à dessiner. Les volets fermés n’existent pas parmi les décors approuvés : il faudrait les dessiner, donc une fiche de décor (« rien de neuf sans fiche »). Aujourd’hui, une boutique fermée se dit par son marchand, et le garde posté fait lire le vol.',
+      rec: 'Les fanions selon la fête dans une tâche à part, après ton essai ; pas de volets sans un décor approuvé sur fiche.',
+      opts: ['Fanions dans une tâche à part, pas de volets', 'Fanions et volets dessinés, sur une fiche de décor', 'Laisser ainsi'], recIdx: 0,
+      src: 'src/world/Plazas.ts (garland, marketStall) ; src/world/PlazaVisibility.ts ; AGENTS.md (direction artistique, J6)' },
+  ]},
+  { id: 'gloire', title: 'La célébrité', sub: 'Ta carte EV-12 : « La célébrité change ce que disent les passants et qui salue le héros ». La célébrité est le pouls playerFame, que rien ne lisait.', fam: 'var(--voile)', items: [
+    { id: 'L5-4', tag: 'saluts', title: 'Qui salue le héros : quatre paliers',
+      ctx: 'Quand tu passes à moins de 2,4 m d’un passant, une fois par page, il réagit selon ta célébrité : inconnu (moins de 25), personne ; remarqué (25), un passant sur quatre ; connu (55), un sur deux ; célébré (80), tous. Celui qui salue s’arrête, se tourne vers toi, et sa phrase flotte au-dessus de lui trois secondes, sur le voile de l’interface (deux à la fois au plus). Le tableau dit le palier du joueur diligent au matin de chaque jour, sur 50 parties : remarqué dès sa première victoire, célébré dans un tiers des parties au jour 7, dans les trois quarts au jour 10.',
+      shots: [['img/06-salut.png', 'Le jour 7, célébré : deux passants voisins, deux phrases différentes']], one: true,
+      table: { head: ['Palier du diligent, au matin', 'inconnu', 'remarqué', 'connu', 'célébré'], rows: [['jours 1 et 2', '100 %', '—', '—', '—'], ['jours 3 et 4', '12 %', '88 %', '—', '—'], ['jour 5', '10 %', '54 %', '36 %', '—'], ['jour 6', '—', '18 %', '82 %', '—'], ['jours 7 et 8', '—', '6 %', '60 %', '34 %'], ['jour 9', '—', '2 %', '34 %', '64 %'], ['jour 10', '—', '2 %', '26 %', '72 %']] },
+      rec: 'Garder : la ville te reconnaît à mesure que tu gagnes, et le héros célébré l’entend partout.',
+      opts: ['Garder', 'Moins souvent : un passant sur deux au plus', 'Des paliers plus hauts (35, 65, 90)'], recIdx: 0,
+      src: 'src/simulation/v2react.ts (FAME, GREET_EVERY, hailOf) ; src/ui/hails.ts ; laboratoire, graines 1 à 50' },
+    { id: 'L5-5', tag: 'paroles', title: 'Ce qu’ils disent : la nouvelle du jour d’abord',
+      ctx: 'La phrase suit le jour : la couronne (« Hail the champion! ») ; un combat aujourd’hui (« Good luck on the sand today! », et « Half the Cité has a coin on you today! » quand la pression du public, l’autre pouls que rien ne lisait, atteint 60) ; un combat gagné ou perdu hier ou aujourd’hui, l’adversaire nommé ; la finale à venir (« Bring the crown home »), un combat demain ; sinon la phrase du palier. Deux passants qui saluent l’un après l’autre ne disent jamais la même chose. Les passants à qui l’on parle (carte L5-8) ouvrent par une phrase du même palier. Les phrases sont courtes et « proposées ».',
+      rec: 'Garder : chaque salut dit quelque chose de vrai sur ta journée.',
+      opts: ['Garder', 'La phrase du palier seulement, sans la nouvelle du jour', 'Les gestes sans phrase au-dessus des têtes'], recIdx: 0,
+      src: 'src/simulation/v2react.ts (hailOf) ; src/narrative/text/en.ts (v2.hail.*) ; src/tournament/pulse.ts (publicPressure)' },
+    { id: 'L5-6', tag: 'marques', title: 'Le registre de Hale passe avant la célébrité',
+      ctx: 'Un nom dans le registre (une marque ou deux) : un passant sur trois chuchote (« That is the one in Hale’s ledger. »), les autres passent, personne ne salue ; recherché (trois marques) : tous s’écartent et se détournent, un sur trois dit pourquoi. Une restitution chez Hale efface les marques, et les saluts reviennent. Mesuré : le joueur curieux du laboratoire, qui vole tant que le registre est propre et ne règle chez Hale qu’à trois marques, porte une marque dès le jour 2 dans les 50 parties : ses passants chuchotent toute la partie. Wynn est posté 2,5 jours par partie chez lui, jamais chez le diligent.',
+      shots: [['img/09-recherche.png', 'Recherché, la nuit sur le quai : les passants s’écartent']], one: true,
+      rec: 'Garder : le vol se paie aussi en regards, et la sortie chez Hale est toujours ouverte.',
+      opts: ['Garder', 'Seulement à trois marques', 'Sans effet sur les saluts'], recIdx: 0,
+      src: 'src/simulation/v2react.ts (WARY_EVERY) ; src/simulation/v2law.ts (marques, restitution)' },
+    { id: 'L5-7', tag: 'rivaux', title: 'Les rivaux sur les places montrent leur attitude',
+      ctx: 'Un rival debout sur une place (Orla, Vessa, Marek, Ilse le jour ; Cassius le soir) réagit quand tu passes à moins de 3,2 m, selon son attitude de L4 : un ami lève la main (« Orla Brask raises a hand to you. »), un rival battu qui te respecte fait un signe de tête, un rancunier se détourne. Sans attitude, rien.',
+      shots: [['img/07-orla.png', 'Le jour 7 : Orla, amie, se tourne vers toi et lève la main']], one: true,
+      rec: 'Garder : la mémoire des rivaux se voit, pas seulement sur la page du tournoi.',
+      opts: ['Garder', 'Sans le dos tourné : l’amitié et le respect seuls'], recIdx: 0,
+      src: 'src/simulation/v2react.ts (gestureOf) ; src/simulation/v2rivals.ts (stanceOf)' },
+    { id: 'L5-8', tag: 'passants', title: 'On parle aux passants sur chaque place',
+      ctx: 'Avant, « Townsfolk » ne se trouvait que sur le quai. Dans une partie de la version 2, tout passant de la foule est à qui parler, sur les trois places comme sur le quai, à toute heure (E à côté de lui, ou la liste Q). Leurs répliques sont celles du quai, ouvertes par la phrase de ta célébrité ou du registre (« I have nothing worth taking, friend. Sergeant Hale has your name, they say. »).',
+      shots: [['img/08-passant.png', 'Un passant du terrain d’entraînement, le jour 7']], one: true,
+      rec: 'Garder : ce que dit la ville s’entend partout où elle marche.',
+      opts: ['Garder', 'Sur le quai seulement, comme avant'], recIdx: 0,
+      src: 'src/simulation/v2watch.ts (placeIn, talkableHere) ; src/narrative/dialogue.ts (folkLine) ; src/world/PlazaApp.ts (nearby)' },
+  ]},
+  { id: 'lecture', title: 'Deux lectures corrigées', sub: 'Relevées hors des lots précédents, laissées à décider (Passes EVL3, EVL5, EVL7) ; corrigées dans la version 2 seulement.', fam: 'var(--ronce)', items: [
+    { id: 'L5-9', tag: 'finale', title: 'Un finaliste ne lit plus « Your bouts are fought » aux jours 7 et 8',
+      ctx: 'La finale n’est tirée qu’après les combats du jour 8 : avant, un vainqueur de demi-finale lisait « Your bouts are fought » sur sa ligne d’état et la page du tournoi, et ne pouvait pas acheter de rumeur sur son prochain adversaire. Il lit désormais « The final: Rhosk, day 10 afternoon » (l’autre finaliste est connu dès le soir du jour 6) et peut demander une rumeur sur lui.',
+      shots: [['img/10-finale.png', 'Le jour 7, la page du tournoi : la finale, son jour et son adversaire']], one: true,
+      rec: 'Garder la correction.',
+      opts: ['Garder la correction', 'La ligne seulement, sans la rumeur avant le jour 9'], recIdx: 0,
+      src: 'src/tournament/v2calendar.ts (pendingFinal) ; src/simulation/v2intel.ts (nextOpponent) ; src/ui/board.ts, townUi.ts' },
+    { id: 'L5-10', tag: 'Hale', title: 'Hale ne dit plus « tonight » le matin',
+      ctx: 'Un jour où la garde est mince, le sergent disait à toute heure « If something happens tonight, I’ll hear of it too late. » Dans la version 2 il dit de jour « after dark », et « tonight » le soir. Le jeu par défaut garde sa phrase (un écart consigné, comme ses autres textes, jusqu’à ce que la version 2 devienne le défaut).',
+      rec: 'Garder : la version 2 seule, le jeu par défaut à l’octet.',
+      opts: ['Garder', 'Retirer la correction'], recIdx: 0,
+      src: 'src/narrative/dialogue.ts (hale) ; src/narrative/text/en.ts (v2.line.hale.thinDay)' },
+  ]},
+  { id: 'suite', title: 'La mesure et la suite', sub: 'Ce que le laboratoire dit, ce qui reste du pouls, ce qui revient à L6, la fusion.', fam: 'var(--brass)', items: [
+    { id: 'L5-11', tag: 'laboratoire', title: 'Le laboratoire identique au JSON près',
+      ctx: 'Contre main figé, 21 séries de 50 parties : les règles classiques et dynamiques (idle, diligent), et la version 2 (idle, diligent, curieux), graines 1 à 50, 51 à 100 et 101 à 150 : toutes identiques au JSON près. Le lot ne change que ce que les pages montrent ; sa seule règle neuve (pas de vol à l’étal gardé) ne touche aucun bot : le curieux ne vole que le registre propre, et Wynn n’est posté qu’après un vol connu, donc une marque.',
+      rec: 'Accepter.',
+      opts: ['Accepter', 'Mesurer aussi un joueur qui vole malgré ses marques'], recIdx: 0,
+      src: 'node tools/tournament-lab.mjs --rules=classic|dynamic|v2 --policy=idle|diligent|curious --seeds=…, contre main figé' },
+    { id: 'L5-12', tag: 'pouls', title: 'Le pouls : ce qui reste sans lecteur',
+      ctx: 'Des trois champs du pouls que l’audit trouvait sans lecteur, deux sont lus désormais : la célébrité (les saluts, les passants) et la pression du public (la phrase des paris un jour de combat). Le troisième, le nombre de concurrents encore en lice, reste sans lecteur : la page du tournoi et les passants (« Four left for the crown ») disent déjà qui reste.',
+      rec: 'Laisser ainsi : rien de plus à montrer qui ne soit déjà dit.',
+      opts: ['Laisser ainsi', 'Un lecteur de plus, à proposer avec L6'], recIdx: 0,
+      src: 'src/tournament/pulse.ts ; briefs/audit-gameplay-ev1.md § 2' },
+    { id: 'L5-13', tag: 'L6', title: 'Ce qui revient à L6 : le récit, les scènes, le festival',
+      ctx: 'Tes cartes EV-13 (compléter les arcs : Rhosk et Tobin ; quatre scènes selon l’état : hors de la coupe, après la demi-finale, Cassius démasqué, l’épilogue) et EV-14 (un festival le jour 9 sur la place de la halle, ses règles sur une fiche à part). Reste aussi L4-6 « Laisser ainsi » : aider un autre rival qu’Orla, avec L6 ou la phase d’équipe. La parade du jour 9 rassemble déjà la foule de la place (L5-2) : le festival peut partir de là.',
+      rec: 'L6 ensuite, dans sa séance, derrière la version 2.',
+      opts: ['L6 ensuite', 'Un essai en jeu de L2 à L5 d’abord'], recIdx: 0,
+      src: 'briefs/fiche-ev1.html (EV-13, EV-14) ; journal Passe EVL8' },
+    { id: 'L5-14', tag: 'suite', title: 'Fusionner, puis ton essai',
+      ctx: 'La branche claude/l5-ville est poussée, non fusionnée. Après tes choix, je les applique, je refais les preuves touchées, puis je fusionne dans main. Ton essai : npm run dev, puis /?play=1&new=1&v2=1 ; en DEV, les états nommés v2-watch-forecourt (Wynn chez Hilde), v2-watch-quay (Wynn chez Mara) et v2-famous-training (le jour 7, célébré, Orla amie) : /?play=1&state=v2-famous-training.',
+      rec: 'Fusionner après la fiche, essayer ensuite, comme pour L2 à L4.',
+      opts: ['Fusionner après la fiche, essayer ensuite', 'Essayer avant de fusionner'], recIdx: 0,
+      src: 'AGENTS.md (règle des branches) ; journal Passe EVL8' },
+  ]},
+];
+
+
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
