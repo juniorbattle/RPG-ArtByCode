@@ -3,6 +3,8 @@
  *  atlas never see them. Each sheet stands for its person on a square (`person-<id>`, PlazaApp); Rhosk and Tobin have no place in town (« Portrait seulement »,
  *  R-ville): their sheets give their faces and enter no square's atlas. */
 import { castEntries, type CastEntry } from './BakedCast';
+import type { BakedFrame } from './BakedSprites';
+import { sheetSkin } from './FighterSkinCast';
 
 const png = import.meta.glob(['../../art-lab/characters/exports/{anwen,brann,cassius,corvin,hilde,ilse,lio,marek,odo,orla,pip,rhosk,tobin,vessa,wren}-x2-v2.png', '../../art-lab/characters/exports/{vendor,wayfarer,noble,errand-boy,girl}-x2-v1.png', '../../art-lab/characters/exports/{aldric,corra,ambrose,lucan,piers,kell}-x2-v1.png'], { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
 const json = import.meta.glob(['../../art-lab/characters/exports/{anwen,brann,cassius,corvin,hilde,ilse,lio,marek,odo,orla,pip,rhosk,tobin,vessa,wren}-x2-v2.json', '../../art-lab/characters/exports/{vendor,wayfarer,noble,errand-boy,girl}-x2-v1.json', '../../art-lab/characters/exports/{aldric,corra,ambrose,lucan,piers,kell}-x2-v1.json'], { eager: true, import: 'default' }) as Record<string, unknown>;
@@ -29,11 +31,19 @@ const generic = (who: string): CastEntry => { const id = `${who}-x2-v1`; return 
 export function plazaCastEntries(): CastEntry[] {
   return [...castEntries(false).filter((e) => !['merchant-x2-v2', 'blacksmith-x2-v1'].includes(e.manifest.id)), ...PLAZA_PEOPLE.filter((w) => !FACE_ONLY.has(w)).map(entry), ...CITIZENS.map(citizen)];
 }
+/** a portrait's source; `face`: the front idle frame as the person shows it (a generic fighter's skin variant, journal Passe GS1), null = the sheet's own */
+export interface FaceSource { id: string; png: string; json: unknown; sha256: string; face?: (frames: readonly BakedFrame[], fw: number, fh: number) => Uint8Array | null }
+/** a generic fighter's front idle frame under its skin variant (FighterSkinCast: an approved variant, or the DEV review's), or null */
+export function fighterFace(sheetId: string, frames: readonly BakedFrame[], fw: number, fh: number): Uint8Array | null {
+  const named = frames.map((f) => ({ name: `${f.dir}/${f.anim}.${f.i}`, rgba: f.rgba })), n = named.findIndex((f) => f.name === 'down/idle.0');
+  const skin = n < 0 ? null : sheetSkin(sheetId, named, fw, fh);
+  return skin ? skin(n, named[n].rgba) : null;
+}
 /** the approved faces, by person (the interface's portraits in a version 2 game) */
-export function plazaFaces(): Record<string, { id: string; png: string; json: unknown; sha256: string }> {
+export function plazaFaces(): Record<string, FaceSource> {
   const face = (e: CastEntry) => { const id = e.manifest.id; return { id, png: e.png, json: e.json, sha256: e.files[`art-lab/characters/exports/${id}.png`] }; };
   // the passers-by (lot L2a, journal Passe EVL2): the faces of the sheets they stand as, a citizen of a square or a townsperson of the quay
   const older = castEntries(false).find((e) => e.manifest.id === 'older-merchant-x2-v1');
   const passers: Array<[string, CastEntry | undefined]> = [['edda', castEntries(false, [citizen('noble')])[0]], ['sela', castEntries(false, [citizen('wayfarer')])[0]], ['fenwick', older]];
-  return Object.fromEntries([...PLAZA_PEOPLE.map((who) => [who, face(castEntries(false, [entry(who)])[0])]), ...GENERIC_FACES.map((who) => [who, face(castEntries(false, [generic(who)])[0])]), ...passers.filter(([, e]) => !!e).map(([who, e]) => [who, face(e!)])]);
+  return Object.fromEntries([...PLAZA_PEOPLE.map((who) => [who, face(castEntries(false, [entry(who)])[0])]), ...GENERIC_FACES.map((who) => { const f = face(castEntries(false, [generic(who)])[0]); return [who, { ...f, face: (frames: readonly BakedFrame[], fw: number, fh: number) => fighterFace(f.id, frames, fw, fh) }]; }), ...passers.filter(([, e]) => !!e).map(([who, e]) => [who, face(e!)])]);
 }

@@ -4,6 +4,7 @@ import type { Anim } from '../characters/SpriteGenerator';
 import { decodePng, sha256 } from '../characters/BakedDecode';
 import { parseAsepriteJson } from '../characters/SheetMeta';
 import { CELL_FOOT, CELL_H, CELL_W, type ArenaSpriteSet } from './FighterArt';
+import type { BakedFrame } from '../characters/BakedSprites';
 
 /** The fighters' baked combat sheets in the arena (journal Passes RC1, RC2, CX1): cells of the arena at x3 (192 x 288 texels, feet on row 270, facing left) in place of the
  *  generated frames, by their keys `<seat>/side/<clip>.<i>/0`: the duel plays them on its moments (sheetFrame). Ren and the rival of the bout share one texture: a page of 2048 holds
@@ -88,7 +89,8 @@ export function paintRim(rgba: Uint8Array, W: number, H: number): number {
 }
 
 /** a sheet to install: its export, its pinned SHA-256 (its provenance pack), who sits where */
-export interface SheetSource { seat: Seat; id: string; png: Uint8Array; json: unknown; sha256: string; runtimeUse: string }
+/** `recolor`: a frame (`<clip>.<i>`) as the fighter shows it, before the painted rim (a generic fighter's skin variant, journal Passe GS1) */
+export interface SheetSource { seat: Seat; id: string; png: Uint8Array; json: unknown; sha256: string; runtimeUse: string; recolor?: (frame: string, rgba: Uint8Array) => Uint8Array }
 /** `push`: how far the cell moved the frame's body behind its axis to hold the blade (texels, the JSON's meta.pushed, build-combat.mjs) */
 interface Cell { seat: Seat; clip: string; i: number; rgba: Uint8Array; push: number }
 
@@ -112,6 +114,7 @@ async function cellsOf(s: SheetSource, rim: boolean): Promise<{ cells: Cell[]; k
       for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) { const al = rgba[(y * cw + x) * 4 + 3]; if (al && al !== 255) bad++; if (al < 128) continue; last = y; if (y < cut) high++; if (!x || !y || x === cw - 1 || y === ch - 1) bad++; }
       if (bad || last !== foot) throw new Error(`${s.id} ${t.name} ${n - t.from}: ${bad} texels off the frame contract, last row ${last} (foot ${foot})`);
       if (high) throw new Error(`${s.id} ${t.name} ${n - t.from}: ${high} texels above row ${cut}, the rows no frame may use`);
+      if (s.recolor) rgba.set(s.recolor(`${clip}.${n - t.from}`, rgba));
       if (rim) rimTexels += paintRim(rgba, cw, ch);
       cells.push({ seat: s.seat, clip, i: n - t.from, rgba, push: pushed[`${clip}.${n - t.from}`] ?? 0 });
     }
@@ -201,7 +204,7 @@ export async function installSheets(set: ArenaSpriteSet, sheets: SheetSource[], 
 /** the faces the HUD shows beside a sheet (L4 « Visage cuit d'abord, bustes plus tard »): each fighter's town sheet, front idle, head and shoulders, 32 x 32 texels */
 export async function bakedFaces(set: ArenaSpriteSet, foe: string): Promise<void> {
   const [{ plazaFaces }, { castSource }, { sheetFrames }, { faceCrop }] = await Promise.all([import('../characters/PlazaCast'), import('../characters/BakedCast'), import('../characters/BakedDecode'), import('../ui/portraits')]);
-  const faces: Array<[Seat, { id: string; png: string; json: unknown; sha256: string } | null]> = [['ren', { id: 'hero-x2-v4', ...castSource('hero-x2-v4')! }], ['marek', plazaFaces()[foe] ?? null]];
+  const faces: Array<[Seat, { id: string; png: string; json: unknown; sha256: string; face?: (frames: readonly BakedFrame[], fw: number, fh: number) => Uint8Array | null } | null]> = [['ren', { id: 'hero-x2-v4', ...castSource('hero-x2-v4')! }], ['marek', plazaFaces()[foe] ?? null]];
   for (const [seat, src] of faces) {
     if (!src) continue;
     const bytes = new Uint8Array(await (await fetch(src.png)).arrayBuffer()), got = await sha256(bytes);
@@ -209,9 +212,11 @@ export async function bakedFaces(set: ArenaSpriteSet, foe: string): Promise<void
     const { k, frames } = sheetFrames(src.id, await decodePng(bytes), src.json), front = frames.find((f) => f.dir === 'down' && f.anim === 'idle' && f.i === 0);
     if (!front) throw new Error(`${src.id}: no front idle frame`);
     const fw = 32 * k, crop = faceCrop(front.rgba, fw, 48 * k), c = document.createElement('canvas');
+    // a generic fighter's skin variant (journal Passe GS1): the HUD's face follows the portraits'
+    const shown = src.face?.(frames, fw, 48 * k) ?? front.rgba;
     c.width = c.height = crop.size;
     const img = new ImageData(crop.size, crop.size);
-    for (let y = 0; y < crop.size; y++) for (let x = 0; x < crop.size; x++) { const s = ((crop.y + y) * fw + crop.x + x) * 4, d = (y * crop.size + x) * 4; for (let j = 0; j < 4; j++) img.data[d + j] = front.rgba[s + j]; }
+    for (let y = 0; y < crop.size; y++) for (let x = 0; x < crop.size; x++) { const s = ((crop.y + y) * fw + crop.x + x) * 4, d = (y * crop.size + x) * 4; for (let j = 0; j < 4; j++) img.data[d + j] = shown[s + j]; }
     c.getContext('2d')!.putImageData(img, 0, 0);
     set.portraits[seat] = c;
   }

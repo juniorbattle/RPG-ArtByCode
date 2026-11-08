@@ -1,5 +1,8 @@
 import type { ArenaSpriteSet } from './FighterArt';
 import { bakedFaces, edgeFor, installSheets, shadeFor, type InstalledSheets, type Seat, type SheetSource } from './CombatSheets';
+import { decodePng } from '../characters/BakedDecode';
+import { namedFrames } from '../characters/FighterSkins';
+import { sheetSkin } from '../characters/FighterSkinCast';
 
 /** The combat sheets in production (journal Passes CX1 to CX4: each approved on the operator's lot sheets, Ren and Marek together as RC2-5 asked): Ren's and the seven rivals', and since
  *  journal Passe GA2 the three generic fighters' (Ser Aldric Venn, Corra Dunmere, Brother Ambrose: « Production », GA-S1 « Les six ensemble »), since journal Passe GA4 three more (Lucan Rook,
@@ -20,7 +23,17 @@ async function source(seat: Seat, id: string): Promise<SheetSource | null> {
   if (!manifest.approved || manifest.runtimeUse !== 'production') throw new Error(`${id}: not approved for production`);
   const want = (await p()).files[`art-lab/characters/exports/${id}.png`];
   if (!want) throw new Error(`${id}: its export is not in its provenance pack`);
-  return { seat, id, png: new Uint8Array(await (await fetch(url)).arrayBuffer()), json: await j(), sha256: want, runtimeUse: manifest.runtimeUse };
+  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer()), meta = await j();
+  return { seat, id, png: bytes, json: meta, sha256: want, runtimeUse: manifest.runtimeUse, ...(await skinOf(id, bytes, meta)) };
+}
+
+/** a generic fighter's skin variant on its combat sheet (journal Passe GS1, FighterSkinCast): the frames recoloured by name before the painted rim; nothing for any other sheet */
+async function skinOf(id: string, bytes: Uint8Array, meta: unknown): Promise<Pick<SheetSource, 'recolor'>> {
+  if (!/-x3-combat$/.test(id) || id.startsWith('hero-')) return {};
+  const { fw, fh, frames } = namedFrames(await decodePng(bytes), meta, true), skin = sheetSkin(id, frames, fw, fh);
+  if (!skin) return {};
+  const at = new Map(frames.map((f, n) => [f.name, n]));
+  return { recolor: (frame, rgba) => { const n = at.get(frame); return n === undefined ? rgba : skin(n, rgba); } };
 }
 
 /** a duel's sheets: Ren's, and the rival's when it has one */

@@ -75,7 +75,7 @@ const baked = new Map<string, string>();
 let loading: Promise<void> | null = null;
 /** paints the baked faces once (the pages wait for it, with the fonts, before they say they are ready); a sheet that fails its check keeps
  *  the generated portrait (said in the console) */
-export function preloadPortraits(extra: Record<string, { id: string; png: string; json: unknown; sha256: string }> = {}): Promise<void> {
+export function preloadPortraits(extra: Record<string, { id: string; png: string; json: unknown; sha256: string; face?: (frames: readonly BakedFrame[], fw: number, fh: number) => Uint8Array | null }> = {}): Promise<void> {
   loading ??= (async () => {
     const sheets = new Map<string, string>();
     for (const [who, s] of Object.entries(extra)) BAKED[who] = s.id;
@@ -89,11 +89,13 @@ export function preloadPortraits(extra: Record<string, { id: string; png: string
         const front = frames.find((f) => f.dir === 'down' && f.anim === 'idle' && f.i === 0);
         if (!front) throw new Error('no front idle frame');
         const fw = 32 * k, fh = 48 * k, crop = faceCrop(front.rgba, fw, fh), c = document.createElement('canvas');
+        // a generic fighter's skin variant (journal Passe GS1): the source's own face, recoloured; null = the sheet's texels
+        const shown = Object.values(extra).find((s) => s.id === id)?.face?.(frames, fw, fh) ?? front.rgba;
         c.width = c.height = crop.size;
         const img = new ImageData(crop.size, crop.size);
         for (let y = 0; y < crop.size; y++) for (let x = 0; x < crop.size; x++) {
           const s = ((crop.y + y) * fw + crop.x + x) * 4, d = (y * crop.size + x) * 4;
-          for (let j = 0; j < 4; j++) img.data[d + j] = front.rgba[s + j];
+          for (let j = 0; j < 4; j++) img.data[d + j] = shown[s + j];
         }
         c.getContext('2d')!.putImageData(img, 0, 0);
         sheets.set(id, c.toDataURL());

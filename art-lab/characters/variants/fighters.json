@@ -1,0 +1,369 @@
+{
+ "$comment": "The generic fighters' skin variants (journal Passe GS1; src/characters/FighterSkins.ts): per fighter, the skin masks of its town sheet (the face) and of its combat sheet, written by palette colours (skin: always; shade: only where skin surrounds them; minPart: the smallest group kept; feet: a group in the bottom rows is a boot), the candidate skins (the NPCs' approved skin ramps of variants.json, copied as they are) and the one it shows (fixed, 1-based; absent = the original). Reaches production only with approved: true from the operator, each sheet's mask fingerprint checked at load. Aldric has no visible skin (closed helm, gauntlets): no mask.",
+ "approved": false,
+ "approval": null,
+ "ramps": {
+  "skin": {
+   "light": [
+    "#9c6656",
+    "#bc826a",
+    "#d89e84",
+    "#ebb89c",
+    "#f6cfb6"
+   ],
+   "medium": [
+    "#84523e",
+    "#a26a50",
+    "#be8466",
+    "#d29c7c",
+    "#e2b294"
+   ],
+   "tan": [
+    "#64392a",
+    "#80503a",
+    "#9c674c",
+    "#b47e60",
+    "#c89474"
+   ],
+   "dark": [
+    "#38211a",
+    "#4e3024",
+    "#664032",
+    "#7e5242",
+    "#966654"
+   ]
+  }
+ },
+ "fighters": {
+  "aldric": {
+   "sheets": {
+    "aldric-x2-v1": {
+     "mask": {
+      "skin": [],
+      "shade": [],
+      "minPart": 6,
+      "feet": 8
+     }
+    },
+    "aldric-x3-combat": {
+     "mask": {
+      "skin": [],
+      "shade": [],
+      "minPart": 14,
+      "feet": 12,
+      "frames": {
+       "ko.1": {
+        "feet": 0
+       },
+       "ko.2": {
+        "feet": 0
+       }
+      }
+     }
+    }
+   },
+   "variants": [
+    "light",
+    "medium",
+    "tan",
+    "dark"
+   ]
+  },
+  "corra": {
+   "sheets": {
+    "corra-x2-v1": {
+     "mask": {
+      "skin": [
+       "f9cc9b",
+       "d58c5b"
+      ],
+      "shade": [],
+      "minPart": 6,
+      "feet": 8
+     }
+    },
+    "corra-x3-combat": {
+     "mask": {
+      "skin": [
+       "f9cc9b",
+       "d58c5b"
+      ],
+      "shade": [],
+      "minPart": 14,
+      "feet": 12,
+      "frames": {
+       "ko.1": {
+        "feet": 0,
+        "minPart": 1
+       },
+       "ko.2": {
+        "feet": 0,
+        "minPart": 1
+       }
+      }
+     }
+    }
+   },
+   "variants": [
+    "light",
+    "medium",
+    "tan",
+    "dark"
+   ]
+  },
+  "ambrose": {
+   "sheets": {
+    "ambrose-x2-v1": {
+     "mask": {
+      "skin": [
+       "fac696",
+       "f3b786",
+       "e19c5e",
+       "e3ab91",
+       "fad2a8"
+      ],
+      "shade": [
+       "c18451",
+       "ad6e4a",
+       "af7d48",
+       "9e6544",
+       "905b3f",
+       "d5925e"
+      ],
+      "minPart": 6,
+      "feet": 8
+     }
+    },
+    "ambrose-x3-combat": {
+     "mask": {
+      "skin": [
+       "fac696",
+       "f3b786",
+       "e19c5e",
+       "e3ab91",
+       "fad2a8"
+      ],
+      "shade": [
+       "c18451",
+       "ad6e4a",
+       "af7d48",
+       "9e6544",
+       "905b3f",
+       "d5925e"
+      ],
+      "minPart": 14,
+      "feet": 12,
+      "frames": {
+       "ko.1": {
+        "feet": 0
+       },
+       "ko.2": {
+        "feet": 0
+       }
+      }
+     }
+    }
+   },
+   "variants": [
+    "light",
+    "medium",
+    "tan",
+    "dark"
+   ]
+  },
+  "lucan": {
+   "sheets": {
+    "lucan-x2-v1": {
+     "mask": {
+      "skin": [
+       "fac89e",
+       "f4c195",
+       "f0af83",
+       "dda17a",
+       "da916a"
+      ],
+      "shade": [
+       "c38562",
+       "b37354",
+       "a4694d",
+       "ac8467",
+       "935944",
+       "7b483a",
+       "795442",
+       "dfb287"
+      ],
+      "minPart": 6,
+      "feet": 8
+     }
+    },
+    "lucan-x3-combat": {
+     "mask": {
+      "skin": [
+       "fac89e",
+       "f4c195",
+       "f0af83",
+       "dda17a",
+       "da916a"
+      ],
+      "shade": [
+       "c38562",
+       "b37354",
+       "a4694d",
+       "ac8467",
+       "935944",
+       "7b483a",
+       "795442",
+       "dfb287"
+      ],
+      "minPart": 14,
+      "feet": 12,
+      "frames": {
+       "ko.1": {
+        "feet": 0
+       },
+       "ko.2": {
+        "feet": 0
+       }
+      }
+     }
+    }
+   },
+   "variants": [
+    "light",
+    "medium",
+    "tan",
+    "dark"
+   ]
+  },
+  "piers": {
+   "sheets": {
+    "piers-x2-v1": {
+     "mask": {
+      "skin": [
+       "f4c89b"
+      ],
+      "shade": [
+       "c98b5e",
+       "b88557",
+       "9f6241",
+       "e5b26e",
+       "d8a466",
+       "c9965a",
+       "a9774c"
+      ],
+      "minPart": 6,
+      "feet": 8
+     }
+    },
+    "piers-x3-combat": {
+     "mask": {
+      "skin": [
+       "f4c89b"
+      ],
+      "shade": [
+       "c98b5e",
+       "b88557",
+       "9f6241",
+       "e5b26e",
+       "d8a466",
+       "c9965a",
+       "a9774c"
+      ],
+      "minPart": 14,
+      "feet": 12,
+      "frames": {
+       "ko.1": {
+        "feet": 0
+       },
+       "ko.2": {
+        "feet": 0
+       }
+      },
+      "force": {
+       "ko.2": [
+        [
+         37,
+         249,
+         57,
+         258
+        ],
+        [
+         20,
+         261,
+         33,
+         268
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "variants": [
+    "light",
+    "medium",
+    "tan",
+    "dark"
+   ]
+  },
+  "kell": {
+   "sheets": {
+    "kell-x2-v1": {
+     "mask": {
+      "skin": [
+       "f4bd8f",
+       "f2b787",
+       "eaaa7c",
+       "e09d71",
+       "d89369",
+       "d18960",
+       "c77f57",
+       "bc774f",
+       "af6b45"
+      ],
+      "shade": [
+       "a36745",
+       "9b5c40"
+      ],
+      "minPart": 12,
+      "feet": 8
+     }
+    },
+    "kell-x3-combat": {
+     "mask": {
+      "skin": [
+       "f4bd8f",
+       "f2b787",
+       "eaaa7c",
+       "e09d71",
+       "d89369",
+       "d18960",
+       "c77f57",
+       "bc774f",
+       "af6b45"
+      ],
+      "shade": [
+       "a36745",
+       "9b5c40"
+      ],
+      "minPart": 20,
+      "feet": 12,
+      "frames": {
+       "ko.1": {
+        "feet": 0
+       },
+       "ko.2": {
+        "feet": 0
+       }
+      }
+     }
+    }
+   },
+   "variants": [
+    "light",
+    "medium",
+    "tan",
+    "dark"
+   ]
+  }
+ }
+}
