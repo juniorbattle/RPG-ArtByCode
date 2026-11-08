@@ -391,8 +391,32 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - https://claude.ai/artifact/LYTp6hCZ643k6u8LN17rf3 (`briefs/fiche-rivaux-peaux.html`, tirée de la fiche des génériques, sa logique gardée) : une carte par rival (la planche des peaux, le duel le soir et à midi avec le visage du HUD, les réserves dites), la carte RS-PROD (les places sans et avec les peaux recommandées) ; pas de carte pour Ren. Recommandation : Marek et Orla « Foncée (dark) », Ilse et Rhosk « Hâlée (tan) », Cassius et Tobin « Moyenne (medium) » (dite à peine visible en jeu), Vessa « Garder l’original ». La collection `decisions` relue vide après publication ; la page vérifiée sur le serveur DEV (huit cartes, 37 options, aucune erreur).
 - Les documents de revue Aseprite (quatorze, `art-lab/characters/scratch/rival-skins/` du dossier principal, ignoré) refaits sur les masques finaux, chacun relu par Aseprite (calque original identique à l'export).
 
+### Suite
+- La fiche relue en Passe RS2.
+
+## Passe RS2 — La fiche des peaux des rivaux relue : Marek foncé, Orla et Rhosk en moyenne, Cassius hâlé en production derrière la version 2 ; Vessa, Ilse et Tobin leur original (2026-11-08)
+
+### Les choix de l'opérateur, mot pour mot
+- Fiche https://claude.ai/artifact/LYTp6hCZ643k6u8LN17rf3 (`briefs/fiche-rivaux-peaux.html`), remplie le 2026-11-08 entre 21:11 et 21:13 UTC, huit sur huit, aucune note ; l'opérateur l'a dit dans la conversation (« Sheet filled »). Collection `decisions` relue :
+  - RS-marek « Foncée (dark) » (la recommandation) ;
+  - RS-vessa « Garder l’original » (la recommandation) ;
+  - RS-orla « Moyenne (medium) » (recommandé : foncée) ;
+  - RS-cassius « Hâlée (tan) » (recommandé : moyenne) ;
+  - RS-ilse « Garder l’original » (recommandé : hâlée) ;
+  - RS-rhosk « Moyenne (medium) » (recommandé : hâlée) ;
+  - RS-tobin « Garder l’original » (recommandé : moyenne) ;
+  - RS-PROD « En production » (la recommandation).
+- Trois sur huit à la recommandation. La distribution des rivaux : une foncée (Marek), une hâlée (Cassius), deux moyennes (Orla, Rhosk), trois claires d'origine (Vessa, Ilse, Tobin). Avec les génériques (Kell et Ambrose foncés, Piers hâlé après sa retouche, Corra et Lucan clairs) et Ren (hâlé).
+
+### Le fichier approuvé — [OK]
+- `art-lab/characters/variants/rivals.json` : `approved: true`, `approval` (l'opérateur, la date, la fiche et chaque choix cités, sa demande mot pour mot) ; pour chacun, la seule variante retenue (`variants` d'un élément, `fixed: 1`) et l'empreinte des masques de ses deux feuilles, calculée sur les masques relus : Marek `ed76161f` / `e8fe7be0`, Orla `e94f4f1c` / `84b4434f`, Cassius `72646e95` / `f2af66ad`, Rhosk `99e0571d` / `56655640`. Vessa, Ilse et Tobin : aucune variante, leurs masques gardés sans empreinte (rien d'appliqué, rien à vérifier), comme Corra et Lucan chez les génériques. Les feuilles et leurs exports inchangés.
+
+### Tests et fautes injectées — [OK]
+- `tests/rival-skins.test.mjs` : le choix de l'opérateur épinglé (chaque choix cité dans l'approbation, la peau montrée par chacun, une empreinte exactement quand une variante s'applique) ; le portrait sous sa peau pour les quatre, son texel d'origine pour les trois autres ; la place telle que la page la charge (`loadProductionCast` avec les entrées des places : Marek, Orla et Cassius recolorés, Vessa et Ilse comme leur export) ; le duel lu sur la source de `CombatCast` (ses feuilles ne se chargent que dans le navigateur). 6 tests ; avec `tests/fighter-skins.test.mjs`, 16 sur 16.
+- **Quinze fautes injectées une à une** (script hors dépôt, chaque fichier rendu et vérifié par SHA-256) : le fichier non approuvé, sans date, RS-PROD « Pas encore », Marek sans sa variante, Cassius foncé, Vessa avec une variante, une empreinte fausse, un masque changé sous son empreinte, le fichier des rivaux non lu, la place jamais recolorée, une personne de place sans crochet, les portraits sans crochet, le chargeur qui n'appelle pas `tone`, le duel qui ne recolore pas, le héros avec le crochet d'un rival : quinze attrapées. **[KO → corrigé]** trois passaient d'abord : le portrait (le test acceptait `null` comme visage : il exige maintenant une image recolorée), le duel (aucun test ne lisait `CombatCast` : ajouté), le héros (ma faute ne changeait pas ce que le test lit : réécrite, elle donne au héros le crochet de Marek).
+
 ### En cours
-- En attente de la fiche de l'opérateur ; rien ne change dans le jeu avant elle. Ensuite : ses choix mot pour mot, l'approbation et les empreintes dans `rivals.json`, les preuves (le duel et les places sous la peau choisie, `tools/challenge-flow.mjs`, le jeu par défaut et la version 2 hors des rivaux à 0 px contre une copie figée de `main`, en DEV et sur les paquets), `AGENTS.md`, la fusion.
+- Les preuves : le duel et les places sous la peau choisie (DEV et paquet), un défi joué (`tools/challenge-flow.mjs`), le jeu par défaut et la version 2 hors des rivaux à 0 px contre une copie figée de `main` ; la validation ; `AGENTS.md` ; la fusion.
 
 ## À reprendre (par priorité)
 

@@ -77,7 +77,7 @@ test('a square decodes a town sheet in the tools\' order: same names, same texel
   }
 });
 
-test('the runtime: every sheet of the file owned by its fighter; nothing recoloured while the file waits, on a square, in a portrait or in a duel', async () => {
+test('the runtime: every sheet of the file owned by its fighter; recoloured only through the approval and a fixed variant, on a square, in a portrait and in a duel', async () => {
   for (const w of RIVALS) for (const id of SHEETS(w)) assert.equal(cast.fighterOfSheet(id), w, id);
   assert.equal(cast.fighterOfSheet('kell-x3-combat'), 'kell', 'the generic fighters\' file still read');
   for (const id of ['anwen-x2-v2', 'brann-x2-v2', 'artisan-x2-v1', 'hero-x2-v4', 'hero-x3-combat', 'marek-x2-v1']) assert.equal(cast.fighterOfSheet(id), null, id);
@@ -103,4 +103,43 @@ test('the runtime: every sheet of the file owned by its fighter; nothing recolou
   // the portraits: a hook on every rival and generic face
   const faces = plaza.plazaFaces();
   for (const w of [...RIVALS, 'aldric', 'corra', 'ambrose', 'lucan', 'piers', 'kell']) assert.equal(typeof faces[w].face, 'function', `${w}: the portrait's hook`);
+  for (const w of RIVALS) {
+    const id = `${w}-x2-v2`, { k, frames } = sheetFrames(id, await decodePng(bytes(id)), read(`art-lab/characters/exports/${id}.json`));
+    const face = faces[w].face(frames, 32 * k, 48 * k);
+    if (!file.approved || !file.fighters[w].fixed) assert.equal(face, null, `${w}: the portrait keeps its texels`);
+    else { const front = frames.find((q) => q.dir === 'down' && q.anim === 'idle' && q.i === 0); assert.ok(face instanceof Uint8Array && face.length === front.rgba.length, `${w}: a recoloured front frame`); assert.notDeepEqual(face, front.rgba, `${w}: the portrait under its skin`); }
+  }
+  // the duel: CombatCast recolours every combat sheet but Ren's through FighterSkinCast (its sources are loaded in the browser only: read on the source)
+  const cc = fs.readFileSync(path.join(ROOT, 'src/arena/CombatCast.ts'), 'utf8');
+  assert.match(cc, /import \{ sheetSkin \} from '\.\.\/characters\/FighterSkinCast'/);
+  assert.match(cc, /skin = id\.startsWith\('hero-'\) \? heroSheetLook\(id, frames, fw, fh\) : sheetSkin\(id, frames, fw, fh\)/, 'a rival\'s combat sheet through its skin');
+  assert.match(cc, /\.\.\.\(await skinOf\(id, bytes, meta\)\)/, 'every duel sheet through skinOf');
+});
+
+test('a square\'s cast as the page loads it (loadProductionCast with the squares\' entries): a rival with a fixed variant under its skin, the others as their export', async () => {
+  const real = globalThis.fetch;
+  globalThis.fetch = async (url) => new Response(fs.readFileSync(path.join(ROOT, decodeURIComponent(String(url)).replace(/[?#].*$/, '').replace(/^\//, ''))));
+  try {
+    const { sheets } = await baked.loadProductionCast(false, 'approved', undefined, plaza.plazaCastEntries());
+    for (const w of ['marek', 'vessa', 'orla', 'cassius', 'ilse']) {
+      const id = `${w}-x2-v2`, got = sheets.find((s) => s.id === id), plain = sheetFrames(id, await decodePng(bytes(id)), read(`art-lab/characters/exports/${id}.json`)).frames;
+      assert.ok(got, `${id}: on the square`);
+      const changed = got.frames.filter((q, n) => !Buffer.from(q.rgba).equals(Buffer.from(plain[n].rgba))).length;
+      if (file.approved && file.fighters[w].fixed) assert.ok(changed > 0, `${id}: under its skin on the square`); else assert.equal(changed, 0, `${id}: as its export`);
+    }
+  } finally { globalThis.fetch = real; }
+});
+
+test('the operator choices (journal Passe RS1): Marek dark, Orla and Rhosk medium, Cassius tan in production; Vessa, Ilse and Tobin their original', () => {
+  assert.equal(file.approved, true);
+  assert.equal(file.approval.by, 'operator (git user wonmii)');
+  assert.equal(file.approval.date, '2026-11-08');
+  for (const c of ['Marek « Foncée (dark) »', 'Vessa « Garder l’original »', 'Orla « Moyenne (medium) »', 'Cassius « Hâlée (tan) »', 'Ilse « Garder l’original »', 'Rhosk « Moyenne (medium) »', 'Tobin « Garder l’original »', 'RS-PROD « En production »', '« Il faudra aussi effectuer des variants de peau des combattants principaux »']) assert.ok(file.approval.note.includes(c), c);
+  const shown = Object.fromEntries(Object.entries(file.fighters).map(([w, f]) => [w, f.fixed ? f.variants[f.fixed - 1] : null]));
+  assert.deepEqual(shown, { marek: 'dark', vessa: null, orla: 'medium', cassius: 'tan', ilse: null, rhosk: 'medium', tobin: null });
+  // only the variant shown: a fighter keeping its original has no candidate left, no fingerprint (nothing is applied, nothing to check)
+  for (const [w, f] of Object.entries(file.fighters)) {
+    assert.equal(f.variants.length, f.fixed ? 1 : 0, `${w}: its variants`);
+    for (const [id, sv] of Object.entries(f.sheets)) assert.equal(!!sv.fingerprint, !!f.fixed, `${id}: a fingerprint exactly when a variant is applied`);
+  }
 });

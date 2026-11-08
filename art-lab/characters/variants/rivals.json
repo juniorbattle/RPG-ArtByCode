@@ -1,7 +1,11 @@
 {
-  "$comment": "The rivals' skin variants (journal Passe RS1; the operator's request of 2026-11-07, word for word: « Il faudra aussi effectuer des variants de peau des combattants principaux »; the rules: src/characters/FighterSkins.ts, the generic fighters' file fighters.json). Per fighter, the skin masks of its town sheet (the squares, the faces of the portraits and of the duel's HUD) and of its combat sheet, written by palette colours; the candidate skins (the NPCs' approved skin ramps of variants.json, copied as they are) and the one it shows (fixed, 1-based; absent = the original). Reaches production only with approved: true from the operator, each sheet's mask fingerprint checked at load; while it waits, nothing changes (DEV review: fighterskin=<ramp> or fighterskin=<who>:<ramp>,...).",
-  "approved": false,
-  "approval": null,
+  "$comment": "The rivals' skin variants (journal Passe RS1; the operator's request of 2026-11-07, word for word: « Il faudra aussi effectuer des variants de peau des combattants principaux »; the rules: src/characters/FighterSkins.ts, the generic fighters' file fighters.json). Per fighter, the skin masks of its town sheet (the squares, the faces of the portraits and of the duel's HUD) and of its combat sheet, written by palette colours; the candidate skins (the NPCs' approved skin ramps of variants.json, copied as they are) and the one it shows (fixed, 1-based; absent = the original). Reaches production only with approved: true from the operator, each applied sheet's mask fingerprint checked at load (approved on 2026-11-08, journal Passe RS1: see approval); a fighter without `fixed` keeps its original, its masks kept without a fingerprint. DEV review: fighterskin=<ramp> or fighterskin=<who>:<ramp>,... among a fighter's variants.",
+  "approved": true,
+  "approval": {
+    "by": "operator (git user wonmii)",
+    "date": "2026-11-08",
+    "note": "APPROVED FOR PRODUCTION by the operator on the decision sheet https://claude.ai/artifact/LYTp6hCZ643k6u8LN17rf3 (journal Passe RS1, choices clicked on 2026-11-08 between 21:11 and 21:13 UTC, no note): Marek « Foncée (dark) » (RS-marek), Vessa « Garder l’original » (RS-vessa), Orla « Moyenne (medium) » (RS-orla), Cassius « Hâlée (tan) » (RS-cassius), Ilse « Garder l’original » (RS-ilse), Rhosk « Moyenne (medium) » (RS-rhosk), Tobin « Garder l’original » (RS-tobin), RS-PROD « En production ». The operator's request, word for word: « Il faudra aussi effectuer des variants de peau des combattants principaux ». The sheets and their exports unchanged; the masks are those of the recorded fingerprints; the skin follows each rival on the version 2's squares (its town sheet), in the portraits and the duel's HUD (its face) and in the duel (its combat sheet). Version 2 only. Not a Gold Master."
+  },
   "ramps": {
     "skin": {
       "light": ["#9c6656", "#bc826a", "#d89e84", "#ebb89c", "#f6cfb6"],
@@ -12,6 +16,8 @@
   },
   "fighters": {
     "marek": {
+      "variants": ["dark"],
+      "fixed": 1,
       "sheets": {
         "marek-x2-v2": {
           "mask": {
@@ -47,7 +53,8 @@
               "side/idle.2": [[34, 21, 35, 25], [36, 19, 36, 19]],
               "side/idle.3": [[34, 21, 35, 25], [36, 19, 36, 19]]
             }
-          }
+          },
+          "fingerprint": "ed76161f"
         },
         "marek-x3-combat": {
           "mask": {
@@ -194,12 +201,13 @@
               "hit.1": [[67, 173, 68, 173], [67, 174, 67, 174], [66, 175, 66, 175]],
               "skillSup.1": [[81, 170, 81, 170], [84, 170, 84, 171], [82, 171, 83, 171]]
             }
-          }
+          },
+          "fingerprint": "e8fe7be0"
         }
-      },
-      "variants": ["light", "medium", "tan", "dark"]
+      }
     },
     "vessa": {
+      "variants": [],
       "sheets": {
         "vessa-x2-v2": {
           "mask": {
@@ -342,10 +350,11 @@
             }
           }
         }
-      },
-      "variants": ["light", "medium", "tan", "dark"]
+      }
     },
     "orla": {
+      "variants": ["medium"],
+      "fixed": 1,
       "sheets": {
         "orla-x2-v2": {
           "mask": {
@@ -401,7 +410,8 @@
               "side/walk.4": [[30, 25, 31, 27]],
               "side/walk.5": [[29, 23, 31, 26]]
             }
-          }
+          },
+          "fingerprint": "e94f4f1c"
         },
         "orla-x3-combat": {
           "mask": {
@@ -463,12 +473,14 @@
               "victory.1": [[87, 225, 90, 237], [79, 235, 80, 235], [80, 236, 85, 236], [82, 237, 85, 237]],
               "heavy.0": [[69, 231, 73, 235], [86, 244, 88, 246]]
             }
-          }
+          },
+          "fingerprint": "84b4434f"
         }
-      },
-      "variants": ["light", "medium", "tan", "dark"]
+      }
     },
     "cassius": {
+      "variants": ["tan"],
+      "fixed": 1,
       "sheets": {
         "cassius-x2-v2": {
           "mask": {
@@ -494,7 +506,8 @@
               "side/idle.2": [[27, 22, 27, 22]],
               "side/idle.3": [[27, 22, 27, 22]]
             }
-          }
+          },
+          "fingerprint": "72646e95"
         },
         "cassius-x3-combat": {
           "mask": {
@@ -579,12 +592,13 @@
               "victory.1": [[82, 169, 82, 169], [87, 179, 87, 180]],
               "skillDef.1": [[77, 186, 82, 202]]
             }
-          }
+          },
+          "fingerprint": "f2af66ad"
         }
-      },
-      "variants": ["light", "medium", "tan", "dark"]
+      }
     },
     "ilse": {
+      "variants": [],
       "sheets": {
         "ilse-x2-v2": {
           "mask": {
@@ -704,10 +718,11 @@
             }
           }
         }
-      },
-      "variants": ["light", "medium", "tan", "dark"]
+      }
     },
     "rhosk": {
+      "variants": ["medium"],
+      "fixed": 1,
       "sheets": {
         "rhosk-x2-v2": {
           "mask": {
@@ -743,7 +758,8 @@
               "side/idle.3": [[33, 18, 34, 18]],
               "up/idle.3": [[24, 18, 24, 18]]
             }
-          }
+          },
+          "fingerprint": "99e0571d"
         },
         "rhosk-x3-combat": {
           "mask": {
@@ -811,12 +827,13 @@
               "recover.0": [[75, 163, 75, 164], [76, 164, 77, 164], [97, 221, 97, 221], [105, 225, 106, 225], [106, 226, 106, 226]],
               "recover.1": [[75, 161, 75, 162], [76, 162, 77, 162]]
             }
-          }
+          },
+          "fingerprint": "56655640"
         }
-      },
-      "variants": ["light", "medium", "tan", "dark"]
+      }
     },
     "tobin": {
+      "variants": [],
       "sheets": {
         "tobin-x2-v2": {
           "mask": {
@@ -916,8 +933,7 @@
             }
           }
         }
-      },
-      "variants": ["light", "medium", "tan", "dark"]
+      }
     }
   }
 }
