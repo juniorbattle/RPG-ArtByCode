@@ -22,7 +22,8 @@ const LAB = await load('/src/tournament/lab.ts');
 const { computePulse } = await load('/src/tournament/pulse.ts');
 const { Rng } = await load('/src/core/rng.ts');
 
-const v2 = (name = 'day1-morning', seed) => G.makeV2(G.namedState(name, seed));
+/** a named state as a version 2 game (a version 2 state as it is: makeV2 would start its own state again) */
+const v2 = (name = 'day1-morning', seed) => { const s = G.namedState(name, seed); return s.flags.v2 === true ? s : G.makeV2(s); };
 const act = (st, a, rng) => { const r = G.advance(st, a, rng); assert.ok(r.ok, `${a.type}: ${r.reason}`); return r; };
 const opt = (st, pred) => G.actions(st).find((o) => pred(o.action));
 const at = (st, day, slot, place = st.place) => { const s = structuredClone(st); s.day = day; s.slot = slot; s.place = place; s.pulse = computePulse(s); return s; };
@@ -144,14 +145,15 @@ test('the keepers remember: a regular (15 or more) and a face to watch (-15 or l
 });
 
 test('the training sand: shut the morning after a brawl at the barracks, open again at noon; Orla still spars; today\'s game drills as before', () => {
-  const s = at(v2(), 5, 'morning', 'training'); s.flags['brawl:5'] = true;
+  // (day 3, a free day: the afternoon of a bout belongs to the bout)
+  const s = at(v2(), 3, 'morning', 'training'); s.flags['brawl:3'] = true;
   for (const a of [{ type: 'train' }, { type: 'drillSkill', skill: 't1' }]) {
     const o = opt(s, (x) => x.type === a.type); assert.ok(o && !o.ok, a.type); assert.match(o.reason, /shut until noon/);
   }
   assert.ok(opt(s, (x) => x.type === 'spar').ok, 'Orla still spars');
   assert.match(D.linesOf(s, 'drill')[0], /black eyes/);
-  assert.ok(opt(at(s, 5, 'afternoon'), (x) => x.type === 'train').ok, 'the afternoon');
-  assert.ok(opt(at(s, 6, 'morning'), (x) => x.type === 'train').ok, 'the next morning');
+  assert.ok(opt(at(s, 3, 'afternoon'), (x) => x.type === 'train').ok, 'the afternoon');
+  assert.ok(opt(at(s, 4, 'morning'), (x) => x.type === 'train').ok, 'the next morning');
   // the brawl writes its morning (src/events/v2catalog.ts: tomorrow)
   const b = at(v2(), 4, 'evening', 'training'); b.flags['pulse:security'] = -30; b.pulse = computePulse(b);
   E.runEvents(b, b.pulse, (e) => e, { fork: () => ({ next: () => 0 }) }, [byId['v2-barracks-brawl']]); assert.ok(b.flags['brawl:5']);
@@ -289,6 +291,7 @@ test('on the sand day, by day, the training ground refuses a drill; Orla spars, 
 test('a friend warns of the forge\'s sabotage the afternoon after the hood bought the oil, and of the gear\'s on the eve, by day; nobody without a friend', () => {
   const forge = () => { const s = at(v2(), 3, 'afternoon', 'district'); s.competitors.cassius.relationships.player = -40; s.tournament.matches.find((m) => m.day === 2 && m.a === 'player').winner = 'player'; s.flags['ev:sign-lamp-oil'] = 6; s.pulse = computePulse(s); return s; };
   const plain = forge(); assert.equal(run(plain, ['v2-friend-forge']).length, 0, 'no friend');
+  const almost = forge(); for (const who of ['orla', 'ilse', 'tobin', 'marek']) almost.competitors[who].relationships.player = 24; assert.equal(run(almost, ['v2-friend-forge']).length, 0, 'not a friend under 25');
   const FR = { orla: /Orla Brask/, ilse: /Ilse Morrow/, tobin: /Tobin Fenn/, marek: /Marek Varn/ };
   for (const [who, re] of Object.entries(FR)) { const s = forge(); s.competitors[who].relationships.player = 25; const out = run(s, ['v2-friend-forge']); assert.equal(out.length, 1, who); assert.match(out[0].text, re); assert.match(out[0].text, /Hale's watch/); assert.ok(s.facts.includes('friend-warned-forge')); }
   const both = forge(); both.competitors.orla.relationships.player = 30; both.competitors.marek.relationships.player = 30; assert.match(run(both, ['v2-friend-forge'])[0].text, /Orla/, 'Orla first');

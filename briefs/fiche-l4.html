@@ -1,0 +1,417 @@
+<title>Rivaux et suites</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+.state { display: flex; flex-direction: column; gap: 12px; }
+.state h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; border-bottom: 2px solid var(--brass); padding-bottom: 6px; }
+.state p { margin: 0; max-width: 68ch; }
+.chip { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border-radius: 4px; padding: 1px 7px; white-space: nowrap; }
+.chip.ok { color: var(--rec); background: var(--rec-soft); }
+.chip.thin { color: var(--brass); background: var(--brass-soft); }
+.chip.no { color: var(--cendre); background: color-mix(in srgb, var(--cendre) 14%, var(--surface)); }
+.chip.gap { color: var(--muted); background: color-mix(in srgb, var(--muted) 14%, var(--surface)); }
+.tbl.cov td:nth-child(2), .tbl.cov th { text-align: left; }
+.tbl.cov td:last-child { text-align: left; white-space: normal; color: var(--muted); font-size: 13px; min-width: 16ch; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.fig { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fig b { font-family: var(--font-body); font-weight: 700; font-size: 26px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.fig span { font-size: 13px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · version 2 · étape 5 · lot L4 · Passe EVL7 · 8 novembre 2026</span>
+    <h1>Les événements et les rivalités : le lot L4 construit</h1>
+    <p class="lede">Tes choix EV-7 « Les suites des actions, puis un par lieu, puis le ciblé » (avec ta note : « il faut que cela puisse impacter la preparation du joueur en jouant sur cet aspect imprevisible »), EV-8 « Hors des nouvelles, dans les répliques et le son » et EV-9 « Chaque rival se souvient ; deux autres agissent » sont construits, derrière la version 2, sur la branche <code>claude/l4-rivalites</code>. Le sergent Hale, Corra Dunmere et Frère Ambrose y ont chacun un rôle (L3-11). Le jeu par défaut ne change pas. Rien n’est fusionné : chaque carte attend ton choix.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="state" aria-labelledby="h-state">
+    <h2 id="h-state">Ce qui est construit, et ce que ça change</h2>
+    <p>Chaque ajout tient à une personne, un lieu et un moment des dix jours, et touche ta préparation par un côté : l’entraînement (Rhosk sur le sable, la rixe), l’information (le conte de Vessa chez Lio), les soins (Sœur Anwen occupée), les compétences (Corvin après un défi gagné), la protection (un ami qui avertit). La structure du tournoi ne bouge pas : les dix jours, la poule de huit, la coupe, les finales.</p>
+    <div class="figs">
+      <div class="fig"><b>3</b><span>ambiances sorties des nouvelles (le marché de nuit, la clameur, les marionnettes), dites par Pip, Wren et le sergent Brann</span></div>
+      <div class="fig"><b>7 / 7</b><span>rivaux dont la page du tournoi dit ce qu’ils pensent de toi, et pourquoi</span></div>
+      <div class="fig"><b>2</b><span>rivaux qui agissent en plus de Cassius : Vessa (désinformation), Rhosk (intimidation)</span></div>
+      <div class="fig"><b>0 px</b><span>d’écart dans le jeu par défaut contre <code>main</code> figé : dix-sept vues en DEV ; sur les paquets, toutes sauf le compteur vivant « FPS » du panneau</span></div>
+    </div>
+    <div class="tbl cov">
+      <table>
+        <thead><tr><th scope="col">Ton choix</th><th scope="col">Construit</th><th scope="col">Où</th></tr></thead>
+        <tbody>
+          <tr><td>EV-8 · les ambiances hors des nouvelles, dans les répliques et le son</td><td><span class="chip ok">fait</span></td><td>écrites cachées, leur pouls gardé ; Pip, Wren, Brann ; le son tel qu’il est (les clameurs des jours de combat)</td></tr>
+          <tr><td>EV-9 · chaque rival se souvient : battu, humilié ou aidé, il ne parle plus pareil</td><td><span class="chip ok">fait</span></td><td>la page du tournoi (T) ; les répliques d’Ilse, Tobin, Rhosk, Marek, dont l’arc n’en disait rien</td></tr>
+          <tr><td>EV-9 · deux autres agissent (Vessa, Rhosk)</td><td><span class="chip ok">fait</span></td><td>Vessa : la salle de Lio ; Rhosk : le sable du terrain d’entraînement</td></tr>
+          <tr><td>EV-9 · un rival aidé peut avertir d’un sabotage</td><td><span class="chip ok">fait</span></td><td>un ami (Orla le plus souvent) avant chacune des deux chaînes de Cassius</td></tr>
+          <tr><td>EV-7 · les suites des actions</td><td><span class="chip ok">fait</span></td><td>le défi qui fait parler (Corvin), le marchand qui se souvient ; le vol découvert existait (L2)</td></tr>
+          <tr><td>EV-7 · un par lieu, qui change un service</td><td><span class="chip ok">fait</span></td><td>le sable fermé après la rixe, Sœur Anwen occupée ; les autres lieux avaient déjà le leur (lot V7)</td></tr>
+          <tr><td>EV-7 · puis le ciblé (contrat projet § 9.2)</td><td><span class="chip ok">fait</span></td><td>désinformation (Vessa), intimidation et sabotage d’entraînement (Rhosk)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="foot">Journal : Passe EVL7. Tests : 476 sur 476, vingt-neuf fautes injectées une à une, toutes attrapées. Preuves : une partie jouée dans le navigateur pour chacun des deux rivaux qui agissent (<code>tools/rivals-flow.mjs</code>), rejouée en Node à la même empreinte ; <code>ui-text</code> sur les pages touchées.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot au journal et dans <code>briefs/audit-gameplay-ev1.md</code>, j’applique ce qu’ils changent, je refais les mesures et les preuves touchées, puis je fusionne selon L4-14. Tout texte reste « proposé » : une phrase qui ne te va pas se note sur sa carte.</p>
+    <p class="src">Sources : journal Passes EV1, EV2, EVL5, EVL6, EVL7 ; <code>briefs/audit-gameplay-ev1.md</code> §§ 1-3, 10 ; <code>briefs/fiche-ev1.html</code> (EV-7 à EV-9) ; <code>src/simulation/v2rivals.ts</code>, <code>v2intel.ts</code>, <code>src/events/v2catalog.ts</code>, <code>catalog.ts</code>, <code>engine.ts</code>, <code>src/narrative/dialogue.ts</code>, <code>src/ui/board.ts</code>, <code>src/tournament/lab.ts</code> ; <code>tests/v2-rivals.test.mjs</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Une entrée par décision. fam : une variable de couleur. shots : captures publiées via `files`.
+// Apostrophes : l’apostrophe typographique ’ seulement dans les chaînes entre ' '.
+const GROUPS = [
+  { id: 'ambiances', title: 'Les ambiances', sub: 'Ton choix EV-8 : hors des nouvelles, dans les répliques et le son.', fam: 'var(--voile)', items: [
+    { id: 'L4-1', tag: 'EV-8', title: 'Le marché de nuit, la clameur et les marionnettes sortent des nouvelles',
+      ctx: 'Dans une partie de la version 2, ces trois événements partent toujours et bougent toujours le pouls (le commerce, l’excitation, la fête), mais ils ne s’écrivent plus ni dans les nouvelles ni dans le journal (J). Les gens les disent à la place, un texte par jour et selon l’état : Pip, à son étal le soir, parle du marché de nuit (trois textes, un par jour) ; Wren, sur la place, raconte les marionnettes qui rejouent ton dernier combat, gagné ou perdu, l’adversaire nommé ; le sergent Brann entend le Colisée les après-midi des combats des autres ; les passants du quai disaient déjà la clameur. Le son ne change pas : les clameurs des jours de combat portent déjà le Colisée (lot S2), et ta réception du son (S5-RECEPTION) fait de toute suite une demande à part. Le jeu par défaut garde ses nouvelles.',
+      shots: [['img/01-pip-marche.png', 'Pip à son étal, le soir : le marché de nuit'], ['img/02-wren-marionnettes.png', 'Wren sur la place : les marionnettes rejouent ton combat contre Vessa']],
+      rec: 'Garder : les nouvelles gardent ce qui change quelque chose, et ces trois ambiances restent dans la ville.',
+      opts: ['Garder', 'Les garder aussi au journal (J), hors des nouvelles', 'Les remettre dans les nouvelles, une fois tous les deux jours'], recIdx: 0,
+      src: 'src/events/catalog.ts, v2catalog.ts (v2quiet) ; src/events/engine.ts ; src/narrative/dialogue.ts (MARKET, PUPPETS) ; src/audio/score.ts (les clameurs)' },
+  ]},
+  { id: 'rivaux', title: 'Les rivalités', sub: 'Ton choix EV-9 : chaque rival se souvient ; deux autres agissent ; un rival aidé peut avertir d’un sabotage.', fam: 'var(--ronce)', items: [
+    { id: 'L4-2', tag: 'mémoire', title: 'Chaque rival se souvient, et la page du tournoi le dit',
+      ctx: 'Chaque rival a une attitude envers toi, tirée de ce qui s’est passé : une rancune (son lien avec toi à −15 ou moins : une défaite pour un fier, une moquerie, un regard sur son entraînement), une amitié (25 ou plus : la cargaison et l’entraînement avec Orla, un rival honorable battu deux fois), ou le respect d’un honorable ou d’un froid que tu as battu. La page du tournoi (T) le dit avec ses causes, par exemple « Vessa Lark holds a grudge: beaten by you on day 2. », « barely touched » quand tu as gardé plus de 70 % de ta vie. Ceux dont l’arc ne parlait pas de toi le disent aussi : Ilse et Tobin (respect, amitié), Rhosk (respect), Marek (amitié) ; Vessa, Orla et Cassius le disaient déjà.',
+      shots: [['img/03-tableau-rancune.png', 'La page du tournoi sur Vessa : sa rancune et sa cause, les tournées payées chez Lio']], one: true,
+      rec: 'Garder : une ligne lisible, avec ses causes, et des seuils déjà ceux du jeu (Orla recrutable à 25).',
+      opts: ['Garder', 'La page du tournoi seulement, sans répliques nouvelles', 'Sans les causes, l’attitude seule'], recIdx: 0,
+      src: 'src/simulation/v2rivals.ts (stanceOf, memoryOf, stanceLine, stanceWords) ; src/ui/board.ts ; src/tournament/pool.ts (humbled-by)' },
+    { id: 'L4-3', tag: 'Vessa', title: 'Vessa Lark, la désinformation : un conte dans la salle de Lio',
+      ctx: 'Battue par toi (le jour 2) et fière, Vessa t’en veut. Les soirs de tes combats de la poule (jours 2 et 4), elle paie toutes les tournées chez Lio et raconte que ton prochain adversaire est blessé et rouillé. Le lendemain matin, les nouvelles disent « In the taverns they say… », sans nommer qui paie ; la salle de Lio le répète jusqu’à ce combat, à chaque fois. Un conte vrai n’est pas un mensonge : si l’adversaire est déjà blessé et rouillé, elle se tait. Ce qui la trahit : la page du tournoi la voit payer les tournées ; Frère Ambrose, qui allume les lampes de la place, l’a vue ; l’inconnu, jamais faux, dit la vérité et qui a payé. La réponse : le lui dire en face sur le parvis, de jour, une fois que tu sais (ta réputation +3, la sienne −5) ; le conte meurt et elle n’en dit plus. L’effet est une information fausse, donc une préparation faussée : le laboratoire ne le voit pas.',
+      shots: [['img/04-ambrose.png', 'Frère Ambrose sur la place : Vessa a payé les tournées chez Lio'], ['img/05-vessa-confrontee.png', 'Sur le parvis : tu le dis à Vessa devant la foule']],
+      table: { head: ['50 parties, graines 1 à 50', 'diligent', 'curieux'], rows: [['Contes dans les tavernes', '88', '90'], ['Parties où Vessa a été battue le jour 2', '44', '45']], foot: 'Deux contes par partie où Vessa perd contre toi (les soirs des jours 2 et 4).' },
+      rec: 'Garder : elle joue sur ce que L3 t’a donné (les rumeurs, vraies ou fausses selon la source), avec deux témoins et une réponse.',
+      opts: ['Garder', 'Une seule fois (le soir du jour 2)', 'Vessa l’espionnage plutôt : elle vend ce qu’elle a vu de ton entraînement à ton adversaire (ses coups un peu plus forts)'], recIdx: 0,
+      src: 'src/simulation/v2rivals.ts (vessaTalks, confrontVessa) ; src/simulation/v2intel.ts (rumourOf, seenInTown) ; src/narrative/dialogue.ts (Ambrose)' },
+    { id: 'L4-4', tag: 'Rhosk', title: 'Rhosk, l’intimidation : le sable du terrain d’entraînement',
+      ctx: 'Hors du titre après la coupe (les combats de la Porte) quand toi tu y es, Rhosk veut montrer aux nobles qu’il fait peur au favori : le jour libre avant ton prochain combat du tableau (le jour 7 si tu as perdu ta demi-finale, le jour 9 si tu es en finale), il prend le sable où tu t’entraînes, de jour. Le signe, la veille au soir : Corra Dunmere, sur le quai, dit qu’il lui a offert de l’argent pour se tenir à côté de lui « where the favourite drills ». Ce jour-là, s’entraîner et travailler une compétence au terrain sont refusés, la raison dite. Trois réponses : Orla s’entraîne toujours avec toi ; un défi gagné contre lui (il est défiable, hors du titre) le fait partir ; le sergent Hale, prévenu sur le quai, envoie un coureur au greffier. C’est la seule pièce du lot qui change les combats du diligent : il ne répond pas et perd son entraînement de la veille.',
+      shots: [['img/06-sable-refuse.png', 'Au terrain d’entraînement : « Rhosk the Northman stands on the sand you drill on »'], ['img/07-hale-coureur.png', 'Sur le quai : le sergent Hale envoie un coureur au greffier']],
+      table: { head: ['50 parties', 'diligent', 'curieux'], rows: [['Signe de Corra (graines 1 à 50)', '19', '17'], ['Signe (51 à 100 · 101 à 150)', '16 · 15', '10 · 13'], ['Rapporté à Hale avant le jour du sable', '0', 'tous']], foot: 'Le diligent ne répond pas : sur 150 parties, deux perdent le combat qu’elles gagnaient (graines 27 et 122). Le curieux prévient Hale chaque fois.' },
+      rec: 'Garder : un signe la veille, trois réponses, un effet lisible sur ta préparation.',
+      opts: ['Garder', 'Le signe seul, sans effet sur le sable', 'Rhosk payé par Cassius (un seul antagoniste derrière les attaques)'], recIdx: 0,
+      src: 'src/events/v2catalog.ts (v2-rhosk-offer) ; src/simulation/v2rivals.ts (sandTaken, reportRhosk) ; src/simulation/v2town.ts (le défi gagné) ; src/narrative/dialogue.ts (Corra, Hale, Brann)' },
+    { id: 'L4-5', tag: 'ami', title: 'Un ami avertit des deux chaînes de Cassius',
+      ctx: 'Un rival qui te compte pour ami (25 ou plus : Orla le plus souvent ; Ilse, Tobin, Marek dans cet ordre s’ils le sont) t’avertit le créneau d’avant : pour la forge, l’après-midi après que l’homme encapuchonné a acheté l’huile de Mara (« Pay Hale’s watch at the forge tonight ») ; pour l’équipement, le jour de la veille, quand Clerk Odo est encore là (« Leave your gear with Clerk Odo before dusk, or have Hilde look it over before the bell »). C’est un signe de plus, avec la réponse nommée.',
+      table: { head: ['Avertissements, par 50 parties', 'diligent', 'curieux'], rows: [['Graines 1 à 50', '4', '1'], ['51 à 100', '1', '5'], ['101 à 150', '3', '6']] },
+      rec: 'Garder : la réponse arrive quand elle sert encore, et l’amitié a une valeur.',
+      opts: ['Garder', 'Seulement Orla', 'Avertir aussi des attaques de Vessa et de Rhosk'], recIdx: 0,
+      src: 'src/events/v2catalog.ts (v2-friend-forge, v2-friend-gear)' },
+    { id: 'L4-6', tag: 'aider', title: 'Aider un autre rival qu’Orla : pas construit',
+      ctx: 'Ta carte EV-9 dit « un rival aidé ». Aujourd’hui, seule Orla peut être aidée (la cargaison de Tam, l’entraînement) ; un rival honorable battu deux fois devient aussi un ami. On pourrait ajouter deux aides tenues à une personne et un lieu : une aumône pour l’hôpital d’Ilse chez Sœur Anwen, un repas ou une pierre à aiguiser pour Tobin au terrain d’entraînement (à partir du jour 6). Ce serait du contenu neuf (le pilier « relation » du contrat, mince) : je ne l’ai pas fait sans ton choix.',
+      rec: 'Laisser ainsi pour L4 ; y revenir avec L5 (la ville qui réagit) ou la phase d’équipe.',
+      opts: ['Laisser ainsi', 'Ajouter les deux aides dans L4 avant de fusionner'], recIdx: 0,
+      src: 'contrat de gameplay § 5 (relation) ; briefs/audit-gameplay-ev1.md § 2' },
+  ]},
+  { id: 'suites', title: 'Les suites des actions et les lieux', sub: 'Ton choix EV-7 : les suites des actions, puis un par lieu, puis le ciblé (les cartes L4-3 et L4-4).', fam: 'var(--astre)', items: [
+    { id: 'L4-7', tag: 'défi', title: 'Le défi qui fait parler : Corvin à un cinquième le lendemain',
+      ctx: 'Chaque défi gagné en ville, un jour d’écart au plus, fait parler : le premier, les hérauts ajoutent une ligne sur toi (comme avant) ; chaque fois, Maître Corvin l’entend et t’enseigne à un cinquième du prix le lendemain (le prix de sa leçon ouverte).',
+      rec: 'Garder : la suite d’un défi touche ta préparation, et on va voir Corvin.',
+      opts: ['Garder', 'La première fois seulement', 'Revenir aux hérauts seuls'], recIdx: 0,
+      src: 'src/events/v2catalog.ts (v2-challenge-fame) ; src/simulation/v2town.ts (won-challenge) ; src/simulation/v2skills.ts (skillPrice)' },
+    { id: 'L4-8', tag: 'marchands', title: 'Les marchands se souviennent',
+      ctx: 'Mara, Hilde, Pip et Corvin le disent : un habitué (leur bienveillance à 15 ou plus : achats, marchandages gagnés) entend « a tenth off », la remise qui existait déjà sans être dite ; un voleur ou un marchandage aigri (−15 ou moins) entend qu’on le surveille. Les prix ne changent pas.',
+      rec: 'Garder : une règle qui existait devient lisible.',
+      opts: ['Garder', 'Les habitués seulement'], recIdx: 0,
+      src: 'src/narrative/dialogue.ts (keeperMemory) ; src/simulation/v2gear.ts (shopPrice)' },
+    { id: 'L4-9', tag: 'terrain', title: 'Le sable fermé le matin après la rixe des casernes',
+      ctx: 'La rixe des casernes (un soir de garde mince) promettait depuis la Passe VP1 le terrain fermé le lendemain matin, et rien ne le faisait. Désormais le sergent Brann garde le sable fermé jusqu’à midi : s’entraîner et travailler une compétence sont refusés le matin, la raison dite ; Orla s’entraîne toujours ; l’après-midi rouvre. Le diligent paie la garde chaque soir, la rixe ne part presque jamais chez lui.',
+      rec: 'Garder : une promesse tenue, un service qui change, une alternative.',
+      opts: ['Garder', 'Retirer la promesse du texte, le terrain ouvert'], recIdx: 0,
+      src: 'src/events/v2catalog.ts (v2-barracks-brawl) ; src/simulation/v2rivals.ts (sandShut)' },
+    { id: 'L4-10', tag: 'soins', title: 'Sœur Anwen occupée le soir d’un rival blessé',
+      ctx: 'Le texte « Sister Anwen is busy tonight » ne faisait rien. Le soir où un rival est blessé dans les combats de l’après-midi, ses soins attendent le matin (le repos et l’onguent restent). Ni le diligent ni le curieux ne se soignent le soir : le laboratoire ne bouge pas.',
+      rec: 'Garder : une promesse tenue, une préparation qui demande d’anticiper.',
+      opts: ['Garder', 'Retirer la promesse du texte'], recIdx: 0,
+      src: 'src/events/catalog.ts (rival-injured) ; src/simulation/v2rivals.ts (anwenBusy) ; src/simulation/roles.ts (heal)' },
+    { id: 'L4-11', tag: 'L3-11', title: 'Le sergent Hale, Corra Dunmere et Frère Ambrose',
+      ctx: 'Ta carte L3-11 les gardait pour L4. Chacun a un rôle : Frère Ambrose, sur la place l’après-midi et le soir, a vu Vessa payer les tournées (le témoin de L4-3) ; Corra Dunmere, sur le quai la nuit, a refusé l’argent de Rhosk (le signe de L4-4) ; le sergent Hale et son registre envoient le coureur au greffier, et le nom de Rhosk y reste.',
+      rec: 'Garder ces trois rôles.',
+      opts: ['Garder', 'Hale aussi pour Vessa (un rapport plutôt qu’une confrontation)'], recIdx: 0,
+      src: 'src/narrative/dialogue.ts (ambrose, corra, hale) ; src/simulation/v2rivals.ts (reportRhosk)' },
+  ]},
+  { id: 'suite', title: 'La mesure et la suite', sub: 'Ce que le laboratoire dit, ce qui revient à L5, la fusion.', fam: 'var(--brass)', items: [
+    { id: 'L4-12', tag: 'laboratoire', title: 'Le laboratoire, avant et après, chaque écart nommé',
+      ctx: 'Contre main figé (11dabb7), graines 1 à 50 : les règles classiques et dynamiques (idle, diligent) sont identiques au JSON près. L’idle v2 aussi, sauf ses empreintes : les trois ambiances écrites cachées ; avec elles racontées de nouveau, il est identique au JSON près. Le diligent v2, sur 150 graines : deux parties perdent un combat (27 et 122), et rien d’autre ne change dans ses résultats ; avec le sable de Rhosk retiré, il est identique à main dans ses résultats et ses événements (les contes et les signes ne s’écrivent qu’au journal). Le curieux v2 : une partie gagne un combat (41), ses actions en ville bougent de quelques centièmes ; avec ses deux nouvelles réponses retirées (le rapport à Hale, l’avertissement d’un ami pris comme un signe), il est identique à main : ses actions de plus décalent les tirages qui suivent.',
+      table: { head: ['Combats gagnés · coupe · finale', 'main', 'branche'], rows: [['diligent 1 à 50', '59,6 % · 88 % · 20 %', '59,2 % · 88 % · 20 %'], ['diligent 51 à 100', '61,2 % · 94 % · 30 %', 'identique'], ['diligent 101 à 150', '60,8 % · 96 % · 22 %', '60,4 % · 96 % · 22 %'], ['curieux 1 à 50', '51,0 % · 74 % · 16 %', '51,4 % · 74 % · 16 %'], ['curieux 51 à 100 · 101 à 150', '53,3 % · 56,6 %', 'identiques']] },
+      rec: 'Accepter : chaque écart vient d’une pièce du lot, nommée.',
+      opts: ['Accepter', 'Le sable de Rhosk sans effet pour un joueur qui ne lit pas les signes (revient sur L4-4)'], recIdx: 0,
+      src: 'node tools/tournament-lab.mjs --rules=v2 --policy=diligent|curious|idle --seeds=…, contre main figé (11dabb7)' },
+    { id: 'L4-13', tag: 'L5', title: 'Ce qui revient à L5, la ville qui réagit',
+      ctx: 'Ta carte EV-12 : les places lisent le pouls comme le quai (la foule, les fanions, une boutique aux volets fermés), la célébrité change ce que disent les passants et qui salue le héros, un garde se poste à l’étal le jour d’un vol. Les deux pulsations que rien ne lit (la célébrité du joueur, la pression du public) n’ont pas été touchées. Reste aussi « Your bouts are fought » le jour 7 pour un finaliste, relevé hors des lots.',
+      rec: 'L5 ensuite, dans sa séance, derrière la version 2.',
+      opts: ['L5 ensuite', 'Un essai en jeu de L2 à L4 d’abord'], recIdx: 0,
+      src: 'briefs/fiche-ev1.html (EV-12) ; journal Passes EVL5, EVL6' },
+    { id: 'L4-14', tag: 'suite', title: 'Fusionner, puis ton essai',
+      ctx: 'La branche claude/l4-rivalites est poussée, non fusionnée. Après tes choix, je les applique, je refais les preuves touchées, puis je fusionne dans main. Ton essai : npm run dev, puis /?play=1&new=1&v2=1 ; en DEV, les états nommés v2-tale-day3 (le conte de Vessa) et v2-sand-day9 (Rhosk sur le sable) : /?play=1&state=v2-tale-day3.',
+      rec: 'Fusionner après la fiche, essayer ensuite, comme pour L2 et L3.',
+      opts: ['Fusionner après la fiche, essayer ensuite', 'Essayer avant de fusionner'], recIdx: 0,
+      src: 'AGENTS.md (règle des branches) ; journal Passe EVL6' },
+  ]},
+];
+
+
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

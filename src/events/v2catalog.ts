@@ -130,7 +130,7 @@ export const V2_EVENTS: readonly EventDef[] = [
     outcomes: [
       { when: friend('orla'), effects: [{ fact: 'friend-warned-forge' }], text: 'Orla Brask finds you: « The dockers say a hood bought pitch and asked when Bram sleeps. Pay Hale\'s watch at the forge tonight. »' },
       { when: friend('ilse'), effects: [{ fact: 'friend-warned-forge' }], text: 'Ilse Morrow stops you: « A man in a hood asked the Temple\'s wardens when the smith on the quay sleeps. Have Hale\'s watch stand at the forge tonight. »' },
-      { when: friend('tobin'), effects: [{ fact: 'friend-warned-forge' }], text: 'Tobin Fenn runs up, out of breath: « A man with pitch on his hands asked me where Bram sleeps! Get the watch on the forge tonight! »' },
+      { when: friend('tobin'), effects: [{ fact: 'friend-warned-forge' }], text: 'Tobin Fenn runs up, out of breath: « A man with pitch on his hands asked me where Bram sleeps! Get Hale\'s watch on the forge tonight! »' },
       { effects: [{ fact: 'friend-warned-forge' }], text: 'Marek Varn speaks low: « Somebody means to burn the quay\'s forge. I would not leave it to the night alone: Hale\'s watch costs less than a new forge. »' },
     ],
   },

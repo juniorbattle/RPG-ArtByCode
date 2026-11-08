@@ -198,3 +198,16 @@ taux mais plus son JSON (la garde, les trafics sans effet : carte L3-9). La fich
 **Relue en Passe EVL6 (07/11/2026)** : douze choix sur douze à la recommandation, sans note ; L3-9 « Accepter l’écart » (le diligent v2 garde ses combats et ses
 taux, plus son JSON) ; L3-11 « Les garder pour L4 » (Hale, Corra, Ambrose) ; L3-12 « Fusionner après la fiche, essayer ensuite » : fusionné. La suite : L4, les événements
 et les rivalités (EV-7 à EV-9).
+
+## 11. L4, les événements et les rivalités (Passe EVL7, 07-08/11/2026)
+
+Construit derrière `flags.v2` sur la branche `claude/l4-rivalites`, non fusionné. EV-8 : le marché de nuit, la clameur du Colisée et les marionnettes partent toujours et
+bougent le pouls, mais s'écrivent hors des nouvelles et du journal ; Pip, Wren et le sergent Brann les disent, un texte par jour ; le son reste tel qu'il est. EV-9 : chaque
+rival a une attitude envers le joueur (une rancune à −15, une amitié à 25, le respect d'un honorable ou d'un froid battu), dite avec ses causes sur la page du tournoi et dans
+les répliques de ceux dont l'arc n'en parlait pas ; Vessa, battue et fière, paie la salle de Lio les soirs des jours 2 et 4 pour dire le prochain adversaire blessé et rouillé
+(Frère Ambrose et l'inconnu savent qui a payé ; la confronter sur le parvis l'arrête) ; Rhosk, hors du titre, prend le sable du terrain d'entraînement le jour libre avant le
+combat du joueur dans le tableau (Corra Dunmere le dit la veille ; Orla, un défi gagné ou le sergent Hale y répondent) ; un ami parmi les rivaux avertit des deux chaînes de
+Cassius. EV-7 : Maître Corvin à un cinquième le lendemain d'un défi gagné, les marchands qui se souviennent, le sable fermé le matin après la rixe des casernes, Sœur Anwen
+occupée le soir d'un rival blessé. Le jeu par défaut est identique (0 px, empreintes, laboratoire au JSON près pour les règles classiques et dynamiques) ; l'idle v2 ne change
+que par ses empreintes (les ambiances cachées) ; le diligent v2 perd un combat dans deux parties sur 150 (le sable de Rhosk, qu'il ne lit pas) ; le curieux, qui répond, bouge
+dans son bruit. La fiche du lot : https://claude.ai/artifact/Nyf3wvTgKHQXMiNVtBekp3 (`briefs/fiche-l4.html`), quatorze cartes.

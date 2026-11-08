@@ -115,7 +115,9 @@ test('the numbers of the decision: seeds 1..50 give Passe V2B1\'s wounds a game,
   // the rule unchanged; its numbers measured again once the heavy attack became a skill and the charge times and the charged blows' power were trimmed
   // (journal Passe CH1; Passe V2B1: 0.80 and 1.62 wounds a game, 60.4 % of the bouts, crowned 4 %, the cut 88 %)
   assert.equal(+prepared.rates.playerInjured.toFixed(2), 0.76); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.74);
-  assert.equal(+prepared.rates.playerWins.toFixed(3), 0.596); assert.equal(prepared.v2.champion, 0.02); assert.equal(prepared.v2.madeCut, 0.88);
+  // (lot L4, journal Passe EVL7: 0.592 since Rhosk takes the training sand on the free day before a bracket bout, which the prepared player does not answer: seed 27
+  // loses the major match it won; 0.596 before)
+  assert.equal(+prepared.rates.playerWins.toFixed(3), 0.592); assert.equal(prepared.v2.champion, 0.02); assert.equal(prepared.v2.madeCut, 0.88);
   assert.ok(prepared.rates.playerInjured < idle.rates.playerInjured / 2, 'the prepared player is wounded less than half as often as the idle one');
   assert.ok(prepared.eventCounts['healer-offer'] > 0 && idle.eventCounts['healer-offer'] > 0, 'the healer still writes to the wounded');
 });

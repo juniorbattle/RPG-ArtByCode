@@ -1,6 +1,7 @@
 import { actions, placeName, standings, dusk, type Action, type ActionOption, type GameEvent, type GameState } from '../simulation';
 import { offeredBy, scoutable } from '../simulation/roles';
 import { heardLine, strapCut } from '../simulation/v2intel';
+import { sandRefusal } from '../simulation/v2rivals';
 import { PEOPLE, titleOf } from '../narrative/people';
 import { linesOf } from '../narrative/dialogue';
 import { RIVALS } from '../narrative/roster';
@@ -258,8 +259,9 @@ export class TownUi {
   /** the list on demand (UM-R2, Q): what can be done here and now, the rest and the wait, the people; a band at the foot of the screen, as a dialogue */
   openHere(): void {
     const s = this.st, v2 = isV2(s), all = actions(s);
-    // the place's actions open now (the version 2, P5), every one with its reason in today's game; the people's are in their dialogues
-    const opts = all.filter((o) => { const by = offeredBy(o.action as never); return o.action.type !== 'talk' && o.action.type !== 'move' && (by === null || by === 'forge') && (!v2 || o.ok || o.action.type === 'rest' || o.action.type === 'wait'); });
+    // the place's actions open now (the version 2, P5), every one with its reason in today's game; the people's are in their dialogues; a version 2 game also
+    // shows the drill the sand refuses, with its reason (lot L4: the morning after a brawl, Rhosk on it), so the player reads why
+    const opts = all.filter((o) => { const by = offeredBy(o.action as never); return o.action.type !== 'talk' && o.action.type !== 'move' && (by === null || by === 'forge') && (!v2 || o.ok || o.action.type === 'rest' || o.action.type === 'wait' || (o.action.type === 'train' && !!sandRefusal(s))); });
     const fight = s.slot === 'afternoon' && s.tournament.matches.some((m) => m.day === s.day && !m.winner && (m.a === 'player' || m.b === 'player'));
     const people = all.filter((o) => o.action.type === 'talk');
     this.closeModal(); this.modal = true; this.prompt.classList.remove('on');

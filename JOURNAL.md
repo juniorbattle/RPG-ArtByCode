@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -73,205 +73,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/60-passes-EVL2-EVL3.md`](journal/60-passes-EVL2-EVL3.md) | EVL2, EVL3 | 05/11 → 06/11 |
 | [`journal/61-passes-EVL4.md`](journal/61-passes-EVL4.md) | EVL4 | 06/11 |
 | [`journal/62-passes-GA1-GA2.md`](journal/62-passes-GA1-GA2.md) | GA1, GA2 | 06/11 → 07/11 |
+| [`journal/63-passes-GA3-GA4.md`](journal/63-passes-GA3-GA4.md) | GA3, GA4 | 07/11 → 08/11 |
 
 ---
-
-## Passe GA3 — Trois combattants génériques de plus, Lucan Rook, Piers Calloway et Kell Barrow : six feuilles candidates, leur place dans le jeu, la fiche de lot publiée (2026-11-07)
-
-### Demande
-- Transmise par la séance mère (`local_9c4ca758-…`) : faire les trois combattants que l'opérateur a retenus sur la fiche des génériques (Passe GA2) : GA-P1, GA-P2, GA-P3 « Oui, ainsi », GA-P4 « Une tâche à part, après celle-ci ». Les figures de la planche de tournoi a (`tournament-roster-casting-2026-10-18-a-original.png`) et leur rôle, tels que proposés et acceptés :
-  - n° 08 « Swordmaster » → « Lucan Rook, the Red Blade » : battu par Marek en qualification, il s'entraîne devant la porte de l'arène le soir ; au parvis le soir ; profil de Marek ;
-  - n° 09 « Spear Champion » → « Piers Calloway, of the Long Spear » : il garde les barges sur le quai le jour ; au quai le jour ; profil de Vessa ; sa lance depuis le texte (X4) ; réserve : ses cheveux bleus rappellent Cassius ;
-  - n° 14 « Martial Artist » → « Kell Barrow, the Bare Fist » : il se bat pour quelques pièces sur les marches de la halle le matin ; à la place de la halle le matin ; profil de Tobin ; à mains nues.
-- La recette des Passes GA1 / GA2, derrière `flags.v2`, le jeu par défaut inchangé. Branche `claude/generiques-plus`.
-
-### Fait — [OK], tout `candidate` jusqu'à la fiche
-1. **Trois planches propres** (une requête de deux variantes chacune, 0,39 $). Références : la planche PNJ 01-16, la planche propre du casting `casting-clear-2026-11-01-a`, la figure découpée de la planche de tournoi (agrandie ×2 au plus proche, hors dépôt). Retenues :
-   - Lucan, variante 1 : elle garde la cuirasse d'acier de sa figure, la variante 2 la remplaçait par une tunique ;
-   - Piers, variante 2 : le manteau crème de sa figure, l'autre le peignait blanc ;
-   - Kell, variante 1 : des vues plus nettes.
-   Archivées à l'octet : `lucan-clear-2026-11-07`, `piers-clear-2026-11-07`, `kell-clear-2026-11-07`.
-2. **Trois feuilles de ville** `lucan-x2-v1`, `piers-x2-v1`, `kell-x2-v1` (`clearRig`, 12 images debout, 48 couleurs), à même échelle à côté de Ren, Marek, Vessa, Tobin, Cassius et Aldric. Les têtes, relues à la source :
-   - Kell agrandie de 1,2 sur 83 rangs, comme Cassius et Tobin (23 texels de large sinon) ;
-   - Lucan et Piers agrandies de 1,1 après la critique (84 texels de haut, « un peu petits », le portrait de Lucan sur son col) : 86 texels, le visage dans le cadrage du portrait comme pour le casting.
-3. **Les planches de poses** (gpt-image-2), les invites de GA1 adaptées à chaque arme et au kit du rival emprunté : l'épée longue de Lucan et la lance de Piers depuis le texte (X4), Kell à mains nues (chaque coup est un poing).
-   - Lucan : sept planches. Les planches a à d, puis trois reprises : e, Iron Gate de profil (la planche c la dessinait de face dans ses deux variantes) ; f et g, après la critique.
-   - Piers : six planches, a à d, puis e et f après la critique.
-   - Kell : quatre planches. Son kit, celui de Tobin, tient en trois (ni garde ni compétence de garde) ; d est une reprise faite après la critique.
-4. **Trois feuilles de combat** (`rivalRig`) :
-   - `lucan-x3-combat`, 32 images : kit de Marek (garde, Iron Fall, Iron Gate, Champion's Resolve) ;
-   - `piers-x3-combat`, 34 images : kit de Vessa (garde, esquive, Quickblade Lunge, Brace, Tempo) ;
-   - `kell-x3-combat`, 27 images : kit de Tobin (Wild Swing, Farmboy Grit).
-   Hauteurs debout : Lucan 125, Piers 123, Kell 128. Pour Piers, 118 au départ, celle de Vessa : à 125, sa fente (le manteau et la lance à l'horizontale) dépasse la case de 192 texels. Chaque pas est réglé sur la hauteur d'une figure debout de sa planche, du haut des cheveux aux semelles (`stand`), puis relu à l'œil sur la feuille entière (la planche b de Piers corrigée de 305 à 292).
-5. **Manifestes et paquets de provenance** des six feuilles : `candidate`, `runtimeUse: lab` ; rien dans le jeu ne les charge. Vues en DEV dans le duel par `?scene=arena&v2=1&fighterdensity=combat&foe=<id>`.
-6. **Leur place dans le jeu**, derrière la version 2 :
-   - `src/narrative/generics.ts` : leur profil, PV et dégâts « proposés » (Lucan 0,85 / 0,9 sur le profil du champion ; Piers et Kell 0,9 / 0,95) ;
-   - `src/narrative/people.ts` : Lucan au parvis le soir, Piers au quai le matin et l'après-midi, Kell à la place de la halle le matin, `generic: true` ;
-   - leurs répliques (`v2.line.lucan`, `.piers`, `.kell`) ;
-   - le défi : `challengeable` les prend avec les génériques ;
-   - une figure générée de l'arène en attendant leurs feuilles : `FOES.lucan = FOES.marek`, `FOES.piers = FOES.kell = FOES.vessa` ;
-   - le joueur curieux du laboratoire les défie après les autres (`lab.ts`).
-7. **`tools/challenge-flow.mjs`** : `[who]` accepte `lucan`, `piers`, `kell` ; en chemin vers le soir, le combat officiel du jour est gagné (comme le fait déjà la représaille) ; un combattant du quai est défié sans déplacement. **`AGENTS.md`** : le paramètre `[who]`.
-
-### La critique à l'aveugle — puis les reprises
-- Un agent neuf, à froid, avec : les figures d'origine, les feuilles de ville à côté du casting, les portraits, chaque image de combat sur fond de nuit et de jour, le duel la nuit et à midi.
-
-| | Ville : propreté / fidélité / place | Combat : propreté / fidélité / proportions / poses | Nuit / midi | Verdict |
-|---|---|---|---|---|
-| Lucan | 9 / 8 / 7 | 7 / 8 / 7 / 7 | 8 / 8 | avec petites corrections |
-| Piers | 9 / 7 / 7 | 6 / 8 / 5 / 6 | 6 / 8 | à reprendre, de façon ciblée |
-| Kell | 9 / 8 / 9 | 9 / 8 / 9 / 7 | 8 / 8 | avec petites corrections |
-
-- **Vérifié sur les pixels avant de corriger.** [KO] « La pointe de l'épée et le fer de lance coupés au bord de la case » : faux. La source dessine des pointes émoussées, et `place` pousse un corps trop long vers la droite jusqu'à ce que son pixel le plus à gauche touche la colonne 1. Le critique l'a reconnu à la revérification.
-- **Corrigé, sur des planches de reprise :**
-  - Lucan :
-    - le coup reçu, l'épée pointée vers Ren, se lisait comme une estoc ;
-    - son rétablissement ;
-    - la levée du coup puissant (le visage caché) ;
-    - l'étourdi et la victoire, avec l'épée à pleine longueur.
-  - Piers :
-    - sa taille ;
-    - Tempo et l'atterrissage de l'esquive, lance couchée, se lisaient comme des attaques : la lance pointe désormais en haut ;
-    - le rétablissement après un coup ;
-    - le K.O. (la lance à plat sous lui faisait un bord droit de 101 texels, que la règle de `sheet-clean` refuse dès 96).
-  - Kell :
-    - la fin de son coup puissant, à genoux, avait la même boîte que le K.O. ;
-    - la levée, les poings joints au-dessus de la tête, se lisait comme un étirement ;
-    - la préparation du ralliement, les mains sur la tête, se lisait comme une douleur.
-- **Revérifiées par le même critique** : Lucan 9/8/8 en ville, 8/8/8/7 en combat, nuit 8, midi 8, avec petites corrections ; Piers 9/7/8, 8/8/6/7, nuit 6, midi 8, avec petites corrections ; Kell 9/8/9, 9/8/9/9, nuit 8, midi 8, prêt. Il demandait encore deux choses :
-  - le second coup reçu de Lucan : son accroupi se lisait comme l'élan du coup puissant ; repris debout, il recule l'épée levée (planche g) ;
-  - le K.O. de Piers, la lance dressée à 35° depuis son dos : repris, la lance couchée derrière lui, et le bout qui dépassait des bottes masqué (`mask`) pour tenir dans la case (planche f).
-  Ces deux dernières reprises n'ont pas repassé de critique.
-- **Reste, en réserve sur la fiche** : la lance de Piers n'a pas une seule longueur. Sa partie visible va d'environ 120 texels (au repos, une partie de la hampe passe derrière le manteau) à 175 (à la victoire, il la tient droite, plus haute que lui). Deux reprises n'y ont rien fait : le générateur ne tient pas une longueur d'une planche à l'autre. Un masque côté talon trouerait le manteau dans la posture. La nuit, ses cheveux bleu nuit se fondent dans la porte. Sa ressemblance avec Cassius en portrait a sa carte.
-
-### Défauts trouvés — [KO → corrigé]
-- **Deux processus de `gen-image.mjs` à la fois corrompent son registre.** Chaque instance charge le registre, réserve, puis réécrit sa propre copie au règlement : lancées en parallèle (trois, puis neuf requêtes), les instances se sont écrasées. Résultats :
-  - des requêtes payées restaient « pending » à leur pire estimation : Lucan comptait 4,08 $ au lieu de 1,23 $, et ses deux requêtes suivantes ont été refusées pour un faux dépassement du plafond ;
-  - l'entrée de la planche propre de Kell avait disparu : 0,39 $ non comptés.
-
-  Le registre des trois tâches est reconstruit depuis les fiches de provenance des images (chaque requête une fois, à son coût réel `fromUsage`, une note dans chaque entrée), la copie d'avant gardée hors dépôt ; ensuite, une seule requête à la fois. [?] L'outil n'a pas de verrou : carte GA3-S3.
-- Iron Gate dessiné de face, la fente de Piers trop large pour la case, le K.O. de Piers au bord droit : voir plus haut.
-- Mon script : des apostrophes non échappées dans `generics.ts` (typecheck rouge), corrigées à la main ; un premier essai de `challenge-flow` contre Kell, avant tout branchement, échoue comme attendu sur le visage et la feuille (le contrôle négatif).
-
-### Le compte OpenAI de nouveau à sec, puis rechargé — [OK]
-- La reprise de Kell : « HTTP 429: You have no credits remaining », deux fois, non facturé. Demandé à l'opérateur par la séance mère ; l'opérateur, mot pour mot : « compte recharge ».
-
-### Coûts (registre de `gen-image.mjs`, plafond 5 $ par combattant)
-| Combattant | Requêtes | Total |
-|---|---|---|
-| Lucan | 7 (planche propre, a à d, reprises e, f, g) | 3,32 $ |
-| Piers | 6 (planche propre, a à d, reprises e, f) | 2,90 $ |
-| Kell | 5 facturées (planche propre, a, b, c, reprise d) et deux 429 non facturés | 2,07 $ |
-
-### Mesures — TournamentLab, graines 1 à 50
-- **Contre `main` figé (`4c7cb9c`)**, au JSON près identiques : les règles classiques et dynamiques (diligent), et en v2 `idle` et `diligent`.
-- **`curious` (v2)** : 54,9 % de combats gagnés, comme avant ; qualifié à 68 % (66 %) ; finaliste à 8 %. Il fait 7,9 défis par partie (7,1), dont 4,6 gagnés (3,8) : les trois nouveaux s'ajoutent à sa liste, après les autres.
-
-### Tests — [OK]
-- **`tests/v2-town.test.mjs`** : un test neuf pour les trois.
-  - Chacun est à son lieu et à son heure, refusé aux autres heures et ailleurs, sur le profil de son rival avec ses nombres.
-  - Il n'enseigne rien, la mise revient double, et le bot finit le duel v2.
-  - Aucun des trois n'existe dans le jeu par défaut.
-  - Quatre fautes injectées une à une, toutes attrapées : Kell aussi l'après-midi, Piers sur Orla, Lucan de jour, Lucan à pleine vie.
-- **`tests/combat-cast.test.mjs`** : les trois feuilles de combat sont tenues au contrat de toute feuille (le kit du rival emprunté, la case, la palette de leur feuille de ville, leur paquet). Ce sont des candidates : ni approuvées ni chargées.
-- La règle de `tests/sheet-clean.test.mjs` passe sur les six candidates : toutes propres. `build-character --check` et `build-combat --check` : les six se reconstruisent à l'identique.
-- `npm test` 444 sur 444, `npm run typecheck`, `npm run build`, `npm run art:validate` (73 manifestes, 123 sources archivées, 0 erreur).
-- `ui-text` : les dialogues de Lucan (parvis, le soir), de Piers (quai, le matin) et de Kell (halle, le matin), à 1 600 × 900 et 390 × 844 : six pages sur six, 16 et 14 px au plus petit.
-- Environnement : une jonction `node_modules/three` vers le dossier principal (dossier ignoré, à défaire en fin de tâche), comme en GA1.
-
-### Archive du journal
-- Les passes EVL2 et EVL3 (branche `claude/l2-ville`, fusionnée) déplacées à l'octet dans `journal/60-passes-EVL2-EVL3.md` : le corps de l'archive est égal aux 21 806 octets retirés, chaque passe est dans un seul fichier, les fins de ligne CRLF sont gardées.
-
-### La fiche — publiée, rien de décidé
-- Page privée https://claude.ai/artifact/AnVwmX5TVwWNzM9ddzyoAT, source `briefs/fiche-generiques-plus.html` (la page de GA1), 24 images publiées avec elle (pas dans le dépôt).
-- La collection `decisions` a été relue vide à la publication.
-- Vérifiée en local avant : 10 cartes, 35 animations, les 26 images chargées, aucun débordement à 375 px.
-- Dix cartes, chacune avec sa recommandation :
-  - GA3-LU1 et GA3-LU2, GA3-PI1 et GA3-PI2, GA3-KE1 et GA3-KE2 : chaque feuille, « Production » ;
-  - GA3-PI3, la ressemblance de Piers avec Cassius : « Garder (la figure fait foi) » ;
-  - GA3-S1, le branchement : « Les six ensemble » ;
-  - GA3-S2, leurs nombres : « Garder » ;
-  - GA3-S3, le verrou du registre de `gen-image.mjs` : « Une tâche à part ».
-
-### Où reprendre
-- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot. Passer en production ce qu'il approuve (manifestes, `GENERIC_FACES` dans `PlazaCast.ts`, `CombatCast.ts`, `tests/combat-cast.test.mjs` sans les candidats). Puis les preuves :
-  - le jeu par défaut à 0 px contre `main` figé, en DEV et sur les deux paquets de production ;
-  - `challenge-flow` gagné et perdu contre chacun, sous sa feuille ;
-  - `arena-sheet-proof` ;
-  - `play-flow` et `play-day`.
-  Ensuite `AGENTS.md` (« Art production principle »), puis la fusion.
-
-### Pensée
-- Un constat de la critique se vérifie sur les pixels avant d'être corrigé : la « pointe coupée » était une pointe émoussée que la case poussait jusqu'à son bord.
-- Le générateur ne tient pas la longueur d'une arme d'une planche à l'autre, même quand l'invite la fixe sur une figure de référence. Une arme longue (lance, bâton) le montre plus qu'une épée : mieux vaut la mesurer tôt et la dire sur la fiche que l'espérer d'une reprise.
-- Un outil qui lit puis réécrit un fichier partagé ne se lance pas en parallèle sans verrou : la reconstruction est possible parce que chaque image garde sa propre fiche de provenance.
-
-## Passe GA4 — La fiche des trois génériques de plus relue : dix sur dix, les six feuilles en production derrière la version 2, une note sur la diversité des couleurs de peau ; la branche fusionnée (2026-11-07 → 2026-11-08)
-
-### Demande
-- L'opérateur, mot pour mot : « Fiche remplie ». Relire `decisions` (https://claude.ai/artifact/AnVwmX5TVwWNzM9ddzyoAT, source `briefs/fiche-generiques-plus.html`), consigner mot pour mot, passer en production ce qu'il approuve, refaire les preuves, fusionner.
-
-### Les choix de l'opérateur, mot pour mot (dix sur dix, cliqués le 2026-11-07 entre 23 h 56 et 23 h 57 UTC)
-| Carte | Ce qu'elle demandait | Choix | Note de l'opérateur |
-|---|---|---|---|
-| GA3-LU1 | Lucan Rook, la feuille de ville | « Production » | « par contre je veux de la diversivite et non uniquement des personnages a la meme couleur de peau sinon oui je suis satisfait. » |
-| GA3-LU2 | Lucan Rook, la feuille de combat ×3 | « Production » | — |
-| GA3-PI1 | Piers Calloway, la feuille de ville | « Production » | — |
-| GA3-PI2 | Piers Calloway, la feuille de combat ×3 | « Production » | — |
-| GA3-PI3 | Piers et Cassius se ressemblent en portrait | « Garder (la figure fait foi) » | — |
-| GA3-KE1 | Kell Barrow, la feuille de ville | « Production » | — |
-| GA3-KE2 | Kell Barrow, la feuille de combat ×3 | « Production » | — |
-| GA3-S1 | Le branchement | « Les six ensemble » | — |
-| GA3-S2 | Leurs nombres de combat | « Garder » | — |
-| GA3-S3 | Un verrou pour le registre de `gen-image.mjs` | « Une tâche à part » | — |
-
-- Les dix choix suivent la recommandation de leur carte. La réserve sur la lance de Piers (GA3-PI2) est acceptée avec la feuille ; sa ressemblance avec Cassius est gardée (GA3-PI3).
-- **La note sur GA3-LU1** ne retire pas l'approbation (« sinon oui je suis satisfait »). Elle vise la distribution : les combattants et les personnes faits jusqu'ici ont presque tous la même couleur de peau claire. Elle est consignée comme une direction pour les prochains personnages (« À reprendre ») : je ne l'ai pas appliquée aux feuilles approuvées, ce serait un dessin neuf sans son choix.
-
-### Fait — [OK]
-1. **Les six feuilles approuvées** : manifestes `approved: true`, `runtimeUse: production`, la carte de chacune et GA3-S1 cités ; paquets de provenance à jour (`approvals`) ; les vingt sources archivées passent « approuvées à travers leurs feuilles » (trois planches propres, dix-sept planches de poses).
-2. **Branchées derrière la version 2** :
-   - `src/arena/CombatCast.ts` : `lucan`, `piers`, `kell` dans ses quatre motifs ; un défi les montre sur leur feuille, sur les clips du rival qu'ils empruntent ;
-   - `src/characters/PlazaCast.ts` : `GENERIC_FACES`, leurs visages dans les portraits d'une partie de la version 2 (dialogues, HUD du duel), sans place sur une place ;
-   - la figure générée de l'arène (`FOES.lucan`, `.piers`, `.kell`) reste la place de repli de `cast=generated`.
-3. `tests/combat-cast.test.mjs` (plus de candidats : les six en production, leurs visages dans `PlazaCast`), `tests/baked-cast.test.mjs` et `tests/stride.test.mjs` (leurs feuilles de ville hors du quartier et des marches) ; `tests/sheet-clean.test.mjs` mesure désormais les six.
-4. `AGENTS.md` (« Art production principle »), `art-lab/characters/README.md`, `art-lab/characters/reference/README.md`.
-
-### Tests — [OK]
-- Trois fautes injectées une à une, toutes attrapées : Kell retiré du motif de `CombatCast`, Piers de `GENERIC_FACES`, Lucan sur le profil d'Ilse.
-- `npm test` **444 sur 444**, `npm run typecheck`, `npm run build`, `npm run art:validate` (73 manifestes, 123 sources archivées, 0 erreur).
-
-### Preuves — [OK]
-- **Serveurs** (par `preview_start`) : la branche en DEV `:5271`, `main` figé (`git archive` de `4c7cb9c`) en DEV `:5272`, les deux paquets de production par `vite preview` `:5273` et `:5274`.
-- **`challenge-flow`** (DEV) :
-  - Lucan gagné et perdu : `05e60bcbb8b9956f`, `9f1537003e154edd` ;
-  - Piers gagné et perdu : `c92f44fcdd643334`, `4f6900db0ab1712c` ;
-  - Kell gagné et perdu : `6aa48e097071136b`, `d0a062c63e4e82e8`.
-
-  Tous les contrôles passent : chacun sur sa feuille de production, son visage dans le dialogue, Node rejoue à la même empreinte. **Contrôle négatif** (Passe GA3, avant le branchement) : le défi à Kell échouait sur le visage et la feuille.
-- **`arena-sheet-proof`** (DEV, `foe=<générique>`), la nuit (60 s) et à midi (20 s) : 0 image hors feuille, les visages cuits 32 × 32 dans le HUD. Images vues : Lucan 25 et 24 de ses 32 ; Piers 25 et 24 de 34 ; Kell 23 et 21 de 27. Contrôle négatif `--q=cast=generated` : 2 464 images hors feuille, FAIL.
-- **Le jeu par défaut, inchangé** :
-  - `detshots` à 0 px au seuil 0 contre `main` figé, sept vues : la ville de nuit et à midi ; le mode jouable par défaut à l'ouverture, avec la liste Q et Mara ; la ville d'une partie v2 à l'ouverture et avec la liste Q. Témoin de répétition à 0 px ; contrôle négatif (nuit contre midi) 97 % ;
-  - l'arène par défaut et le duel v2 contre Marek, trois moments chacun, à 0 px (`HOLD=1 FREEZE_CSS=1`), témoin à 0 px.
-- **Les paquets de production** :
-  - les mêmes sept vues et l'arène (défaut et v2, calme et K.O.) à 0 px. Une exception lue puis expliquée : la ville de nuit du premier chargement de `main` diffère de 199 pixels dans le compteur « FPS / frame ms » du panneau de performance, une mesure vivante. `main` diffère de lui-même d'un chargement à l'autre (199 px) ; la branche contre `main` au chargement suivant : 0 px ; deux chargements de la branche : 0 px ;
-  - l'entrée garde sa taille (220 044 octets) ; changent `CombatCast`, `PlazaCast`, `FighterArt`, les six feuilles et les morceaux qui les nomment.
-- **Empreintes**, celles des Passes EVL1 à GA2 :
-  - `play-flow` sur le paquet de production : par défaut `0025acce7a403773`, `V2=1` `cf669f2d59e33a8d` ;
-  - `play-day` (DEV) : par défaut `6a942086a2616ab2`, `V2=1` `98f385cda8abd0e9`.
-- **`ui-text`**, les trois dialogues avec leur visage, chacun à 1 600 × 900 et 390 × 844 : six pages sur six, 16 et 14 px au plus petit.
-- **Vu sur les captures de `challenge-flow`** : le visage de Lucan dans son dialogue au parvis le soir, celui de Piers dans le HUD de son duel, Piers en garde sur le sable. L'outil photographie encore le fondu de l'écran de chargement sur certaines captures (déjà relevé en Passe GA2).
-
-### La fusion
-- La branche `claude/generiques-plus` (Passes GA3, GA4) est fusionnée en avance rapide dans `main` ; `main` est poussé, la branche supprimée, locale et distante.
-
-### Ce qui suit
-- **GA3-S3 « Une tâche à part »** : un verrou autour de la lecture et de l'écriture du registre de `gen-image.mjs`, avec son test.
-- **La note sur la diversité** (GA3-LU1) : les prochains personnages (génériques, casting) avec des couleurs de peau variées, chacun sur le choix de l'opérateur. Les planches de référence du casting en montrent peu : il faudra les choisir ou les demander. Aucun dessin neuf sans lui demander.
-
-### Pensée
-- Une note écrite à côté d'une approbation se lit pour ce qu'elle demande : ici une direction pour la suite (« sinon oui je suis satisfait »), pas une reprise des feuilles approuvées.
-- Une différence de pixels sur un paquet se lit avant d'accuser la branche : `main` contre lui-même la montrait aussi, c'était un compteur vivant.
 
 ## Passe I2 — Le verrou du registre de `gen-image.mjs` : chaque requête comptée une fois, le plafond vérifié sous le verrou ; la branche fusionnée (2026-11-08)
 
@@ -451,25 +255,69 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Une fiche relue sans note, toute à la recommandation, n'appelle pas de nouvelle preuve quand ni le code ni `main` n'ont bougé : on le vérifie (le commit, `origin/main`) avant de fusionner, plutôt que de refaire les séries.
 
-## Passe EVL7 — Le lot L4 de l'étape 5 (les événements et les rivalités), en cours : le code écrit, les preuves pas faites (2026-11-07)
+## Passe EVL7 — Le lot L4 de l'étape 5 : les ambiances hors des nouvelles, chaque rival se souvient, Vessa et Rhosk agissent, un ami avertit, les suites des actions et des lieux ; la fiche de lot publiée (2026-11-07 → 2026-11-08)
 
 ### Demande
-- Transmise par la séance mère (local_6617afa0-…) : construire L4 derrière flags.v2 d'après EV-7, EV-8, EV-9 (Passe EV2) et L3-11. Branche claude/l4-rivalites. **Interrompue par la limite d'usage de la séance.**
+- Transmise par la séance mère (`local_6617afa0-…`) : construire le lot L4 de l'étape 5 derrière `flags.v2`, le jeu par défaut inchangé, d'après les choix de l'opérateur sur la fiche EV1 (Passe EV2) : EV-7 « Les suites des actions, puis un par lieu, puis le ciblé », avec sa note mot pour mot « il faut que cela puisse impacter la preparation du joueur en jouant sur cet aspect imprevisible » ; EV-8 « Hors des nouvelles, dans les répliques et le son » ; EV-9 « Chaque rival se souvient ; deux autres agissent » (sa carte : « un rival aidé peut avertir d'un sabotage », « Vessa l'espionnage et la désinformation, Rhosk l'intimidation : à relire »). Et L3-11 « Les garder pour L4 » : le sergent Hale, Corra Dunmere, Frère Ambrose.
+- Lu d'abord : `JOURNAL.md` en entier (Passes EVL5, EVL6), `briefs/audit-gameplay-ev1.md` (§§ 1-3, 10), `briefs/fiche-ev1.html` (EV-7 à EV-9), `AGENTS.md`. Branche `claude/l4-rivalites`.
+- Interrompue une fois par la limite d'usage (commit `6c1a1c1`, cette passe « en cours ») ; reprise sur la demande de la séance mère (« Try again » de l'opérateur).
 
-### Écrit — [?] non prouvé, rien de fusionné
-- EV-8 : night-market, colosseum-roar, v2-puppet-show écrits cachés dans une partie v2 (champ v2quiet, src/events/engine.ts), leur pouls gardé ; dits par Pip (marché, un texte par jour), Wren (marionnettes après un combat), le sergent Brann (clameur).
-- EV-9 mémoire : src/simulation/v2rivals.ts (stanceOf, memoryOf, stanceLine sur la page du tournoi, stanceWords pour Ilse, Tobin, Rhosk, Marek) ; le fait humbled-by en v2.
-- EV-9 Vessa (désinformation) : les soirs des jours 2 et 4, rancunière d'avoir perdu, elle paie la salle de Lio : l'adversaire suivant « blessé et rouillé » dans les nouvelles du lendemain, Lio le répète jusqu'au combat ; Frère Ambrose et l'inconnu le savent ; confrontVessa sur le parvis.
-- EV-9 Rhosk (intimidation) : hors du titre, le jour libre avant un combat du joueur dans le tableau, il prend le sable (signe de Corra la veille, v2-rhosk-offer) ; réponses : Orla, un défi gagné, reportRhosk chez Hale.
-- Un ami avertit (v2-friend-forge, v2-friend-gear) ; Corvin à un cinquième le lendemain d'un défi gagné ; les marchands se souviennent (répliques) ; le sable fermé le matin après la rixe ; Sœur Anwen occupée le soir d'un rival blessé.
-- États nommés v2-tale-day3, v2-sand-day9, v2-sand-training (graine 6, un état peut porter sa graine) ; le curieux répond ; 73 textes « proposé ».
+### Fait — [OK], derrière la version 2 (`src/simulation/v2rivals.ts`, neuf)
+1. **EV-8, les ambiances hors des nouvelles** : `night-market`, `colosseum-roar` et `v2-puppet-show` portent `v2quiet` ; dans une partie v2 ils partent et bougent le pouls comme avant, mais s'écrivent cachés (`visible: false`, `src/events/engine.ts`) : ni nouvelles, ni bandes, ni journal (J). Les gens les disent, un texte par jour et selon l'état : Pip le soir (le marché, trois textes), Wren après un combat du joueur, aujourd'hui ou hier (les marionnettes, gagné ou perdu, l'adversaire nommé, deux textes chacun), le sergent Brann les après-midi des combats des autres (la clameur) ; les passants du quai la disaient déjà. Le son ne change pas : les clameurs des jours de combat (`score.ts`) portent déjà le Colisée, et S5-RECEPTION fait de toute suite une demande à part. Le jeu par défaut garde ses nouvelles.
+2. **EV-9, chaque rival se souvient** : `stanceOf` (une rancune à −15 ou moins, une amitié à 25 ou plus, le respect d'un honorable ou d'un froid battu par le joueur), `memoryOf` (les combats, les défis, regardé à l'entraînement pour un fier, la première victoire et la moquerie pour Cassius, la cargaison, l'entraînement et le recrutement pour Orla, le rapport pour Rhosk, la confrontation pour Vessa) ; la page du tournoi (T) le dit (« Vessa Lark holds a grudge: beaten by you on day 2. ») ; un fait neuf en v2, `humbled-by:player:<jour>`, quand le joueur gagne avec plus de 70 % de sa vie (« barely touched »). Les répliques s'ajoutent là où l'arc ne disait rien : Ilse et Tobin (respect, amitié), Rhosk (respect), Marek (amitié).
+3. **EV-9, Vessa, la désinformation** (`vessaTalks`, `confrontVessa`) : battue par le joueur et rancunière, les soirs des jours 2 et 4 elle paie la salle de Lio pour dire que le prochain adversaire est blessé et rouillé (`V2State.lie`) ; les nouvelles du lendemain matin le disent sans la nommer (« In the taverns they say… ») ; Lio le répète jusqu'au combat, à chaque fois ; un conte vrai n'est pas dit. Ce qui la trahit : « paid for every round at Lio's » sur la page du tournoi (un acte public dans le journal caché des rivaux), Frère Ambrose (la place, l'après-midi et le soir), l'inconnu (la vérité, et « A duelist from the river towns paid for it »). La réponse : le lui dire en face sur le parvis, de jour, une fois qu'on sait (réputation +3, la sienne −5, son lien −5) ; le conte meurt et elle n'en dit plus.
+4. **EV-9, Rhosk, l'intimidation** (`v2-rhosk-offer`, `sandTaken`, `reportRhosk`) : hors du titre (la Porte) quand le joueur y est, le soir deux jours avant le prochain combat du joueur, Corra Dunmere dit sur le quai qu'il lui a offert de l'argent pour tenir le sable avec lui ; le lendemain (jour 7 ou 9), de jour, s'entraîner et travailler une compétence sont refusés au terrain, la raison dite. Trois réponses : Orla s'entraîne toujours, un défi gagné contre lui, le sergent Hale prévenu sur le quai (un coureur au greffier ; le nom de Rhosk dans son registre).
+5. **EV-9, un ami avertit** (`v2-friend-forge`, `v2-friend-gear`) : un rival à 25 ou plus (Orla, puis Ilse, Tobin, Marek) avertit le créneau d'avant chacune des deux chaînes de Cassius, la réponse nommée (la garde de Hale, la chambre forte d'Odo ou Hilde).
+6. **EV-7, les suites des actions** : chaque défi gagné, un jour d'écart au plus, Maître Corvin enseigne à un cinquième le lendemain (les hérauts la première fois, comme avant) ; Mara, Hilde, Pip et Corvin disent l'habitué (15 ou plus, « a tenth off », la remise qui existait) et le visage à surveiller (−15 ou moins).
+7. **EV-7, un par lieu** : le sable fermé le matin après la rixe des casernes (la promesse de son premier `about`, Passe VP1) ; Sœur Anwen occupée le soir d'un rival blessé (le texte de `rival-injured` le promettait).
+8. **Conditions des événements** : `{ boutIn: n }` (le prochain combat dans exactement n jours), `{ status: [id, phases] }`.
+9. **Le joueur curieux** : il prévient Hale dès le signe de Rhosk, et prend l'avertissement d'un ami pour un signe de sa chaîne. Le diligent ne change pas.
+10. **États nommés** (DEV) : `v2-tale-day3` (graine 1842), `v2-sand-day9` et `v2-sand-training` (graine 6 : Rhosk à la Porte) ; un état peut porter sa graine, prise sauf si l'adresse en donne une (`src/ui/play.ts`).
+11. **`tools/rivals-flow.mjs`** (neuf) : `tale` et `sand` joués dans le navigateur, rejoués en Node. **Textes** : 73 clés neuves, « proposé ». **`AGENTS.md`** : la version 2, les tests, l'outil.
 
-### Mesuré
-- TournamentLab contre main figé (11dabb7) : classique et dynamique (idle, diligent) identiques au JSON ; idle v2 identique sauf les empreintes (les ambiances cachées) ; diligent v2 59,6 → 59,2 % (1-50), 60,8 → 60,4 (101-150), 61,2 = (51-100), coupe et finales égales ; curieux 51,0 → 51,4 (1-50), égal ailleurs. Différences pas encore décomposées.
-- typecheck vert ; tests/v2-rivals.test.mjs (neuf) : 13 sur 16, trois échecs à lire (le sable après la rixe, Ambrose dans v2-tale-day3, la phrase de Tobin) ; tests/v2-injury.test.mjs attend 0,596 du diligent (0,592).
+### Mesures — TournamentLab, contre `main` figé (`11dabb7`)
+- **Identiques au JSON près** : les règles classiques et dynamiques, idle et diligent. **L'idle v2** : identique sauf ses empreintes ; avec les ambiances de nouveau racontées (copie hors dépôt), identique au JSON près.
+
+| Combats gagnés · coupe · finale | Graines | main | branche |
+|---|---|---|---|
+| diligent | 1-50 | 59,6 % · 88 % · 20 % | 59,2 % · 88 % · 20 % |
+| diligent | 51-100 | 61,2 % · 94 % · 30 % | identique |
+| diligent | 101-150 | 60,8 % · 96 % · 22 % | 60,4 % · 96 % · 22 % |
+| curieux | 1-50 | 51,0 % · 74 % · 16 % | 51,4 % · 74 % · 16 % |
+| curieux | 51-100 · 101-150 | 53,3 % · 56,6 % | identiques |
+
+- **Décomposition** (copies hors dépôt, une pièce éteinte à la fois) : le diligent, sable de Rhosk éteint, est identique à `main` dans ses résultats et ses événements, sur 150 graines ; avec lui, deux parties perdent le combat qu'elles gagnaient (27 et 122 : le signe la veille, l'entraînement refusé, une action de moins qui décale les tirages qui suivent). Le curieux, ses deux réponses neuves éteintes (le rapport à Hale, l'avertissement pris pour un signe), est identique à `main` ; avec elles, la graine 41 gagne un combat et ses actions en ville bougent de quelques centièmes (marchandages 3,56 → 3,60, défis gagnés 5,02 → 5,08 sur 1-50). La leçon de Corvin seule ne change rien (le curieux n'achète pas de compétence).
+- Par 50 parties : contes de Vessa 88 / 96 / 92 (diligent), 90 / 84 / 94 (curieux), deux par partie où Vessa perd contre le joueur ; signe de Rhosk 19 / 16 / 15 (diligent, jamais rapporté), 17 / 10 / 13 (curieux, toujours rapporté avant le jour du sable) ; avertissements d'un ami 4 / 1 / 3 et 1 / 5 / 6.
+
+### Tests — [OK]
+- **`tests/v2-rivals.test.mjs`** (neuf, 16 tests), oracles écrits dans le test (les seuils, les jours, les lieux et heures, les mots à dire) : les ambiances cachées en v2 et dites au jeu par défaut, leur pouls, le journal sans elles sur une partie entière ; Pip, Wren et Brann ; les attitudes à chaque seuil et chaque tempérament, les causes sur la page du tournoi, « barely touched », rien au jeu par défaut ; les répliques ajoutées ; les marchands ; le sable après la rixe ; Sœur Anwen ; le conte de Vessa (ses conditions, ses jours, Lio sur 200 tirages, l'inconnu, Ambrose, la confrontation) ; Rhosk (les causes du signe une à une, le sable, Orla, Hale, le défi, le lendemain libre) ; les avertissements (les quatre amis, l'ordre, les bornes de jours et de créneaux, 24 contre 25) ; le curieux ; le jeu par défaut sans rien de tout cela.
+- Mis à jour : `tests/v2-events.test.mjs` (la leçon de Corvin), `tests/v2-reading.test.mjs` (le premier après-midi ne dit que le marché de nuit, désormais hors des nouvelles : la boucle prend le premier soir, et le marché caché est vérifié à part), `tests/v2-injury.test.mjs` (le diligent à 0,592, sa cause écrite).
+- **Fautes injectées une à une** (script hors dépôt, chaque fichier rendu à l'octet et vérifié par SHA-256) : 29, toutes attrapées. [KO → corrigé] « un ami dès 20 » passait (aucun cas à 24) : le test borne désormais 24 contre 25. « Le curieux ne prévient jamais Hale » passait en ne retirant que le soir : il prévenait le lendemain matin, la faute réécrite (les deux), attrapée.
+- `npm test` **476 sur 476**, `npm run typecheck`, `npm run build`, `npm run art:validate` (73 manifestes, 123 sources archivées, 0 erreur ; 23 manifestes de son).
+
+### Preuves — [OK]
+- **Serveurs** par `preview_start` (une entrée de `.claude/launch.json` du worktree, non suivi) : la branche en DEV `:5291`, `main` figé (`git archive` de `11dabb7`, dossier `.frozen-main` non suivi) en DEV `:5292`, les deux paquets de production par `vite preview` `:5293` et `:5294`.
+- **Le jeu par défaut, inchangé** : `detshots` à l'octet près contre `main` figé, dix-sept vues : la ville de nuit et à midi ; le mode jouable par défaut à l'ouverture, avec la liste Q, Mara, le journal et le tableau ; son premier soir avec la liste ; la ville d'une partie v2 à l'ouverture, avec la liste Q et Mara ; l'arène par défaut et le duel v2, trois moments chacun (`HOLD=1 FREEZE_CSS=1`). Témoin de répétition (un second chargement de la branche) à l'octet près ; contrôles négatifs : nuit contre midi, ouverture contre liste, journal et tableau, arène par défaut contre duel v2, tous différents. [KO → corrigé] Le journal et le tableau, ouverts par une touche simulée, n'ouvraient rien (une fenêtre de nouvelles tenait la touche) : leurs captures égalaient l'ouverture ; refaits par les appels de la page. **Les paquets** : les mêmes vues (sans le premier soir, qui demande un état nommé) à l'octet près, sauf la ville de nuit et à midi : 192 et 77 pixels, tous dans la ligne « FPS / frame ms » du panneau de performance (1 653 à 1 908 × 1 069 à 1 076), une mesure vivante ; la branche diffère d'elle-même au même endroit (165 pixels), comme aux Passes GA4 et EVL5. L'entrée garde sa taille (220 044 octets) ; changent `save` (+12,2 Ko : la simulation), `text` (+7,1 Ko), `board`, `play`, `townUi`.
+- **Empreintes** : `play-flow` sur le paquet de production, par défaut `0025acce7a403773` ; `play-day` (DEV), par défaut `6a942086a2616ab2` : celles des Passes EVL1 à EVL6. En version 2 elles changent : `play-flow` `V2=1` `cf669f2d59e33a8d` → `f3974c5eedc75e97`, `play-day` `V2=1` `9f7aa09e947f678b` → `456b834c7af247e4`, rejouées en Node à la même empreinte ; la cause, vérifiée par le laboratoire sur les états nommés du même chemin (`v2-day2-afternoon`, `v2-training-dusk`) : avec les ambiances de nouveau racontées, l'empreinte de `main` revient.
+- **Une partie v2 jouée dans le navigateur, rejouée en Node** (`tools/rivals-flow.mjs`, DEV) : `tale` (graine 1842, jour 3) : le mot des tavernes dans le journal et sur sa page, la page du tournoi sur Vessa (« Vessa Lark holds a grudge: beaten by you on day 2. », « paid for every round at Lio's »), les mots de Frère Ambrose et sa nouvelle dans la bande, Vessa confrontée sur le parvis, la page du tournoi après (« … and shamed by you before the forecourt. ») : Node `e8bb3358d168ee17` = navigateur ; `sand` (graine 6, jour 9) : l'entraînement refusé avec sa raison dans la liste Q, les mots de Brann et de Hale, le rapport, l'entraînement fait : Node `476ff339bf0e18aa` = navigateur. [KO → corrigé] Dans une partie v2, la liste Q ne montre que ce qui est ouvert : l'entraînement refusé par Rhosk n'y paraissait pas, la raison n'était lue nulle part ailleurs que chez Brann ; il y paraît désormais refusé, avec sa raison, comme le repos et l'attente (`src/ui/townUi.ts`). L'outil attend la fin du fondu de l'écran de chargement avant ses captures.
+- **`ui-text`** : huit pages, chacune à 1 600 × 900 et 390 × 844, seize sur seize : Pip le soir, Wren et les marionnettes, Frère Ambrose, la page du tournoi sur Vessa, le journal du jour 3, la liste Q sur le sable de Rhosk, Brann, Hale ; 16 px et 14 px au plus petit.
+- Vu sur les captures (`play-shots`, DEV) : les sept images de la fiche. Relevé hors du lot sur celle de Hale (graine 6) : le matin, il dit encore « If something happens tonight » (sa ligne de garde mince ne lit pas l'heure).
+- Environnement : une jonction `node_modules/three` vers le dossier principal (dossier ignoré), à défaire en fin de tâche, comme en GA1 et EVL5.
+
+### La fiche — publiée, rien de décidé
+- Page privée https://claude.ai/artifact/Nyf3wvTgKHQXMiNVtBekp3, source `briefs/fiche-l4.html` (la page de la fiche de L3), sept captures publiées avec elle (pas dans le dépôt). La collection `decisions` a été relue vide à la publication. Vérifiée en local avant : quatorze cartes, les sept images chargées, aucun débordement à 375 px.
+- Quatorze cartes, chacune avec sa recommandation : L4-1 les ambiances hors des nouvelles (« Garder ») ; L4-2 chaque rival se souvient (« Garder ») ; L4-3 Vessa, la désinformation (« Garder » ; « l'espionnage plutôt » en alternative, la lecture que la carte EV-9 laissait « à relire ») ; L4-4 Rhosk, l'intimidation (« Garder ») ; L4-5 un ami avertit (« Garder ») ; L4-6 aider un autre rival qu'Orla, pas construit (« Laisser ainsi ») ; L4-7 Corvin après un défi gagné (« Garder ») ; L4-8 les marchands se souviennent (« Garder ») ; L4-9 le sable fermé après la rixe (« Garder ») ; L4-10 Sœur Anwen occupée (« Garder ») ; L4-11 Hale, Corra et Ambrose (« Garder ») ; L4-12 le laboratoire, chaque écart nommé (« Accepter ») ; L4-13 ce qui revient à L5 (« L5 ensuite ») ; L4-14 « Fusionner après la fiche, essayer ensuite ».
+
+### Relevés hors du lot
+- `sed -i` sous Git Bash a converti `src/events/v2catalog.ts` en LF dans le dossier de travail (l'index le garde en LF : aucun effet sur le dépôt) et mangé une barre oblique inverse ; corrigé par l'outil d'édition.
 
 ### Où reprendre
-- Corriger les trois tests, mettre à jour v2-injury avec la décomposition, npm test entier, build, art:validate, fautes injectées ; 0 px du jeu par défaut (DEV et paquets), play-flow 0025acce7a403773 et play-day 6a942086a2616ab2 ; une partie v2 au navigateur rejouée en Node ; ui-text ; la fiche L4 ; AGENTS.md ; puis la fusion. Le dossier .frozen-main (non suivi) et la jonction node_modules/three du worktree sont à retirer en fin de tâche.
+- Relire `decisions` quand l'opérateur dit la fiche remplie, consigner mot pour mot (journal, `briefs/audit-gameplay-ev1.md`), appliquer, refaire les preuves touchées, puis fusionner selon L4-14. La passe qui fusionne dit ce qui revient à L5 (EV-12, la ville qui réagit).
+
+### Pensée
+- Une règle qui retire une action au joueur témoin (l'entraînement refusé) change aussi tout ce qui suit par le nombre d'actions : les tirages se décalent. On le décompose en éteignant la règle seule, et l'écart doit retomber à zéro, événements compris.
+- Un aide de test qui « rend » un état v2 peut le refaire de zéro : `makeV2` sur un état déjà v2 efface ce que le lot y a écrit ; le test a d'abord accusé le code.
+- Une condition qui lit « demain » ne dit pas quand un camp joue : `boutIn` compte les jours jusqu'au prochain combat, et le signe de Rhosk tombe deux jours avant, quel que soit le chemin dans le tableau.
 
 ## À reprendre (par priorité)
 
@@ -489,7 +337,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   - **V1 fait (Passe V1)** : la commande à trois touches et la charge par paliers (`src/combat/charge.ts`), C3, l'équilibrage « modéré » proposé (tableau de la Passe V1), `?scene=arena&v2=1` et `&input=keys`. À revoir : des duels de plus de 10 min (Rhosk, Ilse à adresse 0,4). À faire en local : l'essai en main de la charge (le ressenti des 2 s, des paliers), `arena-scene-check` en direct, les 5 poses de charge de Ren et la feuille de Marek sont faites (Passes CX1, CX2 ; X3 « Ren seul, avant Marek » : pas de poses de charge pour Vessa).
   - **Essai de la version 2** : fiche remplie (Passe FV3, 18 sur 18) ; **preuves locales faites (Passe FV4)** : les places sous la nuit B à chaque moment et dans chaque cadrage (1080p et 1440p), leur cuisson neuve en 164 à 260 ms sur GPU, leur visibilité à 0 px sur 101 vues, l'arène vivante en PASS, `play-flow` v2, la cadence à 55 images/s, la page de revue https://claude.ai/artifact/EQPBWPv3msxgds6nGkDzLQ ; le quai d'une partie v2 en plan B la nuit, +0,1 ms (+0,7 %) sur la nuit B : « Accepter l'égalité » (Passe FV5) ; **V2-2 « Rien ne la coupe » appliquée (Passe V2C1)** : rien ne coupe une charge, un relâché que le duel ne peut pas prendre attend, seul le K.O. la finit ; **l'équilibrage recalé (Passe V2C2, « Oui, recaler »)** : les coups des rivaux × 1,45 et leurs PV × 1,2, le joueur préparé de nouveau à 60,4 %, des duels de 5 à 10 min, la tentative de sabotage revenue (16 parties sur 40) ; **V2-4 appliquée (Passe V2B1, « A. K.O. par un coup puissant »)** : seul un K.O. par un coup puissant blesse, une victoire jamais (0,80 blessure par partie pour le joueur préparé, 1,74 avant ; l'effet et les réponses gardés) ; restent sa revue (la page, puis en jeu), l'écoute du son, le prix réel d'une blessure à juger en jeu (le soir perdu : le laboratoire ne le voit pas), les feuilles des rivaux d'abord (V2-18) ; le défaut « Pas encore » (V2-17). Les « à faire en local » des mesures GPU et de la cuisson des places, dans les lignes V2 à VP9 ci-dessous, sont faits par la Passe FV4.
   - **La charge sans palier puissant (Passe CH1, décision A3 du 2026-11-04)** : l'attaque puissante est une compétence (1 PA, ses niveaux, possédée dès le départ, emportée ou non), les temps de charge et la puissance des coups chargés à 0,85, l'équilibre de V2C2 retrouvé (59,6 %) ; contrat et spécification amendés. **Fiche relue, six sur six à la recommandation (Passe CH2)** : CH-1 « 0,85 (−15 %) », CH-2 « La puissance suit la tenue (×0,85) », CH-3 « 1 PA », CH-4 « Les quatre d’aujourd’hui, la puissante à côté », CH-5 « Bien ainsi (à confirmer en jeu) », CH-6 « Fusionner après la fiche, essayer ensuite » ; fusionné dans `main`. **Reste l'essai en jeu de l'opérateur.**
-  - **Étape 5, le gameplay (Passe EV1)** : audit des événements, du vol, du défi, du marchandage et du récit de la version 2 contre les contrats (`briefs/audit-gameplay-ev1.md`) : le défi sans enjeu (gagné 15 fois sur 15), le vol sans suite (un voleur à réputation 0 qualifié 9 fois sur 10), le marchandage un dé, trois ambiances à 52 % des nouvelles, une seule réponse (la garde du quai) contre les deux sabotages, trois champs du pouls lus par rien, l’information et la réaction visible de la ville minces, le festival et l’investissement absents ; six défauts de lecture relevés (dont les nouvelles de fin de créneau perdues sur les places). **Fiche relue, seize sur seize à la recommandation (Passe EV2)** : https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`), quatre notes consignées mot pour mot (une représaille possible après un vol, des combattants génériques, le marchandage avec les passants, des événements qui touchent la préparation) ; les génériques « En ville, structure gardée (Recommandé) » ; la consigne : l’importance narrative et la cohérence du gameplay, sans se perdre dans la structure. **L1 fait (Passe EVL1)** : les six défauts de lecture corrigés dans la version 2 (les nouvelles des places, celles d’une action dans sa bande, « free », les causes du journal, la fiche de match, le vol réussi) ; le jeu par défaut inchangé, trois écarts à lui consignés (les codes de son journal, ses nouvelles cachées sous une bande, son quai qui redit le bandeau). **L2 fait et fusionné (Passes EVL2 à EVL4)**, la fiche relue (treize sur quatorze à la recommandation ; L2-2 « Des marques (Recommandé) » : le registre de Hale compte une marque par vol pris ou découvert à l’aube, trois marques ferment les étals) : les marques à côté de la réputation, expliquées dans le jeu ; le vol découvert à l’aube, la fouille et les étals fermés à trois marques, la restitution chez Hale toujours ouverte, le greffier, les étals forcés la nuit ; le marchandage au moment d’acheter (trois arguments) et trois passants avec leur pièce ; le défi à pleine vie avec une mise, une fois par phase, dans l’arène aux gradins vides ; les éliminés dès le jour 6 et trois combattants génériques (portrait seul, figure générée en attendant leur art) ; la représaille de Corra ; le joueur curieux au laboratoire. **L3 fait et fusionné (Passes EVL5, EVL6)** : chaque rival observé là où il s’entraîne, deux sources de rumeurs (Lio, juste deux fois sur trois ; l’inconnu, jamais faux), ce que la ville a vu sur la page du tournoi, la garde du quai pour la forge seule et la chambre forte d’Odo pour les vestiaires, le trafic seulement la veille d’un combat du joueur, la sangle coupée lue sur la fiche et trouvée après le combat, Lady Edda qui nomme la maison Dree, le rapport qui paie l’équipement ; la fiche relue douze sur douze à la recommandation (Passe EVL6 ; L3-9 « Accepter l’écart » : le diligent v2 n’est plus identique au JSON près) ; l’essai de L3 en jeu par l’opérateur (L3-12). **La suite : L4** (les événements et les rivalités, EV-7 à EV-9 ; ce qui lui revient : Passe EVL6), puis L5 et L6 dans cet ordre (EV-15), chacun dans sa séance derrière `flags.v2` ; à L4 aussi le sergent Hale, Corra et Ambrose (L3-11 « Les garder pour L4 »). **À part** : l’art des trois combattants génériques fait et en production (Passes GA1, GA2 : leurs visages en portrait, leurs feuilles au duel, derrière la version 2) ; **trois combattants de plus**, Lucan Rook, Piers Calloway et Kell Barrow, faits et en production derrière la version 2 (Passes GA3, GA4 : leurs visages en portrait, leurs feuilles au duel) ; **la note de l’opérateur sur GA3-LU1**, mot pour mot « par contre je veux de la diversivite et non uniquement des personnages a la meme couleur de peau sinon oui je suis satisfait. » : les prochains personnages avec des couleurs de peau variées, chacun sur son choix (Passe GA4) ; l’essai de L2 en jeu par l’opérateur (L2-14). Relevé hors du lot : « Your bouts are fought » au jour 7 pour un finaliste (Passe EVL3). Le recrutement et la phase d’équipe restent un chantier plus tard.
+  - **Étape 5, le gameplay (Passe EV1)** : audit des événements, du vol, du défi, du marchandage et du récit de la version 2 contre les contrats (`briefs/audit-gameplay-ev1.md`) : le défi sans enjeu (gagné 15 fois sur 15), le vol sans suite (un voleur à réputation 0 qualifié 9 fois sur 10), le marchandage un dé, trois ambiances à 52 % des nouvelles, une seule réponse (la garde du quai) contre les deux sabotages, trois champs du pouls lus par rien, l’information et la réaction visible de la ville minces, le festival et l’investissement absents ; six défauts de lecture relevés (dont les nouvelles de fin de créneau perdues sur les places). **Fiche relue, seize sur seize à la recommandation (Passe EV2)** : https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`), quatre notes consignées mot pour mot (une représaille possible après un vol, des combattants génériques, le marchandage avec les passants, des événements qui touchent la préparation) ; les génériques « En ville, structure gardée (Recommandé) » ; la consigne : l’importance narrative et la cohérence du gameplay, sans se perdre dans la structure. **L1 fait (Passe EVL1)** : les six défauts de lecture corrigés dans la version 2 (les nouvelles des places, celles d’une action dans sa bande, « free », les causes du journal, la fiche de match, le vol réussi) ; le jeu par défaut inchangé, trois écarts à lui consignés (les codes de son journal, ses nouvelles cachées sous une bande, son quai qui redit le bandeau). **L2 fait et fusionné (Passes EVL2 à EVL4)**, la fiche relue (treize sur quatorze à la recommandation ; L2-2 « Des marques (Recommandé) » : le registre de Hale compte une marque par vol pris ou découvert à l’aube, trois marques ferment les étals) : les marques à côté de la réputation, expliquées dans le jeu ; le vol découvert à l’aube, la fouille et les étals fermés à trois marques, la restitution chez Hale toujours ouverte, le greffier, les étals forcés la nuit ; le marchandage au moment d’acheter (trois arguments) et trois passants avec leur pièce ; le défi à pleine vie avec une mise, une fois par phase, dans l’arène aux gradins vides ; les éliminés dès le jour 6 et trois combattants génériques (portrait seul, figure générée en attendant leur art) ; la représaille de Corra ; le joueur curieux au laboratoire. **L3 fait et fusionné (Passes EVL5, EVL6)** : chaque rival observé là où il s’entraîne, deux sources de rumeurs (Lio, juste deux fois sur trois ; l’inconnu, jamais faux), ce que la ville a vu sur la page du tournoi, la garde du quai pour la forge seule et la chambre forte d’Odo pour les vestiaires, le trafic seulement la veille d’un combat du joueur, la sangle coupée lue sur la fiche et trouvée après le combat, Lady Edda qui nomme la maison Dree, le rapport qui paie l’équipement ; la fiche relue douze sur douze à la recommandation (Passe EVL6 ; L3-9 « Accepter l’écart » : le diligent v2 n’est plus identique au JSON près) ; l’essai de L3 en jeu par l’opérateur (L3-12). **L4 construit (Passe EVL7)**, branche `claude/l4-rivalites`, non fusionnée : les ambiances hors des nouvelles et dans les répliques (EV-8), chaque rival se souvient sur la page du tournoi, Vessa (le conte dans la salle de Lio) et Rhosk (le sable du terrain d’entraînement) agissent, un ami avertit des chaînes de Cassius (EV-9), Corvin après un défi gagné, les marchands qui se souviennent, le sable fermé après la rixe, Sœur Anwen occupée (EV-7) ; Hale, Corra et Ambrose y ont leur rôle (L3-11) ; **la fiche https://claude.ai/artifact/Nyf3wvTgKHQXMiNVtBekp3 (`briefs/fiche-l4.html`, quatorze cartes) attend l’opérateur**, puis la fusion selon L4-14. Ensuite L5 et L6 dans cet ordre (EV-15), chacun dans sa séance derrière `flags.v2`. **À part** : l’art des trois combattants génériques fait et en production (Passes GA1, GA2 : leurs visages en portrait, leurs feuilles au duel, derrière la version 2) ; **trois combattants de plus**, Lucan Rook, Piers Calloway et Kell Barrow, faits et en production derrière la version 2 (Passes GA3, GA4 : leurs visages en portrait, leurs feuilles au duel) ; **la note de l’opérateur sur GA3-LU1**, mot pour mot « par contre je veux de la diversivite et non uniquement des personnages a la meme couleur de peau sinon oui je suis satisfait. » : les prochains personnages avec des couleurs de peau variées, chacun sur son choix (Passe GA4) ; l’essai de L2 en jeu par l’opérateur (L2-14). Relevé hors du lot : « Your bouts are fought » au jour 7 pour un finaliste (Passe EVL3). Le recrutement et la phase d’équipe restent un chantier plus tard.
   - **La manette (Passe MN1)** : état des lieux de chaque chemin d'entrée (seul le duel lit une manette, la première seulement), prototype de revue des glyphes (DEV, `?padglyph=`), fiche https://claude.ai/artifact/F2fYfXXjwL5y6o7p5q4fj1 relue onze sur onze à la recommandation ; **construite et prouvée (Passe MN2)** : la ville, les places, toutes les pages, l'écran titre et le duel de la version 2 à la manette, le jeu au clavier à 0 px contre `main` (DEV et paquets), une manette simulée jouant le premier jour et un combat. **Reste l'essai de l'opérateur avec sa manette** (MN-11) : le son à la première pression (MN-10), la vibration, la zone morte et la marche la plus lente.
   - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
@@ -714,7 +562,7 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
   en Passe O1) ; les tests ne sont pas typés (`.mjs`, hors `tsconfig`). Fonctions pures et refus « images manquantes » : testés (Passe Q2).
 - **Code mort mineur** (Passe M5) : des `void x;` qui taisent des paramètres, des types exportés sans usage hors de leur fichier.
 - **Archivage du journal** : « Branche fusionnée suffit » (Passe D1, `AGENTS.md` mis à jour). Derniers archivages : H1-H4 (Passe B1), H5-P2
-  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10), SN7-SN8 (Passe SN14), SN9-SN10 (Passe SN16), SN11-SN12 et SN13-SN14 (Passe SN19), SN15-SN17 (Passe SN22), SA1-SN18 (Passe CH1), SN19-SN22 (Passe PU2), CH1-CH2 (Passe MN2), PU1-PU2 (Passe EV2), EV1-MN2 (Passe EVL2), EV2-EVL1 (Passe GA1), EVL2-EVL3 (Passe GA3), EVL4 (Passe I2), GA1-GA2 (Passe EVL5) ; le prochain au-delà d'environ 60 Ko de passes gardées.
+  (Passe D1), H7-D2 (Passe Z2), H9-Z4 (Passe Y4), R2-Y3 (Passe K10), Y4-D7 (Passe N3), K9-H11 (Passe L2), N1-N4 et L0-L1 (Passe L7), L2-L3 (Passe Q4), L4-L6 (Passe S3), L7-L7b (Passe D9), Q4-Q4b (Passe AD1), D8-F2 (Passe UI2), S3b-AD1 (Passe UI3), AA1-UI1 (Passe CB1), UI2-UI3 (Passe C2), CB1-C1 (Passe RC1), C2-AA2 (Passe AP1), RC1-C2F (Passe RC2), AP1-RC2 (Passe V0), AV1-V10 (Passe VP2), VP1-VP2 (Passe VP6), VP3-VP6 (Passe VP7), VP7 (Passe VP8), VP8 (Passe VP9), VP9 (Passe RC3), FV1-FV3 (Passe V2B1), FV4-FV5 (Passe FX1), V2C1 (Passe FX3), RC3 (Passe FX5), V2C2-V2B1 (Passe CA3), FX1 (Passe CA7), FX2-FX5 (Passe CX2), CA1-CA2 (Passe CX4), CA3-CA7 (Passe UM8), CX1-CX4 (Passe SN3), UM2-UM8 (Passe SN5), UM9-SN3 (Passe SN7), UM10-SN6 (Passe SN10), SN7-SN8 (Passe SN14), SN9-SN10 (Passe SN16), SN11-SN12 et SN13-SN14 (Passe SN19), SN15-SN17 (Passe SN22), SA1-SN18 (Passe CH1), SN19-SN22 (Passe PU2), CH1-CH2 (Passe MN2), PU1-PU2 (Passe EV2), EV1-MN2 (Passe EVL2), EV2-EVL1 (Passe GA1), EVL2-EVL3 (Passe GA3), EVL4 (Passe I2), GA1-GA2 (Passe EVL5), GA3-GA4 (Passe EVL7) ; le prochain au-delà d'environ 60 Ko de passes gardées.
 
 ## Principes à garder
 
@@ -812,6 +660,8 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 ### Preuves
 - Une consigne de preuve écrite avant la conception (« au JSON près ») se relit contre le choix qu’elle accompagne : un joueur témoin qui s’appuyait sur l’ancienne règle ne peut pas rester identique ; on prouve ce qui doit l’être (ses combats, ses taux) et l’on nomme chaque différence (Passe EVL5).
 - Un sabotage se mesure à ce qu’il change : lister, pour chaque tentative du laboratoire, ce qui s’est passé le lendemain ; une politique dont chaque pièce dépensée change la nuit suivante se juge sur plusieurs jeux de graines et pièce par pièce (Passe EVL5).
+- Une règle qui retire une action au joueur témoin décale aussi tous les tirages qui suivent (une action de moins) : on la décompose en l’éteignant seule, et l’écart doit retomber à zéro, événements compris (Passe EVL7).
+- Un aide de test qui « rend » un état peut le refaire de zéro (`makeV2` sur un état déjà v2 efface ce que le lot y écrit) : un échec se lit d’abord dans le test (Passe EVL7).
 - Une capture de l’arène ne se compare qu’avec ses réglages figés (`HOLD=1 FREEZE_CSS=1`) : sans eux, deux captures de la même page diffèrent (Passe EVL3).
 - Une empreinte écrite au journal se rejoue sur la base figée avant d’accuser la branche : la représaille perdue de la Passe EVL4 ne s’y retrouve pas non plus (Passe GA2).
 - Une action rare (un vol pris, une représaille) se prouve dans le navigateur à partir d’un état bâti en Node par les actions du jeu, les tirages forcés par le `rng` d’`advance`, puis gardé dans la sauvegarde : l’interface prend la suite, et Node rejoue ce que la page a fait, ouverture d’un dialogue comprise (Passe EVL3).
