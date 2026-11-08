@@ -5,6 +5,7 @@ import { isV2, v2KitOf } from './v2';
 import { LATE_TEACHER, SKILL_BOOK, taughtBy } from '../combat/skillbook';
 import { MAX_LEVEL, chargeTime } from '../combat/skills';
 import { skillName, tx } from '../narrative/text';
+import { sandRefusal } from './v2rivals';
 
 /** The skills of a version 2 game (lot V2, C4; the operator's decision AV-9 « Achat, entraînement et défi », journal Passe V2): the skills the
  *  player owns and their levels (`s.v2.kit.levels`, AV-8), the four brought to a duel (`s.v2.kit.loadout`), and the three ways to obtain one:
@@ -76,8 +77,9 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
     list: (s) => (isV2(s) && atForecourt(s) ? Object.values(SKILL_BOOK).filter((k) => k.source === 'train' || owns(s, k.id)).map((k) => ({ type: 'drillSkill', skill: k.id })) : []),
     label: (s, a) => (owns(s, a.skill) ? tx('v2.drill.raise', { skill: skillName(a.skill), level: levelOf(s, a.skill) + 1 }) : tx('v2.drill.learn', { skill: skillName(a.skill) })),
     cost: () => 1,
-    check: (s, a) => (!isV2(s) ? tx('v2.only') : !atForecourt(s) ? tx('v2.train.notHere') : s.slot === 'evening' ? tx('train.closed')
-      : !owns(s, a.skill) && SKILL_BOOK[a.skill]?.source !== 'train' ? tx('v2.drill.notBase') : levelOf(s, a.skill) >= TRAIN_CAP ? tx('v2.drill.cap', { skill: skillName(a.skill), cap: TRAIN_CAP }) : null),
+    // lot L4 (EV-7 / EV-9): the sand shut the morning after a brawl, or taken by Rhosk (src/simulation/v2rivals.ts)
+    check: (s, a) => (!isV2(s) ? tx('v2.only') : !atForecourt(s) ? tx('v2.train.notHere') : s.slot === 'evening' ? tx('train.closed') : sandRefusal(s) ?? (
+      !owns(s, a.skill) && SKILL_BOOK[a.skill]?.source !== 'train' ? tx('v2.drill.notBase') : levelOf(s, a.skill) >= TRAIN_CAP ? tx('v2.drill.cap', { skill: skillName(a.skill), cap: TRAIN_CAP }) : null)),
     apply: (s, a, _r, emit) => {
       const r = learnOrRaise(s, a.skill, TRAIN_CAP);
       s.player.reputation = clamp(s.player.reputation + 1);

@@ -29,7 +29,7 @@ export function journalDays(s: GameState): JournalDay[] {
 const sentence = (t: string): string => /^.*?[.!?](?=\s|$)/.exec(t)?.[0] ?? t;
 
 /** an action's cause in words (journal Passe EVL1): the simulation writes `action:<type>` */
-const ACTION_WHY: Record<string, TextKey> = { steal: 'v2.why.steal', checkGear: 'v2.why.checkGear', recruit: 'v2.why.recruit', repair: 'v2.why.repair', report: 'v2.why.report', confront: 'v2.why.confront' };
+const ACTION_WHY: Record<string, TextKey> = { steal: 'v2.why.steal', checkGear: 'v2.why.checkGear', recruit: 'v2.why.recruit', repair: 'v2.why.repair', report: 'v2.why.report', confront: 'v2.why.confront', confrontVessa: 'v2.why.confrontVessa', reportRhosk: 'v2.why.reportRhosk' };
 
 /** the cause written under a consequence or a sign: a sentence stays as the simulation wrote it; in a version 2 game a code (`action:steal`,
  *  `challenge:orla`, `match:r2:player-vessa`) is said in words, or not at all (UM-R3 « Tous les retirer »: no developer's text on screen;

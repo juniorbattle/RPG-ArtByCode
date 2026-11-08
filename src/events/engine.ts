@@ -40,6 +40,8 @@ export function holds(c: Cond, s: GameState, pulse: WorldPulse): boolean {
   if ('others' in c) return s.tournament.matches.some((m) => m.day === s.day && m.a !== PLAYER_ID && m.b !== PLAYER_ID);
   if ('firedBefore' in c) { const at = s.flags[`ev:${c.firedBefore}`]; return typeof at === 'number' && at < slotNumber(s); }
   if ('boutTomorrow' in c) return s.tournament.matches.some((m) => m.day === s.day + 1 && !m.winner && (m.a === PLAYER_ID || m.b === PLAYER_ID));
+  if ('boutIn' in c) { const next = s.tournament.matches.filter((m) => m.day > s.day && !m.winner && (m.a === PLAYER_ID || m.b === PLAYER_ID)).reduce((d, m) => Math.min(d, m.day), Infinity); return next - s.day === c.boutIn; }
+  if ('status' in c) return c.status[1].includes(s.competitors[c.status[0]]?.phaseStatus ?? '');
   throw new Error(`unknown condition ${JSON.stringify(c)}`);
 }
 
@@ -77,7 +79,8 @@ export function runEvents(s: GameState, pulse: WorldPulse, emit: Emit, rng: Rng,
     if (!out) continue;
     for (const e of out.effects) applyEffect(e, s);
     s.flags[`ev:${ev.id}`] = slotNumber(s);
-    emit({ kind: ev.major ? 'consequence' : ev.type === 'targeted' ? 'sign' : 'event', id: ev.id, cause: ev.cause, text: out.text, visible: true });
+    // a version 2 game's ambiences leave the news (lot L4, EV-8): written hidden, their pulse kept
+    emit({ kind: ev.major ? 'consequence' : ev.type === 'targeted' ? 'sign' : 'event', id: ev.id, cause: ev.cause, text: out.text, visible: !(ev.v2quiet && s.flags.v2 === true) });
     fired.push(ev.id);
   }
   return fired;

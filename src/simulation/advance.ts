@@ -9,6 +9,7 @@ import { computePulse } from '../tournament/pulse';
 import { tx } from '../narrative/text';
 import { daysOf, v2AfterSlot } from '../tournament/v2calendar';
 import { v2Dawn } from './v2law';
+import { vessaTalks } from './v2rivals';
 
 /** The simulation's entry points (PROJECT_MASTER_CONTRACT § 10.2, journal Passe L1):
  *  - `newGame(seed, name)`: the slice's first morning;
@@ -88,7 +89,7 @@ function passSlot(s: GameState, emit: Emit, cause: string): void {
   // the version 2's bracket (lot V6): the cut, the major match, the final, the champion, once the day's bouts are fought
   v2AfterSlot(s, s.slot, emit);
   // a version 2 game's dawn (lot L2a): the owners count what was stolen in the day, the watch searches a player it wants
-  if (s.slot === 'evening' && s.day < daysOf(s) && s.flags.v2 === true) v2Dawn(s, emit, rngFor(s, 'law'));
+  if (s.slot === 'evening' && s.day < daysOf(s) && s.flags.v2 === true) { v2Dawn(s, emit, rngFor(s, 'law')); vessaTalks(s, emit); }
   const i = slotIndex(s.slot);
   if (i < SLOTS.length - 1) s.slot = SLOTS[i + 1];
   else if (s.day < daysOf(s)) { s.day++; s.slot = 'morning'; }

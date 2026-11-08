@@ -5,6 +5,7 @@ import { isV2 } from './v2';
 import { available } from './roles';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
 import { tx, type TextKey } from '../narrative/text';
+import { taleOf, TALE } from './v2rivals';
 
 /** The version 2's information and the sabotage's answers (lot L3; the operator's EV-11 « Observer tout adversaire, rumeurs, activité lisible » and EV-10
  *  « Une réponse par lieu, un effet lisible », journal Passe EV2; the audit's §§ 2-3, `briefs/audit-gameplay-ev1.md`). Three tiers of what the player can
@@ -50,7 +51,10 @@ export function secretOf(s: GameState, who: string): V2Rumour['secret'] {
 export function rumourOf(s: GameState, who: string, src: RumourSrc, r: Rng): V2Rumour {
   const c = s.competitors[who], hp = (c?.healthState ?? 'fit') as V2Rumour['hp'], form = formOf(c?.preparation ?? 0);
   if (src === 'stranger') { const secret = secretOf(s, who); return { day: s.day, src, hp, form, ...(secret ? { secret } : {}) }; }
-  if (r.next() < RUMOUR.lio.truth) return { day: s.day, src, hp, form };
+  const right = r.next() < RUMOUR.lio.truth;
+  // lot L4 (EV-9): the tale Vessa Lark paid the room to tell of this rival, repeated until the player's bout against them (src/simulation/v2rivals.ts)
+  if (taleOf(s) === who) return { day: s.day, src, ...TALE };
+  if (right) return { day: s.day, src, hp, form };
   const others = FORMS.filter((f) => f !== form);
   return { day: s.day, src, hp: hp === 'fit' ? 'hurt' : 'fit', form: others[r.int(0, others.length - 1)] };
 }
@@ -79,6 +83,8 @@ export function seenInTown(s: GameState, who: string): string {
   if (n) parts.push(n === 1 ? tx('v2.seen.train') : tx('v2.seen.trainN', { n }));
   if (acts.some((a) => a.act === 'buy')) parts.push(tx('v2.seen.buy'));
   if (acts.some((a) => a.act === 'rest')) parts.push(tx('v2.seen.rest'));
+  // lot L4 (EV-9): Vessa paying every round at Lio's to tell her tale, seen by the whole room (src/simulation/v2rivals.ts vessaTalks)
+  if (acts.some((a) => a.act === 'lie')) parts.push(tx('v2.seen.rounds'));
   // whom they drank with, read against the very words the off-screen log wrote (src/tournament/offscreen.ts)
   const drank: string[] = [], words: string[] = [];
   for (const a of acts.filter((x) => x.act === 'socialise')) {
@@ -130,7 +136,11 @@ export const V2_INTEL_ACTIONS: { [K in V2IntelAction['type']]: ActionDef<Extract
       const who = nextOpponent(s)!, h = rumourOf(s, who, a.src, r);
       s.player.coins -= RUMOUR[a.src].coins; s.flags[`rumour:${a.src}:${s.day}`] = true;
       (s.v2!.heard ??= {})[who] = h;
-      emit({ kind: 'action', id: `rumour:${a.src}`, cause: 'action:rumour', visible: true, text: tx(a.src === 'lio' ? 'v2.rumour.lioLog' : 'v2.rumour.strangerLog', { said: rumourText(who, h) }) });
+      // lot L4 (EV-9): the stranger knows who paid for the tale the taverns tell of this rival
+      const tale = a.src === 'stranger' && taleOf(s) === who;
+      if (tale && !s.facts.includes('vessa-lie-known')) s.facts.push('vessa-lie-known');
+      const said = tale ? `${rumourText(who, h)} ${tx('v2.lie.stranger')}` : rumourText(who, h);
+      emit({ kind: 'action', id: `rumour:${a.src}`, cause: 'action:rumour', visible: true, text: tx(a.src === 'lio' ? 'v2.rumour.lioLog' : 'v2.rumour.strangerLog', { said }) });
     },
   },
   // the lockers' own answer (EV-10): the gear sleeps in the registrar's strongroom, the night before a bout

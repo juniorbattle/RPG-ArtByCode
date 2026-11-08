@@ -80,7 +80,11 @@ test('what the events change: the master\'s lesson, the alert after a theft, a c
   const t = v2(); const c = T.stealChance(t, 'mara'); t.flags['alert:1'] = true; assert.ok(Math.abs(c - 0.15 - T.stealChance(t, 'mara')) < 1e-9 || T.stealChance(t, 'mara') === 0.05);
   const caught = v2(); caught.slot = 'evening'; caught.flags['caught:1'] = true;
   const evs = run(caught, ['v2-quay-alert', 'v2-thief-talk']).map((e) => e.id); assert.deepEqual(evs, ['v2-quay-alert', 'v2-thief-talk']); assert.ok(caught.flags['alert:2']);
-  const ch = v2(); ch.flags['challenge-won'] = true; assert.equal(run(ch, ['v2-challenge-fame']).length, 1);
+  // a challenge won today (lot L4, EV-7 « Les suites des actions »): the heralds the first time, Master Corvin's lesson the next day each time, a day apart
+  const ch = v2(); ch.flags['challenge-won'] = true; assert.equal(run(ch, ['v2-challenge-fame']).length, 0, 'a win of another day says nothing');
+  ch.flags['won-challenge:1'] = true; const first = run(ch, ['v2-challenge-fame']); assert.equal(first.length, 1); assert.match(first[0].text, /heralds/); assert.ok(ch.flags['lesson:2'] && !ch.flags['lesson:1']);
+  ch.slot = 'afternoon'; assert.equal(run(ch, ['v2-challenge-fame']).length, 0, 'once a day');
+  ch.day = 3; ch.slot = 'morning'; ch.flags['won-challenge:3'] = true; const again = run(ch, ['v2-challenge-fame']); assert.equal(again.length, 1); assert.doesNotMatch(again[0].text, /heralds/); assert.match(again[0].text, /Corvin/); assert.ok(ch.flags['lesson:4']);
   const car = v2(); car.services.forge = 'repaired'; car.services.shopFactor = 1.4; car.flags['ev:steel-shortage'] = 3; run(car, ['v2-steel-caravan']); assert.equal(car.services.shopFactor, 1);
   // a version 2 condition never holds in today's game
   assert.equal(E.holds({ v2: true }, G.namedState('day1-morning'), G.namedState('day1-morning').pulse), false);

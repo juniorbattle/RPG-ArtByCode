@@ -45,7 +45,8 @@ function squareApi(st0) {
 
 test('(1) a square shows the news of a slot that ended there: « Wait » on the forecourt, the heralds on the page that opens', () => {
   const store = memory();
-  for (const name of ['v2-forecourt-morning', 'v2-training-morning', 'v2-square-morning', 'v2-forecourt-midday']) {
+  // (lot L4, EV-8 « Hors des nouvelles »: the first afternoon's end tells only the night market, now out of the news; the first evening's end the heralds' day)
+  for (const name of ['v2-forecourt-morning', 'v2-training-morning', 'v2-square-morning', 'v2-forecourt-night']) {
     const st = v2(name);
     // the page opens: what it shows, then counted as shown
     N.seenBefore(st, store); N.markSeen(st, store);
@@ -60,6 +61,9 @@ test('(1) a square shows the news of a slot that ended there: « Wait » on the 
     // the defect, reproduced by the oracle: from the log's last entry, nothing is shown
     assert.equal(shown(r.state, r.state.log.length - 1).length, 0);
   }
+  // the first afternoon on the forecourt: the night market opens at its end, its pulse kept, out of the news (EV-8)
+  const mid = G.advance(v2('v2-forecourt-midday'), { type: 'wait' });
+  assert.ok(mid.events.some((e) => e.id === 'night-market' && !e.visible) && !mid.events.some((e) => e.visible), 'the night market, out of the news');
 });
 
 test('(1) what an action keeping the page showed counts as shown; an action that reloads leaves its news to the next page; a walk tells nothing again', () => {

@@ -23,7 +23,9 @@ export const EVENTS: readonly EventDef[] = [
   },
   {
     id: 'colosseum-roar', type: 'tournament', about: 'The Colosseum\'s roar over the rooftops on the afternoons of the bouts (PROJECT § 8.2: the Colosseum audible).',
-    // a version 2 game: only on an afternoon of bouts the player does not fight (its free days are quiet; the final alone is the player's own)
+    // a version 2 game: only on an afternoon of bouts the player does not fight (its free days are quiet; the final alone is the player's own); kept out of
+    // its news since lot L4 (EV-8 « Hors des nouvelles, dans les répliques et le son »): the passers-by and the bout days' cheers say it
+    v2quiet: true,
     slots: ['afternoon'], once: false, cooldown: 3, when: { all: [{ day: true, gte: 2 }, { any: [{ not: { v2: true } }, { others: true }] }] }, cause: 'the pool\'s bouts at the Colosseum',
     outcomes: [
       { when: { all: [{ v2: true }, { day: true, gte: 10 }] }, effects: [{ pulse: 'excitement', add: 3 }], text: 'The Colosseum roars as one over the rooftops: the final is being fought.' },
@@ -102,6 +104,8 @@ export const EVENTS: readonly EventDef[] = [
   },
   {
     id: 'night-market', type: 'district', about: 'Lantern Row comes alive at night.',
+    // kept out of a version 2 game's news (lot L4, EV-8): Pip says it at his stall at dusk
+    v2quiet: true,
     slots: ['afternoon'], once: false, cooldown: 3, when: { pulse: 'festivity', gte: 30 }, cause: 'the tournament\'s crowds',
     outcomes: [
       { when: { v2: true }, effects: [{ pulse: 'commerce', add: 2 }], text: 'As the sun goes down, the festival square lights its paper lanterns: the night market opens.' },

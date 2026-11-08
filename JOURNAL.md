@@ -451,6 +451,26 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Une fiche relue sans note, toute à la recommandation, n'appelle pas de nouvelle preuve quand ni le code ni `main` n'ont bougé : on le vérifie (le commit, `origin/main`) avant de fusionner, plutôt que de refaire les séries.
 
+## Passe EVL7 — Le lot L4 de l'étape 5 (les événements et les rivalités), en cours : le code écrit, les preuves pas faites (2026-11-07)
+
+### Demande
+- Transmise par la séance mère (local_6617afa0-…) : construire L4 derrière flags.v2 d'après EV-7, EV-8, EV-9 (Passe EV2) et L3-11. Branche claude/l4-rivalites. **Interrompue par la limite d'usage de la séance.**
+
+### Écrit — [?] non prouvé, rien de fusionné
+- EV-8 : night-market, colosseum-roar, v2-puppet-show écrits cachés dans une partie v2 (champ v2quiet, src/events/engine.ts), leur pouls gardé ; dits par Pip (marché, un texte par jour), Wren (marionnettes après un combat), le sergent Brann (clameur).
+- EV-9 mémoire : src/simulation/v2rivals.ts (stanceOf, memoryOf, stanceLine sur la page du tournoi, stanceWords pour Ilse, Tobin, Rhosk, Marek) ; le fait humbled-by en v2.
+- EV-9 Vessa (désinformation) : les soirs des jours 2 et 4, rancunière d'avoir perdu, elle paie la salle de Lio : l'adversaire suivant « blessé et rouillé » dans les nouvelles du lendemain, Lio le répète jusqu'au combat ; Frère Ambrose et l'inconnu le savent ; confrontVessa sur le parvis.
+- EV-9 Rhosk (intimidation) : hors du titre, le jour libre avant un combat du joueur dans le tableau, il prend le sable (signe de Corra la veille, v2-rhosk-offer) ; réponses : Orla, un défi gagné, reportRhosk chez Hale.
+- Un ami avertit (v2-friend-forge, v2-friend-gear) ; Corvin à un cinquième le lendemain d'un défi gagné ; les marchands se souviennent (répliques) ; le sable fermé le matin après la rixe ; Sœur Anwen occupée le soir d'un rival blessé.
+- États nommés v2-tale-day3, v2-sand-day9, v2-sand-training (graine 6, un état peut porter sa graine) ; le curieux répond ; 73 textes « proposé ».
+
+### Mesuré
+- TournamentLab contre main figé (11dabb7) : classique et dynamique (idle, diligent) identiques au JSON ; idle v2 identique sauf les empreintes (les ambiances cachées) ; diligent v2 59,6 → 59,2 % (1-50), 60,8 → 60,4 (101-150), 61,2 = (51-100), coupe et finales égales ; curieux 51,0 → 51,4 (1-50), égal ailleurs. Différences pas encore décomposées.
+- typecheck vert ; tests/v2-rivals.test.mjs (neuf) : 13 sur 16, trois échecs à lire (le sable après la rixe, Ambrose dans v2-tale-day3, la phrase de Tobin) ; tests/v2-injury.test.mjs attend 0,596 du diligent (0,592).
+
+### Où reprendre
+- Corriger les trois tests, mettre à jour v2-injury avec la décomposition, npm test entier, build, art:validate, fautes injectées ; 0 px du jeu par défaut (DEV et paquets), play-flow 0025acce7a403773 et play-day 6a942086a2616ab2 ; une partie v2 au navigateur rejouée en Node ; ui-text ; la fiche L4 ; AGENTS.md ; puis la fusion. Le dossier .frozen-main (non suivi) et la jonction node_modules/three du worktree sont à retirer en fin de tâche.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

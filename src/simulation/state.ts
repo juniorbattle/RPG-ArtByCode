@@ -140,6 +140,9 @@ export interface V2State {
   /** the last rumour heard of each rival (lot L3, the operator's EV-11 « Observer tout adversaire, rumeurs, activité lisible », journal Passe EV2): what the
    *  source said, true or not (src/simulation/v2intel.ts), never the truth itself */
   heard?: Record<string, V2Rumour>;
+  /** the tale Vessa Lark paid Lio's room to tell (lot L4, the operator's EV-9 « Chaque rival se souvient ; deux autres agissent », journal Passe EV2): of which rival,
+   *  from which day the room repeats it, until the day of the player's bout against them (src/simulation/v2rivals.ts) */
+  lie?: { who: string; from: number; until: number };
 }
 /** a rumour as it was told: the day, the source (Lio's room, often right; the hooded stranger, never wrong), the rival's health and form as said, and a
  *  secret only the stranger tells (they watched you train, they meet a hood at night) */

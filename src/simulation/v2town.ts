@@ -239,10 +239,16 @@ export function applyChallenge(s: GameState, o: DuelOutcome, emit: Emit): void {
   (v.challenged ??= {})[who] = s.day;
   const stake = ch.stake ?? 'name';
   if (won) {
-    s.flags['challenge-won'] = true;
+    // lot L4 (EV-7 « Les suites des actions »): the day's win, which makes the town talk (src/events/v2catalog.ts v2-challenge-fame: Master Corvin's lesson the next day)
+    s.flags['challenge-won'] = true; s.flags[`won-challenge:${s.day}`] = true;
     if (stake === 'coins') s.player.coins += 2 * STAKE.coins; else s.player.reputation = clamp(s.player.reputation + STAKE.name);
     const c = s.competitors[who]; if (c) c.relationships.player = clamp((c.relationships.player ?? 0) + (temper === 'proud' ? -6 : 10), -100, 100);
     emit({ kind: 'action', id: 'challenge:won', cause: `challenge:${who}`, visible: true, text: tx(stake === 'coins' ? 'v2.challenge.wonCoins' : 'v2.challenge.wonName', { name, n: stake === 'coins' ? 2 * STAKE.coins : STAKE.name }) });
+    // lot L4 (EV-9): Rhosk beaten on the sand leaves it to the player (src/simulation/v2rivals.ts), whatever he meant to do with it
+    if (who === 'rhosk' && !s.flags['sand-cleared']) {
+      s.flags['sand-cleared'] = true;
+      if (s.flags[`sand:${s.day}`] || s.flags[`sand:${s.day + 1}`]) emit({ kind: 'consequence', id: 'rhosk:beaten', cause: `challenge:${who}`, visible: true, text: tx('v2.sand.challengeLog') });
+    }
     learnFromChallenge(s, who, emit);
   } else {
     if (stake === 'name') s.player.reputation = clamp(s.player.reputation - STAKE.name);

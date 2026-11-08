@@ -12,8 +12,9 @@ import { V2_STORY_ACTIONS } from '../narrative/v2story';
 import { V2_LAW_ACTIONS } from './v2law';
 import { V2_BARTER_ACTIONS } from './v2barter';
 import { V2_INTEL_ACTIONS } from './v2intel';
+import { V2_RIVAL_ACTIONS, anwenBusy } from './v2rivals';
 
-const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS };
+const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS };
 
 /** The town's people in game roles (choice P4, journal Passe L4): the district's existing characters offer services, quests and clues;
  *  the forecourt's officials and the rivals offer care, sparring and scouting (choice K3: portraits and dialogues). Each action names who
@@ -211,7 +212,8 @@ export const ROLE_ACTIONS: T = {
     label: (st) => tx('heal.label', { price: st.flags['free-care'] ? tx('heal.free') : tx('heal.paid') }),
     cost: () => 1,
     coins: (st) => (st.flags['free-care'] ? 0 : 8),
-    check: (st) => available(st, 'anwen') ?? (st.player.injury === 0 ? tx('heal.notHurt') : !st.flags['free-care'] && st.player.coins < 8 ? tx('heal.poor') : null),
+    // a version 2 game (lot L4, EV-7 « un par lieu »): busy the evening a rival was hurt in the bouts, her care waits for the morning (src/simulation/v2rivals.ts)
+    check: (st) => available(st, 'anwen') ?? (anwenBusy(st) ? tx('v2.heal.busy') : st.player.injury === 0 ? tx('heal.notHurt') : !st.flags['free-care'] && st.player.coins < 8 ? tx('heal.poor') : null),
     apply: (s, _a, _r, emit) => { if (!s.flags['free-care']) s.player.coins -= 8; s.player.injury = 0; emit({ kind: 'action', id: 'heal', cause: 'action:heal', text: tx('heal.log'), visible: true }); },
   },
   spar: {

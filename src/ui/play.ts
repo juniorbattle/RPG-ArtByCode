@@ -44,7 +44,8 @@ export function withRules(s: GameState, params: URLSearchParams): GameState {
 
 export function startingState(params: URLSearchParams): { state: GameState; note?: string } {
   // DEV only: a named state (PROJECT § 10.3) for reviews and proofs
-  if (import.meta.env.DEV && params.has('state')) return { state: withRules(namedState(params.get('state')!, Number(params.get('seed') ?? 1842) >>> 0, params.get('name') ?? 'Ren'), params) };
+  // (a state of its own seed, lot L4, takes it unless the address gives one)
+  if (import.meta.env.DEV && params.has('state')) return { state: withRules(namedState(params.get('state')!, params.has('seed') ? Number(params.get('seed')) >>> 0 : undefined, params.get('name') ?? 'Ren'), params) };
   if (params.has('new')) return { state: withRules(newGame(Number(params.get('seed') ?? 1842) >>> 0, params.get('name') ?? 'Ren'), params) };
   const r = readSave();
   if (r.state) return { state: r.state };

@@ -1,11 +1,12 @@
 import type { GameState } from '../simulation/state';
 import type { Emit } from '../simulation/advance';
 import { RIVALS } from './roster';
-import { tx } from './text';
+import { tx, type TextKey } from './text';
 import { v2Lines } from './v2story';
 import { isV2 } from '../simulation/v2';
 import { skillPrice } from '../simulation/v2skills';
 import { PEOPLE } from './people';
+import { anwenBusy, sandShut, sandTaken, stanceWords, taleOf } from '../simulation/v2rivals';
 
 /** What the town's people say (journal Passe L4; GAMEPLAY § 8: the city reacts to the tournament, the player's fame, the sabotage, the
  *  hour, readable without a debug screen). Lines are chosen from the state: the slot, the pulse, the facts learnt, the quests, the results.
@@ -32,9 +33,44 @@ export function onTalk(s: GameState, who: string, emit: Emit): void {
     if (!s.facts.includes('edda-witness')) s.facts.push('edda-witness');
     emit({ kind: 'consequence', id: 'edda:witness', cause: tx('v2.edda.why'), visible: true, text: tx('v2.edda.witness') });
   }
+  // lot L4 (the operator's EV-9 « Chaque rival se souvient ; deux autres agissent »): Brother Ambrose, who lights the festival square's lamps at dusk, saw Vessa Lark
+  // pay every round at Lio's to tell her tale (src/simulation/v2rivals.ts): now the player knows whom to answer
+  if (who === 'ambrose' && isV2(s) && s.v2?.lie && !s.flags['confronted:vessa'] && !s.facts.includes('vessa-lie-known')) {
+    s.facts.push('vessa-lie-known');
+    emit({ kind: 'consequence', id: 'ambrose:witness', cause: tx('v2.lie.why'), visible: true, text: tx('v2.lie.ambroseLog', { name: RIVALS[s.v2.lie.who]?.name ?? s.v2.lie.who }) });
+  }
 }
 
 export function linesOf(s: GameState, who: string): string[] {
+  const out = baseLines(s, who);
+  if (!isV2(s)) return out;
+  // a version 2 game (lot L4, EV-9 « Chaque rival se souvient »): what a rival whose arc says nothing of it remembers of you (src/simulation/v2rivals.ts)
+  const st = stanceWords(s, who);
+  return st ? [...out, st] : out;
+}
+
+/** what a keeper remembers of the player (lot L4, EV-7 « le marchand qui se souvient »): a regular (their goodwill 15 or more: a tenth off, src/simulation/v2gear.ts
+ *  shopPrice) or a face they will watch (−15 or less: robbed, a bargain soured) */
+const KEEPER_MEMORY: Record<string, [TextKey, TextKey]> = { mara: ['v2.line.mara.regular', 'v2.line.mara.sore'], hilde: ['v2.line.hilde.regular', 'v2.line.hilde.sore'], pip: ['v2.line.pip.regular', 'v2.line.pip.sore'], corvin: ['v2.line.corvin.regular', 'v2.line.corvin.sore'] };
+function keeperMemory(s: GameState, who: string): string[] {
+  const k = KEEPER_MEMORY[who], g = s.town[who] ?? 0;
+  return !k || !isV2(s) ? [] : g >= 15 ? [tx(k[0])] : g <= -15 ? [tx(k[1])] : [];
+}
+
+/** a version 2 game's ambiences out of the news (lot L4, the operator's EV-8 « Hors des nouvelles, dans les répliques et le son »): one text a day, by the state */
+const MARKET: readonly TextKey[] = ['v2.line.pip.market1', 'v2.line.pip.market2', 'v2.line.pip.market3'];
+const PUPPETS: Record<'won' | 'lost', readonly TextKey[]> = { won: ['v2.line.bard.puppetsWon1', 'v2.line.bard.puppetsWon2'], lost: ['v2.line.bard.puppetsLost1', 'v2.line.bard.puppetsLost2'] };
+/** the player's last bout fought today or yesterday: whom against, and whether it was won */
+function lastBout(s: GameState): { foe: string; won: boolean } | null {
+  const m = [...s.tournament.matches].reverse().find((x) => x.winner && (x.a === 'player' || x.b === 'player') && x.day >= s.day - 1 && x.day <= s.day);
+  return m ? { foe: RIVALS[m.a === 'player' ? m.b : m.a]?.name ?? '', won: m.winner === 'player' } : null;
+}
+
+function baseLines(s: GameState, who: string): string[] {
+  // a version 2 game (lot L4): Vessa, once told to her face what she paid Lio's room to say; Rhosk on the sand he took, or warned off it
+  if (isV2(s) && who === 'vessa' && s.flags['confronted:vessa']) return [tx('v2.line.vessa.confronted')];
+  if (isV2(s) && who === 'rhosk' && sandTaken(s)) return [tx('v2.line.rhosk.sand')];
+  if (isV2(s) && who === 'rhosk' && s.flags['reported:rhosk']) return [tx('v2.line.rhosk.warned')];
   // the version 2's rivals speak by the act and what happened between you (lot V6)
   const arc = v2Lines(s, who);
   if (arc) return arc;
@@ -47,7 +83,7 @@ export function linesOf(s: GameState, who: string): string[] {
       if (s.facts.includes('lamp-oil')) out.push(tx('line.mara.lampOil'));
       else if (P.commerce >= 60) out.push(tx('line.mara.trade'));
       if (s.flags['discount:mara']) out.push(tx('line.mara.discount'));
-      return out;
+      return [...out, ...keeperMemory(s, 'mara')];
     }
     case 'bram':
       if (s.services.forge === 'repaired') return [tx('line.bram.repaired')];
@@ -61,6 +97,9 @@ export function linesOf(s: GameState, who: string): string[] {
       if (night) out.push(tx('line.hale.night'));
       // a version 2 game (lot L2a, EV-2): the sergeant says what his ledger holds and how a name leaves it
       if (isV2(s) && (s.v2?.marks ?? 0) > 0) out.push(tx(s.v2!.marks === 1 ? 'v2.line.hale.ledger1' : 'v2.line.hale.ledger', { n: s.v2!.marks! }));
+      // lot L4 (EV-9): Rhosk's plan to take the training sand, which a word from Hale to the registrar answers; his name in the ledger after
+      if (isV2(s) && s.facts.includes('rhosk-offer') && !s.flags['sand-cleared']) out.push(tx('v2.line.hale.rhosk'));
+      else if (isV2(s) && s.flags['reported:rhosk']) out.push(tx('v2.line.hale.rhoskLedger'));
       return out;
     }
     case 'wynn':
@@ -91,6 +130,8 @@ export function linesOf(s: GameState, who: string): string[] {
       if (isV2(s)) return [s.day >= 6 ? tx('v2.line.odo.bracket') : s.flags.registered ? tx('v2.line.odo.signed') : tx('v2.line.odo.sign')];
       return [s.flags.registered ? tx('line.odo.signed') : tx('line.odo.sign')];
     case 'anwen':
+      // a version 2 game (lot L4, EV-7 « un par lieu »): the evening a rival was hurt in the bouts, her infirmary is full until morning
+      if (anwenBusy(s)) return [tx('v2.line.anwen.busy')];
       return [s.player.injury ? tx('line.anwen.hurt') : tx('line.anwen.well'), ...(s.flags['free-care'] ? [tx('line.anwen.free')] : [])];
     case 'orla':
       if (s.facts.includes('orla-recruitable')) return [tx('line.orla.recruit')];
@@ -108,24 +149,36 @@ export function linesOf(s: GameState, who: string): string[] {
     // the version 2 (journal Passe V2): the weapon master
     case 'corvin':
       // « rich »: the player can pay for the Whirlwind he teaches, at its price today (journal Passe VP1)
-      return [night ? tx('line.corvin.night') : s.player.coins >= skillPrice(s, 't3') && !(s.v2?.kit.levels.t3) ? tx('line.corvin.rich') : tx('line.corvin.pitch')];
+      return [night ? tx('line.corvin.night') : s.player.coins >= skillPrice(s, 't3') && !(s.v2?.kit.levels.t3) ? tx('line.corvin.rich') : tx('line.corvin.pitch'), ...keeperMemory(s, 'corvin')];
     case 'hilde':
-      return [s.services.shopFactor > 1 ? tx('line.hilde.shortage') : tx('line.hilde.pitch')];
+      return [s.services.shopFactor > 1 ? tx('line.hilde.shortage') : tx('line.hilde.pitch'), ...keeperMemory(s, 'hilde')];
     case 'ilse':
       return [s.v2?.challenged?.ilse ? tx('line.ilse.after') : tx('line.ilse.pitch')];
     case 'pip':
-      return [tx('line.pip.pitch')];
+      // the night market at dusk, out of a version 2 game's news (lot L4, EV-8): Pip's stall is in it, one text a day
+      return [isV2(s) && night ? tx(MARKET[s.day % MARKET.length]) : tx('line.pip.pitch'), ...keeperMemory(s, 'pip')];
     // the version 2's districts (lot V5): the drill master, the bard
     case 'drill':
       // the morning after a brawl at the barracks (src/events/v2catalog.ts)
+      // lot L4: Rhosk on the sand (EV-9); the sand shut until noon the morning after the brawl (EV-7 « un par lieu ») (src/simulation/v2rivals.ts)
+      if (sandTaken(s)) return [tx('v2.line.drill.rhosk')];
+      if (sandShut(s)) return [tx('v2.line.drill.brawlShut')];
       if (s.flags[`brawl:${s.day}`]) return [tx('v2.line.drill.brawl')];
+      // the Colosseum's roar on an afternoon of bouts the player does not fight, out of the news (EV-8)
+      if (isV2(s) && s.slot === 'afternoon' && s.tournament.matches.some((m) => m.day === s.day && m.a !== 'player' && m.b !== 'player')) return [tx('v2.line.drill.roar')];
       return [s.slot === 'morning' ? tx('line.drill.bout') : tx('line.drill.day')];
     case 'bard':
+    {
+      // the puppeteers replay the player's last bout on the square, out of a version 2 game's news (lot L4, EV-8): one text a day, won or lost
+      const b = isV2(s) ? lastBout(s) : null;
+      if (b) { const k = PUPPETS[b.won ? 'won' : 'lost']; return [tx(k[s.day % k.length], { name, foe: b.foe })]; }
       return [s.player.reputation >= 40 ? tx('line.bard.famous', { name }) : night ? tx('line.bard.night') : tx('line.bard.day')];
+    }
     // the version 2's generic fighters (lot L2b); Tobin and Rhosk on the training ground after the cut, in the title's race or out of it
     case 'aldric': return [tx(s.v2?.gear?.armour === 'knight-hauberk' || s.v2?.gear?.bag.includes('knight-hauberk') ? 'v2.line.aldric.hauberk' : 'v2.line.aldric')];
-    case 'corra': return [s.v2?.reprisal ? tx('v2.line.corra.reprisal', { name: PEOPLE[s.v2.reprisal.by]?.name ?? s.v2.reprisal.by }) : tx('v2.line.corra')];
-    case 'ambrose': return [tx('v2.line.ambrose')];
+    // lot L4 (L3-11 « Les garder pour L4 »): Corra was offered Rhosk's coin to stand on the sand with him; Brother Ambrose saw Vessa pay Lio's room
+    case 'corra': return [s.v2?.reprisal ? tx('v2.line.corra.reprisal', { name: PEOPLE[s.v2.reprisal.by]?.name ?? s.v2.reprisal.by }) : s.facts.includes('rhosk-offer') && !s.flags['sand-cleared'] ? tx('v2.line.corra.rhosk') : tx('v2.line.corra')];
+    case 'ambrose': { const tale = s.v2?.lie && !s.flags['confronted:vessa'] ? s.v2.lie.who : null; return [tale ? tx(taleOf(s) ? 'v2.line.ambrose.tale' : 'v2.line.ambrose.taleOld', { name: RIVALS[tale]?.name ?? tale }) : tx('v2.line.ambrose')]; }
     case 'lucan': return [tx('v2.line.lucan')];
     case 'piers': return [tx('v2.line.piers')];
     case 'kell': return [tx('v2.line.kell')];

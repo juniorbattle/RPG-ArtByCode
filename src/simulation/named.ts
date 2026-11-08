@@ -28,7 +28,14 @@ const LOST: Action = { type: 'fight', outcome: { winner: 'opponent', playerHp: 0
 // semi-final fought on it, the next morning on the forecourt (Lady Edda can name the colours)
 const STRAP6: readonly Action[] = [W, W, { type: 'move', to: 'lanterns' }, { type: 'taunt' }, W, W, WON, W, W, W, W, W, WON, W, W, WON, W, { type: 'rumour', src: 'lio' }, W, { type: 'move', to: 'forecourt' }];
 
-export const NAMED_STATES: Record<string, { about: string; script: readonly Action[]; v2?: boolean }> = {
+// lot L4 (journal Passe EVL7): Vessa Lark beaten on day 2 (seed 1842), her tale of Orla Brask told in the taverns the next morning, the festival square on day 3's
+// afternoon (Brother Ambrose saw her pay the rounds); Rhosk out of the title (seed 6: the cut's four others), every bout won, his plan told on the quay on day 8's
+// evening, the next morning on the quay (Sergeant Hale can act on it) and at the training ground (the sand taken)
+const POOL_WON: readonly Action[] = [W, W, W, W, WON, W, W, W, W, W, WON, W, W, WON, W];
+const SAND9: readonly Action[] = [...POOL_WON, W, WON, W, W, W, W, W, W, W];
+
+/** a state may carry its own seed (lot L4: Rhosk out of the title needs another draw of the pool than 1842's), taken unless a seed is asked for */
+export const NAMED_STATES: Record<string, { about: string; script: readonly Action[]; v2?: boolean; seed?: number }> = {
   'day1-morning': { about: 'a new game, the first morning', script: [] },
   'day1-evening': { about: 'the first evening, nothing done', script: [W, W] },
   'day2-morning': { about: 'the second morning, nothing done', script: [W, W, W] },
@@ -63,11 +70,14 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   // lot L3 (journal Passe EVL5): the strap cut, before and after the semi-final
   'v2-strap-day6': { about: 'a version 2 game on day 6\'s afternoon, on the forecourt: the strap cut in the night before the semi-final, Lio\'s room asked of Orla', script: STRAP6, v2: true },
   'v2-strap-day7': { about: 'a version 2 game on day 7\'s morning, on the forecourt: the semi-final won on the cut strap, its culprit unknown', script: [...STRAP6, WON, W], v2: true },
+  'v2-tale-day3': { about: 'a version 2 game on day 3\'s afternoon, on the festival square: Vessa Lark beaten on day 2, her tale of Orla Brask in the taverns', script: [W, W, W, W, WON, W, W, { type: 'move', to: 'lanterns' }], v2: true },
+  'v2-sand-day9': { about: 'a version 2 game on day 9\'s morning, on the quay: every bout won, Rhosk out of the title (seed 6), his plan to take the training sand told the night before', script: SAND9, v2: true, seed: 6 },
+  'v2-sand-training': { about: 'a version 2 game on day 9\'s morning, at the training ground: Rhosk on the sand (seed 6)', script: [...SAND9, { type: 'move', to: 'training' }], v2: true, seed: 6 },
 };
 
-export function namedState(name: string, seed = NAMED_SEED, player = 'Ren'): GameState {
+export function namedState(name: string, seed?: number, player = 'Ren'): GameState {
   const n = NAMED_STATES[name];
   if (!n) throw new Error(`no named state "${name}" (known: ${Object.keys(NAMED_STATES).join(', ')})`);
-  const st = newGame(seed, player);
+  const st = newGame(seed ?? n.seed ?? NAMED_SEED, player);
   return play(n.v2 ? makeV2(st) : st, n.script);
 }

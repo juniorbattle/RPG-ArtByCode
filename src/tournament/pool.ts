@@ -116,6 +116,8 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
     P.reputation = clamp(P.reputation + (opp === 'marek' ? 20 : 15)); P.coins += 20;
     c.reputation = clamp(c.reputation - (close ? 1 : 4));
     rivalry(s, opp, PLAYER_ID, o.playerHp / o.playerMaxHp > 0.7);
+    // a version 2 game (lot L4, EV-9 « Chaque rival se souvient »): the rival remembers a beating taken with the player barely touched, the day it came
+    if (isV2(s) && o.playerHp / o.playerMaxHp > 0.7) c.knownFacts.push(`humbled-by:${PLAYER_ID}:${m.day}`);
   } else {
     P.reputation = clamp(P.reputation + (close ? 2 : -5)); P.coins += 5;
     c.reputation = clamp(c.reputation + 5);

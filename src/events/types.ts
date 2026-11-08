@@ -37,7 +37,10 @@ export type Cond =
    *  it announces) */
   | { others: true } | { firedBefore: string }
   /** lot L3 (journal Passe EVL5): the player fights tomorrow (a bout of theirs on the next day, not fought yet) */
-  | { boutTomorrow: true };
+  | { boutTomorrow: true }
+  /** lot L4 (journal Passe EVL7): the player's next bout, not fought yet, comes in exactly this many days (1 = tomorrow); a competitor's phase in the
+   *  version 2's bracket (`phaseStatus`: 'pool', 'semi', 'gate', 'third', 'final', 'champion') */
+  | { boutIn: number } | { status: [string, string[]] };
 
 export type Effect =
   /** a lasting shift of a pulse field (read by computePulse) */
@@ -77,4 +80,8 @@ export interface EventDef {
   outcomes: EventOutcome[];
   /** a major event: the signs that announce it and the answers the player has (PROJECT § 9.3, GAMEPLAY § 9: at least two) */
   major?: { signs: string[]; answers: string[] };
+  /** an ambience a version 2 game keeps out of the news (lot L4, the operator's EV-8 « Hors des nouvelles, dans les répliques et le son », journal Passe EV2):
+   *  it still fires and still moves the pulse, written hidden from the journal and the bands; the town's lines say it instead (src/narrative/dialogue.ts).
+   *  Today's game shows it as before */
+  v2quiet?: true;
 }

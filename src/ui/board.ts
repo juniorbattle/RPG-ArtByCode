@@ -8,6 +8,7 @@ import { marksOf } from '../simulation/v2law';
 import { actOf, stageName } from '../tournament/v2calendar';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 import { heardLine, seenInTown } from '../simulation/v2intel';
+import { stanceLine } from '../simulation/v2rivals';
 
 /** The tournament board (TOURNAMENT_MASTER_CONTRACT § 11, journal Passes L3 / L4 / UM11, the audit of Passe UM10; the structure of the gear's page, journal Passe
  *  UM9): on the left the phase, the next deadline and the pool's standings; on the right the fighter selected, the next opponent first: their bouts fought and
@@ -75,9 +76,11 @@ function fighterHtml(st: GameState, id: string): { head: string; body: string } 
   const fought = bouts.filter((b) => b.won !== null), ahead = bouts.filter((b) => b.won === null);
   // a version 2 game (lot L3, EV-11 « activité lisible »): what the town saw them do since yesterday, and the last rumour heard of them, with its source
   const heard = isV2(st) && r ? heardLine(st, id) : null, seen = isV2(st) && r ? seenInTown(st, id) : '';
+  // lot L4 (EV-9 « Chaque rival se souvient »): what stands between you, and why
+  const between = isV2(st) && r ? stanceLine(st, id) : null;
   return {
     head: `<div class="pm-who">${url ? `<img src="${url}" alt="">` : ''}<h2 class="pm-h">${esc(nameOf(st, id))}<small>${esc(sub)}</small></h2><div class="pm-rec"><b>${st.tournament.points[id] ?? 0}</b><small>${tx('ui.board.pts')}</small></div></div>`,
-    body: `${r ? `<p>${esc(r.bio)}</p>` : ''}${me ? nameHtml(st) : ''}${known ? `<p class="pm-entry">${esc(known)}</p>` : ''}${seen ? `<p class="pm-entry">${esc(seen)}</p>` : ''}${heard ? `<p class="pm-entry">${esc(heard)}</p>` : ''}${ahead.length ? `<p class="pm-sub">${tx('ui.board.ahead')}</p>${ahead.map((b) => boutHtml(st, b)).join('')}` : ''}${fought.length ? `<p class="pm-sub">${tx('ui.board.results')}</p>${fought.map((b) => boutHtml(st, b)).join('')}` : ''}${rulesHtml(st)}`,
+    body: `${r ? `<p>${esc(r.bio)}</p>` : ''}${me ? nameHtml(st) : ''}${between ? `<p class="pm-entry">${esc(between)}</p>` : ''}${known ? `<p class="pm-entry">${esc(known)}</p>` : ''}${seen ? `<p class="pm-entry">${esc(seen)}</p>` : ''}${heard ? `<p class="pm-entry">${esc(heard)}</p>` : ''}${ahead.length ? `<p class="pm-sub">${tx('ui.board.ahead')}</p>${ahead.map((b) => boutHtml(st, b)).join('')}` : ''}${fought.length ? `<p class="pm-sub">${tx('ui.board.results')}</p>${fought.map((b) => boutHtml(st, b)).join('')}` : ''}${rulesHtml(st)}`,
   };
 }
 
