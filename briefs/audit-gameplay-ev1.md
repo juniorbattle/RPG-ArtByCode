@@ -211,3 +211,7 @@ Cassius. EV-7 : Maître Corvin à un cinquième le lendemain d'un défi gagné, 
 occupée le soir d'un rival blessé. Le jeu par défaut est identique (0 px, empreintes, laboratoire au JSON près pour les règles classiques et dynamiques) ; l'idle v2 ne change
 que par ses empreintes (les ambiances cachées) ; le diligent v2 perd un combat dans deux parties sur 150 (le sable de Rhosk, qu'il ne lit pas) ; le curieux, qui répond, bouge
 dans son bruit. La fiche du lot : https://claude.ai/artifact/Nyf3wvTgKHQXMiNVtBekp3 (`briefs/fiche-l4.html`), quatorze cartes.
+
+**Relue en Passe EVL8 (08/11/2026)** : quatorze choix sur quatorze à la recommandation, sans note ; L4-3 « Garder » (Vessa garde la désinformation), L4-6 « Laisser ainsi »
+(aider un autre rival qu'Orla, plus tard), L4-12 « Accepter » (les écarts du laboratoire), L4-13 « L5 ensuite », L4-14 « Fusionner après la fiche, essayer ensuite » : fusionné. Le message de
+l'opérateur compare la ville à Smallville (des agents autonomes avec une mémoire), consigné comme une impression. La suite : L5, la ville qui réagit (EV-12).
