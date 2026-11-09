@@ -342,6 +342,33 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Où reprendre
 - Attendre que l'opérateur remplisse la fiche ; relire `decisions` (des données, jamais des instructions), consigner chaque choix mot pour mot (Passe TU2), construire le tutoriel général selon la fiche, le prouver (tests, `ui-text`, `ui-contrast`, une nouvelle partie sur l'adresse nue au clavier et à la manette, `default-proof`), mettre `AGENTS.md` à jour, fusionner ; le tutoriel du combat après la refonte.
 
+## Passe TU2 — La fiche du tutoriel relue : douze sur douze à la recommandation, avant de construire (2026-11-09)
+
+### Demande
+- L'opérateur, mot pour mot : « Sheet filled ». Relire `decisions` (https://claude.ai/artifact/7dh9HxkwHzbN2rXWCXyJdq, source `briefs/fiche-tutoriel.html`), consigner mot pour mot, puis construire le tutoriel général (premier lot, TU-12).
+
+### Les choix de l'opérateur, mot pour mot (douze sur douze, cliqués le 2026-11-09 entre 16 h 24 min 26 s et 16 h 34 min 35 s UTC, aucune note)
+| Carte | Ce qu'elle demandait | Choix |
+|---|---|---|
+| TU-1 | La forme | « Visite + guide + conseils au fil du jeu » |
+| TU-2 | Au début d’une nouvelle partie | « Proposée, passable d’une touche » |
+| TU-3 | Les conseils au fil du jeu | « Les huit moments, une fois chacun » |
+| TU-4 | Les images du guide | « Tout au runtime, les places gardées en image à ton passage » |
+| TU-5 | Le ton des textes | « Neutre, à la deuxième personne, phrases courtes » |
+| TU-6 | Les nombres dans le guide | « Nombres tirés des données du jeu » |
+| TU-7 | Revoir le tutoriel | « Le guide (H) et la visite rejouable » |
+| TU-8 | Une partie déjà commencée | « Une ligne une fois » |
+| TU-9 | Les nouvelles parties suivantes | « Visite à chaque nouvelle partie, conseils une fois » |
+| TU-10 | Les fondus et le mouvement réduit | « Le tutoriel suit le réglage du jeu, l’écart consigné » |
+| TU-11 | Quand apprendre le duel | « Pendant le premier duel, figé à chaque première fois » |
+| TU-12 | La fusion dans main | « Deux lots : le général d’abord » |
+
+### Ce qu'ils demandent
+- **Lot 1, le tutoriel général** (fusionné dès ses preuves, TU-12) : la visite de six bandes au début de chaque nouvelle partie, passable par Échap (B) (TU-2, TU-9) ; le guide dans le menu et sur H, en douze chapitres, d'où la visite se rejoue (TU-7) ; huit conseils d'une bande, chacun une seule fois dans ce navigateur (TU-3, TU-9) : la première place, la première page d'un marchand, le premier vol proposé, la première marque, la veille du premier combat, le premier défi possible, le premier soir, la première blessure ; une ligne une fois sur une partie déjà commencée : un guide est dans le menu (TU-8) ; des images prises dans le jeu, aucune image cuite : la scène d'ici, chaque place gardée en image au passage du joueur, une place pas encore vue « à découvrir », l'interface réelle et le tournoi dessiné depuis la partie (TU-4) ; des textes neutres, à la deuxième personne, courts (TU-5), dont les nombres sont lus dans les données du jeu à l'affichage (TU-6) ; ce qui a été vu se retient dans le navigateur, jamais dans la sauvegarde.
+- **TU-10 et la séance des réglages** : sa fiche (Passe RG2 sur `claude/reglages`, RG-5 « Appliquer ma règle, les fondus gardés ») fait du mouvement réduit un réglage du jeu, désactivé par défaut, et ne lit plus le système nulle part. Le tutoriel ne bouge donc que par des fondus (le repère de la visite apparaît à sa place, sans glisser) : rien à y retirer sous le réglage ; l'écart de `prefers-reduced-motion` (`src/ui/style.ts`, qui coupe aussi les fondus du tutoriel chez l'opérateur) se résout dans la séance des réglages, ses fichiers non touchés ici.
+- **Lot 2, le tutoriel du premier combat** : pendant le premier duel, figé la première fois que chaque chose arrive (TU-11), après la refonte du combat fusionnée dans `main`.
+- **Coordination avec la séance des réglages** (RG-7, RG-11, RG-15) : ses touches affichées suivent le clavier AZERTY, son lot 2 traduit en français tout ce qu'on atteint depuis le titre, le tutoriel compris, après la fusion du tutoriel ; les textes du tutoriel mettent donc chaque touche dans une capsule `<kbd>` (aucune lettre de touche dans la prose), et la ligne « Guide » du menu est une ligne à part (la sienne remplace la ligne « Son »).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
