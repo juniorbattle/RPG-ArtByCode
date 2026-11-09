@@ -16,6 +16,7 @@ import * as THREE from 'three';
 import { watchPost } from '../simulation/v2watch';
 import { hailOf } from '../simulation/v2react';
 import { Hails, type HailWalker } from './hails';
+import { keepPlace, tutorialOn } from './tutorial';
 
 /** The city in the play mode (journal Passes L3 / L4): the frozen Merchant District as it is, its day state, forge, crowd and weather taken
  *  from the game state (choice P4: game layers only, no geometry, framing, cast or look change), and the play mode's interface over it.
@@ -71,6 +72,7 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
     reload: (extra) => go(b.params, extra),
     // the guide's picture of the scene (journal Passe TU1): a frame rendered and read at once (the canvas keeps no buffer)
     snapshot: () => { try { app.render(); return b.canvas.toDataURL('image/webp', 0.86); } catch { return null; } },
+    tutorial: isV2(st) && tutorialOn(b.params),
     nearby: () => {
       const p = app.actors.player;
       let best: string | null = null, bd = 2.6 * 2.6;
@@ -86,8 +88,6 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   }, seen);
   markSeen(st);
   (window as any).__ui = ui;
-  // a new game's first page (journal Passe TU1): the tour, once the arrival's news are read
-  if (isV2(st) && b.params.has('new')) void ui.newsRead.then(() => ui.tour());
   (window as any).__game.subscribe(() => ui.render());
   // E / Space next to someone opens their dialogue (the district's bubble stays: its « ... » is the town's own)
   const interact = app.actors.interact.bind(app.actors);
@@ -135,5 +135,7 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   let n = 0;
   const wait = () => { if (++n > 3) (window as any).__ready = true; else requestAnimationFrame(wait); };
   wait();
+  // the tutorial (journal Passe TU3): a new game's tour, a game begun before's line, the moment's hints; the quay's picture kept for the guide (TU-4)
+  if (isV2(st) && tutorialOn(b.params)) { void ui.welcome(b.params.has('new')); setTimeout(() => keepPlace(st.place, () => { app.render(); return b.canvas; }), 1500); }
   if (note) void overlay(`<h2 class="pm-h">${tx('ui.newGame')}</h2><p>${esc(note)}</p>`, [{ id: 'ok', label: tx('ui.continue'), primary: true }]).done;
 }

@@ -21,7 +21,7 @@ import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
 import { tabTo } from '../input/pad';
-import { guidePage, runTour, TOUR } from './tutorial';
+import { guidePage, hintChapter, hintSeen, markHint, markTold, runTour, showHint, told, TOUR, type HintId } from './tutorial';
 
 /** the menu's pages a gamepad's shoulders walk through (journal Passe MN2, MN-4) */
 type MenuPage = 'map' | 'journal' | 'board' | 'skills' | 'gear' | 'sound';
@@ -44,6 +44,8 @@ export interface UiHost {
   focus?(who: string | null): void;
   /** the live scene as an image, for the guide (journal Passe TU1) */
   snapshot?(): string | null;
+  /** the tutorial's tour and hints on this page (journal Passe TU3: off in a browser driven by a tool unless the address asks for them) */
+  tutorial?: boolean;
 }
 
 /** on a computer: the state top left and the figures top right on their veils, the prompt at the foot, the list's and the menu's keys in the corner, the
@@ -254,6 +256,7 @@ export class TownUi {
     // a version 2 game (lot L2a, EV-2; L2-2 « Des marques »): the marks of Hale's ledger beside the reputation, only once there is one (two numbers apart)
     const sus = v2 ? marksOf(s) : 0;
     this.figs.innerHTML = `<div><b>${P.coins}</b><small>${tx('ui.coins')}</small></div><div><b>${P.reputation}</b><small>${tx('ui.reputation')}</small></div>${sus > 0 ? `<div class="hurt"><b>${sus}/3</b><small>${tx('ui.marks')}</small></div>` : ''}${P.injury ? `<div class="hurt"><b>${P.injury}</b><small>${P.injury > 1 ? tx('ui.badlyHurt') : tx('ui.hurt')}</small></div>` : ''}`;
+    if (this.welcomed && v2 && (sus > 0 || P.injury > 0)) { if (sus > 0) this.hint('mark'); if (P.injury > 0) this.hint('hurt'); }
     const bout = this.boutNow();
     this.hereKey.className = `pm-btn${bout ? ' primary' : ''}`;
     this.hereKey.innerHTML = `<kbd>Q</kbd>${bout ? (s.v2?.challenge ? this.sandLabel(s) : tx('ui.enterArena')) : tx('ui.here')}`;
@@ -302,6 +305,8 @@ export class TownUi {
     side.append(list, footOf(close)); arrowKeys(side); card.appendChild(side); root.appendChild(card);
     document.body.appendChild(root); this.current = root; scrollFade(list);
     ((list.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? close).focus();
+    // the first theft the list offers (journal Passe TU3, TU-3)
+    if (opts.some((o) => o.ok && o.action.type === 'steal')) this.hint('steal');
   }
 
   private optionButton(o: ActionOption, after?: () => void): HTMLButtonElement {
@@ -405,6 +410,8 @@ export class TownUi {
     document.body.classList.add('pm-talking');
     this.current = root; scrollFade(list);
     ((list.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement | null) ?? leave).focus();
+    // the first challenge a person accepts (journal Passe TU3, TU-3)
+    if (opts.some((o) => o.ok && o.action.type === 'challenge')) this.hint('challenge', who);
   }
 
   /** the version 2's skills (lot V2; the page, journal Passe UM11, src/ui/skills.ts); `enter`: the match sheet, the opponent first (CB-1 § 8), the bout follows */
@@ -438,6 +445,8 @@ export class TownUi {
   private openWares(who: string | null): void {
     this.page();
     this.show(waresPage(who, { state: () => this.st, act: (a) => this.run(a, true), close: () => this.leave() }));
+    // a keeper's goods, the first time (journal Passe TU3, TU-3: bargaining)
+    if (who) this.hint('shop');
   }
 
   /** the version 2's sound (lot V8): the volume, the music's share, the mute; the engine loaded on demand (src/audio/Sound.ts) */
@@ -482,16 +491,57 @@ export class TownUi {
   }
 
   /** the guide (journal Passe TU1, src/ui/tutorial.ts): a page of the menu, H */
-  openGuide(first?: string): void { this.page(); this.show(guidePage({ state: () => this.st, snapshot: this.host.snapshot }, () => this.closeModal(), first)); }
+  openGuide(first?: string): void {
+    this.page();
+    this.show(guidePage({ state: () => this.st, snapshot: this.host.snapshot, replay: () => void this.tour() }, () => this.closeModal(), first));
+    markTold();
+  }
 
   /** the tour over the live page (journal Passe TU1): the scene's keys held while a band shows */
   async tour(): Promise<boolean> {
     this.closeModal(); this.modal = true; this.prompt.classList.remove('on');
     const hint = (i: number) => () => this.hints.children[i] ?? null;
     const at = { status: () => this.status, figs: () => this.figs, list: hint(0), menu: hint(1) };
-    const seen = await runTour(TOUR.map((s) => ({ title: s.title, body: s.body, target: s.at ? at[s.at] : undefined })));
-    this.modal = false;
+    const seen = await runTour(this.st, TOUR.map((s) => ({ title: s.title, body: s.body, target: s.at ? at[s.at] : undefined })));
+    this.modal = false; markTold();
     return seen;
+  }
+
+  /** the tutorial's hints (journal Passe TU3, TU-3): each once in this browser, one after another, over what is open; Space (X) opens its chapter of the guide */
+  private hintsQ: Promise<void> = Promise.resolve();
+  /** the page's welcome is done: a mark or a wound shows its hint from then on (never over the news or the tour) */
+  private welcomed = false;
+  hint(id: HintId, who?: string): void {
+    if (!this.host.tutorial || !isV2(this.st) || hintSeen(id)) return;
+    markHint(id);
+    this.hintsQ = this.hintsQ.then(async () => {
+      const was = this.modal, near = this.prompt.classList.contains('on');
+      this.modal = true; this.prompt.classList.remove('on');
+      const r = await showHint(this.st, id, who);
+      if (r === 'more') { this.openGuide(hintChapter(id)); return; }
+      // the page or band under the hint keeps its state (the setter clears the bands' classes only when nothing was open)
+      if (!was) { this.modal = false; if (near) this.prompt.classList.add('on'); }
+    });
+  }
+
+  /** what a page shows once it is ready (journal Passe TU3): a new game's tour (TU-2, TU-9), else the line of a game begun before (TU-8), then the hints this
+   *  moment calls for (TU-3); waits for the news to be read */
+  async welcome(fresh: boolean): Promise<void> {
+    if (!this.host.tutorial || !isV2(this.st)) return;
+    await this.newsRead;
+    if (fresh) await this.tour();
+    else if (!told()) { this.hint('guide'); markTold(); }
+    this.welcomed = true;
+    this.momentHints();
+  }
+
+  /** the hints of the moment: the eve of a bout, the evening, a wound, a mark (and the square's, given by the square's page) */
+  momentHints(): void {
+    const s = this.st, next = s.tournament.matches.filter((m) => !m.winner && (m.a === 'player' || m.b === 'player')).map((m) => m.day).sort((x, y) => x - y)[0];
+    if (next === s.day + 1 && s.slot !== 'morning') this.hint('eve');
+    if (s.slot === 'evening') this.hint('evening');
+    if (s.player.injury > 0) this.hint('hurt');
+    if (marksOf(s) > 0) this.hint('mark');
   }
 
   private openJournal(): void { this.page(); this.show(journalPage(this.st, () => this.closeModal())); this.shownPage = 'journal'; }
@@ -510,7 +560,9 @@ export class TownUi {
     body.innerHTML = `<h2 class="pm-h">${tx('ui.menu')}</h2>`;
     const add = (label: string, f: () => void, key = '') => { const b = el('button', 'pm-btn', `<span>${esc(label)}</span>${key ? `<kbd>${key}</kbd>` : ''}`); b.addEventListener('click', f); body.appendChild(b); };
     add(tx('ui.map'), () => this.openMap(), 'M'); add(tx('ui.journal'), () => this.openJournal(), 'J'); add(tx('ui.tournament'), () => this.openBoard(), 'T');
-    if (isV2(s)) { add(tx('v2.skills.view'), () => this.openSkills(false), 'K'); add(tx('v2.gear.view'), () => this.openGear(), 'G'); add(tx('v2.sound.view'), () => void this.openSound(), 'V'); add(tx('tut.guide'), () => this.openGuide(), 'H'); }
+    if (isV2(s)) { add(tx('v2.skills.view'), () => this.openSkills(false), 'K'); add(tx('v2.gear.view'), () => this.openGear(), 'G'); add(tx('v2.sound.view'), () => void this.openSound(), 'V'); }
+    // the guide (journal Passe TU3, TU-7): a line of its own
+    if (isV2(s)) add(tx('tut.guide'), () => this.openGuide(), 'H');
     body.appendChild(el('p', 'pm-sub pm-gap', tx('ui.menu.saves')));
     add(tx('ui.menu.saveFile'), () => downloadSave(s));
     add(tx('ui.menu.loadFile'), () => {

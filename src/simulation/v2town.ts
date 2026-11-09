@@ -35,6 +35,8 @@ export const CHALLENGERS: Record<string, true> = { orla: true, vessa: true, ilse
 
 /** a challenge's stake (lot L2b, the operator's EV-3 « Pleine vie, une mise, une fois par phase », journal Passe EVL3): coins put on the table at once
  *  and won back twice, or a share of one's name won or lost at the result (« proposé ») */
+/** the most a theft caught at a stall is fined, by day and at night (read by the guide too, journal Passe TU3) */
+export const STEAL_FINE = { day: 15, night: 25 } as const;
 export const STAKE = { coins: 10, name: 5 } as const;
 export type Stake = keyof typeof STAKE;
 /** a fighter is challenged once per phase: before the cut (days 1 to 5), then after it (days 6 to 10) */
@@ -119,7 +121,7 @@ export const V2_TOWN_ACTIONS: { [K in V2TownAction['type']]: ActionDef<Extract<V
         return;
       }
       // caught: forcing a shutter is punished harder (lot L2a)
-      const cap = night ? 25 : 15, fine = Math.min(cap, s.player.coins), d = shopDay(s, a.shop);
+      const cap = night ? STEAL_FINE.night : STEAL_FINE.day, fine = Math.min(cap, s.player.coins), d = shopDay(s, a.shop);
       s.player.coins -= fine; s.player.reputation = clamp(s.player.reputation - (night ? (fine < cap ? 15 : 12) : fine < cap ? 12 : 8));
       s.town[keeper] = clamp((s.town[keeper] ?? 0) - (night ? 25 : 20), -100, 100); s.town.hale = clamp((s.town.hale ?? 0) - (night ? 15 : 10), -100, 100);
       if (night) { d.closed = s.day + 1; d.markup = s.day + 2; } else { d.closed = s.day; d.markup = s.day + 1; }

@@ -14,6 +14,9 @@ import { PEOPLE } from '../narrative/people';
  *  reputation, the keeper's goodwill, the events (the steel shortage) and the hour, « sans simulation financière lourde » (GAMEPLAY § 10).
  *  Mara's shop of today is this system's general store in a version 2 game; the forge's Wyrmsteel temper is the weapon's first tier. Pure. */
 
+/** a level of wound takes this share of the health in a bout; a training session adds this share of damage at the next bout, up to TRAIN_MAX sessions (read by
+ *  the guide too, journal Passe TU3) */
+export const INJURY_HP = 0.2, TRAIN_DMG = 0.05, TRAIN_MAX = 2;
 export const START_GEAR: V2Gear = { weapon: 'training-sword', tier: 0, armour: null, acc: [null, null], bag: [] };
 
 export function gearOf(s: GameState): V2Gear {
@@ -45,7 +48,7 @@ export function wornFx(s: GameState): Required<GearFx> {
 export function v2Mods(s: GameState): Mods & { taken: number; gauge: number; charge: number; effect: number } {
   const fx = wornFx(s), stone = s.player.items.includes('whetstone') ? 1.05 : 1;
   return {
-    hp: +((1 - 0.2 * s.player.injury) * fx.hp).toFixed(4), damage: +(fx.damage * stone * (1 + 0.05 * Math.min(2, s.player.training))).toFixed(4), ap: fx.ap + allyAp(s),
+    hp: +((1 - INJURY_HP * s.player.injury) * fx.hp).toFixed(4), damage: +(fx.damage * stone * (1 + TRAIN_DMG * Math.min(TRAIN_MAX, s.player.training))).toFixed(4), ap: fx.ap + allyAp(s),
     // the gear tampered with in the night (lot V7, the event v2-gear-tamper): 15 % more damage taken that day, unless Hilde checked it
     taken: +(fx.taken * (s.flags[`tampered:${s.day}`] && !s.flags[`checked:${s.day}`] ? 1.15 : 1)).toFixed(4), gauge: +fx.gauge.toFixed(4), charge: +fx.charge.toFixed(4), effect: +fx.effect.toFixed(4),
   };

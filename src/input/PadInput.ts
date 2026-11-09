@@ -212,7 +212,8 @@ export class PadInput {
     const root = this.modal(); if (!root) return;
     if (key === ' ') {
       // X presses the page's Space only where a cap shows it (the skills: bring, leave); elsewhere it does nothing
-      const foot = [...root.querySelectorAll('kbd')].find((k) => capKey(k) === 'Space')?.closest('button');
+      // (a cap in a text, the tutorial's « [Space] bargains », is not a button: journal Passe TU3)
+      const foot = [...root.querySelectorAll('kbd')].find((k) => capKey(k) === 'Space' && !!k.closest('button'))?.closest('button');
       if (foot && !(foot as HTMLButtonElement).disabled) { this.note('key Space'); foot.click(); }
       return;
     }

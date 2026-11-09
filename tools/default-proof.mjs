@@ -6,7 +6,8 @@
 //   2. « New game » at the keyboard: its Enter is the first gesture and the title plays « titre » (VD-5); a name typed, Enter: the page goes to the
 //      play mode's new game, an address without `v2`, and the game is a version 2 game (its flag, the dynamic rules, the ten days, its pad layer);
 //   3. the sound on the game's first page: « titre » taken up where the title left it (SA-15), heard at the output;
-//   4. the gamepad: A wakes it, its caps show, the stick walks the hero;
+//   4. the gamepad: A wakes it, its caps show, the stick walks the hero; the tutorial (journal Passe TU3): the tour of six bands at the pad, the guide from the
+//      menu (its chapters, the days drawn from the game, the scene's live picture), the tour replayed (X) and skipped (B);
 //   5. the bare address again: the title screen offers « Continue », the save a version 2 game;
 //   6. « Explore the district » (VD-3): the version 2's look, the pad walks the hero, the town's piece of midday follows « titre »;
 //   7. a save of today's game (v2=0): « Continue » marked « the earlier version » (VD-2).
@@ -119,6 +120,42 @@ try {
   await press(BTN.A);
   const pad = await page.evaluate(() => ({ mode: window.__pad?.mode ?? null, family: window.__pad?.family ?? null, cap: document.querySelector('#pm-hints kbd')?.getAttribute('aria-label') ?? null }));
   check(pad.mode === 'pad' && pad.family === 'xbox', `A wakes the pad: ${JSON.stringify(pad)}`);
+  // 4b. the tutorial (journal Passe TU3, the operator's sheet TU-1 to TU-12): A closed the arrival's news and the tour opens, six bands at the pad (A goes on), the
+  // real clock, figures, list and menu lit; then the guide from the menu with the pad (Start, the D-pad to « Guide », A): twelve chapters, the ten days drawn
+  // from the game, the scene here as a live picture; X replays the tour, B leaves it
+  const band1 = await until(() => document.querySelector('.tu-band .tu-step')?.textContent ?? null, 10000, 'the tour');
+  check(band1 === 'Tour · 1 of 6', `the tour opens after the arrival's news: ${band1}`);
+  const tourCaps = await page.evaluate(() => [...document.querySelectorAll('.tu-band .pm-foot kbd')].map((k) => k.getAttribute('aria-label') ?? k.textContent));
+  check(tourCaps.join() === 'A,B', `its foot shows the pad's buttons: ${tourCaps.join(', ')}`);
+  await page.screenshot({ path: path.join(outDir, '3-tour-1.png') });
+  const lit = [];
+  for (let i = 2; i <= 6; i++) {
+    await sleep(320); await press(BTN.A);
+    const r = await until(() => { const t = document.querySelector('.tu-band .tu-step')?.textContent; return t ? { t, lit: !!document.querySelector('.tu-spot.on') } : null; }, 5000, `band ${i}`);
+    check(r?.t === `Tour · ${i} of 6`, `A goes on: ${r?.t}`);
+    lit.push(r?.lit ? 'lit' : '-');
+    if (i === 2) await page.screenshot({ path: path.join(outDir, '3-tour-2.png') });
+  }
+  check(lit.join() === 'lit,lit,lit,lit,-', `bands 2 to 5 light the real clock, figures, list and menu: ${lit.join(', ')}`);
+  await sleep(320); await press(BTN.A);
+  check(!!(await until(() => !document.querySelector('.tu-band') && !document.querySelector('.tu-spot'), 5000, 'the tour to end')), 'the last band plays on: the tour ends');
+  await press(9);
+  await until(() => !!document.querySelector('.pm-menu'), 5000, 'the menu');
+  const items = await page.evaluate(() => [...document.querySelectorAll('.pm-menu .pm-body .pm-btn')].map((x) => x.textContent.trim()));
+  const gi = items.findIndex((t) => /^Guide/.test(t));
+  check(gi > 0, `the menu has « Guide »: ${items.join(' | ')}`);
+  for (let k = 0; k < gi; k++) await press(13);
+  await press(BTN.A);
+  const g = await until(() => (document.querySelector('.tu-guide') ? { n: document.querySelectorAll('.tu-guide .pm-glist .pm-btn').length, days: document.querySelectorAll('.tu-days div').length } : null), 5000, 'the guide');
+  check(g?.n === 12 && g?.days === 10, `the guide: ${g?.n} chapters, the tournament's ${g?.days} days drawn from the game`);
+  await press(13); await press(13);
+  const pic = await until(() => document.querySelector('.tu-guide .tu-fig img')?.getAttribute('src')?.slice(0, 23) ?? null, 5000, 'the scene\'s picture');
+  check(pic === 'data:image/webp;base64,', `« Walking and talking » shows the scene here, taken as the guide opened: ${pic}`);
+  await page.screenshot({ path: path.join(outDir, '3-guide.png') });
+  await sleep(320); await press(2);
+  check((await until(() => document.querySelector('.tu-band .tu-step')?.textContent ?? null, 5000, 'the tour replayed')) === 'Tour · 1 of 6', 'X replays the tour from the guide');
+  await sleep(320); await press(BTN.B);
+  check(!!(await until(() => !document.querySelector('.tu-band'), 5000, 'the tour to be skipped')), 'B skips the tour');
   if (await page.evaluate(() => !!document.querySelector('.pm-overlay'))) await press(BTN.B);
   const d = await walked();
   check(d > 0.3, `the stick walks the hero: ${d.toFixed(2)} m in 0.5 s`);

@@ -19,6 +19,7 @@ import { paradeBlocks } from '../simulation/v2festival';
 import { tx } from '../narrative/text';
 import { ANNOUNCED } from '../audio/plan';
 import { parseWeather } from '../atmosphere/Weather';
+import { keepPlace, tutorialOn } from './tutorial';
 
 /** The version 2's open places (lot V5, journal Passe V5): the Arena Forecourt, the Training Ground and the Festival Square (in place of
  *  Lantern Row's mock-up), each a square of src/world/Plazas.ts walked across in the slot's day state; the people there at this hour stand
@@ -58,6 +59,9 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
     nearby: () => { const w = app.nearby(); return w && PEOPLE[w] ? w : null; },
     // P4 (lot V9): the camera turns to the person spoken to
     focus: (who) => { const at = who ? app.spotOf(who) : null; void app.lookAt(at, 9, 0); },
+    // the guide's picture of the scene, and the tutorial (journal Passe TU3)
+    snapshot: () => { try { app.render(); return b.canvas.toDataURL('image/webp', 0.86); } catch { return null; } },
+    tutorial: tutorialOn(b.params),
   }, seenBefore(st));
   markSeen(st);
   (window as any).__ui = ui;
@@ -106,4 +110,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
     await playCutscene(st, scene, { look: (at, dist, secs) => app.lookAt(at, dist, secs), walk: (who, to) => app.walkTo(who, to), lock: (on) => { app.locked = on; } });
     (window as any).__game.act({ type: 'watched', scene: scene.id });
   }
+  // the tutorial (journal Passe TU3): after the news and the scene, a game begun before's line and the moment's hints, the square's own the first time; the
+  // square's picture kept for the guide (TU-4)
+  if (tutorialOn(b.params)) { keepPlace(st.place, () => { app.render(); return b.canvas; }); await ui.welcome(false); ui.hint('square'); }
 }

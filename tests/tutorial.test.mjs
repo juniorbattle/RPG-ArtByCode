@@ -1,0 +1,114 @@
+// The tutorial of the default game (journal Passes TU1 to TU3, the operator's sheet TU-1 to TU-12): its texts in the table with every number read from the
+// game's data (TU-6: no digit written into a chapter or a hint), every key in a cap the gamepad and the keyboard layout follow, the twelve chapters and the
+// eight hints (and the line of TU-8) each with its words and its chapter, the tour's six bands; what it remembers lives in the browser's storage and never in
+// the save; where it shows (a new game's tour, a game begun before's line, each hint's moment) and that a browser driven by a tool keeps today's flow; the
+// constants it reads are the ones the rules use.
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { load, ROOT } from './load.mjs';
+
+const { EN } = await load('/src/narrative/text/en.ts');
+const G = await load('/src/simulation/index.ts');
+const TU = await load('/src/ui/tutorial.ts');
+const LAW = await load('/src/simulation/v2law.ts');
+const TOWN = await load('/src/simulation/v2town.ts');
+const INTEL = await load('/src/simulation/v2intel.ts');
+const GEAR = await load('/src/simulation/v2gear.ts');
+const { POINTS } = await load('/src/narrative/roster.ts');
+
+const src = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\r\n/g, '\n');
+const v2 = () => { const s = G.newGame(1842, 'Ren'); G.makeV2(s); return s; };
+const tutKeys = Object.keys(EN).filter((k) => k.startsWith('tut.'));
+
+test('the texts: in the table, numbers only through slots, every cap known (TU-5, TU-6)', () => {
+  assert.ok(tutKeys.length >= 100, `tut keys: ${tutKeys.length}`);
+  // a chapter or a hint writes no number of its own: each comes from the data through a slot (a rebalance cannot make the guide wrong)
+  for (const k of tutKeys.filter((x) => /^tut\.(ch|hint)\./.test(x))) assert.doesNotMatch(EN[k], /\d/, `${k} writes a number: ${EN[k]}`);
+  // a key in a text is a cap the gamepad and the keyboard layout redraw, never a letter in the prose
+  for (const k of tutKeys) for (const m of EN[k].matchAll(/\[([^\]]+)\]/g)) assert.ok(['E', 'Q', 'Menu', 'M', 'Space', 'Enter', 'Back'].includes(m[1]), `${k}: unknown cap [${m[1]}]`);
+  const html = TU.rich('Press [E], then [Menu]; <b>x</b>');
+  assert.match(html, /<kbd data-cap="hints">E<\/kbd>/);
+  assert.match(html, /<kbd data-cap="hints">Esc<\/kbd>/);
+  assert.match(html, /&lt;b&gt;x&lt;\/b&gt;/, 'the rest is escaped');
+});
+
+test('the guide: twelve chapters, each filled from the game\'s data (TU-1, TU-6)', () => {
+  const s = v2();
+  assert.deepEqual(TU.CHAPTERS.map((c) => c.id), ['tournament', 'time', 'moving', 'places', 'shops', 'law', 'challenges', 'intel', 'renown', 'prepare', 'duel', 'keys']);
+  const text = Object.fromEntries(TU.CHAPTERS.map((c) => [c.id, TU.chapterText(s, c)]));
+  for (const [id, t] of Object.entries(text)) assert.doesNotMatch(t, /[{}]/, id);
+  assert.match(text.tournament, new RegExp(`a win is worth ${POINTS.win} points, a close defeat ${POINTS.close}`));
+  assert.match(text.tournament, /pool on days 2, 4 and 5/);
+  assert.match(text.tournament, /semi-finals on day 6/);
+  assert.match(text.law, new RegExp(`up to ${TOWN.STEAL_FINE.day} coins by day, ${TOWN.STEAL_FINE.night} at night`));
+  assert.match(text.law, new RegExp(`At ${LAW.LAW.wanted} marks`));
+  assert.match(text.challenges, new RegExp(`You stake ${TOWN.STAKE.coins} coins or ${TOWN.STAKE.name} of your reputation`));
+  assert.match(text.intel, new RegExp(`${INTEL.RUMOUR.lio.coins} coins, right about 67 %`));
+  assert.match(text.intel, new RegExp(`for ${INTEL.STRONGROOM} coins`));
+  assert.match(text.prepare, new RegExp(`adds ${Math.round(GEAR.TRAIN_DMG * 100)} % to your damage at your next bout, up to ${GEAR.TRAIN_MAX} sessions`));
+  assert.match(text.prepare, new RegExp(`takes ${Math.round(GEAR.INJURY_HP * 100)} % of your health`));
+  assert.match(text.places, /the Arena Forecourt, the Training Ground and the Festival Square/);
+});
+
+test('the constants the guide reads are the rules\' own (the training, the wound, the fine)', () => {
+  // the bout's numbers are made from them (src/simulation/v2gear.ts), the theft's fine too (src/simulation/v2town.ts)
+  const gear = src('src/simulation/v2gear.ts'), town = src('src/simulation/v2town.ts');
+  assert.match(gear, /1 - INJURY_HP \* s\.player\.injury/);
+  assert.match(gear, /1 \+ TRAIN_DMG \* Math\.min\(TRAIN_MAX, s\.player\.training\)/);
+  assert.match(town, /const cap = night \? STEAL_FINE\.night : STEAL_FINE\.day/);
+  assert.deepEqual([GEAR.INJURY_HP, GEAR.TRAIN_DMG, GEAR.TRAIN_MAX, TOWN.STEAL_FINE.day, TOWN.STEAL_FINE.night], [0.2, 0.05, 2, 15, 25]);
+});
+
+test('the tour\'s six bands and the hints, each with its words and its chapter (TU-2, TU-3, TU-8)', () => {
+  assert.equal(TU.TOUR.length, 6);
+  assert.deepEqual(TU.TOUR.map((b) => b.at ?? null), [null, 'status', 'figs', 'list', 'menu', null]);
+  for (const b of TU.TOUR) { assert.ok(b.title in EN && b.body in EN, b.title); }
+  const ids = ['square', 'shop', 'steal', 'mark', 'eve', 'challenge', 'evening', 'hurt', 'guide'];
+  for (const id of ids) {
+    assert.ok(`tut.hint.${id}.title` in EN && `tut.hint.${id}.body` in EN, id);
+    assert.ok(TU.CHAPTERS.some((c) => c.id === TU.hintChapter(id)), `${id} opens a chapter`);
+  }
+});
+
+test('what it remembers lives in the browser, never in the save; a driven browser keeps today\'s flow', () => {
+  const t = src('src/ui/tutorial.ts');
+  assert.doesNotMatch(t, /writeSave|__game|advance\(|\.act\(/, 'the tutorial never acts on the game nor writes its save');
+  assert.match(t, /'cite-du-tournoi\.tutorial'/);
+  assert.match(t, /'cite-du-tournoi\.places'/);
+  assert.equal(TU.tutorialOn(new URLSearchParams('tutorial=1')), true);
+  assert.equal(TU.tutorialOn(new URLSearchParams('tutorial=0')), false);
+  assert.match(t, /t === '1' \|\| \(t !== '0' && !navigator\.webdriver\)/);
+  // no localStorage in Node: the tutorial forgets quietly
+  assert.equal(TU.hintSeen('shop'), false);
+  assert.doesNotThrow(() => TU.markHint('shop'));
+  assert.equal(TU.told(), false);
+});
+
+test('where it shows: the tour of a new game, the line of a game begun before, each hint at its moment (TU-2, TU-3, TU-8, TU-9)', () => {
+  const ui = src('src/ui/townUi.ts'), town = src('src/ui/playTown.ts'), plaza = src('src/ui/playPlaza.ts');
+  assert.match(town, /if \(isV2\(st\) && tutorialOn\(b\.params\)\) \{ void ui\.welcome\(b\.params\.has\('new'\)\);/);
+  assert.match(plaza, /if \(tutorialOn\(b\.params\)\) \{ keepPlace\(st\.place, .*\); await ui\.welcome\(false\); ui\.hint\('square'\); \}/);
+  assert.match(ui, /if \(fresh\) await this\.tour\(\);\n\s*else if \(!told\(\)\) \{ this\.hint\('guide'\); markTold\(\); \}/);
+  assert.match(ui, /if \(next === s\.day \+ 1 && s\.slot !== 'morning'\) this\.hint\('eve'\);/);
+  assert.match(ui, /if \(s\.slot === 'evening'\) this\.hint\('evening'\);/);
+  assert.match(ui, /if \(opts\.some\(\(o\) => o\.ok && o\.action\.type === 'steal'\)\) this\.hint\('steal'\);/);
+  assert.match(ui, /if \(opts\.some\(\(o\) => o\.ok && o\.action\.type === 'challenge'\)\) this\.hint\('challenge', who\);/);
+  assert.match(ui, /if \(who\) this\.hint\('shop'\);/);
+  assert.match(ui, /if \(this\.welcomed && v2 && \(sus > 0 \|\| P\.injury > 0\)\)/);
+  // the guide: in the menu on a line of its own (H), the tour replayed from it (TU-7)
+  assert.match(ui, /if \(isV2\(s\)\) add\(tx\('tut\.guide'\), \(\) => this\.openGuide\(\), 'H'\);/);
+  assert.match(ui, /replay: \(\) => void this\.tour\(\)/);
+  // today's game (v2=0) shows none of it
+  assert.match(town, /tutorial: isV2\(st\) && tutorialOn\(b\.params\)/);
+  assert.match(ui, /if \(!this\.host\.tutorial \|\| !isV2\(this\.st\) \|\| hintSeen\(id\)\) return;/);
+});
+
+test('it moves by fades only (TU-10: the reduced motion is the game\'s own setting)', () => {
+  const css = src('src/ui/tutorial.ts').match(/const CSS = `([\s\S]*?)`;/)[1];
+  assert.doesNotMatch(css, /transform|translate|ds-rise|ds-in\b/, 'no slide');
+  assert.match(css, /\.tu-spot\{[^}]*transition:opacity \.2s/);
+  assert.match(css, /tu-band\{animation:ds-fade/);
+  assert.match(css, /tu-hint\{[^}]*animation:ds-fade/);
+});

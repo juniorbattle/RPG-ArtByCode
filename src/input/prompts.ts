@@ -8,7 +8,8 @@ import { capOf, PAD_CSS, type GlyphStyle } from './glyphs';
 
 export interface PromptMode { family: PadFamily; style: GlyphStyle }
 
-const placeOf = (k: Element): CapPlace => (k.closest('#pm-hints') ? 'hints' : k.closest('.pm-scene') ? 'scene' : k.closest('#arena-hud') ? 'arena' : k.closest('.pm-menu') ? 'menu' : 'other');
+// a cap may say which place's key it shows (`data-cap`, the tutorial's texts: journal Passe TU3): the exploring keys, the duel's
+const placeOf = (k: Element): CapPlace => (k.closest('#pm-hints, [data-cap=hints]') ? 'hints' : k.closest('.pm-scene') ? 'scene' : k.closest('#arena-hud, [data-cap=arena]') ? 'arena' : k.closest('.pm-menu') ? 'menu' : 'other');
 
 /** a cap's key: the one it was written with, whatever it shows now */
 export const capKey = (k: Element): string => (k as HTMLElement).dataset?.key ?? k.textContent ?? '';
