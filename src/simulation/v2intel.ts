@@ -4,7 +4,7 @@ import type { ActionDef } from './actions';
 import { isV2 } from './v2';
 import { available } from './roles';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
-import { tx, type TextKey } from '../narrative/text';
+import { inEnglish, tx, type TextKey } from '../narrative/text';
 import { taleOf, TALE } from './v2rivals';
 import { pendingFinal } from '../tournament/v2calendar';
 
@@ -93,8 +93,9 @@ export function seenInTown(s: GameState, who: string): string {
     for (const o of Object.keys(RIVALS)) {
       if (o === who) continue;
       const other = RIVALS[o].name;
-      if (a.text === tx('off.socialise', { name, other }) && !drank.includes(other)) drank.push(other);
-      if (a.text === tx('off.socialiseWords', { name, other }) && !words.includes(other)) words.push(other);
+      // the log is English whatever the page's language (journal Passe RG4): compared with the English
+      if (a.text === inEnglish(() => tx('off.socialise', { name, other })) && !drank.includes(other)) drank.push(other);
+      if (a.text === inEnglish(() => tx('off.socialiseWords', { name, other })) && !words.includes(other)) words.push(other);
     }
   }
   if (drank.length) parts.push(tx('v2.seen.drink', { names: drank.join(tx('v2.seen.and')) }));

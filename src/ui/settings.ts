@@ -197,8 +197,12 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
 
   const language = (): void => {
     for (const l of LANGS) {
-      const b = toggle(LANG_LABEL[l], () => (loadSettings().lang ?? pageLang()) === l, () => chooseLanguage(l, !o.inDuel));
-      b.setAttribute('lang', l);
+      // one language at a time: the choice marks its line and unmarks the other (in a duel the page stays, so both are redrawn)
+      const b = toggle(LANG_LABEL[l], () => (loadSettings().lang ?? pageLang()) === l, () => {
+        chooseLanguage(l, !o.inDuel);
+        for (const x of detail.querySelectorAll<HTMLElement>('[data-lang]')) x.setAttribute('aria-pressed', String(x.dataset.lang === l));
+      });
+      b.setAttribute('lang', l); b.dataset.lang = l;
       detail.appendChild(b);
     }
     // in a duel the bout goes on in its language, the next page speaks the new one

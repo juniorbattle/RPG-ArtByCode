@@ -6,7 +6,8 @@
 //   node tools/play-flow.mjs <outDir> <win|lose> [seed] [day=2|3]   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs;
 //   COMBAT=dynamic: the new game under the rules of the « tour par tour dynamique », &combat=dynamic, its bout in DynamicSim, journal Passe C2;
 //   a version 2 game by default, the default game since the operator's decision of journal Passe VD1: the bare ?play=1&new=1, its flag and the
-//   dynamic rules with it, journal Passe V0; V2=0: today's game, &v2=0; COMBAT=dynamic: today's game under the dynamic rules, &v2=0&combat=dynamic)
+//   dynamic rules with it, journal Passe V0; V2=0: today's game, &v2=0; COMBAT=dynamic: today's game under the dynamic rules, &v2=0&combat=dynamic;
+//   PAGE_LANG=fr: every page in French, &lang=fr, journal Passe RG4: the same fingerprint, the simulation running in English)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -27,11 +28,12 @@ const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (
 try {
   const page = await b.newPage();
   page.on('pageerror', (e) => { errors.push(e.message); console.log('[pageerror]', e.message); });
-  const open = async (q) => { await page.goto(`${BASE}${q}`, { waitUntil: 'load', timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); const e = await page.evaluate(() => window.__error ?? null); check(!e, `page ${q} ready${e ? `: ${e}` : ''}`); };
+  const open = async (q) => { await page.goto(`${BASE}${q}${process.env.PAGE_LANG ? `&lang=${process.env.PAGE_LANG}` : ''}`, { waitUntil: 'load', timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); const e = await page.evaluate(() => window.__error ?? null); check(!e, `page ${q} ready${e ? `: ${e}` : ''}`); };
   const act = async (a) => { const r = await page.evaluate((x) => window.__game.act(x), a); check(r.ok, `act ${JSON.stringify(a).slice(0, 60)}${r.ok ? '' : `: ${r.reason}`}`); if (r.ok) actionsDone.push(a); return r; };
   // 1. the town: a new game, the clock to the bout's afternoon
   await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1${V2 ? '' : DYN ? '&v2=0&combat=dynamic' : '&v2=0'}`);
   check((await page.evaluate(() => window.__game.state().flags.v2 ?? null)) === (V2 ? true : null), `the version 2's flag: ${V2 ? 'on' : 'absent'}`);
+  { const want = process.env.PAGE_LANG && V2 ? process.env.PAGE_LANG : 'en'; const l = await page.evaluate(() => document.documentElement.lang || 'en'); check(l === want, `the page's language: ${l}`); }
   check((await page.evaluate(() => window.__game.state().flags.combat ?? null)) === (DYN ? 'dynamic' : null), `the game's rules: ${DYN ? 'dynamic' : 'today'}`);
   // the slots to the bout's afternoon: (day - 1) days of three slots and the morning
   const waits = (day - 1) * 3 + 1;

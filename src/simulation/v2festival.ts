@@ -8,7 +8,7 @@ import { marksOf, LAW } from './v2law';
 import { FRIENDSHIP } from './v2rivals';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
 import { PEOPLE } from '../narrative/people';
-import { tx, type TextKey } from '../narrative/text';
+import { tx, txBy, type TextKey } from '../narrative/text';
 
 /** The version 2's festival (lot L6; the operator's EV-14 « Un festival le jour 9, conçu sur une fiche à part », and the festival's design sheet, journal Passe EVL11,
  *  nine of nine at the recommendation: FE-1 « La Lanterne de Tête » ... FE-9). The Cité's custom: on the eve of the final each of the eight fighters leads a cortege,
@@ -190,10 +190,11 @@ export function festivalWords(s: GameState, who: string): string | null {
   const b = BEARERS.find((x) => x.who === who);
   if (!b) return null;
   const { behind, why } = bearerOf(s, who);
-  if (behind === PLAYER_ID) return tx('v2.fest.walksYou', { why: tx(why!) });
+  // each person in their own register (RG-11: in French Bram, Lio, Mara... say « tu », txBy)
+  if (behind === PLAYER_ID) return txBy(who, 'v2.fest.walksYou', { why: txBy(who, why!) });
   // what would send the lantern behind the player, said by the person (Sergeant Brann and Sister Anwen: nothing)
-  const unless = b.whyYou === 'v2.fest.why.never' ? tx('v2.fest.why.never') : tx('v2.fest.unless', { why: tx(b.whyYou) });
-  if (behind) return tx('v2.fest.walksRival', { name: RIVALS[behind].name, why: tx(why!), unless });
+  const unless = b.whyYou === 'v2.fest.why.never' ? txBy(who, 'v2.fest.why.never') : txBy(who, 'v2.fest.unless', { why: txBy(who, b.whyYou) });
+  if (behind) return tx('v2.fest.walksRival', { name: RIVALS[behind].name, why: txBy(who, why!), unless });
   return tx('v2.fest.walksNone', { unless });
 }
 
@@ -210,7 +211,7 @@ export function festivalLine(s: GameState, id: string): string | null {
   if (id === PLAYER_ID && f?.behind) return tx('v2.fest.board.behind', { name: RIVALS[f.behind].name });
   const ls = corteges(s)[id] ?? [], n = count(ls);
   if (!n) return tx('v2.fest.board.none', { name });
-  const parts = ls.map((l) => (l.who ? tx('v2.fest.board.person', { name: PEOPLE[l.who]?.name ?? l.who, why: tx(l.why) }) : tx('v2.fest.board.group', { n: l.n, why: tx(l.why) })));
+  const parts = ls.map((l) => (l.who ? tx('v2.fest.board.person', { name: PEOPLE[l.who]?.name ?? l.who, why: txBy(l.who, l.why) }) : tx('v2.fest.board.group', { n: l.n, why: tx(l.why) })));
   return tx('v2.fest.board.tonight', { n, list: parts.join('; ') });
 }
 

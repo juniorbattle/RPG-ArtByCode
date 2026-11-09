@@ -10,7 +10,10 @@
 //      QWERTY again, W walks;
 //   7. the duel of the version 2: Space pauses, Esc opens the page over the paused duel, Space there does not resume it, Esc closes; the pad's Y opens it;
 //   8. the reduced motion: the system's « reduce » changes nothing (the game's setting alone); the setting on stops the slides (--ds-move 0) and reaches the
-//      duel and its effects; off again.
+//      duel and its effects; off again;
+//   9. the language (journal Passe RG4): the title's « Français · English » line (English pressed in an English browser), the arrows and Enter to French:
+//      kept, the page reloaded in French; the settings' language part back to English; a French browser on a fresh profile speaks French; a new game
+//      in French; in a duel's pause a new language is kept for the next page without reloading the bout, a line says so; today's game (v2=0) in English.
 // A DEV server (named states).   node tools/settings-proof.mjs <outDir>   (BASE_URL, W / H, CHROME_PATH / CHROME_ARGS / READY_MS as tools/detshots.mjs)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -212,6 +215,62 @@ try {
   await page.evaluate(() => localStorage.removeItem('cite-du-tournoi.settings'));
   await page.reload({ waitUntil: 'load' }); await page.waitForFunction('window.__ready === true && window.__arena?.ready', { timeout: READY });
   check(await page.evaluate(() => window.__arena.reducedMotion === false), 'off again by default');
+
+  // 9. the language (journal Passe RG4, RG-9, RG-10, RG-13, RG-14): the title's line, the settings' part, a duel keeping its language, today's game in English
+  const lang = () => page.evaluate(() => document.documentElement.lang || 'en');
+  const label = (id) => page.evaluate((id) => document.querySelector(`#title-menu [data-id="${id}"]`)?.firstChild?.firstChild?.textContent?.trim() ?? '', id);
+  const reloadTitle = async (act) => { await Promise.all([page.waitForNavigation({ waitUntil: 'load', timeout: READY }), act()]); await page.waitForSelector('#title-screen #title-menu .pm-btn', { timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); await sleep(600); };
+  await title();
+  const line = await page.evaluate(() => [...document.querySelectorAll('#title-menu .langs button')].map((x) => `${x.textContent}${x.getAttribute('aria-pressed') === 'true' ? '*' : ''}`).join(' · '));
+  check(line === 'Français · English*' && (await lang()) === 'en', `the title's line, English spoken (an English browser): ${line}`);
+  for (let i = 0; i < 8 && (await focus()) !== 'lang-fr'; i++) await key('ArrowDown');
+  check((await focus()) === 'lang-fr', 'the arrows reach « Français »');
+  await reloadTitle(() => page.keyboard.press('Enter'));
+  check((await lang()) === 'fr' && (await stored())?.lang === 'fr', 'Enter keeps French and the page speaks it');
+  check((await label('new')) === 'Nouvelle partie' && (await label('settings')) === 'Réglages', `the title in French: ${await label('new')}, ${await label('settings')}`);
+  await page.screenshot({ path: path.join(outDir, '9-title-fr.png') });
+  for (let i = 0; i < 8 && (await focus()) !== 'settings'; i++) await key('ArrowDown');
+  await key('Enter');
+  await until(() => !!document.querySelector('.pm-settings'), 4000, 'the settings in French');
+  for (let i = 0; i < 4 && (await focus()) !== 'language'; i++) await key('ArrowDown');
+  await key('ArrowRight');
+  check(await page.evaluate(() => document.querySelector('.pm-settings section:last-child .pm-h')?.textContent === 'Langue'), 'the settings\' language part, in French');
+  const toggles = await page.evaluate(() => [...document.querySelectorAll('.pm-settings .pm-detail .pm-btn')].map((x) => `${x.getAttribute('lang')}:${x.getAttribute('aria-pressed') === 'true' ? 1 : 0}`).join());
+  check(toggles === 'en:0,fr:1', `the two languages offered, French marked: ${toggles}`);
+  for (let i = 0; i < 3 && !/English/.test(await focus()); i++) await key('ArrowUp');
+  if (!/English/.test(await focus())) for (let i = 0; i < 3 && !/English/.test(await focus()); i++) await key('ArrowDown');
+  check(/English/.test(await focus()), `« English » selected: ${await focus()}`);
+  await reloadTitle(() => page.keyboard.press('Enter'));
+  check((await lang()) === 'en' && (await stored())?.lang === 'en' && (await label('new')) === 'New game', 'English chosen in the settings: kept, the page reloaded in English');
+  // a French browser on a fresh profile speaks French (RG-9); nothing stored
+  await page.evaluate(() => localStorage.clear());
+  const fr = await page.evaluateOnNewDocument(() => { Object.defineProperty(Navigator.prototype, 'language', { get: () => 'fr-FR' }); });
+  await title();
+  check((await lang()) === 'fr' && (await stored()) === null && (await label('new')) === 'Nouvelle partie', 'a French browser, nothing stored: the game speaks French');
+  // a version 2 game in French: the town, then a duel whose pause keeps a new language for the next page
+  await page.goto(`${BASE}?play=1&new=1&name=Ren&noreload=1&tutorial=0`, { waitUntil: 'load', timeout: READY });
+  await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); await sleep(800);
+  check(await page.evaluate(() => /Jour 1/.test(document.body.innerText) && !/Day 1/.test(document.body.innerText)), 'a new game in French: « Jour 1 »');
+  await page.goto(`${BASE}?play=1&state=v2-day2-afternoon&scene=arena&noreload=1&tutorial=0`, { waitUntil: 'load', timeout: READY });
+  await page.waitForFunction('window.__ready === true && window.__arena?.ready', { timeout: READY }); await sleep(500);
+  await page.evaluate(() => { window.__stay = 1; });
+  await key('Space'); await key('Escape');
+  await until(() => !!document.querySelector('.pm-settings'), 4000, 'the settings over the duel');
+  for (let i = 0; i < 4 && (await focus()) !== 'language'; i++) await key('ArrowDown');
+  await key('ArrowRight');
+  for (let i = 0; i < 3 && !/English/.test(await focus()); i++) await key('ArrowUp');
+  if (!/English/.test(await focus())) for (let i = 0; i < 3 && !/English/.test(await focus()); i++) await key('ArrowDown');
+  await key('Enter'); await sleep(800);
+  check(await page.evaluate(() => window.__stay === 1 && window.__arena.paused && document.documentElement.lang === 'fr'), 'in the duel the choice does not reload the page: the bout goes on in French');
+  check((await stored())?.lang === 'en' && await page.evaluate(() => /garde sa langue/.test(document.querySelector('.pm-settings .pm-detail')?.textContent ?? '')), 'kept for the next page, the line says so');
+  await page.screenshot({ path: path.join(outDir, '9-duel-language.png') });
+  await page.removeScriptToEvaluateOnNewDocument(fr.identifier);
+  // today's game (v2=0) speaks English whatever the choice (RG-14)
+  await page.evaluate(() => localStorage.setItem('cite-du-tournoi.settings', JSON.stringify({ lang: 'fr' })));
+  await page.goto(`${BASE}?play=1&new=1&name=Ren&v2=0&noreload=1`, { waitUntil: 'load', timeout: READY });
+  await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); await sleep(800);
+  check((await lang()) === 'en' && await page.evaluate(() => /Day 1/.test(document.body.innerText)), 'today\'s game (v2=0), French chosen: English');
+  await page.evaluate(() => localStorage.removeItem('cite-du-tournoi.settings'));
 } finally {
   await b.close();
 }

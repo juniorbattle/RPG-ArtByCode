@@ -749,6 +749,7 @@ export const EN = {
   'ui.save.blocked': 'The browser does not let this page keep a save (private window or blocked storage).',
   'list.and': '{a} and {b}',
   'list.comma': '{a}, {b}',
+  'list.last': '{a}, {b}',
   'ui.skill.lessHit': '{pct} % less damage',
   'ui.skill.lessGauge': '{pct} % less to your gauge',
   'ui.skill.moreHit': '{pct} % more damage',
@@ -946,6 +947,7 @@ export const EN = {
   'v2.board.fought': 'Your bouts are fought: the tournament ends on the tenth day.',
   // a bout's day on the tournament's page (journal Passe RG4: out of the code)
   'v2.board.when': ' — day {day}, afternoon',
+  'v2.board.against': '{stage}: {name}, {epithet}',
   'v2.line.drill.brawl': '« Half my recruits have black eyes this morning, and the other half have sore heads. Mind the broken bottles by the barracks. »',
   // lot L3 (journal Passe EVL5; the operator's EV-10 « Une réponse par lieu, un effet lisible » and EV-11 « Observer tout adversaire, rumeurs, activité lisible »,
   // journal Passe EV2): watching every rival at practice, the rumours of the next opponent, what the town saw, the lockers' own answer, the strap cut, « proposé »

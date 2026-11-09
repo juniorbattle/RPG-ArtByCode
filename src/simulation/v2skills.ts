@@ -4,7 +4,7 @@ import type { ActionDef } from './actions';
 import { isV2, v2KitOf } from './v2';
 import { LATE_TEACHER, SKILL_BOOK, taughtBy } from '../combat/skillbook';
 import { MAX_LEVEL, chargeTime } from '../combat/skills';
-import { skillName, tx } from '../narrative/text';
+import { joined, skillName, tx } from '../narrative/text';
 import { sandRefusal } from './v2rivals';
 
 /** The skills of a version 2 game (lot V2, C4; the operator's decision AV-9 « Achat, entraînement et défi », journal Passe V2): the skills the
@@ -98,6 +98,6 @@ export const V2_SKILL_ACTIONS: { [K in V2SkillAction['type']]: ActionDef<Extract
       for (const id of a.skills) if (!owns(s, id)) return tx('v2.loadout.notOwned', { skill: SKILL_BOOK[id] ? skillName(id) : id });
       return null;
     },
-    apply: (s, a, _r, emit) => { v2State(s).kit.loadout = [...a.skills]; emit({ kind: 'action', id: 'loadout', cause: 'action:setLoadout', visible: false, text: tx('v2.loadout.log', { skills: a.skills.map(skillName).join(', ') }) }); },
+    apply: (s, a, _r, emit) => { v2State(s).kit.loadout = [...a.skills]; emit({ kind: 'action', id: 'loadout', cause: 'action:setLoadout', visible: false, text: tx('v2.loadout.log', { skills: joined(a.skills.map(skillName)) }) }); },
   },
 };

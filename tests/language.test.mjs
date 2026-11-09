@@ -15,6 +15,7 @@ const { FR_TEXTS } = await load('/src/narrative/text/fr-texts.ts');
 const G = await load('/src/simulation/index.ts');
 const L = await load('/src/tournament/lab.ts');
 const S = await load('/src/settings/settings.ts');
+const INTEL = await load('/src/simulation/v2intel.ts');
 
 const marks = (s) => [...s.matchAll(/\{(\w+)(?:\|\w+)?\}/g)].map((m) => m[1]).sort().join(',');
 const caps = (s) => [...s.matchAll(/\[(\w+)\]/g)].map((m) => m[1]).sort().join(',');
@@ -101,4 +102,47 @@ test('the language chosen: the player\'s choice, else the browser\'s among the l
   assert.equal(S.langOf(none, 'fr-FR', true), 'en');
   assert.equal(S.langOf({ ...none, lang: 'fr' }, 'en-US', true), 'fr');
   assert.equal(S.langOf({ ...none, lang: 'en' }, 'fr-FR', false), 'en');
+});
+
+test('what the cold proofreading found in the code (journal Passe RG4): lists said in the page\'s language, the English kept to the byte', () => {
+  // a list joined during the simulation: its English as before (« a, b, c »), its French with « et », each item said in French
+  assert.equal(T.joined(['a', 'b', 'c']), 'a, b, c');
+  assert.equal(T.joined(['a', 'b', 'c'], 'list.and'), 'a, b and c');
+  assert.equal(T.joined(['a']), 'a');
+  assert.equal(inFrench(() => T.joined(['a', 'b', 'c'])), 'a, b et c');
+  const skills = T.inEnglish(() => T.joined(['t1', 't2', 'd1'].map(T.skillName)));
+  assert.equal(skills, T.inEnglish(() => ['t1', 't2', 'd1'].map(T.skillName).join(', ')), 'the English list unchanged');
+  const ref = T.refOf(T.inEnglish(() => T.tx('v2.loadout.log', { skills })));
+  inFrench(() => {
+    const fr = T.render(ref);
+    assert.ok(/ et /.test(fr) && !/Flash cut|Thrust/.test(fr), `the skills listed in French: ${fr}`);
+    // the player first among the finalists, capitalised in English before the page says it
+    assert.equal(T.word('You'), 'Vous');
+    // the weapon's name without its article, held in English by the simulation
+    assert.equal(T.word('training sword'), 'épée d’entraînement');
+  });
+});
+
+test('a person who says « tu » to the player in French keeps it on the Lanterns\' parade, one table line serving several people (RG-11)', () => {
+  inFrench(() => {
+    assert.match(T.txBy('bram', 'v2.fest.walksYou', { why: T.txBy('bram', 'v2.fest.why.forge') }), /derrière toi .*tu as rallumé ma forge/);
+    assert.match(T.txBy('hilde', 'v2.fest.walksYou', { why: T.txBy('hilde', 'v2.fest.why.regular') }), /derrière vous .*vous avez acheté/);
+    assert.match(T.txBy('mara', 'v2.fest.unless', { why: T.txBy('mara', 'v2.fest.why.regular') }), /derrière toi .*tu as acheté/);
+  });
+  // in English the line as it is
+  assert.equal(T.txBy('bram', 'v2.fest.why.forge'), T.tx('v2.fest.why.forge'));
+});
+
+test('a page reading the English log compares it with the English, whatever the page speaks (what the town saw a rival do)', () => {
+  // a whole game played step by step: every morning, each rival's line of what the town saw, in English and in French
+  let st = G.newGame(11, 'Ren'); G.makeV2(st);
+  let drinks = 0;
+  for (let i = 0; i < 600 && !st.over; i++) {
+    if (st.slot === 'morning') for (const who of ['cassius', 'ilse', 'tobin', 'orla', 'marek', 'vessa', 'rhosk']) {
+      const en = INTEL.seenInTown(st, who), fr = inFrench(() => INTEL.seenInTown(st, who));
+      if (/drank|traded words/.test(en)) { drinks++; assert.match(fr, /bu|verre|boire|mots/i, `the drinks said in French: « ${fr} » / « ${en} »`); }
+    }
+    st = G.advance(st, L.POLICIES.curious.choose(st)).state;
+  }
+  assert.ok(drinks > 0, 'a rival seen drinking at least once');
 });

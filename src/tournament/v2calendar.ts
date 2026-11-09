@@ -2,7 +2,7 @@ import { DAYS, clamp, type GameState, type MatchRecord } from '../simulation/sta
 import type { Emit } from '../simulation/advance';
 import { isV2 } from '../simulation/v2';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
-import { tx } from '../narrative/text';
+import { joined, tx } from '../narrative/text';
 import { nameOf, standings } from './pool';
 
 /** The ten days of the version 2's tournament (lot V6, journal Passe V6; the project contract's planning lock, § 4: « 1 arrivée, inscription,
@@ -76,8 +76,8 @@ function cut(s: GameState, emit: Emit): void {
   s.tournament.matches.push(match(4, 6, top[0], top[3], 'semi'), match(4, 6, top[1], top[2], 'semi'), match(4, 6, rest[0], rest[3], 'gate'), match(4, 6, rest[1], rest[2], 'gate'));
   const inside = top.includes(PLAYER_ID);
   emit({ kind: 'match', id: inside ? 'cut:in' : 'cut:out', cause: 'tournament:cut', visible: true, text: inside
-    ? tx('v2.cut.in', { rank: top.indexOf(PLAYER_ID) + 1, four: top.filter((id) => id !== PLAYER_ID).map((id) => RIVALS[id].name).join(', ') })
-    : tx('v2.cut.out', { four: top.map((id) => RIVALS[id].name).join(', ') }) });
+    ? tx('v2.cut.in', { rank: top.indexOf(PLAYER_ID) + 1, four: joined(top.filter((id) => id !== PLAYER_ID).map((id) => RIVALS[id].name)) })
+    : tx('v2.cut.out', { four: joined(top.map((id) => RIVALS[id].name)) }) });
 }
 
 function major(s: GameState, emit: Emit): void {

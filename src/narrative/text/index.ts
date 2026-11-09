@@ -79,6 +79,12 @@ export function word(s: string): string { if (TABLE === EN || !s) return s; cons
 /** a number as the language in use writes it: the French decimal comma (« 1,5 s »); `digits` fixed decimals */
 export function num(v: number, digits?: number): string { const s = digits === undefined ? String(v) : v.toFixed(digits); return LANG === 'fr' && TABLE !== EN ? s.replace('.', ',') : s; }
 
+/** names or texts listed in a sentence, each one a text of the table so that a page says the list in its language: « a, b and c » with `list.and`; with
+ *  `list.last` the English keeps its commas (« a, b, c », as the log was written before the French, so the fingerprints stay) and the French says « a, b et c » */
+export function joined(items: readonly string[], last: 'list.and' | 'list.last' = 'list.last'): string {
+  return items.reduce((a, b, i) => (i === 0 ? b : tx(i === items.length - 1 ? last : 'list.comma', { a, b })), '');
+}
+
 /** a capital first letter */
 export const cap = (s: string): string => (s ? s[0].toUpperCase() + s.slice(1) : s);
 /** a name without its article, capitalised, in the language in use (a place in the status line: « Merchant District », « Quartier marchand ») */
@@ -102,6 +108,20 @@ export function tx(key: TextKey, vars?: Record<string, string | number>): string
   let v: TextRef['v'];
   if (vars) { v = {}; for (const [k, x] of Object.entries(vars)) { const r = typeof x === 'string' ? SAID.get(x) : undefined; v[k] = r ?? x; } }
   remember(out, v ? { k: key, v } : { k: key });
+  return out;
+}
+
+/** the people who say « tu » to the player in French (RG-11 « Récit en vous, chaque personnage selon qui il est »; the translators' brief of journal Passe RG4) */
+const SAYS_TU = new Set(['mara', 'tam', 'pip', 'lio', 'bram', 'orla', 'tobin', 'rhosk', 'kell', 'corra', 'fenwick', 'folk', 'wynn']);
+/** a line a person says in their own register, where one table line serves several people (the Lanterns' parade): the table's `<key>|tu` when this
+ *  person says « tu » to the player and the language has that form (the English has none: the line as it is) */
+export function txBy(who: string, key: TextKey, vars?: Record<string, string | number>): string {
+  const k = `${key}|tu`, t = SAYS_TU.has(who) ? TABLE[k] : undefined;
+  if (t === undefined) return tx(key, vars);
+  const out = fill(k, t, vars);
+  let v: TextRef['v'];
+  if (vars) { v = {}; for (const [n, x] of Object.entries(vars)) v[n] = (typeof x === 'string' ? SAID.get(x) : undefined) ?? x; }
+  remember(out, v ? { k, v } : { k });
   return out;
 }
 
