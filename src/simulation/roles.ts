@@ -15,6 +15,9 @@ import { V2_BARTER_ACTIONS } from './v2barter';
 import { V2_INTEL_ACTIONS } from './v2intel';
 import { V2_RIVAL_ACTIONS, anwenBusy } from './v2rivals';
 import { V2_FESTIVAL_ACTIONS } from './v2festival';
+import { TRAINED_STATS, TRAIN_POINT, type TrainedStat } from '../combat/stats';
+/** the stats' names (keys written whole: tests/texts.test.mjs) */
+const SPAR_STAT: Record<TrainedStat, TextKey> = { atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv' };
 
 const V2_OFFERS = { ...V2_SKILL_ACTIONS, ...V2_GEAR_ACTIONS, ...V2_TOWN_ACTIONS, ...V2_STORY_ACTIONS, ...V2_LAW_ACTIONS, ...V2_BARTER_ACTIONS, ...V2_INTEL_ACTIONS, ...V2_RIVAL_ACTIONS, ...V2_FESTIVAL_ACTIONS };
 
@@ -35,7 +38,7 @@ export type RoleAction =
   | { type: 'report' }
   | { type: 'register' }
   | { type: 'heal' }
-  | { type: 'spar' }
+  | { type: 'spar'; stat?: TrainedStat }
   | { type: 'scout'; who: string }
   | { type: 'listen' }
   | { type: 'taunt' }
@@ -223,12 +226,14 @@ export const ROLE_ACTIONS: T = {
   spar: {
     by: 'orla',
     // Orla trains at the version 2's training ground (lot V5)
-    list: (st) => (st.place === placeOf(PEOPLE.orla, isV2(st)) ? [{ type: 'spar' }] : []),
-    label: () => tx('spar.label'),
+    // a version 2 game: a session like the sand's, one line per stat it may raise (the operator's DB7-3, journal Passe DB8)
+    list: (st) => (st.place !== placeOf(PEOPLE.orla, isV2(st)) ? [] : isV2(st) ? TRAINED_STATS.map((stat) => ({ type: 'spar' as const, stat })) : [{ type: 'spar' }]),
+    label: (st, a) => (isV2(st) ? tx('v2.spar.stat', { stat: tx(SPAR_STAT[a.stat && (TRAINED_STATS as readonly string[]).includes(a.stat) ? a.stat : 'atk']), n: TRAIN_POINT }) : tx('spar.label')),
     cost: () => 1,
     check: (st) => available(st, 'orla') ?? (st.player.training >= 2 ? tx('spar.sharp') : null),
-    apply: (s, _a, _r, emit) => {
+    apply: (s, a, _r, emit) => {
       s.player.training++; const o = s.competitors.orla; if (o) o.relationships.player = clamp((o.relationships.player ?? 0) + 15, -100, 100);
+      if (s.v2) (s.v2.prep ??= []).push(a.stat && (TRAINED_STATS as readonly string[]).includes(a.stat) ? a.stat : 'atk');
       const friend = (o?.relationships.player ?? 0) >= 25;
       if (friend) fact(s, 'orla-recruitable');
       emit({ kind: 'action', id: 'spar', cause: 'action:spar', visible: true, text: friend ? tx('spar.friend') : tx('spar.log') });

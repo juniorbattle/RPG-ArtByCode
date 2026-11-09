@@ -18,16 +18,16 @@ const v2 = (name = 'day1-morning') => G.makeV2(G.namedState(name));
 const act = (st, a) => { const r = G.advance(st, a); assert.ok(r.ok, `${a.type}: ${r.reason}`); return r.state; };
 const rows = (p) => Object.fromEntries(p.rows.map((r) => [r.id, r]));
 
-test('the numbers of a bout are the duel\'s own: health, the heavy blow, the AP and the charge as the arena builds them, gear and wounds included', () => {
+test('the numbers of a bout are the duel\'s own: health as the arena builds it, Ren\'s stats, the AP and the effects, gear and wounds included (DB7-7, journal Passe DB8)', () => {
   const st = G.makeV2(G.namedState('day2-afternoon'));
-  // the heavy attack is a skill since journal Passe CH1: its blow and its charge are a bout's that brings it, at its level, whether it is brought or not
-  for (const gear of [{}, { weapon: 'imported-blade', tier: 2 }, { armour: 'mail-shirt', acc: ['lucky-ribbon', 'docker-wrap'] }, { weapon: 'duelist-sabre', acc: ['swift-boots', 'iron-ring'] }]) for (const injury of [0, 1]) for (const heavy of [1, 3]) for (const brought of [false, true]) {
-    const s = structuredClone(st); Object.assign(s.v2.gear, gear); s.player.injury = injury; s.v2.kit.levels.heavy = heavy;
-    if (brought) s.v2.kit.loadout = ['t1', 'heavy', 'd1', 's1'];
-    const kit = { loadout: brought ? s.v2.kit.loadout : ['heavy', 't4', 'd1', 's1'], levels: s.v2.kit.levels };
-    const m = VG.v2Mods(s), { data: d, tiers } = M.v2SheetData(M.matchSheetFor(s), undefined, kit, m), n = P.duelStats(s);
-    assert.equal(n.hp, d.fighters.ren.maxHp); assert.equal(n.blow, d.actions.heavy.damage); assert.equal(n.ap, d.ap.start);
-    assert.equal(n.charge, tiers.find((t) => t.id === 'heavy').at);
+  for (const gear of [{}, { weapon: 'imported-blade', tier: 2 }, { armour: 'mail-shirt', acc: ['lucky-ribbon', 'docker-wrap'] }, { weapon: 'duelist-sabre', acc: ['swift-boots', 'iron-ring'] }]) for (const injury of [0, 1]) for (const wins of [0, 3]) {
+    const s = structuredClone(st); Object.assign(s.v2.gear, gear); s.player.injury = injury; s.v2.wins = wins;
+    const m = VG.v2Mods(s), { data: d } = M.v2SheetData(M.matchSheetFor(s), undefined, s.v2.kit, m), n = P.duelStats(s);
+    assert.equal(n.hp, d.fighters.ren.maxHp); assert.equal(n.ap, d.ap.start); assert.equal(n.effect, m.effect * 100);
+    assert.deepEqual([n.atk, n.def, n.end, n.viv], [m.stats.atk, m.stats.def, m.stats.end, m.stats.viv]);
+    // the vigour (DB7-4 « +12 PV par victoire ») and the wound's share of it
+    assert.equal(d.fighters.ren.maxHp, Math.round(m.stats.hp * (1 - 0.2 * injury))); assert.equal(m.stats.hp - VG.v2Stats({ ...s, v2: { ...s.v2, wins: 0 } }).hp, 12 * wins);
+    assert.equal(n.blow, undefined, 'the heavy blow is a skill\'s figure (the skills page)');
   }
   const plain = G.namedState('day2-afternoon'), classic = M.sheetData(M.matchSheetFor(plain));
   assert.deepEqual(P.duelStats(plain), { hp: classic.fighters.ren.maxHp, blow: classic.actions.heavy.damage }, 'the default game: its own two numbers');
@@ -42,7 +42,7 @@ test('every line sold anywhere: the « after » is what buying it really gives, 
       const before = G.hash(st), p = P.preview(st, o.action), next = act(st, o.action), had = P.duelStats(st), got = P.duelStats(next);
       assert.equal(G.hash(st), before, `${o.label}: a preview changes nothing`);
       assert.deepEqual(p.coins, [st.player.coins, next.player.coins], o.label);
-      for (const id of P.STAT_IDS) {
+      for (const id of P.STAT_IDS.filter((x) => had[x] !== undefined)) {
         const r = rows(p)[id];
         if (r) { assert.equal(r.now, had[id], `${o.label}: ${id}`); assert.equal(r.after, got[id], `${o.label}: ${id}`); } else assert.equal(+got[id].toFixed(3), +had[id].toFixed(3), `${o.label}: ${id} does not move`);
       }
@@ -50,16 +50,16 @@ test('every line sold anywhere: the « after » is what buying it really gives, 
   }
 });
 
-test('better and worse follow the number\'s sense: less damage taken is better, a slower charge is worse', () => {
+test('better and worse follow the number\'s sense: more Defence is better, less Speed is worse', () => {
   const st = v2('forecourt-morning'); st.player.coins = 300;
   const r = rows(P.preview(st, { type: 'shopBuy', shop: 'armourer', item: 'mail-shirt' }));
-  assert.equal(r.taken.better, true); assert.equal(Math.round(r.taken.after), 88);
-  // the heavy attack's charge at level 1 (2 s x 0.85, journal Passe CH1) slowed 5 % by the mail
-  assert.equal(r.charge.better, false); assert.equal(r.charge.after, +(1.7 * 1.05).toFixed(3));
+  // the mail (DB7-2): Defence +3, Speed -0.5
+  assert.equal(r.def.better, true); assert.equal(r.def.after, r.def.now + 3);
+  assert.equal(r.viv.better, false); assert.equal(r.viv.after, r.viv.now - 0.5);
   const w = v2(); w.player.coins = 300;
   const b = rows(P.preview(w, { type: 'shopBuy', shop: 'mara', item: 'docker-wrap' }));
-  // Ren 2 750 since journal Passe DB3 (2 200 x 1.25), the wrap +6 %
-  assert.equal(b.hp.better, true); assert.equal(b.hp.after, 2915);
+  // Ren 150 at the start (journal Passe DB8), the wrap +9
+  assert.equal(b.hp.better, true); assert.equal(b.hp.after, 159);
 });
 
 test('what it replaces, and the trap a swap hides: the forge\'s tiers leave with the old weapon', () => {
@@ -67,7 +67,7 @@ test('what it replaces, and the trap a swap hides: the forge\'s tiers leave with
   const p = P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'imported-blade' });
   assert.deepEqual([p.slot, p.replaces, p.tierLost], ['weapon', 'training-sword', 3]);
   const r = rows(p);
-  assert.equal(r.blow.better, false, 'three tiers (+24 %) lost for +15 %: the heavy blow falls, and the page says it');
+  assert.equal(r.atk.better, false, 'three tiers (Attack +3) lost for the blade\'s +2: the Attack falls, and the page says it');
   st.v2.gear.tier = 1;
   const up = P.preview(st, { type: 'upgradeWeapon' });
   assert.deepEqual([up.slot, up.replaces, up.tierLost], ['weapon', null, 0], 'the forge keeps the weapon');
@@ -86,8 +86,8 @@ test('both accessories on: a third goes to the bag and changes nothing; from the
 
 test('the whetstone and the salve read as the duel reads them, in a version 2 game and in the default game', () => {
   const st = v2(); st.player.coins = 300; st.player.injury = 1;
-  assert.ok(rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'whetstone' })).blow.better);
-  assert.deepEqual([rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'salve' })).hp.now, rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'salve' })).hp.after], [2200, 2750]);
+  assert.ok(rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'whetstone' })).atk.better);
+  assert.deepEqual([rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'salve' })).hp.now, rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'salve' })).hp.after], [120, 150]);
   const d = G.namedState('day1-morning'); d.player.coins = 300; d.player.injury = 1;
   for (const o of G.actions(d).filter((x) => W.isWare(x) && x.ok)) {
     const p = P.preview(d, o.action), next = act(d, o.action);
@@ -102,7 +102,7 @@ test('a line out of reach still tells what it would change: the coins go below z
   const o = G.actions(st).find((x) => x.action.type === 'shopBuy' && x.action.item === 'imported-blade');
   assert.equal(o.ok, false);
   const p = P.preview(st, o.action);
-  assert.equal(p.coins[1], 5 - o.coins); assert.ok(rows(p).blow.better);
+  assert.equal(p.coins[1], 5 - o.coins); assert.ok(rows(p).atk.better);
 });
 
 test('the dialogue gives one line to the goods: every keeper\'s wares and bargain leave its list, nothing else does', () => {

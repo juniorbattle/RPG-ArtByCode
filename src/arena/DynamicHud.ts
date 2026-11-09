@@ -57,9 +57,9 @@ export const DYN_TEXTS_EN: DynTexts = {
 };
 
 /** the version 2's words (lot V1, journal Passe V1): the attack button of the three-button command and its tiers */
-export interface ChargeTexts { attack: string; holdSub: string; tierLight: string; tierHeavy: string; locked: string; foeSkill: (name: string) => string }
-export const CHARGE_TEXTS_FR: ChargeTexts = { attack: 'Attaque', holdSub: 'tenir : charge', tierLight: 'Légère', tierHeavy: 'Puissante', locked: 'PA manquants', foeSkill: (n) => `Compétence : ${n}` };
-export const CHARGE_TEXTS_EN: ChargeTexts = { attack: 'Attack', holdSub: 'hold: charge', tierLight: 'Quick', tierHeavy: 'Heavy', locked: 'AP missing', foeSkill: (n) => `Skill: ${n}` };
+export interface ChargeTexts { attack: string; holdSub: string; tierLight: string; tierHeavy: string; locked: string; cooling: string; secs: (n: number) => string; foeSkill: (name: string) => string }
+export const CHARGE_TEXTS_FR: ChargeTexts = { attack: 'Attaque', holdSub: 'tenir : charge', tierLight: 'Légère', tierHeavy: 'Puissante', locked: 'PA manquants', cooling: 'En recharge', secs: (n) => `${n} s`, foeSkill: (n) => `Compétence : ${n}` };
+export const CHARGE_TEXTS_EN: ChargeTexts = { attack: 'Attack', holdSub: 'hold: charge', tierLight: 'Quick', tierHeavy: 'Heavy', locked: 'AP missing', cooling: 'Cooling down', secs: (n) => `${n} s`, foeSkill: (n) => `Skill: ${n}` };
 
 /** the tier strip of the charge (the version 2 only): in the dodge window's bar's place above the bar (the bar, when it shows with the full
  *  assistance, takes it); a short window (600 px high or less, journal Passe AF1) keeps only the attack button, its label the tier a release
@@ -85,6 +85,9 @@ body.pm-pad #ah-pause .kb{display:none}
 #ah-tiers .tr.launch{color:var(--ds-accent)}
 #ah-tiers .tr.next{color:var(--ds-ivory)}
 #ah-tiers .tr.locked{color:var(--ds-muted);opacity:.6;text-decoration:line-through}
+#ah-tiers .tr.cooling{color:var(--ds-muted);opacity:.75}
+#ah-tiers .tr s{text-decoration:none;font-variant-numeric:tabular-nums;display:none}
+#ah-tiers .tr.cooling s{display:inline}
 .ah-b.charging b,.ah-b.charging em{color:var(--ds-accent)}
 #arena-hud .ah-b.charging kbd{border-color:var(--ds-accent);color:var(--ds-accent)}
 @media (max-width:1240px){#ah-tiers{bottom:72px}#arena-hud.cmd3 #ah-bar{gap:18px}}
@@ -177,7 +180,7 @@ export class DynamicHud {
       return `<button class="ah-b${b.wide ? ' wide' : ''}" data-act="${b.id}" aria-label="${b.name} (${own ? actName(own) : b.key})">${own ? bindCap(own) : `<kbd>${b.key}</kbd>`}<b>${label}</b><em>${b.sub}</em><i class="pg"></i>${b.id === 'dodge' ? '<i class="wl"></i>' : ''}</button>`;
     }).join('');
     const tierName = (id: string) => (id === 'light' ? ct!.tierLight : id === 'heavy' ? ct!.tierHeavy : t.skillShorts[id as DynActionId] ?? A[id as DynActionId]?.short ?? A[id as DynActionId]?.name ?? id);
-    const tiers = charge ? `<div id="ah-tiers" aria-hidden="true">${charge.tiers.map((x, i) => `<span class="tr" data-i="${i}"><b>${tierName(x.id)}</b>${x.ap ? diamonds(x.ap) : ''}<i></i></span>`).join('')}</div>` : '';
+    const tiers = charge ? `<div id="ah-tiers" aria-hidden="true">${charge.tiers.map((x, i) => `<span class="tr" data-i="${i}"><b>${tierName(x.id)}</b>${x.ap ? diamonds(x.ap) : ''}<s></s><i></i></span>`).join('')}</div>` : '';
     const card = (who: DynFighterId, side: 'l' | 'r', sub: string) => `<div class="ah-f ${side}" id="ah-${who}" aria-label="${D.fighters[who].name}, ${sub}"><canvas class="ah-port" width="24" height="24" aria-hidden="true"></canvas><div class="ah-card"><div class="ah-nm">${D.fighters[who].name}<em></em></div><div class="ah-hp" role="meter" aria-label="${t.health(D.fighters[who].name)}" aria-valuemin="0" aria-valuemax="${D.fighters[who].maxHp}"><u></u><i></i></div><div class="ah-rs" role="meter" aria-label="${who === 'ren' ? t.resist : t.breakBar}" aria-valuemin="0" aria-valuemax="100"><span>${who === 'ren' ? t.resist : t.breakBar}</span><div class="ah-rb"><i></i><s></s></div></div>${who === 'ren' ? `<div class="ah-pips" aria-label="${t.apLabel}">` + '<b></b>'.repeat(D.ap.max) + '</div>' : ''}<div class="ah-tags"><b class="wd"></b><b class="bs"></b></div><div class="ah-state"></div></div></div>`;
     this.el.setAttribute('aria-label', t.subtitle);
     if (charge) this.el.classList.add('cmd3');
@@ -313,7 +316,10 @@ export class DynamicHud {
     this.cls('tiers', strip, 'on', cv.held || cv.waiting);
     strip.querySelectorAll<HTMLElement>('.tr').forEach((el, i) => {
       const st = cv.tiers[i]?.state ?? 'ahead';
-      this.set(`tr${i}`, st, () => { el.className = `tr ${st}`; el.title = st === 'locked' ? ct.locked : ''; });
+      this.set(`tr${i}`, st, () => { el.className = `tr ${st}`; el.title = st === 'locked' ? ct.locked : st === 'cooling' ? ct.cooling : ''; });
+      // DB5-3: the seconds before a skill is ready again
+      const cd = st === 'cooling' ? Math.ceil(cv.tiers[i].cool) : 0;
+      this.set(`trc${i}`, cd, () => { (el.querySelector(':scope > s') as HTMLElement).textContent = cd ? ct.secs(cd) : ''; });
       const w = st === 'next' ? cv.toNext : 0;
       this.set(`trw${i}`, w, () => { (el.querySelector(':scope > i') as HTMLElement).style.width = `${w}%`; });
     });

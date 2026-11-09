@@ -582,6 +582,16 @@ Les décisions A3 sont citées mot pour mot et datées au journal avant la mise 
 - **Leur défense** : dans leurs pauses, ils gardent 90 % des coups du joueur, jamais pendant leur rupture (DB5-2).
 - **La recharge** (DB5-3) : une compétence du joueur qui part ne revient qu’après 5 fois son temps de charge au niveau 1 (l’Estocade 38 s), comptés depuis son départ ; le HUD la montre.
 
+### 19.6 Les réglages de la mise en œuvre (journal Passe DB9)
+
+- **Les coups des rivaux** : ×0,72 des puissances de la fiche DB7 (simple 4,03, lourd 12,1, compétence 18,1 contre Ren à stats égales), recalés sur des parties entières (DB4-5) : le joueur préparé du TournamentLab à 60,0 % de ses combats.
+- **Deux nombres « à régler » du § 6** (ce que chaque coup ajoute à la jauge) :
+  - l'attaque simple 0,5 (2 depuis DB-5) ;
+  - un coup gardé ajoute deux fois sa part à la jauge du gardien (une fois avant), une règle pour les deux.
+  - La raison, mesurée : avec la garde à −80 %, un joueur qui tenait la garde pendant chaque séquence et ne faisait que l'attaque simple battait quatre rivaux sur sept (Tobin, Cassius, Rhosk et Orla dix fois sur dix). Avec ces deux nombres, il ne bat plus que Tobin (sept fois sur dix), Cassius et Rhosk deux fois sur dix ; une compétence gardée par un rival brise sa garde plus tôt, comme le veut « briser la garde ».
+- **La recharge** part du coup lancé ; une compétence repoussée avant de porter (CB-3) la rend avec ses PA.
+- **La Vivacité des rivaux** : lue dans le tempo de leurs kits ; la croissance de DB7-6 ne la touche pas, leur tempo reste celui d'aujourd'hui.
+
 ---
 
 ## Annexe A — Les réponses de l'opérateur, mot pour mot (25/10/2026)

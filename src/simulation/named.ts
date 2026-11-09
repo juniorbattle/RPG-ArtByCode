@@ -80,7 +80,8 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   // at Mara's, the quay that afternoon); a famous player on day 7's morning at the training ground, Orla Brask a friend (the strap's game of lot L3)
   'v2-watch-forecourt': { about: 'a version 2 game on the first afternoon, on the forecourt: caught stealing at Hilde\'s stall that morning, Wynn of the watch beside her (seed 1)', script: [{ type: 'move', to: 'forecourt' }, { type: 'steal', shop: 'armourer' }, W], v2: true, seed: 1 },
   'v2-watch-quay': { about: 'a version 2 game on the first afternoon, on the quay: caught stealing at Mara\'s stall that morning, Wynn of the watch beside her', script: [{ type: 'steal', shop: 'mara' }, W], v2: true },
-  'v2-famous-training': { about: 'a version 2 game on day 7\'s morning, at the training ground: every bout won, the passers-by celebrate the player, Orla Brask a friend', script: [...STRAP6, WON, W, { type: 'move', to: 'training' }], v2: true, seed: 23 },
+  // since the race of journal Passe DB9 Orla no longer meets the player in the semi-final (her second defeat by him made her a friend): a spar on day 1's morning instead
+  'v2-famous-training': { about: 'a version 2 game on day 7\'s morning, at the training ground: every bout won, the passers-by celebrate the player, Orla Brask a friend (a spar on day 1)', script: [{ type: 'move', to: 'training' }, { type: 'spar', stat: 'def' }, ...STRAP6.slice(1), WON, W, { type: 'move', to: 'training' }], v2: true, seed: 23 },
   // lot L6 (journal Passe EVL11): the scenes that depend on the state (seed 1842) - every pool bout lost, the Gate's morning on the forecourt; the semi-final won or
   // lost, its evening on the forecourt; the strap's game of lot L3 with Lady Edda's word and Sergeant Hale told, the festival square that evening (Cassius unmasked);
   // every bout won, the crowning's evening on the forecourt

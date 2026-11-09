@@ -1,7 +1,8 @@
 import { clamp, type GameState, type V2Gear } from './state';
 import type { ActionDef } from './actions';
 import { isV2 } from './v2';
-import { GEAR, MAX_WEAPON_TIER, SHOPS, TIER_PRICE, WEAPON_TIER_DAMAGE, type GearFx, type ShopId } from './gear';
+import { GEAR, MAX_WEAPON_TIER, SHOPS, TIER_PRICE, WEAPON_TIER_ATK, type GearFx, type ShopId } from './gear';
+import { REN_BASE, TRAIN_POINT, TRAINED_STATS, VIGOUR_HP, type FighterStats, type TrainedStat } from '../combat/stats';
 import { itemText, tx } from '../narrative/text';
 import { allyAp } from '../narrative/v2story';
 import type { Mods } from '../combat/profiles';
@@ -14,9 +15,10 @@ import { PEOPLE } from '../narrative/people';
  *  reputation, the keeper's goodwill, the events (the steel shortage) and the hour, « sans simulation financière lourde » (GAMEPLAY § 10).
  *  Mara's shop of today is this system's general store in a version 2 game; the forge's Wyrmsteel temper is the weapon's first tier. Pure. */
 
-/** a level of wound takes this share of the health in a bout; a training session adds this share of damage at the next bout, up to TRAIN_MAX sessions (read by
- *  the guide too, journal Passe TU3) */
-export const INJURY_HP = 0.2, TRAIN_DMG = 0.05, TRAIN_MAX = 2;
+/** a level of wound takes this share of the health in a bout; a training session gives TRAIN_POINT to the stat chosen at the next bout (the operator's
+ *  DB7-3 « +1 à la stat choisie, pour le prochain combat », journal Passe DB8; +5 % damage before), up to TRAIN_MAX sessions (read by the guide too,
+ *  journal Passe TU3) */
+export const INJURY_HP = 0.2, TRAIN_MAX = 2;
 export const START_GEAR: V2Gear = { weapon: 'training-sword', tier: 0, armour: null, acc: [null, null], bag: [] };
 
 export function gearOf(s: GameState): V2Gear {
@@ -31,26 +33,46 @@ export function weaponTier(s: GameState): number {
   return Math.min(MAX_WEAPON_TIER, gearView(s).tier + (s.player.items.includes('tempered-blade') ? 1 : 0));
 }
 
-/** every effect the player wears (the weapon, the armour, both accessories), multiplied or added */
+/** every effect the player wears (the weapon and its tiers, the armour, both accessories): the stat points added, the AP added, the effect multiplied */
 export function wornFx(s: GameState): Required<GearFx> {
-  const g = gearView(s), fx: Required<GearFx> = { damage: 1, taken: 1, ap: 0, gauge: 1, charge: 1, effect: 1, hp: 1 };
+  const g = gearView(s), fx: Required<GearFx> = { atk: 0, def: 0, end: 0, viv: 0, hp: 0, ap: 0, effect: 1 };
   for (const id of [g.weapon, g.armour, ...g.acc]) {
     const d = id ? GEAR[id] : undefined;
     if (!d) continue;
-    for (const [k, v] of Object.entries(d.fx) as Array<[keyof GearFx, number]>) { if (k === 'ap') fx.ap += v; else fx[k] *= v; }
+    for (const [k, v] of Object.entries(d.fx) as Array<[keyof GearFx, number]>) { if (k === 'effect') fx.effect *= v; else fx[k] += v; }
   }
-  fx.damage *= 1 + WEAPON_TIER_DAMAGE * weaponTier(s);
+  fx.atk += WEAPON_TIER_ATK * weaponTier(s);
   return fx;
 }
 
-/** what a version 2 player's state changes in a duel: today's injury, whetstone and training, and the gear (the weapon replaces today's blade
- *  items: the imported blade is a weapon, the temper a tier); `taken`, `gauge`, `charge`, `effect` go to the duel's data (v2duel.ts) */
-export function v2Mods(s: GameState): Mods & { taken: number; gauge: number; charge: number; effect: number } {
-  const fx = wornFx(s), stone = s.player.items.includes('whetstone') ? 1.05 : 1;
+/** the training sessions' stats for the next bout (DB7-3): the stat chosen at each, a session recorded before DB7 as Attack (its +5 % damage of before) */
+export function trainedStats(s: GameState): TrainedStat[] {
+  const n = Math.min(TRAIN_MAX, s.player.training), chosen = (s.v2?.prep ?? []).filter((k): k is TrainedStat => (TRAINED_STATS as readonly string[]).includes(k)).slice(0, n);
+  return [...chosen, ...Array<TrainedStat>(n - chosen.length).fill('atk')];
+}
+
+/** Ren's stats in a version 2 game's next bout (the operator's DB7 sheet, decisions A3, journal Passe DB8; src/combat/stats.ts): his base, the
+ *  vigour of his wins (DB7-4 « +12 PV par victoire »), the gear in points (DB7-2), the whetstone, the training sessions (DB7-3); an injury is a share
+ *  of the health on top (v2Mods) */
+export function v2Stats(s: GameState): FighterStats {
+  const fx = wornFx(s), st: FighterStats = { ...REN_BASE };
+  st.hp += VIGOUR_HP * (s.v2?.wins ?? 0) + fx.hp;
+  st.atk += fx.atk + (s.player.items.includes('whetstone') ? GEAR.whetstone.fx.atk ?? 0 : 0);
+  st.def += fx.def; st.end += fx.end; st.viv += fx.viv;
+  for (const k of trainedStats(s)) st[k] += TRAIN_POINT;
+  for (const k of Object.keys(st) as Array<keyof FighterStats>) st[k] = +st[k].toFixed(2);
+  return st;
+}
+
+/** what a version 2 player's state changes in a duel on top of his stats (v2Stats): the injury's share of his health, the AP of his gear and of a
+ *  friend, the night's tampering, the effects' duration; `damage`, `gauge` and `charge` are in his stats since DB7-2 (1 here) */
+export function v2Mods(s: GameState): Mods & { taken: number; gauge: number; charge: number; effect: number; stats: FighterStats } {
+  const fx = wornFx(s);
   return {
-    hp: +((1 - INJURY_HP * s.player.injury) * fx.hp).toFixed(4), damage: +(fx.damage * stone * (1 + TRAIN_DMG * Math.min(TRAIN_MAX, s.player.training))).toFixed(4), ap: fx.ap + allyAp(s),
+    stats: v2Stats(s),
+    hp: +(1 - INJURY_HP * s.player.injury).toFixed(4), damage: 1, ap: fx.ap + allyAp(s),
     // the gear tampered with in the night (lot V7, the event v2-gear-tamper): 15 % more damage taken that day, unless Hilde checked it
-    taken: +(fx.taken * (s.flags[`tampered:${s.day}`] && !s.flags[`checked:${s.day}`] ? 1.15 : 1)).toFixed(4), gauge: +fx.gauge.toFixed(4), charge: +fx.charge.toFixed(4), effect: +fx.effect.toFixed(4),
+    taken: s.flags[`tampered:${s.day}`] && !s.flags[`checked:${s.day}`] ? 1.15 : 1, gauge: 1, charge: 1, effect: +fx.effect.toFixed(4),
   };
 }
 

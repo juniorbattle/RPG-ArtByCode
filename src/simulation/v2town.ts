@@ -246,6 +246,8 @@ export function applyChallenge(s: GameState, o: DuelOutcome, emit: Emit): void {
   if (won) {
     // lot L4 (EV-7 « Les suites des actions »): the day's win, which makes the town talk (src/events/v2catalog.ts v2-challenge-fame: Master Corvin's lesson the next day)
     s.flags['challenge-won'] = true; s.flags[`won-challenge:${s.day}`] = true;
+    // the vigour (DB7-4 « +12 PV par victoire », journal Passe DB8): a challenge won counts
+    v.wins = (v.wins ?? 0) + 1;
     if (stake === 'coins') s.player.coins += 2 * STAKE.coins; else s.player.reputation = clamp(s.player.reputation + STAKE.name);
     const c = s.competitors[who]; if (c) c.relationships.player = clamp((c.relationships.player ?? 0) + (temper === 'proud' ? -6 : 10), -100, 100);
     emit({ kind: 'action', id: 'challenge:won', cause: `challenge:${who}`, visible: true, text: tx(stake === 'coins' ? 'v2.challenge.wonCoins' : 'v2.challenge.wonName', { name, n: stake === 'coins' ? 2 * STAKE.coins : STAKE.name }) });

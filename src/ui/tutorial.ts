@@ -8,7 +8,8 @@ import { CHALLENGERS, STAKE, STEAL_FINE } from '../simulation/v2town';
 import { RUMOUR, STRONGROOM } from '../simulation/v2intel';
 import { argChance, DISCOUNT } from '../simulation/v2barter';
 import { fameTier, type FameTier } from '../simulation/v2react';
-import { INJURY_HP, TRAIN_DMG, TRAIN_MAX } from '../simulation/v2gear';
+import { INJURY_HP, TRAIN_MAX } from '../simulation/v2gear';
+import { TRAIN_POINT } from '../combat/stats';
 import { v2DuelData } from '../combat/v2duel';
 import { forgetLessons } from './duelTutorial';
 import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
@@ -231,7 +232,7 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'law': return tx(c.body, { day: STEAL_FINE.day, night: STEAL_FINE.night, max: LAW.wanted, fee: LAW.fee, hale: nameOf('hale') });
     case 'challenges': return tx(c.body, { names: list(Object.keys(CHALLENGERS).map(nameOf)), coins: STAKE.coins, name: STAKE.name, day: dayOf('semis') });
     case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM });
-    case 'prepare': return tx(c.body, { train: pct(TRAIN_DMG), sessions: TRAIN_MAX, wound: pct(INJURY_HP), anwen: nameOf('anwen') });
+    case 'prepare': return tx(c.body, { train: TRAIN_POINT, sessions: TRAIN_MAX, wound: pct(INJURY_HP), anwen: nameOf('anwen') });
     case 'duel': { const D = v2DuelData('marek', { seed: 1, playerName: '', opponentName: '' }).data; return tx(c.body, { gain: D.actions.light?.apGain ?? 1, start: D.ap.start, max: D.ap.max, guard: pct(D.guard.reduce), n: D.ai.riposte?.after ?? 0, stun: D.resist.breakStun, times: D.resist.breakDamage }); }
     case 'renown': return tx(c.body, { hale: nameOf('hale'), parade: Math.max(...daysOfKind('free')) });
     case 'time': return tx(c.body, { slot: tx('ui.oneSlot') });

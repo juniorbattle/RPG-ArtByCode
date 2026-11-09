@@ -27,7 +27,7 @@ export interface PlayerState {
   reputation: number;
   /** 0 healthy, 1 hurt (-20 % health in a duel), 2 badly hurt (-40 %) */
   injury: number;
-  /** training sessions since the last duel (each: +5 % damage at the next duel, at most 2) */
+  /** training sessions since the last duel (each: +5 % damage at the next duel, at most 2; in a version 2 game +1 to the stat chosen, V2State.prep) */
   training: number;
   /** items held (ids of the narrative's item table) */
   items: string[];
@@ -121,6 +121,11 @@ export interface GameState {
 /** the version 2's state: the skills and their levels, the four brought (lot V2); the lots after it add their parts */
 export interface V2State {
   kit: { loadout: string[]; levels: Record<string, number> };
+  /** the stat chosen at each training session since the last bout (the operator's DB7-3 « +1 à la stat choisie, pour le prochain combat », journal
+   *  Passe DB8): 'atk', 'def', 'end' or 'viv'; emptied with the sessions after the bout */
+  prep?: string[];
+  /** the bouts won, the tournament's and the challenges' (DB7-4 « +12 PV par victoire »: Ren's vigour, src/simulation/v2gear.ts v2Stats) */
+  wins?: number;
   /** the gear carried (lot V3): the weapon and its tier, the armour, the two accessories, the bag of what is owned and not worn */
   gear?: V2Gear;
   /** the shops' day-long states (lot V4): a bargain or a grudge of the day, closed to the player for the day, a markup until a day */

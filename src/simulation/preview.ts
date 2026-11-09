@@ -5,46 +5,51 @@ import { v2Mods } from './v2gear';
 import { TRAIN_CAP, levelOf } from './v2skills';
 import type { ChargeTier } from '../combat/charge';
 import type { DynActionId } from '../combat/dynamic';
-import { playerMods } from '../combat/match';
+import { matchSheetFor, playerMods, v2SheetData } from '../combat/match';
 import { DYN_PROFILES, PROFILES, duelData, dynDuelData } from '../combat/profiles';
 import { SKILL_BOOK } from '../combat/skillbook';
 import { MAX_LEVEL } from '../combat/skills';
 import { v2DuelData, type V2Duel, type V2Kit } from '../combat/v2duel';
+import { skillPower } from '../combat/stats';
 import { Rng } from '../core/rng';
 
 /** What a purchase or a change of gear would change (the operator's choice UM7-3 « Lot à part : héros, détail, comparaison », journal Passe UM9): no
  *  rule of its own, so it cannot drift from the game. The numbers are read from the duel's own data, built as a bout builds them; the « after » is the
  *  real action applied to a copy of the state, its clock left alone. Pure. */
 
-export type StatId = 'hp' | 'blow' | 'taken' | 'ap' | 'charge' | 'gauge' | 'effect';
+export type StatId = 'hp' | 'atk' | 'def' | 'end' | 'viv' | 'blow' | 'taken' | 'ap' | 'charge' | 'gauge' | 'effect';
 export type Stats = Partial<Record<StatId, number>>;
-/** the order of the sheet */
-export const STAT_IDS: readonly StatId[] = ['hp', 'blow', 'taken', 'ap', 'charge', 'gauge', 'effect'];
+/** the order of the sheet: a version 2 game's stats first (the operator's DB7-7 « Équipement, fiche de match et compétences », journal Passe DB8) */
+export const STAT_IDS: readonly StatId[] = ['hp', 'atk', 'def', 'end', 'viv', 'blow', 'taken', 'ap', 'charge', 'gauge', 'effect'];
 /** the numbers where less is better */
 const LESS_IS_BETTER: ReadonlySet<StatId> = new Set(['taken', 'charge', 'gauge']);
 
 const NAMES = { seed: 1, playerName: '', opponentName: '' };
 
-/** the player's numbers in a bout now: health, the heavy blow's damage, then a version 2 game's damage taken, starting AP, heavy charge (s), gauge
- *  fill and the wards' and boosts' length (% of the bare figure); the opponent's own numbers stay out of it. In a version 2 game the heavy attack is
- *  a skill (journal Passe CH1): its blow and its charge at its level, as a bout that brings it builds them, whether it is brought or not */
+/** the player's numbers in a bout now: health and the heavy blow's damage in today's game; a version 2 game's stats at the next bout (the operator's
+ *  DB7 sheet, journal Passe DB8: health with the injury's share, Attack, Defence, Endurance, Speed, src/simulation/v2gear.ts v2Stats), the AP at the
+ *  start and the wards' and boosts' length (% of the bare figure); the opponent's own numbers stay out of it */
 export function duelStats(s: GameState): Stats {
   if (isV2(s)) {
-    const m = v2Mods(s), d = skillDuel(s, withSkill(s, 'heavy'), v2KitOf(s).levels).data, heavy = skillFigures(s, 'heavy', levelOf(s, 'heavy') || 1);
-    return { hp: d.fighters.ren.maxHp, blow: heavy.damage, taken: m.taken * 100, ap: d.ap.start, charge: heavy.charge, gauge: m.gauge * 100, effect: m.effect * 100 };
+    const m = v2Mods(s), d = skillDuel(s, v2KitOf(s).loadout, v2KitOf(s).levels).data, st = m.stats;
+    return { hp: d.fighters.ren.maxHp, atk: st.atk, def: st.def, end: st.end, viv: st.viv, ap: d.ap.start, effect: m.effect * 100 };
   }
   const m = playerMods(s), d = s.flags.combat === 'dynamic' ? dynDuelData(DYN_PROFILES.marek, { ...NAMES, player: m }) : duelData(PROFILES.marek, { ...NAMES, player: m });
   return { hp: d.fighters.ren.maxHp, blow: d.actions.heavy.damage };
 }
 
-/** a duel as a bout builds it, with these skills at these levels */
+/** a duel as a bout builds it, with these skills at these levels: the player's next bout when there is one (since journal Passe DB8 a blow's damage
+ *  follows the opponent's Defence and its stage), else Marek at the pool */
 function skillDuel(s: GameState, loadout: string[], levels: Record<string, number>): V2Duel {
-  const m = v2Mods(s);
-  return v2DuelData('marek', { ...NAMES, player: { hp: m.hp, damage: m.damage, ap: m.ap }, gear: m, kit: { loadout: loadout as V2Kit['loadout'], levels } });
+  const m = v2Mods(s), kit = { loadout: loadout as V2Kit['loadout'], levels }, sh = matchSheetFor(s);
+  if (sh) return v2SheetData(sh, undefined, kit, m);
+  return v2DuelData('marek', { ...NAMES, player: { hp: m.hp, damage: m.damage, ap: m.ap }, gear: m, ren: m.stats, kit });
 }
 
 export interface SkillFigures {
   ap: number;
+  /** an offensive skill's power before the stats (the operator's DB7-7, journal Passe DB8: src/combat/stats.ts skillPower; 0 for a ward or a boost) */
+  power: number;
   /** what the blow does, gear and level in it: its damage and what it adds to the gauge */
   damage: number; gauge: number;
   /** the hold that opens it (s) */
@@ -62,7 +67,7 @@ const withSkill = (s: GameState, id: string): string[] => { const k = v2KitOf(s)
 export function skillFigures(s: GameState, id: string, level: number): SkillFigures {
   const k = v2KitOf(s), { data: d, tiers } = skillDuel(s, withSkill(s, id), { ...k.levels, [id]: level });
   const a = d.actions[id as DynActionId], e = a.ward ?? a.boost;
-  return { ap: a.apCost ?? 0, damage: a.damage, gauge: a.resist, charge: tiers.find((t) => t.id === id)!.at, dur: e?.dur ?? 0, ward: a.ward ?? null, boost: a.boost ?? null, pierce: !!a.ignoreGuard };
+  return { ap: a.apCost ?? 0, power: a.family === 'offensive' ? +skillPower(id, level).toFixed(1) : 0, damage: a.damage, gauge: a.resist, charge: tiers.find((t) => t.id === id)!.at, dur: e?.dur ?? 0, ward: a.ward ?? null, boost: a.boost ?? null, pierce: !!a.ignoreGuard };
 }
 
 /** the tiers of the charge with these skills (the light attack, then each one by its time; the heavy attack only when it is among them, journal Passe CH1), as

@@ -178,7 +178,17 @@ Le bot du jeu (faible 0,2, moyen 0,5, fort 0,9) contre les sept rivaux, 10 comba
 - Le recalage sur des parties entières, `V2_RACERS`, les états nommés, les textes du tutoriel du premier combat (ils lisent les nombres du duel).
 - Les tests, le laboratoire, le combat en navigateur, la fusion ; puis ton essai en jeu.
 
-Mesures : `node tools/duel-balance.mjs --audit --seeds=1..10 --skills=0.2,0.5,0.9 --variant="rpg+fguard90+greduce80+cd5+gauge70+stun10+rs<n>+lv<n>[+stage<n>][+rhp<N>]"`. Les jetons de la variante `rpg` :
+## 6. Ce qui a été décidé et appliqué (journal Passes DB8 et DB9)
+
+- La fiche DB7 relue : six cartes sur sept à la recommandation ; DB7-1 « Ajouter la Vivacité (vitesse de charge) », avec la note « certains adversaires seront plus rapide que d'autres et il en est de meme pour notre protagonist ». Cinq stats donc : la Vivacité règle les temps de charge de Ren (× 10 / Vivacité) et le tempo d'un rival ; l'équipement qui touchait la charge donne des points de Vivacité (le sabre et les bottes +1, la cotte et le haubert −0,5) ; une séance peut la choisir.
+- Appliqué dans le jeu par défaut (`src/combat/stats.ts`), avec les règles de DB5, et trois réglages de la mise en œuvre (`briefs/combat-system.md` § 19.6) :
+  - les coups des rivaux ×0,72, recalés à six combats sur dix ;
+  - l'attaque simple remplit la jauge de 0,5 ;
+  - un coup gardé remplit deux fois la jauge du gardien.
+- Les deux derniers parce qu'un joueur qui tenait la garde à chaque séquence et ne faisait que l'attaque simple gagnait contre quatre rivaux sur sept.
+- Les nombres des § 3 et § 2.5 sont ceux de la proposition, avant ces réglages ; la courbe recalée est au journal (Passe DB9).
+
+Mesures : `node tools/duel-balance.mjs --audit --seeds=1..10 --skills=0.2,0.5,0.9 --variant="rs<n>+lv<n>[+stage<n>][+rhp<N>]"` (les stats du jeu depuis la Passe DB8 ; avant, le prototype `rpg+fguard90+greduce80+cd5+gauge70+stun10`). Les jetons :
 
 | Jeton | Ce qu'il règle |
 |---|---|

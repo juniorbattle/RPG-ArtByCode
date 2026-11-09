@@ -19,6 +19,7 @@ import { itemName, weaponTier } from '../simulation/v2gear';
 import { marksOf } from '../simulation/v2law';
 import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
+import { foeSheetOf, matchSheetFor } from '../combat/match';
 import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
 import { tabTo } from '../input/pad';
 import { guidePage, hintChapter, hintSeen, markHint, markTold, runTour, showHint, told, TOUR, type HintId } from './tutorial';
@@ -438,8 +439,12 @@ export class TownUi {
     const id = opponentOf(m), r = RIVALS[id], url = portraitUrl(id), g = s.v2?.gear;
     const stage = stageName(m);
     const intel = foeIntel(s, id), heard = heardLine(s, id), strap = strapCut(s);
+    // the opponent's stats at this bout's stage (the operator's DB7-7 « Équipement, fiche de match et compétences », journal Passe DB8)
+    const sh = matchSheetFor(s), foe = sh?.sides[1].fighters[0], fs = foe ? foeSheetOf(foe, sh!.stage ?? 0) : null;
+    const stats = fs ? tx('v2.sheet.stats', { hp: Math.round(fs.hp * (foe!.mods.hp ?? 1)), atk: +fs.atk.toFixed(1), def: +fs.def.toFixed(1), end: +fs.end.toFixed(1), viv: +fs.viv.toFixed(1) }) : '';
     const gear = !g ? '' : g.armour ? tx('v2.sheet.gear', { weapon: itemName(g.weapon), tier: weaponTier(s), armour: itemName(g.armour) }) : tx('v2.sheet.gearBare', { weapon: itemName(g.weapon), tier: weaponTier(s) });
     return `<p class="pm-sub">${esc(stage)}</p><div class="pm-foe">${url ? `<span class="pm-port"><img src="${url}" alt="" width="64" height="64"></span>` : ''}<div><h2 class="pm-h">${esc(r.name)}</h2><p class="pm-sub">${esc(r.epithet)}</p></div></div><p>${esc(r.bio)}</p>`
+      + (stats ? `<p class="pm-sub pm-fstats">${esc(stats)}</p>` : '')
       + `<p class="pm-sub">${esc(intel)}</p>${heard ? `<p class="pm-sub">${esc(heard)}</p>` : ''}<p class="pm-sub">${esc(gear)}</p>${strap ? `<p class="pm-sub pm-warn">${esc(tx('v2.sheet.strap'))}</p>` : ''}${s.facts.includes('orla-recruited') ? `<p class="pm-sub">${tx('v2.sheet.ally')}</p>` : ''}`;
   }
 

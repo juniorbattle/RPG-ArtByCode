@@ -53,7 +53,8 @@ try {
   check(!!first.on && first.on === first.name && first.hero, `the goods: ${JSON.stringify(first)}`);
   let line = first;
   for (let i = 0; i < 6 && line.on !== 'Whetstone'; i++) { await page.keyboard.press('ArrowDown'); line = await seen(); }
-  check(line.name === 'Whetstone' && /Heavy blow/.test(line.cmp) && /Coins/.test(line.cmp), `the arrows reach the whetstone, the detail with them: ${JSON.stringify(line)}`);
+  // the whetstone's Attack +0.5 since the fighters' stats (journal Passe DB9; its heavy blow before)
+  check(line.name === 'Whetstone' && /Attack/.test(line.cmp) && /Coins/.test(line.cmp), `the arrows reach the whetstone, the detail with them: ${JSON.stringify(line)}`);
   await page.screenshot({ path: path.join(outDir, 'day1-mara-goods.png') });
   const coins = await page.evaluate(() => window.__game.state().player.coins);
   await page.keyboard.press('Enter');

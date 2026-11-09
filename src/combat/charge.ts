@@ -6,7 +6,8 @@ import { DynamicSim, type DynActionId, type DynData, type DynEvent, type DynFigh
  *  is held: a tap is the light attack; then, tier after tier, the four skills the player brought, ranked by their charge time at their level;
  *  releasing launches the tier reached (as Cyan's Bushido). The heavy attack has no tier of its own since the operator's decision A3 of
  *  2026-11-04 (journal Passe CH1, « attaque puissante deviendra une des competences »): it is one of the skills, brought or not. A skill still costs its action points: a tier
- *  whose AP are missing does not open (the release launches the best open tier reached), and the HUD shows it.
+ *  whose AP are missing does not open (the release launches the best open tier reached), and the HUD shows it; nor does one still cooling down
+ *  (the operator's DB5-3 « 5 × le temps de charge », a decision A3, journal Passe DB6: DynActionDef.cooldown).
  *  The rules of the duel are DynamicSim's, unchanged (src/combat/dynamic.ts); this wraps it and turns the three buttons into its commands.
  *  Nothing cuts a charge: the operator's decision V2-2 « Rien ne la coupe » (journal Passes FV3 / V2C1; the rule « proposé » of Passe V1, where
  *  an unguarded blow, the dodge, the break or the K.O. cut it, is gone). Its edge cases, each « proposé » (journal Passe V2C1), read as « rien »:
@@ -53,8 +54,10 @@ export interface ChargeView {
   tiers: ChargeTier[];
   /** the last tier its time has reached (0 = the light attack) */
   reached: number;
-  /** each tier can open now (its AP are there) */
+  /** each tier can open now (its AP are there, its cooldown over) */
   open: boolean[];
+  /** each tier's cooldown left (s; 0 = ready: DB5-3) */
+  cool: number[];
   /** the tier a release would launch now (the best open tier reached) */
   launch: number;
   /** the released tier waiting for the duel to take it (the best tier the AP open now, at most the one reached at its release), or -1 */
@@ -90,19 +93,21 @@ export class ChargedDuel {
 
   private emit(e: ChargeEvent): void { e.t = this.sim.t; this.extra.push(e); }
   private free(): boolean { const s = this.sim.f.ren.state; return s === 'idle'; }
-  /** the best tier at most `reached` whose AP are there now (the light attack costs none) */
+  /** a tier can open: its AP are there and its cooldown is over (DB5-3) */
+  private opens(i: number): boolean { return this.sim.f.ren.ap >= this.tiers[i].ap && this.sim.ready('ren', this.tiers[i].id); }
+  /** the best tier at most `reached` that can open now (the light attack always can) */
   private bestOpen(reached: number): number {
-    const ap = this.sim.f.ren.ap;
-    for (let i = reached; i > 0; i--) if (ap >= this.tiers[i].ap) return i;
+    for (let i = reached; i > 0; i--) if (this.opens(i)) return i;
     return 0;
   }
 
   /** what the player's charge is now (the HUD, the bot) */
   view(): ChargeView {
-    const ap = this.sim.f.ren.ap, open = this.tiers.map((x) => ap >= x.ap);
+    const open = this.tiers.map((_, i) => this.opens(i));
     let reached = 0;
     for (let i = 0; i < this.tiers.length; i++) if (this.hold >= this.tiers[i].at) reached = i;
-    return { held: this.held, t: this.hold, tiers: this.tiers, reached, open, launch: this.bestOpen(reached), waiting: this.waits.length ? this.bestOpen(this.waits[0].reached) : -1 };
+    const cool = this.tiers.map((x) => +this.sim.cooldownLeft('ren', x.id).toFixed(2));
+    return { held: this.held, t: this.hold, tiers: this.tiers, reached, open, cool, launch: this.bestOpen(reached), waiting: this.waits.length ? this.bestOpen(this.waits[0].reached) : -1 };
   }
 
   /** the attack button: pressed starts a charge, released launches the tier reached (or keeps it waiting until the duel can take it) */

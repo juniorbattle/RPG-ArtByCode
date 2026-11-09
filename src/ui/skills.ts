@@ -27,6 +27,7 @@ function doesWhat(f: SkillFigures): string {
 function cmpHtml(now: SkillFigures, next: SkillFigures | null, level: number): string {
   const row = (label: string, a: number, b: number | undefined, unit = ''): string => `<span class="l">${label}</span><span class="${next ? 'v' : 'a'}">${num(a)}${unit}</span><span class="a${b !== undefined && b !== a ? ' up' : ''}">${b === undefined ? '' : `${num(b)}${unit}`}</span><span class="m"></span>`;
   const rows = [
+    now.power ? row(tx('ui.skill.power'), now.power, next?.power) : '',
     now.damage ? row(tx('ui.skill.damage'), now.damage, next?.damage) : '',
     now.gauge ? row(tx('ui.skill.gauge'), now.gauge, next?.gauge) : '',
     now.dur ? row(tx('ui.skill.length'), now.dur, next?.dur, ' s') : '',

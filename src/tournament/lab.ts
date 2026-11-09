@@ -96,8 +96,11 @@ function diligentV2(st: GameState): Action {
   if (st.slot === 'morning' && boutToday && st.facts.includes('armour-asked')) { const c = at('forecourt', { type: 'checkGear' }); if (c) return c; }
   const armour = st.v2?.gear?.armour, want = !armour ? 'padded-jack' : armour === 'padded-jack' ? 'mail-shirt' : null;
   if (want && st.player.coins >= (want === 'padded-jack' ? 25 : 50)) { const b = at('forecourt', { type: 'shopBuy', shop: 'armourer', item: want }); if (b) return b; }
-  return at('training', { type: 'train' }) ?? fallback(st, 0.6);
+  return at('training', labSession(st)) ?? fallback(st, 0.6);
 }
+
+/** the lab's training session in a version 2 game (the operator's DB7-3, journal Passe DB8): Attack first, then Defence */
+const labSession = (st: GameState): Action => ({ type: 'train', stat: st.player.training === 0 ? 'atk' : 'def' });
 
 /** the curious player's version 2 day (« proposé », a policy, not a person): see POLICIES.curious */
 function curiousV2(st: GameState): Action {
@@ -170,7 +173,7 @@ function curiousV2(st: GameState): Action {
   // the festival of day 9 (lot L6, FE-9): the good turns on the festival square, the hall's lanterns in the morning, Brother Ambrose's flame in the afternoon, a round at
   // Lio's when the purse keeps the healer's price (the diligent does none of it)
   const festival = (): Action | null => first(() => at('lanterns', { type: 'festDeed', deed: st.slot === 'morning' ? 'hang' : 'flame' }), () => (st.player.coins >= FEST.round + 8 ? at('lanterns', { type: 'festDeed', deed: 'round' }) : null));
-  return first(sand, strongroom, investigate, festival, buy, barter, steal, rumour, challenge, scout, () => at('training', { type: 'train' })) ?? fallback(st, 0.6);
+  return first(sand, strongroom, investigate, festival, buy, barter, steal, rumour, challenge, scout, () => at('training', labSession(st))) ?? fallback(st, 0.6);
 }
 
 /** a scripted game (journal Passe L5): per slot, the actions to try in order (each once, when the state allows it), then the slot's end

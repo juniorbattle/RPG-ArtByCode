@@ -173,7 +173,7 @@ function pickTier(duel: ChargedDuel, s: number, rng: Rng): number {
   const heavy = T.findIndex((x) => x.id === 'heavy'), skill = (i: number) => i > 0 && i !== heavy;
   // a skill's long charge may run through a sequence (nothing cuts it): only the light and the heavy must fit in the pause
   const fits = (i: number) => !careful || skill(i) || T[i].at + impactTime(D.actions[T[i].id]) < margin;
-  const ok = (i: number) => r.ap >= T[i].ap && fits(i);
+  const ok = (i: number) => r.ap >= T[i].ap && sim.ready('ren', T[i].id) && fits(i);
   const idx = (pred: (a: DynActionDef) => boolean) => T.findIndex((x, i) => skill(i) && pred(D.actions[x.id]) && ok(i));
   let i = idx((a) => !!a.ward && !r.ward && r.resist >= 0.5 * D.resist.max);
   if (i >= 0) return i;

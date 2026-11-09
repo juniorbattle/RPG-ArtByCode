@@ -17,6 +17,7 @@ const LAW = await load('/src/simulation/v2law.ts');
 const TOWN = await load('/src/simulation/v2town.ts');
 const INTEL = await load('/src/simulation/v2intel.ts');
 const GEAR = await load('/src/simulation/v2gear.ts');
+const STATS = await load('/src/combat/stats.ts');
 const { POINTS } = await load('/src/narrative/roster.ts');
 
 const src = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\r\n/g, '\n');
@@ -54,7 +55,8 @@ test('the guide: twelve chapters, each filled from the game\'s data (TU-1, TU-6)
   assert.match(text.challenges, new RegExp(`You stake ${TOWN.STAKE.coins} coins or ${TOWN.STAKE.name} of your reputation`));
   assert.match(text.intel, new RegExp(`${INTEL.RUMOUR.lio.coins} coins, right about 67 %`));
   assert.match(text.intel, new RegExp(`for ${INTEL.STRONGROOM} coins`));
-  assert.match(text.prepare, new RegExp(`adds ${Math.round(GEAR.TRAIN_DMG * 100)} % to your damage at your next bout, up to ${GEAR.TRAIN_MAX} sessions`));
+  // a session since journal Passe DB8 (the operator's DB7-3 « +1 à la stat choisie, pour le prochain combat »)
+  assert.match(text.prepare, new RegExp(`gives \\+${STATS.TRAIN_POINT} to the stat you choose \\(Attack, Defence, Endurance or Speed\\) at your next bout, up to ${GEAR.TRAIN_MAX} sessions`));
   assert.match(text.prepare, new RegExp(`takes ${Math.round(GEAR.INJURY_HP * 100)} % of your health`));
   assert.match(text.places, /the Arena Forecourt, the Training Ground and the Festival Square/);
 });
@@ -63,9 +65,10 @@ test('the constants the guide reads are the rules\' own (the training, the wound
   // the bout's numbers are made from them (src/simulation/v2gear.ts), the theft's fine too (src/simulation/v2town.ts)
   const gear = src('src/simulation/v2gear.ts'), town = src('src/simulation/v2town.ts');
   assert.match(gear, /1 - INJURY_HP \* s\.player\.injury/);
-  assert.match(gear, /1 \+ TRAIN_DMG \* Math\.min\(TRAIN_MAX, s\.player\.training\)/);
+  assert.match(gear, /const n = Math\.min\(TRAIN_MAX, s\.player\.training\)/);
+  assert.match(gear, /for \(const k of trainedStats\(s\)\) st\[k\] \+= TRAIN_POINT;/);
   assert.match(town, /const cap = night \? STEAL_FINE\.night : STEAL_FINE\.day/);
-  assert.deepEqual([GEAR.INJURY_HP, GEAR.TRAIN_DMG, GEAR.TRAIN_MAX, TOWN.STEAL_FINE.day, TOWN.STEAL_FINE.night], [0.2, 0.05, 2, 15, 25]);
+  assert.deepEqual([GEAR.INJURY_HP, STATS.TRAIN_POINT, GEAR.TRAIN_MAX, TOWN.STEAL_FINE.day, TOWN.STEAL_FINE.night], [0.2, 1, 2, 15, 25]);
 });
 
 test('the tour\'s six bands and the hints, each with its words and its chapter (TU-2, TU-3, TU-8)', () => {

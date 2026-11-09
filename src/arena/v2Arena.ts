@@ -2,6 +2,7 @@ import { DynamicSim, type DynData } from '../combat/dynamic';
 import { ChargedDuel, type ChargeTier, type ChargeView } from '../combat/charge';
 import { v2DuelData, type V2Duel } from '../combat/v2duel';
 import { GENERICS } from '../narrative/generics';
+import { borrowedSheet } from '../combat/stats';
 import { tuneDyn } from './dynamicView';
 import type { DynPreset } from './DynPresets';
 
@@ -17,7 +18,7 @@ export const v2Input = (params: URLSearchParams): V2Input => (params.get('input'
  *  DEV, a generic fighter on its borrowed rival's profile, as a game's challenge fights it (`challengeSheetFor`; journal Passe GA2: its sheet holds that rival's clips only) */
 export function sceneV2Duel(input: V2Input, foe = 'marek'): V2Duel {
   const g = import.meta.env.DEV ? GENERICS[foe] : undefined;
-  return v2DuelData(g?.profile ?? foe, { seed: 1337, playerName: 'Ren', opponentName: g?.name ?? foe[0].toUpperCase() + foe.slice(1), input, ...(g ? { enemy: { hp: g.hp, damage: g.damage } } : {}) });
+  return v2DuelData(g?.profile ?? foe, { seed: 1337, playerName: 'Ren', opponentName: g?.name ?? foe[0].toUpperCase() + foe.slice(1), input, ...(g ? { foeSheet: borrowedSheet(g.profile, g) } : {}) });
 }
 
 export interface V2ArenaDuel { dyn: DynamicSim; charge: ChargedDuel | null; tiers: ChargeTier[] }
@@ -42,14 +43,15 @@ export const V2_PAD: Record<number, string> = { 2: 'attack', 1: 'guard', 0: 'dod
 
 // ------------------------------------------------------------------------------------------------ the HUD's reading of the charge
 
-export type TierState = 'reached' | 'launch' | 'next' | 'ahead' | 'locked';
+export type TierState = 'reached' | 'launch' | 'next' | 'ahead' | 'locked' | 'cooling';
 export interface ChargeHudModel {
   held: boolean;
   /** a released tier waits for the duel to take it (the opponent's sequence, a stun: V2-2 « Rien ne la coupe », journal Passe V2C1) */
   waiting: boolean;
   /** 0..100: the charge toward the next tier (100 past the last one) */
   toNext: number;
-  tiers: Array<{ id: string; at: number; ap: number; state: TierState }>;
+  /** `cool` the seconds before a tier's skill is ready again (DB5-3 « 5 × le temps de charge », journal Passe DB6): 'cooling' while it lasts */
+  tiers: Array<{ id: string; at: number; ap: number; state: TierState; cool: number }>;
   /** the tier a release launches now */
   launch: string;
 }
@@ -59,8 +61,8 @@ export interface ChargeHudModel {
 export function chargeHudModel(v: ChargeView): ChargeHudModel {
   const n = v.tiers.length, next = v.reached + 1 < n ? v.reached + 1 : -1, waiting = !v.held && v.waiting >= 0;
   const tiers = v.tiers.map((x, i): ChargeHudModel['tiers'][number] => ({
-    id: x.id, at: x.at, ap: x.ap,
-    state: !v.open[i] ? 'locked' : waiting ? (i === v.waiting ? 'launch' : 'ahead') : v.held && i === v.launch ? 'launch' : v.held && i <= v.reached ? 'reached' : v.held && i === next ? 'next' : 'ahead',
+    id: x.id, at: x.at, ap: x.ap, cool: v.cool?.[i] ?? 0,
+    state: (v.cool?.[i] ?? 0) > 0 ? 'cooling' : !v.open[i] ? 'locked' : waiting ? (i === v.waiting ? 'launch' : 'ahead') : v.held && i === v.launch ? 'launch' : v.held && i <= v.reached ? 'reached' : v.held && i === next ? 'next' : 'ahead',
   }));
   const toNext = !v.held ? 0 : next < 0 ? 100 : Math.max(0, Math.min(100, Math.round(((v.t - v.tiers[v.reached].at) / (v.tiers[next].at - v.tiers[v.reached].at)) * 1000) / 10));
   return { held: v.held, waiting, toNext, tiers, launch: v.tiers[waiting ? v.waiting : v.launch].id };
@@ -129,4 +131,4 @@ export function runV2Fingerprint(d: ChargedDuel, seen?: (events: ReturnType<Char
  *  again under V2_FOE_HIT, journal Passe VP4; the script and the rule of V2-2, journal Passe V2C1; the rivals' blows and health of journal Passe V2C2;
  *  the heavy attack a skill, the charge times and the charged blows' power trimmed, the script's holds on the new tiers, journal Passe CH1; one
  *  release waiting at most, journal Passe DB1; the duel of journal Passe DB3 and three taps before each charge) */
-export const V2_SIM_HASH = '1943:4:idle:0.083:36.650:-:-;10776:0:acting:0.392:20.020:6.908:-;71.375|0:0.000:0';
+export const V2_SIM_HASH = '8:5:stunned:2.900:70.000:-:-;596:0:idle:0.917:6.741:-:-;77.392|cd:0.000,0.000,0.000,0.000|1:0.933:0';

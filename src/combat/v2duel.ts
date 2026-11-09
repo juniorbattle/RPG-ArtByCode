@@ -3,6 +3,7 @@ import { skillAction } from './skillbook';
 import { DYN_PROFILES, dynDuelData, type DynProfile, type Mods } from './profiles';
 import { chargeTiers, type ChargeTier } from './charge';
 import { CHARGE_TRIM, atLevel, chargeTime } from './skills';
+import { DB5, POWER, REN_BASE, RIVAL_SHEETS, gaugeFactor, hitFactor, rivalSheet, skillPower, speedFactor, type FighterStats, type Stage } from './stats';
 import { localize } from '../narrative/text';
 
 /** The duel of the version 2 (lot V1 of briefs/cloud-session-v2-brief.md, journal Passe V1): the rules of the « tour par tour dynamique »
@@ -64,35 +65,27 @@ export const V2_FOES: Record<string, V2Foe> = {
   rhosk: { defense: { guard: 0.15, dodge: 0 }, skills: { chance: 0.28, list: [{ id: 'm_cleave', weight: 2, cooldown: 26 }, { id: 'm_roar', weight: 1, cooldown: 34 }, { id: 'm_hide', weight: 1, cooldown: 36 }] }, hp: 0.85, damage: 1.1 },
 };
 
-/** the opponents' blows in the version 2, harder than C3's balance: 30 % (journal Passe VP4, the operator's request of 2026-10-27: « augmenter
- *  [...] des dégâts des ennemies pour qu'ils soient plus impactant ou rendre le gameplay combat un peu plus rude »; the prepared player of the
- *  TournamentLab won about six bouts in ten instead of 85 %), then 45 % since V2-2 « Rien ne la coupe » gave the player back that ease, with
- *  V2_FOE_HP (journal Passe V2C2, the operator's « Oui, recaler »: back to six bouts in ten). Every rival's blows and skills. Since the duel of
- *  journal Passe DB3 (the skills x4, 3 to 4 minutes): x 3.4, the prepared player of the TournamentLab at 60.4 % of his bouts on seeds 1..50
- *  (59.2 % before), the operator's DB-7 « Recaler pour garder six sur dix » (x 3.625 on the scene's duel alone, x 3.4 on whole games). */
-export const V2_FOE_HIT = 3.4;
-/** the rivals' health in the version 2 against C3's balance (journal Passe V2C2): 20 % more, so that the harder blows needed to come back to six
- *  bouts in ten do not shorten a losing player's duels under the operator's 5 to 10 minutes [G5] (the blows alone at 1.8: 4.0 min against
- *  Marek at skill 0.2); every duel of the bot at skill 0.2 to 0.9 lasts 5.1 to 9.8 min. Since journal Passe DB3: x 1.8 (1.2 x 1.5), with Ren's
- *  health x 1.25 (V2_REN_HP): the duel's length the operator chose, DB-1 « 3 à 4 minutes » (the bot at 0.5: 3.8 min on the seven rivals). */
-export const V2_FOE_HP = 1.8;
+/** The opponents' blows and health, and Ren's, were multipliers until the operator's DB7 sheet (V2_FOE_HIT, V2_FOE_HP, V2_REN_HP, V2_SKILL_HIT:
+ *  journal Passes VP4, V2C2, DB3): since journal Passe DB8 they come from each fighter's stats (src/combat/stats.ts, briefs/combat-system.md § 19). */
 
 /** The duel after the operator's first trial of the version 2 as the default game (his sheet of 2026-11-09, journal Passes DB2 / DB3; « Je trouve
  *  que les combats sont tres longs [...] le mieux est de spam l'attaque »): duels of 3 to 4 minutes (DB-1, decision A3), the opponent's riposte
  *  at the third light attack of its pause, never in its break (DB-2, decision A3), the player's skills four times harder (DB-4), the gauge filled
  *  by the skills and a break doubling the damage for 8 s (DB-5, decision A3), the rivals and Ren recalibrated to keep the prepared player at six
  *  bouts in ten (DB-7). Every version 2 duel, a game's bout, a challenge and `?scene=arena`; today's game (`v2=0`) and C2's duel keep theirs. */
-/** the player's skills' damage (the heavy attack, a skill, among them; the light attack not), DB-4 « ×4 » */
-export const V2_SKILL_HIT = 4;
-/** what the player's skills add to the opponent's gauge, and the light attack's own share (3 before), DB-5 « Jauge par les compétences » */
+/** what the player's skills add to the opponent's gauge, and the light attack's own share (3 before), DB-5 « Jauge par les compétences »; the light
+ *  attack 0.5 since journal Passe DB9 (2 before): with the guard at −80 % (DB5-2) a player who held the guard through every sequence and only tapped
+ *  broke the rivals by his taps and won four rivals in seven; the gauge is the skills' (DB-5), what each blow adds is « à régler » (§ 6) */
 export const V2_SKILL_GAUGE = 2;
-export const V2_LIGHT_GAUGE = 2;
-/** the break, one rule for both fighters (G3): stunned 8 s, the damage taken doubled (6 s and x1.2 before, C2-9), DB-5 « ×2 pendant 8 s » */
-export const V2_BREAK = { stun: 8, damage: 2 };
+export const V2_LIGHT_GAUGE = 0.5;
+/** what a guarded blow adds to the guarder's gauge, one rule for both fighters (G3; 1 before): the guard's price, « la garde finit par l'étourdir »
+ *  [G1, G2] (journal Passe DB9: a guard held through every blow is no longer free; a skill guarded by a rival breaks its guard sooner) */
+export const V2_GUARD_GAUGE = 2;
+/** the break, one rule for both fighters (G3): stunned 10 s, the damage taken doubled, a gauge of 70 (the operator's DB5-4 « 10 s, ×2, jauge de 70 »,
+ *  a decision A3, journal Passe DB6; 8 s and a gauge of 100 since DB-5, 6 s and x1.2 before, C2-9) */
+export const V2_BREAK = { stun: DB5.breakStun, damage: DB5.breakDamage, gauge: DB5.gauge };
 /** the riposte at the third light attack, its sequence 0.3 s later, DB-2 « Riposte au 3e coup » (DynData.ai.riposte) */
 export const V2_RIPOSTE = { after: 3, delay: 0.3 };
-/** Ren's health against today's dynamic duel, with the rivals' blows and health above: the length (DB-1) and the six bouts in ten (DB-7) */
-export const V2_REN_HP = 1.25;
 
 /** the player's skills in the version 2: the four brought, each at its level (default: today's loadout at level 1); the heavy attack is owned
  *  from the start since it became a skill (journal Passe CH1), at level 1, after the four (the skills page lists them in this order; the operator's CH-4 « Les quatre d’aujourd’hui, la
@@ -133,12 +126,14 @@ function charged(a: DynActionDef): DynActionDef {
 /** `gear` (lot V3): what the player wears changes the damage taken (the opponent's blows), what they add to the player's gauge, the charge
  *  times and the effects' durations */
 export interface V2GearFx { taken: number; gauge: number; charge: number; effect: number }
-export function v2DuelData(foe: string, o: { seed: number; playerName: string; opponentName: string; player?: Mods; enemy?: Mods; names?: Partial<Record<string, string>>; kit?: V2Kit; input?: 'charge' | 'keys'; gear?: V2GearFx }): V2Duel {
+/** `ren` the player's stats (src/simulation/v2gear.ts v2Stats: his gear, his training, his vigour; Ren at the start by default), `foeSheet` the
+ *  opponent's (a generic fighter's, src/combat/stats.ts borrowedSheet; by default the rival's sheet at `stage`); `player.hp` and `enemy` the
+ *  shares a state changes on top (an injury, a rival's preparation), `gear.taken` the night's tampering (src/simulation/v2gear.ts v2Mods) */
+export function v2DuelData(foe: string, o: { seed: number; playerName: string; opponentName: string; player?: Mods; enemy?: Mods; names?: Partial<Record<string, string>>; kit?: V2Kit; input?: 'charge' | 'keys'; gear?: V2GearFx; ren?: FighterStats; foeSheet?: FighterStats; stage?: Stage }): V2Duel {
   const prof: DynProfile = DYN_PROFILES[foe] ?? DYN_PROFILES.marek, F = V2_FOES[foe] ?? V2_FOES.marek, kit = o.kit ?? V2_START_KIT;
   const gfx = o.gear ?? { taken: 1, gauge: 1, charge: 1, effect: 1 }, em0 = o.enemy ?? {}, em = { ...em0, damage: (em0.damage ?? 1) * gfx.taken };
-  const d = dynDuelData(prof, { seed: o.seed, playerName: o.playerName, opponentName: o.opponentName, player: o.player, enemy: { ...em, hp: (em.hp ?? 1) * F.hp * V2_FOE_HP, damage: (em.damage ?? 1) * F.damage * V2_FOE_HIT }, names: o.names });
-  // journal Passe DB3: Ren's health, the break, the riposte
-  d.fighters.ren = { ...d.fighters.ren, maxHp: Math.round(d.fighters.ren.maxHp * V2_REN_HP) };
+  const d = dynDuelData(prof, { seed: o.seed, playerName: o.playerName, opponentName: o.opponentName, player: o.player, enemy: em, names: o.names });
+  // journal Passe DB3: the riposte; journal Passe DB8: the break of DB5-4
   d.resist = { ...d.resist, breakStun: V2_BREAK.stun, breakDamage: V2_BREAK.damage };
   d.ai = { ...d.ai, riposte: { ...V2_RIPOSTE } };
   // the catalogue's new skills (lot V2) join the player's actions, with the player's damage as today's skills take it
@@ -153,7 +148,6 @@ export function v2DuelData(foe: string, o: { seed: number; playerName: string; o
   for (const id of kit.loadout) d.actions[id] = atLevel(id === 'heavy' ? d.actions.heavy : c(d.actions[id]), kit.levels[id] ?? 1);
   for (const k of F.skills.list) {
     const a = JSON.parse(JSON.stringify(FOE_SKILLS[k.id])) as DynActionDef;
-    a.damage = Math.round(a.damage * F.damage * V2_FOE_HIT * (em.damage ?? 1));
     if (o.names?.[k.id]) a.name = o.names[k.id]!;
     d.actions[k.id] = a;
   }
@@ -161,11 +155,55 @@ export function v2DuelData(foe: string, o: { seed: number; playerName: string; o
   // the gear: the opponent's blows fill the player's gauge by `gauge`, the player's wards and boosts last `effect` longer
   if (gfx.gauge !== 1) for (const a of Object.values(d.actions)) if (a.owner === 'marek') a.resist = +(a.resist * gfx.gauge).toFixed(2);
   if (gfx.effect !== 1) for (const id of kit.loadout) { const a = d.actions[id]; if (a.ward) a.ward.dur = +(a.ward.dur * gfx.effect).toFixed(2); if (a.boost) a.boost.dur = +(a.boost.dur * gfx.effect).toFixed(2); }
-  // journal Passe DB3: the player's skills four times harder, and filling the gauge twice as much; the light attack 2
-  for (const a of Object.values(d.actions)) if (a.owner === 'ren' && a.id !== 'light') { a.damage = Math.round(a.damage * V2_SKILL_HIT); a.resist = +(a.resist * V2_SKILL_GAUGE).toFixed(2); }
+  // journal Passe DB3: the player's skills filling the gauge twice as much; the light attack 2
+  for (const a of Object.values(d.actions)) if (a.owner === 'ren' && a.id !== 'light') a.resist = +(a.resist * V2_SKILL_GAUGE).toFixed(2);
   d.actions.light = { ...d.actions.light, resist: V2_LIGHT_GAUGE };
-  const charge = Object.fromEntries(kit.loadout.map((id) => [id, +(chargeTime(id, kit.levels[id] ?? 1) * gfx.charge).toFixed(3)]));
+  const R = o.ren ?? REN_BASE, S = o.foeSheet ?? rivalSheet(RIVAL_SHEETS[foe] ? foe : 'marek', o.stage ?? 0);
+  applyStats(d, kit, R, S, o.player ?? {}, em, (RIVAL_SHEETS[foe] ?? RIVAL_SHEETS.marek).viv);
+  // the charge times by Ren's Speed (DB7-1); the gear's own share (gfx.charge) stays for a caller that still gives one
+  const charge = Object.fromEntries(kit.loadout.map((id) => [id, +(chargeTime(id, kit.levels[id] ?? 1) * gfx.charge * speedFactor(R.viv)).toFixed(3)]));
   return { data: d, tiers: chargeTiers(kit.loadout, charge, d) };
+}
+
+/** The fighters' stats in a version 2 duel (the operator's DB7 sheet, decisions A3, journal Passe DB8; briefs/combat-system.md § 19), with the DB5
+ *  sheet's rules (journal Passe DB6): the health, every blow's damage by the formula, what it adds to the gauge by the target's Endurance, the
+ *  rival's tempo by its Speed, the rivals' guard, the guard's reduction, the gauge of 70, a cooldown on each of the player's skills. `pm.hp` an
+ *  injury's share of Ren's health, `pm.damage` a share of his blows (1 in a game: the gear is in his stats), `em` a state's shares on the opponent
+ *  (its injury, its preparation, the night's tampering). */
+export function applyStats(d: DynData, kit: V2Kit, R: FighterStats, S: FighterStats, pm: Mods, em: Mods, nativeViv = S.viv): void {
+  d.fighters.ren = { ...d.fighters.ren, maxHp: Math.max(1, Math.round(R.hp * (pm.hp ?? 1))) };
+  d.fighters.marek = { ...d.fighters.marek, maxHp: Math.max(1, Math.round(S.hp * (em.hp ?? 1))) };
+  const kr = hitFactor(R.atk, S.def) * (pm.damage ?? 1), kf = hitFactor(S.atk, R.def) * (em.damage ?? 1);
+  for (const a of Object.values(d.actions)) {
+    if (a.owner === 'ren') {
+      if (a.id === 'light') a.damage = Math.max(1, Math.round(POWER.light * kr));
+      else if (a.family === 'offensive') a.damage = Math.max(1, Math.round(skillPower(a.id, kit.levels[a.id] ?? 1) * kr));
+      a.resist = +(a.resist * gaugeFactor(S.end)).toFixed(2);
+      // DB5-3 « 5 × le temps de charge » (A3): every skill the player may bring, the heavy attack among them; the light attack has none
+      if (a.id !== 'light' && (a.kind === 'skill' || a.kind === 'heavy')) a.cooldown = +(DB5.cooldown * chargeTime(a.id, 1)).toFixed(3);
+    } else {
+      if (a.id === d.ai.light) a.damage = Math.max(1, Math.round(POWER.foeLight * kf));
+      else if (a.id === d.ai.heavy) a.damage = Math.max(1, Math.round(POWER.foeHeavy * kf));
+      else if (a.family === 'offensive') a.damage = Math.max(1, Math.round(POWER.foeSkill * kf));
+      a.resist = +(a.resist * gaugeFactor(R.end)).toFixed(2);
+    }
+  }
+  // the rival's tempo by its Speed against the Speed its kit was written at (nativeViv: 1 at every stage today, DB7-6 does not grow it, journal Passe DB8)
+  const tempo = speedFactor(S.viv, nativeViv);
+  if (Math.abs(tempo - 1) > 1e-9) scaleTempo(d, tempo);
+  // DB5-2 « 90 %, garde à −80 % »: the rivals guard 90 % of the player's blows in their pauses (their dodge kept), the guard takes 80 % off
+  d.ai = { ...d.ai, defense: { guard: DB5.foeGuard, dodge: d.ai.defense?.dodge ?? 0 } };
+  d.guard = { ...d.guard, reduce: DB5.guardReduce };
+  // DB5-4: a gauge of 70, emptied by time at the same pace for its size
+  d.resist = { ...d.resist, decay: +(d.resist.decay * DB5.gauge / d.resist.max).toFixed(3), max: DB5.gauge, guard: V2_GUARD_GAUGE };
+}
+
+/** a rival's tempo times k: its blows' wind-up and reaction window, a combo's gaps, its pauses */
+export function scaleTempo(d: DynData, k: number): void {
+  for (const a of Object.values(d.actions)) if (a.owner === 'marek') { a.impactAt = +(a.impactAt * k).toFixed(3); if (a.windowDur) a.windowDur = +(a.windowDur * k).toFixed(3); }
+  d.ai = { ...d.ai, comboGap: [+(d.ai.comboGap[0] * k).toFixed(3), +(d.ai.comboGap[1] * k).toFixed(3)] };
+  const r = d.restByLevel[d.ai.level];
+  d.restByLevel = { ...d.restByLevel, [d.ai.level]: [+(r[0] * k).toFixed(3), +(r[1] * k).toFixed(3)] };
 }
 
 // ------------------------------------------------------------------------------------------- the off-screen race of the version 2 (E6, C3)
@@ -178,11 +216,14 @@ export function v2DuelData(foe: string, o: { seed: number; playerName: string; o
  *  Passe V2C2), and with the heavy attack a skill, the charge times and the charged blows' power trimmed (journal Passe CH1: held-out seeds
  *  within 5 %); measured again with the duel of journal Passe DB3 (the riposte, the skills x4, the break, V2_FOE_HIT 3.4, V2_FOE_HP 1.8: every kill
  *  a little under half of before, Vessa now as hard to bring down as Marek, her dodge taking the skills that carry the damage; held-out seeds within
- *  8 %). A rival a beats b in the time b takes the reference to bring down
+ *  8 %). Measured again with the fighters' stats of journal Passes DB8 / DB9 (each rival's sheet, the formula, the DB5 rules, the guard's and the light
+ *  attack's gauge, the rivals' blows recalibrated): the reference is Ren at the start, 150 health without limit here; calibration seeds 1..80, held-out
+ *  81..120 within 10 % but Vessa's kill (13 %: her dodge makes it skewed); Vessa second to Marek, her quick kit dealing the most. A rival a beats b in the
+ *  time b takes the reference to bring down
  *  over a's damage against it: the reference's own damage cancels out of the race. */
 export const V2_RACERS: Record<string, { kill: number; dps: number }> = {
-  tobin: { kill: 175.2, dps: 9.54 }, orla: { kill: 230.1, dps: 12.61 }, cassius: { kill: 233.5, dps: 9.86 }, ilse: { kill: 246.1, dps: 10.14 },
-  rhosk: { kill: 268.0, dps: 9.1 }, vessa: { kill: 260.7, dps: 11.86 }, marek: { kill: 270.2, dps: 13.04 },
+  tobin: { kill: 92.2, dps: 0.5 }, orla: { kill: 141.4, dps: 0.77 }, cassius: { kill: 124.4, dps: 0.62 }, ilse: { kill: 166.8, dps: 0.68 },
+  rhosk: { kill: 166.6, dps: 0.57 }, vessa: { kill: 145.0, dps: 1.09 }, marek: { kill: 199.0, dps: 0.97 },
 };
 /** how sharply the version 2's race decides a match (« proposé »: lower than today's 14, so a rival a third weaker still wins one in ten) */
 export const V2_RACE_SLOPE = 8;

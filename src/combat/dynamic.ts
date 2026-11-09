@@ -36,6 +36,9 @@ export interface DynActionDef {
   /** what the blow adds to its target's resistance gauge when it lands (hit or guarded) */
   resist: number;
   apCost?: number; apGain?: number; ignoreGuard?: boolean; reactable?: boolean; windowDur?: number;
+  /** a skill's cooldown (s): once it leaves, it cannot leave again for this long (the operator's DB5-3 « 5 × le temps de charge », a decision A3,
+   *  journal Passe DB6; the version 2's duel sets it on the player's skills, src/combat/v2duel.ts); a cancelled one (CB-3) gives it back; absent = none */
+  cooldown?: number;
   /** a defensive skill's protection: for `dur` s, the damage and the resistance its holder takes are multiplied by these */
   ward?: { dur: number; damage: number; resist: number };
   /** a support skill's boost: for `dur` s, the damage and the resistance its holder's blows deal are multiplied by these */
@@ -120,7 +123,7 @@ export type DynEvent = { t?: number } & (
   | { type: 'guardUp' | 'guardDown'; who: DynFighterId }
   | { type: 'apSpend' | 'apGain'; who: DynFighterId; amount: number; ap: number; why?: 'regen' }
   | { type: 'commandStart'; who: DynFighterId; action: DynActionId; kind: DynKind; prep: number; impactAt: number; reactable: boolean; seqIdx: number; seqLen: number }
-  | { type: 'commandDenied'; who: DynFighterId; action: DynActionId; why: 'state' | 'ap' | 'busy' | 'defense' | 'slot' }
+  | { type: 'commandDenied'; who: DynFighterId; action: DynActionId; why: 'state' | 'ap' | 'busy' | 'defense' | 'slot' | 'cooldown' }
   | { type: 'pushed'; who: DynFighterId; action: DynActionId; refund: number; ap: number }
   | { type: 'reactDenied'; who: DynFighterId; kind: string; why: string }
   | { type: 'reactStart'; who: DynFighterId; kind: string; cost: number; early: boolean }
@@ -155,7 +158,8 @@ export interface DynFighter {
   /** the opponent: its sequence (`inSeq` from the first blow's start to the end of the last one, gaps included: the player's defence) */
   plan: DynActionId[]; seqLen: number; seqIdx: number; inSeq: boolean; resting: boolean; aiWait: number;
   anim: DynAnimState | null; lastAction: DynActionId | null;
-  /** lot C3 (only with `ai.defense` / `ai.skills`): a dodge waiting for the player's blow, the guard's release time, the skills' cooldowns */
+  /** lot C3 (only with `ai.defense` / `ai.skills`): a dodge waiting for the player's blow, the guard's release time, the skills' cooldowns (the
+   *  opponent's by its own pacing; the player's by their `cooldown`, DB5-3: the time each is ready again) */
   dodgeAt: number | null; guardUntil: number; skillReady: Record<string, number>;
   /** the player's light attacks landed on it in its pause since its last sequence or stun (only with `ai.riposte`) */
   ripLights: number;
@@ -239,32 +243,38 @@ export class DynamicSim {
   canAfford(who: DynFighterId, id: DynActionId): boolean { const f = this.f[who], a = this.D.actions[id]; return !!(f && a && f.ap >= (a.apCost || 0)); }
   /** a skill the player brought: one of the four slots */
   inLoadout(id: DynActionId): boolean { return this.D.actions[id]?.kind !== 'skill' || this.D.loadout.includes(id); }
+  /** the action's cooldown is over (DB5-3; an action without one is always ready) */
+  ready(who: DynFighterId, id: DynActionId): boolean { const f = this.f[who]; return !f || !this.D.actions[id]?.cooldown || (f.skillReady[id] ?? 0) <= this.t + 1e-9; }
+  /** the seconds before the action is ready again (0 = ready): the HUD */
+  cooldownLeft(who: DynFighterId, id: DynActionId): number { const f = this.f[who]; return f && this.D.actions[id]?.cooldown ? Math.max(0, (f.skillReady[id] ?? 0) - this.t) : 0; }
   /** can this action start right now? */
   canUse(who: DynFighterId, id: DynActionId): boolean {
     const f = this.f[who], a = this.D.actions[id]; if (!f || !a || a.owner !== who || this.over) return false;
-    return f.state === 'idle' && this.canAfford(who, id) && (who !== 'ren' || (this.inLoadout(id) && !this.inSequence()));
+    return f.state === 'idle' && this.canAfford(who, id) && this.ready(who, id) && (who !== 'ren' || (this.inLoadout(id) && !this.inSequence()));
   }
   /** usable soon (brought, affordable), ignoring the current busy state and the defence phase: for the HUD */
   available(who: DynFighterId, id: DynActionId): boolean {
     const f = this.f[who], a = this.D.actions[id]; if (!f || !a || this.over) return false;
-    return f.state !== 'down' && f.state !== 'stunned' && this.canAfford(who, id) && (who !== 'ren' || this.inLoadout(id));
+    return f.state !== 'down' && f.state !== 'stunned' && this.canAfford(who, id) && this.ready(who, id) && (who !== 'ren' || this.inLoadout(id));
   }
   private start(f: DynFighter, a: DynActionDef): void {
     if (f.guarding) { f.guarding = false; f.guardT = 0; this.emit({ type: 'guardDown', who: f.id }); }
     f.buffer = null; f.ap -= (a.apCost || 0);
     f.act = { def: a, t: 0, impacted: false, windowOpened: false }; f.lastAction = a.id; this.set(f, 'acting');
+    if (a.cooldown) f.skillReady[a.id] = this.t + a.cooldown;
     if (a.apCost) this.emit({ type: 'apSpend', who: f.id, amount: a.apCost, ap: f.ap });
     if (f.id === 'ren' && this.D.ai.defense) this.aiDefend(a);
     this.emit({ type: 'commandStart', who: f.id, action: a.id, kind: a.kind, prep: a.prep, impactAt: impactTime(a), reactable: !!a.reactable, seqIdx: f.seqIdx || 0, seqLen: f.seqLen || 0 });
   }
   command(who: DynFighterId, actionId: DynActionId): boolean | 'buffered' {
     const f = this.f[who], a = this.D.actions[actionId];
-    const deny = (why: 'state' | 'ap' | 'busy' | 'defense' | 'slot') => { this.emit({ type: 'commandDenied', who, action: actionId, why }); return false; };
+    const deny = (why: 'state' | 'ap' | 'busy' | 'defense' | 'slot' | 'cooldown') => { this.emit({ type: 'commandDenied', who, action: actionId, why }); return false; };
     if (!f || !a || a.owner !== who || this.over || f.state === 'down' || f.state === 'stunned' || f.state === 'pushed') return deny('state');
     if (who === 'ren' && !this.inLoadout(actionId)) return deny('slot');
     // the opponent's priority (G3, CB-4): through its whole sequence, an attack the player tries does not leave
     if (who === 'ren' && this.inSequence()) return deny('defense');
     if (!this.canAfford(who, actionId)) return deny('ap');
+    if (!this.ready(who, actionId)) return deny('cooldown');
     if (f.state === 'idle') { this.start(f, a); return true; }
     if (this.busyLeft(f) > this.D.bufferTime) return deny('busy');
     f.buffer = { id: actionId, until: this.t + this.D.bufferTime }; return 'buffered';
@@ -327,6 +337,7 @@ export class DynamicSim {
     if (r.state === 'acting' && !r.act!.impacted) {
       const a = r.act!.def, refund = a.apCost || 0;
       r.ap = Math.min(this.D.ap.max, r.ap + refund); r.act = null; this.set(r, 'pushed');
+      if (a.cooldown) r.skillReady[a.id] = this.t;
       this.emit({ type: 'pushed', who: r.id, action: a.id, refund, ap: r.ap });
     }
   }
@@ -464,7 +475,9 @@ export class DynamicSim {
   hash(): string {
     let s = '';
     for (const id of IDS) { const f = this.f[id]; s += f.hp + ':' + f.ap + ':' + f.state + ':' + f.stateT.toFixed(3) + ':' + f.resist.toFixed(3) + ':' + (f.ward ? f.ward.left.toFixed(3) : '-') + ':' + (f.boost ? f.boost.left.toFixed(3) : '-') + ';'; }
-    return s + this.t.toFixed(3);
+    // the player's cooldowns (DB5-3), only in a duel that has them: the hash of every other duel unchanged
+    const cd = this.D.loadout.filter((a) => this.D.actions[a]?.cooldown).map((a) => this.cooldownLeft('ren', a).toFixed(3));
+    return s + this.t.toFixed(3) + (cd.length ? '|cd:' + cd.join(',') : '');
   }
 }
 

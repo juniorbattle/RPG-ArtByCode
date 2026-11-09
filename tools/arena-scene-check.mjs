@@ -26,7 +26,7 @@ const PROTOTYPE_HASH = '152:1:idle:20.233:0.00,0.00,0.00,0.00;800:0:idle:5.283:0
 // src/combat/dynamic.ts DYNAMIC_SIM_HASH (journal Passe C1)
 const DYNAMIC_HASH = '1687:1:idle:0.483:0.000:-:-;4989:0:idle:1.500:61.275:-:-;300.000';
 // src/arena/v2Arena.ts V2_SIM_HASH (`v2=1`: the version 2's charged duel, journal Passe V1)
-const V2_HASH = '1943:4:idle:0.083:36.650:-:-;10776:0:acting:0.392:20.020:6.908:-;71.375|0:0.000:0';
+const V2_HASH = '8:5:stunned:2.900:70.000:-:-;596:0:idle:0.917:6.741:-:-;77.392|cd:0.000,0.000,0.000,0.000|1:0.933:0';
 const extra = process.argv[2] ?? '';
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720);
 const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];

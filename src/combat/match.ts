@@ -7,6 +7,7 @@ import { duelData, dynDuelData, DYN_PROFILES, PROFILES, type Mods } from './prof
 import { mix32, hashString } from '../core/rng';
 import { v2DuelData, type V2Duel, type V2Kit } from './v2duel';
 import { GENERICS } from '../narrative/generics';
+import { borrowedSheet, rivalSheet, stageOf, type FighterStats, type Stage } from './stats';
 
 /** A match sheet (journal Passe L2, used by the arena's play mode in Passe L3): who fights whom, with what the preparation changed. The
  *  game's side of the interface takes lists of fighters per side (PROJECT_MASTER_CONTRACT § 6.1, gap E17: a combat « extensible vers
@@ -23,6 +24,8 @@ export interface MatchSheet {
   intel: string[];
   /** the opponent's sequence seed */
   seed: number;
+  /** the tournament's stage (the operator's DB7-6, journal Passe DB8): 0 the pool, 1 the bracket, 2 the final; the rivals' sheets grow with it */
+  stage?: Stage;
 }
 
 /** what the player's state changes in a duel: an injury (-20 % health per level), a tempered blade (+15 % damage), a whetstone (+5 %, used
@@ -44,7 +47,7 @@ export function matchSheetFor(s: GameState): MatchSheet | null {
     sides: [{ fighters: [{ id: PLAYER_ID, name: s.player.name, mods: playerMods(s) }] }, { fighters: [{ id: opp, name: RIVALS[opp].name, profile: c.combatProfile, mods: rivalMods(c) }] }],
     assist: scouted ? 'full' : 'subtle',
     intel: scouted ? [`${RIVALS[opp].name}: ${PROFILES[c.combatProfile].style}.`, 'Her heavy blow shows on the floor: dodge [A] as the ring closes.'.replace('Her', opp === 'marek' ? 'His' : 'Her')] : [],
-    seed: mix32(s.seed, hashString(matchId(m))),
+    seed: mix32(s.seed, hashString(matchId(m))), stage: stageOf(m.day, m.stage === 'final'),
   };
 }
 
@@ -74,15 +77,25 @@ export function dynSheetData(sh: MatchSheet, names?: Partial<Record<string, stri
   return dynDuelData(prof, { seed: sh.seed, playerName: p.name, opponentName: o.name, player: p.mods, enemy: o.mods, names });
 }
 
+/** an opponent's stats in a version 2 duel (the operator's DB7-5 « Ces fiches » and DB7-6, journal Passe DB8): a rival's sheet at the bout's stage,
+ *  a generic fighter's borrowed from its rival's (src/combat/stats.ts) */
+export function foeSheetOf(o: SheetFighter, stage: Stage = 0): FighterStats {
+  const g = GENERICS[o.id];
+  return g ? borrowedSheet(g.profile, g, stage) : rivalSheet(o.profile ?? o.id, stage);
+}
+
 /** the same sheet as a duel of the version 2 (src/combat/v2duel.ts, journal Passe V1): the three buttons, the charge, the skills at their
- *  levels, the opponent's defence and skills (C3); its kit is the player's (lot V2), today's four skills at level 1 by default */
-export function v2SheetData(sh: MatchSheet, names?: Partial<Record<string, string>>, kit?: V2Kit, player?: Mods & { taken?: number; gauge?: number; charge?: number; effect?: number }): V2Duel {
+ *  levels, the opponent's defence and skills (C3); its kit is the player's (lot V2), today's four skills at level 1 by default; since journal Passe
+ *  DB8 both fighters' stats: the player's from his state (`player.stats`, src/simulation/v2gear.ts v2Mods), the opponent's sheet at the sheet's stage */
+export function v2SheetData(sh: MatchSheet, names?: Partial<Record<string, string>>, kit?: V2Kit, player?: Mods & { taken?: number; gauge?: number; charge?: number; effect?: number; stats?: FighterStats }): V2Duel {
   const [a, b] = sh.sides;
   if (a.fighters.length !== 1 || b.fighters.length !== 1) throw new Error(`match ${sh.id}: team formats (${a.fighters.length}v${b.fighters.length}) are outside the slice; the arena seats one fighter per side`);
   const p = a.fighters[0], o = b.fighters[0];
   // a version 2 player's preparation (its gear, lot V3: src/simulation/v2gear.ts v2Mods) replaces today's mods of the sheet
   const pm = player ?? p.mods, gear = player ? { taken: player.taken ?? 1, gauge: player.gauge ?? 1, charge: player.charge ?? 1, effect: player.effect ?? 1 } : undefined;
-  return v2DuelData(o.profile ?? o.id, { seed: sh.seed, playerName: p.name, opponentName: o.name, player: { hp: pm.hp, damage: pm.damage, ap: pm.ap }, enemy: o.mods, names, kit, gear });
+  // a generic fighter's shares are in its sheet (foeSheetOf): only a rival's state (its injury, its preparation) goes on top
+  const enemy = GENERICS[o.id] ? {} : o.mods;
+  return v2DuelData(o.profile ?? o.id, { seed: sh.seed, playerName: p.name, opponentName: o.name, player: { hp: pm.hp, damage: pm.damage, ap: pm.ap }, enemy, names, kit, gear, ren: player?.stats, foeSheet: foeSheetOf(o, sh.stage ?? 0) });
 }
 
 /** the sheet of a challenge in town (the version 2, lot V4, src/simulation/v2town.ts): the player against the fighter challenged, at full health since
@@ -98,6 +111,6 @@ export function challengeSheetFor(s: GameState): MatchSheet | null {
   return {
     id, round: 0, day: s.day,
     sides: [{ fighters: [{ id: PLAYER_ID, name: s.player.name, mods: playerMods(s) }] }, { fighters: [foe] }],
-    assist: 'subtle', intel: [], seed: mix32(s.seed, hashString(id)),
+    assist: 'subtle', intel: [], seed: mix32(s.seed, hashString(id)), stage: stageOf(s.day),
   };
 }

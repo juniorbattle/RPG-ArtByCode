@@ -112,6 +112,8 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
     s.tournament.points[won ? opp : PLAYER_ID] += close ? POINTS.close : POINTS.loss;
   }
   const P = s.player, name = RIVALS[opp].name;
+  // the vigour of a version 2 game (the operator's DB7-4 « +12 PV par victoire », journal Passe DB8: src/simulation/v2gear.ts v2Stats)
+  if (won && s.v2) s.v2.wins = (s.v2.wins ?? 0) + 1;
   if (won) {
     P.reputation = clamp(P.reputation + (opp === 'marek' ? 20 : 15)); P.coins += 20;
     c.reputation = clamp(c.reputation - (close ? 1 : 4));
@@ -128,7 +130,7 @@ export function applyPlayerDuel(s: GameState, o: DuelOutcome, emit: Emit): void 
   // health, and a win never wounds
   const hurt = (!won && o.finisher === 'heavy') || (!isV2(s) && won && o.playerHp / o.playerMaxHp < 0.15);
   if (hurt) P.injury = Math.min(2, P.injury + 1);
-  P.training = 0;
+  P.training = 0; if (s.v2?.prep) s.v2.prep = [];
   P.items = P.items.filter((i) => i !== 'whetstone');
   emit({
     kind: 'match', id: won ? 'player-won' : 'player-lost', cause: `match:${matchId(m)}`, visible: true,

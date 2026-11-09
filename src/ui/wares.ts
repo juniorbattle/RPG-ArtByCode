@@ -44,7 +44,7 @@ interface Line {
   args?: Line[];
 }
 
-const STAT_TEXT: Record<StatId, TextKey> = { hp: 'ui.stat.hp', blow: 'ui.stat.blow', taken: 'ui.stat.taken', ap: 'ui.stat.ap', charge: 'ui.stat.charge', gauge: 'ui.stat.gauge', effect: 'ui.stat.effect' };
+const STAT_TEXT: Record<StatId, TextKey> = { hp: 'ui.stat.hp', atk: 'stat.atk', def: 'stat.def', end: 'stat.end', viv: 'stat.viv', blow: 'ui.stat.blow', taken: 'ui.stat.taken', ap: 'ui.stat.ap', charge: 'ui.stat.charge', gauge: 'ui.stat.gauge', effect: 'ui.stat.effect' };
 const SLOT_TEXT: Record<GearSlot, TextKey> = { weapon: 'v2.gear.weapon', armour: 'v2.gear.armour', accessory: 'v2.gear.acc', consumable: 'ui.wares.consumable' };
 
 /** the actions the goods hold; a version 2 bargain (lot L2a) is put to a piece of them */
@@ -60,6 +60,8 @@ export const isGoods = (o: ActionOption): boolean => isWare(o) || isArg(o);
 const bare = (name: string): string => { const n = name.replace(/^(?:an? |une? |des |les? |la |l’)/, ''); return n[0].toUpperCase() + n.slice(1); };
 
 export function statValue(id: StatId, v: number): string {
+  // a version 2 game's stats (DB7-7): a whole number, or one decimal (the gear's half points)
+  if (id === 'atk' || id === 'def' || id === 'end' || id === 'viv') return Math.abs(v - Math.round(v)) < 0.05 ? `${Math.round(v)}` : num(v, 1);
   return id === 'charge' ? `${num(v, 2)} s` : id === 'taken' || id === 'gauge' || id === 'effect' ? `${Math.round(v)} %` : `${Math.round(v)}`;
 }
 
