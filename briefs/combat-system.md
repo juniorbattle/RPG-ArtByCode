@@ -17,6 +17,11 @@ palier de la puissante). Les nombres, proposés par la séance de la Passe CH1, 
 CH-1 « 0,85 (−15 %) », CH-2 « La puissance suit la tenue (×0,85) », CH-3 « 1 PA », CH-4 « Les quatre d’aujourd’hui, la puissante à côté ») ;
 le reste du texte est inchangé.
 
+**Amendement du 09/11/2026 (décisions A3 de l'opérateur, journal Passes DB5, DB6 et DB8).** La durée « en 2 et 5 min », DB5-3 (une recharge
+par compétence), DB5-4 (la rupture de 10 s) et les statistiques des combattants de la fiche DB7 (cinq stats, la formule des dégâts,
+l'équipement en points, l'entraînement, la vigueur, les fiches des rivaux et leur croissance) : le § 19. Amendés par une ligne : le § 2, le § 4,
+le § 5, le § 6 et le § 11 ; le reste du texte est inchangé.
+
 **Autorité.** L'atelier est mené par l'opérateur. Son mot d'ordre (note E1 / E16, Passe D8) : « Nous devons faire une tache entiere concernant le
 systeme de combat et la logique car c'est quelque chose de nouveau que seul moi a l'entiere comprehension ». Ses réponses sont la source de ce
 texte. Elles sont recopiées mot pour mot en annexe A (groupes G1 à G5). Chaque règle renvoie à la réponse qui la fonde, par exemple [G3].
@@ -60,10 +65,12 @@ Transe, la file d'exécution et les effets d'état [G2].
    l'adversaire [G2].
 4. **Pendant une séquence**, le joueur est dans sa **phase de défense** : il garde ou il esquive [G2, G3].
 5. Une **résistance pleine** brise le combattant. Il est étourdi 5 à 10 s et prend des dégâts légèrement accrus. L'autre en profite avec ses
-   actions [G3, G5]. Amendé le 09/11/2026 (décision A3 DB-5, § 18) : étourdi 8 s, les dégâts reçus doublés.
+   actions [G3, G5]. Amendé le 09/11/2026 (décision A3 DB-5, § 18) : étourdi 8 s, les dégâts reçus doublés ; puis (décision A3 DB5-4, § 19) :
+   10 s, ×2, une jauge de 70.
 6. Le duel se termine au **K.O.**, et seulement au K.O. [G4].
 7. **Durée visée : 5 à 10 minutes**, « selon la complexite de l'adversaire et ces points de vie » [G5]. Amendée le 09/11/2026 (décision A3
-   DB-1 « 3 à 4 minutes », § 18) : **3 à 4 minutes**.
+   DB-1 « 3 à 4 minutes », § 18) : **3 à 4 minutes** ; puis (décision A3 du 09/11/2026, § 19) : **« en 2 et 5 min »**, « +5 min » pour
+   des combats épiques, un repère et non un réglage strict (« si un combat dure plus longtemps, c'est que c'est normal »).
 
 ## 3. Les ressources d'un combattant
 
@@ -85,9 +92,9 @@ Les touches sont **instantanées** : pas de charge tenue [G2]. Certaines actions
 |---|---|---|---|---|
 | **Attaque légère** | aucun | aucun (instantanée) | Un seul coup [G5]. Fait monter la résistance de la cible ; +1 PA si elle touche. | [G1, G2, G4, G5] |
 | **Attaque puissante** | aucun | préparation automatique | Dégâts forts. Fait monter la résistance plus vite, sur une garde aussi : elle ne brise plus la garde d'un coup [G5]. Elle peut étourdir, mais seulement si la résistance cède [G1]. | [G1, G2, G4, G5] |
-| **Garde** | aucun | tenue | Dégâts réduits. Le gardien voit sa propre résistance monter : la garde finit par l'étourdir quand la jauge est pleine [G1, G2]. Point de départ : −60 %, comme aujourd'hui [CB-5]. | [G1, G2, G5, CB-5] |
+| **Garde** | aucun | tenue | Dégâts réduits. Le gardien voit sa propre résistance monter : la garde finit par l'étourdir quand la jauge est pleine [G1, G2]. Point de départ : −60 %, comme aujourd'hui [CB-5] ; −80 % depuis le 09/11/2026 (DB5-2, § 19). | [G1, G2, G5, CB-5, DB5-2] |
 | **Esquive** | PA | instantanée | Évite l'attaque. Point de départ (comme aujourd'hui) : 1 PA, dans la fenêtre de réaction de l'attaque adverse (plus 0,15 s d'avance tolérée) [CB-5]. Direction : un pas en arrière ou un saut de côté, « a voir celui qui s'adapte le mieux » [G5]. | [G1, G5, CB-5] |
-| **Compétences (4)** | PA | préparation automatique | Familles **offensive, défensive, soutien** [G1]. Choisies avant le duel (§ 8). **Pas de recharge** : « pas prevu mais cela peut etre integre si on juge que le jeu est pas assez structure » [G5]. | [G1, G2, G4, G5] |
+| **Compétences (4)** | PA | préparation automatique | Familles **offensive, défensive, soutien** [G1]. Choisies avant le duel (§ 8). **Pas de recharge** : « pas prevu mais cela peut etre integre si on juge que le jeu est pas assez structure » [G5]. **Depuis le 09/11/2026 (A3 DB5-3, § 19)** : une recharge de 5 × le temps de charge. | [G1, G2, G4, G5, DB5-3] |
 
 - Pas de charge tenue, pas de garde spéciale (miroir, regain), pas de Transe [G2].
 - Point de départ (comme aujourd'hui) [CB-5] : une commande pressée pendant les 0,2 dernières secondes de l'action en cours est gardée en
@@ -151,7 +158,8 @@ La règle de l'opérateur (AV-5, AV-6, AV-7, AV-8) ; ce que la séance a fixé e
   l'adversaire est en rupture/break. », § 18) : au troisième coup rapide du joueur qui le touche (ou touche sa garde) dans sa pause,
   l'adversaire part dans sa séquence suivante 0,3 s après ; jamais pendant sa rupture ; le compte repart à zéro à chaque séquence et après chaque
   étourdissement.
-- **La défense de l'adversaire** [G3] : « certains adversaires sophistiques et special peuvent garder, esquiver voir les deux ».
+- **La défense de l'adversaire** [G3] : « certains adversaires sophistiques et special peuvent garder, esquiver voir les deux ». Depuis le
+  09/11/2026 (DB5-2, § 19) : dans leurs pauses, les rivaux gardent 90 % des coups du joueur, jamais pendant leur rupture.
 - **Ses compétences** [G3] : « presque tous les adversaires auront aussi leur propres competences entre 2-4 competences mais la encore ca
   dependra du niveau de l'adversaire ».
 - **Son annonce** [G5] : un signe discret, « mais avec une legere alerte surtout pour les competences ».
@@ -174,6 +182,8 @@ La règle de l'opérateur (AV-5, AV-6, AV-7, AV-8) ; ce que la séance a fixé e
   - le combattant est étourdi 5 à 10 s ;
   - il prend des dégâts légèrement accrus ;
   - « le but est de donner un avantage sans briser le combat ».
+- **Depuis le 09/11/2026 (décision A3 DB5-4 « 10 s, ×2, jauge de 70 », § 19)** : étourdi 10 s, dégâts reçus ×2, une jauge de 70 ; ce qu'un
+  coup y ajoute se divise par l'Endurance de la cible (× 10 / End, DB7-1).
 - **Après l'étourdissement**, la jauge repart de zéro [G5] : « Oui surtout pour l'adversaire c;est une barre de break ».
 - Un coup puissant sur une garde ne brise plus la garde d'un coup [G5]. Le garde brisé d'aujourd'hui (2,4 s, 100 %) disparaît. Sur l'aide, l'opérateur ajoute : « comme cela ne brise pas et rrend direct etourdi on a plus de marge » [G5].
 - **À régler** : la taille de la jauge, ce que chaque coup y ajoute, la vitesse à laquelle elle se vide, le surplus de dégâts (point de
@@ -230,11 +240,11 @@ adversares max 3 ».
 |---|---|---|
 | PA maximum | 4 ou 5 | [G4] |
 | PA rendus avec le temps | un toutes les 5 à 10 s, seulement si les PA manquent | [G5] |
-| Recharge des compétences | aucune ; à ajouter « si on juge que le jeu est pas assez structure » | [G5] |
+| Recharge des compétences | aucune ; à ajouter « si on juge que le jeu est pas assez structure » ; **5 × le temps de charge depuis DB5-3** (§ 19) | [G5, DB5-3] |
 | Action objet en combat | 3 compétences + une action objet, « selon le rythme du combat » | [G4] |
 | Esquive | un pas en arrière ou un saut de côté | [G5] |
-| Durée d'un duel | 5 à 10 min, par les PV et la complexité de l'adversaire ; **3 à 4 min depuis DB-1** (§ 18) | [G5, DB-1] |
-| Break | 5 à 10 s d'étourdissement, dégâts « légèrement » accrus ; **8 s, ×2 depuis DB-5** (§ 18) | [G3, DB-5] |
+| Durée d'un duel | 5 à 10 min, par les PV et la complexité de l'adversaire ; **3 à 4 min depuis DB-1** (§ 18) ; **« en 2 et 5 min », un repère, depuis le 09/11/2026** (§ 19) | [G5, DB-1] |
+| Break | 5 à 10 s d'étourdissement, dégâts « légèrement » accrus ; **8 s, ×2 depuis DB-5** (§ 18) ; **10 s, ×2, jauge de 70 depuis DB5-4** (§ 19) | [G3, DB-5, DB5-4] |
 | Compétences signature | une animation propre au personnage, « eventuellement » | [G5] |
 
 ## 12. Écarts avec le code d'aujourd'hui (`src/arena/CombatSim.ts`, `src/combat/`)
@@ -483,6 +493,94 @@ DB3) avant la mise en œuvre.
 | DB-6 | Les temps de charge | « Garder les temps d’aujourd’hui » | — | rien (CH-1) |
 | DB-7 | Recaler les rivaux | « Recaler pour garder six sur dix » | — | les coups des rivaux ×3,4, leurs PV ×1,8, ceux de Ren ×1,25 (sur ceux de C3), la course hors écran |
 | DB-8 | Où l'appliquer | « Dans le jeu par défaut, puis ton essai » | — | le duel de la version 2 ; le jeu d'avant (`v2=0`) et le duel de C2 inchangés |
+
+## 19. Les statistiques des combattants et les fiches DB4, DB5, DB7 (09/11/2026)
+
+Après la fiche du duel (§ 18), trois fiches ont suivi (journal Passes DB4 à DB8) :
+- la fiche DB4, sur le poids de l'attaque simple ;
+- la fiche DB5, après l'audit demandé par l'opérateur, `briefs/audit-combat-db5.md` ;
+- la fiche DB7, sur les statistiques des combattants, `briefs/stats-combattants.md`.
+
+La fiche DB6 a été suspendue. Ses mots, mot pour mot :
+- avant l'audit : « je veux qu'un combat basique dure en 2 et 5 min.  +5 min peut etre exceptionnellement des combats epiques car l'adversaire aura une barre de vie monstrueuses » ;
+- après la fiche DB6 : « Les donnes que je donne sont a titre suggestifs le but 'est pas de controller de maniere strict la duree du combat si un combat dure plus longtemps, c'est que c'est normal... moi je veux de la coherence... avoir des combats rythmes et passionnant avec des actions impactantes... mais nou'oublions pas que nous basons les actions d'un combattant par ses stats personnelles  ameliorer a travers les equipement  et/ou le niveau gagnes etc... bref c'est un rpg notre jeu , et je trouve que nous negligeons cette aspect ».
+
+Les décisions A3 sont citées mot pour mot et datées au journal avant la mise en œuvre : la durée et DB5-3 / DB5-4 en Passes DB5 / DB6, DB7-1 à DB7-6 en Passe DB8.
+
+### 19.1 Les décisions
+
+| # | Décision | Choix de l'opérateur | Note | Ce qui change |
+|---|---|---|---|---|
+| Durée (A3) | La durée d'un combat | « en 2 et 5 min », « +5 min » pour des combats épiques | ses mots de la fiche DB6 : un repère, pas un réglage strict | § 2, § 11 : remplace DB-1 « 3 à 4 minutes » |
+| DB4-3, DB4-4 | L'échelle, les rivaux resserrés | « Marek 600, Ren 150 » ; « Resserrer : chaque rival entre 500 et 700 » | — | tenus par les fiches (DB7-5) |
+| DB4-5 | Le recalage | « Recaler pour garder six sur dix » | — | sur des parties entières |
+| DB4-6 | Quand | « Dès que les réglages sont fusionnés » | — | fusionnés (Passe RG4) |
+| DB5-1 | Le poids des compétences | « 20 % (28 % au niveau 5) » | — | l'Estocade à 20 % d'une barre de 600 à stats égales (puissance 120) |
+| DB5-2 | La garde des rivaux | « 90 %, garde à −80 % » | — | § 4, § 5 : dans leurs pauses, les rivaux gardent 90 % des coups du joueur (leur esquive d’aujourd’hui gardée) ; la garde réduit de 80 % (−60 % avant, CB-5), une règle pour les deux |
+| DB5-3 (A3) | Une recharge par compétence | « 5 × le temps de charge » | — | § 4, § 11 : remplace « Pas de recharge » et C2-5 « Aucune » |
+| DB5-4 (A3) | La rupture | « 10 s, ×2, jauge de 70 » | — | § 6, § 11 : étourdi 10 s, dégâts ×2, une jauge de 70 (8 s de DB-5) |
+| DB5-5 | L'attaque simple | « 1 % » | — | 1 % d'une barre de 600 à stats égales (puissance 6) |
+| DB5-6 | La progression | « PV ×1,4 au tableau » | — | remplacé par DB7-6 |
+| DB5-7 | Les épiques | « La finale » | « mais aussi des defis particuliers ( a definir plus tard ) » | la finale de DB7-6 ; les défis particuliers plus tard |
+| DB7-1 (A3) | Les stats et la formule | « Ajouter la Vivacité (vitesse de charge) » | « Oui vivacite peut etre interessant car certains adversaires seront plus rapide que d'autres et il en est de meme pour notre protagonist » | § 19.2 |
+| DB7-2 (A3) | L'équipement | « Des points, le reste gardé » | — | § 19.3 |
+| DB7-3 (A3) | L'entraînement | « +1 à la stat choisie, pour le prochain combat » | — | § 19.3 |
+| DB7-4 (A3) | La vigueur | « +12 PV par victoire » | — | § 19.4 |
+| DB7-5 (A3) | Les fiches des rivaux | « Ces fiches » | — | § 19.5 |
+| DB7-6 (A3) | Leur croissance | « Tableau ×1,3 et stats ; finale ×2,5 et stats » | — | § 19.5 |
+| DB7-7 | L'affichage | « Équipement, fiche de match et compétences » | — | § 9 : les stats se lisent |
+
+### 19.2 Cinq statistiques
+
+| Stat | Ce qu'elle fait |
+|---|---|
+| PV | la barre |
+| Attaque | les dégâts des coups |
+| Défense | les dégâts reçus |
+| Endurance | ce qu'un coup ajoute à la jauge |
+| Vivacité | la vitesse : les temps de charge de Ren ; le tempo d'un rival |
+
+- **Dégâts d'un coup** = puissance de l'action × 2·Atq / (Atq + Déf).
+- **Jauge** : ce qu'un coup y ajoute × 10 / Endurance.
+- **Vivacité de Ren** : ses temps de charge × 10 / Vivacité.
+- **Vivacité d'un rival** : ses temps (préparation des coups, intervalles d'un combo, pauses) × sa Vivacité de fiche / sa Vivacité du moment.
+- **Ren au départ** : 150 PV, 10 dans chaque autre stat.
+- **Les puissances de Ren** au niveau 1 : l'attaque simple 6, l'Estocade 120, les autres compétences offensives au prorata de leur temps de charge. Le niveau d'une compétence les multiplie (×1,0 à ×1,4).
+- **Les coups des rivaux** contre Ren à stats égales : simple 4 %, lourd 11 %, compétence 17 % de ses 150 PV.
+- Les nombres sont des points de départ, recalés sur des parties entières (DB4-5).
+
+### 19.3 L'équipement et l'entraînement
+
+- Chaque objet donne des points :
+  - **Attaque** : la lame importée +2, le sabre +1,5, un palier de forge +1, la pierre +0,5 ;
+  - **Défense** : la veste +1, les cuirs du quai +1,5, la cotte +3, le haubert +3,5 ;
+  - **Endurance** : les cuirs +1, l'anneau de fer +2, la perle +1,5, le jeton du champion +0,5 ;
+  - **PV** : la perle +5, la bande +9, la médaille +8 ;
+  - **Vivacité** : le sabre +1, les bottes +1, la cotte −0,5, le haubert −0,5.
+- Ce qui n'est pas une stat (PA, force des effets) reste comme aujourd'hui.
+- Une séance d'entraînement : +1 à la stat choisie, pour le prochain combat, deux au plus.
+- La blessure : −20 % des PV par niveau, inchangée.
+
+### 19.4 La vigueur
+
++12 PV à Ren par combat gagné, du tournoi ou un défi. Seulement des PV : le contrat projet § 7 veut éviter « qu'une unique statistique de niveau rende toutes les autres décisions secondaires ».
+
+### 19.5 Les rivaux
+
+| Rival | PV | Atq | Déf | End | Viv |
+|---|---|---|---|---|---|
+| Vessa Lark | 500 | 7 | 8 | 7 | 13 |
+| Tobin Fenn | 520 | 9 | 8 | 8 | 9 |
+| Cassius Dree | 560 | 11 | 10 | 9 | 10 |
+| Orla Brask | 600 | 12 | 11 | 11 | 11 |
+| Ilse Morrow | 620 | 10 | 12 | 11 | 10 |
+| Marek Varn | 650 | 13 | 13 | 12 | 10 |
+| Rhosk | 700 | 12 | 10 | 13 | 8 |
+
+- **La croissance** : au tableau (jours 6 à 8) +3 Atq, +3 Déf, +2 End, PV ×1,3 ; en finale (jour 10) +1 Atq, +3 Déf, +2 End, PV ×2,5. La Vivacité ne grandit pas.
+- **Les combattants génériques** prennent une fiche tirée du rival dont ils empruntent les coups, plus basse.
+- **Leur défense** : dans leurs pauses, ils gardent 90 % des coups du joueur, jamais pendant leur rupture (DB5-2).
+- **La recharge** (DB5-3) : une compétence du joueur qui part ne revient qu’après 5 fois son temps de charge au niveau 1 (l’Estocade 38 s), comptés depuis son départ ; le HUD la montre.
 
 ---
 
