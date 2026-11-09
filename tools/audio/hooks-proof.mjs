@@ -108,7 +108,7 @@ try {
   check(Object.values(arena.cues).reduce((a, n) => a + n, 0) > 0 && arena.old === 0, `the duel's events in the band's sounds (${Object.values(arena.cues).reduce((a, n) => a + n, 0)}), lot S0's recipes ${arena.old} time(s)`);
 
   // today's game: no engine at all
-  await open(page, 'play=1&new=1&name=Aster&vis=0&fps=off');
+  await open(page, 'play=1&new=1&name=Aster&vis=0&fps=off&v2=0');
   await wait(1000);
   check(await page.evaluate(() => !window.__sound), 'a game of today has no sound engine');
 } finally { await b.close(); }

@@ -195,6 +195,10 @@ test('the play mode: &combat=dynamic marks a new game, its bouts take the discre
   const g0 = G.newGame(1842, 'Aster'), g1 = withRules(G.newGame(1842, 'Aster'), q('play=1&new=1&combat=dynamic'));
   assert.equal(G.hash(withRules(G.newGame(1842, 'Aster'), q('play=1&new=1'))), G.hash(g0));
   assert.equal(G.hash(withRules(G.newGame(1842, 'Aster'), q('play=1&new=1&combat=classic'))), G.hash(g0));
+  // a new game (fresh) is a version 2 game by default (journal Passe VD1); &v2=0 keeps the game of today, &v2=0&combat=dynamic C2's rules alone
+  assert.equal(G.isV2(withRules(G.newGame(1842, 'Aster'), q('play=1&new=1'), true)), true);
+  assert.equal(G.hash(withRules(G.newGame(1842, 'Aster'), q('play=1&new=1&v2=0'), true)), G.hash(g0));
+  assert.equal(G.hash(withRules(G.newGame(1842, 'Aster'), q('play=1&new=1&v2=0&combat=dynamic'), true)), G.hash(g1));
   assert.equal(g1.flags.combat, 'dynamic'); assert.ok(dynamicRules(g1)); assert.ok(!dynamicRules(g0));
   // the day 2 bout, scouted: today the full assistance; under the new rules the discreet one and a report for the preparation screen
   let st = G.namedState('day2-afternoon', 1842, 'Aster');

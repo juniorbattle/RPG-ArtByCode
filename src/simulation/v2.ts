@@ -5,7 +5,8 @@ import { v2Matches } from '../tournament/v2calendar';
 /** The « version 2 » of the game (the operator's decision AV-2, « Un drapeau « version 2 » pour tout, défaut inchangé », journal Passes AV1 /
  *  V0): every system of the cloud session « Version 2 » (the three-button command and its charged attack, the skills, the equipment and the
  *  shops, haggling / challenging / stealing, the districts, the ten days' story, the events, the sound, the screens) switches on together by
- *  one game flag, `flags.v2`, kept in the save. A new game takes it by `?play=1&new=1&v2=1` (as `combat=dynamic`), a named state by
+ *  one game flag, `flags.v2`, kept in the save. Since the operator's decision of 2026-11-09 (journal Passe VD1) it is the default game: every
+ *  new game takes it (`?play=1&new=1`, the title screen's « New game »; `&v2=0` = today's game), a named state by its own definition or by
  *  `&v2=1`. The flag implies the rules of the « tour par tour dynamique » (`flags.combat = 'dynamic'`, brief § 2). Without it the game is
  *  today's, unchanged. Pure. */
 
@@ -23,10 +24,19 @@ export function makeV2(s: GameState): GameState {
   return s;
 }
 
-/** the address asks for the version 2: `v2` or `v2=1` (anything else, `v2=0` included, is today's game) */
+/** the address asks for the version 2: `v2` or `v2=1` (anything else, `v2=0` included, is today's game); a named state (DEV) keeps its own
+ *  version unless the address asks for the version 2 */
 export function wantsV2(get: (k: string) => string | null): boolean {
   const v = get('v2');
   return v === '' || v === '1';
+}
+
+/** a new game's version: the version 2 is the default game (the operator's decision of 2026-11-09, word for word « non je veux que toutes mes
+ *  implementations soient dans la version par default afin de lancer direct le jeu via http://127.0.0.1:5173/ », journal Passe VD1, replacing
+ *  V2-17 « Pas encore »): every new game is a version 2 game unless the address says `v2=0` (today's game, kept for comparison until the
+ *  operator's sheet of journal Passe VD1 decides) */
+export function newGameV2(get: (k: string) => string | null): boolean {
+  return get('v2') !== '0';
 }
 
 /** the player's duel kit in a version 2 game: the four skills brought and every skill's level (lot V2 makes it the player's own; until then

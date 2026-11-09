@@ -80,6 +80,9 @@ test('the version 2\'s flag: asked by the address, the dynamic rules with it, ke
   assert.equal(G.wantsV2(get('play=1&new=1&v2=1')), true);
   assert.equal(G.wantsV2(get('play=1&new=1&v2')), true);
   for (const q of ['play=1&new=1', 'v2=0', 'v2=yes', 'combat=dynamic']) assert.equal(G.wantsV2(get(q)), false, q);
+  // a new game is a version 2 game unless the address says v2=0 (the operator's decision of 2026-11-09, journal Passe VD1)
+  for (const q of ['', 'play=1&new=1', 'play=1&new=1&name=Ren', 'play=1&new=1&v2=1', 'play=1&new=1&v2', 'play=1&new=1&combat=dynamic', 'v2=yes']) assert.equal(G.newGameV2(get(q)), true, q);
+  assert.equal(G.newGameV2(get('play=1&new=1&v2=0')), false);
   const plain = G.newGame(1842, 'Ren');
   assert.equal(G.isV2(plain), false);
   assert.equal(plain.flags.v2, undefined);
@@ -101,7 +104,10 @@ test('the version 2\'s flag: asked by the address, the dynamic rules with it, ke
 
 test('the play mode\'s entry asks the pure flag (play.ts withRules), and only the play mode and the lab set it', () => {
   const play = lf(fs.readFileSync(path.join(ROOT, 'src/ui/play.ts'), 'utf8'));
-  assert.match(play, /if \(wantsV2\(\(k\) => params\.get\(k\)\)\) makeV2\(s\);/);
+  assert.match(play, /if \(!isV2\(s\) && \(fresh \? newGameV2\(get\) : wantsV2\(get\)\)\) makeV2\(s\);/);
+  // a new game passes fresh (the version 2 by default, journal Passe VD1), a named state does not (its own version, or &v2=1)
+  assert.match(play, /if \(params\.has\('new'\)\) return \{ state: withRules\(newGame\([^\n]*\), params, true\) \};/);
+  assert.match(play, /return \{ state: withRules\(namedState\([^\n]*\), params\) \};/);
   const setters = sources('src').filter((s) => /\bmakeV2\(/.test(s) && !/export function makeV2/.test(s));
   assert.equal(setters.length, 3, 'play.ts, named.ts and lab.ts');
 });

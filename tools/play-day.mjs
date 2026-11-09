@@ -1,7 +1,7 @@
 // The first day played in the town page (journal Passe L4): a new game; at the keyboard, the hero placed by Mara's stall and E pressed must
 // open her dialogue (portrait, words, her shop); then the day through window.__game (the steel cargo: Tam, Hale, the haul; the forecourt:
 // the roll, sparring with Orla; the evening), each slot change saved and the page reloaded from the save, the state's fingerprint kept; the
-// second morning reached. Node replays the same actions: same fingerprint. A version 2 game (V2=1) plays its steps through the page's
+// second morning reached. Node replays the same actions: same fingerprint. A version 2 game (the default; V2=0 today's game) plays its steps through the page's
 // interface and checks the reading of journal Passe EVL1: a theft from the list (Q) said in its band, a square's news after a slot ended there
 // (none after a walk), Orla's challenge tagged « 1 slot » (and « 10 coins » for its stake in coins, Passe EVL3), the journal's causes in words;
 // and lot L3 (Passe EVL5): Clerk Odo's strongroom on the eve of the first bout and the hooded stranger's word at night, each said in the band,
@@ -16,8 +16,9 @@ const puppeteer = createRequire(import.meta.url)('puppeteer-core');
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/google-chrome'].find((p) => p && fs.existsSync(p));
 const [outDir, seedS = '1842'] = process.argv.slice(2);
 if (!outDir) throw new Error('usage: node tools/play-day.mjs <outDir> [seed]');
-// V2=1: a version 2 game (&v2=1, its flag in the save and the Node replay, journal Passe V0)
-const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720), READY = +(process.env.READY_MS || 600000), V2 = process.env.V2 === '1';
+// a version 2 game by default (the default game since the operator's decision of journal Passe VD1: the bare ?play=1&new=1, its flag in the
+// save and the Node replay, journal Passe V0); V2=0: today's game (&v2=0)
+const BASE = process.env.BASE_URL || 'http://127.0.0.1:5173/', W = +(process.env.W || 1280), H = +(process.env.H || 720), READY = +(process.env.READY_MS || 600000), V2 = process.env.V2 !== '0';
 fs.mkdirSync(outDir, { recursive: true });
 const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(Boolean) : ['--use-gl=angle', '--use-angle=d3d11'];
 const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 }, protocolTimeout: READY });
@@ -30,7 +31,7 @@ try {
   // the page's news band, read before it is closed (journal Passe EVL1: a square shows the news of a slot that ended there)
   let band = null;
   const open = async (q, shot) => { await page.goto(`${BASE}${q}`, { waitUntil: 'load', timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); check(!(await page.evaluate(() => window.__error ?? null)), `page ${q} ready`); await new Promise((r) => setTimeout(r, 1200)); band = await page.evaluate(() => { const o = document.querySelector('.pm-overlay.pm-band'); return o ? [...o.querySelectorAll('.pm-body p')].map((p) => p.textContent) : null; }); if (shot && band) await page.screenshot({ path: shot }); await page.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click()); };
-  await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1${V2 ? '&v2=1' : ''}`);
+  await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1${V2 ? '' : '&v2=0'}`);
   check((await page.evaluate(() => window.__game.state().flags.v2 ?? null)) === (V2 ? true : null), `the version 2's flag: ${V2 ? 'on' : 'absent'}`);
   // 1. the keyboard: next to Mara, E opens her dialogue
   await page.evaluate(() => { const A = window.__app, m = A.actors.actors.find((a) => (a.base ?? a.spec) === 'merchant'); A.actors.player.pos.set(m.pos.x + 0.9, 0, m.pos.z + 0.6); });

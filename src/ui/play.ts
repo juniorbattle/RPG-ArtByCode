@@ -1,5 +1,5 @@
 import type { TimeOfDay } from '../atmosphere/DayState';
-import { actions, advance, hash, isV2, lookOf, makeV2, namedState, newGame, wantsV2, type Action, type GameState } from '../simulation';
+import { actions, advance, hash, isV2, lookOf, makeV2, namedState, newGame, newGameV2, wantsV2, type Action, type GameState } from '../simulation';
 import { loadingError, toneLoading } from './loading';
 import { readSave, writeSave } from './save';
 
@@ -35,10 +35,12 @@ export function go(params: URLSearchParams, extra: Record<string, string> = {}):
 /** `&combat=dynamic` on a new game (or a named state): the game is played under the rules of the « tour par tour dynamique »
  *  (`flags.combat`, src/tournament/pool.ts `dynamicRules`; journal Passes C1 / C2), its duels in the arena's DynamicSim and its off-screen
  *  matches in their race; the flag lives in the save. Behind this parameter until the operator's trial (CB-10); absent = the game of today */
-export function withRules(s: GameState, params: URLSearchParams): GameState {
+export function withRules(s: GameState, params: URLSearchParams, fresh = false): GameState {
   if (params.get('combat') === 'dynamic') s.flags.combat = 'dynamic';
-  // `&v2=1`: the version 2 (src/simulation/v2.ts, the operator's decision AV-2), the dynamic rules with it; absent = the game of today
-  if (wantsV2((k) => params.get(k))) makeV2(s);
+  // the version 2 (src/simulation/v2.ts, the operator's decision AV-2), the dynamic rules with it: a new game takes it by default (the operator's
+  // decision of 2026-11-09, journal Passe VD1; `&v2=0` = the game of today); a named state keeps its own version unless `&v2=1` asks for it
+  const get = (k: string) => params.get(k);
+  if (!isV2(s) && (fresh ? newGameV2(get) : wantsV2(get))) makeV2(s);
   return s;
 }
 
@@ -46,7 +48,7 @@ export function startingState(params: URLSearchParams): { state: GameState; note
   // DEV only: a named state (PROJECT § 10.3) for reviews and proofs
   // (a state of its own seed, lot L4, takes it unless the address gives one)
   if (import.meta.env.DEV && params.has('state')) return { state: withRules(namedState(params.get('state')!, params.has('seed') ? Number(params.get('seed')) >>> 0 : undefined, params.get('name') ?? 'Ren'), params) };
-  if (params.has('new')) return { state: withRules(newGame(Number(params.get('seed') ?? 1842) >>> 0, params.get('name') ?? 'Ren'), params) };
+  if (params.has('new')) return { state: withRules(newGame(Number(params.get('seed') ?? 1842) >>> 0, params.get('name') ?? 'Ren'), params, true) };
   const r = readSave();
   if (r.state) return { state: r.state };
   return { state: newGame(1842, params.get('name') ?? 'Ren'), note: r.error };

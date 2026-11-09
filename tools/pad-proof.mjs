@@ -70,7 +70,7 @@ const acts = [];
 try {
   // ------------------------------------------------------------------------------------------------ 1. the town
   await session(XBOX, async ({ page, frames, press, hold, stick, open }) => {
-    await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1&v2=1`);
+    await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1`);
     const flags = await page.evaluate(() => ({ v2: window.__game.state().flags.v2 ?? null, pad: !!window.__pad }));
     check(flags.v2 === true && flags.pad, `a version 2 game, its pad layer installed: ${JSON.stringify(flags)}`);
     const news = await page.evaluate(() => !!document.querySelector('.pm-overlay'));
@@ -320,7 +320,7 @@ try {
 
   // ------------------------------------------------------------------------------------------------ 6. today's game, today's arena: nothing
   await session(XBOX, async ({ page, press, stick, open }) => {
-    await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1`);
+    await open(`?play=1&new=1&name=Aster&seed=${seedS}&vis=0&noreload=1&v2=0`);
     const p0 = await page.evaluate(() => [window.__app.actors.player.pos.x, window.__app.actors.player.pos.z]);
     await press(B.A); await stick(1, 0); await new Promise((r) => setTimeout(r, 600)); await stick(0, 0);
     const r = await page.evaluate(() => ({ pad: !!window.__pad, at: [window.__app.actors.player.pos.x, window.__app.actors.player.pos.z], keys: [...document.querySelectorAll('#pm-hints kbd')].map((k) => k.textContent) }));
