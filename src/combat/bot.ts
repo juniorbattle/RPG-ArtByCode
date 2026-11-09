@@ -20,7 +20,11 @@ export interface DuelResult {
   hash: string;
 }
 
-export interface BotOptions { skill: number; seed: number; /** a duel still on after this many seconds ends on the health shares */ maxSecs?: number }
+export interface BotOptions {
+  skill: number; seed: number; /** a duel still on after this many seconds ends on the health shares */ maxSecs?: number;
+  /** runV2BotDuel only: each step's events and the duel, for a measure (tools/duel-balance.mjs, journal Passe DB2); never changes the duel */
+  observe?: (events: ReturnType<ChargedDuel['drain']>, duel: ChargedDuel) => void;
+}
 
 export function runBotDuel(data: CombatData, o: BotOptions): DuelResult {
   const sim = new CombatSim(data), rng = new Rng(o.seed >>> 0 || 1), dt = data.dt, s = o.skill;
@@ -127,7 +131,7 @@ export function runV2BotDuel(data: DynData, tiers: ChargeTier[], o: BotOptions):
   let decided: unknown = null, seqSeen = false, guardSeq = false, dodge = false, react = 0, nextAct = 0.4 + rng.next() * 0.3, finisher: string | null = null;
   let target = -1, releaseAt = 0;
   const maxT = o.maxSecs ?? 1800;
-  const drain = () => { for (const e of duel.drain()) if (e.type === 'impact' && e.hp <= 0) finisher = e.kind; };
+  const drain = () => { const evs = duel.drain(); o.observe?.(evs, duel); for (const e of evs) if (e.type === 'impact' && e.hp <= 0) finisher = e.kind; };
   while (!sim.over && sim.t < maxT) {
     if (s < 0) { duel.step(dt); drain(); continue; }
     const inc = sim.incoming(), m = sim.f.marek, r = sim.f.ren, v = duel.view();

@@ -1,0 +1,370 @@
+<title>Duel plus court</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · le duel de la version 2 · Passe DB2 · 9 novembre 2026</span>
+    <h1>Un duel plus court, des coups qui comptent</h1>
+    <p class="lede">Après ton premier essai, tu as trouvé les duels très longs, les compétences et la rupture presque sans effet, et le martelage de l’attaque rapide meilleur que tout. Les mesures te donnent raison : une Estocade fait 2,2 % de la barre de Marek, une pause adverse laisse quatorze attaques rapides, et la rupture rapporte 8 % des dégâts. Je propose un paquet, réglé carte par carte ; rien n’est appliqué avant ta fiche. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je consigne mot pour mot au journal ceux qui touchent une règle de la spécification (la durée, la riposte, la rupture : des décisions A3), puis j’applique, je recale sur des parties entières, je refais les tests, le laboratoire et le duel en navigateur, et je fusionne.</p>
+    <p>Déjà fusionné à part : le blocage que tu as vu (les attaques rapides qui se répétaient sans fin après plusieurs clics) est corrigé, un seul relâché attend désormais (journal Passe DB1).</p>
+    <p class="src">Sources : <code>briefs/audit-duel-db2.md</code> (l’audit), <code>briefs/combat-system.md</code> §§ 2, 3, 6 et 17, journal Passes V2C2, CH1 et DB2. Mesures : <code>node tools/duel-balance.mjs</code>, le duel du jeu contre les sept rivaux, 20 graines chacun, le bot du jeu aux adresses 0,2, 0,5 et 0,9 et un marteleur.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Remplacer entièrement : un groupe par famille de décisions, une entrée par décision.
+// fam : une variable de couleur (--astre, --voile, --ronce, --cendre). shots : captures publiées via `files` (facultatif).
+// Apostrophes : l’apostrophe typographique ’ (ou \') ; une ' droite dans une chaîne entre ' ' arrête tout le script.
+const GROUPS = [
+  { id: 'duel', title: 'Le duel proposé', sub: 'Chaque carte change une chose à la fois sur le paquet recommandé. Mesuré hors écran : les sept rivaux, 20 duels chacun, le bot du jeu à l’adresse 0,5 (un joueur moyen), le kit de départ au niveau 1. « Marteleur » : un joueur qui ne fait que l’attaque rapide et se défend comme le bot.', fam: 'var(--voile)', items: [
+    { id: 'DB-1', tag: 'durée · A3', title: 'La durée visée d’un duel',
+      ctx: 'Aujourd’hui, un duel dure 8 minutes en médiane pour un joueur moyen (6,8 à 8,4 selon l’adresse) : c’était la cible « 5 à 10 minutes » de l’atelier (G5) et de l’essai C2 (C2-2). Tu les trouves très longs. La durée se règle par les PV des deux combattants ensemble, sans changer les chances : sur le paquet proposé, les mêmes 58 à 61 % de victoires à chaque durée. Changer la cible est une décision A3 (spécification § 2).',
+      table: { head: ['PV des deux côtés (paquet proposé)', 'Durée médiane, joueur moyen', 'Joueur faible · fort', 'Victoires, joueur moyen'], rows: [
+        ['Aujourd’hui (pour mémoire)', '8,0 min', '6,8 · 8,4 min', '54 %'],
+        ['×0,8 : 2 à 3 minutes', '2,4 min', '2,0 · 2,5 min', '58 %'],
+        ['×1,25 : 3 à 4 minutes', '3,7 min', '3,2 · 3,9 min', '59 %', 1],
+        ['×1,75 : 5 minutes environ', '5,1 min', '4,6 · 5,4 min', '59 %'],
+        ['×2,5 : 7 à 8 minutes', '7,5 min', '6,5 · 7,6 min', '61 %']],
+        foot: 'Selon le rival, à 3 à 4 minutes : Tobin 2,9 min, Marek 3,1, Vessa 3,4, Orla 3,6, Ilse 3,9, Cassius 4,0, Rhosk 4,5. Les PV sont ceux du paquet (DB-7) : ×1,25 veut dire les rivaux à ×1,5 et Ren à ×1,25 des PV d’aujourd’hui.' },
+      rec: '3 à 4 minutes : moitié moins qu’aujourd’hui, assez long pour deux ou trois ruptures et une dizaine de compétences par duel ; un tournoi de dix jours en compte cinq à sept.',
+      opts: ['3 à 4 minutes', '2 à 3 minutes', '5 minutes environ', 'Garder 5 à 10 minutes'], recIdx: 0,
+      src: 'briefs/combat-system.md § 2 et § 17 (C2-2) ; briefs/audit-duel-db2.md ; tools/duel-balance.mjs' },
+    { id: 'DB-2', tag: 'martelage · A3', title: 'Répondre au martelage de l’attaque rapide',
+      ctx: 'Une pause adverse dure 3,5 à 12 s : assez pour 6 à 21 attaques rapides (cycle 0,58 s). Le marteleur en place 14 en médiane, jusqu’à 31, et ses PA restent pleins pour esquiver : ton constat. Je propose une règle simple et lisible : au troisième coup rapide qui touche dans sa pause, l’adversaire riposte (sa séquence part 0,3 s après). Jamais pendant sa rupture : c’est le moment de frapper. C’est une règle neuve de l’adversaire, donc une décision A3.',
+      table: { head: ['Sur le paquet proposé', 'Attaques rapides par pause (marteleur)', 'Marteleur', 'Joueur moyen (avant recalage)'], rows: [
+        ['Riposte au 3e coup', '3 (6 au plus, pendant une rupture)', '0 %, 1,6 min', '59 %', 1],
+        ['Riposte au 4e coup', '4', '0 %, 1,9 min', '79 %'],
+        ['Attaque rapide plus lente (0,9 s au lieu de 0,58)', '9 (14 au plus)', '0 %, 3,9 min', '66 %'],
+        ['Pauses adverses plus courtes (×0,6)', '8 (27 au plus)', '0 %, 2,7 min', '24 %'],
+        ['Rien de plus', '14 (35 au plus)', '0 %, 4,0 min', '83 %']],
+        foot: 'Avec les compétences ×4 et les rivaux recalés, le marteleur perd dans tous les cas : ce qui change, c’est combien de coups une pause laisse. La colonne de droite se recale ensuite à six sur dix (DB-7).' },
+      rec: 'La riposte au 3e coup : elle borne la pause à trois coups (donc à trois PA), elle se lit à l’écran (l’adversaire répond), et elle laisse la rupture comme fenêtre libre. L’attaque plus lente garde neuf coups par pause.',
+      opts: ['Riposte au 3e coup', 'Riposte au 4e coup', 'Attaque rapide plus lente (0,9 s)', 'Pauses adverses plus courtes', 'Rien de plus'], recIdx: 0,
+      src: 'src/combat/dynamic.ts (les pauses, restByLevel) ; briefs/combat-system.md § 2, § 5' },
+    { id: 'DB-3', tag: 'PA', title: 'Les PA de l’attaque rapide',
+      ctx: 'Aujourd’hui, chaque attaque rapide qui touche donne +1 PA (spécification § 3) ; les PA paient les compétences (1 à 4) et l’esquive (1). Avec la riposte, une pause donne au plus trois PA : le gain est déjà borné. Un PA toutes les deux attaques affame les compétences.',
+      table: { head: ['Sur le paquet proposé', 'Joueur moyen', 'PA gagnés par minute', 'Part des compétences'], rows: [
+        ['+1 PA par attaque rapide (aujourd’hui)', '59 %, 3,7 min', '21', '91 %', 1],
+        ['+1 PA toutes les deux attaques', '0 %, 2,9 min', '16', '79 %']] },
+      rec: 'Garder +1 PA : la riposte règle déjà l’accumulation, et la règle reste celle de l’atelier.',
+      opts: ['Garder +1 PA par attaque rapide', '+1 PA toutes les deux attaques'], recIdx: 0,
+      src: 'briefs/combat-system.md § 3 ; src/combat/dynamic.ts (apGain)' },
+    { id: 'DB-4', tag: 'compétences', title: 'Le poids des compétences',
+      ctx: 'Aujourd’hui l’Estocade (7,65 s de charge, 4 PA) fait 168 dégâts : 2,2 % des PV de Marek, 20 dégâts par seconde du temps qu’elle prend, contre 17 pour le martelage. Le Coup éclair (3,4 s, 2 PA) 1 %. L’attaque rapide reste à 10 (0,09 % de la barre) : elle prépare (PA, jauge), les compétences frappent.',
+      table: { head: ['Dégâts des compétences', 'Coup éclair contre Marek', 'Estocade contre Marek', 'Estocade sur sa rupture', 'Joueur moyen (avant recalage)'], rows: [
+        ['Aujourd’hui (pour mémoire)', '1,0 %', '2,2 %', '2,6 %', '54 %, 8,0 min'],
+        ['×3', '2,0 %', '4,4 %', '8,8 %', '26 %, 3,8 min'],
+        ['×4', '2,6 %', '5,8 %', '11,7 %', '59 %, 3,7 min', 1],
+        ['×5', '3,3 %', '7,3 %', '14,6 %', '76 %, 3,2 min']],
+        foot: 'Les pourcentages : contre les PV de Marek dans le paquet (×1,5). Rempart et Ferveur gardent leurs effets ; l’attaque puissante (une compétence) suit le même facteur.' },
+      rec: '×4 : une Estocade enlève un dix-septième de la barre, et près d’un huitième sur une rupture ; les compétences font 91 % des dégâts. ×5 raccourcit encore et rend le recalage plus raide.',
+      opts: ['×4', '×3', '×5'], recIdx: 0,
+      src: 'src/combat/v2duel.ts (V2_POWER) ; src/combat/skills.ts' },
+    { id: 'DB-5', tag: 'break · A3', title: 'La rupture : ce qui la remplit, ce qu’elle rapporte',
+      ctx: 'Aujourd’hui la jauge demande 34 attaques rapides ; la première rupture arrive à 86 s pour un joueur moyen, et elle rapporte ×1,2 pendant 6 s (C2-9) : 8 % de ses dégâts. Je propose que les compétences la remplissent (leur apport ×2 ; l’attaque rapide 2 au lieu de 3 : deux Estocades et un Coup éclair la cassent) et qu’elle double les dégâts pendant 8 s. Au-delà de « dégâts légèrement accrus » (§ 6, G3) : décision A3.',
+      table: { head: ['Sur le paquet proposé', 'Première rupture', 'Ruptures par duel', 'Dégâts faits pendant une rupture', 'Joueur moyen (avant recalage)'], rows: [
+        ['Jauge par les compétences, ×2 pendant 8 s', '45 s', '3,3', '22 %', '59 %', 1],
+        ['Jauge par les compétences, ×1,5 pendant 8 s', '45 s', '3,6', '18 %', '51 %'],
+        ['Jauge par les compétences, rupture d’aujourd’hui (×1,2, 6 s)', '45 s', '3,5', '14 %', '39 %'],
+        ['Tout comme aujourd’hui', '106 s', '1,4', '6 %', '29 %']] },
+      rec: 'La jauge par les compétences, ×2 pendant 8 s : la rupture vient deux fois plus tôt, récompense une compétence et se sent (une Estocade y enlève 11,7 % de la barre). 8 s reste dans les 5 à 10 s de l’atelier.',
+      opts: ['Jauge par les compétences, ×2 pendant 8 s', 'Jauge par les compétences, ×1,5 pendant 8 s', 'Jauge par les compétences, rupture d’aujourd’hui', 'Tout comme aujourd’hui'], recIdx: 0,
+      src: 'briefs/combat-system.md § 6 et § 17 (C2-8, C2-9) ; src/combat/dynamic.ts (resist)' },
+    { id: 'DB-6', tag: 'charge', title: 'Les temps de charge',
+      ctx: 'Tu les as raccourcis le 4 novembre (CH-1 « 0,85 (−15 %) ») : 3 s pour Rempart, 3,4 s pour le Coup éclair, 4,25 s pour Ferveur, 7,65 s pour l’Estocade. La rupture, elle, vient deux fois plus tôt avec DB-5. On peut raccourcir encore.',
+      table: { head: ['Sur le paquet proposé', 'Estocade', 'Première rupture', 'Joueur moyen (avant recalage)'], rows: [
+        ['Garder (CH-1)', '7,65 s', '45 s', '59 %, 3,7 min', 1],
+        ['×0,8 de plus', '6,1 s', '40 s', '70 %, 3,4 min']] },
+      rec: 'Garder : la décision est récente, et l’attente se paie désormais par une compétence qui pèse.',
+      opts: ['Garder les temps d’aujourd’hui', 'Raccourcir encore (×0,8)'], recIdx: 0,
+      src: 'src/combat/skills.ts (CHARGE_TRIM) ; journal Passes CH1, CH2' },
+  ]},
+  { id: 'suite', title: 'Le recalage et la mise en jeu', sub: 'Ce qui suit tes choix.', fam: 'var(--astre)', items: [
+    { id: 'DB-7', tag: 'équilibre', title: 'Recaler les rivaux pour garder six victoires sur dix',
+      ctx: 'Les choix ci-dessus rendent le joueur plus fort ou plus faible. En V2C2 tu as voulu le joueur préparé à six victoires sur dix (« Oui, recaler »). Pour le paquet recommandé : les coups des rivaux ×2,5, leurs PV ×1,5, ceux de Ren ×1,25 (sur ceux d’aujourd’hui). Un coup puissant de Marek enlève alors 8 % des PV de Ren au lieu de 4 % : le duel est plus court des deux côtés.',
+      table: { head: ['Paquet recommandé, recalé', 'Joueur faible (0,2)', 'Moyen (0,5)', 'Fort (0,9)', 'Marteleur'], rows: [
+        ['Aujourd’hui', '1 %, 6,8 min', '54 %, 8,0 min', '99 %, 8,4 min', '37 %, 7,2 min'],
+        ['Proposé', '9 %, 3,2 min', '59 %, 3,7 min', '99 %, 3,9 min', '0 %, 1,6 min', 1]],
+        foot: 'Après la fiche, le recalage se refait sur des parties entières (TournamentLab : le joueur préparé, son équipement et ses niveaux) et la course hors écran des autres matchs (V2_RACERS) se remesure.' },
+      rec: 'Recaler : les chances du tournoi restent celles que tu as validées, seuls la durée et le poids des coups changent.',
+      opts: ['Recaler pour garder six sur dix', 'Ne pas recaler'], recIdx: 0,
+      src: 'src/combat/v2duel.ts (V2_FOE_HIT, V2_FOE_HP, V2_RACERS) ; journal Passe V2C2' },
+    { id: 'DB-8', tag: 'mise en jeu', title: 'Où l’appliquer',
+      ctx: 'Selon ta règle VD-8, le nouveau va directement dans le jeu par défaut. L’ancien duel resterait joignable par v2=0 seulement (le jeu d’avant). La séance du tutoriel de combat attend cette refonte.',
+      rec: 'Dans le jeu par défaut, prouvé par les tests, le laboratoire et le duel en navigateur, puis ton essai en jeu.',
+      opts: ['Dans le jeu par défaut, puis ton essai', 'Derrière un paramètre d’essai d’abord'], recIdx: 0,
+      src: 'AGENTS.md (VD-8) ; journal Passe VD2' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
