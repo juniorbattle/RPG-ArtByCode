@@ -9,6 +9,8 @@ import { RUMOUR, STRONGROOM } from '../simulation/v2intel';
 import { argChance, DISCOUNT } from '../simulation/v2barter';
 import { fameTier, type FameTier } from '../simulation/v2react';
 import { INJURY_HP, TRAIN_DMG, TRAIN_MAX } from '../simulation/v2gear';
+import { v2DuelData } from '../combat/v2duel';
+import { forgetLessons } from './duelTutorial';
 import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
 
 /** The tutorial of the default game (the operator's request of 2026-11-09 and his sheet, journal Passes TU1 / TU2 / TU3): a tour of six bands over the live page
@@ -55,14 +57,17 @@ const keptPlaces = (): Record<string, string> => readJson<Record<string, string>
 
 // ------------------------------------------------------------------------------------------------ texts: keys in caps, numbers from the data
 
-/** the caps a text may hold: `[E]` talk, `[Q]` the list, `[Menu]` the menu (Esc, the pad's Start), `[M]` the map, `[Space]`, `[Enter]`, `[Back]` (Esc in a page) */
+/** the caps a text may hold: `[E]` talk, `[Q]` the list, `[Menu]` the menu (Esc, the pad's Start), `[M]` the map, `[Space]`, `[Enter]`, `[Back]` (Esc in a page),
+ *  `[J]`, `[K]`, `[L]` the duel's attack, guard and dodge */
 const CAPS: Record<string, string> = {
   E: '<kbd data-cap="hints">E</kbd>', Q: '<kbd data-cap="hints">Q</kbd>', Menu: '<kbd data-cap="hints">Esc</kbd>', M: '<kbd data-cap="hints">M</kbd>',
   Space: '<kbd>Space</kbd>', Enter: '<kbd>Enter</kbd>', Back: '<kbd>Esc</kbd>',
+  // the duel's keys (journal Passe TU4): the pad's buttons in the duel
+  J: '<kbd data-cap="arena">J</kbd>', K: '<kbd data-cap="arena">K</kbd>', L: '<kbd data-cap="arena">L</kbd>',
 };
 /** a text of the table as paragraphs, its caps drawn and the rest escaped */
 export function rich(t: string, first = ''): string {
-  return t.split('\n').map((p, i) => `<p${i === 0 && first ? ` class="${first}"` : ''}>${esc(p).replace(/\[(E|Q|Menu|M|Space|Enter|Back)\]/g, (_, k: string) => CAPS[k])}</p>`).join('');
+  return t.split('\n').map((p, i) => `<p${i === 0 && first ? ` class="${first}"` : ''}>${esc(p).replace(/\[(E|Q|Menu|M|Space|Enter|Back|J|K|L)\]/g, (_, k: string) => CAPS[k])}</p>`).join('');
 }
 const pct = (x: number): number => Math.round(x * 100);
 /** « 2, 4 and 5 » */
@@ -203,7 +208,7 @@ export const CHAPTERS: Chapter[] = [
   { id: 'intel', title: 'tut.ch.intel.title', line: 'tut.ch.intel.line', body: 'tut.ch.intel.body', fig: 'none' },
   { id: 'renown', title: 'tut.ch.renown.title', line: 'tut.ch.renown.line', body: 'tut.ch.renown.body', fig: 'fame' },
   { id: 'prepare', title: 'tut.ch.prepare.title', line: 'tut.ch.prepare.line', body: 'tut.ch.prepare.body', fig: 'none' },
-  { id: 'duel', title: 'tut.ch.duel.title', line: 'tut.ch.duel.line', body: 'tut.ch.duel.body', fig: 'none', keys: 'duel' },
+  { id: 'duel', title: 'tut.ch.duel.title', line: 'tut.ch.duel.line', body: 'tut.ch.duel.body', fig: 'none' },
   { id: 'keys', title: 'tut.ch.keys.title', line: 'tut.ch.keys.line', body: 'tut.ch.keys.body', fig: 'none', keys: 'all' },
 ];
 
@@ -217,6 +222,7 @@ export function chapterText(s: GameState, c: Chapter): string {
     case 'challenges': return tx(c.body, { names: list(Object.keys(CHALLENGERS).map(nameOf)), coins: STAKE.coins, name: STAKE.name, day: dayOf('semis') });
     case 'intel': return tx(c.body, { lio: RUMOUR.lio.coins, lioPct: pct(RUMOUR.lio.truth), stranger: RUMOUR.stranger.coins, odo: nameOf('odo'), room: STRONGROOM });
     case 'prepare': return tx(c.body, { train: pct(TRAIN_DMG), sessions: TRAIN_MAX, wound: pct(INJURY_HP), anwen: nameOf('anwen') });
+    case 'duel': { const D = v2DuelData('marek', { seed: 1, playerName: '', opponentName: '' }).data; return tx(c.body, { gain: D.actions.light?.apGain ?? 1, start: D.ap.start, max: D.ap.max, guard: pct(D.guard.reduce), n: D.ai.riposte?.after ?? 0, stun: D.resist.breakStun, times: D.resist.breakDamage }); }
     case 'renown': return tx(c.body, { hale: nameOf('hale'), parade: Math.max(...daysOfKind('free')) });
     case 'time': return tx(c.body, { slot: tx('ui.oneSlot') });
     default: return tx(c.body);
@@ -285,21 +291,34 @@ export function guidePage(host: GuideHost, close: () => void, first?: string): {
     + `<section class="pm-col"><header class="pm-head"><h2 class="pm-h"></h2></header><div class="pm-detail pm-grow"></div><div class="pm-foot"></div></section>`;
   root.appendChild(card);
   const list = card.querySelector('.pm-glist') as HTMLElement, detail = card.querySelector('.pm-detail') as HTMLElement, title = card.querySelector('section:last-child .pm-h') as HTMLElement;
-  const out = footBtn('Esc', tx('ui.close'), close), replay = host.replay ? footBtn('Space', tx('tut.guide.replay'), () => host.replay!()) : null, fit = scrollFade(detail);
+  const out = footBtn('Esc', tx('ui.close'), close), fit = scrollFade(detail);
+  const replay = host.replay ? footBtn('Space', tx('tut.guide.replay'), () => { if (at.id === 'duel') { forgetLessons(); detail.insertAdjacentHTML('beforeend', `<p class="tu-done" role="status">${tx('tut.duel.again.done')}</p>`); fit(); } else host.replay!(); }) : null;
   fillFoot(card.querySelector('.pm-foot') as HTMLElement, replay, out);
   // the live scene, taken once when a chapter first asks for it
   let scene: string | null | undefined;
   const here = (): string | null => (scene === undefined ? (scene = host.snapshot?.() ?? null) : scene);
+  let at: Chapter = CHAPTERS[0];
   const show = (c: Chapter): void => {
+    at = c;
+    // the duel's chapter: Space teaches the duel again at the next bout (journal Passe TU4); elsewhere it replays the tour
+    if (replay) replay.querySelector('span')!.textContent = tx(c.id === 'duel' ? 'tut.duel.again' : 'tut.guide.replay');
     title.textContent = tx(c.title);
     detail.innerHTML = figure(s, c.fig, here) + rich(chapterText(s, c), 'tu-lead') + (c.keys ? keysHtml(c.keys) : '');
     detail.scrollTop = 0; fit();
   };
-  for (const c of CHAPTERS) list.appendChild(pickRow(`<span>${tx(c.title)}<span class="why">${tx(c.line)}</span></span>`, { select: () => show(c), press: () => {} }));
+  const rows = CHAPTERS.map((c) => list.appendChild(pickRow(`<span>${tx(c.title)}<span class="why">${tx(c.line)}</span></span>`, { select: () => show(c), press: () => {} })));
   arrowKeys(list); scrollFade(list);
+  // a window without the system's focus gets no focus event (the arrows move the focus all the same): the chapter follows the row the arrows reached
+  list.addEventListener('keydown', (e) => {
+    if (!e.key.startsWith('Arrow')) return;
+    const i = rows.indexOf(document.activeElement as HTMLButtonElement);
+    if (i >= 0 && CHAPTERS[i] !== at) { rows.forEach((r) => r.classList.toggle('on', r === rows[i])); show(CHAPTERS[i]); }
+  });
   card.addEventListener('keydown', (e) => { if (e.key === ' ' && replay) { e.preventDefault(); e.stopPropagation(); replay.click(); } });
   const start = Math.max(0, CHAPTERS.findIndex((c) => c.id === first));
-  return { root, focus: () => { (list.querySelectorAll<HTMLElement>('.pm-btn')[start] ?? out).focus(); } };
+  // the first chapter is shown at once, focus event or not
+  rows[start].classList.add('on'); show(CHAPTERS[start]);
+  return { root, focus: () => { (rows[start] ?? out).focus(); } };
 }
 
 // ------------------------------------------------------------------------------------------------ the style (the design system's tokens, fades only)
@@ -348,10 +367,14 @@ body.pm-full .pm-overlay.pm-band.tu-hint{background:linear-gradient(to bottom,va
 .tu-k>kbd{justify-self:start}
 .tu-k>span:only-child{grid-column:1 / 3}
 .tu-k span{font-size:var(--ds-fs-body)}
+.pm-col .pm-detail p.tu-done{color:var(--ds-accent)}
 .pm-col .pm-detail p.tu-lead{font-size:var(--ds-fs-label);line-height:1.3;margin:0 0 8px}
 .pm-detail p kbd,.tu-band p kbd,.tu-hint p kbd{margin:0 2px}
 body.pm-pad .tu-k.kb,body.pm-pad .pm-sub.kb{display:none}
+/* a duel's lesson (journal Passe TU4): the action bar under its band steps aside while it is read */
+body.tu-lesson #arena-hud .bot{visibility:hidden}
 @media (max-width:700px){.tu-days{grid-template-columns:repeat(5,minmax(0,1fr))}.tu-fig{max-height:24vh}.tu-places{grid-template-columns:repeat(4,minmax(0,1fr))}.pm-overlay.pm-band.tu-hint{padding:12px 16px 40px}}
 @media (max-height:480px) and (min-width:701px){.pm-overlay .pm-card.pm-two.tu-guide{display:grid;grid-template-columns:minmax(0,280px) minmax(0,1fr);column-gap:28px}.tu-guide .pm-col{min-height:0}.tu-fig{max-height:30vh}.tu-places{grid-template-columns:repeat(4,minmax(0,1fr))}}
 `;
+export function tutorialStyle(): void { style(); }
 function style(): void { if (!document.getElementById('tu-css')) { const s = el('style'); s.id = 'tu-css'; s.textContent = CSS; document.head.appendChild(s); } }

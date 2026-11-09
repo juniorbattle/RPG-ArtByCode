@@ -127,6 +127,15 @@ export class ArenaApp {
   assist: Assist = 'subtle';
   hudVisible = true;
   paused = false;
+  /** the first duel's lesson being read (journal Passe TU4, src/ui/duelTutorial.ts): the duel holds and its keys do not reach the fight */
+  private lesson = false;
+  /** the duel's events, for the first duel's tutorial (journal Passe TU4) */
+  onDuelEvents: ((evs: ReadonlyArray<{ type: string } & Record<string, unknown>>) => void) | null = null;
+  /** holds the duel for a lesson (no pause screen), the held commands let go, then gives it back */
+  holdForLesson(on: boolean): void {
+    if (on) { this.action('guard', false); if (this.charge) this.action('attack', false); }
+    this.lesson = on; this.paused = on; this.moment = on; this.hud?.still(on);
+  }
   /** a scripted moment is on screen (`jump`): the simulation holds without the pause screen */
   moment = false;
   timeScale = 1;
@@ -370,7 +379,7 @@ export class ArenaApp {
     }
     const KEYS: Record<string, string> = this.charge ? V2_KEYS : this.dyn ? dynKeys(this.dyn.D.loadout) : { '1': 'light', '2': 'heavy', '3': 't1', '4': 't2', '5': 't3', '6': 't4', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
     window.addEventListener('keydown', (e) => {
-      if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || !this.ready) return;
+      if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || !this.ready || this.lesson) return;
       const k = e.key.toLowerCase(), m = KEYS[k];
       if (m) { e.preventDefault(); this.action(m, true); this.hud?.flash(m); }
       else if (k === 'h') this.hudVisible = !this.hudVisible;
@@ -417,6 +426,7 @@ export class ArenaApp {
     this.combatFx?.onEvents(evs, this.fighters, this.charge?.tiers.length ?? 0);
     this.stands?.onEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>, this.sim.t);
     this.pad?.duelEvents(evs as unknown as Array<{ type: string } & Record<string, unknown>>);
+    this.onDuelEvents?.(evs as unknown as Array<{ type: string } & Record<string, unknown>>);
     for (const e of evs) {
       this.snd?.duelEvent(e);
       if (e.type === 'impact') {
