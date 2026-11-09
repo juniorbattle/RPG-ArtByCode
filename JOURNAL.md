@@ -294,6 +294,37 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Le moteur de son gardait déjà la position d'une page à l'autre : la musique du titre n'a demandé qu'une scène demandée tôt, une touche relayée et une sortie qui attend le fondu ; le geste fait sur l'écran titre a suivi la page de la partie dans Chrome.
 - Garder l'ancien jeu derrière `v2=0` laisse toutes les preuves d'avant valables : les empreintes du jeu d'aujourd'hui se retrouvent à l'identique sous ce paramètre.
 
+## Passe DB1 — Le duel de la version 2 : les clics répétés sur l'attaque ne s'empilent plus (2026-11-09)
+
+### Demande
+- Retour de l'opérateur après son premier essai de la version 2 (jeu par défaut), transmis par la séance mère (`local_94e3af37-…`), mot pour mot : « j'ai aussi remarque un bug lorsque j'ai clique plusieurs fois sur le bouton attaque rapide.... l'action est devenu comme bloque et les attaques simples se repetaient sans arret, faisant en sorte que plus aucune touche fonctionner ». Partie 1 de la tâche (le bug, fusionné vite) ; la partie 2, la refonte de l'équilibre du duel, suit sur sa propre branche (Passe DB2).
+- Branche `claude/duel-file-attente`, tirée de `main` `615bcb8`.
+
+### La cause — [OK] reproduite en Node puis dans le navigateur
+- `ChargedDuel` (`src/combat/charge.ts`) garde, depuis V2-2 « Rien ne la coupe » (Passe V2C1), tout relâché que le duel ne peut pas prendre (une action en cours, la séquence adverse, un étourdissement) dans une file `waits`, **sans limite** : un relâché pendant qu'un autre attend s'ajoutait derrière (cas « proposé » de la Passe V2C1, « a new press meanwhile starts a new charge, whose release waits behind it »). Chaque clic (ou chaque J) pendant une attaque rapide en cours ajoutait donc une attaque rapide à la file ; elles partaient une à une (0,58 s chacune), le joueur restait « en action » : la garde (`guarding` exige l'état `idle`) et l'esquive (`idle` ou `recovering`) ne répondaient plus, et un nouveau relâché allait encore au bout de la file. Le clavier, la manette et le bouton du HUD passent tous par `ArenaApp.action('attack', down)` → `ChargedDuel.attack` : la cause est la même pour les trois.
+- En Node (le duel de la scène, l'adversaire tenu à l'écart) : 12 clics en 1,7 s → 12 attaques rapides, la dernière à 6,75 s ; la garde tenue dès le dernier clic ne se lève qu'à 6,76 s.
+
+### La correction — [OK]
+- **Un relâché attend au plus** : un relâché pendant qu'un autre attend ne prend sa place que s'il a atteint un palier plus haut ; sinon il est abandonné. Un tap ne s'empile jamais derrière un palier en attente, et un palier chargé n'est jamais abandonné pour un tap. Rien d'autre ne change : rien ne coupe une charge (V2-2), un relâché pris tout de suite part tout de suite, un palier en attente part au premier pas où le joueur peut agir, le K.O. seul le finit.
+- Ce qui reste de la « mitraille » : le joueur attaque aussi vite que l'attaque rapide le permet, jamais plus vite, et au plus une attaque part après son dernier clic. C'est le constat d'équilibre de l'opérateur (« le mieux est de spam l'attaque »), traité en Passe DB2, pas ici.
+- Cas « proposé » de la Passe V2C1 remplacé (consigné, pas une décision de l'opérateur : la règle V2-2 elle-même est tenue) : un relâché derrière un palier en attente n'attend plus derrière lui.
+
+### Tests — [OK]
+- `tests/combat-charge.test.mjs` : nouveau test « taps in a row never pile up » (12 taps de 40 ms toutes les 80 ms pendant les attaques : au plus 4 attaques rapides, aucune plus de 0,7 s après le dernier tap, la garde tenue se lève moins de 1,2 s après, puis l'esquive répond au coup suivant). **Il échoue sur le `charge.ts` de `main`** (le fichier remis temporairement : ce test et l'ancien cas de la file à deux tombent) **et passe avec la correction**. Le cas « a new press while a tier waits » réécrit : le tap derrière la puissante en attente est abandonné, la puissante seule part ; un palier plus haut relâché pendant qu'un tap attend prend sa place.
+- `V2_SIM_HASH` (le script fixe du duel chargé, `src/arena/v2Arena.ts`, et `tools/arena-scene-check.mjs`) : le script relâche des taps pendant qu'un palier attend, l'empreinte change, justifiée par la règle : `1785:1:idle:0.075:51.125:-:-;7253:0:idle:3.192:13.095:-:-;108.883|1:0.083:` (le test vérifie toujours que le script atteint chaque chemin de V2-2 : coups gardés ou non, esquive, rupture et K.O. sur une charge tenue, relâchés qui attendent).
+
+### Preuve dans le navigateur — [OK]
+- `tools/attack-spam-proof.mjs` (neuf) : l'arène seule (`?scene=arena`, le duel de la version 2), le bouton d'attaque du HUD cliqué 12 fois à la vraie souris (40 ms appuyé, 80 ms entre deux) pendant que la boucle de la page tourne, puis K tenue ; une manche l'adversaire tenu à l'écart (mesure), une manche l'adversaire vivant (chiffres seuls). Serveurs par `preview_start` : la branche (`dev-strict`, `:5186`) et `main` figé `615bcb8` (`git archive`, `three` copié, entrée `db1-main`).
+  - `main` figé : adversaire tenu, 12 clics en 2,16 s → 9 attaques rapides, 6 après le dernier clic (la dernière 3,52 s après), **la garde levée 4,12 s après le dernier clic** ; adversaire vivant : 12 attaques, 10 après le dernier clic (5,37 s), la garde 5,97 s après. **FAIL**.
+  - Branche : adversaire tenu, 3 attaques rapides, aucune après le dernier clic, **la garde levée 0,52 s après** ; adversaire vivant : 3 attaques, une 0,01 s après le dernier clic, la garde 0,61 s après. **PASS**, aucune erreur de page.
+
+### Validation
+- `npm run typecheck` ; `npm test` **541 sur 541** ; `npm run build` ; `npm run art:validate` (73 manifestes, 23 du son, 0 erreur).
+
+### Pensée
+- Une file d'entrées sans borne transforme l'impatience du joueur en blocage : plus il appuie parce que « ça ne répond pas », plus la file s'allonge. Une mémoire d'entrée se borne à une action, comme le tampon de `DynamicSim` (`bufferTime`).
+- Un cas « proposé » par un agent (Passe V2C1) se relit à l'essai de l'opérateur : il a montré en un essai ce que le test, qui figeait la file à deux, ne voyait pas.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

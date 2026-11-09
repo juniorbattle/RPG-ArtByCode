@@ -126,5 +126,6 @@ export function runV2Fingerprint(d: ChargedDuel, seen?: (events: ReturnType<Char
 }
 /** the hash runV2Fingerprint leaves on the scene's duel (sceneV2Duel('charge'), recorded with the rules, journal Passe V1; Ren's health
  *  again under V2_FOE_HIT, journal Passe VP4; the script and the rule of V2-2, journal Passe V2C1; the rivals' blows and health of journal Passe V2C2;
- *  the heavy attack a skill, the charge times and the charged blows' power trimmed, the script's holds on the new tiers, journal Passe CH1) */
-export const V2_SIM_HASH = '1913:2:idle:8.133:55.900:-:-;7407:0:idle:1.358:0.000:-:-;83.867|1:8.458:';
+ *  the heavy attack a skill, the charge times and the charged blows' power trimmed, the script's holds on the new tiers, journal Passe CH1; one
+ *  release waiting at most, journal Passe DB1) */
+export const V2_SIM_HASH = '1785:1:idle:0.075:51.125:-:-;7253:0:idle:3.192:13.095:-:-;108.883|1:0.083:';

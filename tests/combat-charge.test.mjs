@@ -151,16 +151,46 @@ test('a release the duel cannot take waits (V2-2, journal Passe V2C1): the oppon
   assert.equal(A.chargeHudModel(c.view()).launch, 'heavy', 'the HUD shows the tier that will leave');
   evs = until(c, (e) => e.some((x) => x.type === 'chargeRelease'), 8);
   assert.equal(evs.find((e) => e.type === 'chargeRelease').id, 'heavy');
-  // a new press while a tier waits starts a new charge; its release waits behind it: both leave, in their order
+  // a new press while a tier waits starts a new charge; one release waits at most (journal Passe DB1): a tap released behind the waiting heavy
+  // is dropped, the heavy alone leaves
   c = fresh({ kit: HK }); c.attack(true); steps(c, 1.8); c.sim.forceSequence(['m_slash', 'm_slash', 'm_slash']); steps(c, 0.05);
   c.attack(false); c.attack(true); steps(c, 0.1); c.attack(false);
-  evs = c.drain(); assert.deepEqual(evs.filter((e) => e.type === 'chargeWait').map((e) => e.id), ['heavy', 'light']);
-  evs = until(c, (e) => e.filter((x) => x.type === 'chargeRelease').length >= 2, 12);
-  assert.deepEqual(evs.filter((e) => e.type === 'chargeRelease').map((e) => [e.id, e.ok]), [['heavy', true], ['light', true]]);
+  evs = c.drain(); assert.deepEqual(evs.filter((e) => e.type === 'chargeWait').map((e) => e.id), ['heavy']);
+  evs = until(c, (e) => e.some((x) => x.type === 'chargeRelease'), 12); steps(c, 3); evs.push(...c.drain());
+  assert.deepEqual(evs.filter((e) => e.type === 'chargeRelease').map((e) => [e.id, e.ok]), [['heavy', true]]);
+  // a higher tier released while a tap waits takes its place
+  c = fresh({ kit: HK }); c.sim.forceSequence(['m_slash', 'm_slash', 'm_slash']); steps(c, 0.05);
+  c.attack(true); c.step(); c.attack(false); c.attack(true); steps(c, 1.8);
+  assert.ok(c.sim.inSequence(), 'still the opponent\'s sequence');
+  c.attack(false); evs = c.drain();
+  assert.deepEqual(evs.filter((e) => e.type === 'chargeWait').map((e) => e.id), ['light', 'heavy']);
+  assert.equal(c.view().waiting, 1);
+  evs = until(c, (e) => e.some((x) => x.type === 'chargeRelease'), 12); steps(c, 3); evs.push(...c.drain());
+  assert.deepEqual(evs.filter((e) => e.type === 'chargeRelease').map((e) => [e.id, e.ok]), [['heavy', true]]);
   // a release the duel can take leaves at once, as before (the tap is the light attack)
   c = fresh(); c.attack(true); c.step(); c.attack(false);
   assert.deepEqual(c.drain().filter((e) => e.type.startsWith('charge')).map((e) => e.type), ['chargeStart', 'chargeRelease']);
   assert.equal(c.sim.f.ren.act?.def.id, 'light');
+});
+
+test('taps in a row never pile up (journal Passe DB1, the operator\'s report of 2026-11-09: light attacks repeated without end and no key answered)', () => {
+  // twelve taps of the attack button, 40 ms down and 80 ms apart, while the light attacks run: then the guard held and a dodge
+  const c = fresh(), dt = c.D.dt, lights = [];
+  const run = (s) => { for (let i = 0; i < Math.round(s / dt); i++) { c.step(dt); for (const e of c.drain()) if (e.type === 'chargeRelease') lights.push(c.t); } };
+  run(0.2);
+  for (let k = 0; k < 12; k++) { c.attack(true); run(0.04); c.attack(false); run(0.08); }
+  const last = c.t;
+  // the player keeps attacking as fast as the light attack goes, never faster: one release waits at most
+  assert.ok(lights.length <= 4, `${lights.length} light attacks for 12 taps in ${last.toFixed(2)} s`);
+  // after the last tap, at most the one waiting light attack leaves, at once; then the guard held rises
+  c.setGuard('ren', true); let guard = -1;
+  for (let i = 0; i < Math.round(6 / dt) && guard < 0; i++) { c.step(dt); for (const e of c.drain()) { if (e.type === 'chargeRelease') lights.push(c.t); if (e.type === 'guardUp') guard = c.t; } }
+  assert.ok(lights.every((t) => t <= last + 0.7), `a light attack left ${(lights.at(-1) - last).toFixed(2)} s after the last tap`);
+  assert.ok(guard > 0 && guard - last < 1.2, `the guard rose ${(guard - last).toFixed(2)} s after the last tap`);
+  // and a dodge answers the next blow
+  c.setGuard('ren', false); c.sim.f.ren.ap = 2; c.sim.f.marek.aiWait = 0.1; c.sim.forceSequence(['m_heavy']);
+  until(c, () => c.incoming()?.windowOpen, 4);
+  assert.ok(c.react('ren', 'dodge'), 'the dodge answers');
 });
 
 test('the K.O. ends the duel and the charge with it, unlaunched (V2-2, journal Passe V2C1)', () => {

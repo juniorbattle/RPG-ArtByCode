@@ -16,7 +16,10 @@ import { DynamicSim, type DynActionId, type DynData, type DynEvent, type DynFigh
  *    back or stunned by a break, it is kept, not grown, and grows again once the player is free;
  *  - a release the duel cannot take now (the opponent's priority G3 / CB-4 through its whole sequence, the player stunned, pushed back or
  *    still in an action) is not lost: the tier reached waits and leaves at the first step the player can act (the best tier the AP still open,
- *    at most the one reached); a new press meanwhile starts a new charge, whose release waits behind it;
+ *    at most the one reached); a new press meanwhile starts a new charge;
+ *  - one release waits at most (journal Passe DB1, the operator's report of 2026-11-09: taps clicked in a row each waited behind the last, light
+ *    attacks followed one another for seconds and no key answered): a release while another waits takes its place only if it reached a higher
+ *    tier; otherwise it is dropped (a tap never stacks behind a waiting tier, and a charged tier is never given up for a tap);
  *  - the K.O. ends the duel: a charge held or waiting ends with it, unlaunched (there is no one left to strike); nothing else ends a charge.
  *  Pure, deterministic: the same inputs at the same steps give the same duel. */
 
@@ -64,7 +67,7 @@ export class ChargedDuel {
   private held = false;
   private hold = 0;
   private lastTier = 0;
-  /** the releases the duel could not take yet, in their order: the tier reached and the charge's time at each */
+  /** the release the duel could not take yet (one at most, journal Passe DB1): the tier reached and the charge's time */
   private waits: Array<{ reached: number; held: number }> = [];
   private extra: ChargeEvent[] = [];
 
@@ -114,7 +117,9 @@ export class ChargedDuel {
     const v = this.view();
     this.held = false; this.hold = 0; this.lastTier = 0;
     if (!this.waits.length && this.sim.canUse('ren', this.tiers[v.launch].id)) { this.launch(v.launch, v.t); return; }
-    this.waits.push({ reached: v.reached, held: v.t });
+    // one release waits at most (journal Passe DB1): a higher tier takes the waiting one's place, anything else is dropped
+    if (this.waits.length && v.reached <= this.waits[0].reached) return;
+    this.waits = [{ reached: v.reached, held: v.t }];
     this.emit({ type: 'chargeWait', idx: v.launch, id: this.tiers[v.launch].id, held: +v.t.toFixed(3) });
   }
 
