@@ -374,6 +374,43 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - L'inventaire d'un menu de réglages trouve des réglages déjà là sans le dire : le jeu suivait le mouvement réduit de Windows à sept endroits, contre la règle de l'opérateur ; on le montre sur la fiche avec ce qu'il voit aujourd'hui sur sa machine.
 - Une langue n'est pas qu'une table : la manière dont l'état garde ses phrases (en anglais, dans l'empreinte) décide de ce qu'un changement de langue peut traduire ; elle se lit avant de proposer.
 
+## Passe RG2 — La fiche des réglages relue : quinze sur quinze à la recommandation, avant de construire (2026-11-09)
+
+### Demande
+- L'opérateur, mot pour mot : « Sheet filled ». Relire `decisions` (https://claude.ai/artifact/2Lc1cdJfk5dZqWpKydwKj1, source `briefs/fiche-reglages.html`), consigner mot pour mot, puis construire le lot 1.
+
+### Les choix de l'opérateur, mot pour mot (quinze sur quinze, cliqués le 2026-11-09 entre 16 h 15 min 31 s et 16 h 17 min 36 s UTC, aucune note)
+| Carte | Ce qu'elle demandait | Choix |
+|---|---|---|
+| RG-1 | Où vit le menu des réglages | « Une page « Réglages », quatre parties, titre et menu » |
+| RG-2 | Les réglages pendant un duel | « Depuis la pause du duel aussi » |
+| RG-3 | Les réglages graphiques montrés et leurs paliers | « Une ligne « Qualité » et chaque réglage seul » |
+| RG-4 | Le joueur peut-il couper la profondeur de champ et le halo ? | « Oui, allumés par défaut, avec une mise en garde » |
+| RG-5 | Le mouvement réduit, selon ta règle | « Appliquer ma règle, les fondus gardés » |
+| RG-6 | Les volumes | « Général, Musique, Ambiance, Effets » |
+| RG-7 | Le clavier AZERTY | « Une ligne « Clavier » QWERTY / AZERTY » |
+| RG-8 | Le remappage des touches | « Afficher maintenant, remapper plus tard (tâche à part) » |
+| RG-9 | La langue par défaut | « La langue du navigateur, puis le choix gardé » |
+| RG-10 | Où choisir la langue | « Réglages et ligne de l’écran titre » |
+| RG-11 | Le ton du français : tu ou vous | « Récit en vous, chaque personnage selon qui il est » |
+| RG-12 | Les noms propres | « Noms gardés, titres et lieux traduits » |
+| RG-13 | Changer de langue en cours de partie | « Tout change, le journal déjà écrit compris » |
+| RG-14 | Ce que couvre le français | « Tout ce qu’on atteint depuis le titre ; v2=0 et le panneau DEV en anglais » |
+| RG-15 | Les lots, la relecture et la fusion | « Lot 1 dès ses preuves, le français relu à froid puis fusionné, ton essai ensuite » |
+
+### Ce qu'ils demandent
+- **Lot 1** (fusionné dès ses preuves, RG-15) :
+  - une page « Réglages » bâtie comme le journal, quatre parties à gauche (Graphismes, Son, Contrôles, Langue) et leurs réglages à droite ; ouverte par un bouton de l'écran titre, par le menu (Échap) à la place de la ligne « Son », par V sur la partie Son, et par la pause du duel, l'image changeant à l'instant (RG-1, RG-2) ;
+  - une ligne « Qualité » (Basse, Moyenne, Haute = le défaut d'aujourd'hui, Très haute) et chaque réglage seul : résolution de rendu, anticrénelage, reflet de l'eau, images par seconde, profondeur de champ, halo lumineux, plein écran ; la profondeur de champ et le halo allumés par défaut, avec une ligne qui dit que l'allure en dépend ; les paramètres d'adresse des outils gardent la main (RG-3, RG-4) ;
+  - le mouvement réduit en réglage du jeu, désactivé par défaut : les glissements de l'interface, la secousse et les effets réduits du duel ; les fondus gardés ; le système n'est plus lu nulle part (RG-5, règle de l'opérateur du 2026-11-03) ;
+  - quatre volumes, Général, Musique, Ambiance, Effets (les coups, la foule et l'interface ensemble), et la coupure ; la vibration de la manette dans Contrôles (RG-6) ;
+  - toutes les touches affichées, clavier et manette, par moment du jeu ; une ligne « Clavier » QWERTY / AZERTY, d'abord le clavier que le navigateur annonce, sinon la langue ; en AZERTY, Z Q S D marchent et A ouvre la liste, toutes les touches affichées suivent ; le remappage est une tâche à part, plus tard (RG-7, RG-8) ;
+  - le choix de la langue (anglais seul tant que le français n'est pas écrit) dans les réglages et sur l'écran titre ; au premier lancement la langue du navigateur, puis le choix gardé ; un navigateur piloté reste en anglais (RG-9, RG-10).
+- **Lot 2** (après la fusion du tutoriel, relu à froid par un agent neuf, fusionné après ses preuves, puis l'essai de l'opérateur, RG-15) : tout ce qu'on atteint depuis l'écran titre en français, le tutoriel compris ; `v2=0` et le panneau DEV restent en anglais (RG-14) ; le récit et l'interface vouvoient le joueur, chaque personnage tutoie ou vouvoie selon qui il est, les boutons à l'infinitif (RG-11) ; les noms des personnes gardés, les titres et les lieux traduits (RG-12) ; tout change de langue en cours de partie, le journal déjà écrit compris, chaque ligne gardant ce qu'elle dit sans que l'empreinte de la partie change (RG-13).
+
+### Suite
+- Le lot 1 sur cette branche, puis sa fusion ; la tâche à part du remappage (RG-8) se propose à la fin.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -609,7 +646,7 @@ de la Passe P2 (republiée avec le HUD d'aujourd'hui, Passe AP1). **Fenêtres ba
 marques du sol sous ~600 px de haut, corrigé ; relevés sans décision : en 568 × 320 la barre d'actions dépasse l'écran et le signe touche les têtes ;
 l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres basses ; à 900 × 500 la carte de Marek passe ses PV sur deux lignes.
 
-**6g. Réglages et langue (Passe RG1)** — la demande de l'opérateur du 2026-11-09 (menu de réglages : graphismes, son, contrôles ; français ou anglais). Fiche https://claude.ai/artifact/2Lc1cdJfk5dZqWpKydwKj1 (`briefs/fiche-reglages.html`) publiée, quinze cartes, **à relire quand l'opérateur l'aura remplie** ; puis le lot 1 (le menu, les graphismes, le son, les contrôles, le choix de la langue), puis le français après la fusion du tutoriel. Constats de l'inventaire : le mouvement réduit lu sur Windows à sept endroits (contre la règle de l'opérateur du 2026-11-03), la marche qui ignore le clavier AZERTY.
+**6g. Réglages et langue (Passes RG1, RG2)** — la demande de l'opérateur du 2026-11-09 (menu de réglages : graphismes, son, contrôles ; français ou anglais). Fiche https://claude.ai/artifact/2Lc1cdJfk5dZqWpKydwKj1 (`briefs/fiche-reglages.html`) **relue quinze sur quinze à la recommandation** (Passe RG2). En cours : le lot 1 (la page « Réglages » depuis le titre, le menu, V et la pause du duel ; la ligne Qualité et chaque réglage graphique ; le mouvement réduit en réglage du jeu ; quatre volumes ; les touches affichées et la ligne Clavier QWERTY / AZERTY ; le choix de la langue). Ensuite le lot 2, le français, après la fusion du tutoriel (relu à froid, puis l'essai de l'opérateur). Plus tard, une tâche à part : le remappage (RG-8).
 
 **7. Outillage, documentation, dette**
 - **Le chemin v2 de `tools/play-day.mjs` instable** (Passe VD1) : ses lectures de la bande et du nouvel état se font sans attendre ; sous charge, une course sur deux échoue, `main` figé compris (l'achat lu avant sa mise à jour, des créneaux décalés, « the training's news after spar: null ») ; l'empreinte, elle, tient (`456b834c7af247e4`). À reprendre dans l'outil : attendre la bande et l'état.
