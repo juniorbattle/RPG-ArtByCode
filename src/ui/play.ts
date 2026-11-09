@@ -65,7 +65,7 @@ export function installGameApi(get: () => GameState, set: (s: GameState) => void
     actions: () => actions(get()),
     act: (a: Action) => {
       const prev = get(), r = advance(prev, a);
-      if (!r.ok) return { ok: false, reason: r.reason };
+      if (!r.ok) return { ok: false, reason: r.reason, $reason: r.$reason };
       set(r.state); writeSave(r.state);
       for (const f of subs) f();
       return { ok: true, events: r.events, reload: after(prev, r.state, a) };

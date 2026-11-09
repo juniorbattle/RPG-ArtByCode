@@ -1,3 +1,4 @@
+import { localize } from './text';
 /** The pool's competitors (journal Passe L2): the player and seven rivals, persistent on and off screen (TOURNAMENT_MASTER_CONTRACT § 5).
  *  Each has an identity, a style (its combat profile, src/combat/profiles.ts), objectives, starting relationships and a portrait look (the
  *  town generator's colours: rivals appear in town as portraits and dialogues only, choice K3). English (choice K1). Pure data. */
@@ -56,6 +57,9 @@ export const RIVALS: Record<string, RivalDef> = {
     look: { skin: [222, 186, 160], hair: [196, 120, 60], top: [84, 74, 64], trim: [150, 140, 120], hairStyle: 'long', beard: [180, 110, 56] },
   },
 };
+
+// names, epithets and stories read in the language shown (journal Passe RG4)
+for (const r of Object.values(RIVALS)) localize(r, ['name', 'epithet', 'bio']);
 
 /** the pool's two rounds in the slice (choice G3): the player meets Vessa on day 2 and Marek on day 3; every competitor fights both days */
 export const ROUNDS: ReadonlyArray<{ round: number; day: number; pairs: ReadonlyArray<readonly [string, string]> }> = [

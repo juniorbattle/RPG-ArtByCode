@@ -1,3 +1,4 @@
+import { localize } from './text';
 /** The version 2's generic fighters (lot L2b; the operator's note on EV-4, « Je voulais integrer aussi des pnjs generiques qui peuvent etre des
  *  combattants present lors de qualifs/eliminatoires par exemple », and his answer « En ville, structure gardée (Recommandé) », journal Passes EV2 / EVL3):
  *  the qualifiers' losers, held before Ren came to the Cité; the ten days and the pool of eight stay as they are. They stayed in town: each takes a
@@ -45,6 +46,9 @@ export const GENERICS: Record<string, GenericDef> = {
     bio: 'A bare-handed fighter out in the qualifiers. He fights for a few coins on the market hall\'s steps in the morning.',
   },
 };
+
+// names, epithets and stories read in the language shown (journal Passe RG4)
+for (const g of Object.values(GENERICS)) localize(g, ['name', 'epithet', 'bio']);
 
 /** the staff for hire a robbed keeper pays (the reprisal, lot L2b) */
 export const MUSCLE = 'corra';

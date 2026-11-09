@@ -12,7 +12,7 @@ import { portraitUrl } from './portraits';
 import { downloadSave, loadSaveFile, writeSave } from './save';
 import { arrowKeys, el, esc, footBtn, footOf, injectStyle, overlay, pageShell, scrollFade } from './style';
 import { skillsPage } from './skills';
-import { tx } from '../narrative/text';
+import { said, tx, type TextRef } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
 import { pendingFinal, stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
 import { itemName, weaponTier } from '../simulation/v2gear';
@@ -34,7 +34,7 @@ type MenuPage = 'map' | 'journal' | 'board' | 'skills' | 'gear' | 'settings';
  *  bout keeps its prompt in the corner. One menu on Esc (UM-R1) leads to the map, the journal, the tournament, the version 2's skills, gear and sound,
  *  and the saves; M, J, T, K, G and V stay. The person's words stand in a band at the foot of the screen. DOM over the scene, keyboard reachable. */
 
-export interface ActResult { ok: boolean; reason?: string; events?: GameEvent[]; reload?: boolean }
+export interface ActResult { ok: boolean; reason?: string; $reason?: TextRef; events?: GameEvent[]; reload?: boolean }
 export interface UiHost {
   state(): GameState;
   act(a: Action): ActResult;
@@ -324,10 +324,10 @@ export class TownUi {
   /** applies an action: a reload for a new slot or place, otherwise the panels and the news */
   run(a: Action, quiet = false): ActResult {
     const r = this.host.act(a);
-    if (!r.ok) { void this.card(`<p>${esc(r.reason ?? tx('ui.cannot'))}</p>`, tx('ui.close'), true); return r; }
+    if (!r.ok) { void this.card(`<p>${esc(r.reason ? said(r.reason, r.$reason) : tx('ui.cannot'))}</p>`, tx('ui.close'), true); return r; }
     if (r.reload) { this.closeModal(); this.host.reload(); return r; }
     // the dialogue that opens says who it is: « You meet Mara » stays in the journal, not on the screen (journal Passe UM1)
-    const news = quiet ? [] : (r.events ?? []).filter((e) => e.visible && e.id !== 'meet').map((e) => e.text);
+    const news = quiet ? [] : (r.events ?? []).filter((e) => e.visible && e.id !== 'meet').map((e) => said(e.text, e.$t));
     // a version 2 game (journal Passe EVL1): with a band open (the list, a dialogue) the news stand in it, under the place or the person's words,
     // where the player is reading (the bandeau at the top is hidden while a band is open); today's game keeps its bandeau
     const inBand = isV2(this.st) && news.length > 0 && (this.opening || document.body.classList.contains('pm-talking'));
@@ -358,8 +358,8 @@ export class TownUi {
     if (!news.length) return;
     // P6 (lot V9): back from a bout of the version 2, the result first, large
     const duel = isV2(this.st) ? news.find((e) => e.kind === 'match' && (e.id === 'player-won' || e.id === 'player-lost')) : undefined;
-    if (duel) { this.newsRead = this.card(`<div class="pm-result"><p class="pm-big">${duel.id === 'player-won' ? tx('v2.result.won') : tx('v2.result.lost')}</p>${news.slice(-8).map((e) => `<p>${esc(e.text)}</p>`).join('')}</div>`, tx('ui.goOn')); return; }
-    this.newsRead = this.card(`<h2 class="pm-h">${news.length > 1 ? tx('ui.meanwhile') : tx('ui.news')}</h2>${news.slice(-8).map((e) => `<p>${esc(e.text)}</p>`).join('')}`, tx('ui.goOn'), true);
+    if (duel) { this.newsRead = this.card(`<div class="pm-result"><p class="pm-big">${duel.id === 'player-won' ? tx('v2.result.won') : tx('v2.result.lost')}</p>${news.slice(-8).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('')}</div>`, tx('ui.goOn')); return; }
+    this.newsRead = this.card(`<h2 class="pm-h">${news.length > 1 ? tx('ui.meanwhile') : tx('ui.news')}</h2>${news.slice(-8).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('')}`, tx('ui.goOn'), true);
   }
 
   /** `band`: what is read in passing, at the foot of the screen; else a page on the full-screen veil */

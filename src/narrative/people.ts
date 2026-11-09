@@ -1,3 +1,4 @@
+import { localize } from './text';
 import type { PlaceId, SlotId } from '../simulation/state';
 
 /** The people the player can talk to (journal Passes L1 / L4 / L5): the district's existing characters in game roles (choice P4: no new
@@ -76,6 +77,9 @@ export const PEOPLE: Record<string, Person> = {
   tobin: { id: 'tobin', name: 'Tobin Fenn', title: 'the Hopeful, of the pool', place: 'training', hours: DAY, rival: 'tobin', v2: true, generic: true },
   rhosk: { id: 'rhosk', name: 'Rhosk', title: 'the Northman, of the pool', place: 'training', hours: DAY, rival: 'rhosk', v2: true, generic: true },
 };
+
+// names and titles read in the language shown (journal Passe RG4); the simulation, run in English, reads the English
+for (const p of Object.values(PEOPLE)) { localize(p, ['name', 'title']); if (p.v2at) localize(p.v2at, ['title']); }
 
 /** where a person stands in this game (a version 2 game moves some of today's people: lot V5) */
 export function placeOf(p: Person, v2: boolean): PlaceId { return (v2 && p.v2at?.place) || p.place; }

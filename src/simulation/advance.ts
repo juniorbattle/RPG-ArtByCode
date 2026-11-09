@@ -6,7 +6,7 @@ import { endSlot } from './slot';
 import { initialState, CONTENT_ID } from './content';
 import { playerMatch } from '../tournament/pool';
 import { computePulse } from '../tournament/pulse';
-import { tx } from '../narrative/text';
+import { inEnglish, refOf, tx, type TextRef } from '../narrative/text';
 import { daysOf, v2AfterSlot } from '../tournament/v2calendar';
 import { festivalDusk } from './v2festival';
 import { v2Dawn } from './v2law';
@@ -23,7 +23,8 @@ import { vessaTalks } from './v2rivals';
  *  Randomness: `rngFor(state, label)`, a stream derived from (seed, step, label) only, so a reloaded save draws what the continued game
  *  draws (tests/game-core.test.mjs). */
 
-export interface Advance { state: GameState; events: GameEvent[]; ok: boolean; reason?: string }
+/** `$reason`: what a refusal says, for a page in another language than the simulation's English (journal Passe RG4) */
+export interface Advance { state: GameState; events: GameEvent[]; ok: boolean; reason?: string; $reason?: TextRef }
 /** cost: the slots it takes (0 or 1); coins: what it takes from the purse (0 = nothing) */
 /** `later`: a slot booked now and spent later (`ActionDef.later`), present only on the actions that book one */
 export interface ActionOption { action: Action; label: string; cost: number; coins: number; later?: number; ok: boolean; reason?: string }
@@ -62,7 +63,13 @@ function option(st: GameState, def: ActionDef, a: Action): ActionOption {
   return { action: a, label: def.label(st, a), cost: def.cost(st, a), coins: def.coins?.(st, a) ?? 0, ...(def.later ? { later: def.later(st, a) } : {}), ok: reason === null, ...(reason !== null ? { reason } : {}) };
 }
 
+/** an action played (journal Passe RG4: always in English, the state's language; each log line keeps what it says, `$t` / `$c`, and a refusal its
+ *  `$reason`, for the page's language) */
 export function advance(st: GameState, action: Action, rng?: Rng): Advance {
+  return inEnglish(() => { const r = advanceEn(st, action, rng); if (!r.ok && r.reason) { const ref = refOf(r.reason); if (ref) r.$reason = ref; } return r; });
+}
+
+function advanceEn(st: GameState, action: Action, rng?: Rng): Advance {
   if (st.over) return { state: st, events: [], ok: false, reason: st.flags.v2 === true ? tx('v2.over') : tx('refuse.over') };
   const def = ACTIONS[action.type] as ActionDef | undefined;
   if (!def) return { state: st, events: [], ok: false, reason: tx('refuse.unknown', { type: action.type }) };
@@ -72,6 +79,9 @@ export function advance(st: GameState, action: Action, rng?: Rng): Advance {
   const r = rng ?? rngFor(st, `action:${action.type}`);
   const emit = (e: Omit<GameEvent, 'seq' | 'day' | 'slot'> & Partial<Pick<GameEvent, 'day' | 'slot'>>): GameEvent => {
     const ev: GameEvent = { seq: s.log.length, day: e.day ?? s.day, slot: e.slot ?? s.slot, kind: e.kind, id: e.id, cause: e.cause, text: e.text, visible: e.visible };
+    // what the line and its cause say, for the journal in the language chosen (journal Passe RG4, RG-13); left out of the fingerprint (« $ » keys)
+    const t = refOf(e.text), c = refOf(e.cause);
+    if (t) ev.$t = t; if (c) ev.$c = c;
     s.log.push(ev); events.push(ev);
     return ev;
   };
@@ -108,7 +118,8 @@ export interface SaveFile { kind: 'cite-du-tournoi-save'; schemaVersion: number;
 
 export function serialize(st: GameState): string {
   const f: SaveFile = { kind: 'cite-du-tournoi-save', schemaVersion: SCHEMA_VERSION, content: st.content, state: st };
-  return canonical(f);
+  // the save keeps what each log line says (« $ » keys, journal Passe RG4); the fingerprint (hash) leaves it out
+  return canonical(f, true);
 }
 
 /** migrations by source version (PROJECT § 10.3: « migrations de sauvegarde prévues »): none yet, version 1 is the first */

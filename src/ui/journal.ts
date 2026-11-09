@@ -1,5 +1,5 @@
 import type { GameEvent, GameState } from '../simulation';
-import { tx, type TextKey } from '../narrative/text';
+import { said, tx, type TextKey } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
 import { PEOPLE } from '../narrative/people';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
@@ -56,15 +56,15 @@ export function journalPage(s: GameState, close: () => void): { root: HTMLElemen
   const out = footBtn('Esc', tx('ui.close'), close), fit = scrollFade(detail);
   fillFoot(card.querySelector('.pm-foot') as HTMLElement, out);
   const entry = (e: GameEvent): string => {
-    const why = e.kind === 'consequence' || e.kind === 'sign' ? whyOf(s, e.cause) : null;
-    return `<p class="pm-entry">${esc(e.text)}${why !== null ? `<span class="why">${tx('ui.why', { cause: esc(why) })}</span>` : ''}</p>`;
+    const why = e.kind === 'consequence' || e.kind === 'sign' ? whyOf(s, said(e.cause, e.$c)) : null;
+    return `<p class="pm-entry">${esc(said(e.text, e.$t))}${why !== null ? `<span class="why">${tx('ui.why', { cause: esc(why) })}</span>` : ''}</p>`;
   };
   const show = (d: JournalDay): void => {
     title.textContent = tx('ui.dayN', { day: d.day });
     detail.innerHTML = d.slots.map((x) => `<p class="pm-sub">${esc(x.slot[0].toUpperCase() + x.slot.slice(1))}</p>${x.entries.map(entry).join('')}`).join('');
     detail.scrollTop = 0; fit();
   };
-  for (const d of days) list.appendChild(pickRow(`<span>${tx('ui.dayN', { day: d.day })}<span class="why">${esc(d.bout ? sentence(d.bout.text) : tx(d.size === 1 ? 'ui.journal.one' : 'ui.journal.many', { n: d.size }))}</span></span>`, { select: () => show(d), press: () => {} }));
+  for (const d of days) list.appendChild(pickRow(`<span>${tx('ui.dayN', { day: d.day })}<span class="why">${esc(d.bout ? sentence(said(d.bout.text, d.bout.$t)) : tx(d.size === 1 ? 'ui.journal.one' : 'ui.journal.many', { n: d.size }))}</span></span>`, { select: () => show(d), press: () => {} }));
   if (!days.length) detail.appendChild(el('p', 'pm-sub', tx('ui.journal.empty')));
   arrowKeys(list); scrollFade(list);
   return { root, focus: () => { (list.querySelector('.pm-btn') as HTMLElement | null ?? out).focus(); } };

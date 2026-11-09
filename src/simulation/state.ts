@@ -1,4 +1,5 @@
 import type { V2Festival } from './v2festival';
+import type { TextRef } from '../narrative/text';
 /** The game's state (the playable slice, journal Passe L1): plain data only, JSON-serialisable, versioned. Pure module: no three, no DOM,
  *  no Math.random, no clock (tests/game-core.test.mjs scans src/simulation, src/tournament, src/combat, src/events, src/narrative).
  *  The simulation owns the state (PROJECT_MASTER_CONTRACT § 10.2: `advance(state, action, rng)`); the town and the arena only display it. */
@@ -81,6 +82,8 @@ export interface GameEvent {
   text: string;
   /** shown in the player's journal; offscreen detail is kept but not shown */
   visible: boolean;
+  /** what `text` and `cause` say, for the journal in the language chosen (journal Passe RG4); outside the fingerprint (« $ » keys) */
+  $t?: TextRef; $c?: TextRef;
 }
 
 export interface GameState {

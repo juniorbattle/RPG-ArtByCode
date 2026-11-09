@@ -1,14 +1,16 @@
 /** Canonical JSON (object keys sorted at every level) and the state's fingerprint: two states are the same game when their canonical
  *  texts are equal; the hash is a 64-bit FNV-1a of that text, printed as 16 hex digits. Pure. */
 
-export function canonical(v: unknown): string {
+/** `withDisplay`: keep the keys that start with « $ », what a log line says for the display in any language (journal Passe RG4: RG-13, the
+ *  journal written before changes language too); the fingerprint leaves them out, so a game's hash is the same whatever language it was played in */
+export function canonical(v: unknown, withDisplay = false): string {
   if (v === null || typeof v !== 'object') {
     if (typeof v === 'number' && !Number.isFinite(v)) throw new Error(`canonical: a non-finite number (${v}) cannot be saved`);
     return JSON.stringify(v);
   }
-  if (Array.isArray(v)) return `[${v.map((x) => canonical(x === undefined ? null : x)).join(',')}]`;
+  if (Array.isArray(v)) return `[${v.map((x) => canonical(x === undefined ? null : x, withDisplay)).join(',')}]`;
   const o = v as Record<string, unknown>;
-  return `{${Object.keys(o).filter((k) => o[k] !== undefined).sort().map((k) => `${JSON.stringify(k)}:${canonical(o[k])}`).join(',')}}`;
+  return `{${Object.keys(o).filter((k) => o[k] !== undefined && (withDisplay || k[0] !== '$')).sort().map((k) => `${JSON.stringify(k)}:${canonical(o[k], withDisplay)}`).join(',')}}`;
 }
 
 /** FNV-1a 64-bit over the UTF-16 code units, in two 32-bit halves (no BigInt in the hot path) */

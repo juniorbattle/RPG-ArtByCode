@@ -305,6 +305,19 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 - Un « coup qui compte » se règle avec la durée du duel : le nombre de coups pour un K.O. fois le temps entre deux coups. Avec trois coups par pause, la durée et le poids d'un coup ne sont pas deux réglages indépendants.
 - Recaler à six sur dix un duel très court rend les deux camps mortels : la symétrie se paie dans les coups adverses, pas seulement dans ceux du joueur.
 
+## Passe RG4 — Le lot 2 des réglages : la langue française (2026-11-09)
+
+### Demande
+- Le lot 2 de la fiche relue en Passe RG2 : tout ce qu'on atteint depuis l'écran titre en français et en anglais, le tutoriel compris (RG-14 ; `v2=0` et le panneau DEV restent en anglais) ; le récit et l'interface vouvoient le joueur, chaque personnage tutoie ou vouvoie selon qui il est (RG-11) ; les noms des personnes gardés, titres et lieux traduits (RG-12) ; tout change de langue en cours de partie, le journal déjà écrit compris (RG-13) ; relu à froid par un agent neuf, fusionné après ses preuves, puis l'essai de l'opérateur (RG-15). Après la fusion du tutoriel (Passes TU3, TU4) et du lot 1 (Passe RG3).
+- Branche `claude/langue`, tirée de `main` `cc7127c`.
+
+### Le moteur — [en cours]
+- **L'état reste en anglais** : `advance()` et la partie neuve (`initialState`) tournent sous `inEnglish` (`src/narrative/text/index.ts`) : ce que la simulation garde (le journal, une cause, `shopCause`) est l'anglais des empreintes, quelle que soit la langue de la page.
+- **Ce que dit chaque ligne** : `tx` retient, pour les textes dits dernièrement (une mémoire bornée), leur clé et leurs valeurs, une valeur qui était elle-même un texte gardée comme sa référence ; `emit` pose `$t` et `$c` sur la ligne du journal (`GameEvent`), `advance` un `$reason` sur un refus ; `canonical` laisse les clés « $ » hors de l'empreinte (`hash`) et la sauvegarde les garde (`canonical(f, true)`). Les empreintes épinglées des tests restent les mêmes.
+- **L'affichage** : `said(text, ref)` montre l'anglais tel qu'il fut écrit en anglais (rien ne change en anglais) et, en français, ce que dit la référence ; une phrase sans référence (une sauvegarde d'avant, une phrase d'un catalogue) passe par `word`. Le journal, les nouvelles, le résultat d'un combat, la page des marchandises et les refus l'utilisent.
+- **Le français dans les gabarits** : `word(s)` traduit une chaîne anglaise que le code garde hors de la table (un nom, un titre, un lieu, une phrase d'événement) par l'entrée `=<l'anglais>` de la table française ; en français, chaque valeur d'un gabarit passe par elle, puis son article rencontre le mot d'avant (`contract` : « à le » → « au », « de les » → « des », « de » + voyelle → « d’ »), et `{x|form}` prend une forme de la table (`<clé>|<forme>`) au besoin. `localize` change les champs d'une table de données en lectures traduites : les noms et titres des personnes, les noms, épithètes et histoires des rivaux et des génériques ; le code qui les lit ne change pas, la simulation (en anglais) lit l'anglais.
+- **La langue de la page** (`src/settings/language.ts`) : avant que rien ne s'affiche, la langue du navigateur au premier lancement puis le choix gardé (RG-9), l'anglais dans un navigateur piloté ; rien à charger pour l'anglais (la table par défaut : le chemin statique du district libre ne touche toujours aucun module du jeu, le test le garde), la table française et le module des textes chargés à la demande (`await` en tête de `main.ts`, seulement pour le français) ; `<html lang>` suit. Un changement se garde et recharge la page (une partie se sauve à chaque action).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères

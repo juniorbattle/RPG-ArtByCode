@@ -6,20 +6,110 @@ import { EN, type TextKey } from './en';
  *  text never shows its braces). Pure. */
 
 export type { TextKey } from './en';
-export type TextTable = Record<TextKey, string>;
+/** a language's table: every key of the English, and possibly the forms its grammar needs (`<key>|<form>`, e.g. `place.forecourt|to`) */
+export type TextTable = Record<TextKey, string> & Partial<Record<string, string>>;
 
-/** the table in use: the English (the only one; another language is a task of its own) */
+/** the table in use: the English by default, the French once chosen (journal Passe RG4) */
 let TABLE: TextTable = EN;
+let LANG: 'en' | 'fr' = 'en';
+/** the language the game speaks now */
+export const lang = (): 'en' | 'fr' => LANG;
+
+/** what a text says, whatever its language (journal Passe RG4, RG-13 « Tout change, le journal déjà écrit compris »): its key and its values, a value
+ *  that was itself a text kept as its own reference; a log line keeps one (`$t`) beside its English sentence, and is shown in the language chosen */
+export interface TextRef { k: string; v?: Record<string, string | number | TextRef> }
+export const isRef = (x: unknown): x is TextRef => !!x && typeof x === 'object' && typeof (x as TextRef).k === 'string';
+
+/** the texts said lately and what they said (a bounded memory, oldest first): a value that is a text keeps its reference, a log line finds its own */
+const SAID = new Map<string, TextRef>();
+const SAID_MAX = 6000;
+function remember(out: string, ref: TextRef): void {
+  if (SAID.has(out)) SAID.delete(out);
+  SAID.set(out, ref);
+  if (SAID.size > SAID_MAX) SAID.delete(SAID.keys().next().value as string);
+}
+/** the reference of a text said lately (a log line, a cause, a refusal), or undefined: a sentence the tables did not write */
+export function refOf(text: string): TextRef | undefined { return SAID.get(text); }
+
+/** a template filled: `{name}` the value; `{name|form}` the form of a value that is a text (`<its key>|<form>` in the table, else the value itself); in
+ *  French, the article of a value meets the word before it (à + le = au, de + les = des, de + a vowel = d’) */
+function fill(key: string, t: string, vars?: Record<string, string | number>): string {
+  let out = '', last = 0;
+  for (const m of t.matchAll(/\{(\w+)(?:\|(\w+))?\}/g)) {
+    out += t.slice(last, m.index); last = m.index! + m[0].length;
+    const k = m[1], form = m[2], v = vars?.[k];
+    if (v === undefined) throw new Error(`text "${key}": no value for {${k}}`);
+    let s = String(v);
+    if (form) { const r = SAID.get(s); const f = r ? TABLE[`${r.k}|${form}`] : undefined; if (r && f !== undefined) s = fill(`${r.k}|${form}`, f, plain(r.v)); }
+    // in French, a value the code holds in English (a name, a place, a title) said through the table, then its article meets the word before it
+    if (LANG === 'fr' && TABLE !== EN) { if (typeof v === 'string') s = word(s); [out, s] = contract(out, s); }
+    out += s;
+  }
+  return out + t.slice(last);
+}
+/** French contractions where a value comes after « à », « de » or « que » (journal Passe RG4): « à le Parvis » → « au Parvis », « de les lices » → « des
+ *  lices », « de Orla » → « d’Orla » (an English h stays: « de Hale ») */
+function contract(before: string, v: string): [string, string] {
+  const m = /(^|[\s(«'’])(à|À|de|De|que|Que) $/.exec(before);
+  if (!m) return [before, v];
+  const w = m[2], head = before.slice(0, before.length - w.length - 1), cap = w[0] === w[0].toUpperCase();
+  const lower = w.toLowerCase();
+  if (lower === 'à' || lower === 'de') {
+    const art = /^(le|les) /.exec(v);
+    if (art) { const c = lower === 'à' ? (art[1] === 'le' ? 'au' : 'aux') : (art[1] === 'le' ? 'du' : 'des'); return [head + (cap ? c[0].toUpperCase() + c.slice(1) : c) + ' ', v.slice(art[0].length)]; }
+  }
+  if ((lower === 'de' || lower === 'que') && /^[aeiouyàâäéèêëîïôöûùüœAEIOUYÀÂÉÈÊÎÔÛŒ]/.test(v)) return [head + (cap ? w[0] : w[0].toLowerCase()) + (lower === 'de' ? '’' : 'u’'), v];
+  return [before, v];
+}
+/** a reference's values as strings in the language in use: a value that was a text is said again, a name or a word through the table (`word`) */
+function plain(v: TextRef['v']): Record<string, string | number> | undefined {
+  if (!v) return undefined;
+  const o: Record<string, string | number> = {};
+  for (const [k, x] of Object.entries(v)) o[k] = isRef(x) ? render(x) : typeof x === 'string' ? word(x) : x;
+  return o;
+}
+
+/** an English word or sentence the code holds outside the table (a person's name and title, a rival's epithet, an event's words) in the language in use:
+ *  the table's `=<the English>` entry, else the English itself (journal Passe RG4) */
+export function word(s: string): string { if (TABLE === EN || !s) return s; const t = TABLE[`=${s}`]; return t ?? s; }
+
+/** a data table's English fields read in the language in use (a person's name and title, a rival's epithet and story): each field becomes a getter
+ *  through `word`, the code that reads it unchanged; the simulation, run in English, reads the English */
+export function localize<T extends object>(o: T, fields: readonly string[]): T {
+  for (const f of fields) {
+    const raw = (o as Record<string, unknown>)[f];
+    if (typeof raw === 'string') Object.defineProperty(o, f, { get: () => word(raw), enumerable: true, configurable: true });
+  }
+  return o;
+}
 
 /** a text of the table, its `{name}` slots filled */
 export function tx(key: TextKey, vars?: Record<string, string | number>): string {
   const t = TABLE[key];
   if (t === undefined) throw new Error(`no text "${key}"`);
-  return t.replace(/\{(\w+)\}/g, (_, k: string) => {
-    const v = vars?.[k];
-    if (v === undefined) throw new Error(`text "${key}": no value for {${k}}`);
-    return String(v);
-  });
+  const out = fill(key, t, vars);
+  let v: TextRef['v'];
+  if (vars) { v = {}; for (const [k, x] of Object.entries(vars)) { const r = typeof x === 'string' ? SAID.get(x) : undefined; v[k] = r ?? x; } }
+  remember(out, v ? { k: key, v } : { k: key });
+  return out;
+}
+
+/** what a reference says in the language in use (a key the table lacks gives its English) */
+export function render(r: TextRef): string {
+  if (!(r.k in TABLE)) return EN[r.k as TextKey] !== undefined ? fill(r.k, EN[r.k as TextKey], plain(r.v)) : r.k;
+  return tx(r.k as TextKey, plain(r.v));
+}
+
+/** a sentence the simulation kept (a log line, a cause, a refusal) in the language shown: its English as it was written, or what its reference says in
+ *  another language (journal Passe RG4, RG-13; a sentence without a reference, from a save made before, stays English) */
+export function said(text: string, ref?: TextRef): string { return LANG === 'en' ? text : ref ? render(ref) : word(text); }
+
+/** runs the simulation in English, whatever the language shown (journal Passe RG4): what it keeps in the state (the log, a cause) is the English the
+ *  fingerprints were made with; its references let the pages say it in the language chosen */
+let canonicalDepth = 0, shown: TextTable = EN;
+export function inEnglish<T>(f: () => T): T {
+  if (canonicalDepth++ === 0) { shown = TABLE; TABLE = EN; }
+  try { return f(); } finally { if (--canonicalDepth === 0) TABLE = shown; }
 }
 
 /** the table's raw template (for tests and a translator's tools) */
@@ -27,6 +117,9 @@ export function template(key: TextKey): string { return TABLE[key]; }
 
 /** swaps the table (tests; a later translation): the same keys only */
 export function useTable(t: TextTable): void { TABLE = t; }
+
+/** the language chosen (journal Passe RG4): its table, then every text says it (the French loaded on demand by the page, src/settings/language.ts) */
+export function useLanguage(l: 'en' | 'fr', table: TextTable = EN): void { LANG = l; TABLE = l === 'en' ? EN : table; }
 
 /** a skill's name (the catalogue's twelve, src/combat/skillbook.ts) */
 const SKILL_KEYS: Record<string, TextKey> = {

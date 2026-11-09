@@ -11,7 +11,7 @@ import { GENERICS } from '../narrative/generics';
 import { boutPiece } from '../audio/plan';
 import { RIVALS } from '../narrative/roster';
 import { ACTION_NAMES_EN } from '../narrative/texts';
-import { tx } from '../narrative/text';
+import { said, tx, type TextRef } from '../narrative/text';
 import { arenaQuery, lookOf, standings, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { writeSave } from './save';
@@ -97,7 +97,7 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
     const res = (window as any).__game.act(challenge ? { type: 'challengeResult', outcome } : { type: 'fight', outcome });
     if (!res.ok) { console.error(res.reason); return; }
     writeSave(st);
-    const won = r.winner === 'ren', lines = (res.events as Array<{ visible: boolean; text: string; kind: string }>).filter((e) => e.visible && (e.kind === 'match' || e.kind === 'consequence' || (!!challenge && e.kind === 'action'))).map((e) => `<p>${esc(e.text)}</p>`).join('');
+    const won = r.winner === 'ren', lines = (res.events as Array<{ visible: boolean; text: string; kind: string; $t?: TextRef }>).filter((e) => e.visible && (e.kind === 'match' || e.kind === 'consequence' || (!!challenge && e.kind === 'action'))).map((e) => `<p>${esc(said(e.text, e.$t))}</p>`).join('');
     await overlay(`<p class="pm-big">${won ? tx('ui.arena.victory') : tx('ui.arena.defeat')}</p>${lines}<p class="pm-sub">${tx('ui.pool')}</p>${standingsHtml(st, standings(st))}`, [{ id: 'back', label: tx('ui.arena.back'), primary: true }]).done;
     go(b.params);
   }

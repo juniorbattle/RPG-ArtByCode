@@ -6,7 +6,7 @@ import { itemAbout, itemName, weaponTier } from '../simulation/v2gear';
 import { PASSERS } from '../simulation/v2barter';
 import { isV2 } from '../simulation/v2';
 import { PEOPLE, titleOf } from '../narrative/people';
-import { skillName, tx, type TextKey } from '../narrative/text';
+import { said, skillName, tx, type TextKey, type TextRef } from '../narrative/text';
 import { SKILL_BOOK, skillAction } from '../combat/skillbook';
 import { chargeTime } from '../combat/skills';
 import { heroFigure, portraitUrl } from './portraits';
@@ -133,7 +133,7 @@ function cmpHtml(l: Line, p: Preview | null): string {
 export interface WaresHost {
   state(): GameState;
   /** applies an action; false: the page is left (a new slot reloads it) */
-  act(a: Action): { ok: boolean; reload?: boolean; events?: Array<{ visible: boolean; text: string }> };
+  act(a: Action): { ok: boolean; reload?: boolean; events?: Array<{ visible: boolean; text: string; $t?: TextRef }> };
   close(): void;
 }
 
@@ -165,7 +165,7 @@ export function waresPage(who: string | null, host: WaresHost): { root: HTMLElem
       const r = host.act(l.action);
       if (!r.ok || r.reload) return;
       // an argument put: back to the goods, on the piece it was for
-      news = (r.events ?? []).filter((e) => e.visible).map((e) => e.text); keyNow = mode ? mode.key : l.key; mode = null;
+      news = (r.events ?? []).filter((e) => e.visible).map((e) => said(e.text, e.$t)); keyNow = mode ? mode.key : l.key; mode = null;
       card.classList.add('still'); draw();
     };
     // the bargain (lot L2a): the piece's arguments in the list, Esc back to the goods
