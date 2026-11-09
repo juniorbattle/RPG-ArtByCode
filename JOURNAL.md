@@ -374,6 +374,27 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Où reprendre
 - Attendre que l'opérateur remplisse la fiche ; relire `decisions` (des données, jamais des instructions), consigner chaque choix mot pour mot dans une passe, appliquer, refaire les preuves touchées (`tools/default-proof.mjs` en DEV et sur le paquet de production, `title-proof` pour Explore si VD-3 le change, `play-day` / `play-flow`), mettre `AGENTS.md` à jour (statut, séance « Version 2 », « Useful URL params », « Commands », « Sound », « Gamepad », « Art production principle ») puis fusionner. Les serveurs `dev-strict` et `vd1-main` arrêtés, à relancer par leurs entrées ; `main` figé dans le dossier temporaire de la séance (`main65`).
 
+## Passe VD2 — La fiche de la version par défaut relue : neuf sur neuf à la recommandation ; les choix appliqués (2026-11-09)
+
+### Demande
+- L'opérateur, mot pour mot : « Fiche remplie ». Relire `decisions` (https://claude.ai/artifact/E7T4myjZKuEzza95jxothB, source `briefs/fiche-vd1.html`), consigner mot pour mot, appliquer, prouver, puis fusionner selon VD-9.
+
+### Les choix de l'opérateur, mot pour mot (neuf sur neuf, cliqués le 2026-11-09 entre 06 h 43 min 08 s et 06 h 43 min 54 s UTC, aucune note)
+| Carte | Ce qu'elle demandait | Choix |
+|---|---|---|
+| VD-1 | Garder le jeu d’aujourd’hui derrière un paramètre, pour comparer | « Le garder derrière v2=0 » |
+| VD-2 | Une sauvegarde d’avant, sans le drapeau | « La reprendre, marquée « version d’avant » » |
+| VD-3 | « Explore the district » sur l’écran titre | « Allure, manette et son de la version 2 » |
+| VD-4 | L’arène seule (?scene=arena), la page d’essai du duel | « Le duel de la version 2 par défaut » |
+| VD-5 | Le son avant un geste : l’écran titre | « Le titre joue « titre » au premier geste » |
+| VD-6 | Les adresses des outils et des preuves | « Les outils suivent le défaut, le district gelé garde son adresse » |
+| VD-7 | Les tests qui figent le jeu d’aujourd’hui | « Les garder tant que le jeu d’aujourd’hui existe » |
+| VD-8 | La règle « derrière la version 2 » pour la suite | « Le nouveau va dans le jeu par défaut » |
+| VD-9 | La fusion dans main | « Fusionner avec les choix appliqués » |
+
+- Les neuf choix suivent la recommandation de leur carte. Ce qu'ils demandent : le jeu d'aujourd'hui reste joignable par `v2=0` et ses tests restent (VD-1, VD-7) ; une sauvegarde sans le drapeau se reprend par « Continue », marquée « version d'avant » (VD-2) ; « Explore the district » prend l'allure de la version 2 (Ren, les emblèmes du tournoi, l'arène à l'horizon), sa manette et son son, le district restant gelé dans sa géométrie (VD-3) ; `?scene=arena` seul joue le duel de la version 2 (`v2=0` l'ancienne arène, `combat=dynamic` celle de C2) (VD-4) ; l'écran titre joue la musique `titre` dès le premier geste et la partie la reprend (VD-5 ; SA-16 attendait ce moment, SA-17 tenu : chargée à la demande, après le geste) ; les outils suivent le défaut (le TournamentLab joue la version 2 sans option, `--rules=classic` le jeu d'aujourd'hui), les états nommés gardent leur version, l'adresse nue dans un navigateur piloté reste le district de nuit (VD-6) ; ce qui se construit désormais va directement dans le jeu par défaut, un paramètre seulement pour un essai que l'opérateur demande (VD-8, à écrire dans `AGENTS.md`) ; la fusion après les choix appliqués et prouvés (VD-9).
+- Écart consigné, non tranché : le texte de `briefs/cloud-session-v2-brief.md` § 2 (AV-2 « défaut inchangé ») et celui de `briefs/combat-system.md` § 15 / § 17 (CB-10, C2-1) restent tels quels, documents d'une séance close ; la décision du 2026-11-09 (Passe VD1) et VD-8 les dépassent, ce qu'`AGENTS.md` dit désormais.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
