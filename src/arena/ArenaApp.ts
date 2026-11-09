@@ -12,7 +12,8 @@ import { LOOKS, arenaLitByDay, arenaSunDir, parseTime, type DayLook } from '../a
 import { applyPose, type CamPose } from '../app/CameraRig';
 import { FrameCap } from '../app/FrameCap';
 import { followGraphics } from '../settings/scene';
-import { capRatio, gameKey, layout, onSettings, reducedMotion, type ResCap } from '../settings/settings';
+import { actHeld, actsOf, capRatio, onSettings, reducedMotion, type ResCap } from '../settings/settings';
+import { keyId } from '../settings/keys';
 import { PerfMonitor } from '../debug/PerfMonitor';
 import { SpriteRenderer, PIXEL_WORLD, type Actor } from '../characters/SpriteRenderer';
 import type { Anim } from '../characters/SpriteGenerator';
@@ -26,7 +27,7 @@ import { PRESETS, runScript } from './Presets';
 import { DYN_PRESETS, runDynScript } from './DynPresets';
 import { arenaRules, dynClip, dynClipFrame, dynKeys, dynPad, fxOn, tuneDyn, type ArenaRules } from './dynamicView';
 import { FloorUI } from './FloorUI';
-import { chargeHudModel, makeV2Duel, runV2Script, V2_HELD, V2_KEYS, V2_PAD, V2_PRESETS } from './v2Arena';
+import { chargeHudModel, makeV2Duel, runV2Script, V2_PAD, V2_PRESETS } from './v2Arena';
 import { CHARGE_TEXTS_EN, CHARGE_TEXTS_FR } from './DynamicHud';
 import { lang } from '../narrative/text';
 import type { ChargedDuel, ChargeTier } from '../combat/charge';
@@ -195,7 +196,8 @@ export class ArenaApp {
       const piece: PieceId = opts.match?.piece ?? (m0 === 'rival' || m0 === 'finale' ? m0 : 'duel'), maxHp = { ren: v.dyn.f.ren.maxHp, marek: v.dyn.f.marek.maxHp };
       void import('../audio/Sound').then((m) => {
         const snd = m.sound(); this.snd = snd as unknown as { duelEvent(e: unknown): void }; snd.setScene('arena', look, false, 1842, { bout: piece, maxHp, tiers: this.charge?.tiers.length, ...(opts.match?.empty ? { empty: true } : {}) });
-        window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'n' && !e.repeat) snd.set({ muted: !snd.settings.muted }); });
+        // mute: the player's key (the remapping, journal Passe RM2: mute is heard in the duel too)
+        window.addEventListener('keydown', (e) => { if (!e.repeat && actsOf(e, 'duel').includes('mute')) snd.set({ muted: !snd.settings.muted }); });
       });
     }
     else this.sim = this.classic = new CombatSim(opts.match?.data as CombatData | undefined);
@@ -390,21 +392,26 @@ export class ArenaApp {
 
   private bindInput(): void {
     if (this.opts.forecourt) {
-      window.addEventListener('keydown', (e) => { if (!e.metaKey && !e.ctrlKey && !e.altKey && !(e.target instanceof HTMLInputElement)) this.walkKeys.add(gameKey(e.key, layout(), e.isTrusted)); });
-      window.addEventListener('keyup', (e) => this.walkKeys.delete(gameKey(e.key, layout(), e.isTrusted)));
+      window.addEventListener('keydown', (e) => { if (!e.metaKey && !e.ctrlKey && !e.altKey && !(e.target instanceof HTMLInputElement)) this.walkKeys.add(keyId(e)); });
+      window.addEventListener('keyup', (e) => this.walkKeys.delete(keyId(e)));
       window.addEventListener('blur', () => this.walkKeys.clear());
       return;
     }
-    const KEYS: Record<string, string> = this.charge ? V2_KEYS : this.dyn ? dynKeys(this.dyn.D.loadout) : { '1': 'light', '2': 'heavy', '3': 't1', '4': 't2', '5': 't3', '6': 't4', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
+    // the version 2's duel reads the player's keys (the remapping, journal Passe RM2: attack, guard, dodge, pause, today's V2_KEYS at the start; R, the
+    // arena page's restart, and H, the HUD, give way to a key the player put there, RM-4); the other rules keep the prototype's keys (RM-1)
+    const KEYS: Record<string, string> = this.charge ? { r: 'reset' } : this.dyn ? dynKeys(this.dyn.D.loadout) : { '1': 'light', '2': 'heavy', '3': 't1', '4': 't2', '5': 't3', '6': 't4', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
     window.addEventListener('keydown', (e) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || !this.ready || this.lesson || this.settingsOpen) return;
-      const k = e.key.toLowerCase(), m = KEYS[k];
+      const bound = this.charge ? actsOf(e, 'duel') : [], k = e.key.toLowerCase(), m = bound.find((a) => a !== 'mute') ?? (bound.length ? undefined : KEYS[k]);
       if (m) { e.preventDefault(); this.action(m, true); this.hud?.flash(m); }
-      else if (k === 'h') this.hudVisible = !this.hudVisible;
+      else if (k === 'h' && !bound.length) this.hudVisible = !this.hudVisible;
       else if (k === 'escape') this.openSettings();
     });
     window.addEventListener('cdt-open-settings', () => this.openSettings());
-    window.addEventListener('keyup', (e) => { const k = e.key.toLowerCase(); if (this.charge) { if (V2_HELD[k]) this.action(V2_HELD[k], false); } else if (k === 'b') this.action('guard', false); });
+    window.addEventListener('keyup', (e) => {
+      if (this.charge) { const a = actsOf(e, 'duel'); if (a.includes('attack')) this.action('attack', false); if (a.includes('guard')) this.action('guard', false); }
+      else if (e.key.toLowerCase() === 'b') this.action('guard', false);
+    });
     window.addEventListener('blur', () => { this.action('guard', false); if (this.charge) this.action('attack', false); });
     // the version 2's charged duel reads the shared gamepad (the operator's MN-5 « Les deux : X, B, A et les gâchettes en double », journal Passe MN2):
     // whichever pad was used last, X or RT the attack held, B or LT the guard held, A the dodge, Start the pause, View the page's restart; the
@@ -608,7 +615,7 @@ export class ArenaApp {
 
   /** the forecourt: the hero walks (the town generator's walk, side view), Marek drills his slash by the ring when he is there */
   private presentForecourt(dt: number): void {
-    const k = this.walkKeys, ix = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0), iz = (k.has('s') || k.has('arrowdown') ? 1 : 0) - (k.has('w') || k.has('arrowup') ? 1 : 0);
+    const k = this.walkKeys, ix = (actHeld(k, 'right') ? 1 : 0) - (actHeld(k, 'left') ? 1 : 0), iz = (actHeld(k, 'down') ? 1 : 0) - (actHeld(k, 'up') ? 1 : 0);
     const r = this.fighters.ren, m = this.fighters.marek;
     if (ix || iz) {
       this.walkerX = Math.max(-6.4, Math.min(6.4, this.walkerX + ix * 2.6 * dt));

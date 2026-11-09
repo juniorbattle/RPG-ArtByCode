@@ -1,4 +1,5 @@
 import { installDesign } from './design/system';
+import { keyCap } from '../input/caps';
 import { PHONE_QUERY } from './design/tokens';
 
 /** The play mode's interface style, built from the design system (journal Passes UI3 / UM1, direction A « Voile »): the tone's colours (`--ds-*`,
@@ -228,7 +229,8 @@ export function scrollFade(box: HTMLElement): () => void {
 
 /** the foot's button: its key, then what it does (journal Passe UM11: one form on every page, Enter for the page's action, Esc for the way out) */
 export function footBtn(key: string, label: string, act: () => void, primary = false): HTMLButtonElement {
-  const b = el('button', `pm-btn${primary ? ' primary' : ''}`, `<kbd>${key}</kbd><span>${esc(label)}</span>`);
+  // the key's name in the page's language, its English name kept in data-key (the remapping, journal Passe RM2: RM-7)
+  const b = el('button', `pm-btn${primary ? ' primary' : ''}`, `${keyCap(key)}<span>${esc(label)}</span>`);
   b.addEventListener('click', act);
   return b;
 }
@@ -237,7 +239,7 @@ export function footBtn(key: string, label: string, act: () => void, primary = f
 export function fillFoot(f: HTMLElement, ...actions: Array<HTMLElement | null>): void {
   const all = actions.filter((a): a is HTMLElement => !!a);
   f.replaceChildren(...all);
-  // a cap showing a pad's button keeps its key in data-key (src/input/prompts.ts)
+  // a cap names its key in data-key (src/input/caps.ts)
   for (const a of all) { const k = a.querySelector('kbd'); a.classList.toggle('out', (k?.dataset.key ?? k?.textContent) === 'Esc'); }
 }
 

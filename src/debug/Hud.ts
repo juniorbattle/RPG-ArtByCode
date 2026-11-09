@@ -1,4 +1,13 @@
 import type { App } from '../app/App';
+import { keysOf } from '../settings/settings';
+import { firstSlot } from '../settings/keys';
+
+/** the talk key's cap (the remapping, journal Passe RM2, RM-6): the player's key; named here, the free district loading no text table */
+function talkCap(): string {
+  const k = firstSlot(keysOf().talk)?.k ?? 'e', fr = document.documentElement.lang === 'fr';
+  const name = k === ' ' ? (fr ? 'Espace' : 'Space') : k === 'Shift' ? (fr ? 'Maj' : 'Shift') : k.length === 1 ? k.toUpperCase() : k;
+  return `<kbd data-bind="talk">${name.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!)}</kbd>`;
+}
 
 /** The free-roaming town's HUD in the design system (UM-R5 « Dans le système, sans mini-carte », journal Passe UM6): the place and the hour on their veil,
  *  the interaction's prompt at the foot of the screen. The tone and the fonts are the page's (the loading screen installs them). The DEV panel stays
@@ -37,7 +46,7 @@ export class Hud {
     const msg = near ? (a.config.forgeState === 'NORMAL_FORGE' ? (fr ? 'Saboter la forge' : 'Sabotage the forge') : (fr ? 'Réparer la forge' : 'Restore the forge')) : t ? (fr ? 'Parler' : 'Talk') : '';
     if (msg === this.shown) return;
     this.shown = msg;
-    if (msg) this.prompt.innerHTML = `<kbd>E</kbd>${msg}`;
+    if (msg) this.prompt.innerHTML = `${talkCap()}${msg}`;
     this.prompt.style.opacity = msg ? '1' : '0';
   }
 }

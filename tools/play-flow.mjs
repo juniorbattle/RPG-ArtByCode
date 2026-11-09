@@ -27,6 +27,8 @@ let failed = 0;
 const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (!ok) failed++; };
 try {
   const page = await b.newPage();
+  // a real gamepad plugged into the machine reaches headless Chrome (the operator's, journal Passe RM3: its drift pressed keys in a proof): hidden; PAD=1 keeps it
+  if (!process.env.PAD) await page.evaluateOnNewDocument(() => Object.defineProperty(Navigator.prototype, 'getGamepads', { configurable: true, value: () => [] }));
   page.on('pageerror', (e) => { errors.push(e.message); console.log('[pageerror]', e.message); });
   const open = async (q) => { await page.goto(`${BASE}${q}${process.env.PAGE_LANG ? `&lang=${process.env.PAGE_LANG}` : ''}`, { waitUntil: 'load', timeout: READY }); await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY }); const e = await page.evaluate(() => window.__error ?? null); check(!e, `page ${q} ready${e ? `: ${e}` : ''}`); };
   const act = async (a) => { const r = await page.evaluate((x) => window.__game.act(x), a); check(r.ok, `act ${JSON.stringify(a).slice(0, 60)}${r.ok ? '' : `: ${r.reason}`}`); if (r.ok) actionsDone.push(a); return r; };

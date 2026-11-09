@@ -24,6 +24,8 @@ const gl = process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(' ').filter(B
 const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [...gl, '--ignore-gpu-blocklist', '--no-sandbox', `--window-size=${W},${H}`, '--hide-scrollbars', '--disable-background-timer-throttling', '--disable-renderer-backgrounding'], defaultViewport: { width: W, height: H, deviceScaleFactor: 1 }, protocolTimeout: +(process.env.READY_MS || 180000) });
 try {
   const page = await b.newPage(); page.on('pageerror', (e) => console.log('[pageerror]', e.message));
+  // a real gamepad plugged into the machine reaches headless Chrome (the operator's, journal Passe RM3): hidden, so that a capture never shows its buttons; PAD=1 keeps it
+  if (!process.env.PAD) await page.evaluateOnNewDocument(() => Object.defineProperty(Navigator.prototype, 'getGamepads', { configurable: true, value: () => [] }));
   await page.evaluateOnNewDocument(SEED); await page.evaluateOnNewDocument(HOLD);
   // MOTION=no-preference|reduce: the system's reduced motion emulated (journal Passe RG3: the tools' headless Chrome reports the operator's Windows, « reduce »)
   if (process.env.MOTION) await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: process.env.MOTION }]);

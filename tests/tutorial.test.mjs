@@ -12,6 +12,7 @@ import { load, ROOT } from './load.mjs';
 const { EN } = await load('/src/narrative/text/en.ts');
 const G = await load('/src/simulation/index.ts');
 const TU = await load('/src/ui/tutorial.ts');
+const CAP = await load('/src/input/caps.ts');
 const LAW = await load('/src/simulation/v2law.ts');
 const TOWN = await load('/src/simulation/v2town.ts');
 const INTEL = await load('/src/simulation/v2intel.ts');
@@ -27,10 +28,16 @@ test('the texts: in the table, numbers only through slots, every cap known (TU-5
   // a chapter or a hint writes no number of its own: each comes from the data through a slot (a rebalance cannot make the guide wrong)
   for (const k of tutKeys.filter((x) => /^tut\.(ch|hint)\./.test(x))) assert.doesNotMatch(EN[k], /\d/, `${k} writes a number: ${EN[k]}`);
   // a key in a text is a cap the gamepad and the keyboard layout redraw, never a letter in the prose
-  for (const k of tutKeys) for (const m of EN[k].matchAll(/\[([^\]]+)\]/g)) assert.ok(['E', 'Q', 'Menu', 'M', 'Space', 'Enter', 'Back', 'J', 'K', 'L'].includes(m[1]), `${k}: unknown cap [${m[1]}]`);
+  // [Move] and [Run], the walk's keys and the run, since the remapping (journal Passe RM2, RM-6: the words « the arrow keys », « Shift » became caps that follow)
+  for (const k of tutKeys) for (const m of EN[k].matchAll(/\[([^\]]+)\]/g)) assert.ok(['E', 'Q', 'Menu', 'M', 'Space', 'Enter', 'Back', 'J', 'K', 'L', 'Move', 'Run'].includes(m[1]), `${k}: unknown cap [${m[1]}]`);
+  // an action's cap carries its action (data-bind) and shows the player's key; a fixed key's carries its English name (data-key) and shows its name
   const html = TU.rich('Press [E], then [Menu]; <b>x</b>');
-  assert.match(html, /<kbd data-cap="hints">E<\/kbd>/);
-  assert.match(html, /<kbd data-cap="hints">Esc<\/kbd>/);
+  assert.match(html, /<kbd data-bind="talk" data-cap="hints">E<\/kbd>/);
+  assert.match(html, /<kbd data-key="Esc" data-cap="hints">Esc<\/kbd>/);
+  // the walk's four keys and the run, each the player's (WASD or ZQSD by the keyboard this machine announces, and Shift)
+  const move = TU.rich('[Move] [Run]');
+  assert.equal(move, '<p>' + ['up', 'left', 'down', 'right'].map((a) => `<kbd data-bind="${a}" data-cap="hints">${CAP.actName(a)}</kbd>`).join('') + ' <kbd data-bind="run" data-cap="hints">Shift</kbd></p>');
+  assert.ok(['WASD', 'ZQSD'].includes(['up', 'left', 'down', 'right'].map(CAP.actName).join('')));
   assert.match(html, /&lt;b&gt;x&lt;\/b&gt;/, 'the rest is escaped');
 });
 
@@ -98,7 +105,7 @@ test('where it shows: the tour of a new game, the line of a game begun before, e
   assert.match(ui, /if \(who\) this\.hint\('shop'\);/);
   assert.match(ui, /if \(this\.welcomed && v2 && \(sus > 0 \|\| P\.injury > 0\)\)/);
   // the guide: in the menu on a line of its own (H), the tour replayed from it (TU-7)
-  assert.match(ui, /if \(isV2\(s\)\) add\(tx\('tut\.guide'\), \(\) => this\.openGuide\(\), 'H'\);/);
+  assert.match(ui, /if \(isV2\(s\)\) add\(tx\('tut\.guide'\), \(\) => this\.openGuide\(\), 'guide'\);/);
   assert.match(ui, /replay: \(\) => void this\.tour\(\)/);
   // today's game (v2=0) shows none of it
   assert.match(town, /tutorial: isV2\(st\) && tutorialOn\(b\.params\)/);
@@ -125,13 +132,13 @@ test('the first duel\'s lessons: one per first, their numbers from the duel\'s o
   assert.match(DT.lessonText('riposte', D), new RegExp(`After ${V2D.V2_RIPOSTE.after} quick blows`));
   assert.match(DT.lessonText('priority', D), new RegExp(`takes ${Math.round(D.guard.reduce * 100)} % off each blow`));
   assert.match(DT.lessonText('ap', D), new RegExp(`gives you ${D.actions.light.apGain} action point\. You start a bout with ${D.ap.start} and hold ${D.ap.max} at most`));
-  assert.match(DT.lessonText('start', D), /<kbd data-cap="arena">J<\/kbd>|\[J\]/);
+  assert.match(DT.lessonText('start', D), /<kbd data-bind="attack" data-cap="arena">J<\/kbd>|\[J\]/);
   // the guide's chapter says the same numbers (read from the same data)
   const duel = TU.chapterText(v2(), TU.CHAPTERS.find((c) => c.id === 'duel'));
   assert.match(duel, new RegExp(`stunned for ${V2D.V2_BREAK.stun} seconds and takes ${V2D.V2_BREAK.damage} times`));
   assert.match(duel, new RegExp(`After ${V2D.V2_RIPOSTE.after} quick blows`));
   // the caps of the duel in a text are the duel's
-  assert.match(TU.rich('[J] [K] [L]'), /<kbd data-cap="arena">J<\/kbd> <kbd data-cap="arena">K<\/kbd> <kbd data-cap="arena">L<\/kbd>/);
+  assert.match(TU.rich('[J] [K] [L]'), /<kbd data-bind="attack" data-cap="arena">J<\/kbd> <kbd data-bind="guard" data-cap="arena">K<\/kbd> <kbd data-bind="dodge" data-cap="arena">L<\/kbd>/);
 });
 
 test('which event is which first: the player\'s charge past the quick blow, an action point, the opponent\'s sequence, a gauge a third full, its break, the riposte', () => {

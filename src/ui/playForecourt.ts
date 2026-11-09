@@ -5,6 +5,7 @@ import { TownUi } from './townUi';
 import { fontsReady, installDesign } from './design/system';
 import { progressOn } from './loading';
 import { preloadPortraits } from './portraits';
+import { actsOf } from '../settings/settings';
 
 /** The Arena Forecourt (journal Passes L4 / L6): the arena's sand outside the bouts, walkable (the hero walks it, arrows or A / D, W / S),
  *  Marek drilling by the ring by day; the registrar's table, the practice post where Orla trains and the healer's corner are spots on
@@ -31,7 +32,8 @@ export async function startPlayForecourt(b: Boot, st0: GameState): Promise<void>
   }, st.log.length - 1);
   (window as any).__ui = ui;
   (window as any).__game.subscribe(() => ui.render());
-  window.addEventListener('keydown', (e) => { const k = e.key.toLowerCase(); if ((k === 'e' || k === ' ') && !e.repeat) { e.preventDefault(); ui.interact(); } });
+  // talk: the player's key (the remapping, journal Passe RM2)
+  window.addEventListener('keydown', (e) => { if (!e.repeat && actsOf(e, 'walk').includes('talk')) { e.preventDefault(); ui.interact(); } });
   const frame = () => { ui.update(); requestAnimationFrame(frame); };
   frame();
   app.start();

@@ -10,6 +10,7 @@ import { PEOPLE } from '../narrative/people';
 import { pendingScene } from '../narrative/v2story';
 import { playCutscene } from './cutscene';
 import { go, installGameApi, type Boot } from './play';
+import { actsOf } from '../settings/settings';
 import { TownUi } from './townUi';
 import { fontsReady, installDesign } from './design/system';
 import { progressOn } from './loading';
@@ -66,7 +67,8 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   markSeen(st);
   (window as any).__ui = ui;
   (window as any).__game.subscribe(() => ui.render());
-  window.addEventListener('keydown', (e) => { const k = e.key.toLowerCase(); if ((k === 'e' || k === ' ') && !e.repeat) { e.preventDefault(); ui.interact(); } });
+  // talk: the player's key (the remapping, journal Passe RM2)
+  window.addEventListener('keydown', (e) => { if (!e.repeat && actsOf(e, 'walk').includes('talk')) { e.preventDefault(); ui.interact(); } });
   // the ways out (journal Passe VP5): their tags as the hero comes near, the way walked through taken (the move saved, the next place's page
   // opened at the way in from this one)
   // (lot L6, FE-7: the evening of the Lanterns' parade the street between the festival square and the forecourt is full: its tag says so, and walking into it

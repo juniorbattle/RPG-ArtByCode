@@ -6,6 +6,8 @@ import type { DistrictConfig } from '../district/MerchantDistrictGenerator';
 import type { ForgeState } from '../district/ForgeGenerator';
 import { CAM_IDS, type CamId } from '../app/CameraGraph';
 import { OCC_STYLES, type OccStyle } from '../app/Occlusion';
+import { actsOf } from '../settings/settings';
+import { EXPLORE_ACTS } from '../settings/keys';
 
 /** Art-direction panel: structural sliders regenerate the district (deterministically), look sliders are live. */
 
@@ -38,7 +40,8 @@ export class DebugPanel {
     this.el = document.createElement('div'); this.el.id = 'adp';
     document.body.appendChild(this.el);
     this.build();
-    window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'h' && !(e.target instanceof HTMLInputElement)) this.el.style.display = this.el.style.display === 'none' ? '' : 'none'; });
+    // H: the panel, unless the player put one of Explore's actions on it (the remapping, journal Passe RM2, RM-4: a tool key gives way)
+    window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'h' && !(e.target instanceof HTMLInputElement) && !actsOf(e, 'walk').some((a) => EXPLORE_ACTS.includes(a))) this.el.style.display = this.el.style.display === 'none' ? '' : 'none'; });
     app.onRegenerate.push(() => { this.seedInput.value = String(app.config.seed); });
   }
 

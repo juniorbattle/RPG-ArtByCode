@@ -1,10 +1,11 @@
-import { capButton, type CapPlace, type PadFamily } from './pad';
+import { bindButton, capButton, type CapPlace, type PadFamily } from './pad';
 import { capOf, PAD_CSS, type GlyphStyle } from './glyphs';
 
 /** The key caps of the interface as pad buttons (journal Passe MN1): while the pad was the last device used, every `<kbd>` the pages show holds
  *  the button the pad presses for that key in that place (src/input/pad.ts, `capButton`), drawn in the design system's keycap; a keyboard
  *  shortcut the pad reaches through the menu is hidden; a key press gives every cap back its key. The pages are not touched: the caps are found
- *  in the DOM as they come (a MutationObserver), their key kept in `data-key`. */
+ *  in the DOM as they come (a MutationObserver). A cap names its key in `data-key` (its English name, src/input/caps.ts) or its action in `data-bind`
+ *  (the player's keys, journal Passe RM2), else by its text; the text it showed is kept in `data-txt` while the button stands in it. */
 
 export interface PromptMode { family: PadFamily; style: GlyphStyle }
 
@@ -12,7 +13,7 @@ export interface PromptMode { family: PadFamily; style: GlyphStyle }
 const placeOf = (k: Element): CapPlace => (k.closest('#pm-hints, [data-cap=hints]') ? 'hints' : k.closest('.pm-scene') ? 'scene' : k.closest('#arena-hud, [data-cap=arena]') ? 'arena' : k.closest('.pm-menu') ? 'menu' : 'other');
 
 /** a cap's key: the one it was written with, whatever it shows now */
-export const capKey = (k: Element): string => (k as HTMLElement).dataset?.key ?? k.textContent ?? '';
+export const capKey = (k: Element): string => (k as HTMLElement).dataset?.key ?? (k as HTMLElement).dataset?.txt ?? k.textContent ?? '';
 
 export class Prompts {
   private mode: PromptMode | null = null;
@@ -49,12 +50,11 @@ export class Prompts {
   }
 
   private apply(k: HTMLElement): void {
-    const key = capKey(k);
-    if (k.dataset.key !== undefined) this.restore(k);
+    if (k.dataset.txt !== undefined) this.restore(k);
     if (!this.mode) return;
-    const b = capButton(key, placeOf(k));
+    const b = k.dataset.bind ? bindButton(k.dataset.bind, placeOf(k)) : capButton(capKey(k), placeOf(k));
     if (b === null) return;
-    k.dataset.key = key;
+    k.dataset.txt = k.textContent ?? '';
     if (b === 'hide') { k.style.display = 'none'; return; }
     const c = capOf(this.mode.family, b, this.mode.style);
     k.innerHTML = c.html;
@@ -64,8 +64,8 @@ export class Prompts {
   }
 
   private restore(k: HTMLElement): void {
-    k.textContent = k.dataset.key ?? '';
-    delete k.dataset.key;
+    k.textContent = k.dataset.txt ?? '';
+    delete k.dataset.txt;
     k.classList.remove('pad', 'round', 'pill', 'fill');
     k.style.display = ''; k.style.background = '';
     k.removeAttribute('role'); k.removeAttribute('aria-label');

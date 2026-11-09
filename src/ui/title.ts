@@ -3,7 +3,8 @@ import { cleanName } from '../simulation';
 import { arrowKeys, el, esc, injectStyle } from './style';
 import { tx } from '../narrative/text';
 import type { Look } from '../audio/score';
-import { layout, LANGS, onSettings, shownKey, type Lang } from '../settings/settings';
+import { keysOf, LANGS, onSettings, type Lang } from '../settings/settings';
+import { actName, slotName } from '../input/caps';
 import { chooseLanguage, pageLang } from '../settings/language';
 
 /** The title screen (choice P2, journal Passe L4; the operator's decisions UM-R4 « La vraie ville derrière » and UM2-4 « Le titre d'abord, la ville apparaît
@@ -14,8 +15,15 @@ import { chooseLanguage, pageLang } from '../settings/language';
  *  answer from the start; its music, « titre », from the first key or click (VD-5). DOM, English (choice K1). Shown on the bare address only (main.ts),
  *  and forced by `?title=1`. Keys pressed on it stay on it: the town behind does not walk. */
 
-/** the walking keys of the player's keyboard (journal Passe RG2, RG-7: WASD on QWERTY, ZQSD on AZERTY) */
-const keysLine = (): string => tx('ui.title.keys', { move: ['w', 'a', 's', 'd'].map((k) => shownKey(k, layout())).join('') });
+/** the walking keys and the talk key, the player's (the remapping, journal Passe RM2, RM-6; at the start WASD on QWERTY, ZQSD on AZERTY, and the arrows) */
+function keysLine(): string {
+  const t = keysOf(), dirs = ['up', 'left', 'down', 'right'] as const, ARROW = { up: 'ArrowUp', left: 'ArrowLeft', down: 'ArrowDown', right: 'ArrowRight' };
+  const names = (xs: string[]) => xs.join(xs.every((x) => x.length === 1) ? '' : ' ');
+  const first = names(dirs.map((d) => actName(d))), second = dirs.map((d) => t[d][0] && t[d][1]);
+  const move = dirs.every((d) => t[d][1]?.k === ARROW[d]) ? tx('ui.title.move', { a: tx('ui.title.arrows'), b: first })
+    : second.every(Boolean) ? tx('ui.title.move', { a: first, b: names(second.map((x) => slotName(x))) }) : first;
+  return tx('ui.title.keys', { move, talk: actName('talk') });
+}
 
 /** each language named in its own words (the title's line, RG-10) */
 const LANG_NAME: Record<Lang, string> = { fr: 'Français', en: 'English' };

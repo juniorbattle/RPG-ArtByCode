@@ -5,7 +5,8 @@ import { setSkylineArena } from '../district/DistantCity';
 import { defaultPainters } from '../materials/PainterPool';
 import { FrameCap, frameCapLabel } from './FrameCap';
 import { followGraphics } from '../settings/scene';
-import { capRatio, type ResCap } from '../settings/settings';
+import { actsOf, capRatio, type ResCap } from '../settings/settings';
+import { EXPLORE_ACTS } from '../settings/keys';
 import { PostFX } from '../atmosphere/PostFX';
 import { MoonShadow, PlanarReflection } from '../atmosphere/ShadowAndReflection';
 import { LightRig } from '../atmosphere/LightRig';
@@ -171,7 +172,8 @@ export class App {
       if (!isNaN(v[12])) an.charScale = v[12];
     }
     window.addEventListener('resize', () => this.resize());
-    window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'f' && this.ready && !(e.target instanceof HTMLInputElement)) this.setForgeState(this.config.forgeState === 'NORMAL_FORGE' ? 'SABOTAGED_FORGE' : 'NORMAL_FORGE'); });
+    // F: the forge, unless the player put one of Explore's actions on it (the remapping, journal Passe RM2, RM-4: a tool key gives way)
+    window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'f' && this.ready && !(e.target instanceof HTMLInputElement) && !actsOf(e, 'walk').some((a) => EXPLORE_ACTS.includes(a))) this.setForgeState(this.config.forgeState === 'NORMAL_FORGE' ? 'SABOTAGED_FORGE' : 'NORMAL_FORGE'); });
   }
 
   async init(): Promise<void> {

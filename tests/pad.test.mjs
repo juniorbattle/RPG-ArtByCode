@@ -13,6 +13,7 @@ import { load, ROOT } from './load.mjs';
 const P = await load('/src/input/pad.ts');
 const G = await load('/src/input/glyphs.ts');
 const { V2_PAD, V2_KEYS } = await load('/src/arena/v2Arena.ts');
+const K = await load('/src/settings/keys.ts');
 const src = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\r\n/g, '\n');
 const close = (a, b, e = 1e-9) => Math.abs(a - b) <= e;
 
@@ -81,11 +82,17 @@ test('the keys each button presses (MN-3, MN-4, MN-6), as the sheet\'s tables sa
   assert.deepEqual({ ...P.KEYS.page }, { [STD.A]: 'Enter', [STD.B]: 'Escape', [STD.X]: ' ', [STD.START]: 'Escape' });
   assert.deepEqual({ ...P.KEYS.scene }, { [STD.A]: 'Enter', [STD.START]: 'Escape' });
   assert.deepEqual({ ...P.TAB }, { [STD.LB]: -1, [STD.RB]: 1 });
-  // the pages answer those keys: the town's interface, the squares and the district hear e / q / m / Escape, a cutscene Enter and Escape
+  // the pages answer those keys: a key the pad presses (untrusted) is read as QWERTY's whatever the player's keys (the remapping, journal Passe RM2,
+  // RM-3): e talks, q the list, m the map, even on AZERTY's table and on a table where the player moved them; Escape the menu; a cutscene Enter and Escape
+  const moved = K.rebind(K.rebind(K.DEFAULT_KEYS.qwerty, 'talk', 0, { c: 'KeyF', k: 'f' }).table, 'map', 0, { c: 'KeyE', k: 'e' }).table;
+  assert.equal(moved.map[0].c, 'KeyE', 'the player put the map on E');
+  for (const t of [K.DEFAULT_KEYS.qwerty, K.DEFAULT_KEYS.azerty, moved]) {
+    assert.deepEqual(['e', 'q', 'm'].map((k) => K.actsOfId(K.keyId({ key: k, isTrusted: false }), 'walk', t)), [['talk'], ['list'], ['map']]);
+  }
   const town = src('src/ui/townUi.ts'), plaza = src('src/ui/playPlaza.ts'), scene = src('src/ui/cutscene.ts');
-  for (const k of ["k === 'q'", "k === 'm'", "k === 'escape'"]) assert.ok(town.includes(k), k);
-  assert.ok(plaza.includes("k === 'e'"));
-  assert.ok(scene.includes("k === 'escape'") && scene.includes("k === 'enter'"));
+  for (const k of ["is('list')", "is('map')", "escape = e.key === 'Escape'"]) assert.ok(town.includes(k), k);
+  assert.ok(plaza.includes("actsOf(e, 'walk').includes('talk')"));
+  assert.ok(scene.includes("e.key === 'Escape'") && scene.includes("e.key === 'Enter'") && scene.includes("actsOf(e, 'walk').includes('talk')"));
 });
 
 test('the duel (MN-5): X or RT attack, B or LT guard, both held; A dodge, Start pause; today\'s V2_PAD kept whole', () => {
@@ -142,38 +149,39 @@ test('the pages\' navigation: the D-pad, the stick past half tilt held till 0.35
   assert.equal(P.contextOf({ scene: false, modal: false, duel: false, explore: false }), null);
 });
 
-test('every key cap the version 2\'s interface writes shows a pad button or hides', () => {
-  // the caps written by the play mode's pages (<kbd>X</kbd>, footBtn('X', ...), the menu's shortcuts) and by the version 2's duel HUD
+test('every key cap the version 2\'s interface writes shows a pad button or hides; an action\'s cap by its action (journal Passe RM2, RM-6)', () => {
+  // the caps written by the play mode's pages: no bare letter left, an action's cap through bindCap (data-bind), a fixed key's through keyCap or footBtn
+  // (data-key, its name in the page's language: RM-7)
   const ui = fs.readdirSync(path.join(ROOT, 'src/ui')).filter((f) => f.endsWith('.ts')).map((f) => src(`src/ui/${f}`)).join('\n');
-  const keys = new Set();
-  for (const m of ui.matchAll(/<kbd>([^<$]+)<\/kbd>/g)) keys.add(m[1]);
-  for (const m of ui.matchAll(/footBtn\('([^']+)'/g)) keys.add(m[1]);
-  for (const m of ui.matchAll(/, '([A-Z])'\);/g)) keys.add(m[1]);
-  for (const m of ui.matchAll(/b\.primary \? '([^']+)' : '([^']+)'/g)) { keys.add(m[1]); keys.add(m[2]); }
-  // the list's cap by the keyboard (journal Passe RG2, RG-7: Q on QWERTY, A on AZERTY) and a switch of the settings page with its key (the mute's N)
-  for (const m of ui.matchAll(/shownKey\('([a-z])'/g)) keys.add(m[1].toUpperCase());
-  for (const m of ui.matchAll(/'', '([A-Z])'\)/g)) keys.add(m[1]);
-  assert.deepEqual([...keys].sort(), ['E', 'Enter', 'Esc', 'G', 'H', 'J', 'K', 'M', 'N', 'Q', 'Space', 'T', 'V'].sort());
+  assert.deepEqual([...ui.matchAll(/<kbd>([^<$]+)<\/kbd>/g)].map((m) => m[1]), [], 'no cap written as a bare key');
+  assert.deepEqual([...new Set([...ui.matchAll(/(?:keyCap|footBtn)\('([^']+)'/g)].map((m) => m[1]))].sort(), ['Enter', 'Esc', 'Space']);
+  const acts = new Set([...ui.matchAll(/bindCap\('([a-z]+)'/g)].map((m) => m[1]));
+  // the menu's lines and the guide's shortcuts name their action
+  for (const m of ui.matchAll(/this\.open\w+\([^)]*\), '([a-z]+)'\)/g)) acts.add(m[1]);
+  for (const m of ui.matchAll(/kb\('([a-z]+)', 'tut\.key/g)) acts.add(m[1]);
+  for (const m of ui.matchAll(/\b[ha]\('([a-z]+)'\)/g)) acts.add(m[1]);
+  assert.deepEqual([...acts].filter((a) => !K.ACTS.includes(a)), [], 'every cap names a known action');
+  for (const a of ['talk', 'list', 'map', 'journal', 'board', 'skills', 'gear', 'settings', 'guide', 'mute', 'attack', 'guard', 'dodge', 'pause', 'run']) assert.ok(acts.has(a), a);
   const B = STD;
-  const want = { E: B.A, Enter: B.A, Esc: B.B, Space: B.X, Q: B.Y, A: B.Y, N: 'hide' };
-  for (const [k, b] of Object.entries(want)) assert.equal(P.capButton(k, 'other'), b, k);
+  for (const [k, b] of Object.entries({ Enter: B.A, Esc: B.B, Space: B.X })) assert.equal(P.capButton(k, 'other'), b, k);
   assert.equal(P.capButton('Esc', 'hints'), B.START);
   assert.equal(P.capButton('Esc', 'scene'), B.START);
-  assert.equal(P.capButton('E', 'scene'), B.A);
-  // the guide's H (journal Passe TU1) too: the pad reaches it through the menu
-  for (const k of ['J', 'T', 'K', 'G', 'V', 'H']) assert.equal(P.capButton(k, 'menu'), 'hide', k);
-  assert.equal(P.capButton('M', 'menu'), B.VIEW);
-  // the version 2's duel: its bar's K, L, J, the dodge window's L, the pause's Space
-  const hud = src('src/arena/DynamicHud.ts'), charge = hud.match(/const items: BarItem\[\] = ct \? \[([\s\S]*?)\] :/)[1];
-  const bar = [...charge.matchAll(/key: '([^']+)'/g)].map((m) => m[1]);
-  assert.deepEqual(bar, ['K', 'L', 'J']);
-  assert.ok(hud.includes("<kbd>${charge ? 'L' : 'A'}</kbd>") && hud.includes('<kbd>Space</kbd>'));
-  assert.deepEqual(['K', 'L', 'J', 'Space'].map((k) => P.capButton(k, 'arena')), [B.B, B.A, B.X, B.START]);
-  // the pause's settings (RG-2): its Esc shows the button that opens them
-  assert.ok(hud.includes("<kbd>Esc</kbd>${tx('set.title')}"));
+  // an action's button wherever its cap stands, whatever key the player gave it; the pages' shortcuts hidden in the menu
+  const want = { up: B.UP, down: B.DOWN, left: B.LEFT, right: B.RIGHT, run: B.B, talk: B.A, list: B.Y, map: B.VIEW, attack: B.X, guard: B.B, dodge: B.A, pause: B.START, mute: 'hide' };
+  for (const [a, b] of Object.entries(want)) for (const w of ['hints', 'scene', 'arena', 'menu', 'other']) assert.equal(P.bindButton(a, w), b, `${a} ${w}`);
+  for (const a of ['journal', 'board', 'skills', 'gear', 'settings', 'guide']) { assert.equal(P.bindButton(a, 'menu'), 'hide', a); assert.equal(P.bindButton(a, 'other'), null, a); }
+  // the same buttons today's letters showed (capButton) on the starting keys
+  for (const [a, k, w] of [['talk', 'E', 'other'], ['list', 'Q', 'hints'], ['list', 'A', 'hints'], ['map', 'M', 'menu'], ['mute', 'N', 'other'], ['journal', 'J', 'menu'], ['guide', 'H', 'menu'], ['skills', 'K', 'other'], ['attack', 'J', 'arena'], ['guard', 'K', 'arena'], ['dodge', 'L', 'arena'], ['pause', 'Space', 'arena']]) assert.equal(P.bindButton(a, w), P.capButton(k, w), `${a} ${k}`);
+  // the version 2's duel: its bar's three buttons and the dodge window's by their actions, the pause's too; the settings' Esc fixed
+  const hud = src('src/arena/DynamicHud.ts');
+  assert.ok(hud.includes("bindCap('dodge')") && hud.includes("bindCap('pause')") && hud.includes('bindCap(own)'));
+  assert.ok(hud.includes("keyCap('Esc')}${tx('set.title')}"));
   assert.equal(P.DUEL[P.capButton('Esc', 'arena')], 'settings');
-  // each shows the button that does it in the duel
-  for (const k of ['K', 'L', 'J']) assert.equal(P.DUEL[P.capButton(k, 'arena')], V2_KEYS[k.toLowerCase()], k);
+  for (const a of ['attack', 'guard', 'dodge']) assert.equal(P.DUEL[P.bindButton(a, 'arena')], a, a);
+  // the prompts' layer: a cap keeps its key in data-key (permanent) and what it showed in data-txt, the button chosen by data-bind first
+  const pr = src('src/input/prompts.ts');
+  assert.match(pr, /k\.dataset\.bind \? bindButton\(k\.dataset\.bind, placeOf\(k\)\) : capButton\(capKey\(k\), placeOf\(k\)\)/);
+  assert.ok(!/delete k\.dataset\.key/.test(pr), 'data-key is never removed');
 });
 
 test('the glyphs (MN-7, MN-8): every button for every family, text inside the fonts\' subset, the rest drawn', () => {

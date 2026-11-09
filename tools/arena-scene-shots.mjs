@@ -23,6 +23,8 @@ const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [
 let errors = 0;
 try {
   const page = await b.newPage();
+  // a real gamepad plugged into the machine reaches headless Chrome (the operator's, journal Passe RM3): hidden, so that a capture never shows its buttons; PAD=1 keeps it
+  if (!process.env.PAD) await page.evaluateOnNewDocument(() => Object.defineProperty(Navigator.prototype, 'getGamepads', { configurable: true, value: () => [] }));
   page.on('pageerror', (e) => { errors++; console.log('[pageerror]', e.message); });
   page.on('console', (m) => { if (m.type() === 'error') { errors++; console.log('[console]', m.text()); } });
   await page.evaluateOnNewDocument(SEED);

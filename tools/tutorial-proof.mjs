@@ -47,6 +47,8 @@ async function next(page) {
 
 try {
   const page = await b.newPage();
+  // a real gamepad plugged into the machine reaches headless Chrome (the operator's, journal Passe RM3: its drift pressed keys in a proof): hidden; PAD=1 keeps it
+  if (!process.env.PAD) await page.evaluateOnNewDocument(() => Object.defineProperty(Navigator.prototype, 'getGamepads', { configurable: true, value: () => [] }));
   page.on('pageerror', (e) => { errors++; console.log('[pageerror]', e.message); });
 
   // 1. a new game: the news, then the tour at the keyboard
@@ -185,6 +187,7 @@ try {
   // 4. a game begun before, in a fresh profile: the guide's line once
   const ctx = await b.createBrowserContext();
   const p2 = await ctx.newPage();
+  if (!process.env.PAD) await p2.evaluateOnNewDocument(() => Object.defineProperty(Navigator.prototype, 'getGamepads', { configurable: true, value: () => [] }));
   p2.on('pageerror', (e) => { errors++; console.log('[pageerror]', e.message); });
   await open(p2, '?play=1&new=1&name=Old&noreload=1&tutorial=0');
   await open(p2, '?play=1&noreload=1&tutorial=1');
@@ -202,6 +205,7 @@ try {
   // 5. today's game (v2=0): none of it
   const ctx3 = await b.createBrowserContext();
   const p3 = await ctx3.newPage();
+  if (!process.env.PAD) await p3.evaluateOnNewDocument(() => Object.defineProperty(Navigator.prototype, 'getGamepads', { configurable: true, value: () => [] }));
   p3.on('pageerror', (e) => { errors++; console.log('[pageerror]', e.message); });
   await open(p3, '?play=1&new=1&name=Then&noreload=1&v2=0&tutorial=1');
   await p3.evaluate(() => document.querySelector('.pm-overlay .pm-btn')?.click());

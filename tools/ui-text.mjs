@@ -84,6 +84,8 @@ try {
     const [name, query, sizes, js] = spec.split('|');
     for (const size of (sizes || '1920x1080').split(',')) {
       const [w, h] = size.split('x').map(Number), page = await b.newPage();
+      // a real gamepad plugged into the machine reaches headless Chrome (the operator's, journal Passe RM3): hidden, so that a capture never shows its buttons; PAD=1 keeps it
+      if (!process.env.PAD) await page.evaluateOnNewDocument(() => Object.defineProperty(Navigator.prototype, 'getGamepads', { configurable: true, value: () => [] }));
       await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
       const errors = [];
       page.on('pageerror', (e) => errors.push(e.message));

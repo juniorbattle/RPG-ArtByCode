@@ -157,6 +157,19 @@ export function capButton(key: string, where: CapPlace): Btn | 'hide' | null {
   return null;
 }
 
+/** the button an action's cap shows (the remapping, journal Passe RM2: RM-6, a cap keeps its action whatever key the player gave it): the walk's directions
+ *  on the D-pad, run B held, talk A, the list Y, the map View; in the duel attack X, guard B, dodge A, pause Start; the pages' shortcuts hidden in the menu
+ *  (the pad reaches them through it) and left as keys elsewhere, mute hidden everywhere, as their letters were (`capButton`) */
+export function bindButton(act: string, where: CapPlace): Btn | 'hide' | null {
+  switch (act) {
+    case 'up': return BTN.UP; case 'down': return BTN.DOWN; case 'left': return BTN.LEFT; case 'right': return BTN.RIGHT;
+    case 'run': return BTN.B; case 'talk': return BTN.A; case 'list': return BTN.Y; case 'map': return BTN.VIEW;
+    case 'attack': return BTN.X; case 'guard': return BTN.B; case 'dodge': return BTN.A; case 'pause': return BTN.START;
+    case 'mute': return 'hide';
+    default: return where === 'menu' ? 'hide' : null;
+  }
+}
+
 /** the vibration on the player's hits in the duel (MN-9): strength 0..1 and length in ms, by what happened to Ren; nothing for a blow guarded */
 export function rumbleOf(e: { type: string; to?: string; result?: string; kind?: string; damage?: number; hp?: number }): { strong: number; weak: number; ms: number } | null {
   if (e.type !== 'impact' || e.to !== 'ren') return null;

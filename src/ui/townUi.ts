@@ -23,7 +23,9 @@ import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
 import { tabTo } from '../input/pad';
 import { guidePage, hintChapter, hintSeen, markHint, markTold, runTour, showHint, told, TOUR, type HintId } from './tutorial';
 import { settingsPage, type SettingsSection } from './settings';
-import { keyOf, layout, onSettings, shownKey } from '../settings/settings';
+import { actsOf, onSettings } from '../settings/settings';
+import type { Act } from '../settings/keys';
+import { bindCap, keyCap } from '../input/caps';
 
 /** the menu's pages a gamepad's shoulders walk through (journal Passe MN2, MN-4) */
 type MenuPage = 'map' | 'journal' | 'board' | 'skills' | 'gear' | 'settings';
@@ -177,22 +179,22 @@ export class TownUi {
     this.veils[0].id = 'pm-veil-l'; this.veils[1].id = 'pm-veil-r';
     this.status.id = 'pm-status'; this.figs.id = 'pm-figs'; this.hints.id = 'pm-hints'; this.prompt.id = 'pm-prompt'; this.toast.id = 'pm-toast';
     this.status.setAttribute('aria-live', 'polite');
-    const menu = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('ui.menu')}`);
+    const menu = el('button', 'pm-btn', `${keyCap('Esc')}${tx('ui.menu')}`);
     this.hereKey.addEventListener('click', () => this.openHere()); menu.addEventListener('click', () => this.openMenu());
     this.hints.append(this.hereKey, menu);
     document.body.append(...this.veils, this.status, this.figs, this.hints, this.prompt, this.toast);
     window.addEventListener('keydown', (e) => {
       if (e.repeat || (e.target instanceof HTMLInputElement && e.key !== 'Escape')) return;
-      // the game's keys (journal Passe RG2, RG-7): on AZERTY, A opens the list where QWERTY's Q does
-      const k = keyOf(e);
-      if (k === 'n' && isV2(this.st)) { void import('../audio/Sound').then((m) => { const s = m.sound(); s.set({ muted: !s.settings.muted }); window.dispatchEvent(new Event('cdt-sound')); }); return; }
-      if (this.modal) { if (k === 'escape' || (k === 'q' && this.current?.dataset.here)) this.leave(); return; }
-      if (k === 'q') this.openHere(); else if (k === 'm') this.openMap(); else if (k === 'j') this.openJournal(); else if (k === 't') this.openBoard(); else if (k === 'escape') this.openMenu();
-      else if (k === 'k' && isV2(this.st)) this.openSkills(false); else if (k === 'g' && isV2(this.st)) this.openGear(); else if (k === 'v' && isV2(this.st)) this.openSettings('sound');
-      else if (k === 'h' && isV2(this.st)) this.openGuide();
+      // the player's keys (the remapping, journal Passe RM2: each action by the key the player gave it, RM-1; Esc stays the menu's)
+      const acts = actsOf(e, 'walk'), is = (a: Act): boolean => acts.includes(a), escape = e.key === 'Escape';
+      if (is('mute') && isV2(this.st)) { void import('../audio/Sound').then((m) => { const s = m.sound(); s.set({ muted: !s.settings.muted }); window.dispatchEvent(new Event('cdt-sound')); }); return; }
+      if (this.modal) { if (escape || (is('list') && this.current?.dataset.here)) this.leave(); return; }
+      if (is('list')) this.openHere(); else if (is('map')) this.openMap(); else if (is('journal')) this.openJournal(); else if (is('board')) this.openBoard(); else if (escape) this.openMenu();
+      else if (is('skills') && isV2(this.st)) this.openSkills(false); else if (is('gear') && isV2(this.st)) this.openGear(); else if (is('settings') && isV2(this.st)) this.openSettings('sound');
+      else if (is('guide') && isV2(this.st)) this.openGuide();
     });
     this.render();
-    // a change of keyboard shows its keys at once (the list's cap: Q on QWERTY, A on AZERTY)
+    // a change of keys shows them at once (the list's cap: the player's key, Q or A at the start)
     onSettings(() => this.render());
     if (this.st.over) void this.showEnd(); else this.showNews();
   }
@@ -229,7 +231,7 @@ export class TownUi {
     if (n !== this.near) {
       this.near = n;
       const p = n ? PEOPLE[n] : null;
-      this.prompt.innerHTML = p ? `<kbd>E</kbd>${tx('ui.talkTo', { name: esc(p.name), title: esc(titleOf(p, isV2(this.st))) })}` : '';
+      this.prompt.innerHTML = p ? `${bindCap('talk')}${tx('ui.talkTo', { name: esc(p.name), title: esc(titleOf(p, isV2(this.st))) })}` : '';
       this.prompt.classList.toggle('on', !!p && !this.modal);
     }
   }
@@ -264,7 +266,7 @@ export class TownUi {
     if (this.welcomed && v2 && (sus > 0 || P.injury > 0)) { if (sus > 0) this.hint('mark'); if (P.injury > 0) this.hint('hurt'); }
     const bout = this.boutNow();
     this.hereKey.className = `pm-btn${bout ? ' primary' : ''}`;
-    this.hereKey.innerHTML = `<kbd>${shownKey('q', layout())}</kbd>${bout ? (s.v2?.challenge ? this.sandLabel(s) : tx('ui.enterArena')) : tx('ui.here')}`;
+    this.hereKey.innerHTML = `${bindCap('list')}${bout ? (s.v2?.challenge ? this.sandLabel(s) : tx('ui.enterArena')) : tx('ui.here')}`;
     if (this.current?.dataset.here) this.openHere();
   }
 
@@ -542,11 +544,12 @@ export class TownUi {
     this.page();
     const s = this.st, { root, card, body, foot } = pageShell(tx('ui.menu'), 'pm-menu');
     body.innerHTML = `<h2 class="pm-h">${tx('ui.menu')}</h2>`;
-    const add = (label: string, f: () => void, key = '') => { const b = el('button', 'pm-btn', `<span>${esc(label)}</span>${key ? `<kbd>${key}</kbd>` : ''}`); b.addEventListener('click', f); body.appendChild(b); };
-    add(tx('ui.map'), () => this.openMap(), 'M'); add(tx('ui.journal'), () => this.openJournal(), 'J'); add(tx('ui.tournament'), () => this.openBoard(), 'T');
-    if (isV2(s)) { add(tx('v2.skills.view'), () => this.openSkills(false), 'K'); add(tx('v2.gear.view'), () => this.openGear(), 'G'); add(tx('set.open'), () => this.openSettings(), 'V'); }
+    // each page's key: the player's (the remapping, journal Passe RM2, RM-6)
+    const add = (label: string, f: () => void, act: Act | '' = '') => { const b = el('button', 'pm-btn', `<span>${esc(label)}</span>${act ? bindCap(act) : ''}`); b.addEventListener('click', f); body.appendChild(b); };
+    add(tx('ui.map'), () => this.openMap(), 'map'); add(tx('ui.journal'), () => this.openJournal(), 'journal'); add(tx('ui.tournament'), () => this.openBoard(), 'board');
+    if (isV2(s)) { add(tx('v2.skills.view'), () => this.openSkills(false), 'skills'); add(tx('v2.gear.view'), () => this.openGear(), 'gear'); add(tx('set.open'), () => this.openSettings(), 'settings'); }
     // the guide (journal Passe TU3, TU-7): a line of its own
-    if (isV2(s)) add(tx('tut.guide'), () => this.openGuide(), 'H');
+    if (isV2(s)) add(tx('tut.guide'), () => this.openGuide(), 'guide');
     body.appendChild(el('p', 'pm-sub pm-gap', tx('ui.menu.saves')));
     add(tx('ui.menu.saveFile'), () => downloadSave(s));
     add(tx('ui.menu.loadFile'), () => {

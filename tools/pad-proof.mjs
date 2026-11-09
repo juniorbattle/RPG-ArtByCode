@@ -63,7 +63,8 @@ async function session(id, run) {
   try { await run({ page, frames, press, hold, stick, open, logLen }); } finally { await page.close(); }
 }
 
-const caps = (page, sel) => page.evaluate((sel) => [...document.querySelectorAll(sel)].map((k) => ({ key: k.dataset.key ?? null, text: k.textContent, label: k.getAttribute('aria-label'), svg: !!k.querySelector('svg'), hidden: k.style.display === 'none' })), sel);
+// a cap names a fixed key in data-key and an action in data-bind (the player's keys, journal Passe RM3)
+const caps = (page, sel) => page.evaluate((sel) => [...document.querySelectorAll(sel)].map((k) => ({ key: k.dataset.key ?? k.dataset.bind ?? null, text: k.textContent, label: k.getAttribute('aria-label'), svg: !!k.querySelector('svg'), hidden: k.style.display === 'none' })), sel);
 const focused = (page) => page.evaluate(() => (document.activeElement?.textContent ?? '').trim().slice(0, 60));
 const acts = [];
 
@@ -78,7 +79,7 @@ try {
     const after = await page.evaluate(() => ({ overlay: !!document.querySelector('.pm-overlay'), mode: window.__pad.mode, family: window.__pad.family }));
     check(after.mode === 'pad' && after.family === 'xbox' && (!news || !after.overlay), `A ${news ? 'closes the news' : 'wakes the pad'}: ${JSON.stringify(after)}`);
     const hints = await caps(page, '#pm-hints kbd');
-    check(hints.length === 2 && hints[0].key === 'Q' && hints[0].label === 'Y' && hints[1].key === 'Esc' && hints[1].label === 'Menu' && hints[1].svg, `the hints show Y and Menu: ${JSON.stringify(hints)}`);
+    check(hints.length === 2 && hints[0].key === 'list' && hints[0].label === 'Y' && hints[1].key === 'Esc' && hints[1].label === 'Menu' && hints[1].svg, `the hints show Y and Menu: ${JSON.stringify(hints)}`);
     // the walk, from the quay where the game starts (next to Mara the stall's colliders hold the hero): the stick to the right at full tilt, at half
     // tilt, with B held; the D-pad
     const at = await page.evaluate(() => { const m = window.__app.actors.actors.find((a) => (a.base ?? a.spec) === 'merchant'); return [m.pos.x, m.pos.z]; });
@@ -106,7 +107,7 @@ try {
     await page.evaluate((m) => window.__app.actors.player.pos.set(m[0] + 0.9, 0, m[1] + 0.6), at);
     await page.waitForFunction("window.__ui.near === 'mara'", { timeout: 60000 }).catch(() => {});
     const prompt = await caps(page, '#pm-prompt kbd');
-    check(prompt[0]?.key === 'E' && prompt[0]?.label === 'A', `the prompt shows A: ${JSON.stringify(prompt)}`);
+    check(prompt[0]?.key === 'talk' && prompt[0]?.label === 'A', `the prompt shows A: ${JSON.stringify(prompt)}`);
     await press(B.A);
     await page.waitForSelector('.pm-talk .pm-dlg', { timeout: 20000 }).catch(() => {});
     const dlg = await page.evaluate(() => document.querySelector('.pm-talk .pm-dlg h2')?.firstChild?.textContent ?? null);
@@ -138,7 +139,7 @@ try {
     // Start: the menu, the journal, the shoulders
     await press(B.START);
     const menu = await caps(page, '.pm-menu kbd');
-    check(menu.filter((c) => !c.hidden).map((c) => c.key).join() === 'M,Esc' && menu.find((c) => c.key === 'M')?.label === 'View', `Start opens the menu, its shortcuts hidden but the map's: ${JSON.stringify(menu.map((c) => `${c.key}:${c.hidden ? 'hidden' : c.label}`))}`);
+    check(menu.filter((c) => !c.hidden).map((c) => c.key).join() === 'map,Esc' && menu.find((c) => c.key === 'map')?.label === 'View', `Start opens the menu, its shortcuts hidden but the map's: ${JSON.stringify(menu.map((c) => `${c.key}:${c.hidden ? 'hidden' : c.label}`))}`);
     await press(B.DOWN); await press(B.A);
     const title = () => page.evaluate(() => document.querySelector('.pm-overlay .pm-card')?.getAttribute('aria-label') ?? null);
     const pages = [await title()];
@@ -186,7 +187,8 @@ try {
     const kb = await caps(page, '#pm-hints kbd');
     await press(B.LB);
     const pd = await caps(page, '#pm-hints kbd');
-    check(kb[0].text === 'Q' && kb[0].key === null && pd[0].label === 'Y', `a key gives the caps their keys back (${kb.map((c) => c.text)}), a pad press the buttons (${pd.map((c) => c.label)})`);
+    // the cap keeps naming its action (data-bind, journal Passe RM3); its text is the key again
+    check(kb[0].text === 'Q' && kb[0].key === 'list' && kb[0].label === null && pd[0].label === 'Y', `a key gives the caps their keys back (${kb.map((c) => c.text)}), a pad press the buttons (${pd.map((c) => c.label)})`);
     check(await page.evaluate(() => !document.getElementById('pm-padsound') || !document.getElementById('pm-padsound').classList.contains('on') || window.__pad.mode === 'pad'), 'the sound line only with the pad');
     await page.screenshot({ path: path.join(outDir, '1-town.png') });
     acts.push(...await page.evaluate(() => window.__acts ?? []));
@@ -221,7 +223,7 @@ try {
     const fight = await page.evaluate(() => ({ band: !!document.querySelector('.pm-overlay'), paused: window.__arena.paused }));
     check(!fight.band && !fight.paused, `A « Fight »: ${JSON.stringify(fight)}`);
     const bar = await caps(page, '#ah-bar kbd');
-    check(bar.map((c) => `${c.key}:${c.label}`).join() === 'K:B,L:A,J:X', `the duel's bar shows B, A, X: ${bar.map((c) => `${c.key}:${c.label}`)}`);
+    check(bar.map((c) => `${c.key}:${c.label}`).join() === 'guard:B,dodge:A,attack:X', `the duel's bar shows B, A, X: ${bar.map((c) => `${c.key}:${c.label}`)}`);
     // the opponent held off while the commands are read
     await page.evaluate(() => { window.__arena.sim.f.marek.aiWait = 1e9; window.__arena.sim.f.ren.ap = 5; });
     await hold(B.X, true); await page.waitForFunction(() => window.__arena.charge.view().reached >= 1, { timeout: 15000 }).catch(() => {});

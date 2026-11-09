@@ -96,9 +96,10 @@ test('UM2-3: the digits of the title font come from the text font; UM-R1, UM-R2:
   assert.match(S, /DIGITS = 'U\+0030-0039'/);
   // no bar of keys and no panel on the scene: the state, the prompt, the list's and the menu's keys
   assert.ok(!/pm-bar|pm-here/.test(U), 'the former bar and panel are gone');
-  for (const key of ["k === 'q'", "k === 'm'", "k === 'j'", "k === 't'", "k === 'k'", "k === 'g'", "k === 'v'", "k === 'escape'"]) assert.ok(U.includes(key), key);
-  // the menu shows the shortcuts
-  for (const k of ['M', 'J', 'T', 'K', 'G', 'V']) assert.match(U, new RegExp(`, '${k}'\\)`), `the menu's ${k}`);
+  // the list's and the pages' keys: the player's (the remapping, journal Passe RM2), Esc the menu's
+  for (const key of ["is('list')", "is('map')", "is('journal')", "is('board')", "is('skills')", "is('gear')", "is('settings')", "escape = e.key === 'Escape'"]) assert.ok(U.includes(key), key);
+  // the menu shows the shortcuts, each by its action's cap
+  for (const a of ['map', 'journal', 'board', 'skills', 'gear', 'settings']) assert.match(U, new RegExp(`, '${a}'\\)`), `the menu's ${a}`);
   assert.match(U, /tx\('ui\.enterArena'\)\) : tx\('ui\.here'\)/, 'the bout keeps its prompt');
 });
 

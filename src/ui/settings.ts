@@ -2,9 +2,11 @@ import { tx, type TextKey } from '../narrative/text';
 import { capOf } from '../input/glyphs';
 import { BTN, type Btn, type PadFamily } from '../input/pad';
 import {
-  FPS_STEPS, LANGS, layout, loadSettings, MSAA_STEPS, onSettings, QUALITY, QUALITY_STEPS, qualityOf, REFL_STEPS, RES_STEPS, saveSettings, shownKey,
+  FPS_STEPS, keysOf, LANGS, layout, loadSettings, MSAA_STEPS, onSettings, QUALITY, QUALITY_STEPS, qualityOf, REFL_STEPS, RES_STEPS, saveKeys, saveSettings,
   type GameSettings, type Lang, type Layout, type Quality,
 } from '../settings/settings';
+import { DEFAULT_KEYS, labelOf, normCode, rebind, reserved, type Act, type KeyTable, type Slot } from '../settings/keys';
+import { bindCap, fixedName, slotName } from '../input/caps';
 import { el, esc, fillFoot, footBtn, injectStyle, pickRow, scrollFade } from './style';
 import { chooseLanguage, pageLang } from '../settings/language';
 
@@ -47,6 +49,11 @@ const CSS = `
 .pm-cap .pad-l{display:block;line-height:26px}
 .pm-cap .pad-s{display:block}
 .pm-keys .via{font-size:var(--ds-fs-small);color:var(--ds-muted)}
+.pm-keys td .why{display:block;font-size:var(--ds-fs-small);color:var(--ds-muted)}
+.pm-keys tr.fixed td{color:var(--ds-muted)}
+.pm-slot{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:44px;height:34px;margin:2px 0 2px 6px;padding:0 10px;font:600 var(--ds-fs-small)/1 var(--ds-text);color:var(--ds-ivory);background:transparent;border:1px solid var(--ds-muted);border-radius:3px;cursor:pointer;white-space:nowrap}
+.pm-slot:hover,.pm-slot:focus,.pm-slot.wait{border-color:var(--ds-accent);color:var(--ds-accent);outline:none}
+.pm-slot.empty{color:var(--ds-muted)}
 @media (max-height:480px) and (min-width:701px){.pm-overlay .pm-card.pm-two.pm-settings{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr);column-gap:28px}.pm-settings .pm-glist .why{display:none}.pm-settings .pm-col .pm-head p{display:none}.pm-settings .pm-col .pm-head{padding-bottom:6px}}
 `;
 
@@ -63,6 +70,12 @@ const FPS_LABEL = (v: number): string => (v === 0 ? tx('set.fps.none') : String(
 const QUALITY_LABEL: Record<Quality, TextKey> = { low: 'set.quality.low', medium: 'set.quality.medium', high: 'set.quality.high', ultra: 'set.quality.ultra' };
 const LAYOUT_LABEL: Record<Layout, string> = { qwerty: 'QWERTY', azerty: 'AZERTY' };
 const LANG_LABEL: Record<Lang, string> = { en: 'English', fr: 'Français' };
+/** each action's line (the remapping sheet, journal Passe RM2) */
+const ACT_LABEL: Record<Act, TextKey> = {
+  up: 'set.keys.up', down: 'set.keys.down', left: 'set.keys.left', right: 'set.keys.right', run: 'set.keys.run', talk: 'set.keys.talk', list: 'set.keys.here', map: 'set.keys.map',
+  journal: 'set.keys.journal', board: 'set.keys.board', skills: 'set.keys.skills', gear: 'set.keys.gear', settings: 'set.keys.settingsPage', guide: 'set.keys.guide', mute: 'set.keys.mute',
+  attack: 'set.keys.attack', guard: 'set.keys.guard', dodge: 'set.keys.dodge', pause: 'set.keys.pause',
+};
 const SECTION_KEY: Record<SettingsSection, [TextKey, TextKey]> = {
   graphics: ['set.graphics', 'set.graphics.sub'], sound: ['set.sound', 'set.sound.sub'], controls: ['set.controls', 'set.controls.sub'], language: ['set.language', 'set.language.sub'],
 };
@@ -98,9 +111,9 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
     b.dataset.ctl = 'choice'; draw();
     return b;
   };
-  /** a switch */
-  const toggle = (label: string, get: () => boolean, set: (v: boolean) => void, note = '', kbd = ''): HTMLButtonElement => {
-    const b = el('button', 'pm-btn', `<i class="pm-check"></i><span>${esc(label)}${note ? `<span class="why">${esc(note)}</span>` : ''}</span>${kbd ? `<kbd>${kbd}</kbd>` : ''}`);
+  /** a switch (its key's cap, html: src/input/caps.ts) */
+  const toggle = (label: string, get: () => boolean, set: (v: boolean) => void, note = '', capHtml = ''): HTMLButtonElement => {
+    const b = el('button', 'pm-btn', `<i class="pm-check"></i><span>${esc(label)}${note ? `<span class="why">${esc(note)}</span>` : ''}</span>${capHtml}`);
     b.setAttribute('aria-pressed', String(get()));
     b.addEventListener('click', () => { set(!get()); b.setAttribute('aria-pressed', String(get())); });
     b.dataset.ctl = 'toggle';
@@ -144,7 +157,7 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
         slider(tx('v2.sound.music'), () => snd.settings.music, set('music')),
         slider(tx('set.ambience'), () => snd.settings.ambience, set('ambience')),
         slider(tx('set.effects'), () => snd.settings.effects, set('effects')),
-        toggle(tx('v2.sound.mute'), () => snd.settings.muted, (v) => snd.set({ muted: v }), '', 'N'),
+        toggle(tx('v2.sound.mute'), () => snd.settings.muted, (v) => snd.set({ muted: v }), '', bindCap('mute')),
       );
       // the page opened from the keyboard on this part lands on its first control
       if (pendingFocus) { pendingFocus = false; (detail.children[at]?.querySelector('input') as HTMLElement | null)?.focus(); }
@@ -152,47 +165,109 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
     });
   };
 
+  // ---------------------------------------------------------------- the player's keys (the remapping sheet, journal Passes RM1 / RM2)
+  /** the last change, said on its line (kept across the redraw the change causes) */
+  let said: { at: string; text: string } | null = null;
+  /** a slot waiting for its key: what ends the wait */
+  let waiting: (() => void) | null = null;
+  const stopWait = (): void => { waiting?.(); waiting = null; };
+  const actLabel = (a: Act): string => tx(ACT_LABEL[a]);
+
+  /** RM-8 « Dans la partie Contrôles, une ligne par action »: Enter or a click on a slot, then the key; Esc cancels, Backspace empties the slot; the key
+   *  already taken in the same moment swapped (RM-4), the reserved keys refused, the change said on its line; the gamepad cannot give a key (RM-3) */
+  const wait = (b: HTMLButtonElement): void => {
+    stopWait();
+    const act = b.dataset.act as Act, col = Number(b.dataset.col ?? 0) as 0 | 1;
+    b.textContent = tx('set.keys.wait'); b.classList.add('wait');
+    const cell = b.closest('tr')?.querySelector('td');
+    cell?.querySelector('.why')?.remove();
+    cell?.insertAdjacentHTML('beforeend', `<span class="why" role="status">${esc(tx('set.keys.wait.sub', { act: actLabel(act) }))}</span>`);
+    fit();
+    let swallow: string | null = null;
+    const stop = (): void => { window.removeEventListener('keydown', onKey, true); document.removeEventListener('pointerdown', onPointer, true); waiting = null; };
+    const cancel = (): void => { stop(); window.removeEventListener('keyup', onUp, true); said = null; redraw(); };
+    const done = (text: string, table?: KeyTable): void => { said = { at: act, text }; stop(); if (table) saveKeys(table); else redraw(); };
+    function onKey(e: KeyboardEvent): void {
+      e.preventDefault(); e.stopImmediatePropagation();
+      if (e.repeat) return;
+      if (e.key === 'Escape') { cancel(); return; }
+      if (!e.isTrusted) return;
+      if (e.key === 'Backspace') {
+        swallow = 'Backspace';
+        const r = rebind(keysOf(), act, col, null);
+        done(r.ok ? tx('set.keys.cleared', { act: actLabel(act) }) : tx('set.keys.last', { act: actLabel(act) }), r.ok ? r.table : undefined);
+        return;
+      }
+      const sl: Slot = { c: normCode(e.code, e.key), k: labelOf(e.key) }, name = slotName(sl);
+      swallow = sl.c;
+      if (reserved(sl.c, sl.k)) { done(tx('set.keys.reserved', { key: name })); return; }
+      const r = rebind(keysOf(), act, col, sl);
+      if (!r.ok) { done(r.why === 'clash' ? tx('set.keys.clash', { key: name, other: actLabel(r.act ?? act) }) : r.why === 'last' ? tx('set.keys.last', { act: actLabel(r.act ?? act) }) : tx('set.keys.reserved', { key: name })); return; }
+      const sw = r.swaps[0];
+      done(!sw ? tx('set.keys.done', { key: name, act: actLabel(act) })
+        : sw.to ? tx('set.keys.swapped', { key: name, act: actLabel(act), other: actLabel(sw.act), old: slotName(sw.to) })
+          : tx('set.keys.emptied', { key: name, act: actLabel(act), other: actLabel(sw.act) }), r.table);
+    }
+    // the chosen key's release stays here too (Space released on the slot would press it again)
+    function onUp(e: KeyboardEvent): void { if (swallow && normCode(e.code, e.key) === swallow) { e.preventDefault(); e.stopImmediatePropagation(); swallow = null; window.removeEventListener('keyup', onUp, true); } }
+    function onPointer(e: PointerEvent): void { if (e.target !== b) cancel(); }
+    window.addEventListener('keydown', onKey, true); window.addEventListener('keyup', onUp, true); document.addEventListener('pointerdown', onPointer, true);
+    waiting = () => { stop(); window.removeEventListener('keyup', onUp, true); };
+  };
+  /** a slot's arrows: ← → its line's other slot (← on the first back to the parts), ↑ ↓ the same slot on the line above or below */
+  const slotKey = (e: KeyboardEvent, b: HTMLButtonElement): void => {
+    if (waiting) return;
+    const col = Number(b.dataset.col ?? 0);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault(); e.stopPropagation();
+      if (e.key === 'ArrowLeft' && col === 0) { rows.get(shown)!.focus(); return; }
+      b.closest('td')?.querySelector<HTMLElement>(`.pm-slot[data-col="${e.key === 'ArrowLeft' ? 0 : 1}"]`)?.focus();
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault(); e.stopPropagation();
+      const d = e.key === 'ArrowDown' ? 1 : -1, all = [...detail.querySelectorAll<HTMLElement>('button, input')];
+      const same = all.filter((x) => x.classList.contains('pm-slot') && x.dataset.col === b.dataset.col), i = same.indexOf(b);
+      const out = (x: HTMLElement) => !x.classList.contains('pm-slot');
+      (same[i + d] ?? (d > 0 ? all.slice(all.indexOf(same[same.length - 1]) + 1).find(out) : all.slice(0, all.indexOf(same[0])).reverse().find(out)))?.focus();
+    }
+  };
+
   const controls = (padIn: typeof import('../input/PadInput') | null): void => {
-    const lay = layout(), fam: PadFamily = padIn?.pad()?.family ?? 'xbox', k = (x: string) => shownKey(x, lay);
-    detail.append(choice(tx('set.keyboard'), ['qwerty', 'azerty'] as const, () => layout(), (v) => saveSettings({ keyboard: v }), (v) => LAYOUT_LABEL[v ?? 'qwerty'], tx('set.keyboard.sub')));
+    const lay = layout(), fam: PadFamily = padIn?.pad()?.family ?? 'xbox', keys = keysOf();
+    detail.append(choice(tx('set.keyboard'), ['qwerty', 'azerty'] as const, () => layout(), (v) => { said = null; saveSettings({ keyboard: v }); }, (v) => LAYOUT_LABEL[v ?? 'qwerty'], tx('set.keyboard.sub')));
     if (padIn) detail.appendChild(toggle(tx('v2.sound.vibration'), () => padIn.padSettings().vibration, (v) => padIn.setPadSettings({ vibration: v })));
-    const table = (rows: Array<[TextKey, string, string]>) => {
-      const t = el('table', 'pm-keys');
-      t.innerHTML = rows.map(([label, kb, pd]) => `<tr><td>${esc(tx(label))}</td><td class="k">${kb}</td><td class="p">${pd}</td></tr>`).join('');
-      return t;
+    detail.appendChild(note(tx('set.keys.rebind')));
+    const table = (html: string) => { const t = el('table', 'pm-keys'); t.innerHTML = html; return t; };
+    const why = (at: string) => (said?.at === at ? `<span class="why" role="status">${esc(said.text)}</span>` : '');
+    const slot = (a: Act, i: 0 | 1) => {
+      const sl = keys[a][i], name = slotName(sl);
+      return `<button class="pm-slot${sl ? '' : ' empty'}" type="button" data-act="${a}" data-col="${i}" aria-label="${esc(tx('set.keys.slot', { act: actLabel(a), n: i + 1, key: name }))}">${esc(name)}</button>`;
     };
-    const via = `<span class="via">${esc(tx('set.keys.viaMenu'))}</span>`;
+    // an action the player may rebind (RM-1): its two slots (RM-2) and the gamepad's buttons beside, which stay as they are (RM-3)
+    const own = (a: Act, pd: string) => `<tr data-row="${a}"><td>${esc(actLabel(a))}${why(a)}</td><td class="k">${slot(a, 0)}${slot(a, 1)}</td><td class="p">${pd}</td></tr>`;
+    // a fixed key (RM-1: Esc, Enter, the pages' arrows and Space), in grey, its name in the page's language (RM-7)
+    const fixed = (label: TextKey, kb: string, pd: string) => `<tr class="fixed"><td>${esc(tx(label))}</td><td class="k">${kb}</td><td class="p">${pd}</td></tr>`;
+    const via = `<span class="via">${esc(tx('set.keys.viaMenu'))}</span>`, walkPad = (b: Btn) => cap(fam, BTN.LS, b);
     detail.append(
       heading(tx('set.keys.walk')),
-      table([
-        // « Arrows » in words: ← and → are outside the fonts' subset (LATIN_RANGE holds ↑ and ↓ only)
-        ['set.keys.move', key(k('w'), k('a'), k('s'), k('d'), tx('set.keys.arrows')), cap(fam, BTN.LS, BTN.UP)],
-        ['set.keys.run', key('Shift'), cap(fam, BTN.B)],
-        ['set.keys.talk', key(k('e')), cap(fam, BTN.A)],
-        ['set.keys.here', key(k('q')), cap(fam, BTN.Y)],
-        ['set.keys.menu', key('Esc'), cap(fam, BTN.START)],
-        ['set.keys.map', key(k('m')), cap(fam, BTN.VIEW)],
-        ['set.keys.pages', key(k('j'), k('t'), k('k'), k('g'), k('v'), k('h')), via],
-        ['set.keys.mute', key(k('n')), via],
-      ]),
+      table(own('up', walkPad(BTN.UP)) + own('down', walkPad(BTN.DOWN)) + own('left', walkPad(BTN.LEFT)) + own('right', walkPad(BTN.RIGHT))
+        + own('run', cap(fam, BTN.B)) + own('talk', cap(fam, BTN.A)) + own('list', cap(fam, BTN.Y)) + fixed('set.keys.menu', key(fixedName('Esc')), cap(fam, BTN.START))
+        + own('map', cap(fam, BTN.VIEW)) + (['journal', 'board', 'skills', 'gear', 'settings', 'guide', 'mute'] as const).map((a) => own(a, via)).join('')),
       heading(tx('set.keys.page')),
-      table([
-        ['set.keys.choose', key('↑', '↓'), cap(fam, BTN.UP, BTN.LS)],
-        ['set.keys.press', key('Enter'), cap(fam, BTN.A)],
-        ['set.keys.back', key('Esc'), cap(fam, BTN.B)],
-        ['set.keys.space', key('Space'), cap(fam, BTN.X)],
-        ['set.keys.tab', '', cap(fam, BTN.LB, BTN.RB)],
-        ['set.keys.scroll', '', cap(fam, BTN.RS)],
-      ]),
+      table(fixed('set.keys.choose', key('↑', '↓'), cap(fam, BTN.UP, BTN.LS)) + fixed('set.keys.press', key(fixedName('Enter')), cap(fam, BTN.A))
+        + fixed('set.keys.back', key(fixedName('Esc')), cap(fam, BTN.B)) + fixed('set.keys.space', key(fixedName('Space')), cap(fam, BTN.X))
+        + fixed('set.keys.tab', '', cap(fam, BTN.LB, BTN.RB)) + fixed('set.keys.scroll', '', cap(fam, BTN.RS))),
       heading(tx('set.keys.duel')),
-      table([
-        ['set.keys.attack', key('J'), cap(fam, BTN.X, BTN.RT)],
-        ['set.keys.guard', key('K'), cap(fam, BTN.B, BTN.LT)],
-        ['set.keys.dodge', key('L'), cap(fam, BTN.A)],
-        ['set.keys.pause', key('Space'), cap(fam, BTN.START)],
-        ['set.keys.settings', key('Esc'), cap(fam, BTN.Y)],
-      ]),
+      table(own('attack', cap(fam, BTN.X, BTN.RT)) + own('guard', cap(fam, BTN.B, BTN.LT)) + own('dodge', cap(fam, BTN.A)) + own('pause', cap(fam, BTN.START))
+        + fixed('set.keys.settings', key(fixedName('Esc')), cap(fam, BTN.Y))),
     );
+    // « Default keys »: the shown keyboard's starting keys back (RM-5)
+    const reset = el('button', 'pm-btn', `<span>${esc(tx('set.keys.default'))}<span class="why">${esc(tx('set.keys.default.sub', { layout: LAYOUT_LABEL[lay] }))}</span>${why('reset')}</span>`);
+    reset.addEventListener('click', () => { said = { at: 'reset', text: tx('set.keys.reset', { layout: LAYOUT_LABEL[lay] }) }; saveKeys(DEFAULT_KEYS[lay], lay); });
+    detail.appendChild(reset);
+    for (const b of detail.querySelectorAll<HTMLButtonElement>('.pm-slot')) {
+      b.addEventListener('click', () => wait(b));
+      b.addEventListener('keydown', (e) => slotKey(e, b));
+    }
   };
 
   const language = (): void => {
@@ -212,6 +287,8 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
   // ---------------------------------------------------------------- the page
   let pendingFocus = false;
   const show = (sec: SettingsSection): void => {
+    // a change said on its line belongs to its part (the remapping's messages, journal Passe RM3)
+    if (sec !== shown) { said = null; stopWait(); }
     shown = sec;
     const [t, s] = SECTION_KEY[sec];
     title.textContent = tx(t); sub.textContent = tx(s);
@@ -272,7 +349,7 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
   const onFull = () => { if (root.isConnected && shown === 'graphics') redraw(); };
   document.addEventListener('fullscreenchange', onFull);
   let closed = false;
-  const close = (): void => { if (closed) return; closed = true; off(); window.removeEventListener('cdt-sound', onMute); document.removeEventListener('fullscreenchange', onFull); root.remove(); o.close(); };
+  const close = (): void => { if (closed) return; closed = true; stopWait(); off(); window.removeEventListener('cdt-sound', onMute); document.removeEventListener('fullscreenchange', onFull); root.remove(); o.close(); };
 
   show(shown);
   return {

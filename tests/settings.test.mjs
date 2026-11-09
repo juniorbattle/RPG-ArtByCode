@@ -7,11 +7,13 @@ import path from 'node:path';
 import { load, ROOT } from './load.mjs';
 
 const S = await load('/src/settings/settings.ts');
+const KY = await load('/src/settings/keys.ts');
 const src = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\r\n/g, '\n');
 const q = (s) => new URLSearchParams(s);
 
 test('the defaults are today\'s game: no resolution cap, MSAA 4, the reflection at half, a60, depth of field and bloom on, no reduced motion', () => {
-  assert.deepEqual({ ...S.DEFAULT_SETTINGS }, { res: 'native', msaa: 4, refl: 0.5, fps: 60, dof: true, bloom: true, reducedMotion: false, keyboard: null, lang: null });
+  // keys: null, today's keys (the remapping, journal Passe RM2, RM-9: nothing stored is today's game, key for key)
+  assert.deepEqual({ ...S.DEFAULT_SETTINGS }, { res: 'native', msaa: 4, refl: 0.5, fps: 60, dof: true, bloom: true, reducedMotion: false, keyboard: null, lang: null, keys: null });
   const g = S.graphicsFrom(q(''), S.readSettings(null));
   assert.deepEqual(g, { resCap: null, msaa: 4, refl: 0.5, frameCap: { kind: 'adaptive', fps: 60 }, dof: true, bloom: true });
   // the operator's choices of journal Passes 6e to 6h, as the scenes wrote them before (App.ts: a60, PostFX: msaa 4, PlanarReflection: 0.5)
@@ -25,8 +27,12 @@ test('the record: every field checked, anything broken is its default', () => {
   assert.deepEqual(S.readSettings('{oops'), { ...S.DEFAULT_SETTINGS });
   assert.deepEqual(S.readSettings('[1,2]'), { ...S.DEFAULT_SETTINGS });
   assert.deepEqual(S.readSettings('{"res":800,"msaa":3,"refl":0.3,"fps":45,"dof":"no","bloom":1,"reducedMotion":"yes","keyboard":"dvorak","lang":"de"}'), { ...S.DEFAULT_SETTINGS });
-  const all = { res: 720, msaa: 0, refl: 1, fps: 0, dof: false, bloom: false, reducedMotion: true, keyboard: 'azerty', lang: 'fr' };
+  const all = { res: 720, msaa: 0, refl: 1, fps: 0, dof: false, bloom: false, reducedMotion: true, keyboard: 'azerty', lang: 'fr', keys: { azerty: { talk: [{ c: 'KeyF', k: 'f' }, { c: 'Space', k: ' ' }] } } };
   assert.deepEqual(S.readSettings(JSON.stringify(all)), all);
+  // the keys (RM-9): a broken slot is its default, and what is left equal to the starting keys is not kept
+  assert.equal(S.readSettings('{"keys":[1]}').keys, null);
+  assert.equal(S.readSettings('{"keys":{"qwerty":{"talk":[{"c":"Escape","k":"Escape"},{"c":"Space","k":" "}]}}}').keys, null, 'a reserved key is its default');
+  assert.deepEqual(S.readSettings('{"keys":{"qwerty":{"talk":[{"c":"KeyF","k":"f"},7],"nope":[null,null]}}}').keys, { qwerty: { talk: [{ c: 'KeyF', k: 'f' }, { c: 'Space', k: ' ' }] } });
   for (const res of S.RES_STEPS) assert.equal(S.readSettings(JSON.stringify({ res })).res, res);
 });
 
@@ -69,16 +75,15 @@ test('the quality\'s tiers (RG-3): each sets the resolution, the anti-aliasing a
 });
 
 test('the keyboard (RG-7): on AZERTY, Z Q S D walk and A opens the list; the gamepad\'s keys and QWERTY are left as they are', () => {
-  assert.deepEqual(['z', 'q', 's', 'd', 'a', 'w', 'e', 'm', 'j', 'n', 'Escape', 'ArrowUp', ' '].map((k) => S.gameKey(k, 'azerty')), ['w', 'a', 's', 'd', 'q', 'z', 'e', 'm', 'j', 'n', 'escape', 'arrowup', ' ']);
-  assert.deepEqual(['W', 'A', 'S', 'D', 'Q', 'Z'].map((k) => S.gameKey(k, 'qwerty')), ['w', 'a', 's', 'd', 'q', 'z']);
-  // a key the gamepad presses is the game's own (src/input/PadInput.ts dispatches the keys the interface shows)
-  assert.equal(S.gameKey('q', 'azerty', false), 'q');
-  // the caps show the key one presses
-  assert.deepEqual(['w', 'a', 's', 'd', 'q', 'e'].map((k) => S.shownKey(k, 'azerty')), ['Z', 'Q', 'S', 'D', 'A', 'E']);
-  assert.deepEqual(['w', 'a', 's', 'd', 'q'].map((k) => S.shownKey(k, 'qwerty')), ['W', 'A', 'S', 'D', 'Q']);
-  assert.equal(S.shownKey('Esc', 'azerty'), 'Esc');
-  // what a key shows, the game reads back: the two functions undo each other on both keyboards
-  for (const l of ['qwerty', 'azerty']) for (const k of 'wasdqzemjtkgvn') assert.equal(S.gameKey(S.shownKey(k, l), l), k, `${l} ${k}`);
+  // since the remapping (journal Passe RM2, RM-5) a key is read by its place: each keyboard's starting keys are today's, a real AZERTY keyboard's events
+  // (its Z at QWERTY's W, its A at QWERTY's Q, its M at QWERTY's ;) doing what they did through the layout's translation of journal Passe RG3
+  const K = { qwerty: S.keysOf(S.readSettings(null), 'qwerty'), azerty: S.keysOf(S.readSettings(null), 'azerty') };
+  const real = { qwerty: { w: 'KeyW', a: 'KeyA', s: 'KeyS', d: 'KeyD', q: 'KeyQ', z: 'KeyZ', e: 'KeyE', m: 'KeyM', j: 'KeyJ', n: 'KeyN' }, azerty: { z: 'KeyW', q: 'KeyA', s: 'KeyS', d: 'KeyD', a: 'KeyQ', w: 'KeyZ', e: 'KeyE', m: 'Semicolon', j: 'KeyJ', n: 'KeyN' } };
+  const walkActs = (t, e) => KY.actsOfId(KY.keyId(e), 'walk', t), read = (l, k) => walkActs(K[l], { code: real[l][k], key: k });
+  assert.deepEqual(['z', 'q', 's', 'd', 'a', 'w', 'e', 'm', 'j', 'n'].map((k) => read('azerty', k)), [['up'], ['left'], ['down'], ['right'], ['list'], [], ['talk'], ['map'], ['journal'], ['mute']]);
+  assert.deepEqual(['w', 'a', 's', 'd', 'q', 'z', 'e', 'm'].map((k) => read('qwerty', k)), [['up'], ['left'], ['down'], ['right'], ['list'], [], ['talk'], ['map']]);
+  // a key the gamepad presses is the game's own (src/input/PadInput.ts dispatches the keys the interface shows): « q » is the list on AZERTY's table too
+  assert.deepEqual(walkActs(K.azerty, { key: 'q', isTrusted: false }), ['list']);
   // the layout: the browser's keyboard map first, then the language
   assert.equal(S.layoutOfMap(new Map([['KeyQ', 'a'], ['KeyW', 'z']])), 'azerty');
   assert.equal(S.layoutOfMap(new Map([['KeyQ', 'q'], ['KeyW', 'w']])), 'qwerty');
@@ -113,18 +118,72 @@ test('every scene renders with the settings, the address first; none reads its o
   assert.match(scene, /onSettings\(\(s\) => \{ applyGraphics\(scene, params, s\); scene\.resize\(\); \}\)/);
 });
 
-test('the walking keys go through the keyboard\'s layout (RG-7); the list\'s key and its cap too', () => {
-  const actors = src('src/characters/ActorSystem.ts'), plaza = src('src/world/PlazaApp.ts');
-  assert.match(actors, /const k = gameKey\(e\.key, layout\(\), e\.isTrusted\);\n      this\.keys\.add\(k\);/);
-  assert.match(plaza, /keys\.add\(gameKey\(e\.key, layout\(\), e\.isTrusted\)\)/);
-  for (const t of [actors, plaza]) assert.match(t, /keys\.delete\(gameKey\(e\.key, layout\(\), e\.isTrusted\)\)/);
-  assert.match(src('src/arena/ArenaApp.ts'), /walkKeys\.add\(gameKey\(e\.key, layout\(\), e\.isTrusted\)\)/);
+test('the walking keys go through the player\'s keys (RG-7, then the remapping of journal Passe RM2); the list\'s key and its cap too', () => {
+  // a key held by its id (its place, or the QWERTY name the pad and the tools give), the walk and the run read through the player's actions
+  const actors = src('src/characters/ActorSystem.ts'), plaza = src('src/world/PlazaApp.ts'), arena = src('src/arena/ArenaApp.ts');
+  assert.match(actors, /this\.keys\.add\(keyId\(e\)\);\n      if \(actsOf\(e, 'walk'\)\.includes\('talk'\)\) this\.interact\(\);/);
+  assert.match(plaza, /keys\.add\(keyId\(e\)\)/);
+  for (const t of [actors, plaza]) assert.match(t, /keys\.delete\(keyId\(e\)\)/);
+  assert.match(arena, /walkKeys\.add\(keyId\(e\)\)/);
+  for (const t of [actors, plaza, arena]) for (const a of ['up', 'down', 'left', 'right']) assert.ok(t.includes(`actHeld(k, '${a}')`), a);
+  for (const t of [actors, plaza]) assert.ok(t.includes("actHeld(k, 'run')"));
+  for (const t of [actors, plaza, arena]) assert.doesNotMatch(t, /has\('(arrow\w+|shift|[wasd])'\)/, 'no key read by its letter');
   const town = src('src/ui/townUi.ts');
-  assert.match(town, /const k = keyOf\(e\);/);
-  assert.match(town, /<kbd>\$\{shownKey\('q', layout\(\)\)\}<\/kbd>/);
+  assert.match(town, /const acts = actsOf\(e, 'walk'\)/);
+  assert.match(town, /this\.hereKey\.innerHTML = `\$\{bindCap\('list'\)\}/);
   assert.match(town, /onSettings\(\(\) => this\.render\(\)\);/);
-  // the duel's keys (J, K, L) are the same on both keyboards and are read as typed
-  assert.match(src('src/arena/ArenaApp.ts'), /const k = e\.key\.toLowerCase\(\), m = KEYS\[k\];/);
+  // the version 2's duel reads the player's keys too; the other rules keep the prototype's
+  assert.match(arena, /const bound = this\.charge \? actsOf\(e, 'duel'\) : \[\]/);
+});
+
+test('the player\'s keys (journal Passe RM2): the starting keys are today\'s, a swap in one moment, the reserved keys, the slots, the record', () => {
+  const Q = KY.DEFAULT_KEYS.qwerty, A = KY.DEFAULT_KEYS.azerty, slot = (c, k) => ({ c, k });
+  // RM-2: today's keys at the start, the duel's those of V2_KEYS (journal Passe V1), the walk's those of journal Passe RG3, on each keyboard; none shared in a moment
+  assert.deepEqual(KY.conflicts(Q), []); assert.deepEqual(KY.conflicts(A), []);
+  const label = (t, a) => t[a].map((x) => x?.k ?? null);
+  assert.deepEqual(['up', 'left', 'down', 'right', 'run', 'talk', 'list', 'map'].map((a) => label(Q, a)), [['w', 'ArrowUp'], ['a', 'ArrowLeft'], ['s', 'ArrowDown'], ['d', 'ArrowRight'], ['Shift', null], ['e', ' '], ['q', null], ['m', null]]);
+  assert.deepEqual(['up', 'left', 'list', 'map'].map((a) => label(A, a)), [['z', 'ArrowUp'], ['q', 'ArrowLeft'], ['a', null], ['m', null]]);
+  assert.deepEqual(['journal', 'board', 'skills', 'gear', 'settings', 'guide', 'mute'].map((a) => Q[a][0].k).join(''), 'jtkgvhn');
+  assert.deepEqual(['attack', 'guard', 'dodge', 'pause'].map((a) => label(Q, a)), [['j', '1'], ['k', 'b'], ['l', 'a'], [' ', null]]);
+  // a key read by its place: both Shifts are one, a keypad digit is its digit (the AZERTY top row's « 1 » attacks: it types « & »)
+  assert.equal(KY.normCode('ShiftRight', 'Shift'), 'Shift');
+  assert.equal(KY.normCode('Numpad1', '1'), 'Digit1');
+  assert.deepEqual(KY.actsOfId(KY.keyId({ code: 'Digit1', key: '&' }), 'duel', A), ['attack']);
+  assert.deepEqual(KY.actsOfId(KY.keyId({ code: 'Numpad1', key: '1' }), 'duel', Q), ['attack']);
+  assert.deepEqual(KY.actsOfId(KY.keyId({ code: 'KeyW', key: 'W' }), 'walk', Q), ['up'], 'Shift held changes nothing');
+  // mute is heard walking and in the duel; J journals walking and attacks in the duel (two moments, one key: as today)
+  assert.deepEqual(KY.actsOfId('KeyN', 'duel', Q), ['mute']);
+  assert.deepEqual([KY.actsOfId('KeyJ', 'walk', Q), KY.actsOfId('KeyJ', 'duel', Q)], [['journal'], ['attack']]);
+  // RM-4: a key already taken in the same moment swaps
+  let r = KY.rebind(Q, 'talk', 0, slot('Shift', 'Shift'));
+  assert.ok(r.ok); assert.deepEqual(label(r.table, 'talk'), ['Shift', ' ']); assert.deepEqual(label(r.table, 'run'), ['e', null]);
+  assert.deepEqual(r.swaps, [{ act: 'run', slot: 0, to: slot('KeyE', 'e') }]);
+  // the duel's attack on K: the guard takes J; walking, K stays the skills'
+  r = KY.rebind(Q, 'attack', 0, slot('KeyK', 'k'));
+  assert.deepEqual([label(r.table, 'attack'), label(r.table, 'guard'), label(r.table, 'skills')], [['k', '1'], ['j', 'b'], ['k', null]]);
+  // a key free in the moment: nothing swaps; the action's other slot holding it: the two slots trade
+  r = KY.rebind(Q, 'map', 0, slot('KeyF', 'f')); assert.deepEqual([r.swaps, label(r.table, 'map')], [[], ['f', null]]);
+  r = KY.rebind(Q, 'talk', 0, slot('Space', ' ')); assert.deepEqual(label(r.table, 'talk'), [' ', 'e']);
+  // refused: a reserved key, an action left with no key, a swap that would put two actions of one moment on one key
+  for (const [c, k] of [['Escape', 'Escape'], ['Enter', 'Enter'], ['Tab', 'Tab'], ['F5', 'F5'], ['ControlLeft', 'Control'], ['AltLeft', 'Alt'], ['MetaLeft', 'Meta'], ['Backspace', 'Backspace'], ['Quote', 'Dead']]) assert.deepEqual(KY.rebind(Q, 'talk', 0, slot(c, k)), { ok: false, why: 'reserved' }, c);
+  assert.deepEqual(KY.rebind(Q, 'map', 0, null), { ok: false, why: 'last', act: 'map' });
+  assert.deepEqual(KY.rebind(Q, 'list', 1, slot('KeyM', 'm')), { ok: false, why: 'last', act: 'map' }, 'the map would be left with no key');
+  r = KY.rebind(Q, 'talk', 1, null); assert.deepEqual(label(r.table, 'talk'), ['e', null]);
+  r = KY.rebind(Q, 'talk', 0, null); assert.deepEqual(label(r.table, 'talk'), [null, ' '], 'the first slot may empty while the second keeps a key');
+  // the skills on N: mute takes K, the guard's key in the duel: refused, and mute named
+  assert.deepEqual(KY.rebind(Q, 'skills', 0, slot('KeyN', 'n')), { ok: false, why: 'clash', act: 'mute' });
+  // the record: only what differs from the starting keys, read back the same; a stored table where two actions share a key goes back whole
+  r = KY.rebind(Q, 'attack', 0, slot('KeyK', 'k'));
+  const kept = KY.toStored(r.table, 'qwerty');
+  assert.deepEqual(Object.keys(kept).sort(), ['attack', 'guard']);
+  assert.deepEqual(KY.readKeys(JSON.parse(JSON.stringify(kept)), 'qwerty'), r.table);
+  assert.equal(KY.toStored(Q, 'qwerty'), undefined);
+  assert.equal(KY.readKeys({ talk: [slot('KeyQ', 'q'), null] }, 'qwerty'), Q, 'two actions on Q: the starting keys');
+  // RM-5: each keyboard keeps its keys
+  const both = S.readSettings(JSON.stringify({ keys: { qwerty: { map: [slot('KeyF', 'f'), null] }, azerty: { map: [slot('KeyU', 'u'), null] } } }));
+  assert.deepEqual([S.keysOf(both, 'qwerty').map[0].k, S.keysOf(both, 'azerty').map[0].k], ['f', 'u']);
+  // a stored table that puts two actions of one moment on a key (the map on G, the gear's) is the keyboard's starting keys again
+  assert.equal(S.readSettings(JSON.stringify({ keys: { azerty: { map: [slot('KeyG', 'g'), null] } } })).keys, null);
 });
 
 test('the reduced motion (RG-5): applied on the document before anything shows, followed by the duel and its effects, the system never read', () => {
@@ -141,8 +200,8 @@ test('the settings page (RG-1, RG-2): four parts; from the title screen, the ver
   assert.match(page, /const SECTIONS: readonly SettingsSection\[\] = \['graphics', 'sound', 'controls', 'language'\];/);
   for (const k of ['set.quality', 'set.res', 'set.msaa', 'set.refl', 'set.fps', 'set.dof', 'set.bloom', 'set.look', 'set.motion', 'set.fullscreen', 'set.volume', 'v2.sound.music', 'set.ambience', 'set.effects', 'v2.sound.mute', 'set.keyboard', 'v2.sound.vibration']) assert.ok(page.includes(`tx('${k}')`), k);
   const town = src('src/ui/townUi.ts');
-  assert.match(town, /add\(tx\('set\.open'\), \(\) => this\.openSettings\(\), 'V'\);/);
-  assert.match(town, /else if \(k === 'v' && isV2\(this\.st\)\) this\.openSettings\('sound'\);/);
+  assert.match(town, /add\(tx\('set\.open'\), \(\) => this\.openSettings\(\), 'settings'\);/);
+  assert.match(town, /else if \(is\('settings'\) && isV2\(this\.st\)\) this\.openSettings\('sound'\);/);
   assert.doesNotMatch(town, /openSound/);
   assert.match(src('src/ui/title.ts'), /add\('settings', tx\('set\.open'\), tx\('set\.openSub'\)/);
   const arena = src('src/arena/ArenaApp.ts');

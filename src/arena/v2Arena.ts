@@ -33,6 +33,7 @@ export function makeV2Duel(params: URLSearchParams, match?: { data: DynData; tie
 /** the keyboard of the three buttons: J (or 1) attack, held to charge; K (or B) guard, held; L (or A) dodge; R restart, Space pause. The attack
  *  key is none of the forecourt's walking keys (WASD, the arrows: the brief's « la touche d'attaque ne doit pas entrer en conflit avec la
  *  marche du parvis ») */
+// the starting keys of the duel: the game reads the player's keys since the remapping (journal Passe RM2, src/settings/keys.ts), from these
 export const V2_KEYS: Record<string, string> = { j: 'attack', '1': 'attack', k: 'guard', b: 'guard', l: 'dodge', a: 'dodge', r: 'reset', ' ': 'pause' };
 /** the keys released that end a hold: the attack (the release launches its tier) and the guard */
 export const V2_HELD: Record<string, string> = { j: 'attack', '1': 'attack', k: 'guard', b: 'guard' };

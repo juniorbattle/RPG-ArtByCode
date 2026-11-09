@@ -8,7 +8,8 @@ import type { Anim, Dir } from './SpriteGenerator';
 import { requiredFrames, type AuthoredSpawn } from './BakedSprites';
 import type { CastMember } from './BakedCast';
 import { variantOf } from './Variants';
-import { gameKey, layout } from '../settings/settings';
+import { actHeld, actsOf } from '../settings/settings';
+import { keyId } from '../settings/keys';
 
 /** Player control + NPC behaviours + a tiny circle-vs-box collision solver. */
 
@@ -59,6 +60,7 @@ export class ActorSystem {
   actors: Actor[] = [];
   player!: Actor;
   colliders: Collider[] = [];
+  /** the keys held, by id (src/settings/keys.ts `keyId`: a real key by its place, a key the gamepad or a tool presses by its QWERTY name: « w », « shift ») */
   keys = new Set<string>();
   /** a version 2 game's gamepad (journal Passe MN2, src/input/PadInput.ts): x to the screen's right, y up the screen, its speed as a share of the
    *  walk and its run (B held, MN-2); read only while no movement key is held, so the keyboard's walk is the same as without it */
@@ -105,13 +107,12 @@ export class ActorSystem {
 
   /** camera: shows a walking facing by its on-screen direction (null: the world rule for every facing) */
   constructor(private atlas: SpriteAtlas, private camera: THREE.PerspectiveCamera | null = null) {
-    // the game's keys (journal Passe RG2, RG-7): on AZERTY, Z Q S D walk where QWERTY's W A S D do
+    // the player's keys (the remapping, journal Passe RM2): a key held by its place, the walk and the run read through the player's actions (RM-1, RM-5)
     window.addEventListener('keydown', (e) => {
-      const k = gameKey(e.key, layout(), e.isTrusted);
-      this.keys.add(k);
-      if (k === 'e' || k === ' ') this.interact();
+      this.keys.add(keyId(e));
+      if (actsOf(e, 'walk').includes('talk')) this.interact();
     });
-    window.addEventListener('keyup', (e) => this.keys.delete(gameKey(e.key, layout(), e.isTrusted)));
+    window.addEventListener('keyup', (e) => this.keys.delete(keyId(e)));
     window.addEventListener('blur', () => this.keys.clear());
   }
 
@@ -321,7 +322,7 @@ export class ActorSystem {
 
   private keyAxes(): [number, number] {
     const k = this.keys;
-    return [(k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0), (k.has('w') || k.has('arrowup') ? 1 : 0) - (k.has('s') || k.has('arrowdown') ? 1 : 0)];
+    return [(actHeld(k, 'right') ? 1 : 0) - (actHeld(k, 'left') ? 1 : 0), (actHeld(k, 'up') ? 1 : 0) - (actHeld(k, 'down') ? 1 : 0)];
   }
   /** the gamepad's walk when it is the one walking: the movement keys ask for none (journal Passe MN2) */
   private padWalk(): { x: number; y: number; speed: number; run: boolean } | null { const [kx, ky] = this.keyAxes(); return !kx && !ky ? this.pad : null; }
@@ -338,7 +339,7 @@ export class ActorSystem {
     const [ix, iy] = this.axes(), pw = this.padWalk();
     const hero = this.heroWalkSpeed();
     // the gamepad runs with B held (MN-2), as Shift does
-    const run = k.has('shift') || pw?.run ? (hero ? HERO_RUN : PLAYER_RUN) : 1;
+    const run = actHeld(k, 'run') || pw?.run ? (hero ? HERO_RUN : PLAYER_RUN) : 1;
     // screen right = (c, -s), toward-camera = (s, c); "up" on screen = away from camera
     const mv = new THREE.Vector3(c * ix - s * iy, 0, -s * ix - c * iy);
     if (mv.lengthSq() > 0) {

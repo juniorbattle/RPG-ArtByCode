@@ -1,8 +1,9 @@
 import { parseFrameCap, type FrameCapMode } from '../app/FrameCap';
+import { actsOfId, keyId, readKeys, toStored, type Act, type KeyTable, type Moment, type StoredKeys } from './keys';
 
 /** The player's settings (the operator's sheet of journal Passe RG2, fifteen of fifteen at the recommendation): the graphics a player can change
  *  (RG-3, RG-4), the reduced motion (RG-5, the operator's rule of 2026-11-03: a setting of the game, off by default, never read from the system), the
- *  keyboard's layout (RG-7) and the language (RG-9). Kept in the browser (`cite-du-tournoi.settings`) and read by every scene at its start and at
+ *  keyboard's layout (RG-7), the player's keys (the remapping sheet, journal Passes RM1 / RM2: src/settings/keys.ts) and the language (RG-9). Kept in the browser (`cite-du-tournoi.settings`) and read by every scene at its start and at
  *  every change (`cdt-settings`). The sound's volumes stay in the sound engine's own record (src/audio/score.ts), the gamepad's vibration in the
  *  pad's (src/input/PadInput.ts). Nothing stored = today's game, to the pixel: the defaults are the operator's choices of journal Passes 6e to 6h.
  *  An address's own parameter (`res=`, `msaa=`, `refl=`, `fps=`, the tools and the proofs) wins over a stored setting. Pure, but for the storage. */
@@ -24,9 +25,11 @@ export interface GameSettings {
   keyboard: Layout | null;
   /** null: the browser's language at the first launch (RG-9) */
   lang: Lang | null;
+  /** the player's keys, by keyboard: the actions changed from their starting keys (RM-5, RM-9); null: today's keys */
+  keys: StoredKeys | null;
 }
 
-export const DEFAULT_SETTINGS: Readonly<GameSettings> = Object.freeze({ res: 'native', msaa: 4, refl: 0.5, fps: 60, dof: true, bloom: true, reducedMotion: false, keyboard: null, lang: null });
+export const DEFAULT_SETTINGS: Readonly<GameSettings> = Object.freeze({ res: 'native', msaa: 4, refl: 0.5, fps: 60, dof: true, bloom: true, reducedMotion: false, keyboard: null, lang: null, keys: null });
 
 export const RES_STEPS: readonly ResSetting[] = ['native', 1440, 1080, 900, 720];
 export const MSAA_STEPS: readonly MsaaSetting[] = [0, 2, 4, 8];
@@ -60,7 +63,16 @@ export function readSettings(text: string | null): GameSettings {
     dof: flag(o.dof, d.dof), bloom: flag(o.bloom, d.bloom), reducedMotion: flag(o.reducedMotion, d.reducedMotion),
     keyboard: o.keyboard === 'qwerty' || o.keyboard === 'azerty' ? o.keyboard : null,
     lang: o.lang === 'en' || o.lang === 'fr' ? o.lang : null,
+    keys: readStoredKeys(o.keys),
   };
+}
+
+/** the keys kept, every slot checked (RM-9): what remains after reading is what differs from each keyboard's starting keys, or null */
+function readStoredKeys(v: unknown): StoredKeys | null {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
+  const o = v as Record<string, unknown>, out: StoredKeys = {};
+  for (const l of ['qwerty', 'azerty'] as const) { const t = toStored(readKeys(o[l], l), l); if (t) out[l] = t; }
+  return out.qwerty || out.azerty ? out : null;
 }
 
 // ---------------------------------------------------------------- the graphics a scene applies
@@ -103,20 +115,6 @@ export function layoutOfMap(map: { get(code: string): string | undefined } | nul
   return q === 'a' && w === 'z' ? 'azerty' : q === 'q' ? 'qwerty' : null;
 }
 
-/** the game's key for a key typed (RG-7): on AZERTY, Z, Q, S, D walk where QWERTY's W, A, S, D do, and A opens the list where QWERTY's Q does; the
- *  other letters of the game are the same on both keyboards. A key the gamepad presses (`trusted` false: src/input/PadInput.ts) is already the
- *  game's key. Lowercase, as the game reads them. */
-export function gameKey(key: string, layout: Layout, trusted = true): string {
-  const k = key.toLowerCase();
-  if (layout !== 'azerty' || !trusted) return k;
-  return k === 'z' ? 'w' : k === 'q' ? 'a' : k === 'a' ? 'q' : k === 'w' ? 'z' : k;
-}
-
-/** the key a player presses for one of the game's keys, as a cap shows it (uppercase) */
-export function shownKey(key: string, layout: Layout): string {
-  const k = key.toLowerCase(), t = layout !== 'azerty' ? k : k === 'w' ? 'z' : k === 'a' ? 'q' : k === 'q' ? 'a' : k === 'z' ? 'w' : k;
-  return t.length === 1 ? t.toUpperCase() : key;
-}
 
 // ---------------------------------------------------------------- the language (RG-9)
 
@@ -181,8 +179,31 @@ export function detectLayout(): void {
   }).catch(() => { /* refused: the language's guess stays */ });
 }
 
-/** the game's key for a key event (RG-7) */
-export const keyOf = (e: KeyboardEvent): string => gameKey(e.key, layout(), e.isTrusted);
+// ---------------------------------------------------------------- the player's keys (RM-1 to RM-9)
+
+let keysCache: { s: GameSettings; l: Layout; t: KeyTable } | null = null;
+/** the keys the game reads now: the keyboard's own (RM-5: each keyboard keeps its keys, the « Keyboard » line gives the starting ones) */
+export function keysOf(s: GameSettings = loadSettings(), l: Layout = layout(s)): KeyTable {
+  if (keysCache && keysCache.s === s && keysCache.l === l) return keysCache.t;
+  const t = readKeys(s.keys?.[l], l);
+  keysCache = { s, l, t };
+  return t;
+}
+/** the actions of a moment a key event serves (a key the gamepad presses is read as QWERTY's: RM-3) */
+export const actsOf = (e: { code?: string; key: string; isTrusted?: boolean }, moment: Moment): Act[] => actsOfId(keyId(e), moment, keysOf());
+/** whether an action is held among the keys held (their ids, src/settings/keys.ts `keyId`) */
+export function actHeld(held: ReadonlySet<string>, act: Act, moment: Moment = 'walk'): boolean {
+  const t = keysOf();
+  for (const id of held) if (actsOfId(id, moment, t).includes(act)) return true;
+  return false;
+}
+/** a keyboard's keys kept (nothing kept when they are its starting keys) */
+export function saveKeys(table: KeyTable, l: Layout = layout()): GameSettings {
+  const cur = loadSettings().keys ?? {}, next: StoredKeys = { ...cur };
+  const t = toStored(table, l);
+  if (t) next[l] = t; else delete next[l];
+  return saveSettings({ keys: next.qwerty || next.azerty ? next : null });
+}
 
 /** the reduced motion on the page (RG-5): a class on the document that the interface's styles read (`html.cdt-reduced`), never the system's
  *  setting; the fades stay */

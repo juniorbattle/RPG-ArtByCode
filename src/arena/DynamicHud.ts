@@ -5,6 +5,9 @@ import { CSS, TEXTS_EN, TEXTS_FR, type ArenaTexts, type Assist } from './ArenaHu
 import { dynHudModel, type DynGauge } from './dynamicView';
 import { tx } from '../narrative/text';
 import type { ChargeHudModel } from './v2Arena';
+import { actName, bindCap, keyCap } from '../input/caps';
+import { keysOf, onSettings } from '../settings/settings';
+import { firstSlot, type Act } from '../settings/keys';
 
 /** The HUD of the « tour par tour dynamique » (lot C2, journal Passe C2), behind its parameter (CB-10). Built on the arena HUD's rules
  *  (ArenaHud.ts, the interface's design system: direction A « Voile », its tone following the arena's day state, the embedded fonts,
@@ -145,6 +148,9 @@ export class DynamicHud {
   readonly ready: Promise<void>;
 
   /** `charge`: the version 2's three buttons and the tier strip (src/arena/v2Arena.ts); absent: the C2 bar (keys 1-6), as before */
+  /** the pause's keyboard line: today's words while Space pauses, else the player's key and the words after it (the remapping, journal Passe RM2) */
+  private resumeLine(): string { return firstSlot(keysOf().pause)?.c === 'Space' ? this.t.resume : `${actName('pause')} ${this.t.resumePad ?? ''}`.trim(); }
+
   constructor(sim: DynamicSim, portraits: Record<DynFighterId, HTMLCanvasElement | null>, private t: DynTexts = DYN_TEXTS_FR, time: TimeOfDay | null = null, private charge: { texts: ChargeTexts; tiers: Array<{ id: string; ap: number }> } | null = null) {
     installDesign(time);
     this.ready = fontsReady();
@@ -166,7 +172,9 @@ export class DynamicHud {
     const buttons = items.map((b) => {
       if (b === '|') return '<span class="ah-sep"></span>';
       const label = b.short ? `<span class="fn">${b.name}</span><span class="sn">${b.short}</span>` : b.name;
-      return `<button class="ah-b${b.wide ? ' wide' : ''}" data-act="${b.id}" aria-label="${b.name} (${b.key})"><kbd>${b.key}</kbd><b>${label}</b><em>${b.sub}</em><i class="pg"></i>${b.id === 'dodge' ? '<i class="wl"></i>' : ''}</button>`;
+      // the version 2's three buttons show the player's keys (the remapping, journal Passe RM2, RM-6); the other rules keep the prototype's (RM-1)
+      const own = ct && (b.id === 'attack' || b.id === 'guard' || b.id === 'dodge') ? b.id as Act : null;
+      return `<button class="ah-b${b.wide ? ' wide' : ''}" data-act="${b.id}" aria-label="${b.name} (${own ? actName(own) : b.key})">${own ? bindCap(own) : `<kbd>${b.key}</kbd>`}<b>${label}</b><em>${b.sub}</em><i class="pg"></i>${b.id === 'dodge' ? '<i class="wl"></i>' : ''}</button>`;
     }).join('');
     const tierName = (id: string) => (id === 'light' ? ct!.tierLight : id === 'heavy' ? ct!.tierHeavy : t.skillShorts[id as DynActionId] ?? A[id as DynActionId]?.short ?? A[id as DynActionId]?.name ?? id);
     const tiers = charge ? `<div id="ah-tiers" aria-hidden="true">${charge.tiers.map((x, i) => `<span class="tr" data-i="${i}"><b>${tierName(x.id)}</b>${x.ap ? diamonds(x.ap) : ''}<i></i></span>`).join('')}</div>` : '';
@@ -177,11 +185,13 @@ export class DynamicHud {
       ${card('ren', 'l', t.subRen)}${card('marek', 'r', t.subMarek)}
       <div id="ah-phase" role="status"><b></b><span></span></div>
       <div id="ah-alert"><b></b><span></span></div>
-      <div id="ah-dmg"></div><div id="ah-wbar" aria-hidden="true"><i></i><b>${t.window}<kbd>${charge ? 'L' : 'A'}</kbd></b></div>${tiers}<div id="ah-bar">${buttons}</div>
+      <div id="ah-dmg"></div><div id="ah-wbar" aria-hidden="true"><i></i><b>${t.window}${charge ? bindCap('dodge') : '<kbd>A</kbd>'}</b></div>${tiers}<div id="ah-bar">${buttons}</div>
       <div id="ah-ko" role="status"><div><b></b><span>${t.restart}</span></div></div>
-      <div id="ah-pause" role="status"><div><b>${t.pause}</b>${charge ? `<span class="kb">${t.resume}</span><span class="pad-only"><kbd>Space</kbd>${t.resumePad ?? ''}</span><button class="ah-set" type="button"><kbd>Esc</kbd>${tx('set.title')}</button>` : `<span>${t.resume}</span>`}</div></div>
+      <div id="ah-pause" role="status"><div><b>${t.pause}</b>${charge ? `<span class="kb">${this.resumeLine()}</span><span class="pad-only">${bindCap('pause')}${t.resumePad ?? ''}</span><button class="ah-set" type="button">${keyCap('Esc')}${tx('set.title')}</button>` : `<span>${t.resume}</span>`}</div></div>
       <div id="ah-rotate" role="alert"><div><b>${t.title}</b><span>${t.rotate}</span></div></div>`;
     document.body.appendChild(this.el);
+    // the pause's line follows the player's pause key (the remapping, journal Passe RM2)
+    if (charge) onSettings(() => { const kb = this.el.querySelector('#ah-pause .kb'); if (kb) kb.textContent = this.resumeLine(); });
     // the pause's settings (the operator's RG-2 « Depuis la pause du duel aussi », journal Passe RG2): the arena opens the page (ArenaApp.openSettings)
     this.el.querySelector('#ah-pause .ah-set')?.addEventListener('click', () => window.dispatchEvent(new Event('cdt-open-settings')));
     for (const who of ['ren', 'marek'] as DynFighterId[]) {

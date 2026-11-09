@@ -13,7 +13,8 @@ import { Weather, overcast, parseWeather } from '../atmosphere/Weather';
 import { applyFrame, type CamPose } from '../app/CameraRig';
 import { FrameCap } from '../app/FrameCap';
 import { followGraphics } from '../settings/scene';
-import { capRatio, gameKey, layout, type ResCap } from '../settings/settings';
+import { actHeld, capRatio, type ResCap } from '../settings/settings';
+import { keyId } from '../settings/keys';
 import { PerfMonitor } from '../debug/PerfMonitor';
 import { SpriteAtlas } from '../characters/SpriteAtlas';
 import { SpriteRenderer, type Actor } from '../characters/SpriteRenderer';
@@ -228,8 +229,8 @@ export class PlazaApp {
     if (wp && (wp.rain > 0 || wp.snow > 0 || wp.storm > 0 || wp.wind !== 1)) { this.weather = new Weather(wp, { day: !!this.look, post: this.post.params }); this.scene.add(this.weather.group); }
     window.addEventListener('resize', () => this.resize());
     // the game's keys (journal Passe RG2, RG-7): on AZERTY, Z Q S D walk where QWERTY's W A S D do
-    window.addEventListener('keydown', (e) => { if (!e.metaKey && !e.ctrlKey && !e.altKey && !(e.target instanceof HTMLInputElement)) this.keys.add(gameKey(e.key, layout(), e.isTrusted)); });
-    window.addEventListener('keyup', (e) => this.keys.delete(gameKey(e.key, layout(), e.isTrusted)));
+    window.addEventListener('keydown', (e) => { if (!e.metaKey && !e.ctrlKey && !e.altKey && !(e.target instanceof HTMLInputElement)) this.keys.add(keyId(e)); });
+    window.addEventListener('keyup', (e) => this.keys.delete(keyId(e)));
     window.addEventListener('blur', () => this.keys.clear());
   }
 
@@ -370,10 +371,11 @@ export class PlazaApp {
 
   /** the hero walks (arrows or WASD, relative to the camera), the crowd walks its points, the people idle at their spots */
   private walk(dt: number): void {
-    const k = this.keys, kx = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0), kz = (k.has('s') || k.has('arrowdown') ? 1 : 0) - (k.has('w') || k.has('arrowup') ? 1 : 0);
+    // the player's keys (the remapping, journal Passe RM2)
+    const k = this.keys, kx = (actHeld(k, 'right') ? 1 : 0) - (actHeld(k, 'left') ? 1 : 0), kz = (actHeld(k, 'down') ? 1 : 0) - (actHeld(k, 'up') ? 1 : 0);
     // the gamepad's walk while no movement key asks for one (journal Passe MN2: the stick's tilt sets the speed, B held runs, MN-2)
     const pw = !kx && !kz ? this.pad : null, ix = pw ? pw.x : kx, iz = pw ? -pw.y : kz;
-    const P = this.player, speed = (this.cast?.get('player')?.walkSpeed ?? 3.2) * (k.has('shift') || pw?.run ? 1.2 : 1) * (pw ? pw.speed : 1);
+    const P = this.player, speed = (this.cast?.get('player')?.walkSpeed ?? 3.2) * (actHeld(k, 'run') || pw?.run ? 1.2 : 1) * (pw ? pw.speed : 1);
     this.moving = !!(ix || iz) && !this.locked;
     if (!ix && !iz) this.moveYaw = null;
     if ((ix || iz) && !this.locked) {

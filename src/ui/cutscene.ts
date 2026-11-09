@@ -3,6 +3,8 @@ import { speakerName, speakerOf, type Cutscene } from '../narrative/v2story';
 import { tx } from '../narrative/text';
 import { el, esc } from './style';
 import { portraitUrl } from './portraits';
+import { actsOf } from '../settings/settings';
+import { bindCap, keyCap } from '../input/caps';
 
 /** A live cutscene on a square of the version 2 (lot V6, journal Passe V6): the page's scene keeps running, the camera goes where the script
  *  looks, the people walk, and each line waits in the dialogue's band at the foot of the screen (the speaker's face and name), over the
@@ -39,10 +41,11 @@ export async function playCutscene(s: GameState, c: Cutscene, stage: SceneStage)
   const say = (who: string, line: string) => new Promise<void>((done) => {
     const url = who === 'player' ? null : portraitUrl(who);
     card.innerHTML = `<div class="pm-dlg"><span class="port">${url ? `<img src="${url}" alt="">` : ''}</span><div class="who"><h2 class="pm-h">${esc(speakerName(s, who))}</h2><div class="pm-line"><q>${esc(line)}</q></div></div></div>`;
-    const row = el('div', 'pm-row'), skip = el('button', 'pm-btn', `<kbd>Esc</kbd>${tx('v2.scene.skip')}`), next = el('button', 'pm-btn', `<kbd>E</kbd>${tx('v2.scene.next')}`);
+    const row = el('div', 'pm-row'), skip = el('button', 'pm-btn', `${keyCap('Esc')}${tx('v2.scene.skip')}`), next = el('button', 'pm-btn', `${bindCap('talk')}${tx('v2.scene.next')}`);
     row.append(next, skip); card.firstElementChild!.appendChild(row);
     const end = (sk: boolean) => { window.removeEventListener('keydown', key, true); if (sk) skipped = true; done(); };
-    const key = (e: KeyboardEvent) => { const k = e.key.toLowerCase(); if (k === 'escape') { e.preventDefault(); e.stopPropagation(); end(true); } else if (k === 'e' || k === ' ' || k === 'enter') { e.preventDefault(); e.stopPropagation(); end(false); } };
+    // the next line: Enter or the player's talk key (the remapping, journal Passe RM2, RM-1); Esc skips
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); end(true); } else if (e.key === 'Enter' || actsOf(e, 'walk').includes('talk')) { e.preventDefault(); e.stopPropagation(); end(false); } };
     window.addEventListener('keydown', key, true);
     next.onclick = () => end(false); skip.onclick = () => end(true);
     next.focus();

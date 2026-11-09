@@ -6,8 +6,8 @@
 //   3. a setting kept is applied at the next load; the address's own parameter wins over it;
 //   4. the gamepad: the D-pad to « Settings », A opens, → enters, ← changes the quality, B closes;
 //   5. a version 2 game: V opens the page on the sound, → moves the general volume (kept by the sound engine), Esc; the menu (Esc) lists « Settings »;
-//   6. the keyboard's layout: AZERTY chosen in the controls, Z held walks the hero, Q held walks him left without opening the list, A opens the list;
-//      QWERTY again, W walks;
+//   6. the keyboard's layout: AZERTY chosen in the controls, Z held walks the hero, Q held walks him left without opening the list, A opens the list (typed as
+//      a real AZERTY keyboard sends them since the remapping, journal Passe RM2: its Z at QWERTY's W, its Q at QWERTY's A, its A at QWERTY's Q); QWERTY again, W walks;
 //   7. the duel of the version 2: Space pauses, Esc opens the page over the paused duel, Space there does not resume it, Esc closes; the pad's Y opens it;
 //   8. the reduced motion: the system's « reduce » changes nothing (the game's setting alone); the setting on stops the slides (--ds-move 0) and reaches the
 //      duel and its effects; off again;
@@ -159,18 +159,23 @@ try {
   check(await page.evaluate(() => document.querySelector('.pm-settings section:last-child .pm-h')?.textContent === 'Controls'), 'the controls');
   await key('Enter'); await key('ArrowRight');
   check((await stored())?.keyboard === 'azerty', 'AZERTY chosen and kept');
-  const walkKeys = await page.evaluate(() => [...document.querySelectorAll('.pm-keys tr:first-child .pm-key')].map((k) => k.textContent).slice(0, 4).join(''));
+  // the walk's first slots, up, down, left, right (the remapping, journal Passe RM2: a line per action)
+  const walkKeys = await page.evaluate(() => ['up', 'left', 'down', 'right'].map((a) => document.querySelector(`.pm-slot[data-act="${a}"][data-col="0"]`)?.textContent).join(''));
   check(walkKeys === 'ZQSD', `the controls show Z Q S D: ${walkKeys}`);
   await page.screenshot({ path: path.join(outDir, '6-game-controls-azerty.png') });
   await key('Escape');
   check(await page.evaluate(() => document.querySelector('#pm-hints kbd')?.textContent === 'A'), 'the list\'s cap shows A');
   const pos = () => page.evaluate(() => { const p = window.__app.actors.player.pos; return { x: p.x, z: p.z }; });
   const hold = async (k, ms = 500) => { await page.keyboard.down(k); await sleep(ms); await page.keyboard.up(k); await frames(3); };
-  let p0 = await pos(); await hold('z'); let p1 = await pos();
+  // a real AZERTY keyboard's key: its place (QWERTY's name) and what it types
+  const cdp = await page.createCDPSession(), vk = (k) => k.toUpperCase().charCodeAt(0);
+  const azerty = (type, code, k) => cdp.send('Input.dispatchKeyEvent', { type, code, key: k, windowsVirtualKeyCode: vk(k), nativeVirtualKeyCode: vk(k), ...(type === 'keyDown' ? { text: k, unmodifiedText: k } : {}) });
+  const holdAz = async (code, k, ms = 500) => { await azerty('keyDown', code, k); await sleep(ms); await azerty('keyUp', code, k); await frames(3); };
+  let p0 = await pos(); await holdAz('KeyW', 'z'); let p1 = await pos();
   check(Math.hypot(p1.x - p0.x, p1.z - p0.z) > 0.3, `Z held walks the hero (${Math.hypot(p1.x - p0.x, p1.z - p0.z).toFixed(2)} m)`);
-  p0 = await pos(); await hold('q'); p1 = await pos();
+  p0 = await pos(); await holdAz('KeyA', 'q'); p1 = await pos();
   check(Math.hypot(p1.x - p0.x, p1.z - p0.z) > 0.3 && !(await page.evaluate(() => !!document.querySelector('[data-here]'))), `Q held walks him without opening the list (${Math.hypot(p1.x - p0.x, p1.z - p0.z).toFixed(2)} m)`);
-  await key('a');
+  await azerty('keyDown', 'KeyQ', 'a'); await frames(2); await azerty('keyUp', 'KeyQ', 'a'); await frames(2);
   check(await until(() => !!document.querySelector('[data-here]'), 3000, 'the list'), 'A opens the list');
   await key('Escape');
   await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('cite-du-tournoi.settings')); s.keyboard = 'qwerty'; localStorage.setItem('cite-du-tournoi.settings', JSON.stringify(s)); });
