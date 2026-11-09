@@ -25,6 +25,8 @@ try {
   page.on('pageerror', (e) => { failed++; console.log('[pageerror]', e.message); });
   await page.evaluateOnNewDocument(SEED); await page.evaluateOnNewDocument(HOLD);
   const q = `play=1&noreload=1&state=${encodeURIComponent(state)}&name=Aster&fps=off&cutscene=0${extra ? `&${extra}` : ''}`;
+  // MOTION=no-preference|reduce: the system's reduced motion emulated (journal Passe RG3: the tools' headless Chrome reports the operator's Windows, « reduce »)
+  if (process.env.MOTION) await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: process.env.MOTION }]);
   await page.goto(`${BASE}?${q}`, { waitUntil: 'load', timeout: READY });
   await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY });
   const err = await page.evaluate(() => window.__error ?? null);

@@ -25,6 +25,8 @@ const b = await puppeteer.launch({ executablePath: exe, headless: 'new', args: [
 try {
   const page = await b.newPage(); page.on('pageerror', (e) => console.log('[pageerror]', e.message));
   await page.evaluateOnNewDocument(SEED); await page.evaluateOnNewDocument(HOLD);
+  // MOTION=no-preference|reduce: the system's reduced motion emulated (journal Passe RG3: the tools' headless Chrome reports the operator's Windows, « reduce »)
+  if (process.env.MOTION) await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: process.env.MOTION }]);
   await page.goto(`${BASE}?${query}`, { waitUntil: 'load' }); await page.waitForFunction('window.__ready === true', { timeout: +(process.env.READY_MS || 180000) });
   await new Promise((r) => setTimeout(r, 1200));   // the loading screen fades out (the app does not run meanwhile)
   await page.evaluate((steps) => {

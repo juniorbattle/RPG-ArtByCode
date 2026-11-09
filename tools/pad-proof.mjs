@@ -3,7 +3,7 @@
 //   1. the town: A closes the news, the caps show the pad's buttons; the left stick walks (its tilt sets the speed, B runs), the D-pad walks;
 //      next to Mara A opens her dialogue, the D-pad walks its lines, A opens her goods, the D-pad reaches the whetstone, A buys it, B goes back
 //      to her, B leaves; Y opens the list and B closes it; Start opens the menu (its shortcuts hidden but the map's), A opens the journal, RB / LB
-//      walk the menu's pages, the right stick scrolls a detail; the sound page: its vibration switch, a slider moved by the D-pad; View the map;
+//      walk the menu's pages, the right stick scrolls a detail; the settings page (journal Passe RG3): a slider of the sound moved by the D-pad, the vibration switch in the controls; View the map;
 //      a key pressed gives the caps their keys back, a pad press takes them again;
 //   2. the bout: the clock to the first bout's afternoon (window.__game), Y the list, A « Enter the arena », the match sheet (X leaves a skill
 //      out and brings it back), A enters; the arena: A « Fight », X held charges and its release launches, LT holds the guard, A dodges, Start
@@ -150,21 +150,27 @@ try {
     const sc2 = await page.evaluate(() => document.querySelector('.pm-overlay .pm-detail')?.scrollTop ?? 0);
     check(!sc?.can || sc2 > sc.top, `the right stick scrolls the journal's day (${sc?.can ? `${sc.top} -> ${sc2}` : 'nothing to scroll here'})`);
     await press(B.B);
-    // the sound page: the vibration switch, a slider
+    // the settings page (journal Passe RG3, in place of lot V8's sound page): the menu's « Settings », the sound's sliders, the vibration's switch in the controls
     await press(B.START);
     for (let i = 0; i < 5; i++) await press(B.DOWN);
     await press(B.A);
-    await page.waitForFunction(() => !!document.querySelector('.pm-overlay input[type=range]'), { timeout: 20000 }).catch(() => {});
-    const vib = await page.evaluate(() => [...document.querySelectorAll('.pm-overlay .pm-btn')].find((x) => /Gamepad vibration/.test(x.textContent))?.getAttribute('aria-pressed') ?? null);
-    check(vib === 'true', `the sound page shows the vibration's switch, on: ${vib}`);
+    await page.waitForFunction(() => !!document.querySelector('.pm-settings'), { timeout: 20000 }).catch(() => {});
+    const part = () => page.evaluate(() => document.querySelector('.pm-settings section:last-child .pm-h')?.textContent ?? null);
+    check((await part()) === 'Graphics', `A opens the settings on the graphics: ${await part()}`);
+    await press(B.DOWN); await press(B.RIGHT);
+    await page.waitForFunction(() => document.activeElement?.type === 'range', { timeout: 20000 }).catch(() => {});
     const music0 = await page.evaluate(() => document.querySelectorAll('.pm-overlay input[type=range]')[1]?.value);
-    for (let i = 0; i < 3; i++) await press(B.UP);
+    await press(B.DOWN);
     const sl = await page.evaluate(() => document.activeElement?.getAttribute('aria-label'));
     await press(B.LEFT);
     const music1 = await page.evaluate(() => document.querySelectorAll('.pm-overlay input[type=range]')[1]?.value);
     check(sl === 'Music' && +music1 === +music0 - 5, `the D-pad reaches the music's slider and moves it: ${sl} ${music0} -> ${music1}`);
     await press(B.RIGHT);
-    await press(B.DOWN); await press(B.DOWN);
+    await press(B.UP); await press(B.UP); await press(B.DOWN);
+    check((await part()) === 'Controls', `↑ goes back to the parts, ↓ the controls: ${await part()}`);
+    await press(B.RIGHT); await press(B.DOWN);
+    const vib = await page.evaluate(() => [...document.querySelectorAll('.pm-overlay .pm-btn')].find((x) => /Gamepad vibration/.test(x.textContent))?.getAttribute('aria-pressed') ?? null);
+    check(vib === 'true' && /Gamepad vibration/.test(await page.evaluate(() => document.activeElement?.textContent ?? '')), `the controls show the vibration's switch, on: ${vib}`);
     await press(B.A);
     const vib2 = await page.evaluate(() => JSON.parse(localStorage.getItem('cite-du-tournoi.pad') ?? '{}').vibration);
     await press(B.A);
@@ -234,11 +240,12 @@ try {
     await press(B.A);
     check((await page.evaluate(() => window.__pad.log.filter((x) => x === 'duel dodge down').length)) >= 1, 'A dodges');
     await press(B.START);
-    const pause = await page.evaluate(() => ({ paused: window.__arena.paused, words: [...document.querySelectorAll('#ah-pause span')].filter((s) => getComputedStyle(s).display !== 'none').map((s) => s.textContent), cap: document.querySelector('#ah-pause .pad-only kbd')?.getAttribute('aria-label') }));
+    // the pause's words (a cap's own letters left out) and, since journal Passe RG3, its settings line under the pad's Y (RG-2)
+    const pause = await page.evaluate(() => ({ paused: window.__arena.paused, words: [...document.querySelectorAll('#ah-pause span')].filter((s) => !s.closest('kbd') && getComputedStyle(s).display !== 'none').map((s) => s.textContent), cap: document.querySelector('#ah-pause .pad-only kbd')?.getAttribute('aria-label'), set: document.querySelector('#ah-pause .ah-set kbd')?.getAttribute('aria-label') ?? null }));
     await page.screenshot({ path: path.join(outDir, '2-pause.png') });
     await press(B.START);
     const resumed = await page.evaluate(() => window.__arena.paused);
-    check(pause.paused && pause.cap === 'Menu' && pause.words.join() === 'to resume' && !resumed, `Start pauses, under the pad's button (${pause.words}), and resumes`);
+    check(pause.paused && pause.cap === 'Menu' && pause.words.join() === 'to resume' && pause.set === 'Y' && !resumed, `Start pauses, under the pad's button (${pause.words}; the settings under ${pause.set}), and resumes`);
     // a heavy blow taken: the pad rumbles
     await page.evaluate(() => { const s = window.__arena.sim; s.f.marek.aiWait = 0; s.f.ren.hp = Math.max(s.f.ren.hp, 400); s.forceSequence(['m_heavy']); });
     await page.waitForFunction(() => (window.__rumbles ?? []).length > 0, { timeout: 20000 }).catch(() => {});
@@ -303,7 +310,7 @@ try {
     const named = await page.evaluate(() => document.activeElement?.id);
     await press(B.DOWN); await press(B.B);
     const back = await page.evaluate(() => [...document.querySelectorAll('#title-menu .pm-btn')].map((x) => x.dataset.id).join());
-    check(named === 'title-name' && back === 'continue,new,explore', `A opens « New game » (${named}), B goes back (${back})`);
+    check(named === 'title-name' && back === 'continue,new,explore,settings', `A opens « New game » (${named}), B goes back (${back})`);
     await Promise.all([page.waitForNavigation({ timeout: 60000 }).catch(() => null), page.evaluate(() => window.__padSet(0, true))]);
     check(/play=1/.test(page.url()), `A « Continue » takes up the game: ${page.url().replace(BASE, '/')}`);
   });
@@ -325,7 +332,8 @@ try {
     await press(B.A); await stick(1, 0); await new Promise((r) => setTimeout(r, 600)); await stick(0, 0);
     const r = await page.evaluate(() => ({ pad: !!window.__pad, at: [window.__app.actors.player.pos.x, window.__app.actors.player.pos.z], keys: [...document.querySelectorAll('#pm-hints kbd')].map((k) => k.textContent) }));
     check(!r.pad && r.at[0] === p0[0] && r.at[1] === p0[1] && r.keys.join() === 'Q,Esc', `today's game: no pad layer, the hero still, the keys shown: ${JSON.stringify(r)}`);
-    await open('?scene=arena');
+    // today's arena is `v2=0` since VD-4 (journal Passe VD2: the bare `?scene=arena` plays the version 2's duel, which reads the shared pad)
+    await open('?scene=arena&v2=0');
     check(await page.evaluate(() => !window.__pad), 'today\'s arena: no shared pad layer (its own pollPad, unchanged)');
   });
   check(errors === 0, `no page error (${errors})`);

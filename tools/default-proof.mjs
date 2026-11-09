@@ -71,7 +71,7 @@ try {
   check(await page.evaluate(() => navigator.webdriver === false && location.search === ''), 'the bare address, in a browser that does not announce automation');
   await page.waitForSelector('#title-screen #title-menu .pm-btn', { timeout: READY });
   const buttons = await page.evaluate(() => [...document.querySelectorAll('#title-menu .pm-btn')].map((x) => x.dataset.id));
-  check(buttons.join() === 'new,explore', `the title screen: ${buttons.join(', ')} (no save, no « Continue »)`);
+  check(buttons.join() === 'new,explore,settings', `the title screen: ${buttons.join(', ')} (no save, no « Continue »; « Settings » since journal Passe RG3)`);
   await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY });
   await sleep(1200);
   check((await sound()).ctx === null, 'no sound before the first gesture');
@@ -167,7 +167,7 @@ try {
   await page.goto(BASE, { waitUntil: 'load', timeout: READY });
   await page.waitForSelector('#title-screen #title-menu .pm-btn', { timeout: READY });
   const again = await page.evaluate(() => ({ ids: [...document.querySelectorAll('#title-menu .pm-btn')].map((x) => x.dataset.id), line: document.querySelector('#title-menu [data-id="continue"] .line')?.textContent ?? null }));
-  check(again.ids.join() === 'continue,new,explore' && !/earlier/.test(again.line ?? ''), `the title screen again offers « Continue »: ${again.ids.join(', ')} — ${again.line}`);
+  check(again.ids.join() === 'continue,new,explore,settings' && !/earlier/.test(again.line ?? ''), `the title screen again offers « Continue »: ${again.ids.join(', ')} — ${again.line}`);
   await page.waitForFunction('window.__ready === true || window.__error', { timeout: READY });
   await page.screenshot({ path: path.join(outDir, '4-title-continue.png') });
 

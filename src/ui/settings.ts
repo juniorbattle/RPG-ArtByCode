@@ -44,6 +44,7 @@ const CSS = `
 .pm-cap .pad-l{display:block;line-height:26px}
 .pm-cap .pad-s{display:block}
 .pm-keys .via{font-size:var(--ds-fs-small);color:var(--ds-muted)}
+@media (max-height:480px) and (min-width:701px){.pm-overlay .pm-card.pm-two.pm-settings{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr);column-gap:28px}.pm-settings .pm-glist .why{display:none}.pm-settings .pm-col .pm-head p{display:none}.pm-settings .pm-col .pm-head{padding-bottom:6px}}
 `;
 
 function style(): void {

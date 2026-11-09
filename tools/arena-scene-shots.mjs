@@ -28,6 +28,9 @@ try {
   await page.evaluateOnNewDocument(SEED);
   if (process.env.HOLD === '1') await page.evaluateOnNewDocument(`Object.defineProperty(window, '__arena', { configurable: true, get() { return undefined; }, set(v) { v.start = () => {}; Object.defineProperty(window, '__arena', { value: v, writable: true, configurable: true }); } });`);
   const q = `scene=arena&freeze=7.3${extra ? '&' + extra : ''}`;
+  // MOTION=no-preference|reduce: the system's reduced motion emulated (journal Passe RG3: the tools' headless Chrome reports the operator's Windows,
+  // « reduce », and a base before RG3 read it; the game since reads its own setting only)
+  if (process.env.MOTION) await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: process.env.MOTION }]);
   await page.goto(`${BASE}?${q}`, { waitUntil: 'load', timeout: 120000 });
   await page.waitForFunction('window.__ready === true || window.__error', { timeout: +(process.env.READY_MS || 300000) });
   const err = await page.evaluate(() => window.__error);
