@@ -1,0 +1,378 @@
+<title>Fiche du remappage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; min-width: 640px; width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px 5px 0; text-align: left; white-space: nowrap; vertical-align: top; }
+.tbl td:nth-child(2) { white-space: normal; min-width: 190px; }
+.tbl td:first-child { color: var(--muted); font-size: 13px; }
+.tbl td:nth-child(3), .tbl td:nth-child(4) { font-family: var(--font-mono); font-size: 12.5px; padding-top: 6px; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · tes décisions · 9 novembre 2026</span>
+    <h1>Le remappage des touches</h1>
+    <p class="lede">Ta décision RG-8 sur la fiche des réglages, mot pour mot : « Afficher maintenant, remapper plus tard (tâche à part) ». Voici cette tâche. Rien n’est encore construit. La première carte recense toutes les touches que le jeu lit aujourd’hui, avec la manette et le fichier qui les lit. Dix choix suivent, chacun avec son contexte, ma recommandation et tes options. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne mot pour mot dans le journal et dans AGENTS.md, puis le remappage se construit dans sa propre séance, selon tes choix, et se fusionne après ses preuves. Rien du jeu ne change avant.</p>
+    <p class="src">Sources : JOURNAL.md (Passes MN2, RG2, RG3, RG4) ; AGENTS.md (« Settings », « Gamepad ») ; src/settings/settings.ts, src/ui/settings.ts, src/input/pad.ts, src/input/PadInput.ts, src/input/prompts.ts, src/ui/townUi.ts, src/characters/ActorSystem.ts, src/world/PlazaApp.ts, src/ui/playPlaza.ts, src/ui/cutscene.ts, src/arena/ArenaApp.ts, src/arena/v2Arena.ts, src/arena/DynamicHud.ts, src/ui/tutorial.ts, src/ui/title.ts, src/narrative/text/.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Un groupe par famille de décisions, une entrée par décision. fam : une variable de couleur. shots : captures publiées via `files`.
+// table : une ligne avec un élément de plus que l'en-tête est surlignée. Apostrophes : la typographique ’ ; une ' droite dans une chaîne entre ' ' arrête tout le script.
+const GROUPS = [
+  { id: 'quoi', title: 'Ce qu’on peut changer', sub: 'Les actions, le nombre de touches par action, la manette.', fam: 'var(--voile)', items: [
+    { id: 'RM-1', tag: 'actions', title: 'Quelles actions peut-on changer',
+      ctx: 'Le jeu lit ses touches de trois façons. La marche, la liste et les pages de la ville passent par une table qui fait déjà l’AZERTY (gameKey). Le duel, la parole sur les places et les scènes lisent la lettre frappée telle quelle. Chaque page garde ses propres touches (flèches, Entrée, Échap, Espace). « Explore the district » marche avec la même table que la ville. Le tableau les recense toutes.',
+      shots: [['img/controls.png', 'Aujourd’hui : la partie Contrôles, la marche'], ['img/controls-duel.png', 'Aujourd’hui : la même partie, les pages et le duel']],
+      table: { head: ['Moment', 'Action', 'Clavier', 'Manette', 'Lu dans'], rows: [
+        ['Marche', 'Marcher', 'W A S D · flèches', 'stick g. · croix', 'ActorSystem, PlazaApp', 1],
+        ['Marche', 'Courir (maintenir)', 'Maj', 'B', 'ActorSystem, PlazaApp', 1],
+        ['Marche', 'Parler, prendre une sortie', 'E · Espace', 'A', 'ActorSystem, playPlaza', 1],
+        ['Marche', 'Ce qu’on peut faire ici', 'Q (A en AZERTY)', 'Y', 'townUi', 1],
+        ['Marche', 'Carte', 'M', 'Vue', 'townUi', 1],
+        ['Marche', 'Journal, tournoi, compétences, équipement, réglages, guide', 'J T K G V H', 'par le menu', 'townUi', 1],
+        ['Marche', 'Couper le son', 'N', 'par le menu', 'townUi, ArenaApp', 1],
+        ['Marche', 'Menu', 'Échap', 'Menu', 'townUi'],
+        ['Scène', 'Réplique suivante', 'E · Espace · Entrée', 'A', 'cutscene'],
+        ['Scène', 'Passer la scène', 'Échap', 'Menu', 'cutscene'],
+        ['Pages', 'Parcourir une liste (← → : un réglage)', '↑ ↓', 'croix · stick', 'chaque page'],
+        ['Pages', 'Choisir', 'Entrée', 'A', 'chaque page'],
+        ['Pages', 'Retour, fermer', 'Échap', 'B · Menu', 'chaque page'],
+        ['Pages', 'Emporter une compétence, marchander', 'Espace', 'X', 'skills, wares'],
+        ['Pages', 'Page voisine du menu', '—', 'LB · RB', 'PadInput'],
+        ['Duel', 'Attaque (maintenir : la charge)', 'J · 1', 'X · RT', 'v2Arena', 1],
+        ['Duel', 'Garde (maintenir)', 'K · B', 'B · LT', 'v2Arena', 1],
+        ['Duel', 'Esquive', 'L · A', 'A', 'v2Arena', 1],
+        ['Duel', 'Pause', 'Espace', 'Menu', 'ArenaApp', 1],
+        ['Duel', 'Réglages (en pause)', 'Échap', 'Y', 'ArenaApp'],
+        ['Duel', 'Cacher le HUD', 'H', '—', 'ArenaApp'],
+        ['Duel', 'Recommencer (page de l’arène seule)', 'R', 'Vue', 'ArenaApp'],
+        ['Explore', 'Panneau DEV (outil)', 'H', '—', 'DebugPanel'],
+        ['Explore', 'Forge sabotée (outil)', 'F', '—', 'App'],
+      ], foot: 'En vert : ce que ma recommandation rend modifiable. La réplique suivante d’une scène suit la touche « Parler ». Le duel du jeu d’avant (v2=0, touches 1 à 6) et le prototype de l’arène gardent leurs touches.' },
+      rec: 'Les actions du jeu : marcher (les quatre directions), courir, parler, la liste, la carte, les six raccourcis des pages, couper le son ; au duel, l’attaque, la garde, l’esquive et la pause. Restent fixes : Échap (menu, retour, passer une scène, réglages depuis la pause), Entrée, les flèches et Espace dans les pages, H et R au duel. Une page se parcourt toujours de la même façon, et Échap sort toujours.',
+      opts: ['Les actions du jeu, les touches des pages fixes', 'La marche et les trois boutons du duel seulement', 'Tout sauf Échap, les touches des pages comprises'], recIdx: 0,
+      src: 'src/characters/ActorSystem.ts, src/world/PlazaApp.ts, src/ui/townUi.ts, src/ui/playPlaza.ts, src/ui/cutscene.ts, src/arena/ArenaApp.ts, src/arena/v2Arena.ts (V2_KEYS), src/settings/settings.ts (gameKey, keyOf)' },
+    { id: 'RM-2', tag: 'deux touches', title: 'Une ou deux touches par action',
+      ctx: 'Plusieurs actions ont déjà deux touches : marcher (W A S D et les flèches), parler (E et Espace), et au duel l’attaque (J et 1), la garde (K et B), l’esquive (L et A), ces trois dernières venues du prototype. La table des contrôles n’en montre qu’une. Constat : en AZERTY, la touche 1 de la rangée du haut tape « & », et la seconde touche d’attaque ne répond qu’au pavé numérique.',
+      rec: 'Deux cases par action, remplies au départ avec les touches d’aujourd’hui. Chacune se change, la seconde peut rester vide, et une action garde toujours au moins une touche. Sans rien de gardé dans le navigateur, le jeu reste celui d’aujourd’hui, touche pour touche, comme pour les autres réglages. Un joueur garde ainsi les flèches à côté de ses lettres.',
+      opts: ['Deux touches par action, celles d’aujourd’hui au départ', 'Une touche à choisir, les flèches gardées pour marcher', 'Une seule touche par action'], recIdx: 0,
+      src: 'src/arena/v2Arena.ts (V2_KEYS, V2_HELD), src/characters/ActorSystem.ts, src/ui/settings.ts (la table des contrôles)' },
+    { id: 'RM-3', tag: 'manette', title: 'Le clavier seul, ou la manette aussi',
+      ctx: 'La manette appuie sur les touches que l’interface montre (MN2) : A presse E, Y la liste, B Échap dans une page. Une touche du clavier changée ne la touche donc pas. Sa disposition a été choisie bouton par bouton sur ta fiche de la manette (MN-2 à MN-6). Au duel, l’attaque et la garde ont déjà deux boutons (X ou RT, B ou LT), pour tenir la charge et la garde ensemble.',
+      rec: 'Le clavier seul pour cette tâche. La manette garde la disposition de ta fiche, montrée en regard dans la table. La remapper demande une autre saisie (attendre un bouton) et refait les preuves de la manette ; elle viendra si tu la demandes après ton essai.',
+      opts: ['Le clavier seul ; la manette garde sa disposition', 'Le clavier, et les trois boutons du duel à la manette', 'Le clavier et toute la manette'], recIdx: 0,
+      src: 'src/input/pad.ts (KEYS, DUEL), src/input/PadInput.ts ; Passe MN2' },
+  ]},
+  { id: 'regles', title: 'Les règles', sub: 'Ce qui se passe quand une touche est déjà prise, et comment le remappage s’entend avec la ligne « Clavier ».', fam: 'var(--cendre)', items: [
+    { id: 'RM-4', tag: 'conflits', title: 'Une touche déjà prise, et les touches réservées',
+      ctx: 'Une même touche peut servir à deux moments différents : en AZERTY, A ouvre la liste en ville et esquive au duel, sans gêne. Dans un même moment, deux actions sur une touche se marchent dessus. Certaines touches appartiennent au navigateur ou au système : Tab (le focus), F1 à F12 (F5 recharge la page, F11 le plein écran), Ctrl, Alt et la touche Windows (Ctrl+W ferme l’onglet).',
+      rec: 'Échanger. La touche choisie passe à l’action, l’action qui l’avait prend l’ancienne touche, et une ligne le dit (« E passe à Courir, Maj à Parler »). Les moments sont séparés : la marche (ville, places, Explore, avec la liste et les raccourcis) et le duel. Réservées, jamais proposées : Échap, Entrée, Tab, F1 à F12, Ctrl, Alt, la touche Windows. Les touches d’outil cèdent : H et R au duel, H (le panneau DEV) et F (la forge) dans Explore ne font plus leur outil quand une action y est.',
+      opts: ['Échanger les deux touches, une liste de touches réservées', 'Refuser une touche déjà prise', 'Prendre la touche, l’autre action reste sans touche'], recIdx: 0,
+      src: 'src/world/PlazaApp.ts (Ctrl, Alt, Meta ignorés), src/app/App.ts (F), src/debug/DebugPanel.ts (H), src/arena/ArenaApp.ts (H, R)' },
+    { id: 'RM-5', tag: 'AZERTY', title: 'Tes touches et la ligne « Clavier »',
+      ctx: 'La ligne « Clavier » (RG-7) choisit entre W A S D avec Q et Z Q S D avec A, d’abord d’après le clavier que le navigateur annonce, sinon la langue. Les autres touches du jeu se lisent par la lettre frappée et répondent sur les deux claviers. Avec le remappage, tes touches et cette ligne doivent s’entendre.',
+      shots: [['img/controls-fr-azerty.png', 'Aujourd’hui : la même partie en français, la ligne sur AZERTY']],
+      rec: 'La ligne garde son rôle : elle donne les touches de départ du clavier choisi. Chaque clavier garde ses propres touches : tes changements en AZERTY restent en AZERTY, repasser en QWERTY montre celles du QWERTY, et rien n’est perdu. « Touches par défaut » remet celles du clavier affiché. Le jeu retient la touche par sa place et la lettre qu’elle montrait quand tu l’as choisie : elle répond Maj tenue ou non (la touche 1 d’un AZERTY répond enfin au duel), et les touches affichées montrent ta lettre.',
+      opts: ['Chaque clavier garde ses touches ; la ligne donne celles de départ', 'Changer de clavier remet ses touches de départ', 'Retirer la ligne « Clavier » : tes touches suffisent'], recIdx: 0,
+      src: 'src/settings/settings.ts (layout, gameKey, shownKey, layoutOfMap) ; Passe RG3' },
+  ]},
+  { id: 'voir', title: 'Ce qu’on voit', sub: 'Les touches affichées partout dans le jeu, leurs noms, et la page où on les change.', fam: 'var(--astre)', items: [
+    { id: 'RM-6', tag: 'touches affichées', title: 'Les touches affichées suivent-elles les tiennes',
+      ctx: 'Les touches affichées sont des lettres écrites par chaque page : Q et Échap en bas de l’écran, E près d’une personne, M J T K G V H dans le menu, K L J sur la barre du duel, Espace et Échap à sa pause, E et Échap dans les scènes, [E] [Q] [J] [K] [L] [M] dans les textes du tutoriel et du guide, la ligne de l’écran titre, la table des contrôles. Seules la liste et la marche suivent l’AZERTY. Avec la manette, chaque touche affichée devient un bouton reconnu à sa lettre (J au duel devient X).',
+      shots: [['img/town.png', 'Aujourd’hui : la ville, Q et Échap en bas'], ['img/menu.png', 'Aujourd’hui : le menu et ses lettres'], ['img/duel.png', 'Aujourd’hui : la barre du duel, K L J (la page de l’arène seule garde les mots du prototype)']],
+      rec: 'Toutes les touches affichées suivent les tiennes, à l’instant : le bas de l’écran, le menu, la barre et la pause du duel, les scènes, l’écran titre, les textes du tutoriel et du guide, la table des contrôles. Chaque touche affichée montre la première touche de l’action ; la table montre les deux. Avec la manette, chacune montre son bouton comme aujourd’hui, car elle retient son action et non sa lettre.',
+      opts: ['Toutes les touches affichées suivent, tutoriel compris', 'Toutes, sauf les textes du tutoriel (lettres d’origine)', 'Seule la table des contrôles montre tes touches'], recIdx: 0,
+      src: 'src/input/prompts.ts, src/input/pad.ts (capButton), src/ui/townUi.ts, src/ui/tutorial.ts (CAPS), src/arena/DynamicHud.ts, src/ui/cutscene.ts, src/ui/title.ts, src/debug/Hud.ts' },
+    { id: 'RM-7', tag: 'noms', title: 'Le nom des touches en français',
+      ctx: 'Constat : en français, les touches nommées gardent leur nom anglais sur leur cap, « Space », « Enter », « Esc », « Shift » (la capture de la carte RM-5), alors que le guide écrit « maintenez Maj ». Une touche choisie par le joueur peut aussi être un nom (Retour arrière, Origine…) ou un signe (« ; », « ù »).',
+      rec: 'Les noms français en français : Espace, Entrée, Échap, Maj, Flèches ; les noms anglais en anglais. Un signe s’affiche tel quel. Les deux polices du jeu couvrent ces caractères. Le joueur lit les mots de son clavier.',
+      opts: ['Les noms français : Espace, Entrée, Échap, Maj', 'Garder Space, Enter, Esc, Shift partout'], recIdx: 0,
+      src: 'src/ui/style.ts (footBtn), src/ui/settings.ts, src/narrative/text/fr-texts.ts ; Passe RG4' },
+    { id: 'RM-8', tag: 'la page', title: 'Où et comment on change une touche',
+      ctx: 'La partie Contrôles des réglages montre aujourd’hui la ligne Clavier, la vibration de la manette et trois tables (la marche, les pages, le duel). On s’y déplace avec ↑ ↓, ← → changent un choix ; la manette presse ces mêmes touches.',
+      rec: 'Dans la partie Contrôles, chaque action devient une ligne avec ses deux cases et le bouton de manette en regard. Entrée ou un clic sur une case : « Appuyez sur une touche », Échap annule, Retour arrière vide la case (il ne se choisit donc pas). Une ligne « Touches par défaut » en bas. Les touches fixes restent montrées, en gris. La manette parcourt la page et remet les défauts ; une touche se choisit au clavier.',
+      opts: ['Dans la partie Contrôles, une ligne par action', 'Une page « Touches » à part, ouverte depuis Contrôles'], recIdx: 0,
+      src: 'src/ui/settings.ts (controls) ; RG-1 (Passe RG2)' },
+  ]},
+  { id: 'garde', title: 'La garde et la livraison', sub: 'Où les touches sont gardées, et quand le remappage arrive dans le jeu.', fam: 'var(--ronce)', items: [
+    { id: 'RM-9', tag: 'garde', title: 'Où les touches sont gardées',
+      ctx: 'Les réglages vivent dans le navigateur (cite-du-tournoi.settings), la vibration dans celui de la manette, la partie dans sa sauvegarde. Le tutoriel garde aussi ce qu’il a vu dans le navigateur, jamais dans la sauvegarde.',
+      rec: 'Dans les réglages du navigateur, avec les autres. Chaque touche est vérifiée à la lecture : une touche inconnue ou réservée reprend son défaut, et rien de gardé donne les touches d’aujourd’hui. Jamais dans la sauvegarde : les touches appartiennent à la personne et à son clavier, pas à la partie. Un navigateur piloté par les outils part des touches d’aujourd’hui, comme il part du QWERTY.',
+      opts: ['Dans les réglages du navigateur, jamais dans la sauvegarde', 'Dans la sauvegarde de la partie'], recIdx: 0,
+      src: 'src/settings/settings.ts (readSettings, loadSettings, saveSettings) ; Passes RG3, TU3' },
+    { id: 'RM-10', tag: 'livraison', title: 'Le lot, ses preuves et la fusion',
+      ctx: 'Selon VD-8, tout va dans le jeu par défaut. Les preuves de la page des réglages (RG3) servent de modèle.',
+      rec: 'Un lot, fusionné dès ses preuves : le jeu sans touche gardée à 0 px contre main (DEV et paquets) ; des tests (la table, les échanges, chaque clavier et ses touches, chaque touche affichée) ; une preuve au clavier dans un navigateur qui ne s’annonce pas piloté, chaque action changée puis jouée (la marche, la liste, une scène, le duel) ; la manette inchangée ; les tailles et les contrastes des nouvelles lignes dans les deux langues. Ton essai ensuite.',
+      opts: ['Un lot fusionné dès ses preuves, ton essai ensuite', 'Ton essai sur une page avant la fusion'], recIdx: 0,
+      src: 'AGENTS.md (Git workflow, VD-8) ; tools/settings-proof.mjs, tools/pad-proof.mjs, tools/ui-text.mjs, tools/ui-contrast.mjs' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.id + ' · ' + it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.id });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche du remappage — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  // le pont du visualiseur peut tarder : jusqu'à 10 s (Passes D7, D8)
+  for (let i = 0; i < 100 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
