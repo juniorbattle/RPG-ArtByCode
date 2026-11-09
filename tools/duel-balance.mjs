@@ -13,6 +13,7 @@ import fs from 'node:fs';
 
 const V = await load('/src/combat/v2duel.ts');
 const B = await load('/src/combat/bot.ts');
+const K = await load('/src/combat/skills.ts');
 const C = await load('/src/combat/charge.ts');
 const Rng = (await load('/src/core/rng.ts')).Rng;
 
@@ -66,8 +67,29 @@ function variantOf(name) {
       if ((st.lights ?? 0) >= k && m.state === 'idle' && !m.inSeq && !m.broken && m.aiWait > 0.3) { m.aiWait = 0.3; st.lights = 0; }
     },
   };
+  // journal Passe DB4 (the operator's note after DB3: « une attaque simple devrait infligeait 5 a 10% des pv max de l'ennemie »):
+  // a pure change of scale, Marek's health brought to N and every health and blow by the same factor (the balance unchanged, a blow at least 1)
+  if ((k = num(name, /^scale(\d+)$/)) !== null) return {
+    label: `échelle : Marek à ${k} PV`,
+    apply: (d) => { const f = k / MAREK_HP; d.fighters.marek.maxHp = Math.max(1, Math.round(d.fighters.marek.maxHp * f)); d.fighters.ren.maxHp = Math.max(1, Math.round(d.fighters.ren.maxHp * f)); for (const a of Object.values(d.actions)) if (a.damage > 0) a.damage = Math.max(1, Math.round(a.damage * f)); },
+  };
+  // the light attack's damage, a share (%) of this opponent's health
+  if ((k = num(name, /^lightpct([\d.]+)$/)) !== null) return { label: `attaque rapide à ${k} % des PV`, apply: (d) => { d.actions.light.damage = Math.max(1, Math.round((k / 100) * d.fighters.marek.maxHp)); } };
+  // the offensive skills' damage in light attacks: k light attacks for a charge of 3.4 s (the Flash cut), in proportion to the charge time
+  if ((k = num(name, /^skl([\d.]+)$/)) !== null) return {
+    label: `compétences à ${k} attaques rapides pour 3,4 s de charge`,
+    apply: (d, t) => { const at = Object.fromEntries(t.map((x) => [x.id, x.at])); for (const a of Object.values(d.actions)) if (a.owner === 'ren' && a.family === 'offensive') a.damage = Math.max(1, Math.round(d.actions.light.damage * k * ((at[a.id] ?? K.chargeTime(a.id, 1)) / 3.4))); },
+  };
+  // the riposte as the game's data says it (DynData.ai.riposte): after k light attacks, 0 = none
+  if ((k = num(name, /^rip(\d+)$/)) !== null) return { label: k ? `riposte au ${k}e coup` : 'sans riposte', apply: (d) => { if (k) d.ai.riposte = { after: k, delay: 0.3 }; else delete d.ai.riposte; } };
+  // the gauge's size (100 today) and its decay in proportion: a break sooner in a short duel
+  if ((k = num(name, /^gauge(\d+)$/)) !== null) return { label: `jauge de ${k}`, apply: (d) => { d.resist = { ...d.resist, decay: +(d.resist.decay * k / d.resist.max).toFixed(3), max: k }; } };
+  // longer sequences: k blows in a combo at most (from k - 2), the combos the opponent's usual sequence (80 %)
+  if ((k = num(name, /^combo(\d+)$/)) !== null) return { label: `séquences adverses jusqu’à ${k} coups`, apply: (d) => { d.ai.comboLen = [Math.max(2, k - 2), k]; d.ai.weights = { combo: 0.8, singleLight: 0.1, singleHeavy: 0.1 }; } };
   throw new Error(`unknown variant "${name}"`);
 }
+/** Marek's health in the scene's duel today (journal Passe DB3: 7 680 x 1.5) */
+const MAREK_HP = 11520;
 export const variant = (spec) => {
   const parts = spec.split('+').map(variantOf);
   return { label: parts.map((p) => p.label).join(' + '), apply: (d, t, f) => parts.forEach((p) => p.apply(d, t, f)), hooks: parts.filter((p) => p.hook) };
