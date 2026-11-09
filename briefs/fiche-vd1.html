@@ -1,0 +1,330 @@
+<title>Fiche version par défaut</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · tes décisions · 9 novembre 2026</span>
+    <h1>La version 2 par défaut : ce que ta phrase ne dit pas</h1>
+    <p class="lede">Ta décision, mot pour mot : « non je veux que toutes mes implementations soient dans la version par default afin de lancer direct le jeu via http://127.0.0.1:5173/ ». C’est fait sur la branche claude/v2-defaut : l’adresse nue, l’écran titre puis « New game » ouvrent une partie de la version 2, avec tout ce qui n’était actif qu’avec v2=1 (les règles dynamiques comprises : C2-1 et CB-10 sont dépassées pour une partie neuve). Restent neuf points que ta phrase ne tranche pas. Pour chacun : le contexte, ma recommandation et tes options. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je les consigne dans les documents du projet, puis j'enchaîne sur la suite décidée.</p>
+    <p>Rien n’est fusionné dans main avant ta relecture : la branche attend tes choix.</p>
+    <p class="src">Sources : JOURNAL.md, Passe VD1 ; AGENTS.md ; src/simulation/v2.ts, src/ui/play.ts, src/ui/title.ts, src/main.ts, src/arena/dynamicView.ts ; tools/default-proof.mjs.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Remplacer entièrement : un groupe par famille de décisions, une entrée par décision.
+// fam : une variable de couleur (--astre, --voile, --ronce, --cendre). shots : captures publiées via `files` (facultatif).
+// Apostrophes : l’apostrophe typographique ’ (ou \') ; une ' droite dans une chaîne entre ' ' arrête tout le script.
+const GROUPS = [
+  { id: 'jeu', title: 'Le jeu d’aujourd’hui et les parties d’avant', sub: 'Sur la branche : une partie neuve est une partie de la version 2, sans paramètre. Les captures sont celles de la preuve, l’adresse nue dans un navigateur ouvert comme par toi.', fam: 'var(--astre)', items: [
+    { id: 'VD-1', tag: 'v2=0', title: 'Garder le jeu d’aujourd’hui derrière un paramètre, pour comparer',
+      ctx: 'Ta phrase est appliquée sur la branche : l’adresse nue, l’écran titre puis « New game » ouvrent une partie de la version 2 (dix jours, le duel à trois boutons et la charge, le son, la manette, Ren cape ivoire). Le jeu d’aujourd’hui (trois jours, l’ancienne arène, sans son ni manette) reste joignable par ?play=1&new=1&v2=0, comme ?v2=0 le disait déjà dans le code. Rien ne l’ouvre sans ce paramètre.',
+      shots: [['img/1-title.png', 'L’adresse nue : l’écran titre'], ['img/2-new-game.png', '« New game » : une partie de la version 2 (Day 1 / 10, son et manette)']],
+      rec: 'Le garder derrière v2=0. Il ne coûte rien à garder, il sert de base aux preuves (0 px, empreintes), et une partie de son code sert encore au district gelé et à « Explore ». Le retirer est un gros chantier (le tournoi de trois jours, l’arène classique, leurs tests) qui mérite sa propre tâche si tu le veux.',
+      opts: ['Le garder derrière v2=0', 'Le retirer, dans une tâche à part'], recIdx: 0,
+      src: 'src/simulation/v2.ts (newGameV2), src/ui/play.ts (withRules) ; journal Passe VD1' },
+    { id: 'VD-2', tag: 'sauvegarde', title: 'Une sauvegarde d’avant, sans le drapeau',
+      ctx: 'Une partie commencée avant (sans le drapeau de la version 2) se reprend par « Continue » telle qu’elle est : le jeu d’aujourd’hui, trois jours. La convertir en cours de route n’est pas possible proprement (la version 2 refait le calendrier). Ton navigateur sur :5173 en garde peut-être une de tes essais.',
+      shots: [['img/4-title-continue.png', 'L’écran titre avec une sauvegarde : « Continue » en premier']],
+      rec: 'La reprendre, marquée « version d’avant » sous « Continue » (une ligne de texte), pour que tu saches que « New game » lance la version 2. Rien n’est perdu et rien ne te surprend.',
+      opts: ['La reprendre, marquée « version d’avant »', 'La reprendre sans rien dire', 'L’ignorer : « New game » seulement'], recIdx: 0,
+      src: 'src/ui/title.ts, src/ui/save.ts' },
+  ]},
+  { id: 'hors', title: 'Ce qui reste hors d’une partie', sub: 'Ce que ta phrase ne dit pas : les pages qu’on ouvre sans jouer une partie.', fam: 'var(--voile)', items: [
+    { id: 'VD-3', tag: 'Explore', title: '« Explore the district » sur l’écran titre',
+      ctx: 'Aujourd’hui, « Explore » ouvre le district gelé à midi, en promenade libre : l’ancienne allure de Ren, la cathédrale à l’horizon, les bannières d’aujourd’hui, sans manette ni son (MN-1, SA-16). L’allure de la version 2 (Ren, les emblèmes du tournoi, l’arène à l’horizon) n’y demande que trois paramètres déjà existants ; la manette et la musique de la ville par heure se branchent comme dans une partie.',
+      shots: [['img/explore-compare.png', 'À gauche Explore aujourd’hui, à droite avec l’allure de la version 2 (même vue, midi)']], one: true,
+      rec: 'L’allure de la version 2, la manette et le son : ta phrase dit « toutes mes implémentations », et Explore est la seule page du titre qui ne les montre pas. Le district reste gelé dans sa géométrie ; seuls Ren, les drapeaux et l’horizon changent, comme dans une partie.',
+      opts: ['Allure, manette et son de la version 2', 'L’allure seule', 'Tel quel (le district gelé)', 'Retirer le bouton'], recIdx: 0,
+      src: 'src/main.ts (titleOverTown), src/ui/title.ts ; L7-6a (Passe D9), MN-1, SA-16' },
+    { id: 'VD-4', tag: 'arène seule', title: 'L’arène seule (?scene=arena), la page d’essai du duel',
+      ctx: 'Hors d’une partie, ?scene=arena montre encore l’ancienne arène ; le duel de la version 2 demande ?scene=arena&v2=1. Les combats d’une partie, eux, sont déjà ceux de la version 2 (gradins, effets, feuilles de combat).',
+      rec: 'Le duel de la version 2 par défaut (?scene=arena&v2=0 pour l’ancienne arène, combat=dynamic pour celle de C2), pour que la page d’essai montre le combat du jeu.',
+      opts: ['Le duel de la version 2 par défaut', 'Garder l’ancienne arène (page d’outil)'], recIdx: 0,
+      src: 'src/arena/dynamicView.ts (arenaRules)' },
+    { id: 'VD-5', tag: 'son', title: 'Le son avant un geste : l’écran titre',
+      ctx: 'Chrome ne joue aucun son avant un geste. Aujourd’hui l’écran titre est muet (SA-16 : « jusqu’à ce que la version 2 devienne le défaut ») ; la musique « titre » démarre sur la première page de la partie, à la première touche ou au premier clic (mesuré : après « New game », le son part au premier clic, entendu à −25 dB à la sortie). Le moment que SA-16 attendait est venu.',
+      rec: 'Le titre joue « titre » dès ton premier geste sur lui, et la partie le reprend où il en est. Un jeu s’ouvre sur sa musique ; le chargement reste à la demande, après le geste (SA-17).',
+      opts: ['Le titre joue « titre » au premier geste', 'Le titre muet, le son à la première touche de la partie'], recIdx: 0,
+      src: 'src/audio/Sound.ts, src/audio/plan.ts ; SA-16, SA-17, MN-10 (Passes SN1, SN3, MN2)' },
+  ]},
+  { id: 'depot', title: 'Outils, preuves et règles du dépôt', sub: 'Ce qui change pour les séances qui suivent ; rien de visible en jeu.', fam: 'var(--ronce)', items: [
+    { id: 'VD-6', tag: 'outils', title: 'Les adresses des outils et des preuves',
+      ctx: 'Déjà fait sur la branche, parce que le défaut l’impose : play-day et play-flow jouent la version 2 sans paramètre (V2=0 pour le jeu d’aujourd’hui), la manette et le son ajoutent v2=0 là où ils vérifient le jeu d’aujourd’hui. Restent : le TournamentLab (règles classiques par défaut), les états nommés (chacun garde sa version), l’adresse nue dans un navigateur piloté (le district de nuit, la base de toutes les preuves du district).',
+      rec: 'Les outils suivent le défaut : le TournamentLab joue la version 2 sans option (--rules=classic pour aujourd’hui) ; les états nommés gardent leur version ; l’adresse nue pilotée reste le district de nuit, la base des preuves du district gelé.',
+      opts: ['Les outils suivent le défaut, le district gelé garde son adresse', 'Ne changer que play-day et play-flow'], recIdx: 0,
+      src: 'tools/tournament-lab.mjs, src/simulation/named.ts, src/main.ts ; AGENTS.md « Commands »' },
+    { id: 'VD-7', tag: 'tests', title: 'Les tests qui figent le jeu d’aujourd’hui',
+      ctx: 'Beaucoup de tests vérifient que le jeu d’aujourd’hui ne bouge pas (ses textes au mot près, ses règles, le district) ; ils bâtissent leur partie en Node, sans l’adresse, et passent tous (540 sur 540 sur la branche). Seuls trois tests de l’entrée ont été mis à jour pour le nouveau défaut.',
+      rec: 'Les garder tant que le jeu d’aujourd’hui existe (VD-1) : ils protègent aussi le district gelé et Explore, et la CI ne change pas.',
+      opts: ['Les garder tant que le jeu d’aujourd’hui existe', 'Les alléger maintenant'], recIdx: 0,
+      src: 'tests/texts.test.mjs, tests/arena-dynamic.test.mjs, tests/combat-charge.test.mjs ; .github/workflows/ci.yml' },
+    { id: 'VD-8', tag: 'règle', title: 'La règle « derrière la version 2 » pour la suite',
+      ctx: 'AGENTS.md dit que chaque nouveauté se construit derrière flags.v2, le jeu par défaut inchangé jusqu’à ton essai. Avec ta décision, cette règle n’a plus d’objet telle quelle.',
+      rec: 'Le nouveau va directement dans le jeu par défaut ; un paramètre seulement pour un essai que tu demandes, retiré après ta décision.',
+      opts: ['Le nouveau va dans le jeu par défaut', 'Un paramètre d’essai pour chaque nouveauté'], recIdx: 0,
+      src: 'AGENTS.md (statut, séance « Version 2 »), briefs/cloud-session-v2-brief.md § 2' },
+    { id: 'VD-9', tag: 'fusion', title: 'La fusion dans main',
+      ctx: 'La branche claude/v2-defaut porte le défaut et ses preuves (typecheck, 540 tests, l’adresse nue en DEV : titre, New game, partie v2, son, manette). Les choix de cette fiche demandent un peu de code (Explore, l’arène seule, le son du titre, la ligne « version d’avant », le TournamentLab).',
+      rec: 'Fusionner avec les choix de cette fiche appliqués et prouvés (DEV et paquet de production), dans la même tâche.',
+      opts: ['Fusionner avec les choix appliqués', 'Fusionner le défaut tout de suite, les choix ensuite'], recIdx: 0,
+      src: 'journal Passe VD1' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
