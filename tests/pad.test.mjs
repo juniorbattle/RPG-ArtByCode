@@ -90,7 +90,8 @@ test('the keys each button presses (MN-3, MN-4, MN-6), as the sheet\'s tables sa
 
 test('the duel (MN-5): X or RT attack, B or LT guard, both held; A dodge, Start pause; today\'s V2_PAD kept whole', () => {
   const D = P.DUEL;
-  assert.deepEqual({ ...D }, { [STD.X]: 'attack', [STD.RT]: 'attack', [STD.B]: 'guard', [STD.LT]: 'guard', [STD.A]: 'dodge', [STD.START]: 'pause', [STD.VIEW]: 'reset' });
+  // Y opens the settings over a paused duel (the operator's RG-2 « Depuis la pause du duel aussi », journal Passe RG2)
+  assert.deepEqual({ ...D }, { [STD.X]: 'attack', [STD.RT]: 'attack', [STD.B]: 'guard', [STD.LT]: 'guard', [STD.A]: 'dodge', [STD.START]: 'pause', [STD.VIEW]: 'reset', [STD.Y]: 'settings' });
   for (const [b, id] of Object.entries(V2_PAD)) assert.equal(D[b], id, `V2_PAD ${b}`);
   // the keyboard's held keys stay the held commands
   assert.deepEqual([...new Set(Object.values({ j: V2_KEYS.j, k: V2_KEYS.k }))].sort(), [...P.HELD].sort());
@@ -149,9 +150,12 @@ test('every key cap the version 2\'s interface writes shows a pad button or hide
   for (const m of ui.matchAll(/footBtn\('([^']+)'/g)) keys.add(m[1]);
   for (const m of ui.matchAll(/, '([A-Z])'\);/g)) keys.add(m[1]);
   for (const m of ui.matchAll(/b\.primary \? '([^']+)' : '([^']+)'/g)) { keys.add(m[1]); keys.add(m[2]); }
+  // the list's cap by the keyboard (journal Passe RG2, RG-7: Q on QWERTY, A on AZERTY) and a switch of the settings page with its key (the mute's N)
+  for (const m of ui.matchAll(/shownKey\('([a-z])'/g)) keys.add(m[1].toUpperCase());
+  for (const m of ui.matchAll(/'', '([A-Z])'\)/g)) keys.add(m[1]);
   assert.deepEqual([...keys].sort(), ['E', 'Enter', 'Esc', 'G', 'H', 'J', 'K', 'M', 'N', 'Q', 'Space', 'T', 'V'].sort());
   const B = STD;
-  const want = { E: B.A, Enter: B.A, Esc: B.B, Space: B.X, Q: B.Y, N: 'hide' };
+  const want = { E: B.A, Enter: B.A, Esc: B.B, Space: B.X, Q: B.Y, A: B.Y, N: 'hide' };
   for (const [k, b] of Object.entries(want)) assert.equal(P.capButton(k, 'other'), b, k);
   assert.equal(P.capButton('Esc', 'hints'), B.START);
   assert.equal(P.capButton('Esc', 'scene'), B.START);
@@ -165,6 +169,9 @@ test('every key cap the version 2\'s interface writes shows a pad button or hide
   assert.deepEqual(bar, ['K', 'L', 'J']);
   assert.ok(hud.includes("<kbd>${charge ? 'L' : 'A'}</kbd>") && hud.includes('<kbd>Space</kbd>'));
   assert.deepEqual(['K', 'L', 'J', 'Space'].map((k) => P.capButton(k, 'arena')), [B.B, B.A, B.X, B.START]);
+  // the pause's settings (RG-2): its Esc shows the button that opens them
+  assert.ok(hud.includes("<kbd>Esc</kbd>${tx('set.title')}"));
+  assert.equal(P.DUEL[P.capButton('Esc', 'arena')], 'settings');
   // each shows the button that does it in the duel
   for (const k of ['K', 'L', 'J']) assert.equal(P.DUEL[P.capButton(k, 'arena')], V2_KEYS[k.toLowerCase()], k);
 });
@@ -211,7 +218,8 @@ test('the wiring: loaded on demand by the version 2\'s pages and the title scree
   const files = fs.readdirSync(path.join(ROOT, 'src'), { recursive: true }).filter((f) => /\.ts$/.test(f)).map((f) => f.replace(/\\/g, '/'));
   const users = files.filter((f) => /import\(['"][./]*input\/PadInput['"]\)|from ['"][./]*input\/PadInput['"]/.test(src(`src/${f}`))).sort();
   // main.ts: Explore walks with the pad since the version 2 is the default game (VD-3, journal Passe VD2), the title screen's layer given the walk
-  assert.deepEqual(users, ['arena/ArenaApp.ts', 'main.ts', 'ui/playPlaza.ts', 'ui/playTown.ts', 'ui/title.ts', 'ui/townUi.ts']);
+  // the settings page shows the pad's caps and its vibration's switch, in place of lot V8's sound page in townUi.ts (journal Passe RG2, RG-1 / RG-6)
+  assert.deepEqual(users, ['arena/ArenaApp.ts', 'main.ts', 'ui/playPlaza.ts', 'ui/playTown.ts', 'ui/settings.ts', 'ui/title.ts']);
   assert.ok(/function exploreInputs\(look: TimeOfDay\): void \{[\s\S]*?p\.installPad\(\{ walk: \(w\) => \{ const a = \(window as \{ __app\?: App \}\)\.__app; if \(a\) a\.actors\.pad = w; \}, sound: \(\) => snd \}\)/.test(src('src/main.ts')), 'Explore: the walk and the sound');
   assert.ok(/m\.installPad\(\{ sound: \(\) => snd \}\)/.test(src('src/ui/title.ts')) && !/dispose\(\)/.test(src('src/ui/title.ts')), 'the title: its layer stays for Explore');
   for (const f of users) assert.ok(!/^import [^;]*from '[^']*input\/PadInput'/m.test(src(`src/${f}`)), `${f}: no static import`);

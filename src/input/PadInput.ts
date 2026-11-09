@@ -38,8 +38,7 @@ const FOCUSABLE = 'button:not(:disabled), input:not(:disabled), [tabindex]:not([
 const shown = (e: Element): boolean => (e as HTMLElement).getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden';
 
 const CSS = `#pm-padsound{left:50%;top:12px;transform:translateX(-50%);z-index:45;padding:8px 52px;white-space:nowrap;pointer-events:none;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:var(--ds-grad-spot);opacity:0;transition:opacity .2s}
-#pm-padsound.on{opacity:1}
-@media (prefers-reduced-motion:reduce){#pm-padsound{transition:none}}`;
+#pm-padsound.on{opacity:1}`;
 
 export class PadInput {
   private hooks: PadHooks = {};
@@ -236,7 +235,8 @@ export class PadInput {
       return;
     }
     const arrow = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' }[dir];
-    if (dir === 'up' || dir === 'down') { if (this.press(el, arrow, { repeat })) return; }
+    // the page's own arrows first, left and right too (the settings page: a choice's ← →, journal Passe RG2); a page that takes none moves the focus
+    if (this.press(el, arrow, { repeat })) return;
     const all = this.focusables(root), i = all.indexOf(el), next = all[stepIndex(all.length, i, dir === 'up' || dir === 'left' ? -1 : 1)];
     next?.focus(); this.note(`focus ${dir}`);
   }

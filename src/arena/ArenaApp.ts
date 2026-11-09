@@ -10,7 +10,9 @@ import { U } from '../atmosphere/SceneUniforms';
 import { buildSky } from '../atmosphere/Sky';
 import { LOOKS, arenaLitByDay, arenaSunDir, parseTime, type DayLook } from '../atmosphere/DayState';
 import { applyPose, type CamPose } from '../app/CameraRig';
-import { FrameCap, parseFrameCap } from '../app/FrameCap';
+import { FrameCap } from '../app/FrameCap';
+import { followGraphics } from '../settings/scene';
+import { capRatio, gameKey, layout, onSettings, reducedMotion, type ResCap } from '../settings/settings';
 import { PerfMonitor } from '../debug/PerfMonitor';
 import { SpriteRenderer, PIXEL_WORLD, type Actor } from '../characters/SpriteRenderer';
 import type { Anim } from '../characters/SpriteGenerator';
@@ -102,6 +104,8 @@ export class ArenaApp {
   readonly reflection = new PlanarReflection();
   readonly lights = new LightRig();
   readonly frameCap = new FrameCap();
+  /** the player's resolution cap (journal Passe RG2, RG-3): none by default */
+  resCap: ResCap | null = null;
   /** frame time, draws and (?gpuprof=1, or tools/perf.mjs) GPU ms per pass, as the town's App */
   readonly perf = new PerfMonitor();
   buildMs = 0;
@@ -201,7 +205,8 @@ export class ArenaApp {
     this.post = new PostFX(this.renderer);
     const q = opts.params;
     if (q.has('gpuprof')) this.perf.gpu.enabled = true;
-    this.frameCap.mode = parseFrameCap(q.get('fps')) ?? { kind: 'adaptive', fps: 60 };
+    // the player's graphics (journal Passe RG2, src/settings/), `fps=` first; nothing stored = today's a60, MSAA 4, the reflection at half
+    followGraphics(this, q);
     const as = q.get('assist');
     if (as === 'full' || as === 'off' || as === 'subtle') this.assist = as;
     if (opts.match) this.assist = opts.match.assist;
@@ -213,7 +218,9 @@ export class ArenaApp {
       if (!isNaN(cv[0])) BASE_POSE.pitch = THREE.MathUtils.degToRad(cv[0]);
       ([['dist', 1], ['fov', 2], ['ty', 3], ['tz', 4], ['tx', 5]] as const).forEach(([k, i]) => { if (!isNaN(cv[i])) BASE_POSE[k] = cv[i]; });
     }
-    this.reducedMotion = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // the reduced motion is the game's own setting, off by default, never the system's (the operator's rule of 2026-11-03; RG-5, journal Passe RG2)
+    this.reducedMotion = reducedMotion();
+    onSettings((s) => { this.reducedMotion = s.reducedMotion; });
     this.scene.add(this.camera);
     this.camera.layers.enable(2);
     const t = parseTime(q);
@@ -349,7 +356,7 @@ export class ArenaApp {
   }
 
   resize(): void {
-    const w = window.innerWidth, h = window.innerHeight, pr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = window.innerWidth, h = window.innerHeight, pr = capRatio(w, h, Math.min(window.devicePixelRatio || 1, 2), this.resCap);
     this.post.setSize(w, h, pr);
     this.reflection.setSize(w * pr, h * pr);
     U.uResolution.value.set(this.post.width, this.post.height);
@@ -367,23 +374,35 @@ export class ArenaApp {
     if (id === 'dodge') s.react('ren', 'dodge');
     else if (id === 'reset') { if (!this.opts.match) this.restart(); }
     else if (id === 'pause') { this.paused = !this.paused && !this.moment ? true : false; this.moment = false; this.hud?.still(false); }
+    else if (id === 'settings') this.openSettings();
     else s.command('ren', id);
+  }
+
+  /** the settings page over a paused duel of the version 2 (the operator's RG-2 « Depuis la pause du duel aussi », journal Passe RG2): Esc, the gamepad's
+   *  Y or the pause's line; the duel stays paused under it, the image changes at once (src/settings/scene.ts), its keys go to the page alone */
+  private settingsOpen = false;
+  openSettings(): void {
+    if (!this.charge || !this.paused || this.moment || this.sim.over || this.settingsOpen) return;
+    this.settingsOpen = true; document.body.classList.add('cdt-settings');
+    void import('../ui/settings').then((m) => { const p = m.settingsPage({ close: () => { this.settingsOpen = false; document.body.classList.remove('cdt-settings'); } }); document.body.appendChild(p.root); p.focus(); });
   }
 
   private bindInput(): void {
     if (this.opts.forecourt) {
-      window.addEventListener('keydown', (e) => { if (!e.metaKey && !e.ctrlKey && !e.altKey && !(e.target instanceof HTMLInputElement)) this.walkKeys.add(e.key.toLowerCase()); });
-      window.addEventListener('keyup', (e) => this.walkKeys.delete(e.key.toLowerCase()));
+      window.addEventListener('keydown', (e) => { if (!e.metaKey && !e.ctrlKey && !e.altKey && !(e.target instanceof HTMLInputElement)) this.walkKeys.add(gameKey(e.key, layout(), e.isTrusted)); });
+      window.addEventListener('keyup', (e) => this.walkKeys.delete(gameKey(e.key, layout(), e.isTrusted)));
       window.addEventListener('blur', () => this.walkKeys.clear());
       return;
     }
     const KEYS: Record<string, string> = this.charge ? V2_KEYS : this.dyn ? dynKeys(this.dyn.D.loadout) : { '1': 'light', '2': 'heavy', '3': 't1', '4': 't2', '5': 't3', '6': 't4', a: 'dodge', b: 'guard', r: 'reset', ' ': 'pause' };
     window.addEventListener('keydown', (e) => {
-      if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || !this.ready || this.lesson) return;
+      if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || !this.ready || this.lesson || this.settingsOpen) return;
       const k = e.key.toLowerCase(), m = KEYS[k];
       if (m) { e.preventDefault(); this.action(m, true); this.hud?.flash(m); }
       else if (k === 'h') this.hudVisible = !this.hudVisible;
+      else if (k === 'escape') this.openSettings();
     });
+    window.addEventListener('cdt-open-settings', () => this.openSettings());
     window.addEventListener('keyup', (e) => { const k = e.key.toLowerCase(); if (this.charge) { if (V2_HELD[k]) this.action(V2_HELD[k], false); } else if (k === 'b') this.action('guard', false); });
     window.addEventListener('blur', () => { this.action('guard', false); if (this.charge) this.action('attack', false); });
     // the version 2's charged duel reads the shared gamepad (the operator's MN-5 « Les deux : X, B, A et les gâchettes en double », journal Passe MN2):

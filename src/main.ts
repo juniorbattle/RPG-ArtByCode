@@ -3,9 +3,14 @@ import { parseTime, type TimeOfDay } from './atmosphere/DayState';
 import { DebugPanel } from './debug/DebugPanel';
 import { Hud } from './debug/Hud';
 import { loadingError, progressOn, showLoading, toneLoading } from './ui/loading';
+import { applyMotion, detectLayout, onSettings } from './settings/settings';
 
 const canvas = document.getElementById('view') as HTMLCanvasElement;
 const params = new URLSearchParams(location.search);
+
+// the player's settings before anything shows (journal Passe RG2): the reduced motion, the game's own setting, off by default and never the system's
+// (RG-5, the operator's rule of 2026-11-03), and the keyboard the browser announces (RG-7; a driven browser keeps QWERTY)
+applyMotion(); onSettings(applyMotion); detectLayout();
 
 // the loading screen in the design system, in the tone of the address's day state (journal Passe UI4; the play mode sets its page's tone)
 const ld = showLoading(parseTime(params)), { label, bar, root: loading } = ld;

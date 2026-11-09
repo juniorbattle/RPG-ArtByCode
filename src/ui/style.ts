@@ -178,7 +178,8 @@ const CSS = `
 .pm-btn::before{content:'';position:absolute;left:0;right:0;top:-1px;height:1px;background:var(--ds-line);transform-origin:left center;animation:ds-rule .24s ease-out backwards}
 .pm-btn{border-top-color:transparent}
 .pm-btn:nth-of-type(2)::before{animation-delay:.03s}.pm-btn:nth-of-type(3)::before{animation-delay:.06s}.pm-btn:nth-of-type(4)::before{animation-delay:.09s}.pm-btn:nth-of-type(n+5)::before{animation-delay:.12s}
-@media (prefers-reduced-motion:reduce){.pm,.pm *,.pm *::before,.pm *::after{transition:none!important;animation:none!important}}
+html.cdt-reduced .pm,html.cdt-reduced .pm *,html.cdt-reduced .pm *::before,html.cdt-reduced .pm *::after{transition-property:opacity,color,border-color,background-color!important}
+html.cdt-reduced .pm-hero{animation:none}
 `;
 
 export function injectStyle(): void {

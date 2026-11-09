@@ -12,6 +12,7 @@ import { INJURY_HP, TRAIN_DMG, TRAIN_MAX } from '../simulation/v2gear';
 import { v2DuelData } from '../combat/v2duel';
 import { forgetLessons } from './duelTutorial';
 import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
+import { layout, shownKey } from '../settings/settings';
 
 /** The tutorial of the default game (the operator's request of 2026-11-09 and his sheet, journal Passes TU1 / TU2 / TU3): a tour of six bands over the live page
  *  at the start of every new game (TU-2, TU-9), each pointing at the real element; a guide of twelve chapters in the menu and on H, from which the tour is replayed
@@ -60,14 +61,16 @@ const keptPlaces = (): Record<string, string> => readJson<Record<string, string>
 /** the caps a text may hold: `[E]` talk, `[Q]` the list, `[Menu]` the menu (Esc, the pad's Start), `[M]` the map, `[Space]`, `[Enter]`, `[Back]` (Esc in a page),
  *  `[J]`, `[K]`, `[L]` the duel's attack, guard and dodge */
 const CAPS: Record<string, string> = {
-  E: '<kbd data-cap="hints">E</kbd>', Q: '<kbd data-cap="hints">Q</kbd>', Menu: '<kbd data-cap="hints">Esc</kbd>', M: '<kbd data-cap="hints">M</kbd>',
+  E: '<kbd data-cap="hints">E</kbd>', Menu: '<kbd data-cap="hints">Esc</kbd>', M: '<kbd data-cap="hints">M</kbd>',
   Space: '<kbd>Space</kbd>', Enter: '<kbd>Enter</kbd>', Back: '<kbd>Esc</kbd>',
   // the duel's keys (journal Passe TU4): the pad's buttons in the duel
   J: '<kbd data-cap="arena">J</kbd>', K: '<kbd data-cap="arena">K</kbd>', L: '<kbd data-cap="arena">L</kbd>',
 };
+/** the list's cap by the player's keyboard (journal Passe RG3, RG-7: Q on QWERTY, A on AZERTY) */
+const listCap = (): string => `<kbd data-cap="hints">${shownKey('q', layout())}</kbd>`;
 /** a text of the table as paragraphs, its caps drawn and the rest escaped */
 export function rich(t: string, first = ''): string {
-  return t.split('\n').map((p, i) => `<p${i === 0 && first ? ` class="${first}"` : ''}>${esc(p).replace(/\[(E|Q|Menu|M|Space|Enter|Back|J|K|L)\]/g, (_, k: string) => CAPS[k])}</p>`).join('');
+  return t.split('\n').map((p, i) => `<p${i === 0 && first ? ` class="${first}"` : ''}>${esc(p).replace(/\[(E|Q|Menu|M|Space|Enter|Back|J|K|L)\]/g, (_, k: string) => (k === 'Q' ? listCap() : CAPS[k]))}</p>`).join('');
 }
 const pct = (x: number): number => Math.round(x * 100);
 /** « 2, 4 and 5 » */
@@ -271,13 +274,13 @@ function figure(s: GameState, fig: Fig, here: () => string | null): string {
 function keysHtml(which: 'explore' | 'duel' | 'all'): string {
   const row = (cap: string, t: TextKey, cls = '') => `<div class="tu-k${cls}">${cap}<span>${tx(t)}</span></div>`;
   const h = (k: string) => `<kbd data-cap="hints">${k}</kbd>`, a = (k: string) => `<kbd data-cap="arena">${k}</kbd>`, p = (k: string) => `<kbd>${k}</kbd>`;
-  const explore = row('', 'tut.key.walk') + row(h('E'), 'tut.key.talk') + row(h('Q'), 'tut.key.list') + row(h('Esc'), 'tut.key.menu') + row(h('M'), 'tut.key.map');
+  const explore = row('', 'tut.key.walk') + row(h('E'), 'tut.key.talk') + row(h(shownKey('q', layout())), 'tut.key.list') + row(h('Esc'), 'tut.key.menu') + row(h('M'), 'tut.key.map');
   const duel = row(a('J'), 'tut.key.attack') + row(a('K'), 'tut.key.guard') + row(a('L'), 'tut.key.dodge') + row(a('Space'), 'tut.key.pause');
   if (which === 'explore') return `<div class="tu-keys">${explore}</div>`;
   if (which === 'duel') return `<div class="tu-keys">${duel}</div>`;
   const pages = row(p('Enter'), 'tut.key.confirm') + row(p('Esc'), 'tut.key.back') + row(p('Space'), 'tut.key.space');
   const kb = (k: string, t: TextKey) => row(p(k), t, ' kb');
-  const short = kb('J', 'tut.key.journal') + kb('T', 'tut.key.board') + kb('K', 'tut.key.skills') + kb('G', 'tut.key.gear') + kb('V', 'tut.key.sound') + kb('H', 'tut.key.guide') + kb('N', 'tut.key.mute');
+  const short = kb('J', 'tut.key.journal') + kb('T', 'tut.key.board') + kb('K', 'tut.key.skills') + kb('G', 'tut.key.gear') + kb('V', 'tut.key.settings') + kb('H', 'tut.key.guide') + kb('N', 'tut.key.mute');
   return `<p class="pm-sub">${tx('tut.keys.explore')}</p><div class="tu-keys">${explore}</div><p class="pm-sub">${tx('tut.keys.pages')}</p><div class="tu-keys">${pages}</div>`
     + `<p class="pm-sub kb">${tx('tut.keys.short')}</p><div class="tu-keys">${short}</div><p class="pm-sub">${tx('tut.keys.duel')}</p><div class="tu-keys">${duel}</div>`;
 }

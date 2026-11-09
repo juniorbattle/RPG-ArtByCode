@@ -4,7 +4,7 @@ import { alignLoop, startOf } from './align';
 import { LayerSet } from './layers';
 import CATALOGUE from './catalogue.json';
 import { CALM, jingleFor, layerLevels, moodStep, pieceFor, type Mood, type PieceId, type StingId } from './plan';
-import { ambienceOf, BAND_RATE, CALL_PAN, ceilingCurve, dbGain, DEFAULT_SETTINGS, DUCK, DUCK_AMBIENCE, duelCue, FADE, hz, JINGLE_AFTER, LIMITER, MIX, NOISE_SECONDS, noiseSamples, NOW_KEY, PATTER_LEVEL, RAIN_LEVEL, readNow, readSettings, recordOf, RESUME_MS, resumeAt, roomImpulse, SEND, STEP_LEVEL, STING_DUCK, STING_WAIT, take, THUNDER_LEVEL, thunderOf, UI_EFFECTS, UI_LEVEL, WEATHER_TRIM, type Ambience, type Effect, type Look, type NowPlaying, type SoundPlace, type SoundSettings, type Voice, type WeatherNow, type WeatherSound } from './score';
+import { ambienceOf, BAND_RATE, busGains, CALL_PAN, ceilingCurve, dbGain, DUCK, DUCK_AMBIENCE, duelCue, FADE, hz, JINGLE_AFTER, LIMITER, MIX, NOISE_SECONDS, noiseSamples, NOW_KEY, PATTER_LEVEL, RAIN_LEVEL, readNow, readSettings, recordOf, RESUME_MS, resumeAt, roomImpulse, SEND, STEP_LEVEL, STING_DUCK, STING_WAIT, take, THUNDER_LEVEL, thunderOf, UI_EFFECTS, UI_LEVEL, WEATHER_TRIM, type Ambience, type Effect, type Look, type NowPlaying, type SoundPlace, type SoundSettings, type Voice, type WeatherNow, type WeatherSound } from './score';
 import { compute, computeSteps, type ComputedId } from './places';
 import { installSoundHooks } from './hooks';
 import { CROWD_CARVE, CROWD_TRIM, HOLD_EVERY, REACT_QUIET, SFX_TRIM, THREAT_QUIET, crowdOf, holdOf, sfxOf, type CrowdId, type SfxCue } from './sfx';
@@ -48,6 +48,7 @@ export class Sound {
   /** the page's fade, on the music and the ambience: an effect is heard at once, the first click of a page too */
   private fade: GainNode | null = null;
   private ducks: { music: GainNode; ambience: GainNode } | null = null;
+  private crowdBus: GainNode | null = null;
   private room: GainNode | null = null;
   private reverb: ConvolverNode | null = null;
   private roomOf: SoundPlace | null = null;
@@ -138,6 +139,8 @@ export class Sound {
     this.ducks = { music: stepsBack(), ambience: stepsBack() };
     this.buses = { ambience: c.createGain(), music: c.createGain(), fx: bus(), ui: bus() };
     this.buses.music.connect(this.ducks.music); this.buses.ambience.connect(this.ducks.ambience);
+    // the arena's crowd: the ambience's way and its step back, at the effects' share (RG-6, journal Passe RG2)
+    this.crowdBus = c.createGain(); this.crowdBus.connect(this.ducks.ambience);
     this.musicIn = c.createGain(); this.musicIn.connect(this.buses.music);
     // a jingle is a moment of its own: the music's level and share, but neither the blows' step back nor the music's own under it
     this.stings = c.createGain(); this.stings.connect(this.fade);
@@ -193,12 +196,14 @@ export class Sound {
   }
   private apply(now = false): void {
     if (!this.ctx || !this.master || !this.buses) return;
-    const t = this.ctx.currentTime, s = this.settings, b = this.buses;
-    const to = (g: GainNode, v: number) => { if (now) g.gain.value = v; else g.gain.setTargetAtTime(v, t, 0.05); };
-    to(this.master, s.muted ? 0 : s.volume);
-    to(b.music, dbGain(MIX.music) * s.music / DEFAULT_SETTINGS.music);
-    if (this.stings) to(this.stings, dbGain(MIX.music) * s.music / DEFAULT_SETTINGS.music);
-    to(b.ambience, dbGain(MIX.ambience)); to(b.fx, dbGain(MIX.fx)); to(b.ui, dbGain(MIX.ui));
+    const t = this.ctx.currentTime, g = busGains(this.settings), b = this.buses;
+    const to = (n: GainNode, v: number) => { if (now) n.gain.value = v; else n.gain.setTargetAtTime(v, t, 0.05); };
+    // the four volumes of the settings page (RG-6, journal Passe RG2): at their defaults, the measured mix exactly
+    to(this.master, g.master);
+    to(b.music, g.music);
+    if (this.stings) to(this.stings, g.music);
+    to(b.ambience, g.ambience); to(b.fx, g.fx); to(b.ui, g.ui);
+    if (this.crowdBus) to(this.crowdBus, g.crowd);
   }
 
   /** a send to the room, at a level */
@@ -323,7 +328,7 @@ export class Sound {
   /** the arena's crowd in place of its rumble (S3-FOULE « Bonne direction (par le code) »): its murmur in a loop on the ambience's way, 5 dB under the duel's
    *  music, its murmur and its reactions carved around 500 Hz (S5-FOULE « Creuser la foule à 500 Hz »); the rumble of lot V8 when the murmur cannot be loaded */
   private crowdScene(fallback: Ambience, cross: boolean): void {
-    const scene = this.scene, group = this.group(this.buses!.ambience, dbGain(CROWD_TRIM), cross), carve = this.ctx!.createBiquadFilter();
+    const scene = this.scene, group = this.group(this.crowdBus ?? this.buses!.ambience, dbGain(CROWD_TRIM), cross), carve = this.ctx!.createBiquadFilter();
     carve.type = 'peaking'; carve.frequency.value = CROWD_CARVE.hz; carve.Q.value = CROWD_CARVE.q; carve.gain.value = CROWD_CARVE.db;
     carve.connect(group);
     this.crowd = carve;

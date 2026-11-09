@@ -8,7 +8,9 @@ import { ParticleSystem } from '../atmosphere/Particles';
 import { U } from '../atmosphere/SceneUniforms';
 import { buildSky } from '../atmosphere/Sky';
 import { applyPose, type CamPose } from '../app/CameraRig';
-import { FrameCap, parseFrameCap } from '../app/FrameCap';
+import { FrameCap } from '../app/FrameCap';
+import { followGraphics } from '../settings/scene';
+import { capRatio, type ResCap } from '../settings/settings';
 import { PerfMonitor } from '../debug/PerfMonitor';
 import { buildLanternRow, type PlaceBuild } from './LanternRow';
 
@@ -32,6 +34,8 @@ export class PlaceApp {
   readonly reflection = new PlanarReflection();
   readonly lights = new LightRig();
   readonly frameCap = new FrameCap();
+  /** the player's resolution cap (journal Passe RG2, RG-3): none by default */
+  resCap: ResCap | null = null;
   readonly perf = new PerfMonitor();
   lib!: MaterialLibrary;
   place!: PlaceBuild;
@@ -50,7 +54,8 @@ export class PlaceApp {
     this.post = new PostFX(this.renderer);
     const q = opts.params;
     if (q.has('gpuprof')) this.perf.gpu.enabled = true;
-    this.frameCap.mode = parseFrameCap(q.get('fps')) ?? { kind: 'adaptive', fps: 60 };
+    // the player's graphics (journal Passe RG2, src/settings/), `fps=` first; nothing stored = today's
+    followGraphics(this, q);
     if (q.has('freeze')) this.frozen = parseFloat(q.get('freeze')!);
     this.scene.add(this.camera);
     // the ground and the decals are main-pass only (LAYER_NOREFLECT), as in the town and the arena
@@ -90,7 +95,7 @@ export class PlaceApp {
   }
 
   resize(): void {
-    const w = window.innerWidth, h = window.innerHeight, pr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = window.innerWidth, h = window.innerHeight, pr = capRatio(w, h, Math.min(window.devicePixelRatio || 1, 2), this.resCap);
     this.post.setSize(w, h, pr);
     this.reflection.setSize(w * pr, h * pr);
     U.uResolution.value.set(this.post.width, this.post.height);

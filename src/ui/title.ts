@@ -3,6 +3,7 @@ import { cleanName } from '../simulation';
 import { arrowKeys, el, esc, injectStyle } from './style';
 import { tx } from '../narrative/text';
 import type { Look } from '../audio/score';
+import { layout, onSettings, shownKey } from '../settings/settings';
 
 /** The title screen (choice P2, journal Passe L4; the operator's decisions UM-R4 « La vraie ville derrière » and UM2-4 « Le titre d'abord, la ville apparaît
  *  derrière », journal Passe UM3): « New game » (it asks the player's name, choice K2; a version 2 game, the default game since the operator's decision
@@ -11,6 +12,9 @@ import type { Look } from '../audio/score';
  *  version », VD-2). It shows at once on the page's ink, before anything is generated; the town at midday comes up behind it (`live`), and its buttons
  *  answer from the start; its music, « titre », from the first key or click (VD-5). DOM, English (choice K1). Shown on the bare address only (main.ts),
  *  and forced by `?title=1`. Keys pressed on it stay on it: the town behind does not walk. */
+
+/** the walking keys of the player's keyboard (journal Passe RG2, RG-7: WASD on QWERTY, ZQSD on AZERTY) */
+const keysLine = (): string => tx('ui.title.keys', { move: ['w', 'a', 's', 'd'].map((k) => shownKey(k, layout())).join('') });
 
 /** `look`: the day state of the town behind the screen (its ambience under the title's music) */
 export interface TitleChoice { explore: () => void; look?: Look }
@@ -27,6 +31,7 @@ const CSS = `
 #title-screen:focus{outline:0}
 #title-screen .wrap{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,520px);column-gap:48px;align-items:end;padding:96px var(--ds-gutter) 48px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 96px),transparent 100%)}
 #title-screen .wrap{animation:ds-in .24s ease-out}
+#title-screen.under .wrap{visibility:hidden}
 #title-screen .name{font:400 var(--ds-fs-title-huge)/1.05 var(--ds-title);color:var(--ds-ivory)}
 #title-screen .tag{margin-top:8px;font-size:var(--ds-fs-label);color:var(--ds-ivory)}
 #title-screen .keys{margin:6px 0 0}
@@ -47,9 +52,11 @@ export function showTitle(c: TitleChoice): { live(): void } {
   const save = readSave().state, root = el('div', 'pm');
   root.id = 'title-screen'; root.tabIndex = -1;
   root.innerHTML = `<div class="wrap">
-    <div><div class="name">Cité du Tournoi</div><div class="tag">${tx('ui.title.tag')}</div><p class="pm-sub keys">${tx('ui.title.keys')}</p></div>
+    <div><div class="name">Cité du Tournoi</div><div class="tag">${tx('ui.title.tag')}</div><p class="pm-sub keys">${keysLine()}</p></div>
     <div id="title-menu"></div></div>`;
   document.body.appendChild(root);
+  // a change of keyboard (the settings, or the one the browser announces once asked) shows its keys at once
+  onSettings(() => { const k = root.querySelector('.keys'); if (k) k.textContent = keysLine(); });
   // the title's music (the operator's VD-5 « Le titre joue « titre » au premier geste », journal Passe VD2; SA-16 waited for the version 2 to become
   // the default): the engine loaded on demand, nothing heard before the first key or click (the browsers' rule; the files fetched after it, SA-17),
   // then « titre » over the town's ambience; the new game's first page takes it up where it stands (SA-15), Explore turns to the town's piece
@@ -72,6 +79,14 @@ export function showTitle(c: TitleChoice): { live(): void } {
     // « Explore the district » leaves the title screen to the town, which the gamepad now walks (VD-3, journal Passe VD2: main.ts adds the walk to
     // the same layer) and where the town's piece takes over from « titre »
     add('explore', tx('ui.title.explore'), tx('ui.title.exploreSub'), () => { root.remove(); c.explore(); });
+    // the settings (the operator's RG-1 « Une page « Réglages », quatre parties, titre et menu », journal Passe RG2): over the title, back to this button
+    const set = add('settings', tx('set.open'), tx('set.openSub'), () => {
+      void import('./settings').then((m) => {
+        root.classList.add('under');
+        const p = m.settingsPage({ close: () => { root.classList.remove('under'); set.focus(); } });
+        document.body.appendChild(p.root); p.focus();
+      });
+    });
     ((first ?? menu.querySelector('.pm-btn')) as HTMLButtonElement).focus();
   };
   const askName = (): void => {

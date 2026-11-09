@@ -8,6 +8,7 @@ import type { Anim, Dir } from './SpriteGenerator';
 import { requiredFrames, type AuthoredSpawn } from './BakedSprites';
 import type { CastMember } from './BakedCast';
 import { variantOf } from './Variants';
+import { gameKey, layout } from '../settings/settings';
 
 /** Player control + NPC behaviours + a tiny circle-vs-box collision solver. */
 
@@ -104,12 +105,13 @@ export class ActorSystem {
 
   /** camera: shows a walking facing by its on-screen direction (null: the world rule for every facing) */
   constructor(private atlas: SpriteAtlas, private camera: THREE.PerspectiveCamera | null = null) {
+    // the game's keys (journal Passe RG2, RG-7): on AZERTY, Z Q S D walk where QWERTY's W A S D do
     window.addEventListener('keydown', (e) => {
-      const k = e.key.toLowerCase();
+      const k = gameKey(e.key, layout(), e.isTrusted);
       this.keys.add(k);
       if (k === 'e' || k === ' ') this.interact();
     });
-    window.addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
+    window.addEventListener('keyup', (e) => this.keys.delete(gameKey(e.key, layout(), e.isTrusted)));
     window.addEventListener('blur', () => this.keys.clear());
   }
 

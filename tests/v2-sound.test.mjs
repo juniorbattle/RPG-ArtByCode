@@ -85,8 +85,30 @@ test('every audio file of the game is the band\'s, under its manifest (SA-8, SA-
 test('the settings: kept values read back within bounds; anything broken is the default', () => {
   assert.deepEqual(S.readSettings(null), S.DEFAULT_SETTINGS);
   assert.deepEqual(S.readSettings('{oops'), S.DEFAULT_SETTINGS);
-  assert.deepEqual(S.readSettings('{"volume":3,"muted":true,"music":-1}'), { volume: 1, muted: true, music: 0 });
+  // the ambience's and the effects' shares since the settings page (the operator's RG-6 « Général, Musique, Ambiance, Effets », journal Passe RG2)
+  assert.deepEqual(S.readSettings('{"volume":3,"muted":true,"music":-1}'), { volume: 1, muted: true, music: 0, ambience: 0.5, effects: 0.5 });
+  assert.deepEqual(S.readSettings('{"volume":0.2,"ambience":2,"effects":0}'), { volume: 0.2, muted: false, music: 0.5, ambience: 1, effects: 0 });
   assert.deepEqual(S.readSettings('{"volume":"x"}'), S.DEFAULT_SETTINGS);
+  // a record kept before (volume, music, mute only) reads back with the two new shares at their defaults
+  assert.deepEqual(S.readSettings('{"volume":0.4,"muted":false,"music":0.8}'), { volume: 0.4, muted: false, music: 0.8, ambience: 0.5, effects: 0.5 });
+});
+
+test('the four volumes (RG-6): at their defaults, each way at the measured mix exactly; a share moves its own ways only', () => {
+  const g = S.busGains(S.DEFAULT_SETTINGS), db = (x) => 10 ** (x / 20);
+  assert.equal(g.master, 0.7);
+  assert.equal(g.music, db(S.MIX.music)); assert.equal(g.ambience, db(S.MIX.ambience)); assert.equal(g.fx, db(S.MIX.fx)); assert.equal(g.ui, db(S.MIX.ui));
+  // the arena's crowd: the ambience's level, the effects' share
+  assert.equal(g.crowd, db(S.MIX.ambience));
+  const fx = S.busGains({ ...S.DEFAULT_SETTINGS, effects: 1 });
+  assert.equal(fx.fx, 2 * g.fx); assert.equal(fx.ui, 2 * g.ui); assert.equal(fx.crowd, 2 * g.crowd); assert.equal(fx.ambience, g.ambience); assert.equal(fx.music, g.music);
+  const amb = S.busGains({ ...S.DEFAULT_SETTINGS, ambience: 0 });
+  assert.equal(amb.ambience, 0); assert.equal(amb.crowd, g.crowd); assert.equal(amb.fx, g.fx);
+  assert.equal(S.busGains({ ...S.DEFAULT_SETTINGS, muted: true }).master, 0);
+  // the engine takes every way's gain from it, the crowd on a way of its own
+  const eng = src('src/audio/Sound.ts');
+  assert.match(eng, /g = busGains\(this\.settings\)/);
+  assert.match(eng, /this\.group\(this\.crowdBus \?\? this\.buses!\.ambience, dbGain\(CROWD_TRIM\), cross\)/);
+  assert.match(eng, /this\.crowdBus = c\.createGain\(\); this\.crowdBus\.connect\(this\.ducks\.ambience\);/);
 });
 
 
@@ -103,7 +125,8 @@ test('no sound before a gesture; only the version 2\'s pages load the engine', (
   walk(fileURLToPath(new URL('../src', import.meta.url)));
   const users = files.filter((f) => !f.includes(`${path.sep}audio${path.sep}`) && /audio\/Sound/.test(fs.readFileSync(f, 'utf8'))).map((f) => path.relative(fileURLToPath(new URL('..', import.meta.url)), f).split(path.sep).join('/')).sort();
   // since the version 2 is the default game, the title screen and Explore too (VD-3, VD-5, journal Passe VD2)
-  assert.deepEqual(users, ['src/arena/ArenaApp.ts', 'src/main.ts', 'src/ui/playPlaza.ts', 'src/ui/playTown.ts', 'src/ui/title.ts', 'src/ui/townUi.ts']);
+  // and the settings page, reached from the title, the version 2's menu and its duel's pause (journal Passe RG2, RG-1 / RG-2)
+  assert.deepEqual(users, ['src/arena/ArenaApp.ts', 'src/main.ts', 'src/ui/playPlaza.ts', 'src/ui/playTown.ts', 'src/ui/settings.ts', 'src/ui/title.ts', 'src/ui/townUi.ts']);
   for (const f of users) { const t = src(f); assert.doesNotMatch(t, /^import .*audio\/Sound/m, `${f}: no static import`); }
   assert.match(src('src/ui/playTown.ts'), /if \(isV2\(st\)\) void import\('\.\.\/audio\/Sound'\)/);
   assert.match(src('src/arena/ArenaApp.ts'), /else if \(this\.rules === 'v2'\) \{[^]*?import\('\.\.\/audio\/Sound'\)/);

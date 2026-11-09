@@ -123,17 +123,24 @@ test('UM-R3, UM-R5: no developer\'s word on screen, Explore in the system, no mi
   assert.match(hud, /var\(--ds-title\)/);
 });
 
-test('UM-T2, lot 5: the moves are the direction\'s and they yield to reduced motion', () => {
+test('UM-T2, lot 5: the moves are the direction\'s and they yield to the game\'s reduced motion, never the system\'s', () => {
   const S = fs.readFileSync(path.join(ROOT, 'src/ui/design/system.ts'), 'utf8'), St = fs.readFileSync(path.join(ROOT, 'src/ui/style.ts'), 'utf8'), A = fs.readFileSync(path.join(ROOT, 'src/arena/ArenaHud.ts'), 'utf8');
-  // a fade and a slide of 8 px in 160 ms, a rule traced from the left, a band rising from the edge
-  assert.match(S, /@keyframes ds-in\{from\{opacity:0;transform:translateY\(8px\)\}\}/);
-  assert.match(S, /@keyframes ds-rule\{from\{transform:scaleX\(0\)\}\}/);
+  // a fade and a slide of 8 px in 160 ms, a rule traced from the left, a band rising from the edge; the slides scaled by --ds-move (1 when unset: the same moves)
+  assert.match(S, /@keyframes ds-in\{from\{opacity:0;transform:translateY\(calc\(8px \* var\(--ds-move,1\)\)\)\}\}/);
+  assert.match(S, /@keyframes ds-rise\{from\{opacity:0;transform:translateY\(calc\(32px \* var\(--ds-move,1\)\)\)\}\}/);
+  assert.match(S, /@keyframes ds-rule\{from\{transform:scaleX\(calc\(1 - var\(--ds-move,1\)\)\)\}\}/);
   assert.match(St, /\.pm-overlay \.pm-card\{animation:ds-in \.16s ease-out\}/);
   assert.match(St, /\.pm-talk\{animation:ds-rise/);
   assert.match(St, /transform-origin:left center;animation:ds-rule/);
-  // no motion for a reader who asked for none
-  assert.match(St, /prefers-reduced-motion:reduce\)\{\.pm,\.pm \*,\.pm \*::before,\.pm \*::after\{transition:none!important;animation:none!important\}\}/);
-  assert.match(A, /prefers-reduced-motion:reduce\)\{[^\n]*#ah-ko\.on b[^\n]*\{animation:none\}/);
+  // the reduced motion is the game's own setting, off by default (the operator's rule of 2026-11-03; RG-5 « Appliquer ma règle, les fondus gardés », journal
+  // Passe RG2): a class on the document stops the slides, the rules' growth and the hero's cycle, the fades stay; the system's setting is read nowhere
+  assert.match(S, /html\.cdt-reduced\{--ds-move:0\}/);
+  assert.match(St, /html\.cdt-reduced \.pm,html\.cdt-reduced \.pm \*,html\.cdt-reduced \.pm \*::before,html\.cdt-reduced \.pm \*::after\{transition-property:opacity,color,border-color,background-color!important\}/);
+  assert.match(St, /html\.cdt-reduced \.pm-hero\{animation:none\}/);
+  assert.match(A, /html\.cdt-reduced #ah-ko\.on b[^\n]*\{animation:none\}/);
+  assert.doesNotMatch(A, /#ah-pause\.on[^{]*\{animation:none\}/, 'the pause fades in still');
+  const files = fs.readdirSync(path.join(ROOT, 'src'), { recursive: true }).filter((f) => /\.ts$/.test(f));
+  for (const f of files) assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'src', f), 'utf8'), /prefers-reduced-motion/, `${f} reads the system's reduced motion`);
 });
 
 test('UM-S2: no frame left: no border image, no texel grid, no pixel font, no pixelated box; only the faces and the hero\'s figure keep their pixels', () => {

@@ -3,7 +3,9 @@ import { MaterialLibrary } from '../materials/MaterialLibrary';
 import { setTournamentHeraldry } from '../materials/CanvasArt';
 import { setSkylineArena } from '../district/DistantCity';
 import { defaultPainters } from '../materials/PainterPool';
-import { FrameCap, parseFrameCap, frameCapLabel, type FrameCapMode } from './FrameCap';
+import { FrameCap, frameCapLabel } from './FrameCap';
+import { followGraphics } from '../settings/scene';
+import { capRatio, type ResCap } from '../settings/settings';
 import { PostFX } from '../atmosphere/PostFX';
 import { MoonShadow, PlanarReflection } from '../atmosphere/ShadowAndReflection';
 import { LightRig } from '../atmosphere/LightRig';
@@ -38,7 +40,6 @@ export interface AppOptions {
 /** The frame cap when `?fps=` is absent: `a60`, evenly paced near 60 fps (55 at 165 Hz, 72 at 144, 60 at 60 / 120) with the adaptive
  *  step (one more vsync per frame while frames keep missing their slot), chosen by the operator on 2026-10-18 (journal pass 6h; `e60`, the
  *  same pace without the step, from pass 6c); `?fps=e60` keeps the fixed step, `?fps=off` restores the uncapped loop. */
-const DEFAULT_FRAME_CAP: FrameCapMode = { kind: 'adaptive', fps: 60 };
 
 export class App {
   readonly renderer: THREE.WebGLRenderer;
@@ -98,12 +99,12 @@ export class App {
   visibilityError: string | null = null;
   private rebakeTimer = 0;
   private lastT = performance.now();
-  /** frame-rate cap (journal pass 6, P4 and 6h): `?fps=off|<n>|v<k>|e<n>|a<n>`, otherwise DEFAULT_FRAME_CAP */
+  /** frame-rate cap (journal pass 6, P4 and 6h): `?fps=off|<n>|v<k>|e<n>|a<n>`, otherwise the player's setting (journal Passe RG2), a60 by default */
   readonly frameCap = new FrameCap();
   /** internal resolution cap (journal pass 6, P6): `?res=<lines>p[:px]` = at most lines x lines x 16 / 9 rendered pixels (1080p: 1920 x 1080),
-   *  scaled up by the browser (`:px` = nearest, `image-rendering: pixelated`); `?res=native` or absent = none (the default, kept by the operator
-   *  on 2026-10-18, journal pass 6e) */
-  resCap: { pixels: number; filter: 'smooth' | 'pixelated' } | null = null;
+   *  scaled up by the browser (`:px` = nearest, `image-rendering: pixelated`); `?res=native` or absent = the player's setting (journal Passe RG2), none
+   *  by default (kept by the operator on 2026-10-18, journal pass 6e) */
+  resCap: ResCap | null = null;
 
   constructor(private opts: AppOptions) {
     this.renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: false, powerPreference: 'high-performance', stencil: false, alpha: false });
@@ -111,23 +112,16 @@ export class App {
     this.renderer.info.autoReset = false;
     this.perf.attach(this.renderer.getContext() as WebGL2RenderingContext);
     if (opts.params.has('gpuprof')) this.perf.gpu.enabled = true;
-    this.frameCap.mode = parseFrameCap(opts.params.get('fps')) ?? DEFAULT_FRAME_CAP;
     // DEV only (journal pass 6k): a wrong boot reading on demand, and the in-session vsync check off, to prove the check corrects it
     if (import.meta.env.DEV) {
       const fv = Number(opts.params.get('vsyncprobe'));
       if (fv > 0) this.frameCap.forcedVsync = fv;
       if (opts.params.get('vsyncwatch') === '0') this.frameCap.watch = false;
     }
-    const rm = opts.params.get('res')?.match(/^(\d{3,4})p(?::(px|pixelated|smooth))?$/);
-    if (rm) this.resCap = { pixels: Math.round((+rm[1] * +rm[1] * 16) / 9), filter: rm[2] === 'px' || rm[2] === 'pixelated' ? 'pixelated' : 'smooth' };
     this.post = new PostFX(this.renderer);
-    // ?msaa=0|2|4|8: samples of the scene target (default 4, kept by the operator on 2026-10-18 after the 4x / 2x captures, journal pass 6f)
-    const ms = Number(opts.params.get('msaa'));
-    if (opts.params.has('msaa') && [0, 2, 4, 8].includes(ms)) this.post.params.msaa = ms;
-    // ?refl=<scale>: the planar reflection's size against the internal resolution, manual (default 0.5, kept by the operator on 2026-10-18
-    // over 1/4 on captures; journal pass 6g)
-    const rf = Number(opts.params.get('refl'));
-    if (rf > 0 && rf <= 1) this.reflection.scale = rf;
+    // the player's graphics (journal Passe RG2, RG-3 / RG-4, src/settings/): the address's own `res=`, `msaa=` (0|2|4|8, default 4, journal pass 6f),
+    // `refl=` (the planar reflection's size, default 0.5, journal pass 6g) and `fps=` first (the tools); nothing stored = today's defaults
+    followGraphics(this, opts.params);
     this.rig.camera.layers.enable(2);
     this.scene.add(this.rig.camera);
     // ?time= (journal Passes Y1 / Y4): read before the sky, which is built as the state's variant
@@ -304,9 +298,8 @@ export class App {
     // internal resolution cap (journal pass 6, P6): above the pixel budget the scene and its reflection render smaller and the browser
     // scales the canvas up (smoothed, or nearest with `pixelated`); at or under the budget nothing changes
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const cap = this.resCap, s = cap ? Math.min(1, Math.sqrt(cap.pixels / (w * dpr * h * dpr))) : 1;
-    const pr = dpr * s;
-    this.opts.canvas.style.imageRendering = cap?.filter === 'pixelated' && s < 1 ? 'pixelated' : '';
+    const cap = this.resCap, pr = capRatio(w, h, dpr, cap);
+    this.opts.canvas.style.imageRendering = cap?.filter === 'pixelated' && pr < dpr ? 'pixelated' : '';
     this.post.setSize(w, h, pr);
     this.reflection.setSize(w * pr, h * pr);
     this.rig.setAspect(w / h);

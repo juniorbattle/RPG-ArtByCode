@@ -113,7 +113,7 @@ export const CSS = `
    choice « Sur le bouton Esquive », journal Passe AF1) */
 @media (max-height:600px){#ah-wbar{display:none}.ah-b.win .wl{display:block}}
 #arena-hud button:focus-visible{outline:1px solid var(--ds-accent);outline-offset:1px}
-@media (prefers-reduced-motion:reduce){.ah-b.open,.ah-b.hit,.ah-b.deny,.ah-pips b.gain,#ah-ko.on,#ah-pause.on,#ah-ko.on b,#ah-ko b::after,#ah-ko.on span{animation:none}#arena-hud>*,#ah-alert{transition:none}#ah-dmg div{animation-duration:.01s}}
+html.cdt-reduced .ah-b.open,html.cdt-reduced .ah-b.hit,html.cdt-reduced .ah-b.deny,html.cdt-reduced .ah-pips b.gain,html.cdt-reduced #ah-ko.on b,html.cdt-reduced #ah-ko b::after,html.cdt-reduced #ah-ko.on span{animation:none}html.cdt-reduced #ah-alert{transition:opacity .12s}html.cdt-reduced #ah-dmg div{animation-duration:.01s}
 `;
 
 /** The HUD's words (journal Passe L3): `?scene=arena` keeps the prototype's French, word for word (TEXTS_FR, the default); the game's play

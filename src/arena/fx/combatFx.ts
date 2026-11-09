@@ -13,6 +13,7 @@ import type { ChargeView } from '../../combat/charge';
 import type { FighterId } from '../CombatSim';
 import { FX_EXPOSURE, FxEngine, type FxHooks } from './FxEngine';
 import { FxDirector, type FxPlayContext, type FxUnitRef } from './FxDirector';
+import { onSettings, reducedMotion } from '../../settings/settings';
 import { RECIPES, blowRecipe, chargeLevel, effectRecipe, type FxRecipe } from './fxRecipes';
 
 /** the figure's height (m), and how far before a fighter the blades meet on generated art (`cast=generated`): Ren holds his sword close, Marek's art at arm's length, Vessa on Ren's clips
@@ -85,7 +86,10 @@ export function installCombatFx(scene: THREE.Scene, camera: THREE.Camera, params
     punch: (point, duration, hold) => { punch = { t: 0, dur: duration, x: point.x, amount: hold ? 1.5 : 1 }; },
   };
   const engine = new FxEngine(scene, camera, hooks), director = new FxDirector(engine);
-  engine.reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // fewer particles and less light under the reduced motion, the game's own setting, never the system's (the operator's rule of 2026-11-03; RG-5,
+  // journal Passe RG2: the operator's Windows, animations off, played every duel reduced until then)
+  engine.reduced = reducedMotion();
+  onSettings((s) => { engine.reduced = s.reducedMotion; });
   // drawn once under the loading screen (the boot's frame), hidden at the first step
   let warm = true;
   engine.warm(new THREE.Vector3(0, -3, 0));

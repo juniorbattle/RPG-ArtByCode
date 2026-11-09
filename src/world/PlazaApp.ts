@@ -11,7 +11,9 @@ import { buildSky } from '../atmosphere/Sky';
 import { LOOKS, skyDefines, type DayLook, type DayTime } from '../atmosphere/DayState';
 import { Weather, overcast, parseWeather } from '../atmosphere/Weather';
 import { applyFrame, type CamPose } from '../app/CameraRig';
-import { FrameCap, parseFrameCap } from '../app/FrameCap';
+import { FrameCap } from '../app/FrameCap';
+import { followGraphics } from '../settings/scene';
+import { capRatio, gameKey, layout, type ResCap } from '../settings/settings';
 import { PerfMonitor } from '../debug/PerfMonitor';
 import { SpriteAtlas } from '../characters/SpriteAtlas';
 import { SpriteRenderer, type Actor } from '../characters/SpriteRenderer';
@@ -131,6 +133,8 @@ export class PlazaApp {
   readonly reflection = new PlanarReflection();
   readonly lights = new LightRig();
   readonly frameCap = new FrameCap();
+  /** the player's resolution cap (journal Passe RG2, RG-3): none by default */
+  resCap: ResCap | null = null;
   readonly perf = new PerfMonitor();
   readonly look: DayLook | null;
   readonly keyDir: THREE.Vector3;
@@ -180,7 +184,8 @@ export class PlazaApp {
     this.post = new PostFX(this.renderer);
     const q = opts.params;
     if (q.has('gpuprof')) this.perf.gpu.enabled = true;
-    this.frameCap.mode = parseFrameCap(q.get('fps')) ?? { kind: 'adaptive', fps: 60 };
+    // the player's graphics (journal Passe RG2, src/settings/), `fps=` first; nothing stored = today's a60, MSAA 4, the reflection at half
+    followGraphics(this, q);
     if (q.has('freeze')) this.frozen = parseFloat(q.get('freeze')!);
     this.scene.add(this.camera);
     this.camera.layers.enable(LAYER_NOREFLECT);
@@ -222,8 +227,9 @@ export class PlazaApp {
     // after the day state: the weather scales the day's values it finds (as the town's, App.setWeather)
     if (wp && (wp.rain > 0 || wp.snow > 0 || wp.storm > 0 || wp.wind !== 1)) { this.weather = new Weather(wp, { day: !!this.look, post: this.post.params }); this.scene.add(this.weather.group); }
     window.addEventListener('resize', () => this.resize());
-    window.addEventListener('keydown', (e) => { if (!e.metaKey && !e.ctrlKey && !e.altKey && !(e.target instanceof HTMLInputElement)) this.keys.add(e.key.toLowerCase()); });
-    window.addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
+    // the game's keys (journal Passe RG2, RG-7): on AZERTY, Z Q S D walk where QWERTY's W A S D do
+    window.addEventListener('keydown', (e) => { if (!e.metaKey && !e.ctrlKey && !e.altKey && !(e.target instanceof HTMLInputElement)) this.keys.add(gameKey(e.key, layout(), e.isTrusted)); });
+    window.addEventListener('keyup', (e) => this.keys.delete(gameKey(e.key, layout(), e.isTrusted)));
     window.addEventListener('blur', () => this.keys.clear());
   }
 
@@ -343,7 +349,7 @@ export class PlazaApp {
   }
 
   resize(): void {
-    const w = window.innerWidth, h = window.innerHeight, pr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = window.innerWidth, h = window.innerHeight, pr = capRatio(w, h, Math.min(window.devicePixelRatio || 1, 2), this.resCap);
     this.post.setSize(w, h, pr);
     this.reflection.setSize(w * pr, h * pr);
     U.uResolution.value.set(this.post.width, this.post.height);

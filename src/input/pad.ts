@@ -80,7 +80,7 @@ export function tabTo<T>(pages: readonly T[], shown: T | null, dir: -1 | 1): T |
 
 /** the version 2's duel (MN-5): X or RT attack (held: the charge), B or LT guard (held), A dodge, Start pause, View the scene page's restart;
  *  the triggers let a charge and the guard be held together while the thumb stays on the dodge. Today's V2_PAD (X, B, A) is kept whole in it */
-export const DUEL: Partial<Record<Btn, string>> = { [BTN.X]: 'attack', [BTN.RT]: 'attack', [BTN.B]: 'guard', [BTN.LT]: 'guard', [BTN.A]: 'dodge', [BTN.START]: 'pause', [BTN.VIEW]: 'reset' };
+export const DUEL: Partial<Record<Btn, string>> = { [BTN.X]: 'attack', [BTN.RT]: 'attack', [BTN.B]: 'guard', [BTN.LT]: 'guard', [BTN.A]: 'dodge', [BTN.START]: 'pause', [BTN.VIEW]: 'reset', [BTN.Y]: 'settings' };
 /** the duel's commands held down while their button is (any of their buttons) */
 export const HELD = new Set(['attack', 'guard']);
 
@@ -146,11 +146,12 @@ export type CapPlace = 'hints' | 'scene' | 'arena' | 'menu' | 'other';
  *  'hide' for a keyboard shortcut the pad reaches through the menu (the menu's J, T, K, G, V; N the mute); null for a cap left as it is */
 export function capButton(key: string, where: CapPlace): Btn | 'hide' | null {
   const k = key.trim();
-  if (where === 'arena') return ({ J: BTN.X, K: BTN.B, L: BTN.A, R: BTN.VIEW, Space: BTN.START } as Record<string, Btn>)[k] ?? null;
+  if (where === 'arena') return ({ J: BTN.X, K: BTN.B, L: BTN.A, R: BTN.VIEW, Space: BTN.START, Esc: BTN.Y } as Record<string, Btn>)[k] ?? null;
   if (k === 'Esc') return where === 'hints' || where === 'scene' ? BTN.START : BTN.B;
   if (k === 'E' || k === 'Enter') return BTN.A;
   if (k === 'Space') return BTN.X;
-  if (k === 'Q') return BTN.Y;
+  // the list's key: Q on QWERTY, A on AZERTY (journal Passe RG2, RG-7)
+  if (k === 'Q' || k === 'A') return BTN.Y;
   if (k === 'M') return BTN.VIEW;
   if (where === 'menu' || k === 'N') return 'hide';
   return null;

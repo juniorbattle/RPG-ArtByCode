@@ -237,14 +237,32 @@ export function recordOf(playing: { key: string; pos: number } | null, found: No
 
 // ---------------------------------------------------------------------------------------------------------------- the settings
 
-export interface SoundSettings { volume: number; muted: boolean; music: number }
-export const DEFAULT_SETTINGS: SoundSettings = { volume: 0.7, muted: false, music: 0.5 };
+/** the general volume, the mute, and the shares of the music, the places' ambience and the effects (the operator's RG-6 « Général, Musique, Ambiance,
+ *  Effets », journal Passe RG2): a share at its default (0.5) is the measured mix of lots S2 to S5, 1 is 6 dB over it; the effects are the blows, the
+ *  arena's crowd and the interface together */
+export interface SoundSettings { volume: number; muted: boolean; music: number; ambience: number; effects: number }
+export const DEFAULT_SETTINGS: SoundSettings = { volume: 0.7, muted: false, music: 0.5, ambience: 0.5, effects: 0.5 };
 /** a stored setting read back, every value checked (a broken entry is the default) */
 export function readSettings(text: string | null): SoundSettings {
   try {
     const o = JSON.parse(text ?? 'null');
     if (!o || typeof o !== 'object') return { ...DEFAULT_SETTINGS };
     const n = (v: unknown, d: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : d);
-    return { volume: n(o.volume, DEFAULT_SETTINGS.volume), muted: o.muted === true, music: n(o.music, DEFAULT_SETTINGS.music) };
+    const d = DEFAULT_SETTINGS;
+    return { volume: n(o.volume, d.volume), muted: o.muted === true, music: n(o.music, d.music), ambience: n(o.ambience, d.ambience), effects: n(o.effects, d.effects) };
   } catch { return { ...DEFAULT_SETTINGS }; }
+}
+
+/** each way's gain under the settings (Sound.apply): at the defaults, the measured mix (`MIX`) exactly; the arena's crowd rides the ambience's way but
+ *  follows the effects' share (RG-6) */
+export function busGains(s: SoundSettings): { master: number; music: number; ambience: number; crowd: number; fx: number; ui: number } {
+  const share = (v: number, d: number) => v / d, D = DEFAULT_SETTINGS;
+  return {
+    master: s.muted ? 0 : s.volume,
+    music: dbGain(MIX.music) * share(s.music, D.music),
+    ambience: dbGain(MIX.ambience) * share(s.ambience, D.ambience),
+    crowd: dbGain(MIX.ambience) * share(s.effects, D.effects),
+    fx: dbGain(MIX.fx) * share(s.effects, D.effects),
+    ui: dbGain(MIX.ui) * share(s.effects, D.effects),
+  };
 }

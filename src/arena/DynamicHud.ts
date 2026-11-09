@@ -3,6 +3,7 @@ import type { TimeOfDay } from '../atmosphere/DayState';
 import { fontsReady, installDesign } from '../ui/design/system';
 import { CSS, TEXTS_EN, TEXTS_FR, type ArenaTexts, type Assist } from './ArenaHud';
 import { dynHudModel, type DynGauge } from './dynamicView';
+import { tx } from '../narrative/text';
 import type { ChargeHudModel } from './v2Arena';
 
 /** The HUD of the « tour par tour dynamique » (lot C2, journal Passe C2), behind its parameter (CB-10). Built on the arena HUD's rules
@@ -51,6 +52,9 @@ export const CHARGE_TEXTS_EN: ChargeTexts = { attack: 'Attack', holdSub: 'hold: 
  *  launches */
 const CHARGE_CSS = `
 #ah-pause .pad-only{display:none}
+body.cdt-settings #ah-pause>div{visibility:hidden}
+#ah-pause .ah-set{pointer-events:auto;display:inline-flex;align-items:center;gap:10px;margin-top:18px;padding:4px 0;font:inherit;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:none;border:0;cursor:pointer}
+#ah-pause .ah-set:hover,#ah-pause .ah-set:focus{color:var(--ds-accent);outline:0}
 body.pm-pad #ah-pause .pad-only{display:flex;justify-content:center;align-items:center;gap:10px}
 body.pm-pad #ah-pause .kb{display:none}
 #ah-tiers{position:absolute;left:50%;bottom:100px;transform:translateX(-50%);display:flex;gap:18px;pointer-events:none;opacity:0;transition:opacity .12s}
@@ -113,7 +117,7 @@ const DYN_CSS = `
    there is no room left: 900 x 500, measured); right under the cards on a phone (its top set by DynamicHud.update from their bottoms) */
 @media (max-width:1240px) and (max-height:600px){#ah-phase{top:12px;bottom:auto}#ah-phase span{display:none}}
 @media (max-height:480px){#ah-phase{top:30%;bottom:auto}}
-@media (prefers-reduced-motion:reduce){#arena-hud .ah-rs.brk .ah-rb i,#ah-phase.nudge{animation:none}}
+html.cdt-reduced #arena-hud .ah-rs.brk .ah-rb i,html.cdt-reduced #ah-phase.nudge{animation:none}
 `;
 
 type BarItem = '|' | { id: string; key: string; name: string; short?: string; sub: string; wide?: boolean };
@@ -164,9 +168,11 @@ export class DynamicHud {
       <div id="ah-alert"><b></b><span></span></div>
       <div id="ah-dmg"></div><div id="ah-wbar" aria-hidden="true"><i></i><b>${t.window}<kbd>${charge ? 'L' : 'A'}</kbd></b></div>${tiers}<div id="ah-bar">${buttons}</div>
       <div id="ah-ko" role="status"><div><b></b><span>${t.restart}</span></div></div>
-      <div id="ah-pause" role="status"><div><b>${t.pause}</b>${charge ? `<span class="kb">${t.resume}</span><span class="pad-only"><kbd>Space</kbd>${t.resumePad ?? ''}</span>` : `<span>${t.resume}</span>`}</div></div>
+      <div id="ah-pause" role="status"><div><b>${t.pause}</b>${charge ? `<span class="kb">${t.resume}</span><span class="pad-only"><kbd>Space</kbd>${t.resumePad ?? ''}</span><button class="ah-set" type="button"><kbd>Esc</kbd>${tx('set.title')}</button>` : `<span>${t.resume}</span>`}</div></div>
       <div id="ah-rotate" role="alert"><div><b>${t.title}</b><span>${t.rotate}</span></div></div>`;
     document.body.appendChild(this.el);
+    // the pause's settings (the operator's RG-2 « Depuis la pause du duel aussi », journal Passe RG2): the arena opens the page (ArenaApp.openSettings)
+    this.el.querySelector('#ah-pause .ah-set')?.addEventListener('click', () => window.dispatchEvent(new Event('cdt-open-settings')));
     for (const who of ['ren', 'marek'] as DynFighterId[]) {
       const src = portraits[who], cv = this.q<HTMLCanvasElement>(`#ah-${who} .ah-port`);
       // a whole number of pixels per texel (a face stays at its whole scale, L4): 3 or 2 times a generated 24 px face, 2 or 1 times a baked 32 px one

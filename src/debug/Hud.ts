@@ -9,7 +9,6 @@ const CSS = `
 #ex-title{position:fixed;left:44px;top:32px;z-index:20;color:var(--ds-ivory);font:400 var(--ds-fs-title-big)/1.1 var(--ds-title);pointer-events:none}
 #ex-title div{margin-top:6px;font:400 var(--ds-fs-body)/1.35 var(--ds-text)}
 #ex-prompt{position:fixed;left:50%;bottom:44px;z-index:20;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:14px 60px;color:var(--ds-ivory);font:400 var(--ds-fs-label)/1.35 var(--ds-text);white-space:nowrap;background:var(--ds-grad-spot);opacity:0;transition:opacity .16s;pointer-events:none}
-@media (prefers-reduced-motion:reduce){#ex-prompt{transition:none}}
 `;
 
 export class Hud {
