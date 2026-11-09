@@ -1,0 +1,373 @@
+<title>Audit du combat</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · le combat de la version 2 · Passe DB5 · 9 novembre 2026</span>
+    <h1>Un combat qui pèse et qui tient le rythme</h1>
+    <p class="lede">Tu as demandé un audit concret avant de choisir : un combat de base en 2 à 5 minutes, des compétences qui pèsent (le quart ou le tiers de la barre au niveau 5, plus sur une rupture), une garde à briser pour frapper fort, du rythme et pas de redondance. Voici l’audit en une table, puis le modèle qui tient ces cibles, réglé carte par carte, avec tes choix sur la fiche DB4. Rien n’est appliqué avant cette fiche. Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <section class="after" aria-labelledby="h-audit" style="margin-bottom:24px">
+    <h2 id="h-audit">L’audit, en une table</h2>
+    <p>Tes cibles, tirées de ton message, mesurées sur le combat d’aujourd’hui puis sur le modèle recommandé (M) : les sept rivaux, 20 combats chacun, le joueur moyen, ses compétences au niveau 1. Les pourcentages sont des parts de la barre de PV de l’adversaire.</p>
+    <style>.audit-t td,.audit-t th{white-space:normal !important;text-align:left !important;vertical-align:top}.audit-t td:first-child{min-width:9em}</style><div class="tbl audit-t" style="overflow-x:auto"><table>
+      <thead><tr><th scope="col">Cible</th><th scope="col">Aujourd’hui</th><th scope="col">Modèle M</th></tr></thead>
+      <tbody>
+        <tr><td>Un combat de base en 2 à 5 min</td><td>3,8 min (rivaux 2,9 à 4,4)</td><td>3,0 min (rivaux 2,6 à 3,4)</td></tr>
+        <tr><td>Un combat épique au-delà, barre monstrueuse</td><td>—</td><td>6,7 min, près de 6 ruptures (la finale, PV ×2,5)</td></tr>
+        <tr><td>Une compétence de niveau 5 : 1/4 à 1/3 de la barre, plus sur une rupture</td><td>Estocade 9,5 % au niveau 5, jamais placée par le bot</td><td>Estocade 34 % franche, 62 % sur une rupture (niveau 5) ; 20 % et 40 % au niveau 1</td></tr>
+        <tr><td>Les compétences plus faibles comptent aussi</td><td>Coup éclair 2,8 %</td><td>Coup éclair 9 % (18 % sur une rupture)</td></tr>
+        <tr><td>Briser la garde inflige de lourds dégâts</td><td>22 % des dégâts pendant les ruptures ; tous les coups petits</td><td>37 % (54 % au niveau 3, 67 % au niveau 5) ; Estocade gardée 4 %, franche 20 %, sur une rupture 40 %</td></tr>
+        <tr><td>En rythme, pas redondant</td><td>Coup éclair relancé 30 fois par combat ; un petit coup toutes les 5,5 s</td><td>2,3 Estocades, 6,6 Coups éclairs, 2,5 ruptures par combat ; un moment fort toutes les 16 s</td></tr>
+        <tr><td>L’escalier faible · moyen · fort ; le marteleur</td><td>11 · 64 · 100 % ; 0 %</td><td>14 · 61 · 90 % ; 0 %</td></tr>
+      </tbody>
+    </table></div>
+    <p>Le modèle M, ce sont les cinq premières cartes à la recommandation, la riposte au 3e coup et le +1 PA par attaque simple gardés. Le détail, chaque pièce retirée et les limites : <code>briefs/audit-combat-db5.md</code>. Ta durée « 2 et 5 min, +5 min pour l’épique » remplace « 3 à 4 minutes » (DB-1) : je la consigne mot pour mot au journal. Tes choix sur DB4 sont pris : l’échelle (Marek 600, Ren 150), les rivaux resserrés entre 500 et 700, le recalage à six sur dix, l’application dès les réglages fusionnés. Deux de tes choix DB4 butent sur ton message de l’audit, plus récent : l’attaque simple à 2 % (« un duel d’une minute ») et les compétences à 3 attaques simples (une Estocade à 19 % au niveau 5) ; les cartes DB5-1 et DB5-5 les reprennent.</p>
+  </section>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je relis tes choix, je consigne mot pour mot ceux qui changent une règle de la spécification (les recharges, la rupture : des décisions A3), puis j’applique avec tes choix DB4 (l’échelle, les rivaux resserrés), je recale sur des parties entières, je refais les tests, le laboratoire et le combat en navigateur, je relis les textes du tutoriel du premier combat, et je fusionne.</p>
+    <p class="src">Sources : <code>briefs/audit-combat-db5.md</code>, <code>briefs/combat-system.md</code> §§ 2, 4, 6, 11, 17 et 18, journal Passes DB3 à DB5. Mesures : <code>node tools/duel-balance.mjs --audit</code>, le combat du jeu contre les sept rivaux, 20 graines chacun, le bot du jeu (0,2, 0,5, 0,9) et un marteleur.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Remplacer entièrement : un groupe par famille de décisions, une entrée par décision.
+// fam : une variable de couleur (--astre, --voile, --ronce, --cendre). shots : captures publiées via `files` (facultatif).
+// Apostrophes : l’apostrophe typographique ’ (ou \') ; une ' droite dans une chaîne entre ' ' arrête tout le script.
+const GROUPS = [
+  { id: 'modele', title: 'Le modèle du combat', sub: 'Chaque carte change une pièce du modèle recommandé (M), mesuré hors écran : les sept rivaux, 20 combats chacun, le bot du jeu au niveau 1 des compétences, recalé à environ six victoires sur dix pour le joueur moyen. Les pourcentages sont des parts de la barre de PV de l’adversaire.', fam: 'var(--voile)', items: [
+    { id: 'DB5-1', tag: 'compétences', title: 'Le poids des compétences',
+      ctx: 'Aujourd’hui l’Estocade, la plus forte du kit de départ, enlève 5,8 % de la barre au niveau 1 et 9,5 % au niveau 5 ; le Coup éclair 2,8 %. Tu veux qu’une compétence de niveau 5 enlève le quart ou le tiers de la barre, davantage sur une rupture. Je chiffre l’Estocade au niveau 1, les autres au prorata de leur temps de charge ; chaque niveau ajoute 10 % (le niveau 5 : ×1,4). Ton choix DB4-2 (« 3 attaques pour 3,4 s ») donnait, avec une attaque simple à 2 %, un Coup éclair à 6 % et une Estocade à 13,5 % au niveau 1, 19 % au niveau 5 : sous ton quart à tiers.',
+      table: { head: ['Estocade au niveau 1', 'Niveau 5 : franche · sur une rupture', 'Coup éclair au niveau 1', 'Durée (joueur moyen, recalé)'], rows: [
+        ['15 %', '21 % · 42 %', '7 %', '~3,5 min'],
+        ['20 %', '28 % · 56 %', '9 %', '3,0 min', 1],
+        ['25 %', '35 % · 70 %', '11 %', '~2,5 min']],
+        foot: 'Mesuré dans un combat : au niveau 5, l’Estocade de 20 % enlève 34 % franche et 62 % sur une rupture. Une Estocade gardée en fait le cinquième (DB5-2).' },
+      rec: '20 % au niveau 1 : au niveau 5 elle enlève 28 % de la barre franche, dans ton quart à tiers, et plus de la moitié sur une rupture ; le combat tient 3 minutes.',
+      opts: ['20 % (28 % au niveau 5)', '15 % (21 % au niveau 5)', '25 % (35 % au niveau 5)', 'Garder DB4-2 : 13,5 % (19 % au niveau 5)'], recIdx: 0,
+      src: 'src/combat/v2duel.ts (V2_POWER, V2_SKILL_HIT) ; src/combat/skills.ts (LEVEL_POWER)' },
+    { id: 'DB5-2', tag: 'garde', title: 'La garde des rivaux, à briser',
+      ctx: 'Pour que briser la garde se sente, les rivaux gardent la plupart des coups hors de leur rupture, et la garde réduit fort. Aujourd’hui ils gardent 10 à 35 % des attaques et la garde réduit de 60 % (la même règle pour Ren). Pendant une rupture, l’adversaire étourdi ne garde plus : le coup est franc et doublé.',
+      table: { head: ['Hors rupture', 'Estocade gardée · franche · sur une rupture', 'Dégâts faits pendant les ruptures', 'Durée'], rows: [
+        ['Gardent 90 %, la garde réduit de 80 %', '4 % · 20 % · 40 %', '37 %', '3,0 min', 1],
+        ['Gardent 90 %, la garde réduit de 60 %', '8 % · 20 % · 40 %', '30 %', '2,4 min'],
+        ['La défense d’aujourd’hui (10 à 35 %)', '4 % · 20 % · 40 % (rarement gardée)', '20 %', '2,0 min (85 %, avant recalage)']],
+        foot: 'La garde à −80 % vaut aussi pour la garde de Ren : une seule règle pour les deux, et les coups des rivaux sont recalés en conséquence. La défense propre à chaque rival (Vessa esquive, Ilse garde…) reste dans leurs écarts.' },
+      rec: 'Gardent 90 %, garde à −80 % : un facteur 10 entre frapper la garde (4 %) et frapper la rupture (40 %) ; la stratégie se lit à chaque coup.',
+      opts: ['90 %, garde à −80 %', '90 %, garde à −60 %', 'Leur défense d’aujourd’hui'], recIdx: 0,
+      src: 'src/combat/v2duel.ts (V2_FOES.defense) ; src/combat/dynamic.ts (guard) ; briefs/combat-system.md § 4 (CB-5)' },
+    { id: 'DB5-3', tag: 'recharges · A3', title: 'Une recharge pour chaque compétence',
+      ctx: 'Aujourd’hui aucune recharge (C2-5) : le joueur relance sans fin la même compétence, le Coup éclair 30 fois par combat, l’Estocade jamais. C’est la redondance que tu veux éviter. L’atelier avait laissé la porte ouverte : « pas prevu mais cela peut etre integre si on juge que le jeu est pas assez structure » (G5). Changer cette règle est une décision A3.',
+      table: { head: ['Recharge', 'Coup éclair · Estocade', 'Par combat', 'Durée', 'Joueur moyen'], rows: [
+        ['5 × le temps de charge', '17 s · 38 s', '6,6 Coups éclairs, 2,3 Estocades, 2,5 ruptures', '3,0 min', '61 %', 1],
+        ['3 × le temps de charge', '10 s · 23 s', '8 Coups éclairs, 2,3 Estocades, 3,2 ruptures', '2,6 min', '81 % (avant recalage)'],
+        ['Aucune (aujourd’hui)', '—', '15 Coups éclairs, aucune Estocade', '1,8 min', '91 % (avant recalage)']],
+        foot: 'La recharge part du coup lancé. La riposte au 3e coup et le +1 PA par attaque simple restent : les PA paient, la recharge rythme.' },
+      rec: '5 × le temps de charge : le joueur tourne entre ses compétences, un moment fort arrive toutes les 16 s, et l’Estocade devient un vrai choix.',
+      opts: ['5 × le temps de charge', '3 × le temps de charge', 'Aucune recharge'], recIdx: 0,
+      src: 'briefs/combat-system.md § 4, § 11, § 17 (C2-5)' },
+    { id: 'DB5-4', tag: 'rupture · A3', title: 'La rupture : le temps de frapper fort',
+      ctx: 'Aujourd’hui (DB-5) : 8 s d’étourdissement, dégâts ×2, une jauge de 100. Au niveau 1, l’Estocade se charge en 7,65 s : elle ne tient pas dans 8 s. Je propose 10 s (le haut des 5 à 10 s de l’atelier) et une jauge de 70, pour deux ou trois ruptures par combat. Changer DB-5 est une décision A3.',
+      table: { head: ['Rupture', 'Ruptures par combat', 'Première', 'Estocade sur une rupture au niveau 1', 'Durée'], rows: [
+        ['10 s, ×2, jauge de 70', '2,5', '~40 s', 'oui (40 %)', '3,0 min', 1],
+        ['8 s, ×2, jauge de 70', '2,5', '~40 s', 'jamais (trop longue à charger)', '3,0 min']] },
+      rec: '10 s, ×2, jauge de 70 : briser la garde donne le temps de charger la plus forte compétence et de la placer, dès le niveau 1.',
+      opts: ['10 s, ×2, jauge de 70', '8 s, ×2, jauge de 70 (DB-5)'], recIdx: 0,
+      src: 'briefs/combat-system.md § 6, § 18 (DB-5) ; src/combat/v2duel.ts (V2_BREAK)' },
+    { id: 'DB5-5', tag: 'attaque simple', title: 'L’attaque simple',
+      ctx: 'Elle prépare : +1 PA, la jauge, la riposte au 3e coup. Son poids règle la part des compétences et la durée. Tu as choisi 2 % sur DB4 (DB4-1, « un duel d’une minute ») ; dans ce modèle, 2 % ramène le combat à 1,5 min, sous tes 2 à 5 minutes, et l’attaque simple y fait les deux tiers des dégâts.',
+      table: { head: ['Attaque simple', 'Part de ses dégâts', 'Durée'], rows: [
+        ['0,5 % de la barre', '32 %', '3,0 min', 1],
+        ['1 %', '50 %', '2,3 min'],
+        ['2 % (ton choix DB4-1)', '66 %', '1,5 min']] },
+      rec: '0,5 % : elle compte (3 PV sur 600) sans voler la place des compétences, et le combat tient tes 2 à 5 minutes.',
+      opts: ['0,5 %', '1 %', '2 % (DB4-1)'], recIdx: 0,
+      src: 'src/combat/dynamic.ts (light)' },
+  ]},
+  { id: 'tournoi', title: 'Le tournoi', sub: 'La progression et les combats épiques. L’échelle (Marek 600, Ren 150), les rivaux resserrés (500 à 700), le recalage et le calendrier sont déjà tes choix sur DB4.', fam: 'var(--astre)', items: [
+    { id: 'DB5-6', tag: 'progression', title: 'Quand le joueur monte ses compétences',
+      ctx: 'Le joueur du laboratoire garde ses compétences au niveau 1 tout le tournoi. Un joueur qui les entraîne raccourcit ses combats : niveau 3 → 2,1 min (88 %), niveau 5 → 1,5 min (96 %). Des rivaux plus endurants aux derniers jours le ramènent dans tes 2 à 5 minutes.',
+      table: { head: ['Rivaux', 'Niveau 1', 'Niveau 3', 'Niveau 5'], rows: [
+        ['Comme au premier jour', '3,0 min (61 %)', '2,1 min (88 %)', '1,5 min (96 %)'],
+        ['PV ×1,4 au tableau (jours 6 à 8)', '3,4 min (34 %)', '2,8 min (69 %)', '2,1 min (91 %)', 1],
+        ['PV ×2 au tableau', '3,6 min (6 %)', '3,4 min (36 %)', '2,8 min (74 %)']], foot: 'Entre parenthèses, les victoires du joueur moyen, avant le recalage sur parties entières (DB5-10). Un joueur qui n’entraîne pas ses compétences perd plus souvent au tableau : le tournoi monte.' },
+      rec: 'PV ×1,4 au tableau : un joueur entraîné reste dans la fourchette (2 à 3 min) et ses niveaux se sentent ; celui qui ne s’entraîne pas trouve le tableau dur, ce que le recalage sur parties entières mesurera.',
+      opts: ['PV ×1,4 au tableau', 'PV ×2 au tableau', 'Les rivaux comme au premier jour'], recIdx: 0,
+      src: 'src/tournament/v2calendar.ts ; src/combat/v2duel.ts' },
+    { id: 'DB5-7', tag: 'épique', title: 'Les combats épiques',
+      ctx: 'Au-delà de 5 minutes, une barre monstrueuse. Mesuré : PV ×2,5 et des coups plus légers (×0,45) donnent 6,7 min, près de six ruptures, et le joueur moyen gagne 59 %.',
+      rec: 'La finale seule (jour 10) : le dernier combat est un événement.',
+      opts: ['La finale', 'La finale et les demi-finales', 'Aucun'], recIdx: 0,
+      src: 'src/tournament/v2calendar.ts' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
