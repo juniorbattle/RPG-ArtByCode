@@ -14,6 +14,7 @@ const P = await load('/src/narrative/people.ts');
 const PZ = await load('/src/world/Plazas.ts');
 const R = await load('/src/narrative/roster.ts');
 const VP = await load('/src/simulation/v2places.ts');
+const RV = await load('/src/simulation/v2rivals.ts');
 
 const WON = { type: 'fight', outcome: { winner: 'player', playerHp: 900, playerMaxHp: 2200, opponentHp: 0, opponentMaxHp: 3000, finisher: 'heavy' } };
 const LOST = { type: 'fight', outcome: { winner: 'opponent', playerHp: 0, playerMaxHp: 2200, opponentHp: 900, opponentMaxHp: 3000, finisher: 'tech' } };
@@ -57,7 +58,8 @@ test('Tobin and Rhosk: on the training sand by day from the first day; a line an
   assert.ok(C.stageMatches(d9, 'semi').some((m) => m.winner === 'player'));
   const fin = (s, id) => C.stageMatches(s, 'final').some((m) => m.a === id || m.b === id);
   assert.equal(D.linesOf(d9, 'tobin')[0], T.tx(fin(d9, 'tobin') ? 'v2.line.tobin.final' : 'v2.line.tobin.act3final'));
-  assert.equal(D.linesOf(d9, 'rhosk')[0], T.tx(fin(d9, 'rhosk') ? 'v2.line.rhosk.final' : 'v2.line.rhosk.act3'));
+  // (Rhosk out of the title takes the training sand the free day before the player's bracket bout, lot L4: his words of L4 first; seed 1842 since the race of journal Passe DB3)
+  assert.equal(D.linesOf(d9, 'rhosk')[0], T.tx(RV.sandTaken(d9) ? 'v2.line.rhosk.sand' : fin(d9, 'rhosk') ? 'v2.line.rhosk.final' : 'v2.line.rhosk.act3'));
   const lost9 = playTo(9, 'morning', () => LOST);
   assert.ok(!fin(lost9, 'player'));
   assert.equal(D.linesOf(lost9, 'tobin')[0], T.tx(fin(lost9, 'tobin') ? 'v2.line.tobin.final' : 'v2.line.tobin.act3'));

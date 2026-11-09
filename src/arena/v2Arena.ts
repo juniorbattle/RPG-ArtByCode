@@ -112,8 +112,8 @@ export function v2PresetNames(dyn: Record<string, DynPreset>): string[] { return
  *  `seen` gets each step's events and whether a charge was held before it (the tests) */
 export function runV2Fingerprint(d: ChargedDuel, seen?: (events: ReturnType<ChargedDuel['drain']>, held: boolean) => void): void {
   // the holds on the tiers of the scene's duel (journal Passe CH1: Rampart 3 s, Flash cut 3.4, Fervour 4.25, Thrust 7.65; a 12 s hold reaches a
-  // break with a charge held)
-  const dt = d.D.dt, holds = [0.05, 3.1, 0.05, 3.5, 0.05, 4.3, 7.7, 0.05, 9.4, 12];
+  // break with a charge held); three taps before each charge since journal Passe DB3 (the AP the skills need; three taps in a row draw the riposte)
+  const dt = d.D.dt, holds = [0.05, 0.05, 0.05, 3.1, 0.05, 0.05, 0.05, 3.5, 0.05, 0.05, 0.05, 4.3, 0.05, 0.05, 0.05, 7.7, 0.05, 9.4, 12];
   let n = 0, next = 0.5, until = -1;
   for (let i = 0; i < Math.round(360 / dt); i++) {
     const inc = d.incoming(), v = d.view();
@@ -127,5 +127,5 @@ export function runV2Fingerprint(d: ChargedDuel, seen?: (events: ReturnType<Char
 /** the hash runV2Fingerprint leaves on the scene's duel (sceneV2Duel('charge'), recorded with the rules, journal Passe V1; Ren's health
  *  again under V2_FOE_HIT, journal Passe VP4; the script and the rule of V2-2, journal Passe V2C1; the rivals' blows and health of journal Passe V2C2;
  *  the heavy attack a skill, the charge times and the charged blows' power trimmed, the script's holds on the new tiers, journal Passe CH1; one
- *  release waiting at most, journal Passe DB1) */
-export const V2_SIM_HASH = '1785:1:idle:0.075:51.125:-:-;7253:0:idle:3.192:13.095:-:-;108.883|1:0.083:';
+ *  release waiting at most, journal Passe DB1; the duel of journal Passe DB3 and three taps before each charge) */
+export const V2_SIM_HASH = '1943:4:idle:0.083:36.650:-:-;10776:0:acting:0.392:20.020:6.908:-;71.375|0:0.000:0';

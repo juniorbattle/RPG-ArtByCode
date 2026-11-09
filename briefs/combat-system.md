@@ -60,9 +60,10 @@ Transe, la file d'exécution et les effets d'état [G2].
    l'adversaire [G2].
 4. **Pendant une séquence**, le joueur est dans sa **phase de défense** : il garde ou il esquive [G2, G3].
 5. Une **résistance pleine** brise le combattant. Il est étourdi 5 à 10 s et prend des dégâts légèrement accrus. L'autre en profite avec ses
-   actions [G3, G5].
+   actions [G3, G5]. Amendé le 09/11/2026 (décision A3 DB-5, § 18) : étourdi 8 s, les dégâts reçus doublés.
 6. Le duel se termine au **K.O.**, et seulement au K.O. [G4].
-7. **Durée visée : 5 à 10 minutes**, « selon la complexite de l'adversaire et ces points de vie » [G5].
+7. **Durée visée : 5 à 10 minutes**, « selon la complexite de l'adversaire et ces points de vie » [G5]. Amendée le 09/11/2026 (décision A3
+   DB-1 « 3 à 4 minutes », § 18) : **3 à 4 minutes**.
 
 ## 3. Les ressources d'un combattant
 
@@ -146,6 +147,10 @@ La règle de l'opérateur (AV-5, AV-6, AV-7, AV-8) ; ce que la séance a fixé e
 - **L'étendue de la phase de défense** [CB-4, « Toute la séquence, intervalles compris »] : du début d'une séquence adverse à la fin de son
   dernier coup, les intervalles d'un combo compris.
 - **Les pauses** entre les séquences restent, plus courtes selon le niveau de l'adversaire [G1].
+- **La riposte** (décision A3 DB-2 « Riposte au 3e coup » du 09/11/2026, avec la note de l'opérateur « mais cela ne s'applique pas si
+  l'adversaire est en rupture/break. », § 18) : au troisième coup rapide du joueur qui le touche (ou touche sa garde) dans sa pause,
+  l'adversaire part dans sa séquence suivante 0,3 s après ; jamais pendant sa rupture ; le compte repart à zéro à chaque séquence et après chaque
+  étourdissement.
 - **La défense de l'adversaire** [G3] : « certains adversaires sophistiques et special peuvent garder, esquiver voir les deux ».
 - **Ses compétences** [G3] : « presque tous les adversaires auront aussi leur propres competences entre 2-4 competences mais la encore ca
   dependra du niveau de l'adversaire ».
@@ -162,6 +167,9 @@ La règle de l'opérateur (AV-5, AV-6, AV-7, AV-8) ; ce que la séance a fixé e
   - l'attaque puissante plus vite, sur une garde aussi [G5].
 - **Ce qui la vide** : le temps, « legerement et progressivement avec le temps pour faire simplle » [G4]. L'esquive et l'attaque du joueur ne la
   vident pas (l'idée de G2, « si il tappe, ou esquive elle peut baisser », « a confirmer », est remplacée par la règle simple de G4).
+- **Depuis le 09/11/2026** (décision A3 DB-5 « Jauge par les compétences, ×2 pendant 8 s », § 18) : les compétences du joueur la remplissent
+  deux fois plus, son attaque rapide 2 au lieu de 3 ; une rupture étourdit 8 s et double les dégâts reçus, pour les deux combattants (une seule
+  règle, G3). Le texte ci-dessous reste celui de l'atelier.
 - **Quand elle est pleine, c'est le « break »** [G3] :
   - le combattant est étourdi 5 à 10 s ;
   - il prend des dégâts légèrement accrus ;
@@ -225,8 +233,8 @@ adversares max 3 ».
 | Recharge des compétences | aucune ; à ajouter « si on juge que le jeu est pas assez structure » | [G5] |
 | Action objet en combat | 3 compétences + une action objet, « selon le rythme du combat » | [G4] |
 | Esquive | un pas en arrière ou un saut de côté | [G5] |
-| Durée d'un duel | 5 à 10 min, par les PV et la complexité de l'adversaire | [G5] |
-| Break | 5 à 10 s d'étourdissement, dégâts « légèrement » accrus | [G3] |
+| Durée d'un duel | 5 à 10 min, par les PV et la complexité de l'adversaire ; **3 à 4 min depuis DB-1** (§ 18) | [G5, DB-1] |
+| Break | 5 à 10 s d'étourdissement, dégâts « légèrement » accrus ; **8 s, ×2 depuis DB-5** (§ 18) | [G3, DB-5] |
 | Compétences signature | une animation propre au personnage, « eventuellement » | [G5] |
 
 ## 12. Écarts avec le code d'aujourd'hui (`src/arena/CombatSim.ts`, `src/combat/`)
@@ -451,6 +459,30 @@ Fiche de l'essai du lot C2, page privée https://claude.ai/artifact/2BFmUTe6GFRA
 
 Le défaut reste l'arène d'aujourd'hui jusqu'à C3 et un second essai ; les nombres d'aujourd'hui (§ 3, § 6) sont tenus ; l'esquive est en
 arrière (§ 14 : `dodge`) ; Rempart et Ferveur restent les familles défensive et soutien.
+
+---
+
+## 18. Les décisions de la fiche du duel (09/11/2026)
+
+Après le premier essai de l'opérateur de la version 2 devenue le jeu par défaut, ses mots pour le combat : « Je trouve que les combats sont tres
+longs... il faut faire en sorte que les competences ou la zone de break fasse vraiment des degats, surtout quelle prend du temps a etre
+accessible » ; « mais on doit vraiment trouver une solution pour que les attaques soient significatifs car elles degats cree a peine des degats
+meme les competences, et le mieux est de spam l'attaque car on peut attaquer presque 10 fois avant que l'ennemie attaque et donc on cumule des ap
+pour esquiver... il faut retravailler cela pour que notre systemne de combat soit optimale ». L'audit : `briefs/audit-duel-db2.md`. La fiche, page
+privée https://claude.ai/artifact/PQeCdpmT3Uv6vUdgS4ZZKN (`briefs/fiche-db2.html`), relue le 09/11/2026 : huit sur huit à la recommandation
+(journal Passes DB2, DB3). Trois touchent une règle de cette spécification : des décisions A3, citées mot pour mot et datées au journal (Passe
+DB3) avant la mise en œuvre.
+
+| # | Décision | Choix de l'opérateur | Note | Ce qui change |
+|---|---|---|---|---|
+| DB-1 (A3) | La durée visée d'un duel | « 3 à 4 minutes » | — | § 2, § 11 : 3 à 4 min au lieu de 5 à 10 (C2-2 dépassée) |
+| DB-2 (A3) | Répondre au martelage de l'attaque rapide | « Riposte au 3e coup » | « mais cela ne s'applique pas si l'adversaire est en rupture/break. » | § 5 : la riposte |
+| DB-3 | Les PA de l'attaque rapide | « Garder +1 PA par attaque rapide » | — | rien (§ 3) |
+| DB-4 | Le poids des compétences | « ×4 » | — | les dégâts des compétences du joueur ×4, l'attaque puissante comprise |
+| DB-5 (A3) | La rupture | « Jauge par les compétences, ×2 pendant 8 s » | — | § 2, § 6, § 11 : la jauge par les compétences, 8 s, ×2 (C2-8, C2-9 dépassées) |
+| DB-6 | Les temps de charge | « Garder les temps d’aujourd’hui » | — | rien (CH-1) |
+| DB-7 | Recaler les rivaux | « Recaler pour garder six sur dix » | — | les coups des rivaux ×3,4, leurs PV ×1,8, ceux de Ren ×1,25 (sur ceux de C3), la course hors écran |
+| DB-8 | Où l'appliquer | « Dans le jeu par défaut, puis ton essai » | — | le duel de la version 2 ; le jeu d'avant (`v2=0`) et le duel de C2 inchangés |
 
 ---
 

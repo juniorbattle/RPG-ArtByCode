@@ -125,7 +125,8 @@ test('the bout takes the player\'s kit: its four skills at their levels, the new
   assert.deepEqual(d.tiers.map((t) => t.id), ['light', 'k_cry', 'k_iron', 'k_sunder', 't4']);
   assert.equal(d.tiers[1].at, K.chargeTime('k_cry', 3));
   // its power x 0.85 since the charge times were trimmed (journal Passe CH1), then its level's
-  assert.equal(d.data.actions.k_sunder.damage, Math.round(Math.round(SB.skillAction('k_sunder').damage * V.V2_POWER.k_sunder.damage * 0.85) * 1.1));
+  // and four times harder since journal Passe DB3 (DB-4 « ×4 »)
+  assert.equal(d.data.actions.k_sunder.damage, Math.round(Math.round(Math.round(SB.skillAction('k_sunder').damage * V.V2_POWER.k_sunder.damage * 0.85) * 1.1) * V.V2_SKILL_HIT));
   const r = B.runV2BotDuel(d.data, d.tiers, { skill: 0.7, seed: 9 });
   assert.ok(r.winner, 'a K.O.');
   // levels make a kit stronger: today's four at level 3 beat Marek where level 1 often loses (the bot at 0.5, eight duels)

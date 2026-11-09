@@ -23,8 +23,8 @@ const W: Action = { type: 'wait' };
 const WON: Action = { type: 'fight', outcome: { winner: 'player', playerHp: 120, playerMaxHp: 200, opponentHp: 0, opponentMaxHp: 600, finisher: 'tech' } };
 const LOST: Action = { type: 'fight', outcome: { winner: 'opponent', playerHp: 0, playerMaxHp: 200, opponentHp: 300, opponentMaxHp: 600, finisher: 'heavy' } };
 
-// lot L3 (journal Passe EVL5): the strap cut in the night before the semi-final (seed 1842: Cassius taunted on the festival square the first night, every pool bout won,
-// both signs on day 4, the cut through in second place, the strap cut that night), Lio's room asked of Orla, the semi's opponent, on day 6's morning; then the
+// lot L3 (journal Passe EVL5): the strap cut in the night before the semi-final (seed 1842 until the race of journal Passe DB3, seed 23 since: Cassius taunted on the festival square the first night, every pool bout won,
+// both signs on day 4, the cut through (in second place at 1842, first at 23), the strap cut that night), Lio's room asked of Orla, the semi's opponent, on day 6's morning; then the
 // semi-final fought on it, the next morning on the forecourt (Lady Edda can name the colours)
 const STRAP6: readonly Action[] = [W, W, { type: 'move', to: 'lanterns' }, { type: 'taunt' }, W, W, WON, W, W, W, W, W, WON, W, W, WON, W, { type: 'rumour', src: 'lio' }, W, { type: 'move', to: 'forecourt' }];
 
@@ -71,8 +71,8 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   'v2-wanted-night': { about: 'a version 2 thief the watch wants (three marks), on the quay at night', script: [{ type: 'steal', shop: 'mara' }, { type: 'move', to: 'lanterns' }, W, { type: 'steal', shop: 'trinkets' }, { type: 'steal', shop: 'trinkets' }, W, { type: 'move', to: 'district' }, { type: 'pickpocket', who: 'fenwick' }], v2: true },
   'v2-day7-training': { about: 'a version 2 game on day 7, every bout won, at the Training Ground', script: [W, W, W, W, WON, W, W, W, W, W, WON, W, W, WON, W, W, WON, W, { type: 'move', to: 'training' }], v2: true },
   // lot L3 (journal Passe EVL5): the strap cut, before and after the semi-final
-  'v2-strap-day6': { about: 'a version 2 game on day 6\'s afternoon, on the forecourt: the strap cut in the night before the semi-final, Lio\'s room asked of Orla', script: STRAP6, v2: true },
-  'v2-strap-day7': { about: 'a version 2 game on day 7\'s morning, on the forecourt: the semi-final won on the cut strap, its culprit unknown', script: [...STRAP6, WON, W], v2: true },
+  'v2-strap-day6': { about: 'a version 2 game on day 6\'s afternoon, on the forecourt: the strap cut in the night before the semi-final, Lio\'s room asked of Orla', script: STRAP6, v2: true, seed: 23 },
+  'v2-strap-day7': { about: 'a version 2 game on day 7\'s morning, on the forecourt: the semi-final won on the cut strap, its culprit unknown', script: [...STRAP6, WON, W], v2: true, seed: 23 },
   'v2-tale-day3': { about: 'a version 2 game on day 3\'s afternoon, on the festival square: Vessa Lark beaten on day 2, her tale of Orla Brask in the taverns', script: [W, W, W, W, WON, W, W, { type: 'move', to: 'lanterns' }], v2: true },
   'v2-sand-day9': { about: 'a version 2 game on day 9\'s morning, on the quay: every bout won, Rhosk out of the title (seed 6), his plan to take the training sand told the night before', script: SAND9, v2: true, seed: 6 },
   'v2-sand-training': { about: 'a version 2 game on day 9\'s morning, at the training ground: Rhosk on the sand (seed 6)', script: [...SAND9, { type: 'move', to: 'training' }], v2: true, seed: 6 },
@@ -80,14 +80,14 @@ export const NAMED_STATES: Record<string, { about: string; script: readonly Acti
   // at Mara's, the quay that afternoon); a famous player on day 7's morning at the training ground, Orla Brask a friend (the strap's game of lot L3)
   'v2-watch-forecourt': { about: 'a version 2 game on the first afternoon, on the forecourt: caught stealing at Hilde\'s stall that morning, Wynn of the watch beside her (seed 1)', script: [{ type: 'move', to: 'forecourt' }, { type: 'steal', shop: 'armourer' }, W], v2: true, seed: 1 },
   'v2-watch-quay': { about: 'a version 2 game on the first afternoon, on the quay: caught stealing at Mara\'s stall that morning, Wynn of the watch beside her', script: [{ type: 'steal', shop: 'mara' }, W], v2: true },
-  'v2-famous-training': { about: 'a version 2 game on day 7\'s morning, at the training ground: every bout won, the passers-by celebrate the player, Orla Brask a friend', script: [...STRAP6, WON, W, { type: 'move', to: 'training' }], v2: true },
+  'v2-famous-training': { about: 'a version 2 game on day 7\'s morning, at the training ground: every bout won, the passers-by celebrate the player, Orla Brask a friend', script: [...STRAP6, WON, W, { type: 'move', to: 'training' }], v2: true, seed: 23 },
   // lot L6 (journal Passe EVL11): the scenes that depend on the state (seed 1842) - every pool bout lost, the Gate's morning on the forecourt; the semi-final won or
   // lost, its evening on the forecourt; the strap's game of lot L3 with Lady Edda's word and Sergeant Hale told, the festival square that evening (Cassius unmasked);
   // every bout won, the crowning's evening on the forecourt
   'v2-gate-day6': { about: 'a version 2 game on day 6\'s morning, on the forecourt: every pool bout lost, the Gate bouts today', script: [...POOL_LOST, { type: 'move', to: 'forecourt' }], v2: true },
   'v2-semi-won': { about: 'a version 2 game on day 6\'s evening, on the forecourt: every bout won, the semi-final too', script: [...POOL_WON, W, WON, { type: 'move', to: 'forecourt' }], v2: true },
   'v2-semi-lost': { about: 'a version 2 game on day 6\'s evening, on the forecourt: the pool won, the semi-final lost', script: [...POOL_WON, W, LOST, { type: 'move', to: 'forecourt' }], v2: true },
-  'v2-unmasked-night': { about: 'a version 2 game on day 7\'s evening, on the festival square: the strap cut before the semi-final, Lady Edda names House Dree, Sergeant Hale told', script: UNMASK7, v2: true },
+  'v2-unmasked-night': { about: 'a version 2 game on day 7\'s evening, on the festival square: the strap cut before the semi-final, Lady Edda names House Dree, Sergeant Hale told', script: UNMASK7, v2: true, seed: 23 },
   'v2-epilogue': { about: 'a version 2 game on day 10\'s evening, on the forecourt: every bout won, the hero crowned', script: [...POOL_WON, W, WON, W, W, W, W, W, W, W, W, W, W, W, WON, { type: 'move', to: 'forecourt' }], v2: true },
   // lot L6 (the festival of day 9, journal Passe EVL11): its morning on the festival square, the good turns there (tools/festival-flow.mjs)
   'v2-festival-day9': { about: 'a version 2 game on day 9\'s morning, on the festival square: every bout won, the Lanterns\' parade at dusk', script: [...SAND9, { type: 'move', to: 'lanterns' }], v2: true },

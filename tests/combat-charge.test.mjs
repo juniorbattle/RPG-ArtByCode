@@ -232,14 +232,15 @@ test('the three buttons: the heavy and the skills lose their automatic preparati
   assert.deepEqual(k.data.ai.defense, c.data.ai.defense);
   assert.deepEqual(k.data.ai.skills, c.data.ai.skills);
   // a charged blow pays for its hold; the light attack keeps today's numbers; the heavy x 2.2 of damage, x 0.85 since the charge times were trimmed
-  // (journal Passe CH1), and its gauge x 2; a skill of 1 AP under the three buttons, free under the old scheme
-  assert.equal(c.data.actions.light.damage, D.DYNAMIC_DATA.actions.light.damage);
-  assert.equal(c.data.actions.heavy.damage, Math.round(26 * 2.2 * 0.85)); assert.equal(c.data.actions.heavy.resist, 16);
-  assert.equal(c.data.actions.t4.damage, Math.round(58 * 3.4 * 0.85)); assert.equal(c.data.actions.d1.ward.dur, 9);
+  // (journal Passe CH1), and its gauge x 2; a skill of 1 AP under the three buttons, free under the old scheme; since journal Passe DB3 every
+  // skill of the player four times harder and twice the gauge (DB-4, DB-5), the light attack's gauge 2
+  assert.equal(c.data.actions.light.damage, D.DYNAMIC_DATA.actions.light.damage); assert.equal(c.data.actions.light.resist, 2);
+  assert.equal(c.data.actions.heavy.damage, Math.round(26 * 2.2 * 0.85) * 4); assert.equal(c.data.actions.heavy.resist, 32);
+  assert.equal(c.data.actions.t4.damage, Math.round(58 * 3.4 * 0.85) * 4); assert.equal(c.data.actions.d1.ward.dur, 9);
   assert.equal(c.data.actions.heavy.apCost, 1); assert.ok(!k.data.actions.heavy.apCost); assert.equal(c.data.actions.heavy.family, 'offensive');
-  // the old scheme with the heavy attack among the four: the C2 command, the heavy at level 1 as today
+  // the old scheme with the heavy attack among the four: the C2 command, the heavy at level 1 as today, under the duel's weights of journal Passe DB3
   const kh = V.v2DuelData('marek', { seed: 1337, playerName: 'Ren', opponentName: 'Marek', input: 'keys', kit: HK });
-  assert.deepEqual(kh.data.actions.heavy, { ...D.DYNAMIC_DATA.actions.heavy, family: 'offensive' });
+  assert.deepEqual(kh.data.actions.heavy, { ...D.DYNAMIC_DATA.actions.heavy, family: 'offensive', damage: 26 * 4, resist: 16 });
   const q = (s) => new URLSearchParams(s);
   assert.equal(A.v2Input(q('v2=1')), 'charge'); assert.equal(A.v2Input(q('v2=1&input=keys')), 'keys');
   assert.equal(DV.arenaRules(q('scene=arena&v2=1')), 'v2'); assert.equal(DV.arenaRules(q('scene=arena&v2')), 'v2');
@@ -284,7 +285,7 @@ test('C3: the opponents\' defence in their pauses (guard, dodge of the heavy and
   assert.equal(f.hash(), D.DYNAMIC_SIM_HASH);
 });
 
-test('the balance toward « modéré » (L7-4, CB-11; « proposé »): a staircase by the bot\'s skill, Marek the hardest, duels of 5 to 10 minutes (the operator\'s [G5], held since journal Passe V2C2)', () => {
+test('the balance toward « modéré » (L7-4, CB-11; « proposé »): a staircase by the bot\'s skill, Marek the hardest, duels of 3 to 4 minutes (the operator\'s DB-1 « 3 à 4 minutes », decision A3 of 2026-11-09, journal Passe DB3; 5 to 10 [G5] before)', () => {
   const rate = (foe, skill, n = 6) => {
     let w = 0, t = 0;
     for (let i = 1; i <= n; i++) { const d = V.v2DuelData(foe, { seed: 3000 + i, playerName: 'Ren', opponentName: foe }); const r = B.runV2BotDuel(d.data, d.tiers, { skill, seed: 40 + i }); assert.ok(r.winner, `${foe}: a K.O.`); if (r.winner === 'player') w++; t += r.t; }
@@ -295,11 +296,13 @@ test('the balance toward « modéré » (L7-4, CB-11; « proposé »): a stairca
   assert.ok(weak.w <= 0.35, `orla at 0.2: ${weak.w}`);
   assert.ok(m2.w <= 0.2, `marek at 0.2: ${m2.w}`);
   assert.ok(m6.w < o6.w, `marek at 0.6 (${m6.w}) is harder than orla (${o6.w})`);
-  for (const r of [strong, weak, m6, o6, m2]) assert.ok(r.min >= 5 && r.min <= 10, `duel length ${r.min.toFixed(1)} min`);
+  // a losing weak player falls a little sooner (2.6 min against Marek at 0.2), a strong one wins in under 4
+  for (const r of [strong, weak, m6, o6, m2]) assert.ok(r.min >= 2.5 && r.min <= 4.5, `duel length ${r.min.toFixed(1)} min`);
 });
 
 test('the harder rivals (journal Passes VP4, V2C2) under V2-2 « Rien ne la coupe » (journal Passe V2C1): whole version 2 games on seeds 1..12, a staircase by the player\'s skill and preparation', () => {
-  assert.equal(V.V2_FOE_HIT, 1.45); assert.equal(V.V2_FOE_HP, 1.2);
+  // recalibrated with the duel of journal Passe DB3 (the operator's DB-7 « Recaler pour garder six sur dix »): 1.45 and 1.2 before
+  assert.equal(V.V2_FOE_HIT, 3.4); assert.equal(V.V2_FOE_HP, 1.8); assert.equal(V.V2_REN_HP, 1.25);
   const S = Array.from({ length: 12 }, (_, i) => i + 1);
   const at = (skill) => ({ name: `diligent-${skill}`, skill, choose: (st) => { const a = L.POLICIES.diligent.choose(st); return a.type === 'fight' ? { type: 'fight', outcome: L.botOutcome(st, skill) } : a; } });
   const idle = L.labReport(S, L.POLICIES.idle, 'v2'), prepared = L.labReport(S, L.POLICIES.diligent, 'v2'), expert = L.labReport(S, at(0.9), 'v2');

@@ -58,7 +58,8 @@ test('better and worse follow the number\'s sense: less damage taken is better, 
   assert.equal(r.charge.better, false); assert.equal(r.charge.after, +(1.7 * 1.05).toFixed(3));
   const w = v2(); w.player.coins = 300;
   const b = rows(P.preview(w, { type: 'shopBuy', shop: 'mara', item: 'docker-wrap' }));
-  assert.equal(b.hp.better, true); assert.equal(b.hp.after, 2332);
+  // Ren 2 750 since journal Passe DB3 (2 200 x 1.25), the wrap +6 %
+  assert.equal(b.hp.better, true); assert.equal(b.hp.after, 2915);
 });
 
 test('what it replaces, and the trap a swap hides: the forge\'s tiers leave with the old weapon', () => {
@@ -86,7 +87,7 @@ test('both accessories on: a third goes to the bag and changes nothing; from the
 test('the whetstone and the salve read as the duel reads them, in a version 2 game and in the default game', () => {
   const st = v2(); st.player.coins = 300; st.player.injury = 1;
   assert.ok(rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'whetstone' })).blow.better);
-  assert.deepEqual([rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'salve' })).hp.now, rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'salve' })).hp.after], [1760, 2200]);
+  assert.deepEqual([rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'salve' })).hp.now, rows(P.preview(st, { type: 'shopBuy', shop: 'mara', item: 'salve' })).hp.after], [2200, 2750]);
   const d = G.namedState('day1-morning'); d.player.coins = 300; d.player.injury = 1;
   for (const o of G.actions(d).filter((x) => W.isWare(x) && x.ok)) {
     const p = P.preview(d, o.action), next = act(d, o.action);

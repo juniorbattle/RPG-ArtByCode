@@ -60,6 +60,11 @@ export interface DynData {
     /** lot C3: its 2 to 4 skills [G3], each a sequence of its own: `chance` = the share of its sequences that is a skill when one is ready, a
      *  skill's `cooldown` (s) its own pacing (the opponent has no AP, CB-1); absent = no skill */
     skills?: { chance: number; list: Array<{ id: DynActionId; weight: number; cooldown: number }> };
+    /** the riposte (the operator's decision A3 of 2026-11-09, DB-2 « Riposte au 3e coup », with his note « mais cela ne s'applique pas si
+     *  l'adversaire est en rupture/break. », journal Passe DB3): in its pause, at the player's `after`-th light attack that lands on it (hit or
+     *  guarded), its next sequence starts `delay` s later; never while it is broken, the count starting again after each sequence and each stun;
+     *  absent = no riposte (today's game, C2's duel) */
+    riposte?: { after: number; delay: number };
   };
   /** the pauses between sequences per level (s): shorter as the level rises, « presque le combat full actif » [G1] */
   restByLevel: Record<number, [number, number]>;
@@ -131,6 +136,8 @@ export type DynEvent = { t?: number } & (
   | { type: 'ko'; who: DynFighterId }
   | { type: 'windowOpen'; who: DynFighterId; action: DynActionId; dur: number }
   | { type: 'windowClose'; who: DynFighterId; action: DynActionId }
+  /** the opponent answers the player's light attacks in its pause (DynData.ai.riposte, journal Passe DB3): its next sequence starts soon */
+  | { type: 'riposte'; who: DynFighterId; lights: number }
 );
 
 export interface DynFighter {
@@ -150,6 +157,8 @@ export interface DynFighter {
   anim: DynAnimState | null; lastAction: DynActionId | null;
   /** lot C3 (only with `ai.defense` / `ai.skills`): a dodge waiting for the player's blow, the guard's release time, the skills' cooldowns */
   dodgeAt: number | null; guardUntil: number; skillReady: Record<string, number>;
+  /** the player's light attacks landed on it in its pause since its last sequence or stun (only with `ai.riposte`) */
+  ripLights: number;
 }
 
 export interface DynIncoming {
@@ -190,7 +199,7 @@ export class DynamicSim {
         recoverLeft: 0, recoverDur: 0, stunLeft: 0, stunDur: 0, flinch: 0, react: null, guardHeld: false, guarding: false, guardT: 0, buffer: null,
         resist: 0, broken: false, ward: null, boost: null, apClock: 0,
         plan: [], seqLen: 0, seqIdx: 0, inSeq: false, resting: false, aiWait: D.ai.start, anim: null, lastAction: null,
-        dodgeAt: null, guardUntil: 0, skillReady: {},
+        dodgeAt: null, guardUntil: 0, skillReady: {}, ripLights: 0,
       };
     }
     this.ar = (D.ai.seed >>> 0) || 1; this.refreshAnims(); this.emit({ type: 'reset' });
@@ -313,7 +322,7 @@ export class DynamicSim {
 
   /** the opponent starts a sequence: the player's defence phase begins; a player's action that has not landed is cancelled (CB-3) */
   private sequenceStart(m: DynFighter): void {
-    m.inSeq = true; this.emit({ type: 'sequenceStart', who: m.id, len: m.seqLen });
+    m.inSeq = true; m.ripLights = 0; this.emit({ type: 'sequenceStart', who: m.id, len: m.seqLen });
     const r = this.other(m); r.buffer = null;
     if (r.state === 'acting' && !r.act!.impacted) {
       const a = r.act!.def, refund = a.apCost || 0;
@@ -344,6 +353,7 @@ export class DynamicSim {
     }
     if (dmg > 0) target.hp = Math.max(0, target.hp - dmg);
     if (result === 'hit') target.flinch = D.flinch;
+    if (D.ai.riposte && attacker.usesAp && a.kind === 'light' && result !== 'dodged' && !target.inSeq && !target.broken) target.ripLights++;
     // the gauge: every blow that lands, guarded ones too (a guarded blow adds `resist.guard` of it); held full while its break lasts
     if (result !== 'dodged' && !target.broken) {
       const add = a.resist * (result === 'guarded' ? D.resist.guard : 1) * (attacker.boost ? attacker.boost.resist : 1) * (target.ward ? target.ward.resist : 1);
@@ -398,11 +408,15 @@ export class DynamicSim {
       switch (f.state) {
         case 'idle':
           if (f.buffer) { if (f.buffer.until < this.t) f.buffer = null; else if (this.canUse(id, f.buffer.id)) { const ba = D.actions[f.buffer.id]; f.buffer = null; this.start(f, ba); break; } }
+          if (id === 'marek' && D.ai.riposte && f.ripLights >= D.ai.riposte.after && !f.inSeq && !f.broken && !this.over) {
+            if (f.aiWait > D.ai.riposte.delay) { f.aiWait = D.ai.riposte.delay; this.emit({ type: 'riposte', who: id, lights: f.ripLights }); }
+            f.ripLights = 0;
+          }
           if (id === 'marek' && !this.over && !f.react) { f.aiWait -= dt; if (f.aiWait <= 0) this.aiNext(f); }
           break;
         case 'stunned':
           f.stunLeft -= dt;
-          if (f.stunLeft <= 0) { if (f.broken) { f.broken = false; f.resist = 0; } this.emit({ type: 'stunEnd', who: id }); this.set(f, 'idle'); if (id === 'marek') { f.aiWait = D.ai.afterStun; f.resting = true; } }
+          if (f.stunLeft <= 0) { if (f.broken) { f.broken = false; f.resist = 0; } f.ripLights = 0; this.emit({ type: 'stunEnd', who: id }); this.set(f, 'idle'); if (id === 'marek') { f.aiWait = D.ai.afterStun; f.resting = true; } }
           break;
         case 'pushed':
           // held until the blow it was caught by lands (resolve); released if that blow can no longer come
