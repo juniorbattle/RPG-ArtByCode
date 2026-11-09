@@ -1,7 +1,8 @@
 // The title screen's proof (journal Passes L4 / UM3; plan § 7, PD): the bare address in a browser that does not announce automation shows the title
 // screen at once, the town coming up behind it (« New game », « Explore the district », and « Continue » only with a save); « Explore the district » then gives exactly the town
-// at midday (the operator's decision L7-6a, journal Passe D9): the same deterministic capture as a frozen main's ?time=midday (BASE_QUERY,
-// default 'time=midday'; BASE_QUERY= gives main's bare address, the night: the negative control), at threshold 0. The harness of
+// at midday (the operator's decision L7-6a, journal Passe D9) in the version 2's look (VD-3, journal Passe VD2): the same deterministic capture as a frozen
+// main's ?time=midday&herolook=1&heraldry=tournament&skyline=arena (BASE_QUERY, its default; BASE_QUERY=time=midday the look of before, BASE_QUERY= main's
+// bare address, the night: the negative controls), at threshold 0. The harness of
 // tools/detshots.mjs (seeded Math.random, the loop held, N fixed steps, one render).
 // Its DEV panel starts closed and H opens it (the operator's decision P1, « Fermé par défaut, H l'ouvre », journal Passe UI2): the base page
 // gets BASE_KEYS before its capture (default 'h': the base's panel closed by H, the view Explore opens; BASE_KEYS= : the panel open, the
@@ -17,7 +18,7 @@ const puppeteer = createRequire(import.meta.url)('puppeteer-core');
 const exe = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/google-chrome'].find((p) => p && fs.existsSync(p));
 const [outDir, BASE, BRANCH, stepsS = '120'] = process.argv.slice(2);
 if (!outDir || !BASE || !BRANCH) throw new Error('usage: node tools/title-proof.mjs <outDir> <base url> <branch url> [steps]');
-const BASE_QUERY = process.env.BASE_QUERY ?? 'time=midday', BASE_KEYS = process.env.BASE_KEYS ?? 'h';
+const BASE_QUERY = process.env.BASE_QUERY ?? 'time=midday&herolook=1&heraldry=tournament&skyline=arena', BASE_KEYS = process.env.BASE_KEYS ?? 'h';
 const W = +(process.env.W || 1280), H = +(process.env.H || 720), READY = +(process.env.READY_MS || 600000);
 const SEED = `(() => { let s = 1842; Math.random = () => { s |= 0; s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();`;
 const HOLD = `Object.defineProperty(window, '__app', { configurable: true, get() { return undefined; }, set(v) { v.start = () => {}; Object.defineProperty(window, '__app', { value: v, writable: true, configurable: true }); } });`;

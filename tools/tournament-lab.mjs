@@ -6,9 +6,12 @@
 //   node tools/tournament-lab.mjs --state=<named state> | --save=<file.json> [--days=N] [--policy=..]
 //       load a state (a named state of src/simulation/named.ts, or a save file), play N more days with the policy, inspect the competitors
 //   node tools/tournament-lab.mjs --compare=1842,7719 [--policy=..]   two seeds side by side: standings and results
-//   --rules=dynamic (any of the above): the games under the rules of the « tour par tour dynamique » (src/combat/dynamic.ts, journal Passe C1),
-//       their duels in DynamicSim and their off-screen matches in the same rules' race; absent = the arena of today
-//   --rules=v2: version 2 games (src/simulation/v2.ts, journal Passe V0: the flag `flags.v2`, the dynamic rules with it)
+//   the games are version 2 games by default (src/simulation/v2.ts, journal Passe V0: the flag `flags.v2`, the dynamic rules with it), the default
+//   game since the operator's decision of journal Passe VD1 (VD-6 « Les outils suivent le défaut », journal Passe VD2); a loaded state keeps its
+//   own version unless --rules names one; --rules=v2 says it aloud;
+//   --rules=classic: today's game (the arena of today, `?v2=0`);
+//   --rules=dynamic (any of the above): today's game under the rules of the « tour par tour dynamique » (src/combat/dynamic.ts, journal Passe C1),
+//       its duels in DynamicSim and its off-screen matches in the same rules' race
 import fs from 'node:fs';
 import path from 'node:path';
 import { createServer } from 'vite';
@@ -25,14 +28,14 @@ try {
   // a policy (idle, diligent) or one of the slice's scripted games (careful, careless, losing; a script restarts its plan with each new game)
   const pn = arg('policy', 'diligent'), policy = L.POLICIES[pn] ?? L.SCRIPTS[pn]?.();
   if (!policy) throw new Error(`no policy "${pn}" (known: ${[...Object.keys(L.POLICIES), ...Object.keys(L.SCRIPTS)].join(', ')})`);
-  const out = arg('json'), rules = arg('rules', 'classic');
+  const out = arg('json'), named = arg('rules'), rules = named ?? 'v2';
   if (rules !== 'classic' && rules !== 'dynamic' && rules !== 'v2') throw new Error(`no rules "${rules}" (known: classic, dynamic, v2)`);
   const table = (st) => T.standings(st).map((r, i) => `  ${String(i + 1).padStart(2)}. ${(r.id === 'player' ? st.player.name : RIVALS[r.id].name).padEnd(14)} ${String(r.points).padStart(2)} pts  rep ${String(r.reputation).padStart(3)}${r.id === 'player' ? '' : `  ${st.competitors[r.id].healthState.padEnd(7)} prep ${st.competitors[r.id].preparation}`}`).join('\n');
 
   if (arg('state') || arg('save')) {
     let st = arg('save') ? G.deserialize(fs.readFileSync(arg('save'), 'utf8')) : G.namedState(arg('state'));
-    if (rules === 'dynamic') st.flags.combat = 'dynamic';
-    if (rules === 'v2') G.makeV2(st);
+    if (named === 'dynamic') st.flags.combat = 'dynamic';
+    if (named === 'v2' && !G.isV2(st)) G.makeV2(st);
     const target = st.day + +(arg('days', '0'));
     while (!st.over && st.day < target) { const r = G.advance(st, policy.choose(st)); if (!r.ok) throw new Error(r.reason); st = r.state; }
     console.log(`day ${st.day} ${st.slot}${st.over ? ' (slice over)' : ''}, hash ${G.hash(st)}\n${table(st)}`);

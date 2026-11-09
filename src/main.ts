@@ -1,5 +1,5 @@
 import { App, type AppOptions } from './app/App';
-import { parseTime } from './atmosphere/DayState';
+import { parseTime, type TimeOfDay } from './atmosphere/DayState';
 import { DebugPanel } from './debug/DebugPanel';
 import { Hud } from './debug/Hud';
 import { loadingError, progressOn, showLoading, toneLoading } from './ui/loading';
@@ -27,13 +27,25 @@ else void ld.ready.then(() => { ld.reveal(); if (params.get('scene') === 'arena'
  *  decision L7-6a, « Le jour devient le défaut d’« Explore the district » », with midday and the button alone as its scope, journal Passes D8 / D9):
  *  the town below with ?time=midday's params, the address unchanged (a reload shows the title screen again); every address with parameters keeps the
  *  night without time= (tools, proofs, the play mode). Pressed before the town stands, the loading screen shows until it does. Its DEV panel starts
- *  closed, H opens it (the operator's decision P1, « Fermé par défaut, H l'ouvre », journal Passes UI1 / UI2) */
+ *  closed, H opens it (the operator's decision P1, « Fermé par défaut, H l'ouvre », journal Passes UI1 / UI2). Since the version 2 is the default game
+ *  (journal Passes VD1 / VD2) the town behind the title and Explore wear its look, Explore walks with a gamepad and plays the town's music (VD-3) */
 function titleOverTown(m: typeof import('./ui/title')): void {
   if (!params.has('time')) params.set('time', 'midday');
+  // the version 2's look behind the title and in Explore (the operator's VD-3 « Allure, manette et son de la version 2 », journal Passe VD2): Ren under his
+  // look, the tournament's emblems, the arena on the far city, as a version 2 game's town sets them (src/ui/playTown.ts); the district's geometry unchanged
+  for (const [k, v] of [['herolook', '1'], ['heraldry', 'tournament'], ['skyline', 'arena']]) if (!params.has(k)) params.set(k, v);
   toneLoading(label, parseTime(params));
+  const look: TimeOfDay = parseTime(params) ?? 'night';
   let openHud: (() => void) | null = null, chosen = false;
-  const screen = m.showTitle({ explore: () => { chosen = true; ld.reveal(); openHud?.(); } });
+  const screen = m.showTitle({ look, explore: () => { chosen = true; ld.reveal(); openHud?.(); exploreInputs(look); } });
   void ld.ready.then(() => startTown({ panelClosed: true, behindTitle: (hud) => { openHud = hud; if (chosen) hud(); else screen.live(); } }));
+}
+
+/** Explore's gamepad and sound (VD-3): the pad walks the hero as in a version 2 game's town, the district's piece of the hour takes over from the
+ *  title's « titre »; both loaded on demand, the sound after a gesture (the engine the title screen made, SA-17) */
+function exploreInputs(look: TimeOfDay): void {
+  const snd = import('./audio/Sound').then((s) => { const e = s.sound(); e.setScene('district', look, false, Number(params.get('seed') ?? 1842) >>> 0); return e; });
+  void import('./input/PadInput').then((p) => p.installPad({ walk: (w) => { const a = (window as { __app?: App }).__app; if (a) a.actors.pad = w; }, sound: () => snd }));
 }
 
 async function startArena(): Promise<void> {

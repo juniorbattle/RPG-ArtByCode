@@ -24,12 +24,18 @@ const G = await load('/src/simulation/index.ts');
 const D0 = DYNAMIC_DATA, A0 = D0.actions;
 const q = (s) => new URLSearchParams(s);
 
-test('the rules of a page: today\'s arena unless the parameter (or the play mode\'s game) asks for the new ones', () => {
-  assert.equal(V.arenaRules(q('')), 'classic');
-  assert.equal(V.arenaRules(q('scene=arena')), 'classic');
-  assert.equal(V.arenaRules(q('scene=arena&combat=classic')), 'classic');
-  assert.equal(V.arenaRules(q('scene=arena&combat=Dynamic')), 'classic');
+test('the rules of a page: the version 2\'s duel unless the parameter (or the play mode\'s game) asks for another', () => {
+  // the arena alone plays the version 2's duel by default (VD-4, journal Passe VD2)
+  assert.equal(V.arenaRules(q('')), 'v2');
+  assert.equal(V.arenaRules(q('scene=arena')), 'v2');
+  assert.equal(V.arenaRules(q('scene=arena&combat=classic')), 'v2');
+  assert.equal(V.arenaRules(q('scene=arena&combat=Dynamic')), 'v2');
+  assert.equal(V.arenaRules(q('scene=arena&v2=yes')), 'v2');
   assert.equal(V.arenaRules(q('scene=arena&combat=dynamic')), 'dynamic');
+  // today's arena: v2=0 (VD-1), its C2 duel with combat=dynamic
+  assert.equal(V.arenaRules(q('scene=arena&v2=0')), 'classic');
+  assert.equal(V.arenaRules(q('scene=arena&v2=0&combat=classic')), 'classic');
+  assert.equal(V.arenaRules(q('scene=arena&v2=0&combat=dynamic')), 'dynamic');
   // a play-mode bout: the game's flag decides, never the address
   assert.equal(V.arenaRules(q('combat=dynamic'), {}), 'classic');
   assert.equal(V.arenaRules(q(''), { rules: 'dynamic' }), 'dynamic');

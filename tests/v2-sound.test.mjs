@@ -102,8 +102,18 @@ test('no sound before a gesture; only the version 2\'s pages load the engine', (
   // fileURLToPath, not URL.pathname: on Windows the pathname is '/C:/...' and path.join turns it into 'C:\C:\...' (journal Passe FV2)
   walk(fileURLToPath(new URL('../src', import.meta.url)));
   const users = files.filter((f) => !f.includes(`${path.sep}audio${path.sep}`) && /audio\/Sound/.test(fs.readFileSync(f, 'utf8'))).map((f) => path.relative(fileURLToPath(new URL('..', import.meta.url)), f).split(path.sep).join('/')).sort();
-  assert.deepEqual(users, ['src/arena/ArenaApp.ts', 'src/ui/playPlaza.ts', 'src/ui/playTown.ts', 'src/ui/townUi.ts']);
+  // since the version 2 is the default game, the title screen and Explore too (VD-3, VD-5, journal Passe VD2)
+  assert.deepEqual(users, ['src/arena/ArenaApp.ts', 'src/main.ts', 'src/ui/playPlaza.ts', 'src/ui/playTown.ts', 'src/ui/title.ts', 'src/ui/townUi.ts']);
   for (const f of users) { const t = src(f); assert.doesNotMatch(t, /^import .*audio\/Sound/m, `${f}: no static import`); }
   assert.match(src('src/ui/playTown.ts'), /if \(isV2\(st\)\) void import\('\.\.\/audio\/Sound'\)/);
   assert.match(src('src/arena/ArenaApp.ts'), /else if \(this\.rules === 'v2'\) \{[^]*?import\('\.\.\/audio\/Sound'\)/);
+  // the title screen (VD-5): « titre » over the town's ambience, asked at once, heard from the first key or click; a key on the screen starts it
+  const title = src('src/ui/title.ts').replace(/\r\n/g, '\n');
+  assert.match(title, /const snd = import\('\.\.\/audio\/Sound'\)\.then\(\(m\) => \{ const s = m\.sound\(\); s\.setScene\('district', c\.look \?\? 'midday', false, 1842, \{ opening: true \}\); return s; \}\);/);
+  assert.match(title, /root\.addEventListener\('keydown', \(e\) => \{ e\.stopPropagation\(\); void snd\.then\(\(s\) => s\.unlock\(\)\); \}\);/);
+  // its pages go once the music went down, its record kept for the next page (SA-15): « New game » and « Continue »
+  assert.equal((title.match(/leaveTo\(/g) ?? []).length, 3, 'the function and its two calls');
+  assert.doesNotMatch(title, /location\.assign\(['`]\?play/);
+  // Explore (VD-3): the town's piece of the hour, from the same engine
+  assert.match(src('src/main.ts').replace(/\r\n/g, '\n'), /function exploreInputs\(look: TimeOfDay\): void \{\n  const snd = import\('\.\/audio\/Sound'\)\.then\(\(s\) => \{ const e = s\.sound\(\); e\.setScene\('district', look, false,/);
 });

@@ -327,6 +327,7 @@ export const EN = {
   'ui.title.continue': 'Continue',
   'ui.title.save': '{name} · day {day}, {slot}{over}',
   'ui.title.over': ' · the pool is over',
+  'ui.title.earlier': ' · the earlier version',
   'ui.title.new': 'New game',
   'ui.title.newSub': 'Enter the tournament under your own name',
   'ui.title.explore': 'Explore the district',

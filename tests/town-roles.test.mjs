@@ -13,6 +13,7 @@ const G = await load('/src/simulation/index.ts');
 const R = await load('/src/simulation/roles.ts');
 const { linesOf } = await load('/src/narrative/dialogue.ts');
 const { PEOPLE } = await load('/src/narrative/people.ts');
+const T = await load('/src/narrative/text/index.ts');
 const { matchSheetFor, sheetData } = await load('/src/combat/match.ts');
 
 const ok = (st, a) => { const r = G.advance(st, a); assert.ok(r.ok, `${JSON.stringify(a)}: ${r.reason}`); return r.state; };
@@ -149,7 +150,10 @@ test('the title shows at once, the town at midday comes up behind it, « Explore
   assert.ok(over.indexOf('m.showTitle(') < over.indexOf('startTown('));
   assert.match(over, /startTown\(\{ panelClosed: true, behindTitle: /);
   // pressed before the town stands, the loading screen shows
-  assert.match(over, /explore: \(\) => \{ chosen = true; ld\.reveal\(\); openHud\?\.\(\); \}/);
+  assert.match(over, /explore: \(\) => \{ chosen = true; ld\.reveal\(\); openHud\?\.\(\); exploreInputs\(look\); \}/);
+  // the version 2's look behind the title and in Explore (VD-3, journal Passe VD2), set before the town, unless the address names its own
+  assert.ok(over.includes("for (const [k, v] of [['herolook', '1'], ['heraldry', 'tournament'], ['skyline', 'arena']]) if (!params.has(k)) params.set(k, v);"));
+  assert.ok(over.indexOf("['skyline', 'arena']") < over.indexOf('startTown('));
   // every other address opens the panel as before: the dispatch calls startTown without options, the HUD built at once
   assert.match(now, /\nelse void ld\.ready\.then\(\(\) => \{ ld\.reveal\(\); if \(params\.get\('scene'\) === 'arena'\) void startArena\(\); else startTown\(\); \}\);\n/);
   assert.match(now, /if \(behindTitle\) behindTitle\(hud\); else hud\(\);\n    app\.start\(\);/);
@@ -157,8 +161,11 @@ test('the title shows at once, the town at midday comes up behind it, « Explore
   assert.ok(now.includes("if (panelClosed) panel.el.style.display = 'none';"), 'the closed panel');
   // keys pressed on the title screen stay on it: the town behind does not walk
   const title = fs.readFileSync(path.join(ROOT, 'src/ui/title.ts'), 'utf8');
-  assert.match(title, /root\.addEventListener\('keydown', \(e\) => e\.stopPropagation\(\)\)/);
+  assert.match(title, /root\.addEventListener\('keydown', \(e\) => \{ e\.stopPropagation\(\); /);
   assert.match(title, /root\.tabIndex = -1/);
+  // a save without the version 2's flag is taken up as it is, marked « the earlier version » (VD-2, journal Passe VD2); a version 2 save says nothing more
+  assert.match(title.replace(/\r\n/g, '\n'), /const earlier = save && save\.flags\.v2 !== true;\n    const first = save \? add\('continue', [^\n]*\+ \(earlier \? tx\('ui\.title\.earlier'\) : ''\) \}\), \(\) => leaveTo\('\?play=1'\), true\) : null;/);
+  assert.equal(T.tx('ui.title.earlier'), ' · the earlier version');
 });
 test('Lantern Row (journal Passe L6): open at night only; the tavern\'s talk takes the evening; Cassius mocked, or named once the culprit is known', () => {
   no(G.newGame(1842, 'Aster'), { type: 'move', to: 'lanterns' }, /sleeps until dusk/);

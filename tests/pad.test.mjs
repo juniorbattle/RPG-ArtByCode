@@ -209,7 +209,10 @@ test('the rumble (MN-9): the player\'s hits, stronger for a heavy blow, a broken
 test('the wiring: loaded on demand by the version 2\'s pages and the title screen only; today\'s arena reads its own pad as before', () => {
   const files = fs.readdirSync(path.join(ROOT, 'src'), { recursive: true }).filter((f) => /\.ts$/.test(f)).map((f) => f.replace(/\\/g, '/'));
   const users = files.filter((f) => /import\(['"][./]*input\/PadInput['"]\)|from ['"][./]*input\/PadInput['"]/.test(src(`src/${f}`))).sort();
-  assert.deepEqual(users, ['arena/ArenaApp.ts', 'ui/playPlaza.ts', 'ui/playTown.ts', 'ui/title.ts', 'ui/townUi.ts']);
+  // main.ts: Explore walks with the pad since the version 2 is the default game (VD-3, journal Passe VD2), the title screen's layer given the walk
+  assert.deepEqual(users, ['arena/ArenaApp.ts', 'main.ts', 'ui/playPlaza.ts', 'ui/playTown.ts', 'ui/title.ts', 'ui/townUi.ts']);
+  assert.ok(/function exploreInputs\(look: TimeOfDay\): void \{[\s\S]*?p\.installPad\(\{ walk: \(w\) => \{ const a = \(window as \{ __app\?: App \}\)\.__app; if \(a\) a\.actors\.pad = w; \}, sound: \(\) => snd \}\)/.test(src('src/main.ts')), 'Explore: the walk and the sound');
+  assert.ok(/m\.installPad\(\{ sound: \(\) => snd \}\)/.test(src('src/ui/title.ts')) && !/dispose\(\)/.test(src('src/ui/title.ts')), 'the title: its layer stays for Explore');
   for (const f of users) assert.ok(!/^import [^;]*from '[^']*input\/PadInput'/m.test(src(`src/${f}`)), `${f}: no static import`);
   assert.ok(/if \(isV2\(st\)\) void import\('\.\.\/input\/PadInput'\)/.test(src('src/ui/playTown.ts')), 'the town: a version 2 game only');
   assert.ok(/if \(this\.charge\) void import\('\.\.\/input\/PadInput'\)/.test(src('src/arena/ArenaApp.ts')), 'the arena: the version 2\'s charged duel only');

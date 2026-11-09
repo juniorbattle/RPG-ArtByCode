@@ -11,13 +11,15 @@ import type { DynActionId, DynAnimState, DynData, DynamicSim, DynFighterId } fro
 /** 'v2': the version 2's duel (the three buttons and the charge, the opponents of C3; src/arena/v2Arena.ts, journal Passe V1) */
 export type ArenaRules = 'classic' | 'dynamic' | 'v2';
 
-/** the rules of an arena page: the play mode's bout says (its game's flags), else `?v2=1`, then `?combat=dynamic`; anything else is the arena
- *  of today */
+/** the rules of an arena page: the play mode's bout says (its game's flags); the arena alone plays the version 2's duel by default (the
+ *  operator's VD-4 « Le duel de la version 2 par défaut », journal Passe VD2): `?v2=1` asks for it, `?combat=dynamic` the duel of C2, `?v2=0`
+ *  the arena of today */
 export function arenaRules(params: URLSearchParams, match?: { rules?: ArenaRules }): ArenaRules {
   if (match) return match.rules === 'dynamic' || match.rules === 'v2' ? match.rules : 'classic';
   const v2 = params.get('v2');
   if (v2 === '' || v2 === '1') return 'v2';
-  return params.get('combat') === 'dynamic' ? 'dynamic' : 'classic';
+  if (params.get('combat') === 'dynamic') return 'dynamic';
+  return v2 === '0' ? 'classic' : 'v2';
 }
 
 /** the duel's effects (src/arena/fx/, the operator's H-7 « Tâche à part, derrière flags.v2 », journal Passes FX4 / FX5): a duel under the version 2's rules;

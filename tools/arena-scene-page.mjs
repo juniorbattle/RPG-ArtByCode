@@ -3,9 +3,9 @@
 // viewport, body). The service hands no query string to the page, so a first inline script sets `?scene=arena` on its own URL
 // (history.replaceState) before the game's module reads it; the game itself is unchanged. Publish the page with every file of <outDir>/assets
 // as supporting files (published path `assets/<name>`).
-//   node tools/arena-scene-page.mjs <outDir> [query] [title]   (query: default `scene=arena`; `scene=arena&combat=dynamic` for the duel of the
-//   « tour par tour dynamique », the operator's trial, journal Passe C2)
-//   `play=1&new=1&name=Ren&noreload=1&v2=1`: a game of the play mode on one page (journal Passe UM2: `noreload`, a published page cannot change its address)
+//   node tools/arena-scene-page.mjs <outDir> [query] [title]   (query: default `scene=arena`, the version 2's duel since VD-4, journal Passe VD2;
+//   `scene=arena&v2=0` the arena of today; `scene=arena&combat=dynamic` for the duel of the « tour par tour dynamique », the operator's trial, journal Passe C2)
+//   `play=1&new=1&name=Ren&noreload=1`: a game of the play mode on one page, a version 2 game by default (journal Passe UM2: `noreload`, a published page cannot change its address)
 import fs from 'node:fs';
 import path from 'node:path';
 import { build } from 'vite';

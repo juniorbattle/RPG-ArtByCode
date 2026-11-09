@@ -1,4 +1,6 @@
-// Checks of the game's arena scene (`?scene=arena`, journal Passe P1) on a running dev server, same harness as tools/arena-scene-shots.mjs:
+// Checks of the game's arena scene (`?scene=arena`, journal Passe P1) on a running dev server, same harness as tools/arena-scene-shots.mjs; the page
+// plays the version 2's duel by default since the operator's VD-4 (journal Passe VD2): `v2=0` in the extra query for the prototype's CombatSim (check 1
+// against PROTOTYPE_HASH), `combat=dynamic` for C2's DynamicSim; each check takes the rules the page plays:
 //   1. the simulation in the page (the ported CombatSim): the fixed input script of tools/arena-check.mjs, its hash against the prototype's;
 //      under the new rules (`combat=dynamic` in the extra query, journal Passe C2): DynamicSim's own script (runDynamicFingerprint, 300 s),
 //      its hash against DYNAMIC_SIM_HASH, the value recorded with the rules (journal Passe C1);

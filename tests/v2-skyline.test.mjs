@@ -83,7 +83,14 @@ test('the pages that set it: a version 2 game\'s town only; the squares, the are
   assert.match(src('src/ui/playTown.ts'), /if \(isV2\(st\)\) \{ q\.set\('heraldry', 'tournament'\); q\.set\('skyline', 'arena'\); \}/);
   assert.match(src('src/app/App.ts'), /setSkylineArena\(this\.opts\.params\.get\('skyline'\) === 'arena'\);/);
   assert.equal(src('src/app/App.ts').match(/setSkylineArena\(/g).length, 1);
-  for (const f of ['src/world/PlazaApp.ts', 'src/world/PlaceApp.ts', 'src/arena/ArenaApp.ts', 'src/main.ts']) assert.doesNotMatch(src(f), /skyline|setSkylineArena/, f);
+  for (const f of ['src/world/PlazaApp.ts', 'src/world/PlaceApp.ts', 'src/arena/ArenaApp.ts']) assert.doesNotMatch(src(f), /skyline|setSkylineArena/, f);
+  // the title screen's town and Explore wear the version 2's look since it is the default game (VD-3, journal Passe VD2): main.ts sets the parameter
+  // there only (titleOverTown), never the module's flag; every other address of the town keeps the cathedral
+  const main = src('src/main.ts').replace(/\r\n/g, '\n');
+  assert.doesNotMatch(main, /setSkylineArena/);
+  assert.equal((main.match(/skyline/g) ?? []).length, 1, 'the parameter set in titleOverTown, once');
+  const over = main.slice(main.indexOf('function titleOverTown('), main.indexOf('function exploreInputs('));
+  assert.ok(over.includes("['skyline', 'arena']"));
   // the flag is the module's and starts off
   assert.match(src('src/district/DistantCity.ts'), /let SKYLINE_ARENA = false;/);
 });

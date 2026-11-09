@@ -2,14 +2,24 @@ import { readSave } from './save';
 import { cleanName } from '../simulation';
 import { arrowKeys, el, esc, injectStyle } from './style';
 import { tx } from '../narrative/text';
+import type { Look } from '../audio/score';
 
 /** The title screen (choice P2, journal Passe L4; the operator's decisions UM-R4 « La vraie ville derrière » and UM2-4 « Le titre d'abord, la ville apparaît
- *  derrière », journal Passe UM3): « New game » (it asks the player's name, choice K2), « Explore the district » (today's town at midday and the
- *  DEV panel: the operator's decision L7-6a, journal Passes D8 / D9) and « Continue » when a save exists. It shows at once on the page's ink, before
- *  anything is generated; the town at midday comes up behind it (`live`), and its buttons answer from the start. DOM, English (choice K1). Shown
- *  on the bare address only (main.ts), and forced by `?title=1`. Keys pressed on it stay on it: the town behind does not walk. */
+ *  derrière », journal Passe UM3): « New game » (it asks the player's name, choice K2; a version 2 game, the default game since the operator's decision
+ *  of journal Passe VD1), « Explore the district » (the town at midday and the DEV panel: the operator's decision L7-6a, journal Passes D8 / D9; the
+ *  version 2's look, gamepad and sound since VD-3, journal Passe VD2) and « Continue » when a save exists (a save of today's game marked « the earlier
+ *  version », VD-2). It shows at once on the page's ink, before anything is generated; the town at midday comes up behind it (`live`), and its buttons
+ *  answer from the start; its music, « titre », from the first key or click (VD-5). DOM, English (choice K1). Shown on the bare address only (main.ts),
+ *  and forced by `?title=1`. Keys pressed on it stay on it: the town behind does not walk. */
 
-export interface TitleChoice { explore: () => void }
+/** `look`: the day state of the town behind the screen (its ambience under the title's music) */
+export interface TitleChoice { explore: () => void; look?: Look }
+
+/** to another page once the title's music went down (the engine's fade; at once when it never started) */
+function leaveTo(url: string): void {
+  const wait: number = (window as { __soundLeave?: () => number }).__soundLeave?.() ?? 0;
+  if (wait > 0) setTimeout(() => location.assign(url), wait); else location.assign(url);
+}
 
 const CSS = `
 #title-screen{inset:0;z-index:60;background:var(--ds-ink);transition:background-color .9s}
@@ -40,7 +50,12 @@ export function showTitle(c: TitleChoice): { live(): void } {
     <div><div class="name">Cité du Tournoi</div><div class="tag">${tx('ui.title.tag')}</div><p class="pm-sub keys">${tx('ui.title.keys')}</p></div>
     <div id="title-menu"></div></div>`;
   document.body.appendChild(root);
-  root.addEventListener('keydown', (e) => e.stopPropagation());
+  // the title's music (the operator's VD-5 « Le titre joue « titre » au premier geste », journal Passe VD2; SA-16 waited for the version 2 to become
+  // the default): the engine loaded on demand, nothing heard before the first key or click (the browsers' rule; the files fetched after it, SA-17),
+  // then « titre » over the town's ambience; the new game's first page takes it up where it stands (SA-15), Explore turns to the town's piece
+  const snd = import('../audio/Sound').then((m) => { const s = m.sound(); s.setScene('district', c.look ?? 'midday', false, 1842, { opening: true }); return s; });
+  // keys pressed on the screen stay on it (the town behind does not walk, the engine's own listener does not hear them): a key starts the sound here
+  root.addEventListener('keydown', (e) => { e.stopPropagation(); void snd.then((s) => s.unlock()); });
   const menu = root.querySelector('#title-menu')!;
   const menuButtons = (): void => {
     menu.innerHTML = '';
@@ -49,10 +64,14 @@ export function showTitle(c: TitleChoice): { live(): void } {
       b.dataset.id = id; b.addEventListener('click', f); menu.appendChild(b);
       return b;
     };
-    const first = save ? add('continue', tx('ui.title.continue'), tx('ui.title.save', { name: save.player.name, day: save.day, slot: save.slot, over: save.over ? (save.flags.v2 === true ? tx('v2.title.over') : tx('ui.title.over')) : '' }), () => location.assign('?play=1'), true) : null;
+    // a save of today's game (no version 2 flag) is taken up as it is, marked « the earlier version »: « New game » opens the version 2 (the operator's
+    // VD-2 « La reprendre, marquée « version d’avant » », journal Passe VD2)
+    const earlier = save && save.flags.v2 !== true;
+    const first = save ? add('continue', tx('ui.title.continue'), tx('ui.title.save', { name: save.player.name, day: save.day, slot: save.slot, over: (save.over ? (earlier ? tx('ui.title.over') : tx('v2.title.over')) : '') + (earlier ? tx('ui.title.earlier') : '') }), () => leaveTo('?play=1'), true) : null;
     add('new', tx('ui.title.new'), tx('ui.title.newSub'), askName, !save);
-    // « Explore the district » leaves the title screen to today's town, which no gamepad drives (MN-1): the pad's layer goes with the screen
-    add('explore', tx('ui.title.explore'), tx('ui.title.exploreSub'), () => { root.remove(); void padIn?.then((p) => p.dispose()); c.explore(); });
+    // « Explore the district » leaves the title screen to the town, which the gamepad now walks (VD-3, journal Passe VD2: main.ts adds the walk to
+    // the same layer) and where the town's piece takes over from « titre »
+    add('explore', tx('ui.title.explore'), tx('ui.title.exploreSub'), () => { root.remove(); c.explore(); });
     ((first ?? menu.querySelector('.pm-btn')) as HTMLButtonElement).focus();
   };
   const askName = (): void => {
@@ -63,15 +82,15 @@ export function showTitle(c: TitleChoice): { live(): void } {
     const go = el('button', 'pm-btn primary', tx('ui.title.enter')), back = el('button', 'pm-btn', tx('ui.title.back'));
     // the gamepad's B goes back as this button does (journal Passe MN2: the keyboard's Esc answers in the field only)
     back.dataset.padBack = '';
-    const start = () => location.assign(`?play=1&new=1&name=${encodeURIComponent(cleanName(input.value))}`);
+    const start = () => leaveTo(`?play=1&new=1&name=${encodeURIComponent(cleanName(input.value))}`);
     go.addEventListener('click', start); back.addEventListener('click', menuButtons);
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') start(); if (e.key === 'Escape') menuButtons(); });
     menu.append(go, back);
     input.focus();
   };
-  // the gamepad navigates the title screen (the operator's MN-1 « La version 2 et la navigation de l’écran titre », journal Passe MN2): « Continue »
-  // takes up a version 2 game; its layer is loaded on demand and does nothing until a pad is used
-  const padIn = import('../input/PadInput').then((m) => m.installPad());
+  // the gamepad navigates the title screen (the operator's MN-1 « La version 2 et la navigation de l’écran titre », journal Passe MN2): « New game » and
+  // « Continue » open a version 2 game; its layer is loaded on demand and does nothing until a pad is used; its press tries to start the music (MN-10)
+  void import('../input/PadInput').then((m) => m.installPad({ sound: () => snd }));
   menuButtons();
   arrowKeys(menu as HTMLElement);
   return { live: () => root.classList.add('live') };
