@@ -21,6 +21,7 @@ import { opponentOf, playerMatch } from '../tournament/pool';
 import { FOE_SKILLS, V2_FOES } from '../combat/v2duel';
 import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
 import { tabTo } from '../input/pad';
+import { guidePage, runTour, TOUR } from './tutorial';
 
 /** the menu's pages a gamepad's shoulders walk through (journal Passe MN2, MN-4) */
 type MenuPage = 'map' | 'journal' | 'board' | 'skills' | 'gear' | 'sound';
@@ -41,6 +42,8 @@ export interface UiHost {
   nearby?(): string | null;
   /** the version 2's squares (P4, lot V9): the camera turns to the person spoken to (null: back to the hero) */
   focus?(who: string | null): void;
+  /** the live scene as an image, for the guide (journal Passe TU1) */
+  snapshot?(): string | null;
 }
 
 /** on a computer: the state top left and the figures top right on their veils, the prompt at the foot, the list's and the menu's keys in the corner, the
@@ -181,6 +184,7 @@ export class TownUi {
       if (this.modal) { if (k === 'escape' || (k === 'q' && this.current?.dataset.here)) this.leave(); return; }
       if (k === 'q') this.openHere(); else if (k === 'm') this.openMap(); else if (k === 'j') this.openJournal(); else if (k === 't') this.openBoard(); else if (k === 'escape') this.openMenu();
       else if (k === 'k' && isV2(this.st)) this.openSkills(false); else if (k === 'g' && isV2(this.st)) this.openGear(); else if (k === 'v' && isV2(this.st)) void this.openSound();
+      else if (k === 'h' && isV2(this.st)) this.openGuide();
     });
     this.render();
     if (this.st.over) void this.showEnd(); else this.showNews();
@@ -477,6 +481,19 @@ export class TownUi {
     ((card.querySelector('.pm-btn:not(:disabled)') as HTMLButtonElement) ?? close).focus();
   }
 
+  /** the guide (journal Passe TU1, src/ui/tutorial.ts): a page of the menu, H */
+  openGuide(first?: string): void { this.page(); this.show(guidePage({ state: () => this.st, snapshot: this.host.snapshot }, () => this.closeModal(), first)); }
+
+  /** the tour over the live page (journal Passe TU1): the scene's keys held while a band shows */
+  async tour(): Promise<boolean> {
+    this.closeModal(); this.modal = true; this.prompt.classList.remove('on');
+    const hint = (i: number) => () => this.hints.children[i] ?? null;
+    const at = { status: () => this.status, figs: () => this.figs, list: hint(0), menu: hint(1) };
+    const seen = await runTour(TOUR.map((s) => ({ title: s.title, body: s.body, target: s.at ? at[s.at] : undefined })));
+    this.modal = false;
+    return seen;
+  }
+
   private openJournal(): void { this.page(); this.show(journalPage(this.st, () => this.closeModal())); this.shownPage = 'journal'; }
 
   private openBoard(): void { this.page(); this.show(boardPage(this.st, standings(this.st), () => this.closeModal())); this.shownPage = 'board'; }
@@ -493,7 +510,7 @@ export class TownUi {
     body.innerHTML = `<h2 class="pm-h">${tx('ui.menu')}</h2>`;
     const add = (label: string, f: () => void, key = '') => { const b = el('button', 'pm-btn', `<span>${esc(label)}</span>${key ? `<kbd>${key}</kbd>` : ''}`); b.addEventListener('click', f); body.appendChild(b); };
     add(tx('ui.map'), () => this.openMap(), 'M'); add(tx('ui.journal'), () => this.openJournal(), 'J'); add(tx('ui.tournament'), () => this.openBoard(), 'T');
-    if (isV2(s)) { add(tx('v2.skills.view'), () => this.openSkills(false), 'K'); add(tx('v2.gear.view'), () => this.openGear(), 'G'); add(tx('v2.sound.view'), () => void this.openSound(), 'V'); }
+    if (isV2(s)) { add(tx('v2.skills.view'), () => this.openSkills(false), 'K'); add(tx('v2.gear.view'), () => this.openGear(), 'G'); add(tx('v2.sound.view'), () => void this.openSound(), 'V'); add(tx('tut.guide'), () => this.openGuide(), 'H'); }
     body.appendChild(el('p', 'pm-sub pm-gap', tx('ui.menu.saves')));
     add(tx('ui.menu.saveFile'), () => downloadSave(s));
     add(tx('ui.menu.loadFile'), () => {

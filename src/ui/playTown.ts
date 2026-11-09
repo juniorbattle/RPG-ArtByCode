@@ -69,6 +69,8 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
     // a version 2 game counts as shown what an action keeping the page showed at once (journal Passe EVL1); today's game keeps its rule
     act: isV2(st) ? keepSeen(act, () => st) : act,
     reload: (extra) => go(b.params, extra),
+    // the guide's picture of the scene (journal Passe TU1): a frame rendered and read at once (the canvas keeps no buffer)
+    snapshot: () => { try { app.render(); return b.canvas.toDataURL('image/webp', 0.86); } catch { return null; } },
     nearby: () => {
       const p = app.actors.player;
       let best: string | null = null, bd = 2.6 * 2.6;
@@ -84,6 +86,8 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   }, seen);
   markSeen(st);
   (window as any).__ui = ui;
+  // a new game's first page (journal Passe TU1): the tour, once the arrival's news are read
+  if (isV2(st) && b.params.has('new')) void ui.newsRead.then(() => ui.tour());
   (window as any).__game.subscribe(() => ui.render());
   // E / Space next to someone opens their dialogue (the district's bubble stays: its « ... » is the town's own)
   const interact = app.actors.interact.bind(app.actors);

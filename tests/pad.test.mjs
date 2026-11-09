@@ -149,14 +149,15 @@ test('every key cap the version 2\'s interface writes shows a pad button or hide
   for (const m of ui.matchAll(/footBtn\('([^']+)'/g)) keys.add(m[1]);
   for (const m of ui.matchAll(/, '([A-Z])'\);/g)) keys.add(m[1]);
   for (const m of ui.matchAll(/b\.primary \? '([^']+)' : '([^']+)'/g)) { keys.add(m[1]); keys.add(m[2]); }
-  assert.deepEqual([...keys].sort(), ['E', 'Enter', 'Esc', 'G', 'J', 'K', 'M', 'N', 'Q', 'Space', 'T', 'V'].sort());
+  assert.deepEqual([...keys].sort(), ['E', 'Enter', 'Esc', 'G', 'H', 'J', 'K', 'M', 'N', 'Q', 'Space', 'T', 'V'].sort());
   const B = STD;
   const want = { E: B.A, Enter: B.A, Esc: B.B, Space: B.X, Q: B.Y, N: 'hide' };
   for (const [k, b] of Object.entries(want)) assert.equal(P.capButton(k, 'other'), b, k);
   assert.equal(P.capButton('Esc', 'hints'), B.START);
   assert.equal(P.capButton('Esc', 'scene'), B.START);
   assert.equal(P.capButton('E', 'scene'), B.A);
-  for (const k of ['J', 'T', 'K', 'G', 'V']) assert.equal(P.capButton(k, 'menu'), 'hide', k);
+  // the guide's H (journal Passe TU1) too: the pad reaches it through the menu
+  for (const k of ['J', 'T', 'K', 'G', 'V', 'H']) assert.equal(P.capButton(k, 'menu'), 'hide', k);
   assert.equal(P.capButton('M', 'menu'), B.VIEW);
   // the version 2's duel: its bar's K, L, J, the dodge window's L, the pause's Space
   const hud = src('src/arena/DynamicHud.ts'), charge = hud.match(/const items: BarItem\[\] = ct \? \[([\s\S]*?)\] :/)[1];
