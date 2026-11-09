@@ -125,8 +125,79 @@ function variantOf(name) {
   if ((k = num(name, /^gauge(\d+)$/)) !== null) return { label: `jauge de ${k}`, apply: (d) => { d.resist = { ...d.resist, decay: +(d.resist.decay * k / d.resist.max).toFixed(3), max: k }; } };
   // longer sequences: k blows in a combo at most (from k - 2), the combos the opponent's usual sequence (80 %)
   if ((k = num(name, /^combo(\d+)$/)) !== null) return { label: `séquences adverses jusqu’à ${k} coups`, apply: (d) => { d.ai.comboLen = [Math.max(2, k - 2), k]; d.ai.weights = { combo: 0.8, singleLight: 0.1, singleHeavy: 0.1 }; } };
+  if (name === 'rpg') return {
+    label: 'statistiques des combattants (prototype)',
+    apply: (d, t, foe, duel) => {
+      const spec = duel?.spec ?? '', rs = rpgTok(spec, 'rs') ?? 0, st = rpgTok(spec, 'stage') ?? 0, fpow = (rpgTok(spec, 'fpow') ?? 100) / 100, lvk = K.LEVEL_POWER[(duel?.level ?? 1) - 1];
+      const g = RPG.gear[rs], R = { hp: (rpgTok(spec, 'rhp') ?? RPG.ren.hp) + g.hp, atk: RPG.ren.atk + g.atk, def: RPG.ren.def + g.def, end: RPG.ren.end + g.end };
+      const b0 = RPG.rivals[foe] ?? RPG.rivals.marek, base = { hp: rpgTok(spec, 'vhp') ?? b0.hp, atk: rpgTok(spec, 'vatk') ?? b0.atk, def: rpgTok(spec, 'vdef') ?? b0.def, end: rpgTok(spec, 'vend') ?? b0.end };
+      const sg = RPG.stage[st], F = { hp: base.hp * sg.hp, atk: base.atk + sg.atk, def: base.def + sg.def, end: base.end + sg.end };
+      d.fighters.ren.maxHp = Math.round(R.hp); d.fighters.marek.maxHp = Math.round(F.hp);
+      const kr = rpgK(R.atk, F.def), kf = rpgK(F.atk, R.def) * fpow;
+      for (const a of Object.values(d.actions)) {
+        if (a.owner === 'ren') {
+          if (a.id === 'light') a.damage = Math.max(1, Math.round(RPG.light * kr));
+          else if (a.family === 'offensive') a.damage = Math.max(1, Math.round(RPG.thrust * (K.chargeTime(a.id, 1) / K.chargeTime('t4', 1)) * lvk * kr));
+          a.resist = +(a.resist * 10 / F.end).toFixed(2);
+        } else {
+          if (a.id === 'm_slash') a.damage = Math.max(1, Math.round(RPG.foe.light * kf));
+          else if (a.id === 'm_heavy') a.damage = Math.max(1, Math.round(RPG.foe.heavy * kf));
+          else if (a.family === 'offensive') a.damage = Math.max(1, Math.round(RPG.foe.skill * kf));
+          a.resist = +(a.resist * 10 / R.end).toFixed(2);
+        }
+      }
+    },
+  };
+  if (['rs', 'stage', 'fpow', 'rhp', 'vhp', 'vatk', 'vdef', 'vend'].some((pre) => rpgTok(name, pre) !== null)) return { label: name, apply() {} };
   throw new Error(`unknown variant "${name}"`);
 }
+/** a numbered token of a spec (`rs2`, `stage1`, `fpow90`), or null */
+const rpgTok = (spec, pre) => { const t = spec.split('+').find((x) => x.startsWith(pre) && x.length > pre.length && !Number.isNaN(+x.slice(pre.length))); return t ? +t.slice(pre.length) : null; };
+
+// ------------------------------------------------------------------------------------------------ the fighters' stats (journal Passe DB7)
+/** The operator, 2026-11-09: « nous basons les actions d'un combattant par ses stats personnelles  ameliorer a travers les equipement  et/ou le
+ *  niveau gagnes etc... bref c'est un rpg notre jeu ». A prototype outside the game: four stats a fighter (PV, Attaque, Défense, Endurance), a blow's
+ *  damage = its power x 2·Atq / (Atq + Déf) (x1 at equal stats, diminishing returns), the gauge it fills x 10 / Endurance. Every number « proposé ». */
+export const RPG = {
+  /** the player's actions' power at level 1 (the bar of 600): the light attack 1 % (DB5-5), the Thrust 20 % (DB5-1), every other offensive skill
+   *  in proportion to its charge time at level 1 */
+  light: 6, thrust: 120,
+  /** the rivals' blows' power against Ren (150): a light 4 %, a heavy 11 %, an offensive skill 17 % of his bar at equal stats (first measured
+   *  as 4 / 12 / 18 with `fpow140`) */
+  foe: { light: 5.6, heavy: 16.8, skill: 25.2 },
+  ren: { hp: 150, atk: 10, def: 10, end: 10 },
+  /** what Ren wears and has trained, as stats (each item's percentage turned into points, briefs/stats-combattants.md: the imported blade +2 Atq, a
+   *  forge tier +1, the whetstone +0.5, a training session +1 to the stat chosen for the next bout; the padded jack +1 Déf, the mail +3, the iron
+   *  ring +2 End, the docker's wrap +9 PV). 1: a session, the padded jack; 2: the imported blade at tier 1, a session, the mail, the wrap; 3: the
+   *  blade at tier 3, the whetstone, two sessions, the mail, the ring, the wrap. Ren's base PV by `rhp<N>` (the vigour of DB7-4: 150 at the
+   *  pool, 185 at the bracket, 220 at the final) */
+  gear: {
+    0: { atk: 0, def: 0, end: 0, hp: 0 },
+    1: { atk: 1, def: 1, end: 0, hp: 0 },
+    2: { atk: 4, def: 3, end: 0, hp: 9 },
+    3: { atk: 7.5, def: 3, end: 2, hp: 9 },
+  },
+  /** each rival's sheet at the pool (its identity: Tobin green, Vessa quick with light blows - the first bout, day 2 -, Rhosk heavy, Ilse a wall, Marek
+   *  the champion; Vessa first measured at 500 / 11 / 9 / 8: 5 to 10 % for the average player) */
+  rivals: {
+    tobin: { hp: 520, atk: 9, def: 8, end: 8 },
+    cassius: { hp: 560, atk: 11, def: 10, end: 9 },
+    ilse: { hp: 620, atk: 10, def: 12, end: 11 },
+    rhosk: { hp: 700, atk: 12, def: 10, end: 13 },
+    orla: { hp: 600, atk: 12, def: 11, end: 11 },
+    marek: { hp: 650, atk: 13, def: 13, end: 12 },
+    vessa: { hp: 500, atk: 7, def: 8, end: 7 },
+  },
+  /** the rivals grow with the tournament, added to their sheet (PV multiplied): 0 the pool, 1 the bracket (days 6 to 8), 2 the final, as proposed;
+   *  3 to 11 the other growths measured in journal Passe DB7 (10 and 11: the PV alone, DB5-6 and DB5-7) */
+  stage: {
+    0: { atk: 0, def: 0, end: 0, hp: 1 }, 1: { atk: 3, def: 3, end: 2, hp: 1.3 }, 2: { atk: 1, def: 3, end: 2, hp: 2.5 },
+    3: { atk: 2, def: 2, end: 1, hp: 1.15 }, 4: { atk: 3, def: 3, end: 2, hp: 2.5 }, 5: { atk: 1, def: 3, end: 2, hp: 3 }, 6: { atk: 0, def: 2, end: 2, hp: 2.5 },
+    7: { atk: 1, def: 2, end: 2, hp: 2 }, 8: { atk: 0, def: 2, end: 3, hp: 4 }, 9: { atk: -2, def: 2, end: 3, hp: 4 }, 10: { atk: 0, def: 0, end: 0, hp: 1.4 }, 11: { atk: 0, def: 0, end: 0, hp: 2.5 },
+  },
+};
+const rpgK = (a, d) => (2 * a) / (a + d);
+
 /** Marek's health in the scene's duel today (journal Passe DB3: 7 680 x 1.5) */
 const MAREK_HP = 11520;
 export const variant = (spec) => {
@@ -153,7 +224,7 @@ function duelOf(foe, seed, spec) {
   // `gearatk<k>`: the gear's attack bonus at k % of its own (its defence kept), journal Passe DB6
   const ga = spec.split("+").map((x) => x.match(/^gearatk(\d+)$/)).find(Boolean), g0 = GEAR_PRESETS[gearOf(spec)], g = ga ? { ...g0, damage: +(1 + (g0.damage - 1) * (+ga[1]) / 100).toFixed(4) } : g0;
   const d = V.v2DuelData(foe, { seed: 3000 + seed, playerName: 'Ren', opponentName: foe, kit, player: { damage: g.damage, hp: g.hp }, gear: { taken: g.taken, gauge: g.gauge, charge: g.charge, effect: g.effect } });
-  d.level = lv; d.playerDamage = g.damage;
+  d.level = lv; d.playerDamage = g.damage; d.spec = spec;
   variant(spec).apply(d.data, d.tiers, foe, d);
   return d;
 }

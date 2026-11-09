@@ -1,0 +1,374 @@
+<title>Stats des combattants</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · le combat de la version 2 · Passe DB7 · 9 novembre 2026</span>
+    <h1>Les stats des combattants</h1>
+    <p class="lede">Tu l’as dit : les nombres que tu donnes sont des indications, une durée qui s’allonge peut être normale, et nous négligions l’essentiel d’un RPG, des actions tirées des stats de chaque combattant, montées par l’équipement et ce qu’on gagne. Voici cette règle : quatre stats par combattant, une formule, l’équipement en points, des PV qui montent quand Ren gagne, une fiche par rival et leur croissance au fil du tournoi. Tout est mesuré hors écran avec tes choix DB4 et DB5, qui restent en place. La fiche DB6 est remplacée par celle-ci.</p>
+    <p class="lede">Clique ton choix ; une note est facultative. Tes choix sont enregistrés au fur et à mesure, et je les relis directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je consigne tes choix, puis j’applique tout le combat (DB4, DB5 et cette fiche) dans le jeu par défaut : les fiches de stats et la formule, l’équipement en points, la vigueur de Ren dans sa sauvegarde, les rivaux et leur croissance, les recharges et leur affichage, la garde des rivaux, la rupture, la jauge, et les stats sur les pages, en français et en anglais. Ensuite le recalage sur des parties entières (six sur dix), les tests, le laboratoire, le combat en navigateur, les textes du tutoriel du premier combat, et la fusion. Puis ton essai en jeu.</p>
+    <p>Ce qui reste incertain, dit sans détour : le bot ne joue pas la rupture comme toi ; la courbe attendue est tirée des règles, pas d’un joueur réel ; le +12 PV par victoire suppose un parcours (deux victoires de poule et un défi avant le tableau) qui se vérifiera sur des parties entières. Chaque nombre sera dans une seule table, pour se corriger en une ligne après ton essai.</p>
+    <p class="src">Sources : <code>briefs/stats-combattants.md</code> (la proposition, la courbe mesurée, les limites), journal Passe DB7. Mesures : <code>node tools/duel-balance.mjs --audit</code>, variante <code>rpg</code> (jetons <code>rs&lt;n&gt;</code>, <code>lv&lt;n&gt;</code>, <code>stage&lt;n&gt;</code>, <code>rhp&lt;N&gt;</code>).</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Remplacer entièrement : un groupe par famille de décisions, une entrée par décision.
+// fam : une variable de couleur (--astre, --voile, --ronce, --cendre). shots : captures publiées via `files` (facultatif).
+// Apostrophes : l’apostrophe typographique ’ (ou \') ; une ' droite dans une chaîne entre ' ' arrête tout le script.
+const GROUPS = [
+  { id: 'regle', title: 'La règle : des stats et une formule', sub: 'Aujourd’hui un combattant n’a que des PV et des actions aux dégâts fixes ; l’équipement et l’entraînement multiplient ces dégâts en pourcentages, qui se cumulent (×2,3 tout équipé au niveau 5). Voici des fiches de stats à la place, mesurées hors écran avec tes choix DB4 et DB5 (recharges, garde des rivaux à 90 %, rupture 10 s, jauge de 70).', fam: 'var(--voile)', items: [
+    { id: 'DB7-1', tag: 'stats', title: 'Quatre stats par combattant, et des dégâts qui en sortent',
+      ctx: 'Chaque combattant, Ren comme ses rivaux, a des PV, une Attaque, une Défense et une Endurance. Les dégâts d’un coup = la puissance de l’action × 2·Atq / (Atq + Déf) : ×1 à stats égales, ×1,33 avec une Attaque double de la Défense, ×0,67 avec une Attaque moitié ; jamais zéro, et chaque point vaut un peu moins que le précédent, si bien que l’équipement et les niveaux ne s’emballent plus. L’Endurance divise ce qu’un coup ajoute à la jauge (× 10 / End). Les puissances suivent tes choix DB5 : l’attaque simple 1 % d’une barre de 600 (DB5-5), l’Estocade 20 % (DB5-1), les autres compétences selon leur temps de charge, le niveau d’une compétence ×1,0 à ×1,4.',
+      table: { head: ['Stat', 'Ce qu’elle fait', 'Ren au départ'], rows: [
+        ['PV', 'la barre', '150'],
+        ['Attaque', 'les dégâts de ses coups', '10'],
+        ['Défense', 'les dégâts qu’il reçoit', '10'],
+        ['Endurance', 'ce qu’un coup ajoute à sa jauge', '10']],
+        foot: 'Les coups des rivaux, à stats égales contre Ren : le simple 4 % de sa barre, le lourd 11 %, une compétence 17 %. Une formule soustractive (Atq − Déf) tombe à zéro dès que la Défense rattrape l’Attaque. La Vivacité (vitesse de charge) ferait double emploi avec les temps de charge et les recharges.' },
+      rec: 'Quatre stats et cette formule : lisible (une fiche de quatre nombres), et elle borne d’elle-même le cumul de l’équipement et des niveaux.',
+      opts: ['Quatre stats, cette formule', 'Ajouter la Vivacité (vitesse de charge)', 'Formule soustractive (Atq − Déf)', 'Garder les pourcentages d’aujourd’hui'], recIdx: 0,
+      src: 'briefs/stats-combattants.md § 2.1-2.2 ; tools/duel-balance.mjs (variante rpg) ; src/combat/v2duel.ts' },
+    { id: 'DB7-2', tag: 'équipement', title: 'L’équipement donne des points de stats',
+      ctx: 'Chaque objet garde son rôle et son prix ; son pourcentage devient des points. Ce qui n’est pas une stat (les PA, la vitesse de charge, la force des effets) reste comme aujourd’hui. Tout équipé, avec les compétences au niveau 5, Ren frappe ×1,8 en poule au lieu de ×2,3.',
+      table: { head: ['Objet', 'Aujourd’hui', 'En points'], rows: [
+        ['Lame importée', 'dégâts ×1,15', 'Atq +2'],
+        ['Sabre de duelliste', 'dégâts ×1,12, charge ×0,92', 'Atq +1,5, charge gardée'],
+        ['Palier de forge (3 au plus)', '+8 % chacun', 'Atq +1 chacun'],
+        ['Pierre à aiguiser', '×1,05', 'Atq +0,5'],
+        ['Veste rembourrée', 'reçus ×0,94', 'Déf +1'],
+        ['Cuirs du quai', 'reçus ×0,92, jauge ×0,92', 'Déf +1,5, End +1'],
+        ['Cotte de mailles', 'reçus ×0,88, charge ×1,05', 'Déf +3, charge gardée'],
+        ['Haubert de chevalier', 'reçus ×0,86, charge ×1,04', 'Déf +3,5, charge gardée'],
+        ['Anneau de fer', 'jauge ×0,85', 'End +2'],
+        ['Perle de rivière', 'jauge ×0,88, PV ×1,03', 'End +1,5, PV +5'],
+        ['Bande de docker', 'PV ×1,06', 'PV +9'],
+        ['Médaille du pèlerin', 'PV ×1,05, effet ×1,15', 'PV +8, effet gardé'],
+        ['Jeton du champion', 'PA +1, jauge ×0,95', 'PA +1, End +0,5'],
+        ['Ruban, bottes, charme de ferveur', 'PA, charge, effet', 'inchangés']],
+        foot: 'La blessure garde sa règle : −20 % des PV par niveau.' },
+      rec: 'Des points : l’arme donne de l’Attaque, l’armure de la Défense, les bijoux de l’Endurance ou des PV ; chaque achat se lit sur la fiche de Ren, et les rendements décroissants empêchent le cumul de casser la fin du tournoi.',
+      opts: ['Des points, le reste gardé', 'Garder les pourcentages d’aujourd’hui'], recIdx: 0,
+      src: 'src/simulation/gear.ts (GEAR) ; src/simulation/v2gear.ts (v2Mods) ; briefs/stats-combattants.md § 2.3' },
+    { id: 'DB7-3', tag: 'entraînement', title: 'Une séance d’entraînement : +1 à la stat de ton choix',
+      ctx: 'Aujourd’hui une séance (au terrain d’entraînement, ou en s’exerçant avec Orla) donne +5 % de dégâts au prochain combat, deux séances au plus, et tout repart à zéro après le combat. Les niveaux de compétence, eux, se gagnent par l’exercice des compétences et les défis, et restent.',
+      rec: '+1 à la stat que tu choisis (Attaque, Défense ou Endurance), pour le prochain combat, deux au plus : la préparation reste ce qu’elle est (avant un combat), et elle devient un choix contre un adversaire donné (plus de Défense contre Marek, plus d’Attaque contre Ilse).',
+      opts: ['+1 à la stat choisie, pour le prochain combat', '+1 Attaque seulement, pour le prochain combat', '+1 à la stat choisie, pour toujours'], recIdx: 0,
+      src: 'src/simulation/actions.ts (train) ; src/simulation/roles.ts (spar) ; src/tournament/pool.ts (training remis à zéro) ; src/simulation/v2gear.ts (TRAIN_DMG, TRAIN_MAX)' },
+    { id: 'DB7-4', tag: 'vigueur', title: 'Les PV de Ren montent quand il gagne',
+      ctx: 'Sans croissance, Ren aborde la finale avec ses 150 PV contre un rival devenu plus fort : le joueur moyen la perd (33 %, et 0 % contre Marek). Proposé : +12 PV par combat gagné, du tournoi ou un défi, et seulement des PV : environ 185 PV au tableau, 220 en finale. Un niveau qui monterait tout serait la « statistique unique » que le contrat du projet veut éviter (§ 7) : l’équipement, l’entraînement et les compétences gardent chacun leur part.',
+      table: { head: ['Ren', 'Tableau (moyen)', 'Finale (moyen)', 'Contre Marek en finale'], rows: [
+        ['+12 PV par victoire (185, puis 220)', '79 %, 2,4 min', '66 %, 3,5 min', '20 % (joueur fort 100 %)', 1],
+        ['Aucune croissance (150)', '63 %, 2,3 min', '33 %, 2,8 min', '0 %']],
+        foot: 'Joueur attendu : équipement 2 et niveau 3 au tableau, tout équipé et niveau 3 en finale.' },
+      rec: '+12 PV par victoire : la finale se gagne en jouant bien, gagner rapporte quelque chose qui se sent, et les autres couches de progression gardent leur poids.',
+      opts: ['+12 PV par victoire', 'Un niveau de personnage (PV et un point de stat à placer)', 'Aucune croissance : la finale moins dure à la place'], recIdx: 0,
+      src: 'briefs/stats-combattants.md § 2.4 ; contracts/PROJECT_MASTER_CONTRACT.md § 7' },
+  ]},
+  { id: 'rivaux', title: 'Les rivaux', sub: 'Mesuré pour le joueur moyen (le bot du jeu à 0,5), 10 combats contre chaque rival. Les victoires se recaleront sur des parties entières (six sur dix, ton choix DB4-5) : les nombres bougeront de quelques points, pas leur forme.', fam: 'var(--cendre)', items: [
+    { id: 'DB7-5', tag: 'fiches', title: 'Une fiche de stats par rival, qui dit qui il est',
+      ctx: 'Les PV restent dans les 500 à 700 de DB4-4. Le kit d’un rival pèse autant que sa fiche : Vessa, d’abord mesurée à Atq 11, était imbattable pour le joueur moyen (5 à 10 %) à cause de la vitesse de ses enchaînements ; elle est ton premier combat (jour 2), elle a donc les coups les plus légers. Les six combattants génériques (Aldric, Corra, Ambrose, Lucan, Piers, Kell) prendront une fiche tirée du rival dont ils empruntent les coups, plus basse.',
+      table: { head: ['Rival', 'PV', 'Atq', 'Déf', 'End', 'Joueur moyen en poule'], rows: [
+        ['Vessa Lark, la Lame vive (jour 2)', '500', '7', '8', '7', '50 %'],
+        ['Tobin Fenn, l’Espoir', '520', '9', '8', '8', '100 %'],
+        ['Cassius Dree, escrime patiente', '560', '11', '10', '9', '100 %'],
+        ['Orla Brask, bagarreuse des docks', '600', '12', '11', '11', '50 %'],
+        ['Ilse Morrow, chevalière du Temple', '620', '10', '12', '11', '60 %'],
+        ['Marek Varn, le champion', '650', '13', '13', '12', '20 %'],
+        ['Rhosk le Nordique, hache lourde', '700', '12', '10', '13', '70 %']],
+        foot: 'En poule, Ren peu équipé au niveau 1 : 64 % en moyenne, 2,2 min (1,5 à 2,7 selon le rival) ; le joueur faible 17 %, le fort 99 % ; le marteleur 0 %. L’Estocade de niveau 1 enlève 21 % d’une barre, 43 % sur une rupture.' },
+      rec: 'Ces fiches : chacun se reconnaît à ses nombres (Ilse encaisse, Rhosk dure, Marek fait tout bien), Vessa reste un premier combat abordable, et les PV restent dans ta fourchette.',
+      opts: ['Ces fiches', 'Une fiche commune, seuls les PV changent'], recIdx: 0,
+      src: 'briefs/stats-combattants.md § 2.5 ; src/combat/profiles.ts (style) ; src/narrative/people.ts' },
+    { id: 'DB7-6', tag: 'croissance', title: 'Les rivaux grandissent au tableau et en finale',
+      ctx: 'Ce qui s’ajoute à la fiche de chaque rival : au tableau (jours 6 à 8) +3 Atq, +3 Déf, +2 End et PV ×1,3, à la place de tes PV ×1,4 (DB5-6) ; en finale (jour 10) +1 Atq, +3 Déf, +2 End et PV ×2,5, l’épique de DB5-7 (une barre de 1 250 à 1 750 PV). Avec des PV seuls, Ren grandit et ses rivaux non : 91 % au tableau, 90 % en finale.',
+      table: { head: ['Finale (joueur attendu, 220 PV)', 'Moyen', 'Contre Marek', 'Durée'], rows: [
+        ['PV ×3, stats +1/+3/+2', '43 %', '0 %', '3,8 min'],
+        ['PV ×2,5, stats +1/+3/+2', '66 %', '20 % (fort 100 %, 5,4 min)', '3,5 min', 1],
+        ['PV ×2, stats +1/+2/+2', '87 %', '70 %', '3,0 min'],
+        ['PV ×2,5 seuls', '90 %', '40 %', '3,1 min']],
+        foot: 'Au tableau, avec la croissance proposée : moyen 79 %, 2,4 min ; en avance (niveau 5, tout équipé) 99 %, 1,4 min ; en retard (rien, niveau 1) 20 %, 2,5 min. Les « défis particuliers » épiques de DB5-7 restent à définir avec toi.' },
+      rec: 'Tableau +3/+3/+2 et PV ×1,3, finale +1/+3/+2 et PV ×2,5 : le tableau monte d’un cran, et la finale contre Marek dure, se mérite (20 % pour un joueur moyen) et se gagne en jouant bien.',
+      opts: ['Tableau ×1,3 et stats ; finale ×2,5 et stats', 'Finale ×3 (plus épique, plus dure)', 'Finale ×2 (plus courte)', 'PV seuls (DB5 : ×1,4 / ×2,5)'], recIdx: 0,
+      src: 'briefs/stats-combattants.md § 2.6 et § 3 ; src/tournament/v2calendar.ts' },
+  ]},
+  { id: 'lecture', title: 'Ce qui se voit', sub: 'Tu préfères des règles simples et lisibles aux points cachés.', fam: 'var(--ronce)', items: [
+    { id: 'DB7-7', tag: 'affichage', title: 'Les stats sur les pages du jeu',
+      ctx: 'La page d’équipement (G) montre déjà les nombres d’un combat, avant et après un achat ; la fiche de match montre l’adversaire ; la page des compétences montre les chiffres de chaque niveau.',
+      rec: 'Les quatre stats de Ren sur la page d’équipement (avant et après un achat), celles de l’adversaire sur la fiche de match, la puissance de chaque compétence niveau par niveau : tout se lit, rien n’est caché.',
+      opts: ['Équipement, fiche de match et compétences', 'Sur la page d’équipement seulement', 'Cachées'], recIdx: 0,
+      src: 'src/ui/wares.ts ; src/ui/skills.ts ; la fiche de match' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

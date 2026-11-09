@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -87,52 +87,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/74-passes-TU1-TU2.md`](journal/74-passes-TU1-TU2.md) | TU1, TU2 | 09/11 |
 | [`journal/75-passes-TU3-TU4.md`](journal/75-passes-TU3-TU4.md) | TU3, TU4 | 09/11 |
 | [`journal/76-passes-RG1-RG3.md`](journal/76-passes-RG1-RG3.md) | RG1, RG2, RG3 | 09/11 |
+| [`journal/77-passes-DB4.md`](journal/77-passes-DB4.md) | DB4 | 09/11 |
 
 ---
-
-## Passe DB4 — Le poids de l'attaque simple en part des PV : mesuré, une fiche d'arbitrages publiée ; rien d'appliqué (2026-11-09)
-
-### Demande
-- Transmise par la séance mère (`local_94e3af37-…`) après DB3. L'opérateur, mot pour mot (2026-11-09) : « je trouve qu'une attaque basique qui fait 10pv de degats sur un adversaire possedant 6000pv c"est tres destructurer , peut etre qu'il faudrait baisser les pv a 600pv au lieu 6000pv bref il faut optimiser cette partie apres avoir finies nos autre sous=sessions » ; puis, à la proposition de diviser PV et dégâts par 10 ensemble (une attaque simple à environ 1 PV sur 600, l'équilibre inchangé) : « non le truc c'est que je veux pas que ca fasse 1 pv sur 600 l'ecart etre trop enorme une attaque simple devrait infligeait 5 a 10% des pv max de l'ennemie ».
-- Mesurer des paquets (l'attaque simple à 5, 7,5 et 10 % des PV, de petits PV ronds), publier une fiche, demander si DB-1 « 3 à 4 minutes » (décision A3) tient encore ; créer la branche seulement après la fusion de `claude/reglages-4` (fusionnée dans `main` `cc7127c`, branche `claude/duel-echelle` tirée de là).
-
-### L'outil — [OK] `tools/duel-balance.mjs`, cinq variantes de plus
-- `scale<N>` (un changement d'échelle pur : Marek à N PV, tous les PV et tous les coups au même facteur, un coup au moins 1) ; `lightpct<p>` (l'attaque simple à p % des PV de cet adversaire) ; `skl<k>` (les compétences offensives à k attaques simples pour 3,4 s de charge, au prorata de leur temps de charge) ; `rip<n>` (la riposte des données du jeu au n-ième coup, 0 = aucune) ; `gauge<N>` (la jauge de taille N, sa décroissance au prorata) ; `combo<k>` (des séquences adverses jusqu'à k coups).
-
-### Mesures — [OK] les deux demandes ne tiennent pas ensemble
-- **L'arithmétique** : avec le rythme du duel (une pause adverse de 3,5 à 12 s, la riposte au 3e coup, les compétences chargées pendant les séquences adverses, V2-2), le joueur place environ trois coups simples par pause ; 3 à 4 minutes font 20 à 25 pauses ; à 5 % par coup, les seuls coups simples feraient 300 % des PV. Avec le rythme d'aujourd'hui, un coup lourd veut un duel court.
-- **Sans recalage** (le paquet de DB3, l'échelle 600, les compétences à 3 coups pour 3,4 s) : à 5 / 7,5 / 10 % par coup et riposte au 3e coup, le duel dure 0,5 / 0,4 / 0,3 min, le bot gagne 100 %, le marteleur aussi, aucune rupture. **[KO]** le rythme d'échange (riposte au 1er coup, pauses ×0,3, séquences adverses plus longues) : 0,3 à 0,9 min et le joueur écrasé (0 à 20 % au bot 0,9) : il ne rallonge pas assez le duel.
-- **Recalé à six sur dix** (les coups des rivaux montés jusqu'à rendre au bot 0,5 environ 60 %, 20 graines par rival ; l'échelle Marek 600, Ren 143) :
-
-| Attaque simple | Coups pour un K.O. | Durée (bot 0,5) | Victoires 0,2 · 0,5 · 0,9 | Marteleur | Estocade | Coup puissant de Marek | Dégâts pendant une rupture |
-|---|---|---|---|---|---|---|---|
-| 0,09 % (DB3) | 1 152 | 3,8 min | 11 · 64 · 100 % | 0 % | 5,8 % | 7,8 % de Ren | 22 % |
-| 1 % | 100 | 2,0 min | 8 · 59 · 98 % | 0 % | 5,8 % | 15 % | 24 % |
-| 2 % (compétences ×3 coups) | 50 | 1,0 min | 12 · 57 · 94 % | 1 % | 13,5 % | 31 % | 20 % |
-| 3 % (jauge de 60) | 34 | 36 s | 14 · 58 · 88 % | 1 % | 17 % | 54 % | 32 % |
-| 5 % | 20 | 30 s | 16 · 52 · 92 % | 21 % | 22,5 % | 54 % | 0 % (jamais atteinte) |
-| 5 % (jauge de 40) | 20 | 18 s | 19 · 51 · 77 % | 1 % | 22,5 % | 115 % (un coup tue) | 31 % |
-| 10 % (jauge de 25) | 10 | 12 s | 46 · 72 · 83 % | 21 % | 34 % | 154 % (un coup tue) | 45 % |
-
-- À 10 %, aucun recalage ne rend six sur dix (coups des rivaux ×20 à ×30 : 71 à 79 %) : le joueur gagne avant que l'adversaire ait frappé deux fois. Une jauge plus courte rend la rupture aux duels courts, mais il faut alors des rivaux qui tuent d'un coup.
-- Le poids des compétences à 2 % (avant recalage) : 2 coups pour 3,4 s → 36 %, 1,1 min, 39 % des dégâts ; 3 coups → 57 %, 1,0 min, 49 % ; 4 coups → 70 %, 0,9 min, 57 %.
-- Les mesures prennent l'attaque simple au même pourcentage contre chaque rival ; avec une attaque simple fixe, les écarts de PV d'aujourd'hui (à l'échelle 600 : Vessa 293, Orla 590, Marek 600, Rhosk 717) lui donneraient 4 % contre Vessa et 1,7 % contre Rhosk.
-
-### La fiche — publiée, rien de décidé
-- https://claude.ai/artifact/2PFNieC27mG8mFC5G61W1C (`briefs/fiche-db4.html`, le modèle de `briefs/fiche-db2.html`), collection `decisions` relue vide à la publication ; vérifiée dans Chrome (6 cartes, 17 options, aucune erreur, aucun débordement à 375 px). Six cartes :
-  - **DB4-1** (A3 sur DB-1) l'attaque simple en part des PV, donc la durée : recommandé « 2 % · un duel d’une minute », dit sous son seuil de 5 % avec la raison (à 5 % le duel tombe à 30 s, la rupture disparaît, le martelage revient) ; les autres : 1 % (2 min), 3 % (36 s), 5 % (30 s), et « Garder DB3 : 3 à 4 minutes » ;
-  - **DB4-2** les compétences en attaques simples (« 3 attaques pour 3,4 s ») ; **DB4-3** l'échelle (« Marek 600, Ren 150 ») ; **DB4-4** les écarts de PV entre rivaux (« Resserrer : chaque rival entre 500 et 700 ») ; **DB4-5** le recalage (« Recaler pour garder six sur dix ») ; **DB4-6** quand (« Dès que les réglages sont fusionnés »).
-
-### Validation
-- Rien du jeu ne change sur cette branche (l'outil, la fiche, le journal). `npm run typecheck` ; `npm test` : voir le commit.
-- Les passes gardées dépassaient 60 Ko (62,3 Ko) : TU1 et TU2 (branche fusionnée) déplacées à l'octet dans `journal/74-passes-TU1-TU2.md`, la ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les 10 830 octets retirés, le journal reconstruit égale l'original, CRLF partout, chaque passe TU1 / TU2 dans un seul fichier. 51,8 Ko de passes restent.
-
-### Où reprendre
-- Attendre que l'opérateur dise la fiche remplie ; relire `decisions` ; consigner mot pour mot et daté (DB4-1 est une décision A3 s'il remplace « 3 à 4 minutes ») ; amender `briefs/combat-system.md` (§ 2, § 18) ; appliquer (`v2duel.ts` : l'échelle, l'attaque simple, les compétences, les PV des rivaux resserrés, la jauge si un paquet court la demande ; `profiles.ts`) ; recaler sur des parties entières et remesurer `V2_RACERS` ; revoir les états nommés et le tutoriel du premier duel (ses textes lisent les nombres du duel, Passe TU4) ; prouver ; fusionner.
-
-### Pensée
-- Un « coup qui compte » se règle avec la durée du duel : le nombre de coups pour un K.O. fois le temps entre deux coups. Avec trois coups par pause, la durée et le poids d'un coup ne sont pas deux réglages indépendants.
-- Recaler à six sur dix un duel très court rend les deux camps mortels : la symétrie se paie dans les coups adverses, pas seulement dans ceux du joueur.
 
 ## Passe RG4 — Le lot 2 des réglages : la langue française (2026-11-09)
 
@@ -326,6 +283,109 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Une carte restée vide n'est pas un choix : la collection relue se compte contre les cartes de la fiche avant de consigner, et la question manquante se pose à l'opérateur (ici neuf documents pour dix cartes).
 
+## Passe DB7 — Les statistiques des combattants : une proposition mesurée et sa fiche ; la fiche DB6 remplacée ; rien d'appliqué (2026-11-09)
+
+### Demande
+- La direction de l'opérateur après la fiche DB6 (consignée mot pour mot en Passe DB6 : « nous basons les actions d'un combattant par ses stats personnelles […] c'est un rpg notre jeu »), puis, à la question de préparer une proposition de statistiques : « Oui, prépare-la ».
+- Branche `claude/duel-stats`, tirée de `main` `f1610f6`, avancée en avance rapide sur `b1b889b` (Passe RM2, d'une autre séance) avant le commit.
+
+### Le prototype — [OK] hors écran, rien du jeu touché
+- `tools/duel-balance.mjs`, variante `rpg` (la table `RPG`).
+- Quatre stats par combattant : PV, Attaque, Défense, Endurance.
+  - Dégâts d'un coup = puissance × 2·Atq / (Atq + Déf) : ×1 à stats égales, rendements décroissants, jamais zéro.
+  - Jauge × 10 / Endurance.
+- Ren : 150 / 10 / 10 / 10.
+- Les puissances de Ren suivent DB5 : l'attaque simple 6 (1 % d'une barre de 600), l'Estocade 120 (20 %), les autres compétences offensives au prorata de leur temps de charge, `LEVEL_POWER` par-dessus.
+- Les coups des rivaux : 5,6 / 16,8 / 25,2, soit 4 / 11 / 17 % des 150 PV de Ren à stats égales (d'abord 4 / 12 / 18 × `fpow140`).
+- Les jetons :
+
+| Jeton | Ce qu'il règle |
+|---|---|
+| `rs<n>` | l'état d'équipement en points |
+| `lv<n>` | le niveau des compétences |
+| `stage<n>` | la croissance des rivaux (0 poule, 1 tableau, 2 finale, 3 à 11 les essais) |
+| `rhp<N>` | les PV de base de Ren |
+| `vhp`, `vatk`, `vdef`, `vend` | la fiche de l'adversaire, pendant un réglage |
+
+- Le paquet DB5 en jetons : `fguard90+greduce80+cd5+gauge70+stun10`.
+- Mesure : bot 0,2 / 0,5 / 0,9 et marteleur, 10 graines par rival (20 pour Vessa).
+
+### Ce que la mesure a appris
+- **[KO] La finale par les seuls PV adverses.**
+  - Première croissance (finale +3 Atq / +3 Déf / +2 End et PV ×2,5, Ren à 150 PV) : le joueur attendu 21 %, le joueur en retard 0 %.
+  - PV ×4 (avec ou sans coups allégés) : 0 à 19 %, perdue en 3 min.
+  - La durée d'un combat est bornée par la survie de Ren (aucun soin) : gonfler la barre adverse rend la finale perdue, pas longue.
+- **[OK] La vigueur.** Les PV de Ren montent au fil du parcours (150 en poule, 185 au tableau, 220 en finale) : la finale attendue passe à 41-66 % selon la croissance, en 3,5 min. Proposé : +12 PV par victoire, PV seuls (contrat projet § 7).
+- **[KO, corrigé] Vessa.** À 500 / 11 / 9 / 8, elle donnait 0 à 10 % au joueur moyen, alors qu'elle est son premier combat (jour 2) : son kit (enchaînements rapides) pèse autant que sa fiche. À 500 / 7 / 8 / 7 : 60 % (20 graines). Seule la part de son Attaque change.
+- **Le tableau.**
+  - +2 / +2 / +1 et PV ×1,15 : 90 %, trop facile.
+  - +3 / +3 / +2 et PV ×1,3 : 74 à 79 %, retenu.
+  - PV ×1,4 seuls (DB5-6) : 91 %.
+- **La finale, finaliste par finaliste** (joueur attendu, 220 PV) :
+
+| Croissance | Marek | Orla | Ilse | Rhosk |
+|---|---|---|---|---|
+| PV ×3, stats +1 / +3 / +2 | 0 % | 10 % | 30 % | 60 % |
+| **PV ×2,5, stats +1 / +3 / +2 (retenu)** | **20 %** (fort : 100 %, 5,4 min) | **50 %** | **80 %** | **70 %** |
+| PV ×2, stats +1 / +2 / +2 | 70 % | 90 % | 100 % | 90 % |
+| PV ×2,5 seuls, sans stats en plus | 40 % | 100 % | 100 % | 100 % |
+
+  Contre les sept rivaux, avec PV ×2 et stats +1 / +2 / +2 : 87 %.
+- **La courbe proposée** (moyen ; faible / fort entre parenthèses) :
+
+| Étape | Victoires | Durée | Estocade franche / sur une rupture |
+|---|---|---|---|
+| Poule | 64 % (17 / 99) | 2,2 min | 21 % / 43 % |
+| Tableau | 79 % (39 / 97) | 2,4 min | — |
+| Finale | 66 % (26 / 100), Marek 20 % | 3,5 min | — |
+
+  - En avance : 100 % en 1,3 min (poule), 99 % en 1,4 min (tableau), 90 % en 3,0 min (finale).
+  - En retard : 56 % (poule), 20 % (tableau), 11 % (finale ; le joueur fort y met 5,6 min).
+  - Le marteleur : 0 % partout, sauf 17 % en poule tout équipé au niveau 3.
+  - Sans vigueur : tableau 63 %, finale 33 % (Marek 0 %).
+- **L'entraînement aujourd'hui.** +5 % de dégâts par séance, deux au plus, remis à zéro après le combat du joueur (`src/tournament/pool.ts`). La proposition le garde passager : +1 à la stat choisie.
+- Fichiers de mesure hors dépôt ; refaits par `--audit --seeds=1..10 --skills=0.2,0.5,0.9 --variant="rpg+fguard90+greduce80+cd5+gauge70+stun10+rs<n>+lv<n>[+stage<n>][+rhp<N>]"`.
+
+### La proposition — `briefs/stats-combattants.md`
+- Les quatre stats et la formule (DB7-1).
+- L'équipement en points, objet par objet (DB7-2) : la lame +2 Atq, un palier +1, la cotte +3 Déf, l'anneau +2 End, la bande +9 PV... Tout équipé au niveau 5 : ×1,8 en poule au lieu de ×2,3.
+- La séance d'entraînement : +1 à la stat choisie pour le prochain combat (DB7-3).
+- La vigueur (DB7-4).
+- Une fiche par rival, tirée de son style (`src/combat/profiles.ts`), les PV dans les 500-700 de DB4-4 (DB7-5).
+- La croissance (DB7-6) : tableau +3 / +3 / +2 et PV ×1,3 à la place de DB5-6 ; finale +1 / +3 / +2 et PV ×2,5 pour l'épique de DB5-7.
+- Les stats montrées sur la page d'équipement, la fiche de match et les compétences (DB7-7).
+- La courbe, les limites, ce qu'il faudra construire.
+
+### La fiche DB7 — publiée, rien de décidé
+- https://claude.ai/artifact/BYVmCK87bj3qFomkD2knbz (`briefs/fiche-db7.html`).
+  - Sept cartes en trois familles : la règle (DB7-1 à DB7-4), les rivaux (DB7-5, DB7-6), ce qui se voit (DB7-7).
+  - La collection `decisions` relue vide.
+  - Vérifiée dans Chrome sans tête : sept cartes, 21 options, cinq tables, aucune erreur, aucun débordement à 375 px.
+- La fiche DB6 porte maintenant le lien vers DB7 (« elle remplace cette fiche », version 3). Ses choix ne sont pas à remplir.
+- La durée : les mots de l'opérateur (Passe DB6) font de « 2 et 5 min » un repère. La fiche donne les durées mesurées sans les tenir pour une cible ; la décision A3 consignée en Passe DB5 reste écrite telle quelle.
+
+### Validation
+- Rien du jeu ne change sur cette branche (l'outil de mesure, la proposition, les fiches, le journal) : `npm run typecheck` sans erreur ; `npm test` 576 / 576 ; `npm run build` réussi ; `npm run art:validate` 73 manifestes, 123 sources archivées, 23 manifestes de son, 0 erreur.
+- Les passes gardées auraient dépassé 60 Ko : DB4 (branche fusionnée) déplacée à l'octet dans `journal/77-passes-DB4.md`, sa ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les 6 875 octets retirés, le journal reconstruit égale l'original, CRLF partout, chaque passe dans un seul fichier. 53,7 Ko de passes restent.
+
+### Où reprendre
+- Attendre la fiche DB7, puis la consigner.
+- Amender `briefs/combat-system.md` : § 2, § 4 les recharges, § 5 la garde, § 6 la rupture, § 11, § 18, et les stats.
+- Appliquer dans le jeu par défaut DB4, DB5 et DB7 :
+  - les fiches et la formule dans les données du duel et `DynamicSim` ;
+  - l'équipement en points dans `v2Mods` ;
+  - la vigueur dans l'état du joueur ;
+  - la croissance des rivaux par étape du calendrier, et les fiches des génériques ;
+  - les recharges et leur affichage, la garde des rivaux, la rupture 10 s, la jauge de 70 ;
+  - les stats sur les pages, en deux langues.
+- Recaler sur des parties entières (six sur dix) et `V2_RACERS` ; revoir les états nommés et le tutoriel du premier combat.
+- Prouver, fusionner, puis l'essai de l'opérateur. Les « défis particuliers » de DB5-7 restent à définir avec lui.
+
+### Pensée
+- Sans soin, la longueur d'un duel est bornée par la survie du joueur : un combat épique demande que ses PV montent aussi (ou que les coups adverses baissent), pas seulement une barre adverse plus grosse.
+- La fiche d'un rival se règle contre son kit, rival par rival : une formule seule n'en fait pas un premier combat abordable (Vessa).
+- Une moyenne sur sept rivaux cache le combat qui compte : la finale se mesure contre ses finalistes probables (Marek).
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -347,7 +407,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   - **Étape 5, le gameplay (Passe EV1)** : audit des événements, du vol, du défi, du marchandage et du récit de la version 2 contre les contrats (`briefs/audit-gameplay-ev1.md`) : le défi sans enjeu (gagné 15 fois sur 15), le vol sans suite (un voleur à réputation 0 qualifié 9 fois sur 10), le marchandage un dé, trois ambiances à 52 % des nouvelles, une seule réponse (la garde du quai) contre les deux sabotages, trois champs du pouls lus par rien, l’information et la réaction visible de la ville minces, le festival et l’investissement absents ; six défauts de lecture relevés (dont les nouvelles de fin de créneau perdues sur les places). **Fiche relue, seize sur seize à la recommandation (Passe EV2)** : https://claude.ai/artifact/Ky78QRmuxrikUw1KM6yPcr (`briefs/fiche-ev1.html`), quatre notes consignées mot pour mot (une représaille possible après un vol, des combattants génériques, le marchandage avec les passants, des événements qui touchent la préparation) ; les génériques « En ville, structure gardée (Recommandé) » ; la consigne : l’importance narrative et la cohérence du gameplay, sans se perdre dans la structure. **L1 fait (Passe EVL1)** : les six défauts de lecture corrigés dans la version 2 (les nouvelles des places, celles d’une action dans sa bande, « free », les causes du journal, la fiche de match, le vol réussi) ; le jeu par défaut inchangé, trois écarts à lui consignés (les codes de son journal, ses nouvelles cachées sous une bande, son quai qui redit le bandeau). **L2 fait et fusionné (Passes EVL2 à EVL4)**, la fiche relue (treize sur quatorze à la recommandation ; L2-2 « Des marques (Recommandé) » : le registre de Hale compte une marque par vol pris ou découvert à l’aube, trois marques ferment les étals) : les marques à côté de la réputation, expliquées dans le jeu ; le vol découvert à l’aube, la fouille et les étals fermés à trois marques, la restitution chez Hale toujours ouverte, le greffier, les étals forcés la nuit ; le marchandage au moment d’acheter (trois arguments) et trois passants avec leur pièce ; le défi à pleine vie avec une mise, une fois par phase, dans l’arène aux gradins vides ; les éliminés dès le jour 6 et trois combattants génériques (portrait seul, figure générée en attendant leur art) ; la représaille de Corra ; le joueur curieux au laboratoire. **L3 fait et fusionné (Passes EVL5, EVL6)** : chaque rival observé là où il s’entraîne, deux sources de rumeurs (Lio, juste deux fois sur trois ; l’inconnu, jamais faux), ce que la ville a vu sur la page du tournoi, la garde du quai pour la forge seule et la chambre forte d’Odo pour les vestiaires, le trafic seulement la veille d’un combat du joueur, la sangle coupée lue sur la fiche et trouvée après le combat, Lady Edda qui nomme la maison Dree, le rapport qui paie l’équipement ; la fiche relue douze sur douze à la recommandation (Passe EVL6 ; L3-9 « Accepter l’écart » : le diligent v2 n’est plus identique au JSON près) ; l’essai de L3 en jeu par l’opérateur (L3-12). **L4 fait et fusionné (Passes EVL7, EVL8)** : les ambiances hors des nouvelles et dans les répliques (EV-8), chaque rival se souvient sur la page du tournoi, Vessa (le conte dans la salle de Lio) et Rhosk (le sable du terrain d’entraînement) agissent, un ami avertit des chaînes de Cassius (EV-9), Corvin après un défi gagné, les marchands qui se souviennent, le sable fermé après la rixe, Sœur Anwen occupée (EV-7) ; Hale, Corra et Ambrose y ont leur rôle (L3-11) ; la fiche relue quatorze sur quatorze à la recommandation (Passe EVL8 ; L4-12 « Accepter » : le diligent v2 perd un combat dans deux parties sur 150) ; l’essai de L4 en jeu par l’opérateur (L4-14). **L5 fait et fusionné (Passes EVL9, EVL10)** : la ville qui réagit (EV-12) : Wynn posté à l’étal d’un vol connu et le vol y refusé, les passants à qui parler sur chaque place, la célébrité qui dit qui salue le héros et quoi (le registre de Hale d’abord), les gestes des rivaux selon leur attitude, la foule des places selon le pouls et les ambiances ; « Your bouts are fought » au finaliste et Hale le matin corrigés dans la version 2 ; les fanions et les volets non construits (carte L5-3) ; laboratoire identique au JSON près ; la fiche https://claude.ai/artifact/MsxZqyzPvSThAefPLkAZ1z (`briefs/fiche-l5.html`) relue quatorze sur quatorze à la recommandation (Passe EVL10 ; L5-3 « Fanions dans une tâche à part, pas de volets » : les fanions selon la fête, une tâche à part après l’essai) ; l’essai de L5 en jeu par l’opérateur (L5-14). **Les fanions selon la fête, faits et fusionnés (Passes FT1, FT2)** : de jour, les guirlandes déjà approuvées des places en trois paliers du pouls `festivity` (une façade sur deux sous 60, toutes dès 60, les cordes du cœur et les portes dès 90), la nuit et le quai inchangés, pas de volets ; chaque palier sa cuisson, 0 px contre `vis=0` ; la fiche https://claude.ai/artifact/GXRRjoaFhhaoT8V7HFUFUQ relue six sur six à la recommandation ; l’essai en jeu de l’opérateur (FT-6). **L6 fait et fusionné (Passes EVL11, EVL12)** : les arcs de Rhosk et Tobin et quatre scènes selon l’état (EV-13), le festival du jour 9 « La Lanterne de Tête » (EV-14, avec L4-6, la fiche https://claude.ai/artifact/MTC9VJ4Qjr8Lagg8WQLw7o relue neuf sur neuf) ; la fiche de lot https://claude.ai/artifact/4pvSUjBvsvTZCo4uee82Yy relue douze sur douze à la recommandation. **Les six lots de l’étape 5 sont faits.** **Ensuite** (L6-12 « L’essai en jeu, puis la phase d’équipe sur fiche ») : l’essai en jeu de l’opérateur (L5, les fanions, L6), puis la phase d’équipe (le recrutement, l’écart consigné depuis la Passe V6) à concevoir sur fiche. **À part** : l’art des trois combattants génériques fait et en production (Passes GA1, GA2 : leurs visages en portrait, leurs feuilles au duel, derrière la version 2) ; **trois combattants de plus**, Lucan Rook, Piers Calloway et Kell Barrow, faits et en production derrière la version 2 (Passes GA3, GA4 : leurs visages en portrait, leurs feuilles au duel) ; **la note de l’opérateur sur GA3-LU1**, mot pour mot « par contre je veux de la diversivite et non uniquement des personnages a la meme couleur de peau sinon oui je suis satisfait. » : les prochains personnages avec des couleurs de peau variées, chacun sur son choix (Passe GA4) ; l’essai de L2 en jeu par l’opérateur (L2-14). **Les peaux des génériques (Passes GS1, GS2)** : Kell et Ambrose en peau foncée en production derrière la version 2, Corra et Lucan leur original, Aldric sans peau visible ; reste **la retouche de Piers** (GS-RET « Retouche à part, Piers ensuite », sa peau hâlée ensuite). **Les peaux des sept rivaux, faites et en production derrière la version 2 (Passes RS1, RS2)** : la fiche https://claude.ai/artifact/LYTp6hCZ643k6u8LN17rf3 relue (Marek « Foncée (dark) », Orla et Rhosk « Moyenne (medium) », Cassius « Hâlée (tan) », Vessa, Ilse et Tobin « Garder l’original ») ; la peau suit chacun sur les places, en portrait et au duel ; les réserves des masques dites en Passe RS1. « Your bouts are fought » au jour 7 pour un finaliste (Passe EVL3) : corrigé dans la version 2 par L5 (carte L5-9). Le recrutement et la phase d’équipe restent un chantier plus tard.
   - **Le tutoriel (Passes TU1 à TU3)** : la demande de l'opérateur du 2026-11-09 ; fiche https://claude.ai/artifact/7dh9HxkwHzbN2rXWCXyJdq relue douze sur douze à la recommandation (Passe TU2) ; **lot 1, le tutoriel général, fait et fusionné (Passe TU3)** : la visite à chaque nouvelle partie, le guide en douze chapitres (H), huit conseils, les images prises dans le jeu, les nombres lus dans les données. **Lot 2, le tutoriel du premier combat, fait et fusionné (Passe TU4)** : le duel figé à la première fois de chaque chose, sept leçons aux nombres du duel. Relevés sans décision : le « coins » du HUD à 4,2:1 au téléphone couché (812 × 375), avec ou sans le tutoriel ; les animations coupées sous `prefers-reduced-motion` (`src/ui/style.ts`), que la séance des réglages remplace par un réglage du jeu (RG-5). Reste l'essai en jeu de l'opérateur.
   - **La manette (Passe MN1)** : état des lieux de chaque chemin d'entrée (seul le duel lit une manette, la première seulement), prototype de revue des glyphes (DEV, `?padglyph=`), fiche https://claude.ai/artifact/F2fYfXXjwL5y6o7p5q4fj1 relue onze sur onze à la recommandation ; **construite et prouvée (Passe MN2)** : la ville, les places, toutes les pages, l'écran titre et le duel de la version 2 à la manette, le jeu au clavier à 0 px contre `main` (DEV et paquets), une manette simulée jouant le premier jour et un combat. **Reste l'essai de l'opérateur avec sa manette** (MN-11) : le son à la première pression (MN-10), la vibration, la zone morte et la marche la plus lente.
-  - **Le duel après le premier essai de l'opérateur (Passes DB1, DB2)** : le blocage des clics répétés corrigé et fusionné (DB1 : un seul relâché attend) ; l'équilibre mesuré (des duels de 8 min, une Estocade à 2,2 % de la barre, 14 attaques rapides par pause, la rupture à 8 % des dégâts) et la fiche https://claude.ai/artifact/PQeCdpmT3Uv6vUdgS4ZZKN relue huit sur huit à la recommandation (DB3 : « 3 à 4 minutes », « Riposte au 3e coup » jamais pendant la rupture, « ×4 », « Jauge par les compétences, ×2 pendant 8 s », « Recaler pour garder six sur dix ») : **appliqué et fusionné** (DB3 : la riposte, les compétences ×4, la rupture ×2 8 s, les rivaux recalés à ×3,4 / ×1,8 et Ren ×1,25, le joueur préparé à 60,4 %, des duels de 3,4 à 3,9 min) ; reste **l’essai en jeu de l’opérateur** (DB-8), et à juger avec lui le joueur curieux tombé de 51 à 37 % et Vessa devenue presque aussi dure que Marek dans la course ; la séance du tutoriel de combat attend cette refonte. **Passe DB4** : sa note après DB3 (« une attaque simple devrait infligeait 5 a 10% des pv max de l'ennemie ») mesurée, la fiche https://claude.ai/artifact/2PFNieC27mG8mFC5G61W1C publiée (à 5 % par coup un duel tombe à 30 s : DB-1 « 3 à 4 minutes » à reconfirmer ou remplacer, A3) : **attendre ses choix**. **Passes DB5, DB6** : l'audit demandé (« un combat basique dure en 2 et 5 min », A3 ; `briefs/audit-combat-db5.md`), la fiche DB4 relue (6/6), la fiche DB5 relue (7/7 ; recharges et rupture 10 s en A3 ; l'attaque simple à 1 %), l'équipement mesuré (il cassait le calibrage : ×2,3 avec les niveaux) ; la fiche DB6 https://claude.ai/artifact/F3ebcGDEjkwBvStFpGgQpp publiée : **attendre ses choix**, puis appliquer DB4 à DB6, recaler, prouver, fusionner, son essai.
+  - **Le duel après le premier essai de l'opérateur (Passes DB1, DB2)** : le blocage des clics répétés corrigé et fusionné (DB1 : un seul relâché attend) ; l'équilibre mesuré (des duels de 8 min, une Estocade à 2,2 % de la barre, 14 attaques rapides par pause, la rupture à 8 % des dégâts) et la fiche https://claude.ai/artifact/PQeCdpmT3Uv6vUdgS4ZZKN relue huit sur huit à la recommandation (DB3 : « 3 à 4 minutes », « Riposte au 3e coup » jamais pendant la rupture, « ×4 », « Jauge par les compétences, ×2 pendant 8 s », « Recaler pour garder six sur dix ») : **appliqué et fusionné** (DB3 : la riposte, les compétences ×4, la rupture ×2 8 s, les rivaux recalés à ×3,4 / ×1,8 et Ren ×1,25, le joueur préparé à 60,4 %, des duels de 3,4 à 3,9 min) ; reste **l’essai en jeu de l’opérateur** (DB-8), et à juger avec lui le joueur curieux tombé de 51 à 37 % et Vessa devenue presque aussi dure que Marek dans la course ; la séance du tutoriel de combat attend cette refonte. **Passe DB4** : sa note après DB3 (« une attaque simple devrait infligeait 5 a 10% des pv max de l'ennemie ») mesurée, la fiche https://claude.ai/artifact/2PFNieC27mG8mFC5G61W1C publiée (à 5 % par coup un duel tombe à 30 s : DB-1 « 3 à 4 minutes » à reconfirmer ou remplacer, A3) : **attendre ses choix**. **Passes DB5, DB6** : l'audit demandé (« un combat basique dure en 2 et 5 min », A3 ; `briefs/audit-combat-db5.md`), la fiche DB4 relue (6/6), la fiche DB5 relue (7/7 ; recharges et rupture 10 s en A3 ; l'attaque simple à 1 %), l'équipement mesuré (il cassait le calibrage : ×2,3 avec les niveaux) ; la fiche DB6 https://claude.ai/artifact/F3ebcGDEjkwBvStFpGgQpp publiée puis suspendue après sa direction (« c'est un rpg notre jeu », Passe DB6). **Passe DB7** : les statistiques des combattants proposées et mesurées (`briefs/stats-combattants.md` : quatre stats, l'équipement en points, la vigueur de Ren, une fiche par rival et sa croissance), la fiche https://claude.ai/artifact/BYVmCK87bj3qFomkD2knbz publiée : **attendre ses choix**, puis appliquer DB4, DB5 et DB7, recaler, prouver, fusionner, son essai.
   - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
@@ -1005,3 +1065,4 @@ l'alerte du nouveau duel chevauche ses cartes (plus hautes) sur les fenêtres ba
 - `tools/art-lab/gen-image.mjs` : une requête à la fois, jamais deux processus en parallèle ; son registre n'a pas de verrou, et des instances parallèles se sont écrasées (Passe GA3).
 - Un fichier partagé lu puis réécrit autour d'une attente (le registre de `gen-image.mjs` autour d'une requête) passe par un verrou de fichier créé en exclusif, et chaque écriture relit le fichier sous ce verrou ; le verrou ne se tient jamais pendant l'attente, et un verrou périmé se casse par un renommage, dont un seul réussit (Passe I2).
 - Avant de rendre des touches modifiables, on cherche où le jeu les lit et où il les écrit : une touche affichée est une lettre dans une page, que la manette reconnaît à sa lettre ; une touche retenue par son caractère change avec Maj sur la rangée des chiffres d’un AZERTY (Passe RM1).
+- Sans soin, la longueur d'un duel est bornée par la survie du joueur : un combat épique demande que ses PV montent aussi, pas seulement une barre adverse plus grosse ; une moyenne sur tous les rivaux cache le combat qui compte (la finale contre ses finalistes probables), et la fiche d'un rival se règle contre son kit (Passe DB7).
