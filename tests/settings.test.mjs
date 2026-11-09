@@ -148,5 +148,8 @@ test('the settings page (RG-1, RG-2): four parts; from the title screen, the ver
   const arena = src('src/arena/ArenaApp.ts');
   assert.match(arena, /if \(!this\.charge \|\| !this\.paused \|\| this\.moment \|\| this\.sim\.over \|\| this\.settingsOpen\) return;/);
   assert.match(arena, /else if \(k === 'escape'\) this\.openSettings\(\);/);
-  assert.match(arena, /if \(e\.repeat \|\| e\.metaKey \|\| e\.ctrlKey \|\| e\.altKey \|\| !this\.ready \|\| this\.settingsOpen\) return;/, 'the duel ignores the keys of the page');
+  // with the first duel's lesson (journal Passe TU4): the duel ignores the keys of a lesson and of the page
+  assert.match(arena, /if \(e\.repeat \|\| e\.metaKey \|\| e\.ctrlKey \|\| e\.altKey \|\| !this\.ready \|\| this\.lesson \|\| this\.settingsOpen\) return;/, 'the duel ignores the keys of the page');
+  // a lesson holds the duel without its pause (moment): the page opens from the pause only
+  assert.match(arena, /this\.lesson = on; this\.paused = on; this\.moment = on;/);
 });

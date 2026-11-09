@@ -155,7 +155,8 @@ test('which event is which first: the player\'s charge past the quick blow, an a
 
 test('the lessons hold the duel and its keys, only in a version 2 game\'s bout; the guide teaches them again (TU-7)', () => {
   const arena = src('src/arena/ArenaApp.ts'), page = src('src/ui/playArena.ts'), dt = src('src/ui/duelTutorial.ts'), tu = src('src/ui/tutorial.ts');
-  assert.match(arena, /if \(e\.repeat \|\| e\.metaKey \|\| e\.ctrlKey \|\| e\.altKey \|\| !this\.ready \|\| this\.lesson\) return;/);
+  // the settings page over a paused duel holds its keys too (journal Passe RG3, RG-2)
+  assert.match(arena, /if \(e\.repeat \|\| e\.metaKey \|\| e\.ctrlKey \|\| e\.altKey \|\| !this\.ready \|\| this\.lesson \|\| this\.settingsOpen\) return;/);
   assert.match(arena, /this\.lesson = on; this\.paused = on; this\.moment = on; this\.hud\?\.still\(on\);/);
   assert.match(arena, /this\.onDuelEvents\?\.\(evs/);
   assert.match(page, /if \(v2\) \{\n\s*const coach = new DuelCoach\(\{ hold: \(on\) => app\.holdForLesson\(on\), data: \(\) => app\.dyn\?\.D \?\? null \}, b\.params\);/);
