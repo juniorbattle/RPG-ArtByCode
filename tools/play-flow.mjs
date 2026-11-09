@@ -54,11 +54,11 @@ try {
   check(await page.evaluate(() => window.__game.hash()) === hBefore, 'the town page reloaded from the save holds the same state');
   await page.screenshot({ path: path.join(outDir, `${mode}-1-town.png`) });
   // 2. « Enter the arena »: the town saves and goes to the arena page
-  await page.evaluate(() => { window.__ui.openHere(); [...document.querySelectorAll('.pm-talk .pm-btn')].find((x) => /Enter the arena/.test(x.textContent)).click(); });
+  await page.evaluate(() => { window.__ui.openHere(); [...document.querySelectorAll('.pm-talk .pm-btn')].find((x) => /Enter the arena|Entrer dans l’arène/.test(x.textContent)).click(); });
   // the version 2: the match sheet first (lot V9, P6), its four skills kept
   if (V2) {
     const sheet = await page.evaluate(() => document.querySelector('.pm-overlay .pm-card')?.textContent ?? '');
-    check(sheet.includes(FOE[day]) && /Enter the arena with these four/.test(sheet), 'the match sheet names the opponent');
+    check(sheet.includes(FOE[day]) && /Enter the arena with these four|Entrer dans l’arène avec ces quatre/.test(sheet), 'the match sheet names the opponent');
     // Enter enters the arena from any line of the sheet (journal Passe UM11)
     await page.evaluate(() => document.activeElement?.blur?.() ?? 0); await page.focus('.pm-glist .pm-btn'); await page.keyboard.press('Enter');
   }
@@ -69,7 +69,8 @@ try {
   check(sheet.rules === (V2 ? 'v2' : DYN ? 'dynamic' : 'classic'), `the arena plays ${sheet.rules}`);
   check(sheet.names[0] === 'Aster' && sheet.names[1] === FOE[day], `the arena seats ${sheet.names.join(' vs ')}`);
   // the version 2's bout names its stage (journal Passe VP2: « The pool · round 1 », « Semi-final »...), today's the slice's pool
-  check((V2 ? /The pool · round \d/ : /Pool of eight/).test(sheet.hud ?? ''), `English HUD: ${sheet.hud}`);
+  if (process.env.PAGE_LANG === 'fr' && V2) check(/La poule · tour \d/.test(sheet.hud ?? ''), `French HUD: ${sheet.hud}`);
+  else check((V2 ? /The pool · round \d/ : /Pool of eight/).test(sheet.hud ?? ''), `English HUD: ${sheet.hud}`);
   // the version 2's duel: Ren and the seated rival each under their own approved sheet (journal Passe CX4)
   if (V2) { const worn = await page.evaluate(() => window.__arena.sheets?.info.sheets.map((s) => `${s.id} ${s.runtimeUse}`).join(', ') ?? 'none'); check(worn === `hero-x3-combat production, ${sheet.names[1].split(' ')[0].toLowerCase()}-x3-combat production`, `the sheets worn: ${worn}`); }
   await page.screenshot({ path: path.join(outDir, `${mode}-2-report.png`) });

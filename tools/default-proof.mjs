@@ -33,7 +33,9 @@ const check = (ok, what) => { console.log(`${ok ? 'OK ' : 'KO '} ${what}`); if (
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** a browser a person drives: the page must not see automation (tools/title-proof.mjs) */
-const HUMAN = `Object.defineProperty(Navigator.prototype, 'webdriver', { get: () => false });`;
+// an English browser (journal Passe RG4: the game speaks the browser's language, RG-9, and this headed Chrome reports the operator's French Windows);
+// the French has its own proofs (tools/settings-proof.mjs, PAGE_LANG=fr in tools/play-flow.mjs)
+const HUMAN = `Object.defineProperty(Navigator.prototype, 'webdriver', { get: () => false }); Object.defineProperty(Navigator.prototype, 'language', { get: () => 'en-US' });`;
 /** the fake pad (tools/pad-proof.mjs), defined before the page's scripts */
 function fakePad(id) {
   const pad = { id, index: 0, connected: true, mapping: 'standard', timestamp: 0, buttons: Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 })), axes: [0, 0, 0, 0],

@@ -52,7 +52,7 @@ const CSS = `
 #title-menu .langs button[aria-pressed=true]{color:var(--ds-ivory)}
 #title-menu .langs button:hover,#title-menu .langs button:focus{color:var(--ds-ivory);outline:0;text-decoration:underline 1px var(--ds-accent);text-underline-offset:6px}
 @media (max-width:900px){#title-screen .wrap{grid-template-columns:minmax(0,1fr);row-gap:18px;padding:72px 18px 18px}}
-@media (max-height:480px) and (min-width:600px){#title-screen .wrap{grid-template-columns:minmax(0,1fr) minmax(280px,420px);column-gap:28px;padding:24px 18px 12px}#title-menu .langs{padding:0}}
+@media (max-height:480px) and (min-width:600px){#title-screen .wrap{grid-template-columns:minmax(0,1fr) minmax(280px,420px);column-gap:28px;padding:44px 18px 10px;background:linear-gradient(to top,var(--ds-veil-strong) 0,var(--ds-veil) calc(100% - 36px),transparent 100%)}#title-menu .langs{padding:0}}
 `;
 
 /** `live()`: the town stands behind the screen, the ink fades out */

@@ -254,6 +254,8 @@ try {
   await page.goto(`${BASE}?play=1&state=v2-day2-afternoon&scene=arena&noreload=1&tutorial=0`, { waitUntil: 'load', timeout: READY });
   await page.waitForFunction('window.__ready === true && window.__arena?.ready', { timeout: READY }); await sleep(500);
   await page.evaluate(() => { window.__stay = 1; });
+  // the bout's card first (Enter: fight), then the pause and its settings
+  await key('Enter'); await sleep(1200);
   await key('Space'); await key('Escape');
   await until(() => !!document.querySelector('.pm-settings'), 4000, 'the settings over the duel');
   for (let i = 0; i < 4 && (await focus()) !== 'language'; i++) await key('ArrowDown');
