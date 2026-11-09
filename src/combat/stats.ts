@@ -68,9 +68,10 @@ export const gaugeFactor = (end: number): number => 10 / Math.max(1, end);
 export const speedFactor = (viv: number, base = 10): number => base / Math.max(1, viv);
 
 /** the actions' power at equal stats (the bar of 600 for the player's, Ren's 150 for the rivals'): the light attack 1 % (DB5-5), the Thrust 20 %
- *  (DB5-1); a rival's light blow, its heavy and an offensive skill 4 %, 11 % and 17 % on the DB7 sheet (5.6, 16.8, 25.2), recalibrated on whole games
- *  (DB4-5 « Recaler pour garder six sur dix »: × 0.72, the TournamentLab's prepared player at 60.0 % of his bouts on seeds 1..50, journal Passe DB9) */
-export const POWER = { light: 6, thrust: 120, foeLight: 4.032, foeHeavy: 12.096, foeSkill: 18.144 } as const;
+ *  (DB5-1); a rival's light blow, its heavy and an offensive skill 4 %, 11 % and 17 % of Ren's bar: the DB7 sheet's own (5.6, 16.8, 25.2). The
+ *  operator's answer of 2026-11-09 to « Which reference should six bouts in ten be measured on? »: « The DB7 sheet's curve » (journal Passe DB10): the
+ *  sheet's expected player, not the TournamentLab's (x 0.72 in journal Passe DB9, its prepared player never drilling his skills) */
+export const POWER = { light: 6, thrust: 120, foeLight: 5.6, foeHeavy: 16.8, foeSkill: 25.2 } as const;
 
 /** an offensive skill's power at a level, before the stats (the Thrust's 120 at level 1, the others by their charge time at level 1, the level's
  *  power over it: src/combat/skills.ts); the duel multiplies it by the formula (src/combat/v2duel.ts applyStats), the skills page shows it (DB7-7) */

@@ -117,10 +117,13 @@ test('the numbers of the decision: seeds 1..50 give Passe V2B1\'s wounds a game,
   // (journal Passe DB3, the duel of 3 to 4 minutes recalibrated to six bouts in ten: 0.76 and 1.74 wounds a game before, 59.2 % of the bouts, crowned 2 %,
   // the cut 88 %)
   // (journal Passe DB9, the fighters' stats recalibrated to six bouts in ten: 0.54 and 1.68 wounds a game before, 60.4 % of the bouts, crowned 8 %, the cut 92 %)
-  assert.equal(+prepared.rates.playerInjured.toFixed(2), 0.56); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.4);
+  // (journal Passe DB10, the rivals at the DB7 sheet's strength, the operator's « The DB7 sheet's curve »: 0.56 and 1.4 before, 59.6 % of the bouts, the cut 92 %;
+  // the lab's prepared player never drills his skills, so it loses and is knocked down more)
+  assert.equal(+prepared.rates.playerInjured.toFixed(2), 1); assert.equal(+idle.rates.playerInjured.toFixed(2), 1.64);
   // (lot L4, journal Passe EVL7: 0.592 since Rhosk takes the training sand on the free day before a bracket bout, which the prepared player does not answer: seed 27
   // loses the major match it won; 0.596 before; 0.604 with the duel of journal Passe DB3)
-  assert.equal(+prepared.rates.playerWins.toFixed(3), 0.596); assert.equal(prepared.v2.champion, 0); assert.equal(prepared.v2.madeCut, 0.92);
-  assert.ok(prepared.rates.playerInjured < idle.rates.playerInjured / 2, 'the prepared player is wounded less than half as often as the idle one');
+  assert.equal(+prepared.rates.playerWins.toFixed(3), 0.42); assert.equal(prepared.v2.champion, 0); assert.equal(prepared.v2.madeCut, 0.74);
+  // less than half as often until journal Passe DB9; at the sheet's strength the lab's prepared player, without his skills' levels, still less often than the idle one
+  assert.ok(prepared.rates.playerInjured < idle.rates.playerInjured, 'the prepared player is wounded less often than the idle one');
   assert.ok(prepared.eventCounts['healer-offer'] > 0 && idle.eventCounts['healer-offer'] > 0, 'the healer still writes to the wounded');
 });

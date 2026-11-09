@@ -201,8 +201,9 @@ test('the pages read the stats (DB7-7): the gear page Ren\'s five, the skills pa
   assert.equal(EN['stat.viv'], 'Speed'); assert.match(FR, /"stat\.viv": "Vivacité"/);
 });
 
-test('the balance measured (journal Passe DB9): the rivals\' blows recalibrated, a spammer who guards every sequence loses to most rivals', () => {
-  assert.deepEqual([ST.POWER.foeLight, ST.POWER.foeHeavy, ST.POWER.foeSkill], [4.032, 12.096, 18.144]);
+test('the balance measured (journal Passes DB9 / DB10): the rivals\' blows at the DB7 sheet\'s strength, a spammer who guards every sequence loses to most rivals', () => {
+  // the DB7 sheet's own strength (the operator's « The DB7 sheet's curve », journal Passe DB10)
+  assert.deepEqual([ST.POWER.foeLight, ST.POWER.foeHeavy, ST.POWER.foeSkill], [5.6, 16.8, 25.2]);
   assert.deepEqual([V.V2_LIGHT_GAUGE, V.V2_GUARD_GAUGE], [0.5, 2]);
   // the spammer: taps whenever free outside the opponent's sequences, holds the guard through every sequence, dodges the heavy blows 3 times in 5
   let wins = 0;

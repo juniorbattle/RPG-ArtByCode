@@ -584,7 +584,7 @@ Les décisions A3 sont citées mot pour mot et datées au journal avant la mise 
 
 ### 19.6 Les réglages de la mise en œuvre (journal Passe DB9)
 
-- **Les coups des rivaux** : ×0,72 des puissances de la fiche DB7 (simple 4,03, lourd 12,1, compétence 18,1 contre Ren à stats égales), recalés sur des parties entières (DB4-5) : le joueur préparé du TournamentLab à 60,0 % de ses combats.
+- **Les coups des rivaux** : à la force de la fiche DB7 (simple 5,6, lourd 16,8, compétence 25,2 contre Ren à stats égales). La réponse de l'opérateur du 09/11/2026, mot pour mot « The DB7 sheet's curve » (journal Passe DB10), à la question de la référence de DB4-5 : le joueur attendu de la fiche, plus le joueur du TournamentLab qui n'exerce jamais ses compétences (×0,72 en Passe DB9). La poule 24 / 61 / 90 %, le tableau 47 / 74 / 94 %, la finale 29 / 70 / 94 % (faible / moyen / fort).
 - **Deux nombres « à régler » du § 6** (ce que chaque coup ajoute à la jauge) :
   - l'attaque simple 0,5 (2 depuis DB-5) ;
   - un coup gardé ajoute deux fois sa part à la jauge du gardien (une fois avant), une règle pour les deux.

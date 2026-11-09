@@ -131,4 +131,4 @@ export function runV2Fingerprint(d: ChargedDuel, seen?: (events: ReturnType<Char
  *  again under V2_FOE_HIT, journal Passe VP4; the script and the rule of V2-2, journal Passe V2C1; the rivals' blows and health of journal Passe V2C2;
  *  the heavy attack a skill, the charge times and the charged blows' power trimmed, the script's holds on the new tiers, journal Passe CH1; one
  *  release waiting at most, journal Passe DB1; the duel of journal Passe DB3 and three taps before each charge) */
-export const V2_SIM_HASH = '8:5:stunned:2.900:70.000:-:-;596:0:idle:0.917:6.741:-:-;77.392|cd:0.000,0.000,0.000,0.000|1:0.933:0';
+export const V2_SIM_HASH = '55:2:stunned:6.225:70.000:-:-;564:0:idle:5.783:36.286:-:-;83.383|cd:7.742,0.000,0.000,0.000|0:0.000:0';

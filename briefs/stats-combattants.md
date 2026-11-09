@@ -182,7 +182,7 @@ Le bot du jeu (faible 0,2, moyen 0,5, fort 0,9) contre les sept rivaux, 10 comba
 
 - La fiche DB7 relue : six cartes sur sept à la recommandation ; DB7-1 « Ajouter la Vivacité (vitesse de charge) », avec la note « certains adversaires seront plus rapide que d'autres et il en est de meme pour notre protagonist ». Cinq stats donc : la Vivacité règle les temps de charge de Ren (× 10 / Vivacité) et le tempo d'un rival ; l'équipement qui touchait la charge donne des points de Vivacité (le sabre et les bottes +1, la cotte et le haubert −0,5) ; une séance peut la choisir.
 - Appliqué dans le jeu par défaut (`src/combat/stats.ts`), avec les règles de DB5, et trois réglages de la mise en œuvre (`briefs/combat-system.md` § 19.6) :
-  - les coups des rivaux ×0,72, recalés à six combats sur dix ;
+  - les coups des rivaux ×0,72 recalés sur le joueur du laboratoire (Passe DB9), puis à la force même de la fiche sur la réponse de l'opérateur « The DB7 sheet's curve » (Passe DB10) ;
   - l'attaque simple remplit la jauge de 0,5 ;
   - un coup gardé remplit deux fois la jauge du gardien.
 - Les deux derniers parce qu'un joueur qui tenait la garde à chaque séquence et ne faisait que l'attaque simple gagnait contre quatre rivaux sur sept.

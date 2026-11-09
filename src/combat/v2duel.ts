@@ -217,13 +217,13 @@ export function scaleTempo(d: DynData, k: number): void {
  *  within 5 %); measured again with the duel of journal Passe DB3 (the riposte, the skills x4, the break, V2_FOE_HIT 3.4, V2_FOE_HP 1.8: every kill
  *  a little under half of before, Vessa now as hard to bring down as Marek, her dodge taking the skills that carry the damage; held-out seeds within
  *  8 %). Measured again with the fighters' stats of journal Passes DB8 / DB9 (each rival's sheet, the formula, the DB5 rules, the guard's and the light
- *  attack's gauge, the rivals' blows recalibrated): the reference is Ren at the start, 150 health without limit here; calibration seeds 1..80, held-out
- *  81..120 within 10 % but Vessa's kill (13 %: her dodge makes it skewed); Vessa second to Marek, her quick kit dealing the most. A rival a beats b in the
- *  time b takes the reference to bring down
+ *  attack's gauge, the rivals' blows at the DB7 sheet's strength, journal Passe DB10): the reference is Ren at the start, 150 health without limit here;
+ *  calibration seeds 1..80, held-out 81..120 within 10 % but Vessa's kill (13 %: her dodge makes it skewed); Vessa second to Marek, her quick kit dealing the
+ *  most. A rival a beats b in the time b takes the reference to bring down
  *  over a's damage against it: the reference's own damage cancels out of the race. */
 export const V2_RACERS: Record<string, { kill: number; dps: number }> = {
-  tobin: { kill: 92.2, dps: 0.5 }, orla: { kill: 141.4, dps: 0.77 }, cassius: { kill: 124.4, dps: 0.62 }, ilse: { kill: 166.8, dps: 0.68 },
-  rhosk: { kill: 166.6, dps: 0.57 }, vessa: { kill: 145.0, dps: 1.09 }, marek: { kill: 199.0, dps: 0.97 },
+  tobin: { kill: 92.2, dps: 0.68 }, orla: { kill: 141.4, dps: 1.11 }, cassius: { kill: 124.4, dps: 0.9 }, ilse: { kill: 166.8, dps: 1.0 },
+  rhosk: { kill: 166.6, dps: 0.81 }, vessa: { kill: 145.0, dps: 1.64 }, marek: { kill: 199.0, dps: 1.23 },
 };
 /** how sharply the version 2's race decides a match (« proposé »: lower than today's 14, so a rival a third weaker still wins one in ten) */
 export const V2_RACE_SLOPE = 8;

@@ -303,8 +303,8 @@ test('the balance toward « modéré » (L7-4, CB-11; « proposé »): a stairca
 });
 
 test('the harder rivals (journal Passes VP4, V2C2) under V2-2 « Rien ne la coupe » (journal Passe V2C1): whole version 2 games on seeds 1..12, a staircase by the player\'s skill and preparation', () => {
-  // recalibrated with the fighters' stats of journal Passes DB8 / DB9 (the operator's DB4-5 « Recaler pour garder six sur dix »): the rivals' blows x 0.72 of the DB7 sheet's
-  assert.deepEqual([ST.POWER.foeLight, ST.POWER.foeHeavy, ST.POWER.foeSkill], [4.032, 12.096, 18.144]);
+  // the fighters' stats of journal Passes DB8 to DB10: the rivals' blows at the DB7 sheet's strength (the operator's « The DB7 sheet's curve »)
+  assert.deepEqual([ST.POWER.foeLight, ST.POWER.foeHeavy, ST.POWER.foeSkill], [5.6, 16.8, 25.2]);
   const S = Array.from({ length: 12 }, (_, i) => i + 1);
   const at = (skill) => ({ name: `diligent-${skill}`, skill, choose: (st) => { const a = L.POLICIES.diligent.choose(st); return a.type === 'fight' ? { type: 'fight', outcome: L.botOutcome(st, skill) } : a; } });
   const idle = L.labReport(S, L.POLICIES.idle, 'v2'), prepared = L.labReport(S, L.POLICIES.diligent, 'v2'), expert = L.labReport(S, at(0.9), 'v2');
@@ -313,12 +313,14 @@ test('the harder rivals (journal Passes VP4, V2C2) under V2-2 « Rien ne la coup
   // V2C1), found again by the rivals' harder blows and health (the operator's « Oui, recaler », journal Passe V2C2)
   // since the fighters' stats (journal Passes DB8 / DB9) a player who only fights wins a little at the pool, as the DB7 sheet's weak player (17 %); a fifth at most
   assert.ok(idle.rates.playerWins <= 0.25, `idle ${idle.rates.playerWins}`);
-  assert.ok(prepared.rates.playerWins >= 0.5 && prepared.rates.playerWins <= 0.75, `prepared ${prepared.rates.playerWins}`);
-  assert.ok(prepared.v2.madeCut >= 0.75 && prepared.v2.champion <= 0.15, `prepared ${JSON.stringify(prepared.v2)}`);
+  // since journal Passe DB10 the reference of six bouts in ten is the DB7 sheet's expected player, who drills his skills (the operator's « The DB7 sheet's
+  // curve »): the lab's prepared player, who never does, wins about four bouts in ten (42 % on seeds 1..50) and makes the cut three games in four
+  assert.ok(prepared.rates.playerWins >= 0.33 && prepared.rates.playerWins <= 0.55, `prepared ${prepared.rates.playerWins}`);
+  assert.ok(prepared.v2.madeCut >= 0.5 && prepared.v2.champion <= 0.15, `prepared ${JSON.stringify(prepared.v2)}`);
   // since the fighters' stats (journal Passes DB8 / DB9) the final is the epic of DB7-6 (PV x 2.5 and stats): the lab's players never drill their skills,
   // and at level 1 Marek is not beaten in the final even at 0.9 (a player at level 3 beats him seven times in ten at 0.6: tools/duel-balance.mjs); the
-  // expert still wins most of its bouts and reaches the final
-  assert.ok(expert.rates.playerWins >= 0.7 && expert.v2.finalist >= 0.2, `expert ${expert.rates.playerWins} ${JSON.stringify(expert.v2)}`);
+  // expert still wins most of its bouts and makes the cut (the final rarely, at level 1: journal Passe DB10)
+  assert.ok(expert.rates.playerWins >= 0.6 && expert.v2.madeCut >= 0.75, `expert ${expert.rates.playerWins} ${JSON.stringify(expert.v2)}`);
   assert.ok(idle.rates.playerWins < prepared.rates.playerWins && prepared.rates.playerWins < expert.rates.playerWins, 'the staircase');
 });
 
