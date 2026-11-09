@@ -2,7 +2,7 @@ import type { Action, GameState } from '../simulation';
 import { chargeLadder, nextLevel, skillFigures, type SkillFigures } from '../simulation/preview';
 import { v2KitOf } from '../simulation/v2';
 import { RIVALS } from '../narrative/roster';
-import { skillName, tx } from '../narrative/text';
+import { num, skillName, tx } from '../narrative/text';
 import { SKILL_BOOK } from '../combat/skillbook';
 import { figHtml, statsHtml } from './wares';
 import { arrowKeys, el, esc, fillFoot, footBtn, pickRow, scrollFade } from './style';
@@ -25,7 +25,7 @@ function doesWhat(f: SkillFigures): string {
 
 /** the figures now and at the next level */
 function cmpHtml(now: SkillFigures, next: SkillFigures | null, level: number): string {
-  const row = (label: string, a: number, b: number | undefined, unit = ''): string => `<span class="l">${label}</span><span class="${next ? 'v' : 'a'}">${a}${unit}</span><span class="a${b !== undefined && b !== a ? ' up' : ''}">${b === undefined ? '' : `${b}${unit}`}</span><span class="m"></span>`;
+  const row = (label: string, a: number, b: number | undefined, unit = ''): string => `<span class="l">${label}</span><span class="${next ? 'v' : 'a'}">${num(a)}${unit}</span><span class="a${b !== undefined && b !== a ? ' up' : ''}">${b === undefined ? '' : `${num(b)}${unit}`}</span><span class="m"></span>`;
   const rows = [
     now.damage ? row(tx('ui.skill.damage'), now.damage, next?.damage) : '',
     now.gauge ? row(tx('ui.skill.gauge'), now.gauge, next?.gauge) : '',
@@ -71,7 +71,7 @@ export function skillsPage(host: SkillsHost, sheet: string | null): { root: HTML
     (card.querySelector('.pm-purse b') as HTMLElement).textContent = String(chosen.size);
     const ladder = card.querySelector('.pm-ladder'), wide = card.querySelector('.pm-ladder2');
     if (ladder) ladder.innerHTML = `<p class="pm-sub">${tx('ui.skill.ladder')}</p>${ladderHtml(host.state(), four())}`;
-    if (wide) wide.innerHTML = `<p class="ttl">${tx('ui.skill.ladder')}</p>${chargeLadder(host.state(), four()).map((t) => `<div><dt>${esc(t.id === 'light' ? tx('ui.skill.light') : skillName(t.id))}</dt><dd>${t.id === 'light' ? tx('ui.skill.tap') : `${t.at} s`}</dd></div>`).join('')}`;
+    if (wide) wide.innerHTML = `<p class="ttl">${tx('ui.skill.ladder')}</p>${chargeLadder(host.state(), four()).map((t) => `<div><dt>${esc(t.id === 'light' ? tx('ui.skill.light') : skillName(t.id))}</dt><dd>${t.id === 'light' ? tx('ui.skill.tap') : `${num(t.at)} s`}</dd></div>`).join('')}`;
     if (go) go.disabled = chosen.size !== 4;
     const lv = kit.levels[now], st = host.state(), f = skillFigures(st, now, lv), up = nextLevel(st, now), k = SKILL_BOOK[now];
     const said = !up ? tx('ui.skill.top') : up.by === 'drill' ? tx('ui.skill.drill', { level: up.level }) : tx('ui.skill.challenge', { name: RIVALS[up.teacher!].name });

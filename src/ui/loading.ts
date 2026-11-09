@@ -44,7 +44,9 @@ export function showLoading(time: TimeOfDay | null): Loading {
 /** the page's tone (`installDesign`) and the screen's opening line: the night, or the day */
 export function toneLoading(label: HTMLElement, time: TimeOfDay | null): void {
   installDesign(time);
-  if (!label.classList.contains('err')) label.textContent = time && time !== 'night' ? 'Painting the day…' : 'Painting the night…';
+  // the page's language (journal Passe RG4: `<html lang>`, set before the screen; this screen stays free of the game's modules)
+  const fr = document.documentElement?.lang === 'fr';
+  if (!label.classList.contains('err')) label.textContent = time && time !== 'night' ? (fr ? 'On peint le jour…' : 'Painting the day…') : (fr ? 'On peint la nuit…' : 'Painting the night…');
 }
 
 /** a scene's progress: the gauge's fill; the status line stays the screen's own, no developer's word on it (UM-R3 « Tous les retirer »), the generator's
@@ -57,6 +59,6 @@ export function progressOn(label: HTMLElement, bar: HTMLElement): (phase: string
 export function loadingError(label: HTMLElement, e: any): void {
   console.error(e);
   label.classList.add('err');
-  label.textContent = 'ERROR: ' + (e?.message ?? e);
+  label.textContent = (document.documentElement?.lang === 'fr' ? 'ERREUR : ' : 'ERROR: ') + (e?.message ?? e);
   (window as any).__error = String(e?.stack ?? e);
 }

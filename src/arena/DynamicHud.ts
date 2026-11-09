@@ -32,6 +32,17 @@ export const DYN_TEXTS_FR: DynTexts = {
   skillShorts: { t1: 'Éclair', t2: 'Fente', t3: 'Tourbillon', t4: 'Estocade', d1: 'Rempart', s1: 'Ferveur' }, preparing: 'Préparation',
   wardTag: (s) => `Rempart ${s} s`, boostTag: (s) => `Ferveur ${s} s`, wardOn: 'Rempart', boostOn: 'Ferveur',
 };
+/** the play mode's words in French (journal Passe RG4, RG-14): the prototype's table, the glossary's names (« Taille éclair », « Estoc », « Rupture ») and an
+ *  official bout's lines (no restart); the arena's own page (`?scene=arena`) keeps the prototype's table */
+export const DYN_TEXTS_FR_GAME: DynTexts = {
+  ...DYN_TEXTS_FR,
+  light: 'Rapide', heavy: 'Puissante', shorts: ['Éclair', 'Fente', 'Tourbillon', 'Estoc'],
+  subtitle: 'Poule des huit · combat officiel', subRen: 'challenger', subMarek: 'adversaire', health: (n) => `Santé de ${n}`,
+  restart: 'Un combat officiel ne se recommence pas', rotate: 'Tournez l’appareil : l’arène se joue en paysage', window: 'Fenêtre d’esquive', apLabel: 'Points d’action',
+  isDown: (n) => `${n} est à terre`, breakBar: 'Rupture', brokenTag: (s) => `Rompu · ${s} s`, foeBroken: (f) => `${f} rompu — frappez !`, youBroken: 'Résistance rompue',
+  breakFloat: 'Rupture !',
+  skillShorts: { t1: 'Éclair', t2: 'Fente', t3: 'Tourbillon', t4: 'Estoc', d1: 'Rempart', s1: 'Ferveur' },
+};
 export const DYN_TEXTS_EN: DynTexts = {
   ...TEXTS_EN,
   resist: 'Resistance', breakBar: 'Break', brokenTag: (s) => `Broken · ${s} s`,

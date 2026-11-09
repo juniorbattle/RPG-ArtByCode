@@ -1,5 +1,5 @@
 import { placeName, type GameState, type PlaceId, type SlotId } from '../simulation';
-import { tx, type TextKey } from '../narrative/text';
+import { lang, shortName, tx, type TextKey } from '../narrative/text';
 import { PEOPLE } from '../narrative/people';
 import { POINTS } from '../narrative/roster';
 import { V2_DAY_KIND, V2_DAYS } from '../tournament/v2calendar';
@@ -78,7 +78,9 @@ function list(xs: Array<string | number>): string { return xs.length < 2 ? Strin
 const daysOfKind = (...k: string[]): number[] => Object.entries(V2_DAY_KIND).filter(([, v]) => k.includes(v)).map(([d]) => +d);
 const dayOf = (k: string): number => daysOfKind(k)[0];
 const nameOf = (id: string): string => PEOPLE[id]?.name ?? id;
-const placeShort = (p: PlaceId): string => placeName(p, true).replace(/^the /, '');
+/** a place in a chapter's text: without its article in English (« the Arena Forecourt » read « Arena Forecourt »), with it in French, where the table finds it
+ *  and the article meets the word before it (journal Passe RG4) */
+const placeShort = (p: PlaceId): string => (lang() === 'fr' ? placeName(p, true) : placeName(p, true).replace(/^the /, ''));
 /** the player's first bout's day */
 const firstBout = (s: GameState): number => Math.min(...s.tournament.matches.filter((m) => m.a === 'player' || m.b === 'player').map((m) => m.day), dayOf('pool'));
 
@@ -252,7 +254,7 @@ function figure(s: GameState, fig: Fig, here: () => string | null): string {
     const kept = keptPlaces(), u = here();
     return `<div class="tu-places">${(['district', 'forecourt', 'training', 'lanterns'] as PlaceId[]).map((p) => {
       const img = p === s.place && u ? u : kept[p];
-      return `<figure class="tu-fig${img ? '' : ' unseen'}">${img ? `<img src="${img}" alt="">` : `<span>${tx('tut.fig.unseen')}</span>`}<figcaption>${esc(placeShort(p))}</figcaption></figure>`;
+      return `<figure class="tu-fig${img ? '' : ' unseen'}">${img ? `<img src="${img}" alt="">` : `<span>${tx('tut.fig.unseen')}</span>`}<figcaption>${esc(shortName(placeName(p, true)))}</figcaption></figure>`;
     }).join('')}</div>`;
   }
   if (fig === 'odds') {

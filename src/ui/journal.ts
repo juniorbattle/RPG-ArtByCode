@@ -1,5 +1,5 @@
 import type { GameEvent, GameState } from '../simulation';
-import { said, tx, type TextKey } from '../narrative/text';
+import { cap, said, tx, word, type TextKey } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
 import { PEOPLE } from '../narrative/people';
 import { PLAYER_ID, RIVALS } from '../narrative/roster';
@@ -61,7 +61,7 @@ export function journalPage(s: GameState, close: () => void): { root: HTMLElemen
   };
   const show = (d: JournalDay): void => {
     title.textContent = tx('ui.dayN', { day: d.day });
-    detail.innerHTML = d.slots.map((x) => `<p class="pm-sub">${esc(x.slot[0].toUpperCase() + x.slot.slice(1))}</p>${x.entries.map(entry).join('')}`).join('');
+    detail.innerHTML = d.slots.map((x) => `<p class="pm-sub">${esc(cap(word(x.slot)))}</p>${x.entries.map(entry).join('')}`).join('');
     detail.scrollTop = 0; fit();
   };
   for (const d of days) list.appendChild(pickRow(`<span>${tx('ui.dayN', { day: d.day })}<span class="why">${esc(d.bout ? sentence(said(d.bout.text, d.bout.$t)) : tx(d.size === 1 ? 'ui.journal.one' : 'ui.journal.many', { n: d.size }))}</span></span>`, { select: () => show(d), press: () => {} }));

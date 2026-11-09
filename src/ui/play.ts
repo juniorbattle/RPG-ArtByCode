@@ -2,6 +2,8 @@ import type { TimeOfDay } from '../atmosphere/DayState';
 import { actions, advance, hash, isV2, lookOf, makeV2, namedState, newGame, newGameV2, wantsV2, type Action, type GameState } from '../simulation';
 import { loadingError, toneLoading } from './loading';
 import { readSave, writeSave } from './save';
+import { lang, useLanguage } from '../narrative/text';
+import { pageInEnglish } from '../settings/language';
 
 /** The play mode's entry (journal Passe L3; `?play=1`, the tools' way in, and later the title screen's « New game » / « Continue »): the game
  *  state comes from the save (or a new game), and the page shows the scene of the state's place: the district (the town, App), or the
@@ -13,7 +15,7 @@ import { readSave, writeSave } from './save';
 export interface Boot { canvas: HTMLCanvasElement; params: URLSearchParams; label: HTMLElement; bar: HTMLElement; loading: HTMLElement }
 
 /** the tools' parameters carried from the address into every play-mode page (measurements, captures, culling checks) */
-const CARRY = ['fps', 'vis', 'viscache', 'painters', 'res', 'msaa', 'refl', 'camera', 'player', 'static', 'occ', 'freeze', 'gpuprof', 'noreload', 'spriteedge', 'npcfacing', 'dyn', 'input', 'cutscene', 'tutorial', 'fx'];
+const CARRY = ['fps', 'vis', 'viscache', 'painters', 'res', 'msaa', 'refl', 'camera', 'player', 'static', 'occ', 'freeze', 'gpuprof', 'noreload', 'spriteedge', 'npcfacing', 'dyn', 'input', 'cutscene', 'tutorial', 'lang', 'fx'];
 
 /** the address of a play-mode page, the carried parameters kept */
 export function playUrl(params: URLSearchParams, extra: Record<string, string> = {}): string {
@@ -83,6 +85,8 @@ export function pageTone(params: URLSearchParams, s: GameState): TimeOfDay {
 export async function startPlay(b: Boot): Promise<void> {
   try {
     const { state, note } = startingState(b.params);
+    // today's game (v2=0), kept to compare, speaks English (the operator's RG-14, journal Passe RG4)
+    if (!isV2(state) && lang() !== 'en') { useLanguage('en'); pageInEnglish(); }
     // the loading screen takes the tone of the page it opens (journal Passe UI4), before its first frame
     toneLoading(b.label, pageTone(b.params, state));
     writeSave(state);

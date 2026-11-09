@@ -12,7 +12,7 @@ import { portraitUrl } from './portraits';
 import { downloadSave, loadSaveFile, writeSave } from './save';
 import { arrowKeys, el, esc, footBtn, footOf, injectStyle, overlay, pageShell, scrollFade } from './style';
 import { skillsPage } from './skills';
-import { said, tx, type TextRef } from '../narrative/text';
+import { cap, itemText, lang, said, shortName, tx, word, type TextRef } from '../narrative/text';
 import { isV2 } from '../simulation/v2';
 import { pendingFinal, stageName, v2EndLine, v2Ranking } from '../tournament/v2calendar';
 import { itemName, weaponTier } from '../simulation/v2gear';
@@ -253,11 +253,11 @@ export class TownUi {
     const next = v2 ? (s.over ? tx('v2.over') : opp ? tx('v2.next.bout', { stage: stageName(m!), name: opp.name, day: m!.day, when }) : fo ? tx('v2.next.bout', { stage: tx('v2.stage.final'), name: fo.name, day: fin!.day, when: '' }) : tx('v2.next.done'))
       : s.over ? tx('ui.next.over') : opp ? tx('ui.next.bout', { name: opp.name, day: m!.day, when }) : tx('ui.next.done');
     const slotName = s.slot === 'evening' ? (dusk(s) ? tx('ui.slot.sunset') : 'evening') : s.slot, days = v2 ? 10 : 3;
-    const place = placeName(s.place, v2).replace(/^the /, '');
+    const place = shortName(placeName(s.place, v2));
     this.status.setAttribute('aria-label', v2 ? tx('ui.clockV2', { day: s.day, slot: slotName }) : tx('ui.clock', { day: s.day, slot: slotName }));
     this.status.innerHTML = `<div class="clock">${tx('ui.clockDay', { day: s.day })} <span>${tx('ui.clockOf', { days })}</span></div>
       <div class="ticks">${Array.from({ length: days }, (_, i) => `<i class="${i + 1 < s.day ? 'on' : i + 1 === s.day ? 'cur' : ''}"></i>`).join('')}</div>
-      <div class="where">${esc(slotName[0].toUpperCase() + slotName.slice(1))} · ${esc(place)}</div><div class="next">${esc(next)}</div>`;
+      <div class="where">${esc(cap(word(slotName)))} · ${esc(place)}</div><div class="next">${esc(next)}</div>`;
     // a version 2 game (lot L2a, EV-2; L2-2 « Des marques »): the marks of Hale's ledger beside the reputation, only once there is one (two numbers apart)
     const sus = v2 ? marksOf(s) : 0;
     this.figs.innerHTML = `<div><b>${P.coins}</b><small>${tx('ui.coins')}</small></div><div><b>${P.reputation}</b><small>${tx('ui.reputation')}</small></div>${sus > 0 ? `<div class="hurt"><b>${sus}/3</b><small>${tx('ui.marks')}</small></div>` : ''}${P.injury ? `<div class="hurt"><b>${P.injury}</b><small>${P.injury > 1 ? tx('ui.badlyHurt') : tx('ui.hurt')}</small></div>` : ''}`;
@@ -285,7 +285,7 @@ export class TownUi {
     const root = el('div', 'pm pm-talk'), card = el('div', 'pm-dlg here'), side = el('div', 'side'), list = el('div', 'opts');
     root.dataset.here = '1';
     root.setAttribute('role', 'dialog'); root.setAttribute('aria-label', tx('ui.here'));
-    card.innerHTML = `<div class="who"><h2 class="pm-h">${esc(placeName(s.place, v2).replace(/^the /, ''))}</h2><div class="pm-sub">${esc(s.player.name)}${s.player.items.length ? ` · ${esc(s.player.items.map((i) => i.replace('-', ' ')).join(', '))}` : ''}</div>${this.saidHtml()}</div>`;
+    card.innerHTML = `<div class="who"><h2 class="pm-h">${esc(shortName(placeName(s.place, v2)))}</h2><div class="pm-sub">${esc(s.player.name)}${s.player.items.length ? ` · ${esc(s.player.items.map((i) => (lang() === 'en' ? i.replace('-', ' ') : itemText(i, 'name'))).join(', '))}` : ''}</div>${this.saidHtml()}</div>`;
     if (fight) {
       const b = el('button', 'pm-btn primary', `<span>${tx('ui.enterArena')}</span><span class="cost">${tx('ui.oneSlot')}</span>`);
       // the version 2: the match sheet chooses the four skills first (lot V2, journal Passe V2)
@@ -391,7 +391,7 @@ export class TownUi {
     const s = this.st, p = PEOPLE[who];
     if (!p) return;
     const talk = actions(s).find((o) => o.action.type === 'talk' && (o.action as { who: string }).who === who);
-    if (!talk?.ok) { this.said = []; void this.card(`<p>${esc(talk?.reason ?? `${p.name} is not here.`)}</p>`, tx('ui.close'), true); return; }
+    if (!talk?.ok) { this.said = []; void this.card(`<p>${esc(talk?.reason ?? tx('avail.notHere', { name: p.name }))}</p>`, tx('ui.close'), true); return; }
     this.opening = true;
     try { this.run({ type: 'talk', who }); } finally { this.opening = false; }
     const st = this.st, lines = linesOf(st, who), url = portraitUrl(who);

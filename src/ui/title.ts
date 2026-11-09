@@ -3,7 +3,8 @@ import { cleanName } from '../simulation';
 import { arrowKeys, el, esc, injectStyle } from './style';
 import { tx } from '../narrative/text';
 import type { Look } from '../audio/score';
-import { layout, onSettings, shownKey } from '../settings/settings';
+import { layout, LANGS, onSettings, shownKey, type Lang } from '../settings/settings';
+import { chooseLanguage, pageLang } from '../settings/language';
 
 /** The title screen (choice P2, journal Passe L4; the operator's decisions UM-R4 « La vraie ville derrière » and UM2-4 « Le titre d'abord, la ville apparaît
  *  derrière », journal Passe UM3): « New game » (it asks the player's name, choice K2; a version 2 game, the default game since the operator's decision
@@ -15,6 +16,9 @@ import { layout, onSettings, shownKey } from '../settings/settings';
 
 /** the walking keys of the player's keyboard (journal Passe RG2, RG-7: WASD on QWERTY, ZQSD on AZERTY) */
 const keysLine = (): string => tx('ui.title.keys', { move: ['w', 'a', 's', 'd'].map((k) => shownKey(k, layout())).join('') });
+
+/** each language named in its own words (the title's line, RG-10) */
+const LANG_NAME: Record<Lang, string> = { fr: 'Français', en: 'English' };
 
 /** `look`: the day state of the town behind the screen (its ambience under the title's music) */
 export interface TitleChoice { explore: () => void; look?: Look }
@@ -42,6 +46,11 @@ const CSS = `
 #title-menu input{width:100%;margin:6px 0 10px;padding:8px 10px;font:inherit;color:var(--ds-ivory);background:none;border:1px solid var(--ds-line);border-radius:0}
 #title-menu input::placeholder{color:var(--ds-muted)}
 #title-menu .warn{color:var(--ds-accent)}
+#title-menu .langs{display:flex;align-items:center;gap:2px;padding:4px 0 6px;color:var(--ds-muted);font-size:var(--ds-fs-label)}
+#title-menu .langs button{min-height:44px;padding:0 10px;font:inherit;color:var(--ds-muted);background:none;border:0;border-radius:0;cursor:pointer}
+#title-menu .langs button:first-child{padding-left:0}
+#title-menu .langs button[aria-pressed=true]{color:var(--ds-ivory)}
+#title-menu .langs button:hover,#title-menu .langs button:focus{color:var(--ds-ivory);outline:0;text-decoration:underline 1px var(--ds-accent);text-underline-offset:6px}
 @media (max-width:900px){#title-screen .wrap{grid-template-columns:minmax(0,1fr);row-gap:18px;padding:72px 18px 18px}}
 `;
 
@@ -87,6 +96,22 @@ export function showTitle(c: TitleChoice): { live(): void } {
         document.body.appendChild(p.root); p.focus();
       });
     });
+    // the language's line (the operator's RG-10 « Réglages et ligne de l’écran titre », journal Passe RG4): each language in its own words, the page
+    // reloaded to speak the one chosen (the settings' language part does the same)
+    const langs = el('div', 'langs');
+    (['fr', 'en'] as const).filter((l) => LANGS.includes(l)).forEach((l, i) => {
+      if (i) langs.appendChild(el('span', '', '·'));
+      const b = el('button', '', LANG_NAME[l]);
+      b.setAttribute('lang', l); b.dataset.id = `lang-${l}`; b.setAttribute('aria-pressed', String(pageLang() === l));
+      b.addEventListener('click', () => chooseLanguage(l));
+      langs.appendChild(b);
+    });
+    langs.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const all = [...langs.querySelectorAll('button')], i = all.indexOf(document.activeElement as HTMLButtonElement);
+      e.preventDefault(); all[(i + (e.key === 'ArrowRight' ? 1 : -1) + all.length) % all.length].focus();
+    });
+    menu.appendChild(langs);
     ((first ?? menu.querySelector('.pm-btn')) as HTMLButtonElement).focus();
   };
   const askName = (): void => {

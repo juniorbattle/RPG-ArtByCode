@@ -120,8 +120,8 @@ export function shownKey(key: string, layout: Layout): string {
 
 // ---------------------------------------------------------------- the language (RG-9)
 
-/** the languages the game is written in (the French comes with the second lot of journal Passe RG2) */
-export const LANGS: readonly Lang[] = ['en'];
+/** the languages the game is written in (the French since the second lot of journal Passe RG2, journal Passe RG4) */
+export const LANGS: readonly Lang[] = ['en', 'fr'];
 
 /** the language the game speaks: the player's choice, else the browser's (French when it is, among the languages written), English in a driven browser */
 export function langOf(s: GameSettings, browser: string | undefined, isDriven: boolean): Lang {

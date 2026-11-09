@@ -41,10 +41,10 @@ export function nextBout(st: GameState): MatchRecord | null {
 export function deadline(st: GameState): string {
   if (isV2(st)) {
     const m = nextBout(st), opp = m ? RIVALS[m.a === PLAYER_ID ? m.b : m.a] : null;
-    if (m && opp) return `${esc(stageName(m))}: ${esc(opp.name)}, ${esc(opp.epithet)} — day ${m.day}, afternoon${m.day === st.day ? tx('ui.board.today') : ''}`;
+    if (m && opp) return `${esc(stageName(m))}: ${esc(opp.name)}, ${esc(opp.epithet)}${tx('v2.board.when', { day: m.day })}${m.day === st.day ? tx('ui.board.today') : ''}`;
     // a finalist before the final is drawn (lot L5: « Your bouts are fought » was said on days 7 and 8)
     const f = pendingFinal(st), fo = f?.foe ? RIVALS[f.foe] : null;
-    return f && fo ? `${esc(tx('v2.stage.final'))}: ${esc(fo.name)}, ${esc(fo.epithet)} — day ${f.day}, afternoon` : tx('v2.board.fought');
+    return f && fo ? `${esc(tx('v2.stage.final'))}: ${esc(fo.name)}, ${esc(fo.epithet)}${tx('v2.board.when', { day: f.day })}` : tx('v2.board.fought');
   }
   const next = ROUNDS.find((r) => r.day >= st.day && !st.tournament.matches.some((m) => m.round === r.round && m.winner && (m.a === PLAYER_ID || m.b === PLAYER_ID)));
   const opp = next?.pairs.find((p) => p.includes(PLAYER_ID))?.find((x) => x !== PLAYER_ID);

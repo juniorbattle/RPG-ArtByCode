@@ -1,4 +1,5 @@
 import { deserialize, serialize, type GameState } from '../simulation';
+import { tx } from '../narrative/text';
 
 /** The play mode's save (journal Passe L3): one slot in the browser's localStorage, plus a file to keep or move it (GAMEPLAY § 13:
  *  « sauvegarde/chargement »). Every access is guarded: a private window or blocked storage makes the game say so instead of failing. */
@@ -7,7 +8,7 @@ const KEY = 'cite-du-tournoi.save';
 
 export function readSave(): { state: GameState | null; error?: string } {
   let text: string | null = null;
-  try { text = localStorage.getItem(KEY); } catch { return { state: null, error: 'The browser does not let this page keep a save (private window or blocked storage).' }; }
+  try { text = localStorage.getItem(KEY); } catch { return { state: null, error: tx('ui.save.blocked') }; }
   if (!text) return { state: null };
   try { return { state: deserialize(text) }; } catch (e) { return { state: null, error: (e as Error).message }; }
 }

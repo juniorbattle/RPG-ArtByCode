@@ -21,7 +21,9 @@ export class Hud {
   constructor(private app: App) {
     if (!document.getElementById('ex-css')) { const st = document.createElement('style'); st.id = 'ex-css'; st.textContent = CSS; document.head.appendChild(st); }
     this.veil.id = 'ex-veil'; this.title.id = 'ex-title'; this.prompt.id = 'ex-prompt';
-    this.title.innerHTML = `Merchant District<div>${app.dayLabel ?? 'Night'} <span></span></div>`;
+    // Explore's words in the page's language (journal Passe RG4: `<html lang>`; this HUD stays free of the game's modules)
+    const fr = document.documentElement.lang === 'fr', DAY_FR: Record<string, string> = { Midday: 'Midi', Morning: 'Matin', 'End of day': 'Fin de journée' };
+    this.title.innerHTML = fr ? `Quartier marchand<div>${app.dayLabel ? DAY_FR[app.dayLabel] ?? app.dayLabel : 'Nuit'} <span></span></div>` : `Merchant District<div>${app.dayLabel ?? 'Night'} <span></span></div>`;
     this.state = this.title.querySelector('span')!;
     document.body.append(this.veil, this.title, this.prompt);
   }
@@ -30,8 +32,9 @@ export class Hud {
 
   update(): void {
     const a = this.app, near = a.actors?.nearForge, t = a.actors?.interactTarget;
-    this.state.textContent = a.config.forgeState === 'SABOTAGED_FORGE' ? '· the forge has been sabotaged' : '';
-    const msg = near ? (a.config.forgeState === 'NORMAL_FORGE' ? 'Sabotage the forge' : 'Restore the forge') : t ? 'Talk' : '';
+    const fr = document.documentElement.lang === 'fr';
+    this.state.textContent = a.config.forgeState === 'SABOTAGED_FORGE' ? (fr ? '· la forge a été sabotée' : '· the forge has been sabotaged') : '';
+    const msg = near ? (a.config.forgeState === 'NORMAL_FORGE' ? (fr ? 'Saboter la forge' : 'Sabotage the forge') : (fr ? 'Réparer la forge' : 'Restore the forge')) : t ? (fr ? 'Parler' : 'Talk') : '';
     if (msg === this.shown) return;
     this.shown = msg;
     if (msg) this.prompt.innerHTML = `<kbd>E</kbd>${msg}`;

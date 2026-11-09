@@ -6,7 +6,7 @@ import { itemAbout, itemName, weaponTier } from '../simulation/v2gear';
 import { PASSERS } from '../simulation/v2barter';
 import { isV2 } from '../simulation/v2';
 import { PEOPLE, titleOf } from '../narrative/people';
-import { said, skillName, tx, type TextKey, type TextRef } from '../narrative/text';
+import { num, said, skillName, tx, type TextKey, type TextRef } from '../narrative/text';
 import { SKILL_BOOK, skillAction } from '../combat/skillbook';
 import { chargeTime } from '../combat/skills';
 import { heroFigure, portraitUrl } from './portraits';
@@ -56,10 +56,11 @@ export const isWare = (o: ActionOption): boolean => WARE_TYPES.includes(o.action
 export const isGoods = (o: ActionOption): boolean => isWare(o) || isArg(o);
 
 /** « a mail shirt » as a line's name */
-const bare = (name: string): string => { const n = name.replace(/^an? /, ''); return n[0].toUpperCase() + n.slice(1); };
+// a name without its article, capitalised (« a whetstone » → « Whetstone », « une pierre à aiguiser » → « Pierre à aiguiser »)
+const bare = (name: string): string => { const n = name.replace(/^(?:an? |une? |des |les? |la |l’)/, ''); return n[0].toUpperCase() + n.slice(1); };
 
 export function statValue(id: StatId, v: number): string {
-  return id === 'charge' ? `${v.toFixed(2)} s` : id === 'taken' || id === 'gauge' || id === 'effect' ? `${Math.round(v)} %` : `${Math.round(v)}`;
+  return id === 'charge' ? `${num(v, 2)} s` : id === 'taken' || id === 'gauge' || id === 'effect' ? `${Math.round(v)} %` : `${Math.round(v)}`;
 }
 
 function goodsLine(s: GameState, o: ActionOption): Line {

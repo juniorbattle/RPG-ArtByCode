@@ -28,6 +28,7 @@ import { arenaRules, dynClip, dynClipFrame, dynKeys, dynPad, fxOn, tuneDyn, type
 import { FloorUI } from './FloorUI';
 import { chargeHudModel, makeV2Duel, runV2Script, V2_HELD, V2_KEYS, V2_PAD, V2_PRESETS } from './v2Arena';
 import { CHARGE_TEXTS_EN, CHARGE_TEXTS_FR } from './DynamicHud';
+import { lang } from '../narrative/text';
 import type { ChargedDuel, ChargeTier } from '../combat/charge';
 import type { CombatFx } from './fx/combatFx';
 import type { PieceId } from '../audio/plan';
@@ -334,7 +335,7 @@ export class ArenaApp {
     if (this.look) this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 2, -4), this.keyDir, 30, 30);
     else this.shadow.update(this.renderer, this.scene, new THREE.Vector3(0, 3.5, -6), MOON_DIR, 24, 9);
     if (!this.opts.params.has('clean')) {
-      this.hud = this.dyn ? new DynamicHud(this.dyn, this.set.portraits, this.opts.match?.texts as DynTexts | undefined, parseTime(this.opts.params), this.charge ? { texts: this.opts.match ? CHARGE_TEXTS_EN : CHARGE_TEXTS_FR, tiers: this.charge.tiers } : null)
+      this.hud = this.dyn ? new DynamicHud(this.dyn, this.set.portraits, this.opts.match?.texts as DynTexts | undefined, parseTime(this.opts.params), this.charge ? { texts: this.opts.match ? (lang() === 'fr' ? CHARGE_TEXTS_FR : CHARGE_TEXTS_EN) : CHARGE_TEXTS_FR, tiers: this.charge.tiers } : null)
         : new ArenaHud(this.classic!, this.set.portraits, this.opts.match?.texts, parseTime(this.opts.params));
     }
     if (this.hud) {
@@ -384,7 +385,7 @@ export class ArenaApp {
   openSettings(): void {
     if (!this.charge || !this.paused || this.moment || this.sim.over || this.settingsOpen) return;
     this.settingsOpen = true; document.body.classList.add('cdt-settings');
-    void import('../ui/settings').then((m) => { const p = m.settingsPage({ close: () => { this.settingsOpen = false; document.body.classList.remove('cdt-settings'); } }); document.body.appendChild(p.root); p.focus(); });
+    void import('../ui/settings').then((m) => { const p = m.settingsPage({ inDuel: true, close: () => { this.settingsOpen = false; document.body.classList.remove('cdt-settings'); } }); document.body.appendChild(p.root); p.focus(); });
   }
 
   private bindInput(): void {

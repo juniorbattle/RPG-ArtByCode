@@ -1,6 +1,6 @@
 import { ArenaApp } from '../arena/ArenaApp';
 import { TEXTS_EN } from '../arena/ArenaHud';
-import { DYN_TEXTS_EN } from '../arena/DynamicHud';
+import { DYN_TEXTS_EN, DYN_TEXTS_FR_GAME } from '../arena/DynamicHud';
 import { challengeSheetFor, dynSheetData, dynSheetView, matchSheetFor, sheetData, v2SheetData } from '../combat/match';
 import { V2_FOES, FOE_SKILLS } from '../combat/v2duel';
 import { isV2, v2KitOf } from '../simulation/v2';
@@ -11,7 +11,10 @@ import { GENERICS } from '../narrative/generics';
 import { boutPiece } from '../audio/plan';
 import { RIVALS } from '../narrative/roster';
 import { ACTION_NAMES_EN } from '../narrative/texts';
-import { said, tx, type TextRef } from '../narrative/text';
+
+/** the actions' names in the page's language (journal Passe RG4: the English through the table's `word`) */
+const actionNames = (): Record<string, string> => Object.fromEntries(Object.entries(ACTION_NAMES_EN).map(([k, v]) => [k, word(v)]));
+import { lang, said, tx, word, type TextRef } from '../narrative/text';
 import { arenaQuery, lookOf, standings, type GameState } from '../simulation';
 import { go, installGameApi, type Boot } from './play';
 import { writeSave } from './save';
@@ -51,9 +54,9 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
   const dyn = dynamicRules(st), v2 = isV2(st), view = dyn ? dynSheetView(sheet, opp.name, opp.id) : { assist: sheet.assist, intel: sheet.intel };
   // the version 2 (journal Passe V1): scouting also names the opponent's skills (C3), announced in the duel by the light alert
   if (v2 && view.intel.length) view.intel.push(tx('ui.arena.foeSkills', { name: opp.name, skills: (V2_FOES[opp.id]?.skills.list ?? []).map((k) => FOE_SKILLS[k.id].name).join(', ') }));
-  const v2d = v2 ? v2SheetData(sheet, ACTION_NAMES_EN, v2KitOf(st), v2Mods(st)) : null;
+  const v2d = v2 ? v2SheetData(sheet, actionNames(), v2KitOf(st), v2Mods(st)) : null;
   if (dyn && b.params.has('dyn')) q.set('dyn', b.params.get('dyn')!);
-  const texts = { ...(dyn ? DYN_TEXTS_EN : TEXTS_EN), subtitle: challenge ? tx(reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title') : v2 && m ? stageName(m) : tx('ui.arena.subtitle', { round: sheet.round }), subMarek: opp.epithet };
+  const texts = { ...(dyn ? (lang() === 'fr' ? DYN_TEXTS_FR_GAME : DYN_TEXTS_EN) : TEXTS_EN), subtitle: challenge ? tx(reprisal ? 'v2.challenge.reprisal' : 'v2.challenge.title') : v2 && m ? stageName(m) : tx('ui.arena.subtitle', { round: sheet.round }), subMarek: opp.epithet };
   const app = new ArenaApp({
     canvas: b.canvas, params: q,
     onProgress: progressOn(b.label, b.bar),
@@ -61,8 +64,8 @@ export async function startPlayArena(b: Boot, st0: GameState): Promise<void> {
       // a challenge or a reprisal in town (lot L2b, EV-5 « L’arène aux gradins vides »): the stands empty, no crowd, the lists' piece of the band
       ? { data: v2d.data, tiers: v2d.tiers, rules: 'v2', foe: opp.id, assist: view.assist, texts, piece: challenge ? 'lices' : boutPiece(m?.stage), ...(challenge ? { empty: true } : {}), onOver: (r) => void finish(r) }
       : dyn
-      ? { data: dynSheetData(sheet, ACTION_NAMES_EN), rules: 'dynamic', foe: opp.id, assist: view.assist, texts, onOver: (r) => void finish(r) }
-      : { data: sheetData(sheet, ACTION_NAMES_EN), foe: opp.id, assist: sheet.assist, texts, onOver: (r) => void finish(r) },
+      ? { data: dynSheetData(sheet, actionNames()), rules: 'dynamic', foe: opp.id, assist: view.assist, texts, onOver: (r) => void finish(r) }
+      : { data: sheetData(sheet, actionNames()), foe: opp.id, assist: sheet.assist, texts, onOver: (r) => void finish(r) },
   });
   (window as any).__arena = app;
   await app.init();

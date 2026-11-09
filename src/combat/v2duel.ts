@@ -3,6 +3,7 @@ import { skillAction } from './skillbook';
 import { DYN_PROFILES, dynDuelData, type DynProfile, type Mods } from './profiles';
 import { chargeTiers, type ChargeTier } from './charge';
 import { CHARGE_TRIM, atLevel, chargeTime } from './skills';
+import { localize } from '../narrative/text';
 
 /** The duel of the version 2 (lot V1 of briefs/cloud-session-v2-brief.md, journal Passe V1): the rules of the « tour par tour dynamique »
  *  (DynamicSim) under the three-button command and its charged attack (src/combat/charge.ts, the operator's decision A3 / AV-5), the player's
@@ -39,6 +40,8 @@ export const FOE_SKILLS: Record<string, DynActionDef> = {
   m_roar: boost('m_roar', 'War Roar', 8),
   m_hide: ward('m_hide', 'Bearskin', 7),
 };
+// the opponents' skill names in the language shown (journal Passe RG4); the duel's rules never read them
+for (const a of Object.values(FOE_SKILLS)) localize(a, ['name']);
 
 export interface V2Foe {
   /** its defence in its pauses (DynData.ai.defense) */

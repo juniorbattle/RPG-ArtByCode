@@ -39,10 +39,13 @@ function fill(key: string, t: string, vars?: Record<string, string | number>): s
     out += t.slice(last, m.index); last = m.index! + m[0].length;
     const k = m[1], form = m[2], v = vars?.[k];
     if (v === undefined) throw new Error(`text "${key}": no value for {${k}}`);
-    let s = String(v);
-    if (form) { const r = SAID.get(s); const f = r ? TABLE[`${r.k}|${form}`] : undefined; if (r && f !== undefined) s = fill(`${r.k}|${form}`, f, plain(r.v)); }
+    let s = typeof v === 'number' ? num(v) : String(v);
+    if (form && LANG === 'fr' && TABLE !== EN && typeof v === 'string') s = word(s);
+    if (form && form !== 'cap') { const r = SAID.get(s); const f = r ? TABLE[`${r.k}|${form}`] : undefined; if (r && f !== undefined) s = fill(`${r.k}|${form}`, f, plain(r.v)); }
     // in French, a value the code holds in English (a name, a place, a title) said through the table, then its article meets the word before it
-    if (LANG === 'fr' && TABLE !== EN) { if (typeof v === 'string') s = word(s); [out, s] = contract(out, s); }
+    if (LANG === 'fr' && TABLE !== EN) { if (typeof v === 'string' && !form) s = word(s); [out, s] = contract(out, s); }
+    // `{x|cap}`: a value at the head of a sentence (« le sergent Hale » → « Le sergent Hale »)
+    if (form === 'cap' && s) s = s[0].toUpperCase() + s.slice(1);
     out += s;
   }
   return out + t.slice(last);
@@ -72,6 +75,14 @@ function plain(v: TextRef['v']): Record<string, string | number> | undefined {
 /** an English word or sentence the code holds outside the table (a person's name and title, a rival's epithet, an event's words) in the language in use:
  *  the table's `=<the English>` entry, else the English itself (journal Passe RG4) */
 export function word(s: string): string { if (TABLE === EN || !s) return s; const t = TABLE[`=${s}`]; return t ?? s; }
+
+/** a number as the language in use writes it: the French decimal comma (« 1,5 s »); `digits` fixed decimals */
+export function num(v: number, digits?: number): string { const s = digits === undefined ? String(v) : v.toFixed(digits); return LANG === 'fr' && TABLE !== EN ? s.replace('.', ',') : s; }
+
+/** a capital first letter */
+export const cap = (s: string): string => (s ? s[0].toUpperCase() + s.slice(1) : s);
+/** a name without its article, capitalised, in the language in use (a place in the status line: « Merchant District », « Quartier marchand ») */
+export function shortName(s: string): string { return cap(word(s).replace(/^(the |le |la |les |l’|l')/i, '')); }
 
 /** a data table's English fields read in the language in use (a person's name and title, a rival's epithet and story): each field becomes a getter
  *  through `word`, the code that reads it unchanged; the simulation, run in English, reads the English */

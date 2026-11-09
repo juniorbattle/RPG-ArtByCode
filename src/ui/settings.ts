@@ -6,6 +6,7 @@ import {
   type GameSettings, type Lang, type Layout, type Quality,
 } from '../settings/settings';
 import { el, esc, fillFoot, footBtn, injectStyle, pickRow, scrollFade } from './style';
+import { chooseLanguage, pageLang } from '../settings/language';
 
 /** The settings page (the operator's sheet of journal Passe RG2: RG-1 « Une page « Réglages », quatre parties, titre et menu », RG-2 « Depuis la pause du
  *  duel aussi »): built as the journal, the four parts on the left (graphics, sound, controls, language), their settings on the right, one foot with
@@ -19,6 +20,8 @@ const SECTIONS: readonly SettingsSection[] = ['graphics', 'sound', 'controls', '
 export interface SettingsOptions {
   section?: SettingsSection;
   close(): void;
+  /** the duel's pause: a new language is kept for the next page (a bout is not reloaded) */
+  inDuel?: boolean;
 }
 
 const CSS = `
@@ -194,13 +197,13 @@ export function settingsPage(o: SettingsOptions): { root: HTMLElement; focus(): 
 
   const language = (): void => {
     for (const l of LANGS) {
-      const b = toggle(LANG_LABEL[l], () => (loadSettings().lang ?? langNow()) === l, () => saveSettings({ lang: l }));
+      const b = toggle(LANG_LABEL[l], () => (loadSettings().lang ?? pageLang()) === l, () => chooseLanguage(l, !o.inDuel));
       b.setAttribute('lang', l);
       detail.appendChild(b);
     }
+    // in a duel the bout goes on in its language, the next page speaks the new one
+    if (o.inDuel) detail.appendChild(note(tx('set.language.later')));
   };
-  /** the language spoken now (the page reads the table's: lot 1 has the English alone) */
-  const langNow = (): Lang => LANGS[0];
 
   // ---------------------------------------------------------------- the page
   let pendingFocus = false;

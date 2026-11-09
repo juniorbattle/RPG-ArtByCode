@@ -82,7 +82,8 @@ export function registrarOnCatch(s: GameState, emit: Emit): void {
 }
 
 const add = (s: GameState, who: string, n: number) => { s.town[who] = clamp((s.town[who] ?? 0) + n, -100, 100); };
-const names = (ids: string[]): string => { const n = ids.map(itemName); return n.length <= 1 ? n.join('') : `${n.slice(0, -1).join(', ')} and ${n[n.length - 1]}`; };
+/** the items named in a sentence, « a, b and c » (texts of the table, so that a page says them in its language, journal Passe RG4) */
+const names = (ids: string[]): string => ids.map(itemName).reduce((a, b, i, all) => (i === 0 ? b : tx(i === all.length - 1 ? 'list.and' : 'list.comma', { a, b })), '');
 
 /** dawn after a version 2 day (called when its evening ends, the next day ahead): the owners count what they had, then the watch searches a
  *  player it wants. The news are dated the next morning, where the player reads them. */
