@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2, DB7, RM3, DB8, DB9, DB10, ECO1, TF1, ECO2, ECO3, DB11, DB12, DB13, MD1, MK1, MK2, MK3, MK4, MK5, MK6 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1, TF1, ECO3, DB11, DB13, MD1, MK3, MK6, LA3, AL1, AU2) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2, DB7, RM3, DB8, DB9, DB10, ECO1, TF1, ECO2, ECO3, DB11, DB12, DB13, MD1, MK1, MK2, MK3, MK4, MK5, MK6, LA1, LA2 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1, TF1, ECO3, DB11, DB13, MD1, MK3, MK6, LA3, AL1, AU2, AU4) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -101,71 +101,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/88-passes-DB13-MD1.md`](journal/88-passes-DB13-MD1.md) | DB13, MD1 | 10/11 → 11/11 |
 | [`journal/89-passes-MK1-MK3.md`](journal/89-passes-MK1-MK3.md) | MK1, MK2, MK3 | 11/11 |
 | [`journal/90-passes-MK4-MK6.md`](journal/90-passes-MK4-MK6.md) | MK4, MK5, MK6 | 11/11 |
+| [`journal/91-passes-LA1-LA2.md`](journal/91-passes-LA1-LA2.md) | LA1, LA2 | 11/11 |
 
 ---
-
-## Passe LA1 — La liste des actions [Q] mise en avant : l'inventaire, les maquettes rendues dans le jeu et la fiche publiée ; rien d'appliqué (2026-11-11)
-
-### Demande
-- L'opérateur, le 2026-11-11, mot pour mot (transmis par la séance qui coordonne) : « je constate qu'on a un bouton permettant d'afficher nos activites secondaires possible qui propose des interactions de tout type mais je pense que nous pourrions mettre plus en evidence cette zone a l'ecran durant nos parcours afin d'inciter le joueur a voir ce qui a a faire durant la periode ».
-- Brief : inventorier la liste du lieu (Q, Y à la manette), décidée « liste à la demande » (UM-R2, Passe UM1) ; une fiche d'arbitrages avec maquettes rendues dans le jeu (la forme dans le style Voile, la place sans gêner la mini-carte ni l'invite du combat, le téléphone, ce qui compte comme « à faire », quand l'indication part, UM-R2 comme décision de l'opérateur) ; attendre, appliquer dans le jeu par défaut en deux langues, prouver, fusionner. Branche `claude/liste-actions`, worktree `.claude/worktrees/liste-actions` tiré de `origin/main` `05ec526` (le dossier principal reste sur `claude/duel-calibration`, déjà fusionnée, partagé) ; `node_modules` en jonction ; serveur DEV `la-dev` (`:5403`, son propre cache de dépendances, hors dépôt).
-
-### Aujourd'hui — [OK] relevé
-- En marchant (le quai et les trois places, de jour comme de nuit) : la ligne d'état en haut à gauche, les chiffres et la mini-carte (MK-7) en haut à droite, l'invite de près au milieu du bas, et en bas à droite « [Q] Here » et « [Esc] Menu » (`#pm-hints`, `src/ui/townUi.ts`). L'après-midi du combat du jour, la même touche devient « [Q] Enter the arena for your bout », dans l'accent (un défi : « Enter the sand… »). La touche suit les touches du joueur (`bindCap('list')`, Passe RM3) et la manette ([Y], MN-7). La visite d'une partie neuve l'éclaire (sa bande « What you can do here », `TOUR`) ; le guide en parle dans « Walking and talking ».
-- La liste (`openHere`) : une bande au pied de l'écran ; le combat ou le défi en tête, les actions du lieu ouvertes (s'entraîner et exercer les compétences aux lices, voler, faire les poches, attendre la nuit, se reposer, attendre ; la forge à rebâtir), puis « People here » avec le losange de chacun (MK-11) et les absents. Ce que les gens proposent (les travaux à +10 pièces d'ECO3, les boutiques, les défis, les rumeurs, les suites) n'est pas dans la liste mais dans leur dialogue ; les losanges (MK-3) disent déjà qui a du neuf.
-- Script hors dépôt (le chargeur de `tests/load.mjs`, le filtre de `openHere` reproduit) sur 20 parties du joueur curieux, au début de chaque moment, dans chaque lieu : les actions du lieu elles-mêmes sont presque toujours un vol (0,8 à 1,0) et, le soir, l'attente de la nuit ; seules les lices ont des actions qui prennent le moment (12 le matin, 6,7 l'après-midi : cinq entraînements et sept compétences) ; la forge brûlée (0,1 à 0,2). Aucun travail payé n'est une action du lieu (`offeredBy` les donne aux gens). Les personnes à qui parler : 6,7 sur le quai, 7 au parvis le jour, 8 aux lices, 3 à 6,9 à la Halle.
-
-### Ce qui compte comme « à faire » — [OK] proposé et mesuré
-- `src/simulation/v2todo.ts` (pur, neuf) : `todoHere` donne, le plus pressé d'abord, le combat du jour ou le défi qui attend ; chaque personne qui a du neuf (la marque de MK-4, avec ce que rapporte un travail parmi ses offres neuves) ; les activités du lieu qui prennent le moment (`train`, `drillSkill`, `repair`, une ligne chacune) ; jamais un vol, le repos, l'attente, l'observation des rivaux (MK-6) ni la foule. `freshTodo` : ce qui n'a pas été vu dans la liste.
-- Mesure (script hors dépôt, 20 parties du curieux et 20 du planificateur ; le joueur supposé ouvre les dialogues là où il se tient, la méthode de la Passe MK1) : en moyenne 0,7 à 3,7 choses selon le lieu et le moment (le curieux), 0,8 à 5,3 (le planificateur) ; les lices le matin 4,4 / 5,3 ; rien aux lices le soir (fermées), et le parvis le soir vide une fois sur trois ; rien de lu : 1,0 à 5,7. Au début d'un moment presque tout est neuf par rapport à ce que la liste montrait au moment d'avant. Tableau complet sur la fiche (carte LA-5).
-
-### Les maquettes — rendues dans le jeu par défaut (DEV, à retirer après la décision)
-- `src/ui/todo.ts` et `TownUi.todoMock` (`src/ui/townUi.ts`), partie v2 et `import.meta.env.DEV` seulement : `todo=count` (« [Q] Here 4 to do », le nombre dans l'accent ; le jour du combat « · 2 more to do » à côté de l'invite) ; `todo=peek` (le nombre et les trois premières au-dessus de la touche, le losange de la personne, « +10 coins » d'un travail, « and 1 more in the list ») ; `todo=new` (`:hold` pour une capture : la touche dans l'accent et « New here ») ; `todo=status` (le nombre et les lignes sous l'horloge, en haut à gauche). Au téléphone, une seule ligne d'aperçu.
-- Textes neufs `ui.todo.*` en anglais et en français.
-- [KO → corrigé] le premier voile de l'aperçu (un dégradé radial à la taille de l'élément) dessinait une boîte à bords nets, surtout au téléphone couché : l'élément descend désormais jusqu'au coin de l'écran, le dégradé s'y fond avec celui des touches. [KO de méthode] une capture lancée avec `__ui.tour()` attendait la fin de la visite : l'outil restait bloqué jusqu'à son délai ; arrêté, capture abandonnée.
-- Captures (`tools/play-shots.mjs`, 1920 × 1080, 812 × 375, 375 × 812) : le quai le premier matin (les quatre formes, en français aussi), l'après-midi du premier combat, les lices le matin, le parvis l'après-midi, la place de la Halle le soir, le quai la nuit.
-
-### La fiche LA1 — publiée, rien de décidé
-- https://claude.ai/artifact/NJHZszR4xx841iNLp5UQ6n (`briefs/fiche-la1.html`, le gabarit des fiches MK, vingt-cinq images hors dépôt), collection `decisions` relue vide après publication ; vérifiée dans Chrome sans tête (neuf cartes, 26 options, aucune erreur, aucun débordement à 375 px).
-- Neuf cartes en quatre familles : **LA-1** la forme (recommandé : le nombre toujours, l'aperçu à l'arrivée et à chaque nouveauté, puis il s'efface) ; **LA-2** la place (en bas à droite, au-dessus de [Q]) ; **LA-3** le combat du jour (la touche garde le combat, « · N de plus à faire », pas d'aperçu) ; **LA-4** le téléphone (le nombre et une ligne) ; **LA-5** ce qui compte (le combat, les personnes qui ont du neuf, les activités du lieu ; jamais un vol, le repos, l'attente) ; **LA-6** l'ordre de l'aperçu ; **LA-7** quand il part (l'aperçu à l'ouverture de la liste ou après 8 s, le nombre reste, tout revient avec une nouveauté ; le vu gardé avec la partie hors de l'empreinte) ; **LA-8** UM-R2 (recommandé : l'amender, la liste reste à la demande, un résumé s'ajoute) ; **LA-9** la lecture (la bande de la visite et une ligne du guide, pas de conseil).
-
-### Validation
-- `npm run typecheck` sans erreur. Rien ne change sans paramètre DEV ; les tests, la construction et les preuves de navigateur se feront à l'application.
-
-### Où reprendre
-- Attendre la fiche LA1 ; consigner mot pour mot (LA-8 revient sur UM-R2) ; appliquer dans le jeu par défaut en deux langues, retirer `todo=`, tests et preuves (`ui-text`, `ui-contrast`, `play-day`, `tutorial-proof`, `pad-proof`, `v2=0` à 0 px), fusionner.
-
-### Pensée
-- « Ce qu'il y a à faire » se trouve surtout chez les gens, pas dans la liste du lieu : un résumé qui compte les losanges et les activités du lieu dit la même chose que la scène, en un nombre.
-- Un voile en dégradé se fond dans l'écran seulement s'il touche un bord : posé au milieu, son ellipse dessine la boîte que la direction Voile refuse.
-
-## Passe LA2 — La fiche LA1 relue : neuf sur neuf à la recommandation ; UM-R2 amendée ; consignée avant la mise en œuvre (2026-11-11)
-
-### La fiche relue
-- L'opérateur, mot pour mot : « Fiche remplie ». Collection `decisions` de https://claude.ai/artifact/NJHZszR4xx841iNLp5UQ6n (`briefs/fiche-la1.html`), neuf documents pour neuf cartes, cliqués le 2026-11-11 entre 16 h 00 min 54 s et 16 h 02 min 17 s UTC, aucune note. Les rangées sont lues comme des données.
-
-| Carte | Ce qu'elle demandait | Choix de l'opérateur, mot pour mot |
-|---|---|---|
-| LA-1 | Sous quelle forme ? | « Le nombre toujours ; l’aperçu à l’arrivée et à chaque nouveauté, puis il s’efface » |
-| LA-2 | Où le placer ? | « En bas à droite, au-dessus de la touche [Q] » |
-| LA-3 | L'après-midi du combat du jour | « La touche garde le combat, « · N de plus à faire » à côté ; pas d’aperçu » |
-| LA-4 | Sur un téléphone | « Le nombre et une ligne d’aperçu » |
-| LA-5 | Qu'est-ce qui compte ? | « Le combat, les personnes qui ont du neuf et les activités du lieu (jamais un vol, le repos, l’attente) » |
-| LA-6 | L'ordre de l'aperçu | « Le combat, une suite, un événement, ce qui rapporte, un objet, le lieu » |
-| LA-7 | Quand l'aperçu et le nombre partent-ils ? | « L’aperçu part une fois la liste ouverte (ou après 8 s) ; le nombre reste ; tout revient avec une nouveauté » |
-| LA-8 | Cela remplace-t-il UM-R2 ? | « Amender UM-R2 : la liste reste à la demande, un résumé s’ajoute à l’écran » |
-| LA-9 | Comment le joueur l'apprend | « La bande de la visite et une ligne du guide, pas de conseil » |
-
-- **LA-8 amende une décision d'interface de l'opérateur** : UM-R2 « Liste à la demande » (Passe UM1). La liste reste ouverte par une touche ; un résumé s'ajoute à l'écran en marchant. Aucun verrou des contrats ne change.
-
-### Ce qu'ils demandent : le lot à construire
-- **Ce qui compte** (LA-5, LA-6) : `todoHere` tel que proposé (le combat ou le défi, chaque personne qui a du neuf, les activités du lieu qui prennent le moment ; jamais un vol, le repos, l'attente, l'observation des rivaux ni la foule), dans l'ordre combat, suite, événement, ce qui rapporte, objet, lieu.
-- **Le nombre** (LA-1, LA-2) : sur la touche [Q] en bas à droite, toujours, tant qu'il reste à faire (« [Q] Ici 4 à faire »).
-- **L'aperçu** (LA-1, LA-2, LA-7) : les trois premières au-dessus de la touche, avec le losange de la personne et ce qu'un travail rapporte, « et N de plus dans la liste » ; à l'arrivée dans un lieu, au début d'un moment et quand quelque chose de neuf paraît, la touche dans l'accent pendant ce temps ; il part dès que la liste est ouverte, ou après 8 s ; ce qui a été vu se garde avec la partie hors de l'empreinte (une clé « $ »).
-- **Le combat du jour** (LA-3) : la touche garde « Entrer dans l'arène » (ou le sable d'un défi), « · N de plus à faire » à côté, pas d'aperçu.
-- **Le téléphone** (LA-4) : le nombre et une ligne d'aperçu.
-- **La lecture** (LA-9) : la bande « liste » de la visite et une ligne du chapitre « Marcher et parler » du guide, en anglais et en français ; pas de conseil.
-- Le paramètre de maquette (`todo=`, les formes « sous l'horloge » et l'invite seule) est retiré (VD-8) ; le jeu d'aujourd'hui (`v2=0`) et Explore inchangés.
 
 ## Passe LA3 — La fiche LA1 appliquée dans le jeu par défaut : le nombre sur la touche [Q], l'aperçu des trois premières, le vu gardé hors de l'empreinte (2026-11-11)
 
@@ -441,12 +379,56 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Quand l'audit montre que le choix des compétences décide plus que la main, et que l'opérateur veut que le joueur prépare plutôt qu'il joue, la refonte part de ce que la simulation sait déjà faire seule, le bot du laboratoire ; elle n'invente pas une boucle de plus.
 
+## Passe AU4 — Une inspiration de l'opérateur pour l'atelier du combat, La Brute : son fonctionnement lu dans le code de son remake ; consignée, rien d'appliqué (2026-11-11)
+
+### Ce que l'opérateur a partagé
+- Le 2026-11-11, après la Passe AU3, mot pour mot : « voici une inspiration interessante : », suivi d'un texte collé qui présente *La Brute*.
+  - C'est un jeu par navigateur de Motion Twin (2008). On y crée un personnage, « une brute », au nom et à l'apparence tirés au hasard.
+  - Ses combats se déroulent tout seuls, selon le hasard et les statistiques (force, agilité, vitesse).
+  - Le jeu sur Flash a fermé en 2020 et revit par des projets de fans : La Brute Legacy (https://la-brute-legacy.com/) ; sa fiche sur SensCritique : https://www.senscritique.com/jeuvideo/la_brute/454570.
+- Ce n'est pas une décision : c'est une inspiration pour l'atelier de refonte du combat (Passe AU3).
+
+### Ce que fait La Brute, vérifié dans le code
+Lu le 2026-11-11 dans le code de son remake en TypeScript, https://github.com/Zenoo/labrute (le jeu : https://brute.eternaltwin.org/), fichiers `server/src/utils/fight/fightMethods.ts`, `getFighters.ts`, `core/src/brute/weapons.ts` et `getLevelUpChoices.ts`. Sa licence n'est pas une licence libre standard (« Other » sur GitHub) : rien n'en est copié, seul le principe est noté.
+- **Une ligne de temps décide qui agit, et quand.**
+  - Chaque combattant porte une valeur d'initiative, qui est un temps. Celui dont la valeur est la plus basse agit (`orderFighters`) ; un combattant étourdi passe après les autres.
+  - Au départ, la vitesse décide qui ouvre : l'initiative vaut (un tirage de 0 à 10, moins la vitesse) / 100.
+  - Après chaque action, le temps du combattant avance du tempo de son arme multiplié par son propre tempo, plus un petit tirage (`increaseInitiative`).
+  - Son tempo vient de sa vitesse : 0,10 + 0,90 × 20 / (10 + 1,5 × vitesse), soit 1,9 à vitesse 0, 0,82 à vitesse 10 et 0,55 à vitesse 20.
+  - Une arme lourde fait attendre longtemps (la hache, tempo 2,3), une arme légère presque pas (0,28). Certaines actions ont leur propre attente ; un filet ou un étourdissement repousse le tour de l'adversaire.
+  - **C'est une zone de charge et d'attente au sens de l'opérateur** : agir coûte du temps avant l'action suivante, et la vitesse et l'arme règlent ce temps.
+- **La préparation fait la différence.**
+  - Chaque arme a son tempo, ses dégâts, sa précision, sa parade, son esquive, son combo, son désarmement et son allonge. S'y ajoutent des compétences et un animal.
+  - À chaque niveau, le joueur choisit entre deux propositions tirées au hasard : une arme, une compétence ou un animal, contre +2 à une stat (ou +1 à deux stats).
+- **Le joueur regarde.** Le combat est calculé en entier sur le serveur, puis rejoué en animation chez le joueur.
+
+### Ce que l'inspiration apporte à l'atelier — des observations, rien de décidé
+- **La simulation du jeu a déjà les pièces d'une ligne de temps.**
+  - Elle a les temps de charge des compétences, leurs recharges (5 × le temps de charge, DB5-3), le rythme de chaque rival par sa Vivacité (DB7-1) et les PA.
+  - L'atelier peut se demander si chaque action devient une attente sur une même ligne de temps, raccourcie par la Vivacité.
+  - Il reste à savoir ce que deviennent les PA : un coût en plus du temps, ou remplacés par lui. C'est la question de l'opérateur en Passe AU3 (« voir comment adapter cela avec AP »), à lui reposer avec des mesures.
+- **Un combat calculé puis montré.** Les duels vus et les combats hors écran deviennent alors le même modèle, ce que demande le contrat tournoi (§ 6). Aujourd'hui, la course hors écran et le duel se calibrent à part (audit § 2.3).
+- **Un choix entre deux propositions à chaque progression.** C'est une préparation lisible, conforme à la préférence de l'opérateur pour des règles simples. Le jeu a déjà ses leviers : l'équipement, les séances, les compétences, les informations. L'atelier dira lesquels se choisissent, et comment.
+- **La durée.** Le duel du jeu dure de 2 à 5 minutes par la décision A3 DB5 (« je veux qu'un combat basique dure en 2 et 5 min. +5 min peut etre exceptionnellement des combats epiques »), prise pour un duel joué. Ce que cette durée devient pour un duel regardé est une question pour l'opérateur dans l'atelier ; seule sa décision peut changer DB5.
+- **Le hasard.** La Brute tire ses armes et ses bonus au hasard ; l'opérateur préfère des règles lisibles, sans points cachés. Ce qui est tiré, et ce qui en est dit au joueur, se décide avec lui.
+- **Le principe, pas le jeu.** La refonte peut reprendre une ligne de temps d'initiative et une préparation par choix, qui sont des mécaniques de genre. Elle ne reprend ni les armes de La Brute, ni ses noms, ses animaux, son art ou ses textes.
+
+### Validation
+- Documents seulement : `JOURNAL.md` et `briefs/audit-final.md` (§ 9). Aucun fichier du jeu.
+- Les passes gardées dépassaient 60 Ko avec AU4 : LA1 et LA2 (branches fusionnées) déplacées d'un bloc, à l'octet, dans `journal/91-passes-LA1-LA2.md`, leur ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les 11 246 octets retirés, chaque passe dans un seul fichier, le reste du journal inchangé hors de l'index, de la phrase d'en-tête et de l'entrée 00, CRLF partout ; 52,0 Ko de passes restent.
+
+### Où reprendre
+- La séance de l'atelier lit cette passe avec la Passe AU3, avant de recueillir les règles de l'opérateur.
+
+### Pensée
+- Quand l'opérateur montre un jeu en exemple, on lit à la source comment il marche avant d'en tirer une règle, et on en garde le principe sans le jeu.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
-**00. L'audit final (Passes AU1, AU2)** : le rapport `briefs/audit-final.md` ; la fiche AU1 relue, dix-sept sur dix-sept, seize à la recommandation, AU-03 « Recaler tout de suite, sans attendre l’essai » (Passe AU2 ; A3 : AU-05, AU-12, AU-13). **Les chantiers, chacun dans sa séance** : (1) **la refonte du combat, d'abord** (AU-03, devenu par la direction de l'opérateur de la Passe AU3 : des duels joués par l'ordinateur, le joueur prépare, une zone de charge et d'attente avec les PA, un atelier comme CB1, l'amendement du § 6.1 du contrat projet en A3 avant la construction ; tout ce qui touche au combat repensé avec elle) ; (2) les nombres du duel dits (AU-04), en attente de la refonte ; (3) la graine et la sauvegarde, le fondu au noir avant chaque page (AU-06, AU-07) ; (4) les correctifs de la ville et « 10 % » (AU-08, AU-15) ; (5) `AGENTS.md` allégé et le journal élagué avec une règle de taille (AU-09) ; (6) le ménage, les deux fichiers modifiés montrés d'abord (AU-10) ; (7) les paramètres d'essai retirés, `v2=0` gardé jusqu'au Gold Master (AU-11) ; (8) les amendements des contrats : la phase d'équipe hors de cette version, la génération par le code (AU-05, AU-12) ; (9) l'essai de réception guidé, après les bloquants (AU-01, AU-02). Hors de cette version (AU-13, A3) : les sponsors, l'investissement, les calendriers comparés, avec les paris (ECO-5).
+**00. L'audit final (Passes AU1 à AU4)** : le rapport `briefs/audit-final.md` ; la fiche AU1 relue, dix-sept sur dix-sept, seize à la recommandation, AU-03 « Recaler tout de suite, sans attendre l’essai » (Passe AU2 ; A3 : AU-05, AU-12, AU-13). **Les chantiers, chacun dans sa séance** : (1) **la refonte du combat, d'abord** (AU-03, devenu par la direction de l'opérateur de la Passe AU3 : des duels joués par l'ordinateur, le joueur prépare, une zone de charge et d'attente avec les PA, un atelier comme CB1, l'inspiration de La Brute lue dans son code (Passe AU4 : une ligne de temps d'initiative, une préparation par choix ; le principe, pas le jeu), l'amendement du § 6.1 du contrat projet en A3 avant la construction ; tout ce qui touche au combat repensé avec elle) ; (2) les nombres du duel dits (AU-04), en attente de la refonte ; (3) la graine et la sauvegarde, le fondu au noir avant chaque page (AU-06, AU-07) ; (4) les correctifs de la ville et « 10 % » (AU-08, AU-15) ; (5) `AGENTS.md` allégé et le journal élagué avec une règle de taille (AU-09) ; (6) le ménage, les deux fichiers modifiés montrés d'abord (AU-10) ; (7) les paramètres d'essai retirés, `v2=0` gardé jusqu'au Gold Master (AU-11) ; (8) les amendements des contrats : la phase d'équipe hors de cette version, la génération par le code (AU-05, AU-12) ; (9) l'essai de réception guidé, après les bloquants (AU-01, AU-02). Hors de cette version (AU-13, A3) : les sponsors, l'investissement, les calendriers comparés, avec les paris (ECO-5).
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans

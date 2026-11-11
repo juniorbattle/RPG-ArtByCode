@@ -768,6 +768,11 @@ Ce qui en découle :
 - Le § 6.1 du contrat projet (les trois commandes) sera amendé par une décision A3 avant la construction.
 - Les décisions A3 déjà prises sur le duel (DB5, DB5-3, DB5-4, DB-2, DB7-1 à DB7-6, DB11-2, DB11-5, DB11-6) se relisent dans l'atelier avec l'opérateur.
 
+**Une inspiration de l'opérateur pour l'atelier** (Passe AU4) : *La Brute* (Motion Twin, 2008), des combats automatiques décidés par les statistiques et la préparation. Son fonctionnement a été lu dans le code de son remake (https://github.com/Zenoo/labrute) ; rien n'en est copié.
+- Une ligne de temps d'initiative décide qui agit : chaque action fait attendre son auteur selon son arme et sa vitesse. C'est la zone de charge et d'attente demandée en AU3.
+- La préparation (armes, compétences, animal ; un choix entre deux propositions à chaque niveau) décide de l'issue ; le combat est calculé, puis montré.
+- Pour l'atelier : ce que deviennent les PA sur une telle ligne de temps ; un même modèle pour les duels vus et hors écran (contrat tournoi § 6) ; la durée de 2 à 5 minutes (DB5, A3) pour un duel regardé ; ce qui est tiré au hasard et ce qui est dit au joueur. Le principe est repris, pas le jeu.
+
 ---
 
 ## Annexe — les commandes
