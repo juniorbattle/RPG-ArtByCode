@@ -5,7 +5,7 @@ la suite parte d'un état connu. À compléter à chaque passe (une entrée par 
 
 Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu ou à surveiller · **Pensée** = raisonnement / leçon.
 
-> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9) ; ce fichier garde les passes récentes,
+> Les passes 0 à S1b, H0, M6, V0 à V3, H1, M7, H2 à H4, H5 à P2, H7 à D2, H9 à Z4, R2 à Y3, Y4 à D7, K9 à H11, N1 à N4, L0 à L6, L7, Q3, L7b, Q4, Q4b, D8, S3, F2, S3b, F3, D9, FR1, AD1, AA1, UI1, UI2, UI3, CB1, C1, C2, AA2, RC1, C2F, AP1, UI4, AF1, AP2, RC2, AV1, V0 à V10, VP1 à VP9 de la séance « Version 2 », FV1 à FV5, V2C1, RC3, V2C2, V2B1, FX1, FX2 à FX5, CA1 à CA7, CX1, CX2, UM1, CX3, CX4, UM2, UM3, UM4, UM5, UM6, UM7, UM8, UM9, SN1, SN2, SN3, UM10, UM11, SN4, SN5, UM12, SN6, SN7, SN8, SN9, SN10, SN11, SN12, SN13, SN14, SN15, SN16, SN17, SA1, SN18, SN19, SN20, SN21, SN22, CH1, CH2, PU1, PU2, EV1, MN1, MN2, EV2, EVL1, EVL2, EVL3, EVL4, GA1, GA2, GA3, GA4, I2, EVL5, EVL6, EVL7, EVL8, GS1, GS2, EVL11, EVL12, RS1, RS2, VD1, VD2, DB1, DB2, DB3, TU1, TU2, TU3, TU4, RG1, RG2, RG3, DB4, RG4, RM1, DB5, DB6, RM2 sont archivées **mot pour mot** dans `journal/` (Passes M3, M6, M7, H5, T1, B1, D1, Z2, Y4, K10, N3, L2, L7, Q4, S3, D9, AD1, UI2, UI3, CB1, C2, RC1, AP1, RC2, V0, VP2, VP6, VP7, VP8, VP9, RC3, V2B1, FX1, FX3, FX5 et CA3, CX2, CX4, UM8, SN3, SN5, SN7, SN10, SN14, SN16, SN19, SN22, CH1, PU2, MN2, EV2, EVL2, GA1, GA3, I2, EVL5, EVL7, EVL9, PR2, FT2, RS2, VD2, DB2, TU3, RG3, DB4, RG4, DB6, DB7, RM3, DB9, ECO1) ; ce fichier garde les passes récentes,
 > « À reprendre » et « Principes à garder ». Un renvoi à une passe archivée (« journal pass 6k », « JOURNAL, Passe 4A-0B ») se lit
 > dans le fichier que donne l'index.
 
@@ -90,95 +90,9 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 | [`journal/77-passes-DB4.md`](journal/77-passes-DB4.md) | DB4 | 09/11 |
 | [`journal/78-passes-RG4.md`](journal/78-passes-RG4.md) | RG4 | 09/11 |
 | [`journal/79-passes-RM1-DB5.md`](journal/79-passes-RM1-DB5.md) | RM1, DB5 | 09/11 |
+| [`journal/80-passes-DB6-RM2.md`](journal/80-passes-DB6-RM2.md) | DB6, RM2 | 09/11 |
 
 ---
-
-## Passe DB6 — La fiche DB5 relue : sept sur sept, une hors recommandation et une note ; deux décisions A3 consignées ; l'équipement ajouté à l'audit (2026-11-09)
-
-### Les choix de l'opérateur, mot pour mot
-- L'opérateur, mot pour mot : « Fiche remplie /// mais nsommes nous sure totalement ? ». Collection `decisions` de https://claude.ai/artifact/GbCXvxRKve2YsYP74YYK4Y (`briefs/fiche-db5.html`), cliquée le 2026-11-09 entre 19 h 34 min 09 s et 19 h 38 min 36 s UTC :
-
-| Carte | Ce qu'elle demandait | Choix | Note |
-|---|---|---|---|
-| DB5-1 | Le poids des compétences | « 20 % (28 % au niveau 5) » | — |
-| DB5-2 | La garde des rivaux, à briser | « 90 %, garde à −80 % » | — |
-| DB5-3 | Une recharge pour chaque compétence | « 5 × le temps de charge » | — |
-| DB5-4 | La rupture : le temps de frapper fort | « 10 s, ×2, jauge de 70 » | — |
-| DB5-5 | L’attaque simple | « 1 % » (recommandé : 0,5 %) | — |
-| DB5-6 | Quand le joueur monte ses compétences | « PV ×1,4 au tableau » | — |
-| DB5-7 | Les combats épiques | « La finale » | « mais aussi des defis particuliers ( a definir plus tard ) » |
-
-- **Décisions A3 consignées** (E11), le 2026-11-09 : **DB5-3 « 5 × le temps de charge »** remplace « Pas de recharge » (spécification § 4, § 11) et C2-5 « Aucune » (§ 17), la porte que G5 laissait ouverte (« pas prevu mais cela peut etre integre si on juge que le jeu est pas assez structure ») ; **DB5-4 « 10 s, ×2, jauge de 70 »** remplace DB-5 « Jauge par les compétences, ×2 pendant 8 s » (la jauge de 100) : l'étourdissement de 10 s reste dans les 5 à 10 s de G3. La durée « en 2 et 5 min » (Passe DB5) les accompagne.
-- DB5-2 (« garde à −80 % ») change le point de départ −60 % de la garde (CB-5), une règle pour les deux combattants : son choix, consigné. DB5-7 : les « défis particuliers » épiques restent à définir avec lui.
-
-### Sa question, et la réponse mesurée
-- À « mais nsommes nous sure totalement ? » : non, pas totalement. Mesuré sur le paquet exact de ses choix (l'attaque simple à 1 %, coups des rivaux ×1,6 sur ceux de DB3, 20 graines par rival) : 2,2 min au joueur moyen (rivaux 2,0 à 2,4), escalier 15 / 61 / 91 %, marteleur 0 %, l'attaque simple la moitié des dégâts ; un joueur entraîné passe sous 2 min (niveau 3 : 1,6 min ; niveau 5 : 1,3 min ; 1,8 min encore face aux rivaux ×1,4 du tableau) ; ×1,8 au tableau ramènerait le niveau 5 à 2,1 min mais le joueur du niveau 1 n'y gagnerait que 11 % ; l'épique de la finale 5,1 à 5,3 min. À 0,5 % : 3,0 min, le niveau 5 au tableau 2,1 min. Le reste dit sans détour : le bot n'est pas un joueur (il ne garde pas sa compétence pour la rupture), les recharges sont prototypées hors du jeu et leur affichage n'est pas conçu, la garde à 90 % change l'identité des rivaux, rien n'est recalé sur des parties entières. Question posée : revenir à 0,5 % ou garder 1 %.
-- Puis l'opérateur, mot pour mot : « mais n'oublie pas qu'il y a aussi l'amelioration des armes et armures donc attaque defense et etc... ».
-
-### L'équipement mesuré — [OK] il cassait le calibrage
-- **L'outil** : `gear<n>` (quatre états, comme `v2Mods` les donne : 0 rien ; 1 ce que porte le joueur du laboratoire, ×1,10 sur l'attaque et ×0,94 sur les dégâts reçus ; 2 la lame au palier 1, une pierre, une séance, la cotte, l'enveloppe, ×1,37 / ×0,88 / PV ×1,06 ; 3 la lame au palier 3, une pierre, deux séances, la cotte, l'enveloppe, l'anneau, ×1,65 / ×0,88 / PV ×1,06 / jauge ×0,85) ; `gearatk<k>` (l'attaque d'équipement à k % de la sienne, la défense entière) ; les variantes qui fixent les dégâts du joueur (`skp`, `lightpct`) gardent l'attaque d'équipement par-dessus.
-- **Le joueur du laboratoire s'équipe à peine** (20 parties) : `diligent` ×1,05 à ×1,10 sur l'attaque (son entraînement, une pierre), ×0,94 sur les dégâts reçus (la veste) ; `curious` ×1,00 à ×1,06, ×0,91 à ×0,94. Le recalage de DB3 valait pour un joueur peu équipé. [?] L'attaque plus faible du curieux (moins d'entraînement) peut expliquer une part de sa chute relevée en DB3 ; non prouvé.
-- **La grille** (attaque simple 0,5 %, le paquet DB5, 10 graines par rival, le joueur moyen) : en poule, de 3,1 min (rien, niveau 1) à 1,1 min (équipement 3, niveau 5), l'Estocade alors à 55 % de la barre franche et 105 % sur une rupture ; au tableau (×1,4) de 3,5 à 1,2 min ; la finale (×2,5) de 6,9 à 2,1 min. À 1 % : 2,2 à 0,7 min en poule. Fichier de la grille hors dépôt ; refaite par `--audit` sur `gear<n>+lv<n>+epic<k>`.
-- **Le rythme des règles** : l'entraînement monte une compétence d'un niveau par créneau jusqu'au niveau 3 (`TRAIN_CAP`), les niveaux 4 et 5 viennent des défis gagnés ; l'équipement s'achète avec les pièces. Courbe attendue retenue pour la mesure : poule niveau 1, équipement 1 ; tableau niveau 3, équipement 2 ; finale niveau 3, équipement 3.
-- **Quatre corrections sur cette courbe** (et un joueur en avance, niveau 5 tout équipé, et en retard, niveau 1 sans rien, au tableau) : DB5 tel quel 2,9 / 2,2 / 3,0 min (en avance 1,2 min, en retard 3,5 min et 34 %) ; rivaux seuls plus endurants (×1,8 au tableau, ×4 en finale) 2,9 / 3,0 / 4,7 (en retard 13 %) ; attaque d'équipement à moitié seule 3,0 / 2,6 / 3,7 ; **attaque d'équipement à moitié, ×1,6 au tableau, ×3,5 en finale : 3,0 / 3,0 / 5,1 min** (en avance 1,9 min, l'Estocade de niveau 5 à 27 % de la barre d'un rival du tableau, 54 % sur une rupture ; en retard 3,6 min et 23 %). Avec l'attaque simple à 1 %, ce dernier réglage donne 2,2 / 2,4 / 4,2 min. [KO de méthode, corrigé] un premier relevé lisait les variantes par leur ordre alors que des clés identiques d'une correction à l'autre (la poule) s'étaient fondues : relu par clé.
-- `briefs/audit-combat-db5.md` § 5 bis : l'équipement, sa progression, ce tableau, la lecture.
-
-### La fiche DB6 — publiée, rien de décidé
-- https://claude.ai/artifact/F3ebcGDEjkwBvStFpGgQpp (`briefs/fiche-db6.html`), collection `decisions` relue vide ; vérifiée dans Chrome (deux cartes, six options, aucune erreur, aucun débordement à 375 px) : **DB6-1** tenir 2 à 5 minutes quand le joueur s'équipe (« Attaque d’équipement à moitié, ×1,6 / ×3,5 », qui remplace le ×1,4 de DB5-6) ; **DB6-2** l'attaque simple (« 0,5 % », son 1 % de DB5-5 parmi les options). Ce qui reste incertain y est dit (le bot, les recharges à construire, la courbe tirée des règles).
-
-### Validation
-- Rien du jeu ne change sur cette branche (l'outil, l'audit, les fiches, le journal) : `npm run typecheck` ; `npm test` ; `npm run build` ; `npm run art:validate` : voir le commit.
-- Les passes gardées dépassaient 60 Ko (64,3 Ko) : RG1, RG2 et RG3 (branches fusionnées) déplacées à l'octet dans `journal/76-passes-RG1-RG3.md`, la ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les 28 294 octets retirés, le journal reconstruit égale l'original, CRLF partout, chaque passe dans un seul fichier. 36,7 Ko de passes restent.
-
-### Où reprendre
-- Attendre la fiche DB6 ; consigner ; amender `briefs/combat-system.md` (§ 2 la durée, § 4 les recharges, § 5 la garde et la riposte, § 6 la rupture, § 11, § 18) ; appliquer dans le jeu par défaut tout le combat de DB4 à DB6 (les compétences en part de la barre et l'échelle Marek 600 / Ren 150, les PV des rivaux resserrés, leur garde à 90 % et la garde à −80 %, les recharges comme règle de `DynamicSim` portée par ses données et leur affichage dans le HUD, la rupture 10 s ×2 et la jauge de 70, l'attaque simple, l'attaque d'équipement si DB6-1 la réduit, les rivaux du tableau et l'épique de la finale au calendrier) ; recaler sur des parties entières (six sur dix) et remesurer `V2_RACERS` ; revoir les états nommés et les textes du tutoriel du premier combat (ils lisent les nombres du duel) ; prouver ; fusionner ; puis l'essai de l'opérateur. Les « défis particuliers » épiques de DB5-7 restent à définir avec lui.
-
-### Après la publication de la fiche DB6 — la direction de l'opérateur, mot pour mot (2026-11-09)
-- « Les donnes que je donne sont a titre suggestifs le but 'est pas de controller de maniere strict la duree du combat si un combat dure plus longtemps, c'est que c'est normal... moi je veux de la coherence... avoir des combats rythmes et passionnant avec des actions impactantes... mais nou'oublions pas que nous basons les actions d'un combattant par ses stats personnelles  ameliorer a travers les equipement  et/ou le niveau gagnes etc... bref c'est un rpg notre jeu , et je trouve que nous negligeons cette aspect »
-- Lecture : les durées (DB5, « 2 et 5 min ») sont des repères, pas un réglage à tenir strictement ; ce qui compte : la cohérence, des combats rythmés et passionnants, des actions qui pèsent, et des dégâts **tirés des statistiques propres de chaque combattant** (montées par l'équipement et les niveaux), comme dans un RPG. La fiche DB6 chiffrait encore des parts de barre et des corrections de durée : **suspendue** (à ne pas remplir), remplacée par une proposition de statistiques des combattants (la suite). [?] « le niveau gagnes » : les niveaux des compétences, ou un niveau du personnage ? Le contrat projet § 7 fonde la progression sur plusieurs couches (compétences, équipement, armes, relations…) et dit : « Le jeu doit éviter qu'une unique statistique de niveau rende toutes les autres décisions secondaires. » Des statistiques montées par l'équipement, l'entraînement et les niveaux des compétences y tiennent ; un niveau du personnage devrait rester une couche parmi d'autres : à lui demander.
-
-### Pensée
-- Un réglage fait sur un personnage nu ne tient pas : chaque couche de progression (niveaux, arme, forge, entraînement) multiplie les dégâts, et leur produit (×2,3) décide de la fin du tournoi. Un équilibre se mesure sur la courbe attendue du joueur, avec un joueur en avance et un en retard de part et d'autre.
-- L'opérateur avait raison de rappeler l'équipement : le modèle de l'audit le laissait de côté.
-
-## Passe RM2 — La fiche du remappage relue : dix sur dix à la recommandation, avant de construire (2026-11-09)
-
-### Demande
-- L'opérateur, mot pour mot : « Sheet filled ». Relire `decisions` (https://claude.ai/artifact/4P3YLfmeqPEzbtMkPDiZK3, source `briefs/fiche-remappage.html`) et consigner mot pour mot, avant de construire.
-
-### Les choix de l'opérateur, mot pour mot
-- Neuf cartes cliquées sur la fiche le 2026-11-09, entre 20 h 26 min 27 s et 20 h 26 min 46 s UTC, aucune note. **RM-2 n'avait aucun choix enregistré** (la collection relue n'en a pas de document : carte non cliquée ou écriture perdue). Une ligne absente n'étant pas un choix, la question a été posée à l'opérateur dans la conversation, avec les trois options de la carte ; sa réponse, mot pour mot : « Deux touches par action, celles d’aujourd’hui au départ » (l'étiquette « (Recommended) » de la question laissée de côté).
-
-| Carte | Ce qu'elle demandait | Choix |
-|---|---|---|
-| RM-1 | Quelles actions peut-on changer | « Les actions du jeu, les touches des pages fixes » |
-| RM-2 | Une ou deux touches par action | « Deux touches par action, celles d’aujourd’hui au départ » (dans la conversation) |
-| RM-3 | Le clavier seul, ou la manette aussi | « Le clavier seul ; la manette garde sa disposition » |
-| RM-4 | Une touche déjà prise, et les touches réservées | « Échanger les deux touches, une liste de touches réservées » |
-| RM-5 | Tes touches et la ligne « Clavier » | « Chaque clavier garde ses touches ; la ligne donne celles de départ » |
-| RM-6 | Les touches affichées suivent-elles les tiennes | « Toutes les touches affichées suivent, tutoriel compris » |
-| RM-7 | Le nom des touches en français | « Les noms français : Espace, Entrée, Échap, Maj » |
-| RM-8 | Où et comment on change une touche | « Dans la partie Contrôles, une ligne par action » |
-| RM-9 | Où les touches sont gardées | « Dans les réglages du navigateur, jamais dans la sauvegarde » |
-| RM-10 | Le lot, ses preuves et la fusion | « Un lot fusionné dès ses preuves, ton essai ensuite » |
-
-### Ce qu'ils demandent : le lot à construire
-- **Les actions modifiables** (RM-1) : marcher (les quatre directions), courir, parler (la réplique suivante d'une scène suit cette touche, comme E aujourd'hui), la liste, la carte, les six raccourcis des pages (journal, tournoi, compétences, équipement, réglages, guide), couper le son ; au duel l'attaque, la garde, l'esquive et la pause. Fixes : Échap (menu, retour, passer une scène, réglages depuis la pause), Entrée, les flèches et Espace dans les pages, H et R au duel. Le duel du jeu d'avant (`v2=0`, touches 1 à 6) et le prototype de l'arène gardent les leurs.
-- **Deux cases par action** (RM-2), remplies au départ avec les touches d'aujourd'hui (W A S D et les flèches ; E et Espace ; au duel J et 1, K et B, L et A) ; chacune se change, la seconde peut rester vide, une action garde toujours au moins une touche ; rien de gardé = le jeu d'aujourd'hui, touche pour touche.
-- **Le clavier seul** (RM-3) : la manette garde la disposition de la fiche MN (MN-2 à MN-6), montrée en regard dans la table ; elle presse les touches du jeu (`isTrusted` faux), que la traduction laisse telles quelles, comme l'AZERTY aujourd'hui.
-- **Les conflits** (RM-4) : dans un même moment (la marche : la ville, les places, Explore, avec la liste et les raccourcis ; le duel), la touche choisie passe à l'action et l'action qui l'avait prend l'ancienne touche, une ligne le dit ; d'un moment à l'autre une touche peut servir deux fois. Réservées, jamais proposées : Échap, Entrée, Tab, F1 à F12, Ctrl, Alt, la touche Windows, et Retour arrière, qui vide une case (RM-8). Les touches d'outil cèdent : H et R au duel, H (le panneau DEV) et F (la forge) dans Explore ne font plus leur outil quand une action y est.
-- **L'AZERTY** (RM-5) : la ligne « Clavier » donne les touches de départ du clavier choisi ; chaque clavier garde ses propres touches (passer de l'un à l'autre ne perd rien) ; « Touches par défaut » remet celles du clavier affiché. Une touche est retenue par sa place (`code`) et la lettre qu'elle montrait quand le joueur l'a choisie : elle répond Maj tenue ou non (la touche 1 d'un AZERTY répond enfin au duel), et les touches affichées montrent cette lettre.
-- **Les touches affichées** (RM-6) suivent toutes, à l'instant : le bas de l'écran, le menu, la barre et la pause du duel, les scènes, l'écran titre, les textes du tutoriel et du guide, la table des contrôles, le HUD d'Explore ; chacune montre la première touche de l'action, la table les deux ; chacune retient son action, que la couche de la manette lit pour montrer son bouton (aujourd'hui `capButton` lit la lettre).
-- **Les noms** (RM-7) : en français Espace, Entrée, Échap, Maj, Flèches ; en anglais les noms anglais ; un signe s'affiche tel quel.
-- **La page** (RM-8) : dans la partie Contrôles, une ligne par action avec ses deux cases et le bouton de manette en regard ; Entrée ou un clic sur une case, « Appuyez sur une touche », Échap annule, Retour arrière vide la case ; une ligne « Touches par défaut » en bas ; les touches fixes montrées en gris ; la manette parcourt la page et remet les défauts, une touche se choisit au clavier.
-- **La garde** (RM-9) : dans `cite-du-tournoi.settings`, chaque touche vérifiée à la lecture (une touche inconnue ou réservée reprend son défaut), jamais dans la sauvegarde ; un navigateur piloté par les outils part des touches d'aujourd'hui.
-- **La livraison** (RM-10) : un lot dans le jeu par défaut (VD-8), fusionné dès ses preuves : le jeu sans touche gardée à 0 px contre `main` (DEV et paquets), des tests (la table, les échanges, chaque clavier et ses touches, chaque touche affichée), une preuve au clavier dans un navigateur qui ne s'annonce pas piloté (chaque action changée puis jouée : la marche, la liste, une scène, le duel), la manette inchangée (`tools/pad-proof.mjs`), `tools/ui-text.mjs` et `tools/ui-contrast.mjs` sur les nouvelles lignes dans les deux langues ; ensuite l'essai de l'opérateur.
-
-### Suite
-- Le lot du remappage dans une séance à part (son brief : cette passe et la Passe RM1, l'inventaire des trois façons de lire une touche et des touches affichées). `AGENTS.md` (section « Settings », « Controls ») dit les choix.
-
-### Pensée
-- Une carte restée vide n'est pas un choix : la collection relue se compte contre les cartes de la fiche avant de consigner, et la question manquante se pose à l'opérateur (ici neuf documents pour dix cartes).
 
 ## Passe DB7 — Les statistiques des combattants : une proposition mesurée et sa fiche ; la fiche DB6 remplacée ; rien d'appliqué (2026-11-09)
 
@@ -546,6 +460,69 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
 ### Pensée
 - Quand deux références de calibrage se contredisent (le laboratoire, la fiche), le choix revient à l'opérateur : on lui montre les deux courbes et ce que chacune donne au joueur faible et à la finale.
 
+## Passe ECO1 — L'argent d'une partie de la version 2 : l'inventaire, la courbe des pièces mesurée et la fiche publiée ; rien d'appliqué (2026-11-10)
+
+### Demande
+- L'opérateur, après son essai du 2026-11-10, mot pour mot : « On doit aussi pouvoir trouver le moyen de gagner de l'argent pour financer notre equipement et preparer nos prochains combats car ils semble dur de gagner de l'argent par moment ».
+- Séance ouverte par une autre séance (brief : inventorier l'économie, mesurer la courbe des pièces au TournamentLab, préparer une fiche chiffrée, attendre les choix ; ne pas toucher aux nombres du duel, qu'une séance parallèle retravaille ; ajouter les textes français sans réécrire les existants). Branche `claude/economie-v2`, tirée de `main` `df16326` (Passe DB10).
+
+### L'inventaire — [OK]
+- **Ce qui rapporte** : 60 pièces au départ (`content.ts`) ; 20 par combat gagné, 5 par combat perdu, de la poule à la finale (`pool.ts` `applyPlayerDuel`, six combats au plus) ; 100 au champion, à la fin (`v2calendar.ts`) ; un défi gagné avec mise, +10 net, une fois par phase (`v2town.ts`, `STAKE`) ; les caisses de Mara le matin au quai, +6 et un créneau (`roles.ts` `restock`, la seule tâche payée) ; la cargaison d'acier, +8 une fois ; le rapport à Hale +15, le saboteur pris +15 (la guilde) ; la Bourse des Lanternes, 30, au seul qui ouvre le défilé du jour 9 (`v2festival.ts`) ; des événements (+10 des parieurs du parvis, −4, −5).
+- **Ce qui coûte** : la lame importée 30, le sabre 61, la forge 10 / 25 / 40 (`TIER_PRICE` ; une arme neuve repart au palier 0), la veste 21, la cotte 46, le haubert 34, l'anneau 28, les bottes 33, la bande 14, le ruban 11 ; la pierre 8 avant chaque combat (consommée), l'onguent 10, les soins 8 ; une compétence 35 à 45 (`skillbook.ts`) ; les rumeurs 3 ou 8, la chambre forte 5, Hilde 5, le guet 15 la nuit, la forge à réparer après un sabotage ; la mise d'un défi 10.
+- **La courbe du combat** (Passe DB10, « The DB7 sheet's curve ») suppose l'équipement 2 au tableau (la lame au palier 1, la cotte, la bande : environ 100 pièces) et l'équipement 3 en finale (les trois paliers, l'anneau, la bande, la cotte, la pierre : environ 200).
+
+### La courbe des pièces mesurée — [OK]
+- Script hors dépôt (le chargeur de `tests/load.mjs`, les politiques du laboratoire, 30 parties v2, graines 1..30) : la bourse chaque matin et chaque pièce gagnée ou dépensée rangée par action.
+
+| Joueur | Bourse le matin j2 / j4 / j6 / j8 / j10 | Gagné en 10 jours | Dépenses principales | Objets portés |
+|---|---|---|---|---|
+| `idle` | 60 / 60 / 76 / 80 / 81 | +21 (combats 27, événements −7) | aucune | 0 |
+| `diligent` | 25 / 8 / 27 / 8 / 5 | +68 (combats 53, événements 15) | le guet 96 (chaque soir, sans signe), la veste 20, Hilde 8 | 1 |
+| `curious` | 0 / 4 / 19 / 12 / 20 | +87 (combats 63, défis 9, événements 11, festival 4) | pièces des passants 44, marchandages 19, amendes de vol 16, guet 14, rumeurs 8 | 2,8 |
+
+- **Aucun joueur du laboratoire n'achète d'arme ni de palier** : le laboratoire ne voit pas l'économie que la courbe du combat suppose.
+- **Un joueur « planificateur »** (script hors dépôt, `plan.mjs` : il se soigne, achète dans l'ordre de la courbe — la lame, la forge, la cotte, la bande, la forge, l'anneau, la forge —, répare la forge quand elle est froide, s'entraîne deux fois, exerce l'Estocade et l'attaque puissante, combat au bot 0,6 ; les travaux et les bourses proposés simulés en ajoutant des pièces à l'état, aucune règle changée), 30 parties :
+
+| Variante | Pièces en plus | Équipement 2 au jour 6 | Équipement 3 au jour 10 | Combats gagnés | Finale atteinte |
+|---|---|---|---|---|---|
+| aujourd'hui | — | 0 % (2,1 objets sur 7) | 0 % (3,7) | 45 % | 3 % |
+| les caisses de Mara seules (+6) | +7 | 0 % | 0 % | 45 % | 7 % |
+| un travail par jour, 8 | +80 | 50 % | 17 % | 48 % | 13 % |
+| **un travail par jour, 10** | **+100** | **97 %** | **50 %** (80 % achetables ce matin-là) | **51 %** | **20 %** |
+| un travail par jour, 15 | +150 | 100 % | 100 % (64 pièces en trop à la fin) | 50 % | 10 % |
+| un travail par lieu et par jour, 10 (11,6 travaux) | +116 | 97 % | 87 % | 51 % | 17 % |
+| bourses par étape seules | +18 | 0 % | 0 % | 45 % | 3 % |
+| **un travail par jour à 10 et bourses par étape** | **+123** | **97 %** | **97 %** | **51 %** | **20 %** |
+
+- [KO de méthode, corrigé] un premier passage du planificateur restait bloqué au deuxième palier : la forge sabotée (il ne paie pas le guet) ; le script répare désormais la forge (30 réparations sur 30 parties). Un sondage qui laissait passer le temps sur un après-midi de combat bouclait sans fin (l'attente y est refusée) : arrêté, non relancé.
+- [?] Le planificateur est un programme à ordre d'achat fixe ; un joueur réel dépense aussi en compétences, pièces des passants et rumeurs. Les victoires (45 → 51 %) et la finale atteinte (1 → 6 sur 30) bougent peu sur 30 parties.
+
+### La fiche ECO1 — publiée, rien de décidé
+- https://claude.ai/artifact/RmLKYWsLnJfp9yRS7dRCTB (`briefs/fiche-eco1.html`, le gabarit des fiches DB), collection `decisions` relue vide après publication.
+- Huit cartes en cinq familles :
+  - **ECO-1** le constat (« C’est bien ça ») ;
+  - **ECO-2** les petits travaux, un par lieu à son moment, chez quelqu'un qu'on connaît (le quai le matin chez Mara, ses caisses ; le terrain d'entraînement le matin chez Maître Corvin, les boucliers de ses élèves ; le parvis l'après-midi chez Hilde, les armures des combattants du jour ; la place de la halle le soir chez Lio, servir dans sa salle), un créneau, l'amitié de l'employeur comme Mara aujourd'hui ; recommandé « Un travail par jour, à son lieu et à son moment » ;
+  - **ECO-3** la paie : recommandé « 10 pièces » ;
+  - **ECO-4** les bourses par étape : recommandé « jour 6 35 / 10, jour 8 45 / 15, finale 80 / 30 », la poule et les 100 du champion inchangés ;
+  - **ECO-5** les paris chez les parieurs du parvis : recommandé « Pas de paris » (une défaite coûterait aussi la mise, au moment où l'argent manque) ;
+  - **ECO-6** la revente : recommandé « Mara rachète à moitié prix ce qui est dans le sac, jamais un objet volé » ;
+  - **ECO-7** la lecture : recommandé l'étiquette « +10 pièces » dans la liste (Q), un chapitre « Gagner des pièces » dans le guide (H), un conseil au premier achat refusé faute de pièces ;
+  - **ECO-8** le laboratoire : recommandé un joueur « planificateur » de plus, les trois autres inchangés (les nombres que les tests épinglent ne bougent pas).
+- Le croisement avec les stats est dit sur la fiche : l'équipement donne des points de stats (DB7-2), un joueur mieux équipé gagne plus, ce qui est le but (le ramener à la courbe sur laquelle le duel a été recalé) ; aucun nombre du duel ne change.
+
+### Validation
+- Rien du jeu ne change sur cette branche (la fiche, le journal, l'archive) : `npm run typecheck` sans erreur ; `npm test` 587 / 587 ; `npm run build` réussi ; `npm run art:validate` 73 manifestes, 123 sources, 23 manifestes de son, 0 erreur.
+- [KO → expliqué] un premier `npm test` donnait 584 tests et un échec (`arena-day` : « Failed to load url /node_modules/three/... ») : le worktree n'avait qu'un `node_modules` de caches, Vite y cherchait `three`. Une jonction vers le `node_modules` du dossier principal (comme en Passe RM3) : 587 / 587.
+- Les passes gardées auraient dépassé 60 Ko : DB6 et RM2 (branches fusionnées) déplacées à l'octet dans `journal/80-passes-DB6-RM2.md`, leur ligne ajoutée à l'index ; preuve par script : le corps de l'archive égale les octets retirés, le journal reconstruit égale l'original, CRLF partout, chaque passe dans un seul fichier.
+
+### Où reprendre
+- Attendre la fiche ECO1 ; consigner ses choix mot pour mot.
+- Puis appliquer dans le jeu par défaut : les règles dans la simulation (les travaux, la paie, les bourses, la revente), leurs textes en anglais et en français, la liste (Q), le guide (H) et le conseil, les tests, le laboratoire (le planificateur), les preuves de navigateur (`play-day`, `ui-text`, `ui-contrast`) ; rejouer sur le dernier `main` (les séances du duel et de la relecture du français travaillent en parallèle), fusionner, puis l'essai de l'opérateur.
+
+### Pensée
+- Un réglage calé sur un joueur « équipé » suppose une économie qui le laisse s'équiper : la courbe du combat et la courbe des pièces se mesurent ensemble, sur un joueur qui achète ce que la courbe suppose.
+- Un joueur de laboratoire qui paie chaque soir une protection sans signe cache le manque d'argent derrière une dépense : on range chaque pièce par action avant de conclure.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
@@ -568,6 +545,7 @@ Légende : **[OK]** réussi · **[KO]** échec / impasse · **[?]** non résolu 
   - **Le tutoriel (Passes TU1 à TU3)** : la demande de l'opérateur du 2026-11-09 ; fiche https://claude.ai/artifact/7dh9HxkwHzbN2rXWCXyJdq relue douze sur douze à la recommandation (Passe TU2) ; **lot 1, le tutoriel général, fait et fusionné (Passe TU3)** : la visite à chaque nouvelle partie, le guide en douze chapitres (H), huit conseils, les images prises dans le jeu, les nombres lus dans les données. **Lot 2, le tutoriel du premier combat, fait et fusionné (Passe TU4)** : le duel figé à la première fois de chaque chose, sept leçons aux nombres du duel. Relevés sans décision : le « coins » du HUD à 4,2:1 au téléphone couché (812 × 375), avec ou sans le tutoriel ; les animations coupées sous `prefers-reduced-motion` (`src/ui/style.ts`), que la séance des réglages remplace par un réglage du jeu (RG-5). Reste l'essai en jeu de l'opérateur.
   - **La manette (Passe MN1)** : état des lieux de chaque chemin d'entrée (seul le duel lit une manette, la première seulement), prototype de revue des glyphes (DEV, `?padglyph=`), fiche https://claude.ai/artifact/F2fYfXXjwL5y6o7p5q4fj1 relue onze sur onze à la recommandation ; **construite et prouvée (Passe MN2)** : la ville, les places, toutes les pages, l'écran titre et le duel de la version 2 à la manette, le jeu au clavier à 0 px contre `main` (DEV et paquets), une manette simulée jouant le premier jour et un combat. **Reste l'essai de l'opérateur avec sa manette** (MN-11) : le son à la première pression (MN-10), la vibration, la zone morte et la marche la plus lente.
   - **Le duel après le premier essai de l'opérateur (Passes DB1, DB2)** : le blocage des clics répétés corrigé et fusionné (DB1 : un seul relâché attend) ; l'équilibre mesuré (des duels de 8 min, une Estocade à 2,2 % de la barre, 14 attaques rapides par pause, la rupture à 8 % des dégâts) et la fiche https://claude.ai/artifact/PQeCdpmT3Uv6vUdgS4ZZKN relue huit sur huit à la recommandation (DB3 : « 3 à 4 minutes », « Riposte au 3e coup » jamais pendant la rupture, « ×4 », « Jauge par les compétences, ×2 pendant 8 s », « Recaler pour garder six sur dix ») : **appliqué et fusionné** (DB3 : la riposte, les compétences ×4, la rupture ×2 8 s, les rivaux recalés à ×3,4 / ×1,8 et Ren ×1,25, le joueur préparé à 60,4 %, des duels de 3,4 à 3,9 min) ; reste **l’essai en jeu de l’opérateur** (DB-8), et à juger avec lui le joueur curieux tombé de 51 à 37 % et Vessa devenue presque aussi dure que Marek dans la course ; la séance du tutoriel de combat attend cette refonte. **Passe DB4** : sa note après DB3 (« une attaque simple devrait infligeait 5 a 10% des pv max de l'ennemie ») mesurée, la fiche https://claude.ai/artifact/2PFNieC27mG8mFC5G61W1C publiée (à 5 % par coup un duel tombe à 30 s : DB-1 « 3 à 4 minutes » à reconfirmer ou remplacer, A3) : **attendre ses choix**. **Passes DB5, DB6** : l'audit demandé (« un combat basique dure en 2 et 5 min », A3 ; `briefs/audit-combat-db5.md`), la fiche DB4 relue (6/6), la fiche DB5 relue (7/7 ; recharges et rupture 10 s en A3 ; l'attaque simple à 1 %), l'équipement mesuré (il cassait le calibrage : ×2,3 avec les niveaux) ; la fiche DB6 https://claude.ai/artifact/F3ebcGDEjkwBvStFpGgQpp publiée puis suspendue après sa direction (« c'est un rpg notre jeu », Passe DB6). **Passe DB7** : les statistiques des combattants proposées et mesurées (`briefs/stats-combattants.md` : quatre stats, l'équipement en points, la vigueur de Ren, une fiche par rival et sa croissance), la fiche https://claude.ai/artifact/BYVmCK87bj3qFomkD2knbz publiée ; **relue (Passe DB8)** : six sur sept à la recommandation, DB7-1 « Ajouter la Vivacité (vitesse de charge) » ; A3 consignées, spécification § 19 ; **appliqué et fusionné (Passe DB9)** : les cinq stats, les fiches et leur croissance, l'équipement en points, la séance au choix, la vigueur, les règles de DB5 (recharges montrées dans le HUD), l'attaque simple 0,5 à la jauge et un coup gardé ×2 à celle du gardien (le marteleur qui garde gagnait), puis le recalage sur la réponse de l'opérateur « The DB7 sheet's curve » (Passe DB10 : les coups des rivaux à la force de la fiche ; la poule 24 / 61 / 90 %, la finale 29 / 70 / 94 %) ; reste **l'essai en jeu de l'opérateur** ; relevés : la fiche de match coupe son pied à 568 × 320 (sans lien avec ce travail), `play-day` et `town-flow` fragiles sous charge.
+  - **L'argent de la version 2 (Passe ECO1)** : la demande de l'opérateur du 2026-11-10 (« On doit aussi pouvoir trouver le moyen de gagner de l'argent pour financer notre equipement et preparer nos prochains combats car ils semble dur de gagner de l'argent par moment ») ; l'économie inventoriée et la courbe des pièces mesurée (aucun joueur du laboratoire n'atteint l'équipement que la courbe DB7 suppose ; le préparé paie 96 pièces au guet) ; la fiche https://claude.ai/artifact/RmLKYWsLnJfp9yRS7dRCTB publiée (huit cartes : les petits travaux, la paie, les bourses par étape, les paris, la revente, la lecture, le laboratoire) : **attendre ses choix**, puis appliquer dans le jeu par défaut en deux langues, prouver, fusionner.
   - **Effets de combat (Passes FX1 à FX5)** : le moteur de RPGThreeJS (`dev@5cc6119e`) est sorti du labo (`src/arena/fx/`) et joue dans tout duel aux règles de la version 2, dans une partie comme sous `?scene=arena&v2=1` ; `fx=off` garde les anciens effets pour comparer, le jeu par défaut est inchangé. En duel réel : +0,2 à +0,6 ms, sous la nuit B (Passe FX5). **Reste l'essai en main de l'opérateur dans une partie** ; l'écart de garde à revoir avec les feuilles cuites des rivaux. Relevé sur `main`, non touché : l'ancien croissant de garde tombe derrière le gardien, l'ancienne étincelle ne se voit pas à midi sur Marek.
   - **V2 à V10 faits (Passes V2 à V10)** : la version 2 complète derrière `flags.v2` ; l'essai de l'opérateur par `briefs/v2-trial.md` et la fiche `briefs/fiche-v2.html` (à publier par une séance locale). À faire en local : mesures GPU des places (budget E24), revue visuelle des places, des cinématiques et des écrans, écoute du son, contrôle vivant de l'arène ; à revoir : le sabotage de l'équipement dans chaque partie où Cassius est hostile, les noms des compétences adverses hors des tables de textes (`FOE_SKILLS`), les portraits des personnes de la version 2 sans feuille cuite ; écart consigné : la phase d'équipe (contrat projet § 5.1). Les noms de passes V0 à V3 de cette séance doublent ceux des passes V0 à V3 du 18/10 (archivées dans `journal/08`) : citer « Passe V1 (séance Version 2) ».
   - **VP1 / VP2 faites (Passes VP1, VP2)** : les places refaites dans la langue du district et cuites (visibilité prouvée contre `vis=0`, en cache),
