@@ -21,6 +21,9 @@ import { tx } from '../narrative/text';
 import { ANNOUNCED } from '../audio/plan';
 import { parseWeather } from '../atmosphere/Weather';
 import { keepPlace, tutorialOn } from './tutorial';
+import { marksOf, type MarkKind } from '../simulation/v2marks';
+import { NpcMarks, type MarkStyle } from './npcMarks';
+import { MiniMap, type MapCorner } from './minimap';
 
 /** The version 2's open places (lot V5, journal Passe V5): the Arena Forecourt, the Training Ground and the Festival Square (in place of
  *  Lantern Row's mock-up), each a square of src/world/Plazas.ts walked across in the slot's day state; the people there at this hour stand
@@ -85,11 +88,25 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   const hails = new Hails((k, n) => hailOf(st, k, n), (who) => (RIVALS[who] ? gestureOf(st, who) : null));
   (window as any).__hails = hails;
   const open = (to: typeof from | null) => (to && !shut(to) ? to : null);
+  // the people worth talking to and the plan of the place (journal Passe MK1, the sheet's mock-ups: DEV `npcmark=`, `minimap=`)
+  const markStyle = import.meta.env.DEV ? (b.params.get('npcmark') as MarkStyle | null) : null;
+  const mapCorner = import.meta.env.DEV ? (b.params.get('minimap') as MapCorner | null) : null;
+  const marks = markStyle ? new NpcMarks(markStyle) : null;
+  let kinds = new Map<string, MarkKind>();
+  const reMark = () => { kinds = new Map(marksOf(st).map((m) => [m.who, m.kind])); if (marks) marks.marks = kinds; };
+  if (marks || mapCorner) { reMark(); (window as any).__game.subscribe(reMark); }
+  if (marks) (window as any).__marks = marks;
+  const standing = () => [...app.who].filter(([a, who]) => !a.hidden && PEOPLE[who]).map(([a, who]) => ({ a, who }));
+  const pl = app.place;
+  const map = mapCorner ? new MiniMap({ walk: [pl.walk, ...pl.lanes], blocks: pl.blockers.map((k) => ({ x: k.x, z: k.z, r: k.r })), edges: [], exits: pl.exits.map((e) => ({ x: e.anchor[0], z: e.anchor[2] })), reach: 15 }, mapCorner) : null;
+  if (map) (window as any).__map = map;
   let last = app.stepped;
   const frame = () => {
     const dt = app.stepped - last; last = app.stepped;
     if (ui.modal) { app.keys.clear(); app.pad = null; }
     ui.update(); ways.update(app.camera, app.player.pos, ui.modal ? null : open(app.exitTaken()?.to ?? null), leave);
+    if (marks) marks.update(app.camera, app.player.pos, standing().map(({ a, who }) => ({ who, pos: a.pos, head: a.height * a.scale })), ui.modal || app.locked);
+    if (map) map.update(app.camera, app.player.pos, standing().map(({ a, who }) => ({ x: a.pos.x, z: a.pos.z, kind: kinds.get(who) ?? null })), ui.modal || app.locked);
     hails.update(app.locked ? 0 : dt, app.camera, app.player.pos, app.hailWalkers((who) => !!RIVALS[who]), ui.modal);
     requestAnimationFrame(frame);
   };

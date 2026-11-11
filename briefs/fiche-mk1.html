@@ -1,0 +1,374 @@
+<title>Marques et mini-carte</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · le jeu par défaut · Passe MK1 · 11 novembre 2026</span>
+    <h1>Les PNJ utiles, la bulle et la mini-carte</h1>
+    <p class="lede">Tu as écrit : « actuellement la commercante est seule a avoir son icon dialogue et cela ressemble a une defaut de conception, je pense il faudra l’enlever ou adapter. car il va falloir pourvoir mettre en avant de maniere subtile les pnjs avec lesquels l’interaction peut etre utile car ils ont un objet ou un evenement a proposer, peut etre meme integrer aussi une mini map sur le coin ». Voici d’où vient la bulle, qui a vraiment quelque chose à proposer au fil d’une partie, et des maquettes rendues dans le jeu par défaut pour la marque et pour la mini-carte.</p>
+    <p class="lede">Les maquettes sont derrière un paramètre de développement (npcmark=, minimap=), retiré après tes choix ; rien n’est appliqué avant. Les nombres viennent de parties entières du laboratoire. La mini-carte revient sur une décision d’interface (UM-R5) : elle est marquée sur sa carte. Clique ton choix ; une note est facultative ; je relis tes choix directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation. Je consigne tes choix mot pour mot au journal (la mini-carte, qui remplace UM-R5, citée telle quelle), puis j’applique dans le jeu par défaut : le sort de la bulle, la marque et ses sortes, son déclencheur, la mini-carte, les textes en anglais et en français, le conseil et le guide. Ensuite les tests, les preuves dans le navigateur (le quai et les trois places, de jour et de nuit, au téléphone), la taille et le contraste des textes, le jeu d’aujourd’hui (v2=0) au pixel près, la fusion. Puis ton essai en jeu.</p>
+    <p>Ce qui reste incertain, dit sans détour : le classement des offres en trois sortes est le mien (chaque action du jeu rangée une fois, dans une seule table, pour se corriger en une ligne) ; les nombres du déclencheur viennent de bots qui ne parlent pas à tout le monde ; la lisibilité de la marque en mouvement et dans la foule de midi se juge en jeu.</p>
+    <p class="src">Sources : journal Passe MK1 ; <code>src/simulation/v2marks.ts</code>, <code>src/ui/npcMarks.ts</code>, <code>src/ui/minimap.ts</code> (maquettes) ; captures : <code>node tools/play-shots.mjs</code> sur les états nommés <code>v2-day1-morning</code>, <code>v2-forecourt-morning</code>, <code>v2-training-morning</code>, <code>v2-square-night</code>, <code>v2-wanted-night</code> avec <code>npcmark=losange|mot|sol</code> et <code>minimap=tr|bl</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Apostrophes : l’apostrophe typographique ’ ; une ' droite dans une chaîne entre ' ' arrête tout le script.
+const GROUPS = [
+  { id: 'bulle', title: 'La bulle d’aujourd’hui', sub: 'D’où elle vient : le générateur du quartier donne à deux personnages un rôle « qui parle » (src/props/MarketGenerator.ts : la marchande de l’étal, merchant-talk, et le premier garde de la barrière, guard-talk-idle) ; le moteur des personnages leur met une bulle « … » en pixel art, en permanence (src/characters/ActorSystem.ts). Elle date du quartier libre (Passe 4A), avant le mode jouable.', fam: 'var(--cendre)', items: [
+    { id: 'MK-1', tag: 'bulle', title: 'Que faire de la bulle « … » ?',
+      ctx: 'Elle n’est que sur le quai, de jour comme de nuit, dans toute partie (le jeu par défaut et v2=0) et dans « Explore the district » : Mara (la marchande) et le sergent Hale à la barrière est (rarement dans le cadre). Les trois places n’en ont aucune. Et un défaut de plus : quand on appuie sur [E] près de quelqu’un d’autre (le porteur, Wynn, le forgeron, l’inconnu), il reçoit la bulle et la garde jusqu’au prochain chargement de la page (personne ne la retire). Elle ne dit rien de ce que la personne a à offrir : Mara la porte même quand elle n’a plus rien de neuf.',
+      shots: [['img/avant-quai-z.webp', 'Aujourd’hui, le premier matin : la bulle de Mara derrière les fanions, seule sur le quai'], ['img/avant-quai.webp', 'Le même cadre entier (personne d’autre n’a de marque)']],
+      rec: 'La retirer du jeu par défaut, la marque des PNJ utiles (cartes suivantes) en prend la place ; le défaut de la bulle qui reste après [E] corrigé. Explore, qui n’a pas de dialogue, garde seulement sa courte réaction à [E] (2,5 s, puis elle part). Le jeu d’aujourd’hui (v2=0) reste tel quel.',
+      opts: ['La retirer du jeu par défaut ; Explore garde la courte réaction à [E], corrigée ; v2=0 inchangé', 'La retirer partout, Explore compris (v2=0 inchangé)', 'La garder, corriger seulement le reste après [E]'], recIdx: 0,
+      src: 'src/props/MarketGenerator.ts (rôles) ; src/characters/ActorSystem.ts (spawnNpc, interact, talkTimer) ; src/characters/SpriteRenderer.ts (la bulle dessinée) ; src/characters/SpriteAtlas.ts (makeBubble)' },
+  ]},
+  { id: 'marque', title: 'La marque des PNJ utiles', sub: 'Maquettes rendues dans le jeu par défaut (DEV, npcmark=), dans le système de design : pas de boîte sur la scène, des traits d’un pixel, un seul accent (or de jour, ambre la nuit), posé sur le petit voile des étiquettes de sortie. Sur ces images, la bulle est retirée et toute personne qui a quelque chose est marquée (le déclencheur se choisit plus bas).', fam: 'var(--voile)', items: [
+    { id: 'MK-2', tag: 'forme', title: 'La forme de la marque',
+      ctx: 'Trois formes essayées sur le quai le premier matin (même cadre), puis la recommandée sur les places, la nuit et au téléphone. Elle suit la personne, s’efface au bord de l’écran, se cache pendant une page ou un dialogue ; elle ne bouge pas (des fondus seulement, le mouvement réduit compris).',
+      shots: [['img/losange-quai-z.webp', 'Losange au-dessus de la tête (recommandé) : Mara, le forgeron, le porteur'], ['img/mot-quai-z.webp', 'Le mot au-dessus de la tête, seulement de près (ici « Item » : la maquette était en anglais)'], ['img/sol-quai-z.webp', 'Un liseré d’un pixel au sol, sous les pieds'], ['img/losange-parvis.webp', 'Losange, le parvis le premier matin'], ['img/losange-lices.webp', 'Losange, les lices le matin'], ['img/losange-halle-nuit.webp', 'Losange, la place de la Halle le soir (ambre)'], ['img/losange-quai-nuit.webp', 'Losange, le quai la nuit'], ['img/tel-quai.webp', 'Téléphone couché (812 × 375)'], ['img/tel-halle.webp', 'Téléphone, la Halle le soir']],
+      rec: 'Le losange : petit (15 px), lisible de loin sur le pavé de midi comme dans la nuit grâce à son voile, il dit « là » sans texte et ne coupe pas les sprites. Le mot ne se voit que de près (on ne sait pas où aller) ; le liseré au sol se perd sur le pavé et derrière les autres personnages. Au téléphone le losange et son voile seront réduits d’un tiers (ils sont un peu gros sur l’image).',
+      opts: ['Losange au-dessus de la tête', 'Le mot au-dessus de la tête, de près seulement', 'Un liseré au sol', 'Aucune marque sur la scène (la liste et la carte seulement)'], recIdx: 0,
+      src: 'src/ui/npcMarks.ts (maquette) ; src/ui/exits.ts (le même voile et le même accent) ; journal Passe UM1 (direction A « Voile »)' },
+    { id: 'MK-3', tag: 'sortes', title: 'Distinguer un objet, un événement, une suite',
+      ctx: 'Classé d’après l’état du jeu, comme le dialogue le lit (ce que la personne offre et que le jeu accepte maintenant, et ce que lui parler change à lui seul). Objet : une marchandise, la forge, une compétence, les soins, un travail payé, la revente. Événement : un défi ouvert cette phase, un entraînement avec Orla, les bonnes actions et les cortèges du festival, la rumeur du jour (Lio, l’inconnu), la garde payée du quai. Suite : ce qui découle de ce qui s’est passé (Lady Edda qui reconnaît la sangle, frère Ambrose témoin du conte de Vessa, le rapport à Hale, la restitution, répondre à Vessa ou à Rhosk, les gros bras de Corra, la forge à réparer, la cargaison de Tam). Quand une personne a plusieurs sortes, la plus forte l’emporte : suite, puis événement, puis objet.',
+      shots: [['img/losange-halle-nuit.webp', 'Losange vide = objet (Pip, Sela), plein = événement, vide autour d’un plein = suite (Lio : son travail et la rumeur)']], one: true,
+      rec: 'Trois sortes, trois formes du même losange (vide, plein, vide autour d’un plein) : un seul accent, une seule forme à apprendre. De près, l’invite le dit en mots : « [E] Parler à Mara, marchande · Objet ».',
+      opts: ['Trois sortes, trois formes du losange, la sorte dite dans l’invite de près', 'Une seule marque ; la sorte dite seulement dans l’invite de près', 'Deux sortes : objet et événement (la suite comptée comme événement)'], recIdx: 0,
+      src: 'src/simulation/v2marks.ts (maquette : marksOf, le classement) ; src/simulation/roles.ts (offeredBy) ; src/narrative/dialogue.ts (onTalk)' },
+  ]},
+  { id: 'declencheur', title: 'Ce qui déclenche la marque', sub: 'Mesuré sur des parties v2 entières du laboratoire (20 parties, graines 1 à 20, le joueur « curieux » ; le « planificateur » donne des nombres proches) : à chaque créneau réel, dans chaque lieu, les personnes visibles et celles qui auraient une marque selon la règle. Seules les personnes qui ont un sprite sur la page comptent (la foule des passants jamais).', fam: 'var(--astre)', items: [
+    { id: 'MK-4', tag: 'déclencheur', title: 'Quand une personne porte-t-elle la marque ?',
+      ctx: 'Avec « tout ce qui est possible », presque tout le monde est marqué tout le temps (Mara chaque matin, chaque marchand, chaque rival qu’on peut défier) : la marque ne distingue plus rien. « Ce qui est neuf » marque ce que le joueur n’a pas encore vu chez cette personne (une marchandise nouvelle, le travail du jour, un défi ouvert à nouveau dans la nouvelle phase, une suite) : de 0 à 3 personnes par lieu. Personnes marquées en moyenne par créneau (personnes visibles) :',
+      table: { head: ['Lieu et moment', 'Visibles', 'Tout ce qui est possible', 'Ce qui est neuf', 'Événements et suites seulement'], rows: [
+        ['Quai, matin', '7', '3,4', '1,4', '1,9'],
+        ['Quai, après-midi', '7', '2,7', '0,3', '1,5'],
+        ['Quai, soir', '7', '2,3', '2,2', '1,6'],
+        ['Parvis, matin', '6', '3,7', '1,9', '1,7'],
+        ['Parvis, après-midi', '6', '2,7', '1,6', '1,5'],
+        ['Parvis, soir', '1', '0,1', '0,1', '0'],
+        ['Lices, matin', '4', '2,9', '2,0', '1,6'],
+        ['Lices, après-midi', '4', '1,8', '0,5', '1,3'],
+        ['Lices, soir', '0', '0', '0', '0'],
+        ['Halle, matin', '1', '1,0', '0,9', '0,1'],
+        ['Halle, après-midi', '3,9', '1,8', '1,4', '0,1'],
+        ['Halle, soir', '4,9', '3,3', '3,1', '1,0']],
+        foot: '« Ce qui est neuf » suppose qu’à chaque créneau le joueur a ouvert le dialogue de chaque personne du lieu où il se tient : c’est le moins de marques possible ; un joueur réel en verra un peu plus. Par personne : Mara a quelque chose 86 % des matins (sa boutique, ses caisses), Hilde, maître Corvin, Pip et Sela presque toujours (leur boutique) ; les rivaux de la poule un défi par phase ; Lio sa rumeur chaque jour et son travail le soir ; l’inconnu sa rumeur la nuit ; Hale une suite dès qu’un vol est connu.' },
+      rec: 'Ce qui est neuf depuis la dernière conversation : la marque reste rare (0 à 3 par lieu), elle attire là où il se passe quelque chose, et une boutique déjà visitée ne crie plus.',
+      opts: ['Ce qui est neuf depuis la dernière conversation avec la personne', 'Tout ce qui est possible maintenant', 'Les événements et les suites seulement (jamais les boutiques)'], recIdx: 0,
+      src: 'script de mesure hors dépôt (le chargeur de tests/load.mjs, les politiques du laboratoire) ; src/simulation/v2marks.ts (offerKey, freshMark)' },
+    { id: 'MK-5', tag: 'après', title: 'Après l’interaction',
+      ctx: 'Ce que « vu » veut dire : avoir ouvert le dialogue de la personne (pas forcément acheté). Une offre revient « neuve » quand elle change : un travail le lendemain, un défi à la phase suivante (jour 6), une rumeur chaque jour, une pièce nouvelle dans une boutique. Ce que le joueur a vu se garde avec la partie, hors de l’empreinte (comme les mots du journal : la simulation et ses empreintes ne changent pas).',
+      rec: 'La marque part dès qu’on a ouvert le dialogue, et revient avec la prochaine nouveauté de cette personne.',
+      opts: ['Elle part à l’ouverture du dialogue, revient avec une nouveauté', 'Elle reste tant que l’offre existe', 'Elle part à l’ouverture et ne revient que le lendemain'], recIdx: 0,
+      src: 'src/ui/townUi.ts (openPerson) ; src/simulation/advance.ts (les clés « $ » hors de l’empreinte)' },
+    { id: 'MK-6', tag: 'exclus', title: 'Ce qui ne porte jamais de marque',
+      ctx: 'Deux offres sont ouvertes presque tout le temps : regarder un rival s’entraîner (chaque rival de la poule, là où il s’entraîne, Passe EVL5) et parler aux passants de la foule (« Les passants »). Les marquer mettrait un losange sur chaque rival et sur la foule. Elles restent dans la liste (Q) et dans les dialogues.',
+      rec: 'Ni l’observation des rivaux ni la foule des passants ne portent de marque ; les trois passants nommés (Fenwick, Lady Edda, Sela) en portent une quand ils ont une pièce neuve.',
+      opts: ['Ni l’observation des rivaux ni la foule', 'Marquer aussi les rivaux qu’on peut observer'], recIdx: 0,
+      src: 'src/simulation/v2marks.ts (NEVER) ; src/simulation/roles.ts (scout) ; src/simulation/v2watch.ts (talkableHere)' },
+  ]},
+  { id: 'carte', title: 'La mini-carte', sub: 'L’interface a été décidée « Dans le système, sans mini-carte » (UM-R5, Passe UM1 : la mini-carte d’Explore est alors sortie du jeu, Passes UM5 / UM6). Ta demande la remet en question : c’est ta décision. Maquette rendue dans le jeu (DEV, minimap=) : un petit plan dans un coin, sans cadre, ses traits d’un pixel en ivoire qui s’effacent au bord sur le voile, l’accent pour ce qu’on peut faire (les PNJ marqués, les sorties), le héros en ivoire au centre ; tourné comme la caméra (ce qui est devant à l’écran est en haut du plan).', fam: 'var(--ronce)', items: [
+    { id: 'MK-7', tag: 'mini-carte', title: 'Une mini-carte dans le coin ?',
+      ctx: 'Coût mesuré sur la machine de l’opérateur (Radeon 780M, Chrome) : le dessin du plan 0,02 à 0,03 ms, une image sur trois (2D, 168 px) ; les marques 0,01 ms par image pour huit personnes ; le calcul des marques à chaque action seulement. La composition du navigateur (un petit canevas de plus) se mesurera GPU saturé à l’application (cadence sans plafond), comme les voiles (Passe UM2).',
+      shots: [['img/carte-quai.webp', 'En haut à droite, sous les pièces : le quai le matin (losanges de Mara, du forgeron, du porteur ; les deux sorties en triangle)'], ['img/carte-parvis.webp', 'Le parvis le matin'], ['img/carte-halle.webp', 'La place de la Halle le soir'], ['img/carte-bas.webp', 'En bas à gauche (le quai)']],
+      rec: 'Oui, en haut à droite sous les pièces et la réputation : là où l’œil cherche l’état ; en bas à gauche elle prend la place de la bande des nouvelles et des dialogues. Elle se cache pendant les pages, les dialogues et les scènes. Elle remplace UM-R5.',
+      opts: ['Oui, en haut à droite (remplace UM-R5)', 'Oui, en bas à gauche (remplace UM-R5)', 'Seulement dans la page Carte (M) : le plan du lieu au-dessus de la liste des lieux', 'Non, garder UM-R5 (les marques suffisent)'], recIdx: 0,
+      src: 'src/ui/minimap.ts (maquette) ; journal Passes UM1, UM5 / UM6 ; l’ancienne mini-carte d’Explore (git show 9f1ad65^:src/debug/Hud.ts)' },
+    { id: 'MK-8', tag: 'contenu', title: 'Ce qu’elle montre, et dans quel sens',
+      ctx: 'La maquette montre le sol où l’on marche, ce qui s’y dresse (étals, puits, monuments), le front des maisons du quai, les sorties (triangle d’accent, gardé au bord du plan quand elles sont plus loin), les personnes : un point pâle, ou la forme de leur marque en accent ; le héros au centre. Le quai fait 40 m de long : le plan montre 13 m autour du héros ; une place se voit presque entière.',
+      rec: 'Le héros, les sorties, les PNJ marqués (et les autres en point pâle), tourné comme la caméra : à l’écran, haut veut dire « devant », comme les touches de marche.',
+      opts: ['Héros, sorties, PNJ marqués et autres en point pâle ; tournée comme la caméra', 'Les mêmes, le nord toujours en haut', 'Le héros et les sorties seulement'], recIdx: 0,
+      src: 'src/ui/minimap.ts ; src/world/Plazas.ts (walk, lanes, blockers, exits) ; src/district/MerchantDistrictGenerator.ts (walk, colliders)' },
+    { id: 'MK-9', tag: 'téléphone', title: 'Sur un téléphone',
+      ctx: 'Au téléphone (la règle du système : largeur sous 700 px ou hauteur sous 480 px) la maquette fait 104 px, sous les chiffres, à 10 px du bord. Les textes du HUD ne bougent pas.',
+      shots: [['img/tel-quai.webp', 'Le quai, 812 × 375'], ['img/tel-halle.webp', 'La Halle le soir, 812 × 375']],
+      rec: '104 px dans le même coin, comme montré.',
+      opts: ['104 px dans le même coin', 'Cachée sur un téléphone'], recIdx: 0,
+      src: 'src/ui/design/tokens.ts (PHONE_QUERY)' },
+  ]},
+  { id: 'portee', title: 'Où, et comment on l’apprend', sub: 'Le jeu par défaut seulement (VD-8 : le nouveau va dans le jeu par défaut) ; le jeu d’aujourd’hui (v2=0) inchangé.', fam: 'var(--cendre)', items: [
+    { id: 'MK-10', tag: 'lieux', title: 'Les lieux concernés',
+      ctx: 'Le quai (la ville d’une partie) et les trois places (le parvis, les lices, la place de la Halle), à chaque moment, la météo comprise. « Explore the district » n’a ni dialogue ni état de partie : aucune personne n’y est utile.',
+      rec: 'Les quatre lieux d’une partie du jeu par défaut ; Explore sans marque ni carte ; v2=0 inchangé (le même rendu au pixel près).',
+      opts: ['Les quatre lieux d’une partie ; Explore sans marque ni carte ; v2=0 inchangé', 'Les mêmes, et la mini-carte aussi dans Explore'], recIdx: 0,
+      src: 'src/ui/playTown.ts ; src/ui/playPlaza.ts ; src/main.ts (Explore)' },
+    { id: 'MK-11', tag: 'lecture', title: 'Comment le joueur l’apprend',
+      ctx: 'Le tutoriel a un guide (H) en treize chapitres et des conseils qui ne paraissent qu’une fois (Passes TU1 à TU3, ECO3). La liste (Q) range déjà les actions par personne.',
+      rec: 'La marque aussi dans la liste (Q) à côté du nom ; un conseil la première fois qu’une marque paraît (« Une marque au-dessus d’une tête : cette personne a du nouveau ») ; une ligne dans le chapitre du guide « Marcher et parler » (la légende des trois formes). En anglais et en français.',
+      opts: ['La liste, un conseil et une ligne du guide', 'Le conseil seulement', 'Rien de plus : la marque se comprend seule'], recIdx: 0,
+      src: 'src/ui/tutorial.ts (HINTS, chapitres) ; src/ui/townUi.ts (la liste Q)' },
+  ]},
+];
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>
