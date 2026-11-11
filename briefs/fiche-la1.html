@@ -1,0 +1,360 @@
+<title>Ce qu’il y a à faire</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column of decision cards, grouped by family colour; sticky progress bar on top. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --fg: #1d2129;
+  --muted: #5b6270;
+  --line: #d9dde4;
+  --brass: #8a6416;
+  --brass-soft: #f4ead2;
+  --rec: #2f6b3f;
+  --rec-soft: #e3f0e6;
+  --cendre: #c4511d;
+  --voile: #3b5fb0;
+  --ronce: #2f7d45;
+  --astre: #a7801a;
+  --focus: #3b5fb0;
+  --font-display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+    --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+    --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161b; --surface: #1d2027; --fg: #e8e9ec; --muted: #a3a9b5; --line: #323743;
+  --brass: #d9b45a; --brass-soft: #2e2817; --rec: #7cc48e; --rec-soft: #1c2c21;
+  --cendre: #f08a52; --voile: #86a6ef; --ronce: #6fc286; --astre: #e3bf55; --focus: #86a6ef;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header.top { padding-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 5vw, 42px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 65ch; }
+.progress {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px;
+}
+.bar { flex: 1 1 200px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; min-width: 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--brass); transition: width .3s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { font-size: 13px; color: var(--muted); }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 7px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--brass); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+section.group { display: flex; flex-direction: column; gap: 14px; }
+.group-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid var(--fam); padding-bottom: 6px; }
+.group-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.card.decided { border-color: color-mix(in srgb, var(--fam) 55%, var(--line)); }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.tag { font-family: var(--font-mono); font-size: 12px; color: var(--fam); border: 1px solid currentColor; border-radius: 4px; padding: 1px 6px; }
+.card h3 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; }
+.card p { margin: 0; max-width: 68ch; }
+.ctx { color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.src code { font-family: var(--font-mono); font-size: 12px; }
+.rec { background: var(--rec-soft); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+.rec b { color: var(--rec); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  font: inherit; font-size: 15px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 6px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.opt:hover { border-color: var(--fam); }
+.opt .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--fam); background: color-mix(in srgb, var(--fam) 12%, var(--surface)); font-weight: 600; }
+.opt[aria-pressed="true"] .dot { border-color: var(--fam); background: var(--fam); }
+.opt .star { font-size: 12px; font-weight: 700; color: var(--rec); letter-spacing: .04em; text-transform: uppercase; }
+textarea {
+  font: inherit; font-size: 15px; width: 100%; min-height: 44px; resize: vertical; border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; background: var(--bg); color: var(--fg);
+}
+label.note-l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.shots.one { grid-template-columns: 1fr; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; cursor: zoom-in; background: #000; display: block; width: 100%; }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.shot figcaption { font-size: 13px; color: var(--muted); }
+.after { background: var(--brass-soft); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.after h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0; }
+.after p { margin: 0; max-width: 68ch; }
+dialog { border: none; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .82); }
+dialog img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 6px; }
+dialog p { color: #e8e9ec; margin: 8px 0 0; font-size: 14px; text-align: center; }
+.tbl { overflow-x: auto; min-width: 0; }
+.tbl table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; min-width: 100%; }
+.tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 5px 10px; text-align: right; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; white-space: normal; }
+.tbl thead th { color: var(--muted); font-weight: 600; }
+.tbl tbody tr.mark td { background: var(--rec-soft); }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Cité du Tournoi · le jeu par défaut · Passe LA1 · 11 novembre 2026</span>
+    <h1>Ce qu’il y a à faire : la liste [Q] mise en avant</h1>
+    <p class="lede">Tu as écrit : « je constate qu’on a un bouton permettant d’afficher nos activites secondaires possible qui propose des interactions de tout type mais je pense que nous pourrions mettre plus en evidence cette zone a l’ecran durant nos parcours afin d’inciter le joueur a voir ce qui a a faire durant la periode ».</p>
+    <p class="lede">Aujourd’hui, en marchant, l’écran ne montre que la ligne d’état, les chiffres, la mini-carte et, en bas à droite, « [Q] Ici » (ta décision UM-R2 « Liste à la demande », Passe UM1). La liste elle-même s’ouvre en bande au pied de l’écran : les activités du lieu (s’entraîner, exercer une compétence, voler, attendre), puis les personnes présentes avec leur losange. Ce que les gens proposent (les travaux à +10 pièces, les boutiques, les défis, les rumeurs) est dans leur dialogue, et leur losange dit déjà qui a du neuf.</p>
+    <p class="lede">Les maquettes ci-dessous sont rendues dans le jeu par défaut, derrière un paramètre de développement (todo=), retiré après tes choix ; rien n’est appliqué avant. Les nombres viennent de parties entières du laboratoire. La dernière famille touche une de tes décisions d’interface (UM-R2) : elle est marquée sur sa carte. Clique ton choix ; une note est facultative ; je relis tes choix directement.</p>
+  </header>
+
+  <div class="progress" role="status" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 décidée</span>
+    <span class="status" id="save">Connexion à l'enregistrement…</span>
+    <button class="btn" id="copy" type="button">Copier le récapitulatif</button>
+  </div>
+
+  <div id="groups"></div>
+
+  <section class="after">
+    <h2>Une fois la fiche remplie</h2>
+    <p>Dis-le dans la conversation : je consigne tes choix mot pour mot au journal (celui de la carte UM-R2 cité tel quel), puis j’applique dans le jeu par défaut, en anglais et en français : ce qui compte, la forme et la place choisies, le combat du jour, le téléphone, quand l’indication part, la visite et le guide. La manette suit d’elle-même : la touche affichée devient [Y] quand on y joue (la règle MN-7). Ensuite les tests, les preuves dans le navigateur (le quai et les trois places, de jour et de nuit, au téléphone, en deux langues : taille et contraste des textes, la journée jouée de bout en bout, le tutoriel, la manette), le jeu d’aujourd’hui (v2=0) au pixel près, la fusion. Puis ton essai en jeu.</p>
+    <p>Ce qui reste incertain, dit sans détour : le classement « ce qui compte » et l’ordre de l’aperçu sont les miens (une seule table, qui se corrige en une ligne) ; les bots du laboratoire n’ouvrent pas les dialogues comme toi : les nombres supposent un joueur qui lit tout là où il passe ; l’effet sur l’envie de jouer se juge en jeu.</p>
+    <p class="src">Sources : journal Passe LA1 ; <code>src/simulation/v2todo.ts</code> (ce qui compte), <code>src/ui/todo.ts</code> et <code>src/ui/townUi.ts</code> (maquettes) ; captures : <code>node tools/play-shots.mjs</code> sur les états nommés <code>v2-day1-morning</code>, <code>v2-day2-afternoon</code>, <code>v2-training-morning</code>, <code>v2-forecourt-midday</code>, <code>v2-square-night</code>, <code>v2-wanted-night</code> avec <code>todo=count|peek|new|status</code>.</p>
+  </section>
+</div>
+
+<dialog id="zoom"><img id="zoom-img" alt=""><p id="zoom-cap"></p></dialog>
+
+<script>
+// Apostrophes : l’apostrophe typographique ’ ; une ' droite dans une chaîne entre ' ' arrête tout le script.
+const GROUPS = [
+  { id: 'forme', title: 'Mettre la liste en avant', sub: 'Maquettes dans le système de design (direction A « Voile ») : pas de boîte sur la scène, le texte sur un voile en dégradé qui monte du coin de l’écran, un seul accent (or de jour, ambre la nuit), le losange des personnes (MK-2) et un petit trait pour une activité du lieu. Sur ces images, « à faire » suit la recommandation de la carte LA-5.', fam: 'var(--voile)', items: [
+    { id: 'LA-1', tag: 'forme', title: 'Sous quelle forme ?',
+      ctx: 'Quatre formes essayées sur le quai le premier matin (même cadre). Le nombre : la touche dit « [Q] Ici 4 à faire ». L’aperçu : les trois premières choses au-dessus de la touche, avec le losange de la personne et ce que cela rapporte (« +10 pièces » pour un travail), puis « et 1 de plus dans la liste ». L’invite allumée : la touche dans l’accent et une ligne « Nouveau ici » quand quelque chose de neuf paraît. Sous l’horloge : le même contenu en haut à gauche (carte suivante). Une maquette ne bouge pas : seulement des fondus.',
+      shots: [['img/avant-quai-z.webp', 'Aujourd’hui : « [Q] Here » seul dans le coin'], ['img/compte-quai-z.webp', 'Le nombre sur la touche'], ['img/apercu-quai-z.webp', 'Le nombre et l’aperçu des trois premières'], ['img/nouveau-quai-z.webp', 'L’invite allumée : la touche dans l’accent, « Nouveau ici »'], ['img/apercu-quai.webp', 'L’aperçu, le cadre entier'], ['img/compte-quai.webp', 'Le nombre seul, le cadre entier']],
+      rec: 'Le nombre sur la touche, toujours (il dit qu’il y a quelque chose sans rien couvrir) ; l’aperçu des trois premières à l’arrivée dans un lieu, au début d’un moment et quand quelque chose de neuf paraît, la touche dans l’accent pendant ce temps, puis il s’efface (carte LA-7). C’est l’aperçu qui donne envie (« Mara · Objet +10 pièces » se lit d’un coup d’œil) ; tenu en permanence, il couvrirait le coin du décor tout le temps.',
+      opts: ['Le nombre toujours ; l’aperçu à l’arrivée et à chaque nouveauté, puis il s’efface', 'Le nombre seul', 'Le nombre et l’aperçu, toujours', 'L’invite allumée à chaque nouveauté, sans nombre'], recIdx: 0,
+      src: 'src/ui/todo.ts (maquettes) ; src/ui/townUi.ts (la touche « Ici », openHere) ; journal Passe UM1 (UM-R2)' },
+    { id: 'LA-2', tag: 'place', title: 'Où le placer ?',
+      ctx: 'Le coin bas droit tient déjà la touche [Q] et [Échap] Menu ; le haut droit, les pièces, la réputation et la mini-carte (MK-7) ; le haut gauche, l’horloge, le lieu et le prochain combat ; le milieu du bas, l’invite près de quelqu’un (« [E] Parler à Mara »). Sous l’horloge, l’ensemble descend jusqu’au tiers de l’écran et demande un voile plus fort sur les façades claires de midi.',
+      shots: [['img/apercu-quai-z.webp', 'En bas à droite, au-dessus de la touche [Q] (recommandé)'], ['img/etat-quai-z.webp', 'Sous l’horloge, en haut à gauche'], ['img/etat-quai.webp', 'Sous l’horloge, le cadre entier'], ['img/etat-lices-z.webp', 'Sous l’horloge, les lices le matin']],
+      rec: 'En bas à droite, au-dessus de la touche [Q] : ce qu’on lit et la touche qui l’ouvre au même endroit ; la mini-carte et les chiffres restent seuls en haut, l’invite de près reste au milieu du bas. Sous l’horloge, le haut gauche devient un bloc de six lignes sur la scène.',
+      opts: ['En bas à droite, au-dessus de la touche [Q]', 'Sous l’horloge, en haut à gauche'], recIdx: 0,
+      src: 'src/ui/townUi.ts (#pm-hints, #pm-status) ; src/ui/minimap.ts (le coin haut droit)' },
+    { id: 'LA-3', tag: 'combat', title: 'L’après-midi du combat du jour',
+      ctx: 'Ce jour-là, la touche du coin devient « [Q] Entrer dans l’arène pour votre combat », dans l’accent (le combat garde son invite, UM-R2). Il peut rester d’autres choses à faire avant d’y aller (en moyenne une à deux).',
+      shots: [['img/avant-combat.webp', 'Aujourd’hui, l’après-midi du premier combat'], ['img/combat-compte-z.webp', 'La touche garde le combat, « · 2 de plus à faire » à côté (recommandé)'], ['img/combat-etat-z.webp', 'Sous l’horloge : le combat en tête, dans l’accent']],
+      rec: 'La touche garde « Entrer dans l’arène », « · 2 de plus à faire » à côté, en gris ; pas d’aperçu ce jour-là : le combat reste la seule chose dans l’accent.',
+      opts: ['La touche garde le combat, « · N de plus à faire » à côté ; pas d’aperçu', 'Le combat en tête de l’aperçu, les autres dessous', 'Rien d’autre l’après-midi du combat'], recIdx: 0,
+      src: 'src/ui/townUi.ts (boutNow, hereKey)' },
+    { id: 'LA-4', tag: 'téléphone', title: 'Sur un téléphone',
+      ctx: 'Couché (812 × 375), la touche reste en bas à droite ; debout (375 × 812), [Q] et Menu sont aux deux bouts du pied de l’écran. L’aperçu y tient en une ligne (la première chose et « et N de plus »).',
+      shots: [['img/tel-apercu.webp', 'Couché : le nombre et une ligne d’aperçu (recommandé)'], ['img/tel-compte.webp', 'Couché : le nombre seul'], ['img/teld-apercu.webp', 'Debout : le nombre et une ligne'], ['img/teld-compte.webp', 'Debout : le nombre seul'], ['img/tel-etat.webp', 'Couché, sous l’horloge : le nombre seul tient'], ['img/teld-nouveau.webp', 'Debout, l’invite allumée']],
+      rec: 'Le nombre sur la touche et une seule ligne d’aperçu, aux mêmes moments que sur ordinateur : le petit écran garde la scène.',
+      opts: ['Le nombre et une ligne d’aperçu', 'Le nombre seul', 'Comme sur ordinateur (trois lignes)'], recIdx: 0,
+      src: 'src/ui/todo.ts (PHONE_QUERY) ; journal Passe UM1 (UM-L3)' },
+  ]},
+  { id: 'quoi', title: 'Ce qui compte comme « à faire »', sub: 'Mesuré sur 20 parties entières de deux joueurs du laboratoire (le curieux et le planificateur), au début de chaque moment, dans chacun des quatre lieux. Le joueur supposé lit tout là où il passe : un losange déjà lu ne compte plus (la règle MK-4).', fam: 'var(--astre)', items: [
+    { id: 'LA-5', tag: 'compte', title: 'Qu’est-ce qui compte ?',
+      ctx: 'Le combat du jour ou un défi qui attend ; chaque personne qui a du neuf (ses losanges : un travail, une boutique, un défi, une rumeur, une suite) ; les activités du lieu qui prennent le moment (s’entraîner, exercer une compétence, rebâtir la forge). Jamais : un vol, le repos, l’attente, l’observation des rivaux (MK-6), la foule. Le tableau donne la moyenne de la recommandation (curieux / planificateur), celle des personnes seules et le cas où rien n’a été lu.',
+      table: { head: ['Lieu, moment', 'Recommandé (curieux / planif.)', 'Combat et losanges seuls', 'Rien de lu', 'Jamais rien'], rows: [
+        ['Quai, matin', '2,1 / 1,9', '1,9', '4,5', '2 %'], ['Quai, après-midi', '1,1 / 0,8', '1,0', '3,9', '15 %'], ['Quai, soir', '3,4 / 3,6', '3,4', '3,6', '0 %'],
+        ['Parvis, matin', '1,6 / 3,5', '1,6', '2,8', '16 %'], ['Parvis, après-midi', '1,9 / 3,4', '1,9', '2,8', '0 %'], ['Parvis, soir', '0,7 / 0,9', '0,7', '1,0', '37 %'],
+        ['Lices, matin', '4,4 / 5,3', '2,6', '5,7', '0 %'], ['Lices, après-midi', '2,2 / 3,5', '1,3', '3,9', '1 %'], ['Lices, soir (fermées)', '0 / 0', '0', '0', '100 %'],
+        ['Halle, matin', '1,7 / 1,4', '1,7', '1,9', '0 %'], ['Halle, après-midi', '2,8 / 3,0', '2,8', '3,1', '8 %'], ['Halle, soir', '3,7 / 4,7', '3,7', '4,2', '0 %']],
+        foot: '« Jamais rien » : la part des moments où la recommandation ne compte rien (le curieux). Les activités du lieu ne pèsent qu’aux lices (1 à 2 de plus) et une fois sur dix sur le quai (la forge brûlée). Compter aussi les vols et l’attente donnerait toujours au moins deux à trois choses partout : le nombre ne dirait plus rien.' },
+      shots: [['img/apercu-lices.webp', 'Les lices le matin : 6 à faire (Orla, Ilse, Aldric en tête ; l’entraînement et les compétences plus loin)'], ['img/apercu-parvis-midi.webp', 'Le parvis l’après-midi'], ['img/apercu-halle-nuit.webp', 'La place de la Halle le soir (ambre)'], ['img/apercu-quai-nuit.webp', 'Le quai la nuit']],
+      rec: 'Le combat ou le défi, chaque personne qui a du neuf, et les activités du lieu qui prennent le moment ; jamais un vol, le repos, l’attente ni l’observation des rivaux. Le nombre suit ainsi les losanges que tu vois déjà, plus ce que le lieu lui-même propose ; un vol reste dans la liste, sans être poussé.',
+      opts: ['Le combat, les personnes qui ont du neuf et les activités du lieu (jamais un vol, le repos, l’attente)', 'Le combat et les personnes qui ont du neuf seulement', 'Tout ce que la liste propose de faire, vols et attente compris'], recIdx: 0,
+      src: 'src/simulation/v2todo.ts (todoHere) ; src/simulation/v2marks.ts, v2offers.ts (MK-4 à MK-6)' },
+    { id: 'LA-6', tag: 'ordre', title: 'L’ordre de l’aperçu',
+      ctx: 'L’aperçu ne montre que trois lignes : l’ordre décide ce qu’on voit. Sur le quai le premier matin : Tam (une suite : sa cargaison), Piers Calloway (un événement : un défi), Mara (un objet, son travail à +10 pièces), puis le forgeron.',
+      shots: [['img/apercu-quai-z.webp', 'Suite, événement, objet (recommandé)'], ['img/fr-apercu-z.webp', 'Le même en français']],
+      rec: 'Le combat, puis une suite (ce qui découle de ce qui s’est passé, souvent pressé), un événement (un défi, une rumeur, valables un temps), ce qui rapporte des pièces, un objet, enfin les activités du lieu.',
+      opts: ['Le combat, une suite, un événement, ce qui rapporte, un objet, le lieu', 'Ce qui rapporte d’abord (les travaux), puis le reste'], recIdx: 0,
+      src: 'src/simulation/v2todo.ts (ORDER)' },
+  ]},
+  { id: 'quand', title: 'Quand l’indication part', sub: 'Ce qui a été vu se garderait avec la partie, hors de son empreinte (comme les losanges, MK-5) : chaque action qui change de moment ou de lieu recharge la page.', fam: 'var(--ronce)', items: [
+    { id: 'LA-7', tag: 'durée', title: 'Quand l’aperçu et le nombre partent-ils ?',
+      ctx: 'Au début de chaque moment presque tout est neuf (le curieux : tout ce qui compte l’est encore au moment suivant) ; au fil du moment, une action peut faire paraître autre chose (une suite, un défi, un travail). Le nombre, lui, baisse de lui-même quand on parle aux gens (leurs losanges partent) et quand on fait l’activité.',
+      shots: [['img/nouveau-quai-z.webp', 'L’invite allumée à une nouveauté'], ['img/compte-quai-z.webp', 'Après : le nombre seul']],
+      rec: 'L’aperçu part dès que la liste est ouverte, ou de lui-même après 8 secondes ; le nombre reste tant qu’il reste à faire ; l’aperçu revient au moment suivant, dans un autre lieu ou quand quelque chose de neuf paraît.',
+      opts: ['L’aperçu part une fois la liste ouverte (ou après 8 s) ; le nombre reste ; tout revient avec une nouveauté', 'Tout part une fois la liste ouverte, jusqu’au moment suivant', 'Rien ne part avant la fin du moment'], recIdx: 0,
+      src: 'src/simulation/v2todo.ts (freshTodo) ; src/simulation/v2offers.ts ($seen)' },
+  ]},
+  { id: 'decision', title: 'Ta décision d’interface et la lecture', sub: 'UM-R2 « Liste à la demande » est ton choix de la fiche d’interface (Passe UM1) : en marchant, l’état et l’invite seulement, la liste ouverte par une touche, le combat du jour gardant son invite.', fam: 'var(--cendre)', items: [
+    { id: 'LA-8', tag: 'UM-R2', title: 'Cela remplace-t-il UM-R2 ?',
+      ctx: 'Les options des cartes précédentes ajoutent à l’écran, en marchant, un nombre (et un aperçu par moments). La liste reste une bande ouverte par [Q]. C’est ta décision : elle revient sur UM-R2.',
+      shots: [['img/avant-liste.webp', 'La liste ouverte par [Q] (les lices), inchangée'], ['img/apercu-quai.webp', 'Le quai avec l’aperçu']],
+      rec: 'Amender UM-R2 : la liste reste à la demande, un résumé s’ajoute à l’écran (le nombre, l’aperçu par moments). Ce que tu as voulu avec UM-R2, une scène dégagée, tient : un nombre dans le coin, trois lignes qui s’effacent.',
+      opts: ['Amender UM-R2 : la liste reste à la demande, un résumé s’ajoute à l’écran', 'Garder UM-R2 tel quel : rien de permanent, seulement l’invite allumée à une nouveauté', 'Remplacer UM-R2 : la liste toujours ouverte sur le côté'], recIdx: 0,
+      src: 'journal Passe UM1 (UM-R2), AGENTS.md (Interface)' },
+    { id: 'LA-9', tag: 'lecture', title: 'Comment le joueur l’apprend',
+      ctx: 'La visite d’une partie neuve a une bande sur la liste (« Ce que vous pouvez faire ici : [Q] ouvre la liste… ») ; le guide (H) en parle dans « Marcher et parler » ; il y a douze conseils, chacun une fois.',
+      shots: [['img/fr-etat-z.webp', 'Le résumé en français (sous l’horloge, pour la lecture des mots)']],
+      rec: 'La bande « liste » de la visite et une ligne du guide disent le nombre et l’aperçu ; pas de nouveau conseil : le nombre se comprend en le voyant baisser.',
+      opts: ['La bande de la visite et une ligne du guide, pas de conseil', 'Les mêmes et un conseil la première fois', 'Rien de plus'], recIdx: 0,
+      src: 'src/ui/tutorial.ts (TOUR, chapitre « Marcher et parler »)' },
+  ]},
+];
+
+const ITEMS = GROUPS.flatMap((g) => g.items.map((it) => ({ ...it, fam: g.fam, group: g.title })));
+const state = {};
+let db = null;
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'style') n.style.cssText = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+};
+
+function render() {
+  const root = document.getElementById('groups');
+  root.replaceChildren();
+  for (const g of GROUPS) {
+    const sec = el('section', { class: 'group', style: `--fam:${g.fam}`, 'aria-labelledby': 'h-' + g.id },
+      el('div', { class: 'group-head' }, el('h2', { id: 'h-' + g.id }, g.title), g.sub ? el('p', {}, g.sub) : null));
+    for (const it of g.items) sec.append(card(it, g.fam));
+    root.append(sec);
+  }
+  update();
+}
+
+function card(it, fam) {
+  const c = el('article', { class: 'card', id: 'card-' + it.id, style: `--fam:${fam}` });
+  c.append(el('div', { class: 'card-head' }, el('span', { class: 'tag' }, it.tag), el('h3', {}, it.title)));
+  c.append(el('p', { class: 'ctx' }, it.ctx));
+  if (it.shots) {
+    const grid = el('div', { class: 'shots' + (it.one ? ' one' : '') });
+    for (const [src, cap] of it.shots) {
+      grid.append(el('figure', { class: 'shot' },
+        el('button', { type: 'button', 'aria-label': 'Agrandir : ' + cap, onclick: () => zoom(src, cap) }, el('img', { src, alt: cap, loading: 'lazy' })),
+        el('figcaption', {}, cap)));
+    }
+    c.append(grid);
+  }
+  if (it.table) {
+    const t = el('table', {}, el('thead', {}, el('tr', {}, ...it.table.head.map((h) => el('th', { scope: 'col' }, h)))));
+    const body = el('tbody');
+    for (const r of it.table.rows) { const mark = r.length > it.table.head.length; body.append(el('tr', mark ? { class: 'mark' } : {}, ...r.slice(0, it.table.head.length).map((v) => el('td', {}, v)))); }
+    t.append(body);
+    c.append(el('div', { class: 'tbl' }, t));
+    if (it.table.foot) c.append(el('p', { class: 'foot' }, it.table.foot));
+  }
+  c.append(el('p', { class: 'rec' }, el('b', {}, 'Ma recommandation : '), it.rec));
+  const opts = el('div', { class: 'opts', role: 'group', 'aria-label': 'Ton choix pour ' + it.tag });
+  it.opts.forEach((label, i) => {
+    const b = el('button', { type: 'button', class: 'opt', 'aria-pressed': 'false', 'data-choice': label, onclick: () => choose(it.id, label) },
+      el('span', { class: 'dot', 'aria-hidden': 'true' }), label, i === it.recIdx ? el('span', { class: 'star' }, 'recommandé') : null);
+    opts.append(b);
+  });
+  c.append(opts);
+  const ta = el('textarea', { id: 'note-' + it.id, rows: '1', placeholder: 'Une précision, un retour, une condition…' });
+  // enregistrée aussi pendant la frappe (une demi-seconde après la dernière touche) : sur 'change' seul, une note tapée en dernier, le champ jamais quitté, se perd
+  ta.addEventListener('change', () => saveNote(it.id, ta.value)); let noteTimer = 0; ta.addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(() => saveNote(it.id, ta.value), 500); });
+  c.append(el('label', { class: 'note-l', for: 'note-' + it.id }, 'Note (facultative)'), ta);
+  c.append(el('p', { class: 'src' }, 'Source : ', it.src));
+  return c;
+}
+
+function update() {
+  let n = 0;
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    const c = document.getElementById('card-' + it.id);
+    if (!c) continue;
+    c.classList.toggle('decided', !!s.choice);
+    if (s.choice) n++;
+    c.querySelectorAll('.opt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.choice === s.choice)));
+    const ta = document.getElementById('note-' + it.id);
+    if (ta && document.activeElement !== ta && (s.note ?? '') !== ta.value) ta.value = s.note ?? '';
+  }
+  document.getElementById('count').textContent = `${n} / ${ITEMS.length} décidées`;
+  document.getElementById('bar').style.width = (100 * n / ITEMS.length) + '%';
+}
+
+const setSave = (t) => { document.getElementById('save').textContent = t; };
+// writing[id] : une écriture en cours ; edited[id] : la dernière modification locale. Un instantané peut porter une version plus ancienne d'un document
+// en cours d'écriture : repris dans l'état, la boucle d'écriture renverrait cette ancienne valeur et perdrait ce qui a été tapé (une note revenue vide après 48 écritures)
+const writing = {}, edited = {};
+async function write(id) {
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  if (writing[id]) { writing[id].again = true; return; }
+  writing[id] = { again: false };
+  try {
+    do {
+      writing[id].again = false;
+      const s = state[id] || {};
+      setSave('Enregistrement…');
+      await db.doc('decisions/' + id).set({ choice: s.choice || '', note: s.note || '', at: new Date().toISOString() });
+    } while (writing[id].again);
+    setSave('Enregistré');
+  } catch (e) {
+    setSave(e && e.code === 'invalid_argument' ? 'Lecture seule pour toi : tes choix ne sont pas enregistrés.' : 'Échec de l\'enregistrement, réessaie dans un instant.');
+  } finally { delete writing[id]; }
+}
+function choose(id, label) {
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), choice: state[id]?.choice === label ? '' : label };
+  update(); write(id);
+}
+function saveNote(id, v) {
+  if ((state[id]?.note || '') === v) return;
+  edited[id] = Date.now();
+  state[id] = { ...(state[id] || {}), note: v };
+  write(id);
+}
+
+function summary() {
+  const lines = ['Fiche d\'arbitrages — mes choix :'];
+  for (const it of ITEMS) {
+    const s = state[it.id] || {};
+    lines.push(`- ${it.id} (${it.title}) : ${s.choice || 'non décidé'}${s.note ? ' — ' + s.note : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('copy').addEventListener('click', async () => {
+  const text = summary();
+  try { await navigator.clipboard.writeText(text); setSave('Récapitulatif copié'); }
+  catch { const ta = el('textarea', { style: 'position:fixed;opacity:0' }); ta.value = text; document.body.append(ta); ta.select(); setSave('Sélectionné : copie avec Ctrl+C'); setTimeout(() => ta.remove(), 4000); }
+});
+
+const dlg = document.getElementById('zoom');
+function zoom(src, cap) { document.getElementById('zoom-img').src = src; document.getElementById('zoom-img').alt = cap; document.getElementById('zoom-cap').textContent = cap; dlg.showModal(); }
+dlg.addEventListener('click', () => dlg.close());
+
+render();
+
+(async () => {
+  for (let i = 0; i < 30 && !window.claude; i++) await new Promise((r) => setTimeout(r, 100));
+  try { db = window.claude ? await window.claude.use('db') : null; } catch { db = null; }
+  if (!db) { setSave('Enregistrement indisponible ici : copie le récapitulatif dans la conversation.'); return; }
+  setSave('Prêt');
+  db.collection('decisions').onSnapshot((snap) => {
+    // un document en cours d'écriture, ou modifié ici il y a moins de 5 s, garde son état local : l'écho du serveur l'écraserait
+    for (const d of snap.docs) { if (writing[d.id] || Date.now() - (edited[d.id] || 0) < 5000) continue; const v = d.data() || {}; state[d.id] = { choice: v.choice || '', note: v.note || '' }; }
+    update();
+  }, () => setSave('Connexion à l\'enregistrement perdue : recharge la page.'));
+})();
+</script>

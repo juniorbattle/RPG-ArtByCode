@@ -27,6 +27,8 @@ import { costTag, isGoods, isWare, shortLabel, waresPage } from './wares';
 import { tabTo } from '../input/pad';
 import { guidePage, hintChapter, hintSeen, markHint, markTold, runTour, showHint, told, TOUR, type HintId } from './tutorial';
 import { settingsPage, type SettingsSection } from './settings';
+import { todoHere } from '../simulation/v2todo';
+import { installTodoCss, todoKey, todoPeek, todoStyle } from './todo';
 import { actsOf, onSettings } from '../settings/settings';
 import type { Act } from '../settings/keys';
 import { bindCap, keyCap } from '../input/caps';
@@ -276,7 +278,35 @@ export class TownUi {
     const bout = this.boutNow();
     this.hereKey.className = `pm-btn${bout ? ' primary' : ''}`;
     this.hereKey.innerHTML = `${bindCap('list')}${bout ? (s.v2?.challenge ? this.sandLabel(s) : tx('ui.enterArena')) : tx('ui.here')}`;
+    this.todoMock(s, bout);
     if (this.current?.dataset.here) this.openHere();
+  }
+
+  /** the DEV mock-ups of what there is to do here (journal Passe LA1, `todo=count|peek|new|status`): src/ui/todo.ts */
+  private todoEl: HTMLElement | null = null;
+  private todoMock(s: GameState, bout: boolean): void {
+    const td = isV2(s) ? todoStyle() : null;
+    if (!td) return;
+    installTodoCss();
+    const list = todoHere(s), label = bout ? (s.v2?.challenge ? this.sandLabel(s) : tx('ui.enterArena')) : tx('ui.here');
+    if (td.style !== 'status') this.hereKey.innerHTML = todoKey(label, list.length, bout);
+    if (!this.todoEl) { this.todoEl = el('div', 'pm'); this.todoEl.id = 'pm-todo'; document.body.appendChild(this.todoEl); }
+    const box = this.todoEl;
+    box.style.display = 'none'; box.className = 'pm';
+    if (td.style === 'status') {
+      if (!list.length) return;
+      const lines = todoPeek(s, list, 3, '').replace('<h3></h3>', '');
+      this.status.insertAdjacentHTML('beforeend', `<div class="pm-todo-s"><div class="head"><b>${list.length}</b><span>${esc(tx('ui.todo.title'))}</span>${bindCap('list')}</div>${lines}</div>`);
+      this.veils[0].style.height = '440px';
+      this.veils[0].style.background = 'radial-gradient(120% 100% at 0 0,var(--ds-veil-strong) 0,var(--ds-veil) 56%,transparent 100%)';
+      return;
+    }
+    if (td.style === 'peek' && list.length && !bout) { box.innerHTML = todoPeek(s, list, 3, tx('ui.todo.title')); box.style.display = ''; }
+    if (td.style === 'new' && list.length) {
+      this.hereKey.classList.add('lit');
+      box.innerHTML = todoPeek(s, list, 1, tx('ui.todo.new')); box.classList.add('new'); box.style.display = '';
+      if (!td.hold) setTimeout(() => { box.style.display = 'none'; this.hereKey.classList.remove('lit'); }, 6000);
+    }
   }
 
   /** the sand's door: a challenge, or a reprisal's muscle waiting there (lot L2b) */
