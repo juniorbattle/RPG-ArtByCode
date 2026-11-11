@@ -11,7 +11,11 @@ import { el } from './style';
  *  (src/ui/npcMarks.ts), the same on the minimap. */
 
 /** `shut`: why the way is closed now (lot L6, FE-7: the Lanterns' parade fills the street to the forecourt that evening), said on its tag instead of the place */
-export interface WayOut { to: PlaceId; anchor: [number, number, number]; shut?: string | null }
+export interface WayOut { to: PlaceId; anchor: [number, number, number]; shut?: string | null; note?: string | null }
+
+/** from how far a way's name takes its chevron's place (m; faded over the last 2.5 m): 9 in journal Passe VP5, 13 since the operator's trial of 2026-11-11 (journal
+ *  Passe AL1: the name read from 8 to 22 % of a place's floor, the chevrons alone elsewhere, « visuellement on peut parfois galerer a trouver ») */
+export const NAME_NEAR = 13;
 
 const CSS = `
 .pm-exit{position:fixed;z-index:25;left:0;top:0;pointer-events:none;padding:6px 34px;white-space:nowrap;font-size:var(--ds-fs-small);color:var(--ds-ivory);background:var(--ds-grad-spot);opacity:0;transition:opacity .25s}
@@ -31,11 +35,12 @@ export class ExitMarkers {
 
   /** each way's chevron, shown where its tag is not read yet (MK-12) */
   private far: HTMLElement[];
-  constructor(private readonly ways: WayOut[], near = 9) {
+  constructor(private readonly ways: WayOut[], near = NAME_NEAR) {
     this.near = near;
     if (!document.getElementById('pm-exit-css')) { const st = document.createElement('style'); st.id = 'pm-exit-css'; st.textContent = CSS; document.head.appendChild(st); }
     this.tags = ways.map((w) => {
-      const t = el('div', 'pm pm-exit', w.shut ?? tx('v2.exit.to', { place: placeName(w.to, true) }));
+      // a way open says where it leads, and what is shut there or opens beyond it (journal Passe AL1, src/simulation/v2access.ts); a way shut, why (MK-14)
+      const t = el('div', 'pm pm-exit', w.shut ?? (w.note ? tx('v2.exit.toNote', { place: placeName(w.to, true), note: w.note }) : tx('v2.exit.to', { place: placeName(w.to, true) })));
       t.dataset.to = w.to; if (w.shut) t.classList.add('shut'); document.body.appendChild(t);
       return t;
     });
@@ -70,5 +75,5 @@ export class ExitMarkers {
   }
 
   /** the ways' tags, for the proofs: where each stands and how visible */
-  state(): Array<{ to: string; opacity: number; chevron: number; shut: boolean }> { return this.tags.map((t, i) => ({ to: t.dataset.to ?? '', opacity: +(t.style.opacity || 0), chevron: +(this.far[i].style.opacity || 0), shut: t.classList.contains('shut') })); }
+  state(): Array<{ to: string; opacity: number; chevron: number; shut: boolean; text: string }> { return this.tags.map((t, i) => ({ to: t.dataset.to ?? '', opacity: +(t.style.opacity || 0), chevron: +(this.far[i].style.opacity || 0), shut: t.classList.contains('shut'), text: t.textContent ?? '' })); }
 }

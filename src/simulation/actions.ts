@@ -19,6 +19,7 @@ import { V2_BARTER_ACTIONS, type V2BarterAction } from './v2barter';
 import { V2_INTEL_ACTIONS, type V2IntelAction } from './v2intel';
 import { V2_RIVAL_ACTIONS, sandRefusal, type V2RivalAction } from './v2rivals';
 import { V2_FESTIVAL_ACTIONS, paradeBlocks, type V2FestivalAction } from './v2festival';
+import { placeNote } from './v2access';
 import { V2_WORK_ACTIONS, type V2WorkAction } from './v2work';
 import { TRAINED_STATS, trainGain, type TrainedStat } from '../combat/stats';
 import type { TextKey } from '../narrative/text';
@@ -73,7 +74,8 @@ const BASE: Table = {
   move: {
     // the version 2's places (lot V5): the training ground, and the festival square, open by day as by night, where Lantern Row was
     list: (st) => (isV2(st) ? V2_PLACES : PLACES).filter((p) => p !== st.place).map((to) => ({ type: 'move', to })),
-    label: (st, a) => tx('move.label', { place: placeName(a.to, isV2(st)) }),
+    // a version 2 game's map says what is shut where a line leads (the Training Ground's sand: journal Passe AL1, src/simulation/v2access.ts)
+    label: (st, a) => { const note = placeNote(st, a.to); return note ? tx('move.labelNote', { place: placeName(a.to, true), note }) : tx('move.label', { place: placeName(a.to, isV2(st)) }); },
     cost: () => 0,
     check: (st, a) => (!(isV2(st) ? V2_PLACES : PLACES).includes(a.to) ? tx('move.noPlace') : a.to === st.place ? tx('move.there') : a.to === 'lanterns' && st.slot !== 'evening' && !isV2(st) ? tx('move.lanternsShut') : paradeBlocks(st, a.to) ? tx('v2.fest.wayShut') : null),
     apply: (s, a, _r, emit) => { s.place = a.to; emit({ kind: 'action', id: 'move', cause: 'action:move', text: tx('move.log', { place: placeName(a.to, isV2(s)) }), visible: false }); },

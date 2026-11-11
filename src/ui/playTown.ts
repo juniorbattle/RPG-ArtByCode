@@ -11,6 +11,7 @@ import { preloadPortraits } from './portraits';
 import { ExitMarkers } from './exits';
 import { WALK } from '../architecture/StreetComposer';
 import { V2_EXITS } from '../simulation/v2places';
+import { wayNote } from '../simulation/v2access';
 import { parseWeather } from '../atmosphere/Weather';
 import * as THREE from 'three';
 import { watchPost } from '../simulation/v2watch';
@@ -100,7 +101,7 @@ export async function startPlayTown(b: Boot, st0: GameState, note?: string): Pro
   // Arena Forecourt; walked into with a key held, the move saved and the square's page opened at its way in from the quay
   const END: Record<string, [number, number, number]> = { west: [WALK.x0 - 0.1, 2.6, 0.4], east: [WALK.x1 + 0.3, 2.6, 0] };
   const ways = isV2(st) ? V2_EXITS.district.map((e) => ({ ...e, anchor: END[e.side] })) : [];
-  const markers = ways.length ? new ExitMarkers(ways.map((w) => ({ to: w.to, anchor: w.anchor }))) : null;
+  const markers = ways.length ? new ExitMarkers(ways.map((w) => ({ to: w.to, anchor: w.anchor, note: wayNote(st, st.place, w.to) }))) : null;
   if (markers) (window as any).__exits = markers;
   // a version 2 game plays with a gamepad too (the operator's sheet of journal Passe MN2): its walk, its pages' shoulders, the sound it may wake;
   // loaded on demand, it does nothing until a pad is used; today's game reads none

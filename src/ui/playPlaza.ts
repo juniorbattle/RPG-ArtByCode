@@ -17,6 +17,7 @@ import { progressOn } from './loading';
 import { preloadPortraits } from './portraits';
 import { ExitMarkers } from './exits';
 import { paradeBlocks } from '../simulation/v2festival';
+import { wayNote } from '../simulation/v2access';
 import { cap, shortName, tx, word } from '../narrative/text';
 import { ANNOUNCED } from '../audio/plan';
 import { parseWeather } from '../atmosphere/Weather';
@@ -76,7 +77,7 @@ export async function startPlayPlaza(b: Boot, st0: GameState): Promise<void> {
   // (lot L6, FE-7: the evening of the Lanterns' parade the street between the festival square and the forecourt is full: its tag says so, and walking into it
   // goes nowhere; the quay stays open)
   const shut = (to: typeof st.place) => paradeBlocks(st, to);
-  const from = st.place, ways = new ExitMarkers(app.place.exits.map((e) => ({ to: e.to, anchor: e.anchor, shut: shut(e.to) ? tx('v2.fest.shutTag', { place: placeName(e.to, true) }) : null })));
+  const from = st.place, ways = new ExitMarkers(app.place.exits.map((e) => ({ to: e.to, anchor: e.anchor, shut: shut(e.to) ? tx('v2.fest.shutTag', { place: placeName(e.to, true) }) : null, note: wayNote(st, from, e.to) })));
   (window as any).__exits = ways;
   const leave = (to: typeof from) => { const r = (window as any).__game.act({ type: 'move', to }); if (r.ok) go(b.params, { arrive: from }); else location.reload(); };
   // the gamepad (the operator's sheet of journal Passe MN2): its walk, its pages' shoulders, the sound it may wake; loaded on demand, it does

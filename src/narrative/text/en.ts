@@ -15,6 +15,7 @@ export const EN = {
 
   // ------------------------------------------------------------------------------------------------ the player's own actions
   'move.label': 'Go to {place}',
+  'move.labelNote': 'Go to {place} · {note}',
   'move.noPlace': 'No such place.',
   'move.there': 'You are already there.',
   'move.lanternsShut': 'Lantern Row sleeps until dusk: its taverns open at night.',
@@ -732,6 +733,11 @@ export const EN = {
   'v2.result.lost': 'Defeat',
   'v2.result.vigour': 'Vigour: +{n} health for this win. At your next bout: {hp} health.',
   'v2.exit.to': 'To {place}',
+  'v2.exit.toNote': 'To {place} · {note}',
+  'v2.access.sandNight': 'the sand is shut until dawn',
+  'v2.access.sandBrawl': 'the sand is shut until noon',
+  'v2.access.sandRhosk': 'Rhosk holds the sand today',
+  'v2.access.beyond': '{place} beyond',
   'v2.mark.item': 'Item',
   'v2.mark.event': 'Event',
   'v2.mark.follow': 'Follow-up',
@@ -1276,7 +1282,7 @@ export const EN = {
   'tut.ch.moving.todo': 'The list\'s key, [Q], counts what there is to do here now: the people with something new, what the place itself offers, the day\'s bout. On arriving, and when something new comes up, the first things show above it for a few seconds.',
   'tut.ch.places.title': 'The Cité and its squares',
   'tut.ch.places.line': 'The quay, three squares, and the ways between them',
-  'tut.ch.places.body': 'Your game starts on the quay of the {quay}. Three squares open from it: the {a}, the {b} and the {c}, each with its own people at their own hours.\nAt the edges of a place, a tag shows a way out: walk into it to go there. The map, [M], takes you anywhere at once. Moving never costs a slot.\nA place\'s picture is kept here when you walk there.',
+  'tut.ch.places.body': 'Your game starts on the quay of the {quay}. Two squares open from it: the {c} at its west end, the {a} past the guards at its east end; the {b} opens from the {a}. Each has its own people at their own hours.\nAt the edges of a place, a tag shows a way out: walk into it to go there. The map, [M], takes you anywhere at once. Moving never costs a slot.\nA place\'s picture is kept here when you walk there.',
   'tut.ch.places.ways': 'A small chevron over a street or a gate shows a way out, from as far as you can see it; near it, its sign says where it leads, and walking through takes you there. A grey chevron is a way shut for now. The plan in the top right corner shows the ways out you cannot see.',
   'tut.ch.shops.title': 'Shops and bargaining',
   'tut.ch.shops.line': 'Prices, and how to talk them down',

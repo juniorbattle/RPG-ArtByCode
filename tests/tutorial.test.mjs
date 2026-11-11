@@ -67,7 +67,8 @@ test('the guide: thirteen chapters (« Earning coins » since journal Passe ECO2
   assert.match(text.prepare, new RegExp(`gives \\+${STATS.TRAIN_POINT} to the stat you choose \\(Attack, Defence, Endurance or Speed\\), or \\+${STATS.TRAIN_HP} health, at your next bout, up to ${GEAR.TRAIN_MAX} sessions`));
   assert.match(text.prepare, new RegExp(`Your health starts at ${STATS.REN_BASE.hp} and grows by ${STATS.VIGOUR_HP} for good with each bout you win`));
   assert.match(text.prepare, new RegExp(`takes ${Math.round(GEAR.INJURY_HP * 100)} % of your health`));
-  assert.match(text.places, /the Arena Forecourt, the Training Ground and the Festival Square/);
+  // (how the places connect, journal Passe AL1: the quay has two ways, the Training Ground opens from the forecourt)
+  assert.match(text.places, /the Festival Square at its west end, the Arena Forecourt past the guards at its east end; the Training Ground opens from the Arena Forecourt/);
 });
 
 test('the constants the guide reads are the rules\' own (the training, the wound, the fine)', () => {
