@@ -129,9 +129,17 @@ function variantOf(name) {
   if ((k = num(name, /^gauge(\d+)$/)) !== null) return { label: `jauge de ${k}`, apply: (d) => { d.resist = { ...d.resist, decay: +(d.resist.decay * k / d.resist.max).toFixed(3), max: k }; } };
   // longer sequences: k blows in a combo at most (from k - 2), the combos the opponent's usual sequence (80 %)
   if ((k = num(name, /^combo(\d+)$/)) !== null) return { label: `séquences adverses jusqu’à ${k} coups`, apply: (d) => { d.ai.comboLen = [Math.max(2, k - 2), k]; d.ai.weights = { combo: 0.8, singleLight: 0.1, singleHeavy: 0.1 }; } };
+  // journal Passe DB11 (the operator's trial of 2026-11-10: « les ennemies attaquent beaucoup trop souvent des le debut du jeu », « la barre de break
+  // pour nos ennemies est trop lente a monter »): longer combos (`clen<n>`: n more blows at both ends of a combo, the weights kept), the opponent's
+  // whole tempo (`tempo<k>`: its pauses, its blows' wind-up and reaction window, a combo's gaps x k/100, as its Speed does), the gauge's decay
+  // (`decay<k>`: x k/100), what the player's skills add to the opponent's gauge (`sgk<k>`: x k/100)
+  if ((k = num(name, /^clen(\d+)$/)) !== null) return { label: `combos +${k} coup(s)`, apply: (d) => { d.ai.comboLen = [d.ai.comboLen[0] + k, d.ai.comboLen[1] + k]; } };
+  if ((k = num(name, /^tempo(\d+)$/)) !== null) return { label: `tempo adverse ×${k / 100}`, apply: (d) => { V.scaleTempo(d, k / 100); } };
+  if ((k = num(name, /^decay(\d+)$/)) !== null) return { label: `la jauge se vide ×${k / 100}`, apply: (d) => { d.resist = { ...d.resist, decay: +(d.resist.decay * k / 100).toFixed(3) }; } };
+  if ((k = num(name, /^sgk(\d+)$/)) !== null) return { label: `jauge des compétences ×${k / 100}`, apply: (d) => { for (const a of playerSkills(d)) a.resist = +(a.resist * k / 100).toFixed(2); } };
   // the fighters' stats: the game's own since journal Passe DB8 (src/combat/stats.ts); the tokens below are read by duelOf
   if (name === 'rpg') return { label: 'statistiques des combattants (le jeu)', apply() {} };
-  if (['rs', 'stage', 'fpow', 'rhp', 'vhp', 'vatk', 'vdef', 'vend', 'rviv'].some((pre) => rpgTok(name, pre) !== null)) return { label: name, apply() {} };
+  if (['rs', 'stage', 'fpow', 'rhp', 'vhp', 'vatk', 'vdef', 'vend', 'rviv', 'vivd'].some((pre) => rpgTok(name, pre) !== null)) return { label: name, apply() {} };
   throw new Error(`unknown variant "${name}"`);
 }
 /** a numbered token of a spec (`rs2`, `stage1`, `fpow90`), or null */
@@ -162,7 +170,8 @@ function statsOf(foe, spec) {
   const st = rpgTok(spec, 'stage') ?? 0, b0 = ST.RIVAL_SHEETS[foe] ?? ST.RIVAL_SHEETS.marek;
   const b = { hp: rpgTok(spec, 'vhp') ?? b0.hp, atk: rpgTok(spec, 'vatk') ?? b0.atk, def: rpgTok(spec, 'vdef') ?? b0.def, end: rpgTok(spec, 'vend') ?? b0.end, viv: b0.viv };
   const gr = ST.STAGE_GROWTH[st] ?? RPG.stage[st];
-  return { ren, foe: { hp: b.hp * gr.hp, atk: b.atk + gr.atk, def: b.def + gr.def, end: b.end + gr.end, viv: b.viv }, fpow: (rpgTok(spec, 'fpow') ?? 100) / 100 };
+  // journal Passe DB11: `vivd<n>` the opponent n Speed under its sheet (its tempo x its sheet's Speed / its Speed now, as the game reads it)
+  return { ren, foe: { hp: b.hp * gr.hp, atk: b.atk + gr.atk, def: b.def + gr.def, end: b.end + gr.end, viv: b.viv - (rpgTok(spec, 'vivd') ?? 0) }, fpow: (rpgTok(spec, 'fpow') ?? 100) / 100 };
 }
 
 /** Marek's health in the scene's duel today (journal Passe DB3: 7 680 x 1.5) */
@@ -187,6 +196,22 @@ function duelOf(foe, seed, spec) {
 }
 
 // ------------------------------------------------------------------------------------------------ the policies
+/** the guarding spammer (journal Passe DB9, tests/duel-stats.test.mjs): it taps the light attack whenever it is free outside the opponent's sequences,
+ *  holds the guard through every sequence and dodges a heavy blow or a skill 3 times in 5; the perfect player of one tactic, who must lose */
+function runGuardSpammer(data, tiers, o) {
+  const duel = new C.ChargedDuel(data, tiers), sim = duel.sim, rng = new Rng(o.seed >>> 0 || 1), dt = data.dt;
+  let wasDown = false;
+  while (!sim.over && sim.t < 1800) {
+    const inc = sim.incoming();
+    if (inc && inc.windowOpen && inc.kind !== 'light' && rng.next() < 0.6) sim.react('ren', 'dodge');
+    duel.setGuard('ren', sim.inSequence());
+    if (wasDown) { duel.attack(false); wasDown = false; } else if (!sim.inSequence() && sim.f.ren.state === 'idle') { duel.attack(true); wasDown = true; }
+    duel.step(dt); o.observe(duel.drain(), duel);
+  }
+  const r = sim.f.ren, k = sim.f.marek;
+  return { winner: r.state === 'down' ? 'opponent' : k.state === 'down' ? 'player' : null, t: sim.t, renHp: r.hp };
+}
+
 /** the spammer: between the opponent's sequences it taps the light attack whenever it is free; in a sequence it defends as the bot does */
 function runSpammer(data, tiers, o) {
   const duel = new C.ChargedDuel(data, tiers), sim = duel.sim, rng = new Rng(o.seed >>> 0 || 1), dt = data.dt, s = o.skill;
@@ -205,7 +230,7 @@ function runSpammer(data, tiers, o) {
     duel.step(dt); o.observe(duel.drain(), duel);
   }
   const r = sim.f.ren, k = sim.f.marek;
-  return { winner: r.state === 'down' ? 'opponent' : k.state === 'down' ? 'player' : null, t: sim.t };
+  return { winner: r.state === 'down' ? 'opponent' : k.state === 'down' ? 'player' : null, t: sim.t, renHp: r.hp };
 }
 
 /** the strategist (journal Passe DB5): it plays for the break. It defends as the bot does. Out of a break it builds AP and the opponent's gauge with
@@ -243,12 +268,12 @@ function runStrategist(data, tiers, o) {
     duel.step(dt); o.observe(duel.drain(), duel);
   }
   const r = sim.f.ren, k = sim.f.marek;
-  return { winner: r.state === 'down' ? 'opponent' : k.state === 'down' ? 'player' : null, t: sim.t };
+  return { winner: r.state === 'down' ? 'opponent' : k.state === 'down' ? 'player' : null, t: sim.t, renHp: r.hp };
 }
 
 /** one duel, measured */
 function measure(foe, seed, variantSpec, policy, skill) {
-  const d = duelOf(foe, seed, variantSpec), m = { light: 0, heavy: 0, skills: 0, broken: 0, breaks: 0, firstBreak: null, pauses: [], cur: 0, apGain: 0, apDodge: 0, apSkill: 0, dmgTaken: 0, top: { hit: [], guarded: [], broken: [] }, ce: { hit: [], guarded: [], broken: [] }, moments: [] };
+  const d = duelOf(foe, seed, variantSpec), m = { light: 0, heavy: 0, skills: 0, broken: 0, breaks: 0, firstBreak: null, pauses: [], cur: 0, apGain: 0, apDodge: 0, apSkill: 0, dmgTaken: 0, top: { hit: [], guarded: [], broken: [] }, ce: { hit: [], guarded: [], broken: [] }, moments: [], seqs: 0, ripostes: 0, seqEnd: null, free: [], stunned: false };
   const foeHp = d.data.fighters.marek.maxHp, topId = 't4';
   let brokenNow = false;
   const vt = variant(variantSpec), st = {};
@@ -266,15 +291,20 @@ function measure(foe, seed, variantSpec, policy, skill) {
       if (e.type === 'impact' && e.from === 'marek') m.dmgTaken += e.damage;
       if (e.type === 'break' && e.who === 'marek') { brokenNow = true; m.breaks++; m.moments.push(e.t); if (m.firstBreak === null) m.firstBreak = e.t; }
       if (e.type === 'stunEnd' && e.who === 'marek') brokenNow = false;
-      if (e.type === 'sequenceStart') { m.pauses.push(m.cur); m.cur = 0; }
+      if (e.type === 'sequenceStart') { m.pauses.push(m.cur); m.cur = 0; m.seqs++; if (m.seqEnd !== null && !m.stunned) m.free.push(e.t - m.seqEnd); m.seqEnd = null; m.stunned = false; }
+      // journal Passe DB11: the opponent's rhythm as the player meets it, the time between the end of a sequence and the start of the next (a pause
+      // with a break of its own left out), and the sequences its riposte started
+      if (e.type === 'sequenceEnd') m.seqEnd = e.t;
+      if (e.type === 'stun' && e.who === 'marek') m.stunned = true;
+      if (e.type === 'riposte') m.ripostes++;
       if (e.type === 'apGain' && e.who === 'ren') m.apGain += e.amount;
       if (e.type === 'apSpend' && e.who === 'ren') { if (e.amount && evs.some((x) => x.type === 'reactStart' && x.who === 'ren')) m.apDodge += e.amount; else m.apSkill += e.amount; }
     }
   };
-  const r = policy === 'spam' ? runSpammer(d.data, d.tiers, { skill, seed: 40 + seed, observe }) : policy === 'strat' ? runStrategist(d.data, d.tiers, { skill, seed: 40 + seed, observe }) : B.runV2BotDuel(d.data, d.tiers, { skill, seed: 40 + seed, observe });
+  const r = policy === 'gspam' ? runGuardSpammer(d.data, d.tiers, { seed: 40 + seed, observe }) : policy === 'spam' ? runSpammer(d.data, d.tiers, { skill, seed: 40 + seed, observe }) : policy === 'strat' ? runStrategist(d.data, d.tiers, { skill, seed: 40 + seed, observe }) : B.runV2BotDuel(d.data, d.tiers, { skill, seed: 40 + seed, observe });
   const mo = [...new Set(m.moments.map((x) => +x.toFixed(2)))].sort((a, b) => a - b), gaps = mo.slice(1).map((x, i) => x - mo[i]);
   const dealt = m.light + m.heavy + m.skills;
-  return { win: r.winner === 'player' ? 1 : 0, ko: r.winner ? 1 : 0, t: r.t, light: m.light / dealt, skills: m.skills / dealt, heavy: m.heavy / dealt, broken: m.broken / dealt, breaks: m.breaks, firstBreak: m.firstBreak, pauses: m.pauses.slice(1), apGainMin: (m.apGain / r.t) * 60, apDodge: m.apDodge, apSkill: m.apSkill, top: m.top, ce: m.ce, gap: gaps.length ? med(gaps) : null, moments: mo.length };
+  return { win: r.winner === 'player' ? 1 : 0, ko: r.winner ? 1 : 0, t: r.t, light: m.light / dealt, skills: m.skills / dealt, heavy: m.heavy / dealt, broken: m.broken / dealt, breaks: m.breaks, firstBreak: m.firstBreak, pauses: m.pauses.slice(1), apGainMin: (m.apGain / r.t) * 60, apDodge: m.apDodge, apSkill: m.apSkill, top: m.top, ce: m.ce, gap: gaps.length ? med(gaps) : null, moments: mo.length, seqMin: m.seqs / (r.t / 60), ripostes: m.ripostes, ripShare: m.seqs ? m.ripostes / m.seqs : 0, free: m.free, renHp: d.data.fighters.ren.maxHp, foeHp, renLeft: (r.renHp ?? r.playerHp ?? 0) / d.data.fighters.ren.maxHp };
 }
 
 const med = (a) => { const s = [...a].sort((x, y) => x - y); return s.length ? (s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2) : NaN; };
@@ -301,22 +331,22 @@ for (const variant of variants) {
   if (process.argv.includes('--static')) { console.log(JSON.stringify(res.static, null, 1)); out.variants[variant] = res; continue; }
   console.log(`\n== ${variant}: ${(VARIANTS[variant] ?? VARIANTS.base).label}`);
   console.log('policy        foe      wins  KO  len(min) med [p10-p90]   light skills heavy | in-break  breaks first(s)  lights/pause med max  AP/min dodge:skill');
-  const POL = arg('policies', 'bot,spam').split(','), plist = POL.flatMap((p) => (p === 'spam' ? [['spam', 0.5]] : SKILLS.map((x) => [p, x])));
+  const POL = arg('policies', 'bot,spam').split(','), plist = POL.flatMap((p) => (p === 'spam' || p === 'gspam' ? [[p, 0.5]] : SKILLS.map((x) => [p, x])));
   for (const [policy, skill] of plist) {
     const all = [], rivalLen = [];
     for (const foe of FOES) {
       const rs = SEEDS.map((seed) => measure(foe, seed, variant, policy, skill)); all.push(...rs); rivalLen.push(med(rs.map((r) => r.t / 60)));
       const ts = rs.map((r) => r.t / 60), p = rs.flatMap((r) => r.pauses), fb = rs.map((r) => r.firstBreak).filter((x) => x !== null);
-      const row = { policy: `${policy}${policy !== 'spam' ? ' ' + skill : ''}`, foe, wins: avg(rs.map((r) => r.win)), ko: avg(rs.map((r) => r.ko)), lenMed: med(ts), lenP10: med(ts.slice().sort((a, b) => a - b).slice(0, Math.max(1, Math.round(ts.length * 0.2)))), lenP90: ts.slice().sort((a, b) => a - b)[Math.floor(ts.length * 0.9)], light: avg(rs.map((r) => r.light)), skills: avg(rs.map((r) => r.skills)), heavy: avg(rs.map((r) => r.heavy)), broken: avg(rs.map((r) => r.broken)), breaks: avg(rs.map((r) => r.breaks)), firstBreak: fb.length ? med(fb) : null, pauseMed: med(p), pauseMax: Math.max(...p), apMin: avg(rs.map((r) => r.apGainMin)), apDodge: avg(rs.map((r) => r.apDodge)), apSkill: avg(rs.map((r) => r.apSkill)) };
+      const row = { policy: `${policy}${policy !== 'spam' && policy !== 'gspam' ? ' ' + skill : ''}`, foe, wins: avg(rs.map((r) => r.win)), ko: avg(rs.map((r) => r.ko)), lenMed: med(ts), lenP10: med(ts.slice().sort((a, b) => a - b).slice(0, Math.max(1, Math.round(ts.length * 0.2)))), lenP90: ts.slice().sort((a, b) => a - b)[Math.floor(ts.length * 0.9)], light: avg(rs.map((r) => r.light)), skills: avg(rs.map((r) => r.skills)), heavy: avg(rs.map((r) => r.heavy)), broken: avg(rs.map((r) => r.broken)), breaks: avg(rs.map((r) => r.breaks)), firstBreak: fb.length ? med(fb) : null, pauseMed: med(p), pauseMax: Math.max(...p), apMin: avg(rs.map((r) => r.apGainMin)), apDodge: avg(rs.map((r) => r.apDodge)), apSkill: avg(rs.map((r) => r.apSkill)) };
       (res.duels[row.policy] ??= []).push(row);
       if (!SUMMARY) console.log(`${row.policy.padEnd(13)} ${foe.padEnd(8)} ${pc(row.wins).padStart(5)} ${pc(row.ko).padStart(5)} ${row.lenMed.toFixed(1).padStart(5)} [${ts.slice().sort((a, b) => a - b)[Math.floor(ts.length * 0.1)].toFixed(1)}-${row.lenP90.toFixed(1)}]   ${pc(row.light).padStart(5)} ${pc(row.skills).padStart(5)} ${pc(row.heavy).padStart(5)} | ${pc(row.broken).padStart(5)}  ${row.breaks.toFixed(1).padStart(5)} ${row.firstBreak === null ? '   -' : row.firstBreak.toFixed(0).padStart(5)}     ${String(row.pauseMed).padStart(5)} ${String(row.pauseMax).padStart(3)}   ${row.apMin.toFixed(1).padStart(5)} ${row.apDodge.toFixed(0)}:${row.apSkill.toFixed(0)}`);
     }
     const ts = all.map((r) => r.t / 60), pall = all.flatMap((r) => r.pauses), fball = all.map((r) => r.firstBreak).filter((x) => x !== null);
     res.all = res.all ?? {}; const tops = (k) => all.flatMap((r) => r.top[k]), ces = (k) => all.flatMap((r) => r.ce[k]), gp = all.map((r) => r.gap).filter((x) => x !== null);
-    res.all[policy + (policy !== 'spam' ? ' ' + skill : '')] = { rivalLen: [Math.min(...rivalLen), Math.max(...rivalLen)], topHit: avg(tops('hit')), topGuarded: avg(tops('guarded')), topBroken: avg(tops('broken')), topN: [tops('hit').length, tops('guarded').length, tops('broken').length], ceHit: avg(ces('hit')), ceGuarded: avg(ces('guarded')), ceBroken: avg(ces('broken')), ceN: [ces('hit').length, ces('guarded').length, ces('broken').length].map((x) => +(x / all.length).toFixed(1)), topPer: +((tops('hit').length + tops('guarded').length + tops('broken').length) / all.length).toFixed(1), gap: gp.length ? med(gp) : null, wins: avg(all.map((r) => r.win)), lenMed: med(ts), lenP10: ts.slice().sort((a, b) => a - b)[Math.floor(ts.length * 0.1)], lenP90: ts.slice().sort((a, b) => a - b)[Math.floor(ts.length * 0.9)], light: avg(all.map((r) => r.light)), skills: avg(all.map((r) => r.skills)), heavy: avg(all.map((r) => r.heavy)), broken: avg(all.map((r) => r.broken)), breaks: avg(all.map((r) => r.breaks)), firstBreak: fball.length ? med(fball) : null, pauseMed: med(pall), pauseMax: Math.max(...pall), apMin: avg(all.map((r) => r.apGainMin)) };
-    const A2 = res.all[policy + (policy !== 'spam' ? ' ' + skill : '')], pct1 = (x) => (Number.isFinite(x) ? (100 * x).toFixed(1) : '-');
-    if (AUDIT) { console.log(`${(policy + (policy !== 'spam' ? ' ' + skill : '')).padEnd(10)} wins ${pc(A2.wins).padStart(5)}  len ${A2.lenMed.toFixed(1)} [rivals ${A2.rivalLen[0].toFixed(1)}-${A2.rivalLen[1].toFixed(1)}]  skills ${pc(A2.skills)}  in-break ${pc(A2.broken)}  breaks ${A2.breaks.toFixed(1)} first ${A2.firstBreak === null ? '-' : A2.firstBreak.toFixed(0)}s  Estocade ${pct1(A2.topHit)}/${pct1(A2.topGuarded)}/${pct1(A2.topBroken)} % x${A2.topPer}  Eclair ${pct1(A2.ceHit)}/${pct1(A2.ceGuarded)}/${pct1(A2.ceBroken)} % x${A2.ceN.join('/')}  moment every ${A2.gap === null ? '-' : A2.gap.toFixed(1)}s  lights/pause ${A2.pauseMed}`); continue; }
-    console.log(`${(policy + (policy !== 'spam' ? ' ' + skill : '')).padEnd(13)} ALL      ${pc(avg(all.map((r) => r.win))).padStart(5)} ${pc(avg(all.map((r) => r.ko))).padStart(5)} ${med(ts).toFixed(1).padStart(5)}               ${pc(avg(all.map((r) => r.light))).padStart(5)} ${pc(avg(all.map((r) => r.skills))).padStart(5)} ${pc(avg(all.map((r) => r.heavy))).padStart(5)} | ${pc(avg(all.map((r) => r.broken))).padStart(5)}  ${avg(all.map((r) => r.breaks)).toFixed(1).padStart(5)} ${fball.length ? med(fball).toFixed(0).padStart(5) : '    -'}     ${String(med(pall)).padStart(5)} ${String(Math.max(...pall)).padStart(3)}   ${avg(all.map((r) => r.apGainMin)).toFixed(1).padStart(5)}`);
+    res.all[policy + (policy !== 'spam' && policy !== 'gspam' ? ' ' + skill : '')] = { rivalLen: [Math.min(...rivalLen), Math.max(...rivalLen)], topHit: avg(tops('hit')), topGuarded: avg(tops('guarded')), topBroken: avg(tops('broken')), topN: [tops('hit').length, tops('guarded').length, tops('broken').length], ceHit: avg(ces('hit')), ceGuarded: avg(ces('guarded')), ceBroken: avg(ces('broken')), ceN: [ces('hit').length, ces('guarded').length, ces('broken').length].map((x) => +(x / all.length).toFixed(1)), topPer: +((tops('hit').length + tops('guarded').length + tops('broken').length) / all.length).toFixed(1), gap: gp.length ? med(gp) : null, wins: avg(all.map((r) => r.win)), lenMed: med(ts), lenP10: ts.slice().sort((a, b) => a - b)[Math.floor(ts.length * 0.1)], lenP90: ts.slice().sort((a, b) => a - b)[Math.floor(ts.length * 0.9)], light: avg(all.map((r) => r.light)), skills: avg(all.map((r) => r.skills)), heavy: avg(all.map((r) => r.heavy)), broken: avg(all.map((r) => r.broken)), breaks: avg(all.map((r) => r.breaks)), firstBreak: fball.length ? med(fball) : null, pauseMed: med(pall), pauseMax: Math.max(...pall), apMin: avg(all.map((r) => r.apGainMin)), seqMin: avg(all.map((r) => r.seqMin)), freeMed: med(all.flatMap((r) => r.free)), ripShare: avg(all.map((r) => r.ripShare)), breakMin: avg(all.map((r) => r.breaks / (r.t / 60))), renLeftWon: avg(all.filter((r) => r.win).map((r) => r.renLeft)), renHp: med(all.map((r) => r.renHp)), foeHp: [Math.min(...all.map((r) => r.foeHp)), Math.max(...all.map((r) => r.foeHp))], perFoe: Object.fromEntries(FOES.map((f, i) => [f, { wins: avg(all.slice(i * SEEDS.length, (i + 1) * SEEDS.length).map((r) => r.win)), len: med(all.slice(i * SEEDS.length, (i + 1) * SEEDS.length).map((r) => r.t / 60)), first: med(all.slice(i * SEEDS.length, (i + 1) * SEEDS.length).map((r) => r.firstBreak).filter((x) => x !== null)), seqMin: avg(all.slice(i * SEEDS.length, (i + 1) * SEEDS.length).map((r) => r.seqMin)), free: med(all.slice(i * SEEDS.length, (i + 1) * SEEDS.length).flatMap((r) => r.free)) }])) };
+    const A2 = res.all[policy + (policy !== 'spam' && policy !== 'gspam' ? ' ' + skill : '')], pct1 = (x) => (Number.isFinite(x) ? (100 * x).toFixed(1) : '-');
+    if (AUDIT) { console.log(`${(policy + (policy !== 'spam' && policy !== 'gspam' ? ' ' + skill : '')).padEnd(10)} wins ${pc(A2.wins).padStart(5)}  len ${A2.lenMed.toFixed(1)} [rivals ${A2.rivalLen[0].toFixed(1)}-${A2.rivalLen[1].toFixed(1)}]  skills ${pc(A2.skills)}  in-break ${pc(A2.broken)}  breaks ${A2.breaks.toFixed(1)} first ${A2.firstBreak === null ? '-' : A2.firstBreak.toFixed(0)}s  Estocade ${pct1(A2.topHit)}/${pct1(A2.topGuarded)}/${pct1(A2.topBroken)} % x${A2.topPer}  Eclair ${pct1(A2.ceHit)}/${pct1(A2.ceGuarded)}/${pct1(A2.ceBroken)} % x${A2.ceN.join('/')}  moment every ${A2.gap === null ? '-' : A2.gap.toFixed(1)}s  lights/pause ${A2.pauseMed}  | seq/min ${A2.seqMin.toFixed(1)} free ${A2.freeMed.toFixed(1)}s riposte ${pc(A2.ripShare)} breaks/min ${A2.breakMin.toFixed(2)} renLeft ${pct1(A2.renLeftWon)} % hp ${A2.renHp} v ${A2.foeHp.join('-')}`); continue; }
+    console.log(`${(policy + (policy !== 'spam' && policy !== 'gspam' ? ' ' + skill : '')).padEnd(13)} ALL      ${pc(avg(all.map((r) => r.win))).padStart(5)} ${pc(avg(all.map((r) => r.ko))).padStart(5)} ${med(ts).toFixed(1).padStart(5)}               ${pc(avg(all.map((r) => r.light))).padStart(5)} ${pc(avg(all.map((r) => r.skills))).padStart(5)} ${pc(avg(all.map((r) => r.heavy))).padStart(5)} | ${pc(avg(all.map((r) => r.broken))).padStart(5)}  ${avg(all.map((r) => r.breaks)).toFixed(1).padStart(5)} ${fball.length ? med(fball).toFixed(0).padStart(5) : '    -'}     ${String(med(pall)).padStart(5)} ${String(Math.max(...pall)).padStart(3)}   ${avg(all.map((r) => r.apGainMin)).toFixed(1).padStart(5)}`);
   }
   out.variants[variant] = res;
 }
