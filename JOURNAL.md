@@ -423,12 +423,67 @@ Lu le 2026-11-11 dans le code de son remake en TypeScript, https://github.com/Ze
 ### Pensée
 - Quand l'opérateur montre un jeu en exemple, on lit à la source comment il marche avant d'en tirer une règle, et on en garde le principe sans le jeu.
 
+## Passe AU5 — Les réponses de l'opérateur pour la refonte du combat : une ligne de temps avec les PA, la défense et l'esquive par les cinq stats, un semi-automatique, une durée pour profiter du duel, et le vrai problème, le joueur qui perd trop contre les rivaux avancés ; consignées, rien d'appliqué (2026-11-11)
+
+### Ce que l'opérateur a dit (en réponse à la Passe AU4, mot pour mot)
+- Sur la ligne de temps et les PA : « Il faudrait une ligne de temps mais les PA sont essentiels pour l'usage des competences sauf si on a un meilleur choix, et la defense et esquive comment cela sera gere ? on a deja defini 5 stats ».
+- Sur un même modèle pour les duels vus et hors écran : « determinons le plus optimale mais comme j'ai dit un system semi-auto permettrait de determiner quand lancer les competences par exemple ».
+- Sur la durée (DB5) : « il faut determiner un temps de simulation suffisamment bon a profiter du duel ».
+- Sur « le principe, pas le jeu » : « oui on est sur une inspi car on a deja notre idee de base de ce que nous voulons mais il s'avere que ce n'est pas bien structure car le joueur perd trop souvent face au ennemie avance/expert par exemple, ce qui est la problematique ».
+
+### Ce que cela fixe pour l'atelier : une direction, pas encore des nombres
+- Une ligne de temps, et les PA gardés pour les compétences, sauf si l'atelier trouve mieux et le montre à l'opérateur.
+- La défense et l'esquive à définir dans une simulation automatique, avec les cinq stats déjà décidées (DB7-1 à DB7-6, A3).
+- Le modèle le plus juste pour les duels vus et hors écran, à déterminer ; un semi-automatique où le joueur choisit quand lancer ses compétences.
+- Une durée choisie pour qu'on profite d'un duel regardé. DB5 (A3) reste en vigueur jusqu'à une nouvelle décision de l'opérateur.
+- **Le problème à résoudre, nommé par l'opérateur** : le joueur perd trop souvent contre les rivaux avancés et experts. Selon lui, c'est la structure qui est en cause, pas seulement les nombres.
+
+### Ce que l'audit en mesure (`briefs/audit-final.md` § 2.1 et § 2.3)
+- 0 titre en 200 parties. La poule est gagnée à 100 % dès le jour 4, puis la demi-finale du jour 6 tombe à 4 % pour le planificateur (0 sur 37 contre Vessa).
+- Les rivaux grandissent par multiplicateurs à chaque étape : PV ×1,7 au tableau et ×3,5 en finale, +3 / +3 / +2 aux stats. S'y ajoute leur préparation (×1,09 au jour 2, ×1,21 en demi-finale, ×1,25 en finale), que l'outil de calibrage ne compte pas.
+- Ren grandit par petits ajouts fixes : +24 PV par victoire, +1 à une stat par séance, l'équipement en points. La courbe suppose ses compétences au niveau 3, qu'aucune politique n'atteint : toutes restent au niveau 1.
+- Facteurs isolés, au tableau : le niveau 3 sans la préparation des rivaux gagne 82 %, le niveau 1 avec elle 25 %.
+
+### Des propositions pour l'atelier — à mesurer et à montrer à l'opérateur, rien de décidé
+1. **Le temps décide quand, les PA décident quoi.**
+   - Chaque action fait attendre son auteur sur la ligne de temps : son temps de charge, raccourci par la Vivacité (la règle ×10 / Vivacité d'aujourd'hui).
+   - Les PA se gagnent (par l'attaque simple, DB-3) et paient les compétences. Une recharge devient une attente avant de relancer la même compétence.
+2. **La défense et l'esquive en réactions, sans sixième stat.**
+   - Chaque coup reçu peut être gardé ou esquivé, avec une chance calculée et affichée.
+   - La garde viendrait de la Défense : le coup gardé à −80 %, sa part ×2 à la jauge de celui qui garde (règles DB5 et DB9).
+   - L'esquive viendrait de la Vivacité, comparée à celle de l'attaquant.
+   - Les cinq stats gardent leur rôle d'aujourd'hui (PV, dégâts, jauge, attente), et deux d'entre elles en prennent un second, visible.
+   - Autres voies à comparer : la garde et l'esquive en postures choisies sur la ligne de temps, ou données par l'équipement et les compétences seulement.
+3. **Une simulation, trois façons de décider.**
+   - L'IA des rivaux et des combats hors écran.
+   - L'automatique du joueur : l'IA joue Ren selon sa préparation, et peut-être selon une tactique choisie avant le combat.
+   - Le semi-automatique : le joueur lance une compétence quand il le veut, et elle part au prochain tour de Ren.
+   - Ainsi construit, le semi-automatique ne demande pas de refaire le combat, et les combats hors écran deviennent la même simulation (contrat tournoi § 6). C'est déjà la forme du code : `DynamicSim` et son bot, une empreinte égale entre le laboratoire et l'arène (105 duels sur 105).
+4. **La durée comptée en actions.**
+   - Il faut assez d'échanges pour voir la préparation agir (les compétences, une rupture, un retournement), et pas assez pour lasser.
+   - Une hypothèse de départ à mesurer : 20 à 40 actions par duel, de 1,5 à 2,5 s de montré chacune, avec une vitesse ×2 et « passer au résultat ».
+   - Aujourd'hui, dans des parties entières : la poule dure 1,0 à 2,1 min, la demi-finale 1,6 à 2,4, la finale 3,4 à 3,7.
+5. **Partir de la courbe, pas du duel.**
+   - Fixer d'abord, pour chaque étape, le joueur de référence : ce qu'un joueur qui prépare normalement a au jour 6 et au jour 10, avec des niveaux de compétences réellement atteignables.
+   - Fixer les chances visées, par exemple : un joueur préparé gagne nettement en poule et se bat à peu près à égalité en finale ; un joueur qui ne prépare pas perd.
+   - Puis caler les rivaux dessus, leur préparation comprise, mesuré sur des parties entières du laboratoire et non sur des duels isolés.
+   - En automatique, la préparation est le seul levier : l'écart entre préparé et non préparé doit se voir et rester juste. La croissance des rivaux se dit sur la fiche de match.
+
+### Validation
+- Documents seulement : `JOURNAL.md` et `briefs/audit-final.md` (§ 9). Aucun fichier du jeu.
+
+### Où reprendre
+- L'atelier de refonte du combat part de cette passe et des Passes AU3 et AU4. Il recueille d'abord les choix de l'opérateur sur ces cinq propositions, sur une fiche, avec des mesures.
+
+### Pensée
+- Quand le joueur ne joue plus le duel, la difficulté se règle entièrement par la préparation : on calibre sur ce qu'un joueur peut réellement préparer, pas sur un joueur supposé.
+
 ## À reprendre (par priorité)
 
 > Élaguée le 18/10 (Passe M3) : seul le travail ouvert reste, regroupé par thème ; ce qui est fait vit dans sa passe. Les anciens repères
 > (-3 … 6) cités par les passes antérieures renvoient à la liste de `7086340` (`git show 7086340:JOURNAL.md`).
 
-**00. L'audit final (Passes AU1 à AU4)** : le rapport `briefs/audit-final.md` ; la fiche AU1 relue, dix-sept sur dix-sept, seize à la recommandation, AU-03 « Recaler tout de suite, sans attendre l’essai » (Passe AU2 ; A3 : AU-05, AU-12, AU-13). **Les chantiers, chacun dans sa séance** : (1) **la refonte du combat, d'abord** (AU-03, devenu par la direction de l'opérateur de la Passe AU3 : des duels joués par l'ordinateur, le joueur prépare, une zone de charge et d'attente avec les PA, un atelier comme CB1, l'inspiration de La Brute lue dans son code (Passe AU4 : une ligne de temps d'initiative, une préparation par choix ; le principe, pas le jeu), l'amendement du § 6.1 du contrat projet en A3 avant la construction ; tout ce qui touche au combat repensé avec elle) ; (2) les nombres du duel dits (AU-04), en attente de la refonte ; (3) la graine et la sauvegarde, le fondu au noir avant chaque page (AU-06, AU-07) ; (4) les correctifs de la ville et « 10 % » (AU-08, AU-15) ; (5) `AGENTS.md` allégé et le journal élagué avec une règle de taille (AU-09) ; (6) le ménage, les deux fichiers modifiés montrés d'abord (AU-10) ; (7) les paramètres d'essai retirés, `v2=0` gardé jusqu'au Gold Master (AU-11) ; (8) les amendements des contrats : la phase d'équipe hors de cette version, la génération par le code (AU-05, AU-12) ; (9) l'essai de réception guidé, après les bloquants (AU-01, AU-02). Hors de cette version (AU-13, A3) : les sponsors, l'investissement, les calendriers comparés, avec les paris (ECO-5).
+**00. L'audit final (Passes AU1 à AU5)** : le rapport `briefs/audit-final.md` ; la fiche AU1 relue, dix-sept sur dix-sept, seize à la recommandation, AU-03 « Recaler tout de suite, sans attendre l’essai » (Passe AU2 ; A3 : AU-05, AU-12, AU-13). **Les chantiers, chacun dans sa séance** : (1) **la refonte du combat, d'abord** (AU-03, devenu par la direction de l'opérateur de la Passe AU3 : des duels joués par l'ordinateur, le joueur prépare, une zone de charge et d'attente avec les PA, un atelier comme CB1, l'inspiration de La Brute lue dans son code (Passe AU4 : une ligne de temps d'initiative, une préparation par choix ; le principe, pas le jeu), les réponses de l'opérateur de la Passe AU5 (une ligne de temps avec les PA, la défense et l'esquive par les cinq stats, un semi-automatique, une durée pour profiter du duel ; le problème à résoudre : le joueur perd trop souvent contre les rivaux avancés), l'amendement du § 6.1 du contrat projet en A3 avant la construction ; tout ce qui touche au combat repensé avec elle) ; (2) les nombres du duel dits (AU-04), en attente de la refonte ; (3) la graine et la sauvegarde, le fondu au noir avant chaque page (AU-06, AU-07) ; (4) les correctifs de la ville et « 10 % » (AU-08, AU-15) ; (5) `AGENTS.md` allégé et le journal élagué avec une règle de taille (AU-09) ; (6) le ménage, les deux fichiers modifiés montrés d'abord (AU-10) ; (7) les paramètres d'essai retirés, `v2=0` gardé jusqu'au Gold Master (AU-11) ; (8) les amendements des contrats : la phase d'équipe hors de cette version, la génération par le code (AU-05, AU-12) ; (9) l'essai de réception guidé, après les bloquants (AU-01, AU-02). Hors de cette version (AU-13, A3) : les sponsors, l'investissement, les calendriers comparés, avec les paris (ECO-5).
 
 **0. Jalon M1 — clos (Passe Z4)** : le Merchant District est déclaré complet (décision RJ1) ; Gold Master : « Pas encore » (RJ3).
 - **La suite, RJ2 « L'état jour »** : la direction artistique est décidée (fiche de la Passe R2, choix consignés en Passe D4 et dans

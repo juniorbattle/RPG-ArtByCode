@@ -773,6 +773,13 @@ Ce qui en découle :
 - La préparation (armes, compétences, animal ; un choix entre deux propositions à chaque niveau) décide de l'issue ; le combat est calculé, puis montré.
 - Pour l'atelier : ce que deviennent les PA sur une telle ligne de temps ; un même modèle pour les duels vus et hors écran (contrat tournoi § 6) ; la durée de 2 à 5 minutes (DB5, A3) pour un duel regardé ; ce qui est tiré au hasard et ce qui est dit au joueur. Le principe est repris, pas le jeu.
 
+**Les réponses de l'opérateur** (Passe AU5, mot pour mot dans le journal) : une ligne de temps, et les PA gardés pour les compétences sauf meilleur choix ; la défense et l'esquive à définir avec les cinq stats ; le modèle le plus juste, et un semi-automatique où le joueur choisit quand lancer ses compétences ; une durée suffisante pour profiter du duel. Le problème qu'il nomme : « le joueur perd trop souvent face au ennemie avance/expert ». Cinq propositions sont notées pour l'atelier, rien n'est décidé :
+- le temps décide quand, les PA décident quoi ;
+- la garde et l'esquive en réactions calculées par la Défense et la Vivacité, sans sixième stat ;
+- une simulation et trois façons de décider (l'IA, l'automatique du joueur, le semi-automatique) ;
+- la durée comptée en actions ;
+- partir de la courbe : un joueur de référence par étape, réellement atteignable, et les rivaux calés dessus, leur préparation comprise.
+
 ---
 
 ## Annexe — les commandes
